@@ -298,6 +298,12 @@ func TestPreconfiguredAsksOnlyAboutUnresolvedChoices(t *testing.T) {
 	c.True(processModifiers([]*gurps.Trait{trait}, true))
 	c.Equal([]modifierPrompt{{title: "Blast", modifiers: []string{"Plain", "Made", "Open", "Optional"}}}, *prompts,
 		"a trait that isn't preconfigured is asked about everything")
+
+	*prompts = nil
+	open.Children[0].SetEnabled(false)
+	trait.Preconfigured = true
+	c.True(processModifiers([]*gurps.Trait{trait}, false))
+	c.Equal(0, len(*prompts), "a preconfigured row headed for a template isn't asked about its choices")
 }
 
 // TestDuplicatingAnOptionKeepsThePick verifies that an option duplicated within a choice arrives turned off, so that
@@ -464,47 +470,87 @@ func TestUnresolvedChoiceLeadsTheTooltip(t *testing.T) {
 }
 
 // TestModifierSelectionTreatsChoicesByKind verifies the prompt asking which modifiers to enable: a modifier outside a
-// choice gets a check box, the options of an optional choice get radio buttons along with "None", and those of a
-// mandatory choice get radio buttons alone, the prompt not being complete until one is picked.
+// choice gets a check box, and each choice, reaching through the groups beneath it but not into a choice within it,
+// gets radio buttons for its options, an optional one adding "None". On a sheet a mandatory choice shows whether it
+// has its pick and holds the prompt open until it does; elsewhere it is offered as an optional one is.
 func TestModifierSelectionTreatsChoicesByKind(t *testing.T) {
 	c := check.New(t)
-	plain := gurps.NewTraitModifier(nil, nil, false)
-	plain.Name = "Plain"
-	mandatory := newTraitModifierChoiceFor(nil, true, []string{"Low", "High"})
+	named := func(parent *gurps.TraitModifier, name string) *gurps.TraitModifier {
+		m := gurps.NewTraitModifier(nil, parent, false)
+		m.Name = name
+		m.SetEnabled(false)
+		parent.Children = append(parent.Children, m)
+		return m
+	}
+	outer := gurps.NewTraitModifier(nil, nil, true)
+	plain := named(outer, "Plain")
+	plain.SetEnabled(true)
+	choice := gurps.NewTraitModifierChoice(nil, outer)
+	outer.Children = append(outer.Children, choice)
+	direct := named(choice, "Direct")
+	group := gurps.NewTraitModifier(nil, choice, true)
+	choice.Children = append(choice.Children, group)
+	grouped := named(group, "Grouped")
+	inner := gurps.NewTraitModifierChoice(nil, choice)
+	choice.Children = append(choice.Children, inner)
+	low := named(inner, "Low")
+	high := named(inner, "High")
 	optional := newTraitModifierChoiceFor(nil, false, []string{"Hot", "Cold"}, "Hot", "Cold")
-	s := newModifierSelection([]*gurps.TraitModifier{plain, mandatory, optional}, true)
+
+	s := newModifierSelection([]*gurps.TraitModifier{outer, optional}, true)
 	c.NotNil(s)
-	c.Equal(1, len(s.boxes), "only the modifier outside a choice gets a check box")
-	c.Equal(2, len(s.choices))
-	c.True(s.choices[0].mandatory)
-	c.False(s.choices[1].mandatory)
-	c.Equal(5, len(panelsOfType[*unison.RadioButton](s.list)),
-		"each option of a choice gets a radio button, and only the optional choice adds one for None")
+	var changes int
+	s.onChange = func() { changes++ }
+	c.Equal(1, len(s.boxes), "only the modifier outside every choice gets a check box")
+	c.Equal(3, len(s.choices), "each choice, nested or not, gets its own group of radio buttons")
+	c.Equal(7, len(panelsOfType[*unison.RadioButton](s.list)), "only the optional choice adds one for None")
+	optionsOf := func(choice *choiceRadioGroup) map[gurps.GeneralModifier]*unison.RadioButton {
+		options := make(map[gurps.GeneralModifier]*unison.RadioButton)
+		for rb, gm := range choice.options {
+			options[gm] = rb
+		}
+		return options
+	}
+	outerOptions := optionsOf(s.choices[0])
+	innerOptions := optionsOf(s.choices[1])
+	c.Equal(2, len(outerOptions))
+	c.NotNil(outerOptions[direct])
+	c.NotNil(outerOptions[grouped], "an option in a group beneath the choice is one of its options")
+	c.Equal(2, len(innerOptions), "the nested choice's options are its own")
+	c.NotNil(innerOptions[low])
+	c.NotNil(innerOptions[high])
+	c.False(s.choices[2].mandatory)
+	c.True(s.choices[2].group.Selected(optionsOf(s.choices[2])[optional.Children[0]]),
+		"the first enabled option starts out picked")
+	pills := func() []string {
+		return slices.DeleteFunc(labelTitles(s.list), func(title string) bool { return title != "Required" && title != "Picked" })
+	}
+	c.Equal([]string{"Required", "Required"}, pills())
 	c.False(s.complete(), "a mandatory choice with nothing picked must hold the prompt open")
 
-	radio := func(choice *choiceRadioGroup, m *gurps.TraitModifier) *unison.RadioButton {
-		for rb, gm := range choice.options {
-			if gm == m {
-				return rb
-			}
-		}
-		t.Fatalf("no radio button for %s", m.Name)
-		return nil
-	}
-	c.True(s.choices[1].group.Selected(radio(s.choices[1], optional.Children[0])),
-		"the first enabled option starts out picked")
-	radio(s.choices[0], mandatory.Children[1]).Click()
-	c.True(s.complete(), "picking an option makes the mandatory choice")
-
+	outerOptions[grouped].Click()
+	c.Equal(1, changes, "picking an option tells the prompt")
+	c.Equal([]string{"Picked", "Required"}, pills())
+	c.False(s.complete(), "the nested choice still has to be made")
+	innerOptions[high].Click()
+	c.Equal(2, changes)
+	c.True(s.complete())
 	for cb := range s.boxes {
 		cb.State = checkstate.Off
 	}
 	c.True(s.apply())
 	c.False(plain.Enabled())
-	c.False(mandatory.Children[0].Enabled())
-	c.True(mandatory.Children[1].Enabled())
+	c.False(direct.Enabled())
+	c.True(grouped.Enabled())
+	c.False(low.Enabled())
+	c.True(high.Enabled())
 	c.True(optional.Children[0].Enabled())
 	c.False(optional.Children[1].Enabled(), "only one option of a choice may be left on")
+
+	s = newModifierSelection([]*gurps.TraitModifier{newTraitModifierChoiceFor(nil, true, []string{"Low", "High"})}, false)
+	c.True(s.complete(), "off a sheet a mandatory choice may be left without its pick")
+	c.Equal(3, len(panelsOfType[*unison.RadioButton](s.list)), "the options and None")
+	c.Nil(s.choices[0].updateStatus)
 }
 
 // TestTraitEditorShowsTheRangeOfAnOpenChoice verifies that a trait editor opened outside a sheet shows the range of
@@ -614,87 +660,6 @@ func TestModifierEditorFollowsTheChoiceRules(t *testing.T) {
 	e.editorData.Disabled = true
 	e.applyEdits()
 	c.False(offSheet.Children[0].Enabled(), "off a sheet a mandatory choice may be left without its pick")
-}
-
-// TestModifierSelectionOutsideASheet verifies that when the rows aren't headed for a sheet, a mandatory choice is
-// offered just as an optional one is, "None" included, and doesn't hold the prompt open, and that a preconfigured row
-// isn't asked about at all.
-func TestModifierSelectionOutsideASheet(t *testing.T) {
-	c := check.New(t)
-	mandatory := newTraitModifierChoiceFor(nil, true, []string{"Low", "High"})
-	s := newModifierSelection([]*gurps.TraitModifier{mandatory}, false)
-	c.True(s.complete(), "a template may keep a mandatory choice without its pick")
-	c.Equal(3, len(panelsOfType[*unison.RadioButton](s.list)), "the options and None")
-	c.Nil(s.choices[0].updateStatus)
-
-	prompts := captureModifierPrompts(t)
-	trait := gurps.NewTrait(nil, nil, false)
-	trait.Modifiers = []*gurps.TraitModifier{mandatory}
-	trait.Preconfigured = true
-	c.True(processModifiers([]*gurps.Trait{trait}, false))
-	c.Equal(0, len(*prompts), "a preconfigured row headed for a template isn't asked about its choices")
-}
-
-// TestModifierSelectionReachesIntoNestedContainers verifies that the prompt finds the options of a choice through the
-// groups nested beneath it, while a choice nested beneath it keeps its own options, and that picking an option tells
-// the prompt, which is how its OK button learns whether it may be pressed.
-func TestModifierSelectionReachesIntoNestedContainers(t *testing.T) {
-	c := check.New(t)
-	named := func(parent *gurps.TraitModifier, name string) *gurps.TraitModifier {
-		m := gurps.NewTraitModifier(nil, parent, false)
-		m.Name = name
-		m.SetEnabled(false)
-		parent.Children = append(parent.Children, m)
-		return m
-	}
-	outer := gurps.NewTraitModifier(nil, nil, true)
-	plain := named(outer, "Plain")
-	choice := gurps.NewTraitModifierChoice(nil, outer)
-	outer.Children = append(outer.Children, choice)
-	direct := named(choice, "Direct")
-	group := gurps.NewTraitModifier(nil, choice, true)
-	choice.Children = append(choice.Children, group)
-	grouped := named(group, "Grouped")
-	inner := gurps.NewTraitModifierChoice(nil, choice)
-	choice.Children = append(choice.Children, inner)
-	low := named(inner, "Low")
-	high := named(inner, "High")
-
-	s := newModifierSelection([]*gurps.TraitModifier{outer}, true)
-	c.NotNil(s)
-	var changes int
-	s.onChange = func() { changes++ }
-	c.Equal(1, len(s.boxes), "only the modifier outside every choice gets a check box")
-	c.Equal(2, len(s.choices), "each choice, nested or not, gets its own group of radio buttons")
-	optionsOf := func(choice *choiceRadioGroup) map[gurps.GeneralModifier]*unison.RadioButton {
-		options := make(map[gurps.GeneralModifier]*unison.RadioButton)
-		for rb, gm := range choice.options {
-			options[gm] = rb
-		}
-		return options
-	}
-	outerOptions := optionsOf(s.choices[0])
-	innerOptions := optionsOf(s.choices[1])
-	c.Equal(2, len(outerOptions))
-	c.NotNil(outerOptions[direct])
-	c.NotNil(outerOptions[grouped], "an option in a group beneath the choice is one of its options")
-	c.Equal(2, len(innerOptions), "the nested choice's options are its own")
-	c.NotNil(innerOptions[low])
-	c.NotNil(innerOptions[high])
-	c.False(s.complete())
-
-	outerOptions[grouped].Click()
-	c.Equal(1, changes, "picking an option tells the prompt")
-	c.False(s.complete(), "the nested choice still has to be made")
-	innerOptions[high].Click()
-	c.Equal(2, changes)
-	c.True(s.complete())
-	c.True(s.apply())
-	c.False(plain.Enabled())
-	c.False(direct.Enabled())
-	c.True(grouped.Enabled())
-	c.False(low.Enabled())
-	c.True(high.Enabled())
 }
 
 // TestEmptyMandatoryChoiceDoesNotHoldThePromptOpen verifies that a mandatory choice with no options, which has
