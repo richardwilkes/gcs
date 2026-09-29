@@ -430,6 +430,21 @@ func TestEquipmentRangesWithMandatoryModifierChoice(t *testing.T) {
 	c.Equal(fxp.FromInteger(300), eqp.ExtendedValue(), "once made, the options enabled count as they always have")
 }
 
+// TestTemplateChoiceOfEquipmentWithAnOpenModifierChoice verifies that a template choice of equipment counts an option
+// whose mandatory modifier choice is still to be made by the range its modifiers give it.
+func TestTemplateChoiceOfEquipmentWithAnOpenModifierChoice(t *testing.T) {
+	c := check.New(t)
+	pick := newEquipmentChoice("Rope")
+	eqp := newEquipmentItem("Sword", "100", "3 lb")
+	eqp.Quantity = fxp.FromInteger(2)
+	eqp.AddModifiers(newEquipmentModifierChoiceWith([2]string{"+50", "+1 lb"}, [2]string{"+100", "+2 lb"}))
+	eqp.SetParent(pick)
+	pick.Children = append(pick.Children, eqp)
+	c.Equal("10~400", FormatValueRange(pick.ExtendedValueRange(), fxp.Int.Comma))
+	c.Equal("1~10 lb", FormatWeightRange(pick.ExtendedWeightRange(fxp.Pound), fxp.Pound.Format))
+	c.Equal(fxp.FromInteger(150), eqp.ExtendedValueOfJustOne(), "one of it counts as the least it may come to")
+}
+
 // TestWeightIgnoredForSkillsWithAnOpenChoice verifies that equipment whose weight is ignored for skills weighs nothing
 // for them while a choice is still to be made, whether it is a mandatory choice among its own modifiers or a template
 // choice holding it, just as it does once the choice is made.

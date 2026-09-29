@@ -14,6 +14,7 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/eqcontainer"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/picker"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/toolbox/v2/tid"
@@ -292,10 +293,10 @@ func TestPickerQuantityUpdatesDetailsAndTotal(t *testing.T) {
 	c.Equal(fxp.FromInteger(4), torch.Quantity)
 	c.Equal("4", details[0].String())
 	c.Equal("$12", details[1].String())
-	c.Equal("$12", formatPickerTotal(torch, picker.Value, pickerMeasureRange(torch, picker.Value)))
+	c.Equal("$12", formatPickerTotal(torch, picker.Value, gurps.PickerMeasureRange(torch, picker.Value)))
 	units := gurps.SheetSettingsFor(nil).DefaultWeightUnits
 	c.Equal(units.Format(torch.ExtendedWeight(false, units)), details[2].String())
-	c.Equal(details[2].String(), formatPickerTotal(torch, picker.Weight, pickerMeasureRange(torch, picker.Weight)))
+	c.Equal(details[2].String(), formatPickerTotal(torch, picker.Weight, gurps.PickerMeasureRange(torch, picker.Weight)))
 }
 
 // TestQuantityCommandsSkipGroups verifies that Increment and Decrement, which adjust equipment's quantity, leave a
@@ -358,4 +359,62 @@ func TestApplyModifierSkipsEquipmentGroups(t *testing.T) {
 		[]*gurps.EquipmentModifier{sturdy}, gurps.LibraryFile{}))
 	c.Equal(0, len(group.Modifiers), "the group must not be given the modifier")
 	c.Equal(1, len(backpack.Modifiers), "the physical container must still get it")
+}
+
+// TestConvertToContainerInALibrary verifies that "Convert to Container" turns a group into a physical container in an
+// equipment library too, where it is the shared conversion that handles it, and that undo turns it back.
+func TestConvertToContainerInALibrary(t *testing.T) {
+	c := check.New(t)
+	registerKeyBindingsOnce.Do(func() { registerActions() })
+	group := gurps.NewEquipmentGroup(nil, nil)
+	item := gurps.NewEquipment(nil, nil, false)
+	d := NewEquipmentTableDockable("Gear"+gurps.EquipmentExt, []*gurps.Equipment{group, item})
+	table := d.table
+	table.SetSelectionMap(map[tid.TID]bool{group.ID(): true, item.ID(): true})
+	c.True(d.CanPerformCmd(nil, ConvertToContainerItemID))
+	d.PerformCmd(nil, ConvertToContainerItemID)
+	c.True(group.IsPhysicalContainer(), "the group must have become a physical container")
+	c.True(item.IsPhysicalContainer(), "the item must have become a physical container")
+	mgr := unison.UndoManagerFor(table)
+	c.NotNil(mgr)
+	mgr.Undo()
+	c.True(group.IsGroup(), "undo must turn the group back")
+	c.False(item.Container(), "the same undo must turn the item back")
+}
+
+// TestCopyToTemplateNormalizesEquipmentChoices verifies that an equipment choice copied into a template arrives
+// normalized, just as it would have been had the template loaded it: a physical container carrying template choices
+// becomes a group, and loses its VTT notes, tags and source, while being left equipped. The rows being copied are left
+// alone.
+func TestCopyToTemplateNormalizesEquipmentChoices(t *testing.T) {
+	c := check.New(t)
+	choices := gurps.NewEquipment(nil, nil, true)
+	choices.Name = "Pick One"
+	choices.TemplatePicker.Type = picker.Count
+	choices.TemplatePicker.Qualifier.Qualifier = fxp.One
+	choices.VTTNotes = "vtt"
+	choices.Tags = []string{"Gear"}
+	choices.Source = gurps.Source{Library: "lib", Path: "choices.eqp", TID: choices.ID()}
+	choices.Equipped = false
+	option := gurps.NewEquipment(nil, choices, false)
+	option.Name = "Rope"
+	choices.Children = []*gurps.Equipment{option}
+	source := newTestTemplateWithEquipment(choices)
+	source.Equipment.Table.SelectAll()
+	destinationData := gurps.NewTemplate()
+	destination := newTestTemplateDockable("Destination", destinationData)
+
+	copySelectionTo(source.Equipment.Table, []*Template{destination})
+
+	c.Equal(1, len(destinationData.Equipment))
+	arrived := destinationData.Equipment[0]
+	c.True(gurps.IsTemplateChoiceContainer(arrived), "the choices must have been kept")
+	c.Equal(eqcontainer.Group, arrived.ContainerType, "the choice must arrive as a group")
+	c.Equal("", arrived.VTTNotes, "the choice must arrive without VTT notes")
+	c.Equal(0, len(arrived.Tags), "the choice must arrive without tags")
+	c.True(arrived.Source.IsZero(), "the choice must arrive without a source")
+	c.True(arrived.Equipped, "the choice must arrive equipped")
+	c.Equal(1, len(arrived.Children), "the options must have been kept")
+	c.Equal(eqcontainer.Container, choices.ContainerType, "the rows copied from must be left alone")
+	c.Equal(1, len(choices.Tags), "the rows copied from must be left alone")
 }

@@ -43,8 +43,16 @@ func CanTakeModifiers[T Node[T]](node T) bool {
 	if xreflect.IsNil(node) || IsTemplateChoiceContainer(node) {
 		return false
 	}
-	eqp, isEquipment := any(node).(*Equipment)
-	return !isEquipment || !eqp.IsGroup()
+	if mt, ok := any(node).(modifierTaker); ok {
+		return mt.canTakeModifiers()
+	}
+	return true
+}
+
+// modifierTaker is implemented by the node types some of whose nodes can't take modifiers for a reason of their own,
+// beyond being a template choice container.
+type modifierTaker interface {
+	canTakeModifiers() bool
 }
 
 // GeneralModifier is used for common access to modifiers.

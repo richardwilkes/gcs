@@ -470,3 +470,19 @@ func TestLegacyExportLeavesAGroupsOwnFiguresEmpty(t *testing.T) {
 	c.Equal("Kit||||2 lb|5|\nRope|1|5|2 lb|2 lb|5|\n", runLegacyExport(t, c, e,
 		"@EQUIPMENT_LOOP_START@DESCRIPTION|@QTY|@COST|@WEIGHT|@WEIGHT_SUMMARY|@COST_SUMMARY|\n@EQUIPMENT_LOOP_END"))
 }
+
+// TestLegacyExportEquipmentType verifies that the legacy exporter tells a group from a physical container, as it tells
+// trait containers apart by their type.
+func TestLegacyExportEquipmentType(t *testing.T) {
+	c := check.New(t)
+	e := NewEntity()
+	backpack := NewEquipment(e, nil, true)
+	backpack.Name = "Backpack"
+	group := NewEquipmentGroup(e, nil)
+	group.Name = "Kit"
+	rope := NewEquipment(e, nil, false)
+	rope.Name = "Rope"
+	e.CarriedEquipment = []*Equipment{backpack, group, rope}
+	c.Equal("Backpack|CONTAINER\nKit|GROUP\nRope|ITEM\n", runLegacyExport(t, c, e,
+		"@EQUIPMENT_LOOP_START@DESCRIPTION|@TYPE\n@EQUIPMENT_LOOP_END"))
+}

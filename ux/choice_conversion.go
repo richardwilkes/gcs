@@ -29,6 +29,10 @@ type choiceConversion[T gurps.Node[T], D gurps.EditorData[T]] struct {
 	after        D
 	sourceBefore gurps.Source
 	sourceAfter  gurps.Source
+	// stateBefore and stateAfter hold what the conversion changes outside of the data an editor edits, such as the kind
+	// of an equipment container, for a target that keeps any (see containerConversionStateKeeper).
+	stateBefore any
+	stateAfter  any
 }
 
 type choiceConversionList[T gurps.Node[T], D gurps.EditorData[T]] struct {
@@ -52,12 +56,19 @@ func (c *choiceConversionList[T, D]) apply(undo bool) {
 	}
 	discardEditorsFor(ids)
 	for _, one := range c.list {
+		keeper, keeps := any(one.target).(containerConversionStateKeeper)
 		if undo {
 			one.before.ApplyTo(one.target)
 			restoreSource(one.target, one.sourceBefore, one.sourceAfter)
+			if keeps {
+				keeper.RestoreContainerConversionState(one.stateBefore)
+			}
 		} else {
 			one.after.ApplyTo(one.target)
 			restoreSource(one.target, one.sourceAfter, one.sourceBefore)
+			if keeps {
+				keeper.RestoreContainerConversionState(one.stateAfter)
+			}
 		}
 	}
 	if undo {
@@ -76,9 +87,6 @@ const (
 	choiceContainerKind containerKind = iota
 	// groupContainerKind is a group: a container that only organizes what it holds.
 	groupContainerKind
-	// physicalContainerKind is a piece of equipment, such as a backpack, that holds other equipment. Only equipment
-	// has these.
-	physicalContainerKind
 )
 
 // installChoiceConversionHandlers installs the commands that convert the selected group containers to template choice
@@ -92,10 +100,10 @@ func installChoiceConversionHandlers[T gurps.Node[T], D gurps.EditorData[T]](p *
 	installContainerKindConversionHandler[T, D](p, p.Table, owner, ConvertToGroupContainerItemID, groupContainerKind)
 }
 
-// installEquipmentContainerConversionHandlers installs the commands that convert equipment among its kinds of
-// container. Unlike a choice, a group and a physical container may be held by anything, so these are installed for
-// every equipment list, after the ones that convert an item to a container and back, since "Convert to Container" is
-// extended here to also turn a group into a physical container.
+// installEquipmentContainerConversionHandlers installs the commands that convert equipment containers to a choice and
+// to a group. Unlike a choice, a group may be held by anything, so "Convert to Group" is installed for every equipment
+// list, turning a physical container into one as well as a choice. Turning a group into a physical container is left
+// to "Convert to Container" (see InstallContainerConversionHandlers).
 func installEquipmentContainerConversionHandlers(paneler unison.Paneler, table *unison.Table[*Node[*gurps.Equipment]], owner Rebuildable) {
 	if _, ok := owner.(*Template); ok {
 		installContainerKindConversionHandler[*gurps.Equipment, *gurps.EquipmentEditData](paneler, table, owner,
@@ -103,12 +111,6 @@ func installEquipmentContainerConversionHandlers(paneler unison.Paneler, table *
 	}
 	installContainerKindConversionHandler[*gurps.Equipment, *gurps.EquipmentEditData](paneler, table, owner,
 		ConvertToGroupContainerItemID, groupContainerKind)
-	paneler.AsPanel().InstallCmdHandlers(ConvertToContainerItemID,
-		func(_ any) bool {
-			return CanConvertToContainer(table) ||
-				len(containerKindConvertibleSelection(table, physicalContainerKind)) != 0
-		},
-		func(_ any) { convertEquipmentToPhysicalContainers(owner, table) })
 }
 
 // installModifierChoiceConversionHandlers installs the commands that convert modifier groups to choices and back, on
@@ -156,14 +158,7 @@ func canConvertContainerKind[T gurps.Node[T]](data T, kind containerKind) bool {
 	case choiceContainerKind:
 		return gurps.CanConvertToTemplateChoiceContainer(data) || gurps.CanConvertToModifierChoice(data)
 	case groupContainerKind:
-		if gurps.IsTemplateChoiceContainer(data) || gurps.IsModifierChoice(data) {
-			return true
-		}
-		eqp, ok := any(data).(*gurps.Equipment)
-		return ok && eqp.CanConvertToGroup()
-	case physicalContainerKind:
-		eqp, ok := any(data).(*gurps.Equipment)
-		return ok && eqp.CanConvertToPhysicalContainer()
+		return gurps.CanConvertToGroupContainer(data)
 	default:
 		return false
 	}
@@ -179,20 +174,7 @@ func convertContainerKind[T gurps.Node[T]](data T, kind containerKind) {
 			gurps.ConvertToTemplateChoiceContainer(data)
 		}
 	case groupContainerKind:
-		switch {
-		case gurps.IsTemplateChoiceContainer(data):
-			gurps.ConvertFromTemplateChoiceContainer(data)
-		case gurps.IsModifierChoice(data):
-			gurps.ConvertFromModifierChoice(data)
-		default:
-			if eqp, ok := any(data).(*gurps.Equipment); ok {
-				eqp.ConvertToGroup()
-			}
-		}
-	case physicalContainerKind:
-		if eqp, ok := any(data).(*gurps.Equipment); ok {
-			eqp.ConvertToPhysicalContainer()
-		}
+		gurps.ConvertToGroupContainer(data)
 	}
 }
 
@@ -240,9 +222,16 @@ func convertContainerKinds[T gurps.Node[T], D gurps.EditorData[T]](owner Rebuild
 			before:       newData(target),
 			sourceBefore: target.GetSource(),
 		}
+		keeper, keeps := any(target).(containerConversionStateKeeper)
+		if keeps {
+			conv.stateBefore = keeper.ContainerConversionState()
+		}
 		convertContainerKind(target, kind)
 		conv.after = newData(target)
 		conv.sourceAfter = target.GetSource()
+		if keeps {
+			conv.stateAfter = keeper.ContainerConversionState()
+		}
 		edits.list = append(edits.list, conv)
 	}
 	edits.optionsAfter = modifierEnabledStates(targets)
@@ -255,14 +244,9 @@ func addContainerKindUndo[T gurps.Node[T]](table *unison.Table[*Node[T]], kind c
 	if mgr == nil {
 		return
 	}
-	var action *unison.Action
-	switch kind {
-	case choiceContainerKind:
+	action := convertToGroupContainerAction
+	if kind == choiceContainerKind {
 		action = convertToChoiceContainerAction
-	case groupContainerKind:
-		action = convertToGroupContainerAction
-	default:
-		action = convertToContainerAction
 	}
 	mgr.Add(&unison.UndoEdit[func(bool)]{
 		ID:         unison.NextUndoID(),
@@ -274,49 +258,10 @@ func addContainerKindUndo[T gurps.Node[T]](table *unison.Table[*Node[T]], kind c
 	})
 }
 
-// convertEquipmentToPhysicalContainers carries out "Convert to Container" for an equipment list: the selected items
-// become containers, as they do for any list, and the selected groups become physical containers, all recorded as a
-// single undo edit. As with the other conversions, any editor open on the rows is closed first.
-func convertEquipmentToPhysicalContainers(owner Rebuildable, table *unison.Table[*Node[*gurps.Equipment]]) {
-	var targets []*gurps.Equipment
-	for _, row := range table.SelectedRows(false) {
-		if data := row.Data(); !xreflect.IsNil(data) &&
-			((!data.Container() && data.CanConvertToFromContainer()) || data.CanConvertToPhysicalContainer()) {
-			targets = append(targets, data)
-		}
-	}
-	if len(targets) == 0 {
-		return
-	}
-	table, ok := closeEditorsBeforeConversion(table, targets)
-	if !ok {
-		return
-	}
-	before, after := convertContainersWithoutUndo(owner, table, true)
-	groups := convertContainerKinds[*gurps.Equipment, *gurps.EquipmentEditData](owner, table, physicalContainerKind)
-	if before == nil && groups == nil {
-		return
-	}
-	addContainerKindUndo(table, physicalContainerKind, func(undo bool) {
-		if groups != nil {
-			groups.apply(undo)
-		}
-		if before != nil {
-			if undo {
-				before.Apply()
-			} else {
-				after.Apply()
-			}
-		}
-	})
-	rebuildAsModified(owner, true)
-}
-
 // confirmContainerKindConversion asks whether to go ahead with a conversion that discards data, returning true if it
 // should proceed. Converting a choice container to a group always discards the choices. Converting to a choice
 // container, or a physical container to a group, discards whatever the new kind can't hold, and needs no confirmation
-// when there is nothing of the sort, as for a modifier group. Converting a group to a physical container discards
-// nothing.
+// when there is nothing of the sort, as for a modifier group.
 func confirmContainerKindConversion[T gurps.Node[T]](targets []T, kind containerKind) bool {
 	var losses strings.Builder
 	removesChoices := false
@@ -326,11 +271,8 @@ func confirmContainerKindConversion[T gurps.Node[T]](targets []T, kind container
 		case choiceContainerKind:
 			list = gurps.TemplateChoiceConversionLosses(target)
 		case groupContainerKind:
-			if gurps.IsTemplateChoiceContainer(target) || gurps.IsModifierChoice(target) {
-				removesChoices = true
-			} else if eqp, ok := any(target).(*gurps.Equipment); ok {
-				list = eqp.GroupConversionLosses()
-			}
+			removesChoices = removesChoices || gurps.IsTemplateChoiceContainer(target) || gurps.IsModifierChoice(target)
+			list = gurps.GroupConversionLosses(target)
 		default:
 		}
 		if len(list) != 0 {

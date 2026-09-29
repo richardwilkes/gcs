@@ -70,3 +70,35 @@ func TestContextMenuItemsMatchTheirActions(t *testing.T) {
 		}
 	}
 }
+
+// TestContextMenusUseShortTitles verifies that a list's context menu leaves out what the list holds from all but its
+// first "New" item, since it can only add to that list, while the menu bar keeps the full titles.
+func TestContextMenusUseShortTitles(t *testing.T) {
+	c := check.New(t)
+	registerKeyBindingsOnce.Do(registerActions)
+	lists := &listsForTest{}
+	entity := gurps.NewEntity()
+	titles := func(provider interface{ ContextMenuItems() []ContextMenuItem }) map[int]string {
+		m := make(map[int]string)
+		for _, one := range provider.ContextMenuItems() {
+			m[one.ID] = one.Title
+		}
+		return m
+	}
+	traits := titles(NewTraitsProvider(lists, false))
+	c.Equal("New Trait", traits[NewTraitItemID])
+	c.Equal("New Container", traits[NewTraitContainerItemID])
+	c.Equal("New Choice", traits[NewTraitChoiceContainerItemID])
+	skills := titles(NewSkillsProvider(entity, false))
+	c.Equal("New Skill", skills[NewSkillItemID])
+	c.Equal("New Container", skills[NewSkillContainerItemID])
+	c.Equal("New Technique", skills[NewTechniqueItemID], "a distinct kind of item keeps its name")
+	spells := titles(NewSpellsProvider(entity, false))
+	c.Equal("New Container", spells[NewSpellContainerItemID])
+	c.Equal("New Choice", spells[NewSpellChoiceContainerItemID])
+	c.Equal("New Ritual Magic Spell", spells[NewRitualMagicSpellItemID])
+	notes := titles(NewNotesProvider(lists, false))
+	c.Equal("New Note", notes[NewNoteItemID])
+	c.Equal("New Container", notes[NewNoteContainerItemID])
+	c.Equal("New Trait Container", newTraitContainerAction.Title, "the menu bar keeps the full title")
+}

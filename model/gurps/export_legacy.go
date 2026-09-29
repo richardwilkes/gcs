@@ -957,6 +957,7 @@ func (ex *legacyExporter) processEquipmentLoop(buffer []byte, carried bool) {
 	Traverse(func(eqp *Equipment) bool {
 		if ex.includeByEquipmentTags(eqp) {
 			keys := legacyNodeKeys{
+				containerType: strings.ToUpper(eqp.ContainerType.Key()),
 				pageRef:       eqp.PageRef,
 				satisfied:     func() bool { return eqp.UnsatisfiedReason == "" },
 				notes:         eqp.Notes,
@@ -1005,7 +1006,7 @@ func (ex *legacyExporter) processEquipmentLoop(buffer []byte, carried bool) {
 				// A group has no quantity, value or weight of its own, so these are left empty for one, as its row in
 				// the list leaves them.
 				case "QTY":
-					if !eqp.IsGroup() {
+					if eqp.HasOwnQuantity() {
 						ex.writeEncodedText(eqp.Quantity.String())
 					}
 				case "COST":
