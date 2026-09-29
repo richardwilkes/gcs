@@ -229,15 +229,21 @@ func (p *applyPart[T]) stripPickers() {
 }
 
 func (p *applyPart[T]) modifierTargetCount() int {
-	return len(modifierTargets(p.rows))
+	return len(modifierTargets(p.rows, p.requirePicks()))
+}
+
+// requirePicks reports whether the rows are headed for a sheet (see modifierPromptInfo.requirePicks).
+func (p *applyPart[T]) requirePicks() bool {
+	return transferKindOf(p.table) == transferSheet
 }
 
 // promptForModifiers and promptForNameables put up the prompts for the rows' modifiers and nameable keys. Neither
 // rebuilds or reports anything: the rows aren't in a table yet, and applyTransfer does both once the answers are in.
 // promptForModifiers also returns how many rows it asked about, counted before any answer can change that.
 func (p *applyPart[T]) promptForModifiers(op promptOperation, done, total int) (asked int, ok bool) {
-	targets := modifierTargets(p.rows)
-	return len(targets), promptForModifierTargets(op, targets, done, total)
+	requirePicks := p.requirePicks()
+	targets := modifierTargets(p.rows, requirePicks)
+	return len(targets), promptForModifierTargets(op, targets, done, total, requirePicks)
 }
 
 func (p *applyPart[T]) promptForNameables(op promptOperation) bool {

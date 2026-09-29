@@ -52,11 +52,11 @@ type modifierPromptInfo struct {
 
 // modifierTargets returns the rows the modifier prompt asks about: each of the given rows, and every row below them,
 // that has modifiers to ask about (see modifierPromptOf).
-func modifierTargets[T gurps.Node[T]](rows []T) []T {
+func modifierTargets[T gurps.Node[T]](rows []T, requirePicks bool) []T {
 	var targets []T
 	for _, row := range rows {
 		gurps.Traverse(func(row T) bool {
-			if modifierPromptOf(row) != nil {
+			if modifierPromptOf(row, requirePicks) != nil {
 				targets = append(targets, row)
 			}
 			return false
@@ -68,15 +68,15 @@ func modifierTargets[T gurps.Node[T]](rows []T) []T {
 // promptForModifierTargets puts up the modifier prompt for each of the targets (see modifierTargets). The prompts are
 // counted as following the given number already done, out of total, since one transfer may ask about the rows of
 // several lists. Returns false if the user canceled a prompt, in which case no further prompts are shown.
-func promptForModifierTargets[T gurps.Node[T]](op promptOperation, targets []T, done, total int) bool {
+func promptForModifierTargets[T gurps.Node[T]](op promptOperation, targets []T, done, total int, requirePicks bool) bool {
 	for i, row := range targets {
-		if ask := modifierPromptOf(row); ask != nil && ask(&modifierPromptInfo{
+		if ask := modifierPromptOf(row, requirePicks); ask != nil && ask(&modifierPromptInfo{
 			op:           op,
 			name:         row.String(),
 			location:     rowLocation(row),
 			step:         done + i + 1,
 			steps:        total,
-			requirePicks: gurps.IsOnSheet(row),
+			requirePicks: requirePicks,
 		}) {
 			return false
 		}
@@ -86,19 +86,18 @@ func promptForModifierTargets[T gurps.Node[T]](op promptOperation, targets []T, 
 
 // modifierPromptOf returns what puts up the prompt for the row's modifiers and reports whether it was canceled, or nil
 // if the row has none to ask about (see modifiersToAskAbout).
-func modifierPromptOf[T gurps.Node[T]](row T) func(info *modifierPromptInfo) bool {
+func modifierPromptOf[T gurps.Node[T]](row T, requirePicks bool) func(info *modifierPromptInfo) bool {
 	switch t := any(row).(type) {
 	case *gurps.Trait:
-		return modifierPromptFor(row, t.Modifiers, promptForTraitModifiers)
+		return modifierPromptFor(modifiersToAskAbout(row, t.Modifiers, requirePicks), promptForTraitModifiers)
 	case *gurps.Equipment:
-		return modifierPromptFor(row, t.Modifiers, promptForEquipmentModifiers)
+		return modifierPromptFor(modifiersToAskAbout(row, t.Modifiers, requirePicks), promptForEquipmentModifiers)
 	default:
 		return nil
 	}
 }
 
-func modifierPromptFor[T gurps.Node[T], M gurps.Node[M]](row T, modifiers []M, prompt func(*modifierPromptInfo, []M) (changed, canceled bool)) func(*modifierPromptInfo) bool {
-	mods := modifiersToAskAbout(row, modifiers)
+func modifierPromptFor[M gurps.Node[M]](mods []M, prompt func(*modifierPromptInfo, []M) (changed, canceled bool)) func(*modifierPromptInfo) bool {
 	if len(mods) == 0 {
 		return nil
 	}
@@ -109,12 +108,12 @@ func modifierPromptFor[T gurps.Node[T], M gurps.Node[M]](row T, modifiers []M, p
 }
 
 // modifiersToAskAbout returns the modifiers of the row to ask about: all of them for a row that isn't preconfigured,
-// and for one on a sheet that is, just the outermost of the mandatory choices it has left unresolved.
-func modifiersToAskAbout[T gurps.Node[T], M gurps.Node[M]](row T, modifiers []M) []M {
+// and for one that is, just the outermost of the mandatory choices it has left unresolved, and only if requirePicks.
+func modifiersToAskAbout[T gurps.Node[T], M gurps.Node[M]](row T, modifiers []M, requirePicks bool) []M {
 	if !gurps.IsNodePreconfigured(row) {
 		return modifiers
 	}
-	if !gurps.IsOnSheet(row) {
+	if !requirePicks {
 		return nil
 	}
 	// A choice within another is shown along with it.

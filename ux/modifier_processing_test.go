@@ -113,9 +113,9 @@ func forbidModifierPrompts(t *testing.T) {
 }
 
 // processModifiers prompts for the modifiers of the rows as applyTransfer does.
-func processModifiers[T gurps.Node[T]](rows []T) bool {
-	targets := modifierTargets(rows)
-	return promptForModifierTargets(promptOperation{}, targets, 0, len(targets))
+func processModifiers[T gurps.Node[T]](rows []T, requirePicks bool) bool {
+	targets := modifierTargets(rows, requirePicks)
+	return promptForModifierTargets(promptOperation{}, targets, 0, len(targets), requirePicks)
 }
 
 // TestProcessModifiersIgnoresModifierRows documents that processModifiers only has something to do for rows that can
@@ -128,16 +128,16 @@ func TestProcessModifiersIgnoresModifierRows(t *testing.T) {
 
 	traitMod := gurps.NewTraitModifier(entity, nil, false)
 	traitMod.Name = "Trait Modifier"
-	processModifiers([]*gurps.TraitModifier{traitMod})
+	processModifiers([]*gurps.TraitModifier{traitMod}, true)
 	equipmentMod := gurps.NewEquipmentModifier(entity, nil, false)
 	equipmentMod.Name = "Equipment Modifier"
-	processModifiers([]*gurps.EquipmentModifier{equipmentMod})
+	processModifiers([]*gurps.EquipmentModifier{equipmentMod}, true)
 	c.Equal(0, len(*prompts), "modifier rows have no modifiers of their own to prompt for")
 
 	trait := gurps.NewTrait(entity, nil, false)
 	trait.Name = "Trait"
 	trait.Modifiers = []*gurps.TraitModifier{traitMod}
-	processModifiers([]*gurps.Trait{trait})
+	processModifiers([]*gurps.Trait{trait}, true)
 	c.Equal([]modifierPrompt{{title: "Trait", modifiers: []string{"Trait Modifier"}}}, *prompts,
 		"a trait must be prompted for with its own modifiers")
 }
@@ -157,7 +157,7 @@ func TestModifierPromptsCountOnlyRowsWithModifiers(t *testing.T) {
 	first.AddModifiers(gurps.NewTraitModifier(entity, nil, false))
 	second := gurps.NewTrait(entity, nil, false)
 	second.AddModifiers(gurps.NewTraitModifier(entity, nil, false))
-	c.True(processModifiers([]*gurps.Trait{plain, first, plain, second}))
+	c.True(processModifiers([]*gurps.Trait{plain, first, plain, second}, false))
 	c.Equal([][2]int{{1, 2}, {2, 2}}, steps)
 }
 
