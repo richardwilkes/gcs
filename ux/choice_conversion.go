@@ -315,8 +315,8 @@ func convertEquipmentToPhysicalContainers(owner Rebuildable, table *unison.Table
 // confirmContainerKindConversion asks whether to go ahead with a conversion that discards data, returning true if it
 // should proceed. Converting a choice container to a group always discards the choices. Converting to a choice
 // container, or a physical container to a group, discards whatever the new kind can't hold, and needs no confirmation
-// when there is nothing of the sort, which is always so for a modifier group, since a modifier choice holds everything
-// it does. Converting a group to a physical container discards nothing.
+// when there is nothing of the sort, as for a modifier group. Converting a group to a physical container discards
+// nothing.
 func confirmContainerKindConversion[T gurps.Node[T]](targets []T, kind containerKind) bool {
 	var losses strings.Builder
 	removesChoices := false

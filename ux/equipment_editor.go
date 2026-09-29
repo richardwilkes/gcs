@@ -158,22 +158,20 @@ func initEquipmentChoiceEditor(e *editor[*gurps.Equipment, *gurps.EquipmentEditD
 
 // extendedValueForEditor computes the Extended Value preview for the equipment editor. The overlaid clone is used as
 // the modifier context, not the unedited target, so that cost modifiers whose multiplier depends on the equipment
-// itself (per level, per pound) see the editor's pending values. It is costed just as the list costs it, so an open
-// mandatory modifier choice counts as the least it may come to there too.
+// itself (per level, per pound) see the editor's pending values.
 func extendedValueForEditor(target *gurps.Equipment, overlay *gurps.EquipmentEditData) fxp.Int {
 	return cloneEquipmentWithOverlay(target, overlay).ExtendedValue()
 }
 
 // extendedWeightForEditor computes the Extended Weight preview for the equipment editor. As with
 // extendedValueForEditor, the overlaid clone is the modifier context so that per-level weight modifiers see the
-// editor's pending values, and it is weighed just as the list weighs it.
+// editor's pending values.
 func extendedWeightForEditor(target *gurps.Equipment, overlay *gurps.EquipmentEditData, defUnits fxp.WeightUnit) fxp.Weight {
 	return cloneEquipmentWithOverlay(target, overlay).ExtendedWeight(false, defUnits)
 }
 
 // extendedValueTextForEditor renders the Extended Value preview for the equipment editor. A container holding a choice
-// yet to be made, or equipment with a mandatory modifier choice yet to be made, shows the range of values the choice
-// may come to, as the list does.
+// or a mandatory modifier choice yet to be made shows the range of values it may come to, as the list does.
 func extendedValueTextForEditor(target *gurps.Equipment, overlay *gurps.EquipmentEditData) string {
 	if overlay.Quantity > 0 {
 		if r := cloneEquipmentWithOverlay(target, overlay).ExtendedValueRange(); !r.IsSettled() {
@@ -184,8 +182,7 @@ func extendedValueTextForEditor(target *gurps.Equipment, overlay *gurps.Equipmen
 }
 
 // extendedWeightTextForEditor renders the Extended Weight preview for the equipment editor. A container holding a
-// choice yet to be made, or equipment with a mandatory modifier choice yet to be made, shows the range of weights the
-// choice may come to, as the list does.
+// choice or a mandatory modifier choice yet to be made shows the range of weights it may come to, as the list does.
 func extendedWeightTextForEditor(target *gurps.Equipment, overlay *gurps.EquipmentEditData, defUnits fxp.WeightUnit) string {
 	if overlay.Quantity > 0 {
 		if r := cloneEquipmentWithOverlay(target, overlay).ExtendedWeightRange(defUnits); !r.IsSettled() {
@@ -195,9 +192,8 @@ func extendedWeightTextForEditor(target *gurps.Equipment, overlay *gurps.Equipme
 	return defUnits.Format(extendedWeightForEditor(target, overlay, defUnits))
 }
 
-// cloneEquipmentWithOverlay returns a throwaway copy of the equipment holding the editor's pending data. The copy gets
-// modifiers of its own, since costing equipment points its modifiers at it, and the editor's must keep modifying the
-// equipment being edited.
+// cloneEquipmentWithOverlay returns a throwaway copy of the equipment holding the editor's pending data. ApplyTo gives
+// the copy modifiers of its own, since costing points them at it and the editor's must stay on the edited equipment.
 func cloneEquipmentWithOverlay(e *gurps.Equipment, overlay *gurps.EquipmentEditData) *gurps.Equipment {
 	clone := e.Clone(e.Source.LibraryFile, e.DataOwner(), e.Parent(), gurps.Copy)
 	overlay.ApplyTo(clone)

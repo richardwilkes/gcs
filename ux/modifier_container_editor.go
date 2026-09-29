@@ -15,10 +15,8 @@ import (
 	"github.com/richardwilkes/unison"
 )
 
-// initModifierContainerEditor fills in the content of the editor for a modifier group or choice. Neither is a modifier
-// in its own right: a group only organizes the modifiers it holds, and a choice also asks for one of them to be picked.
-// So the editor has only what describes the container and, for a choice, what it asks for. The rest of a modifier's
-// fields (cost, level, enabled state, features and so on) mean nothing to a container, and aren't kept for one.
+// initModifierContainerEditor fills in the editor for a modifier group or choice, which has only what describes the
+// container and, for a choice, what it asks for; a modifier's other fields mean nothing to a container.
 func initModifierContainerEditor(content *unison.Panel, data *gurps.NodeSyncData, container *gurps.ModifierContainerSyncData, source *gurps.SourcedID) {
 	addNameLabelAndField(content, &data.Name)
 	addLabelAndMultiLineStringField(content, i18n.Text("Notes"), "", &data.LocalNotes)
@@ -31,9 +29,8 @@ func initModifierContainerEditor(content *unison.Panel, data *gurps.NodeSyncData
 	addSourceFields(content, source)
 }
 
-// addModifierChoiceField adds the popup that says what a modifier choice asks for: exactly one of its options, which
-// makes it mandatory, or at most one. The choice can't be taken out of use here, since that would leave a group
-// behind; that is the job of the "Convert to Group" command.
+// addModifierChoiceField adds the popup that says whether a modifier choice is mandatory or optional. Making it a group
+// is left to "Convert to Group".
 func addModifierChoiceField(parent *unison.Panel, container *gurps.ModifierContainerSyncData) {
 	mandatory := i18n.Text("Mandatory: exactly one must be picked")
 	optional := i18n.Text("Optional: at most one may be picked")

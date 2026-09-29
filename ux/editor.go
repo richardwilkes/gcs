@@ -305,8 +305,7 @@ func (e *editor[N, D]) applyEdits() {
 	rebuildAsModified(owner, true)
 }
 
-// changesEnabled returns true if the editor's data turns the target on or off, rather than carrying along the state
-// the target had when the editor was opened.
+// changesEnabled returns true if the editor's data turns the target on or off.
 func (e *editor[N, D]) changesEnabled() bool {
 	scratch := e.target.Clone(gurps.LibraryFile{}, e.target.DataOwner(), e.target.Parent(), gurps.Copy)
 	e.beforeData.ApplyTo(scratch)
@@ -315,8 +314,7 @@ func (e *editor[N, D]) changesEnabled() bool {
 	return scratch.Enabled() != before
 }
 
-// modifierChoicePicker returns what the node, if it is a modifier container, holds to say which kind of choice it is.
-// A group holds the zero value, as does a node that isn't a modifier container.
+// modifierChoicePicker returns the picker of a modifier container, the zero value for a group or anything else.
 func modifierChoicePicker[N gurps.Node[N]](node N) gurps.TemplatePicker {
 	if provider, ok := any(node).(gurps.ModifierChoiceProvider); ok && !xreflect.IsNil(node) && node.Container() {
 		return provider.ModifierChoiceData().Choice
@@ -324,12 +322,9 @@ func modifierChoicePicker[N gurps.Node[N]](node N) gurps.TemplatePicker {
 	return gurps.TemplatePicker{}
 }
 
-// applyModifierChoiceRulesAfterEdit applies the rules of a modifier choice after an editor's data has been applied to
-// the target. For an option of a choice, the rules only follow a change the editor made to whether it is enabled; the
-// state the editor opened with is otherwise put back, since the option may have been picked, or had another picked
-// over it, since then. A choice itself is brought into line with the rules only when the editor changed what it asks
-// for, which it may then no longer be in line with after, say, being made mandatory on a sheet with nothing picked. An
-// edit that leaves that alone leaves its options alone too, so one flagged for want of a pick stays that way.
+// applyModifierChoiceRulesAfterEdit applies the choice rules after an editor's data has been applied to the target. An
+// option keeps its current state unless the editor changed it, since another may have been picked since the editor
+// opened; a choice is settled only when the editor changed what it asks for.
 func applyModifierChoiceRulesAfterEdit[N gurps.Node[N]](target N, wasEnabled, changesEnabled, choiceChanged bool) {
 	if gurps.IsModifierChoice(target) {
 		if choiceChanged {

@@ -51,10 +51,7 @@ func initTraitEditor(e *editor[*gurps.Trait, *gurps.TraitEditData], content *uni
 	if !e.target.Container() {
 		wrapper, _ := addFlowWrapper(content, i18n.Text("Point Cost"), 2)
 		costField := NewNonEditableField(func(field *NonEditableField) {
-			// While a mandatory modifier choice is yet to be made, the cost is shown as the list shows it: the range
-			// it may come to, or the one cost it comes to when its options all cost the same. That counts the
-			// modifiers the trait inherits from the containers above it, while the cost shown otherwise leaves them
-			// out, as it always has.
+			// An open mandatory choice shows the list's range; the settled cost leaves out inherited modifiers.
 			if r, open := cloneTraitWithOverlay(e.target, e.editorData).ModifierChoicePointsRange(); open {
 				field.SetTitle(r.String())
 			} else {

@@ -71,11 +71,10 @@ func beginTableUndo[T gurps.Node[T]](table *unison.Table[*Node[T]], title string
 	}
 }
 
-// commitTableUndo finishes an edit begun with beginTableUndo: the table's current data becomes the edit's "after" state
-// and the edit is handed to the table's undo manager. The modifier choices are settled first, so the "after" state
-// holds the settled picks. Both come from the table currently showing the data (see liveTable), since the edit may have
-// replaced the table the "before" state was captured from, and an orphaned table has no manager above it any more. A
-// nil edit is ignored.
+// commitTableUndo finishes an edit begun with beginTableUndo: the table's current data becomes the edit's "after"
+// state and the edit is handed to the table's undo manager. Both come from the table currently showing the data (see
+// liveTable), since the edit may have replaced the table the "before" state was captured from, and an orphaned table
+// has no manager above it any more. A nil edit is ignored.
 func commitTableUndo[T gurps.Node[T]](table *unison.Table[*Node[T]], undo *unison.UndoEdit[*TableUndoEditData[T]]) {
 	settleModifierChoices(table)
 	if undo == nil {
@@ -294,7 +293,7 @@ func (t *TableDragUndoEditData[T]) Apply() {
 	restored.report()
 }
 
-// priorModifierPicksKey holds, in a modifier table's client data, the picks its choices had when the current edit began.
+// priorModifierPicksKey holds, in a modifier table's client data, its choices' picks from when the edit began.
 const priorModifierPicksKey = "prior-modifier-picks"
 
 // notePriorModifierPicks records, as an edit of the table begins, the choice each enabled modifier is an option of.

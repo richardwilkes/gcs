@@ -129,10 +129,7 @@ func modifiersToAskAbout[T gurps.Node[T], M gurps.Node[M]](row T, modifiers []M)
 	})
 }
 
-// showModifiersDialog asks which of the modifiers to enable. Modifiers that aren't options of a choice each get a check
-// box. The options of a choice get radio buttons, since no more than one of them may be enabled: an optional choice
-// also offers "None". When info.requirePicks is true, a mandatory choice offers no way out of picking and is flagged
-// until one is picked, the prompt refusing to finish until then; otherwise it is offered just as an optional one is.
+// showModifiersDialog asks which of the modifiers to enable (see newModifierSelection).
 func showModifiersDialog[T gurps.Node[T]](info *modifierPromptInfo, modifiers []T) (changed, canceled bool) {
 	selection := newModifierSelection(modifiers, info.requirePicks)
 	if selection == nil {
@@ -161,8 +158,7 @@ func showModifiersDialog[T gurps.Node[T]](info *modifierPromptInfo, modifiers []
 	return selection.apply(), false
 }
 
-// modifierSelection is the content of the prompt asking which modifiers to enable, along with what is needed to read
-// the answers back out of it.
+// modifierSelection is the content of the prompt asking which modifiers to enable.
 type modifierSelection struct {
 	list     *unison.Panel
 	boxes    map[*unison.CheckBox]gurps.GeneralModifier
@@ -180,15 +176,14 @@ type choiceRadioGroup struct {
 	updateStatus func(made bool)
 }
 
-// made returns true if the choice has been made, which an optional choice always has, "None" being an answer.
+// made returns true if the choice has been made, which an optional one always has.
 func (c *choiceRadioGroup) made() bool {
 	return !c.mandatory || c.hasPickedOption()
 }
 
 // newModifierSelection builds the content of the prompt asking which of the modifiers to enable, or returns nil if
-// there is nothing to ask about. A mandatory choice must have its pick made only when requirePicks is true. Each option
-// of a choice starts out picked if it is enabled, the first one enabled winning should an older version have left more
-// than one so.
+// there is nothing to ask about. An optional choice also offers "None"; when requirePicks is true a mandatory choice
+// doesn't, and holds the prompt open until picked.
 func newModifierSelection[T gurps.Node[T]](modifiers []T, requirePicks bool) *modifierSelection {
 	s := &modifierSelection{
 		list:  unison.NewPanel(),
@@ -228,8 +223,7 @@ func newModifierSelection[T gurps.Node[T]](modifiers []T, requirePicks bool) *mo
 			choice := &choiceRadioGroup{
 				group:   unison.NewGroup(),
 				options: make(map[*unison.RadioButton]gurps.GeneralModifier),
-				// A choice with no options has nothing to pick from, so it can't hold the prompt open, and isn't
-				// flagged.
+				// A choice with no options can't hold the prompt open.
 				mandatory: requirePicks && gurps.IsMandatoryModifierChoice(m) &&
 					len(gurps.ModifierChoiceOptions(m)) != 0,
 			}
@@ -306,8 +300,8 @@ func (c *choiceRadioGroup) hasPickedOption() bool {
 	return false
 }
 
-// addRow adds a row to the list, indented for its depth: the control, if there is one, the text, and the status, if
-// there is one. Clicking the text clicks the control, as clicking a control's own title would.
+// addRow adds a row to the list, indented for its depth, with the optional control and status around the text.
+// Clicking the text clicks the control.
 func (s *modifierSelection) addRow(depth int, text string, control interface {
 	unison.Paneler
 	Click()

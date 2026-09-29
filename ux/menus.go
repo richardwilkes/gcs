@@ -163,8 +163,6 @@ const (
 	NewOtherEquipmentGroupItemID
 	LastGroupContainerMarker
 
-	// Unlike a template choice, a modifier choice may be held anywhere modifiers are, so the library tables install
-	// these too.
 	FirstModifierChoiceMarker // Keep this block grouped together
 	NewEquipmentModifierChoiceItemID
 	NewTraitModifierChoiceItemID
