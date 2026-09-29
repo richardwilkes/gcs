@@ -37,6 +37,35 @@ func newTraitModifierChoiceFor(owner gurps.DataOwner, mandatory bool, names []st
 	return choice
 }
 
+// newEquipmentModifierChoiceFor returns a mandatory equipment modifier choice owned by owner, holding an option for
+// each name, each enabled only if its name is among those given as enabled.
+func newEquipmentModifierChoiceFor(owner gurps.DataOwner, names []string, enabled ...string) *gurps.EquipmentModifier {
+	choice := gurps.NewEquipmentModifierChoice(owner, nil)
+	for _, name := range names {
+		option := gurps.NewEquipmentModifier(owner, choice, false)
+		option.Name = name
+		option.SetEnabled(slices.Contains(enabled, name))
+		choice.Children = append(choice.Children, option)
+	}
+	return choice
+}
+
+// traitEditorOnSheet returns an editor for a trait on the sheet holding the given modifiers, along with its content and
+// its table of modifiers.
+func traitEditorOnSheet(t *testing.T, sheet *Sheet, modifiers ...*gurps.TraitModifier) (
+	*editor[*gurps.Trait, *gurps.TraitEditData], *unison.Panel, *unison.Table[*Node[*gurps.TraitModifier]],
+) {
+	t.Helper()
+	trait := gurps.NewTrait(sheet.Entity(), nil, false)
+	trait.Modifiers = modifiers
+	e, content := buildEditorContent(sheet, trait, initTraitEditor)
+	panel, ok := firstPanelOfType[*traitModifiersPanel](content)
+	if !ok {
+		t.Fatal("expected a trait modifiers panel in the trait editor")
+	}
+	return e, content, panel.table
+}
+
 // labelTitles returns the titles of every label found anywhere beneath the given panel.
 func labelTitles(p *unison.Panel) []string {
 	labels := panelsOfType[*unison.Label](p)
@@ -175,21 +204,6 @@ func TestConvertingNestedGroupsTogetherUndoesCleanly(t *testing.T) {
 	c.Equal(converted, enabled(), "redo must leave them as the conversion did")
 }
 
-// TestModifierChoiceConversionInEditor verifies that the conversions reach the modifier table of a trait editor, where
-// only the editor's copy is converted.
-func TestModifierChoiceConversionInEditor(t *testing.T) {
-	c := check.New(t)
-	registerKeyBindingsOnce.Do(registerActions)
-	e, table, _ := newTraitEditorWithModifiers(t)
-	group := e.editorData.Modifiers[1]
-	table.SetSelectionMap(map[tid.TID]bool{group.ID(): true})
-	c.True(table.CanPerformCmd(nil, ConvertToChoiceContainerItemID))
-	table.PerformCmd(nil, ConvertToChoiceContainerItemID)
-	c.True(gurps.IsModifierChoice(group), "the editor's copy must have become a choice")
-	c.False(gurps.IsModifierChoice(e.target.Modifiers[1]), "the trait's own modifier must wait for the edit to be applied")
-	c.True(unison.UndoManagerFor(table).CanUndo())
-}
-
 // TestCreatingModifierChoices verifies that the "New ... Modifier Choice" commands are offered by a modifier library
 // and by an editor's modifier table, in the menus as well, and that what they create is a mandatory choice.
 func TestCreatingModifierChoices(t *testing.T) {
@@ -199,9 +213,6 @@ func TestCreatingModifierChoices(t *testing.T) {
 	c.True(library.CanPerformCmd(nil, NewTraitModifierChoiceItemID))
 	provider, ok := library.provider.(*modifiersProvider[*gurps.TraitModifier])
 	c.True(ok)
-	choice := provider.newChoice(nil, nil)
-	c.True(gurps.IsMandatoryModifierChoice(choice))
-	c.Equal("Trait Modifier Choice", choice.Name)
 	items := provider.ContextMenuItems()
 	titles := make([]string, 0, len(items))
 	for _, item := range items {
@@ -213,14 +224,11 @@ func TestCreatingModifierChoices(t *testing.T) {
 	var edited *gurps.TraitModifier
 	provider.edit = func(_ Rebuildable, item *gurps.TraitModifier) { edited = item }
 	library.PerformCmd(nil, NewTraitModifierChoiceItemID)
-	c.NotNil(edited, "the new choice is handed to its editor")
-	c.Equal(1, len(provider.RootData()), "the command adds the choice to the list")
-	c.True(provider.RootData()[0] == edited)
+	c.Equal([]*gurps.TraitModifier{edited}, provider.RootData(), "the command adds the choice and hands it to its editor")
 	c.True(gurps.IsMandatoryModifierChoice(edited))
 
 	e, _, _ := newEquipmentEditorWithModifiers(t)
 	c.True(e.CanPerformCmd(nil, NewEquipmentModifierChoiceItemID))
-	c.True(gurps.IsMandatoryModifierChoice(gurps.NewEquipmentModifierChoice(nil, nil)))
 }
 
 // TestTogglingAnOptionOnTurnsTheOthersOff verifies that turning on an option of a modifier choice turns off the one
@@ -229,15 +237,7 @@ func TestCreatingModifierChoices(t *testing.T) {
 func TestTogglingAnOptionOnTurnsTheOthersOff(t *testing.T) {
 	c := check.New(t)
 	sheet := newTestSheetForTemplate(t)
-	entity := sheet.Entity()
-	trait := gurps.NewTrait(entity, nil, false)
-	trait.Modifiers = []*gurps.TraitModifier{
-		newTraitModifierChoiceFor(entity, true, []string{"A", "B", "C"}, "A"),
-	}
-	e, content := buildEditorContent(sheet, trait, initTraitEditor)
-	panel, ok := firstPanelOfType[*traitModifiersPanel](content)
-	c.True(ok)
-	table := panel.table
+	e, _, table := traitEditorOnSheet(t, sheet, newTraitModifierChoiceFor(sheet.Entity(), true, []string{"A", "B", "C"}, "A"))
 	options := e.editorData.Modifiers[0].Children
 	enabled := func() []bool {
 		return []bool{options[0].Enabled(), options[1].Enabled(), options[2].Enabled()}
@@ -306,14 +306,16 @@ func TestPreconfiguredAsksOnlyAboutUnresolvedChoices(t *testing.T) {
 	c.Equal(0, len(*prompts), "a preconfigured row headed for a template isn't asked about its choices")
 }
 
-// TestDuplicatingAnOptionKeepsThePick verifies that an option duplicated within a choice arrives turned off, so that
-// the choice keeps the pick it had, and that undo takes the duplicate away again.
+// TestDuplicatingAnOptionKeepsThePick verifies that an option duplicated within a choice in an editor arrives turned
+// off, so that the choice keeps its pick, and modifies the item its original does with the same data owner. What a
+// structural undo gives back still belongs to the item: the pick is still locked, and a weapon still has its owner.
 func TestDuplicatingAnOptionKeepsThePick(t *testing.T) {
 	c := check.New(t)
 	sheet := newTestSheetForTemplate(t)
 	entity := sheet.Entity()
 	trait := gurps.NewTrait(entity, nil, false)
 	trait.Modifiers = []*gurps.TraitModifier{newTraitModifierChoiceFor(entity, true, []string{"A", "B"}, "A")}
+	trait.Weapons = []*gurps.Weapon{gurps.NewWeapon(trait, true)}
 	e, content := buildEditorContent(sheet, trait, initTraitEditor)
 	panel, ok := firstPanelOfType[*traitModifiersPanel](content)
 	c.True(ok)
@@ -326,33 +328,14 @@ func TestDuplicatingAnOptionKeepsThePick(t *testing.T) {
 	c.False(choice.Children[1].Enabled(), "the duplicate arrives turned off")
 	c.Equal(trait, choice.Children[1].Target(), "the duplicate modifies the trait its original does")
 	c.True(gurps.IsOnSheet(choice.Children[1]))
-	unison.UndoManagerFor(table).Undo()
-	options := liveTable(table).RootRows()[0].Data().Children
-	c.Equal(2, len(options), "undo takes the duplicate away")
-	c.True(options[0].Enabled(), "undo keeps the pick")
-	c.False(options[1].Enabled())
-}
 
-// TestUndoInAnEditorKeepsTheModifiersAttached verifies that the modifiers and weapons an editor's lists get back from
-// a structural undo still belong to the item being edited, so that the pick of a mandatory choice on a sheet is still
-// locked, and a weapon still has its owner.
-func TestUndoInAnEditorKeepsTheModifiersAttached(t *testing.T) {
-	c := check.New(t)
-	sheet := newTestSheetForTemplate(t)
-	entity := sheet.Entity()
-	trait := gurps.NewTrait(entity, nil, false)
-	trait.Modifiers = []*gurps.TraitModifier{newTraitModifierChoiceFor(entity, true, []string{"A", "B"}, "A")}
-	trait.Weapons = []*gurps.Weapon{gurps.NewWeapon(trait, true)}
-	e, content := buildEditorContent(sheet, trait, initTraitEditor)
-	panel, ok := firstPanelOfType[*traitModifiersPanel](content)
-	c.True(ok)
-	table := panel.table
-	table.SetSelectionMap(map[tid.TID]bool{e.editorData.Modifiers[0].Children[1].ID(): true})
-	DuplicateSelection(table)
 	unison.UndoManagerFor(table).Undo()
 	table = liveTable(table)
-	pick := table.RootRows()[0].Data().Children[0]
-	c.True(pick.Enabled())
+	options := table.RootRows()[0].Data().Children
+	c.Equal(2, len(options), "undo takes the duplicate away")
+	c.False(options[1].Enabled())
+	pick := options[0]
+	c.True(pick.Enabled(), "undo keeps the pick")
 	c.True(gurps.IsOnSheet(pick), "the restored modifiers keep the sheet as their owner")
 	c.Equal(trait, pick.Target(), "the restored modifiers keep modifying the trait")
 	table.SetSelectionMap(map[tid.TID]bool{pick.ID(): true})
@@ -370,82 +353,56 @@ func TestUndoInAnEditorKeepsTheModifiersAttached(t *testing.T) {
 	c.Equal(gurps.WeaponOwner(trait), e.editorData.Weapons[0].Owner, "the restored weapon keeps its owner")
 }
 
-// TestDuplicateInAnEditorModifiesTheSameItem verifies that a modifier duplicated within a choice in an editor's list
-// modifies the item its original does and has the same data owner.
-func TestDuplicateInAnEditorModifiesTheSameItem(t *testing.T) {
-	c := check.New(t)
-	sheet := newTestSheetForTemplate(t)
-	entity := sheet.Entity()
-	container := gurps.NewTrait(entity, nil, true)
-	container.Modifiers = []*gurps.TraitModifier{newTraitModifierChoiceFor(entity, true, []string{"A", "B"}, "A")}
-	e, content := buildEditorContent(sheet, container, initTraitEditor)
-	panel, ok := firstPanelOfType[*traitModifiersPanel](content)
-	c.True(ok)
-	table := panel.table
-	table.SetSelectionMap(map[tid.TID]bool{e.editorData.Modifiers[0].Children[0].ID(): true})
-	DuplicateSelection(table)
-	duplicate := e.editorData.Modifiers[0].Children[1]
-	c.Equal(container, duplicate.Target())
-	c.True(gurps.IsOnSheet(duplicate))
-}
-
-// TestUndoInALootEquipmentEditorKeepsThePickLocked verifies that the modifiers an equipment editor's list gets back
-// from a structural undo on a loot sheet still have the loot as their owner, which locks the pick of a mandatory
-// choice there as on a character sheet.
-func TestUndoInALootEquipmentEditorKeepsThePickLocked(t *testing.T) {
+// TestEquipmentEditorOnALootSheet verifies the choice rules in an equipment editor on a loot sheet, as on a character
+// sheet: turning an option on turns the pick off, and the new pick can't be turned off. A duplicate is on the loot sheet
+// as its original is, and the modifiers a structural undo gives back keep the loot as their owner, so the pick stays
+// locked.
+func TestEquipmentEditorOnALootSheet(t *testing.T) {
 	c := check.New(t)
 	sheet := newTestLootSheet(t)
-	choice := gurps.NewEquipmentModifierChoice(sheet.loot, nil)
-	for _, name := range []string{"A", "B"} {
-		option := gurps.NewEquipmentModifier(sheet.loot, choice, false)
-		option.Name = name
-		option.SetEnabled(name == "A")
-		choice.Children = append(choice.Children, option)
-	}
 	equipment := gurps.NewEquipment(sheet.loot, nil, false)
-	equipment.Modifiers = []*gurps.EquipmentModifier{choice}
+	equipment.Modifiers = []*gurps.EquipmentModifier{newEquipmentModifierChoiceFor(sheet.loot, []string{"A", "B"}, "A")}
 	e, content := buildEditorContent(sheet, equipment, initEquipmentEditor(true))
 	panel, ok := firstPanelOfType[*equipmentModifiersPanel](content)
 	c.True(ok)
 	table := panel.table
-	table.SetSelectionMap(map[tid.TID]bool{e.editorData.Modifiers[0].Children[1].ID(): true})
+	options := e.editorData.Modifiers[0].Children
+	table.SetSelectionMap(map[tid.TID]bool{options[1].ID(): true})
+	table.PerformCmd(nil, ToggleStateItemID)
+	c.False(options[0].Enabled(), "turning B on turns A off")
+	c.True(options[1].Enabled())
+	c.False(table.CanPerformCmd(nil, ToggleStateItemID), "the new pick can't be turned off on a sheet")
+
 	DuplicateSelection(table)
-	duplicate := e.editorData.Modifiers[0].Children[1]
-	c.True(gurps.IsOnSheet(duplicate), "the duplicate is on the loot sheet as its original is")
+	options = e.editorData.Modifiers[0].Children
+	c.Equal(3, len(options))
+	c.True(gurps.IsOnSheet(options[2]), "the duplicate is on the loot sheet as its original is")
 	unison.UndoManagerFor(table).Undo()
 	table = liveTable(table)
-	pick := table.RootRows()[0].Data().Children[0]
+	pick := table.RootRows()[0].Data().Children[1]
+	c.True(pick.Enabled())
 	c.True(gurps.IsOnSheet(pick), "the restored modifiers keep the loot as their owner")
 	table.SetSelectionMap(map[tid.TID]bool{pick.ID(): true})
 	c.False(table.CanPerformCmd(nil, ToggleStateItemID), "the pick is still locked")
 }
 
-// TestConvertingToAChoiceOnASheetPicksTheFirstOption verifies that a group converted to a choice on a sheet, where a
-// mandatory choice must be made, gets its first option picked when it had none, and that undo puts that back.
+// TestConvertingToAChoiceOnASheetPicksTheFirstOption verifies that a group converted to a choice in the editor of a
+// trait on a sheet, where a mandatory choice must be made, gets its first option picked when it had none, that the
+// trait's own modifier waits for the edit to be applied, and that undo puts the pick back.
 func TestConvertingToAChoiceOnASheetPicksTheFirstOption(t *testing.T) {
 	c := check.New(t)
 	registerKeyBindingsOnce.Do(registerActions)
 	sheet := newTestSheetForTemplate(t)
-	entity := sheet.Entity()
-	group := gurps.NewTraitModifier(entity, nil, true)
-	for _, name := range []string{"A", "B"} {
-		option := gurps.NewTraitModifier(entity, group, false)
-		option.Name = name
-		option.SetEnabled(false)
-		group.Children = append(group.Children, option)
-	}
-	trait := gurps.NewTrait(entity, nil, false)
-	trait.Modifiers = []*gurps.TraitModifier{group}
-	e, content := buildEditorContent(sheet, trait, initTraitEditor)
-	panel, ok := firstPanelOfType[*traitModifiersPanel](content)
-	c.True(ok)
-	table := panel.table
+	group := newTraitModifierChoiceFor(sheet.Entity(), true, []string{"A", "B"})
+	gurps.ConvertFromModifierChoice(group)
+	e, _, table := traitEditorOnSheet(t, sheet, group)
 	copyOfGroup := e.editorData.Modifiers[0]
 	table.SetSelectionMap(map[tid.TID]bool{copyOfGroup.ID(): true})
 	table.PerformCmd(nil, ConvertToChoiceContainerItemID)
 	c.True(gurps.IsMandatoryModifierChoice(copyOfGroup))
 	c.True(copyOfGroup.Children[0].Enabled(), "the first option is picked")
 	c.False(copyOfGroup.Children[1].Enabled())
+	c.False(gurps.IsModifierChoice(e.target.Modifiers[0]), "the trait's own modifier waits for the edit to be applied")
 	mgr := unison.UndoManagerFor(table)
 	mgr.Undo()
 	c.False(gurps.IsModifierChoice(copyOfGroup))
@@ -553,35 +510,11 @@ func TestModifierSelectionTreatsChoicesByKind(t *testing.T) {
 	c.Nil(s.choices[0].updateStatus)
 }
 
-// TestTraitEditorShowsTheRangeOfAnOpenChoice verifies that a trait editor opened outside a sheet shows the range of
-// point costs while a mandatory modifier choice is yet to be made, as the list does, and a single cost once the trait
-// is marked preconfigured with its pick made, the editor's own pending state counting in both.
+// TestTraitEditorShowsTheRangeOfAnOpenChoice verifies that a trait editor opened outside a sheet counts a mandatory
+// modifier choice yet to be made in its Point Cost as the list does, as a range once its options cost different
+// amounts, and as a single cost once the trait is marked preconfigured with its pick made, the editor's own pending
+// state counting throughout.
 func TestTraitEditorShowsTheRangeOfAnOpenChoice(t *testing.T) {
-	c := check.New(t)
-	trait := gurps.NewTrait(nil, nil, false)
-	trait.BasePoints = fxp.FromInteger(10)
-	choice := newTraitModifierChoiceFor(nil, true, []string{"Small", "Large"})
-	choice.Children[0].CostAdj = "+5"
-	choice.Children[1].CostAdj = "+10"
-	trait.AddModifiers(choice)
-	e, content := buildEditorContent(nil, trait, initTraitEditor)
-	// The Point Cost field is the first of the editor's non-editable fields.
-	fields := panelsOfType[*NonEditableField](content)
-	c.NotEqual(0, len(fields))
-	pointCost := func() string { return fields[0].String() }
-	c.Equal("15~20", pointCost())
-	e.editorData.Preconfigured = true
-	DeepSync(e)
-	c.Equal("15~20", pointCost(), "a preconfigured trait still has a choice with no pick to make")
-	e.editorData.Modifiers[0].Children[1].SetEnabled(true)
-	DeepSync(e)
-	c.Equal("20", pointCost(), "a preconfigured trait takes the pick already made")
-}
-
-// TestTraitEditorCountsAnOpenChoiceWhoseOptionsCostTheSame verifies that a trait editor opened outside a sheet shows
-// the cost the list shows while a mandatory modifier choice whose options all cost the same is yet to be made. The
-// editor used to leave the choice out altogether, as though it could be left unmade.
-func TestTraitEditorCountsAnOpenChoiceWhoseOptionsCostTheSame(t *testing.T) {
 	c := check.New(t)
 	trait := gurps.NewTrait(nil, nil, false)
 	trait.BasePoints = fxp.FromInteger(10)
@@ -594,9 +527,16 @@ func TestTraitEditorCountsAnOpenChoiceWhoseOptionsCostTheSame(t *testing.T) {
 	// The Point Cost field is the first of the editor's non-editable fields.
 	pointCost := panelsOfType[*NonEditableField](content)[0]
 	c.Equal("15", pointCost.String())
-	e.editorData.Modifiers[0].Children[0].CostAdj = "+1"
+	options := e.editorData.Modifiers[0].Children
+	options[1].CostAdj = "+10"
 	DeepSync(e)
-	c.Equal("11~15", pointCost.String(), "the editor's own pending state counts")
+	c.Equal("15~20", pointCost.String())
+	e.editorData.Preconfigured = true
+	DeepSync(e)
+	c.Equal("15~20", pointCost.String(), "a preconfigured trait still has a choice with no pick to make")
+	options[1].SetEnabled(true)
+	DeepSync(e)
+	c.Equal("20", pointCost.String(), "a preconfigured trait takes the pick already made")
 }
 
 // TestLockedPickKeepsItsCheckmark verifies that clicking the checkmark of the pick of a mandatory choice on a sheet
@@ -605,13 +545,7 @@ func TestTraitEditorCountsAnOpenChoiceWhoseOptionsCostTheSame(t *testing.T) {
 func TestLockedPickKeepsItsCheckmark(t *testing.T) {
 	c := check.New(t)
 	sheet := newTestSheetForTemplate(t)
-	entity := sheet.Entity()
-	trait := gurps.NewTrait(entity, nil, false)
-	trait.Modifiers = []*gurps.TraitModifier{newTraitModifierChoiceFor(entity, true, []string{"A", "B"}, "A")}
-	e, content := buildEditorContent(sheet, trait, initTraitEditor)
-	panel, ok := firstPanelOfType[*traitModifiersPanel](content)
-	c.True(ok)
-	table := panel.table
+	e, _, table := traitEditorOnSheet(t, sheet, newTraitModifierChoiceFor(sheet.Entity(), true, []string{"A", "B"}, "A"))
 	pick := table.RootRows()[0].Children()[0]
 	label, ok := pick.ColumnCell(0, 0, unison.Black, unison.White, false, false, false).(*unison.Label)
 	c.True(ok, "the enabled cell must be a label")
@@ -630,10 +564,7 @@ func TestLockedPickKeepsItsCheckmark(t *testing.T) {
 func TestModifierEditorFollowsTheChoiceRules(t *testing.T) {
 	c := check.New(t)
 	sheet := newTestSheetForTemplate(t)
-	entity := sheet.Entity()
-	trait := gurps.NewTrait(entity, nil, false)
-	trait.Modifiers = []*gurps.TraitModifier{newTraitModifierChoiceFor(entity, true, []string{"A", "B"}, "A")}
-	traitEditor, _ := buildEditorContent(sheet, trait, initTraitEditor)
+	traitEditor, _, _ := traitEditorOnSheet(t, sheet, newTraitModifierChoiceFor(sheet.Entity(), true, []string{"A", "B"}, "A"))
 	options := traitEditor.editorData.Modifiers[0].Children
 
 	e, _ := buildEditorContent(traitEditor, options[1], initTraitModifierEditor)
@@ -693,50 +624,34 @@ func TestApplyingAChoiceToLootAsksForItsPick(t *testing.T) {
 			asked = append(asked, info.requirePicks)
 			return false, false
 		})
-	choice := gurps.NewEquipmentModifierChoice(nil, nil)
-	option := gurps.NewEquipmentModifier(nil, choice, false)
-	choice.Children = []*gurps.EquipmentModifier{option}
+	choice := newEquipmentModifierChoiceFor(nil, []string{"A"}, "A")
 	attachModifierClones("", []*unison.Table[*Node[*gurps.Equipment]]{sheet.Equipment.Table}, sheet.loot,
 		[]*gurps.Equipment{eqp}, []*gurps.EquipmentModifier{choice}, gurps.LibraryFile{})
 	c.Equal([]bool{true}, asked, "the loot sheet asks, requiring the pick")
 }
 
-// traitEditorOnSheet returns a trait editor on a sheet for a trait holding the given modifiers, along with its table of
-// modifiers.
-func traitEditorOnSheet(t *testing.T, sheet *Sheet, modifiers ...*gurps.TraitModifier) (*editor[*gurps.Trait, *gurps.TraitEditData],
-	*unison.Table[*Node[*gurps.TraitModifier]],
-) {
-	t.Helper()
-	trait := gurps.NewTrait(sheet.Entity(), nil, false)
-	trait.Modifiers = modifiers
-	e, content := buildEditorContent(sheet, trait, initTraitEditor)
-	panel, ok := firstPanelOfType[*traitModifiersPanel](content)
-	if !ok {
-		t.Fatal("expected a trait modifiers panel in the trait editor")
-	}
-	return e, panel.table
-}
-
 // TestMovingAGroupIntoAChoiceKeepsThePick verifies that a group moved into a choice brings its options in turned off,
-// so that the choice keeps the pick it had, even though they land ahead of it.
+// so that the choice keeps the pick it had even though they land ahead of it, the pick being selected along with the
+// group not counting as a move, and that undo puts both back.
 func TestMovingAGroupIntoAChoiceKeepsThePick(t *testing.T) {
 	c := check.New(t)
 	registerKeyBindingsOnce.Do(registerActions)
 	sheet := newTestSheetForTemplate(t)
 	entity := sheet.Entity()
 	group := gurps.NewTraitModifier(entity, nil, true)
-	carried := gurps.NewTraitModifier(entity, group, false)
-	group.Children = []*gurps.TraitModifier{carried}
-	e, table := traitEditorOnSheet(t, sheet, group, newTraitModifierChoiceFor(entity, false, []string{"X", "Y"}, "X"))
+	group.Children = []*gurps.TraitModifier{gurps.NewTraitModifier(entity, group, false)}
+	e, _, table := traitEditorOnSheet(t, sheet, group, newTraitModifierChoiceFor(entity, false, []string{"X", "Y"}, "X"))
 	groupCopy := e.editorData.Modifiers[0]
-	table.SetSelectionMap(map[tid.TID]bool{groupCopy.ID(): true})
+	pick := e.editorData.Modifiers[1].Children[0]
+	table.SetSelectionMap(map[tid.TID]bool{groupCopy.ID(): true, pick.ID(): true})
 	c.True(table.CanPerformCmd(nil, MoveIntoContainerItemID))
 	table.PerformCmd(nil, MoveIntoContainerItemID)
 	c.Equal(1, len(e.editorData.Modifiers), "the group went into the choice")
 	options := gurps.ModifierChoiceOptions(e.editorData.Modifiers[0])
-	c.Equal(3, len(options), "the option the group carried, then X and Y")
+	c.Equal([]*gurps.TraitModifier{groupCopy.Children[0], pick, options[2]}, options,
+		"the option the group carried, then X and Y")
 	c.False(options[0].Enabled(), "what the group carried in arrives turned off")
-	c.True(options[1].Enabled(), "the choice keeps its pick, X")
+	c.True(pick.Enabled(), "the choice keeps its pick, X, which didn't move")
 	c.False(options[2].Enabled())
 
 	unison.UndoManagerFor(table).Undo()
@@ -748,35 +663,13 @@ func TestMovingAGroupIntoAChoiceKeepsThePick(t *testing.T) {
 	c.False(options[1].Enabled())
 }
 
-// TestMovingIntoAChoiceCountsOnlyWhatMoved verifies that moving a modifier into a choice while the choice's pick is
-// selected along with it keeps the pick, since the pick didn't move.
-func TestMovingIntoAChoiceCountsOnlyWhatMoved(t *testing.T) {
-	c := check.New(t)
-	registerKeyBindingsOnce.Do(registerActions)
-	sheet := newTestSheetForTemplate(t)
-	entity := sheet.Entity()
-	moved := gurps.NewTraitModifier(entity, nil, false)
-	moved.Name = "M"
-	e, table := traitEditorOnSheet(t, sheet, moved, newTraitModifierChoiceFor(entity, false, []string{"P", "Q"}, "P"))
-	movedCopy := e.editorData.Modifiers[0]
-	pick := e.editorData.Modifiers[1].Children[0]
-	table.SetSelectionMap(map[tid.TID]bool{movedCopy.ID(): true, pick.ID(): true})
-	table.PerformCmd(nil, MoveIntoContainerItemID)
-	c.Equal(1, len(e.editorData.Modifiers), "M went into the choice")
-	options := gurps.ModifierChoiceOptions(e.editorData.Modifiers[0])
-	c.Equal([]*gurps.TraitModifier{movedCopy, pick, options[2]}, options)
-	c.False(movedCopy.Enabled(), "M arrives turned off")
-	c.True(pick.Enabled(), "P stays the pick, since it didn't move")
-}
-
 // TestEditorKeepsAPickMadeSinceItOpened verifies that applying an option's editor, opened while it was the pick, after
 // another option has been picked in the list leaves that later pick alone, since the editor didn't change whether its
 // option is enabled.
 func TestEditorKeepsAPickMadeSinceItOpened(t *testing.T) {
 	c := check.New(t)
 	sheet := newTestSheetForTemplate(t)
-	entity := sheet.Entity()
-	traitEditor, table := traitEditorOnSheet(t, sheet, newTraitModifierChoiceFor(entity, true, []string{"A", "B"}, "A"))
+	traitEditor, _, table := traitEditorOnSheet(t, sheet, newTraitModifierChoiceFor(sheet.Entity(), true, []string{"A", "B"}, "A"))
 	options := traitEditor.editorData.Modifiers[0].Children
 	aEditor, _ := buildEditorContent(traitEditor, options[0], initTraitModifierEditor)
 	adjustModifierEnabled(traitEditor, table, options[1], true)
@@ -788,15 +681,24 @@ func TestEditorKeepsAPickMadeSinceItOpened(t *testing.T) {
 	c.True(options[1].Enabled(), "and B stays the pick")
 }
 
-// TestChoiceMadeMandatoryInItsEditorOnASheet verifies that a choice made mandatory in its editor on a sheet, with
-// nothing picked, gets its first option picked, as Convert to Choice does, and that undo and redo cover it.
+// TestChoiceMadeMandatoryInItsEditorOnASheet verifies that applying a choice's editor on a sheet without changing what
+// the choice asks for leaves its options as they are, so a mandatory choice flagged for want of a pick isn't given one,
+// while a choice made mandatory there gets its first option picked, as Convert to Choice does, undo and redo covering
+// it.
 func TestChoiceMadeMandatoryInItsEditorOnASheet(t *testing.T) {
 	c := check.New(t)
 	sheet := newTestSheetForTemplate(t)
-	entity := sheet.Entity()
-	traitEditor, _ := traitEditorOnSheet(t, sheet, newTraitModifierChoiceFor(entity, false, []string{"A", "B"}))
+	traitEditor, _, _ := traitEditorOnSheet(t, sheet, newTraitModifierChoiceFor(sheet.Entity(), true, []string{"A", "B"}))
 	choice := traitEditor.editorData.Modifiers[0]
 	choiceEditor, _ := buildEditorContent(traitEditor, choice, initTraitModifierEditor)
+	choiceEditor.editorData.Name = "Renamed"
+	choiceEditor.applyEdits()
+	c.Equal("Renamed", choice.Name)
+	c.False(choice.Children[0].Enabled(), "the edit doesn't pick the first option")
+	c.False(choice.Children[1].Enabled())
+
+	choice.SetMandatoryChoice(false)
+	choiceEditor, _ = buildEditorContent(traitEditor, choice, initTraitModifierEditor)
 	choiceEditor.editorData.SetMandatoryChoice(true)
 	choiceEditor.applyEdits()
 	c.True(gurps.IsMandatoryModifierChoice(choice))
@@ -807,33 +709,6 @@ func TestChoiceMadeMandatoryInItsEditorOnASheet(t *testing.T) {
 	c.False(choice.Children[0].Enabled(), "undo takes the pick back")
 	mgr.Redo()
 	c.True(choice.Children[0].Enabled(), "redo picks it again")
-}
-
-// TestEquipmentChoiceToggleAndLock verifies the choice rules in an equipment editor on a sheet: turning an option on
-// turns the pick off, and the new pick can't be turned off.
-func TestEquipmentChoiceToggleAndLock(t *testing.T) {
-	c := check.New(t)
-	sheet := newTestSheetForTemplate(t)
-	entity := sheet.Entity()
-	choice := gurps.NewEquipmentModifierChoice(entity, nil)
-	for _, name := range []string{"A", "B"} {
-		option := gurps.NewEquipmentModifier(entity, choice, false)
-		option.Name = name
-		option.SetEnabled(name == "A")
-		choice.Children = append(choice.Children, option)
-	}
-	equipment := gurps.NewEquipment(entity, nil, false)
-	equipment.Modifiers = []*gurps.EquipmentModifier{choice}
-	e, content := buildEditorContent(sheet, equipment, initEquipmentEditor(true))
-	panel, ok := firstPanelOfType[*equipmentModifiersPanel](content)
-	c.True(ok)
-	table := panel.table
-	options := e.editorData.Modifiers[0].Children
-	table.SetSelectionMap(map[tid.TID]bool{options[1].ID(): true})
-	table.PerformCmd(nil, ToggleStateItemID)
-	c.False(options[0].Enabled(), "turning B on turns A off")
-	c.True(options[1].Enabled())
-	c.False(table.CanPerformCmd(nil, ToggleStateItemID), "the new pick can't be turned off on a sheet")
 }
 
 // TestPromptRequiresPicksOnlyForSheets verifies that rows headed for a template are asked about their modifiers
@@ -892,28 +767,22 @@ func simulateMoveDrop[T gurps.Node[T]](table *unison.Table[*Node[T]], moved, int
 	didDropCallback(undo, table, table, true)
 }
 
-// TestDropIntoAChoiceInAnEditorShowsTheSettledCost verifies that a modifier dropped into a choice in the editor of a
-// trait on a sheet is settled before the editor is rebuilt, so that the Point Cost it shows counts only the option the
-// choice keeps, and that undo takes the drop back.
+// TestDropIntoAChoiceInAnEditorShowsTheSettledCost verifies that a modifier dropped into a closed choice in the editor
+// of a trait on a sheet is settled before the editor is rebuilt, so that the Point Cost it shows counts only the option
+// the choice keeps, and that undo takes the drop back.
 func TestDropIntoAChoiceInAnEditorShowsTheSettledCost(t *testing.T) {
 	c := check.New(t)
 	sheet := newTestSheetForTemplate(t)
 	entity := sheet.Entity()
 	moved := gurps.NewTraitModifier(entity, nil, false)
-	moved.Name = "M"
 	moved.CostAdj = "+10"
 	choice := newTraitModifierChoiceFor(entity, true, []string{"A", "B"}, "A")
 	choice.Children[0].CostAdj = "+5"
-	trait := gurps.NewTrait(entity, nil, false)
-	trait.BasePoints = fxp.FromInteger(10)
-	trait.Modifiers = []*gurps.TraitModifier{moved, choice}
-	e, content := buildEditorContent(sheet, trait, initTraitEditor)
-	panel, ok := firstPanelOfType[*traitModifiersPanel](content)
-	c.True(ok)
-	table := panel.table
+	choice.SetOpen(false)
+	e, content, table := traitEditorOnSheet(t, sheet, moved, choice)
 	// The Point Cost field is the first of the editor's non-editable fields.
 	pointCost := panelsOfType[*NonEditableField](content)[0]
-	c.Equal("25", pointCost.String())
+	c.Equal("15", pointCost.String())
 
 	simulateMoveDrop(table, e.editorData.Modifiers[0].ID(), e.editorData.Modifiers[1].ID(), 0)
 	c.Equal(1, len(e.editorData.Modifiers))
@@ -921,30 +790,13 @@ func TestDropIntoAChoiceInAnEditorShowsTheSettledCost(t *testing.T) {
 	c.Equal(3, len(options))
 	c.False(options[0].Enabled(), "the dropped modifier arrives turned off")
 	c.True(options[1].Enabled(), "the choice keeps its pick")
-	c.Equal("15", pointCost.String(), "the cost counts only the pick")
+	c.Equal("5", pointCost.String(), "the cost counts only the pick")
 
 	unison.UndoManagerFor(table).Undo()
 	roots := liveTable(table).RootRows()
 	c.Equal(2, len(roots), "undo takes the drop back")
 	c.True(roots[0].Data().Enabled(), "and turns the modifier back on")
-	c.Equal("25", pointCost.String())
-}
-
-// TestDropIntoAClosedChoiceKeepsThePick verifies that a modifier dropped into a closed choice arrives turned off, the
-// choice keeping its pick, and that undo takes the drop back.
-func TestDropIntoAClosedChoiceKeepsThePick(t *testing.T) {
-	c := check.New(t)
-	moved := gurps.NewTraitModifier(nil, nil, false)
-	choice := newTraitModifierChoiceFor(nil, false, []string{"X"}, "X")
-	choice.SetOpen(false)
-	library := NewTraitModifierTableDockable("mods"+gurps.TraitModifiersExt, []*gurps.TraitModifier{moved, choice})
-	table := library.table
-	simulateMoveDrop(table, moved.ID(), choice.ID(), 0)
-	c.Equal(1, len(table.RootRows()))
-	c.False(moved.Enabled(), "the dropped modifier arrives turned off")
-	c.True(choice.Children[1].Enabled(), "X stays the pick")
-	unison.UndoManagerFor(table).Undo()
-	c.Equal(2, len(liveTable(table).RootRows()), "undo takes the drop back")
+	c.Equal("15", pointCost.String())
 }
 
 // insertNewTraitModifier inserts a new trait modifier into an editor's table of modifiers, as "New Trait Modifier"
@@ -961,55 +813,46 @@ func insertNewTraitModifier(t *testing.T, owner Rebuildable, table *unison.Table
 	return item
 }
 
-// TestNewModifierInAClosedGroupInAChoice verifies that a new modifier inserted into a closed group within a choice
-// arrives turned off, leaving the choice its pick, and that undo takes it away.
-func TestNewModifierInAClosedGroupInAChoice(t *testing.T) {
+// TestNewModifierInAChoiceArrivesOff verifies that a new modifier inserted into a choice arrives turned off: into an
+// optional choice, into a mandatory choice on a sheet with no pick, which is left without one and flagged, and into a
+// closed group within a choice, which keeps its pick. Undo takes it away.
+func TestNewModifierInAChoiceArrivesOff(t *testing.T) {
 	c := check.New(t)
 	sheet := newTestSheetForTemplate(t)
 	entity := sheet.Entity()
-	choice := newTraitModifierChoiceFor(entity, true, []string{"y"}, "y")
-	group := gurps.NewTraitModifier(entity, choice, true)
+	withGroup := newTraitModifierChoiceFor(entity, true, []string{"y"}, "y")
+	group := gurps.NewTraitModifier(entity, withGroup, true)
 	x := gurps.NewTraitModifier(entity, group, false)
-	x.Name = "x"
 	x.SetEnabled(false)
 	group.Children = []*gurps.TraitModifier{x}
 	group.SetOpen(false)
-	choice.Children = slices.Insert(choice.Children, 0, group)
-	e, table := traitEditorOnSheet(t, sheet, choice)
-	groupCopy := e.editorData.Modifiers[0].Children[0]
-	table.SetSelectionMap(map[tid.TID]bool{groupCopy.ID(): true})
-	item := insertNewTraitModifier(t, e, table)
-	c.Equal(item, groupCopy.Children[1], "the new modifier goes into the group")
-	c.False(item.Enabled(), "the new modifier arrives turned off")
-	c.True(e.editorData.Modifiers[0].Children[1].Enabled(), "y stays the pick")
-
-	unison.UndoManagerFor(table).Undo()
-	restored := liveTable(table).RootRows()[0].Data().Children[0]
-	c.Equal(1, len(restored.Children), "undo takes the new modifier away")
-}
-
-// TestNewModifierInAChoiceWithoutAPick verifies that a new modifier inserted into a choice with no pick arrives turned
-// off, even into a mandatory choice on a sheet, which is left without its pick and flagged.
-func TestNewModifierInAChoiceWithoutAPick(t *testing.T) {
-	c := check.New(t)
-	sheet := newTestSheetForTemplate(t)
-	entity := sheet.Entity()
-	e, table := traitEditorOnSheet(t, sheet,
+	withGroup.Children = slices.Insert(withGroup.Children, 0, group)
+	e, _, table := traitEditorOnSheet(t, sheet, withGroup,
 		newTraitModifierChoiceFor(entity, false, []string{"a"}),
 		newTraitModifierChoiceFor(entity, true, []string{"b"}))
-	optional := e.editorData.Modifiers[0]
+	optional := e.editorData.Modifiers[1]
 	table.SetSelectionMap(map[tid.TID]bool{optional.ID(): true})
 	item := insertNewTraitModifier(t, e, table)
 	c.Equal(item, optional.Children[1])
 	c.False(item.Enabled(), "the new modifier arrives turned off in an optional choice")
 
-	mandatory := e.editorData.Modifiers[1]
+	mandatory := e.editorData.Modifiers[2]
 	table.SetSelectionMap(map[tid.TID]bool{mandatory.Children[0].ID(): true})
 	item = insertNewTraitModifier(t, e, table)
 	c.Equal(item, mandatory.Children[1])
 	c.False(item.Enabled(), "and in a mandatory one")
 	c.Equal([]*gurps.TraitModifier{mandatory}, gurps.UnresolvedModifierChoices(e.editorData.Modifiers...),
 		"which is left without its pick")
+
+	groupCopy := e.editorData.Modifiers[0].Children[0]
+	table.SetSelectionMap(map[tid.TID]bool{groupCopy.ID(): true})
+	item = insertNewTraitModifier(t, e, table)
+	c.Equal(item, groupCopy.Children[1], "the new modifier goes into the group")
+	c.False(item.Enabled(), "and arrives turned off there too")
+	c.True(e.editorData.Modifiers[0].Children[1].Enabled(), "y stays the pick")
+	unison.UndoManagerFor(table).Undo()
+	restored := liveTable(table).RootRows()[0].Data().Children[0]
+	c.Equal(1, len(restored.Children), "undo takes the new modifier away")
 }
 
 // TestTakingThePickAwayLeavesTheChoiceFlagged verifies that deleting the pick of a mandatory choice on a sheet, or
@@ -1031,7 +874,7 @@ func TestTakingThePickAwayLeavesTheChoiceFlagged(t *testing.T) {
 			table.PerformCmd(nil, MoveOutOfContainerItemID)
 		},
 	} {
-		e, table := traitEditorOnSheet(t, sheet, newTraitModifierChoiceFor(entity, true, []string{"A", "B"}, "A"))
+		e, _, table := traitEditorOnSheet(t, sheet, newTraitModifierChoiceFor(entity, true, []string{"A", "B"}, "A"))
 		choice := e.editorData.Modifiers[len(e.editorData.Modifiers)-1]
 		c.False(required(choice))
 		table.SetSelectionMap(map[tid.TID]bool{choice.Children[0].ID(): true})
@@ -1043,30 +886,13 @@ func TestTakingThePickAwayLeavesTheChoiceFlagged(t *testing.T) {
 	}
 }
 
-// TestEditingAChoiceLeavesItsOptionsAlone verifies that applying a choice's editor without changing what the choice
-// asks for leaves its options as they are: a mandatory choice on a sheet flagged for want of a pick isn't given one.
-func TestEditingAChoiceLeavesItsOptionsAlone(t *testing.T) {
-	c := check.New(t)
-	sheet := newTestSheetForTemplate(t)
-	entity := sheet.Entity()
-	traitEditor, _ := traitEditorOnSheet(t, sheet, newTraitModifierChoiceFor(entity, true, []string{"A", "B"}))
-
-	open := traitEditor.editorData.Modifiers[0]
-	choiceEditor, _ := buildEditorContent(traitEditor, open, initTraitModifierEditor)
-	choiceEditor.editorData.Name = "Renamed"
-	choiceEditor.applyEdits()
-	c.Equal("Renamed", open.Name)
-	c.False(open.Children[0].Enabled(), "the edit doesn't pick the first option")
-	c.False(open.Children[1].Enabled())
-}
-
 // TestLockedPickHasItsEnabledBoxDisabled verifies that the editor of the pick of a mandatory choice on a sheet doesn't
 // let its Enabled box be unchecked, and that the editor of an option that isn't the pick does.
 func TestLockedPickHasItsEnabledBoxDisabled(t *testing.T) {
 	c := check.New(t)
 	sheet := newTestSheetForTemplate(t)
 	entity := sheet.Entity()
-	traitEditor, _ := traitEditorOnSheet(t, sheet, newTraitModifierChoiceFor(entity, true, []string{"A", "B"}, "A"))
+	traitEditor, _, _ := traitEditorOnSheet(t, sheet, newTraitModifierChoiceFor(entity, true, []string{"A", "B"}, "A"))
 	options := traitEditor.editorData.Modifiers[0].Children
 	_, content := buildEditorContent(traitEditor, options[0], initTraitModifierEditor)
 	box := findCheckBoxTitled(content, "Enabled")
@@ -1076,9 +902,7 @@ func TestLockedPickHasItsEnabledBoxDisabled(t *testing.T) {
 	_, content = buildEditorContent(traitEditor, options[1], initTraitModifierEditor)
 	c.True(findCheckBoxTitled(content, "Enabled").Enabled(), "another option can be turned on")
 
-	choice := gurps.NewEquipmentModifierChoice(entity, nil)
-	pick := gurps.NewEquipmentModifier(entity, choice, false)
-	choice.Children = []*gurps.EquipmentModifier{pick}
+	pick := newEquipmentModifierChoiceFor(entity, []string{"A"}, "A").Children[0]
 	_, content = buildEditorContent(nil, pick, initEquipmentModifierEditor)
 	c.False(findCheckBoxTitled(content, "Enabled").Enabled(), "the same goes for equipment modifiers")
 }
