@@ -584,7 +584,7 @@ func modifierChoiceRange[M ModifierNode[M, T], T ModifiableNode[T, M]](item T, m
 		}
 		ranges = append(ranges, eval(variant))
 	})
-	return spanOfNumericRanges(ranges), true
+	return rangeForPickerByCount(newTemplateChoicePicker().Qualifier, ranges), true
 }
 
 // eachModifierChoicePick calls fn once for each way of making the choices, handing it the picks in fixed along with

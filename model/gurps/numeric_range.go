@@ -200,26 +200,6 @@ func sumNumericRanges(ranges []NumericRange) NumericRange {
 	return NumericRange{Min: lower.end(), Max: upper.end()}
 }
 
-// spanOfNumericRanges returns the range covering all of the ranges, which is what something that will turn out to be
-// worth one of them may be worth: from the least of their lower ends to the greatest of their upper ends. An end with
-// no limit in any of them has none in the result either.
-func spanOfNumericRanges(ranges []NumericRange) NumericRange {
-	if len(ranges) == 0 {
-		return NumericRange{}
-	}
-	lower := ranges[0].Min
-	upper := ranges[0].Max
-	for _, one := range ranges[1:] {
-		if lower != nil && (one.Min == nil || *one.Min < *lower) {
-			lower = one.Min
-		}
-		if upper != nil && (one.Max == nil || *one.Max > *upper) {
-			upper = one.Max
-		}
-	}
-	return NumericRange{Min: lower, Max: upper}
-}
-
 // rangeForPickerByCount returns the range of a container whose picker constrains how many of its children are
 // taken. These cases are exact: the cheapest way to satisfy "pick 3" is the 3 cheapest children, and a child that costs
 // less than nothing is always worth taking when the picker allows more to be taken.

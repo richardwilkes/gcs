@@ -741,7 +741,7 @@ func (t *Trait) pointsRange(fixed modifierChoicePicks[*TraitModifier]) NumericRa
 			spans = append(spans, pointsRangeForPicker(t.TemplatePicker, ranges))
 		}
 	})
-	return spanOfNumericRanges(spans)
+	return rangeForPickerByCount(newTemplateChoicePicker().Qualifier, spans)
 }
 
 // leafPointsRange returns what pointsRange does for a trait that isn't a container.
