@@ -121,7 +121,7 @@ type applyPart[T gurps.Node[T]] struct {
 // applyPartOps is what applyTransfer needs of each part, whatever its row type.
 type applyPartOps interface {
 	normalizeChoices()
-	resolvePickers(op promptOperation) bool
+	resolvePickers(op promptOperation, promptChoices bool) bool
 	pickerContainers() []string
 	stripPickers()
 	modifierTargetCount() int
@@ -204,8 +204,8 @@ func (p *applyPart[T]) normalizeChoices() {
 	gurps.NormalizeTemplateChoiceContainers(p.rows...)
 }
 
-func (p *applyPart[T]) resolvePickers(op promptOperation) bool {
-	revised, abort := processPickerRows(op, p.rows)
+func (p *applyPart[T]) resolvePickers(op promptOperation, promptChoices bool) bool {
+	revised, abort := processPickerRows(op, p.rows, promptChoices)
 	if abort {
 		return false
 	}
@@ -340,7 +340,7 @@ func applyTransfer(destination unison.Paneler, parts *applyParts, opts applyOpti
 	if opts.normalizeChoices {
 		parts.each(applyPartOps.normalizeChoices)
 	}
-	if opts.resolvePickers && !promptForPickers(op, parts) {
+	if opts.resolvePickers && !promptForPickers(op, parts, opts.promptForChoices) {
 		return false
 	}
 	var pickerContainers []string

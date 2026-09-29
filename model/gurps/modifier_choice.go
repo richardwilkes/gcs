@@ -418,17 +418,45 @@ func IsSheetOwner(owner DataOwner) bool {
 // counts as made with the picks it has. A trait container fixes these for every trait inside it.
 type modifierChoicePicks[M comparable] map[M]M
 
+// choiceView says how open modifier choices are costed. The zero value costs them where the item is; prompted costs
+// them as the modifier prompt will see them, even on a sheet, and taken reports items whose picks count as made, as a
+// preconfigured item's do.
+type choiceView struct {
+	prompted bool
+	taken    func(item any) bool
+}
+
+// promptedView returns the prompted choiceView, with taken (which may be nil) reporting items of type T.
+func promptedView[T any](taken func(T) bool) choiceView {
+	view := choiceView{prompted: true}
+	if taken != nil {
+		view.taken = func(item any) bool {
+			one, ok := item.(T)
+			return ok && taken(one)
+		}
+	}
+	return view
+}
+
+// choicesMade returns true if every modifier choice of the node counts as made where it is.
+func choicesMade[T Node[T]](node T, view choiceView) bool {
+	return !view.prompted && IsOnSheet(node)
+}
+
 // openMandatoryModifierChoices returns the mandatory choices among the modifiers still to be made that fixed holds no
 // pick for, and the ways of making them, capped at one past maxModifierChoiceVariants. Off a sheet a choice is open
-// unless it has a pick and what it is asked about on is preconfigured; a choice with no options never is.
-func openMandatoryModifierChoices[M ModifierNode[M, T], T ModifiableNode[T, M]](item T, modifiers []M, fixed modifierChoicePicks[M]) (open []M, variants int) {
+// unless it has a pick and what it is asked about on is preconfigured or taken; a choice with no options never is.
+func openMandatoryModifierChoices[M ModifierNode[M, T], T ModifiableNode[T, M]](item T, modifiers []M, fixed modifierChoicePicks[M], view choiceView) (open []M, variants int) {
 	variants = 1
-	if xreflect.IsNil(item) || IsOnSheet(item) {
+	if xreflect.IsNil(item) || choicesMade(item, view) {
 		return nil, variants
 	}
 	Traverse(func(mod M) bool {
-		if _, isFixed := fixed[mod]; isFixed || !IsMandatoryModifierChoice(mod) ||
-			(IsNodePreconfigured(modifierAskedAboutOn(item, mod)) && ModifierChoiceIsResolved(mod)) {
+		if _, isFixed := fixed[mod]; isFixed || !IsMandatoryModifierChoice(mod) {
+			return false
+		}
+		if askedOn := modifierAskedAboutOn(item, mod); (IsNodePreconfigured(askedOn) ||
+			(view.taken != nil && view.taken(askedOn))) && ModifierChoiceIsResolved(mod) {
 			return false
 		}
 		if options := ModifierChoiceOptions(mod); len(options) != 0 {
@@ -452,15 +480,16 @@ func modifierAskedAboutOn[M ModifierNode[M, T], T ModifiableNode[T, M]](item T, 
 
 // hasOpenMandatoryModifierChoice returns true if the item has an open mandatory modifier choice within the cap.
 func hasOpenMandatoryModifierChoice[M ModifierNode[M, T], T ModifiableNode[T, M]](item T, modifiers []M) bool {
-	open, variants := openMandatoryModifierChoices(item, modifiers, nil)
+	open, variants := openMandatoryModifierChoices(item, modifiers, nil, choiceView{})
 	return len(open) != 0 && variants <= maxModifierChoiceVariants
 }
 
 // modifierChoiceRange returns the span of eval over each way of making the open mandatory choices among the modifiers,
-// with those in fixed made as it says. eval gets the non-container modifiers in order, with only each such choice's
-// pick among its options, enabled. Returns false, without calling eval, when there is nothing to enumerate.
-func modifierChoiceRange[M ModifierNode[M, T], T ModifiableNode[T, M]](item T, modifiers []M, fixed modifierChoicePicks[M], eval func([]M) NumericRange) (NumericRange, bool) {
-	open, variants := openMandatoryModifierChoices(item, modifiers, fixed)
+// seen as view says, with those in fixed made as it says. eval gets the non-container modifiers in order, with only
+// each such choice's pick among its options, enabled. Returns false, without calling eval, when there is nothing to
+// enumerate.
+func modifierChoiceRange[M ModifierNode[M, T], T ModifiableNode[T, M]](item T, modifiers []M, fixed modifierChoicePicks[M], view choiceView, eval func([]M) NumericRange) (NumericRange, bool) {
+	open, variants := openMandatoryModifierChoices(item, modifiers, fixed, view)
 	if variants > maxModifierChoiceVariants {
 		open = nil
 	}

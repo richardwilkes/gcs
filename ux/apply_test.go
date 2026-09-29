@@ -51,7 +51,7 @@ func newTestTemplateWithTraits(traits ...*gurps.Trait) *Template {
 func pickFirstOption(t *testing.T) *int {
 	t.Helper()
 	calls := 0
-	swapForTest(t, &promptForPickers, func(_ promptOperation, parts *applyParts) bool {
+	swapForTest(t, &promptForPickers, func(_ promptOperation, parts *applyParts, _ bool) bool {
 		calls++
 		var revised []*gurps.Trait
 		for _, row := range parts.traits.rows {
@@ -149,6 +149,10 @@ func TestCopyFromSheetToSheetIsAPlainCopy(t *testing.T) {
 	destination := newTestSheetForTemplate(t)
 	originalTraits := len(destination.Entity().Traits)
 	prompts := captureModifierPrompts(t)
+	swapForTest(t, &promptForPickers, func(op promptOperation, parts *applyParts, promptChoices bool) bool {
+		c.False(promptChoices, "no modifier prompt follows")
+		return processPickers(op, parts, promptChoices)
+	})
 
 	copySelectionTo(source.Traits.Table, []*Sheet{destination})
 
@@ -398,7 +402,7 @@ func TestDropOnSheetWithCanceledPickerLeavesSheetUntouched(t *testing.T) {
 	originalTraits := len(entity.Traits)
 	source := newTestTemplateWithTraits(newChoiceTrait("Pick One", "First", "Second"))
 	calls := 0
-	swapForTest(t, &promptForPickers, func(_ promptOperation, _ *applyParts) bool {
+	swapForTest(t, &promptForPickers, func(_ promptOperation, _ *applyParts, _ bool) bool {
 		calls++
 		return false
 	})
@@ -567,7 +571,8 @@ func TestApplyTemplatePromptSequence(t *testing.T) {
 			steps:       info.steps,
 		})
 	}
-	swapForTest(t, &promptForPickers, func(op promptOperation, _ *applyParts) bool {
+	swapForTest(t, &promptForPickers, func(op promptOperation, _ *applyParts, promptChoices bool) bool {
+		c.True(promptChoices, "the modifier prompt follows, so the picker must cost rows as it will see them")
 		record("choices", op)
 		return true
 	})

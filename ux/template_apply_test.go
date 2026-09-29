@@ -50,7 +50,7 @@ func TestApplyTemplateCanceledPickerLeavesSheetUntouched(t *testing.T) {
 	originalTraitCount := len(entity.Traits)
 	template := newTestTemplateWithBodyType("Template Body")
 
-	swapForTest(t, &promptForPickers, func(_ promptOperation, _ *applyParts) bool { return false })
+	swapForTest(t, &promptForPickers, func(_ promptOperation, _ *applyParts, _ bool) bool { return false })
 	c.False(template.applyTemplateToSheet(sheet, promptOperation{}, true), "a canceled picker must report that the template was not applied")
 	c.Equal(originalBody, entity.SheetSettings.BodyType, "the body type must not have been replaced")
 	c.Equal(originalTraitCount, len(entity.Traits), "no traits must have been added")
@@ -65,7 +65,7 @@ func TestNewSheetFromTemplateCanceledPickerClosesTheSheet(t *testing.T) {
 	c := check.New(t)
 	screen, _ := startHeadlessWorkspace(t, c)
 	template := newTestTemplateWithBodyType("Template Body")
-	swapForTest(t, &promptForPickers, func(_ promptOperation, _ *applyParts) bool { return false })
+	swapForTest(t, &promptForPickers, func(_ promptOperation, _ *applyParts, _ bool) bool { return false })
 	var open int
 	screen.Do(func() {
 		template.newSheetFromTemplate(nil)

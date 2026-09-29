@@ -243,12 +243,12 @@ func TestPickerRowDetailsForEquipment(t *testing.T) {
 	rope.Quantity = fxp.FromInteger(3)
 	rope.BaseValue = "10"
 	rope.BaseWeight = "2 lb"
-	c.Equal([]string{"3", "$30", "6 lb"}, pickerRowDetails(rope))
+	c.Equal([]string{"3", "$30", "6 lb"}, pickerRowDetails(rope, false))
 
 	group := gurps.NewEquipmentGroup(nil, choice)
 	rope.SetParent(group)
 	group.Children = []*gurps.Equipment{rope}
-	c.Equal([]string{"", "$30", "6 lb"}, pickerRowDetails(group), "a group has no quantity of its own")
+	c.Equal([]string{"", "$30", "6 lb"}, pickerRowDetails(group, false), "a group has no quantity of its own")
 }
 
 // TestEquipmentContextMenuLeavesOutTheListName verifies that an equipment list's context menu offers to add to that list
@@ -288,14 +288,14 @@ func TestPickerQuantityUpdatesDetailsAndTotal(t *testing.T) {
 	torch.BaseValue = "3"
 	torch.BaseWeight = "1 lb"
 	details := []*unison.Label{unison.NewLabel(), unison.NewLabel(), unison.NewLabel()}
-	setPickerRowQuantity(torch, fxp.FromInteger(4), details)
+	setPickerRowQuantity(torch, fxp.FromInteger(4), details, false)
 	c.Equal(fxp.FromInteger(4), torch.Quantity)
 	c.Equal("4", details[0].String())
 	c.Equal("$12", details[1].String())
-	c.Equal("$12", formatPickerTotal(torch, picker.Value, pickerMeasureRange(torch, picker.Value)))
+	c.Equal("$12", formatPickerTotal(torch, picker.Value, pickerMeasureRange(torch, picker.Value, false)))
 	units := gurps.SheetSettingsFor(nil).DefaultWeightUnits
 	c.Equal(units.Format(torch.ExtendedWeight(false, units)), details[2].String())
-	c.Equal(details[2].String(), formatPickerTotal(torch, picker.Weight, pickerMeasureRange(torch, picker.Weight)))
+	c.Equal(details[2].String(), formatPickerTotal(torch, picker.Weight, pickerMeasureRange(torch, picker.Weight, false)))
 }
 
 // TestQuantityCommandsSkipGroups verifies that Increment and Decrement, which adjust equipment's quantity, leave a

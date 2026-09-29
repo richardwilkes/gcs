@@ -15,6 +15,7 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/picker"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/tid"
@@ -905,4 +906,26 @@ func TestLockedPickHasItsEnabledBoxDisabled(t *testing.T) {
 	pick := newEquipmentModifierChoiceFor(entity, []string{"A"}, "A").Children[0]
 	_, content = buildEditorContent(nil, pick, initEquipmentModifierEditor)
 	c.False(findCheckBoxTitled(content, "Enabled").Enabled(), "the same goes for equipment modifiers")
+}
+
+// TestPickerCostsSheetRowsAsPrompted verifies that when the modifier prompt follows, the picker costs a row headed for a
+// sheet as that prompt will see it, rather than at the picks it happens to have.
+func TestPickerCostsSheetRowsAsPrompted(t *testing.T) {
+	c := check.New(t)
+	entity := gurps.NewEntity()
+	trait := gurps.NewTrait(entity, nil, false)
+	trait.BasePoints = fxp.FromInteger(10)
+	choice := newTraitModifierChoiceFor(entity, true, []string{"A", "B"}, "A")
+	choice.Children[0].CostAdj = "+5"
+	choice.Children[1].CostAdj = "+10"
+	trait.AddModifiers(choice)
+	c.Equal("15", pointsRangeFor(trait, false).String())
+	c.Equal("15~20", pointsRangeFor(trait, true).String())
+
+	sword, _ := newEditorEquipmentWithChoice([2]string{"+50", "+1 lb"}, [2]string{"+100", "+2 lb"})
+	sword.SetDataOwner(entity)
+	sword.Modifiers[0].Children[0].Disabled = false
+	c.Equal([]string{"1", "$150", "3 lb"}, pickerRowDetails(sword, false))
+	c.Equal([]string{"1", "$150~200", "3~4 lb"}, pickerRowDetails(sword, true))
+	c.Equal("$150~200", formatPickerTotal(sword, picker.Value, pickerMeasureRange(sword, picker.Value, true)))
 }

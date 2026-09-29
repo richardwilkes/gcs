@@ -24,12 +24,12 @@ import (
 // where every choice has been made, so there it is the same single value ExtendedValue or ExtendedWeight reports.
 
 // adjustedValueRange returns the span of values one of this equipment may have, not counting what it holds, while a
-// mandatory choice among its modifiers is open.
-func (e *Equipment) adjustedValueRange() NumericRange {
+// mandatory choice among its modifiers is open, seen as view says.
+func (e *Equipment) adjustedValueRange(view choiceView) NumericRange {
 	eval := func(modifiers []*EquipmentModifier) NumericRange {
 		return NumericRangeOf(ValueAdjustedForModifiers(e, e.ResolvedBaseValue(), modifiers))
 	}
-	if r, open := modifierChoiceRange(e, e.Modifiers, nil, eval); open {
+	if r, open := modifierChoiceRange(e, e.Modifiers, nil, view, eval); open {
 		return r
 	}
 	return eval(e.Modifiers)
@@ -40,7 +40,7 @@ func (e *Equipment) adjustedWeightRange(defUnits fxp.WeightUnit) NumericRange {
 	eval := func(modifiers []*EquipmentModifier) NumericRange {
 		return NumericRangeOf(fxp.Int(WeightAdjustedForModifiers(e, e.ResolvedBaseWeight(), modifiers, defUnits)))
 	}
-	if r, open := modifierChoiceRange(e, e.Modifiers, nil, eval); open {
+	if r, open := modifierChoiceRange(e, e.Modifiers, nil, choiceView{}, eval); open {
 		return r
 	}
 	return eval(e.Modifiers)
@@ -49,6 +49,17 @@ func (e *Equipment) adjustedWeightRange(defUnits fxp.WeightUnit) NumericRange {
 // ExtendedValueRange returns the span of extended values this equipment may end up having once every choice within it
 // has been made.
 func (e *Equipment) ExtendedValueRange() NumericRange {
+	return e.extendedValueRange(choiceView{})
+}
+
+// PromptedExtendedValueRange is ExtendedValueRange as the modifier prompt will see the equipment, even on a sheet.
+// Equipment taken (which may be nil) reports counts as preconfigured.
+func (e *Equipment) PromptedExtendedValueRange(taken func(*Equipment) bool) NumericRange {
+	return e.extendedValueRange(promptedView(taken))
+}
+
+// extendedValueRange is ExtendedValueRange seen as view says.
+func (e *Equipment) extendedValueRange(view choiceView) NumericRange {
 	if e.Quantity <= 0 {
 		return NumericRangeOf(0)
 	}
@@ -56,13 +67,13 @@ func (e *Equipment) ExtendedValueRange() NumericRange {
 	if e.Container() {
 		children := make([]NumericRange, len(e.Children))
 		for i, one := range e.Children {
-			children[i] = one.ExtendedValueRange()
+			children[i] = one.extendedValueRange(view)
 		}
 		contents = equipmentContentsRange(e, picker.Value, children)
 	}
-	own := e.adjustedValueRange()
+	own := e.adjustedValueRange(view)
 	if !e.Container() && own.IsSettled() {
-		return NumericRangeOf(e.ExtendedValue())
+		return NumericRangeOf(lowerEndOf(own).Mul(e.Quantity))
 	}
 	return scaleNumericRange(own.Add(contents), e.Quantity)
 }
@@ -70,11 +81,17 @@ func (e *Equipment) ExtendedValueRange() NumericRange {
 // ExtendedWeightRange returns the span of extended weights this equipment may end up having once every choice within
 // it has been made.
 func (e *Equipment) ExtendedWeightRange(defUnits fxp.WeightUnit) NumericRange {
-	return e.extendedWeightRange(false, defUnits)
+	return e.extendedWeightRange(choiceView{}, false, defUnits)
 }
 
-// extendedWeightRange is ExtendedWeightRange, counting only the weight that counts for skills when forSkills is true.
-func (e *Equipment) extendedWeightRange(forSkills bool, defUnits fxp.WeightUnit) NumericRange {
+// PromptedExtendedWeightRange is PromptedExtendedValueRange for weight.
+func (e *Equipment) PromptedExtendedWeightRange(defUnits fxp.WeightUnit, taken func(*Equipment) bool) NumericRange {
+	return e.extendedWeightRange(promptedView(taken), false, defUnits)
+}
+
+// extendedWeightRange is ExtendedWeightRange seen as view says, counting only the weight that counts for skills when
+// forSkills is true.
+func (e *Equipment) extendedWeightRange(view choiceView, forSkills bool, defUnits fxp.WeightUnit) NumericRange {
 	if e.Quantity <= 0 {
 		return NumericRangeOf(0)
 	}
@@ -82,7 +99,7 @@ func (e *Equipment) extendedWeightRange(forSkills bool, defUnits fxp.WeightUnit)
 	if e.Container() {
 		children := make([]NumericRange, len(e.Children))
 		for i, one := range e.Children {
-			children[i] = one.extendedWeightRange(forSkills, defUnits)
+			children[i] = one.extendedWeightRange(view, forSkills, defUnits)
 		}
 		contents = equipmentContentsRange(e, picker.Weight, children)
 	}
@@ -108,10 +125,10 @@ func (e *Equipment) extendedWeightRange(forSkills bool, defUnits fxp.WeightUnit)
 		}
 		return NumericRangeOf(fxp.Int(base)).Add(NumericRange{Min: reduce(contents.Min), Max: reduce(contents.Max)})
 	}
-	r, open := modifierChoiceRange(e, e.Modifiers, nil, weigh)
+	r, open := modifierChoiceRange(e, e.Modifiers, nil, view, weigh)
 	if !open {
 		if !e.Container() {
-			return NumericRangeOf(fxp.Int(e.ExtendedWeight(forSkills, defUnits)))
+			return NumericRangeOf(fxp.Int(e.extendedWeightAsPicked(forSkills, defUnits)))
 		}
 		r = weigh(e.Modifiers)
 	}

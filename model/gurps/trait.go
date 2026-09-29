@@ -665,11 +665,10 @@ func (t *Trait) AdjustedPoints(_ *xbytes.InsertBuffer) fxp.Int {
 	}
 	if !t.Container() {
 		// An open mandatory modifier choice counts as the least it may come to (see PointsRange).
-		if r, open := t.modifierChoicePointsRange(nil); open {
+		if r, open := t.modifierChoicePointsRange(nil, choiceView{}); open {
 			return *r.Min
 		}
-		return AdjustedPoints(EntityFromNode(t), t, t.CanLevel, t.BasePoints, t.Levels, t.PointsPerLevel,
-			t.SelfControl, t.Frequency, t.AllModifiers(), t.RoundCostDown)
+		return t.pointsAsPicked()
 	}
 	if !t.TemplatePicker.IsZero() {
 		// See pickerContainerPoints for what a container presenting a choice is worth.
@@ -677,8 +676,8 @@ func (t *Trait) AdjustedPoints(_ *xbytes.InsertBuffer) fxp.Int {
 	}
 	// Likewise for open choices the traits inside inherit, which pointsRange makes for all of them at once. Past the
 	// cap, fixed holds the picks as they stand, which must be counted the same way.
-	if choices, fixed := t.containerModifierChoices(nil); len(choices) != 0 || len(fixed) != 0 {
-		if r := t.pointsRange(nil, nil); r.Min != nil {
+	if choices, fixed := t.containerModifierChoices(nil, choiceView{}); len(choices) != 0 || len(fixed) != 0 {
+		if r := t.pointsRange(nil, choiceView{}); r.Min != nil {
 			return *r.Min
 		}
 	}
@@ -702,21 +701,27 @@ func (t *Trait) AdjustedPoints(_ *xbytes.InsertBuffer) fxp.Int {
 // source without saying which row it landed on, so rolling a container's children up into one list would give an
 // unattributed, repetitive pile. That detail belongs on the child rows, where hovering shows it. A trait leaves the
 // tooltip alone even then -- see AdjustedPoints -- but is asked for its cost the same way a skill or a spell is.
-func (t *Trait) PointsRange(tooltip *xbytes.InsertBuffer) NumericRange {
-	return t.pointsRange(nil, tooltip)
+func (t *Trait) PointsRange(_ *xbytes.InsertBuffer) NumericRange {
+	return t.pointsRange(nil, choiceView{})
 }
 
-// pointsRange is PointsRange with each modifier choice fixed holds a pick for counted as made with it, as a container
-// makes the choices among its modifiers for everything inside it.
-func (t *Trait) pointsRange(fixed modifierChoicePicks[*TraitModifier], tooltip *xbytes.InsertBuffer) NumericRange {
+// PromptedPointsRange is PointsRange as the modifier prompt will see the trait, even on a sheet. A trait taken (which
+// may be nil) reports counts as preconfigured.
+func (t *Trait) PromptedPointsRange(taken func(*Trait) bool) NumericRange {
+	return t.pointsRange(nil, promptedView(taken))
+}
+
+// pointsRange is PointsRange seen as view says, with each modifier choice fixed holds a pick for counted as made with
+// it, as a container makes the choices among its modifiers for everything inside it.
+func (t *Trait) pointsRange(fixed modifierChoicePicks[*TraitModifier], view choiceView) NumericRange {
 	if !t.Container() {
-		if !t.EffectivelyDisabled() {
-			if r, open := t.modifierChoicePointsRange(fixed); open {
-				return r
-			}
+		if t.EffectivelyDisabled() {
+			return NumericRangeOf(0)
 		}
-		// The disabled case is covered too: AdjustedPoints reports nothing for a trait that is switched off.
-		return NumericRangeOf(t.AdjustedPoints(tooltip))
+		if r, open := t.modifierChoicePointsRange(fixed, view); open {
+			return r
+		}
+		return NumericRangeOf(t.pointsAsPicked())
 	}
 	if t.EffectivelyDisabled() {
 		return NumericRangeOf(0)
@@ -724,12 +729,12 @@ func (t *Trait) pointsRange(fixed modifierChoicePicks[*TraitModifier], tooltip *
 	if value, settled := settledPickerCost(t.TemplatePicker); settled {
 		return NumericRangeOf(value)
 	}
-	choices, fixed := t.containerModifierChoices(fixed)
+	choices, fixed := t.containerModifierChoices(fixed, view)
 	var spans []NumericRange
 	eachModifierChoicePick(choices, fixed, func(picks modifierChoicePicks[*TraitModifier]) {
 		ranges := make([]NumericRange, len(t.Children))
 		for i, one := range t.Children {
-			ranges[i] = one.pointsRange(picks, nil)
+			ranges[i] = one.pointsRange(picks, view)
 		}
 		if t.TemplatePicker.IsZero() && t.ContainerType == container.AlternativeAbilities {
 			spans = append(spans, t.alternativeAbilitiesPointsRange(ranges))
@@ -744,36 +749,42 @@ func (t *Trait) pointsRange(fixed modifierChoicePicks[*TraitModifier], tooltip *
 
 // ModifierChoicePointsRange returns the costs of this non-container trait while a modifier choice is open, or false.
 func (t *Trait) ModifierChoicePointsRange() (NumericRange, bool) {
-	return t.modifierChoicePointsRange(nil)
+	return t.modifierChoicePointsRange(nil, choiceView{})
 }
 
-// modifierChoicePointsRange is ModifierChoicePointsRange with the picks in fixed counted as made.
-func (t *Trait) modifierChoicePointsRange(fixed modifierChoicePicks[*TraitModifier]) (NumericRange, bool) {
-	if IsOnSheet(t) {
+// modifierChoicePointsRange is ModifierChoicePointsRange seen as view says, with the picks in fixed counted as made.
+func (t *Trait) modifierChoicePointsRange(fixed modifierChoicePicks[*TraitModifier], view choiceView) (NumericRange, bool) {
+	if choicesMade(t, view) {
 		return NumericRange{}, false
 	}
-	return modifierChoiceRange(t, t.AllModifiers(), fixed, func(modifiers []*TraitModifier) NumericRange {
+	return modifierChoiceRange(t, t.AllModifiers(), fixed, view, func(modifiers []*TraitModifier) NumericRange {
 		return NumericRangeOf(AdjustedPoints(nil, t, t.CanLevel, t.BasePoints, t.Levels, t.PointsPerLevel,
 			t.SelfControl, t.Frequency, modifiers, t.RoundCostDown))
 	})
 }
 
+// pointsAsPicked returns the cost of this non-container trait with its modifier choices made as they stand.
+func (t *Trait) pointsAsPicked() fxp.Int {
+	return AdjustedPoints(EntityFromNode(t), t, t.CanLevel, t.BasePoints, t.Levels, t.PointsPerLevel, t.SelfControl,
+		t.Frequency, t.AllModifiers(), t.RoundCostDown)
+}
+
 // containerModifierChoices returns the open mandatory choices among this container's modifiers that fixed holds no
 // pick for, which it makes for everything inside it, and the picks those inside are to count: fixed, or past
 // maxModifierChoiceVariants, fixed plus every open choice within the container as made with the picks it has.
-func (t *Trait) containerModifierChoices(fixed modifierChoicePicks[*TraitModifier]) ([]*TraitModifier, modifierChoicePicks[*TraitModifier]) {
-	if IsOnSheet(t) {
+func (t *Trait) containerModifierChoices(fixed modifierChoicePicks[*TraitModifier], view choiceView) ([]*TraitModifier, modifierChoicePicks[*TraitModifier]) {
+	if choicesMade(t, view) {
 		return nil, fixed
 	}
 	// With no choice of its own, each trait inside keeps to the cap alone.
-	own, _ := openMandatoryModifierChoices(t, t.AllModifiers(), fixed)
+	own, _ := openMandatoryModifierChoices(t, t.AllModifiers(), fixed, view)
 	if len(own) == 0 {
 		return nil, fixed
 	}
 	most := 1
 	var within []*TraitModifier
 	Traverse(func(one *Trait) bool {
-		open, variants := openMandatoryModifierChoices(one, one.AllModifiers(), fixed)
+		open, variants := openMandatoryModifierChoices(one, one.AllModifiers(), fixed, view)
 		within = append(within, open...)
 		most = max(most, variants)
 		return false

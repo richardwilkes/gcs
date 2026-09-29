@@ -21,7 +21,6 @@ import (
 	"github.com/richardwilkes/toolbox/v2/errs"
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/i18n"
-	"github.com/richardwilkes/toolbox/v2/xbytes"
 	"github.com/richardwilkes/toolbox/v2/xreflect"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
@@ -37,14 +36,15 @@ var promptForPickers = processPickers
 
 // processPickers presents the template picker dialog for each row of the parts that has one, replacing the rows with
 // the resulting choices. It returns false if the user canceled one of them, in which case the parts must be discarded.
-// The operation describes what the dialogs are part of and may be empty (see newOperationLabel).
-func processPickers(op promptOperation, parts *applyParts) bool {
-	return parts.all(func(part applyPartOps) bool { return part.resolvePickers(op) })
+// The operation describes what the dialogs are part of and may be empty (see newOperationLabel). promptChoices says
+// whether the modifier prompt follows, so the rows are costed as it will see them.
+func processPickers(op promptOperation, parts *applyParts, promptChoices bool) bool {
+	return parts.all(func(part applyPartOps) bool { return part.resolvePickers(op, promptChoices) })
 }
 
-func processPickerRows[T gurps.Node[T]](op promptOperation, rows []T) (revised []T, abort bool) {
+func processPickerRows[T gurps.Node[T]](op promptOperation, rows []T, prompted bool) (revised []T, abort bool) {
 	for _, one := range rows {
-		result, cancel := processPickerRow(op, one)
+		result, cancel := processPickerRow(op, one, prompted)
 		if cancel {
 			return nil, true
 		}
@@ -53,7 +53,7 @@ func processPickerRows[T gurps.Node[T]](op promptOperation, rows []T) (revised [
 	return revised, false
 }
 
-func processPickerRow[T gurps.Node[T]](op promptOperation, row T) (revised []T, abort bool) {
+func processPickerRow[T gurps.Node[T]](op promptOperation, row T, prompted bool) (revised []T, abort bool) {
 	if !row.Container() {
 		return []T{row}, false
 	}
@@ -67,7 +67,7 @@ func processPickerRow[T gurps.Node[T]](op promptOperation, row T) (revised []T, 
 		rowChildren := make([]T, 0, len(children))
 		for _, child := range children {
 			var result []T
-			result, abort = processPickerRow(op, child)
+			result, abort = processPickerRow(op, child, prompted)
 			if abort {
 				return nil, true
 			}
@@ -113,9 +113,9 @@ func processPickerRow[T gurps.Node[T]](op promptOperation, row T) (revised []T, 
 				case picker.Count:
 					total = total.Add(gurps.NumericRangeOf(fxp.One))
 				case picker.Points:
-					total = total.Add(pointsRangeFor(children[i]))
+					total = total.Add(pointsRangeFor(children[i], prompted))
 				case picker.Value, picker.Weight:
-					total = total.Add(pickerMeasureRange(children[i], tp.Type))
+					total = total.Add(pickerMeasureRange(children[i], tp.Type, prompted))
 				}
 			}
 		}
@@ -126,7 +126,7 @@ func processPickerRow[T gurps.Node[T]](op promptOperation, row T) (revised []T, 
 		}
 	}
 	for _, child := range children {
-		boxes = addPickerRow(op, list, child, tp.Type, callback, boxes)
+		boxes = addPickerRow(op, list, child, tp.Type, prompted, callback, boxes)
 	}
 
 	scroll := unison.NewScrollPanel()
@@ -211,7 +211,7 @@ func processPickerRow[T gurps.Node[T]](op promptOperation, row T) (revised []T, 
 	for i, box := range boxes {
 		if box.State == check.On {
 			var result []T
-			result, abort = processPickerRow(op, children[i])
+			result, abort = processPickerRow(op, children[i], prompted)
 			if abort {
 				return nil, true
 			}
@@ -261,7 +261,7 @@ func newMatchStatePill(top float32) (pill *unison.Label, update func(matches boo
 	return pill, update
 }
 
-func addPickerRow[T gurps.Node[T]](op promptOperation, parent *unison.Panel, row T, pt picker.Type, callback func(), boxes []*unison.CheckBox) []*unison.CheckBox {
+func addPickerRow[T gurps.Node[T]](op promptOperation, parent *unison.Panel, row T, pt picker.Type, prompted bool, callback func(), boxes []*unison.CheckBox) []*unison.CheckBox {
 	wrapper := unison.NewPanel()
 	wrapper.SetLayout(&unison.FlexLayout{
 		Columns:  2,
@@ -274,7 +274,7 @@ func addPickerRow[T gurps.Node[T]](op promptOperation, parent *unison.Panel, row
 	})
 	parent.AddChild(wrapper)
 	checkBox := unison.NewCheckBox()
-	updatePickerCheckBoxTitle(checkBox, row, pt)
+	updatePickerCheckBoxTitle(checkBox, row, pt, prompted)
 	checkBox.ClickCallback = callback
 	wrapper.AddChild(checkBox)
 	boxes = append(boxes, checkBox)
@@ -286,7 +286,7 @@ func addPickerRow[T gurps.Node[T]](op promptOperation, parent *unison.Panel, row
 	switch actual := any(row).(type) {
 	case *gurps.Trait:
 		if actual.IsLeveled() {
-			onClick = func() { pickerRowLevelEditor(op, actual, checkBox, pt, callback) }
+			onClick = func() { pickerRowLevelEditor(op, actual, checkBox, pt, prompted, callback) }
 			editTooltip = i18n.Text("Edit level")
 		}
 		pageRef = actual.PageRef
@@ -309,7 +309,7 @@ func addPickerRow[T gurps.Node[T]](op promptOperation, parent *unison.Panel, row
 		// A choice made by value or weight may take more than one of an option, so its quantity may be set while
 		// picking. A group has no quantity of its own to set.
 		if (pt == picker.Value || pt == picker.Weight) && !actual.IsGroup() {
-			onClick = func() { pickerRowQuantityEditor(op, actual, &details, callback) }
+			onClick = func() { pickerRowQuantityEditor(op, actual, &details, prompted, callback) }
 			editTooltip = i18n.Text("Edit quantity")
 		}
 		pageRef = actual.PageRef
@@ -346,7 +346,7 @@ func addPickerRow[T gurps.Node[T]](op promptOperation, parent *unison.Panel, row
 			wrapper.AddChild(link)
 		}
 	}
-	rowDetails := pickerRowDetails(row)
+	rowDetails := pickerRowDetails(row, prompted)
 	details = make([]*unison.Label, 0, len(rowDetails))
 	for _, detail := range rowDetails {
 		label := unison.NewLabel()
@@ -378,8 +378,9 @@ func pickerRowDetailHeaders[T gurps.Node[T]](container T) []string {
 }
 
 // pickerRowDetails returns the details shown for an option in the columns pickerRowDetailHeaders names. The value and
-// weight are ranges when the option presents a choice of its own.
-func pickerRowDetails[T gurps.Node[T]](row T) []string {
+// weight are ranges when the option presents a choice of its own, costed as the modifier prompt will see it when
+// prompted.
+func pickerRowDetails[T gurps.Node[T]](row T, prompted bool) []string {
 	eqp, ok := any(row).(*gurps.Equipment)
 	if !ok {
 		return nil
@@ -391,22 +392,27 @@ func pickerRowDetails[T gurps.Node[T]](row T) []string {
 	}
 	return []string{
 		quantity,
-		"$" + gurps.FormatValueRange(eqp.ExtendedValueRange(), fxp.Int.Comma),
-		gurps.FormatWeightRange(eqp.ExtendedWeightRange(defUnits), defUnits.Format),
+		"$" + gurps.FormatValueRange(pickerMeasureRange(eqp, picker.Value, prompted), fxp.Int.Comma),
+		gurps.FormatWeightRange(pickerMeasureRange(eqp, picker.Weight, prompted), defUnits.Format),
 	}
 }
 
 // pickerMeasureRange returns what an option counts toward a choice made by value or weight: the range of its extended
 // value or weight, which takes its quantity into account.
-func pickerMeasureRange[T gurps.Node[T]](row T, pt picker.Type) gurps.NumericRange {
+func pickerMeasureRange[T gurps.Node[T]](row T, pt picker.Type, prompted bool) gurps.NumericRange {
 	eqp, ok := any(row).(*gurps.Equipment)
-	if !ok || xreflect.IsNil(eqp) {
+	switch {
+	case !ok || xreflect.IsNil(eqp):
 		return gurps.NumericRangeOf(0)
-	}
-	if pt == picker.Weight {
+	case pt == picker.Weight && prompted:
+		return eqp.PromptedExtendedWeightRange(pickerWeightUnits(eqp), nil)
+	case pt == picker.Weight:
 		return eqp.ExtendedWeightRange(pickerWeightUnits(eqp))
+	case prompted:
+		return eqp.PromptedExtendedValueRange(nil)
+	default:
+		return eqp.ExtendedValueRange()
 	}
-	return eqp.ExtendedValueRange()
 }
 
 // pickerWeightUnits returns the units the picker dialog shows weights in: those of the sheet the row being picked from
@@ -434,7 +440,7 @@ func formatPickerTotal[T gurps.Node[T]](row T, pt picker.Type, total gurps.Numer
 
 // pickerRowQuantityEditor asks for a new quantity of an option of a choice made by value or weight, updating the
 // option's details and the running total to match.
-func pickerRowQuantityEditor(op promptOperation, eqp *gurps.Equipment, details *[]*unison.Label, callback func()) {
+func pickerRowQuantityEditor(op promptOperation, eqp *gurps.Equipment, details *[]*unison.Label, prompted bool, callback func()) {
 	quantity := eqp.Quantity
 	panel := unison.NewPanel()
 	panel.SetLayout(&unison.FlexLayout{
@@ -456,14 +462,14 @@ func pickerRowQuantityEditor(op promptOperation, eqp *gurps.Equipment, details *
 	if dialog.RunModal() != unison.ModalResponseOK {
 		return
 	}
-	setPickerRowQuantity(eqp, quantity, *details)
+	setPickerRowQuantity(eqp, quantity, *details, prompted)
 	callback()
 }
 
 // setPickerRowQuantity sets the quantity of an option of a choice, updating the details shown for it to match.
-func setPickerRowQuantity(eqp *gurps.Equipment, quantity fxp.Int, details []*unison.Label) {
+func setPickerRowQuantity(eqp *gurps.Equipment, quantity fxp.Int, details []*unison.Label, prompted bool) {
 	eqp.Quantity = quantity
-	for i, detail := range pickerRowDetails(eqp) {
+	for i, detail := range pickerRowDetails(eqp, prompted) {
 		if i < len(details) {
 			details[i].SetTitle(detail)
 			details[i].MarkForLayoutRecursivelyUpward()
@@ -472,13 +478,13 @@ func setPickerRowQuantity(eqp *gurps.Equipment, quantity fxp.Int, details []*uni
 	}
 }
 
-func updatePickerCheckBoxTitle[T gurps.Node[T]](checkBox *unison.CheckBox, row T, pt picker.Type) {
+func updatePickerCheckBoxTitle[T gurps.Node[T]](checkBox *unison.CheckBox, row T, pt picker.Type, prompted bool) {
 	title := row.String()
 	switch pt {
 	case picker.Points:
 		// A row that presents choices of its own is worth a range rather than a single cost, which is worth showing
 		// even though picking it leads to another dialog: it is what the row will add to the total.
-		points := pointsRangeFor(row)
+		points := pointsRangeFor(row, prompted)
 		value, settled := points.Settled()
 		if !settled || value != 0 {
 			pointsLabel := i18n.Text("points")
@@ -495,7 +501,7 @@ func updatePickerCheckBoxTitle[T gurps.Node[T]](checkBox *unison.CheckBox, row T
 	checkBox.SetTitle(title)
 }
 
-func pickerRowLevelEditor(op promptOperation, trait *gurps.Trait, checkBox *unison.CheckBox, pt picker.Type, callback func()) {
+func pickerRowLevelEditor(op promptOperation, trait *gurps.Trait, checkBox *unison.CheckBox, pt picker.Type, prompted bool, callback func()) {
 	levels := trait.Levels
 	maximum := trait.ResolvedMaxLevels()
 	fieldMax := fxp.MaxBasePoints
@@ -528,7 +534,7 @@ func pickerRowLevelEditor(op promptOperation, trait *gurps.Trait, checkBox *unis
 		return
 	}
 	trait.Levels = levels
-	updatePickerCheckBoxTitle(checkBox, trait, pt)
+	updatePickerCheckBoxTitle(checkBox, trait, pt, prompted)
 	callback()
 	checkBox.MarkForLayoutRecursivelyUpward()
 	checkBox.MarkForRedraw()
@@ -562,7 +568,8 @@ func pickerRowPointEditor[T pickerRowPointEditorTypes[T]](op promptOperation, no
 		return
 	}
 	node.SetRawPoints(points)
-	updatePickerCheckBoxTitle(checkBox, node, pt)
+	// Skills and spells have no modifiers, so they cost the same prompted or not.
+	updatePickerCheckBoxTitle(checkBox, node, pt, false)
 	callback()
 	checkBox.MarkForLayoutRecursivelyUpward()
 	checkBox.MarkForRedraw()
@@ -572,9 +579,10 @@ func pickerRowPointEditor[T pickerRowPointEditorTypes[T]](op promptOperation, no
 // counted by its raw points, inside a container as much as on its own, since a picker counts what is being bought
 // rather than what the destination sheet's bonuses make of it. The rows are already owned by that sheet by the time
 // the picker is shown, so its bonuses would otherwise be counted. A trait is counted by its adjusted points, which is
-// the only cost a trait has. Either way a container accounts for any choices it presents -- including the exact ones,
-// which are worth what they ask for rather than what their children add up to.
-func pointsRangeFor[T gurps.Node[T]](child T) gurps.NumericRange {
+// the only cost a trait has, as the modifier prompt will see it when prompted. Either way a container accounts for any
+// choices it presents, including the exact ones, which are worth what they ask for rather than what their children add
+// up to.
+func pointsRangeFor[T gurps.Node[T]](child T, prompted bool) gurps.NumericRange {
 	if xreflect.IsNil(child) {
 		return gurps.NumericRangeOf(0)
 	}
@@ -582,11 +590,11 @@ func pointsRangeFor[T gurps.Node[T]](child T) gurps.NumericRange {
 	if rp, ok := any(child).(interface{ RawPointsRange() gurps.NumericRange }); ok {
 		return rp.RawPointsRange()
 	}
-	// Covers traits
-	if rp, ok := any(child).(interface {
-		PointsRange(tooltip *xbytes.InsertBuffer) gurps.NumericRange
-	}); ok {
-		return rp.PointsRange(nil)
+	if trait, ok := any(child).(*gurps.Trait); ok {
+		if prompted {
+			return trait.PromptedPointsRange(nil)
+		}
+		return trait.PointsRange(nil)
 	}
 	return gurps.NumericRangeOf(0)
 }

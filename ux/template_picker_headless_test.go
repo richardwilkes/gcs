@@ -33,7 +33,7 @@ func TestPickerRowPageReferenceIsFollowedFromTheKeyboard(t *testing.T) {
 		trait.Name = "Alpha"
 		trait.PageRef = ref
 		holder = unison.NewPanel()
-		boxes := addPickerRow(promptOperation{}, holder, trait, picker.Count, func() {}, nil)
+		boxes := addPickerRow(promptOperation{}, holder, trait, picker.Count, false, func() {}, nil)
 		if len(boxes) == 1 {
 			box = boxes[0]
 		}

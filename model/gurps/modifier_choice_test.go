@@ -396,7 +396,7 @@ func TestEquipmentRangesWithMandatoryModifierChoice(t *testing.T) {
 	choice := newEquipmentModifierChoiceWith([2]string{"+50", "+1 lb"}, [2]string{"+100", "+2 lb"})
 	eqp.AddModifiers(choice)
 
-	c.Equal("150~200", FormatValueRange(eqp.adjustedValueRange(), fxp.Int.Comma), "one of it alone is open too")
+	c.Equal("150~200", FormatValueRange(eqp.adjustedValueRange(choiceView{}), fxp.Int.Comma), "one of it alone is open too")
 	c.Equal("4~5 lb", FormatWeightRange(eqp.adjustedWeightRange(fxp.Pound), fxp.Pound.Format))
 	c.Equal("300~400", FormatValueRange(eqp.ExtendedValueRange(), fxp.Int.Comma))
 	c.Equal("8~10 lb", FormatWeightRange(eqp.ExtendedWeightRange(fxp.Pound), fxp.Pound.Format))
@@ -428,6 +428,58 @@ func TestEquipmentRangesWithMandatoryModifierChoice(t *testing.T) {
 	c.Equal("300", FormatValueRange(eqp.ExtendedValueRange(), fxp.Int.Comma), "and takes a pick already made")
 	c.Equal("8 lb", FormatWeightRange(eqp.ExtendedWeightRange(fxp.Pound), fxp.Pound.Format))
 	c.Equal(fxp.FromInteger(300), eqp.ExtendedValue(), "once made, the options enabled count as they always have")
+}
+
+// TestPromptedRanges verifies that the prompted ranges cost an item as the modifier prompt will see it, the same on a
+// sheet as off one, and that an item taken counts as preconfigured.
+func TestPromptedRanges(t *testing.T) {
+	c := check.New(t)
+	entity := NewEntity()
+	newTrait := func(owner DataOwner) *Trait {
+		trait := NewTrait(owner, nil, false)
+		trait.BasePoints = fxp.FromInteger(10)
+		trait.AddModifiers(newTraitModifierChoiceWith(true, "+5", "+10"))
+		return trait
+	}
+	all := func(*Trait) bool { return true }
+	for _, owner := range []DataOwner{nil, entity} {
+		trait := newTrait(owner)
+		c.Equal("15~20", trait.PromptedPointsRange(nil).String())
+		c.Equal("15~20", trait.PromptedPointsRange(all).String(), "a choice with no pick is still open when taken")
+		trait.Modifiers[0].Children[1].SetEnabled(true)
+		c.Equal("15~20", trait.PromptedPointsRange(nil).String(), "a pick is only a default until asked")
+		c.Equal("20", trait.PromptedPointsRange(all).String(), "a taken trait keeps its pick")
+		trait.Preconfigured = true
+		c.Equal("20", trait.PromptedPointsRange(nil).String(), "as does a preconfigured one")
+	}
+	c.Equal("10", newTrait(entity).PointsRange(nil).String(), "on a sheet the choice counts as made")
+
+	// A choice inherited from a container is taken with the container, not the trait asked about.
+	parent := NewTrait(entity, nil, true)
+	parent.AddModifiers(newTraitModifierChoiceWith(true, "+1", "+3"))
+	parent.Modifiers[0].Children[0].SetEnabled(true)
+	child := newTraitWithPoints(parent, 10)
+	child.SetDataOwner(entity)
+	c.Equal("11~13", parent.PromptedPointsRange(nil).String())
+	c.Equal("11~13", child.PromptedPointsRange(func(one *Trait) bool { return one == child }).String())
+	c.Equal("11", child.PromptedPointsRange(func(one *Trait) bool { return one == parent }).String())
+
+	taken := func(*Equipment) bool { return true }
+	for _, owner := range []DataOwner{nil, entity} {
+		eqp := newEquipmentItem("Sword", "100", "3 lb")
+		eqp.SetDataOwner(owner)
+		eqp.Quantity = fxp.FromInteger(2)
+		choice := newEquipmentModifierChoiceWith([2]string{"+50", "+1 lb"}, [2]string{"+100", "+2 lb"})
+		eqp.AddModifiers(choice)
+		choice.Children[1].SetEnabled(true)
+		c.Equal("300~400", FormatValueRange(eqp.PromptedExtendedValueRange(nil), fxp.Int.Comma))
+		c.Equal("8~10 lb", FormatWeightRange(eqp.PromptedExtendedWeightRange(fxp.Pound, nil), fxp.Pound.Format))
+		c.Equal("400", FormatValueRange(eqp.PromptedExtendedValueRange(taken), fxp.Int.Comma))
+		c.Equal("10 lb", FormatWeightRange(eqp.PromptedExtendedWeightRange(fxp.Pound, taken), fxp.Pound.Format))
+		if owner != nil {
+			c.Equal("400", FormatValueRange(eqp.ExtendedValueRange(), fxp.Int.Comma), "on a sheet the pick counts")
+		}
+	}
 }
 
 // TestWeightIgnoredForSkillsWithAnOpenChoice verifies that equipment whose weight is ignored for skills weighs nothing
