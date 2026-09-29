@@ -269,9 +269,8 @@ func (e *editor[N, D]) applyEdits() {
 	// The source isn't part of the editor's data, so the undo edit has to carry it itself should applying the edit
 	// have cleared it (see clearSourceOfTemplatePicker).
 	sourceBefore := target.GetSource()
-	// Nor are the options of a modifier choice the target is, or is an option of, which the rules of the choice may
-	// change along with it.
-	optionsBefore := choiceOptionStates(target)
+	// Nor are the other modifiers in the target's tree, which the choice rules may change along with it.
+	optionsBefore := modifierEnabledStates([]N{target})
 	wasEnabled := target.Enabled()
 	changesEnabled := false
 	if _, ok := gurps.ModifierChoiceFor(target); ok {
@@ -282,7 +281,7 @@ func (e *editor[N, D]) applyEdits() {
 	applyModifierChoiceRulesAfterEdit(target, wasEnabled, changesEnabled, modifierChoicePicker(target) != pickerBefore)
 	clearSourceOfTemplatePicker(target)
 	sourceAfter := target.GetSource()
-	optionsAfter := choiceOptionStates(target)
+	optionsAfter := modifierEnabledStates([]N{target})
 	if mgr := unison.UndoManagerFor(owner); mgr != nil {
 		mgr.Add(&unison.UndoEdit[D]{
 			ID:       unison.NextUndoID(),
@@ -304,18 +303,6 @@ func (e *editor[N, D]) applyEdits() {
 		})
 	}
 	rebuildAsModified(owner, true)
-}
-
-// choiceOptionStates returns the enabled state of each option of the modifier choice the node is, or is an option of,
-// or nil if it is neither.
-func choiceOptionStates[N gurps.Node[N]](node N) map[gurps.GeneralModifier]bool {
-	if gurps.IsModifierChoice(node) {
-		return modifierEnabledStates(node)
-	}
-	if choice, ok := gurps.ModifierChoiceFor(node); ok {
-		return modifierEnabledStates(choice)
-	}
-	return nil
 }
 
 // changesEnabled returns true if the editor's data turns the target on or off, rather than carrying along the state

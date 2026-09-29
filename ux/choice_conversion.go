@@ -34,11 +34,8 @@ type choiceConversion[T gurps.Node[T], D gurps.EditorData[T]] struct {
 type choiceConversionList[T gurps.Node[T], D gurps.EditorData[T]] struct {
 	owner Rebuildable
 	list  []*choiceConversion[T, D]
-	// optionsBefore and optionsAfter hold the enabled state of the modifiers within the topmost containers holding the
-	// targets, which a modifier container becoming a choice, or a group, may change: a choice keeps no more than one of
-	// its options enabled and must have one on a sheet, and so must the choice around it. They are taken once for the
-	// whole conversion, rather than for each target, since targets may share a tree and a later one's conversion can
-	// change what an earlier one's left behind.
+	// optionsBefore and optionsAfter hold the enabled states of the modifiers in the targets' trees, which converting a
+	// modifier container may change. They are taken once for the whole conversion, since targets may share a tree.
 	optionsBefore map[gurps.GeneralModifier]bool
 	optionsAfter  map[gurps.GeneralModifier]bool
 }
@@ -237,7 +234,7 @@ func convertContainerKinds[T gurps.Node[T], D gurps.EditorData[T]](owner Rebuild
 		return nil
 	}
 	newData := newEditorData[T, D]
-	edits := &choiceConversionList[T, D]{owner: owner, optionsBefore: modifierEnabledStatesOfTrees(targets)}
+	edits := &choiceConversionList[T, D]{owner: owner, optionsBefore: modifierEnabledStates(targets)}
 	for _, target := range targets {
 		conv := &choiceConversion[T, D]{
 			target:       target,
@@ -249,7 +246,7 @@ func convertContainerKinds[T gurps.Node[T], D gurps.EditorData[T]](owner Rebuild
 		conv.sourceAfter = target.GetSource()
 		edits.list = append(edits.list, conv)
 	}
-	edits.optionsAfter = modifierEnabledStatesOfTrees(targets)
+	edits.optionsAfter = modifierEnabledStates(targets)
 	return edits
 }
 
@@ -376,48 +373,25 @@ var askToConvertChoiceContainers = func(title, message string) bool {
 	return dialog.RunModal() == unison.ModalResponseOK
 }
 
-// modifierEnabledStates returns the enabled state of each modifier within the node, or nil if it holds none.
-func modifierEnabledStates[T gurps.Node[T]](node T) map[gurps.GeneralModifier]bool {
-	var states map[gurps.GeneralModifier]bool
-	gurps.Traverse(func(one T) bool {
-		if gm, ok := any(one).(gurps.GeneralModifier); ok {
-			if states == nil {
-				states = make(map[gurps.GeneralModifier]bool)
-			}
-			states[gm] = gm.Enabled()
-		}
-		return false
-	}, false, true, node.NodeChildren()...)
-	return states
-}
-
-// modifierEnabledStatesOfTrees returns the enabled state of each modifier within the topmost containers holding the
-// nodes, or nil if they hold none.
-func modifierEnabledStatesOfTrees[T gurps.Node[T]](nodes []T) map[gurps.GeneralModifier]bool {
-	var states map[gurps.GeneralModifier]bool
-	seen := make(map[tid.TID]bool, len(nodes))
+// modifierEnabledStates returns the enabled state of each modifier in the trees holding the nodes.
+func modifierEnabledStates[T gurps.Node[T]](nodes []T) map[gurps.GeneralModifier]bool {
+	states := make(map[gurps.GeneralModifier]bool)
+	var zero T
+	if _, ok := any(zero).(gurps.GeneralModifier); !ok {
+		return states
+	}
 	for _, node := range nodes {
-		top := topmostOf(node)
-		if seen[top.ID()] {
-			continue
+		for parent := node.Parent(); !xreflect.IsNil(parent); parent = node.Parent() {
+			node = parent
 		}
-		seen[top.ID()] = true
-		for gm, enabled := range modifierEnabledStates(top) {
-			if states == nil {
-				states = make(map[gurps.GeneralModifier]bool)
+		gurps.Traverse(func(one T) bool {
+			if gm, ok := any(one).(gurps.GeneralModifier); ok {
+				states[gm] = gm.Enabled()
 			}
-			states[gm] = enabled
-		}
+			return false
+		}, false, true, node)
 	}
 	return states
-}
-
-// topmostOf returns the topmost container holding the node, or the node itself when nothing holds it.
-func topmostOf[T gurps.Node[T]](node T) T {
-	for parent := node.Parent(); !xreflect.IsNil(parent); parent = parent.Parent() {
-		node = parent
-	}
-	return node
 }
 
 // restoreModifierEnabledStates puts back the enabled states modifierEnabledStates returned.
