@@ -321,11 +321,11 @@ func settleModifierChoices[T gurps.Node[T]](table *unison.Table[*Node[T]]) {
 	if !ok {
 		return
 	}
-	prior, _ := table.ClientData()[priorModifierPicksKey].(map[tid.TID]tid.TID)
+	prior, found := table.ClientData()[priorModifierPicksKey].(map[tid.TID]tid.TID)
 	delete(table.ClientData(), priorModifierPicksKey)
 	if gurps.SettleModifierChoices(func(one T) bool {
 		choice, _ := gurps.ModifierChoiceFor(one)
-		return prior[one.ID()] != choice.ID()
+		return !found || prior[one.ID()] != choice.ID()
 	}, provider.RootData()...) {
 		live.MarkForRedraw()
 	}
