@@ -890,14 +890,16 @@ func TestPromptRequiresPicksOnlyForSheets(t *testing.T) {
 	trait.Modifiers = []*gurps.TraitModifier{newTraitModifierChoiceFor(nil, true, []string{"A"})}
 	template := newTestTemplateWithTraits()
 	toTemplate := &applyPart[*gurps.Trait]{table: template.Traits.Table, rows: []*gurps.Trait{trait}}
-	c.True(toTemplate.promptForModifiers(promptOperation{}, 0, 1))
+	_, ok := toTemplate.promptForModifiers(promptOperation{}, 0, 1)
+	c.True(ok)
 	c.Equal([]bool{false}, traitAsked, "a template doesn't require the pick")
 
 	loot := newTestLootSheet(t)
 	equipment := gurps.NewEquipment(loot.loot, nil, false)
 	equipment.Modifiers = []*gurps.EquipmentModifier{gurps.NewEquipmentModifierChoice(nil, nil)}
 	toLoot := &applyPart[*gurps.Equipment]{table: loot.Equipment.Table, rows: []*gurps.Equipment{equipment}}
-	c.True(toLoot.promptForModifiers(promptOperation{}, 0, 1))
+	_, ok = toLoot.promptForModifiers(promptOperation{}, 0, 1)
+	c.True(ok)
 	c.Equal([]bool{true}, equipmentAsked, "a loot sheet requires it")
 }
 

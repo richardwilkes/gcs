@@ -125,7 +125,7 @@ type applyPartOps interface {
 	pickerContainers() []string
 	stripPickers()
 	modifierTargetCount() int
-	promptForModifiers(op promptOperation, done, total int) bool
+	promptForModifiers(op promptOperation, done, total int) (asked int, ok bool)
 	promptForNameables(op promptOperation) bool
 	place(merge bool)
 	clearPreconfigured()
@@ -181,26 +181,15 @@ func (a *applyParts) each(fn func(part applyPartOps)) {
 }
 
 // promptForModifiers puts up the modifier prompts for the rows of every part, numbering them across all of the parts
-// rather than starting over with each, since the user sees them as one run. Each part's rows are counted before any
-// prompt is answered, since answering one can take a row out of those a count made afterward would find (see
-// modifierTargets). Returns false if a prompt was canceled.
+// rather than starting over with each, since the user sees them as one run. Returns false if a prompt was canceled.
 func (a *applyParts) promptForModifiers(op promptOperation) bool {
-	var counts []int
 	total := 0
-	a.each(func(part applyPartOps) {
-		count := part.modifierTargetCount()
-		counts = append(counts, count)
-		total += count
-	})
+	a.each(func(part applyPartOps) { total += part.modifierTargetCount() })
 	done := 0
-	i := 0
 	return a.all(func(part applyPartOps) bool {
-		if !part.promptForModifiers(op, done, total) {
-			return false
-		}
-		done += counts[i]
-		i++
-		return true
+		asked, ok := part.promptForModifiers(op, done, total)
+		done += asked
+		return ok
 	})
 }
 
@@ -245,8 +234,10 @@ func (p *applyPart[T]) modifierTargetCount() int {
 
 // promptForModifiers and promptForNameables put up the prompts for the rows' modifiers and nameable keys. Neither
 // rebuilds or reports anything: the rows aren't in a table yet, and applyTransfer does both once the answers are in.
-func (p *applyPart[T]) promptForModifiers(op promptOperation, done, total int) bool {
-	return promptForModifierTargets(op, modifierTargets(p.rows), done, total)
+// promptForModifiers also returns how many rows it asked about, counted before any answer can change that.
+func (p *applyPart[T]) promptForModifiers(op promptOperation, done, total int) (asked int, ok bool) {
+	targets := modifierTargets(p.rows)
+	return len(targets), promptForModifierTargets(op, targets, done, total)
 }
 
 func (p *applyPart[T]) promptForNameables(op promptOperation) bool {
