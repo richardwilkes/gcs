@@ -15,6 +15,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/picker"
 	"github.com/richardwilkes/toolbox/v2/check"
+	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/mod"
 	"github.com/richardwilkes/unison/enums/role"
@@ -65,4 +66,41 @@ func TestPickerRowPageReferenceIsFollowedFromTheKeyboard(t *testing.T) {
 	screen.KeyPress(unison.KeySpace, mod.None)
 	c.Equal([]string{ref}, screen.OpenedURLs(), "and so does Space")
 	c.Equal(link, focus(), "the focus stays on the page reference")
+}
+
+// The picker dialog is sized with its rows' text in place, wraps its hint to the list's width, and grows when the text
+// does.
+func TestPickerDialogFitsItsContent(t *testing.T) {
+	c := check.New(t)
+	screen, _ := startHeadlessWorkspace(t, c)
+	s, n := newKnightSession()
+	// Names long enough that the rows, rather than the buttons, set the dialog's width.
+	n["order"].Name = "Knightly Order of the Realm"
+	n["lion"].Name = "Order of the Lion, Sworn to the Crown"
+	choose(s, n, "ea", "ep", "fit", "order")
+	screen.Do(func() {
+		dialog, refresh := s.newPickerDialog(n["root"], 0)
+		c.NotNil(dialog, "the dialog must be made")
+		if dialog == nil {
+			return
+		}
+		wnd := dialog.Window()
+		defer wnd.Dispose()
+		fits := func(msg string) {
+			_, pref, _ := wnd.Content().Sizes(geom.Size{})
+			size := wnd.ContentRect().Size
+			c.True(pref.Width <= size.Width && pref.Height <= size.Height, "%s: wants %v, has %v", msg, pref, size)
+		}
+		fits("the rows' text is in place when the dialog is sized")
+		wnd.ValidateLayout()
+		hints := panelsOfType[*textLabel](wnd.Content())
+		scrolls := panelsOfType[*unison.ScrollPanel](wnd.Content())
+		c.Equal(1, len(hints))
+		c.Equal(1, len(scrolls))
+		c.True(len(hints[0].lines(hints[0].ContentRect(false).Width)) > 1, "the hint wraps")
+		c.True(hints[0].FrameRect().Width <= scrolls[0].FrameRect().Width, "the hint is no wider than the list")
+		choose(s, n, "lion", "honors", "cr", "wm", "fear2")
+		refresh()
+		fits("the dialog grows to fit longer text")
+	})
 }

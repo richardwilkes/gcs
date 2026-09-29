@@ -47,6 +47,16 @@ func processPickers(op promptOperation, parts *applyParts, promptChoices bool) b
 // showPicker puts up the dialog for the choice container, returning how it was closed. The boxes checked in it are
 // recorded in the session. depth is how many of these dialogs it is stacked on.
 func (s *pickerSession[T]) showPicker(row T, depth int) int {
+	dialog, _ := s.newPickerDialog(row, depth)
+	if dialog == nil {
+		return unison.ModalResponseCancel
+	}
+	return dialog.RunModal()
+}
+
+// newPickerDialog returns the dialog showPicker puts up, or nil if it couldn't be made, and what brings it up to date
+// with the session.
+func (s *pickerSession[T]) newPickerDialog(row T, depth int) (dialog *unison.Dialog, refresh func()) {
 	children := row.NodeChildren()
 	tp := templatePicker(row)
 	headers := pickerRowDetailHeaders(row)
@@ -79,27 +89,39 @@ func (s *pickerSession[T]) showPicker(row T, depth int) int {
 
 	progress, updateProgress := newPickerStatePill(unison.StdVSpacing * 2)
 	progress.Side = side.Right
-	hint := unison.NewLabel()
-	hint.Font = fonts.FieldSecondary
-	hint.SetLayoutData(&unison.FlexLayoutData{HSpan: 2})
+	scroll := unison.NewScrollPanel()
+	hint := newWrappingLabel()
+	hint.font = fonts.FieldSecondary
+	// The hint wraps to the list's width rather than widening the dialog.
+	hint.SetSizer(func(size geom.Size) (minSize, prefSize, maxSize geom.Size) {
+		if size.Width <= 0 {
+			_, pref, _ := scroll.Sizes(geom.Size{})
+			size.Width = pref.Width
+		}
+		return hint.sizes(size)
+	})
+	hint.SetLayoutData(&unison.FlexLayoutData{HSpan: 2, HAlign: align.Fill})
 	updates := make([]func(), 0, len(children))
-	var dialog *unison.Dialog
-	refresh := func() {
+	refresh = func() {
 		for _, update := range updates {
 			update()
 		}
 		state := s.state(row)
-		dialog.Button(unison.ModalResponseOK).SetEnabled(state == pickerOK)
 		updateProgress(state, s.pillText(row))
 		progress.Tooltip = newWrappedTooltip(state.tip())
-		setPickerText(hint, s.hint(row), pickerStateInks[pickerOK])
-		hint.MarkForLayoutRecursivelyUpward()
+		t := s.hint(row)
+		hint.setText(t.text, pickerTextInk(t, pickerStateInks[pickerOK]))
+		// The dialog is first sized with the text above in place; it grows if later text needs more room.
+		if dialog != nil {
+			dialog.Button(unison.ModalResponseOK).SetEnabled(state == pickerOK)
+			growWindowToFit(dialog.Window())
+		}
 	}
 	for _, child := range children {
 		updates = append(updates, s.addPickerRow(list, child, tp.Type, depth, chooseColumn, refresh))
 	}
+	refresh()
 
-	scroll := unison.NewScrollPanel()
 	scroll.SetBorder(unison.NewLineBorder(unison.ThemeSurfaceEdge, geom.Size{}, geom.NewUniformInsets(1), false))
 	scroll.SetContent(list, behavior.Fill, behavior.Fill)
 	scroll.BackgroundInk = unison.ThemeSurface
@@ -172,7 +194,7 @@ func (s *pickerSession[T]) showPicker(row T, depth int) int {
 	var err error
 	if dialog, err = newPromptDialog(s.op.at(promptstep.Choice), nil, nil, panel, buttons...); err != nil {
 		errs.Log(err)
-		return unison.ModalResponseCancel
+		return nil, nil
 	}
 	overrideTip := i18n.Text("Accept the checked options whether or not they satisfy the choice")
 	dialog.Button(unison.ModalResponseUserBase).Tooltip = newWrappedTooltip(overrideTip)
@@ -190,7 +212,7 @@ func (s *pickerSession[T]) showPicker(row T, depth int) int {
 		wnd.EnsureOnDisplay()
 	}
 	refresh()
-	return dialog.RunModal()
+	return dialog, refresh
 }
 
 // newMatchStatePill is newPickerStatePill for something that either matches or doesn't.
@@ -477,14 +499,30 @@ var pickerStateInks = [...]unison.Ink{
 
 // setPickerText shows the text on the label with its tooltip, colored by its state, or plain when that is OK.
 func setPickerText(label *unison.Label, t pickerText, plain unison.Ink) {
-	label.OnBackgroundInk = plain
-	if t.state != pickerOK {
-		label.OnBackgroundInk = pickerStateInks[t.state]
-	}
+	label.OnBackgroundInk = pickerTextInk(t, plain)
 	label.SetTitle(t.text)
 	label.Tooltip = nil
 	if t.tip != "" {
 		label.Tooltip = newWrappedTooltip(t.tip)
+	}
+}
+
+// pickerTextInk returns the color of the text, by its state, or plain when that is OK.
+func pickerTextInk(t pickerText, plain unison.Ink) unison.Ink {
+	if t.state != pickerOK {
+		return pickerStateInks[t.state]
+	}
+	return plain
+}
+
+// growWindowToFit enlarges the window when its content has come to want more room than it has, never shrinking it.
+func growWindowToFit(wnd *unison.Window) {
+	_, pref, _ := wnd.Content().Sizes(geom.Size{})
+	r := wnd.ContentRect()
+	if pref.Width > r.Width || pref.Height > r.Height {
+		r.Size = r.Max(pref)
+		wnd.SetContentRect(r)
+		wnd.EnsureOnDisplay()
 	}
 }
 
