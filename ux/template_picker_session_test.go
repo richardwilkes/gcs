@@ -128,9 +128,7 @@ func TestPickerSessionStates(t *testing.T) {
 	s, n = newKnightSession()
 	choose(s, n, "ea", "fit", "fit1", "fit2", "luck")
 	c.Equal("2 / 1", s.pillText(n["fit"]))
-	box := unison.NewCheckBox()
-	updatePickerCheckBoxTitle(box, n["fit2"], picker.Count, true, nil)
-	c.Equal("fit2 [15 points]", box.Text.String(), "a count choice shows what its options cost too")
+	c.Equal(" [15 points]", s.cost(n["fit2"], picker.Points).text, "a count choice shows what its options cost too")
 	c.Equal("20", s.actual(n["fit"], picker.Points).String(), "a count overridden past its number costs every pick")
 	c.Equal("60 / 60", s.pillText(n["root"]))
 	c.Equal(pickerWarning, s.state(n["root"]))
@@ -450,4 +448,67 @@ func TestPickerSessionClear(t *testing.T) {
 	c.True(s.chosen[n["rose"]])
 	c.True(s.chosen[n["voice"]], "the answers below are kept")
 	c.True(s.pickerAnswered[n["graces"]])
+}
+
+// TestPickerSessionRowText verifies what follows each row's name, what it costs, and the line under the list, with the
+// state that colors them and the tooltip saying why.
+func TestPickerSessionRowText(t *testing.T) {
+	c := check.New(t)
+	type session = pickerSession[*gurps.Trait]
+	detail := (*session).detail
+	cost := func(s *session, row *gurps.Trait) pickerText { return s.cost(row, picker.Points) }
+	hint := (*session).hint
+	start := []string{"ea", "ep", "fit", "order"}
+	over := []string{"ea", "ep", "fit", "order", "lion", "honors", "cr", "wm", "fear2"}
+	misses := []string{"fit1", "fit2", "rose", "honest", "graces", "voice"}
+	for _, tc := range []struct {
+		picks []string
+		row   string
+		text  func(*session, *gurps.Trait) pickerText
+		want  pickerText
+	}{
+		{start, "fit", detail, pickerText{text: " (pick 1)"}},
+		{start, "fit", cost, pickerText{text: " [5~15 points]", state: pickerOpen}},
+		{start, "ea", detail, pickerText{}},
+		{start, "ea", cost, pickerText{text: " [25 points]"}},
+		{start, "resPart", detail, pickerText{text: " [+10]", tip: "Preconfigured"}},
+		{start, "root", hint, pickerText{text: "2 picks still depend on choices below. Choose them now to fix the " +
+			"cost, or later when the template is applied.", state: pickerOpen}},
+		{over, "lion", detail, pickerText{
+			text: " (pick 25 points worth)", state: pickerError,
+			tip: "The picks come to 39~64 points, but this asks for 25 points.",
+		}},
+		{over, "lion", cost, pickerText{text: " [39~64 points]", tip: "Over: expected 25 points.", state: pickerError}},
+		{over, "order", detail, pickerText{
+			text: ": lion", state: pickerWarning,
+			tip: "Something picked below needs attention: lion.",
+		}},
+		{over, "order", cost, pickerText{text: " [39~64 points]", tip: "Over: expected 5~25 points.", state: pickerError}},
+		{over, "honors", detail, pickerText{text: ": cr"}},
+		{over, "root", hint, pickerText{text: "Over by 14~49 points. Needs attention below: order. Override to keep " +
+			"it anyway.", state: pickerError}},
+		{over, "order", hint, pickerText{
+			text:  "Needs attention below: lion. Override to keep it anyway.",
+			state: pickerWarning,
+		}},
+		{misses, "fit", detail, pickerText{text: " (pick 1)", tip: "2 picked, but this asks for 1.", state: pickerError}},
+		{misses, "fit", hint, pickerText{
+			text:  "2 picked, but this asks for 1. Override to keep it anyway.",
+			state: pickerError,
+		}},
+		{misses, "rose", cost, pickerText{text: " [11 points]", tip: "Under: expected 20 points.", state: pickerError}},
+		{misses, "rose", hint, pickerText{text: "9 points short. Override to keep it anyway.", state: pickerError}},
+		{misses, "graces", hint, pickerText{text: "Every pick has a fixed cost."}},
+	} {
+		s, n := newKnightSession()
+		choose(s, n, tc.picks...)
+		c.Equal(tc.want, tc.text(s, n[tc.row]), tc.row)
+	}
+
+	s, n := newKnightSession()
+	wm := n["wm"]
+	wm.Modifiers[0].Children[1].SetEnabled(true)
+	c.Equal(pickerText{}, s.detail(wm), "a pick is only a default until answered")
+	s.modsAnswered[wm] = true
+	c.Equal(pickerText{text: " [+25]"}, s.detail(wm))
 }

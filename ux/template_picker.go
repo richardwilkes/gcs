@@ -27,6 +27,7 @@ import (
 	"github.com/richardwilkes/unison/enums/align"
 	"github.com/richardwilkes/unison/enums/behavior"
 	"github.com/richardwilkes/unison/enums/check"
+	"github.com/richardwilkes/unison/enums/mod"
 	"github.com/richardwilkes/unison/enums/paintstyle"
 	"github.com/richardwilkes/unison/enums/side"
 )
@@ -78,6 +79,9 @@ func (s *pickerSession[T]) showPicker(row T, depth int) int {
 
 	progress, updateProgress := newPickerStatePill(unison.StdVSpacing * 2)
 	progress.Side = side.Right
+	hint := unison.NewLabel()
+	hint.Font = fonts.FieldSecondary
+	hint.SetLayoutData(&unison.FlexLayoutData{HSpan: 2})
 	updates := make([]func(), 0, len(children))
 	var dialog *unison.Dialog
 	refresh := func() {
@@ -87,6 +91,9 @@ func (s *pickerSession[T]) showPicker(row T, depth int) int {
 		state := s.state(row)
 		dialog.Button(unison.ModalResponseOK).SetEnabled(state == pickerOK)
 		updateProgress(state, s.pillText(row))
+		progress.Tooltip = newWrappedTooltip(state.tip())
+		setPickerText(hint, s.hint(row), pickerStateInks[pickerOK])
+		hint.MarkForLayoutRecursivelyUpward()
 	}
 	for _, child := range children {
 		updates = append(updates, s.addPickerRow(list, child, tp.Type, depth, chooseColumn, refresh))
@@ -149,6 +156,7 @@ func (s *pickerSession[T]) showPicker(row T, depth int) int {
 	})
 	panel.AddChild(progress)
 	panel.AddChild(scroll)
+	panel.AddChild(hint)
 
 	buttons := []*unison.DialogButtonInfo{
 		unison.NewCancelButtonInfo(),
@@ -242,7 +250,7 @@ func (s *pickerSession[T]) addPickerRow(parent *unison.Panel, row T, pt picker.T
 	op, prompted := s.op, s.prompted
 	wrapper := unison.NewPanel()
 	wrapper.SetLayout(&unison.FlexLayout{
-		Columns:  2,
+		Columns:  3,
 		HSpacing: unison.StdHSpacing,
 	})
 	// The wrapper fills its column so that the page reference it ends with lines up along the right edge.
@@ -257,9 +265,26 @@ func (s *pickerSession[T]) addPickerRow(parent *unison.Panel, row T, pt picker.T
 		refresh()
 	}
 	wrapper.AddChild(checkBox)
+	name, detail, cost := unison.NewLabel(), unison.NewLabel(), unison.NewLabel()
+	text := unison.NewPanel()
+	text.SetLayout(&unison.FlexLayout{Columns: 3})
+	for _, label := range []*unison.Label{name, detail, cost} {
+		label.Font = checkBox.Font
+		// Clicking the text clicks the box, as when the text was its title.
+		label.MouseDownCallback = func(geom.Point, int, int, mod.Modifiers) bool { return true }
+		label.MouseUpCallback = func(where geom.Point, _ int, _ mod.Modifiers) bool {
+			if where.In(label.ContentRect(false)) {
+				checkBox.Click()
+			}
+			return true
+		}
+		text.AddChild(label)
+	}
+	name.SetTitle(row.String())
+	wrapper.AddChild(text)
 	var onClick func()
 	var editTooltip string
-	var details []*unison.Label
+	details := make([]*unison.Label, 0, len(pickerRowDetailHeaders(row)))
 	pageRef := ""
 	pageRefHighlight := ""
 	switch actual := any(row).(type) {
@@ -325,11 +350,8 @@ func (s *pickerSession[T]) addPickerRow(parent *unison.Panel, row T, pt picker.T
 			wrapper.AddChild(link)
 		}
 	}
-	rowDetails := pickerRowDetails(row, prompted, s.taken)
-	details = make([]*unison.Label, 0, len(rowDetails))
-	for _, detail := range rowDetails {
+	for range pickerRowDetailHeaders(row) {
 		label := unison.NewLabel()
-		label.SetTitle(detail)
 		label.SetLayoutData(&unison.FlexLayoutData{HAlign: align.End})
 		parent.AddChild(label)
 		details = append(details, label)
@@ -364,9 +386,15 @@ func (s *pickerSession[T]) addPickerRow(parent *unison.Panel, row T, pt picker.T
 	}
 	return func() {
 		checkBox.State = check.FromBool(s.chosen[row])
-		updatePickerCheckBoxTitle(checkBox, row, pt, prompted, s.taken)
-		for i, detail := range pickerRowDetails(row, prompted, s.taken) {
-			details[i].SetTitle(detail)
+		setPickerText(detail, s.detail(row), unison.ThemeOnSurface)
+		if pt == picker.Points || pt == picker.Count {
+			setPickerText(cost, s.cost(row, picker.Points), unison.ThemeOnSurface)
+		}
+		checkBox.Accessibility.Name = name.String() + detail.String() + cost.String()
+		if eqp, ok := any(row).(*gurps.Equipment); ok && len(details) == 3 {
+			details[0].SetTitle(pickerRowQuantity(eqp))
+			setPickerText(details[1], s.cost(row, picker.Value), unison.ThemeOnSurface)
+			setPickerText(details[2], s.cost(row, picker.Weight), unison.ThemeOnSurface)
 		}
 		if choose != nil {
 			s.updateChooseButton(choose, row)
@@ -423,14 +451,40 @@ func pickerRowDetails[T gurps.Node[T]](row T, prompted bool, taken func(T) bool)
 		return nil
 	}
 	defUnits := pickerWeightUnits(eqp)
-	quantity := ""
-	if eqp.HasOwnQuantity() {
-		quantity = eqp.Quantity.Comma()
-	}
 	return []string{
-		quantity,
+		pickerRowQuantity(eqp),
 		"$" + gurps.FormatValueRange(gurps.PickerMeasureRange(row, picker.Value, prompted, taken), fxp.Int.Comma),
 		gurps.FormatWeightRange(gurps.PickerMeasureRange(row, picker.Weight, prompted, taken), defUnits.Format),
+	}
+}
+
+// pickerRowQuantity returns the quantity shown for an option, if it has one of its own.
+func pickerRowQuantity(eqp *gurps.Equipment) string {
+	if eqp.HasOwnQuantity() {
+		return eqp.Quantity.Comma()
+	}
+	return ""
+}
+
+// pickerStateInks holds the color of text telling of each state. A warning's is a dark yellow, as the pill's is too
+// light to read as text.
+var pickerStateInks = [...]unison.Ink{
+	pickerOK:      unison.Green,
+	pickerOpen:    unison.ThemeWarning,
+	pickerWarning: &unison.ThemeColor{Light: unison.RGB(122, 92, 0), Dark: unison.RGB(240, 196, 25)},
+	pickerError:   unison.ThemeError,
+}
+
+// setPickerText shows the text on the label with its tooltip, colored by its state, or plain when that is OK.
+func setPickerText(label *unison.Label, t pickerText, plain unison.Ink) {
+	label.OnBackgroundInk = plain
+	if t.state != pickerOK {
+		label.OnBackgroundInk = pickerStateInks[t.state]
+	}
+	label.SetTitle(t.text)
+	label.Tooltip = nil
+	if t.tip != "" {
+		label.Tooltip = newWrappedTooltip(t.tip)
 	}
 }
 
@@ -495,22 +549,6 @@ func setPickerRowQuantity(eqp *gurps.Equipment, quantity fxp.Int, details []*uni
 			details[i].MarkForRedraw()
 		}
 	}
-}
-
-func updatePickerCheckBoxTitle[T gurps.Node[T]](checkBox *unison.CheckBox, row T, pt picker.Type, prompted bool, taken func(T) bool) {
-	title := row.String()
-	switch pt {
-	case picker.Points, picker.Count:
-		// A row that presents choices of its own is worth a range rather than a single cost, which is worth showing
-		// even though picking it leads to another dialog: it is what the row will add to the total.
-		points := gurps.PickerMeasureRange(row, picker.Points, prompted, taken)
-		if value, settled := points.Settled(); !settled || value != 0 {
-			title += " [" + pointsText(points) + "]"
-		}
-	default:
-		// NOP
-	}
-	checkBox.SetTitle(title)
 }
 
 // pointsText returns the points, as in "5 points" or "1 point".

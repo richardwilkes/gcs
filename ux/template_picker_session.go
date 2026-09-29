@@ -10,13 +10,17 @@
 package ux
 
 import (
+	"fmt"
 	"maps"
 	"slices"
+	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/criteria"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/picker"
+	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/toolbox/v2/xreflect"
+	"github.com/richardwilkes/toolbox/v2/xstrings"
 	"github.com/richardwilkes/unison"
 )
 
@@ -308,21 +312,37 @@ func (s *pickerSession[T]) ownState(container T) pickerState {
 // state judges the container: its own error, then trouble in a choice picked from it, then anything still open.
 func (s *pickerSession[T]) state(container T) pickerState {
 	state := s.ownState(container)
-	if state == pickerError {
-		return state
-	}
-	for _, child := range container.NodeChildren() {
-		if !s.chosen[child] {
-			continue
-		}
-		if gurps.IsTemplateChoiceContainer(child) && s.hasPicks(child) && s.state(child) >= pickerWarning {
-			return pickerWarning
-		}
-		if !s.resolved(child) {
-			state = pickerOpen
-		}
+	switch {
+	case state == pickerError:
+	case len(s.troubled(container)) != 0:
+		state = pickerWarning
+	case len(s.unresolved(container)) != 0:
+		state = pickerOpen
 	}
 	return state
+}
+
+// troubled returns the choices picked from the container that are in error or warning themselves.
+func (s *pickerSession[T]) troubled(container T) []T {
+	return s.picks(container, func(child T) bool {
+		return gurps.IsTemplateChoiceContainer(child) && s.hasPicks(child) && s.state(child) >= pickerWarning
+	})
+}
+
+// unresolved returns the container's picks that have something left to answer.
+func (s *pickerSession[T]) unresolved(container T) []T {
+	return s.picks(container, func(child T) bool { return !s.resolved(child) })
+}
+
+// picks returns the container's picks that match.
+func (s *pickerSession[T]) picks(container T, match func(T) bool) []T {
+	var list []T
+	for _, child := range container.NodeChildren() {
+		if s.chosen[child] && match(child) {
+			list = append(list, child)
+		}
+	}
+	return list
 }
 
 // resolved returns true if nothing is left to answer for the row.
@@ -336,17 +356,201 @@ func (s *pickerSession[T]) resolved(row T) bool {
 // pillText returns what the container's picks come to against its target, as in "40~70 / 60" or "65 / ≥60".
 func (s *pickerSession[T]) pillText(container T) string {
 	tp := templatePicker(container)
-	target := formatPickerTotal(container, tp.Type, gurps.NumericRangeOf(tp.Qualifier.Qualifier))
-	switch tp.Qualifier.Compare.EnsureValid() {
-	case criteria.AtLeastNumber:
-		target = "≥" + target
-	case criteria.AtMostNumber:
-		target = "≤" + target
-	case criteria.NotEqualsNumber:
-		target = "≠" + target
+	return formatPickerTotal(container, tp.Type, s.total(container, tp.Type)) + " / " +
+		pickerTarget(container, formatPickerTotal[T])
+}
+
+// pickerText is a piece of the picker dialog's text, colored by the state it tells of, with a tooltip saying why.
+type pickerText struct {
+	text, tip string
+	state     pickerState
+}
+
+// detail returns what follows the row's name: the modifiers picked for it, or for a choice, what was picked from it or
+// its rule, flagged when its picks miss that rule or have trouble below them.
+func (s *pickerSession[T]) detail(row T) pickerText {
+	if !gurps.IsTemplateChoiceContainer(row) {
+		preconfigured := gurps.IsNodePreconfigured(row)
+		names := pickedModifierNames(row)
+		if len(names) == 0 || (!preconfigured && !s.modsAnswered[row]) {
+			return pickerText{}
+		}
+		t := pickerText{text: " [" + strings.Join(names, ", ") + "]"}
+		if preconfigured {
+			t.tip = i18n.Text("Preconfigured")
+		}
+		return t
+	}
+	tp := templatePicker(row)
+	t := pickerText{text: " (" + xstrings.FirstToLower(tp.StringWithUnits(pickerWeightUnits(row))) + ")"}
+	if !s.hasPicks(row) {
+		return t
+	}
+	if tp.Type == picker.Count && s.ownState(row) == pickerOK {
+		t.text = ": " + rowNames(s.picks(row, func(T) bool { return true }))
+	}
+	switch state := s.state(row); state {
+	case pickerError:
+		t.tip, t.state = s.ruleMiss(row), state
+	case pickerWarning:
+		t.tip = fmt.Sprintf(i18n.Text("Something picked below needs attention: %s."), rowNames(s.troubled(row)))
+		t.state = state
 	default:
 	}
-	return formatPickerTotal(container, tp.Type, s.total(container, tp.Type)) + " / " + target
+	return t
+}
+
+// ruleMiss returns why the container's picks miss its rule.
+func (s *pickerSession[T]) ruleMiss(container T) string {
+	tp := templatePicker(container)
+	total := s.total(container, tp.Type)
+	target := pickerTarget(container, pickerMeasureText[T])
+	if tp.Type == picker.Count {
+		return fmt.Sprintf(i18n.Text("%s picked, but this asks for %s."), total.Comma(), target)
+	}
+	return fmt.Sprintf(i18n.Text("The picks come to %s, but this asks for %s."),
+		pickerMeasureText(container, tp.Type, total), target)
+}
+
+// cost returns what the row comes to by kind: red, with what was expected, when a choice's picks come to more or less;
+// amber while it is still a range. A row that costs no points shows none.
+func (s *pickerSession[T]) cost(row T, kind picker.Type) pickerText {
+	actual := s.actual(row, kind)
+	t := pickerText{text: pickerMeasureText(row, kind, actual)}
+	if !actual.IsSettled() {
+		t.state = pickerOpen
+	}
+	if kind == picker.Points {
+		if value, settled := actual.Settled(); settled && value == 0 {
+			return pickerText{}
+		}
+		t.text = " [" + t.text + "]"
+	}
+	if expected, ok := s.expected[pickerMeasureKey[T]{row, kind}]; ok && s.hasPicks(row) {
+		text := pickerMeasureText(row, kind, expected)
+		switch {
+		case actual.Min != nil && expected.Max != nil && *actual.Min > *expected.Max:
+			t.tip, t.state = fmt.Sprintf(i18n.Text("Over: expected %s."), text), pickerError
+		case actual.Max != nil && expected.Min != nil && *actual.Max < *expected.Min:
+			t.tip, t.state = fmt.Sprintf(i18n.Text("Under: expected %s."), text), pickerError
+		default:
+		}
+	}
+	return t
+}
+
+// hint returns the line under the container's list: how far its picks are off, what needs attention below, and what
+// can be done about it.
+func (s *pickerSession[T]) hint(container T) pickerText {
+	tp := templatePicker(container)
+	t := pickerText{state: s.state(container)}
+	var parts []string
+	if s.ownState(container) == pickerError {
+		total, target := s.total(container, tp.Type), tp.Qualifier.Qualifier
+		switch {
+		case tp.Type == picker.Count:
+			parts = append(parts, s.ruleMiss(container))
+		case total.Min != nil && *total.Min > target:
+			over := total.Add(gurps.NumericRangeOf(-target))
+			parts = append(parts, fmt.Sprintf(i18n.Text("Over by %s."), pickerMeasureText(container, tp.Type, over)))
+		case total.Max != nil && *total.Max < target:
+			short := gurps.NumericRange{Min: new(target - *total.Max)}
+			if total.Min != nil {
+				short.Max = new(target - *total.Min)
+			}
+			parts = append(parts, fmt.Sprintf(i18n.Text("%s short."), pickerMeasureText(container, tp.Type, short)))
+		default:
+		}
+	}
+	if troubled := s.troubled(container); len(troubled) != 0 {
+		parts = append(parts, fmt.Sprintf(i18n.Text("Needs attention below: %s."), rowNames(troubled)))
+	}
+	open := len(s.unresolved(container))
+	switch {
+	case t.state >= pickerWarning:
+		parts = append(parts, i18n.Text("Override to keep it anyway."))
+	case open == 1:
+		parts = append(parts, i18n.Text("1 pick still depends on choices below. Choose it now to fix its cost, or later when the template is applied."))
+	case open > 1:
+		parts = append(parts, fmt.Sprintf(i18n.Text("%d picks still depend on choices below. Choose them now to fix the cost, or later when the template is applied."), open))
+	case t.state == pickerOpen:
+		parts = append(parts, i18n.Text("Could still meet the rule."))
+	default:
+		parts = append(parts, i18n.Text("Every pick has a fixed cost."))
+	}
+	t.text = strings.Join(parts, " ")
+	return t
+}
+
+// tip returns what the state means, for the pill.
+func (state pickerState) tip() string {
+	switch state {
+	case pickerOK:
+		return i18n.Text("The rule is met.")
+	case pickerOpen:
+		return i18n.Text("Could still meet the rule once the choices below are made.")
+	case pickerWarning:
+		return i18n.Text("The rule is met, but something picked below needs attention.")
+	default:
+		return i18n.Text("The picks don't meet the rule.")
+	}
+}
+
+// pickerTarget returns the container's target, formatted by format and marked with how it compares, as in "≥60".
+func pickerTarget[T gurps.Node[T]](container T, format func(T, picker.Type, gurps.NumericRange) string) string {
+	tp := templatePicker(container)
+	target := format(container, tp.Type, gurps.NumericRangeOf(tp.Qualifier.Qualifier))
+	switch tp.Qualifier.Compare.EnsureValid() {
+	case criteria.AtLeastNumber:
+		return "≥" + target
+	case criteria.AtMostNumber:
+		return "≤" + target
+	case criteria.NotEqualsNumber:
+		return "≠" + target
+	default:
+		return target
+	}
+}
+
+// pickerMeasureText returns the measure as text, points being "5 points" rather than "5".
+func pickerMeasureText[T gurps.Node[T]](row T, kind picker.Type, r gurps.NumericRange) string {
+	if kind == picker.Points {
+		return pointsText(r)
+	}
+	return formatPickerTotal(row, kind, r)
+}
+
+func rowNames[T gurps.Node[T]](rows []T) string {
+	names := make([]string, len(rows))
+	for i, row := range rows {
+		names[i] = row.String()
+	}
+	return strings.Join(names, ", ")
+}
+
+// pickedModifierNames returns the names of the options picked in the row's modifier choices.
+func pickedModifierNames[T gurps.Node[T]](row T) []string {
+	switch item := any(row).(type) {
+	case *gurps.Trait:
+		return pickedOptionNames(item.Modifiers)
+	case *gurps.Equipment:
+		return pickedOptionNames(item.Modifiers)
+	default:
+		return nil
+	}
+}
+
+func pickedOptionNames[M gurps.Node[M]](modifiers []M) []string {
+	var names []string
+	gurps.Traverse(func(m M) bool {
+		if gm, ok := any(m).(gurps.GeneralModifier); ok {
+			if _, isOption := gurps.ModifierChoiceFor(m); isOption {
+				names = append(names, gm.NameWithReplacements())
+			}
+		}
+		return false
+	}, true, true, modifiers...)
+	return names
 }
 
 // templatePicker returns the picker of a choice container.
