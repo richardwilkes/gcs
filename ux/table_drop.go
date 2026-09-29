@@ -110,12 +110,8 @@ func modifierAltDropSupport[T gurps.ModifiableNode[T, M], M gurps.ModifierNode[M
 // InstallTableDropSupport installs our standard drop support on a table.
 func InstallTableDropSupport[T gurps.Node[T]](table *unison.Table[*Node[T]], provider TableProvider[T]) {
 	table.ClientData()[TableProviderClientKey] = provider
-	var drop *unison.TableDrop[*Node[T], *TableDragUndoEditData[T]]
-	drop = table.InstallDropSupport(provider.DragKey(), provider.DropShouldMoveData, willDropCallback[T],
-		func(undo *unison.UndoEdit[*TableDragUndoEditData[T]], from, to *unison.Table[*Node[T]], move bool) {
-			revealModifierDropTargetUndoably(undo, to, drop.TargetParent)
-			didDropCallback(undo, from, to, move)
-		})
+	drop := table.InstallDropSupport(provider.DragKey(), provider.DropShouldMoveData, willDropCallback[T],
+		didDropCallback[T])
 	installApplyingDrop(drop, provider)
 	// The keyboard repositioning commands are the equivalents of a drag within the table, so they belong on exactly
 	// the tables that accept one.
@@ -232,45 +228,8 @@ func InstallTableDropSupport[T gurps.Node[T]](table *unison.Table[*Node[T]], pro
 	}
 }
 
-// revealModifierDropTarget opens the modifier container rows were just dropped into, if it was closed, as moving rows
-// into a container does. The rows would otherwise be hidden, and the selection can only hold rows that are showing,
-// yet it is what tells which rows arrived when the choices the drop may have added options to are settled (see
-// settleModifierChoices). Other tables are left as they are. It returns the container it opened, if any.
-func revealModifierDropTarget[T gurps.Node[T]](table *unison.Table[*Node[T]], parent *Node[T]) (opened T, ok bool) {
-	var zero T
-	if _, ok = any(zero).(gurps.ModifierChoiceProvider); !ok || parent == nil {
-		return zero, false
-	}
-	if data := parent.Data(); !xreflect.IsNil(data) && data.Container() && !data.IsOpen() {
-		data.SetOpen(true)
-		table.SyncToModel()
-		return data, true
-	}
-	return zero, false
-}
-
-// revealModifierDropTargetUndoably is revealModifierDropTarget for a drop recorded by the given undo edit, which it
-// has close the container it opened before undo puts the data back, so that undo leaves no trace, and reopen it before
-// redo does, as MoveSelection does. The open state is kept under the container's ID, so it makes no difference that
-// the object itself is replaced when the data is deserialized.
-func revealModifierDropTargetUndoably[T gurps.Node[T]](undo *unison.UndoEdit[*TableDragUndoEditData[T]], table *unison.Table[*Node[T]], parent *Node[T]) {
-	opened, ok := revealModifierDropTarget(table, parent)
-	if !ok || undo == nil {
-		return
-	}
-	undoFunc := undo.UndoFunc
-	redoFunc := undo.RedoFunc
-	undo.UndoFunc = func(e *unison.UndoEdit[*TableDragUndoEditData[T]]) {
-		opened.SetOpen(false)
-		undoFunc(e)
-	}
-	undo.RedoFunc = func(e *unison.UndoEdit[*TableDragUndoEditData[T]]) {
-		opened.SetOpen(true)
-		redoFunc(e)
-	}
-}
-
 func willDropCallback[T gurps.Node[T]](from, to *unison.Table[*Node[T]], move bool) *unison.UndoEdit[*TableDragUndoEditData[T]] {
+	notePriorModifierPicks(to)
 	mgr := unison.UndoManagerFor(to)
 	if mgr == nil {
 		return nil
@@ -295,8 +254,7 @@ func didDropCallback[T gurps.Node[T]](undo *unison.UndoEdit[*TableDragUndoEditDa
 			tableProvider.ProcessDropData(from, to)
 		}
 	}
-	// Settled before the owner is rebuilt, so that what the rebuild shows, such as an editor's Point Cost, counts only
-	// the option each choice keeps.
+	// Settled before the rebuild, so that what it shows, such as an editor's Point Cost, counts only the picks.
 	settleModifierChoices(to)
 	if rebuilder := dropRebuilder(to); rebuilder != nil {
 		// This is also what reports the drop (see DropOccurredCallback in InstallTableDropSupport), which is why the
@@ -385,8 +343,6 @@ func dropRebuilder(table unison.Paneler) Rebuildable {
 }
 
 func finishDidDrop[T gurps.Node[T]](undo *unison.UndoEdit[*TableDragUndoEditData[T]], from, to *unison.Table[*Node[T]], move bool) {
-	// Settled ahead of the "after" state being taken, as commitTableUndo does.
-	settleModifierChoices(liveTable(to))
 	if undo == nil {
 		return
 	}

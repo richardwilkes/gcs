@@ -43,6 +43,7 @@ func NewTableUndoEditData[T gurps.Node[T]](table *unison.Table[*Node[T]]) *Table
 // unconditionally. The optional beforeUndo and beforeRedo hooks run ahead of putting the "before" and "after" data
 // back, for an edit that has to restore more than the table's contents (see MoveSelection).
 func beginTableUndo[T gurps.Node[T]](table *unison.Table[*Node[T]], title string, beforeUndo, beforeRedo func()) *unison.UndoEdit[*TableUndoEditData[T]] {
+	notePriorModifierPicks(table)
 	if unison.UndoManagerFor(table) == nil {
 		return nil
 	}
@@ -71,12 +72,12 @@ func beginTableUndo[T gurps.Node[T]](table *unison.Table[*Node[T]], title string
 }
 
 // commitTableUndo finishes an edit begun with beginTableUndo: the table's current data becomes the edit's "after" state
-// and the edit is handed to the table's undo manager. Any modifier choice the edit left with more than one option
-// enabled is settled first, so that the "after" state holds the settled choice (see settleModifierChoices). Both come
-// from the table currently showing the data (see liveTable), since the edit may have replaced the table the "before"
-// state was captured from, and an orphaned table has no manager above it any more. A nil edit is ignored.
+// and the edit is handed to the table's undo manager. The modifier choices are settled first, so the "after" state
+// holds the settled picks. Both come from the table currently showing the data (see liveTable), since the edit may have
+// replaced the table the "before" state was captured from, and an orphaned table has no manager above it any more. A
+// nil edit is ignored.
 func commitTableUndo[T gurps.Node[T]](table *unison.Table[*Node[T]], undo *unison.UndoEdit[*TableUndoEditData[T]]) {
-	settleModifierChoices(liveTable(table))
+	settleModifierChoices(table)
 	if undo == nil {
 		return
 	}
@@ -293,47 +294,49 @@ func (t *TableDragUndoEditData[T]) Apply() {
 	restored.report()
 }
 
-// settleModifierChoices keeps each modifier choice in the table to no more than one enabled option after an edit that
-// may have brought options into one: an insert, a duplicate, a move or a drop. The option a choice already had enabled
-// is kept over those the edit brought in, which are taken to be the rows it leaves selected (see
-// gurps.SettleModifierChoices). A duplicate and a drop leave just the rows they brought in selected. An insert does too,
-// though a new modifier arrives in a choice already turned off (see InsertItems). A move leaves the selection as the
-// user made it, which may hold rows that didn't move, so it settles with the rows that did before it gets here (see
-// settleModifierChoicesFor), leaving nothing for this to do. Settling only ever turns options off: an edit that takes
-// the pick of a mandatory choice away, as deleting it or moving it out does, leaves the choice without one, flagged as
-// required on a sheet. A table of anything but modifiers is left alone.
-func settleModifierChoices[T gurps.Node[T]](table *unison.Table[*Node[T]]) {
-	var zero T
-	if _, ok := any(zero).(gurps.ModifierChoiceProvider); !ok || table == nil {
-		return
-	}
-	var arrived []T
-	for _, row := range table.SelectedRows(false) {
-		if data := row.Data(); !xreflect.IsNil(data) {
-			arrived = append(arrived, data)
-		}
-	}
-	settleModifierChoicesFor(table, arrived)
-}
+// priorModifierPicksKey holds, in a modifier table's client data, the picks its choices had when the current edit began.
+const priorModifierPicksKey = "prior-modifier-picks"
 
-// settleModifierChoicesFor is settleModifierChoices for an edit that knows which rows it brought in, rather than
-// leaving them selected.
-func settleModifierChoicesFor[T gurps.Node[T]](table *unison.Table[*Node[T]], arrived []T) {
-	var zero T
-	if _, ok := any(zero).(gurps.ModifierChoiceProvider); !ok || table == nil {
-		return
-	}
-	provider, ok := any(table.Model).(TableProvider[T])
+// notePriorModifierPicks records, as an edit of the table begins, the choice each enabled modifier is an option of.
+func notePriorModifierPicks[T gurps.Node[T]](table *unison.Table[*Node[T]]) {
+	provider, ok := modifierTableProvider(table)
 	if !ok {
 		return
 	}
-	// A row brought in brings whatever it holds, so a group carried into a choice brings its options.
-	incoming := make(map[tid.TID]bool)
+	picks := make(map[tid.TID]tid.TID)
 	gurps.Traverse(func(node T) bool {
-		incoming[node.ID()] = true
+		if choice, inChoice := gurps.ModifierChoiceFor(node); inChoice && node.Enabled() {
+			picks[node.ID()] = choice.ID()
+		}
 		return false
-	}, false, false, arrived...)
-	if gurps.SettleModifierChoices(func(node T) bool { return incoming[node.ID()] }, provider.RootData()...) {
-		table.MarkForRedraw()
+	}, false, false, provider.RootData()...)
+	table.ClientData()[priorModifierPicksKey] = picks
+}
+
+// settleModifierChoices leaves each modifier choice in the table with no more than one enabled option once an edit is
+// done. The choice's pick from before the edit stays on if it is still enabled; otherwise the first enabled one does.
+func settleModifierChoices[T gurps.Node[T]](table *unison.Table[*Node[T]]) {
+	live := liveTable(table)
+	provider, ok := modifierTableProvider(live)
+	if !ok {
+		return
 	}
+	prior, _ := table.ClientData()[priorModifierPicksKey].(map[tid.TID]tid.TID)
+	delete(table.ClientData(), priorModifierPicksKey)
+	if gurps.SettleModifierChoices(func(one T) bool {
+		choice, _ := gurps.ModifierChoiceFor(one)
+		return prior[one.ID()] != choice.ID()
+	}, provider.RootData()...) {
+		live.MarkForRedraw()
+	}
+}
+
+// modifierTableProvider returns the provider of the table if it is a table of modifiers.
+func modifierTableProvider[T gurps.Node[T]](table *unison.Table[*Node[T]]) (TableProvider[T], bool) {
+	var zero T
+	if _, ok := any(zero).(gurps.ModifierChoiceProvider); !ok || table == nil {
+		return nil, false
+	}
+	provider, ok := any(table.Model).(TableProvider[T])
+	return provider, ok
 }

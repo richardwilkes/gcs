@@ -954,19 +954,13 @@ func rowIndex[T gurps.Node[T]](id tid.TID, startIndex int, rows []*Node[T]) (upd
 	return startIndex, -1
 }
 
-// InsertItems into a table. Items inserted into a closed container open it, so that they show and can be selected. A
-// new modifier that goes into a modifier choice arrives turned off, whether or not the choice has a pick, since a new
-// row has nothing about it that makes it the one to pick.
+// InsertItems into a table. A new modifier that goes into a modifier choice arrives turned off, since nothing makes it
+// the one to pick.
 func InsertItems[T gurps.Node[T]](owner Rebuildable, table *unison.Table[*Node[T]], topList func() []T, setTopList func([]T), rowData func(table *unison.Table[*Node[T]]) []*Node[T], items ...T) {
 	if len(items) == 0 {
 		return
 	}
-	// A container the insert opens is closed again before undo puts the data back, and reopened before redo does, as
-	// MoveSelection does.
-	var opened []T
-	undo := beginTableUndo(table, fmt.Sprintf(i18n.Text("Insert %s"), items[0].Kind()),
-		func() { setContainersOpen(opened, false) },
-		func() { setContainersOpen(opened, true) })
+	undo := beginTableUndo(table, fmt.Sprintf(i18n.Text("Insert %s"), items[0].Kind()), nil, nil)
 	var target, zero T
 	i := table.FirstSelectedRowIndex()
 	if i != -1 {
@@ -975,10 +969,6 @@ func InsertItems[T gurps.Node[T]](owner Rebuildable, table *unison.Table[*Node[T
 			if row.CanHaveChildren() {
 				SetParents(items, target)
 				row.data.SetChildren(append(row.data.NodeChildren(), items...))
-				if !target.IsOpen() {
-					target.SetOpen(true)
-					opened = append(opened, target)
-				}
 			} else {
 				// The items go in after the target, within its parent's children or the top-level list.
 				parent := row.Parent()

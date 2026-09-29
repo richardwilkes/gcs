@@ -130,7 +130,7 @@ func MoveSelection[T gurps.Node[T]](table *unison.Table[*Node[T]], dir MoveDirec
 		// of the one that just did, so the run arrives in order.
 		slices.Reverse(items)
 	}
-	var moved []T
+	moved := false
 	for _, item := range items {
 		if !canMove(provider, item, dir, selected) {
 			continue
@@ -152,10 +152,10 @@ func MoveSelection[T gurps.Node[T]](table *unison.Table[*Node[T]], dir MoveDirec
 			}
 		}
 		if ok {
-			moved = append(moved, item)
+			moved = true
 		}
 	}
-	if len(moved) == 0 {
+	if !moved {
 		return
 	}
 	table.SyncToModel()
@@ -164,9 +164,6 @@ func MoveSelection[T gurps.Node[T]](table *unison.Table[*Node[T]], dir MoveDirec
 	clearPreconfiguredFlag(table, nil)
 	table.ScrollRowCellIntoView(table.LastSelectedRowIndex(), 0)
 	table.ScrollRowCellIntoView(table.FirstSelectedRowIndex(), 0)
-	// The selection is left as the user made it, which may hold rows that didn't move, so the choices are settled
-	// with the rows that did. That leaves nothing for commitTableUndo to settle.
-	settleModifierChoicesFor(table, moved)
 	commitTableUndo(table, undo)
 	rebuildAsModified(table.AncestorOrSelf[Rebuildable](), true)
 }

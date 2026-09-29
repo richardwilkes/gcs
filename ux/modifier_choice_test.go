@@ -784,7 +784,7 @@ func TestMovingAGroupIntoAChoiceKeepsThePick(t *testing.T) {
 }
 
 // TestMovingIntoAChoiceCountsOnlyWhatMoved verifies that moving a modifier into a choice while the choice's pick is
-// selected along with it keeps the pick, since the pick didn't move, and leaves the selection as it was.
+// selected along with it keeps the pick, since the pick didn't move.
 func TestMovingIntoAChoiceCountsOnlyWhatMoved(t *testing.T) {
 	c := check.New(t)
 	registerKeyBindingsOnce.Do(registerActions)
@@ -802,24 +802,6 @@ func TestMovingIntoAChoiceCountsOnlyWhatMoved(t *testing.T) {
 	c.Equal([]*gurps.TraitModifier{movedCopy, pick, options[2]}, options)
 	c.False(movedCopy.Enabled(), "M arrives turned off")
 	c.True(pick.Enabled(), "P stays the pick, since it didn't move")
-	c.Equal(2, len(table.SelectedRows(false)), "the selection is left as it was")
-}
-
-// TestDropIntoAClosedChoiceKeepsTheDroppedRowsSelected verifies that rows dropped into a closed modifier container
-// are shown, the container being opened, so that they stay selected, which is what tells the choice which of its
-// options just arrived.
-func TestDropIntoAClosedChoiceKeepsTheDroppedRowsSelected(t *testing.T) {
-	c := check.New(t)
-	choice := newTraitModifierChoiceFor(nil, false, []string{"X", "Arrived"}, "X")
-	choice.SetOpen(false)
-	library := NewTraitModifierTableDockable("mods"+gurps.TraitModifiersExt, []*gurps.TraitModifier{choice})
-	table := library.table
-	table.SetSelectionMap(map[tid.TID]bool{choice.Children[1].ID(): true})
-	revealModifierDropTarget(table, table.RootRows()[0])
-	c.True(choice.IsOpen(), "the choice is opened")
-	selected := table.SelectedRows(false)
-	c.Equal(1, len(selected))
-	c.Equal(choice.Children[1], selected[0].Data(), "the dropped row is still selected")
 }
 
 // TestEditorKeepsAPickMadeSinceItOpened verifies that applying an option's editor, opened while it was the pick, after
@@ -940,7 +922,6 @@ func simulateMoveDrop[T gurps.Node[T]](table *unison.Table[*Node[T]], moved, int
 	parent.SetChildren(slices.Insert(slices.Clone(parent.Children()), index, row))
 	table.SyncToModel()
 	table.SetSelectionMap(map[tid.TID]bool{moved: true})
-	revealModifierDropTargetUndoably(undo, table, parent)
 	didDropCallback(undo, table, table, true)
 }
 
@@ -982,34 +963,21 @@ func TestDropIntoAChoiceInAnEditorShowsTheSettledCost(t *testing.T) {
 	c.Equal("25", pointCost.String())
 }
 
-// TestUndoingADropClosesTheChoiceItOpened verifies that undoing a drop into a closed choice, which the drop opened to
-// show what arrived, closes it again, and that redo opens it again.
-func TestUndoingADropClosesTheChoiceItOpened(t *testing.T) {
+// TestDropIntoAClosedChoiceKeepsThePick verifies that a modifier dropped into a closed choice arrives turned off, the
+// choice keeping its pick, and that undo takes the drop back.
+func TestDropIntoAClosedChoiceKeepsThePick(t *testing.T) {
 	c := check.New(t)
-	registerKeyBindingsOnce.Do(registerActions)
 	moved := gurps.NewTraitModifier(nil, nil, false)
 	choice := newTraitModifierChoiceFor(nil, false, []string{"X"}, "X")
 	choice.SetOpen(false)
 	library := NewTraitModifierTableDockable("mods"+gurps.TraitModifiersExt, []*gurps.TraitModifier{moved, choice})
 	table := library.table
 	simulateMoveDrop(table, moved.ID(), choice.ID(), 0)
-	c.True(choice.IsOpen(), "the drop opens the choice")
 	c.Equal(1, len(table.RootRows()))
-	isOpen := func() bool {
-		for _, row := range liveTable(table).RootRows() {
-			if row.ID() == choice.ID() {
-				return row.Data().IsOpen()
-			}
-		}
-		t.Fatal("the choice is missing")
-		return false
-	}
-	mgr := unison.UndoManagerFor(table)
-	mgr.Undo()
+	c.False(moved.Enabled(), "the dropped modifier arrives turned off")
+	c.True(choice.Children[1].Enabled(), "X stays the pick")
+	unison.UndoManagerFor(table).Undo()
 	c.Equal(2, len(liveTable(table).RootRows()), "undo takes the drop back")
-	c.False(isOpen(), "and closes the choice again")
-	mgr.Redo()
-	c.True(isOpen(), "redo opens it again")
 }
 
 // insertNewTraitModifier inserts a new trait modifier into an editor's table of modifiers, as "New Trait Modifier"
@@ -1027,8 +995,7 @@ func insertNewTraitModifier(t *testing.T, owner Rebuildable, table *unison.Table
 }
 
 // TestNewModifierInAClosedGroupInAChoice verifies that a new modifier inserted into a closed group within a choice
-// opens the group, so that it is shown and selected, and arrives turned off, leaving the choice its pick, and that
-// undo closes the group again.
+// arrives turned off, leaving the choice its pick, and that undo takes it away.
 func TestNewModifierInAClosedGroupInAChoice(t *testing.T) {
 	c := check.New(t)
 	sheet := newTestSheetForTemplate(t)
@@ -1043,19 +1010,15 @@ func TestNewModifierInAClosedGroupInAChoice(t *testing.T) {
 	choice.Children = slices.Insert(choice.Children, 0, group)
 	e, table := traitEditorOnSheet(t, sheet, choice)
 	groupCopy := e.editorData.Modifiers[0].Children[0]
-	c.False(groupCopy.IsOpen())
 	table.SetSelectionMap(map[tid.TID]bool{groupCopy.ID(): true})
 	item := insertNewTraitModifier(t, e, table)
 	c.Equal(item, groupCopy.Children[1], "the new modifier goes into the group")
-	c.True(groupCopy.IsOpen(), "the group is opened to show it")
-	c.Equal(map[tid.TID]bool{item.ID(): true}, table.CopySelectionMap(), "the new modifier is selected")
 	c.False(item.Enabled(), "the new modifier arrives turned off")
 	c.True(e.editorData.Modifiers[0].Children[1].Enabled(), "y stays the pick")
 
 	unison.UndoManagerFor(table).Undo()
 	restored := liveTable(table).RootRows()[0].Data().Children[0]
 	c.Equal(1, len(restored.Children), "undo takes the new modifier away")
-	c.False(restored.IsOpen(), "and closes the group again")
 }
 
 // TestNewModifierInAChoiceWithoutAPick verifies that a new modifier inserted into a choice with no pick arrives turned
