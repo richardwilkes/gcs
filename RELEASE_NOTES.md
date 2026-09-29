@@ -140,6 +140,16 @@
   and weight of a piece of equipment, are shown as a range, in the lists and in the trait and equipment editors, and a
   trait container counts the same pick for everything inside it. A preconfigured item whose mandatory choices all have
   their picks shows a single figure. Wherever a single figure is needed, as in the totals, the least is counted.
+- The template picker dialog can now make a pick's modifier choices, and the picks of a choice offered within the
+  choice, as the picks are made: a button beside the row puts up the modifier prompt or that choice's own dialog. Once
+  answered, the row shows a fixed cost and isn't asked about again when the template is applied. Until then a row headed
+  for a character sheet shows the range it may cost, rather than whatever its picks happen to be, and a preconfigured
+  item is only asked about a mandatory choice that has no pick.
+- The template picker dialog's running total now reads what the picks come to against the target, as in "40~70 / 60",
+  and shows whether the rule is met, could still be met once the choices below are made, is met but something picked
+  below needs attention, or isn't met. OK is only enabled when the rule is met; anything else needs Override. A choice
+  within the choice whose picks miss its rule, or come to more or less than its rule expects, is marked in red on its
+  row with a tooltip saying why, and a line under the list says how far off the picks are and what is left to do.
 - The editor for a modifier group or choice now shows only the name, notes, choice, tags, page reference and library
   source. The other fields only ever applied to a modifier, and a group's VTT notes are no longer kept.
 - The "Gives a weapon damage modifier of" feature now accepts dice as well as a plain number, so a trait, modifier or
