@@ -249,7 +249,7 @@ func EnsureModifierChoiceRules[T Node[T]](choice T) {
 		return
 	}
 	SettleModifierChoices(nil, choice)
-	if IsOnSheet(choice) && !ModifierChoiceIsResolved(choice) {
+	if modifierChoiceRequired(choice) {
 		SetModifierEnabled(ModifierChoiceOptions(choice)[0], true)
 	}
 }
@@ -343,42 +343,33 @@ func IsLockedModifierChoiceSelection[T Node[T]](mod T) bool {
 func SettleModifierChoices[T Node[T]](incoming func(T) bool, nodes ...T) bool {
 	changed := false
 	Traverse(func(node T) bool {
-		if data := modifierChoiceData(node); data != nil &&
-			settleModifierChoice(incoming, node) {
-			changed = true
+		if !IsModifierChoice(node) {
+			return false
 		}
+		var enabled []T
+		for _, one := range ModifierChoiceOptions(node) {
+			if one.Enabled() {
+				enabled = append(enabled, one)
+			}
+		}
+		if len(enabled) < 2 {
+			return false
+		}
+		keep := enabled[0]
+		if incoming != nil {
+			if i := slices.IndexFunc(enabled, func(one T) bool { return !incoming(one) }); i != -1 {
+				keep = enabled[i]
+			}
+		}
+		for _, one := range enabled {
+			if one != keep {
+				SetModifierEnabled(one, false)
+			}
+		}
+		changed = true
 		return false
 	}, false, false, nodes...)
 	return changed
-}
-
-// settleModifierChoice turns off all but one of the enabled options of the modifier choice, as SettleModifierChoices
-// does, and returns true if anything was turned off.
-func settleModifierChoice[T Node[T]](incoming func(T) bool, choice T) bool {
-	var enabled []T
-	for _, one := range ModifierChoiceOptions(choice) {
-		if one.Enabled() {
-			enabled = append(enabled, one)
-		}
-	}
-	if len(enabled) < 2 {
-		return false
-	}
-	keep := enabled[0]
-	if incoming != nil {
-		for _, one := range enabled {
-			if !incoming(one) {
-				keep = one
-				break
-			}
-		}
-	}
-	for _, one := range enabled {
-		if one != keep {
-			SetModifierEnabled(one, false)
-		}
-	}
-	return true
 }
 
 // SetModifierEnabled sets the enabled state of the node, if it is a modifier.
@@ -493,12 +484,8 @@ func openMandatoryModifierChoices[M ModifierNode[M, T], T ModifiableNode[T, M]](
 // taken as made. The modifier's target can't simply be used, since an editor works on a copy of the item whose own
 // modifiers still point at the original.
 func modifierAskedAboutOn[M ModifierNode[M, T], T ModifiableNode[T, M]](item T, mod M) T {
-	if target := mod.Target(); !xreflect.IsNil(target) && target != item {
-		for parent := item.Parent(); !xreflect.IsNil(parent); parent = parent.Parent() {
-			if parent == target {
-				return target
-			}
-		}
+	if target := mod.Target(); !xreflect.IsNil(target) && isWithin(item, target) {
+		return target
 	}
 	return item
 }
