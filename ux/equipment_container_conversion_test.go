@@ -244,12 +244,12 @@ func TestPickerRowDetailsForEquipment(t *testing.T) {
 	rope.Quantity = fxp.FromInteger(3)
 	rope.BaseValue = "10"
 	rope.BaseWeight = "2 lb"
-	c.Equal([]string{"3", "$30", "6 lb"}, pickerRowDetails(rope, false))
+	c.Equal([]string{"3", "$30", "6 lb"}, pickerRowDetails(rope, false, nil))
 
 	group := gurps.NewEquipmentGroup(nil, choice)
 	rope.SetParent(group)
 	group.Children = []*gurps.Equipment{rope}
-	c.Equal([]string{"", "$30", "6 lb"}, pickerRowDetails(group, false), "a group has no quantity of its own")
+	c.Equal([]string{"", "$30", "6 lb"}, pickerRowDetails(group, false, nil), "a group has no quantity of its own")
 }
 
 // TestEquipmentContextMenuLeavesOutTheListName verifies that an equipment list's context menu offers to add to that list

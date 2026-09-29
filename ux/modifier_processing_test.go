@@ -114,8 +114,8 @@ func forbidModifierPrompts(t *testing.T) {
 
 // processModifiers prompts for the modifiers of the rows as applyTransfer does.
 func processModifiers[T gurps.Node[T]](rows []T, requirePicks bool) bool {
-	targets := modifierTargets(rows, requirePicks)
-	return promptForModifierTargets(promptOperation{}, targets, 0, len(targets), requirePicks)
+	targets := modifierTargets(rows, requirePicks, nil)
+	return promptForModifierTargets(promptOperation{}, targets, 0, len(targets), requirePicks, nil)
 }
 
 // TestProcessModifiersIgnoresModifierRows documents that processModifiers only has something to do for rows that can

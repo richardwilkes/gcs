@@ -10,6 +10,7 @@
 package ux
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/richardwilkes/gcs/v5/model/criteria"
@@ -128,7 +129,7 @@ func TestPickerSessionStates(t *testing.T) {
 	choose(s, n, "ea", "fit", "fit1", "fit2", "luck")
 	c.Equal("2 / 1", s.pillText(n["fit"]))
 	box := unison.NewCheckBox()
-	updatePickerCheckBoxTitle(box, n["fit2"], picker.Count, true)
+	updatePickerCheckBoxTitle(box, n["fit2"], picker.Count, true, nil)
 	c.Equal("fit2 [15 points]", box.Text.String(), "a count choice shows what its options cost too")
 	c.Equal("20", s.actual(n["fit"], picker.Points).String(), "a count overridden past its number costs every pick")
 	c.Equal("60 / 60", s.pillText(n["root"]))
@@ -198,6 +199,134 @@ func TestPickerSessionProcessesRows(t *testing.T) {
 	s.runPicker = func(*gurps.Trait, int) int { return unison.ModalResponseCancel }
 	_, abort = s.processRows([]*gurps.Trait{n["root"]})
 	c.True(abort)
+}
+
+// TestPickerSessionChoosesModifiers verifies that modifiers chosen from the picker count as answered and check the
+// row, that canceling puts everything back, and that the later prompt asks only about what is still open.
+func TestPickerSessionChoosesModifiers(t *testing.T) {
+	c := check.New(t)
+	var answer func(mods []*gurps.TraitModifier) (canceled bool)
+	var asked []string
+	swapForTest(t, &promptForTraitModifiers, func(info *modifierPromptInfo, mods []*gurps.TraitModifier) (changed, canceled bool) {
+		text := fmt.Sprintf("%s (%d of %d) %d", info.name, info.step, info.steps, len(mods))
+		if info.early != nil {
+			text += " " + info.early.cost()
+		}
+		asked = append(asked, text)
+		return false, answer(mods)
+	})
+	s, n := newKnightSession()
+	wm, res := n["wm"], n["res"]
+	answer = func(mods []*gurps.TraitModifier) bool {
+		mods[0].Children[1].SetEnabled(true)
+		return false
+	}
+	s.chooseModifiers(wm)
+	c.True(s.chosen[wm], "confirming checks the row")
+	c.True(s.resolved(wm))
+	c.Equal("25", s.actual(wm, picker.Points).String())
+
+	s.chosen[wm] = false
+	answer = func(mods []*gurps.TraitModifier) bool {
+		mods[0].Children[1].SetEnabled(false)
+		mods[0].Children[2].SetEnabled(true)
+		return true
+	}
+	s.chooseModifiers(wm)
+	c.False(s.chosen[wm], "canceling leaves the row as it was")
+	c.True(wm.Modifiers[0].Children[1].Enabled(), "and puts the picks back")
+	c.False(wm.Modifiers[0].Children[2].Enabled())
+	c.True(s.modsAnswered[wm])
+
+	// A partial answer narrows the row, which is asked about the rest later.
+	answer = func(mods []*gurps.TraitModifier) bool {
+		mods[0].Children[3].SetEnabled(true)
+		return false
+	}
+	s.chooseModifiers(res)
+	c.False(s.resolved(res))
+	c.Equal([]string{"wm (1 of 1) 1 wm: 20~45 points", "wm (1 of 1) 1 wm: 25 points", "res (1 of 1) 2 res: 3~30 points"},
+		asked)
+	c.Equal("3~5", s.actual(res, picker.Points).String())
+	rows := []*gurps.Trait{wm, res, n["resPart"]}
+	targets := modifierTargets(rows, true, s.modsAnswered)
+	c.Equal([]*gurps.Trait{res, n["resPart"]}, targets, "an answered row isn't asked about again")
+	asked = nil
+	answer = func([]*gurps.TraitModifier) bool { return false }
+	c.True(promptForModifierTargets(promptOperation{}, targets, 0, len(targets), true, s.modsAnswered))
+	c.Equal([]string{"res (1 of 2) 1", "resPart (2 of 2) 1"}, asked, "only the choice left open is asked about")
+}
+
+// TestPickerSessionPreconfiguredModifiers verifies that a preconfigured row gets the modifier prompt from the picker
+// only while a mandatory pick is missing, and then only for that choice.
+func TestPickerSessionPreconfiguredModifiers(t *testing.T) {
+	c := check.New(t)
+	var early *earlyModifierPrompt
+	var asked [][]*gurps.TraitModifier
+	swapForTest(t, &promptForTraitModifiers, func(info *modifierPromptInfo, mods []*gurps.TraitModifier) (changed, canceled bool) {
+		early = info.early
+		asked = append(asked, mods)
+		return false, false
+	})
+	s, n := newKnightSession()
+	resPart := n["resPart"]
+	c.Equal([]*gurps.Trait{resPart}, s.modTargets(resPart))
+	s.chooseModifiers(resPart)
+	c.NotNil(early)
+	c.True(early.preconfigured)
+	c.Equal([][]*gurps.TraitModifier{{resPart.Modifiers[1]}}, asked)
+
+	resPart.Modifiers[1].Children[0].SetEnabled(true)
+	s = newPickerSession(promptOperation{}, []*gurps.Trait{n["root"]}, true)
+	c.Equal(0, len(s.modTargets(resPart)), "fully picked, it has nothing to ask")
+	c.True(s.resolved(resPart))
+}
+
+// TestPickerSessionInheritedModifierChoice verifies that a choice inherited from a container above the choice counts
+// as it stands until the later prompt, which still asks about it.
+func TestPickerSessionInheritedModifierChoice(t *testing.T) {
+	c := check.New(t)
+	outer := gurps.NewTrait(nil, nil, true)
+	outer.AddModifiers(newTraitModifierChoiceFor(nil, true, []string{"+1", "+3"}))
+	choice := gurps.NewTrait(nil, outer, true)
+	choice.TemplatePicker.Type = picker.Count
+	choice.TemplatePicker.Qualifier.Compare = criteria.EqualsNumber
+	choice.TemplatePicker.Qualifier.Qualifier = fxp.One
+	outer.Children = []*gurps.Trait{choice}
+	option := gurps.NewTrait(nil, choice, false)
+	option.BasePoints = fxp.FromInteger(10)
+	choice.Children = []*gurps.Trait{option}
+	s := newPickerSession(promptOperation{}, []*gurps.Trait{outer}, true)
+	s.chosen[option] = true
+	c.True(s.resolved(option))
+	c.Equal("10", s.actual(option, picker.Points).String())
+	c.Equal(pickerOK, s.state(choice))
+	c.Equal(0, len(s.modTargets(option)))
+	c.Equal([]*gurps.Trait{outer}, modifierTargets([]*gurps.Trait{outer}, true, s.modsAnswered))
+}
+
+// TestPickerSessionChoosesEquipmentModifiers verifies that equipment modifiers can be chosen from the picker too, the
+// prompt showing the value and weight.
+func TestPickerSessionChoosesEquipmentModifiers(t *testing.T) {
+	c := check.New(t)
+	var cost string
+	swapForTest(t, &promptForEquipmentModifiers, func(info *modifierPromptInfo, mods []*gurps.EquipmentModifier) (changed, canceled bool) {
+		cost = info.early.cost()
+		mods[0].Children[1].SetEnabled(true)
+		return false, false
+	})
+	choice := gurps.NewEquipmentChoiceContainer(nil, nil)
+	choice.TemplatePicker.Type = picker.Value
+	sword, _ := newEditorEquipmentWithChoice([2]string{"+50", "+1 lb"}, [2]string{"+100", "+2 lb"})
+	sword.Name = "Sword"
+	sword.SetParent(choice)
+	choice.Children = []*gurps.Equipment{sword}
+	s := newPickerSession(promptOperation{}, []*gurps.Equipment{choice}, true)
+	c.Equal("$150~200", formatPickerTotal(sword, picker.Value, s.actual(sword, picker.Value)))
+	s.chooseModifiers(sword)
+	c.Equal("Sword: $150~200, 3~4 lb", cost)
+	c.True(s.chosen[sword])
+	c.Equal("$200", formatPickerTotal(sword, picker.Value, s.actual(sword, picker.Value)))
 }
 
 // TestPickerStatePill verifies that each state has its own look, a warning's text being dark on yellow.

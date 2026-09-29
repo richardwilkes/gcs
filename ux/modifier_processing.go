@@ -16,6 +16,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/fonts"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/promptstep"
+	"github.com/richardwilkes/gcs/v5/model/nameable"
 	"github.com/richardwilkes/toolbox/v2/errs"
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/i18n"
@@ -48,15 +49,26 @@ type modifierPromptInfo struct {
 	// requirePicks is true when the rows are headed for a character or loot sheet, where a mandatory modifier choice
 	// must have its pick made; elsewhere one may be left without.
 	requirePicks bool
+	// early is set when the prompt is put up from the template picker, ahead of the others.
+	early *earlyModifierPrompt
+}
+
+// earlyModifierPrompt is what the modifier prompt shows when put up from the template picker: what the row costs as
+// the answers stand, and Clear and Override buttons, the latter keeping a partial answer.
+type earlyModifierPrompt struct {
+	// cost returns what the row costs, with the modifiers enabled as the answers stand.
+	cost func() string
+	// preconfigured is true when the row is preconfigured, so only its missing picks are asked about.
+	preconfigured bool
 }
 
 // modifierTargets returns the rows the modifier prompt asks about: each of the given rows, and every row below them,
-// that has modifiers to ask about (see modifierPromptOf).
-func modifierTargets[T gurps.Node[T]](rows []T, requirePicks bool) []T {
+// that has modifiers to ask about (see modifierPromptOf). Those in asked have been answered already.
+func modifierTargets[T gurps.Node[T]](rows []T, requirePicks bool, asked map[T]bool) []T {
 	var targets []T
 	for _, row := range rows {
 		gurps.Traverse(func(row T) bool {
-			if modifierPromptOf(row, requirePicks) != nil {
+			if modifierPromptOf(row, requirePicks, asked[row]) != nil {
 				targets = append(targets, row)
 			}
 			return false
@@ -68,9 +80,9 @@ func modifierTargets[T gurps.Node[T]](rows []T, requirePicks bool) []T {
 // promptForModifierTargets puts up the modifier prompt for each of the targets (see modifierTargets). The prompts are
 // counted as following the given number already done, out of total, since one transfer may ask about the rows of
 // several lists. Returns false if the user canceled a prompt, in which case no further prompts are shown.
-func promptForModifierTargets[T gurps.Node[T]](op promptOperation, targets []T, done, total int, requirePicks bool) bool {
+func promptForModifierTargets[T gurps.Node[T]](op promptOperation, targets []T, done, total int, requirePicks bool, asked map[T]bool) bool {
 	for i, row := range targets {
-		if ask := modifierPromptOf(row, requirePicks); ask != nil && ask(&modifierPromptInfo{
+		if ask := modifierPromptOf(row, requirePicks, asked[row]); ask != nil && ask(&modifierPromptInfo{
 			op:           op,
 			name:         row.String(),
 			location:     rowLocation(row),
@@ -86,12 +98,12 @@ func promptForModifierTargets[T gurps.Node[T]](op promptOperation, targets []T, 
 
 // modifierPromptOf returns what puts up the prompt for the row's modifiers and reports whether it was canceled, or nil
 // if the row has none to ask about (see modifiersToAskAbout).
-func modifierPromptOf[T gurps.Node[T]](row T, requirePicks bool) func(info *modifierPromptInfo) bool {
+func modifierPromptOf[T gurps.Node[T]](row T, requirePicks, asked bool) func(info *modifierPromptInfo) bool {
 	switch t := any(row).(type) {
 	case *gurps.Trait:
-		return modifierPromptFor(modifiersToAskAbout(row, t.Modifiers, requirePicks), promptForTraitModifiers)
+		return modifierPromptFor(modifiersToAskAbout(row, t.Modifiers, requirePicks, asked), promptForTraitModifiers)
 	case *gurps.Equipment:
-		return modifierPromptFor(modifiersToAskAbout(row, t.Modifiers, requirePicks), promptForEquipmentModifiers)
+		return modifierPromptFor(modifiersToAskAbout(row, t.Modifiers, requirePicks, asked), promptForEquipmentModifiers)
 	default:
 		return nil
 	}
@@ -107,10 +119,11 @@ func modifierPromptFor[M gurps.Node[M]](mods []M, prompt func(*modifierPromptInf
 	}
 }
 
-// modifiersToAskAbout returns the modifiers of the row to ask about: all of them for a row that isn't preconfigured,
-// and for one that is, just the outermost of the mandatory choices it has left unresolved, and only if requirePicks.
-func modifiersToAskAbout[T gurps.Node[T], M gurps.Node[M]](row T, modifiers []M, requirePicks bool) []M {
-	if !gurps.IsNodePreconfigured(row) {
+// modifiersToAskAbout returns the modifiers of the row to ask about: all of them for a row that isn't preconfigured or
+// asked already, and for one that is, just the outermost of the mandatory choices it has left unresolved, and only if
+// requirePicks.
+func modifiersToAskAbout[T gurps.Node[T], M gurps.Node[M]](row T, modifiers []M, requirePicks, asked bool) []M {
+	if !asked && !gurps.IsNodePreconfigured(row) {
 		return modifiers
 	}
 	if !requirePicks {
@@ -130,7 +143,8 @@ func modifiersToAskAbout[T gurps.Node[T], M gurps.Node[M]](row T, modifiers []M,
 
 // showModifiersDialog asks which of the modifiers to enable (see newModifierSelection).
 func showModifiersDialog[T gurps.Node[T]](info *modifierPromptInfo, modifiers []T) (changed, canceled bool) {
-	selection := newModifierSelection(modifiers, info.requirePicks)
+	early := info.early
+	selection := newModifierSelection(modifiers, info.requirePicks, early != nil)
 	if selection == nil {
 		return false, false
 	}
@@ -142,16 +156,60 @@ func showModifiersDialog[T gurps.Node[T]](info *modifierPromptInfo, modifiers []
 	if info.location != "" {
 		extraHeaders = append(extraHeaders, newTruncatedLabel(info.location, maxContextLineLength, fonts.FieldSecondary))
 	}
+	buttons := []*unison.DialogButtonInfo{unison.NewCancelButtonInfo(), unison.NewOKButtonInfo()}
+	if early != nil {
+		if n := selection.mandatoryCount(); n != 0 {
+			text := fmt.Sprintf(i18n.Text("%d choices to make"), n)
+			if n == 1 {
+				text = i18n.Text("1 choice to make")
+			}
+			if early.preconfigured {
+				text += i18n.Text(" (the rest are preconfigured)")
+			}
+			extraHeaders = append(extraHeaders, newTruncatedLabel(text, maxContextLineLength, fonts.FieldSecondary))
+		}
+		buttons = []*unison.DialogButtonInfo{
+			{Title: i18n.Text("Clear Selections"), ResponseCode: unison.ModalResponseUserBase + 1},
+			buttons[0],
+			{Title: i18n.Text("Override"), ResponseCode: unison.ModalResponseUserBase},
+			buttons[1],
+		}
+	}
 	op := info.op.at(promptstep.Modifiers)
-	dialog, err := newPromptDialog(op, nil, nil, newListQuestionPanel(op, header, selection.list, extraHeaders...),
-		unison.NewCancelButtonInfo(), unison.NewOKButtonInfo())
+	panel := newListQuestionPanel(op, header, selection.list, extraHeaders...)
+	var cost *unison.Label
+	if early != nil {
+		if selection.italics {
+			note := unison.NewLabel()
+			note.Font = fonts.FieldSecondary
+			note.SetTitle(i18n.Text("Italic names are filled in after the choices are made."))
+			panel.AddChild(note)
+		}
+		cost = unison.NewLabel()
+		cost.SetLayoutData(&unison.FlexLayoutData{HAlign: align.End})
+		panel.AddChild(cost)
+	}
+	dialog, err := newPromptDialog(op, nil, nil, panel, buttons...)
 	if err != nil {
 		errs.Log(err)
 		return false, true
 	}
-	selection.onChange = func() { dialog.Button(unison.ModalResponseOK).SetEnabled(selection.complete()) }
+	selection.onChange = func() {
+		dialog.Button(unison.ModalResponseOK).SetEnabled(selection.complete())
+		if cost != nil {
+			cost.SetTitle(selection.preview(early.cost))
+			cost.MarkForLayoutRecursivelyUpward()
+		}
+	}
 	selection.onChange()
-	if dialog.RunModal() != unison.ModalResponseOK {
+	if early != nil {
+		// Clearing leaves the prompt up.
+		dialog.Button(unison.ModalResponseUserBase + 1).ClickCallback = selection.clear
+		dialog.Button(unison.ModalResponseUserBase).Tooltip = newWrappedTooltip(
+			i18n.Text("Keep what is answered so far; the rest is asked when the template is applied"),
+		)
+	}
+	if response := dialog.RunModal(); response != unison.ModalResponseOK && response != unison.ModalResponseUserBase {
 		return false, true
 	}
 	return selection.apply(), false
@@ -163,12 +221,17 @@ type modifierSelection struct {
 	boxes    map[*unison.CheckBox]gurps.GeneralModifier
 	choices  []*choiceRadioGroup
 	onChange func()
+	changed  func()
+	// italics is true when a modifier's name, shown in italics, holds a nameable key still to be filled in.
+	italics bool
 }
 
 // choiceRadioGroup holds the radio buttons of the options of one modifier choice.
 type choiceRadioGroup struct {
 	group   *unison.Group
 	options map[*unison.RadioButton]gurps.GeneralModifier
+	// none is the "None" of an optional choice; it is nil for a mandatory one.
+	none *unison.RadioButton
 	// mandatory is true for a choice whose pick has to be made before the prompt can finish.
 	mandatory bool
 	// updateStatus refreshes the flag a mandatory choice shows; it is nil for any other.
@@ -182,8 +245,9 @@ func (c *choiceRadioGroup) made() bool {
 
 // newModifierSelection builds the content of the prompt asking which of the modifiers to enable, or returns nil if
 // there is nothing to ask about. An optional choice also offers "None"; when requirePicks is true a mandatory choice
-// doesn't, and holds the prompt open until picked.
-func newModifierSelection[T gurps.Node[T]](modifiers []T, requirePicks bool) *modifierSelection {
+// doesn't, and holds the prompt open until picked. With italicNameables, names still holding nameable keys are in
+// italics.
+func newModifierSelection[T gurps.Node[T]](modifiers []T, requirePicks, italicNameables bool) *modifierSelection {
 	s := &modifierSelection{
 		list:  unison.NewPanel(),
 		boxes: make(map[*unison.CheckBox]gurps.GeneralModifier),
@@ -204,6 +268,7 @@ func newModifierSelection[T gurps.Node[T]](modifiers []T, requirePicks bool) *mo
 			s.onChange()
 		}
 	}
+	s.changed = changed
 	choices := make(map[T]*choiceRadioGroup)
 	gurps.Traverse(func(m T) bool {
 		gm, ok := any(m).(gurps.GeneralModifier)
@@ -211,6 +276,10 @@ func newModifierSelection[T gurps.Node[T]](modifiers []T, requirePicks bool) *mo
 			return false
 		}
 		text := gm.FullDescription()
+		if italicNameables && !m.Container() && len(nameable.Extract(nil, nil, gm.NameWithReplacements())) != 0 {
+			text = "*" + text + "*"
+			s.italics = true
+		}
 		if cost := gm.FullCostDescription(); cost != "" {
 			text += "; **" + cost + "**"
 		}
@@ -243,9 +312,9 @@ func newModifierSelection[T gurps.Node[T]](modifiers []T, requirePicks bool) *mo
 				return false
 			}
 			s.addRow(gm.Depth(), text, nil, nil)
-			none := choice.newRadio(i18n.Text("None"), changed)
-			choice.group.Select(none)
-			s.addRow(gm.Depth()+1, "*"+i18n.Text("None")+"*", none, nil)
+			choice.none = choice.newRadio(i18n.Text("None"), changed)
+			choice.group.Select(choice.none)
+			s.addRow(gm.Depth()+1, "*"+i18n.Text("None")+"*", choice.none, nil)
 			return false
 		}
 		if owner, found := gurps.ModifierChoiceFor(m); found && choices[owner] != nil {
@@ -362,6 +431,45 @@ func (s *modifierSelection) complete() bool {
 		}
 	}
 	return true
+}
+
+// mandatoryCount returns how many of the choices have to be made.
+func (s *modifierSelection) mandatoryCount() int {
+	n := 0
+	for _, choice := range s.choices {
+		if choice.mandatory {
+			n++
+		}
+	}
+	return n
+}
+
+// clear takes back the pick of every choice, leaving the check boxes alone.
+func (s *modifierSelection) clear() {
+	for _, choice := range s.choices {
+		choice.group.Select(choice.none)
+	}
+	s.changed()
+}
+
+// preview returns what fn does with the modifiers enabled as the answers stand, putting them back as they were after.
+func (s *modifierSelection) preview(fn func() string) string {
+	was := make(map[gurps.GeneralModifier]bool)
+	for _, gm := range s.boxes {
+		was[gm] = gm.Enabled()
+	}
+	for _, choice := range s.choices {
+		for _, gm := range choice.options {
+			was[gm] = gm.Enabled()
+		}
+	}
+	defer func() {
+		for gm, on := range was {
+			gm.SetEnabled(on)
+		}
+	}()
+	s.apply()
+	return fn()
 }
 
 // apply enables the modifiers the answers pick and disables the rest, reporting whether any of them changed.

@@ -11,6 +11,7 @@ package ux
 
 import (
 	"slices"
+	"strings"
 	"testing"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
@@ -455,7 +456,7 @@ func TestModifierSelectionTreatsChoicesByKind(t *testing.T) {
 	high := named(inner, "High")
 	optional := newTraitModifierChoiceFor(nil, false, []string{"Hot", "Cold"}, "Hot", "Cold")
 
-	s := newModifierSelection([]*gurps.TraitModifier{outer, optional}, true)
+	s := newModifierSelection([]*gurps.TraitModifier{outer, optional}, true, false)
 	c.NotNil(s)
 	var changes int
 	s.onChange = func() { changes++ }
@@ -505,10 +506,42 @@ func TestModifierSelectionTreatsChoicesByKind(t *testing.T) {
 	c.True(optional.Children[0].Enabled())
 	c.False(optional.Children[1].Enabled(), "only one option of a choice may be left on")
 
-	s = newModifierSelection([]*gurps.TraitModifier{newTraitModifierChoiceFor(nil, true, []string{"Low", "High"})}, false)
+	s = newModifierSelection([]*gurps.TraitModifier{newTraitModifierChoiceFor(nil, true, []string{"Low", "High"})}, false, false)
 	c.True(s.complete(), "off a sheet a mandatory choice may be left without its pick")
 	c.Equal(3, len(panelsOfType[*unison.RadioButton](s.list)), "the options and None")
 	c.Nil(s.choices[0].updateStatus)
+}
+
+// TestModifierSelectionClearsAndPreviews verifies that clearing takes back the choices' picks but not the check boxes,
+// that a preview sees the answers without keeping them, and that a name still to be filled in is in italics.
+func TestModifierSelectionClearsAndPreviews(t *testing.T) {
+	c := check.New(t)
+	mandatory := newTraitModifierChoiceFor(nil, true, []string{"Low", "@High@"}, "Low")
+	optional := newTraitModifierChoiceFor(nil, false, []string{"Hot", "Cold"}, "Hot")
+	plain := gurps.NewTraitModifier(nil, nil, false)
+	plain.Name = "Plain"
+	mods := []*gurps.TraitModifier{mandatory, optional, plain}
+	enabled := func() string {
+		var names []string
+		gurps.Traverse(func(m *gurps.TraitModifier) bool {
+			names = append(names, m.Name)
+			return false
+		}, true, true, mods...)
+		return strings.Join(names, ", ")
+	}
+	s := newModifierSelection(mods, true, true)
+	c.True(s.italics)
+	for rb, gm := range s.choices[0].options {
+		if gm == mandatory.Children[1] {
+			rb.Click()
+		}
+	}
+	c.Equal("@High@, Hot, Plain", s.preview(enabled))
+	c.Equal("Low, Hot, Plain", enabled(), "a preview keeps nothing")
+	s.clear()
+	c.False(s.complete())
+	c.Equal("Plain", s.preview(enabled))
+	c.False(newModifierSelection(mods, true, false).italics)
 }
 
 // TestTraitEditorShowsTheRangeOfAnOpenChoice verifies that a trait editor opened outside a sheet counts a mandatory
@@ -599,7 +632,7 @@ func TestModifierEditorFollowsTheChoiceRules(t *testing.T) {
 func TestEmptyMandatoryChoiceDoesNotHoldThePromptOpen(t *testing.T) {
 	c := check.New(t)
 	empty := gurps.NewTraitModifierChoice(nil, nil)
-	s := newModifierSelection([]*gurps.TraitModifier{empty}, true)
+	s := newModifierSelection([]*gurps.TraitModifier{empty}, true, false)
 	c.NotNil(s)
 	c.True(s.complete())
 	c.Nil(s.choices[0].updateStatus, "nothing is flagged")
@@ -925,7 +958,7 @@ func TestPickerCostsSheetRowsAsPrompted(t *testing.T) {
 	sword, _ := newEditorEquipmentWithChoice([2]string{"+50", "+1 lb"}, [2]string{"+100", "+2 lb"})
 	sword.SetDataOwner(entity)
 	sword.Modifiers[0].Children[0].Disabled = false
-	c.Equal([]string{"1", "$150", "3 lb"}, pickerRowDetails(sword, false))
-	c.Equal([]string{"1", "$150~200", "3~4 lb"}, pickerRowDetails(sword, true))
+	c.Equal([]string{"1", "$150", "3 lb"}, pickerRowDetails(sword, false, nil))
+	c.Equal([]string{"1", "$150~200", "3~4 lb"}, pickerRowDetails(sword, true, nil))
 	c.Equal("$150~200", formatPickerTotal(sword, picker.Value, gurps.PickerMeasureRange(sword, picker.Value, true, nil)))
 }

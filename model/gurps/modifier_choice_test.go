@@ -463,6 +463,10 @@ func TestPromptedRanges(t *testing.T) {
 	c.Equal("11~13", parent.PromptedPointsRange(nil).String())
 	c.Equal("11~13", child.PromptedPointsRange(func(one *Trait) bool { return one == child }).String())
 	c.Equal("11", child.PromptedPointsRange(func(one *Trait) bool { return one == parent }).String())
+	parent.Modifiers[0].Children[0].SetEnabled(false)
+	c.Equal("10", child.PromptedPointsRange(func(one *Trait) bool { return one == parent }).String(),
+		"the container answers it for the trait, picked or not")
+	c.Equal("11~13", parent.PromptedPointsRange(func(one *Trait) bool { return one == parent }).String())
 
 	taken := func(*Equipment) bool { return true }
 	for _, owner := range []DataOwner{nil, entity} {

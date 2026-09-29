@@ -33,8 +33,8 @@ func TestPickerRowPageReferenceIsFollowedFromTheKeyboard(t *testing.T) {
 		trait.Name = "Alpha"
 		trait.PageRef = ref
 		holder = unison.NewPanel()
-		boxes := addPickerRow(promptOperation{}, holder, trait, picker.Count, false, func() {}, nil)
-		if len(boxes) == 1 {
+		newPickerSession(promptOperation{}, []*gurps.Trait{trait}, false).addPickerRow(holder, trait, picker.Count, func() {})
+		if boxes := panelsOfType[*unison.CheckBox](holder); len(boxes) == 1 {
 			box = boxes[0]
 		}
 		links := panelsMatching(holder, func(p *unison.Panel) bool { return p.Accessibility.Role == role.Link })

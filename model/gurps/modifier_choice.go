@@ -445,7 +445,8 @@ func choicesMade[T Node[T]](node T, view choiceView) bool {
 
 // openMandatoryModifierChoices returns the mandatory choices among the modifiers still to be made that fixed holds no
 // pick for, and the ways of making them, capped at one past maxModifierChoiceVariants. Off a sheet a choice is open
-// unless it has a pick and what it is asked about on is preconfigured or taken; a choice with no options never is.
+// unless it has a pick and what it is asked about on is preconfigured or taken, or it is inherited from a container
+// taken, which answers it for everything inside, picked or not; a choice with no options never is.
 func openMandatoryModifierChoices[M ModifierNode[M, T], T ModifiableNode[T, M]](item T, modifiers []M, fixed modifierChoicePicks[M], view choiceView) (open []M, variants int) {
 	variants = 1
 	if xreflect.IsNil(item) || choicesMade(item, view) {
@@ -455,8 +456,9 @@ func openMandatoryModifierChoices[M ModifierNode[M, T], T ModifiableNode[T, M]](
 		if _, isFixed := fixed[mod]; isFixed || !IsMandatoryModifierChoice(mod) {
 			return false
 		}
-		if askedOn := modifierAskedAboutOn(item, mod); (IsNodePreconfigured(askedOn) ||
-			(view.taken != nil && view.taken(askedOn))) && ModifierChoiceIsResolved(mod) {
+		askedOn := modifierAskedAboutOn(item, mod)
+		if taken := view.taken != nil && view.taken(askedOn); (taken || IsNodePreconfigured(askedOn)) &&
+			ModifierChoiceIsResolved(mod) || (taken && askedOn != item) {
 			return false
 		}
 		if options := ModifierChoiceOptions(mod); len(options) != 0 {

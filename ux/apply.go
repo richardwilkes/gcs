@@ -116,6 +116,8 @@ type applyPart[T gurps.Node[T]] struct {
 	index int
 	// placed holds the rows that were placed, which leaves out any that were merged into a row already present.
 	placed []T
+	// asked holds the rows whose modifiers were answered from the template picker, so aren't asked about again.
+	asked map[T]bool
 }
 
 // applyPartOps is what applyTransfer needs of each part, whatever its row type.
@@ -205,11 +207,13 @@ func (p *applyPart[T]) normalizeChoices() {
 }
 
 func (p *applyPart[T]) resolvePickers(op promptOperation, promptChoices bool) bool {
-	revised, abort := newPickerSession(op, p.rows, promptChoices).processRows(p.rows)
+	s := newPickerSession(op, p.rows, promptChoices)
+	revised, abort := s.processRows(p.rows)
 	if abort {
 		return false
 	}
 	p.rows = revised
+	p.asked = s.modsAnswered
 	return true
 }
 
@@ -229,7 +233,7 @@ func (p *applyPart[T]) stripPickers() {
 }
 
 func (p *applyPart[T]) modifierTargetCount() int {
-	return len(modifierTargets(p.rows, p.requirePicks()))
+	return len(modifierTargets(p.rows, p.requirePicks(), p.asked))
 }
 
 // requirePicks reports whether the rows are headed for a sheet (see modifierPromptInfo.requirePicks).
@@ -242,8 +246,8 @@ func (p *applyPart[T]) requirePicks() bool {
 // promptForModifiers also returns how many rows it asked about, counted before any answer can change that.
 func (p *applyPart[T]) promptForModifiers(op promptOperation, done, total int) (asked int, ok bool) {
 	requirePicks := p.requirePicks()
-	targets := modifierTargets(p.rows, requirePicks)
-	return len(targets), promptForModifierTargets(op, targets, done, total, requirePicks)
+	targets := modifierTargets(p.rows, requirePicks, p.asked)
+	return len(targets), promptForModifierTargets(op, targets, done, total, requirePicks, p.asked)
 }
 
 func (p *applyPart[T]) promptForNameables(op promptOperation) bool {
