@@ -16,7 +16,6 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/fonts"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/promptstep"
-	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/v2/errs"
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/i18n"
@@ -26,7 +25,6 @@ import (
 	"github.com/richardwilkes/unison/enums/align"
 	"github.com/richardwilkes/unison/enums/check"
 	"github.com/richardwilkes/unison/enums/mod"
-	"github.com/richardwilkes/unison/enums/paintstyle"
 )
 
 // The modifier prompts are held in variables so that tests can substitute non-interactive implementations. Each reports
@@ -178,8 +176,7 @@ type choiceRadioGroup struct {
 	options map[*unison.RadioButton]gurps.GeneralModifier
 	// mandatory is true for a choice whose pick has to be made before the prompt can finish.
 	mandatory bool
-	// status and updateStatus are the flag a mandatory choice shows and what refreshes it; they are nil for any other.
-	status       *unison.Label
+	// updateStatus refreshes the flag a mandatory choice shows; it is nil for any other.
 	updateStatus func(made bool)
 }
 
@@ -240,8 +237,16 @@ func newModifierSelection[T gurps.Node[T]](modifiers []T, requirePicks bool) *mo
 			s.choices = append(s.choices, choice)
 			text += "; *" + gurps.ModifierChoiceDescription(m) + "*"
 			if choice.mandatory {
-				choice.status, choice.updateStatus = newModifierChoiceStatus()
-				s.addRow(gm.Depth(), text, nil, choice.status)
+				status, update := newMatchStatePill(0)
+				status.Font = fonts.FieldSecondary
+				choice.updateStatus = func(made bool) {
+					if made {
+						update(true, i18n.Text("Picked"))
+					} else {
+						update(false, i18n.Text("Required"))
+					}
+				}
+				s.addRow(gm.Depth(), text, nil, status)
 				return false
 			}
 			s.addRow(gm.Depth(), text, nil, nil)
@@ -355,39 +360,6 @@ func (s *modifierSelection) addRow(depth int, text string, control interface {
 	})
 	wrapper.SetBorder(unison.NewEmptyBorder(geom.Insets{Left: indent}))
 	s.list.AddChild(wrapper)
-}
-
-// newModifierChoiceStatus returns the flag a mandatory choice shows, marking it as required until it is made, along
-// with the function that refreshes it.
-func newModifierChoiceStatus() (status *unison.Label, update func(made bool)) {
-	status = unison.NewLabel()
-	status.Font = fonts.FieldSecondary
-	status.SetBorder(unison.NewEmptyBorder(geom.NewHorizontalInsets(unison.StdHSpacing)))
-	background := pickerMatchStateColor(false)
-	status.DrawCallback = func(gc *unison.Canvas, _ geom.Rect) {
-		r := status.ContentRect(true)
-		gc.DrawRoundedRect(r, geom.NewUniformSize(8), background.Paint(gc, r, paintstyle.Fill))
-		status.DefaultDraw(gc, r)
-	}
-	update = func(made bool) {
-		img := svg.Not
-		title := i18n.Text("Required")
-		if made {
-			img = unison.CheckmarkSVG
-			title = i18n.Text("Picked")
-		}
-		size := max(status.Font.Baseline()-2, 6)
-		status.Drawable = &unison.DrawableSVG{
-			SVG:  img,
-			Size: geom.NewSize(size, size),
-		}
-		status.SetTitle(title)
-		background = pickerMatchStateColor(made)
-		status.OnBackgroundInk = background.On()
-		status.MarkForLayoutRecursivelyUpward()
-		status.MarkForRedraw()
-	}
-	return status, update
 }
 
 // complete returns true if every mandatory choice has been made.

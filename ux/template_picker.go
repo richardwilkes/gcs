@@ -98,24 +98,8 @@ func processPickerRow[T gurps.Node[T]](op promptOperation, row T) (revised []T, 
 		list.AddChild(unison.NewPanel())
 	}
 
-	progress := unison.NewLabel()
-	progressBackground := pickerMatchStateColor(tp.Qualifier.Matches(0))
-	progress.SetBorder(unison.NewCompoundBorder(
-		unison.NewEmptyBorder(geom.Insets{Top: unison.StdVSpacing * 2}),
-		unison.NewEmptyBorder(geom.NewHorizontalInsets(unison.StdHSpacing)),
-	))
+	progress, updateProgress := newMatchStatePill(unison.StdVSpacing * 2)
 	progress.Side = side.Right
-	progress.OnBackgroundInk = progressBackground.On()
-	progress.DrawCallback = func(gc *unison.Canvas, _ geom.Rect) {
-		if tp.Type == picker.NotApplicable {
-			return
-		}
-		r := progress.ContentRect(true)
-		r.Y += unison.StdVSpacing * 2
-		r.Height -= unison.StdVSpacing * 2
-		gc.DrawRoundedRect(r, geom.NewUniformSize(8), progressBackground.Paint(gc, r, paintstyle.Fill))
-		progress.DefaultDraw(gc, r)
-	}
 	boxes := make([]*unison.CheckBox, 0, len(children))
 	var dialog *unison.Dialog
 	callback := func() {
@@ -138,22 +122,7 @@ func processPickerRow[T gurps.Node[T]](op promptOperation, row T) (revised []T, 
 		matches := total.CanSatisfy(tp.Qualifier)
 		dialog.Button(unison.ModalResponseOK).SetEnabled(matches)
 		if tp.Type != picker.NotApplicable {
-			var img *unison.SVG
-			if matches {
-				img = unison.CheckmarkSVG
-			} else {
-				img = svg.Not
-			}
-			size := max(progress.Font.Baseline()-2, 6)
-			progress.Drawable = &unison.DrawableSVG{
-				SVG:  img,
-				Size: geom.NewSize(size, size),
-			}
-			progressBackground = pickerMatchStateColor(matches)
-			progress.OnBackgroundInk = progressBackground.On()
-			progress.SetTitle(formatPickerTotal(row, tp.Type, total))
-			progress.MarkForLayoutRecursivelyUpward()
-			progress.MarkForRedraw()
+			updateProgress(matches, formatPickerTotal(row, tp.Type, total))
 		}
 	}
 	for _, child := range children {
@@ -258,6 +227,38 @@ func pickerMatchStateColor(matches bool) unison.Color {
 		return unison.Green
 	}
 	return unison.ThemeError.GetColor()
+}
+
+// newMatchStatePill returns a label drawn as a pill in the color pickerMatchStateColor gives, top points below the top
+// of its border, and the function that sets whether it matches and its title. It isn't drawn until that is called.
+func newMatchStatePill(top float32) (pill *unison.Label, update func(matches bool, title string)) {
+	pill = unison.NewLabel()
+	pill.SetBorder(unison.NewEmptyBorder(geom.Insets{Top: top, Left: unison.StdHSpacing, Right: unison.StdHSpacing}))
+	var background unison.Color
+	pill.DrawCallback = func(gc *unison.Canvas, _ geom.Rect) {
+		if pill.Drawable == nil {
+			return
+		}
+		r := pill.ContentRect(true)
+		r.Y += top
+		r.Height -= top
+		gc.DrawRoundedRect(r, geom.NewUniformSize(8), background.Paint(gc, r, paintstyle.Fill))
+		pill.DefaultDraw(gc, r)
+	}
+	update = func(matches bool, title string) {
+		img := svg.Not
+		if matches {
+			img = unison.CheckmarkSVG
+		}
+		size := max(pill.Font.Baseline()-2, 6)
+		pill.Drawable = &unison.DrawableSVG{SVG: img, Size: geom.NewSize(size, size)}
+		background = pickerMatchStateColor(matches)
+		pill.OnBackgroundInk = background.On()
+		pill.SetTitle(title)
+		pill.MarkForLayoutRecursivelyUpward()
+		pill.MarkForRedraw()
+	}
+	return pill, update
 }
 
 func addPickerRow[T gurps.Node[T]](op promptOperation, parent *unison.Panel, row T, pt picker.Type, callback func(), boxes []*unison.CheckBox) []*unison.CheckBox {

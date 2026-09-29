@@ -625,7 +625,7 @@ func TestModifierSelectionOutsideASheet(t *testing.T) {
 	s := newModifierSelection([]*gurps.TraitModifier{mandatory}, false)
 	c.True(s.complete(), "a template may keep a mandatory choice without its pick")
 	c.Equal(3, len(panelsOfType[*unison.RadioButton](s.list)), "the options and None")
-	c.Nil(s.choices[0].status)
+	c.Nil(s.choices[0].updateStatus)
 
 	prompts := captureModifierPrompts(t)
 	trait := gurps.NewTrait(nil, nil, false)
@@ -705,7 +705,7 @@ func TestEmptyMandatoryChoiceDoesNotHoldThePromptOpen(t *testing.T) {
 	s := newModifierSelection([]*gurps.TraitModifier{empty}, true)
 	c.NotNil(s)
 	c.True(s.complete())
-	c.Nil(s.choices[0].status, "nothing is flagged")
+	c.Nil(s.choices[0].updateStatus, "nothing is flagged")
 	for _, row := range s.list.Children() {
 		layout, ok := row.Layout().(*unison.FlexLayout)
 		c.True(ok)
