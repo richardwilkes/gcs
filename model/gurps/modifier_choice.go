@@ -202,28 +202,6 @@ func ModifierEnabledChanges[T Node[T]](modifiers []T, want func(T) bool) (target
 	return targets, enabled
 }
 
-// KeepModifierChoiceRules applies the rules of the choice the modifier is an option of after something set the
-// modifier's enabled state directly, as its editor does: an option that is now enabled becomes the pick, turning off
-// the choice's others, and the pick of a mandatory choice on a sheet, which can't be turned off, is turned back on.
-// wasEnabled is the modifier's state before it was set.
-func KeepModifierChoiceRules[T Node[T]](mod T, wasEnabled bool) {
-	choice, ok := ModifierChoiceFor(mod)
-	if !ok {
-		return
-	}
-	if mod.Enabled() {
-		for _, other := range ModifierChoiceOptions(choice) {
-			if other != mod && other.Enabled() {
-				SetModifierEnabled(other, false)
-			}
-		}
-		return
-	}
-	if wasEnabled && IsOnSheet(mod) && IsMandatoryModifierChoice(choice) && !ModifierChoiceIsResolved(choice) {
-		SetModifierEnabled(mod, true)
-	}
-}
-
 // ModifierChoiceOptions returns the options of the modifier choice, in the order they are listed: the modifiers beneath
 // it that are its own options (see ModifierChoiceFor). Returns nil when the node isn't a modifier choice.
 func ModifierChoiceOptions[T Node[T]](choice T) []T {

@@ -581,7 +581,7 @@ func TestLockedPickKeepsItsCheckmark(t *testing.T) {
 
 // TestModifierEditorFollowsTheChoiceRules verifies that enabling an option in its own editor makes it the pick,
 // turning the one that was picked off, and that undo puts both back. On a sheet, the pick of a mandatory choice can't
-// be turned off there either.
+// be turned off there either, though it can be elsewhere.
 func TestModifierEditorFollowsTheChoiceRules(t *testing.T) {
 	c := check.New(t)
 	sheet := newTestSheetForTemplate(t)
@@ -609,6 +609,12 @@ func TestModifierEditorFollowsTheChoiceRules(t *testing.T) {
 	e.editorData.Disabled = true
 	e.applyEdits()
 	c.True(options[0].Enabled(), "the pick of a mandatory choice on a sheet can't be turned off in its editor")
+
+	offSheet := newTraitModifierChoiceFor(nil, true, []string{"A"}, "A")
+	e, _ = buildEditorContent(nil, offSheet.Children[0], initTraitModifierEditor)
+	e.editorData.Disabled = true
+	e.applyEdits()
+	c.False(offSheet.Children[0].Enabled(), "off a sheet a mandatory choice may be left without its pick")
 }
 
 // TestModifierSelectionOutsideASheet verifies that when the rows aren't headed for a sheet, a mandatory choice is

@@ -354,10 +354,13 @@ func applyModifierChoiceRulesAfterEdit[N gurps.Node[N]](target N, wasEnabled, ch
 	if _, ok := gurps.ModifierChoiceFor(target); !ok {
 		return
 	}
+	on := target.Enabled()
+	gurps.SetModifierEnabled(target, wasEnabled)
 	if changesEnabled {
-		gurps.KeepModifierChoiceRules(target, wasEnabled)
-	} else {
-		gurps.SetModifierEnabled(target, wasEnabled)
+		targets, enabled := gurps.ModifierEnabledChanges([]N{target}, func(N) bool { return on })
+		for _, one := range targets {
+			gurps.SetModifierEnabled(one, enabled[one])
+		}
 	}
 }
 

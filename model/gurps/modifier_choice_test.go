@@ -529,30 +529,6 @@ func TestUnnestingAChoiceKeepsTheOuterPick(t *testing.T) {
 	c.False(innerOption.Enabled(), "the option that came with the group is turned off")
 }
 
-// TestKeepModifierChoiceRules verifies the rules applied after a modifier's enabled state is set directly, as its
-// editor does: an option turned on becomes the pick, and on a sheet the pick of a mandatory choice can't be turned off.
-func TestKeepModifierChoiceRules(t *testing.T) {
-	c := check.New(t)
-	choice := newTraitModifierChoiceWith(true, "+1", "+2")
-	a, b := choice.Children[0], choice.Children[1]
-	a.SetEnabled(true)
-	b.SetEnabled(true)
-	KeepModifierChoiceRules(b, false)
-	c.False(a.Enabled(), "turning b on makes it the pick")
-	c.True(b.Enabled())
-	b.SetEnabled(false)
-	KeepModifierChoiceRules(b, true)
-	c.False(b.Enabled(), "off a sheet a mandatory choice may be left without its pick")
-
-	trait := NewTrait(NewEntity(), nil, false)
-	onSheet := newTraitModifierChoiceWith(true, "+1")
-	trait.AddModifiers(onSheet)
-	pick := onSheet.Children[0]
-	pick.SetEnabled(false)
-	KeepModifierChoiceRules(pick, true)
-	c.True(pick.Enabled(), "on a sheet the pick of a mandatory choice is turned back on")
-}
-
 // TestModifierEnabledChanges verifies the changes worked out for setting modifiers' enabled states: turning an option
 // on turns the choice's other options off, the later of two turned on together winning, a modifier whose state doesn't
 // change is left out, and so is a request to turn off the pick of a mandatory choice on a sheet.
