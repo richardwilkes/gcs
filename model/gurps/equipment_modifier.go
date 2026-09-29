@@ -528,21 +528,11 @@ func (e *EquipmentModifier) SetEnabled(enabled bool) {
 
 // CostMultiplier returns the amount to multiply the cost by.
 func (e *EquipmentModifier) CostMultiplier() fxp.Int {
-	return e.costMultiplier(nil)
-}
-
-// costMultiplier returns the amount to multiply the cost by. A cost per pound is worked out from weight when it isn't
-// nil, and from the equipment's own adjusted weight otherwise: while a mandatory modifier choice is still to be made,
-// each way of making it has a weight of its own, which its cost has to be worked out from.
-func (e *EquipmentModifier) costMultiplier(weight *fxp.Int) fxp.Int {
 	multiplier := multiplierForEquipmentModifier(e.equipment, e.CostIsPerLevel)
 	if e.CostIsPerPound {
-		if weight == nil {
-			w := fxp.Int(e.equipment.AdjustedWeight(false, SheetSettingsFor(EntityFromNode(e)).DefaultWeightUnits))
-			weight = &w
-		}
+		weight := fxp.Int(e.equipment.AdjustedWeight(false, SheetSettingsFor(EntityFromNode(e)).DefaultWeightUnits))
 		baseWeight := fxp.Int(e.equipment.ResolvedBaseWeight())
-		multiplier = multiplier.Mul(max(*weight, baseWeight).Ceil().Max(fxp.One))
+		multiplier = multiplier.Mul(max(weight, baseWeight).Ceil().Max(fxp.One))
 	}
 	return multiplier
 }
@@ -565,20 +555,14 @@ func multiplierForEquipmentModifier(equipment *Equipment, isPerLevel bool) fxp.I
 
 // ValueAdjustedForModifiers returns the value after adjusting it for a set of modifiers.
 func ValueAdjustedForModifiers(equipment *Equipment, value fxp.Int, modifiers []*EquipmentModifier) fxp.Int {
-	return valueAdjustedForModifiers(equipment, value, modifiers, nil)
-}
-
-// valueAdjustedForModifiers is ValueAdjustedForModifiers, with a cost per pound worked out from weight when it isn't
-// nil (see EquipmentModifier.costMultiplier).
-func valueAdjustedForModifiers(equipment *Equipment, value fxp.Int, modifiers []*EquipmentModifier, weight *fxp.Int) fxp.Int {
-	cost := processNonCFStep(equipment, emcost.Original, value, modifiers, weight)
+	cost := processNonCFStep(equipment, emcost.Original, value, modifiers)
 
 	var cf fxp.Int
 	Traverse(func(mod *EquipmentModifier) bool {
 		mod.equipment = equipment
 		if mod.CostType == emcost.Base {
 			t := emcost.Base.FromString(mod.CostAmount)
-			cf += t.ExtractValue(mod.CostAmount).Mul(mod.costMultiplier(weight))
+			cf += t.ExtractValue(mod.CostAmount).Mul(mod.CostMultiplier())
 			if t == emcost.Multiplier {
 				cf -= fxp.One
 			}
@@ -589,21 +573,21 @@ func valueAdjustedForModifiers(equipment *Equipment, value fxp.Int, modifiers []
 		cost = cost.Mul(cf.Max(fxp.NegPointEight) + fxp.One)
 	}
 
-	cost = processNonCFStep(equipment, emcost.FinalBase, cost, modifiers, weight)
+	cost = processNonCFStep(equipment, emcost.FinalBase, cost, modifiers)
 
-	cost = processNonCFStep(equipment, emcost.Final, cost, modifiers, weight)
+	cost = processNonCFStep(equipment, emcost.Final, cost, modifiers)
 
 	return cost.Max(0)
 }
 
-func processNonCFStep(equipment *Equipment, costType emcost.Type, value fxp.Int, modifiers []*EquipmentModifier, weight *fxp.Int) fxp.Int {
+func processNonCFStep(equipment *Equipment, costType emcost.Type, value fxp.Int, modifiers []*EquipmentModifier) fxp.Int {
 	var percentages, additions fxp.Int
 	cost := value
 	Traverse(func(mod *EquipmentModifier) bool {
 		mod.equipment = equipment
 		if mod.CostType == costType {
 			t := costType.FromString(mod.CostAmount)
-			amt := t.ExtractValue(mod.CostAmount).Mul(mod.costMultiplier(weight))
+			amt := t.ExtractValue(mod.CostAmount).Mul(mod.CostMultiplier())
 			switch t {
 			case emcost.Addition:
 				additions += amt

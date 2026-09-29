@@ -468,27 +468,6 @@ func TestEquipmentRangesWithMandatoryModifierChoice(t *testing.T) {
 	c.Equal(fxp.FromInteger(300), eqp.ExtendedValue(), "once made, the options enabled count as they always have")
 }
 
-// TestPerPoundCostFollowsEachOptionsWeight verifies that a cost per pound is worked out from the weight each way of
-// making a mandatory choice gives, rather than from the weight the equipment would have with the lightest option.
-func TestPerPoundCostFollowsEachOptionsWeight(t *testing.T) {
-	c := check.New(t)
-	eqp := newEquipmentItem("Crate", "10", "1 lb")
-	perPound := NewEquipmentModifier(nil, nil, false)
-	perPound.CostAmount = "+1"
-	perPound.CostIsPerPound = true
-	choice := NewEquipmentModifierChoice(nil, nil)
-	for _, weight := range []string{"+1 lb", "+9 lb"} {
-		option := NewEquipmentModifier(nil, choice, false)
-		option.WeightAmount = weight
-		option.SetEnabled(false)
-		choice.Children = append(choice.Children, option)
-	}
-	eqp.AddModifiers(perPound, choice)
-	c.Equal("2~10 lb", FormatWeightRange(eqp.AdjustedWeightRange(fxp.Pound), fxp.Pound.Format))
-	c.Equal("12~20", FormatValueRange(eqp.AdjustedValueRange(), fxp.Int.Comma),
-		"the heavier option costs more per pound")
-}
-
 // TestWeightIgnoredForSkillsWithAnOpenChoice verifies that equipment whose weight is ignored for skills weighs nothing
 // for them while a choice is still to be made, whether it is a mandatory choice among its own modifiers or a template
 // choice holding it, just as it does once the choice is made.

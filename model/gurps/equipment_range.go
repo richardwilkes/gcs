@@ -35,11 +35,8 @@ func (e *Equipment) AdjustedValueRange() NumericRange {
 // modifierChoiceValueRange returns the span of values one of this equipment may come to once the mandatory modifier
 // choices it has yet to make have been made, and false when it has none.
 func (e *Equipment) modifierChoiceValueRange() (NumericRange, bool) {
-	defUnits := SheetSettingsFor(EntityFromNode(e)).DefaultWeightUnits
 	return modifierChoiceRange(e, e.Modifiers, nil, func(modifiers []*EquipmentModifier) NumericRange {
-		// A cost per pound is worked out from the weight this way of making the choices gives, not the equipment's.
-		weight := fxp.Int(WeightAdjustedForModifiers(e, e.ResolvedBaseWeight(), modifiers, defUnits))
-		return NumericRangeOf(valueAdjustedForModifiers(e, e.ResolvedBaseValue(), modifiers, &weight))
+		return NumericRangeOf(ValueAdjustedForModifiers(e, e.ResolvedBaseValue(), modifiers))
 	})
 }
 
