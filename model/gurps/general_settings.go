@@ -102,6 +102,7 @@ type GeneralSettings struct {
 	InitialFieldClickSelectsAll bool               `json:"initial_field_click_selects_all"`
 	RestoreWorkspaceOnStart     bool               `json:"restore_workspace_on_start"`
 	ExpandPageReferences        bool               `json:"expand_page_references"`
+	FocusForReading             bool               `json:"focus_for_reading,omitzero"`
 }
 
 // NewGeneralSettings creates settings with factory defaults.
@@ -170,6 +171,11 @@ func (s *GeneralSettings) UpdateToolTipTiming() {
 // UpdateCursorSize updates the size unison builds cursors at to the value from this object.
 func (s *GeneralSettings) UpdateCursorSize() {
 	unison.SetCursorSize(geom.NewSize(float32(s.CursorSize), float32(s.CursorSize)))
+}
+
+// UpdateFocusForReading hands the FocusForReading setting to unison, which keeps its own copy. EnsureValidity calls it.
+func (s *GeneralSettings) UpdateFocusForReading() {
+	unison.SetFocusForReading(s.FocusForReading)
 }
 
 // CalendarRef returns the CalendarRef these settings refer to.
@@ -251,4 +257,5 @@ func (s *GeneralSettings) EnsureValidity() {
 	s.LibraryUpdateCheck = s.LibraryUpdateCheck.EnsureValid()
 	s.UpdateToolTipTiming()
 	s.UpdateCursorSize()
+	s.UpdateFocusForReading()
 }

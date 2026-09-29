@@ -968,8 +968,7 @@ func WeaponHeaderData(columnID int, melee, forPage bool) HeaderData {
 			data.Title = i18n.Text("Ranged Weapon Usage")
 		}
 	case WeaponSLColumn:
-		data.Title = i18n.Text("SL")
-		data.Detail = i18n.Text("Skill Level")
+		data = abbreviatedHeaderData(i18n.Text("SL"), i18n.Text("Skill Level"))
 	case WeaponParryColumn:
 		data.Title = i18n.Text("Parry")
 	case WeaponBlockColumn:
@@ -979,16 +978,13 @@ func WeaponHeaderData(columnID int, melee, forPage bool) HeaderData {
 	case WeaponReachColumn:
 		data.Title = i18n.Text("Reach")
 	case WeaponSTColumn:
-		data.Title = i18n.Text("ST")
-		data.Detail = i18n.Text("Minimum Strength")
+		data = abbreviatedHeaderData(i18n.Text("ST"), i18n.Text("Minimum Strength"))
 	case WeaponAccColumn:
-		data.Title = i18n.Text("Acc")
-		data.Detail = i18n.Text("Accuracy Bonus")
+		data = abbreviatedHeaderData(i18n.Text("Acc"), i18n.Text("Accuracy Bonus"))
 	case WeaponRangeColumn:
 		data.Title = i18n.Text("Range")
 	case WeaponRoFColumn:
-		data.Title = i18n.Text("RoF")
-		data.Detail = i18n.Text("Rate of Fire")
+		data = abbreviatedHeaderData(i18n.Text("RoF"), i18n.Text("Rate of Fire"))
 	case WeaponShotsColumn:
 		data.Title = i18n.Text("Shots")
 	case WeaponBulkColumn:

@@ -23,6 +23,7 @@ import (
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/toolbox/v2/xhttp"
 	"github.com/richardwilkes/unison"
+	"github.com/richardwilkes/unison/accessibility"
 	"github.com/richardwilkes/unison/drag"
 	"github.com/richardwilkes/unison/enums/filtermode"
 	"github.com/richardwilkes/unison/enums/imgfmt"
@@ -39,6 +40,9 @@ const (
 	// in the 72 pixels-per-inch units the page works in: an inch and a half wide, an inch tall.
 	defaultPortraitWidth  = 108
 	defaultPortraitHeight = 72
+	// portraitPanelRefKey lets the focus return to the portrait after the sheet is resynced, as it is when the portrait
+	// changes. A sheet has one portrait, so the key needs no prefix.
+	portraitPanelRefKey = "portrait"
 )
 
 // PortraitPanel holds the contents of the portrait block on the sheet.
@@ -52,6 +56,7 @@ type PortraitPanel struct {
 func NewPortraitPanel(entity *gurps.Entity) *PortraitPanel {
 	p := &PortraitPanel{entity: entity}
 	p.Self = p
+	p.RefKey = portraitPanelRefKey
 	p.SetSizer(p.sizer)
 	title := i18n.Text("Portrait")
 	p.SetBorder(&TitledBorder{Title: title})
@@ -62,6 +67,26 @@ func NewPortraitPanel(entity *gurps.Entity) *PortraitPanel {
 	p.Accessibility.Name = title
 	p.Accessibility.Description = portraitChangeText()
 	p.DrawCallback = p.drawSelf
+	// The portrait takes the keyboard focus, so it can be changed without a mouse: Space and a screen reader's press
+	// both do what a double-click does.
+	p.SetFocusable(true)
+	p.GainedFocusCallback = p.MarkForRedraw
+	p.LostFocusCallback = p.MarkForRedraw
+	p.KeyDownCallback = func(keyCode unison.KeyCode, mods mod.Modifiers, _ bool) bool {
+		if unison.IsControlAction(keyCode, mods) {
+			p.choosePortrait()
+			return true
+		}
+		return false
+	}
+	p.Accessibility.Callback = func(node *accessibility.Node) { node.Actions = node.Actions.With(accessibility.Press) }
+	p.Accessibility.ActionCallback = func(req accessibility.ActionRequest) bool {
+		if req.Action != accessibility.Press {
+			return false
+		}
+		p.choosePortrait()
+		return true
+	}
 	p.CanAcceptDropCallback = p.acceptableDrag
 	p.DragEnteredCallback = p.dragOver
 	p.DragUpdatedCallback = p.dragOver
@@ -139,11 +164,16 @@ func (p *PortraitPanel) drawSelf(gc *unison.Canvas, _ geom.Rect) {
 			pt.Y += size.Height
 		}
 	}
+	if p.Focused() {
+		focus := unison.ThemeFocus.Paint(gc, r, paintstyle.Stroke)
+		focus.SetStrokeWidth(2)
+		gc.DrawRect(r.Inset(geom.NewUniformInsets(1)), focus)
+	}
 }
 
 // portraitChangeText returns the words that say how the portrait is changed.
 func portraitChangeText() string {
-	return i18n.Text("Drop an image here or double-click to change the portrait")
+	return i18n.Text("Drop an image here, double-click, or press Space to change the portrait")
 }
 
 // Sync the panel to the current data.
@@ -152,12 +182,19 @@ func (p *PortraitPanel) Sync() {
 }
 
 func (p *PortraitPanel) mouseDown(_ geom.Point, button, clickCount int, _ mod.Modifiers) bool {
-	if button == unison.ButtonLeft && clickCount == 2 {
-		if file, ok := chooseFileToOpen(gurps.ImagesLastDirKey, imgfmt.AllReadableExtensions()...); ok {
-			p.fileDrop([]string{file})
+	if button == unison.ButtonLeft {
+		p.RequestFocus()
+		if clickCount == 2 {
+			p.choosePortrait()
 		}
 	}
 	return true
+}
+
+func (p *PortraitPanel) choosePortrait() {
+	if file, ok := chooseFileToOpen(gurps.ImagesLastDirKey, imgfmt.AllReadableExtensions()...); ok {
+		p.fileDrop([]string{file})
+	}
 }
 
 func (p *PortraitPanel) fileDrop(files []string) {

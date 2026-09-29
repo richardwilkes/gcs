@@ -182,8 +182,9 @@ func initSkillEditor(e *editor[*gurps.Skill, *gurps.SkillEditData], content *uni
 
 			encLabel := i18n.Text("Encumbrance Penalty")
 			wrapper, _ := addFlowWrapper(content, encLabel, 2)
-			addDecimalField(wrapper, nil, "", encLabel, "", &e.editorData.EncumbrancePenaltyMultiplier, 0, fxp.Nine, false)
-			wrapper.AddChild(NewFieldTrailingLabel(i18n.Text("times the current encumbrance level"), false))
+			multiplier := addDecimalField(wrapper, nil, "", encLabel, "", &e.editorData.EncumbrancePenaltyMultiplier, 0,
+				fxp.Nine, false)
+			wrapper.AddChild(NewFieldTrailingHint(multiplier, i18n.Text("times the current encumbrance level"), false))
 		}
 
 		if ownerIsSheet || ownerIsTemplate {

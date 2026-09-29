@@ -247,6 +247,7 @@ func newTestGeneralSettingsDockable(t *testing.T) *generalSettingsDockable {
 	saved := *gs
 	t.Cleanup(func() {
 		*gs = saved
+		gs.EnsureValidity() // Restores unison's copies of the settings, which a reset in the test may have changed.
 		gurps.SyncScriptExecTimeLimit()
 	})
 	swapForTest(t, &languageSetting, "")
@@ -263,7 +264,7 @@ func TestGeneralSettingsCheckBoxesAndScaleFieldsEditTheLiveSettings(t *testing.T
 	c := check.New(t)
 	d := newTestGeneralSettingsDockable(t)
 	gs := gurps.GlobalSettings().General
-	c.Equal(6, len(d.checkBoxes), "expected one checkbox per general setting in the block")
+	c.Equal(7, len(d.checkBoxes), "expected one checkbox per general setting in the block")
 	c.Equal(6, len(d.initialScaleFields), "expected one initial scale field per document kind")
 
 	// Each checkbox must have its own field of the live settings, and show its value.
@@ -333,4 +334,66 @@ func TestGeneralSettingsCheckBoxesAndScaleFieldsEditTheLiveSettings(t *testing.T
 	c.True(*gurps.GlobalSettings().General != *defaults, "clicking the checkbox after the reset should change the live settings")
 	field.field.SetText(field.field.Format(scale))
 	c.Equal(scale, *field.value, "editing the field after the reset should record its value")
+}
+
+func TestFocusForReadingCheckBoxAppliesToUnison(t *testing.T) {
+	c := check.New(t)
+	d := newTestGeneralSettingsDockable(t)
+	gs := gurps.GlobalSettings().General
+	*gs = *gurps.NewGeneralSettings()
+	gs.EnsureValidity()
+	d.sync()
+	var box settingCheckBox
+	for _, one := range d.checkBoxes {
+		if one.value == &gs.FocusForReading {
+			box = one
+			break
+		}
+	}
+	c.NotNil(box.box, "expected a checkbox for the focus for reading setting")
+	c.Equal(uncheck.Off, box.box.State, "the setting is off by default")
+	c.False(unison.FocusForReading(), "unison starts with the switch off")
+
+	box.box.State = uncheck.On
+	box.box.ClickCallback()
+	c.True(gs.FocusForReading, "clicking the checkbox should turn the setting on")
+	c.True(unison.FocusForReading(), "clicking the checkbox should hand the setting to unison")
+
+	d.reset()
+	c.False(gs.FocusForReading, "the reset should turn the setting off")
+	c.False(unison.FocusForReading(), "the reset should hand the setting to unison")
+	c.Equal(uncheck.Off, box.box.State, "the reset should bring the checkbox back into line")
+}
+
+func TestGeneralSettingsResetRunsTheSideEffectsOfTheBoxesItChanges(t *testing.T) {
+	c := check.New(t)
+	d := newTestGeneralSettingsDockable(t)
+	gs := gurps.GlobalSettings().General
+	*gs = *gurps.NewGeneralSettings()
+	gs.EnsureValidity()
+	d.sync()
+	fired := make(map[*bool]int)
+	for _, one := range d.checkBoxes {
+		one.box.OnSet = func() { fired[one.value]++ }
+	}
+	var grouping settingCheckBox
+	for _, one := range d.checkBoxes {
+		if one.value == &gs.GroupContainersOnSort {
+			grouping = one
+			break
+		}
+	}
+	if grouping.box == nil {
+		t.Fatal("expected a checkbox for the grouping setting")
+	}
+	grouping.box.State = uncheck.FromBool(!gs.GroupContainersOnSort)
+	grouping.box.ClickCallback()
+	c.Equal(1, fired[&gs.GroupContainersOnSort], "clicking the box has its side effect")
+	c.Equal(1, len(fired), "and only its own")
+
+	d.reset()
+	c.Equal(uncheck.FromBool(gurps.NewGeneralSettings().GroupContainersOnSort), grouping.box.State,
+		"the reset brings the box back into line")
+	c.Equal(2, fired[&gs.GroupContainersOnSort], "the reset has the side effect of the box it changed")
+	c.Equal(1, len(fired), "the boxes the reset left alone have no side effect")
 }

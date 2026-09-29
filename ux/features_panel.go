@@ -247,7 +247,7 @@ func (p *featuresPanel) createDRBonusPanel(f *gurps.DRBonus) (main *unison.Panel
 	field.Accessibility.Name = i18n.Text("Attack Specialization")
 	field.SetMinimumTextWidthUsing(i18n.Text("Specialization"))
 	wrapper.AddChild(field)
-	wrapper.AddChild(NewFieldTrailingLabel(i18n.Text("attacks"), false))
+	wrapper.AddChild(NewFieldTrailingHint(field, i18n.Text("attacks"), false))
 	panel.AddChild(wrapper)
 	return panel, focus
 }

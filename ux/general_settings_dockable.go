@@ -171,11 +171,16 @@ func (d *generalSettingsDockable) createCheckboxBlock(content *unison.Panel) {
 			}
 		})
 	box.Tooltip = newWrappedTooltip(i18n.Text(`When enabled, the page reference column on character sheets, loot sheets, and templates will display more than one page reference when there is room, rather than always collapsing to a single reference. Standalone lists are unaffected, since their columns can be resized directly.`))
+	box = d.addGeneralCheckBox(content,
+		i18n.Text("Include static text and disabled controls in the Tab order for screen readers"),
+		&gs.FocusForReading, func() { gurps.GlobalSettings().General.UpdateFocusForReading() })
+	box.Tooltip = newWrappedTooltip(i18n.Text(`When enabled and a screen reader is in use, labels, other static text and disabled controls become Tab stops, as do the buttons a character sheet otherwise leaves out of the Tab order, such as its randomize buttons, so they can be reached by moving the keyboard focus alone. A disabled control reached this way is announced as unavailable and still cannot be changed. Nothing changes when no screen reader is in use.`))
 }
 
 // addGeneralCheckBox adds a checkbox for the general setting that value points at, keeping it in the field column of
 // the content by preceding it with an empty label. onChange, if not nil, runs after the setting has been changed
-// through the checkbox. The pointer is stable because reset and load copy into the settings rather than replacing them.
+// through the checkbox or by a reset or load (see sync). The pointer is stable because reset and load copy into the
+// settings rather than replacing them.
 func (d *generalSettingsDockable) addGeneralCheckBox(content *unison.Panel, title string, value *bool, onChange func()) *CheckBox {
 	content.AddChild(NewFieldLeadingLabel("", false))
 	box := addCheckBox(content, title, value)
@@ -286,8 +291,8 @@ func (d *generalSettingsDockable) createMonitorResolutionField(content *unison.P
 		func() int { return gurps.GlobalSettings().General.MonitorResolution },
 		func(v int) { gurps.GlobalSettings().General.MonitorResolution = v },
 		strconv.Itoa, strconv.Atoi, gurps.MonitorResolutionMin, gurps.MonitorResolutionMax, 0)
-	addLabeledSettingField(content, title, d.monitorResolutionField,
-		NewFieldTrailingLabel(i18n.Text("ppi (A value of 0 will cause the ppi reported by your monitor to be used)"), false))
+	addLabeledSettingField(content, title, d.monitorResolutionField, NewFieldTrailingHint(d.monitorResolutionField,
+		i18n.Text("ppi (A value of 0 will cause the ppi reported by your monitor to be used)"), false))
 }
 
 func (d *generalSettingsDockable) createImageResolutionField(content *unison.Panel) {
@@ -296,7 +301,8 @@ func (d *generalSettingsDockable) createImageResolutionField(content *unison.Pan
 		func() int { return gurps.GlobalSettings().General.ImageResolution },
 		func(v int) { gurps.GlobalSettings().General.ImageResolution = v },
 		gurps.ImageResolutionMin, gurps.ImageResolutionMax, false, false)
-	addLabeledSettingField(content, title, d.exportResolutionField, NewFieldTrailingLabel(i18n.Text("ppi"), false))
+	addLabeledSettingField(content, title, d.exportResolutionField,
+		NewFieldTrailingHint(d.exportResolutionField, i18n.Text("ppi"), false))
 }
 
 func (d *generalSettingsDockable) createPermittedScriptExecTimeField(content *unison.Panel) {
@@ -309,7 +315,7 @@ func (d *generalSettingsDockable) createPermittedScriptExecTimeField(content *un
 			gurps.SyncScriptExecTimeLimit()
 		}, gurps.PermittedScriptExecTimeMin, gurps.PermittedScriptExecTimeMax, false, false)
 	addLabeledSettingField(content, title, d.permittedScriptExecTimeField,
-		NewFieldTrailingLabel(i18n.Text("seconds per script"), false))
+		NewFieldTrailingHint(d.permittedScriptExecTimeField, i18n.Text("seconds per script"), false))
 }
 
 func (d *generalSettingsDockable) createTooltipDelayField(content *unison.Panel) {
@@ -321,7 +327,8 @@ func (d *generalSettingsDockable) createTooltipDelayField(content *unison.Panel)
 			general.TooltipDelay = v
 			general.UpdateToolTipTiming()
 		}, gurps.TooltipDelayMin, gurps.TooltipDelayMax, false, false)
-	addLabeledSettingField(content, title, d.tooltipDelayField, NewFieldTrailingLabel(i18n.Text("seconds"), false))
+	addLabeledSettingField(content, title, d.tooltipDelayField,
+		NewFieldTrailingHint(d.tooltipDelayField, i18n.Text("seconds"), false))
 }
 
 func (d *generalSettingsDockable) createTooltipDismissalField(content *unison.Panel) {
@@ -333,7 +340,8 @@ func (d *generalSettingsDockable) createTooltipDismissalField(content *unison.Pa
 			general.TooltipDismissal = v
 			general.UpdateToolTipTiming()
 		}, gurps.TooltipDismissalMin, gurps.TooltipDismissalMax, false, false)
-	addLabeledSettingField(content, title, d.tooltipDismissalField, NewFieldTrailingLabel(i18n.Text("seconds"), false))
+	addLabeledSettingField(content, title, d.tooltipDismissalField,
+		NewFieldTrailingHint(d.tooltipDismissalField, i18n.Text("seconds"), false))
 }
 
 func (d *generalSettingsDockable) createScrollWheelMultiplierField(content *unison.Panel) {
@@ -354,7 +362,8 @@ func (d *generalSettingsDockable) createCursorSizeField(content *unison.Panel) {
 			general.CursorSize = v
 			general.UpdateCursorSize()
 		}, gurps.CursorSizeMin, gurps.CursorSizeMax, false, false)
-	addLabeledSettingField(content, title, d.cursorSizeField, NewFieldTrailingLabel(i18n.Text("points"), false))
+	addLabeledSettingField(content, title, d.cursorSizeField,
+		NewFieldTrailingHint(d.cursorSizeField, i18n.Text("points"), false))
 }
 
 // addLabeledSettingField adds a row to the three-column content: a leading label with the title, then the field
@@ -506,6 +515,7 @@ func syncMembership[T cmp.Ordered](boxes []membershipCheckBox[T], members []T) {
 func (d *generalSettingsDockable) reset() {
 	s := gurps.GlobalSettings()
 	*s.General = *gurps.NewGeneralSettings()
+	s.General.EnsureValidity() // Pushes the defaults unison keeps copies of, such as tooltip timing and cursor size.
 	gurps.SyncScriptExecTimeLimit()
 	s.DeepSearch = nil
 	s.OpenInWindow = nil
@@ -519,7 +529,8 @@ func (d *generalSettingsDockable) sync() {
 	gs := s.General
 	d.nameField.SetText(gs.DefaultPlayerName)
 	for _, one := range d.checkBoxes {
-		SetCheckBoxState(one.box, *one.value)
+		// Sync runs the box's OnSet when a reset or load changed its setting, as a click would.
+		one.box.Sync()
 	}
 	d.appUpdateCheckPopup.Select(gs.AppUpdateCheck)
 	d.libraryUpdateCheckPopup.Select(gs.LibraryUpdateCheck)

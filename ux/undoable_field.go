@@ -45,8 +45,11 @@ type undoableField[T comparable] struct {
 	// Panel.Focused() is not used for this because it also requires the window to be active, and a field keeps the
 	// focus -- and receives the next keystroke -- across its window being deactivated and reactivated, with no focus
 	// callbacks fired in between.
-	hasFocus      bool
-	marksModified bool
+	hasFocus bool
+	// focusedForReading records whether the field gained the focus while disabled, which happens only for a screen
+	// reader to read it (see unison.SetFocusForReading).
+	focusedForReading bool
+	marksModified     bool
 }
 
 // init sets the field up to edit the value the accessors reach, on behalf of self, the field embedding it.
@@ -89,13 +92,19 @@ func accessibilityNameFallback(title string) func(node *accessibility.Node) {
 
 func (f *undoableField[T]) gainedFocus() {
 	f.hasFocus = true
+	f.focusedForReading = !f.Enabled()
 	f.DefaultFocusGained()
 }
 
+// lostFocus reformats the field's text, other than in a field that gained the focus while disabled and is still
+// disabled: that field was only being read, and reformatting could clamp a value nobody edited.
 func (f *undoableField[T]) lostFocus() {
 	f.hasFocus = false
 	f.useGet = true
-	f.SetText(f.format(f.parse(f.Text())))
+	if !f.focusedForReading || f.Enabled() {
+		f.SetText(f.format(f.parse(f.Text())))
+	}
+	f.focusedForReading = false
 	f.DefaultFocusLost()
 }
 
@@ -138,10 +147,11 @@ func (f *undoableField[T]) setWithoutUndo(state *unison.FieldState, focus bool) 
 	f.Validate()
 }
 
-// Sync the field to the current value. While the field has the focus, the text in it is what the user is working on,
-// so it is re-parsed rather than replaced.
+// Sync the field to the current value. While the field has the focus, the text in it is what the user is working on, so
+// it is re-parsed rather than replaced. Nothing can be typed into a disabled field, which may hold the focus for a
+// screen reader to read it (see unison.SetFocusForReading), so its text is always replaced.
 func (f *undoableField[T]) Sync() {
-	if !f.hasFocus {
+	if !f.hasFocus || !f.Enabled() {
 		f.useGet = true
 	}
 	state := f.GetFieldState()

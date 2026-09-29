@@ -14,6 +14,7 @@ import (
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
+	"github.com/richardwilkes/unison/enums/role"
 )
 
 // NonEditablePageField holds the data for a non-editable page field.
@@ -53,6 +54,9 @@ func newNonEditablePageField(syncer func(*NonEditablePageField), hAlign align.En
 		syncer: syncer,
 	}
 	f.Self = f
+	// Self is the field, not a *Label, so without an explicit role unison would not take it for static text, and
+	// unison.SetFocusForReading would not make it a tab stop.
+	f.Accessibility.Role = role.Label
 	f.Font = fonts.PageFieldPrimary
 	f.HAlign = hAlign
 	f.SetBorder(unison.NewEmptyBorder(geom.Insets{
@@ -75,6 +79,13 @@ func syncTitleFrom(text func() string) func(*NonEditablePageField) {
 // Sync the field to the current value.
 func (f *NonEditablePageField) Sync() {
 	f.syncer(f)
+}
+
+// ProvideAccessibility implements unison.AccessibilityProvider. It hides the field while it is empty and unnamed, which
+// unison does for a label only when it derives the label's role, and this field's role is explicit.
+func (f *NonEditablePageField) ProvideAccessibility(b *unison.AccessibilityBuilder) {
+	f.Label.ProvideAccessibility(b)
+	ignoreEmptyStaticText(b, f.Text.String())
 }
 
 // SetTitleIfChanged sets the field's text and marks it for layout within its dockable when the text differs, returning

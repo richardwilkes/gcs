@@ -82,6 +82,7 @@ func InitWorkspace(wnd *unison.Window) {
 	Workspace.Navigator = newNavigator()
 	Workspace.DocumentDock = NewDocumentDock()
 	wnd.SetContent(Workspace.TopDock)
+	installStaticTextFocusRing(wnd)
 	Workspace.TopDock.DockTo(Workspace.Navigator, nil, side.Left)
 	dc := Workspace.Navigator.Ancestor[*unison.DockContainer]()
 	Workspace.TopDock.DockTo(Workspace.DocumentDock, dc, side.Right)
@@ -619,6 +620,7 @@ func NewWindowForDockable(dockable unison.Dockable, group dgroup.Group) (*unison
 		VGrab:  true,
 	})
 	content.AddChild(panel)
+	installStaticTextFocusRing(wnd)
 	wnd.ClientData()[dockableClientDataKey] = dockable
 	if tc, ok := dockable.(unison.TabCloser); ok {
 		pendingClose := false

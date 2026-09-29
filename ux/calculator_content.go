@@ -24,6 +24,7 @@ import (
 	"github.com/richardwilkes/unison/enums/check"
 	"github.com/richardwilkes/unison/enums/paintstyle"
 	"github.com/richardwilkes/unison/enums/pathop"
+	"github.com/richardwilkes/unison/enums/role"
 	"github.com/richardwilkes/unison/enums/weight"
 )
 
@@ -131,11 +132,14 @@ func (c *calculatorContent) addRow(columns int) *unison.Panel {
 }
 
 // addFieldRow adds a row holding the field followed by a label with the given text, and returns the label so that a
-// caller passing no text can fill it in later.
+// caller passing no text can fill it in later. A screen reader is given the label's current text as the field's
+// description.
 func (c *calculatorContent) addFieldRow(field unison.Paneler, trailing string) *textLabel {
 	row := c.addRow(2)
 	row.AddChild(field)
-	return addPlainLabel(row, trailing)
+	label := addPlainLabel(row, trailing)
+	describeWithTrailingLabel(field, label)
+	return label
 }
 
 // resultsBoxMargin is the space between a calculator's inputs and the box its results are shown in.
@@ -382,17 +386,23 @@ func setNotes(panel *unison.Panel, notes []string) {
 	}
 }
 
-// createHeader returns a section header holding the text, followed by the page references in parentheses, with the
-// given amount of empty space above it.
-func (c *calculatorContent) createHeader(text string, linkSpecs []linkSpec, topMargin float32) *unison.Panel {
-	wrapper := unison.NewPanel()
-	wrapper.SetLayout(&unison.FlexLayout{Columns: 1 + 2*len(linkSpecs)})
-	if topMargin > 0 {
-		wrapper.SetBorder(unison.NewEmptyBorder(geom.Insets{Top: topMargin}))
-	}
+// headerPageRefOpener, when set, replaces opening a section header's link, so tests can see what it would open.
+var headerPageRefOpener func(pageRef, highlight string)
 
-	first := unison.NewLabel()
-	first.Font = &unison.DynamicFont{
+func openHeaderPageRef(pageRef, highlight string) {
+	if headerPageRefOpener != nil {
+		headerPageRefOpener(pageRef, highlight)
+		return
+	}
+	OpenPageReference(pageRef, highlight, nil)
+}
+
+// createHeader returns a section header holding the text, followed by the page references in parentheses, with the
+// given amount of empty space above it. It is a single heading with the page references as links inside it (see
+// textLabel.linkRefs), so a screen reader reads it as a whole and its heading navigation finds the section.
+func (c *calculatorContent) createHeader(text string, linkSpecs []linkSpec, topMargin float32) *unison.Panel {
+	header := newSingleLineLabel()
+	header.font = &unison.DynamicFont{
 		Resolver: func() unison.FontDescriptor {
 			desc := unison.LabelFont.Descriptor()
 			desc.Size += 2
@@ -400,41 +410,30 @@ func (c *calculatorContent) createHeader(text string, linkSpecs []linkSpec, topM
 			return desc
 		},
 	}
-	if len(linkSpecs) > 0 {
-		first.SetTitle(text + " (")
-		wrapper.AddChild(first)
-	} else {
-		first.SetTitle(text)
-		wrapper.AddChild(first)
-		return wrapper
-	}
-
-	linkTheme := unison.DefaultLinkTheme
-	linkTheme.Font = &unison.DynamicFont{
+	header.linkFont = &unison.DynamicFont{
 		Resolver: func() unison.FontDescriptor {
 			desc := unison.LabelFont.Descriptor()
 			desc.Weight = weight.Bold
 			return desc
 		},
 	}
-	for index, linkSpec := range linkSpecs {
-		link := unison.NewLink(linkSpec.pageRef, "", linkSpec.pageRef, &linkTheme, func(_ unison.Paneler, _ string) {
-			OpenPageReference(linkSpec.pageRef, linkSpec.highlight, nil)
-		})
-		wrapper.AddChild(link)
-		if index < len(linkSpecs)-1 {
-			comma := unison.NewLabel()
-			comma.Font = first.Font
-			comma.SetTitle(", ")
-			wrapper.AddChild(comma)
-		}
+	header.Accessibility.Role = role.Heading
+	header.Accessibility.Level = 1
+	if topMargin > 0 {
+		header.SetBorder(unison.NewEmptyBorder(geom.Insets{Top: topMargin}))
 	}
-
-	last := unison.NewLabel()
-	last.Font = first.Font
-	last.SetTitle(")")
-	wrapper.AddChild(last)
-	return wrapper
+	if len(linkSpecs) > 0 {
+		refs := make([]string, 0, len(linkSpecs))
+		highlights := make(map[string]string, len(linkSpecs))
+		for _, spec := range linkSpecs {
+			refs = append(refs, spec.pageRef)
+			highlights[spec.pageRef] = spec.highlight
+		}
+		header.linkRefs(func(ref string) { openHeaderPageRef(ref, highlights[ref]) }, refs...)
+		text += " (" + strings.Join(refs, ", ") + ")"
+	}
+	header.SetTitle(text)
+	return header.AsPanel()
 }
 
 // useMetersFor returns true if lengths for the given entity should be shown in metric units. A nil entity uses the

@@ -377,21 +377,17 @@ func SkillsHeaderData(columnID int) HeaderData {
 		data.Title = i18n.Text("Skill / Technique")
 		data.Primary = true
 	case SkillDifficultyColumn:
-		data.Title = i18n.Text("Diff")
-		data.Detail = i18n.Text("Difficulty")
+		data = abbreviatedHeaderData(i18n.Text("Diff"), i18n.Text("Difficulty"))
 	case SkillTagsColumn:
 		data = tagsHeaderData()
 	case SkillReferenceColumn:
 		data = pageRefHeaderData()
 	case SkillLevelColumn:
-		data.Title = i18n.Text("SL")
-		data.Detail = i18n.Text("Skill Level")
+		data = abbreviatedHeaderData(i18n.Text("SL"), i18n.Text("Skill Level"))
 	case SkillRelativeLevelColumn:
-		data.Title = i18n.Text("RSL")
-		data.Detail = i18n.Text("Relative Skill Level")
+		data = abbreviatedHeaderData(i18n.Text("RSL"), i18n.Text("Relative Skill Level"))
 	case SkillPointsColumn:
-		data.Title = i18n.Text("Pts")
-		data.Detail = i18n.Text("Points")
+		data = abbreviatedHeaderData(i18n.Text("Pts"), i18n.Text("Points"))
 		data.Less = PointsLessFromString
 	case SkillLibSrcColumn:
 		data = libSrcHeaderData()

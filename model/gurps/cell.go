@@ -34,8 +34,11 @@ const (
 
 // HeaderData holds data for creating a column header's visual representation.
 type HeaderData struct {
-	Title           string
-	Detail          string
+	Title  string
+	Detail string
+	// Name is what a screen reader calls the column when Title is an image key or an abbreviation such as "Pts". It is
+	// short, like a title, since it is read ahead of the column's value in every row. Empty when Title reads as drawn.
+	Name            string
 	Less            func(a, b string) bool
 	TitleIsImageKey bool
 	Primary         bool
@@ -43,8 +46,14 @@ type HeaderData struct {
 
 // imageHeaderData returns the header data for a column whose title is one of the header image keys above, with detail
 // as its tooltip.
-func imageHeaderData(imageKey, detail string) HeaderData {
-	return HeaderData{Title: imageKey, Detail: detail, TitleIsImageKey: true}
+func imageHeaderData(imageKey, name, detail string) HeaderData {
+	return HeaderData{Title: imageKey, Name: name, Detail: detail, TitleIsImageKey: true}
+}
+
+// abbreviatedHeaderData returns the header data for a column whose title is an abbreviation, using what it stands for
+// as both its screen reader name and its tooltip.
+func abbreviatedHeaderData(title, name string) HeaderData {
+	return HeaderData{Title: title, Name: name, Detail: name}
 }
 
 func tagsHeaderData() HeaderData {
@@ -52,19 +61,19 @@ func tagsHeaderData() HeaderData {
 }
 
 func pageRefHeaderData() HeaderData {
-	return imageHeaderData(HeaderBookmark, PageRefTooltip())
+	return imageHeaderData(HeaderBookmark, i18n.Text("Page Reference"), PageRefTooltip())
 }
 
 func libSrcHeaderData() HeaderData {
-	return imageHeaderData(HeaderDatabase, LibSrcTooltip())
+	return imageHeaderData(HeaderDatabase, i18n.Text("Library Source"), LibSrcTooltip())
 }
 
 func switchHeaderData() HeaderData {
-	return imageHeaderData(HeaderSwitch, SwitchHeaderTooltip())
+	return imageHeaderData(HeaderSwitch, i18n.Text("Switched On"), SwitchHeaderTooltip())
 }
 
 func enabledHeaderData() HeaderData {
-	return imageHeaderData(HeaderCheckmark, ModifierEnabledTooltip())
+	return imageHeaderData(HeaderCheckmark, i18n.Text("Enabled"), ModifierEnabledTooltip())
 }
 
 // CellData holds data for creating a cell's visual representation.

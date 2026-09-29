@@ -31,7 +31,9 @@ var _ unison.ColorProvider = &encRowColor{}
 type EncumbrancePanel struct {
 	unison.Panel
 	entity     *gurps.Entity
+	header     *unison.Label
 	row        []unison.Paneler
+	levels     []*NonEditablePageField
 	current    int
 	overloaded bool
 }
@@ -39,19 +41,20 @@ type EncumbrancePanel struct {
 // NewEncumbrancePanel creates a new encumbrance panel.
 func NewEncumbrancePanel(entity *gurps.Entity) *EncumbrancePanel {
 	p := &EncumbrancePanel{entity: entity}
-	// There are no insets, since the header row that comes first should touch the border.
+	// There are no insets, since the header row should touch the border.
 	title := i18n.Text("Encumbrance, Move & Dodge")
-	_, layoutData := initPagePanel(p, &TitledBorder{Title: title}, 9, false, colors.TintEncumbrance)
-	// The block's title is drawn by its border, so the block is given it as its name as well.
+	border := newTitledBlockBorder(title)
+	_, layoutData := initPagePanel(p, border, 9, colors.TintEncumbrance)
+	// The border draws the title, so the block is also named by it and given a heading for a screen reader.
 	p.Accessibility.Name = title
+	addBlockHeading(p.AsPanel(), border, 9)
 	layoutData.HGrab = true
 	p.DrawCallback = func(gc *unison.Canvas, rect geom.Rect) {
-		r := p.Children()[0].FrameRect()
+		r := p.header.FrameRect()
 		r.X = rect.X
 		r.Width = rect.Width
 		gc.DrawRect(r, colors.Header.Paint(gc, r, paintstyle.Fill))
-		p.current = int(entity.EncumbranceLevel(false))
-		p.overloaded = entity.WeightCarried(false) > entity.MaximumCarry(encumbrance.ExtraHeavy)
+		p.syncCurrent()
 		for i, row := range p.row {
 			var ink unison.Ink
 			switch {
@@ -73,7 +76,8 @@ func NewEncumbrancePanel(entity *gurps.Entity) *EncumbrancePanel {
 		}
 	}
 
-	p.AddChild(NewPageHeader(i18n.Text("Level"), 3))
+	p.header = NewPageHeader(i18n.Text("Level"), 3)
+	p.AddChild(p.header)
 	p.AddChild(unison.NewPanel())
 	p.AddChild(NewPageHeader(i18n.Text("Max Load"), 1))
 	p.AddChild(unison.NewPanel())
@@ -87,7 +91,9 @@ func NewEncumbrancePanel(entity *gurps.Entity) *EncumbrancePanel {
 			index: i,
 		}
 		p.AddChild(p.createMarker(entity, enc, rowColor))
-		p.AddChild(p.createLevelField(enc, rowColor))
+		level := p.createLevelField(enc, rowColor)
+		p.levels = append(p.levels, level)
+		p.AddChild(level)
 		name := NewPageLabelWithInk(enc.String(), rowColor)
 		name.SetLayoutData(&unison.FlexLayoutData{
 			HAlign: align.Fill,
@@ -110,6 +116,36 @@ func NewEncumbrancePanel(entity *gurps.Entity) *EncumbrancePanel {
 		p.AddChild(p.createDodgeField(enc, rowColor))
 	}
 	return p
+}
+
+// Sync implements Syncer. Drawing also updates the current level, but a block that is not drawn, such as one scrolled
+// out of view, is still described to a screen reader.
+func (p *EncumbrancePanel) Sync() {
+	p.syncCurrent()
+}
+
+// syncCurrent updates the current level and overload state, and has a screen reader speak the current row's number and
+// name as the current level, since the marker beside the row is an undescribed image and overload is shown only by
+// color.
+func (p *EncumbrancePanel) syncCurrent() {
+	p.current = int(p.entity.EncumbranceLevel(false))
+	p.overloaded = p.entity.WeightCarried(false) > p.entity.MaximumCarry(encumbrance.ExtraHeavy)
+	for i, name := range p.row {
+		var level, levelName string
+		if i == p.current {
+			level = p.spokenCurrentLevel(p.levels[i].Text.String())
+			levelName = p.spokenCurrentLevel(encumbrance.Levels[i].String())
+		}
+		speakAs(p.levels[i], level)
+		speakAs(name, levelName)
+	}
+}
+
+func (p *EncumbrancePanel) spokenCurrentLevel(level string) string {
+	if p.overloaded {
+		return fmt.Sprintf(i18n.Text("Current Encumbrance Level %s, carrying more than the maximum load"), level)
+	}
+	return fmt.Sprintf(i18n.Text("Current Encumbrance Level %s"), level)
 }
 
 func (p *EncumbrancePanel) createMarker(entity *gurps.Entity, enc encumbrance.Level, rowColor *encRowColor) *unison.Label {

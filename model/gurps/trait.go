@@ -468,8 +468,7 @@ func TraitsHeaderData(columnID int) HeaderData {
 		data.Title = i18n.Text("Trait")
 		data.Primary = true
 	case TraitPointsColumn:
-		data.Title = i18n.Text("Pts")
-		data.Detail = i18n.Text("Points")
+		data = abbreviatedHeaderData(i18n.Text("Pts"), i18n.Text("Points"))
 		data.Less = PointsLessFromString
 	case TraitTagsColumn:
 		data = tagsHeaderData()

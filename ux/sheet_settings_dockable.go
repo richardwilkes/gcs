@@ -287,7 +287,8 @@ func (d *sheetSettingsDockable) createOptions(content *unison.Panel) {
 }
 
 // addCheckBox adds a checkbox with the given title to the panel, followed by a link to the page reference when one is
-// given, and returns it. The click callback is handed the state the box was left in.
+// given, and returns it. The click callback is handed the state the box was left in. The reference is a single label
+// with the link inside it, so a screen reader reads it whole and still finds the link.
 func (d *sheetSettingsDockable) addCheckBox(panel *unison.Panel, title, pageRef string, checked bool, onClick func(checked bool)) *unison.CheckBox {
 	checkbox := unison.NewCheckBox()
 	checkbox.SetTitle(title)
@@ -298,18 +299,12 @@ func (d *sheetSettingsDockable) addCheckBox(panel *unison.Panel, title, pageRef 
 		return checkbox
 	}
 	wrapper := unison.NewPanel()
-	wrapper.SetLayout(&unison.FlexLayout{Columns: 4})
+	wrapper.SetLayout(&unison.FlexLayout{Columns: 2, HSpacing: unison.StdHSpacing})
 	wrapper.AddChild(checkbox)
-	label := unison.NewLabel()
-	label.Font = checkbox.Font
-	label.SetTitle(" (")
-	wrapper.AddChild(label)
-	wrapper.AddChild(unison.NewLink(pageRef, "", pageRef, &unison.DefaultLinkTheme, func(_ unison.Paneler, _ string) {
-		OpenPageReference(pageRef, "", nil)
-	}))
-	label = unison.NewLabel()
-	label.Font = checkbox.Font
-	label.SetTitle(")")
+	label := newSingleLineLabel()
+	label.font = checkbox.Font
+	label.linkRefs(openPageRefLink, pageRef)
+	label.SetTitle("(" + pageRef + ")")
 	wrapper.AddChild(label)
 	panel.AddChild(wrapper)
 	return checkbox
