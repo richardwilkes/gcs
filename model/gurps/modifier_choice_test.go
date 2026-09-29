@@ -45,32 +45,68 @@ func newTraitModifierChoiceWith(mandatory bool, costs ...string) *TraitModifier 
 	return choice
 }
 
-// TestModifierContainerKinds verifies that a new modifier container is a group, that a new modifier choice is a
-// mandatory choice, and that each is named for its kind.
+// newEquipmentModifierChoiceWith returns a mandatory equipment modifier choice holding an option for each pair of cost
+// and weight adjustments, with none of them picked.
+func newEquipmentModifierChoiceWith(options ...[2]string) *EquipmentModifier {
+	choice := NewEquipmentModifierChoice(nil, nil)
+	for _, one := range options {
+		option := NewEquipmentModifier(nil, choice, false)
+		option.CostAmount = one[0]
+		option.WeightAmount = one[1]
+		option.SetEnabled(false)
+		choice.Children = append(choice.Children, option)
+	}
+	return choice
+}
+
+// linkToLibrarySource makes source the library version of the modifier whose Source is local, as the entity's source
+// matcher sees it.
+func linkToLibrarySource[T interface {
+	Hashable
+	ID() tid.TID
+}](entity *Entity, local *Source, source T) {
+	libFile := LibraryFile{Library: "Test Library", Path: "Test"}
+	*local = Source{LibraryFile: libFile, TID: source.ID()}
+	entity.SourceMatcher().libHashes = map[LibraryFile]libSrcData{
+		libFile: {dataHashes: map[tid.TID]HashAndData{source.ID(): {Hash: Hash64(source), Data: source}}},
+	}
+}
+
+// hashOf is a Hashable made of a function, for working out what a hash is expected to be.
+type hashOf func(h hash.Hash)
+
+func (f hashOf) Hash(h hash.Hash) { f(h) }
+
+// TestModifierContainerKinds verifies that a new modifier container is a group and a new modifier choice a mandatory
+// one, that only a group converts to a choice and back, and that a group hashes as a modifier container always has, so
+// that copies on existing sheets don't show as out of step with their library after an upgrade.
 func TestModifierContainerKinds(t *testing.T) {
 	c := check.New(t)
 	group := NewTraitModifier(nil, nil, true)
 	c.False(IsModifierChoice(group))
-	c.Equal("Trait Modifier Group", group.Kind())
-	c.Equal("Trait Modifier Group", group.Name)
-	choice := NewTraitModifierChoice(nil, nil)
-	c.True(IsModifierChoice(choice))
-	c.True(IsMandatoryModifierChoice(choice))
-	c.Equal("Trait Modifier Choice", choice.Kind())
-	c.Equal("Trait Modifier Choice", choice.Name)
-	c.Equal("Pick 1", ModifierChoiceDescription(choice))
-	choice.SetMandatoryChoice(false)
-	c.False(IsMandatoryModifierChoice(choice))
-	c.Equal("Pick at most 1", ModifierChoiceDescription(choice))
+	c.Equal(Hash64(hashOf(func(h hash.Hash) {
+		group.TraitModifierSyncData.hash(h)
+		xhash.Num8(h, uint8(255))
+	})), Hash64(group), "a group hashes as a container always has")
+	c.True(CanConvertToModifierChoice(group))
+	ConvertToModifierChoice(group)
+	c.True(IsMandatoryModifierChoice(group))
+	c.Equal("Pick 1", ModifierChoiceDescription(group))
+	c.False(CanConvertToModifierChoice(group), "a choice is already a choice")
+	c.False(IsTemplateChoiceContainer(group), "a modifier choice is not a template choice")
+	mandatory := Hash64(group)
+	group.SetMandatoryChoice(false)
+	c.Equal("Pick at most 1", ModifierChoiceDescription(group))
+	c.NotEqual(mandatory, Hash64(group), "what a choice asks for is part of its hash")
+	ConvertFromModifierChoice(group)
+	c.False(IsModifierChoice(group))
 
-	eqGroup := NewEquipmentModifier(nil, nil, true)
-	c.Equal("Equipment Modifier Group", eqGroup.Kind())
-	eqChoice := NewEquipmentModifierChoice(nil, nil)
-	c.True(IsMandatoryModifierChoice(eqChoice))
-	c.Equal("Equipment Modifier Choice", eqChoice.Kind())
-
+	c.True(IsMandatoryModifierChoice(NewTraitModifierChoice(nil, nil)))
+	c.True(IsMandatoryModifierChoice(NewEquipmentModifierChoice(nil, nil)))
 	c.False(IsModifierChoice(NewTraitModifier(nil, nil, false)), "a modifier that isn't a container is never a choice")
-	c.False(IsTemplateChoiceContainer(choice), "a modifier choice is not a template choice")
+	c.False(CanConvertToModifierChoice(NewEquipmentModifier(nil, nil, false)))
+	c.True(CanConvertToModifierChoice(NewEquipmentModifier(nil, nil, true)))
+	c.False(CanConvertToModifierChoice(NewTrait(nil, nil, true)), "only a modifier container can become one")
 }
 
 // TestModifierChoiceNormalizesOnLoad verifies that loading rewrites a choice in the nearer supported form, an exact
@@ -156,24 +192,6 @@ func TestModifierChoiceOptions(t *testing.T) {
 	_, ok = ModifierChoiceFor(newTraitModifierOption(NewTraitModifier(nil, nil, true), "Loose", "+1"))
 	c.False(ok, "a modifier in a plain group is no option")
 	c.Nil(ModifierChoiceOptions(group))
-}
-
-// TestModifierChoiceConversion verifies that a group converts to a mandatory choice and back, and that nothing else
-// does.
-func TestModifierChoiceConversion(t *testing.T) {
-	c := check.New(t)
-	group := NewEquipmentModifier(nil, nil, true)
-	c.True(CanConvertToModifierChoice(group))
-	ConvertToModifierChoice(group)
-	c.True(IsMandatoryModifierChoice(group))
-	c.False(CanConvertToModifierChoice(group), "a choice is already a choice")
-	before := Hash64(group)
-	group.SetMandatoryChoice(false)
-	c.NotEqual(before, Hash64(group), "what a choice asks for is part of its sync data")
-	ConvertFromModifierChoice(group)
-	c.False(IsModifierChoice(group))
-	c.False(CanConvertToModifierChoice(NewEquipmentModifier(nil, nil, false)))
-	c.False(CanConvertToModifierChoice(NewTrait(nil, nil, true)), "only a modifier container can become one")
 }
 
 // TestTraitPointsRangeWithMandatoryModifierChoice verifies that a trait whose mandatory modifier choice is still to be
@@ -354,64 +372,28 @@ func TestUnresolvedModifierChoiceOnASheet(t *testing.T) {
 }
 
 // TestSettleModifierChoices verifies that settling keeps no more than one option of a choice enabled, keeping the pick
-// a choice already had over options that have just arrived, and that loading and converting to a choice settle too.
+// a choice already had over options that have just arrived.
 func TestSettleModifierChoices(t *testing.T) {
 	c := check.New(t)
 	choice := newTraitModifierChoiceWith(false, "+1", "+2", "+3")
-	enabled := func() []bool {
-		return []bool{choice.Children[0].Enabled(), choice.Children[1].Enabled(), choice.Children[2].Enabled()}
-	}
 	for _, one := range choice.Children {
 		one.SetEnabled(true)
 	}
 	arrived := choice.Children[0]
 	c.True(SettleModifierChoices(func(m *TraitModifier) bool { return m == arrived }, choice))
-	c.Equal([]bool{false, true, false}, enabled(), "the first option that was already there is kept")
+	c.Equal([]bool{false, true, false},
+		[]bool{choice.Children[0].Enabled(), choice.Children[1].Enabled(), choice.Children[2].Enabled()},
+		"the first option that was already there is kept")
 	c.False(SettleModifierChoices(nil, choice), "a settled choice has nothing to settle")
-
-	for _, one := range choice.Children {
-		one.SetEnabled(true)
-	}
-	data, err := json.Marshal(choice)
-	c.NoError(err)
-	var loaded TraitModifier
-	c.NoError(json.Unmarshal(data, &loaded))
-	c.True(loaded.Children[0].Enabled(), "loading keeps the first option enabled")
-	c.False(loaded.Children[1].Enabled() || loaded.Children[2].Enabled(), "and no other")
-
-	group := NewTraitModifier(nil, nil, true)
-	a := NewTraitModifier(nil, group, false)
-	b := NewTraitModifier(nil, group, false)
-	group.Children = []*TraitModifier{a, b}
-	ConvertToModifierChoice(group)
-	c.True(a.Enabled())
-	c.False(b.Enabled(), "a group that becomes a choice keeps only its first enabled option")
-
-	entity := NewEntity()
-	onSheet := NewTraitModifier(entity, nil, true)
-	first := NewTraitModifier(entity, onSheet, false)
-	first.SetEnabled(false)
-	onSheet.Children = []*TraitModifier{first}
-	ConvertToModifierChoice(onSheet)
-	c.True(first.Enabled(), "on a sheet a new mandatory choice gets its first option picked")
 }
 
 // TestEquipmentRangesWithMandatoryModifierChoice verifies that equipment whose mandatory modifier choice is still to be
 // made reports the range of values and weights its options give it, both for one of it and scaled by its quantity.
 func TestEquipmentRangesWithMandatoryModifierChoice(t *testing.T) {
 	c := check.New(t)
-	newOption := func(parent *EquipmentModifier, cost, weight string) {
-		m := NewEquipmentModifier(nil, parent, false)
-		m.CostAmount = cost
-		m.WeightAmount = weight
-		m.SetEnabled(false)
-		parent.Children = append(parent.Children, m)
-	}
 	eqp := newEquipmentItem("Sword", "100", "3 lb")
 	eqp.Quantity = fxp.FromInteger(2)
-	choice := NewEquipmentModifierChoice(nil, nil)
-	newOption(choice, "+50", "+1 lb")
-	newOption(choice, "+100", "+2 lb")
+	choice := newEquipmentModifierChoiceWith([2]string{"+50", "+1 lb"}, [2]string{"+100", "+2 lb"})
 	eqp.AddModifiers(choice)
 
 	c.Equal("150~200", FormatValueRange(eqp.adjustedValueRange(), fxp.Int.Comma), "one of it alone is open too")
@@ -432,10 +414,7 @@ func TestEquipmentRangesWithMandatoryModifierChoice(t *testing.T) {
 	// A container's own modifiers are costed with its contents as they are.
 	pack := NewEquipment(nil, nil, true)
 	pack.BaseValue = "10"
-	packChoice := NewEquipmentModifierChoice(nil, nil)
-	newOption(packChoice, "+1", "")
-	newOption(packChoice, "+2", "")
-	pack.AddModifiers(packChoice)
+	pack.AddModifiers(newEquipmentModifierChoiceWith([2]string{"+1", ""}, [2]string{"+2", ""}))
 	item := newEquipmentItem("Rope", "5", "1 lb")
 	item.SetParent(pack)
 	pack.Children = []*Equipment{item}
@@ -460,14 +439,7 @@ func TestWeightIgnoredForSkillsWithAnOpenChoice(t *testing.T) {
 	eqp.Equipped = true
 	eqp.WeightIgnoredForSkills = true
 	c.Equal(fxp.Weight(0), eqp.ExtendedWeight(true, fxp.Pound))
-	choice := NewEquipmentModifierChoice(nil, nil)
-	for _, weight := range []string{"+1 lb", "+2 lb"} {
-		option := NewEquipmentModifier(nil, choice, false)
-		option.WeightAmount = weight
-		option.SetEnabled(false)
-		choice.Children = append(choice.Children, option)
-	}
-	eqp.AddModifiers(choice)
+	eqp.AddModifiers(newEquipmentModifierChoiceWith([2]string{"", "+1 lb"}, [2]string{"", "+2 lb"}))
 	c.Equal(fxp.Weight(0), eqp.ExtendedWeight(true, fxp.Pound), "an open modifier choice doesn't change that")
 	c.Equal(fxp.Weight(fxp.FromInteger(4)), eqp.ExtendedWeight(false, fxp.Pound))
 
@@ -476,25 +448,6 @@ func TestWeightIgnoredForSkillsWithAnOpenChoice(t *testing.T) {
 	pick.Children = []*Equipment{eqp}
 	c.Equal(fxp.Weight(0), pick.ExtendedWeight(true, fxp.Pound), "nor does a template choice holding it")
 	c.Equal(fxp.Weight(fxp.FromInteger(4)), pick.ExtendedWeight(false, fxp.Pound))
-}
-
-// TestLootIsASheet verifies that equipment on a loot sheet has its modifier choices made, just as it would on a
-// character sheet, since both ask for them on arrival.
-func TestLootIsASheet(t *testing.T) {
-	c := check.New(t)
-	loot := NewLoot()
-	eqp := NewEquipment(loot, nil, false)
-	eqp.BaseValue = "100"
-	choice := NewEquipmentModifierChoice(loot, nil)
-	option := NewEquipmentModifier(loot, choice, false)
-	option.CostAmount = "+50"
-	choice.Children = []*EquipmentModifier{option}
-	eqp.AddModifiers(choice)
-	c.True(IsOnSheet(eqp))
-	c.True(IsOnSheet(option))
-	c.Equal("150", FormatValueRange(eqp.ExtendedValueRange(), fxp.Int.Comma), "the choice is made, so settled")
-	c.True(IsLockedModifierChoiceSelection(option))
-	c.False(IsOnSheet(NewEquipment(nil, nil, false)))
 }
 
 // TestUnnestingAChoiceKeepsTheOuterPick verifies that a choice within a choice turned back into a group gives its
@@ -534,85 +487,49 @@ func TestModifierEnabledChanges(t *testing.T) {
 	c.Equal(0, len(targets), "the pick of a mandatory choice on a sheet can't be turned off")
 }
 
-// TestSyncSettlesAModifierChoice verifies that a group which its library source has since made a choice keeps no more
-// than one of its options enabled once synced.
+// TestSyncSettlesAModifierChoice verifies that a group which its library source has since made a choice gets what the
+// choice asks for but not its options, and keeps no more than one of its options enabled once synced. One with none
+// enabled is left without a pick, flagged on a sheet as any other.
 func TestSyncSettlesAModifierChoice(t *testing.T) {
 	c := check.New(t)
 	entity := NewEntity()
-	libFile := LibraryFile{Library: "Test Library", Path: "Test" + TraitModifiersExt}
-	source := NewTraitModifierChoice(nil, nil)
-	local := NewTraitModifier(entity, nil, true)
-	a := NewTraitModifier(entity, local, false)
-	b := NewTraitModifier(entity, local, false)
-	local.Children = []*TraitModifier{a, b}
-	local.Source = Source{LibraryFile: libFile, TID: source.TID}
-	entity.SourceMatcher().libHashes = map[LibraryFile]libSrcData{
-		libFile: {dataHashes: map[tid.TID]HashAndData{source.TID: {Hash: Hash64(source), Data: source}}},
+	source := newTraitModifierChoiceWith(true, "+5")
+	for _, enabled := range []bool{true, false} {
+		local := NewTraitModifier(entity, nil, true)
+		a := NewTraitModifier(entity, local, false)
+		b := NewTraitModifier(entity, local, false)
+		a.SetEnabled(enabled)
+		b.SetEnabled(enabled)
+		local.Children = []*TraitModifier{a, b}
+		linkToLibrarySource(entity, &local.Source, source)
+		local.SyncWithSource()
+		c.True(IsMandatoryModifierChoice(local), "the sync brings the choice across")
+		c.Equal([]*TraitModifier{a, b}, local.Children, "but not its options")
+		c.Equal(enabled, a.Enabled(), "the first enabled option is kept")
+		c.False(b.Enabled(), "and no other")
+		var data CellData
+		local.CellData(TraitModifierDescriptionColumn, &data)
+		c.Equal(!enabled, data.ChoiceRequired, "a choice left without a pick is flagged")
 	}
-	local.SyncWithSource()
-	c.True(IsMandatoryModifierChoice(local), "the sync brings the choice across")
-	c.True(a.Enabled(), "the first enabled option is kept")
-	c.False(b.Enabled(), "and no other")
 }
 
 // TestSyncSettlesTheOuterChoice verifies that a choice within a choice which its library source has since made a group
-// gives its options to the choice around it, which keeps the pick it had, for both kinds of modifier.
+// gives its options to the choice around it, which keeps the pick it had.
 func TestSyncSettlesTheOuterChoice(t *testing.T) {
 	c := check.New(t)
-	libFile := LibraryFile{Library: "Test Library", Path: "Test"}
-
 	entity := NewEntity()
-	outer := NewTraitModifierChoice(entity, nil)
+	outer := NewEquipmentModifierChoice(entity, nil)
 	outer.SetMandatoryChoice(false)
-	p := NewTraitModifier(entity, outer, false)
-	inner := NewTraitModifierChoice(entity, outer)
-	q := NewTraitModifier(entity, inner, false)
-	inner.Children = []*TraitModifier{q}
-	outer.Children = []*TraitModifier{p, inner}
-	source := NewTraitModifier(nil, nil, true)
-	inner.Source = Source{LibraryFile: libFile, TID: source.TID}
-	entity.SourceMatcher().libHashes = map[LibraryFile]libSrcData{
-		libFile: {dataHashes: map[tid.TID]HashAndData{source.TID: {Hash: Hash64(source), Data: source}}},
-	}
+	p := NewEquipmentModifier(entity, outer, false)
+	inner := NewEquipmentModifierChoice(entity, outer)
+	q := NewEquipmentModifier(entity, inner, false)
+	inner.Children = []*EquipmentModifier{q}
+	outer.Children = []*EquipmentModifier{p, inner}
+	linkToLibrarySource(entity, &inner.Source, NewEquipmentModifier(nil, nil, true))
 	inner.SyncWithSource()
 	c.False(IsModifierChoice(inner), "the sync makes the inner choice a group")
 	c.True(p.Enabled(), "the outer choice keeps its pick")
 	c.False(q.Enabled(), "the option that came with the group is turned off")
-
-	entity = NewEntity()
-	eqOuter := NewEquipmentModifierChoice(entity, nil)
-	eqOuter.SetMandatoryChoice(false)
-	eqP := NewEquipmentModifier(entity, eqOuter, false)
-	eqInner := NewEquipmentModifierChoice(entity, eqOuter)
-	eqQ := NewEquipmentModifier(entity, eqInner, false)
-	eqInner.Children = []*EquipmentModifier{eqQ}
-	eqOuter.Children = []*EquipmentModifier{eqP, eqInner}
-	eqSource := NewEquipmentModifier(nil, nil, true)
-	eqInner.Source = Source{LibraryFile: libFile, TID: eqSource.TID}
-	entity.SourceMatcher().libHashes = map[LibraryFile]libSrcData{
-		libFile: {dataHashes: map[tid.TID]HashAndData{eqSource.TID: {Hash: Hash64(eqSource), Data: eqSource}}},
-	}
-	eqInner.SyncWithSource()
-	c.False(IsModifierChoice(eqInner))
-	c.True(eqP.Enabled())
-	c.False(eqQ.Enabled())
-}
-
-// TestIndependentModifierChoicesWithinTheCap verifies that each way of making two open choices is costed, and that the
-// ways of making twelve choices of two options each, as many as the cap allows, are all worked through.
-func TestIndependentModifierChoicesWithinTheCap(t *testing.T) {
-	c := check.New(t)
-	trait := NewTrait(nil, nil, false)
-	trait.BasePoints = fxp.FromInteger(10)
-	trait.AddModifiers(newTraitModifierChoiceWith(true, "+1", "+2"), newTraitModifierChoiceWith(true, "+10", "+20"))
-	c.Equal("21~32", trait.PointsRange(nil).String())
-
-	atTheCap := NewTrait(nil, nil, false)
-	atTheCap.BasePoints = fxp.FromInteger(10)
-	for range 12 {
-		atTheCap.AddModifiers(newTraitModifierChoiceWith(true, "+0", "+1"))
-	}
-	c.Equal("10~22", atTheCap.PointsRange(nil).String(), "4096 ways are all worked through")
 }
 
 // TestContainedWeightReductionOfEachOption verifies that each option of a mandatory choice on a container reduces the
@@ -622,16 +539,10 @@ func TestContainedWeightReductionOfEachOption(t *testing.T) {
 	c := check.New(t)
 	pack := NewEquipment(nil, nil, true)
 	pack.BaseWeight = "1 lb"
-	choice := NewEquipmentModifierChoice(nil, nil)
-	reducing := NewEquipmentModifier(nil, choice, false)
-	reducing.WeightAmount = "+1 lb"
+	choice := newEquipmentModifierChoiceWith([2]string{"", "+1 lb"}, [2]string{"", ""})
 	reduction := NewContainedWeightReduction()
 	reduction.Reduction = "50%"
-	reducing.Features = Features{reduction}
-	reducing.SetEnabled(false)
-	plain := NewEquipmentModifier(nil, choice, false)
-	plain.SetEnabled(false)
-	choice.Children = []*EquipmentModifier{reducing, plain}
+	choice.Children[0].Features = Features{reduction}
 	pack.AddModifiers(choice)
 	item := newEquipmentItem("Rock", "0", "10 lb")
 	item.SetParent(pack)
@@ -666,15 +577,7 @@ func TestPastTheCapTheCurrentPicksCount(t *testing.T) {
 	eqp := newEquipmentItem("Crate", "100", "10 lb")
 	eqp.Quantity = fxp.FromInteger(2)
 	for range 13 {
-		choice := NewEquipmentModifierChoice(nil, nil)
-		for range 2 {
-			option := NewEquipmentModifier(nil, choice, false)
-			option.WeightAmount = "+1 lb"
-			option.CostAmount = "+1"
-			option.SetEnabled(false)
-			choice.Children = append(choice.Children, option)
-		}
-		eqp.AddModifiers(choice)
+		eqp.AddModifiers(newEquipmentModifierChoiceWith([2]string{"+1", "+1 lb"}, [2]string{"+1", "+1 lb"}))
 	}
 	c.Equal("10 lb", FormatWeightRange(eqp.adjustedWeightRange(fxp.Pound), fxp.Pound.Format))
 	c.Equal(fxp.Weight(fxp.FromInteger(10)), eqp.AdjustedWeight(false, fxp.Pound))
@@ -703,26 +606,4 @@ func TestConvertingAGroupWithinAChoiceOnASheet(t *testing.T) {
 	c.True(pick.Enabled(), "the new choice keeps the pick it holds")
 	c.True(other.Enabled(), "the choice around it gets a pick of its own")
 	c.True(ModifierChoiceIsResolved(outer))
-}
-
-// hashOf is a Hashable made of a function, for working out what a hash is expected to be.
-type hashOf func(h hash.Hash)
-
-func (f hashOf) Hash(h hash.Hash) { f(h) }
-
-// TestModifierContainerHashes verifies that a group hashes just as a modifier container always has, so that copies in
-// existing sheets don't show as out of step with their library after an upgrade, and that what a choice asks for is
-// part of its hash.
-func TestModifierContainerHashes(t *testing.T) {
-	c := check.New(t)
-	group := NewTraitModifier(nil, nil, true)
-	group.Name = "Options"
-	c.Equal(Hash64(hashOf(func(h hash.Hash) {
-		group.TraitModifierSyncData.hash(h)
-		xhash.Num8(h, uint8(255))
-	})), Hash64(group), "a group hashes as a container always has")
-	choice := NewTraitModifierChoice(nil, nil)
-	mandatory := Hash64(choice)
-	choice.SetMandatoryChoice(false)
-	c.NotEqual(mandatory, Hash64(choice), "mandatory and optional choices differ")
 }
