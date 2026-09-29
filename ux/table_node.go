@@ -603,13 +603,13 @@ func (n *Node[T]) addLabelCell(c *gurps.CellData, parent *unison.Panel, width fl
 // down at the time of the click, after c.Checked has been updated to its new state. onClick returns whether it took the
 // change; if it didn't, the cell is put back the way it was, so that it never shows a state the model didn't take on.
 //
-// Only a single click of the primary button toggles the cell. A press of any other button is left unconsumed for the
-// table. A right-click never reaches the cell, although these cells sit at the front of the page lists where one is
-// likely: unison takes it for the table's context menu and the table selects the row as the press lands (see
-// unison.ContextMenuPressHandler); only a right-drag hands the press back. A primary press with any other click count
-// is consumed but doesn't toggle, or the second click of a double-click would flip the state straight back at the cost
-// of two undo edits. The drag and up callbacks report the same consumption as their press, so a press the cell didn't
-// take is the table's from beginning to end.
+// Of mouse presses, only a single click of the primary button toggles the cell. A press of any other button is left
+// unconsumed for the table. A right-click never reaches the cell, although these cells sit at the front of the page
+// lists where one is likely: unison takes it for the table's context menu and the table selects the row as the press
+// lands (see unison.ContextMenuPressHandler); only a right-drag hands the press back. A primary press with any other
+// click count is consumed but doesn't toggle, or the second click of a double-click would flip the state straight back
+// at the cost of two undo edits. The drag and up callbacks report the same consumption as their press, so a press the
+// cell didn't take is the table's from beginning to end.
 func (n *Node[T]) newCheckCell(c *gurps.CellData, foreground unison.Ink, svgFor func(on bool) *unison.SVG,
 	onClick func(label *unison.Label, mods mod.Modifiers) bool,
 ) *unison.Label {
@@ -646,12 +646,7 @@ func (n *Node[T]) newCheckCell(c *gurps.CellData, foreground unison.Ink, svgFor 
 		node.HasCheck = true
 		node.Checked = check.FromBool(c.Checked)
 	}
-	tookPress := false
-	label.MouseDownCallback = func(_ geom.Point, button, clickCount int, mods mod.Modifiers) bool {
-		tookPress = button == unison.ButtonLeft
-		if !tookPress || clickCount != 1 {
-			return tookPress
-		}
+	toggle := func(mods mod.Modifiers) {
 		c.Checked = !c.Checked
 		// The new state is drawn and a layout asked for before the click is reported, since reporting it marks the
 		// owner as modified, which re-syncs the table and recreates every cell, leaving this label detached from the
@@ -663,6 +658,23 @@ func (n *Node[T]) newCheckCell(c *gurps.CellData, foreground unison.Ink, svgFor 
 			setDrawable(c.Checked)
 			label.MarkForLayoutAndRedraw()
 		}
+	}
+	// The table synthesizes no click for Space at cell level (see newLink), so without this, Space would open the row's
+	// editor rather than toggle the cell.
+	label.Accessibility.ActionCallback = func(req accessibility.ActionRequest) bool {
+		if req.Action != accessibility.Press && req.Action != accessibility.Toggle {
+			return false
+		}
+		n.keepingCellCursor(func() { toggle(mod.None) })
+		return true
+	}
+	tookPress := false
+	label.MouseDownCallback = func(_ geom.Point, button, clickCount int, mods mod.Modifiers) bool {
+		tookPress = button == unison.ButtonLeft
+		if !tookPress || clickCount != 1 {
+			return tookPress
+		}
+		toggle(mods)
 		return true
 	}
 	label.MouseDragCallback = func(_ geom.Point, _ int, _ mod.Modifiers) bool {
@@ -672,6 +684,32 @@ func (n *Node[T]) newCheckCell(c *gurps.CellData, foreground unison.Ink, svgFor 
 		return tookPress
 	}
 	return label
+}
+
+// keepingCellCursor runs f and then puts the cell cursor back on the cell it was on, if it was on one and the row still
+// exists. A change to a row re-syncs the table and restores its selection, which moves the cursor to row level, so a
+// second Space would open the row's editor rather than work the cell again.
+func (n *Node[T]) keepingCellCursor(f func()) {
+	table := n.table
+	if table == nil {
+		f()
+		return
+	}
+	row, col := table.LeadRowIndex(), table.LeadColumnIndex()
+	if row < 0 || col < 0 {
+		f()
+		return
+	}
+	id := table.RowFromIndex(row).ID()
+	f()
+	for i := range table.LastRowIndex() + 1 {
+		if table.RowFromIndex(i).ID() == id {
+			if table.LeadRowIndex() != i || table.LeadColumnIndex() != col {
+				table.SetLeadCell(i, col)
+			}
+			return
+		}
+	}
 }
 
 func (n *Node[T]) createToggleCell(c *gurps.CellData, foreground unison.Ink) unison.Paneler {
@@ -837,9 +875,13 @@ func (n *Node[T]) createPageRefLink(c *gurps.CellData, ref string, font unison.F
 	theme := unison.DefaultLinkTheme
 	theme.OnBackgroundInk = foreground
 	theme.Font = font
-	link := unison.NewLink(title, tooltip, ref, &theme, func(_ unison.Paneler, target string) {
+	link := newLink(title, tooltip, ref, &theme, func(_ unison.Paneler, target string) {
 		OpenPageReference(target, c.Secondary, nil)
 	})
+	// In a table cell the focus stays with the table, so the link needs no tab stop, nor the room unison leaves either
+	// side of it for a focus outline, which would widen every page reference column.
+	link.SetFocusable(false)
+	link.SetBorder(nil)
 	link.VAlign = align.Start
 	if icon != nil {
 		link.Drawable = icon

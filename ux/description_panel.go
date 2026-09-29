@@ -61,19 +61,27 @@ func NewDescriptionPanel(entity *gurps.Entity, targetMgr *TargetMgr) *Descriptio
 
 func (d *DescriptionPanel) drawSelf(gc *unison.Canvas, rect geom.Rect) {
 	gc.DrawRect(rect, unison.ThemeBelowSurface.Paint(gc, rect, paintstyle.Fill))
-	children := d.Children()
-	if len(children) == 0 {
-		return
-	}
-	column := children[0]
-	children = column.Children()
-	p := d.AsPanel()
-	for i := 2; i < len(children); i += 4 {
-		r := column.RectTo(children[i].FrameRect(), p)
+	for _, r := range d.bandRects() {
 		r.X = rect.X
 		r.Width = rect.Width
 		gc.DrawRect(r, unison.ThemeBanding.Paint(gc, r, paintstyle.Fill))
 	}
+}
+
+// bandRects returns, in the block's coordinates, the rows of the first column drawn with the alternate background:
+// every other label and field pair, starting with the second.
+func (d *DescriptionPanel) bandRects() []geom.Rect {
+	columns := blockRows(d.AsPanel())
+	if len(columns) == 0 {
+		return nil
+	}
+	column := columns[0]
+	children := column.Children()
+	var rects []geom.Rect
+	for i := 2; i < len(children); i += 4 {
+		rects = append(rects, column.RectTo(children[i].FrameRect(), d.AsPanel()))
+	}
+	return rects
 }
 
 func createColumn() *unison.Panel {

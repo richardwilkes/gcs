@@ -104,7 +104,7 @@ func TestPageRefMappingsInitialFocus(t *testing.T) {
 
 	children := content.Children()
 	c.Equal(5, len(children), "one row of trash button, ID label, offset field, edit button and file name label")
-	c.Nil(firstFocusableInSubtree(children[1], false), "the ID label the old code targeted cannot take the focus")
+	c.Nil(firstFocusableInSubtree(children[1], nil), "the ID label the old code targeted cannot take the focus")
 
 	target := firstContentFocusTarget(toolbar, content)
 	c.True(children[2] == target, "the first row's offset field is the initial focus target")

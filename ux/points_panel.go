@@ -106,7 +106,7 @@ func NewPointsPanel(entity *gurps.Entity, targetMgr *TargetMgr) *PointsPanel {
 			Left:   1,
 			Bottom: 1,
 			Right:  1,
-		}, false), unison.NewEmptyBorder(titledPagePanelInsets)), 2, false, nil)
+		}, false), unison.NewEmptyBorder(titledPagePanelInsets)), 2, nil)
 	layoutData.HGrab = true
 	layoutData.VGrab = true
 	p.AddChild(p.ptsList)

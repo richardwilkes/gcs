@@ -241,8 +241,9 @@ func (f *NumericField[T]) setWithoutUndo(state *unison.FieldState, focus bool) {
 	f.undoableField.setWithoutUndo(state, focus)
 }
 
-// Sync the field to the current value. While the field has the focus, the text in it is what the user is working on,
-// so it is re-parsed rather than replaced.
+// Sync the field to the current value. While the field has the focus, the text in it is what the user is working on, so
+// it is re-parsed rather than replaced, unless the field is disabled, in which case it shows the value's exact text;
+// see undoableField.Sync.
 func (f *NumericField[T]) Sync() {
 	if !f.hasFocus && f.DisplayFormat != nil {
 		// The value is to come from the model and the field isn't being edited, so show the display rendering of it

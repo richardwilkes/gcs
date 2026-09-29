@@ -13,6 +13,7 @@ import (
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
+	"github.com/richardwilkes/unison/enums/role"
 )
 
 // NonEditableField holds the data for a non-editable field.
@@ -32,6 +33,9 @@ func newNonEditableField(syncer func(*NonEditableField), hAlign align.Enum) *Non
 		syncer: syncer,
 	}
 	f.Self = f
+	// Self is the field, not a *Label, so without an explicit role unison would not take it for static text, and
+	// unison.SetFocusForReading would not make it a tab stop.
+	f.Accessibility.Role = role.Label
 	f.Font = unison.FieldFont
 	f.HAlign = hAlign
 	f.SetBorder(unison.NewCompoundBorder(unison.NewLineBorder(unison.ThemeSurfaceEdge, geom.Size{},
@@ -47,4 +51,11 @@ func newNonEditableField(syncer func(*NonEditableField), hAlign align.Enum) *Non
 // Sync the field to the current value.
 func (f *NonEditableField) Sync() {
 	f.syncer(f)
+}
+
+// ProvideAccessibility implements unison.AccessibilityProvider. It hides the field while it is empty and unnamed, which
+// unison does for a label only when it derives the label's role, and this field's role is explicit.
+func (f *NonEditableField) ProvideAccessibility(b *unison.AccessibilityBuilder) {
+	f.Label.ProvideAccessibility(b)
+	ignoreEmptyStaticText(b, f.Text.String())
 }

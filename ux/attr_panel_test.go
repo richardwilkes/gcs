@@ -10,6 +10,7 @@
 package ux
 
 import (
+	"slices"
 	"strings"
 	"testing"
 
@@ -18,6 +19,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/attribute"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/unison"
+	"github.com/richardwilkes/unison/accessibility"
 )
 
 // TestAttrPanelHashReflectsTraitDrivenVisibility verifies that the panel's hash changes when a trait is added, removed,
@@ -279,4 +281,43 @@ func tooltipText(tip *unison.Panel) string {
 		}
 	}
 	return strings.Join(lines, "\n")
+}
+
+// The drawn text is withheld from the node, since macOS would speak both the name and the text.
+func TestAttrPanelPointsFieldsAreSpokenAsPoints(t *testing.T) {
+	c := check.New(t)
+	c.Equal("1 point", spokenPoints(fxp.One))
+	c.Equal("-1 point", spokenPoints(fxp.NegOne))
+	c.Equal("0 points", spokenPoints(0))
+	c.Equal("40 points", spokenPoints(fxp.FromInteger(40)))
+	c.Equal("2.5 points", spokenPoints(fxp.FromStringForced("2.5")))
+
+	e := gurps.NewEntity()
+	e.Recalculate()
+	panel := NewPrimaryAttrPanel(e, NewTargetMgr(unison.NewPanel()))
+	st := e.Attributes.Set[gurps.StrengthID]
+	c.NotNil(st)
+	children := panel.Children()
+	i := slices.Index(children, panel.valueFields[gurps.StrengthID].AsPanel())
+	if i < 2 {
+		t.Fatalf("the points field must be laid out just before the value field, after the heading, but the value "+
+			"field is child %d", i)
+	}
+	points, ok := children[i-1].Self.(*NonEditablePageField)
+	if !ok {
+		t.Fatalf("the panel before the value field must be the points field, not a %T", children[i-1].Self)
+	}
+	c.Equal("[0]", points.Text.String())
+	c.Equal("0 points", points.Accessibility.Name)
+
+	st.SetMaximum(st.Maximum() + fxp.Two)
+	e.Recalculate()
+	points.Sync()
+	c.Equal("[20]", points.Text.String())
+	c.Equal("20 points", points.Accessibility.Name, "the spoken points must follow the attribute")
+
+	node := &accessibility.Node{Name: points.Accessibility.Name, Text: &accessibility.TextInfo{Text: "[20]"}}
+	points.Accessibility.Callback(node)
+	c.Nil(node.Text, "the drawn text must be withheld from the node")
+	c.Equal("20 points", node.Name)
 }

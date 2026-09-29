@@ -25,6 +25,7 @@ import (
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
 	"github.com/richardwilkes/unison/enums/paintstyle"
+	"github.com/richardwilkes/unison/enums/role"
 	"github.com/richardwilkes/unison/enums/side"
 )
 
@@ -34,6 +35,8 @@ type BodyPanel struct {
 	entity        *gurps.Entity
 	targetMgr     *TargetMgr
 	titledBorder  *TitledBorder
+	heading       *unison.Panel
+	header        *unison.Label
 	row           []unison.Paneler
 	sepLayoutData []*unison.FlexLayoutData
 	hash          uint64
@@ -47,18 +50,20 @@ func NewBodyPanel(entity *gurps.Entity, targetMgr *TargetMgr) *BodyPanel {
 	}
 	locations := gurps.SheetSettingsFor(entity).BodyType
 	p.hash = gurps.Hash64(locations)
-	p.titledBorder = &TitledBorder{Title: locations.Name}
-	// There is no top inset, since the header row that comes first should touch the border.
+	p.titledBorder = newTitledBlockBorder(locations.Name)
+	// There is no top inset, since the header row should touch the border.
 	initPagePanel(p, unison.NewCompoundBorder(p.titledBorder, unison.NewEmptyBorder(geom.Insets{
 		Left:   2,
 		Bottom: 1,
 		Right:  2,
-	})), 8, false, colors.TintBody)
-	// The block's title is drawn by its border, so the block is given it as its name as well.
+	})), 8, colors.TintBody)
+	// The border draws the title, so the block is also named by it and given a heading for a screen reader, unless the
+	// body's name is empty (see syncBlockHeading).
 	p.Accessibility.Name = locations.Name
+	p.heading = syncBlockHeading(p.AsPanel(), p.titledBorder, 8)
 	p.DrawCallback = func(gc *unison.Canvas, rect geom.Rect) {
 		gc.DrawRect(rect, unison.ThemeBelowSurface.Paint(gc, rect, paintstyle.Fill))
-		r := p.Children()[0].FrameRect()
+		r := p.header.FrameRect()
 		r.X = rect.X
 		r.Width = rect.Width
 		gc.DrawRect(r, colors.Header.Paint(gc, r, paintstyle.Fill))
@@ -80,8 +85,9 @@ func NewBodyPanel(entity *gurps.Entity, targetMgr *TargetMgr) *BodyPanel {
 }
 
 func (p *BodyPanel) addContent(locations *gurps.Body) {
-	p.RemoveAllChildren()
-	p.AddChild(NewPageHeader(i18n.Text("Roll"), 1))
+	removeBlockRows(p.AsPanel())
+	p.header = NewPageHeader(i18n.Text("Roll"), 1)
+	p.AddChild(p.header)
 	p.AddChild(unison.NewPanel())
 	p.AddChild(NewPageHeader(i18n.Text("Location"), 2))
 	p.AddChild(unison.NewPanel())
@@ -91,6 +97,10 @@ func (p *BodyPanel) addContent(locations *gurps.Body) {
 	p.AddChild(unison.NewPanel())
 	header = NewPageHeader("", 1)
 	header.Tooltip = newWrappedTooltip(i18n.Text("Notes for the hit location"))
+	// Left alone, this icon-only header would be described as an image, and unlike the headers beside it would not be a
+	// tab stop when static text is in the Tab order.
+	header.Accessibility.Role = role.Label
+	header.Accessibility.Name = i18n.Text("Notes")
 	baseline := header.Font.Baseline() * 0.8
 	header.Drawable = &unison.DrawableSVG{
 		SVG:  svg.FirstAidKit,
@@ -117,7 +127,8 @@ func (p *BodyPanel) addTable(bodyType *gurps.Body, depth int) {
 	}
 	for i, location := range bodyType.Locations {
 		rollRange := location.RollRange
-		if rollRange == "-" {
+		noRoll := rollRange == "-"
+		if noRoll {
 			rollRange = " "
 		}
 		var roll *unison.Label
@@ -125,6 +136,11 @@ func (p *BodyPanel) addTable(bodyType *gurps.Body, depth int) {
 			roll = NewPageLabel(rollRange)
 		} else {
 			roll = NewPageLabelCenter(rollRange)
+		}
+		if noRoll {
+			// The space keeps the row's layout, but as a label it would be a blank tab stop when static text is in the
+			// Tab order.
+			roll.Accessibility.Role = role.None
 		}
 		border := unison.NewEmptyBorder(geom.Insets{Left: float32(10 * depth), Bottom: 1})
 		roll.SetBorder(border)
@@ -138,7 +154,7 @@ func (p *BodyPanel) addTable(bodyType *gurps.Body, depth int) {
 		indexes := append(bodyType.ParentIndexes(), i)
 		if location.SubTable != nil {
 			name := unison.NewButton()
-			name.SetFocusable(false)
+			tabStopForReading(name)
 			name.HideBase = true
 			name.HAlign = align.Start
 			name.Side = side.Right
@@ -264,6 +280,7 @@ func (p *BodyPanel) sync(force bool) {
 		p.hash = hash
 		p.titledBorder.Title = locations.Name
 		p.Accessibility.Name = locations.Name
+		p.heading = syncBlockHeading(p.AsPanel(), p.titledBorder, 8)
 		p.addContent(locations)
 		MarkForLayoutWithinDockable(p)
 	}

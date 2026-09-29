@@ -147,7 +147,7 @@ func (a *AttrPanel) columns() int {
 
 func (a *AttrPanel) rebuild(attrs *gurps.AttributeDefs) {
 	focusRefKey := a.targetMgr.CurrentFocusRef()
-	a.RemoveAllChildren()
+	removeBlockRows(a.AsPanel())
 	a.rowStarts = nil
 	a.nameLabels = make(map[string]*unison.Label)
 	a.valueFields = make(map[string]unison.Paneler)
@@ -175,7 +175,7 @@ func (a *AttrPanel) rebuild(attrs *gurps.AttributeDefs) {
 				}
 				title := def.CombinedName()
 				button := unison.NewButton()
-				button.SetFocusable(false)
+				tabStopForReading(button)
 				button.SetLayoutData(&unison.FlexLayoutData{
 					HAlign: align.Middle,
 					VAlign: align.Middle,
@@ -339,7 +339,10 @@ func (a *AttrPanel) rebuild(attrs *gurps.AttributeDefs) {
 
 func (a *AttrPanel) createPointsField(attr *gurps.Attribute) unison.Paneler {
 	field := NewNonEditablePageFieldEnd(func(f *NonEditablePageField) {
-		f.SetTitleIfChanged("[" + attr.PointCost().String() + "]")
+		points := attr.PointCost()
+		f.SetTitleIfChanged("[" + points.String() + "]")
+		// Spoken as "20 points", since the brackets are nothing to hear and a bare number does not say what it counts.
+		speakAs(f, spokenPoints(points))
 		if def := attr.AttributeDef(); def != nil {
 			f.Tooltip = newWrappedTooltip(fmt.Sprintf(i18n.Text("Points spent on %s"), def.CombinedName()))
 		}
@@ -348,6 +351,13 @@ func (a *AttrPanel) createPointsField(attr *gurps.Attribute) unison.Paneler {
 	field.OnBackgroundInk = dimmedPointsColor
 	field.SetTitle(field.Text.String())
 	return field
+}
+
+func spokenPoints(points fxp.Int) string {
+	if points == fxp.One || points == fxp.NegOne {
+		return fmt.Sprintf(i18n.Text("%s point"), points.String())
+	}
+	return fmt.Sprintf(i18n.Text("%s points"), points.String())
 }
 
 // Sync the panel to the current data.

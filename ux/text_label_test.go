@@ -16,7 +16,9 @@ import (
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/unison"
+	"github.com/richardwilkes/unison/accessibility"
 	"github.com/richardwilkes/unison/enums/mod"
+	"github.com/richardwilkes/unison/enums/role"
 )
 
 // TestWrappingLabelSizes verifies the sizing that makes the label wrap: a hint with no usable width wraps the text to
@@ -172,4 +174,77 @@ func TestSingleLineLabel(t *testing.T) {
 	c.True(label.mouseDown(center, unison.ButtonLeft, 1, mod.None))
 	c.True(label.mouseUp(center, unison.ButtonLeft, mod.None))
 	c.Equal([]string{"BX400"}, opened, "the reference in a single-line label opens like one in a note")
+}
+
+// A hint (see describeWithTrailingLabel) is exposed to a screen reader only while it holds a link.
+func TestTextLabelIsATabStopWhileItHoldsLinks(t *testing.T) {
+	c := check.New(t)
+	label := newSingleLineLabel()
+	label.SetTitle("See the rules (B104)")
+	c.False(label.Focusable(), "the reference is not a link yet")
+	label.linkPageRefs(func(string) {})
+	c.True(label.Focusable(), "text holding a link is a tab stop")
+	label.SetTitle("See the rules")
+	c.False(label.Focusable(), "text holding no link is not")
+	label.SetTitle("(B104, B105)")
+	c.True(label.Focusable())
+	c.Equal(role.Label, label.Accessibility.Role)
+
+	// linkRefs links the references it is given, even ones pageRefPattern would not match.
+	label = newSingleLineLabel()
+	label.SetTitle("(PY65:30)")
+	label.linkRefs(func(string) {}, "PY65:30")
+	c.True(label.Focusable())
+	label.SetTitle("(PY65:31)")
+	c.False(label.Focusable(), "a reference the label was not told of is no link")
+
+	field := unison.NewField()
+	hint := newSingleLineLabel()
+	hint.linkPageRefs(func(string) {})
+	hint.SetTitle("yards fallen")
+	describeWithTrailingLabel(field, hint)
+	c.Equal(role.None, hint.Accessibility.Role, "a hint is heard with its control, so it is not described")
+	c.False(hint.Focusable())
+	hint.SetTitle("yards fallen (BX431)")
+	c.Equal(role.Label, hint.Accessibility.Role, "a hint holding a link is described, so the link can be reached")
+	c.True(hint.Focusable())
+	hint.SetTitle("")
+	c.Equal(role.None, hint.Accessibility.Role)
+	c.False(hint.Focusable())
+
+	// A heading keeps its role whatever its text holds.
+	heading := newSingleLineLabel()
+	heading.Accessibility.Role = role.Heading
+	heading.linkPageRefs(func(string) {})
+	heading.SetTitle("Falling (BX431)")
+	c.Equal(role.Heading, heading.Accessibility.Role)
+	heading.SetTitle("Falling")
+	c.Equal(role.Heading, heading.Accessibility.Role)
+}
+
+func TestDescribeWithHint(t *testing.T) {
+	c := check.New(t)
+	for _, one := range []struct {
+		hint        string
+		name        string
+		description string
+		want        string
+	}{
+		{hint: "seconds", name: "Tooltip Delay", want: "seconds"},
+		{hint: "seconds", name: "Tooltip Delay", description: "Value must be at least 0", want: "seconds. Value must be at least 0"},
+		{hint: " seconds ", name: "Tooltip Delay", want: "seconds"},
+		{hint: "", name: "Tooltip Delay", description: "How long to wait", want: "How long to wait"},
+		{hint: "FP", name: "FP", want: ""},
+		{hint: "FP", name: "Fatigue", description: "FP", want: "FP"},
+	} {
+		field := unison.NewField()
+		called := false
+		field.Accessibility.Callback = func(_ *accessibility.Node) { called = true }
+		describeWithHint(field, func() string { return one.hint })
+		node := &accessibility.Node{Name: one.name, Description: one.description}
+		field.Accessibility.Callback(node)
+		c.True(called, "the callback the field already had is still called")
+		c.Equal(one.want, node.Description, "hint %q, name %q, description %q", one.hint, one.name, one.description)
+		c.Equal(one.name, node.Name)
+	}
 }

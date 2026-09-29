@@ -161,3 +161,38 @@ func TestUnitsFieldAcceptsUnitsBeingTyped(t *testing.T) {
 	f.lostFocus()
 	c.Equal("7 kg", fxp.Kilogram.Format(stored), "the typed value and units were committed")
 }
+
+// TestDisabledFieldIsLeftAloneByTheFocus verifies that a field focused while disabled, which happens only for a screen
+// reader, is not treated as being edited: Sync replaces its text and losing the focus does not reformat it. A field
+// that could have been edited is still brought into range.
+func TestDisabledFieldIsLeftAloneByTheFocus(t *testing.T) {
+	c := check.New(t)
+
+	f, value := newTestIntegerField(5, 0, 10)
+	f.SetEnabled(false)
+	f.gainedFocus()
+	*value = 7
+	f.Sync()
+	c.Equal("7", f.Text(), "a disabled field holding the focus shows the value it is given")
+	c.Equal(7, *value)
+	*value = 50 // Out of the field's range, as a value from the model may be.
+	f.Sync()
+	c.Equal("50", f.Text(), "whatever the value is")
+	f.lostFocus()
+	c.Equal("50", f.Text(), "the focus leaving a field that was only read leaves its text alone")
+
+	// A field enabled by the time the focus leaves it may have been typed into.
+	f.gainedFocus()
+	f.SetEnabled(true)
+	f.lostFocus()
+	c.Equal("10", f.Text(), "a field that could be typed into is brought into range")
+
+	// So may one that gained the focus while enabled, even if disabled since.
+	f, value = newTestIntegerField(5, 0, 10)
+	f.gainedFocus()
+	f.Field.SetText("50")
+	f.SetEnabled(false)
+	f.lostFocus()
+	c.Equal("10", f.Text(), "a field that was being edited is brought into range")
+	c.Equal(10, *value)
+}

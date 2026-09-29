@@ -15,6 +15,7 @@ import (
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
+	"github.com/richardwilkes/unison/enums/role"
 )
 
 // TestNonEditablePageFieldSetTitleIfChanged verifies that a field built for a text function shows that text from the
@@ -46,4 +47,12 @@ func TestNonEditablePageFieldSetTitleIfChanged(t *testing.T) {
 	c.True(field.SetTitleIfChanged("three"), "different text is a change")
 	c.Equal("three", field.Text.String())
 	c.True(field.NeedsLayout)
+}
+
+// Both read-only fields have Self set to the field rather than a *Label, so they need an explicit label role for
+// unison.SetFocusForReading to make them tab stops.
+func TestReadOnlyFieldsAreLabelsForAccessibility(t *testing.T) {
+	c := check.New(t)
+	c.Equal(role.Label, NewNonEditablePageFieldFor(func() string { return "-2" }).Accessibility.Role)
+	c.Equal(role.Label, NewNonEditableField(func(f *NonEditableField) { f.SetTitle("path") }).Accessibility.Role)
 }

@@ -25,6 +25,9 @@ var _ unison.Border = &TitledBorder{}
 type TitledBorder struct {
 	Title string
 	Font  unison.Font
+	// HeadingInContent leaves the title strip to the panel's content, for the heading addBlockHeading adds there. The
+	// title is drawn the same either way.
+	HeadingInContent bool
 }
 
 func (t *TitledBorder) font() unison.Font {
@@ -34,19 +37,39 @@ func (t *TitledBorder) font() unison.Font {
 	return t.Font
 }
 
-// Insets implements unison.Border.
-func (t *TitledBorder) Insets() geom.Insets {
+// TitleHeight returns the height of the strip the title is drawn in, below the border's top line.
+func (t *TitledBorder) TitleHeight() float32 {
+	return xmath.Ceil(t.font().LineHeight()) + 1
+}
+
+// TitleStrip returns the strip the title is drawn in, for a border of the given size, in the coordinates of the panel
+// the border is on.
+func (t *TitledBorder) TitleStrip(size geom.Size) geom.Rect {
+	return geom.NewRect(1, 1, size.Width-2, t.TitleHeight())
+}
+
+// titleInsets returns the insets including the title strip, which the border paints even when HeadingInContent is set.
+func (t *TitledBorder) titleInsets() geom.Insets {
 	return geom.Insets{
-		Top:    xmath.Ceil(t.font().LineHeight()) + 2,
+		Top:    t.TitleHeight() + 1,
 		Left:   1,
 		Bottom: 1,
 		Right:  1,
 	}
 }
 
+// Insets implements unison.Border.
+func (t *TitledBorder) Insets() geom.Insets {
+	insets := t.titleInsets()
+	if t.HeadingInContent {
+		insets.Top = 1
+	}
+	return insets
+}
+
 // Draw implements unison.Border.
 func (t *TitledBorder) Draw(gc *unison.Canvas, rect geom.Rect) {
-	clip := rect.Inset(t.Insets())
+	clip := rect.Inset(t.titleInsets())
 	clip.Y += 0.5
 	clip.Height -= 0.5
 	path := unison.NewPath()

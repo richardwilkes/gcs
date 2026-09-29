@@ -129,23 +129,23 @@ func (we *weaponEditor) addDamageBlock(w *gurps.Weapon, content *unison.Panel) {
 
 	wrapper, _ = addFillWrapper(content, "", 2)
 	text := i18n.Text("Non-Leveled Damage Modifier")
-	addScriptField(wrapper, nil, "", text, text,
+	base := addScriptField(wrapper, nil, "", text, text,
 		func() string { return damage.Base },
 		func(s string) { damage.Base = strings.TrimSpace(s) }, false)
-	wrapper.AddChild(NewFieldTrailingLabel(i18n.Text("(unaffected by levels)"), false))
+	wrapper.AddChild(NewFieldTrailingHint(base, i18n.Text("(unaffected by levels)"), false))
 
 	wrapper, _ = addFillWrapper(content, "", 2)
 	text = i18n.Text("Leveled Damage Modifier")
-	addScriptField(wrapper, nil, "", text, text,
+	leveled := addScriptField(wrapper, nil, "", text, text,
 		func() string { return damage.BaseLeveled },
 		func(s string) { damage.BaseLeveled = strings.TrimSpace(s) }, false)
-	wrapper.AddChild(NewFieldTrailingLabel(i18n.Text("per level"), false))
+	wrapper.AddChild(NewFieldTrailingHint(leveled, i18n.Text("per level"), false))
 
 	wrapper, _ = addFillWrapper(content, "", 2)
 	text = i18n.Text("Damage Modifier Per Die")
-	addDecimalField(wrapper, nil, "", text, text, &damage.ModifierPerDie, -fxp.BillionMinusOne,
+	perDie := addDecimalField(wrapper, nil, "", text, text, &damage.ModifierPerDie, -fxp.BillionMinusOne,
 		fxp.BillionMinusOne, true)
-	wrapper.AddChild(NewFieldTrailingLabel(i18n.Text("per die"), false))
+	wrapper.AddChild(NewFieldTrailingHint(perDie, i18n.Text("per die"), false))
 
 	wrapper, _ = addFillWrapper(content, "", 4)
 	armorDivisor := i18n.Text("Armor Divisor")
@@ -242,11 +242,11 @@ func (we *weaponEditor) addRateOfFireModeBlock(content *unison.Panel, mode *gurp
 	text := i18n.Text("Shots Per Attack")
 	spa := addDecimalField(wrapper, nil, "", text, text, &mode.ShotsPerAttack, 0, fxp.MillionMinusOne, false)
 	spa.Accessibility.Name = fmt.Sprintf(i18n.Text("Mode %d Shots Per Attack"), modeNum)
-	wrapper.AddChild(NewFieldTrailingLabel(i18n.Text("per attack with"), false))
+	wrapper.AddChild(NewFieldTrailingHint(spa, i18n.Text("per attack with"), false))
 	text = i18n.Text("Secondary Projectiles")
 	sp := addDecimalField(wrapper, nil, "", text, text, &mode.SecondaryProjectiles, 0, fxp.MillionMinusOne, false)
 	sp.Accessibility.Name = fmt.Sprintf(i18n.Text("Mode %d Secondary Projectiles"), modeNum)
-	wrapper.AddChild(NewFieldTrailingLabel(i18n.Text("secondary projectiles"), false))
+	wrapper.AddChild(NewFieldTrailingHint(sp, i18n.Text("secondary projectiles"), false))
 	wrapper, _ = addFlowWrapper(content, "", 2)
 	auto := addCheckBox(wrapper, i18n.Text("Fully Automatic Only"), &mode.FullAutoOnly)
 	hccb := addCheckBox(wrapper, i18n.Text("High-cyclic Controlled Bursts"), &mode.HighCyclicControlledBursts)

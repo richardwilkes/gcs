@@ -245,8 +245,7 @@ func EquipmentModifierHeaderData(columnID int) HeaderData {
 		data.Title = i18n.Text("Equipment Modifier")
 		data.Primary = true
 	case EquipmentModifierTechLevelColumn:
-		data.Title = i18n.Text("TL")
-		data.Detail = i18n.Text("Tech Level")
+		data = abbreviatedHeaderData(i18n.Text("TL"), i18n.Text("Tech Level"))
 	case EquipmentModifierCostColumn:
 		data.Title = i18n.Text("Cost Adjustment")
 	case EquipmentModifierWeightColumn:

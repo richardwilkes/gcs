@@ -15,8 +15,10 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/v2/check"
+	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/accessibility"
+	"github.com/richardwilkes/unison/enums/role"
 )
 
 // randomizedFieldCount is the number of randomizer buttons the Description and Identity blocks hold between them:
@@ -116,25 +118,41 @@ func TestRandomizedPageFieldsShowWhatTheyStore(t *testing.T) {
 	}
 }
 
+// rowsAfterHeading is blockRows for a titled block, failing the test if the block does not start with a heading.
+func rowsAfterHeading(t *testing.T, block unison.Paneler) []*unison.Panel {
+	t.Helper()
+	children := block.AsPanel().Children()
+	if len(children) == 0 || children[0].Accessibility.Role != role.Heading {
+		t.Fatalf("a titled block starts with its heading, but a %T has %d children and starts with %T", block,
+			len(children), func() any {
+				if len(children) == 0 {
+					return nil
+				}
+				return children[0].Self
+			}())
+	}
+	return children[1:]
+}
+
 // TestPageFieldRowsAlternateLabelsAndFields verifies that the Description, Identity and Miscellaneous blocks lay out
-// their rows as a label followed by its field. The Description block's banding is drawn from that alternation, so a
-// helper that added the two in the wrong order would misplace every band below it.
+// their rows, after the heading, as a label followed by its field. The Description block's banding is drawn from that
+// alternation (see TestDescriptionPanelBandsSkipTheHeading), so a helper that added the two in the wrong order would
+// misplace every band below it.
 func TestPageFieldRowsAlternateLabelsAndFields(t *testing.T) {
 	c := check.New(t)
 	entity := gurps.NewEntity()
 	targetMgr := NewTargetMgr(newPageUndoRoot())
 	description := NewDescriptionPanel(entity, targetMgr)
-	columns := description.Children()
+	columns := rowsAfterHeading(t, description)
 	c.Equal(3, len(columns), "the Description block has three columns")
-	rows := map[string]*unison.Panel{
-		"identity":      NewIdentityPanel(entity, targetMgr).AsPanel(),
-		"miscellaneous": NewMiscPanel(entity, targetMgr).AsPanel(),
+	rows := map[string][]*unison.Panel{
+		"identity":      rowsAfterHeading(t, NewIdentityPanel(entity, targetMgr)),
+		"miscellaneous": rowsAfterHeading(t, NewMiscPanel(entity, targetMgr)),
 	}
 	for i, column := range columns {
-		rows["description column "+string(rune('1'+i))] = column
+		rows["description column "+string(rune('1'+i))] = column.Children()
 	}
-	for name, panel := range rows {
-		children := panel.Children()
+	for name, children := range rows {
 		c.True(len(children) > 0 && len(children)%2 == 0, "%s holds whole label/field pairs, but has %d children",
 			name, len(children))
 		for i, child := range children {
@@ -154,8 +172,8 @@ func TestPageFieldRowsAlternateLabelsAndFields(t *testing.T) {
 // TestRandomizedPageFieldsAreNamedByTheirLabels verifies that an assistive technology names every randomized field on
 // the Description and Identity blocks after the label in the randomizer wrapper before it, and reports that label as
 // what names the field. The sibling-label convention cannot do this on its own, since the field's preceding sibling is
-// the wrapper rather than the label. It also verifies that each randomizer button is still described, rather than
-// being folded away into a label.
+// the wrapper rather than the label. It also verifies that each randomizer button is still described, rather than being
+// folded away into a label.
 func TestRandomizedPageFieldsAreNamedByTheirLabels(t *testing.T) {
 	c := check.New(t)
 	screen, _ := startHeadlessWorkspace(t, c)
@@ -202,4 +220,26 @@ func TestRandomizedPageFieldsAreNamedByTheirLabels(t *testing.T) {
 		c.NotNil(screen.AccessibilityNodeFor(row.button), "the %q randomizer button is described", row.title)
 	}
 	screen.Do(func() { wnd.Dispose() })
+}
+
+// The Description block's bands come from the rows of its first column, which follows the heading. The heading has no
+// children, so mistaking it for the first column would draw no bands.
+func TestDescriptionPanelBandsSkipTheHeading(t *testing.T) {
+	c := check.New(t)
+	entity := gurps.NewEntity()
+	description := NewDescriptionPanel(entity, NewTargetMgr(newPageUndoRoot()))
+	_, pref, _ := description.Sizes(geom.Size{})
+	description.SetFrameRect(geom.NewRect(0, 0, pref.Width, pref.Height))
+	description.ValidateLayout()
+	column := rowsAfterHeading(t, description)[0]
+	pairs := len(column.Children()) / 2
+	c.True(pairs >= 2, "the first column has at least two label and field pairs, but has %d", pairs)
+	bands := description.bandRects()
+	c.Equal(pairs/2, len(bands), "every other pair of the first column is banded")
+	for i, band := range bands {
+		label := column.Children()[2+i*4]
+		c.Equal(column.RectTo(label.FrameRect(), description.AsPanel()), band,
+			"band %d lies over the label and field pair it belongs to", i)
+		c.True(band.Y > 0 && band.Y+band.Height <= pref.Height, "band %d lies within the block, but is %v", i, band)
+	}
 }

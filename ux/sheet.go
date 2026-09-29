@@ -835,7 +835,7 @@ func drawBandedBackground(p unison.Paneler, gc *unison.Canvas, rect geom.Rect, s
 			row++
 		}
 		r := children[i].FrameRect()
-		for j := i + 1; j < i+step; j++ {
+		for j := i + 1; j < i+step && j < len(children); j++ {
 			r = r.Union(children[j].FrameRect())
 		}
 		r.X = rect.X

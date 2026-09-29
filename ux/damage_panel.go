@@ -40,7 +40,7 @@ func NewDamagePanel(entity *gurps.Entity, targetMgr *TargetMgr) *DamagePanel {
 }
 
 func (p *DamagePanel) rebuild() {
-	p.RemoveAllChildren()
+	removeBlockRows(p.AsPanel())
 	p.addDamageField(i18n.Text("Basic Thrust"), func() string { return gurps.Roller.Format(p.entity.Thrust()) })
 	p.addDamageField(i18n.Text("Basic Swing"), func() string { return gurps.Roller.Format(p.entity.Swing()) })
 	if p.showLiftingSTDamage = p.entity.SheetSettings.ShowLiftingSTDamage; p.showLiftingSTDamage {

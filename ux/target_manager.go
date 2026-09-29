@@ -72,18 +72,29 @@ func (t *TargetMgr) CurrentFocusRef() *FocusRef {
 	return nil
 }
 
-// ReacquireFocus attempts to restore the focus previously obtained by a call to CurrentFocusRef().
+// ReacquireFocus attempts to restore the focus previously obtained by a call to CurrentFocusRef(). A ref without a key,
+// such as one for a heading or a label, leaves the focus alone while the window still has one, and otherwise focuses
+// the first focusable part of the content. Looking up an empty key would find the root and focus its first focusable
+// child, a toolbar button.
 func (t *TargetMgr) ReacquireFocus(ref *FocusRef, toolbar, content unison.Paneler) {
-	if ref != nil {
-		if focus := t.Find(ref.Key); focus != nil {
-			focus.RequestFocus()
-			if ref.Selectable {
-				if s, ok := focus.Self.(Selectable); ok {
-					s.SetSelection(ref.SelStart, ref.SelEnd)
-				}
-			}
-		} else {
-			FocusFirstContent(toolbar, content)
+	if ref == nil {
+		return
+	}
+	if ref.Key == "" {
+		if wnd := t.root.Window(); wnd != nil && wnd.CurrentFocus() != nil {
+			return
 		}
+		FocusFirstContent(toolbar, content)
+		return
+	}
+	if focus := t.Find(ref.Key); focus != nil {
+		focus.RequestFocus()
+		if ref.Selectable {
+			if s, ok := focus.Self.(Selectable); ok {
+				s.SetSelection(ref.SelStart, ref.SelEnd)
+			}
+		}
+	} else {
+		FocusFirstContent(toolbar, content)
 	}
 }

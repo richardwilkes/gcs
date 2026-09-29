@@ -119,3 +119,38 @@ func TestUpdateCheckSettings(t *testing.T) {
 	c.NotContains(string(data), "app_update_check", "the default app update check isn't written")
 	c.NotContains(string(data), "library_update_check", "the default library update check isn't written")
 }
+
+func TestFocusForReadingSetting(t *testing.T) {
+	c := check.New(t)
+
+	saved := unison.FocusForReading()
+	defer unison.SetFocusForReading(saved)
+
+	s := NewGeneralSettings()
+	c.False(s.FocusForReading, "new settings leave static text and disabled controls out of the tab order")
+
+	p := filepath.Join(t.TempDir(), "general.json")
+	c.NoError(os.WriteFile(p, []byte(`{"version":2}`), 0o600))
+	// Turned on first, so that the load is what turns it off.
+	unison.SetFocusForReading(true)
+	loaded, err := NewGeneralSettingsFromFile(nil, p)
+	c.NoError(err)
+	c.False(loaded.FocusForReading, "a pre-existing settings file leaves them out of the tab order")
+	c.False(unison.FocusForReading(), "loading hands the setting to unison")
+
+	s.FocusForReading = true
+	s.EnsureValidity()
+	c.True(unison.FocusForReading(), "validation hands the setting to unison")
+
+	c.NoError(s.Save(p))
+	unison.SetFocusForReading(false)
+	loaded, err = NewGeneralSettingsFromFile(nil, p)
+	c.NoError(err)
+	c.True(loaded.FocusForReading, "the choice survives a save and load")
+	c.True(unison.FocusForReading(), "loading hands the choice to unison")
+
+	c.NoError(NewGeneralSettings().Save(p))
+	data, err := os.ReadFile(p)
+	c.NoError(err)
+	c.NotContains(string(data), "focus_for_reading", "the default isn't written")
+}

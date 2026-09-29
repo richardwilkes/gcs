@@ -13,6 +13,7 @@ import (
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
+	"github.com/richardwilkes/unison/enums/role"
 )
 
 // NewFieldLeadingLabel creates a new label appropriate for the first label in a row before a field.
@@ -48,6 +49,15 @@ func NewFieldTrailingLabel(text string, small bool) *unison.Label {
 	label.SetLayoutData(&unison.FlexLayoutData{
 		VAlign: align.Middle,
 	})
+	return label
+}
+
+// NewFieldTrailingHint creates a new label appropriate for after a field that says something about it, such as its
+// units. A screen reader hears the text as part of the field's description rather than as an element of its own.
+func NewFieldTrailingHint(field unison.Paneler, text string, small bool) *unison.Label {
+	label := NewFieldTrailingLabel(text, small)
+	label.Accessibility.Role = role.None
+	describeWithHint(field, func() string { return text })
 	return label
 }
 

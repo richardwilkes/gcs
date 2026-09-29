@@ -15,6 +15,7 @@ import (
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/check"
 	"github.com/richardwilkes/unison/enums/mod"
+	"github.com/richardwilkes/unison/enums/role"
 )
 
 const dataOwnerProviderKey = "data_owner_provider"
@@ -54,8 +55,9 @@ func SetCheckBoxState(checkbox *CheckBox, checked bool) {
 	checkbox.Sync()
 }
 
-// FocusFirstContent focuses the first non-button widget in the content, failing that the first focusable widget in the
-// content, and failing that the first focusable widget in the toolbar.
+// FocusFirstContent focuses the first widget in the content that is not a button, the portrait, static text, a link or
+// disabled. Failing that, it focuses the first enabled focusable widget in the content, then in the toolbar, and only
+// then a disabled one, in the same order.
 //
 // Only the content and toolbar subtrees are scanned. Cycling the window's focus (via FocusNext) instead would roam the
 // entire window and depend on wherever the focus happened to be beforehand, which could intermittently leave the focus
@@ -67,35 +69,62 @@ func FocusFirstContent(toolbar, content unison.Paneler) {
 }
 
 // firstContentFocusTarget returns the panel that FocusFirstContent should focus, or nil if neither the content nor the
-// toolbar contains a focusable widget.
+// toolbar contains a focusable widget. A disabled control, which takes the focus only for a screen reader (see
+// unison.SetFocusForReading), comes last, as it does when unison picks a window's initial focus.
 func firstContentFocusTarget(toolbar, content *unison.Panel) *unison.Panel {
-	if target := firstFocusableInSubtree(content, true); target != nil {
+	if target := firstFocusableInSubtree(content, passedOverForFirstFocus); target != nil {
 		return target
 	}
-	if target := firstFocusableInSubtree(content, false); target != nil {
-		return target
-	}
-	return firstFocusableInSubtree(toolbar, false)
-}
-
-// firstFocusableInSubtree returns the first focusable panel found in a pre-order traversal of the subtree rooted at p,
-// matching the order the window uses when cycling focus, or nil if there is none. When skipButtons is true, buttons are
-// not treated as valid targets.
-func firstFocusableInSubtree(p *unison.Panel, skipButtons bool) *unison.Panel {
-	if p == nil {
-		return nil
-	}
-	if p.Focusable() {
-		if _, isButton := p.Self.(*unison.Button); !skipButtons || !isButton {
-			return p
+	for _, passOver := range []func(*unison.Panel) bool{isDisabled, nil} {
+		if target := firstFocusableInSubtree(content, passOver); target != nil {
+			return target
 		}
-	}
-	for _, child := range p.Children() {
-		if target := firstFocusableInSubtree(child, skipButtons); target != nil {
+		if target := firstFocusableInSubtree(toolbar, passOver); target != nil {
 			return target
 		}
 	}
 	return nil
+}
+
+// firstFocusableInSubtree returns the first focusable panel found in a pre-order traversal of the subtree rooted at p,
+// matching the order the window uses when cycling focus, or nil if there is none. Panels passOver reports true for are
+// skipped, though their descendants are still searched.
+func firstFocusableInSubtree(p *unison.Panel, passOver func(*unison.Panel) bool) *unison.Panel {
+	if p == nil {
+		return nil
+	}
+	if p.Focusable() && (passOver == nil || !passOver(p)) {
+		return p
+	}
+	for _, child := range p.Children() {
+		if target := firstFocusableInSubtree(child, passOver); target != nil {
+			return target
+		}
+	}
+	return nil
+}
+
+func isDisabled(p *unison.Panel) bool {
+	return !p.Enabled()
+}
+
+// passedOverForFirstFocus reports whether FocusFirstContent passes over a panel in favor of something a person can type
+// into: a button, the portrait, a unison.Label (links included), a panel in the label or heading role, or a disabled
+// control. A new sheet then opens with the focus on its name rather than on the portrait or a heading ahead of it.
+func passedOverForFirstFocus(p *unison.Panel) bool {
+	if isDisabled(p) {
+		return true
+	}
+	switch p.Self.(type) {
+	case *unison.Button, *PortraitPanel, *unison.Label:
+		return true
+	}
+	switch p.Accessibility.Role {
+	case role.Label, role.Heading:
+		return true
+	default:
+		return false
+	}
 }
 
 // SetDataOwnerProvider sets the DataOwnerProvider into the client data of the target, removing it when provider is nil.

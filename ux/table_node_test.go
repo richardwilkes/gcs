@@ -19,6 +19,7 @@ import (
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/mod"
+	"github.com/richardwilkes/unison/enums/role"
 )
 
 // TestCellDataForAccessibilityLeavesOutTheContainerMarker verifies that a screen reader is given a container's cell
@@ -543,4 +544,39 @@ func TestChoiceTagFollowsTheRowColors(t *testing.T) {
 	tag = findTag(rows[1].ColumnCell(1, 0, unison.Black, unison.White, false, false, false))
 	c.NotNil(tag, "the unsatisfied trait's cell must hold its tag")
 	c.Equal(unison.Ink(unison.ThemeError), tag.BackgroundInk, "a prerequisite tag must keep its own colors")
+}
+
+func TestPageRefLinkTakesNoMoreRoomThanItsText(t *testing.T) {
+	c := check.New(t)
+	sheet := newTestSheetForTemplate(t)
+	entity := sheet.Entity()
+	trait := gurps.NewTrait(entity, nil, false)
+	trait.Name = "Charisma"
+	trait.PageRef = "B41"
+	entity.Traits = []*gurps.Trait{trait}
+	sheet.Rebuild(true)
+
+	table := sheet.Traits.Table
+	col := columnIndexForID(table, gurps.TraitReferenceColumn)
+	c.True(col >= 0, "the traits table must have a page reference column")
+	rows := table.RootRows()
+	c.Equal(1, len(rows), "the traits table must hold the one trait")
+	cell := rows[0].ColumnCell(0, col, unison.Black, unison.White, false, false, false).AsPanel()
+	links := panelsMatching(cell, func(p *unison.Panel) bool { return p.Accessibility.Role == role.Link })
+	if len(links) != 1 {
+		t.Fatalf("the page reference cell must hold one link, but holds %d", len(links))
+	}
+	link, ok := links[0].Self.(*unison.Label)
+	if !ok {
+		t.Fatalf("the link must be a label, not a %T", links[0].Self)
+	}
+	c.Equal("B41", link.String())
+	c.False(link.Focusable(), "the focus stays with the table")
+	c.Nil(link.Border(), "there is no outline to leave room for")
+	plain := unison.NewLabel()
+	plain.Font = link.Font
+	plain.SetTitle(link.String())
+	_, want, _ := plain.Sizes(geom.Size{})
+	_, got, _ := link.Sizes(geom.Size{})
+	c.Equal(want, got, "the link is the size of its text")
 }

@@ -117,14 +117,23 @@ func headerFromData[T gurps.Node[T]](data gurps.HeaderData, forPage bool) unison
 			img1 = svg.Stack
 			img2 = svg.Weight
 		}
+		// Without a name, an icon header is called by its tooltip, which unison would read in front of the column's
+		// value in every row, so it is given data.Name.
 		if img2 != nil {
-			return NewEditorListSVGPairHeader[T](img1, img2, data.Detail, data.Less, forPage)
+			header := NewEditorListSVGPairHeader[T](img1, img2, data.Detail, data.Less, forPage)
+			header.AsPanel().Accessibility.Name = data.Name
+			return header
 		}
 		if img1 != nil {
-			return NewEditorListSVGHeader[T](img1, data.Detail, data.Less, forPage)
+			header := NewEditorListSVGHeader[T](img1, data.Detail, data.Less, forPage)
+			header.AsPanel().Accessibility.Name = data.Name
+			return header
 		}
 	}
-	return NewEditorListHeader[T](data.Title, data.Detail, data.Less, forPage)
+	header := NewEditorListHeader[T](data.Title, data.Detail, data.Less, forPage)
+	// data.Name spells out an abbreviated title such as "Pts"; most text titles have none and are read as drawn.
+	header.AsPanel().Accessibility.Name = data.Name
+	return header
 }
 
 // NewTableColumnHeader creates a new table column header panel with the given title in small caps.
@@ -153,6 +162,11 @@ type PageTableColumnHeader[T gurps.Node[T]] struct {
 	less        func(a, b string) bool
 	sortState   unison.SortState
 	tooltipText string
+}
+
+// headerLabel implements labelBackedHeader.
+func (h *PageTableColumnHeader[T]) headerLabel() *unison.Label {
+	return h.Label
 }
 
 // NewPageTableColumnHeader creates a new page table column header panel with the given title.

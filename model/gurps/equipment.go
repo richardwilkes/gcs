@@ -422,11 +422,10 @@ func EquipmentHeaderData(columnID int, provider EquipmentListProvider, carried, 
 	settings := SheetSettingsFor(provider.DataOwner().OwningEntity())
 	switch columnID {
 	case EquipmentEquippedColumn:
-		data = imageHeaderData(HeaderCheckmark,
+		data = imageHeaderData(HeaderCheckmark, i18n.Text("Equipped"),
 			i18n.Text("Whether this piece of equipment is equipped or just carried. Items that are not equipped do not apply any features they may normally contribute to the character."))
 	case EquipmentQuantityColumn:
-		data.Title = i18n.Text("#")
-		data.Detail = i18n.Text("Quantity")
+		data = abbreviatedHeaderData(i18n.Text("#"), i18n.Text("Quantity"))
 		data.Less = fxp.IntLessFromString
 	case EquipmentDescriptionColumn:
 		data.Title = i18n.Text("Equipment")
@@ -447,23 +446,21 @@ func EquipmentHeaderData(columnID int, provider EquipmentListProvider, carried, 
 		}
 		data.Primary = true
 	case EquipmentTLColumn:
-		data.Title = i18n.Text("TL")
-		data.Detail = i18n.Text("Tech Level")
+		data = abbreviatedHeaderData(i18n.Text("TL"), i18n.Text("Tech Level"))
 	case EquipmentLCColumn:
-		data.Title = i18n.Text("LC")
-		data.Detail = i18n.Text("Legality Class")
+		data = abbreviatedHeaderData(i18n.Text("LC"), i18n.Text("Legality Class"))
 	case EquipmentCostColumn:
-		data = imageHeaderData(HeaderCoins, i18n.Text("The value of one of these pieces of equipment"))
+		data = imageHeaderData(HeaderCoins, i18n.Text("Value"), i18n.Text("The value of one of these pieces of equipment"))
 		data.Less = ValueRangeLessFromString
 	case EquipmentExtendedCostColumn:
-		data = imageHeaderData(HeaderStackedCoins,
+		data = imageHeaderData(HeaderStackedCoins, i18n.Text("Extended Value"),
 			i18n.Text("The value of all of these pieces of equipment, plus the value of any contained equipment"))
 		data.Less = ValueRangeLessFromString
 	case EquipmentWeightColumn:
-		data = imageHeaderData(HeaderWeight, i18n.Text("The weight of one of these pieces of equipment"))
+		data = imageHeaderData(HeaderWeight, i18n.Text("Weight"), i18n.Text("The weight of one of these pieces of equipment"))
 		data.Less = WeightRangeLessFromStringFunc(settings.DefaultWeightUnits)
 	case EquipmentExtendedWeightColumn:
-		data = imageHeaderData(HeaderStackedWeight,
+		data = imageHeaderData(HeaderStackedWeight, i18n.Text("Extended Weight"),
 			i18n.Text("The weight of all of these pieces of equipment, plus the weight of any contained equipment"))
 		data.Less = WeightRangeLessFromStringFunc(settings.DefaultWeightUnits)
 	case EquipmentTagsColumn:

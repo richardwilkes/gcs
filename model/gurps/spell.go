@@ -371,24 +371,19 @@ func SpellsHeaderData(columnID int) HeaderData {
 	case SpellDurationColumn:
 		data.Title = i18n.Text("Duration")
 	case SpellDifficultyColumn:
-		data.Title = i18n.Text("Diff")
-		data.Detail = i18n.Text("Difficulty")
+		data = abbreviatedHeaderData(i18n.Text("Diff"), i18n.Text("Difficulty"))
 	case SpellPrereqCountColumn:
-		data.Title = i18n.Text("P#")
-		data.Detail = i18n.Text("Prerequisite Count")
+		data = abbreviatedHeaderData(i18n.Text("P#"), i18n.Text("Prerequisite Count"))
 	case SpellTagsColumn:
 		data = tagsHeaderData()
 	case SpellReferenceColumn:
 		data = pageRefHeaderData()
 	case SpellLevelColumn:
-		data.Title = i18n.Text("SL")
-		data.Detail = i18n.Text("Skill Level")
+		data = abbreviatedHeaderData(i18n.Text("SL"), i18n.Text("Skill Level"))
 	case SpellRelativeLevelColumn:
-		data.Title = i18n.Text("RSL")
-		data.Detail = i18n.Text("Relative Skill Level")
+		data = abbreviatedHeaderData(i18n.Text("RSL"), i18n.Text("Relative Skill Level"))
 	case SpellPointsColumn:
-		data.Title = i18n.Text("Pts")
-		data.Detail = i18n.Text("Points")
+		data = abbreviatedHeaderData(i18n.Text("Pts"), i18n.Text("Points"))
 		data.Less = PointsLessFromString
 	case SpellLibSrcColumn:
 		data = libSrcHeaderData()
