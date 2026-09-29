@@ -442,8 +442,7 @@ func (n *Node[T]) createLabelCell(c *gurps.CellData, width float32, foreground, 
 	}
 	switch {
 	case c.UnsatisfiedReason != "":
-		p.AddChild(makeTagForNode(i18n.Text("Unsatisfied prerequisite(s)"), unison.ThemeError, unison.ThemeOnError,
-			n.secondaryFieldFont(), unison.TriangleExclamationSVG))
+		p.AddChild(n.errorTag(i18n.Text("Unsatisfied prerequisite(s)")))
 	case c.PrereqContradiction != "":
 		p.AddChild(makeTagForNode(i18n.Text("Contradictory prerequisite(s)"), unison.ThemeWarning,
 			unison.ThemeOnWarning, n.secondaryFieldFont(), unison.TriangleExclamationSVG))
@@ -457,8 +456,7 @@ func (n *Node[T]) createLabelCell(c *gurps.CellData, width float32, foreground, 
 		p.AddChild(tag)
 	}
 	if c.UnresolvedChoice != "" {
-		p.AddChild(makeTagForNode(i18n.Text("Modifier choice required"), unison.ThemeError, unison.ThemeOnError,
-			n.secondaryFieldFont(), unison.TriangleExclamationSVG))
+		p.AddChild(n.errorTag(i18n.Text("Modifier choice required")))
 	}
 	if c.ChoiceInfo != "" {
 		// Drawn in the row's own colors, as the template choice tag above is, for the same reason.
@@ -472,8 +470,7 @@ func (n *Node[T]) createLabelCell(c *gurps.CellData, width float32, foreground, 
 				HSpacing: unison.StdHSpacing / 2,
 			})
 			row.AddChild(tag)
-			row.AddChild(makeTagForNode(i18n.Text("Required"), unison.ThemeError, unison.ThemeOnError,
-				n.secondaryFieldFont(), unison.TriangleExclamationSVG))
+			row.AddChild(n.errorTag(i18n.Text("Required")))
 			p.AddChild(row)
 		} else {
 			p.AddChild(tag)
@@ -494,34 +491,33 @@ func (n *Node[T]) createLabelCell(c *gurps.CellData, width float32, foreground, 
 // labelCellTooltip returns the text of the tooltip a label cell shows. The reason for an unsatisfied prerequisite
 // replaces the cell's own tooltip, since the row is flagged as broken and the reason is what the user needs to put it
 // right. The explanation of a contradiction among the prerequisites is put ahead of the cell's own tooltip instead,
-// under the same separator Trait.CellData uses between the blocks of that tooltip, since the row is enabled and in
-// use, so what its own tooltip says still applies. The explanation of a mandatory modifier choice left unresolved on a
-// sheet goes ahead of all of that, under the same separator.
+// since the row is enabled and in use, so what its own tooltip says still applies. The explanation of a mandatory
+// modifier choice left unresolved on a sheet goes ahead of all of that.
 func labelCellTooltip(c *gurps.CellData) string {
-	tooltip := prereqCellTooltip(c)
+	tooltip := c.UnsatisfiedReason
+	if tooltip == "" {
+		tooltip = joinTooltipBlocks(c.PrereqContradiction, c.Tooltip)
+	}
+	return joinTooltipBlocks(c.UnresolvedChoice, tooltip)
+}
+
+// joinTooltipBlocks joins two blocks of a tooltip under the separator Trait.CellData uses between them, or returns the
+// one that isn't empty.
+func joinTooltipBlocks(first, second string) string {
 	switch {
-	case c.UnresolvedChoice == "":
-		return tooltip
-	case tooltip == "":
-		return c.UnresolvedChoice
+	case first == "":
+		return second
+	case second == "":
+		return first
 	default:
-		return c.UnresolvedChoice + "\n---\n" + tooltip
+		return first + "\n---\n" + second
 	}
 }
 
-// prereqCellTooltip returns the text of the tooltip a label cell shows before any unresolved modifier choice is
-// explained ahead of it.
-func prereqCellTooltip(c *gurps.CellData) string {
-	switch {
-	case c.UnsatisfiedReason != "":
-		return c.UnsatisfiedReason
-	case c.PrereqContradiction == "":
-		return c.Tooltip
-	case c.Tooltip == "":
-		return c.PrereqContradiction
-	default:
-		return c.PrereqContradiction + "\n---\n" + c.Tooltip
-	}
+// errorTag returns a tag that flags a problem with the row.
+func (n *Node[T]) errorTag(title string) *unison.Tag {
+	return makeTagForNode(title, unison.ThemeError, unison.ThemeOnError, n.secondaryFieldFont(),
+		unison.TriangleExclamationSVG)
 }
 
 func makeTagForNode(title string, bg, fg unison.Ink, font unison.Font, img *unison.SVG) *unison.Tag {
