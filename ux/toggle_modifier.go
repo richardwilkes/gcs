@@ -18,14 +18,15 @@ import (
 
 // modifierExtractor yields a selected row's modifier when its enablement can be toggled. Containers are left out: a
 // container is always enabled and shows no checkmark cell, so excluding them disables the menu item for a
-// container-only selection instead of letting it register an edit that changes nothing.
+// container-only selection instead of letting it register an edit that changes nothing. So is the pick of a mandatory
+// choice on a sheet, which only picking another changes (see gurps.IsLockedModifierChoiceSelection).
 func modifierExtractor[T gurps.Node[T]](node T) (gurps.GeneralModifier, bool) {
 	if xreflect.IsNil(node) {
 		// Container() would dereference the node, so the nil check has to come first.
 		return nil, false
 	}
 	m, ok := any(node).(gurps.GeneralModifier)
-	return m, ok && !m.Container()
+	return m, ok && !m.Container() && !gurps.IsLockedModifierChoiceSelection(node)
 }
 
 // modifierToggleUndoTitle returns the undo title for a table of the given kind of modifier, so that the Edit menu says
@@ -42,16 +43,8 @@ func modifierToggleUndoTitle[T gurps.Node[T]]() string {
 	}
 }
 
-// toggleableModifierExtractor is modifierExtractor for the modifiers whose enabled state may be toggled: every one but
-// the option picked for a mandatory choice on a sheet, which may only be changed by picking another (see
-// gurps.IsLockedModifierChoiceSelection).
-func toggleableModifierExtractor[T gurps.Node[T]](node T) (gurps.GeneralModifier, bool) {
-	m, ok := modifierExtractor(node)
-	return m, ok && !gurps.IsLockedModifierChoiceSelection(node)
-}
-
 func canToggleModifierEnabled[T gurps.Node[T]](table *unison.Table[*Node[T]]) bool {
-	return canAdjustSelection(table, toggleableModifierExtractor[T])
+	return canAdjustSelection(table, modifierExtractor[T])
 }
 
 // toggleModifierEnabled flips the enabled state of each selected modifier, following the rules of any choice it is an
@@ -61,8 +54,8 @@ func canToggleModifierEnabled[T gurps.Node[T]](table *unison.Table[*Node[T]]) bo
 func toggleModifierEnabled[T gurps.Node[T]](owner Rebuildable, table *unison.Table[*Node[T]]) {
 	var nodes []T
 	for _, row := range table.SelectedRows(false) {
-		if data := row.Data(); canToggleModifier(data) {
-			nodes = append(nodes, data)
+		if _, ok := modifierExtractor(row.Data()); ok {
+			nodes = append(nodes, row.Data())
 		}
 	}
 	if len(nodes) != 0 {
@@ -73,7 +66,7 @@ func toggleModifierEnabled[T gurps.Node[T]](owner Rebuildable, table *unison.Tab
 // adjustModifierEnabled sets the enabled state of a single modifier. This is the form the checkmark cell uses, so that
 // a click and the command register the same kind of undoable edit and report the change the same way.
 func adjustModifierEnabled[T gurps.Node[T]](owner Rebuildable, undoSource unison.Paneler, node T, on bool) {
-	if canToggleModifier(node) {
+	if _, ok := modifierExtractor(node); ok {
 		setModifiersEnabled(owner, undoSource, []T{node}, func(T) bool { return on })
 	}
 }
@@ -84,12 +77,6 @@ func setModifiersEnabled[T gurps.Node[T]](owner Rebuildable, undoSource unison.P
 	targets, enabled := gurps.ModifierEnabledChanges(nodes, want)
 	adjustTargets(modifierToggleUndoTitle[T](), owner, undoSource, gurps.EntityFromNode(nodes[0]), targets, T.Enabled,
 		gurps.SetModifierEnabled[T], func(node T) { gurps.SetModifierEnabled(node, enabled[node]) }, false)
-}
-
-// canToggleModifier returns true if the node is a modifier whose enabled state can be toggled.
-func canToggleModifier[T gurps.Node[T]](node T) bool {
-	_, ok := toggleableModifierExtractor(node)
-	return ok
 }
 
 func installToggleModifierEnabledHandler[T gurps.Node[T]](table *unison.Table[*Node[T]]) {
