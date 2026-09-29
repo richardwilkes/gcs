@@ -36,9 +36,7 @@ var (
 	_ = assertModifierNode[*EquipmentModifier]
 	_ = assertEditorData[*EquipmentModifierEditData]
 
-	_ GeneralModifier        = &EquipmentModifier{}
-	_ ModifierChoiceProvider = &EquipmentModifier{}
-	_ ModifierChoiceProvider = &EquipmentModifierEditData{}
+	_ GeneralModifier = &EquipmentModifier{}
 )
 
 // Columns that can be used with the equipment modifier method .CellData()

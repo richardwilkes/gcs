@@ -36,10 +36,8 @@ var (
 	_ = assertModifierNode[*TraitModifier]
 	_ = assertEditorData[*TraitModifierEditData]
 
-	_ GeneralModifier        = &TraitModifier{}
-	_ LeveledOwner           = &TraitModifier{}
-	_ ModifierChoiceProvider = &TraitModifier{}
-	_ ModifierChoiceProvider = &TraitModifierEditData{}
+	_ GeneralModifier = &TraitModifier{}
+	_ LeveledOwner    = &TraitModifier{}
 )
 
 // Columns that can be used with the trait modifier method .CellData()
