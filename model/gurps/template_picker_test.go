@@ -382,14 +382,14 @@ func TestPickerMeasureRange(t *testing.T) {
 	rope.BaseValue = "5"
 	rope.BaseWeight = "2 lb"
 	rope.Quantity = fxp.FromInteger(3)
-	c.Equal(NumericRangeOf(fxp.One), PickerMeasureRange(skill, picker.Count, false))
-	c.Equal(NumericRangeOf(fxp.One), PickerMeasureRange(rope, picker.Count, false), "a count takes no notice of quantity")
-	c.Equal(NumericRangeOf(fxp.FromInteger(4)), PickerMeasureRange(skill, picker.Points, false))
-	c.Equal(NumericRangeOf(fxp.FromInteger(15)), PickerMeasureRange(rope, picker.Value, false))
+	c.Equal(NumericRangeOf(fxp.One), PickerMeasureRange(skill, picker.Count, false, nil))
+	c.Equal(NumericRangeOf(fxp.One), PickerMeasureRange(rope, picker.Count, false, nil), "a count takes no notice of quantity")
+	c.Equal(NumericRangeOf(fxp.FromInteger(4)), PickerMeasureRange(skill, picker.Points, false, nil))
+	c.Equal(NumericRangeOf(fxp.FromInteger(15)), PickerMeasureRange(rope, picker.Value, false, nil))
 	units := SheetSettingsFor(nil).DefaultWeightUnits
-	c.Equal(NumericRangeOf(fxp.Int(rope.ExtendedWeight(false, units))), PickerMeasureRange(rope, picker.Weight, false))
-	c.Equal(NumericRangeOf(0), PickerMeasureRange(rope, picker.Points, false), "equipment has no points")
-	c.Equal(NumericRangeOf(0), PickerMeasureRange(skill, picker.Weight, false), "a skill has no weight")
+	c.Equal(NumericRangeOf(fxp.Int(rope.ExtendedWeight(false, units))), PickerMeasureRange(rope, picker.Weight, false, nil))
+	c.Equal(NumericRangeOf(0), PickerMeasureRange(rope, picker.Points, false, nil), "equipment has no points")
+	c.Equal(NumericRangeOf(0), PickerMeasureRange(skill, picker.Weight, false, nil), "a skill has no weight")
 }
 
 // TestGroupConversionHelpers verifies that the group conversion helpers work through the node types that have groups,

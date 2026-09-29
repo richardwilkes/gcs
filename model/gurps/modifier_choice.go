@@ -484,6 +484,22 @@ func hasOpenMandatoryModifierChoice[M ModifierNode[M, T], T ModifiableNode[T, M]
 	return len(open) != 0 && variants <= maxModifierChoiceVariants
 }
 
+// HasOpenModifierChoice returns true if the node has a mandatory modifier choice of its own still to be made, seen as
+// PickerMeasureRange sees it.
+func HasOpenModifierChoice[T Node[T]](node T, prompted bool, taken func(T) bool) bool {
+	view := promptedView(taken)
+	view.prompted = prompted
+	switch item := any(node).(type) {
+	case *Trait:
+		choices, _ := openMandatoryModifierChoices(item, item.AllModifiers(), nil, view)
+		return len(choices) != 0
+	case *Equipment:
+		choices, _ := openMandatoryModifierChoices(item, item.Modifiers, nil, view)
+		return len(choices) != 0
+	}
+	return false
+}
+
 // modifierChoiceRange returns the span of eval over each way of making the open mandatory choices among the modifiers,
 // seen as view says, with those in fixed made as it says. eval gets the non-container modifiers in order, with only
 // each such choice's pick among its options, enabled. Returns false, without calling eval, when there is nothing to

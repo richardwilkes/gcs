@@ -205,7 +205,7 @@ func (p *applyPart[T]) normalizeChoices() {
 }
 
 func (p *applyPart[T]) resolvePickers(op promptOperation, promptChoices bool) bool {
-	revised, abort := processPickerRows(op, p.rows, promptChoices)
+	revised, abort := newPickerSession(op, p.rows, promptChoices).processRows(p.rows)
 	if abort {
 		return false
 	}

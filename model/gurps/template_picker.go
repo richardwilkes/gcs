@@ -282,15 +282,14 @@ func ConvertToGroupContainer[T Node[T]](node T) {
 // A trait counts by its adjusted points, the only cost a trait has. Toward one made by value or weight, equipment counts
 // by its extended value or weight, its quantity and contents included. Either way a container accounts for any choices
 // it presents, including the exact ones, which are worth what they ask for rather than what their children add up to.
-// When prompted, open modifier choices are costed as the modifier prompt will see them, even on a sheet.
-func PickerMeasureRange[T Node[T]](node T, pickerType picker.Type, prompted bool) NumericRange {
+// When prompted, open modifier choices are costed as the modifier prompt will see them, even on a sheet. A node taken
+// (which may be nil) reports counts as preconfigured.
+func PickerMeasureRange[T Node[T]](node T, pickerType picker.Type, prompted bool, taken func(T) bool) NumericRange {
 	if xreflect.IsNil(node) {
 		return NumericRangeOf(0)
 	}
-	var view choiceView
-	if prompted {
-		view = choiceView{prompted: true}
-	}
+	view := promptedView(taken)
+	view.prompted = prompted
 	switch pickerType {
 	case picker.Count:
 		return NumericRangeOf(fxp.One)
