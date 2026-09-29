@@ -234,7 +234,6 @@ func (t *TraitModifier) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 	migrateLegacyText(&t.LocalNotes, localData.ExprNotes)
 	t.ClearUnusedFieldsForType()
 	finishNodeUnmarshal(t, &t.Tags, localData.Categories, open)
-	// No more than one option of a choice may be enabled, which data edited by hand may not have kept to.
 	SettleModifierChoices(nil, t)
 	return nil
 }
@@ -580,9 +579,7 @@ func (t *TraitModifier) Kind() string {
 	return i18n.Text("Trait Modifier")
 }
 
-// ClearUnusedFieldsForType zeroes out the fields that are not applicable to this type (container vs not-container). A
-// container only organizes the modifiers it holds, or offers a choice among them, so it keeps nothing that would make
-// it a modifier in its own right, and a choice is kept to the forms a modifier choice supports.
+// ClearUnusedFieldsForType zeroes out the fields that are not applicable to this type (container vs not-container).
 func (t *TraitModifier) ClearUnusedFieldsForType() {
 	if t.Container() {
 		t.TraitModifierEditDataNonContainerOnly = TraitModifierEditDataNonContainerOnly{}
@@ -601,8 +598,6 @@ func (t *TraitModifier) SyncWithSource() {
 		t.Tags = slices.Clone(other.Tags)
 		if t.Container() {
 			t.ModifierContainerSyncData = other.ModifierContainerSyncData
-			// The source may have made this a choice, which keeps no more than one of its options enabled, or made a
-			// choice within another one a group, whose options are then the other one's.
 			settleModifierChoicesAround(t)
 		} else {
 			t.TraitModifierNonContainerSyncData = other.TraitModifierNonContainerSyncData

@@ -47,7 +47,7 @@ func (e *Equipment) adjustedWeightRange(defUnits fxp.WeightUnit) NumericRange {
 }
 
 // ExtendedValueRange returns the span of extended values this equipment may end up having once every choice within it
-// has been made, a mandatory choice among its modifiers included.
+// has been made.
 func (e *Equipment) ExtendedValueRange() NumericRange {
 	if e.Quantity <= 0 {
 		return NumericRangeOf(0)
@@ -68,13 +68,12 @@ func (e *Equipment) ExtendedValueRange() NumericRange {
 }
 
 // ExtendedWeightRange returns the span of extended weights this equipment may end up having once every choice within
-// it has been made, a mandatory choice among its modifiers included.
+// it has been made.
 func (e *Equipment) ExtendedWeightRange(defUnits fxp.WeightUnit) NumericRange {
 	return e.extendedWeightRange(false, defUnits)
 }
 
-// extendedWeightRange returns what ExtendedWeightRange does, or, when forSkills is true, the span of weights that count
-// for skills, which leave out the weight of equipped equipment that is ignored for them, as ExtendedWeight does.
+// extendedWeightRange is ExtendedWeightRange, counting only the weight that counts for skills when forSkills is true.
 func (e *Equipment) extendedWeightRange(forSkills bool, defUnits fxp.WeightUnit) NumericRange {
 	if e.Quantity <= 0 {
 		return NumericRangeOf(0)
@@ -88,8 +87,7 @@ func (e *Equipment) extendedWeightRange(forSkills bool, defUnits fxp.WeightUnit)
 		contents = equipmentContentsRange(e, picker.Weight, children)
 	}
 	ignoreOwnWeight := forSkills && e.WeightIgnoredForSkills && e.ReallyEquipped()
-	// The modifiers weigh on the contents as well as on the equipment itself, since they may reduce the weight of what
-	// it holds.
+	// The modifiers may also reduce the weight of the contents.
 	weigh := func(modifiers []*EquipmentModifier) NumericRange {
 		reduction := containedWeightReductionFor(e, defUnits, modifiers, e.Features)
 		reduce := func(end *fxp.Int) *fxp.Int {

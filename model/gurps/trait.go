@@ -665,8 +665,7 @@ func (t *Trait) AdjustedPoints(_ *xbytes.InsertBuffer) fxp.Int {
 		return 0
 	}
 	if !t.Container() {
-		// A mandatory modifier choice yet to be made counts as the least it may come to; see PointsRange for the whole
-		// of what it may come to.
+		// An open mandatory modifier choice counts as the least it may come to (see PointsRange).
 		if r, open := t.modifierChoicePointsRange(nil); open {
 			return *r.Min
 		}
@@ -677,9 +676,8 @@ func (t *Trait) AdjustedPoints(_ *xbytes.InsertBuffer) fxp.Int {
 		// See pickerContainerPoints for what a container presenting a choice is worth.
 		return pickerContainerPoints(t.TemplatePicker, t.Children)
 	}
-	// A mandatory modifier choice the traits inside inherit, yet to be made, counts as the least it may come to, with
-	// every trait inside taking the same pick; see PointsRange for the whole of what it may come to. Past the cap, the
-	// picks handed back are the choices as they stand, which must be counted the same way.
+	// Likewise for open choices the traits inside inherit, which pointsRange makes for all of them at once. Past the
+	// cap, fixed holds the picks as they stand, which must be counted the same way.
 	if choices, fixed := t.containerModifierChoices(nil); len(choices) != 0 || len(fixed) != 0 {
 		if r := t.pointsRange(nil, nil); r.Min != nil {
 			return *r.Min
@@ -727,8 +725,6 @@ func (t *Trait) pointsRange(fixed modifierChoicePicks[*TraitModifier], tooltip *
 	if value, settled := settledPickerCost(t.TemplatePicker); settled {
 		return NumericRangeOf(value)
 	}
-	// Each way of making the open mandatory choices the traits inside inherit is costed as a whole, so that no two of
-	// them count different picks of one choice.
 	choices, fixed := t.containerModifierChoices(fixed)
 	var spans []NumericRange
 	eachModifierChoicePick(choices, fixed, func(picks modifierChoicePicks[*TraitModifier]) {
@@ -747,15 +743,12 @@ func (t *Trait) pointsRange(fixed modifierChoicePicks[*TraitModifier], tooltip *
 	return rangeForPickerByCount(newTemplateChoicePicker().Qualifier, spans)
 }
 
-// ModifierChoicePointsRange returns the span of costs this trait, which must not be a container, may come to once the
-// mandatory modifier choices it has yet to make have been made, and false when there are none.
+// ModifierChoicePointsRange returns the costs of this non-container trait while a modifier choice is open, or false.
 func (t *Trait) ModifierChoicePointsRange() (NumericRange, bool) {
 	return t.modifierChoicePointsRange(nil)
 }
 
-// modifierChoicePointsRange returns the span of costs this trait, which must not be a container, may come to once the
-// mandatory modifier choices it has yet to make have been made, with those fixed holds a pick for made with that pick,
-// and false when there are none. The modifiers are only gathered off a sheet, where such a choice can still be open.
+// modifierChoicePointsRange is ModifierChoicePointsRange with the picks in fixed counted as made.
 func (t *Trait) modifierChoicePointsRange(fixed modifierChoicePicks[*TraitModifier]) (NumericRange, bool) {
 	if IsOnSheet(t) {
 		return NumericRange{}, false
@@ -766,18 +759,14 @@ func (t *Trait) modifierChoicePointsRange(fixed modifierChoicePicks[*TraitModifi
 	})
 }
 
-// containerModifierChoices returns the open mandatory choices among the modifiers of this container, its own and those
-// it inherits, that fixed holds no pick for, which the container makes for everything inside it, along with the picks
-// the traits inside are to count. Those are the ones in fixed, unless the ways of making the open choices of any trait
-// inside, which multiply with those of every container above it, are too many to work through (see
-// maxModifierChoiceVariants). Then no choice is returned, and every open choice within the container is added to the
-// picks as made with the picks it has.
+// containerModifierChoices returns the open mandatory choices among this container's modifiers that fixed holds no
+// pick for, which it makes for everything inside it, and the picks those inside are to count: fixed, or past
+// maxModifierChoiceVariants, fixed plus every open choice within the container as made with the picks it has.
 func (t *Trait) containerModifierChoices(fixed modifierChoicePicks[*TraitModifier]) ([]*TraitModifier, modifierChoicePicks[*TraitModifier]) {
 	if IsOnSheet(t) {
 		return nil, fixed
 	}
-	// With no choice of its own to make, the container has nothing to multiply the ways of those inside with, and
-	// each trait inside keeps to the cap alone, so the traits inside needn't be looked at.
+	// With no choice of its own, each trait inside keeps to the cap alone.
 	own, _ := openMandatoryModifierChoices(t, t.AllModifiers(), fixed)
 	if len(own) == 0 {
 		return nil, fixed

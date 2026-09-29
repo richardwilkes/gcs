@@ -910,8 +910,8 @@ func (e *Equipment) AdjustedWeight(forSkills bool, defUnits fxp.WeightUnit) fxp.
 }
 
 // ExtendedWeight returns the extended weight. A template choice container that is yet to be made counts as the least it
-// may come to, as does anything holding one, and so does a mandatory modifier choice yet to be made; see
-// ExtendedWeightRange for the whole of what it may come to.
+// may come to, as does anything holding one or an open mandatory modifier choice; see ExtendedWeightRange for the
+// whole of what it may come to.
 func (e *Equipment) ExtendedWeight(forSkills bool, defUnits fxp.WeightUnit) fxp.Weight {
 	if e.Quantity > 0 && (IsTemplateChoiceContainer(e) || hasOpenMandatoryModifierChoice(e, e.Modifiers)) {
 		return fxp.Weight(lowerEndOf(e.extendedWeightRange(forSkills, defUnits)))

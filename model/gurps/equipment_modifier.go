@@ -226,7 +226,6 @@ func (e *EquipmentModifier) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 	migrateLegacyText(&e.LocalNotes, localData.ExprNotes)
 	e.ClearUnusedFieldsForType()
 	finishNodeUnmarshal(e, &e.Tags, localData.Categories, open)
-	// No more than one option of a choice may be enabled, which data edited by hand may not have kept to.
 	SettleModifierChoices(nil, e)
 	return nil
 }
@@ -672,9 +671,7 @@ func (e *EquipmentModifier) Kind() string {
 	return i18n.Text("Equipment Modifier")
 }
 
-// ClearUnusedFieldsForType zeroes out the fields that are not applicable to this type (container vs not-container). A
-// container only organizes the modifiers it holds, or offers a choice among them, so it keeps nothing that would make
-// it a modifier in its own right, and a choice is kept to the forms a modifier choice supports.
+// ClearUnusedFieldsForType zeroes out the fields that are not applicable to this type (container vs not-container).
 func (e *EquipmentModifier) ClearUnusedFieldsForType() {
 	if e.Container() {
 		e.EquipmentModifierEditDataNonContainerOnly = EquipmentModifierEditDataNonContainerOnly{}
@@ -693,8 +690,6 @@ func (e *EquipmentModifier) SyncWithSource() {
 		e.Tags = slices.Clone(other.Tags)
 		if e.Container() {
 			e.ModifierContainerSyncData = other.ModifierContainerSyncData
-			// The source may have made this a choice, which keeps no more than one of its options enabled, or made a
-			// choice within another one a group, whose options are then the other one's.
 			settleModifierChoicesAround(e)
 		} else {
 			e.EquipmentModifierNonContainerSyncData = other.EquipmentModifierNonContainerSyncData

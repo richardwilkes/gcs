@@ -23,18 +23,11 @@ import (
 	"github.com/richardwilkes/toolbox/v2/xreflect"
 )
 
-// A modifier container is either a group, which only organizes the modifiers it holds, or a choice, which is a group
-// that also asks for one of the modifiers it holds to be picked. A choice is either mandatory, asking for exactly one,
-// or optional, asking for at most one. A mandatory choice is how a trait or piece of equipment whose price varies is
-// given its price, and an optional one is how a set of modifiers is made mutually exclusive.
-//
-// A choice keeps its data in the same TemplatePicker type a template choice does, but unlike a template choice it is
-// never dissolved: its options stay attached, and the choice is made by which of them are enabled, wherever the
-// modifiers are. Only a count of exactly one or at most one is supported, which is all the data is ever allowed to
-// hold.
+// A modifier container is a group, which only organizes its modifiers, or a choice, which also asks for one of them to
+// be picked: exactly one when mandatory, at most one when optional. A choice keeps its data in a TemplatePicker, but
+// unlike a template choice it never dissolves; its pick is whichever option is enabled.
 
-// ModifierChoiceProvider is implemented by the modifier types and their editor data, since any of their containers may
-// be a choice.
+// ModifierChoiceProvider is implemented by the modifier types and their editor data.
 type ModifierChoiceProvider interface {
 	// ModifierChoiceData returns a non-nil pointer to the data only a modifier container holds.
 	ModifierChoiceData() *ModifierContainerSyncData
@@ -44,8 +37,7 @@ var _ ModifierChoiceProvider = &ModifierContainerSyncData{}
 
 // ModifierContainerSyncData holds the modifier sync data that is only applicable to modifier containers.
 type ModifierContainerSyncData struct {
-	// Choice makes the container a choice when it isn't zero. It only ever holds one of the two forms a modifier
-	// choice supports (see normalizeModifierChoice).
+	// Choice makes the container a choice when it isn't zero (see normalizeModifierChoice).
 	Choice TemplatePicker `json:"choice,omitzero"`
 }
 
@@ -133,10 +125,8 @@ func ModifierChoiceDescription[T Node[T]](node T) string {
 	return ""
 }
 
-// ModifierChoiceFor returns the modifier choice the modifier is an option of: the nearest container above it that is a
-// choice. A group only organizes what it holds, so a modifier in a group within a choice is still one of the choice's
-// options, while a choice within a choice has options of its own. The second return is false when the modifier isn't
-// an option of any choice, which a container never is.
+// ModifierChoiceFor returns the nearest choice above the modifier, which it is an option of, and false if there is none
+// or the modifier is a container. Groups in between don't count, so a nested choice owns its own options.
 func ModifierChoiceFor[T Node[T]](mod T) (T, bool) {
 	if xreflect.IsNil(mod) || mod.Container() {
 		var none T
@@ -145,12 +135,9 @@ func ModifierChoiceFor[T Node[T]](mod T) (T, bool) {
 	return modifierChoiceAbove(mod)
 }
 
-// ModifierEnabledChanges works out every modifier whose enabled state changes when each of the modifiers is set to the
-// state want gives for it, and returns them, in order, along with the state each ends up in. Turning on an option of a
-// choice also turns off the choice's other options, since a choice never has more than one enabled, and when two
-// options of one choice are turned on together the later one wins. The pick of a mandatory choice on a sheet can't be
-// turned off (see IsLockedModifierChoiceSelection), so a request to do that is left out. Containers are always enabled,
-// so they are left out too.
+// ModifierEnabledChanges returns, in order, the modifiers whose enabled state changes when each is set to what want
+// gives for it, and the state each ends up in. Turning an option on turns its choice's other options off, the later of
+// two wins, and a locked pick (see IsLockedModifierChoiceSelection) and containers are left out.
 func ModifierEnabledChanges[T Node[T]](modifiers []T, want func(T) bool) (targets []T, enabled map[T]bool) {
 	enabled = make(map[T]bool)
 	set := func(node T, on bool) {
@@ -193,8 +180,7 @@ func ModifierEnabledChanges[T Node[T]](modifiers []T, want func(T) bool) (target
 	return targets, enabled
 }
 
-// ModifierChoiceOptions returns the options of the modifier choice, in the order they are listed: the modifiers beneath
-// it that are its own options (see ModifierChoiceFor). Returns nil when the node isn't a modifier choice.
+// ModifierChoiceOptions returns the options of the modifier choice in order (see ModifierChoiceFor), or nil.
 func ModifierChoiceOptions[T Node[T]](choice T) []T {
 	if !IsModifierChoice(choice) {
 		return nil
@@ -224,26 +210,21 @@ func CanConvertToModifierChoice[T Node[T]](node T) bool {
 	return ok
 }
 
-// ConvertToModifierChoice converts the modifier group to a modifier choice, if it can be. The new choice is a
-// mandatory one. Nothing a group holds is lost, since a choice holds all of it too, but no more than one of its options
-// can stay enabled, so only the first that is keeps that. On a sheet a mandatory choice must be made, so
-// when none of the options is enabled there, the first is.
+// ConvertToModifierChoice makes the modifier group a mandatory choice, if it can be, and brings it and any choice
+// around it into line with the rules (see EnsureModifierChoiceRules).
 func ConvertToModifierChoice[T Node[T]](node T) {
 	if !CanConvertToModifierChoice(node) {
 		return
 	}
 	any(node).(ModifierChoiceProvider).ModifierChoiceData().SetMandatoryChoice(true) //nolint:errcheck // CanConvertToModifierChoice checked this
 	EnsureModifierChoiceRules(node)
-	// The options the group held were options of the choice around it, which may have had its pick among them.
 	if outer, ok := modifierChoiceAbove(node); ok {
 		EnsureModifierChoiceRules(outer)
 	}
 }
 
-// EnsureModifierChoiceRules brings a modifier choice that has just come into being, or just become mandatory, into line
-// with the rules of a choice: no more than one of its options stays enabled, and on a sheet, where a mandatory choice
-// must have its pick, the first of its options is picked when none is. A node that isn't a modifier choice is left
-// alone.
+// EnsureModifierChoiceRules settles a modifier choice that just came into being or became mandatory, and on a sheet
+// picks its first option when a mandatory one has none.
 func EnsureModifierChoiceRules[T Node[T]](choice T) {
 	if !IsModifierChoice(choice) {
 		return
@@ -254,9 +235,7 @@ func EnsureModifierChoiceRules[T Node[T]](choice T) {
 	}
 }
 
-// ModifierChoiceIsResolved returns true unless the node is a mandatory modifier choice none of whose options is
-// enabled. Such a choice is unresolved: it is allowed anywhere but on a sheet, where the choice has to have
-// been made. A choice with no options has nothing to pick from, so it can't be left unresolved.
+// ModifierChoiceIsResolved returns false only for a mandatory modifier choice that has options but none enabled.
 func ModifierChoiceIsResolved[T Node[T]](choice T) bool {
 	if !IsMandatoryModifierChoice(choice) {
 		return true
@@ -273,8 +252,7 @@ func ModifierChoiceIsResolved[T Node[T]](choice T) bool {
 	return false
 }
 
-// UnresolvedModifierChoices returns the unresolved mandatory choices among the modifiers and their children (see
-// ModifierChoiceIsResolved).
+// UnresolvedModifierChoices returns the unresolved mandatory choices among the modifiers and their children.
 func UnresolvedModifierChoices[T Node[T]](modifiers ...T) []T {
 	var list []T
 	Traverse(func(node T) bool {
@@ -286,9 +264,8 @@ func UnresolvedModifierChoices[T Node[T]](modifiers ...T) []T {
 	return list
 }
 
-// unresolvedModifierChoiceText explains which mandatory choices among the modifiers of an item on a sheet
-// have yet to be made, the one place that isn't allowed, or returns an empty string when there are none or the item
-// isn't on a sheet.
+// unresolvedModifierChoiceText names the unresolved mandatory choices among the modifiers of an item on a sheet, or
+// returns "" when there are none or the item isn't on a sheet.
 func unresolvedModifierChoiceText[T Node[T], M Node[M]](item T, modifiers []M) string {
 	if !IsOnSheet(item) {
 		return ""
@@ -304,14 +281,12 @@ func unresolvedModifierChoiceText[T Node[T], M Node[M]](item T, modifiers []M) s
 	return i18n.Text("A modifier must be picked for each of these choices: ") + strings.Join(names, ", ")
 }
 
-// modifierChoiceRequired returns true if the node is a mandatory modifier choice left unresolved on a sheet,
-// the one place that isn't allowed.
+// modifierChoiceRequired returns true if the node is a mandatory modifier choice left unresolved on a sheet.
 func modifierChoiceRequired[T Node[T]](node T) bool {
 	return IsOnSheet(node) && !ModifierChoiceIsResolved(node)
 }
 
-// fillModifierChoiceCell fills in what the description cell of a modifier shows about a choice: what it asks for, and
-// whether it is required and yet to be made, which is explained ahead of the rest of its tooltip.
+// fillModifierChoiceCell fills in what a modifier's description cell shows about a choice.
 func fillModifierChoiceCell[T Node[T]](node T, data *CellData) {
 	data.ChoiceInfo = ModifierChoiceDescription(node)
 	if data.ChoiceRequired = modifierChoiceRequired(node); data.ChoiceRequired {
@@ -324,9 +299,8 @@ func fillModifierChoiceCell[T Node[T]](node T, data *CellData) {
 	}
 }
 
-// IsLockedModifierChoiceSelection returns true if the modifier is the option picked for a mandatory choice on a sheet.
-// It can't be turned off there, since that would leave the choice unresolved; picking another option is how the choice
-// is changed.
+// IsLockedModifierChoiceSelection returns true if the modifier is the pick of a mandatory choice on a sheet, which can
+// be switched to another option but not turned off.
 func IsLockedModifierChoiceSelection[T Node[T]](mod T) bool {
 	if xreflect.IsNil(mod) || !mod.Enabled() || !IsOnSheet(mod) {
 		return false
@@ -335,11 +309,9 @@ func IsLockedModifierChoiceSelection[T Node[T]](mod T) bool {
 	return ok && IsMandatoryModifierChoice(choice)
 }
 
-// SettleModifierChoices turns off all but one of the enabled options of each modifier choice among the nodes and their
-// children, since a choice never has more than one enabled. The one kept is the first enabled option that incoming
-// doesn't report as having just arrived, so that the pick a choice already had survives an option being added, moved
-// or pasted into it, or failing that the first enabled option. A nil incoming reports nothing as having arrived.
-// Returns true if anything was turned off.
+// SettleModifierChoices turns off all but one enabled option of each modifier choice among the nodes and their
+// children. It keeps the first that incoming (which may be nil) doesn't report as just arrived, so an existing pick
+// survives an option being added, or else the first. Returns true if anything was turned off.
 func SettleModifierChoices[T Node[T]](incoming func(T) bool, nodes ...T) bool {
 	changed := false
 	Traverse(func(node T) bool {
@@ -379,8 +351,8 @@ func SetModifierEnabled[T Node[T]](node T, enabled bool) {
 	}
 }
 
-// ConvertFromModifierChoice converts the modifier choice to a modifier group, discarding its choice. Within another
-// choice, its options become options of that one, which keeps the pick it already had over any of theirs.
+// ConvertFromModifierChoice converts the modifier choice to a group. Within another choice, that one keeps its pick
+// over the options it gains.
 func ConvertFromModifierChoice[T Node[T]](node T) {
 	data := modifierChoiceData(node)
 	if data == nil {
@@ -390,9 +362,8 @@ func ConvertFromModifierChoice[T Node[T]](node T) {
 	settleModifierChoicesAround(node)
 }
 
-// settleModifierChoicesAround settles the modifier choices within the container and the choice around it, if any, once
-// the container may have become a choice or stopped being one. One that stopped being a choice has handed its options
-// to the choice around it, which keeps the pick it already had over any of theirs.
+// settleModifierChoicesAround settles the choices within the container, which may have just become or stopped being a
+// choice, and the choice around it, which keeps its own pick over any the container handed it.
 func settleModifierChoicesAround[T Node[T]](container T) {
 	SettleModifierChoices(nil, container)
 	if outer, ok := modifierChoiceAbove(container); ok {
@@ -421,17 +392,12 @@ func isWithin[T Node[T]](node, container T) bool {
 	return false
 }
 
-// maxModifierChoiceVariants is the most ways of making the open mandatory choices of a set of modifiers that
-// modifierChoiceRange will work through. No real trait or piece of equipment comes anywhere near it; it is there so
-// that a pathological file can't lock up the display. Past it, the choices are treated as made with the picks they
-// have, so that every figure agrees with every other. A trait container makes the choices among its modifiers for the
-// traits inside it, so the ways of making those multiply with the ways of making each trait's own, and the cap covers
-// them together.
+// maxModifierChoiceVariants caps the ways of making open choices that modifierChoiceRange works through, so that a
+// pathological file can't lock up the display; past it, choices count as made with the picks they have. A trait
+// container's choices multiply with those of each trait inside, and the cap covers them together.
 const maxModifierChoiceVariants = 4096
 
-// IsOnSheet returns true if the node belongs to a character sheet or a loot sheet. That is where every modifier choice
-// has been made, and so where a mandatory one may not be left without its pick. A node elsewhere, or with no owner at
-// all, isn't on a sheet.
+// IsOnSheet returns true if the node belongs to a character or loot sheet, where every modifier choice is made.
 func IsOnSheet[T Node[T]](node T) bool {
 	return !xreflect.IsNil(node) && IsSheetOwner(node.DataOwner())
 }
@@ -448,17 +414,13 @@ func IsSheetOwner(owner DataOwner) bool {
 	return isLoot
 }
 
-// modifierChoicePicks maps each mandatory modifier choice whose pick has been settled on for the cost being worked out
-// to the option picked, or to nil when it counts as made with the picks it has. A trait container settles on a pick for
-// each open choice among its modifiers in turn, which every trait inside it then counts, so that no two of them count
-// different picks of one choice.
+// modifierChoicePicks maps each mandatory modifier choice settled on while costing to its pick, or to nil when it
+// counts as made with the picks it has. A trait container fixes these for every trait inside it.
 type modifierChoicePicks[M comparable] map[M]M
 
-// openMandatoryModifierChoices returns each mandatory choice among the modifiers of the item being costed that has yet
-// to be made and that fixed holds no pick for, along with the number of ways of making them, which is never counted
-// past one more than maxModifierChoiceVariants. On a sheet every choice has been made. Elsewhere a mandatory choice is
-// asked about when the item reaches a sheet, and so is still to be made, unless the item is marked preconfigured and
-// the choice already has its pick, which is then taken without asking. A choice with no options has nothing to make.
+// openMandatoryModifierChoices returns the mandatory choices among the modifiers still to be made that fixed holds no
+// pick for, and the ways of making them, capped at one past maxModifierChoiceVariants. Off a sheet a choice is open
+// unless it has a pick and what it is asked about on is preconfigured; a choice with no options never is.
 func openMandatoryModifierChoices[M ModifierNode[M, T], T ModifiableNode[T, M]](item T, modifiers []M, fixed modifierChoicePicks[M]) (open []M, variants int) {
 	variants = 1
 	if xreflect.IsNil(item) || IsOnSheet(item) {
@@ -478,10 +440,8 @@ func openMandatoryModifierChoices[M ModifierNode[M, T], T ModifiableNode[T, M]](
 	return open, variants
 }
 
-// modifierAskedAboutOn returns what the modifier, one of those the item being costed is subject to, is asked about on:
-// the container above the item it belongs to when the item inherits it from one, since a container is asked about its
-// own modifiers, and the item itself otherwise. Whether that is preconfigured decides whether the modifier's choice is
-// taken as made. The modifier's target can't simply be used, since an editor works on a copy of the item whose own
+// modifierAskedAboutOn returns the container the item inherits the modifier from, which is asked about it, or else
+// the item. The modifier's target can't simply be used, since an editor works on a copy of the item whose own
 // modifiers still point at the original.
 func modifierAskedAboutOn[M ModifierNode[M, T], T ModifiableNode[T, M]](item T, mod M) T {
 	if target := mod.Target(); !xreflect.IsNil(target) && isWithin(item, target) {
@@ -490,20 +450,15 @@ func modifierAskedAboutOn[M ModifierNode[M, T], T ModifiableNode[T, M]](item T, 
 	return item
 }
 
-// hasOpenMandatoryModifierChoice returns true if a mandatory choice among the modifiers of the item being costed has
-// yet to be made, and there aren't too many ways of making them to work through (see maxModifierChoiceVariants).
+// hasOpenMandatoryModifierChoice returns true if the item has an open mandatory modifier choice within the cap.
 func hasOpenMandatoryModifierChoice[M ModifierNode[M, T], T ModifiableNode[T, M]](item T, modifiers []M) bool {
 	open, variants := openMandatoryModifierChoices(item, modifiers, nil)
 	return len(open) != 0 && variants <= maxModifierChoiceVariants
 }
 
-// modifierChoiceRange returns the span of what eval reports for each way the open mandatory choices among the
-// modifiers of the item being costed can be made, with each choice fixed holds a pick for counted as made with that
-// pick. eval is handed the modifiers as they would stand with the choices made: a flat list of the modifiers that
-// aren't containers, in their usual order, with just the option picked from each of those choices among them, enabled.
-// The second return is false, and eval is never called, when there is no such choice, or only open ones with too many
-// ways of making them (see maxModifierChoiceVariants), which then count as made with the picks they have. Wherever a
-// single number is needed instead, an open choice counts as the least it may come to.
+// modifierChoiceRange returns the span of eval over each way of making the open mandatory choices among the modifiers,
+// with those in fixed made as it says. eval gets the non-container modifiers in order, with only each such choice's
+// pick among its options, enabled. Returns false, without calling eval, when there is nothing to enumerate.
 func modifierChoiceRange[M ModifierNode[M, T], T ModifiableNode[T, M]](item T, modifiers []M, fixed modifierChoicePicks[M], eval func([]M) NumericRange) (NumericRange, bool) {
 	open, variants := openMandatoryModifierChoices(item, modifiers, fixed)
 	if variants > maxModifierChoiceVariants {
@@ -542,9 +497,8 @@ func modifierChoiceRange[M ModifierNode[M, T], T ModifiableNode[T, M]](item T, m
 	return rangeForPickerByCount(newTemplateChoicePicker().Qualifier, ranges), true
 }
 
-// eachModifierChoicePick calls fn once for each way of making the choices, handing it the picks in fixed along with
-// the one made for each choice. fn is called just once, with the picks in fixed, when there are no choices to make.
-// The picks handed to fn are only good until it returns.
+// eachModifierChoicePick calls fn with fixed plus each combination of picks for the choices, or just once with fixed
+// when there are none. The map is reused between calls.
 func eachModifierChoicePick[M Node[M]](choices []M, fixed modifierChoicePicks[M], fn func(picks modifierChoicePicks[M])) {
 	options := make([][]M, len(choices))
 	for i, one := range choices {
