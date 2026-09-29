@@ -189,6 +189,32 @@ func (s *pickerSession[T]) chooseModifiers(row T) {
 	s.chosen[row] = true
 }
 
+// choosePicks puts up the dialog for a choice container picked from another now rather than after the outer OK.
+// Confirming counts it as answered and checks the row, unless Override kept nothing, which leaves it to be asked later.
+// Canceling puts everything back as it was.
+func (s *pickerSession[T]) choosePicks(row T, depth int) {
+	restore := s.snapshot(row)
+	switch s.runPicker(row, depth+1) {
+	case unison.ModalResponseOK:
+	case unison.ModalResponseUserBase:
+		if !s.hasPicks(row) {
+			return
+		}
+	default:
+		restore()
+		return
+	}
+	s.pickerAnswered[row] = true
+	s.chosen[row] = true
+}
+
+// clear takes back the container's own picks, leaving the answers below them alone.
+func (s *pickerSession[T]) clear(container T) {
+	for _, child := range container.NodeChildren() {
+		delete(s.chosen, child)
+	}
+}
+
 // costText returns what the row costs, counting its modifier picks as made.
 func (s *pickerSession[T]) costText(row T) string {
 	taken := func(one T) bool { return one == row || s.taken(one) }

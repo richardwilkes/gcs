@@ -345,3 +345,109 @@ func TestPickerStatePill(t *testing.T) {
 	update(pickerWarning, "1 / 1")
 	c.Equal(unison.OnLight, pill.OnBackgroundInk)
 }
+
+// TestPickerSessionChoosesPicks verifies that a choice picked from another can be answered from its row, however deep,
+// and is then applied without being asked again, while those left unanswered are still asked.
+func TestPickerSessionChoosesPicks(t *testing.T) {
+	c := check.New(t)
+	s, n := newKnightSession()
+	var asked []string
+	answers := map[string]func(depth int) int{
+		"order": func(depth int) int {
+			choose(s, n, "rose")
+			s.choosePicks(n["rose"], depth)
+			return unison.ModalResponseOK
+		},
+		"rose": func(depth int) int {
+			choose(s, n, "honest")
+			s.choosePicks(n["graces"], depth)
+			return unison.ModalResponseUserBase
+		},
+		"graces": func(int) int {
+			choose(s, n, "voice")
+			return unison.ModalResponseOK
+		},
+		"root": func(int) int {
+			choose(s, n, "ea", "fit", "order")
+			return unison.ModalResponseOK
+		},
+		"fit": func(int) int {
+			choose(s, n, "fit1")
+			return unison.ModalResponseOK
+		},
+	}
+	s.runPicker = func(row *gurps.Trait, depth int) int {
+		asked = append(asked, fmt.Sprintf("%s %d", row.Name, depth))
+		return answers[row.Name](depth)
+	}
+	s.choosePicks(n["order"], 0)
+	c.Equal([]string{"order 1", "rose 2", "graces 3"}, asked)
+	for _, name := range []string{"order", "rose", "graces"} {
+		c.True(s.chosen[n[name]], "confirming checks the row")
+		c.True(s.pickerAnswered[n[name]])
+	}
+	c.Equal("11 / 20", s.pillText(n["rose"]), "Override keeps picks that miss the rule")
+
+	asked = nil
+	rows, abort := s.processRows([]*gurps.Trait{n["root"]})
+	c.False(abort)
+	c.Equal([]string{"root 0", "fit 0"}, asked, "only the choice left unanswered is asked")
+	names := make([]string, 0, len(rows))
+	for _, row := range rows {
+		names = append(names, row.Name)
+	}
+	c.Equal([]string{"ea", "fit1", "voice", "honest"}, names)
+}
+
+// TestPickerSessionChoosesPicksBacksOut verifies that canceling a choice put up from its row puts back everything
+// changed under it, and that Override with nothing picked leaves it to be asked later.
+func TestPickerSessionChoosesPicksBacksOut(t *testing.T) {
+	c := check.New(t)
+	swapForTest(t, &promptForTraitModifiers, func(_ *modifierPromptInfo, mods []*gurps.TraitModifier) (changed, canceled bool) {
+		mods[0].Children[4].SetEnabled(true)
+		return false, false
+	})
+	s, n := newKnightSession()
+	wm := n["wm"]
+	s.runPicker = func(row *gurps.Trait, depth int) int {
+		switch row.Name {
+		case "order":
+			choose(s, n, "lion")
+			s.choosePicks(n["lion"], depth)
+			return unison.ModalResponseCancel
+		case "lion":
+			s.chooseModifiers(wm)
+			n["fear2"].Levels = fxp.Two
+			choose(s, n, "honors", "cr")
+			s.pickerAnswered[n["honors"]] = true
+		}
+		return unison.ModalResponseOK
+	}
+	s.choosePicks(n["order"], 0)
+	for _, name := range []string{"order", "lion", "honors", "cr", "wm"} {
+		c.False(s.chosen[n[name]], name)
+	}
+	c.Equal(0, len(s.pickerAnswered))
+	c.False(s.modsAnswered[wm])
+	c.False(wm.Modifiers[0].Children[4].Enabled())
+	c.Equal(fxp.Int(0), n["fear2"].Levels)
+
+	s.runPicker = func(*gurps.Trait, int) int { return unison.ModalResponseUserBase }
+	s.choosePicks(n["fit"], 0)
+	c.False(s.chosen[n["fit"]], "Override with nothing picked backs out")
+	c.False(s.pickerAnswered[n["fit"]])
+}
+
+// TestPickerSessionClear verifies that clearing a choice takes back only its own picks.
+func TestPickerSessionClear(t *testing.T) {
+	c := check.New(t)
+	s, n := newKnightSession()
+	choose(s, n, "rose", "graces", "voice", "honest")
+	s.pickerAnswered[n["graces"]] = true
+	s.clear(n["rose"])
+	c.False(s.chosen[n["graces"]])
+	c.False(s.chosen[n["honest"]])
+	c.True(s.chosen[n["rose"]])
+	c.True(s.chosen[n["voice"]], "the answers below are kept")
+	c.True(s.pickerAnswered[n["graces"]])
+}

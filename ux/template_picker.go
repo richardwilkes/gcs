@@ -11,6 +11,7 @@ package ux
 
 import (
 	"fmt"
+	"slices"
 
 	"github.com/richardwilkes/gcs/v5/model/fonts"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
@@ -43,14 +44,15 @@ func processPickers(op promptOperation, parts *applyParts, promptChoices bool) b
 }
 
 // showPicker puts up the dialog for the choice container, returning how it was closed. The boxes checked in it are
-// recorded in the session.
-func (s *pickerSession[T]) showPicker(row T, _ int) int {
+// recorded in the session. depth is how many of these dialogs it is stacked on.
+func (s *pickerSession[T]) showPicker(row T, depth int) int {
 	children := row.NodeChildren()
 	tp := templatePicker(row)
 	headers := pickerRowDetailHeaders(row)
-	// A column for the pencil, and one for the choose button when the modifier prompt follows.
+	// A column for the pencil, and one for the choose button when the modifier prompt follows or an option is a choice.
+	chooseColumn := s.prompted || slices.ContainsFunc(children, gurps.IsTemplateChoiceContainer[T])
 	buttonColumns := 1
-	if s.prompted {
+	if chooseColumn {
 		buttonColumns++
 	}
 	list := unison.NewPanel()
@@ -87,7 +89,7 @@ func (s *pickerSession[T]) showPicker(row T, _ int) int {
 		updateProgress(state, s.pillText(row))
 	}
 	for _, child := range children {
-		updates = append(updates, s.addPickerRow(list, child, tp.Type, refresh))
+		updates = append(updates, s.addPickerRow(list, child, tp.Type, depth, chooseColumn, refresh))
 	}
 
 	scroll := unison.NewScrollPanel()
@@ -118,8 +120,7 @@ func (s *pickerSession[T]) showPicker(row T, _ int) int {
 	label.SetLayoutData(&unison.FlexLayoutData{HSpan: 2})
 	label.SetTitle(row.String())
 	panel.AddChild(label)
-	// A choice nested within another is put to the user only once its enclosing choice has been answered, so the
-	// containers above it are named to tie it back to the answer that brought it up.
+	// A choice nested within another names the containers above it, to tie it back to the answer that brought it up.
 	if location := rowLocation(row); location != "" {
 		label = newTruncatedLabel(location, maxContextLineLength, fonts.FieldSecondary)
 		label.SetLayoutData(&unison.FlexLayoutData{HSpan: 2})
@@ -149,20 +150,37 @@ func (s *pickerSession[T]) showPicker(row T, _ int) int {
 	panel.AddChild(progress)
 	panel.AddChild(scroll)
 
-	var err error
-	dialog, err = newPromptDialog(s.op.at(promptstep.Choice), nil, nil, panel,
+	buttons := []*unison.DialogButtonInfo{
 		unison.NewCancelButtonInfo(),
-		&unison.DialogButtonInfo{
-			Title:        i18n.Text("Override"),
-			ResponseCode: unison.ModalResponseUserBase,
-		},
-		unison.NewOKButtonInfo())
-	if err != nil {
+		{Title: i18n.Text("Override"), ResponseCode: unison.ModalResponseUserBase},
+		unison.NewOKButtonInfo(),
+	}
+	if depth > 0 {
+		buttons = slices.Insert(buttons, 0, &unison.DialogButtonInfo{
+			Title:        i18n.Text("Clear Selections"),
+			ResponseCode: unison.ModalResponseUserBase + 1,
+		})
+	}
+	var err error
+	if dialog, err = newPromptDialog(s.op.at(promptstep.Choice), nil, nil, panel, buttons...); err != nil {
 		errs.Log(err)
 		return unison.ModalResponseCancel
 	}
 	overrideTip := i18n.Text("Accept the checked options whether or not they satisfy the choice")
 	dialog.Button(unison.ModalResponseUserBase).Tooltip = newWrappedTooltip(overrideTip)
+	if depth > 0 {
+		// Clearing leaves the dialog up.
+		dialog.Button(unison.ModalResponseUserBase + 1).ClickCallback = func() {
+			s.clear(row)
+			refresh()
+		}
+		// It opens centered over the dialog it is stacked on, so shift it to show that it is.
+		wnd := dialog.Window()
+		frame := wnd.FrameRect()
+		frame.Point = frame.Point.Add(geom.NewPoint(2*unison.StdHSpacing, 3*unison.StdVSpacing))
+		wnd.SetFrameRect(frame)
+		wnd.EnsureOnDisplay()
+	}
 	refresh()
 	return dialog.RunModal()
 }
@@ -218,8 +236,9 @@ func newPickerStatePill(top float32) (pill *unison.Label, update func(state pick
 }
 
 // addPickerRow adds the row to the dialog's list, returning what brings it up to date with the session. refresh is
-// called after anything in the row changes.
-func (s *pickerSession[T]) addPickerRow(parent *unison.Panel, row T, pt picker.Type, refresh func()) (update func()) {
+// called after anything in the row changes. depth is that of the dialog, and chooseColumn says whether it has a
+// column for the choose button.
+func (s *pickerSession[T]) addPickerRow(parent *unison.Panel, row T, pt picker.Type, depth int, chooseColumn bool, refresh func()) (update func()) {
 	op, prompted := s.op, s.prompted
 	wrapper := unison.NewPanel()
 	wrapper.SetLayout(&unison.FlexLayout{
@@ -326,16 +345,21 @@ func (s *pickerSession[T]) addPickerRow(parent *unison.Panel, row T, pt picker.T
 		parent.AddChild(button)
 	}
 	var choose *unison.Button
-	if prompted {
-		if gurps.IsTemplateChoiceContainer(row) || len(s.modTargets(row)) == 0 {
-			parent.AddChild(unison.NewPanel())
-		} else {
+	if chooseColumn {
+		isChoice := gurps.IsTemplateChoiceContainer(row)
+		if isChoice || (prompted && len(s.modTargets(row)) != 0) {
 			choose = NewSVGButtonForFont(svg.Settings, checkBox.Font, -2)
 			choose.ClickCallback = func() {
-				s.chooseModifiers(row)
+				if isChoice {
+					s.choosePicks(row, depth)
+				} else {
+					s.chooseModifiers(row)
+				}
 				refresh()
 			}
 			parent.AddChild(choose)
+		} else {
+			parent.AddChild(unison.NewPanel())
 		}
 	}
 	return func() {
@@ -352,16 +376,28 @@ func (s *pickerSession[T]) addPickerRow(parent *unison.Panel, row T, pt picker.T
 	}
 }
 
-// updateChooseButton shows whether the row still has a mandatory modifier choice to make, and whether it was answered.
+// updateChooseButton shows whether the row still has choices to make, and whether it was answered.
 func (s *pickerSession[T]) updateChooseButton(button *unison.Button, row T) {
-	name := fmt.Sprintf(i18n.Text("Choose modifiers for %s"), row.String())
-	if s.modsAnswered[row] {
-		name = fmt.Sprintf(i18n.Text("Change the modifiers for %s"), row.String())
+	var name, tip string
+	var open bool
+	if gurps.IsTemplateChoiceContainer(row) {
+		name, open = i18n.Text("Choose from %s"), !s.resolved(row)
+		tip = i18n.Text("Its picks are still to be made or miss its rule; choose them now to fix its cost")
+		if s.pickerAnswered[row] {
+			name = i18n.Text("Change the picks in %s")
+		}
+	} else {
+		name, open = i18n.Text("Choose modifiers for %s"), s.modsOpen(row)
+		tip = i18n.Text("Its cost depends on modifier choices still to be made; choose them now to fix it")
+		if s.modsAnswered[row] {
+			name = i18n.Text("Change the modifiers for %s")
+		}
 	}
+	name = fmt.Sprintf(name, row.String())
 	button.Accessibility.Name = name
-	if s.modsOpen(row) {
+	if open {
 		button.OnBackgroundInk = unison.ThemeWarning
-		button.Tooltip = newWrappedTooltip(i18n.Text("Its cost depends on modifier choices still to be made; choose them now to fix it"))
+		button.Tooltip = newWrappedTooltip(tip)
 	} else {
 		button.OnBackgroundInk = unison.DefaultButtonTheme.OnBackgroundInk
 		button.Tooltip = newWrappedTooltip(name)
