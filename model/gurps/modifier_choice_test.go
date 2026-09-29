@@ -396,7 +396,7 @@ func TestEquipmentRangesWithMandatoryModifierChoice(t *testing.T) {
 	choice := newEquipmentModifierChoiceWith([2]string{"+50", "+1 lb"}, [2]string{"+100", "+2 lb"})
 	eqp.AddModifiers(choice)
 
-	c.Equal("150~200", FormatValueRange(eqp.adjustedValueRange(choiceView{}), fxp.Int.Comma), "one of it alone is open too")
+	c.Equal("150~200", FormatValueRange(eqp.adjustedValueRange(), fxp.Int.Comma), "one of it alone is open too")
 	c.Equal("4~5 lb", FormatWeightRange(eqp.adjustedWeightRange(fxp.Pound), fxp.Pound.Format))
 	c.Equal("300~400", FormatValueRange(eqp.ExtendedValueRange(), fxp.Int.Comma))
 	c.Equal("8~10 lb", FormatWeightRange(eqp.ExtendedWeightRange(fxp.Pound), fxp.Pound.Format))
@@ -480,6 +480,21 @@ func TestPromptedRanges(t *testing.T) {
 			c.Equal("400", FormatValueRange(eqp.ExtendedValueRange(), fxp.Int.Comma), "on a sheet the pick counts")
 		}
 	}
+}
+
+// TestTemplateChoiceOfEquipmentWithAnOpenModifierChoice verifies that a template choice of equipment counts an option
+// whose mandatory modifier choice is still to be made by the range its modifiers give it.
+func TestTemplateChoiceOfEquipmentWithAnOpenModifierChoice(t *testing.T) {
+	c := check.New(t)
+	pick := newEquipmentChoice("Rope")
+	eqp := newEquipmentItem("Sword", "100", "3 lb")
+	eqp.Quantity = fxp.FromInteger(2)
+	eqp.AddModifiers(newEquipmentModifierChoiceWith([2]string{"+50", "+1 lb"}, [2]string{"+100", "+2 lb"}))
+	eqp.SetParent(pick)
+	pick.Children = append(pick.Children, eqp)
+	c.Equal("10~400", FormatValueRange(pick.ExtendedValueRange(), fxp.Int.Comma))
+	c.Equal("1~10 lb", FormatWeightRange(pick.ExtendedWeightRange(fxp.Pound), fxp.Pound.Format))
+	c.Equal(fxp.FromInteger(150), eqp.ExtendedValueOfJustOne(), "one of it counts as the least it may come to")
 }
 
 // TestWeightIgnoredForSkillsWithAnOpenChoice verifies that equipment whose weight is ignored for skills weighs nothing

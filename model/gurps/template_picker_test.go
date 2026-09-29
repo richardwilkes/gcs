@@ -355,3 +355,62 @@ func TestLoadingDropsPickerTypesANodeDoesNotAllow(t *testing.T) {
 	c.True(eqp.IsGroup(), "it must be left a plain group")
 	c.Equal(picker.Weight, loadEquipment("weight").TemplatePicker.Type, "equipment may be picked by weight")
 }
+
+// TestLoadingHoldsQualifiersToTheirTypesMinimum verifies that a count, value or weight qualifier below nothing, as only
+// a hand-edited or foreign file can hold, is raised to nothing when loaded, while a points qualifier, which may be less
+// than nothing, is kept.
+func TestLoadingHoldsQualifiersToTheirTypesMinimum(t *testing.T) {
+	c := check.New(t)
+	var eqp Equipment
+	c.NoError(json.Unmarshal([]byte(`{"id":"`+string(tid.MustNewTID(kinds.EquipmentContainer))+
+		`","container_type":"group","template_picker":{"type":"value","qualifier":{"compare":"is","qualifier":-5}}}`),
+		&eqp))
+	c.Equal(fxp.Int(0), eqp.TemplatePicker.Qualifier.Qualifier, "a value may not be less than nothing")
+	var trait Trait
+	c.NoError(json.Unmarshal([]byte(`{"id":"`+string(tid.MustNewTID(kinds.TraitContainer))+
+		`","template_picker":{"type":"points","qualifier":{"compare":"at_most","qualifier":-5}}}`), &trait))
+	c.Equal(fxp.FromInteger(-5), trait.TemplatePicker.Qualifier.Qualifier, "points may be less than nothing")
+}
+
+// TestPickerMeasureRange verifies what each kind of node counts toward a choice of each type, and that a node counts
+// nothing toward a choice made by a measure it doesn't have.
+func TestPickerMeasureRange(t *testing.T) {
+	c := check.New(t)
+	skill := NewSkill(nil, nil, false)
+	skill.Points = fxp.FromInteger(4)
+	rope := NewEquipment(nil, nil, false)
+	rope.BaseValue = "5"
+	rope.BaseWeight = "2 lb"
+	rope.Quantity = fxp.FromInteger(3)
+	c.Equal(NumericRangeOf(fxp.One), PickerMeasureRange(skill, picker.Count, false))
+	c.Equal(NumericRangeOf(fxp.One), PickerMeasureRange(rope, picker.Count, false), "a count takes no notice of quantity")
+	c.Equal(NumericRangeOf(fxp.FromInteger(4)), PickerMeasureRange(skill, picker.Points, false))
+	c.Equal(NumericRangeOf(fxp.FromInteger(15)), PickerMeasureRange(rope, picker.Value, false))
+	units := SheetSettingsFor(nil).DefaultWeightUnits
+	c.Equal(NumericRangeOf(fxp.Int(rope.ExtendedWeight(false, units))), PickerMeasureRange(rope, picker.Weight, false))
+	c.Equal(NumericRangeOf(0), PickerMeasureRange(rope, picker.Points, false), "equipment has no points")
+	c.Equal(NumericRangeOf(0), PickerMeasureRange(skill, picker.Weight, false), "a skill has no weight")
+}
+
+// TestGroupConversionHelpers verifies that the group conversion helpers work through the node types that have groups,
+// and leave alone those that don't.
+func TestGroupConversionHelpers(t *testing.T) {
+	c := check.New(t)
+	backpack := NewEquipment(nil, nil, true)
+	backpack.BaseValue = "60"
+	c.True(CanConvertToGroupContainer(backpack))
+	c.Equal([]string{"value"}, GroupConversionLosses(backpack))
+	ConvertToGroupContainer(backpack)
+	c.True(backpack.IsGroup())
+
+	choice := NewEquipmentChoiceContainer(nil, nil)
+	c.True(CanConvertToGroupContainer(choice), "a choice container becomes a group by losing its choice")
+	c.Equal(0, len(GroupConversionLosses(choice)), "the choice isn't counted among the losses")
+	ConvertToGroupContainer(choice)
+	c.False(IsTemplateChoiceContainer(choice))
+
+	skillContainer := NewSkill(nil, nil, true)
+	c.False(CanConvertToGroupContainer(skillContainer), "a skill container is already only a group")
+	c.True(CanTakeModifiers(NewTrait(nil, nil, false)))
+	c.False(CanTakeModifiers(NewEquipmentGroup(nil, nil)))
+}

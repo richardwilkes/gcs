@@ -26,6 +26,12 @@ import (
 //
 // A settled range -- one whose minimum and maximum are the same known value -- is what the vast majority of items
 // report, and it displays exactly as the bare value always has.
+//
+// Where a single number has to stand for a range that isn't settled, as in the calc block written to a file, points and
+// equipment differ for now. A template choice of points counts as the total of its options (see pickerContainerPoints),
+// which is what points always reported. An equipment choice counts as the least it may come to (see singleValueOf),
+// which is what can be relied upon being there, as does an open mandatory modifier choice for points and equipment
+// alike. The two are to be brought together once template choices can be left open outside of templates.
 type NumericRange struct {
 	// Min is the least the item can cost, or nil if there is no lower limit.
 	Min *fxp.Int
@@ -147,7 +153,8 @@ func (r NumericRange) Comma() string {
 }
 
 // format renders the range, using f to render each end of it. A settled range renders as the bare number, so that
-// everything which isn't a choice looks exactly as it always has.
+// everything which isn't a choice looks exactly as it always has, and so does a range whose ends render the same, as
+// they can when f rounds: "1~1" would say nothing "1" doesn't.
 func (r NumericRange) format(f func(fxp.Int) string) string {
 	switch {
 	case r.Min == nil && r.Max == nil:
@@ -159,7 +166,12 @@ func (r NumericRange) format(f func(fxp.Int) string) string {
 	case *r.Min == *r.Max:
 		return f(*r.Min)
 	default:
-		return f(*r.Min) + rangeSeparator + f(*r.Max)
+		lower := f(*r.Min)
+		upper := f(*r.Max)
+		if lower == upper {
+			return lower
+		}
+		return lower + rangeSeparator + upper
 	}
 }
 

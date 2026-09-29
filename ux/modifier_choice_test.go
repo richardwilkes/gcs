@@ -919,13 +919,13 @@ func TestPickerCostsSheetRowsAsPrompted(t *testing.T) {
 	choice.Children[0].CostAdj = "+5"
 	choice.Children[1].CostAdj = "+10"
 	trait.AddModifiers(choice)
-	c.Equal("15", pointsRangeFor(trait, false).String())
-	c.Equal("15~20", pointsRangeFor(trait, true).String())
+	c.Equal("15", gurps.PickerMeasureRange(trait, picker.Points, false).String())
+	c.Equal("15~20", gurps.PickerMeasureRange(trait, picker.Points, true).String())
 
 	sword, _ := newEditorEquipmentWithChoice([2]string{"+50", "+1 lb"}, [2]string{"+100", "+2 lb"})
 	sword.SetDataOwner(entity)
 	sword.Modifiers[0].Children[0].Disabled = false
 	c.Equal([]string{"1", "$150", "3 lb"}, pickerRowDetails(sword, false))
 	c.Equal([]string{"1", "$150~200", "3~4 lb"}, pickerRowDetails(sword, true))
-	c.Equal("$150~200", formatPickerTotal(sword, picker.Value, pickerMeasureRange(sword, picker.Value, true)))
+	c.Equal("$150~200", formatPickerTotal(sword, picker.Value, gurps.PickerMeasureRange(sword, picker.Value, true)))
 }

@@ -23,143 +23,212 @@ import (
 // already worked out; a weight is an fxp.Int in canonical units. As with points, a range is never unsettled on a sheet,
 // where every choice has been made, so there it is the same single value ExtendedValue or ExtendedWeight reports.
 
-// adjustedValueRange returns the span of values one of this equipment may have, not counting what it holds, while a
-// mandatory choice among its modifiers is open, seen as view says.
-func (e *Equipment) adjustedValueRange(view choiceView) NumericRange {
-	eval := func(modifiers []*EquipmentModifier) NumericRange {
-		return NumericRangeOf(ValueAdjustedForModifiers(e, e.ResolvedBaseValue(), modifiers))
-	}
-	if r, open := modifierChoiceRange(e, e.Modifiers, nil, view, eval); open {
-		return r
-	}
-	return eval(e.Modifiers)
-}
-
-// adjustedWeightRange is adjustedValueRange for weight.
-func (e *Equipment) adjustedWeightRange(defUnits fxp.WeightUnit) NumericRange {
-	eval := func(modifiers []*EquipmentModifier) NumericRange {
-		return NumericRangeOf(fxp.Int(WeightAdjustedForModifiers(e, e.ResolvedBaseWeight(), modifiers, defUnits)))
-	}
-	if r, open := modifierChoiceRange(e, e.Modifiers, nil, choiceView{}, eval); open {
-		return r
-	}
-	return eval(e.Modifiers)
-}
-
 // ExtendedValueRange returns the span of extended values this equipment may end up having once every choice within it
 // has been made.
 func (e *Equipment) ExtendedValueRange() NumericRange {
-	return e.extendedValueRange(choiceView{})
+	return equipmentValue().rangeOf(e, e.Quantity)
 }
 
 // PromptedExtendedValueRange is ExtendedValueRange as the modifier prompt will see the equipment, even on a sheet.
 // Equipment taken (which may be nil) reports counts as preconfigured.
 func (e *Equipment) PromptedExtendedValueRange(taken func(*Equipment) bool) NumericRange {
-	return e.extendedValueRange(promptedView(taken))
-}
-
-// extendedValueRange is ExtendedValueRange seen as view says.
-func (e *Equipment) extendedValueRange(view choiceView) NumericRange {
-	if e.Quantity <= 0 {
-		return NumericRangeOf(0)
-	}
-	contents := NumericRangeOf(0)
-	if e.Container() {
-		children := make([]NumericRange, len(e.Children))
-		for i, one := range e.Children {
-			children[i] = one.extendedValueRange(view)
-		}
-		contents = equipmentContentsRange(e, picker.Value, children)
-	}
-	own := e.adjustedValueRange(view)
-	if !e.Container() && own.IsSettled() {
-		return NumericRangeOf(lowerEndOf(own).Mul(e.Quantity))
-	}
-	return scaleNumericRange(own.Add(contents), e.Quantity)
+	return equipmentValue().seenAs(promptedView(taken)).rangeOf(e, e.Quantity)
 }
 
 // ExtendedWeightRange returns the span of extended weights this equipment may end up having once every choice within
 // it has been made.
 func (e *Equipment) ExtendedWeightRange(defUnits fxp.WeightUnit) NumericRange {
-	return e.extendedWeightRange(choiceView{}, false, defUnits)
+	return e.extendedWeightRange(false, defUnits)
 }
 
 // PromptedExtendedWeightRange is PromptedExtendedValueRange for weight.
 func (e *Equipment) PromptedExtendedWeightRange(defUnits fxp.WeightUnit, taken func(*Equipment) bool) NumericRange {
-	return e.extendedWeightRange(promptedView(taken), false, defUnits)
+	return equipmentWeight(false, defUnits).seenAs(promptedView(taken)).rangeOf(e, e.Quantity)
 }
 
-// extendedWeightRange is ExtendedWeightRange seen as view says, counting only the weight that counts for skills when
-// forSkills is true.
-func (e *Equipment) extendedWeightRange(view choiceView, forSkills bool, defUnits fxp.WeightUnit) NumericRange {
-	if e.Quantity <= 0 {
+// extendedWeightRange is ExtendedWeightRange, counting only the weight that counts for skills when forSkills is true.
+func (e *Equipment) extendedWeightRange(forSkills bool, defUnits fxp.WeightUnit) NumericRange {
+	return equipmentWeight(forSkills, defUnits).rangeOf(e, e.Quantity)
+}
+
+// adjustedValueRange returns the span of values one of this equipment may have, not counting what it holds, while a
+// mandatory choice among its modifiers is open.
+func (e *Equipment) adjustedValueRange() NumericRange {
+	return equipmentValue().oneOf(e, nil)
+}
+
+// adjustedWeightRange is adjustedValueRange for weight.
+func (e *Equipment) adjustedWeightRange(defUnits fxp.WeightUnit) NumericRange {
+	return equipmentWeight(false, defUnits).oneOf(e, nil)
+}
+
+// singleValueOf returns the one value a range stands for where a single number is needed: the value itself when the
+// range is settled, and otherwise the least it may come to, a value or weight never being less than nothing. This is
+// how an equipment choice yet to be made, or an open mandatory modifier choice, counts in the calc block written to a
+// file, in scripts and in exports. A template choice of points counts differently, as the total of its options (see
+// pickerContainerPoints), since that is what points always reported; the two are to be brought together once template
+// choices can be left open outside of templates.
+func singleValueOf(r NumericRange) fxp.Int {
+	if value, settled := r.Settled(); settled {
+		return value
+	}
+	return lowerEndOf(r)
+}
+
+// equipmentMeasure is a quantity a choice of equipment may be made by, other than a count: its value or its weight.
+type equipmentMeasure struct {
+	kind picker.Type
+	// own returns the measure of a single piece of the equipment with the given modifiers, not counting anything it
+	// holds.
+	own func(e *Equipment, modifiers []*EquipmentModifier) fxp.Int
+	// reduce returns the measure of what a single piece of the equipment with the given modifiers holds, given the
+	// range of it before any reduction the equipment makes to it.
+	reduce func(e *Equipment, modifiers []*EquipmentModifier, contents NumericRange) NumericRange
+	// view says how open modifier choices are costed.
+	view choiceView
+}
+
+// seenAs returns the measure with open modifier choices costed as view says.
+func (m equipmentMeasure) seenAs(view choiceView) equipmentMeasure {
+	m.view = view
+	return m
+}
+
+// equipmentValue returns the measure of equipment's value.
+func equipmentValue() equipmentMeasure {
+	return equipmentMeasure{
+		kind: picker.Value,
+		own: func(e *Equipment, modifiers []*EquipmentModifier) fxp.Int {
+			return ValueAdjustedForModifiers(e, e.ResolvedBaseValue(), modifiers)
+		},
+		reduce: func(_ *Equipment, _ []*EquipmentModifier, contents NumericRange) NumericRange { return contents },
+	}
+}
+
+// equipmentWeight returns the measure of equipment's weight, a weight with no units given being in defUnits. When
+// forSkills is true, it measures only the weight that counts for skills.
+func equipmentWeight(forSkills bool, defUnits fxp.WeightUnit) equipmentMeasure {
+	return equipmentMeasure{
+		kind: picker.Weight,
+		own: func(e *Equipment, modifiers []*EquipmentModifier) fxp.Int {
+			if forSkills && e.WeightIgnoredForSkills && e.ReallyEquipped() {
+				return 0
+			}
+			return fxp.Int(WeightAdjustedForModifiers(e, e.ResolvedBaseWeight(), modifiers, defUnits))
+		},
+		reduce: func(e *Equipment, modifiers []*EquipmentModifier, contents NumericRange) NumericRange {
+			reduction := containedWeightReductionFor(e, defUnits, modifiers, e.Features)
+			reduce := func(end *fxp.Int) *fxp.Int {
+				if end == nil {
+					// A reduction that takes away everything leaves nothing, however much there was to begin with.
+					if !reduction.removesEverything() {
+						return nil
+					}
+					var nothing fxp.Int
+					return &nothing
+				}
+				value := fxp.Int(reduction.apply(fxp.Weight(*end)))
+				return &value
+			}
+			return NumericRange{Min: reduce(contents.Min), Max: reduce(contents.Max)}
+		},
+	}
+}
+
+// rangeOf returns the range of the measure of the given quantity of the equipment, what it holds included.
+func (m equipmentMeasure) rangeOf(e *Equipment, quantity fxp.Int) NumericRange {
+	if quantity <= 0 {
 		return NumericRangeOf(0)
 	}
-	contents := NumericRangeOf(0)
+	var contents *NumericRange
 	if e.Container() {
-		children := make([]NumericRange, len(e.Children))
-		for i, one := range e.Children {
-			children[i] = one.extendedWeightRange(view, forSkills, defUnits)
-		}
-		contents = equipmentContentsRange(e, picker.Weight, children)
+		r := m.contentsOf(e)
+		contents = &r
 	}
-	ignoreOwnWeight := forSkills && e.WeightIgnoredForSkills && e.ReallyEquipped()
-	// The modifiers may also reduce the weight of the contents.
-	weigh := func(modifiers []*EquipmentModifier) NumericRange {
-		reduction := containedWeightReductionFor(e, defUnits, modifiers, e.Features)
-		reduce := func(end *fxp.Int) *fxp.Int {
-			if end == nil {
-				// A reduction that takes away everything leaves nothing, however much there was to begin with.
-				if !reduction.removesEverything() {
-					return nil
-				}
-				var nothing fxp.Int
-				return &nothing
-			}
-			value := fxp.Int(reduction.apply(fxp.Weight(*end)))
-			return &value
-		}
-		var base fxp.Weight
-		if !ignoreOwnWeight {
-			base = WeightAdjustedForModifiers(e, e.ResolvedBaseWeight(), modifiers, defUnits)
-		}
-		return NumericRangeOf(fxp.Int(base)).Add(NumericRange{Min: reduce(contents.Min), Max: reduce(contents.Max)})
-	}
-	r, open := modifierChoiceRange(e, e.Modifiers, nil, view, weigh)
-	if !open {
-		if !e.Container() {
-			return NumericRangeOf(fxp.Int(e.extendedWeightAsPicked(forSkills, defUnits)))
-		}
-		r = weigh(e.Modifiers)
-	}
-	return scaleNumericRange(r, e.Quantity)
+	return scaleNumericRange(m.oneOf(e, contents), quantity)
 }
 
-// equipmentContentsRange returns the range of what the container holds, measured as the given picker type measures it,
-// given the ranges of its children. A container that isn't a choice holds all of its children.
+// oneOf returns the range of the measure of a single piece of the equipment over each way of making the open mandatory
+// choices among its modifiers, which may also change how much of what it holds is reduced. contents is the range of
+// what it holds before that reduction, or nil to leave what it holds out.
+func (m equipmentMeasure) oneOf(e *Equipment, contents *NumericRange) NumericRange {
+	eval := func(modifiers []*EquipmentModifier) NumericRange {
+		r := NumericRangeOf(m.own(e, modifiers))
+		if contents != nil {
+			r = r.Add(m.reduce(e, modifiers, *contents))
+		}
+		return r
+	}
+	if r, open := modifierChoiceRange(e, e.Modifiers, nil, m.view, eval); open {
+		return r
+	}
+	return eval(e.Modifiers)
+}
+
+// contentsOf returns the range of the measure of what a single piece of the container holds, before any reduction the
+// container makes to it. A container that isn't a choice holds all of its children.
 //
-// A choice picked by count takes its options as they are, so its range is worked out just as it is for points. A
-// choice picked by the same measure is bounded by its qualifier directly, just as a points choice is by its own. A
-// choice picked by the other measure lets the quantity of each option be raised while picking, save for a group, which
-// has no quantity to raise. So there is no upper limit to what it may hold once any option but a group has something
-// to raise; otherwise it may hold anything from none of its options to all of them.
-func equipmentContentsRange(e *Equipment, measure picker.Type, children []NumericRange) NumericRange {
+// A choice picked by count takes its options as they are, so its range is worked out just as it is for points.
+//
+// A choice picked by a measure lets the quantity of each option with a quantity of its own be raised while picking, so
+// such an option can always add more, so long as a single one of it measures anything, whatever quantity it starts out
+// with. A choice picked by this measure is then bounded by its qualifier directly, just as a points choice is by its
+// own; when no option can be raised, it is also held to what its options can come to together, taken or left. A choice
+// picked by the other measure has no upper limit to this one once any option can be raised, and otherwise may hold
+// anything from none of its options to all of them.
+func (m equipmentMeasure) contentsOf(e *Equipment) NumericRange {
+	children := make([]NumericRange, len(e.Children))
+	for i, one := range e.Children {
+		children[i] = m.rangeOf(one, one.Quantity)
+	}
 	if !IsTemplateChoiceContainer(e) {
 		return sumNumericRanges(children)
 	}
-	switch e.TemplatePicker.Type {
-	case picker.Count:
+	if e.TemplatePicker.Type == picker.Count {
 		return rangeForPickerByCount(e.TemplatePicker.Qualifier, children)
-	case measure:
-		return rangeForPickerByMeasure(e.TemplatePicker.Qualifier, children)
-	default:
-		for i, one := range e.Children {
-			if !one.IsGroup() && SignForNumericRanges(children[i]) != NumericRangeZero {
-				return numericRangeAtLeast(0)
+	}
+	// What each option could add is what a single one of it measures when it can be raised, and what it measures as it
+	// stands otherwise.
+	potential := make([]NumericRange, len(e.Children))
+	raisable := false
+	for i, one := range e.Children {
+		potential[i] = children[i]
+		if one.HasOwnQuantity() {
+			if unit := m.rangeOf(one, fxp.One); SignForNumericRanges(unit) != NumericRangeZero {
+				potential[i] = unit
+				raisable = true
 			}
 		}
-		return rangeForPickerByCount(criteria.Number{Compare: criteria.AnyNumber}, children)
 	}
+	reachable := rangeForPickerByCount(criteria.Number{Compare: criteria.AnyNumber}, children)
+	if e.TemplatePicker.Type != m.kind {
+		if raisable {
+			return numericRangeAtLeast(0)
+		}
+		return reachable
+	}
+	bounded := rangeForPickerByMeasure(e.TemplatePicker.Qualifier, potential)
+	if raisable {
+		return bounded
+	}
+	return capNumericRange(bounded, reachable)
+}
+
+// capNumericRange returns the part of the range within the limits of another. A range with no part within them, as a
+// qualifier nothing can reach gives, is returned as it is: whether a choice can be satisfied is not a range's concern.
+func capNumericRange(r, limits NumericRange) NumericRange {
+	lower := r.Min
+	if lower == nil || (limits.Min != nil && *limits.Min > *lower) {
+		lower = limits.Min
+	}
+	upper := r.Max
+	if upper == nil || (limits.Max != nil && *limits.Max < *upper) {
+		upper = limits.Max
+	}
+	if lower != nil && upper != nil && *lower > *upper {
+		return r
+	}
+	return NumericRange{Min: lower, Max: upper}
 }
 
 // lowerEndOf returns the least of the range, a value or weight never being less than nothing.
@@ -193,6 +262,9 @@ func FormatWeightRange(r NumericRange, format func(fxp.Weight) string) string {
 	if r.Min != nil && r.Max != nil && *r.Min != *r.Max {
 		lower := format(fxp.Weight(*r.Min))
 		upper := format(fxp.Weight(*r.Max))
+		if lower == upper {
+			return upper
+		}
 		if number, units, found := strings.Cut(lower, " "); found {
 			if _, upperUnits, upperFound := strings.Cut(upper, " "); upperFound && units == upperUnits {
 				return number + rangeSeparator + upper

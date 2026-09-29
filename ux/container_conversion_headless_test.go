@@ -20,8 +20,9 @@ import (
 
 // TestContainerConversionClosesEditorsAndUndoesTheKind verifies that converting a displayed equipment group to a plain
 // item closes the editor open on it first, and that undo brings back a group, not a physical container, even though
-// the displayed sheet is checked for modification, and so written out, in between. Redo makes it an item again, with
-// the legality class new equipment starts out with, and discards an editor opened on the group.
+// the displayed sheet is checked for modification, and so written out, in between. Undo discards an editor opened on
+// the item, whose ID differs from the group's in its kind, and redo makes it an item again, with the legality class new
+// equipment starts out with, and discards an editor opened on the group.
 func TestContainerConversionClosesEditorsAndUndoesTheKind(t *testing.T) {
 	c := check.New(t)
 	screen, _ := startHeadlessWorkspace(t, c)
@@ -61,9 +62,12 @@ func TestContainerConversionClosesEditorsAndUndoesTheKind(t *testing.T) {
 	c.Equal("4", group.LegalityClass, "the item must start out with the default legality class")
 	c.Equal(0, editorsOpen(), "converting must close the group's editor")
 
+	screen.Do(func() { EditEquipment(sheet, group, true) })
+	c.Equal(1, editorsOpen(), "the item's editor must be open")
 	screen.Do(func() { _ = sheet.Modified() })
 	screen.Do(mgr.Undo)
 	c.True(group.IsGroup(), "undo must bring back a group, not a physical container")
+	c.Equal(0, editorsOpen(), "undo must discard the editor opened on the item")
 	c.Equal("", group.LegalityClass, "undo must take the legality class away again")
 
 	screen.Do(func() { EditEquipment(sheet, group, true) })

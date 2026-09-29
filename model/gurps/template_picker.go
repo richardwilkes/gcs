@@ -18,6 +18,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/picker"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/toolbox/v2/xhash"
+	"github.com/richardwilkes/toolbox/v2/xreflect"
 )
 
 // TemplatePickerProvider provides access to the valid picker types and the picker data.
@@ -83,6 +84,15 @@ func (t TemplatePicker) Hash(h hash.Hash) {
 	if t.Type != picker.NotApplicable {
 		t.Qualifier.Hash(h)
 	}
+}
+
+// TemplatePickerQualifierMinimum returns the least a picker of the given type may ask for. Only points may be less than
+// nothing, since a disadvantage costs negative points; a count, a value or a weight never can be.
+func TemplatePickerQualifierMinimum(pickerType picker.Type) fxp.Int {
+	if pickerType == picker.Points {
+		return fxp.Min
+	}
+	return 0
 }
 
 // newTemplateChoicePicker returns the picker data a new template choice container starts with: pick exactly one of its
@@ -213,4 +223,94 @@ func ConvertFromTemplateChoiceContainer[T Node[T]](node T) {
 	}
 	_, data := any(node).(TemplatePickerProvider).TemplatePickerData() //nolint:errcheck // IsTemplateChoiceContainer checked this
 	*data = TemplatePicker{}
+}
+
+// groupConvertible is implemented by the node types whose containers come in a kind that holds things as an item in
+// its own right, such as a backpack, as well as a group, which only organizes what it holds, so that the one may be
+// converted into the other.
+type groupConvertible interface {
+	// CanConvertToGroup returns true if this container can be converted to a group.
+	CanConvertToGroup() bool
+	// GroupConversionLosses returns a description of each piece of data this container holds that a group can't.
+	GroupConversionLosses() []string
+	// ConvertToGroup converts this container to a group, discarding what GroupConversionLosses describes.
+	ConvertToGroup()
+}
+
+// CanConvertToGroupContainer returns true if the node is a container that can be converted to a group: a template
+// choice container or a modifier choice, which loses its choice, or a container of a kind that holds things in its own
+// right.
+func CanConvertToGroupContainer[T Node[T]](node T) bool {
+	if IsTemplateChoiceContainer(node) || IsModifierChoice(node) {
+		return true
+	}
+	gc, ok := any(node).(groupConvertible)
+	return ok && gc.CanConvertToGroup()
+}
+
+// GroupConversionLosses returns a description of each piece of data the node would lose by being converted to a group,
+// other than a template choice container's or modifier choice's choice.
+func GroupConversionLosses[T Node[T]](node T) []string {
+	if IsTemplateChoiceContainer(node) || IsModifierChoice(node) {
+		return nil
+	}
+	if gc, ok := any(node).(groupConvertible); ok {
+		return gc.GroupConversionLosses()
+	}
+	return nil
+}
+
+// ConvertToGroupContainer converts the node to a group, if it can be (see CanConvertToGroupContainer).
+func ConvertToGroupContainer[T Node[T]](node T) {
+	if IsTemplateChoiceContainer(node) {
+		ConvertFromTemplateChoiceContainer(node)
+		return
+	}
+	if IsModifierChoice(node) {
+		ConvertFromModifierChoice(node)
+		return
+	}
+	if gc, ok := any(node).(groupConvertible); ok && gc.CanConvertToGroup() {
+		gc.ConvertToGroup()
+	}
+}
+
+// PickerMeasureRange returns the span of what the node counts toward a template choice made by the given picker type.
+// Everything counts as one toward a choice made by count. Toward one made by points, a skill or spell counts by its raw
+// points, inside a container as much as on its own, since a choice counts what is being bought rather than what the
+// destination sheet's bonuses make of it, and the rows are already owned by that sheet by the time the choice is made.
+// A trait counts by its adjusted points, the only cost a trait has. Toward one made by value or weight, equipment counts
+// by its extended value or weight, its quantity and contents included. Either way a container accounts for any choices
+// it presents, including the exact ones, which are worth what they ask for rather than what their children add up to.
+// When prompted, open modifier choices are costed as the modifier prompt will see them, even on a sheet.
+func PickerMeasureRange[T Node[T]](node T, pickerType picker.Type, prompted bool) NumericRange {
+	if xreflect.IsNil(node) {
+		return NumericRangeOf(0)
+	}
+	var view choiceView
+	if prompted {
+		view = choiceView{prompted: true}
+	}
+	switch pickerType {
+	case picker.Count:
+		return NumericRangeOf(fxp.One)
+	case picker.Points:
+		if rp, ok := any(node).(interface{ RawPointsRange() NumericRange }); ok {
+			return rp.RawPointsRange()
+		}
+		if trait, ok := any(node).(*Trait); ok {
+			return trait.pointsRange(nil, view)
+		}
+	case picker.Value:
+		if eqp, ok := any(node).(*Equipment); ok {
+			return equipmentValue().seenAs(view).rangeOf(eqp, eqp.Quantity)
+		}
+	case picker.Weight:
+		if eqp, ok := any(node).(*Equipment); ok {
+			units := SheetSettingsFor(EntityFromNode(node)).DefaultWeightUnits
+			return equipmentWeight(false, units).seenAs(view).rangeOf(eqp, eqp.Quantity)
+		}
+	default:
+	}
+	return NumericRangeOf(0)
 }

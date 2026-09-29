@@ -107,16 +107,8 @@ func processPickerRow[T gurps.Node[T]](op promptOperation, row T, prompted bool)
 		// The picker is satisfied while some way of making those remaining choices would satisfy it.
 		total := gurps.NumericRangeOf(0)
 		for i, box := range boxes {
-			if box.State == check.On {
-				switch tp.Type {
-				case picker.NotApplicable:
-				case picker.Count:
-					total = total.Add(gurps.NumericRangeOf(fxp.One))
-				case picker.Points:
-					total = total.Add(pointsRangeFor(children[i], prompted))
-				case picker.Value, picker.Weight:
-					total = total.Add(pickerMeasureRange(children[i], tp.Type, prompted))
-				}
+			if box.State == check.On && tp.Type != picker.NotApplicable {
+				total = total.Add(gurps.PickerMeasureRange(children[i], tp.Type, prompted))
 			}
 		}
 		matches := total.CanSatisfy(tp.Qualifier)
@@ -307,8 +299,8 @@ func addPickerRow[T gurps.Node[T]](op promptOperation, parent *unison.Panel, row
 		pageRefHighlight = actual.PageRefHighlight
 	case *gurps.Equipment:
 		// A choice made by value or weight may take more than one of an option, so its quantity may be set while
-		// picking. A group has no quantity of its own to set.
-		if (pt == picker.Value || pt == picker.Weight) && !actual.IsGroup() {
+		// picking, if it has one of its own to set.
+		if (pt == picker.Value || pt == picker.Weight) && actual.HasOwnQuantity() {
 			onClick = func() { pickerRowQuantityEditor(op, actual, &details, prompted, callback) }
 			editTooltip = i18n.Text("Edit quantity")
 		}
@@ -387,31 +379,13 @@ func pickerRowDetails[T gurps.Node[T]](row T, prompted bool) []string {
 	}
 	defUnits := pickerWeightUnits(eqp)
 	quantity := ""
-	if !eqp.IsGroup() {
+	if eqp.HasOwnQuantity() {
 		quantity = eqp.Quantity.Comma()
 	}
 	return []string{
 		quantity,
-		"$" + gurps.FormatValueRange(pickerMeasureRange(eqp, picker.Value, prompted), fxp.Int.Comma),
-		gurps.FormatWeightRange(pickerMeasureRange(eqp, picker.Weight, prompted), defUnits.Format),
-	}
-}
-
-// pickerMeasureRange returns what an option counts toward a choice made by value or weight: the range of its extended
-// value or weight, which takes its quantity into account.
-func pickerMeasureRange[T gurps.Node[T]](row T, pt picker.Type, prompted bool) gurps.NumericRange {
-	eqp, ok := any(row).(*gurps.Equipment)
-	switch {
-	case !ok || xreflect.IsNil(eqp):
-		return gurps.NumericRangeOf(0)
-	case pt == picker.Weight && prompted:
-		return eqp.PromptedExtendedWeightRange(pickerWeightUnits(eqp), nil)
-	case pt == picker.Weight:
-		return eqp.ExtendedWeightRange(pickerWeightUnits(eqp))
-	case prompted:
-		return eqp.PromptedExtendedValueRange(nil)
-	default:
-		return eqp.ExtendedValueRange()
+		"$" + gurps.FormatValueRange(gurps.PickerMeasureRange(eqp, picker.Value, prompted), fxp.Int.Comma),
+		gurps.FormatWeightRange(gurps.PickerMeasureRange(eqp, picker.Weight, prompted), defUnits.Format),
 	}
 }
 
@@ -484,7 +458,7 @@ func updatePickerCheckBoxTitle[T gurps.Node[T]](checkBox *unison.CheckBox, row T
 	case picker.Points:
 		// A row that presents choices of its own is worth a range rather than a single cost, which is worth showing
 		// even though picking it leads to another dialog: it is what the row will add to the total.
-		points := pointsRangeFor(row, prompted)
+		points := gurps.PickerMeasureRange(row, picker.Points, prompted)
 		value, settled := points.Settled()
 		if !settled || value != 0 {
 			pointsLabel := i18n.Text("points")
@@ -573,28 +547,4 @@ func pickerRowPointEditor[T pickerRowPointEditorTypes[T]](op promptOperation, no
 	callback()
 	checkBox.MarkForLayoutRecursivelyUpward()
 	checkBox.MarkForRedraw()
-}
-
-// pointsRangeFor returns the span of costs a picker may end up counting a row as being worth. A skill or spell is
-// counted by its raw points, inside a container as much as on its own, since a picker counts what is being bought
-// rather than what the destination sheet's bonuses make of it. The rows are already owned by that sheet by the time
-// the picker is shown, so its bonuses would otherwise be counted. A trait is counted by its adjusted points, which is
-// the only cost a trait has, as the modifier prompt will see it when prompted. Either way a container accounts for any
-// choices it presents, including the exact ones, which are worth what they ask for rather than what their children add
-// up to.
-func pointsRangeFor[T gurps.Node[T]](child T, prompted bool) gurps.NumericRange {
-	if xreflect.IsNil(child) {
-		return gurps.NumericRangeOf(0)
-	}
-	// Covers skills and spells
-	if rp, ok := any(child).(interface{ RawPointsRange() gurps.NumericRange }); ok {
-		return rp.RawPointsRange()
-	}
-	if trait, ok := any(child).(*gurps.Trait); ok {
-		if prompted {
-			return trait.PromptedPointsRange(nil)
-		}
-		return trait.PointsRange(nil)
-	}
-	return gurps.NumericRangeOf(0)
 }
