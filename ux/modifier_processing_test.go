@@ -112,6 +112,12 @@ func forbidModifierPrompts(t *testing.T) {
 	}))
 }
 
+// processModifiers prompts for the modifiers of the rows as applyTransfer does.
+func processModifiers[T gurps.Node[T]](rows []T) bool {
+	targets := modifierTargets(rows)
+	return promptForModifierTargets(promptOperation{}, targets, 0, len(targets))
+}
+
 // TestProcessModifiersIgnoresModifierRows documents that processModifiers only has something to do for rows that can
 // hold modifiers. Handing it the modifiers themselves matches nothing, which is why its callers pass the rows that
 // carry the modifiers (see applyTransfer).
@@ -122,16 +128,16 @@ func TestProcessModifiersIgnoresModifierRows(t *testing.T) {
 
 	traitMod := gurps.NewTraitModifier(entity, nil, false)
 	traitMod.Name = "Trait Modifier"
-	processModifiers(promptOperation{}, []*gurps.TraitModifier{traitMod}, true)
+	processModifiers([]*gurps.TraitModifier{traitMod})
 	equipmentMod := gurps.NewEquipmentModifier(entity, nil, false)
 	equipmentMod.Name = "Equipment Modifier"
-	processModifiers(promptOperation{}, []*gurps.EquipmentModifier{equipmentMod}, true)
+	processModifiers([]*gurps.EquipmentModifier{equipmentMod})
 	c.Equal(0, len(*prompts), "modifier rows have no modifiers of their own to prompt for")
 
 	trait := gurps.NewTrait(entity, nil, false)
 	trait.Name = "Trait"
 	trait.Modifiers = []*gurps.TraitModifier{traitMod}
-	processModifiers(promptOperation{}, []*gurps.Trait{trait}, true)
+	processModifiers([]*gurps.Trait{trait})
 	c.Equal([]modifierPrompt{{title: "Trait", modifiers: []string{"Trait Modifier"}}}, *prompts,
 		"a trait must be prompted for with its own modifiers")
 }
@@ -151,7 +157,7 @@ func TestModifierPromptsCountOnlyRowsWithModifiers(t *testing.T) {
 	first.AddModifiers(gurps.NewTraitModifier(entity, nil, false))
 	second := gurps.NewTrait(entity, nil, false)
 	second.AddModifiers(gurps.NewTraitModifier(entity, nil, false))
-	c.True(processModifiers(promptOperation{}, []*gurps.Trait{plain, first, plain, second}, false))
+	c.True(processModifiers([]*gurps.Trait{plain, first, plain, second}))
 	c.Equal([][2]int{{1, 2}, {2, 2}}, steps)
 }
 

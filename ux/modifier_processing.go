@@ -29,9 +29,8 @@ import (
 	"github.com/richardwilkes/unison/enums/paintstyle"
 )
 
-// The modifier prompts are held in variables so that tests can substitute non-interactive implementations. Each is told
-// through its modifierPromptInfo whether a pick has to be made for every mandatory choice, and reports whether any
-// modifier was changed and whether the prompt was canceled.
+// The modifier prompts are held in variables so that tests can substitute non-interactive implementations. Each reports
+// whether any modifier was changed and whether the prompt was canceled.
 var (
 	promptForTraitModifiers     = showModifiersDialog[*gurps.TraitModifier]
 	promptForEquipmentModifiers = showModifiersDialog[*gurps.EquipmentModifier]
@@ -53,27 +52,13 @@ type modifierPromptInfo struct {
 	requirePicks bool
 }
 
-// processModifiers prompts for which modifiers to enable on each of the rows that modifierTargets picks out of the given
-// rows. requirePicks is true when the rows are headed for a sheet (see modifierPromptInfo.requirePicks). Nothing is
-// rebuilt here; the caller reports the change once the answers are in (see applyTransfer). Returns false if the user
-// canceled a prompt, in which case no further prompts are shown and the caller is expected to abandon the whole
-// operation the prompts were part of.
-func processModifiers[T gurps.Node[T]](op promptOperation, rows []T, requirePicks bool) bool {
-	targets := modifierTargets(rows, requirePicks)
-	return promptForModifierTargets(op, targets, 0, len(targets), requirePicks)
-}
-
 // modifierTargets returns the rows the modifier prompt asks about: each of the given rows, and every row below them,
-// that holds modifiers (traits and equipment). Other rows, the modifiers themselves included, are left out. A
-// preconfigured row is only asked about the mandatory choices it has left unresolved, and only when requirePicks is
-// true, since everything else on it, the picks of its other choices included, is taken as it is; otherwise it is left
-// out too (see modifiersToAskAbout).
-func modifierTargets[T gurps.Node[T]](rows []T, requirePicks bool) []T {
+// that has modifiers to ask about (see modifierPromptOf).
+func modifierTargets[T gurps.Node[T]](rows []T) []T {
 	var targets []T
 	for _, row := range rows {
 		gurps.Traverse(func(row T) bool {
-			if hasModifiers(row) && (!gurps.IsNodePreconfigured(row) ||
-				(requirePicks && hasUnresolvedModifierChoices(row))) {
+			if modifierPromptOf(row) != nil {
 				targets = append(targets, row)
 			}
 			return false
@@ -82,88 +67,68 @@ func modifierTargets[T gurps.Node[T]](rows []T, requirePicks bool) []T {
 	return targets
 }
 
-// promptForModifierTargets puts up the modifier prompt for each of the targets (see modifierTargets), asking about the
-// modifiers modifiersToAskAbout picks out. requirePicks is true when the rows are headed for a sheet (see
-// modifierPromptInfo.requirePicks). The prompts are counted as following the given number already done, out of total,
-// since one transfer may ask about the rows of several lists. The targets are gathered before any prompt is answered,
-// since answering one can make a preconfigured row no longer a target, so a count made afterward would come up short.
-// Returns false if the user canceled a prompt, in which case no further prompts are shown.
-func promptForModifierTargets[T gurps.Node[T]](op promptOperation, targets []T, done, total int, requirePicks bool) bool {
+// promptForModifierTargets puts up the modifier prompt for each of the targets (see modifierTargets). The prompts are
+// counted as following the given number already done, out of total, since one transfer may ask about the rows of
+// several lists. Returns false if the user canceled a prompt, in which case no further prompts are shown.
+func promptForModifierTargets[T gurps.Node[T]](op promptOperation, targets []T, done, total int) bool {
 	for i, row := range targets {
-		info := modifierPromptInfo{
+		if ask := modifierPromptOf(row); ask != nil && ask(&modifierPromptInfo{
 			op:           op,
 			name:         row.String(),
 			location:     rowLocation(row),
 			step:         done + i + 1,
 			steps:        total,
-			requirePicks: requirePicks,
-		}
-		var canceled bool
-		switch t := any(row).(type) {
-		case *gurps.Trait:
-			if mods, ask := modifiersToAskAbout(row, t.Modifiers, requirePicks); ask {
-				_, canceled = promptForTraitModifiers(&info, mods)
-			}
-		case *gurps.Equipment:
-			if mods, ask := modifiersToAskAbout(row, t.Modifiers, requirePicks); ask {
-				_, canceled = promptForEquipmentModifiers(&info, mods)
-			}
-		}
-		if canceled {
+			requirePicks: gurps.IsOnSheet(row),
+		}) {
 			return false
 		}
 	}
 	return true
 }
 
-// hasModifiers returns true if the row is a trait or piece of equipment with modifiers.
-func hasModifiers[T gurps.Node[T]](row T) bool {
+// modifierPromptOf returns what puts up the prompt for the row's modifiers and reports whether it was canceled, or nil
+// if the row has none to ask about (see modifiersToAskAbout).
+func modifierPromptOf[T gurps.Node[T]](row T) func(info *modifierPromptInfo) bool {
 	switch t := any(row).(type) {
 	case *gurps.Trait:
-		return len(t.Modifiers) != 0
+		return modifierPromptFor(row, t.Modifiers, promptForTraitModifiers)
 	case *gurps.Equipment:
-		return len(t.Modifiers) != 0
+		return modifierPromptFor(row, t.Modifiers, promptForEquipmentModifiers)
 	default:
-		return false
+		return nil
 	}
 }
 
-// hasUnresolvedModifierChoices returns true if the row is a trait or piece of equipment with a mandatory modifier choice
-// that has yet to have its pick made.
-func hasUnresolvedModifierChoices[T gurps.Node[T]](row T) bool {
-	switch t := any(row).(type) {
-	case *gurps.Trait:
-		return len(gurps.UnresolvedModifierChoices(t.Modifiers...)) != 0
-	case *gurps.Equipment:
-		return len(gurps.UnresolvedModifierChoices(t.Modifiers...)) != 0
-	default:
-		return false
+func modifierPromptFor[T gurps.Node[T], M gurps.Node[M]](row T, modifiers []M, prompt func(*modifierPromptInfo, []M) (changed, canceled bool)) func(*modifierPromptInfo) bool {
+	mods := modifiersToAskAbout(row, modifiers)
+	if len(mods) == 0 {
+		return nil
+	}
+	return func(info *modifierPromptInfo) bool {
+		_, canceled := prompt(info, mods)
+		return canceled
 	}
 }
 
-// modifiersToAskAbout returns the modifiers of the row to ask about, and whether to ask at all: all of them for a row
-// that isn't preconfigured, and for one that is, just the mandatory choices it has left unresolved, if any, and only
-// when requirePicks says they must be made.
-func modifiersToAskAbout[T gurps.Node[T], M gurps.Node[M]](row T, modifiers []M, requirePicks bool) ([]M, bool) {
+// modifiersToAskAbout returns the modifiers of the row to ask about: all of them for a row that isn't preconfigured,
+// and for one on a sheet that is, just the outermost of the mandatory choices it has left unresolved.
+func modifiersToAskAbout[T gurps.Node[T], M gurps.Node[M]](row T, modifiers []M) []M {
 	if !gurps.IsNodePreconfigured(row) {
-		return modifiers, true
+		return modifiers
 	}
-	if !requirePicks {
-		return nil, false
+	if !gurps.IsOnSheet(row) {
+		return nil
 	}
-	// A choice within another is shown along with it, so only the outermost of those unresolved are asked about.
+	// A choice within another is shown along with it.
 	unresolved := gurps.UnresolvedModifierChoices(modifiers...)
-	outermost := make([]M, 0, len(unresolved))
-	for _, one := range unresolved {
-		nested := false
-		for parent := one.Parent(); !xreflect.IsNil(parent) && !nested; parent = parent.Parent() {
-			nested = slices.Contains(unresolved, parent)
+	return slices.DeleteFunc(slices.Clone(unresolved), func(one M) bool {
+		for parent := one.Parent(); !xreflect.IsNil(parent); parent = parent.Parent() {
+			if slices.Contains(unresolved, parent) {
+				return true
+			}
 		}
-		if !nested {
-			outermost = append(outermost, one)
-		}
-	}
-	return outermost, len(outermost) != 0
+		return false
+	})
 }
 
 // showModifiersDialog asks which of the modifiers to enable. Modifiers that aren't options of a choice each get a check

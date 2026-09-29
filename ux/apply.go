@@ -239,21 +239,14 @@ func (p *applyPart[T]) stripPickers() {
 	gurps.ClearTemplatePickerData(p.rows...)
 }
 
-// requirePicks reports whether the rows are headed for a character or loot sheet, where a mandatory modifier choice
-// must have its pick made (see modifierTargets).
-func (p *applyPart[T]) requirePicks() bool {
-	return transferKindOf(p.table) == transferSheet
-}
-
 func (p *applyPart[T]) modifierTargetCount() int {
-	return len(modifierTargets(p.rows, p.requirePicks()))
+	return len(modifierTargets(p.rows))
 }
 
 // promptForModifiers and promptForNameables put up the prompts for the rows' modifiers and nameable keys. Neither
 // rebuilds or reports anything: the rows aren't in a table yet, and applyTransfer does both once the answers are in.
 func (p *applyPart[T]) promptForModifiers(op promptOperation, done, total int) bool {
-	requirePicks := p.requirePicks()
-	return promptForModifierTargets(op, modifierTargets(p.rows, requirePicks), done, total, requirePicks)
+	return promptForModifierTargets(op, modifierTargets(p.rows), done, total)
 }
 
 func (p *applyPart[T]) promptForNameables(op promptOperation) bool {

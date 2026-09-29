@@ -279,23 +279,23 @@ func TestPreconfiguredAsksOnlyAboutUnresolvedChoices(t *testing.T) {
 	open.Name = "Open"
 	optional := newTraitModifierChoiceFor(nil, false, []string{"Loud", "Quiet"})
 	optional.Name = "Optional"
-	trait := gurps.NewTrait(nil, nil, false)
+	trait := gurps.NewTrait(gurps.NewEntity(), nil, false)
 	trait.Name = "Blast"
 	trait.Modifiers = []*gurps.TraitModifier{plain, made, open, optional}
 	trait.Preconfigured = true
 
-	c.True(processModifiers(promptOperation{}, []*gurps.Trait{trait}, true))
+	c.True(processModifiers([]*gurps.Trait{trait}))
 	c.Equal([]modifierPrompt{{title: "Blast", modifiers: []string{"Open"}}}, *prompts,
 		"only the unresolved mandatory choice is asked about")
 
 	*prompts = nil
 	open.Children[0].SetEnabled(true)
-	c.True(processModifiers(promptOperation{}, []*gurps.Trait{trait}, true))
+	c.True(processModifiers([]*gurps.Trait{trait}))
 	c.Equal(0, len(*prompts), "with every mandatory choice made, a preconfigured trait isn't asked at all")
 
 	*prompts = nil
 	trait.Preconfigured = false
-	c.True(processModifiers(promptOperation{}, []*gurps.Trait{trait}, true))
+	c.True(processModifiers([]*gurps.Trait{trait}))
 	c.Equal([]modifierPrompt{{title: "Blast", modifiers: []string{"Plain", "Made", "Open", "Optional"}}}, *prompts,
 		"a trait that isn't preconfigured is asked about everything")
 }
@@ -631,7 +631,7 @@ func TestModifierSelectionOutsideASheet(t *testing.T) {
 	trait := gurps.NewTrait(nil, nil, false)
 	trait.Modifiers = []*gurps.TraitModifier{mandatory}
 	trait.Preconfigured = true
-	c.True(processModifiers(promptOperation{}, []*gurps.Trait{trait}, false))
+	c.True(processModifiers([]*gurps.Trait{trait}))
 	c.Equal(0, len(*prompts), "a preconfigured row headed for a template isn't asked about its choices")
 }
 
@@ -894,7 +894,7 @@ func TestPromptRequiresPicksOnlyForSheets(t *testing.T) {
 	c.Equal([]bool{false}, traitAsked, "a template doesn't require the pick")
 
 	loot := newTestLootSheet(t)
-	equipment := gurps.NewEquipment(nil, nil, false)
+	equipment := gurps.NewEquipment(loot.loot, nil, false)
 	equipment.Modifiers = []*gurps.EquipmentModifier{gurps.NewEquipmentModifierChoice(nil, nil)}
 	toLoot := &applyPart[*gurps.Equipment]{table: loot.Equipment.Table, rows: []*gurps.Equipment{equipment}}
 	c.True(toLoot.promptForModifiers(promptOperation{}, 0, 1))
