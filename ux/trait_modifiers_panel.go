@@ -22,12 +22,7 @@ type traitModifiersPanel struct {
 func newTraitModifiersPanel(cmdRoot Rebuildable, owner gurps.DataOwner, trait *gurps.Trait, modifiers *[]*gurps.TraitModifier) *traitModifiersPanel {
 	p := &traitModifiersPanel{}
 	p.init(p, owner, modifiers, NewTraitModifiersProvider(p, true), "trait-modifiers-"+uuid.New().String())
-	p.attach = func(list []*gurps.TraitModifier) {
-		gurps.SetDataOwnerAll(trait.DataOwner(), list)
-		for _, one := range list {
-			one.SetTarget(trait)
-		}
-	}
+	p.attach = func(list []*gurps.TraitModifier) { gurps.AttachModifiers(trait, list) }
 	p.installNewItemHandler(cmdRoot, NewTraitModifierItemID, NoItemVariant)
 	p.installNewItemHandler(cmdRoot, NewTraitContainerModifierItemID, ContainerItemVariant)
 	p.installNewItemHandler(cmdRoot, NewTraitModifierChoiceItemID, ChoiceContainerItemVariant)

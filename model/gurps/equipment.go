@@ -694,7 +694,7 @@ func (e *Equipment) SetDataOwner(owner DataOwner) {
 			child.SetDataOwner(owner)
 		}
 	}
-	attachModifiers(e, e.Modifiers)
+	AttachModifiers(e, e.Modifiers)
 }
 
 // IsLeveled returns true if the equipment is capable of having levels.
@@ -1340,12 +1340,12 @@ func (e *Equipment) ModifierList() []*EquipmentModifier {
 
 // SetModifiers sets the list of modifiers
 func (e *Equipment) SetModifiers(mods []*EquipmentModifier) {
-	attachModifiers(e, mods)
+	AttachModifiers(e, mods)
 	e.Modifiers = mods
 }
 
 // AddModifiers adds a modifier to the list
 func (e *Equipment) AddModifiers(mods ...*EquipmentModifier) {
-	attachModifiers(e, mods)
+	AttachModifiers(e, mods)
 	e.Modifiers = append(e.Modifiers, mods...)
 }

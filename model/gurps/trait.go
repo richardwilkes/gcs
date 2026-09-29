@@ -592,7 +592,7 @@ func (t *Trait) SetDataOwner(owner DataOwner) {
 			w.SetOwner(t)
 		}
 	}
-	attachModifiers(t, t.Modifiers)
+	AttachModifiers(t, t.Modifiers)
 }
 
 // IsLeveled returns true if the Trait is capable of having levels.
@@ -1359,12 +1359,12 @@ func (t *Trait) ModifierList() []*TraitModifier {
 
 // SetModifiers sets the list of modifiers
 func (t *Trait) SetModifiers(mods []*TraitModifier) {
-	attachModifiers(t, mods)
+	AttachModifiers(t, mods)
 	t.Modifiers = mods
 }
 
 // AddModifiers adds a modifier to the list
 func (t *Trait) AddModifiers(mods ...*TraitModifier) {
-	attachModifiers(t, mods)
+	AttachModifiers(t, mods)
 	t.Modifiers = append(t.Modifiers, mods...)
 }

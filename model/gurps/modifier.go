@@ -78,8 +78,8 @@ type Modifier[M Modifier[M, T], T Modifiable[T, M]] interface {
 	enabledVariant() M
 }
 
-// attachModifiers points each of the modifiers at the target and gives them the target's data owner.
-func attachModifiers[T ModifiableNode[T, M], M ModifierNode[M, T], S ~[]M](target T, modifiers S) {
+// AttachModifiers points each of the modifiers at the target and gives them the target's data owner.
+func AttachModifiers[T ModifiableNode[T, M], M ModifierNode[M, T], S ~[]M](target T, modifiers S) {
 	owner := target.DataOwner()
 	for _, m := range modifiers {
 		m.SetDataOwner(owner)
