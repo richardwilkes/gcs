@@ -436,8 +436,18 @@ func DuplicateSelection[T gurps.Node[T]](table *unison.Table[*Node[T]]) {
 				continue
 			}
 			parent := target.Parent()
-			clone := target.Clone(gurps.LibraryFile{}, gurps.EntityFromNode(target), parent, gurps.Duplicate)
-			attachLikeOriginal(target, clone)
+			clone := target.Clone(gurps.LibraryFile{}, target.DataOwner(), parent, gurps.Duplicate)
+			// Clone leaves a modifier pointed at nothing.
+			switch m := any(target).(type) {
+			case *gurps.TraitModifier:
+				if dup, isMod := any(clone).(*gurps.TraitModifier); isMod {
+					dup.SetTarget(m.Target())
+				}
+			case *gurps.EquipmentModifier:
+				if dup, isMod := any(clone).(*gurps.EquipmentModifier); isMod {
+					dup.SetTarget(m.Target())
+				}
+			}
 			selMap[clone.ID()] = true
 			if parent == zero {
 				for i, child := range topLevelData {
@@ -464,24 +474,6 @@ func DuplicateSelection[T gurps.Node[T]](table *unison.Table[*Node[T]]) {
 		table.SetSelectionMap(selMap)
 		commitTableUndo(table, undo)
 		rebuildAsModified(table.AncestorOrSelf[Rebuildable](), true)
-	}
-}
-
-// attachLikeOriginal gives a duplicated modifier the data owner and target its original has, since Clone gives it
-// neither: its owner is taken to be the entity, which a loot sheet has none of, and it modifies nothing until pointed
-// at something.
-func attachLikeOriginal[T gurps.Node[T]](original, clone T) {
-	switch m := any(original).(type) {
-	case *gurps.TraitModifier:
-		if dup, ok := any(clone).(*gurps.TraitModifier); ok {
-			dup.SetDataOwner(m.DataOwner())
-			dup.SetTarget(m.Target())
-		}
-	case *gurps.EquipmentModifier:
-		if dup, ok := any(clone).(*gurps.EquipmentModifier); ok {
-			dup.SetDataOwner(m.DataOwner())
-			dup.SetTarget(m.Target())
-		}
 	}
 }
 
