@@ -667,7 +667,7 @@ func (t *Trait) AdjustedPoints(_ *xbytes.InsertBuffer) fxp.Int {
 	if !t.Container() {
 		// A mandatory modifier choice yet to be made counts as the least it may come to; see PointsRange for the whole
 		// of what it may come to.
-		if r, open := t.modifierChoicePointsRange(nil); open && r.Min != nil {
+		if r, open := t.modifierChoicePointsRange(nil); open {
 			return *r.Min
 		}
 		return AdjustedPoints(EntityFromNode(t), t, t.CanLevel, t.BasePoints, t.Levels, t.PointsPerLevel,
@@ -681,7 +681,7 @@ func (t *Trait) AdjustedPoints(_ *xbytes.InsertBuffer) fxp.Int {
 	// every trait inside taking the same pick; see PointsRange for the whole of what it may come to. Past the cap, the
 	// picks handed back are the choices as they stand, which must be counted the same way.
 	if choices, fixed := t.containerModifierChoices(nil); len(choices) != 0 || len(fixed) != 0 {
-		if r := t.pointsRange(nil); r.Min != nil {
+		if r := t.pointsRange(nil, nil); r.Min != nil {
 			return *r.Min
 		}
 	}
@@ -706,17 +706,20 @@ func (t *Trait) AdjustedPoints(_ *xbytes.InsertBuffer) fxp.Int {
 // unattributed, repetitive pile. That detail belongs on the child rows, where hovering shows it. A trait leaves the
 // tooltip alone even then -- see AdjustedPoints -- but is asked for its cost the same way a skill or a spell is.
 func (t *Trait) PointsRange(tooltip *xbytes.InsertBuffer) NumericRange {
-	if !t.Container() {
-		return t.leafPointsRange(nil, tooltip)
-	}
-	return t.pointsRange(nil)
+	return t.pointsRange(nil, tooltip)
 }
 
-// pointsRange returns what PointsRange does, with each mandatory modifier choice fixed holds a pick for counted as
-// made with that pick, as a container above this trait makes the choices among its modifiers for everything inside it.
-func (t *Trait) pointsRange(fixed modifierChoicePicks[*TraitModifier]) NumericRange {
+// pointsRange is PointsRange with each modifier choice fixed holds a pick for counted as made with it, as a container
+// makes the choices among its modifiers for everything inside it.
+func (t *Trait) pointsRange(fixed modifierChoicePicks[*TraitModifier], tooltip *xbytes.InsertBuffer) NumericRange {
 	if !t.Container() {
-		return t.leafPointsRange(fixed, nil)
+		if !t.EffectivelyDisabled() {
+			if r, open := t.modifierChoicePointsRange(fixed); open {
+				return r
+			}
+		}
+		// The disabled case is covered too: AdjustedPoints reports nothing for a trait that is switched off.
+		return NumericRangeOf(t.AdjustedPoints(tooltip))
 	}
 	if t.EffectivelyDisabled() {
 		return NumericRangeOf(0)
@@ -731,7 +734,7 @@ func (t *Trait) pointsRange(fixed modifierChoicePicks[*TraitModifier]) NumericRa
 	eachModifierChoicePick(choices, fixed, func(picks modifierChoicePicks[*TraitModifier]) {
 		ranges := make([]NumericRange, len(t.Children))
 		for i, one := range t.Children {
-			ranges[i] = one.pointsRange(picks)
+			ranges[i] = one.pointsRange(picks, nil)
 		}
 		if t.TemplatePicker.IsZero() && t.ContainerType == container.AlternativeAbilities {
 			spans = append(spans, t.alternativeAbilitiesPointsRange(ranges))
@@ -742,18 +745,6 @@ func (t *Trait) pointsRange(fixed modifierChoicePicks[*TraitModifier]) NumericRa
 		}
 	})
 	return rangeForPickerByCount(newTemplateChoicePicker().Qualifier, spans)
-}
-
-// leafPointsRange returns what pointsRange does for a trait that isn't a container.
-func (t *Trait) leafPointsRange(fixed modifierChoicePicks[*TraitModifier], tooltip *xbytes.InsertBuffer) NumericRange {
-	// A mandatory modifier choice still to be made leaves the cost open until it is.
-	if !t.EffectivelyDisabled() {
-		if r, open := t.modifierChoicePointsRange(fixed); open {
-			return r
-		}
-	}
-	// The disabled case is covered too: AdjustedPoints reports nothing for a trait that is switched off.
-	return NumericRangeOf(t.AdjustedPoints(tooltip))
 }
 
 // ModifierChoicePointsRange returns the span of costs this trait, which must not be a container, may come to once the
