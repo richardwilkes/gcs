@@ -143,3 +143,35 @@ func TestPickerDialogKeepsItsScrollPosition(t *testing.T) {
 		c.True(s.chosen[choice.Children[60]])
 	})
 }
+
+// Override in a modifier prompt put up from the picker backs out when it changed nothing, and keeps a partial answer
+// when it did.
+func TestPickerModifierPromptOverride(t *testing.T) {
+	c := check.New(t)
+	screen, wnd := startHeadlessWorkspace(t, c)
+	s, n := newKnightSession()
+	res := n["res"]
+	override := func(pick bool) {
+		done := false
+		c.True(screen.Post(func() {
+			s.chooseModifiers(res)
+			done = true
+		}))
+		screen.Sync()
+		dialogWnd, dialog := modalDialog(t, screen, wnd)
+		if pick {
+			var radios []*unison.RadioButton
+			screen.Do(func() { radios = panelsOfType[*unison.RadioButton](dialogWnd.Content()) })
+			screen.Click(screen.PanelCenter(radios[1]))
+		}
+		screen.Click(screen.PanelCenter(dialogButton(t, screen, dialog, unison.ModalResponseUserBase)))
+		c.True(done, "the prompt has returned")
+	}
+	override(false)
+	c.False(s.chosen[res], "Override with nothing changed backs out")
+	c.False(s.modsAnswered[res])
+	override(true)
+	c.True(s.chosen[res], "Override keeps a partial answer")
+	c.True(s.modsAnswered[res])
+	c.True(res.Modifiers[0].Children[1].Enabled())
+}

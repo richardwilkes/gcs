@@ -60,6 +60,8 @@ type earlyModifierPrompt struct {
 	cost func() string
 	// preconfigured is true when the row is preconfigured, so only its missing picks are asked about.
 	preconfigured bool
+	// backedOut is set by the prompt when Override changed nothing, which leaves the row to be asked later.
+	backedOut bool
 }
 
 // modifierTargets returns the rows the modifier prompt asks about: each of the given rows, and every row below them,
@@ -209,10 +211,15 @@ func showModifiersDialog[T gurps.Node[T]](info *modifierPromptInfo, modifiers []
 			i18n.Text("Keep what is answered so far; the rest is asked when the template is applied"),
 		)
 	}
-	if response := dialog.RunModal(); response != unison.ModalResponseOK && response != unison.ModalResponseUserBase {
+	response := dialog.RunModal()
+	if response != unison.ModalResponseOK && response != unison.ModalResponseUserBase {
 		return false, true
 	}
-	return selection.apply(), false
+	changed = selection.apply()
+	if early != nil {
+		early.backedOut = response == unison.ModalResponseUserBase && !changed
+	}
+	return changed, false
 }
 
 // modifierSelection is the content of the prompt asking which modifiers to enable.

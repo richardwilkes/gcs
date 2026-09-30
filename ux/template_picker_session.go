@@ -168,11 +168,17 @@ func (s *pickerSession[T]) modsOpen(row T) bool {
 }
 
 // chooseModifiers puts up the modifier prompts for the row now rather than after the choices. Confirming counts them
-// as answered and checks the row; canceling puts everything back as it was.
+// as answered and checks the row, unless each was an Override that changed nothing, which leaves them to be asked
+// later. Canceling puts everything back as it was.
 func (s *pickerSession[T]) chooseModifiers(row T) {
 	restore := s.snapshot(row)
 	targets := s.modTargets(row)
+	answered := false
 	for i, target := range targets {
+		early := &earlyModifierPrompt{
+			cost:          func() string { return target.String() + ": " + s.costText(target) },
+			preconfigured: gurps.IsNodePreconfigured(target),
+		}
 		if s.modPrompts[target](&modifierPromptInfo{
 			op:           s.op,
 			name:         target.String(),
@@ -180,17 +186,19 @@ func (s *pickerSession[T]) chooseModifiers(row T) {
 			step:         i + 1,
 			steps:        len(targets),
 			requirePicks: true,
-			early: &earlyModifierPrompt{
-				cost:          func() string { return target.String() + ": " + s.costText(target) },
-				preconfigured: gurps.IsNodePreconfigured(target),
-			},
+			early:        early,
 		}) {
 			restore()
 			return
 		}
-		s.modsAnswered[target] = true
+		if !early.backedOut {
+			s.modsAnswered[target] = true
+			answered = true
+		}
 	}
-	s.chosen[row] = true
+	if answered {
+		s.chosen[row] = true
+	}
 }
 
 // choosePicks puts up the dialog for a choice container picked from another now rather than after the outer OK.
