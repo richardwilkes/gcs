@@ -511,6 +511,9 @@ func modifierChoiceRange[M ModifierNode[M, T], T ModifiableNode[T, M]](item T, m
 	if variants > maxModifierChoiceVariants {
 		open = nil
 	}
+	if len(open) == 0 && len(fixed) == 0 {
+		return NumericRange{}, false
+	}
 	// The choice each option of an open choice, or of one fixed holds a pick for, is an option of.
 	choiceOf := make(map[M]M)
 	var leaves []M

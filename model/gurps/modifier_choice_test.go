@@ -15,6 +15,7 @@ import (
 	"os"
 	"path/filepath"
 	"testing"
+	"time"
 
 	"github.com/richardwilkes/gcs/v5/model/criteria"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
@@ -484,6 +485,36 @@ func TestPromptedRanges(t *testing.T) {
 			c.Equal("400", FormatValueRange(eqp.ExtendedValueRange(), fxp.Int.Comma), "on a sheet the pick counts")
 		}
 	}
+}
+
+// newPerPoundModifier returns an equipment modifier adding the given cost per pound.
+func newPerPoundModifier(cost string) *EquipmentModifier {
+	m := NewEquipmentModifier(nil, nil, false)
+	m.CostAmount = cost
+	m.CostIsPerPound = true
+	return m
+}
+
+// TestPerPoundCostWithOpenChoices verifies that a cost per pound is by the least the equipment's own weight may come
+// to, seen as its value is, and that costing it doesn't enumerate the weight for each way of making the choices.
+func TestPerPoundCostWithOpenChoices(t *testing.T) {
+	c := check.New(t)
+	for _, owner := range []DataOwner{nil, NewEntity()} {
+		eqp := newEquipmentItem("Thing", "100", "3 lb")
+		eqp.SetDataOwner(owner)
+		eqp.AddModifiers(newPerPoundModifier("+1"),
+			newEquipmentModifierChoiceWith([2]string{"+1", "+1 lb"}, [2]string{"+2", "+2 lb"}))
+		c.Equal("105~106", FormatValueRange(PickerMeasureRange(eqp, picker.Value, true, nil), fxp.Int.Comma))
+	}
+
+	eqp := newEquipmentItem("Thing", "100", "3 lb")
+	eqp.AddModifiers(newPerPoundModifier("+1"))
+	for range 12 {
+		eqp.AddModifiers(newEquipmentModifierChoiceWith([2]string{"+1", "+1 lb"}, [2]string{"+2", "+2 lb"}))
+	}
+	start := time.Now()
+	c.Equal("127~139", FormatValueRange(eqp.ExtendedValueRange(), fxp.Int.Comma))
+	c.True(time.Since(start) < 10*time.Second, "costing it must not multiply the ways of making the choices")
 }
 
 // TestTemplateChoiceOfEquipmentWithAnOpenModifierChoice verifies that a template choice of equipment counts an option
