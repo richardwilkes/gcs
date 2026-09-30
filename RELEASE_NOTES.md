@@ -143,8 +143,8 @@
 - The template picker dialog can now make a pick's modifier choices, and the picks of a choice offered within the
   choice, as the picks are made: a button beside the row puts up the modifier prompt or that choice's own dialog. Once
   answered, the row shows a fixed cost and isn't asked about again when the template is applied. Until then a row headed
-  for a character sheet shows the range it may cost, rather than whatever its picks happen to be, and a preconfigured
-  item is only asked about a mandatory choice that has no pick.
+  for a character or loot sheet shows the range it may cost, rather than whatever its picks happen to be, and a
+  preconfigured item is only asked about a mandatory choice that has no pick.
 - The template picker dialog's running total now reads what the picks come to against the target, as in "40~70 / 60",
   and shows whether the rule is met, could still be met once the choices below are made, is met but something picked
   below needs attention, or isn't met. OK is only enabled when the rule is met; anything else needs Override. A choice
