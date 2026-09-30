@@ -113,6 +113,14 @@
   or weight lets the quantity of each option that isn't itself a group be changed while picking. Until the choice is
   made, a template shows the value and weight the choice may come to as a range, and so do the containers holding it
   and the list's totals.
+- A group inside a template choice, whether a trait group, a skill or spell container or an equipment group, can now
+  offer what it holds one by one rather than being picked as a unit. Uncheck "Picked as a Unit" in its editor, shown
+  only in a template and only for a group in a choice, directly or through other such groups. The choice then counts
+  and costs the options inside the group, and the group shows no cost of its own in the template. In the picker dialog
+  the group is a header, with its name and page reference, that hides or shows its options indented beneath it. On the
+  character, each such group is kept holding only what was picked from it, and one with nothing picked is left out.
+- A container picked as a unit in the template picker dialog can now be opened to show what it holds, with a name and
+  page reference for each and nothing to pick.
 - A list's context menu no longer repeats what the list holds in each of its "New" commands. A trait list's now offers
   "New Trait", "New Container" and "New Choice", and an equipment list's "New Equipment", "New Container", "New Group"
   and "New Choice". The menu bar keeps the full names, since it can add to any list.
