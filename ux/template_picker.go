@@ -223,7 +223,7 @@ func (s *pickerSession[T]) newPickerDialog(row T, depth int) (dialog *unison.Dia
 		wnd.EnsureOnDisplay()
 	}
 	refresh()
-	// The focus starts on the first option, not a chevron before it, so Return accepts the dialog.
+	// The focus starts on the first option, not a chevron before it, as the options are what the dialog is for.
 	if list.first != nil {
 		list.first.RequestFocus()
 	}
@@ -489,8 +489,9 @@ func pickerDisclosureSize() float32 {
 	return max(unison.DefaultCheckBoxTheme.Font.Baseline()-2, 6)
 }
 
-// newPickerDisclosure returns the chevron that shows or hides the section of the list, named for what it holds. Space
-// or Return toggles it.
+// newPickerDisclosure returns the chevron that shows or hides the section of the list, named for what it holds. Like any
+// button, it toggles from the keyboard only on the control action key, Space, leaving Return to the dialog's default
+// button.
 func newPickerDisclosure(list *pickerList, sec *pickerSection, title string) *unison.Button {
 	button := unison.NewButton()
 	button.HideBase = true
@@ -528,13 +529,6 @@ func newPickerDisclosure(list *pickerList, sec *pickerSection, title string) *un
 			}
 			growWindowToFit(wnd)
 		}
-	}
-	button.KeyDownCallback = func(keyCode unison.KeyCode, mods mod.Modifiers, repeat bool) bool {
-		if (keyCode == unison.KeyReturn || keyCode == unison.KeyNumPadEnter) && mods&mod.NonSticky == 0 {
-			button.Click()
-			return true
-		}
-		return button.DefaultKeyDown(keyCode, mods, repeat)
 	}
 	// Described as a table's disclosure triangle is, which can also be asked to expand or collapse.
 	button.Accessibility.Role = role.DisclosureTriangle

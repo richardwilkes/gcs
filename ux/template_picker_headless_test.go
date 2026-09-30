@@ -398,9 +398,9 @@ func TestPickerOrganizingGroupHeaders(t *testing.T) {
 	_, open = expanded("martial")
 	c.False(open, "Space collapses the header")
 	c.Equal(3, shownBoxes(), "its options are hidden")
-	screen.KeyPress(unison.KeyReturn, mod.None)
+	screen.KeyPress(unison.KeySpace, mod.None)
 	_, open = expanded("martial")
-	c.True(open, "Return expands it again")
+	c.True(open, "Space expands it again")
 	c.False(done, "without closing the dialog")
 	screen.Do(func() { c.Equal(cells, list.Children(), "every row is back in its place") })
 	perform := func(name string, action accessibility.Action) {
@@ -440,6 +440,40 @@ func TestPickerOrganizingGroupHeaders(t *testing.T) {
 	modalDialog(t, screen, wnd)
 	screen.KeyPress(unison.KeyReturn, mod.None)
 	c.Equal(unison.ModalResponseOK, response, "Return first thing accepts the dialog")
+
+	// Return on a chevron is the dialog's too, rather than the chevron's.
+	response = unison.ModalResponseCancel
+	c.True(screen.Post(func() { response = s.showPicker(n["root"], 0) }))
+	screen.Sync()
+	dialogWnd, _ = modalDialog(t, screen, wnd)
+	var chevron *unison.Button
+	screen.Do(func() {
+		for _, p := range panelsMatching(dialogWnd.Content(), func(p *unison.Panel) bool {
+			label, ok := p.Self.(*unison.Label)
+			return ok && label.String() == "martial"
+		}) {
+			if one, ok := p.Parent().Children()[0].Self.(*unison.Button); ok {
+				chevron = one
+			}
+		}
+	})
+	if chevron == nil {
+		t.Fatal("martial must have a chevron")
+	}
+	screen.Do(chevron.RequestFocus)
+	// The chevron is turned down while its group is open.
+	isOpen := func() (open bool) {
+		screen.Do(func() {
+			if svg, ok := chevron.Drawable.(*unison.DrawableSVG); ok {
+				open = svg.RotationDegrees == 90
+			}
+		})
+		return open
+	}
+	c.True(isOpen(), "martial starts open")
+	screen.KeyPress(unison.KeyReturn, mod.None)
+	c.Equal(unison.ModalResponseOK, response, "Return on a chevron accepts the dialog")
+	c.True(isOpen(), "without closing the group")
 }
 
 // An organizing group with nothing in it has no chevron, but its name keeps the place of one.
