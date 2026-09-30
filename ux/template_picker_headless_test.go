@@ -74,6 +74,54 @@ func TestPickerRowPageReferenceIsFollowedFromTheKeyboard(t *testing.T) {
 	c.Equal(link, focus(), "the focus stays on the page reference")
 }
 
+// The organizing groups kept with what was picked from them reach the table, where one goes only once all of that
+// merged into rows already there.
+func TestPickerGroupsReachTheTable(t *testing.T) {
+	c := check.New(t)
+	screen, wnd := startHeadlessWorkspace(t, c)
+	brawling, karate := newTestSkill("Brawling", fxp.Four, nil), newTestSkill("Karate", fxp.Four, nil)
+	group := func(name string, children ...*gurps.Skill) *gurps.Skill {
+		one := gurps.NewSkill(nil, nil, true)
+		one.Name = name
+		one.PickSeparately = true
+		one.Children = children
+		SetParents(children, one)
+		return one
+	}
+	unarmed := group("Unarmed", newTestSkill("Brawling", fxp.Two, nil), newTestSkill("Judo", fxp.Two, nil))
+	striking := group("Striking", newTestSkill("Karate", fxp.Two, nil))
+	choice := gurps.NewSkillChoiceContainer(nil, nil)
+	choice.TemplatePicker.Qualifier.Compare = criteria.EqualsNumber
+	choice.TemplatePicker.Qualifier.Qualifier = fxp.Three
+	choice.Children = []*gurps.Skill{unarmed, striking}
+	SetParents(choice.Children, choice)
+	var sheet *Sheet
+	screen.Do(func() {
+		sheet = newTestSheetForTemplate(t)
+		sheet.Entity().Skills = []*gurps.Skill{brawling, karate}
+		sheet.Rebuild(true)
+	})
+	part := &applyPart[*gurps.Skill]{table: sheet.Skills.Table, rows: []*gurps.Skill{choice}, index: -1}
+	resolved := false
+	c.True(screen.Post(func() { resolved = part.resolvePickers(promptOperation{}, false) }))
+	screen.Sync()
+	dialogWnd, dialog := modalDialog(t, screen, wnd)
+	var boxes []*unison.CheckBox
+	screen.Do(func() { boxes = panelsOfType[*unison.CheckBox](dialogWnd.Content()) })
+	for _, box := range boxes {
+		screen.Click(screen.PanelCenter(box))
+	}
+	screen.Click(screen.PanelCenter(dialogButton(t, screen, dialog, unison.ModalResponseOK)))
+	c.True(resolved, "every option is picked")
+	c.Equal([]*gurps.Skill{unarmed, striking}, part.groups, "the groups kept are handed on")
+	screen.Do(func() { part.place(true) })
+	c.Equal(fxp.FromInteger(6), brawling.Points)
+	c.Equal(fxp.FromInteger(6), karate.Points)
+	c.Equal([]*gurps.Skill{brawling, karate, unarmed}, sheet.Entity().Skills,
+		"a group with a pick left is kept, one with none left goes")
+	c.Equal("Judo", unarmed.Children[0].Name)
+}
+
 // The picker dialog is sized with its rows' text in place, wraps its hint to the list's width, and widens when the text
 // does.
 func TestPickerDialogFitsItsContent(t *testing.T) {
