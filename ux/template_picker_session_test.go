@@ -772,12 +772,19 @@ func TestPickerSessionNegativeTargets(t *testing.T) {
 		{criteria.EqualsNumber, []string{"either", "minor", "quirk1"}, "either", cost, pickerText{
 			text: " [-1 points]", tip: "Under: expected -15~-5 points.", state: pickerError,
 		}},
+		{criteria.AtLeastNumber, []string{"bad20"}, "major", cost, pickerText{
+			text: " [-20 points]", tip: "Over: expected -15~0 points.", state: pickerError,
+		}},
+		{criteria.AtMostNumber, []string{"bad5"}, "major", cost, pickerText{
+			text: " [-5 points]", tip: "Under: expected ≤-15 points.", state: pickerError,
+		}},
 		{criteria.EqualsNumber, []string{"either", "bad10"}, "root", hint, pickerText{
 			text: "5~15 points short. Override to keep it anyway.", state: pickerError,
 		}},
 	} {
-		s, n := newDisadvantageSession()
+		_, n := newDisadvantageSession()
 		n["major"].TemplatePicker.Qualifier.Compare = tc.compare
+		s := newPickerSession(promptOperation{}, []*gurps.Trait{n["root"]}, true)
 		choose(s, n, tc.picks...)
 		c.Equal(tc.want, tc.text(s, n[tc.row]), tc.row)
 	}

@@ -551,7 +551,7 @@ func (s *pickerSession[T]) cost(row T, kind picker.Type) pickerText {
 		text := pickerMeasureText(row, kind, expected)
 		above := actual.Min != nil && expected.Max != nil && *actual.Min > *expected.Max
 		below := actual.Max != nil && expected.Min != nil && *actual.Max < *expected.Min
-		if expected.Min != nil && *expected.Min < 0 && (expected.Max == nil || *expected.Max <= 0) {
+		if expected.Sign() == gurps.NumericRangeNegative {
 			// Negative points are judged by how many are expected, so nearer zero is under.
 			above, below = below, above
 		}
