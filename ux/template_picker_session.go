@@ -52,7 +52,8 @@ type pickerSession[T gurps.Node[T]] struct {
 	chosen         map[T]bool
 	pickerAnswered map[T]bool
 	modsAnswered   map[T]bool
-	// above holds the containers above a choice container, whose modifier choices count as they stand until asked.
+	// above holds the containers above a choice container, whose modifier choices count as they stand for the rows
+	// inside until asked.
 	above map[T]bool
 	// modPrompts holds the modifier prompt of each row with modifiers to ask about, as it stood at the start.
 	modPrompts map[T]func(info *modifierPromptInfo) bool
@@ -145,8 +146,10 @@ func (s *pickerSession[T]) processRow(row T) (revised []T, abort bool) {
 	return revised, false
 }
 
-func (s *pickerSession[T]) taken(row T) bool {
-	return s.modsAnswered[row] || s.above[row]
+// taken reports whether the modifier choices asked about on the row count as made: for the rows inside it when
+// inherited is true, else for the row itself.
+func (s *pickerSession[T]) taken(row T, inherited bool) bool {
+	return s.modsAnswered[row] || (inherited && s.above[row])
 }
 
 // modTargets returns the row and the rows below it that have modifiers to ask about, leaving out a choice below it,
@@ -268,7 +271,7 @@ func (s *pickerSession[T]) clear(container T) {
 
 // costText returns what the row costs, counting its modifier picks as made.
 func (s *pickerSession[T]) costText(row T) string {
-	taken := func(one T) bool { return one == row || s.taken(one) }
+	taken := func(one T, inherited bool) bool { return one == row || s.taken(one, inherited) }
 	if _, ok := any(row).(*gurps.Equipment); ok {
 		return formatPickerTotal(row, picker.Value, gurps.PickerMeasureRange(row, picker.Value, true, taken)) + ", " +
 			formatPickerTotal(row, picker.Weight, gurps.PickerMeasureRange(row, picker.Weight, true, taken))

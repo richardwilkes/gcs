@@ -458,8 +458,8 @@ func TestPromptedRanges(t *testing.T) {
 		trait.AddModifiers(newTraitModifierChoiceWith(true, "+5", "+10"))
 		return trait
 	}
-	all := func(*Trait) bool { return true }
-	prompted := func(trait *Trait, taken func(*Trait) bool) NumericRange {
+	all := func(*Trait, bool) bool { return true }
+	prompted := func(trait *Trait, taken func(*Trait, bool) bool) NumericRange {
 		return PickerMeasureRange(trait, picker.Points, true, taken)
 	}
 	for _, owner := range []DataOwner{nil, entity} {
@@ -481,14 +481,18 @@ func TestPromptedRanges(t *testing.T) {
 	child := newTraitWithPoints(parent, 10)
 	child.SetDataOwner(entity)
 	c.Equal("11~13", prompted(parent, nil).String())
-	c.Equal("11~13", prompted(child, func(one *Trait) bool { return one == child }).String())
-	c.Equal("11", prompted(child, func(one *Trait) bool { return one == parent }).String())
+	c.Equal("11~13", prompted(child, func(one *Trait, _ bool) bool { return one == child }).String())
+	c.Equal("11", prompted(child, func(one *Trait, _ bool) bool { return one == parent }).String())
 	parent.Modifiers[0].Children[0].SetEnabled(false)
-	c.Equal("10", prompted(child, func(one *Trait) bool { return one == parent }).String(),
+	c.Equal("10", prompted(child, func(one *Trait, _ bool) bool { return one == parent }).String(),
 		"the container answers it for the trait, picked or not")
-	c.Equal("11~13", prompted(parent, func(one *Trait) bool { return one == parent }).String())
+	c.Equal("11~13", prompted(parent, func(one *Trait, _ bool) bool { return one == parent }).String())
+	parent.Modifiers[0].Children[0].SetEnabled(true)
+	inherited := func(one *Trait, inherited bool) bool { return one == parent && inherited }
+	c.Equal("11", prompted(child, inherited).String(), "taken only for what is inside it")
+	c.Equal("11~13", prompted(parent, inherited).String(), "but not for its own cost")
 
-	taken := func(*Equipment) bool { return true }
+	taken := func(*Equipment, bool) bool { return true }
 	for _, owner := range []DataOwner{nil, entity} {
 		eqp := newEquipmentItem("Sword", "100", "3 lb")
 		eqp.SetDataOwner(owner)

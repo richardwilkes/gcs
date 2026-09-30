@@ -420,19 +420,19 @@ type modifierChoicePicks[M comparable] map[M]M
 
 // choiceView says how open modifier choices are costed. The zero value costs them where the item is; prompted costs
 // them as the modifier prompt will see them, even on a sheet, and taken reports items whose picks count as made, as a
-// preconfigured item's do.
+// preconfigured item's do: those the items inside inherit from it when inherited is true, else its own.
 type choiceView struct {
 	prompted bool
-	taken    func(item any) bool
+	taken    func(item any, inherited bool) bool
 }
 
 // promptedView returns the prompted choiceView, with taken (which may be nil) reporting items of type T.
-func promptedView[T any](taken func(T) bool) choiceView {
+func promptedView[T any](taken func(T, bool) bool) choiceView {
 	view := choiceView{prompted: true}
 	if taken != nil {
-		view.taken = func(item any) bool {
+		view.taken = func(item any, inherited bool) bool {
 			one, ok := item.(T)
-			return ok && taken(one)
+			return ok && taken(one, inherited)
 		}
 	}
 	return view
@@ -457,8 +457,9 @@ func openMandatoryModifierChoices[M ModifierNode[M, T], T ModifiableNode[T, M]](
 			return false
 		}
 		askedOn := modifierAskedAboutOn(item, mod)
-		if taken := view.taken != nil && view.taken(askedOn); (taken || IsNodePreconfigured(askedOn)) &&
-			ModifierChoiceIsResolved(mod) || (taken && askedOn != item) {
+		inherited := askedOn != item
+		if taken := view.taken != nil && view.taken(askedOn, inherited); (taken || IsNodePreconfigured(askedOn)) &&
+			ModifierChoiceIsResolved(mod) || (taken && inherited) {
 			return false
 		}
 		if options := ModifierChoiceOptions(mod); len(options) != 0 {
@@ -488,7 +489,7 @@ func hasOpenMandatoryModifierChoice[M ModifierNode[M, T], T ModifiableNode[T, M]
 
 // HasOpenModifierChoice returns true if the node has a mandatory modifier choice of its own still to be made, seen as
 // PickerMeasureRange sees it.
-func HasOpenModifierChoice[T Node[T]](node T, prompted bool, taken func(T) bool) bool {
+func HasOpenModifierChoice[T Node[T]](node T, prompted bool, taken func(T, bool) bool) bool {
 	view := promptedView(taken)
 	view.prompted = prompted
 	switch item := any(node).(type) {

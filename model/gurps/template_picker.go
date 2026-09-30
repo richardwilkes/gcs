@@ -283,8 +283,8 @@ func ConvertToGroupContainer[T Node[T]](node T) {
 // by its extended value or weight, its quantity and contents included. Either way a container accounts for any choices
 // it presents, including the exact ones, which are worth what they ask for rather than what their children add up to.
 // When prompted, open modifier choices are costed as the modifier prompt will see them, even on a sheet. A node taken
-// (which may be nil) reports counts as preconfigured.
-func PickerMeasureRange[T Node[T]](node T, pickerType picker.Type, prompted bool, taken func(T) bool) NumericRange {
+// (which may be nil) reports counts as preconfigured, for the choices the nodes inside inherit from it when told so.
+func PickerMeasureRange[T Node[T]](node T, pickerType picker.Type, prompted bool, taken func(T, bool) bool) NumericRange {
 	if xreflect.IsNil(node) {
 		return NumericRangeOf(0)
 	}

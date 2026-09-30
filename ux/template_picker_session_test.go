@@ -328,6 +328,40 @@ func TestPickerSessionPlainContainerModifiers(t *testing.T) {
 	c.Equal(pickerOpen, s.state(root))
 }
 
+// TestPickerSessionOwnChoiceAboveAChoice verifies that an option holding a choice has its own modifier choice asked
+// about, while the rows inside take it as it stands.
+func TestPickerSessionOwnChoiceAboveAChoice(t *testing.T) {
+	c := check.New(t)
+	root := gurps.NewTrait(nil, nil, true)
+	root.TemplatePicker.Type = picker.Count
+	root.TemplatePicker.Qualifier.Compare = criteria.EqualsNumber
+	root.TemplatePicker.Qualifier.Qualifier = fxp.One
+	pack := gurps.NewTrait(nil, root, true)
+	root.Children = []*gurps.Trait{pack}
+	choice := newTraitModifierChoiceFor(nil, true, []string{"+0%", "+100%"}, "+0%")
+	for _, option := range choice.Children {
+		option.CostAdj = option.Name
+	}
+	pack.AddModifiers(choice)
+	sub := gurps.NewTrait(nil, pack, true)
+	sub.TemplatePicker.Type = picker.Count
+	sub.TemplatePicker.Qualifier.Compare = criteria.EqualsNumber
+	sub.TemplatePicker.Qualifier.Qualifier = fxp.One
+	pack.Children = []*gurps.Trait{sub}
+	option := gurps.NewTrait(nil, sub, false)
+	option.BasePoints = fxp.FromInteger(10)
+	sub.Children = []*gurps.Trait{option}
+	s := newPickerSession(promptOperation{}, []*gurps.Trait{root}, true)
+	s.chosen[pack], s.chosen[option] = true, true
+	c.True(s.modsOpen(pack), "its own choice is still to be asked about")
+	c.Equal("10~20", s.actual(pack, picker.Points).String())
+	c.True(s.resolved(option), "the rows inside take it as it stands")
+	c.Equal("10", s.actual(option, picker.Points).String())
+	s.modsAnswered[pack] = true
+	c.False(s.modsOpen(pack))
+	c.Equal("10", s.actual(pack, picker.Points).String())
+}
+
 // TestPickerSessionPlainContainerHoldingAChoice verifies that a plain container picked from a choice costs what the
 // picks of a choice inside it come to, is open until that choice is made, and can have it made from its row.
 func TestPickerSessionPlainContainerHoldingAChoice(t *testing.T) {
