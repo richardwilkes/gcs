@@ -14,8 +14,11 @@ import (
 	"testing"
 	"testing/fstest"
 
+	"github.com/richardwilkes/gcs/v5/model/criteria"
+	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/container"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/eqcontainer"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/picker"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/srcstate"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/toolbox/v2/check"
@@ -173,4 +176,86 @@ func traitNames(traits []*Trait) []string {
 		names[i] = one.Name
 	}
 	return names
+}
+
+// newCostedTrait returns a trait costing the points.
+func newCostedTrait(points int) *Trait {
+	trait := NewTrait(nil, nil, false)
+	trait.BasePoints = fxp.FromInteger(points)
+	return trait
+}
+
+// addOptions puts the options into the choice.
+func addOptions[T Node[T]](choice T, options ...T) T {
+	choice.SetChildren(append(choice.NodeChildren(), options...))
+	for _, one := range options {
+		one.SetParent(choice)
+	}
+	return choice
+}
+
+func TestOrganizedChoiceCosts(t *testing.T) {
+	c := check.New(t)
+	a := newTraitGroup("A", true, newCostedTrait(10), newCostedTrait(20))
+	b := newTraitGroup("B", true, newCostedTrait(5), newTraitGroup("C", true, newCostedTrait(40)))
+	choice := addOptions(newPickerContainer(picker.Count, criteria.EqualsNumber, 1, []int{8}), a, b)
+	c.Equal("5~40", choice.PointsRange(nil).String(), "options count one by one across the groups")
+	a.PickSeparately, b.PickSeparately = false, false
+	c.Equal("8~45", choice.PointsRange(nil).String(), "a unit group is one option")
+
+	var data CellData
+	a.CellData(TraitPointsColumn, &data)
+	c.Equal("30", data.Primary)
+	a.PickSeparately = true
+	data = CellData{}
+	a.CellData(TraitPointsColumn, &data)
+	c.Equal("", data.Primary, "an organizing group shows no cost")
+	a.SetParent(nil)
+	data = CellData{}
+	a.CellData(TraitPointsColumn, &data)
+	c.Equal("30", data.Primary, "the flag means nothing outside a choice")
+	c.Equal("30", a.PointsRange(nil).String())
+
+	unit := newTraitGroup("Unit", false, newTraitGroup("D", true, newCostedTrait(10), newCostedTrait(20)))
+	choice = addOptions(newPickerContainer(picker.Count, criteria.EqualsNumber, 1, []int{5}), unit)
+	c.Equal("5~30", choice.PointsRange(nil).String(), "nor inside a unit group")
+
+	choice = addOptions(newPickerContainer(picker.Points, criteria.AtLeastNumber, 20, nil),
+		newTraitGroup("E", true, newTraitGroup("F", true, newCostedTrait(-10)), newCostedTrait(15)))
+	c.Equal(newPickerRange(picker.Points, criteria.AtLeastNumber, 20, []int{-10, 15}), choice.PointsRange(nil),
+		"a points choice sees the options in nested groups")
+
+	enhanced := newTraitGroup("G", true, newCostedTrait(10), newCostedTrait(20))
+	mod := NewTraitModifier(nil, nil, false)
+	mod.CostAdj = "+100%"
+	enhanced.AddModifiers(mod)
+	choice = addOptions(newPickerContainer(picker.Count, criteria.EqualsNumber, 1, []int{5}), enhanced)
+	c.Equal("5~40", choice.PointsRange(nil).String(), "the options cost with the group's modifiers")
+}
+
+func TestOrganizedChoiceCostsForOtherTypes(t *testing.T) {
+	c := check.New(t)
+	skills := NewSkillChoiceContainer(nil, nil)
+	group := NewSkill(nil, nil, true)
+	group.PickSeparately = true
+	for _, points := range []int{1, 2} {
+		skill := NewSkill(nil, nil, false)
+		skill.Points = fxp.FromInteger(points)
+		addOptions(group, skill)
+	}
+	four := NewSkill(nil, nil, false)
+	four.Points = fxp.Four
+	addOptions(skills, group, four)
+	c.Equal("1~4", skills.RawPointsRange().String())
+	c.Equal("1~4", skills.PointsRange(nil).String())
+
+	eqp := NewEquipmentChoiceContainer(nil, nil)
+	eqp.TemplatePicker.Type = picker.Value
+	eqp.TemplatePicker.Qualifier.Compare = criteria.AtMostNumber
+	eqp.TemplatePicker.Qualifier.Qualifier = fxp.FromInteger(50)
+	kit := NewEquipmentGroup(nil, nil)
+	addOptions(eqp, addOptions(kit, newEquipmentItem("Rope", "30", "1 lb")))
+	c.Equal("0~30", eqp.ExtendedValueRange().String(), "a unit group can't be raised")
+	kit.PickSeparately = true
+	c.Equal("0~50", eqp.ExtendedValueRange().String(), "what it holds can")
 }

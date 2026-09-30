@@ -590,6 +590,10 @@ func (e *Equipment) CellData(columnID int, data *CellData) {
 		}
 		e.valueRangeCellData(data, e.adjustedValueRange())
 	case EquipmentExtendedCostColumn:
+		// An organizing group is never picked as a whole, so its total means nothing.
+		if IsOrganizingGroup(e) {
+			break
+		}
 		e.valueRangeCellData(data, e.ExtendedValueRange())
 	case EquipmentWeightColumn:
 		if e.IsGroup() {
@@ -597,6 +601,9 @@ func (e *Equipment) CellData(columnID int, data *CellData) {
 		}
 		e.weightRangeCellData(data, e.adjustedWeightRange)
 	case EquipmentExtendedWeightColumn:
+		if IsOrganizingGroup(e) {
+			break
+		}
 		e.weightRangeCellData(data, e.ExtendedWeightRange)
 	case EquipmentTagsColumn:
 		fillTagsCell(data, e.Tags)

@@ -540,6 +540,10 @@ func (t *Trait) CellData(columnID int, data *CellData) {
 			}
 		}
 	case TraitPointsColumn:
+		// An organizing group is never picked as a whole, so its total means nothing.
+		if IsOrganizingGroup(t) {
+			break
+		}
 		var tooltip xbytes.InsertBuffer
 		r := t.PointsRange(&tooltip)
 		if tooltip.Len() != 0 {
@@ -687,7 +691,7 @@ func (t *Trait) adjustedPoints(fixed modifierChoicePicks[*TraitModifier]) fxp.In
 			return value
 		}
 		var total fxp.Int
-		for _, one := range t.Children {
+		for _, one := range TemplateChoiceOptions(t) {
 			total += one.adjustedPoints(fixed)
 		}
 		return total
@@ -696,7 +700,7 @@ func (t *Trait) adjustedPoints(fixed modifierChoicePicks[*TraitModifier]) fxp.In
 	// those ways. Past the cap, fixed holds the picks as they stand.
 	choices, fixed := t.containerModifierChoices(fixed, choiceView{})
 	costs := t.childCosts(fixed, choices, choiceView{}, true)
-	values := make([]fxp.Int, len(t.Children))
+	values := make([]fxp.Int, len(costs))
 	least := fxp.Max
 	eachModifierChoicePick(choices, fixed, func(picks modifierChoicePicks[*TraitModifier]) {
 		var points fxp.Int
@@ -759,16 +763,18 @@ func (t *Trait) pointsRange(fixed modifierChoicePicks[*TraitModifier], view choi
 	return rangeForPickerByCount(newTemplateChoicePicker().Qualifier, spans)
 }
 
-// childCosts returns, for each child of this container, what it costs with each set of picks for fixed and choices the
-// container makes: pointsRange, or adjustedPoints when adjusted is true. A trait's modifiers are laid out just once.
+// childCosts returns, for each child of this container (each option, for a choice; see TemplateChoiceOptions), what it
+// costs with each set of picks for fixed and choices the container makes: pointsRange, or adjustedPoints when adjusted
+// is true. A trait's modifiers are laid out just once.
 func (t *Trait) childCosts(fixed modifierChoicePicks[*TraitModifier], choices []*TraitModifier, view choiceView, adjusted bool) []func(modifierChoicePicks[*TraitModifier]) NumericRange {
 	keys := make(modifierChoicePicks[*TraitModifier], len(fixed)+len(choices))
 	maps.Copy(keys, fixed)
 	for _, one := range choices {
 		keys[one] = nil
 	}
-	costs := make([]func(modifierChoicePicks[*TraitModifier]) NumericRange, len(t.Children))
-	for i, one := range t.Children {
+	options := TemplateChoiceOptions(t)
+	costs := make([]func(modifierChoicePicks[*TraitModifier]) NumericRange, len(options))
+	for i, one := range options {
 		switch {
 		case one.Container() && adjusted:
 			costs[i] = func(picks modifierChoicePicks[*TraitModifier]) NumericRange {
