@@ -10,8 +10,10 @@
 package ux
 
 import (
+	"fmt"
 	"testing"
 
+	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/picker"
 	"github.com/richardwilkes/toolbox/v2/check"
@@ -68,7 +70,7 @@ func TestPickerRowPageReferenceIsFollowedFromTheKeyboard(t *testing.T) {
 	c.Equal(link, focus(), "the focus stays on the page reference")
 }
 
-// The picker dialog is sized with its rows' text in place, wraps its hint to the list's width, and grows when the text
+// The picker dialog is sized with its rows' text in place, wraps its hint to the list's width, and widens when the text
 // does.
 func TestPickerDialogFitsItsContent(t *testing.T) {
 	c := check.New(t)
@@ -102,5 +104,42 @@ func TestPickerDialogFitsItsContent(t *testing.T) {
 		choose(s, n, "lion", "honors", "cr", "wm", "fear2")
 		refresh()
 		fits("the dialog grows to fit longer text")
+	})
+}
+
+// A picker too tall for the display keeps its place in the list when a click refreshes it.
+func TestPickerDialogKeepsItsScrollPosition(t *testing.T) {
+	c := check.New(t)
+	screen, _ := startHeadlessWorkspace(t, c)
+	choice := gurps.NewTrait(nil, nil, true)
+	choice.TemplatePicker.Type = picker.Count
+	choice.TemplatePicker.Qualifier.Qualifier = fxp.One
+	for i := range 120 {
+		option := gurps.NewTrait(nil, choice, false)
+		option.Name = fmt.Sprintf("Option %d", i)
+		choice.Children = append(choice.Children, option)
+	}
+	s := newPickerSession(promptOperation{}, []*gurps.Trait{choice}, false)
+	screen.Do(func() {
+		dialog, _ := s.newPickerDialog(choice, 0)
+		c.NotNil(dialog, "the dialog must be made")
+		if dialog == nil {
+			return
+		}
+		wnd := dialog.Window()
+		defer wnd.Dispose()
+		wnd.ValidateLayout()
+		scroll := panelsOfType[*unison.ScrollPanel](wnd.Content())[0]
+		scroll.SetPosition(0, 500)
+		wnd.ValidateLayout()
+		_, before := scroll.Position()
+		c.Equal(float32(500), before, "the list scrolls")
+		size := wnd.ContentRect().Size
+		panelsOfType[*unison.CheckBox](scroll.AsPanel())[60].Click()
+		wnd.ValidateLayout()
+		_, after := scroll.Position()
+		c.Equal(before, after, "the list keeps its place")
+		c.Equal(size, wnd.ContentRect().Size, "the dialog keeps its size")
+		c.True(s.chosen[choice.Children[60]])
 	})
 }

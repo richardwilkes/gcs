@@ -111,7 +111,7 @@ func (s *pickerSession[T]) newPickerDialog(row T, depth int) (dialog *unison.Dia
 		progress.Tooltip = newWrappedTooltip(state.tip())
 		t := s.hint(row)
 		hint.setText(t.text, pickerTextInk(t, pickerStateInks[pickerOK]))
-		// The dialog is first sized with the text above in place; it grows if later text needs more room.
+		// The dialog is first sized with the text above in place; it widens if later text needs more room.
 		if dialog != nil {
 			dialog.Button(unison.ModalResponseOK).SetEnabled(state == pickerOK)
 			growWindowToFit(dialog.Window())
@@ -515,12 +515,17 @@ func pickerTextInk(t pickerText, plain unison.Ink) unison.Ink {
 	return plain
 }
 
-// growWindowToFit enlarges the window when its content has come to want more room than it has, never shrinking it.
+// growWindowToFit widens the window, as far as its display allows, when its content has come to want more width than it
+// has. Its height is left alone, as the list scrolls, so the list keeps its place.
 func growWindowToFit(wnd *unison.Window) {
 	_, pref, _ := wnd.Content().Sizes(geom.Size{})
 	r := wnd.ContentRect()
-	if pref.Width > r.Width || pref.Height > r.Height {
-		r.Size = r.Max(pref)
+	width := pref.Width
+	if d := wnd.Display(); d != nil {
+		width = min(width, d.Usable.Width-(wnd.FrameRect().Width-r.Width))
+	}
+	if width > r.Width {
+		r.Width = width
 		wnd.SetContentRect(r)
 		wnd.EnsureOnDisplay()
 	}
