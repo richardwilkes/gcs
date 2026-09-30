@@ -285,14 +285,16 @@ func TestPickerOrganizingGroupHeaders(t *testing.T) {
 	c.Equal(5, len(boxes), "fear, honors, rank, status and luck are options")
 	screen.Do(func() { c.Equal(boxes[0].AsPanel(), dialogWnd.CurrentFocus(), "the focus starts on the first option") })
 	expanded := func(name string) (expandable, expanded bool) {
-		tree := screen.AccessibilityTree(dialogWnd)
-		tree.Walk(func(node *accessibility.Node) bool {
-			if node.Name == "Show or hide "+name {
-				expandable, expanded = node.Expandable, node.Expanded
-			}
-			return true
-		})
-		return expandable, expanded
+		screen.AccessibilityTree(dialogWnd)
+		node := screen.AccessibilityNodeFor(chevrons[name])
+		if node == nil {
+			t.Fatalf("the chevron of %s must be described", name)
+		}
+		c.Equal(role.DisclosureTriangle, node.Role)
+		c.Equal("Show or hide "+name, node.Name)
+		c.Equal(node.Expanded, node.Pressed, "a chevron is pressed while open")
+		c.True(node.Actions.Has(accessibility.Expand) && node.Actions.Has(accessibility.Collapse))
+		return node.Expandable, node.Expanded
 	}
 	shownBoxes := func() (count int) {
 		screen.Do(func() { count = len(panelsOfType[*unison.CheckBox](list)) })
@@ -325,6 +327,22 @@ func TestPickerOrganizingGroupHeaders(t *testing.T) {
 	c.True(open, "Return expands it again")
 	c.False(done, "without closing the dialog")
 	screen.Do(func() { c.Equal(cells, list.Children(), "every row is back in its place") })
+	perform := func(name string, action accessibility.Action) {
+		screen.AccessibilityTree(dialogWnd)
+		c.True(screen.PerformAccessibilityAction(accessibility.ActionRequest{
+			Node:   screen.AccessibilityNodeFor(chevrons[name]).ID,
+			Action: action,
+		}))
+	}
+	perform("martial", accessibility.Collapse)
+	_, open = expanded("martial")
+	c.False(open, "a screen reader can collapse it")
+	perform("martial", accessibility.Collapse)
+	_, open = expanded("martial")
+	c.False(open, "and collapsing it again changes nothing")
+	perform("martial", accessibility.Expand)
+	_, open = expanded("martial")
+	c.True(open, "and expand it")
 
 	screen.Do(func() {
 		chevrons["inner"].Click()

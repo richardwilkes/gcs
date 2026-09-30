@@ -522,10 +522,23 @@ func newPickerDisclosure(list *pickerList, sec *pickerSection, title string) *un
 		}
 		return button.DefaultKeyDown(keyCode, mods, repeat)
 	}
+	// Described as a table's disclosure triangle is, which can also be asked to expand or collapse.
+	button.Accessibility.Role = role.DisclosureTriangle
 	addAccessibilityCallback(button, func(node *accessibility.Node) {
+		node.Pressed = sec.open
 		node.Expandable = true
 		node.Expanded = sec.open
+		node.Actions = node.Actions.With(accessibility.Expand, accessibility.Collapse)
 	})
+	button.Accessibility.ActionCallback = func(req accessibility.ActionRequest) bool {
+		if req.Action != accessibility.Expand && req.Action != accessibility.Collapse {
+			return false
+		}
+		if sec.open != (req.Action == accessibility.Expand) {
+			button.ClickCallback()
+		}
+		return true
+	}
 	return button
 }
 
