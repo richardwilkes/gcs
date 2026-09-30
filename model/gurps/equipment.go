@@ -247,10 +247,11 @@ func (e *Equipment) CanConvertToPhysicalContainer() bool {
 
 // ConvertToPhysicalContainer converts this group to a physical container, if it can be. The container starts out with
 // no value or weight of its own, and with the legality class new equipment starts out with, which converting to a group
-// removes without a warning.
+// removes without a warning. A physical container is picked as a unit, so its flag to pick from it separately goes.
 func (e *Equipment) ConvertToPhysicalContainer() {
 	if e.CanConvertToPhysicalContainer() {
 		e.ContainerType = eqcontainer.Container
+		e.PickSeparately = false
 		if e.LegalityClass == "" {
 			e.LegalityClass = defaultLegalityClass
 		}

@@ -123,6 +123,8 @@ func TestPickSeparatelyClearing(t *testing.T) {
 	group.PickSeparately = true
 	group.ClearUnusedFieldsForType()
 	c.True(group.PickSeparately)
+	group.ConvertToPhysicalContainer()
+	c.False(group.PickSeparately, "nor once converted to one")
 }
 
 func TestPickSeparatelyHasEffect(t *testing.T) {
