@@ -68,8 +68,8 @@ func singleValueOf(r NumericRange) fxp.Int {
 type equipmentMeasure struct {
 	kind picker.Type
 	// own returns the measure of a single piece of the equipment with the given modifiers, not counting anything it
-	// holds. weight is its own adjusted weight, which only a value needs (see CostMultiplier).
-	own func(e *Equipment, modifiers []*EquipmentModifier, weight fxp.Int) fxp.Int
+	// holds.
+	own func(e *Equipment, modifiers []*EquipmentModifier) fxp.Int
 	// reduce returns the measure of what a single piece of the equipment with the given modifiers holds, given the
 	// range of it before any reduction the equipment makes to it.
 	reduce func(e *Equipment, modifiers []*EquipmentModifier, contents NumericRange) NumericRange
@@ -87,7 +87,10 @@ func (m equipmentMeasure) seenAs(view choiceView) equipmentMeasure {
 func equipmentValue() equipmentMeasure {
 	return equipmentMeasure{
 		kind: picker.Value,
-		own: func(e *Equipment, modifiers []*EquipmentModifier, weight fxp.Int) fxp.Int {
+		own: func(e *Equipment, modifiers []*EquipmentModifier) fxp.Int {
+			// A cost per pound is by the weight these modifiers give, so each way of making a choice pays for its own.
+			units := SheetSettingsFor(EntityFromNode(e)).DefaultWeightUnits
+			weight := fxp.Int(WeightAdjustedForModifiers(e, e.ResolvedBaseWeight(), modifiers, units))
 			return ValueAdjustedForModifiers(e, e.ResolvedBaseValue(), weight, modifiers)
 		},
 		reduce: func(_ *Equipment, _ []*EquipmentModifier, contents NumericRange) NumericRange { return contents },
@@ -99,7 +102,7 @@ func equipmentValue() equipmentMeasure {
 func equipmentWeight(forSkills bool, defUnits fxp.WeightUnit) equipmentMeasure {
 	return equipmentMeasure{
 		kind: picker.Weight,
-		own: func(e *Equipment, modifiers []*EquipmentModifier, _ fxp.Int) fxp.Int {
+		own: func(e *Equipment, modifiers []*EquipmentModifier) fxp.Int {
 			if forSkills && e.WeightIgnoredForSkills && e.ReallyEquipped() {
 				return 0
 			}
@@ -141,14 +144,8 @@ func (m equipmentMeasure) rangeOf(e *Equipment, quantity fxp.Int) NumericRange {
 // choices among its modifiers, which may also change how much of what it holds is reduced. contents is the range of
 // what it holds before that reduction, or nil to leave what it holds out.
 func (m equipmentMeasure) oneOf(e *Equipment, contents *NumericRange) NumericRange {
-	var weight fxp.Int
-	if m.kind == picker.Value {
-		// Worked out once, seen as the value is, rather than for each way of making the choices.
-		units := SheetSettingsFor(EntityFromNode(e)).DefaultWeightUnits
-		weight = lowerEndOf(equipmentWeight(false, units).seenAs(m.view).oneOf(e, nil))
-	}
 	eval := func(modifiers []*EquipmentModifier) NumericRange {
-		r := NumericRangeOf(m.own(e, modifiers, weight))
+		r := NumericRangeOf(m.own(e, modifiers))
 		if contents != nil {
 			r = r.Add(m.reduce(e, modifiers, *contents))
 		}

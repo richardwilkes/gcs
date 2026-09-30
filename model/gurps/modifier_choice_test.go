@@ -538,8 +538,8 @@ func newPerPoundModifier(cost string) *EquipmentModifier {
 	return m
 }
 
-// TestPerPoundCostWithOpenChoices verifies that a cost per pound is by the least the equipment's own weight may come
-// to, seen as its value is, and that costing it doesn't enumerate the weight for each way of making the choices.
+// TestPerPoundCostWithOpenChoices verifies that a cost per pound is by the weight each way of making the choices gives,
+// and that costing it doesn't enumerate the weight for each way of making the choices.
 func TestPerPoundCostWithOpenChoices(t *testing.T) {
 	c := check.New(t)
 	for _, owner := range []DataOwner{nil, NewEntity()} {
@@ -547,16 +547,24 @@ func TestPerPoundCostWithOpenChoices(t *testing.T) {
 		eqp.SetDataOwner(owner)
 		eqp.AddModifiers(newPerPoundModifier("+1"),
 			newEquipmentModifierChoiceWith([2]string{"+1", "+1 lb"}, [2]string{"+2", "+2 lb"}))
-		c.Equal("105~106", FormatValueRange(PickerMeasureRange(eqp, picker.Value, true, nil), fxp.Int.Comma))
+		c.Equal("105~107", FormatValueRange(PickerMeasureRange(eqp, picker.Value, true, nil), fxp.Int.Comma))
 	}
 
-	eqp := newEquipmentItem("Thing", "100", "3 lb")
+	eqp := newEquipmentItem("Crate", "0", "10 lb")
+	choice := newEquipmentModifierChoiceWith([2]string{"", "+2 lb"}, [2]string{"", "+3 lb"})
+	eqp.AddModifiers(newPerPoundModifier("+10"), choice)
+	c.Equal("120~130", FormatValueRange(eqp.adjustedValueRange(), fxp.Int.Comma), "the heavier option costs more")
+	eqp.Preconfigured = true
+	choice.Children[1].SetEnabled(true)
+	c.Equal(fxp.FromInteger(130), eqp.AdjustedValue(), "picking it costs what the range said it would")
+
+	eqp = newEquipmentItem("Thing", "100", "3 lb")
 	eqp.AddModifiers(newPerPoundModifier("+1"))
 	for range 12 {
 		eqp.AddModifiers(newEquipmentModifierChoiceWith([2]string{"+1", "+1 lb"}, [2]string{"+2", "+2 lb"}))
 	}
 	start := time.Now()
-	c.Equal("127~139", FormatValueRange(eqp.ExtendedValueRange(), fxp.Int.Comma))
+	c.Equal("127~151", FormatValueRange(eqp.ExtendedValueRange(), fxp.Int.Comma))
 	c.True(time.Since(start) < 10*time.Second, "costing it must not multiply the ways of making the choices")
 }
 

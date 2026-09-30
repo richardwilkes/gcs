@@ -522,8 +522,8 @@ func (e *EquipmentModifier) SetEnabled(enabled bool) {
 	}
 }
 
-// CostMultiplier returns the amount to multiply the cost by. weight is the equipment's own adjusted weight, which a cost
-// per pound is by.
+// CostMultiplier returns the amount to multiply the cost by. weight is what the equipment weighs with the modifiers being
+// costed, which a cost per pound is by.
 func (e *EquipmentModifier) CostMultiplier(weight fxp.Int) fxp.Int {
 	multiplier := multiplierForEquipmentModifier(e.equipment, e.CostIsPerLevel)
 	if e.CostIsPerPound {
@@ -549,8 +549,8 @@ func multiplierForEquipmentModifier(equipment *Equipment, isPerLevel bool) fxp.I
 	return multiplier
 }
 
-// ValueAdjustedForModifiers returns the value after adjusting it for a set of modifiers, weight being the equipment's own
-// adjusted weight (see CostMultiplier).
+// ValueAdjustedForModifiers returns the value after adjusting it for a set of modifiers, weight being what the equipment
+// weighs with them (see CostMultiplier).
 func ValueAdjustedForModifiers(equipment *Equipment, value, weight fxp.Int, modifiers []*EquipmentModifier) fxp.Int {
 	cost := processNonCFStep(equipment, emcost.Original, value, weight, modifiers)
 
