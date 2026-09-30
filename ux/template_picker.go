@@ -111,7 +111,7 @@ func (s *pickerSession[T]) newPickerDialog(row T, depth int) (dialog *unison.Dia
 		}
 		state := s.state(row)
 		updateProgress(state, s.pillText(row))
-		progress.Tooltip = newWrappedTooltip(state.tip())
+		progress.Tooltip = newWrappedTooltip(s.pillTip(row))
 		t := s.hint(row)
 		hint.setText(t.text, pickerTextInk(t, pickerStateInks[pickerOK]))
 		// The dialog is first sized with the text above in place; it widens if later text needs more room.
@@ -199,7 +199,7 @@ func (s *pickerSession[T]) newPickerDialog(row T, depth int) (dialog *unison.Dia
 		errs.Log(err)
 		return nil, nil
 	}
-	overrideTip := i18n.Text("Accept the checked options whether or not they satisfy the choice")
+	overrideTip := i18n.Text("Accept the checked options whether or not they satisfy the choice, leaving any choices still to be made below them for when the template is applied")
 	dialog.Button(unison.ModalResponseUserBase).Tooltip = newWrappedTooltip(overrideTip)
 	if depth > 0 {
 		// Clearing leaves the dialog up.

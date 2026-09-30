@@ -550,9 +550,9 @@ func (s *pickerSession[T]) hint(container T) pickerText {
 	case t.state >= pickerWarning:
 		parts = append(parts, i18n.Text("Override to keep it anyway."))
 	case open == 1:
-		parts = append(parts, i18n.Text("1 pick still depends on choices below. Choose it now to fix its cost, or later when the template is applied."))
+		parts = append(parts, i18n.Text("1 pick still depends on choices below. Choose it now to fix its cost, or Override to answer it when the template is applied."))
 	case open > 1:
-		parts = append(parts, fmt.Sprintf(i18n.Text("%d picks still depend on choices below. Choose them now to fix the cost, or later when the template is applied."), open))
+		parts = append(parts, fmt.Sprintf(i18n.Text("%d picks still depend on choices below. Choose them now to fix the cost, or Override to answer them when the template is applied."), open))
 	case t.state == pickerOpen:
 		parts = append(parts, i18n.Text("Could still meet the rule."))
 	default:
@@ -562,7 +562,16 @@ func (s *pickerSession[T]) hint(container T) pickerText {
 	return t
 }
 
-// tip returns what the state means, for the pill.
+// pillTip returns what the container's state means, for the pill.
+func (s *pickerSession[T]) pillTip(container T) string {
+	state := s.state(container)
+	if state == pickerOpen && s.ownState(container) == pickerOK {
+		return i18n.Text("The rule is met; choices below are still to be made.")
+	}
+	return state.tip()
+}
+
+// tip returns what the state means.
 func (state pickerState) tip() string {
 	switch state {
 	case pickerOK:

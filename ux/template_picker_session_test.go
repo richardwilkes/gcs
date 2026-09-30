@@ -406,6 +406,21 @@ func TestPickerSessionPlainContainerHoldingAChoice(t *testing.T) {
 	c.Equal(pickerOK, s.state(root))
 }
 
+// TestPickerSessionPillTip verifies that the pill says when the rule is met but choices below are still to be made.
+func TestPickerSessionPillTip(t *testing.T) {
+	c := check.New(t)
+	s, n := newKnightSession()
+	choose(s, n, "ea", "order", "rose", "luck")
+	c.Equal("The rule is met; choices below are still to be made.", s.pillTip(n["root"]))
+
+	s, n = newKnightSession()
+	choose(s, n, "ea", "ep", "fit", "order")
+	c.Equal(pickerOpen.tip(), s.pillTip(n["root"]), "its own rule could still be met")
+	choose(s, n, "fit2", "tower", "luck")
+	s.chosen[n["ep"]] = false
+	c.Equal(pickerOK.tip(), s.pillTip(n["root"]))
+}
+
 // TestPickerSessionAnsweredWithNothingPicked verifies that a choice answered with nothing picked costs nothing, rather
 // than what its rules expect.
 func TestPickerSessionAnsweredWithNothingPicked(t *testing.T) {
@@ -633,7 +648,7 @@ func TestPickerSessionRowText(t *testing.T) {
 		{start, "ea", cost, pickerText{text: " [25 points]"}},
 		{start, "resPart", detail, pickerText{text: " [+10]", tip: "Preconfigured"}},
 		{start, "root", hint, pickerText{text: "2 picks still depend on choices below. Choose them now to fix the " +
-			"cost, or later when the template is applied.", state: pickerOpen}},
+			"cost, or Override to answer them when the template is applied.", state: pickerOpen}},
 		{over, "lion", detail, pickerText{
 			text: " (pick 25 points worth)", state: pickerError,
 			tip: "The picks come to 39~64 points, but this asks for 25 points.",
