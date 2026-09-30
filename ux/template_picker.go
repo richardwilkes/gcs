@@ -60,8 +60,11 @@ func (s *pickerSession[T]) newPickerDialog(row T, depth int) (dialog *unison.Dia
 	children := row.NodeChildren()
 	tp := templatePicker(row)
 	headers := pickerRowDetailHeaders(row)
-	// A column for the pencil, and one for the choose button when the modifier prompt follows or an option is a choice.
-	chooseColumn := s.prompted || slices.ContainsFunc(children, gurps.IsTemplateChoiceContainer[T])
+	// A column for the pencil, and one for the choose button when the modifier prompt follows or an option is or holds a
+	// choice.
+	chooseColumn := s.prompted || slices.ContainsFunc(children, func(child T) bool {
+		return gurps.IsTemplateChoiceContainer(child) || len(s.nestedChoices(child)) != 0
+	})
 	buttonColumns := 1
 	if chooseColumn {
 		buttonColumns++
@@ -379,13 +382,13 @@ func (s *pickerSession[T]) addPickerRow(parent *unison.Panel, row T, pt picker.T
 	var choose *unison.Button
 	if chooseColumn {
 		isChoice := gurps.IsTemplateChoiceContainer(row)
-		if isChoice || (prompted && len(s.modTargets(row)) != 0) {
+		if isChoice || (prompted && len(s.modTargets(row)) != 0) || len(s.nestedChoices(row)) != 0 {
 			choose = NewSVGButtonForFont(svg.Settings, checkBox.Font, -2)
 			choose.ClickCallback = func() {
 				if isChoice {
 					s.choosePicks(row, depth)
 				} else {
-					s.chooseModifiers(row)
+					s.chooseWithin(row, depth)
 				}
 				refresh()
 			}
@@ -425,9 +428,13 @@ func (s *pickerSession[T]) updateChooseButton(button *unison.Button, row T) {
 			name = i18n.Text("Change the picks in %s")
 		}
 	} else {
-		name, open = i18n.Text("Choose modifiers for %s"), s.modsOpen(row)
+		name, open = i18n.Text("Choose modifiers for %s"), !s.resolved(row)
 		tip = i18n.Text("Its cost depends on modifier choices still to be made; choose them now to fix it")
-		if s.modsAnswered[row] {
+		switch {
+		case len(s.nestedChoices(row)) != 0:
+			name = i18n.Text("Choose within %s")
+			tip = i18n.Text("Its cost depends on choices within it still to be made; choose them now to fix it")
+		case s.modsAnswered[row]:
 			name = i18n.Text("Change the modifiers for %s")
 		}
 	}

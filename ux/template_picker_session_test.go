@@ -328,6 +328,50 @@ func TestPickerSessionPlainContainerModifiers(t *testing.T) {
 	c.Equal(pickerOpen, s.state(root))
 }
 
+// TestPickerSessionPlainContainerHoldingAChoice verifies that a plain container picked from a choice costs what the
+// picks of a choice inside it come to, is open until that choice is made, and can have it made from its row.
+func TestPickerSessionPlainContainerHoldingAChoice(t *testing.T) {
+	c := check.New(t)
+	newChoice := func(parent *gurps.Trait, pt picker.Type, qualifier int) *gurps.Trait {
+		choice := gurps.NewTrait(nil, parent, true)
+		choice.TemplatePicker.Type = pt
+		choice.TemplatePicker.Qualifier.Compare = criteria.EqualsNumber
+		choice.TemplatePicker.Qualifier.Qualifier = fxp.FromInteger(qualifier)
+		return choice
+	}
+	newLeaf := func(parent *gurps.Trait, points int) *gurps.Trait {
+		leaf := gurps.NewTrait(nil, parent, false)
+		leaf.BasePoints = fxp.FromInteger(points)
+		parent.Children = append(parent.Children, leaf)
+		return leaf
+	}
+	root := newChoice(nil, picker.Points, 20)
+	pack := gurps.NewTrait(nil, root, true)
+	sub := newChoice(pack, picker.Count, 1)
+	pack.Children = []*gurps.Trait{sub}
+	newLeaf(sub, 5)
+	ten := newLeaf(sub, 10)
+	root.Children = append(root.Children, pack)
+	x := newLeaf(root, 10)
+	s := newPickerSession(promptOperation{}, []*gurps.Trait{root}, true)
+	s.chosen[pack], s.chosen[x] = true, true
+	c.Equal("15~20 / 20", s.pillText(root))
+	c.False(s.resolved(pack), "the choice inside it is still to be made")
+	var asked []*gurps.Trait
+	s.runPicker = func(row *gurps.Trait, _ int) int {
+		asked = append(asked, row)
+		s.chosen[ten] = true
+		return unison.ModalResponseOK
+	}
+	s.chosen[pack] = false
+	s.chooseWithin(pack, 0)
+	c.Equal([]*gurps.Trait{sub}, asked)
+	c.True(s.chosen[pack], "confirming checks the row")
+	c.True(s.resolved(pack))
+	c.Equal("20 / 20", s.pillText(root))
+	c.Equal(pickerOK, s.state(root))
+}
+
 // TestPickerSessionChoosesEquipmentModifiers verifies that equipment modifiers can be chosen from the picker too, the
 // prompt showing the value and weight.
 func TestPickerSessionChoosesEquipmentModifiers(t *testing.T) {

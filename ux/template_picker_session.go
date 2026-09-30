@@ -17,6 +17,7 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/criteria"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	traitcontainer "github.com/richardwilkes/gcs/v5/model/gurps/enums/container"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/picker"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/toolbox/v2/xreflect"
@@ -163,6 +164,20 @@ func (s *pickerSession[T]) modTargets(row T) []T {
 	return targets
 }
 
+// nestedChoices returns the choices held by the row or by the plain containers below it, leaving out those within
+// such a choice.
+func (s *pickerSession[T]) nestedChoices(row T) []T {
+	var choices []T
+	for _, child := range row.NodeChildren() {
+		if gurps.IsTemplateChoiceContainer(child) {
+			choices = append(choices, child)
+		} else {
+			choices = append(choices, s.nestedChoices(child)...)
+		}
+	}
+	return choices
+}
+
 // modsOpen returns true if the row or a row below it has a mandatory modifier choice still to be made.
 func (s *pickerSession[T]) modsOpen(row T) bool {
 	return slices.ContainsFunc(s.modTargets(row), func(one T) bool {
@@ -172,8 +187,8 @@ func (s *pickerSession[T]) modsOpen(row T) bool {
 
 // chooseModifiers puts up the modifier prompts for the row now rather than after the choices. Confirming counts them
 // as answered and checks the row, unless each was an Override that changed nothing, which leaves them to be asked
-// later. Canceling puts everything back as it was.
-func (s *pickerSession[T]) chooseModifiers(row T) {
+// later. Canceling puts everything back as it was and returns false.
+func (s *pickerSession[T]) chooseModifiers(row T) bool {
 	restore := s.snapshot(row)
 	targets := s.modTargets(row)
 	answered := false
@@ -192,7 +207,7 @@ func (s *pickerSession[T]) chooseModifiers(row T) {
 			early:        early,
 		}) {
 			restore()
-			return
+			return false
 		}
 		if !early.backedOut {
 			s.modsAnswered[target] = true
@@ -202,12 +217,30 @@ func (s *pickerSession[T]) chooseModifiers(row T) {
 	if answered {
 		s.chosen[row] = true
 	}
+	return true
+}
+
+// chooseWithin puts up the modifier prompts for the row, then the dialog for each choice inside it, stopping at the
+// first canceled. Confirming any of those choices checks the row.
+func (s *pickerSession[T]) chooseWithin(row T, depth int) {
+	if len(s.modTargets(row)) != 0 && !s.chooseModifiers(row) {
+		return
+	}
+	for _, choice := range s.nestedChoices(row) {
+		confirmed, canceled := s.choosePicks(choice, depth)
+		if canceled {
+			return
+		}
+		if confirmed {
+			s.chosen[row] = true
+		}
+	}
 }
 
 // choosePicks puts up the dialog for a choice container picked from another now rather than after the outer OK.
 // Confirming counts it as answered and checks the row, unless Override kept nothing, which leaves it to be asked later.
 // Canceling puts everything back as it was.
-func (s *pickerSession[T]) choosePicks(row T, depth int) {
+func (s *pickerSession[T]) choosePicks(row T, depth int) (confirmed, canceled bool) {
 	restore := s.snapshot(row)
 	switch s.runPicker(row, depth+1) {
 	case unison.ModalResponseOK:
@@ -215,14 +248,15 @@ func (s *pickerSession[T]) choosePicks(row T, depth int) {
 		if !s.hasPicks(row) {
 			// Even if answered before, it is asked later.
 			delete(s.pickerAnswered, row)
-			return
+			return false, false
 		}
 	default:
 		restore()
-		return
+		return false, true
 	}
 	s.pickerAnswered[row] = true
 	s.chosen[row] = true
+	return true, false
 }
 
 // clear takes back the container's own picks, leaving the answers below them alone.
@@ -285,8 +319,8 @@ func (s *pickerSession[T]) hasPicks(container T) bool {
 }
 
 // actual returns what the row counts toward a choice made by kind: a choice container with picks, what they come to
-// (so a count overridden past its number costs every pick); one without, what its rules expect; anything else, its
-// range with the modifiers answered so far.
+// (so a count overridden past its number costs every pick); one without, what its rules expect; a plain container
+// holding a choice, what its rows come to; anything else, its range with the modifiers answered so far.
 func (s *pickerSession[T]) actual(row T, kind picker.Type) gurps.NumericRange {
 	if kind != picker.Count && gurps.IsTemplateChoiceContainer(row) && s.hasPicks(row) {
 		return s.total(row, kind)
@@ -294,7 +328,31 @@ func (s *pickerSession[T]) actual(row T, kind picker.Type) gurps.NumericRange {
 	if r, ok := s.expected[pickerMeasureKey[T]{row, kind}]; ok {
 		return r
 	}
+	if kind != picker.Count && s.rollsUp(row) {
+		total := gurps.NumericRangeOf(0)
+		for _, child := range row.NodeChildren() {
+			total = total.Add(s.actual(child, kind))
+		}
+		return total
+	}
 	return gurps.PickerMeasureRange(row, kind, s.prompted, s.taken)
+}
+
+// rollsUp returns true if the row holds a choice and costs what its rows add up to. Alternative abilities, a container
+// with a modifier choice of its own still open and one with a value or weight of its own are costed as a whole.
+func (s *pickerSession[T]) rollsUp(row T) bool {
+	if len(s.nestedChoices(row)) == 0 {
+		return false
+	}
+	switch item := any(row).(type) {
+	case *gurps.Trait:
+		return item.ContainerType != traitcontainer.AlternativeAbilities &&
+			!gurps.HasOpenModifierChoice(row, s.prompted, s.taken)
+	case *gurps.Equipment:
+		return item.IsGroup()
+	default:
+		return true
+	}
 }
 
 // total returns what the container's picks come to toward a choice made by kind.
@@ -363,7 +421,8 @@ func (s *pickerSession[T]) resolved(row T) bool {
 	if gurps.IsTemplateChoiceContainer(row) {
 		return s.state(row) == pickerOK
 	}
-	return !s.modsOpen(row)
+	return !s.modsOpen(row) &&
+		!slices.ContainsFunc(s.nestedChoices(row), func(choice T) bool { return !s.resolved(choice) })
 }
 
 // pillText returns what the container's picks come to against its target, as in "40~70 / 60" or "65 / ≥60".
