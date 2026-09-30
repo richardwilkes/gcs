@@ -23,6 +23,7 @@ import (
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/toolbox/v2/xreflect"
+	"github.com/richardwilkes/toolbox/v2/xstrings"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/accessibility"
 	"github.com/richardwilkes/unison/enums/align"
@@ -388,15 +389,23 @@ func addPickerHeader[T gurps.Node[T]](list *pickerList, group T, within *pickerS
 }
 
 // addPickerInfoRows adds a row naming each of the rows, and those within them, to the list, in the section, indent
-// levels in. They tell what a container picked as a unit holds, so there is nothing in them to pick or change.
+// levels in. They tell what a container picked as a unit holds, so there is nothing in them to pick or change. A choice
+// among them shows its rule rather than its options, which are picked in its own dialog.
 func addPickerInfoRows[T gurps.Node[T]](list *pickerList, rows []T, sec *pickerSection, indent int) {
 	for _, row := range rows {
 		from := len(list.panel.Children())
 		name := unison.NewLabel()
 		name.SetTitle(row.String())
+		isChoice := gurps.IsTemplateChoiceContainer(row)
+		if isChoice {
+			name.SetTitle(row.String() + " (" +
+				xstrings.FirstToLower(templatePicker(row).StringWithUnits(pickerWeightUnits(row))) + ")")
+		}
 		addPickerNameRow(list, row, nil, false, indent, name)
 		list.claim(from, sec)
-		addPickerInfoRows(list, row.NodeChildren(), sec, indent+1)
+		if !isChoice {
+			addPickerInfoRows(list, row.NodeChildren(), sec, indent+1)
+		}
 	}
 }
 

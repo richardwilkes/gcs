@@ -14,6 +14,7 @@ import (
 	"slices"
 	"testing"
 
+	"github.com/richardwilkes/gcs/v5/model/criteria"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/picker"
@@ -431,7 +432,8 @@ func TestPickerClosingGroupKeepsFocus(t *testing.T) {
 }
 
 // A container picked as a unit keeps its checkbox and cost, and its chevron shows what it holds as rows with nothing to
-// pick, widening the dialog to fit them, their page references lined up with those of the options.
+// pick, a choice among them by its rule, widening the dialog to fit them, their page references lined up with those of
+// the options.
 func TestPickerUnitContainerInformationRows(t *testing.T) {
 	c := check.New(t)
 	screen, _ := startHeadlessWorkspace(t, c)
@@ -444,7 +446,11 @@ func TestPickerUnitContainerInformationRows(t *testing.T) {
 		return one
 	}
 	const long = "Sword of the Realm, Forged in the Fires Beneath the Mountain for the Order's First Champion"
-	kit := trait("Kit", 0, trait(long, 5), trait("Pack", 0, trait("Rope", 1)))
+	trinket := trait("Trinket", 0, trait("Ring", 1), trait("Amulet", 2))
+	trinket.TemplatePicker.Type = picker.Count
+	trinket.TemplatePicker.Qualifier.Compare = criteria.EqualsNumber
+	trinket.TemplatePicker.Qualifier.Qualifier = fxp.One
+	kit := trait("Kit", 0, trait(long, 5), trait("Pack", 0, trait("Rope", 1)), trinket)
 	choice := trait("Choice", 0, kit, trait("Luck", 15))
 	gurps.Traverse(func(one *gurps.Trait) bool {
 		one.PageRef = "B10"
@@ -476,14 +482,16 @@ func TestPickerUnitContainerInformationRows(t *testing.T) {
 		width := wnd.ContentRect().Width
 		chevron.Click()
 		wnd.ValidateLayout()
-		checkPickerRowsAligned(c, row.Parent(), 5)
+		checkPickerRowsAligned(c, row.Parent(), 6)
 		// What the unit holds is set in one level past its name.
 		checkPickerRowPlaces(c, row.Parent(), map[string]pickerPlace{
 			"Kit": {slot: true}, "Luck": {slot: true}, long: {under: "Kit"}, "Pack": {under: "Kit"}, "Rope": {under: "Pack"},
+			"Trinket (pick 1)": {under: "Kit"},
 		})
 		texts := labelTexts(wnd.Content())
 		c.True(slices.Contains(texts, long) && slices.Contains(texts, "Pack") && slices.Contains(texts, "Rope"),
 			"opening it shows what it holds, however deep")
+		c.False(slices.Contains(texts, "Ring"), "but a choice within it shows only its rule, not its options")
 		c.Equal(2, len(panelsOfType[*unison.CheckBox](wnd.Content())), "with nothing to pick")
 		_, pref, _ := wnd.Content().Sizes(geom.Size{})
 		c.True(wnd.ContentRect().Width > width, "the dialog widens")
