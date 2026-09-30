@@ -222,6 +222,10 @@ func (s *pickerSession[T]) newPickerDialog(row T, depth int) (dialog *unison.Dia
 		wnd.EnsureOnDisplay()
 	}
 	refresh()
+	// The focus starts on the first option, not a chevron before it, so Return accepts the dialog.
+	if list.first != nil {
+		list.first.RequestFocus()
+	}
 	return dialog, refresh
 }
 
@@ -276,6 +280,7 @@ type pickerList struct {
 	updates      []func()
 	cells        []*unison.Panel
 	sections     []*pickerSection
+	first        *unison.CheckBox
 	columns      int
 	depth        int
 	pt           picker.Type
@@ -581,6 +586,9 @@ func (s *pickerSession[T]) addPickerRow(list *pickerList, row T, disclosure *uni
 	op, prompted := s.op, s.prompted
 	parent, pt, depth, chooseColumn, refresh := list.panel, list.pt, list.depth, list.chooseColumn, list.refresh
 	checkBox := unison.NewCheckBox()
+	if list.first == nil {
+		list.first = checkBox
+	}
 	checkBox.ClickCallback = func() {
 		s.chosen[row] = checkBox.State == check.On
 		refresh()

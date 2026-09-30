@@ -242,6 +242,8 @@ func TestPickerOrganizingGroupHeaders(t *testing.T) {
 	for _, name := range []string{"martial", "inner", "fear", "status", "luck"} {
 		n[name].PageRef = "B10"
 	}
+	// Picks that meet the rule enable OK, so Return would accept the dialog wherever it isn't used otherwise.
+	choose(s, n, "fear", "status")
 	done := false
 	c.True(screen.Post(func() {
 		s.showPicker(n["root"], 0)
@@ -281,6 +283,7 @@ func TestPickerOrganizingGroupHeaders(t *testing.T) {
 	})
 	c.Equal(3, len(chevrons), "each organizing group is a header")
 	c.Equal(5, len(boxes), "fear, honors, rank, status and luck are options")
+	screen.Do(func() { c.Equal(boxes[0].AsPanel(), dialogWnd.CurrentFocus(), "the focus starts on the first option") })
 	expanded := func(name string) (expandable, expanded bool) {
 		tree := screen.AccessibilityTree(dialogWnd)
 		tree.Walk(func(node *accessibility.Node) bool {
@@ -336,6 +339,13 @@ func TestPickerOrganizingGroupHeaders(t *testing.T) {
 	})
 	screen.KeyPress(unison.KeyEscape, mod.None)
 	c.True(done, "the dialog has closed")
+
+	response := unison.ModalResponseCancel
+	c.True(screen.Post(func() { response = s.showPicker(n["root"], 0) }))
+	screen.Sync()
+	modalDialog(t, screen, wnd)
+	screen.KeyPress(unison.KeyReturn, mod.None)
+	c.Equal(unison.ModalResponseOK, response, "Return first thing accepts the dialog")
 }
 
 // A container picked as a unit keeps its checkbox and cost, and its chevron shows what it holds as rows with nothing to
