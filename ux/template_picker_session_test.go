@@ -1068,10 +1068,17 @@ func TestPickerSessionChooseWithinSkipsAnsweredModifiers(t *testing.T) {
 	sub.TemplatePicker.Type = picker.Count
 	sub.TemplatePicker.Qualifier.Compare = criteria.EqualsNumber
 	sub.TemplatePicker.Qualifier.Qualifier = fxp.One
-	pack.Children = []*gurps.Trait{sub}
+	// A choice already made comes before it.
+	done := gurps.NewTrait(nil, pack, true)
+	done.Name = "done"
+	done.TemplatePicker = sub.TemplatePicker
+	pack.Children = []*gurps.Trait{done, sub}
 	option := gurps.NewTrait(nil, sub, false)
 	sub.Children = []*gurps.Trait{option}
+	made := gurps.NewTrait(nil, done, false)
+	done.Children = []*gurps.Trait{made}
 	s := newPickerSession(promptOperation{}, []*gurps.Trait{root}, true)
+	s.chosen[made], s.pickerAnswered[done] = true, true
 	response := unison.ModalResponseCancel
 	s.runPicker = func(row *gurps.Trait, _ int) int {
 		asked = append(asked, row.Name)
@@ -1081,7 +1088,7 @@ func TestPickerSessionChooseWithinSkipsAnsweredModifiers(t *testing.T) {
 		return response
 	}
 	s.chooseWithin(pack, 0)
-	c.Equal([]string{"pack", "sub"}, asked)
+	c.Equal([]string{"pack", "sub"}, asked, "a choice already made isn't put up before one still to be made")
 	c.True(s.modsAnswered[pack], "canceling a later popup keeps what an earlier one answered")
 	asked, response = nil, unison.ModalResponseOK
 	s.chooseWithin(pack, 0)
@@ -1089,5 +1096,5 @@ func TestPickerSessionChooseWithinSkipsAnsweredModifiers(t *testing.T) {
 	c.True(s.resolved(pack))
 	asked = nil
 	s.chooseWithin(pack, 0)
-	c.Equal([]string{"pack", "sub"}, asked, "with nothing left, everything is asked again")
+	c.Equal([]string{"pack", "done", "sub"}, asked, "with nothing left, everything is asked again")
 }

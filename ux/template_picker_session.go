@@ -262,8 +262,8 @@ func (s *pickerSession[T]) chooseModifiers(row T) bool {
 }
 
 // chooseWithin puts up the modifier prompts for the row, unless all are answered while a choice inside it is still to
-// be made, then the dialog for each choice inside it, stopping at the first canceled, which keeps what the popups before
-// it answered. Confirming any of those choices checks the row.
+// be made, then the dialog for each choice inside it (only those still to be made, if any are), stopping at the first
+// canceled, which keeps what the popups before it answered. Confirming any of those choices checks the row.
 func (s *pickerSession[T]) chooseWithin(row T, depth int) {
 	targets := s.modTargets(row)
 	answered := !slices.ContainsFunc(targets, func(one T) bool { return !s.modsAnswered[one] })
@@ -272,6 +272,9 @@ func (s *pickerSession[T]) chooseWithin(row T, depth int) {
 		return
 	}
 	for _, choice := range s.nestedChoices(row) {
+		if pending && s.resolved(choice) {
+			continue
+		}
 		confirmed, canceled := s.choosePicks(choice, depth)
 		if canceled {
 			return
