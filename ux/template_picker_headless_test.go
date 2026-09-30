@@ -225,7 +225,9 @@ func TestPickerRowsWithoutGroupsLeaveNoRoomForChevrons(t *testing.T) {
 		defer wnd.Dispose()
 		wnd.ValidateLayout()
 		list := panelsOfType[*unison.CheckBox](wnd.Content())[0].Parent().Parent()
-		checkPickerRowPlaces(c, list, map[string]int{"ea": 0, "ep": 0, "fit": 0, "order": 0, "luck": 0, "shield": 0})
+		checkPickerRowPlaces(c, list, map[string]pickerPlace{
+			"ea": {}, "ep": {}, "fit": {}, "order": {}, "luck": {}, "shield": {},
+		})
 	})
 }
 
@@ -266,11 +268,13 @@ func TestPickerOrganizingGroupHeaders(t *testing.T) {
 		list = boxes[0].Parent().Parent()
 		cells = slices.Clone(list.Children())
 		checkPickerRowsAligned(c, list, 5)
-		// Only the groups at the top and within social hold groups, so only their rows leave room for a chevron.
-		checkPickerRowPlaces(c, list, map[string]int{
-			"martial": 1, "fear": 1, "honors": 1,
-			"social": 1, "rank": 2, "inner": 2, "status": 2,
-			"luck": 1,
+		// Only the rows at the top and within social hold groups, so only they leave room for a chevron. Each group's
+		// rows are set in one chevron width past its name.
+		checkPickerRowPlaces(c, list, map[string]pickerPlace{
+			"martial": {slot: true}, "fear": {under: "martial"}, "honors": {under: "martial"},
+			"social": {slot: true}, "rank": {under: "social", slot: true}, "inner": {under: "social", slot: true},
+			"status": {under: "inner"},
+			"luck":   {slot: true},
 		})
 	})
 	c.Equal(3, len(chevrons), "each organizing group is a header")
@@ -380,7 +384,9 @@ func TestPickerUnitContainerInformationRows(t *testing.T) {
 		wnd.ValidateLayout()
 		checkPickerRowsAligned(c, row.Parent(), 5)
 		// What the unit holds is set in one level past its name.
-		checkPickerRowPlaces(c, row.Parent(), map[string]int{"Kit": 1, "Luck": 1, long: 2, "Pack": 2, "Rope": 3})
+		checkPickerRowPlaces(c, row.Parent(), map[string]pickerPlace{
+			"Kit": {slot: true}, "Luck": {slot: true}, long: {under: "Kit"}, "Pack": {under: "Kit"}, "Rope": {under: "Pack"},
+		})
 		texts := labelTexts(wnd.Content())
 		c.True(slices.Contains(texts, long) && slices.Contains(texts, "Pack") && slices.Contains(texts, "Rope"),
 			"opening it shows what it holds, however deep")
@@ -420,10 +426,18 @@ func checkPickerRowsAligned(c check.Checker, list *unison.Panel, want int) {
 	}
 }
 
+// pickerPlace tells where a row of the picker's list is set: under the row whose name it gives, or the top of the list
+// if none, and whether the row's level leaves room for a chevron before its name.
+type pickerPlace struct {
+	under string
+	slot  bool
+}
+
 // checkPickerRowPlaces checks that the rows of the picker's list lead with their checkboxes, or room for one, all in one
-// column, and that the name of each row given is set that many chevron widths past it, just after its chevron if it has
-// one.
-func checkPickerRowPlaces(c check.Checker, list *unison.Panel, places map[string]int) {
+// column, and that the name of each row given is set one chevron width past the name of the row it is under, or at the
+// start of the rows if it is under none, and one more past that when its level leaves room for a chevron, just after
+// its chevron if it has one.
+func checkPickerRowPlaces(c check.Checker, list *unison.Panel, places map[string]pickerPlace) {
 	layout, ok := list.Layout().(*unison.FlexLayout)
 	c.True(ok, "the list is laid out in columns")
 	if !ok {
@@ -443,26 +457,43 @@ func checkPickerRowPlaces(c check.Checker, list *unison.Panel, places map[string
 			c.Equal(left, x(cells[i].Children()[0]), "every row leads with a checkbox, or room for one, in one column")
 		}
 	}
-	base := left + pickerCheckBoxSize().Width + unison.StdHSpacing
 	step := pickerDisclosureSize() + unison.StdHSpacing
-	for name, level := range places {
+	label := func(name string) *unison.Panel {
 		labels := panelsMatching(list, func(p *unison.Panel) bool {
-			label, isLabel := p.Self.(*unison.Label)
-			return isLabel && label.String() == name
+			one, isLabel := p.Self.(*unison.Label)
+			return isLabel && one.String() == name
 		})
 		c.Equal(1, len(labels), "%s is shown once", name)
 		if len(labels) != 1 {
+			return nil
+		}
+		return labels[0]
+	}
+	for name, place := range places {
+		one := label(name)
+		if one == nil {
 			continue
 		}
-		c.Equal(base+float32(level)*step, x(labels[0]), "%s is set %d chevron widths in", name, level)
-		rest := labels[0]
+		want := left + pickerCheckBoxSize().Width + unison.StdHSpacing
+		if place.under != "" {
+			parent := label(place.under)
+			if parent == nil {
+				continue
+			}
+			want = x(parent) + step
+		}
+		if place.slot {
+			want += step
+		}
+		c.Equal(want, x(one), "%s is set in from %q as %+v", name, place.under, place)
+		rest := one
 		for rest.Parent() != nil && rest.Parent().Parent() != list {
 			rest = rest.Parent()
 		}
 		if chevron, isButton := rest.Children()[0].Self.(*unison.Button); isButton {
 			frame := chevron.RectTo(chevron.ContentRect(false), list)
 			c.Equal(pickerDisclosureSize(), frame.Width, "the chevron of %s takes the room left for one", name)
-			c.Equal(x(labels[0]), frame.Right()+unison.StdHSpacing, "the chevron of %s is just before its name", name)
+			c.Equal(x(one), frame.Right()+unison.StdHSpacing, "the chevron of %s is just before its name", name)
 		}
 	}
 }

@@ -320,8 +320,9 @@ func (l *pickerList) sync() {
 }
 
 // addPickerRows adds a row for each of the children to the list, in the section, indent levels in. An organizing group
-// becomes a header with its options beneath it, one level further in. A container picked as a unit may be opened to
-// show what it holds. When any of the children has a chevron, all of them leave room for one, so their names line up.
+// becomes a header with its options beneath it, set in one level past its name. A container picked as a unit may be
+// opened to show what it holds. When any of the children has a chevron, all of them leave room for one, so their names
+// line up.
 func (s *pickerSession[T]) addPickerRows(list *pickerList, children []T, sec *pickerSection, indent int) {
 	slot := slices.ContainsFunc(children, func(child T) bool {
 		return gurps.IsOrganizingGroup(child) || isPickerUnit(child)
@@ -331,7 +332,8 @@ func (s *pickerSession[T]) addPickerRows(list *pickerList, children []T, sec *pi
 		if gurps.IsOrganizingGroup(child) {
 			inner := addPickerHeader(list, child, sec, indent)
 			list.claim(from, sec)
-			s.addPickerRows(list, child.NodeChildren(), inner, indent+1)
+			// Its name follows its chevron, and its options are set in one level past that.
+			s.addPickerRows(list, child.NodeChildren(), inner, indent+2)
 			continue
 		}
 		var unit *pickerSection
@@ -355,13 +357,16 @@ func isPickerUnit[T gurps.Node[T]](row T) bool {
 }
 
 // addPickerHeader adds the header of an organizing group to the list and returns the section within the given one
-// that its options go in, which starts open.
+// that its options go in, which starts open. The header is a heading one level below that of the group it is in.
 func addPickerHeader[T gurps.Node[T]](list *pickerList, group T, within *pickerSection, indent int) *pickerSection {
 	sec := &pickerSection{parent: within, open: true}
 	name := unison.NewLabel()
 	name.SetTitle(group.String())
 	name.Accessibility.Role = role.Heading
-	name.Accessibility.Level = indent + 1
+	name.Accessibility.Level = 1
+	for one := within; one != nil; one = one.parent {
+		name.Accessibility.Level++
+	}
 	addPickerNameRow(list, group, newPickerDisclosure(list, sec, group.String()), true, indent, name)
 	return sec
 }
