@@ -668,7 +668,7 @@ func (t *Trait) AdjustedPoints(_ *xbytes.InsertBuffer) fxp.Int {
 		if r, open := t.modifierChoicePointsRange(nil, choiceView{}); open {
 			return *r.Min
 		}
-		return t.pointsAsPicked()
+		return t.pointsWith(t.AllModifiers())
 	}
 	if !t.TemplatePicker.IsZero() {
 		// See pickerContainerPoints for what a container presenting a choice is worth.
@@ -721,7 +721,7 @@ func (t *Trait) pointsRange(fixed modifierChoicePicks[*TraitModifier], view choi
 		if r, open := t.modifierChoicePointsRange(fixed, view); open {
 			return r
 		}
-		return NumericRangeOf(t.pointsAsPicked())
+		return NumericRangeOf(t.pointsWith(t.AllModifiers()))
 	}
 	if t.EffectivelyDisabled() {
 		return NumericRangeOf(0)
@@ -758,15 +758,14 @@ func (t *Trait) modifierChoicePointsRange(fixed modifierChoicePicks[*TraitModifi
 		return NumericRange{}, false
 	}
 	return modifierChoiceRange(t, t.AllModifiers(), fixed, view, func(modifiers []*TraitModifier) NumericRange {
-		return NumericRangeOf(AdjustedPoints(nil, t, t.CanLevel, t.BasePoints, t.Levels, t.PointsPerLevel,
-			t.SelfControl, t.Frequency, modifiers, t.RoundCostDown))
+		return NumericRangeOf(t.pointsWith(modifiers))
 	})
 }
 
-// pointsAsPicked returns the cost of this non-container trait with its modifier choices made as they stand.
-func (t *Trait) pointsAsPicked() fxp.Int {
+// pointsWith returns the cost of this non-container trait with the given modifiers.
+func (t *Trait) pointsWith(modifiers []*TraitModifier) fxp.Int {
 	return AdjustedPoints(EntityFromNode(t), t, t.CanLevel, t.BasePoints, t.Levels, t.PointsPerLevel, t.SelfControl,
-		t.Frequency, t.AllModifiers(), t.RoundCostDown)
+		t.Frequency, modifiers, t.RoundCostDown)
 }
 
 // containerModifierChoices returns the open mandatory choices among this container's modifiers that fixed holds no

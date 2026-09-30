@@ -487,6 +487,26 @@ func TestPromptedRanges(t *testing.T) {
 	}
 }
 
+// TestPromptedTraitRangeUsesTheSheetSettings verifies that the prompted range of a trait on a sheet is costed the way
+// the sheet costs the trait once picked, multiplicative modifiers included.
+func TestPromptedTraitRangeUsesTheSheetSettings(t *testing.T) {
+	c := check.New(t)
+	entity := NewEntity()
+	entity.SheetSettings.UseMultiplicativeModifiers = true
+	trait := NewTrait(entity, nil, false)
+	trait.BasePoints = fxp.FromInteger(10)
+	fixed := NewTraitModifier(nil, nil, false)
+	fixed.CostAdj = "+50%"
+	choice := newTraitModifierChoiceWith(true, "-50%", "-20%")
+	trait.AddModifiers(fixed, choice)
+	c.Equal("8~12", PickerMeasureRange(trait, picker.Points, true, nil).String())
+	for i, want := range []int{8, 12} {
+		choice.Children[i].SetEnabled(true)
+		c.Equal(fxp.FromInteger(want), trait.AdjustedPoints(nil))
+		choice.Children[i].SetEnabled(false)
+	}
+}
+
 // newPerPoundModifier returns an equipment modifier adding the given cost per pound.
 func newPerPoundModifier(cost string) *EquipmentModifier {
 	m := NewEquipmentModifier(nil, nil, false)
