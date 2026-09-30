@@ -428,11 +428,17 @@ func (s *pickerSession[T]) state(container T) pickerState {
 	return state
 }
 
-// troubled returns the choices picked from the container that are in error or warning themselves.
+// troubled returns the container's picks that are, or hold, a choice with picks in error or warning.
 func (s *pickerSession[T]) troubled(container T) []T {
-	return s.picks(container, func(child T) bool {
-		return gurps.IsTemplateChoiceContainer(child) && s.hasPicks(child) && s.state(child) >= pickerWarning
-	})
+	return s.picks(container, s.inTrouble)
+}
+
+// inTrouble returns true if the row is a choice with picks in error or warning, or holds one.
+func (s *pickerSession[T]) inTrouble(row T) bool {
+	if gurps.IsTemplateChoiceContainer(row) {
+		return s.hasPicks(row) && s.state(row) >= pickerWarning
+	}
+	return slices.ContainsFunc(s.nestedChoices(row), s.inTrouble)
 }
 
 // unresolved returns the container's picks that have something left to answer.

@@ -872,3 +872,38 @@ func TestPickerSessionPhysicalContainerHoldingAChoice(t *testing.T) {
 	c.Equal("$140", formatPickerTotal(backpack, picker.Value, s.actual(backpack, picker.Value)))
 	c.Equal("12 lb", formatPickerTotal(backpack, picker.Weight, s.actual(backpack, picker.Weight)))
 }
+
+// TestPickerSessionTroubleInsidePlainContainer verifies that a choice overridden with picks missing its rule inside a
+// plain container picked from another choice needs attention there, directly or through an organizing group.
+func TestPickerSessionTroubleInsidePlainContainer(t *testing.T) {
+	c := check.New(t)
+	for _, grouped := range []bool{false, true} {
+		root := gurps.NewTrait(nil, nil, true)
+		root.TemplatePicker.Type = picker.Count
+		root.TemplatePicker.Qualifier.Compare = criteria.EqualsNumber
+		root.TemplatePicker.Qualifier.Qualifier = fxp.One
+		parent := root
+		if grouped {
+			parent = gurps.NewTrait(nil, root, true)
+			parent.PickSeparately = true
+			root.Children = []*gurps.Trait{parent}
+		}
+		pack := gurps.NewTrait(nil, parent, true)
+		pack.Name = "pack"
+		parent.Children = []*gurps.Trait{pack}
+		sub := gurps.NewTrait(nil, pack, true)
+		sub.TemplatePicker.Type = picker.Count
+		sub.TemplatePicker.Qualifier.Compare = criteria.EqualsNumber
+		sub.TemplatePicker.Qualifier.Qualifier = fxp.One
+		pack.Children = []*gurps.Trait{sub}
+		s := newPickerSession(promptOperation{}, []*gurps.Trait{root}, true)
+		s.chosen[pack], s.pickerAnswered[sub] = true, true
+		for range 2 {
+			option := gurps.NewTrait(nil, sub, false)
+			sub.Children = append(sub.Children, option)
+			s.chosen[option] = true
+		}
+		c.Equal(pickerWarning, s.state(root))
+		c.Equal([]*gurps.Trait{pack}, s.troubled(root))
+	}
+}
