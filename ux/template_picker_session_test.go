@@ -566,4 +566,18 @@ func TestPickerSessionRowText(t *testing.T) {
 	c.Equal(pickerText{}, s.detail(wm), "a pick is only a default until answered")
 	s.modsAnswered[wm] = true
 	c.Equal(pickerText{text: " [+25]"}, s.detail(wm))
+
+	// A rule asking for anything but its number says so when the picks come to it.
+	s, n = newKnightSession()
+	n["root"].TemplatePicker.Qualifier.Compare = criteria.NotEqualsNumber
+	n["fit"].TemplatePicker.Qualifier.Compare = criteria.NotEqualsNumber
+	choose(s, n, "ea", "ep", "luck", "shield", "fit1")
+	c.Equal(pickerText{
+		text:  "The picks come to 60 points, but this asks for anything but 60 points. Override to keep it anyway.",
+		state: pickerError,
+	}, s.hint(n["root"]))
+	c.Equal(pickerText{
+		text:  "1 picked, but this asks for anything but 1. Override to keep it anyway.",
+		state: pickerError,
+	}, s.hint(n["fit"]))
 }

@@ -418,6 +418,10 @@ func (s *pickerSession[T]) ruleMiss(container T) string {
 	tp := templatePicker(container)
 	total := s.total(container, tp.Type)
 	target := pickerTarget(container, pickerMeasureText[T])
+	if tp.Qualifier.Compare.EnsureValid() == criteria.NotEqualsNumber {
+		target = fmt.Sprintf(i18n.Text("anything but %s"),
+			pickerMeasureText(container, tp.Type, gurps.NumericRangeOf(tp.Qualifier.Qualifier)))
+	}
 	if tp.Type == picker.Count {
 		return fmt.Sprintf(i18n.Text("%s picked, but this asks for %s."), total.Comma(), target)
 	}
@@ -473,6 +477,7 @@ func (s *pickerSession[T]) hint(container T) pickerText {
 			}
 			parts = append(parts, fmt.Sprintf(i18n.Text("%s short."), pickerMeasureText(container, tp.Type, short)))
 		default:
+			parts = append(parts, s.ruleMiss(container))
 		}
 	}
 	if troubled := s.troubled(container); len(troubled) != 0 {
