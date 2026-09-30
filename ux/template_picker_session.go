@@ -366,13 +366,17 @@ func (s *pickerSession[T]) actual(row T, kind picker.Type) gurps.NumericRange {
 		for _, child := range row.NodeChildren() {
 			total = total.Add(s.actual(child, kind))
 		}
+		if eqp, ok := any(row).(*gurps.Equipment); ok && eqp.IsPhysicalContainer() {
+			return gurps.PickerMeasureRangeWithContents(row, kind, s.prompted, s.taken, total)
+		}
 		return total
 	}
 	return gurps.PickerMeasureRange(row, kind, s.prompted, s.taken)
 }
 
-// rollsUp returns true if the row holds a choice and costs what its rows add up to. Alternative abilities, a container
-// with a modifier choice of its own still open and one with a value or weight of its own are costed as a whole.
+// rollsUp returns true if the row holds a choice and costs what its rows add up to, a physical equipment container
+// adding its own. Alternative abilities and a trait container with a modifier choice of its own still open are costed
+// as a whole.
 func (s *pickerSession[T]) rollsUp(row T) bool {
 	if len(s.nestedChoices(row)) == 0 {
 		return false
@@ -381,8 +385,6 @@ func (s *pickerSession[T]) rollsUp(row T) bool {
 	case *gurps.Trait:
 		return item.ContainerType != traitcontainer.AlternativeAbilities &&
 			!gurps.HasOpenModifierChoice(row, s.prompted, s.taken)
-	case *gurps.Equipment:
-		return item.IsGroup()
 	default:
 		return true
 	}

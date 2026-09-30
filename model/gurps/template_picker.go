@@ -303,16 +303,31 @@ func PickerMeasureRange[T Node[T]](node T, pickerType picker.Type, prompted bool
 		if trait, ok := any(node).(*Trait); ok {
 			return trait.pointsRange(nil, view)
 		}
-	case picker.Value:
+	case picker.Value, picker.Weight:
 		if eqp, ok := any(node).(*Equipment); ok {
-			return equipmentValue().seenAs(view).rangeOf(eqp, eqp.Quantity)
-		}
-	case picker.Weight:
-		if eqp, ok := any(node).(*Equipment); ok {
-			units := SheetSettingsFor(EntityFromNode(node)).DefaultWeightUnits
-			return equipmentWeight(false, units).seenAs(view).rangeOf(eqp, eqp.Quantity)
+			return pickerEquipmentMeasure(eqp, pickerType).seenAs(view).rangeOf(eqp, eqp.Quantity)
 		}
 	default:
 	}
 	return NumericRangeOf(0)
+}
+
+// PickerMeasureRangeWithContents is PickerMeasureRange for equipment toward a choice made by value or weight, with what
+// a single one of it holds, before any reduction it makes, taken to be contents. Anything else counts as nothing.
+func PickerMeasureRangeWithContents[T Node[T]](node T, pickerType picker.Type, prompted bool, taken func(T, bool) bool, contents NumericRange) NumericRange {
+	eqp, ok := any(node).(*Equipment)
+	if !ok || eqp == nil || eqp.Quantity <= 0 || (pickerType != picker.Value && pickerType != picker.Weight) {
+		return NumericRangeOf(0)
+	}
+	view := promptedView(taken)
+	view.prompted = prompted
+	return scaleNumericRange(pickerEquipmentMeasure(eqp, pickerType).seenAs(view).oneOf(eqp, &contents), eqp.Quantity)
+}
+
+// pickerEquipmentMeasure returns the measure of the equipment toward a choice made by value or weight.
+func pickerEquipmentMeasure(eqp *Equipment, pickerType picker.Type) equipmentMeasure {
+	if pickerType == picker.Value {
+		return equipmentValue()
+	}
+	return equipmentWeight(false, SheetSettingsFor(EntityFromNode(eqp)).DefaultWeightUnits)
 }

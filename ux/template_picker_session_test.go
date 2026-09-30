@@ -835,3 +835,40 @@ func TestPickerSessionUnansweredChoiceCostsLive(t *testing.T) {
 	c.Equal("20~40 / 40", s.pillText(root))
 	c.Equal(pickerOpen, s.state(root))
 }
+
+// TestPickerSessionPhysicalContainerHoldingAChoice verifies that a physical container picked from a choice comes to its
+// own value and weight plus what is picked inside it, less the weight it takes off what it holds.
+func TestPickerSessionPhysicalContainerHoldingAChoice(t *testing.T) {
+	c := check.New(t)
+	root := gurps.NewEquipmentChoiceContainer(nil, nil)
+	root.TemplatePicker.Type = picker.Value
+	root.TemplatePicker.Qualifier.Compare = criteria.EqualsNumber
+	root.TemplatePicker.Qualifier.Qualifier = fxp.FromInteger(70)
+	backpack := gurps.NewEquipment(nil, root, true)
+	backpack.BaseValue = "50"
+	backpack.BaseWeight = "2 lb"
+	reduction := gurps.NewContainedWeightReduction()
+	reduction.Reduction = "50%"
+	backpack.Features = gurps.Features{reduction}
+	root.Children = []*gurps.Equipment{backpack}
+	sub := gurps.NewEquipmentChoiceContainer(nil, backpack)
+	sub.TemplatePicker.Type = picker.Count
+	sub.TemplatePicker.Qualifier.Compare = criteria.EqualsNumber
+	sub.TemplatePicker.Qualifier.Qualifier = fxp.One
+	backpack.Children = []*gurps.Equipment{sub}
+	for _, one := range [][2]string{{"10", "4 lb"}, {"20", "8 lb"}} {
+		option := gurps.NewEquipment(nil, sub, false)
+		option.BaseValue, option.BaseWeight = one[0], one[1]
+		sub.Children = append(sub.Children, option)
+	}
+	s := newPickerSession(promptOperation{}, []*gurps.Equipment{root}, true)
+	s.chosen[backpack] = true
+	c.Equal("$60~70 / $70", s.pillText(root))
+	s.chosen[sub.Children[1]], s.pickerAnswered[sub] = true, true
+	c.Equal("$70 / $70", s.pillText(root))
+	c.Equal(pickerOK, s.state(root))
+	c.Equal("6 lb", formatPickerTotal(backpack, picker.Weight, s.actual(backpack, picker.Weight)))
+	backpack.Quantity = fxp.Two
+	c.Equal("$140", formatPickerTotal(backpack, picker.Value, s.actual(backpack, picker.Value)))
+	c.Equal("12 lb", formatPickerTotal(backpack, picker.Weight, s.actual(backpack, picker.Weight)))
+}
