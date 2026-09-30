@@ -111,6 +111,33 @@ func TestPickerDialogFitsItsContent(t *testing.T) {
 	})
 }
 
+// Text a row gains once the dialog is up, as what was picked from a choice, is shown whole.
+func TestPickerRowTextIsNeverCut(t *testing.T) {
+	c := check.New(t)
+	screen, _ := startHeadlessWorkspace(t, c)
+	s, n := newKnightSession()
+	n["fit2"].Name = "Very Fit"
+	screen.Do(func() {
+		dialog, refresh := s.newPickerDialog(n["root"], 0)
+		c.NotNil(dialog, "the dialog must be made")
+		if dialog == nil {
+			return
+		}
+		wnd := dialog.Window()
+		defer wnd.Dispose()
+		wnd.ValidateLayout()
+		choose(s, n, "ea", "ep", "fit", "fit2", "luck")
+		s.pickerAnswered[n["fit"]] = true
+		refresh()
+		wnd.ValidateLayout()
+		for _, label := range panelsOfType[*unison.Label](wnd.Content()) {
+			_, pref, _ := label.Sizes(geom.Size{})
+			c.True(label.FrameRect().Width >= pref.Width, "%q is cut: %v of %v", label.String(), label.FrameRect().Width,
+				pref.Width)
+		}
+	})
+}
+
 // A picker too tall for the display keeps its place in the list when a click refreshes it.
 func TestPickerDialogKeepsItsScrollPosition(t *testing.T) {
 	c := check.New(t)

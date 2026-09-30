@@ -724,7 +724,8 @@ func (s *pickerSession[T]) addPickerRow(list *pickerList, row T, disclosure *uni
 		if choose != nil {
 			s.updateChooseButton(choose, row)
 		}
-		checkBox.MarkForLayoutRecursivelyUpward()
+		// From the text, so its labels are laid out again when it keeps its size, rather than cut.
+		text.MarkForLayoutRecursivelyUpward()
 		checkBox.MarkForRedraw()
 	}
 }
