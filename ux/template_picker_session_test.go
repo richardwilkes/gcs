@@ -907,3 +907,50 @@ func TestPickerSessionTroubleInsidePlainContainer(t *testing.T) {
 		c.Equal([]*gurps.Trait{pack}, s.troubled(root))
 	}
 }
+
+// TestPickerSessionChooseWithinSkipsAnsweredModifiers verifies that choosing within a row again goes straight to a
+// choice inside it still to be made once its modifiers are answered, and asks everything again once nothing is left.
+func TestPickerSessionChooseWithinSkipsAnsweredModifiers(t *testing.T) {
+	c := check.New(t)
+	var asked []string
+	swapForTest(t, &promptForTraitModifiers, func(info *modifierPromptInfo, mods []*gurps.TraitModifier) (changed, canceled bool) {
+		asked = append(asked, info.name)
+		mods[0].Children[1].SetEnabled(true)
+		return false, false
+	})
+	root := gurps.NewTrait(nil, nil, true)
+	root.TemplatePicker.Type = picker.Count
+	root.TemplatePicker.Qualifier.Compare = criteria.EqualsNumber
+	root.TemplatePicker.Qualifier.Qualifier = fxp.One
+	pack := gurps.NewTrait(nil, root, true)
+	pack.Name = "pack"
+	pack.AddModifiers(newTraitModifierChoiceFor(nil, true, []string{"+1", "+3"}))
+	root.Children = []*gurps.Trait{pack}
+	sub := gurps.NewTrait(nil, pack, true)
+	sub.Name = "sub"
+	sub.TemplatePicker.Type = picker.Count
+	sub.TemplatePicker.Qualifier.Compare = criteria.EqualsNumber
+	sub.TemplatePicker.Qualifier.Qualifier = fxp.One
+	pack.Children = []*gurps.Trait{sub}
+	option := gurps.NewTrait(nil, sub, false)
+	sub.Children = []*gurps.Trait{option}
+	s := newPickerSession(promptOperation{}, []*gurps.Trait{root}, true)
+	response := unison.ModalResponseCancel
+	s.runPicker = func(row *gurps.Trait, _ int) int {
+		asked = append(asked, row.Name)
+		if response == unison.ModalResponseOK {
+			s.chosen[option] = true
+		}
+		return response
+	}
+	s.chooseWithin(pack, 0)
+	c.Equal([]string{"pack", "sub"}, asked)
+	c.True(s.modsAnswered[pack], "canceling a later popup keeps what an earlier one answered")
+	asked, response = nil, unison.ModalResponseOK
+	s.chooseWithin(pack, 0)
+	c.Equal([]string{"sub"}, asked, "the answered modifiers aren't asked again")
+	c.True(s.resolved(pack))
+	asked = nil
+	s.chooseWithin(pack, 0)
+	c.Equal([]string{"pack", "sub"}, asked, "with nothing left, everything is asked again")
+}
