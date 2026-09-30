@@ -148,15 +148,18 @@ func (s *pickerSession[T]) taken(row T) bool {
 	return s.modsAnswered[row] || s.above[row]
 }
 
-// modTargets returns the row and the rows below it that have modifiers to ask about.
+// modTargets returns the row and the rows below it that have modifiers to ask about, leaving out a choice below it,
+// whose options are answered in its own dialog.
 func (s *pickerSession[T]) modTargets(row T) []T {
 	var targets []T
-	gurps.Traverse(func(one T) bool {
-		if s.modPrompts[one] != nil {
-			targets = append(targets, one)
+	if s.modPrompts[row] != nil {
+		targets = append(targets, row)
+	}
+	for _, child := range row.NodeChildren() {
+		if !gurps.IsTemplateChoiceContainer(child) {
+			targets = append(targets, s.modTargets(child)...)
 		}
-		return false
-	}, false, false, row)
+	}
 	return targets
 }
 
@@ -360,7 +363,7 @@ func (s *pickerSession[T]) resolved(row T) bool {
 	if gurps.IsTemplateChoiceContainer(row) {
 		return s.state(row) == pickerOK
 	}
-	return !gurps.HasOpenModifierChoice(row, s.prompted, s.taken)
+	return !s.modsOpen(row)
 }
 
 // pillText returns what the container's picks come to against its target, as in "40~70 / 60" or "65 / ≥60".

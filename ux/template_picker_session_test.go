@@ -303,6 +303,31 @@ func TestPickerSessionInheritedModifierChoice(t *testing.T) {
 	c.Equal([]*gurps.Trait{outer}, modifierTargets([]*gurps.Trait{outer}, true, s.modsAnswered))
 }
 
+// TestPickerSessionPlainContainerModifiers verifies that a plain container picked from a choice is open while a row
+// below it has a mandatory modifier choice to make, and that its prompt leaves out a choice below it.
+func TestPickerSessionPlainContainerModifiers(t *testing.T) {
+	c := check.New(t)
+	root := gurps.NewTrait(nil, nil, true)
+	root.TemplatePicker.Type = picker.Count
+	root.TemplatePicker.Qualifier.Qualifier = fxp.One
+	pack := gurps.NewTrait(nil, root, true)
+	root.Children = []*gurps.Trait{pack}
+	open := gurps.NewTrait(nil, pack, false)
+	open.AddModifiers(newTraitModifierChoiceFor(nil, true, []string{"+1", "+3"}))
+	sub := gurps.NewTrait(nil, pack, true)
+	sub.TemplatePicker.Type = picker.Count
+	sub.TemplatePicker.Qualifier.Qualifier = fxp.One
+	pack.Children = []*gurps.Trait{open, sub}
+	later := gurps.NewTrait(nil, sub, false)
+	later.AddModifiers(newTraitModifierChoiceFor(nil, true, []string{"+1", "+3"}))
+	sub.Children = []*gurps.Trait{later}
+	s := newPickerSession(promptOperation{}, []*gurps.Trait{root}, true)
+	s.chosen[pack] = true
+	c.Equal([]*gurps.Trait{open}, s.modTargets(pack), "a choice below is answered in its own dialog")
+	c.False(s.resolved(pack), "a mandatory pick is still to be made below it")
+	c.Equal(pickerOpen, s.state(root))
+}
+
 // TestPickerSessionChoosesEquipmentModifiers verifies that equipment modifiers can be chosen from the picker too, the
 // prompt showing the value and weight.
 func TestPickerSessionChoosesEquipmentModifiers(t *testing.T) {
