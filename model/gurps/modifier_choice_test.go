@@ -302,6 +302,22 @@ func TestTraitContainerChoiceIsCostedAsAWhole(t *testing.T) {
 	c.Equal("6~16", inner.PointsRange(nil).String())
 }
 
+// TestTraitContainerChoiceCountsATemplateChoiceInside verifies that a container's own modifier choice leaves a template
+// choice inside counting as the total of its options, as it does without one.
+func TestTraitContainerChoiceCountsATemplateChoiceInside(t *testing.T) {
+	c := check.New(t)
+	group := NewTrait(nil, nil, true)
+	pick := NewTrait(nil, group, true)
+	pick.TemplatePicker = newTemplateChoicePicker()
+	group.Children = append(group.Children, pick)
+	newTraitWithPoints(pick, 10)
+	newTraitWithPoints(pick, 20)
+	newTraitWithPoints(group, 5)
+	c.Equal(fxp.FromInteger(35), group.AdjustedPoints(nil))
+	group.AddModifiers(newTraitModifierChoiceWith(true, "+0", "+0"))
+	c.Equal(fxp.FromInteger(35), group.AdjustedPoints(nil))
+}
+
 // TestTraitContainerChoicesPastTheCap verifies that the ways of making the open choices of a container and those of a
 // trait inside it multiply together, and that past the cap every choice within the container counts as made with the
 // picks it has, even for a trait inside that would be within the cap alone.

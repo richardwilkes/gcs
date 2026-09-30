@@ -660,39 +660,50 @@ func (t *Trait) ResolvedMaxLevels() fxp.Int {
 // is accepted so that every node's cost can be asked for the same way, but nothing here ever fills it: no feature
 // adds points to a trait the way one can to a skill or a spell, so there are no sources to name.
 func (t *Trait) AdjustedPoints(_ *xbytes.InsertBuffer) fxp.Int {
+	return t.adjustedPoints(nil)
+}
+
+// adjustedPoints is AdjustedPoints with each modifier choice fixed holds a pick for counted as made with it (see
+// pointsRange).
+func (t *Trait) adjustedPoints(fixed modifierChoicePicks[*TraitModifier]) fxp.Int {
 	if t.EffectivelyDisabled() {
 		return 0
 	}
 	if !t.Container() {
 		// An open mandatory modifier choice counts as the least it may come to (see PointsRange).
-		if r, open := t.modifierChoicePointsRange(nil, choiceView{}); open {
+		if r, open := t.modifierChoicePointsRange(fixed, choiceView{}); open {
 			return *r.Min
 		}
 		return t.pointsWith(t.AllModifiers())
 	}
 	if !t.TemplatePicker.IsZero() {
 		// See pickerContainerPoints for what a container presenting a choice is worth.
-		return pickerContainerPoints(t.TemplatePicker, t.Children)
-	}
-	// Likewise for open choices the traits inside inherit, which pointsRange makes for all of them at once. Past the
-	// cap, fixed holds the picks as they stand, which must be counted the same way.
-	if choices, fixed := t.containerModifierChoices(nil, choiceView{}); len(choices) != 0 || len(fixed) != 0 {
-		if r := t.pointsRange(nil, choiceView{}); r.Min != nil {
-			return *r.Min
+		if value, settled := t.pointsRange(fixed, choiceView{}).Settled(); settled {
+			return value
 		}
+		var total fxp.Int
+		for _, one := range t.Children {
+			total += one.adjustedPoints(fixed)
+		}
+		return total
 	}
-	if t.ContainerType == container.AlternativeAbilities {
+	// Open choices the traits inside inherit are made for all of them at once, and the container counts as the least of
+	// those ways. Past the cap, fixed holds the picks as they stand.
+	choices, fixed := t.containerModifierChoices(fixed, choiceView{})
+	least := fxp.Max
+	eachModifierChoicePick(choices, fixed, func(picks modifierChoicePicks[*TraitModifier]) {
 		values := make([]fxp.Int, len(t.Children))
+		var points fxp.Int
 		for i, one := range t.Children {
-			values[i] = one.AdjustedPoints(nil)
+			values[i] = one.adjustedPoints(picks)
+			points += values[i]
 		}
-		return alternativeAbilitiesPoints(values, t.ResolvedAlternativeSlots(), t.RoundCostDown)
-	}
-	var points fxp.Int
-	for _, one := range t.Children {
-		points += one.AdjustedPoints(nil)
-	}
-	return points
+		if t.ContainerType == container.AlternativeAbilities {
+			points = alternativeAbilitiesPoints(values, t.ResolvedAlternativeSlots(), t.RoundCostDown)
+		}
+		least = min(least, points)
+	})
+	return least
 }
 
 // PointsRange returns the span of point costs this trait may end up being worth, once every choice it or anything
