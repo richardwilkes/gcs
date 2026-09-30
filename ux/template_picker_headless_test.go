@@ -178,11 +178,15 @@ func TestPickerModifierPromptOverride(t *testing.T) {
 	c.True(res.Modifiers[0].Children[1].Enabled())
 }
 
-// An organizing group in the picker is a heading with a chevron that shows or hides its options, and no checkbox.
+// An organizing group in the picker is a heading with a chevron that shows or hides its options, and no checkbox. Its
+// page reference lines up with theirs.
 func TestPickerOrganizingGroupHeaders(t *testing.T) {
 	c := check.New(t)
 	screen, wnd := startHeadlessWorkspace(t, c)
 	s, n := newOrganizedSession()
+	for _, name := range []string{"martial", "inner", "fear", "status", "luck"} {
+		n[name].PageRef = "B10"
+	}
 	done := false
 	c.True(screen.Post(func() {
 		s.showPicker(n["root"], 0)
@@ -210,6 +214,7 @@ func TestPickerOrganizingGroupHeaders(t *testing.T) {
 		boxes = panelsOfType[*unison.CheckBox](dialogWnd.Content())
 		list = boxes[0].Parent().Parent()
 		cells = slices.Clone(list.Children())
+		checkPickerRowsAligned(c, list, 5)
 	})
 	c.Equal(3, len(chevrons), "each organizing group is a header")
 	c.Equal(5, len(boxes), "fear, honors, rank, status and luck are options")
@@ -240,7 +245,9 @@ func TestPickerOrganizingGroupHeaders(t *testing.T) {
 	if focus.Accessibility.Role == role.Heading {
 		tab()
 	}
-	c.Equal(boxes[0].AsPanel(), focus, "Tab goes from the chevron to the first option beneath it")
+	c.Equal(role.Link, focus.Accessibility.Role, "Tab goes from the chevron to the header's page reference")
+	tab()
+	c.Equal(boxes[0].AsPanel(), focus, "and then to the first option beneath it")
 
 	screen.Do(chevrons["martial"].RequestFocus)
 	screen.KeyPress(unison.KeySpace, mod.None)
@@ -269,7 +276,7 @@ func TestPickerOrganizingGroupHeaders(t *testing.T) {
 }
 
 // A container picked as a unit keeps its checkbox and cost, and its chevron shows what it holds as rows with nothing to
-// pick, widening the dialog to fit them.
+// pick, widening the dialog to fit them, their page references lined up with those of the options.
 func TestPickerUnitContainerInformationRows(t *testing.T) {
 	c := check.New(t)
 	screen, _ := startHeadlessWorkspace(t, c)
@@ -284,6 +291,10 @@ func TestPickerUnitContainerInformationRows(t *testing.T) {
 	const long = "Sword of the Realm, Forged in the Fires Beneath the Mountain for the Order's First Champion"
 	kit := trait("Kit", 0, trait(long, 5), trait("Pack", 0, trait("Rope", 1)))
 	choice := trait("Choice", 0, kit, trait("Luck", 15))
+	gurps.Traverse(func(one *gurps.Trait) bool {
+		one.PageRef = "B10"
+		return false
+	}, false, false, kit, choice.Children[1])
 	choice.TemplatePicker.Type = picker.Count
 	choice.TemplatePicker.Qualifier.Qualifier = fxp.One
 	s := newPickerSession(promptOperation{}, []*gurps.Trait{choice}, false)
@@ -307,6 +318,7 @@ func TestPickerUnitContainerInformationRows(t *testing.T) {
 		width := wnd.ContentRect().Width
 		chevron.Click()
 		wnd.ValidateLayout()
+		checkPickerRowsAligned(c, row.Parent(), 5)
 		texts := labelTexts(wnd.Content())
 		c.True(slices.Contains(texts, long) && slices.Contains(texts, "Pack") && slices.Contains(texts, "Rope"),
 			"opening it shows what it holds, however deep")
@@ -314,5 +326,34 @@ func TestPickerUnitContainerInformationRows(t *testing.T) {
 		_, pref, _ := wnd.Content().Sizes(geom.Size{})
 		c.True(wnd.ContentRect().Width > width, "the dialog widens")
 		c.True(pref.Width <= wnd.ContentRect().Width, "to fit them")
+		cells := slices.Clone(row.Parent().Children())
+		chevron.Click()
+		c.False(slices.Contains(labelTexts(wnd.Content()), "Rope"), "closing it hides them again")
+		chevron.Click()
+		c.Equal(cells, row.Parent().Children(), "and opening it puts every cell back in its place")
 	})
+}
+
+// checkPickerRowsAligned checks that every row of the picker's list has a cell in each of its columns, none spanning
+// more, and that it shows want page references, all alike, lined up with one another.
+func checkPickerRowsAligned(c check.Checker, list *unison.Panel, want int) {
+	layout, ok := list.Layout().(*unison.FlexLayout)
+	c.True(ok, "the list is laid out in columns")
+	if !ok {
+		return
+	}
+	cells := list.Children()
+	c.Equal(0, len(cells)%layout.Columns, "every row has a cell in each column")
+	for _, cell := range cells {
+		if data, isFlex := cell.LayoutData().(*unison.FlexLayoutData); isFlex {
+			c.True(data.HSpan <= 1, "no cell spans columns")
+		}
+	}
+	list.ValidateLayout()
+	links := panelsMatching(list, func(p *unison.Panel) bool { return p.Accessibility.Role == role.Link })
+	c.Equal(want, len(links), "each row shown has its page reference")
+	for _, link := range links[1:] {
+		c.Equal(links[0].RectTo(links[0].ContentRect(false), list).X, link.RectTo(link.ContentRect(false), list).X,
+			"the page references line up")
+	}
 }

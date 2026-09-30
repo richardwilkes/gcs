@@ -354,7 +354,7 @@ func addPickerHeader[T gurps.Node[T]](list *pickerList, group T, within *pickerS
 	name.SetTitle(group.String())
 	name.Accessibility.Role = role.Heading
 	name.Accessibility.Level = indent + 1
-	addPickerSpanningRow(list, group, indent, newPickerDisclosure(list, sec, group.String(), name.Font), name)
+	addPickerNameRow(list, group, indent, newPickerDisclosure(list, sec, group.String(), name.Font), name)
 	return sec
 }
 
@@ -365,15 +365,15 @@ func addPickerInfoRows[T gurps.Node[T]](list *pickerList, rows []T, sec *pickerS
 		from := len(list.panel.Children())
 		name := unison.NewLabel()
 		name.SetTitle(row.String())
-		addPickerSpanningRow(list, row, indent, name)
+		addPickerNameRow(list, row, indent, name)
 		list.claim(from, sec)
 		addPickerInfoRows(list, row.NodeChildren(), sec, indent+1)
 	}
 }
 
-// addPickerSpanningRow adds a row spanning the list's columns, indent levels in, holding the panels followed by the
-// row's page reference.
-func addPickerSpanningRow[T gurps.Node[T]](list *pickerList, row T, indent int, panels ...unison.Paneler) {
+// addPickerNameRow adds a row to the list, indent levels in, holding the panels followed by the row's page reference in
+// the list's first column, so the reference lines up with those of the options, and nothing in the rest.
+func addPickerNameRow[T gurps.Node[T]](list *pickerList, row T, indent int, panels ...unison.Paneler) {
 	if link := newPickerPageLink(pickerRowPageRef(row)); link != nil {
 		panels = append(panels, link)
 	}
@@ -383,7 +383,6 @@ func addPickerSpanningRow[T gurps.Node[T]](list *pickerList, row T, indent int, 
 		HSpacing: unison.StdHSpacing,
 	})
 	panel.SetLayoutData(&unison.FlexLayoutData{
-		HSpan:  list.columns,
 		HAlign: align.Fill,
 		HGrab:  true,
 	})
@@ -392,6 +391,9 @@ func addPickerSpanningRow[T gurps.Node[T]](list *pickerList, row T, indent int, 
 		panel.AddChild(one)
 	}
 	list.panel.AddChild(panel)
+	for range list.columns - 1 {
+		list.panel.AddChild(unison.NewPanel())
+	}
 }
 
 // newPickerDisclosure returns the chevron that shows or hides the section of the list, named for what it holds. Space
