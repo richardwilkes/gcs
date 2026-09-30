@@ -345,3 +345,18 @@ func TestAltDropOfTheWrongKindOfModifierIsIgnored(t *testing.T) {
 	c.Equal(1, len(trait.Modifiers), "trait modifiers must still be attached to a trait")
 	c.Equal(1, len(item.Modifiers), "equipment modifiers must still be attached to equipment")
 }
+
+// TestModifierSelectionCheckBoxReportsChange verifies that clicking a plain modifier's check box updates the prompt, as
+// picking a choice's option does, so the cost shown follows it.
+func TestModifierSelectionCheckBoxReportsChange(t *testing.T) {
+	c := check.New(t)
+	plain := gurps.NewTraitModifier(nil, nil, false)
+	plain.Name = "Plain"
+	selection := newModifierSelection([]*gurps.TraitModifier{plain}, true, true)
+	changes := 0
+	selection.onChange = func() { changes++ }
+	for box := range selection.boxes {
+		box.Click()
+	}
+	c.Equal(1, changes)
+}

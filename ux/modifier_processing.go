@@ -338,6 +338,7 @@ func newModifierSelection[T gurps.Node[T]](modifiers []T, requirePicks, italicNa
 		cb.Font = unison.DefaultMarkdownTheme.Font
 		cb.Accessibility.Name = gm.NameWithReplacements()
 		cb.State = check.FromBool(gm.Enabled())
+		cb.ClickCallback = changed
 		s.boxes[cb] = gm
 		s.addRow(gm.Depth(), text, cb, nil)
 		return false
