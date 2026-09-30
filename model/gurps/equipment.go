@@ -49,7 +49,6 @@ var (
 	_ TemplatePickerProvider    = &Equipment{}
 	_ templateChoiceConvertible = &Equipment{}
 	_ groupConvertible          = &Equipment{}
-	_ modifierTaker             = &Equipment{}
 
 	_ TemplatePickerProvider = &EquipmentData{}
 	_ TemplatePickerProvider = &EquipmentEditData{}
@@ -185,21 +184,10 @@ func NewEquipmentChoiceContainer(owner DataOwner, parent *Equipment) *Equipment 
 }
 
 // IsGroup returns true if this is a group, that is, a container that only organizes the equipment it holds. A template
-// choice container for equipment is always a group.
+// choice container for equipment is always a group. A group keeps nothing of its own: no quantity, value, weight or
+// modifiers.
 func (e *Equipment) IsGroup() bool {
 	return e.Container() && e.ContainerType == eqcontainer.Group
-}
-
-// canTakeModifiers implements modifierTaker. A group keeps nothing of its own, modifiers included.
-func (e *Equipment) canTakeModifiers() bool {
-	return !e.IsGroup()
-}
-
-// HasOwnQuantity returns true if this equipment has a quantity of its own, one that may be shown and changed. A group
-// has none: its quantity is always one. Everything that shows, changes or depends on changing the quantity asks this,
-// so that none of them can disagree about which equipment has one.
-func (e *Equipment) HasOwnQuantity() bool {
-	return !e.IsGroup()
 }
 
 // IsPhysicalContainer returns true if this is a container that is itself a piece of equipment, such as a backpack,
@@ -569,7 +557,7 @@ func (e *Equipment) CellData(columnID int, data *CellData) {
 			data.Dim = true
 		}
 	case EquipmentQuantityColumn:
-		if !e.HasOwnQuantity() {
+		if e.IsGroup() {
 			break
 		}
 		data.Type = cell.Text

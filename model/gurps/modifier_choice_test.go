@@ -459,15 +459,18 @@ func TestPromptedRanges(t *testing.T) {
 		return trait
 	}
 	all := func(*Trait) bool { return true }
+	prompted := func(trait *Trait, taken func(*Trait) bool) NumericRange {
+		return PickerMeasureRange(trait, picker.Points, true, taken)
+	}
 	for _, owner := range []DataOwner{nil, entity} {
 		trait := newTrait(owner)
-		c.Equal("15~20", trait.PromptedPointsRange(nil).String())
-		c.Equal("15~20", trait.PromptedPointsRange(all).String(), "a choice with no pick is still open when taken")
+		c.Equal("15~20", prompted(trait, nil).String())
+		c.Equal("15~20", prompted(trait, all).String(), "a choice with no pick is still open when taken")
 		trait.Modifiers[0].Children[1].SetEnabled(true)
-		c.Equal("15~20", trait.PromptedPointsRange(nil).String(), "a pick is only a default until asked")
-		c.Equal("20", trait.PromptedPointsRange(all).String(), "a taken trait keeps its pick")
+		c.Equal("15~20", prompted(trait, nil).String(), "a pick is only a default until asked")
+		c.Equal("20", prompted(trait, all).String(), "a taken trait keeps its pick")
 		trait.Preconfigured = true
-		c.Equal("20", trait.PromptedPointsRange(nil).String(), "as does a preconfigured one")
+		c.Equal("20", prompted(trait, nil).String(), "as does a preconfigured one")
 	}
 	c.Equal("10", newTrait(entity).PointsRange(nil).String(), "on a sheet the choice counts as made")
 
@@ -477,13 +480,13 @@ func TestPromptedRanges(t *testing.T) {
 	parent.Modifiers[0].Children[0].SetEnabled(true)
 	child := newTraitWithPoints(parent, 10)
 	child.SetDataOwner(entity)
-	c.Equal("11~13", parent.PromptedPointsRange(nil).String())
-	c.Equal("11~13", child.PromptedPointsRange(func(one *Trait) bool { return one == child }).String())
-	c.Equal("11", child.PromptedPointsRange(func(one *Trait) bool { return one == parent }).String())
+	c.Equal("11~13", prompted(parent, nil).String())
+	c.Equal("11~13", prompted(child, func(one *Trait) bool { return one == child }).String())
+	c.Equal("11", prompted(child, func(one *Trait) bool { return one == parent }).String())
 	parent.Modifiers[0].Children[0].SetEnabled(false)
-	c.Equal("10", child.PromptedPointsRange(func(one *Trait) bool { return one == parent }).String(),
+	c.Equal("10", prompted(child, func(one *Trait) bool { return one == parent }).String(),
 		"the container answers it for the trait, picked or not")
-	c.Equal("11~13", parent.PromptedPointsRange(func(one *Trait) bool { return one == parent }).String())
+	c.Equal("11~13", prompted(parent, func(one *Trait) bool { return one == parent }).String())
 
 	taken := func(*Equipment) bool { return true }
 	for _, owner := range []DataOwner{nil, entity} {
@@ -493,10 +496,10 @@ func TestPromptedRanges(t *testing.T) {
 		choice := newEquipmentModifierChoiceWith([2]string{"+50", "+1 lb"}, [2]string{"+100", "+2 lb"})
 		eqp.AddModifiers(choice)
 		choice.Children[1].SetEnabled(true)
-		c.Equal("300~400", FormatValueRange(eqp.PromptedExtendedValueRange(nil), fxp.Int.Comma))
-		c.Equal("8~10 lb", FormatWeightRange(eqp.PromptedExtendedWeightRange(fxp.Pound, nil), fxp.Pound.Format))
-		c.Equal("400", FormatValueRange(eqp.PromptedExtendedValueRange(taken), fxp.Int.Comma))
-		c.Equal("10 lb", FormatWeightRange(eqp.PromptedExtendedWeightRange(fxp.Pound, taken), fxp.Pound.Format))
+		c.Equal("300~400", FormatValueRange(PickerMeasureRange(eqp, picker.Value, true, nil), fxp.Int.Comma))
+		c.Equal("8~10 lb", FormatWeightRange(PickerMeasureRange(eqp, picker.Weight, true, nil), fxp.Pound.Format))
+		c.Equal("400", FormatValueRange(PickerMeasureRange(eqp, picker.Value, true, taken), fxp.Int.Comma))
+		c.Equal("10 lb", FormatWeightRange(PickerMeasureRange(eqp, picker.Weight, true, taken), fxp.Pound.Format))
 		if owner != nil {
 			c.Equal("400", FormatValueRange(eqp.ExtendedValueRange(), fxp.Int.Comma), "on a sheet the pick counts")
 		}

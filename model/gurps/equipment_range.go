@@ -29,21 +29,10 @@ func (e *Equipment) ExtendedValueRange() NumericRange {
 	return equipmentValue().rangeOf(e, e.Quantity)
 }
 
-// PromptedExtendedValueRange is ExtendedValueRange as the modifier prompt will see the equipment, even on a sheet.
-// Equipment taken (which may be nil) reports counts as preconfigured.
-func (e *Equipment) PromptedExtendedValueRange(taken func(*Equipment) bool) NumericRange {
-	return equipmentValue().seenAs(promptedView(taken)).rangeOf(e, e.Quantity)
-}
-
 // ExtendedWeightRange returns the span of extended weights this equipment may end up having once every choice within
 // it has been made.
 func (e *Equipment) ExtendedWeightRange(defUnits fxp.WeightUnit) NumericRange {
 	return e.extendedWeightRange(false, defUnits)
-}
-
-// PromptedExtendedWeightRange is PromptedExtendedValueRange for weight.
-func (e *Equipment) PromptedExtendedWeightRange(defUnits fxp.WeightUnit, taken func(*Equipment) bool) NumericRange {
-	return equipmentWeight(false, defUnits).seenAs(promptedView(taken)).rangeOf(e, e.Quantity)
 }
 
 // extendedWeightRange is ExtendedWeightRange, counting only the weight that counts for skills when forSkills is true.
@@ -199,7 +188,7 @@ func (m equipmentMeasure) contentsOf(e *Equipment) NumericRange {
 	raisable := false
 	for i, one := range e.Children {
 		potential[i] = children[i]
-		if one.HasOwnQuantity() {
+		if !one.IsGroup() {
 			if unit := m.rangeOf(one, fxp.One); SignForNumericRanges(unit) != NumericRangeZero {
 				potential[i] = unit
 				raisable = true

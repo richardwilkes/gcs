@@ -561,15 +561,6 @@ func item(parent *Equipment, name, value, weight string) *Equipment {
 	return one
 }
 
-// TestEquipmentHasOwnQuantity verifies which equipment has a quantity of its own to show and change.
-func TestEquipmentHasOwnQuantity(t *testing.T) {
-	c := check.New(t)
-	c.True(NewEquipment(nil, nil, false).HasOwnQuantity())
-	c.True(NewEquipment(nil, nil, true).HasOwnQuantity(), "a physical container has a quantity")
-	c.False(NewEquipmentGroup(nil, nil).HasOwnQuantity(), "a group's quantity is always one")
-	c.False(NewEquipmentChoiceContainer(nil, nil).HasOwnQuantity(), "a choice is a group")
-}
-
 // TestEquipmentChoiceOptionWithNoQuantity verifies that an option starting out with a quantity of nothing still counts
 // as able to add to a choice made by value or weight, since its quantity may be raised while picking.
 func TestEquipmentChoiceOptionWithNoQuantity(t *testing.T) {

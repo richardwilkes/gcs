@@ -716,12 +716,6 @@ func (t *Trait) PointsRange(_ *xbytes.InsertBuffer) NumericRange {
 	return t.pointsRange(nil, choiceView{})
 }
 
-// PromptedPointsRange is PointsRange as the modifier prompt will see the trait, even on a sheet. A trait taken (which
-// may be nil) reports counts as preconfigured.
-func (t *Trait) PromptedPointsRange(taken func(*Trait) bool) NumericRange {
-	return t.pointsRange(nil, promptedView(taken))
-}
-
 // pointsRange is PointsRange seen as view says, with each modifier choice fixed holds a pick for counted as made with
 // it, as a container makes the choices among its modifiers for everything inside it.
 func (t *Trait) pointsRange(fixed modifierChoicePicks[*TraitModifier], view choiceView) NumericRange {

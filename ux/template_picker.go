@@ -334,7 +334,7 @@ func (s *pickerSession[T]) addPickerRow(parent *unison.Panel, row T, pt picker.T
 	case *gurps.Equipment:
 		// A choice made by value or weight may take more than one of an option, so its quantity may be set while
 		// picking, if it has one of its own to set.
-		if (pt == picker.Value || pt == picker.Weight) && actual.HasOwnQuantity() {
+		if (pt == picker.Value || pt == picker.Weight) && !actual.IsGroup() {
 			onClick = func() { pickerRowQuantityEditor(op, actual, &details, prompted, refresh) }
 			editTooltip = i18n.Text("Edit quantity")
 		}
@@ -482,7 +482,7 @@ func pickerRowDetails[T gurps.Node[T]](row T, prompted bool, taken func(T) bool)
 
 // pickerRowQuantity returns the quantity shown for an option, if it has one of its own.
 func pickerRowQuantity(eqp *gurps.Equipment) string {
-	if eqp.HasOwnQuantity() {
+	if !eqp.IsGroup() {
 		return eqp.Quantity.Comma()
 	}
 	return ""
