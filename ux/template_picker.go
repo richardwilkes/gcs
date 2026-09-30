@@ -12,6 +12,7 @@ package ux
 import (
 	"fmt"
 	"slices"
+	"time"
 
 	"github.com/richardwilkes/gcs/v5/model/fonts"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
@@ -455,8 +456,7 @@ func newPickerRowCell(checkBox *unison.CheckBox, disclosure *unison.Button, slot
 		rest.AddChild(disclosure)
 		columns++
 	case slot:
-		size := pickerDisclosureSize()
-		rest.AddChild(newPickerSpacer(geom.NewSize(size, size)))
+		rest.AddChild(newPickerSpacer(pickerDisclosureSize()))
 		columns++
 	}
 	rest.SetLayout(&unison.FlexLayout{
@@ -484,29 +484,47 @@ func pickerCheckBoxSize() geom.Size {
 	return size
 }
 
-// pickerDisclosureSize returns the width and height of the chevron that shows or hides a section of the picker's list.
-func pickerDisclosureSize() float32 {
+// pickerChevronSize returns the width and height of the chevron drawn in the button that shows or hides a section of
+// the picker's list.
+func pickerChevronSize() float32 {
 	return max(unison.DefaultCheckBoxTheme.Font.Baseline()-2, 6)
+}
+
+// pickerDisclosureSize returns the room the button that shows or hides a section of the picker's list takes: its
+// chevron with the margins around it, which also leave room for the outline it draws when it has the focus.
+func pickerDisclosureSize() geom.Size {
+	button, _ := newPickerChevronButton()
+	_, size, _ := button.Sizes(geom.Size{})
+	return size
+}
+
+// newPickerChevronButton returns a button that is nothing but a chevron, and the chevron, pointing right. Only the
+// chevron is sized, so the button's own margins leave room around it for the outline it draws when it has the focus.
+func newPickerChevronButton() (*unison.Button, *unison.DrawableSVG) {
+	button := unison.NewButton()
+	button.SetLayoutData(&unison.FlexLayoutData{
+		HAlign: align.Middle,
+		VAlign: align.Middle,
+	})
+	button.HideBase = true
+	button.HMargin = 0
+	button.VMargin = 0
+	size := pickerChevronSize()
+	chevron := &unison.DrawableSVG{
+		SVG:  unison.CircledChevronRightSVG,
+		Size: geom.NewSize(size, size),
+	}
+	button.Drawable = chevron
+	return button, chevron
 }
 
 // newPickerDisclosure returns the chevron that shows or hides the section of the list, named for what it holds. Like any
 // button, it toggles from the keyboard only on the control action key, Space, leaving Return to the dialog's default
 // button.
 func newPickerDisclosure(list *pickerList, sec *pickerSection, title string) *unison.Button {
-	button := unison.NewButton()
-	button.HideBase = true
+	button, chevron := newPickerChevronButton()
 	// The button is nothing but its chevron, so its tooltip is also what a screen reader calls it.
 	button.Tooltip = newWrappedTooltip(fmt.Sprintf(i18n.Text("Show or hide %s"), title))
-	size := pickerDisclosureSize()
-	chevron := &unison.DrawableSVG{
-		SVG:  unison.CircledChevronRightSVG,
-		Size: geom.NewSize(size, size),
-	}
-	// Every chevron takes the same room, so the names after them line up.
-	button.SetSizer(func(geom.Size) (minSize, prefSize, maxSize geom.Size) {
-		one := geom.NewSize(size, size)
-		return one, one, one
-	})
 	turn := func() {
 		chevron.RotationDegrees = 0
 		if sec.open {
@@ -514,8 +532,6 @@ func newPickerDisclosure(list *pickerList, sec *pickerSection, title string) *un
 		}
 	}
 	turn()
-	button.Drawable = chevron
-	button.SetLayoutData(&unison.FlexLayoutData{VAlign: align.Middle})
 	button.ClickCallback = func() {
 		sec.open = !sec.open
 		turn()
@@ -528,6 +544,7 @@ func newPickerDisclosure(list *pickerList, sec *pickerSection, title string) *un
 				button.RequestFocus()
 			}
 			growWindowToFit(wnd)
+			unison.InvokeTaskAfter(wnd.UpdateCursorNow, time.Millisecond)
 		}
 	}
 	// Described as a table's disclosure triangle is, which can also be asked to expand or collapse.
@@ -553,7 +570,7 @@ func newPickerDisclosure(list *pickerList, sec *pickerSection, title string) *un
 // pickerIndent returns how far past the checkbox a row of the picker's list is set at the indent level: the room a
 // chevron takes for each level.
 func pickerIndent(indent int) float32 {
-	return float32(indent) * (pickerDisclosureSize() + unison.StdHSpacing)
+	return float32(indent) * (pickerDisclosureSize().Width + unison.StdHSpacing)
 }
 
 // pickerRowPageRef returns the page reference of the row and the text to highlight on its page, if it has one.

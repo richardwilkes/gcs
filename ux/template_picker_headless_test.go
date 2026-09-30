@@ -672,6 +672,71 @@ func TestPickerOpeningGroupGrowsDialog(t *testing.T) {
 	})
 }
 
+// A chevron in the picker, on a header or a unit's row, gets all the room it asks for, inside its row, with room around
+// its icon for the outline it draws when it has the focus, so neither is cut off.
+func TestPickerChevronsAreNotClipped(t *testing.T) {
+	c := check.New(t)
+	screen, wnd := startHeadlessWorkspace(t, c)
+	choice := gurps.NewTrait(nil, nil, true)
+	choice.Name = "Choice"
+	choice.TemplatePicker.Type = picker.Count
+	choice.TemplatePicker.Qualifier.Qualifier = fxp.One
+	group := gurps.NewTrait(nil, choice, true)
+	group.Name = "Group"
+	group.PickSeparately = true
+	fear := gurps.NewTrait(nil, group, false)
+	fear.Name = "Fear"
+	group.Children = []*gurps.Trait{fear}
+	kit := gurps.NewTrait(nil, choice, true)
+	kit.Name = "Kit"
+	rope := gurps.NewTrait(nil, kit, false)
+	rope.Name = "Rope"
+	kit.Children = []*gurps.Trait{rope}
+	choice.Children = []*gurps.Trait{group, kit}
+	s := newPickerSession(promptOperation{}, []*gurps.Trait{choice}, false)
+	done := false
+	c.True(screen.Post(func() {
+		s.showPicker(choice, 0)
+		done = true
+	}))
+	screen.Sync()
+	dialogWnd, _ := modalDialog(t, screen, wnd)
+	var chevrons []*unison.Button
+	screen.Do(func() {
+		chevrons = panelsOfType[*unison.Button](panelsOfType[*unison.CheckBox](dialogWnd.Content())[0].Parent().Parent())
+	})
+	c.Equal(2, len(chevrons), "the group and the unit each have a chevron")
+	checkRoom := func(focused bool) {
+		for _, chevron := range chevrons {
+			if focused {
+				screen.Do(chevron.RequestFocus)
+			}
+			screen.Do(func() {
+				dialogWnd.ValidateLayout()
+				c.Equal(focused, chevron.Focused())
+				_, pref, _ := chevron.Sizes(geom.Size{})
+				frame := chevron.FrameRect()
+				c.True(frame.Width >= pref.Width && frame.Height >= pref.Height,
+					"a chevron gets the room it asks for: %v of %v", frame.Size, pref)
+				drawable := chevron.Drawable.LogicalSize()
+				// Focused, it draws a 2 point outline just inside its edges, so its icon needs that much room around it.
+				c.True(frame.Width-drawable.Width >= 4 && frame.Height-drawable.Height >= 4,
+					"a chevron leaves room around its icon for its focus outline: %v in %v", drawable, frame.Size)
+				for p := chevron.AsPanel(); p.Parent() != nil && p.Parent() != dialogWnd.Content(); p = p.Parent() {
+					within := p.Parent().ContentRect(true)
+					rect := p.FrameRect()
+					c.True(rect.X >= within.X && rect.Y >= within.Y && rect.Right() <= within.Right() &&
+						rect.Bottom() <= within.Bottom(), "a chevron is not cut off by what holds it: %v in %v", rect, within)
+				}
+			})
+		}
+	}
+	checkRoom(false)
+	checkRoom(true)
+	screen.KeyPress(unison.KeyEscape, mod.None)
+	c.True(done, "Escape closes the dialog")
+}
+
 // checkPickerRowsAligned checks that every row of the picker's list has a cell in each of its columns, none spanning
 // more, and that it shows want page references, all alike, lined up with one another.
 func checkPickerRowsAligned(c check.Checker, list *unison.Panel, want int) {
@@ -727,7 +792,7 @@ func checkPickerRowPlaces(c check.Checker, list *unison.Panel, places map[string
 			c.Equal(left, x(cells[i].Children()[0]), "every row leads with a checkbox, or room for one, in one column")
 		}
 	}
-	step := pickerDisclosureSize() + unison.StdHSpacing
+	step := pickerDisclosureSize().Width + unison.StdHSpacing
 	label := func(name string) *unison.Panel {
 		labels := panelsMatching(list, func(p *unison.Panel) bool {
 			one, isLabel := p.Self.(*unison.Label)
@@ -762,7 +827,7 @@ func checkPickerRowPlaces(c check.Checker, list *unison.Panel, places map[string
 		}
 		if chevron, isButton := rest.Children()[0].Self.(*unison.Button); isButton {
 			frame := chevron.RectTo(chevron.ContentRect(false), list)
-			c.Equal(pickerDisclosureSize(), frame.Width, "the chevron of %s takes the room left for one", name)
+			c.Equal(pickerDisclosureSize().Width, frame.Width, "the chevron of %s takes the room left for one", name)
 			c.Equal(x(one), frame.Right()+unison.StdHSpacing, "the chevron of %s is just before its name", name)
 		}
 	}
