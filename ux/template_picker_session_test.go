@@ -797,3 +797,41 @@ func TestPickerSessionOrganizingGroupsRollUp(t *testing.T) {
 	c.Equal("15", s.actual(outer, picker.Points).String())
 	c.True(s.resolved(outer))
 }
+
+// TestPickerSessionUnansweredChoiceCostsLive verifies that a choice with nothing picked is costed as the modifier choices
+// above it now stand, not as they stood when the dialog opened.
+func TestPickerSessionUnansweredChoiceCostsLive(t *testing.T) {
+	c := check.New(t)
+	swapForTest(t, &promptForTraitModifiers, func(_ *modifierPromptInfo, mods []*gurps.TraitModifier) (changed, canceled bool) {
+		mods[0].Children[0].SetEnabled(false)
+		mods[0].Children[1].SetEnabled(true)
+		return false, false
+	})
+	root := gurps.NewTrait(nil, nil, true)
+	root.TemplatePicker.Type = picker.Points
+	root.TemplatePicker.Qualifier.Compare = criteria.EqualsNumber
+	root.TemplatePicker.Qualifier.Qualifier = fxp.FromInteger(40)
+	pack := gurps.NewTrait(nil, root, true)
+	root.Children = []*gurps.Trait{pack}
+	choice := newTraitModifierChoiceFor(nil, true, []string{"+0%", "+100%"}, "+0%")
+	for _, option := range choice.Children {
+		option.CostAdj = option.Name
+	}
+	pack.AddModifiers(choice)
+	sub := gurps.NewTrait(nil, pack, true)
+	sub.TemplatePicker.Type = picker.Count
+	sub.TemplatePicker.Qualifier.Compare = criteria.EqualsNumber
+	sub.TemplatePicker.Qualifier.Qualifier = fxp.One
+	pack.Children = []*gurps.Trait{sub}
+	for _, points := range []int{10, 20} {
+		option := gurps.NewTrait(nil, sub, false)
+		option.BasePoints = fxp.FromInteger(points)
+		sub.Children = append(sub.Children, option)
+	}
+	s := newPickerSession(promptOperation{}, []*gurps.Trait{root}, true)
+	s.runPicker = func(*gurps.Trait, int) int { return unison.ModalResponseCancel }
+	s.chooseWithin(pack, 0)
+	c.True(s.modsAnswered[pack])
+	c.Equal("20~40 / 40", s.pillText(root))
+	c.Equal(pickerOpen, s.state(root))
+}

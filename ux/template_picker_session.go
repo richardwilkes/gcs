@@ -102,7 +102,7 @@ func newPickerSession[T gurps.Node[T]](op promptOperation, rows []T, prompted bo
 	}, false, false, rows...)
 	for _, row := range containers {
 		for _, kind := range []picker.Type{picker.Points, picker.Value, picker.Weight} {
-			s.expected[pickerMeasureKey[T]{row, kind}] = gurps.PickerMeasureRange(row, kind, prompted, s.taken)
+			s.expected[pickerMeasureKey[T]{row, kind}] = gurps.PickerMeasureRange(row, kind, prompted, s.byRules)
 		}
 	}
 	return s
@@ -173,6 +173,12 @@ func (s *pickerSession[T]) pickedFrom(container T) (revised []T, abort bool) {
 // inherited is true, else for the row itself.
 func (s *pickerSession[T]) taken(row T, inherited bool) bool {
 	return s.modsAnswered[row] || (inherited && s.above[row])
+}
+
+// byRules is taken for a choice costed by its rules alone: the rows inside take the choices of a container above them
+// as they stand, and nothing else counts as made.
+func (s *pickerSession[T]) byRules(row T, inherited bool) bool {
+	return inherited && s.above[row]
 }
 
 // modTargets returns the row and the rows below it that have modifiers to ask about, leaving out a choice below it,
@@ -348,11 +354,12 @@ func (s *pickerSession[T]) hasPicks(container T) bool {
 // picks come to (so a count overridden past its number costs every pick); any other, what its rules expect; a plain
 // container holding a choice, what its rows come to; anything else, its range with the modifiers answered so far.
 func (s *pickerSession[T]) actual(row T, kind picker.Type) gurps.NumericRange {
-	if kind != picker.Count && gurps.IsTemplateChoiceContainer(row) && (s.pickerAnswered[row] || s.hasPicks(row)) {
-		return s.total(row, kind)
-	}
-	if r, ok := s.expected[pickerMeasureKey[T]{row, kind}]; ok {
-		return r
+	if kind != picker.Count && gurps.IsTemplateChoiceContainer(row) {
+		if s.pickerAnswered[row] || s.hasPicks(row) {
+			return s.total(row, kind)
+		}
+		// Costed live, as a container above it may have been answered since.
+		return gurps.PickerMeasureRange(row, kind, s.prompted, s.byRules)
 	}
 	if kind != picker.Count && s.rollsUp(row) {
 		total := gurps.NumericRangeOf(0)
