@@ -549,10 +549,16 @@ func (s *pickerSession[T]) cost(row T, kind picker.Type) pickerText {
 	}
 	if expected, ok := s.expected[pickerMeasureKey[T]{row, kind}]; ok && s.hasPicks(row) {
 		text := pickerMeasureText(row, kind, expected)
+		above := actual.Min != nil && expected.Max != nil && *actual.Min > *expected.Max
+		below := actual.Max != nil && expected.Min != nil && *actual.Max < *expected.Min
+		if expected.Min != nil && *expected.Min < 0 && (expected.Max == nil || *expected.Max <= 0) {
+			// Negative points are judged by how many are expected, so nearer zero is under.
+			above, below = below, above
+		}
 		switch {
-		case actual.Min != nil && expected.Max != nil && *actual.Min > *expected.Max:
+		case above:
 			t.tip, t.state = fmt.Sprintf(i18n.Text("Over: expected %s."), text), pickerError
-		case actual.Max != nil && expected.Min != nil && *actual.Max < *expected.Min:
+		case below:
 			t.tip, t.state = fmt.Sprintf(i18n.Text("Under: expected %s."), text), pickerError
 		default:
 		}
@@ -568,18 +574,23 @@ func (s *pickerSession[T]) hint(container T) pickerText {
 	var parts []string
 	if s.ownState(container) == pickerError {
 		total, target := s.total(container, tp.Type), tp.Qualifier.Qualifier
+		overBy, short := i18n.Text("Over by %s."), i18n.Text("%s short.")
+		if target < 0 {
+			// Negative points are judged by how many are asked for, so nearer zero is short.
+			overBy, short = short, overBy
+		}
 		switch {
 		case tp.Type == picker.Count:
 			parts = append(parts, s.ruleMiss(container))
 		case total.Min != nil && *total.Min > target:
-			over := total.Add(gurps.NumericRangeOf(-target))
-			parts = append(parts, fmt.Sprintf(i18n.Text("Over by %s."), pickerMeasureText(container, tp.Type, over)))
+			above := total.Add(gurps.NumericRangeOf(-target))
+			parts = append(parts, fmt.Sprintf(overBy, pickerMeasureText(container, tp.Type, above)))
 		case total.Max != nil && *total.Max < target:
-			short := gurps.NumericRange{Min: new(target - *total.Max)}
+			below := gurps.NumericRange{Min: new(target - *total.Max)}
 			if total.Min != nil {
-				short.Max = new(target - *total.Min)
+				below.Max = new(target - *total.Min)
 			}
-			parts = append(parts, fmt.Sprintf(i18n.Text("%s short."), pickerMeasureText(container, tp.Type, short)))
+			parts = append(parts, fmt.Sprintf(short, pickerMeasureText(container, tp.Type, below)))
 		default:
 			parts = append(parts, s.ruleMiss(container))
 		}

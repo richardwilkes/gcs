@@ -703,6 +703,79 @@ func TestPickerSessionRowText(t *testing.T) {
 	}, s.hint(n["fit"]))
 }
 
+// newDisadvantageSession returns a session over "Pick -30 points worth" of a choice of "Pick -15 points worth" and
+// "Pick -5 points worth" of disadvantages, and its rows by name.
+func newDisadvantageSession() (s *pickerSession[*gurps.Trait], n map[string]*gurps.Trait) {
+	n = make(map[string]*gurps.Trait)
+	row := func(name string, points int, children ...*gurps.Trait) *gurps.Trait {
+		trait := gurps.NewTrait(nil, nil, len(children) != 0)
+		trait.Name = name
+		trait.BasePoints = fxp.FromInteger(points)
+		trait.Children = children
+		SetParents(children, trait)
+		n[name] = trait
+		return trait
+	}
+	pick := func(trait *gurps.Trait, pt picker.Type, qualifier int) *gurps.Trait {
+		trait.TemplatePicker.Type = pt
+		trait.TemplatePicker.Qualifier.Compare = criteria.EqualsNumber
+		trait.TemplatePicker.Qualifier.Qualifier = fxp.FromInteger(qualifier)
+		return trait
+	}
+	root := pick(row("root", 0,
+		pick(row("either", 0,
+			pick(row("major", 0, row("bad15", -15), row("bad20", -20), row("bad5", -5)), picker.Points, -15),
+			pick(row("minor", 0, row("quirk1", -1), row("quirk5", -5)), picker.Points, -5)), picker.Count, 1),
+		row("bad10", -10)), picker.Points, -30)
+	return newPickerSession(promptOperation{}, []*gurps.Trait{root}, true), n
+}
+
+// TestPickerSessionNegativeTargets verifies that a choice asking for negative points is judged by how many points of
+// disadvantages it asks for: a total nearer zero falls short of it, and one further from zero goes over it.
+func TestPickerSessionNegativeTargets(t *testing.T) {
+	c := check.New(t)
+	type session = pickerSession[*gurps.Trait]
+	cost := func(s *session, row *gurps.Trait) pickerText { return s.cost(row, picker.Points) }
+	hint := (*session).hint
+	for _, tc := range []struct {
+		compare criteria.NumericComparison
+		picks   []string
+		row     string
+		text    func(*session, *gurps.Trait) pickerText
+		want    pickerText
+	}{
+		{criteria.EqualsNumber, nil, "major", hint, pickerText{
+			text: "15 points short. Override to keep it anyway.", state: pickerError,
+		}},
+		{criteria.EqualsNumber, []string{"bad15"}, "major", hint, pickerText{
+			text: "Every pick has a fixed cost.", state: pickerOK,
+		}},
+		{criteria.EqualsNumber, []string{"bad20"}, "major", hint, pickerText{
+			text: "Over by 5 points. Override to keep it anyway.", state: pickerError,
+		}},
+		{criteria.AtLeastNumber, []string{"bad20"}, "major", hint, pickerText{
+			text: "Over by 5 points. Override to keep it anyway.", state: pickerError,
+		}},
+		{criteria.AtMostNumber, []string{"bad5"}, "major", hint, pickerText{
+			text: "10 points short. Override to keep it anyway.", state: pickerError,
+		}},
+		{criteria.EqualsNumber, []string{"either", "major", "bad20"}, "either", cost, pickerText{
+			text: " [-20 points]", tip: "Over: expected -15~-5 points.", state: pickerError,
+		}},
+		{criteria.EqualsNumber, []string{"either", "minor", "quirk1"}, "either", cost, pickerText{
+			text: " [-1 points]", tip: "Under: expected -15~-5 points.", state: pickerError,
+		}},
+		{criteria.EqualsNumber, []string{"either", "bad10"}, "root", hint, pickerText{
+			text: "5~15 points short. Override to keep it anyway.", state: pickerError,
+		}},
+	} {
+		s, n := newDisadvantageSession()
+		n["major"].TemplatePicker.Qualifier.Compare = tc.compare
+		choose(s, n, tc.picks...)
+		c.Equal(tc.want, tc.text(s, n[tc.row]), tc.row)
+	}
+}
+
 // newOrganizedSession returns a session over "Pick 2" of fear and a choice of honors in the martial group, rank and
 // status in the social group, whose open modifier choice they inherit, the latter nested again, and luck.
 func newOrganizedSession() (s *pickerSession[*gurps.Trait], n map[string]*gurps.Trait) {
