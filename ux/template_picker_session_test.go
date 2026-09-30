@@ -372,6 +372,33 @@ func TestPickerSessionPlainContainerHoldingAChoice(t *testing.T) {
 	c.Equal(pickerOK, s.state(root))
 }
 
+// TestPickerSessionAnsweredWithNothingPicked verifies that a choice answered with nothing picked costs nothing, rather
+// than what its rules expect.
+func TestPickerSessionAnsweredWithNothingPicked(t *testing.T) {
+	c := check.New(t)
+	root := gurps.NewTrait(nil, nil, true)
+	root.TemplatePicker.Type = picker.Points
+	root.TemplatePicker.Qualifier.Compare = criteria.EqualsNumber
+	root.TemplatePicker.Qualifier.Qualifier = fxp.FromInteger(20)
+	a := gurps.NewTrait(nil, root, false)
+	a.BasePoints = fxp.FromInteger(20)
+	optional := gurps.NewTrait(nil, root, true)
+	optional.TemplatePicker.Type = picker.Points
+	optional.TemplatePicker.Qualifier.Compare = criteria.AtMostNumber
+	optional.TemplatePicker.Qualifier.Qualifier = fxp.FromInteger(10)
+	for _, points := range []int{5, 10} {
+		option := gurps.NewTrait(nil, optional, false)
+		option.BasePoints = fxp.FromInteger(points)
+		optional.Children = append(optional.Children, option)
+	}
+	root.Children = []*gurps.Trait{a, optional}
+	s := newPickerSession(promptOperation{}, []*gurps.Trait{root}, true)
+	s.chosen[a], s.chosen[optional] = true, true
+	c.Equal("20~30 / 20", s.pillText(root))
+	s.pickerAnswered[optional] = true
+	c.Equal("20 / 20", s.pillText(root))
+}
+
 // TestPickerSessionChoosesEquipmentModifiers verifies that equipment modifiers can be chosen from the picker too, the
 // prompt showing the value and weight.
 func TestPickerSessionChoosesEquipmentModifiers(t *testing.T) {
