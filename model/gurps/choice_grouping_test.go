@@ -259,3 +259,24 @@ func TestOrganizedChoiceCostsForOtherTypes(t *testing.T) {
 	kit.PickSeparately = true
 	c.Equal("0~50", eqp.ExtendedValueRange().String(), "what it holds can")
 }
+
+func TestOrganizingGroupModifierChoiceIsMadeOnce(t *testing.T) {
+	c := check.New(t)
+	group := newTraitContainerWithChoice(container.Group, []string{"-50%", "+50%"}, 10, -10)
+	group.PickSeparately = true
+	both := addOptions(newPickerContainer(picker.Count, criteria.EqualsNumber, 2, nil), group)
+	c.Equal("0", both.PointsRange(nil).String(), "either pick makes the two cancel out")
+	c.Equal(fxp.Int(0), both.AdjustedPoints(nil))
+
+	group = newTraitContainerWithChoice(container.Group, []string{"-50%", "+50%"}, 10, -10)
+	group.PickSeparately = true
+	one := addOptions(newPickerContainer(picker.Count, criteria.EqualsNumber, 1, nil), group)
+	c.Equal("-15~15", one.PointsRange(nil).String())
+	c.Equal(fxp.Int(0), one.AdjustedPoints(nil), "the least of the ways the group's choice is made")
+
+	nested := newTraitContainerWithChoice(container.Group, []string{"-50%", "+50%"}, 10, -10)
+	nested.PickSeparately = true
+	outer := newTraitGroup("outer", true, nested)
+	c.Equal("0", addOptions(newPickerContainer(picker.Count, criteria.EqualsNumber, 2, nil), outer).PointsRange(nil).String(),
+		"a group nested in another")
+}

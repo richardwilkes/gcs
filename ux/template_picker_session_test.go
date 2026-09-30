@@ -836,7 +836,9 @@ func TestPickerSessionOrganizingGroups(t *testing.T) {
 	c := check.New(t)
 	s, n := newOrganizedSession()
 	root := n["root"]
-	c.Equal("10~30", s.expected[pickerMeasureKey[*gurps.Trait]{root, picker.Points}].String())
+	c.Equal("10~35", root.PointsRange(nil).String(), "outside the picker, social's choice is still to be made")
+	c.Equal("10~30", s.expected[pickerMeasureKey[*gurps.Trait]{root, picker.Points}].String(),
+		"the picker counts it as it stands")
 	c.Equal("0 / 2", s.pillText(root))
 	choose(s, n, "fear", "status")
 	c.Equal("2 / 2", s.pillText(root))
