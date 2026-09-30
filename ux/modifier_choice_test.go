@@ -573,6 +573,35 @@ func TestTraitEditorShowsTheRangeOfAnOpenChoice(t *testing.T) {
 	c.Equal("20", pointCost.String(), "a preconfigured trait takes the pick already made")
 }
 
+// TestTraitEditorLeavesOutInheritedModifiers verifies that the Point Cost of a trait with a modifier choice leaves out
+// the modifiers of its container whether the choice is open or made.
+func TestTraitEditorLeavesOutInheritedModifiers(t *testing.T) {
+	c := check.New(t)
+	parent := gurps.NewTrait(nil, nil, true)
+	half := gurps.NewTraitModifier(nil, nil, false)
+	half.CostAdj = "-50%"
+	parent.AddModifiers(half)
+	trait := gurps.NewTrait(nil, parent, false)
+	trait.BasePoints = fxp.FromInteger(20)
+	parent.Children = []*gurps.Trait{trait}
+	choice := newTraitModifierChoiceFor(nil, true, []string{"+0%", "+100%"})
+	for _, option := range choice.Children {
+		option.CostAdj = option.Name
+	}
+	trait.AddModifiers(choice)
+	e, content := buildEditorContent(nil, trait, initTraitEditor)
+	pointCost := panelsOfType[*NonEditableField](content)[0]
+	c.Equal("20~40", pointCost.String())
+	e.editorData.Preconfigured = true
+	e.editorData.Modifiers[0].Children[1].SetEnabled(true)
+	DeepSync(e)
+	c.Equal("40", pointCost.String())
+	e.editorData.Modifiers[0].Children[1].SetEnabled(false)
+	e.editorData.Modifiers[0].Children[0].SetEnabled(true)
+	DeepSync(e)
+	c.Equal("20", pointCost.String())
+}
+
 // TestLockedPickKeepsItsCheckmark verifies that clicking the checkmark of the pick of a mandatory choice on a sheet
 // leaves both the modifier and the checkmark drawn for it as they were, rather than clearing the mark over a pick that
 // is still in force.

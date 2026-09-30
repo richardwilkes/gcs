@@ -51,8 +51,11 @@ func initTraitEditor(e *editor[*gurps.Trait, *gurps.TraitEditData], content *uni
 	if !e.target.Container() {
 		wrapper, _ := addFlowWrapper(content, i18n.Text("Point Cost"), 2)
 		costField := NewNonEditableField(func(field *NonEditableField) {
-			// An open mandatory choice shows the list's range; the settled cost leaves out inherited modifiers.
-			if r, open := cloneTraitWithOverlay(e.target, e.editorData).ModifierChoicePointsRange(); open {
+			// An open mandatory choice shows the range it may cost. Both it and the settled cost leave out inherited
+			// modifiers.
+			own := cloneTraitWithOverlay(e.target, e.editorData)
+			own.SetParent(nil)
+			if r, open := own.ModifierChoicePointsRange(); open {
 				field.SetTitle(r.String())
 			} else {
 				field.SetTitle(gurps.AdjustedPoints(entity, e.target, e.editorData.CanLevel, e.editorData.BasePoints,
