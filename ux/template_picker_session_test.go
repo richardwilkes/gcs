@@ -473,21 +473,28 @@ func TestPickerSessionChoosesEquipmentModifiers(t *testing.T) {
 	c.Equal("$200", formatPickerTotal(sword, picker.Value, s.actual(sword, picker.Value)))
 }
 
-// TestPickerStatePill verifies that each state has its own look, a warning's text being dark on yellow.
+// TestPickerStatePill verifies that each state has its own look, in the theme's own colors save for green when all is
+// well, so the pill follows the theme.
 func TestPickerStatePill(t *testing.T) {
 	c := check.New(t)
 	pill, update := newPickerStatePill(0)
-	for state, img := range map[pickerState]*unison.SVG{
-		pickerOK: unison.CheckmarkSVG, pickerOpen: unison.CircledQuestionSVG,
-		pickerWarning: unison.TriangleExclamationSVG, pickerError: svg.Not,
+	for state, want := range map[pickerState]pickerPillLook{
+		pickerOK: {icon: unison.CheckmarkSVG, background: unison.Green, onBackground: unison.Green.On()},
+		pickerOpen: {
+			icon: unison.CircledQuestionSVG, background: unison.ThemeFocus, onBackground: unison.ThemeOnFocus,
+		},
+		pickerWarning: {
+			icon: unison.TriangleExclamationSVG, background: unison.ThemeWarning, onBackground: unison.ThemeOnWarning,
+		},
+		pickerError: {icon: svg.Not, background: unison.ThemeError, onBackground: unison.ThemeOnError},
 	} {
+		c.True(want == pickerPillLooks[state], state.tip())
 		update(state, "1 / 1")
 		drawable, ok := pill.Drawable.(*unison.DrawableSVG)
 		c.True(ok)
-		c.Equal(img, drawable.SVG)
+		c.Equal(want.icon, drawable.SVG)
+		c.True(want.onBackground == pill.OnBackgroundInk, "the pill's text and icon must be drawn in the look's ink")
 	}
-	update(pickerWarning, "1 / 1")
-	c.Equal(unison.OnLight, pill.OnBackgroundInk)
 }
 
 // TestPickerSessionChoosesPicks verifies that a choice picked from another can be answered from its row, however deep,

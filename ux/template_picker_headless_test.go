@@ -147,7 +147,8 @@ func TestPickerDialogKeepsItsScrollPosition(t *testing.T) {
 	})
 }
 
-// The line under the picker's list is in the warning color for an error or a warning, and green once all is well.
+// The line under the picker's list is in the theme's error or warning color for those, dimmed while picks are still
+// open, and green once all is well.
 func TestPickerDialogHintColor(t *testing.T) {
 	c := check.New(t)
 	screen, _ := startHeadlessWorkspace(t, c)
@@ -157,8 +158,9 @@ func TestPickerDialogHintColor(t *testing.T) {
 		state pickerState
 		ink   unison.Ink
 	}{
-		{"root", []string{"ea", "ep", "fit", "order", "lion", "honors", "cr", "wm", "fear2"}, pickerError, unison.ThemeWarning},
+		{"root", []string{"ea", "ep", "fit", "order", "lion", "honors", "cr", "wm", "fear2"}, pickerError, unison.ThemeError},
 		{"order", []string{"order", "lion", "honors", "cr", "wm", "fear2"}, pickerWarning, unison.ThemeWarning},
+		{"root", []string{"ea", "ep", "fit", "order"}, pickerOpen, dimmedTextColor},
 		{"fit", []string{"fit", "fit1"}, pickerOK, unison.Green},
 	} {
 		s, n := newKnightSession()

@@ -120,7 +120,7 @@ func (s *pickerSession[T]) newPickerDialog(row T, depth int) (dialog *unison.Dia
 		updateProgress(state, s.pillText(row))
 		progress.Tooltip = newWrappedTooltip(s.pillTip(row))
 		t := s.hint(row)
-		hint.setText(t.text, pickerHintInk(t.state))
+		hint.setText(t.text, pickerStateInks[t.state])
 		// The dialog is first sized with the text above in place; it widens if later text needs more room.
 		if dialog != nil {
 			dialog.Button(unison.ModalResponseOK).SetEnabled(state == pickerOK)
@@ -230,7 +230,7 @@ func (s *pickerSession[T]) newPickerDialog(row T, depth int) (dialog *unison.Dia
 func newPickerStatePill(top float32) (pill *unison.Label, update func(state pickerState, title string)) {
 	pill = unison.NewLabel()
 	pill.SetBorder(unison.NewEmptyBorder(geom.Insets{Top: top, Left: unison.StdHSpacing, Right: unison.StdHSpacing}))
-	var background unison.Color
+	var look pickerPillLook
 	pill.DrawCallback = func(gc *unison.Canvas, _ geom.Rect) {
 		if pill.Drawable == nil {
 			return
@@ -238,29 +238,35 @@ func newPickerStatePill(top float32) (pill *unison.Label, update func(state pick
 		r := pill.ContentRect(true)
 		r.Y += top
 		r.Height -= top
-		gc.DrawRoundedRect(r, geom.NewUniformSize(8), background.Paint(gc, r, paintstyle.Fill))
+		gc.DrawRoundedRect(r, geom.NewUniformSize(8), look.background.Paint(gc, r, paintstyle.Fill))
 		pill.DefaultDraw(gc, r)
 	}
 	update = func(state pickerState, title string) {
-		var img *unison.SVG
-		switch state {
-		case pickerOK:
-			img, background = unison.CheckmarkSVG, unison.Green
-		case pickerOpen:
-			img, background = unison.CircledQuestionSVG, unison.RGB(138, 83, 0)
-		case pickerWarning:
-			img, background = unison.TriangleExclamationSVG, unison.RGB(240, 196, 25)
-		default:
-			img, background = svg.Not, unison.ThemeError.GetColor()
-		}
+		look = pickerPillLooks[state]
 		size := max(pill.Font.Baseline()-2, 6)
-		pill.Drawable = &unison.DrawableSVG{SVG: img, Size: geom.NewSize(size, size)}
-		pill.OnBackgroundInk = background.On()
+		pill.Drawable = &unison.DrawableSVG{SVG: look.icon, Size: geom.NewSize(size, size)}
+		pill.OnBackgroundInk = look.onBackground
 		pill.SetTitle(title)
 		pill.MarkForLayoutRecursivelyUpward()
 		pill.MarkForRedraw()
 	}
 	return pill, update
+}
+
+// pickerPillLook is how the state pill looks in a state: its icon, its color and the color of what is drawn on it.
+type pickerPillLook struct {
+	icon         *unison.SVG
+	background   unison.Ink
+	onBackground unison.Ink
+}
+
+// pickerPillLooks holds the state pill's look in each state. Its colors are the theme's, so they follow it, save that
+// all is well in green.
+var pickerPillLooks = [...]pickerPillLook{
+	pickerOK:      {icon: unison.CheckmarkSVG, background: unison.Green, onBackground: unison.Green.On()},
+	pickerOpen:    {icon: unison.CircledQuestionSVG, background: unison.ThemeFocus, onBackground: unison.ThemeOnFocus},
+	pickerWarning: {icon: unison.TriangleExclamationSVG, background: unison.ThemeWarning, onBackground: unison.ThemeOnWarning},
+	pickerError:   {icon: svg.Not, background: unison.ThemeError, onBackground: unison.ThemeOnError},
 }
 
 // pickerList is the picker dialog's list of options, with what its rows need and the cells they are made of.
@@ -706,7 +712,7 @@ func (s *pickerSession[T]) updateChooseButton(button *unison.Button, row T) {
 	name = fmt.Sprintf(name, row.String())
 	button.Accessibility.Name = name
 	if open {
-		button.OnBackgroundInk = unison.ThemeWarning
+		button.OnBackgroundInk = unison.ThemeFocus
 		button.Tooltip = newWrappedTooltip(tip)
 	} else {
 		button.OnBackgroundInk = unison.DefaultButtonTheme.OnBackgroundInk
@@ -732,12 +738,12 @@ func pickerRowQuantity(eqp *gurps.Equipment) string {
 	return ""
 }
 
-// pickerStateInks holds the color of text telling of each state. A warning's is a dark yellow, as the pill's is too
-// light to read as text.
+// pickerStateInks holds the color of text telling of each state. What is still open is dimmed rather than colored, as
+// it is not yet a problem.
 var pickerStateInks = [...]unison.Ink{
 	pickerOK:      unison.Green,
-	pickerOpen:    unison.ThemeWarning,
-	pickerWarning: &unison.ThemeColor{Light: unison.RGB(122, 92, 0), Dark: unison.RGB(240, 196, 25)},
+	pickerOpen:    dimmedTextColor,
+	pickerWarning: unison.ThemeWarning,
 	pickerError:   unison.ThemeError,
 }
 
@@ -757,15 +763,6 @@ func pickerTextInk(t pickerText, plain unison.Ink) unison.Ink {
 		return pickerStateInks[t.state]
 	}
 	return plain
-}
-
-// pickerHintInk returns the color of the line under the picker's list in the state. It is the warning color whatever is
-// amiss, an error as much as a warning, leaving the pill to tell which.
-func pickerHintInk(state pickerState) unison.Ink {
-	if state == pickerOK {
-		return pickerStateInks[pickerOK]
-	}
-	return unison.ThemeWarning
 }
 
 // growWindowToFit widens the window, as far as its display allows, when its content has come to want more width than it
