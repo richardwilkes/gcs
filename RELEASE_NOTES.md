@@ -105,7 +105,7 @@
 - Saved list filters can test whether an equipment container is a container or a group, and scripts can read it as the
   container's `kind`. In Go template exports, the Type of an equipment container is now "container" or "group", rather
   than always "group", so a template that tests for "group" to find equipment containers needs to allow for both. The
-  legacy text export still gives GROUP for both, and leaves a group's quantity, value and weight empty.
+  legacy text export now gives CONTAINER or GROUP to match, and leaves a group's quantity, value and weight empty.
 - Equipment can now be offered as a template choice. In a template, "New Equipment Choice" adds one, and "Convert to
   Choice" turns an equipment group into one. An equipment choice is picked by count, by value or by weight, where the
   value and weight counted are the extended ones, and its editor shows only its name, notes, choices, page reference
