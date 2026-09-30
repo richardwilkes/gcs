@@ -37,7 +37,12 @@ func transferKindOf(panel unison.Paneler) transferKind {
 	if xreflect.IsNil(panel) {
 		return transferLibrary
 	}
-	switch unison.AncestorOrSelf[unison.Dockable](panel).(type) {
+	var owner any = unison.AncestorOrSelf[unison.Dockable](panel)
+	if xreflect.IsNil(owner) {
+		// A list the page layout leaves off the page is never attached to it, so ask the table's owner.
+		owner = panel.AsPanel().ClientData()[TableOwnerClientKey]
+	}
+	switch owner.(type) {
 	case *Sheet, *LootSheet:
 		return transferSheet
 	case *Template:
