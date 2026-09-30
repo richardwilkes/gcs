@@ -194,11 +194,6 @@ func (c *calculatorContent) addResultsBox() *calculatorContent {
 	return &calculatorContent{content: body, flush: true}
 }
 
-// addResultRow adds the results box and a two-column row inside it for a calculator's results, and returns the row.
-func (c *calculatorContent) addResultRow() *unison.Panel {
-	return c.addResultsBox().addRow(2)
-}
-
 // addCheckBox adds an indented checkbox with the given title to the content. Clicking it stores whether it is now
 // checked in *flag, then runs changed.
 func (c *calculatorContent) addCheckBox(title string, flag *bool, changed func()) *unison.CheckBox {
@@ -348,14 +343,11 @@ func newNoteRow(note string) *unison.Panel {
 	return row
 }
 
-// addNotes adds a bulleted note for each of the given texts, indented beneath the section they belong to.
+// addNotes adds a group holding a bulleted note for each of the given texts, for notes that never change. It is called
+// on the body of the results box, so that the notes sit inside the box with the results they go with, as the notes the
+// other calculators rewrite do.
 func (c *calculatorContent) addNotes(notes ...string) {
-	group := newRowGroup()
-	group.SetBorder(unison.NewEmptyBorder(geom.Insets{Top: unison.StdVSpacing * 2, Left: unison.StdHSpacing * 2}))
-	for _, note := range notes {
-		group.AddChild(newNoteRow(note))
-	}
-	c.content.AddChild(group)
+	setNotes(c.addNotesGroup(), notes)
 }
 
 // addResultsSection adds the results box, then inside it a two-column panel for results that are rewritten as a whole

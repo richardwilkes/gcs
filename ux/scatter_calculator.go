@@ -100,10 +100,11 @@ func (s *scatterCalculator) createContent() {
 		},
 		0, fxp.Max, false, false))
 	s.addFieldRow(s.distanceField, i18n.Text("yards to the target"))
-	row = s.addResultRow()
+	box := s.addResultsBox()
+	row = box.addRow(2)
 	addPlainLabel(row, i18n.Text("Scatter:"))
 	s.result = addResultLabel(row)
-	s.addNotes(
+	box.addNotes(
 		i18n.Text("The miss is squared when the target was flying or underwater, or when Artillery or Dropping was used against a target the attacker could not see; a dodge is never squared. When the target dodged, the margin is its margin of success."),
 		i18n.Text("Roll 1d for the direction: a 1 is the direction the attacker faces, and each higher number turns 60° further clockwise."),
 		fmt.Sprintf(i18n.Text("Deliberately attacking an area rather than a target standing in it is at %+d to hit. The area cannot defend, though anyone in it may dive for cover."),

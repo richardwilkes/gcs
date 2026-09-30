@@ -174,7 +174,7 @@ func (d *demolitionCalculator) createContent() {
 	d.explosiveWeightLabel = addPlainLabel(d.weightRow, "")
 	d.explosiveWeightResult = addResultLabel(d.weightRow)
 
-	d.addNotes(i18n.Text("Explosives normally do crushing damage with the Explosion modifier (B104), often with Fragmentation (B104)."))
+	box.addNotes(i18n.Text("Explosives normally do crushing damage with the Explosion modifier (B104), often with Fragmentation (B104)."))
 }
 
 // changed implements calculatorTab.
