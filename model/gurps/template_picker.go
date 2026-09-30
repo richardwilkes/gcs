@@ -131,10 +131,12 @@ func HasTemplatePickerData[T Node[T]](nodes ...T) bool {
 	return hasPickerData
 }
 
-// ClearTemplatePickerData removes the template picker data from the nodes and their children. A node that loses its
-// picker data also loses its source, since only a template may hold picker data and a template is never a source.
+// ClearTemplatePickerData removes the template picker data from the nodes and their children, along with every flag to
+// pick a group separately. A node that loses its picker data also loses its source, since only a template may hold
+// picker data and a template is never a source.
 func ClearTemplatePickerData[T Node[T]](nodes ...T) {
 	Traverse(func(node T) bool {
+		clearPickSeparately(node)
 		if IsTemplateChoiceContainer(node) {
 			_, data := any(node).(TemplatePickerProvider).TemplatePickerData() //nolint:errcheck // IsTemplateChoiceContainer checked this
 			*data = TemplatePicker{}
@@ -177,6 +179,7 @@ func normalizeTemplateChoiceContainer[T Node[T]](node T) {
 	if tc, ok := any(node).(templateChoiceConvertible); ok {
 		tc.clearTemplateChoiceContainerExclusions()
 	}
+	clearPickSeparately(node)
 	node.ClearSource()
 }
 

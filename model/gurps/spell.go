@@ -104,6 +104,7 @@ type SpellEditData struct {
 	Replacements map[string]string `json:"replacements,omitempty"`
 	ItemSwitch
 	preconfigurable
+	choiceGrouping
 	SpellNonContainerOnlyEditData
 	SpellContainerOnlySyncData
 }
@@ -160,6 +161,10 @@ func NewSpellChoiceContainer(owner DataOwner, parent *Spell) *Spell {
 	s.TemplatePicker = newTemplateChoicePicker()
 	s.Name = s.Kind()
 	return s
+}
+
+func (s *Spell) canPickSeparately() bool {
+	return s.Container() && s.TemplatePicker.IsZero()
 }
 
 func (s *Spell) canBecomeTemplateChoiceContainer() bool {
@@ -1127,6 +1132,9 @@ func (s *Spell) Kind() string {
 
 // ClearUnusedFieldsForType zeroes out the fields that are not applicable to this type (container vs not-container).
 func (s *Spell) ClearUnusedFieldsForType() {
+	if !s.canPickSeparately() {
+		s.PickSeparately = false
+	}
 	if s.Container() {
 		s.SpellNonContainerOnlyEditData = SpellNonContainerOnlyEditData{}
 		// A container's features never apply, so it can never have anything to switch (see HasSwitchableFeatures).

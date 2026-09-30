@@ -112,6 +112,7 @@ type SkillEditData struct {
 	Replacements map[string]string `json:"replacements,omitempty"`
 	ItemSwitch
 	preconfigurable
+	choiceGrouping
 	SkillNonContainerOnlyEditData
 	SkillContainerOnlySyncData
 	// copiedDefaultsHash is defaultsHash(Defaults) as of CopyFrom, which lets ApplyTo tell whether the defaults have
@@ -179,6 +180,10 @@ func NewSkillChoiceContainer(owner DataOwner, parent *Skill) *Skill {
 	s.TemplatePicker = newTemplateChoicePicker()
 	s.Name = s.Kind()
 	return s
+}
+
+func (s *Skill) canPickSeparately() bool {
+	return s.Container() && s.TemplatePicker.IsZero()
 }
 
 func (s *Skill) canBecomeTemplateChoiceContainer() bool {
@@ -1431,6 +1436,9 @@ func (s *Skill) Kind() string {
 
 // ClearUnusedFieldsForType zeroes out the fields that are not applicable to this type (container vs not-container).
 func (s *Skill) ClearUnusedFieldsForType() {
+	if !s.canPickSeparately() {
+		s.PickSeparately = false
+	}
 	if s.Container() {
 		s.SkillNonContainerOnlyEditData = SkillNonContainerOnlyEditData{}
 		// A container's features never apply, so it can never have anything to switch (see HasSwitchableFeatures).

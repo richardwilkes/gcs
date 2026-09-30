@@ -111,6 +111,7 @@ type TraitEditData struct {
 
 	ItemSwitch
 	preconfigurable
+	choiceGrouping
 	TraitNonContainerOnlyEditData
 	TraitContainerSyncData
 }
@@ -176,6 +177,10 @@ func NewTraitChoiceContainer(owner DataOwner, parent *Trait) *Trait {
 	t.TemplatePicker = newTemplateChoicePicker()
 	t.Name = t.Kind()
 	return t
+}
+
+func (t *Trait) canPickSeparately() bool {
+	return t.Container() && t.ContainerType == container.Group && t.TemplatePicker.IsZero()
 }
 
 func (t *Trait) canBecomeTemplateChoiceContainer() bool {
@@ -1329,6 +1334,9 @@ func (t *Trait) Kind() string {
 
 // ClearUnusedFieldsForType zeroes out the fields that are not applicable to this type (container vs not-container).
 func (t *Trait) ClearUnusedFieldsForType() {
+	if !t.canPickSeparately() {
+		t.PickSeparately = false
+	}
 	if t.Container() {
 		t.TraitNonContainerOnlyEditData = TraitNonContainerOnlyEditData{}
 		if t.ContainerType != container.Ancestry {

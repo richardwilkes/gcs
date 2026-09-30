@@ -450,6 +450,27 @@ func TestDropOnLibraryAsksBeforeRemovingPickers(t *testing.T) {
 	}
 }
 
+// TestCopyOutOfATemplateClearsPickSeparately verifies that only a template keeps a group's flag to be picked from
+// separately, even with no choice around it.
+func TestCopyOutOfATemplateClearsPickSeparately(t *testing.T) {
+	c := check.New(t)
+	group := gurps.NewTrait(nil, nil, true)
+	group.PickSeparately = true
+	source := newTestTemplateWithTraits(group)
+
+	library := newLibraryStyleTraitsTable()
+	c.True(applyDrop(dragged(source.Traits.Table), library, nil, -1))
+	provider, ok := library.ClientData()[TableProviderClientKey].(TableProvider[*gurps.Trait])
+	c.True(ok)
+	c.False(provider.RootData()[0].PickSeparately, "a library doesn't keep it")
+
+	sheet := newTestSheetForTemplate(t)
+	copySelectionTo(source.Traits.Table, []*Sheet{sheet})
+	traits := sheet.Entity().Traits
+	c.False(traits[len(traits)-1].PickSeparately, "a sheet doesn't keep it")
+	c.True(group.PickSeparately, "the template keeps it")
+}
+
 // TestEditorUndoRestoresSourceClearedByTemplatePicker verifies that applying an edit to a choice container that still
 // holds a source clears the source, and that undo and redo put it back and take it away again along with everything
 // else. A choice is stripped of its source whenever it is created, converted, loaded or transferred, so this is only a

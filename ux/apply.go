@@ -69,9 +69,9 @@ type applyOptions struct {
 	suppressRandomizePrompt bool
 	// clearPreconfigured clears the Preconfigured flag, which means nothing on a sheet.
 	clearPreconfigured bool
-	// stripPickers removes the template choices the rows carry, once the user agrees to it, since the destination can't
-	// hold them and has no way to settle them either.
-	stripPickers bool
+	// clearTemplateOnly removes what only a template holds: the template choices the rows still carry, once the user
+	// agrees to it, and the flags to pick a group in one separately.
+	clearTemplateOnly bool
 	// merge folds the points of rows that duplicate a row already present into that row.
 	merge bool
 }
@@ -81,7 +81,8 @@ type applyOptions struct {
 // for settling any template choices a sheet can't hold, the ancestry question and the offer to randomize. Rows arriving
 // on a template are kept as authored, save that their choice containers are normalized and those from a library have
 // their modifiers and nameables prompted for. Rows arriving in a library are kept as they are, Preconfigured flag
-// included, save for the template choices, which only a template can hold.
+// included, save for the template choices and the flags to pick groups in them separately, which only a template can
+// hold.
 func applyOptionsFor(source, destination unison.Paneler) applyOptions {
 	from := transferKindOf(source)
 	switch transferKindOf(destination) {
@@ -92,6 +93,7 @@ func applyOptionsFor(source, destination unison.Paneler) applyOptions {
 				askAncestry:        true,
 				randomize:          true,
 				clearPreconfigured: true,
+				clearTemplateOnly:  true,
 				merge:              true,
 			}
 		}
@@ -101,12 +103,13 @@ func applyOptionsFor(source, destination unison.Paneler) applyOptions {
 			promptForChoices:   true,
 			randomize:          true,
 			clearPreconfigured: true,
+			clearTemplateOnly:  true,
 			merge:              true,
 		}
 	case transferTemplate:
 		return applyOptions{normalizeChoices: true, promptForChoices: from == transferLibrary, merge: true}
 	default:
-		return applyOptions{stripPickers: true}
+		return applyOptions{clearTemplateOnly: true}
 	}
 }
 
@@ -130,7 +133,7 @@ type applyPartOps interface {
 	normalizeChoices()
 	resolvePickers(op promptOperation, promptChoices bool) bool
 	pickerContainers() []string
-	stripPickers()
+	clearTemplateOnly()
 	modifierTargetCount() int
 	promptForModifiers(op promptOperation, done, total int) (asked int, ok bool)
 	promptForNameables(op promptOperation) bool
@@ -233,7 +236,7 @@ func (p *applyPart[T]) pickerContainers() []string {
 	return names
 }
 
-func (p *applyPart[T]) stripPickers() {
+func (p *applyPart[T]) clearTemplateOnly() {
 	gurps.ClearTemplatePickerData(p.rows...)
 }
 
@@ -352,13 +355,11 @@ func applyTransfer(destination unison.Paneler, parts *applyParts, opts applyOpti
 	if opts.resolvePickers && !promptForPickers(op, parts, opts.promptForChoices) {
 		return false
 	}
-	var pickerContainers []string
-	if opts.stripPickers {
-		pickerContainers = parts.pickerContainers()
-	}
-	stripPickers := len(pickerContainers) != 0
-	if stripPickers && !confirmTemplatePickerDataRemoval(op, pickerContainers) {
-		return false
+	if opts.clearTemplateOnly {
+		if pickerContainers := parts.pickerContainers(); len(pickerContainers) != 0 &&
+			!confirmTemplatePickerDataRemoval(op, pickerContainers) {
+			return false
+		}
 	}
 	if opts.promptForChoices &&
 		!(parts.promptForModifiers(op) &&
@@ -390,8 +391,8 @@ func applyTransfer(destination unison.Paneler, parts *applyParts, opts applyOpti
 	// rebuild that reports the change can replace the table it would otherwise be found through.
 	mgr := unison.UndoManagerFor(destination)
 	before := newApplyUndoEditData(sheet, parts)
-	if stripPickers {
-		parts.each(applyPartOps.stripPickers)
+	if opts.clearTemplateOnly {
+		parts.each(applyPartOps.clearTemplateOnly)
 	}
 	if entity != nil && parts.bodyType != nil {
 		entity.SheetSettings.BodyType = parts.bodyType.Clone(entity, nil)

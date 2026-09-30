@@ -111,6 +111,7 @@ type EquipmentEditData struct {
 
 	ItemSwitch
 	preconfigurable
+	choiceGrouping
 }
 
 // EquipmentSyncData holds the equipment sync data that is common to both containers and non-containers.
@@ -254,6 +255,10 @@ func (e *Equipment) ConvertToPhysicalContainer() {
 			e.LegalityClass = defaultLegalityClass
 		}
 	}
+}
+
+func (e *Equipment) canPickSeparately() bool {
+	return e.IsGroup() && e.TemplatePicker.IsZero()
 }
 
 func (e *Equipment) canBecomeTemplateChoiceContainer() bool {
@@ -1206,6 +1211,9 @@ func (e *Equipment) Kind() string {
 // container or group). A group keeps only what organizes the equipment it holds; everything that would make it a piece
 // of equipment in its own right is cleared, and its quantity is always one.
 func (e *Equipment) ClearUnusedFieldsForType() {
+	if !e.canPickSeparately() {
+		e.PickSeparately = false
+	}
 	if !e.Container() {
 		e.ContainerType = eqcontainer.Container
 		e.EquipmentContainerSyncData = EquipmentContainerSyncData{}
