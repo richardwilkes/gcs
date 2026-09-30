@@ -504,8 +504,14 @@ func newPickerDisclosure(list *pickerList, sec *pickerSection, title string) *un
 	button.ClickCallback = func() {
 		sec.open = !sec.open
 		turn()
+		wnd := button.Window()
+		focus := wnd.CurrentFocus()
 		list.sync()
-		if wnd := button.Window(); wnd != nil {
+		if wnd != nil {
+			// A row taken out with the focus hands it to the chevron, as a click leaves it where it was.
+			if focus != nil && focus.Window() != wnd {
+				button.RequestFocus()
+			}
 			growWindowToFit(wnd)
 		}
 	}

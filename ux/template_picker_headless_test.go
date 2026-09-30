@@ -348,6 +348,41 @@ func TestPickerOrganizingGroupHeaders(t *testing.T) {
 	c.Equal(unison.ModalResponseOK, response, "Return first thing accepts the dialog")
 }
 
+// Closing a group by mouse while the focus is inside it moves the focus to its chevron, so the keyboard still works.
+func TestPickerClosingGroupKeepsFocus(t *testing.T) {
+	c := check.New(t)
+	screen, wnd := startHeadlessWorkspace(t, c)
+	t.Cleanup(func() { unison.SetAccessibilityEnabled(true) })
+	screen.Do(func() { unison.SetAccessibilityEnabled(false) })
+	s, n := newOrganizedSession()
+	done := false
+	c.True(screen.Post(func() {
+		s.showPicker(n["root"], 0)
+		done = true
+	}))
+	screen.Sync()
+	dialogWnd, _ := modalDialog(t, screen, wnd)
+	var chevron *unison.Button
+	screen.Do(func() {
+		c.Equal("fear", labelTexts(dialogWnd.CurrentFocus().Parent())[0], "the focus starts inside martial")
+		for _, p := range panelsMatching(dialogWnd.Content(), func(p *unison.Panel) bool {
+			label, ok := p.Self.(*unison.Label)
+			return ok && label.String() == "martial"
+		}) {
+			if one, ok := p.Parent().Children()[0].Self.(*unison.Button); ok {
+				chevron = one
+			}
+		}
+	})
+	if chevron == nil {
+		t.Fatal("martial must have a chevron")
+	}
+	screen.Click(screen.PanelCenter(chevron))
+	screen.Do(func() { c.Equal(chevron.AsPanel(), dialogWnd.CurrentFocus(), "the focus moves to the chevron") })
+	screen.KeyPress(unison.KeyEscape, mod.None)
+	c.True(done, "Escape still closes the dialog")
+}
+
 // A container picked as a unit keeps its checkbox and cost, and its chevron shows what it holds as rows with nothing to
 // pick, widening the dialog to fit them, their page references lined up with those of the options.
 func TestPickerUnitContainerInformationRows(t *testing.T) {
