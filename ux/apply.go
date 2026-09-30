@@ -266,7 +266,8 @@ func (p *applyPart[T]) promptForNameables(op promptOperation) bool {
 }
 
 // place puts the rows into their table and leaves them selected. With merge, the points of any row that duplicates one
-// already present are first folded into that row instead (see mergePoints), and the row is left out.
+// already present are first folded into that row instead (see mergePoints), and the row is left out, as is a group kept
+// for what was picked from it once all of that merged away.
 func (p *applyPart[T]) place(merge bool) {
 	if p.table == nil || len(p.rows) == 0 {
 		return

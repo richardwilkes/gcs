@@ -882,7 +882,7 @@ func (t *Trait) containerModifierChoices(fixed modifierChoicePicks[*TraitModifie
 }
 
 // organizingModifierChoices returns the open mandatory choices among the modifiers of the organizing groups among the
-// children, and those nested in them, asked about on a trait inside so they count as inherited, as the options see them.
+// children, and those nested in them, asked about on a trait inside so they count as inherited, as options see them.
 func organizingModifierChoices(children []*Trait, fixed modifierChoicePicks[*TraitModifier], view choiceView) []*TraitModifier {
 	var open []*TraitModifier
 	for _, group := range children {

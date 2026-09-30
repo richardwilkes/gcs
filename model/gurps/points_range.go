@@ -53,35 +53,36 @@ type rawPointsRangeNode[T rawPointsRangeNode[T]] interface {
 }
 
 // containerRawPointsRange returns the range of a container carrying the given picker, worked out as PointsRange works
-// it out, but from what its children cost before any bonus the sheet they are on grants them.
-func containerRawPointsRange[T rawPointsRangeNode[T]](tp TemplatePicker, children []T) NumericRange {
+// it out, but from what its options (see TemplateChoiceOptions) cost before any bonus the sheet they are on grants
+// them.
+func containerRawPointsRange[T rawPointsRangeNode[T]](tp TemplatePicker, options []T) NumericRange {
 	if value, settled := settledPickerCost(tp); settled {
 		return NumericRangeOf(value)
 	}
-	ranges := make([]NumericRange, len(children))
-	for i, one := range children {
+	ranges := make([]NumericRange, len(options))
+	for i, one := range options {
 		ranges[i] = one.RawPointsRange()
 	}
 	return pointsRangeForPicker(tp, ranges)
 }
 
-// pickerContainerPoints returns what a container carrying the given picker is worth, which is never what its children
-// add up to, since only some of them will be taken. When every way of making the choice costs the same -- "pick 20
-// points worth", most often -- that is what it is worth. When they don't, there is no single answer, and the total of
-// the children is left as the answer AdjustedPoints has always given here, with PointsRange holding the one that can
-// be relied upon.
+// pickerContainerPoints returns what a container carrying the given picker is worth, which is never what its options
+// (see TemplateChoiceOptions) add up to, since only some of them will be taken. When every way of making the choice
+// costs the same, as "pick 20 points worth" most often does, that is what it is worth. When they don't, there is no
+// single answer, and the total of the options is left as the answer AdjustedPoints has always given here, with
+// PointsRange holding the one that can be relied upon.
 //
-// The children are walked once. The range that comes out of that walk answers both questions: whether the choice has
-// a single cost after all, and, when it doesn't, what the children add up to.
-func pickerContainerPoints[T pointsRangeNode[T]](tp TemplatePicker, children []T) fxp.Int {
+// The options are walked once. The range that comes out of that walk answers both questions: whether the choice has
+// a single cost after all, and, when it doesn't, what the options add up to.
+func pickerContainerPoints[T pointsRangeNode[T]](tp TemplatePicker, options []T) fxp.Int {
 	if value, settled := settledPickerCost(tp); settled {
 		return value
 	}
-	ranges := childPointsRanges(children)
+	ranges := childPointsRanges(options)
 	if value, settled := pointsRangeForPicker(tp, ranges).Settled(); settled {
 		return value
 	}
-	return totalOfAdjustedPoints(children, ranges)
+	return totalOfAdjustedPoints(options, ranges)
 }
 
 // totalOfAdjustedPoints returns the total the children cost, given the ranges already worked out for them. A settled

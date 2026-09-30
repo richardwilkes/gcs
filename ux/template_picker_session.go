@@ -368,8 +368,9 @@ func (s *pickerSession[T]) hasPicks(container T) bool {
 }
 
 // actual returns what the row counts toward a choice made by kind: a choice container answered or with picks, what the
-// picks come to (so a count overridden past its number costs every pick); any other, what its rules expect; a plain
-// container holding a choice, what its rows come to; anything else, its range with the modifiers answered so far.
+// picks come to (so a count overridden past its number costs every pick); any other, what its rules expect; a
+// container that rolls up the choices it holds (see rollsUp), what its rows come to, a physical container adding its
+// own; anything else, its range with the modifiers answered so far.
 func (s *pickerSession[T]) actual(row T, kind picker.Type) gurps.NumericRange {
 	if kind != picker.Count && gurps.IsTemplateChoiceContainer(row) {
 		if s.pickerAnswered[row] || s.hasPicks(row) {

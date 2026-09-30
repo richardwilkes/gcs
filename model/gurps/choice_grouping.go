@@ -70,8 +70,8 @@ func TemplateChoiceOptions[T Node[T]](container T) []T {
 	return organizedOptions(children)
 }
 
-// organizedOptions returns the children with each group picked from separately replaced by its options, or the
-// children themselves, without allocating, when there is none.
+// organizedOptions returns the children with each group picked from separately replaced by its options, or the children
+// themselves, without allocating, when there is none.
 func organizedOptions[T Node[T]](children []T) []T {
 	for i, child := range children {
 		if !pickedSeparately(child) {

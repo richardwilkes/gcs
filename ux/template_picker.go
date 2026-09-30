@@ -297,7 +297,7 @@ func (sec *pickerSection) shown() bool {
 	return true
 }
 
-// claim records the cells added to the list since it held from of them as being in the section.
+// claim records the cells added to the list since it held from cells as being in the section.
 func (l *pickerList) claim(from int, sec *pickerSection) {
 	for _, cell := range l.panel.Children()[from:] {
 		l.cells = append(l.cells, cell)

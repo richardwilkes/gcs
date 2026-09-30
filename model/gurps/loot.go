@@ -97,8 +97,9 @@ func (l *Loot) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 	if !tid.IsKindAndValid(l.ID, kinds.Loot) {
 		l.ID = tid.MustNewTID(kinds.Loot)
 	}
-	// Only a template may hold template picker data, so any a loot sheet carries is removed, and the preconfigured mark
-	// means nothing on a sheet, so any an older version left behind is cleared.
+	// Only a template may hold template picker data or the flag to pick from a group separately, so any a loot sheet
+	// carries is removed, and the preconfigured mark means nothing on a sheet, so any an older version left behind is
+	// cleared.
 	ClearTemplatePickerData(l.Equipment...)
 	ClearPreconfigured(l.Equipment...)
 	ClearPreconfigured(l.Notes...)
