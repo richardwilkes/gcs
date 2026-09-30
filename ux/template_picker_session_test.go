@@ -11,6 +11,7 @@ package ux
 
 import (
 	"fmt"
+	"strings"
 	"testing"
 
 	"github.com/richardwilkes/gcs/v5/model/criteria"
@@ -700,4 +701,99 @@ func TestPickerSessionRowText(t *testing.T) {
 		text:  "1 picked, but this asks for anything but 1. Override to keep it anyway.",
 		state: pickerError,
 	}, s.hint(n["fit"]))
+}
+
+// newOrganizedSession returns a session over "Pick 2" of fear and a choice of honors in the martial group, rank and
+// status in the social group, whose open modifier choice they inherit, the latter nested again, and luck.
+func newOrganizedSession() (s *pickerSession[*gurps.Trait], n map[string]*gurps.Trait) {
+	n = make(map[string]*gurps.Trait)
+	row := func(name string, points int, children ...*gurps.Trait) *gurps.Trait {
+		trait := gurps.NewTrait(nil, nil, len(children) != 0)
+		trait.Name = name
+		trait.BasePoints = fxp.FromInteger(points)
+		trait.Children = children
+		SetParents(children, trait)
+		n[name] = trait
+		return trait
+	}
+	group := func(name string, children ...*gurps.Trait) *gurps.Trait {
+		trait := row(name, 0, children...)
+		trait.PickSeparately = true
+		return trait
+	}
+	pick := func(trait *gurps.Trait, count int) *gurps.Trait {
+		trait.TemplatePicker.Type = picker.Count
+		trait.TemplatePicker.Qualifier.Compare = criteria.EqualsNumber
+		trait.TemplatePicker.Qualifier.Qualifier = fxp.FromInteger(count)
+		return trait
+	}
+	social := group("social", row("rank", 5), group("inner", row("status", 10)))
+	choice := newTraitModifierChoiceFor(nil, true, []string{"+0%", "+100%"})
+	for _, option := range choice.Children {
+		option.CostAdj = option.Name
+	}
+	social.AddModifiers(choice)
+	root := pick(row("root", 0, group("martial", row("fear", 5), pick(row("honors", 0, row("cr", 15), row("hpt", 10)), 1)),
+		social, row("luck", 15)), 2)
+	return newPickerSession(promptOperation{}, []*gurps.Trait{root}, true), n
+}
+
+// rowTree describes the rows as "name[children]".
+func rowTree(rows []*gurps.Trait) string {
+	names := make([]string, len(rows))
+	for i, row := range rows {
+		names[i] = row.Name
+		if row.HasChildren() {
+			names[i] += "[" + rowTree(row.Children) + "]"
+		}
+	}
+	return strings.Join(names, " ")
+}
+
+// TestPickerSessionOrganizingGroups verifies that the options in organizing groups are picked one by one, and that the
+// groups reach the sheet holding only what was picked from them.
+func TestPickerSessionOrganizingGroups(t *testing.T) {
+	c := check.New(t)
+	s, n := newOrganizedSession()
+	root := n["root"]
+	c.Equal("10~30", s.expected[pickerMeasureKey[*gurps.Trait]{root, picker.Points}].String())
+	c.Equal("0 / 2", s.pillText(root))
+	choose(s, n, "fear", "status")
+	c.Equal("2 / 2", s.pillText(root))
+	c.Equal(pickerOK, s.state(root))
+	c.Equal("5", s.actual(n["rank"], picker.Points).String(), "a group's open modifier choice counts as it stands")
+	s.clear(root)
+	c.False(s.hasPicks(root), "clearing reaches into the groups")
+
+	choose(s, n, "fear", "honors", "cr", "status")
+	s.pickerAnswered[root], s.pickerAnswered[n["honors"]] = true, true
+	rows, abort := s.processRows([]*gurps.Trait{root})
+	c.False(abort)
+	c.Equal("martial[fear cr] social[inner[status]]", rowTree(rows), "a nested choice dissolves into its group")
+	c.Nil(rows[0].Parent())
+	c.Equal(rows[0], n["cr"].Parent())
+	c.Equal([]*gurps.Trait{n["martial"], n["inner"], n["social"]}, s.groups, "inner groups first")
+
+	s, n = newOrganizedSession()
+	choose(s, n, "luck")
+	s.pickerAnswered[n["root"]] = true
+	rows, _ = s.processRows([]*gurps.Trait{n["root"]})
+	c.Equal("luck", rowTree(rows), "a group with nothing picked is dropped")
+}
+
+// TestPickerSessionOrganizingGroupsRollUp verifies that a plain container holding a choice with organizing groups
+// comes to what is picked from the options in them.
+func TestPickerSessionOrganizingGroupsRollUp(t *testing.T) {
+	c := check.New(t)
+	_, n := newOrganizedSession()
+	outer := gurps.NewTrait(nil, nil, true)
+	outer.Children = []*gurps.Trait{n["root"]}
+	SetParents(outer.Children, outer)
+	s := newPickerSession(promptOperation{}, []*gurps.Trait{outer}, true)
+	c.True(s.rollsUp(outer))
+	c.Equal("10~30", s.actual(outer, picker.Points).String())
+	c.False(s.resolved(outer))
+	choose(s, n, "fear", "status")
+	c.Equal("15", s.actual(outer, picker.Points).String())
+	c.True(s.resolved(outer))
 }

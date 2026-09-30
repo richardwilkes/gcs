@@ -52,9 +52,11 @@ type pickerSession[T gurps.Node[T]] struct {
 	chosen         map[T]bool
 	pickerAnswered map[T]bool
 	modsAnswered   map[T]bool
-	// above holds the containers above a choice container, whose modifier choices count as they stand for the rows
-	// inside until asked.
+	// above holds the containers above a choice container and the organizing groups, whose modifier choices count as
+	// they stand for the rows inside until asked.
 	above map[T]bool
+	// groups holds the organizing groups kept with what was picked from them, inner ones first.
+	groups []T
 	// modPrompts holds the modifier prompt of each row with modifiers to ask about, as it stood at the start.
 	modPrompts map[T]func(info *modifierPromptInfo) bool
 	// expected holds what each choice container should come to by its rules alone, whatever is picked below it.
@@ -79,6 +81,9 @@ func newPickerSession[T gurps.Node[T]](op promptOperation, rows []T, prompted bo
 	s.runPicker = s.showPicker
 	var containers []T
 	gurps.Traverse(func(row T) bool {
+		if gurps.IsOrganizingGroup(row) {
+			s.above[row] = true
+		}
 		if gurps.IsTemplateChoiceContainer(row) {
 			containers = append(containers, row)
 			for parent := row.Parent(); !xreflect.IsNil(parent); parent = parent.Parent() {
@@ -133,16 +138,34 @@ func (s *pickerSession[T]) processRow(row T) (revised []T, abort bool) {
 	if !s.pickerAnswered[row] && s.runPicker(row, 0) == unison.ModalResponseCancel {
 		return nil, true
 	}
-	var chosen []T
-	for _, child := range row.NodeChildren() {
-		if s.chosen[child] {
-			chosen = append(chosen, child)
-		}
-	}
-	if revised, abort = s.processRows(chosen); abort {
+	if revised, abort = s.pickedFrom(row); abort {
 		return nil, true
 	}
 	SetParents(revised, row.Parent())
+	return revised, false
+}
+
+// pickedFrom returns what was picked from the container, processed, keeping each organizing group with only the picks
+// in it and dropping one with none. Returns true for abort if a dialog was canceled.
+func (s *pickerSession[T]) pickedFrom(container T) (revised []T, abort bool) {
+	for _, child := range container.NodeChildren() {
+		var result []T
+		switch {
+		case gurps.IsOrganizingGroup(child):
+			if result, abort = s.pickedFrom(child); len(result) != 0 {
+				child.SetChildren(result)
+				SetParents(result, child)
+				s.groups = append(s.groups, child)
+				result = []T{child}
+			}
+		case s.chosen[child]:
+			result, abort = s.processRow(child)
+		}
+		if abort {
+			return nil, true
+		}
+		revised = append(revised, result...)
+	}
 	return revised, false
 }
 
@@ -264,7 +287,7 @@ func (s *pickerSession[T]) choosePicks(row T, depth int) (confirmed, canceled bo
 
 // clear takes back the container's own picks, leaving the answers below them alone.
 func (s *pickerSession[T]) clear(container T) {
-	for _, child := range container.NodeChildren() {
+	for _, child := range gurps.TemplateChoiceOptions(container) {
 		delete(s.chosen, child)
 	}
 }
@@ -318,7 +341,7 @@ func snapshotEnabled[M gurps.Node[M]](undo []func(), modifiers []M) []func() {
 }
 
 func (s *pickerSession[T]) hasPicks(container T) bool {
-	return slices.ContainsFunc(container.NodeChildren(), func(child T) bool { return s.chosen[child] })
+	return slices.ContainsFunc(gurps.TemplateChoiceOptions(container), func(child T) bool { return s.chosen[child] })
 }
 
 // actual returns what the row counts toward a choice made by kind: a choice container answered or with picks, what the
@@ -361,7 +384,7 @@ func (s *pickerSession[T]) rollsUp(row T) bool {
 // total returns what the container's picks come to toward a choice made by kind.
 func (s *pickerSession[T]) total(container T, kind picker.Type) gurps.NumericRange {
 	total := gurps.NumericRangeOf(0)
-	for _, child := range container.NodeChildren() {
+	for _, child := range gurps.TemplateChoiceOptions(container) {
 		if s.chosen[child] {
 			total = total.Add(s.actual(child, kind))
 		}
@@ -411,7 +434,7 @@ func (s *pickerSession[T]) unresolved(container T) []T {
 // picks returns the container's picks that match.
 func (s *pickerSession[T]) picks(container T, match func(T) bool) []T {
 	var list []T
-	for _, child := range container.NodeChildren() {
+	for _, child := range gurps.TemplateChoiceOptions(container) {
 		if s.chosen[child] && match(child) {
 			list = append(list, child)
 		}

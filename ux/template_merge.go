@@ -110,14 +110,19 @@ func mergePoints[T mergeableNode[T]](existing, incoming []T, defaultTechLevel st
 		return false
 	}, true, true, incoming...)
 	for item := range pruneMap {
-		isItem := func(other T) bool { return other == item }
-		if parent := item.Parent(); xreflect.IsNil(parent) {
-			incoming = slices.DeleteFunc(incoming, isItem)
-		} else {
-			parent.SetChildren(slices.DeleteFunc(parent.NodeChildren(), isItem))
-		}
+		incoming = removeRow(incoming, item)
 	}
 	return incoming
+}
+
+// removeRow takes the row out of its parent's children, or out of rows when it has none, returning rows.
+func removeRow[T gurps.Node[T]](rows []T, row T) []T {
+	isRow := func(other T) bool { return other == row }
+	if parent := row.Parent(); !xreflect.IsNil(parent) {
+		parent.SetChildren(slices.DeleteFunc(parent.NodeChildren(), isRow))
+		return rows
+	}
+	return slices.DeleteFunc(rows, isRow)
 }
 
 // isChoiceOption returns true if the node sits within a template choice container, at any depth.

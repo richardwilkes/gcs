@@ -126,6 +126,8 @@ type applyPart[T gurps.Node[T]] struct {
 	placed []T
 	// asked holds the rows whose modifiers were answered from the template picker, so aren't asked about again.
 	asked map[T]bool
+	// groups holds the organizing groups kept with what was picked from them, inner ones first.
+	groups []T
 }
 
 // applyPartOps is what applyTransfer needs of each part, whatever its row type.
@@ -222,6 +224,7 @@ func (p *applyPart[T]) resolvePickers(op promptOperation, promptChoices bool) bo
 	}
 	p.rows = revised
 	p.asked = s.modsAnswered
+	p.groups = s.groups
 	return true
 }
 
@@ -281,6 +284,12 @@ func (p *applyPart[T]) place(merge bool) {
 		var noParent T
 		SetParents(p.rows, noParent)
 		p.placed = mergeIncoming(p.table, p.rows, selMap)
+		// A group kept for what was picked from it goes when all of that merged away.
+		for _, group := range p.groups {
+			if !group.HasChildren() {
+				p.placed = removeRow(p.placed, group)
+			}
+		}
 	}
 	var siblings []T
 	if xreflect.IsNil(p.parent) {

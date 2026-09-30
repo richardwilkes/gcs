@@ -57,7 +57,7 @@ func (s *pickerSession[T]) showPicker(row T, depth int) int {
 // newPickerDialog returns the dialog showPicker puts up, or nil if it couldn't be made, and what brings it up to date
 // with the session.
 func (s *pickerSession[T]) newPickerDialog(row T, depth int) (dialog *unison.Dialog, refresh func()) {
-	children := row.NodeChildren()
+	children := gurps.TemplateChoiceOptions(row)
 	tp := templatePicker(row)
 	headers := pickerRowDetailHeaders(row)
 	// A column for the pencil, and one for the choose button when the modifier prompt follows or an option is or holds a
