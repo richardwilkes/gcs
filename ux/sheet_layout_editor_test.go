@@ -1041,6 +1041,66 @@ func TestDividerDragTransfersWidth(t *testing.T) {
 	c.Equal(1, undoEditCount(mgr), "resizing a block must be one undoable edit")
 }
 
+// TestDividerDragBackToItsStartPutsTheRowBack checks that a divider dragged away and then back to where it began leaves
+// the row exactly as it was, whatever the weights. The pointer's position is turned into weights of four decimal places,
+// so with weights that don't divide the row evenly the round trip would otherwise land a rounding error away from where
+// it started, and that would be recorded as an edit that changes nothing visible.
+func TestDividerDragBackToItsStartPutsTheRowBack(t *testing.T) {
+	t.Run("uneven weights", func(t *testing.T) {
+		c := check.New(t)
+		traitsWeight := fxp.FromStringForced("1.3")
+		skillsWeight := fxp.FromStringForced("0.7")
+		sheet, editor := newTestSheetWithLayout(t,
+			testContainerNode(layoutnode.Row, fxp.One,
+				testBlockNode(gurps.BlockTraitsKey, traitsWeight),
+				testBlockNode(gurps.BlockSkillsKey, skillsWeight),
+			),
+		)
+		mgr := sheet.UndoManager()
+		divider := findTestDivider(editor.ensureRegions(), gurps.BlockTraitsKey)
+		c.NotNil(divider, "the traits and skills blocks must have a divider between them")
+		start := geom.NewPoint(divider.rect.CenterX(), divider.rect.CenterY())
+		counter := installSyncCounter(sheet)
+		counter.count = 0
+
+		editor.beginDividerDrag(divider, start)
+		editor.updateDividerDrag(geom.NewPoint(start.X+40, start.Y))
+		c.NotEqual(traitsWeight, divider.left.Weight, "the drag must have moved the weights before it comes back")
+		editor.updateDividerDrag(start)
+		editor.endDividerDrag(start)
+		c.Equal(traitsWeight, divider.left.Weight, "the left-hand block must have exactly the weight it started with")
+		c.Equal(skillsWeight, divider.right.Weight, "the right-hand block must have exactly the weight it started with")
+		c.False(mgr.CanUndo(), "a divider put back where it started must not be recorded")
+		c.Equal(0, counter.count, "a divider put back where it started must not sync the sheet")
+		row, ok := divider.rowPanel.Layout().(*weightedRowLayout)
+		c.True(ok, "the row must be laid out by weight")
+		c.Equal([]fxp.Int{traitsWeight, skillsWeight}, row.weights, "the live layout must be put back as well")
+	})
+
+	t.Run("beside the square portrait", func(t *testing.T) {
+		c := check.New(t)
+		sheet, editor := newTestSheetForLayoutEditing(t)
+		mgr := sheet.UndoManager()
+		before := sheet.Entity().SheetSettings.Layout.Clone()
+		divider := findTestDivider(editor.ensureRegions(), gurps.BlockPortraitKey)
+		c.NotNil(divider, "the portrait must have a divider beside it")
+		size := portraitContentSize(t, editor)
+		start := geom.NewPoint(divider.rect.CenterX(), divider.rect.CenterY())
+
+		editor.beginDividerDrag(divider, start)
+		editor.updateDividerDrag(geom.NewPoint(start.X+40, start.Y))
+		editor.endDividerDrag(start)
+		node, _, _ := sheet.Entity().SheetSettings.Layout.Find(gurps.BlockPortraitKey)
+		c.True(node.Square, "the portrait must have its square back")
+		c.Equal(gurps.Hash64(before), gurps.Hash64(sheet.Entity().SheetSettings.Layout),
+			"the drag beside the portrait rewrites every weight in the row, and all of them must be put back")
+		c.False(mgr.CanUndo(), "a divider put back where it started must not be recorded")
+		restored := portraitContentSize(t, editor)
+		c.True(xmath.Abs(restored.Width-size.Width) < 0.01 && nearlySquare(restored),
+			"the picture area must have the shape it had, but %v became %v", size, restored)
+	})
+}
+
 // TestBottomEdgeDragSetsMinimumHeight checks that dragging a block's bottom edge past its natural height gives it a
 // minimum height, that leaving it within a few pixels of its natural height gives it that height back, and that the
 // whole gesture is a single undoable edit.

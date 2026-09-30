@@ -299,26 +299,23 @@ func containerNode(nodeType layoutnode.Type, nodeWeight fxp.Int, children ...*Sh
 	}
 }
 
-// The weights of the factory layout's top bands. They are the proportions the blocks came out at when the sheet drew
-// its top area from a pair of fixed grids, measured at the default page width, so that a sheet that has never had its
-// layout touched looks the way it always has.
-//
-// The portrait has no weight among them: it is marked square instead, taking its width from the height of the row it is
-// in, which is what its hand-tuned weight was only able to imitate at one page size and one set of fonts.
+// The weights of the factory layout. The portrait has no weight among them: it is marked square instead, taking its
+// width from the height of the row it is in.
 var (
-	factoryIdentityColumnWeight    = fxp.FromStringForced("4.3")
-	factoryIdentityWeight          = fxp.FromStringForced("1.6")
-	factoryAttributesColumnWeight  = fxp.FromStringForced("1.5")
-	factoryEncumbranceColumnWeight = fxp.FromStringForced("1.6")
+	factoryIdentityColumnWeight      = fxp.FromStringForced("4.3")
+	factoryIdentityWeight            = fxp.FromStringForced("1.6")
+	factoryAttributesColumnWeight    = fxp.FromStringForced("1.6")
+	factoryPrimaryAttributesWeight   = fxp.FromStringForced("1")
+	factorySecondaryAttributesWeight = fxp.FromStringForced("1")
+	factoryBodyWeight                = fxp.FromStringForced("1.25")
+	factoryEncumbranceColumnWeight   = fxp.FromStringForced("1.3")
+	factorySkillsWeight              = fxp.FromStringForced("0.875")
 )
 
 // factoryTopBands returns the bands that hold the twelve non-list blocks, arranged the way the sheet has always drawn
 // them.
 func factoryTopBands() []*SheetLayoutNode {
 	return []*SheetLayoutNode{
-		// Points stands beside the identity/description column rather than inside its first row: it is far taller
-		// than the identity block, and putting it in that row would stretch the row to its height, whereas as a column
-		// of its own it spans both rows, the way the old grid let it.
 		containerNode(
 			layoutnode.Row, fxp.One,
 			squareBlockNode(BlockPortraitKey),
@@ -340,15 +337,15 @@ func factoryTopBands() []*SheetLayoutNode {
 				containerNode(
 					layoutnode.Row, fxp.One,
 					containerNode(
-						layoutnode.Column, fxp.One,
+						layoutnode.Column, factoryPrimaryAttributesWeight,
 						blockNode(BlockPrimaryAttributesKey),
 						blockNode(BlockDamageKey),
 					),
-					blockNode(BlockSecondaryAttributesKey),
+					weightedBlockNode(BlockSecondaryAttributesKey, factorySecondaryAttributesWeight),
 				),
 				blockNode(BlockPointPoolsKey),
 			),
-			blockNode(BlockBodyKey),
+			weightedBlockNode(BlockBodyKey, factoryBodyWeight),
 			containerNode(
 				layoutnode.Column, factoryEncumbranceColumnWeight,
 				blockNode(BlockEncumbranceKey),
@@ -374,7 +371,7 @@ func FactorySheetLayout() *SheetLayout {
 		containerNode(
 			layoutnode.Row, fxp.One,
 			blockNode(BlockTraitsKey),
-			blockNode(BlockSkillsKey),
+			weightedBlockNode(BlockSkillsKey, factorySkillsWeight),
 		),
 		blockNode(BlockSpellsKey),
 		blockNode(BlockEquipmentKey),

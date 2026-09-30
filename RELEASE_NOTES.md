@@ -190,6 +190,10 @@
 
 ## Bug Fixes
 
+- The button that shows or hides a row's notes no longer pokes out past the edge of its column when the name beside it
+  wraps onto more than one line.
+- Dragging a divider in the sheet layout editor and letting go of it where it started no longer adds an edit to the undo
+  history.
 - Canceling a template's choices while creating a new character sheet from the template no longer leaves an empty
   sheet behind.
 - A skill whose level comes from one of its defaults now shows the right level as soon as what it defaults from

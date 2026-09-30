@@ -104,6 +104,13 @@ func TestFactorySheetLayout(t *testing.T) {
 		c.NotNil(node)
 		c.False(node.Square, "only the portrait is square in the factory layout, but %q was too", key)
 	}
+
+	// The hand-tuned weights of the second band, which decide how the width is shared among the attributes column, the
+	// body and the encumbrance column, and within the attributes column between the primary and secondary attributes.
+	c.Equal([]fxp.Int{factoryAttributesColumnWeight, factoryBodyWeight, factoryEncumbranceColumnWeight},
+		weightsOf(layout.Root.Children[1]))
+	c.Equal([]fxp.Int{factoryPrimaryAttributesWeight, factorySecondaryAttributesWeight},
+		weightsOf(layout.Root.Children[1].Children[0].Children[0]))
 }
 
 // sortedKeys returns the given keys in canonical order.

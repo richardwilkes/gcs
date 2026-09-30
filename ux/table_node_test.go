@@ -13,6 +13,7 @@ import (
 	"slices"
 	"testing"
 
+	"github.com/richardwilkes/gcs/v5/model/fonts"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/toolbox/v2/check"
@@ -579,4 +580,59 @@ func TestPageRefLinkTakesNoMoreRoomThanItsText(t *testing.T) {
 	_, want, _ := plain.Sizes(geom.Size{})
 	_, got, _ := link.Sizes(geom.Size{})
 	c.Equal(want, got, "the link is the size of its text")
+}
+
+// TestLabelCellKeepsTheNotesButtonWithinTheCell verifies that the button which shows and hides a row's notes stays
+// inside the cell whatever the cell's width, once the name beside it has to wrap. The lines a name is broken into
+// keep the space they were broken at, and a label reports a width rounded up to whole pixels, so a line that fit the
+// width it was wrapped to could come out wider than that and push the button past the edge of the cell, where the
+// table clipped it.
+func TestLabelCellKeepsTheNotesButtonWithinTheCell(t *testing.T) {
+	c := check.New(t)
+	sheet := newTestSheetForTemplate(t)
+	entity := sheet.Entity()
+	skill := gurps.NewSkill(entity, nil, false)
+	skill.Name = "Area Knowledge"
+	skill.Specialization = "Kingdom of Cormyr; Lived there"
+	skill.LocalNotes = "General nature of its settlements and towns"
+	entity.Skills = []*gurps.Skill{skill}
+	sheet.Rebuild(true)
+
+	table := sheet.Skills.Table
+	col := columnIndexForID(table, gurps.SkillDescriptionColumn)
+	c.True(col >= 0, "the skills table must have a description column")
+	rows := table.RootRows()
+	c.Equal(1, len(rows), "the skills table must hold the one skill")
+	data := rows[0].cellData(col, true)
+	c.Equal("Area Knowledge (Kingdom of Cormyr; Lived there)", data.Primary)
+	c.NotEqual("", data.Secondary, "the skill's notes must be shown in the cell, or there is no button")
+	isButton := func(p *unison.Panel) bool {
+		_, ok := p.Self.(*unison.Button)
+		return ok
+	}
+	// Fractional widths, since a cell is usually some fraction of a pixel wide and the rounding is what pushed the
+	// button out. The sweep starts where the longest word fits beside the button, since a word too long to fit can't
+	// be broken and overflows whatever the width.
+	longestWord := unison.NewText("Knowledge", &unison.TextDecoration{Font: fonts.PageFieldPrimary}).Width()
+	for width := longestWord + 20; width < 200; width += 0.35 {
+		cell := rows[0].CellFromCellData(&data, width, unison.Black, unison.White, false).AsPanel()
+		_, pref, _ := cell.Sizes(geom.Size{})
+		if pref.Width > width {
+			t.Fatalf("at a width of %.2f the cell wants %.2f, which would push its notes button past its edge",
+				width, pref.Width)
+		}
+		cell.SetFrameRect(geom.NewRect(0, 0, width, pref.Height))
+		cell.ValidateLayout()
+		buttons := panelsMatching(cell, isButton)
+		if len(buttons) != 1 {
+			t.Fatalf("the cell must hold one notes button, but holds %d", len(buttons))
+		}
+		right := buttons[0].FrameRect().Right()
+		for p := buttons[0].Parent(); p != nil && p != cell; p = p.Parent() {
+			right += p.FrameRect().X
+		}
+		if right > width {
+			t.Fatalf("at a width of %.2f the notes button reaches %.2f, past the edge of the cell", width, right)
+		}
+	}
 }

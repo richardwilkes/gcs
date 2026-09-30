@@ -124,6 +124,29 @@ type layoutDividerRegion struct {
 	index     int
 }
 
+// layoutDividerStart is where a divider drag began, along with the weights and square flags the children of its row had
+// at that moment, in the model and in the row's live layout alike. The pointer's position is turned into weights of
+// four decimal places, so a drag that ends where it began need not arrive back at exactly the weights it left, and a
+// drag beside a square block has rewritten every weight in the row by then (see releaseSquareDivider). Putting these
+// back is what makes such a drag change nothing, as finish expects of it.
+type layoutDividerStart struct {
+	pt       geom.Point
+	children []layoutDividerChildStart
+}
+
+// layoutDividerChildStart is the state of one child of the row a divider drag began in. The node governing the child's
+// slot carries its weight, and the node carrying its square flag may be a different one: a block left as the only child
+// of a container is governed by the container's node, while the flag stays on the block's own. Either may be nil for a
+// child the builder recorded nothing on.
+type layoutDividerChildStart struct {
+	node       *gurps.SheetLayoutNode
+	squareNode *gurps.SheetLayoutNode
+	weight     fxp.Int
+	liveWeight fxp.Int
+	square     bool
+	liveSquare bool
+}
+
 // layoutSeamRegion is the seam between two consecutive children of one of the rows and columns the layout is built
 // from, the page's list of bands included. Dropping a block on one end of it makes the block straddle the two of them,
 // spanning both, and dropping it in the middle puts it between them; see resolveDropTarget for the zones the strip is
@@ -209,6 +232,7 @@ type sheetLayoutEditor struct {
 	regions      *layoutRegions
 	beforeLayout *gurps.SheetLayout
 	divider      layoutDividerRegion
+	dividerStart layoutDividerStart
 	bottom       layoutLeafRegion
 	target       dropTarget
 	hoverPt      geom.Point
@@ -1094,7 +1118,55 @@ func (e *sheetLayoutEditor) beginDividerDrag(divider *layoutDividerRegion, where
 	e.beforeLayout = e.sheet.entity.SheetSettings.Layout.Clone()
 	// A copy is taken, since the regions are thrown away the moment the drag moves anything.
 	e.divider = *divider
+	e.recordDividerStart(where)
 	e.updateDividerDrag(where)
+}
+
+// recordDividerStart notes where the divider drag under way began and what the children of its row looked like then,
+// for endDividerDrag to put back should the drag end where it began.
+func (e *sheetLayoutEditor) recordDividerStart(where geom.Point) {
+	row, ok := e.divider.rowPanel.Layout().(*weightedRowLayout)
+	children := e.divider.rowPanel.Children()
+	e.dividerStart = layoutDividerStart{
+		pt:       where,
+		children: make([]layoutDividerChildStart, len(children)),
+	}
+	for i, child := range children {
+		state := &e.dividerStart.children[i]
+		if state.node = sheetLayoutNodeOf(child); state.node != nil {
+			state.weight = state.node.Weight
+		}
+		if state.squareNode = squareLayoutNodeOf(child); state.squareNode != nil {
+			state.square = state.squareNode.Square
+		}
+		if ok {
+			if i < len(row.weights) {
+				state.liveWeight = row.weights[i]
+			}
+			state.liveSquare = row.squareOf(i)
+		}
+	}
+}
+
+// restoreDividerStart puts the row the divider drag under way began in back exactly as recordDividerStart found it, in
+// the model and in the row's live layout alike, and lays the page out again to show that.
+func (e *sheetLayoutEditor) restoreDividerStart() {
+	row, ok := e.divider.rowPanel.Layout().(*weightedRowLayout)
+	for i, state := range e.dividerStart.children {
+		if state.node != nil {
+			state.node.Weight = state.weight
+		}
+		if state.squareNode != nil {
+			state.squareNode.Square = state.square
+		}
+		if ok {
+			if i < len(row.weights) {
+				row.weights[i] = state.liveWeight
+			}
+			row.setSquare(i, state.liveSquare)
+		}
+	}
+	e.relayoutLive(e.divider.rowPanel)
 }
 
 // updateDividerDrag gives the two blocks either side of the divider the shares of the row the pointer calls for. The
@@ -1173,8 +1245,15 @@ func (e *sheetLayoutEditor) releaseSquareDivider(divider *layoutDividerRegion) {
 	}
 }
 
+// endDividerDrag ends the drag where the pointer is. A drag that ends within a pixel of where it began has, to the eye,
+// put the divider back, so the row is put back exactly as it was rather than being left the rounding error away from it
+// that the pointer's position works out to, which finish would have no choice but to record as an edit.
 func (e *sheetLayoutEditor) endDividerDrag(where geom.Point) {
-	e.updateDividerDrag(where)
+	if xmath.Abs(where.X-e.dividerStart.pt.X) < 1 {
+		e.restoreDividerStart()
+	} else {
+		e.updateDividerDrag(where)
+	}
 	e.mode = layoutIdle
 	e.finish(i18n.Text("Resize Block"))
 }

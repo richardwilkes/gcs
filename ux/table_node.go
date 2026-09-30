@@ -13,6 +13,7 @@ import (
 	"fmt"
 	"slices"
 	"strings"
+	"unicode"
 
 	"github.com/richardwilkes/gcs/v5/model/fonts"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
@@ -22,6 +23,7 @@ import (
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/toolbox/v2/tid"
+	"github.com/richardwilkes/toolbox/v2/xmath"
 	"github.com/richardwilkes/toolbox/v2/xos"
 	"github.com/richardwilkes/toolbox/v2/xreflect"
 	"github.com/richardwilkes/unison"
@@ -330,7 +332,9 @@ func (n *Node[T]) createMarkdownCell(content string, width float32, font unison.
 	m.LinkInk = &inks.link
 	m.LinkOnPressedInk = &inks.linkOnPressed
 	adjustMarkdownInk(m, foreground, background, selected)
-	m.SetContent(markdownHardLineBreaks(content), width)
+	// Wrapped to a whole-pixel width for the same reason addLabelCell wraps to one: each line becomes a label, which
+	// reports a width rounded up to whole pixels.
+	m.SetContent(markdownHardLineBreaks(content), xmath.Floor(width))
 	return m
 }
 
@@ -556,18 +560,21 @@ func (n *Node[T]) addLabelCell(c *gurps.CellData, parent *unison.Panel, width fl
 		tag.SetTitle(inlineTag)
 		tag.SetEnabled(!c.Dim)
 	}
+	// A label reports its width rounded up to whole pixels, so the text is wrapped to a whole-pixel width. Wrapped to
+	// the fractional width a cell usually has, a line that fit could still come out a fraction too wide and push what
+	// sits beside it, the notes disclosure button or the inline tag, past the edge of the cell.
 	var lines []*unison.Text
 	if width > 0 {
 		if tag != nil {
 			_, size, _ := tag.Sizes(geom.Size{})
-			lines = unison.NewTextWrappedLines(text, decoration, width-(size.Width+unison.StdHSpacing))
+			lines = unison.NewTextWrappedLines(text, decoration, xmath.Floor(width-(size.Width+unison.StdHSpacing)))
 			if len(lines) > 1 {
 				lines = lines[:1]
 				lines = append(lines, unison.NewTextWrappedLines(strings.TrimPrefix(text, lines[0].String()),
-					decoration, width)...)
+					decoration, xmath.Floor(width))...)
 			}
 		} else {
-			lines = unison.NewTextWrappedLines(text, decoration, width)
+			lines = unison.NewTextWrappedLines(text, decoration, xmath.Floor(width))
 		}
 	} else {
 		lines = unison.NewTextLines(text, decoration)
@@ -578,7 +585,9 @@ func (n *Node[T]) addLabelCell(c *gurps.CellData, parent *unison.Panel, width fl
 		label.StrikeThrough = primary && c.Disabled
 		label.HAlign = c.Alignment
 		label.OnBackgroundInk = foreground
-		label.SetTitle(line.String())
+		// A line keeps the whitespace it was broken at, which only fit because the wrapping doesn't count it; left
+		// on, the label would be measured with it and come out wider than the width the line was wrapped to.
+		label.SetTitle(strings.TrimRightFunc(line.String(), unicode.IsSpace))
 		label.SetEnabled(!c.Dim)
 		if tag != nil {
 			wrapper := unison.NewPanel()
