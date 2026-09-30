@@ -958,7 +958,9 @@ func TestPickerCostsSheetRowsAsPrompted(t *testing.T) {
 	sword, _ := newEditorEquipmentWithChoice([2]string{"+50", "+1 lb"}, [2]string{"+100", "+2 lb"})
 	sword.SetDataOwner(entity)
 	sword.Modifiers[0].Children[0].Disabled = false
-	c.Equal([]string{"1", "$150", "3 lb"}, pickerRowDetails(sword, false, nil))
-	c.Equal([]string{"1", "$150~200", "3~4 lb"}, pickerRowDetails(sword, true, nil))
+	for prompted, want := range map[bool][2]string{false: {"$150", "3 lb"}, true: {"$150~200", "3~4 lb"}} {
+		s := newPickerSession(promptOperation{}, []*gurps.Equipment{sword}, prompted)
+		c.Equal(want, [2]string{s.cost(sword, picker.Value).text, s.cost(sword, picker.Weight).text})
+	}
 	c.Equal("$150~200", formatPickerTotal(sword, picker.Value, gurps.PickerMeasureRange(sword, picker.Value, true, nil)))
 }

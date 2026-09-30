@@ -215,18 +215,6 @@ func (s *pickerSession[T]) newPickerDialog(row T, depth int) (dialog *unison.Dia
 	return dialog, refresh
 }
 
-// newMatchStatePill is newPickerStatePill for something that either matches or doesn't.
-func newMatchStatePill(top float32) (pill *unison.Label, update func(matches bool, title string)) {
-	pill, updateState := newPickerStatePill(top)
-	return pill, func(matches bool, title string) {
-		if matches {
-			updateState(pickerOK, title)
-		} else {
-			updateState(pickerError, title)
-		}
-	}
-}
-
 // newPickerStatePill returns a label drawn as a pill in the look of a picker state, top points below the top of its
 // border, and the function that sets its state and title. It isn't drawn until that is called.
 func newPickerStatePill(top float32) (pill *unison.Label, update func(state pickerState, title string)) {
@@ -335,7 +323,7 @@ func (s *pickerSession[T]) addPickerRow(parent *unison.Panel, row T, pt picker.T
 		// A choice made by value or weight may take more than one of an option, so its quantity may be set while
 		// picking, if it has one of its own to set.
 		if (pt == picker.Value || pt == picker.Weight) && !actual.IsGroup() {
-			onClick = func() { pickerRowQuantityEditor(op, actual, &details, prompted, refresh) }
+			onClick = func() { pickerRowQuantityEditor(op, actual, refresh) }
 			editTooltip = i18n.Text("Edit quantity")
 		}
 		pageRef = actual.PageRef
@@ -464,22 +452,6 @@ func pickerRowDetailHeaders[T gurps.Node[T]](container T) []string {
 	return nil
 }
 
-// pickerRowDetails returns the details shown for an option in the columns pickerRowDetailHeaders names. The value and
-// weight are ranges when the option presents a choice of its own, costed as the modifier prompt will see it when
-// prompted.
-func pickerRowDetails[T gurps.Node[T]](row T, prompted bool, taken func(T) bool) []string {
-	eqp, ok := any(row).(*gurps.Equipment)
-	if !ok {
-		return nil
-	}
-	defUnits := pickerWeightUnits(eqp)
-	return []string{
-		pickerRowQuantity(eqp),
-		"$" + gurps.FormatValueRange(gurps.PickerMeasureRange(row, picker.Value, prompted, taken), fxp.Int.Comma),
-		gurps.FormatWeightRange(gurps.PickerMeasureRange(row, picker.Weight, prompted, taken), defUnits.Format),
-	}
-}
-
 // pickerRowQuantity returns the quantity shown for an option, if it has one of its own.
 func pickerRowQuantity(eqp *gurps.Equipment) string {
 	if !eqp.IsGroup() {
@@ -554,9 +526,8 @@ func formatPickerTotal[T gurps.Node[T]](row T, pt picker.Type, total gurps.Numer
 	}
 }
 
-// pickerRowQuantityEditor asks for a new quantity of an option of a choice made by value or weight, updating the
-// option's details and the running total to match.
-func pickerRowQuantityEditor(op promptOperation, eqp *gurps.Equipment, details *[]*unison.Label, prompted bool, callback func()) {
+// pickerRowQuantityEditor asks for a new quantity of an option of a choice made by value or weight.
+func pickerRowQuantityEditor(op promptOperation, eqp *gurps.Equipment, callback func()) {
 	quantity := eqp.Quantity
 	panel := unison.NewPanel()
 	panel.SetLayout(&unison.FlexLayout{
@@ -578,20 +549,8 @@ func pickerRowQuantityEditor(op promptOperation, eqp *gurps.Equipment, details *
 	if dialog.RunModal() != unison.ModalResponseOK {
 		return
 	}
-	setPickerRowQuantity(eqp, quantity, *details, prompted)
-	callback()
-}
-
-// setPickerRowQuantity sets the quantity of an option of a choice, updating the details shown for it to match.
-func setPickerRowQuantity(eqp *gurps.Equipment, quantity fxp.Int, details []*unison.Label, prompted bool) {
 	eqp.Quantity = quantity
-	for i, detail := range pickerRowDetails(eqp, prompted, nil) {
-		if i < len(details) {
-			details[i].SetTitle(detail)
-			details[i].MarkForLayoutRecursivelyUpward()
-			details[i].MarkForRedraw()
-		}
-	}
+	callback()
 }
 
 // pointsText returns the points, as in "5 points" or "1 point".

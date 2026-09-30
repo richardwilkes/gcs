@@ -244,12 +244,16 @@ func TestPickerRowDetailsForEquipment(t *testing.T) {
 	rope.Quantity = fxp.FromInteger(3)
 	rope.BaseValue = "10"
 	rope.BaseWeight = "2 lb"
-	c.Equal([]string{"3", "$30", "6 lb"}, pickerRowDetails(rope, false, nil))
+	s := newPickerSession(promptOperation{}, []*gurps.Equipment{choice}, false)
+	details := func(row *gurps.Equipment) []string {
+		return []string{pickerRowQuantity(row), s.cost(row, picker.Value).text, s.cost(row, picker.Weight).text}
+	}
+	c.Equal([]string{"3", "$30", "6 lb"}, details(rope))
 
 	group := gurps.NewEquipmentGroup(nil, choice)
 	rope.SetParent(group)
 	group.Children = []*gurps.Equipment{rope}
-	c.Equal([]string{"", "$30", "6 lb"}, pickerRowDetails(group, false, nil), "a group has no quantity of its own")
+	c.Equal([]string{"", "$30", "6 lb"}, details(group), "a group has no quantity of its own")
 }
 
 // TestEquipmentContextMenuLeavesOutTheListName verifies that an equipment list's context menu offers to add to that list
@@ -281,22 +285,18 @@ func TestEquipmentContextMenuLeavesOutTheListName(t *testing.T) {
 	c.False(hasChoice, "the other equipment list never holds choices")
 }
 
-// TestPickerQuantityUpdatesDetailsAndTotal verifies that setting the quantity of an option of a choice made by value or
-// weight updates what is shown for it and what it counts toward the choice.
-func TestPickerQuantityUpdatesDetailsAndTotal(t *testing.T) {
+// TestPickerCostCountsQuantity verifies that the quantity of an option of a choice made by value or weight
+// counts toward what is shown for it.
+func TestPickerCostCountsQuantity(t *testing.T) {
 	c := check.New(t)
 	torch := gurps.NewEquipment(nil, nil, false)
 	torch.BaseValue = "3"
 	torch.BaseWeight = "1 lb"
-	details := []*unison.Label{unison.NewLabel(), unison.NewLabel(), unison.NewLabel()}
-	setPickerRowQuantity(torch, fxp.FromInteger(4), details, false)
-	c.Equal(fxp.FromInteger(4), torch.Quantity)
-	c.Equal("4", details[0].String())
-	c.Equal("$12", details[1].String())
-	c.Equal("$12", formatPickerTotal(torch, picker.Value, gurps.PickerMeasureRange(torch, picker.Value, false, nil)))
+	torch.Quantity = fxp.FromInteger(4)
+	s := newPickerSession(promptOperation{}, []*gurps.Equipment{torch}, false)
+	c.Equal("$12", s.cost(torch, picker.Value).text)
 	units := gurps.SheetSettingsFor(nil).DefaultWeightUnits
-	c.Equal(units.Format(torch.ExtendedWeight(false, units)), details[2].String())
-	c.Equal(details[2].String(), formatPickerTotal(torch, picker.Weight, gurps.PickerMeasureRange(torch, picker.Weight, false, nil)))
+	c.Equal(units.Format(torch.ExtendedWeight(false, units)), s.cost(torch, picker.Weight).text)
 }
 
 // TestQuantityCommandsSkipGroups verifies that Increment and Decrement, which adjust equipment's quantity, leave a

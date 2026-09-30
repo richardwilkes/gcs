@@ -306,13 +306,13 @@ func newModifierSelection[T gurps.Node[T]](modifiers []T, requirePicks, italicNa
 			s.choices = append(s.choices, choice)
 			text += "; *" + gurps.ModifierChoiceDescription(m) + "*"
 			if choice.mandatory {
-				status, update := newMatchStatePill(0)
+				status, update := newPickerStatePill(0)
 				status.Font = fonts.FieldSecondary
 				choice.updateStatus = func(made bool) {
 					if made {
-						update(true, i18n.Text("Picked"))
+						update(pickerOK, i18n.Text("Picked"))
 					} else {
-						update(false, i18n.Text("Required"))
+						update(pickerError, i18n.Text("Required"))
 					}
 				}
 				s.addRow(gm.Depth(), text, nil, status)
