@@ -251,6 +251,20 @@ func TestOrganizedChoiceCostsForOtherTypes(t *testing.T) {
 	c.Equal("1~4", skills.RawPointsRange().String())
 	c.Equal("1~4", skills.PointsRange(nil).String())
 
+	spells := NewSpellChoiceContainer(nil, nil)
+	spellGroup := NewSpell(nil, nil, true)
+	spellGroup.PickSeparately = true
+	for _, points := range []int{1, 2} {
+		spell := NewSpell(nil, nil, false)
+		spell.Points = fxp.FromInteger(points)
+		addOptions(spellGroup, spell)
+	}
+	fourSpell := NewSpell(nil, nil, false)
+	fourSpell.Points = fxp.Four
+	addOptions(spells, spellGroup, fourSpell)
+	c.Equal("1~4", spells.RawPointsRange().String())
+	c.Equal("1~4", spells.PointsRange(nil).String())
+
 	eqp := NewEquipmentChoiceContainer(nil, nil)
 	eqp.TemplatePicker.Type = picker.Value
 	eqp.TemplatePicker.Qualifier.Compare = criteria.AtMostNumber
@@ -260,6 +274,13 @@ func TestOrganizedChoiceCostsForOtherTypes(t *testing.T) {
 	c.Equal("0~30", eqp.ExtendedValueRange().String(), "a unit group can't be raised")
 	kit.PickSeparately = true
 	c.Equal("0~50", eqp.ExtendedValueRange().String(), "what it holds can")
+
+	eqp.TemplatePicker.Type = picker.Weight
+	eqp.TemplatePicker.Qualifier.Qualifier = fxp.FromInteger(5)
+	kit.PickSeparately = false
+	c.Equal("0~1", eqp.ExtendedWeightRange(fxp.Pound).String(), "by weight, a unit group can't be raised")
+	kit.PickSeparately = true
+	c.Equal("0~5", eqp.ExtendedWeightRange(fxp.Pound).String(), "what it holds can")
 }
 
 func TestOrganizingGroupModifierChoiceIsMadeOnce(t *testing.T) {

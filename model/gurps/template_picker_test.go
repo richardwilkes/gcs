@@ -17,6 +17,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/criteria"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/container"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/eqcontainer"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/frequency"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/picker"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/selfctrl"
@@ -413,4 +414,25 @@ func TestGroupConversionHelpers(t *testing.T) {
 	c.False(CanConvertToGroupContainer(skillContainer), "a skill container is already only a group")
 	c.True(CanTakeModifiers(NewTrait(nil, nil, false)))
 	c.False(CanTakeModifiers(NewEquipmentGroup(nil, nil)))
+}
+
+func TestPickerMeasureRangeWithContents(t *testing.T) {
+	c := check.New(t)
+	backpack := newEquipmentItem("Backpack", "50", "2 lb")
+	backpack.ContainerType = eqcontainer.Container
+	reduction := NewContainedWeightReduction()
+	reduction.Reduction = "50%"
+	backpack.Features = Features{reduction}
+	backpack.Quantity = fxp.Two
+	value := newNumericRange(fxp.FromInteger(10), fxp.FromInteger(20))
+	weight := newNumericRange(fxp.Four, fxp.FromInteger(8))
+	c.Equal("120~140", PickerMeasureRangeWithContents(backpack, picker.Value, false, nil, value).String(),
+		"its own value and its contents', for each of it")
+	c.Equal("8~12", PickerMeasureRangeWithContents(backpack, picker.Weight, false, nil, weight).String(),
+		"with the weight of its contents reduced")
+	c.Equal("0", PickerMeasureRangeWithContents(backpack, picker.Points, false, nil, value).String())
+	backpack.Quantity = 0
+	c.Equal("0", PickerMeasureRangeWithContents(backpack, picker.Value, false, nil, value).String(),
+		"none of it counts as nothing")
+	c.Equal("0", PickerMeasureRangeWithContents(NewTrait(nil, nil, true), picker.Value, false, nil, value).String())
 }
