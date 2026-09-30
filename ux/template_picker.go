@@ -368,7 +368,8 @@ func isPickerUnit[T gurps.Node[T]](row T) bool {
 }
 
 // addPickerHeader adds the header of an organizing group to the list and returns the section within the given one
-// that its options go in, which starts open. The header is a heading one level below that of the group it is in.
+// that its options go in, which starts open. The header is a heading one level below that of the group it is in, with
+// a chevron only if the group holds anything to show or hide.
 func addPickerHeader[T gurps.Node[T]](list *pickerList, group T, within *pickerSection, indent int) *pickerSection {
 	sec := &pickerSection{parent: within, open: true}
 	name := unison.NewLabel()
@@ -378,7 +379,11 @@ func addPickerHeader[T gurps.Node[T]](list *pickerList, group T, within *pickerS
 	for one := within; one != nil; one = one.parent {
 		name.Accessibility.Level++
 	}
-	addPickerNameRow(list, group, newPickerDisclosure(list, sec, group.String()), true, indent, name)
+	var disclosure *unison.Button
+	if group.HasChildren() {
+		disclosure = newPickerDisclosure(list, sec, group.String())
+	}
+	addPickerNameRow(list, group, disclosure, true, indent, name)
 	return sec
 }
 

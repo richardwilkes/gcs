@@ -366,6 +366,35 @@ func TestPickerOrganizingGroupHeaders(t *testing.T) {
 	c.Equal(unison.ModalResponseOK, response, "Return first thing accepts the dialog")
 }
 
+// An organizing group with nothing in it has no chevron, but its name keeps the place of one.
+func TestPickerEmptyGroupHasNoChevron(t *testing.T) {
+	c := check.New(t)
+	screen, _ := startHeadlessWorkspace(t, c)
+	choice := gurps.NewTrait(nil, nil, true)
+	choice.TemplatePicker.Type = picker.Count
+	choice.TemplatePicker.Qualifier.Qualifier = fxp.One
+	empty := gurps.NewTrait(nil, choice, true)
+	empty.Name = "empty"
+	empty.PickSeparately = true
+	luck := gurps.NewTrait(nil, choice, false)
+	luck.Name = "luck"
+	choice.Children = []*gurps.Trait{empty, luck}
+	s := newPickerSession(promptOperation{}, []*gurps.Trait{choice}, false)
+	screen.Do(func() {
+		dialog, _ := s.newPickerDialog(choice, 0)
+		c.NotNil(dialog, "the dialog must be made")
+		if dialog == nil {
+			return
+		}
+		wnd := dialog.Window()
+		defer wnd.Dispose()
+		wnd.ValidateLayout()
+		list := panelsOfType[*unison.CheckBox](wnd.Content())[0].Parent().Parent()
+		c.Equal(0, len(panelsOfType[*unison.Button](list)), "there is nothing to show or hide")
+		checkPickerRowPlaces(c, list, map[string]pickerPlace{"empty": {slot: true}, "luck": {slot: true}})
+	})
+}
+
 // Closing a group by mouse while the focus is inside it moves the focus to its chevron, so the keyboard still works.
 func TestPickerClosingGroupKeepsFocus(t *testing.T) {
 	c := check.New(t)
