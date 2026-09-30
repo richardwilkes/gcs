@@ -24,11 +24,13 @@ import (
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/toolbox/v2/xreflect"
 	"github.com/richardwilkes/unison"
+	"github.com/richardwilkes/unison/accessibility"
 	"github.com/richardwilkes/unison/enums/align"
 	"github.com/richardwilkes/unison/enums/behavior"
 	"github.com/richardwilkes/unison/enums/check"
 	"github.com/richardwilkes/unison/enums/mod"
 	"github.com/richardwilkes/unison/enums/paintstyle"
+	"github.com/richardwilkes/unison/enums/role"
 	"github.com/richardwilkes/unison/enums/side"
 )
 
@@ -57,38 +59,44 @@ func (s *pickerSession[T]) showPicker(row T, depth int) int {
 // newPickerDialog returns the dialog showPicker puts up, or nil if it couldn't be made, and what brings it up to date
 // with the session.
 func (s *pickerSession[T]) newPickerDialog(row T, depth int) (dialog *unison.Dialog, refresh func()) {
-	children := gurps.TemplateChoiceOptions(row)
 	tp := templatePicker(row)
 	headers := pickerRowDetailHeaders(row)
 	// A column for the pencil, and one for the choose button when the modifier prompt follows or an option is or holds a
 	// choice.
-	chooseColumn := s.prompted || slices.ContainsFunc(children, func(child T) bool {
+	chooseColumn := s.prompted || slices.ContainsFunc(gurps.TemplateChoiceOptions(row), func(child T) bool {
 		return gurps.IsTemplateChoiceContainer(child) || len(s.nestedChoices(child)) != 0
 	})
 	buttonColumns := 1
 	if chooseColumn {
 		buttonColumns++
 	}
-	list := unison.NewPanel()
-	list.SetBorder(unison.NewEmptyBorder(geom.NewUniformInsets(unison.StdHSpacing)))
-	list.SetLayout(&unison.FlexLayout{
-		Columns:  1 + len(headers) + buttonColumns,
+	list := &pickerList{
+		panel:        unison.NewPanel(),
+		columns:      1 + len(headers) + buttonColumns,
+		pt:           tp.Type,
+		depth:        depth,
+		chooseColumn: chooseColumn,
+	}
+	list.panel.SetBorder(unison.NewEmptyBorder(geom.NewUniformInsets(unison.StdHSpacing)))
+	list.panel.SetLayout(&unison.FlexLayout{
+		Columns:  list.columns,
 		HSpacing: unison.StdHSpacing,
 		VSpacing: unison.StdVSpacing,
 	})
 	if len(headers) != 0 {
-		list.AddChild(unison.NewPanel())
+		list.panel.AddChild(unison.NewPanel())
 		for _, header := range headers {
 			label := unison.NewLabel()
 			label.Font = fonts.FieldSecondary
 			label.SetTitle(header)
 			label.SetLayoutData(&unison.FlexLayoutData{HAlign: align.End})
-			list.AddChild(label)
+			list.panel.AddChild(label)
 		}
 		for range buttonColumns {
-			list.AddChild(unison.NewPanel())
+			list.panel.AddChild(unison.NewPanel())
 		}
 	}
+	list.claim(0, nil)
 
 	progress, updateProgress := newPickerStatePill(unison.StdVSpacing * 2)
 	progress.Side = side.Right
@@ -104,9 +112,8 @@ func (s *pickerSession[T]) newPickerDialog(row T, depth int) (dialog *unison.Dia
 		return hint.sizes(size)
 	})
 	hint.SetLayoutData(&unison.FlexLayoutData{HSpan: 2, HAlign: align.Fill})
-	updates := make([]func(), 0, len(children))
 	refresh = func() {
-		for _, update := range updates {
+		for _, update := range list.updates {
 			update()
 		}
 		state := s.state(row)
@@ -120,13 +127,12 @@ func (s *pickerSession[T]) newPickerDialog(row T, depth int) (dialog *unison.Dia
 			growWindowToFit(dialog.Window())
 		}
 	}
-	for _, child := range children {
-		updates = append(updates, s.addPickerRow(list, child, tp.Type, depth, chooseColumn, refresh))
-	}
+	list.refresh = refresh
+	s.addPickerRows(list, row.NodeChildren(), nil, 0)
 	refresh()
 
 	scroll.SetBorder(unison.NewLineBorder(unison.ThemeSurfaceEdge, geom.Size{}, geom.NewUniformInsets(1), false))
-	scroll.SetContent(list, behavior.Fill, behavior.Fill)
+	scroll.SetContent(list.panel, behavior.Fill, behavior.Fill)
 	scroll.BackgroundInk = unison.ThemeSurface
 	scroll.SetLayoutData(&unison.FlexLayoutData{
 		HAlign: align.Fill,
@@ -256,10 +262,212 @@ func newPickerStatePill(top float32) (pill *unison.Label, update func(state pick
 	return pill, update
 }
 
-// addPickerRow adds the row to the dialog's list, returning what brings it up to date with the session. refresh is
-// called after anything in the row changes. depth is that of the dialog, and chooseColumn says whether it has a
-// column for the choose button.
-func (s *pickerSession[T]) addPickerRow(parent *unison.Panel, row T, pt picker.Type, depth int, chooseColumn bool, refresh func()) (update func()) {
+// pickerList is the picker dialog's list of options, with what its rows need and the cells they are made of.
+type pickerList struct {
+	panel        *unison.Panel
+	refresh      func()
+	updates      []func()
+	cells        []*unison.Panel
+	sections     []*pickerSection
+	columns      int
+	depth        int
+	pt           picker.Type
+	chooseColumn bool
+}
+
+// pickerSection is a run of the list's rows under a disclosure, shown when it and every section it sits in is open.
+type pickerSection struct {
+	parent *pickerSection
+	open   bool
+}
+
+func (sec *pickerSection) shown() bool {
+	for ; sec != nil; sec = sec.parent {
+		if !sec.open {
+			return false
+		}
+	}
+	return true
+}
+
+// claim records the cells added to the list since it held from of them as being in the section.
+func (l *pickerList) claim(from int, sec *pickerSection) {
+	for _, cell := range l.panel.Children()[from:] {
+		l.cells = append(l.cells, cell)
+		l.sections = append(l.sections, sec)
+	}
+}
+
+// sync takes the cells of hidden sections out of the list and puts those of shown ones back in their places. Whole rows
+// come and go, so the rest keep their columns.
+func (l *pickerList) sync() {
+	i := 0
+	for j, cell := range l.cells {
+		switch {
+		case !l.sections[j].shown():
+			if cell.Parent() == l.panel {
+				cell.RemoveFromParent()
+			}
+			continue
+		case cell.Parent() != l.panel:
+			l.panel.AddChildAtIndex(cell, i)
+		}
+		i++
+	}
+	l.panel.MarkForLayoutRecursivelyUpward()
+	l.panel.MarkForRedraw()
+}
+
+// addPickerRows adds a row for each of the children to the list, in the section, indent levels in. An organizing group
+// becomes a header with its options beneath it, one level further in.
+func (s *pickerSession[T]) addPickerRows(list *pickerList, children []T, sec *pickerSection, indent int) {
+	for _, child := range children {
+		from := len(list.panel.Children())
+		if gurps.IsOrganizingGroup(child) {
+			inner := addPickerHeader(list, child, sec, indent)
+			list.claim(from, sec)
+			s.addPickerRows(list, child.NodeChildren(), inner, indent+1)
+			continue
+		}
+		list.updates = append(list.updates, s.addPickerRow(list.panel, child, list.pt, indent, list.depth,
+			list.chooseColumn, list.refresh))
+		list.claim(from, sec)
+	}
+}
+
+// addPickerHeader adds the header of an organizing group to the list, spanning its columns, and returns the section
+// within the given one that its options go in, which starts open.
+func addPickerHeader[T gurps.Node[T]](list *pickerList, group T, within *pickerSection, indent int) *pickerSection {
+	sec := &pickerSection{parent: within, open: true}
+	header := unison.NewPanel()
+	header.SetLayout(&unison.FlexLayout{
+		Columns:  3,
+		HSpacing: unison.StdHSpacing,
+	})
+	header.SetLayoutData(&unison.FlexLayoutData{
+		HSpan:  list.columns,
+		HAlign: align.Fill,
+		HGrab:  true,
+	})
+	header.SetBorder(unison.NewEmptyBorder(geom.Insets{Left: pickerIndent(indent)}))
+	name := unison.NewLabel()
+	name.SetTitle(group.String())
+	name.Accessibility.Role = role.Heading
+	name.Accessibility.Level = indent + 1
+	header.AddChild(newPickerDisclosure(list, sec, group.String(), name.Font))
+	header.AddChild(name)
+	if link := newPickerPageLink(pickerRowPageRef(group)); link != nil {
+		header.AddChild(link)
+	}
+	list.panel.AddChild(header)
+	return sec
+}
+
+// newPickerDisclosure returns the chevron that shows or hides the section of the list, named for what it holds. Space
+// or Return toggles it.
+func newPickerDisclosure(list *pickerList, sec *pickerSection, title string, font unison.Font) *unison.Button {
+	button := unison.NewButton()
+	button.HideBase = true
+	button.HMargin = 0
+	button.VMargin = 0
+	// The button is nothing but its chevron, so its tooltip is also what a screen reader calls it.
+	button.Tooltip = newWrappedTooltip(fmt.Sprintf(i18n.Text("Show or hide %s"), title))
+	size := max(font.Baseline()-2, 6)
+	chevron := &unison.DrawableSVG{
+		SVG:  unison.CircledChevronRightSVG,
+		Size: geom.NewSize(size, size),
+	}
+	turn := func() {
+		chevron.RotationDegrees = 0
+		if sec.open {
+			chevron.RotationDegrees = 90
+		}
+	}
+	turn()
+	button.Drawable = chevron
+	button.SetLayoutData(&unison.FlexLayoutData{VAlign: align.Middle})
+	button.ClickCallback = func() {
+		sec.open = !sec.open
+		turn()
+		list.sync()
+		if wnd := button.Window(); wnd != nil {
+			growWindowToFit(wnd)
+		}
+	}
+	button.KeyDownCallback = func(keyCode unison.KeyCode, mods mod.Modifiers, repeat bool) bool {
+		if (keyCode == unison.KeyReturn || keyCode == unison.KeyNumPadEnter) && mods&mod.NonSticky == 0 {
+			button.Click()
+			return true
+		}
+		return button.DefaultKeyDown(keyCode, mods, repeat)
+	}
+	addAccessibilityCallback(button, func(node *accessibility.Node) {
+		node.Expandable = true
+		node.Expanded = sec.open
+	})
+	return button
+}
+
+// pickerIndent returns how far in a row of the picker's list is set at the indent level.
+func pickerIndent(indent int) float32 {
+	return float32(indent) * 2 * unison.StdHSpacing
+}
+
+// pickerRowPageRef returns the page reference of the row and the text to highlight on its page, if it has one.
+func pickerRowPageRef[T gurps.Node[T]](row T) (pageRef, highlight string) {
+	switch actual := any(row).(type) {
+	case *gurps.Trait:
+		return actual.PageRef, actual.PageRefHighlight
+	case *gurps.Skill:
+		return actual.PageRef, actual.PageRefHighlight
+	case *gurps.Spell:
+		return actual.PageRef, actual.PageRefHighlight
+	case *gurps.Equipment:
+		return actual.PageRef, actual.PageRefHighlight
+	}
+	return "", ""
+}
+
+// newPickerPageLink returns the link to the first of the page references, set to line up along the right edge, or nil
+// if there is none.
+func newPickerPageLink(pageRef, highlight string) *unison.Label {
+	pageRefs := ExtractPageReferences(pageRef)
+	if len(pageRefs) == 0 {
+		return nil
+	}
+	var tooltip string
+	var icon *unison.DrawableSVG
+	title, img := convertLinksForPageRef(pageRefs[0])
+	if img != nil {
+		title = ""
+		height := unison.DefaultLinkTheme.Font.Baseline()
+		icon = &unison.DrawableSVG{
+			SVG:  img,
+			Size: geom.NewSize(height, height).Ceil(),
+		}
+		tooltip = pageRefs[0]
+	}
+	link := newLink(title, tooltip, "", &unison.DefaultLinkTheme, func(_ unison.Paneler, _ string) {
+		OpenPageReference(pageRefs[0], highlight, nil)
+	})
+	link.VAlign = align.Start
+	link.SetLayoutData(&unison.FlexLayoutData{
+		HAlign: align.End,
+		HGrab:  true,
+	})
+	if icon != nil {
+		link.Drawable = icon
+	}
+	if tooltip != "" {
+		link.Tooltip = newWrappedTooltip(tooltip)
+	}
+	return link
+}
+
+// addPickerRow adds the row to the dialog's list, indent levels in, returning what brings it up to date with the
+// session. refresh is called after anything in the row changes. depth is that of the dialog, and chooseColumn says
+// whether it has a column for the choose button.
+func (s *pickerSession[T]) addPickerRow(parent *unison.Panel, row T, pt picker.Type, indent, depth int, chooseColumn bool, refresh func()) (update func()) {
 	op, prompted := s.op, s.prompted
 	wrapper := unison.NewPanel()
 	wrapper.SetLayout(&unison.FlexLayout{
@@ -271,6 +479,9 @@ func (s *pickerSession[T]) addPickerRow(parent *unison.Panel, row T, pt picker.T
 		HAlign: align.Fill,
 		HGrab:  true,
 	})
+	if indent > 0 {
+		wrapper.SetBorder(unison.NewEmptyBorder(geom.Insets{Left: pickerIndent(indent)}))
+	}
 	parent.AddChild(wrapper)
 	checkBox := unison.NewCheckBox()
 	checkBox.ClickCallback = func() {
@@ -298,30 +509,22 @@ func (s *pickerSession[T]) addPickerRow(parent *unison.Panel, row T, pt picker.T
 	var onClick func()
 	var editTooltip string
 	details := make([]*unison.Label, 0, len(pickerRowDetailHeaders(row)))
-	pageRef := ""
-	pageRefHighlight := ""
 	switch actual := any(row).(type) {
 	case *gurps.Trait:
 		if actual.IsLeveled() {
 			onClick = func() { pickerRowLevelEditor(op, actual, refresh) }
 			editTooltip = i18n.Text("Edit level")
 		}
-		pageRef = actual.PageRef
-		pageRefHighlight = actual.PageRefHighlight
 	case *gurps.Skill:
 		if !actual.Container() {
 			onClick = func() { pickerRowPointEditor(op, actual, refresh) }
 			editTooltip = i18n.Text("Edit points")
 		}
-		pageRef = actual.PageRef
-		pageRefHighlight = actual.PageRefHighlight
 	case *gurps.Spell:
 		if !actual.Container() {
 			onClick = func() { pickerRowPointEditor(op, actual, refresh) }
 			editTooltip = i18n.Text("Edit points")
 		}
-		pageRef = actual.PageRef
-		pageRefHighlight = actual.PageRefHighlight
 	case *gurps.Equipment:
 		// A choice made by value or weight may take more than one of an option, so its quantity may be set while
 		// picking, if it has one of its own to set.
@@ -329,39 +532,9 @@ func (s *pickerSession[T]) addPickerRow(parent *unison.Panel, row T, pt picker.T
 			onClick = func() { pickerRowQuantityEditor(op, actual, refresh) }
 			editTooltip = i18n.Text("Edit quantity")
 		}
-		pageRef = actual.PageRef
-		pageRefHighlight = actual.PageRefHighlight
 	}
-	if pageRef != "" {
-		if pageRefs := ExtractPageReferences(pageRef); len(pageRefs) > 0 {
-			var tooltip string
-			var icon *unison.DrawableSVG
-			title, img := convertLinksForPageRef(pageRefs[0])
-			if img != nil {
-				title = ""
-				height := unison.DefaultLinkTheme.Font.Baseline()
-				icon = &unison.DrawableSVG{
-					SVG:  img,
-					Size: geom.NewSize(height, height).Ceil(),
-				}
-				tooltip = pageRefs[0]
-			}
-			link := newLink(title, tooltip, "", &unison.DefaultLinkTheme, func(_ unison.Paneler, _ string) {
-				OpenPageReference(pageRefs[0], pageRefHighlight, nil)
-			})
-			link.VAlign = align.Start
-			link.SetLayoutData(&unison.FlexLayoutData{
-				HAlign: align.End,
-				HGrab:  true,
-			})
-			if icon != nil {
-				link.Drawable = icon
-			}
-			if tooltip != "" {
-				link.Tooltip = newWrappedTooltip(tooltip)
-			}
-			wrapper.AddChild(link)
-		}
+	if link := newPickerPageLink(pickerRowPageRef(row)); link != nil {
+		wrapper.AddChild(link)
 	}
 	for range pickerRowDetailHeaders(row) {
 		label := unison.NewLabel()

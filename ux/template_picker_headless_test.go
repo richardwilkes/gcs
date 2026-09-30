@@ -11,6 +11,7 @@ package ux
 
 import (
 	"fmt"
+	"slices"
 	"testing"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
@@ -19,6 +20,7 @@ import (
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/unison"
+	"github.com/richardwilkes/unison/accessibility"
 	"github.com/richardwilkes/unison/enums/mod"
 	"github.com/richardwilkes/unison/enums/role"
 )
@@ -36,7 +38,7 @@ func TestPickerRowPageReferenceIsFollowedFromTheKeyboard(t *testing.T) {
 		trait.Name = "Alpha"
 		trait.PageRef = ref
 		holder = unison.NewPanel()
-		newPickerSession(promptOperation{}, []*gurps.Trait{trait}, false).addPickerRow(holder, trait, picker.Count, 0, false, func() {})
+		newPickerSession(promptOperation{}, []*gurps.Trait{trait}, false).addPickerRow(holder, trait, picker.Count, 0, 0, false, func() {})
 		if boxes := panelsOfType[*unison.CheckBox](holder); len(boxes) == 1 {
 			box = boxes[0]
 		}
@@ -174,4 +176,94 @@ func TestPickerModifierPromptOverride(t *testing.T) {
 	c.True(s.chosen[res], "Override keeps a partial answer")
 	c.True(s.modsAnswered[res])
 	c.True(res.Modifiers[0].Children[1].Enabled())
+}
+
+// An organizing group in the picker is a heading with a chevron that shows or hides its options, and no checkbox.
+func TestPickerOrganizingGroupHeaders(t *testing.T) {
+	c := check.New(t)
+	screen, wnd := startHeadlessWorkspace(t, c)
+	s, n := newOrganizedSession()
+	done := false
+	c.True(screen.Post(func() {
+		s.showPicker(n["root"], 0)
+		done = true
+	}))
+	screen.Sync()
+	dialogWnd, _ := modalDialog(t, screen, wnd)
+	chevrons := make(map[string]*unison.Button)
+	var boxes []*unison.CheckBox
+	var list *unison.Panel
+	var cells []*unison.Panel
+	screen.Do(func() {
+		for _, p := range panelsMatching(dialogWnd.Content(), func(p *unison.Panel) bool {
+			return p.Accessibility.Role == role.Heading
+		}) {
+			label, ok := p.Self.(*unison.Label)
+			c.True(ok)
+			chevron, isButton := p.Parent().Children()[0].Self.(*unison.Button)
+			c.True(isButton, "a header starts with its chevron")
+			chevrons[label.String()] = chevron
+			c.Equal(map[string]int{"martial": 1, "social": 1, "inner": 2}[label.String()], p.Accessibility.Level,
+				"%s is a heading at its depth", label.String())
+			c.Equal(0, len(panelsOfType[*unison.CheckBox](p.Parent())), "a header has no checkbox")
+		}
+		boxes = panelsOfType[*unison.CheckBox](dialogWnd.Content())
+		list = boxes[0].Parent().Parent()
+		cells = slices.Clone(list.Children())
+	})
+	c.Equal(3, len(chevrons), "each organizing group is a header")
+	c.Equal(5, len(boxes), "fear, honors, rank, status and luck are options")
+	expanded := func(name string) (expandable, expanded bool) {
+		tree := screen.AccessibilityTree(dialogWnd)
+		tree.Walk(func(node *accessibility.Node) bool {
+			if node.Name == "Show or hide "+name {
+				expandable, expanded = node.Expandable, node.Expanded
+			}
+			return true
+		})
+		return expandable, expanded
+	}
+	shownBoxes := func() (count int) {
+		screen.Do(func() { count = len(panelsOfType[*unison.CheckBox](list)) })
+		return count
+	}
+	expandable, open := expanded("martial")
+	c.True(expandable && open, "a header starts open")
+	screen.Do(chevrons["martial"].RequestFocus)
+	var focus *unison.Panel
+	tab := func() {
+		screen.KeyPress(unison.KeyTab, mod.None)
+		screen.Do(func() { focus = dialogWnd.Focus() })
+	}
+	// Where headings take the focus for a screen reader, Tab stops at the name on the way.
+	tab()
+	if focus.Accessibility.Role == role.Heading {
+		tab()
+	}
+	c.Equal(boxes[0].AsPanel(), focus, "Tab goes from the chevron to the first option beneath it")
+
+	screen.Do(chevrons["martial"].RequestFocus)
+	screen.KeyPress(unison.KeySpace, mod.None)
+	_, open = expanded("martial")
+	c.False(open, "Space collapses the header")
+	c.Equal(3, shownBoxes(), "its options are hidden")
+	screen.KeyPress(unison.KeyReturn, mod.None)
+	_, open = expanded("martial")
+	c.True(open, "Return expands it again")
+	c.False(done, "without closing the dialog")
+	screen.Do(func() { c.Equal(cells, list.Children(), "every row is back in its place") })
+
+	screen.Do(func() {
+		chevrons["inner"].Click()
+		chevrons["social"].Click()
+	})
+	c.Equal(3, shownBoxes(), "a collapsed group hides the groups within it")
+	screen.Do(chevrons["social"].Click)
+	c.Equal(4, shownBoxes(), "which stay as they were when it opens")
+	screen.Do(func() {
+		_, pref, _ := dialogWnd.Content().Sizes(geom.Size{})
+		c.True(pref.Width <= dialogWnd.ContentRect().Width, "the dialog still fits")
+	})
+	screen.KeyPress(unison.KeyEscape, mod.None)
+	c.True(done, "the dialog has closed")
 }
