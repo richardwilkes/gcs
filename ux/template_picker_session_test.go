@@ -434,6 +434,36 @@ func TestPickerSessionChoosesPicksBacksOut(t *testing.T) {
 	s.choosePicks(n["fit"], 0)
 	c.False(s.chosen[n["fit"]], "Override with nothing picked backs out")
 	c.False(s.pickerAnswered[n["fit"]])
+
+	// Taking back every pick of an answered choice leaves it to be asked later too.
+	s, n = newKnightSession()
+	fit := n["fit"]
+	var asked []string
+	answer := func(row *gurps.Trait, _ int) int {
+		asked = append(asked, row.Name)
+		switch row.Name {
+		case "root":
+			choose(s, n, "ea", "fit")
+		case "fit":
+			choose(s, n, "fit1")
+		}
+		return unison.ModalResponseOK
+	}
+	s.runPicker = answer
+	s.choosePicks(fit, 0)
+	c.True(s.pickerAnswered[fit])
+	s.runPicker = func(*gurps.Trait, int) int {
+		s.clear(fit)
+		return unison.ModalResponseUserBase
+	}
+	s.choosePicks(fit, 0)
+	c.True(s.chosen[fit], "the row stays as it was")
+	c.False(s.pickerAnswered[fit])
+	s.chosen[fit] = false
+	s.runPicker, asked = answer, nil
+	_, abort := s.processRows([]*gurps.Trait{n["root"]})
+	c.False(abort)
+	c.Equal([]string{"root", "fit"}, asked)
 }
 
 // TestPickerSessionClear verifies that clearing a choice takes back only its own picks.

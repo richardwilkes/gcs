@@ -202,6 +202,8 @@ func (s *pickerSession[T]) choosePicks(row T, depth int) {
 	case unison.ModalResponseOK:
 	case unison.ModalResponseUserBase:
 		if !s.hasPicks(row) {
+			// Even if answered before, it is asked later.
+			delete(s.pickerAnswered, row)
 			return
 		}
 	default:
