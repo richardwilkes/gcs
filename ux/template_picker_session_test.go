@@ -925,6 +925,54 @@ func TestPickerSessionUnansweredChoiceCostsLive(t *testing.T) {
 	c.Equal(pickerOpen, s.state(root))
 }
 
+// TestPickerSessionExpectedFollowsModifiers verifies that what a choice below a row is expected to come to follows the
+// row's modifiers once they are chosen, and goes back with them when the dialog they were chosen in is canceled.
+func TestPickerSessionExpectedFollowsModifiers(t *testing.T) {
+	c := check.New(t)
+	swapForTest(t, &promptForTraitModifiers, func(_ *modifierPromptInfo, mods []*gurps.TraitModifier) (changed, canceled bool) {
+		mods[0].Children[0].SetEnabled(false)
+		mods[0].Children[1].SetEnabled(true)
+		return false, false
+	})
+	pick := func(trait *gurps.Trait, children ...*gurps.Trait) *gurps.Trait {
+		trait.TemplatePicker.Type = picker.Count
+		trait.TemplatePicker.Qualifier.Compare = criteria.EqualsNumber
+		trait.TemplatePicker.Qualifier.Qualifier = fxp.One
+		trait.Children = children
+		SetParents(children, trait)
+		return trait
+	}
+	a, b := gurps.NewTrait(nil, nil, false), gurps.NewTrait(nil, nil, false)
+	a.BasePoints, b.BasePoints = fxp.FromInteger(10), fxp.FromInteger(20)
+	n3 := pick(gurps.NewTrait(nil, nil, true), a, b)
+	n := pick(gurps.NewTrait(nil, nil, true), n3)
+	plain := gurps.NewTrait(nil, nil, true)
+	choice := newTraitModifierChoiceFor(nil, true, []string{"+0%", "+100%"}, "+0%")
+	for _, option := range choice.Children {
+		option.CostAdj = option.Name
+	}
+	plain.AddModifiers(choice)
+	plain.Children = []*gurps.Trait{n}
+	SetParents(plain.Children, plain)
+	root := pick(gurps.NewTrait(nil, nil, true), plain)
+	s := newPickerSession(promptOperation{}, []*gurps.Trait{root}, true)
+	s.runPicker = func(row *gurps.Trait, _ int) int {
+		if row == root {
+			s.chooseWithin(plain, 1)
+		}
+		return unison.ModalResponseCancel
+	}
+	key := pickerMeasureKey[*gurps.Trait]{n3, picker.Points}
+	s.choosePicks(root, 0)
+	c.Equal("10~20", s.expected[key].String(), "canceling puts it back")
+	c.True(choice.Children[0].Enabled())
+
+	s.chooseWithin(plain, 0)
+	c.Equal("20~40", s.expected[key].String())
+	s.chosen[n3], s.chosen[b] = true, true
+	c.Equal(pickerText{text: " [40 points]"}, s.cost(n3, picker.Points), "not over")
+}
+
 // TestPickerSessionPhysicalContainerHoldingAChoice verifies that a physical container picked from a choice comes to its
 // own value and weight plus what is picked inside it, less the weight it takes off what it holds.
 func TestPickerSessionPhysicalContainerHoldingAChoice(t *testing.T) {

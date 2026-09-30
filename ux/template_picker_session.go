@@ -59,7 +59,8 @@ type pickerSession[T gurps.Node[T]] struct {
 	groups []T
 	// modPrompts holds the modifier prompt of each row with modifiers to ask about, as it stood at the start.
 	modPrompts map[T]func(info *modifierPromptInfo) bool
-	// expected holds what each choice container should come to by its rules alone, whatever is picked below it.
+	// expected holds what each choice container should come to by its rules alone, whatever is picked below it, with
+	// the modifiers above it as they stood when last chosen.
 	expected map[pickerMeasureKey[T]]gurps.NumericRange
 	// runPicker puts up the dialog for a choice container, returning how it was closed.
 	runPicker func(row T, depth int) int
@@ -79,13 +80,11 @@ func newPickerSession[T gurps.Node[T]](op promptOperation, rows []T, prompted bo
 		expected:       make(map[pickerMeasureKey[T]]gurps.NumericRange),
 	}
 	s.runPicker = s.showPicker
-	var containers []T
 	gurps.Traverse(func(row T) bool {
 		if gurps.IsOrganizingGroup(row) {
 			s.above[row] = true
 		}
 		if gurps.IsTemplateChoiceContainer(row) {
-			containers = append(containers, row)
 			for parent := row.Parent(); !xreflect.IsNil(parent); parent = parent.Parent() {
 				if !gurps.IsTemplateChoiceContainer(parent) {
 					s.above[parent] = true
@@ -100,12 +99,20 @@ func newPickerSession[T gurps.Node[T]](op promptOperation, rows []T, prompted bo
 		}
 		return false
 	}, false, false, rows...)
-	for _, row := range containers {
-		for _, kind := range []picker.Type{picker.Points, picker.Value, picker.Weight} {
-			s.expected[pickerMeasureKey[T]{row, kind}] = gurps.PickerMeasureRange(row, kind, prompted, s.byRules)
-		}
-	}
+	s.expect(rows...)
 	return s
+}
+
+// expect records what each choice container at or below the rows should come to by its rules alone.
+func (s *pickerSession[T]) expect(rows ...T) {
+	gurps.Traverse(func(row T) bool {
+		if gurps.IsTemplateChoiceContainer(row) {
+			for _, kind := range []picker.Type{picker.Points, picker.Value, picker.Weight} {
+				s.expected[pickerMeasureKey[T]{row, kind}] = gurps.PickerMeasureRange(row, kind, s.prompted, s.byRules)
+			}
+		}
+		return false
+	}, false, false, rows...)
 }
 
 // processRows replaces each choice container among the rows, however deep, with what was chosen from it, putting up
@@ -249,6 +256,8 @@ func (s *pickerSession[T]) chooseModifiers(row T) bool {
 	if answered {
 		s.chosen[row] = true
 	}
+	// The choices below are now expected to come to what their rules give with the modifiers as they stand.
+	s.expect(row)
 	return true
 }
 
@@ -312,10 +321,11 @@ func (s *pickerSession[T]) costText(row T) string {
 	return pointsText(gurps.PickerMeasureRange(row, picker.Points, true, taken))
 }
 
-// snapshot returns what puts back everything a popup for the row can change: the answers, and the levels, points,
-// quantities and enabled modifiers at or below the row.
+// snapshot returns what puts back everything a popup for the row can change: the answers, what choices are expected to
+// come to, and the levels, points, quantities and enabled modifiers at or below the row.
 func (s *pickerSession[T]) snapshot(row T) (restore func()) {
 	chosen, pickerAnswered, modsAnswered := maps.Clone(s.chosen), maps.Clone(s.pickerAnswered), maps.Clone(s.modsAnswered)
+	expected := maps.Clone(s.expected)
 	var undo []func()
 	gurps.Traverse(func(one T) bool {
 		switch item := any(one).(type) {
@@ -332,7 +342,7 @@ func (s *pickerSession[T]) snapshot(row T) (restore func()) {
 		return false
 	}, false, false, row)
 	return func() {
-		s.chosen, s.pickerAnswered, s.modsAnswered = chosen, pickerAnswered, modsAnswered
+		s.chosen, s.pickerAnswered, s.modsAnswered, s.expected = chosen, pickerAnswered, modsAnswered, expected
 		for _, one := range undo {
 			one()
 		}
