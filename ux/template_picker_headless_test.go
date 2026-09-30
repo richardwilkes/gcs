@@ -146,6 +146,37 @@ func TestPickerDialogKeepsItsScrollPosition(t *testing.T) {
 	})
 }
 
+// The line under the picker's list is in the warning color for an error or a warning, and green once all is well.
+func TestPickerDialogHintColor(t *testing.T) {
+	c := check.New(t)
+	screen, _ := startHeadlessWorkspace(t, c)
+	for _, tc := range []struct {
+		row   string
+		picks []string
+		state pickerState
+		ink   unison.Ink
+	}{
+		{"root", []string{"ea", "ep", "fit", "order", "lion", "honors", "cr", "wm", "fear2"}, pickerError, unison.ThemeWarning},
+		{"order", []string{"order", "lion", "honors", "cr", "wm", "fear2"}, pickerWarning, unison.ThemeWarning},
+		{"fit", []string{"fit", "fit1"}, pickerOK, unison.Green},
+	} {
+		s, n := newKnightSession()
+		choose(s, n, tc.picks...)
+		c.Equal(tc.state, s.state(n[tc.row]), tc.row)
+		screen.Do(func() {
+			dialog, _ := s.newPickerDialog(n[tc.row], 0)
+			c.NotNil(dialog, "the dialog must be made")
+			if dialog == nil {
+				return
+			}
+			defer dialog.Window().Dispose()
+			hints := panelsOfType[*textLabel](dialog.Window().Content())
+			c.Equal(1, len(hints))
+			c.Equal(tc.ink, hints[0].ink, tc.row)
+		})
+	}
+}
+
 // Override in a modifier prompt put up from the picker backs out when it changed nothing, and keeps a partial answer
 // when it did.
 func TestPickerModifierPromptOverride(t *testing.T) {

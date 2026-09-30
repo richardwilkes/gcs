@@ -120,7 +120,7 @@ func (s *pickerSession[T]) newPickerDialog(row T, depth int) (dialog *unison.Dia
 		updateProgress(state, s.pillText(row))
 		progress.Tooltip = newWrappedTooltip(s.pillTip(row))
 		t := s.hint(row)
-		hint.setText(t.text, pickerTextInk(t, pickerStateInks[pickerOK]))
+		hint.setText(t.text, pickerHintInk(t.state))
 		// The dialog is first sized with the text above in place; it widens if later text needs more room.
 		if dialog != nil {
 			dialog.Button(unison.ModalResponseOK).SetEnabled(state == pickerOK)
@@ -703,6 +703,15 @@ func pickerTextInk(t pickerText, plain unison.Ink) unison.Ink {
 		return pickerStateInks[t.state]
 	}
 	return plain
+}
+
+// pickerHintInk returns the color of the line under the picker's list in the state. It is the warning color whatever is
+// amiss, an error as much as a warning, leaving the pill to tell which.
+func pickerHintInk(state pickerState) unison.Ink {
+	if state == pickerOK {
+		return pickerStateInks[pickerOK]
+	}
+	return unison.ThemeWarning
 }
 
 // growWindowToFit widens the window, as far as its display allows, when its content has come to want more width than it
