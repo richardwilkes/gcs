@@ -38,7 +38,7 @@ func TestPickerRowPageReferenceIsFollowedFromTheKeyboard(t *testing.T) {
 		trait.Name = "Alpha"
 		trait.PageRef = ref
 		holder = unison.NewPanel()
-		newPickerSession(promptOperation{}, []*gurps.Trait{trait}, false).addPickerRow(holder, trait, picker.Count, 0, 0, false, func() {})
+		newPickerSession(promptOperation{}, []*gurps.Trait{trait}, false).addPickerRow(holder, trait, nil, picker.Count, 0, 0, false, func() {})
 		if boxes := panelsOfType[*unison.CheckBox](holder); len(boxes) == 1 {
 			box = boxes[0]
 		}
@@ -266,4 +266,53 @@ func TestPickerOrganizingGroupHeaders(t *testing.T) {
 	})
 	screen.KeyPress(unison.KeyEscape, mod.None)
 	c.True(done, "the dialog has closed")
+}
+
+// A container picked as a unit keeps its checkbox and cost, and its chevron shows what it holds as rows with nothing to
+// pick, widening the dialog to fit them.
+func TestPickerUnitContainerInformationRows(t *testing.T) {
+	c := check.New(t)
+	screen, _ := startHeadlessWorkspace(t, c)
+	trait := func(name string, points int, children ...*gurps.Trait) *gurps.Trait {
+		one := gurps.NewTrait(nil, nil, len(children) != 0)
+		one.Name = name
+		one.BasePoints = fxp.FromInteger(points)
+		one.Children = children
+		SetParents(children, one)
+		return one
+	}
+	const long = "Sword of the Realm, Forged in the Fires Beneath the Mountain for the Order's First Champion"
+	kit := trait("Kit", 0, trait(long, 5), trait("Pack", 0, trait("Rope", 1)))
+	choice := trait("Choice", 0, kit, trait("Luck", 15))
+	choice.TemplatePicker.Type = picker.Count
+	choice.TemplatePicker.Qualifier.Qualifier = fxp.One
+	s := newPickerSession(promptOperation{}, []*gurps.Trait{choice}, false)
+	screen.Do(func() {
+		dialog, _ := s.newPickerDialog(choice, 0)
+		c.NotNil(dialog, "the dialog must be made")
+		if dialog == nil {
+			return
+		}
+		wnd := dialog.Window()
+		defer wnd.Dispose()
+		wnd.ValidateLayout()
+		boxes := panelsOfType[*unison.CheckBox](wnd.Content())
+		c.Equal(2, len(boxes), "only the options have checkboxes")
+		row := boxes[0].Parent()
+		chevron, ok := row.Children()[0].Self.(*unison.Button)
+		c.True(ok, "the chevron comes before the checkbox")
+		c.Equal(boxes[0].AsPanel(), row.Children()[1])
+		c.NotEqual("", labelTexts(row)[2], "the unit keeps its cost")
+		c.False(slices.Contains(labelTexts(wnd.Content()), "Rope"), "what it holds starts hidden")
+		width := wnd.ContentRect().Width
+		chevron.Click()
+		wnd.ValidateLayout()
+		texts := labelTexts(wnd.Content())
+		c.True(slices.Contains(texts, long) && slices.Contains(texts, "Pack") && slices.Contains(texts, "Rope"),
+			"opening it shows what it holds, however deep")
+		c.Equal(2, len(panelsOfType[*unison.CheckBox](wnd.Content())), "with nothing to pick")
+		_, pref, _ := wnd.Content().Sizes(geom.Size{})
+		c.True(wnd.ContentRect().Width > width, "the dialog widens")
+		c.True(pref.Width <= wnd.ContentRect().Width, "to fit them")
+	})
 }
