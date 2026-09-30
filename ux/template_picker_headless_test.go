@@ -122,8 +122,8 @@ func TestPickerGroupsReachTheTable(t *testing.T) {
 	c.Equal("Judo", unarmed.Children[0].Name)
 }
 
-// The picker dialog is sized with its rows' text in place, wraps its hint to the list's width, and widens when the text
-// does.
+// The picker dialog is sized with its rows' text in place, wraps its hint to the list's width, and grows when its
+// content does.
 func TestPickerDialogFitsItsContent(t *testing.T) {
 	c := check.New(t)
 	screen, _ := startHeadlessWorkspace(t, c)
@@ -153,9 +153,17 @@ func TestPickerDialogFitsItsContent(t *testing.T) {
 		c.Equal(1, len(scrolls))
 		c.True(len(hints[0].lines(hints[0].ContentRect(false).Width)) > 1, "the hint wraps")
 		c.True(hints[0].FrameRect().Width <= scrolls[0].FrameRect().Width, "the hint is no wider than the list")
+		width := wnd.ContentRect().Width
 		choose(s, n, "lion", "honors", "cr", "wm", "fear2")
 		refresh()
 		fits("the dialog grows to fit longer text")
+		c.True(wnd.ContentRect().Width > width, "the dialog widens")
+		// Left shorter than its content wants, it grows taller too.
+		r := wnd.ContentRect()
+		r.Height /= 2
+		wnd.SetContentRect(r)
+		refresh()
+		fits("the dialog grows to fit taller content")
 	})
 }
 
@@ -610,6 +618,57 @@ func TestPickerUnitContainerInformationRows(t *testing.T) {
 		c.False(slices.Contains(labelTexts(wnd.Content()), "Rope"), "closing it hides them again")
 		chevron.Click()
 		c.Equal(cells, row.Parent().Children(), "and opening it puts every cell back in its place")
+	})
+}
+
+// Opening a group in a short list grows the dialog to show all that it holds, rather than squeezing it into the room the
+// list had, and closing it leaves the dialog as it is.
+func TestPickerOpeningGroupGrowsDialog(t *testing.T) {
+	c := check.New(t)
+	screen, _ := startHeadlessWorkspace(t, c)
+	choice := gurps.NewTrait(nil, nil, true)
+	choice.Name = "Choice"
+	choice.TemplatePicker.Type = picker.Count
+	choice.TemplatePicker.Qualifier.Qualifier = fxp.One
+	kit := gurps.NewTrait(nil, choice, true)
+	kit.Name = "Kit"
+	for i := range 8 {
+		item := gurps.NewTrait(nil, kit, false)
+		item.Name = fmt.Sprintf("Item %d", i)
+		kit.Children = append(kit.Children, item)
+	}
+	luck := gurps.NewTrait(nil, choice, false)
+	luck.Name = "Luck"
+	choice.Children = []*gurps.Trait{kit, luck}
+	s := newPickerSession(promptOperation{}, []*gurps.Trait{choice}, false)
+	screen.Do(func() {
+		dialog, _ := s.newPickerDialog(choice, 0)
+		c.NotNil(dialog, "the dialog must be made")
+		if dialog == nil {
+			return
+		}
+		wnd := dialog.Window()
+		defer wnd.Dispose()
+		wnd.ValidateLayout()
+		list := panelsOfType[*unison.CheckBox](wnd.Content())[0].Parent().Parent()
+		chevrons := panelsOfType[*unison.Button](list)
+		c.Equal(1, len(chevrons), "the unit has a chevron")
+		if len(chevrons) != 1 {
+			return
+		}
+		c.False(slices.Contains(labelTexts(list), "Item 7"), "what it holds starts hidden")
+		size := wnd.ContentRect().Size
+		chevrons[0].Click()
+		wnd.ValidateLayout()
+		c.True(slices.Contains(labelTexts(list), "Item 7"), "opening it shows what it holds")
+		grown := wnd.ContentRect().Size
+		c.True(grown.Height > size.Height, "the dialog grows: was %v, is %v", size, grown)
+		scroll := panelsOfType[*unison.ScrollPanel](wnd.Content())[0]
+		c.True(list.FrameRect().Height <= scroll.ContentView().ContentRect(false).Height,
+			"the list shows every row without scrolling")
+		chevrons[0].Click()
+		wnd.ValidateLayout()
+		c.Equal(grown, wnd.ContentRect().Size, "closing it leaves the dialog as it is")
 	})
 }
 

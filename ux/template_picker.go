@@ -801,20 +801,24 @@ func pickerTextInk(t pickerText, plain unison.Ink) unison.Ink {
 	return plain
 }
 
-// growWindowToFit widens the window, as far as its display allows, when its content has come to want more width than it
-// has. Its height is left alone, as the list scrolls, so the list keeps its place.
+// growWindowToFit grows the window, as far as its display allows, when its content has come to want more room than it
+// has, as when a group is opened. It never shrinks, so closing a group leaves it be. Only a size that fits the display is
+// set, since one the display then cut back would lose the list's place.
 func growWindowToFit(wnd *unison.Window) {
-	_, pref, _ := wnd.Content().Sizes(geom.Size{})
+	_, want, _ := wnd.Content().Sizes(geom.Size{})
 	r := wnd.ContentRect()
-	width := pref.Width
 	if d := wnd.Display(); d != nil {
-		width = min(width, d.Usable.Width-(wnd.FrameRect().Width-r.Width))
+		frame := wnd.FrameRect()
+		want.Width = min(want.Width, d.Usable.Width-(frame.Width-r.Width))
+		want.Height = min(want.Height, d.Usable.Height-(frame.Height-r.Height))
 	}
-	if width > r.Width {
-		r.Width = width
-		wnd.SetContentRect(r)
-		wnd.EnsureOnDisplay()
+	if want.Width <= r.Width && want.Height <= r.Height {
+		return
 	}
+	r.Width = max(r.Width, want.Width)
+	r.Height = max(r.Height, want.Height)
+	wnd.SetContentRect(r)
+	wnd.EnsureOnDisplay()
 }
 
 // pickerWeightUnits returns the units the picker dialog shows weights in: those of the sheet the row being picked from
