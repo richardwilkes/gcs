@@ -394,7 +394,8 @@ func isWithin[T Node[T]](node, container T) bool {
 
 // maxModifierChoiceVariants caps the ways of making open choices that modifierChoiceRange works through, so that a
 // pathological file can't lock up the display; past it, choices count as made with the picks they have. A trait
-// container's choices multiply with those of each trait inside, and the cap covers them together.
+// container's choices multiply with those of each trait inside, and the cap bounds the ways for each trait, not for all
+// of them together: a container works through its ways for every trait inside it.
 const maxModifierChoiceVariants = 4096
 
 // IsOnSheet returns true if the node belongs to a character or loot sheet, where every modifier choice is made.
@@ -504,53 +505,92 @@ func HasOpenModifierChoice[T Node[T]](node T, prompted bool, taken func(T, bool)
 }
 
 // modifierChoiceRange returns the span of eval over each way of making the open mandatory choices among the modifiers,
-// seen as view says, with those in fixed made as it says. eval gets the non-container modifiers in order, with only
-// each such choice's pick among its options, enabled. Returns false, without calling eval, when there is nothing to
-// enumerate.
+// seen as view says, with those in fixed made as it says (see modifierChoiceWays.rangeOf). Returns false, without
+// calling eval, when there is nothing to enumerate.
 func modifierChoiceRange[M ModifierNode[M, T], T ModifiableNode[T, M]](item T, modifiers []M, fixed modifierChoicePicks[M], view choiceView, eval func([]M) NumericRange) (NumericRange, bool) {
+	ways, ok := newModifierChoiceWays(item, modifiers, fixed, view)
+	if !ok {
+		return NumericRange{}, false
+	}
+	return ways.rangeOf(fixed, eval), true
+}
+
+// modifierChoiceWays is what working through the ways of making the open mandatory choices among an item's modifiers
+// needs, laid out once so that each set of picks a container makes only swaps in the options picked.
+type modifierChoiceWays[M ModifierNode[M, T], T ModifiableNode[T, M]] struct {
+	open    []M
+	leaves  []M
+	options []M // For each leaf, the choice it is an option of when that choice is open or fixed.
+	enabled []M // For each such option, its enabled variant.
+	variant []M
+	ranges  []NumericRange
+}
+
+// newModifierChoiceWays lays out the ways of making the open mandatory choices among the modifiers, seen as view says,
+// or returns false when there is nothing to enumerate. Only which choices fixed holds picks for matters here.
+func newModifierChoiceWays[M ModifierNode[M, T], T ModifiableNode[T, M]](item T, modifiers []M, fixed modifierChoicePicks[M], view choiceView) (*modifierChoiceWays[M, T], bool) {
 	open, variants := openMandatoryModifierChoices(item, modifiers, fixed, view)
 	if variants > maxModifierChoiceVariants {
 		open = nil
 	}
 	if len(open) == 0 && len(fixed) == 0 {
-		return NumericRange{}, false
+		return nil, false
 	}
-	// The choice each option of an open choice, or of one fixed holds a pick for, is an option of.
-	choiceOf := make(map[M]M)
-	var leaves []M
+	w := &modifierChoiceWays[M, T]{open: open}
+	found := false
 	Traverse(func(mod M) bool {
-		leaves = append(leaves, mod)
-		if choice, ok := ModifierChoiceFor(mod); ok {
-			if _, isFixed := fixed[choice]; isFixed || slices.Contains(open, choice) {
-				choiceOf[mod] = choice
+		var choice, enabled M
+		if of, ok := ModifierChoiceFor(mod); ok {
+			if _, isFixed := fixed[of]; isFixed || slices.Contains(open, of) {
+				choice = of
+				enabled = mod.enabledVariant()
+				found = true
 			}
 		}
+		w.leaves = append(w.leaves, mod)
+		w.options = append(w.options, choice)
+		w.enabled = append(w.enabled, enabled)
 		return false
 	}, false, true, modifiers...)
-	if len(choiceOf) == 0 {
-		return NumericRange{}, false
+	if !found {
+		return nil, false
 	}
-	variant := make([]M, 0, len(leaves))
-	ranges := make([]NumericRange, 0, variants)
-	eachModifierChoicePick(open, fixed, func(picks modifierChoicePicks[M]) {
-		variant = variant[:0]
-		for _, one := range leaves {
-			choice, isOption := choiceOf[one]
-			switch {
-			case !isOption || xreflect.IsNil(picks[choice]):
-				variant = append(variant, one)
-			case picks[choice] == one:
-				variant = append(variant, one.enabledVariant())
+	w.variant = make([]M, 0, len(w.leaves))
+	return w, true
+}
+
+// rangeOf returns the span of eval over each way of making the open choices, with those in fixed made as it says: fixed
+// must hold picks for the same choices it did when the ways were laid out. eval gets the non-container modifiers in
+// order, with only each such choice's pick among its options, enabled.
+func (w *modifierChoiceWays[M, T]) rangeOf(fixed modifierChoicePicks[M], eval func([]M) NumericRange) NumericRange {
+	var none M
+	w.ranges = w.ranges[:0]
+	eachModifierChoicePick(w.open, fixed, func(picks modifierChoicePicks[M]) {
+		w.variant = w.variant[:0]
+		for i, one := range w.leaves {
+			pick := none
+			if choice := w.options[i]; choice != none {
+				pick = picks[choice]
+			}
+			switch pick {
+			case none:
+				w.variant = append(w.variant, one)
+			case one:
+				w.variant = append(w.variant, w.enabled[i])
 			}
 		}
-		ranges = append(ranges, eval(variant))
+		w.ranges = append(w.ranges, eval(w.variant))
 	})
-	return rangeForPickerByCount(newTemplateChoicePicker().Qualifier, ranges), true
+	return rangeForPickerByCount(newTemplateChoicePicker().Qualifier, w.ranges)
 }
 
 // eachModifierChoicePick calls fn with fixed plus each combination of picks for the choices, or just once with fixed
 // when there are none. The map is reused between calls.
 func eachModifierChoicePick[M Node[M]](choices []M, fixed modifierChoicePicks[M], fn func(picks modifierChoicePicks[M])) {
+	if len(choices) == 0 {
+		fn(fixed)
+		return
+	}
 	options := make([][]M, len(choices))
 	for i, one := range choices {
 		options[i] = ModifierChoiceOptions(one)

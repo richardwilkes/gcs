@@ -340,6 +340,23 @@ func TestTraitContainerChoicesPastTheCap(t *testing.T) {
 	c.Equal(fxp.FromInteger(20), past.AdjustedPoints(nil))
 }
 
+// TestTraitContainerChoicesWithManyTraits verifies that costing a container whose choices make as many ways as the cap
+// allows doesn't take as long as working each trait inside through them from scratch would.
+func TestTraitContainerChoicesWithManyTraits(t *testing.T) {
+	c := check.New(t)
+	parent := NewTrait(nil, nil, true)
+	for range 12 {
+		parent.AddModifiers(newTraitModifierChoiceWith(true, "+0", "+1"))
+	}
+	for range 200 {
+		newTraitWithPoints(parent, 10)
+	}
+	start := time.Now()
+	c.Equal("2000~4400", parent.PointsRange(nil).String())
+	c.Equal(fxp.FromInteger(2000), parent.AdjustedPoints(nil))
+	c.True(time.Since(start) < 2*time.Second, "each trait's modifiers must be laid out just once")
+}
+
 // TestUnresolvedModifierChoiceOnASheet verifies that a mandatory choice with no pick is flagged on a character sheet,
 // both on the item and on the choice itself, and only there, and that the pick of one on a sheet can't be turned off,
 // while anything else can.

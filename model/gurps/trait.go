@@ -690,12 +690,13 @@ func (t *Trait) adjustedPoints(fixed modifierChoicePicks[*TraitModifier]) fxp.In
 	// Open choices the traits inside inherit are made for all of them at once, and the container counts as the least of
 	// those ways. Past the cap, fixed holds the picks as they stand.
 	choices, fixed := t.containerModifierChoices(fixed, choiceView{})
+	costs := t.childCosts(fixed, choices, choiceView{}, true)
+	values := make([]fxp.Int, len(t.Children))
 	least := fxp.Max
 	eachModifierChoicePick(choices, fixed, func(picks modifierChoicePicks[*TraitModifier]) {
-		values := make([]fxp.Int, len(t.Children))
 		var points fxp.Int
-		for i, one := range t.Children {
-			values[i] = one.adjustedPoints(picks)
+		for i, cost := range costs {
+			values[i] = *cost(picks).Min
 			points += values[i]
 		}
 		if t.ContainerType == container.AlternativeAbilities {
@@ -735,11 +736,12 @@ func (t *Trait) pointsRange(fixed modifierChoicePicks[*TraitModifier], view choi
 		return NumericRangeOf(value)
 	}
 	choices, fixed := t.containerModifierChoices(fixed, view)
+	costs := t.childCosts(fixed, choices, view, false)
 	var spans []NumericRange
 	eachModifierChoicePick(choices, fixed, func(picks modifierChoicePicks[*TraitModifier]) {
-		ranges := make([]NumericRange, len(t.Children))
-		for i, one := range t.Children {
-			ranges[i] = one.pointsRange(picks, view)
+		ranges := make([]NumericRange, len(costs))
+		for i, cost := range costs {
+			ranges[i] = cost(picks)
 		}
 		if t.TemplatePicker.IsZero() && t.ContainerType == container.AlternativeAbilities {
 			spans = append(spans, t.alternativeAbilitiesPointsRange(ranges))
@@ -752,6 +754,53 @@ func (t *Trait) pointsRange(fixed modifierChoicePicks[*TraitModifier], view choi
 	return rangeForPickerByCount(newTemplateChoicePicker().Qualifier, spans)
 }
 
+// childCosts returns, for each child of this container, what it costs with each set of picks for fixed and choices the
+// container makes: pointsRange, or adjustedPoints when adjusted is true. A trait's modifiers are laid out just once.
+func (t *Trait) childCosts(fixed modifierChoicePicks[*TraitModifier], choices []*TraitModifier, view choiceView, adjusted bool) []func(modifierChoicePicks[*TraitModifier]) NumericRange {
+	keys := make(modifierChoicePicks[*TraitModifier], len(fixed)+len(choices))
+	maps.Copy(keys, fixed)
+	for _, one := range choices {
+		keys[one] = nil
+	}
+	costs := make([]func(modifierChoicePicks[*TraitModifier]) NumericRange, len(t.Children))
+	for i, one := range t.Children {
+		switch {
+		case one.Container() && adjusted:
+			costs[i] = func(picks modifierChoicePicks[*TraitModifier]) NumericRange {
+				return NumericRangeOf(one.adjustedPoints(picks))
+			}
+		case one.Container():
+			costs[i] = func(picks modifierChoicePicks[*TraitModifier]) NumericRange { return one.pointsRange(picks, view) }
+		default:
+			costs[i] = one.pointsRangeFor(keys, view)
+		}
+	}
+	return costs
+}
+
+// pointsRangeFor returns what this non-container costs with each set of picks for the choices keys holds, as
+// pointsRange does.
+func (t *Trait) pointsRangeFor(keys modifierChoicePicks[*TraitModifier], view choiceView) func(modifierChoicePicks[*TraitModifier]) NumericRange {
+	var ways *modifierChoiceWays[*TraitModifier, *Trait]
+	var cost NumericRange
+	switch {
+	case t.EffectivelyDisabled():
+		cost = NumericRangeOf(0)
+	case choicesMade(t, view):
+		cost = NumericRangeOf(t.pointsWith(t.AllModifiers()))
+	default:
+		var open bool
+		if ways, open = newModifierChoiceWays(t, t.AllModifiers(), keys, view); !open {
+			cost = NumericRangeOf(t.pointsWith(t.AllModifiers()))
+		}
+	}
+	if ways == nil {
+		return func(modifierChoicePicks[*TraitModifier]) NumericRange { return cost }
+	}
+	eval := t.pointsWithEach()
+	return func(picks modifierChoicePicks[*TraitModifier]) NumericRange { return ways.rangeOf(picks, eval) }
+}
+
 // ModifierChoicePointsRange returns the costs of this non-container trait while a modifier choice is open, or false.
 func (t *Trait) ModifierChoicePointsRange() (NumericRange, bool) {
 	return t.modifierChoicePointsRange(nil, choiceView{})
@@ -762,15 +811,32 @@ func (t *Trait) modifierChoicePointsRange(fixed modifierChoicePicks[*TraitModifi
 	if choicesMade(t, view) {
 		return NumericRange{}, false
 	}
-	return modifierChoiceRange(t, t.AllModifiers(), fixed, view, func(modifiers []*TraitModifier) NumericRange {
-		return NumericRangeOf(t.pointsWith(modifiers))
-	})
+	return modifierChoiceRange(t, t.AllModifiers(), fixed, view, t.pointsWithEach())
 }
 
 // pointsWith returns the cost of this non-container trait with the given modifiers.
 func (t *Trait) pointsWith(modifiers []*TraitModifier) fxp.Int {
 	return AdjustedPoints(EntityFromNode(t), t, t.CanLevel, t.BasePoints, t.Levels, t.PointsPerLevel, t.SelfControl,
 		t.Frequency, modifiers, t.RoundCostDown)
+}
+
+// pointsWithEach returns pointsWith as a range, for costing many ways of making choices among the same modifiers: what
+// each modifier adjusts the cost by is worked out just once.
+func (t *Trait) pointsWithEach() func([]*TraitModifier) NumericRange {
+	entity := EntityFromNode(t)
+	adjustments := make(map[*TraitModifier]traitCostAdjustment)
+	costOf := func(mod *TraitModifier) traitCostAdjustment {
+		adjustment, ok := adjustments[mod]
+		if !ok {
+			adjustment = costAdjustmentOf(mod, t)
+			adjustments[mod] = adjustment
+		}
+		return adjustment
+	}
+	return func(modifiers []*TraitModifier) NumericRange {
+		return NumericRangeOf(adjustedPointsBy(entity, t.CanLevel, t.BasePoints, t.Levels, t.PointsPerLevel,
+			t.SelfControl, t.Frequency, modifiers, t.RoundCostDown, costOf))
+	}
 }
 
 // containerModifierChoices returns the open mandatory choices among this container's modifiers that fixed holds no
@@ -1128,6 +1194,23 @@ func ExtractTags(tags string) []string {
 // 'trait' is only used to resolve the level of "use level from trait" modifiers; the modifiers themselves are left
 // untouched, since the list may contain modifiers inherited from parent containers, which belong to those parents.
 func AdjustedPoints(entity *Entity, trait *Trait, canLevel bool, basePoints, levels, pointsPerLevel fxp.Int, cr selfctrl.Roll, fr frequency.Roll, modifiers []*TraitModifier, roundCostDown bool) fxp.Int {
+	return adjustedPointsBy(entity, canLevel, basePoints, levels, pointsPerLevel, cr, fr, modifiers, roundCostDown,
+		func(mod *TraitModifier) traitCostAdjustment { return costAdjustmentOf(mod, trait) })
+}
+
+// traitCostAdjustment is what a trait modifier adjusts a trait's cost by.
+type traitCostAdjustment struct {
+	amount fxp.Fraction
+	kind   emweight.Value
+}
+
+// costAdjustmentOf returns what the modifier adjusts the trait's cost by.
+func costAdjustmentOf(mod *TraitModifier, trait *Trait) traitCostAdjustment {
+	return traitCostAdjustment{amount: mod.CostModifierForTrait(trait), kind: mod.CostModifierType()}
+}
+
+// adjustedPointsBy is AdjustedPoints with what each modifier adjusts the cost by given by costOf.
+func adjustedPointsBy(entity *Entity, canLevel bool, basePoints, levels, pointsPerLevel fxp.Int, cr selfctrl.Roll, fr frequency.Roll, modifiers []*TraitModifier, roundCostDown bool, costOf func(*TraitModifier) traitCostAdjustment) fxp.Int {
 	if !canLevel {
 		levels = 0
 		pointsPerLevel = 0
@@ -1141,8 +1224,9 @@ func AdjustedPoints(entity *Entity, trait *Trait, canLevel bool, basePoints, lev
 		Denominator: fxp.One,
 	}
 	Traverse(func(mod *TraitModifier) bool {
-		modifier := mod.CostModifierForTrait(trait)
-		switch mod.CostModifierType() {
+		adjustment := costOf(mod)
+		modifier := adjustment.amount
+		switch adjustment.kind {
 		case emweight.Addition:
 			if mod.Affects == affects.LevelsOnly {
 				if canLevel {
