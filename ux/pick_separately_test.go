@@ -44,10 +44,20 @@ func TestPickedAsAUnitCheckBox(t *testing.T) {
 		e.editorData.ApplyTo(group)
 		c.True(group.PickSeparately, "unchecking it picks from the group separately")
 	}
+	_, content = buildEditorContent(Rebuildable(template), group, initTraitEditor)
+	if boxes = checkBoxesTitled(content, title); len(boxes) == 1 {
+		c.Equal(uncheck.Off, boxes[0].State, "a group already picked from separately opens unchecked")
+	}
 	shown := func(owner Rebuildable, target *gurps.Trait) int {
 		_, content = buildEditorContent(owner, target, initTraitEditor)
 		return len(checkBoxesTitled(content, title))
 	}
+	inner := gurps.NewTrait(nil, nil, true)
+	group.Children = []*gurps.Trait{inner}
+	SetParents(group.Children, group)
+	c.Equal(1, shown(template, inner), "a group in one picked from separately offers it")
+	group.PickSeparately = false
+	c.Equal(0, shown(template, inner), "a group in one picked as a unit must not offer it")
 	c.Equal(0, shown(newTestSheetForTemplate(t), group), "a sheet must not offer it")
 	c.Equal(0, shown(NewTraitTableDockable("traits"+gurps.TraitsExt, nil), group), "a library must not offer it")
 	group.ContainerType = container.AlternativeAbilities
