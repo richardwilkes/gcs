@@ -269,8 +269,9 @@ func (l *LootSheet) generateTreasure() {
 	markdown.SetContent(i18n.Text(`# Treasure Generation
 
 This will generate a new Loot Sheet with items from the contents of this one.
-Each top-level item in this sheet will be treated as a potential item to select from.
-The quantity of that top-level item will be used to determine the likelihood of it
+Each top-level item in this sheet will be treated as a potential item to select from,
+as will each item in a top-level group.
+The quantity of that item will be used to determine the likelihood of it
 being selected, with larger numbers increasing the chance it is chosen.`), 400)
 	content.AddChild(markdown)
 	settings := gurps.GlobalSettings()
@@ -297,7 +298,7 @@ being selected, with larger numbers increasing the chance it is chosen.`), 400)
 		settings.LootGenMaxValue = maxValue
 		m := make(map[*gurps.Equipment]int)
 		for range 10 {
-			choices, total, highest := pruneEquipmentList(maxValue-current, l.loot.Equipment)
+			choices, total, highest := pruneEquipmentList(maxValue-current, lootCandidates(l.loot.Equipment))
 			for len(choices) > 0 && current < minValue {
 				found := false
 				choice := fxp.Int(r.Intn(int(total)))
@@ -415,6 +416,22 @@ func (p *treasureGenPanel) validateOK() {
 	}
 	p.dialog.Button(unison.ModalResponseOK).SetEnabled(p.minValue <= p.maxValue && !p.minField.Invalid() &&
 		!p.maxField.Invalid())
+}
+
+// lootCandidates returns the equipment treasure may be generated from: the items given, save that a group is replaced
+// by what it holds, since a group only organizes its contents and is no piece of equipment to be handed out itself. A
+// group's quantity is always one, so it could never be picked more often than once, and giving it a larger quantity
+// would multiply its contents in a way nothing shows and the next save quietly undoes.
+func lootCandidates(items []*gurps.Equipment) []*gurps.Equipment {
+	var candidates []*gurps.Equipment
+	for _, item := range items {
+		if item.IsGroup() {
+			candidates = append(candidates, lootCandidates(item.Children)...)
+		} else {
+			candidates = append(candidates, item)
+		}
+	}
+	return candidates
 }
 
 func pruneEquipmentList(remaining fxp.Int, items []*gurps.Equipment) (revisedItems []*gurps.Equipment, total, highest fxp.Int) {

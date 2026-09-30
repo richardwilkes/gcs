@@ -16,8 +16,8 @@ import (
 	"github.com/richardwilkes/unison"
 )
 
-// quantityExtractor accepts the equipment whose quantity can be adjusted in the given direction. A group's quantity is
-// always one, so a group is never accepted.
+// quantityExtractor accepts the equipment whose quantity can be adjusted in the given direction, which leaves out
+// anything without a quantity of its own, such as a group.
 func quantityExtractor(increment bool) func(*gurps.Equipment) (*gurps.Equipment, bool) {
 	return func(eqp *gurps.Equipment) (*gurps.Equipment, bool) {
 		if eqp != nil && !eqp.IsGroup() && (increment || eqp.Quantity > 0) {

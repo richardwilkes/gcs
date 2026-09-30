@@ -107,8 +107,10 @@ func NewTableDockable[T gurps.Node[T]](filePath, extension string, provider Tabl
 	switch t := any(d.table).(type) {
 	case *unison.Table[*Node[*gurps.TraitModifier]]:
 		installApplyModifierHandler(d, t, traitModifierTargetKind())
+		installModifierChoiceConversionHandlers[*gurps.TraitModifier, *gurps.TraitModifierEditData](d, t)
 	case *unison.Table[*Node[*gurps.EquipmentModifier]]:
 		installApplyModifierHandler(d, t, equipmentModifierTargetKind())
+		installModifierChoiceConversionHandlers[*gurps.EquipmentModifier, *gurps.EquipmentModifierEditData](d, t)
 	}
 	d.InstallCmdHandlers(SaveItemID,
 		func(_ any) bool { return d.Modified() },
@@ -126,6 +128,8 @@ func NewTableDockable[T gurps.Node[T]](filePath, extension string, provider Tabl
 			variant = ContainerItemVariant
 		case id > FirstGroupContainerMarker && id < LastGroupContainerMarker:
 			variant = GroupContainerItemVariant
+		case id > FirstModifierChoiceMarker && id < LastModifierChoiceMarker:
+			variant = ChoiceContainerItemVariant
 		case id > FirstAlternateNonContainerMarker && id < LastAlternateNonContainerMarker:
 			variant = AlternateItemVariant
 		}

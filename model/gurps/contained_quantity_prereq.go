@@ -66,11 +66,7 @@ func (p *ContainedQuantityPrereq) Satisfied(_ *Entity, exclude any, tooltip *xby
 	satisfied := false
 	if eqp, ok := exclude.(*Equipment); ok {
 		if satisfied = !eqp.Container(); !satisfied {
-			var qty fxp.Int
-			for _, child := range eqp.Children {
-				qty += child.Quantity
-			}
-			satisfied = p.QualifierCriteria.Matches(qty)
+			satisfied = p.QualifierCriteria.Matches(containedQuantity(eqp.Children))
 		}
 	}
 	if !p.Has {
@@ -94,4 +90,19 @@ func (p *ContainedQuantityPrereq) Hash(h hash.Hash) {
 	xhash.Num8(h, p.Type)
 	xhash.Bool(h, p.Has)
 	p.QualifierCriteria.Hash(h)
+}
+
+// containedQuantity returns how many pieces of equipment the children amount to. A group only organizes what it holds,
+// so what it holds is counted in its place, the same way the weight of what it holds counts toward the weight a
+// container holds.
+func containedQuantity(children []*Equipment) fxp.Int {
+	var qty fxp.Int
+	for _, child := range children {
+		if child.IsGroup() {
+			qty += containedQuantity(child.Children)
+		} else {
+			qty += child.Quantity
+		}
+	}
+	return qty
 }

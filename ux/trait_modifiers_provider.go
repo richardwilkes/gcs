@@ -39,8 +39,13 @@ func NewTraitModifiersProvider(provider gurps.TraitModifierListProvider, forEdit
 			},
 			libSrcColumn: gurps.TraitModifierLibSrcColumn,
 			newItem:      gurps.NewTraitModifier,
+			newChoice:    gurps.NewTraitModifierChoice,
 			edit:         EditTraitModifier,
-			menuActions:  []*unison.Action{newTraitModifierAction, newTraitContainerModifierAction},
+			menuActions: []*unison.Action{
+				newTraitModifierAction,
+				newTraitContainerModifierAction,
+				newTraitModifierChoiceAction,
+			},
 			filterKey:    gurps.ListFilterKeyForExtension(gurps.TraitModifiersExt),
 			filterFields: gurps.TraitModifierFilterFields,
 		})

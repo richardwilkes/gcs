@@ -38,5 +38,5 @@ func NewEquipmentModifierTableDockable(filePath string, modifiers []*gurps.Equip
 	return NewTableDockable(filePath, gurps.EquipmentModifiersExt,
 		NewEquipmentModifiersProvider(provider, false),
 		func(path string) error { return gurps.SaveEquipmentModifiers(provider.EquipmentModifierList(), path) },
-		NewEquipmentModifierItemID, NewEquipmentContainerModifierItemID)
+		NewEquipmentModifierItemID, NewEquipmentContainerModifierItemID, NewEquipmentModifierChoiceItemID)
 }

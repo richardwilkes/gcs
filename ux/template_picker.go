@@ -11,6 +11,7 @@ package ux
 
 import (
 	"fmt"
+	"slices"
 
 	"github.com/richardwilkes/gcs/v5/model/fonts"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
@@ -21,12 +22,12 @@ import (
 	"github.com/richardwilkes/toolbox/v2/errs"
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/i18n"
-	"github.com/richardwilkes/toolbox/v2/xbytes"
 	"github.com/richardwilkes/toolbox/v2/xreflect"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
 	"github.com/richardwilkes/unison/enums/behavior"
 	"github.com/richardwilkes/unison/enums/check"
+	"github.com/richardwilkes/unison/enums/mod"
 	"github.com/richardwilkes/unison/enums/paintstyle"
 	"github.com/richardwilkes/unison/enums/side"
 )
@@ -37,52 +38,41 @@ var promptForPickers = processPickers
 
 // processPickers presents the template picker dialog for each row of the parts that has one, replacing the rows with
 // the resulting choices. It returns false if the user canceled one of them, in which case the parts must be discarded.
-// The operation describes what the dialogs are part of and may be empty (see newOperationLabel).
-func processPickers(op promptOperation, parts *applyParts) bool {
-	return parts.all(func(part applyPartOps) bool { return part.resolvePickers(op) })
+// The operation describes what the dialogs are part of and may be empty (see newOperationLabel). promptChoices says
+// whether the modifier prompt follows, so the rows are costed as it will see them.
+func processPickers(op promptOperation, parts *applyParts, promptChoices bool) bool {
+	return parts.all(func(part applyPartOps) bool { return part.resolvePickers(op, promptChoices) })
 }
 
-func processPickerRows[T gurps.Node[T]](op promptOperation, rows []T) (revised []T, abort bool) {
-	for _, one := range rows {
-		result, cancel := processPickerRow(op, one)
-		if cancel {
-			return nil, true
-		}
-		revised = append(revised, result...)
+// showPicker puts up the dialog for the choice container, returning how it was closed. The boxes checked in it are
+// recorded in the session. depth is how many of these dialogs it is stacked on.
+func (s *pickerSession[T]) showPicker(row T, depth int) int {
+	dialog, _ := s.newPickerDialog(row, depth)
+	if dialog == nil {
+		return unison.ModalResponseCancel
 	}
-	return revised, false
+	return dialog.RunModal()
 }
 
-func processPickerRow[T gurps.Node[T]](op promptOperation, row T) (revised []T, abort bool) {
-	if !row.Container() {
-		return []T{row}, false
-	}
+// newPickerDialog returns the dialog showPicker puts up, or nil if it couldn't be made, and what brings it up to date
+// with the session.
+func (s *pickerSession[T]) newPickerDialog(row T, depth int) (dialog *unison.Dialog, refresh func()) {
 	children := row.NodeChildren()
-	tpp, ok := any(row).(gurps.TemplatePickerProvider)
-	var tp *gurps.TemplatePicker
-	if ok {
-		_, tp = tpp.TemplatePickerData()
-	}
-	if !ok || tp.IsZero() {
-		rowChildren := make([]T, 0, len(children))
-		for _, child := range children {
-			var result []T
-			result, abort = processPickerRow(op, child)
-			if abort {
-				return nil, true
-			}
-			rowChildren = append(rowChildren, result...)
-		}
-		row.SetChildren(rowChildren)
-		SetParents(rowChildren, row)
-		return []T{row}, false
-	}
-
+	tp := templatePicker(row)
 	headers := pickerRowDetailHeaders(row)
+	// A column for the pencil, and one for the choose button when the modifier prompt follows or an option is or holds a
+	// choice.
+	chooseColumn := s.prompted || slices.ContainsFunc(children, func(child T) bool {
+		return gurps.IsTemplateChoiceContainer(child) || len(s.nestedChoices(child)) != 0
+	})
+	buttonColumns := 1
+	if chooseColumn {
+		buttonColumns++
+	}
 	list := unison.NewPanel()
 	list.SetBorder(unison.NewEmptyBorder(geom.NewUniformInsets(unison.StdHSpacing)))
 	list.SetLayout(&unison.FlexLayout{
-		Columns:  2 + len(headers),
+		Columns:  1 + len(headers) + buttonColumns,
 		HSpacing: unison.StdHSpacing,
 		VSpacing: unison.StdVSpacing,
 	})
@@ -95,72 +85,46 @@ func processPickerRow[T gurps.Node[T]](op promptOperation, row T) (revised []T, 
 			label.SetLayoutData(&unison.FlexLayoutData{HAlign: align.End})
 			list.AddChild(label)
 		}
-		list.AddChild(unison.NewPanel())
+		for range buttonColumns {
+			list.AddChild(unison.NewPanel())
+		}
 	}
 
-	progress := unison.NewLabel()
-	progressBackground := pickerMatchStateColor(tp.Qualifier.Matches(0))
-	progress.SetBorder(unison.NewCompoundBorder(
-		unison.NewEmptyBorder(geom.Insets{Top: unison.StdVSpacing * 2}),
-		unison.NewEmptyBorder(geom.NewHorizontalInsets(unison.StdHSpacing)),
-	))
+	progress, updateProgress := newPickerStatePill(unison.StdVSpacing * 2)
 	progress.Side = side.Right
-	progress.OnBackgroundInk = progressBackground.On()
-	progress.DrawCallback = func(gc *unison.Canvas, _ geom.Rect) {
-		if tp.Type == picker.NotApplicable {
-			return
+	scroll := unison.NewScrollPanel()
+	hint := newWrappingLabel()
+	hint.font = fonts.FieldSecondary
+	// The hint wraps to the list's width rather than widening the dialog.
+	hint.SetSizer(func(size geom.Size) (minSize, prefSize, maxSize geom.Size) {
+		if size.Width <= 0 {
+			_, pref, _ := scroll.Sizes(geom.Size{})
+			size.Width = pref.Width
 		}
-		r := progress.ContentRect(true)
-		r.Y += unison.StdVSpacing * 2
-		r.Height -= unison.StdVSpacing * 2
-		gc.DrawRoundedRect(r, geom.NewUniformSize(8), progressBackground.Paint(gc, r, paintstyle.Fill))
-		progress.DefaultDraw(gc, r)
-	}
-	boxes := make([]*unison.CheckBox, 0, len(children))
-	var dialog *unison.Dialog
-	callback := func() {
-		// A picked row that presents choices of its own has no single cost yet, so the running total can be a range.
-		// The picker is satisfied while some way of making those remaining choices would satisfy it.
-		total := gurps.NumericRangeOf(0)
-		for i, box := range boxes {
-			if box.State == check.On {
-				switch tp.Type {
-				case picker.NotApplicable:
-				case picker.Count:
-					total = total.Add(gurps.NumericRangeOf(fxp.One))
-				case picker.Points:
-					total = total.Add(pointsRangeFor(children[i]))
-				case picker.Value, picker.Weight:
-					total = total.Add(pickerMeasureRange(children[i], tp.Type))
-				}
-			}
+		return hint.sizes(size)
+	})
+	hint.SetLayoutData(&unison.FlexLayoutData{HSpan: 2, HAlign: align.Fill})
+	updates := make([]func(), 0, len(children))
+	refresh = func() {
+		for _, update := range updates {
+			update()
 		}
-		matches := total.CanSatisfy(tp.Qualifier)
-		dialog.Button(unison.ModalResponseOK).SetEnabled(matches)
-		if tp.Type != picker.NotApplicable {
-			var img *unison.SVG
-			if matches {
-				img = unison.CheckmarkSVG
-			} else {
-				img = svg.Not
-			}
-			size := max(progress.Font.Baseline()-2, 6)
-			progress.Drawable = &unison.DrawableSVG{
-				SVG:  img,
-				Size: geom.NewSize(size, size),
-			}
-			progressBackground = pickerMatchStateColor(matches)
-			progress.OnBackgroundInk = progressBackground.On()
-			progress.SetTitle(formatPickerTotal(row, tp.Type, total))
-			progress.MarkForLayoutRecursivelyUpward()
-			progress.MarkForRedraw()
+		state := s.state(row)
+		updateProgress(state, s.pillText(row))
+		progress.Tooltip = newWrappedTooltip(s.pillTip(row))
+		t := s.hint(row)
+		hint.setText(t.text, pickerTextInk(t, pickerStateInks[pickerOK]))
+		// The dialog is first sized with the text above in place; it widens if later text needs more room.
+		if dialog != nil {
+			dialog.Button(unison.ModalResponseOK).SetEnabled(state == pickerOK)
+			growWindowToFit(dialog.Window())
 		}
 	}
 	for _, child := range children {
-		boxes = addPickerRow(op, list, child, tp.Type, callback, boxes)
+		updates = append(updates, s.addPickerRow(list, child, tp.Type, depth, chooseColumn, refresh))
 	}
+	refresh()
 
-	scroll := unison.NewScrollPanel()
 	scroll.SetBorder(unison.NewLineBorder(unison.ThemeSurfaceEdge, geom.Size{}, geom.NewUniformInsets(1), false))
 	scroll.SetContent(list, behavior.Fill, behavior.Fill)
 	scroll.BackgroundInk = unison.ThemeSurface
@@ -180,7 +144,7 @@ func processPickerRow[T gurps.Node[T]](op promptOperation, row T) (revised []T, 
 		HAlign:   align.Fill,
 		VAlign:   align.Fill,
 	})
-	if opLabel := newOperationLabel(op); opLabel != nil {
+	if opLabel := newOperationLabel(s.op); opLabel != nil {
 		opLabel.SetLayoutData(&unison.FlexLayoutData{HSpan: 2})
 		panel.AddChild(opLabel)
 	}
@@ -188,8 +152,7 @@ func processPickerRow[T gurps.Node[T]](op promptOperation, row T) (revised []T, 
 	label.SetLayoutData(&unison.FlexLayoutData{HSpan: 2})
 	label.SetTitle(row.String())
 	panel.AddChild(label)
-	// A choice nested within another is put to the user only once its enclosing choice has been answered, so the
-	// containers above it are named to tie it back to the answer that brought it up.
+	// A choice nested within another names the containers above it, to tie it back to the answer that brought it up.
 	if location := rowLocation(row); location != "" {
 		label = newTruncatedLabel(location, maxContextLineLength, fonts.FieldSecondary)
 		label.SetLayoutData(&unison.FlexLayoutData{HSpan: 2})
@@ -218,52 +181,89 @@ func processPickerRow[T gurps.Node[T]](op promptOperation, row T) (revised []T, 
 	})
 	panel.AddChild(progress)
 	panel.AddChild(scroll)
+	panel.AddChild(hint)
 
-	var err error
-	dialog, err = newPromptDialog(op.at(promptstep.Choice), nil, nil, panel,
+	buttons := []*unison.DialogButtonInfo{
 		unison.NewCancelButtonInfo(),
-		&unison.DialogButtonInfo{
-			Title:        i18n.Text("Override"),
-			ResponseCode: unison.ModalResponseUserBase,
-		},
-		unison.NewOKButtonInfo())
-	if err != nil {
+		{Title: i18n.Text("Override"), ResponseCode: unison.ModalResponseUserBase},
+		unison.NewOKButtonInfo(),
+	}
+	if depth > 0 {
+		buttons = slices.Insert(buttons, 0, &unison.DialogButtonInfo{
+			Title:        i18n.Text("Clear Selections"),
+			ResponseCode: unison.ModalResponseUserBase + 1,
+		})
+	}
+	var err error
+	if dialog, err = newPromptDialog(s.op.at(promptstep.Choice), nil, nil, panel, buttons...); err != nil {
 		errs.Log(err)
-		return nil, true
+		return nil, nil
 	}
-	overrideTip := i18n.Text("Accept the checked options whether or not they satisfy the choice")
+	overrideTip := i18n.Text("Accept the checked options whether or not they satisfy the choice, leaving any choices still to be made below them for when the template is applied")
 	dialog.Button(unison.ModalResponseUserBase).Tooltip = newWrappedTooltip(overrideTip)
-	callback()
-	if dialog.RunModal() == unison.ModalResponseCancel {
-		return nil, true
-	}
-
-	rowChildren := make([]T, 0, len(children))
-	for i, box := range boxes {
-		if box.State == check.On {
-			var result []T
-			result, abort = processPickerRow(op, children[i])
-			if abort {
-				return nil, true
-			}
-			rowChildren = append(rowChildren, result...)
+	if depth > 0 {
+		// Clearing leaves the dialog up.
+		dialog.Button(unison.ModalResponseUserBase + 1).ClickCallback = func() {
+			s.clear(row)
+			refresh()
 		}
+		// It opens centered over the dialog it is stacked on, so shift it to show that it is.
+		wnd := dialog.Window()
+		frame := wnd.FrameRect()
+		frame.Point = frame.Point.Add(geom.NewPoint(2*unison.StdHSpacing, 3*unison.StdVSpacing))
+		wnd.SetFrameRect(frame)
+		wnd.EnsureOnDisplay()
 	}
-	SetParents(rowChildren, row.Parent())
-	return rowChildren, false
+	refresh()
+	return dialog, refresh
 }
 
-func pickerMatchStateColor(matches bool) unison.Color {
-	if matches {
-		return unison.Green
+// newPickerStatePill returns a label drawn as a pill in the look of a picker state, top points below the top of its
+// border, and the function that sets its state and title. It isn't drawn until that is called.
+func newPickerStatePill(top float32) (pill *unison.Label, update func(state pickerState, title string)) {
+	pill = unison.NewLabel()
+	pill.SetBorder(unison.NewEmptyBorder(geom.Insets{Top: top, Left: unison.StdHSpacing, Right: unison.StdHSpacing}))
+	var background unison.Color
+	pill.DrawCallback = func(gc *unison.Canvas, _ geom.Rect) {
+		if pill.Drawable == nil {
+			return
+		}
+		r := pill.ContentRect(true)
+		r.Y += top
+		r.Height -= top
+		gc.DrawRoundedRect(r, geom.NewUniformSize(8), background.Paint(gc, r, paintstyle.Fill))
+		pill.DefaultDraw(gc, r)
 	}
-	return unison.ThemeError.GetColor()
+	update = func(state pickerState, title string) {
+		var img *unison.SVG
+		switch state {
+		case pickerOK:
+			img, background = unison.CheckmarkSVG, unison.Green
+		case pickerOpen:
+			img, background = unison.CircledQuestionSVG, unison.RGB(138, 83, 0)
+		case pickerWarning:
+			img, background = unison.TriangleExclamationSVG, unison.RGB(240, 196, 25)
+		default:
+			img, background = svg.Not, unison.ThemeError.GetColor()
+		}
+		size := max(pill.Font.Baseline()-2, 6)
+		pill.Drawable = &unison.DrawableSVG{SVG: img, Size: geom.NewSize(size, size)}
+		pill.OnBackgroundInk = background.On()
+		pill.SetTitle(title)
+		pill.MarkForLayoutRecursivelyUpward()
+		pill.MarkForRedraw()
+	}
+	return pill, update
 }
 
-func addPickerRow[T gurps.Node[T]](op promptOperation, parent *unison.Panel, row T, pt picker.Type, callback func(), boxes []*unison.CheckBox) []*unison.CheckBox {
+// addPickerRow adds the row to the dialog's list, returning what brings it up to date with the session. refresh is
+// called after anything in the row changes. depth is that of the dialog, and chooseColumn says whether it has a
+// column for the choose button.
+func (s *pickerSession[T]) addPickerRow(parent *unison.Panel, row T, pt picker.Type, depth int, chooseColumn bool, refresh func()) (update func()) {
+	op, prompted := s.op, s.prompted
 	wrapper := unison.NewPanel()
 	wrapper.SetLayout(&unison.FlexLayout{
-		Columns:  2,
+		Columns:  3,
 		HSpacing: unison.StdHSpacing,
 	})
 	// The wrapper fills its column so that the page reference it ends with lines up along the right edge.
@@ -273,42 +273,60 @@ func addPickerRow[T gurps.Node[T]](op promptOperation, parent *unison.Panel, row
 	})
 	parent.AddChild(wrapper)
 	checkBox := unison.NewCheckBox()
-	updatePickerCheckBoxTitle(checkBox, row, pt)
-	checkBox.ClickCallback = callback
+	checkBox.ClickCallback = func() {
+		s.chosen[row] = checkBox.State == check.On
+		refresh()
+	}
 	wrapper.AddChild(checkBox)
-	boxes = append(boxes, checkBox)
+	name, detail, cost := unison.NewLabel(), unison.NewLabel(), unison.NewLabel()
+	text := unison.NewPanel()
+	text.SetLayout(&unison.FlexLayout{Columns: 3})
+	for _, label := range []*unison.Label{name, detail, cost} {
+		label.Font = checkBox.Font
+		// Clicking the text clicks the box, as when the text was its title.
+		label.MouseDownCallback = func(geom.Point, int, int, mod.Modifiers) bool { return true }
+		label.MouseUpCallback = func(where geom.Point, _ int, _ mod.Modifiers) bool {
+			if where.In(label.ContentRect(false)) {
+				checkBox.Click()
+			}
+			return true
+		}
+		text.AddChild(label)
+	}
+	name.SetTitle(row.String())
+	wrapper.AddChild(text)
 	var onClick func()
 	var editTooltip string
-	var details []*unison.Label
+	details := make([]*unison.Label, 0, len(pickerRowDetailHeaders(row)))
 	pageRef := ""
 	pageRefHighlight := ""
 	switch actual := any(row).(type) {
 	case *gurps.Trait:
 		if actual.IsLeveled() {
-			onClick = func() { pickerRowLevelEditor(op, actual, checkBox, pt, callback) }
+			onClick = func() { pickerRowLevelEditor(op, actual, refresh) }
 			editTooltip = i18n.Text("Edit level")
 		}
 		pageRef = actual.PageRef
 		pageRefHighlight = actual.PageRefHighlight
 	case *gurps.Skill:
 		if !actual.Container() {
-			onClick = func() { pickerRowPointEditor(op, actual, checkBox, pt, callback) }
+			onClick = func() { pickerRowPointEditor(op, actual, refresh) }
 			editTooltip = i18n.Text("Edit points")
 		}
 		pageRef = actual.PageRef
 		pageRefHighlight = actual.PageRefHighlight
 	case *gurps.Spell:
 		if !actual.Container() {
-			onClick = func() { pickerRowPointEditor(op, actual, checkBox, pt, callback) }
+			onClick = func() { pickerRowPointEditor(op, actual, refresh) }
 			editTooltip = i18n.Text("Edit points")
 		}
 		pageRef = actual.PageRef
 		pageRefHighlight = actual.PageRefHighlight
 	case *gurps.Equipment:
 		// A choice made by value or weight may take more than one of an option, so its quantity may be set while
-		// picking. A group has no quantity of its own to set.
+		// picking, if it has one of its own to set.
 		if (pt == picker.Value || pt == picker.Weight) && !actual.IsGroup() {
-			onClick = func() { pickerRowQuantityEditor(op, actual, &details, callback) }
+			onClick = func() { pickerRowQuantityEditor(op, actual, refresh) }
 			editTooltip = i18n.Text("Edit quantity")
 		}
 		pageRef = actual.PageRef
@@ -345,11 +363,8 @@ func addPickerRow[T gurps.Node[T]](op promptOperation, parent *unison.Panel, row
 			wrapper.AddChild(link)
 		}
 	}
-	rowDetails := pickerRowDetails(row)
-	details = make([]*unison.Label, 0, len(rowDetails))
-	for _, detail := range rowDetails {
+	for range pickerRowDetailHeaders(row) {
 		label := unison.NewLabel()
-		label.SetTitle(detail)
 		label.SetLayoutData(&unison.FlexLayoutData{HAlign: align.End})
 		parent.AddChild(label)
 		details = append(details, label)
@@ -364,7 +379,75 @@ func addPickerRow[T gurps.Node[T]](op promptOperation, parent *unison.Panel, row
 		button.ClickCallback = onClick
 		parent.AddChild(button)
 	}
-	return boxes
+	var choose *unison.Button
+	if chooseColumn {
+		isChoice := gurps.IsTemplateChoiceContainer(row)
+		if isChoice || (prompted && len(s.modTargets(row)) != 0) || len(s.nestedChoices(row)) != 0 {
+			choose = NewSVGButtonForFont(svg.Settings, checkBox.Font, -2)
+			choose.ClickCallback = func() {
+				if isChoice {
+					s.choosePicks(row, depth)
+				} else {
+					s.chooseWithin(row, depth)
+				}
+				refresh()
+			}
+			parent.AddChild(choose)
+		} else {
+			parent.AddChild(unison.NewPanel())
+		}
+	}
+	return func() {
+		checkBox.State = check.FromBool(s.chosen[row])
+		setPickerText(detail, s.detail(row), unison.ThemeOnSurface)
+		if pt == picker.Points || pt == picker.Count {
+			setPickerText(cost, s.cost(row, picker.Points), unison.ThemeOnSurface)
+		}
+		checkBox.Accessibility.Name = name.String() + detail.String() + cost.String()
+		if eqp, ok := any(row).(*gurps.Equipment); ok && len(details) == 3 {
+			details[0].SetTitle(pickerRowQuantity(eqp))
+			setPickerText(details[1], s.cost(row, picker.Value), unison.ThemeOnSurface)
+			setPickerText(details[2], s.cost(row, picker.Weight), unison.ThemeOnSurface)
+		}
+		if choose != nil {
+			s.updateChooseButton(choose, row)
+		}
+		checkBox.MarkForLayoutRecursivelyUpward()
+		checkBox.MarkForRedraw()
+	}
+}
+
+// updateChooseButton shows whether the row still has choices to make, and whether it was answered.
+func (s *pickerSession[T]) updateChooseButton(button *unison.Button, row T) {
+	var name, tip string
+	var open bool
+	if gurps.IsTemplateChoiceContainer(row) {
+		name, open = i18n.Text("Choose from %s"), !s.resolved(row)
+		tip = i18n.Text("Its picks are still to be made or miss its rule; choose them now to fix its cost")
+		if s.pickerAnswered[row] {
+			name = i18n.Text("Change the picks in %s")
+		}
+	} else {
+		name, open = i18n.Text("Choose modifiers for %s"), !s.resolved(row)
+		tip = i18n.Text("Its cost depends on modifier choices still to be made; choose them now to fix it")
+		switch {
+		case len(s.nestedChoices(row)) != 0:
+			name = i18n.Text("Choose within %s")
+			tip = i18n.Text("Its cost depends on choices within it still to be made; choose them now to fix it")
+		case s.modsAnswered[row]:
+			name = i18n.Text("Change the modifiers for %s")
+		}
+	}
+	name = fmt.Sprintf(name, row.String())
+	button.Accessibility.Name = name
+	if open {
+		button.OnBackgroundInk = unison.ThemeWarning
+		button.Tooltip = newWrappedTooltip(tip)
+	} else {
+		button.OnBackgroundInk = unison.DefaultButtonTheme.OnBackgroundInk
+		button.Tooltip = newWrappedTooltip(name)
+	}
+	button.MarkForRedraw()
 }
 
 // pickerRowDetailHeaders returns the headings of the columns of details shown for each option of the picker container,
@@ -376,36 +459,55 @@ func pickerRowDetailHeaders[T gurps.Node[T]](container T) []string {
 	return nil
 }
 
-// pickerRowDetails returns the details shown for an option in the columns pickerRowDetailHeaders names. The value and
-// weight are ranges when the option presents a choice of its own.
-func pickerRowDetails[T gurps.Node[T]](row T) []string {
-	eqp, ok := any(row).(*gurps.Equipment)
-	if !ok {
-		return nil
-	}
-	defUnits := pickerWeightUnits(eqp)
-	quantity := ""
+// pickerRowQuantity returns the quantity shown for an option, if it has one of its own.
+func pickerRowQuantity(eqp *gurps.Equipment) string {
 	if !eqp.IsGroup() {
-		quantity = eqp.Quantity.Comma()
+		return eqp.Quantity.Comma()
 	}
-	return []string{
-		quantity,
-		"$" + gurps.FormatValueRange(eqp.ExtendedValueRange(), fxp.Int.Comma),
-		gurps.FormatWeightRange(eqp.ExtendedWeightRange(defUnits), defUnits.Format),
+	return ""
+}
+
+// pickerStateInks holds the color of text telling of each state. A warning's is a dark yellow, as the pill's is too
+// light to read as text.
+var pickerStateInks = [...]unison.Ink{
+	pickerOK:      unison.Green,
+	pickerOpen:    unison.ThemeWarning,
+	pickerWarning: &unison.ThemeColor{Light: unison.RGB(122, 92, 0), Dark: unison.RGB(240, 196, 25)},
+	pickerError:   unison.ThemeError,
+}
+
+// setPickerText shows the text on the label with its tooltip, colored by its state, or plain when that is OK.
+func setPickerText(label *unison.Label, t pickerText, plain unison.Ink) {
+	label.OnBackgroundInk = pickerTextInk(t, plain)
+	label.SetTitle(t.text)
+	label.Tooltip = nil
+	if t.tip != "" {
+		label.Tooltip = newWrappedTooltip(t.tip)
 	}
 }
 
-// pickerMeasureRange returns what an option counts toward a choice made by value or weight: the range of its extended
-// value or weight, which takes its quantity into account.
-func pickerMeasureRange[T gurps.Node[T]](row T, pt picker.Type) gurps.NumericRange {
-	eqp, ok := any(row).(*gurps.Equipment)
-	if !ok || xreflect.IsNil(eqp) {
-		return gurps.NumericRangeOf(0)
+// pickerTextInk returns the color of the text, by its state, or plain when that is OK.
+func pickerTextInk(t pickerText, plain unison.Ink) unison.Ink {
+	if t.state != pickerOK {
+		return pickerStateInks[t.state]
 	}
-	if pt == picker.Weight {
-		return eqp.ExtendedWeightRange(pickerWeightUnits(eqp))
+	return plain
+}
+
+// growWindowToFit widens the window, as far as its display allows, when its content has come to want more width than it
+// has. Its height is left alone, as the list scrolls, so the list keeps its place.
+func growWindowToFit(wnd *unison.Window) {
+	_, pref, _ := wnd.Content().Sizes(geom.Size{})
+	r := wnd.ContentRect()
+	width := pref.Width
+	if d := wnd.Display(); d != nil {
+		width = min(width, d.Usable.Width-(wnd.FrameRect().Width-r.Width))
 	}
-	return eqp.ExtendedValueRange()
+	if width > r.Width {
+		r.Width = width
+		wnd.SetContentRect(r)
+		wnd.EnsureOnDisplay()
+	}
 }
 
 // pickerWeightUnits returns the units the picker dialog shows weights in: those of the sheet the row being picked from
@@ -431,9 +533,8 @@ func formatPickerTotal[T gurps.Node[T]](row T, pt picker.Type, total gurps.Numer
 	}
 }
 
-// pickerRowQuantityEditor asks for a new quantity of an option of a choice made by value or weight, updating the
-// option's details and the running total to match.
-func pickerRowQuantityEditor(op promptOperation, eqp *gurps.Equipment, details *[]*unison.Label, callback func()) {
+// pickerRowQuantityEditor asks for a new quantity of an option of a choice made by value or weight.
+func pickerRowQuantityEditor(op promptOperation, eqp *gurps.Equipment, callback func()) {
 	quantity := eqp.Quantity
 	panel := unison.NewPanel()
 	panel.SetLayout(&unison.FlexLayout{
@@ -455,46 +556,19 @@ func pickerRowQuantityEditor(op promptOperation, eqp *gurps.Equipment, details *
 	if dialog.RunModal() != unison.ModalResponseOK {
 		return
 	}
-	setPickerRowQuantity(eqp, quantity, *details)
+	eqp.Quantity = quantity
 	callback()
 }
 
-// setPickerRowQuantity sets the quantity of an option of a choice, updating the details shown for it to match.
-func setPickerRowQuantity(eqp *gurps.Equipment, quantity fxp.Int, details []*unison.Label) {
-	eqp.Quantity = quantity
-	for i, detail := range pickerRowDetails(eqp) {
-		if i < len(details) {
-			details[i].SetTitle(detail)
-			details[i].MarkForLayoutRecursivelyUpward()
-			details[i].MarkForRedraw()
-		}
+// pointsText returns the points, as in "5 points" or "1 point".
+func pointsText(points gurps.NumericRange) string {
+	if value, settled := points.Settled(); settled && value == fxp.One {
+		return points.Comma() + " " + i18n.Text("point")
 	}
+	return points.Comma() + " " + i18n.Text("points")
 }
 
-func updatePickerCheckBoxTitle[T gurps.Node[T]](checkBox *unison.CheckBox, row T, pt picker.Type) {
-	title := row.String()
-	switch pt {
-	case picker.Points:
-		// A row that presents choices of its own is worth a range rather than a single cost, which is worth showing
-		// even though picking it leads to another dialog: it is what the row will add to the total.
-		points := pointsRangeFor(row)
-		value, settled := points.Settled()
-		if !settled || value != 0 {
-			pointsLabel := i18n.Text("points")
-			if settled && value == fxp.One {
-				pointsLabel = i18n.Text("point")
-			}
-			title += fmt.Sprintf(" [%s %s]", points.Comma(), pointsLabel)
-		}
-	case picker.Count:
-		// NOP
-	default:
-		// NOP
-	}
-	checkBox.SetTitle(title)
-}
-
-func pickerRowLevelEditor(op promptOperation, trait *gurps.Trait, checkBox *unison.CheckBox, pt picker.Type, callback func()) {
+func pickerRowLevelEditor(op promptOperation, trait *gurps.Trait, callback func()) {
 	levels := trait.Levels
 	maximum := trait.ResolvedMaxLevels()
 	fieldMax := fxp.MaxBasePoints
@@ -527,10 +601,7 @@ func pickerRowLevelEditor(op promptOperation, trait *gurps.Trait, checkBox *unis
 		return
 	}
 	trait.Levels = levels
-	updatePickerCheckBoxTitle(checkBox, trait, pt)
 	callback()
-	checkBox.MarkForLayoutRecursivelyUpward()
-	checkBox.MarkForRedraw()
 }
 
 type pickerRowPointEditorTypes[T gurps.Node[T]] interface {
@@ -538,7 +609,7 @@ type pickerRowPointEditorTypes[T gurps.Node[T]] interface {
 	gurps.RawPointsAdjuster
 }
 
-func pickerRowPointEditor[T pickerRowPointEditorTypes[T]](op promptOperation, node T, checkBox *unison.CheckBox, pt picker.Type, callback func()) {
+func pickerRowPointEditor[T pickerRowPointEditorTypes[T]](op promptOperation, node T, callback func()) {
 	points := node.RawPoints()
 	panel := unison.NewPanel()
 	panel.SetLayout(&unison.FlexLayout{
@@ -561,31 +632,5 @@ func pickerRowPointEditor[T pickerRowPointEditorTypes[T]](op promptOperation, no
 		return
 	}
 	node.SetRawPoints(points)
-	updatePickerCheckBoxTitle(checkBox, node, pt)
 	callback()
-	checkBox.MarkForLayoutRecursivelyUpward()
-	checkBox.MarkForRedraw()
-}
-
-// pointsRangeFor returns the span of costs a picker may end up counting a row as being worth. A skill or spell is
-// counted by its raw points, inside a container as much as on its own, since a picker counts what is being bought
-// rather than what the destination sheet's bonuses make of it. The rows are already owned by that sheet by the time
-// the picker is shown, so its bonuses would otherwise be counted. A trait is counted by its adjusted points, which is
-// the only cost a trait has. Either way a container accounts for any choices it presents -- including the exact ones,
-// which are worth what they ask for rather than what their children add up to.
-func pointsRangeFor[T gurps.Node[T]](child T) gurps.NumericRange {
-	if xreflect.IsNil(child) {
-		return gurps.NumericRangeOf(0)
-	}
-	// Covers skills and spells
-	if rp, ok := any(child).(interface{ RawPointsRange() gurps.NumericRange }); ok {
-		return rp.RawPointsRange()
-	}
-	// Covers traits
-	if rp, ok := any(child).(interface {
-		PointsRange(tooltip *xbytes.InsertBuffer) gurps.NumericRange
-	}); ok {
-		return rp.PointsRange(nil)
-	}
-	return gurps.NumericRangeOf(0)
 }

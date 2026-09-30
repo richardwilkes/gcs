@@ -43,8 +43,10 @@ func CanTakeModifiers[T Node[T]](node T) bool {
 	if xreflect.IsNil(node) || IsTemplateChoiceContainer(node) {
 		return false
 	}
-	eqp, isEquipment := any(node).(*Equipment)
-	return !isEquipment || !eqp.IsGroup()
+	if eqp, ok := any(node).(*Equipment); ok {
+		return !eqp.IsGroup()
+	}
+	return true
 }
 
 // GeneralModifier is used for common access to modifiers.
@@ -74,10 +76,12 @@ type Modifier[M Modifier[M, T], T Modifiable[T, M]] interface {
 	GeneralModifier
 	// fillWithNameableKeysEvenIfDisabled is FillWithNameableKeys without the enabled check.
 	fillWithNameableKeysEvenIfDisabled(m, existing map[string]string)
+	// enabledVariant returns the modifier, or an enabled shallow copy of it when it is disabled.
+	enabledVariant() M
 }
 
-// attachModifiers points each of the modifiers at the target and gives them the target's data owner.
-func attachModifiers[T ModifiableNode[T, M], M ModifierNode[M, T], S ~[]M](target T, modifiers S) {
+// AttachModifiers points each of the modifiers at the target and gives them the target's data owner.
+func AttachModifiers[T ModifiableNode[T, M], M ModifierNode[M, T], S ~[]M](target T, modifiers S) {
 	owner := target.DataOwner()
 	for _, m := range modifiers {
 		m.SetDataOwner(owner)

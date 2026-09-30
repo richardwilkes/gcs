@@ -37,7 +37,12 @@ func transferKindOf(panel unison.Paneler) transferKind {
 	if xreflect.IsNil(panel) {
 		return transferLibrary
 	}
-	switch unison.AncestorOrSelf[unison.Dockable](panel).(type) {
+	var owner any = unison.AncestorOrSelf[unison.Dockable](panel)
+	if xreflect.IsNil(owner) {
+		// A list the page layout leaves off the page is never attached to it, so ask the table's owner.
+		owner = panel.AsPanel().ClientData()[TableOwnerClientKey]
+	}
+	switch owner.(type) {
 	case *Sheet, *LootSheet:
 		return transferSheet
 	case *Template:
@@ -116,16 +121,18 @@ type applyPart[T gurps.Node[T]] struct {
 	index int
 	// placed holds the rows that were placed, which leaves out any that were merged into a row already present.
 	placed []T
+	// asked holds the rows whose modifiers were answered from the template picker, so aren't asked about again.
+	asked map[T]bool
 }
 
 // applyPartOps is what applyTransfer needs of each part, whatever its row type.
 type applyPartOps interface {
 	normalizeChoices()
-	resolvePickers(op promptOperation) bool
+	resolvePickers(op promptOperation, promptChoices bool) bool
 	pickerContainers() []string
 	stripPickers()
 	modifierTargetCount() int
-	promptForModifiers(op promptOperation, done, total int) bool
+	promptForModifiers(op promptOperation, done, total int) (asked int, ok bool)
 	promptForNameables(op promptOperation) bool
 	place(merge bool)
 	clearPreconfigured()
@@ -187,11 +194,9 @@ func (a *applyParts) promptForModifiers(op promptOperation) bool {
 	a.each(func(part applyPartOps) { total += part.modifierTargetCount() })
 	done := 0
 	return a.all(func(part applyPartOps) bool {
-		if !part.promptForModifiers(op, done, total) {
-			return false
-		}
-		done += part.modifierTargetCount()
-		return true
+		asked, ok := part.promptForModifiers(op, done, total)
+		done += asked
+		return ok
 	})
 }
 
@@ -206,12 +211,14 @@ func (p *applyPart[T]) normalizeChoices() {
 	gurps.NormalizeTemplateChoiceContainers(p.rows...)
 }
 
-func (p *applyPart[T]) resolvePickers(op promptOperation) bool {
-	revised, abort := processPickerRows(op, p.rows)
+func (p *applyPart[T]) resolvePickers(op promptOperation, promptChoices bool) bool {
+	s := newPickerSession(op, p.rows, promptChoices)
+	revised, abort := s.processRows(p.rows)
 	if abort {
 		return false
 	}
 	p.rows = revised
+	p.asked = s.modsAnswered
 	return true
 }
 
@@ -231,13 +238,21 @@ func (p *applyPart[T]) stripPickers() {
 }
 
 func (p *applyPart[T]) modifierTargetCount() int {
-	return len(modifierTargets(p.rows))
+	return len(modifierTargets(p.rows, p.requirePicks(), p.asked))
+}
+
+// requirePicks reports whether the rows are headed for a sheet (see modifierPromptInfo.requirePicks).
+func (p *applyPart[T]) requirePicks() bool {
+	return transferKindOf(p.table) == transferSheet
 }
 
 // promptForModifiers and promptForNameables put up the prompts for the rows' modifiers and nameable keys. Neither
 // rebuilds or reports anything: the rows aren't in a table yet, and applyTransfer does both once the answers are in.
-func (p *applyPart[T]) promptForModifiers(op promptOperation, done, total int) bool {
-	return promptForModifierTargets(op, modifierTargets(p.rows), done, total)
+// promptForModifiers also returns how many rows it asked about, counted before any answer can change that.
+func (p *applyPart[T]) promptForModifiers(op promptOperation, done, total int) (asked int, ok bool) {
+	requirePicks := p.requirePicks()
+	targets := modifierTargets(p.rows, requirePicks, p.asked)
+	return len(targets), promptForModifierTargets(op, targets, done, total, requirePicks, p.asked)
 }
 
 func (p *applyPart[T]) promptForNameables(op promptOperation) bool {
@@ -334,7 +349,7 @@ func applyTransfer(destination unison.Paneler, parts *applyParts, opts applyOpti
 	if opts.normalizeChoices {
 		parts.each(applyPartOps.normalizeChoices)
 	}
-	if opts.resolvePickers && !promptForPickers(op, parts) {
+	if opts.resolvePickers && !promptForPickers(op, parts, opts.promptForChoices) {
 		return false
 	}
 	var pickerContainers []string

@@ -38,5 +38,5 @@ func NewTraitModifierTableDockable(filePath string, modifiers []*gurps.TraitModi
 	return NewTableDockable(filePath, gurps.TraitModifiersExt,
 		NewTraitModifiersProvider(provider, false),
 		func(path string) error { return gurps.SaveTraitModifiers(provider.TraitModifierList(), path) },
-		NewTraitModifierItemID, NewTraitContainerModifierItemID)
+		NewTraitModifierItemID, NewTraitContainerModifierItemID, NewTraitModifierChoiceItemID)
 }

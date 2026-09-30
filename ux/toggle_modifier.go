@@ -18,14 +18,15 @@ import (
 
 // modifierExtractor yields a selected row's modifier when its enablement can be toggled. Containers are left out: a
 // container is always enabled and shows no checkmark cell, so excluding them disables the menu item for a
-// container-only selection instead of letting it register an edit that changes nothing.
+// container-only selection instead of letting it register an edit that changes nothing. So is a locked pick (see
+// gurps.IsLockedModifierChoiceSelection).
 func modifierExtractor[T gurps.Node[T]](node T) (gurps.GeneralModifier, bool) {
 	if xreflect.IsNil(node) {
 		// Container() would dereference the node, so the nil check has to come first.
 		return nil, false
 	}
 	m, ok := any(node).(gurps.GeneralModifier)
-	return m, ok && !m.Container()
+	return m, ok && !m.Container() && !gurps.IsLockedModifierChoiceSelection(node)
 }
 
 // modifierToggleUndoTitle returns the undo title for a table of the given kind of modifier, so that the Edit menu says
@@ -46,31 +47,49 @@ func canToggleModifierEnabled[T gurps.Node[T]](table *unison.Table[*Node[T]]) bo
 	return canAdjustSelection(table, modifierExtractor[T])
 }
 
-// toggleModifierEnabled flips the enabled state of each selected modifier. Unlike a trait or a piece of equipment,
-// turning a modifier on or off changes only what its owner is worth and what it grants, never which lists the owner
-// shows, so the owner is merely marked as modified rather than rebuilt.
+// toggleModifierEnabled flips the enabled state of each selected modifier, following the choice rules. Unlike a trait
+// or a piece of equipment, turning a modifier on or off changes only what its owner is worth and what it grants, never
+// which lists the owner shows, so the owner is merely marked as modified rather than rebuilt.
 func toggleModifierEnabled[T gurps.Node[T]](owner Rebuildable, table *unison.Table[*Node[T]]) {
-	adjustSelection(modifierToggleUndoTitle[T](), owner, table, modifierExtractor[T], gurps.GeneralModifier.Enabled,
-		gurps.GeneralModifier.SetEnabled,
-		func(m gurps.GeneralModifier) { m.SetEnabled(!m.Enabled()) },
-		true, false)
+	var nodes []T
+	for _, row := range table.SelectedRows(false) {
+		if _, ok := modifierExtractor(row.Data()); ok {
+			nodes = append(nodes, row.Data())
+		}
+	}
+	if len(nodes) != 0 {
+		setModifiersEnabled(owner, table, nodes, func(node T) bool { return !node.Enabled() })
+	}
 }
 
 // adjustModifierEnabled sets the enabled state of a single modifier. This is the form the checkmark cell uses, so that
 // a click and the command register the same kind of undoable edit and report the change the same way.
 func adjustModifierEnabled[T gurps.Node[T]](owner Rebuildable, undoSource unison.Paneler, node T, on bool) {
-	m, ok := modifierExtractor(node)
-	if !ok {
-		return
+	if _, ok := modifierExtractor(node); ok {
+		setModifiersEnabled(owner, undoSource, []T{node}, func(T) bool { return on })
 	}
-	adjustTargets(modifierToggleUndoTitle[T](), owner, undoSource, gurps.EntityFromNode(node),
-		[]gurps.GeneralModifier{m}, gurps.GeneralModifier.Enabled, gurps.GeneralModifier.SetEnabled,
-		func(m gurps.GeneralModifier) { m.SetEnabled(on) },
-		false)
+}
+
+// setModifiersEnabled sets each modifier to the state want gives, and whatever the choice rules change with it, as one
+// undoable edit.
+func setModifiersEnabled[T gurps.Node[T]](owner Rebuildable, undoSource unison.Paneler, nodes []T, want func(T) bool) {
+	targets, enabled := gurps.ModifierEnabledChanges(nodes, want)
+	adjustTargets(modifierToggleUndoTitle[T](), owner, undoSource, gurps.EntityFromNode(nodes[0]), targets, T.Enabled,
+		gurps.SetModifierEnabled[T], func(node T) { gurps.SetModifierEnabled(node, enabled[node]) }, false)
 }
 
 func installToggleModifierEnabledHandler[T gurps.Node[T]](table *unison.Table[*Node[T]]) {
 	table.InstallCmdHandlers(ToggleStateItemID,
 		func(_ any) bool { return canToggleModifierEnabled(table) },
 		func(_ any) { toggleModifierEnabled(table.AncestorOrSelf[Rebuildable](), table) })
+}
+
+// addModifierEnabledCheckBox adds the Enabled check box to a modifier's editor, disabled for a locked pick (see
+// gurps.IsLockedModifierChoiceSelection).
+func addModifierEnabledCheckBox[T gurps.Node[T]](parent *unison.Panel, target T, disabled *bool) {
+	box := addInvertedCheckBox(parent, i18n.Text("Enabled"), disabled)
+	if gurps.IsLockedModifierChoiceSelection(target) {
+		box.SetEnabled(false)
+		box.Tooltip = newWrappedTooltip(i18n.Text("This is the pick of a choice that must be made, so it can't be turned off. Pick another of the choice's modifiers instead."))
+	}
 }

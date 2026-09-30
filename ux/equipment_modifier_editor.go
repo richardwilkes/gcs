@@ -28,27 +28,26 @@ func EditEquipmentModifier(owner Rebuildable, modifier *gurps.EquipmentModifier)
 }
 
 func initEquipmentModifierEditor(e *editor[*gurps.EquipmentModifier, *gurps.EquipmentModifierEditData], content *unison.Panel) func() {
-	addNameLabelAndField(content, &e.editorData.Name)
-	if !e.target.Container() {
-		addLabelAndStringField(content, i18n.Text("Tech Level"), gurps.TechLevelInfo(), &e.editorData.TechLevel)
+	if e.target.Container() {
+		initModifierContainerEditor(content, &e.editorData.EquipmentModifierSyncData,
+			&e.editorData.ModifierContainerSyncData, &e.target.SourcedID)
+		return nil
 	}
+	addNameLabelAndField(content, &e.editorData.Name)
+	addLabelAndStringField(content, i18n.Text("Tech Level"), gurps.TechLevelInfo(), &e.editorData.TechLevel)
 	addLabelAndMultiLineStringField(content, i18n.Text("Notes"), "", &e.editorData.LocalNotes)
 	content.AddChild(unison.NewPanel())
 	addCheckBox(content, i18n.Text("Also show notes in weapon usage"), &e.editorData.ShowNotesOnWeapon)
 	addVTTNotesLabelAndField(content, &e.editorData.VTTNotes)
-	if !e.target.Container() {
-		content.AddChild(unison.NewPanel())
-		addInvertedCheckBox(content, i18n.Text("Enabled"), &e.editorData.Disabled)
-		addEquipmentCostFields(content, e)
-		addEquipmentWeightFields(content, e)
-	}
+	content.AddChild(unison.NewPanel())
+	addModifierEnabledCheckBox(content, e.target, &e.editorData.Disabled)
+	addEquipmentCostFields(content, e)
+	addEquipmentWeightFields(content, e)
 	addTagsLabelAndField(content, &e.editorData.Tags)
 	addPageRefLabelAndField(content, &e.editorData.PageRef)
 	addPageRefHighlightLabelAndField(content, &e.editorData.PageRefHighlight)
 	addSourceFields(content, &e.target.SourcedID)
-	if !e.target.Container() {
-		content.AddChild(newFeaturesPanel(gurps.EntityFromNode(e.target), e.target, &e.editorData.Features, true))
-	}
+	content.AddChild(newFeaturesPanel(gurps.EntityFromNode(e.target), e.target, &e.editorData.Features, true))
 	return nil
 }
 

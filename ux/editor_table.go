@@ -27,8 +27,10 @@ func newEditorTable[T gurps.Node[T]](parent *unison.Panel, provider TableProvide
 	switch t := any(table).(type) {
 	case *unison.Table[*Node[*gurps.TraitModifier]]:
 		installToggleModifierEnabledHandler(t)
+		installModifierChoiceConversionHandlers[*gurps.TraitModifier, *gurps.TraitModifierEditData](t, t)
 	case *unison.Table[*Node[*gurps.EquipmentModifier]]:
 		installToggleModifierEnabledHandler(t)
+		installModifierChoiceConversionHandlers[*gurps.EquipmentModifier, *gurps.EquipmentModifierEditData](t, t)
 	case *unison.Table[*Node[*gurps.Weapon]]:
 		installToggleHiddenHandler(t)
 	}

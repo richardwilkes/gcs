@@ -51,9 +51,17 @@ func initTraitEditor(e *editor[*gurps.Trait, *gurps.TraitEditData], content *uni
 	if !e.target.Container() {
 		wrapper, _ := addFlowWrapper(content, i18n.Text("Point Cost"), 2)
 		costField := NewNonEditableField(func(field *NonEditableField) {
-			field.SetTitle(gurps.AdjustedPoints(entity, e.target, e.editorData.CanLevel, e.editorData.BasePoints,
-				e.editorData.Levels, e.editorData.PointsPerLevel, e.editorData.SelfControl, e.editorData.Frequency, e.editorData.Modifiers,
-				e.editorData.RoundCostDown).String())
+			// An open mandatory choice shows the range it may cost. Both it and the settled cost leave out inherited
+			// modifiers.
+			own := cloneTraitWithOverlay(e.target, e.editorData)
+			own.SetParent(nil)
+			if r, open := own.ModifierChoicePointsRange(); open {
+				field.SetTitle(r.String())
+			} else {
+				field.SetTitle(gurps.AdjustedPoints(entity, e.target, e.editorData.CanLevel, e.editorData.BasePoints,
+					e.editorData.Levels, e.editorData.PointsPerLevel, e.editorData.SelfControl, e.editorData.Frequency,
+					e.editorData.Modifiers, e.editorData.RoundCostDown).String())
+			}
 			field.MarkForLayoutAndRedraw()
 		})
 		insets := costField.Border().Insets()
@@ -159,11 +167,11 @@ func initTraitEditor(e *editor[*gurps.Trait, *gurps.TraitEditData], content *uni
 	}
 	if e.target.Container() {
 		if !choice {
-			content.AddChild(newTraitModifiersPanel(e, entity, &e.editorData.Modifiers))
+			content.AddChild(newTraitModifiersPanel(e, entity, e.target, &e.editorData.Modifiers))
 		}
 	} else {
 		content.AddChild(newFeaturesPanel(entity, e.target, &e.editorData.Features, false))
-		content.AddChild(newTraitModifiersPanel(e, entity, &e.editorData.Modifiers))
+		content.AddChild(newTraitModifiersPanel(e, entity, e.target, &e.editorData.Modifiers))
 		e.meleeWeapons = newWeaponsPanel(e, e.target, true, &e.editorData.Weapons)
 		content.AddChild(e.meleeWeapons)
 		e.rangedWeapons = newWeaponsPanel(e, e.target, false, &e.editorData.Weapons)

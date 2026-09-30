@@ -229,6 +229,7 @@ func InstallTableDropSupport[T gurps.Node[T]](table *unison.Table[*Node[T]], pro
 }
 
 func willDropCallback[T gurps.Node[T]](from, to *unison.Table[*Node[T]], move bool) *unison.UndoEdit[*TableDragUndoEditData[T]] {
+	notePriorModifierPicks(to)
 	mgr := unison.UndoManagerFor(to)
 	if mgr == nil {
 		return nil
@@ -253,6 +254,8 @@ func didDropCallback[T gurps.Node[T]](undo *unison.UndoEdit[*TableDragUndoEditDa
 			tableProvider.ProcessDropData(from, to)
 		}
 	}
+	// Settled before the rebuild, so that what it shows, such as an editor's Point Cost, counts only the picks.
+	settleModifierChoices(to)
 	if rebuilder := dropRebuilder(to); rebuilder != nil {
 		// This is also what reports the drop (see DropOccurredCallback in InstallTableDropSupport), which is why the
 		// owner is rebuilt as modified rather than just rebuilt.

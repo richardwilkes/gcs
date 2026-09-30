@@ -349,6 +349,8 @@ func TestApplyOptionsFor(t *testing.T) {
 	c.Equal(transferSheet, transferKindOf(loot.Equipment.Table), "a loot sheet is a sheet")
 	c.Equal(transferTemplate, transferKindOf(template.Traits.Table))
 	c.Equal(transferLibrary, transferKindOf(library))
+	sheet.Skills.AsPanel().RemoveFromParent()
+	c.Equal(transferSheet, transferKindOf(sheet.Skills.Table), "a list the layout leaves off the page is still the sheet's")
 
 	full := applyOptions{
 		resolvePickers:     true,

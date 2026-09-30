@@ -241,17 +241,21 @@ func migrateLegacyText(text *string, legacy string) {
 }
 
 // finishNodeUnmarshal applies the fix-ups every node type needs at the end of its UnmarshalJSONFrom: folding the legacy
-// categories into the tags and sorting them, dropping a template picker of a type the node doesn't allow, pointing the
-// children back at their parent, and opening the node when the legacy "open" flag asked for it (see fixupLegacyTID).
+// categories into the tags and sorting them, dropping a template picker of a type the node doesn't allow and holding a
+// picker's qualifier to what its type allows, pointing the children back at their parent, and opening the node when the
+// legacy "open" flag asked for it (see fixupLegacyTID).
 func finishNodeUnmarshal[T Node[T]](node T, tags *[]string, legacyCategories []string, open bool) {
 	*tags = convertOldCategoriesToTags(*tags, legacyCategories)
 	slices.Sort(*tags)
 	// Every picker type loads, since they all share one enum, but not every type means something for every node: a
 	// trait has no weight to pick by and equipment no points. Only a hand-edited or foreign file can hold such a picker,
-	// and it could never be satisfied, so it is dropped, leaving a plain group.
+	// and it could never be satisfied, so it is dropped, leaving a plain group. Likewise only such a file can hold a
+	// qualifier below what its type allows, such as a negative count, which is raised to the least the type allows.
 	if tpp, ok := any(node).(TemplatePickerProvider); ok {
 		if types, tp := tpp.TemplatePickerData(); !slices.Contains(types, tp.Type) {
 			*tp = TemplatePicker{}
+		} else {
+			tp.Qualifier.Qualifier = max(tp.Qualifier.Qualifier, TemplatePickerQualifierMinimum(tp.Type))
 		}
 	}
 	if node.Container() {

@@ -48,6 +48,7 @@ var (
 	_ FeatureSwitcher           = &Equipment{}
 	_ TemplatePickerProvider    = &Equipment{}
 	_ templateChoiceConvertible = &Equipment{}
+	_ groupConvertible          = &Equipment{}
 
 	_ TemplatePickerProvider = &EquipmentData{}
 	_ TemplatePickerProvider = &EquipmentEditData{}
@@ -85,6 +86,10 @@ type Equipment struct {
 // EquipmentData holds the Equipment data that is written to disk.
 type EquipmentData struct {
 	SourcedID
+	// ContainerType is the kind of container this is, when it is one. It is kept out of the data an editor edits, since
+	// no editor changes it: a container changes kind only through a conversion, and an editor opened before one would
+	// otherwise put the old kind back when applied.
+	ContainerType eqcontainer.Type `json:"container_type,omitzero"`
 	EquipmentEditData
 	ThirdParty map[string]any `json:"third_party,omitempty"`
 	Children   []*Equipment   `json:"children,omitempty"` // Only for containers
@@ -126,10 +131,10 @@ type EquipmentSyncData struct {
 	WeightIgnoredForSkills bool        `json:"ignore_weight_for_skills,omitzero"`
 }
 
-// EquipmentContainerSyncData holds the equipment sync data that is only applicable to equipment that are containers.
+// EquipmentContainerSyncData holds the equipment sync data that is only applicable to equipment that are containers and
+// that an editor may edit. The kind of container is kept in EquipmentData instead.
 type EquipmentContainerSyncData struct {
-	TemplatePicker TemplatePicker   `json:"template_picker,omitzero"`
-	ContainerType  eqcontainer.Type `json:"container_type,omitzero"`
+	TemplatePicker TemplatePicker `json:"template_picker,omitzero"`
 }
 
 // NewEquipmentFromFile loads an Equipment list from a file.
@@ -179,7 +184,8 @@ func NewEquipmentChoiceContainer(owner DataOwner, parent *Equipment) *Equipment 
 }
 
 // IsGroup returns true if this is a group, that is, a container that only organizes the equipment it holds. A template
-// choice container for equipment is always a group.
+// choice container for equipment is always a group. A group keeps nothing of its own: no quantity, value, weight or
+// modifiers.
 func (e *Equipment) IsGroup() bool {
 	return e.Container() && e.ContainerType == eqcontainer.Group
 }
@@ -341,6 +347,7 @@ func (e *Equipment) Clone(from LibraryFile, owner DataOwner, parent *Equipment, 
 	other.AdjustSource(from, e.SourcedID, mode)
 	other.SetOpen(e.IsOpen())
 	other.ThirdParty = e.ThirdParty
+	other.ContainerType = e.ContainerType
 	other.copyFrom(other, &e.EquipmentEditData, false, mode)
 	PropagateNodeNoteClosedState(e, other)
 	if e.HasChildren() {
@@ -451,14 +458,14 @@ func EquipmentHeaderData(columnID int, provider EquipmentListProvider, carried, 
 		data = abbreviatedHeaderData(i18n.Text("LC"), i18n.Text("Legality Class"))
 	case EquipmentCostColumn:
 		data = imageHeaderData(HeaderCoins, i18n.Text("Value"), i18n.Text("The value of one of these pieces of equipment"))
-		data.Less = fxp.IntLessFromString
+		data.Less = ValueRangeLessFromString
 	case EquipmentExtendedCostColumn:
 		data = imageHeaderData(HeaderStackedCoins, i18n.Text("Extended Value"),
 			i18n.Text("The value of all of these pieces of equipment, plus the value of any contained equipment"))
 		data.Less = ValueRangeLessFromString
 	case EquipmentWeightColumn:
 		data = imageHeaderData(HeaderWeight, i18n.Text("Weight"), i18n.Text("The weight of one of these pieces of equipment"))
-		data.Less = fxp.WeightLessFromStringFunc(settings.DefaultWeightUnits)
+		data.Less = WeightRangeLessFromStringFunc(settings.DefaultWeightUnits)
 	case EquipmentExtendedWeightColumn:
 		data = imageHeaderData(HeaderStackedWeight, i18n.Text("Extended Weight"),
 			i18n.Text("The weight of all of these pieces of equipment, plus the weight of any contained equipment"))
@@ -561,6 +568,7 @@ func (e *Equipment) CellData(columnID int, data *CellData) {
 		data.Primary = e.String()
 		data.Secondary = e.SecondaryText(func(option display.Option) bool { return option.Inline() })
 		data.UnsatisfiedReason = e.UnsatisfiedReason
+		data.UnresolvedChoice = unresolvedModifierChoiceText(e, e.Modifiers)
 		data.Tooltip = e.SecondaryText(func(option display.Option) bool { return option.Tooltip() })
 		data.TemplateInfo = e.TemplatePicker.String()
 	case EquipmentTLColumn:
@@ -575,14 +583,14 @@ func (e *Equipment) CellData(columnID int, data *CellData) {
 		if e.IsGroup() {
 			break
 		}
-		e.valueCellData(data, e.AdjustedValue())
+		e.valueRangeCellData(data, e.adjustedValueRange())
 	case EquipmentExtendedCostColumn:
 		e.valueRangeCellData(data, e.ExtendedValueRange())
 	case EquipmentWeightColumn:
 		if e.IsGroup() {
 			break
 		}
-		e.weightCellData(data, e.AdjustedWeight)
+		e.weightRangeCellData(data, e.adjustedWeightRange)
 	case EquipmentExtendedWeightColumn:
 		e.weightRangeCellData(data, e.ExtendedWeightRange)
 	case EquipmentTagsColumn:
@@ -690,7 +698,7 @@ func (e *Equipment) SetDataOwner(owner DataOwner) {
 			child.SetDataOwner(owner)
 		}
 	}
-	attachModifiers(e, e.Modifiers)
+	AttachModifiers(e, e.Modifiers)
 }
 
 // IsLeveled returns true if the equipment is capable of having levels.
@@ -842,45 +850,25 @@ func (e *Equipment) ResolvedBaseValue() fxp.Int {
 		Min(fxp.Max - 1).Max(0)
 }
 
-// AdjustedValue returns the value after adjustments for any modifiers. Does not include the value of children.
+// AdjustedValue returns the value after adjustments for any modifiers. Does not include the value of children. An open
+// mandatory modifier choice counts as the least it may come to.
 func (e *Equipment) AdjustedValue() fxp.Int {
-	return ValueAdjustedForModifiers(e, e.ResolvedBaseValue(), e.Modifiers)
+	return lowerEndOf(e.adjustedValueRange())
 }
 
-// ExtendedValue returns the extended value. A template choice container that is yet to be made counts as the least it
-// may come to, as does anything holding one; see ExtendedValueRange for the whole of what it may come to.
+// ExtendedValue returns the extended value. It is the single value ExtendedValueRange stands for (see singleValueOf):
+// a choice yet to be made counts as the least it may come to, as does anything holding one.
 func (e *Equipment) ExtendedValue() fxp.Int {
-	if e.Quantity <= 0 {
-		return 0
-	}
-	if IsTemplateChoiceContainer(e) {
-		return lowerEndOf(e.ExtendedValueRange())
-	}
-	value := e.AdjustedValue()
-	if e.Container() {
-		for _, one := range e.Children {
-			value += one.ExtendedValue()
-		}
-	}
-	return value.Mul(e.Quantity)
+	return singleValueOf(e.ExtendedValueRange())
 }
 
 // ExtendedValueOfJustOne returns the extended value of just one piece of this equipment, including the value of
-// children. A template choice container is a group, so there is only ever one of it.
+// children, or nothing when there are none of it at all.
 func (e *Equipment) ExtendedValueOfJustOne() fxp.Int {
 	if e.Quantity <= 0 {
 		return 0
 	}
-	if IsTemplateChoiceContainer(e) {
-		return e.ExtendedValue()
-	}
-	value := e.AdjustedValue()
-	if e.Container() {
-		for _, one := range e.Children {
-			value += one.ExtendedValue()
-		}
-	}
-	return value
+	return singleValueOf(equipmentValue().rangeOf(e, fxp.One))
 }
 
 // BaseWeightWithReplacements returns the base weight with any replacements applied.
@@ -895,19 +883,22 @@ func (e *Equipment) ResolvedBaseWeight() fxp.Weight {
 		SheetSettingsFor(entity).DefaultWeightUnits)
 }
 
-// AdjustedWeight returns the weight after adjustments for any modifiers. Does not include the weight of children.
+// AdjustedWeight returns the weight after adjustments for any modifiers. Does not include the weight of children. An
+// open mandatory modifier choice counts as the least it may come to.
 func (e *Equipment) AdjustedWeight(forSkills bool, defUnits fxp.WeightUnit) fxp.Weight {
 	if forSkills && e.WeightIgnoredForSkills && e.ReallyEquipped() {
 		return 0
 	}
-	return WeightAdjustedForModifiers(e, e.ResolvedBaseWeight(), e.Modifiers, defUnits)
+	return fxp.Weight(lowerEndOf(e.adjustedWeightRange(defUnits)))
 }
 
-// ExtendedWeight returns the extended weight. A template choice container that is yet to be made counts as the least it
-// may come to, as does anything holding one; see ExtendedWeightRange for the whole of what it may come to.
+// ExtendedWeight returns the extended weight. It is the single value ExtendedWeightRange stands for (see
+// singleValueOf): a choice yet to be made counts as the least it may come to, as does anything holding one. The weight
+// that counts toward the encumbrance for skills (forSkills) is worked out without the range where nothing is left to
+// choose, as it always is on a sheet, the only place with encumbrance.
 func (e *Equipment) ExtendedWeight(forSkills bool, defUnits fxp.WeightUnit) fxp.Weight {
-	if e.Quantity > 0 && IsTemplateChoiceContainer(e) {
-		return fxp.Weight(lowerEndOf(e.ExtendedWeightRange(defUnits)))
+	if !forSkills || IsTemplateChoiceContainer(e) || hasOpenMandatoryModifierChoice(e, e.Modifiers) {
+		return fxp.Weight(singleValueOf(e.extendedWeightRange(forSkills, defUnits)))
 	}
 	return ExtendedWeightAdjustedForModifiers(e, defUnits, e.Quantity, e.ResolvedBaseWeight(), e.Modifiers, e.Features, e.Children, forSkills, e.WeightIgnoredForSkills && e.ReallyEquipped())
 }
@@ -1150,11 +1141,11 @@ func (e *Equipment) CanConvertToFromContainer() bool {
 	return !e.Container() || (!e.HasChildren() && !IsTemplateChoiceContainer(e))
 }
 
-// ConvertToContainer converts this node to a container.
-// The container it becomes is always a physical container, since the piece of equipment it was already has everything
-// one holds.
+// ConvertToContainer converts this node to a container. The container it becomes is always a physical container, since
+// the piece of equipment it was already has everything one holds.
 func (e *Equipment) ConvertToContainer() {
 	e.TID = tid.TID(kinds.EquipmentContainer) + e.TID[1:]
+	e.ContainerType = eqcontainer.Container
 	e.EquipmentContainerSyncData = EquipmentContainerSyncData{}
 }
 
@@ -1166,11 +1157,14 @@ func (e *Equipment) ConvertToNonContainer() {
 		e.LegalityClass = defaultLegalityClass
 	}
 	e.TID = tid.TID(kinds.Equipment) + e.TID[1:]
+	e.ContainerType = eqcontainer.Container
 	e.EquipmentContainerSyncData = EquipmentContainerSyncData{}
 }
 
-// equipmentContainerConversionState is what converting equipment to or from a container changes besides its kind.
+// equipmentContainerConversionState is what converting equipment to or from a container, or between kinds of
+// container, changes besides its kind of node.
 type equipmentContainerConversionState struct {
+	containerType eqcontainer.Type
 	container     EquipmentContainerSyncData
 	legalityClass string
 }
@@ -1178,12 +1172,17 @@ type equipmentContainerConversionState struct {
 // ContainerConversionState returns what converting this equipment to or from a container changes besides its kind, so
 // that undoing the conversion can put it back (see RestoreContainerConversionState).
 func (e *Equipment) ContainerConversionState() any {
-	return equipmentContainerConversionState{container: e.EquipmentContainerSyncData, legalityClass: e.LegalityClass}
+	return equipmentContainerConversionState{
+		containerType: e.ContainerType,
+		container:     e.EquipmentContainerSyncData,
+		legalityClass: e.LegalityClass,
+	}
 }
 
 // RestoreContainerConversionState puts back what ContainerConversionState returned.
 func (e *Equipment) RestoreContainerConversionState(state any) {
 	if s, ok := state.(equipmentContainerConversionState); ok {
+		e.ContainerType = s.containerType
 		e.EquipmentContainerSyncData = s.container
 		e.LegalityClass = s.legalityClass
 	}
@@ -1208,6 +1207,7 @@ func (e *Equipment) Kind() string {
 // of equipment in its own right is cleared, and its quantity is always one.
 func (e *Equipment) ClearUnusedFieldsForType() {
 	if !e.Container() {
+		e.ContainerType = eqcontainer.Container
 		e.EquipmentContainerSyncData = EquipmentContainerSyncData{}
 		e.Children = nil
 		return
@@ -1237,6 +1237,7 @@ func (e *Equipment) SyncWithSource() {
 	syncFromSource(e, func(other *Equipment) {
 		e.EquipmentSyncData = other.EquipmentSyncData
 		if e.Container() {
+			e.ContainerType = other.ContainerType
 			e.EquipmentContainerSyncData = other.EquipmentContainerSyncData
 		}
 		e.Tags = slices.Clone(other.Tags)
@@ -1251,15 +1252,11 @@ func (e *Equipment) SyncWithSource() {
 // Hash writes this object's contents into the hasher. Note that this only hashes the data that is considered to be
 // "source" data, i.e. not expected to be modified by the user after copying from a library.
 func (e *Equipment) Hash(h hash.Hash) {
-	e.EquipmentSyncData.hash(h)
+	e.hash(h)
 	if e.Container() {
-		e.EquipmentContainerSyncData.hash(h)
+		e.TemplatePicker.Hash(h)
+		xhash.Num8(h, e.ContainerType)
 	}
-}
-
-func (e *EquipmentContainerSyncData) hash(h hash.Hash) {
-	e.TemplatePicker.Hash(h)
-	xhash.Num8(h, e.ContainerType)
 }
 
 // TemplatePickerData implements TemplatePickerProvider.
@@ -1320,10 +1317,17 @@ func (e *EquipmentEditData) copyFrom(equipment *Equipment, other *EquipmentEditD
 	e.Features = other.Features.Clone()
 }
 
+// CanPreconfigureContainer implements Preconfigurable. The data an editor edits doesn't say what kind of container it
+// belongs to, and the only editor that offers the setting is a physical container's; see Equipment's own
+// CanPreconfigureContainer for the answer that takes the kind into account.
+func (e *EquipmentEditData) CanPreconfigureContainer() bool {
+	return true
+}
+
 // CanPreconfigureContainer implements Preconfigurable. Only a physical container has modifiers of its own to
 // preconfigure.
-func (e *EquipmentEditData) CanPreconfigureContainer() bool {
-	return e.ContainerType == eqcontainer.Container
+func (e *Equipment) CanPreconfigureContainer() bool {
+	return e.IsPhysicalContainer()
 }
 
 // ModifierList returns the list of modifiers
@@ -1333,12 +1337,12 @@ func (e *Equipment) ModifierList() []*EquipmentModifier {
 
 // SetModifiers sets the list of modifiers
 func (e *Equipment) SetModifiers(mods []*EquipmentModifier) {
-	attachModifiers(e, mods)
+	AttachModifiers(e, mods)
 	e.Modifiers = mods
 }
 
 // AddModifiers adds a modifier to the list
 func (e *Equipment) AddModifiers(mods ...*EquipmentModifier) {
-	attachModifiers(e, mods)
+	AttachModifiers(e, mods)
 	e.Modifiers = append(e.Modifiers, mods...)
 }

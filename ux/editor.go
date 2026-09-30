@@ -269,9 +269,19 @@ func (e *editor[N, D]) applyEdits() {
 	// The source isn't part of the editor's data, so the undo edit has to carry it itself should applying the edit
 	// have cleared it (see clearSourceOfTemplatePicker).
 	sourceBefore := target.GetSource()
+	// Nor are the other modifiers in the target's tree, which the choice rules may change along with it.
+	optionsBefore := modifierEnabledStates([]N{target})
+	wasEnabled := target.Enabled()
+	changesEnabled := false
+	if _, ok := gurps.ModifierChoiceFor(target); ok {
+		changesEnabled = e.changesEnabled()
+	}
+	pickerBefore := modifierChoicePicker(target)
 	e.editorData.ApplyTo(target)
+	applyModifierChoiceRulesAfterEdit(target, wasEnabled, changesEnabled, modifierChoicePicker(target) != pickerBefore)
 	clearSourceOfTemplatePicker(target)
 	sourceAfter := target.GetSource()
+	optionsAfter := modifierEnabledStates([]N{target})
 	if mgr := unison.UndoManagerFor(owner); mgr != nil {
 		mgr.Add(&unison.UndoEdit[D]{
 			ID:       unison.NextUndoID(),
@@ -279,11 +289,13 @@ func (e *editor[N, D]) applyEdits() {
 			UndoFunc: func(edit *unison.UndoEdit[D]) {
 				edit.BeforeData.ApplyTo(target)
 				restoreSource(target, sourceBefore, sourceAfter)
+				restoreModifierEnabledStates(optionsBefore)
 				rebuildAsModified(owner, true)
 			},
 			RedoFunc: func(edit *unison.UndoEdit[D]) {
 				edit.AfterData.ApplyTo(target)
 				restoreSource(target, sourceAfter, sourceBefore)
+				restoreModifierEnabledStates(optionsAfter)
 				rebuildAsModified(owner, true)
 			},
 			BeforeData: e.beforeData,
@@ -291,6 +303,46 @@ func (e *editor[N, D]) applyEdits() {
 		})
 	}
 	rebuildAsModified(owner, true)
+}
+
+// changesEnabled returns true if the editor's data turns the target on or off.
+func (e *editor[N, D]) changesEnabled() bool {
+	scratch := e.target.Clone(gurps.LibraryFile{}, e.target.DataOwner(), e.target.Parent(), gurps.Copy)
+	e.beforeData.ApplyTo(scratch)
+	before := scratch.Enabled()
+	e.editorData.ApplyTo(scratch)
+	return scratch.Enabled() != before
+}
+
+// modifierChoicePicker returns the picker of a modifier container, the zero value for a group or anything else.
+func modifierChoicePicker[N gurps.Node[N]](node N) gurps.TemplatePicker {
+	if provider, ok := any(node).(gurps.ModifierChoiceProvider); ok && !xreflect.IsNil(node) && node.Container() {
+		return provider.ModifierChoiceData().Choice
+	}
+	return gurps.TemplatePicker{}
+}
+
+// applyModifierChoiceRulesAfterEdit applies the choice rules after an editor's data has been applied to the target. An
+// option keeps its current state unless the editor changed it, since another may have been picked since the editor
+// opened; a choice is settled only when the editor changed what it asks for.
+func applyModifierChoiceRulesAfterEdit[N gurps.Node[N]](target N, wasEnabled, changesEnabled, choiceChanged bool) {
+	if gurps.IsModifierChoice(target) {
+		if choiceChanged {
+			gurps.EnsureModifierChoiceRules(target)
+		}
+		return
+	}
+	if _, ok := gurps.ModifierChoiceFor(target); !ok {
+		return
+	}
+	on := target.Enabled()
+	gurps.SetModifierEnabled(target, wasEnabled)
+	if changesEnabled {
+		targets, enabled := gurps.ModifierEnabledChanges([]N{target}, func(N) bool { return on })
+		for _, one := range targets {
+			gurps.SetModifierEnabled(one, enabled[one])
+		}
+	}
 }
 
 // restoreSource sets the target's source to want when applying an edit changed it from other, leaving it alone

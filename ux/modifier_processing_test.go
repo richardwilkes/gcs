@@ -112,6 +112,12 @@ func forbidModifierPrompts(t *testing.T) {
 	}))
 }
 
+// processModifiers prompts for the modifiers of the rows as applyTransfer does.
+func processModifiers[T gurps.Node[T]](rows []T, requirePicks bool) bool {
+	targets := modifierTargets(rows, requirePicks, nil)
+	return promptForModifierTargets(promptOperation{}, targets, 0, len(targets), requirePicks, nil)
+}
+
 // TestProcessModifiersIgnoresModifierRows documents that processModifiers only has something to do for rows that can
 // hold modifiers. Handing it the modifiers themselves matches nothing, which is why its callers pass the rows that
 // carry the modifiers (see applyTransfer).
@@ -122,16 +128,16 @@ func TestProcessModifiersIgnoresModifierRows(t *testing.T) {
 
 	traitMod := gurps.NewTraitModifier(entity, nil, false)
 	traitMod.Name = "Trait Modifier"
-	processModifiers(promptOperation{}, []*gurps.TraitModifier{traitMod})
+	processModifiers([]*gurps.TraitModifier{traitMod}, true)
 	equipmentMod := gurps.NewEquipmentModifier(entity, nil, false)
 	equipmentMod.Name = "Equipment Modifier"
-	processModifiers(promptOperation{}, []*gurps.EquipmentModifier{equipmentMod})
+	processModifiers([]*gurps.EquipmentModifier{equipmentMod}, true)
 	c.Equal(0, len(*prompts), "modifier rows have no modifiers of their own to prompt for")
 
 	trait := gurps.NewTrait(entity, nil, false)
 	trait.Name = "Trait"
 	trait.Modifiers = []*gurps.TraitModifier{traitMod}
-	processModifiers(promptOperation{}, []*gurps.Trait{trait})
+	processModifiers([]*gurps.Trait{trait}, true)
 	c.Equal([]modifierPrompt{{title: "Trait", modifiers: []string{"Trait Modifier"}}}, *prompts,
 		"a trait must be prompted for with its own modifiers")
 }
@@ -151,7 +157,7 @@ func TestModifierPromptsCountOnlyRowsWithModifiers(t *testing.T) {
 	first.AddModifiers(gurps.NewTraitModifier(entity, nil, false))
 	second := gurps.NewTrait(entity, nil, false)
 	second.AddModifiers(gurps.NewTraitModifier(entity, nil, false))
-	c.True(processModifiers(promptOperation{}, []*gurps.Trait{plain, first, plain, second}))
+	c.True(processModifiers([]*gurps.Trait{plain, first, plain, second}, false))
 	c.Equal([][2]int{{1, 2}, {2, 2}}, steps)
 }
 
@@ -338,4 +344,19 @@ func TestAltDropOfTheWrongKindOfModifierIsIgnored(t *testing.T) {
 	c.True(equipmentProv.AltDropSupport().Drop([]int{0}, equipmentModData))
 	c.Equal(1, len(trait.Modifiers), "trait modifiers must still be attached to a trait")
 	c.Equal(1, len(item.Modifiers), "equipment modifiers must still be attached to equipment")
+}
+
+// TestModifierSelectionCheckBoxReportsChange verifies that clicking a plain modifier's check box updates the prompt, as
+// picking a choice's option does, so the cost shown follows it.
+func TestModifierSelectionCheckBoxReportsChange(t *testing.T) {
+	c := check.New(t)
+	plain := gurps.NewTraitModifier(nil, nil, false)
+	plain.Name = "Plain"
+	selection := newModifierSelection([]*gurps.TraitModifier{plain}, true, true)
+	changes := 0
+	selection.onChange = func() { changes++ }
+	for box := range selection.boxes {
+		box.Click()
+	}
+	c.Equal(1, changes)
 }

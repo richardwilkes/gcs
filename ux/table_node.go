@@ -442,8 +442,7 @@ func (n *Node[T]) createLabelCell(c *gurps.CellData, width float32, foreground, 
 	}
 	switch {
 	case c.UnsatisfiedReason != "":
-		p.AddChild(makeTagForNode(i18n.Text("Unsatisfied prerequisite(s)"), unison.ThemeError, unison.ThemeOnError,
-			n.secondaryFieldFont(), unison.TriangleExclamationSVG))
+		p.AddChild(n.errorTag(i18n.Text("Unsatisfied prerequisite(s)")))
 	case c.PrereqContradiction != "":
 		p.AddChild(makeTagForNode(i18n.Text("Contradictory prerequisite(s)"), unison.ThemeWarning,
 			unison.ThemeOnWarning, n.secondaryFieldFont(), unison.TriangleExclamationSVG))
@@ -455,6 +454,27 @@ func (n *Node[T]) createLabelCell(c *gurps.CellData, width float32, foreground, 
 		tag := makeTagForNode(c.TemplateInfo, foreground, background, n.secondaryFieldFont(), svg.GCSTemplate)
 		delete(tag.ClientData(), noInvertColorsMarker)
 		p.AddChild(tag)
+	}
+	if c.UnresolvedChoice != "" {
+		p.AddChild(n.errorTag(i18n.Text("Modifier choice required")))
+	}
+	if c.ChoiceInfo != "" {
+		// Drawn in the row's own colors, as the template choice tag above is, for the same reason.
+		tag := makeTagForNode(c.ChoiceInfo, foreground, background, n.secondaryFieldFont(), svg.SignPost)
+		delete(tag.ClientData(), noInvertColorsMarker)
+		if c.ChoiceRequired {
+			// A mandatory choice yet to be made on a sheet says so right beside what it asks for.
+			row := unison.NewPanel()
+			row.SetLayout(&unison.FlexLayout{
+				Columns:  2,
+				HSpacing: unison.StdHSpacing / 2,
+			})
+			row.AddChild(tag)
+			row.AddChild(n.errorTag(i18n.Text("Required")))
+			p.AddChild(row)
+		} else {
+			p.AddChild(tag)
+		}
 	}
 	if tooltip := labelCellTooltip(c); tooltip != "" {
 		var workingDir string
@@ -471,19 +491,33 @@ func (n *Node[T]) createLabelCell(c *gurps.CellData, width float32, foreground, 
 // labelCellTooltip returns the text of the tooltip a label cell shows. The reason for an unsatisfied prerequisite
 // replaces the cell's own tooltip, since the row is flagged as broken and the reason is what the user needs to put it
 // right. The explanation of a contradiction among the prerequisites is put ahead of the cell's own tooltip instead,
-// under the same separator Trait.CellData uses between the blocks of that tooltip, since the row is enabled and in
-// use, so what its own tooltip says still applies.
+// since the row is enabled and in use, so what its own tooltip says still applies. The explanation of a mandatory
+// modifier choice left unresolved on a sheet goes ahead of all of that.
 func labelCellTooltip(c *gurps.CellData) string {
-	switch {
-	case c.UnsatisfiedReason != "":
-		return c.UnsatisfiedReason
-	case c.PrereqContradiction == "":
-		return c.Tooltip
-	case c.Tooltip == "":
-		return c.PrereqContradiction
-	default:
-		return c.PrereqContradiction + "\n---\n" + c.Tooltip
+	tooltip := c.UnsatisfiedReason
+	if tooltip == "" {
+		tooltip = joinTooltipBlocks(c.PrereqContradiction, c.Tooltip)
 	}
+	return joinTooltipBlocks(c.UnresolvedChoice, tooltip)
+}
+
+// joinTooltipBlocks joins two blocks of a tooltip under the separator Trait.CellData uses between them, or returns the
+// one that isn't empty.
+func joinTooltipBlocks(first, second string) string {
+	switch {
+	case first == "":
+		return second
+	case second == "":
+		return first
+	default:
+		return first + "\n---\n" + second
+	}
+}
+
+// errorTag returns a tag that flags a problem with the row.
+func (n *Node[T]) errorTag(title string) *unison.Tag {
+	return makeTagForNode(title, unison.ThemeError, unison.ThemeOnError, n.secondaryFieldFont(),
+		unison.TriangleExclamationSVG)
 }
 
 func makeTagForNode(title string, bg, fg unison.Ink, font unison.Font, img *unison.SVG) *unison.Tag {
@@ -687,6 +721,11 @@ func (n *Node[T]) createToggleCell(c *gurps.CellData, foreground unison.Ink) uni
 			return nil
 		},
 		func(label *unison.Label, _ mod.Modifiers) bool {
+			// The pick of a mandatory modifier choice on a sheet can't be turned off (see
+			// gurps.IsLockedModifierChoiceSelection), so the click is refused, which puts the checkmark back.
+			if gurps.IsLockedModifierChoiceSelection(n.data) {
+				return false
+			}
 			if !handleCheck(n.data, label, c.Checked) {
 				MarkModified(label)
 			}
@@ -953,7 +992,8 @@ func rowIndex[T gurps.Node[T]](id tid.TID, startIndex int, rows []*Node[T]) (upd
 	return startIndex, -1
 }
 
-// InsertItems into a table.
+// InsertItems into a table. A new modifier that goes into a modifier choice arrives turned off, since nothing makes it
+// the one to pick.
 func InsertItems[T gurps.Node[T]](owner Rebuildable, table *unison.Table[*Node[T]], topList func() []T, setTopList func([]T), rowData func(table *unison.Table[*Node[T]]) []*Node[T], items ...T) {
 	if len(items) == 0 {
 		return
@@ -986,6 +1026,11 @@ func InsertItems[T gurps.Node[T]](owner Rebuildable, table *unison.Table[*Node[T
 		// Nothing usable was selected, so append to the end of the top-level list.
 		SetParents(items, zero)
 		setTopList(append(topList(), items...))
+	}
+	for _, item := range items {
+		if _, inChoice := gurps.ModifierChoiceFor(item); inChoice {
+			gurps.SetModifierEnabled(item, false)
+		}
 	}
 	table.SetRootRows(rowData(table))
 	table.ValidateScrollRoot()

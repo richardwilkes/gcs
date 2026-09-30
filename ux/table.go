@@ -43,7 +43,8 @@ const (
 	NoItemVariant ItemVariant = iota
 	ContainerItemVariant
 	AlternateItemVariant
-	// ChoiceContainerItemVariant is a template choice container, which only a template may hold.
+	// ChoiceContainerItemVariant is a choice container: a template choice container, which only a template may hold, or
+	// a modifier choice.
 	ChoiceContainerItemVariant
 	// GroupContainerItemVariant is a container that only organizes what it holds, for the node types whose plain
 	// container is something more than that.
@@ -436,7 +437,18 @@ func DuplicateSelection[T gurps.Node[T]](table *unison.Table[*Node[T]]) {
 				continue
 			}
 			parent := target.Parent()
-			clone := target.Clone(gurps.LibraryFile{}, gurps.EntityFromNode(target), parent, gurps.Duplicate)
+			clone := target.Clone(gurps.LibraryFile{}, target.DataOwner(), parent, gurps.Duplicate)
+			// Clone leaves a modifier pointed at nothing.
+			switch m := any(target).(type) {
+			case *gurps.TraitModifier:
+				if dup, isMod := any(clone).(*gurps.TraitModifier); isMod {
+					dup.SetTarget(m.Target())
+				}
+			case *gurps.EquipmentModifier:
+				if dup, isMod := any(clone).(*gurps.EquipmentModifier); isMod {
+					dup.SetTarget(m.Target())
+				}
+			}
 			selMap[clone.ID()] = true
 			if parent == zero {
 				for i, child := range topLevelData {

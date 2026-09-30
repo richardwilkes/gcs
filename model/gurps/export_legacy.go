@@ -957,6 +957,7 @@ func (ex *legacyExporter) processEquipmentLoop(buffer []byte, carried bool) {
 	Traverse(func(eqp *Equipment) bool {
 		if ex.includeByEquipmentTags(eqp) {
 			keys := legacyNodeKeys{
+				containerType: strings.ToUpper(eqp.ContainerType.Key()),
 				pageRef:       eqp.PageRef,
 				satisfied:     func() bool { return eqp.UnsatisfiedReason == "" },
 				notes:         eqp.Notes,

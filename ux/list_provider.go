@@ -31,7 +31,8 @@ type listProvider[T gurps.Node[T]] struct {
 	columnIDs  func() []int
 	headerData func(columnID int) gurps.HeaderData
 	newItem    func(owner gurps.DataOwner, parent T, container bool) T
-	// newChoice creates a template choice container, and is left unset by the providers whose node type can't be one.
+	// newChoice creates a choice container, a template choice container or a modifier choice, and is left unset by the
+	// providers whose node type can't be one.
 	newChoice func(owner gurps.DataOwner, parent T) T
 	// newGroup creates a group container, and is left unset by the providers whose node type has no container that is
 	// distinct from a group.

@@ -72,6 +72,7 @@ type TraitModifierEditData struct {
 	VTTNotes     string            `json:"vtt_notes,omitzero"`
 	Replacements map[string]string `json:"replacements,omitempty"` // No longer used; kept only to migrate old data
 	TraitModifierEditDataNonContainerOnly
+	ModifierContainerSyncData
 }
 
 // TraitModifierEditDataNonContainerOnly holds the TraitModifier data that is only applicable to TraitModifiers that
@@ -115,6 +116,14 @@ func NewTraitModifier(owner DataOwner, parent *TraitModifier, container bool) *T
 	t.Name = t.Kind()
 	t.SetOpen(container)
 	return &t
+}
+
+// NewTraitModifierChoice creates a new trait modifier choice, which asks for exactly one of its options.
+func NewTraitModifierChoice(owner DataOwner, parent *TraitModifier) *TraitModifier {
+	t := NewTraitModifier(owner, parent, true)
+	t.SetMandatoryChoice(true)
+	t.Name = t.Kind()
+	return t
 }
 
 func traitModifierKind(container bool) byte {
@@ -225,6 +234,7 @@ func (t *TraitModifier) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 	migrateLegacyText(&t.LocalNotes, localData.ExprNotes)
 	t.ClearUnusedFieldsForType()
 	finishNodeUnmarshal(t, &t.Tags, localData.Categories, open)
+	SettleModifierChoices(nil, t)
 	return nil
 }
 
@@ -270,6 +280,7 @@ func (t *TraitModifier) CellData(columnID int, data *CellData) {
 		data.Primary = t.NameWithReplacements()
 		data.Secondary = t.SecondaryText(func(option display.Option) bool { return option.Inline() })
 		data.Tooltip = t.SecondaryText(func(option display.Option) bool { return option.Tooltip() })
+		fillModifierChoiceCell(t, data)
 	case TraitModifierCostColumn:
 		if !t.Container() {
 			data.Type = cell.Text
@@ -535,6 +546,16 @@ func (t *TraitModifier) ApplyNameableKeys(m map[string]string) {
 	}
 }
 
+// enabledVariant implements Modifier.
+func (t *TraitModifier) enabledVariant() *TraitModifier { //nolint:unused // Only called through the Modifier constraint
+	if t.Enabled() {
+		return t
+	}
+	variant := *t
+	variant.Disabled = false
+	return &variant
+}
+
 // Enabled returns true if this node is enabled.
 func (t *TraitModifier) Enabled() bool {
 	return !t.Disabled || t.Container()
@@ -550,7 +571,10 @@ func (t *TraitModifier) SetEnabled(enabled bool) {
 // Kind returns the kind of data.
 func (t *TraitModifier) Kind() string {
 	if t.Container() {
-		return i18n.Text("Trait Modifier Container")
+		if t.IsChoice() {
+			return i18n.Text("Trait Modifier Choice")
+		}
+		return i18n.Text("Trait Modifier Group")
 	}
 	return i18n.Text("Trait Modifier")
 }
@@ -559,7 +583,10 @@ func (t *TraitModifier) Kind() string {
 func (t *TraitModifier) ClearUnusedFieldsForType() {
 	if t.Container() {
 		t.TraitModifierEditDataNonContainerOnly = TraitModifierEditDataNonContainerOnly{}
+		t.VTTNotes = ""
+		t.normalizeModifierChoice()
 	} else {
+		t.ModifierContainerSyncData = ModifierContainerSyncData{}
 		t.Children = nil
 	}
 }
@@ -569,7 +596,10 @@ func (t *TraitModifier) SyncWithSource() {
 	syncFromSource(t, func(other *TraitModifier) {
 		t.TraitModifierSyncData = other.TraitModifierSyncData
 		t.Tags = slices.Clone(other.Tags)
-		if !t.Container() {
+		if t.Container() {
+			t.ModifierContainerSyncData = other.ModifierContainerSyncData
+			settleModifierChoicesAround(t)
+		} else {
 			t.TraitModifierNonContainerSyncData = other.TraitModifierNonContainerSyncData
 			t.Features = other.Features.Clone()
 		}
@@ -579,10 +609,9 @@ func (t *TraitModifier) SyncWithSource() {
 // Hash writes this object's contents into the hasher. Note that this only hashes the data that is considered to be
 // "source" data, i.e. not expected to be modified by the user after copying from a library.
 func (t *TraitModifier) Hash(h hash.Hash) {
-	t.hash(h)
+	t.TraitModifierSyncData.hash(h)
 	if t.Container() {
-		// Containers carry no further sync data, so mark them the same way a nil value is marked elsewhere
-		xhash.Num8(h, uint8(255))
+		t.ModifierContainerSyncData.hash(h)
 	} else {
 		t.TraitModifierNonContainerSyncData.hash(h)
 	}

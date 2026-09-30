@@ -51,7 +51,7 @@ func newTestTemplateWithTraits(traits ...*gurps.Trait) *Template {
 func pickFirstOption(t *testing.T) *int {
 	t.Helper()
 	calls := 0
-	swapForTest(t, &promptForPickers, func(_ promptOperation, parts *applyParts) bool {
+	swapForTest(t, &promptForPickers, func(_ promptOperation, parts *applyParts, _ bool) bool {
 		calls++
 		var revised []*gurps.Trait
 		for _, row := range parts.traits.rows {
@@ -149,6 +149,10 @@ func TestCopyFromSheetToSheetIsAPlainCopy(t *testing.T) {
 	destination := newTestSheetForTemplate(t)
 	originalTraits := len(destination.Entity().Traits)
 	prompts := captureModifierPrompts(t)
+	swapForTest(t, &promptForPickers, func(op promptOperation, parts *applyParts, promptChoices bool) bool {
+		c.False(promptChoices, "no modifier prompt follows")
+		return processPickers(op, parts, promptChoices)
+	})
 
 	copySelectionTo(source.Traits.Table, []*Sheet{destination})
 
@@ -398,7 +402,7 @@ func TestDropOnSheetWithCanceledPickerLeavesSheetUntouched(t *testing.T) {
 	originalTraits := len(entity.Traits)
 	source := newTestTemplateWithTraits(newChoiceTrait("Pick One", "First", "Second"))
 	calls := 0
-	swapForTest(t, &promptForPickers, func(_ promptOperation, _ *applyParts) bool {
+	swapForTest(t, &promptForPickers, func(_ promptOperation, _ *applyParts, _ bool) bool {
 		calls++
 		return false
 	})
@@ -567,7 +571,8 @@ func TestApplyTemplatePromptSequence(t *testing.T) {
 			steps:       info.steps,
 		})
 	}
-	swapForTest(t, &promptForPickers, func(op promptOperation, _ *applyParts) bool {
+	swapForTest(t, &promptForPickers, func(op promptOperation, _ *applyParts, promptChoices bool) bool {
+		c.True(promptChoices, "the modifier prompt follows, so the picker must cost rows as it will see them")
 		record("choices", op)
 		return true
 	})
@@ -622,4 +627,44 @@ func TestApplyTemplatePromptSequence(t *testing.T) {
 		plain("ancestry"),
 		plain("randomize"),
 	}, prompts)
+}
+
+// TestApplyTemplateCountsModifierPromptsBeforeAskingThem verifies that the modifier prompts of a transfer are numbered
+// from a count made before any is answered: a preconfigured trait is only asked about while a mandatory choice of its
+// has no pick, so answering its prompt takes it out of any count made afterward.
+func TestApplyTemplateCountsModifierPromptsBeforeAskingThem(t *testing.T) {
+	c := check.New(t)
+	sheet := newTestSheetForTemplate(t)
+	trait := gurps.NewTrait(nil, nil, false)
+	trait.Name = "Talent"
+	trait.Preconfigured = true
+	trait.AddModifiers(newTraitModifierChoiceFor(nil, true, []string{"A", "B"}))
+	sword := gurps.NewEquipment(nil, nil, false)
+	sword.Name = "Sword"
+	sword.AddModifiers(gurps.NewEquipmentModifier(nil, nil, false))
+	data := gurps.NewTemplate()
+	data.Traits = []*gurps.Trait{trait}
+	data.Equipment = []*gurps.Equipment{sword}
+	template := newTestTemplateDockable("Source", data)
+
+	type step struct {
+		row         string
+		step, steps int
+	}
+	var steps []step
+	swapForTest(t, &promptForTraitModifiers, func(info *modifierPromptInfo, modifiers []*gurps.TraitModifier) (changed, canceled bool) {
+		steps = append(steps, step{row: info.name, step: info.step, steps: info.steps})
+		// Answer as the user must, by making the choice.
+		gurps.ModifierChoiceOptions(modifiers[0])[0].SetEnabled(true)
+		return true, false
+	})
+	swapForTest(t, &promptForEquipmentModifiers, func(info *modifierPromptInfo, _ []*gurps.EquipmentModifier) (changed, canceled bool) {
+		steps = append(steps, step{row: info.name, step: info.step, steps: info.steps})
+		return false, false
+	})
+	swapForTest(t, &promptForNameables, func(_ promptOperation, _ []nameablesSection) bool { return true })
+	swapForTest(t, &askToRandomizeAgain, func(_ promptOperation) bool { return false })
+
+	c.True(template.applyTemplateToSheet(sheet, promptOperation{}, false))
+	c.Equal([]step{{row: "Talent", step: 1, steps: 2}, {row: "Sword", step: 2, steps: 2}}, steps)
 }

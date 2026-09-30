@@ -114,7 +114,7 @@ func initEquipmentItemEditor(e *editor[*gurps.Equipment, *gurps.EquipmentEditDat
 	adjustFieldBlank(usesField, resolvedMaxUses() <= 0)
 	content.AddChild(newPrereqPanel(entity, &e.editorData.Prereq, prereq.TypesForEquipment, false))
 	content.AddChild(newFeaturesPanel(entity, e.target, &e.editorData.Features, false))
-	content.AddChild(newEquipmentModifiersPanel(e, entity, &e.editorData.Modifiers))
+	content.AddChild(newEquipmentModifiersPanel(e, entity, e.target, &e.editorData.Modifiers))
 	e.meleeWeapons = newWeaponsPanel(e, e.target, true, &e.editorData.Weapons)
 	content.AddChild(e.meleeWeapons)
 	e.rangedWeapons = newWeaponsPanel(e, e.target, false, &e.editorData.Weapons)
@@ -160,35 +160,20 @@ func initEquipmentChoiceEditor(e *editor[*gurps.Equipment, *gurps.EquipmentEditD
 // the modifier context, not the unedited target, so that cost modifiers whose multiplier depends on the equipment
 // itself (per level, per pound) see the editor's pending values.
 func extendedValueForEditor(target *gurps.Equipment, overlay *gurps.EquipmentEditData) fxp.Int {
-	if overlay.Quantity <= 0 {
-		return 0
-	}
-	clone := cloneEquipmentWithOverlay(target, overlay)
-	value := gurps.ValueAdjustedForModifiers(clone, clone.ResolvedBaseValue(), overlay.Modifiers)
-	if target.Container() {
-		for _, one := range target.Children {
-			value += one.ExtendedValue()
-		}
-	}
-	return value.Mul(overlay.Quantity)
+	return cloneEquipmentWithOverlay(target, overlay).ExtendedValue()
 }
 
 // extendedWeightForEditor computes the Extended Weight preview for the equipment editor. As with
 // extendedValueForEditor, the overlaid clone is the modifier context so that per-level weight modifiers see the
 // editor's pending values.
 func extendedWeightForEditor(target *gurps.Equipment, overlay *gurps.EquipmentEditData, defUnits fxp.WeightUnit) fxp.Weight {
-	if overlay.Quantity <= 0 {
-		return 0
-	}
-	clone := cloneEquipmentWithOverlay(target, overlay)
-	return gurps.ExtendedWeightAdjustedForModifiers(clone, defUnits, overlay.Quantity, clone.ResolvedBaseWeight(),
-		overlay.Modifiers, overlay.Features, target.Children, false, false)
+	return cloneEquipmentWithOverlay(target, overlay).ExtendedWeight(false, defUnits)
 }
 
 // extendedValueTextForEditor renders the Extended Value preview for the equipment editor. A container holding a choice
-// yet to be made shows the range of values the choice may come to, as the list does.
+// or a mandatory modifier choice yet to be made shows the range of values it may come to, as the list does.
 func extendedValueTextForEditor(target *gurps.Equipment, overlay *gurps.EquipmentEditData) string {
-	if overlay.Quantity > 0 && target.Container() {
+	if overlay.Quantity > 0 {
 		if r := cloneEquipmentWithOverlay(target, overlay).ExtendedValueRange(); !r.IsSettled() {
 			return gurps.FormatValueRange(r, fxp.Int.Comma)
 		}
@@ -197,9 +182,9 @@ func extendedValueTextForEditor(target *gurps.Equipment, overlay *gurps.Equipmen
 }
 
 // extendedWeightTextForEditor renders the Extended Weight preview for the equipment editor. A container holding a
-// choice yet to be made shows the range of weights the choice may come to, as the list does.
+// choice or a mandatory modifier choice yet to be made shows the range of weights it may come to, as the list does.
 func extendedWeightTextForEditor(target *gurps.Equipment, overlay *gurps.EquipmentEditData, defUnits fxp.WeightUnit) string {
-	if overlay.Quantity > 0 && target.Container() {
+	if overlay.Quantity > 0 {
 		if r := cloneEquipmentWithOverlay(target, overlay).ExtendedWeightRange(defUnits); !r.IsSettled() {
 			return gurps.FormatWeightRange(r, defUnits.Format)
 		}
@@ -207,8 +192,10 @@ func extendedWeightTextForEditor(target *gurps.Equipment, overlay *gurps.Equipme
 	return defUnits.Format(extendedWeightForEditor(target, overlay, defUnits))
 }
 
+// cloneEquipmentWithOverlay returns a throwaway copy of the equipment holding the editor's pending data. ApplyTo gives
+// the copy modifiers of its own, since costing points them at it and the editor's must stay on the edited equipment.
 func cloneEquipmentWithOverlay(e *gurps.Equipment, overlay *gurps.EquipmentEditData) *gurps.Equipment {
 	clone := e.Clone(e.Source.LibraryFile, e.DataOwner(), e.Parent(), gurps.Copy)
-	clone.EquipmentEditData = *overlay
+	overlay.ApplyTo(clone)
 	return clone
 }

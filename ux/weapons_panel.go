@@ -38,6 +38,11 @@ func newWeaponsPanel(cmdRoot Rebuildable, weaponOwner gurps.WeaponOwner, melee b
 		refKey = string(tid.MustNewTID(kinds.WeaponRanged))
 	}
 	p.init(p, weaponOwner.DataOwner(), weapons, NewWeaponsProvider(p, melee, false), refKey)
+	p.attach = func(list []*gurps.Weapon) {
+		for _, one := range list {
+			one.SetOwner(weaponOwner)
+		}
+	}
 	p.installNewItemHandler(cmdRoot, id, NoItemVariant)
 	return p
 }
