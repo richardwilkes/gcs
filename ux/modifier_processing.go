@@ -455,8 +455,12 @@ func (s *modifierSelection) mandatoryCount() int {
 	return n
 }
 
-// clear takes back the pick of every choice, leaving the check boxes alone.
+// clear takes back the pick of every choice and unchecks every check box.
 func (s *modifierSelection) clear() {
+	for cb := range s.boxes {
+		cb.State = check.Off
+		cb.MarkForRedraw()
+	}
 	for _, choice := range s.choices {
 		choice.group.Select(choice.none)
 	}
