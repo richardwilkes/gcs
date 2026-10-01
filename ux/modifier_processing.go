@@ -179,7 +179,7 @@ func showModifiersDialog[T gurps.Node[T]](info *modifierPromptInfo, modifiers []
 	}
 	op := info.op.at(promptstep.Modifiers)
 	panel, scroll := newListQuestionPanel(op, header, selection.list, extraHeaders...)
-	// The list has the same room as the template picker's, however few modifiers it holds.
+	// The list has room for as many rows as the template picker's, however few modifiers it holds.
 	setListMinSize(scroll)
 	var cost *unison.Label
 	if early != nil {

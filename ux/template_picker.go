@@ -121,15 +121,16 @@ func (s *pickerSession[T]) newPickerDialog(row T, depth int) (dialog *unison.Dia
 	}
 	list.refresh = refresh
 	s.addPickerRows(list, row.NodeChildren(), nil, 0)
-	list.sync()
 	refresh()
 
 	scroll.SetBorder(unison.NewLineBorder(unison.ThemeSurfaceEdge, geom.Size{}, geom.NewUniformInsets(1), false))
 	scroll.SetContent(list.panel, behavior.Fill, behavior.Fill)
 	scroll.BackgroundInk = unison.ThemeSurface
-	// The list has room for a number of rows however few it holds, so opening a group shows what it holds without the
-	// dialog having to grow.
+	// The list is sized while every row is in it, as with every group open, and only then are the closed groups' rows
+	// taken out, so opening one shows what it holds without the dialog having to grow. It also has room for a number of
+	// rows however few it holds.
 	setListMinSize(scroll)
+	list.sync()
 	scroll.SetLayoutData(&unison.FlexLayoutData{
 		HAlign: align.Fill,
 		VAlign: align.Fill,
@@ -758,10 +759,14 @@ func (s *pickerSession[T]) updateChooseButton(button *unison.Button, row T) {
 	}
 	name = fmt.Sprintf(name, row.String())
 	button.Accessibility.Name = name
+	// While open, it is drawn as a small pill in the alert color, as the dialog's pill is.
+	button.HideBase = !open
 	if open {
-		button.OnBackgroundInk = colors.Alert
+		button.BackgroundInk = colors.Alert
+		button.OnBackgroundInk = colors.OnAlert
 		button.Tooltip = newWrappedTooltip(tip)
 	} else {
+		button.BackgroundInk = unison.DefaultButtonTheme.BackgroundInk
 		button.OnBackgroundInk = unison.DefaultButtonTheme.OnBackgroundInk
 		button.Tooltip = newWrappedTooltip(name)
 	}

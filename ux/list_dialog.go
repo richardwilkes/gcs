@@ -85,17 +85,19 @@ func holdMinSizeOnDisplay(wnd *unison.Window) {
 // however few they hold.
 const listMinRows = 10
 
+// listMinWidthScale is how much wider than its widest rows a list of options is given room for.
+const listMinWidthScale = 1.1
+
 // listMinSize returns the least room a list of options is given inside its scroll panel's border: enough for
-// listMinRows of the template picker's rows, and a width to go with it.
-func listMinSize() geom.Size {
+// listMinRows of the template picker's rows, and listMinWidthScale times width, the list's width with all of it shown.
+func listMinSize(width float32) geom.Size {
 	font := unison.DefaultCheckBoxTheme.Font
 	row := max(pickerCheckBoxSize().Height, pickerDisclosureSize().Height, font.LineHeight())
 	_, button, _ := NewSVGButtonForFont(svg.Edit, font, -2).Sizes(geom.Size{})
 	row = max(row, button.Height)
-	// The list's border is StdHSpacing all around.
-	return geom.NewSize(xmath.Ceil(font.SimpleWidth("n")*80),
-		xmath.Ceil(row*listMinRows+unison.StdVSpacing*(listMinRows-1))).
-		Add(geom.NewUniformInsets(unison.StdHSpacing).Size())
+	// The list's border is StdHSpacing all around, which width already holds.
+	return geom.NewSize(xmath.Ceil(width*listMinWidthScale),
+		xmath.Ceil(row*listMinRows+unison.StdVSpacing*(listMinRows-1)+unison.StdHSpacing*2))
 }
 
 // minSizeLayout is a layout that asks for at least a minimum size for what it lays out, beyond the border, and prefers
@@ -117,8 +119,9 @@ func (l *minSizeLayout) LayoutSizes(target *unison.Panel, hint geom.Size) (minSi
 	return minSize, prefSize, maxSize
 }
 
-// setListMinSize gives the scroll panel holding a list of options its least room (see listMinSize), so the list has room
-// for a number of rows however few it holds. The dialog it is in should hold that size (see holdMinSizeOnDisplay).
+// setListMinSize gives the scroll panel its least room (see listMinSize), for the list it holds as the list stands now,
+// so the list must be showing all it can. The dialog it is in should hold that size (see holdMinSizeOnDisplay).
 func setListMinSize(scroll *unison.ScrollPanel) {
-	scroll.SetLayout(&minSizeLayout{Layout: scroll, minimum: listMinSize()})
+	_, pref, _ := scroll.Content().AsPanel().Sizes(geom.Size{})
+	scroll.SetLayout(&minSizeLayout{Layout: scroll, minimum: listMinSize(pref.Width)})
 }

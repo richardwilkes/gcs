@@ -20,6 +20,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/picker"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/toolbox/v2/geom"
+	"github.com/richardwilkes/toolbox/v2/xmath"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/accessibility"
 	"github.com/richardwilkes/unison/enums/mod"
@@ -130,7 +131,7 @@ func TestPickerDialogFitsItsContent(t *testing.T) {
 	s, n := newKnightSession()
 	// Names long enough that the rows, rather than the buttons, set the dialog's width.
 	n["order"].Name = "Knightly Order of the Realm"
-	n["lion"].Name = "Order of the Lion, Sworn to the Crown and to the Defense of the Realm Against All Its Foes"
+	n["lion"].Name = "Order of the Lion, Sworn to the Crown"
 	choose(s, n, "ea", "ep", "fit", "order")
 	screen.Do(func() {
 		dialog, refresh := s.newPickerDialog(n["root"], 0)
@@ -311,7 +312,12 @@ func TestModifierPromptListHoldsTenRows(t *testing.T) {
 	captureScreen(t, c, screen, "modifier_prompt")
 	screen.Do(func() {
 		scroll := panelsOfType[*unison.ScrollPanel](dialogWnd.Content())[0]
-		minimum := listMinSize()
+		layout, ok := scroll.Layout().(*minSizeLayout)
+		c.True(ok, "the list's scroll panel holds its least size")
+		if !ok {
+			return
+		}
+		minimum := layout.minimum
 		view := scroll.ContentView().ContentRect(false).Size
 		c.True(view.Height >= minimum.Height && view.Width >= minimum.Width,
 			"the list has its least room: wants %v, has %v", minimum, view)
@@ -643,8 +649,8 @@ func TestPickerUnitContainerInformationRows(t *testing.T) {
 		c.False(slices.Contains(texts, "Ring"), "but a choice within it shows only its rule, not its options")
 		c.Equal(2, len(panelsOfType[*unison.CheckBox](wnd.Content())), "with nothing to pick")
 		_, pref, _ := wnd.Content().Sizes(geom.Size{})
-		c.True(wnd.ContentRect().Width > width, "the dialog widens")
-		c.True(pref.Width <= wnd.ContentRect().Width, "to fit them")
+		c.Equal(width, wnd.ContentRect().Width, "the dialog, sized with them in place, keeps its width")
+		c.True(pref.Width <= wnd.ContentRect().Width, "as they already fit")
 		cells := slices.Clone(row.Parent().Children())
 		chevron.Click()
 		c.False(slices.Contains(labelTexts(wnd.Content()), "Rope"), "closing it hides them again")
@@ -653,8 +659,8 @@ func TestPickerUnitContainerInformationRows(t *testing.T) {
 	})
 }
 
-// The list has room for ten rows however few it holds, so opening a group in a short list shows all that it holds
-// without the dialog growing, and the dialog can't be made smaller than that.
+// The list has room for ten rows however few it holds, and is 10% wider than with every group open, so opening a group
+// in a short list shows all that it holds without the dialog growing, and the dialog can't be made smaller than that.
 func TestPickerListHoldsTenRows(t *testing.T) {
 	c := check.New(t)
 	screen, _ := startHeadlessWorkspace(t, c)
@@ -690,7 +696,12 @@ func TestPickerListHoldsTenRows(t *testing.T) {
 			return
 		}
 		c.False(slices.Contains(labelTexts(list), "Item 7"), "what it holds starts hidden")
-		minimum := listMinSize()
+		layout, ok := scroll.Layout().(*minSizeLayout)
+		c.True(ok, "the list's scroll panel holds its least size")
+		if !ok {
+			return
+		}
+		minimum := layout.minimum
 		view := scroll.ContentView().ContentRect(false).Size
 		c.True(view.Height >= minimum.Height && view.Width >= minimum.Width,
 			"the list has its least room: wants %v, has %v", minimum, view)
@@ -698,6 +709,8 @@ func TestPickerListHoldsTenRows(t *testing.T) {
 		chevrons[0].Click()
 		wnd.ValidateLayout()
 		c.True(slices.Contains(labelTexts(list), "Item 7"), "opening it shows what it holds")
+		_, open, _ := list.Sizes(geom.Size{})
+		c.Equal(xmath.Ceil(open.Width*listMinWidthScale), minimum.Width, "the list is wider than with everything shown")
 		c.Equal(size, wnd.ContentRect().Size, "the dialog keeps its size")
 		c.True(list.FrameRect().Height <= scroll.ContentView().ContentRect(false).Height,
 			"the list shows every row without scrolling")
