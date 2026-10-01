@@ -29,20 +29,15 @@ const (
 // demolitionDamageType is what an explosive charge inflicts: crushing damage with the Explosion modifier (BX415).
 const demolitionDamageType = "cr ex"
 
-var (
-	_ calculatorTab = &demolitionCalculator{}
+var _ calculatorTab = &demolitionCalculator{}
 
-	demolitionModes = []demolitionMode{
+// newDemolitionModes returns the directions the calculator works in, in the order the mode constants give them.
+func newDemolitionModes() []demolitionMode {
+	return []demolitionMode{
 		{name: i18n.Text("Explosive needed for a blast")},
 		{name: i18n.Text("Blast from a quantity of explosive")},
 	}
-
-	explosiveChoices = newExplosiveChoices()
-
-	// defaultExplosiveIndex is TNT's place among the choices. The Relative Explosive Force Table measures every other
-	// explosive against TNT, so it is the one the calculator starts on.
-	defaultExplosiveIndex = slices.IndexFunc(explosiveChoices, func(e explosiveChoice) bool { return e.title == "TNT" })
-)
+}
 
 type demolitionMode struct {
 	name string
@@ -91,6 +86,8 @@ type demolitionCalculator struct {
 	blastCountField       *IntegerField
 	refField              *DecimalField
 	explosiveWeightField  *WeightField
+	modes                 []demolitionMode
+	explosives            []explosiveChoice
 	customREF             fxp.Int
 	explosiveWeight       fxp.Weight
 	modeIndex             int
@@ -100,11 +97,15 @@ type demolitionCalculator struct {
 
 func newDemolitionCalculator() *demolitionCalculator {
 	d := &demolitionCalculator{
+		modes:           newDemolitionModes(),
+		explosives:      newExplosiveChoices(),
 		customREF:       fxp.One,
 		explosiveWeight: fxp.Weight(fxp.One),
-		explosiveIndex:  defaultExplosiveIndex,
 		blastCount:      1,
 	}
+	// The Relative Explosive Force Table measures every other explosive against TNT, so it is the one the calculator
+	// starts on.
+	d.explosiveIndex = slices.IndexFunc(d.explosives, func(e explosiveChoice) bool { return e.title == "TNT" })
 	d.createContent()
 	return d
 }
@@ -132,10 +133,10 @@ func (d *demolitionCalculator) createContent() {
 	d.content.AddChild(d.createHeader(i18n.Text("Demolition"), []linkSpec{{pageRef: "BX415", highlight: "Demolition"}}, 0))
 	row := d.addRow(2)
 	addPlainLabel(row, i18n.Text("Mode:"))
-	addIndexPopup(row, demolitionModes, &d.modeIndex, d.changed)
+	addIndexPopup(row, d.modes, &d.modeIndex, d.changed)
 	row = d.addRow(2)
 	addPlainLabel(row, i18n.Text("Explosive:"))
-	addIndexPopup(row, explosiveChoices, &d.explosiveIndex, d.changed)
+	addIndexPopup(row, d.explosives, &d.explosiveIndex, d.changed)
 	d.refField = sameWidth(NewDecimalField(nil, "", i18n.Text("Relative Explosive Force"),
 		func() fxp.Int { return d.customREF },
 		func(v fxp.Int) {
@@ -186,7 +187,7 @@ func (d *demolitionCalculator) changed() {
 // adjustControls enables, disables and blanks the fields to match the mode and the explosive: a control whose input
 // would not be used is blanked as well as disabled, so that a stale value cannot be read as part of the answer.
 func (d *demolitionCalculator) adjustControls() {
-	adjustFieldBlank(d.refField, !explosiveChoices[d.explosiveIndex].custom)
+	adjustFieldBlank(d.refField, !d.explosives[d.explosiveIndex].custom)
 	adjustFieldBlank(d.blastCountField, d.modeIndex != explosiveForBlastMode)
 	adjustFieldBlank(d.explosiveWeightField, d.modeIndex != blastFromExplosiveMode)
 	if d.modeIndex == explosiveForBlastMode {
@@ -201,7 +202,7 @@ func (d *demolitionCalculator) adjustControls() {
 
 // updateResults recomputes the weight of explosive a blast takes, or the blast a weight of it makes (BX415).
 func (d *demolitionCalculator) updateResults() {
-	explosive := explosiveChoices[d.explosiveIndex]
+	explosive := d.explosives[d.explosiveIndex]
 	ref := explosive.ref
 	if explosive.custom {
 		ref = d.customREF

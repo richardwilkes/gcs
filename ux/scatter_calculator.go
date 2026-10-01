@@ -18,15 +18,16 @@ import (
 	"github.com/richardwilkes/unison"
 )
 
-var (
-	_ calculatorTab = &scatterCalculator{}
+var _ calculatorTab = &scatterCalculator{}
 
-	scatterCauses = []scatterCause{
+// newScatterCauses returns the reasons an attack can miss (BX414).
+func newScatterCauses() []scatterCause {
+	return []scatterCause{
 		{name: i18n.Text("Failed attack roll")},
 		{name: i18n.Text("Failed attack roll, squared miss"), squared: true},
 		{name: i18n.Text("Target dodged")},
 	}
-)
+}
 
 // scatterCause is why the attack missed, which decides whether it scatters by the margin or by its square (BX414). A
 // dodge never squares the margin.
@@ -46,6 +47,7 @@ type scatterCalculator struct {
 	marginField   *IntegerField
 	distanceField *DecimalField
 	result        *unison.Label
+	causes        []scatterCause
 	distance      fxp.Int
 	causeIndex    int
 	margin        int
@@ -53,6 +55,7 @@ type scatterCalculator struct {
 
 func newScatterCalculator() *scatterCalculator {
 	s := &scatterCalculator{
+		causes:   newScatterCauses(),
 		distance: fxp.Ten,
 		margin:   1,
 	}
@@ -83,7 +86,7 @@ func (s *scatterCalculator) createContent() {
 	s.content.AddChild(s.createHeader(i18n.Text("Scatter"), []linkSpec{{pageRef: "BX414", highlight: "Scatter"}}, 0))
 	row := s.addRow(2)
 	addPlainLabel(row, i18n.Text("Cause of the miss:"))
-	addIndexPopup(row, scatterCauses, &s.causeIndex, s.changed)
+	addIndexPopup(row, s.causes, &s.causeIndex, s.changed)
 	s.marginField = sameWidth(NewIntegerField(nil, "", i18n.Text("Margin"),
 		func() int { return s.margin },
 		func(v int) {
@@ -114,7 +117,7 @@ func (s *scatterCalculator) createContent() {
 
 // changed implements calculatorTab.
 func (s *scatterCalculator) changed() {
-	yards, capped := gurps.ScatterDistance(s.margin, s.distance, scatterCauses[s.causeIndex].squared)
+	yards, capped := gurps.ScatterDistance(s.margin, s.distance, s.causes[s.causeIndex].squared)
 	text := fmt.Sprintf(i18n.Text("%s yards"), yards.Comma())
 	if capped {
 		text += i18n.Text(" (limited to half the distance)")

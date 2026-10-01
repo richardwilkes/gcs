@@ -122,7 +122,7 @@ func TestCollisionCalculatorSources(t *testing.T) {
 		calc.mover.sm = 2
 		calc.target.hp = fxp.FromInteger(10)
 		calc.target.velocity = fxp.Five
-		calc.angleIndex = slices.IndexFunc(collisionAngles, func(a collisionAngleChoice) bool {
+		calc.angleIndex = slices.IndexFunc(calc.angles, func(a collisionAngleChoice) bool {
 			return a.angle == gurps.RearEndCollision
 		})
 		calc.changed()

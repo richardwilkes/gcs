@@ -164,7 +164,7 @@ func TestExplosionCalculatorSources(t *testing.T) {
 	if !found {
 		t.Fatal("the calculator must offer an explosive popup")
 	}
-	choosePopupItem(t, screen, wnd, explosivePopup, slices.IndexFunc(explosiveChoices,
+	choosePopupItem(t, screen, wnd, explosivePopup, slices.IndexFunc(demolition.explosives,
 		func(e explosiveChoice) bool { return e.title == "Dynamite" }))
 	var damage, tnt, explosiveLabel, explosiveWeight string
 	screen.Do(func() {

@@ -10,13 +10,16 @@
 package ux
 
 import (
+	"fmt"
 	"slices"
+	"strings"
 	"testing"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/toolbox/v2/geom"
+	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/unison"
 )
 
@@ -473,16 +476,16 @@ func TestCalculatorHikingControls(t *testing.T) {
 		}
 		return i
 	}
-	terrainNames := make([]string, len(terrain))
-	for i, one := range terrain {
+	terrainNames := make([]string, len(hiking.terrain))
+	for i, one := range hiking.terrain {
 		terrainNames[i] = one.Name
 	}
-	weatherNames := make([]string, len(weather))
-	for i, one := range weather {
+	weatherNames := make([]string, len(hiking.weather))
+	for i, one := range hiking.weather {
 		weatherNames[i] = one.Name
 	}
-	intensityNames := make([]string, len(hikingIntensity))
-	for i, one := range hikingIntensity {
+	intensityNames := make([]string, len(hiking.intensity))
+	for i, one := range hiking.intensity {
 		intensityNames[i] = one.Name
 	}
 	dirtRoad := indexOf(terrainNames, "Road, Dirt")
@@ -690,4 +693,72 @@ func TestCalculatorHikingControls(t *testing.T) {
 
 	closeEditorWithoutPrompt(t, screen, calc)
 	closeEditorWithoutPrompt(t, screen, sheet)
+}
+
+// TestCalculatorChoicesFollowLanguage verifies that the choices the calculators offer in their popups are translated
+// when a calculator is created rather than when the package initializes. The language setting is only applied after the
+// package has initialized, so a table translated at that point would show a user who chose a language other than the
+// system's the system's language in those popups alone.
+func TestCalculatorChoicesFollowLanguage(t *testing.T) {
+	c := check.New(t)
+	screen, _ := startHeadlessWorkspace(t, c)
+	const mark = "»"
+	i18n.SetLocalizer(func(text string) string { return mark + text })
+	t.Cleanup(func() { i18n.SetLocalizer(nil) })
+
+	type table struct {
+		what  string
+		names []string
+	}
+	var tables []table
+	var startingExplosive string
+	screen.Do(func() {
+		hiking := newHikingCalculator()
+		collision := newCollisionCalculator()
+		demolition := newDemolitionCalculator()
+		explosion := newExplosionCalculator()
+		scatter := newScatterCalculator()
+		throwing := newThrowingCalculator()
+		tables = []table{
+			{"terrain", choiceNames(hiking.terrain)},
+			{"weather", choiceNames(hiking.weather)},
+			{"heat", choiceNames(hiking.heat)},
+			{"intensity", choiceNames(hiking.intensity)},
+			{"fitness", choiceNames(hiking.fitness)},
+			{"Recover Energy", choiceNames(hiking.recoverEnergy)},
+			{"collision scenario", choiceNames(collision.scenarios)},
+			{"collision shape", choiceNames(collision.shapes)},
+			{"collision surface", choiceNames(collision.surfaces)},
+			{"terminal velocity", choiceNames(collision.terminals)},
+			{"collision angle", choiceNames(collision.angles)},
+			{"collision restraint", choiceNames(collision.restraints)},
+			{"demolition mode", choiceNames(demolition.modes)},
+			{"explosive", choiceNames(demolition.explosives)},
+			{"attack type", choiceNames(explosion.attackTypes)},
+			{"explosion environment", choiceNames(explosion.environments)},
+			{"explosion posture", choiceNames(explosion.postures)},
+			{"explosion situation", choiceNames(explosion.situations)},
+			{"scatter cause", choiceNames(scatter.causes)},
+			{"Throwing tier", choiceNames(throwing.throwingTiers)},
+			{"Throwing Art tier", choiceNames(throwing.throwingArtTiers)},
+		}
+		startingExplosive = demolition.explosives[demolition.explosiveIndex].title
+	})
+	for _, one := range tables {
+		c.NotEqual(0, len(one.names), fmt.Sprintf("the %s popup must offer choices", one.what))
+		for _, name := range one.names {
+			c.True(strings.HasPrefix(name, mark),
+				fmt.Sprintf("the %s choice %q must be translated when the calculator is created", one.what, name))
+		}
+	}
+	c.Equal("TNT", startingExplosive, "the demolition calculator must still start on TNT, whose name is not translated")
+}
+
+// choiceNames returns what a popup offering the items shows for each of them.
+func choiceNames[T fmt.Stringer](items []T) []string {
+	names := make([]string, len(items))
+	for i, one := range items {
+		names[i] = one.String()
+	}
+	return names
 }

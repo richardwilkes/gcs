@@ -38,32 +38,44 @@ const (
 	explosiveInsideTarget
 )
 
-var (
-	explosionAttackTypes = []explosionAttackType{
+// newExplosionAttackTypes returns the kinds of attack the calculator handles, in the order the attack constants give
+// them.
+func newExplosionAttackTypes() []explosionAttackType {
+	return []explosionAttackType{
 		{name: i18n.Text("Explosion")},
 		{name: i18n.Text("Area-effect attack")},
 		{name: i18n.Text("Cone attack")},
 	}
+}
 
-	explosionEnvironments = []explosionEnvironmentChoice{
+// newExplosionEnvironmentChoices returns the media a blast can spread through (BX414-BX415).
+func newExplosionEnvironmentChoices() []explosionEnvironmentChoice {
+	return []explosionEnvironmentChoice{
 		{name: i18n.Text("Air"), environment: gurps.ExplosionInAir},
 		{name: i18n.Text("Underwater"), environment: gurps.ExplosionUnderwater},
 		{name: i18n.Text("Vacuum or trace atmosphere"), environment: gurps.ExplosionInVacuum},
 	}
+}
 
-	explosionPostures = []explosionPosture{
+// newExplosionPostures returns the postures the target can be in when the fragments arrive (BX551).
+func newExplosionPostures() []explosionPosture {
+	return []explosionPosture{
 		{name: i18n.Text("Standing"), posture: gurps.StandingTarget},
 		{name: i18n.Text("Crouching, kneeling or sitting (-2)"), posture: gurps.CrouchingTarget},
 		{name: i18n.Text("Crawling or lying down (-2; -4 from a ground burst)"), posture: gurps.ProneTarget},
 	}
+}
 
-	explosionSituations = []explosionSituation{
+// newExplosionSituations returns where the target can be when the explosion goes off, in the order the situation
+// constants give them.
+func newExplosionSituations() []explosionSituation {
+	return []explosionSituation{
 		{name: i18n.Text("Caught in the blast")},
 		{name: i18n.Text("Struck directly")},
 		{name: i18n.Text("Threw himself on the explosive")},
 		{name: i18n.Text("The explosive went off inside him")},
 	}
-)
+}
 
 type explosionAttackType struct {
 	name string
@@ -148,6 +160,10 @@ type explosionCalculator struct {
 	hotFragmentsBox    *unison.CheckBox
 	dissipatesBox      *unison.CheckBox
 	htResistedBox      *unison.CheckBox
+	attackTypes        []explosionAttackType
+	environments       []explosionEnvironmentChoice
+	postures           []explosionPosture
+	situations         []explosionSituation
 	target             blastTarget
 	weaponSheet        *Sheet
 	weapon             *gurps.Weapon
@@ -198,6 +214,10 @@ type blastTarget struct {
 
 func newExplosionCalculator() *explosionCalculator {
 	c := &explosionCalculator{
+		attackTypes:  newExplosionAttackTypes(),
+		environments: newExplosionEnvironmentChoices(),
+		postures:     newExplosionPostures(),
+		situations:   newExplosionSituations(),
 		coneMaxRange: fxp.Hundred,
 		coneMaxWidth: fxp.Five,
 		blastSpec:    "6d",
@@ -241,7 +261,7 @@ func (c *explosionCalculator) createContent() {
 
 	row := c.addRow(2)
 	addPlainLabel(row, i18n.Text("Attack type:"))
-	addIndexPopup(row, explosionAttackTypes, &c.attackTypeIndex, c.changed)
+	addIndexPopup(row, c.attackTypes, &c.attackTypeIndex, c.changed)
 
 	c.addSubheader(i18n.Text("Attack"))
 	c.createAttackRows()
@@ -323,7 +343,7 @@ func (c *explosionCalculator) createExplosionRows() *unison.Panel {
 	rows := &calculatorContent{content: group}
 	row := rows.addRow(2)
 	addPlainLabel(row, i18n.Text("Environment:"))
-	addIndexPopup(row, explosionEnvironments, &c.environmentIndex, c.changed)
+	addIndexPopup(row, c.environments, &c.environmentIndex, c.changed)
 	c.airburstBox = rows.addCheckBox(i18n.Text("Airburst (posture does not protect against the fragments)"),
 		&c.airburst, c.changed)
 	c.hotFragmentsBox = rows.addCheckBox(i18n.Text("Hot fragments (white phosphorus)"), &c.hotFragments, c.changed)
@@ -424,14 +444,14 @@ func (t *blastTarget) createPanel(parent *unison.Panel) {
 
 	row = rows.addRow(2)
 	addPlainLabel(row, i18n.Text("Posture:"))
-	addIndexPopup(row, explosionPostures, &t.postureIndex, t.calc.changed)
+	addIndexPopup(row, t.calc.postures, &t.postureIndex, t.calc.changed)
 
 	t.situationSlot = newRowGroup()
 	t.panel.AddChild(t.situationSlot)
 	situationRows := &calculatorContent{content: t.situationSlot}
 	t.situationRow = situationRows.addRow(2)
 	addPlainLabel(t.situationRow, i18n.Text("Situation:"))
-	addIndexPopup(t.situationRow, explosionSituations, &t.situationIndex, t.calc.changed)
+	addIndexPopup(t.situationRow, t.calc.situations, &t.situationIndex, t.calc.changed)
 
 	t.distanceField = sameWidth(NewDecimalField(nil, "", i18n.Text("Distance"),
 		func() fxp.Int { return t.distance },
@@ -528,7 +548,7 @@ func (t *blastTarget) lockSheetFields() {
 
 // posture returns the posture the target is in when the fragments arrive.
 func (t *blastTarget) posture() explosionPosture {
-	return explosionPostures[t.postureIndex]
+	return t.calc.postures[t.postureIndex]
 }
 
 // changed implements calculatorTab.
@@ -788,8 +808,8 @@ func (c *explosionCalculator) blastDivisor(radius int) (divisor fxp.Int, text st
 		if distance <= 0 {
 			return fxp.One, i18n.Text("None (at the center of the blast)"), true
 		}
-		divisor = explosionEnvironments[c.environmentIndex].environment.CollateralDivisor(distance)
-		switch explosionEnvironments[c.environmentIndex].environment {
+		divisor = c.environments[c.environmentIndex].environment.CollateralDivisor(distance)
+		switch c.environments[c.environmentIndex].environment {
 		case gurps.ExplosionUnderwater:
 			text = fmt.Sprintf(i18n.Text("%s (%s yards, underwater)"), divisor.Comma(), distance.Comma())
 		case gurps.ExplosionInVacuum:

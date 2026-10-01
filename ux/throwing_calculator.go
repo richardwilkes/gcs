@@ -18,25 +18,27 @@ import (
 	"github.com/richardwilkes/unison"
 )
 
-var (
-	_ calculatorTab = &throwingCalculator{}
+var _ calculatorTab = &throwingCalculator{}
 
-	// throwingTiers are the levels of the Throwing skill that matter to a throw (BX355): at DX+1 it adds 1 to the ST
-	// the distance is worked out from, and at DX+2 or better it adds 2. It does nothing for the damage.
-	throwingTiers = []throwingSkillTier{
+// newThrowingTiers returns the levels of the Throwing skill that matter to a throw (BX355): at DX+1 it adds 1 to the ST
+// the distance is worked out from, and at DX+2 or better it adds 2. It does nothing for the damage.
+func newThrowingTiers() []throwingSkillTier {
+	return []throwingSkillTier{
 		{name: i18n.Text("None, or below DX+1")},
 		{name: i18n.Text("DX+1"), distance: 1},
 		{name: i18n.Text("DX+2 or better"), distance: 2},
 	}
+}
 
-	// throwingArtTiers are the levels of the Throwing Art skill that matter to a throw (BX355): at DX it adds 1 to the
-	// ST the distance is worked out from and 1 per die to the damage, and at DX+1 or better it adds 2 of each.
-	throwingArtTiers = []throwingSkillTier{
+// newThrowingArtTiers returns the levels of the Throwing Art skill that matter to a throw (BX355): at DX it adds 1 to
+// the ST the distance is worked out from and 1 per die to the damage, and at DX+1 or better it adds 2 of each.
+func newThrowingArtTiers() []throwingSkillTier {
+	return []throwingSkillTier{
 		{name: i18n.Text("None, or below DX")},
 		{name: i18n.Text("DX"), distance: 1, damage: 1},
 		{name: i18n.Text("DX+1 or better"), distance: 2, damage: 2},
 	}
-)
+}
 
 // throwingSkillTier is a level of a throwing skill, relative to DX, and what it adds to a throw.
 type throwingSkillTier struct {
@@ -63,6 +65,8 @@ type throwingCalculator struct {
 	distanceResult     *unison.Label
 	damageResult       *unison.Label
 	notes              *unison.Panel
+	throwingTiers      []throwingSkillTier
+	throwingArtTiers   []throwingSkillTier
 	st                 fxp.Int
 	strikingST         fxp.Int
 	objectWeight       fxp.Weight
@@ -74,9 +78,11 @@ type throwingCalculator struct {
 
 func newThrowingCalculator() *throwingCalculator {
 	t := &throwingCalculator{
-		st:           fxp.Ten,
-		strikingST:   fxp.Ten,
-		objectWeight: fxp.Weight(fxp.One),
+		throwingTiers:    newThrowingTiers(),
+		throwingArtTiers: newThrowingArtTiers(),
+		st:               fxp.Ten,
+		strikingST:       fxp.Ten,
+		objectWeight:     fxp.Weight(fxp.One),
 	}
 	t.createContent()
 	return t
@@ -132,10 +138,10 @@ func (t *throwingCalculator) createContent() {
 	t.addFieldRow(t.strikingSTField, i18n.Text("Striking ST the damage is worked out from"))
 	row := t.addRow(2)
 	addPlainLabel(row, i18n.Text("Throwing:"))
-	t.throwingPopup = addIndexPopup(row, throwingTiers, &t.throwingIndex, t.changed)
+	t.throwingPopup = addIndexPopup(row, t.throwingTiers, &t.throwingIndex, t.changed)
 	row = t.addRow(2)
 	addPlainLabel(row, i18n.Text("Throwing Art:"))
-	t.throwingArtPopup = addIndexPopup(row, throwingArtTiers, &t.throwingArtIndex, t.changed)
+	t.throwingArtPopup = addIndexPopup(row, t.throwingArtTiers, &t.throwingArtIndex, t.changed)
 
 	t.addSubheader(i18n.Text("Throw"))
 	t.weightField = sameWidth(newSourcedWeightField(i18n.Text("Object Weight"), t.source.entity,
@@ -262,8 +268,8 @@ func (t *throwingCalculator) computeThrow(extraEffortPenalty int) (distance, dam
 		return i18n.Text("None"), i18n.Text("None")
 	}
 	entity := t.source.entity()
-	distanceBonus := max(throwingTiers[t.throwingIndex].distance, throwingArtTiers[t.throwingArtIndex].distance)
-	damageBonus := throwingArtTiers[t.throwingArtIndex].damage
+	distanceBonus := max(t.throwingTiers[t.throwingIndex].distance, t.throwingArtTiers[t.throwingArtIndex].distance)
+	damageBonus := t.throwingArtTiers[t.throwingArtIndex].damage
 
 	st := extraEffortST(t.st, extraEffortPenalty) + fxp.FromInteger(distanceBonus)
 	basicLift := basicLiftFor(entity, st)

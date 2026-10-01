@@ -22,10 +22,11 @@ import (
 	"github.com/richardwilkes/unison/enums/align"
 )
 
-var (
-	_ calculatorTab = &hikingCalculator{}
+var _ calculatorTab = &hikingCalculator{}
 
-	terrain = []terrainModifier{
+// newTerrainChoices returns the kinds of ground a day's hike can cross and what each does to the distance (BX351).
+func newTerrainChoices() []terrainModifier {
+	return []terrainModifier{
 		{Name: i18n.Text("Broken Ground"), Modifier: fxp.Half},
 		{Name: i18n.Text("Deep Snow"), Modifier: fxp.Fifth, IsSnow: true},
 		{Name: i18n.Text("Desert"), Modifier: fxp.Fifth},
@@ -49,45 +50,58 @@ var (
 		{Name: i18n.Text("Sand, Hard-packed"), Modifier: fxp.OneAndAQuarter},
 		{Name: i18n.Text("Swamp"), Modifier: fxp.Fifth},
 	}
+}
 
-	weather = []terrainModifier{
+// newWeatherChoices returns the weather a day's hike can be made in and what each does to the distance (BX351).
+func newWeatherChoices() []terrainModifier {
+	return []terrainModifier{
 		{Name: i18n.Text("Normal"), Modifier: fxp.One, Default: true},
 		{Name: i18n.Text("Rain"), Modifier: fxp.Half, IsRain: true},
 		{Name: i18n.Text("Sleet"), Modifier: fxp.Half, IsIce: true},
 		{Name: i18n.Text("Snow"), Modifier: fxp.Half, IsSnow: true},
 		{Name: i18n.Text("Snow, Heavy"), Modifier: fxp.Quarter, IsSnow: true},
 	}
+}
 
-	hikingIntensity = []hikingIntensityHours{
+// newHikingIntensityChoices returns how hard the day's hike can be pushed, as the hours it spends on the march.
+func newHikingIntensityChoices() []hikingIntensityHours {
+	return []hikingIntensityHours{
 		{Name: i18n.Text("Forced March"), HoursHiking: fxp.Sixteen},
 		{Name: i18n.Text("Long March"), HoursHiking: fxp.Twelve},
 		{Name: i18n.Text("Normal"), HoursHiking: fxp.Eight, Default: true},
 		{Name: i18n.Text("Foraging"), HoursHiking: fxp.Four, IsForaging: true},
 		{Name: i18n.Text("Custom"), IsCustom: true},
 	}
+}
 
-	// hikingHeat is what the day's heat adds to each hour's FP cost (BX426).
-	hikingHeat = []hikingHeatChoice{
+// newHikingHeatChoices returns what the day's heat adds to each hour's FP cost (BX426).
+func newHikingHeatChoices() []hikingHeatChoice {
+	return []hikingHeatChoice{
 		{name: i18n.Text("Temperate")},
 		{name: i18n.Text("Hot (+1 FP per hour)"), fp: 1},
 		{name: i18n.Text("Hot, in plate armor, an overcoat, etc. (+2 FP per hour)"), fp: 2},
 	}
+}
 
-	// hikingFitness is how fit the hiker is (BX55): Fit and Very Fit recover FP at twice the usual rate, and Very Fit
-	// loses FP to exertion at half the usual rate.
-	hikingFitness = []hikingFitnessChoice{
+// newHikingFitnessChoices returns how fit the hiker can be (BX55): Fit and Very Fit recover FP at twice the usual rate,
+// and Very Fit loses FP to exertion at half the usual rate.
+func newHikingFitnessChoices() []hikingFitnessChoice {
+	return []hikingFitnessChoice{
 		{name: i18n.Text("Average")},
 		{name: i18n.Text("Fit (recovers FP twice as fast)"), fit: true},
 		{name: i18n.Text("Very Fit (recovers FP twice as fast, loses FP half as fast)"), fit: true, veryFit: true},
 	}
+}
 
-	// hikingRecoverEnergy is what the Recover Energy spell (BX248) does for the hiker's rest, by the skill it is known at.
-	hikingRecoverEnergy = []hikingRecoverEnergyChoice{
+// newHikingRecoverEnergyChoices returns what the Recover Energy spell (BX248) does for the hiker's rest, by the skill it
+// is known at.
+func newHikingRecoverEnergyChoices() []hikingRecoverEnergyChoice {
+	return []hikingRecoverEnergyChoice{
 		{name: i18n.Text("None")},
 		{name: i18n.Text("Skill 15+ (1 FP per 5 minutes of rest)"), minutesPerFP: 5},
 		{name: i18n.Text("Skill 20+ (1 FP per 2 minutes of rest)"), minutesPerFP: 2},
 	}
-)
+}
 
 // hikingExtraEffortFP is what extra effort on the march adds to the FP lost when the hiker stops (BX357).
 const hikingExtraEffortFP = 2
@@ -180,6 +194,12 @@ type hikingCalculator struct {
 	usingSkatesCheckBox          *unison.CheckBox
 	successfulHikingRollCheckBox *unison.CheckBox
 	hikingRollPageLabel          *textLabel
+	terrain                      []terrainModifier
+	weather                      []terrainModifier
+	heat                         []hikingHeatChoice
+	intensity                    []hikingIntensityHours
+	fitness                      []hikingFitnessChoice
+	recoverEnergy                []hikingRecoverEnergyChoice
 	enhancedMove                 fxp.Int
 	fp                           fxp.Int
 	hikingHours                  fxp.Int
@@ -205,13 +225,19 @@ type hikingCalculator struct {
 
 func newHikingCalculator() *hikingCalculator {
 	h := &hikingCalculator{
-		move:                 5,
-		fp:                   fxp.Ten,
-		terrainIndex:         slices.IndexFunc(terrain, func(t terrainModifier) bool { return t.Default }),
-		weatherIndex:         slices.IndexFunc(weather, func(t terrainModifier) bool { return t.Default }),
-		hikingIntensityIndex: slices.IndexFunc(hikingIntensity, func(t hikingIntensityHours) bool { return t.Default }),
-		hikingHours:          fxp.Eight,
+		terrain:       newTerrainChoices(),
+		weather:       newWeatherChoices(),
+		heat:          newHikingHeatChoices(),
+		intensity:     newHikingIntensityChoices(),
+		fitness:       newHikingFitnessChoices(),
+		recoverEnergy: newHikingRecoverEnergyChoices(),
+		move:          5,
+		fp:            fxp.Ten,
+		hikingHours:   fxp.Eight,
 	}
+	h.terrainIndex = slices.IndexFunc(h.terrain, func(t terrainModifier) bool { return t.Default })
+	h.weatherIndex = slices.IndexFunc(h.weather, func(t terrainModifier) bool { return t.Default })
+	h.hikingIntensityIndex = slices.IndexFunc(h.intensity, func(t hikingIntensityHours) bool { return t.Default })
 	h.createContent()
 	return h
 }
@@ -280,21 +306,21 @@ func (h *hikingCalculator) createContent() {
 	h.addFieldRow(h.fpField, i18n.Text("FP"))
 	row = h.addRow(2)
 	addPlainLabel(row, i18n.Text("Fitness:"))
-	h.fitnessPopup = addIndexPopup(row, hikingFitness, &h.fitnessIndex, h.changed)
+	h.fitnessPopup = addIndexPopup(row, h.fitness, &h.fitnessIndex, h.changed)
 	row = h.addRow(2)
 	addPlainLabel(row, i18n.Text("Recover Energy:"))
-	h.recoverEnergyPopup = addIndexPopup(row, hikingRecoverEnergy, &h.recoverEnergyIndex, h.changed)
+	h.recoverEnergyPopup = addIndexPopup(row, h.recoverEnergy, &h.recoverEnergyIndex, h.changed)
 
 	h.addSubheader(i18n.Text("Journey"))
 	row = h.addRow(2)
 	addPlainLabel(row, i18n.Text("Terrain:"))
-	addIndexPopup(row, terrain, &h.terrainIndex, h.changed)
+	addIndexPopup(row, h.terrain, &h.terrainIndex, h.changed)
 	addPlainLabel(row, i18n.Text("Weather:"))
-	addIndexPopup(row, weather, &h.weatherIndex, h.changed)
+	addIndexPopup(row, h.weather, &h.weatherIndex, h.changed)
 	addPlainLabel(row, i18n.Text("Heat:"))
-	addIndexPopup(row, hikingHeat, &h.heatIndex, h.changed)
+	addIndexPopup(row, h.heat, &h.heatIndex, h.changed)
 	addPlainLabel(row, i18n.Text("Intensity:"))
-	addIndexPopup(row, hikingIntensity, &h.hikingIntensityIndex, h.changed)
+	addIndexPopup(row, h.intensity, &h.hikingIntensityIndex, h.changed)
 
 	h.roadsAreClearedCheckBox = h.addCheckBox(i18n.Text("Roads are cleared"), &h.roadsAreCleared, h.changed)
 	h.usingSkisCheckBox = h.addCheckBox(i18n.Text("Using skis"), &h.usingSkis, h.changed)
@@ -453,7 +479,7 @@ func (h *hikingCalculator) adjustControls() {
 		h.usingSkisCheckBox.SetEnabled(true)
 	}
 
-	i := hikingIntensity[h.hikingIntensityIndex]
+	i := h.intensity[h.hikingIntensityIndex]
 	h.hikingHoursField.SetEnabled(true)
 	if !i.IsCustom {
 		h.hikingHours = i.HoursHiking
@@ -461,8 +487,8 @@ func (h *hikingCalculator) adjustControls() {
 		h.hikingHoursField.SetEnabled(false)
 	}
 
-	w := weather[h.weatherIndex]
-	h.roadsAreClearedCheckBox.SetEnabled(terrain[h.terrainIndex].IsRoad && (w.IsIce || w.IsSnow))
+	w := h.weather[h.weatherIndex]
+	h.roadsAreClearedCheckBox.SetEnabled(h.terrain[h.terrainIndex].IsRoad && (w.IsIce || w.IsSnow))
 	// The penalty is not used without a successful roll, so the field is blanked as well as disabled, and the same
 	// goes for what the rest brings when there is no rest.
 	adjustFieldBlank(h.hikingExtraEffortField, !h.successfulHikingRoll)
@@ -489,7 +515,7 @@ func (h *hikingCalculator) distanceForHours(hours fxp.Int, extraEffortPenalty in
 		distance = distance.Mul(fxp.One + h.enhancedMove)
 	}
 
-	t := terrain[h.terrainIndex]
+	t := h.terrain[h.terrainIndex]
 	mod := t.Modifier
 	if t.IsIce && h.usingSkates {
 		mod = fxp.OneAndAQuarter
@@ -498,7 +524,7 @@ func (h *hikingCalculator) distanceForHours(hours fxp.Int, extraEffortPenalty in
 		mod = fxp.One
 	}
 
-	w := weather[h.weatherIndex]
+	w := h.weather[h.weatherIndex]
 	switch {
 	case w.IsRain:
 		if t.IsRoad {
@@ -585,8 +611,8 @@ type hikingDay struct {
 // fpPerHour returns what each hour of the march costs in FP (BX426): 1, plus 1 per level of encumbrance, plus what
 // the heat adds, halved for a Very Fit hiker (BX55).
 func (h *hikingCalculator) fpPerHour() fxp.Int {
-	perHour := fxp.FromInteger(1 + h.encumbranceIndex + hikingHeat[h.heatIndex].fp)
-	if hikingFitness[h.fitnessIndex].veryFit {
+	perHour := fxp.FromInteger(1 + h.encumbranceIndex + h.heat[h.heatIndex].fp)
+	if h.fitness[h.fitnessIndex].veryFit {
 		perHour = perHour.Div(fxp.Two)
 	}
 	return perHour
@@ -596,10 +622,10 @@ func (h *hikingCalculator) fpPerHour() fxp.Int {
 // Very Fit hiker (BX55), or what Recover Energy gives if that is faster (BX248).
 func (h *hikingCalculator) restMinutesPerFP() int {
 	minutes := hikingRestMinutesPerFP
-	if hikingFitness[h.fitnessIndex].fit {
+	if h.fitness[h.fitnessIndex].fit {
 		minutes /= 2
 	}
-	if spell := hikingRecoverEnergy[h.recoverEnergyIndex].minutesPerFP; spell > 0 && spell < minutes {
+	if spell := h.recoverEnergy[h.recoverEnergyIndex].minutesPerFP; spell > 0 && spell < minutes {
 		minutes = spell
 	}
 	return minutes
@@ -761,7 +787,7 @@ func (h *hikingCalculator) updateFatigue(day hikingDay) {
 	notes := []string{
 		i18n.Text("Each hour of hiking costs 1 FP, plus 1 per level of encumbrance, plus 1 on a hot day or 2 in plate armor, an overcoat, etc. (B426)."),
 	}
-	if hikingFitness[h.fitnessIndex].veryFit {
+	if h.fitness[h.fitnessIndex].veryFit {
 		notes = append(notes, i18n.Text("Being Very Fit, the hiker loses FP at half that rate (B55)."))
 	}
 	if day.tiredAfter > 0 {
@@ -790,7 +816,7 @@ func (h *hikingCalculator) updateFatigue(day hikingDay) {
 	default:
 		notes = append(notes, i18n.Text("Extra effort needs the Hiking roll, which it makes a single Will-based Hiking roll at -1 per 5% of distance beyond the +20% a success gives (B357)."))
 	}
-	if hikingIntensity[h.hikingIntensityIndex].IsForaging {
+	if h.intensity[h.hikingIntensityIndex].IsForaging {
 		notes = append(notes, i18n.Text("The rest of the day goes to foraging; each attempt takes an hour, during which no progress is made (B427)."))
 	}
 	if h.hikingHours > fxp.Sixteen {
@@ -803,12 +829,12 @@ func (h *hikingCalculator) updateFatigue(day hikingDay) {
 // restNote describes what the rest halfway through the day gives back and why (BX427, BX55, BX248).
 func (h *hikingCalculator) restNote(day hikingDay) string {
 	var sources []string
-	spell := hikingRecoverEnergy[h.recoverEnergyIndex].minutesPerFP
+	spell := h.recoverEnergy[h.recoverEnergyIndex].minutesPerFP
 	switch {
 	case spell > 0 && spell <= h.restMinutesPerFP():
 		sources = append(sources, fmt.Sprintf(i18n.Text("1 FP per %d minutes with Recover Energy (B248)"),
 			h.restMinutesPerFP()))
-	case hikingFitness[h.fitnessIndex].fit:
+	case h.fitness[h.fitnessIndex].fit:
 		sources = append(sources, fmt.Sprintf(i18n.Text("1 FP per %d minutes, twice the usual rate, for being fit (B55)"),
 			h.restMinutesPerFP()))
 	default:

@@ -277,7 +277,10 @@ func sameWidth[T xmath.Integer | xmath.Float](field *NumericField[T]) *NumericFi
 }
 
 // addIndexPopup adds a popup offering the items to the parent, with the one at *index selected, and returns it.
-// Choosing an item stores its position in *index, then runs changed.
+// Choosing an item stores its position in *index, then runs changed. The tables of choices the calculators offer here
+// are built when each calculator is created, never at package initialization: i18n.Text follows i18n.Language, which
+// LoadLanguageSetting only sets after the package has initialized, so a table built then would name its choices in the
+// system's language rather than the one the user chose.
 func addIndexPopup[T comparable](parent *unison.Panel, items []T, index *int, changed func()) *unison.PopupMenu[T] {
 	popup := unison.NewPopupMenu[T]()
 	popup.AddItem(items...)

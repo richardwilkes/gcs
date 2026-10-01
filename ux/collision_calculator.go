@@ -28,48 +28,64 @@ const (
 	suddenStopScenario
 )
 
-var (
-	collisionScenarios = []collisionScenario{
+// newCollisionScenarios returns the scenarios the calculator handles, in the order the scenario constants give them.
+func newCollisionScenarios() []collisionScenario {
+	return []collisionScenario{
 		{name: i18n.Text("Fall onto a surface")},
 		{name: i18n.Text("Collision with an immovable object")},
 		{name: i18n.Text("Collision between two objects")},
 		{name: i18n.Text("Sudden stop of a vehicle, elevator, etc.")},
 	}
+}
 
-	collisionShapes = []collisionShape{
+// newCollisionShapes returns the shapes an object in a collision can have (BX430).
+func newCollisionShapes() []collisionShape {
+	return []collisionShape{
 		{name: i18n.Text("Blunt"), damageType: "cr"},
 		{name: i18n.Text("Bullet-shaped"), damageType: "pi", halves: true},
 		{name: i18n.Text("Sharp"), damageType: "cut", halves: true},
 		{name: i18n.Text("Spiked"), damageType: "imp", halves: true},
 	}
+}
 
-	collisionSurfaces = []collisionSurface{
+// newCollisionSurfaces returns the kinds of immovable object something can fall onto or hit (BX431).
+func newCollisionSurfaces() []collisionSurface {
+	return []collisionSurface{
 		{name: i18n.Text("Hard (ground, concrete, a wall)"), hard: true},
 		{name: i18n.Text("Soft (forest litter, hay, swamp)")},
 		{name: i18n.Text("Soft and elastic (mattress, net, airbag)"), elastic: true},
 		{name: i18n.Text("Water or another fluid"), water: true},
 	}
+}
 
-	terminalVelocities = []terminalVelocityChoice{
+// newTerminalVelocityChoices returns the terminal velocities a fall can be limited to (BX431).
+func newTerminalVelocityChoices() []terminalVelocityChoice {
+	return []terminalVelocityChoice{
 		{name: i18n.Text("Human, spread-eagled (60)"), base: fxp.Sixty},
 		{name: i18n.Text("Human, swan dive (100)"), base: fxp.Hundred},
 		{name: i18n.Text("Dense or streamlined object (200)"), base: fxp.FromInteger(200)},
 		{name: i18n.Text("None")},
 		{name: i18n.Text("Custom"), custom: true},
 	}
+}
 
-	collisionAngles = []collisionAngleChoice{
+// newCollisionAngleChoices returns the angles two objects can collide at (BX432).
+func newCollisionAngleChoices() []collisionAngleChoice {
+	return []collisionAngleChoice{
 		{name: i18n.Text("Head-on"), angle: gurps.HeadOnCollision},
 		{name: i18n.Text("Rear-end"), angle: gurps.RearEndCollision},
 		{name: i18n.Text("Side-on, or the struck object is stationary"), angle: gurps.SideOnCollision},
 	}
+}
 
-	collisionRestraints = []collisionRestraint{
+// newCollisionRestraints returns what can hold an occupant in place during a sudden stop (BX432).
+func newCollisionRestraints() []collisionRestraint {
+	return []collisionRestraint{
 		{name: i18n.Text("None")},
 		{name: i18n.Text("Seatbelt or straps (DR 5)"), dr: 5},
 		{name: i18n.Text("Airbag (DR 10)"), dr: 10},
 	}
-)
+}
 
 type collisionScenario struct {
 	name string
@@ -162,6 +178,12 @@ type collisionCalculator struct {
 	obstacleHPField     *DecimalField
 	obstacleDRField     *IntegerField
 	cleanDiveBox        *unison.CheckBox
+	scenarios           []collisionScenario
+	shapes              []collisionShape
+	surfaces            []collisionSurface
+	terminals           []terminalVelocityChoice
+	angles              []collisionAngleChoice
+	restraints          []collisionRestraint
 	mover               collisionParticipant
 	target              collisionParticipant
 	fallDistance        fxp.Int
@@ -215,6 +237,12 @@ type collisionParticipant struct {
 
 func newCollisionCalculator() *collisionCalculator {
 	c := &collisionCalculator{
+		scenarios:      newCollisionScenarios(),
+		shapes:         newCollisionShapes(),
+		surfaces:       newCollisionSurfaces(),
+		terminals:      newTerminalVelocityChoices(),
+		angles:         newCollisionAngleChoices(),
+		restraints:     newCollisionRestraints(),
 		fallDistance:   fxp.Five,
 		gravity:        fxp.One,
 		pressure:       fxp.One,
@@ -256,7 +284,7 @@ func (c *collisionCalculator) createContent() {
 
 	row := c.addRow(2)
 	addPlainLabel(row, i18n.Text("Scenario:"))
-	addIndexPopup(row, collisionScenarios, &c.scenarioIndex, c.changed)
+	addIndexPopup(row, c.scenarios, &c.scenarioIndex, c.changed)
 
 	c.moverHeader = c.addSubheader("")
 	c.mover.createPanel(c.content)
@@ -315,7 +343,7 @@ func (p *collisionParticipant) createPanel(parent *unison.Panel) {
 	rows.addFieldRow(p.smField, i18n.Text("SM"))
 	row := rows.addRow(2)
 	addPlainLabel(row, i18n.Text("Shape:"))
-	addIndexPopup(row, collisionShapes, &p.shapeIndex, p.calc.changed)
+	addIndexPopup(row, p.calc.shapes, &p.shapeIndex, p.calc.changed)
 	p.velocityField = sameWidth(NewDecimalField(nil, "", i18n.Text("Velocity"),
 		func() fxp.Int { return p.velocity },
 		func(v fxp.Int) {
@@ -433,7 +461,7 @@ func (p *collisionParticipant) name(role string) string {
 }
 
 func (p *collisionParticipant) shape() collisionShape {
-	return collisionShapes[p.shapeIndex]
+	return p.calc.shapes[p.shapeIndex]
 }
 
 func (c *collisionCalculator) createFallRows() *unison.Panel {
@@ -457,7 +485,7 @@ func (c *collisionCalculator) createFallRows() *unison.Panel {
 	rows.addFieldRow(c.gravityField, i18n.Text("gravity, in Gs"))
 	row := rows.addRow(4)
 	addPlainLabel(row, i18n.Text("Terminal velocity:"))
-	c.terminalPopup = addIndexPopup(row, terminalVelocities, &c.terminalIndex, c.changed)
+	c.terminalPopup = addIndexPopup(row, c.terminals, &c.terminalIndex, c.changed)
 	c.customTerminalField = sameWidth(NewDecimalField(nil, "", i18n.Text("Custom Terminal Velocity"),
 		func() fxp.Int { return c.customTerminal },
 		func(v fxp.Int) {
@@ -484,7 +512,7 @@ func (c *collisionCalculator) createSurfaceRows() *unison.Panel {
 	rows := &calculatorContent{content: group}
 	row := rows.addRow(2)
 	addPlainLabel(row, i18n.Text("Surface:"))
-	addIndexPopup(row, collisionSurfaces, &c.surfaceIndex, c.changed)
+	addIndexPopup(row, c.surfaces, &c.surfaceIndex, c.changed)
 	c.elasticDRField = sameWidth(NewIntegerField(nil, "", i18n.Text("Elastic DR"),
 		func() int { return c.elasticDR },
 		func(v int) {
@@ -532,7 +560,7 @@ func (c *collisionCalculator) createAngleRows() *unison.Panel {
 	rows := &calculatorContent{content: group}
 	row := rows.addRow(2)
 	addPlainLabel(row, i18n.Text("Collision angle:"))
-	addIndexPopup(row, collisionAngles, &c.angleIndex, c.changed)
+	addIndexPopup(row, c.angles, &c.angleIndex, c.changed)
 	return group
 }
 
@@ -541,7 +569,7 @@ func (c *collisionCalculator) createRestraintRows() *unison.Panel {
 	rows := &calculatorContent{content: group}
 	row := rows.addRow(2)
 	addPlainLabel(row, i18n.Text("Restraint:"))
-	addIndexPopup(row, collisionRestraints, &c.restraintIndex, c.changed)
+	addIndexPopup(row, c.restraints, &c.restraintIndex, c.changed)
 	return group
 }
 
@@ -609,14 +637,14 @@ func (c *collisionCalculator) adjustControls() {
 	// A control whose input would not be used is blanked as well as disabled, so that a stale value cannot be read as
 	// part of the answer. The moving object's velocity is the exception: when it comes from the fall, the field shows
 	// the velocity the fall reaches, which is in use.
-	adjustFieldBlank(c.target.velocityField, collisionAngles[c.angleIndex].angle == gurps.SideOnCollision)
+	adjustFieldBlank(c.target.velocityField, c.angles[c.angleIndex].angle == gurps.SideOnCollision)
 
 	// Unison does not disable a panel's children along with it, so the fall rows are switched one by one when the
 	// striking object in a two-object collision is not something that was dropped.
 	adjustFieldBlank(c.fallDistanceField, !fromFall)
 	adjustFieldBlank(c.gravityField, !fromFall)
 	adjustPopupBlank(c.terminalPopup, !fromFall)
-	terminal := terminalVelocities[c.terminalIndex]
+	terminal := c.terminals[c.terminalIndex]
 	adjustFieldBlank(c.customTerminalField, !fromFall || !terminal.custom)
 	adjustFieldBlank(c.pressureField, !fromFall || (terminal.base <= 0 && !terminal.custom))
 	// The fall can be softened by an Acrobatics roll or by a clean dive into water, but not by both (BX431).
@@ -626,7 +654,7 @@ func (c *collisionCalculator) adjustControls() {
 		gurps.SpeedRangePenalty(c.moverVelocity())))
 	c.cleanDiveBox.SetEnabled(c.inWater() && !c.controlledFallApplies())
 
-	surface := collisionSurfaces[c.surfaceIndex]
+	surface := c.surfaces[c.surfaceIndex]
 	adjustFieldBlank(c.elasticDRField, !surface.elastic)
 	adjustFieldBlank(c.obstacleHPField, !c.breakable)
 	adjustFieldBlank(c.obstacleDRField, !c.breakable)
@@ -645,7 +673,7 @@ func (c *collisionCalculator) velocityFromFall() bool {
 // inWater reports whether the moving object lands in water, where a clean dive is possible.
 func (c *collisionCalculator) inWater() bool {
 	return (c.scenarioIndex == fallScenario || c.scenarioIndex == immovableScenario) &&
-		collisionSurfaces[c.surfaceIndex].water
+		c.surfaces[c.surfaceIndex].water
 }
 
 // controlledFallApplies reports whether the Acrobatics roll shortens the fall, which only a fall allows.
@@ -680,7 +708,7 @@ func (c *collisionCalculator) fallVelocity() (velocity fxp.Int, notes []string) 
 		notes = append(notes, i18n.Text("Without gravity, there is no fall."))
 		return velocity, notes
 	}
-	choice := terminalVelocities[c.terminalIndex]
+	choice := c.terminals[c.terminalIndex]
 	base := choice.base
 	if choice.custom {
 		base = c.customTerminal
@@ -742,9 +770,9 @@ func (c *collisionCalculator) updateSurfaceResults() []string {
 		c.mover.velocity = velocity
 		c.mover.velocityField.Sync()
 	}
-	surface := collisionSurfaces[c.surfaceIndex]
+	surface := c.surfaces[c.surfaceIndex]
 	if c.scenarioIndex == suddenStopScenario {
-		surface = collisionSurfaces[0]
+		surface = c.surfaces[0]
 	}
 	shape := c.mover.shape()
 	count := gurps.CollisionDiceCount(gurps.ImmovableCollisionHP(c.mover.hp, surface.hard), velocity)
@@ -778,7 +806,7 @@ func (c *collisionCalculator) updateSurfaceResults() []string {
 		notes = append(notes, c.swimmingNote())
 	}
 	if c.scenarioIndex == suddenStopScenario {
-		if dr := collisionRestraints[c.restraintIndex].dr; dr > 0 {
+		if dr := c.restraints[c.restraintIndex].dr; dr > 0 {
 			notes = append(notes, fmt.Sprintf(i18n.Text("The restraint gives DR %d against this damage (BX432)."), dr))
 		}
 		notes = append(notes, i18n.Text("Anyone not strapped into an open vehicle is also thrown; work out knockback from this damage to see how far (BX432)."))
@@ -834,7 +862,7 @@ func (c *collisionCalculator) updateTwoObjectResults() []string {
 		c.mover.velocity = strikerVelocity
 		c.mover.velocityField.Sync()
 	}
-	angle := collisionAngles[c.angleIndex].angle
+	angle := c.angles[c.angleIndex].angle
 	struckVelocity := c.target.velocity
 	if angle == gurps.SideOnCollision {
 		struckVelocity = 0
