@@ -154,8 +154,10 @@ func runShellScript(bash, dir, script string, env []string) (string, error) {
 	if err := os.WriteFile(scriptPath, []byte(script), 0o600); err != nil {
 		return "", err
 	}
-	// -e matches how Actions invokes a `shell: bash` step.
-	cmd := exec.Command(bash, "-e", scriptPath)
+	// This is how Actions invokes a step when the workflow names `shell: bash`, as build.yml and release.yml do through
+	// defaults.run: `bash --noprofile --norc -eo pipefail {0}`. Plain `bash -e {0}` is only the default when no shell
+	// is named, and the two differ on a failing command inside a pipeline.
+	cmd := exec.Command(bash, "--noprofile", "--norc", "-eo", "pipefail", scriptPath)
 	cmd.Dir = dir
 	cmd.Env = append([]string{"PATH=" + os.Getenv("PATH"), "GITHUB_OUTPUT=" + outputPath}, env...)
 	if out, err := cmd.CombinedOutput(); err != nil {

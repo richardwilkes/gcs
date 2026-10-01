@@ -58,7 +58,14 @@ func TestEquipmentModifierCloneDoesNotShareReplacements(t *testing.T) {
 	dup := library.Clone(LibraryFile{}, nil, nil, Reference)
 	c.Equal(map[string]string{"Material": "Steel"}, dup.Replacements, "the copy carries the replacements")
 
-	// ...and the next attachment pass migrates the copy's map into the equipment, which has none of its own.
+	// ...into a map of its own. This is the check the rest of the test rests on: SetTarget's merge clones a map it is
+	// handed when the target has none, so the steps below would pass even if the copy still shared the library's map.
+	dup.Replacements["Finish"] = "Blued"
+	c.Equal(map[string]string{"Material": "Steel"}, library.Replacements,
+		"writing into the copy's map must not reach the library row")
+	delete(dup.Replacements, "Finish")
+
+	// The next attachment pass migrates the copy's map into the equipment, which has none of its own.
 	equipment := NewEquipment(nil, nil, false)
 	dup.SetTarget(equipment)
 	c.Nil(dup.Replacements, "the copy hands its map off to the equipment")

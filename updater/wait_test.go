@@ -79,10 +79,10 @@ func TestWaitForPredecessorGivesUpOnAPortHeldByAnotherProcess(t *testing.T) {
 	listener, port := holdPort(t)
 	defer xio.CloseIgnoringErrors(listener)
 
-	// A process that has certainly exited, so that the identifier being watched is definitively gone.
+	// A process that has certainly exited, so that the identifier being watched is definitively gone. The -h makes the
+	// re-executed test binary print its usage and exit before running anything.
 	//nolint:gosec // Re-executing this test binary, purely to obtain a process that has certainly exited
 	cmd := exec.Command(os.Args[0], "-test.run", "TestWaitForPredecessorGivesUpOnAPortHeldByAnotherProcess", "-h")
-	cmd.Env = append(os.Environ(), "GCS_UPDATER_NOOP=1")
 	c.NoError(cmd.Start())
 	deadPID := cmd.Process.Pid
 	_ = cmd.Wait() //nolint:errcheck // Only that it has exited matters, not how

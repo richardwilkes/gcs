@@ -197,7 +197,7 @@ func TestParseMarkerSingleSegmentIsCurrentFormNotLegacy(t *testing.T) {
 	c.Equal("Element", marker.Label)
 }
 
-func TestKeyPlainLegacyLabel(t *testing.T) {
+func TestKeyPlainLabelKeepsRawKey(t *testing.T) {
 	c := check.New(t)
 	m, ok := nameable.NewMarker("Weapon Name")
 	c.True(ok)
@@ -358,7 +358,7 @@ func TestReduceKeepsRequiredEmptyValue(t *testing.T) {
 	c := check.New(t)
 	// Reduce is a pure key-membership filter -- it does no normalization of its own, so needed and replacements
 	// must already agree on key format. A bare legacy label like "Weapon Name" keeps its plain key (see
-	// TestKeyPlainLegacyLabel), matching what's stored for any character sheet saved before Marker.Key() existed.
+	// TestKeyPlainLabelKeepsRawKey), matching what's stored for any character sheet saved before Marker.Key() existed.
 	needed := map[string]string{"Weapon Name": ""}
 	replacements := map[string]string{"Weapon Name": ""}
 	reduced := nameable.Reduce(needed, replacements)
@@ -374,7 +374,7 @@ func TestReduceKeepsAllowEmptyChosenValue(t *testing.T) {
 	c.Equal("Fire", reduced["Element|Fire|Water|?"])
 }
 
-func TestReduceRetainsMalformedReplacementKeyButHasNoEffect(t *testing.T) {
+func TestReduceDropsMalformedReplacementKey(t *testing.T) {
 	c := check.New(t)
 	// A replacements key that itself fails to parse as a marker (here, "") never matches any real marker's key, so
 	// Reduce drops it without affecting the other entries.
