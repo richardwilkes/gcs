@@ -20,10 +20,10 @@ import (
 	"github.com/richardwilkes/unison"
 )
 
-// TestMonitorPPIForDisplay verifies that deriving the monitor PPI is robust against a missing display. On some Linux
-// configurations unison.PrimaryDisplay() can return nil when no monitor is enumerated; previously that caused a nil
-// dereference (and, when reached from an unrecovered background goroutine such as the markdown image loader, an
-// unlogged process crash). It also guards against a zero content scale, which would otherwise divide by zero.
+// TestMonitorPPIForDisplay verifies that deriving the monitor PPI falls back to the default rather than panicking when
+// there is no display (unison.PrimaryDisplay() returns nil on some Linux configurations when no monitor is enumerated,
+// and a panic on a background goroutine such as the markdown image loader's crashes the process) or when the content
+// scale is zero.
 func TestMonitorPPIForDisplay(t *testing.T) {
 	c := check.New(t)
 

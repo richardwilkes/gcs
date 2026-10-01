@@ -102,7 +102,7 @@ func (a *Attributes) Cost(attrID string) fxp.Int {
 	return 0
 }
 
-// Current resolves the given attribute ID to its current value, or fxp.Min.
+// Current resolves the given attribute ID (or numeric literal) to its current value, or fxp.Min.
 func (a *Attributes) Current(attrID string) fxp.Int {
 	if attr, ok := a.Set[attrID]; ok {
 		return attr.Current()
@@ -113,7 +113,7 @@ func (a *Attributes) Current(attrID string) fxp.Int {
 	return fxp.Min
 }
 
-// Maximum resolves the given attribute ID to its maximum value, or fxp.Min.
+// Maximum resolves the given attribute ID (or numeric literal) to its maximum value, or fxp.Min.
 func (a *Attributes) Maximum(attrID string) fxp.Int {
 	if attr, ok := a.Set[attrID]; ok {
 		return attr.Maximum()

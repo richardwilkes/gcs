@@ -215,10 +215,9 @@ func newScriptEntity(r *goja.Runtime, entity *Entity) *goja.Object {
 		})
 	}
 	m["randomWeightInPounds"] = func() goja.Value {
-		// Returns a weight in pounds based on the given strength using the chart from B18. Adjusts appropriately
-		// for the traits Skinny, Overweight, Fat, and Very Fat, if present on the sheet. 'shift' causes a shift
-		// towards a lighter value if negative and a heavier value if positive, similar to having one of the traits
-		// Skinny, Overweight, Fat, and Very Fat applied, but is additive to them.
+		// Returns a weight in pounds based on the given strength using the chart from B18, adjusted for the traits
+		// Skinny, Overweight, Fat, and Very Fat, if present on the sheet. A negative 'shift' moves toward a lighter
+		// value and a positive one toward a heavier value, as those traits do, and adds to them.
 		return r.ToValue(func(call goja.FunctionCall) goja.Value {
 			st := int(call.Argument(0).ToInteger())
 			shift := int(call.Argument(1).ToInteger())

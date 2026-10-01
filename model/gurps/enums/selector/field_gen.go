@@ -63,7 +63,7 @@ var Fields = []Field{
 // Field identifies a multi-state field that a SelectorOverride can replace.
 type Field byte
 
-// EnsureValid ensures this is of a known value.
+// EnsureValid returns this value if it is valid and DefaultField otherwise.
 func (enum Field) EnsureValid() Field {
 	if enum >= FirstField && enum <= LastField {
 		return enum
@@ -139,18 +139,18 @@ func (enum Field) String() string {
 	}
 }
 
-// MarshalText implements the encoding.TextMarshaler interface.
+// MarshalText implements encoding.TextMarshaler.
 func (enum Field) MarshalText() (text []byte, err error) {
 	return []byte(enum.Key()), nil
 }
 
-// UnmarshalText implements the encoding.TextUnmarshaler interface.
+// UnmarshalText implements encoding.TextUnmarshaler.
 func (enum *Field) UnmarshalText(text []byte) error {
 	*enum = ExtractField(string(text))
 	return nil
 }
 
-// ExtractField extracts the value from a string.
+// ExtractField returns the value whose key matches str, ignoring case, or DefaultField if none does.
 func ExtractField(str string) Field {
 	for _, enum := range Fields {
 		if strings.EqualFold(enum.Key(), str) {
@@ -160,10 +160,8 @@ func ExtractField(str string) Field {
 	return DefaultField
 }
 
-// ExtractKnownField extracts the value from a string, reporting whether the string was actually recognized.
-//
-// Unlike ExtractField, which quietly maps anything it doesn't recognize onto the default value, this permits a caller
-// that is dispatching on the type to detect unknown types.
+// ExtractKnownField is like ExtractField, but also reports whether str was recognized, so a caller can tell an unknown
+// key from the default.
 func ExtractKnownField(str string) (value Field, known bool) {
 	for _, enum := range Fields {
 		if strings.EqualFold(enum.Key(), str) {

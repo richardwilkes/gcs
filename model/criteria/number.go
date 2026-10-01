@@ -29,7 +29,7 @@ type NumberData struct {
 	Qualifier fxp.Int           `json:"qualifier,omitzero"`
 }
 
-// IsZero implements json.isZero.
+// IsZero reports whether json's omitzero option should omit this value.
 func (n Number) IsZero() bool {
 	return n.Compare.EnsureValid() == AnyNumber
 }

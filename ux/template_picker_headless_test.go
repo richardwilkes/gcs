@@ -795,7 +795,7 @@ func TestPickerChevronsAreNotClipped(t *testing.T) {
 				c.True(frame.Width >= pref.Width && frame.Height >= pref.Height,
 					"a chevron gets the room it asks for: %v of %v", frame.Size, pref)
 				drawable := chevron.Drawable.LogicalSize()
-				// Focused, it draws a 2 point outline just inside its edges, so its icon needs that much room around it.
+				// Focused, it draws a 2 point outline just inside its edges, which its icon must leave room for.
 				c.True(frame.Width-drawable.Width >= 4 && frame.Height-drawable.Height >= 4,
 					"a chevron leaves room around its icon for its focus outline: %v in %v", drawable, frame.Size)
 				for p := chevron.AsPanel(); p.Parent() != nil && p.Parent() != dialogWnd.Content(); p = p.Parent() {
@@ -844,10 +844,10 @@ type pickerPlace struct {
 	slot  bool
 }
 
-// checkPickerRowPlaces checks that the rows of the picker's list lead with their checkboxes, or room for one, all in one
-// column, and that the name of each row given is set one chevron width past the name of the row it is under, or at the
-// start of the rows if it is under none, and one more past that when its level leaves room for a chevron, just after
-// its chevron if it has one.
+// checkPickerRowPlaces checks that the rows of the picker's list lead with their checkboxes, or room for one, all in
+// one column, and that the name of each row given is set one chevron width past the name of the row it is under, or at
+// the start of the rows if it is under none, and one more past that when its level leaves room for a chevron, just
+// after its chevron if it has one.
 func checkPickerRowPlaces(c check.Checker, list *unison.Panel, places map[string]pickerPlace) {
 	layout, ok := list.Layout().(*unison.FlexLayout)
 	c.True(ok, "the list is laid out in columns")

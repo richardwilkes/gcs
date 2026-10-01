@@ -29,8 +29,8 @@ import (
 )
 
 // newSwitchableAttributeBonuses returns a pair of ST bonuses to attach to the same owner: a +1 that always applies and
-// a switchable +2 that only applies while the owner's switch is on. Every entity-level gating test uses this pair, so
-// the ST bonus the entity reports says exactly which of the two were let through: 1 = off, 3 = on.
+// a switchable +2 that only applies while the owner's switch is on, so the entity's ST bonus is 1 while the switch is
+// off and 3 while it is on.
 func newSwitchableAttributeBonuses() Features {
 	always := NewAttributeBonus(StrengthID)
 	always.Amount = fxp.One
@@ -739,8 +739,7 @@ func TestSwitchableThisArmorDRBonusFromModifier(t *testing.T) {
 		"with the switch on the modifier's located DR applies and the 'this armor' bonus expands onto it")
 }
 
-// TestScriptSwitchedOn verifies that the switch state of each kind of item is readable from the scripts the data owner
-// writes, so that a script can react to it.
+// TestScriptSwitchedOn verifies that scripts can read the switch state of each kind of item.
 func TestScriptSwitchedOn(t *testing.T) {
 	c := check.New(t)
 	e := NewEntity()
@@ -1008,8 +1007,8 @@ func TestEquipmentSwitchCellDimming(t *testing.T) {
 		bonus.Switchable = true
 		return bonus
 	}
-	// Both constructors put what they build into the entity's carried equipment list, since that is where an item has
-	// to live for the character to collect anything from it at all.
+	// item and fullBag put what they build into the entity's carried equipment list, since that is where an item has to
+	// live for the character to collect anything from it at all.
 	item := func(features ...Feature) *Equipment {
 		eqp := addCarriedEquipmentWithFeatures(e, "Amulet", features...)
 		eqp.Equipped = false

@@ -48,8 +48,8 @@ func TestSSRTToYardsTableValues(t *testing.T) {
 	}
 }
 
-// Values beyond either end of the table are clamped to it. The low end has always been clamped; the high end must be
-// too, since the value arrives straight from a script and the yardage grows without bound while fxp.Int does not.
+// Values beyond either end of the table are clamped to it. The high end must be, since the value arrives straight from
+// a script and the yardage grows without bound while fxp.Int does not.
 func TestSSRTToYardsClamps(t *testing.T) {
 	c := check.New(t)
 	low := ssrtToYards(minSSRTValue)
@@ -198,8 +198,7 @@ func TestScriptModifierUnitResolution(t *testing.T) {
 //
 // Go leaves the conversion of an out-of-range float64 to an integer implementation-defined. arm64 saturates to
 // MaxInt64, which clamps to the top of the table; amd64 produces MinInt64, which clamps to the bottom. Narrowing before
-// clamping therefore made measure.modifierToYards(1e300) return 700000000000000 on Apple silicon and 0.0055 on Intel —
-// a split that passed CI on all three arm64 runners and failed on all three amd64 runners.
+// clamping therefore made measure.modifierToYards(1e300) return 700000000000000 on Apple silicon and 0.0055 on Intel.
 func TestSSRTValueFromScriptIsArchitectureIndependent(t *testing.T) {
 	c := check.New(t)
 	for _, tc := range []struct {

@@ -194,9 +194,8 @@ func (e *editor[N, D]) hasNameableKeys() bool {
 }
 
 func (e *editor[N, D]) MarkModified(_ unison.Paneler) {
-	// Editing a field re-syncs the editor's live previews (extended value/weight, markdown, etc.), which resolve the
-	// in-progress, often incomplete script expressions the user is still typing. Suppress the error logging those
-	// failed resolutions would otherwise produce; resolutions performed anywhere else continue to log normally.
+	// Syncing refreshes the editor's live previews (extended value/weight, markdown, etc.), which resolve the often
+	// incomplete script expressions the user is still typing, so don't log their resolution failures.
 	gurps.SuppressScriptResolveErrorLogging(func() {
 		UpdateTitleForDockable(e)
 		DeepSync(e)
@@ -204,11 +203,10 @@ func (e *editor[N, D]) MarkModified(_ unison.Paneler) {
 			e.modificationCallback()
 		}
 	})
-	// The editor's tables show row state -- a modifier's enabled checkmark, a weapon's Hide checkmark -- that nothing
-	// above has marked for redraw, since DeepSync only reaches Syncers and neither unison.Table nor the panels wrapping
-	// the editor's tables is one. A cell click flips its own drawable by hand, but the command path and the undo or
-	// redo of either has nothing to flip, so without this a toggle could leave a stale checkmark on screen.
-	// Node.ColumnCell re-derives the cell data on draw, so a redraw is all that is needed.
+	// The editor's tables show row state -- a modifier's enabled checkmark, a weapon's Hide checkmark -- that DeepSync
+	// misses, since neither unison.Table nor the panels wrapping the editor's tables is a Syncer. A cell click flips
+	// its own drawable, but toggling by command, undo or redo would otherwise leave a stale checkmark. Node.ColumnCell
+	// re-derives the cell data on draw, so a redraw is enough.
 	e.MarkForRedraw()
 }
 

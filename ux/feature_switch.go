@@ -15,11 +15,9 @@ import (
 	"github.com/richardwilkes/unison"
 )
 
-// showSwitchColumn returns true if the switch column should be present in a page list showing the given rows. The
-// column is only shown on character sheets (never on loot sheets, in templates or in library lists), and only when at
-// least one row, at any depth, has switchable features, so that sheets which don't make use of switchable features
-// aren't cluttered by an empty column. Anywhere else, the switch of an item that has one is thrown from the item's
-// editor.
+// showSwitchColumn returns true if a page list showing the given rows should have the switch column: only on character
+// sheets (not loot sheets, templates or library lists), and only when some row, at any depth, has switchable features,
+// so sheets that don't use them aren't cluttered by an empty column. Elsewhere, switches are thrown from editors.
 func showSwitchColumn[T gurps.Node[T]](forPage bool, provider gurps.DataOwnerProvider, rows []T) bool {
 	if !forPage {
 		return false
@@ -45,19 +43,16 @@ func anySwitchable[T gurps.Node[T]](rows []T) bool {
 	return false
 }
 
-// toggleFeatureSwitch sets the switch of the node's data to the given state, registering an undoable edit and
-// recalculating the owning entity. If includeDescendants is true, everything contained within it that actually has
-// something to switch is set as well. Descendants with no switchable features are deliberately left out: throwing their
-// switch would have no effect the user could see, yet the new state would still be written to the file and show up as a
-// change to the sheet.
+// toggleFeatureSwitch sets the switch of the node's data to the given state as an undoable edit and recalculates the
+// owning entity. If includeDescendants is true, everything within it that has switchable features is set too; the rest
+// are left out, since throwing their switch would change nothing visible yet still show up as a change to the sheet.
 //
-// The owner is rebuilt rather than merely marked as modified, since a switchable feature can be a reaction bonus, a
-// conditional modifier bonus or a weapon bonus, and whether the lists showing those appear on the page at all -- along
-// with which columns the weapon lists hold -- is decided only when the owner creates its lists.
+// The owner is rebuilt rather than merely marked as modified, since a switchable feature can be a reaction, conditional
+// modifier or weapon bonus, and whether the lists showing those appear on the page at all -- along with which columns
+// the weapon lists hold -- is decided only when the owner creates its lists.
 //
-// It returns false, without changing anything, if the node's data has no switch to throw. That can't happen for a
-// switch cell, but the caller uses the answer to put the cell back the way it was rather than showing a state the model
-// never took on.
+// It returns false, changing nothing, if the node's data has no switch. That can't happen for a switch cell, but the
+// caller uses the answer to put the cell back rather than show a state the model never took on.
 func toggleFeatureSwitch[T gurps.Node[T]](n *Node[T], source unison.Paneler, on, includeDescendants bool) bool {
 	switcher, ok := any(n.Data()).(gurps.FeatureSwitcher)
 	if !ok {

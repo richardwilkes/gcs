@@ -56,7 +56,6 @@ func TestAncestryEditorPanelRowsMirrorGenders(t *testing.T) {
 	c.NotNil(rootAncestryPanel(t, d).genders, "the gender container exists even when there are no genders")
 }
 
-// TestAncestryEditorPanelFieldsBind verifies that the gender and script fields write to the model.
 func TestAncestryEditorPanelFieldsBind(t *testing.T) {
 	c := check.New(t)
 	a := gurps.NewAncestry()

@@ -74,7 +74,7 @@ func NewKeyBindingsFromFS(fileSystem fs.FS, filePath string) (*KeyBindings, erro
 	return jio.LoadNew[KeyBindings](fileSystem, filePath)
 }
 
-// IsZero implements json.isZero.
+// IsZero reports whether json's omitzero option should omit this value.
 func (b *KeyBindings) IsZero() bool {
 	for k, v := range b.data {
 		if info, ok := factoryBindings[k]; ok && v != info.KeyBinding {

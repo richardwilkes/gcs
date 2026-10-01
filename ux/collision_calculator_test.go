@@ -22,9 +22,8 @@ import (
 
 // TestCollisionCalculatorSources drives the collision calculator inside a headless workspace the way a user would: it
 // opens the calculators from their menu action with a character sheet active, checks that the sheet is preselected as
-// the faller with
-// the fields it supplies locked and filled, switches the source to Manual and back through the popup, switches the
-// scenario and checks that the rows for it are swapped in, reads the damage from the worked example on BX431, and
+// the faller with the fields it supplies locked and filled, switches the source to Manual and back through the popup,
+// switches the scenario and checks that the rows for it are swapped in, works the examples on BX431 and BX432, and
 // finally closes the sheet and checks that the source drops back to Manual with the fields unlocked.
 func TestCollisionCalculatorSources(t *testing.T) {
 	c := check.New(t)

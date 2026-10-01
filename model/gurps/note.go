@@ -375,7 +375,7 @@ func (n *NoteSyncData) hash(h hash.Hash) {
 	hashStrings(h, n.Tags)
 }
 
-// CopyFrom implements node.EditorData.
+// CopyFrom implements EditorData.
 func (n *NoteEditData) CopyFrom(other *Note) {
 	n.copyFrom(&other.NoteEditData)
 }
@@ -385,7 +385,7 @@ func (n *NoteEditData) SetNameableReplacements(replacements map[string]string) {
 	n.Replacements = replacements
 }
 
-// ApplyTo implements node.EditorData.
+// ApplyTo implements EditorData.
 func (n *NoteEditData) ApplyTo(other *Note) {
 	other.copyFrom(n)
 }

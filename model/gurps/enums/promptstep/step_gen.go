@@ -61,7 +61,7 @@ var Steps = []Step{
 // Step identifies the step of an operation a prompt is for, such as settling the modifiers of rows being applied.
 type Step byte
 
-// EnsureValid ensures this is of a known value.
+// EnsureValid returns this value if it is valid and DefaultStep otherwise.
 func (enum Step) EnsureValid() Step {
 	if enum >= FirstStep && enum <= LastStep {
 		return enum
@@ -133,18 +133,18 @@ func (enum Step) String() string {
 	}
 }
 
-// MarshalText implements the encoding.TextMarshaler interface.
+// MarshalText implements encoding.TextMarshaler.
 func (enum Step) MarshalText() (text []byte, err error) {
 	return []byte(enum.Key()), nil
 }
 
-// UnmarshalText implements the encoding.TextUnmarshaler interface.
+// UnmarshalText implements encoding.TextUnmarshaler.
 func (enum *Step) UnmarshalText(text []byte) error {
 	*enum = ExtractStep(string(text))
 	return nil
 }
 
-// ExtractStep extracts the value from a string.
+// ExtractStep returns the value whose key matches str, ignoring case, or DefaultStep if none does.
 func ExtractStep(str string) Step {
 	for _, enum := range Steps {
 		if strings.EqualFold(enum.Key(), str) {
@@ -154,10 +154,8 @@ func ExtractStep(str string) Step {
 	return DefaultStep
 }
 
-// ExtractKnownStep extracts the value from a string, reporting whether the string was actually recognized.
-//
-// Unlike ExtractStep, which quietly maps anything it doesn't recognize onto the default value, this permits a caller
-// that is dispatching on the type to detect unknown types.
+// ExtractKnownStep is like ExtractStep, but also reports whether str was recognized, so a caller can tell an unknown
+// key from the default.
 func ExtractKnownStep(str string) (value Step, known bool) {
 	for _, enum := range Steps {
 		if strings.EqualFold(enum.Key(), str) {

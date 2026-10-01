@@ -101,9 +101,8 @@ func TestSwapReplacesABundleWithoutTheAtomicExchange(t *testing.T) {
 	c.Equal("installed", bundleMarker(t, f.backup))
 }
 
-// useRenameFallback forces the two-rename form, which is what always runs on Linux and Windows, and on macOS whenever
-// the filesystem does not implement the atomic exchange. Without this the macOS run would take the exchange and the
-// rollback below would never be exercised anywhere.
+// useRenameFallback forces the two-rename form. Without this a macOS run would take the atomic exchange and never
+// exercise the rollback below.
 func useRenameFallback(t *testing.T) {
 	t.Helper()
 	realExchange := exchangeFunc

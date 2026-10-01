@@ -41,7 +41,7 @@ var Orientations = []Orientation{
 // Orientation holds the orientation of the page.
 type Orientation byte
 
-// EnsureValid ensures this is of a known value.
+// EnsureValid returns this value if it is valid and DefaultOrientation otherwise.
 func (enum Orientation) EnsureValid() Orientation {
 	if enum >= FirstOrientation && enum <= LastOrientation {
 		return enum
@@ -73,18 +73,18 @@ func (enum Orientation) String() string {
 	}
 }
 
-// MarshalText implements the encoding.TextMarshaler interface.
+// MarshalText implements encoding.TextMarshaler.
 func (enum Orientation) MarshalText() (text []byte, err error) {
 	return []byte(enum.Key()), nil
 }
 
-// UnmarshalText implements the encoding.TextUnmarshaler interface.
+// UnmarshalText implements encoding.TextUnmarshaler.
 func (enum *Orientation) UnmarshalText(text []byte) error {
 	*enum = ExtractOrientation(string(text))
 	return nil
 }
 
-// ExtractOrientation extracts the value from a string.
+// ExtractOrientation returns the value whose key matches str, ignoring case, or DefaultOrientation if none does.
 func ExtractOrientation(str string) Orientation {
 	for _, enum := range Orientations {
 		if strings.EqualFold(enum.Key(), str) {
@@ -94,10 +94,8 @@ func ExtractOrientation(str string) Orientation {
 	return DefaultOrientation
 }
 
-// ExtractKnownOrientation extracts the value from a string, reporting whether the string was actually recognized.
-//
-// Unlike ExtractOrientation, which quietly maps anything it doesn't recognize onto the default value, this permits a
-// caller that is dispatching on the type to detect unknown types.
+// ExtractKnownOrientation is like ExtractOrientation, but also reports whether str was recognized, so a caller can tell
+// an unknown key from the default.
 func ExtractKnownOrientation(str string) (value Orientation, known bool) {
 	for _, enum := range Orientations {
 		if strings.EqualFold(enum.Key(), str) {

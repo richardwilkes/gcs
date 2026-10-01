@@ -51,7 +51,7 @@ var Adjustments = []Adjustment{
 // Adjustment holds an Adjustment for a self-control roll.
 type Adjustment byte
 
-// EnsureValid ensures this is of a known value.
+// EnsureValid returns this value if it is valid and DefaultAdjustment otherwise.
 func (enum Adjustment) EnsureValid() Adjustment {
 	if enum >= FirstAdjustment && enum <= LastAdjustment {
 		return enum
@@ -125,18 +125,18 @@ func (enum Adjustment) AltString() string {
 	}
 }
 
-// MarshalText implements the encoding.TextMarshaler interface.
+// MarshalText implements encoding.TextMarshaler.
 func (enum Adjustment) MarshalText() (text []byte, err error) {
 	return []byte(enum.Key()), nil
 }
 
-// UnmarshalText implements the encoding.TextUnmarshaler interface.
+// UnmarshalText implements encoding.TextUnmarshaler.
 func (enum *Adjustment) UnmarshalText(text []byte) error {
 	*enum = ExtractAdjustment(string(text))
 	return nil
 }
 
-// ExtractAdjustment extracts the value from a string.
+// ExtractAdjustment returns the value whose key matches str, ignoring case, or DefaultAdjustment if none does.
 func ExtractAdjustment(str string) Adjustment {
 	for _, enum := range Adjustments {
 		if strings.EqualFold(enum.Key(), str) {
@@ -146,10 +146,8 @@ func ExtractAdjustment(str string) Adjustment {
 	return DefaultAdjustment
 }
 
-// ExtractKnownAdjustment extracts the value from a string, reporting whether the string was actually recognized.
-//
-// Unlike ExtractAdjustment, which quietly maps anything it doesn't recognize onto the default value, this permits a
-// caller that is dispatching on the type to detect unknown types.
+// ExtractKnownAdjustment is like ExtractAdjustment, but also reports whether str was recognized, so a caller can tell
+// an unknown key from the default.
 func ExtractKnownAdjustment(str string) (value Adjustment, known bool) {
 	for _, enum := range Adjustments {
 		if strings.EqualFold(enum.Key(), str) {

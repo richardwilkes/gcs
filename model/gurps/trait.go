@@ -608,7 +608,7 @@ func (t *Trait) IsLeveled() bool {
 	return t.CanLevel && !t.Container()
 }
 
-// CurrentLevel returns the current level of the trait or zero if it is not leveled.
+// CurrentLevel returns the current level of the trait, or zero if it is disabled or not leveled.
 func (t *Trait) CurrentLevel() fxp.Int {
 	if t.Enabled() {
 		return t.internalCurrentLevel(nil)
@@ -637,8 +637,8 @@ func (t *Trait) internalCurrentLevel(tooltip *xbytes.InsertBuffer) fxp.Int {
 
 // ResolvedMaxLevels returns the maximum level for this trait, resolving the MaxLevels expression (a plain number or an
 // embedded script) and applying any matching TraitMaxLevelBonus features. A return value of zero means the trait has no
-// maximum level. "This trait" bonuses attached to this trait or its enabled modifiers are always applied; "traits whose
-// name" bonuses are gathered from the owning entity, if there is one. Bonuses only adjust a maximum the trait already
+// maximum level. "This trait" bonuses on this trait or its enabled modifiers apply with or without an owning entity;
+// "traits whose name" bonuses are gathered from the owning entity. Bonuses only adjust a maximum the trait already
 // declares -- a trait with no maximum stays unlimited no matter what matches it.
 func (t *Trait) ResolvedMaxLevels() fxp.Int {
 	if !t.IsLeveled() {
@@ -713,10 +713,7 @@ func (t *Trait) adjustedPoints(fixed modifierChoicePicks[*TraitModifier]) fxp.In
 
 // PointsRange returns the span of point costs this trait may end up being worth, once every choice it or anything
 // inside it presents has been made. With no choice left to make, the range is settled and holds the same value
-// AdjustedPoints returns. The tooltip may be nil, and is handed only to a non-container: the notes name each bonus
-// source without saying which row it landed on, so rolling a container's children up into one list would give an
-// unattributed, repetitive pile. That detail belongs on the child rows, where hovering shows it. A trait leaves the
-// tooltip alone even then -- see AdjustedPoints -- but is asked for its cost the same way a skill or a spell is.
+// AdjustedPoints returns. The tooltip is never filled; see AdjustedPoints.
 func (t *Trait) PointsRange(_ *xbytes.InsertBuffer) NumericRange {
 	return t.pointsRange(nil, choiceView{})
 }
@@ -1135,8 +1132,7 @@ func (t *Trait) ModifierNotes() string {
 }
 
 // modifierNotes returns the notes due to modifiers. The self-control roll and frequency roll lines may be individually
-// suppressed; this is intended for export templates that emit those rolls separately via Trait.SelfControl and
-// Trait.Frequency.
+// suppressed, for export templates that emit those rolls separately via the CR and FR fields.
 func (t *Trait) modifierNotes(includeSelfControl, includeFrequency bool) string {
 	var lines []string
 	if resolvedSelfControl := t.ResolvedSelfControl(nil); includeSelfControl && resolvedSelfControl != selfctrl.None {
@@ -1215,7 +1211,7 @@ func ExtractTags(tags string) []string {
 }
 
 // AdjustedPoints returns the total points, taking levels and modifiers into account. 'entity' and 'trait' may be nil.
-// 'trait' is only used to resolve the level of "use level from trait" modifiers; the modifiers themselves are left
+// 'trait' is only used to resolve the level of "use level from owner" modifiers; the modifiers themselves are left
 // untouched, since the list may contain modifiers inherited from parent containers, which belong to those parents.
 func AdjustedPoints(entity *Entity, trait *Trait, canLevel bool, basePoints, levels, pointsPerLevel fxp.Int, cr selfctrl.Roll, fr frequency.Roll, modifiers []*TraitModifier, roundCostDown bool) fxp.Int {
 	return adjustedPointsBy(entity, canLevel, basePoints, levels, pointsPerLevel, cr, fr, modifiers, roundCostDown,
@@ -1437,7 +1433,7 @@ func (t *TraitContainerSyncData) ResolvedAlternativeSlots() int {
 	return max(t.AlternativeSlots, 1)
 }
 
-// CopyFrom implements node.EditorData.
+// CopyFrom implements EditorData.
 func (t *TraitEditData) CopyFrom(other *Trait) {
 	t.copyFrom(other, &other.TraitEditData, false, Copy)
 }
@@ -1447,7 +1443,7 @@ func (t *TraitEditData) SetNameableReplacements(replacements map[string]string) 
 	t.Replacements = replacements
 }
 
-// ApplyTo implements node.EditorData.
+// ApplyTo implements EditorData.
 func (t *TraitEditData) ApplyTo(other *Trait) {
 	other.copyFrom(other, t, true, Copy)
 }
@@ -1488,7 +1484,7 @@ func (t *Trait) SetModifiers(mods []*TraitModifier) {
 	t.Modifiers = mods
 }
 
-// AddModifiers adds a modifier to the list
+// AddModifiers adds the modifiers to the list.
 func (t *Trait) AddModifiers(mods ...*TraitModifier) {
 	AttachModifiers(t, mods)
 	t.Modifiers = append(t.Modifiers, mods...)

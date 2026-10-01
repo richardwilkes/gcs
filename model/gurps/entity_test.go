@@ -26,9 +26,9 @@ import (
 	"github.com/richardwilkes/toolbox/v2/check"
 )
 
-// TestEntitySelfControlOverride verifies that overriding a trait's self-control roll changes the Merchant penalty that
-// the self-control machinery generates during processFeatures — not just the displayed roll. This exercises the
-// deferred generation that waits for every selector override to be collected first.
+// TestEntitySelfControlOverride verifies that overriding a trait's self-control roll changes the Merchant penalty
+// processFeatures generates from it, not just the displayed roll, which requires the generation to wait until every
+// selector override has been collected.
 func TestEntitySelfControlOverride(t *testing.T) {
 	c := check.New(t)
 	e := NewEntity()
@@ -161,12 +161,11 @@ func TestEntityEquipmentPrereqPenaltyHonorsNestedLists(t *testing.T) {
 	checkRecalculationConsistency(c, e, "nested lists")
 }
 
-// TestEntityEquipmentPrereqPenaltySeenByScriptsWhateverTheOrder verifies that a prerequisite script which reads the
-// level of a skill taking the missing-equipment penalty sees the penalized level, whether the script's skill is listed
-// before or after the penalized one. A script computes the level as it runs, from the penalties in place at the time,
-// so were the penalties added as each skill is judged, a script listed before the penalized skill would see the level
-// before the penalty, and the recalculation would settle with that verdict in place. "Alpha" takes the penalty, which
-// brings it from 11 to 6, and "Zulu" requires Alpha at 10 or better by way of a script.
+// TestEntityEquipmentPrereqPenaltySeenByScriptsWhateverTheOrder verifies that a prerequisite script reading the level
+// of a skill that takes the missing-equipment penalty sees the penalized level whether the script's skill is listed
+// before or after the penalized one, which holds only because every penalty is in place before any prerequisite is
+// judged. "Alpha" takes the penalty, which brings it from 11 to 6, and "Zulu" requires Alpha at 10 or better by way of
+// a script.
 func TestEntityEquipmentPrereqPenaltySeenByScriptsWhateverTheOrder(t *testing.T) {
 	c := check.New(t)
 	for _, reversed := range []bool{false, true} {
@@ -1486,10 +1485,10 @@ func TestEntityRecalculateSeesLevelsScriptsRecompute(t *testing.T) {
 	checkRecalculationConsistency(c, e, "bonus withdrawn")
 }
 
-// TestEntityDiscardCachesKeepsAbandonedScriptsBetweenPasses verifies that discarding the caches between the passes
-// of a recalculation keeps the result recorded for a script that was stopped before it could produce an answer, so
-// that a runaway script costs its permitted execution time once per recalculation rather than once per pass, while
-// every completed result is discarded as usual, and that a recalculation begins by discarding both.
+// TestEntityDiscardCachesKeepsAbandonedScriptsBetweenPasses verifies that discarding the caches between the passes of a
+// recalculation keeps the result of a script stopped before it could answer, so that a runaway script costs its
+// permitted execution time once per recalculation rather than once per pass, while completed results are discarded, and
+// that DiscardCaches discards both.
 func TestEntityDiscardCachesKeepsAbandonedScriptsBetweenPasses(t *testing.T) {
 	c := check.New(t)
 	e := NewEntity()

@@ -64,13 +64,9 @@ func TestStageHelperProducesAnExecutableCopy(t *testing.T) {
 	}
 }
 
-// A regression test for an update that could be prepared but never applied. The helper was staged as a bare "helper",
-// with no extension, which on Windows cannot be started at all: the program name is resolved against PATHEXT even when
-// it is an absolute path, so os/exec rejected it with "executable file not found in %PATH%" and every Windows update
-// failed at the final step.
-//
-// exec.LookPath applies exactly the rule Start does and does not require a real executable image, so the stub the
-// fixture writes is enough to catch a name that could never be run.
+// A regression test for an update that could be prepared but never applied: the helper was staged with no ".exe"
+// extension, which Windows cannot start (see helperFileName). exec.LookPath applies the same rule os/exec does when
+// starting it, without needing a real executable image.
 func TestStageHelperCanBeStarted(t *testing.T) {
 	c := check.New(t)
 	target := installed(t, t.TempDir())

@@ -72,11 +72,9 @@ func verifySignature(ctx context.Context, path string) error {
 	return run(ctx, "/usr/bin/codesign", "--verify", "--strict", path)
 }
 
-// A regression test for an update that could never be applied. The helper was once a bare copy of the bundle's main
-// executable, which macOS refuses to run: that executable's signature records the hashes of Contents/Info.plist and of
-// the sealed resource directory, and outside the bundle there is nothing for them to match, so the kernel kills the
-// process at exec. The update simply never happened, and since the helper died before running any of its own code,
-// nothing anywhere said why.
+// A regression test for an update that could never be applied: the helper was once a bare copy of the bundle's main
+// executable, which the kernel kills at exec since its signature seals files outside it (see stageHelper), so the
+// update silently never happened.
 func TestStageHelperCopiesEnoughOfTheBundleToRun(t *testing.T) {
 	c := check.New(t)
 	target := signedBundle(t, t.TempDir())

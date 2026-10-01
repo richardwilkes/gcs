@@ -41,9 +41,8 @@ type NameGeneratorRef struct {
 	generator *NameGenerator
 }
 
-// NameGenerator holds the data necessary to create a Namer. Its JSON form is produced by MarshalJSONTo and consumed by
-// UnmarshalJSONFrom, so the field tags that would otherwise shape it are absent here; see nameGeneratorData for the
-// on-disk layout.
+// NameGenerator holds the data necessary to create a Namer. It has no field tags because MarshalJSONTo and
+// UnmarshalJSONFrom go through nameGeneratorData, which defines the on-disk layout.
 type NameGenerator struct {
 	Type           namegen.Type
 	NoLowered      bool
@@ -54,9 +53,7 @@ type NameGenerator struct {
 	// BuiltIn selects one of the built-in training data sets. When it is anything other than namegen.None, it is used
 	// in preference to Entries. Only valid when Type is not namegen.Compound.
 	BuiltIn namegen.Builtin
-	// Entries is the custom training data: each name with its weight. It is written as "training_data" (a plain list,
-	// preserving order) when every weight is 1 and as "weighted_training_data" (a map) otherwise. Only valid when Type
-	// is not namegen.Compound.
+	// Entries is the custom training data: each name with its weight. Only valid when Type is not namegen.Compound.
 	Entries []*WeightedStringOption
 	// KeyPrefix is a runtime-only key the editor uses to give this generator's widgets a stable identity. It is never
 	// written to disk.
@@ -280,10 +277,9 @@ func (n *NameGenerator) GenerateNameWithRandomizer(rnd xrand.Randomizer) string 
 	return n.namer.GenerateNameWithRandomizer(rnd)
 }
 
-// SampleNames generates count names from the current definition, for trying it out while editing. The work is done on
-// a clone, so this generator is left exactly as it was: no namer is prepared on it, and a definition that is only
-// partly edited never leaves a stale one behind. An error describes what keeps the definition from generating names,
-// in terms suitable for showing to the user.
+// SampleNames generates count names from the current definition, for trying it out while editing. It works on a
+// clone, so this generator is left as it was and never holds a namer for a partly edited definition. An error
+// describes what keeps the definition from generating names, in terms suitable for showing to the user.
 func (n *NameGenerator) SampleNames(count int) ([]string, error) {
 	clone := n.Clone()
 	if err := clone.createNamer(); err != nil {
@@ -314,8 +310,7 @@ func (n *NameGenerator) data() map[string]int {
 		return toUnweighted(american.Last())
 	default:
 		// An entry with no weight or no name (whitespace alone counts as no name) contributes nothing, which is what an
-		// editor's freshly added, not yet filled in row should do. The weights of a name that appears more than once
-		// add together.
+		// editor's freshly added, not yet filled in row should do.
 		data := make(map[string]int, len(n.Entries))
 		for _, one := range n.Entries {
 			if one.Valid() && strings.TrimSpace(one.Value) != "" {
@@ -399,11 +394,10 @@ func (n *NameGenerator) createNamerAt(where string) error {
 // definition with every keystroke, so without a bound the cache would grow for as long as a session lasts.
 const leafNamerCacheLimit = 64
 
-// leafNamerCache holds the namers built for generators other than compound ones, keyed by the hash of the definition
-// each was built from. Training a namer on one of the built-in sets takes tens of milliseconds, and the editor builds
-// namers afresh for every change to the definition it shows, most of which -- a separator, a case option, a compound
-// entry being added -- leave the definition of the expensive leaf as it was; the cache lets those changes reuse the
-// namer already trained. A namer is immutable once built, so it can be shared freely.
+// leafNamerCache holds the namers built for non-compound generators, keyed by the hash of the definition each was
+// built from. Training a namer on a built-in set takes tens of milliseconds, and the editor rebuilds namers on every
+// change, most of which -- a separator, a case option, an added compound entry -- leave the expensive leaves as they
+// were. A namer is immutable once built, so it can be shared freely.
 var (
 	leafNamerCacheLock sync.Mutex
 	leafNamerCache     = make(map[uint64]names.Namer)

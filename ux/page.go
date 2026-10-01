@@ -49,7 +49,7 @@ func NewPage(infoProvider gurps.PageInfoProvider) *Page {
 	return p
 }
 
-// LayoutSizes implements unison.Layout
+// LayoutSizes implements unison.Layout.
 func (p *Page) LayoutSizes(_ *unison.Panel, _ geom.Size) (minSize, prefSize, maxSize geom.Size) {
 	pageSettings := p.infoProvider.PageSettings()
 	w, h := pageSettings.Orientation.Dimensions(gurps.MustParsePageSize(pageSettings.Size))
@@ -67,7 +67,7 @@ func (p *Page) LayoutSizes(_ *unison.Panel, _ geom.Size) (minSize, prefSize, max
 	return prefSize, prefSize, prefSize
 }
 
-// PerformLayout implements unison.Layout
+// PerformLayout implements unison.Layout.
 func (p *Page) PerformLayout(_ *unison.Panel) {
 	p.flex.PerformLayout(p.AsPanel())
 }

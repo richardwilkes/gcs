@@ -87,11 +87,10 @@ func CanMoveSelection[T gurps.Node[T]](table *unison.Table[*Node[T]], dir MoveDi
 	return false
 }
 
-// MoveSelection repositions the selected rows of the table one step in the given direction, as a drag of each of them
-// would, then reports the change by rebuilding the table's owner. Up and down move a row one place among its siblings;
-// out moves it from its container to the place just above that container; into moves it from just above a container
-// to be that container's first child. The selection stays on the moved rows and the change is recorded as a single
-// undo edit. Nothing at all happens, and no edit is recorded, when none of the selected rows can move.
+// MoveSelection repositions the selected rows of the table one step in the given direction (see MoveDirection), as a
+// drag of each of them would, then reports the change by rebuilding the table's owner. The selection stays on the moved
+// rows and the change is recorded as a single undo edit. Nothing happens, and no edit is recorded, when none of the
+// selected rows can move.
 //
 // Each selected row is moved independently, so a selection spread over several containers moves within each of them.
 // Rows that are selected together keep their order relative to one another: a row doesn't move up past a selected
@@ -170,7 +169,7 @@ func MoveSelection[T gurps.Node[T]](table *unison.Table[*Node[T]], dir MoveDirec
 
 // selectionToMove returns what the move commands work from: the table's provider, the data behind the selected rows,
 // in table order, and the selection itself, which decides which siblings a row may move past. It reports false when the
-// table has no provider, has nothing selected, or is showing search results, whose flat list has no order to rearrange.
+// table has no provider, has nothing selected, or is filtered, since a filtered table's rows may not be modified.
 func selectionToMove[T gurps.Node[T]](table *unison.Table[*Node[T]]) (provider TableProvider[T], items []T,
 	selected map[tid.TID]bool, ok bool,
 ) {

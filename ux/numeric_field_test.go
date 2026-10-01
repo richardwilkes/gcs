@@ -115,7 +115,7 @@ func TestNumericFieldValidationPreservesTooltip(t *testing.T) {
 }
 
 // TestFixedPointPrototypes verifies the values a fixed-point field is sized to fit, which the decimal, length and
-// weight fields now share: explicit bounds are widened to fill every decimal place of their integer part, while the
+// weight fields share: explicit bounds are widened to fill every decimal place of their integer part, while the
 // unbounded extremes are stood in for by -1 and 1 rather than rendered, since a field sized to fxp.Min and fxp.Max
 // would be enormous. The length and weight variants must agree exactly with the decimal one, since the conversions to
 // and from fxp.Int inside the helper are the only thing that differs.

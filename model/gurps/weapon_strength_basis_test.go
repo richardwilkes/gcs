@@ -51,9 +51,8 @@ func newStrengthBasisWeapon(melee bool, tkLevels int, overrideTo string) *gurps.
 }
 
 // TestWeaponRangeUsesResolvedStrengthBasis verifies that a muscle-powered range is multiplied by the strength the
-// weapon's *resolved* damage strength basis names. A WeaponDamageStrengthBasis override that retargets the weapon to
-// telekinetic strength must move the range along with the damage; reading the raw basis here left the two disagreeing
-// about the weapon's power source (damage from TK, range from throwing ST).
+// weapon's *resolved* damage strength basis names, so a WeaponDamageStrengthBasis override to telekinetic strength
+// moves the range along with the damage instead of leaving it on throwing ST.
 func TestWeaponRangeUsesResolvedStrengthBasis(t *testing.T) {
 	c := check.New(t)
 
@@ -74,8 +73,7 @@ func TestWeaponRangeUsesResolvedStrengthBasis(t *testing.T) {
 }
 
 // TestWeaponSkillLevelUsesResolvedStrengthBasis verifies that the minimum-ST skill penalty is computed against the
-// attribute the weapon's *resolved* damage strength basis names. Reading the raw basis measured the weapon's minimum ST
-// against the wrong attribute whenever a WeaponDamageStrengthBasis override applied.
+// attribute the weapon's *resolved* damage strength basis names, so a WeaponDamageStrengthBasis override is honored.
 func TestWeaponSkillLevelUsesResolvedStrengthBasis(t *testing.T) {
 	c := check.New(t)
 	dxDefault := func() []*gurps.SkillDefault {
@@ -83,7 +81,7 @@ func TestWeaponSkillLevelUsesResolvedStrengthBasis(t *testing.T) {
 	}
 
 	// Without an override, the thrust basis measures the weapon's ST 14 requirement against striking ST 14, so there is
-	// no penalty and the weapon sits at its DX-10 default.
+	// no penalty and the weapon sits at its DX default of 10.
 	w := newStrengthBasisWeapon(true, 5, "")
 	w.Strength = gurps.ParseWeaponStrength("14")
 	w.Defaults = dxDefault()

@@ -81,10 +81,9 @@ func LengthFromString(text string, defaultUnits LengthUnit) (Length, error) {
 		}
 	}
 	// Everything after the feet marker -- or the whole text, when there is no feet marker -- is the inches portion. The
-	// closing inches marker is optional after a feet marker, since `6'2` is how someone naturally types a height and
-	// the length fields validate on every keystroke, so refusing it would make the closing quote unreachable. What is
-	// not optional is consuming the entire text: anything trailing the inches marker means the input was never really
-	// understood, and silently discarding it would store a value the user did not type.
+	// closing inches marker is optional after a feet marker, since the length fields validate on every keystroke and
+	// refusing `6'2` would make the closing quote unreachable. Anything trailing the inches marker is an error, since
+	// discarding it would store a value the user did not type.
 	inchText := text[feetIndex+1:]
 	if inchIndex != -1 {
 		if feetIndex > inchIndex || strings.TrimSpace(text[inchIndex+1:]) != "" {

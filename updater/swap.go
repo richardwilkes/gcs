@@ -39,10 +39,10 @@ var (
 
 // swap replaces the installation at target with the staged copy at payload, moving what was there to backup.
 //
-// The installation is either the old one or the new one at every moment a crash could occur. On macOS this is a single
-// atomic exchange, so there is no moment at all where the application is missing. Elsewhere it is two renames within
-// one directory, leaving a window of microseconds between them; a crash inside that window leaves the backup intact,
-// which the startup repair recovers from.
+// The installation is either the old one or the new one at every moment a crash could occur. On macOS this is normally
+// a single atomic exchange, so there is no moment at all where the application is missing. Otherwise it is two renames,
+// leaving a window of microseconds between them; a crash inside that window leaves the backup intact, which the startup
+// repair recovers from.
 //
 // If the second rename fails, the first is undone before returning, so a failure leaves the installation as it was.
 func swap(target, payload, backup string) error {

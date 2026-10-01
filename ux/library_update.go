@@ -56,16 +56,13 @@ documents from the library are open.`))
 		}
 	}
 
-	// The library's own filesystem watch is stopped before the download starts (see performLibraryUpdate) and only
-	// re-established by the reload that finishLibraryUpdate schedules, so in the normal flow the extraction's events
-	// never reach the navigator. Two things can still put a rebuild of the deep search content cache over the files
-	// being replaced: a build already in flight when the update starts is reading them; and the UI thread keeps
-	// servicing tasks inside RunModal(), so a reload triggered while the modal progress window below is up -- by an
-	// update check or a watch event from another library, or by a library rooted inside this one, whose watch sees the
-	// extraction directly -- re-watches every library, this one included, after which each batch of extraction events
-	// would start a rebuild that the next batch immediately cancels. Suspending abandons the in-flight build and holds
-	// the rebuilds off until the update is over; the resume folds the one rebuild that is owed into the reload that
-	// finishLibraryUpdate schedules, whose own prewarm covers it.
+	// The library's own watch is stopped before the download (see performLibraryUpdate) and re-established only by the
+	// reload finishLibraryUpdate schedules, but the deep search content cache can still be rebuilt over the files being
+	// replaced: a build may already be in flight, and since RunModal() keeps servicing tasks, a reload triggered while
+	// the progress window is up (by an update check, a watch event from another library, or a library rooted inside
+	// this one, whose watch sees the extraction) re-watches every library, after which each batch of extraction events
+	// would start a rebuild that the next batch cancels. Suspending abandons the in-flight build and holds rebuilds off
+	// until the update is over; the one rebuild owed is folded into finishLibraryUpdate's reload.
 	Workspace.Navigator.suspendContentCachePrewarm()
 	defer Workspace.Navigator.resumeContentCachePrewarm()
 

@@ -39,11 +39,8 @@ type DataOwnerProvider interface {
 	DataOwner() DataOwner
 }
 
-// Node defines the methods required of nodes in our tables.
-//
-// The type union in the body makes this a constraint, not an ordinary interface: it may only be used as a type
-// parameter's constraint or embedded in another constraint, never as a type. Generic code takes a T Node[T] type
-// parameter and works with T directly.
+// Node defines the methods required of nodes in our tables. Its type union makes it a constraint, not a type: generic
+// code takes a T Node[T] type parameter and works with T directly.
 type Node[T Node[T]] interface {
 	// These are the limited set of types that can be nodes. New node types *must* be added here
 	*ConditionalModifier | *Equipment | *EquipmentModifier | *Note | *Skill | *Spell | *Trait | *TraitModifier | *Weapon
@@ -201,11 +198,10 @@ type listData[T any] struct {
 	Rows    []T `json:"rows"`
 }
 
-// loadRows loads the rows of a standalone list file. Each top-level row is given a nil data owner, which is what
-// attaches the weapons and modifiers throughout the tree, since SetDataOwner recurses into the children on its own.
-// Containers must not be skipped along the way: they carry their own weapons and modifiers, which would otherwise never
-// be attached. Only a template may hold template picker data or the flag to pick from a group separately, so any a list
-// file carries is removed.
+// loadRows loads the rows of a standalone list file. Giving each top-level row a nil data owner attaches the weapons
+// and modifiers throughout the tree, containers included, since SetDataOwner recurses into the children. Only a
+// template may hold template picker data or the flag to pick from a group separately, so any a list file carries is
+// removed.
 func loadRows[T Node[T]](fileSystem fs.FS, filePath string, opts ...json.Options) ([]T, error) {
 	var data listData[T]
 	if err := jio.LoadVersionedFile(fileSystem, filePath, &data, &data.Version, opts...); err != nil {
@@ -315,14 +311,13 @@ func convertOldCategoriesToTags(tags, categories []string) []string {
 // or the editor data staged from or committed back to it -- and points each copy at the holder. It returns nil when
 // there is nothing to clone.
 //
-// The LibraryFile for each clone must come from the holder rather than from the modifier being cloned. This covers the
-// case where the source data *is* the authoritative source and therefore carries no source information of its own: the
-// modifier's Source.LibraryFile is empty and AdjustSource won't set source data on the copy, whereas the holder's
-// Source.LibraryFile holds the already-adjusted source for the holder's copy, so it always has the right library path.
+// Each clone's LibraryFile must come from the holder, not the modifier: when the source data *is* the authoritative
+// source, the modifier carries no source information of its own (its Source.LibraryFile is empty, so AdjustSource won't
+// set source data on the copy), whereas the holder's Source.LibraryFile already holds the adjusted library path.
 //
 // Background: when GCS clones an item from one library into another location (as opposed to duplicating in place), it
-// passes the *source* library as the first argument to Clone. That path, combined with the IDs from the source nodes,
-// is what builds the `source` values for the clone.
+// passes the *source* library as the first argument to Clone; that path plus the source nodes' IDs builds the clone's
+// `source` values.
 func cloneModifiers[M ModifierNode[M, T], T ModifiableNode[T, M], S ~[]M](modifiers S, holder T, mode CloneMode) S {
 	if len(modifiers) == 0 {
 		return nil

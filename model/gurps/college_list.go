@@ -18,8 +18,8 @@ import (
 
 var collegeSepRegex = regexp.MustCompile(`(\s+or\s+)|/`)
 
-// CollegeList holds a list of college names. This exists solely due to legacy file formats that stored this as a single
-// string with ' or ' or '/' separating the colleges. We need to be able to load both types.
+// CollegeList holds a list of college names. It also loads the legacy format, a single string with ' or ' or '/'
+// separating the colleges.
 type CollegeList []string
 
 // UnmarshalJSONFrom implements json.UnmarshalerFrom.

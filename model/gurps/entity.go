@@ -216,11 +216,10 @@ func (e *Entity) Save(filePath string) error {
 
 // MarshalJSONTo implements json.MarshalerTo.
 //
-// Writing an entity out does not recalculate it first. Recalculating is not a read-only operation — it updates the
-// skill levels, the features and prerequisites, and the "defaulted_from" of every skill, the last of which is written
-// to disk — so merely hashing an entity to ask whether it has unsaved changes would rewrite part of it, from values
-// the scripts in the data produce, which are not guaranteed to come out the same twice. The callers that need the
-// derived state current — Save, the exporters, and the sheet whenever anything changes — recalculate for themselves.
+// It does not recalculate first. Recalculating rewrites derived state, including each skill's "defaulted_from", which
+// is written to disk, from script results that need not come out the same twice, so merely hashing an entity to ask
+// whether it has unsaved changes would alter it. Callers that need the derived state current (Save, the exporters, and
+// the sheet whenever anything changes) recalculate for themselves.
 func (e *Entity) MarshalJSONTo(enc *jsontext.Encoder) error {
 	if omitCalc(enc) {
 		data := e.EntityData
@@ -713,12 +712,12 @@ func (e *Entity) processFeatures() {
 
 // forEachActiveFeatureList calls fn with each list of features currently in effect on the entity: those of every
 // enabled, non-container trait, of every non-container skill and spell, of every carried piece of equipment that is
-// really equipped, and of each of their enabled modifiers. Switchable features, whether on an item or on one of its
-// modifiers, only take effect while the switch of the primary item is on. The owner is the primary item and mod is the
-// modifier carrying the list, or nil when the list is the item's own. The leveled owner is the node whose level drives
-// a per-level amount: the modifier itself for trait modifiers, which can have levels of their own, and the equipment
-// for equipment modifiers, which cannot. Everything that gathers features from the entity goes through this walk, so
-// they all agree on which features are in effect.
+// really equipped, and of the enabled modifiers of every enabled trait, containers included, and of that equipment.
+// Switchable features, whether on an item or on one of its modifiers, only take effect while the switch of the primary
+// item is on. The owner is the primary item and mod is the modifier carrying the list, or nil when the list is the
+// item's own. The leveled owner is the node whose level drives a per-level amount: the modifier itself for trait
+// modifiers, which can have levels of their own, and the equipment for equipment modifiers, which cannot. Everything
+// that gathers features from the entity goes through this walk, so they all agree on which features are in effect.
 func (e *Entity) forEachActiveFeatureList(fn func(owner, mod fmt.Stringer, leveled LeveledOwner, list Features)) {
 	Traverse(func(t *Trait) bool {
 		if !t.Container() {
@@ -1294,14 +1293,13 @@ func (e *Entity) EquipmentMaxUsesBonusesFor(name string, tags []string, tooltip 
 		})
 }
 
-// AddDRBonusesFor locates any active DR bonuses and adds them to the map. If 'drMap' is nil, it will be created. The
-// provided map (or the newly created one) will be returned.
+// AddDRBonusesFor adds the active DR bonuses for the location to drMap, creating it if nil, and returns it.
 func (e *Entity) AddDRBonusesFor(locationID string, tooltip *xbytes.InsertBuffer, drMap map[string]int) map[string]int {
 	return e.addDRBonusesFor(locationID, tooltip, drMap, false)
 }
 
-// AddArmorDRBonusesFor locates the active DR bonuses that come from worn armor and adds them to the map. If 'drMap' is
-// nil, it will be created. The provided map (or the newly created one) will be returned.
+// AddArmorDRBonusesFor adds the active DR bonuses for the location that come from worn armor to drMap, creating it if
+// nil, and returns it.
 //
 // The falling rules (BX431) count all armor DR as flexible for the purpose of blunt trauma, while innate DR -- a hit
 // location's own DR, or DR granted by a trait, skill or spell -- does not stop a fall that way at all, so the two have
@@ -1392,8 +1390,7 @@ func (e *Entity) TraitBonusFor(name string, tags []string, tooltip *xbytes.Inser
 	})
 }
 
-// AddWeaponWithSkillBonusesFor adds the bonuses for matching weapons to the map. If 'm' is nil, it will be created.
-// The provided map (or the newly created one) will be returned.
+// AddWeaponWithSkillBonusesFor adds the bonuses for matching weapons to m, creating it if nil, and returns it.
 func (e *Entity) AddWeaponWithSkillBonusesFor(name, specialization, usage string, tags []string, dieCount dieCountFunc, tooltip *xbytes.InsertBuffer, m map[*WeaponBonus]bool, allowedFeatureTypes map[feature.Type]bool) map[*WeaponBonus]bool {
 	if m == nil {
 		m = make(map[*WeaponBonus]bool)
@@ -1420,8 +1417,7 @@ func (e *Entity) AddWeaponWithSkillBonusesFor(name, specialization, usage string
 	return m
 }
 
-// AddNamedWeaponBonusesFor adds the bonuses for matching weapons to the map. If 'm' is nil, it will be created. The
-// provided map (or the newly created one) will be returned.
+// AddNamedWeaponBonusesFor adds the bonuses for matching weapons to m, creating it if nil, and returns it.
 func (e *Entity) AddNamedWeaponBonusesFor(nameQualifier, usageQualifier string, tagsQualifier []string, dieCount dieCountFunc, tooltip *xbytes.InsertBuffer, m map[*WeaponBonus]bool, allowedFeatureTypes map[feature.Type]bool) map[*WeaponBonus]bool {
 	if m == nil {
 		m = make(map[*WeaponBonus]bool)
@@ -1495,7 +1491,8 @@ func (e *Entity) BestSkillNamed(name, specialization string, requirePoints bool,
 	return best
 }
 
-// SkillNamed returns a list of skills that match by exact (case-insensitive) name and specialization.
+// SkillNamed returns the skills whose name matches, ignoring case, and whose specialization or optional specialization
+// does too when one is given.
 func (e *Entity) SkillNamed(name, specialization string, requirePoints bool, excludes map[string]bool) []*Skill {
 	var list []*Skill
 	Traverse(func(sk *Skill) bool {
@@ -1825,9 +1822,8 @@ func (e *Entity) Ancestry() *Ancestry {
 	}, true, false, e.Traits...)
 	if anc == nil {
 		if anc = LookupAncestry(DefaultAncestry, GlobalSettings().Libraries); anc == nil {
-			// The default ancestry couldn't be loaded (e.g. a library file with the same name is present but contains
-			// invalid data). Rather than crashing, log the problem and fall back to an empty ancestry so randomization
-			// still produces sane defaults.
+			// The default ancestry couldn't be loaded (e.g. a library file with the same name contains invalid data),
+			// so fall back to an empty ancestry rather than crash, which still gives randomization sane defaults.
 			errs.Log(errs.New("unable to load default ancestry (Human); using built-in defaults"))
 			anc = &Ancestry{Name: DefaultAncestry}
 		}
@@ -1835,8 +1831,8 @@ func (e *Entity) Ancestry() *Ancestry {
 	return anc
 }
 
-// WeaponOwner implements WeaponListProvider. In the case of an Entity, always returns nil, as entities rely on
-// sub-components for their weapons and don't allow them to be created directly.
+// WeaponOwner implements WeaponListProvider. It returns nil, since an entity's weapons come from its components and
+// can't be created directly.
 func (e *Entity) WeaponOwner() WeaponOwner {
 	return nil
 }
@@ -1977,7 +1973,7 @@ func (e *Entity) ConditionalModifiers() []*ConditionalModifier {
 		situationModifiersFromFeatureList[*ConditionalModifierBonus], nil, keep)
 }
 
-// TraitList implements ListProvider
+// TraitList implements ListProvider.
 func (e *Entity) TraitList() []*Trait {
 	return e.Traits
 }
@@ -2004,62 +2000,62 @@ func (e *Entity) HasTraitNamed(name string) bool {
 	return found
 }
 
-// SetTraitList implements ListProvider
+// SetTraitList implements ListProvider.
 func (e *Entity) SetTraitList(list []*Trait) {
 	SetDataOwnerAll(e, list)
 	e.Traits = list
 }
 
-// CarriedEquipmentList implements ListProvider
+// CarriedEquipmentList implements ListProvider.
 func (e *Entity) CarriedEquipmentList() []*Equipment {
 	return e.CarriedEquipment
 }
 
-// SetCarriedEquipmentList implements ListProvider
+// SetCarriedEquipmentList implements ListProvider.
 func (e *Entity) SetCarriedEquipmentList(list []*Equipment) {
 	SetDataOwnerAll(e, list)
 	e.CarriedEquipment = list
 }
 
-// OtherEquipmentList implements ListProvider
+// OtherEquipmentList implements ListProvider.
 func (e *Entity) OtherEquipmentList() []*Equipment {
 	return e.OtherEquipment
 }
 
-// SetOtherEquipmentList implements ListProvider
+// SetOtherEquipmentList implements ListProvider.
 func (e *Entity) SetOtherEquipmentList(list []*Equipment) {
 	SetDataOwnerAll(e, list)
 	e.OtherEquipment = list
 }
 
-// SkillList implements ListProvider
+// SkillList implements ListProvider.
 func (e *Entity) SkillList() []*Skill {
 	return e.Skills
 }
 
-// SetSkillList implements ListProvider
+// SetSkillList implements ListProvider.
 func (e *Entity) SetSkillList(list []*Skill) {
 	SetDataOwnerAll(e, list)
 	e.Skills = list
 }
 
-// SpellList implements ListProvider
+// SpellList implements ListProvider.
 func (e *Entity) SpellList() []*Spell {
 	return e.Spells
 }
 
-// SetSpellList implements ListProvider
+// SetSpellList implements ListProvider.
 func (e *Entity) SetSpellList(list []*Spell) {
 	SetDataOwnerAll(e, list)
 	e.Spells = list
 }
 
-// NoteList implements ListProvider
+// NoteList implements ListProvider.
 func (e *Entity) NoteList() []*Note {
 	return e.Notes
 }
 
-// SetNoteList implements ListProvider
+// SetNoteList implements ListProvider.
 func (e *Entity) SetNoteList(list []*Note) {
 	SetDataOwnerAll(e, list)
 	e.Notes = list

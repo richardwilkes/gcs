@@ -126,9 +126,8 @@ func TestWeaponColumnHasData(t *testing.T) {
 }
 
 // TestWeaponDamageWithNilOwner verifies that formatting and marshaling a weapon whose damage has no back-reference to
-// its owning weapon does not panic. This can happen transiently on the table undo/redo deserialize path, where freshly
-// deserialized weapons have not yet had their owners wired up. A non-dice (script) damage base is required to force
-// resolution through the scripting path, which previously dereferenced the nil owner and panicked. See issue #1015.
+// its owning weapon, as happens transiently on the table undo/redo deserialize path before owners are wired up, does
+// not panic. The script damage base takes the scripting path, which dereferenced the nil owner. See issue #1015.
 func TestWeaponDamageWithNilOwner(t *testing.T) {
 	c := check.New(t)
 
@@ -332,10 +331,9 @@ func newDefenseTestWeaponWithBonuses(c check.Checker, parryBonus, blockBonus int
 }
 
 // TestWeaponSkillLevelIgnoresDefenseTypeDefaults verifies that a parry- or block-type weapon default does not become
-// the weapon's attack skill. The one Defaults list feeds the attack, parry, and block calculations alike, and a
-// defense-type default is there for the defenses: the Tonfa in the High Tech library carries "Brawling Parry" and
-// "Karate Parry" alongside its real attack defaults. Scoring such a default by the level of the skill it names would
-// let a high Karate win the attack, so it stays scored by its halved defense level, which keeps it out of the way.
+// the weapon's attack skill. Such a default is there for the defenses (the Tonfa in the High Tech library carries
+// "Brawling Parry" and "Karate Parry" alongside its real attack defaults), so it stays scored by its halved defense
+// level rather than by the level of the skill it names.
 func TestWeaponSkillLevelIgnoresDefenseTypeDefaults(t *testing.T) {
 	c := check.New(t)
 	w := newDefenseTestWeapon(c)
@@ -488,7 +486,7 @@ func runDefenseResolveTests(t *testing.T, d defenseUnderTest) {
 		c.Equal(fxp.FromInteger(15), e.Skills[0].LevelData.Level, "the Cloak skill should be at level 15")
 		w.Strength = gurps.WeaponStrength{Min: fxp.FromInteger(11)} // -1 to skill for the ST 10 character
 
-		// (15 - 1)/2 + 3 + 1, which the odd skill level rounds up to the same 7 as 15/2 does.
+		// (15 - 1)/2 + 3 + 1: the penalty costs nothing, since 15/2 also rounds down to 7.
 		for _, defaultType := range allDefaultTypes {
 			w.Defaults = []*gurps.SkillDefault{newDefenseTestDefault(defaultType)}
 			c.Equal("11", d.resolve(w), "%q default", defaultType)

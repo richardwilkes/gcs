@@ -201,9 +201,8 @@ func (o *AncestryOptions) RandomHandedness(not string) string {
 }
 
 // chooseWeightedStringOption randomly selects one of the options, preferring one other than 'not'. If excluding 'not'
-// leaves nothing to choose from -- as happens when the options consist solely of the value being replaced -- a second,
-// unfiltered pass is made, so that the ancestry's own choice is kept rather than being replaced by def, a value the
-// ancestry may not define at all. def is only used when there are no usable options.
+// leaves nothing to choose from, an unfiltered pass is made, so the ancestry's own choice is kept rather than replaced
+// by def, a value the ancestry may not define at all. def is only used when there are no usable options.
 func chooseWeightedStringOption(options []*WeightedStringOption, not, def string) string {
 	if choice := ChooseWeightedStringOption(options, not); choice != "" {
 		return choice

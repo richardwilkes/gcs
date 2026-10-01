@@ -163,9 +163,9 @@ func TestTechniqueWithoutDefaultDoesNotPanic(t *testing.T) {
 }
 
 // TestSkillWithNullDefaultEntry verifies that a JSON null in a skill's "defaults" array is dropped rather than
-// dereferenced. Such an entry decodes into a nil pointer without error, and everything that walks the defaults --
-// level resolution, hashing, nameable extraction -- reads the elements without a nil check, so a data file holding one
-// crashed GCS instead of the entry simply being skipped.
+// dereferenced. Such an entry decodes into a nil pointer without error, and the walkers over the defaults -- level
+// resolution, hashing, nameable extraction -- dereferenced it, so a data file holding one crashed GCS instead of the
+// entry simply being skipped.
 func TestSkillWithNullDefaultEntry(t *testing.T) {
 	c := check.New(t)
 	var sk Skill

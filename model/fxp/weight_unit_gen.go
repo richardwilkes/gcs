@@ -51,7 +51,7 @@ var WeightUnits = []WeightUnit{
 // rather than the variations at different weights that the GURPS rules suggest.
 type WeightUnit byte
 
-// EnsureValid ensures this is of a known value.
+// EnsureValid returns this value if it is valid and DefaultWeightUnit otherwise.
 func (enum WeightUnit) EnsureValid() WeightUnit {
 	if enum >= FirstWeightUnit && enum <= LastWeightUnit {
 		return enum
@@ -103,18 +103,18 @@ func (enum WeightUnit) String() string {
 	}
 }
 
-// MarshalText implements the encoding.TextMarshaler interface.
+// MarshalText implements encoding.TextMarshaler.
 func (enum WeightUnit) MarshalText() (text []byte, err error) {
 	return []byte(enum.Key()), nil
 }
 
-// UnmarshalText implements the encoding.TextUnmarshaler interface.
+// UnmarshalText implements encoding.TextUnmarshaler.
 func (enum *WeightUnit) UnmarshalText(text []byte) error {
 	*enum = ExtractWeightUnit(string(text))
 	return nil
 }
 
-// ExtractWeightUnit extracts the value from a string.
+// ExtractWeightUnit returns the value whose key matches str, ignoring case, or DefaultWeightUnit if none does.
 func ExtractWeightUnit(str string) WeightUnit {
 	for _, enum := range WeightUnits {
 		if strings.EqualFold(enum.Key(), str) {
@@ -124,10 +124,8 @@ func ExtractWeightUnit(str string) WeightUnit {
 	return DefaultWeightUnit
 }
 
-// ExtractKnownWeightUnit extracts the value from a string, reporting whether the string was actually recognized.
-//
-// Unlike ExtractWeightUnit, which quietly maps anything it doesn't recognize onto the default value, this permits a
-// caller that is dispatching on the type to detect unknown types.
+// ExtractKnownWeightUnit is like ExtractWeightUnit, but also reports whether str was recognized, so a caller can tell
+// an unknown key from the default.
 func ExtractKnownWeightUnit(str string) (value WeightUnit, known bool) {
 	for _, enum := range WeightUnits {
 		if strings.EqualFold(enum.Key(), str) {

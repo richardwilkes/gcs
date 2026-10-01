@@ -301,10 +301,9 @@ func (w *WeaponDamage) BaseDamageDice() dice.Dice {
 	return base
 }
 
-// ResolvedWeaponDamage is a weapon's damage after the wielder's ST, the bonuses that apply to it and any selector
-// overrides have all been folded in. ResolvedDamage formats it, but callers that need the pieces themselves -- the
-// explosion calculator, which wants the dice and the fragmentation dice -- work from this rather than parsing the
-// formatted string back apart.
+// ResolvedWeaponDamage is a weapon's damage with the wielder's ST, the applicable bonuses and any selector overrides
+// folded in. ResolvedDamage formats it; callers that need the pieces, such as the explosion calculator, use this rather
+// than parsing the formatted string.
 type ResolvedWeaponDamage struct {
 	Type                      string    // The damage type, e.g. "cr ex".
 	FragmentationType         string    // The damage type of the fragments, e.g. "cut".
@@ -333,7 +332,7 @@ func (w *WeaponDamage) ResolveDamage(tooltip *xbytes.InsertBuffer) *ResolvedWeap
 	w.surfaceBaseDamageOverrides(tooltip)
 	adjustForPhoenixFlame := entity.SheetSettings.DamageProgression == progression.PhoenixFlameD3 && base.Sides == 3
 	var percentDamageBonus, percentDRDivisorBonus fxp.Int
-	var bonusDice []BonusDice // The dice contributed by the damage bonuses
+	var bonusDice []BonusDice
 	armorDivisor := w.resolvedDamageNumeric(selector.WeaponArmorDivisor, w.ArmorDivisor, tooltip)
 	dieCount := fxp.FromInteger(base.Count) // Already resolved here, so hand it over rather than resolving it again
 	for _, bonus := range w.Owner.collectWeaponBonuses(func() fxp.Int { return dieCount }, tooltip, feature.WeaponBonus,
@@ -389,8 +388,7 @@ func (w *WeaponDamage) ResolveDamage(tooltip *xbytes.InsertBuffer) *ResolvedWeap
 			// Negative fragmentation doesn't make sense, so ignore it.
 			d = dice.Dice{Sides: 6, Multiplier: 1}
 		}
-		// Dice that format as "0" produce no fragmentation bracket at all, so the formatted form is what decides
-		// whether there is any fragmentation, just as it decides whether the bracket is printed.
+		// Dice that format as "0" print no bracket, so the formatted form decides whether there is any fragmentation.
 		if FormatDice(d, resolved.useModifyingDicePlusAdds) != "0" {
 			resolved.HasFragmentation = true
 			resolved.Fragmentation = d
@@ -464,10 +462,9 @@ func multiplyDice(multiplier int, d dice.Dice) dice.Dice {
 	return d
 }
 
-// halveForPhoenixFlame halves a damage bonus amount once for each of the per-level and per-die options the bonus has
-// set, which is how those bonuses are adjusted for the Phoenix Flame D3 progression, whose base damage has twice as
-// many dice as the standard one. A dice bonus has only its modifier halved this way, so that "1d+2 per level" stays
-// in step with "+2 per level"; the dice themselves are left alone, since a die is a die whatever the progression.
+// halveForPhoenixFlame halves a damage bonus amount once for each of its per-level and per-die options, since the
+// Phoenix Flame D3 progression's base damage has twice as many dice as the standard one. For a dice bonus only the
+// modifier is halved, keeping "1d+2 per level" in step with "+2 per level"; a die is a die whatever the progression.
 func halveForPhoenixFlame(bonus *WeaponBonus, amt fxp.Int) fxp.Int {
 	if bonus.PerLevel {
 		amt = amt.Div(fxp.Two)

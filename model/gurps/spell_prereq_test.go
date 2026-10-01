@@ -21,16 +21,15 @@ import (
 	"github.com/richardwilkes/toolbox/v2/xbytes"
 )
 
-// addTestCollegeSpell creates a non-container spell owned by the entity with the given name and college, one point, then
-// appends it to the entity's spell list.
+// addTestCollegeSpell adds a one-point spell with the given name and college to the entity.
 func addTestCollegeSpell(e *Entity, name, college string) *Spell {
 	s := addTestSpell(e, name, fxp.One)
 	s.College = CollegeList{college}
 	return s
 }
 
-// addSpellNamePrereq attaches a "requires a spell named target" prerequisite to the supplied spell and returns the
-// prerequisite that was created.
+// addSpellNamePrereq replaces the spell's prerequisites with a single "requires a spell named target" prerequisite and
+// returns it.
 func addSpellNamePrereq(s *Spell, target string) *SpellPrereq {
 	p := NewSpellPrereq()
 	p.SubType = spellcmp.Name
@@ -87,8 +86,7 @@ func TestSpellPrereqCircularNotCounted(t *testing.T) {
 		"Wisdom's college prerequisite must be satisfied once a fifth non-circular spell is present")
 }
 
-// TestSpellPrereqNestedCircularNotCounted verifies that a circular relationship expressed inside a nested prereq list is
-// still detected.
+// TestSpellPrereqNestedCircularNotCounted verifies that a circular relationship in a nested prereq list is detected.
 func TestSpellPrereqNestedCircularNotCounted(t *testing.T) {
 	c := check.New(t)
 
@@ -135,8 +133,7 @@ func TestSpellPrereqNilEntity(t *testing.T) {
 	}
 }
 
-// addTestPowerSourceSpell creates a non-container spell owned by the entity with the given name and power source, one
-// point, then appends it to the entity's spell list.
+// addTestPowerSourceSpell adds a one-point spell with the given name and power source to the entity.
 func addTestPowerSourceSpell(e *Entity, name, powerSource string) *Spell {
 	s := addTestSpell(e, name, fxp.One)
 	s.PowerSource = powerSource
@@ -256,8 +253,8 @@ func TestSpellPrereqPowerSourceWithAnyAndCollegeCount(t *testing.T) {
 	}
 }
 
-// addTestFireSpell creates a non-container spell owned by the entity with the given name and power source, one point,
-// belonging to the "Fire" college and tagged "Fire", then appends it to the entity's spell list.
+// addTestFireSpell adds a one-point spell with the given name and power source, in the "Fire" college and tagged
+// "Fire", to the entity.
 func addTestFireSpell(e *Entity, name, powerSource string) *Spell {
 	s := addTestPowerSourceSpell(e, name, powerSource)
 	s.College = CollegeList{"Fire"}
@@ -419,10 +416,10 @@ func TestSpellPrereqSamePowerSourceTooltipNamesOwner(t *testing.T) {
 		tooltip.String(), "the tooltip must show that the owning spell has no power source")
 }
 
-// TestSpellPrereqCircularRespectsPowerSource verifies that the circular prerequisite guard added for GitHub issue #737
-// now takes the power source filter into account: a spell that requires a differently-sourced spell of the same name is
-// not treated as requiring this one, so it can still count toward this spell's own prerequisites, provided those accept
-// its power source.
+// TestSpellPrereqCircularRespectsPowerSource verifies that the circular prerequisite guard (GitHub issue #737) respects
+// the power source filter: a spell that requires a differently-sourced spell of the same name is not treated as
+// requiring this one, so it can still count toward this spell's own prerequisites, provided those accept its power
+// source.
 func TestSpellPrereqCircularRespectsPowerSource(t *testing.T) {
 	c := check.New(t)
 

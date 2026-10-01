@@ -296,8 +296,7 @@ func (p *listFilterPanel) addConditionCriteria(row *unison.Panel, cond *gurps.Fi
 		// A weight criteria adds its parts directly to what it is given, so it needs a panel of its own to sit in.
 		addWeightCriteriaPanel(newCriteriaPanel(row, 1, false), nil, "", prefix, nil, &cond.Weight)
 	case gurps.FilterFieldBool:
-		// Nothing to add. A yes/no field is satisfied by the value being true, and whether that is what the condition
-		// wants is what the must/must not popup ahead of the field says.
+		// Nothing to compare against; the must/must not popup ahead of the field covers it.
 	}
 }
 

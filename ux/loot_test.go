@@ -19,8 +19,7 @@ import (
 	"github.com/richardwilkes/unison"
 )
 
-// TestTreasureGenPanelWithInRangeValues verifies that the fields are primed with the values they were given and that
-// nothing is altered when those values are already within the range the fields allow.
+// TestTreasureGenPanelWithInRangeValues verifies that values already in range reach the fields unaltered.
 func TestTreasureGenPanelWithInRangeValues(t *testing.T) {
 	c := check.New(t)
 	p := newTreasureGenPanel(fxp.Thousand, fxp.TenThousand)
@@ -32,10 +31,10 @@ func TestTreasureGenPanelWithInRangeValues(t *testing.T) {
 	c.False(p.maxField.Invalid(), "maximum field validity")
 }
 
-// TestTreasureGenPanelWithOutOfRangeValues reproduces the crash that occurred when the stored loot generation values
-// were larger than the maximum the fields accept. Creating the field clamps the value into range and reports it through
-// the set callback, which runs while the dialog and the fields are still nil, so validating the OK button at that point
-// panicked and the treasure generation dialog could never be opened.
+// TestTreasureGenPanelWithOutOfRangeValues reproduces a crash when the stored loot generation values exceeded the
+// fields' maximum. Creating a field clamps its value and reports it through the set callback while the dialog and the
+// fields are still nil, so validating the OK button there panicked and the treasure generation dialog could never be
+// opened.
 func TestTreasureGenPanelWithOutOfRangeValues(t *testing.T) {
 	c := check.New(t)
 
@@ -81,12 +80,11 @@ func newTestLootSheet(t *testing.T) *LootSheet {
 }
 
 // TestLootSheetNewItemCommandUsesTheLiveList verifies that a loot sheet's "New Equipment" command adds its item to the
-// list the user is looking at rather than to whichever list existed when the sheet was created. LootSheet.createLists
-// replaces any list whose columns no longer match what its provider asks for, and a command holding on to the list it
-// was handed at construction would afterwards be creating items in an orphan: the insertion wouldn't be undoable, since
-// an orphaned table can't find the undo manager, and the new row would be neither selected nor scrolled into view in
-// the list that is on screen. Nothing in a loot sheet's data calls for a different set of columns today, so the
-// mismatch that drives the replacement is arranged here directly.
+// list on screen rather than the one that existed when the sheet was created. LootSheet.createLists replaces any list
+// whose columns no longer match what its provider asks for, and a command holding the original list would then create
+// items in an orphan: not undoable, since an orphaned table can't find the undo manager, and neither selected nor
+// scrolled into view on screen. Nothing in a loot sheet's data changes its columns today, so the mismatch is arranged
+// here directly.
 func TestLootSheetNewItemCommandUsesTheLiveList(t *testing.T) {
 	c := check.New(t)
 	sheet := newTestLootSheet(t)

@@ -42,7 +42,7 @@ func (d *DocumentDock) DockKey() string {
 	return DocumentsDockKey
 }
 
-// TitleIcon implements unison.Dockable
+// TitleIcon implements unison.Dockable.
 func (d *DocumentDock) TitleIcon(suggestedSize geom.Size) unison.Drawable {
 	return &unison.DrawableSVG{
 		SVG:  unison.DocumentSVG,
@@ -50,17 +50,17 @@ func (d *DocumentDock) TitleIcon(suggestedSize geom.Size) unison.Drawable {
 	}
 }
 
-// Title implements unison.Dockable
+// Title implements unison.Dockable.
 func (d *DocumentDock) Title() string {
 	return i18n.Text("Document Workspace")
 }
 
-// Tooltip implements unison.Dockable
+// Tooltip implements unison.Dockable.
 func (d *DocumentDock) Tooltip() string {
 	return ""
 }
 
-// Modified implements unison.Dockable
+// Modified implements unison.Dockable.
 func (d *DocumentDock) Modified() bool {
 	return false
 }

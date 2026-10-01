@@ -15,9 +15,8 @@ import (
 	"github.com/richardwilkes/toolbox/v2/geom"
 )
 
-// TestPDFTextPosBefore pins the ordering of selection endpoints. Everything the selection does with its two endpoints
-// -- which of them the range starts at, which pages lie between them, which way a drag ran -- rests on this
-// comparison, and a selection made by dragging backwards through the text is the case that depends on it.
+// TestPDFTextPosBefore pins the ordering of selection endpoints, which everything the selection does with them rests
+// on, a selection dragged backwards through the text most of all.
 func TestPDFTextPosBefore(t *testing.T) {
 	for _, tc := range []struct {
 		name string
@@ -40,10 +39,9 @@ func TestPDFTextPosBefore(t *testing.T) {
 	}
 }
 
-// TestPDFSelectionRangeFor pins what each page contributes to a selection. The interesting part is the middle of a
-// multi-page selection: those pages contribute all of their text, so their length has to be known, and until it is
-// there is no answer -- which tells the drawing and the copy to wait for the extraction rather than treating the page
-// as empty.
+// TestPDFSelectionRangeFor pins what each page contributes to a selection. A page in the middle of a multi-page
+// selection contributes all of its text, so until its length is known there is no answer, which makes drawing and
+// copying wait for the extraction rather than treat the page as empty.
 func TestPDFSelectionRangeFor(t *testing.T) {
 	// A length that is known for every page but the one nobody has extracted yet. The pages are given different
 	// lengths, so a range that came from the wrong page would show up as the wrong number.

@@ -74,7 +74,7 @@ func loadReleasesFrom(t *testing.T, body string) ([]Release, error) {
 }
 
 // The app updater downloads a packaged distribution directly, so an asset's name, URL, size and digest all have to
-// survive the decode; before this, only the source zipball URL did.
+// survive the decode.
 func TestLoadReleasesCapturesAssets(t *testing.T) {
 	c := check.New(t)
 	releases, err := loadReleasesFrom(t, `[{

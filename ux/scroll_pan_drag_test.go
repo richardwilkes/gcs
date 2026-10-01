@@ -51,7 +51,7 @@ func TestScrollPanDragFollowsThePointer(t *testing.T) {
 
 	pan.begin(geom.NewPoint(50, 50))
 	c.True(pan.active)
-	// The pointer moves 20 left and 30 up, so the content scrolls 20 right and 30 down.
+	// The pointer moves 20 left and 30 up, so the view scrolls 20 right and 30 down.
 	pan.drag(geom.NewPoint(30, 20))
 	c.Equal(geom.NewPoint(20, 30), scrollPosition(scroll))
 	c.Equal(geom.NewPoint(-20, -30), content.FrameRect().Point, "the content is repositioned to match")

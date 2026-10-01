@@ -245,12 +245,10 @@ func Activate(matcher func(d unison.Dockable) bool) bool {
 	return false
 }
 
-// activateDockable is Activate for the common case of looking for a dockable of a particular type: it activates the
-// first open dockable whose panel's Self is a T and, when match is not nil, that match accepts. The dockable is reached
-// through its panel's Self, since what the dock hands out may be an inner layer rather than the dockable itself (see
-// resolveDockable), which a direct type assertion would not see. Pass nil to match when the type alone identifies the
-// dockable, as it does for the global settings views; pass a predicate when something else is part of its identity,
-// such as the sheet a per-sheet settings view belongs to.
+// activateDockable is Activate for a dockable of a particular type: it activates the first open dockable whose panel's
+// Self is a T and, when match is not nil, that match accepts, such as the sheet a per-sheet settings view belongs to.
+// Self is used since what the dock hands out may be an inner layer rather than the dockable itself (see
+// resolveDockable), which a direct type assertion would not see.
 func activateDockable[T unison.Paneler](match func(T) bool) bool {
 	return Activate(func(d unison.Dockable) bool {
 		t, ok := d.AsPanel().Self.(T)
@@ -527,13 +525,12 @@ func MoveDockableToWindow(dockable unison.Dockable) (*unison.Window, error) {
 	return placeInWindow(dockable, group)
 }
 
-// resolveDockable returns the outermost implementation of the Dockable, i.e. its panel's Self. The code that places a
-// Dockable is frequently handed an inner layer rather than the Dockable itself -- SettingsDockable.Setup, for example,
-// passes its own embedded SettingsDockable rather than the settings view that contains it -- so the value has to be
-// resolved before it is retained or examined, exactly as unison's dock containers do when a Dockable is docked. Without
-// it, anything that type-asserts a Dockable to a concrete type or probes it for an optional interface would see a
-// different value depending on whether the Dockable ended up in the workspace or in a window of its own. The Dockable
-// is returned unchanged if its Self isn't a Dockable.
+// resolveDockable returns the outermost implementation of the Dockable, i.e. its panel's Self, or the Dockable
+// unchanged if its Self isn't a Dockable. The code that places a Dockable is often handed an inner layer --
+// SettingsDockable.Setup, for example, passes its embedded SettingsDockable, not the settings view containing it -- so
+// it has to be resolved before it is retained or examined, as unison's dock containers do when docking. Otherwise type
+// assertions and optional-interface probes would see a different value depending on whether the Dockable ended up in
+// the workspace or in a window of its own.
 func resolveDockable(dockable unison.Dockable) unison.Dockable {
 	if xreflect.IsNil(dockable) {
 		return dockable
@@ -544,11 +541,9 @@ func resolveDockable(dockable unison.Dockable) unison.Dockable {
 	return dockable
 }
 
-// placeInWindow gives the Dockable a window of its own. A Dockable whose bounds aren't known yet has that window
-// created later, once they are, since packing a window around content that can't yet say how big it is would produce a
-// frame the user would have to fix by hand. Nothing is shown for the Dockable in the meantime, which is why the wait a
-// boundsDeferredDockable permits is a short one. A nil window is returned when the creation was deferred, since there
-// is no window to return yet.
+// placeInWindow gives the Dockable a window of its own. A Dockable whose bounds aren't known yet gets its window once
+// they are (see boundsDeferredDockable), and nil is returned. Nothing is shown for the Dockable in the meantime, which
+// is why the wait a boundsDeferredDockable permits is a short one.
 func placeInWindow(dockable unison.Dockable, group dgroup.Group) (*unison.Window, error) {
 	dockable = resolveDockable(dockable)
 	if deferred, ok := dockable.(boundsDeferredDockable); ok && !deferred.BoundsKnown() {
@@ -652,8 +647,8 @@ func NewWindowForDockable(dockable unison.Dockable, group dgroup.Group) (*unison
 // widenToFitTooltips widens the window, which must already be packed, so that its content is at least as wide as the
 // widest tooltip the panel or its descendants carry. A tooltip wider than the window it is shown in is squeezed into
 // that window's width, and an editor's tooltips are typically wider than the fields they explain, so a window packed
-// around the fields alone, as the ancestry and name generator editors' windows were, would show none of its longer
-// tooltips as written. The window is still clamped onto its display afterwards by placeWindowOver.
+// around the fields alone would show none of its longer tooltips as written. The window is still clamped onto its
+// display afterwards by placeWindowOver.
 func widenToFitTooltips(wnd *unison.Window, panel *unison.Panel) {
 	r := wnd.ContentRect()
 	if width := widestTooltipWidth(panel); r.Width < width {
@@ -703,8 +698,8 @@ func DockContainerForGroup(dock *unison.Dock, group dgroup.Group) *unison.DockCo
 	return found
 }
 
-// DockContainerHoldsExtension returns true if an immediate child of the given DockContainer has a FileBackedDockable
-// with the given extension.
+// DockContainerHoldsExtension returns true if the DockContainer holds a FileBackedDockable whose file has one of the
+// given extensions.
 func DockContainerHoldsExtension(dc *unison.DockContainer, ext ...string) bool {
 	for _, one := range dc.Dockables() {
 		if fbd, ok := one.(FileBackedDockable); ok {

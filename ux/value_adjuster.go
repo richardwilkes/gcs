@@ -79,8 +79,7 @@ func sheetOwning(owner unison.Paneler, entity *gurps.Entity) *Sheet {
 // Sheet.MarkModified recalculates before updating anything, since everything it then touches reads the derived state.
 // A sheet already in the middle of an update pass doesn't count, since MarkModified does nothing at all while
 // awaitingUpdate is set; skipping the recalculation then would drop it rather than defer it, leaving the derived state
-// stale until some unrelated later edit. Reading the flag here is safe: it is only ever set and cleared within
-// MarkModified, which, like everything else here, runs on the UI thread.
+// stale until some unrelated later edit. Reading the flag here is safe, since it is only touched on the UI thread.
 func ownerRecalculates(owner unison.Paneler, entity *gurps.Entity) bool {
 	sheet := sheetOwning(owner, entity)
 	return sheet != nil && !sheet.awaitingUpdate
@@ -104,11 +103,11 @@ func canAdjustSelection[T gurps.Node[T], A any](table *unison.Table[*Node[T]], e
 	return false
 }
 
-// adjustSelection snapshots, mutates, and registers an undoable edit for each selected row that yields an adjustable
-// target via extract. When recalculate is true, the owning entity is recalculated after the change (and on undo/redo).
-// Pass rebuild for a change that alters more of what the owner shows than the rows being adjusted -- which lists are
-// on the page, which columns they hold. The corresponding canAdjustSelection call should use the same extract, so that
-// the enable check and the action never diverge.
+// adjustSelection snapshots and mutates each selected row that yields an adjustable target via extract, registering the
+// whole change as one undoable edit. When recalculate is true, the owning entity is recalculated after the change (and
+// on undo/redo). Pass rebuild for a change that alters more of what the owner shows than the rows being adjusted --
+// which lists are on the page, which columns they hold. The corresponding canAdjustSelection call should use the same
+// extract, so that the enable check and the action never diverge.
 func adjustSelection[T gurps.Node[T], A, V any](undoTitle string, owner Rebuildable, table *unison.Table[*Node[T]],
 	extract func(T) (A, bool), get func(A) V, set func(A, V), mutate func(A), recalculate, rebuild bool,
 ) {
@@ -129,9 +128,9 @@ func adjustSelection[T gurps.Node[T], A, V any](undoTitle string, owner Rebuilda
 	adjustTargets(undoTitle, owner, table, entity, targets, get, set, mutate, rebuild)
 }
 
-// adjustTargets snapshots, mutates, and registers an undoable edit for each of the given targets. undoSource is the
-// panel used to locate the undo manager. When entity is non-nil, it is recalculated after the change (and on
-// undo/redo); when rebuild is true, the owner is rebuilt instead of merely being marked as modified.
+// adjustTargets snapshots and mutates each of the given targets, registering the whole change as one undoable edit.
+// undoSource is the panel used to locate the undo manager. When entity is non-nil, it is recalculated after the change
+// (and on undo/redo); when rebuild is true, the owner is rebuilt instead of merely being marked as modified.
 func adjustTargets[A, V any](undoTitle string, owner Rebuildable, undoSource unison.Paneler, entity *gurps.Entity,
 	targets []A, get func(A) V, set func(A, V), mutate func(A), rebuild bool,
 ) {

@@ -59,8 +59,8 @@ const (
 )
 
 // State is the record shared between the application staging an update, the helper applying it, and the application
-// that comes back afterwards. It is deliberately flat and made only of strings and integers, so a build that predates
-// or postdates any given field can still read the rest of it.
+// that comes back afterwards. It is deliberately flat and made only of scalars, so a build that predates or postdates
+// any given field can still read the rest of it.
 type State struct {
 	Schema      int    `json:"schema"`
 	Status      Status `json:"status"`

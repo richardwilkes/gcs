@@ -128,7 +128,7 @@ func (p *spellsProvider) ExcessWidthColumnID() int {
 	return p.HierarchyColumnID()
 }
 
-// CreateItem adds the alternate variant, a ritual magic spell, to the spell and spell container the shared
+// CreateItem adds the alternate variant, a ritual magic spell, to the item, container and choice container the shared
 // implementation creates.
 func (p *spellsProvider) CreateItem(owner Rebuildable, table *unison.Table[*Node[*gurps.Spell]], variant ItemVariant) {
 	switch variant {

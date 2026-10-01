@@ -328,11 +328,9 @@ func TestTraitEditDataCapturesMigratedReplacements(t *testing.T) {
 }
 
 // TestTraitCloneModifiersBelongToTheClone verifies that duplicating a trait gives the copies of its modifiers to the
-// duplicate. Clone() routed through CopyFrom(), which exists for the editor and therefore points the modifier copies at
-// the trait handed to it -- the trait being cloned. The duplicate's modifiers then resolved their names against the
-// original's replacements and their levels from the original's level, so editing the original dragged the duplicate's
-// modifiers along with it. Sheets and templates hide this by reattaching owners on rebuild, but a traits library file
-// never does.
+// duplicate. Clone() once routed through CopyFrom(), which points the modifier copies at the trait being cloned, so the
+// duplicate's modifiers resolved their names and levels against the original. Sheets and templates hide this by
+// reattaching owners on rebuild, but a traits library file never does.
 func TestTraitCloneModifiersBelongToTheClone(t *testing.T) {
 	c := check.New(t)
 

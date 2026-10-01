@@ -28,16 +28,13 @@ import (
 // connections are slow; the Cancel button, not this, is how an impatient user stops it.
 const stageTimeout = 30 * time.Minute
 
-// progressResolution is how finely the progress bar is subdivided. Every change has to be posted to the UI thread, so
-// the download's byte counter is quantized to this first -- otherwise a fast download floods the task queue with tens
-// of thousands of updates no one could tell apart.
+// progressResolution is how finely the progress bar is subdivided. Download progress is quantized to it so that only
+// visible changes are posted to the UI thread (see throttledProgress).
 const progressResolution = 1000
 
-// pendingUpdate holds an update that has been prepared and is waiting for the application to quit.
-//
-// It is applied from the quitting callback rather than right after the quit is requested, because unison.AttemptQuit
-// does not return when the quit succeeds -- it reaches xos.Exit and the process ends. Code after the call runs only
-// when the quit was refused, so the quitting callback is the one place that can act on a quit that will happen.
+// pendingUpdate holds an update that has been prepared and is waiting for the application to quit. It is applied from
+// the quitting callback, since unison.AttemptQuit does not return when the quit succeeds -- it reaches xos.Exit -- so
+// code after the call runs only when the quit was refused.
 var pendingUpdate struct {
 	state     *updater.State
 	statePath string
@@ -64,10 +61,8 @@ func applyPendingUpdate() {
 }
 
 // InitiateAppUpdate prepares the update described by plan and, once it is verified and ready, asks the application to
-// quit so that it can be applied.
-//
-// Nothing in the installation is touched here. Everything this does happens inside a staging directory, so canceling,
-// failing, or refusing the quit all leave the running application exactly as it was.
+// quit so that it can be applied. The work happens in a staging directory, so canceling, failing or a refused quit
+// leaves the installation untouched.
 func InitiateAppUpdate(plan *updater.Plan) {
 	pendingUpdate.lock.Lock()
 	if pendingUpdate.applying {
@@ -129,10 +124,7 @@ func stageAppUpdate(plan *updater.Plan) (*updater.Staged, bool) {
 		return nil, false
 	}
 
-	// The channel must be buffered, and the result read only after RunModal has returned. The background goroutine
-	// sends before it asks for the modal loop to stop, and the UI thread is inside RunModal until then, so nothing is
-	// there to receive at the moment of the send. Reading a shared variable instead would let a failed preparation be
-	// observed as a success.
+	// The channel must be buffered and read only after RunModal returns (see runInBackground).
 	resultChan := make(chan stageResult, 1)
 	runInBackground(resultChan,
 		func() stageResult {
@@ -162,9 +154,8 @@ type stageResult struct {
 	err    error
 }
 
-// throttledProgress returns a progress reporter that only posts to the UI thread when the bar would actually move.
-// Without this, a download posts a task per read, flooding the queue and making the window less responsive the faster
-// the download goes.
+// throttledProgress returns a progress reporter that posts to the UI thread only when the bar would actually move,
+// rather than once per read, which would flood the task queue during a fast download.
 func throttledProgress(bar *unison.ProgressBar) func(float64) {
 	last := -1
 	return func(fraction float64) {

@@ -45,9 +45,8 @@ func TestMarkdownHardLineBreaks(t *testing.T) {
 	}
 }
 
-// TestMarkdownHardLineBreaksRendering reproduces the conditional modifiers amount column tooltip bug: without the fix,
-// the newline-separated bonuses collapse onto a single line because the Markdown renderer treats a single newline as a
-// soft break. After the fix, each bonus renders on its own line.
+// TestMarkdownHardLineBreaksRendering reproduces the conditional modifiers amount column tooltip bug: the Markdown
+// renderer treats a single newline as a soft break, so unconverted newline-separated bonuses collapse onto one line.
 func TestMarkdownHardLineBreaksRendering(t *testing.T) {
 	c := check.New(t)
 	tooltip := "+2 Beauty\n+3 Charisma\n+1 Voice"

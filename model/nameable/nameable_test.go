@@ -125,9 +125,8 @@ func TestApplyToListRetainsMalformedReplacementKeyWithoutAffectingOthers(t *test
 
 func TestApplyToListResolvesSameMarkerAcrossMultipleEntries(t *testing.T) {
 	c := check.New(t)
-	// ApplyToList extracts its full marker set from every entry in the list up front, so a marker resolved via one
-	// entry's key must still resolve correctly when it recurs in another entry, and an entry with no markers at all
-	// must pass through untouched.
+	// A marker resolved in one entry must still resolve correctly when it recurs in another entry, and an entry with no
+	// markers at all must pass through untouched.
 	m := map[string]string{"Element|Fire|Water": "Fire"}
 	got := nameable.ApplyToList([]string{
 		"A @Element|Fire|Water@ spell",
@@ -162,12 +161,12 @@ func TestReduceOmitsUnsetReplacements(t *testing.T) {
 
 func TestNormalizeRewritesUnnormalizedReplacementKey(t *testing.T) {
 	c := check.New(t)
-	// A replacements map loaded from an old file may be keyed on an unnormalized ordering of a current-format
-	// marker's segments, while nameables (as produced by Extract) is always keyed on the normalized form. Normalize
-	// must rewrite the value to live under the normalized key -- not the raw key -- or the entry would silently fail
-	// to resolve later, since Reduce/Missing/Apply/ApplyToList all expect replacements to already be normalized and
-	// no longer do that normalization themselves. (Legacy markers are exempt from this: their key is always their
-	// raw text, unchanged -- see TestKeyLegacyLabeledMarkerKeepsRawKey.)
+	// A replacements map loaded from an old file may be keyed on an unnormalized ordering of a current-format marker's
+	// segments, while nameables (as produced by Extract) is always keyed on the normalized form. Normalize must rewrite
+	// the value to live under the normalized key -- not the raw key -- or the entry would silently fail to resolve
+	// later, since Reduce/Missing/Apply/ApplyToList all expect replacements to be normalized already. (Legacy markers
+	// are exempt from this: their key is always their raw text, unchanged -- see
+	// TestKeyLegacyLabeledMarkerKeepsRawKey.)
 	const raw = "Element|?|Fire|Water"
 	marker, ok := nameable.NewMarker(raw)
 	c.True(ok)

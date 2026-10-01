@@ -27,9 +27,9 @@ import (
 	"github.com/richardwilkes/toolbox/v2/tid"
 )
 
-// TestTemplatePickerLoadsUnknownTypeAsNotApplicable verifies what lets the rest of the code read a picker's type
-// without checking it first: a type this version doesn't know, as a newer or hand-edited file might hold, loads as
-// NotApplicable, leaving the container with no picker at all rather than one with a type nothing can handle.
+// TestTemplatePickerLoadsUnknownTypeAsNotApplicable verifies that a picker type this version doesn't know, as a newer
+// or hand-edited file might hold, loads as NotApplicable, leaving no picker at all rather than one with a type nothing
+// can handle. This is what lets the rest of the code read a picker's type without checking it first.
 func TestTemplatePickerLoadsUnknownTypeAsNotApplicable(t *testing.T) {
 	c := check.New(t)
 	var tp TemplatePicker
@@ -38,7 +38,6 @@ func TestTemplatePickerLoadsUnknownTypeAsNotApplicable(t *testing.T) {
 	c.True(tp.IsZero())
 }
 
-// TestHasTemplatePickerData verifies that a node carrying template choices is spotted
 func TestHasTemplatePickerData(t *testing.T) {
 	c := check.New(t)
 	plain := NewTrait(nil, nil, false)
@@ -64,8 +63,8 @@ func TestHasTemplatePickerData(t *testing.T) {
 	c.True(HasTemplatePickerData(skillContainer), "skills carry choices too")
 }
 
-// TestClearTemplatePickerData verifies that the choices are removed from every container beneath the rows as well, since
-// a copied container brings its whole subtree with it.
+// TestClearTemplatePickerData verifies that the choices are removed from every container beneath the rows as well,
+// since a copied container brings its whole subtree with it.
 func TestClearTemplatePickerData(t *testing.T) {
 	c := check.New(t)
 	outer := NewTrait(nil, nil, true)
@@ -74,22 +73,18 @@ func TestClearTemplatePickerData(t *testing.T) {
 	inner.SetParent(outer)
 	outer.Children = []*Trait{inner}
 
-	// Verify the test data has picker data
 	c.True(HasTemplatePickerData(outer))
 
-	// Clear any template picker data
 	ClearTemplatePickerData(outer)
 
-	// Verify the test data no longer carries picker data
 	c.False(HasTemplatePickerData(outer), "no picker data may be left")
 
-	// Verify we still have the same data otherwise (this could use more checks)
 	c.Equal(2, len(inner.Children), "clearing must not disturb anything else")
 }
 
 // TestClearTemplatePickerDataClearsSource verifies that a container losing its choices also loses its source, while
-// the rest of the subtree keeps theirs. Only a template may hold choices and a template is never a source, so the source
-// a container with choices points at can't have them, and syncing with it would quietly take them away.
+// the rest of the subtree keeps theirs. Only a template may hold choices and a template is never a source, so the
+// source a container with choices points at can't have them, and syncing with it would quietly take them away.
 func TestClearTemplatePickerDataClearsSource(t *testing.T) {
 	c := check.New(t)
 	outer := NewTrait(nil, nil, true)

@@ -39,7 +39,7 @@ import (
 	"github.com/richardwilkes/unison/enums/check"
 )
 
-// PathToLog is set by the main entry point to whatever is being used for the path to the log file.
+// PathToLog is the path to the log file, set by the main entry point.
 var PathToLog string
 
 var languageSetting string

@@ -49,7 +49,7 @@ func ParseWeaponAccuracy(s string) WeaponAccuracy {
 	return wa
 }
 
-// IsZero implements json.isZero.
+// IsZero reports whether json's omitzero option should omit this value.
 func (wa WeaponAccuracy) IsZero() bool {
 	return wa == WeaponAccuracy{}
 }

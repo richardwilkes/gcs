@@ -27,13 +27,12 @@ import (
 	"github.com/richardwilkes/unison/enums/role"
 )
 
-// TestEveryControlHasAnAccessibleName opens every kind of view the application has -- the sheet, each editor seeded
-// with every kind of feature and prerequisite, the settings views, the calculators, the libraries and the file editors
-// -- and asks for the description an assistive technology would be handed of each, failing for every control in them
-// that would be announced with no name. A field, popup or color well is named by the label laid out before it, by the
-// label it points at with Accessibility.LabeledBy, or by an Accessibility.Name of its own; an icon-only button by its
-// tooltip. A control with none of those is announced as "edit text" or "pop up button" and nothing more, which leaves a
-// screen reader user guessing at what they are about to change.
+// TestEveryControlHasAnAccessibleName opens the sheet, each editor seeded with every kind of feature and prerequisite,
+// the settings views, the calculators, and representative libraries and file editors, and fails for every control in
+// them that an assistive technology would be handed with no name. A field, popup or color well is named by the label
+// laid out before it, by the label it points at with Accessibility.LabeledBy, or by an Accessibility.Name of its own;
+// an icon-only button by its tooltip. A control with none of those is announced as "edit text" or "pop up button" and
+// nothing more.
 //
 // The tree is walked rather than the panels, so that what a table describes without a panel apiece -- its column
 // headers and the cells of its rows -- is checked along with everything else.

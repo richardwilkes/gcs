@@ -47,7 +47,7 @@ var NumericComparisons = []NumericComparison{
 // NumericComparison holds the type for a numeric comparison.
 type NumericComparison byte
 
-// EnsureValid ensures this is of a known value.
+// EnsureValid returns this value if it is valid and DefaultNumericComparison otherwise.
 func (enum NumericComparison) EnsureValid() NumericComparison {
 	if enum >= FirstNumericComparison && enum <= LastNumericComparison {
 		return enum
@@ -109,18 +109,19 @@ func (enum NumericComparison) AltString() string {
 	}
 }
 
-// MarshalText implements the encoding.TextMarshaler interface.
+// MarshalText implements encoding.TextMarshaler.
 func (enum NumericComparison) MarshalText() (text []byte, err error) {
 	return []byte(enum.Key()), nil
 }
 
-// UnmarshalText implements the encoding.TextUnmarshaler interface.
+// UnmarshalText implements encoding.TextUnmarshaler.
 func (enum *NumericComparison) UnmarshalText(text []byte) error {
 	*enum = ExtractNumericComparison(string(text))
 	return nil
 }
 
-// ExtractNumericComparison extracts the value from a string.
+// ExtractNumericComparison returns the value whose key matches str, ignoring case, or DefaultNumericComparison if none
+// does.
 func ExtractNumericComparison(str string) NumericComparison {
 	for _, enum := range NumericComparisons {
 		if strings.EqualFold(enum.Key(), str) {
@@ -130,10 +131,8 @@ func ExtractNumericComparison(str string) NumericComparison {
 	return DefaultNumericComparison
 }
 
-// ExtractKnownNumericComparison extracts the value from a string, reporting whether the string was actually recognized.
-//
-// Unlike ExtractNumericComparison, which quietly maps anything it doesn't recognize onto the default value, this
-// permits a caller that is dispatching on the type to detect unknown types.
+// ExtractKnownNumericComparison is like ExtractNumericComparison, but also reports whether str was recognized, so a
+// caller can tell an unknown key from the default.
 func ExtractKnownNumericComparison(str string) (value NumericComparison, known bool) {
 	for _, enum := range NumericComparisons {
 		if strings.EqualFold(enum.Key(), str) {

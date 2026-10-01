@@ -41,7 +41,7 @@ var Units = []Unit{
 // Unit holds the real-world length unit type.
 type Unit byte
 
-// EnsureValid ensures this is of a known value.
+// EnsureValid returns this value if it is valid and DefaultUnit otherwise.
 func (enum Unit) EnsureValid() Unit {
 	if enum >= FirstUnit && enum <= LastUnit {
 		return enum
@@ -77,18 +77,18 @@ func (enum Unit) String() string {
 	}
 }
 
-// MarshalText implements the encoding.TextMarshaler interface.
+// MarshalText implements encoding.TextMarshaler.
 func (enum Unit) MarshalText() (text []byte, err error) {
 	return []byte(enum.Key()), nil
 }
 
-// UnmarshalText implements the encoding.TextUnmarshaler interface.
+// UnmarshalText implements encoding.TextUnmarshaler.
 func (enum *Unit) UnmarshalText(text []byte) error {
 	*enum = ExtractUnit(string(text))
 	return nil
 }
 
-// ExtractUnit extracts the value from a string.
+// ExtractUnit returns the value whose key matches str, ignoring case, or DefaultUnit if none does.
 func ExtractUnit(str string) Unit {
 	for _, enum := range Units {
 		if strings.EqualFold(enum.Key(), str) {
@@ -98,10 +98,8 @@ func ExtractUnit(str string) Unit {
 	return DefaultUnit
 }
 
-// ExtractKnownUnit extracts the value from a string, reporting whether the string was actually recognized.
-//
-// Unlike ExtractUnit, which quietly maps anything it doesn't recognize onto the default value, this permits a caller
-// that is dispatching on the type to detect unknown types.
+// ExtractKnownUnit is like ExtractUnit, but also reports whether str was recognized, so a caller can tell an unknown
+// key from the default.
 func ExtractKnownUnit(str string) (value Unit, known bool) {
 	for _, enum := range Units {
 		if strings.EqualFold(enum.Key(), str) {

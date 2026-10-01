@@ -24,9 +24,8 @@ import (
 // rounding in the cosine easing.
 const pulseTolerance = 0.0001
 
-// TestPulseFractionEndpoints verifies the shape of one pulse cycle: it starts dark, reaches full brightness halfway
-// through, and is back where it started at the end, so that repeating it produces a smooth throb rather than a sawtooth
-// that snaps back.
+// TestPulseFractionEndpoints verifies that a cycle rises from 0 to 1 at its midpoint and is back at 0 at its end, so
+// that repeating it throbs smoothly rather than snapping back like a sawtooth.
 func TestPulseFractionEndpoints(t *testing.T) {
 	c := check.New(t)
 	period := appUpdatePulsePeriod
@@ -48,8 +47,8 @@ func TestPulseFractionEndpoints(t *testing.T) {
 	}
 }
 
-// TestPulseFractionStaysInRange verifies that a sweep across several cycles never produces a value outside [0,1], since
-// the fraction is fed to a color blend that would otherwise be clamped and stall the pulse at an end of its travel.
+// TestPulseFractionStaysInRange guards the color blend, which would clamp a value outside [0,1] and stall the pulse at
+// an end of its travel.
 func TestPulseFractionStaysInRange(t *testing.T) {
 	c := check.New(t)
 	period := appUpdatePulsePeriod
@@ -67,8 +66,6 @@ func TestPulseFractionWithoutPeriod(t *testing.T) {
 	c.Equal(float32(0), pulseFraction(time.Second, -time.Second), "a negative period must not pulse")
 }
 
-// TestShowAppUpdateButton verifies when the "Software Update Available" button is revealed. Most importantly, with the
-// setting at Never it is never shown, even for an update already known from an earlier or manual check.
 func TestShowAppUpdateButton(t *testing.T) {
 	c := check.New(t)
 	releases := []library.Release{{Version: "5.99.0"}}
@@ -113,9 +110,7 @@ func (r *pulseRecorder) fireAll() {
 }
 
 // TestAppUpdatePulseScheduling verifies that the pulse keeps exactly one tick in flight while running and none once
-// stopped. A scheduled tick can't be canceled, so a leftover tick arriving after a stop must do nothing: without the
-// generation check it would resume the pulse and repaint a button that is no longer visible, and a second start()
-// while running would leave two self-perpetuating tick chains behind.
+// stopped. Scheduled ticks can't be canceled, so a leftover tick arriving after a stop must do nothing.
 func TestAppUpdatePulseScheduling(t *testing.T) {
 	c := check.New(t)
 	var recorder pulseRecorder
@@ -147,11 +142,8 @@ func TestAppUpdatePulseScheduling(t *testing.T) {
 	c.Equal(1, len(recorder.pending), "a stopped pulse must be able to start again for the same release")
 }
 
-// TestAppUpdatePulseSettlesAndRestartsOnlyForANewRelease verifies that the pulse gives up after appUpdatePulseDuration,
-// leaving the button at rest, and that the syncs which follow every later check don't set it going again for the
-// release it has already announced. Without the limit the toolbar was repainted twenty times a second for the rest of
-// any session in which the user chose to update later; without the memory of the release, the next hourly check would
-// have started the two minutes over.
+// TestAppUpdatePulseSettlesAndRestartsOnlyForANewRelease verifies that the pulse settles after appUpdatePulseDuration
+// and that the syncs following later checks don't restart it for the release it has already announced.
 func TestAppUpdatePulseSettlesAndRestartsOnlyForANewRelease(t *testing.T) {
 	c := check.New(t)
 	var recorder pulseRecorder
@@ -213,9 +205,7 @@ func seedAppUpdate(t *testing.T, releases []library.Release) {
 }
 
 // TestSyncAppUpdateButtonAddsAndRemovesIt verifies that the update button is a child of the toolbar row only while
-// there is an update to announce, and is added just once however many syncs say so. It used to sit in the row hidden
-// and reporting no size, but the row's flow layout adds its spacing after every child regardless of size, so even a
-// hidden button left a gap.
+// there is an update to announce, and is added just once however many syncs say so. A hidden child would leave a gap.
 func TestSyncAppUpdateButtonAddsAndRemovesIt(t *testing.T) {
 	c := check.New(t)
 	gs, _ := prepareUpdateCheckSettings(t)

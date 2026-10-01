@@ -64,9 +64,7 @@ func TestTemplateReplacesAListWhoseColumnsChanged(t *testing.T) {
 	c.Equal(0, template.Equipment.Table.RootRowCount(), "undo must take the row back out of the list on screen")
 }
 
-// The template used to note which list the focus was in and put it back by hand; the rebuild's ordinary focus
-// restoration finds the replacement table by the reference key it shares with the one it replaced, so that is no
-// longer needed.
+// The rebuild's ordinary focus restoration finds the replacement table by the reference key it shares with the old one.
 func TestTemplateRebuildKeepsTheFocusInAReplacedList(t *testing.T) {
 	c := check.New(t)
 	screen, wnd := startHeadlessWorkspace(t, c)

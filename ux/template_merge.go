@@ -136,8 +136,8 @@ func isChoiceOption[T gurps.Node[T]](node T) bool {
 }
 
 // mergeIncoming folds the points of the incoming rows into identical skill or spell rows already present in the table
-// (see mergePoints), returning the incoming rows that survived, and adding the rows that absorbed points to selMap. Rows
-// of any other type are returned untouched.
+// (see mergePoints), returning the incoming rows that survived, and adding the rows that absorbed points to selMap.
+// Rows of any other type are returned untouched.
 func mergeIncoming[T gurps.Node[T]](table *unison.Table[*Node[T]], incoming []T, selMap map[tid.TID]bool) []T {
 	switch t := any(table).(type) {
 	case *unison.Table[*Node[*gurps.Skill]]:

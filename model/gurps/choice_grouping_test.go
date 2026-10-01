@@ -180,14 +180,12 @@ func traitNames(traits []*Trait) []string {
 	return names
 }
 
-// newCostedTrait returns a trait costing the points.
 func newCostedTrait(points int) *Trait {
 	trait := NewTrait(nil, nil, false)
 	trait.BasePoints = fxp.FromInteger(points)
 	return trait
 }
 
-// addOptions puts the options into the choice.
 func addOptions[T Node[T]](choice T, options ...T) T {
 	choice.SetChildren(append(choice.NodeChildren(), options...))
 	for _, one := range options {

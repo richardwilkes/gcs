@@ -65,7 +65,6 @@ func TestNewTraitsFromFileAttachesContainerModifiers(t *testing.T) {
 		"the child's modifier resolves the child's replacements")
 }
 
-// TestLoadRowsRejectsFutureVersion verifies that the shared loader still refuses a list written by a newer release.
 func TestLoadRowsRejectsFutureVersion(t *testing.T) {
 	c := check.New(t)
 	dir := t.TempDir()
@@ -138,7 +137,6 @@ func TestFixupLegacyTIDKeepsValidIDs(t *testing.T) {
 	c.True(tid.IsKind(id, kinds.Skill), "no suffix selects the plain kind")
 }
 
-// TestSharedCellAndHeaderData verifies the cell and header helpers shared by every node type.
 func TestSharedCellAndHeaderData(t *testing.T) {
 	c := check.New(t)
 
@@ -211,8 +209,6 @@ func TestSharedCellAndHeaderData(t *testing.T) {
 	c.NotContains(data.Tooltip, "\n", "custom data has no source details to show")
 }
 
-// TestClonePtr verifies the generic pointer copy used for the optional tech level, technique limit modifier and
-// recorded default: nil stays nil, and a value is copied to a distinct object.
 func TestClonePtr(t *testing.T) {
 	c := check.New(t)
 	c.Nil(clonePtr[string](nil), "nil clones to nil")

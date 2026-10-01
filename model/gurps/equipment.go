@@ -727,7 +727,7 @@ func (e *Equipment) CurrentLevel() fxp.Int {
 	return 0
 }
 
-// SecondaryText returns the "secondary" text: the text display below the description.
+// SecondaryText returns the "secondary" text: the text displayed below the description.
 func (e *Equipment) SecondaryText(optionChecker func(display.Option) bool) string {
 	var buffer strings.Builder
 	settings := SheetSettingsFor(EntityFromNode(e))
@@ -1003,10 +1003,10 @@ func containedWeightReductionFor(equipment *Equipment, defUnits fxp.WeightUnit, 
 }
 
 // ResolvedMaxUses returns the MaxUses adjusted by any applicable EquipmentMaxUsesBonus features, clamped to the range
-// [0, MaxEquipmentMaxUses]. "This equipment" bonuses attached to this item or its enabled modifiers are always applied;
-// "equipment whose name" bonuses are gathered from the owning entity, if there is one. A MaxUses of zero means the
-// item has no maximum, and it stays that way no matter what bonuses match it, since bonuses adjust an existing cap
-// rather than impose one.
+// [0, MaxEquipmentMaxUses]. "This equipment" bonuses on this item or its enabled modifiers apply whether or not it is
+// equipped, subject to its switch; "equipment whose name" bonuses are gathered from the owning entity, if there is one.
+// A MaxUses of zero means the item has no maximum, and it stays that way no matter what bonuses match it, since bonuses
+// adjust an existing cap rather than impose one.
 func (e *Equipment) ResolvedMaxUses() int {
 	// The level driving a per-level bonus comes from the item the bonus is attached to, even when the bonus is on one
 	// of its modifiers, matching how Entity.processFeatures assigns the leveled owner for equipment features.
@@ -1032,9 +1032,8 @@ func (e *Equipment) ResolvedUses() int {
 	return e.Uses
 }
 
-// AdjustUsesToResolvedMax caps the stored Uses at the ResolvedMaxUses value, bringing a Uses value that a feature has
-// pushed above the maximum back into range. This mutates the stored value and is intended to be called just before
-// saving.
+// AdjustUsesToResolvedMax caps the stored Uses at ResolvedMaxUses. It mutates the stored value and is intended to be
+// called just before saving.
 func (e *Equipment) AdjustUsesToResolvedMax() {
 	if maxUses := e.ResolvedMaxUses(); e.Uses > maxUses {
 		e.Uses = maxUses
@@ -1117,7 +1116,7 @@ func (e *Equipment) DisplayLegalityClass() string {
 	}
 }
 
-// ActiveModifierFor returns the first modifier that matches the name (case-insensitive).
+// ActiveModifierFor returns the first enabled, non-container modifier whose name matches (case-insensitive).
 func (e *Equipment) ActiveModifierFor(name string) *EquipmentModifier {
 	return activeModifierFor(e.Modifiers, name)
 }
@@ -1297,7 +1296,7 @@ func (e *EquipmentSyncData) hash(h hash.Hash) {
 	xhash.Bool(h, e.WeightIgnoredForSkills)
 }
 
-// CopyFrom implements node.EditorData.
+// CopyFrom implements EditorData.
 func (e *EquipmentEditData) CopyFrom(other *Equipment) {
 	e.copyFrom(other, &other.EquipmentEditData, false, Copy)
 }
@@ -1307,7 +1306,7 @@ func (e *EquipmentEditData) SetNameableReplacements(replacements map[string]stri
 	e.Replacements = replacements
 }
 
-// ApplyTo implements node.EditorData.
+// ApplyTo implements EditorData.
 func (e *EquipmentEditData) ApplyTo(other *Equipment) {
 	other.copyFrom(other, e, true, Copy)
 }
@@ -1357,7 +1356,7 @@ func (e *Equipment) SetModifiers(mods []*EquipmentModifier) {
 	e.Modifiers = mods
 }
 
-// AddModifiers adds a modifier to the list
+// AddModifiers adds the modifiers to the list
 func (e *Equipment) AddModifiers(mods ...*EquipmentModifier) {
 	AttachModifiers(e, mods)
 	e.Modifiers = append(e.Modifiers, mods...)

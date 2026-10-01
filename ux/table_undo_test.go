@@ -423,8 +423,8 @@ func TestUndoSpanningSeveralListsRestoresTheSelectionOfEachOne(t *testing.T) {
 }
 
 // TestSyncWithAllSourcesIsOneUndoableEditOnEveryDocumentKind verifies that each kind of document offering "Sync With
-// All Sources" -- character sheet, template and loot sheet -- records the sync as a single undoable edit with its own
-// undo manager and reports it by marking the document as modified, now that all three share one implementation.
+// All Sources" -- character sheet, template and loot sheet -- records the sync as a single undoable edit in its own
+// undo manager.
 func TestSyncWithAllSourcesIsOneUndoableEditOnEveryDocumentKind(t *testing.T) {
 	sheet := newTestSheetForTemplate(t)
 	template := newTestTemplateDockable("Sync", gurps.NewTemplate())

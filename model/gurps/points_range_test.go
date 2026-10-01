@@ -239,7 +239,7 @@ func TestPointsRangeForCountPicker(t *testing.T) {
 		},
 
 		// Pick at least 2 of [10, -5, -20]: two must be taken, so the high end cannot be the advantage alone -- the
-		// cheaper of the two disadvantages comes along with it.
+		// costlier of the two disadvantages comes along with it.
 		{
 			"a minimum count drags a disadvantage into the costliest selection when there are too few advantages",
 			criteria.AtLeastNumber, 2,
@@ -280,7 +280,7 @@ func TestPointsRangeForCountPicker(t *testing.T) {
 			-5, 60, false,
 		},
 
-		// Pick at most 2 of [5, 10, -20]: the cap is above what either end wants to take, so it binds neither.
+		// Pick at most 2 of [5, 10, -20]: the cap allows all that either end wants to take, so it binds neither.
 		{
 			"a maximum count allowing more than is worth taking binds neither end",
 			criteria.AtMostNumber, 2,
@@ -308,7 +308,7 @@ func TestPointsRangeForCountPicker(t *testing.T) {
 			-45, 70, false,
 		},
 
-		// Pick exactly 2 of [40, 20, 10, -5, -10, -30]: the 2 costliest disadvantages, or the 2 costliest advantages,
+		// Pick exactly 2 of [40, 20, 10, -5, -10, -30]: the 2 cheapest disadvantages, or the 2 costliest advantages,
 		// with the other 4 children untouched at either end.
 		{
 			"an exact count far short of the child count takes only the extremes",
@@ -404,9 +404,9 @@ func TestPointsRangeForCountPicker(t *testing.T) {
 }
 
 // TestPointsRangeForPointsPicker verifies the range of a container that asks for an amount of points to be picked. A
-// points picker measures the very quantity it constrains, so the qualifier bounds the container's total directly:
-// the qualifier binds the end it names, taking nothing bounds the other, and the end the picker names no limit for
-// stays open however much the children could have accounted for.
+// points picker measures the very quantity it constrains, so the qualifier bounds the container's total directly: it
+// binds the end it names, and the other end is bounded by taking nothing when it faces nothing, or stays open however
+// much the children could have accounted for when it faces away.
 //
 // Which side of nothing the children sit on is what decides whether the qualifier binds at all, so the groups below
 // are the three answers to that -- advantages, disadvantages, and both at once. Nothing here assumes the amount a
@@ -446,9 +446,8 @@ func TestPointsRangeForPointsPicker(t *testing.T) {
 		},
 
 		// Pick at most 20 points from children that carry none: children that can only cost nothing take no side,
-		// and a picker with no side to take is worth nothing rather than what its qualifier names. Nothing on offer
-		// can be spent, so the cap bounds an end nothing reaches toward. Every comparison reaches the same place over
-		// such children -- the "at least" case below included.
+		// and a picker with no side to take is worth nothing rather than what its qualifier names. Every comparison
+		// but an exact one reaches the same place over such children -- the "at least" case below included.
 		{
 			"a maximum points picker over children carrying no points costs nothing",
 			criteria.AtMostNumber, 20,
@@ -501,8 +500,7 @@ func TestPointsRangeForPointsPicker(t *testing.T) {
 	})
 
 	// Pick at least 100 points from children whose own costs only add up to 50: those costs set no ceiling on what the
-	// container is worth, since the points of a skill or spell picked from it may be assigned while picking. This is the
-	// shape of 13 of the 23 "at least" pickers in the master library, whose children carry no points at all.
+	// container is worth, since the points of a skill or spell picked from it may be assigned while picking.
 	noCeiling := newPickerRange(
 		picker.Points, criteria.AtLeastNumber,
 		100,
@@ -514,9 +512,9 @@ func TestPointsRangeForPointsPicker(t *testing.T) {
 	c.False(noCeiling.IsSettled(), "a cost with no upper limit is never settled")
 	c.Equal("100+", noCeiling.String(), "it renders as its minimum and a plus")
 
-	// A container of 0-point skills is the other common form of that picker, and it parts ways with the case above:
-	// children that can only cost nothing leave the picker no side to take, so the qualifier binds neither end and
-	// the container is worth nothing until those children carry points of their own.
+	// A container of 0-point skills parts ways with the case above: children that can only cost nothing leave the
+	// picker no side to take, so the qualifier binds neither end and the container is worth nothing until those
+	// children carry points of their own.
 	skills := NewSkill(nil, nil, true)
 	skills.TemplatePicker.Type = picker.Points
 	skills.TemplatePicker.Qualifier.Compare = criteria.AtLeastNumber
@@ -571,8 +569,8 @@ func TestPointsRangeForPointsPicker(t *testing.T) {
 
 	// The comparisons that name no floor leave none, the mirror of the ceilings above.
 	checkOpenRangeCases(c, picker.Points, []openRangeCase{
-		// Pick at most -20 points from [-10, -20, -40]: the -20 alone is the least that still satisfies the cap, and
-		// taking nothing would not, so the cap is what bounds the high end, not 0.
+		// Pick at most -20 points from [-10, -20, -40]: the -20 alone is the costliest pick that still satisfies the
+		// cap, and taking nothing would not, so the cap is what bounds the high end, not 0.
 		{
 			"a maximum points picker asking for disadvantages is bounded by its cap, not by zero",
 			criteria.AtMostNumber, -20,
@@ -711,8 +709,7 @@ func TestPointsRangeForPointsPicker(t *testing.T) {
 // one end, or at neither. A points picker asks for an amount without saying how much beyond it may be spent, so a
 // minimum over advantages leaves its upper end open and a maximum over disadvantages leaves its lower end open --
 // those are the halves. A count picker inherits whichever ends the children it offers leave open, so presenting both
-// halves at once is the only way to reach a range with no limit at either end. When an item node gains a range of
-// its own, it takes the place of these inner containers and nothing else here changes.
+// halves at once is the only way to reach a range with no limit at either end.
 func TestPointsRangeForPickerWithOpenEnds(t *testing.T) {
 	c := check.New(t)
 
@@ -789,7 +786,7 @@ func TestPointsRangeForPickerWithOpenEnds(t *testing.T) {
 		},
 
 		// Paired with a settled child, the open end stays open and the other end is whatever the two reach. Picking
-		// 1 of [16+, 20] costs at least 16, since that is the cheaper of the two to start from.
+		// 1 of [1+, 20] costs at least 1, since that is the cheaper of the two to start from.
 		{
 			"a child with no upper limit leaves the picker that offers it without one",
 			criteria.EqualsNumber, 1,
@@ -829,8 +826,7 @@ func TestPointsRangeForPickerWithOpenEnds(t *testing.T) {
 
 		// An open end says nothing about where the other one sits, so each open end is checked against a limit
 		// below nothing, at nothing, and above it. Taking nothing is always an option under a maximum or
-		// unconstrained count, which is what puts a limit at exactly 0: no picker reaches that on its own, since its
-		// qualifier only opens an end it passes, and 0 is passed by every end.
+		// unconstrained count, which is what puts a limit at exactly 0.
 
 		// No upper limit, with the lower one below nothing, at nothing, and above it.
 		{
@@ -996,10 +992,9 @@ func TestPointsRangeForPickerWithOpenEnds(t *testing.T) {
 	})
 }
 
-// TestPointsRangeForExactPointsPickerDirectly verifies the one branch of rangeForPickerByMeasure that no
-// container reaches: an exact points picker is settled at its qualifier by settledPickerCost, which every PointsRange
-// consults before walking any children, so nothing that arrives here carries that comparison. The branch has to
-// answer anyway, and has to answer the same thing the short circuit does, since a change to either could make it the
+// TestPointsRangeForExactPointsPickerDirectly verifies the exact branch of rangeForPickerByMeasure, which no points
+// picker reaches: settledPickerCost settles an exact points picker at its qualifier before any PointsRange walks the
+// children. The branch has to answer the same thing the short circuit does, since a change to either could make it the
 // one that runs.
 func TestPointsRangeForExactPointsPickerDirectly(t *testing.T) {
 	c := check.New(t)
@@ -1670,8 +1665,8 @@ func checkOpenRangeCases(c check.Checker, pt picker.Type, cases []openRangeCase)
 }
 
 // newNestedPickerRange returns the range of a count picker presenting the given containers as the choices it offers.
-// A container is the only thing that produces a range of its own today -- no item node does yet -- so nesting one
-// inside a picker is the only way to reach a range that is open at an end, or at both.
+// No item node produces a range open at an end, so nesting a container inside a count picker is the only way for it to
+// reach one, or one open at both ends.
 func newNestedPickerRange(compare criteria.NumericComparison, qualifier int, inner ...*Trait) NumericRange {
 	outer := NewTrait(nil, nil, true)
 	outer.TemplatePicker.Type = picker.Count

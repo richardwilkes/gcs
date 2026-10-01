@@ -495,7 +495,7 @@ func SyncWithSourceForSelection[T gurps.Node[T]](table *unison.Table[*Node[T]]) 
 
 // applyToSelectedRows applies the given change to the data behind each of the selected rows as a single undoable edit
 // with the given title, then reports the change by rebuilding the table's owner. Nothing is done when the table has no
-// selection or is showing search results (see HasSelectionAndNotFiltered).
+// selection or is filtered (see HasSelectionAndNotFiltered).
 func applyToSelectedRows[T gurps.Node[T]](table *unison.Table[*Node[T]], undoTitle string, apply func(T)) {
 	if !HasSelectionAndNotFiltered(table) {
 		return
@@ -535,12 +535,10 @@ func copyRowsTo[T gurps.Node[T]](table *unison.Table[*Node[T]], rows []*Node[T],
 	table.SetSelectionMap(selMap)
 	if postProcessor != nil {
 		postProcessor(rows)
-		// The post-processing can put a prompt in front of the user, and answering one rebuilds the owner, which can
-		// replace the table: only enabled modifiers count toward a row having switchable features, so toggling one can
-		// add or take away the switch column, and a list can only change its columns by building a new table. That
-		// leaves the table we were handed orphaned, with no Rebuildable above it, so the scroll below would aim at a
-		// detached table and the closing rebuild would be skipped entirely. The selection needs no restoring, since
-		// the rebuild that produced the replacement records it and puts it back by row ID.
+		// Answering a prompt the post-processing raises rebuilds the owner, which can replace the table: toggling a
+		// modifier can add or remove the switch column, and only a new table can change its columns. The orphaned table
+		// has no Rebuildable above it, so the scroll below would miss and the closing rebuild would be skipped. The
+		// selection needs no restoring, since the rebuild records it and puts it back by row ID.
 		table = liveTable(table)
 	}
 	table.ScrollRowCellIntoView(table.LastSelectedRowIndex(), 0)

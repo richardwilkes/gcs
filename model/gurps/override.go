@@ -47,10 +47,9 @@ type OverrideCandidate[T comparable] struct {
 }
 
 // ResolveOverride applies the override-resolution ladder and returns the winning value. base is the field's intrinsic
-// value, returned when nothing applies; it also acts as an implicit lowest-priority contender, so an ordinary
-// priority-0 override still replaces it. render turns a value into display text, for the tooltip and for the
-// deterministic final tie-break. If tooltip is non-nil, the entire contest is written to it, with the winner and any
-// genuine conflict flagged.
+// value, returned when nothing applies; any override, even at priority 0, replaces it. render turns a value into
+// display text, for the tooltip and for the deterministic final tie-break. If tooltip is non-nil, the entire contest is
+// written to it, with the winner and any genuine conflict flagged.
 //
 // The ladder, applied in order:
 //  1. Highest OverridePriority wins.

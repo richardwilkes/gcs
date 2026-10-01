@@ -122,12 +122,13 @@ func (p *PageSettings) EnsureValidity() {
 	p.RightMargin.EnsureValidity()
 }
 
-// Clone a copy of this.
+// Clone returns a copy of this.
 func (p *PageSettings) Clone() *PageSettings {
 	return clonePtr(p)
 }
 
-// EnsurePageSizeIsValid ensures the given page size is valid and returns the corrected value if not.
+// EnsurePageSizeIsValid returns the given page size in canonical form, or the first standard paper size if it isn't
+// valid.
 func EnsurePageSizeIsValid(in string) string {
 	w, h, ok := ParsePageSize(in)
 	if !ok {

@@ -43,7 +43,7 @@ var Enums = []Enum{
 // Enum holds the edge of a sheet layout block that a drop targets.
 type Enum byte
 
-// EnsureValid ensures this is of a known value.
+// EnsureValid returns this value if it is valid and DefaultEnum otherwise.
 func (enum Enum) EnsureValid() Enum {
 	if enum >= FirstEnum && enum <= LastEnum {
 		return enum
@@ -83,18 +83,18 @@ func (enum Enum) String() string {
 	}
 }
 
-// MarshalText implements the encoding.TextMarshaler interface.
+// MarshalText implements encoding.TextMarshaler.
 func (enum Enum) MarshalText() (text []byte, err error) {
 	return []byte(enum.Key()), nil
 }
 
-// UnmarshalText implements the encoding.TextUnmarshaler interface.
+// UnmarshalText implements encoding.TextUnmarshaler.
 func (enum *Enum) UnmarshalText(text []byte) error {
 	*enum = ExtractEnum(string(text))
 	return nil
 }
 
-// ExtractEnum extracts the value from a string.
+// ExtractEnum returns the value whose key matches str, ignoring case, or DefaultEnum if none does.
 func ExtractEnum(str string) Enum {
 	for _, enum := range Enums {
 		if strings.EqualFold(enum.Key(), str) {
@@ -104,10 +104,8 @@ func ExtractEnum(str string) Enum {
 	return DefaultEnum
 }
 
-// ExtractKnownEnum extracts the value from a string, reporting whether the string was actually recognized.
-//
-// Unlike ExtractEnum, which quietly maps anything it doesn't recognize onto the default value, this permits a caller
-// that is dispatching on the type to detect unknown types.
+// ExtractKnownEnum is like ExtractEnum, but also reports whether str was recognized, so a caller can tell an unknown
+// key from the default.
 func ExtractKnownEnum(str string) (value Enum, known bool) {
 	for _, enum := range Enums {
 		if strings.EqualFold(enum.Key(), str) {

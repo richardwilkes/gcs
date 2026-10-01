@@ -26,10 +26,9 @@ import (
 	"github.com/richardwilkes/toolbox/v2/check"
 )
 
-// TestLibrariesNilReadsBehaveLikeAnEmptySet verifies that the read accessors are safe on a nil *Libraries, matching the
-// nil-map semantics of the type this replaced. A settings file without a "libraries" key leaves Settings.Libraries nil
-// until EnsureValidity replaces it, and code like ScanForNamedFileSets reads whatever set it is handed, so reads on a
-// nil set must see an empty set rather than panicking.
+// TestLibrariesNilReadsBehaveLikeAnEmptySet verifies that the read accessors are safe on a nil *Libraries. A settings
+// file without a "libraries" key leaves Settings.Libraries nil until EnsureValidity replaces it, and code like
+// ScanForNamedFileSets reads whatever set it is handed.
 func TestLibrariesNilReadsBehaveLikeAnEmptySet(t *testing.T) {
 	c := check.New(t)
 	var libs *Libraries
@@ -41,11 +40,9 @@ func TestLibrariesNilReadsBehaveLikeAnEmptySet(t *testing.T) {
 	c.Equal("null", strings.TrimSpace(buf.String()))
 }
 
-// TestLibrariesAccessIsSafeForConcurrentMutation verifies the contract the navigator's background content loaders rely
-// on: every access to the library set goes through accessors that share the set's lock, so a loader reading the set
-// while the UI thread re-keys or removes a library is neither a data race nor a fatal "concurrent map read and map
-// write", and the list List returns is a snapshot that mutations made after it was taken do not affect. Run under the
-// race detector, this test fails if any of those accesses stop going through the lock.
+// TestLibrariesAccessIsSafeForConcurrentMutation verifies that the navigator's background content loaders can read the
+// set while the UI thread re-keys or removes a library, and that List returns a snapshot unaffected by later mutations.
+// Under the race detector, it fails if any access stops going through the set's lock.
 func TestLibrariesAccessIsSafeForConcurrentMutation(t *testing.T) {
 	c := check.New(t)
 	libs := NewLibraries()
@@ -76,10 +73,9 @@ func TestLibrariesAccessIsSafeForConcurrentMutation(t *testing.T) {
 }
 
 // TestLibrariesRekeyNeverLeavesTheLibraryAbsent verifies that re-keying a library, as the library settings dialog does
-// when its repository changes, is a single operation on the set: a Remove followed by a Store would leave the library
-// absent in between, which a deep search content loader reading the set at that moment would observe (see
-// Libraries.Rekey). Each reader checks the size of the set under a single lock acquisition, so any window in which the
-// library is missing is observable rather than being masked by the reader's own timing.
+// when its repository changes, never leaves it absent from the set (see Libraries.Rekey). Each reader checks the size
+// of the set under a single lock acquisition, so any window in which the library is missing is observable rather than
+// masked by the reader's own timing.
 func TestLibrariesRekeyNeverLeavesTheLibraryAbsent(t *testing.T) {
 	c := check.New(t)
 	libs := NewLibraries()
@@ -118,10 +114,9 @@ func TestLibrariesRekeyNeverLeavesTheLibraryAbsent(t *testing.T) {
 }
 
 // TestLibrariesMasterAndUserOnlyReadWhenPresent verifies that Master() and User() take only the read lock when the
-// library they return is already in the set, which is every call after NewLibraries(). Taking the write lock would hold
-// up the background readers of the set, and for the create path it would do so across NewLibrary's read of the version
-// file on disk. The read lock is held across the calls here, so either of them taking the write lock deadlocks and is
-// reported by the timeout rather than passing.
+// library they return is already in the set, which is every call after NewLibraries(), so they don't hold up the
+// background readers. The read lock is held across the calls here, so either of them taking the write lock deadlocks
+// and is reported by the timeout.
 func TestLibrariesMasterAndUserOnlyReadWhenPresent(t *testing.T) {
 	c := check.New(t)
 	libs := NewLibraries()
@@ -145,8 +140,7 @@ func TestLibrariesMasterAndUserOnlyReadWhenPresent(t *testing.T) {
 }
 
 // TestLibrariesMasterAndUserCreateOnce verifies the get-or-create contract behind Master() and User() on a set that
-// lacks them: callers that miss at the same time share one build, with the first to miss building the library while
-// the rest wait for it, rather than each building one and discarding all but the first stored. The build is held open
+// lacks them: callers that miss at the same time share one build rather than each building one. The build is held open
 // until it is known to be in flight, so the overlap is forced rather than left to scheduling, and readers must still
 // get through while it is.
 func TestLibrariesMasterAndUserCreateOnce(t *testing.T) {
@@ -203,10 +197,8 @@ func TestLibrariesMasterAndUserCreateOnce(t *testing.T) {
 }
 
 // TestPerformUpdateChecksSnapshotsTheSet verifies that the set of libraries to check is captured on the calling
-// goroutine rather than being ranged over from the background one. The UI thread adds and removes libraries in place --
-// the library settings dialog re-keys one when its repository changes, and the navigator removes one outright -- so a
-// background goroutine ranging the live map is a "concurrent map iteration and map write", which is fatal to the
-// process rather than merely being flagged by the race detector.
+// goroutine rather than ranged over from the background one. The UI thread adds and removes libraries in place, so a
+// background goroutine ranging the live map is a fatal "concurrent map iteration and map write".
 func TestPerformUpdateChecksSnapshotsTheSet(t *testing.T) {
 	c := check.New(t)
 	isolateLibraryChangeNotification(t)
@@ -239,8 +231,8 @@ func TestPerformUpdateChecksSnapshotsTheSet(t *testing.T) {
 }
 
 // TestLibrariesUnmarshalRecordsVersionOnDisk verifies that libraries restored from a settings file know what version is
-// on disk without an update check having run. Only an update check filled that in previously, so turning the periodic
-// checks off would have left the Library Explorer showing no version at all.
+// on disk without an update check having run, so turning the periodic checks off doesn't leave the Library Explorer
+// showing no version at all.
 func TestLibrariesUnmarshalRecordsVersionOnDisk(t *testing.T) {
 	c := check.New(t)
 	dir := t.TempDir()
@@ -269,7 +261,7 @@ func cachedVersion(lib *Library) string {
 }
 
 // waitForCachedVersion blocks until the library has recorded the given version for what is on disk, failing the test if
-// that doesn't happen within a generous deadline. The update checks run on a goroutine of the caller's own making, so
+// that doesn't happen within a generous deadline. PerformUpdateChecks runs the checks on a goroutine of its own, so
 // there is nothing to join.
 func waitForCachedVersion(t *testing.T, lib *Library, want string) {
 	t.Helper()

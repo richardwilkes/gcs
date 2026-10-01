@@ -32,7 +32,7 @@ const testNameGeneratorJSON = `{
 }`
 
 // newTestNameGeneratorEditorDockable builds a name generator editor around the given generator without placing it in
-// the dock or creating a window, neither of which the headless test environment can do; see wireTestFileEditor.
+// the dock or creating a window, so that a plain unit test can drive it; see wireTestFileEditor.
 func newTestNameGeneratorEditorDockable(g *gurps.NameGenerator) *nameGeneratorEditorDockable {
 	d := newNameGeneratorEditorDockable()
 	wireTestFileEditor(&d.fileEditorDockable, g)

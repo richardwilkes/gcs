@@ -59,7 +59,7 @@ var Options = []Option{
 // Option holds the type of strength dice to add to damage.
 type Option byte
 
-// EnsureValid ensures this is of a known value.
+// EnsureValid returns this value if it is valid and DefaultOption otherwise.
 func (enum Option) EnsureValid() Option {
 	if enum >= FirstOption && enum <= LastOption {
 		return enum
@@ -127,18 +127,18 @@ func (enum Option) String() string {
 	}
 }
 
-// MarshalText implements the encoding.TextMarshaler interface.
+// MarshalText implements encoding.TextMarshaler.
 func (enum Option) MarshalText() (text []byte, err error) {
 	return []byte(enum.Key()), nil
 }
 
-// UnmarshalText implements the encoding.TextUnmarshaler interface.
+// UnmarshalText implements encoding.TextUnmarshaler.
 func (enum *Option) UnmarshalText(text []byte) error {
 	*enum = ExtractOption(string(text))
 	return nil
 }
 
-// ExtractOption extracts the value from a string.
+// ExtractOption returns the value whose key matches str, ignoring case, or DefaultOption if none does.
 func ExtractOption(str string) Option {
 	for _, enum := range Options {
 		if strings.EqualFold(enum.Key(), str) {
@@ -148,10 +148,8 @@ func ExtractOption(str string) Option {
 	return DefaultOption
 }
 
-// ExtractKnownOption extracts the value from a string, reporting whether the string was actually recognized.
-//
-// Unlike ExtractOption, which quietly maps anything it doesn't recognize onto the default value, this permits a caller
-// that is dispatching on the type to detect unknown types.
+// ExtractKnownOption is like ExtractOption, but also reports whether str was recognized, so a caller can tell an
+// unknown key from the default.
 func ExtractKnownOption(str string) (value Option, known bool) {
 	for _, enum := range Options {
 		if strings.EqualFold(enum.Key(), str) {

@@ -30,7 +30,7 @@ type tgzEntry struct {
 	typeflag byte
 }
 
-// makeTGZ builds a gzip-compressed tar in memory. The single-regular-file case matches byte for byte what unison's
+// makeTGZ builds a gzip-compressed tar in memory. The single-regular-file case has the same shape as what unison's
 // packager_linux.go emits, so the happy-path test exercises the real archive shape.
 func makeTGZ(t *testing.T, entries ...tgzEntry) []byte {
 	t.Helper()
@@ -139,8 +139,7 @@ func TestExtractSingleTGZRejectsBadArchives(t *testing.T) {
 	}
 }
 
-// TestExtractSingleTGZRejectsABomb verifies the expansion bound. Without it, a few kilobytes of crafted gzip can be
-// made to fill the user's disk.
+// TestExtractSingleTGZRejectsABomb verifies the maxPayloadSize expansion bound.
 func TestExtractSingleTGZRejectsABomb(t *testing.T) {
 	c := check.New(t)
 	dst := filepath.Join(t.TempDir(), "gcs")

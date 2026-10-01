@@ -96,8 +96,8 @@ func TestConditionalAndReactionProvidersUseTheirOwnSpec(t *testing.T) {
 	check.New(t).NotEqual(NewConditionalModifiersProvider(lists).RootRowCount(), NewReactionModifiersProvider(lists).RootRowCount())
 }
 
-// TestCondModProviderWrapsGroupChildren verifies that a group container row is wrapped as a node that can have
-// children, with its members wrapped beneath it in order, while an ungrouped row is a leaf.
+// TestCondModProviderWrapsGroupChildren verifies that a group's members are wrapped beneath its node in order, while an
+// ungrouped row is a leaf.
 func TestCondModProviderWrapsGroupChildren(t *testing.T) {
 	c := check.New(t)
 	group := gurps.NewConditionalModifierGroup(gurps.NewEntity().ID, gurps.BlockReactionsKey, "Combat")

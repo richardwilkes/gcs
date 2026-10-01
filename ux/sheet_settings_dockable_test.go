@@ -217,8 +217,7 @@ func TestSheetSettingsSyncSelectsNumberFormats(t *testing.T) {
 
 // TestSheetSettingsNumberFormatWidgetsWriteTheirOwnSetting checks the other direction: that each decimal places popup
 // and padding checkbox writes to its own format and to no other, and that each change notifies the open sheets. The
-// four blocks that build these widgets are near-identical, so a copy-paste slip between them is the most likely error,
-// and nothing less specific than this would notice one.
+// four rows differ only in the accessor each is given, so a slip there is the most likely error.
 func TestSheetSettingsNumberFormatWidgetsWriteTheirOwnSetting(t *testing.T) {
 	c := check.New(t)
 	owner := newEntityPanelWithFlaggedSettings()

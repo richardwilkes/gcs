@@ -34,9 +34,8 @@ type listFilterPopupHarness struct {
 	chosen  []*gurps.ListFilter
 }
 
-// newListFilterPopupHarness builds a popup over an empty, temporary set of saved filters holding one filter per name
-// given, and points the global settings at a file in the test's own directory so that saving them touches nothing the
-// user owns.
+// newListFilterPopupHarness builds a popup over a temporary set of saved filters holding one filter per name given, and
+// points the global settings at a file in the test's own directory so that saving them touches nothing the user owns.
 func newListFilterPopupHarness(t *testing.T, names ...string) *listFilterPopupHarness {
 	t.Helper()
 	swapForTest(t, &gurps.SettingsPath, filepath.Join(t.TempDir(), "settings.json"))

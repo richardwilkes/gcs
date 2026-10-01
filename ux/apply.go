@@ -285,7 +285,6 @@ func (p *applyPart[T]) place(merge bool) {
 		var noParent T
 		SetParents(p.rows, noParent)
 		p.placed = mergeIncoming(p.table, p.rows, selMap)
-		// A group kept for what was picked from it goes when all of that merged away.
 		for _, group := range p.groups {
 			if !group.HasChildren() {
 				p.placed = removeRow(p.placed, group)

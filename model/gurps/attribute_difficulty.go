@@ -43,7 +43,7 @@ func (a *AttributeDifficulty) Key() string {
 	return a.Attribute + "/" + a.Difficulty.Key()
 }
 
-// IsZero implements json.isZero.
+// IsZero reports whether json's omitzero option should omit this value.
 func (a AttributeDifficulty) IsZero() bool {
 	return a.omit
 }

@@ -25,8 +25,8 @@ const (
 	// CurrentDataVersion holds the current version for data files written with the current release. Note that this is
 	// intentionally the same for all data files that GCS processes.
 	CurrentDataVersion = 5
-	// MinimumDataVersion holds the oldest version for data files that can be loaded. Note that this is intentionally
-	// the same for all data files that GCS processes.
+	// MinimumDataVersion holds the oldest version for data files that can be loaded, unless a file type sets a higher
+	// minimum through CheckVersionWithMinimum.
 	MinimumDataVersion    = 2
 	MinimumLibraryVersion = 3
 )

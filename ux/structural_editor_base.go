@@ -140,9 +140,9 @@ func (s *structuralEditorBase[T]) sync() {
 	scrollRoot.SetPosition(h, v)
 }
 
-// focusOn gives the keyboard focus to the widget with the given reference key and scrolls it into view. Panels call it
-// after sync() has returned, since sync() restores the scroll position as its last act and would otherwise undo the
-// scroll.
+// focusOn gives the keyboard focus to the widget with the given reference key and scrolls it into view. editStructure
+// calls it after sync() has returned, since sync() restores the scroll position as its last act and would otherwise
+// undo the scroll.
 func (s *structuralEditorBase[T]) focusOn(refKey string) {
 	if f := s.targetMgr.Find(refKey); f != nil {
 		f.RequestFocus()

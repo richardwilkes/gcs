@@ -129,15 +129,14 @@ var (
 	_ modificationTimestampBumper = &LootSheet{}
 )
 
-// rebuildAsModified reports an edit to its owner by rebuilding the owner, in place of marking it as modified. A rebuild
-// is a superset of marking as modified for every kind of owner -- it recalculates the entity, re-syncs every table,
-// refreshes the search results and restores the focus and scroll position -- and is what an edit needs when it changes
-// more of what the owner shows than the rows it touched: a sheet carries its melee weapon, ranged weapon, reaction and
-// conditional modifier lists only while there is something to put in them, and a table's set of columns, which comes
-// from what its rows use, can only change by building a new table. Doing both would repeat the whole update, and on a
-// sheet holding hundreds of rows that update is the entire cost of the edit. The one thing a rebuild leaves out is
-// bumping the owner's modification timestamp, so that is done here, and before the rebuild, since the panel showing the
-// timestamp only picks up the new value when it is synced. A nil owner, typed or otherwise, is ignored.
+// rebuildAsModified reports an edit to its owner by rebuilding the owner instead of marking it as modified. For every
+// kind of owner a rebuild does everything marking as modified does -- recalculating the entity, re-syncing every table,
+// refreshing the search results and restoring the focus and scroll position -- except bump the modification timestamp,
+// which is done here, before the rebuild, since the panel showing it only picks up the new value when synced. A rebuild
+// is needed when an edit changes more than the rows it touched: a sheet shows its melee weapon, ranged weapon, reaction
+// and conditional modifier lists only while they have something in them, and a table's columns, which come from what
+// its rows use, can only change by building a new table. Doing both would repeat the whole update, which on a sheet
+// with hundreds of rows is the entire cost of the edit. A nil owner, typed or otherwise, is ignored.
 func rebuildAsModified(owner Rebuildable, full bool) {
 	if xreflect.IsNil(owner) {
 		return

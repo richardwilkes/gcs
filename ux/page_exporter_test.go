@@ -25,17 +25,16 @@ import (
 	"github.com/richardwilkes/unison"
 )
 
-// newTestTemplateDockable returns a template dockable for the given file path. Building the toolbar reaches for the
-// bindable actions, so they are registered first.
+// newTestTemplateDockable returns a template dockable for the given file name, first registering the bindable actions
+// its toolbar needs.
 func newTestTemplateDockable(fileName string, data *gurps.Template) *Template {
 	registerKeyBindingsOnce.Do(func() { registerActions() })
 	return NewTemplate(filepath.Join("some", "dir", fileName+gurps.TemplatesExt), data)
 }
 
 // TestPageInfoProviderForTemplate verifies that obtaining a template dockable's page info provider fills in the page
-// title and clears the modification timestamp. A gurps.Template returns only these explicitly-set values, so a page
-// building path that skipped this setup — printing used to — produced footers with a blank title, or with a stale
-// title left behind by an earlier export in the same session.
+// title and clears the modification timestamp. A gurps.Template has neither of its own, so printing, which once skipped
+// this setup, produced footers with a blank or stale title.
 func TestPageInfoProviderForTemplate(t *testing.T) {
 	c := check.New(t)
 
@@ -116,7 +115,7 @@ func newFakeBandList(key string, overhead float32, heights ...float32) *fakeBand
 	return f
 }
 
-// currentHeight returns the height the rows the list is currently set to draw take up.
+// currentHeight returns the list's overhead plus the height of the rows it is currently set to draw.
 func (f *fakeBandList) currentHeight() float32 {
 	height := f.overhead
 	for _, one := range f.heights[f.start:f.endBefore] {
@@ -332,10 +331,9 @@ func TestPlaceBandRowDefersAsAWhole(t *testing.T) {
 	c.Equal(map[string]int{}, startAt)
 }
 
-// TestPlaceBandHonorsAMinimumHeight verifies that a block's minimum height is weighed against what the page has left
-// before the block is placed, so that a list whose rows would fit but whose floor would not is left for the next page
-// rather than being placed and then stood at a floor that runs off the bottom of the page; that a list whose floor fits
-// is placed and stands at it; and that a block which has the page to itself is placed at its floor regardless.
+// TestPlaceBandHonorsAMinimumHeight verifies that a block's minimum height is checked against what the page has left: a
+// list whose rows fit but whose floor doesn't is left for the next page rather than running off the bottom, one whose
+// floor fits is placed and stands at it, and one with the page to itself is placed at its floor regardless.
 func TestPlaceBandHonorsAMinimumHeight(t *testing.T) {
 	c := check.New(t)
 	inch := paper.Length{Length: 1, Units: paper.Inch}
@@ -398,9 +396,9 @@ func TestPlaceBandHonorsAMinimumHeight(t *testing.T) {
 }
 
 // TestPageExporterKeepsEveryBandWithinThePage verifies, over a range of list lengths and for a list stacked below a
-// long one both as a band of its own and within a column, that no band of an exported page runs past the bottom of
-// the page's printable area. A list given a minimum height is what used to: the rows it had left fit in what remained
-// of the page, so it was placed there, and only then was it stood at a floor deeper than that.
+// long one both as a band of its own and within a column, that no band of an exported page runs past the bottom of the
+// page's printable area. A list with a minimum height once did: it was placed where its rows fit and only then stood at
+// its deeper floor.
 func TestPageExporterKeepsEveryBandWithinThePage(t *testing.T) {
 	c := check.New(t)
 	shapes := map[string]func() *gurps.SheetLayoutNode{
@@ -463,8 +461,8 @@ func TestPageExporterKeepsEveryBandWithinThePage(t *testing.T) {
 	}
 }
 
-// TestPageExporterFitsAnEmptyCharacterOnOnePage verifies that a character with no content still exports the way it
-// always has: a single page whose every band came from the block layout.
+// TestPageExporterFitsAnEmptyCharacterOnOnePage verifies that a character with no content exports as a single page
+// whose every band came from the block layout.
 func TestPageExporterFitsAnEmptyCharacterOnOnePage(t *testing.T) {
 	c := check.New(t)
 	exporter := newPageExporter(gurps.NewEntity())

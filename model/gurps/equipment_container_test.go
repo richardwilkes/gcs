@@ -25,7 +25,6 @@ import (
 	"github.com/richardwilkes/toolbox/v2/tid"
 )
 
-// newEquipmentItem returns a piece of equipment with the given name, value and weight.
 func newEquipmentItem(name, value, weight string) *Equipment {
 	e := NewEquipment(nil, nil, false)
 	e.Name = name
@@ -176,8 +175,8 @@ func TestEquipmentGroupConversion(t *testing.T) {
 	c.True(NewEquipmentGroup(nil, nil).CanConvertToFromContainer(), "an empty group may become a plain item")
 }
 
-// TestEquipmentChoiceConversion verifies that only a group may become a choice container, that the only thing it gives
-// up is being unequipped, and that converting back leaves a group.
+// TestEquipmentChoiceConversion verifies that only a group may become a choice container, giving up its VTT notes,
+// tags, unequipped state and library source, and that converting back leaves a group.
 func TestEquipmentChoiceConversion(t *testing.T) {
 	c := check.New(t)
 	c.False(CanConvertToTemplateChoiceContainer(NewEquipment(nil, nil, true)),
@@ -335,7 +334,6 @@ func TestEquipmentChoiceRanges(t *testing.T) {
 	c.True(strings.Contains(title, "$70~110"), "the list's totals must be ranges too: %s", title)
 }
 
-// TestEquipmentRangeSorting verifies that values and weights sort by their ranges.
 func TestEquipmentRangeSorting(t *testing.T) {
 	c := check.New(t)
 	c.True(ValueRangeLessFromString("10", "10~30"))

@@ -40,9 +40,8 @@ TL11: Age of Exotic Matter
 TL12: Anything Goes`)
 }
 
-// ExtractTechLevel extracts the first number it finds in the string and returns that as the tech level. The start and
-// end (inclusive) indexes within the string where the number resided are returned, but will be -1 if the string didn't
-// contain a resolvable number. The returned tech level will be clamped to the range 0 to 12.
+// ExtractTechLevel returns the first number in the string, clamped to 0-12, as the tech level, along with the inclusive
+// start and end indexes of that number, which are -1 if the string has no resolvable number.
 func ExtractTechLevel(str string) (techLevel fxp.Int, start, end int) {
 	var buffer strings.Builder
 	decimal := true

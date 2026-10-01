@@ -31,10 +31,10 @@ func (f NumberFormat) EnsureValid() NumberFormat {
 	return f
 }
 
-// places returns the number of decimal places this format rounds and pads to, or -1 when every decimal place the value
-// has is to be kept, which is what AsNeeded asks for and what an unrecognized Places is treated as. This is the one
-// place the DecimalPlace choices are mapped to counts. A count is capped at the number of decimal places an Int can
-// hold, so that a choice beyond that neither rounds nor pads with zeros for precision the value cannot have.
+// places returns the number of decimal places this format rounds and pads to, or -1 to keep every decimal place the
+// value has (AsNeeded, or an unrecognized Places). This is the one place the DecimalPlace choices are mapped to counts.
+// The count is capped at the decimal places an Int can hold, so a choice beyond that neither rounds nor pads with zeros
+// for precision the value cannot have.
 func (f NumberFormat) places() int {
 	var places int
 	switch f.Places {
@@ -95,8 +95,7 @@ func (f NumberFormat) Round(value Int) Int {
 
 // Format returns the value rounded to this format's number of decimal places and rendered with thousands separators.
 // When PadWithZeros is set and an explicit, non-zero number of decimal places has been chosen, the fractional part is
-// padded with trailing zeros to that many places, so that e.g. 7.5 becomes "7.50" at two places. Padding has nothing
-// to add at zero places, and AsNeeded shows only the places the value has, so PadWithZeros has no effect for either.
+// padded with trailing zeros to that many places (e.g. 7.5 becomes "7.50" at two places).
 func (f NumberFormat) Format(value Int) string {
 	text := f.Round(value).Comma()
 	places := f.places()

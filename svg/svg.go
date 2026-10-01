@@ -301,9 +301,7 @@ var (
 	Weight     = unison.MustSVGFromContentString(weightData)
 )
 
-// CreateImageFromSVG turns one of our svg-as-a-path objects into an actual SVG document, then renders it into an image
-// at the specified square size. This is not GPU accelerated, since unison can't yet draw into arbitrary offscreen
-// images.
+// CreateImageFromSVG renders svg into a size x size image, preserving its aspect ratio. Rendering is done on the CPU.
 func CreateImageFromSVG(svg *unison.SVG, size int) (image.Image, error) {
 	img, err := unison.NewImageFromDrawing(size, size, 72, func(gc *unison.Canvas) {
 		svg.DrawInRectPreservingAspectRatio(gc, geom.NewRect(0, 0, float32(size), float32(size)), nil, nil)

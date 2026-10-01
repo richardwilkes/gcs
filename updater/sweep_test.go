@@ -214,8 +214,7 @@ func TestSweepStraysToleratesMissingDirectories(t *testing.T) {
 	sweepStrays([]string{filepath.Join(t.TempDir(), "gone")}, staleAge)
 }
 
-// The shorter bound used just before a new update is prepared. Each staging directory holds a whole copy of the
-// application, so leaving a few failed attempts to sit for a week would quietly cost the user hundreds of megabytes.
+// The shorter bound used just before a new update is prepared; see abandonedStagingAge.
 func TestSweepStraysClearsAbandonedStagingSooner(t *testing.T) {
 	c := check.New(t)
 	dir := t.TempDir()

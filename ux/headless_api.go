@@ -86,10 +86,9 @@ const (
 )
 
 // negotiateDocFormat picks a docFormat from the value of an Accept header: docFormatJSON for application/json,
-// docFormatYAML for application/yaml or application/x-yaml, and docFormatMD -- the default -- for anything else,
-// including an empty or missing header, "*/*", or text/markdown itself. Ties (equal, and equal to the highest,
-// "q" value) are broken by whichever the header lists first. A "q" of 0 means "not acceptable", so a format is
-// never chosen because it was the only one listed if the caller said it cannot handle it.
+// docFormatYAML for application/yaml or application/x-yaml, and docFormatMD for anything else, including an empty
+// header, "*/*" or text/markdown. The highest "q" value wins, ties going to the first listed. A "q" of 0 means "not
+// acceptable", so such a format is never chosen, even when it is the only one listed.
 func negotiateDocFormat(accept string) docFormat {
 	best := docFormatMD
 	bestQ := 0.0
@@ -129,9 +128,8 @@ func parseAcceptEntry(entry string) (mediaType string, q float64) {
 	return mediaType, q
 }
 
-// init registers the headless debug API as a runmode.Mode, which is how main learns about -headless-api at all: a
-// build compiled without the headlessapi tag never runs this file, so runmode.Factories stays empty and main has no
-// trace of any of it -- no flags, no help text, no mode name, nothing.
+// init registers the headless debug API as a runmode.Mode. A build without the headlessapi tag lacks this file, so main
+// has no trace of -headless-api: no flags, help text or mode name.
 func init() {
 	runmode.Factories = append(runmode.Factories, newHeadlessAPIRunMode)
 }
@@ -209,13 +207,11 @@ func StartHeadlessAPI(addr string, width, height float32, files []string) {
 	slog.Info("headless debug API listening", "addr", listener.Addr().String())
 	httpServer := &http.Server{Handler: mux, ReadHeaderTimeout: 10 * time.Second}
 
-	// The workspace's own settings-saving close handler (workspaceWillClose, in workspace.go) only ever runs when the
-	// main window is closed the normal way, which a session driven purely through this API never does -- it just runs
-	// until stopped from outside. Without this, everything settings-backed (page reference mappings, recent files,
-	// window layout, and so on) that a session here changes is silently lost the moment the container stops, however
-	// it stops. A periodic autosave covers an unclean stop (SIGKILL, OOM, a crash); the signal handler below covers a
-	// clean one (SIGINT/SIGTERM, which is what "podman stop"/"docker stop" send, and Ctrl-C) by saving once more and
-	// only then letting the process exit, so the common case loses nothing at all.
+	// workspaceWillClose (workspace.go) saves the settings only when the main window is closed the normal way, which a
+	// session driven purely through this API never does; it runs until stopped from outside. So that settings it
+	// changes (page reference mappings, recent files, window layout and so on) survive, a periodic autosave covers an
+	// unclean stop (SIGKILL, OOM, a crash) and the exit handler below covers a clean one (SIGINT/SIGTERM, as sent by
+	// Ctrl-C, "docker stop" and "podman stop") by saving once more before the process exits.
 	stopAutosave := make(chan struct{})
 	go autosaveSettings(screen, stopAutosave)
 	xos.RunAtExit(func() {
@@ -246,7 +242,7 @@ func StartHeadlessAPI(addr string, width, height float32, files []string) {
 }
 
 // autosaveSettings saves the global settings every minute until stop is closed, as a safety net for a container stop
-// that never reaches the signal handler in StartHeadlessAPI (SIGKILL, an OOM kill, a crash).
+// that never reaches the exit handler in StartHeadlessAPI (SIGKILL, an OOM kill, a crash).
 func autosaveSettings(screen *unison.HeadlessScreen, stop <-chan struct{}) {
 	ticker := time.NewTicker(time.Minute)
 	defer ticker.Stop()
@@ -262,7 +258,7 @@ func autosaveSettings(screen *unison.HeadlessScreen, stop <-chan struct{}) {
 
 // saveSettings saves the global settings on the UI thread, the same way workspaceWillClose (workspace.go) does on a
 // normal window close, logging rather than reporting through Workspace.ErrorHandler: nobody is here to see a dialog,
-// and by the time this runs from the shutdown signal handler, the caller wants the process to exit either way.
+// and by the time this runs from the exit handler, the caller wants the process to exit either way.
 func saveSettings(screen *unison.HeadlessScreen) {
 	screen.Do(func() {
 		if err := gurps.GlobalSettings().Save(); err != nil {
@@ -362,7 +358,7 @@ func parseButton(name string) int {
 	}
 }
 
-// resolveKeyCode resolves a "key" op's target key: an explicit numeric code takes precedence, then unison.KeyCodeFromKey
+// resolveKeyCode resolves a "key" op's target key from its numeric code if given, otherwise from its name.
 func resolveKeyCode(name string, code int) (unison.KeyCode, bool) {
 	if code != 0 {
 		return unison.KeyCode(code), true
@@ -453,10 +449,9 @@ func (s *headlessAPIServer) handleInspect(w http.ResponseWriter, r *http.Request
 	writeJSON(w, result)
 }
 
-// handleInspectFocus reports the focused panel of the focused window. It uses unison.Window.CurrentFocus rather than
-// Window.Focus because the latter assigns the focus to the window's first focusable panel when nothing holds it yet,
-// which is not something an "inspect" endpoint should be doing. A window that nothing in has been focused into
-// therefore reports no panel rather than acquiring one.
+// handleInspectFocus reports the focused panel of the focused window. It uses unison.Window.CurrentFocus because
+// Window.Focus would move the focus to the first focusable panel when nothing holds it, which an "inspect" endpoint
+// must not do; such a window reports no panel.
 func (s *headlessAPIServer) handleInspectFocus(w http.ResponseWriter, _ *http.Request) {
 	var result inspectResult
 	var ok bool

@@ -36,7 +36,8 @@ type AttributeChoice struct {
 	Title string
 }
 
-// AttributeChoices collects the available choices for attributes for the given entity, or nil.
+// AttributeChoices returns the attribute choices for the entity, which may be nil, along with the choice matching
+// currentKey; if none matches, an "unrecognized key" choice for it is appended.
 func AttributeChoices(entity *Entity, prefix string, flags AttributeFlags, currentKey string) (choices []*AttributeChoice, current *AttributeChoice) {
 	if prefix != "" && !strings.HasSuffix(prefix, " ") {
 		prefix += " "

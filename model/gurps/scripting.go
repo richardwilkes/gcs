@@ -315,7 +315,7 @@ type scriptResolveResult struct {
 	abandoned bool
 }
 
-// ScriptArg is a named argument to be passed to RunString.
+// ScriptArg is a named argument to be passed to runScript.
 type ScriptArg struct {
 	Name  string
 	Value any
@@ -365,15 +365,14 @@ func DiscardGlobalResolveCache() {
 	clear(globalResolveCache)
 }
 
-// scriptResolveErrorSuppression tracks nested requests to suppress the error logging that normally occurs when a script
-// fails to resolve to an expected result (e.g. a number or weight). The item editors resolve partially-typed—and thus
-// frequently invalid—scripts to build live previews as the user types; logging every intermediate failure would flood
-// the log. It is an atomic counter so suppression can be nested and remains correct if resolution spans goroutines.
+// scriptResolveErrorSuppression counts the active, possibly nested, SuppressScriptResolveErrorLogging calls. It is
+// atomic since scripts resolve on more than one goroutine.
 var scriptResolveErrorSuppression atomic.Int32
 
 // SuppressScriptResolveErrorLogging runs f with the error logging that normally accompanies a failed script resolution
-// suppressed. Failures outside the dynamic scope of f are still logged. This is intended for contexts such as the item
-// editors, which repeatedly resolve incomplete scripts to produce live previews.
+// (e.g. to a number or weight) suppressed. The item editors resolve partially-typed—and thus frequently invalid—scripts
+// to build live previews as the user types, and logging every intermediate failure would flood the log. The suppression
+// is process-wide, so failures on other goroutines while f runs go unlogged too.
 func SuppressScriptResolveErrorLogging(f func()) {
 	scriptResolveErrorSuppression.Add(1)
 	defer scriptResolveErrorSuppression.Add(-1)
@@ -559,10 +558,9 @@ var scriptExecTimeLimitOverride atomic.Int64
 
 // SetScriptExecTimeLimitForTesting overrides the number of seconds a script may run before ResolveScript interrupts it;
 // passing 0 restores the limit from the general settings. Users may only configure that limit between
-// PermittedScriptExecTimeMin and PermittedScriptExecTimeMax, but that does not suit the tests: they are not exercising
-// the timeout, and some CI runners are slow enough that legitimate scripts exceed even the maximum. The override lives
-// outside the settings so that nothing which validates them (see GeneralSettings.EnsureValidity) can quietly reset it.
-// Only tests should call this.
+// PermittedScriptExecTimeMin and PermittedScriptExecTimeMax, but some CI runners are slow enough that legitimate
+// scripts exceed even the maximum. The override lives outside the settings so that nothing which validates them (see
+// GeneralSettings.EnsureValidity) can quietly reset it.
 func SetScriptExecTimeLimitForTesting(seconds fxp.Int) {
 	scriptExecTimeLimitOverride.Store(int64(seconds))
 }
@@ -804,9 +802,8 @@ func runScript(timeout time.Duration, text string, args ...ScriptArg) (string, e
 	return result, nil
 }
 
-// scriptLevel converts a computed level for consumption by a script. An uncomputable level is stored as the fxp.Min
-// sentinel, which would otherwise be handed to scripts as a nonsensical -922337203685477, so clamp it to 0, matching
-// what the weapon wrapper does.
+// scriptLevel converts a computed level for consumption by a script, clamping it to 0 as the weapon wrapper does, so
+// the fxp.Min sentinel stored for an uncomputable level is not handed to scripts as a nonsensical -922337203685477.
 func scriptLevel(level Level) int {
 	return level.Level.Max(0).AsInteger[int]()
 }

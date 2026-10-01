@@ -134,8 +134,7 @@ func (a *AttributeDef) IsSeparator() bool {
 }
 
 // EffectivePlacement returns the placement to use for this attribute. When the Placement is Hidden, a PlacementTrait
-// has been specified, and the entity has an enabled trait with that name, PlacementWhenPresent is returned instead. A
-// nil entity or an empty PlacementTrait yields the unmodified Placement.
+// has been specified, and the entity has an enabled trait with that name, PlacementWhenPresent is returned instead.
 func (a *AttributeDef) EffectivePlacement(entity *Entity) attribute.Placement {
 	if a.Placement == attribute.Hidden && a.PlacementTrait != "" && entity.HasTraitNamed(a.PlacementTrait) {
 		return a.PlacementWhenPresent
@@ -180,17 +179,17 @@ func (a *AttributeDef) Relevant(entity *Entity, kind int) bool {
 	return a.EffectivePlacement(entity) != attribute.Hidden && a.Kind(entity) == kind
 }
 
-// Primary returns true if the base value is a non-derived value, resolved against the given entity.
+// Primary returns true if Kind(entity) is PrimaryAttrKind.
 func (a *AttributeDef) Primary(entity *Entity) bool {
 	return a.Kind(entity) == PrimaryAttrKind
 }
 
-// Secondary returns true if the base value is a derived value, resolved against the given entity.
+// Secondary returns true if Kind(entity) is SecondaryAttrKind.
 func (a *AttributeDef) Secondary(entity *Entity) bool {
 	return a.Kind(entity) == SecondaryAttrKind
 }
 
-// Pool returns true if the base value is a pool value, resolved against the given entity.
+// Pool returns true if Kind(entity) is PoolAttrKind.
 func (a *AttributeDef) Pool(entity *Entity) bool {
 	return a.Kind(entity) == PoolAttrKind
 }
@@ -208,7 +207,8 @@ func (a *AttributeDef) BaseValue(attr *Attribute) fxp.Int {
 	return ResolveToNumber(attr.Entity, deferredNewScriptAttribute(attr), a.Base)
 }
 
-// ComputeCost returns the value adjusted for a cost reduction.
+// ComputeCost returns the point cost of value, reduced by the costReduction percentage plus any size modifier
+// adjustment, with the total reduction capped at 80%.
 func (a *AttributeDef) ComputeCost(entity *Entity, value, costReduction fxp.Int, sizeModifier int) fxp.Int {
 	if a.IsSeparator() {
 		return 0

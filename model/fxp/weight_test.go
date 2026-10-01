@@ -57,7 +57,6 @@ func TestWeightFromStringUnitSuffixes(t *testing.T) {
 	}
 }
 
-// TestWeightFromStringCaseInsensitive verifies that unit suffixes are matched without regard to case.
 func TestWeightFromStringCaseInsensitive(t *testing.T) {
 	c := check.New(t)
 	for _, text := range []string{"0.5KG", "0.5Kg", "0.5 KG"} {

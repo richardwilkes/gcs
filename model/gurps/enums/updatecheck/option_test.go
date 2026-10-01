@@ -17,8 +17,7 @@ import (
 	"github.com/richardwilkes/toolbox/v2/check"
 )
 
-// TestInterval verifies the repeat interval each option asks for. Only the recurring options produce a non-zero
-// interval; a zero tells the caller not to schedule a repeating check at all.
+// TestInterval verifies that only the recurring options produce a non-zero interval.
 func TestInterval(t *testing.T) {
 	c := check.New(t)
 	c.Equal(time.Duration(0), updatecheck.AtLaunch.Interval())
@@ -36,8 +35,8 @@ func TestChecksAtLaunch(t *testing.T) {
 	c.False(updatecheck.Never.ChecksAtLaunch())
 }
 
-// TestZeroValueIsAtLaunch verifies that the zero value -- what a settings file written before this setting existed
-// loads as -- is the same as the default, so old settings files quietly adopt the intended behavior.
+// TestZeroValueIsAtLaunch verifies that the zero value, which settings files predating this setting load as, is the
+// default.
 func TestZeroValueIsAtLaunch(t *testing.T) {
 	c := check.New(t)
 	c.Equal(updatecheck.AtLaunch, updatecheck.Option(0))

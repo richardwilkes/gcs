@@ -50,10 +50,9 @@ const (
 	OutputTemplatesDirName = "Output Templates"
 )
 
-// defaultDownloadSizeEstimate scales the download portion of the progress bar the first time a library is updated,
-// before a real size has been recorded for it. Being a little over the size of the Master Library -- by far the largest
-// and most commonly updated of them -- trades a bar that pauses just short of the end for one that jumps to it. Every
-// update records what it actually transferred, so this only has to be close enough to be useful once.
+// defaultDownloadSizeEstimate scales the download portion of the progress bar until an update has recorded the real
+// size. Being a little over the size of the Master Library -- by far the largest and most commonly updated -- makes the
+// bar jump to the end rather than pause just short of it.
 const defaultDownloadSizeEstimate = 32 * 1024 * 1024
 
 var (
@@ -94,10 +93,9 @@ func NotifyOfLibraryChange() {
 	}
 }
 
-// libraryPersistentData holds the data that will be serialized for a Library. It is deliberately not part of the
-// public API, so that the on-disk format can evolve without dragging the accessors along with it. Note that the GitHub
-// account name and repository name are absent: they are carried by the key the library is filed under within a
-// Libraries set, and are restored from it by ConfigureForKey().
+// libraryPersistentData holds the serialized form of a Library, kept private so that the on-disk format can evolve
+// independently of the accessors. The GitHub account name and repository name are absent: they are carried by the key
+// the library is filed under within a Libraries set, and restored from it by ConfigureForKey().
 type libraryPersistentData struct {
 	ID          tid.TID  `json:"id"`
 	Title       string   `json:"title,omitzero"`
@@ -118,8 +116,7 @@ type Config struct {
 	UseLatest         bool
 }
 
-// Data is a snapshot of a Library's state, as returned by Data(). The favorites are not included, since they are
-// a list that is manipulated independently; use Favorites() for those.
+// Data is a snapshot of a Library's state, as returned by Data(). It omits the favorites; use Favorites() for those.
 type Data struct {
 	Config
 	ID         tid.TID
@@ -182,8 +179,7 @@ func (l *Library) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 	return json.UnmarshalDecode(dec, &l.data)
 }
 
-// Data returns a snapshot of this library's state. The returned value is a copy, so modifying it has no effect on the
-// library; use Configure(), SetID() or SetPath() to make changes.
+// Data returns a snapshot of this library's state. Use Configure(), SetID() or SetPath() to make changes.
 func (l *Library) Data() Data {
 	l.lock.RLock()
 	defer l.lock.RUnlock()
@@ -217,12 +213,11 @@ func (l *Library) config() Config {
 	}
 }
 
-// Configure applies the given configuration as a single atomic operation. Note that this may change the value returned
-// by Key(). A change to the repository being followed -- the account, the repository name, or whether to follow its
-// latest commit rather than its releases -- discards what any earlier check found, since that described the old one:
-// the releases are dropped, the library is left needing a check (see NeedsUpgradeCheck), a check still in flight for
-// the old repository is discarded when it finishes, and the version on disk is re-read, since whether the library is
-// the User Library can change along with the key.
+// Configure applies the given configuration atomically, which may change the value returned by Key(). A change to the
+// repository being followed -- the account, the repository name, or whether to follow its latest commit rather than its
+// releases -- discards what any earlier check found: the releases are dropped, the library is left needing a check (see
+// NeedsUpgradeCheck), a check still in flight is discarded when it finishes, and the version on disk is re-read, since
+// whether the library is the User Library can change along with the key.
 func (l *Library) Configure(config Config) {
 	l.lock.Lock()
 	l.data.Title = config.Title
@@ -234,11 +229,11 @@ func (l *Library) Configure(config Config) {
 	}
 }
 
-// setRepository points the library at the given repository and reports whether that differs from the one it was
-// following. A change discards what any earlier check found, as described for Configure(), apart from the re-read of
-// the version on disk, which the caller must do once the lock has been released, since it reads a file. Dropping the
-// releases and bumping the sequence number in the same critical section as the change of repository is what keeps a
-// check from landing in between with the old repository's answer. The library lock must be held when calling this.
+// setRepository points the library at the given repository and reports whether that was a change. A change discards
+// what any earlier check found, as described for Configure(), except that the caller must re-read the version on disk
+// once the lock has been released. Dropping the releases and bumping the sequence number in the same critical section
+// as the change of repository keeps a check from landing in between with the old repository's answer. The library lock
+// must be held when calling this.
 func (l *Library) setRepository(gitHubAccountName, repoName string, useLatest bool) bool {
 	if l.gitHubAccountName == gitHubAccountName && l.repoName == repoName && l.data.UseLatest == useLatest {
 		return false
@@ -270,11 +265,11 @@ func (l *Library) Valid() bool {
 	return strings.TrimSpace(l.data.PathOnDisk) != "" && strings.TrimSpace(l.data.Title) != ""
 }
 
-// ConfigureForKey configures the GitHub account name and repository name from the given key, which is the form they
-// take when a Libraries set is saved. A change of repository is treated exactly as Configure() treats one. A freshly
-// loaded library follows no repository until this is called, so for it the key is always a change, and the re-read of
-// the version on disk that comes with the change is what fills the version in: it isn't part of what was saved, and an
-// update check is the only other thing that sets it -- which, with the periodic checks turned off, may never run.
+// ConfigureForKey sets the GitHub account name and repository name from the given key, the form they take when a
+// Libraries set is saved. A change of repository is treated as Configure() treats one. A freshly loaded library follows
+// no repository, so for it the key is always a change, and the resulting re-read of the version on disk is what fills
+// the version in: it isn't saved, and otherwise only an update check sets it, which may never run with the periodic
+// checks turned off.
 func (l *Library) ConfigureForKey(key string) error {
 	parts := strings.SplitN(key, "/", 2)
 	if len(parts) != 2 {
@@ -393,10 +388,9 @@ func (l *Library) CleanupFavorites() {
 	l.data.Favorites = favs
 }
 
-// Watch for changes in the directory tree of this library. Each change is reported with the full path of what changed,
-// named the way this library names it: beneath Path(), and beneath any symlinked directory registered with
-// MonitorToken.AddSubPath, rather than wherever those resolve to on disk. A path built from Path() and a directory
-// entry within it can therefore be compared directly with what the callback receives.
+// Watch for changes in the directory tree of this library. Each change is reported with its full path as this library
+// names it -- beneath Path() and beneath any symlinked directory registered with MonitorToken.AddSubPath, rather than
+// wherever those resolve to on disk -- so it can be compared directly with paths built from Path().
 func (l *Library) Watch(callback func(lib *Library, fullPath string, what notify.Event), callbackOnUIThread bool) *MonitorToken {
 	return l.obtainMonitor().newWatch(callback, callbackOnUIThread)
 }
@@ -442,14 +436,12 @@ func (l *Library) IsUser() bool {
 }
 
 // CheckForAvailableUpgrade retrieves the releases that can be upgraded to, recording them for AvailableReleases(). Only
-// one check of a library runs at a time: a call made while another is in flight waits for that one rather than making a
-// second request for the same answer, and returns once it has, or once ctx is done. The check waited on serves the
-// caller only if it answered for the repository the library follows now, whether with its releases or with a failure to
-// reach it, which asking again at once would only repeat. One that was discarded because the repository was
-// reconfigured while it ran, or that was cut short by its own caller's context rather than by this one's, leaves the
-// need unmet, so the caller then makes a check of its own. Without that, a check made from the settings dialog or the
-// Library Explorer right after a repository change would wait on the doomed launch-time check and come back with
-// nothing, leaving the library unchecked until the next scheduled check.
+// one check of a library runs at a time: a call made while another is in flight waits for it, or for ctx to be done,
+// rather than making a second request. The awaited check serves the caller only if it answered for the repository the
+// library follows now, whether with releases or with a failure to reach it. One that was discarded because the
+// repository or the content on disk was replaced while it ran, or that was cut short by its own caller's context,
+// leaves the caller to make a check of its own. Otherwise a check made from the settings dialog or the Library Explorer
+// right after a repository change would wait on the doomed launch-time check and come back with nothing.
 func (l *Library) CheckForAvailableUpgrade(ctx context.Context, client *http.Client) {
 	for ctx.Err() == nil {
 		l.lock.Lock()
@@ -516,7 +508,7 @@ func (l *Library) performCheck(ctx context.Context, client *http.Client, check *
 	l.lock.Lock()
 	if check.seq != l.checkSeq {
 		l.lock.Unlock()
-		return // The repository was changed while this check ran, so its answer is about the wrong one
+		return // The repository or the content on disk was replaced while this check ran, so its answer is stale
 	}
 	answered = true
 	prevCurrent := l.current
@@ -529,15 +521,14 @@ func (l *Library) performCheck(ctx context.Context, client *http.Client, check *
 	l.releases = releases
 	l.current = current
 	l.lock.Unlock()
-	// A notification reloads the entire library tree, which restarts the filesystem watches, drops what has been cached
-	// and disturbs anything in progress, so one is sent only when this check turned up something the previous check
-	// didn't: an update that has just become available, a library whose content changed on disk outside of the app, or
-	// an update that was on offer and no longer is -- the release having been withdrawn, or the library brought up to
-	// date outside of the app -- which must take the indicator down. The first check of a library also announces an
-	// update that was already pending, which is what raises the indicator at startup. A library with no releases to
-	// compare against -- a local one, or a repo whose releases were all rejected as incompatible -- has nothing to
-	// announce, even though the "0" that stands in for an unknown version on disk differs from the empty version of a
-	// release that isn't there.
+	// A notification reloads the entire library tree, restarting the filesystem watches, dropping caches and disturbing
+	// anything in progress, so one is sent only when this check found something the previous one didn't: an update
+	// newly available, content changed on disk outside of the app, or an update no longer on offer -- withdrawn, or
+	// applied outside of the app -- whose indicator must come down. The first check of a library also announces an
+	// update that was already pending, which raises the indicator at startup. A library with no releases to compare
+	// against -- a local one, or a repo whose releases were all rejected as incompatible -- has nothing to announce,
+	// even though the "0" that stands in for an unknown version on disk differs from the empty version of a missing
+	// release.
 	prevUpdateAvailable := prevLastRelease != "" && prevCurrent != prevLastRelease
 	updateAvailable := lastRelease != "" && current != lastRelease
 	if updateAvailable && (firstCheck || prevCurrent != current || prevLastRelease != lastRelease) ||
@@ -554,10 +545,9 @@ func (l *Library) AvailableReleases() (current string, releases []Release) {
 }
 
 // NeedsUpgradeCheck returns true if the library is backed by a GitHub repository and no update check of it has
-// completed since it was pointed at that repository, either because none has been made -- with the periodic checks
-// turned off, none is -- or because every one made so far failed to reach the repository. A library that isn't backed
-// by a repository has nothing to check. A check that is still in flight doesn't yet satisfy the need; calling
-// CheckForAvailableUpgrade() waits for it, and makes a check of its own if that one turns out not to have answered.
+// succeeded since it was pointed at that repository, either because none has been made -- with the periodic checks
+// turned off, none is -- or because every one so far failed to reach the repository. A check still in flight doesn't
+// count; CheckForAvailableUpgrade() waits for it, and makes a check of its own if that one doesn't answer.
 func (l *Library) NeedsUpgradeCheck() bool {
 	l.lock.RLock()
 	defer l.lock.RUnlock()
@@ -615,15 +605,14 @@ func (l *Library) VersionOnDisk() string {
 	return strings.TrimSpace(string(bytes.SplitN(data, []byte{'\n'}, 2)[0]))
 }
 
-// refreshVersionOnDisk updates the cached "current" version from what is present on disk and discards any update check
-// still in flight, since the version that check reads -- which it does before taking the lock -- may be of what was
-// there before. Everything that replaces what is on disk must call this once the replacement is in place: a change of
-// path, a download, whether it succeeded or not, and a change of repository, which can change whether the library is
-// the User Library. Without the discard, a check that read the old directory's version, or the "0" that stands in for
-// a directory moved aside during a download, could land after the refresh and put that back as the current version,
-// showing an update for a library that is in fact up to date until the next scheduled check corrected it. A discarded
-// check leaves the library as it found it -- whether it had been checked is unchanged -- and whoever waited on it asks
-// again; see CheckForAvailableUpgrade. The library lock must not be held when calling this.
+// refreshVersionOnDisk re-reads the cached "current" version from disk and discards any update check still in flight,
+// since the version that check read, before taking the lock, may be of what was there before. Everything that replaces
+// what is on disk must call this once the replacement is in place: a change of path, a download (successful or not),
+// and a change of repository, which can change whether the library is the User Library. Without the discard, a check
+// that read the old directory's version, or the "0" of a directory moved aside during a download, could land after the
+// refresh and show an update for an up-to-date library until the next scheduled check. A discarded check leaves whether
+// the library has been checked unchanged, and whoever waited on it asks again; see CheckForAvailableUpgrade. The
+// library lock must not be held when calling this.
 func (l *Library) refreshVersionOnDisk() {
 	current := l.VersionOnDisk()
 	l.lock.Lock()
@@ -632,8 +621,7 @@ func (l *Library) refreshVersionOnDisk() {
 	l.lock.Unlock()
 }
 
-// Download the release onto the local disk. progress, which may be nil, is called as the work proceeds; see
-// UpdateProgress for what it receives and what is required of it.
+// Download the release onto the local disk. progress may be nil; see UpdateProgress for what is required of it.
 func (l *Library) Download(ctx context.Context, client *http.Client, release *Release, progress UpdateProgress) error {
 	libData := l.Data() // Not named "data", since the byte buffers below already use that name
 	p := l.Path()
@@ -643,10 +631,10 @@ func (l *Library) Download(ctx context.Context, client *http.Client, release *Re
 	if estimate <= 0 {
 		estimate = defaultDownloadSizeEstimate
 	}
-	// Everything to do with progress goes through the one lock, because the git transport reads its responses on
-	// goroutines of go-git's choosing. Counting a chunk and reporting where that leaves things as a single unit is what
-	// keeps two of those goroutines from delivering their progress out of order, which would show as a bar that jumps
-	// backwards, and it means the caller's function is never entered twice at once.
+	// All progress goes through one lock, because the git transport reads its responses on goroutines of go-git's
+	// choosing. Counting a chunk and reporting the result as one unit keeps those goroutines from delivering progress
+	// out of order, which would show as a bar that jumps backwards, and keeps the caller's function from being entered
+	// twice at once.
 	var lock sync.Mutex
 	var received int64
 	report := func(phase UpdatePhase, fraction float64) {
@@ -694,11 +682,10 @@ func (l *Library) Download(ctx context.Context, client *http.Client, release *Re
 				errs.Log(errs.NewWithCause("unable to move the old directory back into place", err), "old", tmpDir, "new", p)
 			}
 		}
-		// Whether the new content is now in place or the old has been put back, what is on disk was replaced while an
-		// update check may have been reading it, so the cached version is re-read here and any such check discarded.
-		// That matters as much for a download that failed as for one that succeeded: the check would otherwise land
-		// with the "0" it read while the directory was aside, and the update flow, which waits on the check either
-		// way, would be told that it was served.
+		// Whether the new content is in place or the old was put back, what is on disk was replaced while an update
+		// check may have been reading it, so the cached version is re-read and any such check discarded. Otherwise the
+		// check could land with the "0" it read while the directory was aside, and the update flow, which waits on the
+		// check either way, would be told that it was served.
 		l.refreshVersionOnDisk()
 	}()
 	if err = os.MkdirAll(p, 0o750); err != nil {
@@ -785,8 +772,7 @@ func installLibraryContent(ctx context.Context, root string, entries []libraryIn
 	var written int64
 	report(UpdateInstalling, 0)
 	for _, entry := range entries {
-		// Writing the content out is the half of the update the context would otherwise have no say over, and it is
-		// long enough to be worth interrupting, so each file is a chance to stop.
+		// Writing the content out takes long enough to be worth interrupting, so each file is a chance to stop.
 		if err := ctx.Err(); err != nil {
 			return errs.Wrap(err)
 		}
@@ -804,9 +790,8 @@ func installLibraryContent(ctx context.Context, root string, entries []libraryIn
 		written += entry.size
 		report(UpdateInstalling, exactFraction(written, total))
 	}
-	// The loop reports its progress as it goes, but it can't be relied upon to have finished on a whole number of
-	// anything -- a download holding no library content reports nothing at all -- so the phase is closed out here
-	// rather than leaving a bar that stops short of its end.
+	// The loop can't be relied upon to end on a fraction of exactly 1 -- with no library content it reports nothing at
+	// all -- so the phase is closed out here rather than leaving a bar that stops short of its end.
 	report(UpdateInstalling, 1)
 	return nil
 }
@@ -831,9 +816,8 @@ func libraryArchiveContent(zr *zip.Reader) (entries []libraryInstallEntry, total
 }
 
 // libraryCloneContent picks out the files in a checked-out clone that make up the library's content, which is the
-// normal files below its "Library" folder, and totals their sizes. The clone lives in memory, so the pass costs nothing
-// worth avoiding, and having the total is what lets the install report real progress rather than a count of files
-// against nothing.
+// normal files below its "Library" folder, and totals their sizes so that the install can report real progress. The
+// clone lives in memory, so the extra pass is cheap.
 func libraryCloneContent(clone billy.Filesystem) (entries []libraryInstallEntry, total int64, err error) {
 	err = util.Walk(clone, "Library", func(path string, info os.FileInfo, walkErr error) error {
 		if walkErr != nil {
@@ -885,9 +869,8 @@ func (l *Library) downloadRelease(ctx context.Context, client *http.Client, rele
 		return nil, err
 	}
 	defer xio.DiscardAndCloseIgnoringErrors(rsp.Body)
-	// The body is read through a counter rather than with io.ReadAll() so that the caller can follow the download as it
-	// arrives. GitHub generates these archives on the fly and sends them without a Content-Length, so counting what has
-	// turned up is all there is to go on.
+	// The body is read through a counter so that the caller can follow the download as it arrives; GitHub generates
+	// these archives on the fly and sends them without a Content-Length.
 	var buffer bytes.Buffer
 	if _, err = buffer.ReadFrom(&countingReader{r: rsp.Body, received: received}); err != nil {
 		return nil, errs.NewWithCause("unable to download "+release.ZipFileURL, err)

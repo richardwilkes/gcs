@@ -154,25 +154,22 @@ func (n *Node[T]) SetChildren(children []*Node[T]) {
 	}
 }
 
-// RefreshChildren discards any cached child nodes so that the next call to Children() rebuilds them from the underlying
-// data. Call this when the data's children have been altered directly, since the cached nodes would otherwise go on
-// reflecting the old state.
+// RefreshChildren discards the cached child nodes so that the next call to Children rebuilds them from the underlying
+// data. Call it after altering the data's children directly.
 func (n *Node[T]) RefreshChildren() {
 	n.children = nil
 }
 
-// cellData returns the cell data for the given column of this row. forDisplay says whether the data is wanted for
-// something the user will actually see, which is what decides if the page-only display preferences (such as the number
-// of decimal places shown for equipment weights) get applied to it: they are, but only for a row that is on a page.
-// Sorting asks with forDisplay false, because the rounding those preferences perform is lossy, and sorting the rows by
-// the rounded text would tie rows whose real values differ, leaving them in an arbitrary order. Searching asks both
-// ways (see columnContains), so that a row is found by the value the user can see as well as by the exact value.
+// cellData returns the cell data for the given column of this row. forDisplay says whether the data is for something
+// the user will see, which decides whether the page-only display preferences (such as the decimal places shown for
+// equipment weights) are applied; they are, but only for a row on a page. Sorting passes false, since their rounding is
+// lossy and would tie rows whose real values differ. Searching asks both ways (see columnContains), so that a row is
+// found by the value the user sees as well as by the exact value.
 func (n *Node[T]) cellData(col int, forDisplay bool) gurps.CellData {
 	data := gurps.CellData{ForPage: n.forPage && forDisplay}
 	n.data.CellData(n.table.Columns[col].ID, &data)
-	// A row that a filter shows only because a row beneath it matched is there for context rather than as a match, so
-	// it is dimmed the way a disabled row is, leaving the rows that matched to stand out. Only the display asks, since
-	// what a row is being shown for has no bearing on how it sorts or what it matches.
+	// A row a filter shows only as context for a match beneath it is dimmed like a disabled row, so the matches stand
+	// out. Sorting and matching don't see the dimming.
 	if forDisplay && n.table.IsFilterContextRow(n) {
 		data.Dim = true
 	}
@@ -951,7 +948,7 @@ func (n *Node[T]) excessColumnCollapsedWidth(col int) float32 {
 	_, size, _ := n.createLabelCell(&c, 0, unison.ThemeOnSurface, unison.ThemeSurface, false).AsPanel().Sizes(geom.Size{})
 	width := size.Width + n.table.Padding.Left + n.table.Padding.Right
 	if hadSecondary {
-		// Account for the disclosure button shown to the left of collapsible notes.
+		// Account for the notes disclosure button shown beside the primary text.
 		width += n.primaryFieldFont().Baseline() + unison.StdHSpacing/2
 	}
 	if n.table.Columns[col].ID == n.table.HierarchyColumnID {

@@ -21,15 +21,14 @@ const (
 	UpdateInstalling
 )
 
-// UpdateProgress reports how far a library update has gotten. fraction runs from 0 to 1 within the phase it is
-// given, so a caller showing a progress bar should start the bar over whenever the phase changes. It is called often,
-// and from more than one goroutine, though never from two at once, so it must be cheap and must not block; throttling
-// and marshaling to a UI thread are the caller's business.
+// UpdateProgress reports how far a library update has gotten. fraction runs from 0 to 1 within each phase, so a
+// progress bar should start over whenever the phase changes. It is called often and from more than one goroutine,
+// though never from two at once, so it must be cheap and must not block; throttling and marshaling to a UI thread are
+// the caller's business.
 type UpdateProgress func(phase UpdatePhase, fraction float64)
 
-// maxEstimatedFraction is as far as the download portion of the progress bar may advance while it is being measured
-// against an estimate. Holding it short of the end keeps an estimate that turns out to be too small from showing a
-// finished bar while data is still arriving.
+// maxEstimatedFraction caps download progress measured against an estimate, so that an estimate that turns out to be
+// too small doesn't show a finished bar while data is still arriving.
 const maxEstimatedFraction = 0.98
 
 // estimatedFraction maps a running byte count onto the 0 to 1 range using a size that is only a guess. GitHub builds
@@ -45,8 +44,8 @@ func estimatedFraction(received, estimate int64) float64 {
 	return maxEstimatedFraction
 }
 
-// exactFraction maps a running count onto the 0 to 1 range using a total that is known. A total of zero means there was
-// nothing to do, which is as finished as it can be.
+// exactFraction maps a running count onto the 0 to 1 range using a known total. A total of zero means there was nothing
+// to do, so it reports 1.
 func exactFraction(current, total int64) float64 {
 	switch {
 	case current >= total:
@@ -74,8 +73,7 @@ func (r *countingReader) Read(data []byte) (int, error) {
 	return n, err
 }
 
-// countingReadCloser is a countingReader that closes the reader it was built from, for the case where what is being
-// measured is an HTTP response body.
+// countingReadCloser is a countingReader that also closes the underlying reader, for measuring an HTTP response body.
 type countingReadCloser struct {
 	countingReader
 	closer io.Closer

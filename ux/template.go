@@ -211,9 +211,8 @@ func ApplyTemplate(filePath string) {
 }
 
 // applyTemplate applies the template to the sheets the user picks, offering to randomize the profile again when the
-// template brings an ancestry. The parameter is only there to fit the command handler signature and is ignored.
-// Creating a new sheet from a template is the one path that randomizes without making that offer, which it does by
-// calling applyTemplateToSheet directly.
+// template brings an ancestry. Creating a new sheet from a template is the one path that randomizes without making that
+// offer, which it does by calling applyTemplateToSheet directly.
 func (t *Template) applyTemplate(_ any) {
 	name := i18n.Text("Apply Template")
 	chooseOp := promptOperation{
@@ -230,7 +229,7 @@ func (t *Template) applyTemplate(_ any) {
 
 // applyTemplateToSheet applies the template to the sheet, putting the questions it raises to the user as part of the
 // given operation. With suppressRandomizePrompt, the profile is randomized again without asking when the template
-// brings an ancestry, rather than the user being offered it.
+// brings an ancestry. Returns false, leaving the sheet untouched, if the user cancels.
 func (t *Template) applyTemplateToSheet(sheet *Sheet, op promptOperation, suppressRandomizePrompt bool) bool {
 	parts := &applyParts{
 		bodyType:  t.template.BodyType,

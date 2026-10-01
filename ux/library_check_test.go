@@ -19,10 +19,9 @@ import (
 )
 
 // TestLibraryUpdateButtonsEnabledBeforeAnyCheck verifies that the Library Explorer's update and release-notes buttons
-// are usable for a library with a repository behind it even though no check has told them about a release, and stay
-// usable after a check that couldn't reach the repository. With the periodic checks set to Never, nothing else ever
-// fills in a library's releases, and the buttons used to stay disabled for the whole session. A library with no
-// repository has nothing to check and stays disabled.
+// are usable for a library with a repository before any check has found a release, and after a check that couldn't
+// reach the repository, since with the periodic checks set to Never nothing else fills in a library's releases. A
+// library with no repository stays disabled.
 func TestLibraryUpdateButtonsEnabledBeforeAnyCheck(t *testing.T) {
 	c := check.New(t)
 	local := library.NewLibrary("Local", "", "", "local", t.TempDir())

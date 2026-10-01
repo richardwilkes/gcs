@@ -82,8 +82,8 @@ func shortNames(names ...string) []any {
 	return short
 }
 
-// describeRows names the rows a transfer is moving: the row itself when there is only the one, or else how many there
-// are, counted by their kind.
+// describeRows names the rows: the row itself when there is only the one, or else how many there are, counted by their
+// kind.
 func describeRows[T gurps.Node[T]](rows []T) string {
 	if len(rows) == 1 {
 		return rows[0].String()

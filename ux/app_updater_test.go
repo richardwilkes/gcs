@@ -19,13 +19,10 @@ import (
 	"github.com/richardwilkes/toolbox/v2/check"
 )
 
-// pendingAppRelease is the release the tests seed as one the user has already been told about. Its version is far
-// enough ahead of anything real that it can never coincide with the version the tests are built as.
+// pendingAppRelease is a release the user has already been told about, versioned far enough ahead that it can never
+// match the version the tests are built as.
 var pendingAppRelease = []library.Release{{Version: "99.0.0"}}
 
-// TestQuietCheckFailureKeepsAKnownUpdate verifies that a background check which can't reach the update site leaves the
-// update the user already knows about on display. The quiet checks run unattended, so a network hiccup that quietly
-// erased the notice would take the update away with nothing to tell the user it had happened.
 func TestQuietCheckFailureKeepsAKnownUpdate(t *testing.T) {
 	c := check.New(t)
 	var u appUpdater
@@ -43,8 +40,8 @@ func TestQuietCheckFailureKeepsAKnownUpdate(t *testing.T) {
 	c.False(u.quiet, "the quiet check must no longer be marked as in flight")
 }
 
-// TestQuietCheckWithNoUpdateClearsAStaleRelease verifies that a background check which finds nothing on offer takes
-// down a release that is no longer being offered -- the user having installed it, for instance -- and says so.
+// TestQuietCheckWithNoUpdateClearsAStaleRelease covers a release no longer on offer, such as one the user has since
+// installed.
 func TestQuietCheckWithNoUpdateClearsAStaleRelease(t *testing.T) {
 	c := check.New(t)
 	var u appUpdater
@@ -58,8 +55,8 @@ func TestQuietCheckWithNoUpdateClearsAStaleRelease(t *testing.T) {
 	c.False(updating)
 }
 
-// TestQuietCheckFindingAnUpdateRecordsIt verifies that the quiet path records a release the same way the visible one
-// does, since the toolbar button and the Help menu read that state without knowing which check produced it.
+// TestQuietCheckFindingAnUpdateRecordsIt verifies that the quiet path records a release as the visible one does, since
+// the toolbar button and the Help menu can't tell which check produced it.
 func TestQuietCheckFindingAnUpdateRecordsIt(t *testing.T) {
 	c := check.New(t)
 	var u appUpdater
@@ -73,9 +70,8 @@ func TestQuietCheckFindingAnUpdateRecordsIt(t *testing.T) {
 	c.False(updating)
 }
 
-// TestQuietResultIsDiscardedAfterAVisibleCheckStarts verifies that a background result which arrives after the user
-// started a check of their own is thrown away. The visible check is the newer question, and letting the older answer
-// land would overwrite the "Checking…" state with a result the user never asked for.
+// TestQuietResultIsDiscardedAfterAVisibleCheckStarts verifies that a late quiet result can't overwrite the "Checking…"
+// state of a visible check the user started.
 func TestQuietResultIsDiscardedAfterAVisibleCheckStarts(t *testing.T) {
 	c := check.New(t)
 	var u appUpdater
@@ -91,9 +87,6 @@ func TestQuietResultIsDiscardedAfterAVisibleCheckStarts(t *testing.T) {
 	c.False(u.quiet, "the quiet check must no longer be marked as in flight")
 }
 
-// TestBeginQuietRefusesWhileAnotherCheckRuns verifies that a quiet check never starts on top of a visible one, whose
-// answer is the one the user is waiting for, nor on top of another quiet one, which would mean two requests to the
-// update site for the same information.
 func TestBeginQuietRefusesWhileAnotherCheckRuns(t *testing.T) {
 	c := check.New(t)
 	var visible appUpdater
@@ -108,10 +101,8 @@ func TestBeginQuietRefusesWhileAnotherCheckRuns(t *testing.T) {
 	c.False(ok, "a second quiet check must not start while the first is in flight")
 }
 
-// TestUncheckedUpdaterReportsAStatus verifies that an updater which has never recorded a result still has something to
-// say, and that what it says follows the setting. The Help menu shows this title verbatim, so an empty string would
-// leave a blank menu item, and it used to claim that the checks were off whenever no check had run -- which, after the
-// setting was switched away from Never mid-session, was no longer true.
+// TestUncheckedUpdaterReportsAStatus verifies that the title before any result is never blank and follows the setting.
+// It once claimed the checks were off whenever none had run, which was wrong once the setting left Never mid-session.
 func TestUncheckedUpdaterReportsAStatus(t *testing.T) {
 	c := check.New(t)
 	option := updatecheck.Never
@@ -136,9 +127,6 @@ func TestUncheckedUpdaterReportsAStatus(t *testing.T) {
 	c.Equal(noAppUpdatesText(), title)
 }
 
-// TestQuietCheckFailureWithNothingKnownIsReported verifies that a background check which fails when nothing is known
-// records the failure. There is nothing to protect in that state, and leaving the title claiming that no check has
-// run would hide the fact that one did and couldn't reach the update site.
 func TestQuietCheckFailureWithNothingKnownIsReported(t *testing.T) {
 	c := check.New(t)
 	u := appUpdater{frequency: func() updatecheck.Option { return updatecheck.Hourly }}
@@ -158,10 +146,9 @@ func TestQuietCheckFailureWithNothingKnownIsReported(t *testing.T) {
 	c.Equal(noAppUpdatesText(), title)
 }
 
-// TestCheckingCoversBothKindsOfCheck verifies that Checking() reports a quiet check as well as a visible one, while
-// Result() goes on reporting only the visible kind as updating. The Help menu's check item is disabled on the strength
-// of Checking(), so that it can't start a second request while a background check is already on its way; the status
-// item and the toolbar button read Result(), and a quiet check must not take a known update away from them.
+// TestCheckingCoversBothKindsOfCheck verifies that Checking reports both kinds of check while Result reports only a
+// visible one as updating: the Help menu's check item reads Checking, while the status item and toolbar button read
+// Result and must keep showing a known update during a quiet check.
 func TestCheckingCoversBothKindsOfCheck(t *testing.T) {
 	c := check.New(t)
 	var u appUpdater
@@ -185,8 +172,6 @@ func TestCheckingCoversBothKindsOfCheck(t *testing.T) {
 	c.False(u.Checking(), "a finished visible check must no longer count")
 }
 
-// TestShouldShowAppUpdateDialog verifies the rule that keeps the update dialog from reappearing at every launch: it
-// opens for a release that hasn't been seen and stays shut for the one recorded as already seen.
 func TestShouldShowAppUpdateDialog(t *testing.T) {
 	c := check.New(t)
 	c.True(shouldShowAppUpdateDialog("99.0.0", "98.0.0"), "a release that hasn't been seen must be announced")

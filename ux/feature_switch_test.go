@@ -144,7 +144,7 @@ func TestSheetShowsSwitchColumnWhenNeeded(t *testing.T) {
 		name         string
 		add          func(entity *gurps.Entity)
 		columns      func(sheet *Sheet) []unison.ColumnInfo
-		switchColumn int // The list's switch column.
+		switchColumn int
 		before       int // The column that holds the switch column's slot until the switch column is needed.
 		switchAt     int // Where the switch column lands; 1 for carried equipment, whose equipped column stays first.
 	}{
@@ -497,10 +497,9 @@ func TestDimmedSwitchCellRemainsClickable(t *testing.T) {
 	c.Equal(unison.CheckmarkSVG, drawable.SVG, "the dimmed cell must show the switch it just threw as on")
 }
 
-// clickSwitchCellThroughTable delivers a primary click to the cell at the given row and column the way a real one
-// arrives: at the center of the frame the table computes for that cell, through the table's own mouse callbacks, which
-// are what locate the cell under the pointer and hand it the event. The table must have been sized beforehand, since
-// those frames come from the column widths and row heights a layout pass produces.
+// clickSwitchCellThroughTable clicks the center of the given cell's frame through the table's own mouse callbacks,
+// which locate the cell under the pointer and hand it the event, as a real click arrives. The table must already be
+// sized, since the frames come from its column widths and row heights.
 func clickSwitchCellThroughTable[T gurps.Node[T]](table *unison.Table[*Node[T]], row, col int) (down, up bool) {
 	where := table.CellFrame(row, col).Center()
 	down = table.MouseDownCallback(where, unison.ButtonLeft, 1, mod.None)
@@ -508,13 +507,10 @@ func clickSwitchCellThroughTable[T gurps.Node[T]](table *unison.Table[*Node[T]],
 	return down, up
 }
 
-// The property that lets a dimmed switch cell be a disabled panel, along the path a user actually takes rather than by
-// calling the cell's own callback directly: the table locates the cell under the pointer and hands it the press itself
-// (Table.DefaultMouseDown and friends), never consulting the cell's enabled state, and the window only ever sees the
-// table, since a cell is attached to the table for the duration of a single event rather than being one of its
-// children. Both cases are driven identically here, so the dimmed one is measured against a known-good baseline, and
-// each ends with a press on an ordinary column that does reach the table's own row selection -- which shows the
-// dispatch really is happening rather than the presses going nowhere.
+// A dimmed switch cell can be a disabled panel because the table, not the window, hands it the press
+// (Table.DefaultMouseDown and friends) without consulting its enabled state; a cell is attached to the table only for
+// the duration of an event. This drives that path as a user would, against an undimmed baseline, and ends each case
+// with a press on an ordinary column that reaches the table's own row selection, showing the dispatch really happens.
 func TestSwitchCellIsClickableThroughTheTable(t *testing.T) {
 	for _, tc := range []struct {
 		name string
@@ -540,10 +536,9 @@ func TestSwitchCellIsClickableThroughTheTable(t *testing.T) {
 			c.NotNil(mgr, "the table must be able to find the sheet's undo manager")
 			c.False(mgr.CanUndo(), "nothing has been done yet")
 
-			// Hit testing needs the table to know how wide its columns and how tall its rows are, which it does even
-			// without a window: syncing a page list sizes its columns to their content (see sizePageTableColumns) and
-			// syncing a table to its model measures every row, and the rebuild above did both. The frame is checked
-			// here so a change to any of that shows up as this rather than as presses that quietly land nowhere.
+			// Hit testing needs column widths and row heights, which the rebuild above set without a window: page list
+			// syncing sizes the columns (see sizePageTableColumns) and model syncing measures every row. Checking the
+			// frame makes a change there fail here, not as presses that quietly land nowhere.
 			c.False(table.CellFrame(0, col).Empty(), "the switch cell must have a frame to aim at")
 			label, ok := table.RootRows()[0].ColumnCell(0, col, unison.Black, unison.White, false, false,
 				false).(*unison.Label)
@@ -611,11 +606,9 @@ func newSheetWithSwitchableReaction(t *testing.T) (*Sheet, *gurps.Trait) {
 	return sheet, trait
 }
 
-// Throwing a switch must rebuild the sheet rather than merely mark it as modified. A switchable feature can be a
-// reaction bonus, and the Reactions list is only carried on the page while there is a reaction to show -- something
-// decided only when the sheet creates its lists -- so a toggle that only marked the sheet as modified would leave the
-// list missing after switching on, and an empty list behind after switching off. The rebuild is also the whole of the
-// update: the sheet must not be synced a second time on top of it.
+// Throwing a switch must rebuild the sheet, not merely mark it as modified: a switchable feature can be a reaction
+// bonus, and the Reactions list is on the page only while there is a reaction to show, which is decided only when the
+// sheet creates its lists. The rebuild must be the whole update, with no second sync on top of it.
 func TestToggleFeatureSwitchRebuildsConditionallyPresentLists(t *testing.T) {
 	c := check.New(t)
 	sheet, trait := newSheetWithSwitchableReaction(t)

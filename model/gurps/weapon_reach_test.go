@@ -56,10 +56,8 @@ func TestWeaponReach(t *testing.T) {
 	checkWeaponFieldParsing(check.New(t), parse, same, adjusted)
 }
 
-// TestWeaponReachRoundTripsThroughJSON verifies that a reach set in the editor survives being saved and reloaded. A
-// close combat weapon serializes its marker into the first component of the string ("C,2-3"), where the marker was
-// read as the minimum reach and produced 0, which Validate then turned into 1: every save/load cycle silently rewrote
-// the weapon's minimum reach.
+// TestWeaponReachRoundTripsThroughJSON guards against the close combat marker in the first component ("C,2-3") being
+// read as a minimum reach of 0, which Validate turned into 1, silently rewriting the minimum on every save/load.
 func TestWeaponReachRoundTripsThroughJSON(t *testing.T) {
 	c := check.New(t)
 	for i, original := range []gurps.WeaponReach{

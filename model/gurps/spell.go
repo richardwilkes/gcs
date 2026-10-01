@@ -821,7 +821,7 @@ func (s *Spell) SetDataOwner(owner DataOwner) {
 	}
 }
 
-// Notes implements WeaponOwner.
+// Notes returns the resolved local notes.
 func (s *Spell) Notes() string {
 	return s.ResolveLocalNotes()
 }
@@ -937,13 +937,12 @@ func (s *Spell) SetRawPoints(points fxp.Int) bool {
 	return s.UpdateLevel()
 }
 
-// AdjustedPoints returns the points, adjusted for any bonuses. Something presenting a choice every outcome of which
-// costs the same reports that cost; see PointsRange for one whose outcomes differ.
+// AdjustedPoints returns the points, adjusted for any bonuses. A container whose choice outcomes all cost the same
+// reports that cost; see PointsRange for one whose outcomes differ.
 func (s *Spell) AdjustedPoints(tooltip *xbytes.InsertBuffer) fxp.Int {
 	if s.Container() {
 		// The tooltip goes no further: a container never puts anything into it; see PointsRange for why.
 		if !s.TemplatePicker.IsZero() {
-			// See pickerContainerPoints for what a container presenting a choice is worth.
 			return pickerContainerPoints(s.TemplatePicker, TemplateChoiceOptions(s))
 		}
 		var total fxp.Int
@@ -956,11 +955,10 @@ func (s *Spell) AdjustedPoints(tooltip *xbytes.InsertBuffer) fxp.Int {
 		s.PowerSourceWithReplacements(), s.CollegeWithReplacements(), s.Tags, tooltip)
 }
 
-// PointsRange returns the span of point costs this spell may end up being worth, once every choice it or anything
-// inside it presents has been made. With no choice left to make, the range is settled and holds the same value
-// AdjustedPoints returns. The tooltip may be nil, and only a non-container ever fills it: the notes name each bonus
-// source without saying which row it landed on, so rolling a container's children up into one list would give an
-// unattributed, repetitive pile. That detail belongs on the child rows, where hovering shows it.
+// PointsRange returns the span of point costs this spell may end up being worth once every choice in or under it has
+// been made; with no choice left, it holds the AdjustedPoints value. The tooltip may be nil, and only a non-container
+// fills it: the notes name each bonus source without saying which row it landed on, so rolling up a container's
+// children would give an unattributed, repetitive pile.
 func (s *Spell) PointsRange(tooltip *xbytes.InsertBuffer) NumericRange {
 	if !s.Container() {
 		return NumericRangeOf(s.AdjustedPoints(tooltip))
@@ -1202,7 +1200,7 @@ func (s *SpellNonContainerOnlySyncData) hash(h hash.Hash) {
 	hashList(h, s.Features)
 }
 
-// CopyFrom implements node.EditorData.
+// CopyFrom implements EditorData.
 func (s *SpellEditData) CopyFrom(other *Spell) {
 	s.copyFrom(other, &other.SpellEditData, other.Container(), false, Copy)
 }
@@ -1212,7 +1210,7 @@ func (s *SpellEditData) SetNameableReplacements(replacements map[string]string) 
 	s.Replacements = replacements
 }
 
-// ApplyTo implements node.EditorData.
+// ApplyTo implements EditorData.
 func (s *SpellEditData) ApplyTo(other *Spell) {
 	other.copyFrom(other, s, other.Container(), true, Copy)
 }

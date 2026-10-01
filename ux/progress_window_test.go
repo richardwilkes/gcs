@@ -18,8 +18,8 @@ import (
 	"github.com/richardwilkes/unison"
 )
 
-// backgroundHandshakeTimeout is how long these tests wait for the background goroutine. It is far longer than anything
-// that should ever be needed, since it exists only so that a broken hand-off fails the test rather than hanging it.
+// backgroundHandshakeTimeout is a generous bound on the wait for the background goroutine, so that a broken hand-off
+// fails the test rather than hanging it.
 const backgroundHandshakeTimeout = 10 * time.Second
 
 // awaitBackgroundResult receives the background work's result, failing rather than hanging if it never arrives.

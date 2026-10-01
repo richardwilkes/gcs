@@ -30,7 +30,7 @@ import (
 // and which criteria the authoring panel offers.
 type SelectorScope byte
 
-// Possible SelectorScope values. The zero value is the weapon scope, so existing weapon descriptors need no change.
+// Possible SelectorScope values. The zero value is the weapon scope, so weapon descriptors need not set Scope.
 const (
 	SelectorScopeWeapon SelectorScope = iota
 	SelectorScopeTrait

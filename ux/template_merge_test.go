@@ -230,7 +230,7 @@ func TestMergeSpellPoints(t *testing.T) {
 }
 
 // placeSkills places the added skills after the existing ones already on a sheet, the way any rows arriving on a sheet
-// are placed, returning the sheet's skills table afterwards.
+// are placed, returning the sheet's entity and skills table afterwards.
 func placeSkills(t *testing.T, existing []*gurps.Skill, added ...*gurps.Skill) (*gurps.Entity, *unison.Table[*Node[*gurps.Skill]]) {
 	t.Helper()
 	sheet := newTestSheetForTemplate(t)
@@ -264,8 +264,7 @@ func TestPlaceMergesIntoExistingRows(t *testing.T) {
 		c.Equal(fxp.FromInteger(4), existing.Points)
 	})
 
-	// Two identical existing rows must not merge with each other, and an added row must merge into the matching
-	// candidate among the rows sharing its hash.
+	// Existing rows sharing a hash must not merge with each other, and an added row must merge into the matching one.
 	t.Run("added row merges into an existing row that shares a hash", func(t *testing.T) {
 		existingTL8 := newTestSkill("Guns", fxp.FromInteger(4), new("8"))
 		existingTL9 := newTestSkill("Guns", fxp.FromInteger(1), new("9"))

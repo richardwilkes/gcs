@@ -29,10 +29,10 @@ import (
 // Wanted pages are never evicted, so the cap may be exceeded when a great many pages are visible at once.
 const maxPDFPageCacheBytes = uint64(512 << 20)
 
-// maxPDFTextPages is a cap on the number of pages whose extracted text is retained. Text is tiny next to a page image
-// -- a densely typeset page runs to a few hundred KB rather than the tens of MB its image costs -- but a long document
-// paged through end to end would still accumulate all of it. The cap is generous enough that it never gets in the way
-// of a selection, since a selection can only span the pages a single drag manages to cross.
+// maxPDFTextPages caps the number of pages whose extracted text is retained. Text is tiny next to a page image -- a
+// densely typeset page runs to a few hundred KB rather than the tens of MB its image costs -- but a long document paged
+// through end to end would still accumulate all of it. The cap is generous enough never to get in the way of a
+// selection, which can only span the pages a single drag crosses.
 const maxPDFTextPages = 64
 
 // PDFTableOfContents holds a table of contents entry.
@@ -42,7 +42,7 @@ type PDFTableOfContents struct {
 	Children   []*PDFTableOfContents
 }
 
-// PDFPage holds a rendered PDFRenderer page.
+// PDFPage holds a rendered PDF page.
 type PDFPage struct {
 	Error      error
 	PageNumber int
@@ -50,7 +50,7 @@ type PDFPage struct {
 	Links      []*PDFLink
 }
 
-// PDFLink holds a single link on a page. If PageNumber if >= 0, then this is an internal link and the URI will be
+// PDFLink holds a single link on a page. If PageNumber is >= 0, then this is an internal link and the URI will be
 // empty.
 type PDFLink struct {
 	Bounds     geom.Rect
@@ -67,14 +67,13 @@ type pdfCacheEntry struct {
 }
 
 // pdfTextEntry holds one page's extracted text along with the information needed to manage its residency in the text
-// cache. A nil text means the page couldn't be read at all, which is the one failure pdfview reports from an
-// extraction; a page that merely has no text on it comes back as a real, empty TextPage. The entry is kept for an
-// unreadable page anyway so that the failure is answered from the cache rather than rediscovered on every mouse move
-// across the page.
+// cache. A nil text means the page couldn't be read at all, the one failure pdfview reports from an extraction (a page
+// with no text on it gets a real, empty TextPage). The entry is kept anyway so that the failure is answered from the
+// cache rather than rediscovered on every mouse move across the page.
 //
 // The entry also memoizes the last answer SearchMatches gave for the page, since drawing asks for it again on every
-// frame while the search text sits unchanged. An empty search needs no flag of its own: SearchMatches answers an empty
-// needle without consulting the entry, so the string stored here is always one somebody actually searched for.
+// frame. SearchMatches answers an empty needle without consulting the entry, so an empty search here just means nothing
+// has been memoized yet.
 type pdfTextEntry struct {
 	text     *pdfview.TextPage // nil when the page couldn't be read
 	search   string            // The search text the matches below were computed for; empty until one has been
@@ -82,7 +81,7 @@ type pdfTextEntry struct {
 	lastUsed uint64            // The value of the renderer's monotonic text use tick when this entry was last asked for
 }
 
-// PDFRenderer holds a PDFRenderer page renderer.
+// PDFRenderer renders a PDF document's pages and extracts their text.
 type PDFRenderer struct {
 	// The fields from here through textExtractedCallback are set during construction and are immutable afterwards, so
 	// they may be read without holding the lock.
@@ -114,16 +113,15 @@ type PDFRenderer struct {
 	ppi float32
 }
 
-// NewPDFRenderer creates a new PDFRenderer page renderer. Everything it does is potentially slow: reading the whole
-// file into memory, parsing it, and then asking every page for the size it will render at. A file the OS has to fetch
-// back from cloud storage first can make the read alone take minutes, so this is meant to be called from a background
-// goroutine rather than from the UI thread.
+// NewPDFRenderer creates a new PDF page renderer. Everything it does is potentially slow -- reading the whole file into
+// memory, parsing it, and asking every page for the size it will render at -- and a file the OS has to fetch back from
+// cloud storage first can make the read alone take minutes, so call this from a background goroutine, not the UI
+// thread.
 //
-// That is precisely why ppi and scaleAdjust are parameters rather than being looked up in here. They derive from
-// gurps.GlobalSettings().General.MonitorPPI() and primaryDisplayScale(), both of which end up calling
-// unison.PrimaryDisplay(), which is only safe to touch from the main/UI thread on some platforms. The caller must
-// capture both values on the UI thread and hand them in. Do not "simplify" this by moving those lookups back inside
-// this function.
+// That is why ppi and scaleAdjust are parameters: they derive from gurps.GlobalSettings().General.MonitorPPI() and
+// primaryDisplayScale(), both of which call unison.PrimaryDisplay(), which on some platforms is only safe to touch from
+// the UI thread. The caller must capture both on the UI thread; do not "simplify" this by moving those lookups back in
+// here.
 //
 // pageRenderedCallback and textExtractedCallback are invoked on the rendering goroutine as a page or a page's text
 // becomes available, so neither may touch the UI directly.
@@ -202,10 +200,8 @@ func (p *PDFRenderer) TOC() []*PDFTableOfContents {
 	return p.toc
 }
 
-// SetWantedPages sets the pages that should be rendered, in priority order. Pages that have already been rendered are
-// left as-is, while the others are queued up for rendering. Nothing here depends on what is being searched for, since
-// the view draws the hits on top of the image rather than into it, so typing in the search field never disturbs what
-// has been rendered.
+// SetWantedPages sets the pages that should be rendered, in priority order. Pages already rendered are left as-is; the
+// others are queued for rendering.
 func (p *PDFRenderer) SetWantedPages(pages []int) {
 	p.lock.Lock()
 	if p.closed || slices.Equal(pages, p.want) {
@@ -270,14 +266,10 @@ func (p *PDFRenderer) PendingSince(pageNumber int) (requested time.Time, pending
 	return requested, pending
 }
 
-// RequestText asks for the text of the given 0-based page to be extracted, if that hasn't already been done. Nothing
-// happens for a page whose text is already available, so this is cheap to call repeatedly. The extraction runs on the
-// render queue's worker, since it costs about what the text portion of a render of the same page costs and so has no
-// business happening on the UI thread; a later call to one of the accessors below picks up the result.
-//
-// The request is submitted as a user signal rather than as a continuation: text is only ever asked for because someone
-// is pointing at, clicking on or dragging across a page right now, so it should not wait behind the background
-// documents.
+// RequestText asks for the text of the given 0-based page to be extracted, if that hasn't already been done, so it is
+// cheap to call repeatedly. The extraction runs on the render queue's worker, and a later call to one of the accessors
+// below picks up the result. It is submitted as a user signal rather than a continuation, since text is only asked for
+// on behalf of something the user is doing right now and should not wait behind the background documents.
 func (p *PDFRenderer) RequestText(pageNumber int) {
 	p.lock.Lock()
 	queue := p.requestText(pageNumber)
@@ -334,15 +326,13 @@ func (p *PDFRenderer) TextLineAt(pageNumber, index int) (start, end int, ok bool
 }
 
 // TextHighlights returns the rectangles that paint the selection [start, end) on the given 0-based page, in the page's
-// logical space -- the same space SearchMatches reports its hits in, so a selection and a search hit are drawn the same
-// way. A range covering no characters, a range whose characters paint nothing (the letters a ligature spells beyond
-// its first have no width of their own, and pdfview drops their rectangles), and a page whose text isn't available all
-// return nil.
+// logical space (the space SearchMatches uses too). A range covering no characters, a range whose characters paint
+// nothing (pdfview drops the rectangles of a ligature's letters beyond its first), and a page whose text isn't
+// available all return nil.
 //
-// Unlike the accessors above, this does not request an extraction for a page that hasn't had one: it is called from
-// drawing, once for every visible page on every frame, and a repaint is no reason to put a page's text at the front of
-// the render queue. The pages a selection spans are pulled in by the caller asking TextLength for each of them, which
-// happens when the selection changes rather than when the view repaints.
+// Unlike the accessors above, this does not request an extraction: it is called from drawing, once for every visible
+// page on every frame, and a repaint is no reason to put a page's text at the front of the render queue. The text of
+// the pages a selection spans is brought in by TextIndexAt for its endpoints and TextLength for the pages between.
 func (p *PDFRenderer) TextHighlights(pageNumber, start, end int) []geom.Rect {
 	p.lock.Lock()
 	text, _ := p.textFor(pageNumber)
@@ -365,17 +355,14 @@ func (p *PDFRenderer) TextRange(pageNumber, start, end int) string {
 // of a dense page's glyphs can't turn drawing that page into thousands of rectangles.
 const pdfMaxSearchHits = 100
 
-// SearchMatches returns the rectangles, in logical space, of the matches of search on the given 0-based page -- the
-// same space TextHighlights reports a selection in, so a search hit and a selection are drawn the same way. At most
-// pdfMaxSearchHits of them are reported. An empty search, a search holding nothing but whitespace, a page with no
-// match on it and a page that couldn't be read all return nil. The returned slice is the renderer's own and must not
-// be modified.
+// SearchMatches returns the rectangles, in the page's logical space, of at most pdfMaxSearchHits matches of search on
+// the given 0-based page. An empty or all-whitespace search, a page with no match on it and a page that couldn't be
+// read all return nil. The returned slice is the renderer's own and must not be modified.
 //
-// ok carries the same meaning it does for TextLength. Unlike TextHighlights, which is also called from drawing and
-// deliberately doesn't ask for an extraction, this does: the hits are wanted for exactly the pages being drawn and
-// nothing else brings their text in. requestText drops a request for a page already asked for, which is what makes
-// calling this from every frame cheap. An empty search asks for nothing, since merely drawing a document nobody is
-// searching has no business extracting the text of every page that scrolls past.
+// ok carries the same meaning it does for TextLength. Unlike TextHighlights, this requests an extraction, since nothing
+// else brings in the text of the pages being drawn; requestText drops a request for a page already asked for, so
+// calling this every frame is cheap. An empty search requests nothing, so drawing a document nobody is searching
+// doesn't extract every page that scrolls past.
 func (p *PDFRenderer) SearchMatches(pageNumber int, search string) (matches []geom.Rect, ok bool) {
 	if search == "" {
 		return nil, true
@@ -398,8 +385,7 @@ func (p *PDFRenderer) SearchMatches(pageNumber int, search string) (matches []ge
 }
 
 // cachedSearchMatches returns the matches already computed for the given 0-based page, if its entry is still in the
-// text cache and holds an answer for this very search text. Drawing asks for the matches of every visible page on
-// every frame while the answer only changes when the search text does, so the matcher runs once per page per search.
+// text cache and holds an answer for this very search text.
 func (p *PDFRenderer) cachedSearchMatches(pageNumber int, search string) (matches []geom.Rect, cached bool) {
 	p.lock.Lock()
 	defer p.lock.Unlock()
@@ -510,10 +496,10 @@ func (p *PDFRenderer) Close() {
 // otherwise a render of the highest priority page that isn't in the cache yet. It is called on the PDF queue's worker
 // goroutine. Neither the document, the image creation, nor the queue submission may be touched while the lock is held.
 //
-// Text comes first because it is only ever asked for by an interaction that is waiting on the answer -- a click that
-// wants a caret, a drag that wants a selection -- while a render is filling in something the user can already see a
-// placeholder for. An extraction is also far cheaper than a render, and the continuation it submits for itself brings
-// the worker straight back around to the pages.
+// Text comes first because it is only asked for by something waiting on the answer -- a click that wants a caret, a
+// drag that wants a selection, a search that wants its hits -- while a render is filling in something the user can
+// already see a placeholder for. An extraction is also far cheaper than a render, and the continuation it submits for
+// itself brings the worker straight back around to the pages.
 func (p *PDFRenderer) renderNext() {
 	if p.extractNextText() {
 		return
@@ -622,12 +608,10 @@ func (p *PDFRenderer) extractNextText() bool {
 	if !ok {
 		return false
 	}
-	// The text is asked for at the one dpi everything is rendered at, so it is labeled for the very images the pointer
-	// is over and never needs re-labeling with AtDPI: zooming scales the rendered image rather than re-rendering it,
-	// and the text's pixel space scales along with it. An error means the page itself couldn't be read -- a page with
-	// nothing on it to select comes back as an empty TextPage instead -- and is cached as a nil text rather than left
-	// absent, so the failure isn't rediscovered every time the pointer crosses it. The render of the same page fails
-	// at the same point and reports it, so there is nothing more to say about it here.
+	// The text is extracted at the one dpi everything is rendered at, so its pixel space matches the rendered image
+	// (which zooming merely scales) and it never needs AtDPI. An error means the page itself couldn't be read (a page
+	// with nothing on it comes back as an empty TextPage); it is cached as a nil text so the failure isn't rediscovered
+	// every time the pointer crosses the page. The render of the same page fails at the same point and reports it.
 	text, err := p.doc.TextPage(pageNumber, p.dpi)
 	if err != nil {
 		text = nil
@@ -661,10 +645,9 @@ func (p *PDFRenderer) recordText(pageNumber int, text *pdfview.TextPage) {
 }
 
 // storeText inserts the entry for a page's extracted text, drops the request that asked for it, and evicts the least
-// recently used entries until the cache is back within its cap. A page that is still waiting on an extraction is never
-// chosen as the victim, which today can't come up -- a page joins the cache and leaves textWant in the same breath --
-// but keeps the eviction from throwing away something that is about to be needed. The lock must be held when calling
-// this.
+// recently used entries until the cache is back within its cap. A page still waiting on an extraction is never evicted;
+// that can't come up today, since a page joins the cache and leaves textWant together, but it keeps the eviction from
+// throwing away something about to be needed. The lock must be held when calling this.
 func (p *PDFRenderer) storeText(pageNumber int, text *pdfview.TextPage) {
 	p.textUseTick++
 	p.textCache[pageNumber] = &pdfTextEntry{text: text, lastUsed: p.textUseTick}

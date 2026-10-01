@@ -17,11 +17,9 @@ import (
 )
 
 // TestCloneWeaponsBelongToTheirNewHolder verifies that the weapon copies made when a trait, skill, spell or piece of
-// equipment is cloned -- or synced from its library source -- belong to the node now holding them. Weapon.Clone() copies
-// the owner over from the original, since it has no way to know the new one, so every caller has to supply it. A copy
-// left pointing at the node it came from resolves its nameable replacements (and its skill defaults and minimum ST)
-// through that node, so a duplicated row's weapons reported the original's values and followed the original's later
-// edits.
+// equipment is cloned -- or synced from its library source -- belong to the clone. Weapon.Clone() keeps the original's
+// owner, so every caller must supply the new one; a copy left pointing at the original resolves its nameable
+// replacements (and its skill defaults and minimum ST) through it, so a duplicated row's weapons followed the original.
 func TestCloneWeaponsBelongToTheirNewHolder(t *testing.T) {
 	c := check.New(t)
 
@@ -75,10 +73,9 @@ func TestCloneWeaponsBelongToTheirNewHolder(t *testing.T) {
 	}
 }
 
-// cloneWithWeapon gives n, whose name is expected to mention "@kind@", a "Fire" replacement for it and one weapon, then
-// clones n and diverges the clone's replacement to "Ice", so the two weapons must resolve differently. Node supplies
-// the clone and owner plumbing, WeaponOwner is what NewWeapon needs and nameable.Setter (promoted from each type's edit
-// data) sets the replacements; only the Weapons slice is a plain field on every node type, so it needs the accessor.
+// cloneWithWeapon gives n a "Fire" replacement for "@kind@" and one weapon, then clones n and diverges the clone's
+// replacement to "Ice", so the two weapons must resolve differently. The Weapons slice is a plain field on every node
+// type rather than an interface method, so it needs the accessor.
 func cloneWithWeapon[T interface {
 	Node[T]
 	WeaponOwner

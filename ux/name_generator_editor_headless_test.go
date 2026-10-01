@@ -35,10 +35,10 @@ type fileListPanel interface {
 
 // TestNameGeneratorEditorHeadless drives the name generator editor end to end inside a headless GCS workspace, the way
 // a user would: it opens the editor from the File menu, adds training names by clicking and typing, toggles the case
-// options, changes the type through its popup, imports names through the open dialog and undoes that with the keyboard,
-// saves through the file dialog, opens the saved generator from an ancestry editor's edit button, and closes both
-// editors. The phases build on one another, so a failure in one that the rest cannot proceed without stops the test
-// there.
+// options, changes the type through its popup, imports names through the open dialog, reorders and removes them,
+// undoing each with the keyboard, saves through the file dialog, brings up the saved generator and a built-in one with
+// an ancestry editor's edit button, and closes both editors. The phases build on one another, so a failure in one that
+// the rest cannot proceed without stops the test there.
 func TestNameGeneratorEditorHeadless(t *testing.T) {
 	c := check.New(t)
 	screen, wnd := startHeadlessWorkspace(t, c)

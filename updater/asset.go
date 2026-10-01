@@ -53,8 +53,7 @@ type platform struct {
 }
 
 // platforms mirrors the naming in unison's cmd/upack/packager, whose packager_darwin.go, packager_linux.go and
-// packager_windows.go each build "<exe>-<version>-<label><ext>". It is written out rather than derived from
-// xos.AppCmdName so a change to the application's command name cannot silently change which file gets downloaded.
+// packager_windows.go each build "<exe>-<version>-<label>-<arch><ext>".
 var platforms = map[string]platform{
 	xos.MacOS:     {label: "macos", ext: ".dmg", payload: BundleName},
 	xos.LinuxOS:   {label: "linux", ext: ".tgz", payload: CmdName},

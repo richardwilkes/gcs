@@ -32,7 +32,7 @@ func newTestEquipment(parent *gurps.Equipment, container bool, baseWeight string
 }
 
 // A container's contained weight is the weight it holds, which is independent of how many copies of the container there
-// are. Deriving it as ExtendedWeight-AdjustedWeight instead yielded S+qty*C for qty > 1 and -S for qty == 0.
+// are. Deriving it as ExtendedWeight-AdjustedWeight instead yielded (qty-1)*S+qty*C for qty > 0 and -S for qty <= 0.
 func TestContainedWeightIsIndependentOfQuantity(t *testing.T) {
 	c := check.New(t)
 	units := fxp.Pound

@@ -46,11 +46,9 @@ func newEditorForTrait() *editor[*gurps.Trait, *gurps.TraitEditData] {
 	return e
 }
 
-// An editor must report unsaved changes when, and only when, its data has actually been edited. The two copies it
-// compares are separate clones with separate script caches, and the derived values used to be part of the comparison: a
-// script that exceeded the permitted per-script execution time while one copy was being marshaled but not the other
-// made an untouched editor enable Apply and Cancel and prompt to save on the way out, purely because the machine had
-// been busy for a moment.
+// An editor must report unsaved changes only when its data has been edited. The two copies it compares have separate
+// script caches, so when their derived values were compared, a script that timed out while marshaling one copy but not
+// the other made an untouched editor prompt to save.
 func TestEditorIsModifiedFollowsTheDataAlone(t *testing.T) {
 	c := check.New(t)
 	e := newEditorForTrait()
@@ -63,10 +61,9 @@ func TestEditorIsModifiedFollowsTheDataAlone(t *testing.T) {
 	c.False(e.isModified(), "putting the original value back must clear the change")
 }
 
-// buildEditorContent fills in the content panel that displayEditor would hand to the given init function, without any
-// of the docking machinery that needs a window. The callback the init function returns is installed as it would be in
-// the real editor, so a change to one widget adjusts the others as it does there. It returns both the editor and its
-// content, so a test can check what a widget in the content does to the editor's copy of the data.
+// buildEditorContent builds an editor's content as displayEditor would, without the docking machinery that needs a
+// window, and installs the init function's callback as the real editor does, so a change to one widget adjusts the
+// others.
 func buildEditorContent[N gurps.Node[N], D gurps.EditorData[N]](owner Rebuildable, target N,
 	initContent func(*editor[N, D], *unison.Panel) func(),
 ) (*editor[N, D], *unison.Panel) {
@@ -155,11 +152,10 @@ func findIntegerFieldLabeled(p *unison.Panel, labelText string) *IntegerField {
 	return nil
 }
 
-// A new trait container holds zero alternative slots, since only an alternative abilities container uses them, yet the
-// slots field used to demand at least one regardless of the container type. The field was blanked, but only over its
-// content, so the error color of the invalid zero showed through the border insets as a sliver of red. Worse, the
-// clamping done while the field was created quietly bumped the editor's copy to one, so the editor opened already
-// modified. The minimum must follow the container type instead.
+// A new trait container holds zero alternative slots, since only an alternative abilities container uses them, so the
+// slots field's minimum must follow the container type. A fixed minimum of one showed the invalid zero's error color
+// through the blanked field's border insets, and its clamping bumped the editor's copy to one, so the editor opened
+// already modified.
 func TestTraitEditorAlternativeSlotsFollowContainerType(t *testing.T) {
 	c := check.New(t)
 	sheet := newTestSheetForTemplate(t)

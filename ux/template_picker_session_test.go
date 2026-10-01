@@ -23,7 +23,7 @@ import (
 	"github.com/richardwilkes/unison"
 )
 
-// newKnightSession returns a session over the class advantages of the DeepNesting mock-up, and its rows by name.
+// newKnightSession returns a session over a knight template's deeply nested class advantages, and its rows by name.
 func newKnightSession() (s *pickerSession[*gurps.Trait], n map[string]*gurps.Trait) {
 	n = make(map[string]*gurps.Trait)
 	leaf := func(name string, points int) *gurps.Trait {
@@ -731,8 +731,8 @@ func TestPickerSessionRowText(t *testing.T) {
 	}, s.hint(n["fit"]))
 }
 
-// newDisadvantageSession returns a session over "Pick -30 points worth" of a choice of "Pick -15 points worth" and
-// "Pick -5 points worth" of disadvantages, and its rows by name.
+// newDisadvantageSession returns a session over "Pick -30 points worth" of a -10 point disadvantage and a choice of
+// "Pick -15 points worth" or "Pick -5 points worth" of disadvantages, and its rows by name.
 func newDisadvantageSession() (s *pickerSession[*gurps.Trait], n map[string]*gurps.Trait) {
 	n = make(map[string]*gurps.Trait)
 	row := func(name string, points int, children ...*gurps.Trait) *gurps.Trait {
@@ -908,8 +908,8 @@ func TestPickerSessionOrganizingGroupsRollUp(t *testing.T) {
 	c.True(s.resolved(outer))
 }
 
-// TestPickerSessionUnansweredChoiceCostsLive verifies that a choice with nothing picked is costed as the modifier choices
-// above it now stand, not as they stood when the dialog opened.
+// TestPickerSessionUnansweredChoiceCostsLive verifies that a choice with nothing picked is costed as the modifier
+// choices above it now stand, not as they stood when the dialog opened.
 func TestPickerSessionUnansweredChoiceCostsLive(t *testing.T) {
 	c := check.New(t)
 	swapForTest(t, &promptForTraitModifiers, func(_ *modifierPromptInfo, mods []*gurps.TraitModifier) (changed, canceled bool) {

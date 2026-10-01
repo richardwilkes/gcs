@@ -24,8 +24,8 @@ import (
 	"github.com/richardwilkes/toolbox/v2/tid"
 )
 
-// TestSpellFeaturesRoundTrip verifies that the features a spell now carries are written and read back, including the
-// switchable flag, and that a spell with none writes no "features" key at all.
+// TestSpellFeaturesRoundTrip verifies that a spell's features are written and read back, including the switchable flag,
+// and that a spell with none writes no "features" key at all.
 func TestSpellFeaturesRoundTrip(t *testing.T) {
 	c := check.New(t)
 	e := NewEntity()
@@ -246,8 +246,7 @@ func TestSpellConditionalModifierFromFeatures(t *testing.T) {
 }
 
 // TestSpellWeaponBonusFromSpellFeatures verifies that a weapon owned by a spell picks up the "to this weapon" bonuses
-// carried by the spell's own features, which is what made Spell an ordinary WeaponOwner rather than one that always
-// reported an empty feature list.
+// carried by the spell's own features.
 func TestSpellWeaponBonusFromSpellFeatures(t *testing.T) {
 	c := check.New(t)
 	e := NewEntity()

@@ -78,9 +78,8 @@ func exportToMenuTitles(c check.Checker, menu unison.Menu) []string {
 }
 
 // TestExportToMenuWithoutTemplateDirs verifies that the placeholder is shown when no library has an "Output Templates"
-// directory at all. This is the regression the stale count check caused: the fixed prologue of four export formats plus
-// its separator already puts the menu item count at 5, so testing for a count of 2 could never be true and the
-// placeholder was never displayed.
+// directory at all. A stale check for an item count of 2 once kept it from ever showing, since the four fixed export
+// formats and their separator already make 5.
 func TestExportToMenuWithoutTemplateDirs(t *testing.T) {
 	c := check.New(t)
 	useTestLibraries(t, c)

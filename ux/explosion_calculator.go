@@ -443,9 +443,8 @@ func (t *blastTarget) createPanel(parent *unison.Panel) {
 	t.distanceLabel = rows.addFieldRow(t.distanceField, "")
 }
 
-// selectSheet reads the target's numbers from the sheet the picker has just made its source, and does nothing at all
-// when there is none. The hit locations belong to the sheet that was chosen, so the location named as the exposed one
-// cannot survive the change.
+// selectSheet reads the target's numbers from the sheet the picker has just made its source, doing nothing when there
+// is none. The exposed location belonged to the previous sheet, so it is dropped.
 func (t *blastTarget) selectSheet(sheet *Sheet) {
 	if sheet == nil {
 		return
@@ -500,8 +499,7 @@ func (t *blastTarget) rebuildExposedChoices(entity *gurps.Entity) {
 }
 
 // exposedFilter returns the test LargeAreaDR uses to decide which locations face the attack: nil when every location is
-// exposed, which is what a true area effect and an unnamed location both mean, and otherwise one that accepts only the
-// location named as the least-protected one facing the attack.
+// exposed (a true area effect, or no location named), otherwise one that accepts only the named location.
 func (t *blastTarget) exposedFilter() func(*gurps.HitLocation) bool {
 	if t.exposed == nil || t.calc.attackTypeIndex == areaEffectAttack {
 		return nil
@@ -685,7 +683,6 @@ func (c *explosionCalculator) updateResults() {
 	c.results.MarkForRedraw()
 }
 
-// addResult adds a labeled result to the results panel.
 func (c *explosionCalculator) addResult(label, value string) {
 	addResult(c.results, label, value)
 }

@@ -4,14 +4,13 @@ set -eEo pipefail
 # -E above makes this trap fire for failures inside functions and subshells too, not just at the top level.
 trap 'echo -e "\033[33;5mBuild failed on build.sh:$LINENO\033[0m"' ERR
 
-# Everything below works relative to the root of the source tree, which is wherever this script lives. The tree may be a
-# clone or a worktree of any name, and the script may be run from any directory.
+# Everything below runs from the root of the source tree, wherever this script lives, whatever the tree is named and
+# wherever the script is run from.
 ROOT=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 cd "$ROOT"
 
-# The root must be where the GCS module itself is defined: go has to find the go.mod for github.com/richardwilkes/gcs/v5
-# here, not in some directory above. Workspace mode is turned off for the check, so that the answer describes this
-# directory alone rather than whatever go.work happens to be in effect.
+# The go.mod for github.com/richardwilkes/gcs/v5 must be here, not in a directory above. Workspace mode is turned off for
+# the check so that the answer describes this directory alone rather than whatever go.work is in effect.
 MODULE_PATH=github.com/richardwilkes/gcs/v5
 if ! FOUND_MODULE=$(GOWORK=off go list -m -f '{{.Path}} {{.Dir}}' 2>/dev/null) ||
 	[ "${FOUND_MODULE%% *}" != "$MODULE_PATH" ] ||
@@ -138,12 +137,12 @@ while [ $# -gt 0 ]; do
 	esac
 done
 
-# A go.work in a parent directory, such as one tying the main checkout to sibling modules, is also found from within any
-# worktree kept inside the tree, yet doesn't list that worktree, which leaves go unable to build it. Unless GOWORK was
-# set explicitly, module mode is used instead whenever the workspace in effect doesn't include this directory. A
-# workspace is also how a locally modified dependency (such as unison) gets built in, though, so dropping one that
-# supplies or replaces a module this build needs would quietly build against the wrong code. In that case the build
-# stops instead; setting GOWORK=off says that building against go.mod alone is intended.
+# A go.work in a parent directory, such as one tying the main checkout to sibling modules, is also found from a worktree
+# kept inside the tree, yet doesn't list that worktree, so go can't build it. Unless GOWORK was set explicitly, module
+# mode is used whenever the workspace in effect doesn't include this directory. A workspace is also how a locally
+# modified dependency (such as unison) gets built in, though, so dropping one that supplies or replaces a module this
+# build needs would quietly build against the wrong code. In that case the build stops instead; GOWORK=off says that
+# building against go.mod alone is intended.
 check_workspace_dropped() {
 	local work_file="$1" used replaced required path dir version needed=()
 	used=$(cd "$(dirname "$work_file")" && GOWORK="$work_file" go list -m -f '{{.Path}} {{.Dir}}' 2>/dev/null || true)
@@ -280,11 +279,10 @@ if [ "$I18N"x == "1x" ]; then
 fi
 
 if [ "$BUILD_GO"x == "1x" ]; then
-	# On Windows the app icon and the version info Explorer shows come from a .syso resource object that the Go linker
-	# only links in if it is already present when `go build` runs. The packager produces it, so it has to be generated
-	# before the build; the packaging step below re-emits it, but by then the build has already consumed it. Without
-	# this, packaged Windows binaries end up as generic, info-less executables. The packager writes one for each
-	# Windows architecture, so this works for any Windows target, but only when running on Windows.
+	# On Windows the app icon and version info come from a .syso resource object that the Go linker only links in if it
+	# exists when `go build` runs. The packager produces it, so it is generated here, before the build; the packaging
+	# step below re-emits it too late. The packager writes one per Windows architecture, so this works for any Windows
+	# target, but only when running on Windows.
 	if [ "$PACKAGER"x == "1x" ] && [ "$TARGET_OS" == "windows" ]; then
 		if [ "$HOST_OS" == "windows" ]; then
 			echo -e "\033[33mGenerating Windows resources...\033[0m"

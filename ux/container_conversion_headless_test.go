@@ -19,10 +19,9 @@ import (
 )
 
 // TestContainerConversionClosesEditorsAndUndoesTheKind verifies that converting a displayed equipment group to a plain
-// item closes the editor open on it first, and that undo brings back a group, not a physical container, even though
-// the displayed sheet is checked for modification, and so written out, in between. Undo discards an editor opened on
-// the item, whose ID differs from the group's in its kind, and redo makes it an item again, with the legality class new
-// equipment starts out with, and discards an editor opened on the group.
+// item closes its editor first, and that undo brings back a group, not a physical container, even though the sheet is
+// checked for modification, and so written out, in between. Undo and redo each discard an editor opened on the row in
+// between, whose ID's kind the conversion changes, and redo brings back the legality class new equipment starts with.
 func TestContainerConversionClosesEditorsAndUndoesTheKind(t *testing.T) {
 	c := check.New(t)
 	screen, _ := startHeadlessWorkspace(t, c)

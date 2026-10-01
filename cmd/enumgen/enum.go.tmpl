@@ -57,7 +57,7 @@ var {{$name}}sFor{{toIdentifier $group}} = []{{$name}}{
 {{wrapComment (printf "%s %s." $name .Desc) 120}}
 type {{$name}} byte
 
-// EnsureValid ensures this is of a known value.
+// EnsureValid returns this value if it is valid and Default{{$name}} otherwise.
 func (enum {{$name}}) EnsureValid() {{$name}} {
 	if enum >= First{{$name}} && enum <= Last{{$name}} {
 		return enum
@@ -132,18 +132,18 @@ func (enum {{$name}}) AltString() string {
 }
 {{- end}}
 
-// MarshalText implements the encoding.TextMarshaler interface.
+// MarshalText implements encoding.TextMarshaler.
 func (enum {{$name}}) MarshalText() (text []byte, err error) {
     return []byte(enum.Key()), nil
 }
 
-// UnmarshalText implements the encoding.TextUnmarshaler interface.
+// UnmarshalText implements encoding.TextUnmarshaler.
 func (enum *{{$name}}) UnmarshalText(text []byte) error {
     *enum = Extract{{$name}}(string(text))
     return nil
 }
 
-{{wrapComment (printf "Extract%s extracts the value from a string." $name) 120}}
+{{wrapComment (printf "Extract%s returns the value whose key matches str, ignoring case, or Default%s if none does." $name $name) 120}}
 func Extract{{$name}}(str string) {{$name}} {
     for _, enum := range {{$name}}s {
         if strings.EqualFold(enum.Key(), str) {
@@ -158,9 +158,7 @@ func Extract{{$name}}(str string) {{$name}} {
     return Default{{$name}}
 }
 
-{{wrapComment (printf "ExtractKnown%s extracts the value from a string, reporting whether the string was actually recognized." $name) 120}}
-//
-{{wrapComment (printf "Unlike Extract%s, which quietly maps anything it doesn't recognize onto the default value, this permits a caller that is dispatching on the type to detect unknown types." $name) 120}}
+{{wrapComment (printf "ExtractKnown%s is like Extract%s, but also reports whether str was recognized, so a caller can tell an unknown key from the default." $name $name) 120}}
 func ExtractKnown{{$name}}(str string) (value {{$name}}, known bool) {
     for _, enum := range {{$name}}s {
         if strings.EqualFold(enum.Key(), str) {

@@ -149,7 +149,7 @@ func newNameGeneratorRefPanel(list *nameGeneratorsPanel, index int) *nameGenerat
 		},
 		nameGeneratorPopupItems(d.nameGeneratorChoices, options.NameGenerators[index])...)
 	p.popup.Tooltip = newWrappedTooltip(i18n.Text("A name generator, identified by the base name of its .names file. A generator not found in any library is listed so it can be kept or replaced, but produces nothing."))
-	// Only the delete button comes before the popup, so it is named outright; the name also titles the menu it opens.
+	// No label precedes the popup, so it is named outright; the name also titles the menu it opens.
 	p.popup.Accessibility.Name = title
 	p.AddChild(p.popup)
 

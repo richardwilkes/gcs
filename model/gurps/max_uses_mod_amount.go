@@ -39,8 +39,8 @@ func (m *MaxUsesModAmount) SetLeveledOwner(owner LeveledOwner) {
 	m.LeveledOwner = owner
 }
 
-// AdjustedAmount implements Bonus. It returns the numeric portion of the Amount, scaled by the leveled owner's current
-// level when this is a per-level bonus. A per-level bonus whose owner has no levels contributes nothing.
+// AdjustedAmount implements Bonus. It returns the numeric portion of the Amount, which a per-level bonus scales by its
+// owner's current level, contributing nothing unless the owner is leveled with a positive level.
 func (m *MaxUsesModAmount) AdjustedAmount() fxp.Int {
 	value := m.Operation().ExtractValue(m.Amount)
 	if m.PerLevel {

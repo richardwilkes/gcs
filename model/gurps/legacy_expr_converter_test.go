@@ -57,11 +57,9 @@ func TestExprToScript(t *testing.T) {
 	c.Equal(`(((2 * Math.max(Math.max($basic_move, Math.floor(entity.skillLevel("jumping") / 2)), $st / 4)) * (1 + Math.max(0, entity.traitLevel("enhanced move (ground)")))) - 3) * entity.currentEncumbrance(false, true) * iff(entity.traitLevel("enhanced move (ground)") < 1, 2, 1) * (Math.pow(2, Math.max(0, entity.traitLevel("super jump"))))`, s)
 }
 
-// TestExprToScriptExponent verifies that the legacy exponent operator is carried over as a Math.pow call. JavaScript's
-// ** operator is not equivalent: its grammar rejects an unparenthesized unary operand on its left, so "-2^2" converted
-// to the syntactically invalid "-2 ** 2", and it is right-associative where the legacy operator was left-associative,
-// so "2^3^2" (64) converted to "2 ** 3 ** 2" (512). Since the conversion is reported as successful, either result
-// permanently replaced the legacy formula when the file was loaded.
+// TestExprToScriptExponent verifies that the legacy exponent operator becomes a Math.pow call. JavaScript's ** differs:
+// "-2 ** 2" is a syntax error, and "2 ** 3 ** 2" is 512 where the left-associative legacy "2^3^2" is 64. A successful
+// conversion permanently replaces the legacy formula on load, so either difference would corrupt it.
 func TestExprToScriptExponent(t *testing.T) {
 	c := check.New(t)
 	for i, one := range []struct {
@@ -89,8 +87,7 @@ func TestExprToScriptExponent(t *testing.T) {
 	} {
 		converted := gurps.ExprToScript(one.in)
 		c.Equal(one.out, converted, "index %d: %s", i, one.in)
-		// The converted text must be something the script engine can actually run, with the value the legacy
-		// expression had.
+		// The converted text must run in the script engine and yield the legacy expression's value.
 		c.Equal(one.result, gurps.ResolveScript(nil, gurps.ScriptSelfProvider{}, converted), "index %d: %s", i, one.in)
 	}
 }

@@ -546,7 +546,7 @@ func (o *operator) match(expression string, start, maximum int) bool {
 		return false
 	}
 	matches := o.symbol == expression[start:start+len(o.symbol)]
-	// Hack to allow negative exponents on floating point numbers (i.e. 1.2e-2)
+	// Hack to allow negative exponents on floating point numbers (e.g. 1.2e-2)
 	if matches && len(o.symbol) == 1 && o.symbol == "-" && start > 1 && expression[start-1:start] == "e" {
 		ch, _ := utf8.DecodeRuneInString(expression[start-2 : start-1])
 		if unicode.IsDigit(ch) {

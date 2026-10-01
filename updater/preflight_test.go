@@ -65,9 +65,8 @@ func TestPreflightAcceptsAWritableInstallation(t *testing.T) {
 	c.Equal(exePath, plan.Target.Path)
 }
 
-// A build with no release behind it must never try to update. The stamped version is "0.0" for a build with no version
-// at all, but a plain `go build` from a git checkout stamps a VCS pseudo-version instead, optionally with "+dirty"
-// appended, and those must be refused just the same.
+// A build with no release behind it, whether unstamped ("0.0") or stamped with a VCS pseudo-version, must never try to
+// update.
 func TestPreflightRefusesADevBuild(t *testing.T) {
 	c := check.New(t)
 	dir := t.TempDir()
@@ -136,8 +135,7 @@ func TestPreflightRefusesSandboxedRuntimes(t *testing.T) {
 }
 
 // The check that keeps an update from being downloaded only to discover at the last moment that it cannot be
-// installed. The probe is a real write, since permission bits alone do not account for access control lists or a
-// read-only mount.
+// installed.
 func TestPreflightRefusesAnUnwritableInstallation(t *testing.T) {
 	if runtime.GOOS == xos.WindowsOS {
 		t.Skip("directory modes do not govern writability on Windows")
@@ -196,9 +194,7 @@ func TestPreflightRefusesAMissingAsset(t *testing.T) {
 	c.Equal(BlockerNoAsset, blockerOf(t, err))
 }
 
-// A release whose asset carries no checksum is refused outright rather than installed without verification. GitHub has
-// published checksums since 2025, so this only arises for releases far older than anything worth installing, but
-// silently skipping the check would be worse than not updating at all.
+// A release whose asset carries no checksum is refused outright rather than installed without verification.
 func TestPreflightRefusesAnUnverifiableAsset(t *testing.T) {
 	c := check.New(t)
 	dir := t.TempDir()

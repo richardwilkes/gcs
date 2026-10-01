@@ -186,7 +186,7 @@ func applySelectedModifiers[T gurps.ModifiableNode[T, M], M gurps.ModifierNode[M
 // a single undoable edit (see attachModifierClones), and selects the targets, opening the containers holding them
 // first. The containers' open state is not part of the undo data (see gurps.SetNodeOpen), so the ones the command
 // opened are closed again before an undo and reopened before a redo, as the move commands do for theirs. Returns false
-// if the user canceled a prompt, in which case nothing has been changed.
+// if nothing was changed, as when the user canceled a prompt.
 func applyModifiersTo[T gurps.ModifiableNode[T, M], M gurps.ModifierNode[M, T]](tables []*unison.Table[*Node[T]], targets []T, modifiers []M, from gurps.LibraryFile) bool {
 	if len(tables) == 0 || len(targets) == 0 || len(modifiers) == 0 {
 		return false
@@ -256,19 +256,17 @@ func selectModifierTargets[T gurps.Node[T]](tables []*unison.Table[*Node[T]], ta
 	return opened
 }
 
-// attachModifierClones gives each target its own clones of the modifiers, appended to its modifiers. Both dropping
-// modifiers onto rows and the Apply Modifier command end here. A modifier pointed at directly is enabled, since the
-// user has just said to apply it. A container's contents are a set to choose from, so when the rows belong to an
-// entity or a loot sheet each target receiving a container is asked which of its new modifiers should be enabled;
-// elsewhere they are left as they came and the choice is made when the row reaches a sheet (see
-// applyTransfer). For an entity the nameables prompt follows, before anything is shown or reported, so that a cancel
-// only has to take the clones back off and the owner is rebuilt once, with the answers in place; that rebuild is also
-// what reports the change (see dropRebuilder). Elsewhere reporting is left to the caller. The tables are the ones the
-// targets live in and all belong to one owner. A row that can't take modifiers, such as a template choice container, is
-// never given them (see gurps.CanTakeModifiers); the callers already leave such rows out of their targets, so this is
-// only a backstop. The name is the short name of the operation the prompts are part of, which starts their titles (see
-// promptOperation). Returns false if nothing was changed: a prompt was canceled, in which case every target has been put
-// back as it was, or there was nothing to do.
+// attachModifierClones appends to each target its own clones of the modifiers; both dropping modifiers onto rows and
+// the Apply Modifier command end here. A modifier pointed at directly is enabled, since the user has just said to apply
+// it. A container's contents are a set to choose from, so on an entity or loot sheet each target receiving a container
+// is asked which of its new modifiers to enable; elsewhere they are left as they came and the choice is made when the
+// row reaches a sheet (see applyTransfer). For an entity the nameables prompt follows, before anything is shown or
+// reported, so a cancel only has to take the clones back off and the owner is rebuilt once, with the answers in place;
+// that rebuild also reports the change (see dropRebuilder). Elsewhere reporting is left to the caller. The tables hold
+// the targets and all belong to one owner. Rows that can't take modifiers (see gurps.CanTakeModifiers) are skipped, as
+// a backstop for callers, which already leave them out. name is the operation's short name, which starts the prompts'
+// titles (see promptOperation). Returns false if nothing was changed: a prompt was canceled, in which case every target
+// has been put back as it was, or there was nothing to do.
 func attachModifierClones[T gurps.ModifiableNode[T, M], M gurps.ModifierNode[M, T]](name string, tables []*unison.Table[*Node[T]], dataOwner gurps.DataOwner, targets []T, modifiers []M, from gurps.LibraryFile) bool {
 	targets = slices.DeleteFunc(slices.Clone(targets), func(node T) bool { return !gurps.CanTakeModifiers(node) })
 	if len(tables) == 0 || len(targets) == 0 || len(modifiers) == 0 {
@@ -369,9 +367,9 @@ func (c modifierTargetChoice[T]) String() string {
 
 // modifierTargetChoices returns a row for every target in the lists, containers included, in table order, save for the
 // rows that can't take modifiers, such as template choice containers and equipment groups (see gurps.CanTakeModifiers);
-// what they hold is still offered. Each is labeled with the
-// target's name and where it sits -- its containers, nearest first, and the list's name when there is more than one
-// list -- so that a screen reader is told what the indentation shows: "Knife (in Pouch, Backpack, Other Equipment)".
+// what they hold is still offered. Each is labeled with the target's name and where it sits -- its containers, nearest
+// first, and the list's name when there is more than one list -- so that a screen reader is told what the indentation
+// shows: "Knife (in Pouch, Backpack, Other Equipment)".
 func modifierTargetChoices[T gurps.Node[T]](lists []modifierTargetList[T]) []modifierTargetChoice[T] {
 	var choices []modifierTargetChoice[T]
 	named := len(lists) > 1

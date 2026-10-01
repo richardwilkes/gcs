@@ -103,8 +103,7 @@ func TestThisArmorDRBonusResolvesSpecialization(t *testing.T) {
 }
 
 // newTestEntityWithDRTrait creates an entity holding a single non-container trait that carries the given DR bonus and
-// the given nameable replacements, then recalculates so the bonus is collected and its owner set. Both the entity and
-// the trait are returned, since callers need the trait to alter its replacements.
+// nameable replacements, then recalculates so the bonus is collected and its owner set.
 func newTestEntityWithDRTrait(bonus *DRBonus, replacements map[string]string) (*Entity, *Trait) {
 	e := NewEntity()
 	trait := addTraitWithFeatures(e, "Damage Resistance", bonus)

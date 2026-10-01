@@ -70,7 +70,7 @@ const (
 
 const currentGeneralSettingsVersion = 2
 
-// GeneralSettings holds general settings for a sheet.
+// GeneralSettings holds the application's general settings.
 type GeneralSettings struct {
 	DefaultPlayerName           string             `json:"default_player_name,omitzero"`
 	DefaultTechLevel            string             `json:"default_tech_level,omitzero"`

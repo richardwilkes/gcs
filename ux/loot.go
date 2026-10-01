@@ -45,7 +45,7 @@ type LootSheet struct {
 	Notes     *PageList[*gurps.Note]
 }
 
-// OpenLootSheets returns the currently open loot sheets.
+// OpenLootSheets returns the currently open loot sheets, other than exclude.
 func OpenLootSheets(exclude *LootSheet) []*LootSheet {
 	var result []*LootSheet
 	for _, one := range AllDockables() {
@@ -157,7 +157,7 @@ func (l *LootSheet) keyToPanel(key *uti.DataType) *unison.Panel {
 	return p.AsPanel()
 }
 
-// Entity implements EntityPanel. A loot sheet has no entity, so nil is always returned.
+// Entity implements EntityPanel. A loot sheet has no entity.
 func (l *LootSheet) Entity() *gurps.Entity {
 	return nil
 }

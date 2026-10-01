@@ -483,15 +483,12 @@ func (h *hikingCalculator) extraEffort() bool {
 func (h *hikingCalculator) distanceForHours(hours fxp.Int, extraEffortPenalty int) fxp.Int {
 	distance := fxp.FromInteger(h.move * 10)
 
-	// Adjust for hours hiking
 	distance = distance.Mul(hours).Div(fxp.Sixteen)
 
-	// Adjust for enhanced move (ground), if any
 	if h.enhancedMove > 0 {
 		distance = distance.Mul(fxp.One + h.enhancedMove)
 	}
 
-	// Adjust for terrain
 	t := terrain[h.terrainIndex]
 	mod := t.Modifier
 	if t.IsIce && h.usingSkates {
@@ -501,7 +498,6 @@ func (h *hikingCalculator) distanceForHours(hours fxp.Int, extraEffortPenalty in
 		mod = fxp.One
 	}
 
-	// Adjust for weather
 	w := weather[h.weatherIndex]
 	switch {
 	case w.IsRain:
@@ -529,7 +525,6 @@ func (h *hikingCalculator) distanceForHours(hours fxp.Int, extraEffortPenalty in
 	}
 	distance = distance.Mul(mod)
 
-	// Adjust for making the hiking/skiing/skating check
 	mod = fxp.One
 	if h.successfulHikingRoll {
 		mod = fxp.OnePointTwo
@@ -736,8 +731,7 @@ func (h *hikingCalculator) updateResults() {
 	h.hikingDistanceLabel.SetTitle(fmt.Sprintf(i18n.Text("%s to travel"), units))
 
 	if timeInDays, ok := hikingTimeInDays(h.hikingDistance, day.distance); !ok {
-		// Ground can't be covered at 0 Move (very low DX/HT, heavy encumbrance, or a Move-reducing effect), so the
-		// travel time is undefined.
+		// No ground is covered at 0 Move or with no hours of travel, so the travel time is undefined.
 		h.hikingTimeLabel.SetTitle("—")
 	} else if timeInDays == fxp.One {
 		h.hikingTimeLabel.SetTitle(i18n.Text("1 day"))
@@ -895,9 +889,8 @@ func signedTenths(value fxp.Int) string {
 }
 
 // hikingTimeInDays returns the number of days needed to cover distanceToCover while traveling distancePerDay each day,
-// rounded to a tenth of a day. ok is false when distancePerDay is 0, since no ground can be covered at 0 Move and the
-// travel time is therefore undefined; the guard also avoids a division by zero (fxp.Int.Div panics on a zero divisor
-// with a non-zero numerator).
+// rounded to a tenth of a day. ok is false when distancePerDay is 0, as the travel time is then undefined (and
+// fxp.Int.Div would panic).
 func hikingTimeInDays(distanceToCover, distancePerDay fxp.Int) (days fxp.Int, ok bool) {
 	if distancePerDay == 0 {
 		return 0, false

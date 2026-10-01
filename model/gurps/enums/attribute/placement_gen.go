@@ -45,7 +45,7 @@ var Placements = []Placement{
 // Placement determines the placement of the attribute on the sheet.
 type Placement byte
 
-// EnsureValid ensures this is of a known value.
+// EnsureValid returns this value if it is valid and DefaultPlacement otherwise.
 func (enum Placement) EnsureValid() Placement {
 	if enum >= FirstPlacement && enum <= LastPlacement {
 		return enum
@@ -85,18 +85,18 @@ func (enum Placement) String() string {
 	}
 }
 
-// MarshalText implements the encoding.TextMarshaler interface.
+// MarshalText implements encoding.TextMarshaler.
 func (enum Placement) MarshalText() (text []byte, err error) {
 	return []byte(enum.Key()), nil
 }
 
-// UnmarshalText implements the encoding.TextUnmarshaler interface.
+// UnmarshalText implements encoding.TextUnmarshaler.
 func (enum *Placement) UnmarshalText(text []byte) error {
 	*enum = ExtractPlacement(string(text))
 	return nil
 }
 
-// ExtractPlacement extracts the value from a string.
+// ExtractPlacement returns the value whose key matches str, ignoring case, or DefaultPlacement if none does.
 func ExtractPlacement(str string) Placement {
 	for _, enum := range Placements {
 		if strings.EqualFold(enum.Key(), str) {
@@ -106,10 +106,8 @@ func ExtractPlacement(str string) Placement {
 	return DefaultPlacement
 }
 
-// ExtractKnownPlacement extracts the value from a string, reporting whether the string was actually recognized.
-//
-// Unlike ExtractPlacement, which quietly maps anything it doesn't recognize onto the default value, this permits a
-// caller that is dispatching on the type to detect unknown types.
+// ExtractKnownPlacement is like ExtractPlacement, but also reports whether str was recognized, so a caller can tell an
+// unknown key from the default.
 func ExtractKnownPlacement(str string) (value Placement, known bool) {
 	for _, enum := range Placements {
 		if strings.EqualFold(enum.Key(), str) {

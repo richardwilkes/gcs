@@ -106,7 +106,7 @@ func convertToExpression(multiplier, divisor, addition fxp.Int) string {
 	return ex + ")"
 }
 
-// Clone a copy of this.
+// Clone returns a copy of this.
 func (p *PoolThreshold) Clone() *PoolThreshold {
 	clone := *p
 	if p.Ops != nil {
@@ -126,12 +126,12 @@ func (p *PoolThreshold) ResolveExplanation(attr *Attribute) string {
 	return ResolveText(attr.Entity, deferredNewScriptAttribute(attr), p.Explanation)
 }
 
-// ContainsOp returns true if this PoolThreshold contains the specified ThresholdOp.
+// ContainsOp returns true if this PoolThreshold contains the specified op.
 func (p *PoolThreshold) ContainsOp(op threshold.Op) bool {
 	return slices.Contains(p.Ops, op)
 }
 
-// AddOp adds the specified ThresholdOp.
+// AddOp adds the specified op, if not already present.
 func (p *PoolThreshold) AddOp(op threshold.Op) {
 	if !slices.Contains(p.Ops, op) {
 		p.Ops = append(p.Ops, op)
@@ -139,7 +139,7 @@ func (p *PoolThreshold) AddOp(op threshold.Op) {
 	}
 }
 
-// RemoveOp removes the specified ThresholdOp.
+// RemoveOp removes the specified op.
 func (p *PoolThreshold) RemoveOp(op threshold.Op) {
 	if i := slices.Index(p.Ops, op); i != -1 {
 		p.Ops = slices.Delete(p.Ops, i, i+1)

@@ -29,7 +29,7 @@ type WeightData struct {
 	Qualifier fxp.Weight        `json:"qualifier,omitzero"`
 }
 
-// IsZero implements json.isZero.
+// IsZero reports whether json's omitzero option should omit this value.
 func (w Weight) IsZero() bool {
 	return w.Compare.EnsureValid() == AnyNumber
 }

@@ -167,7 +167,6 @@ func TestLengthFromStringRejectsTrailingText(t *testing.T) {
 	}
 }
 
-// TestLengthFromStringCaseInsensitive verifies that unit suffixes are matched without regard to case.
 func TestLengthFromStringCaseInsensitive(t *testing.T) {
 	c := check.New(t)
 	for _, text := range []string{"0.5M", "0.5 M"} {

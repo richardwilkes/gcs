@@ -17,9 +17,8 @@ import (
 	"github.com/richardwilkes/toolbox/v2/check"
 )
 
-// TestSheetGroupedReactionsDiscloseAndPersist verifies that reactions filed under a group appear on the sheet as a
-// container row holding them, that closing the container hides them and records the state in the global settings, and
-// that the state survives a rebuild, which regenerates the rows from scratch.
+// TestSheetGroupedReactionsDiscloseAndPersist verifies that grouped reactions show as a container row whose closed
+// state is recorded in the global settings and survives a rebuild, which regenerates the rows from scratch.
 func TestSheetGroupedReactionsDiscloseAndPersist(t *testing.T) {
 	c := check.New(t)
 	sheet := newTestSheetForTemplate(t)

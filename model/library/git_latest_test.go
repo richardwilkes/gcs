@@ -53,8 +53,7 @@ func TestDownloadLatestCommitReservedName(t *testing.T) {
 }
 
 // TestCountingTransportMeasuresResponses verifies that the transport handed to go-git counts everything it receives and
-// still closes what it wrapped. go-git reports nothing about the pack it is receiving -- the messages it writes to
-// CloneOptions.Progress come from the server and stop before the transfer starts -- so this count is the whole basis
+// still closes what it wrapped. Since go-git reports nothing about the pack it receives, this count is the whole basis
 // for the progress shown while a "use latest commit" library is being fetched.
 func TestCountingTransportMeasuresResponses(t *testing.T) {
 	c := check.New(t)

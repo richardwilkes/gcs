@@ -21,8 +21,7 @@ import (
 )
 
 // TestLegacyTraitPrereqKeyLoads verifies that "advantage_prereq", the key GCS wrote before traits were renamed, still
-// resolves to a TraitPrereq. Dispatching on the current keys alone turned every such prerequisite into an
-// UnknownPrereq, which is never satisfied, so all pre-rename files loaded with their trait prerequisites broken.
+// resolves to a TraitPrereq rather than an UnknownPrereq, which is never satisfied.
 func TestLegacyTraitPrereqKeyLoads(t *testing.T) {
 	c := check.New(t)
 
@@ -62,9 +61,8 @@ func TestLegacyTraitPrereqKeyLoads(t *testing.T) {
 	c.NotContains(string(out), "advantage_prereq", "saving should not retain the retired key")
 }
 
-// TestLegacyTraitPrereqIsEvaluated goes past loading and confirms the migrated prerequisite actually participates in
-// prereq evaluation: an UnknownPrereq always fails, so a trait that meets its own requirement would still have been
-// flagged as unsatisfied.
+// TestLegacyTraitPrereqIsEvaluated verifies that a migrated legacy trait prereq is actually evaluated, rather than
+// always failing as an UnknownPrereq would.
 func TestLegacyTraitPrereqIsEvaluated(t *testing.T) {
 	c := check.New(t)
 
@@ -108,8 +106,7 @@ func TestLegacyTraitPrereqIsEvaluated(t *testing.T) {
 	c.Equal("", traits[1].UnsatisfiedReason,
 		"a satisfied legacy trait prereq must not be reported as unsatisfied: %s", traits[1].UnsatisfiedReason)
 
-	// The same prereq must still fail when the required trait isn't present, proving it is genuinely being evaluated
-	// rather than being ignored.
+	// The prereq must fail without the required trait, proving it is evaluated rather than ignored.
 	entity.Traits = traits[1:]
 	entity.Recalculate()
 	c.NotEqual("", traits[1].UnsatisfiedReason, "the legacy trait prereq should fail when the trait is absent")

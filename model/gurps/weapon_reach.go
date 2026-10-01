@@ -41,10 +41,9 @@ func ParseWeaponReach(s string) WeaponReach {
 		if !strings.Contains(s, "spec") {
 			wr.CloseCombat = strings.Contains(s, "c")
 			wr.ChangeRequiresReady = strings.Contains(s, "*")
-			// "C-5" is a range running from close combat out to 5, so its numbers supply only the maximum, leaving
-			// Validate to fill in a minimum of 1. Every other placement of the close combat marker ("C,1", "C,2-3")
-			// states it separately from the reach, so the first number is the minimum. The markers themselves are then
-			// removed, since a marker left in place would be taken as a component of the reach and read as 0.
+			// "C-5" runs from close combat out to 5, so its number is only the maximum and Validate fills in a minimum
+			// of 1. Elsewhere ("C,1", "C,2-3") the marker stands apart from the reach, so the first number is the
+			// minimum. The markers are removed so they aren't read as a reach component of 0.
 			closeCombatRange := strings.Contains(s, "c-")
 			s = strings.NewReplacer("*", "", "c", "").Replace(s)
 			takeMin := !closeCombatRange
@@ -75,7 +74,7 @@ func (wr *WeaponReach) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 	return jio.UnmarshalStringFromInfallible(dec, wr, ParseWeaponReach)
 }
 
-// IsZero implements json.isZero.
+// IsZero reports whether json's omitzero option should omit this value.
 func (wr WeaponReach) IsZero() bool {
 	return wr == WeaponReach{}
 }

@@ -85,10 +85,9 @@ func TestPageRefMappingsSyncReflectsChangedPath(t *testing.T) {
 }
 
 // TestPageRefMappingsInitialFocus verifies that the Page Reference Mappings view starts out focused on the first row's
-// offset field, which is what SettingsDockable.Setup selects. The view used to override that with a hardcoded child
-// index that landed on the row's ID label instead; since a label is neither focusable nor holds focusable children,
-// unison.Window.SetFocus dropped the window's focus altogether and keyboard input went nowhere until something was
-// clicked.
+// offset field, which is what SettingsDockable.Setup selects. The view once overrode that with a hardcoded child index
+// that landed on the row's unfocusable ID label, so the window lost its focus and keyboard input went nowhere until
+// something was clicked.
 func TestPageRefMappingsInitialFocus(t *testing.T) {
 	c := check.New(t)
 	global := gurps.GlobalSettings()

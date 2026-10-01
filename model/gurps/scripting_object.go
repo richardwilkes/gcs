@@ -28,7 +28,7 @@ type ScriptObject struct {
 	kvMap map[string]func() goja.Value
 }
 
-// NewScriptObject creates a new ScriptObject for the given data and key/value map.
+// NewScriptObject creates a new ScriptObject backed by kvMap, adding a toString to it if it lacks one.
 func NewScriptObject(r *goja.Runtime, kvMap map[string]func() goja.Value) *ScriptObject {
 	addScriptObjectToString(r, kvMap)
 	return &ScriptObject{
@@ -39,12 +39,10 @@ func NewScriptObject(r *goja.Runtime, kvMap map[string]func() goja.Value) *Scrip
 }
 
 // addScriptObjectToString gives an object that doesn't define one a toString that reports whatever its valueOf reports,
-// or "[object Object]" if it has no valueOf either. The inherited Object.prototype.toString will not do for the first
-// case: turning an object into a string consults toString before valueOf, and the inherited one always answers
-// "[object Object]", so an object that describes itself as a value — an attribute, whose valueOf yields its maximum —
-// would convert to "[object Object]" rather than to that value. Since a script's result reaches the rest of GCS by
-// being converted to a string, that is the difference between `<script>$st</script>` producing a number and producing
-// "[object Object]".
+// or "[object Object]" if it has no valueOf either. String conversion consults toString before valueOf, and the
+// inherited Object.prototype.toString always answers "[object Object]", so an object that describes itself as a value —
+// an attribute, whose valueOf yields its maximum — would otherwise never convert to that value. A script's result
+// reaches the rest of GCS as a string, so this is what lets `<script>$st</script>` produce a number.
 func addScriptObjectToString(r *goja.Runtime, kvMap map[string]func() goja.Value) {
 	if _, exists := kvMap["toString"]; exists {
 		return
@@ -68,11 +66,10 @@ func addScriptObjectToString(r *goja.Runtime, kvMap map[string]func() goja.Value
 	}
 }
 
-// Get implements goja.DynamicObject. A key this object does not provide must yield nil rather than goja.Undefined():
-// goja only consults the prototype chain when Get returns nil, so answering Undefined would shadow Object.prototype in
-// its entirety, leaving hasOwnProperty, toString, valueOf, constructor and the rest of it undefined — and a TypeError
-// when called. Note that a key the object does provide may still legitimately evaluate to Undefined; only keys that are
-// absent from kvMap are reported as missing here.
+// Get implements goja.DynamicObject. A key absent from kvMap yields nil rather than goja.Undefined(): goja only
+// consults the prototype chain when Get returns nil, so answering Undefined would shadow Object.prototype entirely,
+// leaving hasOwnProperty, toString, valueOf, constructor and the rest undefined. A key that is present may still
+// evaluate to Undefined.
 func (s *ScriptObject) Get(key string) goja.Value {
 	if v, ok := s.cache[key]; ok {
 		return v
@@ -106,9 +103,7 @@ func (s *ScriptObject) Keys() []string {
 	return s.keys
 }
 
-// scriptNode is the part of a node's behavior that the identity properties shared by every node script wrapper rely
-// on. It is a constraint of its own rather than Node because Node's method set has neither ID nor Container, and the
-// wrappers need nothing else from it.
+// scriptNode is the part of a node's behavior that the identity properties shared by every node script wrapper rely on.
 type scriptNode[T any] interface {
 	comparable
 	ID() tid.TID

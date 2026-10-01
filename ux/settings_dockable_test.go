@@ -284,9 +284,8 @@ func settingsDockableOf(d unison.Dockable) (*SettingsDockable, bool) {
 }
 
 // toolbarStartsWithViewContent reports whether the settings view's toolbar starts with something the view itself added.
-// What the base adds -- the reset and menu buttons -- comes after a grabbing spacer when the view added anything, and
-// is all there is otherwise, so a toolbar whose first child is the spacer, or which is empty, holds nothing from the
-// view.
+// The base puts a grabbing spacer ahead of its reset and menu buttons, so a toolbar whose first child is that spacer,
+// or which is empty, holds nothing from the view.
 func toolbarStartsWithViewContent(base *SettingsDockable) bool {
 	children := base.Children()[0].Children()
 	if len(children) == 0 {

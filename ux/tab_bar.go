@@ -15,7 +15,7 @@ import (
 	"github.com/richardwilkes/unison/enums/align"
 )
 
-// tabBar is a row of buttons, one per tab, of which exactly one is selected at a time. What the tabs switch between is
+// tabBar is a row of buttons, one per tab, of which at most one is selected at a time. What the tabs switch between is
 // the caller's business: SelectionChangedCallback runs with the index of the tab that has just been chosen, whether by
 // a click or by selectTab, and only when the choice actually changed. The buttons wrap onto further rows when the bar
 // is too narrow to hold them all on one.

@@ -56,13 +56,7 @@ func (p *Plan) Stage(ctx context.Context, client *http.Client, progress func(fra
 		}
 	}
 
-	// Clear away anything left by an attempt that did not clean up after itself. Each staging directory holds a full
-	// copy of the application, so without this a few failed attempts would consume hundreds of megabytes of the user's
-	// disk until the startup sweep got round to them a week later.
-	//
-	// This cannot affect the directory created below: os.MkdirTemp retries until it creates a name that did not
-	// already exist, so a new staging directory can never collide with one that is already there -- including one a
-	// helper is actively working in.
+	// Clear away anything left by an attempt that did not clean up after itself; see abandonedStagingAge.
 	sweepStrays([]string{p.Target.Parent}, abandonedStagingAge)
 
 	workDir, err := os.MkdirTemp(p.Target.Parent, workDirPrefix)

@@ -154,7 +154,7 @@ func (c *Calculator) createToolbar() *unison.Panel {
 	return toolbar
 }
 
-// TitleIcon implements unison.Dockable
+// TitleIcon implements unison.Dockable.
 func (c *Calculator) TitleIcon(suggestedSize geom.Size) unison.Drawable {
 	return &unison.DrawableSVG{
 		SVG:  svg.Calculator,
@@ -162,7 +162,7 @@ func (c *Calculator) TitleIcon(suggestedSize geom.Size) unison.Drawable {
 	}
 }
 
-// Title implements unison.Dockable
+// Title implements unison.Dockable.
 func (c *Calculator) Title() string {
 	return i18n.Text("Calculators")
 }
@@ -171,27 +171,27 @@ func (c *Calculator) String() string {
 	return c.Title()
 }
 
-// Tooltip implements unison.Dockable
+// Tooltip implements unison.Dockable.
 func (c *Calculator) Tooltip() string {
 	return ""
 }
 
-// Modified implements unison.Dockable
+// Modified implements unison.Dockable.
 func (c *Calculator) Modified() bool {
 	return false
 }
 
-// MayAttemptClose implements unison.TabCloser
+// MayAttemptClose implements unison.TabCloser.
 func (c *Calculator) MayAttemptClose() bool {
 	return true
 }
 
-// AttemptClose implements unison.TabCloser
+// AttemptClose implements unison.TabCloser.
 func (c *Calculator) AttemptClose() bool {
 	return AttemptCloseForDockable(c)
 }
 
-// UndoManager implements unison.UndoManagerProvider
+// UndoManager implements unison.UndoManagerProvider.
 func (c *Calculator) UndoManager() *unison.UndoManager {
 	return c.undoMgr
 }

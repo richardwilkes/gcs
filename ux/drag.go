@@ -63,9 +63,9 @@ var allDragDataTypes = []*uti.DataType{
 	editorRowDragKey,
 }
 
-// registerWindowDragTypes registers the supplied window as a target for every kind of drag payload GCS supports: all of
-// the in-app drag keys plus readable image files and URLs (the latter being required for OS-level file/URL drops, e.g.
-// dropping an image onto the portrait panel, to be delivered).
+// registerWindowDragTypes registers the supplied window as a target for every kind of drag payload GCS supports: the
+// in-app drag keys, readable image files, file and other URLs (required for OS-level drops, such as an image onto the
+// portrait panel, to be delivered) and the dock's own drags.
 func registerWindowDragTypes(wnd *unison.Window) {
 	if wnd == nil {
 		return
@@ -88,8 +88,7 @@ var flushDragFeedback = func(panel *unison.Panel) {
 	panel.FlushDrawing()
 }
 
-// installPanelDragDrop wires the supplied panel-based drag handlers to a panel using the current unison drag callbacks.
-// The over and drop handlers receive the in-progress panel drag data, keyed by drag data type.
+// installPanelDragDrop makes the panel accept drags of dataType, passing panelDragData to the over and drop handlers.
 func installPanelDragDrop(panel *unison.Panel, dataType *uti.DataType,
 	over func(where geom.Point, data any) bool,
 	exit func(),

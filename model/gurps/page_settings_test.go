@@ -16,8 +16,7 @@ import (
 	"github.com/richardwilkes/toolbox/v2/check"
 )
 
-// Width and height come back in the units the size itself specifies, not always in inches as the doc comments once
-// claimed.
+// Width and height come back in the units the size itself specifies, not always in inches.
 func TestParsePageSizeUnits(t *testing.T) {
 	c := check.New(t)
 

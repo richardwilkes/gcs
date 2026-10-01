@@ -85,7 +85,8 @@ func newAncestryEditorDockable() *ancestryEditorDockable {
 	return d
 }
 
-// availableNameGeneratorNames returns the base names of the name generators in all libraries, in library order.
+// availableNameGeneratorNames returns the base names of the available name generators, built-in and from every
+// library, in natural sort order.
 func availableNameGeneratorNames() []string {
 	refs := gurps.AvailableNameGenerators(gurps.GlobalSettings().Libraries)
 	names := make([]string, 0, len(refs))

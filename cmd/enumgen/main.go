@@ -76,10 +76,9 @@ func main() {
 	}
 }
 
-// findRepoRoot returns the absolute path of the root of the GCS source tree: dir if given, otherwise the nearest
-// directory at or above the working directory that holds a go.mod. Every generated file beneath the root is deleted
-// before regenerating, so the root is required to hold the go.mod of the GCS module itself. The name of the directory
-// says nothing about that, since a clone or a worktree may be called anything.
+// findRepoRoot returns the absolute path of the GCS source tree root: dir if given, otherwise the nearest directory at
+// or above the working directory holding a go.mod. Every generated file beneath the root is deleted before
+// regenerating, so the root must hold the go.mod of the GCS module itself; a clone or worktree may be named anything.
 func findRepoRoot(dir string) (string, error) {
 	if dir == "" {
 		wd, err := os.Getwd()
@@ -251,12 +250,8 @@ func (e *enumInfo) RealValues() []*enumValue {
 }
 
 // Groups returns the group memberships declared on this enum's values, keyed by group name, each holding the member
-// value identifiers in declaration order. The template turns a group name into a Go identifier and decides how to name
-// and render the resulting variable.
-//
-// A value whose Groups includes "*" joins every other named group declared anywhere in this enum's values, in addition
-// to any it names explicitly. If the enum declares no named groups at all, "*" has nothing to expand into and is
-// ignored.
+// value identifiers in declaration order. A value whose Groups includes "*" joins every named group declared on any of
+// this enum's values; if there are none, "*" is ignored.
 func (e *enumInfo) Groups() map[string][]string {
 	if len(e.Values) == 0 {
 		return nil

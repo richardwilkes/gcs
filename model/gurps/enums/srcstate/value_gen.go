@@ -45,7 +45,7 @@ var Values = []Value{
 // Value describes the state of a source compared to a piece of data.
 type Value byte
 
-// EnsureValid ensures this is of a known value.
+// EnsureValid returns this value if it is valid and DefaultValue otherwise.
 func (enum Value) EnsureValid() Value {
 	if enum >= FirstValue && enum <= LastValue {
 		return enum
@@ -101,18 +101,18 @@ func (enum Value) AltString() string {
 	}
 }
 
-// MarshalText implements the encoding.TextMarshaler interface.
+// MarshalText implements encoding.TextMarshaler.
 func (enum Value) MarshalText() (text []byte, err error) {
 	return []byte(enum.Key()), nil
 }
 
-// UnmarshalText implements the encoding.TextUnmarshaler interface.
+// UnmarshalText implements encoding.TextUnmarshaler.
 func (enum *Value) UnmarshalText(text []byte) error {
 	*enum = ExtractValue(string(text))
 	return nil
 }
 
-// ExtractValue extracts the value from a string.
+// ExtractValue returns the value whose key matches str, ignoring case, or DefaultValue if none does.
 func ExtractValue(str string) Value {
 	for _, enum := range Values {
 		if strings.EqualFold(enum.Key(), str) {
@@ -122,10 +122,8 @@ func ExtractValue(str string) Value {
 	return DefaultValue
 }
 
-// ExtractKnownValue extracts the value from a string, reporting whether the string was actually recognized.
-//
-// Unlike ExtractValue, which quietly maps anything it doesn't recognize onto the default value, this permits a caller
-// that is dispatching on the type to detect unknown types.
+// ExtractKnownValue is like ExtractValue, but also reports whether str was recognized, so a caller can tell an unknown
+// key from the default.
 func ExtractKnownValue(str string) (value Value, known bool) {
 	for _, enum := range Values {
 		if strings.EqualFold(enum.Key(), str) {

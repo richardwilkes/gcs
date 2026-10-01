@@ -22,9 +22,8 @@ import (
 	"github.com/richardwilkes/toolbox/v2/xio"
 )
 
-// maxPayloadSize bounds what an archive is allowed to expand to. The executable is around 80MB today, so this leaves
-// generous headroom while still refusing a decompression bomb: without a bound, a few kilobytes of crafted gzip can be
-// made to fill the disk.
+// maxPayloadSize bounds what an archive may expand to: generous headroom over the ~80MB executable, while still
+// refusing a decompression bomb that could fill the disk from a few kilobytes of crafted gzip.
 const maxPayloadSize = 512 << 20
 
 // executableModePerm is the mode the extracted payload is written with. The archives record 0755 already, but it is set
@@ -102,8 +101,8 @@ func ExtractSingleZip(archivePath, wantName, dstPath string) error {
 	return writePayload(r, dstPath)
 }
 
-// writePayload copies at most maxPayloadSize bytes from r into dstPath, which is created with an executable mode. The
-// destination is removed on any failure.
+// writePayload copies at most maxPayloadSize bytes from r into dstPath, which must not already exist and is created
+// with an executable mode. Once created, it is removed on any failure.
 func writePayload(r io.Reader, dstPath string) (err error) {
 	if err = os.MkdirAll(filepath.Dir(dstPath), 0o755); err != nil {
 		return errs.Wrap(err)
@@ -132,9 +131,8 @@ func writePayload(r io.Reader, dstPath string) (err error) {
 	if n == 0 {
 		return errs.New("the archive holds an empty file")
 	}
-	// The mode requested at creation is filtered by the process umask, so set it explicitly. Without this, a user with
-	// a umask of 022 gets 0755 while one with 077 gets 0700, and the latter would install an application no other
-	// account on the machine could run.
+	// The mode requested at creation is filtered by the umask; set it explicitly so that a umask of 077 does not
+	// install an application no other account on the machine can run.
 	if err = f.Chmod(executableModePerm); err != nil {
 		return errs.Wrap(err)
 	}

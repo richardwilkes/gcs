@@ -808,7 +808,7 @@ func (n *Navigator) adjustTableSize() {
 	n.table.SizeColumnsToFit(true)
 }
 
-// TitleIcon implements unison.Dockable
+// TitleIcon implements unison.Dockable.
 func (n *Navigator) TitleIcon(suggestedSize geom.Size) unison.Drawable {
 	return &unison.DrawableSVG{
 		SVG:  unison.DocumentSVG,
@@ -816,17 +816,17 @@ func (n *Navigator) TitleIcon(suggestedSize geom.Size) unison.Drawable {
 	}
 }
 
-// Title implements unison.Dockable
+// Title implements unison.Dockable.
 func (n *Navigator) Title() string {
 	return i18n.Text("Library Explorer")
 }
 
-// Tooltip implements unison.Dockable
+// Tooltip implements unison.Dockable.
 func (n *Navigator) Tooltip() string {
 	return ""
 }
 
-// Modified implements unison.Dockable
+// Modified implements unison.Dockable.
 func (n *Navigator) Modified() bool {
 	return false
 }

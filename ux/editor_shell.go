@@ -30,9 +30,8 @@ type editorDockable interface {
 	unison.TabCloser
 }
 
-// editorShell is the dockable-editor shell that editor and pointsEditor share. What the editors differ in -- their
-// title, their data, how it is applied and whether it has changed -- stays with the embedding type, which the shell
-// reaches through Self when it needs the whole dockable.
+// editorShell is the dockable shell shared by editor and pointsEditor. Their title, their data, how it is applied and
+// whether it has changed stay with the embedding type, which the shell reaches through Self.
 type editorShell struct {
 	unison.Panel
 	owner            Rebuildable
@@ -56,10 +55,9 @@ func (s *editorShell) editor() editorDockable {
 	return nil
 }
 
-// setUp readies the shell for display, once Self has been set: it records where to return to when the editor closes,
-// creates the undo manager, and lays the editor out as a single column, for a toolbar above the scrolling content. It
-// returns the content panel, laid out in the given number of columns; the editor adds the toolbar and then the scroll
-// panel itself, since the toolbar may need the scroll panel.
+// setUp readies the shell once Self has been set: it records where to return to when the editor closes, creates the
+// undo manager, and returns the content panel, laid out in the given number of columns. The editor then adds its
+// toolbar and the scroll panel itself, since the toolbar may need the scroll panel.
 func (s *editorShell) setUp(columns int) *unison.Panel {
 	if defDC := DefaultDockContainer(); defDC != nil {
 		if s.previousDockable = defDC.CurrentDockable(); !xreflect.IsNil(s.previousDockable) {
@@ -113,9 +111,8 @@ func (s *editorShell) newContentPanel(columns int) *unison.Panel {
 	return content
 }
 
-// addApplyAndCancelButtons adds the Apply and Discard buttons to the toolbar. Apply applies the changes and closes the
-// editor; Discard closes it without applying them. Neither prompts on the way out, since the user has just said what to
-// do with the changes.
+// addApplyAndCancelButtons adds the Apply and Discard buttons to the toolbar. Both close the editor without prompting,
+// since the user has just said what to do with the changes; Apply applies them first.
 func (s *editorShell) addApplyAndCancelButtons(toolbar *unison.Panel, apply func()) {
 	s.applyButton, s.cancelButton = newApplyCancelButtons(toolbar, true,
 		func() bool {
@@ -131,9 +128,9 @@ func (s *editorShell) discardAndClose() {
 	s.editor().AttemptClose()
 }
 
-// discardEditorsFor closes the editors open on any of the given IDs, dropping their pending changes without asking
-// about them (see discardAndClose). It is for when the item an editor was opened on has changed out from under it in a
-// way that makes the editor's data wrong, where CloseID's offer to save the changes would do harm.
+// discardEditorsFor closes the editors open on any of the given IDs without asking about their pending changes. It is
+// for when an editor's item has changed in a way that makes the editor's data wrong, where CloseID's offer to save the
+// changes would do harm.
 func discardEditorsFor(ids map[tid.TID]bool) {
 	for _, d := range AllDockables() {
 		if closer, ok := d.(interface{ discardAndClose() }); ok {
@@ -217,10 +214,9 @@ type focusWithoutScroller interface {
 	RequestFocusWithoutScroll()
 }
 
-// restoreFocus gives the keyboard focus back to a panel that held it before an editor was opened. A table's default
-// focus handling scrolls the entire table into view, moving the surrounding content even when the row the user was
-// working with is still visible, so tables are focused without that. Callers that know which row matters can follow up
-// with revealRowForData, which only scrolls if that row is actually out of view.
+// restoreFocus gives the keyboard focus back to a panel that held it before an editor was opened. Tables are focused
+// without their default scrolling, which brings the entire table into view even when the user's row is still visible;
+// callers that know the row can follow up with revealRowForData.
 func restoreFocus(p *unison.Panel) {
 	if f, ok := p.Self.(focusWithoutScroller); ok {
 		f.RequestFocusWithoutScroll()

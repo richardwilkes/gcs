@@ -13,11 +13,9 @@ package library
 
 import "testing"
 
-// TestRace re-runs the tests that put two or more goroutines over shared state, which is the only situation the race
-// detector can ever report on: a test that never leaves the test goroutine cannot produce a report, so instrumenting it
-// is pure overhead. build.sh exploits that by running the full suite uninstrumented and then running only this wrapper
-// under the race detector (go test -race -run '^TestRace$' ./...). The build tag keeps the wrapper out of plain builds,
-// where the tests named here already run directly.
+// TestRace re-runs the tests that put two or more goroutines over shared state, the only tests the race detector can
+// report on. build.sh runs the full suite uninstrumented, then only this wrapper with go test -race -run '^TestRace$'.
+// The build tag keeps the wrapper out of plain builds, where these tests already run directly.
 //
 // When adding a test that involves concurrency — spawning goroutines itself or starting a library watch — list it here
 // as well so the race pass covers it.

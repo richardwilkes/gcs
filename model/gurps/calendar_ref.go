@@ -63,7 +63,7 @@ func NewCalendarRefFromFS(fileSystem fs.FS, filePath string) (*CalendarRef, erro
 	}, nil
 }
 
-// RandomBirthday generates a random birthday month and day.
+// RandomBirthday generates a random birthday month and day, retrying a few times to avoid returning not.
 func (c *CalendarRef) RandomBirthday(not string) string {
 	var base int64
 	year := 1

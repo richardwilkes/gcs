@@ -50,7 +50,7 @@ var DecimalPlaces = []DecimalPlace{
 // to the fixed-point maximum) with trailing zeros removed, while the explicit choices round to that many places.
 type DecimalPlace byte
 
-// EnsureValid ensures this is of a known value.
+// EnsureValid returns this value if it is valid and DefaultDecimalPlace otherwise.
 func (enum DecimalPlace) EnsureValid() DecimalPlace {
 	if enum >= FirstDecimalPlace && enum <= LastDecimalPlace {
 		return enum
@@ -98,18 +98,18 @@ func (enum DecimalPlace) String() string {
 	}
 }
 
-// MarshalText implements the encoding.TextMarshaler interface.
+// MarshalText implements encoding.TextMarshaler.
 func (enum DecimalPlace) MarshalText() (text []byte, err error) {
 	return []byte(enum.Key()), nil
 }
 
-// UnmarshalText implements the encoding.TextUnmarshaler interface.
+// UnmarshalText implements encoding.TextUnmarshaler.
 func (enum *DecimalPlace) UnmarshalText(text []byte) error {
 	*enum = ExtractDecimalPlace(string(text))
 	return nil
 }
 
-// ExtractDecimalPlace extracts the value from a string.
+// ExtractDecimalPlace returns the value whose key matches str, ignoring case, or DefaultDecimalPlace if none does.
 func ExtractDecimalPlace(str string) DecimalPlace {
 	for _, enum := range DecimalPlaces {
 		if strings.EqualFold(enum.Key(), str) {
@@ -119,10 +119,8 @@ func ExtractDecimalPlace(str string) DecimalPlace {
 	return DefaultDecimalPlace
 }
 
-// ExtractKnownDecimalPlace extracts the value from a string, reporting whether the string was actually recognized.
-//
-// Unlike ExtractDecimalPlace, which quietly maps anything it doesn't recognize onto the default value, this permits a
-// caller that is dispatching on the type to detect unknown types.
+// ExtractKnownDecimalPlace is like ExtractDecimalPlace, but also reports whether str was recognized, so a caller can
+// tell an unknown key from the default.
 func ExtractKnownDecimalPlace(str string) (value DecimalPlace, known bool) {
 	for _, enum := range DecimalPlaces {
 		if strings.EqualFold(enum.Key(), str) {

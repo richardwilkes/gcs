@@ -107,8 +107,6 @@ func TestRemoveGeneratedDocIconsReportsUnreadableDir(t *testing.T) {
 	c.HasError(removeGeneratedDocIcons(filepath.Join(t.TempDir(), "does_not_exist")))
 }
 
-// TestRemoveGeneratedDocIconsRemovesOnlyDocIcons verifies that the cleanup pass removes the generated document icons
-// and leaves everything else alone.
 func TestRemoveGeneratedDocIconsRemovesOnlyDocIcons(t *testing.T) {
 	c := check.New(t)
 	dir := t.TempDir()

@@ -9,8 +9,8 @@
 
 package gurps
 
-// FeatureSwitch is embedded in every persisted feature type. A switchable feature only takes effect while the switch of
-// the primary item that owns it (a trait, skill, spell, or piece of equipment) is on; other features always apply. The
+// FeatureSwitch is embedded in every known feature type. A switchable feature only takes effect while the switch of the
+// primary item that owns it (a trait, skill, spell, or piece of equipment) is on; other features always apply. The
 // on/off state lives on that item (see FeatureSwitcher), not here, so a modifier's switchable features follow the
 // switch of the trait or equipment the modifier belongs to.
 type FeatureSwitch struct {

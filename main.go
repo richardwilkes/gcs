@@ -31,9 +31,7 @@ func main() {
 	early.Configure()
 	ux.LoadLanguageSetting()
 	unison.AttachConsole()
-	// Run each registered runmode.Factory now, ahead of flag parsing, since each one registers its own flags as a
-	// side effect of being called (see runmode.Factories). Which modes exist, if any beyond the ones this repo
-	// itself registers, is entirely up to what got compiled into this build.
+	// Call each runmode.Factory before flag parsing, since each registers its own flags as a side effect.
 	runModes := make([]runmode.Mode, len(runmode.Factories))
 	var hiddenFlags []string
 	for i, newRunMode := range runmode.Factories {

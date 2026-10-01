@@ -145,10 +145,10 @@ func NewMarker(marker string) (Marker, bool) {
 
 // Marker is a parsed nameable key of the form "Label|tt(Tooltip line)|option|option|...".
 //
-// The first pipe-delimited segment is the label and must not be empty. Each tt(...) segment supplies one line of the
-// tooltip, with multiple such segments joined by '\n'. AllowEmptyToken and FreeFormToken toggle UI behavior instead of
-// being literal choices. A literal `|` or `\` can be escaped by prefixing it with `\`. No other character is reserved
-// within the label, tooltip, or option text.
+// The first pipe-delimited segment is the label and must not be empty. Each tt(...) segment supplies tooltip text, in
+// which `\n` stands for a line break, with multiple such segments joined by '\n'. AllowEmptyToken and FreeFormToken
+// toggle UI behavior instead of being literal choices. A literal `|` or `\` can be escaped by prefixing it with `\`. No
+// other character is reserved within the label, tooltip, or option text.
 type Marker struct {
 	Raw        string
 	Label      string

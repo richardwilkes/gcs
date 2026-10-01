@@ -51,10 +51,9 @@ func NewLootFromFile(fileSystem fs.FS, filePath string) (*Loot, error) {
 	return newLootFromFile(fileSystem, filePath)
 }
 
-// NewLootFromFileWithSavedCalc loads a Loot from a file, keeping the resolved text that the file's "calc" objects
-// record for its notes (see Note.StringWithSavedCalc), so that a reader which only needs the text of the loot sheet
-// need not run the scripts embedded in its notes. It is the counterpart of NewEntityFromFileWithSavedCalc for loot
-// sheets.
+// NewLootFromFileWithSavedCalc loads a Loot from a file, keeping the resolved text the file's "calc" objects record for
+// its notes (see Note.StringWithSavedCalc), so a reader needing only the sheet's text need not run the notes' embedded
+// scripts. It is the loot counterpart of NewEntityFromFileWithSavedCalc.
 func NewLootFromFileWithSavedCalc(fileSystem fs.FS, filePath string) (*Loot, error) {
 	return newLootFromFile(fileSystem, filePath, json.WithUnmarshalers(savedCalcMarker))
 }
@@ -97,9 +96,8 @@ func (l *Loot) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 	if !tid.IsKindAndValid(l.ID, kinds.Loot) {
 		l.ID = tid.MustNewTID(kinds.Loot)
 	}
-	// Only a template may hold template picker data or the flag to pick from a group separately, so any a loot sheet
-	// carries is removed, and the preconfigured mark means nothing on a sheet, so any an older version left behind is
-	// cleared.
+	// Only a template may hold template picker data or the flag to pick from a group separately, and the preconfigured
+	// mark means nothing on a sheet, so clear any of these a loot sheet carries.
 	ClearTemplatePickerData(l.Equipment...)
 	ClearPreconfigured(l.Equipment...)
 	ClearPreconfigured(l.Notes...)

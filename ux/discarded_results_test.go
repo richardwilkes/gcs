@@ -24,12 +24,10 @@ import (
 )
 
 // TestNoDiscardedConstructorResults verifies that no statement in the source tree is nothing but a call to another
-// package's New* constructor. Such a call builds something — a panel, a border, a window — and immediately throws it
-// away, so it can only be a leftover from an edit that removed whatever used to hold the result. The compiler doesn't
-// complain, and neither does the linter, but the allocation happens every time the surrounding code runs: a discarded
-// unison.NewCheckBox() in the table's toggle cell builder cost one wasted CheckBox panel per toggle cell per rebuild.
-// Only qualified calls are checked, since a call to a New* function in this module may legitimately return nothing at
-// all, as NewSheetFromTemplate does.
+// package's New* constructor. Such a call is a leftover that neither the compiler nor the linter flags, yet it still
+// allocates every time it runs: one in the toggle cell builder once cost a CheckBox panel per toggle cell per rebuild.
+// Only qualified calls are checked, since a New* function in this module may return nothing, as NewSheetFromTemplate
+// does.
 func TestNoDiscardedConstructorResults(t *testing.T) {
 	c := check.New(t)
 	root, err := filepath.Abs("..")

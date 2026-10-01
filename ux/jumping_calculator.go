@@ -263,7 +263,6 @@ func (j *jumpingCalculator) computeJump(broad bool, extraEffortPenalty int) fxp.
 	basicMove := j.basicMove
 	basicMoveWithoutRun := basicMove
 
-	// Adjust Basic Move for running
 	if j.runningStart > 0 {
 		basicMove += j.runningStart
 		if j.enhancedMove > 0 {
@@ -273,7 +272,6 @@ func (j *jumpingCalculator) computeJump(broad bool, extraEffortPenalty int) fxp.
 		}
 	}
 
-	// Adjust Basic Move for Jumping skill
 	if j.jumpingSkill > 0 {
 		level := fxp.FromInteger(j.jumpingSkill).Div(fxp.Two).Floor()
 		basicMove = basicMove.Max(level)
@@ -287,7 +285,7 @@ func (j *jumpingCalculator) computeJump(broad bool, extraEffortPenalty int) fxp.
 		basicMoveWithoutRun = basicMoveWithoutRun.Max(adjusted)
 	}
 
-	// Determine base distance
+	// The base distance, which a running start can at most double.
 	var multiplier, reduction fxp.Int
 	if broad {
 		multiplier = fxp.Two
@@ -298,15 +296,12 @@ func (j *jumpingCalculator) computeJump(broad bool, extraEffortPenalty int) fxp.
 	}
 	distance := (basicMove.Mul(multiplier) - reduction).Min((basicMoveWithoutRun.Mul(multiplier) - reduction).Mul(fxp.Two))
 
-	// Adjust for encumbrance
 	distance = distance.Mul(fxp.One - fxp.FromInteger(j.encumbranceIndex).Mul(fxp.Two).Div(fxp.Ten))
 
-	// Adjust for Super Jump
 	if j.superJump > 0 {
 		distance = distance.Mul(fxp.FromFloat(math.Pow(2, j.superJump.AsFloat[float64]())))
 	}
 
-	// Adjust for extra effort
 	if extraEffortPenalty < 0 {
 		distance = distance.Mul(fxp.FromInteger(-5*extraEffortPenalty).Div(fxp.Hundred) + fxp.One)
 	}

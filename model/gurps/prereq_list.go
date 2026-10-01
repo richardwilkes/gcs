@@ -39,7 +39,7 @@ func NewPrereqList() *PrereqList {
 	}
 }
 
-// IsZero implements json.isZero.
+// IsZero reports whether json's omitzero option should omit this value.
 func (p *PrereqList) IsZero() bool {
 	return p == nil || len(p.Prereqs) == 0
 }
@@ -73,9 +73,8 @@ func (p *PrereqList) CloneAsPrereqList(parent *PrereqList) *PrereqList {
 	return &clone
 }
 
-// CloneResolvingEmpty clones this prereq list. If the result would be nil and it isn't a container, a new, empty, list
-// is created. If the result would not be nil but pruneIfEmpty is true and calling IsZero() on it would return true,
-// then nil is returned.
+// CloneResolvingEmpty clones this prereq list. A nil list becomes a new, empty one unless isContainer is true, and an
+// empty list becomes nil if pruneIfEmpty is true.
 func (p *PrereqList) CloneResolvingEmpty(isContainer, pruneIfEmpty bool) *PrereqList {
 	if p != nil {
 		if pruneIfEmpty && p.IsZero() {

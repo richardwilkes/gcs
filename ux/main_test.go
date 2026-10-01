@@ -27,13 +27,12 @@ var ciScriptExecTimeLimit = fxp.FromInteger(30)
 // they are recalculated, and the production default is small enough that some CI runners cannot always finish even a
 // trivial script within it.
 //
-// It also selects the platform-neutral modifier convention for the whole run, which is the one a headless session
-// uses on every host: the menu command key is Control rather than macOS's Command. The actions registerActions builds
-// bake mod.OSMenuCommand() into their key bindings, and they are built once per process by whichever test gets there
-// first. Left to the host's convention, a plain test registering them on macOS would leave every menu shortcut bound to
-// Command, and the headless tests that follow, whose sessions press Control, would never reach the menu items. Pinning
-// the convention here means the bindings match whatever the order the tests run in, and the tests that never start a
-// session behave the same on every host too.
+// It also pins the platform-neutral modifier convention a headless session uses on every host, whose menu command key
+// is Control rather than macOS's Command. registerActions bakes mod.OSMenuCommand() into the key bindings once per
+// process, in whichever test gets there first; under the host's convention, a plain test doing so on macOS would bind
+// every menu shortcut to Command, and the headless tests that follow, which press Control, would never reach the menu
+// items. Pinning it keeps the bindings independent of test order and makes the tests that never start a session behave
+// the same on every host.
 func TestMain(m *testing.M) {
 	limit := gurps.PermittedScriptExecTimeMax
 	if os.Getenv("CI") != "" {

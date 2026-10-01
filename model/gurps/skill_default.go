@@ -74,8 +74,7 @@ func normalizeDefaultType(skillDefaultType string) string {
 	return strings.ToLower(strings.TrimSpace(skillDefaultType))
 }
 
-// cloneSkillDefaults creates a deep copy of the provided SkillDefault list, or nil when it is empty. A nil entry is
-// carried over as is, since the walkers over a default list already skip them.
+// cloneSkillDefaults returns a deep copy of the list, keeping nil entries as nil, or nil when the list is empty.
 func cloneSkillDefaults(list []*SkillDefault) []*SkillDefault {
 	if len(list) == 0 {
 		return nil

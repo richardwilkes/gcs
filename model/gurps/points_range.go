@@ -66,14 +66,11 @@ func containerRawPointsRange[T rawPointsRangeNode[T]](tp TemplatePicker, options
 	return pointsRangeForPicker(tp, ranges)
 }
 
-// pickerContainerPoints returns what a container carrying the given picker is worth, which is never what its options
-// (see TemplateChoiceOptions) add up to, since only some of them will be taken. When every way of making the choice
-// costs the same, as "pick 20 points worth" most often does, that is what it is worth. When they don't, there is no
-// single answer, and the total of the options is left as the answer AdjustedPoints has always given here, with
-// PointsRange holding the one that can be relied upon.
-//
-// The options are walked once. The range that comes out of that walk answers both questions: whether the choice has
-// a single cost after all, and, when it doesn't, what the options add up to.
+// pickerContainerPoints returns what a container carrying the given picker is worth: the single cost every way of
+// making the choice comes to, as with "pick 20 points worth", or else, there being no single answer, the total of its
+// options (see TemplateChoiceOptions), which is what AdjustedPoints has always reported here, with PointsRange holding
+// the answer that can be relied upon. The options are walked once; their ranges tell both whether the choice is settled
+// and, if not, what the options total.
 func pickerContainerPoints[T pointsRangeNode[T]](tp TemplatePicker, options []T) fxp.Int {
 	if value, settled := settledPickerCost(tp); settled {
 		return value
@@ -101,15 +98,9 @@ func totalOfAdjustedPoints[T pointsRangeNode[T]](children []T, ranges []NumericR
 }
 
 // pointsRangeForPicker returns the range of costs a container carrying the given template picker may end up being
-// worth, given the ranges of the children that may be picked from.
-//
-// The count cases are exact: the cheapest way to satisfy "pick 3" is the 3 cheapest children, and a child that costs
-// less than nothing is always worth taking when the picker allows more to be taken. The points cases lean on the fact
-// that a points picker measures the very quantity it constrains -- the cost of what is picked -- so the qualifier
-// bounds the container's total directly, with no need to search for a subset that adds up to it. The cost of that
-// shortcut is that achievability isn't checked: "pick at least 7 points" from children worth 5 and 10 reports a
-// minimum of 7, where the cheapest satisfying pick is really 10. Reporting the constraint the picker states is both
-// cheaper and closer to how the picker describes itself.
+// worth, given the ranges of the children that may be picked from. The points case doesn't check achievability: "pick
+// at least 7 points" from children worth 5 and 10 reports a minimum of 7, where the cheapest satisfying pick is really
+// 10. Reporting the constraint the picker states is both cheaper and closer to how the picker describes itself.
 func pointsRangeForPicker(tp TemplatePicker, children []NumericRange) NumericRange {
 	switch tp.Type {
 	case picker.Count:

@@ -86,10 +86,9 @@ func openMarkdownPageReference(ref string) {
 }
 
 // splitMarkdownPageRef splits a markdown page reference (with the "md:" prefix already removed) into the file path and
-// an optional anchor (the portion following a '#'). URL-encoding in the path (e.g. "%20" for spaces) is decoded, so
-// that encoded and non-encoded references resolve to the same file, and the ".md" extension is appended if not already
-// present. Splitting the anchor off first ensures "File#Section" resolves to "File.md" rather than the non-existent
-// "File#Section.md". The anchor is returned as-is; unison decodes it when scrolling to it.
+// the optional anchor following a '#'. The path is URL-decoded, so encoded and plain references resolve to the same
+// file, and gets the ".md" extension if it lacks one; splitting the anchor off first makes "File#Section" resolve to
+// "File.md" rather than "File#Section.md". The anchor is returned as-is; unison decodes it when scrolling to it.
 func splitMarkdownPageRef(ref string) (path, anchor string) {
 	path, anchor, _ = strings.Cut(ref, "#")
 	if unescaped, err := url.PathUnescape(path); err == nil {
@@ -256,7 +255,7 @@ func asPageRefMappingsDockable(d unison.Dockable) *pageRefMappingsDockable {
 	return m
 }
 
-// RefreshPageRefMappingsView causes the Page References Mappings view to be refreshed if it is open.
+// RefreshPageRefMappingsView refreshes the Page Reference Mappings view if it is open.
 func RefreshPageRefMappingsView() {
 	for _, one := range AllDockables() {
 		if d := asPageRefMappingsDockable(one); d != nil {

@@ -51,12 +51,10 @@ type itemCreator interface {
 // installNewItemCmdHandlers installs on the owner the handlers for the "New ..." commands that add an item to one of
 // its lists: the plain item, and -- unless the container ID is -1, in which case the item is the alternate kind (a
 // technique, a ritual magic spell) -- the container as well. The list is looked up through the getter each time a
-// command is invoked rather than captured here, since a list whose set of columns has to change can only do so by being
-// replaced outright (a table's columns are fixed at creation -- see PageList.needReconstruction), leaving whatever
-// captured it holding an orphan. Creating an item in an orphaned list still updates the model, but everything that goes
-// with it is aimed at a table nobody is looking at: the undo edit can't even find the undo manager, so the insertion
-// isn't undoable and the user's next undo silently takes back the edit before it, and the new row is neither selected
-// nor scrolled into view in the list that is actually on screen.
+// command is invoked rather than captured here, since a list whose columns change is replaced outright (see
+// PageList.needReconstruction). Creating an item in a captured, orphaned list still updates the model, but its undo
+// edit can't find the undo manager, so the user's next undo silently takes back the edit before it, and the new row is
+// neither selected nor scrolled into view in the list on screen.
 func installNewItemCmdHandlers(owner Rebuildable, itemID, containerID int, creator func() itemCreator) {
 	p := owner.AsPanel()
 	variant := NoItemVariant
@@ -82,8 +80,8 @@ type listItemCreators struct {
 }
 
 // installListItemCmdHandlers installs on the owner the handlers for the "New ..." commands for each of the lists it
-// has: the item and the container for every list, and the alternate kind of item -- the technique, the ritual magic
-// spell -- for the skills and the spells.
+// has: the item and the container for every list, the alternate kind of item -- the technique, the ritual magic spell
+// -- for the skills and the spells, and the group for the equipment lists.
 func installListItemCmdHandlers(owner Rebuildable, creators listItemCreators) {
 	install := func(itemID, containerID int, creator func() itemCreator) {
 		if creator != nil {
@@ -152,11 +150,10 @@ func listsForKeys(list func(key string) sheetList, accept func(key string) bool)
 	return lists
 }
 
-// syncOrRebuildList brings a page list up to date with its model, building it anew when the columns it has to show no
-// longer match the ones it has -- or when it doesn't exist yet -- since a table's columns are fixed at creation. The
-// result is stored back through the pointer given, so that the caller's field always names the list that is on
-// screen, and is returned as well. Anything that captured the old list has to allow for it having been replaced; see
-// installNewItemCmdHandlers for what goes wrong when it doesn't.
+// syncOrRebuildList brings a page list up to date with its model, building it anew when it doesn't exist yet or the
+// columns it has to show no longer match the ones it has, since a table's columns are fixed at creation. The result is
+// stored through the pointer, so the caller's field always names the list on screen, and returned. Anything that
+// captured the old list has to allow for its replacement (see installNewItemCmdHandlers).
 func syncOrRebuildList[T gurps.Node[T]](list **PageList[T], build func() *PageList[T]) *PageList[T] {
 	if (*list).needReconstruction() {
 		*list = build()
@@ -167,10 +164,9 @@ func syncOrRebuildList[T gurps.Node[T]](list **PageList[T], build func() *PageLi
 }
 
 // preserveSelections records the selection of each of the lists the function returns and returns a function that puts
-// the selections back. The lists are fetched again when the selections are put back rather than held from when they
-// were recorded, since a rebuild replaces any list whose columns changed (see syncOrRebuildList) and the selection
-// belongs in the list that is on screen, not in the orphan it replaced. Both calls therefore have to yield the lists in
-// the same order.
+// the selections back. The lists are fetched again when restoring, since a rebuild replaces any list whose columns
+// changed (see syncOrRebuildList) and the selection belongs in the list on screen; both calls must therefore yield the
+// lists in the same order.
 func preserveSelections(lists func() []sheetList) (restore func()) {
 	current := lists()
 	selections := make([]map[tid.TID]bool, len(current))

@@ -21,9 +21,8 @@ import (
 // testExt is the extension the scans below look for. Any extension will do, since the scanner treats them all alike.
 const testExt = ".ancestry"
 
-// Files are matched without regard to the case of their extension. The extension map is built from lowercased
-// extensions, but the file's own extension was looked up as-is, so anything with an upper or mixed-case extension was
-// silently skipped from the settings, ancestry, calendar and name-generator scans.
+// Files are matched without regard to the case of their extension; otherwise anything with an upper or mixed-case
+// extension would be silently skipped from the settings, ancestry, calendar and name-generator scans.
 func TestScanForNamedFileSetsIgnoresExtensionCase(t *testing.T) {
 	c := check.New(t)
 	fileSystem := fstest.MapFS{

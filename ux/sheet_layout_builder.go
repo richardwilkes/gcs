@@ -19,8 +19,9 @@ import (
 	"github.com/richardwilkes/unison/enums/align"
 )
 
-// sheetLayoutNodeKey is the client data key the layout node a panel was built for is recorded under. Every panel the
-// builder returns carries one, so that the layout editor and the page exporter can map a panel back into the tree.
+// sheetLayoutNodeKey is the client data key the layout node that governs a panel's slot is recorded under (see
+// buildLayoutNode). Every panel the builder returns carries one, so that the layout editor can map a panel back into
+// the tree.
 const sheetLayoutNodeKey = "sheetLayoutNode"
 
 // sheetLayoutContainerKey is the client data key the Row or Column node a container panel was built from is recorded

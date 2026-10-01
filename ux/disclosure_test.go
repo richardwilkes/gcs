@@ -17,7 +17,7 @@ import (
 	"github.com/richardwilkes/toolbox/v2/check"
 )
 
-// fakeDiscloser stands in for a list in the toggle tests, recording the state it was last put in.
+// fakeDiscloser stands in for a list in the toggle tests, recording every state it is put in.
 type fakeDiscloser struct {
 	open      bool
 	exists    bool
@@ -154,10 +154,9 @@ func TestTableDockableToggles(t *testing.T) {
 }
 
 // TestTableDockableTogglesAreOffWhileFiltered verifies that a list dockable turns its hierarchy and note buttons off
-// while a filter is applied, and that the toggles leave the rows alone should they be reached all the same. A filtered
-// table shows every container it keeps as open whatever the container's own open state, so a toggle would silently
-// change the disclosure states without anything to show for it until the filter was cleared. Both the quick filter and
-// a saved filter have to turn the buttons off, and clearing either has to turn them back on.
+// while either kind of filter is applied, and that the toggles leave the rows alone should they be reached all the
+// same. A filtered table shows every container it keeps as open, so a toggle would silently change disclosure states
+// that nothing shows until the filter is cleared.
 func TestTableDockableTogglesAreOffWhileFiltered(t *testing.T) {
 	c := check.New(t)
 	swapForTest(t, &gurps.GlobalSettings().SheetSettings().NotesDisplay, display.Inline)

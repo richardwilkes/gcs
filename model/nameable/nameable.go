@@ -146,7 +146,7 @@ func ApplyToList(in []string, replacements map[string]string) []string {
 // An entry still holding the Unset sentinel (i.e. the substitutions dialog was shown but the user never chose a value
 // for that marker) is dropped, so an untouched marker is never persisted as if it had been resolved.
 //
-// Returns nil, not an empty map, when there is nothing to keep -- callers that assign the result directly to a stored
+// Returns nil, not an empty map, when either map is empty -- callers that assign the result directly to a stored
 // Replacements field and later write into it (e.g. `x.Replacements[k] = v`) must guard for nil first.
 func Reduce(nameables, replacements map[string]string) map[string]string {
 	if len(nameables) == 0 || len(replacements) == 0 {

@@ -35,9 +35,8 @@ func newEditorEquipment(mutate func(e *gurps.Equipment, mod *gurps.EquipmentModi
 	return equipment, &data
 }
 
-// The Extended Value preview must honor the level currently typed into the editor rather than the level the equipment
-// was opened with. The preview's modifier context used to be the unedited target, so a "per level" cost modifier kept
-// multiplying by the original level and the preview never moved when the Level field changed.
+// The Extended Value preview must honor the level typed into the editor. Its modifier context used to be the unedited
+// target, so a "per level" cost modifier kept multiplying by the original level.
 func TestExtendedValuePreviewUsesPendingLevel(t *testing.T) {
 	c := check.New(t)
 	equipment, data := newEditorEquipment(func(e *gurps.Equipment, mod *gurps.EquipmentModifier) {

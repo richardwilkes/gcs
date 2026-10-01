@@ -174,10 +174,9 @@ func (w *Weapon) IsRanged() bool {
 	return tid.IsKind(w.TID, kinds.WeaponRanged)
 }
 
-// CloneWeapons clones the input list of weapons, pointing each copy at the given owner. Weapon.Clone() carries the
-// original's owner over, since it has no way to know the new one, so the owner must be supplied here: a weapon resolves
-// its nameable replacements, skill defaults and strength requirements through its owner, so a copy left pointing at the
-// node it was copied from reports that node's values rather than its own holder's.
+// CloneWeapons clones the input list of weapons, pointing each copy at the given owner. Weapon.Clone() keeps the
+// original's owner, and a weapon resolves its nameable replacements, skill defaults and strength requirements through
+// its owner, so a copy left pointing at the original's owner would report that node's values rather than its own.
 func CloneWeapons(list []*Weapon, owner WeaponOwner, mode CloneMode) []*Weapon {
 	if len(list) == 0 {
 		return nil
@@ -517,11 +516,10 @@ func (w *Weapon) SkillLevel(tooltip *xbytes.InsertBuffer) fxp.Int {
 	best := fxp.Min
 	replacements := w.NameableReplacements()
 	for _, def := range w.Defaults {
-		// A parry- or block-type default is deliberately left to resolve to its defense level here rather than to the
-		// level of the skill it names. Such a default exists to feed the parry or block calculation -- the Tonfa in
-		// the High Tech library carries "Brawling Parry" and "Karate Parry" alongside its real attack defaults -- and
-		// scoring it by the named skill would let a high Karate win this max and become the weapon's attack skill.
-		// Halved, it stays out of the way.
+		// A parry- or block-type default deliberately resolves to its defense level here, not the named skill's level.
+		// Such a default exists to feed the parry or block calculation -- the Tonfa in the High Tech library carries
+		// "Brawling Parry" and "Karate Parry" alongside its real attack defaults -- and scoring it by the named skill
+		// would let a high Karate become the weapon's attack skill. Halved, it stays out of the way.
 		if level := def.SkillLevelFast(entity, replacements, false, nil, true); level != fxp.Min {
 			level += adj
 			if best < level {
@@ -1093,17 +1091,16 @@ func (w *Weapon) ColumnHasData(columnID int) bool {
 	}
 }
 
-// CopyFrom implements node.EditorData.
+// CopyFrom implements EditorData.
 func (w *Weapon) CopyFrom(t *Weapon) {
 	*w = *t.Clone(LibraryFile{}, t.DataOwner(), nil, Duplicate)
 }
 
-// ApplyTo implements node.EditorData.
+// ApplyTo implements EditorData.
 func (w *Weapon) ApplyTo(t *Weapon) {
 	// Unlike the other EditorData implementations, a Weapon serves as its own editor data, so it carries the TID minted
-	// for it by CopyFrom. Applying an edit must not disturb the target's identity: the TID is persisted as the weapon's
-	// "id" and table selections are keyed on it, and the lineage recorded in ClonedFromTID is what ties a copy held by
-	// a trait, skill or spell editor back to the weapon it came from.
+	// for it by CopyFrom. Applying an edit must not disturb the target's identity: the TID is persisted as the "id" and
+	// keys table selections, and ClonedFromTID ties a copy in its owner's editor back to the weapon it came from.
 	savedTID := t.TID
 	savedClonedFromTID := t.ClonedFromTID
 	*t = *w.Clone(LibraryFile{}, t.DataOwner(), nil, Copy)

@@ -29,9 +29,9 @@ import (
 )
 
 // newTestLayoutRegions returns a hand-built set of regions describing a page holding a two-block row above a full-width
-// band, with a gap above the row, the seam of the page between the two bands and a gap below the band. Those two gaps
-// are the only ones the editor ever builds: the space between two bands is a seam, since a block dropped there may be
-// meant to straddle the two of them rather than to come between them.
+// band, with a gap above the row, the seam of the page between the two bands and a gap below the band. A page with
+// bands has only those two gaps: the space between two bands is a seam, since a block dropped there may be meant to
+// straddle the two of them rather than to come between them.
 func newTestLayoutRegions() *layoutRegions {
 	pageRect := geom.NewRect(0, 0, 100, 200)
 	band := &gurps.SheetLayoutNode{Type: layoutnode.Row}
@@ -582,9 +582,8 @@ func undoEditCount(mgr *unison.UndoManager) int {
 	return count
 }
 
-// leafOnPage returns the region of the block with the given key, ending the test if that block isn't on the page. Every
-// caller reaches straight into what comes back, so a missing block has to stop the test then and there rather than be
-// left as a nil to be dereferenced a line later.
+// leafOnPage returns the region of the block with the given key, ending the test if that block isn't on the page, since
+// every caller dereferences the result.
 func leafOnPage(t *testing.T, regions *layoutRegions, key string) *layoutLeafRegion {
 	t.Helper()
 	leaf := regions.leafFor(key)
@@ -1042,9 +1041,9 @@ func TestDividerDragTransfersWidth(t *testing.T) {
 }
 
 // TestDividerDragBackToItsStartPutsTheRowBack checks that a divider dragged away and then back to where it began leaves
-// the row exactly as it was, whatever the weights. The pointer's position is turned into weights of four decimal places,
-// so with weights that don't divide the row evenly the round trip would otherwise land a rounding error away from where
-// it started, and that would be recorded as an edit that changes nothing visible.
+// the row exactly as it was, whatever the weights. The pointer's position is turned into weights of four decimal
+// places, so with weights that don't divide the row evenly the round trip would otherwise land a rounding error away
+// from where it started, and that would be recorded as an edit that changes nothing visible.
 func TestDividerDragBackToItsStartPutsTheRowBack(t *testing.T) {
 	t.Run("uneven weights", func(t *testing.T) {
 		c := check.New(t)

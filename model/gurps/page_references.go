@@ -66,7 +66,7 @@ func (p *PageRefs) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 	return nil
 }
 
-// IsZero implements json.isZero.
+// IsZero reports whether json's omitzero option should omit this value.
 func (p *PageRefs) IsZero() bool {
 	return p == nil || p.data == nil || len(p.data) == 0
 }

@@ -47,7 +47,7 @@ func ParseWeaponBulk(s string) WeaponBulk {
 	return wb
 }
 
-// IsZero implements json.isZero.
+// IsZero reports whether json's omitzero option should omit this value.
 func (wb WeaponBulk) IsZero() bool {
 	return wb == WeaponBulk{}
 }

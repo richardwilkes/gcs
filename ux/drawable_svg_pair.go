@@ -14,7 +14,7 @@ import (
 	"github.com/richardwilkes/unison"
 )
 
-// DrawableSVGPair draws two SVG's side-by-side.
+// DrawableSVGPair draws two SVGs side-by-side.
 type DrawableSVGPair struct {
 	Left  *unison.SVG
 	Right *unison.SVG

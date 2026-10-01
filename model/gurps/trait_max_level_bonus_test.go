@@ -187,7 +187,7 @@ func TestTraitMaxLevelBonusBroadScopeLeavesUncappedTraitsAlone(t *testing.T) {
 	c.Equal("", uncapped.UnsatisfiedReason, "an unlimited trait must not be flagged for exceeding a maximum")
 }
 
-// TestTraitMaxLevelBonusRoundTrip verifies that each selector/operation combination survives a JSON round-trip.
+// TestTraitMaxLevelBonusRoundTrip verifies that a bonus with each selector survives a JSON round-trip.
 func TestTraitMaxLevelBonusRoundTrip(t *testing.T) {
 	c := check.New(t)
 	this := newMaxLevelBonus(traitsel.ThisTrait, "x2")

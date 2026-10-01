@@ -42,7 +42,7 @@ func ParseWeaponBlock(s string) WeaponBlock {
 	return wb
 }
 
-// IsZero implements json.isZero.
+// IsZero reports whether json's omitzero option should omit this value.
 func (wb WeaponBlock) IsZero() bool {
 	return !wb.CanBlock
 }

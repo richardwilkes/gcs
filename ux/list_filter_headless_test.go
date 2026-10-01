@@ -22,8 +22,8 @@ import (
 	"github.com/richardwilkes/unison/enums/mod"
 )
 
-// The titles of the trait fields the tests drive the condition row's field popup with, and the tooltips that tell the
-// widgets a condition row holds apart from one another.
+// The trait field titles the tests pick in a condition row's field popup, the tooltips that identify the editor's
+// widgets, and the titles of the saved filter popup's commands.
 const (
 	nameFieldTitle        = "have a name"
 	tagsFieldTitle        = "have tags"

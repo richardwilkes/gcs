@@ -173,8 +173,8 @@ const (
 	NewTechniqueItemID
 	LastAlternateNonContainerMarker
 
-	// These are only offered by templates, the only place template choices may be made, so they must stay outside the
-	// container block above, which the library tables install all of.
+	// These are only offered by templates, the only place template choices may be made. They must stay outside the
+	// marker blocks above, since NewTableDockable maps an ID inside one to that block's item variant.
 	NewEquipmentChoiceContainerItemID
 	NewSkillChoiceContainerItemID
 	NewSpellChoiceContainerItemID
@@ -543,10 +543,9 @@ func (s menuBarScope) appendDisabledMenuItem(menu unison.Menu, title string) {
 	menu.InsertItem(-1, item)
 }
 
-// contextMenuItemFor returns the context menu item that invokes action, so that the menu shows the action's own title,
-// or the shorter one registered for it in contextMenuShortTitles, and the two can never drift apart. The action must already
-// have been registered (see registerActions), which SetupMenuBar ensures before any window, and so any context menu,
-// exists.
+// contextMenuItemFor returns the context menu item that invokes action, titled with the action's own title or the
+// shorter one registered for it in contextMenuShortTitles, so the two can never drift apart. The action must already be
+// registered (see registerActions), which SetupMenuBar ensures before any window, and so any context menu, exists.
 func contextMenuItemFor(action *unison.Action) ContextMenuItem {
 	if title, ok := contextMenuShortTitles[action.ID]; ok {
 		return ContextMenuItem{Title: title, ID: action.ID}

@@ -139,9 +139,9 @@ func TestParseMarkerLiteralBackslashNInLabelIsNotANewline(t *testing.T) {
 
 func TestParseMarkerTooltipEscapedBackslashFollowedByNIsNotNewline(t *testing.T) {
 	c := check.New(t)
-	// The tooltip segment unescapes "\\" to "\" before converting a literal "\n" to a real newline, so an escaped
-	// backslash that happens to be followed by a literal 'n' -- as in a Windows-style path -- collapses into a line
-	// break and eats the 'n', instead of staying the single backslash the author escaped.
+	// The tooltip segment is unescaped in a single pass, so an escaped backslash that happens to be followed by a
+	// literal 'n' -- as in a Windows-style path -- stays the single backslash the author escaped rather than collapsing
+	// into a line break.
 	marker, ok := nameable.NewMarker(`Element|tt(Path\\name)|Fire`)
 	c.True(ok)
 	c.Equal(`Path\name`, marker.Tooltip)
@@ -201,9 +201,9 @@ func TestKeyPlainLegacyLabel(t *testing.T) {
 	c := check.New(t)
 	m, ok := nameable.NewMarker("Weapon Name")
 	c.True(ok)
-	// A bare, single-segment legacy marker short-circuits to just its (escaped) label -- no '*'/'?' tokens -- so
-	// that a plain "@Weapon Name@" keeps the same Replacements key it always has, rather than becoming
-	// "Weapon Name|*|?" and silently orphaning every character sheet saved before that normalization existed.
+	// A bare, single-segment marker short-circuits to just its (escaped) label -- no '*'/'?' tokens -- so that a plain
+	// "@Weapon Name@" keeps the Replacements key it always had, rather than becoming "Weapon Name|*|?" and silently
+	// orphaning every character sheet saved before that normalization existed.
 	c.Equal("Weapon Name", m.Key())
 }
 
@@ -277,8 +277,8 @@ func TestKeyDoesNotEscapeParensInTooltip(t *testing.T) {
 
 func TestKeyTooltipIsSeparatedFromPrecedingContentBySegmentDelimiter(t *testing.T) {
 	c := check.New(t)
-	// Regression test: Key() used to write the tooltip's "tt(" prefix with no leading '|', gluing it directly onto
-	// whatever came before it -- the label when there are no options, or the last option when there are. Fixed now.
+	// Regression test: the tooltip's "tt(" prefix must get a leading '|' rather than being glued onto whatever came
+	// before it -- the label when there are no options, or the last option when there are.
 	m1 := nameable.Marker{Label: "Element", Tooltip: "Choose"}
 	c.Equal("Element|tt(Choose)", m1.Key())
 	m2 := nameable.Marker{Label: "Element", Options: []string{"Fire"}, Tooltip: "Choose"}
@@ -287,10 +287,8 @@ func TestKeyTooltipIsSeparatedFromPrecedingContentBySegmentDelimiter(t *testing.
 
 func TestKeyRoundTripsLosslessThroughNewMarker(t *testing.T) {
 	c := check.New(t)
-	// Regression test: before the tooltip-separator fix above, the produced key wasn't valid Marker syntax (the
-	// tooltip segment wasn't actually a separate segment), so feeding it back through NewMarker -- exactly what
-	// happens when a key is persisted and reloaded -- silently absorbed the tooltip into the preceding option and
-	// lost it. Fixed now: the round trip is lossless.
+	// Regression test: feeding a key back through NewMarker -- exactly what happens when a key is persisted and
+	// reloaded -- must keep the tooltip rather than absorbing it into the preceding option.
 	m, ok := nameable.NewMarker("Element|tt(Choose)|Fire")
 	c.True(ok)
 	reparsed, ok := nameable.NewMarker(m.Key())
@@ -326,7 +324,7 @@ func TestExtractUsesExistingValueWhenKeyMatches(t *testing.T) {
 func TestExtractMarkersEscapedBackslashBeforeAtIsNotEscapedAt(t *testing.T) {
 	c := check.New(t)
 	// Two literal backslashes immediately before '@' form one escaped-backslash pair (per the same pairing rule
-	// splitSegments uses for '|'), leaving the '@' itself unescaped and free to open a marker.
+	// ExtractSegments uses for '|'), leaving the '@' itself unescaped and free to open a marker.
 	markers := nameable.Extract(nil, nil, `A\\@Element|Fire|Water@ B`)
 	c.Equal(1, len(markers))
 	_, ok := markers["Element|Fire|Water"]
@@ -378,8 +376,8 @@ func TestReduceKeepsAllowEmptyChosenValue(t *testing.T) {
 
 func TestReduceRetainsMalformedReplacementKeyButHasNoEffect(t *testing.T) {
 	c := check.New(t)
-	// A replacements key that itself fails to parse as a marker (here, "") is retained as-is rather than dropped,
-	// but simply never matches any real marker's key, so it has no effect on the result here.
+	// A replacements key that itself fails to parse as a marker (here, "") never matches any real marker's key, so
+	// Reduce drops it without affecting the other entries.
 	needed := map[string]string{"Element|Fire|Water": ""}
 	replacements := map[string]string{"": "unused", "Element|Fire|Water": "Fire"}
 	reduced := nameable.Reduce(needed, replacements)

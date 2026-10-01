@@ -333,9 +333,8 @@ func (d *librarySettingsDockable) apply() bool {
 				d.config.RepoName))
 		return false
 	}
-	// The deep search content loaders read the library set from background goroutines, so the re-keying goes through
-	// Rekey, which swaps the keys as one locked operation rather than a Remove followed by a Store that would leave the
-	// library absent from the set in between (see Libraries.Rekey).
+	// Rekey rather than Remove then Store, since the deep search content loaders read the library set from background
+	// goroutines and must never see the library absent.
 	oldKey := d.library.Key()
 	d.library.Configure(d.config)
 	libs.Rekey(oldKey, d.library)

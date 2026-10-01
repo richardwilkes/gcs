@@ -30,7 +30,7 @@ type TextData struct {
 	Qualifier string           `json:"qualifier,omitzero"`
 }
 
-// IsZero implements json.isZero.
+// IsZero reports whether json's omitzero option should omit this value.
 func (t Text) IsZero() bool {
 	return t.Compare.EnsureValid() == AnyText
 }
@@ -49,7 +49,7 @@ func (t Text) Matches(replacements map[string]string, value string) bool {
 
 // MatchesList performs a comparison and returns true if the data matches. The qualifier may hold a comma-separated
 // list of qualifiers; a positive comparison (e.g. "is", "contains") needs a match against any one of them, while a
-// negative comparison (e.g. "is not", "does not contain") requires every value to fail to match all of them.
+// negative comparison (e.g. "is not", "does not contain") matches only if no value matches any of them.
 func (t Text) MatchesList(replacements map[string]string, value ...string) bool {
 	qualifiers := splitQualifiers(nameable.Apply(t.Qualifier, replacements))
 	if len(value) == 0 {

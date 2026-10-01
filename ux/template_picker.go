@@ -36,8 +36,7 @@ import (
 	"github.com/richardwilkes/unison/enums/side"
 )
 
-// The picker processing is held in a variable so that tests, which have no way to respond to the dialogs it presents, can
-// substitute their own.
+// promptForPickers is a variable so that tests can stand in for its dialogs.
 var promptForPickers = processPickers
 
 // processPickers presents the template picker dialog for each row of the parts that has one, replacing the rows with
@@ -63,8 +62,8 @@ func (s *pickerSession[T]) showPicker(row T, depth int) int {
 func (s *pickerSession[T]) newPickerDialog(row T, depth int) (dialog *unison.Dialog, refresh func()) {
 	tp := templatePicker(row)
 	headers := pickerRowDetailHeaders(row)
-	// A column for the pencil, and one for the choose button when the modifier prompt follows or an option is or holds a
-	// choice.
+	// A column for the pencil, and one for the choose button when the modifier prompt follows or an option is or holds
+	// a choice.
 	chooseColumn := s.prompted || slices.ContainsFunc(gurps.TemplateChoiceOptions(row), func(child T) bool {
 		return gurps.IsTemplateChoiceContainer(child) || len(s.nestedChoices(child)) != 0
 	})
@@ -512,9 +511,9 @@ func newPickerChevronButton() (*unison.Button, *unison.DrawableSVG) {
 	return button, chevron
 }
 
-// newPickerDisclosure returns the chevron that shows or hides the section of the list, named for what it holds. Like any
-// button, it toggles from the keyboard only on the control action key, Space, leaving Return to the dialog's default
-// button.
+// newPickerDisclosure returns the chevron that shows or hides the section of the list, named for what it holds. Like
+// any button, it toggles from the keyboard only on the control action key, Space, leaving Return to the dialog's
+// default button.
 func newPickerDisclosure(list *pickerList, sec *pickerSection, title string) *unison.Button {
 	button, chevron := newPickerChevronButton()
 	// The button is nothing but its chevron, so its tooltip is also what a screen reader calls it.

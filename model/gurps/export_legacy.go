@@ -743,7 +743,7 @@ type legacyNodeKeys struct {
 	modifierNotesFor func(name string) string
 }
 
-// legacyExportNode is the subset of node behavior processLegacyNodeKey needs beyond what Node provides.
+// legacyExportNode adds to Node the Depth method processLegacyNodeKey needs.
 type legacyExportNode[T Node[T]] interface {
 	Node[T]
 	Depth() int

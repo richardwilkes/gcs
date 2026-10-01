@@ -30,9 +30,8 @@ func bonusDice(count, sides, modifier, multiplier int, sub bool) gurps.BonusDice
 	return b
 }
 
-// TestParseWeaponDamageBonus verifies that the text of a weapon damage bonus is either a flat number, which may be
-// fractional, or a complete dice specification with an optional leading sign, and that text in any other form is
-// rejected.
+// TestParseWeaponDamageBonus verifies that a weapon damage bonus is either a flat, possibly fractional, number or a
+// complete dice specification with an optional leading sign, and that any other text is rejected.
 func TestParseWeaponDamageBonus(t *testing.T) {
 	c := check.New(t)
 	gurps.GlobalSettings() // Initializes the dice rollers, which parse and format the dice
@@ -75,9 +74,8 @@ func TestParseWeaponDamageBonus(t *testing.T) {
 	}
 }
 
-// TestParseBonusDiceRejectsBareNumbers verifies that dice must have at least one die in them, so that a bare number is
-// never carried as dice with only a modifier, which the editor could not show or accept, and that a zero
-// specification is no dice.
+// TestParseBonusDiceRejectsBareNumbers verifies that dice need at least one die, so a bare number is never carried as
+// modifier-only dice, which the editor could not show or accept, and that a zero specification is no dice.
 func TestParseBonusDiceRejectsBareNumbers(t *testing.T) {
 	c := check.New(t)
 	gurps.GlobalSettings() // Initializes the dice rollers, which parse and format the dice
@@ -129,8 +127,8 @@ func TestFormatWeaponDamageBonus(t *testing.T) {
 		"both parts show when a hand-edited file carries both")
 }
 
-// TestWeaponBonusDiceJSON verifies that a weapon damage bonus carrying dice saves them as a dice string beside its flat
-// amount, that a bonus without dice saves exactly as it did before dice existed, and that both load back.
+// TestWeaponBonusDiceJSON verifies that a weapon damage bonus saves its dice as a dice string beside its flat amount
+// and loads them back, and that a bonus without dice saves as it did before dice existed.
 func TestWeaponBonusDiceJSON(t *testing.T) {
 	c := check.New(t)
 	gurps.GlobalSettings() // Initializes the dice rollers, which parse and format the dice
@@ -154,10 +152,10 @@ func TestWeaponBonusDiceJSON(t *testing.T) {
 	c.True(strings.Contains(string(data), `"amount":2`), "the flat amount is saved as a number: %s", data)
 }
 
-// TestWeaponBonusLoadsLegacyAndHandEditedDice verifies that the weapon bonus data written before dice existed, which
-// carries a numeric amount alone, still loads unchanged; that the dice string is read strictly, so text that is not a
-// dice specification is reported rather than silently dropped; and that dice on a bonus of any type other than the
-// damage bonus are discarded, since nothing else can apply them.
+// TestWeaponBonusLoadsLegacyAndHandEditedDice verifies that weapon bonus data from before dice existed (a numeric
+// amount alone) loads unchanged; that the dice string is read strictly, so non-dice text is reported rather than
+// silently dropped; that dice on any bonus type but the damage bonus are discarded, since nothing else can apply them;
+// and that dice clear the percent flag.
 func TestWeaponBonusLoadsLegacyAndHandEditedDice(t *testing.T) {
 	c := check.New(t)
 

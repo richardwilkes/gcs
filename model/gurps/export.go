@@ -720,8 +720,8 @@ func newExportedAttribute(def *AttributeDef, attr *Attribute) *exportedAttribute
 	}
 }
 
-// newExportedConditionalModifiers writes the modifiers out flat: the group containers are skipped and the modifiers
-// they hold take their place, each naming its group, so that templates written before groups existed keep working.
+// newExportedConditionalModifiers returns the modifiers flat: the group containers are skipped and the modifiers they
+// hold take their place, each naming its group, so that templates written before groups existed keep working.
 func newExportedConditionalModifiers(list []*ConditionalModifier) []*exportedConditionalModifier {
 	result := make([]*exportedConditionalModifier, 0, len(list))
 	Traverse(func(one *ConditionalModifier) bool {

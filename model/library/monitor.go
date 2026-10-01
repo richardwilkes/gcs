@@ -22,9 +22,8 @@ import (
 )
 
 // EventRootSync is the event code used when the root path being monitored has been changed to a new path. Only the
-// watches that were carried over to the new root receive it; establishing a watch does not deliver one, since whoever
-// establishes it does its own initial scan. Sending one at that point would put a callback that rescans on every event
-// into an endless cycle, as each rescan re-establishes the watch and would be handed another sync in turn.
+// watches carried over to the new root receive it; a newly established watch does not, since its owner does its own
+// initial scan, and a callback that rescans (re-establishing its watch) on every event would otherwise never settle.
 const EventRootSync = 0xFFFFFFFF
 
 // watchedEvents are the filesystem changes a library watch reports. Writes are included so that a file edited in place
@@ -32,13 +31,11 @@ const EventRootSync = 0xFFFFFFFF
 // it which entries to drop, and an in-place edit changes neither the tree nor the file's name.
 const watchedEvents = notify.Create | notify.Remove | notify.Rename | notify.Write
 
-// eventBufferSize is the capacity of the channel notify delivers events on. notify drops an event outright when the
-// channel is full rather than blocking, and a dropped Create, Remove or Rename is a silently missed reload, so the
-// buffer has to absorb bursts: watching Writes means an in-place edit produces one event per write syscall, and a bulk
-// copy, unzip or git pull into a library produces a Create and a Write per file, all competing with the tree changes
-// for slots. listenForEvents drains the channel into an unbounded queue as fast as it can, so the buffer only has to
-// cover the time that goroutine spends descheduled, but a generous one costs a few kilobytes and makes a drop remote
-// rather than merely unlikely.
+// eventBufferSize is the capacity of the channel notify delivers events on. notify drops an event when the channel is
+// full, and a dropped Create, Remove or Rename is a silently missed reload, so the buffer has to absorb bursts: an
+// in-place edit produces a Write per write syscall, and a bulk copy, unzip or git pull into a library produces a Create
+// and a Write per file. listenForEvents drains the channel into an unbounded queue, so the buffer only has to cover the
+// time that goroutine spends descheduled, but a generous one costs only a few kilobytes.
 const eventBufferSize = 1024
 
 type monitor struct {
@@ -180,13 +177,11 @@ type MonitorToken struct {
 }
 
 // reportedForm returns the form in which the platform watcher reports changes beneath the given path, which is also the
-// form the path must be handed to the watcher in. rjeczalik/notify resolves the symlinks in each path it is asked to
-// watch (on macOS, that also turns /var into /private/var) and reports every change beneath the resolved path rather
-// than the one it was given. On macOS, FSEvents additionally reports each path in the case it has on disk, and notify
-// drops any change whose reported path does not begin with the path it was asked to watch, so a watch established on a
-// path typed in the wrong case would report nothing at all; resolvePath is the platform's way of arriving at the form
-// the watcher will agree with. A path that cannot be resolved is returned as is; the watcher fails to establish a watch
-// on such a path, so nothing is ever reported beneath it anyway.
+// form the watcher must be handed. rjeczalik/notify resolves the symlinks in each watched path (on macOS, turning /var
+// into /private/var) and reports changes beneath the resolved path. On macOS, FSEvents also reports paths in their
+// on-disk case and notify drops any change whose path does not begin with the watched path, so a watch on a path typed
+// in the wrong case would report nothing; resolvePath produces the form the watcher agrees with. A path that cannot be
+// resolved is returned as is, since the watcher can't watch it anyway.
 func reportedForm(p string) string {
 	if resolved, err := resolvePath(p); err == nil {
 		return resolved

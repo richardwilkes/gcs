@@ -62,9 +62,6 @@ var printedFallingVelocities = map[int]int{
 // TestFallingVelocityTable verifies that FallingVelocity reproduces every entry of the printed Falling Velocity Table
 // (BX431) at one gravity, that it hands off to the formula past the end of the table without a step in the value, and
 // that it uses the formula for any other gravity.
-//
-// The printed table cannot be replaced by the formula the same page offers as an alternative: 29 of its 112 entries are
-// exactly one yard per second higher than round(sqrt(21.4 x distance)), so the table has to be encoded.
 func TestFallingVelocityTable(t *testing.T) {
 	c := check.New(t)
 	formulaMismatches := 0

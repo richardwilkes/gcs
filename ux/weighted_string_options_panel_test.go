@@ -149,9 +149,10 @@ func TestWeightedStringOptionsPerGenderListsBindToGender(t *testing.T) {
 		"the other gender is untouched")
 }
 
-// How clicks build up a selection: a plain click selects one row, a shift-click extends from the last plain click in
-// either direction, and a command-click toggles a row without touching the others. Removing the selection takes out
-// exactly the selected options in one undoable edit, and the selection does not outlive the rows it was made on.
+// How clicks build up a selection: a plain click selects one row, a shift-click extends from the row last clicked
+// without shift in either direction, and a command-click toggles a row without touching the others. Removing the
+// selection takes out exactly the selected options in one undoable edit, and the selection does not outlive the rows it
+// was made on.
 func TestWeightedStringOptionsSelection(t *testing.T) {
 	c := check.New(t)
 	a := gurps.NewAncestry()

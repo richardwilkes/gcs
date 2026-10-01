@@ -33,8 +33,8 @@ import (
 // progress, when not nil, is called with the running byte count. It is called often, so it must be cheap and must not
 // block; throttling and marshaling to a UI thread are the caller's business.
 //
-// dstPath is removed on any failure, including cancellation, so a failed attempt cannot leave a partial file for a
-// later step to mistake for a complete one.
+// dstPath must not already exist. Once created, it is removed on any failure, including cancellation, so a failed
+// attempt cannot leave a partial file for a later step to mistake for a complete one.
 func Download(ctx context.Context, client *http.Client, asset Asset, dstPath string, progress func(read int64)) (err error) {
 	if asset.SHA256 == "" {
 		return errs.New("refusing to download " + asset.Name + " without a checksum")

@@ -393,12 +393,11 @@ func (p *featuresPanel) createReactionBonusPanel(f *gurps.ReactionBonus) (main *
 	return panel, focus
 }
 
-// addSelectionCriteriaRow adds the row shared by the bonuses that pick their targets by a selection type: a popup
-// offering the types, followed by the name criteria. The name criteria are blanked while the chosen type needs no name
-// (blank reports that, e.g. for a "this weapon" choice that targets the owner itself), and the name field is also
-// blanked while its comparison accepts anything. When secondary is non-nil, it is called to add the rows that depend on
-// the chosen type after the selection row, and those rows are torn down and rebuilt whenever the choice changes. It is
-// a plain function rather than a method because methods cannot have type parameters.
+// addSelectionCriteriaRow adds the row shared by the bonuses that pick their targets by a selection type: a popup of
+// the types, followed by the name criteria. The name criteria are blanked while blank reports that the chosen type
+// needs no name, and the name field also while its comparison accepts anything. When secondary is non-nil, it adds the
+// rows that depend on the chosen type after this row, which are rebuilt whenever the choice changes. It is a plain
+// function because methods cannot have type parameters.
 func addSelectionCriteriaRow[E comparable](p *featuresPanel, panel *unison.Panel, types []E, sel *E, blank func(E) bool, nameCriteria *criteria.Text, secondary func(parent *unison.Panel, index int)) {
 	panel.AddChild(unison.NewPanel())
 	wrapper := unison.NewPanel()
@@ -759,7 +758,7 @@ func (p *featuresPanel) addWeaponLeveledModifierLine(parent *unison.Panel, wb *g
 		}
 		addCheckBox(panel, i18n.Text("per level"), &wb.PerLevel)
 		if wb.Type != feature.WeaponMinSTBonus && wb.Type != feature.WeaponEffectiveSTBonus {
-			// Can't allow the per-die option for MinST bonuses, since that would cause an infinite loop on resolution.
+			// No per-die for MinST or effective ST bonuses, since that would cause an infinite loop on resolution.
 			addCheckBox(panel, i18n.Text("per die"), &wb.PerDie)
 		}
 		percentCheckBox = addCheckBox(panel, i18n.Text("as a %"), &wb.Percent)
@@ -783,9 +782,8 @@ func (p *featuresPanel) addWeaponLeveledModifierLine(parent *unison.Panel, wb *g
 // as a flat number, e.g. "+2", "-1d" or "+2d+1x3". Text in any other form is flagged and leaves the bonus unchanged.
 // changed is called after each change the field makes to the bonus.
 func addWeaponDamageBonusField(parent *unison.Panel, wb *gurps.WeaponBonus, changed func()) *StringField {
-	// A percentage of the damage can't be expressed in dice, so the "as a %" option is suspended, rather than turned
-	// off for good, while the field holds dice: it comes back when the dice go away again, whether a number is typed
-	// over them or the edit that entered them is undone, so the user never ends up with a choice they did not make.
+	// Dice cannot be a percentage, so "as a %" is suspended, not cleared, while the field holds dice, and restored once
+	// they go away (typed over or undone), so the user never ends up with a choice they did not make.
 	var percentSuspended bool
 	field := NewStringField(nil, "", i18n.Text("Amount"),
 		func() string { return gurps.FormatWeaponDamageBonus(wb.Dice, wb.Amount) },
@@ -819,8 +817,8 @@ func addWeaponDamageBonusField(parent *unison.Panel, wb *gurps.WeaponBonus, chan
 	return field
 }
 
-// syncPercentCheckBox keeps the "as a %" checkbox of a weapon bonus in step with its dice: a bonus that adds dice cannot
-// also be a percentage, so the checkbox is disabled while there are any.
+// syncPercentCheckBox keeps the "as a %" checkbox of a weapon bonus in step with its dice: a bonus that adds dice
+// cannot also be a percentage, so the checkbox is disabled while there are any.
 func syncPercentCheckBox(checkBox *CheckBox, wb *gurps.WeaponBonus) {
 	if checkBox == nil {
 		return
@@ -850,8 +848,8 @@ func (p *featuresPanel) createSelectorOverridePanel(f *gurps.SelectorOverride) (
 	return panel, focus
 }
 
-// addSelectorOverrideLine builds the line "[field] to [value] priority [n]". Changing the field rebuilds the row, since
-// a different field may have a different set of valid values (and thus a different value editor).
+// addSelectorOverrideLine builds the line "[field] to [value] with priority [n]". Changing the field rebuilds the row,
+// since a different field may have a different set of valid values (and thus a different value editor).
 func (p *featuresPanel) addSelectorOverrideLine(parent *unison.Panel, f *gurps.SelectorOverride) unison.Paneler {
 	panel := unison.NewPanel()
 	fieldPopup := addPopup(panel, selector.Fields, &f.Field)

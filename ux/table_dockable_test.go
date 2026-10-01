@@ -19,7 +19,6 @@ import (
 	"github.com/richardwilkes/unison"
 )
 
-// newFilterTestTrait returns a trait with the given name and tags for the filtering tests to work with.
 func newFilterTestTrait(name string, tags ...string) *gurps.Trait {
 	trait := gurps.NewTrait(nil, nil, false)
 	trait.Name = name
@@ -27,11 +26,10 @@ func newFilterTestTrait(name string, tags ...string) *gurps.Trait {
 	return trait
 }
 
-// newFilterTestTraitDockable returns a trait library list dockable holding three traits with distinct names and tags,
-// enough for the filtering to be told apart row by row. The global settings are pointed at a file in the test's own
-// directory and given an empty set of saved filters, holding only the ones passed in, so that the saved filter popup
-// is never built out of whatever the developer running the tests happens to have saved. Building the toolbar reaches
-// for the bindable actions, so they are registered first.
+// newFilterTestTraitDockable returns a trait library list dockable holding three traits with distinct names and tags.
+// The global settings are pointed at a file in the test's directory and hold only the saved filters passed in, so the
+// saved filter popup never reflects the developer's own saved filters. Building the toolbar needs the bindable actions,
+// so they are registered first.
 func newFilterTestTraitDockable(t *testing.T, filters ...*gurps.ListFilter) *TableDockable[*gurps.Trait] {
 	t.Helper()
 	registerKeyBindingsOnce.Do(func() { registerActions() })
@@ -63,8 +61,8 @@ func newContainsFilter(name, fieldKey, text string) *gurps.ListFilter {
 	return f
 }
 
-// visibleTraitNames returns the names of the rows the table is showing, which are the rows that passed the filter when
-// one is applied.
+// visibleTraitNames returns the names of the table's root rows, which under a filter are those it keeps at the top
+// level.
 func visibleTraitNames(d *TableDockable[*gurps.Trait]) []string {
 	rows := d.table.RootRows()
 	names := make([]string, len(rows))
@@ -85,9 +83,8 @@ func TestTableDockableRebuildKeepsFilter(t *testing.T) {
 	c.True(d.table.IsFiltered(), "typing in the quick filter must filter the table")
 	c.Equal([]string{"Fur"}, visibleTraitNames(d), "only the matching trait may be shown")
 
-	// The matching trait is renamed so that it no longer matches, which the rows the rebuild produces have to be put
-	// through the filter to notice. A rebuild that left the rows that last passed the filter in place would go on
-	// showing it under its new name.
+	// Rename the matching trait so it no longer matches. A rebuild that kept the rows that last passed the filter would
+	// go on showing it under its new name.
 	d.provider.RootData()[2].Name = "Pelt"
 	d.Rebuild(false)
 	c.True(d.table.IsFiltered(), "the filter must still be in force after a rebuild")
@@ -98,18 +95,16 @@ func TestTableDockableRebuildKeepsFilter(t *testing.T) {
 	c.True(d.table.IsFiltered(), "the filter must still be in force after a rebuild")
 	c.Equal([]string{"Fur"}, visibleTraitNames(d), "the rebuilt rows must be filtered the same way")
 
-	// A rebuild follows a change to the data, and the rows it produces have to go through the filter as well, so a
-	// newly added trait that matches has to show up.
+	// A newly added trait that matches has to show up after a rebuild.
 	d.provider.SetRootData(append(d.provider.RootData(), newFilterTestTrait("Furry Coat", "Physical")))
 	d.Rebuild(false)
 	c.True(d.table.IsFiltered(), "the filter must still be in force after the data changed")
 	c.Equal([]string{"Fur", "Furry Coat"}, visibleTraitNames(d), "the added trait must be filtered along with the rest")
 }
 
-// TestTableDockableNewItemIsDisabledWhileFiltered verifies that a library list turns its new-item commands off while
-// a filter is hiding part of the list, since creating an item inserts a row and a filtered table may not have its rows
-// modified. Both the quick filter and a saved filter have to turn them off, and clearing either has to turn them back
-// on.
+// TestTableDockableNewItemIsDisabledWhileFiltered verifies that a library list disables its new-item commands while the
+// quick filter or a saved filter is in force, since a filtered table may not have rows inserted, and re-enables them
+// when the filter is cleared.
 func TestTableDockableNewItemIsDisabledWhileFiltered(t *testing.T) {
 	c := check.New(t)
 	f := newNameContainsFilter("Combat", "combat")

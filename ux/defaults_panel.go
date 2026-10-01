@@ -63,10 +63,8 @@ func (p *defaultsPanel) insertDefaultsPanel(index int, def *gurps.SkillDefault) 
 	deleteButton.Tooltip = newWrappedTooltip(i18n.Text("Remove this default"))
 	deleteButton.ClickCallback = func() {
 		if i := slices.IndexFunc(*p.defaults, func(elem *gurps.SkillDefault) bool { return elem == def }); i != -1 {
-			// Cannot use this here: *p.defaults = slices.Delete(*p.defaults, i, i+1)
-			// because it will cause a panic elsewhere due to some code not having the owner properly updated. This
-			// causes the original slice to be looked at, which now has a nil at its end, which causes problems in code
-			// that expects no nils. So... we do it the more expensive and verbose way.
+			// Not slices.Delete, which zeroes the vacated end of the original slice: code still holding that slice,
+			// because its owner was not properly updated, would find a nil there and panic.
 			defs := make([]*gurps.SkillDefault, len(*p.defaults)-1)
 			copy(defs, (*p.defaults)[:i])
 			copy(defs[i:], (*p.defaults)[i+1:])

@@ -20,7 +20,7 @@ import (
 	"github.com/richardwilkes/toolbox/v2/errs"
 )
 
-// Length contains a real-world length value with an attached units.
+// Length contains a real-world length value with its units.
 type Length struct {
 	Length float64
 	Units  Unit

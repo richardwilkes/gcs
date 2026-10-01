@@ -99,11 +99,10 @@ func TestScriptEquipmentEquippedOnEditorClone(t *testing.T) {
 		return eqp.Clone(eqp.Source.LibraryFile, eqp.DataOwner(), eqp.Parent(), Copy)
 	}
 
-	// The clone preserves the ID of the row it came from, and script results are cached per entity by (self ID, script
-	// text), so the cache has to be discarded between the two resolutions or the second would just get the first's
-	// answer back. The editor itself doesn't discard the cache, so its preview of an unchanged script reuses the answer
-	// the sheet already has; what is pinned down here is that the clone resolves the same way the row does whenever the
-	// script is actually run for it -- once the user edits the script text, for one.
+	// The clone keeps the row's ID, and script results are cached per entity by (self ID, script text), so the cache is
+	// discarded before each resolution or the second would get the first's answer back. The editor doesn't discard it,
+	// so an unchanged script's preview reuses the sheet's answer; what is pinned down here is that the clone resolves
+	// as the row does whenever the script actually runs for it, such as once the user edits its text.
 	baseValue := func(eqp *Equipment) fxp.Int {
 		e.DiscardCaches()
 		return eqp.ResolvedBaseValue()

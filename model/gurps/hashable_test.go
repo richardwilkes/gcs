@@ -24,7 +24,7 @@ import (
 )
 
 // recordingHasher captures what would be hashed, so that the tests can inspect it. Only the io.Writer portion of
-// hash.Hash is used by hashJSON.
+// hash.Hash is used by HashJSON.
 type recordingHasher struct {
 	hash.Hash
 	buffer bytes.Buffer
@@ -34,7 +34,7 @@ func (r *recordingHasher) Write(data []byte) (int, error) {
 	return r.buffer.Write(data)
 }
 
-// hashedJSON returns the JSON that hashJSON would feed into a hasher for the given object.
+// hashedJSON returns the JSON that HashJSON would feed into a hasher for the given object.
 func hashedJSON(t *testing.T, in any) string {
 	t.Helper()
 	var rec recordingHasher
@@ -203,8 +203,8 @@ func TestCompletedScriptErrorsStillCount(t *testing.T) {
 	c.NotEqual(before, e.Skills[0].DefaultedFrom.AdjLevel, "a failing script's result must still be recorded")
 }
 
-// TestSaveRecalculatesFirst verifies that the derived values a saved file publishes are brought up to date as it is
-// written, now that marshaling an entity no longer recalculates it on its own.
+// TestSaveRecalculatesFirst verifies that saving brings the derived values the file publishes up to date, since
+// marshaling an entity doesn't recalculate it.
 func TestSaveRecalculatesFirst(t *testing.T) {
 	c := check.New(t)
 	e := newPopulatedEntity()

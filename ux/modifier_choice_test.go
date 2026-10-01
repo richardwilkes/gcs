@@ -356,9 +356,9 @@ func TestDuplicatingAnOptionKeepsThePick(t *testing.T) {
 }
 
 // TestEquipmentEditorOnALootSheet verifies the choice rules in an equipment editor on a loot sheet, as on a character
-// sheet: turning an option on turns the pick off, and the new pick can't be turned off. A duplicate is on the loot sheet
-// as its original is, and the modifiers a structural undo gives back keep the loot as their owner, so the pick stays
-// locked.
+// sheet: turning an option on turns the pick off, and the new pick can't be turned off. A duplicate is on the loot
+// sheet as its original is, and the modifiers a structural undo gives back keep the loot as their owner, so the pick
+// stays locked.
 func TestEquipmentEditorOnALootSheet(t *testing.T) {
 	c := check.New(t)
 	sheet := newTestLootSheet(t)
@@ -970,8 +970,8 @@ func TestLockedPickHasItsEnabledBoxDisabled(t *testing.T) {
 	c.False(findCheckBoxTitled(content, "Enabled").Enabled(), "the same goes for equipment modifiers")
 }
 
-// TestPickerCostsSheetRowsAsPrompted verifies that when the modifier prompt follows, the picker costs a row headed for a
-// sheet as that prompt will see it, rather than at the picks it happens to have.
+// TestPickerCostsSheetRowsAsPrompted verifies that when the modifier prompt follows, the picker costs a row headed for
+// a sheet as that prompt will see it, rather than at the picks it happens to have.
 func TestPickerCostsSheetRowsAsPrompted(t *testing.T) {
 	c := check.New(t)
 	entity := gurps.NewEntity()

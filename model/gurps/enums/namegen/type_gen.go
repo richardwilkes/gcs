@@ -46,7 +46,7 @@ var Types = []Type{
 // Type holds a name generation type.
 type Type byte
 
-// EnsureValid ensures this is of a known value.
+// EnsureValid returns this value if it is valid and DefaultType otherwise.
 func (enum Type) EnsureValid() Type {
 	if enum >= FirstType && enum <= LastType {
 		return enum
@@ -101,18 +101,18 @@ func (enum Type) String() string {
 	}
 }
 
-// MarshalText implements the encoding.TextMarshaler interface.
+// MarshalText implements encoding.TextMarshaler.
 func (enum Type) MarshalText() (text []byte, err error) {
 	return []byte(enum.Key()), nil
 }
 
-// UnmarshalText implements the encoding.TextUnmarshaler interface.
+// UnmarshalText implements encoding.TextUnmarshaler.
 func (enum *Type) UnmarshalText(text []byte) error {
 	*enum = ExtractType(string(text))
 	return nil
 }
 
-// ExtractType extracts the value from a string.
+// ExtractType returns the value whose key matches str, ignoring case, or DefaultType if none does.
 func ExtractType(str string) Type {
 	for _, enum := range Types {
 		if strings.EqualFold(enum.Key(), str) {
@@ -125,10 +125,8 @@ func ExtractType(str string) Type {
 	return DefaultType
 }
 
-// ExtractKnownType extracts the value from a string, reporting whether the string was actually recognized.
-//
-// Unlike ExtractType, which quietly maps anything it doesn't recognize onto the default value, this permits a caller
-// that is dispatching on the type to detect unknown types.
+// ExtractKnownType is like ExtractType, but also reports whether str was recognized, so a caller can tell an unknown
+// key from the default.
 func ExtractKnownType(str string) (value Type, known bool) {
 	for _, enum := range Types {
 		if strings.EqualFold(enum.Key(), str) {

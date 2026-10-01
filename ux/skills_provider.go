@@ -110,8 +110,8 @@ func (p *skillsProvider) ExcessWidthColumnID() int {
 	return gurps.SkillDescriptionColumn
 }
 
-// CreateItem adds the alternate variant, a technique, to the skill and skill container the shared implementation
-// creates.
+// CreateItem adds the alternate variant, a technique, to the item, container and choice container the shared
+// implementation creates.
 func (p *skillsProvider) CreateItem(owner Rebuildable, table *unison.Table[*Node[*gurps.Skill]], variant ItemVariant) {
 	switch variant {
 	case NoItemVariant, ContainerItemVariant, ChoiceContainerItemVariant:

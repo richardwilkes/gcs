@@ -44,22 +44,18 @@ func TestAttrPanelHashReflectsTraitDrivenVisibility(t *testing.T) {
 	panel := &AttrPanel{entity: e, kind: gurps.SecondaryAttrKind}
 	hidden := panel.computeHash(defs)
 
-	// Adding the matching trait must change the hash so the panel rebuilds and reveals the attribute.
 	trait := gurps.NewTrait(e, nil, false)
 	trait.Name = "Magery"
 	e.Traits = append(e.Traits, trait)
 	revealed := panel.computeHash(defs)
 	c.NotEqual(hidden, revealed, "adding the trait must change the hash")
 
-	// Disabling the trait must return the hash to the hidden state.
 	trait.Disabled = true
 	c.Equal(hidden, panel.computeHash(defs), "disabling the trait must restore the hidden hash")
 
-	// Re-enabling it reveals the attribute again.
 	trait.Disabled = false
 	c.Equal(revealed, panel.computeHash(defs), "re-enabling the trait must restore the revealed hash")
 
-	// Removing the trait returns to the hidden state.
 	e.Traits = nil
 	c.Equal(hidden, panel.computeHash(defs), "removing the trait must restore the hidden hash")
 }
@@ -128,8 +124,7 @@ func TestAttrPanelPoolNameTooltipKeepsFullName(t *testing.T) {
 }
 
 // TestAttrPanelSecondaryNameTooltipTracksBonuses verifies that the secondary attributes panel installs and refreshes
-// the bonus tooltip the same way the primary one does, since it is built by the same code but for a different set of
-// attributes and had no coverage of its own.
+// the bonus tooltip the same way the primary one does.
 func TestAttrPanelSecondaryNameTooltipTracksBonuses(t *testing.T) {
 	c := check.New(t)
 	e := gurps.NewEntity()

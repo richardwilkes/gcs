@@ -21,17 +21,11 @@ import (
 
 // NumericRange is the span of values something may end up having once every choice it defines has been made: the
 // points an item costs, or the extended value or weight of a piece of equipment. On a character sheet every such
-// choice has already been made, so a range there is always settled; it is in a library or on a template that an item
-// can still be worth "20 to 45 points", depending on what the player picks.
+// choice has already been made, so a range there is always settled; in a library or on a template an item can still be
+// worth "20 to 45 points", depending on what the player picks. A settled range displays as the bare value.
 //
-// A settled range -- one whose minimum and maximum are the same known value -- is what the vast majority of items
-// report, and it displays exactly as the bare value always has.
-//
-// Where a single number has to stand for a range that isn't settled, as in the calc block written to a file, points and
-// equipment differ for now. A template choice of points counts as the total of its options (see pickerContainerPoints),
-// which is what points always reported. An equipment choice counts as the least it may come to (see singleValueOf),
-// which is what can be relied upon being there, as does an open mandatory modifier choice for points and equipment
-// alike. The two are to be brought together once template choices can be left open outside of templates.
+// Where a single number must stand for an unsettled range, as in a file's calc block, points and equipment differ for
+// now; see singleValueOf.
 type NumericRange struct {
 	// Min is the least the item can cost, or nil if there is no lower limit.
 	Min *fxp.Int
@@ -39,17 +33,17 @@ type NumericRange struct {
 	Max *fxp.Int
 }
 
-// NumericRangeSign is an enum for the sign of a NumericRange
+// NumericRangeSign is an enum for the sign of a NumericRange.
 type NumericRangeSign byte
 
 const (
-	// NumericRangePositive represents a NumericRange where Min/Max are both positive
+	// NumericRangePositive represents a NumericRange with no negative values and some positive ones.
 	NumericRangePositive NumericRangeSign = iota
-	// NumericRangeNegative represents a NumericRange where Min/Max are both negative
+	// NumericRangeNegative represents a NumericRange with no positive values and some negative ones.
 	NumericRangeNegative
-	// NumericRangeZero represents a NumericRange where Min/Max are both zero
+	// NumericRangeZero represents a NumericRange where Min/Max are both zero.
 	NumericRangeZero
-	// NumericRangeMixed represents a NumericRange where Min/Max are split between positive and negative
+	// NumericRangeMixed represents a NumericRange that spans both negative and positive values.
 	NumericRangeMixed
 )
 
@@ -80,8 +74,7 @@ func (r NumericRange) IsSettled() bool {
 	return r.Min != nil && r.Max != nil && *r.Min == *r.Max
 }
 
-// Settled returns the single cost of a settled range. The second return is false for a range that still has something
-// left to decide, in which case there is no single cost to return.
+// Settled returns the single cost of a settled range, or false if the range is not settled.
 func (r NumericRange) Settled() (value fxp.Int, settled bool) {
 	if !r.IsSettled() {
 		return 0, false
@@ -89,7 +82,7 @@ func (r NumericRange) Settled() (value fxp.Int, settled bool) {
 	return *r.Min, true
 }
 
-// Sign returns if the range is positive, negative, zero, or mixed
+// Sign returns whether the range is positive, negative, zero, or mixed.
 func (r NumericRange) Sign() NumericRangeSign {
 	if r.Min != nil && r.Max != nil {
 		switch {
@@ -111,8 +104,7 @@ func (r NumericRange) Sign() NumericRangeSign {
 	return NumericRangeMixed
 }
 
-// Add returns the result of adding another range to this one. An end with no limit stays that way, since nothing that
-// can be added to it brings it back within one.
+// Add returns the result of adding another range to this one. An end with no limit stays unlimited.
 func (r NumericRange) Add(other NumericRange) NumericRange {
 	var lower, upper numericBound
 	return NumericRange{
@@ -121,9 +113,8 @@ func (r NumericRange) Add(other NumericRange) NumericRange {
 	}
 }
 
-// CanSatisfy returns true if some cost within the range meets the criteria. For a settled range this is the plain
-// comparison; for one that is still open it asks whether the choices left to make could still come out right, which is
-// what a picker in the middle of being filled in needs to know.
+// CanSatisfy returns true if some cost within the range meets the criteria: for an open range, whether the choices left
+// to make, as in a picker being filled in, could still come out right.
 func (r NumericRange) CanSatisfy(n criteria.Number) bool {
 	if value, settled := r.Settled(); settled {
 		return n.Matches(value)
@@ -152,9 +143,8 @@ func (r NumericRange) Comma() string {
 	return r.format(func(value fxp.Int) string { return value.Comma() })
 }
 
-// format renders the range, using f to render each end of it. A settled range renders as the bare number, so that
-// everything which isn't a choice looks exactly as it always has, and so does a range whose ends render the same, as
-// they can when f rounds: "1~1" would say nothing "1" doesn't.
+// format renders the range, using f to render each end. A settled range, or one whose ends render the same (as they can
+// when f rounds), renders as the bare number.
 func (r NumericRange) format(f func(fxp.Int) string) string {
 	switch {
 	case r.Min == nil && r.Max == nil:
@@ -216,7 +206,6 @@ func sumNumericRanges(ranges []NumericRange) NumericRange {
 // taken. These cases are exact: the cheapest way to satisfy "pick 3" is the 3 cheapest children, and a child that costs
 // less than nothing is always worth taking when the picker allows more to be taken.
 func rangeForPickerByCount(cq criteria.Number, children []NumericRange) NumericRange {
-	// a picker authored with zero children will always be 0 points for count-based pickers
 	if len(children) == 0 {
 		return NumericRangeOf(0)
 	}
@@ -238,23 +227,14 @@ func rangeForPickerByCount(cq criteria.Number, children []NumericRange) NumericR
 
 	switch compare {
 	case criteria.EqualsNumber: // Expects an exact number of selections
-		// To get a valid range for an exact number of selections, we generate two sums.
-		// The first sum is the `Min` side and is the `Min` sum from the *cheapest* {count} children.
-		// The second sum is the `Max` side and is the `Max` sum from the *most expensive* {count} children.
-		// Both sums respect unbounded ranges
+		// Min totals the Mins of the {count} cheapest children; Max totals the Maxes of the {count} costliest.
 		return NumericRange{
 			Min: totalOfMins(cheapestFirst[:count]).end(),
 			Max: totalOfMaxes(costliestFirst[:count]).end(),
 		}
 	case criteria.AtLeastNumber:
-		// To get a valid range for an number of selections or more, we generate two sums. {count} is a floor on how
-		// many are taken, not a ceiling, so each sum takes the {count} children that suit its end and then whatever
-		// of the rest still helps it.
-		// The first sum is the `Min` side and is the `Min` from the *cheapest* {count} children, plus the `Min` from
-		// the sum of the *remaining* children under 0 points.
-		// The second sum is the `Max` side and is the `Max` from the *most expensive* {count} children, plus the
-		// `Max` from the sum of the *remaining* children over 0 points.
-		// Both sums respect unbounded ranges
+		// {count} is a floor, not a ceiling, so each end takes the {count} children that suit it and then whatever of
+		// the rest still helps it: Min adds the remaining children under 0, Max those over 0.
 		return NumericRange{
 			Min: totalOfMins(cheapestFirst[:count]).add(sumUnder(cheapestFirst[count:]).end()).end(),
 			Max: totalOfMaxes(costliestFirst[:count]).add(sumOver(costliestFirst[count:]).end()).end(),
@@ -273,23 +253,21 @@ func rangeForPickerByCount(cq criteria.Number, children []NumericRange) NumericR
 	}
 }
 
-// rangeForPickerByMeasure returns the range of a container whose picker constrains the total of the very quantity the
-// range measures: the points spent on its children, or the value or weight of the equipment taken from them. These
-// cases lean on the fact that such a picker measures the very quantity it constrains, so the qualifier bounds the
-// container's total directly, with no need to search for a subset that adds up to it.
+// rangeForPickerByMeasure returns the range of a container whose picker constrains the total of the quantity the range
+// measures: the points spent on its children, or the value or weight of the equipment taken from them. The qualifier
+// thus bounds the container's total directly, with no need to search for a subset that adds up to it.
 //
-// What the children can reach still matters at both ends. Taking nothing is always an option, so the cheapest pick can
-// never cost more than nothing and the costliest can never cost less; the qualifier binds only the end it constrains,
-// and only as far as the children allow. A qualifier the children cannot reach leaves its end open rather than
-// contradicting the other one: such a picker offers a leveled trait whose cost can be raised while picking, or a skill
-// or spell whose points are assigned there (see ux.pickerRowPointEditor). A qualifier on the far side of nothing from
-// every child is different: that is an invalid picker, even where every pick would happen to meet it, and it is left
-// open at both ends so that it stands out rather than passing for an unconstrained one.
+// Only which side of nothing the children fall on is consulted. Taking nothing is always an option, so an end the
+// qualifier leaves unconstrained is nothing on the side facing zero and open on the other. An open end stays open even
+// when the children cannot reach the qualifier: such a picker offers a leveled trait whose cost can be raised while
+// picking, or a skill or spell whose points are assigned there (see ux.pickerRowPointEditor). A qualifier on the far
+// side of nothing from every child is an invalid picker, even where every pick would happen to meet it, and is left
+// open at both ends so that it stands out rather than passing for an unconstrained one. Children on both sides of
+// nothing are left open at both ends as well.
 //
-// Children that can only cost nothing -- and a picker authored with nothing to pick from -- leave it no side to take
-// at all, and a qualifier with no side to bind is not what the container is worth: it costs nothing until something
-// on offer can cost something. An exact qualifier is the exception, since it says what the container is worth without
-// consulting its children.
+// Children that can only cost nothing -- and a picker with nothing to pick from -- leave the qualifier nothing to bind,
+// so the container costs nothing until something on offer can cost something. An exact qualifier is the exception,
+// since it says what the container is worth without consulting its children.
 func rangeForPickerByMeasure(cq criteria.Number, children []NumericRange) NumericRange {
 	compare := cq.Compare.EnsureValid()
 	if compare == criteria.EqualsNumber {
@@ -324,12 +302,11 @@ func rangeForPickerByMeasure(cq criteria.Number, children []NumericRange) Numeri
 		return NumericRangeOf(0)
 	}
 
-	// This is the degenerate case and we return a fully unbounded range - ideally this never happens (but it could)
+	// Children on both sides of nothing, or a qualifier on the far side of nothing from them.
 	return NumericRange{}
 }
 
-// byMin returns the ranges ordered from cheapest to costliest, one with no lower limit coming first, since nothing is
-// cheaper than something with no limit to how cheap it is.
+// byMin returns the ranges ordered from cheapest to costliest, those with no lower limit first.
 func byMin(ranges []NumericRange) []NumericRange {
 	sorted := slices.Clone(ranges)
 	slices.SortStableFunc(sorted, func(a, b NumericRange) int {
@@ -347,8 +324,7 @@ func byMin(ranges []NumericRange) []NumericRange {
 	return sorted
 }
 
-// byMax returns the ranges ordered from costliest to cheapest, one with no upper limit coming first, since nothing is
-// costlier than something with no limit to how costly it is.
+// byMax returns the ranges ordered from costliest to cheapest, those with no upper limit first.
 func byMax(ranges []NumericRange) []NumericRange {
 	sorted := slices.Clone(ranges)
 	slices.SortStableFunc(sorted, func(a, b NumericRange) int {
@@ -418,7 +394,7 @@ func sumOver(costliestFirst []NumericRange) numericBound {
 	return result
 }
 
-// SignForNumericRanges returns the sign across a slice of ranges
+// SignForNumericRanges returns the sign across a slice of ranges.
 func SignForNumericRanges(ranges ...NumericRange) NumericRangeSign {
 	var positive bool
 	var negative bool
@@ -450,14 +426,12 @@ func SignForNumericRanges(ranges ...NumericRange) NumericRangeSign {
 	return NumericRangeZero
 }
 
-// How a range is punctuated. These are symbols rather than prose, so they are not run through i18n: a translated
-// "%s%s" would be a catalog key with no content to translate, and reordering its two ends would silently break
-// PointsLessFromString, which reads the ends back out of the rendered text.
+// How a range is punctuated. These are symbols, not prose, so they are not run through i18n: a translation that
+// reordered the ends would silently break PointsLessFromString, which reads them back out of the rendered text.
 const (
-	// rangeSeparator parts the two ends of a range. Either end can be negative, and a dash between two of them --
-	// "-30--20" -- is unreadable, while a dash between two positive costs is easily taken for a single negative one.
-	// Spacing the dash out solves both and costs more width than a points column can spare, so a character that can
-	// never be read as a sign is used instead, and needs no spaces at all.
+	// rangeSeparator parts the two ends of a range. A dash would be unreadable between negative ends ("-30--20") and
+	// mistaken for a sign between positive ones, and spacing it out costs more width than a points column can spare, so
+	// a character that can never be read as a sign is used instead.
 	rangeSeparator = "~"
 	// unboundedMinPrefix marks a range with no lower limit -- "no more than this much". PointsLessFromString looks for
 	// it to order such a range ahead of every finite one.

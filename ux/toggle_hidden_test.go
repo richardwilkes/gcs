@@ -112,10 +112,8 @@ func checkWeaponHideUndoRedo(c check.Checker, e *editor[*gurps.Trait, *gurps.Tra
 		func() { c.False(weapon.Hide, "undo must show the weapon again") })
 }
 
-// The checkmark column of a weapon row in a detail editor means "hidden". Before Toggle State reached these tables,
-// the only way to hide a weapon was clicking its cell one row at a time. Only the editor's copy of the data is
-// touched, so nothing reaches the item being edited until Apply, and the whole selection is flipped as one undoable
-// edit.
+// The checkmark column of a weapon row in a detail editor means "hidden". Toggle State flips the whole selection as one
+// undoable edit, touching only the editor's copy of the data, so nothing reaches the item being edited until Apply.
 func TestToggleStateHidesWeaponsInsideEditors(t *testing.T) {
 	forEachWeaponKind(t, func(t *testing.T, melee bool) {
 		c := check.New(t)
@@ -131,8 +129,8 @@ func TestToggleStateHidesWeaponsInsideEditors(t *testing.T) {
 	})
 }
 
-// The click and the command share adjustTargets and snapshotList.apply, so the click path -- and the redo that goes
-// with it -- needs a test of its own rather than being taken on faith from the command's.
+// The click shares only adjustTargets and snapshotList.apply with the command, so the click path -- and the redo that
+// goes with it -- needs a test of its own rather than being taken on faith from the command's.
 func TestWeaponHideCheckmarkClickIsUndoable(t *testing.T) {
 	forEachWeaponKind(t, func(t *testing.T, melee bool) {
 		c := check.New(t)

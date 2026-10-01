@@ -383,9 +383,8 @@ func TestConvertToContainerInALibrary(t *testing.T) {
 }
 
 // TestCopyToTemplateNormalizesEquipmentChoices verifies that an equipment choice copied into a template arrives
-// normalized, just as it would have been had the template loaded it: a physical container carrying template choices
-// becomes a group, and loses its VTT notes, tags and source, while being left equipped. The rows being copied are left
-// alone.
+// normalized, as if the template had loaded it: a physical container carrying template choices becomes a group, loses
+// its VTT notes, tags and source, and arrives equipped. The rows being copied are left alone.
 func TestCopyToTemplateNormalizesEquipmentChoices(t *testing.T) {
 	c := check.New(t)
 	choices := gurps.NewEquipment(nil, nil, true)

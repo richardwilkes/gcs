@@ -16,10 +16,9 @@ type traversalData[T Node[T]] struct {
 	index int
 }
 
-// Traverse calls the function 'f' for each node and its children in the input list, recursively. Return true from the
-// function to abort early. If onlyEnabled is true, disabled nodes and their children are skipped entirely. If
-// excludeContainers is true, then nodes that are containers will not be passed to 'f', although their children will
-// still be processed as usual.
+// Traverse calls f for each node in the list and their descendants, depth first, stopping early if f returns true. If
+// onlyEnabled is true, disabled nodes and their descendants are skipped. If excludeContainers is true, containers are
+// not passed to f, though their children still are.
 func Traverse[T Node[T]](f func(T) bool, onlyEnabled, excludeContainers bool, in ...T) {
 	tracking := []*traversalData[T]{
 		{

@@ -28,8 +28,7 @@ const (
 	// appUpdatePulseTick is the interval between adjustments of the update button's color.
 	appUpdatePulseTick = time.Second / 20
 	// appUpdatePulseDuration is how long the update button pulses after a release appears before settling into its
-	// resting color. Repainting the toolbar twenty times a second for the rest of a session in which the user has
-	// decided to update later would keep a laptop awake for nothing, and two minutes is long enough to be noticed.
+	// resting color. Pulsing for the whole session would keep a laptop awake for nothing; two minutes gets noticed.
 	appUpdatePulseDuration = 2 * time.Minute
 )
 
@@ -77,9 +76,8 @@ func (n *Navigator) syncAppUpdateButton() {
 		n.appUpdatePulse.stop()
 		n.appUpdateButton.RemoveFromParent()
 	}
-	// Adding or removing the button changes the row's size, so everything above it has to lay out again: unison only
-	// lays out the panels whose own NeedsLayout flag is set, and laying out the row alone would leave its ancestors
-	// with the frames they had before.
+	// Adding or removing the button changes the row's size, so its ancestors must lay out again too: unison lays out
+	// only the panels whose own NeedsLayout flag is set.
 	n.buttonRow.MarkForLayoutRecursivelyUpward()
 	n.buttonRow.MarkForRedraw()
 }
@@ -112,10 +110,8 @@ type appUpdatePulse struct {
 	running   bool
 }
 
-// start begins pulsing for the given release. The pulse runs for appUpdatePulseDuration and then settles, and it
-// doesn't start again for a release it has already pulsed for: the syncs that follow every check must neither restart
-// the cycle nor wake a pulse that has settled. Only a release not pulsed for before sets it going again, or the button
-// being shown again after having been hidden (see stop).
+// start begins pulsing for the given release, unless it has already pulsed for it since the last stop, so that the
+// syncs following every check neither restart the cycle nor wake a pulse that has settled.
 func (p *appUpdatePulse) start(version string) {
 	if p.version == version {
 		return

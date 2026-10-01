@@ -27,7 +27,7 @@ import (
 	"github.com/richardwilkes/toolbox/v2/check"
 )
 
-// progressStep is one call made to a UpdateProgress.
+// progressStep is one call made to an UpdateProgress.
 type progressStep struct {
 	phase    UpdatePhase
 	fraction float64
@@ -87,7 +87,6 @@ func buildLibraryArchive(t *testing.T, files map[string]string) []byte {
 
 // TestLibraryDownloadReportsProgress verifies that a download reports progress that a bar can actually be driven from:
 // the two phases in order, fractions that never go backwards within a phase, and an install phase that ends at its end.
-// Before this, the library update had nothing to report and the window showed an indeterminate bar throughout.
 func TestLibraryDownloadReportsProgress(t *testing.T) {
 	c := check.New(t)
 	archive := buildLibraryArchive(t, map[string]string{
@@ -137,7 +136,7 @@ func TestLibraryDownloadReportsProgress(t *testing.T) {
 
 // TestLibraryCloneContentInstalls verifies that a clone's content is installed the way an archive's is: only what lies
 // below its "Library" folder, laid out relative to the library's directory, with the install phase reported through to
-// its end. The clone path used to have a loop of its own, which had drifted from the archive's.
+// its end.
 func TestLibraryCloneContentInstalls(t *testing.T) {
 	c := check.New(t)
 	clone := memfs.New()
@@ -257,9 +256,8 @@ func checkLibraryUntouched(c check.Checker, lib *Library, dir string) {
 	c.Equal("0.9.0", lib.VersionOnDisk(), "the library must still report the version it actually holds")
 }
 
-// TestLibraryDownloadCanceledWhileInstalling verifies that stopping an update part way through unpacking leaves the
-// library holding what it held before. The Cancel button in the update window is what reaches this, and it would be
-// worse than useless if using it could leave a half-written library behind.
+// TestLibraryDownloadCanceledWhileInstalling verifies that stopping an update part way through unpacking, as the update
+// window's Cancel button does, leaves the library holding what it held before rather than a half-written one.
 func TestLibraryDownloadCanceledWhileInstalling(t *testing.T) {
 	c := check.New(t)
 	archive := buildLibraryArchive(t, map[string]string{

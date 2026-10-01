@@ -56,7 +56,7 @@ var StringComparisons = []StringComparison{
 // for the "not" cases.
 type StringComparison byte
 
-// EnsureValid ensures this is of a known value.
+// EnsureValid returns this value if it is valid and DefaultStringComparison otherwise.
 func (enum StringComparison) EnsureValid() StringComparison {
 	if enum >= FirstStringComparison && enum <= LastStringComparison {
 		return enum
@@ -142,18 +142,19 @@ func (enum StringComparison) AltString() string {
 	}
 }
 
-// MarshalText implements the encoding.TextMarshaler interface.
+// MarshalText implements encoding.TextMarshaler.
 func (enum StringComparison) MarshalText() (text []byte, err error) {
 	return []byte(enum.Key()), nil
 }
 
-// UnmarshalText implements the encoding.TextUnmarshaler interface.
+// UnmarshalText implements encoding.TextUnmarshaler.
 func (enum *StringComparison) UnmarshalText(text []byte) error {
 	*enum = ExtractStringComparison(string(text))
 	return nil
 }
 
-// ExtractStringComparison extracts the value from a string.
+// ExtractStringComparison returns the value whose key matches str, ignoring case, or DefaultStringComparison if none
+// does.
 func ExtractStringComparison(str string) StringComparison {
 	for _, enum := range StringComparisons {
 		if strings.EqualFold(enum.Key(), str) {
@@ -163,10 +164,8 @@ func ExtractStringComparison(str string) StringComparison {
 	return DefaultStringComparison
 }
 
-// ExtractKnownStringComparison extracts the value from a string, reporting whether the string was actually recognized.
-//
-// Unlike ExtractStringComparison, which quietly maps anything it doesn't recognize onto the default value, this permits
-// a caller that is dispatching on the type to detect unknown types.
+// ExtractKnownStringComparison is like ExtractStringComparison, but also reports whether str was recognized, so a
+// caller can tell an unknown key from the default.
 func ExtractKnownStringComparison(str string) (value StringComparison, known bool) {
 	for _, enum := range StringComparisons {
 		if strings.EqualFold(enum.Key(), str) {

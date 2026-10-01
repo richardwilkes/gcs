@@ -65,10 +65,9 @@ func InstallExportCmdHandlers(dockable ExportDockable) {
 	p.InstallCmdHandlers(PrintItemID, unison.AlwaysEnabled, func(_ any) { Print(dockable) })
 }
 
-// pageInfoProviderFor returns the dockable's page info provider, first performing any last-minute setup it needs. A
-// gurps.Template has no title or modification timestamp of its own, so both must be supplied by the dockable holding
-// it; without this, a template's page footers come out blank, or carry stale values left behind by an earlier export.
-// Every path that builds pages goes through here so that no such path can skip the setup.
+// pageInfoProviderFor returns the dockable's page info provider after any setup it needs. A gurps.Template has no title
+// or modification timestamp of its own, so its dockable supplies them, replacing any stale values from an earlier
+// export. Every path that builds pages must go through here.
 func pageInfoProviderFor(dockable ExportDockable) gurps.PageInfoProvider {
 	if tmplDockable, ok := dockable.(*Template); ok {
 		tmplDockable.template.ExplicitPageTitle = tmplDockable.Title()
@@ -130,9 +129,8 @@ func ExportPage(ext string, dockable ExportDockable) {
 	}
 }
 
-// maxBandPlacementPasses caps the number of pages a single band of the layout is allowed to spread itself over. Each
-// pass places at least one row or one block, so no band can legitimately need anything close to this many; the cap is
-// only here so that a band that somehow fails to make progress can't hang the export.
+// maxBandPlacementPasses caps the number of pages a single band may spread over. Each pass places at least one row or
+// block, so the cap only keeps a band that somehow fails to make progress from hanging the export.
 const maxBandPlacementPasses = 1000
 
 // placedBlockMarker is what the startAt map holds for a block that isn't a list once it has been placed. Such a block
@@ -156,10 +154,9 @@ func newPageExporter(provider gurps.PageInfoProvider) *pageExporter {
 	}
 	p.AddChild(page)
 	p.pages = append(p.pages, page)
-	// Each band of the layout is placed on its own, one page at a time. A band that doesn't fit in what is left of the
-	// page it starts on is built again for the next page, this time holding only the parts of it that have yet to be
-	// placed. The new page is only brought into being once there is something to put on it, so that a band ending
-	// exactly at the bottom of a page can't leave a blank one behind it.
+	// Each band of the layout is placed on its own, one page at a time. A band that doesn't fit in what is left of its
+	// page is built again for the next page, holding only the parts of it yet to be placed. A new page is only created
+	// once there is something to put on it, so a band ending exactly at the bottom of a page can't leave a blank one.
 	needNewPage := false
 	for i, node := range gurps.SheetSettingsFor(p.entity).Layout.Root.Children {
 		startAt := make(map[string]int)
@@ -334,9 +331,8 @@ const (
 	columnBandPanel
 )
 
-// bandKindOf returns what kind of thing the given panel of a band is. The panel itself is asked rather than the layout
-// node recorded on it, since a container the builder was left with a single child in is dropped and its node recorded
-// on the child that took its place, which would otherwise make that child look like a container.
+// bandKindOf returns what kind of thing the given panel of a band is. It inspects the panel rather than the node under
+// sheetLayoutNodeKey, since a child that took a dropped single-child container's place records that container's node.
 func bandKindOf(panel *unison.Panel) bandPanelKind {
 	if _, ok := panel.Self.(pageHelper); ok {
 		return listBandPanel
@@ -381,15 +377,12 @@ func newBandPlacer(startAt map[string]int) *bandPlacer {
 // returning the height that takes and whether everything in it was placed. Nothing is altered: the decisions are
 // recorded and applyBand carries them out.
 //
-// A list gives up as many of its rows as fit and leaves the rest for the next page. Anything else is placed whole or
-// not at all, in which case it is left to the next page instead. mayOverflow says that the panel has the page to
-// itself and so must place something rather than run off the end of the pages: a list then takes its first row and a
-// block that isn't a list is placed anyway, with whatever runs past the bottom of the page being lost.
+// A list gives up as many of its rows as fit and leaves the rest for the next page; anything else is placed whole or
+// left for the next page. mayOverflow means the panel has the page to itself and must place something: a list then
+// takes at least its first row and any other block is placed anyway, losing whatever runs past the bottom of the page.
 //
-// A minimum height is a floor the panel stands at however little of it is placed, so it is checked against avail first:
-// a panel whose floor is deeper than what the page has left would run off the bottom of it however few rows it took, so
-// the whole of it is left for the next page, exactly as a block that can't be split is. A panel that has the page to
-// itself is placed anyway, since no page has more room to offer it than this one.
+// A minimum height is a floor the panel stands at however little of it is placed, so a panel whose floor is deeper than
+// avail is left whole for the next page, unless mayOverflow is set, since no page has more room to offer it.
 func (b *bandPlacer) placeBand(panel *unison.Panel, avail float32, mayOverflow bool) (used float32, done bool) {
 	minHeight := panelMinHeight(panel)
 	if minHeight > avail && !mayOverflow {

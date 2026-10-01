@@ -158,8 +158,8 @@ func TestNameGeneratorPanelDepthField(t *testing.T) {
 }
 
 // TestNameGeneratorPanelCompoundAddRemove verifies that adding a generator to a compound generator appends a simple one
-// with a key prefix of its own, builds a row with a nested editor for it, and focuses nothing it cannot find; that
-// removing works by identity; and that both are undoable.
+// with a key prefix of its own and builds a row with a nested editor for it, that removing works by identity, and that
+// both are undoable.
 func TestNameGeneratorPanelCompoundAddRemove(t *testing.T) {
 	c := check.New(t)
 	g := gurps.NewNameGenerator()

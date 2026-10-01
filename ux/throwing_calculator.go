@@ -265,7 +265,6 @@ func (t *throwingCalculator) computeThrow(extraEffortPenalty int) (distance, dam
 	distanceBonus := max(throwingTiers[t.throwingIndex].distance, throwingArtTiers[t.throwingArtIndex].distance)
 	damageBonus := throwingArtTiers[t.throwingArtIndex].damage
 
-	// Determine distance modifier based on weight ratio
 	st := extraEffortST(t.st, extraEffortPenalty) + fxp.FromInteger(distanceBonus)
 	basicLift := basicLiftFor(entity, st)
 	var weightRatio fxp.Int
@@ -324,7 +323,6 @@ func (t *throwingCalculator) computeThrow(extraEffortPenalty int) (distance, dam
 		return i18n.Text("The object is too heavy to throw"), i18n.Text("None")
 	}
 
-	// Determine damage based on weight ratio
 	thrust := thrustFor(entity, extraEffortST(t.strikingST, extraEffortPenalty))
 	thrust.Modifier += thrust.Count * damageBonus
 	basicLift = basicLiftFor(entity, st-fxp.FromInteger(distanceBonus))

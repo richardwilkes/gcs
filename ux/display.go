@@ -14,10 +14,9 @@ import (
 	"github.com/richardwilkes/unison"
 )
 
-// unison.PrimaryDisplay() can return nil on some configurations (notably on Linux when no monitor is enumerated).
-// Dereferencing it then crashes, and on an unrecovered background goroutine (e.g. the markdown image loader) the
-// process terminates with nothing written to the log. The helpers below fall back so that a missing primary display
-// degrades gracefully instead.
+// unison.PrimaryDisplay() can return nil on some configurations (notably on Linux when no monitor is enumerated), and
+// dereferencing it then crashes, silently so on an unrecovered background goroutine. The helpers below fall back to
+// defaults instead.
 
 // primaryDisplayScale returns the content scale of the primary display, or a 1:1 scale when no display is available.
 func primaryDisplayScale() geom.Point {

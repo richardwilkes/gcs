@@ -318,7 +318,6 @@ func (t *TraitModifier) DataOwner() DataOwner {
 
 // SetTarget sets the trait being targeted for modification and configures any sub-components as needed.
 func (t *TraitModifier) SetTarget(target *Trait) *TraitModifier {
-	// Set the target node for this modifier
 	t.trait = target
 
 	// COMPAT: Promote replacements from this node up to the target node
@@ -327,7 +326,6 @@ func (t *TraitModifier) SetTarget(target *Trait) *TraitModifier {
 		t.Replacements = nil
 	}
 
-	// Cascade the operation
 	if t.Container() {
 		for _, child := range t.Children {
 			child.SetTarget(target)
@@ -358,7 +356,7 @@ func (t *TraitModifier) CostModifier() fxp.Fraction {
 }
 
 // CostModifierForTrait returns the total cost modifier as applied to the given trait, which is used in place of the
-// modifier's own owning trait when resolving a "use level from trait" modifier. This allows a modifier inherited from a
+// modifier's own owning trait when resolving a "use level from owner" modifier. This allows a modifier inherited from a
 // parent container (or one held only by an editor's working copy) to be costed against the trait it is being applied
 // to without re-pointing the modifier at that trait. Containers have no cost modifier and always yield zero. When
 // CostIgnoresLevel is set, the adjustment is not multiplied by the level here, which lets a modifier drive per-level
@@ -402,7 +400,7 @@ func (t *TraitModifier) IsLeveled() bool {
 }
 
 // isLeveledForTrait returns true if this TraitModifier is leveled when applied to the given trait, which stands in for
-// the modifier's own owning trait when resolving a "use level from trait" modifier.
+// the modifier's own owning trait when resolving a "use level from owner" modifier.
 func (t *TraitModifier) isLeveledForTrait(trait *Trait) bool {
 	if t.Container() {
 		return false
@@ -426,10 +424,10 @@ func (t *TraitModifier) RawCurrentLevel() fxp.Int {
 	return level
 }
 
-// CurrentLevel returns the current level of the modifier or zero if it is not leveled. Minimum of 1 will be returned
-// if it has levels at all. Unlike the levels the cost is computed from, a "use level from owner" modifier reports the
-// trait's current level, bonus-granted levels included, since this drives the per-level features the modifier carries
-// and how it displays, neither of which is a matter of what was paid for.
+// CurrentLevel returns the current level of the modifier, at least 1, or zero if it is disabled or not leveled. Unlike
+// the levels the cost is computed from, a "use level from owner" modifier reports the trait's current level,
+// bonus-granted levels included, since this drives the per-level features the modifier carries and how it displays,
+// neither of which is a matter of what was paid for.
 func (t *TraitModifier) CurrentLevel() fxp.Int {
 	if t.Enabled() && t.IsLeveled() {
 		return t.RawCurrentLevel().Max(fxp.One)
@@ -626,12 +624,12 @@ func (t *TraitModifierNonContainerSyncData) hash(h hash.Hash) {
 	hashList(h, t.Features)
 }
 
-// CopyFrom implements node.EditorData.
+// CopyFrom implements EditorData.
 func (t *TraitModifierEditData) CopyFrom(other *TraitModifier) {
 	t.copyFrom(&other.TraitModifierEditData)
 }
 
-// ApplyTo implements node.EditorData.
+// ApplyTo implements EditorData.
 func (t *TraitModifierEditData) ApplyTo(other *TraitModifier) {
 	other.copyFrom(t)
 }

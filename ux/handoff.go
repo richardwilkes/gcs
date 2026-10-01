@@ -28,9 +28,9 @@ import (
 )
 
 const (
-	// handoffPort is the port the primary instance holds for its entire life. It is named here rather than being
-	// buried in the address below because the updater waits on it: being able to bind it is how the helper knows the
-	// application has exited and that the replacement it starts will be able to become the primary instance.
+	// handoffPort is the port the primary instance holds for its entire life. The updater's helper waits until it can
+	// bind it, which is how it knows the application has exited and that the replacement it starts can become the
+	// primary instance.
 	handoffPort = 13322
 	// handoffMarker precedes the length-prefixed payload a secondary instance hands off to the primary one.
 	handoffMarker = 22

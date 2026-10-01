@@ -47,8 +47,7 @@ func TestLibraryAncestriesPath(t *testing.T) {
 }
 
 // TestLibraryConcurrentAccess verifies that the mutable state of a Library can be read from background goroutines (as
-// the update checks do) while the UI thread modifies it. Prior to the accessors being added, these fields were plain
-// exported fields with no synchronization at all, which the race detector flags.
+// the update checks do) while the UI thread modifies it.
 func TestLibraryConcurrentAccess(t *testing.T) {
 	c := check.New(t)
 	dir := t.TempDir()
@@ -173,11 +172,10 @@ func TestLibrarySetPathWhenWatchFails(t *testing.T) {
 	c.Equal(int64(1), syncs.Load())
 }
 
-// TestLibrarySetPathAfterWatchFailsRestartsWatch verifies the mirror image of the case above: a library whose watch
-// could not be established at all still restarts its watchers when the path changes to a location that can be watched.
-// The tokens are registered whether or not the filesystem watch succeeded, so stop() must hand them back for the
-// restart even when there is no event channel to shut down. Without that, the library silently stops reporting changes
-// for the rest of the session even though it now sits somewhere perfectly watchable.
+// TestLibrarySetPathAfterWatchFailsRestartsWatch verifies that a library whose watch could not be established still
+// restarts its watchers when the path changes to a location that can be watched. The tokens are registered whether or
+// not the filesystem watch succeeded, so stop() must hand them back even when there is no event channel to shut down;
+// otherwise the library would silently stop reporting changes for the rest of the session.
 func TestLibrarySetPathAfterWatchFailsRestartsWatch(t *testing.T) {
 	c := check.New(t)
 	dir := t.TempDir()
@@ -207,14 +205,12 @@ func TestLibrarySetPathAfterWatchFailsRestartsWatch(t *testing.T) {
 	c.Equal(int64(1), syncs.Load(), "the watch is told the root moved")
 	c.Equal(watchable, token.root, "the watch is now rooted at the new path")
 
-	// Everything above this point is what the restart actually changed, and it holds on every platform. The live-event
-	// check below cannot run on Windows under -race: notify's readdcw backend reads an event's name by viewing its
-	// 4096-byte ReadDirectoryChangesW buffer through a *[syscall.MAX_LONG_PATH]uint16, i.e. a 64KB array type
-	// (watcher_readdcw.go:406, still present in v0.9.3, the newest release). The bytes it goes on to read stay inside
-	// the buffer -- the kernel bounds each record to the size handed to ReadDirectoryChangesW -- but the conversion
-	// itself nominally spans past the allocation, so checkptr, which -race turns on, aborts the process the first time
-	// an event is delivered. That takes the whole test binary with it rather than failing a single test. Release builds
-	// never enable -race, so no shipped binary carries the check.
+	// Everything above this point holds on every platform. The live-event check below cannot run on Windows under
+	// -race: notify's readdcw backend reads an event's name by viewing its 4096-byte ReadDirectoryChangesW buffer
+	// through a *[syscall.MAX_LONG_PATH]uint16, i.e. a 64KB array type (watcher_readdcw.go:406, still present in
+	// v0.9.3, the newest release). The bytes it reads stay inside the buffer, but the conversion itself nominally spans
+	// past the allocation, so checkptr, which -race turns on, aborts the whole test binary the first time an event is
+	// delivered. Release builds never enable -race, so no shipped binary carries the check.
 	if raceEnabled && runtime.GOOS == "windows" {
 		t.Skip("rjeczalik/notify v0.9.3 trips checkptr on Windows when a watch event is delivered under -race")
 	}
@@ -237,10 +233,8 @@ func TestLibrarySetPathAfterWatchFailsRestartsWatch(t *testing.T) {
 }
 
 // TestLibraryWatchDeliversNothingUntilSomethingHappens verifies that establishing a watch delivers no event of its own,
-// root sync or otherwise. The caller has just scanned the library itself -- that is why it is now watching it -- so an
-// event at this point is at best redundant. For a callback that rescans whatever it is told about (the library
-// navigator does exactly that, and re-establishes its watches as part of the rescan), it would never settle: each
-// rescan would establish a watch that hands it another event.
+// root sync or otherwise. The caller has just scanned the library, so such an event is redundant, and a callback that
+// rescans and re-establishes its watches on every event (as the library navigator does) would never settle.
 func TestLibraryWatchDeliversNothingUntilSomethingHappens(t *testing.T) {
 	c := check.New(t)
 	dir := t.TempDir()
@@ -486,8 +480,7 @@ func TestLibrariesUnmarshalSkipsNullEntries(t *testing.T) {
 }
 
 // TestLibraryDownloadReleaseChecksStatusCode verifies that an HTTP error response is reported as an HTTP failure rather
-// than being handed to the zip reader as if it were archive content, which yielded a misleading "unable to open
-// archive" error.
+// than being handed to the zip reader, which would report a misleading "unable to open archive" error.
 func TestLibraryDownloadReleaseChecksStatusCode(t *testing.T) {
 	c := check.New(t)
 	status := http.StatusOK
@@ -519,9 +512,9 @@ func TestLibraryDownloadReleaseChecksStatusCode(t *testing.T) {
 }
 
 // TestCheckForAvailableUpgradeNotifiesLateInstalledFunc verifies that an update check completing before the UI has
-// installed a notification function still delivers that notification once one is installed. The update checks are
-// started by Start() before the workspace (and therefore the navigator) exists, so a fast check would otherwise be
-// silently dropped, leaving no "update available" indicator until some unrelated reload happened to occur.
+// installed a notification function still delivers that notification once one is installed. The launch-time update
+// checks start before the workspace (and therefore the navigator) exists, so a fast check's notification would
+// otherwise be lost, leaving no "update available" indicator until some unrelated reload.
 func TestCheckForAvailableUpgradeNotifiesLateInstalledFunc(t *testing.T) {
 	c := check.New(t)
 	isolateLibraryChangeNotification(t)
@@ -561,9 +554,8 @@ func TestCheckForAvailableUpgradeNotifiesLateInstalledFunc(t *testing.T) {
 }
 
 // TestCheckForAvailableUpgradeNotifiesOnceWhenNothingChanges verifies that repeating a check whose answer hasn't
-// changed notifies only the first time. A notification reloads the entire library tree, so a check that ran every hour
-// and notified every time would restart the filesystem watches, drop the caches and disturb whatever the user had in
-// progress, over and over, for as long as an update went uninstalled.
+// changed notifies only the first time. A notification reloads the entire library tree, so a periodic check that
+// notified every time would disturb the user over and over for as long as an update went uninstalled.
 func TestCheckForAvailableUpgradeNotifiesOnceWhenNothingChanges(t *testing.T) {
 	c := check.New(t)
 	// The function is installed before the first check, so nothing can be latched as a pending notification instead of
@@ -590,8 +582,7 @@ func TestCheckForAvailableUpgradeNotifiesOnceWhenNothingChanges(t *testing.T) {
 
 // TestCheckForAvailableUpgradeStaysQuietForLocalLibrary verifies that a library that isn't backed by a GitHub repo
 // never notifies. There are no releases for it, so the newest release reads as "" while the version on disk reads as
-// "0" for want of a release.txt, and comparing those two directly made every check of such a library announce an
-// update that doesn't exist -- which, with periodic checks, would reload the library tree on every one of them.
+// "0" for want of a release.txt, and comparing those two directly would announce a nonexistent update on every check.
 func TestCheckForAvailableUpgradeStaysQuietForLocalLibrary(t *testing.T) {
 	c := check.New(t)
 	calls := countLibraryChangeNotifications(t)
@@ -666,9 +657,7 @@ func TestCheckForAvailableUpgradeNotifiesWhenReleaseAppears(t *testing.T) {
 
 // TestCheckForAvailableUpgradeNotifiesWhenUpdateDisappears verifies that a check which finds an update that was on
 // offer no longer is -- the release having been withdrawn, or the library having been brought up to date outside of the
-// app -- notifies, so that the Library Explorer's indicator and buttons don't go on offering it. The rule that keeps a
-// repeated check quiet used to keep this one quiet too, leaving the stale indicator up until something else happened to
-// reload the tree.
+// app -- notifies, so that the Library Explorer's indicator and buttons don't go on offering it.
 func TestCheckForAvailableUpgradeNotifiesWhenUpdateDisappears(t *testing.T) {
 	c := check.New(t)
 	calls := countLibraryChangeNotifications(t)
@@ -708,10 +697,9 @@ func TestCheckForAvailableUpgradeNotifiesWhenUpdateDisappears(t *testing.T) {
 
 // TestConfigureDiscardsChecksOfTheOldRepository verifies that pointing a library at a different repository -- or at the
 // same one's latest commit rather than its releases -- discards what an earlier check found and leaves the library
-// needing a check, since those releases belong to the old repository. Without this, the Library Explorer went on
-// offering the old repository's releases, and its on-click check never engaged because the library still counted as
-// checked. Changes to the other settings leave the check state alone: there is nothing about the answer they would
-// change.
+// needing a check, since those releases belong to the old repository. Otherwise the Library Explorer would go on
+// offering the old repository's releases, and its on-click check would never engage because the library still counted
+// as checked. Changes to the other settings leave the check state alone.
 func TestConfigureDiscardsChecksOfTheOldRepository(t *testing.T) {
 	c := check.New(t)
 	isolateLibraryChangeNotification(t)
@@ -1012,9 +1000,9 @@ func TestDownloadDiscardsACheckInFlight(t *testing.T) {
 
 // TestCheckForAvailableUpgradeAsksAgainWhenTheJoinedCheckIsDiscarded verifies that a check which waited on one that was
 // then discarded -- the library having been pointed at a different repository while it ran -- goes on to make a check
-// of its own, of the new repository. The settings dialog starts a check as soon as a new repository is applied, and
-// the Library Explorer's buttons make one on demand; with the launch-time check still in flight, both used to wait on
-// it, see it discarded, and return with nothing, leaving the library unchecked until the next scheduled check.
+// of its own, of the new repository. The settings dialog starts a check as soon as a new repository is applied, and the
+// Library Explorer's buttons make one on demand; with the launch-time check still in flight, both would otherwise wait
+// on it, see it discarded, and return with nothing.
 func TestCheckForAvailableUpgradeAsksAgainWhenTheJoinedCheckIsDiscarded(t *testing.T) {
 	c := check.New(t)
 	calls := countLibraryChangeNotifications(t)
@@ -1111,8 +1099,7 @@ func (t *blockingFailingTransport) RoundTrip(req *http.Request) (*http.Response,
 }
 
 // TestNotifyOfLibraryChangeConcurrent verifies that the notification function may be installed by the UI thread while
-// background goroutines report library changes. It was previously a plain package variable written by the navigator
-// and read by the update-check goroutines, which the race detector flags.
+// background goroutines report library changes.
 func TestNotifyOfLibraryChangeConcurrent(t *testing.T) {
 	c := check.New(t)
 	isolateLibraryChangeNotification(t)
@@ -1196,8 +1183,7 @@ func startUpgradeCheck(ctx context.Context, lib *Library, client *http.Client) <
 }
 
 // checkStillWaiting fails the test if the check behind done has already returned, allowing it a moment to do so. It
-// stands for the "a check made while another is under way waits for that one" half of the joining contract; that the
-// check eventually returns is what the receive from done that each caller goes on to make establishes.
+// covers only the waiting half of the joining contract; each caller's later receive from done covers the returning.
 func checkStillWaiting(t *testing.T, done <-chan struct{}) {
 	t.Helper()
 	select {

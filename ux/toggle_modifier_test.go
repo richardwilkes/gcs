@@ -108,10 +108,8 @@ func checkModifierToggleInEditor[T gurps.Node[T]](t *testing.T, table *unison.Ta
 	checkModifierUndoRedo(c, table, modifiers, isModified, undoName, "toggle")
 }
 
-// Issue #1074: Toggle State must reach the modifier rows of a detail editor. The editor tables used to install no
-// handler for the command, so the only way to turn a modifier on or off was clicking its checkmark cell one row at a
-// time. The whole selection is flipped as one undoable edit, and only the editor's copy of the data is touched, so
-// nothing reaches the item being edited until Apply.
+// Issue #1074: Toggle State must reach the modifier rows of a detail editor, flipping the whole selection as one
+// undoable edit and touching only the editor's copy of the data, so nothing reaches the item being edited until Apply.
 func TestToggleStateFlipsModifiersInsideEditors(t *testing.T) {
 	t.Run("trait", func(t *testing.T) {
 		e, table, modifier := newTraitEditorWithModifiers(t)
@@ -145,7 +143,7 @@ func TestToggleStateSkipsModifierContainers(t *testing.T) {
 
 // checkModifierCheckmarkClickInEditor clicks the checkmark cell of the first modifier row and verifies that the click
 // turns the modifier off in the editor's copy and that the change can be taken back and put back again. Both kinds of
-// modifier cell go through the same handleCheck case, so the two subtests share this.
+// modifier cell reach adjustModifierEnabled through handleCheck, so the two subtests share this.
 func checkModifierCheckmarkClickInEditor[T gurps.Node[T]](t *testing.T, table *unison.Table[*Node[T]], modifiers []T,
 	isModified func() bool, enabledColumnID int, undoName string,
 ) {

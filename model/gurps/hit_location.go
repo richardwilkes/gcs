@@ -114,8 +114,7 @@ func (h *HitLocation) ID() string {
 	return h.LocID
 }
 
-// SetID sets the ID, sanitizing it in the process, so the result may differ from the value passed in -- read it back
-// if you need to be sure of what it became.
+// SetID sets the ID after sanitizing it, so the stored ID may differ from the value passed in.
 func (h *HitLocation) SetID(value string) {
 	h.LocID = SanitizeID(value, false, ReservedIDs...)
 }

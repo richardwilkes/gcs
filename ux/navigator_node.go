@@ -33,7 +33,7 @@ import (
 
 var _ unison.TableRowData[*NavigatorNode] = &NavigatorNode{}
 
-// NavigatorNode holds a library, directory or file.
+// NavigatorNode holds the favorites, a library, a directory or a file.
 type NavigatorNode struct {
 	id                       tid.TID
 	path                     string
@@ -78,7 +78,7 @@ func NewLibraryNode(nav *Navigator, lib *library.Library) *NavigatorNode {
 	return n
 }
 
-// NewDirectoryNode creates a new DirectoryNode.
+// NewDirectoryNode creates a new directory node.
 func NewDirectoryNode(nav *Navigator, lib *library.Library, dirPath string, parent *NavigatorNode) *NavigatorNode {
 	pathForID := "@" + filepath.Join(lib.Path(), dirPath)
 	root := parent
@@ -101,7 +101,7 @@ func NewDirectoryNode(nav *Navigator, lib *library.Library, dirPath string, pare
 	return n
 }
 
-// NewFileNode creates a new FileNode.
+// NewFileNode creates a new file node.
 func NewFileNode(lib *library.Library, filePath string, parent *NavigatorNode) *NavigatorNode {
 	return &NavigatorNode{
 		id:      tid.MustNewTID(kinds.NavigatorFile),

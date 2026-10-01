@@ -17,9 +17,8 @@ import (
 
 // TestEquipmentModifierSyncHashIncludesPerLevelAndPerPoundFlags verifies that the sync hash reflects the
 // CostIsPerLevel, CostIsPerPound, and WeightIsPerLevel flags. They change the cost/weight math without necessarily
-// changing CostAmount/WeightAmount, so omitting them from the hash (as was originally done) made library-sync change
-// detection report a modified library modifier as Matched and never update the local copy. The TID is not part of the
-// hash, so two modifiers differing only in a single flag must still produce different hashes.
+// changing CostAmount/WeightAmount, so leaving them out let library sync report a modified library modifier as Matched
+// and never update the local copy. The TID is not hashed, so a lone flag must change the hash.
 func TestEquipmentModifierSyncHashIncludesPerLevelAndPerPoundFlags(t *testing.T) {
 	c := check.New(t)
 
@@ -45,9 +44,8 @@ func TestEquipmentModifierSyncHashIncludesPerLevelAndPerPoundFlags(t *testing.T)
 }
 
 // TestEquipmentModifierCloneDoesNotShareReplacements verifies that a copy of a modifier still carrying the legacy
-// replacements map gets its own map. SetTarget() installs a modifier's replacements directly into the equipment it
-// is attached to when that equipment has none of its own, so sharing the map let a later merge into the equipment's map
-// write into the library row the copy came from.
+// replacements map gets its own map, so that later merges into the equipment the copy migrates its map into (see
+// SetTarget) cannot write into the library row the copy came from.
 func TestEquipmentModifierCloneDoesNotShareReplacements(t *testing.T) {
 	c := check.New(t)
 

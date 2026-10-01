@@ -51,7 +51,7 @@ var Builtins = []Builtin{
 // Builtin holds a built-in name data type.
 type Builtin byte
 
-// EnsureValid ensures this is of a known value.
+// EnsureValid returns this value if it is valid and DefaultBuiltin otherwise.
 func (enum Builtin) EnsureValid() Builtin {
 	if enum >= FirstBuiltin && enum <= LastBuiltin {
 		return enum
@@ -103,18 +103,18 @@ func (enum Builtin) String() string {
 	}
 }
 
-// MarshalText implements the encoding.TextMarshaler interface.
+// MarshalText implements encoding.TextMarshaler.
 func (enum Builtin) MarshalText() (text []byte, err error) {
 	return []byte(enum.Key()), nil
 }
 
-// UnmarshalText implements the encoding.TextUnmarshaler interface.
+// UnmarshalText implements encoding.TextUnmarshaler.
 func (enum *Builtin) UnmarshalText(text []byte) error {
 	*enum = ExtractBuiltin(string(text))
 	return nil
 }
 
-// ExtractBuiltin extracts the value from a string.
+// ExtractBuiltin returns the value whose key matches str, ignoring case, or DefaultBuiltin if none does.
 func ExtractBuiltin(str string) Builtin {
 	for _, enum := range Builtins {
 		if strings.EqualFold(enum.Key(), str) {
@@ -124,10 +124,8 @@ func ExtractBuiltin(str string) Builtin {
 	return DefaultBuiltin
 }
 
-// ExtractKnownBuiltin extracts the value from a string, reporting whether the string was actually recognized.
-//
-// Unlike ExtractBuiltin, which quietly maps anything it doesn't recognize onto the default value, this permits a caller
-// that is dispatching on the type to detect unknown types.
+// ExtractKnownBuiltin is like ExtractBuiltin, but also reports whether str was recognized, so a caller can tell an
+// unknown key from the default.
 func ExtractKnownBuiltin(str string) (value Builtin, known bool) {
 	for _, enum := range Builtins {
 		if strings.EqualFold(enum.Key(), str) {

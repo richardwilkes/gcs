@@ -164,11 +164,10 @@ var (
 	userGuideAction          *unison.Action
 )
 
-// contextMenuShortTitles holds, by action ID, the title a context menu shows for an action whose own title says more
-// than a context menu needs to. The menu bar's "New ..." commands name what they add, and for equipment the list they
-// add it to, since every list is reachable from the menu bar. A list's own context menu can only add to that list, and
-// its first item already names what the list holds, so the rest need only say what kind of row they add. It is filled
-// in as the actions are registered (see registerFocusActionWithContextTitle).
+// contextMenuShortTitles maps an action ID to the shorter title a list's context menu shows for it. The menu bar's
+// "New ..." commands name what they add and, for equipment, which list, but a list's own context menu can only add to
+// that list and its first item already names what the list holds, so the rest need only say what kind of row they add.
+// Filled in by registerFocusActionWithContextTitle.
 var contextMenuShortTitles = make(map[int]string)
 
 func registerActions() {
@@ -549,10 +548,8 @@ func registerActions() {
 	checkForAppUpdatesAction = &unison.Action{
 		ID:    CheckForAppUpdatesItemID,
 		Title: fmt.Sprintf(i18n.Text("Check for %s updates"), xos.AppName),
-		// Usable whenever no check is already running, whatever the setting and whatever is already known: with an
-		// update known, a fresh check reopens the update window, which is what the settings tooltip and the release
-		// notes promise. A quiet check counts as running, so the item doesn't start a second request for an answer
-		// that is already on its way.
+		// Enabled whenever no check, visible or quiet, is running, whatever the setting or what is already known: with
+		// an update known, a fresh check reopens the update window, as the settings tooltip and release notes promise.
 		EnabledCallback: func(_ *unison.Action, _ any) bool {
 			return !AppUpdateCheckInProgress()
 		},

@@ -135,8 +135,7 @@ func TestExecWithin(t *testing.T) {
 	c.Equal(hostPath("/tmp/staged/gcs"), exe.ExecWithin(hostPath("/tmp/staged/gcs")))
 }
 
-// The staged replacement is named the same as what it replaces, so the swap is a rename between two names in one
-// directory.
+// The staged replacement keeps the name of what it replaces, directly inside the staging directory.
 func TestPayloadPath(t *testing.T) {
 	c := check.New(t)
 	bundle, err := ResolveTarget(hostPath("/Applications/GCS.app/Contents/MacOS/gcs"), "darwin")

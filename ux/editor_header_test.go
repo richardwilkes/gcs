@@ -17,8 +17,7 @@ import (
 )
 
 // TestGroupContainersFirst verifies that a column's own comparison is handed the value a cell shows rather than the
-// marker a container's sort text carries, and that containers still group ahead of everything else. Without this, a
-// comparison that reads a number out of the text sees the marker instead and reports every container as equal.
+// marker a container's sort text carries, and that containers still group ahead of everything else.
 func TestGroupContainersFirst(t *testing.T) {
 	c := check.New(t)
 

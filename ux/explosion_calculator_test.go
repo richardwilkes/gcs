@@ -19,12 +19,10 @@ import (
 	"github.com/richardwilkes/unison"
 )
 
-// TestExplosionCalculatorSources drives the explosion calculator inside a headless workspace the way a user would: it
-// opens the calculators from their menu action with a character sheet active, checks that the sheet is preselected as
-// the target with the fields it supplies locked and filled, works the collateral damage example on BX414, switches the
-// attack type to a cone and works the width example on BX413, works the scatter and demolition examples on BX414 and
-// BX415 on their own tabs, and finally closes the sheet and checks that the target drops back to Manual with the fields
-// unlocked.
+// TestExplosionCalculatorSources drives the calculators in a headless workspace with a character sheet active: the
+// sheet must be preselected as the explosion's target with the fields it supplies locked and filled, the worked
+// examples on BX413-BX415 must come out on the explosion, scatter and demolition tabs, and closing the sheet must drop
+// the target back to Manual with the fields unlocked.
 func TestExplosionCalculatorSources(t *testing.T) {
 	c := check.New(t)
 	screen, wnd := startHeadlessWorkspace(t, c)

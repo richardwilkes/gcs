@@ -59,18 +59,17 @@ startxref
 `
 
 // newPDFTextSampleRenderer writes pdfTextSamplePDF to a temporary file and opens a renderer over it, closing the
-// renderer when the test ends. A scale adjustment of 1 makes the logical space the renderer's public API speaks in and
-// the pixel space the extracted text works in the same, so the assertions can talk about coordinates without undoing a
-// scaling first. The callbacks do nothing: these tests drive the extraction themselves.
+// renderer when the test ends. A scale adjustment of 1 makes the renderer's logical space and the extracted text's
+// pixel space the same, so assertions needn't undo a scaling. The callbacks do nothing: these tests drive the
+// extraction themselves.
 func newPDFTextSampleRenderer(t *testing.T) *PDFRenderer {
 	t.Helper()
 	return newPDFTextSampleRendererAtScale(t, geom.NewPoint(1, 1))
 }
 
-// newPDFTextSampleRendererAtScale is newPDFTextSampleRenderer with the image scale adjustment spelled out. That
-// adjustment is what a display's pixel density produces -- 1 on an ordinary display, 0.5 on a Retina one -- and is the
-// whole of the difference between the extracted text's pixel space and the renderer's logical space, so a test that
-// wants to see that conversion happen asks for a scale that isn't 1.
+// newPDFTextSampleRendererAtScale is newPDFTextSampleRenderer with an explicit image scale adjustment: 1 on an ordinary
+// display, 0.5 on a Retina one. That adjustment is the whole difference between the extracted text's pixel space and
+// the renderer's logical space.
 func newPDFTextSampleRendererAtScale(t *testing.T, scaleAdjust geom.Point) *PDFRenderer {
 	t.Helper()
 	path := filepath.Join(t.TempDir(), "sample.pdf")
@@ -249,10 +248,9 @@ func TestPDFRendererSearchMatchesEmptySearch(t *testing.T) {
 	}
 }
 
-// TestPDFRendererSearchMatches runs the whole of the search path against a real document: the ask that arrives before
-// there is anything to search, the extraction it puts in the queue, and then the hits themselves. The rectangles are
-// compared against what the page's text reports directly -- the same answer a render-time search used to bake into the
-// image, since the point of moving the search out of the rendering was that the answer doesn't change.
+// TestPDFRendererSearchMatches runs the whole search path against a real document: the ask that arrives before there is
+// anything to search, the extraction it queues, and then the hits themselves, which must match what the page's text
+// reports directly.
 func TestPDFRendererSearchMatches(t *testing.T) {
 	pdfBlockSharedQueue(t)
 	pdf := newPDFTextSampleRenderer(t)
@@ -389,10 +387,9 @@ func TestPDFRendererSearchMatchesScaled(t *testing.T) {
 	}
 }
 
-// TestPDFRendererSearchLeavesRenderedPagesAlone is the regression pin for what this whole arrangement is for: typing
-// in the search field must not disturb what has been rendered. The hits used to come out of the rendering, so every
-// keystroke marked every visible page stale and put the "Rendering page N…" overlay back up over pages that were
-// already on screen. The page is rendered here for real and then searched, one keystroke at a time.
+// TestPDFRendererSearchLeavesRenderedPagesAlone pins that typing in the search field doesn't disturb what has been
+// rendered. The hits used to come out of the rendering, so every keystroke marked every visible page stale and put the
+// "Rendering page N…" overlay back up over pages that were already on screen.
 func TestPDFRendererSearchLeavesRenderedPagesAlone(t *testing.T) {
 	pdfBlockSharedQueue(t)
 	pdf := newPDFTextSampleRenderer(t)

@@ -134,10 +134,10 @@ func NewTableDockable[T gurps.Node[T]](filePath, extension string, provider Tabl
 			variant = AlternateItemVariant
 		}
 		if variant != -1 {
-			// Creating an item inserts a row, which unison.Table.ApplyHierarchicalFilter says must not be done while a
-			// filter is applied, so the command is turned off whenever a filter is hiding part of the list, as Delete,
-			// Duplicate and the move commands are. Left on, the insert would clear the filter, open an editor on the
-			// new row and then have the rebuild that follows re-filter the row out from under that editor.
+			// Creating an item inserts a row, which unison.Table.ApplyHierarchicalFilter forbids while a filter is
+			// applied, so the command is disabled then, as Delete, Duplicate and the move commands are. Left on, the
+			// insert would clear the filter, open an editor on the new row and then have the rebuild that follows
+			// re-filter the row out from under that editor.
 			d.InstallCmdHandlers(id,
 				func(_ any) bool { return !d.table.IsFiltered() },
 				func(_ any) { d.provider.CreateItem(d, d.table, variant) })
@@ -147,8 +147,8 @@ func NewTableDockable[T gurps.Node[T]](filePath, extension string, provider Tabl
 }
 
 func (d *TableDockable[T]) createToolbar() *unison.Panel {
-	// The hierarchy and note buttons are kept so that they can be turned off while a filter is applied, when the table
-	// shows a flat list of the rows that passed and a toggle over them would silently change just those rows.
+	// The hierarchy and note buttons are kept so they can be disabled while a filter is applied (see toggleHierarchy
+	// and toggleNotes).
 	d.hierarchyButton = unison.NewSVGButton(svg.Hierarchy)
 	d.hierarchyButton.Tooltip = newWrappedTooltip(i18n.Text("Opens/closes all hierarchical rows"))
 	d.hierarchyButton.ClickCallback = d.toggleHierarchy
@@ -242,10 +242,9 @@ func (d *TableDockable[T]) ApplyNoteState(closed bool) {
 	applyTableNoteState(d.table, closed)
 }
 
-// toggleHierarchy opens or closes every container in the table. Like the other row-affecting commands, it does nothing
-// while a filter is applied, and its button is turned off along with the filter being applied. The filtered view shows
-// every container it keeps as open whatever the container's own open state, so the toggle would change the open states
-// without anything to show for it until the filter was cleared.
+// toggleHierarchy opens or closes every container in the table. It does nothing while a filter is applied, when its
+// button is disabled: the filtered view shows every container it keeps as open whatever its own open state, so the
+// toggle would have nothing to show for it until the filter was cleared.
 func (d *TableDockable[T]) toggleHierarchy() {
 	if d.table.IsFiltered() {
 		return
@@ -275,10 +274,8 @@ func (d *TableDockable[T]) Rebuild(_ bool) {
 	gurps.DiscardGlobalResolveCache()
 	h, v := d.scroll.Position()
 	sel := d.table.CopySelectionMap()
-	// The rows have to be built afresh from the model and put through the filter, which is in force across a rebuild.
-	// Applying the filter syncs the table itself, over the rows that pass, so the sync is only done here when there is
-	// no filter to apply and none to clear, which is the one case where applying it leaves the table alone. Syncing
-	// first regardless would measure every row over the stale set of filtered rows only to throw that away.
+	// The filter stays in force across a rebuild, and applying it syncs the table itself, so sync here only when it
+	// didn't. Syncing first regardless would measure every row of the stale filtered set only to throw that away.
 	if !d.applyFilter() {
 		d.table.SyncToModel()
 	}
@@ -297,9 +294,8 @@ func (d *TableDockable[T]) Hash(h hash.Hash) {
 	gurps.HashJSON(h, data)
 }
 
-// chooseFilter puts the given saved filter in force, or drops the one that was when it is nil. Whatever the quick
-// filter's field holds is left alone either way, since it narrows the list on top of the saved filter rather than
-// standing in for it.
+// chooseFilter puts the given saved filter in force, or drops the current one when f is nil. The quick filter's text is
+// left alone, since it narrows the list on top of the saved filter.
 func (d *TableDockable[T]) chooseFilter(f *gurps.ListFilter) {
 	d.selectedFilter = f
 	d.applyFilter()
@@ -312,12 +308,10 @@ func (d *TableDockable[T]) listFiltersChanged(key string, source *listFilterPopu
 	}
 }
 
-// applyFilter applies the current filtering and reports whether the table was synced to its model as part of that,
-// which unison.Table.ApplyHierarchicalFilter does whenever it is given a filter or has one to clear. A saved filter in
-// force and the text in the quick filter's field are applied together: a row is shown only when it passes both. The
-// hierarchy is kept so that a matching row is seen in context, beneath the containers that hold it. A container shown
-// only for that reason is dimmed (see Node.cellData), so the rows that actually matched stand out from those that are
-// just context.
+// applyFilter applies the saved filter in force and the quick filter's text together, showing a row only when it passes
+// both, and reports whether the table was synced to its model, which unison.Table.ApplyHierarchicalFilter does whenever
+// it is given a filter or has one to clear. The hierarchy is kept so a matching row is seen beneath the containers that
+// hold it; a container shown only for that reason is dimmed (see Node.cellData).
 func (d *TableDockable[T]) applyFilter() (synced bool) {
 	if d.filterField == nil {
 		return false
@@ -330,8 +324,7 @@ func (d *TableDockable[T]) applyFilter() (synced bool) {
 		saved = func(row *Node[T]) bool { return !m(row.Data()) }
 	}
 	if text := strings.ToLower(strings.TrimSpace(d.filterField.GetFieldState().Text)); text != "" {
-		// Match looks at every column, the tags column included, now that the tag popup that once did the tag
-		// filtering is gone.
+		// Match looks at every column, the tags column included.
 		quick = func(row *Node[T]) bool { return !row.Match(text) }
 	}
 	var f func(row *Node[T]) bool

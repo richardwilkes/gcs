@@ -58,11 +58,10 @@ func (s scriptMeasurement) SizeModifier(yards float64) int {
 }
 
 func (s scriptMeasurement) Modifier(length float64, units string, forSize bool) int {
-	// The units are resolved directly rather than by formatting the length into a string and parsing it back. That
-	// round trip discarded any length too large for the fixed-point type: fxp.FromFloat now saturates such a value to
-	// the representable maximum, but routing it through fxp.LengthFromString turned the range error into a flat 0 — the
-	// smallest possible answer for the largest possible input. Converting here also makes measure.modifier(x, "yd", …)
-	// agree with measure.rangeModifier(x) and measure.sizeModifier(x), which have always converted this way.
+	// The units are resolved directly rather than by formatting the length into a string and parsing it back: that
+	// round trip turned a length too large for fxp.Int into 0, the smallest possible answer, instead of the maximum
+	// fxp.FromFloat saturates to. Converting here also keeps measure.modifier(x, "yd", …) in agreement with
+	// measure.rangeModifier(x) and measure.sizeModifier(x).
 	result := ssrtInchesToValue(lengthUnitForScript(units).ToInches(fxp.FromFloat(length)), forSize)
 	if !forSize {
 		result = -result

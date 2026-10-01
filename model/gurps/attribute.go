@@ -230,7 +230,7 @@ func IsThresholdOpMet(op threshold.Op, attributes *Attributes) bool {
 	return false
 }
 
-// CountThresholdOpMet counts the number of times the given ThresholdOp is met.
+// CountThresholdOpMet returns how many attributes have a current threshold containing the given op.
 func CountThresholdOpMet(op threshold.Op, attributes *Attributes) int {
 	total := 0
 	for _, one := range attributes.Set {

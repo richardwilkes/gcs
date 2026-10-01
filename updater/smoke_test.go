@@ -20,8 +20,7 @@ import (
 	"github.com/richardwilkes/toolbox/v2/xos"
 )
 
-// buildStandIn compiles a small program that behaves the way the real executable does when given "-v": it prints the
-// version and exits. src decides how it misbehaves instead.
+// buildStandIn compiles src into a stand-in for the real executable run with "-v", and returns its path.
 func buildStandIn(t *testing.T, src string) string {
 	t.Helper()
 	if _, err := exec.LookPath("go"); err != nil {
@@ -31,9 +30,8 @@ func buildStandIn(t *testing.T, src string) string {
 	if err := os.WriteFile(filepath.Join(dir, "main.go"), []byte(src), 0o600); err != nil {
 		t.Fatal(err)
 	}
-	// The stand-in uses nothing beyond the standard library, so it asks for no particular Go version -- the one on the
-	// PATH need not be the one running this test -- and GOTOOLCHAIN=local keeps that go from downloading a toolchain,
-	// which is the one way this test could otherwise need more than the local machine.
+	// The stand-in needs only the standard library, so it asks for an old Go version -- the go on the PATH need not be
+	// the one running this test -- and GOTOOLCHAIN=local keeps that go from downloading a toolchain.
 	if err := os.WriteFile(filepath.Join(dir, "go.mod"), []byte("module standin\n\ngo 1.21\n"), 0o600); err != nil {
 		t.Fatal(err)
 	}
@@ -112,9 +110,7 @@ func main() { fmt.Println("5.30.0") }
 	c.Contains(err.Error(), "5.30.0")
 }
 
-// An executable exiting cleanly without printing anything is accepted. The Windows build is linked as a GUI
-// application, so it has no console to write to and reports nothing even though it ran correctly; a clean exit is the
-// requirement, not the output.
+// An executable exiting cleanly without printing anything, as the Windows GUI build does, is accepted.
 func TestVerifyRunsAcceptsSilence(t *testing.T) {
 	c := check.New(t)
 	exePath := buildStandIn(t, `package main

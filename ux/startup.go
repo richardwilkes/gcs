@@ -73,8 +73,8 @@ func StartOptions(files []string, config *GCSStartupConfig) []unison.StartupOpti
 				unison.DefaultTitleIcons = []*unison.Image{appIcon}
 			}
 			// Settle up after an update applied while this application was not running, before anything else looks at
-			// the installation directory. Only the primary instance gets here, since the handoff service has already
-			// decided that by the time this callback fires.
+			// the installation directory. With handoff enabled, only the primary instance gets here, since the handoff
+			// service has already decided that by the time this callback fires.
 			ReportAppUpdateOutcome()
 			if gurps.GlobalSettings().General.AppUpdateCheck.ChecksAtLaunch() {
 				CheckForAppUpdates()

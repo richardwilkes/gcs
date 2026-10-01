@@ -45,11 +45,11 @@ type pageDockable interface {
 	createToolbar()
 }
 
-// initPageDockable is the first half of putting a page dockable together, to be called before any of the page is
-// built: it gives the dockable its undo manager, initial UI scale, scroll panel, file-backed panel -- which hashes the
-// content, so that must be complete by now -- the target manager rooted at it, its layout, and the rerouting of drops
-// of list items to the list that takes them. The dockable is passed in explicitly, since it is the concrete value, not
-// this embedded part of it, that the panel's Self, the file-backed panel and the target manager must refer to.
+// initPageDockable is the first half of putting a page dockable together, to be called before any of the page is built:
+// it gives the dockable its undo manager, initial UI scale, scroll panel, file-backed panel -- which hashes the model,
+// so that must be complete by now -- the target manager rooted at it, its layout, and the rerouting of drops of list
+// items to the list that takes them. The dockable is passed in explicitly, since it is the concrete value, not this
+// embedded part of it, that the panel's Self, the file-backed panel and the target manager must refer to.
 func (pv *pageView) initPageDockable(d pageDockable, filePath, extension string, saver func(filePath string) error, hashable gurps.Hashable) {
 	pv.undoMgr = unison.NewUndoManager(200, func(err error) { errs.Log(err) })
 	pv.scale = gurps.GlobalSettings().General.InitialSheetUIScale
@@ -119,7 +119,7 @@ func (pv *pageView) captureViewState() viewState {
 
 // restoreViewState puts the user's place on the page back. The focus goes to the field with the reference key of the
 // one that held it -- a table built anew shares its key with the one it replaced -- or, when no such field remains, to
-// the first focusable part of the toolbar or page. The scroll position goes back last, since focusing a field scrolls
+// the first focusable part of the page or toolbar. The scroll position goes back last, since focusing a field scrolls
 // it into view.
 func (pv *pageView) restoreViewState(state viewState) {
 	pv.targetMgr.ReacquireFocus(state.focusRef, pv.toolbar, pv.scroll.Content())

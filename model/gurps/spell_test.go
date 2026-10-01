@@ -19,8 +19,7 @@ import (
 	"github.com/richardwilkes/toolbox/v2/check"
 )
 
-// addTestSpell creates a non-container spell owned by the entity, giving it the supplied name and points, then appends
-// it to the entity's spell list.
+// addTestSpell adds a spell with the given name and points to the entity.
 func addTestSpell(e *Entity, name string, points fxp.Int) *Spell {
 	s := NewSpell(e, nil, false)
 	s.Name = name
@@ -29,8 +28,7 @@ func addTestSpell(e *Entity, name string, points fxp.Int) *Spell {
 	return s
 }
 
-// addTestRitualMagicSpell creates a ritual magic spell owned by the entity, giving it the supplied name and colleges,
-// then appends it to the entity's spell list.
+// addTestRitualMagicSpell adds a ritual magic spell with the given name and colleges to the entity.
 func addTestRitualMagicSpell(e *Entity, name string, colleges ...string) *Spell {
 	s := NewRitualMagicSpell(e, nil, false)
 	s.Name = name
@@ -47,8 +45,7 @@ func addTestSpellBonus(e *Entity, amount fxp.Int) *Trait {
 }
 
 // TestSpellAdjustedRelativeLevel verifies that AdjustedRelativeLevel returns the cached relative level for a positive
-// level spell (matching the freshly-computed level), and fxp.Min for containers and unowned spells. This guards the
-// switch from recomputing the whole level via CalculateLevel to reading the cached LevelData.
+// level spell, matching a fresh CalculateLevel, and fxp.Min for containers and unowned spells.
 func TestSpellAdjustedRelativeLevel(t *testing.T) {
 	c := check.New(t)
 
@@ -59,8 +56,7 @@ func TestSpellAdjustedRelativeLevel(t *testing.T) {
 	// Precondition: the spell must resolve to a positive level so AdjustedRelativeLevel takes the non-Min branch.
 	c.True(s.LevelData.Level > 0, "precondition: the spell must have a positive level")
 
-	// The cached relative level must be returned, and it must match a fresh recomputation (proving the cheaper cached
-	// read is equivalent to the old CalculateLevel path).
+	// The cached relative level must be returned, and it must match a fresh recomputation.
 	c.Equal(s.LevelData.RelativeLevel, s.AdjustedRelativeLevel())
 	c.Equal(s.CalculateLevel().RelativeLevel, s.AdjustedRelativeLevel())
 
@@ -105,7 +101,7 @@ func TestRitualMagicSpellLevelWithoutRitualSkill(t *testing.T) {
 }
 
 // TestRitualMagicSpellLevelNegativeBonusNoOverflow verifies that a net-negative spell bonus is not added to an
-// unresolvable level. fxp.Min is math.MinInt64, so adding a negative amount to it wraps around to a huge positive level.
+// unresolvable level. fxp.Min is math.MinInt64, so adding a negative amount wraps it around to a huge positive level.
 func TestRitualMagicSpellLevelNegativeBonusNoOverflow(t *testing.T) {
 	c := check.New(t)
 
@@ -200,9 +196,8 @@ func TestSpellRelativeLevelColumn(t *testing.T) {
 	c.Equal("-", primary(unresolvable), "an unresolvable relative level displays as \"-\"")
 }
 
-// TestSpellMarshalUnsatisfiedReason verifies that the unsatisfied reason is written in both calc branches. Ritual magic
-// spells that are unsatisfied typically have a level of fxp.Min, which takes the branch that used to omit the field --
-// so exactly the spells that have a reason were the ones losing it.
+// TestSpellMarshalUnsatisfiedReason verifies that the unsatisfied reason is written in both calc branches, including
+// the one taken for a level of fxp.Min, which unsatisfied ritual magic spells typically have.
 func TestSpellMarshalUnsatisfiedReason(t *testing.T) {
 	c := check.New(t)
 	const reason = "Requires Magery 1"

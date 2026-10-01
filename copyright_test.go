@@ -22,9 +22,8 @@ import (
 // this line is matched instead.
 const copyrightMarker = "This Source Code Form is subject to the terms of the Mozilla Public"
 
-// TestGoSourcesHaveCopyrightHeader verifies that every Go source file in the repository begins with the MPL 2.0
-// copyright header the project requires. Generated files carry a "Code generated" line ahead of it, so the header is
-// looked for near the top of the file rather than at the very first byte.
+// TestGoSourcesHaveCopyrightHeader looks for the header within the first 512 bytes rather than at the very start, since
+// generated files carry a "Code generated" line ahead of it.
 func TestGoSourcesHaveCopyrightHeader(t *testing.T) {
 	c := check.New(t)
 	root, err := os.OpenRoot(".")

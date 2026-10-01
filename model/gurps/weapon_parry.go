@@ -48,7 +48,7 @@ func ParseWeaponParry(s string) WeaponParry {
 	return wp
 }
 
-// IsZero implements json.isZero.
+// IsZero reports whether json's omitzero option should omit this value.
 func (wp WeaponParry) IsZero() bool {
 	return !wp.CanParry
 }

@@ -70,8 +70,8 @@ func TestSkillDefaultWhenTL(t *testing.T) {
 	addTestSkill(e, "Carpentry", "", "", fxp.Four) // no tech level, so it falls back to the character's TL
 	e.Recalculate()
 
-	// The matched skill's TL fails the constraint, so the default must not resolve (the prior bug used the
-	// character's TL of 5, which would have let these through).
+	// The matched skill's TL fails the constraint, so the default must not resolve (the prior bug used the character's
+	// TL of 5, which would have let the Machinist default through).
 	c.Equal(fxp.Min, newWhenTLSkillDefault("Machinist", "",
 		numberCriteria(criteria.AtLeastNumber, fxp.Five)).SkillLevel(e, nil, true, nil, false),
 		"Machinist (TL3) must fail 'when TL at least 5'")

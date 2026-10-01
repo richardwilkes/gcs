@@ -51,9 +51,8 @@ func NewConditionalModifier(source, from string, amt fxp.Int) *ConditionalModifi
 }
 
 // newConditionalModifierInGroup creates a ConditionalModifier filed under the named group. The group is mixed into the
-// TID, so the same situation appearing under two different groups yields two distinct rows rather than one. An empty
-// group takes the NewConditionalModifier path unchanged, so the IDs the exporters write for ungrouped rows are exactly
-// what they were before groups existed.
+// TID, so the same situation under two groups yields two distinct rows. An empty group uses NewConditionalModifier, so
+// the IDs the exporters write for ungrouped rows are what they were before groups existed.
 func newConditionalModifierInGroup(source, group, from string, amt fxp.Int) *ConditionalModifier {
 	if group == "" {
 		return NewConditionalModifier(source, from, amt)
@@ -70,12 +69,11 @@ func newConditionalModifier(id tid.TID, source, from string, amt fxp.Int) *Condi
 	}
 }
 
-// NewConditionalModifierGroup creates the container row that holds the modifiers filed under a group. entityID is the
-// ID of the entity the row is built for and namespace is the sheet block key the row belongs to. The TID is derived
-// from those and the name rather than generated, because these rows are rebuilt from scratch on every recalculation
-// while their disclosure state is stored globally by ID. Mixing in the entity keeps that state per sheet, as it is for
-// the other derived rows (attribute separators and hit location sub-tables), so collapsing a group on one character
-// does not collapse the same-named group on every other one.
+// NewConditionalModifierGroup creates the container row that holds the modifiers filed under a group. namespace is the
+// sheet block key the row belongs to. The TID is derived from the entity ID, namespace and group rather than generated,
+// because these rows are rebuilt on every recalculation while their disclosure state is stored globally by ID. Mixing
+// in the entity keeps that state per sheet, as for the other derived rows (attribute separators and hit location
+// sub-tables), so collapsing a group on one character does not collapse the same-named group on every other one.
 func NewConditionalModifierGroup(entityID tid.TID, namespace, group string) *ConditionalModifier {
 	return &ConditionalModifier{
 		TID:  TIDFromHashedString(kinds.ConditionalModifierContainer, string(entityID), namespace, group),
@@ -114,10 +112,9 @@ func (c *ConditionalModifier) Compare(other *ConditionalModifier) int {
 	return result
 }
 
-// compareCondModRows orders the rows within one level of a reaction or conditional modifier table. It is what produces
-// the final order for these tables, since their headers do not sort, which is also why it -- rather than Compare --
-// reads the general "group containers when sorting" setting: Compare is the plain comparison of two rows and must not
-// depend on a preference.
+// compareCondModRows orders the rows within one level of a reaction or conditional modifier table. Their headers do not
+// sort, so this sets the final order, which is why it -- rather than Compare, which must not depend on a preference --
+// reads the general "group containers when sorting" setting.
 func compareCondModRows(a, b *ConditionalModifier) int {
 	if GlobalSettings().General.GroupContainersOnSort {
 		if result := containersFirst(a, b); result != 0 {
@@ -159,16 +156,16 @@ func (c *ConditionalModifier) GroupName() string {
 	return ""
 }
 
-// GetSource returns the source of this data.
+// GetSource returns an empty Source, since conditional modifiers have none.
 func (c *ConditionalModifier) GetSource() Source {
 	return Source{}
 }
 
-// ClearSource clears the source of this data.
+// ClearSource does nothing.
 func (c *ConditionalModifier) ClearSource() {
 }
 
-// SyncWithSource synchronizes this data with the source.
+// SyncWithSource does nothing.
 func (c *ConditionalModifier) SyncWithSource() {
 }
 
@@ -177,8 +174,7 @@ func (c *ConditionalModifier) ID() tid.TID {
 	return c.TID
 }
 
-// Hash writes this object's contents into the hasher. Note that this only hashes the data that is considered to be
-// "source" data, i.e. not expected to be modified by the user after copying from a library.
+// Hash writes this object's contents into the hasher.
 func (c *ConditionalModifier) Hash(h hash.Hash) {
 	xhash.StringWithLen(h, c.From)
 	xhash.Bool(h, c.Container())
@@ -339,15 +335,15 @@ func (c *ConditionalModifier) DataOwner() DataOwner {
 func (c *ConditionalModifier) SetDataOwner(_ DataOwner) {
 }
 
-// NameableReplacements returns the replacements to be used with Nameables.
+// NameableReplacements always returns nil.
 func (c *ConditionalModifier) NameableReplacements() map[string]string {
 	return nil
 }
 
-// FillWithNameableKeys adds any nameable keys found to the provided map.
+// FillWithNameableKeys does nothing.
 func (c *ConditionalModifier) FillWithNameableKeys(_, _ map[string]string) {
 }
 
-// ApplyNameableKeys replaces any nameable keys found with the corresponding values in the provided map.
+// ApplyNameableKeys does nothing.
 func (c *ConditionalModifier) ApplyNameableKeys(_ map[string]string) {
 }

@@ -312,7 +312,7 @@ func TestFeaturesPanelCreatesEverySelectableType(t *testing.T) {
 }
 
 // Every feature type that builds its own first row -- rather than going through the shared leveled-amount line -- gets
-// exactly one switchable checkbox, wired to that feature.
+// exactly one switchable checkbox wired to that feature, as do the DR and attribute bonuses, which use that line.
 func TestFeaturesPanelSwitchableCheckBoxOnEveryRowType(t *testing.T) {
 	entity := gurps.NewEntity()
 	trait := gurps.NewTrait(entity, nil, false)

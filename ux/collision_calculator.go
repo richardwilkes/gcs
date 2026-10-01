@@ -91,8 +91,8 @@ func (s collisionShape) String() string {
 	return s.name
 }
 
-// collisionSurface is a kind of immovable object (BX431): a hard one is hit as if the mover had twice its HP, an elastic
-// one gives extra DR, and water can be dived into cleanly.
+// collisionSurface is a kind of immovable object (BX431): a hard one is hit as if the mover had twice its HP, an
+// elastic one gives extra DR, and water can be dived into cleanly.
 type collisionSurface struct {
 	name    string
 	hard    bool
@@ -362,7 +362,7 @@ func (p *collisionParticipant) createPanel(parent *unison.Panel) {
 	rows.addFieldRow(p.innateDRField, i18n.Text("innate DR (does not count as flexible)"))
 }
 
-// showExtras adds or removes the rows that only matter for a fall.
+// showExtras adds or removes the rows that a two-object collision does not use.
 func (p *collisionParticipant) showExtras(show bool) {
 	if show == (p.extras.Parent() != nil) {
 		return
@@ -714,7 +714,6 @@ func (c *collisionCalculator) updateResults() {
 	c.results.MarkForRedraw()
 }
 
-// addResult adds a labeled result to the results panel.
 func (c *collisionCalculator) addResult(label, value string) {
 	addResult(c.results, label, value)
 }

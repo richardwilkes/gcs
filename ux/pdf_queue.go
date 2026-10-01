@@ -14,8 +14,8 @@ import (
 	"slices"
 )
 
-// pdfRenderable is everything the render queue needs from a document renderer: a single call that renders whichever
-// page that renderer currently considers the most important. *PDFRenderer is the only implementation the application
+// pdfRenderable is everything the render queue needs from a document renderer: a single call that does whichever piece
+// of work that renderer currently considers the most important. *PDFRenderer is the only implementation the application
 // uses; the interface exists so that the queue's ordering can be exercised without a real document.
 type pdfRenderable interface {
 	renderNext()
@@ -26,10 +26,10 @@ type pdfRenderable interface {
 // alter the queue's state.
 type pdfQueueParams struct {
 	pdf pdfRenderable
-	// enqueue asks for a backlog entry for the renderer, i.e. "this document has a page that still needs rendering".
+	// enqueue asks for a backlog entry for the renderer, i.e. "this document has work still to do".
 	enqueue bool
-	// continuation marks an enqueue the renderer made for itself upon finishing a page, rather than one that came from
-	// something the user did. See addToBacklog for how the two are placed differently.
+	// continuation marks an enqueue the renderer made for itself upon finishing a piece of work, rather than one that
+	// came from something the user did. See addToBacklog for how the two are placed differently.
 	continuation bool
 	// makePriority makes the renderer the queue's sticky priority, displacing whichever renderer held it before.
 	makePriority bool
@@ -79,9 +79,9 @@ func (q *pdfQueueData) submitUserSignal(pdf pdfRenderable) {
 	q.in <- &pdfQueueParams{pdf: pdf, enqueue: true}
 }
 
-// submitContinuation queues a renderer up for its next page, which is what it does for itself each time it finishes
-// one. These go to the back of the dispatch order, so that documents which are still catching up take turns rather
-// than one of them monopolizing the worker.
+// submitContinuation queues a renderer up for its next piece of work, which is what it does for itself each time it
+// finishes one. These go to the back of the dispatch order, so that documents which are still catching up take turns
+// rather than one of them monopolizing the worker.
 func (q *pdfQueueData) submitContinuation(pdf pdfRenderable) {
 	q.in <- &pdfQueueParams{pdf: pdf, enqueue: true, continuation: true}
 }
@@ -89,8 +89,8 @@ func (q *pdfQueueData) submitContinuation(pdf pdfRenderable) {
 // submitPriority makes the renderer the queue's sticky priority, which it holds until another renderer claims it or it
 // is removed. While it is held, that renderer's backlog entry -- including the continuations it submits for itself --
 // is dispatched ahead of everything else, so the focused document renders everything it wants before the background
-// documents resume. Pass true for enqueue if the renderer has a page that needs rendering right now; a renderer with
-// nothing to do still claims the priority, so that it wins the instant scrolling or searching asks it for something.
+// documents resume. Pass true for enqueue if the renderer has work to do right now; a renderer with nothing to do still
+// claims the priority, so that it wins the instant scrolling or searching asks it for something.
 func (q *pdfQueueData) submitPriority(pdf pdfRenderable, enqueue bool) {
 	q.in <- &pdfQueueParams{pdf: pdf, enqueue: enqueue, makePriority: true}
 }

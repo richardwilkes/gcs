@@ -319,7 +319,7 @@ func TestMoveSelectionIsUndoable(t *testing.T) {
 }
 
 // TestMoveSelectionUnavailableWithoutSelectionOrWhileFiltered verifies that none of the commands is offered when there
-// is nothing selected or while the table is showing search results, whose flat list has no order to rearrange.
+// is nothing selected or while the table is filtered.
 func TestMoveSelectionUnavailableWithoutSelectionOrWhileFiltered(t *testing.T) {
 	c := check.New(t)
 	sheet, traits := newMoveTestSheet(t)

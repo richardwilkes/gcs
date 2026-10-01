@@ -151,8 +151,8 @@ func TestHasDefaultToOptionalSpecialization(t *testing.T) {
 }
 
 // TestSwapNotStuckWithOptionalSpecializationSibling reproduces the reported issue: with a base skill carrying the
-// automatic -2 default to an optionally-specialized sibling (Earth), swapping defaults on either must actually change
-// things rather than being permanently stuck.
+// automatic -2 default to an optionally-specialized sibling (Earth), swapping Earth's defaults must actually cycle them
+// rather than staying stuck.
 func TestSwapNotStuckWithOptionalSpecializationSibling(t *testing.T) {
 	c := check.New(t)
 	e := NewEntity()

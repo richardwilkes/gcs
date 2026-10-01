@@ -37,10 +37,9 @@ func TestScriptExecTimeLimitSyncIsConcurrencySafe(t *testing.T) {
 		SyncScriptExecTimeLimit()
 	}()
 
-	// The values the writer publishes all lie within the permitted range, so that the validation the settings dialog
-	// applies would leave each of them alone rather than quietly collapsing it to the default, and none of them is the
-	// default, so that a sync which failed to publish anything could not pass by coincidence with what the mirror
-	// already held.
+	// The published values all lie within the permitted range, so the settings dialog's validation would leave each of
+	// them alone rather than collapsing it to the default, and none is the default, so a sync that published nothing
+	// could not pass by coincidence.
 	published := []fxp.Int{
 		PermittedScriptExecTimeMin,
 		fxp.FromStringForced("0.1"),

@@ -22,12 +22,10 @@ func init() {
 	runmode.Factories = append(runmode.Factories, newFinishRunMode)
 }
 
-// newFinishRunMode registers the hidden -finish-update flag on flagSet as a side effect of being called,
-// and returns the runmode.Mode that finishes applying a staged update. Not meant to be typed by anyone: a copy of
-// GCS is started this way to finish applying an update once the copy that prepared it has exited, since replacing a
-// running application from within itself is not something any of the supported systems allow. Its Start must never
-// reach ux.Start's single-instance handoff protocol. Waiting for that protocol's port to be released is this mode's
-// whole job. Running as its own runmode.Mode, mutually exclusive with every other mode, guarantees this outcome.
+// newFinishRunMode registers the hidden -finish-update flag on flagSet (flag.CommandLine if nil) and returns the
+// runmode.Mode that runs Finish. A copy of GCS is started this way once the copy that staged the update has exited,
+// since no supported system lets a running application replace itself. Being its own mode, exclusive of every other,
+// keeps it from reaching the single-instance handoff ux.StartOptions starts, whose port Finish waits to see released.
 func newFinishRunMode(flagSet *flag.FlagSet) runmode.Mode {
 	if flagSet == nil {
 		flagSet = flag.CommandLine

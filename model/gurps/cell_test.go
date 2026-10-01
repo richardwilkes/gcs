@@ -17,11 +17,9 @@ import (
 	"github.com/richardwilkes/toolbox/v2/xstrings"
 )
 
-// TestForSortDistinguishesSwitchStates verifies that the three states a switch column can be in sort as three distinct
-// groups. The cells are deliberately drawn as three different things -- a checkmark for on, a dash for off, and a blank
-// cell for a row with nothing to switch -- and a row with nothing to switch never gets a switch cell at all, so it
-// reaches ForSort as the zero value, i.e. an empty text cell. The off state used to share the toggle's empty result,
-// which interleaved those rows with the ones that have no switch whenever the column was sorted.
+// TestForSortDistinguishesSwitchStates verifies that the on, off and nothing-to-switch states of a switch column sort
+// as three distinct groups (see switchOffSortValue). Off once sorted as empty, like a toggle, interleaving those rows
+// with the ones that have no switch.
 func TestForSortDistinguishesSwitchStates(t *testing.T) {
 	c := check.New(t)
 	on := (&CellData{Type: cell.Switch, Checked: true}).ForSort()

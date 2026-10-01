@@ -17,10 +17,9 @@ import (
 	"github.com/richardwilkes/toolbox/v2/check"
 )
 
-// TestSourcePathSeparatorNormalization verifies that source paths are stored and round-tripped using forward slashes,
-// regardless of the separator they were authored with. See issue #1005, where files created on Windows stored source
-// paths with backslash separators (e.g. `Basic Set\Basic Set Traits.adq`). Those paths could not be located on other
-// platforms, causing the library source match status to show as a question mark.
+// TestSourcePathSeparatorNormalization verifies that source paths are stored and round-tripped with forward slashes.
+// See issue #1005: backslash paths written on Windows could not be located on other platforms, so the library source
+// match status showed a question mark.
 func TestSourcePathSeparatorNormalization(t *testing.T) {
 	c := check.New(t)
 

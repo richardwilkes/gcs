@@ -369,8 +369,8 @@ func TestScriptCacheIsBounded(t *testing.T) {
 	c.False(again == coldProgram, "the abandoned script must have been evicted from the cache")
 }
 
-// SuppressScriptResolveErrorLogging silences the error logging a failed script resolution would otherwise produce, only
-// within the dynamic scope of the supplied function (so failures elsewhere still log), and nests correctly.
+// SuppressScriptResolveErrorLogging silences the error logging a failed script resolution would otherwise produce only
+// while the supplied function runs, and nests correctly.
 func TestSuppressScriptResolveErrorLogging(t *testing.T) {
 	c := check.New(t)
 	count := countLogs(t, slog.LevelError)
@@ -407,7 +407,7 @@ func TestSuppressScriptResolveErrorLogging(t *testing.T) {
 	})
 	c.Equal(int32(0), count.Load(), "no error should be logged within nested suppression")
 
-	// Scope ends: once suppression returns, logging resumes for failures produced anywhere else.
+	// Once suppression returns, logging resumes.
 	resolve()
 	c.Equal(int32(1), count.Load(), "error logging should resume after suppression returns")
 }

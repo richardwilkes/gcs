@@ -29,12 +29,11 @@ const (
 	userRepoName            = "gcs_user_library"
 )
 
-// Libraries holds a Library set. Once the app is running, the global set held in Settings.Libraries is read from
-// background goroutines, such as the navigator's deep search and the SrcMatcher.PrepareHashes done by
-// Entity.Recalculate. The lock guards the map against those readers seeing the UI thread add or remove a library, which
-// would be a fatal concurrent map read and map write, so all access must go through the accessor methods. Individual
-// Library objects carry their own lock; this one covers only the map itself. A nil *Libraries behaves like a nil map:
-// the read accessors see an empty set, while the mutating ones panic.
+// Libraries holds a Library set. The global set in Settings.Libraries is read from background goroutines, such as the
+// navigator's deep search and the SrcMatcher.PrepareHashes done by Entity.Recalculate, while the UI thread may add or
+// remove a library, so all access must go through the accessor methods, whose lock covers only the map; individual
+// Library objects carry their own. A nil *Libraries behaves like a nil map: the read accessors see an empty set, while
+// the mutating ones panic.
 type Libraries struct {
 	m          map[string]*Library
 	lock       sync.RWMutex
@@ -63,11 +62,9 @@ func (l *Libraries) Remove(key string) {
 	delete(l.m, key)
 }
 
-// Rekey moves the library from oldKey to its current Key() under a single lock acquisition, for use after a
-// Configure() that changed the key. Doing it as one operation rather than a Remove() followed by a Store() keeps the
-// library from ever being absent from the set, so a background reader (see Libraries) never sees a set that is missing
-// a library the user merely reconfigured. Any library already under the new key is replaced, so the caller must have
-// checked for a collision beforehand.
+// Rekey moves the library from oldKey to its current Key(), for use after a Configure() that changed the key. Unlike a
+// Remove() followed by a Store(), it never leaves a background reader (see Libraries) seeing the library absent from
+// the set. Any library already under the new key is replaced, so the caller must check for a collision beforehand.
 func (l *Libraries) Rekey(oldKey string, lib *Library) {
 	newKey := lib.Key()
 	l.lock.Lock()
@@ -150,11 +147,9 @@ func (l *Libraries) User() *Library {
 	})
 }
 
-// getOrCreate returns the library under key, building one with create and storing it if none is present. The common
-// case is a lookup under the read lock, so it never holds up the background readers of the set for a library that
-// exists. A miss builds under createLock rather than the write lock -- NewLibrary reads the version file on disk, and a
-// file read under the write lock would stall every reader for its duration -- so readers proceed throughout, while
-// another caller that misses at the same time waits for the build in flight and picks up its result on the re-check.
+// getOrCreate returns the library under key, building one with create and storing it if none is present. A miss builds
+// under createLock rather than the write lock, since NewLibrary reads the version file on disk, which would stall every
+// reader; a concurrent miss waits for the build in flight and picks up its result on the re-check.
 func (l *Libraries) getOrCreate(key string, create func() *Library) *Library {
 	if lib := l.Lookup(key); lib != nil {
 		return lib

@@ -287,7 +287,8 @@ func (s *Settings) EnsureValidity() {
 	s.OpenInWindow = SanitizeDockableGroups(s.OpenInWindow)
 }
 
-// SanitizeDockableGroups returns the list of valid dockable groups from the passed-in list, in sorted order.
+// SanitizeDockableGroups returns the passed-in groups deduplicated and sorted, with invalid ones replaced by the
+// default group.
 func SanitizeDockableGroups(groups []dgroup.Group) []dgroup.Group {
 	m := make(map[dgroup.Group]bool)
 	for _, k := range groups {

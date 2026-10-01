@@ -71,8 +71,8 @@ func TestContextMenuItemsMatchTheirActions(t *testing.T) {
 	}
 }
 
-// TestContextMenusUseShortTitles verifies that a list's context menu leaves out what the list holds from all but its
-// first "New" item, since it can only add to that list, while the menu bar keeps the full titles.
+// TestContextMenusUseShortTitles verifies that a list's context menu leaves what the list holds out of its "New" items
+// for containers and choices, since it can only add to that list, while the menu bar keeps the full titles.
 func TestContextMenusUseShortTitles(t *testing.T) {
 	c := check.New(t)
 	registerKeyBindingsOnce.Do(registerActions)

@@ -32,9 +32,8 @@ type noteDiscloser interface {
 	ApplyNoteState(closed bool)
 }
 
-// toggleHierarchy opens every container of the disclosers when the first container found among them is closed, and
-// closes every one of them otherwise, so that the group as a whole flips between all open and all closed. The state
-// they were put in is returned. With no container among them there is nothing to flip, and they are all, harmlessly,
+// toggleHierarchy opens every container of the disclosers when the first one found among them is closed, and closes
+// them all otherwise, returning the state they were put in. With no container among them, they are all, harmlessly,
 // opened.
 func toggleHierarchy[D hierarchyDiscloser](disclosers ...D) (open bool) {
 	for _, d := range disclosers {
@@ -50,9 +49,8 @@ func toggleHierarchy[D hierarchyDiscloser](disclosers ...D) (open bool) {
 	return open
 }
 
-// toggleNotes hides every note of the disclosers when the first note found among them is shown, and shows every one
-// of them otherwise, and reports whether there was a note to act on. With none, nothing is changed, and the caller has
-// nothing to refresh.
+// toggleNotes hides every note of the disclosers when the first note found among them is shown, and shows them all
+// otherwise. It reports whether there was a note to act on; with none, nothing is changed.
 func toggleNotes[D noteDiscloser](disclosers ...D) (changed bool) {
 	state := 0
 	for _, d := range disclosers {

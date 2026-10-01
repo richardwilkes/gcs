@@ -17,8 +17,7 @@ import (
 )
 
 // TestContainedQuantityCountsWhatGroupsHold verifies that a contained quantity prerequisite counts what a group holds,
-// in nested groups too, rather than the group itself, while a physical container inside counts as the pieces of it
-// there are.
+// in nested groups too, rather than the group itself, while a physical container inside counts by its own quantity.
 func TestContainedQuantityCountsWhatGroupsHold(t *testing.T) {
 	c := check.New(t)
 	quiver := NewEquipment(nil, nil, true)

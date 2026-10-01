@@ -114,9 +114,9 @@ func (m *maxAdjustment) add(bonus *MaxUsesModAmount) {
 	}
 }
 
-// apply returns the base adjusted by the accumulated bonuses, floored at zero. A base of zero means there is no
-// maximum, and it is returned as is. Bonuses adjust an existing cap, so one must never be allowed to manufacture a cap
-// from a base of zero -- that would turn a bonus meant to raise a limit into one that imposes it.
+// apply returns the base adjusted by the accumulated bonuses, floored at zero. A base of zero means no maximum and is
+// returned as is: bonuses adjust an existing cap and must never manufacture one, which would turn a bonus meant to
+// raise a limit into one that imposes it.
 func (m *maxAdjustment) apply(base fxp.Int) fxp.Int {
 	if !m.have || base <= 0 {
 		return base.Max(0)

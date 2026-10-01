@@ -35,8 +35,7 @@ const (
 type Target struct {
 	// Path is what gets swapped: the .app directory on macOS, the executable elsewhere.
 	Path string
-	// Parent is the directory holding Path. Staging happens here, so the swap is a rename within a single directory on
-	// a single filesystem.
+	// Parent is the directory holding Path. Staging happens here, so the swap is a rename within one filesystem.
 	Parent string
 	// Exec is the executable to run, which is inside Path for a bundle and equal to it otherwise.
 	Exec string
@@ -98,11 +97,9 @@ func (t *Target) BackupPath(unique string) string {
 	return filepath.Join(t.Parent, "."+filepath.Base(t.Path)+backupSuffix+unique)
 }
 
-// FreeBackupPath returns a backup path that nothing currently occupies.
-//
-// The timestamp alone makes a collision all but impossible, but "all but" is not good enough here: the swap moves the
-// installation to this path, and on most systems a rename over an existing file destroys it silently. Were that file a
-// backup from an earlier update, the user's only other copy of the application would disappear without a word.
+// FreeBackupPath returns a backup path that nothing currently occupies. The timestamp alone makes a collision all but
+// impossible, but the swap renames the installation onto this path, which on most systems silently destroys whatever is
+// there -- possibly the user's only other copy of the application.
 func (t *Target) FreeBackupPath() string {
 	base := strconv.FormatInt(time.Now().UnixNano(), 36)
 	path := t.BackupPath(base)

@@ -64,10 +64,9 @@ func TestExclusiveModeMsg(t *testing.T) {
 	}
 }
 
-// TestRunModeFactories checks the wiring every registered runmode.Factory is expected to provide: it registers a flag
-// named after the Mode it returns, that Mode is not requested until that flag is given, and it is requested once it
-// is. Each factory is called with its own flag set, so this exercises exactly what main does with flag.CommandLine
-// without disturbing it. Which modes take part depends on what got compiled into this build (see runmode.Factories).
+// TestRunModeFactories verifies that each registered runmode.Factory registers a flag named after the Mode it returns,
+// along with the Mode's hidden flags, and that the Mode reports being requested only after that flag is parsed. Each
+// factory gets its own flag set, leaving flag.CommandLine undisturbed.
 func TestRunModeFactories(t *testing.T) {
 	c := check.New(t)
 	c.NotEqual(0, len(runmode.Factories))

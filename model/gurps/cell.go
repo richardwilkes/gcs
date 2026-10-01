@@ -102,11 +102,10 @@ type CellData struct {
 	UnresolvedChoice string
 	// ChoiceRequired is true for a mandatory modifier choice on a sheet that has yet to be made.
 	ChoiceRequired bool
-	// ForPage is the one input in this struct: the caller sets it before invoking a node's CellData method, and it
-	// is left untouched by that method. It is true when the cell is being displayed on a sheet, template or loot
-	// page, as opposed to an editor, a library list, or a request made only to sort the rows. Display preferences
-	// that belong to the sheet alone, such as the number of decimal places shown for equipment weights, are applied
-	// only when it is set.
+	// ForPage is the one input in this struct, set by the caller before invoking a node's CellData method and left
+	// untouched by it. It is true when the cell is shown on a sheet, template or loot page rather than in an editor, a
+	// library list, or a sort-only request. Sheet-only display preferences, such as the decimal places shown for
+	// equipment weights, apply only when it is set.
 	ForPage bool
 }
 
@@ -166,14 +165,11 @@ func fillLibSrcCell(data *CellData, owner DataOwner, node SrcProvider) {
 const (
 	// checkedSortValue is what a toggle or switch that is on sorts and searches as.
 	checkedSortValue = "√"
-	// switchOffSortValue is what a switch that is off sorts and searches as. A switch column has three states, not two:
-	// on, off, and "nothing to switch" -- and the last of those isn't a switch cell at all, since rows with nothing to
-	// switch are left as an empty text cell. That is also how the cells are drawn: a checkmark for on, a dash for off,
-	// and nothing at all for a row with no switch. The off state therefore needs a value of its own, or sorting by the
-	// column would interleave the rows whose switch is off with the ones that have no switch, hiding the very
-	// distinction the cells are drawn to show. An en dash is used, since it mirrors the dash the cell is drawn with
-	// and, like the checkmark, won't be typed into the search field by accident, the way an ASCII hyphen would be.
-	// Sorted ascending, this groups the rows as no switch, then off, then on.
+	// switchOffSortValue is what a switch that is off sorts and searches as. A switch column has three states, drawn
+	// as a checkmark for on, a dash for off, and nothing for a row with nothing to switch, which is left as an empty
+	// text cell. Off therefore needs a value of its own, or sorting would interleave the rows whose switch is off with
+	// the ones that have no switch. An en dash mirrors the drawn dash and, like the checkmark, won't be typed into the
+	// search field by accident, as an ASCII hyphen would. Sorted ascending, the rows group as no switch, off, then on.
 	switchOffSortValue = "–"
 )
 

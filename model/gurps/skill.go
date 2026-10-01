@@ -628,12 +628,12 @@ func (s *Skill) String() string {
 	return buffer.String()
 }
 
-// IsLeveled implements LeveledOwner
+// IsLeveled implements LeveledOwner.
 func (s *Skill) IsLeveled() bool {
 	return !s.Container()
 }
 
-// CurrentLevel implements LeveledOwner
+// CurrentLevel implements LeveledOwner.
 func (s *Skill) CurrentLevel() fxp.Int {
 	return s.LevelData.Level
 }
@@ -680,13 +680,12 @@ func (s *Skill) SetRawPoints(points fxp.Int) bool {
 	return s.UpdateLevel()
 }
 
-// AdjustedPoints returns the points, adjusted for any bonuses. Something presenting a choice every outcome of which
-// costs the same reports that cost; see PointsRange for one whose outcomes differ.
+// AdjustedPoints returns the points, adjusted for any bonuses. A container whose choice outcomes all cost the same
+// reports that cost; see PointsRange for one whose outcomes differ.
 func (s *Skill) AdjustedPoints(tooltip *xbytes.InsertBuffer) fxp.Int {
 	if s.Container() {
 		// The tooltip goes no further: a container never puts anything into it; see PointsRange for why.
 		if !s.TemplatePicker.IsZero() {
-			// See pickerContainerPoints for what a container presenting a choice is worth.
 			return pickerContainerPoints(s.TemplatePicker, TemplateChoiceOptions(s))
 		}
 		var total fxp.Int
@@ -712,11 +711,10 @@ func (s *Skill) AdjustedDifficulty() AttributeDifficulty {
 	return diff
 }
 
-// PointsRange returns the span of point costs this skill may end up being worth, once every choice it or anything
-// inside it presents has been made. With no choice left to make, the range is settled and holds the same value
-// AdjustedPoints returns. The tooltip may be nil, and only a non-container ever fills it: the notes name each bonus
-// source without saying which row it landed on, so rolling a container's children up into one list would give an
-// unattributed, repetitive pile. That detail belongs on the child rows, where hovering shows it.
+// PointsRange returns the span of point costs this skill may end up being worth once every choice in or under it has
+// been made; with no choice left, it holds the AdjustedPoints value. The tooltip may be nil, and only a non-container
+// fills it: the notes name each bonus source without saying which row it landed on, so rolling up a container's
+// children would give an unattributed, repetitive pile.
 func (s *Skill) PointsRange(tooltip *xbytes.InsertBuffer) NumericRange {
 	if !s.Container() {
 		return NumericRangeOf(s.AdjustedPoints(tooltip))
@@ -963,17 +961,15 @@ func (s *Skill) UpdateLevel() bool {
 	savedDefaultedFrom := s.DefaultedFrom
 	var level Level
 	if anyScriptAbandonedDuring(EntityFromNode(s), func() {
-		// The default is put in place before the level is computed, since CalculateLevel reads it from the skill: the
-		// adjusted level and points it carries feed the skill's own level. Computing the level against the default of
-		// the previous pass would leave it a pass behind whenever the default is what drives it, and since
-		// Entity.Recalculate stops once the levels settle, that pass would never come.
+		// Set the default before computing the level, since CalculateLevel reads it from the skill. Computing against
+		// the previous pass's default would leave the level a pass behind, and since Entity.Recalculate stops once the
+		// levels settle, that pass would never come.
 		s.DefaultedFrom = s.bestDefaultWithPoints(nil)
 		level = s.CalculateLevel(nil)
 	}) {
-		// A script was stopped before it could produce an answer, so both of these were computed from a stand-in. What
-		// was already here was arrived at when the scripts did finish, making it merely out of date, whereas keeping
-		// these would make it wrong -- and DefaultedFrom is written to disk, so it would be wrong there too. The next
-		// recalculation that gets through its scripts puts both right.
+		// A script was stopped before it could answer, so both values came from a stand-in. Keep the old ones, which
+		// are merely out of date rather than wrong -- DefaultedFrom is written to disk, so it would be wrong there too.
+		// The next recalculation that gets through its scripts puts both right.
 		s.DefaultedFrom = savedDefaultedFrom
 		return false
 	}
@@ -1297,7 +1293,7 @@ func (s *Skill) LocalNotesWithReplacements() string {
 	return nameable.Apply(s.LocalNotes, s.Replacements)
 }
 
-// Notes implements WeaponOwner.
+// Notes returns the resolved local notes.
 func (s *Skill) Notes() string {
 	return s.ResolveLocalNotes()
 }
@@ -1521,7 +1517,7 @@ func (s *SkillNonContainerOnlySyncData) hash(h hash.Hash) {
 	hashList(h, s.Features)
 }
 
-// CopyFrom implements node.EditorData.
+// CopyFrom implements EditorData.
 func (s *SkillEditData) CopyFrom(other *Skill) {
 	s.copyFrom(other, &other.SkillEditData, other.Container(), false, Copy, other.IsTechnique())
 	s.copiedDefaultsHash = defaultsHash(s.Defaults)
@@ -1532,13 +1528,12 @@ func (s *SkillEditData) SetNameableReplacements(replacements map[string]string) 
 	s.Replacements = replacements
 }
 
-// ApplyTo implements node.EditorData.
+// ApplyTo implements EditorData.
 func (s *SkillEditData) ApplyTo(other *Skill) {
-	// The default a skill records is kept from one recalculation to the next rather than silently jumping to whichever
-	// default currently yields the highest level (see bestDefault). That only holds while the declared defaults it was
-	// chosen from stay the same: once they have been edited, the recorded choice is stale and is made afresh. Whether
-	// they have been is judged against the defaults as of the copy this edit data was made from, not the target's
-	// current ones: an undo applies a snapshot whose recorded default was chosen from that snapshot's own defaults.
+	// A recorded default persists across recalculations (see bestDefault) only while the declared defaults it was
+	// chosen from stay the same; once they are edited, it is chosen afresh. Compare against the defaults as of
+	// CopyFrom, not the target's current ones: an undo applies a snapshot whose recorded default was chosen from that
+	// snapshot's own defaults.
 	rechoose := defaultsHash(s.Defaults) != s.copiedDefaultsHash
 	other.copyFrom(other, s, other.Container(), true, Copy, other.IsTechnique())
 	if rechoose {

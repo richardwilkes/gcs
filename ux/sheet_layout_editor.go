@@ -50,8 +50,7 @@ const (
 )
 
 // overlayStackLayout lays a sheet's content out as the page at its preferred size with, while the block layout is being
-// edited, the editor's overlay covering it exactly. The content has only ever held the one page, so with no overlay
-// this behaves the way the single-column layout it replaced did.
+// edited, the editor's overlay covering it exactly.
 type overlayStackLayout struct {
 	page    *Page
 	overlay *unison.Panel
@@ -395,10 +394,9 @@ func (e *sheetLayoutEditor) panelKeys() map[*unison.Panel]string {
 	return keys
 }
 
-// buildRegions works out where everything the editor can point at is, from the panels that are on the page: the blocks,
-// the rows and columns they are gathered into, the dividers between the children of a row and the gaps above and below
-// the page's bands. The containers are there so that a block can be dropped against the edge of a whole row or column
-// rather than only against the edge of a single block; see resolveDropTarget for how one is picked.
+// buildRegions works out where everything the editor can point at is, from the panels that are on the page. The
+// containers are there so that a block can be dropped against the edge of a whole row or column rather than only
+// against the edge of a single block; see resolveDropTarget for how one is picked.
 func (e *sheetLayoutEditor) buildRegions() *layoutRegions {
 	regions := &layoutRegions{}
 	if e.overlay == nil {
@@ -919,9 +917,9 @@ func (e *sheetLayoutEditor) leafAt(where geom.Point) *layoutLeafRegion {
 	return nil
 }
 
-// mouseDown starts whatever gesture the press begins. The close buttons, the dividers and the bottom edges are all
-// small and sit on top of a block, so they are asked about first; a press on a block itself only becomes a move once
-// the pointer has traveled far enough for it to be a drag rather than a click.
+// mouseDown starts whatever gesture the press begins. The close and square buttons, the dividers and the bottom edges
+// are all small and sit on top of a block, so they are asked about first; a press on a block itself only becomes a move
+// once the pointer has traveled far enough for it to be a drag rather than a click.
 //
 // Only the left button begins a gesture. A right press seldom arrives: the overlay has a context menu, so unison takes
 // a right-click for it, delivering neither the press nor its release, and drops a right press made while another button

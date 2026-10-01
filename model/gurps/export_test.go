@@ -86,7 +86,7 @@ func TestExportTraitSelfControlAndFrequency(t *testing.T) {
 	c.NoError(err)
 	out := string(data)
 
-	// A trait with no self-control or frequency roll emits nothing for any of the new fields.
+	// A trait with neither roll emits 0 for the numeric fields and nothing for the rest.
 	c.Contains(out, "<<Plain|0||0|||||>>")
 
 	// A trait with both rolls set emits the numeric value, the full descriptor, and the modifier-notes variants that

@@ -31,7 +31,7 @@ const TableProviderClientKey = "table-provider"
 // or adding rows. The row indexes handed to Drop are those of the rows the drop is to be applied to, in the order they
 // appear in the table (see altDropTargets). They are raw indexes into the table the drop landed in, and it is up to
 // each Drop implementation to resolve them to rows before it changes anything about that table -- in particular before
-// rebuilding the table's owner, which replaces the table and leaves the indexes pointing into an orphan.
+// rebuilding the table's owner, which may replace the table and leave the indexes pointing into an orphan.
 type AltDropSupport struct {
 	DragKey *uti.DataType
 	// Drop returns false if nothing was changed (a prompt was canceled or there was nothing to do), in which case it
@@ -39,10 +39,10 @@ type AltDropSupport struct {
 	Drop func(rowIndexes []int, data any) bool
 }
 
-// altDropTargets returns the rows that an alternate drop released over the row at the given index applies to. Releasing
-// over one of several selected rows applies the drop to all of them, so that a modifier can be attached to a whole
-// batch of traits or equipment in one go; releasing anywhere else -- over a row that isn't part of the selection, or
-// with at most one row selected -- applies it to just the row it landed on, as it always has.
+// altDropTargets returns the indexes of the rows that an alternate drop released over the row at index hovered applies
+// to. Releasing over one of several selected rows applies the drop to all of them, so a modifier can be attached to a
+// whole batch of traits or equipment in one go; releasing over a row outside the selection, or with at most one row
+// selected, applies it to just that row.
 //
 // Only rows that are explicitly selected count. unison paints the descendants of a selected container as indirectly
 // selected rather than putting them into the selection, and dropping onto a container attaches the modifiers to the
@@ -260,10 +260,9 @@ func didDropCallback[T gurps.Node[T]](undo *unison.UndoEdit[*TableDragUndoEditDa
 		// This is also what reports the drop (see DropOccurredCallback in InstallTableDropSupport), which is why the
 		// owner is rebuilt as modified rather than just rebuilt.
 		rebuildAsModified(rebuilder, true)
-		// The rebuild covers the whole owner, so it may have replaced either table: adding rows to one list and
-		// removing them from another can change which columns each needs, and a list can only change its columns by
-		// building a new table. Everything from here on has to work with the tables that took their place rather than
-		// the orphaned ones the drag started and finished on.
+		// The rebuild covers the whole owner, so it may have replaced either table: adding or removing rows can change
+		// the columns a list needs, and only a new table can change its columns. From here on, work with the tables
+		// that took their place.
 		from = liveTable(from)
 		to = liveTable(to)
 	}
@@ -325,8 +324,7 @@ func applyDrop[T gurps.Node[T]](data *unison.TableDragData[*Node[T]], table *uni
 // which anything short of a rebuild re-creates. Everywhere else -- a template, a loot sheet, a library list, or a table
 // in an editor whose item has no entity -- marking the table as modified covers everything a drop can change. Both drop
 // paths, the table's drop notification and the Apply Modifier command decide with this, so they always agree. The
-// entity is taken from the table's own provider. Nil, typed or otherwise, is accepted, since the alternate drop path
-// may have no source table.
+// entity is taken from the table's own provider. A nil table, typed or otherwise, yields nil.
 func dropRebuilder(table unison.Paneler) Rebuildable {
 	if xreflect.IsNil(table) {
 		return nil

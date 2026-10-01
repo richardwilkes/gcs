@@ -46,10 +46,9 @@ func (enum LengthUnit) FormatWith(length Length, format NumberFormat) string {
 	switch enum {
 	case FeetAndInches:
 		inches = format.Round(inches)
-		// The feet and the inches remainder are split off while the value still carries its sign, and each is then
-		// negated on its own. Both are small enough for that, but the value as a whole may not be: Min has no positive
-		// counterpart, so Abs() leaves it as it is, and taking the magnitude first rendered it as just "-", which
-		// cannot be parsed back.
+		// Split off the feet and the inches remainder while the value still carries its sign, and only then take the
+		// magnitude of each: Min has no positive counterpart, so taking the magnitude of the whole value first would
+		// leave it negative and render it as just "-", which cannot be parsed back.
 		negative := inches < 0
 		feet := inches.Div(Twelve).Trunc()
 		inches -= feet.Mul(Twelve)

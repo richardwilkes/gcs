@@ -20,8 +20,8 @@ import (
 )
 
 // The banner's colors are fixed rather than taken from the theme, since it is meant to look like hazard tape in both
-// light and dark mode. The amber is well short of pure yellow so that the banner does not glare, and the stripes and
-// plate are a charcoal rather than black so that they do not shout against it.
+// light and dark mode. The amber is well short of pure yellow so that the banner does not glare, and the stripes are a
+// charcoal rather than black so that they do not shout against it.
 var (
 	filterBannerAmber = unison.RGB(214, 168, 0)
 	filterBannerDark  = unison.RGB(40, 40, 40)

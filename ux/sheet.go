@@ -116,8 +116,7 @@ func NewSheet(filePath string, entity *gurps.Entity) *Sheet {
 	s.initPageDockable(s, filePath, gurps.SheetExt, entity.Save, entity)
 
 	s.page = NewPage(s.entity)
-	// The stacking layout puts the layout editor's overlay on top of the page, at exactly the page's size, and is
-	// otherwise indistinguishable from the single column the content used to be laid out as.
+	// The stacking layout puts the layout editor's overlay on top of the page, at exactly the page's size.
 	s.contentLayout = &overlayStackLayout{page: s.page}
 	s.content.SetLayout(s.contentLayout)
 	s.content.AddChild(s.page)

@@ -18,12 +18,10 @@ func newEditorTable[T gurps.Node[T]](parent *unison.Panel, provider TableProvide
 	header, table := NewNodeTable(provider, unison.FieldFont)
 	installStandardTableCmdHandlers(parent, table, provider,
 		func() Rebuildable { return table.AncestorOrSelf[Rebuildable]() }, true)
-	// Toggle State belongs here rather than in NewNodeTable because the editor tables are the only ones that carry the
-	// checkmark columns it flips: the modifier tables show the enabled column only when built for an editor, and the
-	// weapon tables show the Hide column only when they aren't built for a page. Installing it any higher would offer
-	// the command on the library modifier lists and the sheet's own weapon lists, where there is nothing to toggle. The
-	// owner is resolved inside the execute closure, since this table's parent has not yet been attached to the editor
-	// that owns it.
+	// Toggle State is installed here rather than in NewNodeTable because only the editor tables carry the checkmark
+	// columns it flips: modifier tables show the enabled column only when built for an editor, and weapon tables show
+	// the Hide column only when not built for a page. The owner is resolved inside the execute closure, since this
+	// table's parent is not yet attached to the editor that owns it.
 	switch t := any(table).(type) {
 	case *unison.Table[*Node[*gurps.TraitModifier]]:
 		installToggleModifierEnabledHandler(t)

@@ -53,8 +53,9 @@ type SettingsDockable struct {
 // settingsSpec is what distinguishes one of the views that edit a global setting in place -- the colors, fonts, menu
 // keys, general settings, page reference mappings, sheet defaults and library settings -- from another; everything else
 // about them is in SettingsDockable. Their tab icon is always the settings icon, so the spec does not name one. Any of
-// the functions may be nil, in which case the base omits what it would have done with it: with no loader, saver or
-// resetter the toolbar has no menu or reset button, and with no willClose the view closes without being asked.
+// the functions but initContent may be nil, in which case the base omits what it would have done with it: with no
+// loader, saver or resetter the toolbar has no menu or reset button, and with no willClose the view closes without
+// being asked.
 type settingsSpec struct {
 	title             string
 	ext               string
@@ -116,7 +117,7 @@ func (d *SettingsDockable) Setup(addToStartToolbar, addToEndToolbar, initContent
 	FocusFirstContent(toolbar, content)
 }
 
-// TitleIcon implements unison.Dockable
+// TitleIcon implements unison.Dockable.
 func (d *SettingsDockable) TitleIcon(suggestedSize geom.Size) unison.Drawable {
 	return &unison.DrawableSVG{
 		SVG:  d.TabIcon,
@@ -124,17 +125,17 @@ func (d *SettingsDockable) TitleIcon(suggestedSize geom.Size) unison.Drawable {
 	}
 }
 
-// Title implements unison.Dockable
+// Title implements unison.Dockable.
 func (d *SettingsDockable) Title() string {
 	return d.TabTitle
 }
 
-// Tooltip implements unison.Dockable
+// Tooltip implements unison.Dockable.
 func (d *SettingsDockable) Tooltip() string {
 	return ""
 }
 
-// Modified implements unison.Dockable
+// Modified implements unison.Dockable.
 func (d *SettingsDockable) Modified() bool {
 	if d.ModifiedCallback == nil {
 		return false
@@ -149,12 +150,12 @@ func (d *SettingsDockable) MarkModified(_ unison.Paneler) {
 	DeepSync(d)
 }
 
-// MayAttemptClose implements unison.TabCloser
+// MayAttemptClose implements unison.TabCloser.
 func (d *SettingsDockable) MayAttemptClose() bool {
 	return MayAttemptCloseOfGroup(d)
 }
 
-// AttemptClose implements unison.TabCloser
+// AttemptClose implements unison.TabCloser.
 func (d *SettingsDockable) AttemptClose() bool {
 	if !CloseGroup(d) {
 		return false

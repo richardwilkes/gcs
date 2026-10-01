@@ -45,7 +45,7 @@ var Ops = []Op{
 // Op holds an operation to apply when a pool threshold is hit.
 type Op byte
 
-// EnsureValid ensures this is of a known value.
+// EnsureValid returns this value if it is valid and DefaultOp otherwise.
 func (enum Op) EnsureValid() Op {
 	if enum >= FirstOp && enum <= LastOp {
 		return enum
@@ -101,18 +101,18 @@ func (enum Op) AltString() string {
 	}
 }
 
-// MarshalText implements the encoding.TextMarshaler interface.
+// MarshalText implements encoding.TextMarshaler.
 func (enum Op) MarshalText() (text []byte, err error) {
 	return []byte(enum.Key()), nil
 }
 
-// UnmarshalText implements the encoding.TextUnmarshaler interface.
+// UnmarshalText implements encoding.TextUnmarshaler.
 func (enum *Op) UnmarshalText(text []byte) error {
 	*enum = ExtractOp(string(text))
 	return nil
 }
 
-// ExtractOp extracts the value from a string.
+// ExtractOp returns the value whose key matches str, ignoring case, or DefaultOp if none does.
 func ExtractOp(str string) Op {
 	for _, enum := range Ops {
 		if strings.EqualFold(enum.Key(), str) {
@@ -122,10 +122,8 @@ func ExtractOp(str string) Op {
 	return DefaultOp
 }
 
-// ExtractKnownOp extracts the value from a string, reporting whether the string was actually recognized.
-//
-// Unlike ExtractOp, which quietly maps anything it doesn't recognize onto the default value, this permits a caller that
-// is dispatching on the type to detect unknown types.
+// ExtractKnownOp is like ExtractOp, but also reports whether str was recognized, so a caller can tell an unknown key
+// from the default.
 func ExtractKnownOp(str string) (value Op, known bool) {
 	for _, enum := range Ops {
 		if strings.EqualFold(enum.Key(), str) {

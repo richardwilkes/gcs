@@ -42,7 +42,7 @@ type TemplatePicker struct {
 	Qualifier criteria.Number `json:"qualifier,omitzero"`
 }
 
-// IsZero implements json.isZero.
+// IsZero reports whether json's omitzero option should omit this value.
 func (t TemplatePicker) IsZero() bool {
 	return t.Type == picker.NotApplicable
 }

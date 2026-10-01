@@ -101,7 +101,6 @@ func (h logCountingHandler) Enabled(_ context.Context, level slog.Level) bool {
 	return level >= h.level
 }
 
-// Handle takes the record by value because the slog.Handler interface requires that signature.
 func (h logCountingHandler) Handle(_ context.Context, record slog.Record) error { //nolint:gocritic // interface-mandated signature
 	if record.Level >= h.level {
 		h.count.Add(1)

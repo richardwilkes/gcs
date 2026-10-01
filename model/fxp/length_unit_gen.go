@@ -55,7 +55,7 @@ var LengthUnits = []LengthUnit{
 // variations at different lengths that the GURPS rules suggest.
 type LengthUnit byte
 
-// EnsureValid ensures this is of a known value.
+// EnsureValid returns this value if it is valid and DefaultLengthUnit otherwise.
 func (enum LengthUnit) EnsureValid() LengthUnit {
 	if enum >= FirstLengthUnit && enum <= LastLengthUnit {
 		return enum
@@ -111,18 +111,18 @@ func (enum LengthUnit) String() string {
 	}
 }
 
-// MarshalText implements the encoding.TextMarshaler interface.
+// MarshalText implements encoding.TextMarshaler.
 func (enum LengthUnit) MarshalText() (text []byte, err error) {
 	return []byte(enum.Key()), nil
 }
 
-// UnmarshalText implements the encoding.TextUnmarshaler interface.
+// UnmarshalText implements encoding.TextUnmarshaler.
 func (enum *LengthUnit) UnmarshalText(text []byte) error {
 	*enum = ExtractLengthUnit(string(text))
 	return nil
 }
 
-// ExtractLengthUnit extracts the value from a string.
+// ExtractLengthUnit returns the value whose key matches str, ignoring case, or DefaultLengthUnit if none does.
 func ExtractLengthUnit(str string) LengthUnit {
 	for _, enum := range LengthUnits {
 		if strings.EqualFold(enum.Key(), str) {
@@ -132,10 +132,8 @@ func ExtractLengthUnit(str string) LengthUnit {
 	return DefaultLengthUnit
 }
 
-// ExtractKnownLengthUnit extracts the value from a string, reporting whether the string was actually recognized.
-//
-// Unlike ExtractLengthUnit, which quietly maps anything it doesn't recognize onto the default value, this permits a
-// caller that is dispatching on the type to detect unknown types.
+// ExtractKnownLengthUnit is like ExtractLengthUnit, but also reports whether str was recognized, so a caller can tell
+// an unknown key from the default.
 func ExtractKnownLengthUnit(str string) (value LengthUnit, known bool) {
 	for _, enum := range LengthUnits {
 		if strings.EqualFold(enum.Key(), str) {

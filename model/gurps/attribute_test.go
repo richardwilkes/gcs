@@ -99,9 +99,8 @@ func TestAttributeBonusTooltipTraitModifierSource(t *testing.T) {
 }
 
 // TestAttributeBonusTooltipNonStrengthLimitation verifies that a limitation left over on a bonus to something other
-// than ST is ignored: the feature editor never clears the limitation when the attribute is switched away from ST, so
-// such a bonus must still be applied and listed under the plain heading rather than being filed away under -- or
-// dropped along with -- a section that only ST has.
+// than ST is ignored. The feature editor doesn't clear the limitation when the attribute is switched away from ST, so
+// such a bonus must still be applied and listed under the plain heading, not under a section only ST has.
 func TestAttributeBonusTooltipNonStrengthLimitation(t *testing.T) {
 	c := check.New(t)
 	e := NewEntity()

@@ -35,9 +35,8 @@ func buttonTitle(b *unison.Button) string {
 	return b.Text.String()
 }
 
-// TestMenuKeySettingsRowLayout verifies the ordering of the widgets fill() adds for each binding. The per-binding
-// reset button locates the button displaying the key binding by its position relative to itself, so the documented
-// [key button, title label, reset button] ordering is a contract the reset path depends on.
+// TestMenuKeySettingsRowLayout verifies that fill() adds each binding's widgets in the order [key button, title label,
+// reset button], which the reset button relies on to locate its row's key button.
 func TestMenuKeySettingsRowLayout(t *testing.T) {
 	c := check.New(t)
 	d := newTestMenuKeySettingsDockable()

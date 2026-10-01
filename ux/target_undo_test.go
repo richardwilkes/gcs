@@ -79,8 +79,7 @@ func TestTargetUndoFallsBackToRecordingWidget(t *testing.T) {
 	c.Equal(checkenum.Off, cb.State, "with no replacement to find, undo must be applied to the recording widget")
 }
 
-// unison.NoUndoID is what a field reports while it has no editing session to attribute changes to. Recording with no
-// undo manager in reach must also be a no-op rather than a crash.
+// Recording must be a no-op for unison.NoUndoID and for a widget with no undo manager in reach.
 func TestRecordTargetUndoSkipsNoUndoID(t *testing.T) {
 	c := check.New(t)
 	root := newPopupUndoRoot()

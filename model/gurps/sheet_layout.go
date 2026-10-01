@@ -202,7 +202,7 @@ type SheetLayoutNode struct {
 	Type      layoutnode.Type    `json:"type"`
 	Key       string             `json:"key,omitzero"`        // Block only
 	Weight    fxp.Int            `json:"weight,omitzero"`     // Share of the width when the parent is a Row; <= 0 is 1
-	MinHeight paper.Length       `json:"min_height,omitzero"` // Block only; 0 means use the natural height
+	MinHeight paper.Length       `json:"min_height,omitzero"` // 0 means use the natural height
 	Children  []*SheetLayoutNode `json:"children,omitempty"`  // Row and Column only
 	// Square is Block only. In a Row, the block's width is taken from the row's height so that its content is square,
 	// instead of from its weight; ignored elsewhere.
@@ -734,7 +734,7 @@ func findLayoutNodeParent(within, target *SheetLayoutNode) (parent *SheetLayoutN
 // width the two of them had between them. An edge that calls for the kind of container the parent already is -- Left or
 // Right within a Row, Top or Bottom within a Column -- is not a special case: validation splices such a container away
 // again, degenerating into inserting the block beside the range rather than around it, which is what that gesture
-// means.
+// means. Within the root, Top and Bottom instead leave the block and the range stacked together as a band group.
 //
 // Returns true if the layout was altered, and false for an unknown or absent key, a node that is nil, isn't in the
 // tree, is the block being moved, or doesn't share its parent with the other.

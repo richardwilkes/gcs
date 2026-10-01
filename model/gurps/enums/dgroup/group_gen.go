@@ -57,7 +57,7 @@ var Groups = []Group{
 // Group holds the set of dockable groupings.
 type Group byte
 
-// EnsureValid ensures this is of a known value.
+// EnsureValid returns this value if it is valid and DefaultGroup otherwise.
 func (enum Group) EnsureValid() Group {
 	if enum >= FirstGroup && enum <= LastGroup {
 		return enum
@@ -121,18 +121,18 @@ func (enum Group) String() string {
 	}
 }
 
-// MarshalText implements the encoding.TextMarshaler interface.
+// MarshalText implements encoding.TextMarshaler.
 func (enum Group) MarshalText() (text []byte, err error) {
 	return []byte(enum.Key()), nil
 }
 
-// UnmarshalText implements the encoding.TextUnmarshaler interface.
+// UnmarshalText implements encoding.TextUnmarshaler.
 func (enum *Group) UnmarshalText(text []byte) error {
 	*enum = ExtractGroup(string(text))
 	return nil
 }
 
-// ExtractGroup extracts the value from a string.
+// ExtractGroup returns the value whose key matches str, ignoring case, or DefaultGroup if none does.
 func ExtractGroup(str string) Group {
 	for _, enum := range Groups {
 		if strings.EqualFold(enum.Key(), str) {
@@ -142,10 +142,8 @@ func ExtractGroup(str string) Group {
 	return DefaultGroup
 }
 
-// ExtractKnownGroup extracts the value from a string, reporting whether the string was actually recognized.
-//
-// Unlike ExtractGroup, which quietly maps anything it doesn't recognize onto the default value, this permits a caller
-// that is dispatching on the type to detect unknown types.
+// ExtractKnownGroup is like ExtractGroup, but also reports whether str was recognized, so a caller can tell an unknown
+// key from the default.
 func ExtractKnownGroup(str string) (value Group, known bool) {
 	for _, enum := range Groups {
 		if strings.EqualFold(enum.Key(), str) {

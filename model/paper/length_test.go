@@ -32,8 +32,7 @@ func TestRealLengthConversion(t *testing.T) {
 }
 
 // TestParseLengthUnitCaseInsensitivity verifies that the unit suffix is matched without regard to case, matching
-// fxp.LengthFromString and fxp.WeightFromString. An upper-cased suffix used to be left on the text, so the value failed
-// to parse at all rather than being read as inches.
+// fxp.LengthFromString and fxp.WeightFromString.
 func TestParseLengthUnitCaseInsensitivity(t *testing.T) {
 	c := check.New(t)
 
@@ -64,8 +63,7 @@ func TestParseLengthUnitCaseInsensitivity(t *testing.T) {
 }
 
 // TestParseLengthRejectsNonFinite verifies that the values strconv.ParseFloat accepts but that aren't real measurements
-// are refused. Neither +Inf nor NaN is < 0, so the "value must be zero or greater" check let them through, and a
-// non-finite margin then poisoned the page layout arithmetic and survived a save/load round trip.
+// are refused. Neither +Inf nor NaN is < 0, so the "value must be zero or greater" check alone would let them through.
 func TestParseLengthRejectsNonFinite(t *testing.T) {
 	c := check.New(t)
 

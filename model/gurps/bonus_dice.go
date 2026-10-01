@@ -21,19 +21,18 @@ import (
 )
 
 // BonusDice is the dice of a weapon damage bonus: a complete dice specification, such as "1d", "2d3+1" or "2d+1x3",
-// which is added to the weapon's damage the same way a base damage specification is. When Sub is set, the dice
-// themselves are taken away instead, but only the dice: as in the base damage notation, the modifier and multiplier
-// still apply as written, so "-1d+2" removes one die and adds 2, and "-2dx3" removes two dice and then multiplies the
-// whole total by 3. The zero value is no dice. In text, it is the specification with a leading "-" when Sub is set.
+// added to the weapon's damage as a base damage specification is. Sub takes away only the dice: as in the base damage
+// notation, the modifier and multiplier still apply as written, so "-1d+2" removes one die and adds 2, and "-2dx3"
+// removes two dice and then multiplies the whole total by 3. The zero value is no dice. Its text form has a leading "-"
+// when Sub is set.
 type BonusDice struct {
 	dice.Dice
 	Sub bool
 }
 
-// ParseBonusDice parses a dice specification, optionally preceded by a sign, into a BonusDice. It reports false when
-// the whole of the text is not a dice specification with at least one die in it. A bare number, such as "2" or "-2",
-// is a flat amount rather than dice, so it is rejected here and left to ParseWeaponDamageBonus, which keeps every
-// BonusDice either empty or carrying dice. A zero specification, such as "0", is no dice.
+// ParseBonusDice parses a dice specification, optionally preceded by a sign. It reports false unless the whole text is
+// a dice specification with at least one die, or a zero specification such as "0", which is no dice. A bare number such
+// as "2" or "-2" is a flat amount, left to ParseWeaponDamageBonus, so every BonusDice is either empty or carries dice.
 func ParseBonusDice(text string) (BonusDice, bool) {
 	d, sub, ok := parsePotentialDiceSpec(text)
 	if !ok {
@@ -137,10 +136,9 @@ func boolToInt(b bool) int {
 	return 0
 }
 
-// ParseWeaponDamageBonus parses the text of a weapon damage bonus, which may be a signed number, such as "+2" or
-// "-0.5", or a complete dice specification, optionally preceded by a sign, such as "+1d", "-1d", "1d+2" or "2d+1x3",
-// into its dice and flat parts. A number is always the flat part, so only text with dice in it produces dice. It
-// reports false for text in any other form.
+// ParseWeaponDamageBonus parses the text of a weapon damage bonus into its dice and flat parts. A number, such as "+2"
+// or "-0.5", is the flat part; a complete dice specification, optionally preceded by a sign, such as "+1d", "-1d",
+// "1d+2" or "2d+1x3", is the dice part. It reports false for anything else.
 func ParseWeaponDamageBonus(text string) (d BonusDice, amount fxp.Int, ok bool) {
 	text = strings.TrimSpace(text)
 	if v, err := fxp.FromString(text); err == nil {

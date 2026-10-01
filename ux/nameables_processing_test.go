@@ -64,10 +64,7 @@ func sheetWithNamedTraits(t *testing.T, c check.Checker, names ...string) (*Shee
 	return sheet, rowData(table)
 }
 
-// sheetWithNamedEquipment returns a sheet whose carried equipment list holds one non-container item per name, along
-// with those items in the order a drop will visit them, which is the order they appear in the list rather than the
-// order they were handed over in. The list is verified to be showing every one of them and to be without the switch
-// column, so that a drop which brings that column in can be seen to have replaced the table.
+// sheetWithNamedEquipment is the carried equipment counterpart of sheetWithNamedTraits.
 func sheetWithNamedEquipment(t *testing.T, c check.Checker, names ...string) (*Sheet, []*gurps.Equipment) {
 	t.Helper()
 	sheet := newTestSheetForTemplate(t)
@@ -161,10 +158,9 @@ func TestAltDropOnEquipmentAppliesNameablesToTheLiveList(t *testing.T) {
 }
 
 // TestAltDropOnSeveralTraitsPromptsForEachCopy verifies that dropping a modifier whose name needs filling in onto
-// several selected traits asks about every copy separately, in one prompt. Each target has a copy of its own, so each
-// gets its own entry in the prompt and its own answer, letting the same modifier be named differently on each trait it
-// was attached to. The copies are otherwise identical, so the entries have to be headed by the trait each belongs to,
-// or the user has no way of telling which answer goes where.
+// several selected traits asks about each trait's copy separately, in one prompt, so that each can be named
+// differently. The copies are otherwise identical, so each entry has to be headed by the trait it belongs to, or the
+// user has no way of telling which answer goes where.
 func TestAltDropOnSeveralTraitsPromptsForEachCopy(t *testing.T) {
 	c := check.New(t)
 	forbidModifierPrompts(t)

@@ -56,7 +56,7 @@ type SrcMatcher struct {
 	libHashes map[LibraryFile]libSrcData
 }
 
-// IsZero implements json.isZero.
+// IsZero reports whether json's omitzero option should omit this value.
 func (s Source) IsZero() bool {
 	return s.TID == "" || s.Library == "" || s.Path == ""
 }
@@ -99,7 +99,7 @@ func (l LibraryFile) String() string {
 	return i18n.Text("Library: ") + l.Library + "\n" + i18n.Text("Path: ") + l.Path
 }
 
-// PrepareHashes for the given ListProvider.
+// PrepareHashes loads, or reloads if modified, the hashes of the library files the provider's nodes are sourced from.
 func (sm *SrcMatcher) PrepareHashes(provider ListProvider) {
 	neededLibs := make(map[LibraryFile]struct{})
 	forEachSourcedNode(provider, func(node sourcedNode) { node.GetSource().collectInto(neededLibs) })
@@ -216,11 +216,8 @@ func (s *SourcedID) SetSource(src Source) {
 	s.Source = src
 }
 
-// AdjustSource adjusts TID and Source based on `original` and the clone `mode`.
-//
-// A 'Copy' keeps original's TID instead of minting a fresh one.
-// A 'Reference' when original has no Source of its own, anchors Source to reference the original.
-// Otherwise Source is copied directly from the original.
+// AdjustSource sets TID and Source from original according to mode: a Copy keeps original's TID, and a Reference to an
+// original with no Source of its own points Source at original's TID in from; otherwise original's Source is copied.
 func (s *SourcedID) AdjustSource(from LibraryFile, original SourcedID, mode CloneMode) {
 	if mode == Copy {
 		s.TID = original.TID

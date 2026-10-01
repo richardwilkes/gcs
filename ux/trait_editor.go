@@ -226,10 +226,9 @@ func initTraitEditor(e *editor[*gurps.Trait, *gurps.TraitEditData], content *uni
 	}
 }
 
-// maxAlternativeSlots is the most children an alternative abilities container may bill at full cost. The value selected
-// here is mostly arbitrary, but it is a reasonable upper limit for a container that holds alternative abilities, which
-// are usually a small set of mutually exclusive options. The limit is enforced in the editor, but not in the model, so
-// that a character file with a higher value can still be loaded.
+// maxAlternativeSlots is the most children an alternative abilities container may bill at full cost. The value is
+// mostly arbitrary, since alternative abilities are usually a small set of mutually exclusive options. It is enforced
+// in the editor but not in the model, so that a character file with a higher value can still be loaded.
 const maxAlternativeSlots = 20
 
 // adjustSlotsField enables the alternative slots field when the container holds alternative abilities and blanks it

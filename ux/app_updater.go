@@ -32,12 +32,10 @@ import (
 	"github.com/richardwilkes/unison/enums/behavior"
 )
 
-// appUpdater holds what is known about available application updates. Two kinds of check write to it: a visible one,
-// which the user asked for or which runs at launch, and a quiet one, which the repeating schedule runs in the
-// background. A visible check announces itself by blanking what is known and setting updating, so that the menu and
-// the toolbar button say a check is under way; a quiet check leaves the previous answer on display until it has a
-// better one, so that a failed or unchanged background check never takes away an update the user was already told
-// about.
+// appUpdater holds what is known about available application updates. A visible check (asked for by the user or run at
+// launch) blanks what is known and sets updating, so the menu and toolbar button show a check under way. A quiet check
+// (run by the repeating schedule) leaves the previous answer on display until it has a better one, so a failed or
+// unchanged background check never takes away an update the user was already told about.
 type appUpdater struct {
 	lock      sync.RWMutex
 	frequency func() updatecheck.Option // nil means the general settings' AppUpdateCheck; tests inject a value
@@ -50,8 +48,8 @@ type appUpdater struct {
 
 var appUpdate appUpdater
 
-// Reset marks the start of a visible check, returning false if one is already running. The sequence number is bumped
-// so that any quiet check still in flight is discarded when it finishes: the visible check has taken over.
+// Reset marks the start of a visible check, returning false if one is already running. Bumping seq makes any quiet
+// check still in flight discard its result.
 func (u *appUpdater) Reset() bool {
 	u.lock.Lock()
 	defer u.lock.Unlock()
@@ -65,9 +63,8 @@ func (u *appUpdater) Reset() bool {
 	return true
 }
 
-// Result returns what is currently known. Until a check has recorded something, the title says why there is nothing:
-// the checks are off, one is under way in the background, or none has run yet. The Help menu shows the title verbatim,
-// so it must never be blank.
+// Result returns what is currently known. Until a check records something, the title says why: a quiet check is under
+// way, the checks are off, or none has run yet. The Help menu shows the title verbatim, so it must never be blank.
 func (u *appUpdater) Result() (title string, releases []library.Release, updating bool) {
 	u.lock.RLock()
 	defer u.lock.RUnlock()
@@ -77,9 +74,8 @@ func (u *appUpdater) Result() (title string, releases []library.Release, updatin
 	return u.result, u.releases, u.updating
 }
 
-// Checking returns true while a check of either kind is in flight. Result() reports only a visible check as updating,
-// since a quiet one leaves what is known on display; this is for the Help menu's check item, which has no business
-// starting a second request for an answer that is already on its way.
+// Checking returns true while a check of either kind is in flight, unlike Result, which reports only a visible check as
+// updating. The Help menu's check item uses it to avoid starting a second request.
 func (u *appUpdater) Checking() bool {
 	u.lock.RLock()
 	defer u.lock.RUnlock()
@@ -157,11 +153,10 @@ func (u *appUpdater) beginQuiet() (seq int, ok bool) {
 	return u.seq, true
 }
 
-// finishQuiet records the outcome of a quiet check. A result whose sequence number no longer matches is discarded: a
-// visible check started after this one began, and its answer is the newer one. A failed check leaves what is known
-// untouched, so a network hiccup can't erase an update the user has already been told about; the caller logs the
-// error. When nothing was known, though, there is nothing to protect, and the failure is recorded so that the Help
-// menu says the site couldn't be reached rather than that no check has run.
+// finishQuiet records the outcome of a quiet check. A result whose sequence number no longer matches is discarded,
+// since a visible check has started since. A failed check (the caller logs the error) leaves what is known untouched,
+// so a network hiccup can't erase an update the user was already told about; when nothing was known, the failure is
+// recorded so the Help menu says the site couldn't be reached rather than that no check has run.
 func (u *appUpdater) finishQuiet(seq int, releases []library.Release, err error) {
 	u.lock.Lock()
 	defer u.lock.Unlock()
@@ -183,7 +178,8 @@ func (u *appUpdater) finishQuiet(seq int, releases []library.Release, err error)
 	u.setReleasesLocked(releases)
 }
 
-// loadAppReleases retrieves the releases newer than the running version.
+// loadAppReleases retrieves the releases newer than the running version. With nothing newer, it may hold just the
+// running version's own release.
 func loadAppReleases(ctx context.Context) ([]library.Release, error) {
 	return library.LoadReleases(ctx, &http.Client{}, "richardwilkes", "", "gcs", xos.AppVersion,
 		func(version, _ string) bool {
@@ -192,9 +188,9 @@ func loadAppReleases(ctx context.Context) ([]library.Release, error) {
 		}, false)
 }
 
-// CheckForAppUpdates initiates a fresh check for application updates. This is the visible path: the state says a check
-// is running while it is, and a release that hasn't been shown yet opens the notification dialog. A development build
-// has no release behind it to compare against, so it says so rather than checking.
+// CheckForAppUpdates starts a visible check for application updates: the state shows a check under way, and a release
+// not yet shown opens the notification dialog. A development build has no release to compare against, so it reports
+// that instead of checking.
 func CheckForAppUpdates() {
 	if updater.IsDevVersion(xos.AppVersion) {
 		appUpdate.SetResult(devVersionAppUpdateText())
@@ -237,12 +233,12 @@ func shouldShowAppUpdateDialog(version, lastSeen string) bool {
 	return version != lastSeen
 }
 
-// checkForAppUpdatesQuietly checks for application updates without ever interrupting the user: no dialog, and nothing
-// already known is taken away by a check that fails or finds nothing. This is what the repeating schedule runs.
+// checkForAppUpdatesQuietly checks for application updates for the repeating schedule. It never opens the dialog, and a
+// failed check leaves what is known in place.
 func checkForAppUpdatesQuietly() {
 	if updater.IsDevVersion(xos.AppVersion) {
-		// Development versions have no release behind them to compare against, so they never look for updates. Saying
-		// so, as the visible check does, beats a status claiming that a check is still to come.
+		// Development versions never look for updates; saying so, as the visible check does, beats a status claiming
+		// that a check is still to come.
 		appUpdate.SetResult(devVersionAppUpdateText())
 		return
 	}
@@ -262,8 +258,7 @@ func checkForAppUpdatesQuietly() {
 	}()
 }
 
-// downloadPageResponse is the response code for the button that opens the download page rather than installing. The
-// pre-defined codes are taken by Cancel and by the default action, so a third button needs one of its own.
+// downloadPageResponse is the Download Page button's response code; Cancel and OK already use the predefined ones.
 const downloadPageResponse = unison.ModalResponseUserBase
 
 // NotifyOfAppUpdate notifies the user of the available update.
@@ -272,9 +267,8 @@ func NotifyOfAppUpdate() {
 	if releases == nil {
 		return
 	}
-	// Work out whether this installation can update itself before the dialog is built, so that the choice offered
-	// matches what is actually possible and the user is never told an update is being installed only to be refused
-	// after thirty megabytes have been downloaded.
+	// Check whether this installation can update itself before building the dialog, so it never offers an install
+	// that would be refused after a large download.
 	plan, unavailableMsg := planAppUpdate(&releases[0])
 
 	var buffer strings.Builder
@@ -351,9 +345,8 @@ func planAppUpdate(release *library.Release) (plan *updater.Plan, unavailableMsg
 	return nil, fmt.Sprintf(i18n.Text("%s can't install this update automatically."), xos.AppName)
 }
 
-// blockerMessage explains, in the user's language, why an update cannot be installed automatically, and where possible
-// what they can do about it. The updater deals in stable identifiers rather than messages so that this translation
-// happens here, at the point of display.
+// blockerMessage explains, in the user's language, why an update cannot be installed automatically and, where possible,
+// what to do about it. The updater reports stable identifiers so that translation happens here, at display time.
 func blockerMessage(blocker updater.Blocker) string {
 	switch blocker {
 	case updater.BlockerDevBuild:
@@ -393,16 +386,15 @@ func ReportAppUpdateOutcome() {
 		return
 	}
 	if outcome.Applied {
-		// Installed successfully; only what came after it did not. Nothing here needs the user's attention badly
-		// enough to interrupt them, since they are looking at the new version already.
+		// Installed; only a later step, most likely the relaunch, failed. That isn't worth interrupting a user who is
+		// already running the new version.
 		return
 	}
 	unison.WarningDialogWithMessage(fmt.Sprintf(i18n.Text("%s was not updated"), xos.AppName),
 		xstrings.Wrap("", outcomeMessage(outcome.Reason), 100))
 }
 
-// outcomeMessage explains why an update that had already been prepared was not applied. The caller wraps the result,
-// since the wrapping belongs with the width the dialog showing it wants.
+// outcomeMessage explains why a prepared update was not applied. The caller wraps the result to its dialog's width.
 func outcomeMessage(reason updater.Reason) string {
 	switch reason {
 	case updater.ReasonPredecessorRunning:

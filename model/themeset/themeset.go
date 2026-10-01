@@ -40,9 +40,8 @@ type Provider[V any, E Entry[V]] interface {
 	Applied()
 }
 
-// Set holds a set of themed values keyed by ID. It exists for serialization: the settings UI edits the live entries in
-// place and never touches a Set, so anything that represents the live theme must call CaptureCurrent before it is
-// written, or those edits are lost.
+// Set holds a set of themed values keyed by ID. It exists for serialization and does not track the live theme; see
+// CaptureCurrent.
 type Set[V any, E Entry[V], P Provider[V, E]] struct {
 	data map[string]V
 }

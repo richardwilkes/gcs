@@ -31,8 +31,8 @@ const (
 // 49 yards per second.
 const fallingVelocityTableMaxYards = 112
 
-// fallingVelocityTable is the printed Falling Velocity Table (BX431) for one gravity, one row per printed entry, giving
-// the largest distance in yards the row covers and the velocity in yards per second reached over it.
+// fallingVelocityTable is the printed Falling Velocity Table (BX431) for one gravity, one row per velocity, giving the
+// largest distance in yards the row covers and the velocity in yards per second reached over it.
 //
 // The table is encoded rather than computed because it does not match the formula the same page offers as an
 // alternative. Twenty-nine of its 112 entries are exactly one yard per second higher than round(sqrt(21.4 x distance)),
@@ -178,7 +178,7 @@ func CollisionVelocity(angle CollisionAngle, strikerVelocity, struckVelocity fxp
 
 // CollisionObject describes one of the two objects in a collision.
 type CollisionObject struct {
-	HP         fxp.Int // Its HP.
+	HP         fxp.Int
 	Velocity   fxp.Int // Its own velocity in yards per second, before the angle of the collision is applied.
 	HalfDamage bool    // Whether it is bullet-shaped, sharp or spiked, and so does half damage (BX430).
 }

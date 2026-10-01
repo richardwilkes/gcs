@@ -129,7 +129,7 @@ func altDropPoint(table *unison.Table[*Node[*gurps.Trait]], rowIndex int) geom.P
 
 // TestAltDropDragFeedbackFlushed verifies that dragging a modifier over a table row immediately flushes the drawing,
 // since a native drag has no continuous redraw loop and the row highlight never appears without an explicit flush.
-// This covers every table built through InstallTableDropSupport: character sheets, loot sheets, templates and editors.
+// This covers every table built through InstallTableDropSupport: sheets, templates, library lists and editors.
 func TestAltDropDragFeedbackFlushed(t *testing.T) {
 	c := check.New(t)
 	var flushes []*unison.Panel
@@ -222,8 +222,7 @@ func TestAltDropAppliesToTheWholeSelection(t *testing.T) {
 	dropOnRow(3)
 	c.Equal([][]int{{0, 3}}, provider.altDrops, "a drop onto a selected row must reach the whole selection")
 
-	// A drop onto a row outside the selection is aimed at that row alone: the user is pointing at something they
-	// haven't selected, so the selection has nothing to do with it.
+	// A drop onto a row outside the selection is aimed at that row alone.
 	provider.altDrops = nil
 	dropOnRow(1)
 	c.Equal([][]int{{1}}, provider.altDrops, "a drop onto an unselected row must reach only that row")

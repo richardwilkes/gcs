@@ -47,7 +47,7 @@ var Levels = []Level{
 // Level holds the number of study hours required per point.
 type Level byte
 
-// EnsureValid ensures this is of a known value.
+// EnsureValid returns this value if it is valid and DefaultLevel otherwise.
 func (enum Level) EnsureValid() Level {
 	if enum >= FirstLevel && enum <= LastLevel {
 		return enum
@@ -91,18 +91,18 @@ func (enum Level) String() string {
 	}
 }
 
-// MarshalText implements the encoding.TextMarshaler interface.
+// MarshalText implements encoding.TextMarshaler.
 func (enum Level) MarshalText() (text []byte, err error) {
 	return []byte(enum.Key()), nil
 }
 
-// UnmarshalText implements the encoding.TextUnmarshaler interface.
+// UnmarshalText implements encoding.TextUnmarshaler.
 func (enum *Level) UnmarshalText(text []byte) error {
 	*enum = ExtractLevel(string(text))
 	return nil
 }
 
-// ExtractLevel extracts the value from a string.
+// ExtractLevel returns the value whose key matches str, ignoring case, or DefaultLevel if none does.
 func ExtractLevel(str string) Level {
 	for _, enum := range Levels {
 		if strings.EqualFold(enum.Key(), str) {
@@ -112,10 +112,8 @@ func ExtractLevel(str string) Level {
 	return DefaultLevel
 }
 
-// ExtractKnownLevel extracts the value from a string, reporting whether the string was actually recognized.
-//
-// Unlike ExtractLevel, which quietly maps anything it doesn't recognize onto the default value, this permits a caller
-// that is dispatching on the type to detect unknown types.
+// ExtractKnownLevel is like ExtractLevel, but also reports whether str was recognized, so a caller can tell an unknown
+// key from the default.
 func ExtractKnownLevel(str string) (value Level, known bool) {
 	for _, enum := range Levels {
 		if strings.EqualFold(enum.Key(), str) {

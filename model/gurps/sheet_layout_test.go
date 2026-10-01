@@ -898,7 +898,7 @@ func TestSheetLayoutFiltered(t *testing.T) {
 	c.Equal("column[row[traits skills] spells equipment notes]", filtered.Root.String())
 }
 
-// TestSheetLayoutListBands verifies the projection the sheet, the template and the exporter build their content from.
+// TestSheetLayoutListBands verifies the projection HTMLGridTemplate is built on.
 func TestSheetLayoutListBands(t *testing.T) {
 	c := check.New(t)
 	c.Equal([][]string{

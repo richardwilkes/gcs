@@ -57,7 +57,7 @@ func (wr *WeaponRoF) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 	return jio.UnmarshalStringFromInfallible(dec, wr, ParseWeaponRoF)
 }
 
-// IsZero implements json.isZero.
+// IsZero reports whether json's omitzero option should omit this value.
 func (wr WeaponRoF) IsZero() bool {
 	return wr == WeaponRoF{}
 }

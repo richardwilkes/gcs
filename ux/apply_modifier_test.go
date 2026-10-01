@@ -424,8 +424,6 @@ func TestApplySelectedModifiersAppliesASelectedContainerOnceAndRecordsItsSource(
 		"the copy of the modifier within the container must record the library file too")
 }
 
-// TestCanReceiveModifiersNeedsAProviderAndAnUndoManager verifies that a list without its provider or an undo manager
-// can't receive modifiers.
 func TestCanReceiveModifiersNeedsAProviderAndAnUndoManager(t *testing.T) {
 	c := check.New(t)
 	sheet := newApplyModifierTestSheet(t)

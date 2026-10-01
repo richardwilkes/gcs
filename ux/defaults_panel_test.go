@@ -58,7 +58,7 @@ func findTagCriteriaPopup(c check.Checker, p *unison.Panel) *unison.PopupMenu[st
 }
 
 // findAttributeChoicePopup returns the first default-type switcher popup found anywhere beneath the given panel, or nil
-// if there is none. It is used by the tests to change a default's type the same way a user's popup selection would.
+// if there is none.
 func findAttributeChoicePopup(p *unison.Panel) *unison.PopupMenu[*gurps.AttributeChoice] {
 	popup, _ := firstPanelOfType[*unison.PopupMenu[*gurps.AttributeChoice]](p)
 	return popup

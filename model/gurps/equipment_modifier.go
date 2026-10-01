@@ -71,7 +71,7 @@ type EquipmentModifierData struct {
 type EquipmentModifierEditData struct {
 	EquipmentModifierSyncData
 	VTTNotes     string            `json:"vtt_notes,omitzero"`
-	Replacements map[string]string `json:"replacements,omitempty"` // Not actually used any longer, but kept so that we can migrate old data
+	Replacements map[string]string `json:"replacements,omitempty"` // Legacy; kept only to migrate old data
 	EquipmentModifierEditDataNonContainerOnly
 	ModifierContainerSyncData
 }
@@ -324,7 +324,6 @@ func (e *EquipmentModifier) DataOwner() DataOwner {
 
 // SetTarget sets the equipment being targeted for modification and configures any sub-components as needed
 func (e *EquipmentModifier) SetTarget(target *Equipment) *EquipmentModifier {
-	// Set the target node for this modifier
 	e.equipment = target
 
 	// COMPAT: Promote replacements from this node up to the target node
@@ -333,7 +332,6 @@ func (e *EquipmentModifier) SetTarget(target *Equipment) *EquipmentModifier {
 		e.Replacements = nil
 	}
 
-	// Cascade the operation
 	if e.Container() {
 		for _, child := range e.Children {
 			child.SetTarget(target)
@@ -522,8 +520,9 @@ func (e *EquipmentModifier) SetEnabled(enabled bool) {
 	}
 }
 
-// CostMultiplier returns the amount to multiply the cost by. weight is what the equipment weighs with the modifiers being
-// costed, which a cost per pound is by.
+// CostMultiplier returns the amount to multiply the cost by. A per-pound cost is multiplied by weight, what the
+// equipment weighs with the modifiers being costed, or by its base weight if that is greater, rounded up to a whole
+// pound and never less than one.
 func (e *EquipmentModifier) CostMultiplier(weight fxp.Int) fxp.Int {
 	multiplier := multiplierForEquipmentModifier(e.equipment, e.CostIsPerLevel)
 	if e.CostIsPerPound {
@@ -722,12 +721,12 @@ func (e *EquipmentModifierNonContainerSyncData) hash(h hash.Hash) {
 	hashList(h, e.Features)
 }
 
-// CopyFrom implements node.EditorData.
+// CopyFrom implements EditorData.
 func (e *EquipmentModifierEditData) CopyFrom(other *EquipmentModifier) {
 	e.copyFrom(&other.EquipmentModifierEditData)
 }
 
-// ApplyTo implements node.EditorData.
+// ApplyTo implements EditorData.
 func (e *EquipmentModifierEditData) ApplyTo(other *EquipmentModifier) {
 	other.copyFrom(e)
 }

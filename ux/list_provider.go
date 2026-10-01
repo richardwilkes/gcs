@@ -17,12 +17,11 @@ import (
 	"github.com/richardwilkes/unison"
 )
 
-// listProvider is the part of a TableProvider that is the same for every kind of node: everything that only delegates
-// to the list the rows come from, the owner of that list, and the header data for its columns, along with opening the
-// editor for the selected items and creating a new item or container. A provider embeds it and supplies the parts that
-// differ between node types -- the reference and drag keys, the item names, the column IDs, the context menu, and the
-// callbacks that create and edit an item -- along with any of these methods it needs to do differently. The column IDs
-// are taken through a callback, since they are the embedding provider's to decide.
+// listProvider is the part of a TableProvider that is the same for every node type: delegating to the list the rows
+// come from, its owner and its column header data, opening the editor for the selected items, and creating a new item
+// or container. A provider embeds it, supplies what differs between node types -- the reference and drag keys, the item
+// names, the column IDs, the context menu, and the callbacks that create and edit an item -- and overrides any of these
+// methods it needs to.
 type listProvider[T gurps.Node[T]] struct {
 	table      *unison.Table[*Node[T]]
 	dataOwner  gurps.DataOwnerProvider
@@ -31,8 +30,8 @@ type listProvider[T gurps.Node[T]] struct {
 	columnIDs  func() []int
 	headerData func(columnID int) gurps.HeaderData
 	newItem    func(owner gurps.DataOwner, parent T, container bool) T
-	// newChoice creates a choice container, a template choice container or a modifier choice, and is left unset by the
-	// providers whose node type can't be one.
+	// newChoice creates a template choice container or a modifier choice, and is left unset by the providers whose node
+	// type can't be one.
 	newChoice func(owner gurps.DataOwner, parent T) T
 	// newGroup creates a group container, and is left unset by the providers whose node type has no container that is
 	// distinct from a group.
@@ -190,9 +189,9 @@ func (p *listProvider[T]) OpenEditor(owner Rebuildable, table *unison.Table[*Nod
 	OpenEditor(table, func(item T) { p.edit(owner, item) })
 }
 
-// CreateItem creates a new item, or a new container, group container or template choice container when the variant asks
-// for one, adds it to the table and opens its editor. A provider whose node type has an alternate variant overrides this and uses
-// createItem for the shared tail.
+// CreateItem creates a new item, or a new container, group container or choice container when the variant asks for one,
+// adds it to the table and opens its editor. A provider whose node type has an alternate variant overrides this and
+// uses createItem for the shared tail.
 func (p *listProvider[T]) CreateItem(owner Rebuildable, table *unison.Table[*Node[T]], variant ItemVariant) {
 	var noParent T
 	if variant == ChoiceContainerItemVariant {

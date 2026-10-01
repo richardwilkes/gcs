@@ -38,7 +38,7 @@ func newChoiceContainer(pickerType picker.Type, compare criteria.NumericComparis
 }
 
 // TestChoicesOnlyForChoiceContainers verifies that only a choice container's editor offers choices, and that it can't
-// take them out of use. A container becomes a choice container only by being created as one, and stays one.
+// take them out of use, which is left to the "Convert to Group" command.
 func TestChoicesOnlyForChoiceContainers(t *testing.T) {
 	c := check.New(t)
 	typePopup, _, _ := newChoices(gurps.NewTrait(nil, nil, true))
@@ -152,7 +152,7 @@ func TestChoiceQualifierMinimum(t *testing.T) {
 }
 
 // newEquipmentChoices builds the "Choices" row for an equipment choice container whose picker is set as given,
-// returning the type popup, the comparison popup, the qualifier field and the panel the row was added to.
+// returning the editor data, the row's two popups and qualifier field, and the panel the row was added to.
 func newEquipmentChoices(pickerType picker.Type, compare criteria.NumericComparison, qualifier fxp.Int) (
 	data *gurps.EquipmentEditData, typePopup *unison.PopupMenu[picker.Type], comparison *unison.PopupMenu[string],
 	field unison.Paneler, parent *unison.Panel,
