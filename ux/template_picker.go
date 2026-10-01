@@ -24,7 +24,6 @@ import (
 	"github.com/richardwilkes/toolbox/v2/errs"
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/i18n"
-	"github.com/richardwilkes/toolbox/v2/xmath"
 	"github.com/richardwilkes/toolbox/v2/xreflect"
 	"github.com/richardwilkes/toolbox/v2/xstrings"
 	"github.com/richardwilkes/unison"
@@ -130,7 +129,7 @@ func (s *pickerSession[T]) newPickerDialog(row T, depth int) (dialog *unison.Dia
 	scroll.BackgroundInk = unison.ThemeSurface
 	// The list has room for a number of rows however few it holds, so opening a group shows what it holds without the
 	// dialog having to grow.
-	scroll.SetLayout(&minSizeLayout{Layout: scroll, minimum: pickerListMinSize()})
+	setListMinSize(scroll)
 	scroll.SetLayoutData(&unison.FlexLayoutData{
 		HAlign: align.Fill,
 		VAlign: align.Fill,
@@ -760,7 +759,7 @@ func (s *pickerSession[T]) updateChooseButton(button *unison.Button, row T) {
 	name = fmt.Sprintf(name, row.String())
 	button.Accessibility.Name = name
 	if open {
-		button.OnBackgroundInk = unison.ThemeFocus
+		button.OnBackgroundInk = colors.Alert
 		button.Tooltip = newWrappedTooltip(tip)
 	} else {
 		button.OnBackgroundInk = unison.DefaultButtonTheme.OnBackgroundInk
@@ -828,55 +827,6 @@ func growWindowToFit(wnd *unison.Window) {
 		wnd.SetContentRect(r)
 		wnd.EnsureOnDisplay()
 	}
-}
-
-// holdMinSizeOnDisplay keeps the window at least as large as its content's minimum size, as a window is by default,
-// save where its display has no room for that, where it is held to no more than the display allows.
-func holdMinSizeOnDisplay(wnd *unison.Window) {
-	wnd.MinMaxContentSizeCallback = func() (minimum, maximum geom.Size) {
-		minimum, _, maximum = wnd.Content().Sizes(geom.Size{})
-		if d := wnd.Display(); d != nil {
-			frame, r := wnd.FrameRect(), wnd.ContentRect()
-			minimum.Width = min(minimum.Width, d.Usable.Width-(frame.Width-r.Width))
-			minimum.Height = min(minimum.Height, d.Usable.Height-(frame.Height-r.Height))
-		}
-		return minimum, maximum
-	}
-}
-
-// pickerListMinRows is how many rows the picker's list has room for, however few it holds.
-const pickerListMinRows = 10
-
-// pickerListMinSize returns the least room the picker's list is given inside its scroll panel's border: enough for
-// pickerListMinRows rows of options, and a width to go with it.
-func pickerListMinSize() geom.Size {
-	font := unison.DefaultCheckBoxTheme.Font
-	row := max(pickerCheckBoxSize().Height, pickerDisclosureSize().Height, font.LineHeight())
-	_, button, _ := NewSVGButtonForFont(svg.Edit, font, -2).Sizes(geom.Size{})
-	row = max(row, button.Height)
-	// The list's border is StdHSpacing all around.
-	return geom.NewSize(xmath.Ceil(font.SimpleWidth("n")*80),
-		xmath.Ceil(row*pickerListMinRows+unison.StdVSpacing*(pickerListMinRows-1))).
-		Add(geom.NewUniformInsets(unison.StdHSpacing).Size())
-}
-
-// minSizeLayout is a layout that asks for at least a minimum size for what it lays out, beyond the border, and prefers
-// no less than that either.
-type minSizeLayout struct {
-	unison.Layout
-	minimum geom.Size
-}
-
-func (l *minSizeLayout) LayoutSizes(target *unison.Panel, hint geom.Size) (minSize, prefSize, maxSize geom.Size) {
-	minSize, prefSize, maxSize = l.Layout.LayoutSizes(target, hint)
-	minimum := l.minimum
-	if border := target.Border(); border != nil {
-		minimum = minimum.Add(border.Insets().Size())
-	}
-	minSize = geom.NewSize(max(minSize.Width, minimum.Width), max(minSize.Height, minimum.Height))
-	prefSize = geom.NewSize(max(prefSize.Width, minSize.Width), max(prefSize.Height, minSize.Height))
-	maxSize = geom.NewSize(max(maxSize.Width, prefSize.Width), max(maxSize.Height, prefSize.Height))
-	return minSize, prefSize, maxSize
 }
 
 // newPickerHint returns the line under the picker's list, which wraps to the list's width rather than widening the

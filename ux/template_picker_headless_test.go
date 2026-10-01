@@ -294,6 +294,40 @@ func TestPickerModifierPromptOverride(t *testing.T) {
 	c.True(res.Modifiers[0].Children[1].Enabled())
 }
 
+// The modifier prompt's list has the same least room as the picker's, however few modifiers it holds, and the prompt
+// can't be made too small to give it that.
+func TestModifierPromptListHoldsTenRows(t *testing.T) {
+	c := check.New(t)
+	screen, wnd := startHeadlessWorkspace(t, c)
+	s, n := newKnightSession()
+	res := n["res"]
+	done := false
+	c.True(screen.Post(func() {
+		s.chooseModifiers(res)
+		done = true
+	}))
+	screen.Sync()
+	dialogWnd, dialog := modalDialog(t, screen, wnd)
+	captureScreen(t, c, screen, "modifier_prompt")
+	screen.Do(func() {
+		scroll := panelsOfType[*unison.ScrollPanel](dialogWnd.Content())[0]
+		minimum := listMinSize()
+		view := scroll.ContentView().ContentRect(false).Size
+		c.True(view.Height >= minimum.Height && view.Width >= minimum.Width,
+			"the list has its least room: wants %v, has %v", minimum, view)
+		r := dialogWnd.ContentRect()
+		r.Width /= 2
+		r.Height /= 2
+		dialogWnd.SetContentRect(r)
+		dialogWnd.ValidateLayout()
+		view = scroll.ContentView().ContentRect(false).Size
+		c.True(view.Height >= minimum.Height && view.Width >= minimum.Width,
+			"asked to be smaller, the prompt keeps the list's room: wants %v, has %v", minimum, view)
+	})
+	screen.Click(screen.PanelCenter(dialogButton(t, screen, dialog, unison.ModalResponseCancel)))
+	c.True(done, "the prompt has returned")
+}
+
 // With no chevron among them, the picker's options leave no room for one, so their names follow their checkboxes.
 func TestPickerRowsWithoutGroupsLeaveNoRoomForChevrons(t *testing.T) {
 	c := check.New(t)
@@ -656,7 +690,7 @@ func TestPickerListHoldsTenRows(t *testing.T) {
 			return
 		}
 		c.False(slices.Contains(labelTexts(list), "Item 7"), "what it holds starts hidden")
-		minimum := pickerListMinSize()
+		minimum := listMinSize()
 		view := scroll.ContentView().ContentRect(false).Size
 		c.True(view.Height >= minimum.Height && view.Width >= minimum.Width,
 			"the list has its least room: wants %v, has %v", minimum, view)

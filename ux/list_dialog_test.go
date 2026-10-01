@@ -26,7 +26,7 @@ func TestNewListQuestionPanel(t *testing.T) {
 	list := unison.NewPanel()
 	extra := unison.NewLabel()
 	extra.SetTitle("Extra")
-	panel := newListQuestionPanel(promptOperation{}, "Header", list, extra)
+	panel, scroll := newListQuestionPanel(promptOperation{}, "Header", list, extra)
 	children := panel.Children()
 	c.Equal(3, len(children), "the panel must hold the header, the extra header and the scroll panel")
 
@@ -35,8 +35,7 @@ func TestNewListQuestionPanel(t *testing.T) {
 	c.Equal("Header", header.String())
 	c.Equal(extra.AsPanel(), children[1], "the extra header must follow the header label")
 
-	scroll, ok := children[2].Self.(*unison.ScrollPanel)
-	c.True(ok, "the list must be wrapped in a scroll panel")
+	c.Equal(scroll.AsPanel(), children[2], "the list must be wrapped in the scroll panel returned with the panel")
 	c.Equal(list, scroll.Content(), "the scroll panel must hold the list")
 	c.NotNil(scroll.Border(), "the scroll panel must be outlined")
 	layout, ok := scroll.LayoutData().(*unison.FlexLayoutData)
@@ -46,10 +45,11 @@ func TestNewListQuestionPanel(t *testing.T) {
 		c.Nil(child.LayoutData(), "the headers must not compete with the scroll panel for room")
 	}
 
-	c.Equal(2, len(newListQuestionPanel(promptOperation{}, "Header", unison.NewPanel()).Children()),
-		"with no extra headers, only the header and the scroll panel remain")
+	panel, _ = newListQuestionPanel(promptOperation{}, "Header", unison.NewPanel())
+	c.Equal(2, len(panel.Children()), "with no extra headers, only the header and the scroll panel remain")
 
-	children = newListQuestionPanel(promptOperation{description: "Operation"}, "Header", unison.NewPanel()).Children()
+	panel, _ = newListQuestionPanel(promptOperation{description: "Operation"}, "Header", unison.NewPanel())
+	children = panel.Children()
 	c.Equal(3, len(children), "an operation must add a label of its own")
 	operation, ok := children[0].Self.(*unison.Label)
 	c.True(ok, "the operation must come first")
