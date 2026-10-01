@@ -178,7 +178,9 @@ func showModifiersDialog[T gurps.Node[T]](info *modifierPromptInfo, modifiers []
 		}
 	}
 	op := info.op.at(promptstep.Modifiers)
-	panel := newListQuestionPanel(op, header, selection.list, extraHeaders...)
+	panel, scroll := newListQuestionPanel(op, header, selection.list, extraHeaders...)
+	// The list has room for as many rows as the template picker's, however few modifiers it holds.
+	setListMinSize(scroll)
 	var cost *unison.Label
 	if early != nil {
 		if selection.italics {
@@ -196,6 +198,7 @@ func showModifiersDialog[T gurps.Node[T]](info *modifierPromptInfo, modifiers []
 		errs.Log(err)
 		return false, true
 	}
+	holdMinSizeOnDisplay(dialog.Window())
 	selection.onChange = func() {
 		dialog.Button(unison.ModalResponseOK).SetEnabled(selection.complete())
 		if cost != nil {

@@ -111,6 +111,7 @@ type EquipmentEditData struct {
 
 	ItemSwitch
 	preconfigurable
+	choiceGrouping
 }
 
 // EquipmentSyncData holds the equipment sync data that is common to both containers and non-containers.
@@ -246,14 +247,19 @@ func (e *Equipment) CanConvertToPhysicalContainer() bool {
 
 // ConvertToPhysicalContainer converts this group to a physical container, if it can be. The container starts out with
 // no value or weight of its own, and with the legality class new equipment starts out with, which converting to a group
-// removes without a warning.
+// removes without a warning. A physical container is picked as a unit, so its flag to pick from it separately goes.
 func (e *Equipment) ConvertToPhysicalContainer() {
 	if e.CanConvertToPhysicalContainer() {
 		e.ContainerType = eqcontainer.Container
+		e.PickSeparately = false
 		if e.LegalityClass == "" {
 			e.LegalityClass = defaultLegalityClass
 		}
 	}
+}
+
+func (e *Equipment) canPickSeparately() bool {
+	return e.IsGroup() && e.TemplatePicker.IsZero()
 }
 
 func (e *Equipment) canBecomeTemplateChoiceContainer() bool {
@@ -585,6 +591,10 @@ func (e *Equipment) CellData(columnID int, data *CellData) {
 		}
 		e.valueRangeCellData(data, e.adjustedValueRange())
 	case EquipmentExtendedCostColumn:
+		// An organizing group is never picked as a whole, so its total means nothing.
+		if IsOrganizingGroup(e) {
+			break
+		}
 		e.valueRangeCellData(data, e.ExtendedValueRange())
 	case EquipmentWeightColumn:
 		if e.IsGroup() {
@@ -592,6 +602,9 @@ func (e *Equipment) CellData(columnID int, data *CellData) {
 		}
 		e.weightRangeCellData(data, e.adjustedWeightRange)
 	case EquipmentExtendedWeightColumn:
+		if IsOrganizingGroup(e) {
+			break
+		}
 		e.weightRangeCellData(data, e.ExtendedWeightRange)
 	case EquipmentTagsColumn:
 		fillTagsCell(data, e.Tags)
@@ -1206,6 +1219,9 @@ func (e *Equipment) Kind() string {
 // container or group). A group keeps only what organizes the equipment it holds; everything that would make it a piece
 // of equipment in its own right is cleared, and its quantity is always one.
 func (e *Equipment) ClearUnusedFieldsForType() {
+	if !e.canPickSeparately() {
+		e.PickSeparately = false
+	}
 	if !e.Container() {
 		e.ContainerType = eqcontainer.Container
 		e.EquipmentContainerSyncData = EquipmentContainerSyncData{}

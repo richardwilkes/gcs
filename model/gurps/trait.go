@@ -111,6 +111,7 @@ type TraitEditData struct {
 
 	ItemSwitch
 	preconfigurable
+	choiceGrouping
 	TraitNonContainerOnlyEditData
 	TraitContainerSyncData
 }
@@ -176,6 +177,10 @@ func NewTraitChoiceContainer(owner DataOwner, parent *Trait) *Trait {
 	t.TemplatePicker = newTemplateChoicePicker()
 	t.Name = t.Kind()
 	return t
+}
+
+func (t *Trait) canPickSeparately() bool {
+	return t.Container() && t.ContainerType == container.Group && t.TemplatePicker.IsZero()
 }
 
 func (t *Trait) canBecomeTemplateChoiceContainer() bool {
@@ -535,6 +540,10 @@ func (t *Trait) CellData(columnID int, data *CellData) {
 			}
 		}
 	case TraitPointsColumn:
+		// An organizing group is never picked as a whole, so its total means nothing.
+		if IsOrganizingGroup(t) {
+			break
+		}
 		var tooltip xbytes.InsertBuffer
 		r := t.PointsRange(&tooltip)
 		if tooltip.Len() != 0 {
@@ -676,22 +685,17 @@ func (t *Trait) adjustedPoints(fixed modifierChoicePicks[*TraitModifier]) fxp.In
 		}
 		return t.pointsWith(t.AllModifiers())
 	}
+	// See pickerContainerPoints for what a container presenting a choice is worth.
 	if !t.TemplatePicker.IsZero() {
-		// See pickerContainerPoints for what a container presenting a choice is worth.
 		if value, settled := t.pointsRange(fixed, choiceView{}).Settled(); settled {
 			return value
 		}
-		var total fxp.Int
-		for _, one := range t.Children {
-			total += one.adjustedPoints(fixed)
-		}
-		return total
 	}
 	// Open choices the traits inside inherit are made for all of them at once, and the container counts as the least of
 	// those ways. Past the cap, fixed holds the picks as they stand.
 	choices, fixed := t.containerModifierChoices(fixed, choiceView{})
 	costs := t.childCosts(fixed, choices, choiceView{}, true)
-	values := make([]fxp.Int, len(t.Children))
+	values := make([]fxp.Int, len(costs))
 	least := fxp.Max
 	eachModifierChoicePick(choices, fixed, func(picks modifierChoicePicks[*TraitModifier]) {
 		var points fxp.Int
@@ -699,7 +703,7 @@ func (t *Trait) adjustedPoints(fixed modifierChoicePicks[*TraitModifier]) fxp.In
 			values[i] = *cost(picks).Min
 			points += values[i]
 		}
-		if t.ContainerType == container.AlternativeAbilities {
+		if t.TemplatePicker.IsZero() && t.ContainerType == container.AlternativeAbilities {
 			points = alternativeAbilitiesPoints(values, t.ResolvedAlternativeSlots(), t.RoundCostDown)
 		}
 		least = min(least, points)
@@ -754,16 +758,18 @@ func (t *Trait) pointsRange(fixed modifierChoicePicks[*TraitModifier], view choi
 	return rangeForPickerByCount(newTemplateChoicePicker().Qualifier, spans)
 }
 
-// childCosts returns, for each child of this container, what it costs with each set of picks for fixed and choices the
-// container makes: pointsRange, or adjustedPoints when adjusted is true. A trait's modifiers are laid out just once.
+// childCosts returns, for each child of this container (each option, for a choice; see TemplateChoiceOptions), what it
+// costs with each set of picks for fixed and choices the container makes: pointsRange, or adjustedPoints when adjusted
+// is true. A trait's modifiers are laid out just once.
 func (t *Trait) childCosts(fixed modifierChoicePicks[*TraitModifier], choices []*TraitModifier, view choiceView, adjusted bool) []func(modifierChoicePicks[*TraitModifier]) NumericRange {
 	keys := make(modifierChoicePicks[*TraitModifier], len(fixed)+len(choices))
 	maps.Copy(keys, fixed)
 	for _, one := range choices {
 		keys[one] = nil
 	}
-	costs := make([]func(modifierChoicePicks[*TraitModifier]) NumericRange, len(t.Children))
-	for i, one := range t.Children {
+	options := TemplateChoiceOptions(t)
+	costs := make([]func(modifierChoicePicks[*TraitModifier]) NumericRange, len(options))
+	for i, one := range options {
 		switch {
 		case one.Container() && adjusted:
 			costs[i] = func(picks modifierChoicePicks[*TraitModifier]) NumericRange {
@@ -839,15 +845,20 @@ func (t *Trait) pointsWithEach() func([]*TraitModifier) NumericRange {
 	}
 }
 
-// containerModifierChoices returns the open mandatory choices among this container's modifiers that fixed holds no
-// pick for, which it makes for everything inside it, and the picks those inside are to count: fixed, or past
-// maxModifierChoiceVariants, fixed plus every open choice within the container as made with the picks it has.
+// containerModifierChoices returns the open mandatory choices among this container's modifiers, and for a choice its
+// organizing groups', that fixed holds no pick for, which it makes for everything inside it, and the picks those inside
+// are to count: fixed, or past maxModifierChoiceVariants, fixed plus every open choice within the container as made
+// with the picks it has.
 func (t *Trait) containerModifierChoices(fixed modifierChoicePicks[*TraitModifier], view choiceView) ([]*TraitModifier, modifierChoicePicks[*TraitModifier]) {
 	if choicesMade(t, view) {
 		return nil, fixed
 	}
-	// With no choice of its own, each trait inside keeps to the cap alone.
+	// With no choice of its own, each trait inside keeps to the cap alone. A choice's organizing groups make theirs
+	// for the options inside them.
 	own, _ := openMandatoryModifierChoices(t, t.AllModifiers(), fixed, view)
+	if IsTemplateChoiceContainer(t) {
+		own = append(own, organizingModifierChoices(t.Children, fixed, view)...)
+	}
 	if len(own) == 0 {
 		return nil, fixed
 	}
@@ -868,6 +879,19 @@ func (t *Trait) containerModifierChoices(fixed modifierChoicePicks[*TraitModifie
 		return nil, asTheyStand
 	}
 	return own, fixed
+}
+
+// organizingModifierChoices returns the open mandatory choices among the modifiers of the organizing groups among the
+// children, and those nested in them, asked about on a trait inside so they count as inherited, as options see them.
+func organizingModifierChoices(children []*Trait, fixed modifierChoicePicks[*TraitModifier], view choiceView) []*TraitModifier {
+	var open []*TraitModifier
+	for _, group := range children {
+		if pickedSeparately(group) && len(group.Children) != 0 {
+			choices, _ := openMandatoryModifierChoices(group.Children[0], group.Modifiers, fixed, view)
+			open = append(append(open, choices...), organizingModifierChoices(group.Children, fixed, view)...)
+		}
+	}
+	return open
 }
 
 // alternativeAbilitiesPointsRange returns the span of costs a set of alternative abilities may be worth, given the
@@ -1329,6 +1353,9 @@ func (t *Trait) Kind() string {
 
 // ClearUnusedFieldsForType zeroes out the fields that are not applicable to this type (container vs not-container).
 func (t *Trait) ClearUnusedFieldsForType() {
+	if !t.canPickSeparately() {
+		t.PickSeparately = false
+	}
 	if t.Container() {
 		t.TraitNonContainerOnlyEditData = TraitNonContainerOnlyEditData{}
 		if t.ContainerType != container.Ancestry {

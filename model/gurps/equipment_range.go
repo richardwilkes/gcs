@@ -158,7 +158,8 @@ func (m equipmentMeasure) oneOf(e *Equipment, contents *NumericRange) NumericRan
 }
 
 // contentsOf returns the range of the measure of what a single piece of the container holds, before any reduction the
-// container makes to it. A container that isn't a choice holds all of its children.
+// container makes to it. A container that isn't a choice holds all of its children; a choice offers its options (see
+// TemplateChoiceOptions).
 //
 // A choice picked by count takes its options as they are, so its range is worked out just as it is for points.
 //
@@ -169,8 +170,9 @@ func (m equipmentMeasure) oneOf(e *Equipment, contents *NumericRange) NumericRan
 // picked by the other measure has no upper limit to this one once any option can be raised, and otherwise may hold
 // anything from none of its options to all of them.
 func (m equipmentMeasure) contentsOf(e *Equipment) NumericRange {
-	children := make([]NumericRange, len(e.Children))
-	for i, one := range e.Children {
+	options := TemplateChoiceOptions(e)
+	children := make([]NumericRange, len(options))
+	for i, one := range options {
 		children[i] = m.rangeOf(one, one.Quantity)
 	}
 	if !IsTemplateChoiceContainer(e) {
@@ -181,9 +183,9 @@ func (m equipmentMeasure) contentsOf(e *Equipment) NumericRange {
 	}
 	// What each option could add is what a single one of it measures when it can be raised, and what it measures as it
 	// stands otherwise.
-	potential := make([]NumericRange, len(e.Children))
+	potential := make([]NumericRange, len(options))
 	raisable := false
-	for i, one := range e.Children {
+	for i, one := range options {
 		potential[i] = children[i]
 		if !one.IsGroup() {
 			if unit := m.rangeOf(one, fxp.One); SignForNumericRanges(unit) != NumericRangeZero {

@@ -139,6 +139,7 @@ func initEquipmentGroupEditor(e *editor[*gurps.Equipment, *gurps.EquipmentEditDa
 		addCheckBox(content, i18n.Text("Equipped"), &e.editorData.Equipped)
 	}
 	addTagsLabelAndField(content, &e.editorData.Tags)
+	addPickSeparately(content, e.target, &e.editorData.PickSeparately)
 	addPageRefLabelAndField(content, &e.editorData.PageRef)
 	addPageRefHighlightLabelAndField(content, &e.editorData.PageRefHighlight)
 	addSourceFields(content, &e.target.SourcedID)

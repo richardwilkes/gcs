@@ -131,10 +131,12 @@ func HasTemplatePickerData[T Node[T]](nodes ...T) bool {
 	return hasPickerData
 }
 
-// ClearTemplatePickerData removes the template picker data from the nodes and their children. A node that loses its
-// picker data also loses its source, since only a template may hold picker data and a template is never a source.
+// ClearTemplatePickerData removes the template picker data from the nodes and their children, along with every flag to
+// pick a group separately. A node that loses its picker data also loses its source, since only a template may hold
+// picker data and a template is never a source.
 func ClearTemplatePickerData[T Node[T]](nodes ...T) {
 	Traverse(func(node T) bool {
+		clearPickSeparately(node)
 		if IsTemplateChoiceContainer(node) {
 			_, data := any(node).(TemplatePickerProvider).TemplatePickerData() //nolint:errcheck // IsTemplateChoiceContainer checked this
 			*data = TemplatePicker{}
@@ -177,6 +179,7 @@ func normalizeTemplateChoiceContainer[T Node[T]](node T) {
 	if tc, ok := any(node).(templateChoiceConvertible); ok {
 		tc.clearTemplateChoiceContainerExclusions()
 	}
+	clearPickSeparately(node)
 	node.ClearSource()
 }
 
@@ -300,16 +303,31 @@ func PickerMeasureRange[T Node[T]](node T, pickerType picker.Type, prompted bool
 		if trait, ok := any(node).(*Trait); ok {
 			return trait.pointsRange(nil, view)
 		}
-	case picker.Value:
+	case picker.Value, picker.Weight:
 		if eqp, ok := any(node).(*Equipment); ok {
-			return equipmentValue().seenAs(view).rangeOf(eqp, eqp.Quantity)
-		}
-	case picker.Weight:
-		if eqp, ok := any(node).(*Equipment); ok {
-			units := SheetSettingsFor(EntityFromNode(node)).DefaultWeightUnits
-			return equipmentWeight(false, units).seenAs(view).rangeOf(eqp, eqp.Quantity)
+			return pickerEquipmentMeasure(eqp, pickerType).seenAs(view).rangeOf(eqp, eqp.Quantity)
 		}
 	default:
 	}
 	return NumericRangeOf(0)
+}
+
+// PickerMeasureRangeWithContents is PickerMeasureRange for equipment toward a choice made by value or weight, with what
+// a single one of it holds, before any reduction it makes, taken to be contents. Anything else counts as nothing.
+func PickerMeasureRangeWithContents[T Node[T]](node T, pickerType picker.Type, prompted bool, taken func(T, bool) bool, contents NumericRange) NumericRange {
+	eqp, ok := any(node).(*Equipment)
+	if !ok || eqp == nil || eqp.Quantity <= 0 || (pickerType != picker.Value && pickerType != picker.Weight) {
+		return NumericRangeOf(0)
+	}
+	view := promptedView(taken)
+	view.prompted = prompted
+	return scaleNumericRange(pickerEquipmentMeasure(eqp, pickerType).seenAs(view).oneOf(eqp, &contents), eqp.Quantity)
+}
+
+// pickerEquipmentMeasure returns the measure of the equipment toward a choice made by value or weight.
+func pickerEquipmentMeasure(eqp *Equipment, pickerType picker.Type) equipmentMeasure {
+	if pickerType == picker.Value {
+		return equipmentValue()
+	}
+	return equipmentWeight(false, SheetSettingsFor(EntityFromNode(eqp)).DefaultWeightUnits)
 }

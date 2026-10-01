@@ -284,8 +284,9 @@ func (e *Entity) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 	if !tid.IsKindAndValid(e.ID, kinds.Entity) {
 		e.ID = tid.MustNewTID(kinds.Entity)
 	}
-	// Only a template may hold template picker data, so any a character sheet carries is removed, and the preconfigured
-	// mark means nothing on a sheet, so any an older version left behind is cleared.
+	// Only a template may hold template picker data or the flag to pick from a group separately, so any a character
+	// sheet carries is removed, and the preconfigured mark means nothing on a sheet, so any an older version left behind
+	// is cleared.
 	ClearTemplatePickerData(e.Traits...)
 	ClearTemplatePickerData(e.Skills...)
 	ClearTemplatePickerData(e.Spells...)

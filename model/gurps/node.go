@@ -204,7 +204,8 @@ type listData[T any] struct {
 // loadRows loads the rows of a standalone list file. Each top-level row is given a nil data owner, which is what
 // attaches the weapons and modifiers throughout the tree, since SetDataOwner recurses into the children on its own.
 // Containers must not be skipped along the way: they carry their own weapons and modifiers, which would otherwise never
-// be attached. Only a template may hold template picker data, so any a list file carries is removed.
+// be attached. Only a template may hold template picker data or the flag to pick from a group separately, so any a list
+// file carries is removed.
 func loadRows[T Node[T]](fileSystem fs.FS, filePath string, opts ...json.Options) ([]T, error) {
 	var data listData[T]
 	if err := jio.LoadVersionedFile(fileSystem, filePath, &data, &data.Version, opts...); err != nil {

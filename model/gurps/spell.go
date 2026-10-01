@@ -104,6 +104,7 @@ type SpellEditData struct {
 	Replacements map[string]string `json:"replacements,omitempty"`
 	ItemSwitch
 	preconfigurable
+	choiceGrouping
 	SpellNonContainerOnlyEditData
 	SpellContainerOnlySyncData
 }
@@ -160,6 +161,10 @@ func NewSpellChoiceContainer(owner DataOwner, parent *Spell) *Spell {
 	s.TemplatePicker = newTemplateChoicePicker()
 	s.Name = s.Kind()
 	return s
+}
+
+func (s *Spell) canPickSeparately() bool {
+	return s.Container() && s.TemplatePicker.IsZero()
 }
 
 func (s *Spell) canBecomeTemplateChoiceContainer() bool {
@@ -478,6 +483,10 @@ func (s *Spell) CellData(columnID int, data *CellData) {
 			}
 		}
 	case SpellPointsColumn:
+		// An organizing group is never picked as a whole, so its total means nothing.
+		if IsOrganizingGroup(s) {
+			break
+		}
 		var tooltip xbytes.InsertBuffer
 		r := s.PointsRange(&tooltip)
 		if tooltip.Len() != 0 {
@@ -935,7 +944,7 @@ func (s *Spell) AdjustedPoints(tooltip *xbytes.InsertBuffer) fxp.Int {
 		// The tooltip goes no further: a container never puts anything into it; see PointsRange for why.
 		if !s.TemplatePicker.IsZero() {
 			// See pickerContainerPoints for what a container presenting a choice is worth.
-			return pickerContainerPoints(s.TemplatePicker, s.Children)
+			return pickerContainerPoints(s.TemplatePicker, TemplateChoiceOptions(s))
 		}
 		var total fxp.Int
 		for _, one := range s.Children {
@@ -961,7 +970,7 @@ func (s *Spell) PointsRange(tooltip *xbytes.InsertBuffer) NumericRange {
 	}
 	// A picker with nothing to pick from, and a container carrying no picker at all, both come back as the total of
 	// the children, which is what everything inside a container being taken costs.
-	return pointsRangeForPicker(s.TemplatePicker, childPointsRanges(s.Children))
+	return pointsRangeForPicker(s.TemplatePicker, childPointsRanges(TemplateChoiceOptions(s)))
 }
 
 // RawPointsRange returns the same span as PointsRange, but with every spell in it counted by its raw points rather than
@@ -971,7 +980,7 @@ func (s *Spell) RawPointsRange() NumericRange {
 	if !s.Container() {
 		return NumericRangeOf(s.RawPoints())
 	}
-	return containerRawPointsRange(s.TemplatePicker, s.Children)
+	return containerRawPointsRange(s.TemplatePicker, TemplateChoiceOptions(s))
 }
 
 // AdjustedPointsForNonContainerSpell returns the points, adjusted for any bonuses.
@@ -1127,6 +1136,9 @@ func (s *Spell) Kind() string {
 
 // ClearUnusedFieldsForType zeroes out the fields that are not applicable to this type (container vs not-container).
 func (s *Spell) ClearUnusedFieldsForType() {
+	if !s.canPickSeparately() {
+		s.PickSeparately = false
+	}
 	if s.Container() {
 		s.SpellNonContainerOnlyEditData = SpellNonContainerOnlyEditData{}
 		// A container's features never apply, so it can never have anything to switch (see HasSwitchableFeatures).

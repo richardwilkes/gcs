@@ -30,7 +30,7 @@ import (
 	"github.com/zeebo/xxh3"
 )
 
-var dimmedPointsColor = unison.ThemeOnSurface.Derive(func(basedOn unison.ThemeColor) unison.ThemeColor {
+var dimmedTextColor = unison.ThemeOnSurface.Derive(func(basedOn unison.ThemeColor) unison.ThemeColor {
 	return unison.ThemeColor{
 		Light: basedOn.Light.SetAlphaIntensity(0.5),
 		Dark:  basedOn.Dark.SetAlphaIntensity(0.5),
@@ -348,7 +348,7 @@ func (a *AttrPanel) createPointsField(attr *gurps.Attribute) unison.Paneler {
 		}
 	})
 	field.Font = fonts.PageFieldSecondary
-	field.OnBackgroundInk = dimmedPointsColor
+	field.OnBackgroundInk = dimmedTextColor
 	field.SetTitle(field.Text.String())
 	return field
 }

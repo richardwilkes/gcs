@@ -11,8 +11,10 @@ package ux
 
 import (
 	"fmt"
+	"strings"
 	"testing"
 
+	"github.com/richardwilkes/gcs/v5/model/colors"
 	"github.com/richardwilkes/gcs/v5/model/criteria"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
@@ -472,21 +474,28 @@ func TestPickerSessionChoosesEquipmentModifiers(t *testing.T) {
 	c.Equal("$200", formatPickerTotal(sword, picker.Value, s.actual(sword, picker.Value)))
 }
 
-// TestPickerStatePill verifies that each state has its own look, a warning's text being dark on yellow.
+// TestPickerStatePill verifies that each state has its own look, in the theme's own colors save for green when all is
+// well, so the pill follows the theme. What is still open is in the alert color.
 func TestPickerStatePill(t *testing.T) {
 	c := check.New(t)
 	pill, update := newPickerStatePill(0)
-	for state, img := range map[pickerState]*unison.SVG{
-		pickerOK: unison.CheckmarkSVG, pickerOpen: unison.CircledQuestionSVG,
-		pickerWarning: unison.TriangleExclamationSVG, pickerError: svg.Not,
+	for state, want := range map[pickerState]pickerPillLook{
+		pickerOK: {icon: unison.CheckmarkSVG, background: unison.Green, onBackground: unison.Green.On()},
+		pickerOpen: {
+			icon: unison.CircledQuestionSVG, background: colors.Alert, onBackground: colors.OnAlert,
+		},
+		pickerWarning: {
+			icon: unison.TriangleExclamationSVG, background: unison.ThemeWarning, onBackground: unison.ThemeOnWarning,
+		},
+		pickerError: {icon: svg.Not, background: unison.ThemeError, onBackground: unison.ThemeOnError},
 	} {
+		c.True(want == pickerPillLooks[state], state.tip())
 		update(state, "1 / 1")
 		drawable, ok := pill.Drawable.(*unison.DrawableSVG)
 		c.True(ok)
-		c.Equal(img, drawable.SVG)
+		c.Equal(want.icon, drawable.SVG)
+		c.True(want.onBackground == pill.OnBackgroundInk, "the pill's text and icon must be drawn in the look's ink")
 	}
-	update(pickerWarning, "1 / 1")
-	c.Equal(unison.OnLight, pill.OnBackgroundInk)
 }
 
 // TestPickerSessionChoosesPicks verifies that a choice picked from another can be answered from its row, however deep,
@@ -680,12 +689,23 @@ func TestPickerSessionRowText(t *testing.T) {
 		c.Equal(tc.want, tc.text(s, n[tc.row]), tc.row)
 	}
 
+	// Every enabled modifier shows, picked in a choice or not, answered or not, even with another choice still open.
 	s, n := newKnightSession()
 	wm := n["wm"]
+	for _, name := range []string{"Fixed", "Off"} {
+		mod := gurps.NewTraitModifier(nil, nil, false)
+		mod.Name = name
+		wm.AddModifiers(mod)
+	}
+	wm.Modifiers[2].SetEnabled(false)
+	open := newTraitModifierChoiceFor(nil, true, []string{"x1", "x2"})
+	wm.AddModifiers(open)
+	c.Equal(pickerText{text: " [Fixed]"}, s.detail(wm))
 	wm.Modifiers[0].Children[1].SetEnabled(true)
-	c.Equal(pickerText{}, s.detail(wm), "a pick is only a default until answered")
+	c.Equal(pickerText{text: " [+25, Fixed]"}, s.detail(wm), "the pick shows while the other choice is open")
 	s.modsAnswered[wm] = true
-	c.Equal(pickerText{text: " [+25]"}, s.detail(wm))
+	c.Equal(pickerText{text: " [+25, Fixed]"}, s.detail(wm))
+	c.Equal(pickerText{}, s.detail(n["ea"]), "no modifiers, nothing to show")
 
 	// A rule asking for anything but its number says so when the picks come to it.
 	s, n = newKnightSession()
@@ -700,4 +720,393 @@ func TestPickerSessionRowText(t *testing.T) {
 		text:  "1 picked, but this asks for anything but 1. Override to keep it anyway.",
 		state: pickerError,
 	}, s.hint(n["fit"]))
+}
+
+// newDisadvantageSession returns a session over "Pick -30 points worth" of a choice of "Pick -15 points worth" and
+// "Pick -5 points worth" of disadvantages, and its rows by name.
+func newDisadvantageSession() (s *pickerSession[*gurps.Trait], n map[string]*gurps.Trait) {
+	n = make(map[string]*gurps.Trait)
+	row := func(name string, points int, children ...*gurps.Trait) *gurps.Trait {
+		trait := gurps.NewTrait(nil, nil, len(children) != 0)
+		trait.Name = name
+		trait.BasePoints = fxp.FromInteger(points)
+		trait.Children = children
+		SetParents(children, trait)
+		n[name] = trait
+		return trait
+	}
+	pick := func(trait *gurps.Trait, pt picker.Type, qualifier int) *gurps.Trait {
+		trait.TemplatePicker.Type = pt
+		trait.TemplatePicker.Qualifier.Compare = criteria.EqualsNumber
+		trait.TemplatePicker.Qualifier.Qualifier = fxp.FromInteger(qualifier)
+		return trait
+	}
+	root := pick(row("root", 0,
+		pick(row("either", 0,
+			pick(row("major", 0, row("bad15", -15), row("bad20", -20), row("bad5", -5)), picker.Points, -15),
+			pick(row("minor", 0, row("quirk1", -1), row("quirk5", -5)), picker.Points, -5)), picker.Count, 1),
+		row("bad10", -10)), picker.Points, -30)
+	return newPickerSession(promptOperation{}, []*gurps.Trait{root}, true), n
+}
+
+// TestPickerSessionNegativeTargets verifies that a choice asking for negative points is judged by how many points of
+// disadvantages it asks for: a total nearer zero falls short of it, and one further from zero goes over it.
+func TestPickerSessionNegativeTargets(t *testing.T) {
+	c := check.New(t)
+	type session = pickerSession[*gurps.Trait]
+	cost := func(s *session, row *gurps.Trait) pickerText { return s.cost(row, picker.Points) }
+	hint := (*session).hint
+	for _, tc := range []struct {
+		compare criteria.NumericComparison
+		picks   []string
+		row     string
+		text    func(*session, *gurps.Trait) pickerText
+		want    pickerText
+	}{
+		{criteria.EqualsNumber, nil, "major", hint, pickerText{
+			text: "15 points short. Override to keep it anyway.", state: pickerError,
+		}},
+		{criteria.EqualsNumber, []string{"bad15"}, "major", hint, pickerText{
+			text: "Every pick has a fixed cost.", state: pickerOK,
+		}},
+		{criteria.EqualsNumber, []string{"bad20"}, "major", hint, pickerText{
+			text: "Over by 5 points. Override to keep it anyway.", state: pickerError,
+		}},
+		{criteria.AtLeastNumber, []string{"bad20"}, "major", hint, pickerText{
+			text: "Over by 5 points. Override to keep it anyway.", state: pickerError,
+		}},
+		{criteria.AtMostNumber, []string{"bad5"}, "major", hint, pickerText{
+			text: "10 points short. Override to keep it anyway.", state: pickerError,
+		}},
+		{criteria.EqualsNumber, []string{"either", "major", "bad20"}, "either", cost, pickerText{
+			text: " [-20 points]", tip: "Over: expected -15~-5 points.", state: pickerError,
+		}},
+		{criteria.EqualsNumber, []string{"either", "minor", "quirk1"}, "either", cost, pickerText{
+			text: " [-1 points]", tip: "Under: expected -15~-5 points.", state: pickerError,
+		}},
+		{criteria.AtLeastNumber, []string{"bad20"}, "major", cost, pickerText{
+			text: " [-20 points]", tip: "Over: expected -15~0 points.", state: pickerError,
+		}},
+		{criteria.AtMostNumber, []string{"bad5"}, "major", cost, pickerText{
+			text: " [-5 points]", tip: "Under: expected ≤-15 points.", state: pickerError,
+		}},
+		{criteria.EqualsNumber, []string{"either", "bad10"}, "root", hint, pickerText{
+			text: "5~15 points short. Override to keep it anyway.", state: pickerError,
+		}},
+	} {
+		_, n := newDisadvantageSession()
+		n["major"].TemplatePicker.Qualifier.Compare = tc.compare
+		s := newPickerSession(promptOperation{}, []*gurps.Trait{n["root"]}, true)
+		choose(s, n, tc.picks...)
+		c.Equal(tc.want, tc.text(s, n[tc.row]), tc.row)
+	}
+}
+
+// newOrganizedSession returns a session over "Pick 2" of fear and a choice of honors in the martial group, rank and
+// status in the social group, whose open modifier choice they inherit, the latter nested again, and luck.
+func newOrganizedSession() (s *pickerSession[*gurps.Trait], n map[string]*gurps.Trait) {
+	n = make(map[string]*gurps.Trait)
+	row := func(name string, points int, children ...*gurps.Trait) *gurps.Trait {
+		trait := gurps.NewTrait(nil, nil, len(children) != 0)
+		trait.Name = name
+		trait.BasePoints = fxp.FromInteger(points)
+		trait.Children = children
+		SetParents(children, trait)
+		n[name] = trait
+		return trait
+	}
+	group := func(name string, children ...*gurps.Trait) *gurps.Trait {
+		trait := row(name, 0, children...)
+		trait.PickSeparately = true
+		return trait
+	}
+	pick := func(trait *gurps.Trait, count int) *gurps.Trait {
+		trait.TemplatePicker.Type = picker.Count
+		trait.TemplatePicker.Qualifier.Compare = criteria.EqualsNumber
+		trait.TemplatePicker.Qualifier.Qualifier = fxp.FromInteger(count)
+		return trait
+	}
+	social := group("social", row("rank", 5), group("inner", row("status", 10)))
+	choice := newTraitModifierChoiceFor(nil, true, []string{"+0%", "+100%"})
+	for _, option := range choice.Children {
+		option.CostAdj = option.Name
+	}
+	social.AddModifiers(choice)
+	root := pick(row("root", 0, group("martial", row("fear", 5), pick(row("honors", 0, row("cr", 15), row("hpt", 10)), 1)),
+		social, row("luck", 15)), 2)
+	return newPickerSession(promptOperation{}, []*gurps.Trait{root}, true), n
+}
+
+// rowTree describes the rows as "name[children]".
+func rowTree(rows []*gurps.Trait) string {
+	names := make([]string, len(rows))
+	for i, row := range rows {
+		names[i] = row.Name
+		if row.HasChildren() {
+			names[i] += "[" + rowTree(row.Children) + "]"
+		}
+	}
+	return strings.Join(names, " ")
+}
+
+// TestPickerSessionOrganizingGroups verifies that the options in organizing groups are picked one by one, and that the
+// groups reach the sheet holding only what was picked from them.
+func TestPickerSessionOrganizingGroups(t *testing.T) {
+	c := check.New(t)
+	s, n := newOrganizedSession()
+	root := n["root"]
+	c.Equal("10~35", root.PointsRange(nil).String(), "outside the picker, social's choice is still to be made")
+	c.Equal("10~30", s.expected[pickerMeasureKey[*gurps.Trait]{root, picker.Points}].String(),
+		"the picker counts it as it stands")
+	c.Equal("0 / 2", s.pillText(root))
+	choose(s, n, "fear", "status")
+	c.Equal("2 / 2", s.pillText(root))
+	c.Equal(pickerOK, s.state(root))
+	c.Equal("5", s.actual(n["rank"], picker.Points).String(), "a group's open modifier choice counts as it stands")
+	s.clear(root)
+	c.False(s.hasPicks(root), "clearing reaches into the groups")
+
+	choose(s, n, "fear", "honors", "cr", "status")
+	s.pickerAnswered[root], s.pickerAnswered[n["honors"]] = true, true
+	rows, abort := s.processRows([]*gurps.Trait{root})
+	c.False(abort)
+	c.Equal("martial[fear cr] social[inner[status]]", rowTree(rows), "a nested choice dissolves into its group")
+	c.Nil(rows[0].Parent())
+	c.Equal(rows[0], n["cr"].Parent())
+	c.Equal([]*gurps.Trait{n["martial"], n["inner"], n["social"]}, s.groups, "inner groups first")
+
+	s, n = newOrganizedSession()
+	choose(s, n, "luck")
+	s.pickerAnswered[n["root"]] = true
+	rows, _ = s.processRows([]*gurps.Trait{n["root"]})
+	c.Equal("luck", rowTree(rows), "a group with nothing picked is dropped")
+}
+
+// TestPickerSessionOrganizingGroupsRollUp verifies that a plain container holding a choice with organizing groups
+// comes to what is picked from the options in them.
+func TestPickerSessionOrganizingGroupsRollUp(t *testing.T) {
+	c := check.New(t)
+	_, n := newOrganizedSession()
+	outer := gurps.NewTrait(nil, nil, true)
+	outer.Children = []*gurps.Trait{n["root"]}
+	SetParents(outer.Children, outer)
+	s := newPickerSession(promptOperation{}, []*gurps.Trait{outer}, true)
+	c.True(s.rollsUp(outer))
+	c.Equal("10~30", s.actual(outer, picker.Points).String())
+	c.False(s.resolved(outer))
+	choose(s, n, "fear", "status")
+	c.Equal("15", s.actual(outer, picker.Points).String())
+	c.True(s.resolved(outer))
+}
+
+// TestPickerSessionUnansweredChoiceCostsLive verifies that a choice with nothing picked is costed as the modifier choices
+// above it now stand, not as they stood when the dialog opened.
+func TestPickerSessionUnansweredChoiceCostsLive(t *testing.T) {
+	c := check.New(t)
+	swapForTest(t, &promptForTraitModifiers, func(_ *modifierPromptInfo, mods []*gurps.TraitModifier) (changed, canceled bool) {
+		mods[0].Children[0].SetEnabled(false)
+		mods[0].Children[1].SetEnabled(true)
+		return false, false
+	})
+	root := gurps.NewTrait(nil, nil, true)
+	root.TemplatePicker.Type = picker.Points
+	root.TemplatePicker.Qualifier.Compare = criteria.EqualsNumber
+	root.TemplatePicker.Qualifier.Qualifier = fxp.FromInteger(40)
+	pack := gurps.NewTrait(nil, root, true)
+	root.Children = []*gurps.Trait{pack}
+	choice := newTraitModifierChoiceFor(nil, true, []string{"+0%", "+100%"}, "+0%")
+	for _, option := range choice.Children {
+		option.CostAdj = option.Name
+	}
+	pack.AddModifiers(choice)
+	sub := gurps.NewTrait(nil, pack, true)
+	sub.TemplatePicker.Type = picker.Count
+	sub.TemplatePicker.Qualifier.Compare = criteria.EqualsNumber
+	sub.TemplatePicker.Qualifier.Qualifier = fxp.One
+	pack.Children = []*gurps.Trait{sub}
+	for _, points := range []int{10, 20} {
+		option := gurps.NewTrait(nil, sub, false)
+		option.BasePoints = fxp.FromInteger(points)
+		sub.Children = append(sub.Children, option)
+	}
+	s := newPickerSession(promptOperation{}, []*gurps.Trait{root}, true)
+	s.runPicker = func(*gurps.Trait, int) int { return unison.ModalResponseCancel }
+	s.chooseWithin(pack, 0)
+	c.True(s.modsAnswered[pack])
+	c.Equal("20~40 / 40", s.pillText(root))
+	c.Equal(pickerOpen, s.state(root))
+}
+
+// TestPickerSessionExpectedFollowsModifiers verifies that what a choice below a row is expected to come to follows the
+// row's modifiers once they are chosen, and goes back with them when the dialog they were chosen in is canceled.
+func TestPickerSessionExpectedFollowsModifiers(t *testing.T) {
+	c := check.New(t)
+	swapForTest(t, &promptForTraitModifiers, func(_ *modifierPromptInfo, mods []*gurps.TraitModifier) (changed, canceled bool) {
+		mods[0].Children[0].SetEnabled(false)
+		mods[0].Children[1].SetEnabled(true)
+		return false, false
+	})
+	pick := func(trait *gurps.Trait, children ...*gurps.Trait) *gurps.Trait {
+		trait.TemplatePicker.Type = picker.Count
+		trait.TemplatePicker.Qualifier.Compare = criteria.EqualsNumber
+		trait.TemplatePicker.Qualifier.Qualifier = fxp.One
+		trait.Children = children
+		SetParents(children, trait)
+		return trait
+	}
+	a, b := gurps.NewTrait(nil, nil, false), gurps.NewTrait(nil, nil, false)
+	a.BasePoints, b.BasePoints = fxp.FromInteger(10), fxp.FromInteger(20)
+	n3 := pick(gurps.NewTrait(nil, nil, true), a, b)
+	n := pick(gurps.NewTrait(nil, nil, true), n3)
+	plain := gurps.NewTrait(nil, nil, true)
+	choice := newTraitModifierChoiceFor(nil, true, []string{"+0%", "+100%"}, "+0%")
+	for _, option := range choice.Children {
+		option.CostAdj = option.Name
+	}
+	plain.AddModifiers(choice)
+	plain.Children = []*gurps.Trait{n}
+	SetParents(plain.Children, plain)
+	root := pick(gurps.NewTrait(nil, nil, true), plain)
+	s := newPickerSession(promptOperation{}, []*gurps.Trait{root}, true)
+	s.runPicker = func(row *gurps.Trait, _ int) int {
+		if row == root {
+			s.chooseWithin(plain, 1)
+		}
+		return unison.ModalResponseCancel
+	}
+	key := pickerMeasureKey[*gurps.Trait]{n3, picker.Points}
+	s.choosePicks(root, 0)
+	c.Equal("10~20", s.expected[key].String(), "canceling puts it back")
+	c.True(choice.Children[0].Enabled())
+
+	s.chooseWithin(plain, 0)
+	c.Equal("20~40", s.expected[key].String())
+	s.chosen[n3], s.chosen[b] = true, true
+	c.Equal(pickerText{text: " [40 points]"}, s.cost(n3, picker.Points), "not over")
+}
+
+// TestPickerSessionPhysicalContainerHoldingAChoice verifies that a physical container picked from a choice comes to its
+// own value and weight plus what is picked inside it, less the weight it takes off what it holds.
+func TestPickerSessionPhysicalContainerHoldingAChoice(t *testing.T) {
+	c := check.New(t)
+	root := gurps.NewEquipmentChoiceContainer(nil, nil)
+	root.TemplatePicker.Type = picker.Value
+	root.TemplatePicker.Qualifier.Compare = criteria.EqualsNumber
+	root.TemplatePicker.Qualifier.Qualifier = fxp.FromInteger(70)
+	backpack := gurps.NewEquipment(nil, root, true)
+	backpack.BaseValue = "50"
+	backpack.BaseWeight = "2 lb"
+	reduction := gurps.NewContainedWeightReduction()
+	reduction.Reduction = "50%"
+	backpack.Features = gurps.Features{reduction}
+	root.Children = []*gurps.Equipment{backpack}
+	sub := gurps.NewEquipmentChoiceContainer(nil, backpack)
+	sub.TemplatePicker.Type = picker.Count
+	sub.TemplatePicker.Qualifier.Compare = criteria.EqualsNumber
+	sub.TemplatePicker.Qualifier.Qualifier = fxp.One
+	backpack.Children = []*gurps.Equipment{sub}
+	for _, one := range [][2]string{{"10", "4 lb"}, {"20", "8 lb"}} {
+		option := gurps.NewEquipment(nil, sub, false)
+		option.BaseValue, option.BaseWeight = one[0], one[1]
+		sub.Children = append(sub.Children, option)
+	}
+	s := newPickerSession(promptOperation{}, []*gurps.Equipment{root}, true)
+	s.chosen[backpack] = true
+	c.Equal("$60~70 / $70", s.pillText(root))
+	s.chosen[sub.Children[1]], s.pickerAnswered[sub] = true, true
+	c.Equal("$70 / $70", s.pillText(root))
+	c.Equal(pickerOK, s.state(root))
+	c.Equal("6 lb", formatPickerTotal(backpack, picker.Weight, s.actual(backpack, picker.Weight)))
+	backpack.Quantity = fxp.Two
+	c.Equal("$140", formatPickerTotal(backpack, picker.Value, s.actual(backpack, picker.Value)))
+	c.Equal("12 lb", formatPickerTotal(backpack, picker.Weight, s.actual(backpack, picker.Weight)))
+}
+
+// TestPickerSessionTroubleInsidePlainContainer verifies that a choice overridden with picks missing its rule inside a
+// plain container picked from another choice needs attention there, directly or through an organizing group.
+func TestPickerSessionTroubleInsidePlainContainer(t *testing.T) {
+	c := check.New(t)
+	for _, grouped := range []bool{false, true} {
+		root := gurps.NewTrait(nil, nil, true)
+		root.TemplatePicker.Type = picker.Count
+		root.TemplatePicker.Qualifier.Compare = criteria.EqualsNumber
+		root.TemplatePicker.Qualifier.Qualifier = fxp.One
+		parent := root
+		if grouped {
+			parent = gurps.NewTrait(nil, root, true)
+			parent.PickSeparately = true
+			root.Children = []*gurps.Trait{parent}
+		}
+		pack := gurps.NewTrait(nil, parent, true)
+		pack.Name = "pack"
+		parent.Children = []*gurps.Trait{pack}
+		sub := gurps.NewTrait(nil, pack, true)
+		sub.TemplatePicker.Type = picker.Count
+		sub.TemplatePicker.Qualifier.Compare = criteria.EqualsNumber
+		sub.TemplatePicker.Qualifier.Qualifier = fxp.One
+		pack.Children = []*gurps.Trait{sub}
+		s := newPickerSession(promptOperation{}, []*gurps.Trait{root}, true)
+		s.chosen[pack], s.pickerAnswered[sub] = true, true
+		for range 2 {
+			option := gurps.NewTrait(nil, sub, false)
+			sub.Children = append(sub.Children, option)
+			s.chosen[option] = true
+		}
+		c.Equal(pickerWarning, s.state(root))
+		c.Equal([]*gurps.Trait{pack}, s.troubled(root))
+	}
+}
+
+// TestPickerSessionChooseWithinSkipsAnsweredModifiers verifies that choosing within a row again goes straight to a
+// choice inside it still to be made once its modifiers are answered, and asks everything again once nothing is left.
+func TestPickerSessionChooseWithinSkipsAnsweredModifiers(t *testing.T) {
+	c := check.New(t)
+	var asked []string
+	swapForTest(t, &promptForTraitModifiers, func(info *modifierPromptInfo, mods []*gurps.TraitModifier) (changed, canceled bool) {
+		asked = append(asked, info.name)
+		mods[0].Children[1].SetEnabled(true)
+		return false, false
+	})
+	root := gurps.NewTrait(nil, nil, true)
+	root.TemplatePicker.Type = picker.Count
+	root.TemplatePicker.Qualifier.Compare = criteria.EqualsNumber
+	root.TemplatePicker.Qualifier.Qualifier = fxp.One
+	pack := gurps.NewTrait(nil, root, true)
+	pack.Name = "pack"
+	pack.AddModifiers(newTraitModifierChoiceFor(nil, true, []string{"+1", "+3"}))
+	root.Children = []*gurps.Trait{pack}
+	sub := gurps.NewTrait(nil, pack, true)
+	sub.Name = "sub"
+	sub.TemplatePicker.Type = picker.Count
+	sub.TemplatePicker.Qualifier.Compare = criteria.EqualsNumber
+	sub.TemplatePicker.Qualifier.Qualifier = fxp.One
+	// A choice already made comes before it.
+	done := gurps.NewTrait(nil, pack, true)
+	done.Name = "done"
+	done.TemplatePicker = sub.TemplatePicker
+	pack.Children = []*gurps.Trait{done, sub}
+	option := gurps.NewTrait(nil, sub, false)
+	sub.Children = []*gurps.Trait{option}
+	made := gurps.NewTrait(nil, done, false)
+	done.Children = []*gurps.Trait{made}
+	s := newPickerSession(promptOperation{}, []*gurps.Trait{root}, true)
+	s.chosen[made], s.pickerAnswered[done] = true, true
+	response := unison.ModalResponseCancel
+	s.runPicker = func(row *gurps.Trait, _ int) int {
+		asked = append(asked, row.Name)
+		if response == unison.ModalResponseOK {
+			s.chosen[option] = true
+		}
+		return response
+	}
+	s.chooseWithin(pack, 0)
+	c.Equal([]string{"pack", "sub"}, asked, "a choice already made isn't put up before one still to be made")
+	c.True(s.modsAnswered[pack], "canceling a later popup keeps what an earlier one answered")
+	asked, response = nil, unison.ModalResponseOK
+	s.chooseWithin(pack, 0)
+	c.Equal([]string{"sub"}, asked, "the answered modifiers aren't asked again")
+	c.True(s.resolved(pack))
+	asked = nil
+	s.chooseWithin(pack, 0)
+	c.Equal([]string{"pack", "done", "sub"}, asked, "with nothing left, everything is asked again")
 }

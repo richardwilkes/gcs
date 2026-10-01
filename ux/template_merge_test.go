@@ -298,6 +298,28 @@ func TestPlaceMergesIntoExistingRows(t *testing.T) {
 		c.NotNil(table, "a merge changes the row merged into, so the change must still be reported")
 	})
 
+	t.Run("groups kept for their picks go when all of those merge", func(t *testing.T) {
+		existing := newTestSkill("Brawling", fxp.FromInteger(4), nil)
+		sheet := newTestSheetForTemplate(t)
+		sheet.Entity().Skills = []*gurps.Skill{existing}
+		sheet.Rebuild(true)
+		outer := gurps.NewSkill(nil, nil, true)
+		inner := gurps.NewSkill(nil, outer, true)
+		outer.Children = []*gurps.Skill{inner}
+		child := newTestSkill("Brawling", fxp.FromInteger(2), nil)
+		child.SetParent(inner)
+		inner.Children = []*gurps.Skill{child}
+		part := applyPart[*gurps.Skill]{
+			table:  sheet.Skills.Table,
+			rows:   []*gurps.Skill{outer},
+			index:  -1,
+			groups: []*gurps.Skill{inner, outer},
+		}
+		part.place(true)
+		c.Equal(fxp.FromInteger(6), existing.Points)
+		c.Equal([]*gurps.Skill{existing}, sheet.Entity().Skills, "neither group is kept")
+	})
+
 	// Regression test for #1066: a row nested inside an added container (as when a template is added to the sheet by
 	// dragging it in) merges into an identical existing row, and the now-redundant nested row must leave the table's
 	// view immediately rather than remaining visible until something else causes the table to reload.

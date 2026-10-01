@@ -52,12 +52,15 @@ type pickerSession[T gurps.Node[T]] struct {
 	chosen         map[T]bool
 	pickerAnswered map[T]bool
 	modsAnswered   map[T]bool
-	// above holds the containers above a choice container, whose modifier choices count as they stand for the rows
-	// inside until asked.
+	// above holds the containers above a choice container and the organizing groups, whose modifier choices count as
+	// they stand for the rows inside until asked.
 	above map[T]bool
+	// groups holds the organizing groups kept with what was picked from them, inner ones first.
+	groups []T
 	// modPrompts holds the modifier prompt of each row with modifiers to ask about, as it stood at the start.
 	modPrompts map[T]func(info *modifierPromptInfo) bool
-	// expected holds what each choice container should come to by its rules alone, whatever is picked below it.
+	// expected holds what each choice container should come to by its rules alone, whatever is picked below it, with
+	// the modifiers above it as they stood when last chosen.
 	expected map[pickerMeasureKey[T]]gurps.NumericRange
 	// runPicker puts up the dialog for a choice container, returning how it was closed.
 	runPicker func(row T, depth int) int
@@ -77,10 +80,11 @@ func newPickerSession[T gurps.Node[T]](op promptOperation, rows []T, prompted bo
 		expected:       make(map[pickerMeasureKey[T]]gurps.NumericRange),
 	}
 	s.runPicker = s.showPicker
-	var containers []T
 	gurps.Traverse(func(row T) bool {
+		if gurps.IsOrganizingGroup(row) {
+			s.above[row] = true
+		}
 		if gurps.IsTemplateChoiceContainer(row) {
-			containers = append(containers, row)
 			for parent := row.Parent(); !xreflect.IsNil(parent); parent = parent.Parent() {
 				if !gurps.IsTemplateChoiceContainer(parent) {
 					s.above[parent] = true
@@ -95,12 +99,20 @@ func newPickerSession[T gurps.Node[T]](op promptOperation, rows []T, prompted bo
 		}
 		return false
 	}, false, false, rows...)
-	for _, row := range containers {
-		for _, kind := range []picker.Type{picker.Points, picker.Value, picker.Weight} {
-			s.expected[pickerMeasureKey[T]{row, kind}] = gurps.PickerMeasureRange(row, kind, prompted, s.taken)
-		}
-	}
+	s.expect(rows...)
 	return s
+}
+
+// expect records what each choice container at or below the rows should come to by its rules alone.
+func (s *pickerSession[T]) expect(rows ...T) {
+	gurps.Traverse(func(row T) bool {
+		if gurps.IsTemplateChoiceContainer(row) {
+			for _, kind := range []picker.Type{picker.Points, picker.Value, picker.Weight} {
+				s.expected[pickerMeasureKey[T]{row, kind}] = gurps.PickerMeasureRange(row, kind, s.prompted, s.byRules)
+			}
+		}
+		return false
+	}, false, false, rows...)
 }
 
 // processRows replaces each choice container among the rows, however deep, with what was chosen from it, putting up
@@ -133,16 +145,34 @@ func (s *pickerSession[T]) processRow(row T) (revised []T, abort bool) {
 	if !s.pickerAnswered[row] && s.runPicker(row, 0) == unison.ModalResponseCancel {
 		return nil, true
 	}
-	var chosen []T
-	for _, child := range row.NodeChildren() {
-		if s.chosen[child] {
-			chosen = append(chosen, child)
-		}
-	}
-	if revised, abort = s.processRows(chosen); abort {
+	if revised, abort = s.pickedFrom(row); abort {
 		return nil, true
 	}
 	SetParents(revised, row.Parent())
+	return revised, false
+}
+
+// pickedFrom returns what was picked from the container, processed, keeping each organizing group with only the picks
+// in it and dropping one with none. Returns true for abort if a dialog was canceled.
+func (s *pickerSession[T]) pickedFrom(container T) (revised []T, abort bool) {
+	for _, child := range container.NodeChildren() {
+		var result []T
+		switch {
+		case gurps.IsOrganizingGroup(child):
+			if result, abort = s.pickedFrom(child); len(result) != 0 {
+				child.SetChildren(result)
+				SetParents(result, child)
+				s.groups = append(s.groups, child)
+				result = []T{child}
+			}
+		case s.chosen[child]:
+			result, abort = s.processRow(child)
+		}
+		if abort {
+			return nil, true
+		}
+		revised = append(revised, result...)
+	}
 	return revised, false
 }
 
@@ -150,6 +180,12 @@ func (s *pickerSession[T]) processRow(row T) (revised []T, abort bool) {
 // inherited is true, else for the row itself.
 func (s *pickerSession[T]) taken(row T, inherited bool) bool {
 	return s.modsAnswered[row] || (inherited && s.above[row])
+}
+
+// byRules is taken for a choice costed by its rules alone: the rows inside take the choices of a container above them
+// as they stand, and nothing else counts as made.
+func (s *pickerSession[T]) byRules(row T, inherited bool) bool {
+	return inherited && s.above[row]
 }
 
 // modTargets returns the row and the rows below it that have modifiers to ask about, leaving out a choice below it,
@@ -220,16 +256,25 @@ func (s *pickerSession[T]) chooseModifiers(row T) bool {
 	if answered {
 		s.chosen[row] = true
 	}
+	// The choices below are now expected to come to what their rules give with the modifiers as they stand.
+	s.expect(row)
 	return true
 }
 
-// chooseWithin puts up the modifier prompts for the row, then the dialog for each choice inside it, stopping at the
-// first canceled. Confirming any of those choices checks the row.
+// chooseWithin puts up the modifier prompts for the row, unless all are answered while a choice inside it is still to
+// be made, then the dialog for each choice inside it (only those still to be made, if any are), stopping at the first
+// canceled, which keeps what the popups before it answered. Confirming any of those choices checks the row.
 func (s *pickerSession[T]) chooseWithin(row T, depth int) {
-	if len(s.modTargets(row)) != 0 && !s.chooseModifiers(row) {
+	targets := s.modTargets(row)
+	answered := !slices.ContainsFunc(targets, func(one T) bool { return !s.modsAnswered[one] })
+	pending := slices.ContainsFunc(s.nestedChoices(row), func(choice T) bool { return !s.resolved(choice) })
+	if len(targets) != 0 && (!answered || !pending) && !s.chooseModifiers(row) {
 		return
 	}
 	for _, choice := range s.nestedChoices(row) {
+		if pending && s.resolved(choice) {
+			continue
+		}
 		confirmed, canceled := s.choosePicks(choice, depth)
 		if canceled {
 			return
@@ -264,7 +309,7 @@ func (s *pickerSession[T]) choosePicks(row T, depth int) (confirmed, canceled bo
 
 // clear takes back the container's own picks, leaving the answers below them alone.
 func (s *pickerSession[T]) clear(container T) {
-	for _, child := range container.NodeChildren() {
+	for _, child := range gurps.TemplateChoiceOptions(container) {
 		delete(s.chosen, child)
 	}
 }
@@ -279,10 +324,11 @@ func (s *pickerSession[T]) costText(row T) string {
 	return pointsText(gurps.PickerMeasureRange(row, picker.Points, true, taken))
 }
 
-// snapshot returns what puts back everything a popup for the row can change: the answers, and the levels, points,
-// quantities and enabled modifiers at or below the row.
+// snapshot returns what puts back everything a popup for the row can change: the answers, what choices are expected to
+// come to, and the levels, points, quantities and enabled modifiers at or below the row.
 func (s *pickerSession[T]) snapshot(row T) (restore func()) {
 	chosen, pickerAnswered, modsAnswered := maps.Clone(s.chosen), maps.Clone(s.pickerAnswered), maps.Clone(s.modsAnswered)
+	expected := maps.Clone(s.expected)
 	var undo []func()
 	gurps.Traverse(func(one T) bool {
 		switch item := any(one).(type) {
@@ -299,7 +345,7 @@ func (s *pickerSession[T]) snapshot(row T) (restore func()) {
 		return false
 	}, false, false, row)
 	return func() {
-		s.chosen, s.pickerAnswered, s.modsAnswered = chosen, pickerAnswered, modsAnswered
+		s.chosen, s.pickerAnswered, s.modsAnswered, s.expected = chosen, pickerAnswered, modsAnswered, expected
 		for _, one := range undo {
 			one()
 		}
@@ -318,31 +364,37 @@ func snapshotEnabled[M gurps.Node[M]](undo []func(), modifiers []M) []func() {
 }
 
 func (s *pickerSession[T]) hasPicks(container T) bool {
-	return slices.ContainsFunc(container.NodeChildren(), func(child T) bool { return s.chosen[child] })
+	return slices.ContainsFunc(gurps.TemplateChoiceOptions(container), func(child T) bool { return s.chosen[child] })
 }
 
 // actual returns what the row counts toward a choice made by kind: a choice container answered or with picks, what the
-// picks come to (so a count overridden past its number costs every pick); any other, what its rules expect; a plain
-// container holding a choice, what its rows come to; anything else, its range with the modifiers answered so far.
+// picks come to (so a count overridden past its number costs every pick); any other, what its rules expect; a
+// container that rolls up the choices it holds (see rollsUp), what its rows come to, a physical container adding its
+// own; anything else, its range with the modifiers answered so far.
 func (s *pickerSession[T]) actual(row T, kind picker.Type) gurps.NumericRange {
-	if kind != picker.Count && gurps.IsTemplateChoiceContainer(row) && (s.pickerAnswered[row] || s.hasPicks(row)) {
-		return s.total(row, kind)
-	}
-	if r, ok := s.expected[pickerMeasureKey[T]{row, kind}]; ok {
-		return r
+	if kind != picker.Count && gurps.IsTemplateChoiceContainer(row) {
+		if s.pickerAnswered[row] || s.hasPicks(row) {
+			return s.total(row, kind)
+		}
+		// Costed live, as a container above it may have been answered since.
+		return gurps.PickerMeasureRange(row, kind, s.prompted, s.byRules)
 	}
 	if kind != picker.Count && s.rollsUp(row) {
 		total := gurps.NumericRangeOf(0)
 		for _, child := range row.NodeChildren() {
 			total = total.Add(s.actual(child, kind))
 		}
+		if eqp, ok := any(row).(*gurps.Equipment); ok && eqp.IsPhysicalContainer() {
+			return gurps.PickerMeasureRangeWithContents(row, kind, s.prompted, s.taken, total)
+		}
 		return total
 	}
 	return gurps.PickerMeasureRange(row, kind, s.prompted, s.taken)
 }
 
-// rollsUp returns true if the row holds a choice and costs what its rows add up to. Alternative abilities, a container
-// with a modifier choice of its own still open and one with a value or weight of its own are costed as a whole.
+// rollsUp returns true if the row holds a choice and costs what its rows add up to, a physical equipment container
+// adding its own. Alternative abilities and a trait container with a modifier choice of its own still open are costed
+// as a whole.
 func (s *pickerSession[T]) rollsUp(row T) bool {
 	if len(s.nestedChoices(row)) == 0 {
 		return false
@@ -351,8 +403,6 @@ func (s *pickerSession[T]) rollsUp(row T) bool {
 	case *gurps.Trait:
 		return item.ContainerType != traitcontainer.AlternativeAbilities &&
 			!gurps.HasOpenModifierChoice(row, s.prompted, s.taken)
-	case *gurps.Equipment:
-		return item.IsGroup()
 	default:
 		return true
 	}
@@ -361,7 +411,7 @@ func (s *pickerSession[T]) rollsUp(row T) bool {
 // total returns what the container's picks come to toward a choice made by kind.
 func (s *pickerSession[T]) total(container T, kind picker.Type) gurps.NumericRange {
 	total := gurps.NumericRangeOf(0)
-	for _, child := range container.NodeChildren() {
+	for _, child := range gurps.TemplateChoiceOptions(container) {
 		if s.chosen[child] {
 			total = total.Add(s.actual(child, kind))
 		}
@@ -396,11 +446,17 @@ func (s *pickerSession[T]) state(container T) pickerState {
 	return state
 }
 
-// troubled returns the choices picked from the container that are in error or warning themselves.
+// troubled returns the container's picks that are, or hold, a choice with picks in error or warning.
 func (s *pickerSession[T]) troubled(container T) []T {
-	return s.picks(container, func(child T) bool {
-		return gurps.IsTemplateChoiceContainer(child) && s.hasPicks(child) && s.state(child) >= pickerWarning
-	})
+	return s.picks(container, s.inTrouble)
+}
+
+// inTrouble returns true if the row is a choice with picks in error or warning, or holds one.
+func (s *pickerSession[T]) inTrouble(row T) bool {
+	if gurps.IsTemplateChoiceContainer(row) {
+		return s.hasPicks(row) && s.state(row) >= pickerWarning
+	}
+	return slices.ContainsFunc(s.nestedChoices(row), s.inTrouble)
 }
 
 // unresolved returns the container's picks that have something left to answer.
@@ -411,7 +467,7 @@ func (s *pickerSession[T]) unresolved(container T) []T {
 // picks returns the container's picks that match.
 func (s *pickerSession[T]) picks(container T, match func(T) bool) []T {
 	var list []T
-	for _, child := range container.NodeChildren() {
+	for _, child := range gurps.TemplateChoiceOptions(container) {
 		if s.chosen[child] && match(child) {
 			list = append(list, child)
 		}
@@ -441,13 +497,13 @@ type pickerText struct {
 	state     pickerState
 }
 
-// detail returns what follows the row's name: the modifiers picked for it, or for a choice, what was picked from it or
+// detail returns what follows the row's name: the modifiers enabled on it, or for a choice, what was picked from it or
 // its rule, flagged when its picks miss that rule or have trouble below them.
 func (s *pickerSession[T]) detail(row T) pickerText {
 	if !gurps.IsTemplateChoiceContainer(row) {
 		preconfigured := gurps.IsNodePreconfigured(row)
-		names := pickedModifierNames(row)
-		if len(names) == 0 || (!preconfigured && !s.modsAnswered[row]) {
+		names := enabledModifierNames(row)
+		if len(names) == 0 {
 			return pickerText{}
 		}
 		t := pickerText{text: " [" + strings.Join(names, ", ") + "]"}
@@ -507,10 +563,16 @@ func (s *pickerSession[T]) cost(row T, kind picker.Type) pickerText {
 	}
 	if expected, ok := s.expected[pickerMeasureKey[T]{row, kind}]; ok && s.hasPicks(row) {
 		text := pickerMeasureText(row, kind, expected)
+		above := actual.Min != nil && expected.Max != nil && *actual.Min > *expected.Max
+		below := actual.Max != nil && expected.Min != nil && *actual.Max < *expected.Min
+		if expected.Sign() == gurps.NumericRangeNegative {
+			// Negative points are judged by how many are expected, so nearer zero is under.
+			above, below = below, above
+		}
 		switch {
-		case actual.Min != nil && expected.Max != nil && *actual.Min > *expected.Max:
+		case above:
 			t.tip, t.state = fmt.Sprintf(i18n.Text("Over: expected %s."), text), pickerError
-		case actual.Max != nil && expected.Min != nil && *actual.Max < *expected.Min:
+		case below:
 			t.tip, t.state = fmt.Sprintf(i18n.Text("Under: expected %s."), text), pickerError
 		default:
 		}
@@ -526,18 +588,23 @@ func (s *pickerSession[T]) hint(container T) pickerText {
 	var parts []string
 	if s.ownState(container) == pickerError {
 		total, target := s.total(container, tp.Type), tp.Qualifier.Qualifier
+		overBy, short := i18n.Text("Over by %s."), i18n.Text("%s short.")
+		if target < 0 {
+			// Negative points are judged by how many are asked for, so nearer zero is short.
+			overBy, short = short, overBy
+		}
 		switch {
 		case tp.Type == picker.Count:
 			parts = append(parts, s.ruleMiss(container))
 		case total.Min != nil && *total.Min > target:
-			over := total.Add(gurps.NumericRangeOf(-target))
-			parts = append(parts, fmt.Sprintf(i18n.Text("Over by %s."), pickerMeasureText(container, tp.Type, over)))
+			above := total.Add(gurps.NumericRangeOf(-target))
+			parts = append(parts, fmt.Sprintf(overBy, pickerMeasureText(container, tp.Type, above)))
 		case total.Max != nil && *total.Max < target:
-			short := gurps.NumericRange{Min: new(target - *total.Max)}
+			below := gurps.NumericRange{Min: new(target - *total.Max)}
 			if total.Min != nil {
-				short.Max = new(target - *total.Min)
+				below.Max = new(target - *total.Min)
 			}
-			parts = append(parts, fmt.Sprintf(i18n.Text("%s short."), pickerMeasureText(container, tp.Type, short)))
+			parts = append(parts, fmt.Sprintf(short, pickerMeasureText(container, tp.Type, below)))
 		default:
 			parts = append(parts, s.ruleMiss(container))
 		}
@@ -617,25 +684,23 @@ func rowNames[T gurps.Node[T]](rows []T) string {
 	return strings.Join(names, ", ")
 }
 
-// pickedModifierNames returns the names of the options picked in the row's modifier choices.
-func pickedModifierNames[T gurps.Node[T]](row T) []string {
+// enabledModifierNames returns the names of the modifiers enabled on the row.
+func enabledModifierNames[T gurps.Node[T]](row T) []string {
 	switch item := any(row).(type) {
 	case *gurps.Trait:
-		return pickedOptionNames(item.Modifiers)
+		return enabledNames(item.Modifiers)
 	case *gurps.Equipment:
-		return pickedOptionNames(item.Modifiers)
+		return enabledNames(item.Modifiers)
 	default:
 		return nil
 	}
 }
 
-func pickedOptionNames[M gurps.Node[M]](modifiers []M) []string {
+func enabledNames[M gurps.Node[M]](modifiers []M) []string {
 	var names []string
 	gurps.Traverse(func(m M) bool {
 		if gm, ok := any(m).(gurps.GeneralModifier); ok {
-			if _, isOption := gurps.ModifierChoiceFor(m); isOption {
-				names = append(names, gm.NameWithReplacements())
-			}
+			names = append(names, gm.NameWithReplacements())
 		}
 		return false
 	}, true, true, modifiers...)
