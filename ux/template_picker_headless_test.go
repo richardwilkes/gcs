@@ -190,6 +190,31 @@ func TestPickerRowTextIsNeverCut(t *testing.T) {
 	})
 }
 
+// A trait's name follows its level when the level is changed while picking.
+func TestPickerRowNameFollowsLevel(t *testing.T) {
+	c := check.New(t)
+	screen, _ := startHeadlessWorkspace(t, c)
+	screen.Do(func() {
+		trait := gurps.NewTrait(nil, nil, false)
+		trait.Name = "Fearlessness"
+		trait.CanLevel = true
+		trait.Levels = fxp.One
+		list := &pickerList{panel: unison.NewPanel(), pt: picker.Points, refresh: func() {}}
+		update := newPickerSession(promptOperation{}, []*gurps.Trait{trait}, false).addPickerRow(list, trait, nil,
+			false, 0)
+		has := func(title string) bool {
+			return slices.ContainsFunc(panelsOfType[*unison.Label](list.panel),
+				func(label *unison.Label) bool { return label.String() == title })
+		}
+		update()
+		c.True(has("Fearlessness 1"), "the name shows the level")
+		trait.Levels = fxp.Three
+		update()
+		c.True(has("Fearlessness 3"), "the name shows the new level")
+		c.False(has("Fearlessness 1"), "and no longer the old one")
+	})
+}
+
 // A picker too tall for the display keeps its place in the list when a click refreshes it.
 func TestPickerDialogKeepsItsScrollPosition(t *testing.T) {
 	c := check.New(t)
