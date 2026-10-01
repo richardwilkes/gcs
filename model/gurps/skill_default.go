@@ -215,8 +215,6 @@ func (s *SkillDefault) FullName(entity *Entity, replacements map[string]string) 
 		}
 	}
 	switch s.Type() {
-	case DodgeID:
-		buffer.WriteString(i18n.Text(" Dodge"))
 	case ParryID:
 		buffer.WriteString(i18n.Text(" Parry"))
 	case BlockID:
