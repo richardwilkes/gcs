@@ -647,7 +647,6 @@ func (s *pickerSession[T]) addPickerRow(list *pickerList, row T, disclosure *uni
 		}
 		text.AddChild(label)
 	}
-	name.SetTitle(row.String())
 	panels := []unison.Paneler{text}
 	var onClick func()
 	var editTooltip string
@@ -717,6 +716,8 @@ func (s *pickerSession[T]) addPickerRow(list *pickerList, row T, disclosure *uni
 	}
 	return func() {
 		checkBox.State = check.FromBool(s.chosen[row])
+		// The name holds a trait's level, which may have been changed since.
+		name.SetTitle(row.String())
 		setPickerText(detail, s.detail(row), unison.ThemeOnSurface)
 		if pt == picker.Points || pt == picker.Count {
 			setPickerText(cost, s.cost(row, picker.Points), unison.ThemeOnSurface)
