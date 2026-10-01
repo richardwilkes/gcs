@@ -159,7 +159,7 @@ func (ws WeaponStrength) Tooltip(w *Weapon) string {
 			tooltip.WriteString("\n\n")
 		}
 		if ws.TwoHandedUnready {
-			fmt.Fprintf(&tooltip, i18n.Text("‡: Requires two hands and becomes unready after you attack with it. If you have at least ST %v, you can used it two-handed without it becoming unready. If you have at least ST %v, you can use it one-handed with no readiness penalty."), ws.Min.Mul(fxp.OneAndAHalf).Ceil(), ws.Min.Mul(fxp.Three).Ceil())
+			fmt.Fprintf(&tooltip, i18n.Text("‡: Requires two hands and becomes unready after you attack with it. If you have at least ST %v, you can use it two-handed without it becoming unready. If you have at least ST %v, you can use it one-handed with no readiness penalty."), ws.Min.Mul(fxp.OneAndAHalf).Ceil(), ws.Min.Mul(fxp.Three).Ceil())
 		} else {
 			fmt.Fprintf(&tooltip, i18n.Text("†: Requires two hands. If you have at least ST %v, you can use it one-handed, but it becomes unready after you attack with it. If you have at least ST %v, you can use it one-handed with no readiness penalty."), ws.Min.Mul(fxp.OneAndAHalf).Ceil(), ws.Min.Mul(fxp.Two).Ceil())
 		}
