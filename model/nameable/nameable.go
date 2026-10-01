@@ -98,17 +98,13 @@ func ApplyToList(in []string, replacements map[string]string) []string {
 	if len(in) == 0 {
 		return nil
 	}
-
 	out := make([]string, len(in))
-
 	for i, str := range in {
 		if !strings.ContainsRune(str, MarkerDelimiter) {
 			out[i] = str
 			continue
 		}
-
 		var sb strings.Builder
-
 		for _, part := range ExtractParts(str, MarkerDelimiter, MarkerDelimiter) {
 			if part.Placeholder {
 				if m, ok := NewMarker(UnescapeRunes(part.Value, MarkerDelimiter)); ok {
@@ -133,7 +129,6 @@ func ApplyToList(in []string, replacements map[string]string) []string {
 		}
 		out[i] = sb.String()
 	}
-
 	return out
 }
 
@@ -152,18 +147,19 @@ func Reduce(nameables, replacements map[string]string) map[string]string {
 	if len(nameables) == 0 || len(replacements) == 0 {
 		return nil
 	}
-
-	ret := make(map[string]string, min(len(nameables), len(replacements)))
+	result := make(map[string]string, min(len(nameables), len(replacements)))
 	for k, v := range replacements {
 		if v == Unset {
 			continue
 		}
 		if _, found := nameables[k]; found {
-			ret[k] = v
+			result[k] = v
 		}
 	}
-
-	return ret
+	if len(result) == 0 {
+		return nil
+	}
+	return result
 }
 
 // Missing returns the nameable keys that have no replacement, in no particular order.
@@ -175,17 +171,17 @@ func Missing(nameables, replacements map[string]string) []string {
 	if len(nameables) == 0 {
 		return nil
 	}
-
 	if len(replacements) == 0 {
 		return slices.Collect(maps.Keys(nameables))
 	}
-
 	missing := make([]string, 0, min(len(nameables), len(replacements)))
 	for k := range nameables {
 		if _, exists := replacements[k]; !exists {
 			missing = append(missing, k)
 		}
 	}
-
+	if len(missing) == 0 {
+		return nil
+	}
 	return missing
 }
