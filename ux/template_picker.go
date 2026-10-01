@@ -855,7 +855,7 @@ func pickerListMinSize() geom.Size {
 	_, button, _ := NewSVGButtonForFont(svg.Edit, font, -2).Sizes(geom.Size{})
 	row = max(row, button.Height)
 	// The list's border is StdHSpacing all around.
-	return geom.NewSize(xmath.Ceil(font.SimpleWidth("n")*60),
+	return geom.NewSize(xmath.Ceil(font.SimpleWidth("n")*80),
 		xmath.Ceil(row*pickerListMinRows+unison.StdVSpacing*(pickerListMinRows-1))).
 		Add(geom.NewUniformInsets(unison.StdHSpacing).Size())
 }

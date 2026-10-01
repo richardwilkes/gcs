@@ -130,7 +130,7 @@ func TestPickerDialogFitsItsContent(t *testing.T) {
 	s, n := newKnightSession()
 	// Names long enough that the rows, rather than the buttons, set the dialog's width.
 	n["order"].Name = "Knightly Order of the Realm"
-	n["lion"].Name = "Order of the Lion, Sworn to the Crown"
+	n["lion"].Name = "Order of the Lion, Sworn to the Crown and to the Defense of the Realm Against All Its Foes"
 	choose(s, n, "ea", "ep", "fit", "order")
 	screen.Do(func() {
 		dialog, refresh := s.newPickerDialog(n["root"], 0)
