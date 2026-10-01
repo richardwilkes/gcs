@@ -263,18 +263,28 @@ func TestPickerSessionPreconfiguredModifiers(t *testing.T) {
 	c := check.New(t)
 	var early *earlyModifierPrompt
 	var asked [][]*gurps.TraitModifier
+	var locked []string
 	swapForTest(t, &promptForTraitModifiers, func(info *modifierPromptInfo, mods []*gurps.TraitModifier) (changed, canceled bool) {
 		early = info.early
 		asked = append(asked, mods)
+		locked = info.locked
 		return false, false
 	})
-	s, n := newKnightSession()
+	_, n := newKnightSession()
 	resPart := n["resPart"]
+	for _, name := range []string{"Fixed", "Off"} {
+		mod := gurps.NewTraitModifier(nil, nil, false)
+		mod.Name = name
+		mod.SetEnabled(name == "Fixed")
+		resPart.AddModifiers(mod)
+	}
+	s := newPickerSession(promptOperation{}, []*gurps.Trait{n["root"]}, true)
 	c.Equal([]*gurps.Trait{resPart}, s.modTargets(resPart))
 	s.chooseModifiers(resPart)
 	c.NotNil(early)
 	c.True(early.preconfigured)
 	c.Equal([][]*gurps.TraitModifier{{resPart.Modifiers[1]}}, asked)
+	c.Equal([]string{"+10", "Fixed"}, locked, "the enabled modifiers it doesn't ask about follow the name")
 
 	resPart.Modifiers[1].Children[0].SetEnabled(true)
 	s = newPickerSession(promptOperation{}, []*gurps.Trait{n["root"]}, true)
