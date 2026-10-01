@@ -150,20 +150,3 @@ func TestNewFromFSRefusesOldFormats(t *testing.T) {
 	_, err = NewFromFS(os.DirFS(dir), "new.colors")
 	c.NoError(err)
 }
-
-// TestOnAlertContrasts verifies that text on the alert color, which follows it as the theme changes, reads well against
-// the factory colors at the WCAG's enhanced level, and against any color a theme might choose, mid-tones included, well
-// past its level for large text.
-func TestOnAlertContrasts(t *testing.T) {
-	c := check.New(t)
-	on := deriveOnAlert(*Alert)
-	c.True(contrast(Alert.Light, on.Light) >= 7, "light: %v on %v", on.Light, Alert.Light)
-	c.True(contrast(Alert.Dark, on.Dark) >= 7, "dark: %v on %v", on.Dark, Alert.Dark)
-	c.True(on.Light.PerceivedLightness() < Alert.Light.PerceivedLightness(), "the factory text is darker than the color")
-	for _, base := range []unison.Color{
-		unison.RGB(255, 255, 255), unison.RGB(0, 0, 0), unison.RGB(255, 255, 0), unison.RGB(0, 0, 255),
-		unison.RGB(255, 0, 0), unison.RGB(0, 128, 0), unison.RGB(128, 128, 128), unison.RGB(160, 120, 40),
-	} {
-		c.True(contrast(base, onAlert(base)) >= 4, "%v on %v", onAlert(base), base)
-	}
-}

@@ -11,7 +11,6 @@ package colors
 
 import (
 	"io/fs"
-	"math"
 	"sync"
 
 	"github.com/richardwilkes/gcs/v5/model/jio"
@@ -37,8 +36,6 @@ var (
 var (
 	Header                  = &unison.ThemeColor{Light: unison.RGB(80, 80, 80), Dark: unison.RGB(64, 64, 64)}
 	OnHeader                = Header.DeriveOn()
-	Alert                   = &unison.ThemeColor{Light: unison.RGB(232, 200, 96), Dark: unison.RGB(204, 172, 76)}
-	OnAlert                 = Alert.Derive(deriveOnAlert)
 	TintPortrait            = &unison.ThemeColor{Light: unison.Transparent, Dark: unison.Transparent}
 	TintIdentity            = &unison.ThemeColor{Light: unison.Transparent, Dark: unison.Transparent}
 	TintMisc                = &unison.ThemeColor{Light: unison.Transparent, Dark: unison.Transparent}
@@ -62,39 +59,6 @@ var (
 	TintOtherEquipment      = &unison.ThemeColor{Light: unison.Transparent, Dark: unison.Transparent}
 	TintNotes               = &unison.ThemeColor{Light: unison.Transparent, Dark: unison.Transparent}
 )
-
-// deriveOnAlert returns the color of text drawn on the alert color: a deep shade of its own hue, or a pale tint of it
-// when that would stand further apart, so the text keeps the alert's tone while reading well against it.
-func deriveOnAlert(basedOn unison.ThemeColor) unison.ThemeColor {
-	return unison.ThemeColor{Light: onAlert(basedOn.Light), Dark: onAlert(basedOn.Dark)}
-}
-
-func onAlert(c unison.Color) unison.Color {
-	_, chroma, hue := c.OKLCH()
-	shade := unison.OKLCH(0.22, min(chroma, 0.05), hue, 1)
-	tint := unison.OKLCH(0.98, min(chroma, 0.02), hue, 1)
-	if contrast(c, tint) > contrast(c, shade) {
-		return tint
-	}
-	return shade
-}
-
-// contrast returns the WCAG contrast ratio of the two colors, from 1 for no difference up to 21 for black on white.
-func contrast(a, b unison.Color) float64 {
-	la, lb := luminance(a), luminance(b)
-	return (max(la, lb) + 0.05) / (min(la, lb) + 0.05)
-}
-
-// luminance returns the WCAG relative luminance of the color.
-func luminance(c unison.Color) float64 {
-	channel := func(v float32) float64 {
-		if v <= 0.04045 {
-			return float64(v) / 12.92
-		}
-		return math.Pow((float64(v)+0.055)/1.055, 2.4)
-	}
-	return 0.2126*channel(c.RedIntensity()) + 0.7152*channel(c.GreenIntensity()) + 0.0722*channel(c.BlueIntensity())
-}
 
 // ThemedColor holds a themed color.
 type ThemedColor struct {
@@ -164,7 +128,7 @@ func initialize() {
 		{ID: "tooltip", Title: i18n.Text("Tooltip"), Color: unison.ThemeTooltip},
 		{ID: "error", Title: i18n.Text("Error"), Color: unison.ThemeError},
 		{ID: "warning", Title: i18n.Text("Warning"), Color: unison.ThemeWarning},
-		{ID: "alert", Title: i18n.Text("Needs Attention"), Color: Alert},
+		{ID: "alert", Title: i18n.Text("Needs Attention"), Color: unison.ThemeAlert},
 		{ID: "cursor_fg", Title: i18n.Text("Cursor Foreground"), Color: unison.ThemeCursorForeground},
 		{ID: "cursor_bg", Title: i18n.Text("Cursor Background"), Color: unison.ThemeCursorBackground},
 		{ID: "tint_portrait", Title: i18n.Text("Portrait"), Color: TintPortrait},

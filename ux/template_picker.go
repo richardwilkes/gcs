@@ -14,7 +14,6 @@ import (
 	"slices"
 	"time"
 
-	"github.com/richardwilkes/gcs/v5/model/colors"
 	"github.com/richardwilkes/gcs/v5/model/fonts"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
@@ -265,7 +264,7 @@ type pickerPillLook struct {
 // all is well in green. What is still open needs attention, in the theme's alert color, without yet being a problem.
 var pickerPillLooks = [...]pickerPillLook{
 	pickerOK:      {icon: unison.CheckmarkSVG, background: unison.Green, onBackground: unison.Green.On()},
-	pickerOpen:    {icon: unison.CircledQuestionSVG, background: colors.Alert, onBackground: colors.OnAlert},
+	pickerOpen:    {icon: unison.CircledQuestionSVG, background: unison.ThemeAlert, onBackground: unison.ThemeOnAlert},
 	pickerWarning: {icon: unison.TriangleExclamationSVG, background: unison.ThemeWarning, onBackground: unison.ThemeOnWarning},
 	pickerError:   {icon: svg.Not, background: unison.ThemeError, onBackground: unison.ThemeOnError},
 }
@@ -763,8 +762,8 @@ func (s *pickerSession[T]) updateChooseButton(button *unison.Button, row T) {
 	// While open, it is drawn as a small pill in the alert color, as the dialog's pill is.
 	button.HideBase = !open
 	if open {
-		button.BackgroundInk = colors.Alert
-		button.OnBackgroundInk = colors.OnAlert
+		button.BackgroundInk = unison.ThemeAlert
+		button.OnBackgroundInk = unison.ThemeOnAlert
 		button.Tooltip = newWrappedTooltip(tip)
 	} else {
 		button.BackgroundInk = unison.DefaultButtonTheme.BackgroundInk

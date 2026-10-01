@@ -14,7 +14,6 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/richardwilkes/gcs/v5/model/colors"
 	"github.com/richardwilkes/gcs/v5/model/criteria"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
@@ -492,7 +491,7 @@ func TestPickerStatePill(t *testing.T) {
 	for state, want := range map[pickerState]pickerPillLook{
 		pickerOK: {icon: unison.CheckmarkSVG, background: unison.Green, onBackground: unison.Green.On()},
 		pickerOpen: {
-			icon: unison.CircledQuestionSVG, background: colors.Alert, onBackground: colors.OnAlert,
+			icon: unison.CircledQuestionSVG, background: unison.ThemeAlert, onBackground: unison.ThemeOnAlert,
 		},
 		pickerWarning: {
 			icon: unison.TriangleExclamationSVG, background: unison.ThemeWarning, onBackground: unison.ThemeOnWarning,
