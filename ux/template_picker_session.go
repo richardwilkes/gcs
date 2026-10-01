@@ -497,13 +497,13 @@ type pickerText struct {
 	state     pickerState
 }
 
-// detail returns what follows the row's name: the modifiers picked for it, or for a choice, what was picked from it or
+// detail returns what follows the row's name: the modifiers enabled on it, or for a choice, what was picked from it or
 // its rule, flagged when its picks miss that rule or have trouble below them.
 func (s *pickerSession[T]) detail(row T) pickerText {
 	if !gurps.IsTemplateChoiceContainer(row) {
 		preconfigured := gurps.IsNodePreconfigured(row)
-		names := pickedModifierNames(row)
-		if len(names) == 0 || (!preconfigured && !s.modsAnswered[row]) {
+		names := enabledModifierNames(row)
+		if len(names) == 0 {
 			return pickerText{}
 		}
 		t := pickerText{text: " [" + strings.Join(names, ", ") + "]"}
@@ -684,25 +684,23 @@ func rowNames[T gurps.Node[T]](rows []T) string {
 	return strings.Join(names, ", ")
 }
 
-// pickedModifierNames returns the names of the options picked in the row's modifier choices.
-func pickedModifierNames[T gurps.Node[T]](row T) []string {
+// enabledModifierNames returns the names of the modifiers enabled on the row.
+func enabledModifierNames[T gurps.Node[T]](row T) []string {
 	switch item := any(row).(type) {
 	case *gurps.Trait:
-		return pickedOptionNames(item.Modifiers)
+		return enabledNames(item.Modifiers)
 	case *gurps.Equipment:
-		return pickedOptionNames(item.Modifiers)
+		return enabledNames(item.Modifiers)
 	default:
 		return nil
 	}
 }
 
-func pickedOptionNames[M gurps.Node[M]](modifiers []M) []string {
+func enabledNames[M gurps.Node[M]](modifiers []M) []string {
 	var names []string
 	gurps.Traverse(func(m M) bool {
 		if gm, ok := any(m).(gurps.GeneralModifier); ok {
-			if _, isOption := gurps.ModifierChoiceFor(m); isOption {
-				names = append(names, gm.NameWithReplacements())
-			}
+			names = append(names, gm.NameWithReplacements())
 		}
 		return false
 	}, true, true, modifiers...)

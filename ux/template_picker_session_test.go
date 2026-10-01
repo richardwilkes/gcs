@@ -689,12 +689,23 @@ func TestPickerSessionRowText(t *testing.T) {
 		c.Equal(tc.want, tc.text(s, n[tc.row]), tc.row)
 	}
 
+	// Every enabled modifier shows, picked in a choice or not, answered or not, even with another choice still open.
 	s, n := newKnightSession()
 	wm := n["wm"]
+	for _, name := range []string{"Fixed", "Off"} {
+		mod := gurps.NewTraitModifier(nil, nil, false)
+		mod.Name = name
+		wm.AddModifiers(mod)
+	}
+	wm.Modifiers[2].SetEnabled(false)
+	open := newTraitModifierChoiceFor(nil, true, []string{"x1", "x2"})
+	wm.AddModifiers(open)
+	c.Equal(pickerText{text: " [Fixed]"}, s.detail(wm))
 	wm.Modifiers[0].Children[1].SetEnabled(true)
-	c.Equal(pickerText{}, s.detail(wm), "a pick is only a default until answered")
+	c.Equal(pickerText{text: " [+25, Fixed]"}, s.detail(wm), "the pick shows while the other choice is open")
 	s.modsAnswered[wm] = true
-	c.Equal(pickerText{text: " [+25]"}, s.detail(wm))
+	c.Equal(pickerText{text: " [+25, Fixed]"}, s.detail(wm))
+	c.Equal(pickerText{}, s.detail(n["ea"]), "no modifiers, nothing to show")
 
 	// A rule asking for anything but its number says so when the picks come to it.
 	s, n = newKnightSession()
