@@ -14,6 +14,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/richardwilkes/gcs/v5/model/colors"
 	"github.com/richardwilkes/gcs/v5/model/criteria"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
@@ -474,14 +475,14 @@ func TestPickerSessionChoosesEquipmentModifiers(t *testing.T) {
 }
 
 // TestPickerStatePill verifies that each state has its own look, in the theme's own colors save for green when all is
-// well, so the pill follows the theme.
+// well, so the pill follows the theme. What is still open is in the alert color.
 func TestPickerStatePill(t *testing.T) {
 	c := check.New(t)
 	pill, update := newPickerStatePill(0)
 	for state, want := range map[pickerState]pickerPillLook{
 		pickerOK: {icon: unison.CheckmarkSVG, background: unison.Green, onBackground: unison.Green.On()},
 		pickerOpen: {
-			icon: unison.CircledQuestionSVG, background: unison.ThemeFocus, onBackground: unison.ThemeOnFocus,
+			icon: unison.CircledQuestionSVG, background: colors.Alert, onBackground: colors.OnAlert,
 		},
 		pickerWarning: {
 			icon: unison.TriangleExclamationSVG, background: unison.ThemeWarning, onBackground: unison.ThemeOnWarning,

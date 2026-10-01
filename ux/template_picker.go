@@ -14,6 +14,7 @@ import (
 	"slices"
 	"time"
 
+	"github.com/richardwilkes/gcs/v5/model/colors"
 	"github.com/richardwilkes/gcs/v5/model/fonts"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
@@ -23,6 +24,7 @@ import (
 	"github.com/richardwilkes/toolbox/v2/errs"
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/i18n"
+	"github.com/richardwilkes/toolbox/v2/xmath"
 	"github.com/richardwilkes/toolbox/v2/xreflect"
 	"github.com/richardwilkes/toolbox/v2/xstrings"
 	"github.com/richardwilkes/unison"
@@ -103,17 +105,7 @@ func (s *pickerSession[T]) newPickerDialog(row T, depth int) (dialog *unison.Dia
 	progress, updateProgress := newPickerStatePill(unison.StdVSpacing * 2)
 	progress.Side = side.Right
 	scroll := unison.NewScrollPanel()
-	hint := newWrappingLabel()
-	hint.font = fonts.FieldSecondary
-	// The hint wraps to the list's width rather than widening the dialog.
-	hint.SetSizer(func(size geom.Size) (minSize, prefSize, maxSize geom.Size) {
-		if size.Width <= 0 {
-			_, pref, _ := scroll.Sizes(geom.Size{})
-			size.Width = pref.Width
-		}
-		return hint.sizes(size)
-	})
-	hint.SetLayoutData(&unison.FlexLayoutData{HSpan: 2, HAlign: align.Fill})
+	hint, updateHint := newPickerHint(scroll)
 	refresh = func() {
 		for _, update := range list.updates {
 			update()
@@ -121,8 +113,7 @@ func (s *pickerSession[T]) newPickerDialog(row T, depth int) (dialog *unison.Dia
 		state := s.state(row)
 		updateProgress(state, s.pillText(row))
 		progress.Tooltip = newWrappedTooltip(s.pillTip(row))
-		t := s.hint(row)
-		hint.setText(t.text, pickerStateInks[t.state])
+		updateHint(s.hint(row))
 		// The dialog is first sized with the text above in place; it widens if later text needs more room.
 		if dialog != nil {
 			dialog.Button(unison.ModalResponseOK).SetEnabled(state == pickerOK)
@@ -137,6 +128,9 @@ func (s *pickerSession[T]) newPickerDialog(row T, depth int) (dialog *unison.Dia
 	scroll.SetBorder(unison.NewLineBorder(unison.ThemeSurfaceEdge, geom.Size{}, geom.NewUniformInsets(1), false))
 	scroll.SetContent(list.panel, behavior.Fill, behavior.Fill)
 	scroll.BackgroundInk = unison.ThemeSurface
+	// The list has room for a number of rows however few it holds, so opening a group shows what it holds without the
+	// dialog having to grow.
+	scroll.SetLayout(&minSizeLayout{Layout: scroll, minimum: pickerListMinSize()})
 	scroll.SetLayoutData(&unison.FlexLayoutData{
 		HAlign: align.Fill,
 		VAlign: align.Fill,
@@ -208,6 +202,7 @@ func (s *pickerSession[T]) newPickerDialog(row T, depth int) (dialog *unison.Dia
 		errs.Log(err)
 		return nil, nil
 	}
+	holdMinSizeOnDisplay(dialog.Window())
 	overrideTip := i18n.Text("Accept the checked options whether or not they satisfy the choice, leaving any choices still to be made below them for when the template is applied")
 	dialog.Button(unison.ModalResponseUserBase).Tooltip = newWrappedTooltip(overrideTip)
 	if depth > 0 {
@@ -267,10 +262,10 @@ type pickerPillLook struct {
 }
 
 // pickerPillLooks holds the state pill's look in each state. Its colors are the theme's, so they follow it, save that
-// all is well in green.
+// all is well in green. What is still open needs attention, in the theme's alert color, without yet being a problem.
 var pickerPillLooks = [...]pickerPillLook{
 	pickerOK:      {icon: unison.CheckmarkSVG, background: unison.Green, onBackground: unison.Green.On()},
-	pickerOpen:    {icon: unison.CircledQuestionSVG, background: unison.ThemeFocus, onBackground: unison.ThemeOnFocus},
+	pickerOpen:    {icon: unison.CircledQuestionSVG, background: colors.Alert, onBackground: colors.OnAlert},
 	pickerWarning: {icon: unison.TriangleExclamationSVG, background: unison.ThemeWarning, onBackground: unison.ThemeOnWarning},
 	pickerError:   {icon: svg.Not, background: unison.ThemeError, onBackground: unison.ThemeOnError},
 }
@@ -818,24 +813,107 @@ func pickerTextInk(t pickerText, plain unison.Ink) unison.Ink {
 	return plain
 }
 
-// growWindowToFit grows the window, as far as its display allows, when its content has come to want more room than it
-// has, as when a group is opened. It never shrinks, so closing a group leaves it be. Only a size that fits the display is
-// set, since one the display then cut back would lose the list's place.
+// growWindowToFit widens the window, as far as its display allows, when its content has come to want more width than it
+// has. Its height is left alone, as the list scrolls and already has room for a number of rows, so the list keeps its
+// place.
 func growWindowToFit(wnd *unison.Window) {
-	_, want, _ := wnd.Content().Sizes(geom.Size{})
+	_, pref, _ := wnd.Content().Sizes(geom.Size{})
 	r := wnd.ContentRect()
+	width := pref.Width
 	if d := wnd.Display(); d != nil {
-		frame := wnd.FrameRect()
-		want.Width = min(want.Width, d.Usable.Width-(frame.Width-r.Width))
-		want.Height = min(want.Height, d.Usable.Height-(frame.Height-r.Height))
+		width = min(width, d.Usable.Width-(wnd.FrameRect().Width-r.Width))
 	}
-	if want.Width <= r.Width && want.Height <= r.Height {
-		return
+	if width > r.Width {
+		r.Width = width
+		wnd.SetContentRect(r)
+		wnd.EnsureOnDisplay()
 	}
-	r.Width = max(r.Width, want.Width)
-	r.Height = max(r.Height, want.Height)
-	wnd.SetContentRect(r)
-	wnd.EnsureOnDisplay()
+}
+
+// holdMinSizeOnDisplay keeps the window at least as large as its content's minimum size, as a window is by default,
+// save where its display has no room for that, where it is held to no more than the display allows.
+func holdMinSizeOnDisplay(wnd *unison.Window) {
+	wnd.MinMaxContentSizeCallback = func() (minimum, maximum geom.Size) {
+		minimum, _, maximum = wnd.Content().Sizes(geom.Size{})
+		if d := wnd.Display(); d != nil {
+			frame, r := wnd.FrameRect(), wnd.ContentRect()
+			minimum.Width = min(minimum.Width, d.Usable.Width-(frame.Width-r.Width))
+			minimum.Height = min(minimum.Height, d.Usable.Height-(frame.Height-r.Height))
+		}
+		return minimum, maximum
+	}
+}
+
+// pickerListMinRows is how many rows the picker's list has room for, however few it holds.
+const pickerListMinRows = 10
+
+// pickerListMinSize returns the least room the picker's list is given inside its scroll panel's border: enough for
+// pickerListMinRows rows of options, and a width to go with it.
+func pickerListMinSize() geom.Size {
+	font := unison.DefaultCheckBoxTheme.Font
+	row := max(pickerCheckBoxSize().Height, pickerDisclosureSize().Height, font.LineHeight())
+	_, button, _ := NewSVGButtonForFont(svg.Edit, font, -2).Sizes(geom.Size{})
+	row = max(row, button.Height)
+	// The list's border is StdHSpacing all around.
+	return geom.NewSize(xmath.Ceil(font.SimpleWidth("n")*60),
+		xmath.Ceil(row*pickerListMinRows+unison.StdVSpacing*(pickerListMinRows-1))).
+		Add(geom.NewUniformInsets(unison.StdHSpacing).Size())
+}
+
+// minSizeLayout is a layout that asks for at least a minimum size for what it lays out, beyond the border, and prefers
+// no less than that either.
+type minSizeLayout struct {
+	unison.Layout
+	minimum geom.Size
+}
+
+func (l *minSizeLayout) LayoutSizes(target *unison.Panel, hint geom.Size) (minSize, prefSize, maxSize geom.Size) {
+	minSize, prefSize, maxSize = l.Layout.LayoutSizes(target, hint)
+	minimum := l.minimum
+	if border := target.Border(); border != nil {
+		minimum = minimum.Add(border.Insets().Size())
+	}
+	minSize = geom.NewSize(max(minSize.Width, minimum.Width), max(minSize.Height, minimum.Height))
+	prefSize = geom.NewSize(max(prefSize.Width, minSize.Width), max(prefSize.Height, minSize.Height))
+	maxSize = geom.NewSize(max(maxSize.Width, prefSize.Width), max(maxSize.Height, prefSize.Height))
+	return minSize, prefSize, maxSize
+}
+
+// newPickerHint returns the line under the picker's list, which wraps to the list's width rather than widening the
+// dialog, and the function that sets its text. A warning or an error is set out as a notice, in a box of the theme's
+// color for it with text in the color drawn on that; anything else is plain text in its state's color.
+func newPickerHint(scroll *unison.ScrollPanel) (hint *textLabel, update func(t pickerText)) {
+	hint = newWrappingLabel()
+	hint.font = fonts.FieldSecondary
+	hint.SetSizer(func(size geom.Size) (minSize, prefSize, maxSize geom.Size) {
+		if size.Width <= 0 {
+			_, pref, _ := scroll.Sizes(geom.Size{})
+			size.Width = pref.Width
+		}
+		return hint.sizes(size)
+	})
+	hint.SetLayoutData(&unison.FlexLayoutData{HSpan: 2, HAlign: align.Fill})
+	var box unison.Ink
+	hint.DrawCallback = func(gc *unison.Canvas, dirty geom.Rect) {
+		if box != nil {
+			r := hint.ContentRect(true)
+			gc.DrawRoundedRect(r, geom.NewUniformSize(4), box.Paint(gc, r, paintstyle.Fill))
+		}
+		hint.draw(gc, dirty)
+	}
+	update = func(t pickerText) {
+		if t.state == pickerWarning || t.state == pickerError {
+			look := pickerPillLooks[t.state]
+			box = look.background
+			hint.SetBorder(unison.NewEmptyBorder(geom.NewSymmetricInsets(unison.StdHSpacing, unison.StdVSpacing)))
+			hint.setText(t.text, look.onBackground)
+			return
+		}
+		box = nil
+		hint.SetBorder(nil)
+		hint.setText(t.text, pickerStateInks[t.state])
+	}
+	return hint, update
 }
 
 // pickerWeightUnits returns the units the picker dialog shows weights in: those of the sheet the row being picked from
