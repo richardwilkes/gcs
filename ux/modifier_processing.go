@@ -12,6 +12,7 @@ package ux
 import (
 	"fmt"
 	"slices"
+	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/fonts"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
@@ -41,6 +42,8 @@ type modifierPromptInfo struct {
 	op promptOperation
 	// name is the row's name.
 	name string
+	// locked holds the names of the row's enabled modifiers the prompt doesn't ask about, shown after its name.
+	locked []string
 	// location is the row's kind and the containers above it (see rowLocation). It is empty for a top-level row.
 	location string
 	// step is the prompt's place among the rows being asked about, counting from 1, and steps is how many rows there
@@ -103,22 +106,42 @@ func promptForModifierTargets[T gurps.Node[T]](op promptOperation, targets []T, 
 func modifierPromptOf[T gurps.Node[T]](row T, requirePicks, asked bool) func(info *modifierPromptInfo) bool {
 	switch t := any(row).(type) {
 	case *gurps.Trait:
-		return modifierPromptFor(modifiersToAskAbout(row, t.Modifiers, requirePicks, asked), promptForTraitModifiers)
+		return modifierPromptFor(t.Modifiers, modifiersToAskAbout(row, t.Modifiers, requirePicks, asked),
+			promptForTraitModifiers)
 	case *gurps.Equipment:
-		return modifierPromptFor(modifiersToAskAbout(row, t.Modifiers, requirePicks, asked), promptForEquipmentModifiers)
+		return modifierPromptFor(t.Modifiers, modifiersToAskAbout(row, t.Modifiers, requirePicks, asked),
+			promptForEquipmentModifiers)
 	default:
 		return nil
 	}
 }
 
-func modifierPromptFor[M gurps.Node[M]](mods []M, prompt func(*modifierPromptInfo, []M) (changed, canceled bool)) func(*modifierPromptInfo) bool {
+func modifierPromptFor[M gurps.Node[M]](all, mods []M, prompt func(*modifierPromptInfo, []M) (changed, canceled bool)) func(*modifierPromptInfo) bool {
 	if len(mods) == 0 {
 		return nil
 	}
 	return func(info *modifierPromptInfo) bool {
+		info.locked = lockedModifierNames(all, mods)
 		_, canceled := prompt(info, mods)
 		return canceled
 	}
+}
+
+// lockedModifierNames returns the names of the enabled modifiers among all that aren't in asked or below one of them.
+func lockedModifierNames[M gurps.Node[M]](all, asked []M) []string {
+	var names []string
+	gurps.Traverse(func(m M) bool {
+		for one := m; !xreflect.IsNil(one); one = one.Parent() {
+			if slices.Contains(asked, one) {
+				return false
+			}
+		}
+		if gm, ok := any(m).(gurps.GeneralModifier); ok {
+			names = append(names, gm.NameWithReplacements())
+		}
+		return false
+	}, true, true, all...)
+	return names
 }
 
 // modifiersToAskAbout returns the modifiers of the row to ask about: all of them for a row that isn't preconfigured or
@@ -154,7 +177,12 @@ func showModifiersDialog[T gurps.Node[T]](info *modifierPromptInfo, modifiers []
 	if info.steps > 1 {
 		header = fmt.Sprintf(i18n.Text("Select Modifiers (%d of %d) for:"), info.step, info.steps)
 	}
-	extraHeaders := []*unison.Label{newTruncatedLabel(info.name, maxRowNameLength, unison.SystemFont)}
+	name, maxLen := info.name, maxRowNameLength
+	if len(info.locked) != 0 {
+		name += " [" + strings.Join(info.locked, ", ") + "]"
+		maxLen = maxContextLineLength
+	}
+	extraHeaders := []*unison.Label{newTruncatedLabel(name, maxLen, unison.SystemFont)}
 	if info.location != "" {
 		extraHeaders = append(extraHeaders, newTruncatedLabel(info.location, maxContextLineLength, fonts.FieldSecondary))
 	}
