@@ -512,8 +512,8 @@ func TestModifierSelectionTreatsChoicesByKind(t *testing.T) {
 	c.Nil(s.choices[0].updateStatus)
 }
 
-// TestModifierSelectionClearsAndPreviews verifies that clearing takes back the choices' picks but not the check boxes,
-// that a preview sees the answers without keeping them, and that a name still to be filled in is in italics.
+// TestModifierSelectionClearsAndPreviews verifies that clearing takes back the choices' picks and unchecks the check
+// boxes, that a preview sees the answers without keeping them, and that a name still to be filled in is in italics.
 func TestModifierSelectionClearsAndPreviews(t *testing.T) {
 	c := check.New(t)
 	mandatory := newTraitModifierChoiceFor(nil, true, []string{"Low", "@High@"}, "Low")
@@ -540,7 +540,7 @@ func TestModifierSelectionClearsAndPreviews(t *testing.T) {
 	c.Equal("Low, Hot, Plain", enabled(), "a preview keeps nothing")
 	s.clear()
 	c.False(s.complete())
-	c.Equal("Plain", s.preview(enabled))
+	c.Equal("", s.preview(enabled))
 	c.False(newModifierSelection(mods, true, false).italics)
 }
 
