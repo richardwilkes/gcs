@@ -15,6 +15,7 @@ import (
 	"encoding/json/v2"
 	"fmt"
 	"hash"
+	"slices"
 	"strings"
 	"sync"
 	"unsafe"
@@ -362,6 +363,9 @@ func (w *Weapon) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 		localData.TID = tid.MustNewTID(weaponKind(localData.Type == "melee_weapon"))
 	}
 	w.WeaponData = localData.WeaponData
+	// A JSON null in the defaults array decodes into a nil pointer without error, and every walker over the defaults
+	// dereferences it, so drop such entries the same way Skill.UnmarshalJSONFrom does.
+	w.Defaults = slices.DeleteFunc(w.Defaults, func(one *SkillDefault) bool { return one == nil })
 	w.Validate()
 	return nil
 }

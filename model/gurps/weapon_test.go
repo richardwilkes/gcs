@@ -65,6 +65,38 @@ func TestWeaponParryAndBlockStorage(t *testing.T) {
 	c.Equal(gurps.WeaponBlock{}, loadedWeapon.Block)
 }
 
+// TestWeaponWithNullDefaultEntry verifies that a JSON null in a weapon's "defaults" array is dropped rather than
+// dereferenced, mirroring the handling in Skill.UnmarshalJSONFrom. Such an entry decodes into a nil pointer without
+// error, and the walkers over the defaults -- skill level resolution, hashing, nameable extraction -- dereference it.
+func TestWeaponWithNullDefaultEntry(t *testing.T) {
+	c := check.New(t)
+	e := gurps.NewEntity()
+	addDXSkill(e, "Broadsword", difficulty.Average, fxp.FromInteger(4)) // DX+1, i.e. level 11
+	e.Recalculate()
+
+	owner := gurps.NewTrait(e, nil, false)
+	owner.Name = "Sword"
+	var w gurps.Weapon
+	c.NoError(jio.Unmarshal([]byte(`{"type":"melee_weapon","usage":"Swung",`+
+		`"defaults":[null,{"type":"skill","name":{"compare":"is","qualifier":"Broadsword"},"modifier":-2}]}`), &w),
+		"a weapon with a null default entry should load")
+	c.Equal(1, len(w.Defaults), "the null entry was dropped and the usable one kept")
+	w.Owner = owner
+	owner.Weapons = []*gurps.Weapon{&w}
+	e.Traits = append(e.Traits, owner)
+	e.Recalculate()
+
+	// The surviving default still resolves, so the null entry cost nothing but itself.
+	c.Equal(fxp.FromInteger(9), w.SkillLevel(nil), "the weapon defaults to Broadsword-2")
+
+	// The other walkers over the defaults must be equally safe.
+	c.NotPanics(func() { gurps.Hash64(&w) }, "hashing must not panic")
+	c.NotPanics(func() { w.HashDisplayedState() }, "hashing the displayed state must not panic")
+	c.NotPanics(func() { w.FillWithNameableKeys(make(map[string]string), nil) },
+		"nameable extraction must not panic")
+	c.NotPanics(func() { w.Clone(gurps.LibraryFile{}, e, nil, gurps.Reference) }, "cloning must not panic")
+}
+
 // TestWeaponColumnHasData verifies that ColumnHasData reports hideable columns as empty until they hold meaningful data,
 // and always reports non-hideable columns as having data. See issue #161.
 func TestWeaponColumnHasData(t *testing.T) {
