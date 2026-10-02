@@ -458,6 +458,102 @@ func TestPrereqPanelDragAndDrop(t *testing.T) {
 		"a drop is one step to undo")
 }
 
+// TestPrereqPanelDragFromRow checks that a row can be dragged by its sentence, and that a click on a sentence still
+// opens its row.
+func TestPrereqPanelDragFromRow(t *testing.T) {
+	c := check.New(t)
+	screen, _ := startHeadlessWorkspace(t, c)
+	root := newTestPrereqTree()
+	p, _ := showPrereqPanel(t, screen, &root, false)
+	var sentence, head *unison.Panel
+	var below geom.Point
+	screen.Do(func() {
+		registerWindowDragTypes(p.Window())
+		sentence = p.FindRefKey("r.0" + keySentence)
+		head = p.FindRefKey("r.1" + keyMore).Parent()
+		below = geom.NewPoint(40, head.FrameRect().Height*0.8)
+	})
+	screen.Drag(screen.PanelCenter(sentence), screen.PanelPoint(head, below), 10)
+	c.Equal([]prereq.Type{prereq.List, prereq.Skill, prereq.Script, prereq.Trait, prereq.Unknown}, prereqShape(root))
+	c.Equal("", p.open, "the drag didn't also click")
+	screen.Do(func() { sentence = p.FindRefKey("r.0.0" + keySentence) })
+	screen.Click(screen.PanelCenter(sentence))
+	c.Equal("r.0.0", p.open)
+}
+
+// TestPrereqPanelLevelChip checks that a skill's level of at least 0 is shown, that removing it leaves no level, and
+// that a skill or trait the editor adds starts with none.
+func TestPrereqPanelLevelChip(t *testing.T) {
+	c := check.New(t)
+	screen, _ := startHeadlessWorkspace(t, c)
+	root := newTestPrereqTree()
+	p, _ := showPrereqPanel(t, screen, &root, false)
+	screen.Do(func() { p.toggle("r.1.0") })
+	screen.Do(func() {
+		buttons := panelsOfType[*unison.Button](p.FindRefKey("r.1.0:level" + keyChip))
+		c.NotEqual(0, len(buttons), "a skill's level of at least 0 is a chip")
+		buttons[len(buttons)-1].ClickCallback()
+		for _, label := range []string{"Skill", "Trait"} {
+			prereqMenuAction(p.addEntries(p.tree(), prereqRootPath), label)()
+		}
+	})
+	skill, ok := p.node("r.1.0").(*gurps.SkillPrereq)
+	c.True(ok)
+	c.Equal(criteria.AnyNumber, skill.LevelCriteria.Compare, "removing the chip leaves no level")
+	newSkill, ok := p.node("r.3").(*gurps.SkillPrereq)
+	c.True(ok)
+	c.Equal(criteria.AnyNumber, newSkill.LevelCriteria.Compare)
+	newTrait, ok := p.node("r.4").(*gurps.TraitPrereq)
+	c.True(ok)
+	c.Equal(criteria.AnyNumber, newTrait.LevelCriteria.Compare)
+}
+
+// TestPrereqPanelChipOrder checks that the buttons adding unused criteria follow the chips in use, and that an added
+// criterion takes its place among those chips.
+func TestPrereqPanelChipOrder(t *testing.T) {
+	c := check.New(t)
+	screen, _ := startHeadlessWorkspace(t, c)
+	root := newTestPrereqTree()
+	p, _ := showPrereqPanel(t, screen, &root, false)
+	order := func() []string {
+		children := p.FindRefKey("r.1.0:level" + keyChip).Parent().Children()
+		keys := make([]string, 0, len(children))
+		for _, child := range children {
+			keys = append(keys, child.RefKey[len("r.1.0:"):])
+		}
+		return keys
+	}
+	screen.Do(func() { p.toggle("r.1.0") })
+	screen.Do(func() {
+		c.Equal([]string{"level" + keyChip, "add specialization", "add optional specialization"}, order())
+		panelsOfType[*unison.Button](p.FindRefKey("r.1.0:add specialization"))[0].ClickCallback()
+	})
+	screen.Do(func() {
+		c.Equal([]string{"specialization" + keyChip, "level" + keyChip, "add optional specialization"}, order())
+	})
+}
+
+// TestPrereqPanelButtonsLineUp checks that the more buttons of rows and groups, open or not and at any depth, share a
+// right edge, as do the add buttons of the root and a nested group.
+func TestPrereqPanelButtonsLineUp(t *testing.T) {
+	c := check.New(t)
+	screen, _ := startHeadlessWorkspace(t, c)
+	root := newTestPrereqTree()
+	p, _ := showPrereqPanel(t, screen, &root, false)
+	screen.Do(func() { p.toggle("r.1.0") })
+	screen.Do(func() {
+		p.ValidateLayout()
+		right := func(key string) float32 {
+			b := p.FindRefKey(key)
+			return b.RectToRoot(b.ContentRect(true)).Right()
+		}
+		for _, path := range []string{"r.1", "r.1.0", "r.1.1", "r.2"} {
+			c.Equal(right("r.0"+keyMore), right(path+keyMore), path)
+		}
+		c.Equal(right("r.1"+keyAdd), right(prereqRootPath+keyAdd))
+	})
+}
+
 // seedEveryPrereqControl turns on every optional criterion of the prerequisites in the root, and adds a group with a
 // tech level and nothing in it, so that an audit sees every control the panel can show.
 func seedEveryPrereqControl(root *gurps.PrereqList) {

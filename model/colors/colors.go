@@ -38,11 +38,11 @@ var (
 	OnHeader                = Header.DeriveOn()
 	Success                 = &unison.ThemeColor{Light: unison.RGB(0, 128, 0), Dark: unison.RGB(80, 180, 90)}
 	Failure                 = &unison.ThemeColor{Light: unison.RGB(133, 20, 20), Dark: unison.RGB(230, 110, 110)}
-	Grouping1               = &unison.ThemeColor{Light: unison.RGB(0, 114, 178), Dark: unison.RGB(86, 160, 224)}
-	Grouping2               = &unison.ThemeColor{Light: unison.RGB(170, 90, 140), Dark: unison.RGB(214, 140, 190)}
-	Grouping3               = &unison.ThemeColor{Light: unison.RGB(0, 130, 110), Dark: unison.RGB(60, 190, 160)}
-	Grouping4               = &unison.ThemeColor{Light: unison.RGB(140, 110, 40), Dark: unison.RGB(200, 170, 90)}
-	Grouping5               = &unison.ThemeColor{Light: unison.RGB(100, 100, 140), Dark: unison.RGB(160, 160, 200)}
+	Grouping1               = &unison.ThemeColor{Light: unison.RGB(106, 47, 176), Dark: unison.RGB(132, 59, 220)}
+	Grouping2               = &unison.ThemeColor{Light: unison.RGB(0, 107, 102), Dark: unison.RGB(0, 114, 109)}
+	Grouping3               = &unison.ThemeColor{Light: unison.RGB(158, 31, 110), Dark: unison.RGB(183, 36, 128)}
+	Grouping4               = &unison.ThemeColor{Light: unison.RGB(94, 107, 0), Dark: unison.RGB(96, 109, 0)}
+	Grouping5               = &unison.ThemeColor{Light: unison.RGB(128, 72, 24), Dark: unison.RGB(152, 86, 29)}
 	TintPortrait            = &unison.ThemeColor{Light: unison.Transparent, Dark: unison.Transparent}
 	TintIdentity            = &unison.ThemeColor{Light: unison.Transparent, Dark: unison.Transparent}
 	TintMisc                = &unison.ThemeColor{Light: unison.Transparent, Dark: unison.Transparent}

@@ -22,6 +22,9 @@ import (
 	"github.com/richardwilkes/unison/enums/paintstyle"
 )
 
+// gripInk is the color of an idle handle: plain to see on a light surface, yet still quiet on a dark one.
+var gripInk = unison.ThemeSurface.DeriveLightness(-0.3, 0.15)
+
 // DragHandle provides a simple draggable handle.
 type DragHandle struct {
 	unison.Panel
@@ -63,7 +66,7 @@ func (h *DragHandle) draw(gc *unison.Canvas, rect geom.Rect) {
 	if h.rollover {
 		ink = unison.ThemeFocus
 	} else {
-		ink = unison.DefaultDockTheme.GripInk
+		ink = gripInk
 	}
 	h.svg.DrawInRect(gc, h.ContentRect(false), nil, ink.Paint(gc, rect, paintstyle.Fill))
 }
