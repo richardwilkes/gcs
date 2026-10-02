@@ -174,7 +174,7 @@ func (d *generalSettingsDockable) createCheckboxBlock(content *unison.Panel) {
 	box = d.addGeneralCheckBox(content,
 		i18n.Text("Include static text and disabled controls in the Tab order for screen readers"),
 		&gs.FocusForReading, func() { gurps.GlobalSettings().General.UpdateFocusForReading() })
-	box.Tooltip = newWrappedTooltip(i18n.Text(`When enabled and a screen reader is in use, labels, other static text and disabled controls become Tab stops, as do the buttons a character sheet otherwise leaves out of the Tab order, such as its randomize buttons, so they can be reached by moving the keyboard focus alone. A disabled control reached this way is announced as unavailable and still cannot be changed. Nothing changes when no screen reader is in use.`))
+	box.Tooltip = newWrappedTooltip(i18n.Text(`When enabled and a screen reader is in use, labels, other static text and disabled controls become Tab stops, as do the buttons a character sheet otherwise leaves out of the Tab order, such as its randomize buttons, so they can be reached by moving the keyboard focus alone. A disabled control reached this way is announced as unavailable and still cannot be changed. Nothing changes when no assistive technology is in use.`))
 }
 
 // addGeneralCheckBox adds a checkbox for the general setting that value points at, keeping it in the field column of
