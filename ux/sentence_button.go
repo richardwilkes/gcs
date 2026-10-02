@@ -158,6 +158,11 @@ func (b *sentenceButton) lines(width float32) []*unison.Text {
 	return text.BreakToWidth(width)
 }
 
+// lineHeight returns the height of a line of the sentence, with the border above and below it.
+func (b *sentenceButton) lineHeight() float32 {
+	return unison.DefaultLabelTheme.Font.LineHeight() + b.Border().Insets().Height()
+}
+
 func (b *sentenceButton) sizes(hint geom.Size) (minSize, prefSize, maxSize geom.Size) {
 	insets := b.Border().Insets()
 	for _, line := range b.lines(hint.Width - insets.Width()) {

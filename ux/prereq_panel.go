@@ -93,10 +93,15 @@ func showCheckIcon(label *unison.Label, status checkStatus) {
 		// Without an icon the label took no room, so the panels around it must be laid out again.
 		label.MarkForLayoutRecursivelyUpward()
 	}
-	size := unison.DefaultLabelTheme.Font.Baseline()
-	label.Drawable = &unison.DrawableSVG{SVG: icon, Size: geom.NewSize(size, size).Ceil()}
+	size := checkIconSize()
+	label.Drawable = &unison.DrawableSVG{SVG: icon, Size: geom.NewSize(size, size)}
 	label.OnBackgroundInk = ink
 	label.MarkForRedraw()
+}
+
+// checkIconSize returns the width and height of the icon showCheckIcon shows.
+func checkIconSize() float32 {
+	return xmath.Ceil(unison.DefaultLabelTheme.Font.Baseline())
 }
 
 // faint returns the ink at 30% opacity.
@@ -459,7 +464,7 @@ func (p *prereqPanel) statusIcon(parent *unison.Panel) *unison.Label {
 	icon.Accessibility.Role = role.None
 	insets := geom.Insets{Left: 4}
 	if p.entity == nil {
-		insets.Left += xmath.Ceil(unison.DefaultLabelTheme.Font.Baseline())
+		insets.Left += checkIconSize()
 	}
 	icon.SetBorder(unison.NewEmptyBorder(insets))
 	put(parent, icon)
@@ -592,7 +597,8 @@ func (p *prereqPanel) group(list *gurps.PrereqList, path string) *unison.Panel {
 	pill.Font = desc.Font()
 	head.ClientData()[prereqDropKey] = path
 	if path != prereqRootPath {
-		p.grip(head, path)
+		grip := p.grip(head, path)
+		putOnLine(grip.AsPanel(), controlHeight(head), grip.svg.Size.Height)
 	}
 	// An empty root has nothing for its pill or status to speak of.
 	if path != prereqRootPath || len(list.Prereqs) != 0 {
@@ -614,10 +620,7 @@ func (p *prereqPanel) group(list *gurps.PrereqList, path string) *unison.Panel {
 	if path != prereqRootPath {
 		p.moreButton(head, list, path)
 	} else {
-		// The root's add button is spelled out, as a cue to what the bare ones below do, and keeps room for the more
-		// button the root doesn't have, so that it lines up with them.
-		add.SetTitle(i18n.Text("Add"))
-		add.HideBase = false
+		// The root keeps room for the more button it doesn't have, so that its add button lines up with the others.
 		room := newPrereqIconButton("", svg.CircledVerticalEllipsis, "")
 		room.Hidden = true
 		put(head, room)
@@ -661,7 +664,7 @@ func (p *prereqPanel) row(pr gurps.Prereq, path string) *unison.Panel {
 	open := path == p.open
 	row := unison.NewPanel()
 	row.ClientData()[prereqDropKey] = path
-	p.grip(row, path)
+	grip := p.grip(row, path)
 	view := prereqView{node: pr, icon: p.statusIcon(row)}
 	var main *unison.Panel
 	if open {
@@ -707,6 +710,12 @@ func (p *prereqPanel) row(pr gurps.Prereq, path string) *unison.Panel {
 	p.views = append(p.views, view)
 	p.moreButton(row, pr, path)
 	hbox(row, unison.StdHSpacing)
+	line := controlHeight(row)
+	if !open {
+		line = view.sentence.lineHeight()
+	}
+	putOnLine(grip.AsPanel(), line, grip.svg.Size.Height)
+	putOnLine(view.icon.AsPanel(), line, checkIconSize())
 	for _, child := range row.Children() {
 		if child == main {
 			child.SetLayoutData(&unison.FlexLayoutData{HAlign: align.Fill, VAlign: align.Middle, HGrab: true})
@@ -732,12 +741,13 @@ func (p *prereqPanel) row(pr gurps.Prereq, path string) *unison.Panel {
 }
 
 // grip adds a drag handle to the row, which may be a group's head, and lets either be dragged to move the node at the
-// path.
-func (p *prereqPanel) grip(row *unison.Panel, path string) {
+// path. It returns the handle.
+func (p *prereqPanel) grip(row *unison.Panel, path string) *DragHandle {
 	handle := NewDragHandle(prereqDragKey, nil)
-	put(row, handle)
+	row.AddChild(handle)
 	p.dragBy(handle.AsPanel(), row, path)
 	p.dragBy(row, row, path)
+	return handle
 }
 
 // dragBy lets a press on target that moves far enough to be a drag move the node at the path, shown as an image of the
@@ -1667,6 +1677,20 @@ func put(parent *unison.Panel, child unison.Paneler) {
 		child.AsPanel().SetLayoutData(&unison.FlexLayoutData{VAlign: align.Middle})
 	}
 	parent.AddChild(child)
+}
+
+// putOnLine has the child, an icon of the size, sit at the top of its row, centered on a first line of the height
+// rather than on the whole row, whose sentence may wrap.
+func putOnLine(child *unison.Panel, height, size float32) {
+	var insets geom.Insets
+	if border := child.Border(); border != nil {
+		insets = border.Insets()
+	}
+	insets.Top = (height - size) / 2
+	// Room below that makes the whole height whole, which sizers would otherwise round up, pushing the icon down.
+	insets.Bottom = xmath.Ceil(insets.Top+size) - insets.Top - size
+	child.SetBorder(unison.NewEmptyBorder(insets))
+	child.SetLayoutData(&unison.FlexLayoutData{VAlign: align.Start})
 }
 
 // hbox lays out the panel's children in a row that fills the width, returning the panel.

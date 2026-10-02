@@ -140,10 +140,9 @@ func newScriptEditor(get func() string, set func(string), opts *scriptEditorOpti
 		row := unison.NewPanel()
 		e.icon = unison.NewLabel()
 		e.icon.Accessibility.Role = role.None // The text says the outcome.
-		e.icon.SetBorder(unison.NewEmptyBorder(geom.Insets{Top: 2}))
-		e.icon.SetLayoutData(&unison.FlexLayoutData{VAlign: align.Start})
 		row.AddChild(e.icon)
 		e.result = newSentenceButton("", nil, nil)
+		putOnLine(e.icon.AsPanel(), e.result.lineHeight(), checkIconSize())
 		e.result.SetLayoutData(&unison.FlexLayoutData{HAlign: align.Fill, HGrab: true})
 		row.AddChild(e.result)
 		e.AddChild(hbox(row, unison.StdIconGap))
