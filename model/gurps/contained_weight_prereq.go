@@ -74,11 +74,23 @@ func (p *ContainedWeightPrereq) Satisfied(entity *Entity, exclude any, tooltip *
 	}
 	if !satisfied && tooltip != nil {
 		tooltip.WriteString(prefix)
-		tooltip.WriteString(HasText(p.Has))
-		tooltip.WriteString(i18n.Text(" a contained weight which "))
-		tooltip.WriteString(p.WeightCriteria.Describe(SheetSettingsFor(entity).DefaultWeightUnits))
+		tooltip.WriteString(p.describe(entity))
 	}
 	return satisfied
+}
+
+// Describe implements Prereq. The weight is given in the global default weight units.
+func (p *ContainedWeightPrereq) Describe(_ map[string]string, _ func(string) string) string {
+	return p.describe(nil)
+}
+
+// describe returns the description, giving the weight in the default weight units of the entity, which may be nil.
+func (p *ContainedWeightPrereq) describe(entity *Entity) string {
+	text := HasText(p.Has) + i18n.Text(" a contained weight")
+	if p.WeightCriteria.Compare != criteria.AnyNumber {
+		text += i18n.Text(" of ") + p.WeightCriteria.AltDescribe(SheetSettingsFor(entity).DefaultWeightUnits)
+	}
+	return text
 }
 
 // Hash writes this object's contents into the hasher.

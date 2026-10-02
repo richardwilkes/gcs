@@ -10,8 +10,11 @@
 package gurps
 
 import (
+	"fmt"
 	"hash"
 	"strings"
+	"unicode"
+	"unicode/utf8"
 
 	"github.com/richardwilkes/gcs/v5/model/criteria"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/prereq"
@@ -145,6 +148,56 @@ func (p *PrereqList) Satisfied(entity *Entity, exclude any, buffer *xbytes.Inser
 		}
 	}
 	return satisfied
+}
+
+// Describe implements Prereq. The children are joined with "and" or "or" to match the list's mode, a nested list with
+// more than one child is parenthesized, and a tech level condition is noted at the end.
+func (p *PrereqList) Describe(replacements map[string]string, em func(string) string) string {
+	return p.describeChildren(replacements, em) + p.describeWhenTL()
+}
+
+func (p *PrereqList) describeChildren(replacements map[string]string, em func(string) string) string {
+	parts := make([]string, 0, len(p.Prereqs))
+	for i, one := range p.Prereqs {
+		list, isList := one.(*PrereqList)
+		var text string
+		if isList {
+			text = list.describeChildren(replacements, em)
+		} else {
+			text = one.Describe(replacements, em)
+		}
+		if i != 0 {
+			text = lowerFirst(text)
+		}
+		if isList {
+			if len(list.Prereqs) > 1 {
+				text = "(" + text + ")"
+			}
+			text += list.describeWhenTL()
+		}
+		parts = append(parts, text)
+	}
+	if p.All {
+		return strings.Join(parts, i18n.Text(" and "))
+	}
+	return strings.Join(parts, i18n.Text(" or "))
+}
+
+func (p *PrereqList) describeWhenTL() string {
+	if p.WhenTL.Compare == criteria.AnyNumber {
+		return ""
+	}
+	return fmt.Sprintf(i18n.Text(" (only when TL %s)"), p.WhenTL.AltString())
+}
+
+// lowerFirst lowercases the first letter of text when it begins a word that continues in lowercase, so a description
+// can follow a joining word without lowering a name or an acronym.
+func lowerFirst(text string) string {
+	r, size := utf8.DecodeRuneInString(text)
+	if next, _ := utf8.DecodeRuneInString(text[size:]); unicode.IsUpper(r) && (unicode.IsLower(next) || next == '\'') {
+		return string(unicode.ToLower(r)) + text[size:]
+	}
+	return text
 }
 
 // Hash writes this object's contents into the hasher.

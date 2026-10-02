@@ -16,6 +16,7 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/prereq"
 	"github.com/richardwilkes/gcs/v5/model/nameable"
+	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/toolbox/v2/xbytes"
 	"github.com/richardwilkes/toolbox/v2/xhash"
 )
@@ -66,6 +67,11 @@ func (s *ScriptPrereq) Hash(h hash.Hash) {
 // FillWithNameableKeys implements Prereq.
 func (s *ScriptPrereq) FillWithNameableKeys(m, existing map[string]string) {
 	nameable.Extract(m, existing, s.Script)
+}
+
+// Describe implements Prereq.
+func (s *ScriptPrereq) Describe(_ map[string]string, _ func(string) string) string {
+	return i18n.Text("Passes a custom check")
 }
 
 // Satisfied implements Prereq.

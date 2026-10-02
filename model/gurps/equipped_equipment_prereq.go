@@ -87,12 +87,40 @@ func (p *EquippedEquipmentPrereq) Satisfied(entity *Entity, exclude any, tooltip
 			*hasEquipmentPenalty = true
 		}
 		if tooltip != nil {
-			fmt.Fprintf(tooltip, i18n.Text("%sHas equipment which is equipped and whose name %s %s"),
-				prefix, p.NameCriteria.String(replacements),
-				p.TagsCriteria.StringWithPrefix(replacements, i18n.Text("and at least one tag"), i18n.Text("and all tags")))
+			tooltip.WriteString(prefix)
+			tooltip.WriteString(p.Describe(replacements, plainText))
 		}
 	}
 	return satisfied
+}
+
+// Describe implements Prereq.
+func (p *EquippedEquipmentPrereq) Describe(replacements map[string]string, em func(string) string) string {
+	tags := p.TagsCriteria.Compare != criteria.AnyText
+	var text string
+	switch {
+	case p.NameCriteria.Compare == criteria.IsText && p.NameCriteria.Qualifier != "":
+		text = fmt.Sprintf(i18n.Text("Has %s equipped"), em(nameable.Apply(p.NameCriteria.Qualifier, replacements)))
+	case p.NameCriteria.Compare != criteria.AnyText:
+		text = i18n.Text("Has equipped equipment whose name ") + describeText(p.NameCriteria, replacements, em)
+	case tags:
+		text = i18n.Text("Has equipped equipment")
+	default:
+		return i18n.Text("Has any equipment equipped")
+	}
+	if tags {
+		q := nameable.Apply(p.TagsCriteria.Qualifier, replacements)
+		if q != "" {
+			q = em(q)
+		}
+		if p.TagsCriteria.Compare == criteria.IsText && q != "" {
+			text += i18n.Text(" tagged ") + q
+		} else {
+			text += " " + p.TagsCriteria.Compare.DescribeWithPrefix(i18n.Text("with a tag that"),
+				i18n.Text("with all tags that"), q)
+		}
+	}
+	return text
 }
 
 // Hash writes this object's contents into the hasher.

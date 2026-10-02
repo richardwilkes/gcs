@@ -114,8 +114,8 @@ func TestContainedWeightPrereqIgnoresQuantity(t *testing.T) {
 }
 
 // The tooltip for an unmet prereq must state the weight it requires with its units, in the units the sheet is set to,
-// just as the editor field for the same value does. Without them, "a contained weight which is at most 5" is
-// ambiguous, since that number is a different weight in every unit.
+// just as the editor field for the same value does. Without them, "a contained weight of at most 5" is ambiguous, since
+// that number is a different weight in every unit.
 func TestContainedWeightPrereqTooltipHasUnits(t *testing.T) {
 	c := check.New(t)
 	container := newTestEquipment(nil, true, "5 lb", fxp.One)
@@ -127,11 +127,11 @@ func TestContainedWeightPrereqTooltipHasUnits(t *testing.T) {
 
 	var tooltip xbytes.InsertBuffer
 	c.False(p.Satisfied(entity, container, &tooltip, "", nil), "10 lb of contents exceeds the 5 lb required")
-	c.Equal("Has a contained weight which is at most 5 lb", tooltip.String())
+	c.Equal("Has a contained weight of at most 5 lb", tooltip.String())
 
 	// Switching the sheet to metric restates the same requirement in the units the editor field now shows.
 	entity.SheetSettings.DefaultWeightUnits = fxp.Kilogram
 	tooltip.Reset()
 	c.False(p.Satisfied(entity, container, &tooltip, "", nil))
-	c.Equal("Has a contained weight which is at most 2.5 kg", tooltip.String())
+	c.Equal("Has a contained weight of at most 2.5 kg", tooltip.String())
 }

@@ -70,10 +70,15 @@ func (p *UnknownPrereq) FillWithNameableKeys(_, _ map[string]string) {
 func (p *UnknownPrereq) Satisfied(_ *Entity, _ any, tooltip *xbytes.InsertBuffer, prefix string, _ *bool) bool {
 	if tooltip != nil {
 		tooltip.WriteString(prefix)
-		fmt.Fprintf(tooltip, i18n.Text("an unknown prerequisite type (%q) that requires a newer version of GCS to evaluate"),
-			p.Kind)
+		tooltip.WriteString(p.Describe(nil, plainText))
 	}
 	return false
+}
+
+// Describe implements Prereq.
+func (p *UnknownPrereq) Describe(_ map[string]string, em func(string) string) string {
+	return fmt.Sprintf(i18n.Text(`Meets an unknown type of prerequisite ("%s") that needs a newer version of GCS`),
+		em(p.Kind))
 }
 
 // MarshalJSONTo implements json.MarshalerTo. The original data is written back out as-is.

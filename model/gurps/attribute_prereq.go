@@ -15,7 +15,6 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/criteria"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/prereq"
-	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/toolbox/v2/xbytes"
 	"github.com/richardwilkes/toolbox/v2/xhash"
 )
@@ -79,17 +78,39 @@ func (p *AttributePrereq) Satisfied(entity *Entity, _ any, tooltip *xbytes.Inser
 	}
 	if !satisfied && tooltip != nil {
 		tooltip.WriteString(prefix)
-		tooltip.WriteString(HasText(p.Has))
-		tooltip.WriteByte(' ')
-		tooltip.WriteString(entity.ResolveAttributeName(p.Which))
-		if p.CombinedWith != "" {
-			tooltip.WriteByte('+')
-			tooltip.WriteString(entity.ResolveAttributeName(p.CombinedWith))
-		}
-		tooltip.WriteString(i18n.Text(" which "))
-		tooltip.WriteString(p.QualifierCriteria.String())
+		tooltip.WriteString(p.describe(entity, plainText))
 	}
 	return satisfied
+}
+
+// Describe implements Prereq. Attribute names come from the global attribute definitions.
+func (p *AttributePrereq) Describe(_ map[string]string, em func(string) string) string {
+	return p.describe(nil, em)
+}
+
+// describe returns the description, naming attributes as the entity, which may be nil, defines them.
+func (p *AttributePrereq) describe(entity *Entity, em func(string) string) string {
+	names := attributeTitle(entity, p.Which)
+	if p.CombinedWith != "" {
+		names += "+" + attributeTitle(entity, p.CombinedWith)
+	}
+	text := HasText(p.Has) + " " + em(names)
+	if p.QualifierCriteria.Compare != criteria.AnyNumber {
+		text += " " + p.QualifierCriteria.AltString()
+	}
+	return text
+}
+
+// attributeTitle returns the title the attribute choices give key, or key itself when it isn't one of them.
+func attributeTitle(entity *Entity, key string) string {
+	// No choice has an empty key, so the unrecognized choice for it is always the last one, which is skipped.
+	choices, _ := AttributeChoices(entity, "", SizeFlag|DodgeFlag|ParryFlag|BlockFlag, "")
+	for _, choice := range choices[:len(choices)-1] {
+		if choice.Key == key {
+			return choice.Title
+		}
+	}
+	return key
 }
 
 // Hash writes this object's contents into the hasher.
