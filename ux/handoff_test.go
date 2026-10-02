@@ -14,6 +14,7 @@ import (
 	"io"
 	"math"
 	"net"
+	"path/filepath"
 	"strings"
 	"testing"
 	"time"
@@ -153,5 +154,43 @@ func TestHandoffRoundTrip(t *testing.T) {
 		c.Equal(want, got)
 	case <-time.After(5 * time.Second):
 		c.True(false, "timed out waiting for the handoff to be delivered")
+	}
+}
+
+// A secondary instance hands off both the paths named on its command line and the files the OS asked it to open at
+// launch, which on macOS is how a file double-clicked in the Finder arrives. The command-line paths are made absolute,
+// since the primary instance has its own working directory, and come first; the launch files follow exactly as given,
+// since the OS already names them absolutely. Before the launch files were included, a copy of GCS started by the
+// Finder while another was running handed off an empty list and the file was never opened.
+func TestHandoffPaths(t *testing.T) {
+	c := check.New(t)
+	relPath := filepath.Join("docs", "relative.gcs")
+	wantRel, err := filepath.Abs(relPath)
+	c.NoError(err)
+	c.NotEqual(relPath, wantRel, "the relative path must actually be resolved for this test to mean anything")
+	dir := t.TempDir()
+	absPath := filepath.Join(dir, "absolute.gcs")
+	// Deliberately not in clean form, which filepath.Abs would change, so that any processing of the launch files shows
+	// up as a mismatch.
+	sep := string(filepath.Separator)
+	launchA := dir + sep + "sub" + sep + ".." + sep + "launched.gcs"
+	launchB := filepath.Join(dir, "launched.gct")
+	c.Equal([]string{wantRel, absPath, launchA, launchB},
+		handoffPaths([]string{relPath, absPath}, []string{launchA, launchB}))
+	c.Equal([]string{wantRel, absPath}, handoffPaths([]string{relPath, absPath}, nil), "no launch files")
+	c.Equal([]string{launchA, launchB}, handoffPaths(nil, []string{launchA, launchB}), "no command-line paths")
+	for _, one := range []struct {
+		name         string
+		cmdLinePaths []string
+		launchFiles  []string
+	}{
+		{name: "both nil"},
+		{name: "both empty", cmdLinePaths: []string{}, launchFiles: []string{}},
+		{name: "nil command line, empty launch files", launchFiles: []string{}},
+		{name: "empty command line, nil launch files", cmdLinePaths: []string{}},
+	} {
+		var got []string
+		c.NotPanics(func() { got = handoffPaths(one.cmdLinePaths, one.launchFiles) }, one.name)
+		c.Equal(0, len(got), one.name)
 	}
 }

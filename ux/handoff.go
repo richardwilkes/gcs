@@ -35,9 +35,10 @@ const (
 	// handoffMarker precedes the length-prefixed payload a secondary instance hands off to the primary one.
 	handoffMarker = 22
 	// maxHandoffPayloadSize bounds the payload a handoff may carry. The payload is only a JSON array of the absolute
-	// paths named on the command line, so this is far more than any real invocation can produce, given that the
-	// command line itself is limited to a fraction of this by the OS. Without a bound, any local process able to
-	// connect to the handoff port could claim a payload of up to 4GB and force an allocation of that size.
+	// paths named on the command line plus those of the files the OS asked the process to open at launch, so this is
+	// far more than any real invocation can produce, given that the OS limits both the command line and such a launch
+	// request to a fraction of this. Without a bound, any local process able to connect to the handoff port could claim
+	// a payload of up to 4GB and force an allocation of that size.
 	maxHandoffPayloadSize = 4 << 20
 	// readyTimeout bounds how long startup may take before the app is presumed to be wedged.
 	readyTimeout = 2 * time.Minute
@@ -58,15 +59,19 @@ func startHandoffService(readyChan chan struct{}, pathsChan chan<- []string, pat
 			return
 		}
 		if pathsBuffer == nil {
+			// Files the Finder or LaunchServices hands to GCS on macOS (a double-clicked file, an "Open With" choice, a
+			// file dropped on the Dock icon) are not named on the command line. They arrive as an Apple Event, which
+			// AppKit delivers only once the application has run its launch phase -- normally done by unison.Start,
+			// which this instance never reaches if the handoff succeeds. FilesRequestedAtLaunch performs that phase and
+			// returns them, so they can be handed off along with the command-line paths rather than silently dropped.
+			// It is called only here, once another copy has been found holding the port, and on the main thread, as it
+			// requires. Should the handoff fail and this instance later become the primary after all, nothing is lost
+			// or duplicated: unison keeps those files queued and delivers them to the OpenFilesCallback once Start is
+			// called, while the paths StartOptions opens itself are only the command-line ones.
+			handoffList := handoffPaths(paths, unison.FilesRequestedAtLaunch())
 			var err error
-			absPaths := make([]string, len(paths))
-			for i, p := range paths {
-				if absPaths[i], err = filepath.Abs(p); err != nil {
-					absPaths[i] = p
-				}
-			}
-			if pathsBuffer, err = jio.Marshal(absPaths); err != nil {
-				errs.Log(err, "paths", absPaths)
+			if pathsBuffer, err = jio.Marshal(handoffList); err != nil {
+				errs.Log(err, "paths", handoffList)
 				xos.Exit(1)
 			}
 		}
@@ -78,6 +83,20 @@ func startHandoffService(readyChan chan struct{}, pathsChan chan<- []string, pat
 	}
 	slog.Error("failed to become primary instance and unable to handoff to another copy of GCS")
 	xos.Exit(1)
+}
+
+// handoffPaths returns the paths a secondary instance hands off to the primary one: the absolute forms of the paths
+// named on the command line (each kept as given should it not be resolvable), followed by the files the OS asked this
+// process to open at launch, which are already absolute and so are kept as given.
+func handoffPaths(cmdLinePaths, launchFiles []string) []string {
+	paths := make([]string, 0, len(cmdLinePaths)+len(launchFiles))
+	for _, p := range cmdLinePaths {
+		if absPath, err := filepath.Abs(p); err == nil {
+			p = absPath
+		}
+		paths = append(paths, p)
+	}
+	return append(paths, launchFiles...)
 }
 
 func handoff(conn net.Conn, pathsBuffer []byte) bool {
