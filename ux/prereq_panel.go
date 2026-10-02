@@ -946,7 +946,7 @@ func (p *prereqPanel) exclude() any {
 func (p *prereqPanel) scriptOptions(pr *gurps.ScriptPrereq) *scriptEditorOptions {
 	opts := &scriptEditorOptions{
 		Title: i18n.Text("Script"),
-		Hint:  i18n.Text("Tab indents. Esc closes."),
+		Hint:  i18n.Text("The script's last value is true when met, otherwise false or the reason. Tab indents. Esc closes."),
 	}
 	if p.entity != nil {
 		opts.Evaluate = func(script string) (checkStatus, string) {
