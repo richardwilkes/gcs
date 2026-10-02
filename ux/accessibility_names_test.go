@@ -90,13 +90,14 @@ func TestEveryControlHasAnAccessibleName(t *testing.T) {
 				root.Prereqs = append(root.Prereqs, pr)
 			}
 		}
+		seedEveryPrereqControl(root)
 		return root
 	}
 	studies := func() []*gurps.Study {
 		return []*gurps.Study{{Type: study.Self, Hours: fxp.Ten, Note: "audit"}}
 	}
 
-	audit.checkOpened("trait editor", func() {
+	audit.checkPrereqs("trait editor", func() {
 		tr := gurps.NewTrait(entity, nil, false)
 		tr.Name = "Audit Trait"
 		tr.Features = allFeatures(tr, false)
@@ -110,7 +111,7 @@ func TestEveryControlHasAnAccessibleName(t *testing.T) {
 		m.Features = allFeatures(m, false)
 		EditTraitModifier(sheet, m)
 	})
-	audit.checkOpened("skill editor", func() {
+	audit.checkPrereqs("skill editor", func() {
 		s := gurps.NewSkill(entity, nil, false)
 		s.Prereq = allPrereqs(prereq.TypesForNonEquipment, false)
 		s.Features = allFeatures(s, false)
@@ -121,13 +122,13 @@ func TestEveryControlHasAnAccessibleName(t *testing.T) {
 	audit.checkOpened("technique editor", func() {
 		EditSkill(sheet, gurps.NewTechnique(entity, nil, "Audit Skill"))
 	})
-	audit.checkOpened("spell editor", func() {
+	audit.checkPrereqs("spell editor", func() {
 		s := gurps.NewSpell(entity, nil, false)
 		s.Prereq = allPrereqs(prereq.TypesForNonEquipment, true)
 		s.Study = studies()
 		EditSpell(sheet, s)
 	})
-	audit.checkOpened("equipment editor", func() {
+	audit.checkPrereqs("equipment editor", func() {
 		e := gurps.NewEquipment(entity, nil, false)
 		e.Features = allFeatures(e, false)
 		e.Prereq = allPrereqs(prereq.TypesForEquipment, false)

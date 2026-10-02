@@ -28,11 +28,11 @@ func TestScriptEditor(t *testing.T) {
 			Title:    "Script",
 			Inserts:  []scriptMenuEntry{{Label: "Fn", Text: "fn()", CaretFromEnd: 1}},
 			Snippets: []scriptMenuEntry{{Label: "Pick one", Heading: true}, {Label: "True", Text: "true"}},
-			Evaluate: func(s string) (scriptStatus, string) {
+			Evaluate: func(s string) (checkStatus, string) {
 				if strings.Contains(s, "true") {
-					return scriptMet, "Met"
+					return checkMet, "Met"
 				}
-				return scriptUnmet, "Not met"
+				return checkUnmet, "Not met"
 			},
 		})
 	})
@@ -78,7 +78,7 @@ func TestScriptEditor(t *testing.T) {
 				snippets = one
 			}
 		}
-		editor.field.SetText("x")
+		editor.field.SetText("«x»") // Longer in bytes than in runes.
 	})
 	if snippets == nil {
 		t.Fatal("the editor must have a Snippets button")
@@ -98,4 +98,25 @@ func TestScriptEditor(t *testing.T) {
 		editor.put(0, 0, editor.opts.Inserts[0])
 	})
 	c.Equal("// Prereq Count: 2\nfn()", script, "nothing goes in above the prereq count line")
+}
+
+// TestShowCheckIconMakesRoom checks that a status icon shown in a label that had none, after its row was laid out, is
+// given room at the next layout.
+func TestShowCheckIconMakesRoom(t *testing.T) {
+	c := check.New(t)
+	screen, _ := startHeadlessWorkspace(t, c)
+	var row *unison.Panel
+	var icon *unison.Label
+	screen.Do(func() {
+		row = unison.NewPanel()
+		icon = unison.NewLabel()
+		row.AddChild(icon)
+		hbox(row, 0)
+	})
+	w := showInTestWindow(t, screen, 300, row)
+	screen.Do(func() {
+		showCheckIcon(icon, checkMet)
+		w.ValidateLayout()
+		c.True(icon.FrameRect().Width > 0)
+	})
 }

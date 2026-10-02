@@ -61,6 +61,7 @@ var allDragDataTypes = []*uti.DataType{
 	meleeWeaponDragKey,
 	rangedWeaponDragKey,
 	editorRowDragKey,
+	prereqDragKey,
 }
 
 // registerWindowDragTypes registers the supplied window as a target for every kind of drag payload GCS supports: the

@@ -607,12 +607,6 @@ func addBoolPopup(parent *unison.Panel, trueChoice, falseChoice string, fieldDat
 	return popup
 }
 
-func addHasPopup(parent *unison.Panel, has *bool) {
-	// The popup begins a row that reads as a sentence, so nothing before it serves as a label -- and on rows after the
-	// first, the "and" or "or" that joins them sits there and would be taken as one.
-	addBoolPopup(parent, i18n.Text("has"), i18n.Text("doesn't have"), has).Accessibility.Name = i18n.Text("Has")
-}
-
 func adjustFieldBlank(field unison.Paneler, blank bool) {
 	panel := field.AsPanel()
 	panel.SetEnabled(!blank)
@@ -664,11 +658,6 @@ func addTagCriteriaPanel(parent *unison.Panel, strCriteria *criteria.Text, hSpan
 		i18n.Text("Tag"), strCriteria, hSpan, includeEmptyFiller)
 	field.Tooltip = newWrappedTooltip(i18n.Text(`Separate multiple tags with commas to match any one of them, e.g. "Sword, Axe"`))
 	return popup, field
-}
-
-func addNotesCriteriaPanel(parent *unison.Panel, strCriteria *criteria.Text, hSpan int, includeEmptyFiller bool) (*unison.PopupMenu[string], *StringField) {
-	prefix := i18n.Text("and whose notes")
-	return addStringCriteriaPanel(parent, prefix, prefix, i18n.Text("Notes"), strCriteria, hSpan, includeEmptyFiller)
 }
 
 // criteriaTitles returns what a criteria's two controls are called, from the subject they qualify: the comparison
@@ -731,11 +720,6 @@ func addStringCriteriaPanel(parent *unison.Panel, prefix, notPrefix, subject str
 	return popup, criteriaField
 }
 
-func addLevelCriteriaPanel(parent *unison.Panel, targetMgr *TargetMgr, targetKey string, numCriteria *criteria.Number, hSpan int, includeEmptyFiller bool) {
-	addNumericCriteriaPanel(parent, targetMgr, targetKey, i18n.Text("and whose level"), i18n.Text("Level"), numCriteria,
-		0, fxp.Thousand, hSpan, false, includeEmptyFiller)
-}
-
 // addNumericCriteriaPanel adds a numeric criteria's comparison popup and qualifier field, titled for the subject they
 // qualify; see criteriaTitles.
 func addNumericCriteriaPanel(parent *unison.Panel, targetMgr *TargetMgr, targetKey, prefix, subject string, numCriteria *criteria.Number, minValue, maxValue fxp.Int, hSpan int, integerOnly, includeEmptyFiller bool) (popup *unison.PopupMenu[string], field unison.Paneler) {
@@ -778,43 +762,6 @@ func addWeightCriteriaPanel(parent *unison.Panel, targetMgr *TargetMgr, targetKe
 		MarkModified(parent)
 	}
 	adjustFieldBlank(field, weightCriteria.Compare == criteria.AnyNumber)
-	return popup, field
-}
-
-func addQuantityCriteriaPanel(parent *unison.Panel, targetMgr *TargetMgr, targetKey string, numCriteria *criteria.Number) (popup *unison.PopupMenu[string], field *IntegerField) {
-	choices := []string{
-		i18n.Text("exactly"),
-		i18n.Text("at least"),
-		i18n.Text("at most"),
-	}
-	selectedIndex := 0
-	switch numCriteria.Compare {
-	case criteria.AtLeastNumber:
-		selectedIndex = 1
-	case criteria.AtMostNumber:
-		selectedIndex = 2
-	}
-	comparisonName, undoTitle := criteriaTitles(i18n.Text("Quantity"))
-	popup = newComparisonPopup(comparisonName, choices, selectedIndex)
-	popup.SelectionChangedCallback = func(p *unison.PopupMenu[string]) {
-		switch p.SelectedIndex() {
-		case 0:
-			numCriteria.Compare = criteria.EqualsNumber
-		case 1:
-			numCriteria.Compare = criteria.AtLeastNumber
-		case 2:
-			numCriteria.Compare = criteria.AtMostNumber
-		}
-		MarkModified(parent)
-	}
-	parent.AddChild(popup)
-	field = NewIntegerField(targetMgr, targetKey, undoTitle,
-		func() int { return numCriteria.Qualifier.AsInteger[int]() },
-		func(value int) {
-			numCriteria.Qualifier = fxp.FromInteger(value)
-			MarkModified(parent)
-		}, 0, 9999, false, false)
-	parent.AddChild(field)
 	return popup, field
 }
 

@@ -174,27 +174,46 @@ func (p *PrereqList) satisfied(entity *Entity, exclude any, buffer *xbytes.Inser
 // Describe implements Prereq. The children are joined with "and" or "or" to match the list's mode, a nested list with
 // more than one child is parenthesized, and a tech level condition is noted at the end.
 func (p *PrereqList) Describe(replacements map[string]string, em func(string) string) string {
-	return p.describeChildren(replacements, em) + p.describeWhenTL()
+	return p.describeChildren(nil, replacements, em, false) + p.describeWhenTL()
 }
 
-func (p *PrereqList) describeChildren(replacements map[string]string, em func(string) string) string {
+// DescribePrereq returns the description of the prerequisite, as Describe does, but naming attributes and giving weights
+// as the entity, which may be nil, defines them.
+func DescribePrereq(entity *Entity, pr Prereq, em func(string) string) string {
+	return describePrereq(entity, pr, nil, em)
+}
+
+func describePrereq(entity *Entity, pr Prereq, replacements map[string]string, em func(string) string) string {
+	switch one := pr.(type) {
+	case *PrereqList:
+		return one.describeChildren(entity, replacements, em, false) + one.describeWhenTL()
+	case *AttributePrereq:
+		return one.describe(entity, em)
+	case *ContainedWeightPrereq:
+		return one.describe(entity)
+	default:
+		return pr.Describe(replacements, em)
+	}
+}
+
+// describeChildren joins the descriptions of the children. When lower is true, the first of them follows a joining
+// word, as every other one does, and so begins in lowercase unless it is a name someone wrote.
+func (p *PrereqList) describeChildren(entity *Entity, replacements map[string]string, em func(string) string, lower bool) string {
 	parts := make([]string, 0, len(p.Prereqs))
 	for i, one := range p.Prereqs {
-		list, isList := one.(*PrereqList)
+		lower = lower || i != 0
 		var text string
-		if isList {
-			text = list.describeChildren(replacements, em)
-		} else {
-			text = one.Describe(replacements, em)
-		}
-		if i != 0 {
-			text = lowerFirst(text)
-		}
-		if isList {
+		if list, isList := one.(*PrereqList); isList {
+			text = list.describeChildren(entity, replacements, em, lower)
 			if len(list.Prereqs) > 1 {
 				text = "(" + text + ")"
 			}
 			text += list.describeWhenTL()
+		} else {
+			text = describePrereq(entity, one, replacements, em)
+			if script, isScript := one.(*ScriptPrereq); lower && (!isScript || strings.TrimSpace(script.Name) == "") {
+				text = lowerFirst(text)
+			}
 		}
 		parts = append(parts, text)
 	}

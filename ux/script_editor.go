@@ -12,6 +12,7 @@ package ux
 import (
 	"slices"
 	"strings"
+	"unicode/utf8"
 
 	"github.com/richardwilkes/gcs/v5/model/colors"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
@@ -29,15 +30,43 @@ import (
 // the script (see the spell prereq count).
 const scriptKeepLinePrefix = "// prereq count:"
 
-// scriptStatus is the outcome of evaluating a script, as shown by the script editor's result line.
-type scriptStatus uint8
+// checkStatus is the outcome of checking a requirement, such as a script, against a sheet.
+type checkStatus uint8
 
-// Possible scriptStatus values.
+// Possible checkStatus values.
 const (
-	scriptMet scriptStatus = iota
-	scriptUnmet
-	scriptError
+	checkMet checkStatus = iota
+	checkUnmet
+	checkFailed
+	checkSkipped
 )
+
+// showCheckIcon has the label show the icon of the status.
+func showCheckIcon(label *unison.Label, status checkStatus) {
+	icon, ink := unison.CheckmarkSVG, unison.Ink(colors.Success)
+	switch status {
+	case checkUnmet:
+		icon, ink = svg.Not, colors.Failure
+	case checkFailed:
+		icon, ink = unison.TriangleExclamationSVG, unison.ThemeWarning
+	case checkSkipped:
+		icon, ink = unison.DashSVG, faint(unison.ThemeOnSurface)
+	default:
+	}
+	if label.Drawable == nil {
+		// Without an icon the label took no room, so the panels around it must be laid out again.
+		label.MarkForLayoutRecursivelyUpward()
+	}
+	size := unison.DefaultLabelTheme.Font.Baseline()
+	label.Drawable = &unison.DrawableSVG{SVG: icon, Size: geom.NewSize(size, size).Ceil()}
+	label.OnBackgroundInk = ink
+	label.MarkForRedraw()
+}
+
+// faint returns the ink at 30% opacity.
+func faint(ink unison.Ink) unison.Ink {
+	return &unison.ColorFilteredInk{OriginalInk: ink, ColorFilter: unison.Alpha30Filter()}
+}
 
 // scriptMenuEntry is one item of the script editor's Insert or Snippets menu.
 type scriptMenuEntry struct {
@@ -57,7 +86,7 @@ type scriptEditorOptions struct {
 	Inserts  []scriptMenuEntry
 	Snippets []scriptMenuEntry
 	// Evaluate, when set, runs the script for the result line, whose text should say the outcome.
-	Evaluate func(script string) (status scriptStatus, text string)
+	Evaluate func(script string) (status checkStatus, text string)
 }
 
 // scriptEditor edits a script in a monospaced field under a toolbar of Insert and Snippets menus, with an optional line
@@ -83,7 +112,7 @@ func newScriptEditor(get func() string, set func(string), opts scriptEditorOptio
 		e.put(start, end, entry)
 	})
 	e.addMenuButton(bar, i18n.Text("Snippets"), opts.Snippets, func(entry scriptMenuEntry) {
-		e.put(0, len(e.field.Text()), entry)
+		e.put(0, utf8.RuneCountInString(e.field.Text()), entry)
 	})
 	hint := unison.NewLabel()
 	hint.SetTitle(i18n.Text("Tab indents. Esc closes."))
@@ -93,17 +122,14 @@ func newScriptEditor(get func() string, set func(string), opts scriptEditorOptio
 	guide.ClickCallback = func() { HandleLink(nil, "md:User%20Guide/Scripting%20Guide") }
 	guide.Tooltip = newWrappedTooltip(i18n.Text("Scripting Guide"))
 	bar.AddChild(guide)
-	bar.SetLayout(&unison.FlexLayout{Columns: len(bar.Children()), HSpacing: unison.StdHSpacing})
-	bar.SetLayoutData(&unison.FlexLayoutData{HAlign: align.Fill, HGrab: true})
 	bar.SetBorder(unison.NewCompoundBorder(unison.NewLineBorder(unison.ThemeSurfaceEdge, geom.Size{},
 		geom.Insets{Bottom: 1}, false), unison.NewEmptyBorder(geom.NewUniformInsets(4))))
 	bar.DrawCallback = func(gc *unison.Canvas, r geom.Rect) {
 		gc.DrawRect(r, unison.ThemeSurface.Paint(gc, r, paintstyle.Fill))
 	}
-	frame := unison.NewPanel()
+	frame := newPrereqColumn()
 	frame.SetLayout(&unison.FlexLayout{Columns: 1})
-	frame.SetLayoutData(&unison.FlexLayoutData{HAlign: align.Fill, HGrab: true})
-	frame.AddChild(bar)
+	frame.AddChild(hbox(bar, unison.StdHSpacing))
 	e.AddChild(frame)
 
 	e.field = NewMultiLineStringField(nil, "", opts.Title, get, func(script string) {
@@ -145,8 +171,6 @@ func newScriptEditor(get func() string, set func(string), opts scriptEditorOptio
 
 	if opts.Evaluate != nil {
 		row := unison.NewPanel()
-		row.SetLayout(&unison.FlexLayout{Columns: 2, HSpacing: unison.StdIconGap})
-		row.SetLayoutData(&unison.FlexLayoutData{HAlign: align.Fill, HGrab: true})
 		e.icon = unison.NewLabel()
 		e.icon.Accessibility.Role = role.None // The text says the outcome.
 		e.icon.SetBorder(unison.NewEmptyBorder(geom.Insets{Top: 2}))
@@ -155,7 +179,7 @@ func newScriptEditor(get func() string, set func(string), opts scriptEditorOptio
 		e.result = newSentenceButton("", nil, nil)
 		e.result.SetLayoutData(&unison.FlexLayoutData{HAlign: align.Fill, HGrab: true})
 		row.AddChild(e.result)
-		e.AddChild(row)
+		e.AddChild(hbox(row, unison.StdIconGap))
 		e.refresh()
 	}
 	return e
@@ -168,23 +192,44 @@ func (e *scriptEditor) addMenuButton(bar *unison.Panel, title string, entries []
 	button := unison.NewButton()
 	button.SetTitle(title)
 	button.ClickCallback = func() {
-		f := unison.DefaultMenuFactory()
-		id := unison.ContextMenuIDFlag
-		m := f.NewMenu(id, "", nil)
+		menu := make([]menuEntry, len(entries))
 		for i, entry := range entries {
-			id++
+			menu[i].Label = entry.Label
 			if !entry.Heading {
-				m.InsertItem(-1, f.NewItem(id, entry.Label, unison.KeyBinding{}, nil, func(unison.MenuItem) { act(entry) }))
-				continue
+				menu[i].Act = func() { act(entry) }
 			}
-			if i != 0 {
-				m.InsertSeparator(-1, false)
-			}
-			m.InsertItem(-1, f.NewItem(id, entry.Label, unison.KeyBinding{}, func(unison.MenuItem) bool { return false }, nil))
 		}
-		m.Popup(button.RectToRoot(button.ContentRect(true)), 0)
+		showMenu(button.AsPanel(), menu)
 	}
 	bar.AddChild(button)
+}
+
+// menuEntry is one item of a menu that showMenu builds. One with no action is a heading, shown disabled after a
+// separator unless it comes first; with no label as well, it is just the separator.
+type menuEntry struct {
+	Label string
+	Act   func()
+}
+
+// showMenu pops up a menu of the entries below the anchor.
+func showMenu(anchor *unison.Panel, entries []menuEntry) {
+	f := unison.DefaultMenuFactory()
+	id := unison.ContextMenuIDFlag
+	m := f.NewMenu(id, "", nil)
+	for i, entry := range entries {
+		id++
+		if entry.Act != nil {
+			m.InsertItem(-1, f.NewItem(id, entry.Label, unison.KeyBinding{}, nil, func(unison.MenuItem) { entry.Act() }))
+			continue
+		}
+		if i != 0 {
+			m.InsertSeparator(-1, false)
+		}
+		if entry.Label != "" {
+			m.InsertItem(-1, f.NewItem(id, entry.Label, unison.KeyBinding{}, func(unison.MenuItem) bool { return false }, nil))
+		}
+	}
+	m.Popup(anchor.RectToRoot(anchor.ContentRect(true)), 0)
 }
 
 // put replaces the runes from start to end with the entry's text, below a first line starting with
@@ -213,22 +258,9 @@ func (e *scriptEditor) refresh() {
 	if e.opts.Evaluate == nil {
 		return
 	}
-	var status scriptStatus
+	var status checkStatus
 	var text string
 	gurps.SuppressScriptResolveErrorLogging(func() { status, text = e.opts.Evaluate(e.field.CurrentValue()) })
-	icon := unison.CheckmarkSVG
-	e.icon.OnBackgroundInk = colors.Success
-	switch status {
-	case scriptUnmet:
-		icon = svg.Not
-		e.icon.OnBackgroundInk = unison.ThemeError
-	case scriptError:
-		icon = unison.TriangleExclamationSVG
-		e.icon.OnBackgroundInk = unison.ThemeWarning
-	default:
-	}
-	size := unison.DefaultLabelTheme.Font.Baseline()
-	e.icon.Drawable = &unison.DrawableSVG{SVG: icon, Size: geom.NewSize(size, size).Ceil()}
-	e.icon.MarkForRedraw()
+	showCheckIcon(e.icon, status)
 	e.result.setText(text, "")
 }

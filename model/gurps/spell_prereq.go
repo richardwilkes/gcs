@@ -182,10 +182,8 @@ func (p *SpellPrereq) Satisfied(entity *Entity, exclude any, tooltip *xbytes.Ins
 
 // Describe implements Prereq.
 func (p *SpellPrereq) Describe(replacements map[string]string, em func(string) string) string {
-	var text string
-	if p.Has {
-		text = i18n.Text("Knows")
-	} else {
+	text := i18n.Text("Knows")
+	if !p.Has {
 		text = i18n.Text("Does not know")
 	}
 	var quantity string

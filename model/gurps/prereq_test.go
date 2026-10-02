@@ -20,13 +20,19 @@ import (
 	"github.com/richardwilkes/toolbox/v2/xbytes"
 )
 
+// namedTrait returns a trait prerequisite for the name.
+func namedTrait(name string) *gurps.TraitPrereq {
+	p := gurps.NewTraitPrereq()
+	p.NameCriteria.Qualifier = name
+	return p
+}
+
 // TestPrereqDescribe verifies the description of each prerequisite type, including which names and qualifiers are
 // passed through the emphasis func and which criteria are left out.
 func TestPrereqDescribe(t *testing.T) {
 	c := check.New(t)
 	trait := func(name string, compare criteria.NumericComparison, level fxp.Int) *gurps.TraitPrereq {
-		p := gurps.NewTraitPrereq()
-		p.NameCriteria.Qualifier = name
+		p := namedTrait(name)
 		p.LevelCriteria.Compare = compare
 		p.LevelCriteria.Qualifier = level
 		return p
@@ -164,24 +170,52 @@ func TestPrereqDescribeReplacements(t *testing.T) {
 // than one child, and notes a tech level condition.
 func TestPrereqListDescribe(t *testing.T) {
 	c := check.New(t)
-	newTrait := func(name string) *gurps.TraitPrereq {
-		p := gurps.NewTraitPrereq()
-		p.NameCriteria.Qualifier = name
-		return p
-	}
 	root := gurps.NewPrereqList()
-	root.Prereqs = append(root.Prereqs, newTrait("Magery"))
+	root.Prereqs = append(root.Prereqs, namedTrait("Magery"))
 	anyOf := gurps.NewPrereqList()
 	anyOf.All = false
 	anyOf.WhenTL.Compare = criteria.AtLeastNumber
 	anyOf.WhenTL.Qualifier = fxp.Three
-	anyOf.Prereqs = append(anyOf.Prereqs, newTrait("Luck"), newTrait("DX"))
+	anyOf.Prereqs = append(anyOf.Prereqs, namedTrait("Luck"), namedTrait("DX"))
 	single := gurps.NewPrereqList()
-	single.Prereqs = append(single.Prereqs, newTrait("Fearlessness"))
+	single.Prereqs = append(single.Prereqs, namedTrait("Fearlessness"))
 	root.Prereqs = append(root.Prereqs, anyOf, single)
 	c.Equal("Has trait Magery and (has trait Luck or has trait DX) (only when TL at least 3) and has trait Fearlessness",
 		root.Describe(nil, func(s string) string { return s }))
 	c.Equal("", gurps.NewPrereqList().Describe(nil, func(s string) string { return s }))
+
+	named := gurps.NewScriptPrereq()
+	named.Name = "Elf ancestry"
+	unnamed := gurps.NewScriptPrereq()
+	for _, one := range []struct {
+		name     string
+		prereqs  gurps.Prereqs
+		expected string
+	}{
+		{"a named script", gurps.Prereqs{namedTrait("Magery"), named}, "Has trait Magery and Elf ancestry"},
+		{"an unnamed script", gurps.Prereqs{namedTrait("Magery"), unnamed}, "Has trait Magery and passes a custom check"},
+		{
+			"a named script leading a group",
+			gurps.Prereqs{namedTrait("Magery"), &gurps.PrereqList{All: true, Prereqs: gurps.Prereqs{named, namedTrait("Luck")}}},
+			"Has trait Magery and (Elf ancestry and has trait Luck)",
+		},
+	} {
+		list := gurps.NewPrereqList()
+		list.Prereqs = one.prereqs
+		c.Equal(one.expected, list.Describe(nil, func(s string) string { return s }), one.name)
+	}
+}
+
+// TestDescribePrereqUsesTheEntity verifies that a description made for an entity gives weights in its units, as its
+// fields do, even within a list.
+func TestDescribePrereqUsesTheEntity(t *testing.T) {
+	c := check.New(t)
+	entity := gurps.NewEntity()
+	entity.SheetSettings.DefaultWeightUnits = fxp.Kilogram
+	list := gurps.NewPrereqList()
+	list.Prereqs = gurps.Prereqs{namedTrait("Magery"), gurps.NewContainedWeightPrereq(nil)}
+	c.Equal("Has trait Magery and has a contained weight of at most 2.5 kg",
+		gurps.DescribePrereq(entity, list, func(s string) string { return s }))
 }
 
 // TestPrereqListFailureText verifies how a list lays out what is unmet: a single unmet item collapses to that item,
@@ -191,12 +225,7 @@ func TestPrereqListFailureText(t *testing.T) {
 	c := check.New(t)
 	entity := gurps.NewEntity()
 	entity.Profile.TechLevel = "3"
-	trait := func(name string) *gurps.TraitPrereq {
-		p := gurps.NewTraitPrereq()
-		p.NameCriteria.Qualifier = name
-		return p
-	}
-	met := trait("Z")
+	met := namedTrait("Z")
 	met.Has = false
 	list := func(all bool, children ...gurps.Prereq) *gurps.PrereqList {
 		p := gurps.NewPrereqList()
@@ -204,10 +233,10 @@ func TestPrereqListFailureText(t *testing.T) {
 		p.Prereqs = children
 		return p
 	}
-	atTL5 := list(true, trait("B"))
+	atTL5 := list(true, namedTrait("B"))
 	atTL5.WhenTL.Compare = criteria.AtLeastNumber
 	atTL5.WhenTL.Qualifier = fxp.Five
-	a, b, cc, d := trait("A"), trait("B"), trait("C"), trait("D")
+	a, b, cc, d := namedTrait("A"), namedTrait("B"), namedTrait("C"), namedTrait("D")
 
 	for _, one := range []struct {
 		name     string

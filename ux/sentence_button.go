@@ -29,6 +29,9 @@ const (
 	emEnd   = ''
 )
 
+// stripEm removes the markers em adds.
+var stripEm = strings.NewReplacer(string(emStart), "", string(emEnd), "")
+
 // em wraps s in the markers that have a sentenceButton draw it in bold.
 func em(s string) string {
 	return string(emStart) + s + string(emEnd)
@@ -115,12 +118,7 @@ func (b *sentenceButton) setText(text, suffix string) {
 
 // plainText returns the sentence without its bold markers.
 func (b *sentenceButton) plainText() string {
-	return strings.Map(func(r rune) rune {
-		if r == emStart || r == emEnd {
-			return -1
-		}
-		return r
-	}, b.text)
+	return stripEm.Replace(b.text)
 }
 
 func (b *sentenceButton) hover(on bool) bool {
