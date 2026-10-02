@@ -941,34 +941,12 @@ func (p *prereqPanel) exclude() any {
 	return p.target
 }
 
-// scriptOptions returns the script editor's options for a script prerequisite. Each snippet ends in an expression that
-// is true when met and otherwise the reason it isn't. Evaluate, when there is a sheet, runs the script being edited
-// against it.
+// scriptOptions returns the script editor's options for a script prerequisite. Evaluate, when there is a sheet, runs
+// the script being edited against it.
 func (p *prereqPanel) scriptOptions(pr *gurps.ScriptPrereq) *scriptEditorOptions {
 	opts := &scriptEditorOptions{
-		Title:               i18n.Text("Script"),
-		Hint:                i18n.Text("Tab indents. Shift+Tab leaves. Esc closes."),
-		KeepFirstLinePrefix: gurps.ScriptPrereqCountPrefix,
-		Inserts: []scriptMenuEntry{
-			{Label: i18n.Text("The sheet"), Heading: true},
-			{Label: `entity.attribute("st").current`, Text: `entity.attribute("st").current`},
-			{Label: `entity.hasTrait("")`, Text: `entity.hasTrait("")`, CaretFromEnd: 2},
-			{Label: `entity.traitLevel("")`, Text: `entity.traitLevel("")`, CaretFromEnd: 2},
-			{Label: `entity.skillLevel("")`, Text: `entity.skillLevel("")`, CaretFromEnd: 2},
-			{Label: `entity.findSkills("")`, Text: `entity.findSkills("")`, CaretFromEnd: 2},
-			{Label: `entity.spells`, Text: `entity.spells`},
-			{Label: `entity.equipment`, Text: `entity.equipment`},
-			{Label: `entity.techLevel`, Text: `entity.techLevel`},
-			{Label: i18n.Text("The item being edited"), Heading: true},
-			{Label: `self.level`, Text: `self.level`},
-		},
-		Snippets: []scriptMenuEntry{
-			{Label: i18n.Text("Replaces the script"), Heading: true},
-			{Label: i18n.Text("Two attributes add up to at least a value"), Text: "const total = entity.attribute(\"dx\").current + entity.attribute(\"per\").current;\ntotal >= 26 || `DX + Per is ${total}, needs 26`"},
-			{Label: i18n.Text("A trait at a level or more"), Text: "entity.traitLevel(\"Magery\") >= 2 || \"Needs Magery 2\""},
-			{Label: i18n.Text("Any one of several traits"), Text: "const options = [\"Combat Reflexes\", \"Enhanced Dodge\"];\noptions.some(name => entity.hasTrait(name)) || `Needs one of: ${options.join(\", \")}`"},
-			{Label: i18n.Text("The best of several skills"), Text: "const best = Math.max(...[\"Broadsword\", \"Shortsword\"].map(name => entity.skillLevel(name)));\nbest >= 14 || `Best sword skill is ${best}, needs 14`"},
-		},
+		Title: i18n.Text("Script"),
+		Hint:  i18n.Text("Tab indents. Esc closes."),
 	}
 	if p.entity != nil {
 		opts.Evaluate = func(script string) (checkStatus, string) {

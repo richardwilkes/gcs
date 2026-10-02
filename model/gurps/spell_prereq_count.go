@@ -20,10 +20,6 @@ import (
 	"github.com/richardwilkes/toolbox/v2/xreflect"
 )
 
-// ScriptPrereqCountPrefix starts a first line of a script prerequisite that says how many prerequisites it counts as.
-// It is matched without regard to case.
-const ScriptPrereqCountPrefix = "// prereq count:"
-
 // CountPrereqsForSpell returns the number of prerequisites for the specified spell.
 func CountPrereqsForSpell(spell *Spell, allSpells []*Spell) int {
 	collect := make(map[string]int)
@@ -107,7 +103,7 @@ func collectPrereqsForPrereq(one Prereq, allSpells []*Spell, collect map[string]
 	case *ScriptPrereq:
 		count := 1
 		script := strings.ToLower(p.Script)
-		if revised, found := strings.CutPrefix(script, ScriptPrereqCountPrefix); found {
+		if revised, found := strings.CutPrefix(script, "// prereq count:"); found {
 			if n, err := strconv.Atoi(strings.TrimSpace(strings.SplitN(revised, "\n", 2)[0])); err == nil {
 				count = n
 			}
