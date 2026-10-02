@@ -451,15 +451,17 @@ func (p *prereqPanel) status(node gurps.Prereq) (status checkStatus, tip, suffix
 	}
 }
 
-// statusIcon adds the icon for a node's status to the parent when there is a sheet. Screen readers skip it, since the
-// accessible name of the node's sentence says the status.
+// statusIcon adds the icon for a node's status to the parent, which shows once there is a sheet. Without one its room
+// is kept, so that everything lines up as it would with one. Screen readers skip it, since the accessible name of the
+// node's sentence says the status.
 func (p *prereqPanel) statusIcon(parent *unison.Panel) *unison.Label {
-	if p.entity == nil {
-		return nil
-	}
 	icon := unison.NewLabel()
 	icon.Accessibility.Role = role.None
-	icon.SetBorder(unison.NewEmptyBorder(geom.Insets{Left: 4}))
+	insets := geom.Insets{Left: 4}
+	if p.entity == nil {
+		insets.Left += xmath.Ceil(unison.DefaultLabelTheme.Font.Baseline())
+	}
+	icon.SetBorder(unison.NewEmptyBorder(insets))
 	put(parent, icon)
 	return icon
 }
@@ -576,8 +578,8 @@ func (p *prereqPanel) group(list *gurps.PrereqList, path string) *unison.Panel {
 	box.Accessibility.Role = role.Group
 	box.Accessibility.Name = groupName(list)
 	head := unison.NewPanel()
-	// The same inset on the right as a row's, so that the buttons on the right line up down the panel.
-	head.SetBorder(unison.NewEmptyBorder(geom.Insets{Top: 2, Bottom: 2, Right: 4}))
+	// The same insets on the sides as a row's, so that the grips and the buttons on the right line up down the panel.
+	head.SetBorder(unison.NewEmptyBorder(geom.Insets{Top: 2, Left: 4, Bottom: 2, Right: 8}))
 	pill := compactPopup(p, path+keyPill, i18n.Text("Requirement"), []bool{true, false}, list.All, groupWord,
 		func(all bool) { list.All = all })
 	pill.HMargin = 10
@@ -606,6 +608,7 @@ func (p *prereqPanel) group(list *gurps.PrereqList, path string) *unison.Panel {
 	}
 	add := newPrereqIconButton(path+keyAdd, unison.CircledAddSVG, i18n.Text("Add to this group"))
 	add.ClickCallback = func() { showMenu(add.AsPanel(), p.addEntries(list, path)) }
+	fitLine(add)
 	add.SetLayoutData(&unison.FlexLayoutData{HAlign: align.End, VAlign: align.Middle, HGrab: true})
 	head.AddChild(add)
 	if path != prereqRootPath {
@@ -623,9 +626,9 @@ func (p *prereqPanel) group(list *gurps.PrereqList, path string) *unison.Panel {
 
 	rail := newPrereqColumn()
 	// Lighter than the pill in dark mode, so that the rail has a contrast of at least 3:1 with the surface.
-	rail.SetBorder(unison.NewCompoundBorder(unison.NewEmptyBorder(geom.Insets{Left: 10}),
+	rail.SetBorder(unison.NewCompoundBorder(unison.NewEmptyBorder(geom.Insets{Left: 14}),
 		unison.NewLineBorder(color.DeriveLightness(0, 0.08), geom.Size{}, geom.Insets{Left: 3}, false),
-		unison.NewEmptyBorder(geom.Insets{Left: 10, Bottom: 2})))
+		unison.NewEmptyBorder(geom.Insets{Left: 6, Bottom: 2})))
 	for i, child := range list.Prereqs {
 		if sub, ok := child.(*gurps.PrereqList); ok {
 			rail.AddChild(p.group(sub, childPath(path, i)))
@@ -662,8 +665,7 @@ func (p *prereqPanel) row(pr gurps.Prereq, path string) *unison.Panel {
 	view := prereqView{node: pr, icon: p.statusIcon(row)}
 	var main *unison.Panel
 	if open {
-		// No inset on the left, so that the grip and status icon line up with those of closed rows.
-		row.SetBorder(unison.NewEmptyBorder(geom.Insets{Top: 6, Bottom: 8, Right: 4}))
+		row.SetBorder(unison.NewEmptyBorder(geom.Insets{Top: 6, Left: 4, Bottom: 8, Right: 8}))
 		main = p.editor(pr, path)
 		row.AddChild(main)
 		done := unison.NewButton()
@@ -679,7 +681,7 @@ func (p *prereqPanel) row(pr gurps.Prereq, path string) *unison.Panel {
 			return true
 		}
 	} else {
-		row.SetBorder(unison.NewEmptyBorder(geom.Insets{Top: 3, Bottom: 3, Right: 4}))
+		row.SetBorder(unison.NewEmptyBorder(geom.Insets{Top: 3, Left: 4, Bottom: 3, Right: 8}))
 		var click func()
 		if pr.PrereqType() != prereq.Unknown {
 			click = func() { p.toggle(path) }
@@ -709,11 +711,16 @@ func (p *prereqPanel) row(pr gurps.Prereq, path string) *unison.Panel {
 		if child == main {
 			child.SetLayoutData(&unison.FlexLayoutData{HAlign: align.Fill, VAlign: align.Middle, HGrab: true})
 		} else if open {
+			if _, ok := child.Self.(*unison.Button); ok {
+				fitLine(child)
+			}
 			child.SetLayoutData(&unison.FlexLayoutData{VAlign: align.Start})
 		}
 	}
 	row.DrawCallback = func(gc *unison.Canvas, _ geom.Rect) {
+		// Short of the right edge, so that an open row's background doesn't run into the edge of the panel.
 		r := row.ContentRect(true)
+		r.Width -= 4
 		if open {
 			gc.DrawRoundedRect(r, geom.NewUniformSize(8), unison.ThemeBelowSurface.Paint(gc, r, paintstyle.Fill))
 			return
@@ -1159,8 +1166,8 @@ func (p *prereqPanel) drop(_ geom.Point, data any) {
 	})
 }
 
-// drawDrop dims the prerequisite being dragged, and marks where it would go: a line before or after a row or group, or
-// a tint over a group it would go into.
+// drawDrop dims the prerequisite being dragged, and marks where it would go, in the ink of GCS's other drop markers: a
+// line before or after a row or group, or a tint over a group it would go into.
 func (p *prereqPanel) drawDrop(gc *unison.Canvas, _ geom.Rect) {
 	if dd, ok := panelDragData.(*prereqDrag); ok && dd.panel == p {
 		if more := p.FindRefKey(dd.path + keyMore); more != nil {
@@ -1172,15 +1179,17 @@ func (p *prereqPanel) drawDrop(gc *unison.Canvas, _ geom.Rect) {
 		return
 	}
 	r := p.RectFromRoot(p.dropTarget.RectToRoot(p.dropTarget.ContentRect(true)))
+	// Short of the right edge, as an open row's background is.
+	r.Width -= 4
 	if p.dropWhere == dropInto {
-		gc.DrawRoundedRect(r, geom.NewUniformSize(6), faint(unison.ThemeFocus).Paint(gc, r, paintstyle.Fill))
+		gc.DrawRoundedRect(r, geom.NewUniformSize(6), faint(unison.ThemeWarning).Paint(gc, r, paintstyle.Fill))
 		return
 	}
 	y := r.Y
 	if p.dropWhere == dropAfter {
 		y = r.Bottom()
 	}
-	paint := unison.ThemeFocus.Paint(gc, r, paintstyle.Stroke)
+	paint := unison.ThemeWarning.Paint(gc, r, paintstyle.Stroke)
 	paint.SetStrokeWidth(2)
 	gc.DrawLine(geom.NewPoint(r.X, y), geom.NewPoint(r.Right(), y), paint)
 }
@@ -1459,6 +1468,7 @@ func (p *prereqPanel) optional(chips *unison.Panel, path, key string, on bool, a
 		p.rebuild(chipKey)
 	})
 	b.RefKey = addKey
+	fitLine(b)
 	put(chips, b)
 }
 
@@ -1468,7 +1478,7 @@ func (p *prereqPanel) optional(chips *unison.Panel, path, key string, on bool, a
 func (p *prereqPanel) chip(parent *unison.Panel, key, text, title, after string, remove func(), populate func(chip *unison.Panel)) {
 	chip := unison.NewPanel()
 	chip.RefKey = key + keyChip
-	chip.SetBorder(unison.NewEmptyBorder(geom.Insets{Top: 2, Left: 10, Bottom: 2, Right: 3}))
+	chip.SetBorder(unison.NewEmptyBorder(geom.Insets{Top: chipPadding, Left: 10, Bottom: chipPadding, Right: 3}))
 	chip.DrawCallback = func(gc *unison.Canvas, _ geom.Rect) {
 		r := chip.ContentRect(true)
 		unison.DrawRoundedRectBase(gc, r, geom.NewUniformSize(r.Height/2), 1, unison.ThemeSurface,
@@ -1555,7 +1565,9 @@ func (p *prereqPanel) addCompact(parent *unison.Panel, field *unison.Field) {
 	put(parent, field)
 	p.mute(field)
 	unison.UninstallFocusBorders(field, field)
-	unison.InstallFocusBorders(field, field, compactFieldBorder(true), compactFieldBorder(false))
+	// Padded to the height of the controls around it, less the height of its text.
+	pad := (controlHeight(parent) - field.Font.LineHeight()) / 2
+	unison.InstallFocusBorders(field, field, compactFieldBorder(true, pad), compactFieldBorder(false, pad))
 	radius := geom.NewUniformSize(4)
 	draw := field.DrawCallback
 	field.DrawCallback = func(gc *unison.Canvas, dirty geom.Rect) {
@@ -1578,7 +1590,8 @@ func (p *prereqPanel) mute(field *unison.Field) {
 	}
 }
 
-func compactFieldBorder(focused bool) unison.Border {
+// compactFieldBorder returns the border of a compact field, which leaves pad above and below its text.
+func compactFieldBorder(focused bool, pad float32) unison.Border {
 	ink := unison.Ink(unison.ThemeSurfaceEdge)
 	var w float32 = 1
 	if focused {
@@ -1586,7 +1599,33 @@ func compactFieldBorder(focused bool) unison.Border {
 		w = 2
 	}
 	return unison.NewCompoundBorder(unison.NewLineBorder(ink, geom.NewUniformSize(4), geom.NewUniformInsets(w), false),
-		unison.NewEmptyBorder(geom.Insets{Top: 3 - w, Left: 6 - w, Bottom: 3 - w, Right: 6 - w}))
+		unison.NewEmptyBorder(geom.Insets{Top: pad - w, Left: 6 - w, Bottom: pad - w, Right: 6 - w}))
+}
+
+// chipPadding is the room a chip leaves above and below the controls it holds.
+const chipPadding = 2
+
+// controlHeight returns the height of a control in the parent: within a chip, that of a standard button; anywhere else,
+// that of a chip holding one, so that everything on a line, chips and group pills included, is as tall.
+func controlHeight(parent *unison.Panel) float32 {
+	theme := &unison.DefaultButtonTheme
+	height := xmath.Ceil(theme.Font.LineHeight()) + 2*(theme.VMargin+1)
+	if parent == nil || !strings.HasSuffix(parent.RefKey, keyChip) {
+		height += 2 * chipPadding
+	}
+	return height
+}
+
+// fitLine has the control take the height controlHeight gives it in its parent.
+func fitLine(control unison.Paneler) {
+	panel := control.AsPanel()
+	sizer := panel.Sizer()
+	panel.SetSizer(func(hint geom.Size) (minSize, prefSize, maxSize geom.Size) {
+		minSize, prefSize, maxSize = sizer(hint)
+		height := controlHeight(panel.Parent())
+		minSize.Height, prefSize.Height, maxSize.Height = height, height, height
+		return minSize, prefSize, maxSize
+	})
 }
 
 // compactPopup returns a popup offering the items, as render shows them, with current selected. A choice is handed to
@@ -1601,6 +1640,7 @@ func compactPopup[T comparable](p *prereqPanel, key, name string, items []T, cur
 	// Sized to the choice showing rather than the widest, since any choice rebuilds the panel.
 	popup.SetSizer(func(hint geom.Size) (minSize, prefSize, maxSize geom.Size) {
 		_, prefSize, _ = popup.DefaultSizes(hint)
+		prefSize.Height = controlHeight(popup.Parent())
 		text := unison.NewText(popup.Text(), &unison.TextDecoration{Font: popup.Font})
 		prefSize.Width = xmath.Ceil(text.Width() + popup.HMargin*2 + 4 + prefSize.Height*0.75)
 		return prefSize, prefSize, prefSize
@@ -1656,7 +1696,8 @@ func newPrereqIconButton(key string, icon *unison.SVG, tooltip string) *unison.B
 	return b
 }
 
-// newDashedButton returns a button drawn as a dashed outline, which adds something.
+// newDashedButton returns a button drawn as a dashed outline, which adds something. Under the pointer it is filled, and
+// its outline is solid and in the focus color.
 func newDashedButton(title string, click func()) *unison.Button {
 	b := unison.NewButton()
 	b.HideBase = true
@@ -1664,13 +1705,30 @@ func newDashedButton(title string, click func()) *unison.Button {
 	b.CornerRadius = geom.NewUniformSize(100)
 	b.SetTitle(title)
 	b.ClickCallback = click
+	var hovered bool
+	hover := func(on bool) bool {
+		hovered = on
+		b.MarkForRedraw()
+		return true
+	}
+	b.MouseEnterCallback = func(_ geom.Point, _ mod.Modifiers) bool { return hover(true) }
+	b.MouseExitCallback = func() bool { return hover(false) }
 	draw := b.DrawCallback
 	b.DrawCallback = func(gc *unison.Canvas, dirty geom.Rect) {
-		draw(gc, dirty)
 		r := b.ContentRect(true).Inset(geom.NewUniformInsets(0.5))
-		paint := unison.ThemeSurfaceEdge.Paint(gc, r, paintstyle.Stroke)
-		paint.SetPathEffect(unison.NewDashPathEffect([]float32{3, 3}, 0))
-		gc.DrawRoundedRect(r, geom.NewUniformSize(min(b.CornerRadius.Width, r.Height/2)), paint)
+		radius := geom.NewUniformSize(min(b.CornerRadius.Width, r.Height/2))
+		// Half as strong as text, for a contrast of at least 3:1 with the surface and what is below it.
+		var edge unison.Ink = &unison.ColorFilteredInk{OriginalInk: unison.ThemeOnSurface, ColorFilter: unison.Alpha50Filter()}
+		if hovered {
+			gc.DrawRoundedRect(r, radius, unison.ThemeAboveSurface.Paint(gc, r, paintstyle.Fill))
+			edge = unison.ThemeFocus
+		}
+		draw(gc, dirty)
+		paint := edge.Paint(gc, r, paintstyle.Stroke)
+		if !hovered {
+			paint.SetPathEffect(unison.NewDashPathEffect([]float32{3, 3}, 0))
+		}
+		gc.DrawRoundedRect(r, radius, paint)
 	}
 	return b
 }
