@@ -17,6 +17,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/spellcmp"
 	"github.com/richardwilkes/toolbox/v2/check"
+	"github.com/richardwilkes/toolbox/v2/xbytes"
 )
 
 // TestPrereqDescribe verifies the description of each prerequisite type, including which names and qualifiers are
@@ -181,4 +182,84 @@ func TestPrereqListDescribe(t *testing.T) {
 	c.Equal("Has trait Magery and (has trait Luck or has trait DX) (only when TL at least 3) and has trait Fearlessness",
 		root.Describe(nil, func(s string) string { return s }))
 	c.Equal("", gurps.NewPrereqList().Describe(nil, func(s string) string { return s }))
+}
+
+// TestPrereqListFailureText verifies how a list lays out what is unmet: a single unmet item collapses to that item,
+// nested lists with their parent's mode are flattened into it, lists that don't apply at the tech level are left out,
+// and an "any of" list names every option.
+func TestPrereqListFailureText(t *testing.T) {
+	c := check.New(t)
+	entity := gurps.NewEntity()
+	entity.Profile.TechLevel = "3"
+	trait := func(name string) *gurps.TraitPrereq {
+		p := gurps.NewTraitPrereq()
+		p.NameCriteria.Qualifier = name
+		return p
+	}
+	met := trait("Z")
+	met.Has = false
+	list := func(all bool, children ...gurps.Prereq) *gurps.PrereqList {
+		p := gurps.NewPrereqList()
+		p.All = all
+		p.Prereqs = children
+		return p
+	}
+	atTL5 := list(true, trait("B"))
+	atTL5.WhenTL.Compare = criteria.AtLeastNumber
+	atTL5.WhenTL.Qualifier = fxp.Five
+	a, b, cc, d := trait("A"), trait("B"), trait("C"), trait("D")
+
+	for _, one := range []struct {
+		name     string
+		list     *gurps.PrereqList
+		expected string
+	}{
+		{"all of", list(true, a, b), "\n- Has trait A\n- Has trait B"},
+		{"all of, one unmet", list(true, met, a), "\n- Has trait A"},
+		{"all of, nested all of", list(true, a, list(true, b, cc)), "\n- Has trait A\n- Has trait B\n- Has trait C"},
+		{
+			"all of, nested any of", list(true, a, list(false, b, cc)),
+			"\n- Has trait A\n- Requires at least one of:\n\t- Has trait B\n\t- Has trait C",
+		},
+		{"all of, nested any of with one option", list(true, a, list(false, b)), "\n- Has trait A\n- Has trait B"},
+		{
+			"all of, nested three deep", list(true, a, list(false, b, list(true, cc, d))),
+			"\n- Has trait A\n- Requires at least one of:\n\t- Has trait B\n\t- Requires all of:\n\t\t- Has trait C" +
+				"\n\t\t- Has trait D",
+		},
+		{"all of, skipped for TL", list(true, a, atTL5), "\n- Has trait A"},
+		{"any of", list(false, a, b), "\n- Requires at least one of:\n\t- Has trait A\n\t- Has trait B"},
+		{"any of with one option", list(false, a), "\n- Has trait A"},
+		{
+			"any of, nested any of", list(false, a, list(false, b, cc)),
+			"\n- Requires at least one of:\n\t- Has trait A\n\t- Has trait B\n\t- Has trait C",
+		},
+		{
+			"any of, nested all of with one unmet", list(false, a, list(true, met, b)),
+			"\n- Requires at least one of:\n\t- Has trait A\n\t- Has trait B",
+		},
+	} {
+		var buffer xbytes.InsertBuffer
+		c.False(one.list.Satisfied(entity, nil, &buffer, "\n- ", nil), one.name)
+		c.Equal(one.expected, buffer.String(), one.name)
+	}
+	c.True(list(false, a, met).Satisfied(entity, nil, nil, "\n- ", nil), "an any of list with a met option is met")
+	c.True(list(false, a, atTL5).Satisfied(entity, nil, nil, "\n- ", nil),
+		"an option that doesn't apply at the tech level counts as met")
+}
+
+// TestPrereqListAppliesAt verifies that a list applies only at the tech levels its condition allows, and always when
+// there is no condition or no entity.
+func TestPrereqListAppliesAt(t *testing.T) {
+	c := check.New(t)
+	entity := gurps.NewEntity()
+	entity.Profile.TechLevel = "3"
+	p := gurps.NewPrereqList()
+	c.True(p.AppliesAt(entity), "no condition")
+	p.WhenTL.Compare = criteria.AtLeastNumber
+	p.WhenTL.Qualifier = fxp.Five
+	c.False(p.AppliesAt(entity), "TL 3 is below 5")
+	c.True(p.AppliesAt(nil), "no entity")
+	entity.Profile.TechLevel = "5^"
+	c.True(p.AppliesAt(entity), "TL 5^ is at least 5")
 }
