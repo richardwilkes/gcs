@@ -154,7 +154,7 @@ func TestPrereqDescribe(t *testing.T) {
 			`Meets an unknown type of prerequisite ("[future]") that needs a newer version of GCS`,
 		},
 	} {
-		c.Equal(one.expected, one.prereq.Describe(nil, func(s string) string { return "[" + s + "]" }), one.name)
+		c.Equal(one.expected, one.prereq.Describe(nil, nil, func(s string) string { return "[" + s + "]" }), one.name)
 	}
 }
 
@@ -163,7 +163,7 @@ func TestPrereqDescribeReplacements(t *testing.T) {
 	c := check.New(t)
 	p := gurps.NewTraitPrereq()
 	p.NameCriteria.Qualifier = "@Trait@"
-	c.Equal("Has trait Magery", p.Describe(map[string]string{"Trait": "Magery"}, func(s string) string { return s }))
+	c.Equal("Has trait Magery", p.Describe(nil, map[string]string{"Trait": "Magery"}, func(s string) string { return s }))
 }
 
 // TestPrereqListDescribe verifies that a list joins its children to match its mode, parenthesizes nested lists of more
@@ -181,8 +181,8 @@ func TestPrereqListDescribe(t *testing.T) {
 	single.Prereqs = append(single.Prereqs, namedTrait("Fearlessness"))
 	root.Prereqs = append(root.Prereqs, anyOf, single)
 	c.Equal("Has trait Magery and (has trait Luck or has trait DX) (only when TL at least 3) and has trait Fearlessness",
-		root.Describe(nil, func(s string) string { return s }))
-	c.Equal("", gurps.NewPrereqList().Describe(nil, func(s string) string { return s }))
+		root.Describe(nil, nil, func(s string) string { return s }))
+	c.Equal("", gurps.NewPrereqList().Describe(nil, nil, func(s string) string { return s }))
 
 	named := gurps.NewScriptPrereq()
 	named.Name = "Elf ancestry"
@@ -199,10 +199,22 @@ func TestPrereqListDescribe(t *testing.T) {
 			gurps.Prereqs{namedTrait("Magery"), &gurps.PrereqList{All: true, Prereqs: gurps.Prereqs{named, namedTrait("Luck")}}},
 			"Has trait Magery and (Elf ancestry and has trait Luck)",
 		},
+		{"an empty group", gurps.Prereqs{namedTrait("Magery"), &gurps.PrereqList{}}, "Has trait Magery"},
+		{"an empty group first", gurps.Prereqs{&gurps.PrereqList{}, namedTrait("Magery")}, "Has trait Magery"},
+		{
+			"an empty group with a tech level",
+			gurps.Prereqs{namedTrait("Magery"), &gurps.PrereqList{WhenTL: criteria.Number{Compare: criteria.AtLeastNumber}}},
+			"Has trait Magery",
+		},
+		{
+			"a group holding an empty group",
+			gurps.Prereqs{namedTrait("Magery"), &gurps.PrereqList{Prereqs: gurps.Prereqs{&gurps.PrereqList{}, namedTrait("Luck")}}},
+			"Has trait Magery and has trait Luck",
+		},
 	} {
 		list := gurps.NewPrereqList()
 		list.Prereqs = one.prereqs
-		c.Equal(one.expected, list.Describe(nil, func(s string) string { return s }), one.name)
+		c.Equal(one.expected, list.Describe(nil, nil, func(s string) string { return s }), one.name)
 	}
 }
 
@@ -215,7 +227,7 @@ func TestDescribePrereqUsesTheEntity(t *testing.T) {
 	list := gurps.NewPrereqList()
 	list.Prereqs = gurps.Prereqs{namedTrait("Magery"), gurps.NewContainedWeightPrereq(nil)}
 	c.Equal("Has trait Magery and has a contained weight of at most 2.5 kg",
-		gurps.DescribePrereq(entity, list, func(s string) string { return s }))
+		list.Describe(entity, nil, func(s string) string { return s }))
 }
 
 // TestPrereqListFailureText verifies how a list lays out what is unmet: a single unmet item collapses to that item,

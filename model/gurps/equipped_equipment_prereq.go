@@ -88,14 +88,14 @@ func (p *EquippedEquipmentPrereq) Satisfied(entity *Entity, exclude any, tooltip
 		}
 		if tooltip != nil {
 			tooltip.WriteString(prefix)
-			tooltip.WriteString(p.Describe(replacements, plainText))
+			tooltip.WriteString(p.Describe(entity, replacements, plainText))
 		}
 	}
 	return satisfied
 }
 
 // Describe implements Prereq.
-func (p *EquippedEquipmentPrereq) Describe(replacements map[string]string, em func(string) string) string {
+func (p *EquippedEquipmentPrereq) Describe(_ *Entity, replacements map[string]string, em func(string) string) string {
 	tags := p.TagsCriteria.Compare != criteria.AnyText
 	var text string
 	switch {

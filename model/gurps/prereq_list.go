@@ -171,56 +171,42 @@ func (p *PrereqList) satisfied(entity *Entity, exclude any, buffer *xbytes.Inser
 	return false, 1
 }
 
-// Describe implements Prereq. The children are joined with "and" or "or" to match the list's mode, a nested list with
-// more than one child is parenthesized, and a tech level condition is noted at the end.
-func (p *PrereqList) Describe(replacements map[string]string, em func(string) string) string {
-	return p.describeChildren(nil, replacements, em, false) + p.describeWhenTL()
+// Describe implements Prereq. The children are joined with "and" or "or" to match the list's mode, a nested list that
+// joins more than one is parenthesized, a tech level condition is noted at the end, and empty lists are left out.
+func (p *PrereqList) Describe(entity *Entity, replacements map[string]string, em func(string) string) string {
+	text, _ := p.describeChildren(entity, replacements, em, false)
+	return text + p.describeWhenTL()
 }
 
-// DescribePrereq returns the description of the prerequisite, as Describe does, but naming attributes and giving weights
-// as the entity, which may be nil, defines them.
-func DescribePrereq(entity *Entity, pr Prereq, em func(string) string) string {
-	return describePrereq(entity, pr, nil, em)
-}
-
-func describePrereq(entity *Entity, pr Prereq, replacements map[string]string, em func(string) string) string {
-	switch one := pr.(type) {
-	case *PrereqList:
-		return one.describeChildren(entity, replacements, em, false) + one.describeWhenTL()
-	case *AttributePrereq:
-		return one.describe(entity, em)
-	case *ContainedWeightPrereq:
-		return one.describe(entity)
-	default:
-		return pr.Describe(replacements, em)
-	}
-}
-
-// describeChildren joins the descriptions of the children. When lower is true, the first of them follows a joining
-// word, as every other one does, and so begins in lowercase unless it is a name someone wrote.
-func (p *PrereqList) describeChildren(entity *Entity, replacements map[string]string, em func(string) string, lower bool) string {
+// describeChildren joins the descriptions of the children, returning how many it joined. When lower is true, the first
+// of them follows a joining word, as every other one does, and so begins in lowercase unless it is a name someone
+// wrote.
+func (p *PrereqList) describeChildren(entity *Entity, replacements map[string]string, em func(string) string, lower bool) (text string, count int) {
 	parts := make([]string, 0, len(p.Prereqs))
-	for i, one := range p.Prereqs {
-		lower = lower || i != 0
-		var text string
+	for _, one := range p.Prereqs {
+		lower = lower || len(parts) != 0
 		if list, isList := one.(*PrereqList); isList {
-			text = list.describeChildren(entity, replacements, em, lower)
-			if len(list.Prereqs) > 1 {
+			var n int
+			if text, n = list.describeChildren(entity, replacements, em, lower); n == 0 {
+				continue
+			}
+			if n > 1 {
 				text = "(" + text + ")"
 			}
 			text += list.describeWhenTL()
 		} else {
-			text = describePrereq(entity, one, replacements, em)
-			if script, isScript := one.(*ScriptPrereq); lower && (!isScript || strings.TrimSpace(script.Name) == "") {
+			text = one.Describe(entity, replacements, em)
+			if script, isScript := one.(*ScriptPrereq); lower && (!isScript || script.ResolvedName(replacements) == "") {
 				text = lowerFirst(text)
 			}
 		}
 		parts = append(parts, text)
 	}
+	joiner := i18n.Text(" or ")
 	if p.All {
-		return strings.Join(parts, i18n.Text(" and "))
+		joiner = i18n.Text(" and ")
 	}
-	return strings.Join(parts, i18n.Text(" or "))
+	return strings.Join(parts, joiner), len(parts)
 }
 
 func (p *PrereqList) describeWhenTL() string {

@@ -103,7 +103,7 @@ func (p *SkillPrereq) Satisfied(entity *Entity, exclude any, tooltip *xbytes.Ins
 	}
 	if !satisfied && tooltip != nil {
 		tooltip.WriteString(prefix)
-		tooltip.WriteString(p.Describe(replacements, plainText))
+		tooltip.WriteString(p.Describe(entity, replacements, plainText))
 		if techLevel != nil {
 			tooltip.WriteString(i18n.Text(" with a matching tech level"))
 		}
@@ -112,7 +112,7 @@ func (p *SkillPrereq) Satisfied(entity *Entity, exclude any, tooltip *xbytes.Ins
 }
 
 // Describe implements Prereq.
-func (p *SkillPrereq) Describe(replacements map[string]string, em func(string) string) string {
+func (p *SkillPrereq) Describe(_ *Entity, replacements map[string]string, em func(string) string) string {
 	text := HasText(p.Has) + i18n.Text(" skill ") + describeName(p.NameCriteria, replacements, em)
 	switch {
 	case p.SpecializationCriteria.Compare == criteria.AnyText:

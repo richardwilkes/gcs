@@ -170,7 +170,7 @@ func (p *SpellPrereq) Satisfied(entity *Entity, exclude any, tooltip *xbytes.Ins
 	}
 	if !satisfied && tooltip != nil {
 		tooltip.WriteString(prefix)
-		tooltip.WriteString(p.Describe(replacements, plainText))
+		tooltip.WriteString(p.Describe(entity, replacements, plainText))
 		// Name the owning spell's resolved power source, so that one that is blank or spelled differently from the
 		// spells it expects to match can be diagnosed from the tooltip alone.
 		if p.SamePowerSource && ownerPowerSource != nil {
@@ -181,7 +181,7 @@ func (p *SpellPrereq) Satisfied(entity *Entity, exclude any, tooltip *xbytes.Ins
 }
 
 // Describe implements Prereq.
-func (p *SpellPrereq) Describe(replacements map[string]string, em func(string) string) string {
+func (p *SpellPrereq) Describe(_ *Entity, replacements map[string]string, em func(string) string) string {
 	text := i18n.Text("Knows")
 	if !p.Has {
 		text = i18n.Text("Does not know")

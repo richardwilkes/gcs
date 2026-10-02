@@ -12,9 +12,9 @@ package ux
 import (
 	"slices"
 	"strings"
+	"time"
 	"unicode/utf8"
 
-	"github.com/richardwilkes/gcs/v5/model/colors"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/v2/geom"
@@ -26,47 +26,9 @@ import (
 	"github.com/richardwilkes/unison/enums/role"
 )
 
-// scriptKeepLinePrefix starts a first line that inserts and snippets leave in place, since it is read separately from
-// the script (see the spell prereq count).
-const scriptKeepLinePrefix = "// prereq count:"
-
-// checkStatus is the outcome of checking a requirement, such as a script, against a sheet.
-type checkStatus uint8
-
-// Possible checkStatus values.
-const (
-	checkMet checkStatus = iota
-	checkUnmet
-	checkFailed
-	checkSkipped
-)
-
-// showCheckIcon has the label show the icon of the status.
-func showCheckIcon(label *unison.Label, status checkStatus) {
-	icon, ink := unison.CheckmarkSVG, unison.Ink(colors.Success)
-	switch status {
-	case checkUnmet:
-		icon, ink = svg.Not, colors.Failure
-	case checkFailed:
-		icon, ink = unison.TriangleExclamationSVG, unison.ThemeWarning
-	case checkSkipped:
-		icon, ink = unison.DashSVG, faint(unison.ThemeOnSurface)
-	default:
-	}
-	if label.Drawable == nil {
-		// Without an icon the label took no room, so the panels around it must be laid out again.
-		label.MarkForLayoutRecursivelyUpward()
-	}
-	size := unison.DefaultLabelTheme.Font.Baseline()
-	label.Drawable = &unison.DrawableSVG{SVG: icon, Size: geom.NewSize(size, size).Ceil()}
-	label.OnBackgroundInk = ink
-	label.MarkForRedraw()
-}
-
-// faint returns the ink at 30% opacity.
-func faint(ink unison.Ink) unison.Ink {
-	return &unison.ColorFilteredInk{OriginalInk: ink, ColorFilter: unison.Alpha30Filter()}
-}
+// scriptEvaluationDelay is how long a script must go unchanged before it is evaluated, so that one that runs away
+// doesn't stall every keystroke.
+const scriptEvaluationDelay = 250 * time.Millisecond
 
 // scriptMenuEntry is one item of the script editor's Insert or Snippets menu.
 type scriptMenuEntry struct {
@@ -80,8 +42,12 @@ type scriptMenuEntry struct {
 
 // scriptEditorOptions configures a script editor.
 type scriptEditorOptions struct {
-	// Title is the field's accessible name and its undo title.
+	// Title is the field's accessible name and its undo title, and Hint is shown beside the menus.
 	Title string
+	Hint  string
+	// KeepFirstLinePrefix, when set, starts a first line, matched without regard to case, that inserts and snippets
+	// leave in place.
+	KeepFirstLinePrefix string
 	// Inserts go in at the caret; Snippets replace the script. Either menu is left out when it has no entries.
 	Inserts  []scriptMenuEntry
 	Snippets []scriptMenuEntry
@@ -94,13 +60,13 @@ type scriptEditorOptions struct {
 type scriptEditor struct {
 	unison.Panel
 	field  *StringField
-	opts   scriptEditorOptions
+	opts   *scriptEditorOptions
 	icon   *unison.Label
 	result *sentenceButton
 }
 
 // newScriptEditor returns a script editor for the script the accessors reach.
-func newScriptEditor(get func() string, set func(string), opts scriptEditorOptions) *scriptEditor {
+func newScriptEditor(get func() string, set func(string), opts *scriptEditorOptions) *scriptEditor {
 	e := &scriptEditor{opts: opts}
 	e.Self = e
 	e.SetLayout(&unison.FlexLayout{Columns: 1, VSpacing: unison.StdVSpacing})
@@ -115,7 +81,7 @@ func newScriptEditor(get func() string, set func(string), opts scriptEditorOptio
 		e.put(0, utf8.RuneCountInString(e.field.Text()), entry)
 	})
 	hint := unison.NewLabel()
-	hint.SetTitle(i18n.Text("Tab indents. Esc closes."))
+	hint.SetTitle(opts.Hint)
 	hint.SetLayoutData(&unison.FlexLayoutData{HAlign: align.Fill, VAlign: align.Middle, HGrab: true})
 	bar.AddChild(hint)
 	guide := unison.NewSVGButton(svg.Script)
@@ -127,8 +93,9 @@ func newScriptEditor(get func() string, set func(string), opts scriptEditorOptio
 	bar.DrawCallback = func(gc *unison.Canvas, r geom.Rect) {
 		gc.DrawRect(r, unison.ThemeSurface.Paint(gc, r, paintstyle.Fill))
 	}
-	frame := newPrereqColumn()
+	frame := unison.NewPanel()
 	frame.SetLayout(&unison.FlexLayout{Columns: 1})
+	frame.SetLayoutData(&unison.FlexLayoutData{HAlign: align.Fill, HGrab: true})
 	frame.AddChild(hbox(bar, unison.StdHSpacing))
 	e.AddChild(frame)
 
@@ -180,7 +147,7 @@ func newScriptEditor(get func() string, set func(string), opts scriptEditorOptio
 		e.result.SetLayoutData(&unison.FlexLayoutData{HAlign: align.Fill, HGrab: true})
 		row.AddChild(e.result)
 		e.AddChild(hbox(row, unison.StdIconGap))
-		e.refresh()
+		e.evaluate(e.field.CurrentValue())
 	}
 	return e
 }
@@ -204,40 +171,12 @@ func (e *scriptEditor) addMenuButton(bar *unison.Panel, title string, entries []
 	bar.AddChild(button)
 }
 
-// menuEntry is one item of a menu that showMenu builds. One with no action is a heading, shown disabled after a
-// separator unless it comes first; with no label as well, it is just the separator.
-type menuEntry struct {
-	Label string
-	Act   func()
-}
-
-// showMenu pops up a menu of the entries below the anchor.
-func showMenu(anchor *unison.Panel, entries []menuEntry) {
-	f := unison.DefaultMenuFactory()
-	id := unison.ContextMenuIDFlag
-	m := f.NewMenu(id, "", nil)
-	for i, entry := range entries {
-		id++
-		if entry.Act != nil {
-			m.InsertItem(-1, f.NewItem(id, entry.Label, unison.KeyBinding{}, nil, func(unison.MenuItem) { entry.Act() }))
-			continue
-		}
-		if i != 0 {
-			m.InsertSeparator(-1, false)
-		}
-		if entry.Label != "" {
-			m.InsertItem(-1, f.NewItem(id, entry.Label, unison.KeyBinding{}, func(unison.MenuItem) bool { return false }, nil))
-		}
-	}
-	m.Popup(anchor.RectToRoot(anchor.ContentRect(true)), 0)
-}
-
-// put replaces the runes from start to end with the entry's text, below a first line starting with
-// scriptKeepLinePrefix, and leaves the caret where the entry asks. The order of the calls matters: gaining the focus
+// put replaces the runes from start to end with the entry's text, below a first line starting with the
+// KeepFirstLinePrefix, and leaves the caret where the entry asks. The order of the calls matters: gaining the focus
 // selects everything, so the selection is set last.
 func (e *scriptEditor) put(start, end int, entry scriptMenuEntry) {
 	text := []rune(e.field.Text())
-	if strings.HasPrefix(strings.ToLower(string(text)), scriptKeepLinePrefix) {
+	if keep := e.opts.KeepFirstLinePrefix; keep != "" && strings.HasPrefix(strings.ToLower(string(text)), strings.ToLower(keep)) {
 		keep := slices.Index(text, '\n') + 1
 		if keep == 0 {
 			text = append(text, '\n')
@@ -252,15 +191,25 @@ func (e *scriptEditor) put(start, end int, entry scriptMenuEntry) {
 	e.field.SetSelection(caret, caret)
 }
 
-// refresh evaluates the script again and shows the result. It is called for each change to the script; call it when
-// whatever the script reads changes.
+// refresh evaluates the script again and shows the result, once it has gone unchanged for scriptEvaluationDelay. It is
+// called for each change to the script; call it when whatever the script reads changes.
 func (e *scriptEditor) refresh() {
 	if e.opts.Evaluate == nil {
 		return
 	}
+	script := e.field.CurrentValue()
+	unison.InvokeTaskAfter(func() {
+		if script == e.field.CurrentValue() {
+			e.evaluate(script)
+		}
+	}, scriptEvaluationDelay)
+}
+
+// evaluate shows the result of evaluating the script.
+func (e *scriptEditor) evaluate(script string) {
 	var status checkStatus
 	var text string
-	gurps.SuppressScriptResolveErrorLogging(func() { status, text = e.opts.Evaluate(e.field.CurrentValue()) })
+	gurps.SuppressScriptResolveErrorLogging(func() { status, text = e.opts.Evaluate(script) })
 	showCheckIcon(e.icon, status)
 	e.result.setText(text, "")
 }

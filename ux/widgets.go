@@ -862,3 +862,30 @@ func newApplyCancelButtons(toolbar *unison.Panel, showKeys bool, apply func() bo
 	toolbar.AddChild(cancelButton)
 	return applyButton, cancelButton
 }
+
+// menuEntry is one item of a menu that showMenu builds. One with no action is a heading, shown disabled after a
+// separator unless it comes first; with no label as well, it is just the separator.
+type menuEntry struct {
+	Label string
+	Act   func()
+}
+
+// showMenu pops up a menu of the entries below the anchor.
+func showMenu(anchor *unison.Panel, entries []menuEntry) {
+	f := unison.DefaultMenuFactory()
+	m := f.NewMenu(unison.PopupMenuTemporaryBaseID|unison.ContextMenuIDFlag, "", nil)
+	for i, entry := range entries {
+		id := unison.PopupMenuTemporaryBaseID + i + 1
+		if entry.Act != nil {
+			m.InsertItem(-1, f.NewItem(id, entry.Label, unison.KeyBinding{}, nil, func(unison.MenuItem) { entry.Act() }))
+			continue
+		}
+		if i != 0 {
+			m.InsertSeparator(-1, false)
+		}
+		if entry.Label != "" {
+			m.InsertItem(-1, f.NewItem(id, entry.Label, unison.KeyBinding{}, func(unison.MenuItem) bool { return false }, nil))
+		}
+	}
+	m.Popup(anchor.RectToRoot(anchor.ContentRect(true)), 0)
+}

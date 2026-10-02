@@ -21,6 +21,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/prereq"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/spellcmp"
+	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/v2/errs"
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/i18n"
@@ -48,7 +49,7 @@ const (
 	keySentence    = ":sentence"
 	// keyChip follows the key of a chip's criterion, so that the chip doesn't share the key of the field within it.
 	keyChip = ":chip"
-	// keyFirst marks the editor of an open row; focusing it focuses the first control within it.
+	// keyFirst marks the editor of an open row; focusing it focuses its first text field, or else its first control.
 	keyFirst = ":first"
 )
 
@@ -65,10 +66,43 @@ const (
 	dropInto
 )
 
-var (
-	prereqAddSVG  = unison.MustSVGFromContentString(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M256 80c0-17.7-14.3-32-32-32s-32 14.3-32 32v144H48c-17.7 0-32 14.3-32 32s14.3 32 32 32h144v144c0 17.7 14.3 32 32 32s32-14.3 32-32V288h144c17.7 0 32-14.3 32-32s-14.3-32-32-32H256V80z"/></svg>`)
-	prereqMoreSVG = unison.MustSVGFromContentString(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M8 256a56 56 0 1 1 112 0 56 56 0 1 1-112 0zm160 0a56 56 0 1 1 112 0 56 56 0 1 1-112 0zm216-56a56 56 0 1 1 0 112 56 56 0 1 1 0-112z"/></svg>`)
+// checkStatus is the outcome of checking a requirement, such as a script, against a sheet.
+type checkStatus uint8
+
+// Possible checkStatus values.
+const (
+	checkMet checkStatus = iota
+	checkUnmet
+	checkFailed
+	checkSkipped
 )
+
+// showCheckIcon has the label show the icon of the status.
+func showCheckIcon(label *unison.Label, status checkStatus) {
+	icon, ink := unison.CheckmarkSVG, unison.Ink(colors.Success)
+	switch status {
+	case checkUnmet:
+		icon, ink = svg.Not, colors.Failure
+	case checkFailed:
+		icon, ink = unison.TriangleExclamationSVG, unison.ThemeWarning
+	case checkSkipped:
+		icon, ink = unison.DashSVG, faint(unison.ThemeOnSurface)
+	default:
+	}
+	if label.Drawable == nil {
+		// Without an icon the label took no room, so the panels around it must be laid out again.
+		label.MarkForLayoutRecursivelyUpward()
+	}
+	size := unison.DefaultLabelTheme.Font.Baseline()
+	label.Drawable = &unison.DrawableSVG{SVG: icon, Size: geom.NewSize(size, size).Ceil()}
+	label.OnBackgroundInk = ink
+	label.MarkForRedraw()
+}
+
+// faint returns the ink at 30% opacity.
+func faint(ink unison.Ink) unison.Ink {
+	return &unison.ColorFilteredInk{OriginalInk: ink, ColorFilter: unison.Alpha30Filter()}
+}
 
 // prereqPanel edits a tree of prerequisites. Each one is a row that reads as a sentence until it is opened, one at a
 // time, to edit it. Each list is a group, whose head says whether all or any of its children must be met and whose
@@ -206,6 +240,12 @@ func (p *prereqPanel) edit(title, key string, change func()) *prereqSnapshot {
 func (p *prereqPanel) install(snapshot *prereqSnapshot) {
 	*p.root = cloneTree(snapshot.tree)
 	p.placeholder = nil
+	// A change made in a row's editor is shown by opening that row.
+	if path, name, ok := strings.Cut(snapshot.focus, ":"); ok && ":"+name != keyMore && ":"+name != keySentence {
+		if node := p.node(path); node != nil && node.PrereqType() != prereq.List {
+			p.open = path
+		}
+	}
 	MarkModified(p)
 	p.rebuild(snapshot.focus)
 }
@@ -286,7 +326,18 @@ func (p *prereqPanel) focusOn(key string) bool {
 		return false
 	}
 	if !target.Focusable() {
-		if target = target.FirstFocusableChild(); target == nil {
+		first := target.FirstFocusableChild()
+		// A row's editor gives the focus to its first text field, where typing goes.
+		if strings.HasSuffix(key, keyFirst) {
+			target.HasInSelfOrDescendants(func(one *unison.Panel) bool {
+				if _, ok := one.Self.(Selectable); ok && one.Focusable() {
+					first = one
+					return true
+				}
+				return false
+			})
+		}
+		if target = first; target == nil {
 			return false
 		}
 	}
@@ -306,16 +357,26 @@ func (p *prereqPanel) build() {
 		unison.NewEmptyBorder(geom.Insets{Top: 4, Left: 4, Bottom: 6, Right: 4}),
 	))
 	p.summary.SetLayoutData(&unison.FlexLayoutData{HAlign: align.Fill, HGrab: true})
-	p.AddChild(p.summary)
+	// An empty root's placeholder says what the summary would.
+	if len(p.tree().Prereqs) != 0 {
+		p.AddChild(p.summary)
+	}
 	p.AddChild(p.group(p.tree(), prereqRootPath))
 	p.refresh()
 }
 
-// Sync implements Syncer. Statuses are worked out again only when the tree has changed, since that runs its scripts.
+// Sync implements Syncer. Statuses are worked out again only once the tree has gone unchanged for
+// scriptEvaluationDelay, since that runs its scripts, which would otherwise run on every keystroke.
 func (p *prereqPanel) Sync() {
-	if p.hash != gurps.Hash64(p.tree()) {
-		p.refresh()
+	hash := gurps.Hash64(p.tree())
+	if hash == p.hash {
+		return
 	}
+	unison.InvokeTaskAfter(func() {
+		if hash == gurps.Hash64(p.tree()) && hash != p.hash {
+			p.refresh()
+		}
+	}, scriptEvaluationDelay)
 }
 
 // refresh updates the summary, the sentences and the status icons from the tree, in place.
@@ -323,8 +384,8 @@ func (p *prereqPanel) refresh() {
 	tree := p.tree()
 	p.hash = gurps.Hash64(tree)
 	summary := i18n.Text("No prerequisites.")
-	if len(tree.Prereqs) != 0 {
-		summary = gurps.DescribePrereq(p.entity, tree, em)
+	if text := tree.Describe(p.entity, nil, em); text != "" {
+		summary = fmt.Sprintf(i18n.Text("%s."), text)
 	}
 	p.summary.setText(summary, "")
 	// Until the panel is in its editor, the item being edited, which evaluation leaves out, can't be found.
@@ -339,16 +400,20 @@ func (p *prereqPanel) refresh() {
 			v.icon.Tooltip = newWrappedTooltip(tip)
 		}
 		if v.sentence != nil {
-			v.sentence.setText(gurps.DescribePrereq(p.entity, v.node, em), suffix)
+			v.sentence.setText(v.node.Describe(p.entity, nil, em), suffix)
 		}
 		if list, ok := v.node.(*gurps.PrereqList); ok && v.group != nil {
 			v.group.Accessibility.Name = groupName(list)
+			if suffix != "" {
+				v.group.Accessibility.Name += i18n.Text(", ") + suffix
+			}
 		}
 	}
 }
 
 // status returns the node's status against the sheet, the tooltip of its icon and what a screen reader hears after its
-// sentence. Everything within a list that doesn't apply at the sheet's tech level is skipped.
+// sentence. Everything within a list that doesn't apply at the sheet's tech level is skipped, as is an empty group, which
+// is always met.
 func (p *prereqPanel) status(node gurps.Prereq) (status checkStatus, tip, suffix string) {
 	list, ok := node.(*gurps.PrereqList)
 	if !ok {
@@ -359,22 +424,30 @@ func (p *prereqPanel) status(node gurps.Prereq) (status checkStatus, tip, suffix
 			return checkSkipped, i18n.Text("Doesn't apply at this tech level"), i18n.Text("doesn't apply at this tech level")
 		}
 	}
+	if group, isList := node.(*gurps.PrereqList); isList && len(group.Prereqs) == 0 {
+		return checkSkipped, i18n.Text("Empty group, always met"), i18n.Text("empty group, always met")
+	}
 	var met, failed bool
 	var reason string
 	if script, isScript := node.(*gurps.ScriptPrereq); isScript {
 		gurps.SuppressScriptResolveErrorLogging(func() { met, reason, failed = script.Evaluate(p.entity, p.exclude()) })
 	} else {
 		var buffer xbytes.InsertBuffer
-		met = node.Satisfied(p.entity, p.exclude(), &buffer, "", nil)
-		reason = strings.TrimSpace(buffer.String())
+		met = node.Satisfied(p.entity, p.exclude(), &buffer, "\n- ", nil)
+		// One unmet item reads as a sentence; more are a list.
+		if reason = buffer.String(); strings.Count(reason, "\n") == 1 {
+			reason = strings.TrimPrefix(reason, "\n- ")
+		}
 	}
 	switch {
 	case failed:
 		return checkFailed, reason, fmt.Sprintf(i18n.Text("script error: %s"), reason)
 	case met:
 		return checkMet, i18n.Text("Met"), i18n.Text("met")
+	case strings.HasPrefix(reason, "\n"):
+		return checkUnmet, i18n.Text("Not met:") + reason, i18n.Text("not met")
 	default:
-		return checkUnmet, reason, i18n.Text("not met")
+		return checkUnmet, fmt.Sprintf(i18n.Text("Not met: %s"), reason), i18n.Text("not met")
 	}
 }
 
@@ -415,9 +488,12 @@ func (p *prereqPanel) node(path string) gurps.Prereq {
 
 // locate returns the list holding the node at the path, other than the root, and the node's index within it.
 func (p *prereqPanel) locate(path string) (parent *gurps.PrereqList, index int) {
-	cut := strings.LastIndexByte(path, '.')
-	index, err := strconv.Atoi(path[cut+1:])
-	if list, ok := p.node(path[:cut]).(*gurps.PrereqList); ok && err == nil {
+	parentPath, last, found := strings.CutLast(path, ".")
+	if !found {
+		return nil, -1
+	}
+	index, err := strconv.Atoi(last)
+	if list, ok := p.node(parentPath).(*gurps.PrereqList); ok && err == nil {
 		return list, index
 	}
 	return nil, -1
@@ -516,16 +592,19 @@ func (p *prereqPanel) group(list *gurps.PrereqList, path string) *unison.Panel {
 	if path != prereqRootPath {
 		p.grip(head, path)
 	}
-	p.views = append(p.views, prereqView{node: list, icon: p.statusIcon(head), group: box})
-	put(head, pill)
+	// An empty root has nothing for its pill or status to speak of.
+	if path != prereqRootPath || len(list.Prereqs) != 0 {
+		p.views = append(p.views, prereqView{node: list, icon: p.statusIcon(head), group: box})
+		put(head, pill)
+	}
 	if list.WhenTL.Compare != criteria.AnyNumber {
-		label := i18n.Text("When TL")
-		p.chip(head, path+":tl", label, label, path+keyAdd, func() { list.WhenTL = criteria.Number{} },
+		p.chip(head, path+":tl", i18n.Text("When TL"), i18n.Text("Remove Tech Level Condition"), path+keyAdd,
+			func() { list.WhenTL = criteria.Number{} },
 			func(chip *unison.Panel) {
 				p.numberCriteria(chip, path+":tl", i18n.Text("Tech Level"), &list.WhenTL, true, 0, fxp.Twelve, true)
 			})
 	}
-	add := newPrereqIconButton(path+keyAdd, prereqAddSVG, i18n.Text("Add to this group"))
+	add := newPrereqIconButton(path+keyAdd, unison.CircledAddSVG, i18n.Text("Add to this group"))
 	add.ClickCallback = func() { showMenu(add.AsPanel(), p.addEntries(list, path)) }
 	add.SetLayoutData(&unison.FlexLayoutData{HAlign: align.End, VAlign: align.Middle, HGrab: true})
 	head.AddChild(add)
@@ -536,15 +615,16 @@ func (p *prereqPanel) group(list *gurps.PrereqList, path string) *unison.Panel {
 		// button the root doesn't have, so that it lines up with them.
 		add.SetTitle(i18n.Text("Add"))
 		add.HideBase = false
-		room := newPrereqIconButton("", prereqMoreSVG, "")
+		room := newPrereqIconButton("", svg.CircledVerticalEllipsis, "")
 		room.Hidden = true
 		put(head, room)
 	}
 	box.AddChild(hbox(head, unison.StdHSpacing))
 
 	rail := newPrereqColumn()
+	// Lighter than the pill in dark mode, so that the rail has a contrast of at least 3:1 with the surface.
 	rail.SetBorder(unison.NewCompoundBorder(unison.NewEmptyBorder(geom.Insets{Left: 10}),
-		unison.NewLineBorder(color, geom.Size{}, geom.Insets{Left: 3}, false),
+		unison.NewLineBorder(color.DeriveLightness(0, 0.08), geom.Size{}, geom.Insets{Left: 3}, false),
 		unison.NewEmptyBorder(geom.Insets{Left: 10, Bottom: 2})))
 	for i, child := range list.Prereqs {
 		if sub, ok := child.(*gurps.PrereqList); ok {
@@ -604,7 +684,7 @@ func (p *prereqPanel) row(pr gurps.Prereq, path string) *unison.Panel {
 		if pr.PrereqType() != prereq.Unknown {
 			click = func() { p.toggle(path) }
 		}
-		view.sentence = newSentenceButton(gurps.DescribePrereq(p.entity, pr, em), click, func() bool { return p.open == path })
+		view.sentence = newSentenceButton(pr.Describe(p.entity, nil, em), click, func() bool { return p.open == path })
 		view.sentence.RefKey = path + keySentence
 		p.dragBy(view.sentence.AsPanel(), row, path)
 		if click == nil {
@@ -613,12 +693,12 @@ func (p *prereqPanel) row(pr gurps.Prereq, path string) *unison.Panel {
 		}
 		main = view.sentence.AsPanel()
 		row.AddChild(main)
-		if script, ok := pr.(*gurps.ScriptPrereq); ok && strings.TrimSpace(script.Name) == "" {
+		if script, ok := pr.(*gurps.ScriptPrereq); ok && script.ResolvedName(nil) == "" {
 			describe := newDashedButton(i18n.Text("Add a description"), func() {
 				p.open = path
 				p.rebuild(path + ":name")
 			})
-			describe.OnBackgroundInk = unison.ThemeWarning
+			describe.OnBackgroundInk = unison.ThemeAlert
 			put(row, describe)
 		}
 	}
@@ -654,16 +734,21 @@ func (p *prereqPanel) grip(row *unison.Panel, path string) {
 }
 
 // dragBy lets a press on target that moves far enough to be a drag move the node at the path, shown as an image of the
-// row. A press that becomes a drag is not also a click.
+// row. Only moving counts, not holding the button down, so that a slow click is still a click. A press that becomes a
+// drag is not also a click.
 func (p *prereqPanel) dragBy(target, row *unison.Panel, path string) {
 	var dragged bool
+	var start geom.Point
 	down, up := target.MouseDownCallback, target.MouseUpCallback
 	target.MouseDownCallback = func(where geom.Point, button, count int, mods mod.Modifiers) bool {
 		dragged = false
+		start = where
 		return down == nil || down(where, button, count, mods)
 	}
 	target.MouseDragCallback = func(where geom.Point, button int, _ mod.Modifiers) bool {
-		if dragged || button != unison.ButtonLeft || !target.IsDragGesture(where) {
+		_, drift := unison.DragGestureParameters()
+		if dragged || button != unison.ButtonLeft ||
+			(xmath.Abs(where.X-start.X) <= drift && xmath.Abs(where.Y-start.Y) <= drift) {
 			return true
 		}
 		dragged = true
@@ -679,7 +764,10 @@ func (p *prereqPanel) dragBy(target, row *unison.Panel, path string) {
 			return true
 		}
 		panelDragData = &prereqDrag{panel: p, path: path}
-		row.StartDrag(img, geom.Point{}, func() { panelDragData = nil }, drag.Move,
+		row.StartDrag(img, geom.Point{}, func() {
+			panelDragData = nil
+			p.MarkForRedraw()
+		}, drag.Move,
 			drag.Data{Type: prereqDragKey, Data: []byte{0}})
 		return true
 	}
@@ -688,8 +776,8 @@ func (p *prereqPanel) dragBy(target, row *unison.Panel, path string) {
 	}
 }
 
-// toggle opens the row at the path, closing any other, or closes it if it is the open one. The focus goes to the first
-// control of the row that opens, or to the sentence of the one that closes.
+// toggle opens the row at the path, closing any other, or closes it if it is the open one. The focus goes into the row
+// that opens (see keyFirst), or to the sentence of the one that closes.
 func (p *prereqPanel) toggle(path string) {
 	if p.open == path {
 		p.open = ""
@@ -719,24 +807,39 @@ func (p *prereqPanel) editor(pr gurps.Prereq, path string) *unison.Panel {
 		// Every trait has a level of at least 0, so that is the same as having no level criteria.
 		p.levelChip(chips, path, level,
 			level.Compare != criteria.AnyNumber && (level.Compare != criteria.AtLeastNumber || level.Qualifier > 0))
-		p.textChip(chips, path, i18n.Text("notes"), i18n.Text("Notes"), &one.NotesCriteria)
+		p.textChip(chips, path, "notes", &one.NotesCriteria)
 	case *gurps.SkillPrereq:
 		p.hasPopup(fields, key("has"), &one.Has, false)
 		p.typePopup(fields, path, pr)
 		words(fields, i18n.Text("whose name"))
 		p.textCriteria(fields, key("name"), i18n.Text("Name"), i18n.Text("Skill name"), &one.NameCriteria, true)
-		p.textChip(chips, path, i18n.Text("specialization"), i18n.Text("Specialization"), &one.SpecializationCriteria)
-		p.textChip(chips, path, i18n.Text("optional specialization"), i18n.Text("Optional Specialization"),
-			&one.OptionalSpecializationCriteria)
+		p.textChip(chips, path, "specialization", &one.SpecializationCriteria)
+		p.textChip(chips, path, "optspecialization", &one.OptionalSpecializationCriteria)
 		// Unlike a trait's, "at least 0" is a real criterion here, leaving out skills with no usable level.
 		p.levelChip(chips, path, &one.LevelCriteria, one.LevelCriteria.Compare != criteria.AnyNumber)
 	case *gurps.SpellPrereq:
 		p.hasPopup(fields, key("has"), &one.Has, true)
-		p.numberCriteria(fields, key("quantity"), i18n.Text("Quantity"), &one.QuantityCriteria, false, 0,
-			fxp.FromInteger(9999), true)
+		quantity := func() {
+			p.numberCriteria(fields, key("quantity"), i18n.Text("Quantity"), &one.QuantityCriteria, false, 0,
+				fxp.FromInteger(9999), true)
+		}
+		// A count of colleges follows the match, as in "spells from at least 2 colleges".
+		colleges := one.SubType == spellcmp.CollegeCount
+		if !colleges {
+			quantity()
+		}
 		p.typePopup(fields, path, pr)
-		put(fields, compactPopup(p, key("match"), i18n.Text("Spell Match"), spellcmp.Types, one.SubType, nil,
-			func(t spellcmp.Type) { one.SubType = t }))
+		put(fields, compactPopup(p, key("match"), i18n.Text("Spell Match"), spellcmp.Types, one.SubType,
+			func(t spellcmp.Type) string {
+				if t == spellcmp.CollegeCount {
+					return i18n.Text("from")
+				}
+				return t.String()
+			}, func(t spellcmp.Type) { one.SubType = t }))
+		if colleges {
+			quantity()
+			words(fields, i18n.Text("college(s)"))
+		}
 		if one.SubType.UsesStringCriteria() {
 			p.textCriteria(fields, key("qualifier"), i18n.Text("Spell"), "", &one.QualifierCriteria, true)
 		}
@@ -747,10 +850,10 @@ func (p *prereqPanel) editor(pr gurps.Prereq, path string) *unison.Panel {
 		flags := gurps.SizeFlag | gurps.DodgeFlag | gurps.ParryFlag | gurps.BlockFlag
 		p.attributePopup(fields, key("which"), i18n.Text("Attribute"), &one.Which, flags)
 		words(fields, i18n.Text("which"))
-		p.numberCriteria(fields, key("value"), i18n.Text("Attribute"), &one.QualifierCriteria, true, fxp.Min, fxp.Max,
+		// Named apart from the attribute popup before it.
+		p.numberCriteria(fields, key("value"), i18n.Text("Value"), &one.QualifierCriteria, true, fxp.Min, fxp.Max,
 			false)
-		combined := i18n.Text("combined with")
-		p.optional(chips, path, combined, combined, one.CombinedWith != "",
+		p.optional(chips, path, "combined", one.CombinedWith != "",
 			func() { one.CombinedWith = gurps.AttributeIDFor(p.entity, gurps.DexterityID) },
 			func() { one.CombinedWith = "" },
 			func(chip *unison.Panel) {
@@ -760,7 +863,7 @@ func (p *prereqPanel) editor(pr gurps.Prereq, path string) *unison.Panel {
 		p.typePopup(fields, path, pr)
 		words(fields, i18n.Text("whose name"))
 		p.textCriteria(fields, key("name"), i18n.Text("Name"), i18n.Text("Item name"), &one.NameCriteria, true)
-		p.textChip(chips, path, i18n.Text("tag"), i18n.Text("Tag"), &one.TagsCriteria)
+		p.textChip(chips, path, "tag", &one.TagsCriteria)
 	case *gurps.ContainedQuantityPrereq:
 		p.hasPopup(fields, key("has"), &one.Has, false)
 		p.typePopup(fields, path, pr)
@@ -824,9 +927,11 @@ func (p *prereqPanel) exclude() any {
 // scriptOptions returns the script editor's options for a script prerequisite. Each snippet ends in an expression that
 // is true when met and otherwise the reason it isn't. Evaluate, when there is a sheet, runs the script being edited
 // against it.
-func (p *prereqPanel) scriptOptions(pr *gurps.ScriptPrereq) scriptEditorOptions {
-	opts := scriptEditorOptions{
-		Title: i18n.Text("Script"),
+func (p *prereqPanel) scriptOptions(pr *gurps.ScriptPrereq) *scriptEditorOptions {
+	opts := &scriptEditorOptions{
+		Title:               i18n.Text("Script"),
+		Hint:                i18n.Text("Tab indents. Shift+Tab leaves. Esc closes."),
+		KeepFirstLinePrefix: gurps.ScriptPrereqCountPrefix,
 		Inserts: []scriptMenuEntry{
 			{Label: i18n.Text("The sheet"), Heading: true},
 			{Label: `entity.attribute("st").current`, Text: `entity.attribute("st").current`},
@@ -880,18 +985,18 @@ func (p *prereqPanel) addEntries(list *gurps.PrereqList, path string) []menuEntr
 	}
 	entries := []menuEntry{{Label: i18n.Text("Requirement")}}
 	for _, t := range p.permittedChoices {
-		entries = append(entries, menuEntry{Label: xstrings.FirstToUpper(prereqTypeName(t)), Act: func() {
+		entries = append(entries, menuEntry{Label: prereqTypeName(t), Act: func() {
 			add(i18n.Text("Add Prerequisite"), p.createPrereqForType(t, list))
 		}})
 	}
 	entries = append(entries, menuEntry{Label: i18n.Text("Structure")})
-	for _, all := range []bool{true, false} {
-		entries = append(entries, menuEntry{Label: fmt.Sprintf(i18n.Text("%s group"), groupWord(all)), Act: func() {
-			add(i18n.Text("Add Group"), &gurps.PrereqList{Type: prereq.List, Parent: list, All: all})
+	for i, label := range []string{i18n.Text("All of Group"), i18n.Text("Any of Group")} {
+		entries = append(entries, menuEntry{Label: label, Act: func() {
+			add(i18n.Text("Add Group"), &gurps.PrereqList{Type: prereq.List, Parent: list, All: i == 0})
 		}})
 	}
 	if list.WhenTL.Compare == criteria.AnyNumber {
-		entries = append(entries, menuEntry{Label: i18n.Text("Only when TL…"), Act: func() {
+		entries = append(entries, menuEntry{Label: i18n.Text("Only When TL…"), Act: func() {
 			if after := p.edit(i18n.Text("Add Tech Level Condition"), path+keyAdd, func() {
 				list.WhenTL = criteria.Number{Compare: criteria.AtMostNumber, Qualifier: fxp.FromInteger(3)}
 			}); after != nil {
@@ -905,7 +1010,7 @@ func (p *prereqPanel) addEntries(list *gurps.PrereqList, path string) []menuEntr
 
 // moreButton adds the button for the node's more menu.
 func (p *prereqPanel) moreButton(parent *unison.Panel, node gurps.Prereq, path string) {
-	b := newPrereqIconButton(path+keyMore, prereqMoreSVG, i18n.Text("More actions"))
+	b := newPrereqIconButton(path+keyMore, svg.CircledVerticalEllipsis, i18n.Text("More actions"))
 	b.ClickCallback = func() { showMenu(b.AsPanel(), p.moreEntries(node, path)) }
 	put(parent, b)
 }
@@ -1139,24 +1244,25 @@ func (p *prereqPanel) typePopup(parent *unison.Panel, path string, pr gurps.Prer
 		}))
 }
 
+// prereqTypeName returns the name of the type in the Add menu.
 func prereqTypeName(t prereq.Type) string {
 	switch t {
 	case prereq.Trait:
-		return i18n.Text("trait")
+		return i18n.Text("Trait")
 	case prereq.Attribute:
-		return i18n.Text("attribute")
+		return i18n.Text("Attribute")
 	case prereq.ContainedQuantity:
-		return i18n.Text("contained quantity")
+		return i18n.Text("Contained Quantity")
 	case prereq.ContainedWeight:
-		return i18n.Text("contained weight")
+		return i18n.Text("Contained Weight")
 	case prereq.EquippedEquipment:
-		return i18n.Text("equipped equipment")
+		return i18n.Text("Equipped Equipment")
 	case prereq.Skill:
-		return i18n.Text("skill")
+		return i18n.Text("Skill")
 	case prereq.Spell:
-		return i18n.Text("spell")
+		return i18n.Text("Spell")
 	case prereq.Script:
-		return i18n.Text("script")
+		return i18n.Text("Script")
 	default:
 		return t.String()
 	}
@@ -1236,9 +1342,7 @@ func (p *prereqPanel) attributePopup(parent *unison.Panel, key, name string, val
 // powerSourceChip adds the optional power source criterion of a spell prerequisite. "Same as this spell's" is offered
 // only to a spell's own prerequisites, or shown when a file edited by hand holds it elsewhere.
 func (p *prereqPanel) powerSourceChip(chips *unison.Panel, path string, one *gurps.SpellPrereq) {
-	const same = criteria.StringComparison(255)
-	label := i18n.Text("power source")
-	p.optional(chips, path, label, i18n.Text("and whose power source"), one.SamePowerSource || one.PowerSourceCriteria.Compare != criteria.AnyText,
+	p.optional(chips, path, "power", one.SamePowerSource || one.PowerSourceCriteria.Compare != criteria.AnyText,
 		func() {
 			one.SamePowerSource = p.ownerIsSpell
 			if !p.ownerIsSpell {
@@ -1247,47 +1351,90 @@ func (p *prereqPanel) powerSourceChip(chips *unison.Panel, path string, one *gur
 		},
 		func() { one.SamePowerSource, one.PowerSourceCriteria = false, criteria.Text{} },
 		func(chip *unison.Panel) {
-			items := criteria.StringComparisons[1:]
-			current := one.PowerSourceCriteria.Compare
+			// The choices are the comparisons, as strings, after "is the same as this spell's" when that is offered.
+			same := i18n.Text("is the same as this spell's")
+			var items []string
 			if p.ownerIsSpell || one.SamePowerSource {
-				items = append([]criteria.StringComparison{same}, items...)
-				if one.SamePowerSource {
-					current = same
-				}
+				items = append(items, same)
+			}
+			for _, cmp := range criteria.StringComparisons[1:] {
+				items = append(items, cmp.String())
+			}
+			current := one.PowerSourceCriteria.Compare.String()
+			if one.SamePowerSource {
+				current = same
 			}
 			title := i18n.Text("Power Source")
 			comparison, _ := criteriaTitles(title)
-			put(chip, compactPopup(p, path+":powercmp", comparison, items, current,
-				func(c criteria.StringComparison) string {
-					if c == same {
-						return i18n.Text("is the same as this spell's")
+			put(chip, compactPopup(p, path+":powercmp", comparison, items, current, nil, func(choice string) {
+				one.SamePowerSource = choice == same
+				one.PowerSourceCriteria.Compare = criteria.AnyText
+				for _, cmp := range criteria.StringComparisons[1:] {
+					if cmp.String() == choice {
+						one.PowerSourceCriteria.Compare = cmp
 					}
-					return c.String()
-				},
-				func(c criteria.StringComparison) {
-					one.SamePowerSource = c == same
-					if one.SamePowerSource {
-						c = criteria.AnyText
-					}
-					one.PowerSourceCriteria.Compare = c
-				}))
+				}
+			}))
 			if !one.SamePowerSource {
 				p.textField(chip, path+":power", title, "", &one.PowerSourceCriteria.Qualifier)
 			}
 		})
 }
 
-// textChip adds an optional text criterion, which is in use while its comparison isn't "is anything".
-func (p *prereqPanel) textChip(chips *unison.Panel, path, label, subject string, c *criteria.Text) {
-	p.optional(chips, path, label, fmt.Sprintf(i18n.Text("and whose %s"), label), c.Compare != criteria.AnyText,
+// prereqCriterion describes an optional criterion of a prerequisite: the subject its controls are named for, the
+// button that adds it, the words its chip starts with, and the titles of adding and removing it.
+type prereqCriterion struct {
+	subject, add, words, addTitle, removeTitle string
+}
+
+// prereqCriteria returns the optional criteria, by the key their widgets' reference keys are made from.
+func prereqCriteria() map[string]*prereqCriterion {
+	return map[string]*prereqCriterion{
+		"notes": {
+			i18n.Text("Notes"), i18n.Text("+ notes"), i18n.Text("and whose notes"), i18n.Text("Add Notes"),
+			i18n.Text("Remove Notes"),
+		},
+		"tag": {
+			i18n.Text("Tag"), i18n.Text("+ tag"), i18n.Text("and whose tag"), i18n.Text("Add Tag"),
+			i18n.Text("Remove Tag"),
+		},
+		"specialization": {
+			i18n.Text("Specialization"), i18n.Text("+ specialization"), i18n.Text("and whose specialization"),
+			i18n.Text("Add Specialization"), i18n.Text("Remove Specialization"),
+		},
+		"optspecialization": {
+			i18n.Text("Optional Specialization"), i18n.Text("+ optional specialization"),
+			i18n.Text("and whose optional specialization"), i18n.Text("Add Optional Specialization"),
+			i18n.Text("Remove Optional Specialization"),
+		},
+		"level": {
+			i18n.Text("Level"), i18n.Text("+ level"), i18n.Text("and whose level"), i18n.Text("Add Level"),
+			i18n.Text("Remove Level"),
+		},
+		"power": {
+			i18n.Text("Power Source"), i18n.Text("+ power source"), i18n.Text("and whose power source"),
+			i18n.Text("Add Power Source"), i18n.Text("Remove Power Source"),
+		},
+		"combined": {
+			i18n.Text("Combined With"), i18n.Text("+ combined with"), i18n.Text("combined with"),
+			i18n.Text("Add Combined Attribute"), i18n.Text("Remove Combined Attribute"),
+		},
+	}
+}
+
+// textChip adds the optional text criterion with the key, which is in use while its comparison isn't "is anything".
+func (p *prereqPanel) textChip(chips *unison.Panel, path, key string, c *criteria.Text) {
+	p.optional(chips, path, key, c.Compare != criteria.AnyText,
 		func() { *c = criteria.Text{Compare: criteria.IsText} },
 		func() { *c = criteria.Text{} },
-		func(chip *unison.Panel) { p.textCriteria(chip, path+":"+label, subject, "", c, false) })
+		func(chip *unison.Panel) {
+			p.textCriteria(chip, path+":"+key, prereqCriteria()[key].subject, "", c, false)
+		})
 }
 
 // levelChip adds an optional level criterion.
 func (p *prereqPanel) levelChip(chips *unison.Panel, path string, level *criteria.Number, on bool) {
-	p.optional(chips, path, i18n.Text("level"), i18n.Text("and whose level"), on,
+	p.optional(chips, path, "level", on,
 		func() { *level = criteria.Number{Compare: criteria.AtLeastNumber, Qualifier: fxp.One} },
 		func() { *level = criteria.Number{} },
 		func(chip *unison.Panel) {
@@ -1295,28 +1442,30 @@ func (p *prereqPanel) levelChip(chips *unison.Panel, path string, level *criteri
 		})
 }
 
-// optional adds an optional criterion to chips: when on, as a chip reading text and holding the controls populate
-// adds; otherwise as a dashed chip that adds it.
-func (p *prereqPanel) optional(chips *unison.Panel, path, label, text string, on bool, add, remove func(), populate func(chip *unison.Panel)) {
-	addKey := path + ":add " + label
+// optional adds the optional criterion with the key to chips: when on, as a chip holding the controls populate adds;
+// otherwise as a dashed chip that adds it.
+func (p *prereqPanel) optional(chips *unison.Panel, path, key string, on bool, add, remove func(), populate func(chip *unison.Panel)) {
+	c := prereqCriteria()[key]
+	addKey := path + ":add " + key
+	chipKey := path + ":" + key + keyChip
 	if on {
-		p.chip(chips, path+":"+label, label, text, addKey, remove, populate)
+		p.chip(chips, path+":"+key, c.words, c.removeTitle, addKey, remove, populate)
 		return
 	}
-	b := newDashedButton("+ "+label, func() {
-		if after := p.edit(fmt.Sprintf(i18n.Text("Add %s"), label), addKey, add); after != nil {
-			after.focus = path + ":" + label + keyChip
+	b := newDashedButton(c.add, func() {
+		if after := p.edit(c.addTitle, addKey, add); after != nil {
+			after.focus = chipKey
 		}
-		p.rebuild(path + ":" + label + keyChip)
+		p.rebuild(chipKey)
 	})
 	b.RefKey = addKey
 	put(chips, b)
 }
 
-// chip adds a rounded chip for the label, whose reference key is key followed by keyChip, to the parent with the text,
-// the controls populate adds, and a button that calls remove and then gives the focus to the widget with the reference
+// chip adds a rounded chip, whose reference key is key followed by keyChip, to the parent with the text, the controls
+// populate adds, and a button titled title that calls remove and then gives the focus to the widget with the reference
 // key after.
-func (p *prereqPanel) chip(parent *unison.Panel, key, label, text, after string, remove func(), populate func(chip *unison.Panel)) {
+func (p *prereqPanel) chip(parent *unison.Panel, key, text, title, after string, remove func(), populate func(chip *unison.Panel)) {
 	chip := unison.NewPanel()
 	chip.RefKey = key + keyChip
 	chip.SetBorder(unison.NewEmptyBorder(geom.Insets{Top: 2, Left: 10, Bottom: 2, Right: 3}))
@@ -1327,7 +1476,6 @@ func (p *prereqPanel) chip(parent *unison.Panel, key, label, text, after string,
 	}
 	words(chip, text)
 	populate(chip)
-	title := fmt.Sprintf(i18n.Text("Remove %s"), label)
 	x := newPrereqIconButton("", unison.CircledXSVG, title)
 	x.ClickCallback = func() {
 		if snapshot := p.edit(title, chip.RefKey, remove); snapshot != nil {

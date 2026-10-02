@@ -61,9 +61,9 @@ func TestScriptPrereqEvaluate(t *testing.T) {
 func TestScriptPrereqName(t *testing.T) {
 	c := check.New(t)
 	p := NewScriptPrereq()
-	c.Equal("Passes a custom check", p.Describe(nil, plainText))
+	c.Equal("Passes a custom check", p.Describe(nil, nil, plainText))
 	p.Name = "Knows @Lore@"
-	c.Equal("Knows Demons", p.Describe(map[string]string{"Lore": "Demons"}, plainText))
+	c.Equal("Knows Demons", p.Describe(nil, map[string]string{"Lore": "Demons"}, plainText))
 	keys := make(map[string]string)
 	p.FillWithNameableKeys(keys, nil)
 	_, exists := keys["Lore"]
@@ -96,4 +96,12 @@ func TestResolveScriptCachedErrorStaysFailed(t *testing.T) {
 	c.Equal("2", result)
 	_, failed = resolveScript(entity, ScriptSelfProvider{}, "1 + 1")
 	c.False(failed, "a cached result is not a failure")
+}
+
+// TestResolveScriptSyntaxErrorNamedOnce verifies that a script that won't compile is reported as a SyntaxError once.
+func TestResolveScriptSyntaxErrorNamedOnce(t *testing.T) {
+	c := check.New(t)
+	result, failed := resolveScript(NewEntity(), ScriptSelfProvider{}, "nope(")
+	c.True(failed)
+	c.True(strings.HasPrefix(result, "SyntaxError: ") && !strings.Contains(result, "SyntaxError: SyntaxError:"), result)
 }

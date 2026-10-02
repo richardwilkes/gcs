@@ -103,13 +103,13 @@ func (p *TraitPrereq) Satisfied(entity *Entity, exclude any, tooltip *xbytes.Ins
 	}
 	if !satisfied && tooltip != nil {
 		tooltip.WriteString(prefix)
-		tooltip.WriteString(p.Describe(replacements, plainText))
+		tooltip.WriteString(p.Describe(entity, replacements, plainText))
 	}
 	return satisfied
 }
 
 // Describe implements Prereq. A level of "at least 0" or less is left out, since every trait has at least that.
-func (p *TraitPrereq) Describe(replacements map[string]string, em func(string) string) string {
+func (p *TraitPrereq) Describe(_ *Entity, replacements map[string]string, em func(string) string) string {
 	text := HasText(p.Has) + i18n.Text(" trait ") + describeName(p.NameCriteria, replacements, em)
 	if p.LevelCriteria.Compare != criteria.AnyNumber &&
 		(p.LevelCriteria.Compare != criteria.AtLeastNumber || p.LevelCriteria.Qualifier > 0) {

@@ -10,12 +10,15 @@
 package ux
 
 import (
+	"strings"
 	"testing"
+	"time"
 
 	"github.com/richardwilkes/gcs/v5/model/criteria"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/prereq"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/spellcmp"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/toolbox/v2/geom"
@@ -89,6 +92,12 @@ func prereqShape(root *gurps.PrereqList) []prereq.Type {
 	return types
 }
 
+// waitForEvaluation waits out scriptEvaluationDelay, then for the work it put off.
+func waitForEvaluation(screen *unison.HeadlessScreen) {
+	time.Sleep(2 * scriptEvaluationDelay)
+	screen.Sync()
+}
+
 // prereqMenuAction returns the action of the entry with the label, or nil.
 func prereqMenuAction(entries []menuEntry, label string) func() {
 	for _, one := range entries {
@@ -118,7 +127,7 @@ func TestPrereqPanelBuildingChangesNothing(t *testing.T) {
 		c.Equal(hash, gurps.Hash64(root), "opening %s changes nothing", path)
 	}
 	screen.Do(func() {
-		popup, ok := p.FindRefKey("r.3:powercmp").Self.(*unison.PopupMenu[criteria.StringComparison])
+		popup, ok := p.FindRefKey("r.3:powercmp").Self.(*unison.PopupMenu[string])
 		c.True(ok, "the power source chip is shown")
 		c.Equal(0, popup.SelectedIndex(), "showing the same power source as this spell's even where it can't apply")
 		c.Nil(p.FindRefKey("r.2"+keyFirst), "an unknown prerequisite doesn't open")
@@ -359,8 +368,8 @@ func TestPrereqPanelEscapeClosesTheOpenRow(t *testing.T) {
 	c.Equal(1, host.escapes)
 }
 
-// TestPrereqPanelStatus checks the status of each row against the sheet, as an icon and in the accessible name of its
-// sentence, and that the summary and sentences follow the tree when it changes.
+// TestPrereqPanelStatus checks the status of each row and group against the sheet, as an icon, a tooltip and in the
+// accessible names, and that the summary and sentences follow the tree when it changes.
 func TestPrereqPanelStatus(t *testing.T) {
 	c := check.New(t)
 	screen, _ := startHeadlessWorkspace(t, c)
@@ -375,13 +384,13 @@ func TestPrereqPanelStatus(t *testing.T) {
 	later.WhenTL.Qualifier = fxp.Ten
 	later.Prereqs = gurps.Prereqs{gurps.NewTraitPrereq()}
 	root := gurps.NewPrereqList()
-	root.Prereqs = gurps.Prereqs{trait, met, broken, later}
+	root.Prereqs = gurps.Prereqs{trait, met, broken, later, gurps.NewPrereqList()}
 	root = root.CloneAsPrereqList(nil)
 	p, _ := showPrereqPanel(t, screen, &root, false)
 	screen.Do(func() {
 		for path, want := range map[string]*unison.SVG{
 			"r.0": svg.Not, "r.1": unison.CheckmarkSVG, "r.2": unison.TriangleExclamationSVG, "r.3": unison.DashSVG,
-			"r.3.0": unison.DashSVG,
+			"r.3.0": unison.DashSVG, "r.4": unison.DashSVG,
 		} {
 			for _, v := range p.views {
 				if v.node == p.node(path) {
@@ -394,6 +403,13 @@ func TestPrereqPanelStatus(t *testing.T) {
 		c.True(ok)
 		c.Equal("Has trait Magery, not met", sentence.Accessibility.Name)
 		c.Contains(p.summary.plainText(), "Magery")
+		c.True(strings.HasSuffix(p.summary.plainText(), ")."), "the summary ends with a period")
+		for path, want := range map[string]string{
+			"r.0": "Not met: Has trait Magery", "r.4": "Empty group, always met",
+		} {
+			_, tip, _ := p.status(p.node(path))
+			c.Equal(want, tip, path)
+		}
 	})
 	screen.Do(func() {
 		p.edit("", "", func() {
@@ -402,6 +418,7 @@ func TestPrereqPanelStatus(t *testing.T) {
 			}
 		})
 	})
+	waitForEvaluation(screen)
 	screen.Do(func() {
 		c.Contains(p.summary.plainText(), "Luck", "the summary follows the change")
 		sentence, ok := p.FindRefKey("r.0" + keySentence).Self.(*sentenceButton)
@@ -415,7 +432,7 @@ func TestPrereqPanelStatus(t *testing.T) {
 		screen.Do(func() { name = p.FindRefKey("r.3" + keyPill).Parent().Parent().Accessibility.Name })
 		return name
 	}
-	c.Equal("All of, only when TL at least 10", group())
+	c.Equal("All of, only when TL at least 10, doesn't apply at this tech level", group(), "a group's name has its status")
 	screen.Do(func() {
 		p.edit("", "", func() {
 			if list, ok := root.Prereqs[3].(*gurps.PrereqList); ok {
@@ -423,7 +440,9 @@ func TestPrereqPanelStatus(t *testing.T) {
 			}
 		})
 	})
-	c.Equal("All of, only when TL at least 12", group(), "a group's name follows its tech level")
+	waitForEvaluation(screen)
+	c.Equal("All of, only when TL at least 12, doesn't apply at this tech level", group(),
+		"a group's name follows its tech level")
 }
 
 // TestPrereqPanelDragAndDrop checks where a dragged prerequisite goes before, after or into what it is dropped on, that
@@ -435,7 +454,11 @@ func TestPrereqPanelDragAndDrop(t *testing.T) {
 	p, host := showPrereqPanel(t, screen, &root, false)
 	drag := func(from, onto string, fraction float32) (accepted bool) {
 		screen.Do(func() {
-			target := p.FindRefKey(onto + keyMore).Parent()
+			key := onto + keyMore
+			if onto == prereqRootPath {
+				key = onto + keyAdd
+			}
+			target := p.FindRefKey(key).Parent()
 			r := p.RectFromRoot(target.RectToRoot(target.ContentRect(true)))
 			where := geom.NewPoint(r.X+r.Width/3, r.Y+r.Height*fraction)
 			data := &prereqDrag{panel: p, path: from}
@@ -456,10 +479,13 @@ func TestPrereqPanelDragAndDrop(t *testing.T) {
 	screen.Do(host.mgr.Undo)
 	c.Equal([]prereq.Type{prereq.List, prereq.Skill, prereq.Script, prereq.Unknown, prereq.Trait}, prereqShape(root),
 		"a drop is one step to undo")
+	c.True(drag("r.0.0", prereqRootPath, 0.5), "the root's head is into the root")
+	c.Equal([]prereq.Type{prereq.List, prereq.Script, prereq.Unknown, prereq.Trait, prereq.Skill}, prereqShape(root),
+		"at its end")
 }
 
-// TestPrereqPanelDragFromRow checks that a row can be dragged by its sentence, and that a click on a sentence still
-// opens its row.
+// TestPrereqPanelDragFromRow checks that a row can be dragged by its sentence, and that a click on a sentence, even a
+// slow one, still opens its row.
 func TestPrereqPanelDragFromRow(t *testing.T) {
 	c := check.New(t)
 	screen, _ := startHeadlessWorkspace(t, c)
@@ -479,6 +505,14 @@ func TestPrereqPanelDragFromRow(t *testing.T) {
 	screen.Do(func() { sentence = p.FindRefKey("r.0.0" + keySentence) })
 	screen.Click(screen.PanelCenter(sentence))
 	c.Equal("r.0.0", p.open)
+
+	screen.Do(func() { sentence = p.FindRefKey("r.0.1" + keySentence) })
+	at := screen.PanelCenter(sentence)
+	screen.MouseDown(at, unison.ButtonLeft, mod.None)
+	time.Sleep(300 * time.Millisecond)
+	screen.MouseMove(geom.NewPoint(at.X+2, at.Y), mod.None)
+	screen.MouseUp(geom.NewPoint(at.X+2, at.Y), unison.ButtonLeft, mod.None)
+	c.Equal("r.0.1", p.open, "a slow click that barely moves is still a click")
 }
 
 // TestPrereqPanelLevelChip checks that a skill's level of at least 0 is shown, that removing it leaves no level, and
@@ -525,33 +559,104 @@ func TestPrereqPanelChipOrder(t *testing.T) {
 	}
 	screen.Do(func() { p.toggle("r.1.0") })
 	screen.Do(func() {
-		c.Equal([]string{"level" + keyChip, "add specialization", "add optional specialization"}, order())
+		c.Equal([]string{"level" + keyChip, "add specialization", "add optspecialization"}, order())
 		panelsOfType[*unison.Button](p.FindRefKey("r.1.0:add specialization"))[0].ClickCallback()
 	})
 	screen.Do(func() {
-		c.Equal([]string{"specialization" + keyChip, "level" + keyChip, "add optional specialization"}, order())
+		c.Equal([]string{"specialization" + keyChip, "level" + keyChip, "add optspecialization"}, order())
 	})
 }
 
-// TestPrereqPanelButtonsLineUp checks that the more buttons of rows and groups, open or not and at any depth, share a
-// right edge, as do the add buttons of the root and a nested group.
-func TestPrereqPanelButtonsLineUp(t *testing.T) {
+// TestPrereqPanelEmptyRoot checks that an empty root shows only its placeholder, without a summary, pill or status.
+func TestPrereqPanelEmptyRoot(t *testing.T) {
+	c := check.New(t)
+	screen, _ := startHeadlessWorkspace(t, c)
+	var missing *gurps.PrereqList
+	p, _ := showPrereqPanel(t, screen, &missing, false)
+	screen.Do(func() {
+		c.Nil(p.summary.Parent())
+		c.Nil(p.FindRefKey(prereqRootPath + keyPill))
+		c.Equal(0, len(p.views))
+		c.NotNil(p.FindRefKey(prereqRootPath + ":empty"))
+	})
+}
+
+// TestPrereqPanelUndoReopensRow checks that undoing typing in a row that has since closed opens it again, and that a
+// row the Add menu adds opens with the focus in its name field.
+func TestPrereqPanelUndoReopensRow(t *testing.T) {
 	c := check.New(t)
 	screen, _ := startHeadlessWorkspace(t, c)
 	root := newTestPrereqTree()
-	p, _ := showPrereqPanel(t, screen, &root, false)
-	screen.Do(func() { p.toggle("r.1.0") })
+	p, host := showPrereqPanel(t, screen, &root, false)
+	screen.Do(func() { prereqMenuAction(p.addEntries(p.tree(), prereqRootPath), "Trait")() })
+	screen.Do(func() { c.Equal("r.3:name", p.Window().Focus().RefKey, "a new row focuses its name field") })
+	screen.Type("Luck")
+	screen.Do(func() { p.toggle("r.3") })
+	screen.Do(host.mgr.Undo)
 	screen.Do(func() {
-		p.ValidateLayout()
-		right := func(key string) float32 {
-			b := p.FindRefKey(key)
-			return b.RectToRoot(b.ContentRect(true)).Right()
-		}
-		for _, path := range []string{"r.1", "r.1.0", "r.1.1", "r.2"} {
-			c.Equal(right("r.0"+keyMore), right(path+keyMore), path)
-		}
-		c.Equal(right("r.1"+keyAdd), right(prereqRootPath+keyAdd))
+		c.Equal("r.3", p.open, "the row the undone change was made in opens")
+		c.Equal("r.3:name", p.Window().Focus().RefKey)
 	})
+}
+
+// TestPrereqPanelMenus checks the wording of the Add menu, and that a count of colleges reads as its sentence does.
+func TestPrereqPanelMenus(t *testing.T) {
+	c := check.New(t)
+	screen, _ := startHeadlessWorkspace(t, c)
+	root := gurps.NewPrereqList()
+	sp := gurps.NewSpellPrereq()
+	sp.SubType = spellcmp.CollegeCount
+	root.Prereqs = gurps.Prereqs{sp.Clone(root)}
+	p, _ := showPrereqPanel(t, screen, &root, false)
+	screen.Do(func() {
+		for _, label := range []string{"Equipped Equipment", "All of Group", "Any of Group", "Only When TL…"} {
+			c.NotNil(prereqMenuAction(p.addEntries(p.tree(), prereqRootPath), label), label)
+		}
+		p.toggle("r.0")
+	})
+	screen.Do(func() {
+		var keys []string
+		for _, child := range p.FindRefKey("r.0:match").Parent().Children() {
+			if child.RefKey != "" {
+				keys = append(keys, child.RefKey)
+			}
+		}
+		c.Equal([]string{"r.0:has", "r.0:type", "r.0:match", "r.0:quantitycmp", "r.0:quantity"}, keys)
+	})
+}
+
+// TestPrereqPanelControlNamesDiffer checks that no two controls of an open row share an accessible name.
+func TestPrereqPanelControlNamesDiffer(t *testing.T) {
+	c := check.New(t)
+	screen, _ := startHeadlessWorkspace(t, c)
+	root := gurps.NewPrereqList()
+	for _, one := range prereq.TypesForNonEquipment {
+		root.Prereqs = append(root.Prereqs, (&prereqPanel{}).createPrereqForType(one, root))
+	}
+	seedEveryPrereqControl(root)
+	p, _ := showPrereqPanel(t, screen, &root, false)
+	for i := range prereq.TypesForNonEquipment {
+		path := childPath(prereqRootPath, i)
+		screen.Do(func() { p.toggle(path) })
+		names := make(map[string]bool)
+		var controls []*unison.Panel
+		screen.Do(func() {
+			p.FindRefKey(path + keyFirst).HasInSelfOrDescendants(func(one *unison.Panel) bool {
+				if one.Focusable() {
+					controls = append(controls, one)
+				}
+				return false
+			})
+		})
+		c.NotNil(screen.AccessibilityTree(p.Window()))
+		c.True(len(controls) > 2, path)
+		for _, one := range controls {
+			if node := screen.AccessibilityNodeFor(one); node != nil && node.Name != "" {
+				c.False(names[node.Name], "%s: %s is shared", path, node.Name)
+				names[node.Name] = true
+			}
+		}
+	}
 }
 
 // seedEveryPrereqControl turns on every optional criterion of the prerequisites in the root, and adds a group with a

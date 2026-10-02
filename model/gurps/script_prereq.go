@@ -71,9 +71,14 @@ func (s *ScriptPrereq) FillWithNameableKeys(m, existing map[string]string) {
 	nameable.Extract(m, existing, s.Name, s.Script)
 }
 
+// ResolvedName returns the name with the replacements applied and the surrounding space trimmed.
+func (s *ScriptPrereq) ResolvedName(replacements map[string]string) string {
+	return strings.TrimSpace(nameable.Apply(s.Name, replacements))
+}
+
 // Describe implements Prereq. It returns the name, or a generic description when there is none.
-func (s *ScriptPrereq) Describe(replacements map[string]string, _ func(string) string) string {
-	if name := strings.TrimSpace(nameable.Apply(s.Name, replacements)); name != "" {
+func (s *ScriptPrereq) Describe(_ *Entity, replacements map[string]string, _ func(string) string) string {
+	if name := s.ResolvedName(replacements); name != "" {
 		return name
 	}
 	return i18n.Text("Passes a custom check")
@@ -122,14 +127,14 @@ func (s *ScriptPrereq) Evaluate(entity *Entity, exclude any) (met bool, reason s
 	})
 	switch {
 	case failed:
-		if name := strings.TrimSpace(nameable.Apply(s.Name, replacements)); name != "" {
+		if name := s.ResolvedName(replacements); name != "" {
 			return false, fmt.Sprintf(i18n.Text(`Couldn't check "%s": %s`), name, result), true
 		}
 		return false, fmt.Sprintf(i18n.Text("Couldn't run a custom check: %s"), result), true
 	case result == "" || result == "true":
 		return true, "", false
 	case result == "false":
-		return false, s.Describe(replacements, plainText), false
+		return false, s.Describe(entity, replacements, plainText), false
 	default:
 		return false, result, false
 	}

@@ -78,18 +78,13 @@ func (p *AttributePrereq) Satisfied(entity *Entity, _ any, tooltip *xbytes.Inser
 	}
 	if !satisfied && tooltip != nil {
 		tooltip.WriteString(prefix)
-		tooltip.WriteString(p.describe(entity, plainText))
+		tooltip.WriteString(p.Describe(entity, nil, plainText))
 	}
 	return satisfied
 }
 
-// Describe implements Prereq. Attribute names come from the global attribute definitions.
-func (p *AttributePrereq) Describe(_ map[string]string, em func(string) string) string {
-	return p.describe(nil, em)
-}
-
-// describe returns the description, naming attributes as the entity, which may be nil, defines them.
-func (p *AttributePrereq) describe(entity *Entity, em func(string) string) string {
+// Describe implements Prereq. Attributes are named as the entity, which may be nil, defines them.
+func (p *AttributePrereq) Describe(entity *Entity, _ map[string]string, em func(string) string) string {
 	names := attributeTitle(entity, p.Which)
 	if p.CombinedWith != "" {
 		names += "+" + attributeTitle(entity, p.CombinedWith)

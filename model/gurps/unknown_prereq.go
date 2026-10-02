@@ -70,13 +70,13 @@ func (p *UnknownPrereq) FillWithNameableKeys(_, _ map[string]string) {
 func (p *UnknownPrereq) Satisfied(_ *Entity, _ any, tooltip *xbytes.InsertBuffer, prefix string, _ *bool) bool {
 	if tooltip != nil {
 		tooltip.WriteString(prefix)
-		tooltip.WriteString(p.Describe(nil, plainText))
+		tooltip.WriteString(p.Describe(nil, nil, plainText))
 	}
 	return false
 }
 
 // Describe implements Prereq.
-func (p *UnknownPrereq) Describe(_ map[string]string, em func(string) string) string {
+func (p *UnknownPrereq) Describe(_ *Entity, _ map[string]string, em func(string) string) string {
 	return fmt.Sprintf(i18n.Text(`Meets an unknown type of prerequisite ("%s") that needs a newer version of GCS`),
 		em(p.Kind))
 }

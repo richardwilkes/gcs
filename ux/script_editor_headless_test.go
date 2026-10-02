@@ -23,12 +23,15 @@ func TestScriptEditor(t *testing.T) {
 	screen, _ := startHeadlessWorkspace(t, c)
 	script := "a\nb"
 	var editor *scriptEditor
+	var evaluations int
 	screen.Do(func() {
-		editor = newScriptEditor(func() string { return script }, func(s string) { script = s }, scriptEditorOptions{
-			Title:    "Script",
-			Inserts:  []scriptMenuEntry{{Label: "Fn", Text: "fn()", CaretFromEnd: 1}},
-			Snippets: []scriptMenuEntry{{Label: "Pick one", Heading: true}, {Label: "True", Text: "true"}},
+		editor = newScriptEditor(func() string { return script }, func(s string) { script = s }, &scriptEditorOptions{
+			Title:               "Script",
+			KeepFirstLinePrefix: "// prereq count:",
+			Inserts:             []scriptMenuEntry{{Label: "Fn", Text: "fn()", CaretFromEnd: 1}},
+			Snippets:            []scriptMenuEntry{{Label: "Pick one", Heading: true}, {Label: "True", Text: "true"}},
 			Evaluate: func(s string) (checkStatus, string) {
+				evaluations++
 				if strings.Contains(s, "true") {
 					return checkMet, "Met"
 				}
@@ -69,7 +72,18 @@ func TestScriptEditor(t *testing.T) {
 
 	screen.Do(func() { editor.put(0, len(editor.field.Text()), editor.opts.Snippets[1]) })
 	c.Equal("true", script, "a snippet replaces the script")
-	c.Equal("Met", result(), "the result follows each change")
+	c.Equal("Not met", result(), "the result waits for the script to go unchanged")
+	waitForEvaluation(screen)
+	c.Equal("Met", result(), "then follows the change")
+	var before, after int
+	screen.Do(func() {
+		before = evaluations
+		editor.field.SetText("1")
+		editor.field.SetText("true")
+	})
+	waitForEvaluation(screen)
+	screen.Do(func() { after = evaluations })
+	c.Equal(before+1, after, "changes in quick succession are evaluated once")
 
 	var snippets *unison.Button
 	screen.Do(func() {

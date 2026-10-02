@@ -32,9 +32,10 @@ type Prereq interface {
 	// is only ever set to true, by an unmet equipped-equipment prerequisite and by an unsatisfied list one contributed
 	// to (see PrereqList.Satisfied); that is what earns a skill or spell the missing-equipment penalty.
 	Satisfied(entity *Entity, exclude any, buffer *xbytes.InsertBuffer, prefix string, hasEquipmentPenalty *bool) bool
-	// Describe returns a plain-language description of what this Prereq requires, whether or not it is met. Names and
-	// qualifiers are passed through em, which may wrap them for emphasis; pass an identity func for plain text.
-	Describe(replacements map[string]string, em func(string) string) string
+	// Describe returns a plain-language description of what this Prereq requires, whether or not it is met, naming
+	// attributes and giving weights as the entity, which may be nil, defines them. Names and qualifiers are passed
+	// through em, which may wrap them for emphasis; pass an identity func for plain text.
+	Describe(entity *Entity, replacements map[string]string, em func(string) string) string
 	// Hash writes this object's contents into the hasher.
 	Hash(h hash.Hash)
 }

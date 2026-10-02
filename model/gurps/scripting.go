@@ -655,7 +655,9 @@ func resolveScript(entity *Entity, selfProvider ScriptSelfProvider, text string)
 			abandoned = true
 			noteAbandonedScript(entity)
 		} else {
-			result = err.Error()
+			// The eval that runs the script reports a script that won't compile as a SyntaxError whose message already
+			// starts with "SyntaxError: ".
+			result = strings.Replace(err.Error(), "SyntaxError: SyntaxError: ", "SyntaxError: ", 1)
 		}
 	}
 	storeResolvedScript(entity, key, scriptResolveResult{text: result, abandoned: abandoned, err: err != nil})
