@@ -456,17 +456,15 @@ func (p *prereqPanel) status(node gurps.Prereq) (status checkStatus, tip, suffix
 	}
 }
 
-// statusIcon adds the icon for a node's status to the parent, which shows once there is a sheet. Without one its room
-// is kept, so that everything lines up as it would with one. Screen readers skip it, since the accessible name of the
-// node's sentence says the status.
+// statusIcon adds the icon for a node's status to the parent, which shows once there is a sheet, returning nil without
+// one. Screen readers skip it, since the accessible name of the node's sentence says the status.
 func (p *prereqPanel) statusIcon(parent *unison.Panel) *unison.Label {
+	if p.entity == nil {
+		return nil
+	}
 	icon := unison.NewLabel()
 	icon.Accessibility.Role = role.None
-	insets := geom.Insets{Left: 4}
-	if p.entity == nil {
-		insets.Left += checkIconSize()
-	}
-	icon.SetBorder(unison.NewEmptyBorder(insets))
+	icon.SetBorder(unison.NewEmptyBorder(geom.Insets{Left: 4}))
 	put(parent, icon)
 	return icon
 }
@@ -584,7 +582,12 @@ func (p *prereqPanel) group(list *gurps.PrereqList, path string) *unison.Panel {
 	box.Accessibility.Name = groupName(list)
 	head := unison.NewPanel()
 	// The same insets on the sides as a row's, so that the grips and the buttons on the right line up down the panel.
-	head.SetBorder(unison.NewEmptyBorder(geom.Insets{Top: 2, Left: 4, Bottom: 2, Right: 8}))
+	insets := geom.Insets{Top: 2, Left: 4, Bottom: 2, Right: 8}
+	if path == prereqRootPath && p.entity == nil {
+		// Without a status icon before it, the root's pill keeps the icon's lead from the edge.
+		insets.Left += 4
+	}
+	head.SetBorder(unison.NewEmptyBorder(insets))
 	pill := compactPopup(p, path+keyPill, i18n.Text("Requirement"), []bool{true, false}, list.All, groupWord,
 		func(all bool) { list.All = all })
 	pill.HMargin = 10
@@ -715,7 +718,9 @@ func (p *prereqPanel) row(pr gurps.Prereq, path string) *unison.Panel {
 		line = view.sentence.lineHeight()
 	}
 	putOnLine(grip.AsPanel(), line, grip.svg.Size.Height)
-	putOnLine(view.icon.AsPanel(), line, checkIconSize())
+	if view.icon != nil {
+		putOnLine(view.icon.AsPanel(), line, checkIconSize())
+	}
 	for _, child := range row.Children() {
 		if child == main {
 			child.SetLayoutData(&unison.FlexLayoutData{HAlign: align.Fill, VAlign: align.Middle, HGrab: true})
