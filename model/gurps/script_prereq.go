@@ -27,6 +27,7 @@ var _ Prereq = &ScriptPrereq{}
 type ScriptPrereq struct {
 	Parent *PrereqList `json:"-"`
 	Type   prereq.Type `json:"type"`
+	Name   string      `json:"name,omitzero"`
 	Script string      `json:"script"`
 }
 
@@ -61,28 +62,47 @@ func (s *ScriptPrereq) Hash(h hash.Hash) {
 		return
 	}
 	xhash.Num8(h, s.Type)
+	xhash.StringWithLen(h, s.Name)
 	xhash.StringWithLen(h, s.Script)
 }
 
 // FillWithNameableKeys implements Prereq.
 func (s *ScriptPrereq) FillWithNameableKeys(m, existing map[string]string) {
-	nameable.Extract(m, existing, s.Script)
+	nameable.Extract(m, existing, s.Name, s.Script)
 }
 
-// Describe implements Prereq.
-func (s *ScriptPrereq) Describe(_ map[string]string, _ func(string) string) string {
+// Describe implements Prereq. It returns the name, or a generic description when there is none.
+func (s *ScriptPrereq) Describe(replacements map[string]string, _ func(string) string) string {
+	if name := strings.TrimSpace(nameable.Apply(s.Name, replacements)); name != "" {
+		return name
+	}
 	return i18n.Text("Passes a custom check")
 }
 
 // Satisfied implements Prereq.
 func (s *ScriptPrereq) Satisfied(entity *Entity, exclude any, tooltip *xbytes.InsertBuffer, prefix string, _ *bool) bool {
+	met, reason, _ := s.Evaluate(entity, exclude)
+	if !met && tooltip != nil {
+		tooltip.WriteString(prefix)
+		tooltip.WriteString(reason)
+	}
+	return met
+}
+
+// Evaluate runs the script against the entity for the item given as exclude. A result of "" or "true" is met. A result
+// of "false" is unmet, with this prerequisite's description as the reason, and any other result is unmet, with that
+// text as the reason. failed is true when the script could not produce a result, because it threw, timed out or
+// nested too deeply; the reason then says so.
+func (s *ScriptPrereq) Evaluate(entity *Entity, exclude any) (met bool, reason string, failed bool) {
 	script := s.Script
+	var replacements map[string]string
 	if na, ok := exclude.(nameable.Accesser); ok {
-		script = nameable.Apply(script, na.NameableReplacements())
+		replacements = na.NameableReplacements()
+		script = nameable.Apply(script, replacements)
 	}
 	script = strings.TrimSpace(script)
-	if script != "" && !strings.HasPrefix(script, "<script>") {
-		script = "<script>" + script + "</script>"
+	if script != "" && !strings.HasPrefix(script, scriptStart) {
+		script = scriptStart + script + scriptEnd
 	}
 	var self ScriptSelfProvider
 	switch what := exclude.(type) {
@@ -95,11 +115,22 @@ func (s *ScriptPrereq) Satisfied(entity *Entity, exclude any, tooltip *xbytes.In
 	case *Trait:
 		self = deferredNewScriptTrait(what)
 	}
-	if result := ResolveText(entity, self, script); result != "" {
-		if tooltip != nil {
-			fmt.Fprintf(tooltip, "%s%s", prefix, result)
+	result := embeddedScriptRegex.ReplaceAllStringFunc(script, func(one string) string {
+		text, scriptFailed := resolveScript(entity, self, one[len(scriptStart):len(one)-len(scriptEnd)])
+		failed = failed || scriptFailed
+		return text
+	})
+	switch {
+	case failed:
+		if name := strings.TrimSpace(nameable.Apply(s.Name, replacements)); name != "" {
+			return false, fmt.Sprintf(i18n.Text(`Couldn't check "%s": %s`), name, result), true
 		}
-		return false
+		return false, fmt.Sprintf(i18n.Text("Couldn't run a custom check: %s"), result), true
+	case result == "" || result == "true":
+		return true, "", false
+	case result == "false":
+		return false, s.Describe(replacements, plainText), false
+	default:
+		return false, result, false
 	}
-	return true
 }
