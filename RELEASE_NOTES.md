@@ -52,12 +52,12 @@
 ### Template Choices
 
 - Template choices now live in their own kind of container, a choice, rather than being a setting of an ordinary
-  container, whose editor no longer has a Choices row. In a template, "New Trait Choice", "New Skill Choice" and "New
-  Spell Choice" in the Item menu add one, and "Convert to Choice" and "Convert to Group" in the Edit menu turn a
-  container into a choice and back, warning before removing anything; a trait container must be a plain group to become
-  a choice. A choice's editor shows only its name, notes, choices, page reference and page highlight, its type can no
-  longer be set to Not Applicable, and one made by count can no longer ask for fewer than 0. The choices in your
-  existing templates become choice containers when the template is opened, and a count below 0 is raised to 0.
+  container, whose editor no longer has a Choices row. In a template, "New Trait Choice", "New Skill Choice", "New Spell
+  Choice", and "New Equipment Choice" in the Item menu add one, and "Convert to Choice" and "Convert to Group" in the
+  Edit menu turn a container into a choice and back, warning before removing anything; a trait container must be a plain
+  group to become a choice. A choice's editor shows only its name, notes, choices, page reference and page highlight,
+  its type can no longer be set to Not Applicable, and one made by count can no longer ask for fewer than 0. The choices
+  in your existing templates become choice containers when the template is opened, and a count below 0 is raised to 0.
 - Anything a choice has no use for is removed from it when a template is opened or rows are copied or dragged into one:
   modifiers, VTT notes, user description, tags, self-control roll, frequency of appearance, prerequisites, library
   source and the preconfigured, disabled and switched on settings, and a trait choice is made a plain group. A choice is
