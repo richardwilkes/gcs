@@ -50,7 +50,9 @@ func (e *shellTestEditor) AttemptClose() bool {
 }
 
 // Cmd-Return and Escape within an editor's content stand in for its Apply and Discard buttons, doing nothing while
-// those are disabled, and other keys are left to the content.
+// those are disabled, and other keys are left to the content. What the buttons do once enabled, including the prompt
+// Escape raises, is covered by TestEditorShellDiscardAsksBeforeClosing and TestNewApplyCancelButtons; this test
+// runs with no window, so it only exercises the disabled path, which never puts up a dialog.
 func TestEditorShellContentKeysDriveTheButtons(t *testing.T) {
 	c := check.New(t)
 	e := newShellTestEditor()
@@ -82,16 +84,52 @@ func TestEditorShellContentKeysDriveTheButtons(t *testing.T) {
 	c.Equal(1, e.closed, "and closes the editor")
 	c.False(e.promptForSave, "without prompting, since the user has just said what to do with the changes")
 
-	e.promptForSave = true
-	c.True(content.KeyDownCallback(unison.KeyEscape, 0, false))
-	c.Equal(1, e.applied, "Escape applies nothing")
-	c.Equal(2, e.closed, "but closes the editor")
-	c.False(e.promptForSave, "again without prompting")
-
 	e.modified = false
 	c.False(e.Modified(), "reporting no changes disables the buttons again")
 	c.False(e.applyButton.Enabled())
 	c.False(e.cancelButton.Enabled())
+}
+
+// Escape, standing in for the Discard button, asks for confirmation before dropping a change: canceling the prompt
+// leaves the editor open with the change still in place, and only answering OK discards it and closes the editor. The
+// prompt runs a modal loop, so raising it is posted rather than run through Do, which would wait for it to return.
+func TestEditorShellDiscardAsksBeforeClosing(t *testing.T) {
+	c := check.New(t)
+	screen, wnd := startHeadlessWorkspace(t, c)
+	var e *shellTestEditor
+	var content *unison.Panel
+	screen.Do(func() {
+		e = newShellTestEditor()
+		content = e.newContentPanel(1)
+		e.addApplyAndCancelButtons(newToolbar(), e.apply)
+		e.cancelButton.ClickAnimationTime = 0
+		e.promptForSave = true
+		e.modified = true
+		e.Modified()
+	})
+
+	screen.Post(func() { content.KeyDownCallback(unison.KeyEscape, 0, false) })
+	screen.Sync()
+	_, dialog := modalDialog(t, screen, wnd)
+	var cancel *unison.Button
+	screen.Do(func() { cancel = dialog.Button(unison.ModalResponseCancel) })
+	if cancel == nil {
+		t.Fatal("the discard prompt has no cancel button")
+	}
+	screen.Click(screen.PanelCenter(cancel))
+	c.Equal(0, e.closed, "canceling the prompt leaves the editor open")
+	c.True(e.modified, "and its change in place")
+
+	screen.Post(func() { content.KeyDownCallback(unison.KeyEscape, 0, false) })
+	screen.Sync()
+	_, dialog = modalDialog(t, screen, wnd)
+	var ok *unison.Button
+	screen.Do(func() { ok = dialog.Button(unison.ModalResponseOK) })
+	if ok == nil {
+		t.Fatal("the discard prompt has no OK button")
+	}
+	screen.Click(screen.PanelCenter(ok))
+	c.Equal(1, e.closed, "confirming the prompt discards the change and closes the editor")
 }
 
 // Closing an editor must not put up the save prompt when a button has already settled what happens to the changes, or
@@ -168,8 +206,9 @@ func checkReturnedToSheet(t *testing.T, c check.Checker, screen *unison.Headless
 }
 
 // The points editor is docked with the editors, beside the sheet it was opened from rather than in the sheet's own tab
-// group, and whichever way it is closed -- discarding with Escape, applying with Cmd-Return, or closing the tab and
-// discarding at the prompt -- makes the sheet current again and hands the focus back to the field that had it.
+// group, and whichever way it is closed, discarding with Escape (after confirming), applying with Cmd-Return, or
+// closing the tab and discarding at the prompt, makes the sheet current again and hands the focus back to the field
+// that had it.
 func TestPointsEditorOpensBesideTheSheetAndReturnsToIt(t *testing.T) {
 	c := check.New(t)
 	screen, wnd := startHeadlessWorkspace(t, c)
@@ -216,7 +255,9 @@ func TestPointsEditorOpensBesideTheSheetAndReturnsToIt(t *testing.T) {
 	c.False(applyEnabled, "there is nothing to apply yet")
 	c.False(cancelEnabled, "or to discard")
 
-	// Add an entry, which is a change to discard, then press Escape, standing in for the Discard button.
+	// Add an entry, which is a change to discard, then press Escape, standing in for the Discard button. That asks for
+	// confirmation; canceling the prompt leaves the entry and the editor exactly as they were, and only answering OK
+	// discards it.
 	addEntry := buttonWithTooltip(e.AsPanel(), i18n.Text("Add Entry"))
 	if addEntry == nil {
 		t.Fatal("the points editor has no Add Entry button")
@@ -231,7 +272,27 @@ func TestPointsEditorOpensBesideTheSheetAndReturnsToIt(t *testing.T) {
 	c.True(modified, "adding an entry is a change")
 	c.True(applyEnabled, "that can be applied")
 	c.True(cancelEnabled, "or discarded")
+
 	screen.KeyPress(unison.KeyEscape, 0)
+	_, dialog := modalDialog(t, screen, wnd)
+	var cancelDiscard *unison.Button
+	screen.Do(func() { cancelDiscard = dialog.Button(unison.ModalResponseCancel) })
+	if cancelDiscard == nil {
+		t.Fatal("the discard prompt has no cancel button")
+	}
+	screen.Click(screen.PanelCenter(cancelDiscard))
+	c.Equal(e, soleEditor[*pointsEditor](t, screen, isPointsEditor), "canceling the discard prompt leaves the editor open")
+	screen.Do(func() { modified = e.isModified() })
+	c.True(modified, "with the entry it had before the prompt")
+
+	screen.KeyPress(unison.KeyEscape, 0)
+	_, dialog = modalDialog(t, screen, wnd)
+	var okDiscard *unison.Button
+	screen.Do(func() { okDiscard = dialog.Button(unison.ModalResponseOK) })
+	if okDiscard == nil {
+		t.Fatal("the discard prompt has no OK button")
+	}
+	screen.Click(screen.PanelCenter(okDiscard))
 	checkReturnedToSheet(t, c, screen, wnd, sheet)
 	c.Equal(records, len(entity.PointsRecord), "discarding leaves the entity's points record alone")
 
@@ -256,7 +317,7 @@ func TestPointsEditorOpensBesideTheSheetAndReturnsToIt(t *testing.T) {
 	screen.Click(screen.PanelCenter(addEntry))
 	screen.Post(func() { e.AttemptClose() })
 	screen.Sync()
-	_, dialog := modalDialog(t, screen, wnd)
+	_, dialog = modalDialog(t, screen, wnd)
 	var discard *unison.Button
 	screen.Do(func() { discard = dialog.Button(unison.ModalResponseDiscard) })
 	if discard == nil {
