@@ -729,6 +729,9 @@ func (p *prereqPanel) row(pr gurps.Prereq, path string) *unison.Panel {
 				fitLine(child)
 			}
 			child.SetLayoutData(&unison.FlexLayoutData{VAlign: align.Start})
+		} else if child != grip.AsPanel() && (view.icon == nil || child != view.icon.AsPanel()) {
+			_, pref, _ := child.Sizes(geom.Size{})
+			putOnLine(child, line, pref.Height)
 		}
 	}
 	row.DrawCallback = func(gc *unison.Canvas, _ geom.Rect) {
@@ -1669,7 +1672,7 @@ func putOnLine(child *unison.Panel, height, size float32) {
 	if border := child.Border(); border != nil {
 		insets = border.Insets()
 	}
-	insets.Top = (height - size) / 2
+	insets.Top = max((height-size)/2, 0)
 	// Room below that makes the whole height whole, which sizers would otherwise round up, pushing the icon down.
 	insets.Bottom = xmath.Ceil(insets.Top+size) - insets.Top - size
 	child.SetBorder(unison.NewEmptyBorder(insets))
