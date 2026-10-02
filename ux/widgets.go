@@ -887,5 +887,8 @@ func showMenu(anchor *unison.Panel, entries []menuEntry) {
 			m.InsertItem(-1, f.NewItem(id, entry.Label, unison.KeyBinding{}, func(unison.MenuItem) bool { return false }, nil))
 		}
 	}
-	m.Popup(anchor.RectToRoot(anchor.ContentRect(true)), 0)
+	// A zero width lets the menu size to its items rather than stretch to a wide anchor.
+	where := anchor.RectToRoot(anchor.ContentRect(true))
+	where.Width = 0
+	m.Popup(where, 0)
 }
