@@ -48,7 +48,7 @@ func newNameGeneratorPanel(d *nameGeneratorEditorDockable, g, parent *gurps.Name
 		parent:    parent,
 	}
 	p.Self = p
-	if parent == nil {
+	if p.parent == nil {
 		p.SetBorder(unison.NewEmptyBorder(geom.Insets{
 			Top:    unison.StdVSpacing,
 			Left:   unison.StdHSpacing,
