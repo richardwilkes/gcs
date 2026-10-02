@@ -36,6 +36,13 @@ var (
 var (
 	Header                  = &unison.ThemeColor{Light: unison.RGB(80, 80, 80), Dark: unison.RGB(64, 64, 64)}
 	OnHeader                = Header.DeriveOn()
+	Success                 = &unison.ThemeColor{Light: unison.RGB(0, 128, 0), Dark: unison.RGB(80, 180, 90)}
+	Failure                 = &unison.ThemeColor{Light: unison.RGB(133, 20, 20), Dark: unison.RGB(230, 110, 110)}
+	Grouping1               = &unison.ThemeColor{Light: unison.RGB(0, 114, 178), Dark: unison.RGB(86, 160, 224)}
+	Grouping2               = &unison.ThemeColor{Light: unison.RGB(170, 90, 140), Dark: unison.RGB(214, 140, 190)}
+	Grouping3               = &unison.ThemeColor{Light: unison.RGB(0, 130, 110), Dark: unison.RGB(60, 190, 160)}
+	Grouping4               = &unison.ThemeColor{Light: unison.RGB(140, 110, 40), Dark: unison.RGB(200, 170, 90)}
+	Grouping5               = &unison.ThemeColor{Light: unison.RGB(100, 100, 140), Dark: unison.RGB(160, 160, 200)}
 	TintPortrait            = &unison.ThemeColor{Light: unison.Transparent, Dark: unison.Transparent}
 	TintIdentity            = &unison.ThemeColor{Light: unison.Transparent, Dark: unison.Transparent}
 	TintMisc                = &unison.ThemeColor{Light: unison.Transparent, Dark: unison.Transparent}
@@ -129,8 +136,15 @@ func initialize() {
 		{ID: "error", Title: i18n.Text("Error"), Color: unison.ThemeError},
 		{ID: "warning", Title: i18n.Text("Warning"), Color: unison.ThemeWarning},
 		{ID: "alert", Title: i18n.Text("Needs Attention"), Color: unison.ThemeAlert},
+		{ID: "success", Title: i18n.Text("Success"), Color: Success},
+		{ID: "failure", Title: i18n.Text("Failure"), Color: Failure},
 		{ID: "cursor_fg", Title: i18n.Text("Cursor Foreground"), Color: unison.ThemeCursorForeground},
 		{ID: "cursor_bg", Title: i18n.Text("Cursor Background"), Color: unison.ThemeCursorBackground},
+		{ID: "grouping_1", Title: i18n.Text("Grouping 1"), Color: Grouping1},
+		{ID: "grouping_2", Title: i18n.Text("Grouping 2"), Color: Grouping2},
+		{ID: "grouping_3", Title: i18n.Text("Grouping 3"), Color: Grouping3},
+		{ID: "grouping_4", Title: i18n.Text("Grouping 4"), Color: Grouping4},
+		{ID: "grouping_5", Title: i18n.Text("Grouping 5"), Color: Grouping5},
 		{ID: "tint_portrait", Title: i18n.Text("Portrait"), Color: TintPortrait},
 		{ID: "tint_identity", Title: i18n.Text("Identity"), Color: TintIdentity},
 		{ID: "tint_misc", Title: i18n.Text("Miscellaneous"), Color: TintMisc},
