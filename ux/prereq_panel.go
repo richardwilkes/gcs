@@ -579,6 +579,10 @@ func (p *prereqPanel) group(list *gurps.PrereqList, path string) *unison.Panel {
 	box := newPrereqColumn()
 	box.Accessibility.Role = role.Group
 	box.Accessibility.Name = groupName(list)
+	if path != prereqRootPath {
+		box.RefKey = path + ":group"
+		box.ClientData()[prereqDropKey] = path
+	}
 	head := unison.NewPanel()
 	// The same insets on the sides as a row's, so that the grips and the buttons on the right line up down the panel.
 	insets := geom.Insets{Top: 2, Left: 4, Bottom: 2, Right: 8}
@@ -611,10 +615,34 @@ func (p *prereqPanel) group(list *gurps.PrereqList, path string) *unison.Panel {
 			text = i18n.Text("No prerequisites. Add one to get started.")
 		}
 		empty = newDashedButton(text, nil)
-		empty.ClickCallback = func() { showMenu(empty.AsPanel(), p.addEntries(list, path)) }
+		// A click opens the menu where it lands, as a contextual menu would; a key opens it at the placeholder.
+		var clickAt *geom.Point
+		up := empty.MouseUpCallback
+		empty.MouseUpCallback = func(where geom.Point, button int, mods mod.Modifiers) bool {
+			clickAt = &where
+			defer func() { clickAt = nil }()
+			return up(where, button, mods)
+		}
+		empty.ContextMenuCallback = func(geom.Point) unison.Menu { return newEntriesMenu(p.addEntries(list, path)) }
+		empty.ClickCallback = func() {
+			if clickAt != nil {
+				empty.ShowContextMenu(*clickAt)
+			} else {
+				showMenu(empty.AsPanel(), p.addEntries(list, path))
+			}
+		}
 		empty.HAlign = align.Start
 		empty.VMargin = 6
 		empty.CornerRadius = geom.NewUniformSize(6)
+		// The focus ring insets the text by 2.5, which moves text drawn from the start; take that out of the margins.
+		draw := empty.DrawCallback
+		empty.DrawCallback = func(gc *unison.Canvas, dirty geom.Rect) {
+			if empty.Focused() {
+				empty.HMargin, empty.VMargin = empty.HMargin-2.5, empty.VMargin-2.5
+				defer func() { empty.HMargin, empty.VMargin = empty.HMargin+2.5, empty.VMargin+2.5 }()
+			}
+			draw(gc, dirty)
+		}
 		empty.RefKey = path + ":empty"
 		empty.ClientData()[prereqDropKey] = path
 		empty.SetLayoutData(&unison.FlexLayoutData{HAlign: align.Fill, HGrab: true})
@@ -1104,8 +1132,8 @@ type prereqDrag struct {
 }
 
 // dragOver keeps the pointer in view and finds where a prerequisite dragged from this panel would go: before or after
-// the row under the pointer, before a group when over the top of its head and into it below that, or into an empty
-// group. Nothing can go into itself, and nothing can go before the root.
+// the row under the pointer, before a group when over the top of its head and into it below that, after a group when
+// beside or below its last child, or into an empty group. Nothing can go into itself, and nothing can go before the root.
 func (p *prereqPanel) dragOver(where geom.Point, data any) bool {
 	p.ScrollRectIntoView(geom.NewRect(where.X, where.Y-16, 1, 1))
 	p.ScrollRectIntoView(geom.NewRect(where.X, where.Y+16, 1, 1))
@@ -1132,6 +1160,14 @@ func (p *prereqPanel) dropAt(where geom.Point, data any) (target *unison.Panel, 
 			return nil, 0
 		case target.RefKey == path+":empty":
 			return target, dropInto
+		case target.RefKey == path+":group":
+			// Only the rail's margins reach the group itself; beside or below its last child is after it.
+			rows := target.Children()[len(target.Children())-1].Children()
+			last := rows[len(rows)-1]
+			if where.Y > p.RectFromRoot(last.RectToRoot(last.ContentRect(true))).CenterY() {
+				return target, dropAfter
+			}
+			return nil, 0
 		}
 		y := target.PointFromRoot(p.PointToRoot(where)).Y
 		height := target.FrameRect().Height

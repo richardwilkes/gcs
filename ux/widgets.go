@@ -872,6 +872,14 @@ type menuEntry struct {
 
 // showMenu pops up a menu of the entries below the anchor.
 func showMenu(anchor *unison.Panel, entries []menuEntry) {
+	// A zero width lets the menu size to its items rather than stretch to a wide anchor.
+	where := anchor.RectToRoot(anchor.ContentRect(true))
+	where.Width = 0
+	newEntriesMenu(entries).Popup(where, 0)
+}
+
+// newEntriesMenu returns a popup menu of the entries.
+func newEntriesMenu(entries []menuEntry) unison.Menu {
 	f := unison.DefaultMenuFactory()
 	m := f.NewMenu(unison.PopupMenuTemporaryBaseID|unison.ContextMenuIDFlag, "", nil)
 	for i, entry := range entries {
@@ -887,8 +895,5 @@ func showMenu(anchor *unison.Panel, entries []menuEntry) {
 			m.InsertItem(-1, f.NewItem(id, entry.Label, unison.KeyBinding{}, func(unison.MenuItem) bool { return false }, nil))
 		}
 	}
-	// A zero width lets the menu size to its items rather than stretch to a wide anchor.
-	where := anchor.RectToRoot(anchor.ContentRect(true))
-	where.Width = 0
-	m.Popup(where, 0)
+	return m
 }

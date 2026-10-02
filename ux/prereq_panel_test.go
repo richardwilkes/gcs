@@ -10,6 +10,7 @@
 package ux
 
 import (
+	"image"
 	"strings"
 	"testing"
 	"time"
@@ -484,6 +485,28 @@ func TestPrereqPanelDragAndDrop(t *testing.T) {
 		"at its end")
 }
 
+// TestPrereqPanelDropAfterGroup checks that a drop beside the last child of a group that ends its parent goes after
+// the group, at the end of the parent.
+func TestPrereqPanelDropAfterGroup(t *testing.T) {
+	c := check.New(t)
+	screen, _ := startHeadlessWorkspace(t, c)
+	root := newTestPrereqTree()
+	root.Prereqs = root.Prereqs[:2]
+	p, _ := showPrereqPanel(t, screen, &root, false)
+	screen.Do(func() {
+		group := p.FindRefKey("r.1:group")
+		last := p.FindRefKey("r.1.1" + keyMore).Parent()
+		where := geom.NewPoint(p.RectFromRoot(group.RectToRoot(group.ContentRect(true))).X+4,
+			p.RectFromRoot(last.RectToRoot(last.ContentRect(true))).Bottom()-2)
+		data := &prereqDrag{panel: p, path: "r.0"}
+		p.dragOver(where, data)
+		c.Equal(group, p.dropTarget)
+		c.Equal(dropAfter, p.dropWhere)
+		p.drop(where, data)
+	})
+	c.Equal([]prereq.Type{prereq.List, prereq.Skill, prereq.Script, prereq.Trait}, prereqShape(root))
+}
+
 // TestPrereqPanelDragFromRow checks that a row can be dragged by its sentence, and that a click on a sentence, even a
 // slow one, still opens its row.
 func TestPrereqPanelDragFromRow(t *testing.T) {
@@ -768,4 +791,40 @@ func (a *axNameAudit) checkPrereqs(view string, fn func()) {
 		a.screen.Do(func() { p.toggle(path) })
 		a.check(view+", "+path+" open", d)
 	}
+}
+
+// TestPrereqPanelPlaceholderTextStaysPutOnFocus checks that the empty placeholder draws its text in the same place with
+// and without the focus.
+func TestPrereqPanelPlaceholderTextStaysPutOnFocus(t *testing.T) {
+	c := check.New(t)
+	screen, _ := startHeadlessWorkspace(t, c)
+	var root *gurps.PrereqList
+	p, _ := showPrereqPanel(t, screen, &root, false)
+	var empty, add *unison.Panel
+	screen.Do(func() {
+		empty = p.FindRefKey(prereqRootPath + ":empty")
+		add = p.FindRefKey(prereqRootPath + keyAdd)
+	})
+	capture := func(focus *unison.Panel) *image.NRGBA {
+		screen.Do(focus.RequestFocus)
+		screen.Sync()
+		return screen.CaptureWindow(p.Window())
+	}
+	focused, unfocused := capture(empty), capture(add)
+	var r geom.Rect
+	var scale float32
+	screen.Do(func() {
+		// Clear of the outline and the focus ring around it.
+		r = empty.RectToRoot(empty.ContentRect(false)).Inset(geom.NewUniformInsets(9))
+		scale = float32(focused.Bounds().Dx()) / p.Window().ContentRect().Width
+	})
+	differ := 0
+	for y := int(r.Y * scale); y < int(r.Bottom()*scale); y++ {
+		for x := int(r.X * scale); x < int(r.Right()*scale); x++ {
+			if focused.NRGBAAt(x, y) != unfocused.NRGBAAt(x, y) {
+				differ++
+			}
+		}
+	}
+	c.Equal(0, differ, "the text is drawn in the same place with the focus as without")
 }
