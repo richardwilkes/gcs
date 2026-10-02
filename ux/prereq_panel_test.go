@@ -581,6 +581,56 @@ func TestPrereqPanelEmptyRoot(t *testing.T) {
 	})
 }
 
+// TestPrereqPanelEmptyRootGroupType checks that choosing a group type or a tech level from an empty root's Add menu
+// gives the root itself that type or condition, showing its head over a group's placeholder, and that undo takes it
+// back to the single line.
+func TestPrereqPanelEmptyRootGroupType(t *testing.T) {
+	c := check.New(t)
+	screen, _ := startHeadlessWorkspace(t, c)
+	var root *gurps.PrereqList
+	p, host := showPrereqPanel(t, screen, &root, false)
+	headed := func() (pill bool, placeholder string) {
+		screen.Do(func() {
+			pill = p.FindRefKey(prereqRootPath+keyPill) != nil
+			if b, ok := p.FindRefKey(prereqRootPath + ":empty").Self.(*unison.Button); ok {
+				placeholder = b.Text.String()
+			}
+		})
+		return pill, placeholder
+	}
+	choose := func(label string) {
+		screen.Do(func() { prereqMenuAction(p.addEntries(p.tree(), prereqRootPath), label)() })
+	}
+	single := "No prerequisites. Add one to get started."
+	group := "Empty group. Add a requirement or drag one here."
+	pill, text := headed()
+	c.False(pill)
+	c.Equal(single, text)
+	choose("Any of Group")
+	pill, text = headed()
+	c.True(pill, "the root takes the group type")
+	c.Equal(group, text)
+	c.Equal(0, len(root.Prereqs))
+	c.False(root.All)
+	screen.Do(host.mgr.Undo)
+	pill, text = headed()
+	c.False(pill, "undo goes back to the single line")
+	c.Equal(single, text)
+	choose("All of Group")
+	pill, _ = headed()
+	c.True(pill, "choosing the type the root already has still shows its head")
+	screen.Do(host.mgr.Undo)
+	choose("Only When TL…")
+	pill, _ = headed()
+	c.True(pill, "a tech level condition shows the head")
+	screen.Do(func() { c.NotNil(p.FindRefKey(prereqRootPath + ":tl" + keyChip)) })
+	c.Equal(0, len(root.Prereqs))
+	c.True(root.All)
+	screen.Do(host.mgr.Undo)
+	pill, _ = headed()
+	c.False(pill, "undo takes the condition away again")
+}
+
 // TestPrereqPanelUndoReopensRow checks that undoing typing in a row that has since closed opens it again, and that a
 // row the Add menu adds opens with the focus in its name field.
 func TestPrereqPanelUndoReopensRow(t *testing.T) {

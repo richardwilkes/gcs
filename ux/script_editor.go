@@ -15,6 +15,7 @@ import (
 	"time"
 	"unicode/utf8"
 
+	"github.com/richardwilkes/gcs/v5/model/fonts"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/v2/geom"
@@ -42,9 +43,11 @@ type scriptMenuEntry struct {
 
 // scriptEditorOptions configures a script editor.
 type scriptEditorOptions struct {
-	// Title is the field's accessible name and its undo title, and Hint is shown beside the menus.
-	Title string
-	Hint  string
+	// Title is the field's accessible name and its undo title, Hint is shown beside the menus, and Footer, when set, is
+	// shown in a strip below the field.
+	Title  string
+	Hint   string
+	Footer string
 	// KeepFirstLinePrefix, when set, starts a first line, matched without regard to case, that inserts and snippets
 	// leave in place.
 	KeepFirstLinePrefix string
@@ -88,11 +91,7 @@ func newScriptEditor(get func() string, set func(string), opts *scriptEditorOpti
 	guide.ClickCallback = func() { HandleLink(nil, "md:User%20Guide/Scripting%20Guide") }
 	guide.Tooltip = newWrappedTooltip(i18n.Text("Scripting Guide"))
 	bar.AddChild(guide)
-	bar.SetBorder(unison.NewCompoundBorder(unison.NewLineBorder(unison.ThemeSurfaceEdge, geom.Size{},
-		geom.Insets{Bottom: 1}, false), unison.NewEmptyBorder(geom.NewUniformInsets(4))))
-	bar.DrawCallback = func(gc *unison.Canvas, r geom.Rect) {
-		gc.DrawRect(r, unison.ThemeSurface.Paint(gc, r, paintstyle.Fill))
-	}
+	strip(bar, geom.Insets{Bottom: 1})
 	frame := unison.NewPanel()
 	frame.SetLayout(&unison.FlexLayout{Columns: 1})
 	frame.SetLayoutData(&unison.FlexLayoutData{HAlign: align.Fill, HGrab: true})
@@ -114,9 +113,12 @@ func newScriptEditor(get func() string, set func(string), opts *scriptEditorOpti
 	}
 	keyDown := e.field.KeyDownCallback
 	e.field.KeyDownCallback = func(keyCode unison.KeyCode, mods mod.Modifiers, repeat bool) bool {
-		if keyCode == unison.KeyTab && mods&mod.NonSticky == 0 {
-			e.field.DefaultRuneTyped(' ')
-			e.field.DefaultRuneTyped(' ')
+		// Tab indents, and Shift+Tab is kept from moving the focus, which Esc takes out of the field.
+		if keyCode == unison.KeyTab && mods&mod.NonSticky&^mod.Shift == 0 {
+			if !mods.ShiftDown() {
+				e.field.DefaultRuneTyped(' ')
+				e.field.DefaultRuneTyped(' ')
+			}
 			return true
 		}
 		return keyDown(keyCode, mods, repeat)
@@ -135,6 +137,18 @@ func newScriptEditor(get func() string, set func(string), opts *scriptEditorOpti
 		return minSize, prefSize, maxSize
 	})
 	frame.AddChild(e.field)
+	if opts.Footer != "" {
+		footer := unison.NewPanel()
+		footer.SetLayout(&unison.FlexLayout{Columns: 1})
+		footer.SetLayoutData(&unison.FlexLayoutData{HAlign: align.Fill, HGrab: true})
+		label := newWrappingLabel()
+		label.font = fonts.FieldSecondary
+		label.SetTitle(opts.Footer)
+		label.SetLayoutData(&unison.FlexLayoutData{HAlign: align.Fill, HGrab: true})
+		footer.AddChild(label)
+		strip(footer, geom.Insets{Top: 1})
+		frame.AddChild(footer)
+	}
 
 	if opts.Evaluate != nil {
 		row := unison.NewPanel()
@@ -149,6 +163,16 @@ func newScriptEditor(get func() string, set func(string), opts *scriptEditorOpti
 		e.evaluate(e.field.CurrentValue())
 	}
 	return e
+}
+
+// strip draws the panel as a strip of the editor's box, on the surface color with a line on the side the insets give
+// between it and the field.
+func strip(panel *unison.Panel, line geom.Insets) {
+	panel.SetBorder(unison.NewCompoundBorder(unison.NewLineBorder(unison.ThemeSurfaceEdge, geom.Size{}, line, false),
+		unison.NewEmptyBorder(geom.NewUniformInsets(4))))
+	panel.DrawCallback = func(gc *unison.Canvas, r geom.Rect) {
+		gc.DrawRect(r, unison.ThemeSurface.Paint(gc, r, paintstyle.Fill))
+	}
 }
 
 func (e *scriptEditor) addMenuButton(bar *unison.Panel, title string, entries []scriptMenuEntry, act func(scriptMenuEntry)) {

@@ -58,7 +58,8 @@ func TestScriptEditor(t *testing.T) {
 	c.Equal("a\n  b", script, "Tab inserts two spaces at the caret")
 	screen.Do(func() { c.Equal(editor.field.AsPanel(), editor.field.Window().Focus(), "and keeps the focus") })
 	screen.KeyPress(unison.KeyTab, mod.Shift)
-	screen.Do(func() { c.NotEqual(editor.field.AsPanel(), editor.field.Window().Focus(), "Shift+Tab leaves") })
+	c.Equal("a\n  b", script, "Shift+Tab changes nothing")
+	screen.Do(func() { c.Equal(editor.field.AsPanel(), editor.field.Window().Focus(), "nor moves the focus") })
 
 	screen.Do(func() {
 		editor.field.SetSelection(1, 1)
