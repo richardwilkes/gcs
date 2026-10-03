@@ -55,12 +55,13 @@ func TestApplyUnresolvedLegacyExampleListFallsBackToShortLabel(t *testing.T) {
 	c.Equal("Resistant to @Rare@ (+3)", nameable.Apply(raw, m))
 }
 
-func TestApplyUnresolvedLegacyLabelWithColonFallsBackToShortLabel(t *testing.T) {
+func TestApplyUnresolvedLegacyLabelWithColonKeepsFullText(t *testing.T) {
 	c := check.New(t)
-	// A real, unmodified marker pulled from the GCS master library. No safe options list, but tier 2 still shortens
-	// the display down to the label instead of the full "Class: Mammalia" text.
+	// Real, unmodified markers pulled from the GCS master library. With no example list, the text after the colon may
+	// be the only thing telling markers that share a label apart (the Patron modifiers all use "Who"), so it is kept.
 	m := map[string]string{}
-	c.Equal("A @Class@ trait", nameable.Apply("A @Class: Mammalia@ trait", m))
+	c.Equal("A @Class: Mammalia@ trait", nameable.Apply("A @Class: Mammalia@ trait", m))
+	c.Equal("@Who: A deity@", nameable.Apply("@Who: A deity@", m))
 }
 
 func TestApplyToListUnresolvedAllowEmptyComboFallsBackToLabel(t *testing.T) {
@@ -74,7 +75,7 @@ func TestApplyUnresolvedMarkersWithSharedLabelDoNotBleed(t *testing.T) {
 	c := check.New(t)
 	m := map[string]string{"Who": "The King"}
 	for range 50 {
-		c.Equal("Patron (@Who@) and The King", nameable.Apply("Patron (@Who: A deity@) and @Who@", m))
+		c.Equal("Patron (@Who: A deity@) and The King", nameable.Apply("Patron (@Who: A deity@) and @Who@", m))
 		if t.Failed() {
 			// Stop at the first bad iteration instead of repeating the same failure 50 times in the test output.
 			break

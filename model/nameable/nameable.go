@@ -85,7 +85,8 @@ func Normalize(replacements map[string]string) map[string]string {
 
 // Apply replaces nameable markers with their replacement values in a single string. An unresolved marker is rendered
 // in its compact form, "`@Label@`", keeping the '@' wrapper so displayed text (sheet rows, table columns, tooltips)
-// still visibly flags it as unresolved.
+// still visibly flags it as unresolved. A legacy "Label: text" marker with no example list keeps its full text instead,
+// since that text often carries meaning the label alone does not, such as "Who: A deity".
 func Apply(str string, replacements map[string]string) string {
 	if !strings.ContainsRune(str, MarkerDelimiter) {
 		return str
@@ -112,7 +113,11 @@ func ApplyToList(in []string, replacements map[string]string) []string {
 						sb.WriteString(r)
 					} else {
 						sb.WriteRune(MarkerDelimiter)
-						sb.WriteString(m.Label) // We do not escape markers here by design
+						if m.Legacy && len(m.Options) == 0 {
+							sb.WriteString(m.Raw)
+						} else {
+							sb.WriteString(m.Label) // We do not escape markers here by design
+						}
 						sb.WriteRune(MarkerDelimiter)
 					}
 				} else {
