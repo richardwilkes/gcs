@@ -242,9 +242,9 @@ func TestSkillMarshalCalc(t *testing.T) {
 		`","unsatisfied_reason":"Requires Broadsword"}`), "a leveled skill records its level, rsl and reason: %s", out)
 }
 
-// TestSkillPrereqIgnoresSkillWithNoLevel verifies that a skill with no usable level, shown as "-", doesn't satisfy a
-// skill prereq, while a purchased skill and a skill with no points but a level from a default still do.
-func TestSkillPrereqIgnoresSkillWithNoLevel(t *testing.T) {
+// TestSkillPrereqIgnoresSkillWithNoPoints verifies that a skill with no points spent on it doesn't satisfy a skill
+// prereq, even when it has a level from a default, while a purchased skill does.
+func TestSkillPrereqIgnoresSkillWithNoPoints(t *testing.T) {
 	c := check.New(t)
 	e := NewEntity()
 	broadsword := addTestSkill(e, "Broadsword", "", "", 0)
@@ -262,7 +262,7 @@ func TestSkillPrereqIgnoresSkillWithNoLevel(t *testing.T) {
 			counts bool
 		}{
 			{skill: broadsword, counts: false},
-			{skill: shortsword, counts: true},
+			{skill: shortsword, counts: false},
 			{skill: axe, counts: true},
 		} {
 			p := NewSkillPrereq()

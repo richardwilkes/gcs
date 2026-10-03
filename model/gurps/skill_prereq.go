@@ -87,8 +87,8 @@ func (p *SkillPrereq) Satisfied(entity *Entity, exclude any, tooltip *xbytes.Ins
 		techLevel = sk.TechLevel
 	}
 	Traverse(func(sk *Skill) bool {
-		// A skill with no usable level (shown as "-") doesn't count.
-		if exclude == sk || sk.LevelData.Level.Floor() <= 0 ||
+		// A skill with no points spent on it doesn't count, even if it has a level from a default.
+		if exclude == sk || sk.AdjustedPoints(nil) == 0 ||
 			!p.NameCriteria.Matches(replacements, sk.NameWithReplacements()) ||
 			!p.SpecializationCriteria.Matches(replacements, sk.SpecializationWithReplacements()) ||
 			!p.OptionalSpecializationCriteria.Matches(replacements, sk.OptionalSpecializationWithReplacements()) {
