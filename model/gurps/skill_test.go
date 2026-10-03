@@ -241,3 +241,36 @@ func TestSkillMarshalCalc(t *testing.T) {
 	c.True(strings.Contains(out, `"calc":{"level":`+leveled.LevelData.Level.String()+`,"rsl":"`+leveled.RelativeLevel()+
 		`","unsatisfied_reason":"Requires Broadsword"}`), "a leveled skill records its level, rsl and reason: %s", out)
 }
+
+// TestSkillPrereqIgnoresSkillWithNoPoints verifies that a skill with no points spent on it doesn't satisfy a skill
+// prereq, even when it has a level from a default, while a purchased skill does.
+func TestSkillPrereqIgnoresSkillWithNoPoints(t *testing.T) {
+	c := check.New(t)
+	e := NewEntity()
+	broadsword := addTestSkill(e, "Broadsword", "", "", 0)
+	shortsword := addTestSkill(e, "Shortsword", "", "", 0)
+	shortsword.Defaults = []*SkillDefault{{DefaultType: IntelligenceID, Modifier: -fxp.Five}}
+	axe := addTestSkill(e, "Axe/Mace", "", "", fxp.One)
+	e.Recalculate()
+	c.Equal("-", broadsword.LevelData.LevelAsString(false), "precondition: Broadsword has no level")
+	c.NotEqual("-", shortsword.LevelData.LevelAsString(false), "precondition: Shortsword has a level from its default")
+	c.NotEqual("-", axe.LevelData.LevelAsString(false), "precondition: Axe/Mace has a level from its points")
+
+	for _, compare := range []criteria.NumericComparison{criteria.AnyNumber, criteria.AtLeastNumber} {
+		for _, one := range []struct {
+			skill  *Skill
+			counts bool
+		}{
+			{skill: broadsword, counts: false},
+			{skill: shortsword, counts: false},
+			{skill: axe, counts: true},
+		} {
+			p := NewSkillPrereq()
+			p.LevelCriteria.Compare = compare // Qualifier is 0, so "at least 0"
+			p.NameCriteria.Qualifier = one.skill.Name
+			c.Equal(one.counts, p.Satisfied(e, nil, nil, "", nil), "%s: has %s", compare, one.skill.Name)
+			p.Has = false
+			c.Equal(!one.counts, p.Satisfied(e, nil, nil, "", nil), "%s: doesn't have %s", compare, one.skill.Name)
+		}
+	}
+}
