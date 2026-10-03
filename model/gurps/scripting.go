@@ -425,9 +425,18 @@ func mustSetMember(obj *goja.Object, name string, value any) {
 
 // ResolveText replaces each embedded <script>...</script> section in the text with the result of resolving it.
 func ResolveText(entity *Entity, selfProvider ScriptSelfProvider, text string) string {
-	return embeddedScriptRegex.ReplaceAllStringFunc(text, func(s string) string {
-		return ResolveScript(entity, selfProvider, s[len(scriptStart):len(s)-len(scriptEnd)])
+	result, _ := resolveText(entity, selfProvider, text)
+	return result
+}
+
+// resolveText is ResolveText, also returning true when any section could not produce a result.
+func resolveText(entity *Entity, selfProvider ScriptSelfProvider, text string) (result string, failed bool) {
+	result = embeddedScriptRegex.ReplaceAllStringFunc(text, func(s string) string {
+		one, sectionFailed := resolveScript(entity, selfProvider, s[len(scriptStart):len(s)-len(scriptEnd)])
+		failed = failed || sectionFailed
+		return one
 	})
+	return result, failed
 }
 
 // ResolveToNumber resolves the text to a fixed-point number. Text that already parses as a number is used directly;
@@ -655,13 +664,26 @@ func resolveScript(entity *Entity, selfProvider ScriptSelfProvider, text string)
 			abandoned = true
 			noteAbandonedScript(entity)
 		} else {
-			// The eval that runs the script reports a script that won't compile as a SyntaxError whose message already
-			// starts with "SyntaxError: ".
-			result = strings.Replace(err.Error(), "SyntaxError: SyntaxError: ", "SyntaxError: ", 1)
+			result = scriptErrorText(err)
 		}
 	}
 	storeResolvedScript(entity, key, scriptResolveResult{text: result, abandoned: abandoned, err: err != nil})
 	return result, err != nil
+}
+
+// scriptErrorText returns the text of the error a script ran into. The eval that runs a script reports one that won't
+// compile with an error whose message already starts with the error's name, which would otherwise be read twice.
+func scriptErrorText(err error) string {
+	text := err.Error()
+	if ex, ok := errors.AsType[*goja.Exception](err); ok {
+		if obj, isObj := ex.Value().(*goja.Object); isObj {
+			name, message := obj.Get("name"), obj.Get("message")
+			if name != nil && message != nil && strings.HasPrefix(message.String(), name.String()+": ") {
+				text = strings.TrimPrefix(text, name.String()+": ")
+			}
+		}
+	}
+	return text
 }
 
 // lookupResolvedScript returns a previously resolved result for the given key. Entity-scoped results live in the

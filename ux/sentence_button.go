@@ -29,30 +29,28 @@ const (
 	emEnd   = ''
 )
 
-// stripEm removes the markers em adds.
+// stripEm removes the markers emphasize adds.
 var stripEm = strings.NewReplacer(string(emStart), "", string(emEnd), "")
 
-// em wraps s in the markers that have a sentenceButton draw it in bold.
-func em(s string) string {
+// emphasize wraps s in the markers that have a sentenceButton draw it in bold.
+func emphasize(s string) string {
 	return string(emStart) + s + string(emEnd)
 }
 
-// sentenceButton draws a sentence whose spans wrapped by em are bold, wrapping it to the width it is given; within a
-// FlexLayout it must be given HAlign: align.Fill for that. With a click handler it is a disclosure that Space, Enter or a
-// click activates. Without one it is static text, a tab stop only while reading (see tabStopForReading).
+// sentenceButton draws a sentence whose spans wrapped by emphasize are bold, wrapping it to the width it is given;
+// within a FlexLayout it must be given HAlign: align.Fill for that. With a click handler it is a disclosure that Space,
+// Enter or a click activates, always reported as collapsed, since what it discloses takes its place. Without one it is
+// static text, a tab stop only while reading (see tabStopForReading).
 type sentenceButton struct {
 	unison.Panel
-	text     string
-	suffix   string
-	onClick  func()
-	expanded func() bool
-	hovered  bool
+	text    string
+	onClick func()
+	hovered bool
 }
 
-// newSentenceButton returns a sentenceButton. onClick may be nil for static text; expanded reports the state a screen
-// reader is told of when it is not.
-func newSentenceButton(text string, onClick func(), expanded func() bool) *sentenceButton {
-	b := &sentenceButton{onClick: onClick, expanded: expanded}
+// newSentenceButton returns a sentenceButton. onClick may be nil for static text.
+func newSentenceButton(text string, onClick func()) *sentenceButton {
+	b := &sentenceButton{onClick: onClick}
 	b.Self = b
 	b.SetBorder(unison.NewEmptyBorder(geom.Insets{Top: 2, Left: 4, Bottom: 2, Right: 4}))
 	b.SetSizer(b.sizes)
@@ -85,21 +83,18 @@ func newSentenceButton(text string, onClick func(), expanded func() bool) *sente
 	}
 	addAccessibilityCallback(b, func(node *accessibility.Node) {
 		node.Expandable = true
-		node.Expanded = b.expanded != nil && b.expanded()
 		node.Actions = node.Actions.With(accessibility.Press, accessibility.Expand, accessibility.Collapse)
 	})
 	b.Accessibility.ActionCallback = func(req accessibility.ActionRequest) bool {
 		switch req.Action {
-		case accessibility.Press:
-		case accessibility.Expand, accessibility.Collapse:
-			if (b.expanded != nil && b.expanded()) == (req.Action == accessibility.Expand) {
-				return true
-			}
+		case accessibility.Press, accessibility.Expand:
+			b.onClick()
+			return true
+		case accessibility.Collapse:
+			return true
 		default:
 			return false
 		}
-		b.onClick()
-		return true
 	}
 	return b
 }
@@ -107,7 +102,6 @@ func newSentenceButton(text string, onClick func(), expanded func() bool) *sente
 // setText replaces the sentence and the suffix a screen reader hears after it, such as a status.
 func (b *sentenceButton) setText(text, suffix string) {
 	b.text = text
-	b.suffix = suffix
 	b.Accessibility.Name = b.plainText()
 	if suffix != "" {
 		b.Accessibility.Name += i18n.Text(", ") + suffix
@@ -175,7 +169,7 @@ func (b *sentenceButton) sizes(hint geom.Size) (minSize, prefSize, maxSize geom.
 
 func (b *sentenceButton) draw(gc *unison.Canvas, _ geom.Rect) {
 	r := b.ContentRect(true)
-	radius := geom.NewUniformSize(4)
+	radius := geom.NewUniformSize(compactCornerRadius)
 	if b.onClick != nil && b.hovered {
 		gc.DrawRoundedRect(r, radius, unison.ThemeAboveSurface.Paint(gc, r, paintstyle.Fill))
 	}

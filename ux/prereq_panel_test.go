@@ -93,12 +93,6 @@ func prereqShape(root *gurps.PrereqList) []prereq.Type {
 	return types
 }
 
-// waitForEvaluation waits out scriptEvaluationDelay, then for the work it put off.
-func waitForEvaluation(screen *unison.HeadlessScreen) {
-	time.Sleep(2 * scriptEvaluationDelay)
-	screen.Sync()
-}
-
 // prereqMenuAction returns the action of the entry with the label, or nil.
 func prereqMenuAction(entries []menuEntry, label string) func() {
 	for _, one := range entries {
@@ -411,15 +405,22 @@ func TestPrereqPanelStatus(t *testing.T) {
 			_, tip, _ := p.status(p.node(path))
 			c.Equal(want, tip, path)
 		}
+		p.toggle("r.0")
 	})
 	screen.Do(func() {
-		p.edit("", "", func() {
+		for _, v := range p.views {
+			c.True(v.node != p.node("r.0"), "an open row shows no status")
+		}
+		p.toggle("r.0")
+	})
+	screen.Do(func() {
+		p.edit("", "", "", func() {
 			if one, ok := root.Prereqs[0].(*gurps.TraitPrereq); ok {
 				one.NameCriteria.Qualifier = "Luck"
 			}
 		})
 	})
-	waitForEvaluation(screen)
+	screen.Do(p.refresh)
 	screen.Do(func() {
 		c.Contains(p.summary.plainText(), "Luck", "the summary follows the change")
 		sentence, ok := p.FindRefKey("r.0" + keySentence).Self.(*sentenceButton)
@@ -435,13 +436,13 @@ func TestPrereqPanelStatus(t *testing.T) {
 	}
 	c.Equal("All of, only when TL at least 10, doesn't apply at this tech level", group(), "a group's name has its status")
 	screen.Do(func() {
-		p.edit("", "", func() {
+		p.edit("", "", "", func() {
 			if list, ok := root.Prereqs[3].(*gurps.PrereqList); ok {
 				list.WhenTL.Qualifier = fxp.Twelve
 			}
 		})
 	})
-	waitForEvaluation(screen)
+	screen.Do(p.refresh)
 	c.Equal("All of, only when TL at least 12, doesn't apply at this tech level", group(),
 		"a group's name follows its tech level")
 }
@@ -654,8 +655,8 @@ func TestPrereqPanelEmptyRootGroupType(t *testing.T) {
 	c.False(pill, "undo takes the condition away again")
 }
 
-// TestPrereqPanelUndoReopensRow checks that undoing typing in a row that has since closed opens it again, and that a
-// row the Add menu adds opens with the focus in its name field.
+// TestPrereqPanelUndoReopensRow checks that a row the Add menu adds opens with the focus in its name field, and that
+// undo and redo open whichever row was open when the change was made, or none.
 func TestPrereqPanelUndoReopensRow(t *testing.T) {
 	c := check.New(t)
 	screen, _ := startHeadlessWorkspace(t, c)
@@ -670,6 +671,13 @@ func TestPrereqPanelUndoReopensRow(t *testing.T) {
 		c.Equal("r.3", p.open, "the row the undone change was made in opens")
 		c.Equal("r.3:name", p.Window().Focus().RefKey)
 	})
+	screen.Do(func() { p.toggle("r.3") })
+	screen.Do(func() { prereqMenuAction(p.moreEntries(p.node("r.0"), "r.0"), "Duplicate")() })
+	screen.Do(func() { p.toggle("r.1") })
+	screen.Do(host.mgr.Undo)
+	c.Equal("", p.open, "a change made with no row open closes the open row when undone")
+	screen.Do(host.mgr.Redo)
+	c.Equal("", p.open, "and when redone")
 }
 
 // TestPrereqPanelMenus checks the wording of the Add menu, and that a count of colleges reads as its sentence does.
@@ -729,67 +737,6 @@ func TestPrereqPanelControlNamesDiffer(t *testing.T) {
 				names[node.Name] = true
 			}
 		}
-	}
-}
-
-// seedEveryPrereqControl turns on every optional criterion of the prerequisites in the root, and adds a group with a
-// tech level and nothing in it, so that an audit sees every control the panel can show.
-func seedEveryPrereqControl(root *gurps.PrereqList) {
-	on := criteria.Text{Compare: criteria.IsText}
-	for _, one := range root.Prereqs {
-		switch pr := one.(type) {
-		case *gurps.TraitPrereq:
-			pr.LevelCriteria.Qualifier = fxp.One
-			pr.NotesCriteria = on
-		case *gurps.SkillPrereq:
-			pr.SpecializationCriteria = on
-			pr.OptionalSpecializationCriteria = on
-		case *gurps.SpellPrereq:
-			if !pr.SamePowerSource {
-				pr.PowerSourceCriteria = on
-			}
-		case *gurps.AttributePrereq:
-			pr.CombinedWith = gurps.DexterityID
-		case *gurps.EquippedEquipmentPrereq:
-			pr.TagsCriteria = on
-		default:
-		}
-	}
-	group := gurps.NewPrereqList()
-	group.All = false
-	group.WhenTL.Compare = criteria.AtMostNumber
-	group.Parent = root
-	root.Prereqs = append(root.Prereqs, group)
-}
-
-// checkPrereqs opens a dockable with fn and checks the controls in it, then again with each row of its prerequisites
-// panel open in turn, since a closed row shows only its sentence.
-func (a *axNameAudit) checkPrereqs(view string, fn func()) {
-	a.t.Helper()
-	d := a.open(fn)
-	if d == nil {
-		return
-	}
-	a.check(view, d)
-	var p *prereqPanel
-	var paths []string
-	a.screen.Do(func() {
-		if found := panelsOfType[*prereqPanel](d.AsPanel()); len(found) == 1 {
-			p = found[0]
-			for i, one := range p.tree().Prereqs {
-				if one.PrereqType() != prereq.List && one.PrereqType() != prereq.Unknown {
-					paths = append(paths, childPath(prereqRootPath, i))
-				}
-			}
-		}
-	})
-	if p == nil {
-		a.t.Errorf("%s: no prerequisites panel", view)
-		return
-	}
-	for _, path := range paths {
-		a.screen.Do(func() { p.toggle(path) })
-		a.check(view+", "+path+" open", d)
 	}
 }
 

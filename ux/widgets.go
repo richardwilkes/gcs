@@ -21,6 +21,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/i18n"
+	"github.com/richardwilkes/toolbox/v2/xmath"
 	"github.com/richardwilkes/toolbox/v2/xreflect"
 	"github.com/richardwilkes/toolbox/v2/xstrings"
 	"github.com/richardwilkes/unison"
@@ -896,4 +897,33 @@ func newEntriesMenu(entries []menuEntry) unison.Menu {
 		}
 	}
 	return m
+}
+
+// compactCornerRadius is the corner radius of compact controls and of the boxes drawn around them.
+const compactCornerRadius = 4
+
+// faintInk returns the ink at 30% opacity.
+func faintInk(ink unison.Ink) unison.Ink {
+	return &unison.ColorFilteredInk{OriginalInk: ink, ColorFilter: unison.Alpha30Filter()}
+}
+
+// hbox lays out the panel's children in a row that fills the width, returning the panel.
+func hbox(panel *unison.Panel, spacing float32) *unison.Panel {
+	panel.SetLayout(&unison.FlexLayout{Columns: len(panel.Children()), HSpacing: spacing})
+	panel.SetLayoutData(&unison.FlexLayoutData{HAlign: align.Fill, HGrab: true})
+	return panel
+}
+
+// putOnLine has the child, an icon of the size, sit at the top of its row, centered on a first line of the height
+// rather than on the whole row, whose text may wrap.
+func putOnLine(child *unison.Panel, height, size float32) {
+	var insets geom.Insets
+	if border := child.Border(); border != nil {
+		insets = border.Insets()
+	}
+	insets.Top = max((height-size)/2, 0)
+	// Room below that makes the whole height whole, which sizers would otherwise round up, pushing the icon down.
+	insets.Bottom = xmath.Ceil(insets.Top+size) - insets.Top - size
+	child.SetBorder(unison.NewEmptyBorder(insets))
+	child.SetLayoutData(&unison.FlexLayoutData{VAlign: align.Start})
 }

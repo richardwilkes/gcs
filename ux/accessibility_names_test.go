@@ -14,6 +14,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/richardwilkes/gcs/v5/model/criteria"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/feature"
@@ -399,4 +400,65 @@ func axTruncate(s string) string {
 		return s[:60] + "…"
 	}
 	return s
+}
+
+// seedEveryPrereqControl turns on every optional criterion of the prerequisites in the root, and adds a group with a
+// tech level and nothing in it, so that an audit sees every control the panel can show.
+func seedEveryPrereqControl(root *gurps.PrereqList) {
+	on := criteria.Text{Compare: criteria.IsText}
+	for _, one := range root.Prereqs {
+		switch pr := one.(type) {
+		case *gurps.TraitPrereq:
+			pr.LevelCriteria.Qualifier = fxp.One
+			pr.NotesCriteria = on
+		case *gurps.SkillPrereq:
+			pr.SpecializationCriteria = on
+			pr.OptionalSpecializationCriteria = on
+		case *gurps.SpellPrereq:
+			if !pr.SamePowerSource {
+				pr.PowerSourceCriteria = on
+			}
+		case *gurps.AttributePrereq:
+			pr.CombinedWith = gurps.DexterityID
+		case *gurps.EquippedEquipmentPrereq:
+			pr.TagsCriteria = on
+		default:
+		}
+	}
+	group := gurps.NewPrereqList()
+	group.All = false
+	group.WhenTL.Compare = criteria.AtMostNumber
+	group.Parent = root
+	root.Prereqs = append(root.Prereqs, group)
+}
+
+// checkPrereqs opens a dockable with fn and checks the controls in it, then again with each row of its prerequisites
+// panel open in turn, since a closed row shows only its sentence.
+func (a *axNameAudit) checkPrereqs(view string, fn func()) {
+	a.t.Helper()
+	d := a.open(fn)
+	if d == nil {
+		return
+	}
+	a.check(view, d)
+	var p *prereqPanel
+	var paths []string
+	a.screen.Do(func() {
+		if found := panelsOfType[*prereqPanel](d.AsPanel()); len(found) == 1 {
+			p = found[0]
+			for i, one := range p.tree().Prereqs {
+				if one.PrereqType() != prereq.List && one.PrereqType() != prereq.Unknown {
+					paths = append(paths, childPath(prereqRootPath, i))
+				}
+			}
+		}
+	})
+	if p == nil {
+		a.t.Errorf("%s: no prerequisites panel", view)
+		return
+	}
+	for _, path := range paths {
+		a.screen.Do(func() { p.toggle(path) })
+		a.check(view+", "+path+" open", d)
+	}
 }

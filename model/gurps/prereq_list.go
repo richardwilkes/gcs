@@ -209,6 +209,8 @@ func (p *PrereqList) describeChildren(entity *Entity, replacements map[string]st
 	return strings.Join(parts, joiner), len(parts)
 }
 
+// describeWhenTL returns the note that ends a description of this list when it has a tech level condition, or an empty
+// string when it has none.
 func (p *PrereqList) describeWhenTL() string {
 	if p.WhenTL.Compare == criteria.AnyNumber {
 		return ""

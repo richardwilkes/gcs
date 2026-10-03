@@ -190,34 +190,28 @@ func (p *SpellPrereq) Describe(_ *Entity, replacements map[string]string, em fun
 	if p.QuantityCriteria.Compare != criteria.AnyNumber {
 		quantity = " " + p.QuantityCriteria.AltString()
 	}
-	plural := p.QuantityCriteria.Qualifier != fxp.One
-	whose := false
+	one, many := i18n.Text(" spell"), i18n.Text(" spells")
 	if p.SubType == spellcmp.CollegeCount {
-		text += i18n.Text(" spells from") + quantity
-		if plural {
-			text += i18n.Text(" colleges")
-		} else {
-			text += i18n.Text(" college")
-		}
+		text += i18n.Text(" spells from")
+		one, many = i18n.Text(" college"), i18n.Text(" colleges")
+	}
+	text += quantity
+	if p.QuantityCriteria.Qualifier == fxp.One {
+		text += one
 	} else {
-		text += quantity
-		if plural {
-			text += i18n.Text(" spells")
-		} else {
-			text += i18n.Text(" spell")
+		text += many
+	}
+	whose := p.SubType.UsesStringCriteria() && p.QualifierCriteria.Compare != criteria.AnyText
+	if whose {
+		switch p.SubType {
+		case spellcmp.Tag:
+			text += i18n.Text(" whose tag ")
+		case spellcmp.College:
+			text += i18n.Text(" whose college ")
+		default:
+			text += i18n.Text(" whose name ")
 		}
-		if p.SubType.UsesStringCriteria() && p.QualifierCriteria.Compare != criteria.AnyText {
-			switch p.SubType {
-			case spellcmp.Tag:
-				text += i18n.Text(" whose tag ")
-			case spellcmp.College:
-				text += i18n.Text(" whose college ")
-			default:
-				text += i18n.Text(" whose name ")
-			}
-			text += describeText(p.QualifierCriteria, replacements, em)
-			whose = true
-		}
+		text += describeText(p.QualifierCriteria, replacements, em)
 	}
 	if p.hasPowerSourceFilter() {
 		if whose {

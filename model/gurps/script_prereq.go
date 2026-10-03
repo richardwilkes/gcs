@@ -120,11 +120,7 @@ func (s *ScriptPrereq) Evaluate(entity *Entity, exclude any) (met bool, reason s
 	case *Trait:
 		self = deferredNewScriptTrait(what)
 	}
-	result := embeddedScriptRegex.ReplaceAllStringFunc(script, func(one string) string {
-		text, scriptFailed := resolveScript(entity, self, one[len(scriptStart):len(one)-len(scriptEnd)])
-		failed = failed || scriptFailed
-		return text
-	})
+	result, failed := resolveText(entity, self, script)
 	switch {
 	case failed:
 		if name := s.ResolvedName(replacements); name != "" {

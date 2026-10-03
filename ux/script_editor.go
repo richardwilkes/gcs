@@ -15,11 +15,13 @@ import (
 	"time"
 	"unicode/utf8"
 
+	"github.com/richardwilkes/gcs/v5/model/colors"
 	"github.com/richardwilkes/gcs/v5/model/fonts"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/i18n"
+	"github.com/richardwilkes/toolbox/v2/xmath"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
 	"github.com/richardwilkes/unison/enums/mod"
@@ -30,6 +32,44 @@ import (
 // scriptEvaluationDelay is how long a script must go unchanged before it is evaluated, so that one that runs away
 // doesn't stall every keystroke.
 const scriptEvaluationDelay = 250 * time.Millisecond
+
+// checkStatus is the outcome of checking a requirement, such as a script, against a sheet.
+type checkStatus uint8
+
+// Possible checkStatus values.
+const (
+	checkMet checkStatus = iota
+	checkUnmet
+	checkFailed
+	checkSkipped
+)
+
+// showCheckIcon has the label show the icon of the status.
+func showCheckIcon(label *unison.Label, status checkStatus) {
+	icon, ink := unison.CheckmarkSVG, unison.Ink(colors.Success)
+	switch status {
+	case checkUnmet:
+		icon, ink = svg.Not, colors.Failure
+	case checkFailed:
+		icon, ink = unison.TriangleExclamationSVG, unison.ThemeWarning
+	case checkSkipped:
+		icon, ink = unison.DashSVG, faintInk(unison.ThemeOnSurface)
+	default:
+	}
+	if label.Drawable == nil {
+		// Without an icon the label took no room, so the panels around it must be laid out again.
+		label.MarkForLayoutRecursivelyUpward()
+	}
+	size := checkIconSize()
+	label.Drawable = &unison.DrawableSVG{SVG: icon, Size: geom.NewSize(size, size)}
+	label.OnBackgroundInk = ink
+	label.MarkForRedraw()
+}
+
+// checkIconSize returns the width and height of the icon showCheckIcon shows.
+func checkIconSize() float32 {
+	return xmath.Ceil(unison.DefaultLabelTheme.Font.Baseline())
+}
 
 // scriptMenuEntry is one item of the script editor's Insert or Snippets menu.
 type scriptMenuEntry struct {
@@ -78,10 +118,10 @@ func newScriptEditor(get func() string, set func(string), opts *scriptEditorOpti
 	bar := unison.NewPanel()
 	e.addMenuButton(bar, i18n.Text("Insert"), opts.Inserts, func(entry scriptMenuEntry) {
 		start, end := e.field.Selection()
-		e.put(start, end, entry)
+		e.insertEntry(start, end, entry)
 	})
 	e.addMenuButton(bar, i18n.Text("Snippets"), opts.Snippets, func(entry scriptMenuEntry) {
-		e.put(0, utf8.RuneCountInString(e.field.Text()), entry)
+		e.insertEntry(0, utf8.RuneCountInString(e.field.Text()), entry)
 	})
 	hint := unison.NewLabel()
 	hint.SetTitle(opts.Hint)
@@ -91,7 +131,7 @@ func newScriptEditor(get func() string, set func(string), opts *scriptEditorOpti
 	guide.ClickCallback = func() { HandleLink(nil, "md:User%20Guide/Scripting%20Guide") }
 	guide.Tooltip = newWrappedTooltip(i18n.Text("Scripting Guide"))
 	bar.AddChild(guide)
-	strip(bar, geom.Insets{Bottom: 1})
+	styleAsStrip(bar, geom.Insets{Bottom: 1})
 	frame := unison.NewPanel()
 	frame.SetLayout(&unison.FlexLayout{Columns: 1})
 	frame.SetLayoutData(&unison.FlexLayoutData{HAlign: align.Fill, HGrab: true})
@@ -127,7 +167,7 @@ func newScriptEditor(get func() string, set func(string), opts *scriptEditorOpti
 	unison.UninstallFocusBorders(e.field, e.field)
 	e.field.SetBorder(unison.NewEmptyBorder(geom.Insets{Top: 4, Left: 6, Bottom: 4, Right: 6}))
 	frameBorder := func(ink unison.Ink) unison.Border {
-		return unison.NewLineBorder(ink, geom.NewUniformSize(4), geom.NewUniformInsets(1), false)
+		return unison.NewLineBorder(ink, geom.NewUniformSize(compactCornerRadius), geom.NewUniformInsets(1), false)
 	}
 	unison.InstallFocusBorders(e.field, frame, frameBorder(unison.ThemeFocus), frameBorder(unison.ThemeSurfaceEdge))
 	e.field.SetSizer(func(hint geom.Size) (minSize, prefSize, maxSize geom.Size) {
@@ -146,7 +186,7 @@ func newScriptEditor(get func() string, set func(string), opts *scriptEditorOpti
 		label.SetTitle(opts.Footer)
 		label.SetLayoutData(&unison.FlexLayoutData{HAlign: align.Fill, HGrab: true})
 		footer.AddChild(label)
-		strip(footer, geom.Insets{Top: 1})
+		styleAsStrip(footer, geom.Insets{Top: 1})
 		frame.AddChild(footer)
 	}
 
@@ -155,7 +195,7 @@ func newScriptEditor(get func() string, set func(string), opts *scriptEditorOpti
 		e.icon = unison.NewLabel()
 		e.icon.Accessibility.Role = role.None // The text says the outcome.
 		row.AddChild(e.icon)
-		e.result = newSentenceButton("", nil, nil)
+		e.result = newSentenceButton("", nil)
 		putOnLine(e.icon.AsPanel(), e.result.lineHeight(), checkIconSize())
 		e.result.SetLayoutData(&unison.FlexLayoutData{HAlign: align.Fill, HGrab: true})
 		row.AddChild(e.result)
@@ -165,9 +205,9 @@ func newScriptEditor(get func() string, set func(string), opts *scriptEditorOpti
 	return e
 }
 
-// strip draws the panel as a strip of the editor's box, on the surface color with a line on the side the insets give
-// between it and the field.
-func strip(panel *unison.Panel, line geom.Insets) {
+// styleAsStrip draws the panel as a strip of the editor's box, on the surface color with a line on the side the insets
+// give between it and the field.
+func styleAsStrip(panel *unison.Panel, line geom.Insets) {
 	panel.SetBorder(unison.NewCompoundBorder(unison.NewLineBorder(unison.ThemeSurfaceEdge, geom.Size{}, line, false),
 		unison.NewEmptyBorder(geom.NewUniformInsets(4))))
 	panel.DrawCallback = func(gc *unison.Canvas, r geom.Rect) {
@@ -194,12 +234,13 @@ func (e *scriptEditor) addMenuButton(bar *unison.Panel, title string, entries []
 	bar.AddChild(button)
 }
 
-// put replaces the runes from start to end with the entry's text, below a first line starting with the
+// insertEntry replaces the runes from start to end with the entry's text, below a first line starting with the
 // KeepFirstLinePrefix, and leaves the caret where the entry asks. The order of the calls matters: gaining the focus
 // selects everything, so the selection is set last.
-func (e *scriptEditor) put(start, end int, entry scriptMenuEntry) {
+func (e *scriptEditor) insertEntry(start, end int, entry scriptMenuEntry) {
 	text := []rune(e.field.Text())
-	if keep := e.opts.KeepFirstLinePrefix; keep != "" && strings.HasPrefix(strings.ToLower(string(text)), strings.ToLower(keep)) {
+	if prefix := e.opts.KeepFirstLinePrefix; prefix != "" &&
+		strings.HasPrefix(strings.ToLower(string(text)), strings.ToLower(prefix)) {
 		keep := slices.Index(text, '\n') + 1
 		if keep == 0 {
 			text = append(text, '\n')

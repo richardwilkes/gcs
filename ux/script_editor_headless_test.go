@@ -12,11 +12,18 @@ package ux
 import (
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/mod"
 )
+
+// waitForEvaluation waits out scriptEvaluationDelay, then for the work it put off.
+func waitForEvaluation(screen *unison.HeadlessScreen) {
+	time.Sleep(2 * scriptEvaluationDelay)
+	screen.Sync()
+}
 
 func TestScriptEditor(t *testing.T) {
 	c := check.New(t)
@@ -63,7 +70,7 @@ func TestScriptEditor(t *testing.T) {
 
 	screen.Do(func() {
 		editor.field.SetSelection(1, 1)
-		editor.put(1, 1, editor.opts.Inserts[0])
+		editor.insertEntry(1, 1, editor.opts.Inserts[0])
 	})
 	c.Equal("afn()\n  b", script, "an insert goes in at the caret")
 	start, end := selection()
@@ -71,7 +78,7 @@ func TestScriptEditor(t *testing.T) {
 	c.Equal(4, end)
 	screen.Do(func() { c.Equal(editor.field.AsPanel(), editor.field.Window().Focus(), "the field takes the focus") })
 
-	screen.Do(func() { editor.put(0, len(editor.field.Text()), editor.opts.Snippets[1]) })
+	screen.Do(func() { editor.insertEntry(0, len(editor.field.Text()), editor.opts.Snippets[1]) })
 	c.Equal("true", script, "a snippet replaces the script")
 	c.Equal("Not met", result(), "the result waits for the script to go unchanged")
 	waitForEvaluation(screen)
@@ -105,12 +112,12 @@ func TestScriptEditor(t *testing.T) {
 
 	screen.Do(func() {
 		editor.field.SetText("// prereq count: 3\nold")
-		editor.put(0, len(editor.field.Text()), editor.opts.Snippets[1])
+		editor.insertEntry(0, len(editor.field.Text()), editor.opts.Snippets[1])
 	})
 	c.Equal("// prereq count: 3\ntrue", script, "a snippet keeps the prereq count line")
 	screen.Do(func() {
 		editor.field.SetText("// Prereq Count: 2")
-		editor.put(0, 0, editor.opts.Inserts[0])
+		editor.insertEntry(0, 0, editor.opts.Inserts[0])
 	})
 	c.Equal("// Prereq Count: 2\nfn()", script, "nothing goes in above the prereq count line")
 }

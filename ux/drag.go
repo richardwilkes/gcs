@@ -10,8 +10,10 @@
 package ux
 
 import (
+	"github.com/richardwilkes/toolbox/v2/errs"
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/uti"
+	"github.com/richardwilkes/toolbox/v2/xmath"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/drag"
 	"github.com/richardwilkes/unison/enums/imgfmt"
@@ -34,6 +36,7 @@ var (
 	meleeWeaponDragKey         = unison.CreatePrivateDataType("gcs.melee-weapon")
 	rangedWeaponDragKey        = unison.CreatePrivateDataType("gcs.ranged-weapon")
 	editorRowDragKey           = unison.CreatePrivateDataType("gcs.editor-row")
+	prereqDragKey              = unison.CreatePrivateDataType("gcs.prereq")
 )
 
 var (
@@ -87,6 +90,24 @@ func registerWindowDragTypes(wnd *unison.Window) {
 var flushDragFeedback = func(panel *unison.Panel) {
 	panel.MarkForRedraw()
 	panel.FlushDrawing()
+}
+
+// startPanelDrag starts a drag from the source of the data under the data type, shown as an image of the size that
+// draw draws, held at offset. done, which may be nil, is called once the drag ends.
+func startPanelDrag(source *unison.Panel, dataType *uti.DataType, data any, size geom.Size, offset geom.Point, draw func(gc *unison.Canvas, r geom.Rect), done func()) {
+	img, err := unison.NewImageFromDrawing(int(xmath.Ceil(size.Width)), int(xmath.Ceil(size.Height)), 144,
+		func(gc *unison.Canvas) { draw(gc, geom.Rect{Size: size}) })
+	if err != nil {
+		errs.Log(err)
+		return
+	}
+	panelDragData = data
+	source.StartDrag(img, offset, func() {
+		panelDragData = nil
+		if done != nil {
+			done()
+		}
+	}, drag.Move, drag.Data{Type: dataType, Data: []byte{0}})
 }
 
 // installPanelDragDrop makes the panel accept drags of dataType, passing panelDragData to the over and drop handlers.

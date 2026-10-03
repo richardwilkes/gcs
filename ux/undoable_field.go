@@ -50,6 +50,8 @@ type undoableField[T comparable] struct {
 	// reader to read it (see unison.SetFocusForReading).
 	focusedForReading bool
 	marksModified     bool
+	// skipUndo leaves undo to the setter, which records its changes some other way.
+	skipUndo bool
 }
 
 // init sets the field up to edit the value the accessors reach, on behalf of self, the field embedding it.
@@ -121,9 +123,17 @@ func (f *undoableField[T]) CurrentValue() T {
 	return f.get()
 }
 
+// withoutUndo has the field leave undo to its setter, returning the field.
+func (f *undoableField[T]) withoutUndo() *unison.Field {
+	f.skipUndo = true
+	return f.Field
+}
+
 func (f *undoableField[T]) modified(before, after *unison.FieldState) {
-	recordTargetUndo(f.self, f.targetMgr, f.targetKey, f.undoTitle, f.CurrentUndoID(), before, after,
-		func(self undoableFieldSelf, data *unison.FieldState) { self.setWithoutUndo(data, true) })
+	if !f.skipUndo {
+		recordTargetUndo(f.self, f.targetMgr, f.targetKey, f.undoTitle, f.CurrentUndoID(), before, after,
+			func(self undoableFieldSelf, data *unison.FieldState) { self.setWithoutUndo(data, true) })
+	}
 	f.adjustForText()
 }
 

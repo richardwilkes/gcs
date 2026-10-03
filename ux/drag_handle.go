@@ -11,12 +11,10 @@ package ux
 
 import (
 	"github.com/richardwilkes/gcs/v5/svg"
-	"github.com/richardwilkes/toolbox/v2/errs"
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/toolbox/v2/uti"
 	"github.com/richardwilkes/unison"
-	"github.com/richardwilkes/unison/drag"
 	"github.com/richardwilkes/unison/enums/align"
 	"github.com/richardwilkes/unison/enums/mod"
 	"github.com/richardwilkes/unison/enums/paintstyle"
@@ -90,21 +88,10 @@ func (h *DragHandle) mouseDown(_ geom.Point, _, _ int, _ mod.Modifiers) bool {
 func (h *DragHandle) mouseDrag(where geom.Point, _ int, _ mod.Modifiers) bool {
 	if h.IsDragGesture(where) {
 		size := h.svg.LogicalSize()
-		img, err := unison.NewImageFromDrawing(int(size.Width), int(size.Height), 144, func(c *unison.Canvas) {
-			rect := geom.Rect{Size: size}
-			h.svg.DrawInRect(c, rect, nil, unison.ThemeFocus.Paint(c, rect, paintstyle.Fill))
-		})
-		if err != nil {
-			errs.Log(err)
-			return true
-		}
-		where.X -= size.Width / 2
-		where.Y -= size.Height / 2
-		panelDragData = h.data
-		h.StartDrag(img, where, func() { panelDragData = nil }, drag.Move, drag.Data{
-			Type: h.key,
-			Data: []byte{0},
-		})
+		startPanelDrag(h.AsPanel(), h.key, h.data, size, geom.NewPoint(where.X-size.Width/2, where.Y-size.Height/2),
+			func(gc *unison.Canvas, r geom.Rect) {
+				h.svg.DrawInRect(gc, r, nil, unison.ThemeFocus.Paint(gc, r, paintstyle.Fill))
+			}, nil)
 	}
 	return true
 }
