@@ -113,58 +113,80 @@ func (p *PrereqList) AppliesAt(entity *Entity) bool {
 	return p.WhenTL.Compare.Matches(p.WhenTL.Qualifier, max(tl, 0))
 }
 
-// Satisfied implements Prereq. hasEquipmentPenalty, if not nil, is set to true when this list is unsatisfied and an
-// unmet equipped-equipment prerequisite is among what made it so: one of its own, or one reached through nested lists
-// that are each unsatisfied. An "all of" list that also fails for some other prerequisite sets it, while an unmet
-// equipment prerequisite inside a satisfied nested list, or in a list that does not apply at the sheet's tech level,
-// never does.
+// prereqResult is the outcome of checking a prerequisite list.
+type prereqResult uint8
+
+// Possible prereqResult values.
+const (
+	prereqMet prereqResult = iota
+	prereqUnmet
+	prereqSkipped
+)
+
+// Satisfied implements Prereq. A list is skipped when it does not apply at the sheet's tech level, or when it has
+// nothing in it that isn't skipped. Its parent leaves it out, so an "all of" list is met when the rest are all met and
+// an "any of" list when any of the rest is. A list skipped at the top is met. hasEquipmentPenalty, if not nil, is set
+// to true when this list is unsatisfied and an unmet equipped-equipment prerequisite is among what made it so: one of
+// its own, or one reached through nested lists that are each unsatisfied. An "all of" list that also fails for some
+// other prerequisite sets it, while an unmet equipment prerequisite inside a satisfied or skipped nested list never
+// does.
 //
-// The text written to buffer lists what is unmet. A list that does not apply at the tech level writes nothing, a list
-// with a single unmet item writes just that item, and a nested list with the same mode as its parent writes its items
-// alongside its parent's. Any other list writes a heading with its items indented beneath it. This list is treated as
-// though its caller were an "all of" list, so the items of an "all of" list are written without a heading.
+// The text written to buffer lists what is unmet. A skipped list writes nothing, a list with a single unmet item
+// writes just that item, and a nested list with the same mode as its parent writes its items alongside its parent's.
+// Any other list writes a heading with its items indented beneath it. This list is treated as though its caller were
+// an "all of" list, so the items of an "all of" list are written without a heading.
 func (p *PrereqList) Satisfied(entity *Entity, exclude any, buffer *xbytes.InsertBuffer, prefix string, hasEquipmentPenalty *bool) bool {
-	satisfied, _ := p.satisfied(entity, exclude, buffer, prefix, hasEquipmentPenalty, p.All)
-	return satisfied
+	result, _ := p.satisfied(entity, exclude, buffer, prefix, hasEquipmentPenalty, p.All)
+	return result != prereqUnmet
 }
 
-// satisfied is Satisfied, also returning how many items of text it wrote at the level of prefix. flatten requests that
-// the unmet items be written at that level rather than under a heading.
-func (p *PrereqList) satisfied(entity *Entity, exclude any, buffer *xbytes.InsertBuffer, prefix string, hasEquipmentPenalty *bool, flatten bool) (satisfied bool, items int) {
-	if entity == nil || !p.AppliesAt(entity) {
-		return true, 0
+// satisfied is Satisfied, returning whether the list is met, unmet or skipped, and how many items of text it wrote at
+// the level of prefix. flatten requests that the unmet items be written at that level rather than under a heading.
+func (p *PrereqList) satisfied(entity *Entity, exclude any, buffer *xbytes.InsertBuffer, prefix string, hasEquipmentPenalty *bool, flatten bool) (result prereqResult, items int) {
+	if entity == nil {
+		return prereqMet, 0
 	}
-	count := 0
+	if !p.AppliesAt(entity) {
+		return prereqSkipped, 0
+	}
+	count, applicable := 0, 0
 	var local *xbytes.InsertBuffer
 	if buffer != nil {
 		local = &xbytes.InsertBuffer{}
 	}
 	eqpPenalty := false
 	for _, one := range p.Prereqs {
-		var met bool
+		childResult := prereqMet
 		if list, ok := one.(*PrereqList); ok {
 			var n int
-			met, n = list.satisfied(entity, exclude, local, prefix, &eqpPenalty, list.All == p.All)
+			childResult, n = list.satisfied(entity, exclude, local, prefix, &eqpPenalty, list.All == p.All)
 			items += n
-		} else if met = one.Satisfied(entity, exclude, local, prefix, &eqpPenalty); !met {
+		} else if !one.Satisfied(entity, exclude, local, prefix, &eqpPenalty) {
+			childResult = prereqUnmet
 			items++
 		}
-		if met {
-			count++
+		if childResult != prereqSkipped {
+			applicable++
+			if childResult == prereqMet {
+				count++
+			}
 		}
 	}
-	if count == len(p.Prereqs) || (!p.All && count > 0) {
-		return true, 0
+	if applicable == 0 {
+		return prereqSkipped, 0
+	}
+	if count == applicable || (!p.All && count > 0) {
+		return prereqMet, 0
 	}
 	if eqpPenalty && hasEquipmentPenalty != nil {
 		*hasEquipmentPenalty = true
 	}
 	if buffer == nil {
-		return false, 0
+		return prereqUnmet, 0
 	}
 	if flatten || items == 1 {
 		buffer.WriteString(local.String())
-		return false, items
+		return prereqUnmet, items
 	}
 	buffer.WriteString(prefix)
 	if p.All {
@@ -173,7 +195,7 @@ func (p *PrereqList) satisfied(entity *Entity, exclude any, buffer *xbytes.Inser
 		buffer.WriteString(i18n.Text("Requires at least one of:"))
 	}
 	buffer.WriteString(strings.ReplaceAll(local.String(), "\n", "\n\t"))
-	return false, 1
+	return prereqUnmet, 1
 }
 
 // Describe implements Prereq. The children are joined with "and" or "or" to match the list's mode, a nested list that

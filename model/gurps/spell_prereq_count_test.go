@@ -70,3 +70,16 @@ func TestCountPrereqsForSpellWithNilEntryInList(t *testing.T) {
 		"a nil entry within a prerequisite list must not panic")
 	c.Equal(1, count)
 }
+
+// TestCountPrereqsForSpellSkipsEmptyOption verifies that an empty list in an "any of" list isn't taken as its cheapest
+// option.
+func TestCountPrereqsForSpellSkipsEmptyOption(t *testing.T) {
+	c := check.New(t)
+	e := NewEntity()
+	addTestSpell(e, "Light", fxp.One)
+	continualLight := addTestSpell(e, "Continual Light", fxp.One)
+	addSpellNamePrereq(continualLight, "Light")
+	continualLight.Prereq.All = false
+	continualLight.Prereq.Prereqs = append(continualLight.Prereq.Prereqs, NewPrereqList())
+	c.Equal(1, CountPrereqsForSpell(continualLight, e.Spells))
+}

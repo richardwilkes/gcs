@@ -53,7 +53,9 @@ func showCheckIcon(label *unison.Label, status checkStatus) {
 	case checkFailed:
 		icon, ink = unison.TriangleExclamationSVG, unison.ThemeWarning
 	case checkSkipped:
-		icon, ink = unison.DashSVG, faintInk(unison.ThemeOnSurface)
+		// Half as strong as text, for a contrast of at least 3:1 with the surface.
+		icon = svg.CircledMinus
+		ink = &unison.ColorFilteredInk{OriginalInk: unison.ThemeOnSurface, ColorFilter: unison.Alpha50Filter()}
 	default:
 	}
 	if label.Drawable == nil {

@@ -19,3 +19,6 @@
 - An unset substitution written as "Label: text", such as Patron's "@Who: A deity@", was shown as just "@Who@", so
   modifiers that differ only in that text, like Patron's, couldn't be told apart. The full text is shown again.
   Substitutions that list examples ending in "etc." still show just their label.
+- A prerequisite group whose tech level condition doesn't match the character's no longer counts as met, which made
+  an "any of" group containing one always met. Such a group is now left out of the check, and so is an empty group or
+  one with nothing left in it to check. Prerequisites with nothing left to check are met.

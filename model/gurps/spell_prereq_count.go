@@ -40,6 +40,9 @@ func collectPrereqsForPrereq(one Prereq, allSpells []*Spell, collect map[string]
 		} else {
 			var current map[string]int
 			for _, one := range p.Prereqs {
+				if list, ok := one.(*PrereqList); ok && (list == nil || len(list.Prereqs) == 0) {
+					continue
+				}
 				set := make(map[string]int)
 				maps.Copy(set, collect)
 				collectPrereqsForPrereq(one, allSpells, set)

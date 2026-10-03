@@ -401,27 +401,30 @@ type prereqCheck struct {
 }
 
 // check records the status of the node and those below it against the sheet, running each script once, and returns
-// the node's status. A group that isn't met couldn't be checked when any of its children couldn't be. To its group, a
-// skipped node counts as met, as it does on the sheet.
+// the node's status. A group that isn't met couldn't be checked when any of its children couldn't be. As on the sheet,
+// a group leaves out its skipped children, and is itself skipped when it has nothing left to check.
 func (p *prereqPanel) check(node gurps.Prereq, skipped bool, checks map[gurps.Prereq]prereqCheck) checkStatus {
 	var result prereqCheck
 	switch one := node.(type) {
 	case *gurps.PrereqList:
 		skipped = skipped || !one.AppliesAt(p.entity)
-		met, failed := 0, false
+		met, applicable, failed := 0, 0, false
 		for _, child := range one.Prereqs {
 			switch p.check(child, skipped, checks) {
-			case checkUnmet:
+			case checkSkipped:
+				continue
+			case checkMet:
+				met++
 			case checkFailed:
 				failed = true
 			default:
-				met++
 			}
+			applicable++
 		}
 		switch {
-		case skipped || len(one.Prereqs) == 0:
+		case skipped || applicable == 0:
 			result.status = checkSkipped
-		case met == len(one.Prereqs) || (!one.All && met > 0):
+		case met == applicable || (!one.All && met > 0):
 		case failed:
 			result.status = checkFailed
 		default:
@@ -452,9 +455,13 @@ func (p *prereqPanel) status(node gurps.Prereq, checks map[gurps.Prereq]prereqCh
 	case checkMet:
 		return checkMet, i18n.Text("Met"), i18n.Text("met")
 	case checkSkipped:
-		if list, ok := node.(*gurps.PrereqList); ok && len(list.Prereqs) == 0 && list.AppliesAt(p.entity) &&
-			checks[list.Parent].status != checkSkipped {
-			return checkSkipped, i18n.Text("Empty group, always met"), i18n.Text("empty group, always met")
+		if list, ok := node.(*gurps.PrereqList); ok && p.appliesAt(list) {
+			if len(list.Prereqs) == 0 {
+				return checkSkipped, i18n.Text("Empty group, left out of the check"),
+					i18n.Text("empty group, left out of the check")
+			}
+			return checkSkipped, i18n.Text("Nothing in it applies, left out of the check"),
+				i18n.Text("nothing in it applies, left out of the check")
 		}
 		return checkSkipped, i18n.Text("Doesn't apply at this tech level"), i18n.Text("doesn't apply at this tech level")
 	default:
@@ -475,6 +482,16 @@ func (p *prereqPanel) status(node gurps.Prereq, checks map[gurps.Prereq]prereqCh
 		return checkFailed, tip, fmt.Sprintf(i18n.Text("couldn't run: %s"), result.reason)
 	}
 	return checkFailed, tip, i18n.Text("couldn't be checked")
+}
+
+// appliesAt returns true if the list and the groups holding it apply at the sheet's tech level.
+func (p *prereqPanel) appliesAt(list *gurps.PrereqList) bool {
+	for ; list != nil; list = list.Parent {
+		if !list.AppliesAt(p.entity) {
+			return false
+		}
+	}
+	return true
 }
 
 // evaluateScript runs the script against the sheet, returning its status and the reason it gives, which is the error

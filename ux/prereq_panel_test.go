@@ -388,13 +388,15 @@ func TestPrereqPanelStatus(t *testing.T) {
 	later.WhenTL.Qualifier = fxp.Ten
 	later.Prereqs = gurps.Prereqs{gurps.NewTraitPrereq()}
 	root := gurps.NewPrereqList()
-	root.Prereqs = gurps.Prereqs{trait, met, broken, later, gurps.NewPrereqList()}
+	holder := gurps.NewPrereqList()
+	holder.Prereqs = gurps.Prereqs{gurps.NewPrereqList()}
+	root.Prereqs = gurps.Prereqs{trait, met, broken, later, gurps.NewPrereqList(), holder}
 	root = root.CloneAsPrereqList(nil)
 	p, _ := showPrereqPanel(t, screen, &root, false)
 	screen.Do(func() {
 		for path, want := range map[string]*unison.SVG{
-			"r": unison.TriangleExclamationSVG, "r.0": svg.Not, "r.1": unison.CheckmarkSVG, "r.2": unison.TriangleExclamationSVG, "r.3": unison.DashSVG,
-			"r.3.0": unison.DashSVG, "r.4": unison.DashSVG,
+			"r": unison.TriangleExclamationSVG, "r.0": svg.Not, "r.1": unison.CheckmarkSVG, "r.2": unison.TriangleExclamationSVG, "r.3": svg.CircledMinus,
+			"r.3.0": svg.CircledMinus, "r.4": svg.CircledMinus, "r.5": svg.CircledMinus, "r.5.0": svg.CircledMinus,
 		} {
 			for _, v := range p.views {
 				if v.node == p.node(path) {
@@ -411,7 +413,9 @@ func TestPrereqPanelStatus(t *testing.T) {
 		checks := make(map[gurps.Prereq]prereqCheck)
 		p.check(p.tree(), false, checks)
 		for path, want := range map[string]string{
-			"r.0": "Not met: Has trait Magery", "r.4": "Empty group, always met",
+			"r.0": "Not met: Has trait Magery", "r.3": "Doesn't apply at this tech level",
+			"r.3.0": "Doesn't apply at this tech level", "r.4": "Empty group, left out of the check",
+			"r.5": "Nothing in it applies, left out of the check", "r.5.0": "Empty group, left out of the check",
 		} {
 			_, tip, _ := p.status(p.node(path), checks)
 			c.Equal(want, tip, path)
@@ -465,7 +469,8 @@ func TestPrereqPanelStatus(t *testing.T) {
 }
 
 // TestPrereqPanelStatusOfGroups checks that a group couldn't be checked only when a child that couldn't be decides its
-// result, and that a group skipped by its tech level stays skipped.
+// result, that a group skipped by its tech level stays skipped, and that a group leaves out its skipped children and is
+// skipped when nothing is left.
 func TestPrereqPanelStatusOfGroups(t *testing.T) {
 	c := check.New(t)
 	screen, _ := startHeadlessWorkspace(t, c)
@@ -496,6 +501,10 @@ func TestPrereqPanelStatusOfGroups(t *testing.T) {
 		{"any of, with one that couldn't run and one unmet", group(false, script("false"), script("nope(")), checkFailed},
 		{"nested two deep", group(true, group(false, group(true, script("nope(")))), checkFailed},
 		{"skipped by its tech level", later, checkSkipped},
+		{"any of, with a skipped group and one unmet", group(false, later, script("false")), checkUnmet},
+		{"any of, with only skipped groups", group(false, later, group(true)), checkSkipped},
+		{"any of, with an empty group and one unmet", group(false, group(true), script("false")), checkUnmet},
+		{"empty", group(true), checkSkipped},
 	} {
 		screen.Do(func() {
 			checks := make(map[gurps.Prereq]prereqCheck)
