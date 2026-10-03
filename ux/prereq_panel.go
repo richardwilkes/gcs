@@ -12,7 +12,6 @@ package ux
 import (
 	"cmp"
 	"fmt"
-	"reflect"
 	"slices"
 	"strconv"
 	"strings"
@@ -132,10 +131,23 @@ func newPrereqPanel(entity *gurps.Entity, root **gurps.PrereqList, permittedChoi
 	p.targetMgr = NewTargetMgr(p)
 	installPanelDragDrop(p.AsPanel(), prereqDragKey, p.dragOver, p.dragExit, p.drop)
 	p.DrawOverCallback = p.drawDrop
+	p.KeyDownCallback = p.keyDown
 	p.build()
 	// The item being edited, which evaluation leaves out, can only be found once the panel is in its editor.
 	unison.InvokeTask(p.refresh)
 	return p
+}
+
+// keyDown has Escape close the open row. Escape within the panel never reaches the editor, where it would discard the
+// changes.
+func (p *prereqPanel) keyDown(keyCode unison.KeyCode, mods mod.Modifiers, _ bool) bool {
+	if keyCode != unison.KeyEscape || !noModifiersDown(mods) {
+		return false
+	}
+	if p.open != "" {
+		p.toggle(p.open)
+	}
+	return true
 }
 
 // tree returns the list being edited. A missing list is stood in for by an empty one, which becomes the real one when
@@ -315,7 +327,7 @@ func (p *prereqPanel) focusOn(key string) bool {
 }
 
 func (p *prereqPanel) build() {
-	if node := p.node(p.open); node == nil || node.PrereqType() == prereq.List {
+	if node := p.node(p.open); node == nil || node.PrereqType() == prereq.List || node.PrereqType() == prereq.Unknown {
 		p.open = ""
 	}
 	p.views = p.views[:0]
@@ -502,34 +514,6 @@ func (p *prereqPanel) pathOf(target gurps.Prereq) string {
 	return find(p.tree(), prereqRootPath)
 }
 
-// setParent makes the list the parent of the node, which is being moved there.
-func setParent(node gurps.Prereq, list *gurps.PrereqList) {
-	switch one := node.(type) {
-	case *gurps.PrereqList:
-		one.Parent = list
-	case *gurps.TraitPrereq:
-		one.Parent = list
-	case *gurps.SkillPrereq:
-		one.Parent = list
-	case *gurps.SpellPrereq:
-		one.Parent = list
-	case *gurps.AttributePrereq:
-		one.Parent = list
-	case *gurps.ContainedQuantityPrereq:
-		one.Parent = list
-	case *gurps.ContainedWeightPrereq:
-		one.Parent = list
-	case *gurps.EquippedEquipmentPrereq:
-		one.Parent = list
-	case *gurps.ScriptPrereq:
-		one.Parent = list
-	case *gurps.UnknownPrereq:
-		one.Parent = list
-	default:
-		errs.Log(errs.New("unknown prerequisite type"), "type", reflect.TypeOf(node).String())
-	}
-}
-
 // groupName returns the accessible name of a group.
 func groupName(list *gurps.PrereqList) string {
 	name := groupWord(list.All)
@@ -699,13 +683,6 @@ func (p *prereqPanel) row(pr gurps.Prereq, path string) *unison.Panel {
 		done.RefKey = path + ":done"
 		done.ClickCallback = func() { p.toggle(path) }
 		row.AddChild(done)
-		row.KeyDownCallback = func(keyCode unison.KeyCode, mods mod.Modifiers, _ bool) bool {
-			if keyCode != unison.KeyEscape || !noModifiersDown(mods) {
-				return false
-			}
-			p.toggle(path)
-			return true
-		}
 		line = controlHeight(row)
 	} else {
 		row.SetBorder(unison.NewEmptyBorder(geom.Insets{Top: 3, Left: 4, Bottom: 3, Right: 8}))
@@ -993,7 +970,7 @@ func (p *prereqPanel) addEntries(list *gurps.PrereqList, path string) []menuEntr
 	}
 	entries := []menuEntry{{Label: i18n.Text("Requirement")}}
 	for _, t := range p.permittedChoices {
-		entries = append(entries, menuEntry{Label: prereqTypeName(t), Act: func() {
+		entries = append(entries, menuEntry{Label: t.AltString(), Act: func() {
 			add(i18n.Text("Add Prerequisite"), p.createPrereqForType(t, list))
 		}})
 	}
@@ -1052,7 +1029,7 @@ func (p *prereqPanel) moreEntries(node gurps.Prereq, path string) []menuEntry {
 	entries = append(entries, menuEntry{Label: i18n.Text("Wrap in Group"), Act: func() {
 		p.restructure(i18n.Text("Wrap in Group"), from, "", func() gurps.Prereq {
 			group := &gurps.PrereqList{Type: prereq.List, Parent: list, All: !list.All, Prereqs: gurps.Prereqs{node}}
-			setParent(node, group)
+			node.SetParentList(group)
 			list.Prereqs[i] = group
 			return node
 		})
@@ -1062,7 +1039,7 @@ func (p *prereqPanel) moreEntries(node gurps.Prereq, path string) []menuEntry {
 		entries = append(entries, menuEntry{Label: i18n.Text("Ungroup"), Act: func() {
 			p.restructure(i18n.Text("Ungroup"), from, "", func() gurps.Prereq {
 				for _, child := range g.Prereqs {
-					setParent(child, list)
+					child.SetParentList(list)
 				}
 				list.Prereqs = slices.Replace(list.Prereqs, i, i+1, g.Prereqs...)
 				return g.Prereqs[0]
@@ -1233,7 +1210,7 @@ func (p *prereqPanel) moveTarget(path string, dir int) (to *gurps.PrereqList, at
 func relocate(from *gurps.PrereqList, i int, to *gurps.PrereqList, at int) gurps.Prereq {
 	node := from.Prereqs[i]
 	from.Prereqs = slices.Delete(from.Prereqs, i, i+1)
-	setParent(node, to)
+	node.SetParentList(to)
 	to.Prereqs = slices.Insert(to.Prereqs, at, node)
 	return node
 }
@@ -1261,30 +1238,6 @@ func (p *prereqPanel) typePopup(parent *unison.Panel, path string, pr gurps.Prer
 				list.Prereqs[i] = created
 			}
 		}))
-}
-
-// prereqTypeName returns the name of the type in the Add menu.
-func prereqTypeName(t prereq.Type) string {
-	switch t {
-	case prereq.Trait:
-		return i18n.Text("Trait")
-	case prereq.Attribute:
-		return i18n.Text("Attribute")
-	case prereq.ContainedQuantity:
-		return i18n.Text("Contained Quantity")
-	case prereq.ContainedWeight:
-		return i18n.Text("Contained Weight")
-	case prereq.EquippedEquipment:
-		return i18n.Text("Equipped Equipment")
-	case prereq.Skill:
-		return i18n.Text("Skill")
-	case prereq.Spell:
-		return i18n.Text("Spell")
-	case prereq.Script:
-		return i18n.Text("Script")
-	default:
-		return t.String()
-	}
 }
 
 // createPrereqForType returns a new prerequisite of the type for the parent list, or nil for a type that can't be made.

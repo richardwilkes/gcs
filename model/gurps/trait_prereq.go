@@ -54,6 +54,11 @@ func (p *TraitPrereq) ParentList() *PrereqList {
 	return p.Parent
 }
 
+// SetParentList implements Prereq.
+func (p *TraitPrereq) SetParentList(list *PrereqList) {
+	p.Parent = list
+}
+
 // Clone implements Prereq.
 func (p *TraitPrereq) Clone(parent *PrereqList) Prereq {
 	clone := *p

@@ -48,6 +48,11 @@ func (s *ScriptPrereq) ParentList() *PrereqList {
 	return s.Parent
 }
 
+// SetParentList implements Prereq.
+func (s *ScriptPrereq) SetParentList(list *PrereqList) {
+	s.Parent = list
+}
+
 // Clone implements Prereq.
 func (s *ScriptPrereq) Clone(parent *PrereqList) Prereq {
 	clone := *s
@@ -95,9 +100,9 @@ func (s *ScriptPrereq) Satisfied(entity *Entity, exclude any, tooltip *xbytes.In
 }
 
 // Evaluate runs the script against the entity for the item given as exclude. A result of "" or "true" is met. A result
-// of "false" is unmet, with this prerequisite's description as the reason, and any other result is unmet, with that
-// text as the reason. failed is true when the script could not produce a result, because it threw, timed out or
-// nested too deeply; the reason then says so.
+// of "false" is unmet, with the reason saying this prerequisite's description failed, and any other result is unmet,
+// with that text as the reason. failed is true when the script could not produce a result, because it threw, timed out
+// or nested too deeply; the reason then says so.
 func (s *ScriptPrereq) Evaluate(entity *Entity, exclude any) (met bool, reason string, failed bool) {
 	script := s.Script
 	var replacements map[string]string
@@ -130,7 +135,7 @@ func (s *ScriptPrereq) Evaluate(entity *Entity, exclude any) (met bool, reason s
 	case result == "" || result == "true":
 		return true, "", false
 	case result == "false":
-		return false, s.Describe(entity, replacements, plainText), false
+		return false, fmt.Sprintf(i18n.Text("Failed: %s"), s.Describe(entity, replacements, plainText)), false
 	default:
 		return false, result, false
 	}

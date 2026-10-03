@@ -60,6 +60,11 @@ func (p *PrereqList) ParentList() *PrereqList {
 	return p.Parent
 }
 
+// SetParentList implements Prereq.
+func (p *PrereqList) SetParentList(list *PrereqList) {
+	p.Parent = list
+}
+
 // Clone implements Prereq.
 func (p *PrereqList) Clone(parent *PrereqList) Prereq {
 	return p.CloneAsPrereqList(parent)

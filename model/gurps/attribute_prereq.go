@@ -15,6 +15,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/criteria"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/prereq"
+	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/toolbox/v2/xbytes"
 	"github.com/richardwilkes/toolbox/v2/xhash"
 )
@@ -50,6 +51,11 @@ func (p *AttributePrereq) PrereqType() prereq.Type {
 // ParentList implements Prereq.
 func (p *AttributePrereq) ParentList() *PrereqList {
 	return p.Parent
+}
+
+// SetParentList implements Prereq.
+func (p *AttributePrereq) SetParentList(list *PrereqList) {
+	p.Parent = list
 }
 
 // Clone implements Prereq.
@@ -98,14 +104,21 @@ func (p *AttributePrereq) Describe(entity *Entity, _ map[string]string, em func(
 
 // attributeTitle returns the title the attribute choices give key, or key itself when it isn't one of them.
 func attributeTitle(entity *Entity, key string) string {
-	// No choice has an empty key, so the unrecognized choice for it is always the last one, which is skipped.
-	choices, _ := AttributeChoices(entity, "", SizeFlag|DodgeFlag|ParryFlag|BlockFlag, "")
-	for _, choice := range choices[:len(choices)-1] {
-		if choice.Key == key {
-			return choice.Title
-		}
+	if def := AttributeDefsFor(entity).Set[key]; def != nil {
+		return def.Name
 	}
-	return key
+	switch key {
+	case SizeModifierID:
+		return i18n.Text("Size Modifier")
+	case DodgeID:
+		return i18n.Text("Dodge")
+	case ParryID:
+		return i18n.Text("Parry")
+	case BlockID:
+		return i18n.Text("Block")
+	default:
+		return key
+	}
 }
 
 // Hash writes this object's contents into the hasher.

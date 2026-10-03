@@ -40,9 +40,6 @@ var (
 	Failure                 = &unison.ThemeColor{Light: unison.RGB(133, 20, 20), Dark: unison.RGB(230, 110, 110)}
 	Grouping1               = &unison.ThemeColor{Light: unison.RGB(106, 47, 176), Dark: unison.RGB(132, 59, 220)}
 	Grouping2               = &unison.ThemeColor{Light: unison.RGB(0, 107, 102), Dark: unison.RGB(0, 114, 109)}
-	Grouping3               = &unison.ThemeColor{Light: unison.RGB(158, 31, 110), Dark: unison.RGB(183, 36, 128)}
-	Grouping4               = &unison.ThemeColor{Light: unison.RGB(94, 107, 0), Dark: unison.RGB(96, 109, 0)}
-	Grouping5               = &unison.ThemeColor{Light: unison.RGB(128, 72, 24), Dark: unison.RGB(152, 86, 29)}
 	TintPortrait            = &unison.ThemeColor{Light: unison.Transparent, Dark: unison.Transparent}
 	TintIdentity            = &unison.ThemeColor{Light: unison.Transparent, Dark: unison.Transparent}
 	TintMisc                = &unison.ThemeColor{Light: unison.Transparent, Dark: unison.Transparent}
@@ -142,9 +139,6 @@ func initialize() {
 		{ID: "cursor_bg", Title: i18n.Text("Cursor Background"), Color: unison.ThemeCursorBackground},
 		{ID: "grouping_1", Title: i18n.Text("Grouping 1"), Color: Grouping1},
 		{ID: "grouping_2", Title: i18n.Text("Grouping 2"), Color: Grouping2},
-		{ID: "grouping_3", Title: i18n.Text("Grouping 3"), Color: Grouping3},
-		{ID: "grouping_4", Title: i18n.Text("Grouping 4"), Color: Grouping4},
-		{ID: "grouping_5", Title: i18n.Text("Grouping 5"), Color: Grouping5},
 		{ID: "tint_portrait", Title: i18n.Text("Portrait"), Color: TintPortrait},
 		{ID: "tint_identity", Title: i18n.Text("Identity"), Color: TintIdentity},
 		{ID: "tint_misc", Title: i18n.Text("Miscellaneous"), Color: TintMisc},

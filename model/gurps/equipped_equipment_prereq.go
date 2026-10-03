@@ -50,6 +50,11 @@ func (p *EquippedEquipmentPrereq) ParentList() *PrereqList {
 	return p.Parent
 }
 
+// SetParentList implements Prereq.
+func (p *EquippedEquipmentPrereq) SetParentList(list *PrereqList) {
+	p.Parent = list
+}
+
 // Clone implements Prereq.
 func (p *EquippedEquipmentPrereq) Clone(parent *PrereqList) Prereq {
 	clone := *p

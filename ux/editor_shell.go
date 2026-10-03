@@ -74,8 +74,8 @@ func (s *editorShell) setUp(columns int) *unison.Panel {
 }
 
 // newContentPanel creates the editor's content panel, laid out in the given number of columns, and the scroll panel
-// that holds it. Cmd-Return within the content applies the changes and Escape asks to discard them, by clicking the
-// buttons addApplyAndCancelButtons creates.
+// that holds it. Cmd-Return within the content applies the changes and Escape discards them, by clicking the buttons
+// addApplyAndCancelButtons creates.
 func (s *editorShell) newContentPanel(columns int) *unison.Panel {
 	content := unison.NewPanel()
 	content.SetBorder(unison.NewEmptyBorder(geom.NewUniformInsets(unison.StdHSpacing * 2)))
@@ -111,8 +111,8 @@ func (s *editorShell) newContentPanel(columns int) *unison.Panel {
 	return content
 }
 
-// addApplyAndCancelButtons adds the Apply and Discard buttons to the toolbar. Apply closes the editor without
-// prompting, applying the changes first. Discard asks for confirmation before dropping them.
+// addApplyAndCancelButtons adds the Apply and Discard buttons to the toolbar. Both close the editor without prompting,
+// since the user has just said what to do with the changes; Apply applies them first.
 func (s *editorShell) addApplyAndCancelButtons(toolbar *unison.Panel, apply func()) {
 	s.applyButton, s.cancelButton = newApplyCancelButtons(toolbar, true,
 		func() bool {
@@ -120,16 +120,6 @@ func (s *editorShell) addApplyAndCancelButtons(toolbar *unison.Panel, apply func
 			return true
 		},
 		s.discardAndClose)
-	s.cancelButton.ClickCallback = s.confirmDiscardAndClose
-}
-
-// confirmDiscardAndClose asks whether to discard the pending changes and, if the answer is yes, closes the editor
-// without applying them.
-func (s *editorShell) confirmDiscardAndClose() {
-	if unison.QuestionDialog(fmt.Sprintf(i18n.Text("Discard the changes made to\n%s?"), s.editor().Title()),
-		"") == unison.ModalResponseOK {
-		s.discardAndClose()
-	}
 }
 
 // discardAndClose closes the editor, dropping any pending changes without asking about them.

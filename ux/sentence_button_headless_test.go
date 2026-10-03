@@ -33,6 +33,8 @@ func TestSentenceButton(t *testing.T) {
 		_, narrow, _ := button.Sizes(geom.Size{Width: 150})
 		c.True(narrow.Width <= 150, "the text wraps to the width it is given: %v", narrow)
 		c.True(narrow.Height > wide.Height, "wrapping adds lines: %v versus %v", narrow, wide)
+		lines := button.lines(150)
+		c.True(&lines[0] == &button.lines(150)[0], "the lines for a width are reused")
 	})
 	wnd := showInTestWindow(t, screen, 300, button, static)
 
@@ -64,6 +66,7 @@ func TestSentenceButton(t *testing.T) {
 	screen.Do(func() { button.setText("Plain "+emphasize("bold"), "met") })
 	screen.AccessibilityTree(wnd)
 	c.Equal("Plain bold, met", screen.AccessibilityNodeFor(button).Name, "the suffix follows the sentence")
+	screen.Do(func() { c.Equal("Plain bold", button.lines(2000)[0].String(), "new text is laid out again") })
 
 	node = screen.AccessibilityNodeFor(static)
 	if node == nil {

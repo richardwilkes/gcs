@@ -55,6 +55,11 @@ func (p *SkillPrereq) ParentList() *PrereqList {
 	return p.Parent
 }
 
+// SetParentList implements Prereq.
+func (p *SkillPrereq) SetParentList(list *PrereqList) {
+	p.Parent = list
+}
+
 // Clone implements Prereq.
 func (p *SkillPrereq) Clone(parent *PrereqList) Prereq {
 	clone := *p

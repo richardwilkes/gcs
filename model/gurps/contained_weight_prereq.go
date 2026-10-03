@@ -50,6 +50,11 @@ func (p *ContainedWeightPrereq) ParentList() *PrereqList {
 	return p.Parent
 }
 
+// SetParentList implements Prereq.
+func (p *ContainedWeightPrereq) SetParentList(list *PrereqList) {
+	p.Parent = list
+}
+
 // Clone implements Prereq.
 func (p *ContainedWeightPrereq) Clone(parent *PrereqList) Prereq {
 	clone := *p

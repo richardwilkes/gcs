@@ -55,6 +55,11 @@ func (p *UnknownPrereq) ParentList() *PrereqList {
 	return p.Parent
 }
 
+// SetParentList implements Prereq.
+func (p *UnknownPrereq) SetParentList(list *PrereqList) {
+	p.Parent = list
+}
+
 // Clone implements Prereq.
 func (p *UnknownPrereq) Clone(parent *PrereqList) Prereq {
 	clone := NewUnknownPrereq(p.Kind, p.Data)

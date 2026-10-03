@@ -46,6 +46,12 @@ type sentenceButton struct {
 	text    string
 	onClick func()
 	hovered bool
+	// The sentence as styled text, built with builtFont, and broken into lines for wrappedWidth, since laying out and
+	// drawing ask for them often.
+	built        *unison.Text
+	builtFont    unison.FontDescriptor
+	wrapped      []*unison.Text
+	wrappedWidth float32
 }
 
 // newSentenceButton returns a sentenceButton. onClick may be nil for static text.
@@ -102,6 +108,7 @@ func newSentenceButton(text string, onClick func()) *sentenceButton {
 // setText replaces the sentence and the suffix a screen reader hears after it, such as a status.
 func (b *sentenceButton) setText(text, suffix string) {
 	b.text = text
+	b.built = nil
 	b.Accessibility.Name = b.plainText()
 	if suffix != "" {
 		b.Accessibility.Name += i18n.Text(", ") + suffix
@@ -121,7 +128,26 @@ func (b *sentenceButton) hover(on bool) bool {
 	return true
 }
 
+// lines returns the sentence broken into lines no wider than width, rebuilding it only when the text, the font or the
+// width has changed.
 func (b *sentenceButton) lines(width float32) []*unison.Text {
+	if width <= 0 {
+		width = defaultWrappingLabelWidth
+	}
+	if font := unison.DefaultLabelTheme.Font.Descriptor(); b.built == nil || b.builtFont != font {
+		b.built = b.buildText()
+		b.builtFont = font
+		b.wrapped = nil
+	}
+	if b.wrapped == nil || b.wrappedWidth != width {
+		b.wrapped = b.built.BreakToWidth(width)
+		b.wrappedWidth = width
+	}
+	return b.wrapped
+}
+
+// buildText returns the sentence as styled text, its emphasized spans in bold.
+func (b *sentenceButton) buildText() *unison.Text {
 	plain := &unison.TextDecoration{
 		Font:            unison.DefaultLabelTheme.Font,
 		OnBackgroundInk: unison.DefaultLabelTheme.OnBackgroundInk,
@@ -146,10 +172,7 @@ func (b *sentenceButton) lines(width float32) []*unison.Text {
 		}
 		rest = rest[i+size:]
 	}
-	if width <= 0 {
-		width = defaultWrappingLabelWidth
-	}
-	return text.BreakToWidth(width)
+	return text
 }
 
 // lineHeight returns the height of a line of the sentence, with the border above and below it.

@@ -25,6 +25,8 @@ type Prereq interface {
 	PrereqType() prereq.Type
 	// ParentList returns the owning parent list, if any.
 	ParentList() *PrereqList
+	// SetParentList sets the owning parent list.
+	SetParentList(list *PrereqList)
 	// Clone creates a new copy of this Prereq.
 	Clone(parent *PrereqList) Prereq
 	// Satisfied returns true if this Prereq is satisfied by the specified Entity. 'buffer', if not nil, receives a

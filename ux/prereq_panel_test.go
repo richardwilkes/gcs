@@ -340,7 +340,8 @@ func TestPrereqPanelMoves(t *testing.T) {
 }
 
 // TestPrereqPanelEscapeClosesTheOpenRow checks that Escape closes an open row, returning the focus to its sentence,
-// without reaching the editor, where it would discard the changes, and that it reaches the editor once no row is open.
+// that Escape within the panel never reaches the editor, where it would discard the changes, and that Escape outside the
+// panel still does.
 func TestPrereqPanelEscapeClosesTheOpenRow(t *testing.T) {
 	c := check.New(t)
 	screen, _ := startHeadlessWorkspace(t, c)
@@ -360,7 +361,15 @@ func TestPrereqPanelEscapeClosesTheOpenRow(t *testing.T) {
 	c.Equal(0, host.escapes)
 	screen.Do(func() { c.Equal(p.FindRefKey("r.1.0"+keySentence), p.Window().Focus()) })
 	screen.KeyPress(unison.KeyEscape, mod.None)
-	c.Equal(1, host.escapes)
+	c.Equal(0, host.escapes, "with no row open, Escape in the panel does nothing")
+	screen.Do(func() {
+		outside := unison.NewField()
+		host.AddChild(outside)
+		host.MarkForLayoutAndRedraw()
+		outside.RequestFocus()
+	})
+	screen.KeyPress(unison.KeyEscape, mod.None)
+	c.Equal(1, host.escapes, "Escape outside the panel reaches the editor")
 }
 
 // TestPrereqPanelStatus checks the status of each row and group against the sheet, as an icon, a tooltip and in the
