@@ -13,3 +13,6 @@
   This changes existing behavior: a skill with no points used to meet a skill prerequisite whenever its level from a
   default was high enough, and a prerequisite that doesn't ask for a level, as many in the libraries don't, was met by
   any skill with a matching name. Characters that relied on that may now show the prerequisite as unmet.
+- Adding a skill or spell to a template no longer merges its points into a matching one already there, which made the
+  row vanish, even when it was added inside a choice. Points are still combined once the template is applied to a
+  sheet.
