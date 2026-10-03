@@ -368,13 +368,17 @@ func (p *prereqPanel) refresh() {
 		summary = fmt.Sprintf(i18n.Text("%s."), text)
 	}
 	p.summary.setText(summary, "")
-	check := p.entity != nil && p.Parent() != nil
+	var checks map[gurps.Prereq]prereqCheck
+	if p.entity != nil && p.Parent() != nil {
+		checks = make(map[gurps.Prereq]prereqCheck)
+		gurps.SuppressScriptResolveErrorLogging(func() { p.check(tree, false, checks) })
+	}
 	for _, v := range p.views {
 		var suffix string
-		if check {
+		if checks != nil {
 			var status checkStatus
 			var tip string
-			status, tip, suffix = p.status(v.node)
+			status, tip, suffix = p.status(v.node, checks)
 			showCheckIcon(v.icon, status)
 			v.icon.Tooltip = newWrappedTooltip(tip)
 		}
@@ -390,30 +394,73 @@ func (p *prereqPanel) refresh() {
 	}
 }
 
-// status returns the node's status against the sheet, the tooltip of its icon and what a screen reader hears after its
-// sentence.
-func (p *prereqPanel) status(node gurps.Prereq) (status checkStatus, tip, suffix string) {
-	list, ok := node.(*gurps.PrereqList)
-	if !ok {
-		list = node.ParentList()
-	}
-	for ; list != nil; list = list.Parent {
-		if !list.AppliesAt(p.entity) {
-			return checkSkipped, i18n.Text("Doesn't apply at this tech level"), i18n.Text("doesn't apply at this tech level")
+// prereqCheck is the outcome of checking a node against the sheet, with the error of a script that couldn't run.
+type prereqCheck struct {
+	status checkStatus
+	reason string
+}
+
+// check records the status of the node and those below it against the sheet, running each script once, and returns
+// the node's status. A group that isn't met couldn't be checked when any of its children couldn't be. To its group, a
+// skipped node counts as met, as it does on the sheet.
+func (p *prereqPanel) check(node gurps.Prereq, skipped bool, checks map[gurps.Prereq]prereqCheck) checkStatus {
+	var result prereqCheck
+	switch one := node.(type) {
+	case *gurps.PrereqList:
+		skipped = skipped || !one.AppliesAt(p.entity)
+		met, failed := 0, false
+		for _, child := range one.Prereqs {
+			switch p.check(child, skipped, checks) {
+			case checkUnmet:
+			case checkFailed:
+				failed = true
+			default:
+				met++
+			}
+		}
+		switch {
+		case skipped || len(one.Prereqs) == 0:
+			result.status = checkSkipped
+		case met == len(one.Prereqs) || (!one.All && met > 0):
+		case failed:
+			result.status = checkFailed
+		default:
+			result.status = checkUnmet
+		}
+	case *gurps.ScriptPrereq:
+		if skipped {
+			result.status = checkSkipped
+		} else {
+			result.status, result.reason = p.evaluateScript(one)
+		}
+	default:
+		if skipped {
+			result.status = checkSkipped
+		} else if !node.Satisfied(p.entity, p.exclude(), nil, "", nil) {
+			result.status = checkUnmet
 		}
 	}
-	if group, isList := node.(*gurps.PrereqList); isList && len(group.Prereqs) == 0 {
-		return checkSkipped, i18n.Text("Empty group, always met"), i18n.Text("empty group, always met")
+	checks[node] = result
+	return result.status
+}
+
+// status returns the node's status from the checks, the tooltip of its icon and what a screen reader hears after its
+// sentence.
+func (p *prereqPanel) status(node gurps.Prereq, checks map[gurps.Prereq]prereqCheck) (status checkStatus, tip, suffix string) {
+	result := checks[node]
+	switch result.status {
+	case checkMet:
+		return checkMet, i18n.Text("Met"), i18n.Text("met")
+	case checkSkipped:
+		if list, ok := node.(*gurps.PrereqList); ok && len(list.Prereqs) == 0 && list.AppliesAt(p.entity) &&
+			checks[list.Parent].status != checkSkipped {
+			return checkSkipped, i18n.Text("Empty group, always met"), i18n.Text("empty group, always met")
+		}
+		return checkSkipped, i18n.Text("Doesn't apply at this tech level"), i18n.Text("doesn't apply at this tech level")
+	default:
 	}
 	var buffer xbytes.InsertBuffer
-	gurps.SuppressScriptResolveErrorLogging(func() {
-		if !node.Satisfied(p.entity, p.exclude(), &buffer, "\n- ", nil) {
-			status = checkUnmet
-		}
-	})
-	if status == checkMet {
-		return checkMet, i18n.Text("Met"), i18n.Text("met")
-	}
+	gurps.SuppressScriptResolveErrorLogging(func() { node.Satisfied(p.entity, p.exclude(), &buffer, "\n- ", nil) })
 	// One unmet item reads as a sentence; more are a list.
 	reason := buffer.String()
 	if strings.Count(reason, "\n") == 1 {
@@ -421,12 +468,13 @@ func (p *prereqPanel) status(node gurps.Prereq) (status checkStatus, tip, suffix
 	} else {
 		tip = i18n.Text("Not met:") + reason
 	}
-	if script, isScript := node.(*gurps.ScriptPrereq); isScript {
-		if result, message := p.evaluateScript(script); result == checkFailed {
-			return checkFailed, tip, fmt.Sprintf(i18n.Text("couldn't run: %s"), message)
-		}
+	if result.status == checkUnmet {
+		return checkUnmet, tip, i18n.Text("not met")
 	}
-	return checkUnmet, tip, i18n.Text("not met")
+	if _, isScript := node.(*gurps.ScriptPrereq); isScript {
+		return checkFailed, tip, fmt.Sprintf(i18n.Text("couldn't run: %s"), result.reason)
+	}
+	return checkFailed, tip, i18n.Text("couldn't be checked")
 }
 
 // evaluateScript runs the script against the sheet, returning its status and the reason it gives, which is the error

@@ -393,7 +393,7 @@ func TestPrereqPanelStatus(t *testing.T) {
 	p, _ := showPrereqPanel(t, screen, &root, false)
 	screen.Do(func() {
 		for path, want := range map[string]*unison.SVG{
-			"r.0": svg.Not, "r.1": unison.CheckmarkSVG, "r.2": unison.TriangleExclamationSVG, "r.3": unison.DashSVG,
+			"r": unison.TriangleExclamationSVG, "r.0": svg.Not, "r.1": unison.CheckmarkSVG, "r.2": unison.TriangleExclamationSVG, "r.3": unison.DashSVG,
 			"r.3.0": unison.DashSVG, "r.4": unison.DashSVG,
 		} {
 			for _, v := range p.views {
@@ -408,13 +408,18 @@ func TestPrereqPanelStatus(t *testing.T) {
 		c.Equal("Has trait Magery, not met", sentence.Accessibility.Name)
 		c.Contains(p.summary.plainText(), "Magery")
 		c.True(strings.HasSuffix(p.summary.plainText(), ")."), "the summary ends with a period")
+		checks := make(map[gurps.Prereq]prereqCheck)
+		p.check(p.tree(), false, checks)
 		for path, want := range map[string]string{
 			"r.0": "Not met: Has trait Magery", "r.4": "Empty group, always met",
 		} {
-			_, tip, _ := p.status(p.node(path))
+			_, tip, _ := p.status(p.node(path), checks)
 			c.Equal(want, tip, path)
 		}
-		_, tip, suffix := p.status(p.node("r.2"))
+		_, tip, suffix := p.status(p.node("r"), checks)
+		c.Contains(tip, "A custom check (couldn't run: SyntaxError: ")
+		c.Equal("couldn't be checked", suffix)
+		_, tip, suffix = p.status(p.node("r.2"), checks)
 		c.True(strings.HasPrefix(tip, "Not met: A custom check (couldn't run: SyntaxError: "), tip)
 		c.True(strings.HasPrefix(suffix, "couldn't run: SyntaxError: "), suffix)
 		p.toggle("r.0")
@@ -457,6 +462,46 @@ func TestPrereqPanelStatus(t *testing.T) {
 	screen.Do(p.refresh)
 	c.Equal("All of, only when TL at least 12, doesn't apply at this tech level", group(),
 		"a group's name follows its tech level")
+}
+
+// TestPrereqPanelStatusOfGroups checks that a group couldn't be checked only when a child that couldn't be decides its
+// result, and that a group skipped by its tech level stays skipped.
+func TestPrereqPanelStatusOfGroups(t *testing.T) {
+	c := check.New(t)
+	screen, _ := startHeadlessWorkspace(t, c)
+	var root *gurps.PrereqList
+	p, _ := showPrereqPanel(t, screen, &root, false)
+	script := func(text string) gurps.Prereq {
+		one := gurps.NewScriptPrereq()
+		one.Script = text
+		return one
+	}
+	group := func(all bool, children ...gurps.Prereq) *gurps.PrereqList {
+		list := gurps.NewPrereqList()
+		list.All = all
+		list.Prereqs = children
+		return list.CloneAsPrereqList(nil)
+	}
+	later := group(true, script("nope("))
+	later.WhenTL.Compare = criteria.AtLeastNumber
+	later.WhenTL.Qualifier = fxp.Ten
+	for _, one := range []struct {
+		name string
+		list *gurps.PrereqList
+		want checkStatus
+	}{
+		{"all of, with one that couldn't run", group(true, script("true"), script("nope(")), checkFailed},
+		{"all of, with one that couldn't run and one unmet", group(true, script("false"), script("nope(")), checkFailed},
+		{"any of, with one met and one that couldn't run", group(false, script("true"), script("nope(")), checkMet},
+		{"any of, with one that couldn't run and one unmet", group(false, script("false"), script("nope(")), checkFailed},
+		{"nested two deep", group(true, group(false, group(true, script("nope(")))), checkFailed},
+		{"skipped by its tech level", later, checkSkipped},
+	} {
+		screen.Do(func() {
+			checks := make(map[gurps.Prereq]prereqCheck)
+			c.Equal(one.want, p.check(one.list, false, checks), one.name)
+		})
+	}
 }
 
 // TestPrereqPanelScriptResult checks that the script editor's result line says the outcome, and that changing the
