@@ -71,8 +71,8 @@ func TestCountPrereqsForSpellWithNilEntryInList(t *testing.T) {
 	c.Equal(1, count)
 }
 
-// TestCountPrereqsForSpellSkipsEmptyOption verifies that an empty list in an "any of" list isn't taken as its cheapest
-// option.
+// TestCountPrereqsForSpellSkipsEmptyOption verifies that a list in an "any of" list with nothing to check, whether
+// empty or holding only such lists and nil entries, isn't taken as its cheapest option.
 func TestCountPrereqsForSpellSkipsEmptyOption(t *testing.T) {
 	c := check.New(t)
 	e := NewEntity()
@@ -80,6 +80,8 @@ func TestCountPrereqsForSpellSkipsEmptyOption(t *testing.T) {
 	continualLight := addTestSpell(e, "Continual Light", fxp.One)
 	addSpellNamePrereq(continualLight, "Light")
 	continualLight.Prereq.All = false
-	continualLight.Prereq.Prereqs = append(continualLight.Prereq.Prereqs, NewPrereqList())
+	nested := NewPrereqList()
+	nested.Prereqs = Prereqs{NewPrereqList(), (*PrereqList)(nil), nil}
+	continualLight.Prereq.Prereqs = append(continualLight.Prereq.Prereqs, NewPrereqList(), nested)
 	c.Equal(1, CountPrereqsForSpell(continualLight, e.Spells))
 }

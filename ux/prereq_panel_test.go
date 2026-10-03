@@ -390,7 +390,9 @@ func TestPrereqPanelStatus(t *testing.T) {
 	root := gurps.NewPrereqList()
 	holder := gurps.NewPrereqList()
 	holder.Prereqs = gurps.Prereqs{gurps.NewPrereqList()}
-	root.Prereqs = gurps.Prereqs{trait, met, broken, later, gurps.NewPrereqList(), holder}
+	outOfTL := gurps.NewPrereqList()
+	outOfTL.Prereqs = gurps.Prereqs{later.Clone(nil)}
+	root.Prereqs = gurps.Prereqs{trait, met, broken, later, gurps.NewPrereqList(), holder, outOfTL}
 	root = root.CloneAsPrereqList(nil)
 	p, _ := showPrereqPanel(t, screen, &root, false)
 	screen.Do(func() {
@@ -410,12 +412,12 @@ func TestPrereqPanelStatus(t *testing.T) {
 		c.Equal("Has trait Magery, not met", sentence.Accessibility.Name)
 		c.Contains(p.summary.plainText(), "Magery")
 		c.True(strings.HasSuffix(p.summary.plainText(), ")."), "the summary ends with a period")
-		checks := make(map[gurps.Prereq]prereqCheck)
-		p.check(p.tree(), false, checks)
+		checks := p.checks()
 		for path, want := range map[string]string{
 			"r.0": "Not met: Has trait Magery", "r.3": "Doesn't apply at this tech level",
 			"r.3.0": "Doesn't apply at this tech level", "r.4": "Empty group, left out of the check",
-			"r.5": "Nothing in it applies, left out of the check", "r.5.0": "Empty group, left out of the check",
+			"r.5": "Holds nothing to check, left out of the check", "r.5.0": "Empty group, left out of the check",
+			"r.6": "Nothing in it applies at this tech level, left out of the check",
 		} {
 			_, tip, _ := p.status(p.node(path), checks)
 			c.Equal(want, tip, path)
@@ -466,51 +468,13 @@ func TestPrereqPanelStatus(t *testing.T) {
 	screen.Do(p.refresh)
 	c.Equal("All of, only when TL at least 12, doesn't apply at this tech level", group(),
 		"a group's name follows its tech level")
-}
-
-// TestPrereqPanelStatusOfGroups checks that a group couldn't be checked only when a child that couldn't be decides its
-// result, that a group skipped by its tech level stays skipped, and that a group leaves out its skipped children and is
-// skipped when nothing is left.
-func TestPrereqPanelStatusOfGroups(t *testing.T) {
-	c := check.New(t)
-	screen, _ := startHeadlessWorkspace(t, c)
-	var root *gurps.PrereqList
-	p, _ := showPrereqPanel(t, screen, &root, false)
-	script := func(text string) gurps.Prereq {
-		one := gurps.NewScriptPrereq()
-		one.Script = text
-		return one
-	}
-	group := func(all bool, children ...gurps.Prereq) *gurps.PrereqList {
-		list := gurps.NewPrereqList()
-		list.All = all
-		list.Prereqs = children
-		return list.CloneAsPrereqList(nil)
-	}
-	later := group(true, script("nope("))
-	later.WhenTL.Compare = criteria.AtLeastNumber
-	later.WhenTL.Qualifier = fxp.Ten
-	for _, one := range []struct {
-		name string
-		list *gurps.PrereqList
-		want checkStatus
-	}{
-		{"all of, with one that couldn't run", group(true, script("true"), script("nope(")), checkFailed},
-		{"all of, with one that couldn't run and one unmet", group(true, script("false"), script("nope(")), checkFailed},
-		{"any of, with one met and one that couldn't run", group(false, script("true"), script("nope(")), checkMet},
-		{"any of, with one that couldn't run and one unmet", group(false, script("false"), script("nope(")), checkFailed},
-		{"nested two deep", group(true, group(false, group(true, script("nope(")))), checkFailed},
-		{"skipped by its tech level", later, checkSkipped},
-		{"any of, with a skipped group and one unmet", group(false, later, script("false")), checkUnmet},
-		{"any of, with only skipped groups", group(false, later, group(true)), checkSkipped},
-		{"any of, with an empty group and one unmet", group(false, group(true), script("false")), checkUnmet},
-		{"empty", group(true), checkSkipped},
-	} {
-		screen.Do(func() {
-			checks := make(map[gurps.Prereq]prereqCheck)
-			c.Equal(one.want, p.check(one.list, false, checks), one.name)
-		})
-	}
+	screen.Do(func() {
+		p.edit("", "", "", func() { root.Prereqs = gurps.Prereqs{later} })
+		status, tip, suffix := p.status(p.node("r"), p.checks())
+		c.Equal(gurps.PrereqMet, status, "a top level with nothing left to check is met, as on the sheet")
+		c.Equal("Met", tip)
+		c.Equal("met", suffix)
+	})
 }
 
 // TestPrereqPanelScriptResult checks that the script editor's result line says the outcome, and that changing the
@@ -546,7 +510,7 @@ func TestPrereqPanelScriptResult(t *testing.T) {
 	var evaluations int
 	screen.Do(func() {
 		evaluate := editor.opts.Evaluate
-		editor.opts.Evaluate = func(script string) (checkStatus, string) {
+		editor.opts.Evaluate = func(script string) (gurps.PrereqResult, string) {
 			evaluations++
 			return evaluate(script)
 		}

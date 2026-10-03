@@ -92,24 +92,30 @@ func (s *ScriptPrereq) Describe(_ *Entity, replacements map[string]string, _ fun
 // Satisfied implements Prereq. An unmet prerequisite writes its description, followed by the reason it gives, if any.
 // A reason of more than one line goes on the lines below it, one level deeper.
 func (s *ScriptPrereq) Satisfied(entity *Entity, exclude any, tooltip *xbytes.InsertBuffer, prefix string, _ *bool) bool {
-	met, reason, failed := s.Evaluate(entity, exclude)
-	if met || tooltip == nil {
-		return met
+	result, _ := s.evaluate(entity, exclude, tooltip, prefix)
+	return result == PrereqMet
+}
+
+// evaluate is Satisfied, returning the script's result and the reason it gives.
+func (s *ScriptPrereq) evaluate(entity *Entity, exclude any, tooltip *xbytes.InsertBuffer, prefix string) (result PrereqResult, reason string) {
+	result, reason = s.Evaluate(entity, exclude)
+	reason = strings.TrimSpace(reason)
+	if result == PrereqMet || tooltip == nil {
+		return result, reason
 	}
 	var replacements map[string]string
 	if na, ok := exclude.(nameable.Accesser); ok {
 		replacements = na.NameableReplacements()
 	}
 	name := s.Describe(entity, replacements, plainText)
-	reason = strings.TrimSpace(reason)
 	multiLine := strings.Contains(reason, "\n")
 	tooltip.WriteString(prefix)
 	switch {
 	case reason == "":
 		tooltip.WriteString(name)
-	case failed && multiLine:
+	case result == PrereqFailed && multiLine:
 		fmt.Fprintf(tooltip, i18n.Text("%s (couldn't run):"), name)
-	case failed:
+	case result == PrereqFailed:
 		fmt.Fprintf(tooltip, i18n.Text("%s (couldn't run: %s)"), name, reason)
 	case multiLine:
 		fmt.Fprintf(tooltip, i18n.Text("%s:"), name)
@@ -123,13 +129,13 @@ func (s *ScriptPrereq) Satisfied(entity *Entity, exclude any, tooltip *xbytes.In
 			tooltip.WriteString(strings.TrimRight(line, "\r"))
 		}
 	}
-	return false
+	return result, reason
 }
 
 // Evaluate runs the script against the entity for the item given as exclude. A result of "" or "true" is met, "false"
-// is unmet with no reason, and any other result is unmet, with that text as the reason. failed is true when the script
+// is unmet with no reason, and any other result is unmet, with that text as the reason. It has failed when the script
 // could not produce a result, because it threw, timed out or nested too deeply; the reason is then the error.
-func (s *ScriptPrereq) Evaluate(entity *Entity, exclude any) (met bool, reason string, failed bool) {
+func (s *ScriptPrereq) Evaluate(entity *Entity, exclude any) (result PrereqResult, reason string) {
 	script := s.Script
 	if na, ok := exclude.(nameable.Accesser); ok {
 		script = nameable.Apply(script, na.NameableReplacements())
@@ -149,15 +155,15 @@ func (s *ScriptPrereq) Evaluate(entity *Entity, exclude any) (met bool, reason s
 	case *Trait:
 		self = deferredNewScriptTrait(what)
 	}
-	result, failed := resolveText(entity, self, script)
+	text, failed := resolveText(entity, self, script)
 	switch {
 	case failed:
-		return false, result, true
-	case result == "" || result == "true":
-		return true, "", false
-	case result == "false":
-		return false, "", false
+		return PrereqFailed, text
+	case text == "" || text == "true":
+		return PrereqMet, ""
+	case text == "false":
+		return PrereqUnmet, ""
 	default:
-		return false, result, false
+		return PrereqUnmet, text
 	}
 }

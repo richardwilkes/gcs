@@ -33,26 +33,15 @@ import (
 // doesn't stall every keystroke.
 const scriptEvaluationDelay = 250 * time.Millisecond
 
-// checkStatus is the outcome of checking a requirement, such as a script, against a sheet.
-type checkStatus uint8
-
-// Possible checkStatus values.
-const (
-	checkMet checkStatus = iota
-	checkUnmet
-	checkFailed
-	checkSkipped
-)
-
 // showCheckIcon has the label show the icon of the status.
-func showCheckIcon(label *unison.Label, status checkStatus) {
+func showCheckIcon(label *unison.Label, status gurps.PrereqResult) {
 	icon, ink := unison.CheckmarkSVG, unison.Ink(colors.Success)
 	switch status {
-	case checkUnmet:
+	case gurps.PrereqUnmet:
 		icon, ink = svg.Not, colors.Failure
-	case checkFailed:
+	case gurps.PrereqFailed:
 		icon, ink = unison.TriangleExclamationSVG, unison.ThemeWarning
-	case checkSkipped:
+	case gurps.PrereqSkipped:
 		// Half as strong as text, for a contrast of at least 3:1 with the surface.
 		icon = svg.CircledMinus
 		ink = &unison.ColorFilteredInk{OriginalInk: unison.ThemeOnSurface, ColorFilter: unison.Alpha50Filter()}
@@ -97,7 +86,7 @@ type scriptEditorOptions struct {
 	Inserts  []scriptMenuEntry
 	Snippets []scriptMenuEntry
 	// Evaluate, when set, runs the script for the result line, whose text should say the outcome.
-	Evaluate func(script string) (status checkStatus, text string)
+	Evaluate func(script string) (status gurps.PrereqResult, text string)
 }
 
 // scriptEditor edits a script in a monospaced field under a toolbar of Insert and Snippets menus, with an optional line
@@ -273,7 +262,7 @@ func (e *scriptEditor) refresh() {
 
 // evaluate shows the result of evaluating the script.
 func (e *scriptEditor) evaluate(script string) {
-	var status checkStatus
+	var status gurps.PrereqResult
 	var text string
 	gurps.SuppressScriptResolveErrorLogging(func() { status, text = e.opts.Evaluate(script) })
 	showCheckIcon(e.icon, status)
