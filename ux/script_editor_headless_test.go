@@ -14,6 +14,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/mod"
@@ -37,12 +38,12 @@ func TestScriptEditor(t *testing.T) {
 			KeepFirstLinePrefix: "// prereq count:",
 			Inserts:             []scriptMenuEntry{{Label: "Fn", Text: "fn()", CaretFromEnd: 1}},
 			Snippets:            []scriptMenuEntry{{Label: "Pick one", Heading: true}, {Label: "True", Text: "true"}},
-			Evaluate: func(s string) (checkStatus, string) {
+			Evaluate: func(s string) (gurps.PrereqResult, string) {
 				evaluations++
 				if strings.Contains(s, "true") {
-					return checkMet, "Met"
+					return gurps.PrereqMet, "Met"
 				}
-				return checkUnmet, "Not met"
+				return gurps.PrereqUnmet, "Not met"
 			},
 		})
 	})
@@ -137,7 +138,7 @@ func TestShowCheckIconMakesRoom(t *testing.T) {
 	})
 	w := showInTestWindow(t, screen, 300, row)
 	screen.Do(func() {
-		showCheckIcon(icon, checkMet)
+		showCheckIcon(icon, gurps.PrereqMet)
 		w.ValidateLayout()
 		c.True(icon.FrameRect().Width > 0)
 	})

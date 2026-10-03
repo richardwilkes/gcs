@@ -285,8 +285,6 @@ func TestPrereqListFailureText(t *testing.T) {
 		c.Equal(one.expected, buffer.String(), one.name)
 	}
 	c.True(list(false, a, met).Satisfied(entity, nil, nil, "\n- ", nil), "an any of list with a met option is met")
-	c.True(list(false, a, atTL5).Satisfied(entity, nil, nil, "\n- ", nil),
-		"an option that doesn't apply at the tech level counts as met")
 }
 
 // TestPrereqListAppliesAt verifies that a list applies only at the tech levels its condition allows, and always when
