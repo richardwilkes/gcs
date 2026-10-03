@@ -50,6 +50,11 @@ func (p *ContainedWeightPrereq) ParentList() *PrereqList {
 	return p.Parent
 }
 
+// SetParentList implements Prereq.
+func (p *ContainedWeightPrereq) SetParentList(list *PrereqList) {
+	p.Parent = list
+}
+
 // Clone implements Prereq.
 func (p *ContainedWeightPrereq) Clone(parent *PrereqList) Prereq {
 	clone := *p
@@ -74,11 +79,18 @@ func (p *ContainedWeightPrereq) Satisfied(entity *Entity, exclude any, tooltip *
 	}
 	if !satisfied && tooltip != nil {
 		tooltip.WriteString(prefix)
-		tooltip.WriteString(HasText(p.Has))
-		tooltip.WriteString(i18n.Text(" a contained weight which "))
-		tooltip.WriteString(p.WeightCriteria.Describe(SheetSettingsFor(entity).DefaultWeightUnits))
+		tooltip.WriteString(p.Describe(entity, nil, plainText))
 	}
 	return satisfied
+}
+
+// Describe implements Prereq. The weight is given in the default weight units of the entity, which may be nil.
+func (p *ContainedWeightPrereq) Describe(entity *Entity, _ map[string]string, _ func(string) string) string {
+	text := HasText(p.Has) + i18n.Text(" a contained weight")
+	if p.WeightCriteria.Compare != criteria.AnyNumber {
+		text += i18n.Text(" of ") + p.WeightCriteria.AltDescribe(SheetSettingsFor(entity).DefaultWeightUnits)
+	}
+	return text
 }
 
 // Hash writes this object's contents into the hasher.

@@ -54,6 +54,11 @@ func (p *TraitPrereq) ParentList() *PrereqList {
 	return p.Parent
 }
 
+// SetParentList implements Prereq.
+func (p *TraitPrereq) SetParentList(list *PrereqList) {
+	p.Parent = list
+}
+
 // Clone implements Prereq.
 func (p *TraitPrereq) Clone(parent *PrereqList) Prereq {
 	clone := *p
@@ -103,18 +108,22 @@ func (p *TraitPrereq) Satisfied(entity *Entity, exclude any, tooltip *xbytes.Ins
 	}
 	if !satisfied && tooltip != nil {
 		tooltip.WriteString(prefix)
-		tooltip.WriteString(HasText(p.Has))
-		tooltip.WriteString(i18n.Text(" a trait whose name "))
-		tooltip.WriteString(p.NameCriteria.String(replacements))
-		if p.NotesCriteria.Compare != criteria.AnyText {
-			tooltip.WriteString(i18n.Text(", notes "))
-			tooltip.WriteString(p.NotesCriteria.String(replacements))
-			tooltip.WriteByte(',')
-		}
-		tooltip.WriteString(i18n.Text(" and level "))
-		tooltip.WriteString(p.LevelCriteria.String())
+		tooltip.WriteString(p.Describe(entity, replacements, plainText))
 	}
 	return satisfied
+}
+
+// Describe implements Prereq. A level of "at least 0" or less is left out, since every trait has at least that.
+func (p *TraitPrereq) Describe(_ *Entity, replacements map[string]string, em func(string) string) string {
+	text := HasText(p.Has) + i18n.Text(" trait ") + describeName(p.NameCriteria, replacements, em)
+	if p.LevelCriteria.Compare != criteria.AnyNumber &&
+		(p.LevelCriteria.Compare != criteria.AtLeastNumber || p.LevelCriteria.Qualifier > 0) {
+		text += i18n.Text(" at level ") + p.LevelCriteria.AltString()
+	}
+	if p.NotesCriteria.Compare != criteria.AnyText {
+		text += i18n.Text(" whose notes ") + describeText(p.NotesCriteria, replacements, em)
+	}
+	return text
 }
 
 // Hash writes this object's contents into the hasher.

@@ -103,27 +103,26 @@ func TestSkillPrereqTooltipPunctuation(t *testing.T) {
 	}{
 		{
 			prereq:   newPrereq("", ""),
-			expected: `Has a skill whose name is "Broadsword" and level is at least 12`,
+			expected: `Has skill Broadsword at level at least 12`,
 		},
 		{
 			prereq:   newPrereq("Fencing", ""),
-			expected: `Has a skill whose name is "Broadsword", specialization is "Fencing" and level is at least 12`,
+			expected: `Has skill Broadsword (Fencing) at level at least 12`,
 		},
 		{
-			prereq: newPrereq("Fencing", "Rapier"),
-			expected: `Has a skill whose name is "Broadsword", specialization is "Fencing", optional specialization ` +
-				`is "Rapier" and level is at least 12`,
+			prereq:   newPrereq("Fencing", "Rapier"),
+			expected: `Has skill Broadsword (Fencing) with an optional specialization that is Rapier at level at least 12`,
 		},
 		{
 			prereq:  newPrereq("Fencing", "Rapier"),
 			exclude: withTL,
-			expected: `Has a skill whose name is "Broadsword", specialization is "Fencing", optional specialization ` +
-				`is "Rapier", level is at least 12 and tech level matches`,
+			expected: `Has skill Broadsword (Fencing) with an optional specialization that is Rapier at level at least ` +
+				`12 with a matching tech level`,
 		},
 		{
 			prereq:   newPrereq("", ""),
 			exclude:  withTL,
-			expected: `Has a skill whose name is "Broadsword" level is at least 12 and tech level matches`,
+			expected: `Has skill Broadsword at level at least 12 with a matching tech level`,
 		},
 	} {
 		actual := describe(one.prereq, one.exclude)

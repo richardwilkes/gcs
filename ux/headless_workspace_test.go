@@ -24,6 +24,7 @@ import (
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/unison"
+	"github.com/richardwilkes/unison/enums/align"
 	"github.com/richardwilkes/unison/enums/mod"
 )
 
@@ -83,6 +84,37 @@ func startHeadlessWorkspace(t *testing.T, c check.Checker) (*unison.HeadlessScre
 		Workspace.ErrorHandler = func(msg string, err error) { t.Errorf("unexpected error: %s: %v", msg, err) }
 	})
 	return screen, wnd
+}
+
+// showInTestWindow opens a window of the given width holding the panels, one per row, each filling the width. The
+// window is disposed of when the test ends.
+func showInTestWindow(t *testing.T, screen *unison.HeadlessScreen, width float32, panels ...unison.Paneler) *unison.Window {
+	t.Helper()
+	var wnd *unison.Window
+	screen.Do(func() {
+		w, err := unison.NewWindow("Test")
+		if err != nil {
+			t.Errorf("unable to create the window: %v", err)
+			return
+		}
+		w.Content().SetLayout(&unison.FlexLayout{Columns: 1})
+		for _, one := range panels {
+			one.AsPanel().SetLayoutData(&unison.FlexLayoutData{HAlign: align.Fill, HGrab: true})
+			w.Content().AddChild(one)
+		}
+		w.Pack()
+		frame := w.FrameRect()
+		frame.Width = width
+		w.SetFrameRect(frame)
+		w.Content().ValidateLayout()
+		w.ToFront()
+		wnd = w
+	})
+	if wnd == nil {
+		t.Fatal("the window was not created")
+	}
+	t.Cleanup(func() { screen.Do(wnd.Dispose) })
+	return wnd
 }
 
 // preserveRecentFilesAndLastDirs puts the global settings' recent files list and last-used directories back when the

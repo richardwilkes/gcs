@@ -188,7 +188,7 @@ func TestSpellPrereqSamePowerSourceNonSpellOwner(t *testing.T) {
 	p.QualifierCriteria.Qualifier = "Fireball"
 	var tooltip xbytes.InsertBuffer
 	c.False(p.Satisfied(e, owner, &tooltip, "", nil), "a non-spell owner has no power source to match against")
-	c.Equal(`Has at least 1 spell whose name is "Fireball" and whose power source is the same as this spell's`,
+	c.Equal(`Knows at least 1 spell whose name is Fireball and whose power source is the same as this spell's`,
 		tooltip.String(), "the tooltip must name the unmet power source filter")
 
 	p.Has = false
@@ -313,7 +313,7 @@ func TestSpellPrereqPowerSourceTooltip(t *testing.T) {
 			subType:   spellcmp.Name,
 			qualifier: "Fireball",
 			quantity:  fxp.One,
-			expected:  `Has at least 1 spell whose name is "Fireball"`,
+			expected:  `Knows at least 1 spell whose name is Fireball`,
 		},
 		{
 			name:      "name with the same power source",
@@ -321,7 +321,7 @@ func TestSpellPrereqPowerSourceTooltip(t *testing.T) {
 			qualifier: "Fireball",
 			quantity:  fxp.One,
 			same:      true,
-			expected:  `Has at least 1 spell whose name is "Fireball" and whose power source is the same as this spell's`,
+			expected:  `Knows at least 1 spell whose name is Fireball and whose power source is the same as this spell's`,
 		},
 		{
 			name:      "name with an explicit power source",
@@ -330,7 +330,7 @@ func TestSpellPrereqPowerSourceTooltip(t *testing.T) {
 			quantity:  fxp.One,
 			compare:   criteria.IsText,
 			source:    "Clerical",
-			expected:  `Has at least 1 spell whose name is "Fireball" and whose power source is "Clerical"`,
+			expected:  `Knows at least 1 spell whose name is Fireball and whose power source is Clerical`,
 		},
 		{
 			name:      "tag with the same power source",
@@ -338,7 +338,7 @@ func TestSpellPrereqPowerSourceTooltip(t *testing.T) {
 			qualifier: "Fire",
 			quantity:  fxp.One,
 			same:      true,
-			expected:  `Has at least 1 spell whose tag is "Fire" and whose power source is the same as this spell's`,
+			expected:  `Knows at least 1 spell whose tag is Fire and whose power source is the same as this spell's`,
 		},
 		{
 			name:      "college with an explicit power source",
@@ -347,20 +347,20 @@ func TestSpellPrereqPowerSourceTooltip(t *testing.T) {
 			quantity:  fxp.Two,
 			compare:   criteria.IsText,
 			source:    "Clerical",
-			expected:  `Has at least 2 spells whose college is "Fire" and whose power source is "Clerical"`,
+			expected:  `Knows at least 2 spells whose college is Fire and whose power source is Clerical`,
 		},
 		{
 			name:     "any with the same power source",
 			subType:  spellcmp.Any,
 			quantity: fxp.Three,
 			same:     true,
-			expected: "Has at least 3 spells whose power source is the same as this spell's",
+			expected: "Knows at least 3 spells whose power source is the same as this spell's",
 		},
 		{
 			name:     "any without a power source filter",
 			subType:  spellcmp.Any,
 			quantity: fxp.Three,
-			expected: "Has at least 3 spells of any kind",
+			expected: "Knows at least 3 spells",
 		},
 		{
 			name:     "college count with an explicit power source",
@@ -368,13 +368,13 @@ func TestSpellPrereqPowerSourceTooltip(t *testing.T) {
 			quantity: fxp.Three,
 			compare:  criteria.IsText,
 			source:   "Clerical",
-			expected: `Has at least 3 spells from different colleges whose power source is "Clerical"`,
+			expected: `Knows spells from at least 3 colleges whose power source is Clerical`,
 		},
 		{
 			name:     "college count without a power source filter",
 			subType:  spellcmp.CollegeCount,
 			quantity: fxp.Three,
-			expected: "Has at least 3 spells from different colleges",
+			expected: "Knows spells from at least 3 colleges",
 		},
 	} {
 		p := NewSpellPrereq()
@@ -405,14 +405,14 @@ func TestSpellPrereqSamePowerSourceTooltipNamesOwner(t *testing.T) {
 	p.QualifierCriteria.Qualifier = "Fireball"
 	var tooltip xbytes.InsertBuffer
 	c.False(p.Satisfied(e, owner, &tooltip, "", nil), "a Magical Fireball must not count toward an Arcane spell")
-	c.Equal(`Has at least 1 spell whose name is "Fireball" and whose power source is the same as this spell's ("Arcane")`,
+	c.Equal(`Knows at least 1 spell whose name is Fireball and whose power source is the same as this spell's ("Arcane")`,
 		tooltip.String(), "the tooltip must name the owning spell's power source")
 
 	owner.PowerSource = ""
 	tooltip.Reset()
 	c.False(p.Satisfied(e, owner, &tooltip, "", nil),
 		"a Magical Fireball must not count toward a spell with no power source")
-	c.Equal(`Has at least 1 spell whose name is "Fireball" and whose power source is the same as this spell's ("")`,
+	c.Equal(`Knows at least 1 spell whose name is Fireball and whose power source is the same as this spell's ("")`,
 		tooltip.String(), "the tooltip must show that the owning spell has no power source")
 }
 
@@ -482,7 +482,7 @@ func TestSpellPrereqPowerSourceNameableReplacements(t *testing.T) {
 	var tooltip xbytes.InsertBuffer
 	c.False(p.Satisfied(e, owner, &tooltip, "", nil),
 		"the Arcane Fireball must not match the owner's resolved power source")
-	c.Equal(`Has at least 2 spells whose name is "Fireball" and whose power source is the same as this spell's `+
+	c.Equal(`Knows at least 2 spells whose name is Fireball and whose power source is the same as this spell's `+
 		`("Clerical")`, tooltip.String(), "the tooltip must name the owner's resolved power source")
 
 	// A marker in the power source qualifier is resolved through the owner's replacements.
@@ -495,7 +495,7 @@ func TestSpellPrereqPowerSourceNameableReplacements(t *testing.T) {
 	p.QuantityCriteria.Qualifier = fxp.Two
 	tooltip.Reset()
 	c.False(p.Satisfied(e, owner, &tooltip, "", nil), "the Arcane Fireball must not match the resolved qualifier")
-	c.Equal(`Has at least 2 spells whose name is "Fireball" and whose power source is "Clerical"`, tooltip.String(),
+	c.Equal(`Knows at least 2 spells whose name is Fireball and whose power source is Clerical`, tooltip.String(),
 		"the tooltip must show the resolved qualifier")
 
 	// Changing the owner's replacement changes which spell matches.

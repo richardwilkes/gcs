@@ -2,7 +2,7 @@
 
 ## New & Improved
 
-- (none yet)
+- Revised the prerequisites editor to improve usability.
 
 ## Bug Fixes
 

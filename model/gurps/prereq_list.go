@@ -10,8 +10,11 @@
 package gurps
 
 import (
+	"fmt"
 	"hash"
 	"strings"
+	"unicode"
+	"unicode/utf8"
 
 	"github.com/richardwilkes/gcs/v5/model/criteria"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/prereq"
@@ -57,6 +60,11 @@ func (p *PrereqList) ParentList() *PrereqList {
 	return p.Parent
 }
 
+// SetParentList implements Prereq.
+func (p *PrereqList) SetParentList(list *PrereqList) {
+	p.Parent = list
+}
+
 // Clone implements Prereq.
 func (p *PrereqList) Clone(parent *PrereqList) Prereq {
 	return p.CloneAsPrereqList(parent)
@@ -95,23 +103,36 @@ func (p *PrereqList) FillWithNameableKeys(m, existing map[string]string) {
 	}
 }
 
+// AppliesAt returns true if this list applies at the tech level of the entity, which may be nil. A list with no tech
+// level condition always applies, as does any list when there is no entity.
+func (p *PrereqList) AppliesAt(entity *Entity) bool {
+	if entity == nil || p.WhenTL.Compare == criteria.AnyNumber {
+		return true
+	}
+	tl, _, _ := ExtractTechLevel(entity.Profile.TechLevel)
+	return p.WhenTL.Compare.Matches(p.WhenTL.Qualifier, max(tl, 0))
+}
+
 // Satisfied implements Prereq. hasEquipmentPenalty, if not nil, is set to true when this list is unsatisfied and an
 // unmet equipped-equipment prerequisite is among what made it so: one of its own, or one reached through nested lists
 // that are each unsatisfied. An "all of" list that also fails for some other prerequisite sets it, while an unmet
 // equipment prerequisite inside a satisfied nested list, or in a list that does not apply at the sheet's tech level,
 // never does.
+//
+// The text written to buffer lists what is unmet. A list that does not apply at the tech level writes nothing, a list
+// with a single unmet item writes just that item, and a nested list with the same mode as its parent writes its items
+// alongside its parent's. Any other list writes a heading with its items indented beneath it. This list is treated as
+// though its caller were an "all of" list, so the items of an "all of" list are written without a heading.
 func (p *PrereqList) Satisfied(entity *Entity, exclude any, buffer *xbytes.InsertBuffer, prefix string, hasEquipmentPenalty *bool) bool {
-	if entity == nil {
-		return true
-	}
-	if p.WhenTL.Compare != criteria.AnyNumber {
-		tl, _, _ := ExtractTechLevel(entity.Profile.TechLevel)
-		if tl < 0 {
-			tl = 0
-		}
-		if !p.WhenTL.Compare.Matches(p.WhenTL.Qualifier, tl) {
-			return true
-		}
+	satisfied, _ := p.satisfied(entity, exclude, buffer, prefix, hasEquipmentPenalty, p.All)
+	return satisfied
+}
+
+// satisfied is Satisfied, also returning how many items of text it wrote at the level of prefix. flatten requests that
+// the unmet items be written at that level rather than under a heading.
+func (p *PrereqList) satisfied(entity *Entity, exclude any, buffer *xbytes.InsertBuffer, prefix string, hasEquipmentPenalty *bool, flatten bool) (satisfied bool, items int) {
+	if entity == nil || !p.AppliesAt(entity) {
+		return true, 0
 	}
 	count := 0
 	var local *xbytes.InsertBuffer
@@ -120,31 +141,96 @@ func (p *PrereqList) Satisfied(entity *Entity, exclude any, buffer *xbytes.Inser
 	}
 	eqpPenalty := false
 	for _, one := range p.Prereqs {
-		if one.Satisfied(entity, exclude, local, prefix, &eqpPenalty) {
+		var met bool
+		if list, ok := one.(*PrereqList); ok {
+			var n int
+			met, n = list.satisfied(entity, exclude, local, prefix, &eqpPenalty, list.All == p.All)
+			items += n
+		} else if met = one.Satisfied(entity, exclude, local, prefix, &eqpPenalty); !met {
+			items++
+		}
+		if met {
 			count++
 		}
 	}
-	if local != nil && local.Len() != 0 {
-		indented := strings.ReplaceAll(local.String(), "\n", "\n\t")
-		local = &xbytes.InsertBuffer{}
-		local.WriteString(indented)
+	if count == len(p.Prereqs) || (!p.All && count > 0) {
+		return true, 0
 	}
-	satisfied := count == len(p.Prereqs) || (!p.All && count > 0)
-	if !satisfied {
-		if eqpPenalty && hasEquipmentPenalty != nil {
-			*hasEquipmentPenalty = true
-		}
-		if buffer != nil && local != nil {
-			buffer.WriteString(prefix)
-			if p.All {
-				buffer.WriteString(i18n.Text("Requires all of:"))
-			} else {
-				buffer.WriteString(i18n.Text("Requires at least one of:"))
+	if eqpPenalty && hasEquipmentPenalty != nil {
+		*hasEquipmentPenalty = true
+	}
+	if buffer == nil {
+		return false, 0
+	}
+	if flatten || items == 1 {
+		buffer.WriteString(local.String())
+		return false, items
+	}
+	buffer.WriteString(prefix)
+	if p.All {
+		buffer.WriteString(i18n.Text("Requires all of:"))
+	} else {
+		buffer.WriteString(i18n.Text("Requires at least one of:"))
+	}
+	buffer.WriteString(strings.ReplaceAll(local.String(), "\n", "\n\t"))
+	return false, 1
+}
+
+// Describe implements Prereq. The children are joined with "and" or "or" to match the list's mode, a nested list that
+// joins more than one is parenthesized, a tech level condition is noted at the end, and empty lists are left out.
+func (p *PrereqList) Describe(entity *Entity, replacements map[string]string, em func(string) string) string {
+	text, _ := p.describeChildren(entity, replacements, em, false)
+	return text + p.describeWhenTL()
+}
+
+// describeChildren joins the descriptions of the children, returning how many it joined. When lower is true, the first
+// of them follows a joining word, as every other one does, and so begins in lowercase unless it is a name someone
+// wrote.
+func (p *PrereqList) describeChildren(entity *Entity, replacements map[string]string, em func(string) string, lower bool) (text string, count int) {
+	parts := make([]string, 0, len(p.Prereqs))
+	for _, one := range p.Prereqs {
+		lower = lower || len(parts) != 0
+		if list, isList := one.(*PrereqList); isList {
+			var n int
+			if text, n = list.describeChildren(entity, replacements, em, lower); n == 0 {
+				continue
 			}
-			buffer.WriteString(local.String())
+			if n > 1 {
+				text = "(" + text + ")"
+			}
+			text += list.describeWhenTL()
+		} else {
+			text = one.Describe(entity, replacements, em)
+			if script, isScript := one.(*ScriptPrereq); lower && (!isScript || script.ResolvedName(replacements) == "") {
+				text = lowerFirst(text)
+			}
 		}
+		parts = append(parts, text)
 	}
-	return satisfied
+	joiner := i18n.Text(" or ")
+	if p.All {
+		joiner = i18n.Text(" and ")
+	}
+	return strings.Join(parts, joiner), len(parts)
+}
+
+// describeWhenTL returns the note that ends a description of this list when it has a tech level condition, or an empty
+// string when it has none.
+func (p *PrereqList) describeWhenTL() string {
+	if p.WhenTL.Compare == criteria.AnyNumber {
+		return ""
+	}
+	return fmt.Sprintf(i18n.Text(" (only when TL %s)"), p.WhenTL.AltString())
+}
+
+// lowerFirst lowercases the first letter of text when it begins a word that continues in lowercase or is a single
+// letter, so a description can follow a joining word without lowering a name or an acronym.
+func lowerFirst(text string) string {
+	r, size := utf8.DecodeRuneInString(text)
+	if next, _ := utf8.DecodeRuneInString(text[size:]); unicode.IsUpper(r) && (unicode.IsLower(next) || next == '\'' || next == ' ') {
+		return string(unicode.ToLower(r)) + text[size:]
+	}
+	return text
 }
 
 // Hash writes this object's contents into the hasher.

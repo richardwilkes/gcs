@@ -55,6 +55,11 @@ func (p *SkillPrereq) ParentList() *PrereqList {
 	return p.Parent
 }
 
+// SetParentList implements Prereq.
+func (p *SkillPrereq) SetParentList(list *PrereqList) {
+	p.Parent = list
+}
+
 // Clone implements Prereq.
 func (p *SkillPrereq) Clone(parent *PrereqList) Prereq {
 	clone := *p
@@ -105,30 +110,32 @@ func (p *SkillPrereq) Satisfied(entity *Entity, exclude any, tooltip *xbytes.Ins
 	}
 	if !satisfied && tooltip != nil {
 		tooltip.WriteString(prefix)
-		tooltip.WriteString(HasText(p.Has))
-		tooltip.WriteString(i18n.Text(" a skill whose name "))
-		tooltip.WriteString(p.NameCriteria.String(replacements))
-		if p.SpecializationCriteria.Compare != criteria.AnyText {
-			tooltip.WriteString(i18n.Text(", specialization "))
-			tooltip.WriteString(p.SpecializationCriteria.String(replacements))
-		}
-		if p.OptionalSpecializationCriteria.Compare != criteria.AnyText {
-			tooltip.WriteString(i18n.Text(", optional specialization "))
-			tooltip.WriteString(p.OptionalSpecializationCriteria.String(replacements))
-		}
-		if techLevel == nil {
-			tooltip.WriteString(i18n.Text(" and level "))
-			tooltip.WriteString(p.LevelCriteria.String())
-		} else {
-			if p.SpecializationCriteria.Compare != criteria.AnyText || p.OptionalSpecializationCriteria.Compare != criteria.AnyText {
-				tooltip.WriteByte(',')
-			}
-			tooltip.WriteString(i18n.Text(" level "))
-			tooltip.WriteString(p.LevelCriteria.String())
-			tooltip.WriteString(i18n.Text(" and tech level matches"))
+		tooltip.WriteString(p.Describe(entity, replacements, plainText))
+		if techLevel != nil {
+			tooltip.WriteString(i18n.Text(" with a matching tech level"))
 		}
 	}
 	return satisfied
+}
+
+// Describe implements Prereq.
+func (p *SkillPrereq) Describe(_ *Entity, replacements map[string]string, em func(string) string) string {
+	text := HasText(p.Has) + i18n.Text(" skill ") + describeName(p.NameCriteria, replacements, em)
+	switch {
+	case p.SpecializationCriteria.Compare == criteria.AnyText:
+	case p.SpecializationCriteria.Compare == criteria.IsText && p.SpecializationCriteria.Qualifier != "":
+		text += " (" + em(nameable.Apply(p.SpecializationCriteria.Qualifier, replacements)) + ")"
+	default:
+		text += i18n.Text(" with a specialization that ") + describeText(p.SpecializationCriteria, replacements, em)
+	}
+	if p.OptionalSpecializationCriteria.Compare != criteria.AnyText {
+		text += i18n.Text(" with an optional specialization that ") +
+			describeText(p.OptionalSpecializationCriteria, replacements, em)
+	}
+	if p.LevelCriteria.Compare != criteria.AnyNumber {
+		text += i18n.Text(" at level ") + p.LevelCriteria.AltString()
+	}
+	return text
 }
 
 // Hash writes this object's contents into the hasher.

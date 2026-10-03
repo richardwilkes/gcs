@@ -144,6 +144,34 @@ func (enum Type) String() string {
 	}
 }
 
+// AltString returns the alternate string.
+func (enum Type) AltString() string {
+	switch enum {
+	case List:
+		return i18n.Text(`List`)
+	case Trait:
+		return i18n.Text(`Trait`)
+	case Attribute:
+		return i18n.Text(`Attribute`)
+	case ContainedQuantity:
+		return i18n.Text(`Contained Quantity`)
+	case ContainedWeight:
+		return i18n.Text(`Contained Weight`)
+	case EquippedEquipment:
+		return i18n.Text(`Equipped Equipment`)
+	case Skill:
+		return i18n.Text(`Skill`)
+	case Spell:
+		return i18n.Text(`Spell`)
+	case Script:
+		return i18n.Text(`Script`)
+	case Unknown:
+		return i18n.Text(`Unknown Prerequisite`)
+	default:
+		return i18n.Text(`Unknown Prerequisite`)
+	}
+}
+
 // MarshalText implements encoding.TextMarshaler.
 func (enum Type) MarshalText() (text []byte, err error) {
 	return []byte(enum.Key()), nil

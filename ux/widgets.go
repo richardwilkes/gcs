@@ -21,6 +21,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/i18n"
+	"github.com/richardwilkes/toolbox/v2/xmath"
 	"github.com/richardwilkes/toolbox/v2/xreflect"
 	"github.com/richardwilkes/toolbox/v2/xstrings"
 	"github.com/richardwilkes/unison"
@@ -607,12 +608,6 @@ func addBoolPopup(parent *unison.Panel, trueChoice, falseChoice string, fieldDat
 	return popup
 }
 
-func addHasPopup(parent *unison.Panel, has *bool) {
-	// The popup begins a row that reads as a sentence, so nothing before it serves as a label -- and on rows after the
-	// first, the "and" or "or" that joins them sits there and would be taken as one.
-	addBoolPopup(parent, i18n.Text("has"), i18n.Text("doesn't have"), has).Accessibility.Name = i18n.Text("Has")
-}
-
 func adjustFieldBlank(field unison.Paneler, blank bool) {
 	panel := field.AsPanel()
 	panel.SetEnabled(!blank)
@@ -664,11 +659,6 @@ func addTagCriteriaPanel(parent *unison.Panel, strCriteria *criteria.Text, hSpan
 		i18n.Text("Tag"), strCriteria, hSpan, includeEmptyFiller)
 	field.Tooltip = newWrappedTooltip(i18n.Text(`Separate multiple tags with commas to match any one of them, e.g. "Sword, Axe"`))
 	return popup, field
-}
-
-func addNotesCriteriaPanel(parent *unison.Panel, strCriteria *criteria.Text, hSpan int, includeEmptyFiller bool) (*unison.PopupMenu[string], *StringField) {
-	prefix := i18n.Text("and whose notes")
-	return addStringCriteriaPanel(parent, prefix, prefix, i18n.Text("Notes"), strCriteria, hSpan, includeEmptyFiller)
 }
 
 // criteriaTitles returns what a criteria's two controls are called, from the subject they qualify: the comparison
@@ -731,11 +721,6 @@ func addStringCriteriaPanel(parent *unison.Panel, prefix, notPrefix, subject str
 	return popup, criteriaField
 }
 
-func addLevelCriteriaPanel(parent *unison.Panel, targetMgr *TargetMgr, targetKey string, numCriteria *criteria.Number, hSpan int, includeEmptyFiller bool) {
-	addNumericCriteriaPanel(parent, targetMgr, targetKey, i18n.Text("and whose level"), i18n.Text("Level"), numCriteria,
-		0, fxp.Thousand, hSpan, false, includeEmptyFiller)
-}
-
 // addNumericCriteriaPanel adds a numeric criteria's comparison popup and qualifier field, titled for the subject they
 // qualify; see criteriaTitles.
 func addNumericCriteriaPanel(parent *unison.Panel, targetMgr *TargetMgr, targetKey, prefix, subject string, numCriteria *criteria.Number, minValue, maxValue fxp.Int, hSpan int, integerOnly, includeEmptyFiller bool) (popup *unison.PopupMenu[string], field unison.Paneler) {
@@ -778,43 +763,6 @@ func addWeightCriteriaPanel(parent *unison.Panel, targetMgr *TargetMgr, targetKe
 		MarkModified(parent)
 	}
 	adjustFieldBlank(field, weightCriteria.Compare == criteria.AnyNumber)
-	return popup, field
-}
-
-func addQuantityCriteriaPanel(parent *unison.Panel, targetMgr *TargetMgr, targetKey string, numCriteria *criteria.Number) (popup *unison.PopupMenu[string], field *IntegerField) {
-	choices := []string{
-		i18n.Text("exactly"),
-		i18n.Text("at least"),
-		i18n.Text("at most"),
-	}
-	selectedIndex := 0
-	switch numCriteria.Compare {
-	case criteria.AtLeastNumber:
-		selectedIndex = 1
-	case criteria.AtMostNumber:
-		selectedIndex = 2
-	}
-	comparisonName, undoTitle := criteriaTitles(i18n.Text("Quantity"))
-	popup = newComparisonPopup(comparisonName, choices, selectedIndex)
-	popup.SelectionChangedCallback = func(p *unison.PopupMenu[string]) {
-		switch p.SelectedIndex() {
-		case 0:
-			numCriteria.Compare = criteria.EqualsNumber
-		case 1:
-			numCriteria.Compare = criteria.AtLeastNumber
-		case 2:
-			numCriteria.Compare = criteria.AtMostNumber
-		}
-		MarkModified(parent)
-	}
-	parent.AddChild(popup)
-	field = NewIntegerField(targetMgr, targetKey, undoTitle,
-		func() int { return numCriteria.Qualifier.AsInteger[int]() },
-		func(value int) {
-			numCriteria.Qualifier = fxp.FromInteger(value)
-			MarkModified(parent)
-		}, 0, 9999, false, false)
-	parent.AddChild(field)
 	return popup, field
 }
 
@@ -914,4 +862,68 @@ func newApplyCancelButtons(toolbar *unison.Panel, showKeys bool, apply func() bo
 	cancelButton.ClickCallback = closeWithoutPrompt
 	toolbar.AddChild(cancelButton)
 	return applyButton, cancelButton
+}
+
+// menuEntry is one item of a menu that showMenu builds. One with no action is a heading, shown disabled after a
+// separator unless it comes first; with no label as well, it is just the separator.
+type menuEntry struct {
+	Label string
+	Act   func()
+}
+
+// showMenu pops up a menu of the entries below the anchor.
+func showMenu(anchor *unison.Panel, entries []menuEntry) {
+	// A zero width lets the menu size to its items rather than stretch to a wide anchor.
+	where := anchor.RectToRoot(anchor.ContentRect(true))
+	where.Width = 0
+	newEntriesMenu(entries).Popup(where, 0)
+}
+
+// newEntriesMenu returns a popup menu of the entries.
+func newEntriesMenu(entries []menuEntry) unison.Menu {
+	f := unison.DefaultMenuFactory()
+	m := f.NewMenu(unison.PopupMenuTemporaryBaseID|unison.ContextMenuIDFlag, "", nil)
+	for i, entry := range entries {
+		id := unison.PopupMenuTemporaryBaseID + i + 1
+		if entry.Act != nil {
+			m.InsertItem(-1, f.NewItem(id, entry.Label, unison.KeyBinding{}, nil, func(unison.MenuItem) { entry.Act() }))
+			continue
+		}
+		if i != 0 {
+			m.InsertSeparator(-1, false)
+		}
+		if entry.Label != "" {
+			m.InsertItem(-1, f.NewItem(id, entry.Label, unison.KeyBinding{}, func(unison.MenuItem) bool { return false }, nil))
+		}
+	}
+	return m
+}
+
+// compactCornerRadius is the corner radius of compact controls and of the boxes drawn around them.
+const compactCornerRadius = 4
+
+// faintInk returns the ink at 30% opacity.
+func faintInk(ink unison.Ink) unison.Ink {
+	return &unison.ColorFilteredInk{OriginalInk: ink, ColorFilter: unison.Alpha30Filter()}
+}
+
+// hbox lays out the panel's children in a row that fills the width, returning the panel.
+func hbox(panel *unison.Panel, spacing float32) *unison.Panel {
+	panel.SetLayout(&unison.FlexLayout{Columns: len(panel.Children()), HSpacing: spacing})
+	panel.SetLayoutData(&unison.FlexLayoutData{HAlign: align.Fill, HGrab: true})
+	return panel
+}
+
+// putOnLine has the child, an icon of the size, sit at the top of its row, centered on a first line of the height
+// rather than on the whole row, whose text may wrap.
+func putOnLine(child *unison.Panel, height, size float32) {
+	var insets geom.Insets
+	if border := child.Border(); border != nil {
+		insets = border.Insets()
+	}
+	insets.Top = max((height-size)/2, 0)
+	// Room below that makes the whole height whole, which sizers would otherwise round up, pushing the icon down.
+	insets.Bottom = xmath.Ceil(insets.Top+size) - insets.Top - size
+	child.SetBorder(unison.NewEmptyBorder(insets))
+	child.SetLayoutData(&unison.FlexLayoutData{VAlign: align.Start})
 }

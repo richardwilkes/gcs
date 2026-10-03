@@ -53,6 +53,11 @@ func (p *AttributePrereq) ParentList() *PrereqList {
 	return p.Parent
 }
 
+// SetParentList implements Prereq.
+func (p *AttributePrereq) SetParentList(list *PrereqList) {
+	p.Parent = list
+}
+
 // Clone implements Prereq.
 func (p *AttributePrereq) Clone(parent *PrereqList) Prereq {
 	clone := *p
@@ -79,17 +84,41 @@ func (p *AttributePrereq) Satisfied(entity *Entity, _ any, tooltip *xbytes.Inser
 	}
 	if !satisfied && tooltip != nil {
 		tooltip.WriteString(prefix)
-		tooltip.WriteString(HasText(p.Has))
-		tooltip.WriteByte(' ')
-		tooltip.WriteString(entity.ResolveAttributeName(p.Which))
-		if p.CombinedWith != "" {
-			tooltip.WriteByte('+')
-			tooltip.WriteString(entity.ResolveAttributeName(p.CombinedWith))
-		}
-		tooltip.WriteString(i18n.Text(" which "))
-		tooltip.WriteString(p.QualifierCriteria.String())
+		tooltip.WriteString(p.Describe(entity, nil, plainText))
 	}
 	return satisfied
+}
+
+// Describe implements Prereq. Attributes are named as the entity, which may be nil, defines them.
+func (p *AttributePrereq) Describe(entity *Entity, _ map[string]string, em func(string) string) string {
+	names := attributeTitle(entity, p.Which)
+	if p.CombinedWith != "" {
+		names += "+" + attributeTitle(entity, p.CombinedWith)
+	}
+	text := HasText(p.Has) + " " + em(names)
+	if p.QualifierCriteria.Compare != criteria.AnyNumber {
+		text += " " + p.QualifierCriteria.AltString()
+	}
+	return text
+}
+
+// attributeTitle returns the title the attribute choices give key, or key itself when it isn't one of them.
+func attributeTitle(entity *Entity, key string) string {
+	if def := AttributeDefsFor(entity).Set[key]; def != nil {
+		return def.Name
+	}
+	switch key {
+	case SizeModifierID:
+		return i18n.Text("Size Modifier")
+	case DodgeID:
+		return i18n.Text("Dodge")
+	case ParryID:
+		return i18n.Text("Parry")
+	case BlockID:
+		return i18n.Text("Block")
+	default:
+		return key
+	}
 }
 
 // Hash writes this object's contents into the hasher.

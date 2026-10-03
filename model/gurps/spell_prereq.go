@@ -61,6 +61,11 @@ func (p *SpellPrereq) ParentList() *PrereqList {
 	return p.Parent
 }
 
+// SetParentList implements Prereq.
+func (p *SpellPrereq) SetParentList(list *PrereqList) {
+	p.Parent = list
+}
+
 // Clone implements Prereq.
 func (p *SpellPrereq) Clone(parent *PrereqList) Prereq {
 	clone := *p
@@ -92,31 +97,6 @@ func (p *SpellPrereq) powerSourceMatches(replacements map[string]string, candida
 
 func (p *SpellPrereq) hasPowerSourceFilter() bool {
 	return p.SamePowerSource || p.PowerSourceCriteria.Compare != criteria.AnyText
-}
-
-// powerSourceDescription returns the "is ..." text for the tooltip. The "same as this spell" form also names the owning
-// spell's resolved power source, so a power source that is blank or spelled differently from the spells it expects to
-// match can be diagnosed from the tooltip alone.
-func (p *SpellPrereq) powerSourceDescription(replacements map[string]string, ownerPowerSource *string) string {
-	if !p.SamePowerSource {
-		return p.PowerSourceCriteria.String(replacements)
-	}
-	desc := i18n.Text("is the same as this spell's")
-	if ownerPowerSource != nil {
-		desc += ` ("` + *ownerPowerSource + `")`
-	}
-	return desc
-}
-
-// writePowerSourceTooltip appends the power source portion of the tooltip, introduced by leadIn. Nothing is written
-// when no power source filter has been set.
-func (p *SpellPrereq) writePowerSourceTooltip(tooltip *xbytes.InsertBuffer, leadIn string,
-	replacements map[string]string, ownerPowerSource *string,
-) {
-	if p.hasPowerSourceFilter() {
-		tooltip.WriteString(leadIn)
-		tooltip.WriteString(p.powerSourceDescription(replacements, ownerPowerSource))
-	}
 }
 
 // Satisfied implements Prereq.
@@ -195,38 +175,62 @@ func (p *SpellPrereq) Satisfied(entity *Entity, exclude any, tooltip *xbytes.Ins
 	}
 	if !satisfied && tooltip != nil {
 		tooltip.WriteString(prefix)
-		tooltip.WriteString(HasText(p.Has))
-		tooltip.WriteByte(' ')
-		tooltip.WriteString(p.QuantityCriteria.AltString())
-		if p.QuantityCriteria.Qualifier == fxp.One {
-			tooltip.WriteString(i18n.Text(" spell "))
-		} else {
-			tooltip.WriteString(i18n.Text(" spells "))
-		}
-		switch p.SubType {
-		case spellcmp.Any:
-			if filterPowerSource {
-				p.writePowerSourceTooltip(tooltip, i18n.Text("whose power source "), replacements, ownerPowerSource)
-			} else {
-				tooltip.WriteString(i18n.Text("of any kind"))
-			}
-		case spellcmp.CollegeCount:
-			tooltip.WriteString(i18n.Text("from different colleges"))
-			p.writePowerSourceTooltip(tooltip, i18n.Text(" whose power source "), replacements, ownerPowerSource)
-		default:
-			switch p.SubType {
-			case spellcmp.Name:
-				tooltip.WriteString(i18n.Text("whose name "))
-			case spellcmp.Tag:
-				tooltip.WriteString(i18n.Text("whose tag "))
-			case spellcmp.College:
-				tooltip.WriteString(i18n.Text("whose college "))
-			}
-			tooltip.WriteString(p.QualifierCriteria.String(replacements))
-			p.writePowerSourceTooltip(tooltip, i18n.Text(" and whose power source "), replacements, ownerPowerSource)
+		tooltip.WriteString(p.Describe(entity, replacements, plainText))
+		// Name the owning spell's resolved power source, so that one that is blank or spelled differently from the
+		// spells it expects to match can be diagnosed from the tooltip alone.
+		if p.SamePowerSource && ownerPowerSource != nil {
+			tooltip.WriteString(` ("` + *ownerPowerSource + `")`)
 		}
 	}
 	return satisfied
+}
+
+// Describe implements Prereq.
+func (p *SpellPrereq) Describe(_ *Entity, replacements map[string]string, em func(string) string) string {
+	text := i18n.Text("Knows")
+	if !p.Has {
+		text = i18n.Text("Does not know")
+	}
+	var quantity string
+	if p.QuantityCriteria.Compare != criteria.AnyNumber {
+		quantity = " " + p.QuantityCriteria.AltString()
+	}
+	one, many := i18n.Text(" spell"), i18n.Text(" spells")
+	if p.SubType == spellcmp.CollegeCount {
+		text += i18n.Text(" spells from")
+		one, many = i18n.Text(" college"), i18n.Text(" colleges")
+	}
+	text += quantity
+	if p.QuantityCriteria.Qualifier == fxp.One {
+		text += one
+	} else {
+		text += many
+	}
+	whose := p.SubType.UsesStringCriteria() && p.QualifierCriteria.Compare != criteria.AnyText
+	if whose {
+		switch p.SubType {
+		case spellcmp.Tag:
+			text += i18n.Text(" whose tag ")
+		case spellcmp.College:
+			text += i18n.Text(" whose college ")
+		default:
+			text += i18n.Text(" whose name ")
+		}
+		text += describeText(p.QualifierCriteria, replacements, em)
+	}
+	if p.hasPowerSourceFilter() {
+		if whose {
+			text += i18n.Text(" and whose power source ")
+		} else {
+			text += i18n.Text(" whose power source ")
+		}
+		if p.SamePowerSource {
+			text += i18n.Text("is the same as this spell's")
+		} else {
+			text += describeText(p.PowerSourceCriteria, replacements, em)
+		}
+	}
+	return text
 }
 
 // spellDirectlyRequires returns true if the candidate spell directly lists a spell-by-name prerequisite that matches

@@ -124,7 +124,7 @@ func (enum {{$name}}) AltString() string {
     {{- end}}
     default:
         {{- if .DefaultUnknown}}
-        return {{if not .NoLocalizeAlt}}i18n.Text({{end}}{{printf "%#q" .Default.Alt}}{{if not .NoLocalizeAlt}}){{end}}
+        return {{if not .Default.NoLocalizeAlt}}i18n.Text({{end}}{{printf "%#q" .Default.Alt}}{{if not .Default.NoLocalizeAlt}}){{end}}
         {{- else}}
         return Default{{$name}}.AltString()
         {{- end}}

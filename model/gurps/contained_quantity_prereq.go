@@ -50,6 +50,11 @@ func (p *ContainedQuantityPrereq) ParentList() *PrereqList {
 	return p.Parent
 }
 
+// SetParentList implements Prereq.
+func (p *ContainedQuantityPrereq) SetParentList(list *PrereqList) {
+	p.Parent = list
+}
+
 // Clone implements Prereq.
 func (p *ContainedQuantityPrereq) Clone(parent *PrereqList) Prereq {
 	clone := *p
@@ -74,11 +79,18 @@ func (p *ContainedQuantityPrereq) Satisfied(_ *Entity, exclude any, tooltip *xby
 	}
 	if !satisfied && tooltip != nil {
 		tooltip.WriteString(prefix)
-		tooltip.WriteString(HasText(p.Has))
-		tooltip.WriteString(i18n.Text(" a contained quantity which "))
-		tooltip.WriteString(p.QualifierCriteria.String())
+		tooltip.WriteString(p.Describe(nil, nil, plainText))
 	}
 	return satisfied
+}
+
+// Describe implements Prereq.
+func (p *ContainedQuantityPrereq) Describe(_ *Entity, _ map[string]string, _ func(string) string) string {
+	text := HasText(p.Has) + i18n.Text(" a contained quantity")
+	if p.QualifierCriteria.Compare != criteria.AnyNumber {
+		text += i18n.Text(" of ") + p.QualifierCriteria.AltString()
+	}
+	return text
 }
 
 // Hash writes this object's contents into the hasher.
