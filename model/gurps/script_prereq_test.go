@@ -18,32 +18,36 @@ import (
 	"github.com/richardwilkes/toolbox/v2/xbytes"
 )
 
-// TestScriptPrereqEvaluate verifies how a script's result maps to met, the reason and the failed state.
+// TestScriptPrereqEvaluate verifies how a script's result maps to met, the reason and the failed state, and what an
+// unmet one writes.
 func TestScriptPrereqEvaluate(t *testing.T) {
 	c := check.New(t)
 	entity := NewEntity()
 	for _, one := range []struct {
-		name, script, reason, failedPrefix string
-		met                                bool
+		name, script, reason, text string
+		met, failed                bool
 	}{
 		{name: "Big", script: "", met: true},
 		{name: "Big", script: "true", met: true},
 		{name: "Big", script: "1 < 2", met: true},
-		{name: "Big", script: "false", reason: "Failed: Big"},
-		{script: "false", reason: "Failed: Passes a custom check"},
-		{name: "Big", script: `"Needs\n* more"`, reason: "Needs\n* more"},
-		{name: "Big", script: `throw new Error("boom")`, failedPrefix: `Couldn't check "Big": `},
-		{script: `throw new Error("boom")`, failedPrefix: "Couldn't run a custom check: "},
-		{name: "Big", script: "<script>1 < 2</script> or <script>false</script>", reason: "true or false"},
+		{name: "Big", script: "false", text: "Big"},
+		{script: "false", text: "A custom check"},
+		{name: "Big", script: `"Too weak"`, reason: "Too weak", text: "Big (Too weak)"},
+		{name: "Big", script: `"Needs\n* more"`, reason: "Needs\n* more", text: "Big:\n\t- Needs\n\t- * more"},
+		{name: "Big", script: `throw new Error("boom")`, failed: true, text: "Big (couldn't run: "},
+		{script: `throw new Error("boom")`, failed: true, text: "A custom check (couldn't run: "},
+		{
+			name: "Big", script: "<script>1 < 2</script> or <script>false</script>", reason: "true or false",
+			text: "Big (true or false)",
+		},
 	} {
 		p := NewScriptPrereq()
 		p.Name = one.name
 		p.Script = one.script
 		met, reason, failed := p.Evaluate(entity, nil)
 		c.Equal(one.met, met, one.script)
-		c.Equal(one.failedPrefix != "", failed, one.script)
+		c.Equal(one.failed, failed, one.script)
 		if failed {
-			c.True(strings.HasPrefix(reason, one.failedPrefix), "%s: %q", one.script, reason)
 			c.True(strings.Contains(reason, "boom"), "%s: %q", one.script, reason)
 		} else {
 			c.Equal(one.reason, reason, one.script)
@@ -51,7 +55,7 @@ func TestScriptPrereqEvaluate(t *testing.T) {
 		var tooltip xbytes.InsertBuffer
 		c.Equal(met, p.Satisfied(entity, nil, &tooltip, "\n- ", nil), one.script)
 		if !met {
-			c.Equal("\n- "+reason, tooltip.String(), one.script)
+			c.True(strings.HasPrefix(tooltip.String(), "\n- "+one.text), "%s: %q", one.script, tooltip.String())
 		}
 	}
 }
@@ -61,7 +65,7 @@ func TestScriptPrereqEvaluate(t *testing.T) {
 func TestScriptPrereqName(t *testing.T) {
 	c := check.New(t)
 	p := NewScriptPrereq()
-	c.Equal("Passes a custom check", p.Describe(nil, nil, plainText))
+	c.Equal("A custom check", p.Describe(nil, nil, plainText))
 	p.Name = "Knows @Lore@"
 	c.Equal("Knows Demons", p.Describe(nil, map[string]string{"Lore": "Demons"}, plainText))
 	keys := make(map[string]string)

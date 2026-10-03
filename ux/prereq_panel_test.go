@@ -414,6 +414,9 @@ func TestPrereqPanelStatus(t *testing.T) {
 			_, tip, _ := p.status(p.node(path))
 			c.Equal(want, tip, path)
 		}
+		_, tip, suffix := p.status(p.node("r.2"))
+		c.True(strings.HasPrefix(tip, "Not met: A custom check (couldn't run: SyntaxError: "), tip)
+		c.True(strings.HasPrefix(suffix, "couldn't run: SyntaxError: "), suffix)
 		p.toggle("r.0")
 	})
 	screen.Do(func() {
@@ -454,6 +457,51 @@ func TestPrereqPanelStatus(t *testing.T) {
 	screen.Do(p.refresh)
 	c.Equal("All of, only when TL at least 12, doesn't apply at this tech level", group(),
 		"a group's name follows its tech level")
+}
+
+// TestPrereqPanelScriptResult checks that the script editor's result line says the outcome, and that changing the
+// description evaluates it again.
+func TestPrereqPanelScriptResult(t *testing.T) {
+	c := check.New(t)
+	screen, _ := startHeadlessWorkspace(t, c)
+	root := gurps.NewPrereqList()
+	root.Prereqs = gurps.Prereqs{gurps.NewScriptPrereq()}
+	root = root.CloneAsPrereqList(nil)
+	p, _ := showPrereqPanel(t, screen, &root, false)
+	screen.Do(func() { p.toggle("r.0") })
+	var editor *scriptEditor
+	screen.Do(func() {
+		for panel := p.FindRefKey("r.0:script"); editor == nil; panel = panel.Parent() {
+			if one, ok := panel.Self.(*scriptEditor); ok {
+				editor = one
+			}
+		}
+	})
+	result := func(script string) (text string) {
+		screen.Do(func() { editor.field.SetText(script) })
+		waitForEvaluation(screen)
+		screen.Do(func() { text = editor.result.plainText() })
+		return text
+	}
+	c.Equal("Passed", result("true"))
+	c.Equal("Failed", result("false"))
+	c.Equal("Failed: Too weak", result(`"Too weak"`))
+	c.Equal("Failed: a\nb", result(`"a\nb"`))
+	c.True(strings.HasPrefix(result(`throw new Error("boom")`), "Couldn't run: "), "an error says the script couldn't run")
+
+	var evaluations int
+	screen.Do(func() {
+		evaluate := editor.opts.Evaluate
+		editor.opts.Evaluate = func(script string) (checkStatus, string) {
+			evaluations++
+			return evaluate(script)
+		}
+		field, ok := p.FindRefKey("r.0:name").Self.(*StringField)
+		c.True(ok)
+		field.SetText("Strong")
+	})
+	waitForEvaluation(screen)
+	c.Equal(1, evaluations, "changing the description evaluates the script again")
 }
 
 // TestPrereqPanelDragAndDrop checks where a dragged prerequisite goes before, after or into what it is dropped on, that

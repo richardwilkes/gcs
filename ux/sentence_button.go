@@ -37,18 +37,18 @@ func emphasize(s string) string {
 	return string(emStart) + s + string(emEnd)
 }
 
-// sentenceButton draws a sentence whose spans wrapped by emphasize are bold, wrapping it to the width it is given;
-// within a FlexLayout it must be given HAlign: align.Fill for that. With a click handler it is a disclosure that Space,
-// Enter or a click activates, always reported as collapsed, since what it discloses takes its place. Without one it is
-// static text, a tab stop only while reading (see tabStopForReading).
+// sentenceButton draws a sentence whose spans wrapped by emphasize are bold, breaking it at its line breaks and wrapping
+// it to the width it is given; within a FlexLayout it must be given HAlign: align.Fill for that. With a click handler it
+// is a disclosure that Space, Enter or a click activates, always reported as collapsed, since what it discloses takes its
+// place. Without one it is static text, a tab stop only while reading (see tabStopForReading).
 type sentenceButton struct {
 	unison.Panel
 	text    string
 	onClick func()
 	hovered bool
-	// The sentence as styled text, built with builtFont, and broken into lines for wrappedWidth, since laying out and
-	// drawing ask for them often.
-	built        *unison.Text
+	// The sentence's paragraphs as styled text, built with builtFont, and broken into lines for wrappedWidth, since
+	// laying out and drawing ask for them often.
+	built        []*unison.Text
 	builtFont    unison.FontDescriptor
 	wrapped      []*unison.Text
 	wrappedWidth float32
@@ -140,14 +140,18 @@ func (b *sentenceButton) lines(width float32) []*unison.Text {
 		b.wrapped = nil
 	}
 	if b.wrapped == nil || b.wrappedWidth != width {
-		b.wrapped = b.built.BreakToWidth(width)
+		b.wrapped = nil
+		for _, paragraph := range b.built {
+			b.wrapped = append(b.wrapped, paragraph.BreakToWidth(width)...)
+		}
 		b.wrappedWidth = width
 	}
 	return b.wrapped
 }
 
-// buildText returns the sentence as styled text, its emphasized spans in bold.
-func (b *sentenceButton) buildText() *unison.Text {
+// buildText returns the paragraphs of the sentence, which line breaks separate, as styled text, its emphasized spans in
+// bold.
+func (b *sentenceButton) buildText() []*unison.Text {
 	plain := &unison.TextDecoration{
 		Font:            unison.DefaultLabelTheme.Font,
 		OnBackgroundInk: unison.DefaultLabelTheme.OnBackgroundInk,
@@ -157,22 +161,28 @@ func (b *sentenceButton) buildText() *unison.Text {
 	desc.Weight = weight.Bold
 	bold.Font = desc.Font()
 	text := unison.NewText("", plain)
+	paragraphs := []*unison.Text{text}
 	decoration := plain
 	for rest := b.text; rest != ""; {
-		i := strings.IndexAny(rest, string([]rune{emStart, emEnd}))
+		i := strings.IndexAny(rest, string([]rune{emStart, emEnd, '\n'}))
 		if i < 0 {
 			text.AddString(rest, decoration)
 			break
 		}
 		text.AddString(rest[:i], decoration)
 		r, size := utf8.DecodeRuneInString(rest[i:])
-		decoration = plain
-		if r == emStart {
+		switch r {
+		case '\n':
+			text = unison.NewText("", plain)
+			paragraphs = append(paragraphs, text)
+		case emStart:
 			decoration = &bold
+		default:
+			decoration = plain
 		}
 		rest = rest[i+size:]
 	}
-	return text
+	return paragraphs
 }
 
 // lineHeight returns the height of a line of the sentence, with the border above and below it.

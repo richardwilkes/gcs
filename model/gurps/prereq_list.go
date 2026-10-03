@@ -223,11 +223,11 @@ func (p *PrereqList) describeWhenTL() string {
 	return fmt.Sprintf(i18n.Text(" (only when TL %s)"), p.WhenTL.AltString())
 }
 
-// lowerFirst lowercases the first letter of text when it begins a word that continues in lowercase, so a description
-// can follow a joining word without lowering a name or an acronym.
+// lowerFirst lowercases the first letter of text when it begins a word that continues in lowercase or is a single
+// letter, so a description can follow a joining word without lowering a name or an acronym.
 func lowerFirst(text string) string {
 	r, size := utf8.DecodeRuneInString(text)
-	if next, _ := utf8.DecodeRuneInString(text[size:]); unicode.IsUpper(r) && (unicode.IsLower(next) || next == '\'') {
+	if next, _ := utf8.DecodeRuneInString(text[size:]); unicode.IsUpper(r) && (unicode.IsLower(next) || next == '\'' || next == ' ') {
 		return string(unicode.ToLower(r)) + text[size:]
 	}
 	return text

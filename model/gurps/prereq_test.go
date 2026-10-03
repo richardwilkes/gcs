@@ -148,7 +148,7 @@ func TestPrereqDescribe(t *testing.T) {
 		},
 		{"contained quantity", quantity, "Does not have a contained quantity of at most 1"},
 		{"contained weight", gurps.NewContainedWeightPrereq(nil), "Has a contained weight of at most 5 lb"},
-		{"script", gurps.NewScriptPrereq(), "Passes a custom check"},
+		{"script", gurps.NewScriptPrereq(), "A custom check"},
 		{
 			"unknown", gurps.NewUnknownPrereq("future", []byte(`{"type":"future"}`)),
 			`Meets an unknown type of prerequisite ("[future]") that needs a newer version of GCS`,
@@ -193,7 +193,7 @@ func TestPrereqListDescribe(t *testing.T) {
 		expected string
 	}{
 		{"a named script", gurps.Prereqs{namedTrait("Magery"), named}, "Has trait Magery and Elf ancestry"},
-		{"an unnamed script", gurps.Prereqs{namedTrait("Magery"), unnamed}, "Has trait Magery and passes a custom check"},
+		{"an unnamed script", gurps.Prereqs{namedTrait("Magery"), unnamed}, "Has trait Magery and a custom check"},
 		{
 			"a named script leading a group",
 			gurps.Prereqs{namedTrait("Magery"), &gurps.PrereqList{All: true, Prereqs: gurps.Prereqs{named, namedTrait("Luck")}}},

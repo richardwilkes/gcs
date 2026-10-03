@@ -86,29 +86,53 @@ func (s *ScriptPrereq) Describe(_ *Entity, replacements map[string]string, _ fun
 	if name := s.ResolvedName(replacements); name != "" {
 		return name
 	}
-	return i18n.Text("Passes a custom check")
+	return i18n.Text("A custom check")
 }
 
-// Satisfied implements Prereq.
+// Satisfied implements Prereq. An unmet prerequisite writes its description, followed by the reason it gives, if any.
+// A reason of more than one line goes on the lines below it, one level deeper.
 func (s *ScriptPrereq) Satisfied(entity *Entity, exclude any, tooltip *xbytes.InsertBuffer, prefix string, _ *bool) bool {
-	met, reason, _ := s.Evaluate(entity, exclude)
-	if !met && tooltip != nil {
-		tooltip.WriteString(prefix)
-		tooltip.WriteString(reason)
+	met, reason, failed := s.Evaluate(entity, exclude)
+	if met || tooltip == nil {
+		return met
 	}
-	return met
-}
-
-// Evaluate runs the script against the entity for the item given as exclude. A result of "" or "true" is met. A result
-// of "false" is unmet, with the reason saying this prerequisite's description failed, and any other result is unmet,
-// with that text as the reason. failed is true when the script could not produce a result, because it threw, timed out
-// or nested too deeply; the reason then says so.
-func (s *ScriptPrereq) Evaluate(entity *Entity, exclude any) (met bool, reason string, failed bool) {
-	script := s.Script
 	var replacements map[string]string
 	if na, ok := exclude.(nameable.Accesser); ok {
 		replacements = na.NameableReplacements()
-		script = nameable.Apply(script, replacements)
+	}
+	name := s.Describe(entity, replacements, plainText)
+	reason = strings.TrimSpace(reason)
+	multiLine := strings.Contains(reason, "\n")
+	tooltip.WriteString(prefix)
+	switch {
+	case reason == "":
+		tooltip.WriteString(name)
+	case failed && multiLine:
+		fmt.Fprintf(tooltip, i18n.Text("%s (couldn't run):"), name)
+	case failed:
+		fmt.Fprintf(tooltip, i18n.Text("%s (couldn't run: %s)"), name, reason)
+	case multiLine:
+		fmt.Fprintf(tooltip, i18n.Text("%s:"), name)
+	default:
+		fmt.Fprintf(tooltip, i18n.Text("%s (%s)"), name, reason)
+	}
+	if multiLine {
+		nested := strings.ReplaceAll(prefix, "\n", "\n\t")
+		for line := range strings.SplitSeq(reason, "\n") {
+			tooltip.WriteString(nested)
+			tooltip.WriteString(strings.TrimRight(line, "\r"))
+		}
+	}
+	return false
+}
+
+// Evaluate runs the script against the entity for the item given as exclude. A result of "" or "true" is met, "false"
+// is unmet with no reason, and any other result is unmet, with that text as the reason. failed is true when the script
+// could not produce a result, because it threw, timed out or nested too deeply; the reason is then the error.
+func (s *ScriptPrereq) Evaluate(entity *Entity, exclude any) (met bool, reason string, failed bool) {
+	script := s.Script
+	if na, ok := exclude.(nameable.Accesser); ok {
+		script = nameable.Apply(script, na.NameableReplacements())
 	}
 	script = strings.TrimSpace(script)
 	if script != "" && !strings.HasPrefix(script, scriptStart) {
@@ -128,14 +152,11 @@ func (s *ScriptPrereq) Evaluate(entity *Entity, exclude any) (met bool, reason s
 	result, failed := resolveText(entity, self, script)
 	switch {
 	case failed:
-		if name := s.ResolvedName(replacements); name != "" {
-			return false, fmt.Sprintf(i18n.Text(`Couldn't check "%s": %s`), name, result), true
-		}
-		return false, fmt.Sprintf(i18n.Text("Couldn't run a custom check: %s"), result), true
+		return false, result, true
 	case result == "" || result == "true":
 		return true, "", false
 	case result == "false":
-		return false, fmt.Sprintf(i18n.Text("Failed: %s"), s.Describe(entity, replacements, plainText)), false
+		return false, "", false
 	default:
 		return false, result, false
 	}

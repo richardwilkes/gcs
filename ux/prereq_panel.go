@@ -405,32 +405,32 @@ func (p *prereqPanel) status(node gurps.Prereq) (status checkStatus, tip, suffix
 	if group, isList := node.(*gurps.PrereqList); isList && len(group.Prereqs) == 0 {
 		return checkSkipped, i18n.Text("Empty group, always met"), i18n.Text("empty group, always met")
 	}
-	var reason string
-	if script, isScript := node.(*gurps.ScriptPrereq); isScript {
-		status, reason = p.evaluateScript(script)
-	} else {
-		var buffer xbytes.InsertBuffer
+	var buffer xbytes.InsertBuffer
+	gurps.SuppressScriptResolveErrorLogging(func() {
 		if !node.Satisfied(p.entity, p.exclude(), &buffer, "\n- ", nil) {
 			status = checkUnmet
 		}
-		// One unmet item reads as a sentence; more are a list.
-		if reason = buffer.String(); strings.Count(reason, "\n") == 1 {
-			reason = strings.TrimPrefix(reason, "\n- ")
+	})
+	if status == checkMet {
+		return checkMet, i18n.Text("Met"), i18n.Text("met")
+	}
+	// One unmet item reads as a sentence; more are a list.
+	reason := buffer.String()
+	if strings.Count(reason, "\n") == 1 {
+		tip = fmt.Sprintf(i18n.Text("Not met: %s"), strings.TrimPrefix(reason, "\n- "))
+	} else {
+		tip = i18n.Text("Not met:") + reason
+	}
+	if script, isScript := node.(*gurps.ScriptPrereq); isScript {
+		if result, message := p.evaluateScript(script); result == checkFailed {
+			return checkFailed, tip, fmt.Sprintf(i18n.Text("couldn't run: %s"), message)
 		}
 	}
-	switch {
-	case status == checkFailed:
-		return checkFailed, reason, fmt.Sprintf(i18n.Text("script error: %s"), reason)
-	case status == checkMet:
-		return checkMet, i18n.Text("Met"), i18n.Text("met")
-	case strings.HasPrefix(reason, "\n"):
-		return checkUnmet, i18n.Text("Not met:") + reason, i18n.Text("not met")
-	default:
-		return checkUnmet, fmt.Sprintf(i18n.Text("Not met: %s"), reason), i18n.Text("not met")
-	}
+	return checkUnmet, tip, i18n.Text("not met")
 }
 
-// evaluateScript runs the script against the sheet, returning its status and the reason it gives.
+// evaluateScript runs the script against the sheet, returning its status and the reason it gives, which is the error
+// when it couldn't run.
 func (p *prereqPanel) evaluateScript(script *gurps.ScriptPrereq) (status checkStatus, reason string) {
 	var met, failed bool
 	gurps.SuppressScriptResolveErrorLogging(func() { met, reason, failed = script.Evaluate(p.entity, p.exclude()) })
@@ -890,12 +890,18 @@ func (p *prereqPanel) editor(pr gurps.Prereq, path string) *unison.Panel {
 	case *gurps.ScriptPrereq:
 		p.typePopup(fields, path, pr)
 		addJoiningWords(fields, i18n.Text("described as"))
-		name := p.textField(fields, key("name"), i18n.Text("Description"),
-			i18n.Text(`Describe this requirement, like "DX + Per totals at least 26"`), &one.Name)
-		name.SetMinimumTextWidthUsing(name.Watermark)
 		e := newScriptEditor(func() string { return one.Script },
 			func(script string) { p.edit(i18n.Text("Script"), key("script"), "", func() { one.Script = script }) },
 			p.scriptOptions(one))
+		title := i18n.Text("Description")
+		name := NewStringField(p.targetMgr, key("name"), title, func() string { return one.Name },
+			func(s string) {
+				p.edit(title, key("name"), "", func() { one.Name = s })
+				e.refresh()
+			})
+		name.Watermark = i18n.Text(`Describe this requirement, like "DX + Per totals at least 26"`)
+		name.SetMinimumTextWidthUsing(name.Watermark)
+		p.addCompact(fields, name.withoutUndo())
 		e.field.RefKey = key("script")
 		e.field.SetLayoutData(&unison.FlexLayoutData{HAlign: align.Fill, HGrab: true})
 		e.field.withoutUndo()
@@ -936,17 +942,24 @@ func (p *prereqPanel) scriptOptions(pr *gurps.ScriptPrereq) *scriptEditorOptions
 	opts := &scriptEditorOptions{
 		Title:  i18n.Text("Script"),
 		Hint:   i18n.Text("Tab indents. Esc closes."),
-		Footer: i18n.Text("The script's last value decides: true or empty text means met; false means not met, with the description above as the reason; any other text means not met, with that text as the reason."),
+		Footer: i18n.Text("The script's last value decides: true or empty text means met; false means not met; any other text means not met, with that text as the reason."),
 	}
 	if p.entity != nil {
 		opts.Evaluate = func(script string) (checkStatus, string) {
 			one := *pr
 			one.Script = script
 			status, reason := p.evaluateScript(&one)
-			if status == checkMet {
-				reason = i18n.Text("Met by this sheet")
+			reason = strings.TrimSpace(reason)
+			switch {
+			case status == checkMet:
+				return status, i18n.Text("Passed")
+			case status == checkFailed:
+				return status, fmt.Sprintf(i18n.Text("Couldn't run: %s"), reason)
+			case reason == "":
+				return status, i18n.Text("Failed")
+			default:
+				return status, fmt.Sprintf(i18n.Text("Failed: %s"), reason)
 			}
-			return status, reason
 		}
 	}
 	return opts
