@@ -80,7 +80,8 @@ type applyOptions struct {
 // arriving on a sheet from anywhere but another sheet are fully applied; from another sheet they are a plain copy, save
 // for settling any template choices a sheet can't hold, the ancestry question and the offer to randomize. Rows arriving
 // on a template are kept as authored, save that their choice containers are normalized and those from a library have
-// their modifiers and nameables prompted for. Rows arriving in a library are kept as they are, Preconfigured flag
+// their modifiers and nameables prompted for. They are never merged into a row already there: points only combine
+// once the template is applied to a sheet. Rows arriving in a library are kept as they are, Preconfigured flag
 // included, save for the template choices and the flags to pick groups in them separately, which only a template can
 // hold.
 func applyOptionsFor(source, destination unison.Paneler) applyOptions {
@@ -107,7 +108,7 @@ func applyOptionsFor(source, destination unison.Paneler) applyOptions {
 			merge:              true,
 		}
 	case transferTemplate:
-		return applyOptions{normalizeChoices: true, promptForChoices: from == transferLibrary, merge: true}
+		return applyOptions{normalizeChoices: true, promptForChoices: from == transferLibrary}
 	default:
 		return applyOptions{clearTemplateOnly: true}
 	}
