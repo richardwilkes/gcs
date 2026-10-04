@@ -22,6 +22,7 @@ import (
 const (
 	Name Type = iota
 	Tag
+	TitleNote
 	College
 	CollegeCount
 	Any
@@ -40,6 +41,7 @@ const LastType Type = Any
 var Types = []Type{
 	Name,
 	Tag,
+	TitleNote,
 	College,
 	CollegeCount,
 	Any,
@@ -63,6 +65,8 @@ func (enum Type) Key() string {
 		return "name"
 	case Tag:
 		return "tag"
+	case TitleNote:
+		return "title_note"
 	case College:
 		return "college"
 	case CollegeCount:
@@ -80,6 +84,8 @@ func (enum Type) oldKeys() []string {
 		return nil
 	case Tag:
 		return []string{"category"}
+	case TitleNote:
+		return nil
 	case College:
 		return nil
 	case CollegeCount:
@@ -98,6 +104,8 @@ func (enum Type) String() string {
 		return i18n.Text(`whose name`)
 	case Tag:
 		return i18n.Text(`with a tag which`)
+	case TitleNote:
+		return i18n.Text(`with a title note which`)
 	case College:
 		return i18n.Text(`whose college name`)
 	case CollegeCount:

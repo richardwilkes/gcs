@@ -12,5 +12,5 @@ package spellcmp
 // UsesStringCriteria returns true if the comparison uses a string value.
 func (enum Type) UsesStringCriteria() bool {
 	v := enum.EnsureValid()
-	return v == Name || v == Tag || v == College
+	return v == Name || v == Tag || v == TitleNote || v == College
 }

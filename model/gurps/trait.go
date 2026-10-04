@@ -495,20 +495,17 @@ func (t *Trait) CellData(columnID int, data *CellData) {
 	case TraitDescriptionColumn:
 		data.Type = cell.Text
 		var tooltip, overrideTooltip xbytes.InsertBuffer
-		data.Primary = t.NameAndLevel(&tooltip)
 		var buffer strings.Builder
+		buffer.WriteString(t.NameAndLevel(&tooltip))
+		var parts []string
 		if resolvedSelfControl := t.ResolvedSelfControl(&overrideTooltip); resolvedSelfControl > selfctrl.None {
-			buffer.WriteString(resolvedSelfControl.ShortString())
+			parts = append(parts, resolvedSelfControl.ShortString())
 		}
 		if resolvedFrequency := t.ResolvedFrequency(&overrideTooltip); resolvedFrequency > frequency.None {
-			if buffer.Len() > 0 {
-				buffer.WriteString(", ")
-			}
-			buffer.WriteString(resolvedFrequency.ShortString())
+			parts = append(parts, resolvedFrequency.ShortString())
 		}
-		if buffer.Len() > 0 {
-			data.Primary += " (" + buffer.String() + ")"
-		}
+		writeParenthetical(&buffer, append(parts, t.TitleNotes()...))
+		data.Primary = buffer.String()
 		data.Secondary = t.SecondaryText(func(option display.Option) bool { return option.Inline() })
 		data.Disabled = t.EffectivelyDisabled()
 		data.UnsatisfiedReason, data.PrereqContradiction = t.prereqStatus()
@@ -1018,7 +1015,16 @@ func (t *Trait) UserDescWithReplacements() string {
 
 // String implements fmt.Stringer.
 func (t *Trait) String() string {
-	return t.NameAndLevel(nil)
+	var buffer strings.Builder
+	buffer.WriteString(t.NameAndLevel(nil))
+	writeParenthetical(&buffer, t.TitleNotes())
+	return buffer.String()
+}
+
+// TitleNotes returns the text of the title note features of the trait and its enabled modifiers.
+func (t *Trait) TitleNotes() []string {
+	return modifierTitleNotes(appendTitleNotes(nil, t.Replacements, t.Features), t.Modifiers, t.Replacements,
+		func(mod *TraitModifier) Features { return mod.Features })
 }
 
 // StringWithSavedCalc returns what String returned when the trait was last saved: its name and, when it is leveled, the
@@ -1027,16 +1033,20 @@ func (t *Trait) String() string {
 // templates), whose entity, if it has one, has not been recalculated and so cannot resolve those bonuses itself. A
 // trait loaded any other way, or from a file written before the level was recorded, falls back to its unadjusted
 // level. So does a disabled trait, whose recorded level is zero where String shows the level it would have if
-// enabled.
+// enabled. The title notes follow, as they do in String, since they need nothing the calc holds.
 func (t *Trait) StringWithSavedCalc() string {
-	if !t.IsLeveled() {
-		return t.NameWithReplacements()
+	var buffer strings.Builder
+	buffer.WriteString(t.NameWithReplacements())
+	if t.IsLeveled() {
+		level := t.Levels.Max(0)
+		if t.savedCurrentLevel != nil && t.Enabled() {
+			level = *t.savedCurrentLevel
+		}
+		buffer.WriteByte(' ')
+		buffer.WriteString(level.String())
 	}
-	level := t.Levels.Max(0)
-	if t.savedCurrentLevel != nil && t.Enabled() {
-		level = *t.savedCurrentLevel
-	}
-	return t.NameWithReplacements() + " " + level.String()
+	writeParenthetical(&buffer, t.TitleNotes())
+	return buffer.String()
 }
 
 // NameAndLevel returns the name and level of the trait.
@@ -1121,7 +1131,13 @@ func (t *Trait) ApplyNameableKeys(m map[string]string) {
 	t.Replacements = ownerNameableReplacements(t, t.Replacements, m)
 }
 
-// ActiveModifierFor returns the first modifier that matches the name (case-insensitive).
+// ModifierNames returns the names and short names of the trait's enabled modifiers, for matching.
+func (t *Trait) ModifierNames() []string {
+	return modifierNames(t.Modifiers)
+}
+
+// ActiveModifierFor returns the first enabled, non-container modifier whose name or short name matches
+// (case-insensitive).
 func (t *Trait) ActiveModifierFor(name string) *TraitModifier {
 	return activeModifierFor(t.Modifiers, name)
 }

@@ -1037,6 +1037,10 @@ var allEnums = []*enumInfo{
 				String: "Reduces the contained weight by",
 			},
 			{
+				Key:    "title_note",
+				String: "Adds the title note",
+			},
+			{
 				Key:    "unknown",
 				String: "Is an unknown feature type",
 			},
@@ -1395,6 +1399,10 @@ var allEnums = []*enumInfo{
 				Key:     "tag",
 				OldKeys: []string{"category"},
 				String:  "with a tag which",
+			},
+			{
+				Key:    "title_note",
+				String: "with a title note which",
 			},
 			{
 				Key:    "college",

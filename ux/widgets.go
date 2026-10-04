@@ -152,6 +152,27 @@ func addNameLabelAndField(parent *unison.Panel, fieldData *string) {
 	addLabelAndStringField(parent, i18n.Text("Name"), "", fieldData)
 }
 
+// addModifierShortNameFields adds a modifier's short name field and the checkbox that shows it in its owner's title
+// notes.
+func addModifierShortNameFields(parent *unison.Panel, shortName *string, showInTitle *bool) {
+	addLabelAndStringField(parent, i18n.Text("Short Name"),
+		i18n.Text("Used in place of the name when the modifier is listed in its owner's title notes or notes"), shortName)
+	parent.AddChild(unison.NewPanel())
+	box := addCheckBox(parent, i18n.Text("Show in Title Notes"), showInTitle)
+	box.Tooltip = newWrappedTooltip(i18n.Text("Show the modifier's short name, or its name, in its owner's title notes instead of its owner's notes. A modifier with notes still shows them in its owner's notes."))
+}
+
+// addModifierNotesCheckBoxes adds the checkboxes that say where a modifier's notes are shown: in its owner's notes and
+// in the usage notes of its owner's weapons.
+func addModifierNotesCheckBoxes(parent *unison.Panel, hideNotes, showOnWeapon *bool) {
+	parent.AddChild(unison.NewPanel())
+	box := addInvertedCheckBox(parent, i18n.Text("Show in Owner's Notes"), hideNotes)
+	box.Tooltip = newWrappedTooltip(i18n.Text("Show the modifier's notes in its owner's notes."))
+	parent.AddChild(unison.NewPanel())
+	box = addCheckBox(parent, i18n.Text("Show in Weapon Usage"), showOnWeapon)
+	box.Tooltip = newWrappedTooltip(i18n.Text("Also show the modifier's notes in the usage notes of its owner's weapons."))
+}
+
 func addSpecializationLabelAndField(parent *unison.Panel, fieldData *string) {
 	addLabelAndStringField(parent, i18n.Text("Required Specialization"), "", fieldData)
 }

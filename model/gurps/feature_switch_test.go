@@ -90,6 +90,10 @@ func TestFeaturesActiveAndAnySwitchable(t *testing.T) {
 func TestEveryFeatureTypeCarriesTheSwitchableFlag(t *testing.T) {
 	c := check.New(t)
 	for _, ft := range feature.SelectableTypes {
+		if ft == feature.TitleNote {
+			// A title note is never switchable, by design; TestTitleNotesIgnoreTheSwitch covers it.
+			continue
+		}
 		key := ft.Key()
 		var loaded Features
 		c.NoError(jio.Unmarshal([]byte(`[{"type":"`+key+`","switchable":true}]`), &loaded), "%s: should load", key)

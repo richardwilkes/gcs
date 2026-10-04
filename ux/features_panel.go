@@ -90,6 +90,8 @@ func (p *featuresPanel) insertFeaturePanel(index int, f gurps.Feature) {
 		panel, focus = p.createCostReductionPanel(one)
 	case *gurps.EquipmentMaxUsesBonus:
 		panel, focus = p.createEquipmentMaxUsesBonusPanel(one)
+	case *gurps.TitleNote:
+		panel, focus = p.createTitleNotePanel(one)
 	case *gurps.DRBonus:
 		panel, focus = p.createDRBonusPanel(one)
 	case *gurps.ReactionBonus:
@@ -670,6 +672,27 @@ func (p *featuresPanel) createContainedWeightReductionPanel(f *gurps.ContainedWe
 	return panel, field
 }
 
+func (p *featuresPanel) createTitleNotePanel(f *gurps.TitleNote) (main *unison.Panel, focus unison.Paneler) {
+	panel := p.createBasePanel(f)
+	wrapper := unison.NewPanel()
+	p.addTypeSwitcher(wrapper, f)
+	p.addWrapperAtIndex(panel, wrapper, -1, false)
+	// The text gets a row of its own, so that the type popup's width doesn't squeeze it.
+	panel.AddChild(unison.NewPanel())
+	field := NewStringField(nil, "", i18n.Text("Title Note"), func() string { return f.Text },
+		func(value string) {
+			f.Text = value
+			MarkModified(panel)
+		})
+	field.Watermark = i18n.Text("Title Note")
+	field.SetLayoutData(&unison.FlexLayoutData{
+		HAlign: align.Fill,
+		HGrab:  true,
+	})
+	panel.AddChild(field)
+	return panel, field
+}
+
 func (p *featuresPanel) createCostReductionPanel(f *gurps.CostReduction) (main *unison.Panel, focus unison.Paneler) {
 	panel := p.createBasePanel(f)
 	wrapper := unison.NewPanel()
@@ -1038,6 +1061,8 @@ func (p *featuresPanel) createFeatureForType(featureType feature.Type) gurps.Fea
 		return gurps.NewContainedWeightReduction()
 	case feature.CostReduction:
 		return gurps.NewCostReduction(lastAttributeIDUsed)
+	case feature.TitleNote:
+		return gurps.NewTitleNote()
 	case feature.EquipmentMaxUsesBonus:
 		bonus = gurps.NewEquipmentMaxUsesBonus()
 	case feature.DRBonus:

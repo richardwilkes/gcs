@@ -830,6 +830,8 @@ func (p *prereqPanel) editor(pr gurps.Prereq, path string) *unison.Panel {
 		p.levelChip(chips, path, level,
 			level.Compare != criteria.AnyNumber && (level.Compare != criteria.AtLeastNumber || level.Qualifier > 0))
 		p.textChip(chips, path, "notes", &one.NotesCriteria)
+		p.textChip(chips, path, "titlenote", &one.TitleNoteCriteria)
+		p.textChip(chips, path, "modifier", &one.ModifierCriteria)
 	case *gurps.SkillPrereq:
 		p.hasPopup(fields, key("has"), &one.Has, false)
 		p.typePopup(fields, path, pr)
@@ -837,6 +839,7 @@ func (p *prereqPanel) editor(pr gurps.Prereq, path string) *unison.Panel {
 			true)
 		p.textChip(chips, path, "specialization", &one.SpecializationCriteria)
 		p.textChip(chips, path, "optspecialization", &one.OptionalSpecializationCriteria)
+		p.textChip(chips, path, "titlenote", &one.TitleNoteCriteria)
 		// Unlike a trait's, "at least 0" is a real criterion here, leaving out skills with no usable level.
 		p.levelChip(chips, path, &one.LevelCriteria, one.LevelCriteria.Compare != criteria.AnyNumber)
 	case *gurps.SpellPrereq:
@@ -886,6 +889,8 @@ func (p *prereqPanel) editor(pr gurps.Prereq, path string) *unison.Panel {
 		p.textCriteria(fields, key("name"), i18n.Text("Name"), i18n.Text("Item name"), whose, whose, &one.NameCriteria,
 			true)
 		p.textChip(chips, path, "tag", &one.TagsCriteria)
+		p.textChip(chips, path, "titlenote", &one.TitleNoteCriteria)
+		p.textChip(chips, path, "modifier", &one.ModifierCriteria)
 	case *gurps.ContainedQuantityPrereq:
 		p.hasPopup(fields, key("has"), &one.Has, false)
 		p.typePopup(fields, path, pr)
@@ -1391,6 +1396,16 @@ func prereqCriteria(key string) prereqCriterion {
 		return prereqCriterion{
 			subject: i18n.Text("Tag"), add: i18n.Text("+ tag"),
 			prefix: i18n.Text("and at least one tag"), notPrefix: i18n.Text("and all tags"),
+		}
+	case "titlenote":
+		return prereqCriterion{
+			subject: i18n.Text("Title Note"), add: i18n.Text("+ title note"),
+			prefix: i18n.Text("and at least one title note"), notPrefix: i18n.Text("and all title notes"),
+		}
+	case "modifier":
+		return prereqCriterion{
+			subject: i18n.Text("Modifier"), add: i18n.Text("+ modifier"),
+			prefix: i18n.Text("and at least one modifier"), notPrefix: i18n.Text("and all modifiers"),
 		}
 	case "specialization":
 		return prereqCriterion{

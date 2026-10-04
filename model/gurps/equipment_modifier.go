@@ -10,6 +10,7 @@
 package gurps
 
 import (
+	"cmp"
 	"encoding/json/jsontext"
 	"encoding/json/v2"
 	"hash"
@@ -95,10 +96,17 @@ type EquipmentModifierNonContainerSyncData struct {
 	WeightType        emweight.Type `json:"weight_type,omitzero"`
 	WeightIsPerLevel  bool          `json:"weight_is_per_level,omitzero"`
 	ShowNotesOnWeapon bool          `json:"show_notes_on_weapon,omitzero"`
-	TechLevel         string        `json:"tech_level,omitzero"`
-	CostAmount        string        `json:"cost,omitzero"`
-	WeightAmount      string        `json:"weight,omitzero"`
-	Features          Features      `json:"features,omitempty"`
+	// ShortName, when set, names the modifier in its owner's title and notes in place of its name.
+	ShortName string `json:"short_name,omitzero"`
+	// HideNotes keeps the modifier's notes out of its owner's notes.
+	HideNotes bool `json:"hide_notes,omitzero"`
+	// ShowInTitle moves the modifier from its owner's notes to the title notes after its owner's name. A modifier with
+	// notes of its own still shows them in its owner's notes, unless HideNotes is set.
+	ShowInTitle  bool     `json:"show_in_title,omitzero"`
+	TechLevel    string   `json:"tech_level,omitzero"`
+	CostAmount   string   `json:"cost,omitzero"`
+	WeightAmount string   `json:"weight,omitzero"`
+	Features     Features `json:"features,omitempty"`
 }
 
 // NewEquipmentModifiersFromFile loads an EquipmentModifier list from a file.
@@ -355,6 +363,22 @@ func (e *EquipmentModifier) String() string {
 	return e.NameWithReplacements()
 }
 
+// CompactName returns how the modifier is named in its owner's title and notes: its short name, or its name when it has
+// none.
+func (e *EquipmentModifier) CompactName() string {
+	return cmp.Or(e.ShortNameWithReplacements(), e.NameWithReplacements())
+}
+
+// ShortNameWithReplacements returns the short name with any replacements applied.
+func (e *EquipmentModifier) ShortNameWithReplacements() string {
+	return applyOwnerReplacements(e.ShortName, e.equipment)
+}
+
+// ShowsInTitle returns true if the modifier is shown in its owner's title notes.
+func (e *EquipmentModifier) ShowsInTitle() bool {
+	return !e.Container() && e.ShowInTitle
+}
+
 // ResolveLocalNotes resolves the local notes, running any embedded scripts to get the final result.
 func (e *EquipmentModifier) ResolveLocalNotes() string {
 	return ResolveText(EntityFromNode(e), deferredNewScriptEquipmentModifier(e), e.LocalNotesWithReplacements())
@@ -373,9 +397,25 @@ func (e *EquipmentModifier) SecondaryText(optionChecker func(display.Option) boo
 
 // FullDescription returns a full description.
 func (e *EquipmentModifier) FullDescription() string {
+	return e.describe(e.String(), true)
+}
+
+// NotesDescription returns the description shown in its owner's notes, which names it by its CompactName and leaves out
+// its notes when HideNotes is set.
+func (e *EquipmentModifier) NotesDescription() string {
+	return e.describe(e.CompactName(), !e.HideNotes)
+}
+
+// ShowsInNotes returns true if the modifier appears in its owner's notes: always, unless it is shown in the title, in
+// which case only when it has notes to show.
+func (e *EquipmentModifier) ShowsInNotes() bool {
+	return !e.ShowsInTitle() || (!e.HideNotes && e.ResolveLocalNotes() != "")
+}
+
+func (e *EquipmentModifier) describe(name string, withNotes bool) string {
 	var buffer strings.Builder
-	buffer.WriteString(e.String())
-	if localNotes := e.ResolveLocalNotes(); localNotes != "" {
+	buffer.WriteString(name)
+	if localNotes := e.ResolveLocalNotes(); withNotes && localNotes != "" {
 		buffer.WriteString(" (")
 		buffer.WriteString(localNotes)
 		buffer.WriteByte(')')
@@ -483,6 +523,7 @@ func (e *EquipmentModifier) fillWithNameableKeysEvenIfDisabled(m, existing map[s
 	nameable.Extract(
 		m, existing,
 		e.Name,
+		e.ShortName,
 		e.LocalNotes,
 	)
 	for _, one := range e.Features {
@@ -715,6 +756,9 @@ func (e *EquipmentModifierNonContainerSyncData) hash(h hash.Hash) {
 	xhash.Num8(h, e.WeightType)
 	xhash.Bool(h, e.WeightIsPerLevel)
 	xhash.Bool(h, e.ShowNotesOnWeapon)
+	xhash.StringWithLen(h, e.ShortName)
+	xhash.Bool(h, e.ShowInTitle)
+	xhash.Bool(h, e.HideNotes)
 	xhash.StringWithLen(h, e.TechLevel)
 	xhash.StringWithLen(h, e.CostAmount)
 	xhash.StringWithLen(h, e.WeightAmount)

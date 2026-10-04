@@ -34,10 +34,10 @@ func initEquipmentModifierEditor(e *editor[*gurps.EquipmentModifier, *gurps.Equi
 		return nil
 	}
 	addNameLabelAndField(content, &e.editorData.Name)
+	addModifierShortNameFields(content, &e.editorData.ShortName, &e.editorData.ShowInTitle)
 	addLabelAndStringField(content, i18n.Text("Tech Level"), gurps.TechLevelInfo(), &e.editorData.TechLevel)
 	addLabelAndMultiLineStringField(content, i18n.Text("Notes"), "", &e.editorData.LocalNotes)
-	content.AddChild(unison.NewPanel())
-	addCheckBox(content, i18n.Text("Also show notes in weapon usage"), &e.editorData.ShowNotesOnWeapon)
+	addModifierNotesCheckBoxes(content, &e.editorData.HideNotes, &e.editorData.ShowNotesOnWeapon)
 	addVTTNotesLabelAndField(content, &e.editorData.VTTNotes)
 	content.AddChild(unison.NewPanel())
 	addModifierEnabledCheckBox(content, e.target, &e.editorData.Disabled)

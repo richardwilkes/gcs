@@ -57,6 +57,7 @@ const (
 	SelectorOverride
 	CostReduction
 	ContainedWeightReduction
+	TitleNote
 	Unknown
 )
 
@@ -109,6 +110,7 @@ var Types = []Type{
 	SelectorOverride,
 	CostReduction,
 	ContainedWeightReduction,
+	TitleNote,
 }
 
 // Type holds the type of a Feature.
@@ -201,6 +203,8 @@ func (enum Type) Key() string {
 		return "cost_reduction"
 	case ContainedWeightReduction:
 		return "contained_weight_reduction"
+	case TitleNote:
+		return "title_note"
 	default:
 		return "unknown"
 	}
@@ -285,6 +289,8 @@ func (enum Type) String() string {
 		return i18n.Text(`Reduces the attribute cost of`)
 	case ContainedWeightReduction:
 		return i18n.Text(`Reduces the contained weight by`)
+	case TitleNote:
+		return i18n.Text(`Adds the title note`)
 	case Unknown:
 		return i18n.Text(`Is an unknown feature type`)
 	default:

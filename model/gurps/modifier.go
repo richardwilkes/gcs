@@ -13,9 +13,11 @@ import (
 	"maps"
 	"strings"
 
+	"github.com/richardwilkes/gcs/v5/model/criteria"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/display"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/srcstate"
 	"github.com/richardwilkes/gcs/v5/model/nameable"
+	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/toolbox/v2/xreflect"
 )
 
@@ -54,7 +56,17 @@ type GeneralModifier interface {
 	Container() bool
 	Depth() int
 	NameWithReplacements() string
+	// ShortNameWithReplacements returns the short name with any replacements applied.
+	ShortNameWithReplacements() string
+	// CompactName returns how the modifier is named in its owner's title and notes.
+	CompactName() string
 	FullDescription() string
+	// NotesDescription returns the description shown in its owner's notes.
+	NotesDescription() string
+	// ShowsInTitle returns true if the modifier is shown in its owner's title notes.
+	ShowsInTitle() bool
+	// ShowsInNotes returns true if the modifier appears in its owner's notes.
+	ShowsInNotes() bool
 	FullCostDescription() string
 	Enabled() bool
 	SetEnabled(enabled bool)
@@ -89,12 +101,13 @@ func AttachModifiers[T ModifiableNode[T, M], M ModifierNode[M, T], S ~[]M](targe
 	}
 }
 
-// activeModifierFor returns the first enabled, non-container modifier whose name matches (case-insensitive), or the
-// zero value if there is none.
+// activeModifierFor returns the first enabled, non-container modifier whose name or short name matches
+// (case-insensitive), or the zero value if there is none.
 func activeModifierFor[M ModifierNode[M, T], T ModifiableNode[T, M], S ~[]M](modifiers S, name string) M {
 	var found M
 	Traverse(func(mod M) bool {
-		if strings.EqualFold(mod.NameWithReplacements(), name) {
+		if strings.EqualFold(mod.NameWithReplacements(), name) ||
+			(mod.ShortNameWithReplacements() != "" && strings.EqualFold(mod.ShortNameWithReplacements(), name)) {
 			found = mod
 			return true
 		}
@@ -103,14 +116,49 @@ func activeModifierFor[M ModifierNode[M, T], T ModifiableNode[T, M], S ~[]M](mod
 	return found
 }
 
-// modifierDescriptions returns the full descriptions of the enabled, non-container modifiers, separated by "; ".
+// modifierNames returns the names of the enabled, non-container modifiers, each followed by its short name when it has
+// one, with replacements applied. Levels are left off. It is what a prerequisite's modifier criteria is matched
+// against, so either name of a modifier matches it.
+func modifierNames[M ModifierNode[M, T], T ModifiableNode[T, M], S ~[]M](modifiers S) []string {
+	var names []string
+	Traverse(func(mod M) bool {
+		names = append(names, mod.NameWithReplacements())
+		if short := mod.ShortNameWithReplacements(); short != "" {
+			names = append(names, short)
+		}
+		return false
+	}, true, true, modifiers...)
+	return names
+}
+
+// describeModifier returns the clause a prerequisite adds to its description for its modifier criteria, such as
+// ` with the modifier Unwilling`, or nothing when any modifier will do. A non-empty qualifier is passed through em.
+func describeModifier(t criteria.Text, replacements map[string]string, em func(string) string) string {
+	if t.Compare == criteria.AnyText {
+		return ""
+	}
+	q := nameable.Apply(t.Qualifier, replacements)
+	if q != "" {
+		q = em(q)
+	}
+	if t.Compare == criteria.IsText && q != "" {
+		return i18n.Text(" with the modifier ") + q
+	}
+	return " " + t.Compare.DescribeWithPrefix(i18n.Text("with a modifier that"), i18n.Text("with all modifiers that"), q)
+}
+
+// modifierDescriptions returns the notes descriptions of the enabled, non-container modifiers that appear in their
+// owner's notes, separated by "; ".
 func modifierDescriptions[M ModifierNode[M, T], T ModifiableNode[T, M], S ~[]M](modifiers S) string {
 	var buffer strings.Builder
 	Traverse(func(mod M) bool {
+		if !mod.ShowsInNotes() {
+			return false
+		}
 		if buffer.Len() != 0 {
 			buffer.WriteString("; ")
 		}
-		buffer.WriteString(mod.FullDescription())
+		buffer.WriteString(mod.NotesDescription())
 		return false
 	}, true, true, modifiers...)
 	return buffer.String()
