@@ -9,7 +9,11 @@
 
 package gurps
 
-import "slices"
+import (
+	"slices"
+
+	"github.com/richardwilkes/toolbox/v2/xreflect"
+)
 
 type traversalData[T Node[T]] struct {
 	list  []T
@@ -88,8 +92,12 @@ func forEachSourcedNode(provider ListProvider, visit func(sourcedNode)) {
 	forEachNode(func(n *Note) { visit(n) }, provider.NoteList())
 }
 
-// syncWithLibrarySources syncs every node the provider holds with its library source.
+// syncWithLibrarySources syncs every node the provider holds with its library source. The library files they are
+// sourced from are checked for changes just once, up front, rather than again for each node.
 func syncWithLibrarySources(provider ListProvider) {
+	if owner := provider.DataOwner(); !xreflect.IsNil(owner) {
+		defer owner.SourceMatcher().prepareForAll(provider)()
+	}
 	forEachSourcedNode(provider, sourcedNode.SyncWithSource)
 }
 

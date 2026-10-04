@@ -10,9 +10,13 @@
 package ux
 
 import (
+	"os"
+	"path/filepath"
 	"testing"
 
+	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/srcstate"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/unison"
 )
@@ -65,4 +69,62 @@ func TestPageListEditingCmdsFollowOwner(t *testing.T) {
 	for _, id := range editingTableCmdIDs {
 		c.False(weapons.Table.CanPerformCmd(nil, id), "a read-only list must not offer command %d", id)
 	}
+}
+
+// watchedListOwner is a data owner without a source matcher, as an equipment list file is, that calls onSourceMatcher
+// whenever it is asked for one.
+type watchedListOwner struct {
+	onSourceMatcher func()
+}
+
+func (w *watchedListOwner) OwningEntity() *gurps.Entity { return nil }
+
+func (w *watchedListOwner) SourceMatcher() *gurps.SrcMatcher {
+	w.onSourceMatcher()
+	return nil
+}
+
+func (w *watchedListOwner) WeightUnit() fxp.WeightUnit { return fxp.Pound }
+
+// TestSyncWithSourceForSelectionLoadsEachFileOnce verifies that syncing the selected rows of a library list loads the
+// library file they are sourced from just once for the whole selection, rather than checking it again for each row, by
+// taking the file away as soon as the first row has been synced, and that the file is checked again for a row matched
+// once the sync is done.
+func TestSyncWithSourceForSelectionLoadsEachFileOnce(t *testing.T) {
+	c := check.New(t)
+	registerKeyBindingsOnce.Do(func() { registerActions() })
+	_, user := useTestLibraries(t, c)
+	RegisterKnownFileTypes()
+	libFile := gurps.LibraryFile{Library: user.Key(), Path: "Test" + gurps.NotesExt}
+	p := filepath.Join(user.Path(), libFile.Path)
+	libNotes := []*gurps.Note{gurps.NewNote(nil, nil, false), gurps.NewNote(nil, nil, false)}
+	libNotes[0].MarkDown = "First"
+	libNotes[1].MarkDown = "Second"
+	c.NoError(gurps.SaveNotes(libNotes, p))
+	owner := &watchedListOwner{}
+	notes := make([]*gurps.Note, len(libNotes))
+	for i, one := range libNotes {
+		notes[i] = one.Clone(libFile, owner, nil, gurps.Reference)
+		notes[i].MarkDown += " (old)"
+	}
+	// Each row asks its data owner for a matcher as it is synced, which is when a check of its file would be made.
+	owner.onSourceMatcher = func() {
+		if notes[0].MarkDown == "First" {
+			if err := os.Remove(p); err != nil && !os.IsNotExist(err) {
+				t.Error(err)
+			}
+		}
+	}
+	dockable := NewNoteTableDockable("test"+gurps.NotesExt, notes)
+	dockable.table.SelectAll()
+
+	SyncWithSourceForSelection(dockable.table)
+	_, err := os.Stat(p)
+	c.True(os.IsNotExist(err), "precondition: the file was taken away during the sync")
+	c.Equal("First", notes[0].MarkDown)
+	c.Equal("Second", notes[1].MarkDown, "a row after the first is synced with the file as loaded for the selection")
+
+	notes[0].MarkDown = "First (old)"
+	state, _ := gurps.MatchSource(notes[0])
+	c.Equal(srcstate.Missing, state, "the file is checked again for a row matched once the sync is done")
 }

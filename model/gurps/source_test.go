@@ -14,6 +14,7 @@ import (
 	"maps"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 	"testing"
 	"time"
@@ -373,6 +374,125 @@ func TestSharedMatcherHoldsOnlyTheFilesLastUsed(t *testing.T) {
 	c.False(held(1), "the one used longest ago is let go")
 	state, _ = MatchSource(notes[1])
 	c.Equal(srcstate.Matched, state, "and is loaded again when next needed")
+
+	gone := NewNote(nil, nil, false)
+	gone.Source = Source{Library: "Test Library", Path: "Gone" + NotesExt, TID: notes[0].TID}
+	state, _ = MatchSource(gone)
+	c.Equal(srcstate.Missing, state)
+	c.Equal(maxUnownedSrcFiles, len(unownedSrcMatcher.libHashes), "a file that can't be found pushes out none that can")
+	c.Equal(maxUnownedSrcFiles, len(unownedSrcFiles))
+	c.True(held(3), "so the file used longest ago is still held")
+}
+
+// TestBatchSourceMatchesLoadsEachFileOnce verifies that a batch of matches loads the library file of each node without
+// a source matcher of its own just once, however many files the nodes come from and in whatever order they are matched,
+// where the shared matcher loads a file again each time the others have pushed it out. The batch uses what the shared
+// matcher already holds, leaves it as it was, and the files are checked again once the batch is done.
+func TestBatchSourceMatchesLoadsEachFileOnce(t *testing.T) {
+	c := check.New(t)
+	isolateUnownedSrcMatcher(t)
+	registerTestFileTypes(t, NotesExt)
+	root := useTestLibrary(t, "Test Library")
+	notes := make([]*Note, maxUnownedSrcFiles+2)
+	paths := make([]string, len(notes))
+	for i := range notes {
+		lib := NewNote(nil, nil, false)
+		libFile := LibraryFile{Library: "Test Library", Path: fmt.Sprintf("Notes %d%s", i, NotesExt)}
+		paths[i] = filepath.Join(root, libFile.Path)
+		c.NoError(SaveNotes([]*Note{lib}, paths[i]))
+		notes[i] = lib.Clone(libFile, nil, nil, Reference)
+	}
+	// libCopy returns the library's copy of the note as matched, which is another one each time its file is loaded.
+	libCopy := func(i int) any {
+		state, data := MatchSource(notes[i])
+		c.Equal(srcstate.Matched, state)
+		return data
+	}
+	last := len(notes) - 1
+	first := libCopy(0)
+	for i := 1; i <= last; i++ {
+		libCopy(i)
+	}
+	c.True(first != libCopy(0), "precondition: outside of a batch, a file the others pushed out is loaded again")
+	sharedCopy := libCopy(last)
+	sharedFiles := slices.Clone(unownedSrcFiles)
+
+	done := BatchSourceMatches()
+	copies := make([]any, len(notes))
+	for i := range notes {
+		copies[i] = libCopy(i)
+	}
+	for i := range notes {
+		c.True(copies[i] == libCopy(i), "each file is loaded just once in a batch, however many are used in between")
+	}
+	c.True(sharedCopy == copies[last], "a file the shared matcher holds isn't loaded again for the batch")
+	c.NoError(os.Remove(paths[0]))
+	c.True(copies[0] == libCopy(0), "a file is checked just once in a batch")
+	gone := NewNote(nil, nil, false)
+	gone.Source = Source{Library: "Test Library", Path: "Gone" + NotesExt, TID: notes[0].TID}
+	state, _ := MatchSource(gone)
+	c.Equal(srcstate.Missing, state, "a source whose file can't be found is still missing in a batch")
+	BatchSourceMatches()()
+	c.True(copies[0] == libCopy(0), "a batch begun within another doesn't end it")
+	c.Equal(sharedFiles, unownedSrcFiles, "the batch leaves the shared matcher as it was")
+	c.Equal(len(sharedFiles), len(unownedSrcMatcher.libHashes))
+
+	done()
+	state, _ = MatchSource(notes[0])
+	c.Equal(srcstate.Missing, state, "the files are checked again once the batch is done")
+	c.True(sharedCopy == libCopy(last), "and the shared matcher is used again")
+}
+
+// watchedTemplate is a template that calls onSourceMatcher whenever it is asked for its source matcher.
+type watchedTemplate struct {
+	*Template
+	onSourceMatcher func()
+}
+
+func (w *watchedTemplate) DataOwner() DataOwner { return w }
+
+func (w *watchedTemplate) SourceMatcher() *SrcMatcher {
+	w.onSourceMatcher()
+	return w.Template.SourceMatcher()
+}
+
+// TestSyncWithLibrarySourcesChecksEachFileOnce verifies that syncing every node a provider holds checks the library
+// files they are sourced from just once, up front, rather than again for each node, by taking the file away as soon as
+// it has been loaded, and that the file is checked again for a node matched once the sync is done.
+func TestSyncWithLibrarySourcesChecksEachFileOnce(t *testing.T) {
+	c := check.New(t)
+	registerTestFileTypes(t, TraitsExt)
+	libFile := LibraryFile{Library: "Test Library", Path: "Test" + TraitsExt}
+	p := filepath.Join(useTestLibrary(t, libFile.Library), libFile.Path)
+	libTraits := []*Trait{NewTrait(nil, nil, false), NewTrait(nil, nil, false)}
+	libTraits[0].Name = "Claws"
+	libTraits[1].Name = "Fangs"
+	c.NoError(SaveTraits(libTraits, p))
+	tmpl := &watchedTemplate{Template: NewTemplate()}
+	sm := tmpl.Template.SourceMatcher()
+	// Each node asks its data owner for the matcher as it is synced, which is when a check of its file would be made.
+	tmpl.onSourceMatcher = func() {
+		if _, loaded := sm.libHashes[libFile]; loaded {
+			if err := os.Remove(p); err != nil && !os.IsNotExist(err) {
+				t.Error(err)
+			}
+		}
+	}
+	for _, one := range libTraits {
+		local := one.Clone(libFile, tmpl, nil, Reference)
+		local.Name += " (old)"
+		tmpl.Traits = append(tmpl.Traits, local)
+	}
+
+	syncWithLibrarySources(tmpl)
+	_, err := os.Stat(p)
+	c.True(os.IsNotExist(err), "precondition: the file was taken away during the sync")
+	c.Equal("Claws", tmpl.Traits[0].Name, "a node is synced with the file as it was checked up front")
+	c.Equal("Fangs", tmpl.Traits[1].Name, "as is every node after it")
+
+	tmpl.Traits[0].Name = "Claws (old)"
+	state, _ := MatchSource(tmpl.Traits[0])
+	c.Equal(srcstate.Missing, state, "the file is checked again for a node matched once the sync is done")
 }
 
 // TestCloneWithoutParentHashesTheSame verifies that a copy of a node made without its parent, as an editor makes to

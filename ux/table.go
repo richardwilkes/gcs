@@ -488,8 +488,10 @@ func ClearSourceFromSelection[T gurps.Node[T]](table *unison.Table[*Node[T]]) {
 	applyToSelectedRows(table, clearSourceAction.Title, T.ClearSource)
 }
 
-// SyncWithSourceForSelection synchronizes the selected nodes with their source.
+// SyncWithSourceForSelection synchronizes the selected nodes with their source. The library files of nodes that have
+// no source matcher of their own, as in a library list file, are each loaded just once for the whole selection.
 func SyncWithSourceForSelection[T gurps.Node[T]](table *unison.Table[*Node[T]]) {
+	defer gurps.BatchSourceMatches()()
 	applyToSelectedRows(table, syncWithSourceAction.Title, T.SyncWithSource)
 }
 

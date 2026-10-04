@@ -48,7 +48,6 @@ func SyncToLibraryData(paths ...string) error {
 			return err
 		}
 		data.EnsureAttachments()
-		data.SourceMatcher().PrepareHashes(data)
 		data.SyncWithLibrarySources()
 		if err = data.Save(p); err != nil {
 			return err
@@ -66,7 +65,6 @@ func SyncToLibraryData(paths ...string) error {
 type librarySyncable interface {
 	ListProvider
 	EnsureAttachments()
-	SourceMatcher() *SrcMatcher
 	SyncWithLibrarySources()
 	Save(filePath string) error
 }

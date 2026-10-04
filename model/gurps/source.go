@@ -60,6 +60,9 @@ type SrcProvider interface {
 // SrcMatcher provides Source matching for a given ListProvider.
 type SrcMatcher struct {
 	libHashes map[LibraryFile]libSrcData
+	// prepared is set while every node of the provider is being synced, for which the hashes are prepared up front (see
+	// prepareForAll).
+	prepared bool
 }
 
 // IsZero reports whether json's omitzero option should omit this value.
@@ -116,6 +119,19 @@ func (sm *SrcMatcher) PrepareHashes(provider ListProvider) {
 	for libFile := range neededLibs {
 		sm.prepareHashesFor(libFile)
 	}
+}
+
+// prepareForAll prepares the hashes for the provider's nodes (see PrepareHashes) and has MatchSource rely on them as
+// they stand, rather than check the library file of each node it is asked about again, until the returned function is
+// called. A nil matcher does nothing.
+func (sm *SrcMatcher) prepareForAll(provider ListProvider) (done func()) {
+	if sm == nil {
+		return func() {}
+	}
+	sm.PrepareHashes(provider)
+	was := sm.prepared
+	sm.prepared = true
+	return func() { sm.prepared = was }
 }
 
 // prepareHashesFor loads the hashes of the library file, reloads them if the file was modified or its library moved,
@@ -233,13 +249,27 @@ var (
 	unownedSrcMatcher SrcMatcher
 	// unownedSrcFiles lists the library files unownedSrcMatcher was last used for, the latest last.
 	unownedSrcFiles []LibraryFile
+	// unownedSrcBatch is what MatchSource uses in place of unownedSrcMatcher while a batch of matches is under way (see
+	// BatchSourceMatches).
+	unownedSrcBatch *srcBatch
 )
 
-// useUnownedSrcFile records the library file as the latest unownedSrcMatcher is used for, and drops the files beyond
-// maxUnownedSrcFiles.
+// srcBatch is the source matcher of a batch of matches. It checks each library file it is asked about just once and
+// holds on to them all.
+type srcBatch struct {
+	SrcMatcher
+	checked map[LibraryFile]struct{}
+}
+
+// useUnownedSrcFile has unownedSrcMatcher load the library file, or reload it if modified, records the file as the
+// latest it is used for, and drops the files beyond maxUnownedSrcFiles. A file that can't be found isn't recorded, so
+// that it doesn't push out one that can.
 func useUnownedSrcFile(libFile LibraryFile) {
-	unownedSrcFiles = append(slices.DeleteFunc(unownedSrcFiles, func(one LibraryFile) bool { return one == libFile }),
-		libFile)
+	unownedSrcMatcher.prepareHashesFor(libFile)
+	unownedSrcFiles = slices.DeleteFunc(unownedSrcFiles, func(one LibraryFile) bool { return one == libFile })
+	if _, held := unownedSrcMatcher.libHashes[libFile]; held {
+		unownedSrcFiles = append(unownedSrcFiles, libFile)
+	}
 	if excess := len(unownedSrcFiles) - maxUnownedSrcFiles; excess > 0 {
 		unownedSrcFiles = slices.Delete(unownedSrcFiles, 0, excess)
 	}
@@ -248,20 +278,56 @@ func useUnownedSrcFile(libFile LibraryFile) {
 	})
 }
 
+// BatchSourceMatches has MatchSource, until the returned function is called, load the library file of each node that
+// has no source matcher to use but the shared one just once, when first asked about a node from it, and hold on to
+// every file loaded rather than the few the shared matcher does. It is for matching many such nodes in one go, whose
+// library files would otherwise push each other out of the shared matcher and be loaded again and again. A batch begun
+// within another is part of it.
+func BatchSourceMatches() (done func()) {
+	if unownedSrcBatch != nil {
+		return func() {}
+	}
+	unownedSrcBatch = &srcBatch{
+		libHashes: make(map[LibraryFile]libSrcData),
+		checked:   make(map[LibraryFile]struct{}),
+	}
+	return func() { unownedSrcBatch = nil }
+}
+
+// use loads the library file if this is the first the batch is asked about it. What unownedSrcMatcher holds of the file
+// is used when the file hasn't been modified since, rather than loading it again.
+func (b *srcBatch) use(libFile LibraryFile) {
+	if _, checked := b.checked[libFile]; checked {
+		return
+	}
+	b.checked[libFile] = struct{}{}
+	if data, held := unownedSrcMatcher.libHashes[libFile]; held {
+		b.libHashes[libFile] = data
+	}
+	b.prepareHashesFor(libFile)
+}
+
 // MatchSource returns the source state of the node, along with the library's copy of it when one was found. It uses the
 // source matcher of the node's data owner, or a shared one when there is none, first loading the node's library file,
-// or reloading it if modified, since the matcher may not have been prepared with it.
+// or reloading it if modified, since the matcher may not have been prepared with it. That is skipped while the matcher
+// is prepared for all of its data owner's nodes (see prepareForAll), and done just once for each library file while a
+// batch of matches is under way (see BatchSourceMatches).
 func MatchSource[T Node[T]](node T) (state srcstate.Value, match any) {
 	var sm *SrcMatcher
 	if owner := node.DataOwner(); !xreflect.IsNil(owner) {
 		sm = owner.SourceMatcher()
 	}
 	if src := node.GetSource(); !src.IsZero() {
-		if sm == nil {
+		switch {
+		case sm == nil && unownedSrcBatch != nil:
+			unownedSrcBatch.use(src.LibraryFile)
+			sm = &unownedSrcBatch.SrcMatcher
+		case sm == nil:
 			useUnownedSrcFile(src.LibraryFile)
 			sm = &unownedSrcMatcher
+		case !sm.prepared:
+			sm.prepareHashesFor(src.LibraryFile)
 		}
-		sm.prepareHashesFor(src.LibraryFile)
 	}
 	return sm.Match(node)
 }
