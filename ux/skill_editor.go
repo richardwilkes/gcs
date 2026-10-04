@@ -58,8 +58,18 @@ func initSkillEditor(e *editor[*gurps.Skill, *gurps.SkillEditData], content *uni
 		if e.target.IsTechnique() {
 			if e.editorData.TechniqueDefault == nil {
 				// Data loaded from JSON without a "default" field leaves this nil, so give the editor something to
-				// work with rather than crashing.
-				e.editorData.TechniqueDefault = &gurps.SkillDefault{DefaultType: gurps.SkillID}
+				// work with rather than crashing. The data the editor's is compared against is given the same, or the
+				// editor would open already modified.
+				newDefault := func() *gurps.SkillDefault {
+					return &gurps.SkillDefault{
+						DefaultType: gurps.SkillID,
+						Name:        criteria.Text{TextData: criteria.TextData{Compare: criteria.IsText}},
+					}
+				}
+				e.editorData.TechniqueDefault = newDefault()
+				if e.beforeData.TechniqueDefault == nil {
+					e.beforeData.TechniqueDefault = newDefault()
+				}
 			}
 			wrapper, defaultsLabel := addFlowWrapper(content, i18n.Text("Defaults To"), 4)
 			wrapper.SetLayoutData(&unison.FlexLayoutData{

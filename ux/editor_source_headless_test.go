@@ -20,6 +20,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/toolbox/v2/geom"
+	"github.com/richardwilkes/toolbox/v2/tid"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/mod"
 )
@@ -95,10 +96,14 @@ func TestEditorSourceMenu(t *testing.T) {
 	node := screen.AccessibilityNodeFor(clearItem)
 	c.True(node != nil && node.Disabled, "a trait without a source has none to clear")
 	screen.Click(screen.PanelCenter(clearItem))
-	var modified bool
-	screen.Do(func() { modified = customEditor.isModified() })
+	var modified, menuOpen bool
+	screen.Do(func() {
+		modified = customEditor.isModified()
+		menuOpen = openMenuPopup(wnd) != nil
+	})
 	c.False(modified, "choosing a disabled command does nothing")
-	closeContextMenu(c, screen, wnd)
+	// So there is no menu for an Escape to close: it would go to the editor instead, which discards its changes.
+	c.False(menuOpen, "other than close the menu")
 	closeEditorWithoutPrompt(t, screen, customEditor)
 
 	screen.Do(func() { e = EditTrait(sheet, trait) })
@@ -450,10 +455,11 @@ func TestEditorSyncKeepsTheFocusInPlaceAsContentGrows(t *testing.T) {
 }
 
 // TestEditorSyncClosesItsSubEditors verifies that syncing from the source menu first closes the editors open on the
-// modifiers and weapons within the editor's data, which the sync replaces, and syncs nothing when one of them is kept
-// open, as canceling its prompt to save does. Closing a sub-editor gives the focus to the list it was opened from and
-// scrolls the editor to that list, yet the focus, its selection and the editor's scrolling all end up as they were when
-// the sync was chosen.
+// modifiers and weapons within the editor's data, and syncs nothing when one of them is kept open, as canceling its
+// prompt does. A weapon's editor with changes asks only whether to discard them, since the sync replaces the weapons
+// and saving the changes would have them thrown away. Closing a sub-editor gives the focus to the list it was opened
+// from and scrolls the editor to that list, yet the focus, its selection and the editor's scrolling all end up as they
+// were when the sync was chosen.
 func TestEditorSyncClosesItsSubEditors(t *testing.T) {
 	c := check.New(t)
 	screen, wnd := startHeadlessWorkspace(t, c)
@@ -507,26 +513,33 @@ func TestEditorSyncClosesItsSubEditors(t *testing.T) {
 	c.True(focused, "precondition: the field holds the focus")
 	c.False(listInView, "precondition: the list of weapons is out of view")
 
-	// Canceling the prompt to save the weapon's changes keeps its editor open, so nothing is synced.
+	// Canceling the prompt to discard the weapon's changes keeps its editor open, so nothing is synced.
 	chooseSyncWithSource(t, screen, wnd, e)
-	_, dialog := modalDialog(t, screen, wnd)
-	var button *unison.Button
-	screen.Do(func() { button = dialog.Button(unison.ModalResponseCancel) })
-	if button == nil {
-		t.Fatal("the save prompt has no cancel button")
-	}
-	screen.Click(screen.PanelCenter(button))
-	var name string
+	dialogWnd, dialog := modalDialog(t, screen, wnd)
+	var prompt []string
+	var offersSave bool
+	screen.Do(func() {
+		prompt = labelTexts(dialogWnd.Content())
+		offersSave = dialog.Button(unison.ModalResponseDiscard) != nil
+	})
+	c.True(slices.Contains(prompt, "Discard changes made to"), "the prompt asks whether to discard the weapon's "+
+		"changes: %v", prompt)
+	c.True(slices.Contains(prompt, "Syncing with the source replaces this weapon."), "and says why: %v", prompt)
+	c.False(offersSave, "rather than whether to save them, which the sync would undo")
+	screen.Click(screen.PanelCenter(dialogButton(t, screen, dialog, unison.ModalResponseCancel)))
+	var name, discardReason string
 	var weaponEditors, selStart, selEnd int
 	var hAfter, vAfter float32
 	screen.Do(func() {
 		name = e.editorData.Name
 		weaponEditors = len(AllMatchingDockables(isWeaponEditor))
+		discardReason = weaponEditor.discardReason
 		focused = wnd.CurrentFocus() == vttNotes.AsPanel()
 		selStart, selEnd = vttNotes.Selection()
 		hAfter, vAfter = e.scroll.Position()
 	})
 	c.Equal(1, weaponEditors, "canceling keeps the weapon's editor open")
+	c.Equal("", discardReason, "which asks whether to save its changes again when closed for any other reason")
 	c.Equal("Claws (old)", name, "so nothing is synced")
 	c.True(focused, "and the focus is back on the field that had it")
 	c.Equal(3, selStart, "with the selection as it was")
@@ -544,16 +557,15 @@ func TestEditorSyncClosesItsSubEditors(t *testing.T) {
 	// Discarding the weapon's changes lets its editor close, and the sync go ahead.
 	chooseSyncWithSource(t, screen, wnd, e)
 	_, dialog = modalDialog(t, screen, wnd)
-	screen.Do(func() { button = dialog.Button(unison.ModalResponseDiscard) })
-	if button == nil {
-		t.Fatal("the save prompt has no discard button")
-	}
-	screen.Click(screen.PanelCenter(button))
+	screen.Click(screen.PanelCenter(dialogButton(t, screen, dialog, unison.ModalResponseOK)))
 	rebuilt := editorField(t, screen, e, "VTT Notes")
-	var notes string
+	var notes, usage string
 	screen.Do(func() {
 		name = e.editorData.Name
 		notes = e.editorData.VTTNotes
+		if len(e.editorData.Weapons) == 1 {
+			usage = e.editorData.Weapons[0].Usage
+		}
 		weaponEditors = len(AllMatchingDockables(isWeaponEditor))
 		focused = rebuilt != vttNotes && wnd.CurrentFocus() == rebuilt.AsPanel()
 		selStart, selEnd = rebuilt.Selection()
@@ -563,6 +575,7 @@ func TestEditorSyncClosesItsSubEditors(t *testing.T) {
 	c.Equal(0, weaponEditors, "the weapon's editor is closed")
 	c.Equal("Claws", name, "and the trait synced")
 	c.Equal("Typed", notes)
+	c.Equal("", usage, "with the library's weapon in place of the one that was edited")
 	c.True(focused, "the focus is on the rebuilt field that had it, not the list the weapon's editor gave it to")
 	c.Equal(2, selStart, "with the selection as it was")
 	c.Equal(5, selEnd)
@@ -694,17 +707,13 @@ func TestEditorSyncTakesTheFocusFromAClosedSubEditor(t *testing.T) {
 		c.True(focused, "precondition: the focus is within the weapon's editor")
 		c.True(modified, "precondition: which has changes to save")
 	}
-	// syncDiscardingWeaponChanges chooses Sync with Source, then Discard from the weapon editor's prompt to save.
+	// syncDiscardingWeaponChanges chooses Sync with Source, then agrees to the weapon editor's prompt to discard its
+	// changes.
 	syncDiscardingWeaponChanges := func() {
 		t.Helper()
 		chooseSyncWithSource(t, screen, wnd, e)
 		_, dialog := modalDialog(t, screen, wnd)
-		var button *unison.Button
-		screen.Do(func() { button = dialog.Button(unison.ModalResponseDiscard) })
-		if button == nil {
-			t.Fatal("the save prompt has no discard button")
-		}
-		screen.Click(screen.PanelCenter(button))
+		screen.Click(screen.PanelCenter(dialogButton(t, screen, dialog, unison.ModalResponseOK)))
 	}
 
 	// Opened as from the list of weapons, which holds the focus as the weapon's editor opens.
@@ -756,4 +765,152 @@ func TestEditorSyncTakesTheFocusFromAClosedSubEditor(t *testing.T) {
 		open = slices.ContainsFunc(AllDockables(), func(d unison.Dockable) bool { return d.AsPanel().Self == e })
 	})
 	c.False(open, "Escape reaches the editor, which discards its changes and closes")
+}
+
+// TestEditorSyncKeepsSavedModifierChanges verifies that syncing while a modifier's editor has changes asks whether to
+// save them, as closing it any other way does, and that the sync keeps what was saved, since it leaves the modifiers
+// alone.
+func TestEditorSyncKeepsSavedModifierChanges(t *testing.T) {
+	c := check.New(t)
+	screen, wnd := startHeadlessWorkspace(t, c)
+	sheet, ok := openedByAction(t, screen, newCharacterSheetAction).(*Sheet)
+	if !ok {
+		t.Fatal("New Character Sheet must open a character sheet")
+	}
+	e, _ := newEditedLibraryTrait(t, c, screen, sheet, nil, func(local *gurps.Trait) {
+		modifier := gurps.NewTraitModifier(local.DataOwner(), nil, false)
+		modifier.Name = "Long"
+		local.Modifiers = []*gurps.TraitModifier{modifier}
+		gurps.AttachModifiers(local, local.Modifiers)
+	})
+	isModifierEditor := func(d unison.Dockable) bool {
+		_, isEditor := d.AsPanel().Self.(*editor[*gurps.TraitModifier, *gurps.TraitModifierEditData])
+		return isEditor
+	}
+	screen.Do(func() { EditTraitModifier(e, e.editorData.Modifiers[0]) })
+	modifierEditor := soleEditor[*editor[*gurps.TraitModifier, *gurps.TraitModifierEditData]](t, screen,
+		isModifierEditor)
+	screen.Do(func() {
+		modifierEditor.editorData.Name = "Longer"
+		modifierEditor.MarkModified(nil)
+	})
+
+	chooseSyncWithSource(t, screen, wnd, e)
+	dialogWnd, dialog := modalDialog(t, screen, wnd)
+	var prompt []string
+	screen.Do(func() { prompt = labelTexts(dialogWnd.Content()) })
+	c.True(slices.Contains(prompt, "Save changes made to"), "the prompt asks whether to save the modifier's "+
+		"changes: %v", prompt)
+	screen.Click(screen.PanelCenter(dialogButton(t, screen, dialog, unison.ModalResponseOK)))
+	var name, modifierName string
+	var modifierEditors int
+	screen.Do(func() {
+		name = e.editorData.Name
+		modifierEditors = len(AllMatchingDockables(isModifierEditor))
+		if len(e.editorData.Modifiers) == 1 {
+			modifierName = e.editorData.Modifiers[0].Name
+		}
+	})
+	c.Equal(0, modifierEditors, "saving closes the modifier's editor")
+	c.Equal("Claws", name, "and the trait is synced")
+	c.Equal("Longer", modifierName, "keeping the modifier as it was saved")
+	screen.Click(screen.PanelCenter(e.cancelButton))
+}
+
+// TestEditorSyncKeepsTheSelectionOfTheFocusedList verifies that a sync leaves the rows of the list that holds the focus
+// selected in the list as rebuilt: the same modifiers, which a sync leaves alone, and the weapons in the same places,
+// since a sync replaces the weapons with the library's.
+func TestEditorSyncKeepsTheSelectionOfTheFocusedList(t *testing.T) {
+	c := check.New(t)
+	screen, wnd := startHeadlessWorkspace(t, c)
+	sheet, ok := openedByAction(t, screen, newCharacterSheetAction).(*Sheet)
+	if !ok {
+		t.Fatal("New Character Sheet must open a character sheet")
+	}
+	e, _ := newEditedLibraryTrait(t, c, screen, sheet, func(lib *gurps.Trait) {
+		lib.Weapons = append(lib.Weapons, gurps.NewWeapon(lib, true))
+		lib.Weapons[1].Usage = "Swung"
+	}, func(local *gurps.Trait) {
+		for _, name := range []string{"Long", "Sharp"} {
+			modifier := gurps.NewTraitModifier(local.DataOwner(), nil, false)
+			modifier.Name = name
+			local.Modifiers = append(local.Modifiers, modifier)
+		}
+		gurps.AttachModifiers(local, local.Modifiers)
+	})
+	modifiersTable := func() *unison.Table[*Node[*gurps.TraitModifier]] {
+		if panels := panelsOfType[*traitModifiersPanel](e.content); len(panels) == 1 {
+			return panels[0].table
+		}
+		return nil
+	}
+	var oldModifiers *unison.Table[*Node[*gurps.TraitModifier]]
+	var focused bool
+	screen.Do(func() {
+		if oldModifiers = modifiersTable(); oldModifiers != nil {
+			oldModifiers.RequestFocus()
+			oldModifiers.SelectByIndex(1)
+			focused = wnd.CurrentFocus() == oldModifiers.AsPanel()
+		}
+	})
+	if oldModifiers == nil {
+		t.Fatal("the editor has no list of modifiers")
+	}
+	c.True(focused, "precondition: the list of modifiers holds the focus")
+
+	chooseSyncWithSource(t, screen, wnd, e)
+	var name, selected string
+	var count int
+	screen.Do(func() {
+		name = e.editorData.Name
+		table := modifiersTable()
+		focused = table != nil && table != oldModifiers && wnd.CurrentFocus() == table.AsPanel()
+		if table != nil {
+			count = table.SelectionCount()
+			if rows := table.SelectedRows(false); len(rows) == 1 {
+				selected = rows[0].Data().Name
+			}
+		}
+	})
+	c.Equal("Claws", name, "the trait is synced")
+	c.True(focused, "the focus is on the list of modifiers, as rebuilt")
+	c.Equal(1, count, "with one modifier selected")
+	c.Equal("Sharp", selected, "the one that was")
+
+	var oldWeapons *unison.Table[*Node[*gurps.Weapon]]
+	var oldID tid.TID
+	screen.Do(func() {
+		e.editorData.Name = "Claws (changed)"
+		oldWeapons = e.meleeWeapons.table
+		oldWeapons.RequestFocus()
+		oldWeapons.SelectByIndex(1)
+		focused = wnd.CurrentFocus() == oldWeapons.AsPanel()
+		if rows := oldWeapons.SelectedRows(false); len(rows) == 1 {
+			oldID = rows[0].Data().TID
+		}
+	})
+	c.True(focused, "precondition: the list of weapons holds the focus")
+	c.True(oldID != "", "precondition: with its second weapon selected")
+
+	chooseSyncWithSource(t, screen, wnd, e)
+	var usage string
+	var replaced, second bool
+	screen.Do(func() {
+		name = e.editorData.Name
+		table := e.meleeWeapons.table
+		focused = table != oldWeapons && wnd.CurrentFocus() == table.AsPanel()
+		count = table.SelectionCount()
+		second = table.IsRowSelected(1)
+		if rows := table.SelectedRows(false); len(rows) == 1 {
+			usage = rows[0].Data().Usage
+			replaced = rows[0].Data().TID != oldID
+		}
+	})
+	c.Equal("Claws", name, "the trait is synced again")
+	c.True(focused, "the focus is on the list of weapons, as rebuilt")
+	c.Equal(1, count, "with one weapon selected")
+	c.True(second, "the second")
+	c.Equal("Swung", usage)
+	c.True(replaced, "which is the library's weapon in place of the one that was selected")
+	screen.Click(screen.PanelCenter(e.cancelButton))
 }

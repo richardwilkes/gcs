@@ -12,6 +12,7 @@ package ux
 import (
 	"os"
 	"path/filepath"
+	"slices"
 	"testing"
 	"time"
 
@@ -166,6 +167,42 @@ func stopNavigatorWatches(t *testing.T, screen *unison.HeadlessScreen, n *Naviga
 		}
 		time.Sleep(10 * time.Millisecond)
 	}
+}
+
+// TestReloadServesInPlaceOfAPendingOne verifies that a reload made while one asked for with EventuallyReload is still
+// pending serves in its place: once the delay is up, the navigator is not reloaded a second time, which would replace
+// its rows and watch every library afresh behind the back of whoever made the reload, while a request made after the
+// reload is still honored.
+func TestReloadServesInPlaceOfAPendingOne(t *testing.T) {
+	c := check.New(t)
+	screen, _ := startHeadlessWorkspace(t, c)
+	var n *Navigator
+	screen.Do(func() { n = Workspace.Navigator })
+	// Waits out the reload a new navigator asks for of itself.
+	stopNavigatorWatches(t, screen, n)
+
+	// rowsAfterDelay returns the navigator's root rows once any reload that was pending has had time to be made.
+	rowsAfterDelay := func() []*NavigatorNode {
+		time.Sleep(2 * eventualReloadDelay)
+		var rows []*NavigatorNode
+		screen.Do(func() { rows = slices.Clone(n.table.RootRows()) })
+		return rows
+	}
+	screen.Do(n.EventuallyReload)
+	var pending bool
+	var rows []*NavigatorNode
+	screen.Do(func() {
+		pending = n.needReload
+		n.Reload()
+		rows = slices.Clone(n.table.RootRows())
+	})
+	c.True(pending, "precondition: a reload is pending")
+	c.True(len(rows) != 0, "precondition: the navigator has rows")
+	c.True(slices.Equal(rows, rowsAfterDelay()), "a reload made in the meantime leaves nothing for the pending one "+
+		"to do")
+
+	screen.Do(n.EventuallyReload)
+	c.False(slices.Equal(rows, rowsAfterDelay()), "a reload asked for after that is still made")
 }
 
 // TestNewFolderIsUnavailableForFavorites verifies that New Folder is disabled while the Favorites row is the selection

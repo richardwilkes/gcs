@@ -45,6 +45,9 @@ type editorShell struct {
 	// promptForSave is cleared by the Apply and Discard buttons, which have already settled what happens to pending
 	// changes, so closing then asks nothing.
 	promptForSave bool
+	// discardReason, when not empty, says why saving the pending changes would be futile, as it is while what the editor
+	// edits is about to be replaced. Closing then asks whether to discard them rather than whether to save them.
+	discardReason string
 }
 
 // editor returns the editor embedding the shell, or nil if Self has not been set to one.
@@ -169,11 +172,16 @@ func (s *editorShell) enableApplyAndCancel(modified bool) bool {
 }
 
 // confirmClose asks whether to save pending changes, when isModified reports some and neither button has already
-// settled what to do with them, applying them with apply if the user says to. It returns false if the user cancels, in
-// which case the editor stays open.
+// settled what to do with them, applying them with apply if the user says to. When saving them would be futile (see
+// discardReason), it asks whether to discard them instead. It returns false if the user cancels, in which case the
+// editor stays open.
 func (s *editorShell) confirmClose(isModified func() bool, apply func()) bool {
 	if !s.promptForSave || !isModified() {
 		return true
+	}
+	if s.discardReason != "" {
+		return unison.QuestionDialog(fmt.Sprintf(i18n.Text("Discard changes made to\n%s?"), s.editor().Title()),
+			s.discardReason) == unison.ModalResponseOK
 	}
 	switch unison.YesNoCancelDialog(fmt.Sprintf(i18n.Text("Save changes made to\n%s?"), s.editor().Title()), "") {
 	case unison.ModalResponseDiscard:

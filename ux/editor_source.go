@@ -20,6 +20,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/i18n"
+	"github.com/richardwilkes/toolbox/v2/tid"
 	"github.com/richardwilkes/toolbox/v2/xreflect"
 	"github.com/richardwilkes/unison"
 )
@@ -92,12 +93,13 @@ func syncChangesKind(target, source any) bool {
 
 // syncWithSource syncs the editor's data with the library's copy as a pending change, keeping the pending changes to
 // fields a sync doesn't cover, and rebuilds the content, which clears the editor's undo history. Editors open on the
-// data's modifiers and weapons are closed first, since the sync replaces what they edit.
+// data's modifiers and weapons are closed first (see closeSubEditorsForSync), since the sync replaces what they edit:
+// the modifiers with copies of themselves and the weapons with the library's.
 func (e *editor[N, D]) syncWithSource() {
 	// Noted before the sub-editors are closed, since closing one gives the focus to the list it was opened from and
 	// scrolls the editor to that list.
 	focus := e.noteFocus()
-	closed := CloseGroup(e)
+	closed := e.closeSubEditorsForSync()
 	if focus.gone() {
 		// The focus was within a sub-editor that is now closed, so it stays where closing that one left it if that is
 		// within the content, as the list it was opened from is, and goes to the content otherwise.
@@ -124,6 +126,28 @@ func (e *editor[N, D]) syncWithSource() {
 	focus.restore(e.content, e.scroll)
 }
 
+// closeSubEditorsForSync closes the editors open on the data's modifiers and weapons, as CloseGroup does, returning
+// false if one of them stays open. A sync replaces every weapon with the library's, so saving the changes pending in a
+// weapon's editor would only have them thrown away, and such an editor asks whether to discard them instead. A sync
+// leaves the modifiers alone, so what is saved from a modifier's editor is kept. Closing either leaves the sync still
+// to be done: of what they edit, only the weapons count toward whether the data matches its source, and their pending
+// changes are not saved.
+func (e *editor[N, D]) closeSubEditorsForSync() bool {
+	var weaponEditors []*editor[*gurps.Weapon, *gurps.Weapon]
+	traverseGroup(e, func(target GroupedCloser) bool {
+		if weaponEditor, ok := target.(*editor[*gurps.Weapon, *gurps.Weapon]); ok {
+			weaponEditor.discardReason = i18n.Text("Syncing with the source replaces this weapon.")
+			weaponEditors = append(weaponEditors, weaponEditor)
+		}
+		return false
+	})
+	closed := CloseGroup(e)
+	for _, weaponEditor := range weaponEditors {
+		weaponEditor.discardReason = ""
+	}
+	return closed
+}
+
 // contentFocus records where the keyboard focus was and how the editor was scrolled, so that both can be put back once
 // the editor's sub-editors have been closed and its content rebuilt, in which a control may have moved among its
 // siblings, or gone.
@@ -134,6 +158,10 @@ type contentFocus struct {
 	// field is the text and selection of a panel that is a field, including which end of the selection stays put as
 	// it is extended, and nil for any other panel.
 	field *unison.FieldState
+	// selection is the selected rows of a panel that is a table, by ID, and rows the same by index. Both are empty for
+	// any other panel.
+	selection map[tid.TID]bool
+	rows      []int
 	// origin is where the top left corner of a panel within the content was, in the content's coordinates.
 	origin geom.Point
 	// h and v are the editor's scroll position.
@@ -155,6 +183,16 @@ type statefulField interface {
 	Text() string
 	GetFieldState() *unison.FieldState
 	ApplyFieldState(state *unison.FieldState)
+}
+
+// selectableTable is what a table offers that restoring its selection needs.
+type selectableTable interface {
+	CopySelectionMap() map[tid.TID]bool
+	SetSelectionMap(selMap map[tid.TID]bool)
+	SelectionCount() int
+	IsRowSelected(index int) bool
+	LastRowIndex() int
+	SelectByIndex(indexes ...int)
 }
 
 // noteFocus returns a record of where the keyboard focus is and how the editor is scrolled, or nil if nothing holds
@@ -179,8 +217,16 @@ func (e *editor[N, D]) releaseContentFocus() {
 // scroll position.
 func newContentFocus(content, focus *unison.Panel) *contentFocus {
 	cf := &contentFocus{panel: focus}
-	if field, ok := focus.Self.(statefulField); ok {
-		cf.field = field.GetFieldState()
+	switch p := focus.Self.(type) {
+	case statefulField:
+		cf.field = p.GetFieldState()
+	case selectableTable:
+		cf.selection = p.CopySelectionMap()
+		for i := range p.LastRowIndex() + 1 {
+			if p.IsRowSelected(i) {
+				cf.rows = append(cf.rows, i)
+			}
+		}
 	}
 	if unison.AncestorIsOrSelf(focus, content) {
 		for p := focus; p != content; p = p.Parent() {
@@ -311,8 +357,9 @@ func nearestTakingFocus(panels []*unison.Panel, index int) *unison.Panel {
 // restore puts the focus back where it was, along with the editor's scrolling, both of which closing a sub-editor may
 // have changed. If the focus was within content, which may have been rebuilt since, the editor is instead scrolled by
 // as much as what held the focus has moved, which leaves it where it was within the view. A field gets its selection
-// back only if its text is unchanged; otherwise it is left with all of its text selected. If what held the focus is
-// gone, the nearest panel that can take it (see find) gets it and is scrolled into view. Does nothing if cf is nil.
+// back only if its text is unchanged; otherwise it is left with all of its text selected. A table that has been rebuilt
+// gets its selected rows back (see restoreSelection). If what held the focus is gone, the nearest panel that can take
+// it (see find) gets it and is scrolled into view. Does nothing if cf is nil.
 func (cf *contentFocus) restore(content *unison.Panel, scroll *unison.ScrollPanel) {
 	if cf == nil {
 		return
@@ -327,8 +374,15 @@ func (cf *contentFocus) restore(content *unison.Panel, scroll *unison.ScrollPane
 	}
 	h, v := cf.h, cf.v
 	if same {
-		if field, ok := target.Self.(statefulField); ok && cf.field != nil && field.Text() == cf.field.Text {
-			field.ApplyFieldState(cf.field)
+		switch p := target.Self.(type) {
+		case statefulField:
+			if cf.field != nil && p.Text() == cf.field.Text {
+				p.ApplyFieldState(cf.field)
+			}
+		case selectableTable:
+			if target != cf.panel {
+				cf.restoreSelection(p)
+			}
 		}
 		if len(cf.path) != 0 {
 			moved := originWithin(target, content).Sub(cf.origin).MulPt(content.Scale())
@@ -342,6 +396,19 @@ func (cf *contentFocus) restore(content *unison.Panel, scroll *unison.ScrollPane
 		if focus := content.Window().CurrentFocus(); focus != nil {
 			focus.ScrollIntoView()
 		}
+	}
+}
+
+// restoreSelection selects the rows of a rebuilt table that were selected in the table it replaces: those with the same
+// IDs or, when it has none of them, as when a sync has replaced the weapons with the library's, those in the same
+// places.
+func (cf *contentFocus) restoreSelection(table selectableTable) {
+	if len(cf.selection) == 0 {
+		return
+	}
+	table.SetSelectionMap(cf.selection)
+	if table.SelectionCount() == 0 {
+		table.SelectByIndex(cf.rows...)
 	}
 }
 

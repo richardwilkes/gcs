@@ -34,6 +34,15 @@ var (
 	_ Owned                      = &editor[*gurps.Note, *gurps.NoteEditData]{}
 )
 
+// The data of every kind of item whose editor gets the Set Substitutions button, which relies on it.
+var (
+	_ nameable.Setter = &gurps.EquipmentEditData{}
+	_ nameable.Setter = &gurps.NoteEditData{}
+	_ nameable.Setter = &gurps.SkillEditData{}
+	_ nameable.Setter = &gurps.SpellEditData{}
+	_ nameable.Setter = &gurps.TraitEditData{}
+)
+
 type editor[N gurps.Node[N], D gurps.EditorData[N]] struct {
 	editorShell
 	target               N
@@ -114,15 +123,14 @@ func (e *editor[N, D]) createToolbar(helpMD string, initToolbar func(*editor[N, 
 					if tmp, m := e.prepareForSubstitutions(); len(m) > 0 {
 						showNameablesDialog(promptOperation{}, []nameablesSection{{Title: tmp.String(), Nameables: m}})
 						tmp.ApplyNameableKeys(m)
-						// Applying nameable keys only alters the replacements map, so copy just that back. CopyFrom
-						// would replace the entire object graph with fresh sub-objects, orphaning the widgets already
-						// bound to the existing ones (e.g. the modifiers table) and silently losing their later edits.
+						// Applying nameable keys only alters the replacements map, so copy just that back, which the
+						// data of every kind of item that gets this button can do. CopyFrom would replace the entire
+						// object graph with fresh sub-objects, orphaning the widgets already bound to the existing ones
+						// (e.g. the modifiers table) and silently losing their later edits.
 						if setter, ok2 := any(e.editorData).(nameable.Setter); ok2 {
 							setter.SetNameableReplacements(tmp.NameableReplacements())
-						} else {
-							e.editorData.CopyFrom(tmp)
+							e.Rebuild(false)
 						}
-						e.Rebuild(false)
 					}
 				}
 				toolbar.AddChild(e.nameablesButton)

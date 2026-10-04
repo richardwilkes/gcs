@@ -86,7 +86,9 @@ func (p *defaultsPanel) insertDefaultsPanel(index int, def *gurps.SkillDefault) 
 		for len(panel.Children()) > 4 {
 			panel.RemoveChildAtIndex(len(panel.Children()) - 1)
 		}
-		if def.Type() == gurps.SkillID {
+		// A Parry or Block default is worked out from a skill, which it selects with the same criteria a Skill default
+		// does.
+		if def.SkillBased() {
 			panel.AddChild(unison.NewPanel())
 			addNameCriteriaPanel(panel, &def.Name, 3, false)
 			panel.AddChild(unison.NewPanel())
@@ -97,16 +99,17 @@ func (p *defaultsPanel) insertDefaultsPanel(index int, def *gurps.SkillDefault) 
 		addNumericCriteriaPanel(panel, nil, "", i18n.Text("when the Tech Level"), i18n.Text("Tech Level"),
 			&def.WhenTL, 0, fxp.Twelve, 3, true, true)
 	}
-	callback := attrChoicePopup.SelectionChangedCallback
 	attrChoicePopup.SelectionChangedCallback = func(popup *unison.PopupMenu[*gurps.AttributeChoice]) {
 		if item, ok := popup.Selected(); ok {
 			lastDefaultTypeUsed = item.Key
-			callback(popup)
-			// The criteria rows go with the type, and what they held would otherwise linger unseen: still written to
-			// disk, though nothing consults it on an attribute default.
+			def.DefaultType = item.Key
+			// The criteria rows go with the skill-based types, and what they held would otherwise linger unseen on any
+			// other, to come back should the default later be made skill-based again. It is dropped before the editor
+			// is told of the change, so that a default set back to what it was leaves the editor unmodified.
 			def.Normalize()
 			rebuildDynamicRows()
 			MarkRootAncestorForLayoutRecursively(p)
+			MarkModified(panel)
 		}
 	}
 	rebuildDynamicRows()

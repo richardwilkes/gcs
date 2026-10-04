@@ -414,7 +414,7 @@ func TestWeaponCopyNormalizesDamage(t *testing.T) {
 }
 
 // TestWeaponDamageStringFragmentation verifies the unresolved form of damage with fragmentation: the fragmentation's
-// armor divisor is shown only when it isn't 1, and its type only when it has one, as in the resolved form.
+// armor divisor is shown only when it isn't 1, and its type, trimmed, only when it has one, as in the resolved form.
 func TestWeaponDamageStringFragmentation(t *testing.T) {
 	c := check.New(t)
 	w := gurps.NewWeapon(nil, true)
@@ -424,4 +424,9 @@ func TestWeaponDamageStringFragmentation(t *testing.T) {
 	c.Equal("thr cr [2d cut]", w.Damage.String(), "a type")
 	w.Damage.FragmentationArmorDivisor = fxp.Two
 	c.Equal("thr cr [2d(2) cut]", w.Damage.String(), "an armor divisor and a type")
+	w.Damage.FragmentationType = " cut "
+	c.Equal("thr cr [2d(2) cut]", w.Damage.String(), "a type is trimmed, as the damage type is")
+	w.Damage.FragmentationArmorDivisor = fxp.One
+	w.Damage.FragmentationType = " "
+	c.Equal("thr cr [2d]", w.Damage.String(), "a blank type is no type")
 }

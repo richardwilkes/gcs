@@ -88,3 +88,41 @@ func TestTechniqueEditorKeepsAttributeDefaultNormalized(t *testing.T) {
 	c.Equal("", field.Text(), "the skill name field doesn't bring back the name that was dropped")
 	c.Equal("", e.editorData.TechniqueDefault.Name.Qualifier)
 }
+
+// TestTechniqueEditorOpensUnmodifiedWithoutADefault verifies that the editor of a technique that has no default, as one
+// loaded from a file with no "default" key has none, gives itself a skill default to edit without that counting as a
+// change, while an edit to that default still does.
+func TestTechniqueEditorOpensUnmodifiedWithoutADefault(t *testing.T) {
+	c := check.New(t)
+	sheet := newTestSheetForTemplate(t)
+	entity := sheet.Entity()
+	technique := gurps.NewTechnique(entity, nil, "Karate")
+	technique.Name = "Neck Snap"
+	technique.TechniqueDefault = nil
+	entity.Skills = append(entity.Skills, technique)
+	entity.Recalculate()
+	e, content := buildEditorContent(sheet, technique, initSkillEditor)
+	def := e.editorData.TechniqueDefault
+	if def == nil {
+		t.Fatal("the editor has no default to edit")
+	}
+	c.Equal(gurps.SkillID, def.DefaultType, "the editor is given a skill default to edit")
+	c.False(e.isModified(), "which leaves the editor unmodified")
+	c.Nil(technique.TechniqueDefault, "and the technique alone")
+
+	var field *StringField
+	for _, one := range panelsOfType[*StringField](content) {
+		if one.Watermark == "Skill" {
+			field = one
+			break
+		}
+	}
+	if field == nil {
+		t.Fatal("a skill default has no skill name field")
+	}
+	field.SetText("Karate")
+	c.Equal("Karate", def.Name.Qualifier, "precondition: the field edits the default the editor was given")
+	c.True(e.isModified(), "naming the skill is a change")
+	field.SetText("")
+	c.False(e.isModified(), "that taking the name back out undoes")
+}

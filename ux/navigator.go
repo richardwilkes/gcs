@@ -46,6 +46,8 @@ const (
 	// NavigatorDockKey is the key used to store the Navigator in the top Dock.
 	NavigatorDockKey      = "navigator"
 	minTextWidthCandidate = "Abcdefghijklmnopqrstuvwxyz0123456789"
+	// eventualReloadDelay is how long EventuallyReload waits before it reloads.
+	eventualReloadDelay = 100 * time.Millisecond
 )
 
 var (
@@ -748,14 +750,21 @@ func (n *Navigator) watchCallback(_ *library.Library, fullPath string, what noti
 	}
 }
 
-// EventuallyReload calls Reload() after a small delay, collapsing intervening requests to do the same. May be called
-// from any goroutine, as the library update checks and the filesystem watches do, since the needReload bookkeeping is
-// pushed onto the UI thread rather than being touched directly.
+// EventuallyReload calls Reload() after a small delay, collapsing intervening requests to do the same. A reload made in
+// the meantime, as creating, renaming or deleting something through the navigator makes, serves in its place, since it
+// has already picked up whatever the request was made for: reloading again behind it would only rebuild the rows a
+// second time, perhaps while a prompt opened for one of the rows that are replaced is still up. May be called from any
+// goroutine, as the library update checks and the filesystem watches do, since the needReload bookkeeping is pushed
+// onto the UI thread rather than being touched directly.
 func (n *Navigator) EventuallyReload() {
 	unison.InvokeTask(func() {
 		if !n.needReload {
 			n.needReload = true
-			unison.InvokeTaskAfter(n.Reload, time.Millisecond*100)
+			unison.InvokeTaskAfter(func() {
+				if n.needReload {
+					n.Reload()
+				}
+			}, eventualReloadDelay)
 		}
 	})
 }

@@ -63,7 +63,6 @@ func SyncToLibraryData(paths ...string) error {
 
 // librarySyncable is implemented by the file types whose contents can be synced with their source libraries.
 type librarySyncable interface {
-	ListProvider
 	EnsureAttachments()
 	SyncWithLibrarySources()
 	Save(filePath string) error

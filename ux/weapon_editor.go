@@ -157,18 +157,33 @@ func (we *weaponEditor) addDamageBlock(w *gurps.Weapon, content *unison.Panel) {
 
 	wrapper, _ = addFillWrapper(content, i18n.Text("Fragmentation"), 5)
 	text = i18n.Text("Fragmentation Base Damage")
+	var fragArmorDivisor *DecimalField
+	var fragType *StringField
+	// A fragmentation armor divisor and type apply only to fragmentation dice of the weapon's own and are dropped
+	// without them (see gurps.WeaponDamageData.Normalize), so their fields are only usable once there are some.
+	adjustFragFields := func() {
+		enabled := damage.Fragmentation != ""
+		fragArmorDivisor.SetEnabled(enabled)
+		fragType.SetEnabled(enabled)
+	}
 	addScriptField(wrapper, nil, "", text, text,
 		func() string { return damage.Fragmentation },
-		func(s string) { damage.Fragmentation = strings.TrimSpace(s) }, false)
+		func(s string) {
+			damage.Fragmentation = strings.TrimSpace(s)
+			adjustFragFields()
+		}, false)
 	wrapper.AddChild(NewFieldTrailingLabel(armorDivisor, false))
 	// The fragmentation fields follow the same "Armor Divisor" and "Type" labels the damage fields do, which would
 	// leave a screen reader with two of each, so they are named in full.
 	text = i18n.Text("Fragmentation Armor Divisor")
-	addDecimalField(wrapper, nil, "", text, text, &damage.FragmentationArmorDivisor, 0, fxp.MillionMinusOne,
-		false).Accessibility.Name = text
+	fragArmorDivisor = addDecimalField(wrapper, nil, "", text, text, &damage.FragmentationArmorDivisor, 0,
+		fxp.MillionMinusOne, false)
+	fragArmorDivisor.Accessibility.Name = text
 	wrapper.AddChild(NewFieldTrailingLabel(typeText, false))
 	text = i18n.Text("Fragmentation Type")
-	addStringField(wrapper, text, text, &damage.FragmentationType).Accessibility.Name = text
+	fragType = addStringField(wrapper, text, text, &damage.FragmentationType)
+	fragType.Accessibility.Name = text
+	adjustFragFields()
 }
 
 func filteredDamageOptions() []stdmg.Option {

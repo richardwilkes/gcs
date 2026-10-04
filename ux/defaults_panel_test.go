@@ -14,6 +14,7 @@ import (
 	"testing"
 
 	"github.com/richardwilkes/gcs/v5/model/criteria"
+	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/toolbox/v2/i18n"
@@ -191,4 +192,131 @@ func TestDefaultsPanelUnnormalizedSkillTypeShowsCriteriaRows(t *testing.T) {
 	c.Equal(len(stringPopupsIn(normalizedRow)), len(stringPopupsIn(unnormalizedRow)),
 		"a default typed \"Skill\" must show the same criteria rows as one typed \"skill\"")
 	c.NotNil(findTagCriteriaPopup(c, unnormalizedRow), "a default typed \"Skill\" must offer a tag criteria row")
+}
+
+// attributeChoiceIndex returns the index of the entry for the given default type in the type popup, ending the test if
+// it offers none.
+func attributeChoiceIndex(t *testing.T, popup *unison.PopupMenu[*gurps.AttributeChoice], key string) int {
+	t.Helper()
+	for i := range popup.ItemCount() {
+		if choice, ok := popup.ItemAt(i); ok && choice != nil && choice.Key == key {
+			return i
+		}
+	}
+	t.Fatalf("the type popup has no %s entry", key)
+	return -1
+}
+
+// findNameCriteriaPopup returns the name criteria popup beneath the given panel, identified by the choices
+// addNameCriteriaPanel builds for it, or nil if there is none.
+func findNameCriteriaPopup(p *unison.Panel) *unison.PopupMenu[string] {
+	prefix := i18n.Text("whose name")
+	choices := criteria.PrefixedStringComparisonChoices(prefix, prefix)
+	for _, popup := range stringPopupsIn(p) {
+		if slices.Equal(choices, popupItems(popup)) {
+			return popup
+		}
+	}
+	return nil
+}
+
+// TestDefaultsPanelParryAndBlockDefaultsHaveCriteriaRows verifies that a Parry or Block default, which is worked out
+// from the skills its name, specialization and tag criteria select, shows those criteria for editing as a Skill default
+// does, keeps them when switched to from a Skill default, and loses them only on becoming an attribute default.
+func TestDefaultsPanelParryAndBlockDefaultsHaveCriteriaRows(t *testing.T) {
+	c := check.New(t)
+	entity := gurps.NewEntity()
+	skill := []*gurps.SkillDefault{{DefaultType: gurps.SkillID}}
+	want := len(stringPopupsIn(newDefaultsPanel(entity, &skill).Children()[1]))
+	for _, defaultType := range []string{gurps.ParryID, gurps.BlockID} {
+		def := &gurps.SkillDefault{
+			DefaultType: defaultType,
+			Name:        criteria.Text{TextData: criteria.TextData{Compare: criteria.IsText, Qualifier: "Brawling"}},
+		}
+		defs := []*gurps.SkillDefault{def}
+		row := newDefaultsPanel(entity, &defs).Children()[1]
+		c.Equal(want, len(stringPopupsIn(row)), "a %s default shows the criteria rows a skill default does", defaultType)
+		c.NotNil(findTagCriteriaPopup(c, row), "a %s default offers a tag criteria row", defaultType)
+		namePopup := findNameCriteriaPopup(row)
+		if namePopup == nil {
+			t.Fatalf("a %s default has no name criteria row", defaultType)
+		}
+		field := qualifierFieldFor(namePopup)
+		if field == nil {
+			t.Fatalf("the name criteria row of a %s default has no qualifier field", defaultType)
+		}
+		c.Equal("Brawling", field.Text(), "the name row of a %s default shows the skill it is worked out from",
+			defaultType)
+		field.SetText("Karate")
+		c.Equal("Karate", def.Name.Qualifier, "and edits it")
+
+		typePopup := findAttributeChoicePopup(row)
+		if typePopup == nil {
+			t.Fatal("expected a default-type popup in the row")
+		}
+		selectPopupIndex(typePopup, attributeChoiceIndex(t, typePopup, gurps.SkillID))
+		c.Equal("Karate", def.Name.Qualifier, "switching a %s default to a skill default keeps the criteria",
+			defaultType)
+		selectPopupIndex(typePopup, attributeChoiceIndex(t, typePopup, defaultType))
+		c.Equal("Karate", def.Name.Qualifier, "as does switching it back")
+		if namePopup = findNameCriteriaPopup(row); namePopup == nil {
+			t.Fatalf("a default switched to %s has no name criteria row", defaultType)
+		}
+		if field = qualifierFieldFor(namePopup); field == nil {
+			t.Fatalf("the name criteria row of a default switched to %s has no qualifier field", defaultType)
+		}
+		c.Equal("Karate", field.Text(), "where they can still be seen")
+
+		selectPopupIndex(typePopup, attributeChoiceIndex(t, typePopup, gurps.DexterityID))
+		c.True(def.Name.IsZero(), "switching a %s default to an attribute default drops the criteria", defaultType)
+		c.Nil(findNameCriteriaPopup(row), "and their rows")
+	}
+}
+
+// TestDefaultsPanelTypeChangeReportsNormalizedData verifies that changing a default's type tells the editor of the
+// change only once the criteria the new type has no use for have been dropped, so that a default switched to a skill,
+// given a name and switched back leaves the editor unmodified, rather than with a change that is no longer there.
+func TestDefaultsPanelTypeChangeReportsNormalizedData(t *testing.T) {
+	c := check.New(t)
+	sheet := newTestSheetForTemplate(t)
+	entity := sheet.Entity()
+	skill := gurps.NewSkill(entity, nil, false)
+	skill.Name = "Shortsword"
+	skill.Defaults = []*gurps.SkillDefault{{DefaultType: gurps.DexterityID, Modifier: -fxp.Five}}
+	entity.Skills = append(entity.Skills, skill)
+	entity.Recalculate()
+	e, content := buildEditorContent(sheet, skill, initSkillEditor)
+	c.False(e.isModified(), "precondition: the editor opens unmodified")
+	// What the editor finds each time it is told of a change, which is when it enables its Apply and Discard buttons.
+	var modifiedWhenTold []bool
+	e.modificationCallback = func() { modifiedWhenTold = append(modifiedWhenTold, e.isModified()) }
+
+	panel, ok := firstPanelOfType[*defaultsPanel](content)
+	if !ok {
+		t.Fatal("the skill editor has no defaults panel")
+	}
+	row := panel.Children()[1]
+	typePopup := findAttributeChoicePopup(row)
+	if typePopup == nil {
+		t.Fatal("expected a default-type popup in the row")
+	}
+	selectPopupIndex(typePopup, attributeChoiceIndex(t, typePopup, gurps.SkillID))
+	namePopup := findNameCriteriaPopup(row)
+	if namePopup == nil {
+		t.Fatal("a skill default has no name criteria row")
+	}
+	selectPopupIndex(namePopup, slices.Index(criteria.StringComparisons, criteria.IsText))
+	field := qualifierFieldFor(namePopup)
+	if field == nil {
+		t.Fatal("the name criteria row has no qualifier field")
+	}
+	field.SetText("Broadsword")
+	c.Equal("Broadsword", e.editorData.Defaults[0].Name.Qualifier, "precondition: the default names a skill")
+	c.True(e.isModified(), "precondition: which is a change")
+
+	modifiedWhenTold = nil
+	selectPopupIndex(typePopup, attributeChoiceIndex(t, typePopup, gurps.DexterityID))
+	c.False(e.isModified(), "switching back to DX leaves the default as it started")
+	c.True(len(modifiedWhenTold) != 0 && !modifiedWhenTold[len(modifiedWhenTold)-1],
+		"and the editor is told so once the name has been dropped: %v", modifiedWhenTold)
 }
