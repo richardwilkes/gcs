@@ -36,7 +36,10 @@ import (
 
 // The smoke tests start the whole application headless, exactly as main does apart from the handoff service and the
 // desktop integration (see DefaultHeadlessGCSStartupConfig), against a known set of fixtures, then drive it the way a
-// user would and compare what they find against golden files. They are compiled only with the smoke build tag:
+// user would and compare what they find against golden files. They test how the application behaves, not how a
+// platform renders it: unison's headless mode behaves the same on every host, so the same goldens apply on every
+// platform, and a difference between platforms is a bug to fix rather than something to allow for. They are compiled
+// only with the smoke build tag:
 //
 //	go test -tags smoke ./ux -run Smoke            # compare against the goldens
 //	go test -tags smoke ./ux -run Smoke -update    # rewrite the goldens from what the tests see
