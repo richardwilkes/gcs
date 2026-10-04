@@ -45,8 +45,9 @@ import (
 // settings, which start from the factory defaults with the few changes smokeSettings makes.
 //
 // The fixtures live in testdata/smoke: master_library and user_library are the two libraries, and files holds
-// individual documents, such as character sheets, that a test opens or saves. Each test works on its own copy of all
-// three, made in a temporary directory, so no test can change the fixtures themselves or see what another test did.
+// individual documents, such as character sheets, that a test opens or saves. Together they hold every kind of data GCS
+// reads, which TestSmokeFixtureCoverage checks. Each test works on its own copy of all three, made in a temporary
+// directory, so no test can change the fixtures themselves or see what another test did.
 
 // smokeNow is the time the application sees throughout a smoke test.
 var smokeNow = time.Date(2026, time.January, 2, 15, 4, 0, 0, time.UTC)

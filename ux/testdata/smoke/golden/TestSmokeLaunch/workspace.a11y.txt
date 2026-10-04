@@ -42,40 +42,44 @@ window "GCS" [focused]
               disclosure-triangle "Disclosure Triangle" [pressed] [expanded]
               cell
                 label "User Library" text="User Library"
+            row "User Traits"
+              cell
+                label "User Traits" text="User Traits"
             row "Master Library" [expanded]
               disclosure-triangle "Disclosure Triangle" [pressed] [expanded]
               cell
                 label "Master Library" text="Master Library"
-            row "Dungeon Fantasy RPG" [expanded]
+            row "Fixture Equipment"
+              cell
+                label "Fixture Equipment" text="Fixture Equipment"
+            row "Fixture Equipment Modifiers"
+              cell
+                label "Fixture Equipment Modifiers" text="Fixture Equipment Modifiers"
+            row "Fixture Notes"
+              cell
+                label "Fixture Notes" text="Fixture Notes"
+            row "Fixture Readme"
+              cell
+                label "Fixture Readme" text="Fixture Readme"
+            row "Fixture Skills"
+              cell
+                label "Fixture Skills" text="Fixture Skills"
+            row "Fixture Spells"
+              cell
+                label "Fixture Spells" text="Fixture Spells"
+            row "Fixture Trait Modifiers"
+              cell
+                label "Fixture Trait Modifiers" text="Fixture Trait Modifiers"
+            row "Fixture Traits"
+              cell
+                label "Fixture Traits" text="Fixture Traits"
+            row "Templates" [expanded]
               disclosure-triangle "Disclosure Triangle" [pressed] [expanded]
               cell
-                label "Dungeon Fantasy RPG" text="Dungeon Fantasy RPG"
-            row "Classes" [expanded]
-              disclosure-triangle "Disclosure Triangle" [pressed] [expanded]
+                label "Templates" text="Templates"
+            row "Fixture Template"
               cell
-                label "Classes" text="Classes"
-            row "Knight"
-              cell
-                label "Knight" text="Knight"
-            row "Dungeon Fantasy RPG Equipment"
-              cell
-                label "Dungeon Fantasy RPG Equipment" text="Dungeon Fantasy RPG Equipment"
-            row "Dungeon Fantasy RPG Skills"
-              cell
-                label "Dungeon Fantasy RPG Skills" text="Dungeon Fantasy RPG Skills"
-            row "Dungeon Fantasy RPG Traits"
-              cell
-                label "Dungeon Fantasy RPG Traits" text="Dungeon Fantasy RPG Traits"
-            row "Races" [expanded]
-              disclosure-triangle "Disclosure Triangle" [pressed] [expanded]
-              cell
-                label "Races" text="Races"
-            row "Dwarf"
-              cell
-                label "Dwarf" text="Dwarf"
-            row "Elf"
-              cell
-                label "Elf" text="Elf"
+                label "Fixture Template" text="Fixture Template"
     group "Document Workspace"
       tab-list
         tab "Document Workspace" [selected]

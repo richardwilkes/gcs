@@ -1,0 +1,19 @@
+{
+	"version": 5,
+	"fonts": {
+		"system": "Roboto 10 medium standard upright",
+		"system.emphasized": "Roboto 10 bold standard upright",
+		"label": "Roboto 10 regular standard upright",
+		"field": "Roboto 10 regular standard upright",
+		"field.secondary": "Roboto 9 regular standard upright",
+		"keyboard": "Roboto 10 medium standard upright",
+		"page.field.primary": "Roboto 7 medium standard upright",
+		"page.field.secondary": "Roboto 6 regular standard upright",
+		"page.label.primary": "Roboto 7 regular standard upright",
+		"page.label.secondary": "Roboto 6 regular standard upright",
+		"page.footer.primary": "Roboto 6 medium standard upright",
+		"page.footer.secondary": "Roboto 5 regular standard upright",
+		"markdown.base": "Roboto 10 regular standard upright",
+		"monospaced": "DejaVu Sans Mono 10 regular standard upright"
+	}
+}

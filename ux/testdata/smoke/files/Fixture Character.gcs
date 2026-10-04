@@ -1,0 +1,3641 @@
+{
+	"version": 5,
+	"id": "Aro7lBcvQi8w6HJh7",
+	"total_points": 250,
+	"points_record": [
+		{
+			"when": "2026-01-02T15:04:00Z",
+			"points": 200,
+			"reason": "Initial points"
+		},
+		{
+			"when": "2026-01-09T15:04:00Z",
+			"points": 50,
+			"reason": "Session awards"
+		}
+	],
+	"profile": {
+		"name": "Fixture Character",
+		"age": "30",
+		"birthday": "January 2",
+		"eyes": "Green",
+		"hair": "Black",
+		"skin": "Fair",
+		"handedness": "Left",
+		"gender": "Female",
+		"height": "5'8\"",
+		"weight": "140 lb",
+		"player_name": "Fixture Player",
+		"title": "Tester",
+		"organization": "Smoke Tests",
+		"religion": "None",
+		"tech_level": "3",
+		"portrait": "iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAIAAABLbSncAAAAZ0lEQVR4nBWMQQ0AQAyDKmVSKmVSkFIpk1Ipl+NJCJIYYbECEXGiQhpm8LADQ4YbOkhmjM0aTMyZGmmZxcsuLFlu6SL9Af7yEzgoSGGCw+brhAsN0jGHj70f57ijh1SmuGz/IuVKywPGe1gBBMfXVgAAAABJRU5ErkJggg=="
+	},
+	"settings": {
+		"page": {
+			"paper_size": "letter",
+			"orientation": "portrait",
+			"top_margin": "0.25 in",
+			"left_margin": "0.25 in",
+			"bottom_margin": "0.25 in",
+			"right_margin": "0.25 in"
+		},
+		"layout": {
+			"root": {
+				"type": "column",
+				"weight": 1,
+				"children": [
+					{
+						"type": "row",
+						"weight": 1,
+						"children": [
+							{
+								"type": "block",
+								"key": "portrait",
+								"weight": 1,
+								"square": true
+							},
+							{
+								"type": "column",
+								"weight": 4.3,
+								"children": [
+									{
+										"type": "row",
+										"weight": 1,
+										"children": [
+											{
+												"type": "block",
+												"key": "identity",
+												"weight": 1.6
+											},
+											{
+												"type": "block",
+												"key": "miscellaneous",
+												"weight": 1
+											}
+										]
+									},
+									{
+										"type": "block",
+										"key": "description",
+										"weight": 1
+									}
+								]
+							},
+							{
+								"type": "block",
+								"key": "points",
+								"weight": 1
+							}
+						]
+					},
+					{
+						"type": "row",
+						"weight": 1,
+						"children": [
+							{
+								"type": "column",
+								"weight": 1.6,
+								"children": [
+									{
+										"type": "row",
+										"weight": 1,
+										"children": [
+											{
+												"type": "column",
+												"weight": 1,
+												"children": [
+													{
+														"type": "block",
+														"key": "primary_attributes",
+														"weight": 1
+													},
+													{
+														"type": "block",
+														"key": "damage",
+														"weight": 1
+													}
+												]
+											},
+											{
+												"type": "block",
+												"key": "secondary_attributes",
+												"weight": 1
+											}
+										]
+									},
+									{
+										"type": "block",
+										"key": "point_pools",
+										"weight": 1
+									}
+								]
+							},
+							{
+								"type": "block",
+								"key": "body",
+								"weight": 1.25
+							},
+							{
+								"type": "column",
+								"weight": 1.3,
+								"children": [
+									{
+										"type": "block",
+										"key": "encumbrance",
+										"weight": 1
+									},
+									{
+										"type": "block",
+										"key": "lifting",
+										"weight": 1
+									}
+								]
+							}
+						]
+					},
+					{
+						"type": "row",
+						"weight": 1,
+						"children": [
+							{
+								"type": "block",
+								"key": "reactions",
+								"weight": 1
+							},
+							{
+								"type": "block",
+								"key": "conditional_modifiers",
+								"weight": 1
+							}
+						]
+					},
+					{
+						"type": "block",
+						"key": "melee",
+						"weight": 1
+					},
+					{
+						"type": "block",
+						"key": "ranged",
+						"weight": 1
+					},
+					{
+						"type": "row",
+						"weight": 1,
+						"children": [
+							{
+								"type": "block",
+								"key": "traits",
+								"weight": 1
+							},
+							{
+								"type": "block",
+								"key": "skills",
+								"weight": 0.875
+							}
+						]
+					},
+					{
+						"type": "block",
+						"key": "spells",
+						"weight": 1
+					},
+					{
+						"type": "block",
+						"key": "equipment",
+						"weight": 1
+					},
+					{
+						"type": "block",
+						"key": "other_equipment",
+						"weight": 1
+					},
+					{
+						"type": "block",
+						"key": "notes",
+						"weight": 1
+					}
+				]
+			}
+		},
+		"attributes": [
+			{
+				"id": "st",
+				"type": "integer",
+				"name": "ST",
+				"full_name": "Strength",
+				"base": "10",
+				"cost_per_point": 10,
+				"cost_adj_percent_per_sm": 10
+			},
+			{
+				"id": "dx",
+				"type": "integer",
+				"name": "DX",
+				"full_name": "Dexterity",
+				"base": "10",
+				"cost_per_point": 20
+			},
+			{
+				"id": "iq",
+				"type": "integer",
+				"name": "IQ",
+				"full_name": "Intelligence",
+				"base": "10",
+				"cost_per_point": 20
+			},
+			{
+				"id": "ht",
+				"type": "integer",
+				"name": "HT",
+				"full_name": "Health",
+				"base": "10",
+				"cost_per_point": 10
+			},
+			{
+				"id": "will",
+				"type": "integer",
+				"name": "Will",
+				"base": "$iq",
+				"cost_per_point": 5
+			},
+			{
+				"id": "fright_check",
+				"type": "integer",
+				"name": "Fright Check",
+				"base": "$will",
+				"cost_per_point": 2
+			},
+			{
+				"id": "per",
+				"type": "integer",
+				"name": "Per",
+				"full_name": "Perception",
+				"base": "$iq",
+				"cost_per_point": 5
+			},
+			{
+				"id": "vision",
+				"type": "integer",
+				"name": "Vision",
+				"base": "$per",
+				"cost_per_point": 2
+			},
+			{
+				"id": "hearing",
+				"type": "integer",
+				"name": "Hearing",
+				"base": "$per",
+				"cost_per_point": 2
+			},
+			{
+				"id": "taste_smell",
+				"type": "integer",
+				"name": "Taste & Smell",
+				"base": "$per",
+				"cost_per_point": 2
+			},
+			{
+				"id": "touch",
+				"type": "integer",
+				"name": "Touch",
+				"base": "$per",
+				"cost_per_point": 2
+			},
+			{
+				"id": "basic_speed",
+				"type": "decimal",
+				"name": "Basic Speed",
+				"base": "($dx + $ht) / 4",
+				"cost_per_point": 20
+			},
+			{
+				"id": "basic_move",
+				"type": "integer",
+				"name": "Basic Move",
+				"base": "Math.floor($basic_speed)",
+				"cost_per_point": 5
+			},
+			{
+				"id": "fp",
+				"type": "pool",
+				"name": "FP",
+				"full_name": "Fatigue Points",
+				"base": "$ht",
+				"cost_per_point": 3,
+				"thresholds": [
+					{
+						"state": "Unconscious",
+						"value": "-$fp",
+						"ops": [
+							"halve_move",
+							"halve_dodge",
+							"halve_st"
+						]
+					},
+					{
+						"state": "Collapse",
+						"value": "0",
+						"explanation": "- Roll vs. Will to do anything besides talk or rest; failure causes unconsciousness\n- Each FP you lose below 0 also causes 1 HP of injury\n- Move, Dodge and ST are halved (B426)",
+						"ops": [
+							"halve_move",
+							"halve_dodge",
+							"halve_st"
+						]
+					},
+					{
+						"state": "Tired",
+						"value": "Math.ceil($fp / 3) - 1",
+						"explanation": "Move, Dodge and ST are halved (B426)",
+						"ops": [
+							"halve_move",
+							"halve_dodge",
+							"halve_st"
+						]
+					},
+					{
+						"state": "Tiring",
+						"value": "$fp - 1"
+					},
+					{
+						"state": "Rested",
+						"value": "$fp"
+					}
+				]
+			},
+			{
+				"id": "hp",
+				"type": "pool",
+				"name": "HP",
+				"full_name": "Hit Points",
+				"base": "$st",
+				"cost_per_point": 2,
+				"cost_adj_percent_per_sm": 10,
+				"thresholds": [
+					{
+						"state": "Dead",
+						"value": "Math.round(-$hp * 5)",
+						"ops": [
+							"halve_move",
+							"halve_dodge"
+						]
+					},
+					{
+						"state": "Dying #4",
+						"value": "Math.round(-$hp * 4)",
+						"explanation": "- Roll vs. HT to avoid death\n- Roll vs. HT-4 every second to avoid falling unconscious\n- Move and Dodge are halved (B419)",
+						"ops": [
+							"halve_move",
+							"halve_dodge"
+						]
+					},
+					{
+						"state": "Dying #3",
+						"value": "Math.round(-$hp * 3)",
+						"explanation": "- Roll vs. HT to avoid death\n- Roll vs. HT-3 every second to avoid falling unconscious\n- Move and Dodge are halved (B419)",
+						"ops": [
+							"halve_move",
+							"halve_dodge"
+						]
+					},
+					{
+						"state": "Dying #2",
+						"value": "Math.round(-$hp * 2)",
+						"explanation": "- Roll vs. HT to avoid death\n- Roll vs. HT-2 every second to avoid falling unconscious\n- Move and Dodge are halved (B419)",
+						"ops": [
+							"halve_move",
+							"halve_dodge"
+						]
+					},
+					{
+						"state": "Dying #1",
+						"value": "-$hp",
+						"explanation": "- Roll vs. HT to avoid death\n- Roll vs. HT-1 every second to avoid falling unconscious\n- Move and Dodge are halved (B419)",
+						"ops": [
+							"halve_move",
+							"halve_dodge"
+						]
+					},
+					{
+						"state": "Collapse",
+						"value": "0",
+						"explanation": "- Roll vs. HT every second to avoid falling unconscious\n- Move and Dodge are halved (B419)",
+						"ops": [
+							"halve_move",
+							"halve_dodge"
+						]
+					},
+					{
+						"state": "Reeling",
+						"value": "Math.ceil($hp / 3) - 1",
+						"explanation": "Move and Dodge are halved (B419)",
+						"ops": [
+							"halve_move",
+							"halve_dodge"
+						]
+					},
+					{
+						"state": "Wounded",
+						"value": "$hp - 1"
+					},
+					{
+						"state": "Healthy",
+						"value": "$hp"
+					}
+				]
+			}
+		],
+		"body_type": {
+			"name": "Humanoid",
+			"roll": "3d",
+			"locations": [
+				{
+					"id": "eye",
+					"choice_name": "Eyes",
+					"table_name": "Eyes",
+					"hit_penalty": -9,
+					"description": "An attack that misses by 1 hits the torso instead. Only\nimpaling (imp), piercing (pi-, pi, pi+, pi++), and\ntight-beam burning (burn) attacks can target the eye – and\nonly from the front or sides. Injury over HP÷10 blinds the\neye. Otherwise, treat as skull, but without the extra DR!",
+					"calc": {
+						"roll_range": "-",
+						"dr": {
+							"all": 0
+						}
+					}
+				},
+				{
+					"id": "skull",
+					"choice_name": "Skull",
+					"table_name": "Skull",
+					"slots": 2,
+					"hit_penalty": -7,
+					"dr_bonus": 2,
+					"description": "An attack that misses by 1 hits the torso instead. Wounding\nmodifier is x4. Knockdown rolls are at -10. Critical hits\nuse the Critical Head Blow Table (B556). Exception: These\nspecial effects do not apply to toxic (tox) damage.",
+					"calc": {
+						"roll_range": "3-4",
+						"dr": {
+							"all": 2
+						}
+					}
+				},
+				{
+					"id": "face",
+					"choice_name": "Face",
+					"table_name": "Face",
+					"slots": 1,
+					"hit_penalty": -5,
+					"description": "An attack that misses by 1 hits the torso instead. Jaw,\ncheeks, nose, ears, etc. If the target has an open-faced\nhelmet, ignore its DR. Knockdown rolls are at -5. Critical\nhits use the Critical Head Blow Table (B556). Corrosion\n(cor) damage gets a x1½ wounding modifier, and if it\ninflicts a major wound, it also blinds one eye (both eyes on\ndamage over full HP). Random attacks from behind hit the\nskull instead.",
+					"calc": {
+						"roll_range": "5",
+						"dr": {
+							"all": 0
+						}
+					}
+				},
+				{
+					"id": "leg",
+					"choice_name": "Leg",
+					"table_name": "Right Leg",
+					"slots": 2,
+					"hit_penalty": -2,
+					"description": "Reduce the wounding multiplier of large piercing (pi+), huge\npiercing (pi++), and impaling (imp) damage to x1. Any major\nwound (loss of over ½ HP from one blow) cripples the limb.\nDamage beyond that threshold is lost.",
+					"calc": {
+						"roll_range": "6-7",
+						"dr": {
+							"all": 0
+						}
+					}
+				},
+				{
+					"id": "arm",
+					"choice_name": "Arm",
+					"table_name": "Right Arm",
+					"slots": 1,
+					"hit_penalty": -2,
+					"description": "Reduce the wounding multiplier of large piercing (pi+), huge\npiercing (pi++), and impaling (imp) damage to x1. Any major\nwound (loss of over ½ HP from one blow) cripples the limb.\nDamage beyond that threshold is lost. If holding a shield,\ndouble the penalty to hit: -4 for shield arm instead of -2.",
+					"calc": {
+						"roll_range": "8",
+						"dr": {
+							"all": 0
+						}
+					}
+				},
+				{
+					"id": "torso",
+					"choice_name": "Torso",
+					"table_name": "Torso",
+					"slots": 2,
+					"calc": {
+						"roll_range": "9-10",
+						"dr": {
+							"all": 0
+						}
+					}
+				},
+				{
+					"id": "groin",
+					"choice_name": "Groin",
+					"table_name": "Groin",
+					"slots": 1,
+					"hit_penalty": -3,
+					"description": "An attack that misses by 1 hits the torso instead. Human\nmales and the males of similar species suffer double shock\nfrom crushing (cr) damage, and get -5 to knockdown rolls.\nOtherwise, treat as a torso hit.",
+					"calc": {
+						"roll_range": "11",
+						"dr": {
+							"all": 0
+						}
+					}
+				},
+				{
+					"id": "arm",
+					"choice_name": "Arm",
+					"table_name": "Left Arm",
+					"slots": 1,
+					"hit_penalty": -2,
+					"description": "Reduce the wounding multiplier of large piercing (pi+), huge\npiercing (pi++), and impaling (imp) damage to x1. Any major\nwound (loss of over ½ HP from one blow) cripples the limb.\nDamage beyond that threshold is lost. If holding a shield,\ndouble the penalty to hit: -4 for shield arm instead of -2.",
+					"calc": {
+						"roll_range": "12",
+						"dr": {
+							"all": 0
+						}
+					}
+				},
+				{
+					"id": "leg",
+					"choice_name": "Leg",
+					"table_name": "Left Leg",
+					"slots": 2,
+					"hit_penalty": -2,
+					"description": "Reduce the wounding multiplier of large piercing (pi+), huge\npiercing (pi++), and impaling (imp) damage to x1. Any major\nwound (loss of over ½ HP from one blow) cripples the limb.\nDamage beyond that threshold is lost.",
+					"calc": {
+						"roll_range": "13-14",
+						"dr": {
+							"all": 0
+						}
+					}
+				},
+				{
+					"id": "hand",
+					"choice_name": "Hand",
+					"table_name": "Hand",
+					"slots": 1,
+					"hit_penalty": -4,
+					"description": "If holding a shield, double the penalty to hit: -8 for\nshield hand instead of -4. Reduce the wounding multiplier of\nlarge piercing (pi+), huge piercing (pi++), and impaling\n(imp) damage to x1. Any major wound (loss of over ⅓ HP\nfrom one blow) cripples the extremity. Damage beyond that\nthreshold is lost.",
+					"calc": {
+						"roll_range": "15",
+						"dr": {
+							"all": 0
+						}
+					}
+				},
+				{
+					"id": "foot",
+					"choice_name": "Foot",
+					"table_name": "Foot",
+					"slots": 1,
+					"hit_penalty": -4,
+					"description": "Reduce the wounding multiplier of large piercing (pi+), huge\npiercing (pi++), and impaling (imp) damage to x1. Any major\nwound (loss of over ⅓ HP from one blow) cripples the\nextremity. Damage beyond that threshold is lost.",
+					"calc": {
+						"roll_range": "16",
+						"dr": {
+							"all": 0
+						}
+					}
+				},
+				{
+					"id": "neck",
+					"choice_name": "Neck",
+					"table_name": "Neck",
+					"slots": 2,
+					"hit_penalty": -5,
+					"description": "An attack that misses by 1 hits the torso instead. Neck and\nthroat. Increase the wounding multiplier of crushing (cr)\nand corrosion (cor) attacks to x1½, and that of cutting\n(cut) damage to x2. At the GM’s option, anyone killed by a\ncutting (cut) blow to the neck is decapitated!",
+					"calc": {
+						"roll_range": "17-18",
+						"dr": {
+							"all": 0
+						}
+					}
+				},
+				{
+					"id": "vitals",
+					"choice_name": "Vitals",
+					"table_name": "Vitals",
+					"hit_penalty": -3,
+					"description": "An attack that misses by 1 hits the torso instead. Heart,\nlungs, kidneys, etc. Increase the wounding modifier for an\nimpaling (imp) or any piercing (pi-, pi, pi+, pi++) attack\nto x3. Increase the wounding modifier for a tight-beam\nburning (burn) attack to x2. Other attacks cannot target the\nvitals.",
+					"calc": {
+						"roll_range": "-",
+						"dr": {
+							"all": 0
+						}
+					}
+				}
+			]
+		},
+		"damage_progression": "basic_set",
+		"default_length_units": "ft_in",
+		"default_weight_units": "lb",
+		"user_description_display": "tooltip",
+		"modifiers_display": "inline",
+		"notes_display": "inline",
+		"skill_level_adj_display": "tooltip",
+		"show_spell_adj": true
+	},
+	"attributes": [
+		{
+			"attr_id": "st",
+			"adj": 2,
+			"calc": {
+				"value": 12,
+				"points": 20
+			}
+		},
+		{
+			"attr_id": "dx",
+			"adj": 1,
+			"calc": {
+				"value": 12,
+				"points": 20
+			}
+		},
+		{
+			"attr_id": "iq",
+			"adj": 0,
+			"calc": {
+				"value": 10,
+				"points": 0
+			}
+		},
+		{
+			"attr_id": "ht",
+			"adj": 1,
+			"calc": {
+				"value": 11,
+				"points": 10
+			}
+		},
+		{
+			"attr_id": "will",
+			"adj": 0,
+			"calc": {
+				"value": 10,
+				"points": 0
+			}
+		},
+		{
+			"attr_id": "fright_check",
+			"adj": 0,
+			"calc": {
+				"value": 10,
+				"points": 0
+			}
+		},
+		{
+			"attr_id": "per",
+			"adj": 0,
+			"calc": {
+				"value": 10,
+				"points": 0
+			}
+		},
+		{
+			"attr_id": "vision",
+			"adj": 0,
+			"calc": {
+				"value": 10,
+				"points": 0
+			}
+		},
+		{
+			"attr_id": "hearing",
+			"adj": 0,
+			"calc": {
+				"value": 10,
+				"points": 0
+			}
+		},
+		{
+			"attr_id": "taste_smell",
+			"adj": 0,
+			"calc": {
+				"value": 10,
+				"points": 0
+			}
+		},
+		{
+			"attr_id": "touch",
+			"adj": 0,
+			"calc": {
+				"value": 10,
+				"points": 0
+			}
+		},
+		{
+			"attr_id": "basic_speed",
+			"adj": 0.25,
+			"calc": {
+				"value": 6,
+				"points": 5
+			}
+		},
+		{
+			"attr_id": "basic_move",
+			"adj": 0,
+			"calc": {
+				"value": 6,
+				"points": 0
+			}
+		},
+		{
+			"attr_id": "fp",
+			"adj": 0,
+			"damage": 2,
+			"calc": {
+				"value": 11,
+				"current": 9,
+				"points": 0
+			}
+		},
+		{
+			"attr_id": "hp",
+			"adj": 1,
+			"damage": 4,
+			"calc": {
+				"value": 13,
+				"current": 9,
+				"points": 2
+			}
+		}
+	],
+	"traits": [
+		{
+			"id": "tiT6zo-6EKs17-a-I",
+			"source": {
+				"library": "richardwilkes/gcs_master_library",
+				"path": "Fixture Traits.adq",
+				"id": "tiT6zo-6EKs17-a-I"
+			},
+			"name": "Plain Advantage",
+			"reference": "FX1",
+			"local_notes": "Local notes",
+			"tags": [
+				"Advantage",
+				"Mental"
+			],
+			"vtt_notes": "VTT notes",
+			"userdesc": "User description",
+			"base_points": 15,
+			"third_party": {
+				"example": "kept"
+			},
+			"calc": {
+				"points": 15
+			}
+		},
+		{
+			"id": "tgqp15gSTRwmS6sAv",
+			"source": {
+				"library": "richardwilkes/gcs_master_library",
+				"path": "Fixture Traits.adq",
+				"id": "tgqp15gSTRwmS6sAv"
+			},
+			"name": "Leveled Advantage",
+			"reference": "FX1",
+			"tags": [
+				"Advantage"
+			],
+			"base_points": 2,
+			"points_per_level": 5,
+			"max_levels": "5",
+			"can_level": true,
+			"levels": 3,
+			"calc": {
+				"points": 17,
+				"current_level": 3
+			}
+		},
+		{
+			"id": "TTOpshVsleV9CN9Rz",
+			"source": {
+				"library": "richardwilkes/gcs_master_library",
+				"path": "Fixture Traits.adq",
+				"id": "TTOpshVsleV9CN9Rz"
+			},
+			"name": "Self-Control And Frequency",
+			"children": [
+				{
+					"id": "tlAOALaF_k6lTXwRy",
+					"name": "Self-Control none",
+					"tags": [
+						"Disadvantage"
+					],
+					"cr": 1,
+					"base_points": -10,
+					"calc": {
+						"points": -25
+					}
+				},
+				{
+					"id": "ty_tq-ETf_QmQMura",
+					"name": "Self-Control action_penalty",
+					"tags": [
+						"Disadvantage"
+					],
+					"cr_adj": "action_penalty",
+					"cr": 6,
+					"base_points": -10,
+					"calc": {
+						"points": -20
+					}
+				},
+				{
+					"id": "tsMJwu1dzvGIB8OK-",
+					"name": "Self-Control reaction_penalty",
+					"tags": [
+						"Disadvantage"
+					],
+					"cr_adj": "reaction_penalty",
+					"cr": 7,
+					"base_points": -10,
+					"calc": {
+						"points": -18
+					}
+				},
+				{
+					"id": "t02QfE15CmnkYCpE2",
+					"name": "Self-Control fright_check_penalty",
+					"tags": [
+						"Disadvantage"
+					],
+					"cr_adj": "fright_check_penalty",
+					"cr": 8,
+					"base_points": -10,
+					"calc": {
+						"points": -16
+					}
+				},
+				{
+					"id": "t8npJ3YNOspCXWby_",
+					"name": "Self-Control fright_check_bonus",
+					"tags": [
+						"Disadvantage"
+					],
+					"cr_adj": "fright_check_bonus",
+					"cr": 9,
+					"base_points": -10,
+					"calc": {
+						"points": -15
+					}
+				},
+				{
+					"id": "tQpHlryGLqatj58CB",
+					"name": "Self-Control minor_cost_of_living_increase",
+					"tags": [
+						"Disadvantage"
+					],
+					"cr_adj": "minor_cost_of_living_increase",
+					"cr": 10,
+					"base_points": -10,
+					"calc": {
+						"points": -13
+					}
+				},
+				{
+					"id": "t7TivG46YhjX3olbq",
+					"name": "Self-Control major_cost_of_living_increase",
+					"tags": [
+						"Disadvantage"
+					],
+					"cr_adj": "major_cost_of_living_increase",
+					"cr": 11,
+					"base_points": -10,
+					"calc": {
+						"points": -11
+					}
+				},
+				{
+					"id": "taRtq83G-ITFXXGy3",
+					"name": "Self-Control Roll 12",
+					"cr": 12,
+					"base_points": -5,
+					"calc": {
+						"points": -5
+					}
+				},
+				{
+					"id": "t3Gprz101NLXa6l4r",
+					"name": "Self-Control Roll 13",
+					"cr": 13,
+					"base_points": -5,
+					"calc": {
+						"points": -4
+					}
+				},
+				{
+					"id": "tBiQMH-Ar5-6V5KUP",
+					"name": "Self-Control Roll 14",
+					"cr": 14,
+					"base_points": -5,
+					"calc": {
+						"points": -3
+					}
+				},
+				{
+					"id": "tRZ0agn7tYLNYp0AQ",
+					"name": "Self-Control Roll 15",
+					"cr": 15,
+					"base_points": -5,
+					"calc": {
+						"points": -2
+					}
+				},
+				{
+					"id": "tyavbBZriEbxRYzu_",
+					"name": "Frequency 6",
+					"frequency": 6,
+					"base_points": -5,
+					"calc": {
+						"points": -2
+					}
+				},
+				{
+					"id": "t2dL527fVfUOC5hxm",
+					"name": "Frequency 9",
+					"frequency": 9,
+					"base_points": -5,
+					"calc": {
+						"points": -5
+					}
+				},
+				{
+					"id": "tUOGecayLrBJ-Gdbt",
+					"name": "Frequency 12",
+					"frequency": 12,
+					"base_points": -5,
+					"calc": {
+						"points": -10
+					}
+				},
+				{
+					"id": "tsQRd_qX2lSUDn8yp",
+					"name": "Frequency 15",
+					"frequency": 15,
+					"base_points": -5,
+					"calc": {
+						"points": -15
+					}
+				},
+				{
+					"id": "tjmLBa_qWljOGx_Z3",
+					"name": "Frequency 18",
+					"frequency": 18,
+					"base_points": -5,
+					"calc": {
+						"points": -20
+					}
+				}
+			],
+			"calc": {
+				"points": -184
+			}
+		},
+		{
+			"id": "tjI1047YXNkQZqWzs",
+			"source": {
+				"library": "richardwilkes/gcs_master_library",
+				"path": "Fixture Traits.adq",
+				"id": "tjI1047YXNkQZqWzs"
+			},
+			"name": "Disabled Trait",
+			"disabled": true,
+			"base_points": 5,
+			"calc": {
+				"points": 0
+			}
+		},
+		{
+			"id": "t9bkUtnTZHupp5Yrw",
+			"source": {
+				"library": "richardwilkes/gcs_master_library",
+				"path": "Fixture Traits.adq",
+				"id": "t9bkUtnTZHupp5Yrw"
+			},
+			"name": "Switched On Trait",
+			"switched_on": true,
+			"base_points": 5,
+			"features": [
+				{
+					"type": "attribute_bonus",
+					"switchable": true,
+					"attribute": "dx",
+					"amount": 1
+				}
+			],
+			"calc": {
+				"points": 5
+			}
+		},
+		{
+			"id": "tMbefHs2rSKAcxWx8",
+			"source": {
+				"library": "richardwilkes/gcs_master_library",
+				"path": "Fixture Traits.adq",
+				"id": "tMbefHs2rSKAcxWx8"
+			},
+			"name": "Trait With Modifiers",
+			"modifiers": [
+				{
+					"id": "msdecNrAyrvmZef6R",
+					"name": "Cost +5",
+					"cost_adj": "+5"
+				},
+				{
+					"id": "m732y7LMq_M8L9xm9",
+					"name": "Cost -10",
+					"cost_adj": "-10",
+					"affects": "base_only"
+				},
+				{
+					"id": "mLCtgT7Sx5Vzh-Cp4",
+					"name": "Cost +10%",
+					"cost_adj": "+10%",
+					"affects": "levels_only"
+				},
+				{
+					"id": "me6G0qSnz-ul0hKIb",
+					"name": "Cost -25%",
+					"cost_adj": "-25%"
+				},
+				{
+					"id": "mgBAS1hJlP89z3s-o",
+					"name": "Cost x2",
+					"cost_adj": "x2",
+					"affects": "base_only"
+				},
+				{
+					"id": "mw7NU76nuRHBYAtpA",
+					"name": "Cost x1/2",
+					"cost_adj": "x1/2",
+					"affects": "levels_only"
+				},
+				{
+					"id": "mjNb-L0hwRlBVHVUo",
+					"name": "Leveled Modifier",
+					"cost_adj": "+5%",
+					"levels": 2
+				},
+				{
+					"id": "mdyJhZKDGLDmA3FoP",
+					"name": "Uses Trait Level",
+					"cost_adj": "+1",
+					"use_level_from_trait": true,
+					"cost_ignores_level": true
+				},
+				{
+					"id": "mPpoVWgEw6TGXUUO-",
+					"name": "Shows On Weapon",
+					"local_notes": "Visible on weapons",
+					"cost_adj": "+10%",
+					"show_notes_on_weapon": true,
+					"features": [
+						{
+							"type": "weapon_bonus",
+							"selection_type": "weapons_with_required_skill",
+							"name": {
+								"compare": "is",
+								"qualifier": "Broadsword"
+							},
+							"level": {
+								"compare": "at_least",
+								"qualifier": 10
+							},
+							"amount": 1,
+							"per_die": true
+						}
+					]
+				},
+				{
+					"id": "mSusXQN1dhou0WBf2",
+					"name": "Disabled Modifier",
+					"cost_adj": "+20%",
+					"disabled": true
+				},
+				{
+					"id": "mUTTfeZJYgiydmeqm",
+					"name": "Accessibility (@Condition@)",
+					"cost_adj": "-10%"
+				},
+				{
+					"id": "M8pphJMzSbI8Qj1RK",
+					"name": "Modifier Group",
+					"children": [
+						{
+							"id": "my6X8SgmbIh8yUwaq",
+							"name": "Grouped A",
+							"cost_adj": "+5%"
+						},
+						{
+							"id": "mPwaH2m931JcLwdyd",
+							"name": "Grouped B",
+							"cost_adj": "-5%"
+						}
+					]
+				},
+				{
+					"id": "Mse0I0frn3T84IhC6",
+					"name": "Mandatory Modifier Choice",
+					"choice": {
+						"type": "count",
+						"qualifier": {
+							"compare": "is",
+							"qualifier": 1
+						}
+					},
+					"children": [
+						{
+							"id": "m9E49gg8dDDd3H6v8",
+							"name": "Option One",
+							"cost_adj": "+10%"
+						},
+						{
+							"id": "mjJZf5mMvkCmu42Ih",
+							"name": "Option Two",
+							"cost_adj": "+20%",
+							"disabled": true
+						}
+					]
+				},
+				{
+					"id": "MhuKzln7hxgGq3NLT",
+					"name": "Optional Modifier Choice",
+					"choice": {
+						"type": "count",
+						"qualifier": {
+							"compare": "at_most",
+							"qualifier": 1
+						}
+					},
+					"children": [
+						{
+							"id": "m7TyR1TrOEdDKHSNJ",
+							"name": "Maybe This",
+							"cost_adj": "-10%",
+							"disabled": true
+						},
+						{
+							"id": "mamj3ONiNXttghW8k",
+							"name": "Maybe That",
+							"cost_adj": "-20%",
+							"disabled": true
+						}
+					]
+				}
+			],
+			"base_points": 20,
+			"points_per_level": 10,
+			"can_level": true,
+			"levels": 2,
+			"calc": {
+				"points": 37,
+				"current_level": 2
+			}
+		},
+		{
+			"id": "tZy8tE78-EvYlBN98",
+			"source": {
+				"library": "richardwilkes/gcs_master_library",
+				"path": "Fixture Traits.adq",
+				"id": "tZy8tE78-EvYlBN98"
+			},
+			"name": "Phobia (@Fear|Heights|Spiders|*@)",
+			"local_notes": "Afraid of @Fear|Heights|Spiders|*@ near @Place|?@",
+			"replacements": {
+				"Fear|Heights|Spiders|*": "Spiders"
+			},
+			"modifiers": [
+				{
+					"id": "mUTTfeZJYgiydmeqm",
+					"name": "Accessibility (@Condition@)",
+					"cost_adj": "-10%"
+				}
+			],
+			"cr": 12,
+			"base_points": -10,
+			"calc": {
+				"points": -9,
+				"resolved_notes": "Afraid of Spiders near @Place@"
+			}
+		},
+		{
+			"id": "tDbQqr-S02IlSmoJ3",
+			"source": {
+				"library": "richardwilkes/gcs_master_library",
+				"path": "Fixture Traits.adq",
+				"id": "tDbQqr-S02IlSmoJ3"
+			},
+			"name": "Natural Weapons",
+			"base_points": 5,
+			"weapons": [
+				{
+					"id": "w4rKJPhCYY02t--mA",
+					"sv": 1,
+					"damage": {
+						"type": "cr",
+						"base": "2d"
+					},
+					"strength": "10",
+					"usage": "Mode none",
+					"reach": "1",
+					"parry": "0",
+					"defaults": [
+						{
+							"type": "dx",
+							"modifier": -5
+						},
+						{
+							"type": "skill",
+							"name": {
+								"compare": "is",
+								"qualifier": "Broadsword"
+							}
+						}
+					],
+					"calc": {
+						"level": 13,
+						"damage": "2d cr",
+						"parry": "9"
+					}
+				},
+				{
+					"id": "wK85lGlFwYZmY1uE8",
+					"sv": 1,
+					"damage": {
+						"type": "cut",
+						"st": "thr"
+					},
+					"strength": "10",
+					"usage": "Mode thr",
+					"reach": "1",
+					"parry": "0",
+					"defaults": [
+						{
+							"type": "dx",
+							"modifier": -5
+						},
+						{
+							"type": "skill",
+							"name": {
+								"compare": "is",
+								"qualifier": "Broadsword"
+							}
+						}
+					],
+					"calc": {
+						"level": 13,
+						"damage": "1d-1 cut",
+						"parry": "9"
+					}
+				},
+				{
+					"id": "waFi8rrhYs2aKZ_4n",
+					"sv": 1,
+					"damage": {
+						"type": "imp",
+						"st": "lift_thr"
+					},
+					"strength": "10",
+					"usage": "Mode lift_thr",
+					"reach": "1",
+					"parry": "0",
+					"defaults": [
+						{
+							"type": "dx",
+							"modifier": -5
+						},
+						{
+							"type": "skill",
+							"name": {
+								"compare": "is",
+								"qualifier": "Broadsword"
+							}
+						}
+					],
+					"calc": {
+						"level": 13,
+						"damage": "1d-1 imp",
+						"parry": "9"
+					}
+				},
+				{
+					"id": "wYjvM6x3xLu65BSI0",
+					"sv": 1,
+					"damage": {
+						"type": "pi",
+						"st": "tk_thr"
+					},
+					"strength": "10",
+					"usage": "Mode tk_thr",
+					"reach": "1",
+					"parry": "0",
+					"defaults": [
+						{
+							"type": "dx",
+							"modifier": -5
+						},
+						{
+							"type": "skill",
+							"name": {
+								"compare": "is",
+								"qualifier": "Broadsword"
+							}
+						}
+					],
+					"calc": {
+						"level": 3,
+						"damage": "1d-6 pi",
+						"parry": "4"
+					}
+				},
+				{
+					"id": "w-LVO_GyaBbwfUV30",
+					"sv": 1,
+					"damage": {
+						"type": "burn",
+						"st": "iq_thr"
+					},
+					"strength": "10",
+					"usage": "Mode iq_thr",
+					"reach": "1",
+					"parry": "0",
+					"defaults": [
+						{
+							"type": "dx",
+							"modifier": -5
+						},
+						{
+							"type": "skill",
+							"name": {
+								"compare": "is",
+								"qualifier": "Broadsword"
+							}
+						}
+					],
+					"calc": {
+						"level": 13,
+						"damage": "1d-2 burn",
+						"parry": "9"
+					}
+				},
+				{
+					"id": "waubeCv27sR1BGlM6",
+					"sv": 1,
+					"damage": {
+						"type": "cr",
+						"st": "sw"
+					},
+					"strength": "10",
+					"usage": "Mode sw",
+					"reach": "1",
+					"parry": "0",
+					"defaults": [
+						{
+							"type": "dx",
+							"modifier": -5
+						},
+						{
+							"type": "skill",
+							"name": {
+								"compare": "is",
+								"qualifier": "Broadsword"
+							}
+						}
+					],
+					"calc": {
+						"level": 13,
+						"damage": "1d+2 cr",
+						"parry": "9"
+					}
+				},
+				{
+					"id": "wGKo93UvajLLNxEyg",
+					"sv": 1,
+					"damage": {
+						"type": "cut",
+						"st": "lift_sw"
+					},
+					"strength": "10",
+					"usage": "Mode lift_sw",
+					"reach": "1",
+					"parry": "0",
+					"defaults": [
+						{
+							"type": "dx",
+							"modifier": -5
+						},
+						{
+							"type": "skill",
+							"name": {
+								"compare": "is",
+								"qualifier": "Broadsword"
+							}
+						}
+					],
+					"calc": {
+						"level": 13,
+						"damage": "1d+2 cut",
+						"parry": "9"
+					}
+				},
+				{
+					"id": "wZAIkRjvsuk-uV7rx",
+					"sv": 1,
+					"damage": {
+						"type": "imp",
+						"st": "tk_sw"
+					},
+					"strength": "10",
+					"usage": "Mode tk_sw",
+					"reach": "1",
+					"parry": "0",
+					"defaults": [
+						{
+							"type": "dx",
+							"modifier": -5
+						},
+						{
+							"type": "skill",
+							"name": {
+								"compare": "is",
+								"qualifier": "Broadsword"
+							}
+						}
+					],
+					"calc": {
+						"level": 3,
+						"damage": "1d-5 imp",
+						"parry": "4"
+					}
+				},
+				{
+					"id": "wdDdy5WKJvXdKFQla",
+					"sv": 1,
+					"damage": {
+						"type": "pi",
+						"st": "iq_sw"
+					},
+					"strength": "10",
+					"usage": "Mode iq_sw",
+					"reach": "1",
+					"parry": "0",
+					"defaults": [
+						{
+							"type": "dx",
+							"modifier": -5
+						},
+						{
+							"type": "skill",
+							"name": {
+								"compare": "is",
+								"qualifier": "Broadsword"
+							}
+						}
+					],
+					"calc": {
+						"level": 13,
+						"damage": "1d pi",
+						"parry": "9"
+					}
+				},
+				{
+					"id": "w2KChHl22ntlN3oFH",
+					"sv": 1,
+					"damage": {
+						"type": "burn",
+						"st": "thr",
+						"leveled": true
+					},
+					"strength": "10",
+					"usage": "Mode thr_leveled",
+					"reach": "1",
+					"parry": "0",
+					"defaults": [
+						{
+							"type": "dx",
+							"modifier": -5
+						},
+						{
+							"type": "skill",
+							"name": {
+								"compare": "is",
+								"qualifier": "Broadsword"
+							}
+						}
+					],
+					"calc": {
+						"level": 13,
+						"damage": "burn",
+						"parry": "9"
+					}
+				},
+				{
+					"id": "wEdBy4n6nKm-XxOMz",
+					"sv": 1,
+					"damage": {
+						"type": "cr",
+						"st": "sw",
+						"leveled": true
+					},
+					"strength": "10",
+					"usage": "Mode sw_leveled",
+					"reach": "1",
+					"parry": "0",
+					"defaults": [
+						{
+							"type": "dx",
+							"modifier": -5
+						},
+						{
+							"type": "skill",
+							"name": {
+								"compare": "is",
+								"qualifier": "Broadsword"
+							}
+						}
+					],
+					"calc": {
+						"level": 13,
+						"damage": "cr",
+						"parry": "9"
+					}
+				},
+				{
+					"id": "wbo3Ab3brYkDTqwRT",
+					"sv": 1,
+					"damage": {
+						"type": "cut",
+						"st": "sw",
+						"base": "1"
+					},
+					"strength": "10",
+					"usage": "Fencing",
+					"reach": "1",
+					"parry": "0F",
+					"defaults": [
+						{
+							"type": "dx",
+							"modifier": -5
+						},
+						{
+							"type": "skill",
+							"name": {
+								"compare": "is",
+								"qualifier": "Broadsword"
+							}
+						}
+					],
+					"calc": {
+						"level": 12,
+						"damage": "1d+3 cut",
+						"parry": "8F"
+					}
+				},
+				{
+					"id": "wpVEsH9ZLYJJPSAjZ",
+					"sv": 1,
+					"damage": {
+						"type": "cut",
+						"st": "sw",
+						"base": "1"
+					},
+					"strength": "14†",
+					"usage": "Two-handed",
+					"reach": "1-2*",
+					"parry": "-1U",
+					"defaults": [
+						{
+							"type": "dx",
+							"modifier": -5
+						},
+						{
+							"type": "skill",
+							"name": {
+								"compare": "is",
+								"qualifier": "Broadsword"
+							}
+						}
+					],
+					"calc": {
+						"level": 11,
+						"damage": "1d+3 cut",
+						"parry": "7U"
+					}
+				},
+				{
+					"id": "wlvNTTzgsrxWLifOT",
+					"sv": 1,
+					"damage": {
+						"type": "cut",
+						"st": "sw",
+						"base": "1"
+					},
+					"strength": "‡",
+					"usage": "Unready",
+					"reach": "C,1",
+					"parry": "0",
+					"defaults": [
+						{
+							"type": "dx",
+							"modifier": -5
+						},
+						{
+							"type": "skill",
+							"name": {
+								"compare": "is",
+								"qualifier": "Broadsword"
+							}
+						}
+					],
+					"calc": {
+						"level": 13,
+						"damage": "1d+3 cut",
+						"parry": "9"
+					}
+				},
+				{
+					"id": "wRxBhmK38rdDbpMgl",
+					"sv": 1,
+					"damage": {
+						"type": "cut",
+						"st": "sw",
+						"st_mul": 2,
+						"base": "2",
+						"armor_divisor": 2,
+						"fragmentation": "2d",
+						"fragmentation_armor_divisor": 3,
+						"fragmentation_type": "cut",
+						"modifier_per_die": 1
+					},
+					"strength": "10",
+					"usage": "Close",
+					"usage_notes": "Fragments",
+					"reach": "C",
+					"parry": "1",
+					"block": "0",
+					"defaults": [
+						{
+							"type": "dx",
+							"modifier": -5
+						},
+						{
+							"type": "skill",
+							"name": {
+								"compare": "is",
+								"qualifier": "Broadsword"
+							}
+						}
+					],
+					"calc": {
+						"level": 13,
+						"damage": "4d+8(2) cut [2d(3) cut]",
+						"parry": "10",
+						"block": "9"
+					}
+				},
+				{
+					"id": "Wilw3O-IoKlpHnQTS",
+					"sv": 1,
+					"damage": {
+						"type": "pi",
+						"base": "1d+2"
+					},
+					"strength": "8",
+					"usage": "Thrown",
+					"accuracy": "2",
+					"range": "x1/x1.5",
+					"rate_of_fire": "1",
+					"shots": "T(1)",
+					"bulk": "-2",
+					"defaults": [
+						{
+							"type": "dx",
+							"modifier": -4
+						},
+						{
+							"type": "skill",
+							"name": {
+								"compare": "is",
+								"qualifier": "Bow"
+							}
+						}
+					],
+					"calc": {
+						"level": 8,
+						"damage": "1d+2 pi",
+						"range": "12/18"
+					}
+				},
+				{
+					"id": "WRnbN3Li1Jsm3vJP7",
+					"sv": 1,
+					"damage": {
+						"type": "pi",
+						"base": "1d+2"
+					},
+					"strength": "9B",
+					"usage": "Burst",
+					"accuracy": "4+2",
+					"range": "1,000/3,000",
+					"rate_of_fire": "3x8!#",
+					"shots": "30+1(3)",
+					"bulk": "-3*",
+					"recoil": "2/4",
+					"defaults": [
+						{
+							"type": "dx",
+							"modifier": -4
+						},
+						{
+							"type": "skill",
+							"name": {
+								"compare": "is",
+								"qualifier": "Bow"
+							}
+						}
+					],
+					"calc": {
+						"level": 8,
+						"damage": "1d+2 pi"
+					}
+				},
+				{
+					"id": "WD1Cf_0fI48A5DGIO",
+					"sv": 1,
+					"damage": {
+						"type": "pi",
+						"base": "1d+2"
+					},
+					"strength": "12M",
+					"usage": "Jet",
+					"accuracy": "Jet",
+					"range": "10/20",
+					"rate_of_fire": "Jet",
+					"shots": "10(5i)",
+					"bulk": "-5/-7",
+					"recoil": "1",
+					"defaults": [
+						{
+							"type": "dx",
+							"modifier": -4
+						},
+						{
+							"type": "skill",
+							"name": {
+								"compare": "is",
+								"qualifier": "Bow"
+							}
+						}
+					],
+					"calc": {
+						"level": 8,
+						"damage": "1d+2 pi"
+					}
+				},
+				{
+					"id": "WG3VCT76x8HqOkuoR",
+					"sv": 1,
+					"damage": {
+						"type": "pi",
+						"base": "1d+2"
+					},
+					"strength": "13R",
+					"usage": "Mortar",
+					"accuracy": "6",
+					"range": "2/5 mi",
+					"rate_of_fire": "1/3",
+					"shots": "T(2i)",
+					"bulk": "-8",
+					"defaults": [
+						{
+							"type": "dx",
+							"modifier": -4
+						},
+						{
+							"type": "skill",
+							"name": {
+								"compare": "is",
+								"qualifier": "Bow"
+							}
+						}
+					],
+					"calc": {
+						"level": 7,
+						"damage": "1d+2 pi"
+					}
+				},
+				{
+					"id": "W1eje9nLQTPAFLs5x",
+					"sv": 1,
+					"damage": {
+						"type": "pi",
+						"base": "1d+2"
+					},
+					"strength": "11",
+					"usage": "Hidden",
+					"accuracy": "2",
+					"range": "150/200",
+					"rate_of_fire": "1",
+					"shots": "1(2)",
+					"bulk": "-6",
+					"defaults": [
+						{
+							"type": "dx",
+							"modifier": -4
+						},
+						{
+							"type": "skill",
+							"name": {
+								"compare": "is",
+								"qualifier": "Bow"
+							}
+						}
+					],
+					"hide": true,
+					"calc": {
+						"level": 8,
+						"damage": "1d+2 pi"
+					}
+				}
+			],
+			"calc": {
+				"points": 5
+			}
+		},
+		{
+			"id": "T1J9nvtlB5aW9G-eE",
+			"source": {
+				"library": "richardwilkes/gcs_master_library",
+				"path": "Fixture Traits.adq",
+				"id": "T1J9nvtlB5aW9G-eE"
+			},
+			"name": "Container alternative_abilities",
+			"container_type": "alternative_abilities",
+			"alternative_slots": 2,
+			"children": [
+				{
+					"id": "tLfqO_h3-OcCiUh2V",
+					"name": "alternative_abilities child A",
+					"base_points": 10,
+					"calc": {
+						"points": 10
+					}
+				},
+				{
+					"id": "t5PvsQUR8zayJsRTT",
+					"name": "alternative_abilities child B",
+					"base_points": 20,
+					"calc": {
+						"points": 20
+					}
+				}
+			],
+			"calc": {
+				"points": 30
+			}
+		},
+		{
+			"id": "TFoezWM2aL1Zy8jxV",
+			"source": {
+				"library": "richardwilkes/gcs_master_library",
+				"path": "Fixture Traits.adq",
+				"id": "TFoezWM2aL1Zy8jxV"
+			},
+			"name": "Container meta_trait",
+			"container_type": "meta_trait",
+			"children": [
+				{
+					"id": "tOiUb9TjEoFvlg39T",
+					"name": "meta_trait child A",
+					"base_points": 10,
+					"calc": {
+						"points": 10
+					}
+				},
+				{
+					"id": "tJoWqMEBdNB9pTkrY",
+					"name": "meta_trait child B",
+					"base_points": 20,
+					"calc": {
+						"points": 20
+					}
+				}
+			],
+			"calc": {
+				"points": 30
+			}
+		}
+	],
+	"skills": [
+		{
+			"id": "s9NYuIRXnZcV6S6eV",
+			"source": {
+				"library": "richardwilkes/gcs_master_library",
+				"path": "Fixture Skills.skl",
+				"id": "s9NYuIRXnZcV6S6eV"
+			},
+			"name": "Broadsword",
+			"reference": "FX2",
+			"local_notes": "Notes on the skill",
+			"tags": [
+				"Combat",
+				"Weapon"
+			],
+			"difficulty": "dx/a",
+			"encumbrance_penalty_multiplier": 1,
+			"defaults": [
+				{
+					"type": "dx",
+					"modifier": -5
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Shortsword"
+					},
+					"modifier": -2
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Fixture Specialist"
+					},
+					"specialization": {
+						"compare": "is",
+						"qualifier": "Alpha"
+					},
+					"modifier": -3
+				}
+			],
+			"weapons": [
+				{
+					"id": "wd8ichpHx_zUNn-VD",
+					"sv": 1,
+					"damage": {
+						"type": "cut",
+						"st": "sw",
+						"base": "1"
+					},
+					"strength": "10",
+					"usage": "Swing",
+					"reach": "1",
+					"parry": "0",
+					"defaults": [
+						{
+							"type": "dx",
+							"modifier": -5
+						},
+						{
+							"type": "skill",
+							"name": {
+								"compare": "is",
+								"qualifier": "Broadsword"
+							}
+						}
+					],
+					"calc": {
+						"level": 13,
+						"damage": "1d+3 cut",
+						"parry": "9"
+					}
+				}
+			],
+			"features": [
+				{
+					"type": "skill_bonus",
+					"selection_type": "skills_with_name",
+					"name": {
+						"compare": "is",
+						"qualifier": "Broadsword"
+					},
+					"specialization": {
+						"compare": "is"
+					},
+					"tags": {
+						"compare": "contains",
+						"qualifier": "Combat"
+					},
+					"amount": 1
+				}
+			],
+			"points": 4,
+			"defaulted_from": {
+				"type": "dx",
+				"modifier": -5,
+				"level": 7,
+				"adjusted_level": 7,
+				"points": -7
+			},
+			"study": [
+				{
+					"type": "teacher",
+					"hours": 50
+				}
+			],
+			"study_hours_needed": "160",
+			"calc": {
+				"level": 13,
+				"rsl": "DX+2"
+			}
+		},
+		{
+			"id": "ss-2J4sRnakf49Qse",
+			"source": {
+				"library": "richardwilkes/gcs_master_library",
+				"path": "Fixture Skills.skl",
+				"id": "ss-2J4sRnakf49Qse"
+			},
+			"name": "Fixture Specialist",
+			"specialization": "Alpha",
+			"difficulty": "iq/h",
+			"points": 2,
+			"calc": {
+				"level": 9,
+				"rsl": "IQ-1"
+			}
+		},
+		{
+			"id": "sSacwcHfMjDYIxxQs",
+			"source": {
+				"library": "richardwilkes/gcs_master_library",
+				"path": "Fixture Skills.skl",
+				"id": "sSacwcHfMjDYIxxQs"
+			},
+			"name": "Tech Skill",
+			"difficulty": "iq/a",
+			"tech_level": "3",
+			"points": 1,
+			"calc": {
+				"level": 9,
+				"rsl": "IQ-1"
+			}
+		},
+		{
+			"id": "sC-Ni-6vV0Fm71oUp",
+			"source": {
+				"library": "richardwilkes/gcs_master_library",
+				"path": "Fixture Skills.skl",
+				"id": "sC-Ni-6vV0Fm71oUp"
+			},
+			"name": "Climbing",
+			"difficulty": "dx/a",
+			"encumbrance_penalty_multiplier": 9,
+			"points": 2,
+			"calc": {
+				"level": 3,
+				"rsl": "DX+0"
+			}
+		},
+		{
+			"id": "sRdFDfp_eAJvDBxTs",
+			"source": {
+				"library": "richardwilkes/gcs_master_library",
+				"path": "Fixture Skills.skl",
+				"id": "sRdFDfp_eAJvDBxTs"
+			},
+			"name": "Defensive Skill",
+			"difficulty": "dx/h",
+			"defaults": [
+				{
+					"type": "parry",
+					"modifier": -2
+				},
+				{
+					"type": "block",
+					"modifier": -1
+				},
+				{
+					"type": "10",
+					"modifier": -4
+				}
+			],
+			"points": 1,
+			"defaulted_from": {
+				"type": "block",
+				"name": {
+					"compare": "is",
+					"qualifier": "Broadsword"
+				},
+				"specialization": {
+					"compare": "is"
+				},
+				"modifier": -1,
+				"level": 7,
+				"adjusted_level": 7,
+				"points": -7
+			},
+			"calc": {
+				"level": 10,
+				"rsl": "DX-2"
+			}
+		},
+		{
+			"id": "qEY9npZkyW3HbFrf4",
+			"source": {
+				"library": "richardwilkes/gcs_master_library",
+				"path": "Fixture Skills.skl",
+				"id": "qEY9npZkyW3HbFrf4"
+			},
+			"name": "Technique A",
+			"difficulty": "a",
+			"default": {
+				"type": "skill",
+				"name": {
+					"compare": "is",
+					"qualifier": "Broadsword"
+				},
+				"modifier": -4
+			},
+			"limit": 2,
+			"points": 1,
+			"calc": {
+				"level": 10,
+				"rsl": "-3"
+			}
+		},
+		{
+			"id": "SHDo0MXSCcqppsmdG",
+			"source": {
+				"library": "richardwilkes/gcs_master_library",
+				"path": "Fixture Skills.skl",
+				"id": "SHDo0MXSCcqppsmdG"
+			},
+			"name": "Skill Group",
+			"children": [
+				{
+					"id": "smQbwAqrjSMlj6ho4",
+					"name": "Grouped Skill",
+					"difficulty": "ht/e",
+					"points": 1,
+					"calc": {
+						"level": 11,
+						"rsl": "HT+0"
+					}
+				},
+				{
+					"id": "SWGNsnWMAeIqTfADY",
+					"name": "Nested Skill Group",
+					"children": [
+						{
+							"id": "s9CLsCqrpHTth95rt",
+							"name": "Deep Skill",
+							"difficulty": "per/a",
+							"points": 2,
+							"calc": {
+								"level": 10,
+								"rsl": "Per+0"
+							}
+						},
+						{
+							"id": "q9fReD-EmnI0mcW30",
+							"name": "Deep Technique",
+							"difficulty": "h",
+							"default": {
+								"type": "skill",
+								"name": {
+									"compare": "is",
+									"qualifier": "Deep Skill"
+								},
+								"modifier": -2
+							},
+							"points": 2,
+							"calc": {
+								"level": 9,
+								"rsl": "-1"
+							}
+						}
+					]
+				}
+			]
+		}
+	],
+	"spells": [
+		{
+			"id": "p-7PQih0WKQbeM2ia",
+			"source": {
+				"library": "richardwilkes/gcs_master_library",
+				"path": "Fixture Spells.spl",
+				"id": "p-7PQih0WKQbeM2ia"
+			},
+			"name": "Fireball",
+			"reference": "FX3",
+			"tags": [
+				"Fire",
+				"Missile"
+			],
+			"difficulty": "iq/h",
+			"college": [
+				"Fire"
+			],
+			"power_source": "Arcane",
+			"spell_class": "Missile",
+			"resist": "Dodge",
+			"casting_cost": "1 to 3",
+			"casting_time": "1-3 sec",
+			"duration": "Instant",
+			"item": "Wand",
+			"weapons": [
+				{
+					"id": "WCUkJTr7Cry5Q1AvP",
+					"sv": 1,
+					"damage": {
+						"type": "burn",
+						"base": "1d"
+					},
+					"strength": "11",
+					"usage": "Missile",
+					"accuracy": "1",
+					"range": "25/50",
+					"rate_of_fire": "1",
+					"defaults": [
+						{
+							"type": "dx",
+							"modifier": -4
+						},
+						{
+							"type": "skill",
+							"name": {
+								"compare": "is",
+								"qualifier": "Bow"
+							}
+						}
+					],
+					"calc": {
+						"level": 8,
+						"damage": "1d burn"
+					}
+				}
+			],
+			"points": 4,
+			"calc": {
+				"level": 10,
+				"rsl": "IQ+0"
+			}
+		},
+		{
+			"id": "pdesKx_-sQwVv5nR1",
+			"source": {
+				"library": "richardwilkes/gcs_master_library",
+				"path": "Fixture Spells.spl",
+				"id": "pdesKx_-sQwVv5nR1"
+			},
+			"name": "Multi-College Spell",
+			"difficulty": "iq/vh",
+			"college": [
+				"Fire",
+				"Air",
+				"Water"
+			],
+			"power_source": "Divine",
+			"spell_class": "Regular/Area",
+			"resist": "HT",
+			"casting_cost": "3",
+			"maintenance_cost": "2",
+			"casting_time": "10 sec",
+			"duration": "1 min",
+			"prereqs": {
+				"type": "prereq_list",
+				"all": true,
+				"prereqs": [
+					{
+						"type": "trait_prereq",
+						"has": true,
+						"name": {
+							"compare": "is",
+							"qualifier": "Leveled Advantage"
+						},
+						"level": {
+							"compare": "at_least",
+							"qualifier": 1
+						},
+						"notes": {
+							"compare": "is"
+						}
+					},
+					{
+						"type": "attribute_prereq",
+						"has": true,
+						"combined_with": "ht",
+						"qualifier": {
+							"compare": "is",
+							"qualifier": 20
+						},
+						"which": "st"
+					},
+					{
+						"type": "equipped_equipment",
+						"name": {
+							"compare": "is",
+							"qualifier": "Fixture Sword"
+						},
+						"tags": {
+							"compare": "contains",
+							"qualifier": "Weapon"
+						}
+					},
+					{
+						"type": "skill_prereq",
+						"has": true,
+						"name": {
+							"compare": "is",
+							"qualifier": "Broadsword"
+						},
+						"level": {
+							"compare": "at_least",
+							"qualifier": 12
+						},
+						"specialization": {
+							"compare": "is"
+						}
+					},
+					{
+						"type": "spell_prereq",
+						"sub_type": "name",
+						"has": true,
+						"qualifier": {
+							"compare": "is",
+							"qualifier": "Fireball"
+						},
+						"quantity": {
+							"compare": "at_least",
+							"qualifier": 1
+						}
+					},
+					{
+						"type": "script_prereq",
+						"name": "Strong enough",
+						"script": "$st >= 10"
+					},
+					{
+						"type": "spell_prereq",
+						"sub_type": "tag",
+						"has": true,
+						"qualifier": {
+							"compare": "is",
+							"qualifier": "Fire"
+						},
+						"quantity": {
+							"compare": "at_least",
+							"qualifier": 1
+						}
+					},
+					{
+						"type": "spell_prereq",
+						"sub_type": "college",
+						"has": true,
+						"qualifier": {
+							"compare": "is",
+							"qualifier": "Fire"
+						},
+						"quantity": {
+							"compare": "at_least",
+							"qualifier": 1
+						}
+					},
+					{
+						"type": "spell_prereq",
+						"sub_type": "college_count",
+						"has": true,
+						"quantity": {
+							"compare": "at_least",
+							"qualifier": 1
+						}
+					},
+					{
+						"type": "spell_prereq",
+						"sub_type": "any",
+						"has": true,
+						"quantity": {
+							"compare": "at_least",
+							"qualifier": 1
+						}
+					},
+					{
+						"type": "trait_prereq",
+						"has": false,
+						"name": {
+							"compare": "is_not",
+							"qualifier": "Leveled Advantage"
+						},
+						"level": {
+							"compare": "at_least",
+							"qualifier": 1
+						},
+						"notes": {
+							"compare": "is"
+						}
+					},
+					{
+						"type": "trait_prereq",
+						"has": true,
+						"name": {
+							"compare": "contains",
+							"qualifier": "Leveled Advantage"
+						},
+						"level": {
+							"compare": "at_least",
+							"qualifier": 1
+						},
+						"notes": {
+							"compare": "is"
+						}
+					},
+					{
+						"type": "trait_prereq",
+						"has": false,
+						"name": {
+							"compare": "does_not_contain",
+							"qualifier": "Leveled Advantage"
+						},
+						"level": {
+							"compare": "at_least",
+							"qualifier": 1
+						},
+						"notes": {
+							"compare": "is"
+						}
+					},
+					{
+						"type": "trait_prereq",
+						"has": true,
+						"name": {
+							"compare": "starts_with",
+							"qualifier": "Leveled Advantage"
+						},
+						"level": {
+							"compare": "at_least",
+							"qualifier": 1
+						},
+						"notes": {
+							"compare": "is"
+						}
+					},
+					{
+						"type": "trait_prereq",
+						"has": false,
+						"name": {
+							"compare": "does_not_start_with",
+							"qualifier": "Leveled Advantage"
+						},
+						"level": {
+							"compare": "at_least",
+							"qualifier": 1
+						},
+						"notes": {
+							"compare": "is"
+						}
+					},
+					{
+						"type": "trait_prereq",
+						"has": true,
+						"name": {
+							"compare": "ends_with",
+							"qualifier": "Leveled Advantage"
+						},
+						"level": {
+							"compare": "at_least",
+							"qualifier": 1
+						},
+						"notes": {
+							"compare": "is"
+						}
+					},
+					{
+						"type": "trait_prereq",
+						"has": false,
+						"name": {
+							"compare": "does_not_end_with",
+							"qualifier": "Leveled Advantage"
+						},
+						"level": {
+							"compare": "at_least",
+							"qualifier": 1
+						},
+						"notes": {
+							"compare": "is"
+						}
+					},
+					{
+						"type": "attribute_prereq",
+						"has": true,
+						"combined_with": "ht",
+						"qualifier": {
+							"compare": "is_not",
+							"qualifier": 20
+						},
+						"which": "st"
+					},
+					{
+						"type": "attribute_prereq",
+						"has": true,
+						"combined_with": "ht",
+						"qualifier": {
+							"compare": "at_least",
+							"qualifier": 20
+						},
+						"which": "st"
+					},
+					{
+						"type": "attribute_prereq",
+						"has": true,
+						"combined_with": "ht",
+						"qualifier": {
+							"compare": "at_most",
+							"qualifier": 20
+						},
+						"which": "st"
+					},
+					{
+						"type": "prereq_list",
+						"all": false,
+						"when_tl": {
+							"compare": "at_least",
+							"qualifier": 3
+						},
+						"prereqs": [
+							{
+								"type": "skill_prereq",
+								"has": true,
+								"name": {
+									"compare": "is",
+									"qualifier": "Broadsword"
+								},
+								"level": {
+									"compare": "at_least",
+									"qualifier": 12
+								},
+								"specialization": {
+									"compare": "is"
+								}
+							},
+							{
+								"type": "trait_prereq",
+								"has": false,
+								"name": {
+									"compare": "is_not",
+									"qualifier": "Leveled Advantage"
+								},
+								"level": {
+									"compare": "at_least",
+									"qualifier": 1
+								},
+								"notes": {
+									"compare": "is"
+								}
+							}
+						]
+					}
+				]
+			},
+			"tech_level": "3",
+			"points": 1,
+			"study": [
+				{
+					"type": "intensive",
+					"hours": 20
+				}
+			],
+			"calc": {
+				"level": 7,
+				"rsl": "IQ-3",
+				"unsatisfied_reason": "Prerequisites have not been met:\n- Has ST+HT 20\n- Has ST+HT at most 20"
+			}
+		},
+		{
+			"id": "rwcq27FV2eA4Fr5Rh",
+			"source": {
+				"library": "richardwilkes/gcs_master_library",
+				"path": "Fixture Spells.spl",
+				"id": "rwcq27FV2eA4Fr5Rh"
+			},
+			"name": "Ritual Spell",
+			"difficulty": "iq/h",
+			"college": [
+				"Fire"
+			],
+			"power_source": "Arcane",
+			"spell_class": "Regular",
+			"casting_cost": "2",
+			"casting_time": "1 sec",
+			"duration": "Instant",
+			"base_skill": "Ritual Magic",
+			"prereq_count": 2,
+			"points": 2,
+			"calc": {
+				"unsatisfied_reason": "Prerequisites have not been met:\n- Requires a skill named Ritual Magic (Fire)"
+			}
+		}
+	],
+	"equipment": [
+		{
+			"id": "egQu8-qgWqUTK6EZ7",
+			"source": {
+				"library": "richardwilkes/gcs_master_library",
+				"path": "Fixture Equipment.eqp",
+				"id": "egQu8-qgWqUTK6EZ7"
+			},
+			"description": "Fixture Sword",
+			"reference": "FX4",
+			"local_notes": "A blade",
+			"tech_level": "2",
+			"legality_class": "3",
+			"tags": [
+				"Melee",
+				"Weapon"
+			],
+			"base_value": "500",
+			"base_weight": "3 lb",
+			"weapons": [
+				{
+					"id": "w0maTHbPMv-nVgj8R",
+					"sv": 1,
+					"damage": {
+						"type": "cut",
+						"st": "sw",
+						"base": "1"
+					},
+					"strength": "10",
+					"usage": "Swing",
+					"reach": "1",
+					"parry": "0",
+					"defaults": [
+						{
+							"type": "dx",
+							"modifier": -5
+						},
+						{
+							"type": "skill",
+							"name": {
+								"compare": "is",
+								"qualifier": "Broadsword"
+							}
+						}
+					],
+					"calc": {
+						"level": 13,
+						"damage": "1d+1 cut",
+						"parry": "9"
+					}
+				},
+				{
+					"id": "wLMzNvhJ7jSCCuUtw",
+					"sv": 1,
+					"damage": {
+						"type": "imp",
+						"st": "thr",
+						"base": "2"
+					},
+					"strength": "10",
+					"usage": "Thrust",
+					"reach": "1",
+					"parry": "0",
+					"defaults": [
+						{
+							"type": "dx",
+							"modifier": -5
+						},
+						{
+							"type": "skill",
+							"name": {
+								"compare": "is",
+								"qualifier": "Broadsword"
+							}
+						}
+					],
+					"calc": {
+						"level": 13,
+						"damage": "1d imp",
+						"parry": "9"
+					}
+				}
+			],
+			"modifiers": [
+				{
+					"id": "fN4LWY5mk6wg7P1-c",
+					"name": "to_original_cost +5",
+					"cost_is_per_level": true,
+					"cost": "+5"
+				},
+				{
+					"id": "fUAIM1zXTbhOOyLVc",
+					"name": "Fine",
+					"local_notes": "+1 damage",
+					"cost_type": "to_base_cost",
+					"show_notes_on_weapon": true,
+					"cost": "+3 CF",
+					"features": [
+						{
+							"type": "weapon_bonus",
+							"selection_type": "weapons_with_required_skill",
+							"name": {
+								"compare": "is",
+								"qualifier": "Broadsword"
+							},
+							"level": {
+								"compare": "at_least",
+								"qualifier": 10
+							},
+							"amount": 1,
+							"per_die": true
+						}
+					]
+				},
+				{
+					"id": "F3lV--9_LnKCIKpaP",
+					"name": "Mandatory Equipment Choice",
+					"choice": {
+						"type": "count",
+						"qualifier": {
+							"compare": "is",
+							"qualifier": 1
+						}
+					},
+					"children": [
+						{
+							"id": "foWElSIl3R4pi0qni",
+							"name": "Material A",
+							"cost": "+10"
+						},
+						{
+							"id": "fPwsYwmmNDLTUb9yo",
+							"name": "Material B",
+							"cost": "+20",
+							"disabled": true
+						}
+					]
+				}
+			],
+			"rated_strength": 10,
+			"quantity": 1,
+			"equipped": true,
+			"calc": {
+				"value": 2060,
+				"extended_value": 2060,
+				"weight": "3 lb",
+				"extended_weight": "3 lb"
+			}
+		},
+		{
+			"id": "eIxzyiBtrI7ugev0U",
+			"source": {
+				"library": "richardwilkes/gcs_master_library",
+				"path": "Fixture Equipment.eqp",
+				"id": "eIxzyiBtrI7ugev0U"
+			},
+			"description": "Fixture Bow",
+			"base_value": "200",
+			"base_weight": "2 lb",
+			"weapons": [
+				{
+					"id": "W-Mj9nEOr2n6DcDES",
+					"sv": 1,
+					"damage": {
+						"type": "pi",
+						"base": "1d+2"
+					},
+					"strength": "11",
+					"usage": "Shot",
+					"accuracy": "2",
+					"range": "150/200",
+					"rate_of_fire": "1",
+					"shots": "1(2)",
+					"bulk": "-6",
+					"defaults": [
+						{
+							"type": "dx",
+							"modifier": -4
+						},
+						{
+							"type": "skill",
+							"name": {
+								"compare": "is",
+								"qualifier": "Bow"
+							}
+						}
+					],
+					"calc": {
+						"level": 8,
+						"damage": "1d+2 pi"
+					}
+				}
+			],
+			"quantity": 1,
+			"equipped": true,
+			"calc": {
+				"value": 200,
+				"extended_value": 200,
+				"weight": "2 lb",
+				"extended_weight": "2 lb"
+			}
+		},
+		{
+			"id": "euuEC2OyQLa54CWr6",
+			"source": {
+				"library": "richardwilkes/gcs_master_library",
+				"path": "Fixture Equipment.eqp",
+				"id": "euuEC2OyQLa54CWr6"
+			},
+			"description": "Fixture Lantern",
+			"base_value": "20",
+			"base_weight": "2 lb",
+			"max_uses": 5,
+			"prereqs": {
+				"type": "prereq_list",
+				"all": true,
+				"prereqs": [
+					{
+						"type": "trait_prereq",
+						"has": true,
+						"name": {
+							"compare": "is",
+							"qualifier": "Leveled Advantage"
+						},
+						"level": {
+							"compare": "at_least",
+							"qualifier": 1
+						},
+						"notes": {
+							"compare": "is"
+						}
+					},
+					{
+						"type": "attribute_prereq",
+						"has": true,
+						"combined_with": "ht",
+						"qualifier": {
+							"compare": "is",
+							"qualifier": 20
+						},
+						"which": "st"
+					},
+					{
+						"type": "contained_quantity_prereq",
+						"has": true,
+						"qualifier": {
+							"compare": "at_most",
+							"qualifier": 5
+						}
+					},
+					{
+						"type": "contained_weight_prereq",
+						"has": true,
+						"qualifier": {
+							"compare": "at_most",
+							"qualifier": "10 lb"
+						}
+					},
+					{
+						"type": "equipped_equipment",
+						"name": {
+							"compare": "is",
+							"qualifier": "Fixture Sword"
+						},
+						"tags": {
+							"compare": "contains",
+							"qualifier": "Weapon"
+						}
+					},
+					{
+						"type": "skill_prereq",
+						"has": true,
+						"name": {
+							"compare": "is",
+							"qualifier": "Broadsword"
+						},
+						"level": {
+							"compare": "at_least",
+							"qualifier": 12
+						},
+						"specialization": {
+							"compare": "is"
+						}
+					},
+					{
+						"type": "spell_prereq",
+						"sub_type": "name",
+						"has": true,
+						"qualifier": {
+							"compare": "is",
+							"qualifier": "Fireball"
+						},
+						"quantity": {
+							"compare": "at_least",
+							"qualifier": 1
+						}
+					},
+					{
+						"type": "script_prereq",
+						"name": "Strong enough",
+						"script": "$st >= 10"
+					},
+					{
+						"type": "spell_prereq",
+						"sub_type": "tag",
+						"has": true,
+						"qualifier": {
+							"compare": "is",
+							"qualifier": "Fire"
+						},
+						"quantity": {
+							"compare": "at_least",
+							"qualifier": 1
+						}
+					},
+					{
+						"type": "spell_prereq",
+						"sub_type": "college",
+						"has": true,
+						"qualifier": {
+							"compare": "is",
+							"qualifier": "Fire"
+						},
+						"quantity": {
+							"compare": "at_least",
+							"qualifier": 1
+						}
+					},
+					{
+						"type": "spell_prereq",
+						"sub_type": "college_count",
+						"has": true,
+						"quantity": {
+							"compare": "at_least",
+							"qualifier": 1
+						}
+					},
+					{
+						"type": "spell_prereq",
+						"sub_type": "any",
+						"has": true,
+						"quantity": {
+							"compare": "at_least",
+							"qualifier": 1
+						}
+					},
+					{
+						"type": "trait_prereq",
+						"has": false,
+						"name": {
+							"compare": "is_not",
+							"qualifier": "Leveled Advantage"
+						},
+						"level": {
+							"compare": "at_least",
+							"qualifier": 1
+						},
+						"notes": {
+							"compare": "is"
+						}
+					},
+					{
+						"type": "trait_prereq",
+						"has": true,
+						"name": {
+							"compare": "contains",
+							"qualifier": "Leveled Advantage"
+						},
+						"level": {
+							"compare": "at_least",
+							"qualifier": 1
+						},
+						"notes": {
+							"compare": "is"
+						}
+					},
+					{
+						"type": "trait_prereq",
+						"has": false,
+						"name": {
+							"compare": "does_not_contain",
+							"qualifier": "Leveled Advantage"
+						},
+						"level": {
+							"compare": "at_least",
+							"qualifier": 1
+						},
+						"notes": {
+							"compare": "is"
+						}
+					},
+					{
+						"type": "trait_prereq",
+						"has": true,
+						"name": {
+							"compare": "starts_with",
+							"qualifier": "Leveled Advantage"
+						},
+						"level": {
+							"compare": "at_least",
+							"qualifier": 1
+						},
+						"notes": {
+							"compare": "is"
+						}
+					},
+					{
+						"type": "trait_prereq",
+						"has": false,
+						"name": {
+							"compare": "does_not_start_with",
+							"qualifier": "Leveled Advantage"
+						},
+						"level": {
+							"compare": "at_least",
+							"qualifier": 1
+						},
+						"notes": {
+							"compare": "is"
+						}
+					},
+					{
+						"type": "trait_prereq",
+						"has": true,
+						"name": {
+							"compare": "ends_with",
+							"qualifier": "Leveled Advantage"
+						},
+						"level": {
+							"compare": "at_least",
+							"qualifier": 1
+						},
+						"notes": {
+							"compare": "is"
+						}
+					},
+					{
+						"type": "trait_prereq",
+						"has": false,
+						"name": {
+							"compare": "does_not_end_with",
+							"qualifier": "Leveled Advantage"
+						},
+						"level": {
+							"compare": "at_least",
+							"qualifier": 1
+						},
+						"notes": {
+							"compare": "is"
+						}
+					},
+					{
+						"type": "attribute_prereq",
+						"has": true,
+						"combined_with": "ht",
+						"qualifier": {
+							"compare": "is_not",
+							"qualifier": 20
+						},
+						"which": "st"
+					},
+					{
+						"type": "attribute_prereq",
+						"has": true,
+						"combined_with": "ht",
+						"qualifier": {
+							"compare": "at_least",
+							"qualifier": 20
+						},
+						"which": "st"
+					},
+					{
+						"type": "attribute_prereq",
+						"has": true,
+						"combined_with": "ht",
+						"qualifier": {
+							"compare": "at_most",
+							"qualifier": 20
+						},
+						"which": "st"
+					},
+					{
+						"type": "prereq_list",
+						"all": false,
+						"when_tl": {
+							"compare": "at_least",
+							"qualifier": 3
+						},
+						"prereqs": [
+							{
+								"type": "skill_prereq",
+								"has": true,
+								"name": {
+									"compare": "is",
+									"qualifier": "Broadsword"
+								},
+								"level": {
+									"compare": "at_least",
+									"qualifier": 12
+								},
+								"specialization": {
+									"compare": "is"
+								}
+							},
+							{
+								"type": "trait_prereq",
+								"has": false,
+								"name": {
+									"compare": "is_not",
+									"qualifier": "Leveled Advantage"
+								},
+								"level": {
+									"compare": "at_least",
+									"qualifier": 1
+								},
+								"notes": {
+									"compare": "is"
+								}
+							}
+						]
+					}
+				]
+			},
+			"features": [
+				{
+					"type": "equipment_max_uses_bonus",
+					"selection_type": "this_equipment",
+					"amount": "+1"
+				}
+			],
+			"quantity": 1,
+			"uses": 3,
+			"equipped": true,
+			"calc": {
+				"value": 20,
+				"extended_value": 20,
+				"weight": "2 lb",
+				"extended_weight": "2 lb",
+				"unsatisfied_reason": "Prerequisites have not been met:\n- Has ST+HT 20\n- Has ST+HT at most 20"
+			}
+		},
+		{
+			"id": "ejtr2PjM-kBfmSDci",
+			"source": {
+				"library": "richardwilkes/gcs_master_library",
+				"path": "Fixture Equipment.eqp",
+				"id": "ejtr2PjM-kBfmSDci"
+			},
+			"description": "Leveled Gear",
+			"base_value": "100",
+			"base_weight": "1 lb",
+			"modifiers": [
+				{
+					"id": "fN4LWY5mk6wg7P1-c",
+					"name": "to_original_cost +5",
+					"cost_is_per_level": true,
+					"cost": "+5"
+				},
+				{
+					"id": "flpa-wf15MWsQR57m",
+					"name": "to_original_cost +10%",
+					"cost": "+10%"
+				},
+				{
+					"id": "f9v5kuEl-TZavhxX7",
+					"name": "to_original_cost x2",
+					"cost": "x2"
+				},
+				{
+					"id": "fM02GB5CW_ftaJYqP",
+					"name": "to_base_cost +1 CF",
+					"cost_type": "to_base_cost",
+					"cost_is_per_level": true,
+					"cost": "+1 CF"
+				},
+				{
+					"id": "f8VhKQvIxhVzLdGKU",
+					"name": "to_base_cost x2",
+					"cost_type": "to_base_cost",
+					"cost": "x2"
+				},
+				{
+					"id": "fm4Gc_cwmJkkJeTMU",
+					"name": "to_final_base_cost +5",
+					"cost_type": "to_final_base_cost",
+					"cost_is_per_level": true,
+					"cost": "+5"
+				},
+				{
+					"id": "f7v5FtCMQSgioCErO",
+					"name": "to_final_base_cost -10%",
+					"cost_type": "to_final_base_cost",
+					"cost": "-10%"
+				},
+				{
+					"id": "fIE1hHJ-ddTOV7Me2",
+					"name": "to_final_base_cost x1.5",
+					"cost_type": "to_final_base_cost",
+					"cost": "x1.5"
+				},
+				{
+					"id": "f8n9Qh_MIgXsjpwQm",
+					"name": "to_final_cost +20",
+					"cost_type": "to_final_cost",
+					"cost_is_per_level": true,
+					"cost": "+20"
+				},
+				{
+					"id": "fCPCv5oXQdsy10Ihd",
+					"name": "to_final_cost +50%",
+					"cost_type": "to_final_cost",
+					"cost": "+50%"
+				},
+				{
+					"id": "fwKLWUqOU1N-qGoQu",
+					"name": "to_final_cost x3",
+					"cost_type": "to_final_cost",
+					"cost": "x3"
+				},
+				{
+					"id": "feJlKadZNcLlvI95K",
+					"name": "to_original_weight +1 lb",
+					"weight_is_per_level": true,
+					"weight": "+1 lb"
+				},
+				{
+					"id": "fgYa3y9jqNPCQUOj2",
+					"name": "to_original_weight +10%",
+					"weight": "+10%"
+				},
+				{
+					"id": "fj1iyhfrqLHgj3XnR",
+					"name": "to_base_weight +2 lb",
+					"weight_type": "to_base_weight",
+					"weight_is_per_level": true,
+					"weight": "+2 lb"
+				},
+				{
+					"id": "fOaPZ-iI8xCCWWrgw",
+					"name": "to_base_weight x50%",
+					"weight_type": "to_base_weight",
+					"weight": "x50%"
+				},
+				{
+					"id": "fhhoCikpnKHAGr-EF",
+					"name": "to_base_weight x2",
+					"weight_type": "to_base_weight",
+					"weight": "x2"
+				},
+				{
+					"id": "fprQqsiLGJ6ltgiFD",
+					"name": "to_final_base_weight -1 lb",
+					"weight_type": "to_final_base_weight",
+					"weight_is_per_level": true,
+					"weight": "-1 lb"
+				},
+				{
+					"id": "fxUuVxZlh1sAzKgbA",
+					"name": "to_final_base_weight x2",
+					"weight_type": "to_final_base_weight",
+					"weight": "x2"
+				},
+				{
+					"id": "ffYGd-X7hCcTP5Wr6",
+					"name": "to_final_weight +5 lb",
+					"weight_type": "to_final_weight",
+					"weight_is_per_level": true,
+					"weight": "+5 lb"
+				},
+				{
+					"id": "fBj0zjUpAhvKqgvmf",
+					"name": "to_final_weight x75%",
+					"weight_type": "to_final_weight",
+					"weight": "x75%"
+				},
+				{
+					"id": "fs5Mbkb9kzKVFttUj",
+					"name": "Per Pound",
+					"cost_type": "to_final_cost",
+					"cost_is_per_pound": true,
+					"cost": "+2"
+				},
+				{
+					"id": "fJ_Z2gYhZxiKoz4Zl",
+					"name": "High Tech",
+					"tech_level": "8",
+					"cost": "x4"
+				},
+				{
+					"id": "fUAIM1zXTbhOOyLVc",
+					"name": "Fine",
+					"local_notes": "+1 damage",
+					"cost_type": "to_base_cost",
+					"show_notes_on_weapon": true,
+					"cost": "+3 CF",
+					"features": [
+						{
+							"type": "weapon_bonus",
+							"selection_type": "weapons_with_required_skill",
+							"name": {
+								"compare": "is",
+								"qualifier": "Broadsword"
+							},
+							"level": {
+								"compare": "at_least",
+								"qualifier": 10
+							},
+							"amount": 1,
+							"per_die": true
+						}
+					]
+				},
+				{
+					"id": "fh5Mh0vD-jVPzgp_a",
+					"name": "Disabled Equipment Modifier",
+					"cost": "+100",
+					"disabled": true
+				},
+				{
+					"id": "FUBn4io7W8JQQpqNU",
+					"name": "Equipment Modifier Group",
+					"children": [
+						{
+							"id": "fvcOVp4FwYrlzeEod",
+							"name": "Grouped Equipment Modifier",
+							"cost": "+1"
+						}
+					]
+				},
+				{
+					"id": "F3lV--9_LnKCIKpaP",
+					"name": "Mandatory Equipment Choice",
+					"choice": {
+						"type": "count",
+						"qualifier": {
+							"compare": "is",
+							"qualifier": 1
+						}
+					},
+					"children": [
+						{
+							"id": "foWElSIl3R4pi0qni",
+							"name": "Material A",
+							"cost": "+10"
+						},
+						{
+							"id": "fPwsYwmmNDLTUb9yo",
+							"name": "Material B",
+							"cost": "+20",
+							"disabled": true
+						}
+					]
+				},
+				{
+					"id": "FEs9rjIVrCI1wKWTc",
+					"name": "Optional Equipment Choice",
+					"choice": {
+						"type": "count",
+						"qualifier": {
+							"compare": "at_most",
+							"qualifier": 1
+						}
+					},
+					"children": [
+						{
+							"id": "fhPvSHIEinh88Rbhs",
+							"name": "Extra A",
+							"cost": "+1",
+							"disabled": true
+						}
+					]
+				}
+			],
+			"quantity": 1,
+			"level": 2,
+			"equipped": true,
+			"calc": {
+				"value": 28618.3,
+				"extended_value": 28618.3,
+				"weight": "19.15 lb",
+				"extended_weight": "19.15 lb"
+			}
+		},
+		{
+			"id": "Ee0ScFBmO7Ko4Epsy",
+			"source": {
+				"library": "richardwilkes/gcs_master_library",
+				"path": "Fixture Equipment.eqp",
+				"id": "Ee0ScFBmO7Ko4Epsy"
+			},
+			"description": "Backpack",
+			"base_value": "60",
+			"base_weight": "3 lb",
+			"prereqs": {
+				"type": "prereq_list",
+				"all": true,
+				"prereqs": [
+					{
+						"type": "contained_quantity_prereq",
+						"has": true,
+						"qualifier": {
+							"compare": "at_most",
+							"qualifier": 5
+						}
+					},
+					{
+						"type": "contained_weight_prereq",
+						"has": true,
+						"qualifier": {
+							"compare": "at_most",
+							"qualifier": "10 lb"
+						}
+					}
+				]
+			},
+			"features": [
+				{
+					"type": "contained_weight_reduction",
+					"reduction": "50%"
+				},
+				{
+					"type": "contained_weight_reduction",
+					"reduction": "5 lb"
+				}
+			],
+			"quantity": 1,
+			"equipped": true,
+			"children": [
+				{
+					"id": "eje_IovOeMjj_5Vf1",
+					"description": "Rope",
+					"base_value": "5",
+					"base_weight": "1.5 lb",
+					"quantity": 1,
+					"equipped": true,
+					"calc": {
+						"value": 5,
+						"extended_value": 5,
+						"weight": "1.5 lb",
+						"extended_weight": "1.5 lb"
+					}
+				},
+				{
+					"id": "EBls0UdRlwI7wlxdZ",
+					"description": "Pouch",
+					"base_value": "10",
+					"base_weight": "0.2 lb",
+					"quantity": 1,
+					"equipped": true,
+					"children": [
+						{
+							"id": "eT3iHYaeNru9P1gjq",
+							"description": "Coins",
+							"base_value": "1",
+							"base_weight": "0.02 lb",
+							"quantity": 30,
+							"equipped": true,
+							"calc": {
+								"value": 1,
+								"extended_value": 30,
+								"weight": "0.02 lb",
+								"extended_weight": "0.6 lb"
+							}
+						}
+					],
+					"calc": {
+						"value": 10,
+						"extended_value": 40,
+						"weight": "0.2 lb",
+						"extended_weight": "0.8 lb"
+					}
+				}
+			],
+			"calc": {
+				"value": 60,
+				"extended_value": 105,
+				"weight": "3 lb",
+				"extended_weight": "3 lb"
+			}
+		}
+	],
+	"other_equipment": [
+		{
+			"id": "eaktPFUwA162BTHDa",
+			"source": {
+				"library": "richardwilkes/gcs_master_library",
+				"path": "Fixture Equipment.eqp",
+				"id": "eaktPFUwA162BTHDa"
+			},
+			"description": "Arrows",
+			"base_value": "2",
+			"base_weight": "0.1 lb",
+			"ignore_weight_for_skills": true,
+			"quantity": 20,
+			"calc": {
+				"value": 2,
+				"extended_value": 40,
+				"weight": "0.1 lb",
+				"extended_weight": "2 lb"
+			}
+		},
+		{
+			"id": "EAs6vPiUWzqb-4roI",
+			"source": {
+				"library": "richardwilkes/gcs_master_library",
+				"path": "Fixture Equipment.eqp",
+				"id": "EAs6vPiUWzqb-4roI"
+			},
+			"container_type": "group",
+			"description": "Equipment Group",
+			"quantity": 1,
+			"equipped": true,
+			"children": [
+				{
+					"id": "eig4-KjlweU4v4Ryq",
+					"description": "Grouped Item",
+					"base_value": "3",
+					"base_weight": "0.5 lb",
+					"quantity": 2,
+					"equipped": true,
+					"calc": {
+						"value": 3,
+						"extended_value": 6,
+						"weight": "0.5 lb",
+						"extended_weight": "1 lb"
+					}
+				}
+			],
+			"calc": {
+				"value": 0,
+				"extended_value": 6,
+				"weight": "0 lb",
+				"extended_weight": "1 lb"
+			}
+		}
+	],
+	"notes": [
+		{
+			"id": "n3LpdA9oxm21sd8WK",
+			"source": {
+				"library": "richardwilkes/gcs_master_library",
+				"path": "Fixture Notes.not",
+				"id": "n3LpdA9oxm21sd8WK"
+			},
+			"markdown": "# Fixture Note\n\nSome **bold** and _italic_ text.\n\n- One\n- Two\n",
+			"reference": "FX5",
+			"tags": [
+				"Lore"
+			]
+		},
+		{
+			"id": "nxBoDMS0WhU1dnFxy",
+			"source": {
+				"library": "richardwilkes/gcs_master_library",
+				"path": "Fixture Notes.not",
+				"id": "nxBoDMS0WhU1dnFxy"
+			},
+			"markdown": "Sworn to @Patron@ until @Date|?@.",
+			"replacements": {
+				"Patron": "The Fixture"
+			},
+			"calc": {
+				"resolved_text": "Sworn to The Fixture until @Date@."
+			}
+		},
+		{
+			"id": "Nv36T91KB-Ub6tg3Z",
+			"source": {
+				"library": "richardwilkes/gcs_master_library",
+				"path": "Fixture Notes.not",
+				"id": "Nv36T91KB-Ub6tg3Z"
+			},
+			"markdown": "Note Group",
+			"children": [
+				{
+					"id": "niaScCVVhvdUvsLJh",
+					"markdown": "A child note."
+				}
+			]
+		}
+	],
+	"created_date": "2026-01-02T15:04:00Z",
+	"modified_date": "2026-01-09T15:04:00Z",
+	"calc": {
+		"swing": "1d+2",
+		"thrust": "1d-1",
+		"basic_lift": "29 lb",
+		"move": [
+			6,
+			4,
+			3,
+			2,
+			1
+		],
+		"dodge": [
+			9,
+			8,
+			7,
+			6,
+			5
+		]
+	}
+}

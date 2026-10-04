@@ -1,0 +1,21 @@
+{
+	"type": "compound",
+	"separator": "-",
+	"compound": [
+		{
+			"type": "simple",
+			"training_data": [
+				"Alda",
+				"Brin",
+				"Corra",
+				"Dain",
+				"Edda"
+			]
+		},
+		{
+			"type": "simple",
+			"no_lowered": true,
+			"built_in_training_data": "american_last"
+		}
+	]
+}

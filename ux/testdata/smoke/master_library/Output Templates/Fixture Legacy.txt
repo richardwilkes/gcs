@@ -1,0 +1,3 @@
+Player: @PLAYER
+Title: @TITLE
+Points: @TOTAL_POINTS

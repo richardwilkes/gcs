@@ -1,0 +1,276 @@
+{
+	"version": 5,
+	"id": "LHGrLnwfP9Q5ULRJ2",
+	"name": "Fixture Hoard",
+	"location": "The Cellar",
+	"session": "Session 3",
+	"modified_date": "2026-01-09T15:04:00Z",
+	"equipment": [
+		{
+			"id": "egQu8-qgWqUTK6EZ7",
+			"source": {
+				"library": "richardwilkes/gcs_master_library",
+				"path": "Fixture Equipment.eqp",
+				"id": "egQu8-qgWqUTK6EZ7"
+			},
+			"description": "Fixture Sword",
+			"reference": "FX4",
+			"local_notes": "A blade",
+			"tech_level": "2",
+			"legality_class": "3",
+			"tags": [
+				"Melee",
+				"Weapon"
+			],
+			"base_value": "500",
+			"base_weight": "3 lb",
+			"weapons": [
+				{
+					"id": "w0maTHbPMv-nVgj8R",
+					"sv": 1,
+					"damage": {
+						"type": "cut",
+						"st": "sw",
+						"base": "1"
+					},
+					"strength": "10",
+					"usage": "Swing",
+					"reach": "1",
+					"parry": "0",
+					"defaults": [
+						{
+							"type": "dx",
+							"modifier": -5
+						},
+						{
+							"type": "skill",
+							"name": {
+								"compare": "is",
+								"qualifier": "Broadsword"
+							}
+						}
+					],
+					"calc": {
+						"damage": "sw+1 cut"
+					}
+				},
+				{
+					"id": "wLMzNvhJ7jSCCuUtw",
+					"sv": 1,
+					"damage": {
+						"type": "imp",
+						"st": "thr",
+						"base": "2"
+					},
+					"strength": "10",
+					"usage": "Thrust",
+					"reach": "1",
+					"parry": "0",
+					"defaults": [
+						{
+							"type": "dx",
+							"modifier": -5
+						},
+						{
+							"type": "skill",
+							"name": {
+								"compare": "is",
+								"qualifier": "Broadsword"
+							}
+						}
+					],
+					"calc": {
+						"damage": "thr+2 imp"
+					}
+				}
+			],
+			"modifiers": [
+				{
+					"id": "fN4LWY5mk6wg7P1-c",
+					"name": "to_original_cost +5",
+					"cost_is_per_level": true,
+					"cost": "+5"
+				},
+				{
+					"id": "fUAIM1zXTbhOOyLVc",
+					"name": "Fine",
+					"local_notes": "+1 damage",
+					"cost_type": "to_base_cost",
+					"show_notes_on_weapon": true,
+					"cost": "+3 CF",
+					"features": [
+						{
+							"type": "weapon_bonus",
+							"selection_type": "weapons_with_required_skill",
+							"name": {
+								"compare": "is",
+								"qualifier": "Broadsword"
+							},
+							"level": {
+								"compare": "at_least",
+								"qualifier": 10
+							},
+							"amount": 1,
+							"per_die": true
+						}
+					]
+				},
+				{
+					"id": "F3lV--9_LnKCIKpaP",
+					"name": "Mandatory Equipment Choice",
+					"choice": {
+						"type": "count",
+						"qualifier": {
+							"compare": "is",
+							"qualifier": 1
+						}
+					},
+					"children": [
+						{
+							"id": "foWElSIl3R4pi0qni",
+							"name": "Material A",
+							"cost": "+10"
+						},
+						{
+							"id": "fPwsYwmmNDLTUb9yo",
+							"name": "Material B",
+							"cost": "+20",
+							"disabled": true
+						}
+					]
+				}
+			],
+			"rated_strength": 10,
+			"quantity": 1,
+			"equipped": true,
+			"calc": {
+				"value": 2060,
+				"extended_value": 2060,
+				"weight": "3 lb",
+				"extended_weight": "3 lb"
+			}
+		},
+		{
+			"id": "eaktPFUwA162BTHDa",
+			"source": {
+				"library": "richardwilkes/gcs_master_library",
+				"path": "Fixture Equipment.eqp",
+				"id": "eaktPFUwA162BTHDa"
+			},
+			"description": "Arrows",
+			"base_value": "2",
+			"base_weight": "0.1 lb",
+			"ignore_weight_for_skills": true,
+			"quantity": 20,
+			"calc": {
+				"value": 2,
+				"extended_value": 40,
+				"weight": "0.1 lb",
+				"extended_weight": "2 lb"
+			}
+		},
+		{
+			"id": "Ee0ScFBmO7Ko4Epsy",
+			"source": {
+				"library": "richardwilkes/gcs_master_library",
+				"path": "Fixture Equipment.eqp",
+				"id": "Ee0ScFBmO7Ko4Epsy"
+			},
+			"description": "Backpack",
+			"base_value": "60",
+			"base_weight": "3 lb",
+			"prereqs": {
+				"type": "prereq_list",
+				"all": true,
+				"prereqs": [
+					{
+						"type": "contained_quantity_prereq",
+						"has": true,
+						"qualifier": {
+							"compare": "at_most",
+							"qualifier": 5
+						}
+					},
+					{
+						"type": "contained_weight_prereq",
+						"has": true,
+						"qualifier": {
+							"compare": "at_most",
+							"qualifier": "10 lb"
+						}
+					}
+				]
+			},
+			"features": [
+				{
+					"type": "contained_weight_reduction",
+					"reduction": "50%"
+				},
+				{
+					"type": "contained_weight_reduction",
+					"reduction": "5 lb"
+				}
+			],
+			"quantity": 1,
+			"equipped": true,
+			"children": [
+				{
+					"id": "eje_IovOeMjj_5Vf1",
+					"description": "Rope",
+					"base_value": "5",
+					"base_weight": "1.5 lb",
+					"quantity": 1,
+					"equipped": true,
+					"calc": {
+						"value": 5,
+						"extended_value": 5,
+						"weight": "1.5 lb",
+						"extended_weight": "1.5 lb"
+					}
+				},
+				{
+					"id": "EBls0UdRlwI7wlxdZ",
+					"description": "Pouch",
+					"base_value": "10",
+					"base_weight": "0.2 lb",
+					"quantity": 1,
+					"equipped": true,
+					"children": [
+						{
+							"id": "eT3iHYaeNru9P1gjq",
+							"description": "Coins",
+							"base_value": "1",
+							"base_weight": "0.02 lb",
+							"quantity": 30,
+							"equipped": true,
+							"calc": {
+								"value": 1,
+								"extended_value": 30,
+								"weight": "0.02 lb",
+								"extended_weight": "0.6 lb"
+							}
+						}
+					],
+					"calc": {
+						"value": 10,
+						"extended_value": 40,
+						"weight": "0.2 lb",
+						"extended_weight": "0.8 lb"
+					}
+				}
+			],
+			"calc": {
+				"value": 60,
+				"extended_value": 105,
+				"weight": "3 lb",
+				"extended_weight": "3 lb"
+			}
+		}
+	],
+	"notes": [
+		{
+			"id": "nNBa58S21OnhYBesT",
+			"markdown": "Found behind the barrels."
+		}
+	]
+}

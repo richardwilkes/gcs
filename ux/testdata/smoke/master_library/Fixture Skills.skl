@@ -1,0 +1,592 @@
+{
+	"version": 5,
+	"rows": [
+		{
+			"id": "s6X29Wmzk_ESFIRaj",
+			"name": "Skill DX/E",
+			"difficulty": "dx/e",
+			"defaults": [
+				{
+					"type": "dx",
+					"modifier": -5
+				}
+			],
+			"points": 1
+		},
+		{
+			"id": "sMZi1BK-RmzkHaJ4-",
+			"name": "Skill IQ/A",
+			"difficulty": "iq/a",
+			"defaults": [
+				{
+					"type": "iq",
+					"modifier": -5
+				}
+			],
+			"points": 2
+		},
+		{
+			"id": "sgKa4eEom9gAlrz20",
+			"name": "Skill HT/H",
+			"difficulty": "ht/h",
+			"defaults": [
+				{
+					"type": "ht",
+					"modifier": -5
+				}
+			],
+			"points": 4
+		},
+		{
+			"id": "sGnTjrxmx58VXW5G8",
+			"name": "Skill WILL/VH",
+			"difficulty": "will/vh",
+			"defaults": [
+				{
+					"type": "will",
+					"modifier": -5
+				}
+			],
+			"points": 8
+		},
+		{
+			"id": "sRWh6lVcNyD5IeHcn",
+			"name": "Skill PER/W",
+			"difficulty": "per/w",
+			"defaults": [
+				{
+					"type": "per",
+					"modifier": -5
+				}
+			],
+			"points": 12
+		},
+		{
+			"id": "s9NYuIRXnZcV6S6eV",
+			"name": "Broadsword",
+			"reference": "FX2",
+			"local_notes": "Notes on the skill",
+			"tags": [
+				"Combat",
+				"Weapon"
+			],
+			"difficulty": "dx/a",
+			"encumbrance_penalty_multiplier": 1,
+			"defaults": [
+				{
+					"type": "dx",
+					"modifier": -5
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Shortsword"
+					},
+					"modifier": -2
+				},
+				{
+					"type": "skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Fixture Specialist"
+					},
+					"specialization": {
+						"compare": "is",
+						"qualifier": "Alpha"
+					},
+					"modifier": -3
+				}
+			],
+			"weapons": [
+				{
+					"id": "wd8ichpHx_zUNn-VD",
+					"sv": 1,
+					"damage": {
+						"type": "cut",
+						"st": "sw",
+						"base": "1"
+					},
+					"strength": "10",
+					"usage": "Swing",
+					"reach": "1",
+					"parry": "0",
+					"defaults": [
+						{
+							"type": "dx",
+							"modifier": -5
+						},
+						{
+							"type": "skill",
+							"name": {
+								"compare": "is",
+								"qualifier": "Broadsword"
+							}
+						}
+					],
+					"calc": {
+						"damage": "sw+1 cut"
+					}
+				}
+			],
+			"features": [
+				{
+					"type": "skill_bonus",
+					"selection_type": "skills_with_name",
+					"name": {
+						"compare": "is",
+						"qualifier": "Broadsword"
+					},
+					"specialization": {
+						"compare": "is"
+					},
+					"tags": {
+						"compare": "contains",
+						"qualifier": "Combat"
+					},
+					"amount": 1
+				}
+			],
+			"points": 4,
+			"study": [
+				{
+					"type": "teacher",
+					"hours": 50
+				}
+			],
+			"study_hours_needed": "160"
+		},
+		{
+			"id": "ss-2J4sRnakf49Qse",
+			"name": "Fixture Specialist",
+			"specialization": "Alpha",
+			"difficulty": "iq/h",
+			"points": 2
+		},
+		{
+			"id": "sZ4m6J9NWuCrZStBw",
+			"name": "Optional Specialist",
+			"specialization": "Beta",
+			"difficulty": "iq/a",
+			"optional_specialization": "Gamma",
+			"points": 1
+		},
+		{
+			"id": "sSacwcHfMjDYIxxQs",
+			"name": "Tech Skill",
+			"difficulty": "iq/a",
+			"tech_level": "3",
+			"points": 1
+		},
+		{
+			"id": "sdbLJpAgkVFrXSMKJ",
+			"name": "Tech Skill Unset",
+			"difficulty": "iq/a",
+			"tech_level": "",
+			"points": 1
+		},
+		{
+			"id": "sC-Ni-6vV0Fm71oUp",
+			"name": "Climbing",
+			"difficulty": "dx/a",
+			"encumbrance_penalty_multiplier": 9,
+			"points": 2
+		},
+		{
+			"id": "sV1DmTZAhNj7VT5C5",
+			"name": "Skill With Prerequisites",
+			"difficulty": "iq/vh",
+			"prereqs": {
+				"type": "prereq_list",
+				"all": true,
+				"prereqs": [
+					{
+						"type": "trait_prereq",
+						"has": true,
+						"name": {
+							"compare": "is",
+							"qualifier": "Leveled Advantage"
+						},
+						"level": {
+							"compare": "at_least",
+							"qualifier": 1
+						},
+						"notes": {
+							"compare": "is"
+						}
+					},
+					{
+						"type": "attribute_prereq",
+						"has": true,
+						"combined_with": "ht",
+						"qualifier": {
+							"compare": "is",
+							"qualifier": 20
+						},
+						"which": "st"
+					},
+					{
+						"type": "equipped_equipment",
+						"name": {
+							"compare": "is",
+							"qualifier": "Fixture Sword"
+						},
+						"tags": {
+							"compare": "contains",
+							"qualifier": "Weapon"
+						}
+					},
+					{
+						"type": "skill_prereq",
+						"has": true,
+						"name": {
+							"compare": "is",
+							"qualifier": "Broadsword"
+						},
+						"level": {
+							"compare": "at_least",
+							"qualifier": 12
+						},
+						"specialization": {
+							"compare": "is"
+						}
+					},
+					{
+						"type": "spell_prereq",
+						"sub_type": "name",
+						"has": true,
+						"qualifier": {
+							"compare": "is",
+							"qualifier": "Fireball"
+						},
+						"quantity": {
+							"compare": "at_least",
+							"qualifier": 1
+						}
+					},
+					{
+						"type": "script_prereq",
+						"name": "Strong enough",
+						"script": "$st >= 10"
+					},
+					{
+						"type": "spell_prereq",
+						"sub_type": "tag",
+						"has": true,
+						"qualifier": {
+							"compare": "is",
+							"qualifier": "Fire"
+						},
+						"quantity": {
+							"compare": "at_least",
+							"qualifier": 1
+						}
+					},
+					{
+						"type": "spell_prereq",
+						"sub_type": "college",
+						"has": true,
+						"qualifier": {
+							"compare": "is",
+							"qualifier": "Fire"
+						},
+						"quantity": {
+							"compare": "at_least",
+							"qualifier": 1
+						}
+					},
+					{
+						"type": "spell_prereq",
+						"sub_type": "college_count",
+						"has": true,
+						"quantity": {
+							"compare": "at_least",
+							"qualifier": 1
+						}
+					},
+					{
+						"type": "spell_prereq",
+						"sub_type": "any",
+						"has": true,
+						"quantity": {
+							"compare": "at_least",
+							"qualifier": 1
+						}
+					},
+					{
+						"type": "trait_prereq",
+						"has": false,
+						"name": {
+							"compare": "is_not",
+							"qualifier": "Leveled Advantage"
+						},
+						"level": {
+							"compare": "at_least",
+							"qualifier": 1
+						},
+						"notes": {
+							"compare": "is"
+						}
+					},
+					{
+						"type": "trait_prereq",
+						"has": true,
+						"name": {
+							"compare": "contains",
+							"qualifier": "Leveled Advantage"
+						},
+						"level": {
+							"compare": "at_least",
+							"qualifier": 1
+						},
+						"notes": {
+							"compare": "is"
+						}
+					},
+					{
+						"type": "trait_prereq",
+						"has": false,
+						"name": {
+							"compare": "does_not_contain",
+							"qualifier": "Leveled Advantage"
+						},
+						"level": {
+							"compare": "at_least",
+							"qualifier": 1
+						},
+						"notes": {
+							"compare": "is"
+						}
+					},
+					{
+						"type": "trait_prereq",
+						"has": true,
+						"name": {
+							"compare": "starts_with",
+							"qualifier": "Leveled Advantage"
+						},
+						"level": {
+							"compare": "at_least",
+							"qualifier": 1
+						},
+						"notes": {
+							"compare": "is"
+						}
+					},
+					{
+						"type": "trait_prereq",
+						"has": false,
+						"name": {
+							"compare": "does_not_start_with",
+							"qualifier": "Leveled Advantage"
+						},
+						"level": {
+							"compare": "at_least",
+							"qualifier": 1
+						},
+						"notes": {
+							"compare": "is"
+						}
+					},
+					{
+						"type": "trait_prereq",
+						"has": true,
+						"name": {
+							"compare": "ends_with",
+							"qualifier": "Leveled Advantage"
+						},
+						"level": {
+							"compare": "at_least",
+							"qualifier": 1
+						},
+						"notes": {
+							"compare": "is"
+						}
+					},
+					{
+						"type": "trait_prereq",
+						"has": false,
+						"name": {
+							"compare": "does_not_end_with",
+							"qualifier": "Leveled Advantage"
+						},
+						"level": {
+							"compare": "at_least",
+							"qualifier": 1
+						},
+						"notes": {
+							"compare": "is"
+						}
+					},
+					{
+						"type": "attribute_prereq",
+						"has": true,
+						"combined_with": "ht",
+						"qualifier": {
+							"compare": "is_not",
+							"qualifier": 20
+						},
+						"which": "st"
+					},
+					{
+						"type": "attribute_prereq",
+						"has": true,
+						"combined_with": "ht",
+						"qualifier": {
+							"compare": "at_least",
+							"qualifier": 20
+						},
+						"which": "st"
+					},
+					{
+						"type": "attribute_prereq",
+						"has": true,
+						"combined_with": "ht",
+						"qualifier": {
+							"compare": "at_most",
+							"qualifier": 20
+						},
+						"which": "st"
+					},
+					{
+						"type": "prereq_list",
+						"all": false,
+						"when_tl": {
+							"compare": "at_least",
+							"qualifier": 3
+						},
+						"prereqs": [
+							{
+								"type": "skill_prereq",
+								"has": true,
+								"name": {
+									"compare": "is",
+									"qualifier": "Broadsword"
+								},
+								"level": {
+									"compare": "at_least",
+									"qualifier": 12
+								},
+								"specialization": {
+									"compare": "is"
+								}
+							},
+							{
+								"type": "trait_prereq",
+								"has": false,
+								"name": {
+									"compare": "is_not",
+									"qualifier": "Leveled Advantage"
+								},
+								"level": {
+									"compare": "at_least",
+									"qualifier": 1
+								},
+								"notes": {
+									"compare": "is"
+								}
+							}
+						]
+					}
+				]
+			},
+			"points": 4
+		},
+		{
+			"id": "sRdFDfp_eAJvDBxTs",
+			"name": "Defensive Skill",
+			"difficulty": "dx/h",
+			"defaults": [
+				{
+					"type": "parry",
+					"modifier": -2
+				},
+				{
+					"type": "block",
+					"modifier": -1
+				},
+				{
+					"type": "10",
+					"modifier": -4
+				}
+			],
+			"points": 1
+		},
+		{
+			"id": "sTmlol6S6jTmtHuFX",
+			"name": "Expert Skill (@Field@)",
+			"replacements": {
+				"Field": "Monsters"
+			},
+			"difficulty": "iq/h",
+			"points": 1
+		},
+		{
+			"id": "qEY9npZkyW3HbFrf4",
+			"name": "Technique A",
+			"difficulty": "a",
+			"default": {
+				"type": "skill",
+				"name": {
+					"compare": "is",
+					"qualifier": "Broadsword"
+				},
+				"modifier": -4
+			},
+			"limit": 2,
+			"points": 1
+		},
+		{
+			"id": "qf4VK9ioPrh2uSgni",
+			"name": "Technique H",
+			"difficulty": "h",
+			"default": {
+				"type": "skill",
+				"name": {
+					"compare": "is",
+					"qualifier": "Broadsword"
+				},
+				"modifier": -4
+			},
+			"points": 2
+		},
+		{
+			"id": "SHDo0MXSCcqppsmdG",
+			"name": "Skill Group",
+			"children": [
+				{
+					"id": "smQbwAqrjSMlj6ho4",
+					"name": "Grouped Skill",
+					"difficulty": "ht/e",
+					"points": 1
+				},
+				{
+					"id": "SWGNsnWMAeIqTfADY",
+					"name": "Nested Skill Group",
+					"children": [
+						{
+							"id": "s9CLsCqrpHTth95rt",
+							"name": "Deep Skill",
+							"difficulty": "per/a",
+							"points": 2
+						},
+						{
+							"id": "q9fReD-EmnI0mcW30",
+							"name": "Deep Technique",
+							"difficulty": "h",
+							"default": {
+								"type": "skill",
+								"name": {
+									"compare": "is",
+									"qualifier": "Deep Skill"
+								},
+								"modifier": -2
+							},
+							"points": 2
+						}
+					]
+				}
+			]
+		}
+	]
+}

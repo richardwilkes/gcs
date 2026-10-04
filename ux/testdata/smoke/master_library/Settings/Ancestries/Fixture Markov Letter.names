@@ -1,0 +1,16 @@
+{
+	"type": "markov_letter",
+	"depth": 2,
+	"weighted_training_data": {
+		"Alda": 1,
+		"Brin": 2,
+		"Corra": 3,
+		"Dain": 1,
+		"Edda": 2,
+		"Fenn": 3,
+		"Gilda": 1,
+		"Hart": 2,
+		"Isla": 3,
+		"Jory": 1
+	}
+}

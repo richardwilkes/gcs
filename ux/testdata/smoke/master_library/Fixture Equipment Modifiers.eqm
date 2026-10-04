@@ -1,0 +1,225 @@
+{
+	"version": 5,
+	"rows": [
+		{
+			"id": "fekYc197fiarkJpk6",
+			"name": "to_original_cost +5",
+			"cost_is_per_level": true,
+			"cost": "+5"
+		},
+		{
+			"id": "fV7ZBJbnxBYHeg3jN",
+			"name": "to_original_cost +10%",
+			"cost": "+10%"
+		},
+		{
+			"id": "fOyjbGCSLIxAxQvrU",
+			"name": "to_original_cost x2",
+			"cost": "x2"
+		},
+		{
+			"id": "fxU98FXNnAirRXtXZ",
+			"name": "to_base_cost +1 CF",
+			"cost_type": "to_base_cost",
+			"cost_is_per_level": true,
+			"cost": "+1 CF"
+		},
+		{
+			"id": "fhRYpwljKH5zT_-sV",
+			"name": "to_base_cost x2",
+			"cost_type": "to_base_cost",
+			"cost": "x2"
+		},
+		{
+			"id": "fGtrb2c4wDjW9cfoT",
+			"name": "to_final_base_cost +5",
+			"cost_type": "to_final_base_cost",
+			"cost_is_per_level": true,
+			"cost": "+5"
+		},
+		{
+			"id": "fnAvHZOYBBau06cIJ",
+			"name": "to_final_base_cost -10%",
+			"cost_type": "to_final_base_cost",
+			"cost": "-10%"
+		},
+		{
+			"id": "fOWYebZBHLp-GwQSx",
+			"name": "to_final_base_cost x1.5",
+			"cost_type": "to_final_base_cost",
+			"cost": "x1.5"
+		},
+		{
+			"id": "fFuEK1VfvEwl0QTpE",
+			"name": "to_final_cost +20",
+			"cost_type": "to_final_cost",
+			"cost_is_per_level": true,
+			"cost": "+20"
+		},
+		{
+			"id": "f2PAiARz66jUhPJPO",
+			"name": "to_final_cost +50%",
+			"cost_type": "to_final_cost",
+			"cost": "+50%"
+		},
+		{
+			"id": "fahn0wSvSqJLinTYx",
+			"name": "to_final_cost x3",
+			"cost_type": "to_final_cost",
+			"cost": "x3"
+		},
+		{
+			"id": "fNAn2DpgwlLOnQeH3",
+			"name": "to_original_weight +1 lb",
+			"weight_is_per_level": true,
+			"weight": "+1 lb"
+		},
+		{
+			"id": "fId8w6QiIppKahtGs",
+			"name": "to_original_weight +10%",
+			"weight": "+10%"
+		},
+		{
+			"id": "fzSj4YkBH9kqgyIgJ",
+			"name": "to_base_weight +2 lb",
+			"weight_type": "to_base_weight",
+			"weight_is_per_level": true,
+			"weight": "+2 lb"
+		},
+		{
+			"id": "feX1PJmgfmSqOsPH3",
+			"name": "to_base_weight x50%",
+			"weight_type": "to_base_weight",
+			"weight": "x50%"
+		},
+		{
+			"id": "fybGMJimELD0foF6y",
+			"name": "to_base_weight x2",
+			"weight_type": "to_base_weight",
+			"weight": "x2"
+		},
+		{
+			"id": "fquIurxO3t3T8MH5_",
+			"name": "to_final_base_weight -1 lb",
+			"weight_type": "to_final_base_weight",
+			"weight_is_per_level": true,
+			"weight": "-1 lb"
+		},
+		{
+			"id": "fKkvFjIaa3mA2ZAqP",
+			"name": "to_final_base_weight x2",
+			"weight_type": "to_final_base_weight",
+			"weight": "x2"
+		},
+		{
+			"id": "fxzDXgeonkLZmvZGM",
+			"name": "to_final_weight +5 lb",
+			"weight_type": "to_final_weight",
+			"weight_is_per_level": true,
+			"weight": "+5 lb"
+		},
+		{
+			"id": "fsqreKNUOyEEUCM0a",
+			"name": "to_final_weight x75%",
+			"weight_type": "to_final_weight",
+			"weight": "x75%"
+		},
+		{
+			"id": "fZudvEQxge97AtgoI",
+			"name": "Per Pound",
+			"cost_type": "to_final_cost",
+			"cost_is_per_pound": true,
+			"cost": "+2"
+		},
+		{
+			"id": "fR7-wGMC_7vlSgqx8",
+			"name": "High Tech",
+			"tech_level": "8",
+			"cost": "x4"
+		},
+		{
+			"id": "fnZEKDUsgv_VFY10Q",
+			"name": "Fine",
+			"local_notes": "+1 damage",
+			"cost_type": "to_base_cost",
+			"show_notes_on_weapon": true,
+			"cost": "+3 CF",
+			"features": [
+				{
+					"type": "weapon_bonus",
+					"selection_type": "weapons_with_required_skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Broadsword"
+					},
+					"level": {
+						"compare": "at_least",
+						"qualifier": 10
+					},
+					"amount": 1,
+					"per_die": true
+				}
+			]
+		},
+		{
+			"id": "foJzOjsUhd60k5wLV",
+			"name": "Disabled Equipment Modifier",
+			"cost": "+100",
+			"disabled": true
+		},
+		{
+			"id": "Fqb5PLMt4qUUjKIV_",
+			"name": "Equipment Modifier Group",
+			"children": [
+				{
+					"id": "fUcA4qYsCZPr-MC9M",
+					"name": "Grouped Equipment Modifier",
+					"cost": "+1"
+				}
+			]
+		},
+		{
+			"id": "F8MURbQ0P9wjAMhDf",
+			"name": "Mandatory Equipment Choice",
+			"choice": {
+				"type": "count",
+				"qualifier": {
+					"compare": "is",
+					"qualifier": 1
+				}
+			},
+			"children": [
+				{
+					"id": "fZQtImrePOioSI_5N",
+					"name": "Material A",
+					"cost": "+10"
+				},
+				{
+					"id": "fyGTdx3A054qmy5rs",
+					"name": "Material B",
+					"cost": "+20",
+					"disabled": true
+				}
+			]
+		},
+		{
+			"id": "F1hvpfhjrD2ws9Jtd",
+			"name": "Optional Equipment Choice",
+			"choice": {
+				"type": "count",
+				"qualifier": {
+					"compare": "at_most",
+					"qualifier": 1
+				}
+			},
+			"children": [
+				{
+					"id": "f0TXw4xKgq_jaZOxy",
+					"name": "Extra A",
+					"cost": "+1",
+					"disabled": true
+				}
+			]
+		}
+	]
+}

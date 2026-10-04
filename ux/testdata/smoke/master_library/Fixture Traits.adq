@@ -1,0 +1,2488 @@
+{
+	"version": 5,
+	"rows": [
+		{
+			"id": "tiT6zo-6EKs17-a-I",
+			"name": "Plain Advantage",
+			"reference": "FX1",
+			"local_notes": "Local notes",
+			"tags": [
+				"Advantage",
+				"Mental"
+			],
+			"vtt_notes": "VTT notes",
+			"userdesc": "User description",
+			"base_points": 15,
+			"third_party": {
+				"example": "kept"
+			},
+			"calc": {
+				"points": 15
+			}
+		},
+		{
+			"id": "tgqp15gSTRwmS6sAv",
+			"name": "Leveled Advantage",
+			"reference": "FX1",
+			"tags": [
+				"Advantage"
+			],
+			"base_points": 2,
+			"points_per_level": 5,
+			"max_levels": "5",
+			"can_level": true,
+			"levels": 3,
+			"calc": {
+				"points": 17,
+				"current_level": 3
+			}
+		},
+		{
+			"id": "tHwXOxI-vKaXIlkiU",
+			"name": "Rounded Down",
+			"modifiers": [
+				{
+					"id": "mzEaMiELF6_60-NOy",
+					"name": "Half",
+					"cost_adj": "-50%"
+				}
+			],
+			"points_per_level": 3,
+			"round_down": true,
+			"can_level": true,
+			"levels": 1,
+			"calc": {
+				"points": 1,
+				"current_level": 1
+			}
+		},
+		{
+			"id": "TTOpshVsleV9CN9Rz",
+			"name": "Self-Control And Frequency",
+			"children": [
+				{
+					"id": "tlAOALaF_k6lTXwRy",
+					"name": "Self-Control none",
+					"tags": [
+						"Disadvantage"
+					],
+					"cr": 1,
+					"base_points": -10,
+					"calc": {
+						"points": -25
+					}
+				},
+				{
+					"id": "ty_tq-ETf_QmQMura",
+					"name": "Self-Control action_penalty",
+					"tags": [
+						"Disadvantage"
+					],
+					"cr_adj": "action_penalty",
+					"cr": 6,
+					"base_points": -10,
+					"calc": {
+						"points": -20
+					}
+				},
+				{
+					"id": "tsMJwu1dzvGIB8OK-",
+					"name": "Self-Control reaction_penalty",
+					"tags": [
+						"Disadvantage"
+					],
+					"cr_adj": "reaction_penalty",
+					"cr": 7,
+					"base_points": -10,
+					"calc": {
+						"points": -18
+					}
+				},
+				{
+					"id": "t02QfE15CmnkYCpE2",
+					"name": "Self-Control fright_check_penalty",
+					"tags": [
+						"Disadvantage"
+					],
+					"cr_adj": "fright_check_penalty",
+					"cr": 8,
+					"base_points": -10,
+					"calc": {
+						"points": -16
+					}
+				},
+				{
+					"id": "t8npJ3YNOspCXWby_",
+					"name": "Self-Control fright_check_bonus",
+					"tags": [
+						"Disadvantage"
+					],
+					"cr_adj": "fright_check_bonus",
+					"cr": 9,
+					"base_points": -10,
+					"calc": {
+						"points": -15
+					}
+				},
+				{
+					"id": "tQpHlryGLqatj58CB",
+					"name": "Self-Control minor_cost_of_living_increase",
+					"tags": [
+						"Disadvantage"
+					],
+					"cr_adj": "minor_cost_of_living_increase",
+					"cr": 10,
+					"base_points": -10,
+					"calc": {
+						"points": -13
+					}
+				},
+				{
+					"id": "t7TivG46YhjX3olbq",
+					"name": "Self-Control major_cost_of_living_increase",
+					"tags": [
+						"Disadvantage"
+					],
+					"cr_adj": "major_cost_of_living_increase",
+					"cr": 11,
+					"base_points": -10,
+					"calc": {
+						"points": -11
+					}
+				},
+				{
+					"id": "taRtq83G-ITFXXGy3",
+					"name": "Self-Control Roll 12",
+					"cr": 12,
+					"base_points": -5,
+					"calc": {
+						"points": -5
+					}
+				},
+				{
+					"id": "t3Gprz101NLXa6l4r",
+					"name": "Self-Control Roll 13",
+					"cr": 13,
+					"base_points": -5,
+					"calc": {
+						"points": -4
+					}
+				},
+				{
+					"id": "tBiQMH-Ar5-6V5KUP",
+					"name": "Self-Control Roll 14",
+					"cr": 14,
+					"base_points": -5,
+					"calc": {
+						"points": -3
+					}
+				},
+				{
+					"id": "tRZ0agn7tYLNYp0AQ",
+					"name": "Self-Control Roll 15",
+					"cr": 15,
+					"base_points": -5,
+					"calc": {
+						"points": -2
+					}
+				},
+				{
+					"id": "tyavbBZriEbxRYzu_",
+					"name": "Frequency 6",
+					"frequency": 6,
+					"base_points": -5,
+					"calc": {
+						"points": -2
+					}
+				},
+				{
+					"id": "t2dL527fVfUOC5hxm",
+					"name": "Frequency 9",
+					"frequency": 9,
+					"base_points": -5,
+					"calc": {
+						"points": -5
+					}
+				},
+				{
+					"id": "tUOGecayLrBJ-Gdbt",
+					"name": "Frequency 12",
+					"frequency": 12,
+					"base_points": -5,
+					"calc": {
+						"points": -10
+					}
+				},
+				{
+					"id": "tsQRd_qX2lSUDn8yp",
+					"name": "Frequency 15",
+					"frequency": 15,
+					"base_points": -5,
+					"calc": {
+						"points": -15
+					}
+				},
+				{
+					"id": "tjmLBa_qWljOGx_Z3",
+					"name": "Frequency 18",
+					"frequency": 18,
+					"base_points": -5,
+					"calc": {
+						"points": -20
+					}
+				}
+			],
+			"calc": {
+				"points": -184
+			}
+		},
+		{
+			"id": "tjI1047YXNkQZqWzs",
+			"name": "Disabled Trait",
+			"disabled": true,
+			"base_points": 5,
+			"calc": {
+				"points": 0
+			}
+		},
+		{
+			"id": "t9bkUtnTZHupp5Yrw",
+			"name": "Switched On Trait",
+			"switched_on": true,
+			"base_points": 5,
+			"features": [
+				{
+					"type": "attribute_bonus",
+					"switchable": true,
+					"attribute": "dx",
+					"amount": 1
+				}
+			],
+			"calc": {
+				"points": 5
+			}
+		},
+		{
+			"id": "tvWLLsjhI37vr3s1B",
+			"name": "Switched Off Trait",
+			"base_points": 5,
+			"features": [
+				{
+					"type": "attribute_bonus",
+					"switchable": true,
+					"attribute": "iq",
+					"amount": 1
+				}
+			],
+			"calc": {
+				"points": 5
+			}
+		},
+		{
+			"id": "tGJVnf6krUgKCVmk4",
+			"name": "Preconfigured Trait",
+			"modifiers": [
+				{
+					"id": "msdecNrAyrvmZef6R",
+					"name": "Cost +5",
+					"cost_adj": "+5"
+				},
+				{
+					"id": "Mse0I0frn3T84IhC6",
+					"name": "Mandatory Modifier Choice",
+					"choice": {
+						"type": "count",
+						"qualifier": {
+							"compare": "is",
+							"qualifier": 1
+						}
+					},
+					"children": [
+						{
+							"id": "m9E49gg8dDDd3H6v8",
+							"name": "Option One",
+							"cost_adj": "+10%"
+						},
+						{
+							"id": "mjJZf5mMvkCmu42Ih",
+							"name": "Option Two",
+							"cost_adj": "+20%",
+							"disabled": true
+						}
+					]
+				}
+			],
+			"preconfigured": true,
+			"base_points": 20,
+			"calc": {
+				"points": 28
+			}
+		},
+		{
+			"id": "tMbefHs2rSKAcxWx8",
+			"name": "Trait With Modifiers",
+			"modifiers": [
+				{
+					"id": "msdecNrAyrvmZef6R",
+					"name": "Cost +5",
+					"cost_adj": "+5"
+				},
+				{
+					"id": "m732y7LMq_M8L9xm9",
+					"name": "Cost -10",
+					"cost_adj": "-10",
+					"affects": "base_only"
+				},
+				{
+					"id": "mLCtgT7Sx5Vzh-Cp4",
+					"name": "Cost +10%",
+					"cost_adj": "+10%",
+					"affects": "levels_only"
+				},
+				{
+					"id": "me6G0qSnz-ul0hKIb",
+					"name": "Cost -25%",
+					"cost_adj": "-25%"
+				},
+				{
+					"id": "mgBAS1hJlP89z3s-o",
+					"name": "Cost x2",
+					"cost_adj": "x2",
+					"affects": "base_only"
+				},
+				{
+					"id": "mw7NU76nuRHBYAtpA",
+					"name": "Cost x1/2",
+					"cost_adj": "x1/2",
+					"affects": "levels_only"
+				},
+				{
+					"id": "mjNb-L0hwRlBVHVUo",
+					"name": "Leveled Modifier",
+					"cost_adj": "+5%",
+					"levels": 2
+				},
+				{
+					"id": "mdyJhZKDGLDmA3FoP",
+					"name": "Uses Trait Level",
+					"cost_adj": "+1",
+					"use_level_from_trait": true,
+					"cost_ignores_level": true
+				},
+				{
+					"id": "mPpoVWgEw6TGXUUO-",
+					"name": "Shows On Weapon",
+					"local_notes": "Visible on weapons",
+					"cost_adj": "+10%",
+					"show_notes_on_weapon": true,
+					"features": [
+						{
+							"type": "weapon_bonus",
+							"selection_type": "weapons_with_required_skill",
+							"name": {
+								"compare": "is",
+								"qualifier": "Broadsword"
+							},
+							"level": {
+								"compare": "at_least",
+								"qualifier": 10
+							},
+							"amount": 1,
+							"per_die": true
+						}
+					]
+				},
+				{
+					"id": "mSusXQN1dhou0WBf2",
+					"name": "Disabled Modifier",
+					"cost_adj": "+20%",
+					"disabled": true
+				},
+				{
+					"id": "mUTTfeZJYgiydmeqm",
+					"name": "Accessibility (@Condition@)",
+					"cost_adj": "-10%"
+				},
+				{
+					"id": "M8pphJMzSbI8Qj1RK",
+					"name": "Modifier Group",
+					"children": [
+						{
+							"id": "my6X8SgmbIh8yUwaq",
+							"name": "Grouped A",
+							"cost_adj": "+5%"
+						},
+						{
+							"id": "mPwaH2m931JcLwdyd",
+							"name": "Grouped B",
+							"cost_adj": "-5%"
+						}
+					]
+				},
+				{
+					"id": "Mse0I0frn3T84IhC6",
+					"name": "Mandatory Modifier Choice",
+					"choice": {
+						"type": "count",
+						"qualifier": {
+							"compare": "is",
+							"qualifier": 1
+						}
+					},
+					"children": [
+						{
+							"id": "m9E49gg8dDDd3H6v8",
+							"name": "Option One",
+							"cost_adj": "+10%"
+						},
+						{
+							"id": "mjJZf5mMvkCmu42Ih",
+							"name": "Option Two",
+							"cost_adj": "+20%",
+							"disabled": true
+						}
+					]
+				},
+				{
+					"id": "MhuKzln7hxgGq3NLT",
+					"name": "Optional Modifier Choice",
+					"choice": {
+						"type": "count",
+						"qualifier": {
+							"compare": "at_most",
+							"qualifier": 1
+						}
+					},
+					"children": [
+						{
+							"id": "m7TyR1TrOEdDKHSNJ",
+							"name": "Maybe This",
+							"cost_adj": "-10%",
+							"disabled": true
+						},
+						{
+							"id": "mamj3ONiNXttghW8k",
+							"name": "Maybe That",
+							"cost_adj": "-20%",
+							"disabled": true
+						}
+					]
+				}
+			],
+			"base_points": 20,
+			"points_per_level": 10,
+			"can_level": true,
+			"levels": 2,
+			"calc": {
+				"points": 37,
+				"current_level": 2
+			}
+		},
+		{
+			"id": "tZy8tE78-EvYlBN98",
+			"name": "Phobia (@Fear|Heights|Spiders|*@)",
+			"local_notes": "Afraid of @Fear|Heights|Spiders|*@ near @Place|?@",
+			"replacements": {
+				"Fear|Heights|Spiders|*": "Spiders"
+			},
+			"modifiers": [
+				{
+					"id": "mUTTfeZJYgiydmeqm",
+					"name": "Accessibility (@Condition@)",
+					"cost_adj": "-10%"
+				}
+			],
+			"cr": 12,
+			"base_points": -10,
+			"calc": {
+				"points": -9,
+				"resolved_notes": "Afraid of Spiders near @Place@"
+			}
+		},
+		{
+			"id": "tgIaTBQBQyxPyGOTI",
+			"name": "Studied Trait Standard",
+			"base_points": 5,
+			"study": [
+				{
+					"type": "self",
+					"hours": 10,
+					"note": "Studied by self"
+				},
+				{
+					"type": "job",
+					"hours": 20,
+					"note": "Studied by job"
+				},
+				{
+					"type": "teacher",
+					"hours": 30,
+					"note": "Studied by teacher"
+				},
+				{
+					"type": "intensive",
+					"hours": 40,
+					"note": "Studied by intensive"
+				}
+			],
+			"calc": {
+				"points": 5
+			}
+		},
+		{
+			"id": "toq9EdbL_H7387lAq",
+			"name": "Studied Trait 180",
+			"base_points": 5,
+			"study": [
+				{
+					"type": "self",
+					"hours": 10,
+					"note": "Studied by self"
+				},
+				{
+					"type": "job",
+					"hours": 20,
+					"note": "Studied by job"
+				},
+				{
+					"type": "teacher",
+					"hours": 30,
+					"note": "Studied by teacher"
+				},
+				{
+					"type": "intensive",
+					"hours": 40,
+					"note": "Studied by intensive"
+				}
+			],
+			"study_hours_needed": "180",
+			"calc": {
+				"points": 5
+			}
+		},
+		{
+			"id": "txxTY8T8gRyhql8Js",
+			"name": "Studied Trait 160",
+			"base_points": 5,
+			"study": [
+				{
+					"type": "self",
+					"hours": 10,
+					"note": "Studied by self"
+				},
+				{
+					"type": "job",
+					"hours": 20,
+					"note": "Studied by job"
+				},
+				{
+					"type": "teacher",
+					"hours": 30,
+					"note": "Studied by teacher"
+				},
+				{
+					"type": "intensive",
+					"hours": 40,
+					"note": "Studied by intensive"
+				}
+			],
+			"study_hours_needed": "160",
+			"calc": {
+				"points": 5
+			}
+		},
+		{
+			"id": "tqXm7H90-Jt5571kd",
+			"name": "Studied Trait 140",
+			"base_points": 5,
+			"study": [
+				{
+					"type": "self",
+					"hours": 10,
+					"note": "Studied by self"
+				},
+				{
+					"type": "job",
+					"hours": 20,
+					"note": "Studied by job"
+				},
+				{
+					"type": "teacher",
+					"hours": 30,
+					"note": "Studied by teacher"
+				},
+				{
+					"type": "intensive",
+					"hours": 40,
+					"note": "Studied by intensive"
+				}
+			],
+			"study_hours_needed": "140",
+			"calc": {
+				"points": 5
+			}
+		},
+		{
+			"id": "t6PmdJjZXOU2-XY-J",
+			"name": "Studied Trait 120",
+			"base_points": 5,
+			"study": [
+				{
+					"type": "self",
+					"hours": 10,
+					"note": "Studied by self"
+				},
+				{
+					"type": "job",
+					"hours": 20,
+					"note": "Studied by job"
+				},
+				{
+					"type": "teacher",
+					"hours": 30,
+					"note": "Studied by teacher"
+				},
+				{
+					"type": "intensive",
+					"hours": 40,
+					"note": "Studied by intensive"
+				}
+			],
+			"study_hours_needed": "120",
+			"calc": {
+				"points": 5
+			}
+		},
+		{
+			"id": "tBfpLG6SFIml2gsAE",
+			"name": "Every Feature",
+			"base_points": 1,
+			"features": [
+				{
+					"type": "attribute_bonus",
+					"attribute": "st",
+					"amount": 1
+				},
+				{
+					"type": "conditional_modifier",
+					"situation": "when cornered",
+					"amount": 2
+				},
+				{
+					"type": "dr_bonus",
+					"locations": [
+						"torso",
+						"skull"
+					],
+					"specialization": "burning",
+					"amount": 2
+				},
+				{
+					"type": "equipment_max_uses_bonus",
+					"selection_type": "this_equipment",
+					"amount": "+1"
+				},
+				{
+					"type": "reaction_bonus",
+					"situation": "from nobles",
+					"amount": 1,
+					"per_level": true
+				},
+				{
+					"type": "skill_bonus",
+					"selection_type": "skills_with_name",
+					"name": {
+						"compare": "is",
+						"qualifier": "Broadsword"
+					},
+					"specialization": {
+						"compare": "is"
+					},
+					"tags": {
+						"compare": "contains",
+						"qualifier": "Combat"
+					},
+					"amount": 1
+				},
+				{
+					"type": "skill_point_bonus",
+					"name": {
+						"compare": "is",
+						"qualifier": "Climbing"
+					},
+					"amount": 1
+				},
+				{
+					"type": "spell_bonus",
+					"match": "all_colleges",
+					"amount": 1
+				},
+				{
+					"type": "spell_point_bonus",
+					"match": "all_colleges",
+					"amount": 1
+				},
+				{
+					"type": "trait_bonus",
+					"name": {
+						"compare": "is",
+						"qualifier": "Leveled Advantage"
+					},
+					"amount": 1
+				},
+				{
+					"type": "trait_max_level_bonus",
+					"selection_type": "this_trait",
+					"amount": "+1"
+				},
+				{
+					"type": "weapon_bonus",
+					"selection_type": "weapons_with_required_skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Broadsword"
+					},
+					"level": {
+						"compare": "at_least",
+						"qualifier": 10
+					},
+					"amount": 1,
+					"per_die": true
+				},
+				{
+					"type": "weapon_acc_bonus",
+					"percent": true,
+					"selection_type": "weapons_with_required_skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Broadsword"
+					},
+					"level": {
+						"compare": "at_least",
+						"qualifier": 10
+					},
+					"amount": 1
+				},
+				{
+					"type": "weapon_scope_acc_bonus",
+					"selection_type": "weapons_with_required_skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Broadsword"
+					},
+					"level": {
+						"compare": "at_least",
+						"qualifier": 10
+					},
+					"amount": 1
+				},
+				{
+					"type": "weapon_dr_divisor_bonus",
+					"selection_type": "weapons_with_required_skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Broadsword"
+					},
+					"level": {
+						"compare": "at_least",
+						"qualifier": 10
+					},
+					"amount": 1
+				},
+				{
+					"type": "weapon_effective_st_bonus",
+					"selection_type": "weapons_with_required_skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Broadsword"
+					},
+					"level": {
+						"compare": "at_least",
+						"qualifier": 10
+					},
+					"amount": 1
+				},
+				{
+					"type": "weapon_min_st_bonus",
+					"selection_type": "weapons_with_required_skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Broadsword"
+					},
+					"level": {
+						"compare": "at_least",
+						"qualifier": 10
+					},
+					"amount": 1
+				},
+				{
+					"type": "weapon_min_reach_bonus",
+					"selection_type": "weapons_with_required_skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Broadsword"
+					},
+					"level": {
+						"compare": "at_least",
+						"qualifier": 10
+					},
+					"amount": 1
+				},
+				{
+					"type": "weapon_max_reach_bonus",
+					"selection_type": "weapons_with_required_skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Broadsword"
+					},
+					"level": {
+						"compare": "at_least",
+						"qualifier": 10
+					},
+					"amount": 1
+				},
+				{
+					"type": "weapon_half_damage_range_bonus",
+					"selection_type": "weapons_with_required_skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Broadsword"
+					},
+					"level": {
+						"compare": "at_least",
+						"qualifier": 10
+					},
+					"amount": 1
+				},
+				{
+					"type": "weapon_min_range_bonus",
+					"selection_type": "weapons_with_required_skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Broadsword"
+					},
+					"level": {
+						"compare": "at_least",
+						"qualifier": 10
+					},
+					"amount": 1
+				},
+				{
+					"type": "weapon_max_range_bonus",
+					"selection_type": "weapons_with_required_skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Broadsword"
+					},
+					"level": {
+						"compare": "at_least",
+						"qualifier": 10
+					},
+					"amount": 1
+				},
+				{
+					"type": "weapon_recoil_bonus",
+					"selection_type": "weapons_with_required_skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Broadsword"
+					},
+					"level": {
+						"compare": "at_least",
+						"qualifier": 10
+					},
+					"amount": 1
+				},
+				{
+					"type": "weapon_bulk_bonus",
+					"selection_type": "weapons_with_required_skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Broadsword"
+					},
+					"level": {
+						"compare": "at_least",
+						"qualifier": 10
+					},
+					"amount": 1
+				},
+				{
+					"type": "weapon_parry_bonus",
+					"percent": true,
+					"selection_type": "weapons_with_required_skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Broadsword"
+					},
+					"level": {
+						"compare": "at_least",
+						"qualifier": 10
+					},
+					"amount": 1
+				},
+				{
+					"type": "weapon_block_bonus",
+					"selection_type": "weapons_with_required_skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Broadsword"
+					},
+					"level": {
+						"compare": "at_least",
+						"qualifier": 10
+					},
+					"amount": 1
+				},
+				{
+					"type": "weapon_rof_mode_1_shots_bonus",
+					"selection_type": "weapons_with_required_skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Broadsword"
+					},
+					"level": {
+						"compare": "at_least",
+						"qualifier": 10
+					},
+					"amount": 1
+				},
+				{
+					"type": "weapon_rof_mode_1_secondary_bonus",
+					"selection_type": "weapons_with_required_skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Broadsword"
+					},
+					"level": {
+						"compare": "at_least",
+						"qualifier": 10
+					},
+					"amount": 1
+				},
+				{
+					"type": "weapon_rof_mode_2_shots_bonus",
+					"selection_type": "weapons_with_required_skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Broadsword"
+					},
+					"level": {
+						"compare": "at_least",
+						"qualifier": 10
+					},
+					"amount": 1
+				},
+				{
+					"type": "weapon_rof_mode_2_secondary_bonus",
+					"selection_type": "weapons_with_required_skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Broadsword"
+					},
+					"level": {
+						"compare": "at_least",
+						"qualifier": 10
+					},
+					"amount": 1
+				},
+				{
+					"type": "weapon_non_chamber_shots_bonus",
+					"selection_type": "weapons_with_required_skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Broadsword"
+					},
+					"level": {
+						"compare": "at_least",
+						"qualifier": 10
+					},
+					"amount": 1
+				},
+				{
+					"type": "weapon_chamber_shots_bonus",
+					"selection_type": "weapons_with_required_skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Broadsword"
+					},
+					"level": {
+						"compare": "at_least",
+						"qualifier": 10
+					},
+					"amount": 1
+				},
+				{
+					"type": "weapon_shot_duration_bonus",
+					"selection_type": "weapons_with_required_skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Broadsword"
+					},
+					"level": {
+						"compare": "at_least",
+						"qualifier": 10
+					},
+					"amount": 1
+				},
+				{
+					"type": "weapon_reload_time_bonus",
+					"selection_type": "weapons_with_required_skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Broadsword"
+					},
+					"level": {
+						"compare": "at_least",
+						"qualifier": 10
+					},
+					"amount": 1
+				},
+				{
+					"type": "weapon_switch",
+					"selection_type": "this_weapon",
+					"switch_type_value": true,
+					"amount": 0
+				},
+				{
+					"type": "selector_override",
+					"field": "trait_self_control_roll",
+					"value": "12",
+					"name": {
+						"compare": "is",
+						"qualifier": "Fixture Sword"
+					}
+				},
+				{
+					"type": "cost_reduction",
+					"attribute": "dx",
+					"percentage": 20
+				},
+				{
+					"type": "attribute_bonus",
+					"limitation": "striking_only",
+					"attribute": "st",
+					"amount": 2
+				},
+				{
+					"type": "attribute_bonus",
+					"limitation": "lifting_only",
+					"attribute": "st",
+					"amount": 3
+				},
+				{
+					"type": "attribute_bonus",
+					"limitation": "throwing_only",
+					"attribute": "st",
+					"amount": 4
+				},
+				{
+					"type": "weapon_switch",
+					"selection_type": "this_weapon",
+					"switch_type": "can_block",
+					"switch_type_value": true,
+					"amount": 0
+				},
+				{
+					"type": "weapon_switch",
+					"selection_type": "this_weapon",
+					"switch_type": "can_parry",
+					"switch_type_value": true,
+					"amount": 0
+				},
+				{
+					"type": "weapon_switch",
+					"selection_type": "this_weapon",
+					"switch_type": "close_combat",
+					"switch_type_value": true,
+					"amount": 0
+				},
+				{
+					"type": "weapon_switch",
+					"selection_type": "this_weapon",
+					"switch_type": "fencing",
+					"switch_type_value": true,
+					"amount": 0
+				},
+				{
+					"type": "weapon_switch",
+					"selection_type": "this_weapon",
+					"switch_type": "full_auto_1",
+					"switch_type_value": true,
+					"amount": 0
+				},
+				{
+					"type": "weapon_switch",
+					"selection_type": "this_weapon",
+					"switch_type": "full_auto_2",
+					"switch_type_value": true,
+					"amount": 0
+				},
+				{
+					"type": "weapon_switch",
+					"selection_type": "this_weapon",
+					"switch_type": "bipod",
+					"switch_type_value": true,
+					"amount": 0
+				},
+				{
+					"type": "weapon_switch",
+					"selection_type": "this_weapon",
+					"switch_type": "controlled_bursts_1",
+					"switch_type_value": true,
+					"amount": 0
+				},
+				{
+					"type": "weapon_switch",
+					"selection_type": "this_weapon",
+					"switch_type": "controlled_bursts_2",
+					"switch_type_value": true,
+					"amount": 0
+				},
+				{
+					"type": "weapon_switch",
+					"selection_type": "this_weapon",
+					"switch_type": "jet",
+					"switch_type_value": true,
+					"amount": 0
+				},
+				{
+					"type": "weapon_switch",
+					"selection_type": "this_weapon",
+					"switch_type": "mounted",
+					"switch_type_value": true,
+					"amount": 0
+				},
+				{
+					"type": "weapon_switch",
+					"selection_type": "this_weapon",
+					"switch_type": "muscle_powered",
+					"switch_type_value": true,
+					"amount": 0
+				},
+				{
+					"type": "weapon_switch",
+					"selection_type": "this_weapon",
+					"switch_type": "range_in_miles",
+					"switch_type_value": true,
+					"amount": 0
+				},
+				{
+					"type": "weapon_switch",
+					"selection_type": "this_weapon",
+					"switch_type": "reach_change_requires_ready",
+					"switch_type_value": true,
+					"amount": 0
+				},
+				{
+					"type": "weapon_switch",
+					"selection_type": "this_weapon",
+					"switch_type": "reload_time_is_per_shot",
+					"switch_type_value": true,
+					"amount": 0
+				},
+				{
+					"type": "weapon_switch",
+					"selection_type": "this_weapon",
+					"switch_type": "retracting_stock",
+					"switch_type_value": true,
+					"amount": 0
+				},
+				{
+					"type": "weapon_switch",
+					"selection_type": "this_weapon",
+					"switch_type": "two-handed",
+					"switch_type_value": true,
+					"amount": 0
+				},
+				{
+					"type": "weapon_switch",
+					"selection_type": "this_weapon",
+					"switch_type": "thrown",
+					"switch_type_value": true,
+					"amount": 0
+				},
+				{
+					"type": "weapon_switch",
+					"selection_type": "this_weapon",
+					"switch_type": "unbalanced",
+					"switch_type_value": true,
+					"amount": 0
+				},
+				{
+					"type": "weapon_switch",
+					"selection_type": "this_weapon",
+					"switch_type": "two-handed_and_unready_after_attack",
+					"switch_type_value": true,
+					"amount": 0
+				},
+				{
+					"type": "weapon_switch",
+					"selection_type": "this_weapon",
+					"switch_type": "musket_rest",
+					"switch_type_value": true,
+					"amount": 0
+				},
+				{
+					"type": "selector_override",
+					"field": "trait_self_control_adjustment",
+					"priority": 1,
+					"value": "reaction_penalty",
+					"name": {
+						"compare": "is",
+						"qualifier": "Fixture Sword"
+					}
+				},
+				{
+					"type": "selector_override",
+					"field": "trait_frequency",
+					"priority": 2,
+					"value": "12",
+					"name": {
+						"compare": "is",
+						"qualifier": "Fixture Sword"
+					}
+				},
+				{
+					"type": "selector_override",
+					"field": "weapon_damage_strength_basis",
+					"priority": 3,
+					"value": "sw",
+					"name": {
+						"compare": "is",
+						"qualifier": "Fixture Sword"
+					}
+				},
+				{
+					"type": "selector_override",
+					"field": "weapon_damage_strength_multiplier",
+					"priority": 4,
+					"value": "2",
+					"name": {
+						"compare": "is",
+						"qualifier": "Fixture Sword"
+					}
+				},
+				{
+					"type": "selector_override",
+					"field": "weapon_base_damage_dice",
+					"priority": 5,
+					"value": "2d",
+					"name": {
+						"compare": "is",
+						"qualifier": "Fixture Sword"
+					}
+				},
+				{
+					"type": "selector_override",
+					"field": "weapon_base_damage_dice_per_level",
+					"priority": 6,
+					"value": "1d",
+					"name": {
+						"compare": "is",
+						"qualifier": "Fixture Sword"
+					}
+				},
+				{
+					"type": "selector_override",
+					"field": "weapon_damage_per_die_modifier",
+					"priority": 7,
+					"value": "1",
+					"name": {
+						"compare": "is",
+						"qualifier": "Fixture Sword"
+					}
+				},
+				{
+					"type": "selector_override",
+					"field": "weapon_armor_divisor",
+					"priority": 8,
+					"value": "2",
+					"name": {
+						"compare": "is",
+						"qualifier": "Fixture Sword"
+					}
+				},
+				{
+					"type": "selector_override",
+					"field": "weapon_damage_type",
+					"priority": 9,
+					"value": "imp",
+					"name": {
+						"compare": "is",
+						"qualifier": "Fixture Sword"
+					}
+				},
+				{
+					"type": "selector_override",
+					"field": "weapon_fragmentation_dice",
+					"priority": 10,
+					"value": "2d",
+					"name": {
+						"compare": "is",
+						"qualifier": "Fixture Sword"
+					}
+				},
+				{
+					"type": "selector_override",
+					"field": "weapon_fragmentation_armor_divisor",
+					"priority": 11,
+					"value": "2",
+					"name": {
+						"compare": "is",
+						"qualifier": "Fixture Sword"
+					}
+				},
+				{
+					"type": "selector_override",
+					"field": "weapon_fragmentation_type",
+					"priority": 12,
+					"value": "cut",
+					"name": {
+						"compare": "is",
+						"qualifier": "Fixture Sword"
+					}
+				},
+				{
+					"type": "skill_bonus",
+					"selection_type": "this_weapon",
+					"amount": 1
+				},
+				{
+					"type": "skill_bonus",
+					"selection_type": "weapons_with_name",
+					"name": {
+						"compare": "contains",
+						"qualifier": "Sword"
+					},
+					"amount": 1
+				},
+				{
+					"type": "spell_bonus",
+					"match": "college_name",
+					"name": {
+						"compare": "is",
+						"qualifier": "Fire"
+					},
+					"amount": 1
+				},
+				{
+					"type": "spell_bonus",
+					"match": "power_source_name",
+					"name": {
+						"compare": "is",
+						"qualifier": "Arcane"
+					},
+					"amount": 1
+				},
+				{
+					"type": "spell_bonus",
+					"match": "spell_name",
+					"name": {
+						"compare": "is",
+						"qualifier": "Fireball"
+					},
+					"amount": 1
+				},
+				{
+					"type": "trait_max_level_bonus",
+					"selection_type": "trait_with_name",
+					"name": {
+						"compare": "is",
+						"qualifier": "Leveled Advantage"
+					},
+					"amount": "+10%"
+				},
+				{
+					"type": "equipment_max_uses_bonus",
+					"selection_type": "equipment_with_name",
+					"name": {
+						"compare": "is",
+						"qualifier": "Fixture Lantern"
+					},
+					"amount": "+10%",
+					"per_level": true
+				},
+				{
+					"type": "equipment_max_uses_bonus",
+					"selection_type": "this_equipment",
+					"amount": "x2"
+				},
+				{
+					"type": "weapon_bonus",
+					"selection_type": "this_weapon",
+					"amount": 1,
+					"per_die": true
+				},
+				{
+					"type": "weapon_bonus",
+					"selection_type": "weapons_with_name",
+					"name": {
+						"compare": "starts_with",
+						"qualifier": "Fixture"
+					},
+					"usage": {
+						"compare": "is",
+						"qualifier": "Swing"
+					},
+					"amount": 1,
+					"per_die": true
+				}
+			],
+			"calc": {
+				"points": 1
+			}
+		},
+		{
+			"id": "t_RPw62p8nONgnnJC",
+			"name": "Every Prerequisite",
+			"prereqs": {
+				"type": "prereq_list",
+				"all": true,
+				"prereqs": [
+					{
+						"type": "trait_prereq",
+						"has": true,
+						"name": {
+							"compare": "is",
+							"qualifier": "Leveled Advantage"
+						},
+						"level": {
+							"compare": "at_least",
+							"qualifier": 1
+						},
+						"notes": {
+							"compare": "is"
+						}
+					},
+					{
+						"type": "attribute_prereq",
+						"has": true,
+						"combined_with": "ht",
+						"qualifier": {
+							"compare": "is",
+							"qualifier": 20
+						},
+						"which": "st"
+					},
+					{
+						"type": "equipped_equipment",
+						"name": {
+							"compare": "is",
+							"qualifier": "Fixture Sword"
+						},
+						"tags": {
+							"compare": "contains",
+							"qualifier": "Weapon"
+						}
+					},
+					{
+						"type": "skill_prereq",
+						"has": true,
+						"name": {
+							"compare": "is",
+							"qualifier": "Broadsword"
+						},
+						"level": {
+							"compare": "at_least",
+							"qualifier": 12
+						},
+						"specialization": {
+							"compare": "is"
+						}
+					},
+					{
+						"type": "spell_prereq",
+						"sub_type": "name",
+						"has": true,
+						"qualifier": {
+							"compare": "is",
+							"qualifier": "Fireball"
+						},
+						"quantity": {
+							"compare": "at_least",
+							"qualifier": 1
+						}
+					},
+					{
+						"type": "script_prereq",
+						"name": "Strong enough",
+						"script": "$st >= 10"
+					},
+					{
+						"type": "spell_prereq",
+						"sub_type": "tag",
+						"has": true,
+						"qualifier": {
+							"compare": "is",
+							"qualifier": "Fire"
+						},
+						"quantity": {
+							"compare": "at_least",
+							"qualifier": 1
+						}
+					},
+					{
+						"type": "spell_prereq",
+						"sub_type": "college",
+						"has": true,
+						"qualifier": {
+							"compare": "is",
+							"qualifier": "Fire"
+						},
+						"quantity": {
+							"compare": "at_least",
+							"qualifier": 1
+						}
+					},
+					{
+						"type": "spell_prereq",
+						"sub_type": "college_count",
+						"has": true,
+						"quantity": {
+							"compare": "at_least",
+							"qualifier": 1
+						}
+					},
+					{
+						"type": "spell_prereq",
+						"sub_type": "any",
+						"has": true,
+						"quantity": {
+							"compare": "at_least",
+							"qualifier": 1
+						}
+					},
+					{
+						"type": "trait_prereq",
+						"has": false,
+						"name": {
+							"compare": "is_not",
+							"qualifier": "Leveled Advantage"
+						},
+						"level": {
+							"compare": "at_least",
+							"qualifier": 1
+						},
+						"notes": {
+							"compare": "is"
+						}
+					},
+					{
+						"type": "trait_prereq",
+						"has": true,
+						"name": {
+							"compare": "contains",
+							"qualifier": "Leveled Advantage"
+						},
+						"level": {
+							"compare": "at_least",
+							"qualifier": 1
+						},
+						"notes": {
+							"compare": "is"
+						}
+					},
+					{
+						"type": "trait_prereq",
+						"has": false,
+						"name": {
+							"compare": "does_not_contain",
+							"qualifier": "Leveled Advantage"
+						},
+						"level": {
+							"compare": "at_least",
+							"qualifier": 1
+						},
+						"notes": {
+							"compare": "is"
+						}
+					},
+					{
+						"type": "trait_prereq",
+						"has": true,
+						"name": {
+							"compare": "starts_with",
+							"qualifier": "Leveled Advantage"
+						},
+						"level": {
+							"compare": "at_least",
+							"qualifier": 1
+						},
+						"notes": {
+							"compare": "is"
+						}
+					},
+					{
+						"type": "trait_prereq",
+						"has": false,
+						"name": {
+							"compare": "does_not_start_with",
+							"qualifier": "Leveled Advantage"
+						},
+						"level": {
+							"compare": "at_least",
+							"qualifier": 1
+						},
+						"notes": {
+							"compare": "is"
+						}
+					},
+					{
+						"type": "trait_prereq",
+						"has": true,
+						"name": {
+							"compare": "ends_with",
+							"qualifier": "Leveled Advantage"
+						},
+						"level": {
+							"compare": "at_least",
+							"qualifier": 1
+						},
+						"notes": {
+							"compare": "is"
+						}
+					},
+					{
+						"type": "trait_prereq",
+						"has": false,
+						"name": {
+							"compare": "does_not_end_with",
+							"qualifier": "Leveled Advantage"
+						},
+						"level": {
+							"compare": "at_least",
+							"qualifier": 1
+						},
+						"notes": {
+							"compare": "is"
+						}
+					},
+					{
+						"type": "attribute_prereq",
+						"has": true,
+						"combined_with": "ht",
+						"qualifier": {
+							"compare": "is_not",
+							"qualifier": 20
+						},
+						"which": "st"
+					},
+					{
+						"type": "attribute_prereq",
+						"has": true,
+						"combined_with": "ht",
+						"qualifier": {
+							"compare": "at_least",
+							"qualifier": 20
+						},
+						"which": "st"
+					},
+					{
+						"type": "attribute_prereq",
+						"has": true,
+						"combined_with": "ht",
+						"qualifier": {
+							"compare": "at_most",
+							"qualifier": 20
+						},
+						"which": "st"
+					},
+					{
+						"type": "prereq_list",
+						"all": false,
+						"when_tl": {
+							"compare": "at_least",
+							"qualifier": 3
+						},
+						"prereqs": [
+							{
+								"type": "skill_prereq",
+								"has": true,
+								"name": {
+									"compare": "is",
+									"qualifier": "Broadsword"
+								},
+								"level": {
+									"compare": "at_least",
+									"qualifier": 12
+								},
+								"specialization": {
+									"compare": "is"
+								}
+							},
+							{
+								"type": "trait_prereq",
+								"has": false,
+								"name": {
+									"compare": "is_not",
+									"qualifier": "Leveled Advantage"
+								},
+								"level": {
+									"compare": "at_least",
+									"qualifier": 1
+								},
+								"notes": {
+									"compare": "is"
+								}
+							}
+						]
+					}
+				]
+			},
+			"base_points": 1,
+			"calc": {
+				"points": 1
+			}
+		},
+		{
+			"id": "tDbQqr-S02IlSmoJ3",
+			"name": "Natural Weapons",
+			"base_points": 5,
+			"weapons": [
+				{
+					"id": "w4rKJPhCYY02t--mA",
+					"sv": 1,
+					"damage": {
+						"type": "cr",
+						"base": "2d"
+					},
+					"strength": "10",
+					"usage": "Mode none",
+					"reach": "1",
+					"parry": "0",
+					"defaults": [
+						{
+							"type": "dx",
+							"modifier": -5
+						},
+						{
+							"type": "skill",
+							"name": {
+								"compare": "is",
+								"qualifier": "Broadsword"
+							}
+						}
+					],
+					"calc": {
+						"damage": "2d cr"
+					}
+				},
+				{
+					"id": "wK85lGlFwYZmY1uE8",
+					"sv": 1,
+					"damage": {
+						"type": "cut",
+						"st": "thr"
+					},
+					"strength": "10",
+					"usage": "Mode thr",
+					"reach": "1",
+					"parry": "0",
+					"defaults": [
+						{
+							"type": "dx",
+							"modifier": -5
+						},
+						{
+							"type": "skill",
+							"name": {
+								"compare": "is",
+								"qualifier": "Broadsword"
+							}
+						}
+					],
+					"calc": {
+						"damage": "thr cut"
+					}
+				},
+				{
+					"id": "waFi8rrhYs2aKZ_4n",
+					"sv": 1,
+					"damage": {
+						"type": "imp",
+						"st": "lift_thr"
+					},
+					"strength": "10",
+					"usage": "Mode lift_thr",
+					"reach": "1",
+					"parry": "0",
+					"defaults": [
+						{
+							"type": "dx",
+							"modifier": -5
+						},
+						{
+							"type": "skill",
+							"name": {
+								"compare": "is",
+								"qualifier": "Broadsword"
+							}
+						}
+					],
+					"calc": {
+						"damage": "lifting thr imp"
+					}
+				},
+				{
+					"id": "wYjvM6x3xLu65BSI0",
+					"sv": 1,
+					"damage": {
+						"type": "pi",
+						"st": "tk_thr"
+					},
+					"strength": "10",
+					"usage": "Mode tk_thr",
+					"reach": "1",
+					"parry": "0",
+					"defaults": [
+						{
+							"type": "dx",
+							"modifier": -5
+						},
+						{
+							"type": "skill",
+							"name": {
+								"compare": "is",
+								"qualifier": "Broadsword"
+							}
+						}
+					],
+					"calc": {
+						"damage": "telekinetic thr pi"
+					}
+				},
+				{
+					"id": "w-LVO_GyaBbwfUV30",
+					"sv": 1,
+					"damage": {
+						"type": "burn",
+						"st": "iq_thr"
+					},
+					"strength": "10",
+					"usage": "Mode iq_thr",
+					"reach": "1",
+					"parry": "0",
+					"defaults": [
+						{
+							"type": "dx",
+							"modifier": -5
+						},
+						{
+							"type": "skill",
+							"name": {
+								"compare": "is",
+								"qualifier": "Broadsword"
+							}
+						}
+					],
+					"calc": {
+						"damage": "iq thr burn"
+					}
+				},
+				{
+					"id": "waubeCv27sR1BGlM6",
+					"sv": 1,
+					"damage": {
+						"type": "cr",
+						"st": "sw"
+					},
+					"strength": "10",
+					"usage": "Mode sw",
+					"reach": "1",
+					"parry": "0",
+					"defaults": [
+						{
+							"type": "dx",
+							"modifier": -5
+						},
+						{
+							"type": "skill",
+							"name": {
+								"compare": "is",
+								"qualifier": "Broadsword"
+							}
+						}
+					],
+					"calc": {
+						"damage": "sw cr"
+					}
+				},
+				{
+					"id": "wGKo93UvajLLNxEyg",
+					"sv": 1,
+					"damage": {
+						"type": "cut",
+						"st": "lift_sw"
+					},
+					"strength": "10",
+					"usage": "Mode lift_sw",
+					"reach": "1",
+					"parry": "0",
+					"defaults": [
+						{
+							"type": "dx",
+							"modifier": -5
+						},
+						{
+							"type": "skill",
+							"name": {
+								"compare": "is",
+								"qualifier": "Broadsword"
+							}
+						}
+					],
+					"calc": {
+						"damage": "lifting sw cut"
+					}
+				},
+				{
+					"id": "wZAIkRjvsuk-uV7rx",
+					"sv": 1,
+					"damage": {
+						"type": "imp",
+						"st": "tk_sw"
+					},
+					"strength": "10",
+					"usage": "Mode tk_sw",
+					"reach": "1",
+					"parry": "0",
+					"defaults": [
+						{
+							"type": "dx",
+							"modifier": -5
+						},
+						{
+							"type": "skill",
+							"name": {
+								"compare": "is",
+								"qualifier": "Broadsword"
+							}
+						}
+					],
+					"calc": {
+						"damage": "telekinetic sw imp"
+					}
+				},
+				{
+					"id": "wdDdy5WKJvXdKFQla",
+					"sv": 1,
+					"damage": {
+						"type": "pi",
+						"st": "iq_sw"
+					},
+					"strength": "10",
+					"usage": "Mode iq_sw",
+					"reach": "1",
+					"parry": "0",
+					"defaults": [
+						{
+							"type": "dx",
+							"modifier": -5
+						},
+						{
+							"type": "skill",
+							"name": {
+								"compare": "is",
+								"qualifier": "Broadsword"
+							}
+						}
+					],
+					"calc": {
+						"damage": "iq sw pi"
+					}
+				},
+				{
+					"id": "w2KChHl22ntlN3oFH",
+					"sv": 1,
+					"damage": {
+						"type": "burn",
+						"st": "thr",
+						"leveled": true
+					},
+					"strength": "10",
+					"usage": "Mode thr_leveled",
+					"reach": "1",
+					"parry": "0",
+					"defaults": [
+						{
+							"type": "dx",
+							"modifier": -5
+						},
+						{
+							"type": "skill",
+							"name": {
+								"compare": "is",
+								"qualifier": "Broadsword"
+							}
+						}
+					],
+					"calc": {
+						"damage": "thr (Leveled) burn"
+					}
+				},
+				{
+					"id": "wEdBy4n6nKm-XxOMz",
+					"sv": 1,
+					"damage": {
+						"type": "cr",
+						"st": "sw",
+						"leveled": true
+					},
+					"strength": "10",
+					"usage": "Mode sw_leveled",
+					"reach": "1",
+					"parry": "0",
+					"defaults": [
+						{
+							"type": "dx",
+							"modifier": -5
+						},
+						{
+							"type": "skill",
+							"name": {
+								"compare": "is",
+								"qualifier": "Broadsword"
+							}
+						}
+					],
+					"calc": {
+						"damage": "sw (Leveled) cr"
+					}
+				},
+				{
+					"id": "wbo3Ab3brYkDTqwRT",
+					"sv": 1,
+					"damage": {
+						"type": "cut",
+						"st": "sw",
+						"base": "1"
+					},
+					"strength": "10",
+					"usage": "Fencing",
+					"reach": "1",
+					"parry": "0F",
+					"defaults": [
+						{
+							"type": "dx",
+							"modifier": -5
+						},
+						{
+							"type": "skill",
+							"name": {
+								"compare": "is",
+								"qualifier": "Broadsword"
+							}
+						}
+					],
+					"calc": {
+						"damage": "sw+1 cut"
+					}
+				},
+				{
+					"id": "wpVEsH9ZLYJJPSAjZ",
+					"sv": 1,
+					"damage": {
+						"type": "cut",
+						"st": "sw",
+						"base": "1"
+					},
+					"strength": "14†",
+					"usage": "Two-handed",
+					"reach": "1-2*",
+					"parry": "-1U",
+					"defaults": [
+						{
+							"type": "dx",
+							"modifier": -5
+						},
+						{
+							"type": "skill",
+							"name": {
+								"compare": "is",
+								"qualifier": "Broadsword"
+							}
+						}
+					],
+					"calc": {
+						"damage": "sw+1 cut"
+					}
+				},
+				{
+					"id": "wlvNTTzgsrxWLifOT",
+					"sv": 1,
+					"damage": {
+						"type": "cut",
+						"st": "sw",
+						"base": "1"
+					},
+					"strength": "‡",
+					"usage": "Unready",
+					"reach": "C,1",
+					"parry": "0",
+					"defaults": [
+						{
+							"type": "dx",
+							"modifier": -5
+						},
+						{
+							"type": "skill",
+							"name": {
+								"compare": "is",
+								"qualifier": "Broadsword"
+							}
+						}
+					],
+					"calc": {
+						"damage": "sw+1 cut"
+					}
+				},
+				{
+					"id": "wRxBhmK38rdDbpMgl",
+					"sv": 1,
+					"damage": {
+						"type": "cut",
+						"st": "sw",
+						"st_mul": 2,
+						"base": "2",
+						"armor_divisor": 2,
+						"fragmentation": "2d",
+						"fragmentation_armor_divisor": 3,
+						"fragmentation_type": "cut",
+						"modifier_per_die": 1
+					},
+					"strength": "10",
+					"usage": "Close",
+					"usage_notes": "Fragments",
+					"reach": "C",
+					"parry": "1",
+					"block": "0",
+					"defaults": [
+						{
+							"type": "dx",
+							"modifier": -5
+						},
+						{
+							"type": "skill",
+							"name": {
+								"compare": "is",
+								"qualifier": "Broadsword"
+							}
+						}
+					],
+					"calc": {
+						"damage": "sw+2(2) (+1 per die) cut [2d(3) cut]"
+					}
+				},
+				{
+					"id": "Wilw3O-IoKlpHnQTS",
+					"sv": 1,
+					"damage": {
+						"type": "pi",
+						"base": "1d+2"
+					},
+					"strength": "8",
+					"usage": "Thrown",
+					"accuracy": "2",
+					"range": "x1/x1.5",
+					"rate_of_fire": "1",
+					"shots": "T(1)",
+					"bulk": "-2",
+					"defaults": [
+						{
+							"type": "dx",
+							"modifier": -4
+						},
+						{
+							"type": "skill",
+							"name": {
+								"compare": "is",
+								"qualifier": "Bow"
+							}
+						}
+					],
+					"calc": {
+						"damage": "1d+2 pi"
+					}
+				},
+				{
+					"id": "WRnbN3Li1Jsm3vJP7",
+					"sv": 1,
+					"damage": {
+						"type": "pi",
+						"base": "1d+2"
+					},
+					"strength": "9B",
+					"usage": "Burst",
+					"accuracy": "4+2",
+					"range": "1,000/3,000",
+					"rate_of_fire": "3x8!#",
+					"shots": "30+1(3)",
+					"bulk": "-3*",
+					"recoil": "2/4",
+					"defaults": [
+						{
+							"type": "dx",
+							"modifier": -4
+						},
+						{
+							"type": "skill",
+							"name": {
+								"compare": "is",
+								"qualifier": "Bow"
+							}
+						}
+					],
+					"calc": {
+						"damage": "1d+2 pi"
+					}
+				},
+				{
+					"id": "WD1Cf_0fI48A5DGIO",
+					"sv": 1,
+					"damage": {
+						"type": "pi",
+						"base": "1d+2"
+					},
+					"strength": "12M",
+					"usage": "Jet",
+					"accuracy": "Jet",
+					"range": "10/20",
+					"rate_of_fire": "Jet",
+					"shots": "10(5i)",
+					"bulk": "-5/-7",
+					"recoil": "1",
+					"defaults": [
+						{
+							"type": "dx",
+							"modifier": -4
+						},
+						{
+							"type": "skill",
+							"name": {
+								"compare": "is",
+								"qualifier": "Bow"
+							}
+						}
+					],
+					"calc": {
+						"damage": "1d+2 pi"
+					}
+				},
+				{
+					"id": "WG3VCT76x8HqOkuoR",
+					"sv": 1,
+					"damage": {
+						"type": "pi",
+						"base": "1d+2"
+					},
+					"strength": "13R",
+					"usage": "Mortar",
+					"accuracy": "6",
+					"range": "2/5 mi",
+					"rate_of_fire": "1/3",
+					"shots": "T(2i)",
+					"bulk": "-8",
+					"defaults": [
+						{
+							"type": "dx",
+							"modifier": -4
+						},
+						{
+							"type": "skill",
+							"name": {
+								"compare": "is",
+								"qualifier": "Bow"
+							}
+						}
+					],
+					"calc": {
+						"damage": "1d+2 pi"
+					}
+				},
+				{
+					"id": "W1eje9nLQTPAFLs5x",
+					"sv": 1,
+					"damage": {
+						"type": "pi",
+						"base": "1d+2"
+					},
+					"strength": "11",
+					"usage": "Hidden",
+					"accuracy": "2",
+					"range": "150/200",
+					"rate_of_fire": "1",
+					"shots": "1(2)",
+					"bulk": "-6",
+					"defaults": [
+						{
+							"type": "dx",
+							"modifier": -4
+						},
+						{
+							"type": "skill",
+							"name": {
+								"compare": "is",
+								"qualifier": "Bow"
+							}
+						}
+					],
+					"hide": true,
+					"calc": {
+						"damage": "1d+2 pi"
+					}
+				}
+			],
+			"calc": {
+				"points": 5
+			}
+		},
+		{
+			"id": "ToSd1cx0QIWn_o-fX",
+			"name": "Container group",
+			"children": [
+				{
+					"id": "t6vObqtBBmBPqlMvT",
+					"name": "group child A",
+					"base_points": 10,
+					"calc": {
+						"points": 10
+					}
+				},
+				{
+					"id": "tttThvoPvQ5Ca2SGx",
+					"name": "group child B",
+					"base_points": 20,
+					"calc": {
+						"points": 20
+					}
+				},
+				{
+					"id": "TGgCTS88QcNjpc1dw",
+					"name": "Nested Group",
+					"children": [
+						{
+							"id": "tnwDJeeUOuvD5YEIi",
+							"name": "Deeply Nested",
+							"base_points": 1,
+							"calc": {
+								"points": 1
+							}
+						}
+					],
+					"calc": {
+						"points": 1
+					}
+				}
+			],
+			"calc": {
+				"points": 31
+			}
+		},
+		{
+			"id": "T1J9nvtlB5aW9G-eE",
+			"name": "Container alternative_abilities",
+			"container_type": "alternative_abilities",
+			"alternative_slots": 2,
+			"children": [
+				{
+					"id": "tLfqO_h3-OcCiUh2V",
+					"name": "alternative_abilities child A",
+					"base_points": 10,
+					"calc": {
+						"points": 10
+					}
+				},
+				{
+					"id": "t5PvsQUR8zayJsRTT",
+					"name": "alternative_abilities child B",
+					"base_points": 20,
+					"calc": {
+						"points": 20
+					}
+				}
+			],
+			"calc": {
+				"points": 30
+			}
+		},
+		{
+			"id": "T3uHj4SVPBszSdhyF",
+			"name": "Container ancestry",
+			"ancestry": "Fixture",
+			"container_type": "ancestry",
+			"children": [
+				{
+					"id": "thfJ6WX9tlqU9sCMK",
+					"name": "ancestry child A",
+					"base_points": 10,
+					"calc": {
+						"points": 10
+					}
+				},
+				{
+					"id": "timhK7v0Sk5sv5fsp",
+					"name": "ancestry child B",
+					"base_points": 20,
+					"calc": {
+						"points": 20
+					}
+				}
+			],
+			"calc": {
+				"points": 30
+			}
+		},
+		{
+			"id": "TAvyugOqjeyjTLobk",
+			"name": "Container attributes",
+			"container_type": "attributes",
+			"children": [
+				{
+					"id": "tPylwKeBnLL7hmVjR",
+					"name": "attributes child A",
+					"base_points": 10,
+					"calc": {
+						"points": 10
+					}
+				},
+				{
+					"id": "tZqYYqrxL8d-DIDY-",
+					"name": "attributes child B",
+					"base_points": 20,
+					"calc": {
+						"points": 20
+					}
+				}
+			],
+			"calc": {
+				"points": 30
+			}
+		},
+		{
+			"id": "TFoezWM2aL1Zy8jxV",
+			"name": "Container meta_trait",
+			"container_type": "meta_trait",
+			"children": [
+				{
+					"id": "tOiUb9TjEoFvlg39T",
+					"name": "meta_trait child A",
+					"base_points": 10,
+					"calc": {
+						"points": 10
+					}
+				},
+				{
+					"id": "tJoWqMEBdNB9pTkrY",
+					"name": "meta_trait child B",
+					"base_points": 20,
+					"calc": {
+						"points": 20
+					}
+				}
+			],
+			"calc": {
+				"points": 30
+			}
+		}
+	]
+}

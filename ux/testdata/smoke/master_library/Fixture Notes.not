@@ -1,0 +1,33 @@
+{
+	"version": 5,
+	"rows": [
+		{
+			"id": "n7YfK2YMju4ObwyrL",
+			"markdown": "# Fixture Note\n\nSome **bold** and _italic_ text.\n\n- One\n- Two\n",
+			"reference": "FX5",
+			"tags": [
+				"Lore"
+			]
+		},
+		{
+			"id": "nXuCQ948PpRYEqJls",
+			"markdown": "Sworn to @Patron@ until @Date|?@.",
+			"replacements": {
+				"Patron": "The Fixture"
+			},
+			"calc": {
+				"resolved_text": "Sworn to The Fixture until @Date@."
+			}
+		},
+		{
+			"id": "NPoThtcHvy6eDQuwl",
+			"markdown": "Note Group",
+			"children": [
+				{
+					"id": "n8w-5jGIBoUxciDrk",
+					"markdown": "A child note."
+				}
+			]
+		}
+	]
+}

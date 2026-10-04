@@ -1,0 +1,429 @@
+{
+	"version": 5,
+	"rows": [
+		{
+			"id": "p-7PQih0WKQbeM2ia",
+			"name": "Fireball",
+			"reference": "FX3",
+			"tags": [
+				"Fire",
+				"Missile"
+			],
+			"difficulty": "iq/h",
+			"college": [
+				"Fire"
+			],
+			"power_source": "Arcane",
+			"spell_class": "Missile",
+			"resist": "Dodge",
+			"casting_cost": "1 to 3",
+			"casting_time": "1-3 sec",
+			"duration": "Instant",
+			"item": "Wand",
+			"weapons": [
+				{
+					"id": "WCUkJTr7Cry5Q1AvP",
+					"sv": 1,
+					"damage": {
+						"type": "burn",
+						"base": "1d"
+					},
+					"strength": "11",
+					"usage": "Missile",
+					"accuracy": "1",
+					"range": "25/50",
+					"rate_of_fire": "1",
+					"defaults": [
+						{
+							"type": "dx",
+							"modifier": -4
+						},
+						{
+							"type": "skill",
+							"name": {
+								"compare": "is",
+								"qualifier": "Bow"
+							}
+						}
+					],
+					"calc": {
+						"damage": "1d burn"
+					}
+				}
+			],
+			"points": 4
+		},
+		{
+			"id": "pdesKx_-sQwVv5nR1",
+			"name": "Multi-College Spell",
+			"difficulty": "iq/vh",
+			"college": [
+				"Fire",
+				"Air",
+				"Water"
+			],
+			"power_source": "Divine",
+			"spell_class": "Regular/Area",
+			"resist": "HT",
+			"casting_cost": "3",
+			"maintenance_cost": "2",
+			"casting_time": "10 sec",
+			"duration": "1 min",
+			"prereqs": {
+				"type": "prereq_list",
+				"all": true,
+				"prereqs": [
+					{
+						"type": "trait_prereq",
+						"has": true,
+						"name": {
+							"compare": "is",
+							"qualifier": "Leveled Advantage"
+						},
+						"level": {
+							"compare": "at_least",
+							"qualifier": 1
+						},
+						"notes": {
+							"compare": "is"
+						}
+					},
+					{
+						"type": "attribute_prereq",
+						"has": true,
+						"combined_with": "ht",
+						"qualifier": {
+							"compare": "is",
+							"qualifier": 20
+						},
+						"which": "st"
+					},
+					{
+						"type": "equipped_equipment",
+						"name": {
+							"compare": "is",
+							"qualifier": "Fixture Sword"
+						},
+						"tags": {
+							"compare": "contains",
+							"qualifier": "Weapon"
+						}
+					},
+					{
+						"type": "skill_prereq",
+						"has": true,
+						"name": {
+							"compare": "is",
+							"qualifier": "Broadsword"
+						},
+						"level": {
+							"compare": "at_least",
+							"qualifier": 12
+						},
+						"specialization": {
+							"compare": "is"
+						}
+					},
+					{
+						"type": "spell_prereq",
+						"sub_type": "name",
+						"has": true,
+						"qualifier": {
+							"compare": "is",
+							"qualifier": "Fireball"
+						},
+						"quantity": {
+							"compare": "at_least",
+							"qualifier": 1
+						}
+					},
+					{
+						"type": "script_prereq",
+						"name": "Strong enough",
+						"script": "$st >= 10"
+					},
+					{
+						"type": "spell_prereq",
+						"sub_type": "tag",
+						"has": true,
+						"qualifier": {
+							"compare": "is",
+							"qualifier": "Fire"
+						},
+						"quantity": {
+							"compare": "at_least",
+							"qualifier": 1
+						}
+					},
+					{
+						"type": "spell_prereq",
+						"sub_type": "college",
+						"has": true,
+						"qualifier": {
+							"compare": "is",
+							"qualifier": "Fire"
+						},
+						"quantity": {
+							"compare": "at_least",
+							"qualifier": 1
+						}
+					},
+					{
+						"type": "spell_prereq",
+						"sub_type": "college_count",
+						"has": true,
+						"quantity": {
+							"compare": "at_least",
+							"qualifier": 1
+						}
+					},
+					{
+						"type": "spell_prereq",
+						"sub_type": "any",
+						"has": true,
+						"quantity": {
+							"compare": "at_least",
+							"qualifier": 1
+						}
+					},
+					{
+						"type": "trait_prereq",
+						"has": false,
+						"name": {
+							"compare": "is_not",
+							"qualifier": "Leveled Advantage"
+						},
+						"level": {
+							"compare": "at_least",
+							"qualifier": 1
+						},
+						"notes": {
+							"compare": "is"
+						}
+					},
+					{
+						"type": "trait_prereq",
+						"has": true,
+						"name": {
+							"compare": "contains",
+							"qualifier": "Leveled Advantage"
+						},
+						"level": {
+							"compare": "at_least",
+							"qualifier": 1
+						},
+						"notes": {
+							"compare": "is"
+						}
+					},
+					{
+						"type": "trait_prereq",
+						"has": false,
+						"name": {
+							"compare": "does_not_contain",
+							"qualifier": "Leveled Advantage"
+						},
+						"level": {
+							"compare": "at_least",
+							"qualifier": 1
+						},
+						"notes": {
+							"compare": "is"
+						}
+					},
+					{
+						"type": "trait_prereq",
+						"has": true,
+						"name": {
+							"compare": "starts_with",
+							"qualifier": "Leveled Advantage"
+						},
+						"level": {
+							"compare": "at_least",
+							"qualifier": 1
+						},
+						"notes": {
+							"compare": "is"
+						}
+					},
+					{
+						"type": "trait_prereq",
+						"has": false,
+						"name": {
+							"compare": "does_not_start_with",
+							"qualifier": "Leveled Advantage"
+						},
+						"level": {
+							"compare": "at_least",
+							"qualifier": 1
+						},
+						"notes": {
+							"compare": "is"
+						}
+					},
+					{
+						"type": "trait_prereq",
+						"has": true,
+						"name": {
+							"compare": "ends_with",
+							"qualifier": "Leveled Advantage"
+						},
+						"level": {
+							"compare": "at_least",
+							"qualifier": 1
+						},
+						"notes": {
+							"compare": "is"
+						}
+					},
+					{
+						"type": "trait_prereq",
+						"has": false,
+						"name": {
+							"compare": "does_not_end_with",
+							"qualifier": "Leveled Advantage"
+						},
+						"level": {
+							"compare": "at_least",
+							"qualifier": 1
+						},
+						"notes": {
+							"compare": "is"
+						}
+					},
+					{
+						"type": "attribute_prereq",
+						"has": true,
+						"combined_with": "ht",
+						"qualifier": {
+							"compare": "is_not",
+							"qualifier": 20
+						},
+						"which": "st"
+					},
+					{
+						"type": "attribute_prereq",
+						"has": true,
+						"combined_with": "ht",
+						"qualifier": {
+							"compare": "at_least",
+							"qualifier": 20
+						},
+						"which": "st"
+					},
+					{
+						"type": "attribute_prereq",
+						"has": true,
+						"combined_with": "ht",
+						"qualifier": {
+							"compare": "at_most",
+							"qualifier": 20
+						},
+						"which": "st"
+					},
+					{
+						"type": "prereq_list",
+						"all": false,
+						"when_tl": {
+							"compare": "at_least",
+							"qualifier": 3
+						},
+						"prereqs": [
+							{
+								"type": "skill_prereq",
+								"has": true,
+								"name": {
+									"compare": "is",
+									"qualifier": "Broadsword"
+								},
+								"level": {
+									"compare": "at_least",
+									"qualifier": 12
+								},
+								"specialization": {
+									"compare": "is"
+								}
+							},
+							{
+								"type": "trait_prereq",
+								"has": false,
+								"name": {
+									"compare": "is_not",
+									"qualifier": "Leveled Advantage"
+								},
+								"level": {
+									"compare": "at_least",
+									"qualifier": 1
+								},
+								"notes": {
+									"compare": "is"
+								}
+							}
+						]
+					}
+				]
+			},
+			"tech_level": "3",
+			"points": 1,
+			"study": [
+				{
+					"type": "intensive",
+					"hours": 20
+				}
+			]
+		},
+		{
+			"id": "pP6o1iQEYbHTqcRJ6",
+			"name": "Ward (@Element@)",
+			"replacements": {
+				"Element": "Fire"
+			},
+			"difficulty": "iq/h",
+			"college": [
+				"Meta"
+			],
+			"points": 1
+		},
+		{
+			"id": "rwcq27FV2eA4Fr5Rh",
+			"name": "Ritual Spell",
+			"difficulty": "iq/h",
+			"college": [
+				"Fire"
+			],
+			"power_source": "Arcane",
+			"spell_class": "Regular",
+			"casting_cost": "2",
+			"casting_time": "1 sec",
+			"duration": "Instant",
+			"base_skill": "Ritual Magic",
+			"prereq_count": 2,
+			"points": 2
+		},
+		{
+			"id": "PJc6Cb1PiV3ypNrXF",
+			"name": "Spell Group",
+			"children": [
+				{
+					"id": "puwHGnjBKOpJfBSeV",
+					"name": "Grouped Spell",
+					"difficulty": "iq/h",
+					"college": [
+						"Air"
+					],
+					"points": 1
+				},
+				{
+					"id": "r1iMCfd4sETmvIHgD",
+					"name": "Grouped Ritual",
+					"difficulty": "iq/vh",
+					"college": [
+						"Air"
+					],
+					"base_skill": "Ritual Magic",
+					"points": 1
+				}
+			]
+		}
+	]
+}

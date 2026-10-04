@@ -1,0 +1,973 @@
+{
+	"version": 5,
+	"rows": [
+		{
+			"id": "egQu8-qgWqUTK6EZ7",
+			"description": "Fixture Sword",
+			"reference": "FX4",
+			"local_notes": "A blade",
+			"tech_level": "2",
+			"legality_class": "3",
+			"tags": [
+				"Melee",
+				"Weapon"
+			],
+			"base_value": "500",
+			"base_weight": "3 lb",
+			"weapons": [
+				{
+					"id": "w0maTHbPMv-nVgj8R",
+					"sv": 1,
+					"damage": {
+						"type": "cut",
+						"st": "sw",
+						"base": "1"
+					},
+					"strength": "10",
+					"usage": "Swing",
+					"reach": "1",
+					"parry": "0",
+					"defaults": [
+						{
+							"type": "dx",
+							"modifier": -5
+						},
+						{
+							"type": "skill",
+							"name": {
+								"compare": "is",
+								"qualifier": "Broadsword"
+							}
+						}
+					],
+					"calc": {
+						"damage": "sw+1 cut"
+					}
+				},
+				{
+					"id": "wLMzNvhJ7jSCCuUtw",
+					"sv": 1,
+					"damage": {
+						"type": "imp",
+						"st": "thr",
+						"base": "2"
+					},
+					"strength": "10",
+					"usage": "Thrust",
+					"reach": "1",
+					"parry": "0",
+					"defaults": [
+						{
+							"type": "dx",
+							"modifier": -5
+						},
+						{
+							"type": "skill",
+							"name": {
+								"compare": "is",
+								"qualifier": "Broadsword"
+							}
+						}
+					],
+					"calc": {
+						"damage": "thr+2 imp"
+					}
+				}
+			],
+			"modifiers": [
+				{
+					"id": "fN4LWY5mk6wg7P1-c",
+					"name": "to_original_cost +5",
+					"cost_is_per_level": true,
+					"cost": "+5"
+				},
+				{
+					"id": "fUAIM1zXTbhOOyLVc",
+					"name": "Fine",
+					"local_notes": "+1 damage",
+					"cost_type": "to_base_cost",
+					"show_notes_on_weapon": true,
+					"cost": "+3 CF",
+					"features": [
+						{
+							"type": "weapon_bonus",
+							"selection_type": "weapons_with_required_skill",
+							"name": {
+								"compare": "is",
+								"qualifier": "Broadsword"
+							},
+							"level": {
+								"compare": "at_least",
+								"qualifier": 10
+							},
+							"amount": 1,
+							"per_die": true
+						}
+					]
+				},
+				{
+					"id": "F3lV--9_LnKCIKpaP",
+					"name": "Mandatory Equipment Choice",
+					"choice": {
+						"type": "count",
+						"qualifier": {
+							"compare": "is",
+							"qualifier": 1
+						}
+					},
+					"children": [
+						{
+							"id": "foWElSIl3R4pi0qni",
+							"name": "Material A",
+							"cost": "+10"
+						},
+						{
+							"id": "fPwsYwmmNDLTUb9yo",
+							"name": "Material B",
+							"cost": "+20",
+							"disabled": true
+						}
+					]
+				}
+			],
+			"rated_strength": 10,
+			"quantity": 1,
+			"equipped": true,
+			"calc": {
+				"value": 2060,
+				"extended_value": 2060,
+				"weight": "3 lb",
+				"extended_weight": "3 lb"
+			}
+		},
+		{
+			"id": "eIxzyiBtrI7ugev0U",
+			"description": "Fixture Bow",
+			"base_value": "200",
+			"base_weight": "2 lb",
+			"weapons": [
+				{
+					"id": "W-Mj9nEOr2n6DcDES",
+					"sv": 1,
+					"damage": {
+						"type": "pi",
+						"base": "1d+2"
+					},
+					"strength": "11",
+					"usage": "Shot",
+					"accuracy": "2",
+					"range": "150/200",
+					"rate_of_fire": "1",
+					"shots": "1(2)",
+					"bulk": "-6",
+					"defaults": [
+						{
+							"type": "dx",
+							"modifier": -4
+						},
+						{
+							"type": "skill",
+							"name": {
+								"compare": "is",
+								"qualifier": "Bow"
+							}
+						}
+					],
+					"calc": {
+						"damage": "1d+2 pi"
+					}
+				}
+			],
+			"quantity": 1,
+			"equipped": true,
+			"calc": {
+				"value": 200,
+				"extended_value": 200,
+				"weight": "2 lb",
+				"extended_weight": "2 lb"
+			}
+		},
+		{
+			"id": "eaktPFUwA162BTHDa",
+			"description": "Arrows",
+			"base_value": "2",
+			"base_weight": "0.1 lb",
+			"ignore_weight_for_skills": true,
+			"quantity": 20,
+			"calc": {
+				"value": 2,
+				"extended_value": 40,
+				"weight": "0.1 lb",
+				"extended_weight": "2 lb"
+			}
+		},
+		{
+			"id": "euuEC2OyQLa54CWr6",
+			"description": "Fixture Lantern",
+			"base_value": "20",
+			"base_weight": "2 lb",
+			"max_uses": 5,
+			"prereqs": {
+				"type": "prereq_list",
+				"all": true,
+				"prereqs": [
+					{
+						"type": "trait_prereq",
+						"has": true,
+						"name": {
+							"compare": "is",
+							"qualifier": "Leveled Advantage"
+						},
+						"level": {
+							"compare": "at_least",
+							"qualifier": 1
+						},
+						"notes": {
+							"compare": "is"
+						}
+					},
+					{
+						"type": "attribute_prereq",
+						"has": true,
+						"combined_with": "ht",
+						"qualifier": {
+							"compare": "is",
+							"qualifier": 20
+						},
+						"which": "st"
+					},
+					{
+						"type": "contained_quantity_prereq",
+						"has": true,
+						"qualifier": {
+							"compare": "at_most",
+							"qualifier": 5
+						}
+					},
+					{
+						"type": "contained_weight_prereq",
+						"has": true,
+						"qualifier": {
+							"compare": "at_most",
+							"qualifier": "10 lb"
+						}
+					},
+					{
+						"type": "equipped_equipment",
+						"name": {
+							"compare": "is",
+							"qualifier": "Fixture Sword"
+						},
+						"tags": {
+							"compare": "contains",
+							"qualifier": "Weapon"
+						}
+					},
+					{
+						"type": "skill_prereq",
+						"has": true,
+						"name": {
+							"compare": "is",
+							"qualifier": "Broadsword"
+						},
+						"level": {
+							"compare": "at_least",
+							"qualifier": 12
+						},
+						"specialization": {
+							"compare": "is"
+						}
+					},
+					{
+						"type": "spell_prereq",
+						"sub_type": "name",
+						"has": true,
+						"qualifier": {
+							"compare": "is",
+							"qualifier": "Fireball"
+						},
+						"quantity": {
+							"compare": "at_least",
+							"qualifier": 1
+						}
+					},
+					{
+						"type": "script_prereq",
+						"name": "Strong enough",
+						"script": "$st >= 10"
+					},
+					{
+						"type": "spell_prereq",
+						"sub_type": "tag",
+						"has": true,
+						"qualifier": {
+							"compare": "is",
+							"qualifier": "Fire"
+						},
+						"quantity": {
+							"compare": "at_least",
+							"qualifier": 1
+						}
+					},
+					{
+						"type": "spell_prereq",
+						"sub_type": "college",
+						"has": true,
+						"qualifier": {
+							"compare": "is",
+							"qualifier": "Fire"
+						},
+						"quantity": {
+							"compare": "at_least",
+							"qualifier": 1
+						}
+					},
+					{
+						"type": "spell_prereq",
+						"sub_type": "college_count",
+						"has": true,
+						"quantity": {
+							"compare": "at_least",
+							"qualifier": 1
+						}
+					},
+					{
+						"type": "spell_prereq",
+						"sub_type": "any",
+						"has": true,
+						"quantity": {
+							"compare": "at_least",
+							"qualifier": 1
+						}
+					},
+					{
+						"type": "trait_prereq",
+						"has": false,
+						"name": {
+							"compare": "is_not",
+							"qualifier": "Leveled Advantage"
+						},
+						"level": {
+							"compare": "at_least",
+							"qualifier": 1
+						},
+						"notes": {
+							"compare": "is"
+						}
+					},
+					{
+						"type": "trait_prereq",
+						"has": true,
+						"name": {
+							"compare": "contains",
+							"qualifier": "Leveled Advantage"
+						},
+						"level": {
+							"compare": "at_least",
+							"qualifier": 1
+						},
+						"notes": {
+							"compare": "is"
+						}
+					},
+					{
+						"type": "trait_prereq",
+						"has": false,
+						"name": {
+							"compare": "does_not_contain",
+							"qualifier": "Leveled Advantage"
+						},
+						"level": {
+							"compare": "at_least",
+							"qualifier": 1
+						},
+						"notes": {
+							"compare": "is"
+						}
+					},
+					{
+						"type": "trait_prereq",
+						"has": true,
+						"name": {
+							"compare": "starts_with",
+							"qualifier": "Leveled Advantage"
+						},
+						"level": {
+							"compare": "at_least",
+							"qualifier": 1
+						},
+						"notes": {
+							"compare": "is"
+						}
+					},
+					{
+						"type": "trait_prereq",
+						"has": false,
+						"name": {
+							"compare": "does_not_start_with",
+							"qualifier": "Leveled Advantage"
+						},
+						"level": {
+							"compare": "at_least",
+							"qualifier": 1
+						},
+						"notes": {
+							"compare": "is"
+						}
+					},
+					{
+						"type": "trait_prereq",
+						"has": true,
+						"name": {
+							"compare": "ends_with",
+							"qualifier": "Leveled Advantage"
+						},
+						"level": {
+							"compare": "at_least",
+							"qualifier": 1
+						},
+						"notes": {
+							"compare": "is"
+						}
+					},
+					{
+						"type": "trait_prereq",
+						"has": false,
+						"name": {
+							"compare": "does_not_end_with",
+							"qualifier": "Leveled Advantage"
+						},
+						"level": {
+							"compare": "at_least",
+							"qualifier": 1
+						},
+						"notes": {
+							"compare": "is"
+						}
+					},
+					{
+						"type": "attribute_prereq",
+						"has": true,
+						"combined_with": "ht",
+						"qualifier": {
+							"compare": "is_not",
+							"qualifier": 20
+						},
+						"which": "st"
+					},
+					{
+						"type": "attribute_prereq",
+						"has": true,
+						"combined_with": "ht",
+						"qualifier": {
+							"compare": "at_least",
+							"qualifier": 20
+						},
+						"which": "st"
+					},
+					{
+						"type": "attribute_prereq",
+						"has": true,
+						"combined_with": "ht",
+						"qualifier": {
+							"compare": "at_most",
+							"qualifier": 20
+						},
+						"which": "st"
+					},
+					{
+						"type": "prereq_list",
+						"all": false,
+						"when_tl": {
+							"compare": "at_least",
+							"qualifier": 3
+						},
+						"prereqs": [
+							{
+								"type": "skill_prereq",
+								"has": true,
+								"name": {
+									"compare": "is",
+									"qualifier": "Broadsword"
+								},
+								"level": {
+									"compare": "at_least",
+									"qualifier": 12
+								},
+								"specialization": {
+									"compare": "is"
+								}
+							},
+							{
+								"type": "trait_prereq",
+								"has": false,
+								"name": {
+									"compare": "is_not",
+									"qualifier": "Leveled Advantage"
+								},
+								"level": {
+									"compare": "at_least",
+									"qualifier": 1
+								},
+								"notes": {
+									"compare": "is"
+								}
+							}
+						]
+					}
+				]
+			},
+			"features": [
+				{
+					"type": "equipment_max_uses_bonus",
+					"selection_type": "this_equipment",
+					"amount": "+1"
+				}
+			],
+			"quantity": 1,
+			"uses": 3,
+			"equipped": true,
+			"calc": {
+				"value": 20,
+				"extended_value": 20,
+				"weight": "2 lb",
+				"extended_weight": "2 lb"
+			}
+		},
+		{
+			"id": "ejtr2PjM-kBfmSDci",
+			"description": "Leveled Gear",
+			"base_value": "100",
+			"base_weight": "1 lb",
+			"modifiers": [
+				{
+					"id": "fN4LWY5mk6wg7P1-c",
+					"name": "to_original_cost +5",
+					"cost_is_per_level": true,
+					"cost": "+5"
+				},
+				{
+					"id": "flpa-wf15MWsQR57m",
+					"name": "to_original_cost +10%",
+					"cost": "+10%"
+				},
+				{
+					"id": "f9v5kuEl-TZavhxX7",
+					"name": "to_original_cost x2",
+					"cost": "x2"
+				},
+				{
+					"id": "fM02GB5CW_ftaJYqP",
+					"name": "to_base_cost +1 CF",
+					"cost_type": "to_base_cost",
+					"cost_is_per_level": true,
+					"cost": "+1 CF"
+				},
+				{
+					"id": "f8VhKQvIxhVzLdGKU",
+					"name": "to_base_cost x2",
+					"cost_type": "to_base_cost",
+					"cost": "x2"
+				},
+				{
+					"id": "fm4Gc_cwmJkkJeTMU",
+					"name": "to_final_base_cost +5",
+					"cost_type": "to_final_base_cost",
+					"cost_is_per_level": true,
+					"cost": "+5"
+				},
+				{
+					"id": "f7v5FtCMQSgioCErO",
+					"name": "to_final_base_cost -10%",
+					"cost_type": "to_final_base_cost",
+					"cost": "-10%"
+				},
+				{
+					"id": "fIE1hHJ-ddTOV7Me2",
+					"name": "to_final_base_cost x1.5",
+					"cost_type": "to_final_base_cost",
+					"cost": "x1.5"
+				},
+				{
+					"id": "f8n9Qh_MIgXsjpwQm",
+					"name": "to_final_cost +20",
+					"cost_type": "to_final_cost",
+					"cost_is_per_level": true,
+					"cost": "+20"
+				},
+				{
+					"id": "fCPCv5oXQdsy10Ihd",
+					"name": "to_final_cost +50%",
+					"cost_type": "to_final_cost",
+					"cost": "+50%"
+				},
+				{
+					"id": "fwKLWUqOU1N-qGoQu",
+					"name": "to_final_cost x3",
+					"cost_type": "to_final_cost",
+					"cost": "x3"
+				},
+				{
+					"id": "feJlKadZNcLlvI95K",
+					"name": "to_original_weight +1 lb",
+					"weight_is_per_level": true,
+					"weight": "+1 lb"
+				},
+				{
+					"id": "fgYa3y9jqNPCQUOj2",
+					"name": "to_original_weight +10%",
+					"weight": "+10%"
+				},
+				{
+					"id": "fj1iyhfrqLHgj3XnR",
+					"name": "to_base_weight +2 lb",
+					"weight_type": "to_base_weight",
+					"weight_is_per_level": true,
+					"weight": "+2 lb"
+				},
+				{
+					"id": "fOaPZ-iI8xCCWWrgw",
+					"name": "to_base_weight x50%",
+					"weight_type": "to_base_weight",
+					"weight": "x50%"
+				},
+				{
+					"id": "fhhoCikpnKHAGr-EF",
+					"name": "to_base_weight x2",
+					"weight_type": "to_base_weight",
+					"weight": "x2"
+				},
+				{
+					"id": "fprQqsiLGJ6ltgiFD",
+					"name": "to_final_base_weight -1 lb",
+					"weight_type": "to_final_base_weight",
+					"weight_is_per_level": true,
+					"weight": "-1 lb"
+				},
+				{
+					"id": "fxUuVxZlh1sAzKgbA",
+					"name": "to_final_base_weight x2",
+					"weight_type": "to_final_base_weight",
+					"weight": "x2"
+				},
+				{
+					"id": "ffYGd-X7hCcTP5Wr6",
+					"name": "to_final_weight +5 lb",
+					"weight_type": "to_final_weight",
+					"weight_is_per_level": true,
+					"weight": "+5 lb"
+				},
+				{
+					"id": "fBj0zjUpAhvKqgvmf",
+					"name": "to_final_weight x75%",
+					"weight_type": "to_final_weight",
+					"weight": "x75%"
+				},
+				{
+					"id": "fs5Mbkb9kzKVFttUj",
+					"name": "Per Pound",
+					"cost_type": "to_final_cost",
+					"cost_is_per_pound": true,
+					"cost": "+2"
+				},
+				{
+					"id": "fJ_Z2gYhZxiKoz4Zl",
+					"name": "High Tech",
+					"tech_level": "8",
+					"cost": "x4"
+				},
+				{
+					"id": "fUAIM1zXTbhOOyLVc",
+					"name": "Fine",
+					"local_notes": "+1 damage",
+					"cost_type": "to_base_cost",
+					"show_notes_on_weapon": true,
+					"cost": "+3 CF",
+					"features": [
+						{
+							"type": "weapon_bonus",
+							"selection_type": "weapons_with_required_skill",
+							"name": {
+								"compare": "is",
+								"qualifier": "Broadsword"
+							},
+							"level": {
+								"compare": "at_least",
+								"qualifier": 10
+							},
+							"amount": 1,
+							"per_die": true
+						}
+					]
+				},
+				{
+					"id": "fh5Mh0vD-jVPzgp_a",
+					"name": "Disabled Equipment Modifier",
+					"cost": "+100",
+					"disabled": true
+				},
+				{
+					"id": "FUBn4io7W8JQQpqNU",
+					"name": "Equipment Modifier Group",
+					"children": [
+						{
+							"id": "fvcOVp4FwYrlzeEod",
+							"name": "Grouped Equipment Modifier",
+							"cost": "+1"
+						}
+					]
+				},
+				{
+					"id": "F3lV--9_LnKCIKpaP",
+					"name": "Mandatory Equipment Choice",
+					"choice": {
+						"type": "count",
+						"qualifier": {
+							"compare": "is",
+							"qualifier": 1
+						}
+					},
+					"children": [
+						{
+							"id": "foWElSIl3R4pi0qni",
+							"name": "Material A",
+							"cost": "+10"
+						},
+						{
+							"id": "fPwsYwmmNDLTUb9yo",
+							"name": "Material B",
+							"cost": "+20",
+							"disabled": true
+						}
+					]
+				},
+				{
+					"id": "FEs9rjIVrCI1wKWTc",
+					"name": "Optional Equipment Choice",
+					"choice": {
+						"type": "count",
+						"qualifier": {
+							"compare": "at_most",
+							"qualifier": 1
+						}
+					},
+					"children": [
+						{
+							"id": "fhPvSHIEinh88Rbhs",
+							"name": "Extra A",
+							"cost": "+1",
+							"disabled": true
+						}
+					]
+				}
+			],
+			"quantity": 1,
+			"level": 2,
+			"equipped": true,
+			"calc": {
+				"value": 28618.3,
+				"extended_value": 28618.3,
+				"weight": "19.15 lb",
+				"extended_weight": "19.15 lb"
+			}
+		},
+		{
+			"id": "exKZrw-y565o63iwh",
+			"description": "Preconfigured Gear",
+			"base_value": "50",
+			"base_weight": "1 lb",
+			"modifiers": [
+				{
+					"id": "F3lV--9_LnKCIKpaP",
+					"name": "Mandatory Equipment Choice",
+					"choice": {
+						"type": "count",
+						"qualifier": {
+							"compare": "is",
+							"qualifier": 1
+						}
+					},
+					"children": [
+						{
+							"id": "foWElSIl3R4pi0qni",
+							"name": "Material A",
+							"cost": "+10"
+						},
+						{
+							"id": "fPwsYwmmNDLTUb9yo",
+							"name": "Material B",
+							"cost": "+20",
+							"disabled": true
+						}
+					]
+				}
+			],
+			"quantity": 1,
+			"equipped": true,
+			"preconfigured": true,
+			"calc": {
+				"value": 60,
+				"extended_value": 60,
+				"weight": "1 lb",
+				"extended_weight": "1 lb"
+			}
+		},
+		{
+			"id": "ebVcu1gcXTasg6T4N",
+			"description": "Switched Gear",
+			"features": [
+				{
+					"type": "attribute_bonus",
+					"switchable": true,
+					"attribute": "ht",
+					"amount": 1
+				}
+			],
+			"quantity": 1,
+			"equipped": true,
+			"switched_on": true,
+			"calc": {
+				"value": 0,
+				"extended_value": 0,
+				"weight": "0 lb",
+				"extended_weight": "0 lb"
+			}
+		},
+		{
+			"id": "eoCAhNitznTyuzbXl",
+			"description": "Holy Symbol (@Deity@)",
+			"replacements": {
+				"Deity": "Fixture"
+			},
+			"quantity": 1,
+			"equipped": true,
+			"calc": {
+				"value": 0,
+				"extended_value": 0,
+				"weight": "0 lb",
+				"extended_weight": "0 lb"
+			}
+		},
+		{
+			"id": "Ee0ScFBmO7Ko4Epsy",
+			"description": "Backpack",
+			"base_value": "60",
+			"base_weight": "3 lb",
+			"prereqs": {
+				"type": "prereq_list",
+				"all": true,
+				"prereqs": [
+					{
+						"type": "contained_quantity_prereq",
+						"has": true,
+						"qualifier": {
+							"compare": "at_most",
+							"qualifier": 5
+						}
+					},
+					{
+						"type": "contained_weight_prereq",
+						"has": true,
+						"qualifier": {
+							"compare": "at_most",
+							"qualifier": "10 lb"
+						}
+					}
+				]
+			},
+			"features": [
+				{
+					"type": "contained_weight_reduction",
+					"reduction": "50%"
+				},
+				{
+					"type": "contained_weight_reduction",
+					"reduction": "5 lb"
+				}
+			],
+			"quantity": 1,
+			"equipped": true,
+			"children": [
+				{
+					"id": "eje_IovOeMjj_5Vf1",
+					"description": "Rope",
+					"base_value": "5",
+					"base_weight": "1.5 lb",
+					"quantity": 1,
+					"equipped": true,
+					"calc": {
+						"value": 5,
+						"extended_value": 5,
+						"weight": "1.5 lb",
+						"extended_weight": "1.5 lb"
+					}
+				},
+				{
+					"id": "EBls0UdRlwI7wlxdZ",
+					"description": "Pouch",
+					"base_value": "10",
+					"base_weight": "0.2 lb",
+					"quantity": 1,
+					"equipped": true,
+					"children": [
+						{
+							"id": "eT3iHYaeNru9P1gjq",
+							"description": "Coins",
+							"base_value": "1",
+							"base_weight": "0.02 lb",
+							"quantity": 30,
+							"equipped": true,
+							"calc": {
+								"value": 1,
+								"extended_value": 30,
+								"weight": "0.02 lb",
+								"extended_weight": "0.6 lb"
+							}
+						}
+					],
+					"calc": {
+						"value": 10,
+						"extended_value": 40,
+						"weight": "0.2 lb",
+						"extended_weight": "0.8 lb"
+					}
+				}
+			],
+			"calc": {
+				"value": 60,
+				"extended_value": 105,
+				"weight": "3 lb",
+				"extended_weight": "3 lb"
+			}
+		},
+		{
+			"id": "EAs6vPiUWzqb-4roI",
+			"container_type": "group",
+			"description": "Equipment Group",
+			"quantity": 1,
+			"equipped": true,
+			"children": [
+				{
+					"id": "eig4-KjlweU4v4Ryq",
+					"description": "Grouped Item",
+					"base_value": "3",
+					"base_weight": "0.5 lb",
+					"quantity": 2,
+					"equipped": true,
+					"calc": {
+						"value": 3,
+						"extended_value": 6,
+						"weight": "0.5 lb",
+						"extended_weight": "1 lb"
+					}
+				}
+			],
+			"calc": {
+				"value": 0,
+				"extended_value": 6,
+				"weight": "0 lb",
+				"extended_weight": "1 lb"
+			}
+		}
+	]
+}
