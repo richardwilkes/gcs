@@ -70,7 +70,10 @@ func initSkillEditor(e *editor[*gurps.Skill, *gurps.SkillEditData], content *uni
 				gurps.TenFlag|gurps.SkillFlag|gurps.ParryFlag|gurps.BlockFlag|gurps.DodgeFlag,
 				e.editorData.TechniqueDefault.DefaultType)
 			attrChoicePopup := labelControl(addPopup(wrapper, choices, &attrChoice), defaultsLabel)
-			e.editorData.TechniqueDefault.Name.Compare = criteria.IsText
+			lastWasSkillBased := gurps.DefaultTypeIsSkillBased(e.editorData.TechniqueDefault.DefaultType)
+			if lastWasSkillBased {
+				e.editorData.TechniqueDefault.Name.Compare = criteria.IsText
+			}
 			skillDefNameField := addStringField(wrapper, i18n.Text("Technique Default Skill Name"),
 				i18n.Text("Skill Name"), &e.editorData.TechniqueDefault.Name.Qualifier)
 			skillDefNameField.Watermark = i18n.Text("Skill")
@@ -78,7 +81,6 @@ func initSkillEditor(e *editor[*gurps.Skill, *gurps.SkillEditData], content *uni
 				HAlign: align.Fill,
 				HGrab:  true,
 			})
-			lastWasSkillBased := gurps.DefaultTypeIsSkillBased(e.editorData.TechniqueDefault.DefaultType)
 			if !lastWasSkillBased {
 				skillDefNameField.RemoveFromParent()
 			}
@@ -102,11 +104,16 @@ func initSkillEditor(e *editor[*gurps.Skill, *gurps.SkillEditData], content *uni
 					if skillBased := gurps.DefaultTypeIsSkillBased(e.editorData.TechniqueDefault.DefaultType); skillBased != lastWasSkillBased {
 						lastWasSkillBased = skillBased
 						if skillBased {
+							e.editorData.TechniqueDefault.Name.Compare = criteria.IsText
 							modifierField.RemoveFromParent()
 							wrapper.AddChild(skillDefNameField)
 							addSpecPanel()
 							wrapper.AddChild(modifierField)
 						} else {
+							// The criteria fields go with the type, and what they held would otherwise linger unseen,
+							// making the technique look modified when it has been set back to what it was.
+							e.editorData.TechniqueDefault.Normalize()
+							skillDefNameField.Sync()
 							skillDefNameField.RemoveFromParent()
 							if specPanel != nil {
 								specPanel.RemoveFromParent()

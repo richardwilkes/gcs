@@ -74,32 +74,38 @@ func normalizeDefaultType(skillDefaultType string) string {
 	return strings.ToLower(strings.TrimSpace(skillDefaultType))
 }
 
-// cloneSkillDefaults returns a deep copy of the list, keeping nil entries as nil, or nil when the list is empty.
+// cloneSkillDefaults returns a deep, normalized copy of the list, keeping nil entries as nil, or nil when the list is
+// empty.
 func cloneSkillDefaults(list []*SkillDefault) []*SkillDefault {
 	if len(list) == 0 {
 		return nil
 	}
 	clone := make([]*SkillDefault, len(list))
 	for i, one := range list {
-		clone[i] = clonePtr(one)
+		clone[i] = cloneSkillDefault(one)
 	}
 	return clone
 }
 
-// cloneTechniqueDefault creates a copy of a technique's default, or nil when there is none. The criteria of a default
-// that isn't skill-based are neither shown nor consulted, so they are dropped rather than being written to disk and
-// hashed.
-func cloneTechniqueDefault(def *SkillDefault) *SkillDefault {
+// cloneSkillDefault creates a normalized copy of a default, or nil when there is none.
+func cloneSkillDefault(def *SkillDefault) *SkillDefault {
 	if def == nil {
 		return nil
 	}
 	clone := *def
-	if !DefaultTypeIsSkillBased(clone.DefaultType) {
-		clone.Name = criteria.Text{}
-		clone.Specialization = criteria.Text{}
-		clone.Tags = criteria.Text{}
-	}
+	clone.Normalize()
 	return &clone
+}
+
+// Normalize clears the data a default of this type makes no use of. The name, specialization and tags criteria of a
+// default that isn't skill-based are neither shown nor consulted, so they are dropped rather than being written to
+// disk, offered as nameable keys, or allowed to tell two otherwise equivalent defaults apart.
+func (s *SkillDefault) Normalize() {
+	if !s.SkillBased() {
+		s.Name = criteria.Text{}
+		s.Specialization = criteria.Text{}
+		s.Tags = criteria.Text{}
+	}
 }
 
 // CloneWithoutLevelOrPoints creates a copy, but without the level or points set.
@@ -137,7 +143,11 @@ func (s *SkillDefault) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 	if err := migrateStringToCriteriaText(localData.Name, &s.Name, dec.Options()); err != nil {
 		return err
 	}
-	return migrateStringToCriteriaText(localData.Specialization, &s.Specialization, dec.Options())
+	if err := migrateStringToCriteriaText(localData.Specialization, &s.Specialization, dec.Options()); err != nil {
+		return err
+	}
+	s.Normalize()
+	return nil
 }
 
 // Equivalent returns true if this can be considered equivalent to other.
@@ -447,8 +457,8 @@ func (s *SkillDefault) finalLevel(level fxp.Int) fxp.Int {
 
 // Hash writes this object's contents into the hasher. Note that this only hashes the data that is considered to be
 // "source" data, i.e. not expected to be modified by the user after copying from a library. The name, specialization
-// and tags criteria of a default that isn't skill-based are left out, since a clone drops them (see
-// cloneTechniqueDefault) and must hash the same as what it was copied from.
+// and tags criteria of a default that isn't skill-based are left out, since Normalize drops them and a default must
+// hash the same before and after.
 func (s *SkillDefault) Hash(h hash.Hash) {
 	xhash.StringWithLen(h, s.DefaultType)
 	xhash.Num64(h, s.Modifier)

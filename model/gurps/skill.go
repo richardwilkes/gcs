@@ -360,7 +360,7 @@ func (s *Skill) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 	s.SkillData = localData.SkillData
 	s.Replacements = nameable.Normalize(s.Replacements)
 	s.Defaults = slices.DeleteFunc(s.Defaults, func(one *SkillDefault) bool { return one == nil })
-	if s.TechniqueDefault != nil {
+	if s.TechniqueDefault != nil && s.TechniqueDefault.SkillBased() {
 		s.TechniqueDefault.Name.Compare = criteria.IsText
 	}
 	migrateLegacyText(&s.LocalNotes, localData.ExprNotes)
@@ -1474,7 +1474,7 @@ func (s *Skill) SyncWithSource() {
 		}
 		s.SkillNonContainerOnlySyncData = other.SkillNonContainerOnlySyncData
 		s.Defaults = cloneSkillDefaults(other.Defaults)
-		s.TechniqueDefault = cloneTechniqueDefault(other.TechniqueDefault)
+		s.TechniqueDefault = cloneSkillDefault(other.TechniqueDefault)
 		s.TechniqueLimitModifier = clonePtr(other.TechniqueLimitModifier)
 		s.Prereq = other.Prereq.CloneResolvingEmpty(false, true)
 		s.Weapons = CloneWeapons(other.Weapons, s, Reference)
@@ -1564,12 +1564,12 @@ func (s *SkillEditData) copyFrom(skill *Skill, other *SkillEditData, isContainer
 	s.Tags = slices.Clone(other.Tags)
 	s.Replacements = maps.Clone(other.Replacements)
 	s.TechLevel = clonePtr(other.TechLevel)
-	s.DefaultedFrom = clonePtr(other.DefaultedFrom)
+	s.DefaultedFrom = cloneSkillDefault(other.DefaultedFrom)
 	s.Defaults = nil
 	s.TechniqueDefault = nil
 	s.TechniqueLimitModifier = nil
 	if isTechnique {
-		s.TechniqueDefault = cloneTechniqueDefault(other.TechniqueDefault)
+		s.TechniqueDefault = cloneSkillDefault(other.TechniqueDefault)
 		s.TechniqueLimitModifier = clonePtr(other.TechniqueLimitModifier)
 	} else {
 		s.Defaults = cloneSkillDefaults(other.Defaults)

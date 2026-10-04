@@ -621,7 +621,7 @@ func TestCloneWithoutParentHashesTheSame(t *testing.T) {
 }
 
 // TestLoadedTechniqueCopiesHashTheSame verifies that a technique loaded from a file hashes the same as copies of it,
-// though a copy drops the name criteria that loading gives a default that isn't skill-based.
+// and that loading gives a name criteria only to a default that is skill-based, leaving a copy nothing to drop.
 func TestLoadedTechniqueCopiesHashTheSame(t *testing.T) {
 	c := check.New(t)
 	attrBased := NewTechnique(nil, nil, "Karate")
@@ -634,7 +634,8 @@ func TestLoadedTechniqueCopiesHashTheSame(t *testing.T) {
 	loaded, err := NewSkillsFromFile(os.DirFS(filepath.Dir(p)), filepath.Base(p))
 	c.NoError(err)
 	c.Equal(2, len(loaded))
-	c.False(loaded[0].TechniqueDefault.Name.IsZero(), "precondition: loading gives the attribute default name criteria")
+	c.True(loaded[0].TechniqueDefault.Name.IsZero(), "loading gives the attribute default no name criteria")
+	c.Equal(criteria.IsText, loaded[1].TechniqueDefault.Name.Compare, "loading gives the skill default its name criteria")
 
 	e := NewEntity()
 	for _, one := range loaded {

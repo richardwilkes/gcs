@@ -12,7 +12,6 @@ package ux
 import (
 	"slices"
 
-	"github.com/richardwilkes/gcs/v5/model/criteria"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/toolbox/v2/i18n"
@@ -103,13 +102,9 @@ func (p *defaultsPanel) insertDefaultsPanel(index int, def *gurps.SkillDefault) 
 		if item, ok := popup.Selected(); ok {
 			lastDefaultTypeUsed = item.Key
 			callback(popup)
-			if !def.SkillBased() {
-				// The criteria rows go with the type, and what they held would otherwise linger unseen: still written
-				// to disk and still hashed, though nothing consults it on an attribute default.
-				def.Name = criteria.Text{}
-				def.Specialization = criteria.Text{}
-				def.Tags = criteria.Text{}
-			}
+			// The criteria rows go with the type, and what they held would otherwise linger unseen: still written to
+			// disk, though nothing consults it on an attribute default.
+			def.Normalize()
 			rebuildDynamicRows()
 			MarkRootAncestorForLayoutRecursively(p)
 		}

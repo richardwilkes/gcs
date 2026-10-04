@@ -10,6 +10,8 @@
 package gurps
 
 import (
+	"os"
+	"path/filepath"
 	"slices"
 	"strings"
 	"testing"
@@ -985,8 +987,8 @@ func TestSkillDefaultRechosenWhenSyncedWithSource(t *testing.T) {
 }
 
 // TestCloneSkillDefaultHelpers verifies the shared deep-copy helpers: cloneSkillDefaults copies each default so the
-// clone can be edited without touching the source, carries nil entries over and turns an empty list into nil, and
-// cloneTechniqueDefault drops the criteria of a default that isn't skill-based while keeping those of one that is.
+// clone can be edited without touching the source, carries nil entries over and turns an empty list into nil, and both
+// it and cloneSkillDefault drop the criteria of a default that isn't skill-based while keeping those of one that is.
 func TestCloneSkillDefaultHelpers(t *testing.T) {
 	c := check.New(t)
 	c.Nil(cloneSkillDefaults(nil), "an absent list clones to nil")
@@ -1002,7 +1004,7 @@ func TestCloneSkillDefaultHelpers(t *testing.T) {
 	clone[0].Modifier = fxp.One
 	c.Equal(-fxp.Two, first.Modifier, "editing the clone leaves the source alone")
 
-	c.Nil(cloneTechniqueDefault(nil), "no technique default clones to nil")
+	c.Nil(cloneSkillDefault(nil), "no default clones to nil")
 	skillBased := &SkillDefault{
 		DefaultType:    SkillID,
 		Name:           textCriteria(criteria.IsText, "Karate"),
@@ -1010,19 +1012,166 @@ func TestCloneSkillDefaultHelpers(t *testing.T) {
 		Tags:           textCriteria(criteria.IsText, "Combat"),
 		Modifier:       -fxp.Three,
 	}
-	techClone := cloneTechniqueDefault(skillBased)
-	c.True(skillBased != techClone, "the clone is a distinct object")
-	c.Equal(*skillBased, *techClone, "a skill-based default keeps its criteria")
+	oneClone := cloneSkillDefault(skillBased)
+	c.True(skillBased != oneClone, "the clone is a distinct object")
+	c.Equal(*skillBased, *oneClone, "a skill-based default keeps its criteria")
 
 	attrBased := *skillBased
 	attrBased.DefaultType = DexterityID
-	techClone = cloneTechniqueDefault(&attrBased)
-	c.Equal(DexterityID, techClone.DefaultType, "the type is kept")
-	c.Equal(-fxp.Three, techClone.Modifier, "the modifier is kept")
-	c.True(techClone.Name.IsZero(), "the name criteria of an attribute default is dropped")
-	c.True(techClone.Specialization.IsZero(), "the specialization criteria of an attribute default is dropped")
-	c.True(techClone.Tags.IsZero(), "the tags criteria of an attribute default is dropped")
+	for i, attrClone := range []*SkillDefault{
+		cloneSkillDefault(&attrBased),
+		cloneSkillDefaults([]*SkillDefault{skillBased, &attrBased})[1],
+	} {
+		where := []string{"cloneSkillDefault: ", "cloneSkillDefaults: "}[i]
+		c.Equal(DexterityID, attrClone.DefaultType, where+"the type is kept")
+		c.Equal(-fxp.Three, attrClone.Modifier, where+"the modifier is kept")
+		c.True(attrClone.Name.IsZero(), where+"the name criteria of an attribute default is dropped")
+		c.True(attrClone.Specialization.IsZero(), where+"the specialization criteria of an attribute default is dropped")
+		c.True(attrClone.Tags.IsZero(), where+"the tags criteria of an attribute default is dropped")
+	}
 	c.False(attrBased.Name.IsZero(), "the source keeps its criteria")
+}
+
+// staleSkillDefault returns a default of the given type carrying a name, specialization and tags criteria, each with a
+// nameable key, as an attribute default would if it had been a skill default before the type was changed.
+func staleSkillDefault(defaultType string, modifier fxp.Int) *SkillDefault {
+	return &SkillDefault{
+		DefaultType:    defaultType,
+		Name:           textCriteria(criteria.IsText, "@Weapon@"),
+		Specialization: textCriteria(criteria.IsText, "@Kind@"),
+		Tags:           textCriteria(criteria.IsText, "@Tag@"),
+		Modifier:       modifier,
+	}
+}
+
+// TestSkillDefaultNormalize verifies that normalizing a default drops the criteria only when it isn't skill-based,
+// however the type is spelled, and leaves everything else alone.
+func TestSkillDefaultNormalize(t *testing.T) {
+	c := check.New(t)
+	for _, defaultType := range []string{SkillID, ParryID, BlockID, "Parry", " skill "} {
+		def := staleSkillDefault(defaultType, -fxp.Three)
+		want := *def
+		def.Normalize()
+		c.Equal(want, *def, defaultType+": a skill-based default is left as it is")
+	}
+	for _, defaultType := range []string{DexterityID, DodgeID, "10", " DX "} {
+		def := staleSkillDefault(defaultType, -fxp.Three)
+		def.WhenTL = criteria.Number{Compare: criteria.AtLeastNumber, Qualifier: fxp.Five}
+		before := Hash64(def)
+		def.Normalize()
+		c.True(def.Name.IsZero(), defaultType+": the name criteria is dropped")
+		c.True(def.Specialization.IsZero(), defaultType+": the specialization criteria is dropped")
+		c.True(def.Tags.IsZero(), defaultType+": the tags criteria is dropped")
+		c.Equal(defaultType, def.DefaultType, defaultType+": the type is kept as written")
+		c.Equal(-fxp.Three, def.Modifier, defaultType+": the modifier is kept")
+		c.Equal(criteria.AtLeastNumber, def.WhenTL.Compare, defaultType+": the tech level criteria is kept")
+		c.Equal(before, Hash64(def), defaultType+": the hash is the same before and after")
+	}
+}
+
+// TestSkillDefaultCriteriaDroppedWhenNotSkillBased verifies that the declared defaults of a skill and of a weapon carry
+// no skill criteria on a default that isn't skill-based, whether they were loaded from a file or copied. The hash that
+// judges a library match leaves those criteria out, so a default still holding them would match its source while
+// offering nameable keys the source doesn't have, for values nothing would ever use.
+func TestSkillDefaultCriteriaDroppedWhenNotSkillBased(t *testing.T) {
+	c := check.New(t)
+	newStale := func() *Skill {
+		sk := NewSkill(nil, nil, false)
+		sk.Name = "Stage Combat"
+		sk.Defaults = []*SkillDefault{staleSkillDefault(DexterityID, -fxp.Five), staleSkillDefault(SkillID, -fxp.Three)}
+		w := NewWeapon(sk, true)
+		w.Defaults = []*SkillDefault{staleSkillDefault(DexterityID, -fxp.Four), staleSkillDefault(ParryID, 0)}
+		sk.Weapons = []*Weapon{w}
+		return sk
+	}
+	verify := func(how string, sk *Skill) {
+		t.Helper()
+		c.Equal(2, len(sk.Defaults), how+": the skill's defaults are kept")
+		c.Equal(1, len(sk.Weapons), how+": the weapon is kept")
+		c.Equal(2, len(sk.Weapons[0].Defaults), how+": the weapon's defaults are kept")
+		for i, list := range [][]*SkillDefault{sk.Defaults, sk.Weapons[0].Defaults} {
+			where := how + []string{": skill: ", ": weapon: "}[i]
+			c.True(list[0].Name.IsZero(), where+"the attribute default has no name criteria")
+			c.True(list[0].Specialization.IsZero(), where+"the attribute default has no specialization criteria")
+			c.True(list[0].Tags.IsZero(), where+"the attribute default has no tags criteria")
+			c.Equal(*staleSkillDefault(list[1].DefaultType, list[1].Modifier), *list[1],
+				where+"the skill-based default keeps its criteria")
+			keys := make(map[string]string)
+			list[0].FillWithNameableKeys(keys, nil)
+			c.Equal(0, len(keys), where+"the attribute default offers no nameable keys")
+		}
+	}
+
+	// A file holding the leftovers loads without them, and so hashes the same as one that never had them.
+	stale := newStale()
+	clean := newStale()
+	clean.Defaults[0] = &SkillDefault{DefaultType: DexterityID, Modifier: -fxp.Five}
+	clean.Weapons[0].Defaults[0] = &SkillDefault{DefaultType: DexterityID, Modifier: -fxp.Four}
+	c.Equal(Hash64(clean), Hash64(stale), "precondition: the leftover criteria don't count toward the hash")
+	p := filepath.Join(t.TempDir(), "Skills"+SkillsExt)
+	c.NoError(SaveSkills([]*Skill{stale, clean}, p))
+	data, err := os.ReadFile(p)
+	c.NoError(err)
+	c.Equal(6, strings.Count(string(data), "@Weapon@"), "precondition: the file holds the leftover criteria")
+	loaded, err := NewSkillsFromFile(os.DirFS(filepath.Dir(p)), filepath.Base(p))
+	c.NoError(err)
+	c.Equal(2, len(loaded))
+	c.Equal(Hash64(loaded[1]), Hash64(loaded[0]), "the loaded skill hashes the same as one without the leftovers")
+	verify("load", loaded[0])
+
+	e := NewEntity()
+	clone := stale.Clone(LibraryFile{}, e, nil, Copy)
+	c.Equal(Hash64(stale), Hash64(clone), "a copy hashes the same as what it was copied from")
+	verify("copy", clone)
+
+	var edit SkillEditData
+	edited := newStale()
+	before := Hash64(edited)
+	edit.CopyFrom(edited)
+	edit.ApplyTo(edited)
+	c.Equal(before, Hash64(edited), "an edited skill hashes the same as it did")
+	verify("edit", edited)
+
+	source := newStale()
+	local := NewSkill(e, nil, false)
+	local.Name = "Changed"
+	e.Skills = append(e.Skills, local)
+	libFile := LibraryFile{Library: "Test Library", Path: "Test" + SkillsExt}
+	local.Source = Source{LibraryFile: libFile, TID: source.TID}
+	stubLibrarySources(t, e.SourceMatcher(), libFile, source)
+	local.SyncWithSource()
+	state, _ := MatchSource(local)
+	c.Equal(srcstate.Matched, state, "syncing makes the skill match its source")
+	verify("sync", local)
+}
+
+// TestRecordedDefaultSurvivesCriteriaBeingDropped verifies that a skill keeps the default the user chose for it when
+// that default isn't skill-based and both it and the declared default it was chosen from still carry skill criteria.
+// An edit drops those criteria from the declared defaults; were the recorded one to keep them, it would no longer be
+// recognized among the declared defaults and the skill would silently go back to its best default.
+func TestRecordedDefaultSurvivesCriteriaBeingDropped(t *testing.T) {
+	c := check.New(t)
+	e := NewEntity()
+	sk := addTestSkill(e, "Stage Combat", "", "", fxp.Two)
+	sk.Defaults = []*SkillDefault{staleSkillDefault(DexterityID, -fxp.Five), staleSkillDefault(StrengthID, -fxp.Six)}
+	e.Recalculate()
+	c.NotNil(sk.DefaultedFrom, "precondition: the skill resolves a default")
+	c.Equal(DexterityID, sk.DefaultedFrom.Type(), "precondition: the best default is chosen first")
+	sk.SwapToNextDefault()
+	c.Equal(StrengthID, sk.DefaultedFrom.Type(), "precondition: the user has swapped to the other default")
+	c.False(sk.DefaultedFrom.Name.IsZero(), "precondition: the recorded default carries the leftover criteria")
+
+	var edit SkillEditData
+	edit.CopyFrom(sk)
+	edit.Points = fxp.Four
+	edit.ApplyTo(sk)
+	c.True(sk.Defaults[1].Name.IsZero(), "precondition: the edit dropped the declared default's criteria")
+	e.Recalculate()
+	c.NotNil(sk.DefaultedFrom, "the skill must still resolve a default")
+	c.Equal(StrengthID, sk.DefaultedFrom.Type(), "the recorded choice is kept")
+	c.True(sk.DefaultedFrom.Name.IsZero(), "the recorded default's name criteria is dropped as well")
+	c.True(sk.DefaultedFrom.Specialization.IsZero(), "as is its specialization criteria")
+	c.True(sk.DefaultedFrom.Tags.IsZero(), "and its tags criteria")
 }
 
 // TestDefenseLevelFromSkill verifies the conversion of a skill level into a defense level: half the skill level,
