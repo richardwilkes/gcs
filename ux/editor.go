@@ -49,8 +49,8 @@ type editor[N gurps.Node[N], D gurps.EditorData[N]] struct {
 	modificationCallback func()
 	preApplyCallback     func(D)
 	scale                int
-	// syncedChoice is the choice picker the last pending "Sync with Source" left the target with, or nil if there has
-	// been none.
+	// syncedChoice is the choice picker a pending "Sync with Source" last changed the target's to, or nil if none has
+	// changed it.
 	syncedChoice *gurps.TemplatePicker
 	// sourceCleared is a pending "Clear Source", since the source isn't part of the editor's data.
 	sourceCleared bool
@@ -148,7 +148,9 @@ func (e *editor[N, D]) fillContent(content *unison.Panel, initContent func(*edit
 
 // rebuildContent refills the content panel after the editor's data has been replaced wholesale, which leaves the old
 // widgets bound to objects it no longer holds. The undo history is cleared, since its edits refer to those widgets and
-// objects. Not for the weapon editor, whose initContent keeps state across calls.
+// objects, and only once the new content has settled, since settling may record edits of its own, as the equipment
+// editor does when it clamps the uses left to a lower maximum. Not for the weapon editor, whose initContent keeps state
+// across calls.
 func (e *editor[N, D]) rebuildContent() {
 	e.content.RemoveAllChildren()
 	e.meleeWeapons = nil
@@ -160,9 +162,9 @@ func (e *editor[N, D]) rebuildContent() {
 			list.reattach()
 		}
 	}
-	e.undoMgr.Clear()
 	e.Rebuild(false)
 	e.content.ValidateScrollRoot()
+	e.undoMgr.Clear()
 }
 
 // editedClone returns a copy of the target with the editor's pending changes applied. It has no parent, so that nothing
@@ -376,8 +378,8 @@ func modifierChoicePicker[N gurps.Node[N]](node N) gurps.TemplatePicker {
 // applyModifierChoiceRulesAfterEdit applies the choice rules after an editor's data has been applied to the target. An
 // option keeps its current state unless the editor changed it, since another may have been picked since the editor
 // opened; a container, which wasChoice says was a choice before the edit, is settled only when the editor changed what
-// it asks for. When a pending sync with its source made that change (choiceSynced), no pick is made for it, as when
-// synced from its list; otherwise a choice the user made mandatory is given one.
+// it asks for. When what it now asks for is what a pending sync with its source changed it to (choiceSynced), no pick
+// is made for it, as when synced from its list; otherwise a choice the user made mandatory is given one.
 func applyModifierChoiceRulesAfterEdit[N gurps.Node[N]](target N, wasEnabled, changesEnabled, wasChoice, choiceChanged, choiceSynced bool) {
 	if wasChoice || gurps.IsModifierChoice(target) {
 		switch {

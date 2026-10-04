@@ -11,6 +11,7 @@ package ux
 
 import (
 	"path/filepath"
+	"reflect"
 	"slices"
 	"testing"
 
@@ -102,12 +103,29 @@ func TestEditorsShowNoSourceFields(t *testing.T) {
 	skill := gurps.NewSkill(entity, nil, false)
 	sourced(skill)
 	_, contents["skill"] = buildEditorContent(sheet, skill, initSkillEditor)
+	technique := gurps.NewTechnique(entity, nil, "Karate")
+	sourced(technique)
+	_, contents["technique"] = buildEditorContent(sheet, technique, initSkillEditor)
+	skillContainer := gurps.NewSkill(entity, nil, true)
+	sourced(skillContainer)
+	_, contents["skill container"] = buildEditorContent(sheet, skillContainer, initSkillEditor)
+	_, contents["skill choice"] = buildEditorContent(sheet, gurps.NewSkillChoiceContainer(entity, nil), initSkillEditor)
 	spell := gurps.NewSpell(entity, nil, false)
 	sourced(spell)
 	_, contents["spell"] = buildEditorContent(sheet, spell, initSpellEditor)
+	ritualMagicSpell := gurps.NewRitualMagicSpell(entity, nil, false)
+	sourced(ritualMagicSpell)
+	_, contents["ritual magic spell"] = buildEditorContent(sheet, ritualMagicSpell, initSpellEditor)
+	spellContainer := gurps.NewSpell(entity, nil, true)
+	sourced(spellContainer)
+	_, contents["spell container"] = buildEditorContent(sheet, spellContainer, initSpellEditor)
+	_, contents["spell choice"] = buildEditorContent(sheet, gurps.NewSpellChoiceContainer(entity, nil), initSpellEditor)
 	note := gurps.NewNote(entity, nil, false)
 	sourced(note)
 	_, contents["note"] = buildEditorContent(sheet, note, initNoteEditor)
+	noteContainer := gurps.NewNote(entity, nil, true)
+	sourced(noteContainer)
+	_, contents["note container"] = buildEditorContent(sheet, noteContainer, initNoteEditor)
 	eqp := gurps.NewEquipment(entity, nil, false)
 	sourced(eqp)
 	_, contents["equipment"] = buildEditorContent(sheet, eqp, initEquipmentEditor(true))
@@ -471,20 +489,6 @@ func TestEditorSyncThatMakesAModifierChoice(t *testing.T) {
 // options, and those of the choice around it, just as syncing it from its list does, whatever the sync makes of it: a
 // choice of a group, a group of a choice, or a mandatory choice of an optional one.
 func TestEditorSyncSettlesAChoiceAsItsListDoes(t *testing.T) {
-	// optionalWithoutPick has the inner choice optional, with nothing picked, and its library copy a mandatory choice.
-	optionalWithoutPick := func(t *testing.T, c check.Checker) (sheet *Sheet, outer, inner *gurps.TraitModifier) {
-		sheet, outer, inner = newChoiceWithinChoice(t, c, true)
-		inner.SetMandatoryChoice(false)
-		inner.Children[0].SetEnabled(false)
-		lib := gurps.NewTraitModifierChoice(nil, nil)
-		lib.SetMandatoryChoice(true)
-		lib.Name = inner.Name
-		lib.TID = inner.Source.TID
-		c.NoError(gurps.SaveTraitModifiers([]*gurps.TraitModifier{lib},
-			filepath.Join(gurps.GlobalSettings().Libraries.User().Path(), filepath.FromSlash(inner.Source.Path))))
-		sheet.Entity().Recalculate()
-		return sheet, outer, inner
-	}
 	for _, one := range []struct {
 		name  string
 		build func(t *testing.T, c check.Checker) (sheet *Sheet, outer, inner *gurps.TraitModifier)
@@ -501,7 +505,7 @@ func TestEditorSyncSettlesAChoiceAsItsListDoes(t *testing.T) {
 				return newChoiceWithinChoice(t, c, true)
 			},
 		},
-		{name: "optional to mandatory", build: optionalWithoutPick},
+		{name: "optional to mandatory", build: newOptionalChoiceWithinChoice},
 	} {
 		t.Run(one.name, func(t *testing.T) {
 			c := check.New(t)
@@ -530,9 +534,34 @@ func TestEditorSyncSettlesAChoiceAsItsListDoes(t *testing.T) {
 	}
 }
 
+// TestEditorSyncLeavesTheUsersOwnChoiceChangeToBeSettled verifies that a choice the user made mandatory in its editor is
+// given a pick when the changes are applied, even if a sync with its library copy, which is mandatory too, came in
+// between. The sync didn't make that change, so the pick isn't left for the user to make, as it is when the sync did.
+func TestEditorSyncLeavesTheUsersOwnChoiceChangeToBeSettled(t *testing.T) {
+	c := check.New(t)
+	sheet, _, inner := newOptionalChoiceWithinChoice(t, c)
+	inner.LocalNotes = "Old notes"
+	c.False(gurps.IsMandatoryModifierChoice(inner), "precondition: the choice is optional")
+	c.False(inner.Children[0].Enabled() || inner.Children[1].Enabled(), "precondition: with nothing picked")
+
+	e, _ := buildEditorContent(sheet, inner, initTraitModifierEditor)
+	e.editorData.SetMandatoryChoice(true)
+	requireSourceMenuAction(t, e.sourceMenuEntries(), "Sync with Source",
+		"the choice still differs from its library copy in its notes")()
+	c.Equal("", e.editorData.LocalNotes, "the sync brings the library's notes across")
+	c.Nil(e.syncedChoice, "and has no change to what the choice asks for to answer for")
+	e.applyEdits()
+	c.True(gurps.IsMandatoryModifierChoice(inner), "the choice is mandatory now")
+	c.True(gurps.ModifierChoiceIsResolved(inner), "and, since the user made it so, is given a pick")
+	c.True(inner.Children[0].Enabled() != inner.Children[1].Enabled())
+	state, _ := gurps.MatchSource(inner)
+	c.Equal(srcstate.Matched, state)
+}
+
 // TestEditorSyncWithSourceForEquipment verifies that equipment of the same kind as its library copy can be synced from
 // its editor's menu, which rebuilds the content around the library's data with the modifiers the equipment has and
-// the weapons its library copy has, all pointed at the equipment.
+// the weapons its library copy has, all pointed at the equipment. The uses left are clamped to the library's lower
+// maximum as the new content settles, which leaves nothing in the editor's undo history.
 func TestEditorSyncWithSourceForEquipment(t *testing.T) {
 	c := check.New(t)
 	_, user := useTestLibraries(t, c)
@@ -540,6 +569,7 @@ func TestEditorSyncWithSourceForEquipment(t *testing.T) {
 	lib := gurps.NewEquipment(nil, nil, false)
 	lib.Name = "Rope"
 	lib.BaseValue = "5"
+	lib.MaxUses = 2
 	lib.Weapons = []*gurps.Weapon{gurps.NewWeapon(lib, true)}
 	libFile := gurps.LibraryFile{Library: user.Key(), Path: "Equipment/Test" + gurps.EquipmentExt}
 	c.NoError(gurps.SaveEquipment([]*gurps.Equipment{lib}, filepath.Join(user.Path(), filepath.FromSlash(libFile.Path))))
@@ -548,6 +578,8 @@ func TestEditorSyncWithSourceForEquipment(t *testing.T) {
 	local := lib.Clone(libFile, entity, nil, gurps.Reference)
 	local.Name = "Cord"
 	local.BaseValue = "9"
+	local.MaxUses = 10
+	local.Uses = 8
 	local.Weapons = nil
 	modifier := gurps.NewEquipmentModifier(entity, nil, false)
 	modifier.Name = "Fine"
@@ -559,6 +591,7 @@ func TestEditorSyncWithSourceForEquipment(t *testing.T) {
 	e, content := buildEditorContent(sheet, local, initEquipmentEditor(true))
 	e.editorData.Quantity = fxp.Three
 	oldChildren := slices.Clone(content.Children())
+	oldMelee := e.meleeWeapons
 	entries := e.sourceMenuEntries()
 	c.True(slices.Contains(sourceMenuSummary(entries), "# "+srcstate.Mismatched.String()))
 	requireSourceMenuAction(t, entries, "Sync with Source",
@@ -567,6 +600,10 @@ func TestEditorSyncWithSourceForEquipment(t *testing.T) {
 	c.Equal("Rope", e.editorData.Name, "synced fields come from the library")
 	c.Equal("5", e.editorData.BaseValue)
 	c.Equal(fxp.Three, e.editorData.Quantity, "pending changes to fields a sync leaves alone are kept")
+	c.Equal(2, e.editorData.MaxUses)
+	c.Equal(2, e.editorData.Uses, "the uses left, which a sync leaves alone, are clamped to the library's maximum")
+	c.False(e.UndoManager().CanUndo() || e.UndoManager().CanRedo(),
+		"the clamp, made as the new content settles, isn't left in the editor's undo history")
 	c.Equal(1, len(e.editorData.Modifiers), "the modifiers aren't synced")
 	c.Equal("Fine", e.editorData.Modifiers[0].Name)
 	c.True(e.editorData.Modifiers[0].Target() == local, "the modifiers stay pointed at the equipment")
@@ -576,7 +613,7 @@ func TestEditorSyncWithSourceForEquipment(t *testing.T) {
 	for _, child := range oldChildren {
 		c.Nil(child.Parent(), "the old content is thrown away")
 	}
-	c.True(e.meleeWeapons != nil, "the weapons panel is rebuilt")
+	c.True(e.meleeWeapons != nil && e.meleeWeapons != oldMelee, "the weapons panel is rebuilt")
 	c.Equal(1, len(e.meleeWeapons.Weapons(true, false, false)), "and shows the library's weapon")
 	entries = e.sourceMenuEntries()
 	c.True(slices.Contains(sourceMenuSummary(entries), "# "+srcstate.Matched.String()),
@@ -718,10 +755,35 @@ func TestContentFocusIsFoundAgain(t *testing.T) {
 	c.True(target == box.AsPanel(), "a control of another kind may stand in for the field whose label it now has")
 	c.False(same, "but isn't taken for it")
 
+	// A panel that isn't among its parent's children, as the cell a table hands the focus to isn't, has an index of -1.
+	stray := &contentFocus{path: []focusStep{{kind: reflect.TypeOf(valueField), label: "Value", index: -1}}}
+	target, same = stray.find(content)
+	c.True(target == box.AsPanel(), "a place that was never among its parent's children leads to the nearest control")
+	c.False(same)
+	stray.path[0].label = ""
+	c.Nil(stray.path[0].childOf(content), "and to no child of its parent")
+
 	box.RemoveFromParent()
 	target, same = onValue.find(content)
 	c.Nil(target, "nothing is found in content that has nothing to take the focus")
 	c.False(same)
+}
+
+// newOptionalChoiceWithinChoice is newChoiceWithinChoice with the inner choice optional, with nothing picked, and its
+// library copy a mandatory choice.
+func newOptionalChoiceWithinChoice(t *testing.T, c check.Checker) (sheet *Sheet, outer, inner *gurps.TraitModifier) {
+	t.Helper()
+	sheet, outer, inner = newChoiceWithinChoice(t, c, true)
+	inner.SetMandatoryChoice(false)
+	inner.Children[0].SetEnabled(false)
+	lib := gurps.NewTraitModifierChoice(nil, nil)
+	lib.SetMandatoryChoice(true)
+	lib.Name = inner.Name
+	lib.TID = inner.Source.TID
+	c.NoError(gurps.SaveTraitModifiers([]*gurps.TraitModifier{lib},
+		filepath.Join(gurps.GlobalSettings().Libraries.User().Path(), filepath.FromSlash(inner.Source.Path))))
+	sheet.Entity().Recalculate()
+	return sheet, outer, inner
 }
 
 // newChoiceWithinChoice returns a sheet with a trait whose modifiers are a mandatory choice holding option A and a

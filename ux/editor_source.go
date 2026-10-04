@@ -18,6 +18,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/srcstate"
 	"github.com/richardwilkes/gcs/v5/svg"
+	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/toolbox/v2/xreflect"
 	"github.com/richardwilkes/unison"
@@ -93,34 +94,50 @@ func syncChangesKind(target, source any) bool {
 // fields a sync doesn't cover, and rebuilds the content, which clears the editor's undo history. Editors open on the
 // data's modifiers and weapons are closed first, since the sync replaces what they edit.
 func (e *editor[N, D]) syncWithSource() {
-	// Noted before the sub-editors are closed, since closing one gives the focus to the list it was opened from.
+	// Noted before the sub-editors are closed, since closing one gives the focus to the list it was opened from and
+	// scrolls the editor to that list.
 	focus := e.noteFocus()
-	if CloseGroup(e) {
+	closed := CloseGroup(e)
+	if focus.gone() {
+		// The focus was within a sub-editor that is now closed, so it stays where closing that one left it if that is
+		// within the content, as the list it was opened from is, and goes to the content otherwise.
+		if focus = e.noteFocus(); focus == nil || len(focus.path) == 0 {
+			e.content.RequestFocus()
+			focus = e.noteFocus()
+		}
+	}
+	if closed {
 		// Released before the sync, so that what a field does on losing the focus is done while it is still part of the
 		// editor and before the data is replaced.
 		e.releaseContentFocus()
 		edited := e.editedClone()
 		if state, data := gurps.MatchSource(edited); state == srcstate.Mismatched && !syncChangesKind(edited, data) {
+			before := modifierChoicePicker(edited)
 			edited.SyncWithSource()
 			e.editorData.CopyFrom(edited)
-			choice := modifierChoicePicker(edited)
-			e.syncedChoice = &choice
+			if choice := modifierChoicePicker(edited); choice != before {
+				e.syncedChoice = &choice
+			}
 			e.rebuildContent()
 		}
 	}
 	focus.restore(e.content, e.scroll)
 }
 
-// contentFocus records where the keyboard focus was, so that it can be put back once the editor's content has been
-// rebuilt, in which a control may have moved among its siblings, or gone.
+// contentFocus records where the keyboard focus was and how the editor was scrolled, so that both can be put back once
+// the editor's sub-editors have been closed and its content rebuilt, in which a control may have moved among its
+// siblings, or gone.
 type contentFocus struct {
 	panel *unison.Panel
 	// path leads from the content down to panel, and is empty for a panel outside the content.
-	path     []focusStep
-	text     string
-	selStart int
-	selEnd   int
-	isField  bool
+	path []focusStep
+	// field is the text and selection of a panel that is a field, including which end of the selection stays put as
+	// it is extended, and nil for any other panel.
+	field *unison.FieldState
+	// origin is where the top left corner of a panel within the content was, in the content's coordinates.
+	origin geom.Point
+	// h and v are the editor's scroll position.
+	h, v float32
 }
 
 // focusStep is one step of a contentFocus path: a child of the panel the step before it led to, or of the content for
@@ -133,24 +150,23 @@ type focusStep struct {
 	index int
 }
 
-// selectableText is what a field offers that restoring the focus to it needs.
-type selectableText interface {
+// statefulField is what a field offers that restoring the focus to it needs.
+type statefulField interface {
 	Text() string
-	Selection() (start, end int)
-	SetSelection(start, end int)
+	GetFieldState() *unison.FieldState
+	ApplyFieldState(state *unison.FieldState)
 }
 
-// noteFocus returns a record of where the keyboard focus is, or nil if nothing holds it.
+// noteFocus returns a record of where the keyboard focus is and how the editor is scrolled, or nil if nothing holds
+// the focus.
 func (e *editor[N, D]) noteFocus() *contentFocus {
 	focus := e.Window().CurrentFocus()
-	switch {
-	case focus == nil:
+	if focus == nil {
 		return nil
-	case unison.AncestorIsOrSelf(focus, e.content):
-		return newContentFocus(e.content, focus)
-	default:
-		return &contentFocus{panel: focus}
 	}
+	cf := newContentFocus(e.content, focus)
+	cf.h, cf.v = e.scroll.Position()
+	return cf
 }
 
 func (e *editor[N, D]) releaseContentFocus() {
@@ -159,23 +175,40 @@ func (e *editor[N, D]) releaseContentFocus() {
 	}
 }
 
-// newContentFocus returns a record of where focus, a panel within content, is.
+// newContentFocus returns a record of where focus is, which may be within content or outside of it. The record has no
+// scroll position.
 func newContentFocus(content, focus *unison.Panel) *contentFocus {
 	cf := &contentFocus{panel: focus}
-	for p := focus; p != content; p = p.Parent() {
-		cf.path = append(cf.path, focusStep{
-			kind:  reflect.TypeOf(p.Self),
-			label: panelLabel(p),
-			index: p.Parent().IndexOfChild(p),
-		})
+	if field, ok := focus.Self.(statefulField); ok {
+		cf.field = field.GetFieldState()
 	}
-	slices.Reverse(cf.path)
-	if field, ok := focus.Self.(selectableText); ok {
-		cf.isField = true
-		cf.text = field.Text()
-		cf.selStart, cf.selEnd = field.Selection()
+	if unison.AncestorIsOrSelf(focus, content) {
+		for p := focus; p != content; p = p.Parent() {
+			cf.path = append(cf.path, focusStep{
+				kind:  reflect.TypeOf(p.Self),
+				label: panelLabel(p),
+				index: p.Parent().IndexOfChild(p),
+			})
+		}
+		slices.Reverse(cf.path)
+		cf.origin = originWithin(focus, content)
 	}
 	return cf
+}
+
+// originWithin returns where the top left corner of p is in the coordinates of ancestor. Unlike Panel.PointTo, it
+// doesn't go by way of the root, so the result is the same however ancestor has been scrolled, to the last bit.
+func originWithin(p, ancestor *unison.Panel) geom.Point {
+	var pt geom.Point
+	for ; p != ancestor; p = p.Parent() {
+		pt = pt.MulPt(p.Scale()).Add(p.FrameRect().Point)
+	}
+	return pt
+}
+
+// gone returns true if what held the focus is no longer in a window, as is so once the dockable it was in has closed.
+func (cf *contentFocus) gone() bool {
+	return cf != nil && cf.panel.Window() == nil
 }
 
 // panelLabel returns the text of the label that names the panel, or "" if it has none: the label the panel points at
@@ -204,7 +237,8 @@ func panelLabel(p *unison.Panel) string {
 // label. A child without a label can't be told from its like, so it isn't looked for elsewhere.
 func (s focusStep) childOf(parent *unison.Panel) *unison.Panel {
 	children := parent.Children()
-	if s.index < len(children) && s.leadsTo(children[s.index]) {
+	// A panel that isn't among its parent's children, as the cell a table hands the focus to isn't, has an index of -1.
+	if s.index >= 0 && s.index < len(children) && s.leadsTo(children[s.index]) {
 		return children[s.index]
 	}
 	if s.label == "" {
@@ -274,38 +308,41 @@ func nearestTakingFocus(panels []*unison.Panel, index int) *unison.Panel {
 	return nearest
 }
 
-// restore puts the focus back where it was, without scrolling if that was within content, which may have been rebuilt
-// since. A field gets its selection back only if its text is unchanged; otherwise it is left with all of its text
-// selected. If what held the focus is gone, the nearest panel that can take it (see find) gets it and is scrolled into
-// view. Does nothing if cf is nil.
+// restore puts the focus back where it was, along with the editor's scrolling, both of which closing a sub-editor may
+// have changed. If the focus was within content, which may have been rebuilt since, the editor is instead scrolled by
+// as much as what held the focus has moved, which leaves it where it was within the view. A field gets its selection
+// back only if its text is unchanged; otherwise it is left with all of its text selected. If what held the focus is
+// gone, the nearest panel that can take it (see find) gets it and is scrolled into view. Does nothing if cf is nil.
 func (cf *contentFocus) restore(content *unison.Panel, scroll *unison.ScrollPanel) {
 	if cf == nil {
 		return
 	}
 	target := cf.panel
 	same := true
-	if !unison.AncestorIsOrSelf(target, content) {
-		if len(cf.path) == 0 {
-			target.RequestFocus()
-			return
+	if len(cf.path) != 0 && !unison.AncestorIsOrSelf(target, content) {
+		target, same = cf.find(content)
+	}
+	if target != nil {
+		target.RequestFocus()
+	}
+	h, v := cf.h, cf.v
+	if same {
+		if field, ok := target.Self.(statefulField); ok && cf.field != nil && field.Text() == cf.field.Text {
+			field.ApplyFieldState(cf.field)
 		}
-		if target, same = cf.find(content); target == nil {
-			return
+		if len(cf.path) != 0 {
+			moved := originWithin(target, content).Sub(cf.origin).MulPt(content.Scale())
+			h += moved.X
+			v += moved.Y
 		}
 	}
-	h, v := scroll.Position()
-	target.RequestFocus()
-	if !same {
+	scroll.SetPosition(h, v)
+	if !same && target != nil {
 		// Not every panel brings itself into view on taking the focus.
 		if focus := content.Window().CurrentFocus(); focus != nil {
 			focus.ScrollIntoView()
 		}
-		return
 	}
-	if field, ok := target.Self.(selectableText); ok && cf.isField && field.Text() == cf.text {
-		field.SetSelection(cf.selStart, cf.selEnd)
-	}
-	scroll.SetPosition(h, v)
 }
 
 func (e *editor[N, D]) clearSource() {
