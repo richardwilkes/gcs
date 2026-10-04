@@ -15,7 +15,6 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/srcstate"
 	"github.com/richardwilkes/gcs/v5/model/nameable"
 	"github.com/richardwilkes/toolbox/v2/check"
-	"github.com/richardwilkes/toolbox/v2/tid"
 )
 
 func TestMergeReplacements(t *testing.T) {
@@ -138,16 +137,11 @@ func TestModifierHashDistinguishesContainers(t *testing.T) {
 }
 
 // TestModifierSyncWithSource verifies that a modifier which has drifted from its library source pulls the synced
-// fields back across, that one without a data owner is left alone, and that containers do not pick up leaf-only data.
+// fields back across, whether or not it has a data owner, and that containers do not pick up leaf-only data.
 func TestModifierSyncWithSource(t *testing.T) {
 	c := check.New(t)
 	e := NewEntity()
 	libFile := LibraryFile{Library: "Test Library", Path: "Test" + TraitModifiersExt}
-	install := func(source SrcProvider, id tid.TID) {
-		e.SourceMatcher().libHashes = map[LibraryFile]libSrcData{
-			libFile: {dataHashes: map[tid.TID]HashAndData{id: {Hash: Hash64(source), Data: source}}},
-		}
-	}
 
 	// A leaf trait modifier whose local copy has drifted in name and cost.
 	source := NewTraitModifier(nil, nil, false)
@@ -158,7 +152,7 @@ func TestModifierSyncWithSource(t *testing.T) {
 	local.Name = "Reduced Time (old)"
 	local.CostAdj = "+10%"
 	local.Source = Source{LibraryFile: libFile, TID: source.TID}
-	install(source, source.TID)
+	stubLibrarySources(t, e.SourceMatcher(), libFile, source)
 	state, _ := e.SourceMatcher().Match(local)
 	c.Equal(srcstate.Mismatched, state, "precondition: the local copy differs from its source")
 	local.SyncWithSource()
@@ -170,12 +164,17 @@ func TestModifierSyncWithSource(t *testing.T) {
 	state, _ = e.SourceMatcher().Match(local)
 	c.Equal(srcstate.Matched, state, "after syncing, the local copy matches its source")
 
-	// Without a data owner there is nothing to look the source up in, so nothing changes.
+	// Without a data owner, the source is looked up in the shared matcher.
+	isolateUnownedSrcMatcher(t)
 	orphan := NewTraitModifier(nil, nil, false)
 	orphan.Name = "Reduced Time (old)"
 	orphan.Source = Source{LibraryFile: libFile, TID: source.TID}
 	orphan.SyncWithSource()
-	c.Equal("Reduced Time (old)", orphan.Name)
+	c.Equal("Reduced Time (old)", orphan.Name,
+		"what the entity's matcher holds is no use to a modifier without a data owner")
+	stubLibrarySources(t, &unownedSrcMatcher, libFile, source)
+	orphan.SyncWithSource()
+	c.Equal("Reduced Time", orphan.Name, "a modifier without a data owner is synced with what the shared matcher holds")
 
 	// A container only picks up the common data.
 	sourceContainer := NewEquipmentModifier(nil, nil, true)
@@ -184,7 +183,7 @@ func TestModifierSyncWithSource(t *testing.T) {
 	localContainer := NewEquipmentModifier(e, nil, true)
 	localContainer.Name = "Options (old)"
 	localContainer.Source = Source{LibraryFile: libFile, TID: sourceContainer.TID}
-	install(sourceContainer, sourceContainer.TID)
+	stubLibrarySources(t, e.SourceMatcher(), libFile, sourceContainer)
 	state, _ = e.SourceMatcher().Match(localContainer)
 	c.Equal(srcstate.Mismatched, state, "precondition: the local container differs from its source")
 	localContainer.SyncWithSource()

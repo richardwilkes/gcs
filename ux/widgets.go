@@ -148,31 +148,6 @@ func rebuildAsModified(owner Rebuildable, full bool) {
 	owner.Rebuild(full)
 }
 
-func addSourceFields(parent *unison.Panel, source *gurps.SourcedID) {
-	addIDField(parent, source)
-	parent.AddChild(NewFieldLeadingLabel(i18n.Text("Source ID"), false))
-	parent.AddChild(NewNonEditableField(func(f *NonEditableField) {
-		f.SetTitle(string(source.Source.TID))
-	}))
-	parent.AddChild(NewFieldLeadingLabel(i18n.Text("Source Library"), false))
-	parent.AddChild(NewNonEditableField(func(f *NonEditableField) {
-		f.SetTitle(source.Source.Library)
-	}))
-	parent.AddChild(NewFieldLeadingLabel(i18n.Text("Source Path"), false))
-	parent.AddChild(NewNonEditableField(func(f *NonEditableField) {
-		f.SetTitle(source.Source.Path)
-	}))
-}
-
-// addIDField adds the node's own ID, without the fields describing its source. A template choice container shows only
-// this, since it can only exist in a template and a template is never a source.
-func addIDField(parent *unison.Panel, source *gurps.SourcedID) {
-	parent.AddChild(NewFieldLeadingLabel(i18n.Text("ID"), false))
-	parent.AddChild(NewNonEditableField(func(f *NonEditableField) {
-		f.SetTitle(string(source.TID))
-	}))
-}
-
 func addNameLabelAndField(parent *unison.Panel, fieldData *string) {
 	addLabelAndStringField(parent, i18n.Text("Name"), "", fieldData)
 }
@@ -865,10 +840,12 @@ func newApplyCancelButtons(toolbar *unison.Panel, showKeys bool, apply func() bo
 }
 
 // menuEntry is one item of a menu that showMenu builds. One with no action is a heading, shown disabled after a
-// separator unless it comes first; with no label as well, it is just the separator.
+// separator unless it comes first; with no label as well, it is just the separator. Disabled grays out one with an
+// action.
 type menuEntry struct {
-	Label string
-	Act   func()
+	Label    string
+	Act      func()
+	Disabled bool
 }
 
 // showMenu pops up a menu of the entries below the anchor.
@@ -886,7 +863,12 @@ func newEntriesMenu(entries []menuEntry) unison.Menu {
 	for i, entry := range entries {
 		id := unison.PopupMenuTemporaryBaseID + i + 1
 		if entry.Act != nil {
-			m.InsertItem(-1, f.NewItem(id, entry.Label, unison.KeyBinding{}, nil, func(unison.MenuItem) { entry.Act() }))
+			var validator func(unison.MenuItem) bool
+			if entry.Disabled {
+				validator = func(unison.MenuItem) bool { return false }
+			}
+			m.InsertItem(-1, f.NewItem(id, entry.Label, unison.KeyBinding{}, validator,
+				func(unison.MenuItem) { entry.Act() }))
 			continue
 		}
 		if i != 0 {

@@ -17,7 +17,7 @@ import (
 
 // initModifierContainerEditor fills in the editor for a modifier group or choice, which has only what describes the
 // container and, for a choice, what it asks for; a modifier's other fields mean nothing to a container.
-func initModifierContainerEditor(content *unison.Panel, data *gurps.NodeSyncData, container *gurps.ModifierContainerSyncData, source *gurps.SourcedID) {
+func initModifierContainerEditor(content *unison.Panel, data *gurps.NodeSyncData, container *gurps.ModifierContainerSyncData) {
 	addNameLabelAndField(content, &data.Name)
 	addLabelAndMultiLineStringField(content, i18n.Text("Notes"), "", &data.LocalNotes)
 	if container.IsChoice() {
@@ -26,7 +26,6 @@ func initModifierContainerEditor(content *unison.Panel, data *gurps.NodeSyncData
 	addTagsLabelAndField(content, &data.Tags)
 	addPageRefLabelAndField(content, &data.PageRef)
 	addPageRefHighlightLabelAndField(content, &data.PageRefHighlight)
-	addSourceFields(content, source)
 }
 
 // addModifierChoiceField adds the popup that says whether a modifier choice is mandatory or optional. Making it a group

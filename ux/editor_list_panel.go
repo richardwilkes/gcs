@@ -61,6 +61,14 @@ func (p *editorListPanel[T]) setList(list []T) {
 	syncTablePreservingSelection(p.table)
 }
 
+// reattach points the list's nodes back at what they belong to, since copying the editor's data from another node
+// leaves them pointed at that node.
+func (p *editorListPanel[T]) reattach() {
+	if p.attach != nil {
+		p.attach(*p.list)
+	}
+}
+
 // installNewItemHandler makes the command create a new item of the given variant in this panel's table. The handler is
 // installed on cmdRoot, the editor holding the panel, which the creation is also undone and rebuilt through.
 func (p *editorListPanel[T]) installNewItemHandler(cmdRoot Rebuildable, id int, variant ItemVariant) {

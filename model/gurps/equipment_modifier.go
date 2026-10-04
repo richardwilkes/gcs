@@ -689,7 +689,7 @@ func (e *EquipmentModifier) SyncWithSource() {
 		e.Tags = slices.Clone(other.Tags)
 		if e.Container() {
 			e.ModifierContainerSyncData = other.ModifierContainerSyncData
-			settleModifierChoicesAround(e)
+			SettleModifierChoicesAround(e)
 		} else {
 			e.EquipmentModifierNonContainerSyncData = other.EquipmentModifierNonContainerSyncData
 			e.Features = other.Features.Clone()

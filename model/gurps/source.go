@@ -12,14 +12,17 @@ package gurps
 import (
 	"encoding/json/jsontext"
 	"encoding/json/v2"
+	"maps"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 	"time"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/srcstate"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/toolbox/v2/tid"
+	"github.com/richardwilkes/toolbox/v2/xreflect"
 )
 
 // LibraryFile holds the library and path to a file.
@@ -41,7 +44,10 @@ type Source struct {
 }
 
 type libSrcData struct {
+	// path, timestamp and size identify the version of the file the hashes were loaded from.
+	path       string
 	timestamp  time.Time
+	size       int64
 	dataHashes map[tid.TID]HashAndData
 }
 
@@ -99,95 +105,111 @@ func (l LibraryFile) String() string {
 	return i18n.Text("Library: ") + l.Library + "\n" + i18n.Text("Path: ") + l.Path
 }
 
-// PrepareHashes loads, or reloads if modified, the hashes of the library files the provider's nodes are sourced from.
+// PrepareHashes loads, or reloads if modified, the hashes of the library files the provider's nodes are sourced from. A
+// nil matcher does nothing.
 func (sm *SrcMatcher) PrepareHashes(provider ListProvider) {
+	if sm == nil {
+		return
+	}
 	neededLibs := make(map[LibraryFile]struct{})
 	forEachSourcedNode(provider, func(node sourcedNode) { node.GetSource().collectInto(neededLibs) })
-	libs := GlobalSettings().Libraries
-	if sm.libHashes == nil {
-		sm.libHashes = make(map[LibraryFile]libSrcData)
-	}
 	for libFile := range neededLibs {
-		lib := libs.Lookup(libFile.Library)
-		if lib == nil {
-			continue
-		}
-		p := filepath.Join(lib.Path(), filepath.FromSlash(libFile.Path))
-		stat, err := os.Stat(p)
-		if err != nil {
-			delete(sm.libHashes, libFile)
-			continue
-		}
-		modTime := stat.ModTime()
-		if data, exists := sm.libHashes[libFile]; exists {
-			if modTime.Equal(data.timestamp) {
-				continue // We've already loaded this exact version of the file.
-			}
-			delete(sm.libHashes, libFile)
-		}
-		var srcData libSrcData
-		srcData.timestamp = modTime
-		srcData.dataHashes = make(map[tid.TID]HashAndData)
-		dir := os.DirFS(filepath.Dir(p))
-		file := filepath.Base(p)
-		fi := FileInfoFor(p)
-		if fi == nil || len(fi.UTI.Extensions) == 0 {
-			continue
-		}
-		switch fi.UTI.Extensions[0] {
-		case TraitsExt:
-			var data []*Trait
-			if data, err = NewTraitsFromFile(dir, file); err == nil {
-				NodesToHashesByID(srcData.dataHashes, data...)
-				Traverse(func(t *Trait) bool {
-					NodesToHashesByID(srcData.dataHashes, t.Modifiers...)
-					return false
-				}, false, false, data...)
-			}
-		case TraitModifiersExt:
-			var data []*TraitModifier
-			if data, err = NewTraitModifiersFromFile(dir, file); err == nil {
-				NodesToHashesByID(srcData.dataHashes, data...)
-			}
-		case SkillsExt:
-			var data []*Skill
-			if data, err = NewSkillsFromFile(dir, file); err == nil {
-				NodesToHashesByID(srcData.dataHashes, data...)
-			}
-		case SpellsExt:
-			var data []*Spell
-			if data, err = NewSpellsFromFile(dir, file); err == nil {
-				NodesToHashesByID(srcData.dataHashes, data...)
-			}
-		case EquipmentExt:
-			var data []*Equipment
-			if data, err = NewEquipmentFromFile(dir, file); err == nil {
-				NodesToHashesByID(srcData.dataHashes, data...)
-				Traverse(func(e *Equipment) bool {
-					NodesToHashesByID(srcData.dataHashes, e.Modifiers...)
-					return false
-				}, false, false, data...)
-			}
-		case EquipmentModifiersExt:
-			var data []*EquipmentModifier
-			if data, err = NewEquipmentModifiersFromFile(dir, file); err == nil {
-				NodesToHashesByID(srcData.dataHashes, data...)
-			}
-		case NotesExt:
-			var data []*Note
-			if data, err = NewNotesFromFile(dir, file); err == nil {
-				NodesToHashesByID(srcData.dataHashes, data...)
-			}
-		}
-		sm.libHashes[libFile] = srcData
+		sm.prepareHashesFor(libFile)
 	}
 }
 
-// Match returns the source state of the given data.
+// prepareHashesFor loads the hashes of the library file, reloads them if the file was modified or its library moved,
+// and drops them if the file or its library is gone.
+func (sm *SrcMatcher) prepareHashesFor(libFile LibraryFile) {
+	lib := GlobalSettings().Libraries.Lookup(libFile.Library)
+	if lib == nil {
+		delete(sm.libHashes, libFile)
+		return
+	}
+	if sm.libHashes == nil {
+		sm.libHashes = make(map[LibraryFile]libSrcData)
+	}
+	p := filepath.Join(lib.Path(), filepath.FromSlash(libFile.Path))
+	stat, err := os.Stat(p)
+	if err != nil {
+		delete(sm.libHashes, libFile)
+		return
+	}
+	srcData := libSrcData{
+		path:       p,
+		timestamp:  stat.ModTime(),
+		size:       stat.Size(),
+		dataHashes: make(map[tid.TID]HashAndData),
+	}
+	if data, exists := sm.libHashes[libFile]; exists {
+		if data.path == p && data.timestamp.Equal(srcData.timestamp) && data.size == srcData.size {
+			return // We've already loaded this exact version of the file.
+		}
+		delete(sm.libHashes, libFile)
+	}
+	dir := os.DirFS(filepath.Dir(p))
+	file := filepath.Base(p)
+	fi := FileInfoFor(p)
+	if fi == nil || len(fi.UTI.Extensions) == 0 {
+		return
+	}
+	switch fi.UTI.Extensions[0] {
+	case TraitsExt:
+		var data []*Trait
+		if data, err = NewTraitsFromFile(dir, file); err == nil {
+			NodesToHashesByID(srcData.dataHashes, data...)
+			Traverse(func(t *Trait) bool {
+				NodesToHashesByID(srcData.dataHashes, t.Modifiers...)
+				return false
+			}, false, false, data...)
+		}
+	case TraitModifiersExt:
+		var data []*TraitModifier
+		if data, err = NewTraitModifiersFromFile(dir, file); err == nil {
+			NodesToHashesByID(srcData.dataHashes, data...)
+		}
+	case SkillsExt:
+		var data []*Skill
+		if data, err = NewSkillsFromFile(dir, file); err == nil {
+			NodesToHashesByID(srcData.dataHashes, data...)
+		}
+	case SpellsExt:
+		var data []*Spell
+		if data, err = NewSpellsFromFile(dir, file); err == nil {
+			NodesToHashesByID(srcData.dataHashes, data...)
+		}
+	case EquipmentExt:
+		var data []*Equipment
+		if data, err = NewEquipmentFromFile(dir, file); err == nil {
+			NodesToHashesByID(srcData.dataHashes, data...)
+			Traverse(func(e *Equipment) bool {
+				NodesToHashesByID(srcData.dataHashes, e.Modifiers...)
+				return false
+			}, false, false, data...)
+		}
+	case EquipmentModifiersExt:
+		var data []*EquipmentModifier
+		if data, err = NewEquipmentModifiersFromFile(dir, file); err == nil {
+			NodesToHashesByID(srcData.dataHashes, data...)
+		}
+	case NotesExt:
+		var data []*Note
+		if data, err = NewNotesFromFile(dir, file); err == nil {
+			NodesToHashesByID(srcData.dataHashes, data...)
+		}
+	}
+	sm.libHashes[libFile] = srcData
+}
+
+// Match returns the source state of the given data, along with the library's copy of it when one was found. A nil
+// matcher finds nothing.
 func (sm *SrcMatcher) Match(data SrcProvider) (state srcstate.Value, match any) {
 	src := data.GetSource()
 	if src.IsZero() {
 		return srcstate.Custom, nil
+	}
+	if sm == nil {
+		return srcstate.Missing, nil
 	}
 	if srcData, ok := sm.libHashes[src.LibraryFile]; ok {
 		var dataHash HashAndData
@@ -199,6 +221,49 @@ func (sm *SrcMatcher) Match(data SrcProvider) (state srcstate.Value, match any) 
 		}
 	}
 	return srcstate.Missing, nil
+}
+
+// maxUnownedSrcFiles is the most library files unownedSrcMatcher holds on to.
+const maxUnownedSrcFiles = 8
+
+var (
+	// unownedSrcMatcher is the source matcher MatchSource uses for a node that has no data owner, or whose data owner
+	// has no matcher. It lasts as long as the app, and each library file it holds comes with every node parsed from it,
+	// so it holds on to only the files in unownedSrcFiles.
+	unownedSrcMatcher SrcMatcher
+	// unownedSrcFiles lists the library files unownedSrcMatcher was last used for, the latest last.
+	unownedSrcFiles []LibraryFile
+)
+
+// useUnownedSrcFile records the library file as the latest unownedSrcMatcher is used for, and drops the files beyond
+// maxUnownedSrcFiles.
+func useUnownedSrcFile(libFile LibraryFile) {
+	unownedSrcFiles = append(slices.DeleteFunc(unownedSrcFiles, func(one LibraryFile) bool { return one == libFile }),
+		libFile)
+	if excess := len(unownedSrcFiles) - maxUnownedSrcFiles; excess > 0 {
+		unownedSrcFiles = slices.Delete(unownedSrcFiles, 0, excess)
+	}
+	maps.DeleteFunc(unownedSrcMatcher.libHashes, func(one LibraryFile, _ libSrcData) bool {
+		return !slices.Contains(unownedSrcFiles, one)
+	})
+}
+
+// MatchSource returns the source state of the node, along with the library's copy of it when one was found. It uses the
+// source matcher of the node's data owner, or a shared one when there is none, first loading the node's library file,
+// or reloading it if modified, since the matcher may not have been prepared with it.
+func MatchSource[T Node[T]](node T) (state srcstate.Value, match any) {
+	var sm *SrcMatcher
+	if owner := node.DataOwner(); !xreflect.IsNil(owner) {
+		sm = owner.SourceMatcher()
+	}
+	if src := node.GetSource(); !src.IsZero() {
+		if sm == nil {
+			useUnownedSrcFile(src.LibraryFile)
+			sm = &unownedSrcMatcher
+		}
+		sm.prepareHashesFor(src.LibraryFile)
+	}
+	return sm.Match(node)
 }
 
 // GetSource returns the source of this data.

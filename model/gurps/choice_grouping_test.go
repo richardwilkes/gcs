@@ -22,7 +22,6 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/srcstate"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/toolbox/v2/check"
-	"github.com/richardwilkes/toolbox/v2/tid"
 )
 
 // newTraitGroup returns a trait group holding the children, picked from separately when separately is true.
@@ -73,9 +72,7 @@ func TestPickSeparatelyPersistence(t *testing.T) {
 	e := NewEntity()
 	libFile := LibraryFile{Library: "Test Library", Path: "Test" + TraitsExt}
 	source := newTraitGroup("Source", false)
-	e.SourceMatcher().libHashes = map[LibraryFile]libSrcData{
-		libFile: {dataHashes: map[tid.TID]HashAndData{source.TID: {Hash: Hash64(source), Data: source}}},
-	}
+	stubLibrarySources(t, e.SourceMatcher(), libFile, source)
 	local := newTraitGroup("Local", true)
 	local.SetDataOwner(e)
 	local.Source = Source{LibraryFile: libFile, TID: source.TID}

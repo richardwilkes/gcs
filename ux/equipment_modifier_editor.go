@@ -30,7 +30,7 @@ func EditEquipmentModifier(owner Rebuildable, modifier *gurps.EquipmentModifier)
 func initEquipmentModifierEditor(e *editor[*gurps.EquipmentModifier, *gurps.EquipmentModifierEditData], content *unison.Panel) func() {
 	if e.target.Container() {
 		initModifierContainerEditor(content, &e.editorData.EquipmentModifierSyncData,
-			&e.editorData.ModifierContainerSyncData, &e.target.SourcedID)
+			&e.editorData.ModifierContainerSyncData)
 		return nil
 	}
 	addNameLabelAndField(content, &e.editorData.Name)
@@ -46,7 +46,6 @@ func initEquipmentModifierEditor(e *editor[*gurps.EquipmentModifier, *gurps.Equi
 	addTagsLabelAndField(content, &e.editorData.Tags)
 	addPageRefLabelAndField(content, &e.editorData.PageRef)
 	addPageRefHighlightLabelAndField(content, &e.editorData.PageRefHighlight)
-	addSourceFields(content, &e.target.SourcedID)
 	content.AddChild(newFeaturesPanel(gurps.EntityFromNode(e.target), e.target, &e.editorData.Features, true))
 	return nil
 }

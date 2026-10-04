@@ -10,11 +10,22 @@
 package gurps
 
 import (
+	"fmt"
+	"maps"
+	"os"
+	"path/filepath"
 	"strings"
 	"testing"
+	"time"
 
+	"github.com/richardwilkes/gcs/v5/model/criteria"
+	"github.com/richardwilkes/gcs/v5/model/fxp"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/srcstate"
 	"github.com/richardwilkes/gcs/v5/model/jio"
+	"github.com/richardwilkes/gcs/v5/model/library"
 	"github.com/richardwilkes/toolbox/v2/check"
+	"github.com/richardwilkes/toolbox/v2/tid"
+	"github.com/richardwilkes/toolbox/v2/uti"
 )
 
 // TestSourcePathSeparatorNormalization verifies that source paths are stored and round-tripped with forward slashes.
@@ -111,4 +122,415 @@ func TestForEachSourcedNodeVisitsEveryNodeOnce(t *testing.T) {
 	got = visits(loot)
 	c.Equal(3, len(got), "a loot sheet's equipment, its modifier and its note are visited and nothing else")
 	c.Equal(1, got[lootMod], "the loot equipment's modifier is visited once")
+}
+
+// unmatchedOwner is a data owner without a source matcher, as an equipment list file is.
+type unmatchedOwner struct{}
+
+func (unmatchedOwner) OwningEntity() *Entity      { return nil }
+func (unmatchedOwner) SourceMatcher() *SrcMatcher { return nil }
+func (unmatchedOwner) WeightUnit() fxp.WeightUnit { return fxp.Pound }
+
+// useTestLibrary returns the root of the library under the key in the global set, adding one rooted in a temporary
+// directory until the test ends if there is none.
+func useTestLibrary(t *testing.T, key string) string {
+	t.Helper()
+	libs := GlobalSettings().Libraries
+	if lib := libs.Lookup(key); lib != nil {
+		return lib.Path()
+	}
+	lib := library.NewLibrary(key, "", "", key, t.TempDir())
+	libs.Store(key, lib)
+	t.Cleanup(func() { libs.Remove(key) })
+	return lib.Path()
+}
+
+// stubLibrarySources makes the sources all that the matcher holds, as though loaded from the library file. The file is
+// created, empty (see useTestLibrary), since a matcher keeps what it holds only while the file is there and unchanged.
+func stubLibrarySources[T interface {
+	Hashable
+	ID() tid.TID
+}](t *testing.T, sm *SrcMatcher, libFile LibraryFile, sources ...T) {
+	t.Helper()
+	p := filepath.Join(useTestLibrary(t, libFile.Library), filepath.FromSlash(libFile.Path))
+	if err := os.MkdirAll(filepath.Dir(p), 0o750); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(p, nil, 0o640); err != nil {
+		t.Fatal(err)
+	}
+	stat, err := os.Stat(p)
+	if err != nil {
+		t.Fatal(err)
+	}
+	data := libSrcData{
+		path:       p,
+		timestamp:  stat.ModTime(),
+		size:       stat.Size(),
+		dataHashes: make(map[tid.TID]HashAndData, len(sources)),
+	}
+	for _, one := range sources {
+		data.dataHashes[one.ID()] = HashAndData{Hash: Hash64(one), Data: one}
+	}
+	sm.libHashes = map[LibraryFile]libSrcData{libFile: data}
+}
+
+// isolateUnownedSrcMatcher empties the shared matcher for the test, putting back what it held when the test ends.
+func isolateUnownedSrcMatcher(t *testing.T) {
+	t.Helper()
+	savedHashes, savedFiles := unownedSrcMatcher.libHashes, unownedSrcFiles
+	t.Cleanup(func() { unownedSrcMatcher.libHashes, unownedSrcFiles = savedHashes, savedFiles })
+	unownedSrcMatcher.libHashes, unownedSrcFiles = nil, nil
+}
+
+// registerTestFileTypes registers the extensions as file types until the test ends, standing in for the ux-layer
+// registration a matcher relies on to tell what a library file holds.
+func registerTestFileTypes(t *testing.T, extensions ...string) {
+	t.Helper()
+	savedRegistry := maps.Clone(fileTypeRegistry)
+	savedKnown := KnownFileTypes
+	t.Cleanup(func() {
+		fileTypeRegistry = savedRegistry
+		KnownFileTypes = savedKnown
+	})
+	for _, ext := range extensions {
+		(&FileInfo{Name: "Test " + ext, UTI: &uti.DataType{Extensions: []string{ext}}, IsGCSData: true}).Register()
+	}
+}
+
+// TestMatchWithoutSourceMatcher verifies that a nil source matcher finds nothing rather than crashing, and that
+// MatchSource uses the matcher of the node's data owner, or the shared one when the node has no data owner or its data
+// owner has no matcher.
+func TestMatchWithoutSourceMatcher(t *testing.T) {
+	c := check.New(t)
+	isolateUnownedSrcMatcher(t)
+	libFile := LibraryFile{Library: "Test Library", Path: "Test" + EquipmentExt}
+	var sm *SrcMatcher
+	source := NewEquipment(nil, nil, false)
+	source.Name = "Library"
+	custom := NewEquipment(nil, nil, false)
+	state, data := sm.Match(custom)
+	c.Equal(srcstate.Custom, state, "a node without a source is custom, matcher or not")
+	c.Nil(data)
+	sourced := NewEquipment(nil, nil, false)
+	sourced.Source = Source{LibraryFile: libFile, TID: source.TID}
+	state, data = sm.Match(sourced)
+	c.Equal(srcstate.Missing, state, "a nil matcher can't find the source")
+	c.Nil(data)
+
+	state, _ = MatchSource(sourced)
+	c.Equal(srcstate.Missing, state, "a source no library holds can't be found")
+	state, _ = MatchSource(custom)
+	c.Equal(srcstate.Custom, state)
+	sourced.Name = "Local"
+	sourced.SyncWithSource()
+	c.Equal("Local", sourced.Name, "syncing with nothing to match against must change nothing")
+
+	stubLibrarySources(t, &unownedSrcMatcher, libFile, source)
+	// A nil matcher must cope with a provider that has a library file to load.
+	provider := NewEntity()
+	provider.OtherEquipment = append(provider.OtherEquipment, sourced)
+	sm.PrepareHashes(provider)
+
+	sourced.SetDataOwner(unmatchedOwner{})
+	state, data = MatchSource(sourced)
+	c.Equal(srcstate.Mismatched, state, "the shared matcher is used for a data owner without one")
+	c.Equal(any(source), data, "the library's copy comes back with the state")
+	sourced.SetDataOwner(nil)
+	state, _ = MatchSource(sourced)
+	c.Equal(srcstate.Mismatched, state, "and for a node without a data owner")
+	sourced.SyncWithSource()
+	c.Equal("Library", sourced.Name, "which can then be synced")
+
+	sourced.Name = "Local"
+	e := NewEntity()
+	stubLibrarySources(t, e.SourceMatcher(), libFile, source)
+	unownedSrcMatcher.libHashes = nil
+	sourced.SetDataOwner(e)
+	state, data = MatchSource(sourced)
+	c.Equal(srcstate.Mismatched, state, "the data owner's matcher is used")
+	c.Equal(any(source), data, "the library's copy comes back with the state")
+}
+
+// TestSourceHashesFollowTheLibraryFile verifies that a matcher loads the hashes of a library file when first asked
+// about a node from it, keeps them while the file stays as it is, loads them again once the file has been changed or
+// its library moved, and drops them once the file or its library is gone.
+func TestSourceHashesFollowTheLibraryFile(t *testing.T) {
+	c := check.New(t)
+	isolateUnownedSrcMatcher(t)
+	registerTestFileTypes(t, TraitsExt)
+	libFile := LibraryFile{Library: "Test Library", Path: "Traits/Test" + TraitsExt}
+	root := useTestLibrary(t, libFile.Library)
+	// Each save sets the file's time explicitly, since two saves may fall within the file system's resolution.
+	modTime := time.Now().Add(-time.Hour).Truncate(time.Second)
+	lib := NewTrait(nil, nil, false)
+	lib.Name = "Claws"
+	save := func(dir string) string {
+		p := filepath.Join(dir, filepath.FromSlash(libFile.Path))
+		c.NoError(os.MkdirAll(filepath.Dir(p), 0o750))
+		c.NoError(SaveTraits([]*Trait{lib}, p))
+		c.NoError(os.Chtimes(p, modTime, modTime))
+		return p
+	}
+	p := save(root)
+	local := lib.Clone(libFile, nil, nil, Reference)
+	stateOf := func() srcstate.Value {
+		state, _ := MatchSource(local)
+		return state
+	}
+	// libName returns the name of the library's copy as matched, or "" if it wasn't found.
+	libName := func() string {
+		if _, data := MatchSource(local); data != nil {
+			if trait, ok := data.(*Trait); ok {
+				return trait.Name
+			}
+		}
+		return ""
+	}
+	loaded := func() any { return unownedSrcMatcher.libHashes[libFile].dataHashes[lib.TID].Data }
+
+	c.Equal(srcstate.Matched, stateOf(), "the file is loaded when a node from it is first matched")
+	first := loaded()
+	c.NotNil(first)
+	c.Equal(srcstate.Matched, stateOf())
+	c.True(first == loaded(), "a file that hasn't changed isn't loaded again")
+
+	lib.Name = "Fangs"
+	modTime = modTime.Add(time.Minute)
+	save(root)
+	c.Equal("Fangs", libName(), "a file saved since is loaded again, though it be the same size")
+	c.Equal(srcstate.Mismatched, stateOf())
+	lib.Name = "Talons"
+	save(root)
+	c.Equal("Talons", libName(), "as is one of another size, though its time be the same")
+
+	// Once the library has moved, the library file is another file, though it be of the same size and time.
+	lib.Name = "Spikes"
+	moved := t.TempDir()
+	save(moved)
+	testLib := GlobalSettings().Libraries.Lookup(libFile.Library)
+	c.NoError(testLib.SetPath(moved))
+	c.Equal("Spikes", libName(), "the file of a library that has moved is loaded from where it is now")
+	c.NoError(testLib.SetPath(root))
+	c.Equal("Talons", libName())
+
+	c.NoError(os.Remove(p))
+	c.Equal(srcstate.Missing, stateOf(), "the source can't be found once its file is gone")
+	_, held := unownedSrcMatcher.libHashes[libFile]
+	c.False(held, "and what was loaded from the file is dropped")
+
+	lib.Name = "Claws"
+	save(root)
+	c.Equal(srcstate.Matched, stateOf(), "the file is loaded again once it is back")
+	GlobalSettings().Libraries.Remove(libFile.Library)
+	c.Equal(srcstate.Missing, stateOf(), "the source can't be found once its library is gone")
+	_, held = unownedSrcMatcher.libHashes[libFile]
+	c.False(held, "and what was loaded from the library's file is dropped")
+
+	// A data owner's matcher drops it too, when asked to prepare the hashes of what the data owner holds.
+	save(useTestLibrary(t, libFile.Library))
+	e := NewEntity()
+	owned := lib.Clone(libFile, e, nil, Reference)
+	e.Traits = append(e.Traits, owned)
+	e.SourceMatcher().PrepareHashes(e)
+	state, _ := e.SourceMatcher().Match(owned)
+	c.Equal(srcstate.Matched, state, "precondition: the data owner's matcher has loaded the file")
+	GlobalSettings().Libraries.Remove(libFile.Library)
+	e.SourceMatcher().PrepareHashes(e)
+	state, _ = e.SourceMatcher().Match(owned)
+	c.Equal(srcstate.Missing, state, "a data owner's matcher drops the file of a library that is gone as well")
+}
+
+// TestSharedMatcherHoldsOnlyTheFilesLastUsed verifies that the shared matcher holds no more than maxUnownedSrcFiles
+// library files, letting go of the one used longest ago.
+func TestSharedMatcherHoldsOnlyTheFilesLastUsed(t *testing.T) {
+	c := check.New(t)
+	isolateUnownedSrcMatcher(t)
+	registerTestFileTypes(t, NotesExt)
+	root := useTestLibrary(t, "Test Library")
+	notes := make([]*Note, maxUnownedSrcFiles+1)
+	for i := range notes {
+		lib := NewNote(nil, nil, false)
+		libFile := LibraryFile{Library: "Test Library", Path: fmt.Sprintf("Notes %d%s", i, NotesExt)}
+		c.NoError(SaveNotes([]*Note{lib}, filepath.Join(root, libFile.Path)))
+		notes[i] = lib.Clone(libFile, nil, nil, Reference)
+	}
+	held := func(i int) bool {
+		_, ok := unownedSrcMatcher.libHashes[notes[i].Source.LibraryFile]
+		return ok
+	}
+	for i := range maxUnownedSrcFiles {
+		state, _ := MatchSource(notes[i])
+		c.Equal(srcstate.Matched, state)
+	}
+	c.Equal(maxUnownedSrcFiles, len(unownedSrcMatcher.libHashes))
+	state, _ := MatchSource(notes[0])
+	c.Equal(srcstate.Matched, state)
+	state, _ = MatchSource(notes[maxUnownedSrcFiles])
+	c.Equal(srcstate.Matched, state, "a file beyond those held is still matched")
+	c.Equal(maxUnownedSrcFiles, len(unownedSrcMatcher.libHashes), "by letting go of another")
+	c.True(held(0), "the file used again since is kept")
+	c.False(held(1), "the one used longest ago is let go")
+	state, _ = MatchSource(notes[1])
+	c.Equal(srcstate.Matched, state, "and is loaded again when next needed")
+}
+
+// TestCloneWithoutParentHashesTheSame verifies that a copy of a node made without its parent, as an editor makes to
+// compare its pending changes against the library, hashes the same as the node, for every kind of node with a source.
+func TestCloneWithoutParentHashesTheSame(t *testing.T) {
+	c := check.New(t)
+	e := NewEntity()
+	same := func(name string, original, clone Hashable) {
+		c.Equal(Hash64(original), Hash64(clone), name)
+	}
+	weapons := func(owner WeaponOwner) []*Weapon {
+		melee := NewWeapon(owner, true)
+		melee.Usage = "Swung"
+		melee.Defaults = []*SkillDefault{
+			newSkillDefaultTo("Broadsword", "", true, -fxp.Two),
+			{DefaultType: DexterityID, Name: textCriteria(criteria.IsText, "Leftover"), Modifier: -fxp.Five},
+		}
+		ranged := NewWeapon(owner, false)
+		ranged.Usage = "Thrown"
+		ranged.Defaults = []*SkillDefault{newSkillDefaultTo("Thrown Weapon", "Knife", false, 0)}
+		return []*Weapon{melee, ranged}
+	}
+	features := func() Features {
+		return Features{newSkillBonusTo("Alchemy", fxp.Two), NewAttributeBonus(StrengthID)}
+	}
+	prereqs := func() *PrereqList {
+		list := NewPrereqList()
+		either := NewPrereqList()
+		either.All = false
+		either.Parent = list
+		for _, name := range []string{"Magery", "Power Investiture"} {
+			one := NewTraitPrereq()
+			one.NameCriteria.Qualifier = name
+			one.Parent = either
+			either.Prereqs = append(either.Prereqs, one)
+		}
+		skill := NewSkillPrereq()
+		skill.NameCriteria.Qualifier = "Thaumatology"
+		skill.Parent = list
+		list.Prereqs = Prereqs{either, skill}
+		return list
+	}
+
+	traitParent := NewTrait(e, nil, true)
+	trait := NewTrait(e, traitParent, false)
+	trait.Name = "Trait"
+	trait.BasePoints = fxp.Ten
+	trait.Tags = []string{"Physical"}
+	trait.Weapons = weapons(trait)
+	trait.Features = features()
+	trait.Prereq = prereqs()
+	trait.Modifiers = []*TraitModifier{NewTraitModifier(e, nil, false)}
+	trait.Modifiers[0].Name = "Own Modifier"
+	trait.Modifiers[0].Features = features()
+	same("trait", trait, trait.Clone(LibraryFile{}, e, nil, Copy))
+	traitParent.Name = "Trait Container"
+	traitParent.Prereq = prereqs()
+	traitParent.Children = []*Trait{trait}
+	same("trait container", traitParent, traitParent.Clone(LibraryFile{}, e, nil, Copy))
+	skillParent := NewSkill(e, nil, true)
+	skill := NewSkill(e, skillParent, false)
+	skill.Name = "Skill"
+	skill.Tags = []string{"Combat"}
+	skill.Defaults = []*SkillDefault{
+		newSkillDefaultTo("Knife", "", true, -fxp.Three),
+		{DefaultType: DexterityID, Name: textCriteria(criteria.IsText, "Leftover"), Modifier: -fxp.Five},
+	}
+	skill.Weapons = weapons(skill)
+	skill.Features = features()
+	skill.Prereq = prereqs()
+	same("skill", skill, skill.Clone(LibraryFile{}, e, nil, Copy))
+	technique := NewTechnique(e, skillParent, "Karate")
+	technique.Name = "Technique"
+	technique.Weapons = weapons(technique)
+	technique.Features = features()
+	technique.Prereq = prereqs()
+	same("technique", technique, technique.Clone(LibraryFile{}, e, nil, Copy))
+	spellParent := NewSpell(e, nil, true)
+	spell := NewSpell(e, spellParent, false)
+	spell.Name = "Spell"
+	spell.College = []string{"Fire"}
+	spell.Weapons = weapons(spell)
+	spell.Features = features()
+	spell.Prereq = prereqs()
+	same("spell", spell, spell.Clone(LibraryFile{}, e, nil, Copy))
+	eqpParent := NewEquipment(e, nil, true)
+	eqp := NewEquipment(e, eqpParent, false)
+	eqp.Name = "Equipment"
+	eqp.BaseValue = "10"
+	eqp.Tags = []string{"Weapon"}
+	eqp.Weapons = weapons(eqp)
+	eqp.Features = features()
+	eqp.Prereq = prereqs()
+	eqp.Modifiers = []*EquipmentModifier{NewEquipmentModifier(e, nil, false)}
+	eqp.Modifiers[0].Name = "Own Modifier"
+	eqp.Modifiers[0].Features = features()
+	same("equipment", eqp, eqp.Clone(LibraryFile{}, e, nil, Copy))
+	eqpParent.Name = "Equipment Container"
+	eqpParent.Weapons = weapons(eqpParent)
+	eqpParent.Features = features()
+	eqpParent.Prereq = prereqs()
+	eqpParent.Children = []*Equipment{eqp}
+	same("equipment container", eqpParent, eqpParent.Clone(LibraryFile{}, e, nil, Copy))
+	noteParent := NewNote(e, nil, true)
+	note := NewNote(e, noteParent, false)
+	note.MarkDown = "Note"
+	same("note", note, note.Clone(LibraryFile{}, e, nil, Copy))
+	traitModParent := NewTraitModifierChoice(e, nil)
+	traitMod := NewTraitModifier(e, traitModParent, false)
+	traitMod.Name = "Trait Modifier"
+	traitMod.Tags = []string{"Enhancement"}
+	traitMod.Features = features()
+	same("trait modifier", traitMod, traitMod.Clone(LibraryFile{}, e, nil, Copy))
+	traitModParent.Name = "Trait Modifier Choice"
+	traitModParent.Children = []*TraitModifier{traitMod}
+	same("trait modifier choice", traitModParent, traitModParent.Clone(LibraryFile{}, e, nil, Copy))
+	eqpModParent := NewEquipmentModifierChoice(e, nil)
+	eqpMod := NewEquipmentModifier(e, eqpModParent, false)
+	eqpMod.Name = "Equipment Modifier"
+	eqpMod.Tags = []string{"Quality"}
+	eqpMod.Features = features()
+	same("equipment modifier", eqpMod, eqpMod.Clone(LibraryFile{}, e, nil, Copy))
+	eqpModParent.Name = "Equipment Modifier Choice"
+	eqpModParent.Children = []*EquipmentModifier{eqpMod}
+	same("equipment modifier choice", eqpModParent, eqpModParent.Clone(LibraryFile{}, e, nil, Copy))
+}
+
+// TestLoadedTechniqueCopiesHashTheSame verifies that a technique loaded from a file hashes the same as copies of it,
+// though a copy drops the name criteria that loading gives a default that isn't skill-based.
+func TestLoadedTechniqueCopiesHashTheSame(t *testing.T) {
+	c := check.New(t)
+	attrBased := NewTechnique(nil, nil, "Karate")
+	attrBased.Name = "Kicking"
+	attrBased.TechniqueDefault = &SkillDefault{DefaultType: DexterityID, Modifier: -fxp.Two}
+	skillBased := NewTechnique(nil, nil, "Karate")
+	skillBased.Name = "Jump Kick"
+	p := filepath.Join(t.TempDir(), "Techniques"+SkillsExt)
+	c.NoError(SaveSkills([]*Skill{attrBased, skillBased}, p))
+	loaded, err := NewSkillsFromFile(os.DirFS(filepath.Dir(p)), filepath.Base(p))
+	c.NoError(err)
+	c.Equal(2, len(loaded))
+	c.False(loaded[0].TechniqueDefault.Name.IsZero(), "precondition: loading gives the attribute default name criteria")
+
+	e := NewEntity()
+	for _, one := range loaded {
+		clone := one.Clone(LibraryFile{}, e, nil, Copy)
+		c.Equal(Hash64(one), Hash64(clone), one.Name+": a copy hashes the same")
+		var data SkillEditData
+		data.CopyFrom(one)
+		edited := one.Clone(LibraryFile{}, e, nil, Copy)
+		data.ApplyTo(edited)
+		c.Equal(Hash64(one), Hash64(edited), one.Name+": a copy passed through an editor's data hashes the same")
+		synced := one.Clone(LibraryFile{}, e, nil, Copy)
+		synced.Name = "Changed"
+		synced.Source = Source{Library: "Test Library", Path: "Techniques" + SkillsExt, TID: one.TID}
+		stubLibrarySources(t, e.SourceMatcher(), synced.Source.LibraryFile, one)
+		synced.SyncWithSource()
+		state, _ := MatchSource(synced)
+		c.Equal(srcstate.Matched, state, one.Name+": syncing makes a copy match its source")
+	}
 }

@@ -158,11 +158,6 @@ func initTraitEditor(e *editor[*gurps.Trait, *gurps.TraitEditData], content *uni
 	addChoices(e, content)
 	addPageRefLabelAndField(content, &e.editorData.PageRef)
 	addPageRefHighlightLabelAndField(content, &e.editorData.PageRefHighlight)
-	if choice {
-		addIDField(content, &e.target.SourcedID)
-	} else {
-		addSourceFields(content, &e.target.SourcedID)
-	}
 	if !choice {
 		content.AddChild(newPrereqPanel(entity, &e.editorData.Prereq, prereq.TypesForNonEquipment, false))
 	}
@@ -191,8 +186,12 @@ func initTraitEditor(e *editor[*gurps.Trait, *gurps.TraitEditData], content *uni
 		}
 		if crAdjPopup != nil {
 			if e.editorData.SelfControl == selfctrl.None {
-				crAdjPopup.SetEnabled(false)
-				crAdjPopup.Select(selfctrl.NoAdjustment)
+				// Cleared only as the roll is taken away, so that an adjustment a sync with its source brought in
+				// without a roll is kept.
+				if crAdjPopup.Enabled() {
+					crAdjPopup.SetEnabled(false)
+					crAdjPopup.Select(selfctrl.NoAdjustment)
+				}
 			} else {
 				crAdjPopup.SetEnabled(true)
 			}

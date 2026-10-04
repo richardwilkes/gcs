@@ -225,15 +225,9 @@ func modifierSecondaryText[T interface {
 	return node.ResolveLocalNotes()
 }
 
-// syncFromSource looks the node up in its data owner's source matcher and, when the node has drifted from its library
-// source, hands the library's copy to apply so the node can pull the synced fields across. A node with no data owner,
-// no source, or a source it already matches is left alone.
+// syncFromSource hands the library's copy of the node to apply when the node has drifted from it (see MatchSource).
 func syncFromSource[T Node[T]](node T, apply func(source T)) {
-	owner := node.DataOwner()
-	if xreflect.IsNil(owner) {
-		return
-	}
-	if state, data := owner.SourceMatcher().Match(node); state == srcstate.Mismatched {
+	if state, data := MatchSource(node); state == srcstate.Mismatched {
 		if source, ok := data.(T); ok {
 			apply(source)
 		}

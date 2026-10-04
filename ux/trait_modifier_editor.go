@@ -28,8 +28,7 @@ func EditTraitModifier(owner Rebuildable, modifier *gurps.TraitModifier) {
 
 func initTraitModifierEditor(e *editor[*gurps.TraitModifier, *gurps.TraitModifierEditData], content *unison.Panel) func() {
 	if e.target.Container() {
-		initModifierContainerEditor(content, &e.editorData.TraitModifierSyncData, &e.editorData.ModifierContainerSyncData,
-			&e.target.SourcedID)
+		initModifierContainerEditor(content, &e.editorData.TraitModifierSyncData, &e.editorData.ModifierContainerSyncData)
 		return nil
 	}
 	addNameLabelAndField(content, &e.editorData.Name)
@@ -88,7 +87,6 @@ func initTraitModifierEditor(e *editor[*gurps.TraitModifier, *gurps.TraitModifie
 	addTagsLabelAndField(content, &e.editorData.Tags)
 	addPageRefLabelAndField(content, &e.editorData.PageRef)
 	addPageRefHighlightLabelAndField(content, &e.editorData.PageRefHighlight)
-	addSourceFields(content, &e.target.SourcedID)
 	content.AddChild(newFeaturesPanel(gurps.EntityFromNode(e.target), e.target, &e.editorData.Features, false))
 	return nil
 }

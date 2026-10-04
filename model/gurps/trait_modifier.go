@@ -596,7 +596,7 @@ func (t *TraitModifier) SyncWithSource() {
 		t.Tags = slices.Clone(other.Tags)
 		if t.Container() {
 			t.ModifierContainerSyncData = other.ModifierContainerSyncData
-			settleModifierChoicesAround(t)
+			SettleModifierChoicesAround(t)
 		} else {
 			t.TraitModifierNonContainerSyncData = other.TraitModifierNonContainerSyncData
 			t.Features = other.Features.Clone()

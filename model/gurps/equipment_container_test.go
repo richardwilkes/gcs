@@ -22,7 +22,6 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/srcstate"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/toolbox/v2/check"
-	"github.com/richardwilkes/toolbox/v2/tid"
 )
 
 func newEquipmentItem(name, value, weight string) *Equipment {
@@ -355,9 +354,7 @@ func TestEquipmentSyncToGroupClearsWhatAGroupCantHold(t *testing.T) {
 	libFile := LibraryFile{Library: "Test Library", Path: "Test" + EquipmentExt}
 	source := NewEquipmentGroup(nil, nil)
 	source.Name = "Kit"
-	e.SourceMatcher().libHashes = map[LibraryFile]libSrcData{
-		libFile: {dataHashes: map[tid.TID]HashAndData{source.TID: {Hash: Hash64(source), Data: source}}},
-	}
+	stubLibrarySources(t, e.SourceMatcher(), libFile, source)
 	local := NewEquipment(e, nil, true)
 	local.Name = "Kit"
 	local.Quantity = fxp.FromInteger(2)

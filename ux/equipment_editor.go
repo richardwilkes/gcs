@@ -110,7 +110,6 @@ func initEquipmentItemEditor(e *editor[*gurps.Equipment, *gurps.EquipmentEditDat
 	addTagsLabelAndField(content, &e.editorData.Tags)
 	addPageRefLabelAndField(content, &e.editorData.PageRef)
 	addPageRefHighlightLabelAndField(content, &e.editorData.PageRefHighlight)
-	addSourceFields(content, &e.target.SourcedID)
 	adjustFieldBlank(usesField, resolvedMaxUses() <= 0)
 	content.AddChild(newPrereqPanel(entity, &e.editorData.Prereq, prereq.TypesForEquipment, false))
 	content.AddChild(newFeaturesPanel(entity, e.target, &e.editorData.Features, false))
@@ -142,19 +141,16 @@ func initEquipmentGroupEditor(e *editor[*gurps.Equipment, *gurps.EquipmentEditDa
 	addPickSeparately(content, e.target, &e.editorData.PickSeparately)
 	addPageRefLabelAndField(content, &e.editorData.PageRef)
 	addPageRefHighlightLabelAndField(content, &e.editorData.PageRefHighlight)
-	addSourceFields(content, &e.target.SourcedID)
 }
 
 // initEquipmentChoiceEditor fills in the content of the editor for a template choice container. It dissolves into the
-// options chosen from it when the template is applied, so it has nothing but what describes the choice, and no source
-// fields, since only a template may hold one and a template is never a source.
+// options chosen from it when the template is applied, so it has nothing but what describes the choice.
 func initEquipmentChoiceEditor(e *editor[*gurps.Equipment, *gurps.EquipmentEditData], content *unison.Panel) {
 	addNameLabelAndField(content, &e.editorData.Name)
 	addNotesLabelAndField(content, &e.editorData.LocalNotes)
 	addChoices(e, content)
 	addPageRefLabelAndField(content, &e.editorData.PageRef)
 	addPageRefHighlightLabelAndField(content, &e.editorData.PageRefHighlight)
-	addIDField(content, &e.target.SourcedID)
 }
 
 // extendedValueForEditor computes the Extended Value preview for the equipment editor. The overlaid clone is used as

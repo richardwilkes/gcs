@@ -18,7 +18,6 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/srcstate"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/toolbox/v2/check"
-	"github.com/richardwilkes/toolbox/v2/tid"
 	"github.com/richardwilkes/toolbox/v2/xbytes"
 )
 
@@ -47,9 +46,7 @@ func TestSkillOptionalSpecializationNotSynced(t *testing.T) {
 	e.Skills = append(e.Skills, local)
 	libFile := LibraryFile{Library: "Test Library", Path: "Test" + SkillsExt}
 	local.Source = Source{LibraryFile: libFile, TID: source.TID}
-	e.SourceMatcher().libHashes = map[LibraryFile]libSrcData{
-		libFile: {dataHashes: map[tid.TID]HashAndData{source.TID: {Hash: Hash64(source), Data: source}}},
-	}
+	stubLibrarySources(t, e.SourceMatcher(), libFile, source)
 
 	// Differing only in optional specialization is no difference at all as far as the source is concerned.
 	c.Equal(Hash64(source), Hash64(local), "skills differing only in optional specialization must hash the same")

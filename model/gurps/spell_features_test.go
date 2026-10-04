@@ -21,7 +21,6 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/gcs/v5/model/nameable"
 	"github.com/richardwilkes/toolbox/v2/check"
-	"github.com/richardwilkes/toolbox/v2/tid"
 )
 
 // TestSpellFeaturesRoundTrip verifies that a spell's features are written and read back, including the switchable flag,
@@ -154,9 +153,7 @@ func TestSpellSyncWithSourceClonesFeatures(t *testing.T) {
 	e.Spells = append(e.Spells, local)
 	libFile := LibraryFile{Library: "Test Library", Path: "Test.spl"}
 	local.Source = Source{LibraryFile: libFile, TID: source.TID}
-	e.SourceMatcher().libHashes = map[LibraryFile]libSrcData{
-		libFile: {dataHashes: map[tid.TID]HashAndData{source.TID: {Hash: Hash64(source), Data: source}}},
-	}
+	stubLibrarySources(t, e.SourceMatcher(), libFile, source)
 
 	c.Equal(0, len(local.Features), "precondition: the local copy starts with no features")
 	local.SyncWithSource()

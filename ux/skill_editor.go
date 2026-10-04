@@ -236,11 +236,6 @@ func initSkillEditor(e *editor[*gurps.Skill, *gurps.SkillEditData], content *uni
 	}
 	addPageRefLabelAndField(content, &e.editorData.PageRef)
 	addPageRefHighlightLabelAndField(content, &e.editorData.PageRefHighlight)
-	if choice {
-		addIDField(content, &e.target.SourcedID)
-	} else {
-		addSourceFields(content, &e.target.SourcedID)
-	}
 	if !e.target.Container() {
 		content.AddChild(newPrereqPanel(entity, &e.editorData.Prereq, prereq.TypesForNonEquipment, false))
 		if !e.target.IsTechnique() {

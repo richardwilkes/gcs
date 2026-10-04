@@ -65,12 +65,11 @@ func newEquipmentModifierChoiceWith(options ...[2]string) *EquipmentModifier {
 func linkToLibrarySource[T interface {
 	Hashable
 	ID() tid.TID
-}](entity *Entity, local *Source, source T) {
+}](t *testing.T, entity *Entity, local *Source, source T) {
+	t.Helper()
 	libFile := LibraryFile{Library: "Test Library", Path: "Test"}
 	*local = Source{LibraryFile: libFile, TID: source.ID()}
-	entity.SourceMatcher().libHashes = map[LibraryFile]libSrcData{
-		libFile: {dataHashes: map[tid.TID]HashAndData{source.ID(): {Hash: Hash64(source), Data: source}}},
-	}
+	stubLibrarySources(t, entity.SourceMatcher(), libFile, source)
 }
 
 // hashOf is a Hashable made of a function, for working out what a hash is expected to be.
@@ -672,7 +671,7 @@ func TestSyncSettlesAModifierChoice(t *testing.T) {
 		a.SetEnabled(enabled)
 		b.SetEnabled(enabled)
 		local.Children = []*TraitModifier{a, b}
-		linkToLibrarySource(entity, &local.Source, source)
+		linkToLibrarySource(t, entity, &local.Source, source)
 		local.SyncWithSource()
 		c.True(IsMandatoryModifierChoice(local), "the sync brings the choice across")
 		c.Equal([]*TraitModifier{a, b}, local.Children, "but not its options")
@@ -696,7 +695,7 @@ func TestSyncSettlesTheOuterChoice(t *testing.T) {
 	q := NewEquipmentModifier(entity, inner, false)
 	inner.Children = []*EquipmentModifier{q}
 	outer.Children = []*EquipmentModifier{p, inner}
-	linkToLibrarySource(entity, &inner.Source, NewEquipmentModifier(nil, nil, true))
+	linkToLibrarySource(t, entity, &inner.Source, NewEquipmentModifier(nil, nil, true))
 	inner.SyncWithSource()
 	c.False(IsModifierChoice(inner), "the sync makes the inner choice a group")
 	c.True(p.Enabled(), "the outer choice keeps its pick")

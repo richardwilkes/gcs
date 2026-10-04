@@ -446,12 +446,19 @@ func (s *SkillDefault) finalLevel(level fxp.Int) fxp.Int {
 }
 
 // Hash writes this object's contents into the hasher. Note that this only hashes the data that is considered to be
-// "source" data, i.e. not expected to be modified by the user after copying from a library.
+// "source" data, i.e. not expected to be modified by the user after copying from a library. The name, specialization
+// and tags criteria of a default that isn't skill-based are left out, since a clone drops them (see
+// cloneTechniqueDefault) and must hash the same as what it was copied from.
 func (s *SkillDefault) Hash(h hash.Hash) {
 	xhash.StringWithLen(h, s.DefaultType)
 	xhash.Num64(h, s.Modifier)
-	s.Name.Hash(h)
-	s.Specialization.Hash(h)
+	skillBased := DefaultTypeIsSkillBased(s.DefaultType)
+	if skillBased {
+		s.Name.Hash(h)
+		s.Specialization.Hash(h)
+	}
 	s.WhenTL.Hash(h)
-	s.Tags.Hash(h)
+	if skillBased {
+		s.Tags.Hash(h)
+	}
 }

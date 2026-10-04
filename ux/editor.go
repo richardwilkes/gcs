@@ -40,6 +40,8 @@ type editor[N gurps.Node[N], D gurps.EditorData[N]] struct {
 	nameablesButton      *unison.Button
 	meleeWeapons         *weaponsPanel
 	rangedWeapons        *weaponsPanel
+	content              *unison.Panel
+	initContent          func(*editor[N, D], *unison.Panel) func()
 	beforeData           D
 	editorData           D
 	nameablesScratch     N
@@ -47,6 +49,11 @@ type editor[N gurps.Node[N], D gurps.EditorData[N]] struct {
 	modificationCallback func()
 	preApplyCallback     func(D)
 	scale                int
+	// syncedChoice is the choice picker the last pending "Sync with Source" left the target with, or nil if there has
+	// been none.
+	syncedChoice *gurps.TemplatePicker
+	// sourceCleared is a pending "Clear Source", since the source isn't part of the editor's data.
+	sourceCleared bool
 }
 
 func displayEditor[N gurps.Node[N], D gurps.EditorData[N]](owner Rebuildable, target N, icon *unison.SVG, helpMD string, initToolbar func(*editor[N, D], *unison.Panel), initContent func(*editor[N, D], *unison.Panel) func(), preApplyCallback func(D)) *editor[N, D] {
@@ -78,7 +85,7 @@ func displayEditor[N gurps.Node[N], D gurps.EditorData[N]](owner Rebuildable, ta
 	content := e.setUp(2)
 	e.AddChild(e.createToolbar(helpMD, initToolbar))
 	e.AddChild(e.scroll)
-	e.modificationCallback = initContent(e, content)
+	e.fillContent(content, initContent)
 	e.placeInDock(target.ID())
 	content.RequestFocus()
 	return e
@@ -121,6 +128,7 @@ func (e *editor[N, D]) createToolbar(helpMD string, initToolbar func(*editor[N, 
 				toolbar.AddChild(e.nameablesButton)
 			}
 		}
+		toolbar.AddChild(e.newSourceButton())
 	}
 
 	if initToolbar != nil {
@@ -131,9 +139,45 @@ func (e *editor[N, D]) createToolbar(helpMD string, initToolbar func(*editor[N, 
 	return toolbar
 }
 
+// fillContent fills the content panel using initContent, keeping both so that rebuildContent can do it again.
+func (e *editor[N, D]) fillContent(content *unison.Panel, initContent func(*editor[N, D], *unison.Panel) func()) {
+	e.content = content
+	e.initContent = initContent
+	e.modificationCallback = initContent(e, content)
+}
+
+// rebuildContent refills the content panel after the editor's data has been replaced wholesale, which leaves the old
+// widgets bound to objects it no longer holds. The undo history is cleared, since its edits refer to those widgets and
+// objects. Not for the weapon editor, whose initContent keeps state across calls.
+func (e *editor[N, D]) rebuildContent() {
+	e.content.RemoveAllChildren()
+	e.meleeWeapons = nil
+	e.rangedWeapons = nil
+	e.modificationCallback = e.initContent(e, e.content)
+	// Copying the data from another node leaves its modifiers and weapons pointed at that node.
+	for _, child := range e.content.Children() {
+		if list, ok := child.Self.(interface{ reattach() }); ok {
+			list.reattach()
+		}
+	}
+	e.undoMgr.Clear()
+	e.Rebuild(false)
+	e.content.ValidateScrollRoot()
+}
+
+// editedClone returns a copy of the target with the editor's pending changes applied. It has no parent, so that nothing
+// done to it can reach into the target's tree.
+func (e *editor[N, D]) editedClone() N {
+	clone := e.target.Clone(e.target.GetSource().LibraryFile, e.target.DataOwner(), nil, gurps.Copy)
+	e.editorData.ApplyTo(clone)
+	if e.sourceCleared {
+		clone.ClearSource()
+	}
+	return clone
+}
+
 func (e *editor[N, D]) prepareForSubstitutions() (tmpNode N, m map[string]string) {
-	tmpNode = e.target.Clone(e.target.GetSource().LibraryFile, e.target.DataOwner(), nil, gurps.Copy)
-	e.editorData.ApplyTo(tmpNode)
+	tmpNode = e.editedClone()
 	m = make(map[string]string)
 	tmpNode.FillWithNameableKeys(m, nil)
 	return tmpNode, m
@@ -154,6 +198,9 @@ func (e *editor[N, D]) Target() N {
 var pruneIDFields = regexp.MustCompile(`\s*"id":\s*"[^"]+",?\s*`)
 
 func (e *editor[N, D]) isModified() bool {
+	if e.sourceCleared {
+		return true
+	}
 	d1, err := gurps.MarshalWithoutCalc(e.beforeData)
 	if err != nil {
 		errs.Log(err)
@@ -265,7 +312,7 @@ func (e *editor[N, D]) applyEdits() {
 	owner := e.owner
 	target := e.target
 	// The source isn't part of the editor's data, so the undo edit has to carry it itself should applying the edit
-	// have cleared it (see clearSourceOfTemplatePicker).
+	// have cleared it, whether by a pending "Clear Source" or by clearSourceOfTemplatePicker.
 	sourceBefore := target.GetSource()
 	// Nor are the other modifiers in the target's tree, which the choice rules may change along with it.
 	optionsBefore := modifierEnabledStates([]N{target})
@@ -275,8 +322,14 @@ func (e *editor[N, D]) applyEdits() {
 		changesEnabled = e.changesEnabled()
 	}
 	pickerBefore := modifierChoicePicker(target)
+	wasChoice := gurps.IsModifierChoice(target)
 	e.editorData.ApplyTo(target)
-	applyModifierChoiceRulesAfterEdit(target, wasEnabled, changesEnabled, modifierChoicePicker(target) != pickerBefore)
+	if e.sourceCleared {
+		target.ClearSource()
+	}
+	pickerAfter := modifierChoicePicker(target)
+	applyModifierChoiceRulesAfterEdit(target, wasEnabled, changesEnabled, wasChoice, pickerAfter != pickerBefore,
+		e.syncedChoice != nil && *e.syncedChoice == pickerAfter)
 	clearSourceOfTemplatePicker(target)
 	sourceAfter := target.GetSource()
 	optionsAfter := modifierEnabledStates([]N{target})
@@ -322,10 +375,16 @@ func modifierChoicePicker[N gurps.Node[N]](node N) gurps.TemplatePicker {
 
 // applyModifierChoiceRulesAfterEdit applies the choice rules after an editor's data has been applied to the target. An
 // option keeps its current state unless the editor changed it, since another may have been picked since the editor
-// opened; a choice is settled only when the editor changed what it asks for.
-func applyModifierChoiceRulesAfterEdit[N gurps.Node[N]](target N, wasEnabled, changesEnabled, choiceChanged bool) {
-	if gurps.IsModifierChoice(target) {
-		if choiceChanged {
+// opened; a container, which wasChoice says was a choice before the edit, is settled only when the editor changed what
+// it asks for. When a pending sync with its source made that change (choiceSynced), no pick is made for it, as when
+// synced from its list; otherwise a choice the user made mandatory is given one.
+func applyModifierChoiceRulesAfterEdit[N gurps.Node[N]](target N, wasEnabled, changesEnabled, wasChoice, choiceChanged, choiceSynced bool) {
+	if wasChoice || gurps.IsModifierChoice(target) {
+		switch {
+		case !choiceChanged:
+		case choiceSynced:
+			gurps.SettleModifierChoicesAround(target)
+		default:
 			gurps.EnsureModifierChoiceRules(target)
 		}
 		return

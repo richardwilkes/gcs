@@ -211,7 +211,7 @@ func CanConvertToModifierChoice[T Node[T]](node T) bool {
 }
 
 // ConvertToModifierChoice makes the modifier group a mandatory choice, if it can be, and brings it and any choice
-// around it into line with the rules (see EnsureModifierChoiceRules).
+// around it, which may have lost its pick to it, into line with the rules (see EnsureModifierChoiceRules).
 func ConvertToModifierChoice[T Node[T]](node T) {
 	if !CanConvertToModifierChoice(node) {
 		return
@@ -359,12 +359,13 @@ func ConvertFromModifierChoice[T Node[T]](node T) {
 		return
 	}
 	data.Choice = TemplatePicker{}
-	settleModifierChoicesAround(node)
+	SettleModifierChoicesAround(node)
 }
 
-// settleModifierChoicesAround settles the choices within the container, which may have just become or stopped being a
-// choice, and the choice around it, which keeps its own pick over any the container handed it.
-func settleModifierChoicesAround[T Node[T]](container T) {
+// SettleModifierChoicesAround settles the choices within the container, which may have just become or stopped being a
+// choice, and the choice around it, which keeps its own pick over any the container handed it. Unlike
+// EnsureModifierChoiceRules, it makes no pick for a mandatory choice left without one.
+func SettleModifierChoicesAround[T Node[T]](container T) {
 	SettleModifierChoices(nil, container)
 	if outer, ok := modifierChoiceAbove(container); ok {
 		SettleModifierChoices(func(one T) bool { return isWithin(one, container) }, outer)

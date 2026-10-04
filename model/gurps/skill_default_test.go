@@ -21,7 +21,6 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/gcs/v5/model/nameable"
 	"github.com/richardwilkes/toolbox/v2/check"
-	"github.com/richardwilkes/toolbox/v2/tid"
 	"github.com/richardwilkes/toolbox/v2/xbytes"
 )
 
@@ -845,10 +844,10 @@ func TestSkillDefaultRechosenWhenDefaultsEdited(t *testing.T) {
 }
 
 // TestTechniqueDefaultCriteriaClearedWhenNotSkillBased verifies that a technique whose default is an attribute rather
-// than a skill carries no skill criteria on that default, however it came by them. The editor hides the criteria
-// fields for such a default, so a name, specialization or tag left behind from an earlier skill selection could not be
-// seen or removed, yet would still be written to disk and hashed, making the technique look modified relative to its
-// library source over criteria that nothing consults.
+// than a skill carries no skill criteria on that default, however it came by them. The editor hides the criteria fields
+// for such a default, so a name, specialization or tag left behind from an earlier skill selection could not be seen or
+// removed, yet would still be written to disk. The hash leaves them out, so they can't make the technique look modified
+// relative to its library source.
 func TestTechniqueDefaultCriteriaClearedWhenNotSkillBased(t *testing.T) {
 	c := check.New(t)
 
@@ -868,7 +867,7 @@ func TestTechniqueDefaultCriteriaClearedWhenNotSkillBased(t *testing.T) {
 	clean := newFeint(e)
 	clean.TechniqueDefault.Name = criteria.Text{}
 	stale := withLeftovers(newFeint(e))
-	c.NotEqual(Hash64(clean), Hash64(stale), "precondition: the leftover criteria count toward the hash")
+	c.Equal(Hash64(clean), Hash64(stale), "the leftover criteria don't count toward the hash")
 
 	// Committing an edit of the technique clears them.
 	var edit SkillEditData
@@ -877,7 +876,7 @@ func TestTechniqueDefaultCriteriaClearedWhenNotSkillBased(t *testing.T) {
 	c.True(stale.TechniqueDefault.Name.IsZero(), "an edit must clear a leftover name criteria")
 	c.True(stale.TechniqueDefault.Specialization.IsZero(), "an edit must clear a leftover specialization criteria")
 	c.True(stale.TechniqueDefault.Tags.IsZero(), "an edit must clear a leftover tag criteria")
-	c.Equal(Hash64(clean), Hash64(stale), "once cleared, the technique must hash as one that never had them")
+	c.Equal(Hash64(clean), Hash64(stale), "nor does clearing them")
 
 	// So does syncing the technique with a library source that still carries them.
 	source := withLeftovers(newFeint(nil))
@@ -887,9 +886,7 @@ func TestTechniqueDefaultCriteriaClearedWhenNotSkillBased(t *testing.T) {
 	e.Skills = append(e.Skills, local)
 	libFile := LibraryFile{Library: "Test Library", Path: "Test" + SkillsExt}
 	local.Source = Source{LibraryFile: libFile, TID: source.TID}
-	e.SourceMatcher().libHashes = map[LibraryFile]libSrcData{
-		libFile: {dataHashes: map[tid.TID]HashAndData{source.TID: {Hash: Hash64(source), Data: source}}},
-	}
+	stubLibrarySources(t, e.SourceMatcher(), libFile, source)
 	state, _ := e.SourceMatcher().Match(local)
 	c.Equal(srcstate.Mismatched, state, "precondition: the technique differs from its source")
 	local.SyncWithSource()
@@ -956,9 +953,7 @@ func TestSkillDefaultRechosenWhenSyncedWithSource(t *testing.T) {
 	libFile := LibraryFile{Library: "Test Library", Path: "Test" + SkillsExt}
 	local.Source = Source{LibraryFile: libFile, TID: source.TID}
 	setSource := func() {
-		e.SourceMatcher().libHashes = map[LibraryFile]libSrcData{
-			libFile: {dataHashes: map[tid.TID]HashAndData{source.TID: {Hash: Hash64(source), Data: source}}},
-		}
+		stubLibrarySources(t, e.SourceMatcher(), libFile, source)
 	}
 	setSource()
 	e.Recalculate()

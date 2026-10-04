@@ -61,9 +61,9 @@ func TestEditorIsModifiedFollowsTheDataAlone(t *testing.T) {
 	c.False(e.isModified(), "putting the original value back must clear the change")
 }
 
-// buildEditorContent builds an editor's content as displayEditor would, without the docking machinery that needs a
-// window, and installs the init function's callback as the real editor does, so a change to one widget adjusts the
-// others.
+// buildEditorContent builds an editor's content as displayEditor would, without the toolbar and the docking machinery
+// that needs a window, and installs the init function's callback as the real editor does, so a change to one widget
+// adjusts the others.
 func buildEditorContent[N gurps.Node[N], D gurps.EditorData[N]](owner Rebuildable, target N,
 	initContent func(*editor[N, D], *unison.Panel) func(),
 ) (*editor[N, D], *unison.Panel) {
@@ -75,14 +75,9 @@ func buildEditorContent[N gurps.Node[N], D gurps.EditorData[N]](owner Rebuildabl
 	e.beforeData.CopyFrom(target)
 	reflect.ValueOf(&e.editorData).Elem().Set(reflect.New(reflect.TypeOf(e.editorData).Elem()))
 	e.editorData.CopyFrom(target)
-	content := unison.NewPanel()
-	content.SetLayout(&unison.FlexLayout{
-		Columns:  2,
-		HSpacing: unison.StdHSpacing,
-		VSpacing: unison.StdVSpacing,
-	})
-	e.AddChild(content)
-	e.modificationCallback = initContent(e, content)
+	content := e.newContentPanel(2)
+	e.AddChild(e.scroll)
+	e.fillContent(content, initContent)
 	return e, content
 }
 
