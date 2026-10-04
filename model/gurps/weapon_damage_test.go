@@ -324,3 +324,104 @@ func TestWeaponDamageBonusDicePhoenixFlame(t *testing.T) {
 		c.Equal(tc.want, w.Damage.ResolvedDamage(nil), tc.name)
 	}
 }
+
+// TestWeaponDamageNormalize verifies that normalizing weapon damage puts it into the form a file gives it: a ST
+// multiplier or armor divisor of 0 becomes 1, the fragmentation is trimmed, and a fragmentation armor divisor and type
+// are kept only when there is fragmentation for them to apply to. Hashing that form is what lets a weapon that has
+// never been saved match the same weapon read back from a file.
+func TestWeaponDamageNormalize(t *testing.T) {
+	c := check.New(t)
+	plain := gurps.WeaponDamageData{
+		StrengthMultiplier:        fxp.One,
+		ArmorDivisor:              fxp.One,
+		FragmentationArmorDivisor: fxp.One,
+	}
+	withFragmentation := gurps.WeaponDamageData{
+		Type:                      "cr ex",
+		StrengthMultiplier:        fxp.Two,
+		ArmorDivisor:              fxp.Three,
+		Fragmentation:             "2d",
+		FragmentationArmorDivisor: fxp.Two,
+		FragmentationType:         "cut",
+	}
+	withDefaultedDivisor := withFragmentation
+	withDefaultedDivisor.FragmentationArmorDivisor = fxp.One
+	for _, tc := range []struct {
+		name string
+		in   gurps.WeaponDamageData
+		want gurps.WeaponDamageData
+	}{
+		{name: "nothing set", want: plain},
+		{name: "already normalized", in: plain, want: plain},
+		{
+			name: "an armor divisor and type left behind by fragmentation that was removed",
+			in: gurps.WeaponDamageData{
+				StrengthMultiplier:        fxp.One,
+				ArmorDivisor:              fxp.One,
+				FragmentationArmorDivisor: fxp.Two,
+				FragmentationType:         "cut",
+			},
+			want: plain,
+		},
+		{
+			name: "blank fragmentation",
+			in:   gurps.WeaponDamageData{Fragmentation: " \t", FragmentationArmorDivisor: fxp.Two, FragmentationType: "cut"},
+			want: plain,
+		},
+		{name: "fragmentation keeps its armor divisor and type", in: withFragmentation, want: withFragmentation},
+		{
+			name: "fragmentation is trimmed and given an armor divisor when it has none",
+			in: gurps.WeaponDamageData{
+				Type:               "cr ex",
+				StrengthMultiplier: fxp.Two,
+				ArmorDivisor:       fxp.Three,
+				Fragmentation:      " 2d ",
+				FragmentationType:  "cut",
+			},
+			want: withDefaultedDivisor,
+		},
+	} {
+		got := tc.in
+		got.Normalize()
+		c.Equal(tc.want, got, tc.name)
+	}
+	for _, melee := range []bool{true, false} {
+		w := gurps.NewWeapon(nil, melee)
+		want := w.Damage.WeaponDamageData
+		w.Damage.Normalize()
+		c.Equal(want, w.Damage.WeaponDamageData, "a new weapon's damage is already normalized")
+	}
+}
+
+// TestWeaponCopyNormalizesDamage verifies that copying a weapon, which is how an edit is applied, normalizes its
+// damage, so that what the editor left behind in fields that no longer apply neither shows nor counts toward the hash.
+func TestWeaponCopyNormalizesDamage(t *testing.T) {
+	c := check.New(t)
+	plain := gurps.NewWeapon(nil, true)
+	edited := gurps.NewWeapon(nil, true)
+	edited.Damage.ArmorDivisor = 0
+	edited.Damage.StrengthMultiplier = 0
+	edited.Damage.FragmentationArmorDivisor = fxp.Two
+	edited.Damage.FragmentationType = "cut"
+	c.NotEqual(gurps.Hash64(plain), gurps.Hash64(edited), "precondition: the leftovers count toward the hash")
+	c.Equal("thr(0) cr", edited.Damage.String(), "precondition: an armor divisor of 0 shows")
+
+	clone := edited.Clone(gurps.LibraryFile{}, nil, nil, gurps.Copy)
+	c.Equal(plain.Damage.WeaponDamageData, clone.Damage.WeaponDamageData, "the copy's damage is normalized")
+	c.Equal(gurps.Hash64(plain), gurps.Hash64(clone), "so the copy hashes the same as a weapon without the leftovers")
+	c.Equal("thr cr", clone.Damage.String(), "and shows no armor divisor")
+	c.Equal(fxp.Two, edited.Damage.FragmentationArmorDivisor, "the weapon copied from is left alone")
+}
+
+// TestWeaponDamageStringFragmentation verifies the unresolved form of damage with fragmentation: the fragmentation's
+// armor divisor is shown only when it isn't 1, and its type only when it has one, as in the resolved form.
+func TestWeaponDamageStringFragmentation(t *testing.T) {
+	c := check.New(t)
+	w := gurps.NewWeapon(nil, true)
+	w.Damage.Fragmentation = "2d"
+	c.Equal("thr cr [2d]", w.Damage.String(), "no armor divisor and no type")
+	w.Damage.FragmentationType = "cut"
+	c.Equal("thr cr [2d cut]", w.Damage.String(), "a type")
+	w.Damage.FragmentationArmorDivisor = fxp.Two
+	c.Equal("thr cr [2d(2) cut]", w.Damage.String(), "an armor divisor and a type")
+}

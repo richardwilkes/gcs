@@ -620,6 +620,63 @@ func TestCloneWithoutParentHashesTheSame(t *testing.T) {
 	same("equipment modifier choice", eqpModParent, eqpModParent.Clone(LibraryFile{}, e, nil, Copy))
 }
 
+// TestUnsavedWeaponsMatchOnceLoaded verifies that a node whose weapons have never been through a file hashes the same
+// as it does once saved and loaded, so that a copy of it made before the save matches the library source read back from
+// disk. The weapons are new ones of each kind, the natural attacks, and one edited to leave values behind in damage
+// fields that aren't written out. Also verifies that a loaded weapon given fragmentation shows no armor divisor for it,
+// and that the file is written as it always has been.
+func TestUnsavedWeaponsMatchOnceLoaded(t *testing.T) {
+	c := check.New(t)
+	sk := NewSkill(nil, nil, false)
+	sk.Name = "Stage Combat"
+	edited := NewWeapon(sk, false)
+	sk.Weapons = []*Weapon{NewWeapon(sk, true), NewWeapon(sk, false), newBite(sk), newPunch(sk), newKick(sk), edited}
+	var edit Weapon
+	edit.CopyFrom(edited)
+	edit.Damage.ArmorDivisor = 0
+	edit.Damage.FragmentationArmorDivisor = fxp.Two
+	edit.Damage.FragmentationType = "cut"
+	edit.ApplyTo(edited)
+
+	p := filepath.Join(t.TempDir(), "Skills"+SkillsExt)
+	c.NoError(SaveSkills([]*Skill{sk}, p))
+	data, err := os.ReadFile(p)
+	c.NoError(err)
+	for _, key := range []string{"st_mul", "armor_divisor", "fragmentation"} {
+		c.NotContains(string(data), key, "values that go without saying aren't written")
+	}
+	loaded, err := NewSkillsFromFile(os.DirFS(filepath.Dir(p)), filepath.Base(p))
+	c.NoError(err)
+	c.Equal(1, len(loaded))
+	c.Equal(len(sk.Weapons), len(loaded[0].Weapons))
+	for i, w := range loaded[0].Weapons {
+		c.Equal(sk.Weapons[i].Damage.WeaponDamageData, w.Damage.WeaponDamageData,
+			"weapon %d: the damage is the same once loaded", i)
+	}
+	c.Equal(Hash64(sk), Hash64(loaded[0]), "the skill hashes the same once loaded")
+
+	p2 := filepath.Join(t.TempDir(), "Skills"+SkillsExt)
+	c.NoError(SaveSkills(loaded, p2))
+	data2, err := os.ReadFile(p2)
+	c.NoError(err)
+	c.Equal(string(data), string(data2), "and is written back the same")
+
+	e := NewEntity()
+	libFile := LibraryFile{Library: "Test Library", Path: "Test" + SkillsExt}
+	local := sk.Clone(libFile, e, nil, Reference)
+	local.Source = Source{LibraryFile: libFile, TID: loaded[0].TID}
+	e.Skills = append(e.Skills, local)
+	stubLibrarySources(t, e.SourceMatcher(), libFile, loaded[0])
+	state, _ := MatchSource(local)
+	c.Equal(srcstate.Matched, state, "a copy made before the save matches the source as loaded")
+
+	edit = Weapon{}
+	edit.CopyFrom(loaded[0].Weapons[0])
+	c.Equal(fxp.One, edit.Damage.FragmentationArmorDivisor, "a loaded weapon has a fragmentation armor divisor of 1")
+	edit.Damage.Fragmentation = "2d"
+	c.Equal("thr cr [2d]", edit.Damage.String(), "so fragmentation added to it shows no armor divisor")
+}
+
 // TestLoadedTechniqueCopiesHashTheSame verifies that a technique loaded from a file hashes the same as copies of it,
 // and that loading gives a name criteria only to a default that is skill-based, leaving a copy nothing to drop.
 func TestLoadedTechniqueCopiesHashTheSame(t *testing.T) {

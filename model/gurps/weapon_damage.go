@@ -68,10 +68,31 @@ func (w *WeaponDamage) Hash(h hash.Hash) {
 	xhash.Num64(h, w.ModifierPerDie)
 }
 
-// Clone creates a copy of this data.
+// Normalize puts the data into the one form used for it in memory, which is the form it has once loaded from a file,
+// so that a weapon hashes the same and shows the same damage whether or not it has been saved and loaded since it was
+// created or edited. A ST multiplier or armor divisor of 0 is not valid and becomes 1. Without any fragmentation, its
+// armor divisor and type have nothing to apply to and aren't written to disk, so they become 1 and empty.
+func (w *WeaponDamageData) Normalize() {
+	if w.StrengthMultiplier == 0 {
+		w.StrengthMultiplier = fxp.One
+	}
+	if w.ArmorDivisor == 0 {
+		w.ArmorDivisor = fxp.One
+	}
+	w.Fragmentation = strings.TrimSpace(w.Fragmentation)
+	if w.Fragmentation == "" {
+		w.FragmentationType = ""
+	}
+	if w.Fragmentation == "" || w.FragmentationArmorDivisor == 0 {
+		w.FragmentationArmorDivisor = fxp.One
+	}
+}
+
+// Clone creates a normalized copy of this data.
 func (w *WeaponDamage) Clone(owner *Weapon) *WeaponDamage {
 	other := *w
 	other.Owner = owner
+	other.Normalize()
 	return &other
 }
 
@@ -79,19 +100,15 @@ func (w *WeaponDamage) Clone(owner *Weapon) *WeaponDamage {
 func (w *WeaponDamage) MarshalJSONTo(enc *jsontext.Encoder) error {
 	// Marshal a copy so that suppressing "default" values for output doesn't mutate the receiver.
 	data := w.WeaponDamageData
-	// A ST multiplier of 0 is not valid and 1 is very common, so suppress its output when 1.
+	data.Normalize()
+	// A ST multiplier or armor divisor of 1 is very common, so suppress its output.
 	if data.StrengthMultiplier == fxp.One {
 		data.StrengthMultiplier = 0
 	}
-	// An armor divisor of 0 is not valid and 1 is very common, so suppress its output when 1.
 	if data.ArmorDivisor == fxp.One {
 		data.ArmorDivisor = 0
 	}
-	data.Fragmentation = strings.TrimSpace(data.Fragmentation)
-	if data.Fragmentation == "" {
-		data.FragmentationArmorDivisor = 0
-		data.FragmentationType = ""
-	} else if data.FragmentationArmorDivisor == fxp.One {
+	if data.FragmentationArmorDivisor == fxp.One {
 		data.FragmentationArmorDivisor = 0
 	}
 	return json.MarshalEncode(enc, &data)
@@ -110,16 +127,7 @@ func (w *WeaponDamage) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 		w.StrengthType = stdmg.Swing
 		w.Leveled = true
 	}
-	if w.StrengthMultiplier == 0 {
-		w.StrengthMultiplier = fxp.One
-	}
-	if w.ArmorDivisor == 0 {
-		w.ArmorDivisor = fxp.One
-	}
-	w.Fragmentation = strings.TrimSpace(w.Fragmentation)
-	if w.Fragmentation != "" && w.FragmentationArmorDivisor == 0 {
-		w.FragmentationArmorDivisor = fxp.One
-	}
+	w.Normalize()
 	return nil
 }
 
@@ -172,8 +180,10 @@ func (w *WeaponDamage) String() string {
 				buffer.WriteString(w.FragmentationArmorDivisor.String())
 				buffer.WriteByte(')')
 			}
-			buffer.WriteByte(' ')
-			buffer.WriteString(w.FragmentationType)
+			if w.FragmentationType != "" {
+				buffer.WriteByte(' ')
+				buffer.WriteString(w.FragmentationType)
+			}
 			buffer.WriteByte(']')
 		}
 	}
