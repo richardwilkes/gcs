@@ -37,6 +37,7 @@
 		{
 			"id": "will",
 			"type": "integer",
+			"placement": "primary",
 			"name": "Will",
 			"base": "$iq",
 			"cost_per_point": 5
@@ -51,6 +52,7 @@
 		{
 			"id": "per",
 			"type": "integer",
+			"placement": "secondary",
 			"name": "Per",
 			"full_name": "Perception",
 			"base": "$iq",
@@ -73,6 +75,7 @@
 		{
 			"id": "taste_smell",
 			"type": "integer",
+			"placement": "hidden",
 			"name": "Taste & Smell",
 			"base": "$per",
 			"cost_per_point": 2
@@ -225,6 +228,42 @@
 					"value": "$hp"
 				}
 			]
+		},
+		{
+			"id": "fixture_primary_sep",
+			"type": "primary_separator",
+			"name": "Fixture Primary Group"
+		},
+		{
+			"id": "fixture_int_ref",
+			"type": "integer_ref",
+			"name": "IR",
+			"full_name": "Integer Reference",
+			"base": "$st+$dx"
+		},
+		{
+			"id": "fixture_secondary_sep",
+			"type": "secondary_separator",
+			"name": "Fixture Secondary Group"
+		},
+		{
+			"id": "fixture_dec_ref",
+			"type": "decimal_ref",
+			"name": "DR",
+			"full_name": "Decimal Reference",
+			"base": "$basic_speed/2"
+		},
+		{
+			"id": "fixture_pool_sep",
+			"type": "pool_separator",
+			"name": "Fixture Pools"
+		},
+		{
+			"id": "fixture_pool_ref",
+			"type": "pool_ref",
+			"name": "PR",
+			"full_name": "Pool Reference",
+			"base": "$fp+$hp"
 		}
 	]
 }

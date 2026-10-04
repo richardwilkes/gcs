@@ -415,7 +415,7 @@
 	],
 	"body_type": {
 		"name": "Humanoid",
-		"roll": "3d6",
+		"roll": "3d",
 		"locations": [
 			{
 				"id": "eye",
@@ -562,9 +562,9 @@
 	"damage_progression": "basic_set",
 	"default_length_units": "ft_in",
 	"default_weight_units": "lb",
-	"user_description_display": "tooltip",
-	"modifiers_display": "inline",
-	"notes_display": "inline",
-	"skill_level_adj_display": "tooltip",
+	"user_description_display": "not_shown",
+	"modifiers_display": "inline_and_tooltip",
+	"notes_display": "tooltip",
+	"skill_level_adj_display": "inline",
 	"show_spell_adj": true
 }

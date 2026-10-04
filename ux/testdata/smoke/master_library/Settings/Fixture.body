@@ -1,7 +1,7 @@
 {
 	"version": 5,
 	"name": "Humanoid",
-	"roll": "3d6",
+	"roll": "3d",
 	"locations": [
 		{
 			"id": "eye",

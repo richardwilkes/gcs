@@ -1,1 +1,6 @@
-{}
+{
+	"FX": {
+		"path": "Fixture Readme.md",
+		"offset": 2
+	}
+}

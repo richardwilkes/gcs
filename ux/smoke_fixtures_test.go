@@ -7,15 +7,18 @@
 // This Source Code Form is "Incompatible With Secondary Licenses", as
 // defined by the Mozilla Public License, version 2.0.
 
-//go:build smoke
-
 package ux
 
 import (
+	"bufio"
+	"bytes"
+	"encoding/json"
+	"flag"
 	"fmt"
 	"io/fs"
 	"os"
 	"path"
+	"path/filepath"
 	"slices"
 	"strings"
 	"testing"
@@ -25,15 +28,19 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/fonts"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/affects"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/attribute"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/container"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/difficulty"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/display"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/emcost"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/emweight"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/eqcontainer"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/equipmentsel"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/feature"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/frequency"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/layoutnode"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/maxusesmod"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/namegen"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/picker"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/prereq"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/selector"
@@ -44,19 +51,53 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/stdmg"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/stlimit"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/study"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/threshold"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/traitsel"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/wsel"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/wswitch"
+	"github.com/richardwilkes/unison"
 )
 
 // The fixtures in testdata/smoke are meant to hold at least one of every kind of data GCS reads, so that the smoke
 // tests exercise all of it. TestSmokeFixtureCoverage keeps that true: it loads every fixture with the loader GCS uses
 // for its file type, then checks that every value of the enums that shape the data, and every structural case listed
-// in fixtureCases, turns up somewhere in what was loaded. When GCS gains a new kind of data, the test fails until a
-// fixture includes it.
+// in fixtureCases, turns up somewhere in what was loaded. Every enum package in model/gurps/enums must be either
+// required here or listed in fixtureExemptEnums with the reason it isn't, so a new enum fails the test until one or the
+// other is done.
 //
-// The fixtures are written in the form GCS itself saves them in, so loading and saving one through GCS changes
-// nothing. Edit them by hand, or open them in GCS, change them and save.
+// The fixtures are also kept in the form GCS itself saves them in, so that they exercise the current file format
+// rather than a migration from an older one: loading and saving each one through GCS must change nothing. Edit them by
+// hand, or open them in GCS and save them, then run the test with -update-fixtures to put them back in that form, which
+// is also how they are brought up to date after a change to the file format.
+//
+// It needs neither the smoke tag nor a headless session, so it runs with the rest of the tests.
+
+// smokeFixtureDir is where the smoke tests' fixtures are kept, relative to this package.
+const smokeFixtureDir = "testdata/smoke"
+
+var updateFixtures = flag.Bool("update-fixtures", false, "rewrite the smoke fixtures in the form GCS saves them in")
+
+// fixtureEnums lists the enum packages in model/gurps/enums that the fixtures must hold every value of. They are the
+// ones TestSmokeFixtureCoverage requires.
+var fixtureEnums = []string{
+	"affects", "attribute", "container", "difficulty", "display", "emcost", "emweight", "eqcontainer", "equipmentsel",
+	"feature", "frequency", "layoutnode", "maxusesmod", "namegen", "picker", "prereq", "selector", "selfctrl",
+	"skillsel", "spellcmp", "spellmatch", "stdmg", "stlimit", "study", "threshold", "traitsel", "wsel", "wswitch",
+}
+
+// fixtureExemptEnums lists the enum packages in model/gurps/enums the fixtures need not hold every value of, and why.
+var fixtureExemptEnums = map[string]string{
+	"autoscale":   "how the PDF viewer scales pages, an application setting rather than data",
+	"cell":        "how a list column is drawn, which nothing stores",
+	"dgroup":      "which dockables share a window, kept in the application's own settings",
+	"encumbrance": "worked out from what a character carries, never stored",
+	"filternode":  "list filters, kept in the application's own settings",
+	"layoutedge":  "where a dragged block lands in the layout editor, which nothing stores",
+	"progression": "one sheet setting whose every value is stored the same way",
+	"promptstep":  "the order of the prompts when rows arrive in a document, which nothing stores",
+	"srcstate":    "worked out by comparing a row with its library source, never stored",
+	"updatecheck": "how often to check for updates, an application setting rather than data",
+}
 
 // fixtureCases lists the structural cases the fixtures must hold that no enum describes.
 var fixtureCases = []string{
@@ -71,8 +112,7 @@ var fixtureCases = []string{
 	"note container", "note nameable", "weapon melee", "weapon ranged", "weapon hidden", "prereq list any",
 	"prereq when tl", "sheet portrait", "sheet points record", "sheet other equipment", "sheet pool damage",
 	"template body type", "template ancestry", "loot", "output template html", "output template text",
-	"output template legacy", "name generator simple", "name generator markov_letter",
-	"name generator markov_run", "name generator compound",
+	"output template legacy", "key bindings", "page references",
 }
 
 // fixtureFileTypes lists the file types the fixtures must include an example of.
@@ -86,6 +126,8 @@ var fixtureFileTypes = []string{
 
 // TestSmokeFixtureCoverage checks that every fixture loads, and that together they hold every kind of data GCS reads.
 func TestSmokeFixtureCoverage(t *testing.T) {
+	// Loading general settings applies some of them to unison, as starting GCS does.
+	preserveGeneralSettingsEffects(t)
 	c := &fixtureCoverage{t: t, seen: make(map[string]map[string]bool)}
 	fsys := os.DirFS(smokeFixtureDir)
 	for _, dir := range []string{"master_library", "user_library", "files"} {
@@ -99,6 +141,7 @@ func TestSmokeFixtureCoverage(t *testing.T) {
 			t.Fatal(err)
 		}
 	}
+	c.requireEveryEnumPackage()
 	c.require("file type", fixtureFileTypes)
 	c.require("case", fixtureCases)
 	c.requireEnum("feature", without(feature.Types, feature.Unknown))
@@ -130,12 +173,58 @@ func TestSmokeFixtureCoverage(t *testing.T) {
 	c.requireEnum("equipment selection", equipmentsel.Types)
 	c.requireEnum("selector field", selector.Fields)
 	c.requireEnum("max uses adjustment", maxusesmod.Types)
+	c.requireEnum("attribute type", attribute.Types)
+	c.requireEnum("attribute placement", attribute.Placements)
+	c.requireEnum("pool threshold op", without(threshold.Ops, threshold.Unknown))
+	c.requireEnum("display option", display.Options)
+	c.requireEnum("layout node", layoutnode.Types)
+	c.requireEnum("name generator", namegen.Types)
 }
 
 // fixtureCoverage records what the fixtures were found to hold.
 type fixtureCoverage struct {
 	t    *testing.T
 	seen map[string]map[string]bool
+}
+
+// preserveGeneralSettingsEffects puts back, when the test ends, the unison state that loading general settings changes
+// (see gurps.GeneralSettings.EnsureValidity).
+func preserveGeneralSettingsEffects(t *testing.T) {
+	t.Helper()
+	tooltipDelay := unison.DefaultTooltipTheme.Delay
+	tooltipDismissal := unison.DefaultTooltipTheme.Dismissal
+	cursorSize := unison.CursorSize()
+	focusForReading := unison.FocusForReading()
+	t.Cleanup(func() {
+		unison.DefaultTooltipTheme.Delay = tooltipDelay
+		unison.DefaultTooltipTheme.Dismissal = tooltipDismissal
+		unison.SetCursorSize(cursorSize)
+		unison.SetFocusForReading(focusForReading)
+	})
+}
+
+// requireEveryEnumPackage checks that every enum package in model/gurps/enums is either required by this test or
+// exempt from it, so that a new one is not overlooked.
+func (c *fixtureCoverage) requireEveryEnumPackage() {
+	c.t.Helper()
+	entries, err := os.ReadDir(filepath.Join("..", "model", "gurps", "enums"))
+	if err != nil {
+		c.t.Fatal(err)
+	}
+	for _, one := range entries {
+		if !one.IsDir() {
+			continue
+		}
+		name := one.Name()
+		_, exempt := fixtureExemptEnums[name]
+		if required := slices.Contains(fixtureEnums, name); required == exempt {
+			if required {
+				c.t.Errorf("enum package %q is both required and exempt", name)
+			} else {
+				c.t.Errorf("enum package %q is neither required by the fixture coverage nor listed as exempt", name)
+			}
+		}
+	}
 }
 
 func (c *fixtureCoverage) mark(category, value string) {
@@ -216,6 +305,18 @@ func (c *fixtureCoverage) requireEnum(category string, values any) {
 		requireKeys(c, category, list)
 	case []maxusesmod.Type:
 		requireKeys(c, category, list)
+	case []attribute.Type:
+		requireKeys(c, category, list)
+	case []attribute.Placement:
+		requireKeys(c, category, list)
+	case []threshold.Op:
+		requireKeys(c, category, list)
+	case []display.Option:
+		requireKeys(c, category, list)
+	case []layoutnode.Type:
+		requireKeys(c, category, list)
+	case []namegen.Type:
+		requireKeys(c, category, list)
 	default:
 		c.t.Fatalf("unhandled enum list %T", values)
 	}
@@ -234,133 +335,301 @@ func stringsOf[T any](list []T) []string {
 }
 
 // load loads one fixture with the loader GCS uses for its file type, failing the test if it can't be loaded, and
-// records what it holds.
+// records what it holds. Then it saves what it loaded through GCS and checks that the result matches the fixture.
 func (c *fixtureCoverage) load(fsys fs.FS, p string) {
 	c.t.Helper()
 	ext := strings.ToLower(path.Ext(p))
 	c.mark("file type", ext)
-	var err error
-	switch ext {
-	case gurps.SheetExt:
-		var e *gurps.Entity
-		if e, err = gurps.NewEntityFromFile(fsys, p); err == nil {
-			c.entity(e)
-		}
-	case gurps.TemplatesExt:
-		var tmpl *gurps.Template
-		if tmpl, err = gurps.NewTemplateFromFile(fsys, p); err == nil {
-			c.traits(tmpl.Traits)
-			c.skills(tmpl.Skills)
-			c.spells(tmpl.Spells)
-			c.equipment(tmpl.Equipment)
-			c.notes(tmpl.Notes)
-			if tmpl.BodyType != nil {
-				c.mark("case", "template body type")
-			}
-			gurps.Traverse(func(one *gurps.Trait) bool {
-				if one.Container() && one.ContainerType == container.Ancestry {
-					c.mark("case", "template ancestry")
-				}
-				return false
-			}, false, false, tmpl.Traits...)
-		}
-	case gurps.LootExt:
-		var l *gurps.Loot
-		if l, err = gurps.NewLootFromFile(fsys, p); err == nil {
-			c.mark("case", "loot")
-			c.equipment(l.Equipment)
-			c.notes(l.Notes)
-		}
-	case gurps.TraitsExt:
-		var list []*gurps.Trait
-		if list, err = gurps.NewTraitsFromFile(fsys, p); err == nil {
-			c.traits(list)
-		}
-	case gurps.TraitModifiersExt:
-		var list []*gurps.TraitModifier
-		if list, err = gurps.NewTraitModifiersFromFile(fsys, p); err == nil {
-			c.traitModifiers(list)
-		}
-	case gurps.SkillsExt:
-		var list []*gurps.Skill
-		if list, err = gurps.NewSkillsFromFile(fsys, p); err == nil {
-			c.skills(list)
-		}
-	case gurps.SpellsExt:
-		var list []*gurps.Spell
-		if list, err = gurps.NewSpellsFromFile(fsys, p); err == nil {
-			c.spells(list)
-		}
-	case gurps.EquipmentExt:
-		var list []*gurps.Equipment
-		if list, err = gurps.NewEquipmentFromFile(fsys, p); err == nil {
-			c.equipment(list)
-		}
-	case gurps.EquipmentModifiersExt:
-		var list []*gurps.EquipmentModifier
-		if list, err = gurps.NewEquipmentModifiersFromFile(fsys, p); err == nil {
-			c.equipmentModifiers(list)
-		}
-	case gurps.NotesExt:
-		var list []*gurps.Note
-		if list, err = gurps.NewNotesFromFile(fsys, p); err == nil {
-			c.notes(list)
-		}
-	case gurps.AncestryExt:
-		_, err = gurps.NewAncestryFromFile(fsys, p)
-	case gurps.NamesExt:
-		var n *gurps.NameGenerator
-		if n, err = gurps.NewNameGeneratorFromFS(fsys, p); err == nil {
-			c.mark("case", "name generator "+n.Type.Key())
-		}
-	case gurps.AttributesExt:
-		_, err = gurps.NewAttributeDefsFromFile(fsys, p)
-	case gurps.BodyExt:
-		_, err = gurps.NewBodyFromFile(fsys, p)
-	case gurps.CalendarExt:
-		_, err = gurps.NewCalendarRefFromFS(fsys, p)
-	case gurps.ColorSettingsExt:
-		_, err = colors.NewFromFS(fsys, p)
-	case gurps.FontSettingsExt:
-		_, err = fonts.NewFromFS(fsys, p)
-	case gurps.GeneralSettingsExt:
-		_, err = gurps.NewGeneralSettingsFromFile(fsys, p)
-	case gurps.KeySettingsExt:
-		_, err = gurps.NewKeyBindingsFromFS(fsys, p)
-	case gurps.PageRefSettingsExt:
-		_, err = gurps.NewPageRefsFromFS(fsys, p)
-	case gurps.SheetSettingsExt:
-		_, err = gurps.NewSheetSettingsFromFile(fsys, p)
-	case ".md":
-	case ".html", ".txt":
-		c.outputTemplate(fsys, p)
-	default:
-		c.t.Errorf("%s: no loader for %s files", p, ext)
-	}
+	save, err := c.loadAndWalk(fsys, p, ext)
 	if err != nil {
 		c.t.Errorf("%s: %v", p, err)
+		return
+	}
+	if save != nil {
+		c.roundTrip(fsys, p, save)
 	}
 }
 
-func (c *fixtureCoverage) outputTemplate(fsys fs.FS, p string) {
+// loadAndWalk loads one fixture and records what it holds. It returns the function that saves what was loaded the way
+// GCS saves that file type, or nil for a type GCS doesn't save (or, for key bindings, saves only partly; see
+// gurps.KeyBindings.MarshalJSONTo).
+func (c *fixtureCoverage) loadAndWalk(fsys fs.FS, p, ext string) (func(string) error, error) {
+	switch ext {
+	case gurps.SheetExt:
+		e, err := gurps.NewEntityFromFile(fsys, p)
+		if err != nil {
+			return nil, err
+		}
+		c.entity(e)
+		return e.Save, nil
+	case gurps.TemplatesExt:
+		tmpl, err := gurps.NewTemplateFromFile(fsys, p)
+		if err != nil {
+			return nil, err
+		}
+		c.traits(tmpl.Traits)
+		c.skills(tmpl.Skills)
+		c.spells(tmpl.Spells)
+		c.equipment(tmpl.Equipment)
+		c.notes(tmpl.Notes)
+		if tmpl.BodyType != nil {
+			c.mark("case", "template body type")
+		}
+		gurps.Traverse(func(one *gurps.Trait) bool {
+			if one.Container() && one.ContainerType == container.Ancestry {
+				c.mark("case", "template ancestry")
+			}
+			return false
+		}, false, false, tmpl.Traits...)
+		return tmpl.Save, nil
+	case gurps.LootExt:
+		l, err := gurps.NewLootFromFile(fsys, p)
+		if err != nil {
+			return nil, err
+		}
+		c.mark("case", "loot")
+		c.equipment(l.Equipment)
+		c.notes(l.Notes)
+		return l.Save, nil
+	case gurps.TraitsExt:
+		list, err := gurps.NewTraitsFromFile(fsys, p)
+		if err != nil {
+			return nil, err
+		}
+		c.traits(list)
+		return func(dst string) error { return gurps.SaveTraits(list, dst) }, nil
+	case gurps.TraitModifiersExt:
+		list, err := gurps.NewTraitModifiersFromFile(fsys, p)
+		if err != nil {
+			return nil, err
+		}
+		c.traitModifiers(list)
+		return func(dst string) error { return gurps.SaveTraitModifiers(list, dst) }, nil
+	case gurps.SkillsExt:
+		list, err := gurps.NewSkillsFromFile(fsys, p)
+		if err != nil {
+			return nil, err
+		}
+		c.skills(list)
+		return func(dst string) error { return gurps.SaveSkills(list, dst) }, nil
+	case gurps.SpellsExt:
+		list, err := gurps.NewSpellsFromFile(fsys, p)
+		if err != nil {
+			return nil, err
+		}
+		c.spells(list)
+		return func(dst string) error { return gurps.SaveSpells(list, dst) }, nil
+	case gurps.EquipmentExt:
+		list, err := gurps.NewEquipmentFromFile(fsys, p)
+		if err != nil {
+			return nil, err
+		}
+		c.equipment(list)
+		return func(dst string) error { return gurps.SaveEquipment(list, dst) }, nil
+	case gurps.EquipmentModifiersExt:
+		list, err := gurps.NewEquipmentModifiersFromFile(fsys, p)
+		if err != nil {
+			return nil, err
+		}
+		c.equipmentModifiers(list)
+		return func(dst string) error { return gurps.SaveEquipmentModifiers(list, dst) }, nil
+	case gurps.NotesExt:
+		list, err := gurps.NewNotesFromFile(fsys, p)
+		if err != nil {
+			return nil, err
+		}
+		c.notes(list)
+		return func(dst string) error { return gurps.SaveNotes(list, dst) }, nil
+	case gurps.AncestryExt:
+		a, err := gurps.NewAncestryFromFile(fsys, p)
+		if err != nil {
+			return nil, err
+		}
+		return a.Save, nil
+	case gurps.NamesExt:
+		// Loaded once ready to generate names, which checks the definition is complete, and once as an editor would,
+		// which keeps it exactly as written for saving.
+		n, err := gurps.NewNameGeneratorFromFS(fsys, p)
+		if err != nil {
+			return nil, err
+		}
+		c.markKey("name generator", n.Type)
+		for _, one := range n.Compound {
+			c.markKey("name generator", one.Type)
+		}
+		if n, err = gurps.ReadNameGeneratorFromFS(fsys, p); err != nil {
+			return nil, err
+		}
+		return n.Save, nil
+	case gurps.AttributesExt:
+		defs, err := gurps.NewAttributeDefsFromFile(fsys, p)
+		if err != nil {
+			return nil, err
+		}
+		c.attributeDefs(defs)
+		return defs.Save, nil
+	case gurps.BodyExt:
+		b, err := gurps.NewBodyFromFile(fsys, p)
+		if err != nil {
+			return nil, err
+		}
+		return b.Save, nil
+	case gurps.CalendarExt:
+		_, err := gurps.NewCalendarRefFromFS(fsys, p)
+		return nil, err
+	case gurps.ColorSettingsExt:
+		cs, err := colors.NewFromFS(fsys, p)
+		if err != nil {
+			return nil, err
+		}
+		return cs.Save, nil
+	case gurps.FontSettingsExt:
+		f, err := fonts.NewFromFS(fsys, p)
+		if err != nil {
+			return nil, err
+		}
+		return f.Save, nil
+	case gurps.GeneralSettingsExt:
+		g, err := gurps.NewGeneralSettingsFromFile(fsys, p)
+		if err != nil {
+			return nil, err
+		}
+		return g.Save, nil
+	case gurps.KeySettingsExt:
+		if _, err := gurps.NewKeyBindingsFromFS(fsys, p); err != nil {
+			return nil, err
+		}
+		var raw map[string]string
+		if err := readJSON(fsys, p, &raw); err != nil {
+			return nil, err
+		}
+		if len(raw) != 0 {
+			c.mark("case", "key bindings")
+		}
+		return nil, nil
+	case gurps.PageRefSettingsExt:
+		refs, err := gurps.NewPageRefsFromFS(fsys, p)
+		if err != nil {
+			return nil, err
+		}
+		if len(refs.List()) != 0 {
+			c.mark("case", "page references")
+		}
+		return refs.Save, nil
+	case gurps.SheetSettingsExt:
+		ss, err := gurps.NewSheetSettingsFromFile(fsys, p)
+		if err != nil {
+			return nil, err
+		}
+		c.sheetSettings(ss)
+		return ss.Save, nil
+	case ".md":
+		return nil, nil
+	case ".html", ".txt":
+		return nil, c.outputTemplate(fsys, p)
+	default:
+		return nil, fmt.Errorf("no loader for %s files", ext)
+	}
+}
+
+func readJSON(fsys fs.FS, p string, v any) error {
+	data, err := fs.ReadFile(fsys, p)
+	if err != nil {
+		return err
+	}
+	return json.Unmarshal(data, v)
+}
+
+// roundTrip saves what was loaded from the fixture at p through GCS and checks that the result is the fixture itself,
+// apart from line endings, which a checkout may have changed. With -update-fixtures, it writes the result over the
+// fixture instead.
+func (c *fixtureCoverage) roundTrip(fsys fs.FS, p string, save func(string) error) {
 	c.t.Helper()
-	if path.Base(path.Dir(p)) != "Output Templates" {
-		c.t.Errorf("%s: not an output template", p)
+	dst := filepath.Join(c.t.TempDir(), path.Base(p))
+	if err := save(dst); err != nil {
+		c.t.Errorf("%s: unable to save: %v", p, err)
 		return
+	}
+	saved, err := os.ReadFile(dst)
+	if err != nil {
+		c.t.Fatal(err)
+	}
+	original, err := fs.ReadFile(fsys, p)
+	if err != nil {
+		c.t.Fatal(err)
+	}
+	if bytes.Equal(bytes.ReplaceAll(original, []byte("\r\n"), []byte("\n")), saved) {
+		return
+	}
+	if *updateFixtures {
+		// G703: p is one of the fixtures the walk found, and rewriting it is what -update-fixtures asks for.
+		target := filepath.Join(smokeFixtureDir, filepath.FromSlash(p))
+		if err = os.WriteFile(target, saved, 0o640); err != nil { //nolint:gosec // See above.
+			c.t.Fatal(err)
+		}
+		return
+	}
+	c.t.Errorf("%s is not in the form GCS saves it in; run with -update-fixtures to rewrite it", p)
+}
+
+func (c *fixtureCoverage) outputTemplate(fsys fs.FS, p string) error {
+	if path.Base(path.Dir(p)) != "Output Templates" {
+		return fmt.Errorf("not an output template")
 	}
 	data, err := fs.ReadFile(fsys, p)
 	if err != nil {
-		c.t.Errorf("%s: %v", p, err)
-		return
+		return err
 	}
-	first, _, _ := strings.Cut(string(data), "\n")
-	switch first {
+	// The first line is read as gurps.Export reads it, which leaves out a carriage return.
+	var first []byte
+	if _, first, err = bufio.ScanLines(data, true); err != nil {
+		return err
+	}
+	switch string(first) {
 	case "GCS HTML Template v1":
 		c.mark("case", "output template html")
 	case "GCS Text Template v1":
 		c.mark("case", "output template text")
 	default:
 		c.mark("case", "output template legacy")
+	}
+	return nil
+}
+
+func (c *fixtureCoverage) sheetSettings(ss *gurps.SheetSettings) {
+	for _, one := range []display.Option{
+		ss.UserDescriptionDisplay, ss.ModifiersDisplay, ss.NotesDisplay,
+		ss.SkillLevelAdjDisplay,
+	} {
+		c.markKey("display option", one)
+	}
+	if ss.Attributes != nil {
+		c.attributeDefs(ss.Attributes)
+	}
+	if ss.Layout != nil {
+		c.layoutNode(ss.Layout.Root)
+	}
+}
+
+func (c *fixtureCoverage) layoutNode(n *gurps.SheetLayoutNode) {
+	if n == nil {
+		return
+	}
+	c.markKey("layout node", n.Type)
+	for _, one := range n.Children {
+		c.layoutNode(one)
+	}
+}
+
+func (c *fixtureCoverage) attributeDefs(defs *gurps.AttributeDefs) {
+	for _, def := range defs.List(false) {
+		c.markKey("attribute type", def.Type)
+		c.markKey("attribute placement", def.Placement)
+		for _, t := range def.Thresholds {
+			for _, op := range t.Ops {
+				c.markKey("pool threshold op", op)
+			}
+		}
 	}
 }
 
@@ -379,6 +648,7 @@ func (c *fixtureCoverage) entity(e *gurps.Entity) {
 			c.mark("case", "sheet pool damage")
 		}
 	}
+	c.sheetSettings(e.SheetSettings)
 	c.traits(e.Traits)
 	c.skills(e.Skills)
 	c.spells(e.Spells)
@@ -442,7 +712,7 @@ func (c *fixtureCoverage) traits(list []*gurps.Trait) {
 func (c *fixtureCoverage) traitModifiers(list []*gurps.TraitModifier) {
 	gurps.Traverse(func(one *gurps.TraitModifier) bool {
 		if one.Container() {
-			c.modifierContainer("modifier", one.Choice)
+			c.modifierContainer("modifier", one.Choice.IsZero(), one.IsMandatoryChoice())
 		} else {
 			c.markKey("modifier affects", one.Affects)
 			c.features(one.Features)
@@ -454,14 +724,14 @@ func (c *fixtureCoverage) traitModifiers(list []*gurps.TraitModifier) {
 	}, false, false, list...)
 }
 
-func (c *fixtureCoverage) modifierContainer(kind string, choice gurps.TemplatePicker) {
+func (c *fixtureCoverage) modifierContainer(kind string, group, mandatory bool) {
 	switch {
-	case choice.IsZero():
+	case group:
 		c.mark("case", kind+" group")
-	case choice.Qualifier.Compare == criteria.AtMostNumber:
-		c.mark("case", kind+" choice optional")
-	default:
+	case mandatory:
 		c.mark("case", kind+" choice mandatory")
+	default:
+		c.mark("case", kind+" choice optional")
 	}
 }
 
@@ -480,6 +750,12 @@ func (c *fixtureCoverage) skills(list []*gurps.Skill) {
 			if one.TechniqueLimitModifier != nil {
 				c.mark("case", "technique limit")
 			}
+			for _, s := range one.Study {
+				c.markKey("study", s.Type)
+			}
+			c.features(one.Features)
+			c.weapons(one.Weapons)
+			c.prereqs(one.Prereq)
 		default:
 			c.markKey("skill difficulty", one.Difficulty.Difficulty)
 			if one.Specialization != "" {
@@ -526,6 +802,7 @@ func (c *fixtureCoverage) spells(list []*gurps.Spell) {
 			for _, s := range one.Study {
 				c.markKey("study", s.Type)
 			}
+			c.features(one.Features)
 			c.weapons(one.Weapons)
 			c.prereqs(one.Prereq)
 		}
@@ -567,7 +844,7 @@ func (c *fixtureCoverage) equipment(list []*gurps.Equipment) {
 func (c *fixtureCoverage) equipmentModifiers(list []*gurps.EquipmentModifier) {
 	gurps.Traverse(func(one *gurps.EquipmentModifier) bool {
 		if one.Container() {
-			c.modifierContainer("equipment modifier", one.Choice)
+			c.modifierContainer("equipment modifier", one.Choice.IsZero(), one.IsMandatoryChoice())
 		} else {
 			c.markKey("equipment modifier cost", one.CostType)
 			c.markKey("equipment modifier weight", one.WeightType)
@@ -641,11 +918,12 @@ func (c *fixtureCoverage) features(list gurps.Features) {
 	}
 }
 
+// prereqs records what a row's prerequisites hold. Every row has a top-level list, so only the lists nested inside it
+// count as examples of prereq_list.
 func (c *fixtureCoverage) prereqs(list *gurps.PrereqList) {
 	if list == nil {
 		return
 	}
-	c.markKey("prereq", list.PrereqType())
 	if !list.All {
 		c.mark("case", "prereq list any")
 	}
@@ -655,6 +933,7 @@ func (c *fixtureCoverage) prereqs(list *gurps.PrereqList) {
 	for _, one := range list.Prereqs {
 		switch p := one.(type) {
 		case *gurps.PrereqList:
+			c.markKey("prereq", p.PrereqType())
 			c.prereqs(p)
 			continue
 		case *gurps.SpellPrereq:

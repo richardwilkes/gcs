@@ -28,21 +28,25 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/updatecheck"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/toolbox/v2/check"
+	"github.com/richardwilkes/toolbox/v2/errs"
 	"github.com/richardwilkes/toolbox/v2/xos"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/accessibility"
 )
 
 // The smoke tests start the whole application headless, exactly as main does apart from the handoff service and the
-// desktop integration (see DefaultHeadlessGCSStartupConfig), against a known set of fixtures, then drive it the way a user would and compare what they find against golden files. They are
-// compiled only with the smoke build tag:
+// desktop integration (see DefaultHeadlessGCSStartupConfig), against a known set of fixtures, then drive it the way a
+// user would and compare what they find against golden files. They are compiled only with the smoke build tag:
 //
 //	go test -tags smoke ./ux -run Smoke            # compare against the goldens
 //	go test -tags smoke ./ux -run Smoke -update    # rewrite the goldens from what the tests see
 //
 // Everything a run could pick up from the machine it runs on is pinned, so that the same run produces the same pixels:
 // the clock, the time zone, the application's name, version and copyright banner, the home directory, and the
-// settings, which start from the factory defaults with the few changes smokeSettings makes.
+// settings, which start from the factory defaults with the few changes useSmokeSettings makes.
+//
+// Sessions share the process's global state, which each test changes and puts back, so the smoke tests must never call
+// t.Parallel.
 //
 // The fixtures live in testdata/smoke: master_library and user_library are the two libraries, and files holds
 // individual documents, such as character sheets, that a test opens or saves. Together they hold every kind of data GCS
@@ -51,9 +55,6 @@ import (
 
 // smokeNow is the time the application sees throughout a smoke test.
 var smokeNow = time.Date(2026, time.January, 2, 15, 4, 0, 0, time.UTC)
-
-// smokeFixtureDir is where the smoke tests' fixtures are kept, relative to this package.
-const smokeFixtureDir = "testdata/smoke"
 
 // smokeSession is one running smoke test: the headless screen, the workspace window, and the directory holding the
 // test's own copy of the fixtures.
@@ -80,6 +81,7 @@ type smokeSession struct {
 func startSmoke(t *testing.T, files ...string) *smokeSession {
 	t.Helper()
 	s := &smokeSession{t: t, c: check.New(t), dir: t.TempDir(), reported: make(map[string]bool)}
+	s.clearArtifacts()
 	s.pinEnvironment()
 	s.captureErrorLogs()
 	for _, one := range []string{"master_library", "user_library", "files"} {
@@ -93,7 +95,8 @@ func startSmoke(t *testing.T, files ...string) *smokeSession {
 	for i, one := range files {
 		paths[i] = s.file(one)
 	}
-	screen, err := unison.StartHeadless(unison.HeadlessConfig{Width: 1400, Height: 900}, StartOptions(paths, DefaultHeadlessGCSStartupConfig())...)
+	screen, err := unison.StartHeadless(unison.HeadlessConfig{Width: 1400, Height: 900},
+		StartOptions(paths, DefaultHeadlessGCSStartupConfig())...)
 	if err != nil {
 		t.Fatalf("unable to start the headless session: %v", err)
 	}
@@ -104,6 +107,7 @@ func startSmoke(t *testing.T, files ...string) *smokeSession {
 		for _, one := range screen.Errors() {
 			t.Errorf("the headless session recorded an error: %v", one)
 		}
+		s.checkBeeps("the end of the test")
 		s.checkLogs()
 	})
 	t.Cleanup(screen.Stop)
@@ -114,12 +118,17 @@ func startSmoke(t *testing.T, files ...string) *smokeSession {
 	// pending reload is let finish first, and only then are the watches stopped, since a reload watches the libraries
 	// afresh. Registered after Stop so that it runs before it, while the session can still act.
 	t.Cleanup(func() {
-		s.settle()
-		screen.Do(func() {
+		if waitErr := s.waitForNavigator(); waitErr != nil {
+			t.Error(waitErr)
+		}
+		stop := func() {
 			for _, lib := range gurps.GlobalSettings().Libraries.List() {
 				lib.StopAllWatches()
 			}
-		})
+		}
+		if !screen.Do(stop) {
+			stop() // The session has already ended, so there is no UI thread to do it on.
+		}
 	})
 	screen.Do(func() {
 		s.wnd = Workspace.Window
@@ -128,6 +137,10 @@ func startSmoke(t *testing.T, files ...string) *smokeSession {
 	if s.wnd == nil {
 		t.Fatal("the workspace window was not created")
 	}
+	// Accessibility support changes how the application behaves, moving the focus to a button or check box when it is
+	// clicked, for one. It is switched on from the start, rather than by the first snapshot, so that every step of a
+	// test runs the same way.
+	screen.EnableAccessibility()
 	s.settle()
 	return s
 }
@@ -139,39 +152,42 @@ func startSmoke(t *testing.T, files ...string) *smokeSession {
 //
 // Making a handler of another kind the default also points the log package at it, and putting slog's own default back
 // does not undo that, so the log package's writer and flags are put back separately.
+//
+// Anything logged while the test is being torn down is checked as the handler is taken away again.
 func (s *smokeSession) captureErrorLogs() {
 	prev := slog.Default()
 	prevWriter := log.Writer()
 	prevFlags := log.Flags()
 	s.t.Cleanup(func() {
+		s.checkLogs()
 		slog.SetDefault(prev)
 		log.SetOutput(prevWriter)
 		log.SetFlags(prevFlags)
 	})
-	slog.SetDefault(slog.New(&smokeLogHandler{next: slog.NewTextHandler(os.Stderr, nil), s: s}))
+	slog.SetDefault(slog.New(&smokeLogHandler{
+		next:    slog.NewTextHandler(os.Stderr, nil),
+		capture: slog.NewTextHandler(smokeLogSink{s: s}, &slog.HandlerOptions{Level: slog.LevelError}),
+	}))
 }
 
-// smokeLogHandler is the slog.Handler captureErrorLogs installs.
+// smokeLogHandler is the slog.Handler captureErrorLogs installs. It passes every record on to next, and the error-level
+// ones to capture as well, which formats them for smokeLogSink. Formatting them with a handler of slog's own resolves
+// their values and keeps the attributes and groups added through WithAttrs and WithGroup.
 type smokeLogHandler struct {
-	next slog.Handler
-	s    *smokeSession
+	next    slog.Handler
+	capture slog.Handler
 }
 
 func (h *smokeLogHandler) Enabled(ctx context.Context, level slog.Level) bool {
-	return level >= slog.LevelError || h.next.Enabled(ctx, level)
+	return h.capture.Enabled(ctx, level) || h.next.Enabled(ctx, level)
 }
 
-func (h *smokeLogHandler) Handle(ctx context.Context, r slog.Record) error { //nolint:gocritic // slog.Handler requires a value
-	if r.Level >= slog.LevelError {
-		var buf strings.Builder
-		buf.WriteString(r.Message)
-		r.Attrs(func(a slog.Attr) bool {
-			fmt.Fprintf(&buf, " %s=%v", a.Key, a.Value)
-			return true
-		})
-		h.s.logLock.Lock()
-		h.s.logged = append(h.s.logged, buf.String())
-		h.s.logLock.Unlock()
+//nolint:gocritic // slog.Handler requires the record by value.
+func (h *smokeLogHandler) Handle(ctx context.Context, r slog.Record) error {
+	if h.capture.Enabled(ctx, r.Level) {
+		if err := h.capture.Handle(ctx, r); err != nil {
+			return err
+		}
 	}
 	if h.next.Enabled(ctx, r.Level) {
 		return h.next.Handle(ctx, r)
@@ -180,24 +196,34 @@ func (h *smokeLogHandler) Handle(ctx context.Context, r slog.Record) error { //n
 }
 
 func (h *smokeLogHandler) WithAttrs(attrs []slog.Attr) slog.Handler {
-	return &smokeLogHandler{next: h.next.WithAttrs(attrs), s: h.s}
+	return &smokeLogHandler{next: h.next.WithAttrs(attrs), capture: h.capture.WithAttrs(attrs)}
 }
 
 func (h *smokeLogHandler) WithGroup(name string) slog.Handler {
-	return &smokeLogHandler{next: h.next.WithGroup(name), s: h.s}
+	return &smokeLogHandler{next: h.next.WithGroup(name), capture: h.capture.WithGroup(name)}
+}
+
+// smokeLogSink receives the error-level records smokeLogHandler captures, one formatted record per Write, and keeps
+// them for checkLogs.
+type smokeLogSink struct {
+	s *smokeSession
+}
+
+func (w smokeLogSink) Write(p []byte) (int, error) {
+	w.s.logLock.Lock()
+	w.s.logged = append(w.s.logged, strings.TrimSpace(string(p)))
+	w.s.logLock.Unlock()
+	return len(p), nil
 }
 
 // checkInvariants checks what must hold at every step of every test, whatever the test is about, failing the test for
 // each thing that does not: nothing in w may be a control without an accessible name (by the same rule as
 // TestEveryControlHasAnAccessibleName), nothing may have beeped, and nothing may have been logged as an error. It runs
-// whenever a test takes a GUI snapshot, so every screen a test looks at is checked.
-// The where says which step it was, for the failure messages.
+// whenever a test takes a snapshot, of either kind, so every screen a test looks at is checked. Beeps and logged errors
+// are checked once more when the test ends. The where says which step it was, for the failure messages.
 func (s *smokeSession) checkInvariants(where string, w *unison.Window) {
 	s.t.Helper()
-	if beeps := s.screen.Beeps(); beeps != s.beeps {
-		s.t.Errorf("%s: the application beeped %d time(s)", where, beeps-s.beeps)
-		s.beeps = beeps
-	}
+	s.checkBeeps(where)
 	s.checkLogs()
 	tree := s.screen.AccessibilityTree(w)
 	if tree == nil {
@@ -214,6 +240,15 @@ func (s *smokeSession) checkInvariants(where string, w *unison.Window) {
 		}
 		return true
 	})
+}
+
+// checkBeeps fails the test if the application has beeped since it was last called.
+func (s *smokeSession) checkBeeps(where string) {
+	s.t.Helper()
+	if beeps := s.screen.Beeps(); beeps != s.beeps {
+		s.t.Errorf("%s: the application beeped %d time(s)", where, beeps-s.beeps)
+		s.beeps = beeps
+	}
 }
 
 // checkLogs fails the test for every error-level record logged since it was last called.
@@ -269,23 +304,33 @@ func describeUnnamed(tree *accessibility.Tree, n *accessibility.Node) string {
 	return desc
 }
 
-// settle waits for the work the navigator defers to a timer to be done: the reload it asks for as it is created and
-// whenever a library changes, and the resizing of its table. Sync cannot wait for these, since nothing can tell a timer
-// that is about to fire from one that never will, but the navigator records that it has them pending. Starting up is
-// not finished until they are done, since the reload can change what the navigator shows.
+// settle waits for the work the navigator defers to a timer or to a goroutine to be done, failing the test if it isn't
+// done within 5 seconds. See waitForNavigator.
 func (s *smokeSession) settle() {
 	s.t.Helper()
+	if err := s.waitForNavigator(); err != nil {
+		s.t.Fatal(err)
+	}
+}
+
+// waitForNavigator waits for the work the navigator defers to be done: the reload it asks for, on a timer, as it is
+// created and whenever a library changes; the resizing of its table, also on a timer; and the build of its search
+// cache, which reads the libraries on a goroutine of its own. Sync cannot wait for any of these, since nothing can tell
+// a timer that is about to fire from one that never will, but the navigator records that it has them pending. Starting
+// up is not finished until they are done, since the reload can change what the navigator shows, and neither is a test,
+// since the cache build reads the test's copies of the fixtures.
+func (s *smokeSession) waitForNavigator() error {
 	deadline := time.Now().Add(5 * time.Second)
 	for {
 		pending := false
 		if !s.screen.Do(func() {
 			n := Workspace.Navigator
-			pending = n != nil && (n.needReload || n.adjustTableSizePending)
+			pending = n != nil && (n.needReload || n.adjustTableSizePending || n.lastBuild != nil)
 		}) || !pending {
-			return
+			return nil
 		}
 		if time.Now().After(deadline) {
-			s.t.Fatal("the navigator still has work pending after 5 seconds")
+			return errs.New("the navigator still has work pending after 5 seconds")
 		}
 		time.Sleep(10 * time.Millisecond)
 	}
@@ -337,15 +382,24 @@ func (s *smokeSession) useSmokeSettings() {
 	global.General.AutoFillProfile = false
 	// Each test starts from an empty workspace.
 	global.General.RestoreWorkspaceOnStart = false
+	// The factory default is the name of the user running the tests.
+	global.General.DefaultPlayerName = "Fixture Player"
 	// Tooltips appear on a timer, which a capture could otherwise land either side of. With the longest delay there is,
 	// no tooltip appears unless a test hovers for half a minute. The settings apply their tooltip timing to unison's
 	// tooltip theme, which putting the settings back does not undo, so the theme is put back separately.
 	global.General.TooltipDelay = gurps.TooltipDelayMax
-	swapForTest(s.t, &unison.DefaultTooltipTheme.Delay, unison.DefaultTooltipTheme.Delay)
-	swapForTest(s.t, &unison.DefaultTooltipTheme.Dismissal, unison.DefaultTooltipTheme.Dismissal)
+	// Applying general settings changes some of unison's state too, which putting the settings back does not undo.
+	preserveGeneralSettingsEffects(s.t)
 	s.c.NoError(global.Libraries.Master().SetPath(filepath.Join(s.dir, "master_library")))
 	s.c.NoError(global.Libraries.User().SetPath(filepath.Join(s.dir, "user_library")))
 	global.EnsureValidity()
+	// The file dialogs start in the directory last used for their purpose. With none recorded, that is the real home
+	// directory of the user running the tests, which GCS looks up through the operating system rather than $HOME.
+	home := filepath.Join(s.dir, "home")
+	for _, key := range []string{gurps.DefaultLastDirKey, gurps.ImagesLastDirKey, gurps.SettingsLastDirKey} {
+		global.SetLastDir(key, home)
+	}
+	global.SetLastDir(gurps.RulesLookupLastDirKey, global.Libraries.User().Path())
 	applyGlobalSettings(global)
 }
 

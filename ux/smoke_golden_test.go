@@ -48,15 +48,27 @@ func (s *smokeSession) goldenPath(name string) string {
 	return filepath.Join(smokeGoldenDir, s.t.Name(), name)
 }
 
-// artifactPath returns the path to write what this test saw, for the golden file with the given name, creating the
-// directory it goes in.
-func (s *smokeSession) artifactPath(name string) string {
+// artifactDir returns the directory this test writes what it saw to when a comparison fails.
+func (s *smokeSession) artifactDir() string {
 	dir := os.Getenv("GCS_SMOKE_ARTIFACTS")
 	if dir == "" {
 		dir = filepath.Join(os.TempDir(), "gcs-smoke")
 	}
-	dir = filepath.Join(dir, s.t.Name())
-	s.c.NoError(os.MkdirAll(dir, 0o750)) //nolint:gosec // G703: writing into the directory named in the environment is the point
+	return filepath.Join(dir, s.t.Name())
+}
+
+// clearArtifacts removes what an earlier run of this test left in its artifact directory, so that what is there
+// afterwards is from this run alone.
+func (s *smokeSession) clearArtifacts() {
+	s.c.NoError(os.RemoveAll(s.artifactDir()))
+}
+
+// artifactPath returns the path to write what this test saw, for the golden file with the given name, creating the
+// directory it goes in.
+func (s *smokeSession) artifactPath(name string) string {
+	dir := s.artifactDir()
+	// G703: writing into the directory named in the environment is the point.
+	s.c.NoError(os.MkdirAll(dir, 0o750)) //nolint:gosec // See above.
 	return filepath.Join(dir, name)
 }
 
@@ -223,6 +235,11 @@ func (s *smokeSession) expectScreenshot(name string, p unison.Paneler) {
 	s.t.Helper()
 	golden := name + ".png"
 	actual := s.capture(p)
+	wnd := s.wnd
+	if p != nil {
+		s.screen.Do(func() { wnd = p.AsPanel().Window() })
+	}
+	s.checkInvariants(fmt.Sprintf("the %q screenshot", name), wnd)
 	if *updateSmokeGoldens {
 		var buf bytes.Buffer
 		s.c.NoError(png.Encode(&buf, actual))
@@ -258,8 +275,9 @@ func (s *smokeSession) expectScreenshot(name string, p unison.Paneler) {
 }
 
 // capture returns the pixels of p, or of the whole screen when p is nil, once the application has gone quiet and the
-// work the navigator defers to a timer is done (see settle). The pointer is moved first to the empty end of the menu bar, where it highlights nothing, so that what is captured does
-// not depend on where the last click was.
+// work the navigator defers is done (see settle). The pointer is moved first to the empty end of the menu bar, where it
+// highlights nothing, so that what is captured does not depend on where the last click was. A panel must lie wholly on
+// the screen.
 func (s *smokeSession) capture(p unison.Paneler) *image.NRGBA {
 	s.t.Helper()
 	size := s.screen.Size()
@@ -281,8 +299,8 @@ func (s *smokeSession) capture(p unison.Paneler) *image.NRGBA {
 	scale := s.screen.Scale()
 	crop := image.Rect(int(r.X*scale), int(r.Y*scale), int((r.X+r.Width)*scale), int((r.Y+r.Height)*scale))
 	sub, ok := img.SubImage(crop).(*image.NRGBA)
-	if !ok || sub.Bounds().Empty() {
-		s.t.Fatalf("the panel's rect %v is not on the screen", r)
+	if !ok || sub.Bounds() != crop {
+		s.t.Fatalf("the panel's rect %v does not lie wholly on the screen", r)
 	}
 	// Copied so that the result starts at the origin, as a decoded golden file does.
 	out := image.NewNRGBA(image.Rect(0, 0, crop.Dx(), crop.Dy()))
