@@ -179,7 +179,7 @@ func newEditedLibraryTrait(t *testing.T, c check.Checker, screen *unison.Headles
 		prepareLib(lib)
 	}
 	libFile := gurps.LibraryFile{Library: user.Key(), Path: "Traits/Test" + gurps.TraitsExt}
-	c.NoError(gurps.SaveTraits([]*gurps.Trait{lib}, filepath.Join(user.Path(), filepath.FromSlash(libFile.Path))))
+	c.NoError(gurps.SaveTraits([]*gurps.Trait{lib}, filepath.Join(user.Path(false), filepath.FromSlash(libFile.Path))))
 	var e *editor[*gurps.Trait, *gurps.TraitEditData]
 	var local *gurps.Trait
 	screen.Do(func() {
@@ -344,7 +344,7 @@ func TestEditorSyncPutsTheFocusBack(t *testing.T) {
 	lib.LocalNotes = strings.Repeat("A line of notes.\n", 80)
 	libFile := gurps.LibraryFile{Library: user.Key(), Path: "Modifiers/Test" + gurps.TraitModifiersExt}
 	c.NoError(gurps.SaveTraitModifiers([]*gurps.TraitModifier{lib},
-		filepath.Join(user.Path(), filepath.FromSlash(libFile.Path))))
+		filepath.Join(user.Path(false), filepath.FromSlash(libFile.Path))))
 	isChoiceEditor := func(d unison.Dockable) bool {
 		_, isEditor := d.AsPanel().Self.(*editor[*gurps.TraitModifier, *gurps.TraitModifierEditData])
 		return isEditor

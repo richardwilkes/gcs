@@ -195,7 +195,7 @@ func (d *fileEditorDockable[T]) addToStartToolbar(toolbar *unison.Panel) {
 // live, and the file name is taken from the display name.
 func (d *fileEditorDockable[T]) save(forceSaveAs bool) bool {
 	if forceSaveAs || d.path == "" {
-		return saveDockableAs(d, d.spec.ext, func() string { return gurps.GlobalSettings().Libraries.User().AncestriesPath() },
+		return saveDockableAs(d, d.spec.ext, func() string { return gurps.GlobalSettings().Libraries.User().AncestriesPath(true) },
 			gurps.SettingsLastDirKey, d.model.Save, func(p string) {
 				d.path = p
 				d.loadedName = ""

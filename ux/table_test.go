@@ -96,7 +96,7 @@ func TestSyncWithSourceForSelectionLoadsEachFileOnce(t *testing.T) {
 	_, user := useTestLibraries(t, c)
 	RegisterKnownFileTypes()
 	libFile := gurps.LibraryFile{Library: user.Key(), Path: "Test" + gurps.NotesExt}
-	p := filepath.Join(user.Path(), libFile.Path)
+	p := filepath.Join(user.Path(false), libFile.Path)
 	libNotes := []*gurps.Note{gurps.NewNote(nil, nil, false), gurps.NewNote(nil, nil, false)}
 	libNotes[0].MarkDown = "First"
 	libNotes[1].MarkDown = "Second"

@@ -33,15 +33,58 @@ import (
 	"github.com/rjeczalik/notify"
 )
 
+// TestLibraryPath verifies that Path() creates the library's directory only when told it may.
+func TestLibraryPath(t *testing.T) {
+	c := check.New(t)
+	libPath := filepath.Join(t.TempDir(), "lib")
+	lib := NewLibrary("Test", "someone", "", "repo", libPath)
+	c.Equal(libPath, lib.Path(false))
+	_, err := os.Stat(libPath)
+	c.True(errors.Is(err, os.ErrNotExist), "library directory was not created")
+	c.Equal(libPath, lib.Path(true))
+	info, err := os.Stat(libPath)
+	c.NoError(err)
+	c.True(err == nil && info.IsDir(), "library directory was created")
+}
+
+// TestLibraryWatchCreatesPath verifies that establishing a watch creates the library's directory when it is missing, as
+// Watch documents: for a first watch, for one established after the directory has been removed, which is what puts a
+// deleted library's directory back when the navigator reloads, and for one SetPath carries over to a new path.
+func TestLibraryWatchCreatesPath(t *testing.T) {
+	c := check.New(t)
+	dir := t.TempDir()
+	libPath := filepath.Join(dir, "lib")
+	lib := NewLibrary("Test", "someone", "", "repo", libPath)
+	isDir := func(p string) bool {
+		info, err := os.Stat(p)
+		return err == nil && info.IsDir()
+	}
+	callback := func(_ *Library, _ string, _ notify.Event) {}
+	token := lib.Watch(callback, false)
+	c.True(isDir(libPath), "a first watch creates the library directory")
+	token.Stop()
+	c.NoError(os.RemoveAll(libPath))
+	token = lib.Watch(callback, false)
+	defer token.Stop()
+	c.True(isDir(libPath), "a watch established after the directory was removed puts it back")
+	moved := filepath.Join(dir, "moved")
+	c.NoError(lib.SetPath(moved))
+	c.True(isDir(moved), "a watch carried over to a new path creates the directory there")
+}
+
 // TestLibraryAncestriesPath verifies that AncestriesPath() names the conventional Settings/Ancestries directory within
-// the library and creates it on demand, so that an editor can save a new ancestry there without checking first.
+// the library and creates it only when told it may, so that an editor can save a new ancestry there without checking
+// first, while merely asking where it is leaves the disk alone.
 func TestLibraryAncestriesPath(t *testing.T) {
 	c := check.New(t)
 	libPath := filepath.Join(t.TempDir(), "lib")
 	lib := NewLibrary("Test", "someone", "", "repo", libPath)
-	p := lib.AncestriesPath()
-	c.Equal(filepath.Join(libPath, SettingsDirName, AncestriesDirName), p)
-	info, err := os.Stat(p)
+	expected := filepath.Join(libPath, SettingsDirName, AncestriesDirName)
+	c.Equal(expected, lib.AncestriesPath(false))
+	_, err := os.Stat(libPath)
+	c.True(errors.Is(err, os.ErrNotExist), "nothing was created")
+	c.Equal(expected, lib.AncestriesPath(true))
+	info, err := os.Stat(expected)
 	c.NoError(err)
 	c.True(err == nil && info.IsDir(), "ancestries directory was created")
 }
@@ -60,7 +103,7 @@ func TestLibraryConcurrentAccess(t *testing.T) {
 		_ = lib.Valid()
 		_ = lib.IsMaster()
 		_ = lib.IsUser()
-		_ = lib.Path()
+		_ = lib.Path(false)
 		_ = lib.VersionOnDisk()
 		_, _ = lib.AvailableReleases()
 	})

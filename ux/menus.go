@@ -473,7 +473,7 @@ func (s menuBarScope) exportToUpdater(menu unison.Menu) {
 	menu.InsertSeparator(-1, false)
 	index := 0
 	for _, lib := range gurps.GlobalSettings().Libraries.List() {
-		dir := lib.Path()
+		dir := lib.Path(false)
 		entries, err := fs.ReadDir(os.DirFS(dir), library.OutputTemplatesDirName)
 		if err != nil {
 			if !errors.Is(err, fs.ErrNotExist) {

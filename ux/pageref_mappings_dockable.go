@@ -68,14 +68,14 @@ func openMarkdownPageReference(ref string) {
 	path, anchor := splitMarkdownPageRef(ref[3:])
 	if path != "" {
 		for _, lib := range gurps.GlobalSettings().Libraries.List() {
-			filePath := filepath.Join(lib.Path(), "Markdown", path)
+			filePath := filepath.Join(lib.Path(false), "Markdown", path)
 			if xos.FileIsReadable(filePath) {
 				openMarkdownFileAtAnchor(filePath, anchor)
 				return
 			}
 		}
 		for _, lib := range gurps.GlobalSettings().Libraries.List() {
-			filePath := filepath.Join(lib.Path(), path)
+			filePath := filepath.Join(lib.Path(false), path)
 			if xos.FileIsReadable(filePath) {
 				openMarkdownFileAtAnchor(filePath, anchor)
 				return

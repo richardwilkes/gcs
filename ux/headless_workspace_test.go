@@ -471,7 +471,7 @@ func saveNewFileEditor[M fileEditorModel[M], T gurps.Hashable](t *testing.T, c c
 		screen.Type(saveAs)
 	}
 	screen.KeyPress(unison.KeyReturn, mod.None)
-	savedPath = filepath.Join(gurps.GlobalSettings().Libraries.User().AncestriesPath(), name+ext)
+	savedPath = filepath.Join(gurps.GlobalSettings().Libraries.User().AncestriesPath(false), name+ext)
 	var path, title, tooltip string
 	var modified bool
 	var windows int

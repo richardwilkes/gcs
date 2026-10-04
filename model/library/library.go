@@ -295,22 +295,30 @@ func (l *Library) Key() string {
 	return l.gitHubAccountName + "/" + l.repoName
 }
 
-// Path returns the path on disk to this Library, creating any necessary directories.
-func (l *Library) Path() string {
+// Path returns the path on disk to this Library. Any necessary directories are created only if okToCreate is true.
+// Passing false only keeps this call from creating them, though, and does not mean a missing directory stays missing:
+// establishing a watch creates it as well (see Watch), and the navigator establishes a fresh watch on every library
+// each time it reloads, so while the app is running, a library directory that gets removed is put straight back.
+func (l *Library) Path(okToCreate bool) string {
 	l.lock.RLock()
 	p := l.data.PathOnDisk
 	l.lock.RUnlock()
-	if err := os.MkdirAll(p, 0o750); err != nil {
-		errs.Log(err, "path", p)
+	if okToCreate {
+		if err := os.MkdirAll(p, 0o750); err != nil {
+			errs.Log(err, "path", p)
+		}
 	}
 	return p
 }
 
-// AncestriesPath returns the path on disk to this Library's ancestries directory, creating it if necessary.
-func (l *Library) AncestriesPath() string {
-	p := filepath.Join(l.Path(), SettingsDirName, AncestriesDirName)
-	if err := os.MkdirAll(p, 0o750); err != nil {
-		errs.Log(err, "path", p)
+// AncestriesPath returns the path on disk to this Library's ancestries directory. It is created, along with any
+// directories leading to it, only if okToCreate is true.
+func (l *Library) AncestriesPath(okToCreate bool) string {
+	p := filepath.Join(l.Path(false), SettingsDirName, AncestriesDirName)
+	if okToCreate {
+		if err := os.MkdirAll(p, 0o750); err != nil {
+			errs.Log(err, "path", p)
+		}
 	}
 	return p
 }
@@ -391,6 +399,9 @@ func (l *Library) CleanupFavorites() {
 // Watch for changes in the directory tree of this library. Each change is reported with its full path as this library
 // names it -- beneath Path() and beneath any symlinked directory registered with MonitorToken.AddSubPath, rather than
 // wherever those resolve to on disk -- so it can be compared directly with paths built from Path().
+//
+// Establishing a watch creates the library's directory if it is missing, as Path(true) does, since a directory that
+// does not exist cannot be watched. The same goes for the watches SetPath re-establishes on the new path.
 func (l *Library) Watch(callback func(lib *Library, fullPath string, what notify.Event), callbackOnUIThread bool) *MonitorToken {
 	return l.obtainMonitor().newWatch(callback, callbackOnUIThread)
 }
@@ -624,7 +635,7 @@ func (l *Library) refreshVersionOnDisk() {
 // Download the release onto the local disk. progress may be nil; see UpdateProgress for what is required of it.
 func (l *Library) Download(ctx context.Context, client *http.Client, release *Release, progress UpdateProgress) error {
 	libData := l.Data() // Not named "data", since the byte buffers below already use that name
-	p := l.Path()
+	p := l.Path(true)
 	// What the last download transferred is the only basis there is for scaling the download portion of the bar, and it
 	// lives in the directory that is about to be moved aside, so it has to be read now.
 	estimate := l.recordedDownloadSize()

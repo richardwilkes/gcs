@@ -39,7 +39,7 @@ func useTestLibraries(t *testing.T, c check.Checker) (master, user *library.Libr
 // addOutputTemplates creates the library's "Output Templates" directory and populates it with the named files. Passing
 // no names leaves the directory empty.
 func addOutputTemplates(c check.Checker, lib *library.Library, names ...string) {
-	dir := filepath.Join(lib.Path(), library.OutputTemplatesDirName)
+	dir := filepath.Join(lib.Path(false), library.OutputTemplatesDirName)
 	c.NoError(os.MkdirAll(dir, 0o750))
 	for _, name := range names {
 		c.NoError(os.WriteFile(filepath.Join(dir, name), []byte("template"), 0o640))

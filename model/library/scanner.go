@@ -49,7 +49,7 @@ func ScanForNamedFileSets(builtIn fs.FS, builtInDir string, omitDuplicateNames b
 	set := make(map[string]bool)
 	list := make([]*NamedFileSet, 0)
 	for _, lib := range libraries.List() {
-		libPath := lib.Path()
+		libPath := lib.Path(false)
 		if refs := scanForNamedFileSets(os.DirFS(libPath), SettingsDirName, libPath, extensions, omitDuplicateNames, set); len(refs) != 0 {
 			list = append(list, &NamedFileSet{
 				Name: lib.Data().Title,

@@ -236,7 +236,7 @@ func TestAncestryEditorHeadless(t *testing.T) {
 	// file, so the choice brings it forward and changes nothing, not even the edit in progress. The name is at the top
 	// of the content, which the steps above scrolled away from, so it is brought back into view first. A second
 	// ancestry is put into the library too, so that the menu has one to open in an editor of its own.
-	dwarfPath := filepath.Join(user.AncestriesPath(), "Dwarf"+gurps.AncestryExt)
+	dwarfPath := filepath.Join(user.AncestriesPath(true), "Dwarf"+gurps.AncestryExt)
 	c.NoError(os.WriteFile(dwarfPath, []byte(`{"version": 5, "name": "Dwarf"}`), 0o640))
 	screen.Do(func() {
 		if nameField = d.targetMgr.Find(d.model.KeyPrefix + "name"); nameField != nil {

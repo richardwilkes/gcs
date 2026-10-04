@@ -138,12 +138,12 @@ func useTestLibrary(t *testing.T, key string) string {
 	t.Helper()
 	libs := GlobalSettings().Libraries
 	if lib := libs.Lookup(key); lib != nil {
-		return lib.Path()
+		return lib.Path(false)
 	}
 	lib := library.NewLibrary(key, "", "", key, t.TempDir())
 	libs.Store(key, lib)
 	t.Cleanup(func() { libs.Remove(key) })
-	return lib.Path()
+	return lib.Path(false)
 }
 
 // stubLibrarySources makes the sources all that the matcher holds, as though loaded from the library file. The file is

@@ -13,6 +13,7 @@ import (
 	"os"
 	"path/filepath"
 	"testing"
+	"time"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/toolbox/v2/check"
@@ -135,4 +136,130 @@ func TestReloadOfADiscardedNavigatorLeavesTheLiveOneAlone(t *testing.T) {
 	c.False(discardedInWindow, "the navigator of a torn-down workspace must no longer be in a window")
 	c.Equal(0, watches, "the discarded navigator must have stopped watching the libraries")
 	c.Equal(0, len(closedLibraries), "the live navigator's library rows must stay open; closed: %v", closedLibraries)
+}
+
+// stopNavigatorWatches stops the navigator's library watches and returns once nothing is left that would bring them
+// back. A change the watches have already reported is still on its way to a reload, as is the reload a new navigator
+// asks for of itself, and a reload watches every library afresh, so any that is pending is waited out first and the
+// watches are stopped again behind it. Until the navigator is next reloaded, changes on disk go unnoticed: its rows go
+// stale rather than being rebuilt, and a library folder that is removed is not put back.
+func stopNavigatorWatches(t *testing.T, screen *unison.HeadlessScreen, n *Navigator) {
+	t.Helper()
+	deadline := time.Now().Add(10 * time.Second)
+	for {
+		var stopped bool
+		screen.Do(func() {
+			if n.needReload {
+				return
+			}
+			stopped = len(n.tokens) == 0
+			for _, token := range n.tokens {
+				token.Stop()
+			}
+			n.tokens = nil
+		})
+		if stopped {
+			return
+		}
+		if time.Now().After(deadline) {
+			t.Fatal("the navigator never stopped reloading")
+		}
+		time.Sleep(10 * time.Millisecond)
+	}
+}
+
+// TestNewFolderIsUnavailableForFavorites verifies that New Folder is disabled while the Favorites row is the selection
+// and does nothing should it be asked for anyway. That row has no path of its own, so a folder made "inside" it would
+// land in the process's working directory.
+func TestNewFolderIsUnavailableForFavorites(t *testing.T) {
+	c := check.New(t)
+	screen, _ := startHeadlessWorkspace(t, c)
+	var n *Navigator
+	var favoritesSelected, enabledForLibrary, enabledForFavorites bool
+	screen.Do(func() {
+		n = Workspace.Navigator
+		n.ApplySelectedPaths([]string{gurps.GlobalSettings().Libraries.User().Path(false)})
+		enabledForLibrary = n.newFolderButton.Enabled()
+		n.table.ClearSelection()
+		n.table.SelectByIndex(0)
+		sel := n.table.SelectedRows(false)
+		favoritesSelected = len(sel) == 1 && sel[0].IsFavorites()
+		enabledForFavorites = n.newFolderButton.Enabled()
+	})
+	c.True(enabledForLibrary, "New Folder must be offered for a library")
+	c.True(favoritesSelected, "the Favorites row must be the selection")
+	c.False(enabledForFavorites, "New Folder must not be offered for the Favorites row")
+
+	c.True(screen.Post(n.newFolder))
+	screen.Sync()
+	var windows int
+	screen.Do(func() { windows = len(unison.Windows()) })
+	c.Equal(1, windows, "asking for a new folder in the Favorites row must not prompt for its name")
+}
+
+// TestNewFolderCreatesWhatIsMissingAboveIt drives New Folder for rows whose place on disk has gone: a library whose
+// folder is missing, and a folder and a file left showing after the library holding them was deleted. Each time, the
+// folder is made along with everything missing above it, the row it was made in is disclosed and the new folder ends
+// up selected. The navigator's watches are stopped before the library is deleted, since a navigator that hears of the
+// deletion reloads, which drops the stale rows and, by watching the library afresh, puts its folder back.
+func TestNewFolderCreatesWhatIsMissingAboveIt(t *testing.T) {
+	c := check.New(t)
+	// Every row starts out disclosed, so that what is put in the user library below gets rows of its own.
+	swapForTest(t, &gurps.GlobalSettings().Closed, make(map[string]int64))
+	screen, wnd := startHeadlessWorkspace(t, c)
+	libPath := gurps.GlobalSettings().Libraries.User().Path(false)
+	staleDir := filepath.Join(libPath, "stale")
+	staleFile := filepath.Join(libPath, "stale"+gurps.SheetExt)
+	var n *Navigator
+	screen.Do(func() { n = Workspace.Navigator })
+
+	for _, one := range []struct {
+		name      string
+		rowPath   string
+		parentDir string
+	}{
+		{name: "library", rowPath: libPath, parentDir: libPath},
+		{name: "folder", rowPath: staleDir, parentDir: staleDir},
+		{name: "file", rowPath: staleFile, parentDir: libPath},
+	} {
+		c.NoError(os.MkdirAll(staleDir, 0o750), one.name)
+		c.NoError(gurps.NewEntity().Save(staleFile), one.name)
+		screen.Do(func() {
+			n.Reload()
+			n.ApplySelectedPaths([]string{one.rowPath})
+		})
+		stopNavigatorWatches(t, screen, n)
+		var selected []string
+		screen.Do(func() {
+			selected = n.SelectedPaths()
+			// Closed, so that the new folder can only end up selected if its parent's row gets disclosed.
+			if row := n.table.SelectedRows(false); len(row) == 1 && row[0].Container() {
+				row[0].SetOpen(false)
+				n.table.SyncToModel()
+			}
+		})
+		c.Equal([]string{one.rowPath}, selected, "the %s row must be the selection", one.name)
+		c.NoError(os.RemoveAll(libPath), one.name)
+
+		// The dialog runs a nested modal loop, so the call is posted rather than run through Do.
+		c.True(screen.Post(n.newFolder), one.name)
+		screen.Sync()
+		_, dialog := modalDialog(t, screen, wnd)
+		screen.Type("  made in " + one.name + "  ")
+		var okButton *unison.Button
+		screen.Do(func() { okButton = dialog.Button(unison.ModalResponseOK) })
+		screen.Click(screen.PanelCenter(okButton))
+
+		created := filepath.Join(one.parentDir, "made in "+one.name)
+		info, err := os.Stat(created)
+		c.NoError(err, one.name)
+		c.True(err == nil && info.IsDir(), "a folder must have been made in the %s row's place on disk", one.name)
+		var windows int
+		screen.Do(func() {
+			windows = len(unison.Windows())
+			selected = n.SelectedPaths()
+		})
+		c.Equal(1, windows, "the prompt for the %s row has been dismissed", one.name)
+		c.Equal([]string{created}, selected, "the folder made in the %s row must end up selected", one.name)
+	}
 }

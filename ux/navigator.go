@@ -863,6 +863,7 @@ func (n *Navigator) selectionChanged() {
 				favoriteEnabled = true
 				if row.IsFavorites() {
 					renameEnabled = false
+					newFolderEnabled = false
 					deleteEnabled = false
 					favoriteEnabled = false
 				}
@@ -1592,6 +1593,11 @@ func OpenFile(filePath string, initialPage gurps.PageInfo) (dockable unison.Dock
 func (n *Navigator) newFolder() {
 	if n.table.SelectionCount() == 1 {
 		row := n.table.SelectedRows(false)[0]
+		if row.IsFavorites() {
+			// The favorites row has no path of its own, so a folder made "inside" it would land in the process's
+			// working directory.
+			return
+		}
 		parentDir := row.Path()
 		if row.IsFile() {
 			parentDir = filepath.Dir(parentDir)
@@ -1601,7 +1607,9 @@ func (n *Navigator) newFolder() {
 		if !ok {
 			return
 		}
-		if err := os.Mkdir(dirPath, 0o750); err != nil {
+		// The library's folder is only created when a watch is established on it and a row can outlive what it shows,
+		// so whatever is missing above the new folder is created along with it.
+		if err := os.MkdirAll(dirPath, 0o750); err != nil {
 			Workspace.ErrorHandler(fmt.Sprintf(i18n.Text("Unable to create:\n%s"), dirPath), err)
 			return
 		}

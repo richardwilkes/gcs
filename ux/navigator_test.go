@@ -60,7 +60,7 @@ func newTestLibrary(t *testing.T) *library.Library {
 
 // writeTestLibraryFile writes the data to the named file in the library's directory and returns the file's node.
 func writeTestLibraryFile(c check.Checker, lib *library.Library, fileName string, data []byte) *NavigatorNode {
-	c.NoError(os.WriteFile(filepath.Join(lib.Path(), fileName), data, 0o600))
+	c.NoError(os.WriteFile(filepath.Join(lib.Path(false), fileName), data, 0o600))
 	return NewFileNode(lib, fileName, nil)
 }
 
@@ -74,7 +74,7 @@ func newTestCharacter(name string) *gurps.Entity {
 // saveTestSheet saves the character as a sheet in the named file in the library's directory and returns the file's
 // node.
 func saveTestSheet(c check.Checker, lib *library.Library, fileName string, entity *gurps.Entity) *NavigatorNode {
-	c.NoError(entity.Save(filepath.Join(lib.Path(), fileName)))
+	c.NoError(entity.Save(filepath.Join(lib.Path(false), fileName)))
 	return NewFileNode(lib, fileName, nil)
 }
 
@@ -165,7 +165,7 @@ func TestDeepSearchCachesMarkdownContent(t *testing.T) {
 	ext := uti.Markdown.Extensions[0]
 	lib := newTestLibrary(t)
 	fileName := "notes" + ext
-	p := filepath.Join(lib.Path(), fileName)
+	p := filepath.Join(lib.Path(false), fileName)
 	node := writeTestLibraryFile(c, lib, fileName, []byte("# Conan The Barbarian\n"))
 	n := newDeepSearchNavigator(ext)
 	n.search("barbarian", []*NavigatorNode{node})
@@ -192,7 +192,7 @@ func TestDeepSearchServesCacheHitsUntilInvalidated(t *testing.T) {
 	ext := uti.Markdown.Extensions[0]
 	lib := newTestLibrary(t)
 	fileName := "notes" + ext
-	p := filepath.Join(lib.Path(), fileName)
+	p := filepath.Join(lib.Path(false), fileName)
 	node := writeTestLibraryFile(c, lib, fileName, []byte("alpha\n"))
 	n := newDeepSearchNavigator(ext)
 	n.search("alpha", []*NavigatorNode{node})
@@ -369,7 +369,7 @@ func TestDeepSearchDisabledTypeIgnoresCache(t *testing.T) {
 	c := check.New(t)
 	lib := newTestLibrary(t)
 	fileName := "sheet1" + gurps.SheetExt
-	p := filepath.Join(lib.Path(), fileName)
+	p := filepath.Join(lib.Path(false), fileName)
 	node := saveTestSheet(c, lib, fileName, newTestCharacter("Conan"))
 	n := newDeepSearchNavigator(gurps.SheetExt)
 	n.search("conan", []*NavigatorNode{node})
@@ -441,7 +441,7 @@ func TestDeepSearchCachesFileWhoseParsePanics(t *testing.T) {
 	c := check.New(t)
 	lib := newTestLibrary(t)
 	fileName := "panics" + gurps.SkillsExt
-	p := filepath.Join(lib.Path(), fileName)
+	p := filepath.Join(lib.Path(false), fileName)
 	// A null row is valid JSON, so this gets past parsing and panics when the nil skill is traversed.
 	node := writeTestLibraryFile(c, lib, fileName, []byte(`{"version":5,"rows":[null]}`))
 	n := newDeepSearchNavigator(gurps.SkillsExt)
@@ -490,7 +490,7 @@ func TestSupersededCacheBuildHandsEntriesToItsSuccessor(t *testing.T) {
 	paths := make([]string, len(names))
 	nodes := make([]*NavigatorNode, len(names))
 	for i, name := range names {
-		paths[i] = filepath.Join(lib.Path(), name)
+		paths[i] = filepath.Join(lib.Path(false), name)
 		nodes[i] = writeTestLibraryFile(c, lib, name, []byte("content "+name+"\n"))
 	}
 	n := newDeepSearchNavigator(ext)
@@ -572,8 +572,8 @@ func TestCollectDeepSearchPaths(t *testing.T) {
 	paths := make(map[string]bool)
 	n.collectDeepSearchPaths([]*NavigatorNode{favorites, libraryNode}, paths)
 	c.Equal(2, len(paths))
-	c.True(paths[filepath.Join(lib.Path(), shared)], "the file favorites repeats must be collected exactly once")
-	c.True(paths[filepath.Join(lib.Path(), nested)], "the file nested in a subdirectory must be reached by recursion")
+	c.True(paths[filepath.Join(lib.Path(false), shared)], "the file favorites repeats must be collected exactly once")
+	c.True(paths[filepath.Join(lib.Path(false), nested)], "the file nested in a subdirectory must be reached by recursion")
 }
 
 // TestContentCachePrewarmSuspension verifies the hold a library update places on the background cache rebuilds:

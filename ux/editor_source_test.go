@@ -75,7 +75,7 @@ func newLibrarySourcedTrait(t *testing.T, c check.Checker, lib *gurps.Trait) (*S
 	_, user := useTestLibraries(t, c)
 	RegisterKnownFileTypes()
 	libFile := gurps.LibraryFile{Library: user.Key(), Path: "Traits/Test" + gurps.TraitsExt}
-	c.NoError(gurps.SaveTraits([]*gurps.Trait{lib}, filepath.Join(user.Path(), filepath.FromSlash(libFile.Path))))
+	c.NoError(gurps.SaveTraits([]*gurps.Trait{lib}, filepath.Join(user.Path(false), filepath.FromSlash(libFile.Path))))
 	sheet := newTestSheetForTemplate(t)
 	entity := sheet.Entity()
 	local := lib.Clone(libFile, entity, nil, gurps.Reference)
@@ -215,16 +215,16 @@ func TestSourceMenuMatchesWhatNoSheetPrepared(t *testing.T) {
 	libMod.Name = "Long"
 	modFile := gurps.LibraryFile{Library: user.Key(), Path: "Modifiers/Test" + gurps.TraitModifiersExt}
 	c.NoError(gurps.SaveTraitModifiers([]*gurps.TraitModifier{libMod},
-		filepath.Join(user.Path(), filepath.FromSlash(modFile.Path))))
+		filepath.Join(user.Path(false), filepath.FromSlash(modFile.Path))))
 	libTrait := gurps.NewTrait(nil, nil, false)
 	libTrait.Name = "Claws"
 	traitFile := gurps.LibraryFile{Library: user.Key(), Path: "Traits/Test" + gurps.TraitsExt}
-	c.NoError(gurps.SaveTraits([]*gurps.Trait{libTrait}, filepath.Join(user.Path(), filepath.FromSlash(traitFile.Path))))
+	c.NoError(gurps.SaveTraits([]*gurps.Trait{libTrait}, filepath.Join(user.Path(false), filepath.FromSlash(traitFile.Path))))
 	libEqp := gurps.NewEquipment(nil, nil, false)
 	libEqp.Name = "Rope"
 	eqpFile := gurps.LibraryFile{Library: user.Key(), Path: "Equipment/Test" + gurps.EquipmentExt}
 	c.NoError(gurps.SaveEquipment([]*gurps.Equipment{libEqp},
-		filepath.Join(user.Path(), filepath.FromSlash(eqpFile.Path))))
+		filepath.Join(user.Path(false), filepath.FromSlash(eqpFile.Path))))
 	sheet := newTestSheetForTemplate(t)
 	sheet.Entity().Recalculate()
 
@@ -397,7 +397,7 @@ func TestEditorSyncLeavesEquipmentKindChangesToTheList(t *testing.T) {
 	libContainer.Name = "Sack"
 	libFile := gurps.LibraryFile{Library: user.Key(), Path: "Equipment/Test" + gurps.EquipmentExt}
 	c.NoError(gurps.SaveEquipment([]*gurps.Equipment{lib, libContainer},
-		filepath.Join(user.Path(), filepath.FromSlash(libFile.Path))))
+		filepath.Join(user.Path(false), filepath.FromSlash(libFile.Path))))
 	sheet := newTestSheetForTemplate(t)
 	entity := sheet.Entity()
 	local := lib.Clone(libFile, entity, nil, gurps.Reference)
@@ -572,7 +572,7 @@ func TestEditorSyncWithSourceForEquipment(t *testing.T) {
 	lib.MaxUses = 2
 	lib.Weapons = []*gurps.Weapon{gurps.NewWeapon(lib, true)}
 	libFile := gurps.LibraryFile{Library: user.Key(), Path: "Equipment/Test" + gurps.EquipmentExt}
-	c.NoError(gurps.SaveEquipment([]*gurps.Equipment{lib}, filepath.Join(user.Path(), filepath.FromSlash(libFile.Path))))
+	c.NoError(gurps.SaveEquipment([]*gurps.Equipment{lib}, filepath.Join(user.Path(false), filepath.FromSlash(libFile.Path))))
 	sheet := newTestSheetForTemplate(t)
 	entity := sheet.Entity()
 	local := lib.Clone(libFile, entity, nil, gurps.Reference)
@@ -669,7 +669,7 @@ func TestEditorSyncSurvivesTheContentItRebuilds(t *testing.T) {
 		libTechnique.TechniqueDefault.DefaultType = defaultType
 		libFile := gurps.LibraryFile{Library: user.Key(), Path: "Skills/Test" + gurps.SkillsExt}
 		c.NoError(gurps.SaveSkills([]*gurps.Skill{libTechnique},
-			filepath.Join(user.Path(), filepath.FromSlash(libFile.Path))))
+			filepath.Join(user.Path(false), filepath.FromSlash(libFile.Path))))
 		techniqueSheet := newTestSheetForTemplate(t)
 		entity := techniqueSheet.Entity()
 		technique := libTechnique.Clone(libFile, entity, nil, gurps.Reference)
@@ -781,7 +781,7 @@ func newOptionalChoiceWithinChoice(t *testing.T, c check.Checker) (sheet *Sheet,
 	lib.Name = inner.Name
 	lib.TID = inner.Source.TID
 	c.NoError(gurps.SaveTraitModifiers([]*gurps.TraitModifier{lib},
-		filepath.Join(gurps.GlobalSettings().Libraries.User().Path(), filepath.FromSlash(inner.Source.Path))))
+		filepath.Join(gurps.GlobalSettings().Libraries.User().Path(false), filepath.FromSlash(inner.Source.Path))))
 	sheet.Entity().Recalculate()
 	return sheet, outer, inner
 }
@@ -826,7 +826,7 @@ func newChoiceWithinChoice(t *testing.T, c check.Checker, innerIsChoice bool) (s
 	lib.Name = inner.Name
 	libFile := gurps.LibraryFile{Library: user.Key(), Path: "Modifiers/Test" + gurps.TraitModifiersExt}
 	c.NoError(gurps.SaveTraitModifiers([]*gurps.TraitModifier{lib},
-		filepath.Join(user.Path(), filepath.FromSlash(libFile.Path))))
+		filepath.Join(user.Path(false), filepath.FromSlash(libFile.Path))))
 	inner.Source = gurps.Source{LibraryFile: libFile, TID: lib.TID}
 
 	trait := gurps.NewTrait(entity, nil, false)

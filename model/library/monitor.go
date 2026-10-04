@@ -65,7 +65,8 @@ func (m *monitor) newWatch(callback func(lib *Library, fullPath string, what not
 
 func (m *monitor) startWatch(token *MonitorToken, sendSync bool) {
 	m.lock.Lock()
-	token.root = m.library.Path()
+	// A missing directory cannot be watched, so it is created here. Library.Watch documents that it does this.
+	token.root = m.library.Path(true)
 	form := reportedForm(token.root)
 	m.tokensLock.Lock()
 	token.watched = map[string]string{token.root: form}

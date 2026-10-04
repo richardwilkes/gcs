@@ -94,9 +94,7 @@ func (s *Source) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 
 func (s Source) collectInto(m map[LibraryFile]struct{}) {
 	if !s.IsZero() {
-		if _, exists := m[s.LibraryFile]; !exists {
-			m[s.LibraryFile] = struct{}{}
-		}
+		m[s.LibraryFile] = struct{}{}
 	}
 }
 
@@ -145,7 +143,7 @@ func (sm *SrcMatcher) prepareHashesFor(libFile LibraryFile) {
 	if sm.libHashes == nil {
 		sm.libHashes = make(map[LibraryFile]libSrcData)
 	}
-	p := filepath.Join(lib.Path(), filepath.FromSlash(libFile.Path))
+	p := filepath.Join(lib.Path(false), filepath.FromSlash(libFile.Path))
 	stat, err := os.Stat(p)
 	if err != nil {
 		delete(sm.libHashes, libFile)

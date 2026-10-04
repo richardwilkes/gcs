@@ -387,7 +387,7 @@ func TestApplySelectedModifiersAppliesASelectedContainerOnceAndRecordsItsSource(
 	inner := gurps.NewTraitModifier(nil, group, false)
 	inner.Name = "Inner"
 	group.Children = []*gurps.TraitModifier{inner}
-	library := NewTraitModifierTableDockable(filepath.Join(user.Path(), "Sub", "mods"+gurps.TraitModifiersExt),
+	library := NewTraitModifierTableDockable(filepath.Join(user.Path(false), "Sub", "mods"+gurps.TraitModifiersExt),
 		[]*gurps.TraitModifier{group})
 	library.table.SetSelectionMap(map[tid.TID]bool{group.ID(): true, inner.ID(): true})
 	c.Equal(2, len(library.table.SelectedRows(false)),

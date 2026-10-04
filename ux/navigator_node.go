@@ -65,7 +65,7 @@ func NewLibraryNode(nav *Navigator, lib *library.Library) *NavigatorNode {
 		id = "10000000000000001"
 	default:
 		if id = lib.Data().ID; id == "" {
-			id = gurps.IDForNavNode(lib.Path(), kinds.NavigatorLibrary)
+			id = gurps.IDForNavNode(lib.Path(false), kinds.NavigatorLibrary)
 			lib.SetID(id)
 		}
 	}
@@ -80,7 +80,7 @@ func NewLibraryNode(nav *Navigator, lib *library.Library) *NavigatorNode {
 
 // NewDirectoryNode creates a new directory node.
 func NewDirectoryNode(nav *Navigator, lib *library.Library, dirPath string, parent *NavigatorNode) *NavigatorNode {
-	pathForID := "@" + filepath.Join(lib.Path(), dirPath)
+	pathForID := "@" + filepath.Join(lib.Path(false), dirPath)
 	root := parent
 	for root.parent != nil {
 		root = root.parent
@@ -278,9 +278,9 @@ func (n *NavigatorNode) Path() string {
 	case n.IsFavorites():
 		return ""
 	case n.IsLibrary():
-		return n.library.Path()
+		return n.library.Path(false)
 	default:
-		return filepath.Join(n.library.Path(), n.path)
+		return filepath.Join(n.library.Path(false), n.path)
 	}
 }
 
@@ -307,8 +307,8 @@ func (n *NavigatorNode) Refresh() {
 		groupContainers := gurps.GlobalSettings().General.GroupContainersOnSort
 		slices.SortFunc(favs, func(a, b *fav) int {
 			if groupContainers {
-				aIsDir := xos.IsDir(filepath.Join(a.library.Path(), a.path))
-				if aIsDir != xos.IsDir(filepath.Join(b.library.Path(), b.path)) {
+				aIsDir := xos.IsDir(filepath.Join(a.library.Path(false), a.path))
+				if aIsDir != xos.IsDir(filepath.Join(b.library.Path(false), b.path)) {
 					if aIsDir {
 						return -1 // Directories before files
 					}
@@ -322,7 +322,7 @@ func (n *NavigatorNode) Refresh() {
 			return result
 		})
 		for _, one := range favs {
-			p := filepath.Join(one.library.Path(), one.path)
+			p := filepath.Join(one.library.Path(false), one.path)
 			if xos.IsDir(p) {
 				n.children = append(n.children, NewDirectoryNode(n.nav, one.library, one.path, n))
 			} else {
@@ -346,7 +346,7 @@ func (n *NavigatorNode) OpenNodeContent() (dockable unison.Dockable, wasOpen boo
 }
 
 func (n *NavigatorNode) refreshChildren(dirPath string, parent *NavigatorNode) []*NavigatorNode {
-	libPath := n.library.Path()
+	libPath := n.library.Path(false)
 	entries, err := os.ReadDir(filepath.Join(libPath, dirPath))
 	if err != nil {
 		if !errors.Is(err, fs.ErrNotExist) {

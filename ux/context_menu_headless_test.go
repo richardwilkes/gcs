@@ -487,8 +487,8 @@ func TestNavigatorContextMenuHeadless(t *testing.T) {
 	screen, wnd := startHeadlessWorkspace(t, c)
 	screen.EnableAccessibility()
 	user := gurps.GlobalSettings().Libraries.User()
-	c.NoError(os.MkdirAll(user.Path(), 0o750))
-	path := filepath.Join(user.Path(), "test"+gurps.SheetExt)
+	c.NoError(os.MkdirAll(user.Path(false), 0o750))
+	path := filepath.Join(user.Path(false), "test"+gurps.SheetExt)
 	c.NoError(gurps.NewEntity().Save(path))
 
 	var n *Navigator
