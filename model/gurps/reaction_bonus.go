@@ -14,6 +14,7 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/feature"
+	"github.com/richardwilkes/gcs/v5/model/nameable"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/toolbox/v2/xhash"
 )
@@ -44,6 +45,15 @@ func (r *ReactionBonus) FeatureType() feature.Type {
 // Clone implements Feature.
 func (r *ReactionBonus) Clone() Feature {
 	return clonePtr(r)
+}
+
+// Describe implements Feature.
+func (r *ReactionBonus) Describe(_ *Entity, replacements map[string]string, em func(string) string) string {
+	text := describeAmount(r.Amount.StringWithSign(), r.PerLevel, em) + i18n.Text(" to reactions")
+	if situation := nameable.Apply(r.Situation, replacements); situation != "" {
+		text += " " + situation
+	}
+	return describeSwitchable(r.Switchable, text)
 }
 
 // Hash writes this object's contents into the hasher.

@@ -689,7 +689,7 @@ func TestWeaponPerDieBonusTooltip(t *testing.T) {
 
 	var accTooltip xbytes.InsertBuffer
 	c.Equal("6", w.Accuracy.Resolve(w, &accTooltip).String(), "+1 per die on a 3d weapon raises Acc 3 to 6")
-	c.Contains(accTooltip.String(), "+3 (+1 per die) to weapon accuracy", "the tooltip reports the amount applied")
+	c.Contains(accTooltip.String(), "+3 (+1 per die) to accuracy", "the tooltip reports the amount applied")
 
 	// The same holds for the other stats, which share the collection that writes these tooltips.
 	var bulkTooltip xbytes.InsertBuffer
@@ -742,7 +742,7 @@ func TestWeaponPerLevelBonusFromTraitModifier(t *testing.T) {
 	var tooltip xbytes.InsertBuffer
 	c.Equal("3", w.Accuracy.Resolve(w, &tooltip).String(),
 		"a per-level bonus on a modifier with no levels adds nothing, no matter the trait's level")
-	c.Equal("\nInnate Attack 3 (Targeting) [+0 (+1 per level) to weapon accuracy]", tooltip.String(),
+	c.Equal("\nInnate Attack 3 (Targeting) [+0 (+1 per level) to accuracy]", tooltip.String(),
 		"the tooltip reports the amount applied rather than scaling by the trait's level")
 
 	// Giving the modifier levels of its own is what makes the bonus count.
@@ -750,7 +750,7 @@ func TestWeaponPerLevelBonusFromTraitModifier(t *testing.T) {
 	e.Recalculate()
 	tooltip.Reset()
 	c.Equal("5", w.Accuracy.Resolve(w, &tooltip).String(), "+1 per level on a level 2 modifier raises Acc 3 to 5")
-	c.Equal("\nInnate Attack 3 (Targeting 2) [+2 (+1 per level) to weapon accuracy]", tooltip.String(),
+	c.Equal("\nInnate Attack 3 (Targeting 2) [+2 (+1 per level) to accuracy]", tooltip.String(),
 		"the tooltip names the modifier with its level and agrees with the amount applied")
 
 	// A "use level from owner" modifier reports the trait's level, and the bonus scales by that.
@@ -760,7 +760,7 @@ func TestWeaponPerLevelBonusFromTraitModifier(t *testing.T) {
 	tooltip.Reset()
 	c.Equal("6", w.Accuracy.Resolve(w, &tooltip).String(),
 		"a modifier that takes the trait's level of 3 raises Acc 3 to 6")
-	c.Equal("\nInnate Attack 3 (Targeting 3) [+3 (+1 per level) to weapon accuracy]", tooltip.String(),
+	c.Equal("\nInnate Attack 3 (Targeting 3) [+3 (+1 per level) to accuracy]", tooltip.String(),
 		"the tooltip agrees with the amount applied when the level comes from the trait")
 }
 

@@ -140,6 +140,36 @@ func (d *DRBonus) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 	return nil
 }
 
+// Describe implements Feature. Locations are named as the body type of the entity, which may be nil, names them,
+// falling back to their IDs. A bonus with no locations applies to the armor it is attached to.
+func (d *DRBonus) Describe(entity *Entity, replacements map[string]string, em func(string) string) string {
+	text := describeAmount(d.Amount.StringWithSign(), d.PerLevel, em) + i18n.Text(" DR to ")
+	switch {
+	case len(d.Locations) == 0:
+		text += i18n.Text("this armor")
+	case slices.Contains(d.Locations, AllID):
+		text += em(i18n.Text("all locations"))
+	default:
+		body := BodyFor(entity)
+		names := make([]string, len(d.Locations))
+		for i, id := range d.Locations {
+			if loc := body.LookupLocationByID(entity, id); loc != nil && loc.ChoiceName != "" {
+				id = loc.ChoiceName
+			}
+			names[i] = id
+		}
+		if len(names) == 1 {
+			text += i18n.Text("the ") + em(names[0])
+		} else {
+			text += em(fmt.Sprintf(i18n.Text("%d locations"), len(names))) + ": " + strings.Join(names, ", ")
+		}
+	}
+	if spec := normalizeDRSpecialization(nameable.Apply(d.Specialization, replacements)); spec != AllID {
+		text += fmt.Sprintf(i18n.Text(" against %s attacks"), em(spec))
+	}
+	return describeSwitchable(d.Switchable, text)
+}
+
 // Hash writes this object's contents into the hasher.
 func (d *DRBonus) Hash(h hash.Hash) {
 	if d == nil {

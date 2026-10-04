@@ -20,6 +20,7 @@ import (
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/unison"
+	uncheck "github.com/richardwilkes/unison/enums/check"
 )
 
 // newEditorForTrait returns an editor holding the two copies of a trait's edit data that displayEditor would give it,
@@ -98,6 +99,12 @@ func findCheckBoxTitled(p *unison.Panel, title string) *CheckBox {
 		return boxes[0]
 	}
 	return nil
+}
+
+// clickCheckBox puts the checkbox into the given state and runs its click callback, as a user's click does.
+func clickCheckBox(box *CheckBox, on bool) {
+	box.State = uncheck.FromBool(on)
+	box.ClickCallback()
 }
 
 // findFeaturesPanel returns the first features panel found anywhere beneath the given panel.

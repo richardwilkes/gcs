@@ -257,55 +257,134 @@ func (w *WeaponBonus) addToTooltip(dieCount fxp.Int, leveledOwner LeveledOwner, 
 				buf.WriteString(amt)
 			}
 			buf.WriteString(i18n.Text(" to "))
-			switch w.Type {
-			case feature.WeaponBonus:
-				buf.WriteString(i18n.Text("damage"))
-			case feature.WeaponAccBonus:
-				buf.WriteString(i18n.Text("weapon accuracy"))
-			case feature.WeaponScopeAccBonus:
-				buf.WriteString(i18n.Text("scope accuracy"))
-			case feature.WeaponDRDivisorBonus:
-				buf.WriteString(i18n.Text("armor divisor"))
-			case feature.WeaponEffectiveSTBonus:
-				buf.WriteString(i18n.Text("effective ST"))
-			case feature.WeaponMinSTBonus:
-				buf.WriteString(i18n.Text("minimum ST"))
-			case feature.WeaponMinReachBonus:
-				buf.WriteString(i18n.Text("minimum reach"))
-			case feature.WeaponMaxReachBonus:
-				buf.WriteString(i18n.Text("maximum reach"))
-			case feature.WeaponHalfDamageRangeBonus:
-				buf.WriteString(i18n.Text("half-damage range"))
-			case feature.WeaponMinRangeBonus:
-				buf.WriteString(i18n.Text("minimum range"))
-			case feature.WeaponMaxRangeBonus:
-				buf.WriteString(i18n.Text("maximum range"))
-			case feature.WeaponBulkBonus:
-				buf.WriteString(i18n.Text("bulk"))
-			case feature.WeaponRecoilBonus:
-				buf.WriteString(i18n.Text("recoil"))
-			case feature.WeaponParryBonus:
-				buf.WriteString(i18n.Text("parry"))
-			case feature.WeaponBlockBonus:
-				buf.WriteString(i18n.Text("block"))
-			case feature.WeaponRofMode1ShotsBonus, feature.WeaponRofMode2ShotsBonus:
-				buf.WriteString(i18n.Text("shots per attack"))
-			case feature.WeaponRofMode1SecondaryBonus, feature.WeaponRofMode2SecondaryBonus:
-				buf.WriteString(i18n.Text("secondary projectiles"))
-			case feature.WeaponNonChamberShotsBonus:
-				buf.WriteString(i18n.Text("non-chamber shots"))
-			case feature.WeaponChamberShotsBonus:
-				buf.WriteString(i18n.Text("chamber shots"))
-			case feature.WeaponShotDurationBonus:
-				buf.WriteString(i18n.Text("shot duration"))
-			case feature.WeaponReloadTimeBonus:
-				buf.WriteString(i18n.Text("reload time"))
-			default:
-			}
+			buf.WriteString(weaponBonusNoun(w.Type))
 		}
 		buf.WriteByte(']')
 		buffer.WriteString(buf.String())
 	}
+}
+
+// weaponBonusNoun returns what a weapon bonus of the type changes, such as "accuracy".
+func weaponBonusNoun(featureType feature.Type) string {
+	switch featureType {
+	case feature.WeaponBonus:
+		return i18n.Text("damage")
+	case feature.WeaponAccBonus:
+		return i18n.Text("accuracy")
+	case feature.WeaponScopeAccBonus:
+		return i18n.Text("scope accuracy")
+	case feature.WeaponDRDivisorBonus:
+		return i18n.Text("armor divisor")
+	case feature.WeaponEffectiveSTBonus:
+		return i18n.Text("effective ST")
+	case feature.WeaponMinSTBonus:
+		return i18n.Text("minimum ST")
+	case feature.WeaponMinReachBonus:
+		return i18n.Text("minimum reach")
+	case feature.WeaponMaxReachBonus:
+		return i18n.Text("maximum reach")
+	case feature.WeaponHalfDamageRangeBonus:
+		return i18n.Text("half-damage range")
+	case feature.WeaponMinRangeBonus:
+		return i18n.Text("minimum range")
+	case feature.WeaponMaxRangeBonus:
+		return i18n.Text("maximum range")
+	case feature.WeaponBulkBonus:
+		return i18n.Text("bulk")
+	case feature.WeaponRecoilBonus:
+		return i18n.Text("recoil")
+	case feature.WeaponParryBonus:
+		return i18n.Text("parry")
+	case feature.WeaponBlockBonus:
+		return i18n.Text("block")
+	case feature.WeaponRofMode1ShotsBonus:
+		return i18n.Text("shots per attack (mode 1)")
+	case feature.WeaponRofMode1SecondaryBonus:
+		return i18n.Text("secondary projectiles (mode 1)")
+	case feature.WeaponRofMode2ShotsBonus:
+		return i18n.Text("shots per attack (mode 2)")
+	case feature.WeaponRofMode2SecondaryBonus:
+		return i18n.Text("secondary projectiles (mode 2)")
+	case feature.WeaponNonChamberShotsBonus:
+		return i18n.Text("non-chamber shots")
+	case feature.WeaponChamberShotsBonus:
+		return i18n.Text("chamber shots")
+	case feature.WeaponShotDurationBonus:
+		return i18n.Text("shot duration")
+	case feature.WeaponReloadTimeBonus:
+		return i18n.Text("reload time")
+	default:
+		return ""
+	}
+}
+
+// Describe implements Feature. A weapon switch describes the flag it sets, and any other weapon bonus the amount it
+// gives. A relative skill level of "at least 0", the default, is left out.
+func (w *WeaponBonus) Describe(_ *Entity, replacements map[string]string, em func(string) string) string {
+	if w.Type == feature.WeaponSwitch {
+		flag := fmt.Sprintf(i18n.Text("%s flag"), em(w.SwitchType.String()))
+		value := i18n.Text("false")
+		if w.SwitchTypeValue {
+			value = i18n.Text("true")
+		}
+		return describeSwitchable(w.Switchable, fmt.Sprintf(i18n.Text("Sets %s to %s"),
+			w.describeWeapons(flag, replacements, em), em(value)))
+	}
+	var amount string
+	if w.Type == feature.WeaponBonus {
+		amount = FormatWeaponDamageBonus(w.Dice, w.Amount)
+	} else {
+		amount = w.Amount.StringWithSign()
+	}
+	if w.Percent && w.Dice.IsZero() {
+		amount += "%"
+	}
+	text := em(amount)
+	if w.PerDie && w.Type != feature.WeaponMinSTBonus && w.Type != feature.WeaponEffectiveSTBonus {
+		text += i18n.Text(" per die")
+	}
+	if w.PerLevel {
+		text += i18n.Text(" per level")
+	}
+	return describeSwitchable(w.Switchable, text+i18n.Text(" to ")+
+		w.describeWeapons(weaponBonusNoun(w.Type), replacements, em))
+}
+
+// describeWeapons returns what the bonus changes on the weapons it selects, such as "this weapon's damage" or "the
+// damage of weapons using Broadsword", followed by the criteria that narrow those weapons.
+func (w *WeaponBonus) describeWeapons(noun string, replacements map[string]string, em func(string) string) string {
+	switch w.SelectionType {
+	case wsel.ThisWeapon:
+		return describeThisWeapon(noun, w.SpecializationCriteria, replacements, em)
+	case wsel.WithName:
+		return fmt.Sprintf(i18n.Text("the %s of %s"), noun,
+			describeNamedWeapons(w.NameCriteria, w.SpecializationCriteria, w.TagsCriteria, replacements, em))
+	default:
+		text := fmt.Sprintf(i18n.Text("the %s of %s"), noun, describeTarget(i18n.Text("weapons using %s"),
+			i18n.Text("weapons"), i18n.Text("whose skill name"), w.NameCriteria, replacements, em)) +
+			describeSpecialization(w.SpecializationCriteria, criteria.Text{Compare: criteria.AnyText}, replacements,
+				em) +
+			describeWhose(i18n.Text("whose usage"), w.UsageCriteria, replacements, em) +
+			describeTags(w.TagsCriteria, replacements, em)
+		if r := w.RelativeLevelCriteria; r.Compare != criteria.AnyNumber &&
+			(r.Compare != criteria.AtLeastNumber || r.Qualifier != 0) {
+			text += i18n.Text(" whose relative skill level ") + r.String()
+		}
+		return text
+	}
+}
+
+// describeThisWeapon returns the noun as it applies to the weapon a feature belongs to, with the usage it requires.
+func describeThisWeapon(noun string, usage criteria.Text, replacements map[string]string, em func(string) string) string {
+	return fmt.Sprintf(i18n.Text("this weapon's %s"), noun) +
+		describeWhose(i18n.Text("when its usage"), usage, replacements, em)
+}
+
+// describeNamedWeapons returns how a feature names the weapons it selects by name, usage and tags.
+func describeNamedWeapons(name, usage, tags criteria.Text, replacements map[string]string, em func(string) string) string {
+	return describeTarget(i18n.Text("weapons named %s"), i18n.Text("weapons"), i18n.Text("whose name"), name,
+		replacements, em) + describeWhose(i18n.Text("whose usage"), usage, replacements, em) +
+		describeTags(tags, replacements, em)
 }
 
 // Hash writes this object's contents into the hasher.

@@ -13,281 +13,945 @@ import (
 	"encoding/json/jsontext"
 	"fmt"
 	"slices"
+	"strings"
 	"testing"
 
 	"github.com/richardwilkes/gcs/v5/model/criteria"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
-	"github.com/richardwilkes/gcs/v5/model/gurps/enums/equipmentsel"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/feature"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/selector"
-	"github.com/richardwilkes/gcs/v5/model/gurps/enums/skillsel"
-	"github.com/richardwilkes/gcs/v5/model/gurps/enums/spellmatch"
-	"github.com/richardwilkes/gcs/v5/model/gurps/enums/traitsel"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/wsel"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/wswitch"
 	"github.com/richardwilkes/toolbox/v2/check"
-	"github.com/richardwilkes/toolbox/v2/i18n"
+	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/unison"
 	uncheck "github.com/richardwilkes/unison/enums/check"
+	"github.com/richardwilkes/unison/enums/mod"
+	"github.com/richardwilkes/unison/enums/role"
+	"github.com/zeebo/xxh3"
 )
 
-// findFeatureTypePopup returns the first feature-type switcher popup found anywhere beneath the given panel, which is
-// what the tests drive a type change through.
-func findFeatureTypePopup(p *unison.Panel) *unison.PopupMenu[feature.Type] {
-	popup, _ := firstPanelOfType[*unison.PopupMenu[feature.Type]](p)
+// testSkullID is the ID of the skull in the default body.
+const testSkullID = "skull"
+
+// showFeaturesPanel shows a featuresPanel for the features of the owner in a window, within a host, so that its
+// rebuilds run and its edits can be undone.
+func showFeaturesPanel(t *testing.T, screen *unison.HeadlessScreen, entity *gurps.Entity, owner fmt.Stringer, features *gurps.Features, forEquipmentModifier bool) (*featuresPanel, *prereqUndoHost) {
+	var p *featuresPanel
+	host := &prereqUndoHost{mgr: unison.NewUndoManager(100, func(error) {})}
+	screen.Do(func() {
+		host.Self = host
+		host.SetLayout(&unison.FlexLayout{Columns: 1})
+		host.KeyDownCallback = func(keyCode unison.KeyCode, _ mod.Modifiers, _ bool) bool {
+			if keyCode == unison.KeyEscape {
+				host.escapes++
+			}
+			return true
+		}
+		p = newFeaturesPanel(entity, owner, features, forEquipmentModifier)
+		host.AddChild(p)
+	})
+	showInTestWindow(t, screen, 900, host)
+	return p, host
+}
+
+// newTestFeatures returns a skill bonus, a switchable DR bonus to the skull, and a feature this version of GCS doesn't
+// understand, each belonging to the owner.
+func newTestFeatures(owner fmt.Stringer) gurps.Features {
+	skill := gurps.NewSkillBonus()
+	skill.NameCriteria.Qualifier = "Streetwise"
+	skill.SetOwner(owner)
+	dr := gurps.NewDRBonus()
+	dr.Locations = []string{testSkullID}
+	dr.SetSwitchable(true)
+	dr.SetOwner(owner)
+	return gurps.Features{skill, dr, gurps.NewUnknownFeature("future", jsontext.Value(`{"type":"future"}`))}
+}
+
+// featureTypes returns the types of the features.
+func featureTypes(list gurps.Features) []feature.Type {
+	types := make([]feature.Type, 0, len(list))
+	for _, one := range list {
+		types = append(types, one.FeatureType())
+	}
+	return types
+}
+
+// featuresHash returns a hash of the features.
+func featuresHash(list gurps.Features) uint64 {
+	h := xxh3.New()
+	for _, one := range list {
+		one.Hash(h)
+	}
+	return h.Sum64()
+}
+
+// featuresPopup returns the popup with the reference key, failing the test if there is none.
+func featuresPopup[T comparable](c check.Checker, p *featuresPanel, key string) *unison.PopupMenu[T] {
+	popup, ok := p.FindRefKey(key).Self.(*unison.PopupMenu[T])
+	c.True(ok, "expected a popup keyed %s", key)
 	return popup
 }
 
-// switchFeatureType invokes the type switcher inside the given feature row the way picking newType from the popup does.
-func switchFeatureType(c check.Checker, row *unison.Panel, types []feature.Type, newType feature.Type) {
-	popup := findFeatureTypePopup(row)
-	c.NotNil(popup, "expected a feature-type switcher in the row")
-	index := slices.Index(types, newType)
-	c.True(index >= 0, "the new feature type must be present in the switcher's list")
-	popup.ChoiceMadeCallback(popup, index, newType)
+// featuresCheckBox returns the checkbox with the reference key, failing the test if there is none.
+func featuresCheckBox(c check.Checker, p *featuresPanel, key string) *unison.CheckBox {
+	box, ok := p.FindRefKey(key).Self.(*unison.CheckBox)
+	c.True(ok, "expected a checkbox keyed %s", key)
+	return box
 }
 
-// Reproduces the bug where switching a feature's type away from the SelectorOverride ("Set the value of") entry deleted
-// the entire Features section instead of just replacing that one row. The SelectorOverride row hosts its type switcher
-// directly on the base row panel, so the old parent.Parent() removal walked all the way up to the features panel.
-func TestFeaturesPanelSwitchAwayFromSelectorOverride(t *testing.T) {
-	c := check.New(t)
-	entity := gurps.NewEntity()
-	owner := gurps.NewTrait(entity, nil, false)
-
-	override := gurps.NewSelectorOverride(selector.WeaponDamageType)
-	override.SetOwner(owner)
-	features := gurps.Features{override}
-
-	panel := newFeaturesPanel(entity, owner, &features, false)
-	// Give the features panel a parent so an erroneous RemoveFromParent() on the panel itself shows up as the whole
-	// section vanishing, exactly as it does in a real editor.
-	container := unison.NewPanel()
-	container.AddChild(panel)
-
-	c.Equal(2, len(panel.Children()), "expected add button + one feature row before the switch")
-
-	row := panel.Children()[1]
-	switchFeatureType(c, row, panel.featureTypesList(), feature.WeaponBonus)
-
-	c.True(slices.Contains(container.Children(), panel.AsPanel()), "the features section must not be removed")
-
-	c.Equal(1, len(features), "there must still be exactly one feature")
-	_, ok := features[0].(*gurps.WeaponBonus)
-	c.True(ok, "the feature must have been replaced with a WeaponBonus")
-	c.Equal(2, len(panel.Children()), "expected add button + one feature row after the switch")
-}
-
-// TestFeaturesPanelSwitchToSelectorOverride verifies the reverse direction: switching an ordinary feature to the
-// SelectorOverride type replaces just that row and leaves the section intact.
-func TestFeaturesPanelSwitchToSelectorOverride(t *testing.T) {
-	c := check.New(t)
-	entity := gurps.NewEntity()
-	owner := gurps.NewTrait(entity, nil, false)
-
-	bonus := gurps.NewAttributeBonus(gurps.StrengthID)
-	bonus.SetOwner(owner)
-	features := gurps.Features{bonus}
-
-	panel := newFeaturesPanel(entity, owner, &features, false)
-	container := unison.NewPanel()
-	container.AddChild(panel)
-
-	row := panel.Children()[1]
-	switchFeatureType(c, row, panel.featureTypesList(), feature.SelectorOverride)
-
-	c.Equal(1, len(container.Children()), "the features section must not be removed")
-	c.Equal(1, len(features), "there must still be exactly one feature")
-	_, ok := features[0].(*gurps.SelectorOverride)
-	c.True(ok, "the feature must have been replaced with a SelectorOverride")
-	c.Equal(2, len(panel.Children()), "expected add button + one feature row after the switch")
-}
-
-// Guards the index-based removal: with several features present, switching the type of one in the middle must replace
-// only that row and leave the others, and their order, untouched.
-func TestFeaturesPanelSwitchMiddleFeature(t *testing.T) {
-	c := check.New(t)
-	entity := gurps.NewEntity()
-	owner := gurps.NewTrait(entity, nil, false)
-
-	first := gurps.NewAttributeBonus(gurps.StrengthID)
-	first.SetOwner(owner)
-	middle := gurps.NewSelectorOverride(selector.WeaponDamageType)
-	middle.SetOwner(owner)
-	last := gurps.NewSkillBonus()
-	last.SetOwner(owner)
-	features := gurps.Features{first, middle, last}
-
-	panel := newFeaturesPanel(entity, owner, &features, false)
-	container := unison.NewPanel()
-	container.AddChild(panel)
-
-	// Feature at list index 1 lives at child index 2 (child 0 is the add button).
-	row := panel.Children()[2]
-	switchFeatureType(c, row, panel.featureTypesList(), feature.WeaponBonus)
-
-	c.Equal(1, len(container.Children()), "the features section must not be removed")
-	c.Equal(3, len(features), "the feature count must be unchanged")
-	c.Equal(gurps.Feature(first), features[0], "the first feature must be untouched")
-	c.Equal(gurps.Feature(last), features[2], "the last feature must be untouched")
-	_, ok := features[1].(*gurps.WeaponBonus)
-	c.True(ok, "the middle feature must have been replaced with a WeaponBonus")
-	c.Equal(4, len(panel.Children()), "expected add button + three feature rows after the switch")
-}
-
-// switchableCheckBoxes returns every "switchable" checkbox found anywhere beneath the given panel, since the box's
-// position within a row varies from one feature type to the next and a test needs to insist that a row has exactly one.
-func switchableCheckBoxes(p *unison.Panel) []*CheckBox {
-	return checkBoxesTitled(p, i18n.Text("switchable"))
-}
-
-// findSwitchableCheckBox returns the sole "switchable" checkbox beneath the given panel, or nil if there is none. A row
-// carrying more than one is a failure, since the extra would be an unattached duplicate of the same flag.
-func findSwitchableCheckBox(c check.Checker, p *unison.Panel) *CheckBox {
-	boxes := switchableCheckBoxes(p)
-	if len(boxes) == 0 {
-		return nil
-	}
-	c.Equal(1, len(boxes), "a row must not hold more than one switchable checkbox")
-	return boxes[0]
-}
-
-// clickCheckBox puts the checkbox into the given state and runs its click callback, as a user's click does.
-func clickCheckBox(box *CheckBox, on bool) {
+// clickFeatureCheckBox puts the checkbox into the given state and runs its click callback, as a user's click does.
+func clickFeatureCheckBox(box *unison.CheckBox, on bool) {
 	box.State = uncheck.FromBool(on)
 	box.ClickCallback()
 }
 
-// The "switchable" checkbox on a feature row must be wired to the feature's own flag in both directions.
-func TestFeaturesPanelSwitchableCheckBoxTogglesTheFlag(t *testing.T) {
+// TestFeaturesPanelSentences checks that each closed row reads as its feature's description, which a screen reader
+// hears as a disclosure, and that an unknown feature's row is static text that doesn't open.
+func TestFeaturesPanelSentences(t *testing.T) {
 	c := check.New(t)
+	screen, _ := startHeadlessWorkspace(t, c)
 	entity := gurps.NewEntity()
 	owner := gurps.NewTrait(entity, nil, false)
-
-	bonus := gurps.NewAttributeBonus(gurps.StrengthID)
-	bonus.SetOwner(owner)
-	features := gurps.Features{bonus}
-
-	panel := newFeaturesPanel(entity, owner, &features, false)
-	box := findSwitchableCheckBox(c, panel.Children()[1])
-	c.NotNil(box, "expected a switchable checkbox in the attribute bonus row")
-	c.Equal(uncheck.Off, box.State, "a feature that isn't switchable must start out unchecked")
-	c.False(bonus.IsSwitchable(), "a new attribute bonus must not be switchable")
-
-	clickCheckBox(box, true)
-	c.True(bonus.IsSwitchable(), "checking the box must mark the feature as switchable")
-
-	clickCheckBox(box, false)
-	c.False(bonus.IsSwitchable(), "clearing the box must mark the feature as not switchable")
+	features := newTestFeatures(owner)
+	p, _ := showFeaturesPanel(t, screen, entity, owner, &features, false)
+	screen.Do(func() {
+		for i, want := range []struct {
+			text string
+			role role.Enum
+		}{
+			{"+1 to skill Streetwise", role.DisclosureTriangle},
+			{"+1 DR to the Skull, only while switched on", role.DisclosureTriangle},
+			// An unknown feature's sentence is static text.
+			{`Unknown feature type "future"; it will be preserved, but ignored`, role.Label},
+		} {
+			sentence, ok := p.FindRefKey(fmt.Sprintf("%d%s", i, keySentence)).Self.(*sentenceButton)
+			c.True(ok, "row %d is a sentence", i)
+			if !ok {
+				continue
+			}
+			c.Equal(want.text, sentence.plainText())
+			c.Equal(want.text, sentence.Accessibility.Name)
+			c.Equal(want.role, sentence.Accessibility.Role)
+			c.Equal(want.role == role.Label, sentence.Tooltip != nil, "only an unknown feature's says why")
+		}
+		c.NotNil(p.FindRefKey("2"+keyMore), "but can still be deleted")
+		p.open = "2"
+		p.rebuild("")
+	})
+	c.Equal("", p.open, "an unknown feature doesn't open")
+	screen.Do(func() { c.Nil(p.FindRefKey("2" + keyFirst)) })
 }
 
-// A feature loaded as switchable must show a checked box rather than an empty one.
-func TestFeaturesPanelSwitchableCheckBoxReflectsExistingFlag(t *testing.T) {
+// TestFeaturesPanelOpenAndClose checks that a row opens to its editor, focusing its first field, that only one row is
+// open at a time, and that Done and Escape close it, the latter without reaching the editor.
+func TestFeaturesPanelOpenAndClose(t *testing.T) {
 	c := check.New(t)
+	screen, _ := startHeadlessWorkspace(t, c)
 	entity := gurps.NewEntity()
 	owner := gurps.NewTrait(entity, nil, false)
-
-	bonus := gurps.NewAttributeBonus(gurps.StrengthID)
-	bonus.SetOwner(owner)
-	bonus.SetSwitchable(true)
-	features := gurps.Features{bonus}
-
-	panel := newFeaturesPanel(entity, owner, &features, false)
-	box := findSwitchableCheckBox(c, panel.Children()[1])
-	c.NotNil(box, "expected a switchable checkbox in the attribute bonus row")
-	c.Equal(uncheck.On, box.State, "a switchable feature must show a checked box")
+	features := newTestFeatures(owner)
+	p, host := showFeaturesPanel(t, screen, entity, owner, &features, false)
+	screen.Do(func() { p.toggle("0") })
+	screen.Do(func() {
+		c.NotNil(p.FindRefKey("0" + keyFirst))
+		c.Equal("0:amount", p.Window().Focus().RefKey, "opening a row focuses its first field")
+		p.toggle("1")
+	})
+	screen.Do(func() {
+		c.Nil(p.FindRefKey("0"+keyFirst), "opening another row closes the first")
+		c.NotNil(p.FindRefKey("1" + keyFirst))
+		done, ok := p.FindRefKey("1:done").Self.(*unison.Button)
+		c.True(ok)
+		done.ClickCallback()
+	})
+	screen.Do(func() {
+		c.Equal("", p.open)
+		c.Equal(p.FindRefKey("1"+keySentence), p.Window().Focus(), "closing gives the focus to the sentence")
+		p.toggle("1")
+	})
+	screen.KeyPress(unison.KeyEscape, mod.None)
+	c.Equal("", p.open, "Escape closes the open row")
+	c.Equal(0, host.escapes, "and doesn't reach the editor")
 }
 
-// Changing a feature's type must carry the switchable flag over to the replacement, so a user retyping a feature
-// doesn't silently lose the switch that governs it.
-func TestFeaturesPanelSwitchPreservesSwitchable(t *testing.T) {
+// TestFeaturesPanelBuildingChangesNothing opens every row in turn, holding values a file can hold but the editor
+// doesn't offer, and checks that none of it changes the data, since opening an editor must not mark it modified.
+func TestFeaturesPanelBuildingChangesNothing(t *testing.T) {
 	c := check.New(t)
+	screen, _ := startHeadlessWorkspace(t, c)
 	entity := gurps.NewEntity()
 	owner := gurps.NewTrait(entity, nil, false)
-
-	bonus := gurps.NewAttributeBonus(gurps.StrengthID)
-	bonus.SetOwner(owner)
-	bonus.SetSwitchable(true)
-	features := gurps.Features{bonus}
-
-	panel := newFeaturesPanel(entity, owner, &features, false)
-	switchFeatureType(c, panel.Children()[1], panel.featureTypesList(), feature.SkillBonus)
-
-	c.Equal(1, len(features), "there must still be exactly one feature")
-	_, ok := features[0].(*gurps.SkillBonus)
-	c.True(ok, "the feature must have been replaced with a SkillBonus")
-	c.True(features[0].IsSwitchable(), "the replacement feature must still be switchable")
-
-	box := findSwitchableCheckBox(c, panel.Children()[1])
-	c.NotNil(box, "expected a switchable checkbox in the replacement row")
-	c.Equal(uncheck.On, box.State, "the replacement row's checkbox must show the preserved flag")
+	weaponSwitch := gurps.NewWeaponBonus(feature.WeaponSwitch)
+	weaponSwitch.SetOwner(owner)
+	override := gurps.NewSelectorOverride(selector.WeaponDamageType)
+	override.Value = "not a damage type"
+	override.SetOwner(owner)
+	dr := gurps.NewDRBonus()
+	dr.Locations = []string{"tail", gurps.AllID, testSkullID}
+	dr.Specialization = " "
+	dr.SetOwner(owner)
+	reduction := gurps.NewCostReduction(gurps.StrengthID)
+	reduction.Percentage = fxp.FromInteger(33)
+	features := gurps.Features{weaponSwitch, override, dr, reduction}
+	c.Equal(wswitch.NotSwitched, weaponSwitch.SwitchType, "precondition: a switch that isn't one of the choices")
+	hash := featuresHash(features)
+	p, _ := showFeaturesPanel(t, screen, entity, owner, &features, false)
+	for i := range features {
+		path := fmt.Sprint(i)
+		screen.Do(func() { p.toggle(path) })
+		screen.Do(func() { c.NotNil(p.FindRefKey(path + keyFirst)) })
+		c.Equal(hash, featuresHash(features), "opening %s changes nothing", path)
+	}
+	screen.Do(func() {
+		c.Equal("by 33%", featuresPopup[fxp.Int](c, p, "3:reduction").Text(), "a reduction that isn't offered is shown")
+	})
+	c.Equal(wswitch.NotSwitched, weaponSwitch.SwitchType)
+	c.Equal("not a damage type", override.Value)
+	c.Equal([]string{"tail", gurps.AllID, testSkullID}, dr.Locations)
 }
 
-// A feature this version of GCS doesn't understand offers no switchable checkbox: its raw data is preserved verbatim,
-// so any such flag in the data must not be second-guessed.
-func TestFeaturesPanelUnknownFeatureHasNoSwitchableCheckBox(t *testing.T) {
+// TestFeaturesPanelAdd checks that the add button adds a feature of the type last chosen at the end of the list, opened
+// with the focus in its first field, and that the new type becomes the one added next.
+func TestFeaturesPanelAdd(t *testing.T) {
 	c := check.New(t)
+	screen, _ := startHeadlessWorkspace(t, c)
 	entity := gurps.NewEntity()
 	owner := gurps.NewTrait(entity, nil, false)
+	features := newTestFeatures(owner)
+	p, host := showFeaturesPanel(t, screen, entity, owner, &features, false)
+	defer func(last feature.Type) { lastFeatureTypeUsed = last }(lastFeatureTypeUsed)
+	lastFeatureTypeUsed = feature.ReactionBonus
+	add := func() {
+		screen.Do(func() {
+			button, ok := p.FindRefKey(featureAddKey).Self.(*unison.Button)
+			c.True(ok, "the section has an add button")
+			button.ClickCallback()
+		})
+	}
+	add()
+	c.Equal(4, len(features))
+	c.Equal(feature.ReactionBonus, features[3].FeatureType(), "a feature is added at the end")
+	c.Equal("3", p.open, "and opens")
+	screen.Do(func() { c.Equal("3:amount", p.Window().Focus().RefKey) })
+	bonus, ok := features[3].(gurps.Bonus)
+	c.True(ok)
+	c.Equal(fmt.Stringer(owner), bonus.Owner(), "belonging to the item")
+	c.Equal("Undo Add Feature", host.mgr.UndoTitle())
 
-	unknown := gurps.NewUnknownFeature("bogus", jsontext.Value(`{"type":"bogus","switchable":true}`))
-	features := gurps.Features{unknown}
-
-	panel := newFeaturesPanel(entity, owner, &features, false)
-	c.Equal(2, len(panel.Children()), "expected add button + one feature row")
-	c.Nil(findSwitchableCheckBox(c, panel.Children()[1]), "an unknown feature must not offer a switchable checkbox")
-	c.False(unknown.IsSwitchable(), "an unknown feature is never switchable")
+	screen.Do(func() {
+		featuresPopup[featureTypeEntry](c, p, "3:type").Select(featureTypeEntry{featureType: feature.SkillPointBonus})
+	})
+	c.Equal(feature.SkillPointBonus, lastFeatureTypeUsed)
+	add()
+	c.Equal(feature.SkillPointBonus, features[4].FeatureType(), "the type chosen last is the one added")
+	screen.Do(host.mgr.Undo)
+	c.Equal(4, len(features), "adding is undone in one step")
+	c.Equal("3", p.open, "undo opens the row that was open")
 }
 
-// Guards the layout of the weapon "switch" row, the one row whose controls live in a nested two-row wrapper. The
-// switchable checkbox belongs at the end of the wrapper's second row, as it is on every other row. As a sibling of the
-// wrapper instead, it was top-aligned against the wrapper's two rows and pinned to the far right edge, since the
-// wrapper's column takes up all the slack.
-func TestFeaturesPanelWeaponSwitchRowPlacesCheckBoxLast(t *testing.T) {
+// TestFeaturesPanelLayout checks that the add button sits under the last row, in line with the more buttons, even with
+// no rows, that an open row's controls follow its type as a sentence would, with every line after the first indented
+// by the same small amount, that a situation fills its line, and that a DR bonus's locations follow the popup that
+// picks them, with its chips after them.
+func TestFeaturesPanelLayout(t *testing.T) {
 	c := check.New(t)
+	screen, _ := startHeadlessWorkspace(t, c)
 	entity := gurps.NewEntity()
 	owner := gurps.NewTrait(entity, nil, false)
+	skill := gurps.NewSkillBonus()
+	skill.TagsCriteria = criteria.Text{Compare: criteria.IsText, Qualifier: "Combat"}
+	skill.SetOwner(owner)
+	reaction := gurps.NewReactionBonus()
+	reaction.SetOwner(owner)
+	dr := gurps.NewDRBonus()
+	dr.Locations = []string{testSkullID, "tail"}
+	dr.SetOwner(owner)
+	features := gurps.Features{skill, reaction, dr}
+	var empty gurps.Features
+	c.NotEqual(criteria.AnyText, skill.TagsCriteria.Compare, "precondition: the skill bonus has a chip")
+	c.Equal([]string{testSkullID, "tail"}, dr.Locations,
+		"precondition: the DR bonus has a list of locations, one of which the body doesn't have")
+	c.Equal(0, len(empty), "precondition: the empty list has no features")
+	p, _ := showFeaturesPanel(t, screen, entity, owner, &features, false)
+	emptyPanel, _ := showFeaturesPanel(t, screen, entity, owner, &empty, false)
+	rect := func(panel *featuresPanel, key string) geom.Rect {
+		target := panel.FindRefKey(key)
+		c.NotNil(target, "expected %s", key)
+		if target == nil {
+			return geom.Rect{}
+		}
+		return target.RectToRoot(target.ContentRect(true))
+	}
+	// lines checks that the open row at the path starts with its type, and that each of its lines after the first,
+	// whether the sentence wrapped or the line holds a situation, chips or a note, starts the indent in from it.
+	lines := func(path string) {
+		editor := p.FindRefKey(path + keyFirst)
+		c.NotNil(editor, "expected row %s to be open", path)
+		if editor == nil {
+			return
+		}
+		typ := rect(p, path+":type")
+		c.Equal(editor.RectToRoot(editor.ContentRect(false)).X, typ.X, "the type starts row %s", path)
+		indent := typ.X + featureIndent
+		children := editor.Children()
+		prev := typ.X
+		for _, child := range children[0].Children()[1:] {
+			r := child.RectToRoot(child.ContentRect(true))
+			if r.X < prev {
+				c.Equal(indent, r.X, "a wrapped line of row %s starts at the indent", path)
+			}
+			prev = r.X
+		}
+		for _, line := range children[1:] {
+			for _, child := range line.Children() {
+				c.Equal(indent, child.RectToRoot(child.ContentRect(true)).X,
+					"a line after the sentence of row %s starts at the indent", path)
+			}
+		}
+	}
+	screen.Do(func() {
+		add, more := rect(p, featureAddKey), rect(p, "2"+keyMore)
+		c.Equal(more.Right(), add.Right(), "the add button lines up with the more buttons")
+		c.True(add.Y >= more.Bottom(), "under the last row")
+		emptyAdd, emptySection := rect(emptyPanel, featureAddKey), emptyPanel.RectToRoot(emptyPanel.ContentRect(false))
+		c.Equal(add.Right()-p.RectToRoot(p.ContentRect(false)).Right(), emptyAdd.Right()-emptySection.Right(),
+			"and stays at the right with no rows")
+		p.toggle("0")
+	})
+	screen.Do(func() {
+		amount, typ := rect(p, "0:amount"), rect(p, "0:type")
+		c.True(amount.X > typ.Right(), "the controls follow the type")
+		c.Equal(typ.CenterY(), amount.CenterY(), "on its line")
+		c.Equal(typ.X+featureIndent, rect(p, "0:tag"+keyChip).X, "and the chips start at the indent")
+		lines("0")
+		p.toggle("1")
+	})
+	screen.Do(func() {
+		situation, done := rect(p, "1:situation"), rect(p, "1:done")
+		c.Equal(rect(p, "1:type").X+featureIndent, situation.X, "the situation starts at the indent")
+		c.True(done.X-situation.Right() <= 2*unison.StdHSpacing, "and fills its line")
+		lines("1")
+		p.toggle("2")
+	})
+	screen.Do(func() {
+		popup, against := rect(p, "2:locations"), rect(p, "2:add against")
+		var locations []geom.Rect
+		for _, box := range panelsOfType[*unison.CheckBox](p.FindRefKey("2" + keyFirst)) {
+			if strings.HasPrefix(box.RefKey, "2:loc ") {
+				locations = append(locations, box.RectToRoot(box.ContentRect(true)))
+			}
+		}
+		c.NotEqual(0, len(locations), "the DR bonus shows its locations")
+		if len(locations) == 0 {
+			return
+		}
+		first, last := locations[0], locations[len(locations)-1]
+		c.True(first.Y > popup.Bottom() || (first.X > popup.Right() && first.CenterY() == popup.CenterY()),
+			"the locations follow the popup that picks them")
+		c.True(against.Y > last.Bottom() || (against.X > last.Right() && against.CenterY() == last.CenterY()),
+			"with the chips after them")
+		lines("2")
+	})
+}
 
-	bonus := gurps.NewWeaponBonus(feature.WeaponSwitch)
-	bonus.SetOwner(owner)
-	features := gurps.Features{bonus}
+// TestFeaturesPanelTypeSwitchKeepsSwitchable checks that changing a feature's type replaces it in place, carrying over
+// whether it is switchable, and leaves the others alone.
+func TestFeaturesPanelTypeSwitchKeepsSwitchable(t *testing.T) {
+	c := check.New(t)
+	screen, _ := startHeadlessWorkspace(t, c)
+	entity := gurps.NewEntity()
+	owner := gurps.NewTrait(entity, nil, false)
+	features := newTestFeatures(owner)
+	first, last := features[0], features[2]
+	c.True(features[1].IsSwitchable(), "precondition: the feature being switched is switchable")
+	p, _ := showFeaturesPanel(t, screen, entity, owner, &features, false)
+	defer func(last feature.Type) { lastFeatureTypeUsed = last }(lastFeatureTypeUsed)
+	screen.Do(func() { p.toggle("1") })
+	screen.Do(func() {
+		featuresPopup[featureTypeEntry](c, p, "1:type").Select(featureTypeEntry{featureType: feature.SelectorOverride})
+	})
+	c.Equal([]feature.Type{feature.SkillBonus, feature.SelectorOverride, feature.Unknown}, featureTypes(features))
+	c.True(features[1].IsSwitchable(), "the replacement is still switchable")
+	c.True(features[0] == first && features[2] == last, "the other features are untouched")
+	c.Equal("1", p.open, "the row stays open")
+	screen.Do(func() { c.NotNil(p.FindRefKey("1:switchable"+keyChip), "and shows the switchable chip it kept") })
+}
 
-	panel := newFeaturesPanel(entity, owner, &features, false)
-	boxes := switchableCheckBoxes(panel.Children()[1])
-	c.Equal(1, len(boxes), "expected exactly one switchable checkbox in the row")
-	if len(boxes) != 1 {
+// TestFeaturesPanelTypeHeadings checks that the type popup files the types it offers under headings, in the order of
+// the types within each group, with a separator between groups, and that the headings can't be chosen.
+func TestFeaturesPanelTypeHeadings(t *testing.T) {
+	c := check.New(t)
+	screen, _ := startHeadlessWorkspace(t, c)
+	entity := gurps.NewEntity()
+	owner := gurps.NewTrait(entity, nil, false)
+	features := newTestFeatures(owner)
+	p, _ := showFeaturesPanel(t, screen, entity, owner, &features, false)
+	screen.Do(func() { p.toggle("0") })
+	screen.Do(func() {
+		popup := featuresPopup[featureTypeEntry](c, p, "0:type")
+		var types []feature.Type
+		var headings []string
+		group := -1
+		for i := range popup.ItemCount() {
+			entry, ok := popup.ItemAt(i)
+			switch {
+			case !ok:
+				c.True(i != 0 && len(headings) != 0, "a separator only comes between groups")
+			case entry.heading != "":
+				c.False(popup.ItemEnabledAt(i), "%s can't be chosen", entry.heading)
+				headings = append(headings, entry.heading)
+			default:
+				c.True(popup.ItemEnabledAt(i))
+				c.True(featureTypeGroup(entry.featureType) >= group, "%s is in order", entry.featureType.Key())
+				group = featureTypeGroup(entry.featureType)
+				c.Equal(featureTypeGroups()[group], headings[len(headings)-1], "%s is under its heading",
+					entry.featureType.Key())
+				types = append(types, entry.featureType)
+			}
+		}
+		c.Equal(featureTypeGroups(), headings)
+		want := slices.Clone(p.featureTypesList())
+		slices.SortStableFunc(want, func(a, b feature.Type) int { return featureTypeGroup(a) - featureTypeGroup(b) })
+		c.Equal(want, types, "every type offered, in order within its group")
+		c.Equal(feature.SkillBonus.String(), popup.Text(), "with the row's type chosen")
+	})
+}
+
+// TestFeaturesPanelSwitchablePill checks that the switchable pill of an open row adds and removes its feature's flag,
+// each as one step to undo, for every type of feature.
+func TestFeaturesPanelSwitchablePill(t *testing.T) {
+	c := check.New(t)
+	screen, _ := startHeadlessWorkspace(t, c)
+	entity := gurps.NewEntity()
+	owner := gurps.NewEquipment(entity, nil, true)
+	features := make(gurps.Features, 0, len(feature.SelectableTypes))
+	fp := newFeaturesPanel(entity, owner, &features, false)
+	for _, one := range feature.SelectableTypes {
+		features = append(features, fp.createFeatureForType(one))
+	}
+	p, host := showFeaturesPanel(t, screen, entity, owner, &features, false)
+	click := func(key string) {
+		screen.Do(func() {
+			buttons := panelsOfType[*unison.Button](p.FindRefKey(key))
+			c.NotEqual(0, len(buttons), "expected a button within %s", key)
+			if len(buttons) != 0 {
+				buttons[len(buttons)-1].ClickCallback()
+			}
+		})
+	}
+	for i, one := range features {
+		path := fmt.Sprint(i)
+		name := one.FeatureType().Key()
+		c.False(one.IsSwitchable(), "precondition: %s starts out not switchable", name)
+		screen.Do(func() { p.toggle(path) })
+		click(path + ":add switchable")
+		c.True(features[i].IsSwitchable(), "adding the pill makes %s switchable", name)
+		c.Equal("Undo Add Switchable", host.mgr.UndoTitle())
+		screen.Do(func() { c.Nil(p.FindRefKey(path+":add switchable"), "%s shows the chip instead", name) })
+		click(path + ":switchable" + keyChip)
+		c.False(features[i].IsSwitchable(), "removing the chip makes %s not switchable", name)
+		c.Equal("Undo Remove Switchable", host.mgr.UndoTitle())
+		screen.Do(host.mgr.Undo)
+		c.True(features[i].IsSwitchable(), "undoing the removal makes %s switchable again", name)
+		screen.Do(host.mgr.Undo)
+		c.False(features[i].IsSwitchable(), "undoing the addition makes %s not switchable again", name)
+	}
+}
+
+// TestFeaturesPanelMoreMenu checks that Duplicate, Move up, Move down and Delete change the list as they say, that the
+// open row stays open wherever it goes, and that the moves are offered only where there is room.
+func TestFeaturesPanelMoreMenu(t *testing.T) {
+	c := check.New(t)
+	screen, _ := startHeadlessWorkspace(t, c)
+	entity := gurps.NewEntity()
+	owner := gurps.NewTrait(entity, nil, false)
+	features := newTestFeatures(owner)
+	p, _ := showFeaturesPanel(t, screen, entity, owner, &features, false)
+	act := func(path, label string) {
+		screen.Do(func() {
+			action := prereqMenuAction(p.moreEntries(path), label)
+			c.NotNil(action, "%s offers %s", path, label)
+			if action != nil {
+				action()
+			}
+		})
+	}
+	screen.Do(func() {
+		c.Nil(prereqMenuAction(p.moreEntries("0"), "Move Up"), "nothing above the top")
+		c.Nil(prereqMenuAction(p.moreEntries("2"), "Move Down"), "nothing below the bottom")
+		p.toggle("1")
+	})
+	dr := features[1]
+	act("1", "Move Up")
+	c.Equal([]feature.Type{feature.DRBonus, feature.SkillBonus, feature.Unknown}, featureTypes(features))
+	c.Equal("0", p.open, "the open row moves with its feature")
+	screen.Do(func() { c.Equal("0"+keyMore, p.Window().Focus().RefKey, "the moved row's more button takes the focus") })
+	act("0", "Move Down")
+	c.Equal([]feature.Type{feature.SkillBonus, feature.DRBonus, feature.Unknown}, featureTypes(features))
+	c.Equal("1", p.open)
+	act("1", "Duplicate")
+	c.Equal([]feature.Type{feature.SkillBonus, feature.DRBonus, feature.DRBonus, feature.Unknown}, featureTypes(features))
+	c.True(features[1] == dr && features[2] != dr, "the copy follows the original")
+	c.Equal(gurps.Hash64(dr), gurps.Hash64(features[2]), "and is the same")
+	act("0", "Delete")
+	c.Equal([]feature.Type{feature.DRBonus, feature.DRBonus, feature.Unknown}, featureTypes(features))
+	c.Equal("0", p.open, "the open row keeps its place as rows above it go")
+	act("0", "Delete")
+	c.Equal("", p.open, "deleting the open row leaves none open")
+	act("1", "Delete")
+	act("0", "Delete")
+	c.Equal(0, len(features))
+	screen.Do(func() {
+		c.Equal(featureAddKey, p.Window().Focus().RefKey, "deleting the last gives the add button the focus")
+	})
+}
+
+// TestFeaturesPanelUndo checks that typing in a field is recorded as one snapshot of the list, that a change to the
+// list's shape is another, that undo and redo install copies of their snapshots, and that a field's own undo is never
+// recorded.
+func TestFeaturesPanelUndo(t *testing.T) {
+	c := check.New(t)
+	screen, _ := startHeadlessWorkspace(t, c)
+	entity := gurps.NewEntity()
+	owner := gurps.NewTrait(entity, nil, false)
+	features := newTestFeatures(owner)
+	p, host := showFeaturesPanel(t, screen, entity, owner, &features, false)
+	screen.Do(func() { p.toggle("0") })
+	screen.Do(func() {
+		field, ok := p.FindRefKey("0:name").Self.(*StringField)
+		c.True(ok, "the open skill bonus has a name field")
+		field.RequestFocus()
+		field.SetSelection(0, len(field.Text()))
+	})
+	screen.Type("Pickpocket")
+	skill := func() *gurps.SkillBonus {
+		one, ok := features[0].(*gurps.SkillBonus)
+		c.True(ok)
+		return one
+	}
+	c.Equal("Pickpocket", skill().NameCriteria.Qualifier)
+	c.Equal("Undo Name", host.mgr.UndoTitle())
+	screen.Do(func() { prereqMenuAction(p.moreEntries("1"), "Delete")() })
+	c.Equal(2, len(features))
+	c.Equal("Undo Delete Feature", host.mgr.UndoTitle())
+	installed := features[0]
+	screen.Do(host.mgr.Undo)
+	c.Equal([]feature.Type{feature.SkillBonus, feature.DRBonus, feature.Unknown}, featureTypes(features))
+	c.True(installed != features[0], "undo installs a copy")
+	c.Equal("Pickpocket", skill().NameCriteria.Qualifier)
+	screen.Do(host.mgr.Undo)
+	c.Equal("Streetwise", skill().NameCriteria.Qualifier, "the typing was one edit")
+	c.False(host.mgr.CanUndo())
+	screen.Do(func() {
+		field, ok := p.FindRefKey("0:name").Self.(*StringField)
+		c.True(ok, "the row the typing was done in is open")
+		c.Equal("Streetwise", field.Text())
+		c.Equal(field.AsPanel(), field.Window().Focus(), "and the field has the focus")
+	})
+	screen.Do(host.mgr.Redo)
+	c.Equal("Pickpocket", skill().NameCriteria.Qualifier)
+	screen.Do(host.mgr.Redo)
+	c.Equal([]feature.Type{feature.SkillBonus, feature.Unknown}, featureTypes(features))
+}
+
+// TestFeaturesPanelDragAndDrop checks that a dragged feature goes before or after a row by which half of the row it is
+// over, that a drop is one step to undo and redo, that the open row follows its feature, and that a drop onto or beside
+// itself, or of a feature from another panel, changes nothing.
+func TestFeaturesPanelDragAndDrop(t *testing.T) {
+	c := check.New(t)
+	screen, _ := startHeadlessWorkspace(t, c)
+	entity := gurps.NewEntity()
+	owner := gurps.NewTrait(entity, nil, false)
+	features := newTestFeatures(owner)
+	p, host := showFeaturesPanel(t, screen, entity, owner, &features, false)
+	otherFeatures := newTestFeatures(owner)
+	var other *featuresPanel
+	screen.Do(func() { other = newFeaturesPanel(entity, owner, &otherFeatures, false) })
+	point := func(onto string, fraction float32) geom.Point {
+		target := p.FindRefKey(onto + keyMore).Parent()
+		r := p.RectFromRoot(target.RectToRoot(target.ContentRect(true)))
+		return geom.NewPoint(r.X+r.Width/3, r.Y+r.Height*fraction)
+	}
+	spot := func(data any, onto string, fraction float32) (target *unison.Panel, at int) {
+		screen.Do(func() { target, at = p.dropAt(point(onto, fraction), data) })
+		return target, at
+	}
+	drag := func(from, onto string, fraction float32) (accepted bool) {
+		screen.Do(func() {
+			where := point(onto, fraction)
+			data := &rowDrag{panel: p.AsPanel(), path: from}
+			p.dragOver(where, data)
+			accepted = p.dropTarget != nil
+			p.drop(where, data)
+		})
+		return accepted
+	}
+	var row2 *unison.Panel
+	screen.Do(func() { row2 = p.FindRefKey("2" + keyMore).Parent() })
+	target, at := spot(&rowDrag{panel: p.AsPanel(), path: "0"}, "2", 0.2)
+	c.Equal(row2, target, "a feature can be dropped on another's row")
+	c.Equal(dropBefore, at, "the top half of a row is before it")
+	target, at = spot(&rowDrag{panel: p.AsPanel(), path: "0"}, "2", 0.8)
+	c.Equal(row2, target)
+	c.Equal(dropAfter, at, "the bottom half is after it")
+	target, _ = spot(&rowDrag{panel: other.AsPanel(), path: "0"}, "2", 0.2)
+	c.Nil(target, "a feature from another panel can't be dropped")
+	target, _ = spot("0", "2", 0.2)
+	c.Nil(target, "nor can anything else")
+
+	c.False(drag("0", "0", 0.2), "a row can't be dropped onto itself")
+	c.True(drag("1", "0", 0.8), "after the row above it")
+	c.True(drag("1", "2", 0.2), "and before the row below it")
+	c.Equal([]feature.Type{feature.SkillBonus, feature.DRBonus, feature.Unknown}, featureTypes(features),
+		"but neither moves it")
+	c.False(host.mgr.CanUndo(), "nor records a step")
+
+	screen.Do(func() { p.toggle("1") })
+	c.True(drag("0", "2", 0.8))
+	c.Equal([]feature.Type{feature.DRBonus, feature.Unknown, feature.SkillBonus}, featureTypes(features))
+	c.Equal("0", p.open, "the open row moves with its feature")
+	c.Equal("Undo Move Feature", host.mgr.UndoTitle())
+	screen.Do(host.mgr.Undo)
+	c.Equal([]feature.Type{feature.SkillBonus, feature.DRBonus, feature.Unknown}, featureTypes(features),
+		"a drop is one step to undo")
+	c.Equal("1", p.open)
+	c.False(host.mgr.CanUndo())
+	screen.Do(host.mgr.Redo)
+	c.Equal([]feature.Type{feature.DRBonus, feature.Unknown, feature.SkillBonus}, featureTypes(features), "and to redo")
+	c.Equal("0", p.open)
+	c.True(drag("2", "0", 0.2), "before the first row")
+	c.Equal([]feature.Type{feature.SkillBonus, feature.DRBonus, feature.Unknown}, featureTypes(features))
+	c.Equal("1", p.open)
+}
+
+// TestFeaturesPanelDragFromRow checks that a row can be dragged by its sentence without also opening it, and that a
+// click on a sentence still opens its row.
+func TestFeaturesPanelDragFromRow(t *testing.T) {
+	c := check.New(t)
+	screen, _ := startHeadlessWorkspace(t, c)
+	entity := gurps.NewEntity()
+	owner := gurps.NewTrait(entity, nil, false)
+	features := newTestFeatures(owner)
+	p, _ := showFeaturesPanel(t, screen, entity, owner, &features, false)
+	var sentence, row *unison.Panel
+	var below geom.Point
+	screen.Do(func() {
+		registerWindowDragTypes(p.Window())
+		sentence = p.FindRefKey("0" + keySentence)
+		row = p.FindRefKey("2" + keyMore).Parent()
+		below = geom.NewPoint(40, row.FrameRect().Height*0.8)
+	})
+	screen.Drag(screen.PanelCenter(sentence), screen.PanelPoint(row, below), 10)
+	c.Equal([]feature.Type{feature.DRBonus, feature.Unknown, feature.SkillBonus}, featureTypes(features))
+	c.Equal("", p.open, "the drag didn't also click")
+	screen.Do(func() { sentence = p.FindRefKey("0" + keySentence) })
+	screen.Click(screen.PanelCenter(sentence))
+	c.Equal("0", p.open)
+}
+
+// TestFeaturesPanelChips checks that an optional criterion is added as a chip and removed again, and that one with no
+// comparison of its own, such as a group, shows once added even before it holds anything.
+func TestFeaturesPanelChips(t *testing.T) {
+	c := check.New(t)
+	screen, _ := startHeadlessWorkspace(t, c)
+	entity := gurps.NewEntity()
+	owner := gurps.NewTrait(entity, nil, false)
+	skill := gurps.NewSkillBonus()
+	skill.SetOwner(owner)
+	reaction := gurps.NewReactionBonus()
+	reaction.SetOwner(owner)
+	features := gurps.Features{skill, reaction}
+	c.Equal(criteria.AnyText, skill.TagsCriteria.Compare, "precondition: the skill bonus has no tags criterion")
+	c.Equal("", reaction.Group, "precondition: the reaction bonus has no group")
+	p, _ := showFeaturesPanel(t, screen, entity, owner, &features, false)
+	click := func(key string) {
+		screen.Do(func() {
+			buttons := panelsOfType[*unison.Button](p.FindRefKey(key))
+			c.NotEqual(0, len(buttons), "expected a button within %s", key)
+			if len(buttons) != 0 {
+				buttons[len(buttons)-1].ClickCallback()
+			}
+		})
+	}
+	screen.Do(func() { p.toggle("0") })
+	click("0:add tag")
+	c.Equal(criteria.IsText, skill.TagsCriteria.Compare, "adding the chip adds the criterion")
+	screen.Do(func() { c.Equal("0:tagcmp", p.Window().Focus().RefKey, "and focuses its comparison") })
+	click("0:tag" + keyChip)
+	c.Equal(criteria.AnyText, skill.TagsCriteria.Compare, "removing the chip removes it")
+
+	screen.Do(func() { p.toggle("1") })
+	click("1:add group")
+	screen.Do(func() { c.NotNil(p.FindRefKey("1:group"+keyChip), "an added group shows while it is empty") })
+	screen.Type("Social")
+	c.Equal("Social", reaction.Group)
+	click("1:group" + keyChip)
+	c.Equal("", reaction.Group)
+	screen.Do(func() { c.Nil(p.FindRefKey("1:group" + keyChip)) })
+}
+
+// TestFeaturesPanelDRLocations checks that a DR bonus's checkbox grid adds and removes locations, refusing to remove
+// the last, that the location popup offers "to this armor" only to an equipment modifier, and that choosing a list of
+// locations from "all" starts it with the torso.
+func TestFeaturesPanelDRLocations(t *testing.T) {
+	c := check.New(t)
+	screen, _ := startHeadlessWorkspace(t, c)
+	entity := gurps.NewEntity()
+	trait := gurps.NewTrait(entity, nil, false)
+	traitDR := gurps.NewDRBonus()
+	traitDR.SetOwner(trait)
+	traitFeatures := gurps.Features{traitDR}
+	modifier := gurps.NewEquipmentModifier(entity, nil, false)
+	modifierDR := gurps.NewDRBonus()
+	modifierDR.SetOwner(modifier)
+	modifierFeatures := gurps.Features{modifierDR}
+	c.Equal([]string{gurps.TorsoID}, traitDR.Locations, "precondition: the trait's bonus covers the torso")
+	c.Equal([]string{gurps.TorsoID}, modifierDR.Locations, "precondition: the modifier's bonus covers the torso")
+	traitPanel, _ := showFeaturesPanel(t, screen, entity, trait, &traitFeatures, false)
+	modifierPanel, _ := showFeaturesPanel(t, screen, entity, modifier, &modifierFeatures, true)
+	screen.Do(func() {
+		traitPanel.toggle("0")
+		modifierPanel.toggle("0")
+	})
+	screen.Do(func() {
+		c.Equal(-1, featuresPopup[string](c, traitPanel, "0:locations").IndexOfItem("to this armor"),
+			"a trait's bonus doesn't offer to this armor")
+		c.Equal(0, featuresPopup[string](c, modifierPanel, "0:locations").IndexOfItem("to this armor"),
+			"an equipment modifier's bonus does")
+		clickFeatureCheckBox(featuresCheckBox(c, traitPanel, "0:loc "+testSkullID), true)
+	})
+	c.Equal([]string{testSkullID, gurps.TorsoID}, traitDR.Locations, "ticking a box adds its location")
+	screen.Do(func() { clickFeatureCheckBox(featuresCheckBox(c, traitPanel, "0:loc "+gurps.TorsoID), false) })
+	c.Equal([]string{testSkullID}, traitDR.Locations, "unticking one removes it")
+	screen.Do(func() { clickFeatureCheckBox(featuresCheckBox(c, traitPanel, "0:loc "+testSkullID), false) })
+	c.Equal([]string{testSkullID}, traitDR.Locations, "the last one stays")
+	screen.Do(func() {
+		c.Equal(uncheck.On, featuresCheckBox(c, traitPanel, "0:loc "+testSkullID).State, "and shows as ticked")
+		featuresPopup[string](c, modifierPanel, "0:locations").Select("to this armor")
+	})
+	c.Equal(0, len(modifierDR.Locations), "to this armor has no locations")
+	screen.Do(func() {
+		c.Nil(modifierPanel.FindRefKey("0:loc "+gurps.TorsoID), "and no grid")
+		featuresPopup[string](c, modifierPanel, "0:locations").Select("to all locations")
+	})
+	c.Equal([]string{gurps.AllID}, modifierDR.Locations)
+	screen.Do(func() { featuresPopup[string](c, modifierPanel, "0:locations").Select("to these locations:") })
+	c.Equal([]string{gurps.TorsoID}, modifierDR.Locations)
+}
+
+// TestFeaturesPanelContainedWeightReductionOnlyForContainers checks that only a container offers the contained weight
+// reduction, while a feature of that type that something else holds is still shown as such.
+func TestFeaturesPanelContainedWeightReductionOnlyForContainers(t *testing.T) {
+	c := check.New(t)
+	screen, _ := startHeadlessWorkspace(t, c)
+	entity := gurps.NewEntity()
+	container := gurps.NewEquipment(entity, nil, true)
+	containerFeatures := gurps.Features{gurps.NewContainedWeightReduction()}
+	item := gurps.NewEquipment(entity, nil, false)
+	itemFeatures := gurps.Features{gurps.NewContainedWeightReduction()}
+	c.True(container.Container(), "precondition: the container is one")
+	c.False(item.Container(), "precondition: the item isn't one")
+	containerPanel, _ := showFeaturesPanel(t, screen, entity, container, &containerFeatures, false)
+	itemPanel, _ := showFeaturesPanel(t, screen, entity, item, &itemFeatures, false)
+	c.True(slices.Contains(containerPanel.featureTypesList(), feature.ContainedWeightReduction))
+	c.False(slices.Contains(itemPanel.featureTypesList(), feature.ContainedWeightReduction))
+	screen.Do(func() {
+		containerPanel.toggle("0")
+		itemPanel.toggle("0")
+	})
+	screen.Do(func() {
+		c.Equal(feature.ContainedWeightReduction.String(), featuresPopup[featureTypeEntry](c, containerPanel, "0:type").Text())
+		c.Equal(feature.ContainedWeightReduction.String(), featuresPopup[featureTypeEntry](c, itemPanel, "0:type").Text())
+	})
+}
+
+// TestFeaturesPanelSelectorFieldChange checks that choosing another field for a selector override resets its value to
+// the field's first, and clears the usage criterion when the field belongs to traits, which have no usage.
+func TestFeaturesPanelSelectorFieldChange(t *testing.T) {
+	c := check.New(t)
+	screen, _ := startHeadlessWorkspace(t, c)
+	entity := gurps.NewEntity()
+	owner := gurps.NewTrait(entity, nil, false)
+	override := gurps.NewSelectorOverride(selector.WeaponDamageType)
+	override.UsageCriteria = criteria.Text{Compare: criteria.IsText, Qualifier: "Thrown"}
+	override.SetOwner(owner)
+	features := gurps.Features{override}
+	p, _ := showFeaturesPanel(t, screen, entity, owner, &features, false)
+	defer func(last selector.Field) { lastSelectorFieldUsed = last }(lastSelectorFieldUsed)
+	var traitField selector.Field
+	var found bool
+	for _, one := range selector.Fields {
+		if gurps.SelectorFieldDescriptorFor(one).Scope == gurps.SelectorScopeTrait {
+			traitField, found = one, true
+			break
+		}
+	}
+	c.True(found, "precondition: some field belongs to traits")
+	screen.Do(func() { p.toggle("0") })
+	screen.Do(func() { featuresPopup[selector.Field](c, p, "0:field").Select(traitField) })
+	d := gurps.SelectorFieldDescriptorFor(traitField)
+	want := ""
+	if len(d.SuggestedStates) != 0 {
+		want = d.SuggestedStates[0]
+	}
+	c.Equal(want, override.Value, "the value starts over")
+	c.Equal(criteria.Text{Compare: criteria.AnyText}, override.UsageCriteria, "the usage criterion is cleared")
+	c.Equal(traitField, lastSelectorFieldUsed)
+	screen.Do(func() { c.Nil(p.FindRefKey("0:add usage"), "and isn't offered") })
+}
+
+// TestFeaturesPanelWeaponDamageBonus checks that the amount of a weapon damage bonus takes a dice specification as well
+// as a number, that "as a %" is suspended while it holds dice and comes back once they go, unless it was turned off,
+// that text in any other form leaves the bonus alone, that only the damage bonus takes dice, and that the ST bonuses
+// offer no per-die choice.
+func TestFeaturesPanelWeaponDamageBonus(t *testing.T) {
+	c := check.New(t)
+	screen, _ := startHeadlessWorkspace(t, c)
+	entity := gurps.NewEntity()
+	owner := gurps.NewTrait(entity, nil, false)
+	damage := gurps.NewWeaponBonus(feature.WeaponBonus)
+	damage.SelectionType = wsel.ThisWeapon
+	damage.Amount = fxp.Ten
+	damage.Percent = true
+	damage.SetOwner(owner)
+	accuracy := gurps.NewWeaponBonus(feature.WeaponAccBonus)
+	accuracy.SetOwner(owner)
+	minST := gurps.NewWeaponBonus(feature.WeaponMinSTBonus)
+	minST.SetOwner(owner)
+	features := gurps.Features{damage, accuracy, minST}
+	p, _ := showFeaturesPanel(t, screen, entity, owner, &features, false)
+	screen.Do(func() { p.toggle("0") })
+	var field *StringField
+	screen.Do(func() {
+		var ok bool
+		field, ok = p.FindRefKey("0:amount").Self.(*StringField)
+		c.True(ok, "the damage bonus amount is a text field")
+		c.Equal("+10", field.Text())
+		c.True(featuresCheckBox(c, p, "0:percent").Enabled())
+		c.NotNil(p.FindRefKey("0:perdie"))
+	})
+	if field == nil {
 		return
 	}
-	box := boxes[0]
-	wrapper := box.Parent()
-	c.NotNil(wrapper, "the checkbox must live inside the wrapper holding the switch controls")
+	screen.Do(func() { field.SetText("2d+1x3") })
+	expected, ok := gurps.ParseBonusDice("2d+1x3")
+	c.True(ok)
+	c.Equal(expected, damage.Dice, "a dice specification is stored as the bonus's dice")
+	c.Equal(fxp.Int(0), damage.Amount, "and clears the flat amount")
+	c.False(damage.Percent, "entering dice turns the percentage off")
+	screen.Do(func() {
+		percent := featuresCheckBox(c, p, "0:percent")
+		c.False(percent.Enabled(), "and disables it")
+		c.Equal(uncheck.Off, percent.State)
+		field.SetText("2d+1x3 cr")
+		c.False(field.ValidateCallback(), "text that is not a bonus is flagged")
+	})
+	c.Equal(expected, damage.Dice, "and leaves the dice alone")
+	screen.Do(func() { field.SetText("+10") })
+	c.True(damage.Percent, "the percentage comes back once the dice are gone")
+	screen.Do(func() {
+		c.True(featuresCheckBox(c, p, "0:percent").Enabled())
+		clickFeatureCheckBox(featuresCheckBox(c, p, "0:percent"), false)
+		field.SetText("+1d")
+		field.SetText("+3")
+	})
+	c.False(damage.Percent, "a percentage the user turned off is not turned back on")
 
-	children := wrapper.Children()
-	c.Equal(5, len(children), "the wrapper holds the type switcher, the indent spacer, both popups and the checkbox")
-	c.True(children[len(children)-1] == box.AsPanel(), "the checkbox must be the last widget in the wrapper")
-	_, ok := children[len(children)-2].Self.(*unison.PopupMenu[string])
-	c.True(ok, "the checkbox must sit immediately after the bool popup")
-
-	layout, ok := wrapper.Layout().(*unison.FlexLayout)
-	c.True(ok, "the wrapper must use a flex layout")
-	c.Equal(4, layout.Columns, "the wrapper's second row holds the spacer, both popups and the checkbox")
-	data, ok := children[0].LayoutData().(*unison.FlexLayoutData)
-	c.True(ok, "the type switcher must carry flex layout data")
-	c.Equal(layout.Columns, data.HSpan, "the type switcher must span the whole first row")
-
-	// The wrapper is the only thing on the line, so the line's column count must be 1: anything beside the wrapper
-	// would be shoved aside by the column the wrapper's HGrab expands.
-	line := wrapper.Parent()
-	c.NotNil(line, "the wrapper must be attached to the line panel")
-	c.Equal(1, len(line.Children()), "the wrapper must be the only widget on the line")
-	lineLayout, ok := line.Layout().(*unison.FlexLayout)
-	c.True(ok, "the line panel must use a flex layout")
-	c.Equal(len(line.Children()), lineLayout.Columns, "the line's column count must match its child count")
+	screen.Do(func() { p.toggle("1") })
+	screen.Do(func() {
+		_, isDecimal := p.FindRefKey("1:amount").Self.(*DecimalField)
+		c.True(isDecimal, "another weapon bonus keeps its numeric amount")
+		c.NotNil(p.FindRefKey("1:perdie"))
+		p.toggle("2")
+	})
+	screen.Do(func() { c.Nil(p.FindRefKey("2:perdie"), "a minimum ST bonus has no per-die choice") })
 }
 
-// The editor must create a feature for every type the user can pick, carrying that type and, for bonuses, its owner.
-// The weapon bonuses share one constructor keyed by type, so a weapon type missing from feature.Type.IsWeaponBonus
-// would fall through to the "unknown feature type" arm and yield nil here.
+// TestFeaturesPanelPercentSuspensionSurvivesRebuild checks that "as a %", suspended while a weapon damage bonus holds
+// dice, comes back once they go even after the row has been closed and reopened, or another control has rebuilt the
+// panel, and that undo leaves no suspension behind for the copies it installs.
+func TestFeaturesPanelPercentSuspensionSurvivesRebuild(t *testing.T) {
+	c := check.New(t)
+	screen, _ := startHeadlessWorkspace(t, c)
+	entity := gurps.NewEntity()
+	owner := gurps.NewTrait(entity, nil, false)
+	damage := gurps.NewWeaponBonus(feature.WeaponBonus)
+	damage.SelectionType = wsel.ThisWeapon
+	damage.Amount = fxp.Ten
+	damage.Percent = true
+	damage.SetOwner(owner)
+	features := gurps.Features{damage}
+	p, host := showFeaturesPanel(t, screen, entity, owner, &features, false)
+	setAmount := func(text string) {
+		screen.Do(func() {
+			field, ok := p.FindRefKey("0:amount").Self.(*StringField)
+			c.True(ok, "the damage bonus amount is a text field")
+			if ok {
+				field.SetText(text)
+			}
+		})
+	}
+	screen.Do(func() { p.toggle("0") })
+	setAmount("+1d")
+	c.False(damage.Percent, "precondition: dice suspend the percentage")
+	screen.Do(func() { p.toggle("0") })
+	screen.Do(func() { p.toggle("0") })
+	setAmount("+10")
+	c.True(damage.Percent, "the percentage comes back after the row is closed and reopened")
+
+	setAmount("+1d")
+	c.False(damage.Percent, "precondition: dice suspend the percentage again")
+	screen.Do(func() {
+		featuresPopup[wsel.Type](c, p, "0:selection").Select(wsel.WithRequiredSkill)
+	})
+	c.Equal(wsel.WithRequiredSkill, damage.SelectionType, "precondition: the popup rebuilt the panel")
+	setAmount("+10")
+	c.True(damage.Percent, "the percentage comes back after another control rebuilt the panel")
+
+	setAmount("+1d")
+	c.Equal(1, len(p.percentSuspended), "precondition: the percentage is suspended")
+	screen.Do(host.mgr.Undo)
+	installed, ok := features[0].(*gurps.WeaponBonus)
+	c.True(ok)
+	c.True(installed != damage, "undo installs a copy")
+	c.Equal(0, len(p.percentSuspended), "and no suspension is left behind")
+}
+
+// TestFeaturesPanelCheckBoxUndo checks that each click on a checkbox is a step of its own to undo, rather than being
+// run together with the clicks before it as typing is.
+func TestFeaturesPanelCheckBoxUndo(t *testing.T) {
+	c := check.New(t)
+	screen, _ := startHeadlessWorkspace(t, c)
+	entity := gurps.NewEntity()
+	owner := gurps.NewTrait(entity, nil, false)
+	skill := gurps.NewSkillBonus()
+	skill.SetOwner(owner)
+	features := gurps.Features{skill}
+	c.False(skill.PerLevel, "precondition: the skill bonus is not per level")
+	p, host := showFeaturesPanel(t, screen, entity, owner, &features, false)
+	screen.Do(func() { p.toggle("0") })
+	screen.Do(func() { clickFeatureCheckBox(featuresCheckBox(c, p, "0:perlevel"), true) })
+	screen.Do(func() { clickFeatureCheckBox(featuresCheckBox(c, p, "0:perlevel"), false) })
+	perLevel := func() bool {
+		one, ok := features[0].(*gurps.SkillBonus)
+		c.True(ok)
+		return one.PerLevel
+	}
+	c.False(perLevel())
+	screen.Do(host.mgr.Undo)
+	c.True(perLevel(), "undo takes back the untick alone")
+	c.True(host.mgr.CanUndo(), "leaving the tick")
+	screen.Do(host.mgr.Undo)
+	c.False(perLevel())
+	c.False(host.mgr.CanUndo())
+}
+
+// TestFeaturesPanelCreatesEverySelectableType checks that the editor creates a feature for every type the user can
+// pick, carrying that type and, for bonuses, its owner. The weapon bonuses share one constructor keyed by type, so a
+// weapon type missing from feature.Type.IsWeaponBonus would fall through to the "unknown feature type" arm and yield
+// nil here.
 func TestFeaturesPanelCreatesEverySelectableType(t *testing.T) {
 	entity := gurps.NewEntity()
 	trait := gurps.NewTrait(entity, nil, false)
@@ -309,334 +973,4 @@ func TestFeaturesPanelCreatesEverySelectableType(t *testing.T) {
 			c.Equal(one.IsWeaponBonus(), isWeaponBonus, "weapon bonus")
 		})
 	}
-}
-
-// Every feature type that builds its own first row -- rather than going through the shared leveled-amount line -- gets
-// exactly one switchable checkbox wired to that feature, as do the DR and attribute bonuses, which use that line.
-func TestFeaturesPanelSwitchableCheckBoxOnEveryRowType(t *testing.T) {
-	entity := gurps.NewEntity()
-	trait := gurps.NewTrait(entity, nil, false)
-	equipmentContainer := gurps.NewEquipment(entity, nil, true)
-	for _, one := range []struct {
-		name    string
-		owner   fmt.Stringer
-		feature gurps.Feature
-	}{
-		{name: "weapon switch bonus", owner: trait, feature: gurps.NewWeaponBonus(feature.WeaponSwitch)},
-		{name: "weapon damage bonus", owner: trait, feature: gurps.NewWeaponBonus(feature.WeaponBonus)},
-		{name: "contained weight reduction", owner: equipmentContainer, feature: gurps.NewContainedWeightReduction()},
-		{name: "cost reduction", owner: trait, feature: gurps.NewCostReduction(gurps.StrengthID)},
-		{name: "selector override", owner: trait, feature: gurps.NewSelectorOverride(selector.WeaponDamageType)},
-		{name: "equipment max uses bonus", owner: trait, feature: gurps.NewEquipmentMaxUsesBonus()},
-		{name: "trait max level bonus", owner: trait, feature: gurps.NewTraitMaxLevelBonus()},
-		{name: "DR bonus", owner: trait, feature: gurps.NewDRBonus()},
-		{name: "attribute bonus", owner: trait, feature: gurps.NewAttributeBonus(gurps.StrengthID)},
-	} {
-		t.Run(one.name, func(t *testing.T) {
-			c := check.New(t)
-			if bonus, ok := one.feature.(gurps.Bonus); ok {
-				bonus.SetOwner(one.owner)
-			}
-			features := gurps.Features{one.feature}
-			panel := newFeaturesPanel(entity, one.owner, &features, false)
-			c.Equal(2, len(panel.Children()), "expected add button + one feature row")
-			boxes := switchableCheckBoxes(panel.Children()[1])
-			c.Equal(1, len(boxes), "expected exactly one switchable checkbox in the row")
-			if len(boxes) != 1 {
-				return
-			}
-			box := boxes[0]
-			c.Equal(uncheck.Off, box.State, "the feature starts out not switchable")
-
-			clickCheckBox(box, true)
-			c.True(one.feature.IsSwitchable(), "checking the box must mark this feature as switchable")
-
-			clickCheckBox(box, false)
-			c.False(one.feature.IsSwitchable(), "clearing the box must mark this feature as not switchable")
-		})
-	}
-}
-
-// TestFeaturesPanelSituationBonusGroupField verifies that the conditional modifier and reaction bonus rows carry a
-// field for the situation and a separate one for the optional group, each writing to its own part of the feature.
-func TestFeaturesPanelSituationBonusGroupField(t *testing.T) {
-	entity := gurps.NewEntity()
-	trait := gurps.NewTrait(entity, nil, false)
-	for _, one := range []struct {
-		name    string
-		feature gurps.Feature
-	}{
-		{name: "conditional modifier", feature: gurps.NewConditionalModifierBonus()},
-		{name: "reaction bonus", feature: gurps.NewReactionBonus()},
-	} {
-		t.Run(one.name, func(t *testing.T) {
-			c := check.New(t)
-			var situation, group *string
-			switch f := one.feature.(type) {
-			case *gurps.ConditionalModifierBonus:
-				situation, group = &f.Situation, &f.Group
-				f.SetOwner(trait)
-			case *gurps.ReactionBonus:
-				situation, group = &f.Situation, &f.Group
-				f.SetOwner(trait)
-			}
-			c.NotNil(situation)
-			if situation == nil {
-				return
-			}
-			features := gurps.Features{one.feature}
-			panel := newFeaturesPanel(entity, trait, &features, false)
-			c.Equal(2, len(panel.Children()), "expected add button + one feature row")
-			fields := panelsOfType[*StringField](panel.Children()[1])
-			c.Equal(2, len(fields), "expected the situation field and the group field")
-			if len(fields) != 2 {
-				return
-			}
-			situationField, groupField := fields[0], fields[1]
-			c.Equal(*situation, situationField.Text(), "the situation field starts out showing the default situation")
-			c.Equal("", groupField.Text(), "the group field starts out empty")
-			c.Equal(i18n.Text("optional"), groupField.Watermark, "the group is marked as optional")
-
-			groupField.SetText("Combat")
-			c.Equal("Combat", *group, "typing into the group field sets the feature's group")
-			c.NotEqual("Combat", *situation, "and leaves the situation alone")
-
-			situationField.SetText("from foes")
-			c.Equal("from foes", *situation, "typing into the situation field sets the feature's situation")
-			c.Equal("Combat", *group, "and leaves the group alone")
-		})
-	}
-}
-
-// findPopups returns every popup of the given item type found anywhere beneath the given panel, in depth-first order.
-func findPopups[T comparable](p *unison.Panel) []*unison.PopupMenu[T] {
-	var popups []*unison.PopupMenu[T]
-	if popup, ok := p.Self.(*unison.PopupMenu[T]); ok {
-		popups = append(popups, popup)
-	}
-	for _, child := range p.Children() {
-		popups = append(popups, findPopups[T](child)...)
-	}
-	return popups
-}
-
-// checkSelectionCriteriaRow drives the selection-type popup of a feature row built on addSelectionCriteriaRow and
-// verifies that the criteria rows follow it: the "this item" choice blanks the name criteria and leaves thisRows
-// criteria rows, while the other choice enables the name criteria and leaves otherRows of them.
-func checkSelectionCriteriaRow[E comparable](t *testing.T, f gurps.Feature, selection *E, this E, thisRows int, other E, otherRows int) {
-	c := check.New(t)
-	entity := gurps.NewEntity()
-	owner := gurps.NewTrait(entity, nil, false)
-	if bonus, ok := f.(gurps.Bonus); ok {
-		bonus.SetOwner(owner)
-	}
-	*selection = this
-	features := gurps.Features{f}
-	panel := newFeaturesPanel(entity, owner, &features, false)
-	c.Equal(2, len(panel.Children()), "expected add button + one feature row")
-	row := panel.Children()[1]
-
-	popups := findPopups[E](row)
-	c.Equal(1, len(popups), "expected exactly one selection-type popup in the row")
-	if len(popups) != 1 {
-		return
-	}
-	selPopup := popups[0]
-	checkRows := func(want int, blank bool, when string) {
-		criteriaPopups := findPopups[string](row)
-		c.Equal(want, len(criteriaPopups), "the criteria rows present %s", when)
-		if len(criteriaPopups) == 0 {
-			return
-		}
-		c.Equal(!blank, criteriaPopups[0].Enabled(), "the name criteria popup is blanked %s", when)
-		c.Equal(!blank, nameCriteriaField(criteriaPopups[0]).Enabled(), "the name criteria field is blanked %s", when)
-	}
-	choose := func(item E) {
-		index := selPopup.IndexOfItem(item)
-		c.True(index >= 0, "the choice must be present in the selector")
-		selPopup.ChoiceMadeCallback(selPopup, index, item)
-		c.Equal(item, *selection, "the choice must be stored on the feature")
-	}
-	checkRows(thisRows, true, "for the 'this item' choice")
-
-	choose(other)
-	checkRows(otherRows, false, "for the other choice")
-
-	choose(this)
-	checkRows(thisRows, true, "for the 'this item' choice again")
-}
-
-// nameCriteriaField returns the qualifier field that sits beside the given criteria comparison popup.
-func nameCriteriaField(popup *unison.PopupMenu[string]) *unison.Panel {
-	return popup.Parent().Children()[1]
-}
-
-// "this equipment" needs only the blanked name row, while "equipment with name" adds the tag row.
-func TestFeaturesPanelEquipmentMaxUsesSelectionRows(t *testing.T) {
-	f := gurps.NewEquipmentMaxUsesBonus()
-	checkSelectionCriteriaRow(t, f, &f.SelectionType, equipmentsel.ThisEquipment, 1, equipmentsel.EquipmentWithName, 2)
-}
-
-// "this trait" needs only the blanked name row, while "trait with name" adds the tag row.
-func TestFeaturesPanelTraitMaxLevelSelectionRows(t *testing.T) {
-	f := gurps.NewTraitMaxLevelBonus()
-	checkSelectionCriteriaRow(t, f, &f.SelectionType, traitsel.ThisTrait, 1, traitsel.TraitWithName, 2)
-}
-
-// "this weapon" has the blanked name row plus the usage row, while "skills with name" has the name, specialization and
-// tag rows.
-func TestFeaturesPanelSkillBonusSelectionRows(t *testing.T) {
-	f := gurps.NewSkillBonus()
-	checkSelectionCriteriaRow(t, f, &f.SelectionType, skillsel.ThisWeapon, 2, skillsel.Name, 3)
-}
-
-// "this weapon" has the blanked name row plus the usage row, while "weapons with required skill" has the name,
-// specialization, usage, tag and relative skill level rows.
-func TestFeaturesPanelWeaponBonusSelectionRows(t *testing.T) {
-	f := gurps.NewWeaponBonus(feature.WeaponBonus)
-	checkSelectionCriteriaRow(t, f, &f.SelectionType, wsel.ThisWeapon, 2, wsel.WithRequiredSkill, 5)
-}
-
-// The spell bonus row keeps its name and tag rows across match type changes, blanking the name row only for "all
-// colleges".
-func TestFeaturesPanelSpellBonusSelectionRows(t *testing.T) {
-	f := gurps.NewSpellBonus()
-	checkSelectionCriteriaRow(t, f, &f.SpellMatchType, spellmatch.AllColleges, 2, spellmatch.Name, 2)
-}
-
-// The spell point bonus row keeps its name and tag rows across match type changes, blanking the name row only for "all
-// colleges".
-func TestFeaturesPanelSpellPointBonusSelectionRows(t *testing.T) {
-	f := gurps.NewSpellPointBonus()
-	checkSelectionCriteriaRow(t, f, &f.SpellMatchType, spellmatch.AllColleges, 2, spellmatch.Name, 2)
-}
-
-// The name qualifier field is blanked while the name comparison accepts anything, even though the selection type calls
-// for a name, while the comparison popup stays enabled so the user can pick a comparison that needs a qualifier.
-func TestFeaturesPanelSelectionRowBlanksNameFieldForAnyComparison(t *testing.T) {
-	c := check.New(t)
-	entity := gurps.NewEntity()
-	owner := gurps.NewTrait(entity, nil, false)
-	f := gurps.NewSkillBonus()
-	f.SetOwner(owner)
-	f.SelectionType = skillsel.Name
-	f.NameCriteria.Compare = criteria.AnyText
-	features := gurps.Features{f}
-	panel := newFeaturesPanel(entity, owner, &features, false)
-	row := panel.Children()[1]
-	criteriaPopups := findPopups[string](row)
-	c.True(len(criteriaPopups) > 0, "expected the name criteria row")
-	if len(criteriaPopups) == 0 {
-		return
-	}
-	namePopup := criteriaPopups[0]
-	c.True(namePopup.Enabled(), "the name comparison popup stays enabled when a name is called for")
-	c.False(nameCriteriaField(namePopup).Enabled(), "the name field is blanked while the comparison accepts anything")
-
-	selPopup := findPopups[skillsel.Type](row)[0]
-	selPopup.ChoiceMadeCallback(selPopup, selPopup.IndexOfItem(skillsel.ThisWeapon), skillsel.ThisWeapon)
-	c.False(namePopup.Enabled(), "the name comparison popup is blanked for 'this weapon'")
-	c.False(nameCriteriaField(namePopup).Enabled(), "the name field is blanked for 'this weapon'")
-
-	selPopup.ChoiceMadeCallback(selPopup, selPopup.IndexOfItem(skillsel.Name), skillsel.Name)
-	c.True(namePopup.Enabled(), "the name comparison popup is enabled again once a name is called for")
-	c.False(nameCriteriaField(namePopup).Enabled(),
-		"the name field stays blanked while the comparison still accepts anything")
-
-	namePopup.SelectIndex(int(criteria.IsText))
-	namePopup.SelectionChangedCallback(namePopup)
-	c.Equal(criteria.IsText, f.NameCriteria.Compare, "picking a comparison must be stored on the feature")
-	c.True(nameCriteriaField(namePopup).Enabled(), "the name field is enabled once the comparison needs a qualifier")
-}
-
-// TestFeaturesPanelWeaponDamageBonusAcceptsDice verifies that the amount field of a weapon damage bonus takes a dice
-// specification as well as a number, keeping each in its own slot on the bonus; that the "as a %" checkbox is disabled
-// while the bonus carries dice, since a percentage cannot be expressed in dice; that text in any other form is flagged
-// and leaves the bonus alone; and that every other kind of weapon bonus keeps its numeric field.
-func TestFeaturesPanelWeaponDamageBonusAcceptsDice(t *testing.T) {
-	c := check.New(t)
-	entity := gurps.NewEntity()
-	trait := gurps.NewTrait(entity, nil, false)
-	f := gurps.NewWeaponBonus(feature.WeaponBonus)
-	f.SetOwner(trait)
-	f.SelectionType = wsel.ThisWeapon
-	features := gurps.Features{f}
-	panel := newFeaturesPanel(entity, trait, &features, false)
-	row := panel.Children()[1]
-	field, ok := firstPanelOfType[*StringField](row)
-	c.True(ok, "the damage bonus amount is a text field")
-	if !ok {
-		return
-	}
-	c.Equal("+1", field.Text(), "the field starts out showing the flat amount with its sign")
-	percent := findCheckBoxTitled(row, i18n.Text("as a %"))
-	c.NotNil(percent)
-	c.True(percent.Enabled(), "the percentage checkbox is available while the bonus has no dice")
-
-	field.SetText("2d+1x3")
-	expected, ok := gurps.ParseBonusDice("2d+1x3")
-	c.True(ok)
-	c.Equal(expected, f.Dice, "a dice specification is stored as the bonus's dice")
-	c.Equal(fxp.Int(0), f.Amount, "and clears the flat amount")
-	c.True(field.ValidateCallback(), "a dice specification is valid")
-	c.False(percent.Enabled(), "the percentage checkbox is disabled while the bonus has dice")
-
-	field.SetText("2d+1x3 cr")
-	c.Equal(expected, f.Dice, "text that is not a bonus leaves the dice alone")
-	c.False(field.ValidateCallback(), "and is flagged")
-
-	field.SetText("-0.5")
-	c.Equal(gurps.BonusDice{}, f.Dice, "a number clears the dice")
-	c.Equal(-fxp.Half, f.Amount, "and is stored as the flat amount")
-	c.True(percent.Enabled(), "the percentage checkbox is available again once the dice are gone")
-
-	acc := gurps.NewWeaponBonus(feature.WeaponAccBonus)
-	acc.SetOwner(trait)
-	features = gurps.Features{acc}
-	panel = newFeaturesPanel(entity, trait, &features, false)
-	_, ok = firstPanelOfType[*DecimalField](panel.Children()[1])
-	c.True(ok, "a weapon bonus other than the damage bonus keeps its numeric amount field")
-}
-
-// TestFeaturesPanelWeaponDamageBonusRestoresPercent verifies that the "as a %" option a weapon damage bonus had is
-// only suspended while dice are entered in its amount field, coming back once the dice go away again, which is also
-// what undoing the edit that entered them does, and that an option the user turned off themselves stays off.
-func TestFeaturesPanelWeaponDamageBonusRestoresPercent(t *testing.T) {
-	c := check.New(t)
-	entity := gurps.NewEntity()
-	trait := gurps.NewTrait(entity, nil, false)
-	f := gurps.NewWeaponBonus(feature.WeaponBonus)
-	f.SetOwner(trait)
-	f.SelectionType = wsel.ThisWeapon
-	f.Amount = fxp.Ten
-	f.Percent = true
-	features := gurps.Features{f}
-	panel := newFeaturesPanel(entity, trait, &features, false)
-	row := panel.Children()[1]
-	field, ok := firstPanelOfType[*StringField](row)
-	c.True(ok)
-	if !ok {
-		return
-	}
-	percent := findCheckBoxTitled(row, i18n.Text("as a %"))
-	c.NotNil(percent)
-	c.Equal(uncheck.On, percent.State)
-
-	field.SetText("+1d")
-	c.False(f.Percent, "entering dice turns the percentage off")
-	c.Equal(uncheck.Off, percent.State)
-	c.False(percent.Enabled())
-
-	field.SetText("+10")
-	c.True(f.Percent, "the percentage comes back once the dice are gone, as undoing the edit leaves it")
-	c.Equal(uncheck.On, percent.State)
-	c.True(percent.Enabled())
-
-	f.Percent = false // As if the user turned it off
-	percent.Sync()
-	field.SetText("+1d")
-	c.False(f.Percent)
-	field.SetText("+3")
-	c.False(f.Percent, "a percentage the user turned off is not turned back on")
-	c.Equal(uncheck.Off, percent.State)
 }

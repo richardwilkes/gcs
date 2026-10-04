@@ -278,11 +278,11 @@ func (enum Type) String() string {
 	case WeaponReloadTimeBonus:
 		return i18n.Text(`Gives a weapon reload time modifier of`)
 	case WeaponSwitch:
-		return i18n.Text(`Set the weapon flag`)
+		return i18n.Text(`Sets the weapon flag`)
 	case SelectorOverride:
 		return i18n.Text(`Sets the value of`)
 	case CostReduction:
-		return i18n.Text(`Reduces the attribute cost of`)
+		return i18n.Text(`Reduces the cost of`)
 	case ContainedWeightReduction:
 		return i18n.Text(`Reduces the contained weight by`)
 	case Unknown:

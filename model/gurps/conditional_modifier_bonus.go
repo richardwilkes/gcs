@@ -14,6 +14,7 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/feature"
+	"github.com/richardwilkes/gcs/v5/model/nameable"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/toolbox/v2/xhash"
 )
@@ -44,6 +45,17 @@ func (c *ConditionalModifierBonus) FeatureType() feature.Type {
 // Clone implements Feature.
 func (c *ConditionalModifierBonus) Clone() Feature {
 	return clonePtr(c)
+}
+
+// Describe implements Feature.
+func (c *ConditionalModifierBonus) Describe(_ *Entity, replacements map[string]string, em func(string) string) string {
+	text := describeAmount(c.Amount.StringWithSign(), c.PerLevel, em)
+	if situation := nameable.Apply(c.Situation, replacements); situation != "" {
+		text += " " + situation
+	} else {
+		text += i18n.Text(" as a conditional modifier")
+	}
+	return describeSwitchable(c.Switchable, text)
 }
 
 // Hash writes this object's contents into the hasher.

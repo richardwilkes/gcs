@@ -19,6 +19,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/feature"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/spellmatch"
 	"github.com/richardwilkes/gcs/v5/model/nameable"
+	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/toolbox/v2/xbytes"
 	"github.com/richardwilkes/toolbox/v2/xhash"
 )
@@ -87,6 +88,31 @@ func (s *SpellBonusData) AddToTooltip(buffer *xbytes.InsertBuffer) {
 func (s *SpellBonusData) MatchesSpell(replacements map[string]string, name, powerSource string, colleges, tags []string) bool {
 	return s.TagsCriteria.MatchesList(replacements, tags...) &&
 		s.SpellMatchType.MatchForType(s.NameCriteria, replacements, name, powerSource, colleges)
+}
+
+// Describe implements Feature. A spell point bonus gives its amount in points.
+func (s *SpellBonusData) Describe(_ *Entity, replacements map[string]string, em func(string) string) string {
+	var text string
+	if s.Type == feature.SpellPointBonus {
+		text = describePoints(s.Amount, s.PerLevel, em)
+	} else {
+		text = describeAmount(s.Amount.StringWithSign(), s.PerLevel, em)
+	}
+	text += i18n.Text(" to ")
+	switch s.SpellMatchType {
+	case spellmatch.CollegeName:
+		text += describeTarget(i18n.Text("spells of the %s college"), i18n.Text("spells"), i18n.Text("whose college"),
+			s.NameCriteria, replacements, em)
+	case spellmatch.PowerSource:
+		text += describeTarget(i18n.Text("spells of the %s power source"), i18n.Text("spells"),
+			i18n.Text("whose power source"), s.NameCriteria, replacements, em)
+	case spellmatch.Name:
+		text += describeTarget(i18n.Text("spell %s"), i18n.Text("spells"), i18n.Text("whose name"), s.NameCriteria,
+			replacements, em)
+	default:
+		text += i18n.Text("all spells")
+	}
+	return describeSwitchable(s.Switchable, text+describeTags(s.TagsCriteria, replacements, em))
 }
 
 // Hash writes the data into the hasher.

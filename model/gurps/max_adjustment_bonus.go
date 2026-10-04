@@ -17,6 +17,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/feature"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/maxusesmod"
 	"github.com/richardwilkes/gcs/v5/model/nameable"
+	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/toolbox/v2/xbytes"
 	"github.com/richardwilkes/toolbox/v2/xhash"
 )
@@ -73,6 +74,20 @@ func (d *maxAdjustmentBonusData[S]) fillWithNameableKeysWhen(m, existing map[str
 			d.TagsCriteria.Qualifier,
 		)
 	}
+}
+
+// describe returns the description of the bonus: the adjustment to what, applied to this item or, when the selection
+// is withName, to the items named in the format one, or to all of many when any name will do.
+func (d *maxAdjustmentBonusData[S]) describe(what, this, one, many string, withName S, replacements map[string]string, em func(string) string) string {
+	op := d.Operation()
+	text := describeAmount(op.Format(op.ExtractValue(d.Amount)), d.PerLevel, em) + i18n.Text(" to ") + what + " "
+	if d.SelectionType == withName {
+		text += describeTarget(one, many, i18n.Text("whose name"), d.NameCriteria, replacements, em) +
+			describeTags(d.TagsCriteria, replacements, em)
+	} else {
+		text += this
+	}
+	return describeSwitchable(d.Switchable, text)
 }
 
 // Hash writes the fields into the hash. The embedding types guard against a nil receiver before calling it.

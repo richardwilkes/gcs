@@ -120,18 +120,8 @@ func (p *SkillPrereq) Satisfied(entity *Entity, exclude any, tooltip *xbytes.Ins
 
 // Describe implements Prereq.
 func (p *SkillPrereq) Describe(_ *Entity, replacements map[string]string, em func(string) string) string {
-	text := HasText(p.Has) + i18n.Text(" skill ") + describeName(p.NameCriteria, replacements, em)
-	switch {
-	case p.SpecializationCriteria.Compare == criteria.AnyText:
-	case p.SpecializationCriteria.Compare == criteria.IsText && p.SpecializationCriteria.Qualifier != "":
-		text += " (" + em(nameable.Apply(p.SpecializationCriteria.Qualifier, replacements)) + ")"
-	default:
-		text += i18n.Text(" with a specialization that ") + describeText(p.SpecializationCriteria, replacements, em)
-	}
-	if p.OptionalSpecializationCriteria.Compare != criteria.AnyText {
-		text += i18n.Text(" with an optional specialization that ") +
-			describeText(p.OptionalSpecializationCriteria, replacements, em)
-	}
+	text := HasText(p.Has) + i18n.Text(" skill ") + describeName(p.NameCriteria, replacements, em) +
+		describeSpecialization(p.SpecializationCriteria, p.OptionalSpecializationCriteria, replacements, em)
 	if p.LevelCriteria.Compare != criteria.AnyNumber {
 		text += i18n.Text(" at level ") + p.LevelCriteria.AltString()
 	}

@@ -14,6 +14,7 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/equipmentsel"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/feature"
+	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/toolbox/v2/xhash"
 )
 
@@ -41,6 +42,12 @@ func (e *EquipmentMaxUsesBonus) Clone() Feature {
 // FillWithNameableKeys implements Feature.
 func (e *EquipmentMaxUsesBonus) FillWithNameableKeys(m, existing map[string]string) {
 	e.fillWithNameableKeysWhen(m, existing, equipmentsel.EquipmentWithName)
+}
+
+// Describe implements Feature.
+func (e *EquipmentMaxUsesBonus) Describe(_ *Entity, replacements map[string]string, em func(string) string) string {
+	return e.describe(i18n.Text("the maximum uses of"), i18n.Text("this equipment"), i18n.Text("equipment %s"),
+		i18n.Text("equipment"), equipmentsel.EquipmentWithName, replacements, em)
 }
 
 // Hash writes this object's contents into the hasher.

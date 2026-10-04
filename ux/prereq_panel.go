@@ -10,7 +10,6 @@
 package ux
 
 import (
-	"cmp"
 	"fmt"
 	"slices"
 	"strconv"
@@ -27,30 +26,23 @@ import (
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/toolbox/v2/xbytes"
-	"github.com/richardwilkes/toolbox/v2/xmath"
+	"github.com/richardwilkes/toolbox/v2/xhash"
 	"github.com/richardwilkes/toolbox/v2/xstrings"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
 	"github.com/richardwilkes/unison/enums/mod"
-	"github.com/richardwilkes/unison/enums/paintstyle"
-	"github.com/richardwilkes/unison/enums/pathop"
 	"github.com/richardwilkes/unison/enums/role"
 	"github.com/richardwilkes/unison/enums/weight"
+	"github.com/zeebo/xxh3"
 )
 
 // A node of the tree is found by its path: prereqRootPath for the root, then the index of each child on the way down,
-// separated by dots. A widget's reference key is the path of its node followed by one of the suffixes below, or by a
-// colon and a name of its own.
+// separated by dots. A widget's reference key is the path of its node followed by one of the suffixes below, one of
+// those of sentenceRows, or a colon and a name of its own.
 const (
 	prereqRootPath = "r"
 	keyAdd         = ":add"
-	keyMore        = ":more"
 	keyPill        = ":pill"
-	keySentence    = ":sentence"
-	// keyChip follows the key of a chip's criterion, so that the chip doesn't share the key of the field within it.
-	keyChip = ":chip"
-	// keyFirst marks the editor of an open row; focusing it focuses its first text field, or else its first control.
-	keyFirst = ":first"
 )
 
 // prereqDropKey marks what a dragged prerequisite can be dropped on, holding a prereqDropSpot: the path of the node it
@@ -69,19 +61,9 @@ const (
 	dropOnEmpty
 )
 
-// Where a dragged prerequisite goes in relation to what it is dropped on.
 const (
-	dropBefore = iota
-	dropAfter
-	dropInto
-)
-
-const (
-	pillCornerRadius  = 100
 	maxPrereqQuantity = 9999
 	defaultWhenTL     = 3
-	// rowEndGap keeps what is drawn behind a row short of the panel's right edge, so it doesn't run into it.
-	rowEndGap = 4
 )
 
 // prereqPanel edits a tree of prerequisites. Each one is a row that reads as a sentence until it is opened, one at a
@@ -89,24 +71,16 @@ const (
 // children hang from a rail in the head's color. Every change, typing included, records a snapshot of the whole tree
 // with the editor's undo manager, and changes to the tree's shape rebuild the panel's content.
 type prereqPanel struct {
-	unison.Panel
+	sentenceRows[prereqState]
 	entity           *gurps.Entity
 	root             **gurps.PrereqList
 	placeholder      *gurps.PrereqList
 	permittedChoices []prereq.Type
-	targetMgr        *TargetMgr
 	summary          *sentenceButton
 	views            []prereqView
 	target           any
-	open             string
-	focus            string
-	editKey          string
-	editID           int64
-	dropTarget       *unison.Panel
-	dropWhere        int
 	hash             uint64
 	ownerIsSpell     bool
-	rebuilding       bool
 	// headed has an empty root show its head, once a group type or tech level has been chosen for it. An empty list
 	// isn't saved, so these choices live here until it has prerequisites.
 	headed bool
@@ -128,26 +102,15 @@ func newPrereqPanel(entity *gurps.Entity, root **gurps.PrereqList, permittedChoi
 		ownerIsSpell:     ownerIsSpell,
 	}
 	initTitledEditorSection(p, i18n.Text("Prerequisites"))
-	p.targetMgr = NewTargetMgr(p)
-	installPanelDragDrop(p.AsPanel(), prereqDragKey, p.dragOver, p.dragExit, p.drop)
-	p.DrawOverCallback = p.drawDrop
-	p.KeyDownCallback = p.keyDown
+	p.initRows(prereqDragKey, p.build, p.state, p.setState, p.stateHash)
+	p.initDrop(func(where geom.Point, data any) (*unison.Panel, int) {
+		target, _, at := p.dropAt(where, data)
+		return target, at
+	}, p.drop)
 	p.build()
 	// The item being edited, which evaluation leaves out, can only be found once the panel is in its editor.
 	unison.InvokeTask(p.refresh)
 	return p
-}
-
-// keyDown has Escape close the open row. Escape within the panel never reaches the editor, where it would discard the
-// changes.
-func (p *prereqPanel) keyDown(keyCode unison.KeyCode, mods mod.Modifiers, _ bool) bool {
-	if keyCode != unison.KeyEscape || !noModifiersDown(mods) {
-		return false
-	}
-	if p.open != "" {
-		p.toggle(p.open)
-	}
-	return true
 }
 
 // tree returns the list being edited. A missing list is stood in for by an empty one, which becomes the real one when
@@ -162,12 +125,9 @@ func (p *prereqPanel) tree() *gurps.PrereqList {
 	return p.placeholder
 }
 
-// prereqSnapshot is the panel as it stood before or after an edit: the tree, the open row, and the reference key of the
-// widget that undo or redo returning to it gives the focus to.
-type prereqSnapshot struct {
+// prereqState is the data a snapshot of the panel holds: the tree, and whether an empty root shows its head.
+type prereqState struct {
 	tree   *gurps.PrereqList
-	focus  string
-	open   string
 	headed bool
 }
 
@@ -178,58 +138,27 @@ func cloneTree(list *gurps.PrereqList) *gurps.PrereqList {
 	return list.CloneAsPrereqList(nil)
 }
 
-// edit applies change to the tree and records snapshots of the panel before and after it, under the title. Undo gives
-// the focus to the widget with the reference key key, as redo does unless focusAfter is set, which also rebuilds the
-// panel with the focus there. Consecutive edits with the same non-empty key, such as keystrokes in a field, are
-// recorded as one until the panel is next rebuilt. It returns the snapshot after, or nil if nothing changed.
-func (p *prereqPanel) edit(title, key, focusAfter string, change func()) *prereqSnapshot {
-	before := &prereqSnapshot{tree: cloneTree(*p.root), focus: key, open: p.open, headed: p.headed}
-	hash := gurps.Hash64(p.tree())
+// state returns a copy of the panel's data. Since edit takes one ahead of each change, it then makes a stand-in for a
+// missing tree the real one, so that the change lands in it; the copy keeps the tree missing, for undo.
+func (p *prereqPanel) state() prereqState {
+	s := prereqState{tree: cloneTree(*p.root), headed: p.headed}
 	*p.root = p.tree()
-	change()
-	if focusAfter != "" {
-		defer p.rebuild(focusAfter)
-	}
-	if gurps.Hash64(*p.root) == hash && p.headed == before.headed {
-		return nil
-	}
-	if key == "" || key != p.editKey {
-		p.editID = unison.NextUndoID()
-	}
-	p.editKey = key
-	after := &prereqSnapshot{tree: cloneTree(*p.root), focus: cmp.Or(focusAfter, key), open: p.open, headed: p.headed}
-	if parent := p.Parent(); parent != nil {
-		if mgr := unison.UndoManagerFor(parent); mgr != nil {
-			mgr.Add(&unison.UndoEdit[*prereqSnapshot]{
-				ID:       p.editID,
-				EditName: title,
-				EditCost: 1,
-				UndoFunc: func(e *unison.UndoEdit[*prereqSnapshot]) { p.install(e.BeforeData) },
-				RedoFunc: func(e *unison.UndoEdit[*prereqSnapshot]) { p.install(e.AfterData) },
-				AbsorbFunc: func(e *unison.UndoEdit[*prereqSnapshot], other unison.Undoable) bool {
-					if o, ok := other.(*unison.UndoEdit[*prereqSnapshot]); ok && o.ID == e.ID {
-						e.AfterData = o.AfterData
-						return true
-					}
-					return false
-				},
-				BeforeData: before,
-				AfterData:  after,
-			})
-		}
-	}
-	MarkModified(p)
-	return after
+	return s
 }
 
-// install returns the panel to the snapshot, for undo and redo, editing a copy of its tree.
-func (p *prereqPanel) install(snapshot *prereqSnapshot) {
-	*p.root = cloneTree(snapshot.tree)
+// setState returns the panel's data to a copy of the state, for undo and redo.
+func (p *prereqPanel) setState(s prereqState) {
+	*p.root = cloneTree(s.tree)
 	p.placeholder = nil
-	p.headed = snapshot.headed
-	p.open = snapshot.open
-	MarkModified(p)
-	p.rebuild(snapshot.focus)
+	p.headed = s.headed
+}
+
+// stateHash returns a hash of the panel's data.
+func (p *prereqPanel) stateHash() uint64 {
+	h := xxh3.New()
+	p.tree().Hash(h)
+	xhash.Bool(h, p.headed)
+	return h.Sum64()
 }
 
 // restructure changes the shape of the tree through the widget with the reference key from, then rebuilds. change
@@ -237,93 +166,14 @@ func (p *prereqPanel) install(snapshot *prereqSnapshot) {
 // fallback does. The open row stays open wherever it ends up, and closes if it is removed.
 func (p *prereqPanel) restructure(title, from, fallback string, change func() (dst gurps.Prereq)) {
 	open := p.node(p.open)
-	var dst gurps.Prereq
-	after := p.edit(title, from, "", func() {
-		dst = change()
+	p.sentenceRows.restructure(title, from, fallback, func() string {
+		dst := change()
 		p.open = p.pathOf(open)
+		if dst == nil {
+			return ""
+		}
+		return p.pathOf(dst) + keyMore
 	})
-	if dst != nil {
-		fallback = p.pathOf(dst) + keyMore
-	}
-	if after != nil {
-		after.focus = fallback
-	}
-	p.rebuild(fallback)
-}
-
-// rebuild replaces the panel's content once the current event has been handled, since that may have come from a widget
-// about to be thrown away, keeping the scroll position and giving the focus to focus or else back where it was.
-func (p *prereqPanel) rebuild(focus string) {
-	if focus != "" {
-		p.focus = focus
-	}
-	// Whatever asked for the rebuild ends a run of typing, so typing in the same field after it is a step of its own.
-	p.editKey = ""
-	if p.rebuilding {
-		return
-	}
-	p.rebuilding = true
-	unison.InvokeTask(func() {
-		p.rebuilding = false
-		ref := p.targetMgr.CurrentFocusRef()
-		focus = p.focus
-		p.focus = ""
-		scroll := p.ScrollRoot()
-		var h, v float32
-		if scroll != nil {
-			h, v = scroll.Position()
-		}
-		p.RemoveAllChildren()
-		p.build()
-		top := p.AsPanel()
-		if d := unison.Ancestor[unison.Dockable](p); d != nil {
-			top = d.AsPanel()
-		}
-		top.MarkForLayoutRecursively()
-		top.ValidateLayout()
-		if scroll != nil {
-			scroll.SetPosition(h, v)
-		}
-		switch {
-		case focus != "" && (ref == nil || ref.Key != focus) && p.focusOn(focus):
-		case ref != nil && ref.Key != "" && p.focusOn(ref.Key):
-			if s, ok := p.FindRefKey(ref.Key).Self.(Selectable); ok && ref.Selectable {
-				s.SetSelection(ref.SelStart, ref.SelEnd)
-			}
-		case ref != nil:
-			if first := p.FirstFocusableChild(); first != nil {
-				first.RequestFocus()
-			}
-		}
-		p.MarkForRedraw()
-	})
-}
-
-// focusOn gives the focus to the widget with the reference key, or to the first control within it when it takes none
-// itself, reporting whether there was one.
-func (p *prereqPanel) focusOn(key string) bool {
-	target := p.FindRefKey(key)
-	if target == nil {
-		return false
-	}
-	if !target.Focusable() {
-		first := target.FirstFocusableChild()
-		if strings.HasSuffix(key, keyFirst) {
-			target.HasInSelfOrDescendants(func(one *unison.Panel) bool {
-				if _, ok := one.Self.(Selectable); ok && one.Focusable() {
-					first = one
-					return true
-				}
-				return false
-			})
-		}
-		if target = first; target == nil {
-			return false
-		}
-	}
-	target.RequestFocus()
-	target.ScrollIntoView()
-	return true
 }
 
 func (p *prereqPanel) build() {
@@ -550,7 +400,7 @@ func (p *prereqPanel) group(list *gurps.PrereqList, path string) *unison.Panel {
 	if list.All {
 		color = colors.Grouping1
 	}
-	box := newPrereqColumn()
+	box := newColumn()
 	box.Accessibility.Role = role.Group
 	box.Accessibility.Name = groupName(list)
 	if path != prereqRootPath {
@@ -565,7 +415,7 @@ func (p *prereqPanel) group(list *gurps.PrereqList, path string) *unison.Panel {
 		insets.Left += 4
 	}
 	head.SetBorder(unison.NewEmptyBorder(insets))
-	pill := compactPopup(p, path+keyPill, i18n.Text("Requirement"), []bool{true, false}, list.All, groupWord,
+	pill := compactPopup(&p.sentenceRows, path+keyPill, i18n.Text("Requirement"), []bool{true, false}, list.All, groupWord,
 		func(all bool) { list.All = all })
 	pill.HMargin = 10
 	pill.CornerRadius = geom.NewUniformSize(pillCornerRadius)
@@ -634,7 +484,7 @@ func (p *prereqPanel) group(list *gurps.PrereqList, path string) *unison.Panel {
 					fxp.Twelve, true)
 			})
 	}
-	add := newPrereqIconButton(path+keyAdd, unison.CircledAddSVG, i18n.Text("Add to this group"))
+	add := newIconButton(path+keyAdd, unison.CircledAddSVG, i18n.Text("Add to this group"))
 	add.ClickCallback = func() { showMenu(add.AsPanel(), p.addEntries(list, path)) }
 	fitLine(add)
 	add.SetLayoutData(&unison.FlexLayoutData{HAlign: align.End, VAlign: align.Middle, HGrab: !emptyRoot})
@@ -643,7 +493,7 @@ func (p *prereqPanel) group(list *gurps.PrereqList, path string) *unison.Panel {
 		p.moreButton(head, list, path)
 	} else {
 		// The root keeps room for the more button it doesn't have, so that its add button lines up with the others.
-		room := newPrereqIconButton("", svg.CircledVerticalEllipsis, "")
+		room := newIconButton("", svg.CircledVerticalEllipsis, "")
 		room.Hidden = true
 		addCentered(head, room)
 	}
@@ -651,7 +501,7 @@ func (p *prereqPanel) group(list *gurps.PrereqList, path string) *unison.Panel {
 	fitLine(head.Children()[len(head.Children())-1])
 	box.AddChild(hbox(head, unison.StdHSpacing))
 
-	rail := newPrereqColumn()
+	rail := newColumn()
 	// Lighter than the pill in dark mode, so that the rail has a contrast of at least 3:1 with the surface.
 	rail.SetBorder(unison.NewCompoundBorder(unison.NewEmptyBorder(geom.Insets{Left: 14}),
 		unison.NewLineBorder(color.DeriveLightness(0, 0.08), geom.Size{}, geom.Insets{Left: 3}, false),
@@ -676,147 +526,44 @@ func (p *prereqPanel) group(list *gurps.PrereqList, path string) *unison.Panel {
 // row returns the panel for a prerequisite other than a list: its sentence, or while it is open its editor, beside a
 // button for more actions.
 func (p *prereqPanel) row(pr gurps.Prereq, path string) *unison.Panel {
-	open := path == p.open
-	row := unison.NewPanel()
-	row.ClientData()[prereqDropKey] = prereqDropSpot{path: path, part: dropOnRow}
-	grip := p.grip(row, path)
-	icon := p.statusIcon(row)
-	var main *unison.Panel
-	var line float32
-	if open {
-		if icon != nil {
-			// An open row shows no status, but keeps the room for it, so that its editor lines up with the sentences.
-			showCheckIcon(icon, gurps.PrereqMet)
-			icon.OnBackgroundInk = unison.Transparent
-		}
-		row.SetBorder(unison.NewEmptyBorder(geom.Insets{Top: 6, Left: 4, Bottom: 8, Right: 8}))
-		main = p.editor(pr, path)
-		row.AddChild(main)
-		done := unison.NewButton()
-		done.SetTitle(i18n.Text("Done"))
-		done.RefKey = path + ":done"
-		done.ClickCallback = func() { p.toggle(path) }
-		row.AddChild(done)
-		line = controlHeight(row)
-	} else {
-		row.SetBorder(unison.NewEmptyBorder(geom.Insets{Top: 3, Left: 4, Bottom: 3, Right: 8}))
-		var click func()
-		if pr.PrereqType() != prereq.Unknown {
-			click = func() { p.toggle(path) }
-		}
-		sentence := newSentenceButton(pr.Describe(p.entity, nil, emphasize), click)
-		sentence.RefKey = path + keySentence
-		p.dragBy(sentence.AsPanel(), row, path)
-		if click == nil {
-			// One this version of GCS doesn't understand can't be edited, so its sentence is static text.
-			sentence.Tooltip = newWrappedTooltip(i18n.Text("This was most likely created by a newer version of GCS. Its original data will be written back out unchanged when this file is saved."))
-		}
-		main = sentence.AsPanel()
-		row.AddChild(main)
-		if script, ok := pr.(*gurps.ScriptPrereq); ok && script.ResolvedName(nil) == "" {
-			describe := newDashedButton(i18n.Text("Add a description"), func() {
-				p.open = path
-				p.rebuild(path + ":name")
-			})
-			describe.OnBackgroundInk = unison.ThemeAlert
-			addCentered(row, describe)
-		}
-		p.views = append(p.views, prereqView{node: pr, icon: icon, sentence: sentence})
-		line = sentence.lineHeight()
-	}
-	p.moreButton(row, pr, path)
-	hbox(row, unison.StdHSpacing)
-	putOnLine(grip.AsPanel(), line, grip.svg.Size.Height)
-	if icon != nil {
-		putOnLine(icon.AsPanel(), line, checkIconSize())
-	}
-	for _, child := range row.Children() {
-		switch {
-		case child == main:
-			child.SetLayoutData(&unison.FlexLayoutData{HAlign: align.Fill, VAlign: align.Middle, HGrab: true})
-		case open:
-			if _, ok := child.Self.(*unison.Button); ok {
-				fitLine(child)
+	var icon *unison.Label
+	row := p.sentenceRow(path, func() string { return pr.Describe(p.entity, nil, emphasize) },
+		pr.PrereqType() != prereq.Unknown, func() *unison.Panel { return p.editor(pr, path) },
+		func() []menuEntry { return p.moreEntries(pr, path) },
+		func(row *unison.Panel) (*unison.Panel, float32) {
+			if icon = p.statusIcon(row); icon == nil {
+				return nil, 0
 			}
-			child.SetLayoutData(&unison.FlexLayoutData{VAlign: align.Start})
-		case child != grip.AsPanel() && (icon == nil || child != icon.AsPanel()):
-			_, pref, _ := child.Sizes(geom.Size{})
-			putOnLine(child, line, pref.Height)
-		}
-	}
-	row.DrawCallback = func(gc *unison.Canvas, _ geom.Rect) {
-		r := row.ContentRect(true)
-		r.Width -= rowEndGap
-		if open {
-			gc.DrawRoundedRect(r, geom.NewUniformSize(8), unison.ThemeBelowSurface.Paint(gc, r, paintstyle.Fill))
-			return
-		}
-		gc.DrawLine(geom.NewPoint(r.X, r.Bottom()-0.5), geom.NewPoint(r.Right(), r.Bottom()-0.5),
-			faintInk(unison.ThemeSurfaceEdge).Paint(gc, r, paintstyle.Stroke))
-	}
+			if path == p.open {
+				// An open row shows no status, but keeps the room for it, so that its editor lines up with the sentences.
+				showCheckIcon(icon, gurps.PrereqMet)
+				icon.OnBackgroundInk = unison.Transparent
+			}
+			return icon.AsPanel(), checkIconSize()
+		},
+		func(row *unison.Panel, sentence *sentenceButton) {
+			if script, ok := pr.(*gurps.ScriptPrereq); ok && script.ResolvedName(nil) == "" {
+				describe := newDashedButton(i18n.Text("Add a description"), func() {
+					p.open = path
+					p.rebuild(path + ":name")
+				})
+				describe.OnBackgroundInk = unison.ThemeAlert
+				addCentered(row, describe)
+			}
+			p.views = append(p.views, prereqView{node: pr, icon: icon, sentence: sentence})
+		})
+	row.ClientData()[prereqDropKey] = prereqDropSpot{path: path, part: dropOnRow}
 	return row
-}
-
-// grip adds a drag handle to the row, which may be a group's head, and lets either be dragged to move the node at the
-// path.
-func (p *prereqPanel) grip(row *unison.Panel, path string) *DragHandle {
-	handle := NewDragHandle(prereqDragKey, nil)
-	row.AddChild(handle)
-	p.dragBy(handle.AsPanel(), row, path)
-	p.dragBy(row, row, path)
-	return handle
-}
-
-// dragBy lets a press on target that moves far enough to be a drag move the node at the path, shown as an image of the
-// row. Only moving counts, not holding the button down, so that a slow click is still a click. A press that becomes a
-// drag is not also a click.
-func (p *prereqPanel) dragBy(target, row *unison.Panel, path string) {
-	var dragged bool
-	var start geom.Point
-	down, up := target.MouseDownCallback, target.MouseUpCallback
-	target.MouseDownCallback = func(where geom.Point, button, count int, mods mod.Modifiers) bool {
-		dragged = false
-		start = where
-		return down == nil || down(where, button, count, mods)
-	}
-	target.MouseDragCallback = func(where geom.Point, button int, _ mod.Modifiers) bool {
-		_, drift := unison.DragGestureParameters()
-		if dragged || button != unison.ButtonLeft ||
-			(xmath.Abs(where.X-start.X) <= drift && xmath.Abs(where.Y-start.Y) <= drift) {
-			return true
-		}
-		dragged = true
-		startPanelDrag(row, prereqDragKey, &prereqDrag{panel: p, path: path}, row.FrameRect().Size, geom.Point{},
-			func(gc *unison.Canvas, r geom.Rect) {
-				gc.DrawRect(r, unison.ThemeBelowSurface.Paint(gc, r, paintstyle.Fill))
-				row.Draw(gc, r)
-			}, p.MarkForRedraw)
-		return true
-	}
-	target.MouseUpCallback = func(where geom.Point, button int, mods mod.Modifiers) bool {
-		return dragged || up == nil || up(where, button, mods)
-	}
-}
-
-// toggle opens the row at the path, closing any other, or closes it if it is the open one.
-func (p *prereqPanel) toggle(path string) {
-	if p.open == path {
-		p.open = ""
-		p.rebuild(path + keySentence)
-	} else {
-		p.open = path
-		p.rebuild(path + keyFirst)
-	}
 }
 
 // editor returns the controls for an open row: those that say what the prerequisite requires, flowing as a sentence
 // would, then its optional criteria as chips, or the script editor for a script.
 func (p *prereqPanel) editor(pr gurps.Prereq, path string) *unison.Panel {
-	box := newPrereqColumn()
+	box := newColumn()
 	box.RefKey = path + keyFirst
-	fields := newPrereqFlow()
+	fields := newFlow()
 	box.AddChild(fields)
-	chips := newPrereqFlow()
+	chips := newFlow()
 	key := func(name string) string { return path + ":" + name }
 	whose := i18n.Text("whose name")
 	switch one := pr.(type) {
@@ -851,7 +598,7 @@ func (p *prereqPanel) editor(pr gurps.Prereq, path string) *unison.Panel {
 			quantity()
 		}
 		p.typePopup(fields, path, pr)
-		addCentered(fields, compactPopup(p, key("match"), i18n.Text("Spell Match"), spellcmp.Types, one.SubType,
+		addCentered(fields, compactPopup(&p.sentenceRows, key("match"), i18n.Text("Spell Match"), spellcmp.Types, one.SubType,
 			func(t spellcmp.Type) string {
 				if t == spellcmp.CollegeCount {
 					return i18n.Text("from")
@@ -874,11 +621,11 @@ func (p *prereqPanel) editor(pr gurps.Prereq, path string) *unison.Panel {
 		// Named apart from the attribute popup before it.
 		p.numberCriteria(fields, key("value"), i18n.Text("Value"), i18n.Text("which"), &one.QualifierCriteria, fxp.Min,
 			fxp.Max, false)
-		p.optional(chips, path, "combined", one.CombinedWith != "",
+		p.optionalCriterion(chips, path, "combined", one.CombinedWith != "",
 			func() { one.CombinedWith = gurps.AttributeIDFor(p.entity, gurps.DexterityID) },
 			func() { one.CombinedWith = "" },
 			func(chip *unison.Panel) {
-				p.attributePopup(chip, key("combined"), i18n.Text("Combined With"), prereqCriteria("combined").prefix,
+				p.attributePopup(chip, key("combined"), i18n.Text("Combined With"), rowCriteria("combined").prefix,
 					&one.CombinedWith, flags)
 			})
 	case *gurps.EquippedEquipmentPrereq:
@@ -1025,9 +772,7 @@ func (p *prereqPanel) addEntries(list *gurps.PrereqList, path string) []menuEntr
 
 // moreButton adds the button for the node's more menu.
 func (p *prereqPanel) moreButton(parent *unison.Panel, node gurps.Prereq, path string) {
-	b := newPrereqIconButton(path+keyMore, svg.CircledVerticalEllipsis, i18n.Text("More actions"))
-	b.ClickCallback = func() { showMenu(b.AsPanel(), p.moreEntries(node, path)) }
-	addCentered(parent, b)
+	addMoreButton(parent, path, func() []menuEntry { return p.moreEntries(node, path) })
 }
 
 // moreEntries returns the entries of the node's more menu: Duplicate, Move up and down, which step into and out of
@@ -1086,31 +831,12 @@ func (p *prereqPanel) moreEntries(node gurps.Prereq, path string) []menuEntry {
 	return entries
 }
 
-// prereqDrag is the payload of a prerequisite being dragged: the panel it belongs to and its path there.
-type prereqDrag struct {
-	panel *prereqPanel
-	path  string
-}
-
-// dragOver keeps the pointer in view and marks where the prerequisite would be dropped (see dropAt).
-func (p *prereqPanel) dragOver(where geom.Point, data any) bool {
-	p.ScrollRectIntoView(geom.NewRect(where.X, where.Y-16, 1, 1))
-	p.ScrollRectIntoView(geom.NewRect(where.X, where.Y+16, 1, 1))
-	target, _, at := p.dropAt(where, data)
-	if target != p.dropTarget || at != p.dropWhere {
-		p.dropTarget = target
-		p.dropWhere = at
-		p.MarkForRedraw()
-	}
-	return true
-}
-
 // dropAt returns the panel a prerequisite dragged to where would be dropped on, the path of its node and where it would
 // go: before or after a row, before a group over the top of its head and into it below that, after a group beside or
 // below its last child, or into an empty group. The panel is nil where nothing can go, such as into itself.
 func (p *prereqPanel) dropAt(where geom.Point, data any) (target *unison.Panel, path string, at int) {
-	dd, ok := data.(*prereqDrag)
-	if !ok || dd.panel != p || p.node(dd.path) == nil {
+	from := p.dragPath(data)
+	if p.node(from) == nil {
 		return nil, "", 0
 	}
 	for target = p.PanelAt(where); target != nil && target != p.AsPanel(); target = target.Parent() {
@@ -1118,7 +844,7 @@ func (p *prereqPanel) dropAt(where geom.Point, data any) (target *unison.Panel, 
 		if !isTarget {
 			continue
 		}
-		if spot.path == dd.path || strings.HasPrefix(spot.path, dd.path+".") {
+		if spot.path == from || strings.HasPrefix(spot.path, from+".") {
 			return nil, "", 0
 		}
 		y := target.PointFromRoot(p.PointToRoot(where)).Y
@@ -1149,17 +875,11 @@ func (p *prereqPanel) dropAt(where geom.Point, data any) (target *unison.Panel, 
 	return nil, "", 0
 }
 
-func (p *prereqPanel) dragExit() {
-	p.dropTarget = nil
-	p.MarkForRedraw()
-}
-
 // drop moves the dragged prerequisite to where it would go.
 func (p *prereqPanel) drop(where geom.Point, data any) {
 	target, path, at := p.dropAt(where, data)
 	p.dragExit()
-	dd, ok := data.(*prereqDrag)
-	if target == nil || !ok {
+	if target == nil {
 		return
 	}
 	to, index := p.locate(path)
@@ -1168,44 +888,18 @@ func (p *prereqPanel) drop(where geom.Point, data any) {
 	} else if at == dropAfter {
 		index++
 	}
-	from, i := p.locate(dd.path)
+	dragged := p.dragPath(data)
+	from, i := p.locate(dragged)
 	if from == to && i < index {
 		// Taking the node out moves what comes after it up by one.
 		index--
 	}
-	p.restructure(i18n.Text("Move Prerequisite"), dd.path+keyMore, "", func() gurps.Prereq {
+	p.restructure(i18n.Text("Move Prerequisite"), dragged+keyMore, "", func() gurps.Prereq {
 		if from == to && i == index {
 			return nil
 		}
 		return relocate(from, i, to, index)
 	})
-}
-
-// drawDrop dims the prerequisite being dragged, and marks where it would go, in the ink of GCS's other drop markers: a
-// line before or after a row or group, or a tint over a group it would go into.
-func (p *prereqPanel) drawDrop(gc *unison.Canvas, _ geom.Rect) {
-	if dd, ok := panelDragData.(*prereqDrag); ok && dd.panel == p {
-		if more := p.FindRefKey(dd.path + keyMore); more != nil {
-			r := p.RectFromRoot(more.Parent().RectToRoot(more.Parent().ContentRect(true)))
-			gc.DrawRect(r, faintInk(unison.ThemeSurface).Paint(gc, r, paintstyle.Fill))
-		}
-	}
-	if p.dropTarget == nil {
-		return
-	}
-	r := p.RectFromRoot(p.dropTarget.RectToRoot(p.dropTarget.ContentRect(true)))
-	r.Width -= rowEndGap
-	if p.dropWhere == dropInto {
-		gc.DrawRoundedRect(r, geom.NewUniformSize(6), faintInk(unison.ThemeWarning).Paint(gc, r, paintstyle.Fill))
-		return
-	}
-	y := r.Y
-	if p.dropWhere == dropAfter {
-		y = r.Bottom()
-	}
-	paint := unison.ThemeWarning.Paint(gc, r, paintstyle.Stroke)
-	paint.SetStrokeWidth(2)
-	gc.DrawLine(geom.NewPoint(r.X, y), geom.NewPoint(r.Right(), y), paint)
 }
 
 // moveTarget returns where Move up (dir -1) or Move down (dir 1) takes the node at the path: into an adjacent group,
@@ -1255,7 +949,7 @@ func (p *prereqPanel) typePopup(parent *unison.Panel, path string, pr gurps.Prer
 		// With no "has" popup ahead of it, it starts the sentence.
 		render = func(t prereq.Type) string { return xstrings.FirstToUpper(t.String()) }
 	}
-	addCentered(parent, compactPopup(p, path+":type", i18n.Text("Prerequisite Type"), items, current, render,
+	addCentered(parent, compactPopup(&p.sentenceRows, path+":type", i18n.Text("Prerequisite Type"), items, current, render,
 		func(t prereq.Type) {
 			list, i := p.locate(path)
 			if created := p.createPrereqForType(t, list); created != nil {
@@ -1322,7 +1016,7 @@ func (p *prereqPanel) hasPopup(parent *unison.Panel, key string, has *bool, spel
 	if spell {
 		yes, no = i18n.Text("Knows"), i18n.Text("Doesn't know")
 	}
-	addCentered(parent, compactPopup(p, key, i18n.Text("Has"), []bool{true, false}, *has, func(v bool) string {
+	addCentered(parent, compactPopup(&p.sentenceRows, key, i18n.Text("Has"), []bool{true, false}, *has, func(v bool) string {
 		if v {
 			return yes
 		}
@@ -1334,14 +1028,14 @@ func (p *prereqPanel) hasPopup(parent *unison.Panel, key string, has *bool, spel
 // kept until another is chosen.
 func (p *prereqPanel) attributePopup(parent *unison.Panel, key, name, prefix string, value *string, flags gurps.AttributeFlags) {
 	choices, current := gurps.AttributeChoices(p.entity, prefix, flags, *value)
-	addCentered(parent, compactPopup(p, key, name, choices, current,
+	addCentered(parent, compactPopup(&p.sentenceRows, key, name, choices, current,
 		func(c *gurps.AttributeChoice) string { return c.Title }, func(c *gurps.AttributeChoice) { *value = c.Key }))
 }
 
 // powerSourceChip adds the optional power source criterion of a spell prerequisite. "Same as this spell's" is offered
 // only to a spell's own prerequisites, or shown when a file edited by hand holds it elsewhere.
 func (p *prereqPanel) powerSourceChip(chips *unison.Panel, path string, one *gurps.SpellPrereq) {
-	p.optional(chips, path, "power", one.SamePowerSource || one.PowerSourceCriteria.Compare != criteria.AnyText,
+	p.optionalCriterion(chips, path, "power", one.SamePowerSource || one.PowerSourceCriteria.Compare != criteria.AnyText,
 		func() {
 			one.SamePowerSource = p.ownerIsSpell
 			if !p.ownerIsSpell {
@@ -1350,7 +1044,7 @@ func (p *prereqPanel) powerSourceChip(chips *unison.Panel, path string, one *gur
 		},
 		func() { one.SamePowerSource, one.PowerSourceCriteria = false, criteria.Text{} },
 		func(chip *unison.Panel) {
-			prefix := prereqCriteria("power").prefix
+			prefix := rowCriteria("power").prefix
 			choices := criteria.PrefixedStringComparisonChoices(prefix, prefix)
 			same := i18n.Text("and whose power source is the same as this spell's")
 			var items []string
@@ -1364,7 +1058,7 @@ func (p *prereqPanel) powerSourceChip(chips *unison.Panel, path string, one *gur
 			}
 			title := i18n.Text("Power Source")
 			comparison, _ := criteriaTitles(title)
-			addCentered(chip, compactPopup(p, path+":powercmp", comparison, items, current, nil, func(choice string) {
+			addCentered(chip, compactPopup(&p.sentenceRows, path+":powercmp", comparison, items, current, nil, func(choice string) {
 				one.SamePowerSource = choice == same
 				one.PowerSourceCriteria.Compare = criteria.StringComparisons[max(slices.Index(choices, choice), 0)]
 			}))
@@ -1374,344 +1068,13 @@ func (p *prereqPanel) powerSourceChip(chips *unison.Panel, path string, one *gur
 		})
 }
 
-// prereqCriterion describes an optional criterion of a prerequisite: the subject its controls are named for, the
-// button that adds it, and the words its chip's first popup starts each choice with or, when notPrefix is set, each
-// "not" choice (see criteria.PrefixedStringComparisonChoices). addTitle and removeTitle, when set, replace the titles
-// of adding and removing it that are made from the subject.
-type prereqCriterion struct {
-	subject, add, prefix, notPrefix, addTitle, removeTitle string
-}
-
-// prereqCriteria returns the optional criterion with the key its widgets' reference keys are made from.
-func prereqCriteria(key string) prereqCriterion {
-	switch key {
-	case "notes":
-		return prereqCriterion{subject: i18n.Text("Notes"), add: i18n.Text("+ notes"), prefix: i18n.Text("and whose notes")}
-	case "tag":
-		return prereqCriterion{
-			subject: i18n.Text("Tag"), add: i18n.Text("+ tag"),
-			prefix: i18n.Text("and at least one tag"), notPrefix: i18n.Text("and all tags"),
-		}
-	case "specialization":
-		return prereqCriterion{
-			subject: i18n.Text("Specialization"), add: i18n.Text("+ specialization"),
-			prefix: i18n.Text("and whose specialization"),
-		}
-	case "optspecialization":
-		return prereqCriterion{
-			subject: i18n.Text("Optional Specialization"), add: i18n.Text("+ optional specialization"),
-			prefix: i18n.Text("and whose optional specialization"),
-		}
-	case "level":
-		return prereqCriterion{subject: i18n.Text("Level"), add: i18n.Text("+ level"), prefix: i18n.Text("and whose level")}
-	case "power":
-		return prereqCriterion{
-			subject: i18n.Text("Power Source"), add: i18n.Text("+ power source"),
-			prefix: i18n.Text("and whose power source"),
-		}
-	case "combined":
-		return prereqCriterion{
-			subject: i18n.Text("Combined With"), add: i18n.Text("+ combined with"),
-			prefix: i18n.Text("combined with"), addTitle: i18n.Text("Add Combined Attribute"),
-			removeTitle: i18n.Text("Remove Combined Attribute"),
-		}
-	default:
-		return prereqCriterion{}
-	}
-}
-
-// titles returns the titles of adding and removing the criterion.
-func (c *prereqCriterion) titles() (add, remove string) {
-	return cmp.Or(c.addTitle, fmt.Sprintf(i18n.Text("Add %s"), c.subject)),
-		cmp.Or(c.removeTitle, fmt.Sprintf(i18n.Text("Remove %s"), c.subject))
-}
-
-// textChip adds the optional text criterion with the key, which is in use while its comparison isn't "is anything".
-func (p *prereqPanel) textChip(chips *unison.Panel, path, key string, c *criteria.Text) {
-	p.optional(chips, path, key, c.Compare != criteria.AnyText,
-		func() { *c = criteria.Text{Compare: criteria.IsText} },
-		func() { *c = criteria.Text{} },
-		func(chip *unison.Panel) {
-			one := prereqCriteria(key)
-			p.textCriteria(chip, path+":"+key, one.subject, "", one.prefix, cmp.Or(one.notPrefix, one.prefix), c, false)
-		})
-}
-
 // levelChip adds an optional level criterion.
 func (p *prereqPanel) levelChip(chips *unison.Panel, path string, level *criteria.Number, on bool) {
-	p.optional(chips, path, "level", on,
+	p.optionalCriterion(chips, path, "level", on,
 		func() { *level = criteria.Number{Compare: criteria.AtLeastNumber, Qualifier: fxp.One} },
 		func() { *level = criteria.Number{} },
 		func(chip *unison.Panel) {
-			p.numberCriteria(chip, path+":level", i18n.Text("Level"), prereqCriteria("level").prefix, level, 0,
+			p.numberCriteria(chip, path+":level", i18n.Text("Level"), rowCriteria("level").prefix, level, 0,
 				fxp.Thousand, false)
 		})
-}
-
-// optional adds the optional criterion with the key to chips: as a chip of the controls populate adds while on, else as
-// a dashed button that adds it.
-func (p *prereqPanel) optional(chips *unison.Panel, path, key string, on bool, add, remove func(), populate func(chip *unison.Panel)) {
-	c := prereqCriteria(key)
-	addTitle, removeTitle := c.titles()
-	addKey := path + ":add " + key
-	if on {
-		p.chip(chips, path+":"+key, removeTitle, addKey, remove, populate)
-		return
-	}
-	b := newDashedButton(c.add, func() { p.edit(addTitle, addKey, path+":"+key+keyChip, add) })
-	b.RefKey = addKey
-	fitLine(b)
-	addCentered(chips, b)
-}
-
-// prereqChip is the panel of an optional criterion in use, which holds its controls.
-type prereqChip struct {
-	unison.Panel
-}
-
-// chip adds a rounded chip keyed key+keyChip to the parent, holding the controls populate adds and a button titled
-// title that removes the criterion, giving the focus to the widget with the reference key after.
-func (p *prereqPanel) chip(parent *unison.Panel, key, title, after string, remove func(), populate func(chip *unison.Panel)) {
-	chip := &prereqChip{}
-	chip.Self = chip
-	chip.RefKey = key + keyChip
-	chip.SetBorder(unison.NewEmptyBorder(geom.Insets{Top: chipPadding, Left: 10, Bottom: chipPadding, Right: 3}))
-	chip.DrawCallback = func(gc *unison.Canvas, _ geom.Rect) {
-		r := chip.ContentRect(true)
-		unison.DrawRoundedRectBase(gc, r, geom.NewUniformSize(r.Height/2), 1, unison.ThemeSurface,
-			unison.ThemeSurfaceEdge)
-	}
-	populate(chip.AsPanel())
-	x := newPrereqIconButton("", unison.CircledXSVG, title)
-	x.ClickCallback = func() { p.edit(title, chip.RefKey, after, remove) }
-	addCentered(chip.AsPanel(), x)
-	addCentered(parent, hbox(chip.AsPanel(), 5))
-}
-
-// textCriteria adds the comparison of a text criterion, each choice after the prefix or, for a "not" comparison, the
-// notPrefix, and, unless it is "is anything", the field for its qualifier, which shows the hint while empty. withAny
-// offers "is anything", which a chip leaves to its remove button.
-func (p *prereqPanel) textCriteria(parent *unison.Panel, key, subject, hint, prefix, notPrefix string, c *criteria.Text, withAny bool) {
-	comparison, _ := criteriaTitles(subject)
-	items := criteria.StringComparisons
-	if !withAny {
-		items = items[1:]
-	}
-	var render func(criteria.StringComparison) string
-	if prefix != "" {
-		choices := criteria.PrefixedStringComparisonChoices(prefix, notPrefix)
-		render = func(v criteria.StringComparison) string { return choices[v] }
-	}
-	addCentered(parent, compactPopup(p, key+"cmp", comparison, items, c.Compare, render,
-		func(v criteria.StringComparison) { c.Compare = v }))
-	if c.Compare != criteria.AnyText {
-		p.textField(parent, key, subject, hint, &c.Qualifier)
-	}
-}
-
-// numberCriteria adds the comparison of a numeric criterion, worded as numberCompare words it, and, unless it is
-// "anything", the field for its qualifier, which takes whole numbers when integer is true.
-func (p *prereqPanel) numberCriteria(parent *unison.Panel, key, subject, prefix string, c *criteria.Number, minValue, maxValue fxp.Int, integer bool) {
-	comparison, _ := criteriaTitles(subject)
-	p.numberCompare(parent, key+"cmp", comparison, prefix, &c.Compare)
-	if c.Compare == criteria.AnyNumber {
-		return
-	}
-	set := func(v fxp.Int) { p.edit(subject, key, "", func() { c.Qualifier = v }) }
-	if integer {
-		p.addCompact(parent, NewIntegerField(p.targetMgr, key, subject, func() int { return c.Qualifier.AsInteger[int]() },
-			func(v int) { set(fxp.FromInteger(v)) }, minValue.AsInteger[int](), maxValue.AsInteger[int](), false,
-			false).withoutUndo())
-		return
-	}
-	p.addCompact(parent, NewDecimalField(p.targetMgr, key, subject, func() fxp.Int { return c.Qualifier }, set, minValue,
-		maxValue, false, false).withoutUndo())
-}
-
-// numberCompare adds the popup for a numeric comparison: with a prefix, each choice after it, as in "and whose level is
-// at least"; otherwise in the short words that come before a quantity, as in "at least 2 spells".
-func (p *prereqPanel) numberCompare(parent *unison.Panel, key, name, prefix string, c *criteria.NumericComparison) {
-	items := criteria.NumericComparisons
-	// "anything" is left to a chip's remove button, but is shown when a file edited by hand holds it.
-	if *c != criteria.AnyNumber {
-		items = items[1:]
-	}
-	choices := criteria.PrefixedNumericComparisonChoices(prefix)
-	addCentered(parent, compactPopup(p, key, name, items, *c, func(v criteria.NumericComparison) string {
-		if prefix != "" {
-			return choices[v]
-		}
-		if v == criteria.EqualsNumber {
-			return i18n.Text("exactly")
-		}
-		return v.AltString()
-	}, func(v criteria.NumericComparison) { *c = v }))
-}
-
-// textField adds a compact field for the text, which shows the hint while empty.
-func (p *prereqPanel) textField(parent *unison.Panel, key, title, hint string, value *string) *StringField {
-	field := NewStringField(p.targetMgr, key, title, func() string { return *value },
-		func(s string) { p.edit(title, key, "", func() { *value = s }) })
-	field.Watermark = hint
-	field.SetMinimumTextWidthUsing(i18n.Text("Weapon Master (Sword)"))
-	p.addCompact(parent, field.withoutUndo())
-	return field
-}
-
-// addCompact adds the field, which leaves undo to edit, to the parent with rounded borders.
-func (p *prereqPanel) addCompact(parent *unison.Panel, field *unison.Field) {
-	addCentered(parent, field)
-	unison.UninstallFocusBorders(field, field)
-	// Padded to the height of the controls around it, less the height of its text.
-	pad := (controlHeight(parent) - field.Font.LineHeight()) / 2
-	unison.InstallFocusBorders(field, field, compactFieldBorder(true, pad), compactFieldBorder(false, pad))
-	radius := geom.NewUniformSize(compactCornerRadius)
-	draw := field.DrawCallback
-	field.DrawCallback = func(gc *unison.Canvas, dirty geom.Rect) {
-		gc.Save()
-		path := unison.NewPath()
-		path.RoundedRect(field.ContentRect(true), radius)
-		gc.ClipPath(path, pathop.Intersect, true)
-		draw(gc, dirty)
-		gc.Restore()
-	}
-}
-
-// compactFieldBorder returns the border of a compact field, which leaves pad above and below its text.
-func compactFieldBorder(focused bool, pad float32) unison.Border {
-	ink := unison.Ink(unison.ThemeSurfaceEdge)
-	var w float32 = 1
-	if focused {
-		ink = unison.ThemeFocus
-		w = 2
-	}
-	return unison.NewCompoundBorder(unison.NewLineBorder(ink, geom.NewUniformSize(compactCornerRadius),
-		geom.NewUniformInsets(w), false),
-		unison.NewEmptyBorder(geom.Insets{Top: pad - w, Left: 6 - w, Bottom: pad - w, Right: 6 - w}))
-}
-
-// chipPadding is the room a chip leaves above and below the controls it holds.
-const chipPadding = 2
-
-// controlHeight returns the height of a control in the parent: within a chip, that of a standard button; anywhere else,
-// that of a chip holding one, so that everything on a line, chips and group pills included, is as tall.
-func controlHeight(parent *unison.Panel) float32 {
-	theme := &unison.DefaultButtonTheme
-	height := xmath.Ceil(theme.Font.LineHeight()) + 2*(theme.VMargin+1)
-	if parent != nil {
-		if _, inChip := parent.Self.(*prereqChip); inChip {
-			return height
-		}
-	}
-	return height + 2*chipPadding
-}
-
-// fitLine has the control take the height controlHeight gives it in its parent.
-func fitLine(control unison.Paneler) {
-	panel := control.AsPanel()
-	sizer := panel.Sizer()
-	panel.SetSizer(func(hint geom.Size) (minSize, prefSize, maxSize geom.Size) {
-		minSize, prefSize, maxSize = sizer(hint)
-		height := controlHeight(panel.Parent())
-		minSize.Height, prefSize.Height, maxSize.Height = height, height, height
-		return minSize, prefSize, maxSize
-	})
-}
-
-// compactPopup returns a popup offering the items, as render shows them, with current selected. A choice is handed to
-// set within an edit named name, after which the panel is rebuilt.
-func compactPopup[T comparable](p *prereqPanel, key, name string, items []T, current T, render func(T) string, set func(T)) *unison.PopupMenu[T] {
-	popup := unison.NewPopupMenu[T]()
-	popup.RefKey = key
-	popup.Accessibility.Name = name
-	popup.ItemRendererCallback = render
-	popup.HMargin = 6
-	popup.AddItem(items...)
-	// Sized to the choice showing rather than the widest, since any choice rebuilds the panel.
-	popup.SetSizer(func(hint geom.Size) (minSize, prefSize, maxSize geom.Size) {
-		_, prefSize, _ = popup.DefaultSizes(hint)
-		prefSize.Height = controlHeight(popup.Parent())
-		text := unison.NewText(popup.Text(), &unison.TextDecoration{Font: popup.Font})
-		prefSize.Width = xmath.Ceil(text.Width() + popup.HMargin*2 + 4 + prefSize.Height*0.75)
-		return prefSize, prefSize, prefSize
-	})
-	installPopupSelection(popup, current, func(v T) {
-		p.edit(name, key, "", func() { set(v) })
-		p.rebuild("")
-	})
-	return popup
-}
-
-// addJoiningWords adds text that joins the controls of an open row into a sentence.
-func addJoiningWords(parent *unison.Panel, text string) {
-	label := unison.NewLabel()
-	label.SetTitle(text)
-	addCentered(parent, label)
-}
-
-// addCentered adds the child to the parent, centered vertically on its line.
-func addCentered(parent *unison.Panel, child unison.Paneler) {
-	if _, ok := parent.Layout().(*unison.FlowLayout); ok {
-		child.AsPanel().SetLayoutData(align.Middle)
-	} else {
-		child.AsPanel().SetLayoutData(&unison.FlexLayoutData{VAlign: align.Middle})
-	}
-	parent.AddChild(child)
-}
-
-func newPrereqColumn() *unison.Panel {
-	column := unison.NewPanel()
-	column.SetLayout(&unison.FlexLayout{Columns: 1, VSpacing: unison.StdVSpacing})
-	column.SetLayoutData(&unison.FlexLayoutData{HAlign: align.Fill, HGrab: true})
-	return column
-}
-
-func newPrereqFlow() *unison.Panel {
-	flow := newPrereqColumn()
-	flow.SetLayout(&unison.FlowLayout{HSpacing: 6, VSpacing: 6})
-	return flow
-}
-
-func newPrereqIconButton(key string, icon *unison.SVG, tooltip string) *unison.Button {
-	b := unison.NewSVGButton(icon)
-	b.RefKey = key
-	b.Tooltip = newWrappedTooltip(tooltip)
-	return b
-}
-
-// newDashedButton returns a button drawn as a dashed outline, which adds something. Under the pointer it is filled, and
-// its outline is solid and in the focus color.
-func newDashedButton(title string, click func()) *unison.Button {
-	b := unison.NewButton()
-	b.HideBase = true
-	b.OnBackgroundInk = unison.ThemeOnSurface
-	b.CornerRadius = geom.NewUniformSize(pillCornerRadius)
-	b.SetTitle(title)
-	b.ClickCallback = click
-	var hovered bool
-	hover := func(on bool) bool {
-		hovered = on
-		b.MarkForRedraw()
-		return true
-	}
-	b.MouseEnterCallback = func(_ geom.Point, _ mod.Modifiers) bool { return hover(true) }
-	b.MouseExitCallback = func() bool { return hover(false) }
-	draw := b.DrawCallback
-	b.DrawCallback = func(gc *unison.Canvas, dirty geom.Rect) {
-		r := b.ContentRect(true).Inset(geom.NewUniformInsets(0.5))
-		radius := geom.NewUniformSize(min(b.CornerRadius.Width, r.Height/2))
-		// Half as strong as text, for a contrast of at least 3:1 with the surface and what is below it.
-		var edge unison.Ink = &unison.ColorFilteredInk{OriginalInk: unison.ThemeOnSurface, ColorFilter: unison.Alpha50Filter()}
-		if hovered {
-			gc.DrawRoundedRect(r, radius, unison.ThemeAboveSurface.Paint(gc, r, paintstyle.Fill))
-			edge = unison.ThemeFocus
-		}
-		draw(gc, dirty)
-		paint := edge.Paint(gc, r, paintstyle.Stroke)
-		if !hovered {
-			paint.SetPathEffect(unison.NewDashPathEffect([]float32{3, 3}, 0))
-		}
-		gc.DrawRoundedRect(r, radius, paint)
-	}
-	return b
 }
