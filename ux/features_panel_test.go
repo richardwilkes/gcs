@@ -28,6 +28,7 @@ import (
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/unison"
+	"github.com/richardwilkes/unison/accessibility"
 	uncheck "github.com/richardwilkes/unison/enums/check"
 	"github.com/richardwilkes/unison/enums/mod"
 	"github.com/richardwilkes/unison/enums/role"
@@ -38,7 +39,8 @@ import (
 const testSkullID = "skull"
 
 // showFeaturesPanel shows a featuresPanel for the features of the owner in a window, within a host, so that its
-// rebuilds run and its edits can be undone.
+// rebuilds run and its edits can be undone. The panel is expanded, as most tests look at its rows; see
+// TestFeaturesPanelStartingState for how it starts out.
 func showFeaturesPanel(t *testing.T, screen *unison.HeadlessScreen, entity *gurps.Entity, owner fmt.Stringer, features *gurps.Features, forEquipmentModifier bool) (*featuresPanel, *prereqUndoHost) {
 	var p *featuresPanel
 	host := &prereqUndoHost{mgr: unison.NewUndoManager(100, func(error) {})}
@@ -52,6 +54,10 @@ func showFeaturesPanel(t *testing.T, screen *unison.HeadlessScreen, entity *gurp
 			return true
 		}
 		p = newFeaturesPanel(entity, owner, features, forEquipmentModifier)
+		// Expanded ahead of showing, so that the window is sized for the rows.
+		if p.collapse.collapsed {
+			p.collapse.toggle()
+		}
 		host.AddChild(p)
 	})
 	showInTestWindow(t, screen, 900, host)
@@ -176,6 +182,175 @@ func TestFeaturesPanelOpenAndClose(t *testing.T) {
 	screen.KeyPress(unison.KeyEscape, mod.None)
 	c.Equal("", p.open, "Escape closes the open row")
 	c.Equal(0, host.escapes, "and doesn't reach the editor")
+}
+
+// TestFeaturesPanelCollapse checks that the title bar collapses the panel to a paragraph of every row's sentence and
+// expands it again, as does the paragraph, from a click or the keyboard, that a screen reader hears whether it is
+// expanded, that collapsing hands the focus from the rows to the title bar, and that it is no edit and keeps the open
+// row open.
+func TestFeaturesPanelCollapse(t *testing.T) {
+	c := check.New(t)
+	screen, _ := startHeadlessWorkspace(t, c)
+	entity := gurps.NewEntity()
+	owner := gurps.NewTrait(entity, nil, false)
+	features := newTestFeatures(owner)
+	c.Equal(3, len(features), "precondition: three features")
+	p, host := showFeaturesPanel(t, screen, entity, owner, &features, false)
+	hash := featuresHash(features)
+	expanded := func() bool {
+		node := &accessibility.Node{}
+		p.collapse.Accessibility.Callback(node)
+		c.True(node.Expandable)
+		return node.Expanded
+	}
+	summary := func() *sentenceButton {
+		b, ok := p.FindRefKey(featureSummaryKey).Self.(*sentenceButton)
+		c.True(ok, "a collapsed panel shows a paragraph")
+		return b
+	}
+	screen.Do(func() {
+		c.Equal(role.DisclosureTriangle, p.collapse.Accessibility.Role)
+		c.Equal("Features", p.collapse.Accessibility.Name, "the title bar is named for the title")
+		c.True(p.collapse.Focusable())
+		c.True(expanded(), "precondition: the panel is expanded")
+		c.Nil(p.FindRefKey(featureSummaryKey))
+		p.toggle("0")
+	})
+	screen.Do(func() {
+		c.Equal("0:amount", p.Window().Focus().RefKey, "precondition: the focus is in the open row")
+		p.collapse.MouseUpCallback(geom.Point{X: 1, Y: 1}, 0, mod.None)
+	})
+	screen.Do(func() {
+		c.False(expanded(), "clicking the title bar collapses the panel")
+		for _, key := range []string{"0" + keyFirst, "1" + keySentence, featureAddKey} {
+			c.Nil(p.FindRefKey(key), "collapsing hides %s", key)
+		}
+		c.Equal("+1 to skill Streetwise. +1 DR to the Skull, only while switched on. "+
+			`Unknown feature type "future"; it will be preserved, but ignored.`, summary().Accessibility.Name)
+		c.Equal(p.collapse.AsPanel(), p.Window().Focus(), "the focus moves from the rows to the title bar")
+		// Nothing but the title strip and the paragraph takes room: the border's insets, as under a plain title, and
+		// the 2 point inset all round.
+		paragraph := summary()
+		_, pref, _ := p.Sizes(geom.Size{Width: p.FrameRect().Width})
+		_, text, _ := paragraph.Sizes(geom.Size{Width: paragraph.FrameRect().Width})
+		plain := &TitledBorder{Title: p.collapse.border.Title, Font: p.collapse.border.Font}
+		c.Equal(plain.Insets().Height()+4+text.Height, pref.Height, "the collapsed panel is only as tall as it shows")
+	})
+	screen.KeyPress(unison.KeyEscape, mod.None)
+	c.Equal("0", p.open, "the open row stays open, even through Escape")
+	screen.KeyPress(unison.KeySpace, mod.None)
+	screen.Do(func() {
+		c.True(expanded(), "Space expands the panel")
+		c.Nil(p.FindRefKey(featureSummaryKey), "and hides the paragraph")
+		c.NotNil(p.FindRefKey("0"+keyFirst), "with the open row still open")
+		c.Equal(p.collapse.AsPanel(), p.Window().Focus(), "and the focus left on the title bar")
+	})
+	screen.KeyPress(unison.KeyReturn, mod.None)
+	screen.Do(func() {
+		c.False(expanded(), "Return collapses it")
+		summary().RequestFocus()
+	})
+	screen.KeyPress(unison.KeySpace, mod.None)
+	screen.Do(func() {
+		c.True(expanded(), "the paragraph expands the panel")
+		c.Nil(p.FindRefKey(featureSummaryKey))
+		c.Equal("0:amount", p.Window().Focus().RefKey, "and the open row takes the focus from it")
+	})
+	c.Equal(hash, featuresHash(features), "collapsing changes nothing")
+	c.False(host.mgr.CanUndo(), "and is not an edit")
+	c.Equal(0, host.modified, "nor marks the editor modified")
+}
+
+// TestFeaturesPanelStartingState checks that a panel with features starts out collapsed, leaving the focus where the
+// window put it, and one without starts out open with its placeholder, and that adding the first feature or deleting the last leaves it
+// open.
+func TestFeaturesPanelStartingState(t *testing.T) {
+	c := check.New(t)
+	screen, _ := startHeadlessWorkspace(t, c)
+	entity := gurps.NewEntity()
+	owner := gurps.NewTrait(entity, nil, false)
+	features := newTestFeatures(owner)
+	var empty gurps.Features
+	c.Equal(3, len(features), "precondition: three features")
+	c.Equal(0, len(empty), "precondition: the list has no features")
+	var full, open *featuresPanel
+	var field *unison.Field
+	host := &prereqUndoHost{mgr: unison.NewUndoManager(100, func(error) {})}
+	screen.Do(func() {
+		host.Self = host
+		host.SetLayout(&unison.FlexLayout{Columns: 1})
+		field = unison.NewField()
+		host.AddChild(field)
+		full = newFeaturesPanel(entity, owner, &features, false)
+		open = newFeaturesPanel(entity, owner, &empty, false)
+		host.AddChild(full)
+		host.AddChild(open)
+	})
+	wnd := showInTestWindow(t, screen, 900, host)
+	screen.Do(func() {
+		c.True(full.collapse.collapsed, "a panel with features starts out collapsed")
+		c.NotNil(full.FindRefKey(featureSummaryKey), "showing the paragraph")
+		c.Nil(full.FindRefKey("0"+keySentence), "in place of the rows")
+		c.False(open.collapse.collapsed, "a panel without features starts out open")
+		c.NotNil(open.FindRefKey(featureEmptyKey), "showing the placeholder")
+		c.Equal(field.AsPanel(), wnd.Focus(), "neither takes the focus from the field ahead of them")
+		add, ok := open.FindRefKey(featureAddKey).Self.(*unison.Button)
+		c.True(ok, "the open panel has an add button")
+		if ok {
+			add.ClickCallback()
+		}
+	})
+	c.Equal(1, len(empty), "precondition: a feature was added")
+	screen.Do(func() {
+		c.False(open.collapse.collapsed, "adding the first feature leaves the panel open")
+		open.moreEntries("0")[len(open.moreEntries("0"))-1].Act()
+	})
+	c.Equal(0, len(empty), "precondition: the feature was deleted")
+	screen.Do(func() {
+		c.False(open.collapse.collapsed, "deleting the last leaves it open")
+		c.NotNil(open.FindRefKey(featureEmptyKey))
+	})
+}
+
+// TestFeaturesPanelCollapseEmpty checks that a collapsed panel with no features says so.
+func TestFeaturesPanelCollapseEmpty(t *testing.T) {
+	c := check.New(t)
+	screen, _ := startHeadlessWorkspace(t, c)
+	entity := gurps.NewEntity()
+	owner := gurps.NewTrait(entity, nil, false)
+	var features gurps.Features
+	c.Equal(0, len(features), "precondition: the list has no features")
+	p, _ := showFeaturesPanel(t, screen, entity, owner, &features, false)
+	screen.Do(p.collapse.toggle)
+	screen.Do(func() {
+		b, ok := p.FindRefKey(featureSummaryKey).Self.(*sentenceButton)
+		c.True(ok, "a collapsed panel shows a paragraph")
+		if ok {
+			c.Equal("No features.", b.plainText())
+		}
+		c.Nil(p.FindRefKey(featureEmptyKey), "in place of the placeholder")
+	})
+}
+
+// TestFeaturesPanelTitleBar checks that the title bar covers the strip the title is drawn in, and that the rows start
+// where they would under a title that can't be clicked.
+func TestFeaturesPanelTitleBar(t *testing.T) {
+	c := check.New(t)
+	screen, _ := startHeadlessWorkspace(t, c)
+	entity := gurps.NewEntity()
+	owner := gurps.NewTrait(entity, nil, false)
+	features := newTestFeatures(owner)
+	p, _ := showFeaturesPanel(t, screen, entity, owner, &features, false)
+	screen.Do(func() {
+		border := p.collapse.border
+		c.Equal(border.TitleStrip(p.FrameRect().Size), p.collapse.FrameRect())
+		children := p.Children()
+		c.True(len(children) > 1 && children[0] == p.collapse.AsPanel(), "the title bar comes first, then the rows")
+		if len(children) > 1 {
+			plain := &TitledBorder{Title: border.Title, Font: border.Font}
+			c.Equal(plain.Insets().Top+2, children[1].FrameRect().Y, "the first row starts below the title")
+		}
+	})
 }
 
 // TestFeaturesPanelBuildingChangesNothing opens every row in turn, holding values a file can hold but the editor

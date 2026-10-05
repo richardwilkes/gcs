@@ -486,8 +486,9 @@ func seedEveryFeatureControl(list gurps.Features) {
 	}
 }
 
-// checkRows opens a dockable with fn and checks the controls in it, then again with each row of its prerequisites and
-// features panels open in turn, since a closed row shows only its sentence.
+// checkRows opens a dockable with fn and checks the controls in it, with its features panels collapsed as they start
+// out, then again with them expanded and each row of its prerequisites and features panels open in turn, since a
+// closed row shows only its sentence.
 func (a *axNameAudit) checkRows(view string, fn func()) {
 	a.t.Helper()
 	d := a.open(fn)
@@ -495,6 +496,27 @@ func (a *axNameAudit) checkRows(view string, fn func()) {
 		return
 	}
 	a.check(view, d)
+	// A features panel with features starts out collapsed, showing a paragraph in place of its rows, and its title bar
+	// says so.
+	var collapsed []*featuresPanel
+	a.screen.Do(func() {
+		for _, p := range panelsOfType[*featuresPanel](d.AsPanel()) {
+			if len(*p.features) != 0 {
+				collapsed = append(collapsed, p)
+			}
+		}
+	})
+	for _, p := range collapsed {
+		if node := a.screen.AccessibilityNodeFor(p.collapse); node == nil || !node.Expandable || node.Expanded {
+			a.t.Errorf("%s: a collapsed features panel's title bar isn't described as collapsed", view)
+		}
+	}
+	a.screen.Do(func() {
+		for _, p := range collapsed {
+			p.collapse.toggle()
+		}
+	})
+	a.check(view+", features expanded", d)
 	var names []string
 	var toggles []func()
 	a.screen.Do(func() {

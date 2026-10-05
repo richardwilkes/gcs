@@ -31,16 +31,18 @@ import (
 // modified, and records the Escape that would discard the editor's changes.
 type prereqUndoHost struct {
 	unison.Panel
-	mgr     *unison.UndoManager
-	escapes int
+	mgr      *unison.UndoManager
+	escapes  int
+	modified int
 }
 
 func (h *prereqUndoHost) UndoManager() *unison.UndoManager {
 	return h.mgr
 }
 
-// MarkModified implements ModifiableRoot, syncing as the editor does.
+// MarkModified implements ModifiableRoot, counting the calls and syncing as the editor does.
 func (h *prereqUndoHost) MarkModified(_ unison.Paneler) {
+	h.modified++
 	DeepSync(h)
 }
 

@@ -10,6 +10,8 @@
   sentence, such as "+1 per level to skill Streetwise", that opens to edit it. Optional criteria and switchable are
   added as pills, and the type menu groups the types under headings. Features can be duplicated, moved or dragged to
   reorder them, new ones are added at the end of the list, and every change can be undone.
+  The section opens collapsed to a paragraph of its features' sentences when it has any; clicking its title or the
+  paragraph expands it.
 - Weapon bonus tooltips on the sheet use shorter names, such as "to accuracy", and the rate of fire bonuses say which
   mode they apply to.
 - A new weapon bonus that picks weapons by their skill no longer starts out requiring a relative skill level of at least

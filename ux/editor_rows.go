@@ -12,11 +12,16 @@ package ux
 import (
 	"slices"
 
+	"github.com/richardwilkes/gcs/v5/model/colors"
+	"github.com/richardwilkes/toolbox/v2/errs"
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/unison"
+	"github.com/richardwilkes/unison/accessibility"
 	"github.com/richardwilkes/unison/enums/align"
+	"github.com/richardwilkes/unison/enums/mod"
 	"github.com/richardwilkes/unison/enums/paintstyle"
+	"github.com/richardwilkes/unison/enums/role"
 	"github.com/richardwilkes/unison/enums/weight"
 )
 
@@ -174,8 +179,9 @@ func joiningText[R comparable](siblings []R, row R, all bool) string {
 }
 
 // initTitledEditorSection sets up a panel as a titled section of an editor, such as its features or prerequisites,
-// spanning both columns of the editor's grid. The caller then adds the section's rows.
-func initTitledEditorSection(p unison.Paneler, title string) {
+// spanning both columns of the editor's grid, and returns the border that draws its title. The caller then adds the
+// section's rows.
+func initTitledEditorSection(p unison.Paneler, title string) *TitledBorder {
 	panel := p.AsPanel()
 	panel.Self = p
 	panel.SetLayout(&unison.FlexLayout{
@@ -188,15 +194,123 @@ func initTitledEditorSection(p unison.Paneler, title string) {
 		HAlign: align.Fill,
 		HGrab:  true,
 	})
-	panel.SetBorder(unison.NewCompoundBorder(
-		&TitledBorder{
-			Title: title,
-			Font:  unison.LabelFont,
-		},
-		unison.NewEmptyBorder(geom.NewUniformInsets(2)),
-	))
+	border := &TitledBorder{
+		Title: title,
+		Font:  unison.LabelFont,
+	}
+	panel.SetBorder(unison.NewCompoundBorder(border, unison.NewEmptyBorder(geom.NewUniformInsets(2))))
 	panel.DrawCallback = func(gc *unison.Canvas, rect geom.Rect) {
 		gc.DrawRect(rect, unison.ThemeSurface.Paint(gc, rect, paintstyle.Fill))
+	}
+	return border
+}
+
+// sectionToggleKey is the reference key of the title bar of a section that can be collapsed.
+const sectionToggleKey = "toggle"
+
+// sectionToggle is the title bar of a section set up by initTitledEditorSection that can be collapsed, laid over the
+// strip its border paints the title in. A click, Space or Return collapses or expands the section, as a screen reader
+// can ask it to. The section adds it as its first child each time it fills itself, and decides what each state shows.
+type sectionToggle struct {
+	unison.Panel
+	border    *TitledBorder
+	collapsed bool
+	changed   func()
+}
+
+// newSectionToggle lets the section be collapsed by clicking the title its border draws, and returns its title bar,
+// which starts out collapsed or not as asked. changed is called after each collapse or expansion. The section's layout
+// must be the FlexLayout initTitledEditorSection installs.
+func newSectionToggle(section unison.Paneler, border *TitledBorder, collapsed bool, changed func()) *sectionToggle {
+	t := &sectionToggle{border: border, collapsed: collapsed, changed: changed}
+	t.Self = t
+	t.RefKey = sectionToggleKey
+	t.SetFocusable(true)
+	t.SetLayoutData(&unison.FlexLayoutData{HAlign: align.Fill, HGrab: true})
+	panel := section.AsPanel()
+	// The title bar takes the first row in place of the strip the border reserved, so the border leaves the strip to
+	// the content and blockLayout puts the title bar over the whole of it.
+	border.HeadingInContent = true
+	var vSpacing float32
+	if layout, ok := panel.Layout().(*unison.FlexLayout); ok {
+		vSpacing = layout.VSpacing
+		panel.SetLayout(&blockLayout{FlexLayout: layout, border: border, heading: t.AsPanel()})
+	} else {
+		errs.Log(errs.Newf("a section toggle needs a FlexLayout, not a %T", panel.Layout()))
+	}
+	// The row is short by the spacing that follows it, so the rows below start where the strip would have put them.
+	t.SetSizer(func(_ geom.Size) (minSize, prefSize, maxSize geom.Size) {
+		height := max(border.TitleHeight()-vSpacing, 0)
+		return geom.NewSize(0, height), geom.NewSize(0, height), geom.NewSize(unison.DefaultMaxSize, height)
+	})
+	// A panel draws its border over its children, so the border draws the chevron and the focus ring.
+	panel.SetBorder(&sectionToggleBorder{Border: panel.Border(), toggle: t})
+	t.MouseDownCallback = func(_ geom.Point, _, _ int, _ mod.Modifiers) bool { return true }
+	t.MouseUpCallback = func(where geom.Point, _ int, _ mod.Modifiers) bool {
+		if where.In(t.ContentRect(true)) {
+			t.toggle()
+		}
+		return true
+	}
+	t.UpdateCursorCallback = func(_ geom.Point) *unison.Cursor { return unison.PointingCursor() }
+	t.KeyDownCallback = func(keyCode unison.KeyCode, mods mod.Modifiers, _ bool) bool {
+		if mods&mod.NonSticky != 0 ||
+			(keyCode != unison.KeySpace && keyCode != unison.KeyReturn && keyCode != unison.KeyNumPadEnter) {
+			return false
+		}
+		t.toggle()
+		return true
+	}
+	t.Accessibility.Role = role.DisclosureTriangle
+	t.Accessibility.Name = border.Title
+	addAccessibilityCallback(t, func(node *accessibility.Node) {
+		node.Expandable = true
+		node.Expanded = !t.collapsed
+		node.Actions = node.Actions.With(accessibility.Press, accessibility.Expand, accessibility.Collapse)
+	})
+	t.Accessibility.ActionCallback = func(req accessibility.ActionRequest) bool {
+		switch req.Action {
+		case accessibility.Press:
+			t.toggle()
+		case accessibility.Expand, accessibility.Collapse:
+			if t.collapsed == (req.Action == accessibility.Expand) {
+				t.toggle()
+			}
+		default:
+			return false
+		}
+		return true
+	}
+	return t
+}
+
+// toggle collapses or expands the section.
+func (t *sectionToggle) toggle() {
+	t.collapsed = !t.collapsed
+	t.MarkForRedraw()
+	t.changed()
+}
+
+// sectionToggleBorder draws a section's border, then the chevron and focus ring of its title bar.
+type sectionToggleBorder struct {
+	unison.Border
+	toggle *sectionToggle
+}
+
+// Draw implements unison.Border.
+func (b *sectionToggleBorder) Draw(gc *unison.Canvas, rect geom.Rect) {
+	b.Border.Draw(gc, rect)
+	strip := b.toggle.FrameRect()
+	size := max(b.toggle.border.font().Baseline()-2, 6)
+	chevron := &unison.DrawableSVG{SVG: unison.CircledChevronRightSVG, Size: geom.NewSize(size, size)}
+	if !b.toggle.collapsed {
+		chevron.RotationDegrees = 90
+	}
+	chevron.DrawInRect(gc, geom.NewRect(strip.X+unison.StdHSpacing, strip.CenterY()-size/2, size, size), nil,
+		colors.OnHeader.Paint(gc, strip, paintstyle.Fill))
+	if b.toggle.Focused() {
+		ring := strip.Inset(geom.NewUniformInsets(0.5))
+		gc.DrawRect(ring, unison.ThemeFocus.Paint(gc, ring, paintstyle.Stroke))
 	}
 }
 
