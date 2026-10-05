@@ -21,7 +21,6 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/prereq"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/spellcmp"
-	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/v2/errs"
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/i18n"
@@ -396,7 +395,8 @@ func groupWord(all bool) string {
 	return i18n.Text("Any of")
 }
 
-// group returns the panel for a list: its head, over its children hanging from a rail in the head's color.
+// group returns the panel for a list: its head, over its children hanging from a rail in the head's color. Its more
+// menu adds to it, as do the root's add button and the add button beside the placeholder of an empty group.
 func (p *prereqPanel) group(list *gurps.PrereqList, path string) *unison.Panel {
 	color := colors.Grouping2
 	if list.All {
@@ -433,6 +433,7 @@ func (p *prereqPanel) group(list *gurps.PrereqList, path string) *unison.Panel {
 		putOnLine(grip.AsPanel(), controlHeight(head), grip.svg.Size.Height)
 	}
 	var empty *unison.Button
+	var emptyLine *unison.Panel
 	var emptyRoot bool
 	if len(list.Prereqs) == 0 {
 		emptyRoot = path == prereqRootPath && !p.headed
@@ -456,37 +457,47 @@ func (p *prereqPanel) group(list *gurps.PrereqList, path string) *unison.Panel {
 			return true
 		}
 		empty.ClientData()[prereqDropKey] = prereqDropSpot{path: path, part: dropOnEmpty}
+		// The placeholder shares its line with an add button, in line with the more buttons.
+		add := newIconButton(path+keyAdd, unison.CircledAddSVG, i18n.Text("Add to this group"))
+		add.ClickCallback = func() { showMenu(add.AsPanel(), p.addEntries(list, path)) }
+		fitLine(add)
+		add.SetLayoutData(&unison.FlexLayoutData{HAlign: align.End, VAlign: align.Middle})
+		// An untouched empty root has nothing for its pill, status or rail to speak of, so its placeholder takes their
+		// place.
+		if emptyRoot {
+			head.AddChild(empty)
+			head.AddChild(add)
+			box.AddChild(hbox(head, unison.StdHSpacing))
+			return box
+		}
+		emptyLine = unison.NewPanel()
+		emptyLine.SetBorder(unison.NewEmptyBorder(geom.Insets{Right: 8}))
+		emptyLine.AddChild(empty)
+		emptyLine.AddChild(add)
+		hbox(emptyLine, unison.StdHSpacing)
 	}
-	// An untouched empty root has nothing for its pill, status or rail to speak of, so its placeholder takes their place.
-	if emptyRoot {
-		head.AddChild(empty)
-	} else {
-		p.views = append(p.views, prereqView{node: list, icon: p.statusIcon(head), group: box})
-		addCentered(head, pill)
-	}
+	p.views = append(p.views, prereqView{node: list, icon: p.statusIcon(head), group: box})
+	addCentered(head, pill)
 	if list.WhenTL.Compare != criteria.AnyNumber {
-		p.chip(head, path+":tl", i18n.Text("Remove Tech Level Condition"), path+keyAdd,
+		p.chip(head, path+":tl", i18n.Text("Remove Tech Level Condition"), addKey(list, path),
 			func() { list.WhenTL = criteria.Number{} },
 			func(chip *unison.Panel) {
 				p.numberCriteria(chip, path+":tl", i18n.Text("Tech Level"), i18n.Text("When TL"), &list.WhenTL, 0,
 					fxp.Twelve, true)
 			})
 	}
-	add := newIconButton(path+keyAdd, unison.CircledAddSVG, i18n.Text("Add to this group"))
-	add.ClickCallback = func() { showMenu(add.AsPanel(), p.addEntries(list, path)) }
-	fitLine(add)
-	add.SetLayoutData(&unison.FlexLayoutData{HAlign: align.End, VAlign: align.Middle, HGrab: !emptyRoot})
-	head.AddChild(add)
 	if path != prereqRootPath {
 		p.moreButton(head, list, path)
 	} else {
-		// The root keeps room for the more button it doesn't have, so that its add button lines up with the others.
-		room := newIconButton("", svg.CircledVerticalEllipsis, "")
-		room.Hidden = true
-		addCentered(head, room)
+		// The root can't be moved or deleted, so in place of a more button it has an add button, keyed as one.
+		add := newIconButton(path+keyMore, unison.CircledAddSVG, i18n.Text("Add to this group"))
+		add.ClickCallback = func() { showMenu(add.AsPanel(), p.addEntries(list, path)) }
+		addCentered(head, add)
 	}
-	// As tall as the add button, since centering a shorter one could put its icon on a half pixel, blurring it.
-	fitLine(head.Children()[len(head.Children())-1])
+	more := head.Children()[len(head.Children())-1]
+	more.SetLayoutData(&unison.FlexLayoutData{HAlign: align.End, VAlign: align.Middle, HGrab: true})
+	// Fitted to its line, since centering a shorter button could put its icon on a half pixel, blurring it.
+	fitLine(more)
 	box.AddChild(hbox(head, unison.StdHSpacing))
 
 	rail := newColumn()
@@ -501,11 +512,8 @@ func (p *prereqPanel) group(list *gurps.PrereqList, path string) *unison.Panel {
 			rail.AddChild(p.row(child, childPath(path, i)))
 		}
 	}
-	if emptyRoot {
-		return box
-	}
-	if empty != nil {
-		rail.AddChild(empty)
+	if emptyLine != nil {
+		rail.AddChild(emptyLine)
 	}
 	box.AddChild(rail)
 	return box
@@ -714,8 +722,14 @@ func (p *prereqPanel) scriptOptions(pr *gurps.ScriptPrereq) *scriptEditorOptions
 	return opts
 }
 
-// addEntries returns the entries of a list's Add menu.
+// addEntries returns the menu of an add button: what can be added to a list, under headings.
 func (p *prereqPanel) addEntries(list *gurps.PrereqList, path string) []menuEntry {
+	return p.addEntriesUnder(list, path, i18n.Text("Requirement"), i18n.Text("Structure"))
+}
+
+// addEntriesUnder returns what can be added to a list, the prerequisites under the heading requirement and groups and
+// conditions under the heading structure.
+func (p *prereqPanel) addEntriesUnder(list *gurps.PrereqList, path, requirement, structure string) []menuEntry {
 	add := func(title string, created gurps.Prereq) {
 		at := childPath(path, len(list.Prereqs))
 		opens := created.PrereqType() != prereq.List
@@ -723,20 +737,20 @@ func (p *prereqPanel) addEntries(list *gurps.PrereqList, path string) []menuEntr
 		if opens {
 			focus = at + keyFirst
 		}
-		p.edit(title, path+keyAdd, focus, func() {
+		p.edit(title, addKey(list, path), focus, func() {
 			list.Prereqs = append(list.Prereqs, created)
 			if opens {
 				p.open = at
 			}
 		})
 	}
-	entries := []menuEntry{{Label: i18n.Text("Requirement")}}
+	entries := []menuEntry{{Label: requirement}}
 	for _, t := range p.permittedChoices {
 		entries = append(entries, menuEntry{Label: t.AltString(), Act: func() {
 			add(i18n.Text("Add Prerequisite"), p.createPrereqForType(t, list))
 		}})
 	}
-	entries = append(entries, menuEntry{Label: i18n.Text("Structure")})
+	entries = append(entries, menuEntry{Label: structure})
 	for i, label := range []string{i18n.Text("All of Group"), i18n.Text("Any of Group")} {
 		entries = append(entries, menuEntry{Label: label, Act: func() {
 			if path != prereqRootPath || len(list.Prereqs) != 0 {
@@ -749,7 +763,7 @@ func (p *prereqPanel) addEntries(list *gurps.PrereqList, path string) []menuEntr
 	}
 	if list.WhenTL.Compare == criteria.AnyNumber {
 		entries = append(entries, menuEntry{Label: i18n.Text("Only When TL…"), Act: func() {
-			p.edit(i18n.Text("Add Tech Level Condition"), path+keyAdd, path+":tl"+keyChip, func() {
+			p.edit(i18n.Text("Add Tech Level Condition"), addKey(list, path), path+":tl"+keyChip, func() {
 				list.WhenTL = criteria.Number{Compare: criteria.AtMostNumber, Qualifier: fxp.FromInteger(defaultWhenTL)}
 				p.headed = p.headed || path == prereqRootPath
 			})
@@ -758,23 +772,37 @@ func (p *prereqPanel) addEntries(list *gurps.PrereqList, path string) []menuEntr
 	return entries
 }
 
+// addKey returns the reference key of what adds to the group at the path: the add button beside its placeholder while
+// it is empty, or else its more button, or the root's add button in its place.
+func addKey(list *gurps.PrereqList, path string) string {
+	if len(list.Prereqs) == 0 {
+		return path + keyAdd
+	}
+	return path + keyMore
+}
+
 // moreButton adds the button for the node's more menu.
 func (p *prereqPanel) moreButton(parent *unison.Panel, node gurps.Prereq, path string) {
 	addMoreButton(parent, path, func() []menuEntry { return p.moreEntries(node, path) })
 }
 
-// moreEntries returns the entries of the node's more menu: Duplicate, Move up and down, which step into and out of
-// groups, Wrap in group, Ungroup when that keeps what the group means, and Delete.
+// moreEntries returns the entries of the node's more menu: for a group, what can be added to it, then Duplicate, Move up and
+// down, which step into and out of groups, Wrap in group, Ungroup when that keeps what the group means, and Delete.
 func (p *prereqPanel) moreEntries(node gurps.Prereq, path string) []menuEntry {
 	list, i := p.locate(path)
 	from := path + keyMore
-	entries := []menuEntry{{Label: i18n.Text("Duplicate"), Act: func() {
+	var entries []menuEntry
+	if g, ok := node.(*gurps.PrereqList); ok {
+		entries = append(p.addEntriesUnder(g, path, i18n.Text("Add Requirement"), i18n.Text("Add Structure")),
+			menuEntry{})
+	}
+	entries = append(entries, menuEntry{Label: i18n.Text("Duplicate"), Act: func() {
 		p.restructure(i18n.Text("Duplicate Prerequisite"), from, "", func() gurps.Prereq {
 			dst := node.Clone(list)
 			list.Prereqs = slices.Insert(list.Prereqs, i+1, dst)
 			return dst
 		})
-	}}}
+	}})
 	titles := []string{i18n.Text("Move Up"), i18n.Text("Move Down")}
 	for k, dir := range []int{-1, 1} {
 		to, at, ok := p.moveTarget(path, dir)
@@ -808,7 +836,13 @@ func (p *prereqPanel) moreEntries(node gurps.Prereq, path string) []menuEntry {
 	}
 	entries = append(entries, menuEntry{}, menuEntry{Label: i18n.Text("Delete"), Act: func() {
 		parentPath := path[:strings.LastIndexByte(path, '.')]
-		p.restructure(i18n.Text("Delete Prerequisite"), from, parentPath+keyAdd, func() gurps.Prereq {
+		// What adds to the parent takes the focus when nothing comes after, which is its placeholder's add button once
+		// it is empty.
+		fallback := parentPath + keyMore
+		if len(list.Prereqs) == 1 {
+			fallback = parentPath + keyAdd
+		}
+		p.restructure(i18n.Text("Delete Prerequisite"), from, fallback, func() gurps.Prereq {
 			list.Prereqs = slices.Delete(list.Prereqs, i, i+1)
 			if i < len(list.Prereqs) {
 				return list.Prereqs[i]

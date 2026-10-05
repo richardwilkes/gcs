@@ -10,7 +10,9 @@
 package ux
 
 import (
+	"cmp"
 	"image"
+	"slices"
 	"strings"
 	"testing"
 	"time"
@@ -747,11 +749,7 @@ func TestPrereqPanelDragAndDrop(t *testing.T) {
 	p, host := showPrereqPanel(t, screen, &root, false)
 	drag := func(from, onto string, fraction float32) (accepted bool) {
 		screen.Do(func() {
-			key := onto + keyMore
-			if onto == prereqRootPath {
-				key = onto + keyAdd
-			}
-			target := p.FindRefKey(key).Parent()
+			target := p.FindRefKey(onto + keyMore).Parent()
 			r := p.RectFromRoot(target.RectToRoot(target.ContentRect(true)))
 			where := geom.NewPoint(r.X+r.Width/3, r.Y+r.Height*fraction)
 			data := &rowDrag{panel: p.AsPanel(), path: from}
@@ -882,7 +880,8 @@ func TestPrereqPanelChipOrder(t *testing.T) {
 	})
 }
 
-// TestPrereqPanelEmptyRoot checks that an empty root shows only its placeholder, without a summary, pill or status.
+// TestPrereqPanelEmptyRoot checks that an empty root shows only its placeholder and add button, without a summary,
+// pill, status or more button.
 func TestPrereqPanelEmptyRoot(t *testing.T) {
 	c := check.New(t)
 	screen, _ := startHeadlessWorkspace(t, c)
@@ -893,6 +892,9 @@ func TestPrereqPanelEmptyRoot(t *testing.T) {
 		c.Nil(p.FindRefKey(prereqRootPath + keyPill))
 		c.Equal(0, len(p.views))
 		c.NotNil(p.FindRefKey(prereqRootPath + ":empty"))
+		c.Equal(p.FindRefKey(prereqRootPath+":empty").Parent(), p.FindRefKey(prereqRootPath+keyAdd).Parent(),
+			"its add button beside the placeholder")
+		c.Nil(p.FindRefKey(prereqRootPath+keyMore), "and no more button")
 	})
 }
 
@@ -1029,6 +1031,129 @@ func TestPrereqPanelControlNamesDiffer(t *testing.T) {
 			}
 		}
 	}
+}
+
+// prereqMenuLabels returns the labels of the entries, with "-" for a separator.
+func prereqMenuLabels(entries []menuEntry) []string {
+	labels := make([]string, 0, len(entries))
+	for _, one := range entries {
+		labels = append(labels, cmp.Or(one.Label, "-"))
+	}
+	return labels
+}
+
+// TestPrereqPanelGroupMenusAdd checks that a nested group has no add button in its head and that its more menu starts
+// with what can be added to it, under headings that say so, that the root has an add button in place of a more button,
+// that each adds into its own group with the focus as the add button gave it, and that an empty group keeps its add
+// button beside its placeholder.
+func TestPrereqPanelGroupMenusAdd(t *testing.T) {
+	c := check.New(t)
+	screen, _ := startHeadlessWorkspace(t, c)
+	root := newTestPrereqTree()
+	p, host := showPrereqPanel(t, screen, &root, false)
+	more := func(path string) []menuEntry {
+		var entries []menuEntry
+		screen.Do(func() {
+			c.NotNil(p.FindRefKey(path+keyMore), "%s has a more button, or the root its add button", path)
+			// The menu the button would show, gathered rather than popped up.
+			if path == prereqRootPath {
+				entries = p.addEntries(p.tree(), path)
+			} else {
+				entries = p.moreEntries(p.node(path), path)
+			}
+		})
+		return entries
+	}
+	screen.Do(func() {
+		for _, path := range []string{prereqRootPath, "r.1"} {
+			c.Nil(p.FindRefKey(path+keyAdd), "%s has no placeholder's add button", path)
+			head := p.FindRefKey(path + keyPill).Parent()
+			c.Equal(head, p.FindRefKey(path+keyMore).Parent(), "%s: its button is in its head", path)
+		}
+		c.Equal("More actions", tooltipText(p.FindRefKey("r.1"+keyMore).Tooltip), "a nested group's is a more button")
+		root, ok := p.FindRefKey(prereqRootPath + keyMore).Self.(*unison.Button)
+		c.True(ok)
+		if ok {
+			c.Equal("Add to this group", tooltipText(root.Tooltip), "the root's is an add button")
+			drawable, isSVG := root.Drawable.(*unison.DrawableSVG)
+			c.True(isSVG && drawable.SVG == unison.CircledAddSVG, "showing the add icon")
+		}
+		right := func(key string) float32 {
+			panel := p.FindRefKey(key)
+			return p.RectFromRoot(panel.RectToRoot(panel.ContentRect(true))).Right()
+		}
+		c.Equal(right("r.0"+keyMore), right(prereqRootPath+keyMore), "the root's more button lines up with the others")
+	})
+	// groupLen returns the number of children of the group at the path, or -1 if it isn't a group.
+	groupLen := func(path string) int {
+		if list, ok := p.node(path).(*gurps.PrereqList); ok {
+			return len(list.Prereqs)
+		}
+		return -1
+	}
+	adds := prereqMenuLabels(more(prereqRootPath))
+	c.Equal("Requirement", adds[0])
+	c.True(slices.Contains(adds, "Structure"), "the root's add menu has its headings")
+	c.Equal("Only When TL…", adds[len(adds)-1], "with the tech level condition under Structure")
+	nested := prereqMenuLabels(more("r.1"))
+	want := slices.Clone(adds)
+	for i, label := range want {
+		if label == "Requirement" || label == "Structure" {
+			want[i] = "Add " + label
+		}
+	}
+	c.Equal(want, nested[:len(adds)], "a nested group's more menu starts with what can be added to it, saying so")
+	c.Equal([]string{"-", "Duplicate"}, nested[len(adds):len(adds)+2], "then the rest, after a separator")
+	c.Equal(prereqMenuLabels(p.moreEntries(p.node("r.0"), "r.0"))[0], "Duplicate", "a row's more menu is as it was")
+
+	prereqMenuAction(more("r.1"), "Trait")()
+	screen.Sync()
+	screen.Do(func() {
+		c.Equal(3, groupLen("r.1"), "the nested group's menu adds to it")
+		c.Equal("r.1.2", p.open, "opening the new row")
+		c.True(p.FindRefKey("r.1.2"+keyFirst).HasInSelfOrDescendants(func(one *unison.Panel) bool {
+			return one == p.Window().Focus()
+		}), "with the focus in it")
+	})
+	screen.Do(host.mgr.Undo)
+	screen.Do(func() { c.Equal("r.1"+keyMore, p.Window().Focus().RefKey, "undo gives the focus to the more button") })
+	prereqMenuAction(more(prereqRootPath), "All of Group")()
+	screen.Sync()
+	screen.Do(func() {
+		c.Equal(4, len(p.tree().Prereqs), "the root's menu adds to the root")
+		c.Equal("r.3"+keyMore, p.Window().Focus().RefKey, "a new group takes the focus on its more button")
+	})
+
+	// An empty nested group keeps its add button, beside its placeholder.
+	screen.Do(func() {
+		empty := p.FindRefKey("r.3:empty")
+		add := p.FindRefKey("r.3" + keyAdd)
+		c.NotNil(add, "an empty group has an add button")
+		c.Equal(empty.Parent(), add.Parent(), "beside its placeholder")
+		c.True(add.Parent() != p.FindRefKey("r.3"+keyPill).Parent(), "not in its head")
+		c.Equal("Add to this group", tooltipText(add.Tooltip))
+	})
+	prereqMenuAction(more("r.3"), "Skill")()
+	screen.Sync()
+	screen.Do(func() {
+		c.Equal(1, groupLen("r.3"))
+		c.Nil(p.FindRefKey("r.3"+keyAdd), "the add button goes once the group holds something")
+		prereqMenuAction(p.moreEntries(p.node("r.3.0"), "r.3.0"), "Delete")()
+	})
+	screen.Sync()
+	screen.Do(func() {
+		c.Equal("r.3"+keyAdd, p.Window().Focus().RefKey, "deleting the last child focuses the placeholder's add button")
+		prereqMenuAction(p.moreEntries(p.node("r.2"), "r.2"), "Delete")()
+	})
+	screen.Sync()
+	screen.Do(func() {
+		c.Equal("r.2"+keyMore, p.Window().Focus().RefKey, "deleting another focuses what comes after it")
+		prereqMenuAction(p.moreEntries(p.node("r.2"), "r.2"), "Delete")()
+	})
+	screen.Sync()
+	screen.Do(func() {
+		c.Equal(prereqRootPath+keyMore, p.Window().Focus().RefKey, "deleting the last focuses the root's add button")
+	})
 }
 
 // TestPrereqPanelPlaceholderTextStaysPutOnFocus checks that the empty placeholder draws its text in the same place with
