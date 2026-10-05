@@ -14,6 +14,7 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/feature"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/traitsel"
+	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/toolbox/v2/xhash"
 )
 
@@ -40,6 +41,12 @@ func (t *TraitMaxLevelBonus) Clone() Feature {
 // FillWithNameableKeys implements Feature.
 func (t *TraitMaxLevelBonus) FillWithNameableKeys(m, existing map[string]string) {
 	t.fillWithNameableKeysWhen(m, existing, traitsel.TraitWithName)
+}
+
+// Describe implements Feature.
+func (t *TraitMaxLevelBonus) Describe(_ *Entity, replacements map[string]string, em func(string) string) string {
+	return t.describe(i18n.Text("the maximum level of"), i18n.Text("this trait"), i18n.Text("trait %s"),
+		i18n.Text("traits"), traitsel.TraitWithName, replacements, em)
 }
 
 // Hash writes this object's contents into the hasher.

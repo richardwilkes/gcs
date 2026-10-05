@@ -33,13 +33,12 @@ func TestSituationBonusPersistsAndHashesThroughEmbedding(t *testing.T) {
 	} {
 		c.Equal(tc.typ, tc.bonus.FeatureType(), "%s: constructor sets the type", tc.name)
 		c.Equal(fxp.One, tc.bonus.AdjustedAmount(), "%s: constructor sets the default amount", tc.name)
-		c.NotEqual("", tc.bonus.situation(), "%s: constructor sets a default situation", tc.name)
-
+		c.Equal("", tc.bonus.situation(), "%s: constructor leaves the situation empty", tc.name)
 		c.Equal("", tc.bonus.group(), "%s: constructor leaves the group empty", tc.name)
 
 		data, err := jio.Marshal(Features{tc.bonus})
 		c.NoError(err, "%s: should marshal", tc.name)
-		c.Contains(string(data), `"situation":"`+tc.bonus.situation()+`"`, "%s: situation written under its key", tc.name)
+		c.NotContains(string(data), `"situation"`, "%s: an empty situation is not written", tc.name)
 		c.Contains(string(data), `"amount":1`, "%s: amount written under its key", tc.name)
 		c.NotContains(string(data), `"group"`, "%s: an empty group is not written", tc.name)
 
@@ -60,6 +59,7 @@ func TestSituationBonusPersistsAndHashesThroughEmbedding(t *testing.T) {
 		c.Equal("@Kind@", restored.group(), "%s: group survives the round trip", tc.name)
 		data, err = jio.Marshal(loaded)
 		c.NoError(err, "%s: should marshal again", tc.name)
+		c.Contains(string(data), `"situation":"@Target@"`, "%s: situation written under its key", tc.name)
 		c.Contains(string(data), `"group":"@Kind@"`, "%s: a set group is written under its key", tc.name)
 
 		keys := make(map[string]string)

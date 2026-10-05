@@ -67,7 +67,7 @@ func SwitchedOnTooltip() string {
 	return i18n.Text("Whether the switchable features of this item are currently on. This only matters if at least one feature is marked as switchable, since features marked as switchable only take effect while the item's switch is on.")
 }
 
-// SwitchableTooltip returns the standard tooltip text for the "switchable" feature checkbox.
+// SwitchableTooltip returns the standard tooltip text for the "switchable" feature pill.
 func SwitchableTooltip() string {
-	return i18n.Text("When checked, this feature only takes effect while the switch of the trait, skill, spell or piece of equipment it belongs to is on. For a feature on a modifier, that is the item the modifier belongs to. The switch can be toggled from the character sheet or the item's editor.")
+	return i18n.Text("When added, this feature only takes effect while the switch of the trait, skill, spell or piece of equipment it belongs to is on. For a feature on a modifier, that is the item the modifier belongs to. The switch can be toggled from the character sheet or the item's editor.")
 }

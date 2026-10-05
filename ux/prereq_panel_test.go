@@ -31,16 +31,18 @@ import (
 // modified, and records the Escape that would discard the editor's changes.
 type prereqUndoHost struct {
 	unison.Panel
-	mgr     *unison.UndoManager
-	escapes int
+	mgr      *unison.UndoManager
+	escapes  int
+	modified int
 }
 
 func (h *prereqUndoHost) UndoManager() *unison.UndoManager {
 	return h.mgr
 }
 
-// MarkModified implements ModifiableRoot, syncing as the editor does.
+// MarkModified implements ModifiableRoot, counting the calls and syncing as the editor does.
 func (h *prereqUndoHost) MarkModified(_ unison.Paneler) {
+	h.modified++
 	DeepSync(h)
 }
 
@@ -538,7 +540,7 @@ func TestPrereqPanelDragAndDrop(t *testing.T) {
 			target := p.FindRefKey(key).Parent()
 			r := p.RectFromRoot(target.RectToRoot(target.ContentRect(true)))
 			where := geom.NewPoint(r.X+r.Width/3, r.Y+r.Height*fraction)
-			data := &prereqDrag{panel: p, path: from}
+			data := &rowDrag{panel: p.AsPanel(), path: from}
 			p.dragOver(where, data)
 			accepted = p.dropTarget != nil
 			p.drop(where, data)
@@ -574,7 +576,7 @@ func TestPrereqPanelDropAfterGroup(t *testing.T) {
 		last := p.FindRefKey("r.1.1" + keyMore).Parent()
 		where := geom.NewPoint(p.RectFromRoot(group.RectToRoot(group.ContentRect(true))).X+4,
 			p.RectFromRoot(last.RectToRoot(last.ContentRect(true))).Bottom()-2)
-		data := &prereqDrag{panel: p, path: "r.0"}
+		data := &rowDrag{panel: p.AsPanel(), path: "r.0"}
 		p.dragOver(where, data)
 		c.Equal(group, p.dropTarget)
 		c.Equal(dropAfter, p.dropWhere)

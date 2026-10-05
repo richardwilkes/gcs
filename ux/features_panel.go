@@ -12,8 +12,8 @@ package ux
 import (
 	"fmt"
 	"maps"
-	"reflect"
 	"slices"
+	"strconv"
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/criteria"
@@ -29,14 +29,18 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/traitsel"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/wsel"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/wswitch"
+	"github.com/richardwilkes/gcs/v5/model/nameable"
 	"github.com/richardwilkes/toolbox/v2/errs"
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/i18n"
+	"github.com/richardwilkes/toolbox/v2/xhash"
 	"github.com/richardwilkes/toolbox/v2/xslices"
 	"github.com/richardwilkes/toolbox/v2/xstrings"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
 	"github.com/richardwilkes/unison/enums/check"
+	"github.com/richardwilkes/unison/enums/mod"
+	"github.com/zeebo/xxh3"
 )
 
 var (
@@ -45,13 +49,43 @@ var (
 	lastSelectorFieldUsed = selector.WeaponDamageType
 )
 
+// featureAddKey is the reference key of the section's add button. A feature's row is found by its path, which is its
+// index in the list.
+const featureAddKey = "add"
+
+// featureEmptyKey is the reference key of the placeholder shown in place of the rows while there are none.
+const featureEmptyKey = "empty"
+
+// featureSummaryKey is the reference key of the paragraph shown in place of the rows while the panel is collapsed.
+const featureSummaryKey = "summary"
+
+// featureDropKey marks a row a dragged feature can be dropped on, holding its path.
+const featureDropKey = "feature.drop"
+
+// featuresPanel edits a list of features. Each one is a row that reads as a sentence until it is opened, one at a time,
+// to edit it. Every change, typing included, records a snapshot of the whole list with the editor's undo manager.
+// Clicking the title collapses the panel to a paragraph of every row's sentence. It starts out collapsed when there
+// are features, and open to add one when there are none.
 type featuresPanel struct {
-	unison.Panel
-	entity               *gurps.Entity
-	owner                fmt.Stringer
-	features             *gurps.Features
-	currentLocation      int
+	sentenceRows[featuresState]
+	entity   *gurps.Entity
+	owner    fmt.Stringer
+	features *gurps.Features
+	collapse *sectionToggle
+	// pending is the key of an optional criterion added to the open row that holds nothing yet. It shows until the row
+	// closes, since nothing in the data says it is there.
+	pending string
+	// percentSuspended holds the weapon damage bonuses whose "as a %" is suspended while they hold dice (see
+	// damageField). It is kept here, rather than with the controls, so that it lasts while the panel is rebuilt.
+	percentSuspended     map[*gurps.WeaponBonus]bool
 	forEquipmentModifier bool
+}
+
+// featuresState is the data a snapshot of the panel holds: the features, and the indexes of those whose "as a %" is
+// suspended, so that undo and redo suspend it for the copies they install.
+type featuresState struct {
+	features  gurps.Features
+	suspended []int
 }
 
 func newFeaturesPanel(entity *gurps.Entity, owner fmt.Stringer, features *gurps.Features, forEquipmentModifier bool) *featuresPanel {
@@ -59,290 +93,696 @@ func newFeaturesPanel(entity *gurps.Entity, owner fmt.Stringer, features *gurps.
 		entity:               entity,
 		owner:                owner,
 		features:             features,
+		percentSuspended:     make(map[*gurps.WeaponBonus]bool),
 		forEquipmentModifier: forEquipmentModifier,
 	}
-	initTitledEditorSection(p, i18n.Text("Features"))
-	p.AddChild(newSectionAddButton(p, i18n.Text("Add a feature"), func() bool {
-		created := p.createFeatureForType(lastFeatureTypeUsed)
-		if created == nil {
-			return false
+	p.collapse = newSectionToggle(p, initTitledEditorSection(p, i18n.Text("Features")), len(*features) != 0,
+		p.collapseChanged)
+	p.initRows(featureDragKey, p.build, p.state, p.setState, p.dataHash)
+	p.initDrop(p.dropAt, p.drop)
+	// While collapsed, Escape leaves the hidden open row alone.
+	rowsKeyDown := p.KeyDownCallback
+	p.KeyDownCallback = func(keyCode unison.KeyCode, mods mod.Modifiers, repeat bool) bool {
+		if p.collapse.collapsed && keyCode == unison.KeyEscape && noModifiersDown(mods) {
+			return true
 		}
-		*features = slices.Insert(*features, 0, created)
-		p.insertFeaturePanel(1, created)
-		return true
-	}))
-	for i, one := range *features {
-		p.insertFeaturePanel(i+1, one)
+		return rowsKeyDown(keyCode, mods, repeat)
 	}
+	p.build()
 	return p
 }
 
-func (p *featuresPanel) insertFeaturePanel(index int, f gurps.Feature) {
-	var panel, focus unison.Paneler
-	switch one := f.(type) {
-	case *gurps.AttributeBonus:
-		panel, focus = p.createAttributeBonusPanel(one)
-	case *gurps.ConditionalModifierBonus:
-		panel, focus = p.createConditionalModifierPanel(one)
-	case *gurps.ContainedWeightReduction:
-		panel, focus = p.createContainedWeightReductionPanel(one)
-	case *gurps.CostReduction:
-		panel, focus = p.createCostReductionPanel(one)
-	case *gurps.EquipmentMaxUsesBonus:
-		panel, focus = p.createEquipmentMaxUsesBonusPanel(one)
-	case *gurps.DRBonus:
-		panel, focus = p.createDRBonusPanel(one)
-	case *gurps.ReactionBonus:
-		panel, focus = p.createReactionBonusPanel(one)
-	case *gurps.SkillBonus:
-		panel, focus = p.createSkillBonusPanel(one)
-	case *gurps.SkillPointBonus:
-		panel, focus = p.createSkillPointBonusPanel(one)
-	case *gurps.SpellBonus:
-		panel, focus = p.createSpellBonusPanel(one)
-	case *gurps.SpellPointBonus:
-		panel, focus = p.createSpellPointBonusPanel(one)
-	case *gurps.TraitBonus:
-		panel, focus = p.createTraitBonusPanel(one)
-	case *gurps.TraitMaxLevelBonus:
-		panel, focus = p.createTraitMaxLevelBonusPanel(one)
-	case *gurps.WeaponBonus:
-		panel, focus = p.createWeaponBonusPanel(one)
-	case *gurps.SelectorOverride:
-		panel, focus = p.createSelectorOverridePanel(one)
-	case *gurps.UnknownFeature:
-		panel, focus = p.createUnknownFeaturePanel(one)
-	default:
-		errs.Log(errs.New("unknown feature type"), "type", reflect.TypeOf(f).String())
+// state returns a copy of the panel's data, for a snapshot.
+func (p *featuresPanel) state() featuresState {
+	state := featuresState{features: p.features.Clone()}
+	for i, one := range *p.features {
+		if bonus, ok := one.(*gurps.WeaponBonus); ok && p.percentSuspended[bonus] {
+			state.suspended = append(state.suspended, i)
+		}
+	}
+	return state
+}
+
+// setState installs a copy of the data of a snapshot, suspending the percentage of the copies it held suspended.
+func (p *featuresPanel) setState(state featuresState) {
+	*p.features = state.features.Clone()
+	clear(p.percentSuspended)
+	for _, i := range state.suspended {
+		if bonus, ok := (*p.features)[i].(*gurps.WeaponBonus); ok {
+			p.percentSuspended[bonus] = true
+		}
+	}
+}
+
+// dataHash returns a hash of the features.
+func (p *featuresPanel) dataHash() uint64 {
+	h := xxh3.New()
+	xhash.Num64(h, len(*p.features))
+	for _, one := range *p.features {
+		one.Hash(h)
+	}
+	return h.Sum64()
+}
+
+// index returns the index of the feature at the path, or -1 if there is none.
+func (p *featuresPanel) index(path string) int {
+	if i, err := strconv.Atoi(path); err == nil && i >= 0 && i < len(*p.features) {
+		return i
+	}
+	return -1
+}
+
+// replacements returns the values the owning item gives the nameable markers in its features.
+func (p *featuresPanel) replacements() map[string]string {
+	if owner, ok := p.owner.(nameable.Accesser); ok {
+		return owner.NameableReplacements()
+	}
+	return nil
+}
+
+func (p *featuresPanel) build() {
+	if i := p.index(p.open); i < 0 || (*p.features)[i].FeatureType() == feature.Unknown {
+		p.open = ""
+	}
+	if p.open == "" || !strings.HasPrefix(p.pending, p.open+":") {
+		p.pending = ""
+	}
+	p.AddChild(p.collapse)
+	if p.collapse.collapsed {
+		// The features read as one paragraph, which expands the panel again when clicked.
+		summary := newSentenceButton(p.summary(), p.collapse.toggle)
+		summary.RefKey = featureSummaryKey
+		summary.SetLayoutData(&unison.FlexLayoutData{HAlign: align.Fill, HGrab: true})
+		p.AddChild(summary)
 		return
 	}
-	if panel != nil {
-		_, isSelectorOverride := f.(*gurps.SelectorOverride)
-		panel.AsPanel().SetLayoutData(&unison.FlexLayoutData{
-			HAlign: align.Fill,
-			HGrab:  !isSelectorOverride,
+	add := newSectionAddButton(p, i18n.Text("Add a feature"), func() bool {
+		t := lastFeatureTypeUsed
+		if !slices.Contains(p.featureTypesList(), t) {
+			t = feature.AttributeBonus
+		}
+		created := p.createFeatureForType(t)
+		if created == nil {
+			return false
+		}
+		path := strconv.Itoa(len(*p.features))
+		p.edit(i18n.Text("Add Feature"), featureAddKey, path+keyFirst, func() {
+			*p.features = append(*p.features, created)
+			p.open = path
 		})
-		p.AddChildAtIndex(panel, index)
-		focus.AsPanel().RequestFocus()
+		return true
+	})
+	add.RefKey = featureAddKey
+	for i, one := range *p.features {
+		p.AddChild(p.row(one, strconv.Itoa(i)))
 	}
+	// New features go at the end, so the add button sits under the last row, in line with the more buttons.
+	foot := unison.NewPanel()
+	foot.SetBorder(unison.NewEmptyBorder(geom.Insets{Left: 4, Right: 8}))
+	empty := len(*p.features) == 0
+	if empty {
+		// With no features, a placeholder that adds one as the add button does stands before it.
+		foot.AddChild(newEmptyPlaceholder(featureEmptyKey, i18n.Text("No features. Click here to add one."),
+			add.ClickCallback))
+	}
+	foot.AddChild(add)
+	hbox(foot, unison.StdHSpacing)
+	add.SetLayoutData(&unison.FlexLayoutData{HAlign: align.End, VAlign: align.Middle, HGrab: !empty})
+	p.AddChild(foot)
 }
 
-func (p *featuresPanel) createBasePanel(f gurps.Feature) *unison.Panel {
-	panel := unison.NewPanel()
-	panel.SetLayout(&unison.FlexLayout{
-		Columns:  2,
-		HAlign:   align.Fill,
-		HSpacing: unison.StdHSpacing,
-		VSpacing: unison.StdVSpacing,
-	})
-	deleteButton := unison.NewSVGButton(unison.TrashSVG)
-	deleteButton.Tooltip = newWrappedTooltip(i18n.Text("Delete this feature"))
-	deleteButton.ClickCallback = func() {
-		if i := slices.IndexFunc(*p.features, func(elem gurps.Feature) bool { return elem == f }); i != -1 {
+// summary returns the paragraph a collapsed panel shows: the sentence of each row, ended with a period.
+func (p *featuresPanel) summary() string {
+	if len(*p.features) == 0 {
+		return i18n.Text("No features.")
+	}
+	replacements := p.replacements()
+	sentences := make([]string, 0, len(*p.features))
+	for _, one := range *p.features {
+		sentences = append(sentences, fmt.Sprintf(i18n.Text("%s."), one.Describe(p.entity, replacements, emphasize)))
+	}
+	return strings.Join(sentences, " ")
+}
+
+// collapseChanged rebuilds the panel once it has been collapsed or expanded. That is no edit, so it isn't undone and
+// doesn't mark the editor modified, and the open row stays open for when the panel expands. Collapsing hands the focus
+// from what it hides to the title bar.
+func (p *featuresPanel) collapseChanged() {
+	var focus string
+	if p.collapse.collapsed && p.targetMgr.CurrentFocusRef() != nil {
+		focus = sectionToggleKey
+	}
+	p.rebuild(focus)
+}
+
+// row returns the panel for a feature: its sentence, or while it is open its editor, beside a button for more actions.
+func (p *featuresPanel) row(f gurps.Feature, path string) *unison.Panel {
+	row := p.sentenceRow(path, func() string { return f.Describe(p.entity, p.replacements(), emphasize) },
+		f.FeatureType() != feature.Unknown, func() *unison.Panel { return p.editor(f, path) },
+		func() []menuEntry { return p.moreEntries(path) }, nil, nil)
+	row.ClientData()[featureDropKey] = path
+	return row
+}
+
+// moreEntries returns the entries of the more menu of the feature at the path: Duplicate, Move up and down, and Delete.
+func (p *featuresPanel) moreEntries(path string) []menuEntry {
+	i := p.index(path)
+	if i < 0 {
+		return nil
+	}
+	from := path + keyMore
+	entries := []menuEntry{{Label: i18n.Text("Duplicate"), Act: func() {
+		p.restructure(i18n.Text("Duplicate Feature"), from, "", func() int {
+			*p.features = slices.Insert(*p.features, i+1, (*p.features)[i].Clone())
+			return i + 1
+		})
+	}}}
+	titles := []string{i18n.Text("Move Up"), i18n.Text("Move Down")}
+	for k, j := range []int{i - 1, i + 1} {
+		if j < 0 || j >= len(*p.features) {
+			continue
+		}
+		title := titles[k]
+		entries = append(entries, menuEntry{Label: title, Act: func() {
+			p.restructure(title, from, "", func() int {
+				list := *p.features
+				list[i], list[j] = list[j], list[i]
+				return j
+			})
+		}})
+	}
+	return append(entries, menuEntry{}, menuEntry{Label: i18n.Text("Delete"), Act: func() {
+		p.restructure(i18n.Text("Delete Feature"), from, featureAddKey, func() int {
 			*p.features = slices.Delete(*p.features, i, i+1)
-		}
-		panel.RemoveFromParent()
-		MarkRootAncestorForLayoutRecursively(p)
-		MarkModified(p)
-	}
-	panel.AddChild(deleteButton)
-	return panel
-}
-
-func (p *featuresPanel) createAttributeBonusPanel(f *gurps.AttributeBonus) (main *unison.Panel, focus unison.Paneler) {
-	panel := p.createBasePanel(f)
-	focus = p.addLeveledModifierLine(panel, f, &f.LeveledAmount)
-	panel.AddChild(unison.NewPanel())
-	wrapper := unison.NewPanel()
-	var limitationPopup *unison.PopupMenu[stlimit.Option]
-	attrChoicePopup := addAttributeChoicePopup(wrapper, p.entity, i18n.Text("to"), &f.Attribute,
-		gurps.SizeFlag|gurps.DodgeFlag|gurps.ParryFlag|gurps.BlockFlag)
-	attrChoicePopup.Accessibility.Name = i18n.Text("Attribute")
-	callback := attrChoicePopup.SelectionChangedCallback
-	attrChoicePopup.SelectionChangedCallback = func(popup *unison.PopupMenu[*gurps.AttributeChoice]) {
-		if item, ok := popup.Selected(); ok {
-			lastAttributeIDUsed = item.Key
-			callback(popup)
-			adjustPopupBlank(limitationPopup, f.Attribute != gurps.StrengthID)
-		}
-	}
-	limitationPopup = addPopup(wrapper, stlimit.Options, &f.Limitation)
-	limitationPopup.Accessibility.Name = i18n.Text("Limitation")
-	adjustPopupBlank(limitationPopup, f.Attribute != gurps.StrengthID)
-	p.addWrapperAtIndex(panel, wrapper, -1, true)
-	return panel, focus
-}
-
-func (p *featuresPanel) createConditionalModifierPanel(f *gurps.ConditionalModifierBonus) (main *unison.Panel, focus unison.Paneler) {
-	panel := p.createBasePanel(f)
-	focus = p.addLeveledModifierLine(panel, f, &f.LeveledAmount)
-	p.addSituationAndGroupLines(panel, &f.Situation, &f.Group, i18n.Text("Triggering Condition"))
-	return panel, focus
-}
-
-// addSituationAndGroupLines adds the two rows the conditional modifier and reaction bonus panels share: the full-width
-// situation field, followed by the optional group the entry is filed under in the table that displays it. The base
-// panel's first column holds the delete button, so each row is preceded by a spacer. watermark is the placeholder for
-// the situation field, the only thing that differs between the two callers.
-func (p *featuresPanel) addSituationAndGroupLines(panel *unison.Panel, situation, group *string, watermark string) {
-	panel.AddChild(unison.NewPanel())
-	field := NewMultiLineStringField(nil, "", watermark, func() string { return *situation },
-		func(value string) {
-			*situation = value
-			panel.MarkForLayoutAndRedraw()
-			MarkModified(panel)
-		})
-	field.Watermark = watermark
-	field.Accessibility.Name = watermark
-	field.AutoScroll = false
-	field.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: align.Fill,
-		HGrab:  true,
-	})
-	panel.AddChild(field)
-
-	panel.AddChild(unison.NewPanel())
-	wrapper := unison.NewPanel()
-	wrapper.SetLayout(&unison.FlexLayout{
-		Columns:  2,
-		HSpacing: unison.StdHSpacing,
-		VSpacing: unison.StdVSpacing,
-	})
-	wrapper.AddChild(NewFieldLeadingLabel(i18n.Text("in group"), false))
-	groupField := NewStringField(nil, "", i18n.Text("Group"), func() string { return *group },
-		func(value string) {
-			*group = value
-			MarkModified(wrapper)
-		})
-	groupField.Watermark = i18n.Text("optional")
-	// Named outright, since the "in group" label before the field would otherwise be taken as its name.
-	groupField.Accessibility.Name = i18n.Text("Group")
-	// The longer of the two situation watermarks, so that the group field is the same width under either panel.
-	groupField.SetMinimumTextWidthUsing(i18n.Text("Triggering Condition"))
-	wrapper.AddChild(groupField)
-	panel.AddChild(wrapper)
-}
-
-func (p *featuresPanel) createDRBonusPanel(f *gurps.DRBonus) (main *unison.Panel, focus unison.Paneler) {
-	panel := p.createBasePanel(f)
-	focus = p.addLeveledModifierLine(panel, f, &f.LeveledAmount)
-	panel.AddChild(unison.NewPanel())
-	panel.AddChild(p.createHitLocationChoicesPanel(f))
-	panel.AddChild(unison.NewPanel())
-	wrapper := unison.NewPanel()
-	wrapper.SetLayout(&unison.FlexLayout{
-		Columns:  3,
-		HSpacing: unison.StdHSpacing,
-		VSpacing: unison.StdVSpacing,
-	})
-	wrapper.AddChild(NewFieldLeadingLabel(i18n.Text("against"), false))
-	field := NewStringField(nil, "", i18n.Text("Specialization"), func() string { return f.Specialization },
-		func(value string) {
-			f.Specialization = value
-			f.Normalize()
-			MarkModified(wrapper)
-		})
-	field.Watermark = gurps.AllID
-	// Named outright, since the "against" label before the field would otherwise be taken as its name.
-	field.Accessibility.Name = i18n.Text("Attack Specialization")
-	field.SetMinimumTextWidthUsing(i18n.Text("Specialization"))
-	wrapper.AddChild(field)
-	wrapper.AddChild(NewFieldTrailingHint(field, i18n.Text("attacks"), false))
-	panel.AddChild(wrapper)
-	return panel, focus
-}
-
-func (p *featuresPanel) createHitLocationChoicesPanel(f *gurps.DRBonus) *unison.Panel {
-	panel := unison.NewPanel()
-	panel.SetLayout(&unison.FlexLayout{
-		Columns:  1,
-		HSpacing: unison.StdHSpacing,
-		VSpacing: unison.StdVSpacing,
-	})
-	popup := unison.NewPopupMenu[string]()
-	popup.Accessibility.Name = i18n.Text("Locations")
-	if p.forEquipmentModifier {
-		popup.AddItem(i18n.Text("to this armor"))
-	}
-	popup.AddItem(i18n.Text("to all locations"))
-	popup.AddItem(i18n.Text("to these locations:"))
-	if len(f.Locations) == 0 {
-		p.currentLocation = 0
-	} else {
-		if slices.Contains(f.Locations, gurps.AllID) {
-			p.currentLocation = 0
-		} else {
-			p.currentLocation = 1
-		}
-		if p.forEquipmentModifier {
-			p.currentLocation++
-		}
-	}
-	popup.SelectIndex(p.currentLocation)
-	popup.SelectionChangedCallback = func(pop *unison.PopupMenu[string]) {
-		p.currentLocation = pop.SelectedIndex()
-		for len(panel.Children()) > 1 {
-			panel.RemoveChildAtIndex(1)
-		}
-		switch {
-		case p.isCurrentLocationThisArmor():
-			f.Locations = nil
-		case p.isCurrentLocationAll():
-			f.Locations = []string{gurps.AllID}
-		case p.isCurrentLocationList():
-			f.Locations = slices.DeleteFunc(f.Locations, func(loc string) bool { return loc == gurps.AllID })
-			if len(f.Locations) == 0 {
-				f.Locations = []string{gurps.TorsoID}
+			if i < len(*p.features) {
+				return i
 			}
-			panel.AddChild(p.createHitLocationsCheckBoxes(f))
-		}
-		MarkModified(panel)
-		panel.MarkForLayoutRecursivelyUpward()
-	}
-	panel.AddChild(popup)
-	if p.isCurrentLocationList() {
-		f.Locations = slices.DeleteFunc(f.Locations, func(loc string) bool { return loc == gurps.AllID })
-		panel.AddChild(p.createHitLocationsCheckBoxes(f))
-	}
-	return panel
+			return -1
+		})
+	}})
 }
 
-func (p *featuresPanel) createHitLocationsCheckBoxes(f *gurps.DRBonus) *unison.Panel {
-	panel := unison.NewPanel()
-	const desiredColumns = 4
-	panel.SetLayout(&unison.FlexLayout{
-		Columns:      desiredColumns,
-		HSpacing:     unison.StdHSpacing,
-		VSpacing:     unison.StdVSpacing,
-		EqualColumns: true,
+// dropAt returns the row a feature dragged to where would be dropped on and whether it would go before or after it, by
+// which half of the row where is in. The row is nil where the feature can't go, such as onto itself.
+func (p *featuresPanel) dropAt(where geom.Point, data any) (target *unison.Panel, at int) {
+	from := p.dragPath(data)
+	if p.index(from) < 0 {
+		return nil, 0
+	}
+	for target = p.PanelAt(where); target != nil && target != p.AsPanel(); target = target.Parent() {
+		path, isRow := target.ClientData()[featureDropKey].(string)
+		if !isRow {
+			continue
+		}
+		if path == from {
+			return nil, 0
+		}
+		if target.PointFromRoot(p.PointToRoot(where)).Y < target.FrameRect().Height/2 {
+			return target, dropBefore
+		}
+		return target, dropAfter
+	}
+	return nil, 0
+}
+
+// drop moves the dragged feature to where it would go.
+func (p *featuresPanel) drop(where geom.Point, data any) {
+	target, at := p.dropAt(where, data)
+	p.dragExit()
+	if target == nil {
+		return
+	}
+	path, isRow := target.ClientData()[featureDropKey].(string)
+	if !isRow {
+		return
+	}
+	from := p.dragPath(data)
+	i := p.index(from)
+	index := p.index(path)
+	if at == dropAfter {
+		index++
+	}
+	if i < index {
+		// Taking the feature out moves what comes after it up by one.
+		index--
+	}
+	if i == index {
+		return
+	}
+	p.restructure(i18n.Text("Move Feature"), from+keyMore, "", func() int {
+		one := (*p.features)[i]
+		*p.features = slices.Insert(slices.Delete(*p.features, i, i+1), index, one)
+		return index
 	})
-	panel.SetBorder(unison.NewEmptyBorder(geom.Insets{Left: unison.StdHSpacing * 2}))
-	bodyType := gurps.BodyFor(p.entity)
-	existing := xslices.MapFromKeys(f.Locations, func(in string) string { return in })
-	locs := bodyType.UniqueHitLocations(p.entity)
-	boxes := make([]*unison.CheckBox, 0, len(existing)+len(locs))
+}
+
+// restructure moves, adds or removes features through the widget with the reference key from, then rebuilds. change
+// returns the index of the feature whose more button takes the focus; with -1, the widget with the reference key
+// fallback does. The open row stays open wherever it ends up, and closes if it is removed.
+func (p *featuresPanel) restructure(title, from, fallback string, change func() int) {
+	var open gurps.Feature
+	if i := p.index(p.open); i >= 0 {
+		open = (*p.features)[i]
+	}
+	p.sentenceRows.restructure(title, from, fallback, func() string {
+		dst := change()
+		p.open = ""
+		if i := slices.Index(*p.features, open); open != nil && i >= 0 {
+			p.open = strconv.Itoa(i)
+		}
+		if dst < 0 {
+			return ""
+		}
+		return strconv.Itoa(dst) + keyMore
+	})
+}
+
+// featureIndent is how far the lines of an open row after its first are indented, to show they belong to it.
+const featureIndent = 12
+
+// editor returns the controls for an open row: its type, followed by those that say what the feature does, flowing as
+// a sentence would, then its optional criteria as chips. Every line after the first is indented a little.
+func (p *featuresPanel) editor(f gurps.Feature, path string) *unison.Panel {
+	editor := newColumn()
+	editor.RefKey = path + keyFirst
+	fields := newHangingFlow(featureIndent)
+	editor.AddChild(fields)
+	p.typePopup(fields, path, f)
+	box := newColumn()
+	box.SetBorder(unison.NewEmptyBorder(geom.Insets{Left: featureIndent}))
+	chips := newFlow()
+	key := func(name string) string { return path + ":" + name }
+	var note *unison.Label
+	switch one := f.(type) {
+	case *gurps.AttributeBonus:
+		p.amount(fields, path, &one.Amount, &one.PerLevel)
+		p.attributePopup(fields, key("attribute"), i18n.Text("to"), &one.Attribute, func(id string) { lastAttributeIDUsed = id })
+		if one.Attribute == gurps.StrengthID {
+			p.optional(chips, path, "limitation", i18n.Text("+ limitation"), i18n.Text("Add Limitation"),
+				i18n.Text("Remove Limitation"), one.Limitation != stlimit.None,
+				func() { one.Limitation = stlimit.StrikingOnly },
+				func() { one.Limitation = stlimit.None },
+				func(chip *unison.Panel) {
+					addCentered(chip, compactPopup(&p.sentenceRows, key("limitation"), i18n.Text("Limitation"),
+						stlimit.Options[1:], one.Limitation, nil, func(v stlimit.Option) { one.Limitation = v }))
+				})
+		}
+	case *gurps.ConditionalModifierBonus:
+		p.amount(fields, path, &one.Amount, &one.PerLevel)
+		p.situation(box, chips, path, &one.Situation, &one.Group, i18n.Text("Triggering Condition"))
+	case *gurps.ReactionBonus:
+		p.amount(fields, path, &one.Amount, &one.PerLevel)
+		p.situation(box, chips, path, &one.Situation, &one.Group, i18n.Text("from/to target"))
+	case *gurps.DRBonus:
+		p.amount(fields, path, &one.Amount, &one.PerLevel)
+		note = p.locations(fields, path, one)
+		spec := strings.TrimSpace(one.Specialization)
+		// After the locations, which it qualifies.
+		p.optional(fields, path, "against", i18n.Text("+ against"), i18n.Text("Add Attack Specialization"),
+			i18n.Text("Remove Attack Specialization"),
+			(spec != "" && !strings.EqualFold(spec, gurps.AllID)) || p.pending == key("against"),
+			func() { p.pending = key("against") },
+			func() { one.Specialization, p.pending = gurps.AllID, "" },
+			func(chip *unison.Panel) {
+				addJoiningWords(chip, i18n.Text("against"))
+				// Named outright, since the words before the field would otherwise be taken as its name.
+				p.textField(chip, key("against"), i18n.Text("Attack Specialization"), gurps.AllID,
+					&one.Specialization).Accessibility.Name = i18n.Text("Attack Specialization")
+				addJoiningWords(chip, i18n.Text("attacks"))
+			})
+	case *gurps.SkillBonus:
+		p.amount(fields, path, &one.Amount, &one.PerLevel)
+		selectionPopup(p, fields, path, skillsel.Types, &one.SelectionType, skillsel.ThisWeapon, &one.NameCriteria)
+		if one.SelectionType == skillsel.Name {
+			p.textChip(chips, path, "specialization", &one.SpecializationCriteria)
+			p.textChip(chips, path, "optspecialization", &one.OptionalSpecializationCriteria)
+		} else {
+			p.textChip(chips, path, "usage", &one.SpecializationCriteria)
+		}
+		if one.SelectionType != skillsel.ThisWeapon {
+			p.tagsChip(chips, path, &one.TagsCriteria)
+		}
+	case *gurps.SkillPointBonus:
+		p.amount(fields, path, &one.Amount, &one.PerLevel)
+		whose := i18n.Text("to skills whose name")
+		p.textCriteria(fields, key("name"), i18n.Text("Name"), "", whose, whose, &one.NameCriteria, true)
+		p.textChip(chips, path, "specialization", &one.SpecializationCriteria)
+		p.textChip(chips, path, "optspecialization", &one.OptionalSpecializationCriteria)
+		p.tagsChip(chips, path, &one.TagsCriteria)
+	case *gurps.SpellBonus:
+		p.amount(fields, path, &one.Amount, &one.PerLevel)
+		selectionPopup(p, fields, path, spellmatch.Types, &one.SpellMatchType, spellmatch.AllColleges, &one.NameCriteria)
+		p.tagsChip(chips, path, &one.TagsCriteria)
+	case *gurps.SpellPointBonus:
+		p.amount(fields, path, &one.Amount, &one.PerLevel)
+		selectionPopup(p, fields, path, spellmatch.Types, &one.SpellMatchType, spellmatch.AllColleges, &one.NameCriteria)
+		p.tagsChip(chips, path, &one.TagsCriteria)
+	case *gurps.TraitBonus:
+		p.amount(fields, path, &one.Amount, &one.PerLevel)
+		whose := i18n.Text("to traits whose name")
+		p.textCriteria(fields, key("name"), i18n.Text("Name"), "", whose, whose, &one.NameCriteria, true)
+		p.tagsChip(chips, path, &one.TagsCriteria)
+	case *gurps.EquipmentMaxUsesBonus:
+		p.maxAdjustment(fields, path, &one.MaxUsesModAmount, i18n.Text("Maximum Uses Adjustment"))
+		selectionPopup(p, fields, path, equipmentsel.Types, &one.SelectionType, equipmentsel.ThisEquipment,
+			&one.NameCriteria)
+		if one.SelectionType == equipmentsel.EquipmentWithName {
+			p.tagsChip(chips, path, &one.TagsCriteria)
+		}
+	case *gurps.TraitMaxLevelBonus:
+		p.maxAdjustment(fields, path, &one.MaxUsesModAmount, i18n.Text("Maximum Level Adjustment"))
+		selectionPopup(p, fields, path, traitsel.Types, &one.SelectionType, traitsel.ThisTrait, &one.NameCriteria)
+		if one.SelectionType == traitsel.TraitWithName {
+			p.tagsChip(chips, path, &one.TagsCriteria)
+		}
+	case *gurps.WeaponBonus:
+		p.weaponBonus(fields, chips, path, one)
+	case *gurps.CostReduction:
+		p.attributePopup(fields, key("attribute"), "", &one.Attribute, nil)
+		items := make([]fxp.Int, 0, 17)
+		for i := 5; i <= 80; i += 5 {
+			items = append(items, fxp.FromInteger(i))
+		}
+		if !slices.Contains(items, one.Percentage) {
+			items = append(items, one.Percentage)
+		}
+		addCentered(fields, compactPopup(&p.sentenceRows, key("reduction"), i18n.Text("Reduction"), items,
+			one.Percentage, func(v fxp.Int) string { return fmt.Sprintf(i18n.Text("by %s%%"), v.String()) },
+			func(v fxp.Int) { one.Percentage = v }))
+	case *gurps.ContainedWeightReduction:
+		title := i18n.Text("Contained Weight Reduction")
+		units := gurps.SheetSettingsFor(p.entity).DefaultWeightUnits
+		field := NewStringField(p.targetMgr, key("reduction"), title, func() string { return one.Reduction },
+			func(s string) {
+				p.edit(title, key("reduction"), "", func() {
+					//nolint:errcheck // A valid value is always returned
+					one.Reduction, _ = gurps.ExtractContainedWeightReduction(s, units)
+				})
+			})
+		field.SetMinimumTextWidthUsing("1,000 lb")
+		field.Tooltip = newWrappedTooltip(i18n.Text(`Enter a weight or percentage, e.g. "2 lb" or "5%"`))
+		field.ValidateCallback = func() bool {
+			_, err := gurps.ExtractContainedWeightReduction(field.Text(), units)
+			return err == nil
+		}
+		p.addCompact(fields, field.withoutUndo())
+	case *gurps.SelectorOverride:
+		p.selectorOverride(fields, chips, path, one)
+	default:
+		errs.Log(errs.New("unknown feature type"), "type", f.FeatureType().Key())
+	}
+	if len(chips.Children()) != 0 {
+		// The buttons that add unused criteria go after the chips in use, so an added one takes its place among them.
+		for _, child := range slices.Clone(chips.Children()) {
+			if _, ok := child.Self.(*unison.Button); ok {
+				chips.AddChild(child)
+			}
+		}
+		p.switchable(chips, path, f)
+		box.AddChild(chips)
+	} else {
+		p.switchable(fields, path, f)
+	}
+	if note != nil {
+		box.AddChild(note)
+	}
+	if len(box.Children()) != 0 {
+		editor.AddChild(box)
+	}
+	return editor
+}
+
+// featureTypeEntry is an entry of the feature type popup: a type, or the heading of a group of them.
+type featureTypeEntry struct {
+	heading     string
+	featureType feature.Type
+}
+
+// featureTypeGroups returns the headings of the groups the feature type popup files the types under, in order.
+func featureTypeGroups() []string {
+	return []string{
+		i18n.Text("Attributes and Traits"), i18n.Text("Skills and Spells"), i18n.Text("Defense"),
+		i18n.Text("Weapons"), i18n.Text("Equipment"),
+	}
+}
+
+// featureTypeGroup returns the index of the group the feature type popup files the type under.
+func featureTypeGroup(t feature.Type) int {
+	if t.IsWeaponBonus() {
+		return 3
+	}
+	switch t {
+	case feature.SkillBonus, feature.SkillPointBonus, feature.SpellBonus, feature.SpellPointBonus:
+		return 1
+	case feature.DRBonus:
+		return 2
+	case feature.SelectorOverride:
+		return 3
+	case feature.EquipmentMaxUsesBonus, feature.ContainedWeightReduction:
+		return 4
+	default:
+		return 0
+	}
+}
+
+// typePopup adds the popup that switches a feature to another type, keeping whether it is switchable, with the types
+// under headings of what they apply to. A type that isn't offered here, which a file can still hold, is shown but not
+// offered for others.
+func (p *featuresPanel) typePopup(parent *unison.Panel, path string, f gurps.Feature) {
+	current := featureTypeEntry{featureType: f.FeatureType()}
+	types := p.featureTypesList()
+	if !slices.Contains(types, current.featureType) {
+		types = append(slices.Clone(types), current.featureType)
+	}
+	popup := compactPopup(&p.sentenceRows, path+":type", i18n.Text("Feature Type"), nil, current,
+		func(e featureTypeEntry) string {
+			if e.heading != "" {
+				return e.heading
+			}
+			return e.featureType.String()
+		},
+		func(e featureTypeEntry) {
+			i := p.index(path)
+			if i < 0 {
+				return
+			}
+			if created := p.createFeatureForType(e.featureType); created != nil {
+				lastFeatureTypeUsed = e.featureType
+				created.SetSwitchable(f.IsSwitchable())
+				(*p.features)[i] = created
+			}
+		})
+	// Filled in afterward, since compactPopup takes no headings, with the callback held back so that selecting the
+	// current type isn't taken as a choice.
+	choose := popup.SelectionChangedCallback
+	popup.SelectionChangedCallback = nil
+	for i, heading := range featureTypeGroups() {
+		var group []featureTypeEntry
+		for _, t := range types {
+			if featureTypeGroup(t) == i {
+				group = append(group, featureTypeEntry{featureType: t})
+			}
+		}
+		if len(group) == 0 {
+			continue
+		}
+		if popup.ItemCount() != 0 {
+			popup.AddSeparator()
+		}
+		popup.AddDisabledItem(featureTypeEntry{heading: heading})
+		popup.AddItem(group...)
+	}
+	popup.Select(current)
+	popup.SelectionChangedCallback = choose
+	addCentered(parent, popup)
+}
+
+// switchable adds the pill that makes the feature switchable, which comes last: after the chips, or at the end of the
+// sentence when there are none.
+func (p *featuresPanel) switchable(parent *unison.Panel, path string, f gurps.Feature) {
+	words := i18n.Text("only while switched on")
+	p.optional(parent, path, "switchable", i18n.Text("+ switchable"), i18n.Text("Add Switchable"),
+		i18n.Text("Remove Switchable"), f.IsSwitchable(),
+		func() { f.SetSwitchable(true) },
+		func() { f.SetSwitchable(false) },
+		func(chip *unison.Panel) { addJoiningWords(chip, words) })
+	tip := newWrappedTooltip(gurps.SwitchableTooltip())
+	if one := parent.FindRefKey(path + ":add switchable"); one != nil {
+		one.Tooltip = tip
+	} else if one = parent.FindRefKey(path + ":switchable" + keyChip); one != nil {
+		one.Tooltip = tip
+	}
+}
+
+// checkBox returns a checkbox titled title, checked while on, which hands a change to set within an edit.
+func (p *featuresPanel) checkBox(key, title string, on bool, set func(bool)) *unison.CheckBox {
+	box := unison.NewCheckBox()
+	box.SetTitle(title)
+	box.RefKey = key
+	box.State = check.FromBool(on)
+	box.ClickCallback = func() {
+		p.edit(title, key, "", func() { set(box.State == check.On) })
+		// Each click is a step of its own to undo, unlike a run of typing.
+		p.editKey = ""
+	}
+	return box
+}
+
+// amount adds the field for an amount and the checkbox that gives it per level.
+func (p *featuresPanel) amount(parent *unison.Panel, path string, amount *fxp.Int, perLevel *bool) {
+	key := path + ":amount"
+	title := i18n.Text("Amount")
+	p.addCompact(parent, NewDecimalField(p.targetMgr, key, title, func() fxp.Int { return *amount },
+		func(v fxp.Int) { p.edit(title, key, "", func() { *amount = v }) }, fxp.Min, fxp.Max, true, false).withoutUndo())
+	p.perLevel(parent, path, perLevel)
+}
+
+func (p *featuresPanel) perLevel(parent *unison.Panel, path string, perLevel *bool) {
+	addCentered(parent, p.checkBox(path+":perlevel", i18n.Text("per level"), *perLevel,
+		func(on bool) { *perLevel = on }))
+}
+
+// attributePopup adds a popup of attributes, each after the prefix, handing a choice to chosen as well when it is set.
+// A key that isn't one of them is shown as such, and kept until another is chosen.
+func (p *featuresPanel) attributePopup(parent *unison.Panel, key, prefix string, value *string, chosen func(string)) {
+	choices, current := gurps.AttributeChoices(p.entity, prefix, gurps.SizeFlag|gurps.DodgeFlag|gurps.ParryFlag|
+		gurps.BlockFlag, *value)
+	addCentered(parent, compactPopup(&p.sentenceRows, key, i18n.Text("Attribute"), choices, current,
+		func(c *gurps.AttributeChoice) string { return c.Title }, func(c *gurps.AttributeChoice) {
+			*value = c.Key
+			if chosen != nil {
+				chosen(c.Key)
+			}
+		}))
+}
+
+// selectionPopup adds the popup that picks what a bonus applies to, followed by the criteria for their name unless this,
+// which needs none, is picked. It is a plain function because methods cannot have type parameters.
+func selectionPopup[E comparable](p *featuresPanel, parent *unison.Panel, path string, items []E, selection *E, this E, name *criteria.Text) {
+	addCentered(parent, compactPopup(&p.sentenceRows, path+":selection", i18n.Text("Selection Type"), items,
+		*selection, nil, func(v E) { *selection = v }))
+	if *selection != this {
+		p.textCriteria(parent, path+":name", i18n.Text("Name"), "", "", "", name, true)
+	}
+}
+
+// tagsChip adds the optional tags criterion, whose field says how to match any of several tags.
+func (p *featuresPanel) tagsChip(chips *unison.Panel, path string, c *criteria.Text) {
+	p.textChip(chips, path, "tag", c)
+	if field := chips.FindRefKey(path + ":tag"); field != nil {
+		field.Tooltip = newWrappedTooltip(i18n.Text(`Separate multiple tags with commas to match any one of them, e.g. "Sword, Axe"`))
+	}
+}
+
+// situation adds the field for the situation of a conditional modifier or reaction bonus, which shows the hint while
+// empty, on a line of its own where a long situation can wrap, and the chip for the group it is filed under in the
+// table that displays it.
+func (p *featuresPanel) situation(box, chips *unison.Panel, path string, situation, group *string, hint string) {
+	key := path + ":group"
+	title := i18n.Text("Situation")
+	field := NewMultiLineStringField(p.targetMgr, path+":situation", title, func() string { return *situation },
+		func(s string) { p.edit(title, path+":situation", "", func() { *situation = s }) })
+	field.Watermark = hint
+	// Named for the hint, as it always has been.
+	field.Accessibility.Name = hint
+	// It grows to fit its text, so scrolling within it would only shift the text out of place.
+	field.AutoScroll = false
+	p.addCompact(box, field.withoutUndo())
+	field.SetLayoutData(&unison.FlexLayoutData{HAlign: align.Fill, HGrab: true})
+	p.optional(chips, path, "group", i18n.Text("+ group"), i18n.Text("Add Group"), i18n.Text("Remove Group"),
+		*group != "" || p.pending == key,
+		func() { p.pending = key },
+		func() { *group, p.pending = "", "" },
+		func(chip *unison.Panel) {
+			addJoiningWords(chip, i18n.Text("in group"))
+			// Named outright, since the words before the field would otherwise be taken as its name.
+			p.textField(chip, key, i18n.Text("Group"), "", group).Accessibility.Name = i18n.Text("Group")
+		})
+}
+
+// locations adds the popup of where a DR bonus applies and, while that is a list of locations, a checkbox for each
+// after it, continuing the sentence. "To this armor" is offered only by an equipment modifier's bonus, or shown when a
+// file holds it elsewhere. It returns the note that some of the locations aren't in the body, if they aren't, which
+// goes on a line of its own after the sentence.
+func (p *featuresPanel) locations(fields *unison.Panel, path string, one *gurps.DRBonus) *unison.Label {
+	thisArmor, all, chosen := i18n.Text("to this armor"), i18n.Text("to all locations"), i18n.Text("to these locations:")
+	current := chosen
+	switch {
+	case len(one.Locations) == 0:
+		current = thisArmor
+	case slices.Contains(one.Locations, gurps.AllID):
+		current = all
+	}
+	var items []string
+	if p.forEquipmentModifier || current == thisArmor {
+		items = append(items, thisArmor)
+	}
+	items = append(items, all, chosen)
+	addCentered(fields, compactPopup(&p.sentenceRows, path+":locations", i18n.Text("Locations"), items, current, nil,
+		func(choice string) {
+			switch choice {
+			case thisArmor:
+				one.Locations = nil
+			case all:
+				one.Locations = []string{gurps.AllID}
+			default:
+				one.Locations = slices.DeleteFunc(slices.Clone(one.Locations),
+					func(loc string) bool { return loc == gurps.AllID })
+				if len(one.Locations) == 0 {
+					one.Locations = []string{gurps.TorsoID}
+				}
+			}
+		}))
+	if current != chosen {
+		return nil
+	}
+	return p.locationBoxes(fields, path, one)
+}
+
+// locationBoxes adds a checkbox for each hit location of the body to the parent, followed by one for each location of
+// the bonus the body doesn't have, which are marked as such, and returns the note saying what the mark means when
+// there are any. Ticking more boxes has the bonus cover more locations. Unticking the last one is refused, since a
+// bonus with no locations applies to the armor it is attached to instead.
+func (p *featuresPanel) locationBoxes(parent *unison.Panel, path string, one *gurps.DRBonus) *unison.Label {
+	title := i18n.Text("Locations")
+	newBox := func(id, name string) *unison.CheckBox {
+		key := path + ":loc " + id
+		box := unison.NewCheckBox()
+		box.SetTitle(name)
+		box.RefKey = key
+		box.State = check.FromBool(slices.Contains(one.Locations, id))
+		// Rebuilt after each change, which shows a refused one as it was.
+		box.ClickCallback = func() {
+			p.edit(title, key, key, func() {
+				switch {
+				case box.State == check.On:
+					one.Locations = append(slices.Clone(one.Locations), id)
+					slices.Sort(one.Locations)
+				case len(one.Locations) > 1:
+					one.Locations = slices.DeleteFunc(slices.Clone(one.Locations), func(in string) bool { return in == id })
+				}
+			})
+		}
+		return box
+	}
+	missing := xslices.MapFromKeys(one.Locations, func(in string) string { return in })
+	locs := gurps.BodyFor(p.entity).UniqueHitLocations(p.entity)
+	boxes := make([]*unison.CheckBox, 0, len(locs)+len(missing))
 	for _, loc := range locs {
-		box := unison.NewCheckBox()
-		box.SetTitle(loc.ChoiceName)
-		box.State = check.FromBool(slices.Contains(f.Locations, loc.LocID))
-		box.ClickCallback = func() { toggleHitLocation(box, f, loc.LocID) }
-		delete(existing, loc.LocID)
+		boxes = append(boxes, newBox(loc.LocID, loc.ChoiceName))
+		delete(missing, loc.LocID)
+	}
+	const missingKey = "missing"
+	for id := range maps.Keys(missing) {
+		box := newBox(id, id+"*")
+		box.ClientData()[missingKey] = true
 		boxes = append(boxes, box)
 	}
-	const unknownKey = "unknown"
-	for loc := range maps.Keys(existing) {
-		box := unison.NewCheckBox()
-		box.SetTitle(loc + "*")
-		box.State = check.On
-		box.ClientData()[unknownKey] = true
-		box.ClickCallback = func() { toggleHitLocation(box, f, loc) }
-		boxes = append(boxes, box)
-	}
-	xslices.ColumnSort(boxes, desiredColumns, func(a, b *unison.CheckBox) int {
-		_, au := a.ClientData()[unknownKey]
-		_, bu := b.ClientData()[unknownKey]
-		if au != bu {
-			if au {
+	slices.SortFunc(boxes, func(a, b *unison.CheckBox) int {
+		_, am := a.ClientData()[missingKey]
+		_, bm := b.ClientData()[missingKey]
+		if am != bm {
+			if am {
 				return 1
 			}
 			return -1
@@ -350,462 +790,123 @@ func (p *featuresPanel) createHitLocationsCheckBoxes(f *gurps.DRBonus) *unison.P
 		return xstrings.NaturalCmp(a.Text.String(), b.Text.String(), true)
 	})
 	for _, box := range boxes {
-		panel.AddChild(box)
+		addCentered(parent, box)
 	}
-	if len(existing) != 0 {
-		label := unison.NewLabel()
-		fd := label.Font.Descriptor()
-		fd.Size *= 0.8
-		label.Font = fd.Font()
-		label.SetTitle(i18n.Text("* Locations not present in current body type"))
-		label.SetLayoutData(&unison.FlexLayoutData{HSpan: desiredColumns})
-		panel.AddChild(label)
+	if len(missing) == 0 {
+		return nil
 	}
-	return panel
+	label := unison.NewLabel()
+	fd := label.Font.Descriptor()
+	fd.Size *= 0.8
+	label.Font = fd.Font()
+	label.SetTitle(i18n.Text("* Locations not present in current body type"))
+	return label
 }
 
-func toggleHitLocation(box *unison.CheckBox, f *gurps.DRBonus, loc string) {
-	if box.State == check.On {
-		f.Locations = append(f.Locations, loc)
-		slices.Sort(f.Locations)
-	} else {
-		f.Locations = slices.DeleteFunc(f.Locations, func(in string) bool { return in == loc })
-	}
-	MarkModified(box)
-}
-
-func (p *featuresPanel) isCurrentLocationThisArmor() bool {
-	return p.forEquipmentModifier && p.currentLocation == 0
-}
-
-func (p *featuresPanel) isCurrentLocationAll() bool {
-	return (p.forEquipmentModifier && p.currentLocation == 1) || (!p.forEquipmentModifier && p.currentLocation == 0)
-}
-
-func (p *featuresPanel) isCurrentLocationList() bool {
-	return (p.forEquipmentModifier && p.currentLocation == 2) || (!p.forEquipmentModifier && p.currentLocation == 1)
-}
-
-func (p *featuresPanel) createReactionBonusPanel(f *gurps.ReactionBonus) (main *unison.Panel, focus unison.Paneler) {
-	panel := p.createBasePanel(f)
-	focus = p.addLeveledModifierLine(panel, f, &f.LeveledAmount)
-	p.addSituationAndGroupLines(panel, &f.Situation, &f.Group, i18n.Text("from/to target"))
-	return panel, focus
-}
-
-// addSelectionCriteriaRow adds the row shared by the bonuses that pick their targets by a selection type: a popup of
-// the types, followed by the name criteria. The name criteria are blanked while blank reports that the chosen type
-// needs no name, and the name field also while its comparison accepts anything. When secondary is non-nil, it adds the
-// rows that depend on the chosen type after this row, which are rebuilt whenever the choice changes. It is a plain
-// function because methods cannot have type parameters.
-func addSelectionCriteriaRow[E comparable](p *featuresPanel, panel *unison.Panel, types []E, sel *E, blank func(E) bool, nameCriteria *criteria.Text, secondary func(parent *unison.Panel, index int)) {
-	panel.AddChild(unison.NewPanel())
-	wrapper := unison.NewPanel()
-	var criteriaPopup *unison.PopupMenu[string]
-	var criteriaField *StringField
-	adjust := func() {
-		noName := blank(*sel)
-		adjustPopupBlank(criteriaPopup, noName)
-		adjustFieldBlank(criteriaField, noName || nameCriteria.IsZero())
-	}
-	popup := addPopup(wrapper, types, sel)
-	popup.Accessibility.Name = i18n.Text("Selection Type")
-	popup.ChoiceMadeCallback = func(pop *unison.PopupMenu[E], index int, item E) {
-		pop.SelectIndex(index)
-		*sel = item
-		adjust()
-		if secondary != nil {
-			i := panel.IndexOfChild(wrapper) + 1
-			for j := len(panel.Children()) - 1; j >= i; j-- {
-				panel.RemoveChildAtIndex(j)
-			}
-			secondary(panel, i)
-			MarkRootAncestorForLayoutRecursively(p)
-		}
-		MarkModified(p)
-	}
-	criteriaPopup, criteriaField = addStringCriteriaPanel(wrapper, "", "", i18n.Text("Name"), nameCriteria, 1, false)
-	p.addWrapperAtIndex(panel, wrapper, -1, false)
-	adjust()
-	if secondary != nil {
-		secondary(panel, len(panel.Children()))
-	}
-}
-
-func (p *featuresPanel) createSkillBonusPanel(f *gurps.SkillBonus) (main *unison.Panel, focus unison.Paneler) {
-	panel := p.createBasePanel(f)
-	focus = p.addLeveledModifierLine(panel, f, &f.LeveledAmount)
-	addSelectionCriteriaRow(p, panel, skillsel.Types, &f.SelectionType,
-		func(t skillsel.Type) bool { return t == skillsel.ThisWeapon }, &f.NameCriteria,
-		func(parent *unison.Panel, index int) { p.createSecondarySkillPanels(parent, index, f) })
-	return panel, focus
-}
-
-func (p *featuresPanel) createSecondarySkillPanels(parent *unison.Panel, index int, f *gurps.SkillBonus) {
-	var wrapper *unison.Panel
-	wrapper, index = p.prepareNewWrapper(parent, index)
-	switch f.SelectionType {
-	case skillsel.Name:
-		addSpecializationCriteriaPanel(wrapper, &f.SpecializationCriteria, 1, false)
-	case skillsel.ThisWeapon, skillsel.WeaponsWithName:
-		prefix := i18n.Text("and whose usage")
-		addStringCriteriaPanel(wrapper, prefix, prefix, i18n.Text("Usage"), &f.SpecializationCriteria, 1, false)
-	default:
-		errs.Log(errs.New("unknown selection type"), "type", int(f.SelectionType))
-	}
-	index = p.addWrapperAtIndex(parent, wrapper, index, false)
-	if f.SelectionType != skillsel.ThisWeapon {
-		wrapper, index = p.prepareNewWrapper(parent, index)
-		addTagCriteriaPanel(wrapper, &f.TagsCriteria, 1, false)
-		p.addWrapperAtIndex(parent, wrapper, index, false)
-	}
-}
-
-// maxAdjustmentBonusSpec describes the parts of a maximum uses / maximum level adjustment bonus panel that differ
-// between the equipment and trait variants. Both features carry the same name and tag criteria and the same
-// MaxUsesModAmount; only the selection enum and the amount field's label vary.
-type maxAdjustmentBonusSpec[E comparable] struct {
-	feature     gurps.Feature
-	types       []E
-	selection   *E
-	this        E // The "this item" choice, which needs no criteria at all.
-	withName    E // The "items with name" choice, which adds the tag criteria row.
-	name        *criteria.Text
-	tags        *criteria.Text
-	amount      *gurps.MaxUsesModAmount
-	amountLabel string
-}
-
-func (p *featuresPanel) createEquipmentMaxUsesBonusPanel(f *gurps.EquipmentMaxUsesBonus) (main *unison.Panel, focus unison.Paneler) {
-	return createMaxAdjustmentBonusPanel(p, maxAdjustmentBonusSpec[equipmentsel.Type]{
-		feature:     f,
-		types:       equipmentsel.Types,
-		selection:   &f.SelectionType,
-		this:        equipmentsel.ThisEquipment,
-		withName:    equipmentsel.EquipmentWithName,
-		name:        &f.NameCriteria,
-		tags:        &f.TagsCriteria,
-		amount:      &f.MaxUsesModAmount,
-		amountLabel: i18n.Text("Maximum Uses Adjustment"),
-	})
-}
-
-func (p *featuresPanel) createTraitMaxLevelBonusPanel(f *gurps.TraitMaxLevelBonus) (main *unison.Panel, focus unison.Paneler) {
-	return createMaxAdjustmentBonusPanel(p, maxAdjustmentBonusSpec[traitsel.Type]{
-		feature:     f,
-		types:       traitsel.Types,
-		selection:   &f.SelectionType,
-		this:        traitsel.ThisTrait,
-		withName:    traitsel.TraitWithName,
-		name:        &f.NameCriteria,
-		tags:        &f.TagsCriteria,
-		amount:      &f.MaxUsesModAmount,
-		amountLabel: i18n.Text("Maximum Level Adjustment"),
-	})
-}
-
-// createMaxAdjustmentBonusPanel builds the panel for a maximum uses / maximum level adjustment bonus. It is a plain
-// function rather than a method because methods cannot have type parameters.
-func createMaxAdjustmentBonusPanel[E comparable](p *featuresPanel, spec maxAdjustmentBonusSpec[E]) (main *unison.Panel, focus unison.Paneler) {
-	panel := p.createBasePanel(spec.feature)
-	focus = p.addMaxAdjustmentModifierLine(panel, spec.feature, spec.amount, spec.amountLabel)
-	addSelectionCriteriaRow(p, panel, spec.types, spec.selection, func(t E) bool { return t == spec.this }, spec.name,
-		func(parent *unison.Panel, index int) { createSecondaryMaxAdjustmentPanels(p, parent, index, spec) })
-	return panel, focus
-}
-
-func (p *featuresPanel) addMaxAdjustmentModifierLine(parent *unison.Panel, f gurps.Feature, amount *gurps.MaxUsesModAmount, label string) *StringField {
-	panel := unison.NewPanel()
-	p.addTypeSwitcher(panel, f)
-	field := NewStringField(nil, "", label,
-		func() string { return amount.Amount },
-		func(value string) {
-			amount.Amount = maxusesmod.Normalize(value)
-			MarkModified(panel)
-		})
+// maxAdjustment adds the field for the amount of a maximum uses or maximum level adjustment, titled title, and the
+// checkbox that gives it per level.
+func (p *featuresPanel) maxAdjustment(parent *unison.Panel, path string, amount *gurps.MaxUsesModAmount, title string) {
+	key := path + ":amount"
+	field := NewStringField(p.targetMgr, key, title, func() string { return amount.Amount },
+		func(s string) { p.edit(title, key, "", func() { amount.Amount = maxusesmod.Normalize(s) }) })
 	field.SetMinimumTextWidthUsing("-1,000,000")
 	field.Tooltip = newWrappedTooltip(i18n.Text(`Enter a number, percentage or multiplier, e.g. "-1", "10%" or "x2"`))
-	panel.AddChild(field)
-	addCheckBox(panel, i18n.Text("per level"), &amount.PerLevel)
-	addSwitchableCheckBox(panel, f)
-	panel.SetLayout(&unison.FlexLayout{
-		Columns:  len(panel.Children()),
-		HSpacing: unison.StdHSpacing,
-		VSpacing: unison.StdVSpacing,
-	})
-	panel.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: align.Fill,
-		HGrab:  true,
-	})
-	parent.AddChild(panel)
-	return field
+	p.addCompact(parent, field.withoutUndo())
+	p.perLevel(parent, path, &amount.PerLevel)
 }
 
-func createSecondaryMaxAdjustmentPanels[E comparable](p *featuresPanel, parent *unison.Panel, index int, spec maxAdjustmentBonusSpec[E]) {
-	if *spec.selection == spec.withName {
-		var wrapper *unison.Panel
-		wrapper, index = p.prepareNewWrapper(parent, index)
-		addTagCriteriaPanel(wrapper, spec.tags, 1, false)
-		p.addWrapperAtIndex(parent, wrapper, index, false)
-	}
-}
-
-func (p *featuresPanel) createSkillPointBonusPanel(f *gurps.SkillPointBonus) (main *unison.Panel, focus unison.Paneler) {
-	panel := p.createBasePanel(f)
-	focus = p.addLeveledModifierLine(panel, f, &f.LeveledAmount)
-	prefix := i18n.Text("to skills whose name")
-	addStringCriteriaPanel(panel, prefix, prefix, i18n.Text("Name"), &f.NameCriteria, 1, true)
-	addSpecializationCriteriaPanel(panel, &f.SpecializationCriteria, 1, true)
-	addTagCriteriaPanel(panel, &f.TagsCriteria, 1, true)
-	return panel, focus
-}
-
-func (p *featuresPanel) createSpellBonusPanel(f *gurps.SpellBonus) (main *unison.Panel, focus unison.Paneler) {
-	return p.createSpellMatchBonusPanel(f, &f.SpellMatchType, &f.NameCriteria, &f.TagsCriteria, &f.LeveledAmount)
-}
-
-func (p *featuresPanel) createSpellPointBonusPanel(f *gurps.SpellPointBonus) (main *unison.Panel, focus unison.Paneler) {
-	return p.createSpellMatchBonusPanel(f, &f.SpellMatchType, &f.NameCriteria, &f.TagsCriteria, &f.LeveledAmount)
-}
-
-// createSpellMatchBonusPanel builds the panel shared by the spell bonus and the spell point bonus, which pick the
-// spells they apply to the same way: by a match type, a name to match against it and the spells' tags.
-func (p *featuresPanel) createSpellMatchBonusPanel(f gurps.Feature, matchType *spellmatch.Type, name, tags *criteria.Text, amount *gurps.LeveledAmount) (main *unison.Panel, focus unison.Paneler) {
-	panel := p.createBasePanel(f)
-	focus = p.addLeveledModifierLine(panel, f, amount)
-	addSelectionCriteriaRow(p, panel, spellmatch.Types, matchType,
-		func(t spellmatch.Type) bool { return t == spellmatch.AllColleges }, name, nil)
-	addTagCriteriaPanel(panel, tags, 1, true)
-	return panel, focus
-}
-
-func (p *featuresPanel) createTraitBonusPanel(f *gurps.TraitBonus) (main *unison.Panel, focus unison.Paneler) {
-	panel := p.createBasePanel(f)
-	focus = p.addLeveledModifierLine(panel, f, &f.LeveledAmount)
-	prefix := i18n.Text("to traits whose name")
-	addStringCriteriaPanel(panel, prefix, prefix, i18n.Text("Name"), &f.NameCriteria, 1, true)
-	addTagCriteriaPanel(panel, &f.TagsCriteria, 1, true)
-	return panel, focus
-}
-
-func (p *featuresPanel) createWeaponBonusPanel(f *gurps.WeaponBonus) (main *unison.Panel, focus unison.Paneler) {
-	panel := p.createBasePanel(f)
-	_, focus = p.addWeaponLeveledModifierLine(panel, f)
-	addSelectionCriteriaRow(p, panel, wsel.Types, &f.SelectionType,
-		func(t wsel.Type) bool { return t == wsel.ThisWeapon }, &f.NameCriteria,
-		func(parent *unison.Panel, index int) { p.createSecondaryWeaponPanels(parent, index, f) })
-	return panel, focus
-}
-
-func (p *featuresPanel) createSecondaryWeaponPanels(parent *unison.Panel, index int, f *gurps.WeaponBonus) {
-	var wrapper *unison.Panel
-	wrapper, index = p.prepareNewWrapper(parent, index)
-	switch f.SelectionType {
-	case wsel.WithRequiredSkill:
-		addSpecializationCriteriaPanel(wrapper, &f.SpecializationCriteria, 1, false)
-		wrapper, index = p.prepareNewWrapper(parent, p.addWrapperAtIndex(parent, wrapper, index, false))
-		addUsageCriteriaPanel(wrapper, &f.UsageCriteria, 1, false)
-	case wsel.ThisWeapon, wsel.WithName:
-		addUsageCriteriaPanel(wrapper, &f.SpecializationCriteria, 1, false)
-	default:
-		errs.Log(errs.New("unknown selection type"), "type", int(f.SelectionType))
-	}
-	index = p.addWrapperAtIndex(parent, wrapper, index, false)
-
-	if f.SelectionType != wsel.ThisWeapon {
-		wrapper, index = p.prepareNewWrapper(parent, index)
-		addTagCriteriaPanel(wrapper, &f.TagsCriteria, 1, false)
-		index = p.addWrapperAtIndex(parent, wrapper, index, false)
-		if f.SelectionType != wsel.WithName {
-			wrapper, index = p.prepareNewWrapper(parent, index)
-			addNumericCriteriaPanel(wrapper, nil, "", i18n.Text("and whose relative skill level"),
-				i18n.Text("Level"), &f.RelativeLevelCriteria, -fxp.Thousand, fxp.Thousand, 1, true, false)
-			p.addWrapperAtIndex(parent, wrapper, index, false)
+// weaponBonus adds the controls of a weapon bonus: the flag a weapon switch sets, or the amount of any other.
+func (p *featuresPanel) weaponBonus(fields, chips *unison.Panel, path string, one *gurps.WeaponBonus) {
+	key := func(name string) string { return path + ":" + name }
+	if one.Type == feature.WeaponSwitch {
+		items := wswitch.Types[1:]
+		if !slices.Contains(items, one.SwitchType) {
+			items = append(slices.Clone(items), one.SwitchType)
 		}
-	}
-}
-
-func (p *featuresPanel) prepareNewWrapper(parent *unison.Panel, index int) (wrapper *unison.Panel, newIndex int) {
-	parent.AddChildAtIndex(unison.NewPanel(), index)
-	index++
-	return unison.NewPanel(), index
-}
-
-func (p *featuresPanel) addWrapperAtIndex(parent, wrapper *unison.Panel, index int, hgrab bool) int {
-	wrapper.SetLayout(&unison.FlexLayout{
-		Columns:  len(wrapper.Children()),
-		HSpacing: unison.StdHSpacing,
-		VSpacing: unison.StdVSpacing,
-	})
-	wrapper.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: align.Fill,
-		HGrab:  hgrab,
-	})
-	parent.AddChildAtIndex(wrapper, index)
-	index++
-	return index
-}
-
-func (p *featuresPanel) createContainedWeightReductionPanel(f *gurps.ContainedWeightReduction) (main *unison.Panel, focus unison.Paneler) {
-	panel := p.createBasePanel(f)
-	wrapper := unison.NewPanel()
-	p.addTypeSwitcher(wrapper, f)
-	field := NewStringField(nil, "", i18n.Text("Contained Weight Reduction"),
-		func() string { return f.Reduction },
-		func(value string) {
-			//nolint:errcheck // A valid value is always returned
-			f.Reduction, _ = gurps.ExtractContainedWeightReduction(value,
-				gurps.SheetSettingsFor(p.entity).DefaultWeightUnits)
-			MarkModified(wrapper)
-		})
-	field.SetMinimumTextWidthUsing("1,000 lb")
-	field.Tooltip = newWrappedTooltip(i18n.Text(`Enter a weight or percentage, e.g. "2 lb" or "5%"`))
-	field.ValidateCallback = func() bool {
-		_, err := gurps.ExtractContainedWeightReduction(field.Text(), gurps.SheetSettingsFor(p.entity).DefaultWeightUnits)
-		return err == nil
-	}
-	wrapper.AddChild(field)
-	addSwitchableCheckBox(wrapper, f)
-	p.addWrapperAtIndex(panel, wrapper, -1, false)
-	return panel, field
-}
-
-func (p *featuresPanel) createCostReductionPanel(f *gurps.CostReduction) (main *unison.Panel, focus unison.Paneler) {
-	panel := p.createBasePanel(f)
-	wrapper := unison.NewPanel()
-	p.addTypeSwitcher(wrapper, f)
-	addAttributeChoicePopup(wrapper, p.entity, "", &f.Attribute,
-		gurps.SizeFlag|gurps.DodgeFlag|gurps.ParryFlag|gurps.BlockFlag).Accessibility.Name = i18n.Text("Attribute")
-	choices := make([]string, 0, 16)
-	for i := 5; i <= 80; i += 5 {
-		choices = append(choices, fmt.Sprintf(i18n.Text("by %d%%"), i))
-	}
-	choice := choices[max(min((f.Percentage.AsInteger[int]()/5)-1, 15), 0)]
-	pop := addPopup(wrapper, choices, &choice)
-	pop.Accessibility.Name = i18n.Text("Reduction")
-	pop.ChoiceMadeCallback = func(popup *unison.PopupMenu[string], index int, _ string) {
-		popup.SelectIndex(index)
-		f.Percentage = fxp.FromInteger((index + 1) * 5)
-		MarkModified(wrapper)
-	}
-	addSwitchableCheckBox(wrapper, f)
-	p.addWrapperAtIndex(panel, wrapper, -1, true)
-	return panel, pop
-}
-
-func (p *featuresPanel) addLeveledModifierLine(parent *unison.Panel, f gurps.Feature, amount *gurps.LeveledAmount) *DecimalField {
-	panel := unison.NewPanel()
-	p.addTypeSwitcher(panel, f)
-	field, _ := addLeveledAmountPanel(panel, nil, "", i18n.Text("per level"), amount)
-	addSwitchableCheckBox(panel, f)
-	panel.SetLayout(&unison.FlexLayout{
-		Columns:  len(panel.Children()),
-		HSpacing: unison.StdHSpacing,
-		VSpacing: unison.StdVSpacing,
-	})
-	panel.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: align.Fill,
-		HGrab:  true,
-	})
-	parent.AddChild(panel)
-	return field
-}
-
-func (p *featuresPanel) addWeaponLeveledModifierLine(parent *unison.Panel, wb *gurps.WeaponBonus) (main *unison.Panel, focus unison.Paneler) {
-	panel := unison.NewPanel()
-	switcher := p.addTypeSwitcher(panel, wb)
-	if wb.Type == feature.WeaponSwitch {
-		wrapper := unison.NewPanel()
-		wrapper.AddChild(switcher)
-		switcher.SetLayoutData(&unison.FlexLayoutData{HSpan: 4})
-		if wb.SwitchType == wswitch.NotSwitched {
-			wb.SwitchType = wswitch.Types[1]
-		}
-		spacer := unison.NewPanel()
-		spacer.SetLayoutData(&unison.FlexLayoutData{SizeHint: geom.Size{Width: 16}})
-		wrapper.AddChild(spacer)
-		addPopup(wrapper, wswitch.Types[1:], &wb.SwitchType).Accessibility.Name = i18n.Text("Switch")
-		valuePopup := addBoolPopup(wrapper, i18n.Text("to true"), i18n.Text("to false"), &wb.SwitchTypeValue)
-		valuePopup.Accessibility.Name = i18n.Text("Switch Value")
-		focus = valuePopup
-		// The checkbox belongs inside the wrapper, at the end of its second row, so that it sits snugly after the last
-		// control as it does on every other feature row. Beside the wrapper instead, it would be top-aligned against a
-		// two-row neighbor and pinned to the far right edge, since the wrapper's column absorbs all of the slack.
-		addSwitchableCheckBox(wrapper, wb)
-		wrapper.SetLayout(&unison.FlexLayout{
-			Columns:  4,
-			HSpacing: unison.StdHSpacing,
-			VSpacing: unison.StdVSpacing,
-		})
-		wrapper.SetLayoutData(&unison.FlexLayoutData{
-			HAlign: align.Fill,
-			HGrab:  true,
-		})
-		panel.AddChild(wrapper)
+		addCentered(fields, compactPopup(&p.sentenceRows, key("switch"), i18n.Text("Switch"), items, one.SwitchType,
+			nil, func(v wswitch.Type) { one.SwitchType = v }))
+		addCentered(fields, compactPopup(&p.sentenceRows, key("switchvalue"), i18n.Text("Switch Value"),
+			[]bool{true, false}, one.SwitchTypeValue, func(v bool) string {
+				if v {
+					return i18n.Text("to true")
+				}
+				return i18n.Text("to false")
+			}, func(v bool) { one.SwitchTypeValue = v }))
 	} else {
-		var percentCheckBox *CheckBox
-		if wb.Type == feature.WeaponBonus {
-			focus = addWeaponDamageBonusField(panel, wb, func() { syncPercentCheckBox(percentCheckBox, wb) })
+		var percent *unison.CheckBox
+		if one.Type == feature.WeaponBonus {
+			p.damageField(fields, path, one, func() {
+				percent.State = check.FromBool(one.Percent)
+				percent.SetEnabled(one.Dice.IsZero())
+			})
+			p.perLevel(fields, path, &one.PerLevel)
 		} else {
-			field := NewDecimalField(nil, "", i18n.Text("Amount"),
-				func() fxp.Int { return wb.Amount },
-				func(value fxp.Int) {
-					wb.Amount = value
-					MarkModified(panel)
-				}, fxp.Min, fxp.Max, true, false)
-			focus = field
-			panel.AddChild(field)
+			p.amount(fields, path, &one.Amount, &one.PerLevel)
 		}
-		addCheckBox(panel, i18n.Text("per level"), &wb.PerLevel)
-		if wb.Type != feature.WeaponMinSTBonus && wb.Type != feature.WeaponEffectiveSTBonus {
+		if one.Type != feature.WeaponMinSTBonus && one.Type != feature.WeaponEffectiveSTBonus {
 			// No per-die for MinST or effective ST bonuses, since that would cause an infinite loop on resolution.
-			addCheckBox(panel, i18n.Text("per die"), &wb.PerDie)
+			addCentered(fields, p.checkBox(key("perdie"), i18n.Text("per die"), one.PerDie,
+				func(on bool) { one.PerDie = on }))
 		}
-		percentCheckBox = addCheckBox(panel, i18n.Text("as a %"), &wb.Percent)
-		syncPercentCheckBox(percentCheckBox, wb)
-		addSwitchableCheckBox(panel, wb)
+		percent = p.checkBox(key("percent"), i18n.Text("as a %"), one.Percent, func(on bool) { one.Percent = on })
+		// A bonus that adds dice cannot also be a percentage.
+		percent.SetEnabled(one.Dice.IsZero())
+		addCentered(fields, percent)
 	}
-	panel.SetLayout(&unison.FlexLayout{
-		Columns:  len(panel.Children()),
-		HSpacing: unison.StdHSpacing,
-		VSpacing: unison.StdVSpacing,
-	})
-	panel.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: align.Fill,
-		HGrab:  true,
-	})
-	parent.AddChild(panel)
-	return panel, focus
+	selectionPopup(p, fields, path, wsel.Types, &one.SelectionType, wsel.ThisWeapon, &one.NameCriteria)
+	switch one.SelectionType {
+	case wsel.WithRequiredSkill:
+		p.textChip(chips, path, "specialization", &one.SpecializationCriteria)
+		p.textChip(chips, path, "usage", &one.UsageCriteria)
+	default:
+		p.textChip(chips, path, "usage", &one.SpecializationCriteria)
+	}
+	if one.SelectionType != wsel.ThisWeapon {
+		p.tagsChip(chips, path, &one.TagsCriteria)
+	}
+	if one.SelectionType == wsel.WithRequiredSkill {
+		level := &one.RelativeLevelCriteria
+		p.optional(chips, path, "level", i18n.Text("+ relative skill level"), i18n.Text("Add Relative Skill Level"),
+			i18n.Text("Remove Relative Skill Level"), level.Compare != criteria.AnyNumber,
+			func() { *level = criteria.Number{Compare: criteria.AtLeastNumber, Qualifier: fxp.One} },
+			func() { *level = criteria.Number{Compare: criteria.AnyNumber} },
+			func(chip *unison.Panel) {
+				p.numberCriteria(chip, key("level"), i18n.Text("Level"), i18n.Text("and whose relative skill level"),
+					level, -fxp.Thousand, fxp.Thousand, true)
+			})
+	}
 }
 
-// addWeaponDamageBonusField adds the amount field of a weapon damage bonus, which accepts a dice specification as well
-// as a flat number, e.g. "+2", "-1d" or "+2d+1x3". Text in any other form is flagged and leaves the bonus unchanged.
-// changed is called after each change the field makes to the bonus.
-func addWeaponDamageBonusField(parent *unison.Panel, wb *gurps.WeaponBonus, changed func()) *StringField {
+// damageField adds the amount field of a weapon damage bonus, which accepts a dice specification as well as a flat
+// number, e.g. "+2", "-1d" or "+2d+1x3". Text in any other form is flagged and leaves the bonus unchanged. changed is
+// called after each change the field makes to the bonus.
+func (p *featuresPanel) damageField(parent *unison.Panel, path string, one *gurps.WeaponBonus, changed func()) {
+	key := path + ":amount"
+	title := i18n.Text("Amount")
 	// Dice cannot be a percentage, so "as a %" is suspended, not cleared, while the field holds dice, and restored once
-	// they go away (typed over or undone), so the user never ends up with a choice they did not make.
-	var percentSuspended bool
-	field := NewStringField(nil, "", i18n.Text("Amount"),
-		func() string { return gurps.FormatWeaponDamageBonus(wb.Dice, wb.Amount) },
-		func(value string) {
-			d, amount, ok := gurps.ParseWeaponDamageBonus(value)
+	// they go away, so the user never ends up with a choice they did not make.
+	field := NewStringField(p.targetMgr, key, title,
+		func() string { return gurps.FormatWeaponDamageBonus(one.Dice, one.Amount) },
+		func(s string) {
+			d, amount, ok := gurps.ParseWeaponDamageBonus(s)
 			if !ok {
 				return
 			}
-			wb.Dice = d
-			wb.Amount = amount
-			switch {
-			case d.IsZero():
-				if percentSuspended {
-					wb.Percent = true
-					percentSuspended = false
+			p.edit(title, key, "", func() {
+				one.Dice = d
+				one.Amount = amount
+				switch {
+				case d.IsZero():
+					if p.percentSuspended[one] {
+						one.Percent = true
+						delete(p.percentSuspended, one)
+					}
+				case one.Percent:
+					one.Percent = false
+					p.percentSuspended[one] = true
 				}
-			case wb.Percent:
-				wb.Percent = false
-				percentSuspended = true
-			}
+			})
 			changed()
-			MarkModified(parent)
 		})
 	field.ValidateCallback = func() bool {
 		_, _, ok := gurps.ParseWeaponDamageBonus(field.Text())
@@ -813,168 +914,70 @@ func addWeaponDamageBonusField(parent *unison.Panel, wb *gurps.WeaponBonus, chan
 	}
 	field.SetMinimumTextWidthUsing("+99d+99.99")
 	field.Tooltip = newWrappedTooltip(i18n.Text(`Enter a number or a dice specification, e.g. "+2", "-1d", "+1d+2" or "2dx3"`))
-	parent.AddChild(field)
-	return field
+	p.addCompact(parent, field.withoutUndo())
 }
 
-// syncPercentCheckBox keeps the "as a %" checkbox of a weapon bonus in step with its dice: a bonus that adds dice
-// cannot also be a percentage, so the checkbox is disabled while there are any.
-func syncPercentCheckBox(checkBox *CheckBox, wb *gurps.WeaponBonus) {
-	if checkBox == nil {
-		return
-	}
-	checkBox.SetEnabled(wb.Dice.IsZero())
-	checkBox.Sync()
-}
-
-func (p *featuresPanel) createSelectorOverridePanel(f *gurps.SelectorOverride) (main *unison.Panel, focus unison.Paneler) {
-	panel := p.createBasePanel(f)
-	wrapper := unison.NewPanel()
-	p.addTypeSwitcher(wrapper, f)
-	addSwitchableCheckBox(wrapper, f)
-	p.addWrapperAtIndex(panel, wrapper, -1, false)
-	panel.AddChild(unison.NewPanel())
-	focus = p.addSelectorOverrideLine(panel, f)
-	if gurps.SelectorFieldDescriptorFor(f.Field).Scope == gurps.SelectorScopeTrait {
-		prefix := i18n.Text("to traits whose name")
-		addStringCriteriaPanel(panel, prefix, prefix, i18n.Text("Name"), &f.NameCriteria, 1, true)
-		addTagCriteriaPanel(panel, &f.TagsCriteria, 1, true)
-	} else {
-		prefix := i18n.Text("to weapons whose name")
-		addStringCriteriaPanel(panel, prefix, prefix, i18n.Text("Name"), &f.NameCriteria, 1, true)
-		addUsageCriteriaPanel(panel, &f.UsageCriteria, 1, true)
-		addTagCriteriaPanel(panel, &f.TagsCriteria, 1, true)
-	}
-	return panel, focus
-}
-
-// addSelectorOverrideLine builds the line "[field] to [value] with priority [n]". Changing the field rebuilds the row,
-// since a different field may have a different set of valid values (and thus a different value editor).
-func (p *featuresPanel) addSelectorOverrideLine(parent *unison.Panel, f *gurps.SelectorOverride) unison.Paneler {
-	panel := unison.NewPanel()
-	fieldPopup := addPopup(panel, selector.Fields, &f.Field)
-	fieldPopup.Accessibility.Name = i18n.Text("Field")
-	fieldPopup.ChoiceMadeCallback = func(pop *unison.PopupMenu[selector.Field], index int, item selector.Field) {
-		pop.SelectIndex(index)
-		f.Field = item
-		lastSelectorFieldUsed = item
-		d := gurps.SelectorFieldDescriptorFor(item)
-		if len(d.SuggestedStates) != 0 {
-			f.Value = d.SuggestedStates[0]
-		} else {
-			f.Value = ""
-		}
-		if d.Scope == gurps.SelectorScopeTrait {
-			// The usage row is hidden for trait-scoped fields, so clear any criterion the user set while the field was
-			// weapon-scoped rather than leaving an invisible one behind in the data.
-			f.UsageCriteria = criteria.Text{Compare: criteria.AnyText}
-		}
-		p.rebuildFeaturePanel(f)
-	}
-	panel.AddChild(NewFieldLeadingLabel(i18n.Text("to"), false))
-	focus := p.addSelectorValueEditor(panel, f)
-	panel.AddChild(NewFieldLeadingLabel(i18n.Text("with priority"), false))
-	priorityField := NewIntegerField(nil, "", i18n.Text("Priority"),
-		func() int { return f.Priority },
-		func(value int) {
-			f.Priority = value
-			MarkModified(panel)
-		}, -99, 99, false, false)
-	// Named outright, since the "with priority" label before the field would otherwise be taken as its name.
-	priorityField.Accessibility.Name = i18n.Text("Priority")
-	panel.AddChild(priorityField)
-	panel.SetLayout(&unison.FlexLayout{
-		Columns:  len(panel.Children()),
-		HSpacing: unison.StdHSpacing,
-		VSpacing: unison.StdVSpacing,
-	})
-	panel.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: align.Fill,
-	})
-	parent.AddChild(panel)
-	return focus
-}
-
-// addSelectorValueEditor adds the value editor appropriate to the field: a popup when the field is constrained to a
-// known set of states, or a free-form string field (with the suggested states offered in a tooltip) otherwise. Either
-// one is named outright, since the "to" label before it would otherwise be taken as its name.
-func (p *featuresPanel) addSelectorValueEditor(parent *unison.Panel, f *gurps.SelectorOverride) unison.Paneler {
-	d := gurps.SelectorFieldDescriptorFor(f.Field)
+// selectorOverride adds the controls of a selector override: "[field] to [value] with priority [n]", followed by the
+// items it applies to. Changing the field resets the value, since another field may take other values, and clears the
+// usage criteria of a field that applies to traits, which have no usage.
+func (p *featuresPanel) selectorOverride(fields, chips *unison.Panel, path string, one *gurps.SelectorOverride) {
+	key := func(name string) string { return path + ":" + name }
+	addCentered(fields, compactPopup(&p.sentenceRows, key("field"), i18n.Text("Field"), selector.Fields, one.Field, nil,
+		func(v selector.Field) {
+			one.Field = v
+			lastSelectorFieldUsed = v
+			d := gurps.SelectorFieldDescriptorFor(v)
+			one.Value = ""
+			if len(d.SuggestedStates) != 0 {
+				one.Value = d.SuggestedStates[0]
+			}
+			if d.Scope == gurps.SelectorScopeTrait {
+				one.UsageCriteria = criteria.Text{Compare: criteria.AnyText}
+			}
+		}))
+	addJoiningWords(fields, i18n.Text("to"))
+	title := i18n.Text("Value")
+	d := gurps.SelectorFieldDescriptorFor(one.Field)
 	if len(d.SuggestedStates) != 0 && !d.FreeForm {
-		if !slices.Contains(d.SuggestedStates, f.Value) {
-			f.Value = d.SuggestedStates[0]
+		// A constrained field shows a popup of human labels while storing the canonical value behind each one. A value
+		// that isn't one of them is shown as it is.
+		items := d.SuggestedStates
+		if !slices.Contains(items, one.Value) {
+			items = append(slices.Clone(items), one.Value)
 		}
-		// A constrained field shows a popup of human labels while storing the canonical value behind each one.
-		popup := unison.NewPopupMenu[string]()
-		popup.Accessibility.Name = i18n.Text("Value")
-		for _, state := range d.SuggestedStates {
-			if d.StateTitle != nil {
-				popup.AddItem(d.StateTitle(state))
-			} else {
-				popup.AddItem(state)
-			}
+		var render func(string) string
+		if d.StateTitle != nil {
+			render = d.StateTitle
 		}
-		popup.SelectIndex(slices.Index(d.SuggestedStates, f.Value))
-		popup.SelectionChangedCallback = func(pm *unison.PopupMenu[string]) {
-			if i := pm.SelectedIndex(); i >= 0 && i < len(d.SuggestedStates) {
-				f.Value = d.SuggestedStates[i]
-				MarkModified(parent)
-			}
+		addCentered(fields, compactPopup(&p.sentenceRows, key("value"), title, items, one.Value, render,
+			func(v string) { one.Value = v }))
+	} else {
+		field := p.textField(fields, key("value"), title, "", &one.Value)
+		// Named outright, since the words before the field would otherwise be taken as its name.
+		field.Accessibility.Name = title
+		if len(d.SuggestedStates) != 0 {
+			field.Tooltip = newWrappedTooltip(fmt.Sprintf(i18n.Text("Suggested values: %s"),
+				strings.Join(d.SuggestedStates, ", ")))
 		}
-		parent.AddChild(popup)
-		return popup
+		if d.Validate != nil {
+			field.ValidateCallback = func() bool { return d.Validate(field.Text()) }
+		}
 	}
-	field := NewStringField(nil, "", i18n.Text("Value"),
-		func() string { return f.Value },
-		func(value string) {
-			f.Value = value
-			MarkModified(parent)
-		})
-	field.Accessibility.Name = i18n.Text("Value")
-	// Give the field a minimum width so it can't collapse to nothing as the panel narrows, and let it grab the slack so
-	// it flexes rather than being crushed by its neighbors.
-	field.SetMinimumTextWidthUsing("impaling")
-	field.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: align.Fill,
-		HGrab:  true,
-	})
-	if len(d.SuggestedStates) != 0 {
-		field.Tooltip = newWrappedTooltip(fmt.Sprintf(i18n.Text("Suggested values: %s"), strings.Join(d.SuggestedStates, ", ")))
+	addJoiningWords(fields, i18n.Text("with priority"))
+	priorityTitle := i18n.Text("Priority")
+	priority := NewIntegerField(p.targetMgr, key("priority"), priorityTitle, func() int { return one.Priority },
+		func(v int) { p.edit(priorityTitle, key("priority"), "", func() { one.Priority = v }) }, -99, 99, false, false)
+	// Named outright, since the words before the field would otherwise be taken as its name.
+	priority.Accessibility.Name = priorityTitle
+	p.addCompact(fields, priority.withoutUndo())
+	whose := i18n.Text("on weapons whose name")
+	if d.Scope == gurps.SelectorScopeTrait {
+		whose = i18n.Text("on traits whose name")
+	} else {
+		p.textChip(chips, path, "usage", &one.UsageCriteria)
 	}
-	if d.Validate != nil {
-		field.ValidateCallback = func() bool { return d.Validate(field.Text()) }
-	}
-	parent.AddChild(field)
-	return field
-}
-
-// createUnknownFeaturePanel creates the panel for a feature this version of GCS doesn't understand. No editing is
-// offered, since we have no idea what the data means, but the row is shown so the feature's presence is visible and it
-// can be deleted deliberately. No type switcher is present, as switching the type would throw away the original data.
-func (p *featuresPanel) createUnknownFeaturePanel(f *gurps.UnknownFeature) (main *unison.Panel, focus unison.Paneler) {
-	panel := p.createBasePanel(f)
-	label := NewFieldLeadingLabel(fmt.Sprintf(i18n.Text("Unknown feature type %q; it will be preserved, but ignored"),
-		f.Kind), false)
-	label.Tooltip = newWrappedTooltip(i18n.Text("This was most likely created by a newer version of GCS. Its original data will be written back out unchanged when this file is saved."))
-	label.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: align.Fill,
-		HGrab:  true,
-	})
-	panel.AddChild(label)
-	return panel, panel
-}
-
-// rebuildFeaturePanel replaces the on-screen panel for the given feature in place, keeping the same feature object. It
-// is used when an edit (such as changing a selector's field) changes which sub-widgets the row needs.
-func (p *featuresPanel) rebuildFeaturePanel(f gurps.Feature) {
-	i := slices.IndexFunc(*p.features, func(one gurps.Feature) bool { return one == f })
-	if i < 0 {
-		return
-	}
-	p.RemoveChildAtIndex(i + 1) // child 0 is the add button; feature at list index i is at child index i+1
-	p.insertFeaturePanel(i+1, f)
-	MarkRootAncestorForLayoutRecursively(p)
-	MarkModified(p)
+	p.textCriteria(fields, key("name"), i18n.Text("Name"), "", whose, whose, &one.NameCriteria, true)
+	p.tagsChip(chips, path, &one.TagsCriteria)
 }
 
 func (p *featuresPanel) featureTypesList() []feature.Type {
@@ -984,47 +987,12 @@ func (p *featuresPanel) featureTypesList() []feature.Type {
 	return feature.SelectableTypesWithoutContainedWeightReduction
 }
 
-// addSwitchableCheckBox adds the checkbox that marks a feature as switchable, i.e. one that only takes effect while the
-// owning item's switch is on.
-func addSwitchableCheckBox(parent *unison.Panel, f gurps.Feature) *CheckBox {
-	checkBox := NewCheckBox(nil, "", i18n.Text("switchable"),
-		func() check.Enum { return check.FromBool(f.IsSwitchable()) },
-		func(state check.Enum) { f.SetSwitchable(state == check.On) })
-	checkBox.Tooltip = newWrappedTooltip(gurps.SwitchableTooltip())
-	parent.AddChild(checkBox)
-	return checkBox
-}
-
-func (p *featuresPanel) addTypeSwitcher(parent *unison.Panel, f gurps.Feature) *unison.PopupMenu[feature.Type] {
-	currentType := f.FeatureType()
-	popup := addPopup(parent, p.featureTypesList(), &currentType)
-	popup.Accessibility.Name = i18n.Text("Feature Type")
-	popup.ChoiceMadeCallback = func(pop *unison.PopupMenu[feature.Type], index int, item feature.Type) {
-		pop.SelectIndex(index)
-		if newFeature := p.createFeatureForType(item); newFeature != nil {
-			list := *p.features
-			i := slices.IndexFunc(list, func(one gurps.Feature) bool { return one == f })
-			if i < 0 {
-				return
-			}
-			lastFeatureTypeUsed = item
-			newFeature.SetSwitchable(f.IsSwitchable())
-			// Remove the old row by its list position rather than via parent.Parent(): the type switcher isn't nested
-			// at a fixed depth for every feature type, so walking up from the switcher could reach the whole features
-			// panel and delete the entire section.
-			p.RemoveChildAtIndex(i + 1) // child 0 is the add button; feature at list index i is at child index i+1
-			list[i] = newFeature
-			p.insertFeaturePanel(i+1, newFeature)
-			MarkRootAncestorForLayoutRecursively(p)
-			MarkModified(p)
-		}
-	}
-	return popup
-}
-
 func (p *featuresPanel) createFeatureForType(featureType feature.Type) gurps.Feature {
 	if featureType.IsWeaponBonus() {
 		bonus := gurps.NewWeaponBonus(featureType)
+		if featureType == feature.WeaponSwitch {
+			bonus.SwitchType = wswitch.Types[1]
+		}
 		bonus.SetOwner(p.owner)
 		return bonus
 	}

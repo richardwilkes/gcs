@@ -11,16 +11,20 @@ package ux
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 	"testing"
 
 	"github.com/richardwilkes/gcs/v5/model/criteria"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/equipmentsel"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/feature"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/namegen"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/prereq"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/stlimit"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/study"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/traitsel"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/unison"
@@ -81,6 +85,7 @@ func TestEveryControlHasAnAccessibleName(t *testing.T) {
 				list = append(list, f)
 			}
 		}
+		seedEveryFeatureControl(list)
 		return list
 	}
 	allPrereqs := func(types []prereq.Type, ownerIsSpell bool) *gurps.PrereqList {
@@ -98,7 +103,7 @@ func TestEveryControlHasAnAccessibleName(t *testing.T) {
 		return []*gurps.Study{{Type: study.Self, Hours: fxp.Ten, Note: "audit"}}
 	}
 
-	audit.checkPrereqs("trait editor", func() {
+	audit.checkRows("trait editor", func() {
 		tr := gurps.NewTrait(entity, nil, false)
 		tr.Name = "Audit Trait"
 		tr.Features = allFeatures(tr, false)
@@ -107,12 +112,12 @@ func TestEveryControlHasAnAccessibleName(t *testing.T) {
 		tr.Weapons = []*gurps.Weapon{gurps.NewWeapon(tr, true), gurps.NewWeapon(tr, false)}
 		EditTrait(sheet, tr)
 	})
-	audit.checkOpened("trait modifier editor", func() {
+	audit.checkRows("trait modifier editor", func() {
 		m := gurps.NewTraitModifier(entity, nil, false)
 		m.Features = allFeatures(m, false)
 		EditTraitModifier(sheet, m)
 	})
-	audit.checkPrereqs("skill editor", func() {
+	audit.checkRows("skill editor", func() {
 		s := gurps.NewSkill(entity, nil, false)
 		s.Prereq = allPrereqs(prereq.TypesForNonEquipment, false)
 		s.Features = allFeatures(s, false)
@@ -123,19 +128,19 @@ func TestEveryControlHasAnAccessibleName(t *testing.T) {
 	audit.checkOpened("technique editor", func() {
 		EditSkill(sheet, gurps.NewTechnique(entity, nil, "Audit Skill"))
 	})
-	audit.checkPrereqs("spell editor", func() {
+	audit.checkRows("spell editor", func() {
 		s := gurps.NewSpell(entity, nil, false)
 		s.Prereq = allPrereqs(prereq.TypesForNonEquipment, true)
 		s.Study = studies()
 		EditSpell(sheet, s)
 	})
-	audit.checkPrereqs("equipment editor", func() {
+	audit.checkRows("equipment editor", func() {
 		e := gurps.NewEquipment(entity, nil, false)
 		e.Features = allFeatures(e, false)
 		e.Prereq = allPrereqs(prereq.TypesForEquipment, false)
 		EditEquipment(sheet, e, true)
 	})
-	audit.checkOpened("equipment modifier editor", func() {
+	audit.checkRows("equipment modifier editor", func() {
 		m := gurps.NewEquipmentModifier(entity, nil, false)
 		m.Features = allFeatures(m, true)
 		EditEquipmentModifier(sheet, m)
@@ -432,33 +437,114 @@ func seedEveryPrereqControl(root *gurps.PrereqList) {
 	root.Prereqs = append(root.Prereqs, group)
 }
 
-// checkPrereqs opens a dockable with fn and checks the controls in it, then again with each row of its prerequisites
-// panel open in turn, since a closed row shows only its sentence.
-func (a *axNameAudit) checkPrereqs(view string, fn func()) {
+// seedEveryFeatureControl turns on every optional criterion of the features, so that an audit sees every control the
+// panel can show.
+func seedEveryFeatureControl(list gurps.Features) {
+	on := criteria.Text{Compare: criteria.IsText}
+	for _, one := range list {
+		one.SetSwitchable(true)
+		switch f := one.(type) {
+		case *gurps.AttributeBonus:
+			f.Attribute = gurps.StrengthID
+			f.Limitation = stlimit.StrikingOnly
+		case *gurps.ConditionalModifierBonus:
+			f.Group = "Audit"
+		case *gurps.ReactionBonus:
+			f.Group = "Audit"
+		case *gurps.DRBonus:
+			f.Specialization = "crushing"
+		case *gurps.SkillBonus:
+			f.SpecializationCriteria = on
+			f.OptionalSpecializationCriteria = on
+			f.TagsCriteria = on
+		case *gurps.SkillPointBonus:
+			f.SpecializationCriteria = on
+			f.OptionalSpecializationCriteria = on
+			f.TagsCriteria = on
+		case *gurps.SpellBonus:
+			f.TagsCriteria = on
+		case *gurps.SpellPointBonus:
+			f.TagsCriteria = on
+		case *gurps.TraitBonus:
+			f.TagsCriteria = on
+		case *gurps.EquipmentMaxUsesBonus:
+			f.SelectionType = equipmentsel.EquipmentWithName
+			f.TagsCriteria = on
+		case *gurps.TraitMaxLevelBonus:
+			f.SelectionType = traitsel.TraitWithName
+			f.TagsCriteria = on
+		case *gurps.WeaponBonus:
+			f.SpecializationCriteria = on
+			f.UsageCriteria = on
+			f.TagsCriteria = on
+			f.RelativeLevelCriteria = criteria.Number{Compare: criteria.AtLeastNumber, Qualifier: fxp.One}
+		case *gurps.SelectorOverride:
+			f.UsageCriteria = on
+			f.TagsCriteria = on
+		default:
+		}
+	}
+}
+
+// checkRows opens a dockable with fn and checks the controls in it, with its features panels collapsed as they start
+// out, then again with them expanded and each row of its prerequisites and features panels open in turn, since a
+// closed row shows only its sentence.
+func (a *axNameAudit) checkRows(view string, fn func()) {
 	a.t.Helper()
 	d := a.open(fn)
 	if d == nil {
 		return
 	}
 	a.check(view, d)
-	var p *prereqPanel
-	var paths []string
+	// A features panel with features starts out collapsed, showing a paragraph in place of its rows, and its title bar
+	// says so.
+	var collapsed []*featuresPanel
 	a.screen.Do(func() {
-		if found := panelsOfType[*prereqPanel](d.AsPanel()); len(found) == 1 {
-			p = found[0]
+		for _, p := range panelsOfType[*featuresPanel](d.AsPanel()) {
+			if len(*p.features) != 0 {
+				collapsed = append(collapsed, p)
+			}
+		}
+	})
+	for _, p := range collapsed {
+		if node := a.screen.AccessibilityNodeFor(p.collapse); node == nil || !node.Expandable || node.Expanded {
+			a.t.Errorf("%s: a collapsed features panel's title bar isn't described as collapsed", view)
+		}
+	}
+	a.screen.Do(func() {
+		for _, p := range collapsed {
+			p.collapse.toggle()
+		}
+	})
+	a.check(view+", features expanded", d)
+	var names []string
+	var toggles []func()
+	a.screen.Do(func() {
+		for _, p := range panelsOfType[*prereqPanel](d.AsPanel()) {
 			for i, one := range p.tree().Prereqs {
 				if one.PrereqType() != prereq.List && one.PrereqType() != prereq.Unknown {
-					paths = append(paths, childPath(prereqRootPath, i))
+					path := childPath(prereqRootPath, i)
+					names = append(names, "prerequisite "+path)
+					toggles = append(toggles, func() { p.toggle(path) })
+				}
+			}
+		}
+		for _, p := range panelsOfType[*featuresPanel](d.AsPanel()) {
+			for i, one := range *p.features {
+				if one.FeatureType() != feature.Unknown {
+					path := strconv.Itoa(i)
+					names = append(names, "feature "+path)
+					toggles = append(toggles, func() { p.toggle(path) })
 				}
 			}
 		}
 	})
-	if p == nil {
-		a.t.Errorf("%s: no prerequisites panel", view)
+	if len(toggles) == 0 {
+		a.t.Errorf("%s: no rows to open", view)
 		return
 	}
-	for _, path := range paths {
-		a.screen.Do(func() { p.toggle(path) })
-		a.check(view+", "+path+" open", d)
+	for i, toggle := range toggles {
+		a.screen.Do(toggle)
+		a.check(view+", "+names[i]+" open", d)
 	}
 }

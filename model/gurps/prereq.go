@@ -80,3 +80,36 @@ func describeName(t criteria.Text, replacements map[string]string, em func(strin
 		return i18n.Text("whose name ") + describeText(t, replacements, em)
 	}
 }
+
+// describeSpecialization returns how a specialization narrows a skill: the bare specialization in parentheses for
+// "is", nothing when any will do, and a "with a specialization that" clause otherwise, followed by the same kind of
+// clause for the optional specialization when it is set.
+func describeSpecialization(specialization, optional criteria.Text, replacements map[string]string, em func(string) string) string {
+	var text string
+	switch {
+	case specialization.Compare == criteria.AnyText:
+	case specialization.Compare == criteria.IsText && specialization.Qualifier != "":
+		text = " (" + em(nameable.Apply(specialization.Qualifier, replacements)) + ")"
+	default:
+		text = i18n.Text(" with a specialization that ") + describeText(specialization, replacements, em)
+	}
+	if optional.Compare != criteria.AnyText {
+		text += i18n.Text(" with an optional specialization that ") + describeText(optional, replacements, em)
+	}
+	return text
+}
+
+// describeTags returns a clause for the tags t matches, such as " tagged Weapon", or nothing when any tags will do.
+func describeTags(t criteria.Text, replacements map[string]string, em func(string) string) string {
+	if t.Compare == criteria.AnyText {
+		return ""
+	}
+	q := nameable.Apply(t.Qualifier, replacements)
+	if q != "" {
+		q = em(q)
+	}
+	if t.Compare == criteria.IsText && q != "" {
+		return i18n.Text(" tagged ") + q
+	}
+	return " " + t.Compare.DescribeWithPrefix(i18n.Text("with a tag that"), i18n.Text("with all tags that"), q)
+}

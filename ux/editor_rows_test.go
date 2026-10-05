@@ -315,14 +315,23 @@ func expectTitledEditorSection(c check.Checker, p unison.Paneler, title string) 
 	c.Helper()
 	panel := p.AsPanel()
 	layout, ok := panel.Layout().(*unison.FlexLayout)
+	if block, isBlock := panel.Layout().(*blockLayout); isBlock {
+		// A collapsible section's layout puts its title bar over the title.
+		layout, ok = block.FlexLayout, true
+	}
 	c.True(ok, "%s: a titled editor section uses a FlexLayout", title)
 	c.Equal(1, layout.Columns, "%s: a titled editor section stacks its rows in a single column", title)
 	c.Equal(float32(unison.StdHSpacing), layout.HSpacing, "%s: horizontal spacing", title)
 	c.Equal(float32(unison.StdVSpacing), layout.VSpacing, "%s: vertical spacing", title)
 	c.Equal(&unison.FlexLayoutData{HSpan: 2, HAlign: align.Fill, HGrab: true}, panel.LayoutData(),
 		"%s: a titled editor section spans, fills and grabs both editor columns", title)
-	expected := unison.NewCompoundBorder(&TitledBorder{Title: title, Font: unison.LabelFont},
-		unison.NewEmptyBorder(geom.NewUniformInsets(2)))
+	titled := &TitledBorder{Title: title, Font: unison.LabelFont}
+	if toggle, isToggle := panel.Border().(*sectionToggleBorder); isToggle {
+		c.Equal(title, toggle.toggle.border.Title, "%s: the title bar is named for the title", title)
+		// The title bar takes the strip the border would otherwise leave for the title.
+		titled.HeadingInContent = true
+	}
+	expected := unison.NewCompoundBorder(titled, unison.NewEmptyBorder(geom.NewUniformInsets(2)))
 	c.Equal(expected.Insets(), panel.Border().Insets(), "%s: the border is the titled border with a 2-point inset", title)
 	c.NotNil(panel.DrawCallback, "%s: a titled editor section paints its own background", title)
 }

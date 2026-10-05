@@ -12,6 +12,7 @@ package gurps
 import (
 	"encoding/json/jsontext"
 	"encoding/json/v2"
+	"fmt"
 	"hash"
 
 	"github.com/richardwilkes/gcs/v5/model/criteria"
@@ -19,6 +20,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/feature"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/skillsel"
 	"github.com/richardwilkes/gcs/v5/model/nameable"
+	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/toolbox/v2/xbytes"
 	"github.com/richardwilkes/toolbox/v2/xhash"
 )
@@ -90,6 +92,24 @@ func (s *SkillBonus) SetLeveledOwner(owner LeveledOwner) {
 // AddToTooltip implements Bonus.
 func (s *SkillBonus) AddToTooltip(buffer *xbytes.InsertBuffer) {
 	s.basicAddToTooltip(&s.LeveledAmount, buffer)
+}
+
+// Describe implements Feature.
+func (s *SkillBonus) Describe(_ *Entity, replacements map[string]string, em func(string) string) string {
+	text := describeAmount(s.Amount.StringWithSign(), s.PerLevel, em) + i18n.Text(" to ")
+	switch s.SelectionType {
+	case skillsel.ThisWeapon:
+		text += describeThisWeapon(i18n.Text("skill"), s.SpecializationCriteria, replacements, em)
+	case skillsel.WeaponsWithName:
+		text += fmt.Sprintf(i18n.Text("the %s of %s"), i18n.Text("skill"),
+			describeNamedWeapons(s.NameCriteria, s.SpecializationCriteria, s.TagsCriteria, replacements, em))
+	default:
+		text += describeTarget(i18n.Text("skill %s"), i18n.Text("skills"), i18n.Text("whose name"), s.NameCriteria,
+			replacements, em) +
+			describeSpecialization(s.SpecializationCriteria, s.OptionalSpecializationCriteria, replacements, em) +
+			describeTags(s.TagsCriteria, replacements, em)
+	}
+	return describeSwitchable(s.Switchable, text)
 }
 
 // Hash writes this object's contents into the hasher.

@@ -95,6 +95,15 @@ func (s *SkillPointBonus) AddToTooltip(buffer *xbytes.InsertBuffer) {
 	}
 }
 
+// Describe implements Feature.
+func (s *SkillPointBonus) Describe(_ *Entity, replacements map[string]string, em func(string) string) string {
+	return describeSwitchable(s.Switchable, describePoints(s.Amount, s.PerLevel, em)+i18n.Text(" to ")+
+		describeTarget(i18n.Text("skill %s"), i18n.Text("skills"), i18n.Text("whose name"), s.NameCriteria,
+			replacements, em)+
+		describeSpecialization(s.SpecializationCriteria, s.OptionalSpecializationCriteria, replacements, em)+
+		describeTags(s.TagsCriteria, replacements, em))
+}
+
 // Hash writes this object's contents into the hasher.
 func (s *SkillPointBonus) Hash(h hash.Hash) {
 	if s == nil {

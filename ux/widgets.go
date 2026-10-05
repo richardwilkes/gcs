@@ -624,11 +624,6 @@ func addSpecializationCriteriaPanel(parent *unison.Panel, strCriteria *criteria.
 		includeEmptyFiller)
 }
 
-func addUsageCriteriaPanel(parent *unison.Panel, strCriteria *criteria.Text, hSpan int, includeEmptyFiller bool) (*unison.PopupMenu[string], *StringField) {
-	prefix := i18n.Text("and whose usage")
-	return addStringCriteriaPanel(parent, prefix, prefix, i18n.Text("Usage"), strCriteria, hSpan, includeEmptyFiller)
-}
-
 func addTagCriteriaPanel(parent *unison.Panel, strCriteria *criteria.Text, hSpan int, includeEmptyFiller bool) (*unison.PopupMenu[string], *StringField) {
 	popup, field := addStringCriteriaPanel(parent, i18n.Text("and at least one tag"), i18n.Text("and all tags"),
 		i18n.Text("Tag"), strCriteria, hSpan, includeEmptyFiller)
@@ -739,12 +734,6 @@ func addWeightCriteriaPanel(parent *unison.Panel, targetMgr *TargetMgr, targetKe
 	}
 	adjustFieldBlank(field, weightCriteria.Compare == criteria.AnyNumber)
 	return popup, field
-}
-
-func addLeveledAmountPanel(parent *unison.Panel, targetMgr *TargetMgr, targetKey, title string, amount *gurps.LeveledAmount) (field *DecimalField, checkBox *CheckBox) {
-	field = addDecimalField(parent, targetMgr, targetKey, i18n.Text("Amount"), "", &amount.Amount, fxp.Min, fxp.Max, true)
-	checkBox = addCheckBox(parent, title, &amount.PerLevel)
-	return field, checkBox
 }
 
 func addScriptField(parent *unison.Panel, targetMgr *TargetMgr, targetKey, undoTitle, tooltip string, get func() string, set func(string), includeMarkdownButton bool) *StringField {

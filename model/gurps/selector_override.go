@@ -12,6 +12,7 @@ package gurps
 import (
 	"encoding/json/jsontext"
 	"encoding/json/v2"
+	"fmt"
 	"hash"
 	"strconv"
 
@@ -23,6 +24,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/selfctrl"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/stdmg"
 	"github.com/richardwilkes/gcs/v5/model/nameable"
+	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/toolbox/v2/xhash"
 )
 
@@ -137,6 +139,30 @@ func (o *SelectorOverride) MatchesTrait(t *Trait) bool {
 	replacements := bonusReplacements(o)
 	return o.NameCriteria.Matches(replacements, t.NameWithReplacements()) &&
 		o.TagsCriteria.MatchesList(replacements, t.Tags...)
+}
+
+// Describe implements Feature. The value is shown by its title, where its field has titles for its values, and as an
+// empty pair of quotes while it is empty, as an empty qualifier is.
+func (o *SelectorOverride) Describe(_ *Entity, replacements map[string]string, em func(string) string) string {
+	d := SelectorFieldDescriptorFor(o.Field)
+	value := o.Value
+	if d.StateTitle != nil {
+		value = d.StateTitle(value)
+	}
+	if value == "" {
+		value = `""`
+	} else {
+		value = em(value)
+	}
+	var target string
+	if d.Scope == SelectorScopeTrait {
+		target = describeTarget(i18n.Text("traits named %s"), i18n.Text("traits"), i18n.Text("whose name"),
+			o.NameCriteria, replacements, em) + describeTags(o.TagsCriteria, replacements, em)
+	} else {
+		target = describeNamedWeapons(o.NameCriteria, o.UsageCriteria, o.TagsCriteria, replacements, em)
+	}
+	return describeSwitchable(o.Switchable, fmt.Sprintf(i18n.Text("Sets %s to %s on %s (priority %d)"),
+		em(o.Field.String()), value, target, o.Priority))
 }
 
 // Hash writes this object's contents into the hasher.

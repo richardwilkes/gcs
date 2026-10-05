@@ -11,10 +11,12 @@ package gurps
 
 import (
 	"encoding/json/jsontext"
+	"fmt"
 	"hash"
 	"slices"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/feature"
+	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/toolbox/v2/xhash"
 )
 
@@ -60,6 +62,11 @@ func (u *UnknownFeature) IsSwitchable() bool {
 
 // SetSwitchable implements Feature. This is a no-op, since the raw data is preserved as-is.
 func (u *UnknownFeature) SetSwitchable(_ bool) {
+}
+
+// Describe implements Feature.
+func (u *UnknownFeature) Describe(_ *Entity, _ map[string]string, _ func(string) string) string {
+	return fmt.Sprintf(i18n.Text("Unknown feature type %q; it will be preserved, but ignored"), u.Kind)
 }
 
 // MarshalJSONTo implements json.MarshalerTo. The original data is written back out as-is.

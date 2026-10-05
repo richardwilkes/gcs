@@ -113,19 +113,7 @@ func (p *EquippedEquipmentPrereq) Describe(_ *Entity, replacements map[string]st
 	default:
 		return i18n.Text("Has any equipment equipped")
 	}
-	if tags {
-		q := nameable.Apply(p.TagsCriteria.Qualifier, replacements)
-		if q != "" {
-			q = em(q)
-		}
-		if p.TagsCriteria.Compare == criteria.IsText && q != "" {
-			text += i18n.Text(" tagged ") + q
-		} else {
-			text += " " + p.TagsCriteria.Compare.DescribeWithPrefix(i18n.Text("with a tag that"),
-				i18n.Text("with all tags that"), q)
-		}
-	}
-	return text
+	return text + describeTags(p.TagsCriteria, replacements, em)
 }
 
 // Hash writes this object's contents into the hasher.

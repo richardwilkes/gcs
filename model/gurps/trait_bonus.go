@@ -18,6 +18,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/feature"
 	"github.com/richardwilkes/gcs/v5/model/nameable"
+	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/toolbox/v2/xbytes"
 	"github.com/richardwilkes/toolbox/v2/xhash"
 )
@@ -76,6 +77,15 @@ func (s *TraitBonus) SetLeveledOwner(owner LeveledOwner) {
 // AddToTooltip implements Bonus.
 func (s *TraitBonus) AddToTooltip(buffer *xbytes.InsertBuffer) {
 	s.basicAddToTooltip(&s.LeveledAmount, buffer)
+}
+
+// Describe implements Feature.
+func (s *TraitBonus) Describe(_ *Entity, replacements map[string]string, em func(string) string) string {
+	return describeSwitchable(s.Switchable, describeAmount(s.Amount.StringWithSign(), s.PerLevel, em)+
+		i18n.Text(" to the level of ")+
+		describeTarget(i18n.Text("trait %s"), i18n.Text("traits"), i18n.Text("whose name"), s.NameCriteria,
+			replacements, em)+
+		describeTags(s.TagsCriteria, replacements, em))
 }
 
 // Hash writes this object's contents into the hasher.

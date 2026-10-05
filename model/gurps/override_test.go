@@ -133,6 +133,9 @@ func (n *nilOwnerOverride) OverridePriority() int                       { return
 func (n *nilOwnerOverride) OverrideSpecificity() int                    { return 0 }
 func (n *nilOwnerOverride) IsSwitchable() bool                          { return false }
 func (n *nilOwnerOverride) SetSwitchable(_ bool)                        {}
+func (n *nilOwnerOverride) Describe(_ *gurps.Entity, _ map[string]string, _ func(string) string) string {
+	return ""
+}
 
 func (n *nilOwnerOverride) Clone() gurps.Feature {
 	return &nilOwnerOverride{owner: n.owner, subOwner: n.subOwner}

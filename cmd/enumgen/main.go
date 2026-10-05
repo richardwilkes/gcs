@@ -1021,7 +1021,7 @@ var allEnums = []*enumInfo{
 			},
 			{
 				Key:    "weapon_switch",
-				String: "Set the weapon flag",
+				String: "Sets the weapon flag",
 			},
 			{
 				Name:   "SelectorOverride",
@@ -1030,7 +1030,7 @@ var allEnums = []*enumInfo{
 			},
 			{
 				Key:    "cost_reduction",
-				String: "Reduces the attribute cost of",
+				String: "Reduces the cost of",
 			},
 			{
 				Key:    "contained_weight_reduction",

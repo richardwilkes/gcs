@@ -15,6 +15,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/feature"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/stlimit"
+	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/toolbox/v2/xbytes"
 	"github.com/richardwilkes/toolbox/v2/xhash"
 )
@@ -71,6 +72,16 @@ func (a *AttributeBonus) SetLeveledOwner(owner LeveledOwner) {
 // AddToTooltip implements Bonus.
 func (a *AttributeBonus) AddToTooltip(buffer *xbytes.InsertBuffer) {
 	a.basicAddToTooltip(&a.LeveledAmount, buffer)
+}
+
+// Describe implements Feature. The attribute is named as the entity, which may be nil, defines it.
+func (a *AttributeBonus) Describe(entity *Entity, _ map[string]string, em func(string) string) string {
+	text := describeAmount(a.Amount.StringWithSign(), a.PerLevel, em) + i18n.Text(" to ") +
+		em(attributeTitle(entity, a.Attribute))
+	if limitation := a.ActualLimitation(); limitation != stlimit.None {
+		text += " " + limitation.String()
+	}
+	return describeSwitchable(a.Switchable, text)
 }
 
 // Hash writes this object's contents into the hasher.
