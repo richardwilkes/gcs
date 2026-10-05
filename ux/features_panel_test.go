@@ -41,9 +41,9 @@ const testSkullID = "skull"
 // showFeaturesPanel shows a featuresPanel for the features of the owner in a window, within a host, so that its
 // rebuilds run and its edits can be undone. The panel is expanded, as most tests look at its rows; see
 // TestFeaturesPanelStartingState for how it starts out.
-func showFeaturesPanel(t *testing.T, screen *unison.HeadlessScreen, entity *gurps.Entity, owner fmt.Stringer, features *gurps.Features, forEquipmentModifier bool) (*featuresPanel, *prereqUndoHost) {
+func showFeaturesPanel(t *testing.T, screen *unison.HeadlessScreen, entity *gurps.Entity, owner fmt.Stringer, features *gurps.Features, forEquipmentModifier bool) (*featuresPanel, *sentenceUndoHost) {
 	var p *featuresPanel
-	host := &prereqUndoHost{mgr: unison.NewUndoManager(100, func(error) {})}
+	host := &sentenceUndoHost{mgr: unison.NewUndoManager(100, func(error) {})}
 	screen.Do(func() {
 		host.Self = host
 		host.SetLayout(&unison.FlexLayout{Columns: 1})
@@ -275,7 +275,7 @@ func TestFeaturesPanelStartingState(t *testing.T) {
 	c.Equal(0, len(empty), "precondition: the list has no features")
 	var full, open *featuresPanel
 	var field *unison.Field
-	host := &prereqUndoHost{mgr: unison.NewUndoManager(100, func(error) {})}
+	host := &sentenceUndoHost{mgr: unison.NewUndoManager(100, func(error) {})}
 	screen.Do(func() {
 		host.Self = host
 		host.SetLayout(&unison.FlexLayout{Columns: 1})
@@ -648,7 +648,7 @@ func TestFeaturesPanelMoreMenu(t *testing.T) {
 	p, _ := showFeaturesPanel(t, screen, entity, owner, &features, false)
 	act := func(path, label string) {
 		screen.Do(func() {
-			action := prereqMenuAction(p.moreEntries(path), label)
+			action := menuAction(p.moreEntries(path), label)
 			c.NotNil(action, "%s offers %s", path, label)
 			if action != nil {
 				action()
@@ -656,8 +656,8 @@ func TestFeaturesPanelMoreMenu(t *testing.T) {
 		})
 	}
 	screen.Do(func() {
-		c.Nil(prereqMenuAction(p.moreEntries("0"), "Move Up"), "nothing above the top")
-		c.Nil(prereqMenuAction(p.moreEntries("2"), "Move Down"), "nothing below the bottom")
+		c.Nil(menuAction(p.moreEntries("0"), "Move Up"), "nothing above the top")
+		c.Nil(menuAction(p.moreEntries("2"), "Move Down"), "nothing below the bottom")
 		p.toggle("1")
 	})
 	dr := features[1]
@@ -710,7 +710,7 @@ func TestFeaturesPanelUndo(t *testing.T) {
 	}
 	c.Equal("Pickpocket", skill().NameCriteria.Qualifier)
 	c.Equal("Undo Name", host.mgr.UndoTitle())
-	screen.Do(func() { prereqMenuAction(p.moreEntries("1"), "Delete")() })
+	screen.Do(func() { menuAction(p.moreEntries("1"), "Delete")() })
 	c.Equal(2, len(features))
 	c.Equal("Undo Delete Feature", host.mgr.UndoTitle())
 	installed := features[0]

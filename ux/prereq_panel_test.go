@@ -10,7 +10,6 @@
 package ux
 
 import (
-	"cmp"
 	"image"
 	"slices"
 	"strings"
@@ -31,31 +30,12 @@ import (
 	"github.com/richardwilkes/unison/enums/role"
 )
 
-// prereqUndoHost stands in for the editor that holds a prereqPanel: it provides the undo manager, syncs when marked
-// modified, and records the Escape that would discard the editor's changes.
-type prereqUndoHost struct {
-	unison.Panel
-	mgr      *unison.UndoManager
-	escapes  int
-	modified int
-}
-
-func (h *prereqUndoHost) UndoManager() *unison.UndoManager {
-	return h.mgr
-}
-
-// MarkModified implements ModifiableRoot, counting the calls and syncing as the editor does.
-func (h *prereqUndoHost) MarkModified(_ unison.Paneler) {
-	h.modified++
-	DeepSync(h)
-}
-
 // showPrereqPanel shows a prereqPanel for the root in a window, within a host, so that its rebuilds run and its edits
 // can be undone. The panel is expanded, as most tests look at its rows; see TestPrereqPanelStartingState for how it
 // starts out.
-func showPrereqPanel(t *testing.T, screen *unison.HeadlessScreen, root **gurps.PrereqList, ownerIsSpell bool) (*prereqPanel, *prereqUndoHost) {
+func showPrereqPanel(t *testing.T, screen *unison.HeadlessScreen, root **gurps.PrereqList, ownerIsSpell bool) (*prereqPanel, *sentenceUndoHost) {
 	var p *prereqPanel
-	host := &prereqUndoHost{mgr: unison.NewUndoManager(100, func(error) {})}
+	host := &sentenceUndoHost{mgr: unison.NewUndoManager(100, func(error) {})}
 	screen.Do(func() {
 		host.Self = host
 		host.SetLayout(&unison.FlexLayout{Columns: 1})
@@ -104,16 +84,6 @@ func prereqShape(root *gurps.PrereqList) []prereq.Type {
 	return types
 }
 
-// prereqMenuAction returns the action of the entry with the label, or nil.
-func prereqMenuAction(entries []menuEntry, label string) func() {
-	for _, one := range entries {
-		if one.Label == label {
-			return one.Act
-		}
-	}
-	return nil
-}
-
 // TestPrereqPanelBuildingChangesNothing opens every row in turn, and shows a missing list, checking that neither
 // changes the data, since opening an editor must not mark it modified.
 func TestPrereqPanelBuildingChangesNothing(t *testing.T) {
@@ -143,7 +113,7 @@ func TestPrereqPanelBuildingChangesNothing(t *testing.T) {
 	var missing *gurps.PrereqList
 	p, _ = showPrereqPanel(t, screen, &missing, false)
 	c.Nil(missing, "a missing list stays missing until something is added")
-	screen.Do(func() { prereqMenuAction(p.addEntries(p.tree(), prereqRootPath), "Trait")() })
+	screen.Do(func() { menuAction(p.addEntries(p.tree(), treeRootPath), "Trait")() })
 	c.Equal(1, len(missing.Prereqs), "then it is made")
 }
 
@@ -180,7 +150,7 @@ func TestPrereqPanelUndo(t *testing.T) {
 		c.Equal(field.AsPanel(), field.Window().Focus(), "and the field keeps the focus")
 	})
 
-	screen.Do(func() { prereqMenuAction(p.moreEntries(root.Prereqs[0], "r.0"), "Delete")() })
+	screen.Do(func() { menuAction(p.moreEntries(root.Prereqs[0], "r.0"), "Delete")() })
 	c.Equal(2, len(root.Prereqs))
 	c.Equal("", p.open, "deleting the open row leaves none open")
 	installed := root
@@ -239,7 +209,7 @@ func TestPrereqPanelUndoFocus(t *testing.T) {
 			}
 		}},
 		{"a move", "r.0" + keyMore, "r.0.0" + keyMore, func(p *prereqPanel) {
-			prereqMenuAction(p.moreEntries(p.node("r.0"), "r.0"), "Move Down")()
+			menuAction(p.moreEntries(p.node("r.0"), "r.0"), "Move Down")()
 		}},
 	} {
 		root := newTestPrereqTree()
@@ -279,7 +249,7 @@ func TestPrereqPanelOpenRowFollowsRestructures(t *testing.T) {
 		screen.Do(func() { p.toggle(one.open) })
 		screen.Do(func() {
 			opened := p.node(one.open).PrereqType()
-			prereqMenuAction(p.moreEntries(p.node(one.path), one.path), one.label)()
+			menuAction(p.moreEntries(p.node(one.path), one.path), one.label)()
 			c.Equal(one.want, p.open, "%s %s with %s open", one.label, one.path, one.open)
 			if one.want != "" {
 				c.Equal(opened, p.node(one.want).PrereqType())
@@ -317,7 +287,7 @@ func TestPrereqPanelMoves(t *testing.T) {
 	p, _ := showPrereqPanel(t, screen, &root, false)
 	move := func(path, label string) {
 		screen.Do(func() {
-			act := prereqMenuAction(p.moreEntries(p.node(path), path), label)
+			act := menuAction(p.moreEntries(p.node(path), path), label)
 			c.NotNil(act, "%s offers %s", path, label)
 			if act != nil {
 				act()
@@ -325,7 +295,7 @@ func TestPrereqPanelMoves(t *testing.T) {
 		})
 	}
 	screen.Do(func() {
-		c.Nil(prereqMenuAction(p.moreEntries(p.node("r.0"), "r.0"), "Move Up"), "nothing above the top")
+		c.Nil(menuAction(p.moreEntries(p.node("r.0"), "r.0"), "Move Up"), "nothing above the top")
 	})
 	move("r.0", "Move Down")
 	c.Equal([]prereq.Type{prereq.List, prereq.Trait, prereq.Skill, prereq.Script, prereq.Unknown}, prereqShape(root),
@@ -342,11 +312,11 @@ func TestPrereqPanelMoves(t *testing.T) {
 	c.True(list.Prereqs[2].ParentList() == list, "a moved node belongs to its new list")
 
 	screen.Do(func() {
-		c.Nil(prereqMenuAction(p.moreEntries(list, "r.1"), "Ungroup"), "an any-of group in an all-of list stays")
+		c.Nil(menuAction(p.moreEntries(list, "r.1"), "Ungroup"), "an any-of group in an all-of list stays")
 		list.All = true
-		c.NotNil(prereqMenuAction(p.moreEntries(list, "r.1"), "Ungroup"), "unless the modes match")
+		c.NotNil(menuAction(p.moreEntries(list, "r.1"), "Ungroup"), "unless the modes match")
 		list.WhenTL.Compare = criteria.AtLeastNumber
-		c.Nil(prereqMenuAction(p.moreEntries(list, "r.1"), "Ungroup"), "and it has no tech level")
+		c.Nil(menuAction(p.moreEntries(list, "r.1"), "Ungroup"), "and it has no tech level")
 	})
 }
 
@@ -426,7 +396,7 @@ func TestPrereqPanelCollapse(t *testing.T) {
 	})
 	screen.Do(func() {
 		c.False(expanded(), "clicking the title bar collapses the panel")
-		for _, key := range []string{"r.0" + keyFirst, "r.1.0" + keySentence, prereqRootPath + keyPill} {
+		for _, key := range []string{"r.0" + keyFirst, "r.1.0" + keySentence, treeRootPath + keyPill} {
 			c.Nil(p.FindRefKey(key), "collapsing hides %s", key)
 		}
 		c.Equal(0, len(p.views), "and the statuses of the rows")
@@ -524,7 +494,7 @@ func TestPrereqPanelStartingState(t *testing.T) {
 	c.Equal(3, len(root.Prereqs), "precondition: three prerequisites at the top")
 	var full, open *prereqPanel
 	var field *unison.Field
-	host := &prereqUndoHost{mgr: unison.NewUndoManager(100, func(error) {})}
+	host := &sentenceUndoHost{mgr: unison.NewUndoManager(100, func(error) {})}
 	screen.Do(func() {
 		host.Self = host
 		host.SetLayout(&unison.FlexLayout{Columns: 1})
@@ -541,19 +511,19 @@ func TestPrereqPanelStartingState(t *testing.T) {
 		c.NotNil(full.FindRefKey(sectionSummaryKey), "showing the paragraph")
 		c.Nil(full.FindRefKey("r.0"+keySentence), "in place of the rows")
 		c.False(open.collapse.collapsed, "a panel without prerequisites starts out open")
-		c.NotNil(open.FindRefKey(prereqRootPath+":empty"), "showing the placeholder")
+		c.NotNil(open.FindRefKey(treeRootPath+":empty"), "showing the placeholder")
 		c.Equal(field.AsPanel(), wnd.Focus(), "neither takes the focus from the field ahead of them")
-		prereqMenuAction(open.addEntries(open.tree(), prereqRootPath), "Trait")()
+		menuAction(open.addEntries(open.tree(), treeRootPath), "Trait")()
 	})
 	c.Equal(1, len(missing.Prereqs), "precondition: a prerequisite was added")
 	screen.Do(func() {
 		c.False(open.collapse.collapsed, "adding the first prerequisite leaves the panel open")
-		prereqMenuAction(open.moreEntries(open.node("r.0"), "r.0"), "Delete")()
+		menuAction(open.moreEntries(open.node("r.0"), "r.0"), "Delete")()
 	})
 	c.Equal(0, len(missing.Prereqs), "precondition: the prerequisite was deleted")
 	screen.Do(func() {
 		c.False(open.collapse.collapsed, "deleting the last leaves it open")
-		c.NotNil(open.FindRefKey(prereqRootPath + ":empty"))
+		c.NotNil(open.FindRefKey(treeRootPath + ":empty"))
 	})
 }
 
@@ -571,13 +541,13 @@ func TestPrereqPanelCollapseEmpty(t *testing.T) {
 		if ok {
 			c.Equal("No prerequisites.", b.plainText())
 		}
-		c.Nil(p.FindRefKey(prereqRootPath+":empty"), "in place of the placeholder")
+		c.Nil(p.FindRefKey(treeRootPath+":empty"), "in place of the placeholder")
 	})
 	c.Nil(missing, "collapsing doesn't make the missing list")
 
 	// A tech level condition is all an empty root has to describe, which is still no prerequisites.
 	screen.Do(p.collapse.toggle)
-	screen.Do(func() { prereqMenuAction(p.addEntries(p.tree(), prereqRootPath), "Only When TL…")() })
+	screen.Do(func() { menuAction(p.addEntries(p.tree(), treeRootPath), "Only When TL…")() })
 	screen.Do(p.collapse.toggle)
 	screen.Do(func() {
 		c.True(p.headed, "precondition: the root shows its head")
@@ -786,7 +756,7 @@ func TestPrereqPanelDragAndDrop(t *testing.T) {
 	screen.Do(host.mgr.Undo)
 	c.Equal([]prereq.Type{prereq.List, prereq.Skill, prereq.Script, prereq.Unknown, prereq.Trait}, prereqShape(root),
 		"a drop is one step to undo")
-	c.True(drag("r.0.0", prereqRootPath, 0.5), "the root's head is into the root")
+	c.True(drag("r.0.0", treeRootPath, 0.5), "the root's head is into the root")
 	c.Equal([]prereq.Type{prereq.List, prereq.Script, prereq.Unknown, prereq.Trait, prereq.Skill}, prereqShape(root),
 		"at its end")
 }
@@ -857,7 +827,7 @@ func TestPrereqPanelLevelChip(t *testing.T) {
 		c.NotEqual(0, len(buttons), "a skill's level of at least 0 is a chip")
 		buttons[len(buttons)-1].ClickCallback()
 		for _, label := range []string{"Skill", "Trait"} {
-			prereqMenuAction(p.addEntries(p.tree(), prereqRootPath), label)()
+			menuAction(p.addEntries(p.tree(), treeRootPath), label)()
 		}
 	})
 	skill, ok := p.node("r.1.0").(*gurps.SkillPrereq)
@@ -905,13 +875,13 @@ func TestPrereqPanelEmptyRoot(t *testing.T) {
 	p, _ := showPrereqPanel(t, screen, &missing, false)
 	screen.Do(func() {
 		c.Nil(p.FindRefKey(sectionSummaryKey))
-		c.Nil(p.FindRefKey(prereqRootPath + keyPill))
+		c.Nil(p.FindRefKey(treeRootPath + keyPill))
 		c.Equal(0, len(p.views))
-		c.NotNil(p.FindRefKey(prereqRootPath + ":empty"))
-		c.Equal(p.FindRefKey(prereqRootPath+":empty").Parent(), p.FindRefKey(prereqRootPath+keyAdd).Parent(),
+		c.NotNil(p.FindRefKey(treeRootPath + ":empty"))
+		c.Equal(p.FindRefKey(treeRootPath+":empty").Parent(), p.FindRefKey(treeRootPath+keyAdd).Parent(),
 			"its add button beside the placeholder")
-		c.Nil(p.FindRefKey(prereqRootPath+keyMore), "and no more button")
-		box := p.FindRefKey(prereqRootPath + ":empty").Parent().Parent()
+		c.Nil(p.FindRefKey(treeRootPath+keyMore), "and no more button")
+		box := p.FindRefKey(treeRootPath + ":empty").Parent().Parent()
 		c.NotEqual(role.Group, box.Accessibility.Role, "nor is it a group to a screen reader")
 		c.Equal("", box.Accessibility.Name)
 	})
@@ -927,15 +897,15 @@ func TestPrereqPanelEmptyRootGroupType(t *testing.T) {
 	p, host := showPrereqPanel(t, screen, &root, false)
 	headed := func() (pill bool, placeholder string) {
 		screen.Do(func() {
-			pill = p.FindRefKey(prereqRootPath+keyPill) != nil
-			if b, ok := p.FindRefKey(prereqRootPath + ":empty").Self.(*unison.Button); ok {
+			pill = p.FindRefKey(treeRootPath+keyPill) != nil
+			if b, ok := p.FindRefKey(treeRootPath + ":empty").Self.(*unison.Button); ok {
 				placeholder = b.Text.String()
 			}
 		})
 		return pill, placeholder
 	}
 	choose := func(label string) {
-		screen.Do(func() { prereqMenuAction(p.addEntries(p.tree(), prereqRootPath), label)() })
+		screen.Do(func() { menuAction(p.addEntries(p.tree(), treeRootPath), label)() })
 	}
 	single := "No prerequisites. Click here to add one."
 	group := "Empty group. Add a requirement or drag one here."
@@ -959,7 +929,7 @@ func TestPrereqPanelEmptyRootGroupType(t *testing.T) {
 	choose("Only When TL…")
 	pill, _ = headed()
 	c.True(pill, "a tech level condition shows the head")
-	screen.Do(func() { c.NotNil(p.FindRefKey(prereqRootPath + ":tl" + keyChip)) })
+	screen.Do(func() { c.NotNil(p.FindRefKey(treeRootPath + ":tl" + keyChip)) })
 	c.Equal(0, len(root.Prereqs))
 	c.True(root.All)
 	screen.Do(host.mgr.Undo)
@@ -974,7 +944,7 @@ func TestPrereqPanelUndoReopensRow(t *testing.T) {
 	screen, _ := startHeadlessWorkspace(t, c)
 	root := newTestPrereqTree()
 	p, host := showPrereqPanel(t, screen, &root, false)
-	screen.Do(func() { prereqMenuAction(p.addEntries(p.tree(), prereqRootPath), "Trait")() })
+	screen.Do(func() { menuAction(p.addEntries(p.tree(), treeRootPath), "Trait")() })
 	screen.Do(func() { c.Equal("r.3:name", p.Window().Focus().RefKey, "a new row focuses its name field") })
 	screen.Type("Luck")
 	screen.Do(func() { p.toggle("r.3") })
@@ -984,7 +954,7 @@ func TestPrereqPanelUndoReopensRow(t *testing.T) {
 		c.Equal("r.3:name", p.Window().Focus().RefKey)
 	})
 	screen.Do(func() { p.toggle("r.3") })
-	screen.Do(func() { prereqMenuAction(p.moreEntries(p.node("r.0"), "r.0"), "Duplicate")() })
+	screen.Do(func() { menuAction(p.moreEntries(p.node("r.0"), "r.0"), "Duplicate")() })
 	screen.Do(func() { p.toggle("r.1") })
 	screen.Do(host.mgr.Undo)
 	c.Equal("", p.open, "a change made with no row open closes the open row when undone")
@@ -1003,7 +973,7 @@ func TestPrereqPanelMenus(t *testing.T) {
 	p, _ := showPrereqPanel(t, screen, &root, false)
 	screen.Do(func() {
 		for _, label := range []string{"Equipped Equipment", "All of Group", "Any of Group", "Only When TL…"} {
-			c.NotNil(prereqMenuAction(p.addEntries(p.tree(), prereqRootPath), label), label)
+			c.NotNil(menuAction(p.addEntries(p.tree(), treeRootPath), label), label)
 		}
 		p.toggle("r.0")
 	})
@@ -1029,11 +999,13 @@ func TestPrereqPanelControlNamesDiffer(t *testing.T) {
 	seedEveryPrereqControl(root)
 	p, _ := showPrereqPanel(t, screen, &root, false)
 	for i := range prereq.TypesForNonEquipment {
-		path := childPath(prereqRootPath, i)
+		path := childPath(treeRootPath, i)
 		screen.Do(func() { p.toggle(path) })
 		names := make(map[string]bool)
 		var controls []*unison.Panel
+		var wnd *unison.Window
 		screen.Do(func() {
+			wnd = p.Window()
 			p.FindRefKey(path + keyFirst).HasInSelfOrDescendants(func(one *unison.Panel) bool {
 				if one.Focusable() {
 					controls = append(controls, one)
@@ -1041,7 +1013,7 @@ func TestPrereqPanelControlNamesDiffer(t *testing.T) {
 				return false
 			})
 		})
-		c.NotNil(screen.AccessibilityTree(p.Window()))
+		c.NotNil(screen.AccessibilityTree(wnd))
 		c.True(len(controls) > 2, path)
 		for _, one := range controls {
 			if node := screen.AccessibilityNodeFor(one); node != nil && node.Name != "" {
@@ -1050,15 +1022,6 @@ func TestPrereqPanelControlNamesDiffer(t *testing.T) {
 			}
 		}
 	}
-}
-
-// prereqMenuLabels returns the labels of the entries, with "-" for a separator.
-func prereqMenuLabels(entries []menuEntry) []string {
-	labels := make([]string, 0, len(entries))
-	for _, one := range entries {
-		labels = append(labels, cmp.Or(one.Label, "-"))
-	}
-	return labels
 }
 
 // TestPrereqPanelGroupMenusAdd checks that a nested group has no add button in its head and that its more menu starts
@@ -1075,7 +1038,7 @@ func TestPrereqPanelGroupMenusAdd(t *testing.T) {
 		screen.Do(func() {
 			c.NotNil(p.FindRefKey(path+keyMore), "%s has a more button, or the root its add button", path)
 			// The menu the button would show, gathered rather than popped up.
-			if path == prereqRootPath {
+			if path == treeRootPath {
 				entries = p.addEntries(p.tree(), path)
 			} else {
 				entries = p.moreEntries(p.node(path), path)
@@ -1084,13 +1047,13 @@ func TestPrereqPanelGroupMenusAdd(t *testing.T) {
 		return entries
 	}
 	screen.Do(func() {
-		for _, path := range []string{prereqRootPath, "r.1"} {
+		for _, path := range []string{treeRootPath, "r.1"} {
 			c.Nil(p.FindRefKey(path+keyAdd), "%s has no placeholder's add button", path)
 			head := p.FindRefKey(path + keyPill).Parent()
 			c.Equal(head, p.FindRefKey(path+keyMore).Parent(), "%s: its button is in its head", path)
 		}
 		c.Equal("More actions", tooltipText(p.FindRefKey("r.1"+keyMore).Tooltip), "a nested group's is a more button")
-		add, ok := p.FindRefKey(prereqRootPath + keyMore).Self.(*unison.Button)
+		add, ok := p.FindRefKey(treeRootPath + keyMore).Self.(*unison.Button)
 		c.True(ok)
 		if ok {
 			c.Equal("Add to this group", tooltipText(add.Tooltip), "the root's is an add button")
@@ -1101,7 +1064,7 @@ func TestPrereqPanelGroupMenusAdd(t *testing.T) {
 			panel := p.FindRefKey(key)
 			return p.RectFromRoot(panel.RectToRoot(panel.ContentRect(true))).Right()
 		}
-		c.Equal(right("r.0"+keyMore), right(prereqRootPath+keyMore), "the root's more button lines up with the others")
+		c.Equal(right("r.0"+keyMore), right(treeRootPath+keyMore), "the root's more button lines up with the others")
 	})
 	// groupLen returns the number of children of the group at the path, or -1 if it isn't a group.
 	groupLen := func(path string) int {
@@ -1110,11 +1073,11 @@ func TestPrereqPanelGroupMenusAdd(t *testing.T) {
 		}
 		return -1
 	}
-	adds := prereqMenuLabels(more(prereqRootPath))
+	adds := menuLabels(more(treeRootPath))
 	c.Equal("Requirement", adds[0])
 	c.True(slices.Contains(adds, "Structure"), "the root's add menu has its headings")
 	c.Equal("Only When TL…", adds[len(adds)-1], "with the tech level condition under Structure")
-	nested := prereqMenuLabels(more("r.1"))
+	nested := menuLabels(more("r.1"))
 	want := slices.Clone(adds)
 	for i, label := range want {
 		if label == "Requirement" || label == "Structure" {
@@ -1123,11 +1086,11 @@ func TestPrereqPanelGroupMenusAdd(t *testing.T) {
 	}
 	c.Equal(want, nested[:len(adds)], "a nested group's more menu starts with what can be added to it, saying so")
 	c.Equal([]string{"-", "Duplicate"}, nested[len(adds):len(adds)+2], "then the rest, after a separator")
-	c.Equal("Duplicate", prereqMenuLabels(more("r.0"))[0], "a row's more menu is as it was")
+	c.Equal("Duplicate", menuLabels(more("r.0"))[0], "a row's more menu is as it was")
 
 	// choose picks the entry with the label from the menu, on the UI thread, as a click on it would.
 	choose := func(entries []menuEntry, label string) {
-		screen.Do(prereqMenuAction(entries, label))
+		screen.Do(menuAction(entries, label))
 	}
 	choose(more("r.1"), "Trait")
 	screen.Do(func() {
@@ -1139,7 +1102,7 @@ func TestPrereqPanelGroupMenusAdd(t *testing.T) {
 	})
 	screen.Do(host.mgr.Undo)
 	screen.Do(func() { c.Equal("r.1"+keyMore, p.Window().Focus().RefKey, "undo gives the focus to the more button") })
-	choose(more(prereqRootPath), "All of Group")
+	choose(more(treeRootPath), "All of Group")
 	screen.Do(func() {
 		c.Equal(4, len(p.tree().Prereqs), "the root's menu adds to the root")
 		c.Equal("r.3"+keyMore, p.Window().Focus().RefKey, "a new group takes the focus on its more button")
@@ -1158,21 +1121,21 @@ func TestPrereqPanelGroupMenusAdd(t *testing.T) {
 	screen.Do(func() {
 		c.Equal(1, groupLen("r.3"))
 		c.Nil(p.FindRefKey("r.3"+keyAdd), "the add button goes once the group holds something")
-		prereqMenuAction(p.moreEntries(p.node("r.3.0"), "r.3.0"), "Delete")()
+		menuAction(p.moreEntries(p.node("r.3.0"), "r.3.0"), "Delete")()
 	})
 	screen.Sync()
 	screen.Do(func() {
 		c.Equal("r.3"+keyAdd, p.Window().Focus().RefKey, "deleting the last child focuses the placeholder's add button")
-		prereqMenuAction(p.moreEntries(p.node("r.2"), "r.2"), "Delete")()
+		menuAction(p.moreEntries(p.node("r.2"), "r.2"), "Delete")()
 	})
 	screen.Sync()
 	screen.Do(func() {
 		c.Equal("r.2"+keyMore, p.Window().Focus().RefKey, "deleting another focuses what comes after it")
-		prereqMenuAction(p.moreEntries(p.node("r.2"), "r.2"), "Delete")()
+		menuAction(p.moreEntries(p.node("r.2"), "r.2"), "Delete")()
 	})
 	screen.Sync()
 	screen.Do(func() {
-		c.Equal(prereqRootPath+keyMore, p.Window().Focus().RefKey, "deleting the last focuses the root's add button")
+		c.Equal(treeRootPath+keyMore, p.Window().Focus().RefKey, "deleting the last focuses the root's add button")
 	})
 }
 
@@ -1185,8 +1148,8 @@ func TestPrereqPanelPlaceholderTextStaysPutOnFocus(t *testing.T) {
 	p, _ := showPrereqPanel(t, screen, &root, false)
 	var empty, add *unison.Panel
 	screen.Do(func() {
-		empty = p.FindRefKey(prereqRootPath + ":empty")
-		add = p.FindRefKey(prereqRootPath + keyAdd)
+		empty = p.FindRefKey(treeRootPath + ":empty")
+		add = p.FindRefKey(treeRootPath + keyAdd)
 	})
 	capture := func(focus *unison.Panel) *image.NRGBA {
 		screen.Do(focus.RequestFocus)
