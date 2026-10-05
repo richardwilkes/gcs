@@ -765,7 +765,14 @@ func (e *Equipment) String() string {
 		buffer.WriteByte(' ')
 		buffer.WriteString(e.Level.String())
 	}
+	writeParenthetical(&buffer, e.TitleNotes())
 	return buffer.String()
+}
+
+// TitleNotes returns the text of the title note features of the equipment and its enabled modifiers.
+func (e *Equipment) TitleNotes() []string {
+	return modifierTitleNotes(appendTitleNotes(nil, e.Replacements, e.Features), e.Modifiers, e.Replacements,
+		func(mod *EquipmentModifier) Features { return mod.Features })
 }
 
 // ResolveLocalNotes resolves the local notes, running any embedded scripts to get the final result.
@@ -1116,7 +1123,13 @@ func (e *Equipment) DisplayLegalityClass() string {
 	}
 }
 
-// ActiveModifierFor returns the first enabled, non-container modifier whose name matches (case-insensitive).
+// ModifierNames returns the names and short names of the equipment's enabled modifiers, for matching.
+func (e *Equipment) ModifierNames() []string {
+	return modifierNames(e.Modifiers)
+}
+
+// ActiveModifierFor returns the first enabled, non-container modifier whose name or short name matches
+// (case-insensitive).
 func (e *Equipment) ActiveModifierFor(name string) *EquipmentModifier {
 	return activeModifierFor(e.Modifiers, name)
 }

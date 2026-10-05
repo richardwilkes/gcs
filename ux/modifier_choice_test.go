@@ -96,7 +96,7 @@ func TestModifierContainerEditorsShowOnlyWhatAContainerUses(t *testing.T) {
 	c.True(slices.Contains(titles, "Notes"))
 	c.False(slices.Contains(titles, "Choice"), "a group asks for no choice")
 	c.Equal(0, len(checkBoxesTitled(content, "Enabled")), "a container is always enabled")
-	c.Equal(0, len(checkBoxesTitled(content, "Also show notes in weapon usage")))
+	c.Equal(0, len(checkBoxesTitled(content, "Show in Weapon Usage")))
 
 	choice := gurps.NewEquipmentModifierChoice(nil, nil)
 	e, content := buildEditorContent(nil, choice, initEquipmentModifierEditor)

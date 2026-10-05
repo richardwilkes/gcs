@@ -23,6 +23,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/toolbox/v2/geom"
+	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/mod"
 )
@@ -658,11 +659,80 @@ func TestPrereqPanelChipOrder(t *testing.T) {
 	}
 	screen.Do(func() { p.toggle("r.1.0") })
 	screen.Do(func() {
-		c.Equal([]string{"level" + keyChip, "add specialization", "add optspecialization"}, order())
+		c.Equal([]string{"level" + keyChip, "add specialization", "add optspecialization", "add titlenote"}, order())
 		panelsOfType[*unison.Button](p.FindRefKey("r.1.0:add specialization"))[0].ClickCallback()
 	})
 	screen.Do(func() {
-		c.Equal([]string{"specialization" + keyChip, "level" + keyChip, "add optspecialization"}, order())
+		c.Equal([]string{"specialization" + keyChip, "level" + keyChip, "add optspecialization", "add titlenote"},
+			order())
+	})
+}
+
+// TestPrereqPanelTitleNoteChip checks that the title note criterion is added at "is" and removed by its chip.
+func TestPrereqPanelTitleNoteChip(t *testing.T) {
+	c := check.New(t)
+	screen, _ := startHeadlessWorkspace(t, c)
+	root := newTestPrereqTree()
+	p, _ := showPrereqPanel(t, screen, &root, false)
+	skill := func() *gurps.SkillPrereq {
+		one, ok := p.node("r.1.0").(*gurps.SkillPrereq)
+		c.True(ok, "r.1.0 is a skill prereq")
+		return one
+	}
+	c.Equal(criteria.AnyText, skill().TitleNoteCriteria.Compare, "precondition: no title note criterion")
+	screen.Do(func() { p.toggle("r.1.0") })
+	screen.Do(func() {
+		panelsOfType[*unison.Button](p.FindRefKey("r.1.0:add titlenote"))[0].ClickCallback()
+	})
+	screen.Do(func() {
+		c.Equal(criteria.IsText, skill().TitleNoteCriteria.Compare, "adding the chip starts it at is")
+		c.Nil(p.FindRefKey("r.1.0:add titlenote"))
+		// The chip offers the same comparisons as the tag chip, worded for title notes. "Is anything" is left to the
+		// chip's remove button.
+		popup, ok := p.FindRefKey("r.1.0:titlenotecmp").Self.(*unison.PopupMenu[criteria.StringComparison])
+		c.True(ok, "the chip has a comparison popup")
+		expected := criteria.PrefixedStringComparisonChoices(i18n.Text("and at least one title note"),
+			i18n.Text("and all title notes"))[1:]
+		c.Equal(len(expected), popup.ItemCount())
+		for i, want := range expected {
+			item, _ := popup.ItemAt(i)
+			c.Equal(want, popup.ItemRendererCallback(item))
+		}
+		panelsOfType[*unison.Button](p.FindRefKey("r.1.0:titlenote" + keyChip))[0].ClickCallback()
+	})
+	screen.Do(func() {
+		c.Equal(criteria.AnyText, skill().TitleNoteCriteria.Compare, "removing the chip clears the criterion")
+		c.NotNil(p.FindRefKey("r.1.0:add titlenote"))
+	})
+}
+
+// TestPrereqPanelModifierChip checks that a trait prerequisite offers the modifier criterion, added at "is" and removed
+// by its chip.
+func TestPrereqPanelModifierChip(t *testing.T) {
+	c := check.New(t)
+	screen, _ := startHeadlessWorkspace(t, c)
+	root := newTestPrereqTree()
+	p, _ := showPrereqPanel(t, screen, &root, false)
+	trait := func() *gurps.TraitPrereq {
+		one, ok := p.node("r.0").(*gurps.TraitPrereq)
+		c.True(ok, "r.0 is a trait prereq")
+		return one
+	}
+	c.Equal(criteria.AnyText, trait().ModifierCriteria.Compare, "precondition: no modifier criterion")
+	screen.Do(func() { p.toggle("r.0") })
+	screen.Do(func() {
+		panelsOfType[*unison.Button](p.FindRefKey("r.0:add modifier"))[0].ClickCallback()
+	})
+	screen.Do(func() {
+		c.Equal(criteria.IsText, trait().ModifierCriteria.Compare, "adding the chip starts it at is")
+		popup, ok := p.FindRefKey("r.0:modifiercmp").Self.(*unison.PopupMenu[criteria.StringComparison])
+		c.True(ok, "the chip has a comparison popup")
+		item, _ := popup.ItemAt(0)
+		c.Equal(i18n.Text("and at least one modifier is"), popup.ItemRendererCallback(item))
+		panelsOfType[*unison.Button](p.FindRefKey("r.0:modifier" + keyChip))[0].ClickCallback()
+	})
+	screen.Do(func() {
+		c.Equal(criteria.AnyText, trait().ModifierCriteria.Compare, "removing the chip clears the criterion")
 	})
 }
 

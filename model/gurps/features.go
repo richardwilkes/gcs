@@ -81,6 +81,8 @@ func allocFeature(featureType feature.Type) Feature {
 		return &ContainedWeightReduction{}
 	case feature.CostReduction:
 		return &CostReduction{}
+	case feature.TitleNote:
+		return &TitleNote{}
 	case feature.EquipmentMaxUsesBonus:
 		return &EquipmentMaxUsesBonus{}
 	case feature.DRBonus:

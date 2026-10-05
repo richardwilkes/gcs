@@ -29,6 +29,12 @@ type EquippedEquipmentPrereq struct {
 	Type         prereq.Type   `json:"type"`
 	NameCriteria criteria.Text `json:"name,omitzero"`
 	TagsCriteria criteria.Text `json:"tags,omitzero"`
+	// TitleNoteCriteria is matched against the equipment's title notes, the same way TagsCriteria is
+	// matched against its tags.
+	TitleNoteCriteria criteria.Text `json:"title_note,omitzero"`
+	// ModifierCriteria is matched against the names and short names of the equipment's enabled modifiers, the same
+	// way TagsCriteria is matched against its tags.
+	ModifierCriteria criteria.Text `json:"modifier,omitzero"`
 }
 
 // NewEquippedEquipmentPrereq creates a new EquippedEquipmentPrereq.
@@ -37,6 +43,8 @@ func NewEquippedEquipmentPrereq() *EquippedEquipmentPrereq {
 	p.Type = prereq.EquippedEquipment
 	p.NameCriteria.Compare = criteria.IsText
 	p.TagsCriteria.Compare = criteria.AnyText
+	p.TitleNoteCriteria.Compare = criteria.AnyText
+	p.ModifierCriteria.Compare = criteria.AnyText
 	return &p
 }
 
@@ -68,6 +76,8 @@ func (p *EquippedEquipmentPrereq) FillWithNameableKeys(m, existing map[string]st
 		m, existing,
 		p.NameCriteria.Qualifier,
 		p.TagsCriteria.Qualifier,
+		p.TitleNoteCriteria.Qualifier,
+		p.ModifierCriteria.Qualifier,
 	)
 }
 
@@ -84,7 +94,9 @@ func (p *EquippedEquipmentPrereq) Satisfied(entity *Entity, exclude any, tooltip
 	Traverse(func(eqp *Equipment) bool {
 		satisfied = exclude != eqp && eqp.ReallyEquipped() &&
 			p.NameCriteria.Matches(replacements, eqp.NameWithReplacements()) &&
-			p.TagsCriteria.MatchesList(replacements, eqp.Tags...)
+			p.TagsCriteria.MatchesList(replacements, eqp.Tags...) &&
+			p.TitleNoteCriteria.MatchesList(replacements, eqp.TitleNotes()...) &&
+			p.ModifierCriteria.MatchesList(replacements, eqp.ModifierNames()...)
 		return satisfied
 	}, false, false, entity.CarriedEquipment...)
 	if !satisfied {
@@ -102,13 +114,15 @@ func (p *EquippedEquipmentPrereq) Satisfied(entity *Entity, exclude any, tooltip
 // Describe implements Prereq.
 func (p *EquippedEquipmentPrereq) Describe(_ *Entity, replacements map[string]string, em func(string) string) string {
 	tags := p.TagsCriteria.Compare != criteria.AnyText
+	titleNotes := p.TitleNoteCriteria.Compare != criteria.AnyText
+	modifiers := p.ModifierCriteria.Compare != criteria.AnyText
 	var text string
 	switch {
 	case p.NameCriteria.Compare == criteria.IsText && p.NameCriteria.Qualifier != "":
 		text = fmt.Sprintf(i18n.Text("Has %s equipped"), em(nameable.Apply(p.NameCriteria.Qualifier, replacements)))
 	case p.NameCriteria.Compare != criteria.AnyText:
 		text = i18n.Text("Has equipped equipment whose name ") + describeText(p.NameCriteria, replacements, em)
-	case tags:
+	case tags || titleNotes || modifiers:
 		text = i18n.Text("Has equipped equipment")
 	default:
 		return i18n.Text("Has any equipment equipped")
@@ -125,7 +139,8 @@ func (p *EquippedEquipmentPrereq) Describe(_ *Entity, replacements map[string]st
 				i18n.Text("with all tags that"), q)
 		}
 	}
-	return text
+	return text + describeTitleNote(p.TitleNoteCriteria, replacements, em) +
+		describeModifier(p.ModifierCriteria, replacements, em)
 }
 
 // Hash writes this object's contents into the hasher.
@@ -137,4 +152,6 @@ func (p *EquippedEquipmentPrereq) Hash(h hash.Hash) {
 	xhash.Num8(h, p.Type)
 	p.NameCriteria.Hash(h)
 	p.TagsCriteria.Hash(h)
+	p.TitleNoteCriteria.Hash(h)
+	p.ModifierCriteria.Hash(h)
 }

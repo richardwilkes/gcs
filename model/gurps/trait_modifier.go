@@ -10,6 +10,7 @@
 package gurps
 
 import (
+	"cmp"
 	"encoding/json/jsontext"
 	"encoding/json/v2"
 	"hash"
@@ -89,12 +90,19 @@ type TraitModifierSyncData = NodeSyncData
 // TraitModifierNonContainerSyncData holds the TraitModifier sync data that is only applicable to TraitModifiers that
 // aren't containers.
 type TraitModifierNonContainerSyncData struct {
-	CostAdj           string         `json:"cost_adj,omitzero"`
-	UseLevelFromTrait bool           `json:"use_level_from_trait,omitzero"`
-	CostIgnoresLevel  bool           `json:"cost_ignores_level,omitzero"`
-	ShowNotesOnWeapon bool           `json:"show_notes_on_weapon,omitzero"`
-	Affects           affects.Option `json:"affects,omitzero"`
-	Features          Features       `json:"features,omitempty"`
+	CostAdj           string `json:"cost_adj,omitzero"`
+	UseLevelFromTrait bool   `json:"use_level_from_trait,omitzero"`
+	CostIgnoresLevel  bool   `json:"cost_ignores_level,omitzero"`
+	ShowNotesOnWeapon bool   `json:"show_notes_on_weapon,omitzero"`
+	// ShortName, when set, names the modifier in its owner's title and notes in place of its name.
+	ShortName string `json:"short_name,omitzero"`
+	// HideNotes keeps the modifier's notes out of its owner's notes.
+	HideNotes bool `json:"hide_notes,omitzero"`
+	// ShowInTitle moves the modifier from its owner's notes to the title notes after its owner's name. A modifier with
+	// notes of its own still shows them in its owner's notes, unless HideNotes is set.
+	ShowInTitle bool           `json:"show_in_title,omitzero"`
+	Affects     affects.Option `json:"affects,omitzero"`
+	Features    Features       `json:"features,omitempty"`
 }
 
 // NewTraitModifiersFromFile loads a TraitModifier list from a file.
@@ -436,13 +444,30 @@ func (t *TraitModifier) CurrentLevel() fxp.Int {
 }
 
 func (t *TraitModifier) String() string {
-	var buffer strings.Builder
-	buffer.WriteString(t.NameWithReplacements())
-	if t.IsLeveled() {
-		buffer.WriteByte(' ')
-		buffer.WriteString(t.CurrentLevel().String())
+	return t.withLevel(t.NameWithReplacements())
+}
+
+// CompactName returns how the modifier is named in its owner's title and notes: its short name, or its name when it has
+// none, followed by its level when it is leveled.
+func (t *TraitModifier) CompactName() string {
+	return t.withLevel(cmp.Or(t.ShortNameWithReplacements(), t.NameWithReplacements()))
+}
+
+func (t *TraitModifier) withLevel(name string) string {
+	if !t.IsLeveled() {
+		return name
 	}
-	return buffer.String()
+	return name + " " + t.CurrentLevel().String()
+}
+
+// ShortNameWithReplacements returns the short name with any replacements applied.
+func (t *TraitModifier) ShortNameWithReplacements() string {
+	return applyOwnerReplacements(t.ShortName, t.trait)
+}
+
+// ShowsInTitle returns true if the modifier is shown in its owner's title notes.
+func (t *TraitModifier) ShowsInTitle() bool {
+	return !t.Container() && t.ShowInTitle
 }
 
 // ResolveLocalNotes resolves the local notes, running any embedded scripts to get the final result.
@@ -462,9 +487,25 @@ func (t *TraitModifier) SecondaryText(optionChecker func(display.Option) bool) s
 
 // FullDescription returns a full description.
 func (t *TraitModifier) FullDescription() string {
+	return t.describe(t.String(), true)
+}
+
+// NotesDescription returns the description shown in its owner's notes, which names it by its CompactName and leaves out
+// its notes when HideNotes is set.
+func (t *TraitModifier) NotesDescription() string {
+	return t.describe(t.CompactName(), !t.HideNotes)
+}
+
+// ShowsInNotes returns true if the modifier appears in its owner's notes: always, unless it is shown in the title, in
+// which case only when it has notes to show.
+func (t *TraitModifier) ShowsInNotes() bool {
+	return !t.ShowsInTitle() || (!t.HideNotes && t.ResolveLocalNotes() != "")
+}
+
+func (t *TraitModifier) describe(name string, withNotes bool) string {
 	var buffer strings.Builder
-	buffer.WriteString(t.String())
-	if localNotes := t.ResolveLocalNotes(); localNotes != "" {
+	buffer.WriteString(name)
+	if localNotes := t.ResolveLocalNotes(); withNotes && localNotes != "" {
 		buffer.WriteString(" (")
 		buffer.WriteString(localNotes)
 		buffer.WriteByte(')')
@@ -529,6 +570,7 @@ func (t *TraitModifier) fillWithNameableKeysEvenIfDisabled(m, existing map[strin
 	nameable.Extract(
 		m, existing,
 		t.Name,
+		t.ShortName,
 		t.LocalNotes,
 	)
 	for _, one := range t.Features {
@@ -620,6 +662,9 @@ func (t *TraitModifierNonContainerSyncData) hash(h hash.Hash) {
 	xhash.Bool(h, t.UseLevelFromTrait)
 	xhash.Bool(h, t.CostIgnoresLevel)
 	xhash.Bool(h, t.ShowNotesOnWeapon)
+	xhash.StringWithLen(h, t.ShortName)
+	xhash.Bool(h, t.ShowInTitle)
+	xhash.Bool(h, t.HideNotes)
 	xhash.Num8(h, t.Affects)
 	hashList(h, t.Features)
 }
