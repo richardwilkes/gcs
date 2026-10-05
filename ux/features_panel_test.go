@@ -889,7 +889,7 @@ func TestFeaturesPanelEmpty(t *testing.T) {
 		if !ok {
 			return
 		}
-		c.Equal("No features. Add one to get started.", empty.Text.String())
+		c.Equal("No features. Click here to add one.", empty.Text.String())
 		add := p.FindRefKey(featureAddKey)
 		c.NotNil(add)
 		r, a := empty.RectToRoot(empty.ContentRect(true)), add.RectToRoot(add.ContentRect(true))
