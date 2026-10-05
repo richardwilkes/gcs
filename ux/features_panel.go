@@ -39,7 +39,6 @@ import (
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
 	"github.com/richardwilkes/unison/enums/check"
-	"github.com/richardwilkes/unison/enums/mod"
 	"github.com/zeebo/xxh3"
 )
 
@@ -56,9 +55,6 @@ const featureAddKey = "add"
 // featureEmptyKey is the reference key of the placeholder shown in place of the rows while there are none.
 const featureEmptyKey = "empty"
 
-// featureSummaryKey is the reference key of the paragraph shown in place of the rows while the panel is collapsed.
-const featureSummaryKey = "summary"
-
 // featureDropKey marks a row a dragged feature can be dropped on, holding its path.
 const featureDropKey = "feature.drop"
 
@@ -71,7 +67,6 @@ type featuresPanel struct {
 	entity   *gurps.Entity
 	owner    fmt.Stringer
 	features *gurps.Features
-	collapse *sectionToggle
 	// pending is the key of an optional criterion added to the open row that holds nothing yet. It shows until the row
 	// closes, since nothing in the data says it is there.
 	pending string
@@ -96,18 +91,10 @@ func newFeaturesPanel(entity *gurps.Entity, owner fmt.Stringer, features *gurps.
 		percentSuspended:     make(map[*gurps.WeaponBonus]bool),
 		forEquipmentModifier: forEquipmentModifier,
 	}
-	p.collapse = newSectionToggle(p, initTitledEditorSection(p, i18n.Text("Features")), len(*features) != 0,
-		p.collapseChanged)
+	border := initTitledEditorSection(p, i18n.Text("Features"))
 	p.initRows(featureDragKey, p.build, p.state, p.setState, p.dataHash)
+	p.initCollapse(border, len(*features) != 0)
 	p.initDrop(p.dropAt, p.drop)
-	// While collapsed, Escape leaves the hidden open row alone.
-	rowsKeyDown := p.KeyDownCallback
-	p.KeyDownCallback = func(keyCode unison.KeyCode, mods mod.Modifiers, repeat bool) bool {
-		if p.collapse.collapsed && keyCode == unison.KeyEscape && noModifiersDown(mods) {
-			return true
-		}
-		return rowsKeyDown(keyCode, mods, repeat)
-	}
 	p.build()
 	return p
 }
@@ -167,13 +154,8 @@ func (p *featuresPanel) build() {
 	if p.open == "" || !strings.HasPrefix(p.pending, p.open+":") {
 		p.pending = ""
 	}
-	p.AddChild(p.collapse)
-	if p.collapse.collapsed {
-		// The features read as one paragraph, which expands the panel again when clicked.
-		summary := newSentenceButton(p.summary(), p.collapse.toggle)
-		summary.RefKey = featureSummaryKey
-		summary.SetLayoutData(&unison.FlexLayoutData{HAlign: align.Fill, HGrab: true})
-		p.AddChild(summary)
+	// Collapsed, the features read as one paragraph.
+	if p.addTitleBar(p.summary) != nil {
 		return
 	}
 	add := newSectionAddButton(p, i18n.Text("Add a feature"), func() bool {
@@ -222,17 +204,6 @@ func (p *featuresPanel) summary() string {
 		sentences = append(sentences, fmt.Sprintf(i18n.Text("%s."), one.Describe(p.entity, replacements, emphasize)))
 	}
 	return strings.Join(sentences, " ")
-}
-
-// collapseChanged rebuilds the panel once it has been collapsed or expanded. That is no edit, so it isn't undone and
-// doesn't mark the editor modified, and the open row stays open for when the panel expands. Collapsing hands the focus
-// from what it hides to the title bar.
-func (p *featuresPanel) collapseChanged() {
-	var focus string
-	if p.collapse.collapsed && p.targetMgr.CurrentFocusRef() != nil {
-		focus = sectionToggleKey
-	}
-	p.rebuild(focus)
 }
 
 // row returns the panel for a feature: its sentence, or while it is open its editor, beside a button for more actions.

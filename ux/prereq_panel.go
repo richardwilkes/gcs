@@ -69,7 +69,9 @@ const (
 // prereqPanel edits a tree of prerequisites. Each one is a row that reads as a sentence until it is opened, one at a
 // time, to edit it. Each list is a group, whose head says whether all or any of its children must be met and whose
 // children hang from a rail in the head's color. Every change, typing included, records a snapshot of the whole tree
-// with the editor's undo manager, and changes to the tree's shape rebuild the panel's content.
+// with the editor's undo manager, and changes to the tree's shape rebuild the panel's content. Clicking the title
+// collapses the panel to a paragraph describing the whole tree. It starts out collapsed when there are prerequisites,
+// and open to add one when there are none.
 type prereqPanel struct {
 	sentenceRows[prereqState]
 	entity           *gurps.Entity
@@ -101,8 +103,9 @@ func newPrereqPanel(entity *gurps.Entity, root **gurps.PrereqList, permittedChoi
 		permittedChoices: permittedChoices,
 		ownerIsSpell:     ownerIsSpell,
 	}
-	initTitledEditorSection(p, i18n.Text("Prerequisites"))
+	border := initTitledEditorSection(p, i18n.Text("Prerequisites"))
 	p.initRows(prereqDragKey, p.build, p.state, p.setState, p.stateHash)
+	p.initCollapse(border, len(p.tree().Prereqs) != 0)
 	p.initDrop(func(where geom.Point, data any) (*unison.Panel, int) {
 		target, _, at := p.dropAt(where, data)
 		return target, at
@@ -181,17 +184,10 @@ func (p *prereqPanel) build() {
 		p.open = ""
 	}
 	p.views = p.views[:0]
-	p.summary = newSentenceButton("", nil)
-	p.summary.SetBorder(unison.NewCompoundBorder(
-		unison.NewLineBorder(unison.ThemeSurfaceEdge, geom.Size{}, geom.Insets{Bottom: 1}, false),
-		unison.NewEmptyBorder(geom.Insets{Top: 4, Left: 4, Bottom: 6, Right: 4}),
-	))
-	p.summary.SetLayoutData(&unison.FlexLayoutData{HAlign: align.Fill, HGrab: true})
-	// An empty root's placeholder says what the summary would.
-	if len(p.tree().Prereqs) != 0 {
-		p.AddChild(p.summary)
+	// Collapsed, the tree reads as one paragraph, which refresh keeps current; expanded, there is none.
+	if p.summary = p.addTitleBar(p.summaryText); p.summary == nil {
+		p.AddChild(p.group(p.tree(), prereqRootPath))
 	}
-	p.AddChild(p.group(p.tree(), prereqRootPath))
 	p.refresh()
 }
 
@@ -209,17 +205,23 @@ func (p *prereqPanel) Sync() {
 	}, scriptEvaluationDelay)
 }
 
-// refresh updates the summary, the sentences and the status icons from the tree, in place.
-func (p *prereqPanel) refresh() {
-	tree := p.tree()
-	p.hash = gurps.Hash64(tree)
-	summary := i18n.Text("No prerequisites.")
-	if text := tree.Describe(p.entity, nil, emphasize); text != "" {
-		summary = fmt.Sprintf(i18n.Text("%s."), text)
+// summaryText returns the paragraph a collapsed panel shows: the whole tree as a sentence, ended with a period.
+func (p *prereqPanel) summaryText() string {
+	if text := p.tree().Describe(p.entity, nil, emphasize); text != "" {
+		return fmt.Sprintf(i18n.Text("%s."), text)
 	}
-	p.summary.setText(summary, "")
+	return i18n.Text("No prerequisites.")
+}
+
+// refresh updates the summary, the sentences and the status icons from the tree, in place. The tree's scripts run only
+// when there are rows to show their status.
+func (p *prereqPanel) refresh() {
+	p.hash = gurps.Hash64(p.tree())
+	if p.summary != nil {
+		p.summary.setText(p.summaryText(), "")
+	}
 	var checks map[gurps.Prereq]prereqCheck
-	if p.entity != nil && p.Parent() != nil {
+	if p.entity != nil && p.Parent() != nil && len(p.views) != 0 {
 		checks = p.checks()
 	}
 	for _, v := range p.views {

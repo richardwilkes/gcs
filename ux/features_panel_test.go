@@ -204,7 +204,7 @@ func TestFeaturesPanelCollapse(t *testing.T) {
 		return node.Expanded
 	}
 	summary := func() *sentenceButton {
-		b, ok := p.FindRefKey(featureSummaryKey).Self.(*sentenceButton)
+		b, ok := p.FindRefKey(sectionSummaryKey).Self.(*sentenceButton)
 		c.True(ok, "a collapsed panel shows a paragraph")
 		return b
 	}
@@ -213,7 +213,7 @@ func TestFeaturesPanelCollapse(t *testing.T) {
 		c.Equal("Features", p.collapse.Accessibility.Name, "the title bar is named for the title")
 		c.True(p.collapse.Focusable())
 		c.True(expanded(), "precondition: the panel is expanded")
-		c.Nil(p.FindRefKey(featureSummaryKey))
+		c.Nil(p.FindRefKey(sectionSummaryKey))
 		p.toggle("0")
 	})
 	screen.Do(func() {
@@ -241,7 +241,7 @@ func TestFeaturesPanelCollapse(t *testing.T) {
 	screen.KeyPress(unison.KeySpace, mod.None)
 	screen.Do(func() {
 		c.True(expanded(), "Space expands the panel")
-		c.Nil(p.FindRefKey(featureSummaryKey), "and hides the paragraph")
+		c.Nil(p.FindRefKey(sectionSummaryKey), "and hides the paragraph")
 		c.NotNil(p.FindRefKey("0"+keyFirst), "with the open row still open")
 		c.Equal(p.collapse.AsPanel(), p.Window().Focus(), "and the focus left on the title bar")
 	})
@@ -253,7 +253,7 @@ func TestFeaturesPanelCollapse(t *testing.T) {
 	screen.KeyPress(unison.KeySpace, mod.None)
 	screen.Do(func() {
 		c.True(expanded(), "the paragraph expands the panel")
-		c.Nil(p.FindRefKey(featureSummaryKey))
+		c.Nil(p.FindRefKey(sectionSummaryKey))
 		c.Equal("0:amount", p.Window().Focus().RefKey, "and the open row takes the focus from it")
 	})
 	c.Equal(hash, featuresHash(features), "collapsing changes nothing")
@@ -289,7 +289,7 @@ func TestFeaturesPanelStartingState(t *testing.T) {
 	wnd := showInTestWindow(t, screen, 900, host)
 	screen.Do(func() {
 		c.True(full.collapse.collapsed, "a panel with features starts out collapsed")
-		c.NotNil(full.FindRefKey(featureSummaryKey), "showing the paragraph")
+		c.NotNil(full.FindRefKey(sectionSummaryKey), "showing the paragraph")
 		c.Nil(full.FindRefKey("0"+keySentence), "in place of the rows")
 		c.False(open.collapse.collapsed, "a panel without features starts out open")
 		c.NotNil(open.FindRefKey(featureEmptyKey), "showing the placeholder")
@@ -323,7 +323,7 @@ func TestFeaturesPanelCollapseEmpty(t *testing.T) {
 	p, _ := showFeaturesPanel(t, screen, entity, owner, &features, false)
 	screen.Do(p.collapse.toggle)
 	screen.Do(func() {
-		b, ok := p.FindRefKey(featureSummaryKey).Self.(*sentenceButton)
+		b, ok := p.FindRefKey(sectionSummaryKey).Self.(*sentenceButton)
 		c.True(ok, "a collapsed panel shows a paragraph")
 		if ok {
 			c.Equal("No features.", b.plainText())

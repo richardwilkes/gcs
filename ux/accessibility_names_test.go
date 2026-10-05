@@ -486,9 +486,9 @@ func seedEveryFeatureControl(list gurps.Features) {
 	}
 }
 
-// checkRows opens a dockable with fn and checks the controls in it, with its features panels collapsed as they start
-// out, then again with them expanded and each row of its prerequisites and features panels open in turn, since a
-// closed row shows only its sentence.
+// checkRows opens a dockable with fn and checks the controls in it, with its prerequisites and features panels collapsed
+// as they start out, then again with them expanded and each of their rows open in turn, since a closed row shows only
+// its sentence.
 func (a *axNameAudit) checkRows(view string, fn func()) {
 	a.t.Helper()
 	d := a.open(fn)
@@ -496,27 +496,32 @@ func (a *axNameAudit) checkRows(view string, fn func()) {
 		return
 	}
 	a.check(view, d)
-	// A features panel with features starts out collapsed, showing a paragraph in place of its rows, and its title bar
-	// says so.
-	var collapsed []*featuresPanel
+	// A prerequisites or features panel with anything in it starts out collapsed, showing a paragraph in place of its
+	// rows, and its title bar says so.
+	var collapsed []*sectionToggle
 	a.screen.Do(func() {
+		for _, p := range panelsOfType[*prereqPanel](d.AsPanel()) {
+			if len(p.tree().Prereqs) != 0 {
+				collapsed = append(collapsed, p.collapse)
+			}
+		}
 		for _, p := range panelsOfType[*featuresPanel](d.AsPanel()) {
 			if len(*p.features) != 0 {
-				collapsed = append(collapsed, p)
+				collapsed = append(collapsed, p.collapse)
 			}
 		}
 	})
-	for _, p := range collapsed {
-		if node := a.screen.AccessibilityNodeFor(p.collapse); node == nil || !node.Expandable || node.Expanded {
-			a.t.Errorf("%s: a collapsed features panel's title bar isn't described as collapsed", view)
+	for _, toggle := range collapsed {
+		if node := a.screen.AccessibilityNodeFor(toggle); node == nil || !node.Expandable || node.Expanded {
+			a.t.Errorf("%s: the collapsed %s panel's title bar isn't described as collapsed", view, toggle.border.Title)
 		}
 	}
 	a.screen.Do(func() {
-		for _, p := range collapsed {
-			p.collapse.toggle()
+		for _, toggle := range collapsed {
+			toggle.toggle()
 		}
 	})
-	a.check(view+", features expanded", d)
+	a.check(view+", expanded", d)
 	var names []string
 	var toggles []func()
 	a.screen.Do(func() {
