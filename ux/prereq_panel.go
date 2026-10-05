@@ -439,7 +439,7 @@ func (p *prereqPanel) group(list *gurps.PrereqList, path string) *unison.Panel {
 		emptyRoot = path == prereqRootPath && !p.headed
 		text := i18n.Text("Empty group. Add a requirement or drag one here.")
 		if emptyRoot {
-			text = i18n.Text("No prerequisites. Add one to get started.")
+			text = emptyRowsText(i18n.Text("No prerequisites."))
 		}
 		empty = newEmptyPlaceholder(path+":empty", text, nil)
 		// A click opens the menu where it lands, as a right-click does; a key opens it at the placeholder.

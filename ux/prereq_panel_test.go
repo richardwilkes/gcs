@@ -918,7 +918,7 @@ func TestPrereqPanelEmptyRootGroupType(t *testing.T) {
 	choose := func(label string) {
 		screen.Do(func() { prereqMenuAction(p.addEntries(p.tree(), prereqRootPath), label)() })
 	}
-	single := "No prerequisites. Add one to get started."
+	single := "No prerequisites. Click here to add one."
 	group := "Empty group. Add a requirement or drag one here."
 	pill, text := headed()
 	c.False(pill)
