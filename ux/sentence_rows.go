@@ -839,6 +839,12 @@ func newIconButton(key string, icon *unison.SVG, tooltip string) *unison.Button 
 	return b
 }
 
+// emptyRowsText returns the text of the placeholder for a panel or group with no rows: none, which says what it lacks,
+// such as "No features.", followed by an invitation to click it.
+func emptyRowsText(none string) string {
+	return fmt.Sprintf(i18n.Text("%s %s"), none, i18n.Text("Click here to add one."))
+}
+
 // newEmptyPlaceholder returns the dashed box, keyed key, that stands in for the rows of a panel or group that has none,
 // saying text and calling click when clicked. It fills its line.
 func newEmptyPlaceholder(key, text string, click func()) *unison.Button {
