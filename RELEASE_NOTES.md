@@ -16,6 +16,12 @@
   prerequisites when it has any. That paragraph no longer shows above them once the section is expanded. A group's
   add button has moved into its more menu, except for the top group's, which takes the place of a more menu, and an
   empty group's, which now sits beside its placeholder.
+- The editor for saved list filters has been rebuilt to work like the prerequisites editor. Each condition is shown as a
+  short sentence, such as "Must not be a container", that opens to edit it. Each group's pill says how it combines
+  what it holds: all of it must match, any of it, none of it, or not all of it. Conditions and groups can be
+  duplicated, moved, wrapped in a group or dragged into place, a group that isn't negated can be ungrouped, new ones are
+  added at the end, and every change can be undone. Escape closes the open condition, or with none open, cancels the
+  editor.
 - Weapon bonus tooltips on the sheet use shorter names, such as "to accuracy", and the rate of fire bonuses say which
   mode they apply to.
 - A new weapon bonus that picks weapons by their skill no longer starts out requiring a relative skill level of at least

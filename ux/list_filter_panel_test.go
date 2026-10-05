@@ -10,540 +10,785 @@
 package ux
 
 import (
-	"encoding/json/jsontext"
-	"hash"
+	"bytes"
 	"slices"
-	"strings"
 	"testing"
 
 	"github.com/richardwilkes/gcs/v5/model/criteria"
+	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
-	"github.com/richardwilkes/gcs/v5/model/gurps/enums/filternode"
+	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/toolbox/v2/check"
-	"github.com/richardwilkes/toolbox/v2/i18n"
+	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/unison"
+	"github.com/richardwilkes/unison/enums/mod"
 )
 
-// newTestListFilterPanel creates a filter editor over the given filter, with the session's memory of the field last
-// used swapped out for an empty one so that one test cannot influence another. The panel has no window above it and
-// nothing that implements ModifiableRoot, so every MarkModified the criteria widgets it shares with the editors make
-// finds nothing to mark; a test that drives the editor and never panics is therefore also proof that the editor works
-// outside of a document.
-func newTestListFilterPanel(t *testing.T, key string, fields []filterFieldInfo, filter *gurps.ListFilter) *listFilterPanel {
+// listFilterPanelTestKey is the list type the panel tests edit filters for: equipment, which has a field of every kind.
+const listFilterPanelTestKey = "eqp"
+
+// showListFilterPanel shows a filter editor for the filter in a window, within the content the dialog would hold it in,
+// which provides its undo manager. The session's memory of the field last used is swapped out for an empty one, so that
+// one test can't influence another.
+func showListFilterPanel(t *testing.T, screen *unison.HeadlessScreen, filter *gurps.ListFilter) (*listFilterPanel, *listFilterDialogContent) {
+	t.Helper()
+	return showListFilterPanelFor(t, screen, filter, filterFieldInfos(gurps.EquipmentFilterFields()))
+}
+
+// showListFilterPanelFor shows a filter editor as showListFilterPanel does, offering the fields.
+func showListFilterPanelFor(t *testing.T, screen *unison.HeadlessScreen, filter *gurps.ListFilter, fields []filterFieldInfo) (*listFilterPanel, *listFilterDialogContent) {
 	t.Helper()
 	swapForTest(t, &lastFilterFieldKeyUsed, make(map[string]string))
-	return newListFilterPanel(key, filter, fields)
+	var p *listFilterPanel
+	var host *listFilterDialogContent
+	screen.Do(func() {
+		host = newListFilterDialogContent()
+		host.SetLayout(&unison.FlexLayout{Columns: 1})
+		p = newListFilterPanel(listFilterPanelTestKey, filter, fields)
+		host.AddChild(p)
+	})
+	showInTestWindow(t, screen, 700, host)
+	return p, host
 }
 
-// filterRootRow returns the row of the filter's root group, which is the editor's only child.
-func filterRootRow(p *listFilterPanel) *unison.Panel {
-	return p.Children()[0]
+// newTestListFilter returns a filter whose root requires all of: a name containing "sword", a weight of at most 5 lb,
+// none of a "Shield" or "Buckler" tag or a cost of at least 1000, not being a container, a condition on a field this
+// version doesn't know, and a node of a kind it doesn't know.
+func newTestListFilter() *gurps.ListFilter {
+	f := gurps.NewListFilter("Light blades")
+	root := f.Root
+	name := gurps.NewFilterCondition(root, "name")
+	name.Text = criteria.Text{Compare: criteria.ContainsText, Qualifier: "sword"}
+	weight := gurps.NewFilterCondition(root, "weight")
+	weight.Weight = criteria.Weight{Compare: criteria.AtMostNumber, Qualifier: fxp.WeightFromInteger(5, fxp.Pound)}
+	none := gurps.NewFilterGroup(root)
+	none.All = false
+	none.Not = true
+	tags := gurps.NewFilterCondition(none, "tags")
+	tags.Text = criteria.Text{Compare: criteria.IsText, Qualifier: "Shield, Buckler"}
+	cost := gurps.NewFilterCondition(none, "cost")
+	cost.Number = criteria.Number{Compare: criteria.AtLeastNumber, Qualifier: fxp.FromInteger(1000)}
+	none.Children = gurps.FilterNodes{tags, cost}
+	container := gurps.NewFilterCondition(root, "container")
+	container.Not = true
+	future := gurps.NewFilterCondition(root, "future_field")
+	unknown := gurps.NewUnknownFilterNode("sparkle", []byte(`{"type":"sparkle"}`))
+	unknown.Parent = root
+	root.Children = gurps.FilterNodes{name, weight, none, container, future, unknown}
+	return f
 }
 
-// filterChildRow returns the row of the group row's child at the given position. A group's children follow its own
-// fixed columns within its row panel.
-func filterChildRow(groupRow *unison.Panel, index int) *unison.Panel {
-	return groupRow.Children()[filterGroupColumns+index]
-}
-
-// filterRowButtons returns the buttons of a filter row, which live in the row's first child.
-func filterRowButtons(row *unison.Panel) []*unison.Button {
-	return panelsOfType[*unison.Button](row.Children()[0])
-}
-
-// filterRowAndOr returns the text of the label that joins a filter row to the one ahead of it. It always sits right
-// after the buttons, whether or not it has anything to say.
-func filterRowAndOr(row *unison.Panel) string {
-	if label, ok := row.Children()[1].Self.(*unison.Label); ok {
-		return label.String()
-	}
-	return "<not a label>"
-}
-
-// filterFieldPopup returns the popup that chooses the field a condition row tests, which follows the buttons, the
-// and/or label and the must/must not popup, or nil when the row has none, as a row the editor can only preserve has.
-func filterFieldPopup(row *unison.Panel) *unison.PopupMenu[string] {
-	children := row.Children()
-	if len(children) < 4 {
-		return nil
-	}
-	if popup, ok := children[3].Self.(*unison.PopupMenu[string]); ok {
-		return popup
-	}
-	return nil
-}
-
-// filterNotPopup returns the popup that inverts a row's node. Every row has one, group and condition alike, right
-// after the buttons and the and/or label.
-func filterNotPopup(row *unison.Panel) *unison.PopupMenu[string] {
-	if popup, ok := row.Children()[2].Self.(*unison.PopupMenu[string]); ok {
-		return popup
-	}
-	return nil
-}
-
-// filterRowIndentOf returns how far a row's buttons are indented, which is what shows how deeply the row's node is
-// nested. A row with no border on its buttons yields -1, so that a missing indent fails the comparison readably.
-func filterRowIndentOf(row *unison.Panel) float32 {
-	if border := row.Children()[0].Border(); border != nil {
-		return border.Insets().Left
-	}
-	return -1
-}
-
-// chooseFilterField picks the field with the given key in a condition row's field popup, exactly as a choice made from
-// the popup menu would.
-func chooseFilterField(c check.Checker, p *listFilterPanel, row *unison.Panel, key string) {
-	index := p.fieldIndex(key)
-	c.True(index >= 0, "the %q field must be among those offered", key)
-	popup := filterFieldPopup(row)
-	c.NotNil(popup, "a condition row must hold a field popup")
-	if index < 0 || popup == nil {
-		return
-	}
-	item, _ := popup.ItemAt(index)
-	popup.ChoiceMadeCallback(popup, index, item)
-}
-
-// filterRowColumns returns the number of columns a filter row lays its children out in.
-func filterRowColumns(row *unison.Panel) int {
-	if layout, ok := row.Layout().(*unison.FlexLayout); ok {
-		return layout.Columns
-	}
-	return -1
-}
-
-// TestListFilterPanelAddsAndRemovesConditions verifies that the add button puts a new condition at the head of both
-// the group and its row, that the and/or labels reflect where each condition sits and how the group combines them,
-// and that the delete button takes a condition out of both.
-func TestListFilterPanelAddsAndRemovesConditions(t *testing.T) {
-	c := check.New(t)
-	filter := gurps.NewListFilter("Test")
-	panel := newTestListFilterPanel(t, "adq", filterFieldInfos(gurps.TraitFilterFields()), filter)
-	root := filterRootRow(panel)
-
-	buttons := filterRowButtons(root)
-	c.Equal(2, len(buttons), "the root group may be added to, but not deleted")
-	if len(buttons) != 2 {
-		return
-	}
-	buttons[0].ClickCallback()
-	c.Equal(1, len(filter.Root.Children), "adding a condition must put it into the group")
-	first, ok := filter.Root.Children[0].(*gurps.FilterCondition)
-	c.True(ok, "the added node must be a condition")
-	if !ok {
-		return
-	}
-	c.Equal("name", first.Field, "a new condition must start out on the first field")
-	c.Equal(filterGroupColumns+1, len(root.Children()), "the condition's row must be added to the group's row")
-
-	// A second condition goes ahead of the first, so that what was just added is right beneath the button that made it.
-	buttons[0].ClickCallback()
-	c.Equal(2, len(filter.Root.Children), "the group must now hold both conditions")
-	second := filter.Root.Children[0]
-	c.True(filter.Root.Children[1] == gurps.FilterNode(first), "the earlier condition must be pushed down")
-	c.Equal(filterGroupColumns+2, len(root.Children()), "the group's row must now hold both rows")
-
-	// The first of the two has nothing ahead of it to be joined to; the second does.
-	c.Equal("", filterRowAndOr(filterChildRow(root, 0)), "the first row must have no and/or text")
-	c.Equal(i18n.Text("and"), filterRowAndOr(filterChildRow(root, 1)),
-		"the second row of a group that matches all of its children must read \"and\"")
-
-	// Switching the group from all to any changes what joins its children.
-	allPopup, ok := root.Children()[3].Self.(*unison.PopupMenu[string])
-	c.True(ok, "the group's row must hold an all/any popup")
-	if !ok {
-		return
-	}
-	selectPopupIndex(allPopup, 1)
-	c.False(filter.Root.All, "picking the second choice must make the group match any of its children")
-	c.Equal("", filterRowAndOr(filterChildRow(root, 0)), "the first row must still have no and/or text")
-	c.Equal(i18n.Text("or"), filterRowAndOr(filterChildRow(root, 1)),
-		"the second row of a group that matches any of its children must read \"or\"")
-
-	// Deleting takes the condition out of the group and its row out of the panel.
-	secondRow := filterChildRow(root, 1)
-	rowButtons := filterRowButtons(secondRow)
-	c.Equal(1, len(rowButtons), "a condition row offers only the delete button")
-	if len(rowButtons) != 1 {
-		return
-	}
-	rowButtons[0].ClickCallback()
-	c.Equal(1, len(filter.Root.Children), "deleting must take the condition out of the group")
-	c.True(filter.Root.Children[0] == second,
-		"the row whose button was clicked is the first condition's, so the one added second must be what is left")
-	c.Equal(filterGroupColumns+1, len(root.Children()), "deleting must take the row out of the group's row")
-	c.Equal("", filterRowAndOr(filterChildRow(root, 0)), "the sole remaining row must have no and/or text")
-}
-
-// TestListFilterPanelAddsGroups verifies that the add-group button creates a sub-group owned by the group it was added
-// to, that the sub-group's row offers everything a group's row offers plus the delete button the root lacks, that what
-// goes into it is owned by it, indented one level further and joined by its own all/any popup rather than the root's,
-// and that deleting it takes every row below it, and every and/or label they had, along with it.
-func TestListFilterPanelAddsGroups(t *testing.T) {
-	c := check.New(t)
-	filter := gurps.NewListFilter("Test")
-	panel := newTestListFilterPanel(t, "adq", filterFieldInfos(gurps.TraitFilterFields()), filter)
-	root := filterRootRow(panel)
-
-	buttons := filterRowButtons(root)
-	c.Equal(2, len(buttons), "the root group may be added to, but not deleted")
-	if len(buttons) != 2 {
-		return
-	}
-	buttons[1].ClickCallback()
-	c.Equal(1, len(filter.Root.Children), "adding a group must put it into the root group")
-	group, ok := filter.Root.Children[0].(*gurps.FilterGroup)
-	c.True(ok, "the added node must be a group")
-	if !ok {
-		return
-	}
-	c.True(group.ParentGroup() == filter.Root, "the new group must be owned by the group it was added to")
-	c.True(group.All, "a new group must start out matching all of its children")
-
-	subRow := filterChildRow(root, 0)
-	c.Equal(filterGroupColumns, len(subRow.Children()), "a group's row starts out with only its own columns")
-	subButtons := filterRowButtons(subRow)
-	c.Equal(3, len(subButtons), "a sub-group may be added to and deleted")
-	if len(subButtons) != 3 {
-		return
-	}
-	c.Equal(float32(filterRowIndent), filterRowIndentOf(subRow), "a row one level down is indented one level")
-
-	// What is added to the sub-group belongs to it, not to the root group, and sits one level deeper still.
-	subButtons[0].ClickCallback()
-	subButtons[0].ClickCallback()
-	c.Equal(2, len(group.Children), "both conditions must go into the sub-group")
-	c.Equal(1, len(filter.Root.Children), "and none of them into the root group")
-	for i, child := range group.Children {
-		c.True(child.ParentGroup() == group, "condition %d must be owned by the sub-group it was added to", i)
-	}
-	c.Equal(filterGroupColumns+2, len(subRow.Children()), "the sub-group's row must hold the rows of both conditions")
-	c.Equal(float32(2*filterRowIndent), filterRowIndentOf(filterChildRow(subRow, 0)),
-		"a row two levels down is indented two levels")
-	c.Equal(float32(2*filterRowIndent), filterRowIndentOf(filterChildRow(subRow, 1)),
-		"whichever of the two levels down it is")
-
-	// The rows within the sub-group are joined by the sub-group's own all/any popup, not by the root group's.
-	c.Equal("", filterRowAndOr(filterChildRow(subRow, 0)), "the first row of the sub-group must have no and/or text")
-	c.Equal(i18n.Text("and"), filterRowAndOr(filterChildRow(subRow, 1)),
-		"the second row of a sub-group that matches all of its children must read \"and\"")
-	allPopup, ok2 := subRow.Children()[3].Self.(*unison.PopupMenu[string])
-	c.True(ok2, "the sub-group's row must hold an all/any popup")
-	if !ok2 {
-		return
-	}
-	selectPopupIndex(allPopup, 1)
-	c.False(group.All, "picking the second choice must make the sub-group match any of its children")
-	c.True(filter.Root.All, "and must leave the root group alone")
-	c.Equal(i18n.Text("or"), filterRowAndOr(filterChildRow(subRow, 1)),
-		"the second row of a sub-group that matches any of its children must read \"or\"")
-
-	// A group may be nested within the sub-group, and a condition within that, each indented one level further.
-	subButtons[1].ClickCallback()
-	nested, ok3 := group.Children[0].(*gurps.FilterGroup)
-	c.True(ok3, "the added node must be a group")
-	if !ok3 {
-		return
-	}
-	c.True(nested.ParentGroup() == group, "the nested group must be owned by the sub-group it was added to")
-	nestedRow := filterChildRow(subRow, 0)
-	c.Equal(float32(2*filterRowIndent), filterRowIndentOf(nestedRow), "the nested group's row is two levels down")
-	filterRowButtons(nestedRow)[0].ClickCallback()
-	c.Equal(1, len(nested.Children), "the condition must go into the nested group")
-	c.Equal(filterGroupColumns+1, len(nestedRow.Children()), "and its row into the nested group's row")
-	c.Equal(float32(3*filterRowIndent), filterRowIndentOf(filterChildRow(nestedRow, 0)),
-		"a row three levels down is indented three levels")
-
-	// Deleting the sub-group takes everything below it along, and the and/or label of every one of those rows is
-	// forgotten with it, leaving only the root group's own.
-	c.Equal(6, len(panel.andOrMap), "every row built so far has an and/or label of its own")
-	subButtons[2].ClickCallback()
-	c.Equal(0, len(filter.Root.Children), "deleting the sub-group must take it out of the root group")
-	c.Equal(filterGroupColumns, len(root.Children()),
-		"and its row, along with the rows of everything it held, out of the root group's row")
-	c.Equal(1, len(panel.andOrMap), "only the root group's own and/or label may be left behind")
-}
-
-// TestListFilterPanelFieldChangeRebuildsCriteria verifies that choosing another field on a condition throws away the
-// criteria that went with the old one and builds whatever the new one needs: a comma-aware text field for a list, a
-// decimal field for a number, and nothing at all for a yes/no field.
-func TestListFilterPanelFieldChangeRebuildsCriteria(t *testing.T) {
-	c := check.New(t)
-	filter := gurps.NewListFilter("Test")
-	panel := newTestListFilterPanel(t, "adq", filterFieldInfos(gurps.TraitFilterFields()), filter)
-	root := filterRootRow(panel)
-	filterRowButtons(root)[0].ClickCallback()
-	cond, ok := filter.Root.Children[0].(*gurps.FilterCondition)
-	c.True(ok, "the added node must be a condition")
-	if !ok {
-		return
-	}
-	row := filterChildRow(root, 0)
-	cond.Text = criteria.Text{Compare: criteria.IsText, Qualifier: "Sword"}
-
-	chooseFilterField(c, panel, row, "tags")
-	c.Equal("tags", cond.Field, "picking the tags field must change what the condition tests")
-	c.True(cond.Text.IsZero(), "changing the field must reset the criteria that went with the old one")
-	c.Equal("tags", lastFilterFieldKeyUsed["adq"], "the field just chosen must be remembered for this list type")
-	textFields := panelsOfType[*StringField](row)
-	c.Equal(1, len(textFields), "a list field must offer exactly one qualifier field")
-	if len(textFields) == 1 {
-		c.True(strings.Contains(tooltipText(textFields[0].Tooltip), "commas"),
-			"a list field's qualifier must say that commas separate the values")
-	}
-
-	// The next condition added starts out on the field last chosen rather than back at the first one.
-	filterRowButtons(root)[0].ClickCallback()
-	next, ok2 := filter.Root.Children[0].(*gurps.FilterCondition)
-	c.True(ok2, "the added node must be a condition")
-	if ok2 {
-		c.Equal("tags", next.Field, "a new condition must start out on the field last chosen")
-	}
-
-	// A yes/no field needs no criteria at all, so nothing follows the field popup.
-	row = filterChildRow(root, 1)
-	chooseFilterField(c, panel, row, "container")
-	c.Equal("container", cond.Field, "picking the container field must change what the condition tests")
-	c.Equal(4, len(row.Children()), "a yes/no field must leave nothing after the field popup")
-	c.Equal(len(row.Children()), filterRowColumns(row), "a row lays its children out in one column each")
-
-	// A number field gets a decimal qualifier.
-	chooseFilterField(c, panel, row, "points")
-	c.Equal("points", cond.Field, "picking the points field must change what the condition tests")
-	c.Equal(1, len(panelsOfType[*DecimalField](row)), "a number field must offer exactly one decimal qualifier")
-	c.Equal(0, len(panelsOfType[*StringField](row)), "a number field must not leave a text qualifier behind")
-	c.Equal(len(row.Children()), filterRowColumns(row), "a row lays its children out in one column each")
-}
-
-// TestListFilterPanelWeightFieldForEquipment verifies that a condition on an equipment list's weight field offers a
-// weight qualifier, which is the one kind of criteria no other list type has.
-func TestListFilterPanelWeightFieldForEquipment(t *testing.T) {
-	c := check.New(t)
-	filter := gurps.NewListFilter("Test")
-	panel := newTestListFilterPanel(t, "eqp", filterFieldInfos(gurps.EquipmentFilterFields()), filter)
-	root := filterRootRow(panel)
-	filterRowButtons(root)[0].ClickCallback()
-	cond, ok := filter.Root.Children[0].(*gurps.FilterCondition)
-	c.True(ok, "the added node must be a condition")
-	if !ok {
-		return
-	}
-	row := filterChildRow(root, 0)
-
-	chooseFilterField(c, panel, row, "weight")
-	c.Equal("weight", cond.Field, "picking the weight field must change what the condition tests")
-	c.Equal(1, len(panelsOfType[*WeightField](row)), "a weight field must offer exactly one weight qualifier")
-}
-
-// TestListFilterPanelSameFieldChoiceChangesNothing verifies that picking the field a condition already tests leaves
-// both the criteria the user filled in and the widgets holding them exactly as they were, rather than resetting the
-// one and rebuilding the other.
-func TestListFilterPanelSameFieldChoiceChangesNothing(t *testing.T) {
-	c := check.New(t)
-	filter := gurps.NewListFilter("Test")
-	panel := newTestListFilterPanel(t, "adq", filterFieldInfos(gurps.TraitFilterFields()), filter)
-	root := filterRootRow(panel)
-	filterRowButtons(root)[0].ClickCallback()
-	cond, ok := filter.Root.Children[0].(*gurps.FilterCondition)
-	c.True(ok, "the added node must be a condition")
-	if !ok {
-		return
-	}
-	row := filterChildRow(root, 0)
-	text := criteria.Text{Compare: criteria.IsText, Qualifier: "Sword"}
-	cond.Text = text
-	before := slices.Clone(row.Children())
-
-	chooseFilterField(c, panel, row, cond.Field)
-	c.Equal("name", cond.Field, "the condition must still test the field it did")
-	c.Equal(text, cond.Text, "re-picking the field a condition already tests must leave the criteria alone")
-	after := row.Children()
-	c.Equal(len(before), len(after), "and must leave the row with the children it had")
-	if len(before) == len(after) {
-		for i := range before {
-			c.True(before[i] == after[i], "the row's widgets must be the same ones, but child %d was rebuilt", i)
+// filterShape returns the field of each of the root's conditions, and for each group its mode, then the shape of its
+// children, then ":end".
+func filterShape(root *gurps.FilterGroup) []string {
+	var shape []string
+	var walk func(group *gurps.FilterGroup)
+	walk = func(group *gurps.FilterGroup) {
+		for _, one := range group.Children {
+			switch node := one.(type) {
+			case *gurps.FilterCondition:
+				shape = append(shape, node.Field)
+			case *gurps.FilterGroup:
+				shape = append(shape, groupModeOf(node).String()+":")
+				walk(node)
+				shape = append(shape, ":end")
+			default:
+				shape = append(shape, "unknown")
+			}
 		}
 	}
-	_, remembered := lastFilterFieldKeyUsed["adq"]
-	c.False(remembered, "a choice that changes nothing must not be remembered as the field last used")
+	walk(root)
+	return shape
 }
 
-// TestListFilterPanelNegationPopups verifies that the must/must not popup of a row shows its own node's negation and
-// writes back to that node alone, on a group as well as on a condition.
-func TestListFilterPanelNegationPopups(t *testing.T) {
-	c := check.New(t)
-	filter := gurps.NewListFilter("Test")
-	filter.Root.Not = true
-	negated := gurps.NewFilterCondition(filter.Root, "name")
-	negated.Not = true
-	plain := gurps.NewFilterCondition(filter.Root, "name")
-	filter.Root.Children = append(filter.Root.Children, negated, plain)
-	panel := newTestListFilterPanel(t, "adq", filterFieldInfos(gurps.TraitFilterFields()), filter)
-	root := filterRootRow(panel)
+// filterConditionAt returns the condition at the path. Without one, it fails the test and returns an empty condition,
+// so that the caller can go on. Call it on the UI thread.
+func filterConditionAt(t *testing.T, p *listFilterPanel, path string) *gurps.FilterCondition {
+	t.Helper()
+	cond, ok := p.node(path).(*gurps.FilterCondition)
+	if !ok {
+		t.Errorf("no condition at %s", path)
+		return &gurps.FilterCondition{}
+	}
+	return cond
+}
 
-	rootNot := filterNotPopup(root)
-	negatedNot := filterNotPopup(filterChildRow(root, 0))
-	plainNot := filterNotPopup(filterChildRow(root, 1))
-	c.NotNil(rootNot, "a group's row must hold a must/must not popup")
-	c.NotNil(negatedNot, "a condition's row must hold one as well")
-	c.NotNil(plainNot, "whether or not the condition is negated")
-	if rootNot == nil || negatedNot == nil || plainNot == nil {
+// refAs returns the panel within p that has the ref key as T: the panel itself when T is *unison.Panel, and its Self
+// otherwise. Without one, it fails the test and returns false, so that the caller can skip what it would have done with
+// it. Call it on the UI thread.
+func refAs[T any](t *testing.T, p *unison.Panel, key string) (T, bool) {
+	t.Helper()
+	var zero T
+	one := p.FindRefKey(key)
+	if one == nil {
+		t.Errorf("nothing has the ref key %s", key)
+		return zero, false
+	}
+	if v, ok := any(one).(T); ok {
+		return v, true
+	}
+	if v, ok := one.Self.(T); ok {
+		return v, true
+	}
+	t.Errorf("%s is a %T, not a %T", key, one.Self, zero)
+	return zero, false
+}
+
+// focusedRefKey returns the ref key of what has the window's focus, or "" when nothing does. Call it on the UI thread.
+func focusedRefKey(wnd *unison.Window) string {
+	if focus := wnd.Focus(); focus != nil {
+		return focus.RefKey
+	}
+	return ""
+}
+
+// sentenceText returns the text of the sentence of the row at the path, without its emphasis. Call it on the UI thread.
+func sentenceText(p *listFilterPanel, path string) string {
+	if one := p.FindRefKey(path + keySentence); one != nil {
+		if b, ok := one.Self.(*sentenceButton); ok {
+			return stripEm.Replace(b.text)
+		}
+	}
+	return ""
+}
+
+func TestListFilterPanelRows(t *testing.T) {
+	c := check.New(t)
+	screen, _ := startHeadlessWorkspace(t, c)
+	f := newTestListFilter()
+	before := gurps.Hash64(f.Root)
+	p, _ := showListFilterPanel(t, screen, f)
+	screen.Do(func() {
+		for path, want := range map[string]string{
+			"r.0":   `Must have a name that contains "sword"`,
+			"r.1":   `Must have a weight that is at most 5 lb`,
+			"r.2.0": `Must have tags where at least one is Shield or Buckler`,
+			"r.2.1": `Must have a cost that is at least 1,000`,
+			"r.3":   `Must not be a container`,
+			"r.4":   `Condition on unknown field "future_field"; it will be preserved, but never matches`,
+			"r.5":   `Unknown filter node type "sparkle"; it will be preserved, but never matches`,
+		} {
+			c.Equal(want, sentenceText(p, path), path)
+		}
+		for path, want := range map[string]string{"r": "All of", "r.2": "None of"} {
+			if pill, ok := refAs[*unison.PopupMenu[filterGroupMode]](t, p.AsPanel(), path+keyPill); ok {
+				c.Equal(want, pill.Text(), path)
+				c.NotNil(pill.Tooltip, "%s's pill explains the choices", path)
+			}
+		}
+		c.Equal("None of", p.FindRefKey("r.2:group").Accessibility.Name)
+		for _, path := range []string{"r.4", "r.5"} {
+			b, ok := p.FindRefKey(path + keySentence).Self.(*sentenceButton)
+			c.True(ok && b.onClick == nil, "%s can't be opened", path)
+			if ok {
+				c.Equal(wrapTextForTooltip(preservedFilterNodeTooltip()), tooltipText(b.Tooltip), path)
+			}
+		}
+		p.toggle("r.4")
+	})
+	screen.Do(func() {
+		c.Equal("", p.open, "a condition on a field this version doesn't know doesn't open")
+		c.Equal(before, gurps.Hash64(f.Root), "showing the filter changes nothing")
+	})
+}
+
+// TestListFilterPanelListSentences checks the sentences of list conditions that accept anything or ask for an empty
+// list, and of a value with space around it, which is quoted so that the space shows.
+func TestListFilterPanelListSentences(t *testing.T) {
+	c := check.New(t)
+	screen, _ := startHeadlessWorkspace(t, c)
+	f := gurps.NewListFilter("")
+	anything := gurps.NewFilterCondition(f.Root, "tags")
+	none := gurps.NewFilterCondition(f.Root, "tags")
+	none.Text = criteria.Text{Compare: criteria.IsText}
+	padded := gurps.NewFilterCondition(f.Root, "name")
+	padded.Text = criteria.Text{Compare: criteria.IsText, Qualifier: " Axe "}
+	f.Root.Children = gurps.FilterNodes{anything, none, padded}
+	p, _ := showListFilterPanel(t, screen, f)
+	screen.Do(func() {
+		c.Equal(`Must have tags that are anything`, sentenceText(p, "r.0"))
+		c.Equal(`Must not have tags`, sentenceText(p, "r.1"))
+		c.Equal(`Must have a name that is " Axe "`, sentenceText(p, "r.2"))
+	})
+}
+
+// TestListFilterPanelPluralFields checks that a condition on a field whose title is plural agrees with it, in its
+// sentence and in the choices of its comparison, for text and numbers alike.
+func TestListFilterPanelPluralFields(t *testing.T) {
+	c := check.New(t)
+	screen, _ := startHeadlessWorkspace(t, c)
+	f := gurps.NewListFilter("")
+	notes := gurps.NewFilterCondition(f.Root, "notes")
+	notes.Not = true
+	notes.Text = criteria.Text{Compare: criteria.StartsWithText, Qualifier: "Cheap"}
+	points := gurps.NewFilterCondition(f.Root, "points")
+	points.Number = criteria.Number{Compare: criteria.AtLeastNumber, Qualifier: fxp.FromInteger(5)}
+	name := gurps.NewFilterCondition(f.Root, "name")
+	name.Text = criteria.Text{Compare: criteria.StartsWithText, Qualifier: "A"}
+	f.Root.Children = gurps.FilterNodes{notes, points, name}
+	p, _ := showListFilterPanelFor(t, screen, f, filterFieldInfos(gurps.TraitFilterFields()))
+	screen.Do(func() {
+		c.Equal(`Must not have notes that start with "Cheap"`, sentenceText(p, "r.0"))
+		c.Equal(`Must have points that are at least 5`, sentenceText(p, "r.1"))
+		c.Equal(`Must have a name that starts with "A"`, sentenceText(p, "r.2"), "a singular title is left alone")
+		p.toggle("r.0")
+	})
+	screen.Do(func() {
+		if popup, ok := refAs[*unison.PopupMenu[criteria.StringComparison]](t, p.AsPanel(), "r.0:textcmp"); ok {
+			c.Equal("that start with", popup.Text())
+			items := make([]string, 0, popup.ItemCount())
+			for i := range popup.ItemCount() {
+				item, _ := popup.ItemAt(i)
+				items = append(items, popup.ItemRendererCallback(item))
+			}
+			c.Equal([]string{
+				"that are anything", "that are", "that are not", "that contain", "that do not contain",
+				"that start with", "that do not start with", "that end with", "that do not end with",
+			}, items, "every choice agrees with notes")
+		}
+		p.toggle("r.1")
+	})
+	screen.Do(func() {
+		if popup, ok := refAs[*unison.PopupMenu[criteria.NumericComparison]](t, p.AsPanel(), "r.1:numbercmp"); ok {
+			c.Equal("that are at least", popup.Text())
+			items := make([]string, 0, popup.ItemCount())
+			for i := range popup.ItemCount() {
+				item, _ := popup.ItemAt(i)
+				items = append(items, popup.ItemRendererCallback(item))
+			}
+			c.Equal([]string{"that are anything", "that are", "that are not", "that are at least", "that are at most"},
+				items, "every choice agrees with points")
+		}
+		p.toggle("r.2")
+	})
+	screen.Do(func() {
+		if popup, ok := refAs[*unison.PopupMenu[criteria.StringComparison]](t, p.AsPanel(), "r.2:textcmp"); ok {
+			c.Equal("that starts with", popup.Text(), "a singular title keeps the singular choices")
+		}
+	})
+}
+
+func TestListFilterPanelEmptyRoot(t *testing.T) {
+	c := check.New(t)
+	screen, _ := startHeadlessWorkspace(t, c)
+	f := gurps.NewListFilter("")
+	p, host := showListFilterPanel(t, screen, f)
+	screen.Do(func() {
+		c.Nil(p.FindRefKey("r"+keyPill), "an untouched empty root shows no pill")
+		if empty, ok := refAs[*unison.Button](t, p.AsPanel(), "r:empty"); ok {
+			c.Equal("No conditions. Click here to add one.", empty.Text.String())
+		}
+		c.Equal([]string{"Condition", "New Condition", "Structure", "All of Group", "Any of Group"},
+			menuLabels(p.treeAddEntries(f.Root, "r")))
+		menuAction(p.treeAddEntries(f.Root, "r"), "All of Group")()
+	})
+	screen.Do(func() {
+		c.NotNil(p.FindRefKey("r"+keyPill), "choosing the group type shows the pill")
+		c.True(f.Root.All)
+		c.Equal(0, len(f.Root.Children), "and adds no group")
+		host.undoMgr.Undo()
+	})
+	screen.Do(func() {
+		c.Nil(p.FindRefKey("r"+keyPill), "which undo takes back")
+		c.Equal("r"+keyAdd, focusedRefKey(p.Window()), "giving the focus to what adds to the root")
+	})
+
+	for _, mode := range []filterGroupMode{filterAnyOf, filterNoneOf, filterNotAllOf} {
+		f = gurps.NewListFilter("")
+		mode.apply(f.Root)
+		p, _ = showListFilterPanel(t, screen, f)
+		screen.Do(func() {
+			c.NotNil(p.FindRefKey("r"+keyPill), "an empty root that is %s shows its pill", mode)
+			if empty, ok := refAs[*unison.Button](t, p.AsPanel(), "r:empty"); ok {
+				c.Equal("Empty group. Add a condition or drag one here.", empty.Text.String())
+			}
+		})
+	}
+
+	// An empty root that shows its pill has one add button, beside its placeholder, and adding a group to it adds a
+	// group rather than changing its own type.
+	f = gurps.NewListFilter("")
+	filterNoneOf.apply(f.Root)
+	p, _ = showListFilterPanel(t, screen, f)
+	screen.Do(func() {
+		c.Nil(p.FindRefKey("r"+keyMore), "the head has no add button of its own")
+		c.NotNil(p.FindRefKey("r"+keyAdd), "the placeholder's add button is the one")
+		menuAction(p.treeAddEntries(f.Root, "r"), "All of Group")()
+	})
+	screen.Do(func() {
+		c.Equal(filterNoneOf, groupModeOf(f.Root), "the root keeps its type")
+		group, ok := p.node("r.0").(*gurps.FilterGroup)
+		c.True(ok && group.All && !group.Not, "and holds a new all of group")
+		c.NotNil(p.FindRefKey("r"+keyMore), "which brings back the head's add button")
+	})
+
+	// The root shows its placeholder alone again once undo empties it, and choosing a group type for it then clears
+	// whatever its head said.
+	f = gurps.NewListFilter("")
+	p, _ = showListFilterPanel(t, screen, f)
+	screen.Do(func() { menuAction(p.treeAddEntries(f.Root, "r"), "Any of Group")() })
+	screen.Do(func() { c.Equal(filterAnyOf, groupModeOf(f.Root), "Any of Group makes the bare root any of") })
+
+	// Choosing All of in the pill of an empty root keeps the pill.
+	f = gurps.NewListFilter("")
+	filterAnyOf.apply(f.Root)
+	p, _ = showListFilterPanel(t, screen, f)
+	screen.Do(func() {
+		if pill, ok := refAs[*unison.PopupMenu[filterGroupMode]](t, p.AsPanel(), "r"+keyPill); ok {
+			pill.Select(filterAllOf)
+		}
+	})
+	screen.Do(func() {
+		c.True(f.Root.All)
+		c.NotNil(p.FindRefKey("r"+keyPill), "the pill stays once a mode has been chosen")
+	})
+}
+
+func TestListFilterPanelAddCondition(t *testing.T) {
+	c := check.New(t)
+	screen, _ := startHeadlessWorkspace(t, c)
+	f := newTestListFilter()
+	p, host := showListFilterPanel(t, screen, f)
+	screen.Do(func() {
+		lastFilterFieldKeyUsed[listFilterPanelTestKey] = "weight"
+		c.Equal([]string{
+			"Add Condition", "New Condition", "Add Structure", "All of Group", "Any of Group", "-", "Duplicate",
+			"Move Up", "Move Down", "Wrap in Group", "-", "Delete",
+		}, menuLabels(p.moreEntries(p.node("r.2"), "r.2")))
+		menuAction(p.treeAddEntries(f.Root, "r"), "New Condition")()
+	})
+	screen.Do(func() {
+		c.Equal("r.6", p.open, "a new condition goes at the end, open")
+		cond := filterConditionAt(t, p, "r.6")
+		c.Equal("weight", cond.Field, "on the field last chosen")
+		c.Equal(criteria.AnyNumber, cond.Weight.Compare, "accepting anything")
+		c.Equal("r.6:field", focusedRefKey(p.Window()), "the field popup takes the focus")
+		menuAction(p.moreEntries(p.node("r.2"), "r.2"), "Any of Group")()
+	})
+	screen.Do(func() {
+		group, ok := p.node("r.2.2").(*gurps.FilterGroup)
+		c.True(ok && !group.All, "a group added through a group's more menu goes at its end")
+		c.Equal("r.2.2"+keyMore, focusedRefKey(p.Window()), "and its more button takes the focus")
+		host.undoMgr.Undo()
+		host.undoMgr.Undo()
+	})
+	screen.Do(func() {
+		c.Equal([]string{"name", "weight", "None of:", "tags", "cost", ":end", "container", "future_field", "unknown"},
+			filterShape(f.Root), "each addition is one step to undo")
+	})
+}
+
+func TestListFilterPanelFieldChange(t *testing.T) {
+	c := check.New(t)
+	screen, _ := startHeadlessWorkspace(t, c)
+	f := newTestListFilter()
+	p, host := showListFilterPanel(t, screen, f)
+	screen.Do(func() { p.toggle("r.0") })
+	screen.Do(func() {
+		popup, ok := refAs[*unison.PopupMenu[string]](t, p.AsPanel(), "r.0:field")
+		if !ok {
+			return
+		}
+		c.Equal("have a name", popup.Text())
+		popup.Select("cost")
+	})
+	screen.Do(func() {
+		cond := filterConditionAt(t, p, "r.0")
+		c.Equal("cost", cond.Field)
+		c.Equal(criteria.Text{}, cond.Text, "the old field's criterion is cleared")
+		c.Equal(criteria.Number{}, cond.Number, "and the new one's accepts anything")
+		c.Equal("cost", lastFilterFieldKeyUsed[listFilterPanelTestKey],
+			"the field is remembered for the next condition")
+		if popup, ok := refAs[*unison.PopupMenu[criteria.NumericComparison]](t, p.AsPanel(), "r.0:numbercmp"); ok {
+			c.Equal(len(criteria.NumericComparisons), popup.ItemCount(), "which offers anything")
+		}
+		c.Nil(p.FindRefKey("r.0:number"), "and no number while it is anything")
+		if not, ok := refAs[*unison.PopupMenu[bool]](t, p.AsPanel(), "r.0:not"); ok {
+			not.Select(true)
+		}
+	})
+	screen.Do(func() {
+		c.True(filterConditionAt(t, p, "r.0").Not, "Must not negates the condition")
+		host.undoMgr.Undo()
+		host.undoMgr.Undo()
+	})
+	screen.Do(func() {
+		cond := filterConditionAt(t, p, "r.0")
+		c.Equal("name", cond.Field, "a field change is one step to undo")
+		c.Equal(criteria.Text{Compare: criteria.ContainsText, Qualifier: "sword"}, cond.Text, "criteria and all")
+		c.False(cond.Not)
+	})
+}
+
+func TestListFilterPanelPill(t *testing.T) {
+	c := check.New(t)
+	screen, _ := startHeadlessWorkspace(t, c)
+	f := newTestListFilter()
+	p, _ := showListFilterPanel(t, screen, f)
+	for _, one := range []struct {
+		mode     filterGroupMode
+		all, not bool
+	}{
+		{filterAllOf, true, false},
+		{filterAnyOf, false, false},
+		{filterNotAllOf, true, true},
+		{filterNoneOf, false, true},
+	} {
+		screen.Do(func() {
+			if pill, ok := refAs[*unison.PopupMenu[filterGroupMode]](t, p.AsPanel(), "r.2"+keyPill); ok {
+				pill.Select(one.mode)
+			}
+		})
+		screen.Do(func() {
+			group, ok := p.node("r.2").(*gurps.FilterGroup)
+			c.True(ok)
+			if ok {
+				c.Equal(one.all, group.All, one.mode.String())
+				c.Equal(one.not, group.Not, one.mode.String())
+				c.Equal(one.mode, groupModeOf(group))
+			}
+		})
+	}
+}
+
+func TestListFilterPanelMoreMenu(t *testing.T) {
+	c := check.New(t)
+	screen, _ := startHeadlessWorkspace(t, c)
+	f := newTestListFilter()
+	p, host := showListFilterPanel(t, screen, f)
+	screen.Do(func() { menuAction(p.moreEntries(p.node("r.0"), "r.0"), "Wrap in Group")() })
+	screen.Do(func() {
+		c.Equal([]string{
+			"Any of:", "name", ":end", "weight", "None of:", "tags", "cost", ":end", "container",
+			"future_field", "unknown",
+		}, filterShape(f.Root), "a wrapped node goes in a group of the other kind")
+		c.True(slices.Contains(menuLabels(p.moreEntries(p.node("r.0"), "r.0")), "Ungroup"),
+			"a group of one can be ungrouped")
+		if pill, ok := refAs[*unison.PopupMenu[filterGroupMode]](t, p.AsPanel(), "r.0"+keyPill); ok {
+			pill.Select(filterNoneOf)
+		}
+	})
+	screen.Do(func() {
+		c.False(slices.Contains(menuLabels(p.moreEntries(p.node("r.0"), "r.0")), "Ungroup"),
+			"but not once it is negated")
+		host.undoMgr.Undo()
+	})
+	screen.Do(func() { menuAction(p.moreEntries(p.node("r.0"), "r.0"), "Ungroup")() })
+	screen.Do(func() { menuAction(p.moreEntries(p.node("r.3"), "r.3"), "Duplicate")() })
+	screen.Do(func() { menuAction(p.moreEntries(p.node("r.1"), "r.1"), "Move Down")() })
+	screen.Do(func() { menuAction(p.moreEntries(p.node("r.1.0"), "r.1.0"), "Move Up")() })
+	screen.Do(func() {
+		c.Equal("r.1"+keyMore, focusedRefKey(p.Window()), "Move Up steps out of the group, ahead of it")
+		c.Equal("weight", filterConditionAt(t, p, "r.1").Field)
+		menuAction(p.moreEntries(p.node("r.1"), "r.1"), "Move Down")()
+	})
+	screen.Do(func() {
+		c.Equal("r.1.0"+keyMore, focusedRefKey(p.Window()), "the moved node's more button takes the focus")
+		menuAction(p.moreEntries(p.node("r.4"), "r.4"), "Delete")()
+	})
+	screen.Do(func() {
+		c.Equal("r.4"+keyMore, focusedRefKey(p.Window()), "after a delete, what came next takes the focus")
+		c.Equal([]string{"name", "None of:", "weight", "tags", "cost", ":end", "container", "container", "unknown"},
+			filterShape(f.Root), "moving down steps into a group, and the unknown field is gone")
+		group, ok := p.node("r.1").(*gurps.FilterGroup)
+		c.True(ok)
+		if ok {
+			for _, child := range group.Children {
+				c.True(child.ParentGroup() == group, "the moved node belongs to its new group")
+			}
+		}
+		host.undoMgr.Undo()
+	})
+	screen.Do(func() {
+		c.Equal("r.4"+keyMore, focusedRefKey(p.Window()), "undoing the delete gives its more button the focus")
+		c.Equal("future_field", filterConditionAt(t, p, "r.4").Field, "and puts it back")
+	})
+}
+
+func TestListFilterPanelKeepsUnknownData(t *testing.T) {
+	c := check.New(t)
+	screen, _ := startHeadlessWorkspace(t, c)
+	f := newTestListFilter()
+	p, _ := showListFilterPanel(t, screen, f)
+	var original *gurps.UnknownFilterNode
+	screen.Do(func() {
+		var ok bool
+		original, ok = p.node("r.5").(*gurps.UnknownFilterNode)
+		c.True(ok, "the fixture's unknown node is at r.5")
+	})
+	if original == nil {
 		return
 	}
-	c.Equal(1, rootNot.SelectedIndex(), "a group that must not match must show the second choice")
-	c.Equal(1, negatedNot.SelectedIndex(), "and so must a condition that must not match")
-	c.Equal(0, plainNot.SelectedIndex(), "while a condition that must match shows the first")
-
-	// Each popup writes back to the node it belongs to, and to no other.
-	selectPopupIndex(rootNot, 0)
-	c.False(filter.Root.Not, "picking the first choice must make the group one that has to match")
-	c.True(negated.Not, "and must leave the conditions below it alone")
-	selectPopupIndex(plainNot, 1)
-	c.True(plain.Not, "picking the second choice must invert the condition")
-	c.True(negated.Not, "and must leave the other condition alone")
-	selectPopupIndex(negatedNot, 0)
-	c.False(negated.Not, "picking the first choice must put a negated condition back to one that has to match")
-	c.True(plain.Not, "and must leave the other condition alone")
+	data := bytes.Clone(original.Data)
+	screen.Do(func() { menuAction(p.moreEntries(p.node("r.5"), "r.5"), "Duplicate")() })
+	screen.Do(func() { menuAction(p.moreEntries(p.node("r.6"), "r.6"), "Move Up")() })
+	screen.Do(func() { menuAction(p.moreEntries(p.node("r.6"), "r.6"), "Delete")() })
+	screen.Do(func() {
+		c.Equal(6, len(f.Root.Children))
+		kept, isUnknown := p.node("r.5").(*gurps.UnknownFilterNode)
+		c.True(isUnknown, "the copy is left where the original was")
+		if isUnknown {
+			c.True(kept != original, "and is a copy")
+			c.True(bytes.Equal(data, kept.Data), "holding the original data byte for byte")
+		}
+	})
 }
 
-// TestListFilterPanelPreservesUnknownField verifies that a condition naming a field this version of GCS doesn't have --
-// which a filter written by a newer version may hold -- is shown as something the editor cannot represent and left
-// exactly as it was, rather than being quietly turned into a condition on a field this version does have.
-func TestListFilterPanelPreservesUnknownField(t *testing.T) {
+func TestListFilterPanelDragAndDrop(t *testing.T) {
 	c := check.New(t)
-	filter := gurps.NewListFilter("Test")
-	cond := gurps.NewFilterCondition(filter.Root, "not_a_field_this_version_knows")
-	cond.Not = true
+	screen, _ := startHeadlessWorkspace(t, c)
+	f := newTestListFilter()
+	p, host := showListFilterPanel(t, screen, f)
+	drag := func(from, onto string, fraction float32, capture string) (accepted bool) {
+		var where geom.Point
+		data := &rowDrag{panel: p.AsPanel(), path: from}
+		screen.Do(func() {
+			more, ok := refAs[*unison.Panel](t, p.AsPanel(), onto+keyMore)
+			if !ok {
+				return
+			}
+			target := more.Parent()
+			r := p.RectFromRoot(target.RectToRoot(target.ContentRect(true)))
+			where = geom.NewPoint(r.X+r.Width/3, r.Y+r.Height*fraction)
+			p.dragOver(where, data)
+			accepted = p.dropTarget != nil
+		})
+		if capture != "" {
+			captureScreen(t, c, screen, capture)
+		}
+		screen.Do(func() { p.drop(where, data) })
+		return accepted
+	}
+	shape := func() []string {
+		var s []string
+		screen.Do(func() { s = filterShape(f.Root) })
+		return s
+	}
+	c.False(drag("r.2", "r.2.0", 0.5, ""), "a group can't go into itself")
+	c.True(drag("r.3", "r.2", 0.8, "list_filter_drop_into_group"), "below the top of a group's head is into it")
+	c.Equal([]string{"name", "weight", "None of:", "tags", "cost", "container", ":end", "future_field", "unknown"},
+		shape())
+	c.True(drag("r.0", "r.2.0", 0.2, "list_filter_drop_before_row"), "the top of a row is before it")
+	c.Equal([]string{"weight", "None of:", "name", "tags", "cost", "container", ":end", "future_field", "unknown"},
+		shape())
+	screen.Do(host.undoMgr.Undo)
+	c.Equal([]string{"name", "weight", "None of:", "tags", "cost", "container", ":end", "future_field", "unknown"},
+		shape(), "a drop is one step to undo")
+
+	// Beside the last child of a group is after the group.
+	screen.Do(func() {
+		group, ok := refAs[*unison.Panel](t, p.AsPanel(), "r.2:group")
+		if !ok {
+			return
+		}
+		more, ok := refAs[*unison.Panel](t, p.AsPanel(), "r.2.2"+keyMore)
+		if !ok {
+			return
+		}
+		last := more.Parent()
+		where := geom.NewPoint(p.RectFromRoot(group.RectToRoot(group.ContentRect(true))).X+4,
+			p.RectFromRoot(last.RectToRoot(last.ContentRect(true))).Bottom()-2)
+		data := &rowDrag{panel: p.AsPanel(), path: "r.0"}
+		p.dragOver(where, data)
+		c.Equal(group, p.dropTarget, "the group is the target")
+		c.Equal(dropAfter, p.dropWhere, "after it")
+		p.drop(where, data)
+	})
+	c.Equal([]string{"weight", "None of:", "tags", "cost", "container", ":end", "name", "future_field", "unknown"},
+		shape())
+
+	// Onto the placeholder of an empty group is into it.
+	screen.Do(func() { menuAction(p.treeAddEntries(f.Root, treeRootPath), "Any of Group")() })
+	screen.Do(func() {
+		empty, ok := refAs[*unison.Panel](t, p.AsPanel(), "r.5:empty")
+		if !ok {
+			return
+		}
+		r := p.RectFromRoot(empty.RectToRoot(empty.ContentRect(true)))
+		where := geom.NewPoint(r.CenterX(), r.CenterY())
+		data := &rowDrag{panel: p.AsPanel(), path: "r.0"}
+		p.dragOver(where, data)
+		c.Equal(dropInto, p.dropWhere, "the placeholder takes the row into its group")
+		p.drop(where, data)
+	})
+	c.Equal([]string{
+		"None of:", "tags", "cost", "container", ":end", "name", "future_field", "unknown", "Any of:",
+		"weight", ":end",
+	}, shape())
+}
+
+// TestListFilterPanelPassesEscape checks the rows' own handling of Escape, which passEscape sets for the filter editor:
+// it closes the open row and is taken, and with no row open, it is left for what holds the panel. The dialog closes
+// the open row before the rows see the key, which TestListFilterEditorKeysHeadless covers.
+func TestListFilterPanelPassesEscape(t *testing.T) {
+	c := check.New(t)
+	screen, _ := startHeadlessWorkspace(t, c)
+	p, _ := showListFilterPanel(t, screen, newTestListFilter())
+	screen.Do(func() { p.toggle("r.0") })
+	screen.Do(func() { c.True(p.keyDown(unison.KeyEscape, mod.None, false), "Escape closes the open row") })
+	screen.Do(func() {
+		c.Equal("", p.open)
+		c.False(p.keyDown(unison.KeyEscape, mod.None, false), "and with none open, is left for the dialog")
+	})
+}
+
+// TestListFilterPanelFieldKinds switches one condition through a field of every kind and back, checking that each
+// brings the controls its kind compares with and clears what the last one had.
+func TestListFilterPanelFieldKinds(t *testing.T) {
+	c := check.New(t)
+	screen, _ := startHeadlessWorkspace(t, c)
+	f := newTestListFilter()
+	p, _ := showListFilterPanel(t, screen, f)
+	screen.Do(func() { p.toggle("r.0") })
+	for _, one := range []struct {
+		field, control string
+	}{
+		{"tags", "r.0:textcmp"},
+		{"cost", "r.0:numbercmp"},
+		{"weight", "r.0:weightcmp"},
+		{"container", ""},
+		{"name", "r.0:textcmp"},
+	} {
+		screen.Do(func() {
+			if popup, ok := p.FindRefKey("r.0:field").Self.(*unison.PopupMenu[string]); ok {
+				popup.Select(one.field)
+			}
+		})
+		screen.Do(func() {
+			cond := filterConditionAt(t, p, "r.0")
+			c.Equal(one.field, cond.Field, one.field)
+			c.True(cond.Text.IsZero() && cond.Number.IsZero() && cond.Weight.IsZero(), "%s starts clear", one.field)
+			for _, key := range []string{"r.0:textcmp", "r.0:numbercmp", "r.0:weightcmp"} {
+				c.Equal(key == one.control, p.FindRefKey(key) != nil, "%s: %s", one.field, key)
+			}
+		})
+	}
+}
+
+// TestListFilterPanelSavesUnknownData shows a filter loaded with a node of a kind and a condition on a field this
+// version doesn't know, changes the rest of it, and checks that saving writes both back out byte for byte.
+func TestListFilterPanelSavesUnknownData(t *testing.T) {
+	c := check.New(t)
+	screen, _ := startHeadlessWorkspace(t, c)
+	const unknownNode = `{"type":"future_node","weird":[1,2]}`
+	const unknownField = `{"type":"condition","field":"future_field","text":{"compare":"contains","qualifier":"x"}}`
+	var f gurps.ListFilter
+	c.NoError(jio.Unmarshal([]byte(`{"name":"Saved","root":{"type":"group","all":true,"children":[`+unknownNode+
+		`,`+unknownField+`,{"type":"condition","field":"name"}]}}`), &f))
+	p, _ := showListFilterPanel(t, screen, &f)
+	screen.Do(func() { menuAction(p.moreEntries(p.node("r.2"), "r.2"), "Move Up")() })
+	screen.Do(func() {
+		if pill, ok := refAs[*unison.PopupMenu[filterGroupMode]](t, p.AsPanel(), "r"+keyPill); ok {
+			pill.Select(filterAnyOf)
+		}
+	})
+	var out []byte
+	var err error
+	screen.Do(func() { out, err = jio.Marshal(&f) })
+	c.NoError(err)
+	c.Contains(string(out), unknownNode, "the unknown node is saved as it was")
+	c.Contains(string(out), unknownField, "and so is the condition on an unknown field")
+	c.Contains(string(out), `"all":false`, "along with the change")
+}
+
+// TestListFilterPanelKeepsUnknownField shows a filter with a condition on a field this version doesn't know, changes
+// the rest of it, and checks that saving keeps the condition's field, its negation and its criteria.
+func TestListFilterPanelKeepsUnknownField(t *testing.T) {
+	c := check.New(t)
+	screen, _ := startHeadlessWorkspace(t, c)
+	f := gurps.NewListFilter("Saved")
 	text := criteria.Text{Compare: criteria.IsText, Qualifier: "Sword"}
-	cond.Text = text
-	filter.Root.Children = append(filter.Root.Children, cond)
-	panel := newTestListFilterPanel(t, "adq", filterFieldInfos(gurps.TraitFilterFields()), filter)
-	root := filterRootRow(panel)
-	row := filterChildRow(root, 0)
-
-	c.Equal("not_a_field_this_version_knows", cond.Field, "a condition on an unknown field must keep the field it names")
-	c.Equal(text, cond.Text,
-		"along with the criteria that went with it, which a newer version of GCS still understands")
-	c.True(cond.Not, "and its negation")
-	c.Nil(filterFieldPopup(row), "a condition the editor can only preserve must offer no field popup")
-	c.Equal(3, len(row.Children()),
-		"a preserved row holds its buttons, its and/or label and the label saying what it is, and nothing more")
-	checkPreservedFilterRow(c, row, cond.Field, i18n.Text("Delete this condition"))
-
-	// Nothing can be altered, but the condition can still be deleted deliberately.
-	filterRowButtons(row)[0].ClickCallback()
-	c.Equal(0, len(filter.Root.Children), "deleting must take the condition out of the group")
-	c.Equal(filterGroupColumns, len(root.Children()), "and its row out of the group's row")
-}
-
-// TestListFilterPanelPreservesUnknownNode verifies that a node of a kind this version of GCS doesn't understand -- one
-// a newer version wrote -- is shown as a row saying so, holds nothing that could alter it, keeps the data it was
-// loaded with, and can be deleted deliberately.
-func TestListFilterPanelPreservesUnknownNode(t *testing.T) {
-	c := check.New(t)
-	const data = `{"type":"future_node","weird":[1,2]}`
-	filter := gurps.NewListFilter("Test")
-	node := gurps.NewUnknownFilterNode("future_node", jsontext.Value(data))
-	filter.Root.Children = append(filter.Root.Children, node)
-	filter.EnsureValidity()
-	panel := newTestListFilterPanel(t, "adq", filterFieldInfos(gurps.TraitFilterFields()), filter)
-	root := filterRootRow(panel)
-	row := filterChildRow(root, 0)
-
-	c.Equal(3, len(row.Children()),
-		"a preserved row holds its buttons, its and/or label and the label saying what it is, and nothing more")
-	checkPreservedFilterRow(c, row, "future_node", i18n.Text("Delete this node"))
-	c.Equal(data, node.Data.String(), "the node's original data must be left exactly as it was")
-
-	filterRowButtons(row)[0].ClickCallback()
-	c.Equal(0, len(filter.Root.Children), "deleting must take the node out of the group")
-	c.Equal(filterGroupColumns, len(root.Children()), "and its row out of the group's row")
-}
-
-// checkPreservedFilterRow verifies that a row the editor can only preserve says what it holds, explains why nothing
-// can be done to it, and offers the delete button alone.
-func checkPreservedFilterRow(c check.Checker, row *unison.Panel, mentions, deleteTooltip string) {
-	label, ok := row.Children()[2].Self.(*unison.Label)
-	c.True(ok, "a preserved row must end with the label that says what it holds")
-	if ok {
-		c.Contains(label.String(), mentions, "the label must name what was found")
-		// The tooltip is compared in the wrapped form every tooltip is built with, since that is what the labels
-		// holding it were given.
-		c.Equal(wrapTextForTooltip(preservedFilterNodeTooltip()), tooltipText(label.Tooltip),
-			"the label must explain that what it stands for is kept as it is")
-	}
-	buttons := filterRowButtons(row)
-	c.Equal(1, len(buttons), "a preserved row offers only the delete button, since there is nothing to add to or edit")
-	if len(buttons) == 1 {
-		c.Equal(deleteTooltip, tooltipText(buttons[0].Tooltip), "which must say what it would delete")
-	}
-}
-
-// TestListFilterPanelSkipsNodeItCannotBuild verifies that a node the editor has no case for at all is passed over
-// without a row, rather than bringing the editor down, and is left in the filter so that saving writes it back out.
-func TestListFilterPanelSkipsNodeItCannotBuild(t *testing.T) {
-	c := check.New(t)
-	filter := gurps.NewListFilter("Test")
-	filter.Root.Children = append(filter.Root.Children, &testUnhandledFilterNode{})
-	filter.EnsureValidity()
-	var panel *listFilterPanel
-	c.NotPanics(func() {
-		panel = newTestListFilterPanel(t, "adq", filterFieldInfos(gurps.TraitFilterFields()), filter)
-	}, "a node the editor has no case for must not bring the editor down")
-	if panel == nil {
+	number := criteria.Number{Compare: criteria.AtLeastNumber, Qualifier: fxp.FromInteger(3)}
+	future := gurps.NewFilterCondition(f.Root, "future_field")
+	future.Not = true
+	future.Text = text
+	future.Number = number
+	tags := gurps.NewFilterCondition(f.Root, "tags")
+	name := gurps.NewFilterCondition(f.Root, "name")
+	f.Root.Children = gurps.FilterNodes{future, tags, name}
+	p, _ := showListFilterPanel(t, screen, f)
+	screen.Do(func() {
+		c.True(future == p.node("r.0"), "the future field's condition is at r.0")
+		c.True(tags == p.node("r.1"), "the tags condition is at r.1")
+		c.True(name == p.node("r.2"), "the name condition is at r.2")
+		menuAction(p.moreEntries(p.node("r.2"), "r.2"), "Move Up")()
+	})
+	screen.Do(func() {
+		if pill, ok := refAs[*unison.PopupMenu[filterGroupMode]](t, p.AsPanel(), "r"+keyPill); ok {
+			pill.Select(filterAnyOf)
+		}
+	})
+	screen.Do(func() { p.toggle("r.2") })
+	screen.Do(func() {
+		if field, ok := refAs[*unison.PopupMenu[string]](t, p.AsPanel(), "r.2:field"); ok {
+			field.Select("cost")
+		}
+	})
+	var out []byte
+	var err error
+	screen.Do(func() { out, err = jio.Marshal(f) })
+	c.NoError(err)
+	var saved gurps.ListFilter
+	c.NoError(jio.Unmarshal(out, &saved))
+	c.Equal([]string{"future_field", "name", "cost"}, filterShape(saved.Root), "the other changes are saved")
+	c.False(saved.Root.All, "the pill's choice among them")
+	if len(saved.Root.Children) == 0 {
 		return
 	}
-
-	c.Equal(filterGroupColumns, len(filterRootRow(panel).Children()),
-		"a node the editor has no case for must be passed over without a row")
-	c.Equal(1, len(filter.Root.Children), "but must be left in the group it belongs to")
-	c.True(filter.Root.Children[0].ParentGroup() == filter.Root, "still owned by that group")
+	kept, ok := saved.Root.Children[0].(*gurps.FilterCondition)
+	c.True(ok, "the condition on the future field is saved as a condition")
+	if ok {
+		c.Equal("future_field", kept.Field, "keeping its field")
+		c.True(kept.Not, "its negation")
+		c.Equal(text, kept.Text, "its text criterion")
+		c.Equal(number, kept.Number, "and its number criterion")
+	}
 }
 
-// testUnhandledFilterNode is a filter node of a kind the editor has no case for. The editor has one for every kind the
-// model can produce, so a stand-in is needed to reach the fallback that logs the node and builds no row for it.
-type testUnhandledFilterNode struct {
-	parent *gurps.FilterGroup
-}
-
-// NodeType implements gurps.FilterNode.
-func (n *testUnhandledFilterNode) NodeType() filternode.Type {
-	return filternode.Unknown
-}
-
-// ParentGroup implements gurps.FilterNode.
-func (n *testUnhandledFilterNode) ParentGroup() *gurps.FilterGroup {
-	return n.parent
-}
-
-// SetParentGroup implements gurps.FilterNode.
-func (n *testUnhandledFilterNode) SetParentGroup(parent *gurps.FilterGroup) {
-	n.parent = parent
-}
-
-// Clone implements gurps.FilterNode.
-func (n *testUnhandledFilterNode) Clone(parent *gurps.FilterGroup) gurps.FilterNode {
-	return &testUnhandledFilterNode{parent: parent}
-}
-
-// Hash implements gurps.FilterNode.
-func (n *testUnhandledFilterNode) Hash(_ hash.Hash) {
-}
-
-// TestFilterAndOrTextSurvivesAnEmptiedGroup verifies that the and/or label of a node that still points at its group
-// can be asked for after the group has been emptied, which is the same shape a prerequisite's label has to withstand.
-func TestFilterAndOrTextSurvivesAnEmptiedGroup(t *testing.T) {
+// TestListFilterPanelControlNamesDiffer checks that the controls of an open condition of each kind, and the group
+// pills, have names of their own for a screen reader.
+func TestListFilterPanelControlNamesDiffer(t *testing.T) {
 	c := check.New(t)
-	group := gurps.NewFilterGroup(nil)
-	one := gurps.NewFilterCondition(group, "name")
-	two := gurps.NewFilterCondition(group, "name")
-	group.Children = []gurps.FilterNode{one, two}
-	c.Equal(noAndOr, filterAndOrText(one), "the first of two nodes gets no label")
-	c.Equal(i18n.Text("and"), filterAndOrText(two), "the second of two nodes is joined to the first")
-
-	group.Children = nil
-	c.NotPanics(func() {
-		c.Equal(noAndOr, filterAndOrText(two), "a node whose group has been emptied gets no label")
-	}, "an emptied group must not be indexed")
+	screen, _ := startHeadlessWorkspace(t, c)
+	p, _ := showListFilterPanel(t, screen, newTestListFilter())
+	var pill *unison.Panel
+	var wnd *unison.Window
+	screen.Do(func() {
+		pill = p.FindRefKey("r.2" + keyPill)
+		wnd = p.Window()
+	})
+	c.NotNil(screen.AccessibilityTree(wnd))
+	pillNode := screen.AccessibilityNodeFor(pill)
+	c.NotNil(pillNode)
+	if pillNode != nil {
+		c.Equal("Match", pillNode.Name, "the group pill says what it chooses")
+	}
+	for _, path := range []string{"r.0", "r.1", "r.2.0", "r.2.1", "r.3"} {
+		screen.Do(func() { p.toggle(path) })
+		names := make(map[string]bool)
+		var controls []*unison.Panel
+		screen.Do(func() {
+			if editor, ok := refAs[*unison.Panel](t, p.AsPanel(), path+keyFirst); ok {
+				editor.HasInSelfOrDescendants(func(one *unison.Panel) bool {
+					if one.Focusable() {
+						controls = append(controls, one)
+					}
+					return false
+				})
+			}
+		})
+		c.NotNil(screen.AccessibilityTree(wnd))
+		c.True(len(controls) >= 2, path)
+		for _, one := range controls {
+			node := screen.AccessibilityNodeFor(one)
+			c.NotNil(node, path)
+			if node == nil {
+				continue
+			}
+			c.NotEqual("", node.Name, "%s: every control has a name", path)
+			c.False(names[node.Name], "%s: %s is shared", path, node.Name)
+			names[node.Name] = true
+		}
+		c.True(names["Must"], "%s: the Must popup is named for itself", path)
+	}
 }

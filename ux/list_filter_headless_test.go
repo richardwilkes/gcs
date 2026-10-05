@@ -18,19 +18,13 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/toolbox/v2/check"
+	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/mod"
 )
 
-// The trait field titles the tests pick in a condition row's field popup, the tooltips that identify the editor's
-// widgets, and the titles of the saved filter popup's commands.
+// The titles of the saved filter popup's commands.
 const (
-	nameFieldTitle        = "have a name"
-	tagsFieldTitle        = "have tags"
-	pointsFieldTitle      = "have points"
-	containerFieldTitle   = "be a container"
-	fieldPopupTooltip     = "The field to test"
-	addConditionTooltip   = "Add a condition"
 	newFilterItemTitle    = "New Filter…"
 	editFilterItemTitle   = "Edit Filter…"
 	deleteFilterItemTitle = "Delete Filter…"
@@ -117,6 +111,24 @@ func popupItemIndexFromEnd(screen *unison.HeadlessScreen, popup *unison.PopupMen
 	return index, title
 }
 
+// popupItemIndexOf returns the index of the popup's item with the title, failing the test if there is none.
+func popupItemIndexOf(t *testing.T, screen *unison.HeadlessScreen, popup *unison.PopupMenu[string], title string) int {
+	t.Helper()
+	index := -1
+	screen.Do(func() {
+		for i := range popup.ItemCount() {
+			if one, _ := popup.ItemAt(i); one == title {
+				index = i
+				return
+			}
+		}
+	})
+	if index == -1 {
+		t.Fatalf("the popup has no item %q", title)
+	}
+	return index
+}
+
 // dialogButton returns the dialog's button for the given modal response, failing the test if it has none.
 func dialogButton(t *testing.T, screen *unison.HeadlessScreen, dialog *unison.Dialog, response int) *unison.Button {
 	t.Helper()
@@ -128,115 +140,27 @@ func dialogButton(t *testing.T, screen *unison.HeadlessScreen, dialog *unison.Di
 	return button
 }
 
-// filterEditorRootRow returns the row of the filter editor's root group, which is the only child of the editor's
-// panel. Every other row hangs off of it: the group's own columns come first and the rows of its children follow.
-func filterEditorRootRow(t *testing.T, screen *unison.HeadlessScreen, dialogWnd *unison.Window) *unison.Panel {
+// dialogFilterPanel returns the filter editor in the dialog.
+func dialogFilterPanel(t *testing.T, screen *unison.HeadlessScreen, dialogWnd *unison.Window) *listFilterPanel {
 	t.Helper()
-	var row *unison.Panel
-	screen.Do(func() {
-		if panel, ok := firstPanelOfType[*listFilterPanel](dialogWnd.Content()); ok && len(panel.Children()) == 1 {
-			row = panel.Children()[0]
-		}
-	})
-	if row == nil {
-		t.Fatal("the filter editor has no root group row")
+	var p *listFilterPanel
+	screen.Do(func() { p, _ = firstPanelOfType[*listFilterPanel](dialogWnd.Content()) })
+	if p == nil {
+		t.Fatal("the dialog holds no filter editor")
 	}
-	return row
+	return p
 }
 
-// clickButtonWithTooltip clicks the button within root whose tooltip reads exactly text, failing the test if there is
-// none. The filter editor's buttons carry icons rather than titles, so the tooltip is what identifies them.
-func clickButtonWithTooltip(t *testing.T, screen *unison.HeadlessScreen, root *unison.Panel, text string) {
+// dialogNameField returns the filter editor's name field, failing the test unless it is the one string field in the
+// dialog, as it is while no row is open.
+func dialogNameField(t *testing.T, screen *unison.HeadlessScreen, dialogWnd *unison.Window) *StringField {
 	t.Helper()
-	var button *unison.Button
-	screen.Do(func() { button = buttonWithTooltip(root, text) })
-	if button == nil {
-		t.Fatalf("no button tooltipped %q", text)
+	var fields []*StringField
+	screen.Do(func() { fields = panelsOfType[*StringField](dialogWnd.Content()) })
+	if len(fields) != 1 {
+		t.Fatalf("expected the name field to be the dialog's one string field, found %d string fields", len(fields))
 	}
-	screen.Click(screen.PanelCenter(button))
-}
-
-// traitFilterFieldIndex returns the position of the trait field with the given title among the fields the condition
-// row's field popup offers, which are the trait fields in their own order.
-func traitFilterFieldIndex(t *testing.T, title string) int {
-	t.Helper()
-	for i, field := range gurps.TraitFilterFields() {
-		if field.Title == title {
-			return i
-		}
-	}
-	t.Fatalf("no trait filter field is titled %q", title)
-	return -1
-}
-
-// conditionFieldPopup returns the popup that chooses which field a condition row tests, found by the tooltip only it
-// carries, since the row holds two other popups of the same type.
-func conditionFieldPopup(t *testing.T, screen *unison.HeadlessScreen, row *unison.Panel) *unison.PopupMenu[string] {
-	t.Helper()
-	var popup *unison.PopupMenu[string]
-	screen.Do(func() {
-		for _, one := range panelsOfType[*unison.PopupMenu[string]](row) {
-			if one.Tooltip != nil && tooltipText(one.Tooltip) == fieldPopupTooltip {
-				popup = one
-				return
-			}
-		}
-	})
-	if popup == nil {
-		t.Fatal("the condition row has no field popup")
-	}
-	return popup
-}
-
-// conditionComparisonPopup returns the popup that leads a condition row's criteria, which is the third of the row's
-// popups, exactly as readConditionRow finds it: the must/must not popup and the field popup come ahead of it.
-func conditionComparisonPopup(t *testing.T, screen *unison.HeadlessScreen, row *unison.Panel) *unison.PopupMenu[string] {
-	t.Helper()
-	var popup *unison.PopupMenu[string]
-	screen.Do(func() {
-		if popups := panelsOfType[*unison.PopupMenu[string]](row); len(popups) > 2 {
-			popup = popups[2]
-		}
-	})
-	if popup == nil {
-		t.Fatal("the condition row has no comparison popup")
-	}
-	return popup
-}
-
-// conditionRowShape is what a condition row holds once its field has been chosen: the criteria widgets the field's
-// kind calls for, the tooltips those widgets carry, where the criteria's comparison popup stands, and whether the
-// row's layout has been brought into line with the children it now has.
-type conditionRowShape struct {
-	stringTooltips []string
-	strings        int
-	decimals       int
-	comparison     int
-	children       int
-	columns        int
-}
-
-// readConditionRow takes a snapshot of a condition row, all of it read in one pass on the UI thread. The comparison is
-// reported as -1 when the row has no comparison popup, which is what a yes/no field leaves behind.
-func readConditionRow(screen *unison.HeadlessScreen, row *unison.Panel) conditionRowShape {
-	shape := conditionRowShape{comparison: -1}
-	screen.Do(func() {
-		for _, field := range panelsOfType[*StringField](row) {
-			shape.strings++
-			shape.stringTooltips = append(shape.stringTooltips, tooltipText(field.Tooltip))
-		}
-		shape.decimals = len(panelsOfType[*DecimalField](row))
-		// The row's popups are, in order, the must/must not popup, the field popup and, when the field's kind calls for
-		// criteria, the comparison popup that leads them.
-		if popups := panelsOfType[*unison.PopupMenu[string]](row); len(popups) > 2 {
-			shape.comparison = popups[2].SelectedIndex()
-		}
-		shape.children = len(row.Children())
-		if layout, ok := row.Layout().(*unison.FlexLayout); ok {
-			shape.columns = layout.Columns
-		}
-	})
-	return shape
+	return fields[0]
 }
 
 // TestListFilterPopupAppliesSavedFilterHeadless drives the saved filter popup of a trait list inside a headless
@@ -330,19 +254,13 @@ func TestListFilterNewFilterDialogHeadless(t *testing.T) {
 		return enabled
 	}
 
-	var nameFields []*StringField
+	nameField := dialogNameField(t, screen, dialogWnd)
 	var contentWidth, contentHeight float32
 	screen.Do(func() {
-		nameFields = panelsOfType[*StringField](dialogWnd.Content())
 		rect := dialogWnd.ContentRect()
 		contentWidth = rect.Width
 		contentHeight = rect.Height
 	})
-	if len(nameFields) != 1 {
-		t.Fatalf("expected the editor of an empty filter to hold the name field alone, found %d string fields",
-			len(nameFields))
-	}
-	nameField := nameFields[0]
 	c.False(okEnabled(), "a filter with no name cannot be accepted")
 	c.True(contentWidth >= listFilterDialogMinWidth,
 		"the editor opens at least %d wide, but is %v", listFilterDialogMinWidth, contentWidth)
@@ -363,17 +281,16 @@ func TestListFilterNewFilterDialogHeadless(t *testing.T) {
 	c.True(okEnabled(), "a name no other saved filter bears can be accepted")
 	captureScreen(t, c, screen, "list_filter_dialog")
 
-	// Add a condition to the root group. It starts out testing the first field, which is a text one, so it brings a
-	// qualifier field of its own along.
-	clickButtonWithTooltip(t, screen, dialogWnd.Content(), addConditionTooltip)
-	rootRow := filterEditorRootRow(t, screen, dialogWnd)
-	var rootChildren, stringFields int
+	// Add a condition to the empty root through its placeholder. It starts out testing the first field, open.
+	p := dialogFilterPanel(t, screen, dialogWnd)
+	var placeholder *unison.Panel
+	screen.Do(func() { placeholder = p.FindRefKey(treeRootPath + ":empty") })
+	c.NotNil(placeholder, "an empty filter shows its placeholder")
+	screen.Do(func() { menuAction(p.treeAddEntries(p.filter.Root, treeRootPath), "New Condition")() })
 	screen.Do(func() {
-		rootChildren = len(rootRow.Children())
-		stringFields = len(panelsOfType[*StringField](dialogWnd.Content()))
+		c.Equal("r.0", p.open, "the added condition is open")
+		c.Equal("r.0:field", dialogWnd.Focus().RefKey, "with its field popup focused")
 	})
-	c.Equal(filterGroupColumns+1, rootChildren, "the group's own columns must be followed by the added condition's row")
-	c.Equal(2, stringFields, "the added condition brings a qualifier field of its own")
 
 	screen.Click(screen.PanelCenter(okButton))
 	var windows int
@@ -463,86 +380,193 @@ func TestListFilterDeleteAsksAndFallsBackHeadless(t *testing.T) {
 	c.Equal(itemCount-2, len(titles), "so the popup holds two items fewer than it did")
 }
 
-// TestListFilterConditionRowRebuildsForFieldKindHeadless drives a condition row's field popup inside a headless
-// workspace, showing that the criteria trailing the popup are thrown away and rebuilt to suit each field's kind, that
-// the row's layout follows, and that canceling the editor saves nothing.
-func TestListFilterConditionRowRebuildsForFieldKindHeadless(t *testing.T) {
+// TestListFilterEditorKeysHeadless drives the filter editor's keys inside a headless workspace: the key bindings of
+// Undo and Redo work within the dialog, which has no menu bar of its own, whether the focus is in the name field, the
+// conditions or a button, and undoing the name brings the OK button into line. Escape closes the open row before it
+// cancels the dialog, wherever the focus is, and Return accepts it.
+func TestListFilterEditorKeysHeadless(t *testing.T) {
+	c := check.New(t)
+	screen, wnd := startHeadlessWorkspace(t, c)
+	swapForTest(t, &gurps.GlobalSettings().ListFilters, make(map[string][]*gurps.ListFilter))
+	swapForTest(t, &lastFilterFieldKeyUsed, make(map[string]string))
+	seedListFilter("Mental", "tags", "Mental")
+	d := openListFilterTraitDockable(t, screen)
+	newIndex := popupItemIndexOf(t, screen, d.savedFilters.popup, newFilterItemTitle)
+	choosePopupItem(t, screen, wnd, d.savedFilters.popup, newIndex)
+	dialogWnd, dialog := modalDialog(t, screen, wnd)
+	p := dialogFilterPanel(t, screen, dialogWnd)
+	okButton := dialogButton(t, screen, dialog, unison.ModalResponseOK)
+	cancelButton := dialogButton(t, screen, dialog, unison.ModalResponseCancel)
+	nameField := dialogNameField(t, screen, dialogWnd)
+	type state struct {
+		name     string
+		open     string
+		children int
+		ok       bool
+	}
+	read := func() state {
+		var s state
+		screen.Do(func() {
+			s = state{
+				name:     nameField.Text(),
+				open:     p.open,
+				children: len(p.filter.Root.Children),
+				ok:       okButton.Enabled(),
+			}
+		})
+		return s
+	}
+	focus := func(panel unison.Paneler) { screen.Do(func() { panel.AsPanel().RequestFocus() }) }
+	windows := func() int {
+		var n int
+		screen.Do(func() { n = len(unison.Windows()) })
+		return n
+	}
+	undo := func() { screen.KeyPress(unison.KeyZ, mod.OSMenuCommand()) }
+	redo := func() { screen.KeyPress(unison.KeyY, mod.OSMenuCommand()) }
+
+	screen.Type("Ranged")
+	screen.Do(func() { menuAction(p.treeAddEntries(p.filter.Root, treeRootPath), "New Condition")() })
+	c.Equal(state{name: "Ranged", open: "r.0", children: 1, ok: true}, read(), "a named filter with a condition")
+
+	focus(nameField)
+	undo()
+	c.Equal(0, read().children, "Undo in the name field takes the condition back")
+	undo()
+	c.Equal(state{}, read(), "and then the name, which leaves OK off")
+	redo()
+	c.Equal(state{name: "Ranged", ok: true}, read(), "Redo puts the name back, and OK on")
+	redo()
+	c.Equal(state{name: "Ranged", open: "r.0", children: 1, ok: true}, read(), "and then the condition, open")
+
+	focus(okButton)
+	screen.KeyPress(unison.KeyEscape, mod.None)
+	c.Equal("", read().open, "Escape on OK closes the open row")
+	c.Equal(2, windows(), "and leaves the dialog up")
+	focus(cancelButton)
+	undo()
+	c.Equal(0, read().children, "Undo on Cancel works too")
+	redo()
+	c.Equal(state{name: "Ranged", open: "r.0", children: 1, ok: true}, read(), "as does Redo, opening the row again")
+	focus(cancelButton)
+	screen.KeyPress(unison.KeyEscape, mod.None)
+	c.Equal("", read().open, "Escape on Cancel closes it")
+	screen.Do(func() { p.toggle("r.0") })
+	focus(nameField)
+	screen.KeyPress(unison.KeyEscape, mod.None)
+	c.Equal("", read().open, "Escape in the name field closes it too")
+	c.Equal(2, windows(), "leaving the dialog up")
+
+	// The dialog follows the key bindings as they stand, and a cleared one matches no key.
+	swapForTest(t, &undoAction.KeyBinding, unison.KeyBinding{KeyCode: unison.KeyU, Modifiers: mod.OSMenuCommand()})
+	swapForTest(t, &redoAction.KeyBinding, unison.KeyBinding{})
+	undo()
+	c.Equal(1, read().children, "the old Undo key does nothing once Undo is bound to another")
+	screen.KeyPress(unison.KeyU, mod.OSMenuCommand())
+	c.Equal(0, read().children, "and the new one undoes")
+	redo()
+	c.Equal(0, read().children, "the old Redo key does nothing once Redo is cleared")
+	var taken bool
+	screen.Do(func() { taken = dialogWnd.KeyDownCallback(0, mod.None, false) })
+	c.False(taken, "and the cleared binding matches no key")
+
+	focus(cancelButton)
+	screen.KeyPress(unison.KeyEscape, mod.None)
+	c.Equal(1, windows(), "with no row open, Escape cancels the dialog")
+	c.Equal(1, len(savedFilters()), "which saves nothing")
+
+	// Return accepts the dialog even with a row open.
+	choosePopupItem(t, screen, wnd, d.savedFilters.popup, newIndex)
+	dialogWnd, _ = modalDialog(t, screen, wnd)
+	p = dialogFilterPanel(t, screen, dialogWnd)
+	nameField = dialogNameField(t, screen, dialogWnd)
+	screen.Type("Ranged")
+	screen.Do(func() { menuAction(p.treeAddEntries(p.filter.Root, treeRootPath), "New Condition")() })
+	focus(nameField)
+	c.Equal("r.0", read().open, "a row is open")
+	screen.KeyPress(unison.KeyReturn, mod.None)
+	c.Equal(1, windows(), "Return accepts the dialog")
+	saved := savedFilters()
+	c.Equal(2, len(saved))
+	if len(saved) == 2 {
+		c.Equal("Ranged", saved[1].Name)
+		c.Equal(1, len(saved[1].Root.Children), "with its condition")
+	}
+}
+
+// TestListFilterEditCancelHeadless edits a saved filter through the real dialog and cancels it, checking that the
+// saved filter is left as it was.
+func TestListFilterEditCancelHeadless(t *testing.T) {
+	c := check.New(t)
+	screen, wnd := startHeadlessWorkspace(t, c)
+	swapForTest(t, &gurps.GlobalSettings().ListFilters, make(map[string][]*gurps.ListFilter))
+	mental := seedListFilter("Mental", "tags", "Mental")
+	before := gurps.Hash64(mental)
+	d := openListFilterTraitDockable(t, screen)
+	choosePopupItem(t, screen, wnd, d.savedFilters.popup, popupItemIndexOf(t, screen, d.savedFilters.popup, "Mental"))
+	choosePopupItem(t, screen, wnd, d.savedFilters.popup,
+		popupItemIndexOf(t, screen, d.savedFilters.popup, editFilterItemTitle))
+	dialogWnd, dialog := modalDialog(t, screen, wnd)
+	p := dialogFilterPanel(t, screen, dialogWnd)
+	screen.Type("Changed")
+	screen.Do(func() {
+		menuAction(p.treeAddEntries(p.filter.Root, treeRootPath), "New Condition")()
+		menuAction(p.moreEntries(p.node("r.0"), "r.0"), "Delete")()
+	})
+	screen.Do(func() {
+		c.True(p.filter != mental, "the dialog edits a copy")
+		c.Equal("Changed", p.filter.Name, "which takes the typed name")
+		c.Equal([]string{gurps.TraitFilterFields()[0].Key}, filterShape(p.filter.Root),
+			"and the change to its conditions")
+	})
+	screen.Click(screen.PanelCenter(dialogButton(t, screen, dialog, unison.ModalResponseCancel)))
+	var windows int
+	screen.Do(func() { windows = len(unison.Windows()) })
+	c.Equal(1, windows, "Cancel dismisses the dialog")
+	c.Equal("Mental", mental.Name, "the saved filter keeps its name")
+	c.Equal(before, gurps.Hash64(mental), "and its conditions")
+	c.True(mental == readListFilterState(screen, d).selected, "and stays in force")
+}
+
+// TestListFilterDialogDragHeadless drags a row by its sentence within the filter editor's dialog, which is a window of
+// its own, so the drop lands only because the dialog takes the rows' drag type.
+func TestListFilterDialogDragHeadless(t *testing.T) {
 	c := check.New(t)
 	screen, wnd := startHeadlessWorkspace(t, c)
 	swapForTest(t, &gurps.GlobalSettings().ListFilters, make(map[string][]*gurps.ListFilter))
 	swapForTest(t, &lastFilterFieldKeyUsed, make(map[string]string))
 	d := openListFilterTraitDockable(t, screen)
-
-	newIndex, newTitle := popupItemIndexFromEnd(screen, d.savedFilters.popup, 3)
-	c.Equal(newFilterItemTitle, newTitle, "New Filter… is the third item from the end, even with no saved filters")
-	choosePopupItem(t, screen, wnd, d.savedFilters.popup, newIndex)
-	dialogWnd, dialog := modalDialog(t, screen, wnd)
-
-	clickButtonWithTooltip(t, screen, dialogWnd.Content(), addConditionTooltip)
-	rootRow := filterEditorRootRow(t, screen, dialogWnd)
-	var row *unison.Panel
+	choosePopupItem(t, screen, wnd, d.savedFilters.popup,
+		popupItemIndexOf(t, screen, d.savedFilters.popup, newFilterItemTitle))
+	dialogWnd, _ := modalDialog(t, screen, wnd)
+	p := dialogFilterPanel(t, screen, dialogWnd)
+	var first, second gurps.FilterNode
 	screen.Do(func() {
-		if children := rootRow.Children(); len(children) == filterGroupColumns+1 {
-			row = children[filterGroupColumns]
+		menuAction(p.treeAddEntries(p.filter.Root, treeRootPath), "New Condition")()
+		menuAction(p.treeAddEntries(p.filter.Root, treeRootPath), "New Condition")()
+		p.toggle("r.1")
+	})
+	var sentence, target *unison.Panel
+	var above geom.Point
+	screen.Do(func() {
+		first = p.node("r.0")
+		second = p.node("r.1")
+		sentence, _ = refAs[*unison.Panel](t, p.AsPanel(), "r.1"+keySentence)
+		if more, ok := refAs[*unison.Panel](t, p.AsPanel(), "r.0"+keyMore); ok {
+			target = more.Parent()
+			above = geom.NewPoint(40, target.FrameRect().Height*0.2)
 		}
 	})
-	if row == nil {
-		t.Fatal("the root group must hold the row of the condition that was added")
+	if sentence == nil || target == nil {
+		return
 	}
-	// The popups within the row are read from the row rather than from the dialog, so that the popups of the group's
-	// own row cannot be mistaken for the condition's.
-	fieldPopup := conditionFieldPopup(t, screen, row)
-
-	// A list field is compared against text that may hold several values.
-	choosePopupItem(t, screen, dialogWnd, fieldPopup, traitFilterFieldIndex(t, tagsFieldTitle))
-	shape := readConditionRow(screen, row)
-	c.Equal(1, shape.strings, "a list field is compared against text")
-	c.Equal(0, shape.decimals, "and against no number")
-	if shape.strings == 1 {
-		c.Contains(shape.stringTooltips[0], "commas", "a list field's qualifier may hold several values")
-	}
-	c.Equal(shape.children, shape.columns, "the row's layout must hold one column per child")
-
-	// Move the comparison off its default. A list field is compared through the same text criteria a text field is, so
-	// what the field changes below do to it shows when the name field is reached.
-	choosePopupItem(t, screen, dialogWnd, conditionComparisonPopup(t, screen, row), 1)
-	c.Equal(1, readConditionRow(screen, row).comparison, "the comparison must be the one just chosen")
-
-	// A yes/no field needs no criteria at all: the must/must not popup ahead of the field says all there is to say.
-	choosePopupItem(t, screen, dialogWnd, fieldPopup, traitFilterFieldIndex(t, containerFieldTitle))
-	shape = readConditionRow(screen, row)
-	c.Equal(0, shape.strings, "a yes/no field has nothing to compare against")
-	c.Equal(0, shape.decimals, "of either kind")
-	c.Equal(-1, shape.comparison, "so the row keeps no comparison popup")
-	c.Equal(shape.children, shape.columns,
-		"and the row's layout must be brought into line with the children it now has")
-
-	// A number field is compared against a number.
-	choosePopupItem(t, screen, dialogWnd, fieldPopup, traitFilterFieldIndex(t, pointsFieldTitle))
-	shape = readConditionRow(screen, row)
-	c.Equal(1, shape.decimals, "a number field is compared against a number")
-	c.Equal(0, shape.strings, "and against no text")
-	c.Equal(shape.children, shape.columns, "the row's layout must hold one column per child")
-
-	// Move this field's comparison off its default as well, so that the criteria the field change resets is not the
-	// text one alone.
-	choosePopupItem(t, screen, dialogWnd, conditionComparisonPopup(t, screen, row), 1)
-	c.Equal(1, readConditionRow(screen, row).comparison, "the comparison must be the one just chosen")
-
-	// A text field is compared against text, with the criteria reset rather than carried over from the field before.
-	choosePopupItem(t, screen, dialogWnd, fieldPopup, traitFilterFieldIndex(t, nameFieldTitle))
-	shape = readConditionRow(screen, row)
-	c.Equal(1, shape.strings, "a text field is compared against text")
-	c.Equal(0, shape.decimals, "and against no number")
-	c.Equal(0, shape.comparison, "changing the field resets the criteria, so the comparison goes back to the first")
-	c.Equal(shape.children, shape.columns, "the row's layout must hold one column per child")
-
-	screen.Click(screen.PanelCenter(dialogButton(t, screen, dialog, unison.ModalResponseCancel)))
-	var windows int
-	screen.Do(func() { windows = len(unison.Windows()) })
-	c.Equal(1, windows, "the editor has been dismissed")
-	c.Equal(0, len(savedFilters()), "a canceled editor must save nothing")
-	c.Nil(readListFilterState(screen, d).selected, "and must leave the list with no saved filter")
+	c.NotNil(first, "the first condition is at r.0")
+	c.NotNil(second, "the second condition is at r.1")
+	screen.Drag(screen.PanelCenter(sentence), screen.PanelPoint(target, above), 10)
+	screen.Do(func() {
+		c.True(second == p.node("r.0"), "the dragged condition goes first")
+		c.True(first == p.node("r.1"), "ahead of the other")
+	})
 }
 
 // TestListFilterChangesReachOtherDockablesHeadless verifies that a change made to the saved filters through one

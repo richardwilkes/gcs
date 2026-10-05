@@ -278,6 +278,49 @@ func TestPrereqPanelShowsAnyNumberItCantOffer(t *testing.T) {
 	c.Equal(hash, gurps.Hash64(root))
 }
 
+// TestPrereqPanelWeightAnything checks that a contained weight of "anything", which only a file edited by hand can
+// hold, shows its comparison without a weight field.
+func TestPrereqPanelWeightAnything(t *testing.T) {
+	c := check.New(t)
+	screen, _ := startHeadlessWorkspace(t, c)
+	root := gurps.NewPrereqList()
+	wp := gurps.NewContainedWeightPrereq(nil)
+	wp.WeightCriteria.Compare = criteria.AnyNumber
+	root.Prereqs = gurps.Prereqs{wp.Clone(root)}
+	p, _ := showPrereqPanel(t, screen, &root, false)
+	screen.Do(func() { p.toggle("r.0") })
+	screen.Do(func() {
+		popup, isPopup := p.FindRefKey("r.0:weightcmp").Self.(*unison.PopupMenu[criteria.NumericComparison])
+		c.True(isPopup)
+		if isPopup {
+			c.Equal("which is anything", popup.Text())
+		}
+		c.Nil(p.FindRefKey("r.0:weight"), "and no weight field")
+	})
+}
+
+// TestPrereqPanelLayoutFollowsRebuild checks that a rebuild outside a dock, as in a dialog, lays the window's content
+// out again before it hands out the focus, so that the panel already has the size of its new rows when the focus
+// lands in them, rather than only at the next draw.
+func TestPrereqPanelLayoutFollowsRebuild(t *testing.T) {
+	c := check.New(t)
+	screen, _ := startHeadlessWorkspace(t, c)
+	root := newTestPrereqTree()
+	p, host := showPrereqPanel(t, screen, &root, false)
+	var before, atFocus, pref float32
+	screen.Do(func() {
+		before = p.FrameRect().Height
+		host.FocusChangeInHierarchyCallback = func(_, _ *unison.Panel) {
+			atFocus = p.FrameRect().Height
+			_, size, _ := p.Sizes(geom.Size{Width: p.FrameRect().Width})
+			pref = size.Height
+		}
+		p.toggle("r.0")
+	})
+	c.True(atFocus > before, "the panel grows: %v from %v", atFocus, before)
+	c.Equal(pref, atFocus)
+}
+
 // TestPrereqPanelMoves checks that Move up and Move down step into an adjacent group and out of the ends of one, and
 // that Ungroup is offered only where it keeps the meaning.
 func TestPrereqPanelMoves(t *testing.T) {
@@ -922,6 +965,13 @@ func TestPrereqPanelEmptyRootGroupType(t *testing.T) {
 	pill, text = headed()
 	c.False(pill, "undo goes back to the single line")
 	c.Equal(single, text)
+	screen.Do(func() {
+		focus := p.Window().Focus()
+		c.NotNil(focus)
+		if focus != nil {
+			c.Equal(treeRootPath+keyAdd, focus.RefKey, "giving the focus to what adds to the root")
+		}
+	})
 	choose("All of Group")
 	pill, _ = headed()
 	c.True(pill, "choosing the type the root already has still shows its head")

@@ -460,12 +460,6 @@ func addDecimalField(parent *unison.Panel, targetMgr *TargetMgr, targetKey, labe
 		false), tooltip)
 }
 
-func addWeightField(parent *unison.Panel, targetMgr *TargetMgr, targetKey, labelText, tooltip string, entity *gurps.Entity, fieldData *fxp.Weight, noMinWidth bool) *WeightField {
-	get, set := pointerAccessors(parent, fieldData)
-	return installField(parent, NewWeightField(targetMgr, targetKey, labelText, entity, get, set, 0, fxp.Weight(fxp.Max),
-		noMinWidth), tooltip)
-}
-
 func addCheckBox(parent *unison.Panel, labelText string, fieldData *bool) *CheckBox {
 	checkBox := NewCheckBox(nil, "", labelText,
 		func() check.Enum { return check.FromBool(*fieldData) },
@@ -564,23 +558,6 @@ func installPopupSelection[T comparable](popup *unison.PopupMenu[T], current T, 
 			onSelect(item)
 		}
 	}
-}
-
-func addBoolPopup(parent *unison.Panel, trueChoice, falseChoice string, fieldData *bool) *unison.PopupMenu[string] {
-	popup := unison.NewPopupMenu[string]()
-	popup.AddItem(trueChoice)
-	popup.AddItem(falseChoice)
-	if *fieldData {
-		popup.SelectIndex(0)
-	} else {
-		popup.SelectIndex(1)
-	}
-	popup.SelectionChangedCallback = func(p *unison.PopupMenu[string]) {
-		*fieldData = p.SelectedIndex() == 0
-		MarkModified(parent)
-	}
-	parent.AddChild(popup)
-	return popup
 }
 
 func adjustFieldBlank(field unison.Paneler, blank bool) {
@@ -716,23 +693,6 @@ func addNumericCriteriaPanel(parent *unison.Panel, targetMgr *TargetMgr, targetK
 		field = addDecimalField(panel, targetMgr, targetKey, undoTitle, "", &numCriteria.Qualifier, minValue, maxValue, false)
 	}
 	adjustFieldBlank(field, numCriteria.Compare == criteria.AnyNumber)
-	return popup, field
-}
-
-// addWeightCriteriaPanel adds a weight criteria's comparison popup and qualifier field directly to the parent, which is
-// expected to lay them out itself.
-func addWeightCriteriaPanel(parent *unison.Panel, targetMgr *TargetMgr, targetKey, prefix string, entity *gurps.Entity, weightCriteria *criteria.Weight) (popup *unison.PopupMenu[string], field *WeightField) {
-	comparisonName, undoTitle := criteriaTitles(i18n.Text("Weight"))
-	popup = newComparisonPopup(comparisonName, criteria.PrefixedNumericComparisonChoices(prefix),
-		int(weightCriteria.Compare.EnsureValid()))
-	parent.AddChild(popup)
-	field = addWeightField(parent, targetMgr, targetKey, undoTitle, "", entity, &weightCriteria.Qualifier, false)
-	popup.SelectionChangedCallback = func(p *unison.PopupMenu[string]) {
-		weightCriteria.Compare = criteria.NumericComparisons[p.SelectedIndex()]
-		adjustFieldBlank(field, weightCriteria.Compare == criteria.AnyNumber)
-		MarkModified(parent)
-	}
-	adjustFieldBlank(field, weightCriteria.Compare == criteria.AnyNumber)
 	return popup, field
 }
 

@@ -47,17 +47,25 @@ const (
 )
 
 // FilterField describes one field of a list type that a saved filter may test: the key it is stored under, the title
-// the filter editor shows for it (phrased to follow "must" or "must not"), its kind, and the accessor for its kind,
-// which is the only one of the five that is set.
+// the filter editor shows for it (phrased to follow "must" or "must not"), whether that title names something plural,
+// such as "have notes", its kind, and the accessor for its kind, which is the only one of the five that is set.
 type FilterField[T Node[T]] struct {
 	Key    string
 	Title  string
+	Plural bool
 	Kind   FilterFieldKind
 	Text   func(T) string
 	List   func(T) []string
 	Number func(T) fxp.Int
 	Weight func(T) fxp.Weight
 	Bool   func(T) bool
+}
+
+// WithPluralTitle marks the field's title as naming something plural, so that what follows it agrees, as in "have notes
+// that contain", and returns the field.
+func (f *FilterField[T]) WithPluralTitle() *FilterField[T] {
+	f.Plural = true
+	return f
 }
 
 // NewTextFilterField creates a field holding a single text value.
@@ -92,14 +100,15 @@ func NewBoolFilterField[T Node[T]](key, title string, f func(T) bool) *FilterFie
 func TraitFilterFields() []*FilterField[*Trait] {
 	return []*FilterField[*Trait]{
 		NewTextFilterField(filterFieldKeyName, i18n.Text("have a name"), (*Trait).NameWithReplacements),
-		NewTextFilterField(filterFieldKeyNotes, i18n.Text("have notes"), (*Trait).LocalNotesWithReplacements),
+		NewTextFilterField(filterFieldKeyNotes, i18n.Text("have notes"),
+			(*Trait).LocalNotesWithReplacements).WithPluralTitle(),
 		NewTextFilterField("user_desc", i18n.Text("have a user description"), (*Trait).UserDescWithReplacements),
-		NewListFilterField(filterFieldKeyTags, i18n.Text("have tags"), (*Trait).TagList),
+		NewListFilterField(filterFieldKeyTags, i18n.Text("have tags"), (*Trait).TagList).WithPluralTitle(),
 		NewTextFilterField(filterFieldKeyReference, i18n.Text("have a page reference"),
 			func(t *Trait) string { return t.PageRef }),
 		NewNumberFilterField(filterFieldKeyPoints, i18n.Text("have points"),
-			func(t *Trait) fxp.Int { return t.AdjustedPoints(nil) }),
-		NewNumberFilterField("levels", i18n.Text("have levels"), (*Trait).CurrentLevel),
+			func(t *Trait) fxp.Int { return t.AdjustedPoints(nil) }).WithPluralTitle(),
+		NewNumberFilterField("levels", i18n.Text("have levels"), (*Trait).CurrentLevel).WithPluralTitle(),
 		NewTextFilterField("cr", i18n.Text("have a self-control roll"),
 			func(t *Trait) string { return t.SelfControl.ShortString() }),
 		NewTextFilterField("container_type", i18n.Text("have a container type"), func(t *Trait) string {
@@ -116,8 +125,9 @@ func TraitFilterFields() []*FilterField[*Trait] {
 func TraitModifierFilterFields() []*FilterField[*TraitModifier] {
 	return []*FilterField[*TraitModifier]{
 		NewTextFilterField(filterFieldKeyName, i18n.Text("have a name"), (*TraitModifier).NameWithReplacements),
-		NewTextFilterField(filterFieldKeyNotes, i18n.Text("have notes"), (*TraitModifier).LocalNotesWithReplacements),
-		NewListFilterField(filterFieldKeyTags, i18n.Text("have tags"), (*TraitModifier).TagList),
+		NewTextFilterField(filterFieldKeyNotes, i18n.Text("have notes"),
+			(*TraitModifier).LocalNotesWithReplacements).WithPluralTitle(),
+		NewListFilterField(filterFieldKeyTags, i18n.Text("have tags"), (*TraitModifier).TagList).WithPluralTitle(),
 		NewTextFilterField(filterFieldKeyReference, i18n.Text("have a page reference"),
 			func(t *TraitModifier) string { return t.PageRef }),
 		NewTextFilterField(filterFieldKeyCost, i18n.Text("have a cost"), func(t *TraitModifier) string {
@@ -142,8 +152,9 @@ func SkillFilterFields() []*FilterField[*Skill] {
 		NewTextFilterField(filterFieldKeyName, i18n.Text("have a name"), (*Skill).NameWithReplacements),
 		NewTextFilterField("specialization", i18n.Text("have a specialization"),
 			(*Skill).SpecializationWithReplacements),
-		NewTextFilterField(filterFieldKeyNotes, i18n.Text("have notes"), (*Skill).LocalNotesWithReplacements),
-		NewListFilterField(filterFieldKeyTags, i18n.Text("have tags"), (*Skill).TagList),
+		NewTextFilterField(filterFieldKeyNotes, i18n.Text("have notes"),
+			(*Skill).LocalNotesWithReplacements).WithPluralTitle(),
+		NewListFilterField(filterFieldKeyTags, i18n.Text("have tags"), (*Skill).TagList).WithPluralTitle(),
 		NewTextFilterField(filterFieldKeyReference, i18n.Text("have a page reference"),
 			func(s *Skill) string { return s.PageRef }),
 		NewTextFilterField("difficulty", i18n.Text("have a difficulty"), func(s *Skill) string {
@@ -152,7 +163,7 @@ func SkillFilterFields() []*FilterField[*Skill] {
 			}
 			return s.Difficulty.Description(EntityFromNode(s))
 		}),
-		NewNumberFilterField(filterFieldKeyPoints, i18n.Text("have points"), (*Skill).RawPoints),
+		NewNumberFilterField(filterFieldKeyPoints, i18n.Text("have points"), (*Skill).RawPoints).WithPluralTitle(),
 		NewBoolFilterField("technique", i18n.Text("be a technique"), (*Skill).IsTechnique),
 		NewBoolFilterField(filterFieldKeyContainer, i18n.Text("be a container"), (*Skill).Container),
 	}
@@ -162,8 +173,9 @@ func SkillFilterFields() []*FilterField[*Skill] {
 func SpellFilterFields() []*FilterField[*Spell] {
 	return []*FilterField[*Spell]{
 		NewTextFilterField(filterFieldKeyName, i18n.Text("have a name"), (*Spell).NameWithReplacements),
-		NewTextFilterField(filterFieldKeyNotes, i18n.Text("have notes"), (*Spell).LocalNotesWithReplacements),
-		NewListFilterField(filterFieldKeyTags, i18n.Text("have tags"), (*Spell).TagList),
+		NewTextFilterField(filterFieldKeyNotes, i18n.Text("have notes"),
+			(*Spell).LocalNotesWithReplacements).WithPluralTitle(),
+		NewListFilterField(filterFieldKeyTags, i18n.Text("have tags"), (*Spell).TagList).WithPluralTitle(),
 		NewTextFilterField(filterFieldKeyReference, i18n.Text("have a page reference"),
 			func(s *Spell) string { return s.PageRef }),
 		NewTextFilterField("difficulty", i18n.Text("have a difficulty"), func(s *Spell) string {
@@ -172,7 +184,7 @@ func SpellFilterFields() []*FilterField[*Spell] {
 			}
 			return s.Difficulty.Description(EntityFromNode(s))
 		}),
-		NewListFilterField("college", i18n.Text("have colleges"), (*Spell).CollegeWithReplacements),
+		NewListFilterField("college", i18n.Text("have colleges"), (*Spell).CollegeWithReplacements).WithPluralTitle(),
 		NewTextFilterField("power_source", i18n.Text("have a power source"), (*Spell).PowerSourceWithReplacements),
 		NewTextFilterField("class", i18n.Text("have a class"), (*Spell).ClassWithReplacements),
 		NewTextFilterField("resist", i18n.Text("have a resistance"), (*Spell).ResistWithReplacements),
@@ -181,7 +193,7 @@ func SpellFilterFields() []*FilterField[*Spell] {
 			(*Spell).MaintenanceCostWithReplacements),
 		NewTextFilterField("casting_time", i18n.Text("have a casting time"), (*Spell).CastingTimeWithReplacements),
 		NewTextFilterField("duration", i18n.Text("have a duration"), (*Spell).DurationWithReplacements),
-		NewNumberFilterField(filterFieldKeyPoints, i18n.Text("have points"), (*Spell).RawPoints),
+		NewNumberFilterField(filterFieldKeyPoints, i18n.Text("have points"), (*Spell).RawPoints).WithPluralTitle(),
 		NewBoolFilterField("ritual_magic", i18n.Text("be ritual magic"), (*Spell).IsRitualMagic),
 		NewBoolFilterField(filterFieldKeyContainer, i18n.Text("be a container"), (*Spell).Container),
 	}
@@ -191,8 +203,9 @@ func SpellFilterFields() []*FilterField[*Spell] {
 func EquipmentFilterFields() []*FilterField[*Equipment] {
 	return []*FilterField[*Equipment]{
 		NewTextFilterField(filterFieldKeyName, i18n.Text("have a name"), (*Equipment).NameWithReplacements),
-		NewTextFilterField(filterFieldKeyNotes, i18n.Text("have notes"), (*Equipment).LocalNotesWithReplacements),
-		NewListFilterField(filterFieldKeyTags, i18n.Text("have tags"), (*Equipment).TagList),
+		NewTextFilterField(filterFieldKeyNotes, i18n.Text("have notes"),
+			(*Equipment).LocalNotesWithReplacements).WithPluralTitle(),
+		NewListFilterField(filterFieldKeyTags, i18n.Text("have tags"), (*Equipment).TagList).WithPluralTitle(),
 		NewTextFilterField(filterFieldKeyReference, i18n.Text("have a page reference"),
 			func(e *Equipment) string { return e.PageRef }),
 		NewTextFilterField(filterFieldKeyTechLevel, i18n.Text("have a tech level"),
@@ -219,8 +232,8 @@ func EquipmentModifierFilterFields() []*FilterField[*EquipmentModifier] {
 	return []*FilterField[*EquipmentModifier]{
 		NewTextFilterField(filterFieldKeyName, i18n.Text("have a name"), (*EquipmentModifier).NameWithReplacements),
 		NewTextFilterField(filterFieldKeyNotes, i18n.Text("have notes"),
-			(*EquipmentModifier).LocalNotesWithReplacements),
-		NewListFilterField(filterFieldKeyTags, i18n.Text("have tags"), (*EquipmentModifier).TagList),
+			(*EquipmentModifier).LocalNotesWithReplacements).WithPluralTitle(),
+		NewListFilterField(filterFieldKeyTags, i18n.Text("have tags"), (*EquipmentModifier).TagList).WithPluralTitle(),
 		NewTextFilterField(filterFieldKeyReference, i18n.Text("have a page reference"),
 			func(e *EquipmentModifier) string { return e.PageRef }),
 		NewTextFilterField(filterFieldKeyTechLevel, i18n.Text("have a tech level"),
@@ -235,7 +248,7 @@ func EquipmentModifierFilterFields() []*FilterField[*EquipmentModifier] {
 func NoteFilterFields() []*FilterField[*Note] {
 	return []*FilterField[*Note]{
 		NewTextFilterField("text", i18n.Text("have text"), (*Note).TextWithReplacements),
-		NewListFilterField(filterFieldKeyTags, i18n.Text("have tags"), (*Note).TagList),
+		NewListFilterField(filterFieldKeyTags, i18n.Text("have tags"), (*Note).TagList).WithPluralTitle(),
 		NewTextFilterField(filterFieldKeyReference, i18n.Text("have a page reference"),
 			func(n *Note) string { return n.PageRef }),
 		NewBoolFilterField(filterFieldKeyContainer, i18n.Text("be a container"), (*Note).Container),

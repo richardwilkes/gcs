@@ -842,8 +842,9 @@ func (p *featuresPanel) weaponBonus(fields, chips *unison.Panel, path string, on
 			func() { *level = criteria.Number{Compare: criteria.AtLeastNumber, Qualifier: fxp.One} },
 			func() { *level = criteria.Number{Compare: criteria.AnyNumber} },
 			func(chip *unison.Panel) {
-				p.numberCriteria(chip, key("level"), i18n.Text("Level"), i18n.Text("and whose relative skill level"),
-					level, -fxp.Thousand, fxp.Thousand, true)
+				p.numberCriteria(chip, key("level"), i18n.Text("Level"),
+					numericWordsAfter(i18n.Text("and whose relative skill level")), level, -fxp.Thousand, fxp.Thousand,
+					true, false)
 			})
 	}
 }

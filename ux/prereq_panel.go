@@ -343,7 +343,7 @@ func (p *prereqPanel) treeCanUngroup(group gurps.Prereq) bool {
 	return list != nil && list.WhenTL.Compare == criteria.AnyNumber
 }
 
-func (p *prereqPanel) treeTitles() treeEditTitles {
+func (p *prereqPanel) treeTitles(_ gurps.Prereq) treeEditTitles {
 	return treeEditTitles{
 		duplicate: i18n.Text("Duplicate Prerequisite"),
 		move:      i18n.Text("Move Prerequisite"),
@@ -374,8 +374,8 @@ func (p *prereqPanel) treeGroupHead(group gurps.Prereq, path string, head, box *
 		p.chip(head, path+":tl", i18n.Text("Remove Tech Level Condition"), p.addKey(list, path),
 			func() { list.WhenTL = criteria.Number{} },
 			func(chip *unison.Panel) {
-				p.numberCriteria(chip, path+":tl", i18n.Text("Tech Level"), i18n.Text("When TL"), &list.WhenTL, 0,
-					fxp.Twelve, true)
+				p.numberCriteria(chip, path+":tl", i18n.Text("Tech Level"), numericWordsAfter(i18n.Text("When TL")),
+					&list.WhenTL, 0, fxp.Twelve, true, false)
 			})
 	}
 	return color
@@ -467,8 +467,8 @@ func (p *prereqPanel) editor(pr gurps.Prereq, path string) *unison.Panel {
 	case *gurps.SpellPrereq:
 		p.hasPopup(fields, key("has"), &one.Has, true)
 		quantity := func() {
-			p.numberCriteria(fields, key("quantity"), i18n.Text("Quantity"), "", &one.QuantityCriteria, 0,
-				fxp.FromInteger(maxPrereqQuantity), true)
+			p.numberCriteria(fields, key("quantity"), i18n.Text("Quantity"), numericWordsAfter(""),
+				&one.QuantityCriteria, 0, fxp.FromInteger(maxPrereqQuantity), true, false)
 		}
 		// A count of colleges follows the match, as in "spells from at least 2 colleges".
 		colleges := one.SubType == spellcmp.CollegeCount
@@ -497,8 +497,8 @@ func (p *prereqPanel) editor(pr gurps.Prereq, path string) *unison.Panel {
 		flags := gurps.SizeFlag | gurps.DodgeFlag | gurps.ParryFlag | gurps.BlockFlag
 		p.attributePopup(fields, key("which"), i18n.Text("Attribute"), "", &one.Which, flags)
 		// Named apart from the attribute popup before it.
-		p.numberCriteria(fields, key("value"), i18n.Text("Value"), i18n.Text("which"), &one.QualifierCriteria, fxp.Min,
-			fxp.Max, false)
+		p.numberCriteria(fields, key("value"), i18n.Text("Value"), numericWordsAfter(i18n.Text("which")),
+			&one.QualifierCriteria, fxp.Min, fxp.Max, false, false)
 		p.optionalCriterion(chips, path, "combined", one.CombinedWith != "",
 			func() { one.CombinedWith = gurps.AttributeIDFor(p.entity, gurps.DexterityID) },
 			func() { one.CombinedWith = "" },
@@ -514,18 +514,13 @@ func (p *prereqPanel) editor(pr gurps.Prereq, path string) *unison.Panel {
 	case *gurps.ContainedQuantityPrereq:
 		p.hasPopup(fields, key("has"), &one.Has, false)
 		p.typePopup(fields, path, pr)
-		p.numberCriteria(fields, key("quantity"), i18n.Text("Quantity"), "", &one.QualifierCriteria, 0,
-			fxp.FromInteger(maxPrereqQuantity), true)
+		p.numberCriteria(fields, key("quantity"), i18n.Text("Quantity"), numericWordsAfter(""),
+			&one.QualifierCriteria, 0, fxp.FromInteger(maxPrereqQuantity), true, false)
 	case *gurps.ContainedWeightPrereq:
 		p.hasPopup(fields, key("has"), &one.Has, false)
 		p.typePopup(fields, path, pr)
-		title := i18n.Text("Weight")
-		comparison, _ := criteriaTitles(title)
-		p.numberCompare(fields, key("weightcmp"), comparison, i18n.Text("which"), &one.WeightCriteria.Compare)
-		p.addCompact(fields, NewWeightField(p.targetMgr, key("weight"), title, p.entity,
-			func() fxp.Weight { return one.WeightCriteria.Qualifier },
-			func(w fxp.Weight) { p.edit(title, key("weight"), "", func() { one.WeightCriteria.Qualifier = w }) },
-			0, fxp.Weight(fxp.Max), false).withoutUndo())
+		p.weightCriteria(fields, key("weight"), i18n.Text("Weight"), numericWordsAfter(i18n.Text("which")), p.entity,
+			&one.WeightCriteria, false)
 	case *gurps.ScriptPrereq:
 		p.typePopup(fields, path, pr)
 		addJoiningWords(fields, i18n.Text("described as"))
@@ -612,18 +607,12 @@ func (p *prereqPanel) addEntries(list *gurps.PrereqList, path string) []menuEntr
 // addEntriesUnder returns what can be added to a list, the prerequisites under the heading requirement and groups and
 // conditions under the heading structure.
 func (p *prereqPanel) addEntriesUnder(list *gurps.PrereqList, path, requirement, structure string) []menuEntry {
+	// What is added opens at once; groups are added by groupEntries.
 	add := func(title string, created gurps.Prereq) {
 		at := childPath(path, len(list.Prereqs))
-		opens := created.PrereqType() != prereq.List
-		focus := at + keyMore
-		if opens {
-			focus = at + keyFirst
-		}
-		p.edit(title, p.addKey(list, path), focus, func() {
+		p.edit(title, p.addKey(list, path), at+keyFirst, func() {
 			list.Prereqs = append(list.Prereqs, created)
-			if opens {
-				p.open = at
-			}
+			p.open = at
 		})
 	}
 	entries := []menuEntry{{Label: requirement}}
@@ -633,16 +622,7 @@ func (p *prereqPanel) addEntriesUnder(list *gurps.PrereqList, path, requirement,
 		}})
 	}
 	entries = append(entries, menuEntry{Label: structure})
-	for i, label := range []string{i18n.Text("All of Group"), i18n.Text("Any of Group")} {
-		entries = append(entries, menuEntry{Label: label, Act: func() {
-			if path != treeRootPath || len(list.Prereqs) != 0 {
-				add(i18n.Text("Add Group"), &gurps.PrereqList{Type: prereq.List, Parent: list, All: i == 0})
-				return
-			}
-			// An empty root takes the group type itself, rather than holding a group of that type.
-			p.edit(label, path+keyPill, path+keyPill, func() { list.All, p.headed = i == 0, true })
-		}})
-	}
+	entries = append(entries, p.groupEntries(list, path, func(all bool) { list.All, p.headed = all, true })...)
 	if list.WhenTL.Compare == criteria.AnyNumber {
 		entries = append(entries, menuEntry{Label: i18n.Text("Only When TL…"), Act: func() {
 			p.edit(i18n.Text("Add Tech Level Condition"), p.addKey(list, path), path+":tl"+keyChip, func() {
@@ -793,7 +773,7 @@ func (p *prereqPanel) levelChip(chips *unison.Panel, path string, level *criteri
 		func() { *level = criteria.Number{Compare: criteria.AtLeastNumber, Qualifier: fxp.One} },
 		func() { *level = criteria.Number{} },
 		func(chip *unison.Panel) {
-			p.numberCriteria(chip, path+":level", i18n.Text("Level"), rowCriteria("level").prefix, level, 0,
-				fxp.Thousand, false)
+			p.numberCriteria(chip, path+":level", i18n.Text("Level"), numericWordsAfter(rowCriteria("level").prefix),
+				level, 0, fxp.Thousand, false, false)
 		})
 }

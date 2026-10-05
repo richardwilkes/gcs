@@ -60,15 +60,16 @@ type treeNodes[N comparable] interface {
 	treeSetParent(node, group N)
 	// treeClone returns a deep copy of the node, owned by the parent.
 	treeClone(node, parent N) N
-	// treeAll reports whether the group requires all of its children rather than any one of them.
+	// treeAll reports whether the group combines its children as "all of" rather than "any of", which is so as well
+	// for a group that a negation makes "not all of" rather than "none of".
 	treeAll(group N) bool
 	// treeNewGroup returns a new, empty group owned by the parent, which requires all of its children when all is set.
 	treeNewGroup(parent N, all bool) N
 	// treeCanUngroup reports whether a group may be replaced by its children, as far as the tree is concerned; the
 	// sentenceTree also requires that doing so keeps what the group means.
 	treeCanUngroup(group N) bool
-	// treeTitles returns the titles of the edits that restructure the tree.
-	treeTitles() treeEditTitles
+	// treeTitles returns the titles of the edits that duplicate, move and delete the node.
+	treeTitles(node N) treeEditTitles
 	// treeHasLead reports whether the head of a group starts with something ahead of its pill, such as the status icon
 	// of a prerequisite.
 	treeHasLead() bool
@@ -271,18 +272,22 @@ func (p *sentenceTree[T, N]) group(group N, path string) *unison.Panel {
 	box.Accessibility.Role = role.Group
 	box.Accessibility.Name = p.nodes.treeGroupName(group)
 	color := p.nodes.treeGroupHead(group, path, head, box)
-	if path != treeRootPath {
+	switch {
+	case path != treeRootPath:
 		p.moreButton(head, group, path)
-	} else {
-		// The root can't be moved or deleted, so in place of a more button it has an add button, keyed as one.
+	case emptyLine == nil:
+		// The root can't be moved or deleted, so in place of a more button it has an add button, keyed as one. While it
+		// is empty, the add button beside its placeholder stands in for it.
 		add := newIconButton(path+keyMore, unison.CircledAddSVG, i18n.Text("Add to this group"))
 		add.ClickCallback = func() { showMenu(add.AsPanel(), p.nodes.treeAddEntries(group, path)) }
 		addCentered(head, add)
 	}
-	more := head.Children()[len(head.Children())-1]
-	more.SetLayoutData(&unison.FlexLayoutData{HAlign: align.End, VAlign: align.Middle, HGrab: true})
-	// Fitted to its line, since centering a shorter button could put its icon on a half pixel, blurring it.
-	fitLine(more)
+	if path != treeRootPath || emptyLine == nil {
+		more := head.Children()[len(head.Children())-1]
+		more.SetLayoutData(&unison.FlexLayoutData{HAlign: align.End, VAlign: align.Middle, HGrab: true})
+		// Fitted to its line, since centering a shorter button could put its icon on a half pixel, blurring it.
+		fitLine(more)
+	}
 	box.AddChild(hbox(head, unison.StdHSpacing))
 
 	rail := newColumn()
@@ -315,6 +320,30 @@ func (p *sentenceTree[T, N]) addKey(group N, path string) string {
 	return path + keyMore
 }
 
+// groupEntries returns the entries that add a group to the group at the path, one that requires all of its children
+// and one that requires any one of them. An empty root that shows its placeholder alone (see treeEmpty) takes the group
+// type itself, through setRoot, rather than holding a group of that type; undo then gives the focus back to what adds
+// to it, since the pill goes with the type.
+func (p *sentenceTree[T, N]) groupEntries(group N, path string, setRoot func(all bool)) []menuEntry {
+	children, _ := p.nodes.treeChildren(group)
+	entries := make([]menuEntry, 0, 2)
+	for i, label := range []string{i18n.Text("All of Group"), i18n.Text("Any of Group")} {
+		all := i == 0
+		entries = append(entries, menuEntry{Label: label, Act: func() {
+			if path == treeRootPath && len(*children) == 0 {
+				if _, bare := p.nodes.treeEmpty(group, path); bare {
+					p.edit(label, p.addKey(group, path), path+keyPill, func() { setRoot(all) })
+					return
+				}
+			}
+			p.edit(i18n.Text("Add Group"), p.addKey(group, path), childPath(path, len(*children))+keyMore, func() {
+				*children = append(*children, p.nodes.treeNewGroup(group, all))
+			})
+		}})
+	}
+	return entries
+}
+
 // moreButton adds the button for the node's more menu.
 func (p *sentenceTree[T, N]) moreButton(parent *unison.Panel, node N, path string) {
 	addMoreButton(parent, path, func() []menuEntry { return p.moreEntries(node, path) })
@@ -327,7 +356,7 @@ func (p *sentenceTree[T, N]) moreEntries(node N, path string) []menuEntry {
 	parent, i := p.locate(path)
 	siblings, _ := p.nodes.treeChildren(parent)
 	from := path + keyMore
-	titles := p.nodes.treeTitles()
+	titles := p.nodes.treeTitles(node)
 	var entries []menuEntry
 	children, isGroup := p.nodes.treeChildren(node)
 	if isGroup {
@@ -459,7 +488,7 @@ func (p *sentenceTree[T, N]) drop(where geom.Point, data any) {
 		// Taking the node out moves what comes after it up by one.
 		index--
 	}
-	p.restructure(p.nodes.treeTitles().move, dragged+keyMore, "", func() N {
+	p.restructure(p.nodes.treeTitles(p.node(dragged)).move, dragged+keyMore, "", func() N {
 		if from == to && i == index {
 			var none N
 			return none

@@ -10,51 +10,59 @@
 package ux
 
 import (
-	"reflect"
-	"slices"
-
 	"github.com/richardwilkes/gcs/v5/model/criteria"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
-	"github.com/richardwilkes/gcs/v5/svg"
-	"github.com/richardwilkes/toolbox/v2/errs"
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/i18n"
+	"github.com/richardwilkes/toolbox/v2/xhash"
 	"github.com/richardwilkes/unison"
-	"github.com/richardwilkes/unison/enums/align"
+	"github.com/zeebo/xxh3"
 )
 
-const (
-	// filterGroupColumns is the number of columns a group's own row holds: the buttons, the and/or label, the
-	// must/must not popup and the all/any popup. The group's children follow, each spanning all of them, so the child
-	// at position i within the group is the row panel's child at filterGroupColumns+i.
-	filterGroupColumns = 4
-	// filterRowIndent is how far, in pixels, each level of nesting indents a row.
-	filterRowIndent = 20
-)
-
-// lastFilterFieldKeyUsed remembers, per list type key, the field the user last chose in a condition row, so the next
+// lastFilterFieldKeyUsed remembers, per list type key, the field the user last chose for a condition, so the next
 // condition starts out testing the same field. Session only.
 var lastFilterFieldKeyUsed = make(map[string]string)
 
-// listFilterPanel is the editor for a saved filter's tree of nodes. It holds the tree's root group row as its only
-// child; every other row hangs off of that one, since a group's children are added to the group's own row panel.
+// listFilterPanel edits a saved filter's tree of nodes. Each condition is a row that reads as a sentence until it is
+// opened, one at a time, to edit it. Each group's head says whether all, any, none or not all of its children must
+// match, and its children hang from a rail in the head's color. Every change, typing included, records a snapshot of
+// the whole tree with the undo manager of the dialog that holds the panel.
 type listFilterPanel struct {
-	unison.Panel
-	key      string
-	filter   *gurps.ListFilter
-	fields   []filterFieldInfo
-	andOrMap map[gurps.FilterNode]*unison.Label
+	sentenceTree[filterTreeState, gurps.FilterNode]
+	// listKey is the key of the list type the filter belongs to.
+	listKey string
+	filter  *gurps.ListFilter
+	// fields are the fields the list type offers, in the order they are shown, fieldKeys their keys in that order, and
+	// byKey the same fields by key.
+	fields    []filterFieldInfo
+	fieldKeys []string
+	byKey     map[string]filterFieldInfo
+	// weightUnits are the units weights are described in, looked up on each build.
+	weightUnits fxp.WeightUnit
+	// headed has an empty root show its head, once a group type has been chosen for it.
+	headed bool
 }
 
-// newListFilterPanel creates the editor for the given filter. key is the list type the filter belongs to, used to
+// filterTreeState is the data a snapshot of the panel holds: the tree, and whether an empty root shows its head.
+type filterTreeState struct {
+	root   *gurps.FilterGroup
+	headed bool
+}
+
+// newListFilterPanel creates the editor for the given filter. listKey is the list type the filter belongs to, used to
 // remember the last field chosen, and fields are the fields that list type offers, in the order they are shown.
-func newListFilterPanel(key string, filter *gurps.ListFilter, fields []filterFieldInfo) *listFilterPanel {
+func newListFilterPanel(listKey string, filter *gurps.ListFilter, fields []filterFieldInfo) *listFilterPanel {
 	p := &listFilterPanel{
-		key:      key,
-		filter:   filter,
-		fields:   fields,
-		andOrMap: make(map[gurps.FilterNode]*unison.Label),
+		listKey:   listKey,
+		filter:    filter,
+		fields:    fields,
+		fieldKeys: make([]string, len(fields)),
+		byKey:     make(map[string]filterFieldInfo, len(fields)),
+	}
+	for i, info := range fields {
+		p.fieldKeys[i] = info.key
+		p.byKey[info.key] = info
 	}
 	p.Self = p
 	p.SetLayout(&unison.FlexLayout{
@@ -65,355 +73,163 @@ func newListFilterPanel(key string, filter *gurps.ListFilter, fields []filterFie
 	// No titled border here, unlike the prerequisites and features sections of an editor: this panel is the whole of a
 	// dialog, which supplies the title, so all it needs is a little breathing room.
 	p.SetBorder(unison.NewEmptyBorder(geom.NewUniformInsets(4)))
-	root, _ := p.createGroupPanel(0, p.filter.Root)
-	p.AddChild(root)
+	p.initRows(listFilterDragKey, p.build, p.state, p.setState, p.stateHash)
+	// An Escape that closes no row cancels the dialog.
+	p.passEscape = true
+	p.staticTip = preservedFilterNodeTooltip
+	p.initTree(p)
+	p.build()
 	return p
 }
 
-// createGroupPanel creates the row for a group: its buttons, its and/or label, the popup that inverts it and the popup
-// that says whether all of its children or any one of them has to match. The rows of the group's children are added
-// after those, each spanning all of the row's columns.
-func (p *listFilterPanel) createGroupPanel(depth int, group *gurps.FilterGroup) (main, focus unison.Paneler) {
-	row := p.beginFilterRow(depth, group)
-	addNotPopup(row, &group.Not)
-	popup := addBoolPopup(row, i18n.Text("match all of:"), i18n.Text("match any of:"), &group.All)
-	popup.Accessibility.Name = i18n.Text("Match")
-	callback := popup.SelectionChangedCallback
-	popup.SelectionChangedCallback = func(pop *unison.PopupMenu[string]) {
-		callback(pop)
-		// Switching between all and any changes what the children's and/or labels say.
-		p.adjustAndOrForGroup(group)
+func (p *listFilterPanel) state() filterTreeState {
+	return filterTreeState{root: p.filter.Root.CloneAsFilterGroup(nil), headed: p.headed}
+}
+
+func (p *listFilterPanel) setState(s filterTreeState) {
+	p.filter.Root = s.root.CloneAsFilterGroup(nil)
+	p.headed = s.headed
+}
+
+func (p *listFilterPanel) stateHash() uint64 {
+	h := xxh3.New()
+	p.filter.Root.Hash(h)
+	xhash.Bool(h, p.headed)
+	return h.Sum64()
+}
+
+func (p *listFilterPanel) build() {
+	if cond, ok := p.node(p.open).(*gurps.FilterCondition); !ok || !p.knows(cond.Field) {
+		p.open = ""
 	}
-	row.SetLayout(&unison.FlexLayout{
-		Columns:  filterGroupColumns,
-		HSpacing: unison.StdHSpacing,
-		VSpacing: unison.StdVSpacing,
-	})
-	row.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: align.Fill,
-		HGrab:  true,
-	})
-	for _, child := range group.Children {
-		p.addToGroup(row, depth+1, -1, child)
+	p.weightUnits = gurps.SheetSettingsFor(nil).DefaultWeightUnits
+	p.AddChild(p.group(p.filter.Root, treeRootPath))
+}
+
+// row returns the panel for a node other than a group: its sentence, or while it is open its editor, beside a button
+// for more actions. A node this version of GCS can't edit, of a kind or on a field it doesn't know, is static text.
+func (p *listFilterPanel) row(node gurps.FilterNode, path string) *unison.Panel {
+	cond, editable := node.(*gurps.FilterCondition)
+	if editable {
+		editable = p.knows(cond.Field)
 	}
-	return row, popup
+	return p.sentenceRow(path, func() string { return p.describe(node) }, editable,
+		func() *unison.Panel { return p.editor(cond, path) },
+		func() []menuEntry { return p.moreEntries(node, path) }, nil, nil)
 }
 
-// createConditionPanel creates the row for a condition: its buttons, its and/or label, the popup that inverts it, the
-// popup that chooses the field to test and, for every kind of field but a yes/no one, the criteria the field is
-// compared against. A condition on a field this version of GCS doesn't know, which a filter written by a newer version
-// may hold, gets the same treatment as a node of an unknown kind: it is shown as it is, with nothing to edit, and
-// left exactly as it was, since it never matches now and rewriting it would quietly turn it into something that does.
-func (p *listFilterPanel) createConditionPanel(depth int, cond *gurps.FilterCondition) (main, focus unison.Paneler) {
-	if p.fieldIndex(cond.Field) == -1 {
-		return p.createPreservedNodePanel(depth, cond,
-			i18n.Text("Condition on unknown field %q; it will be preserved, but never matches", cond.Field))
-	}
-	row := p.beginFilterRow(depth, cond)
-	addNotPopup(row, &cond.Not)
-	popup := p.addFieldPopup(row, cond)
-	p.addConditionCriteria(row, cond)
-	setFilterRowLayout(row)
-	return row, popup
-}
-
-// createUnknownNodePanel creates the row for a node this version of GCS doesn't understand. No editing is offered,
-// since we have no idea what the data means, but the row is shown so the node is visible and can be deleted
-// deliberately.
-func (p *listFilterPanel) createUnknownNodePanel(depth int, node *gurps.UnknownFilterNode) (main, focus unison.Paneler) {
-	return p.createPreservedNodePanel(depth, node,
-		i18n.Text("Unknown filter node type %q; it will be preserved, but never matches", node.Kind))
-}
-
-// createPreservedNodePanel creates the row for a node the editor can't represent: its buttons, its and/or label and a
-// label saying what it is, and nothing that could alter it.
-func (p *listFilterPanel) createPreservedNodePanel(depth int, node gurps.FilterNode, text string) (main, focus unison.Paneler) {
-	row := p.beginFilterRow(depth, node)
-	label := NewFieldLeadingLabel(text, false)
-	label.Tooltip = newWrappedTooltip(preservedFilterNodeTooltip())
-	row.AddChild(label)
-	setFilterRowLayout(row)
-	return row, row
-}
-
-// beginFilterRow starts a row with the parts every row has: the buttons, then the label that joins the row to the one
-// ahead of it. That label always sits right after the buttons, even while it has nothing to say. This differs from a
-// prerequisite row, which parks an empty and/or label at the end of the row and moves it forward when it gains text:
-// a condition row throws away and rebuilds everything after its field popup whenever the field changes, so a label
-// parked at the end would not survive that.
-func (p *listFilterPanel) beginFilterRow(depth int, node gurps.FilterNode) *unison.Panel {
-	row := unison.NewPanel()
-	p.createButtonsPanel(row, depth, node)
-	p.addAndOr(row, node)
-	return row
-}
-
-// createButtonsPanel adds the row's leading column of buttons, indented to show how deeply the node is nested. Only a
-// group can have things added to it, and only a node that has a parent can be deleted, which leaves the root group
-// with nothing but the two add buttons.
-func (p *listFilterPanel) createButtonsPanel(row *unison.Panel, depth int, node gurps.FilterNode) {
-	buttons := unison.NewPanel()
-	buttons.SetBorder(unison.NewEmptyBorder(geom.Insets{Left: float32(depth * filterRowIndent)}))
-	row.AddChild(buttons)
-	if group, ok := node.(*gurps.FilterGroup); ok {
-		addConditionButton := unison.NewSVGButton(unison.CircledAddSVG)
-		addConditionButton.Tooltip = newWrappedTooltip(i18n.Text("Add a condition"))
-		addConditionButton.ClickCallback = func() {
-			p.insertIntoGroup(row, depth, group, gurps.NewFilterCondition(group, p.defaultFieldKey()))
-		}
-		buttons.AddChild(addConditionButton)
-
-		addGroupButton := unison.NewSVGButton(svg.CircledVerticalEllipsis)
-		addGroupButton.Tooltip = newWrappedTooltip(i18n.Text("Add a group"))
-		addGroupButton.ClickCallback = func() {
-			p.insertIntoGroup(row, depth, group, gurps.NewFilterGroup(group))
-		}
-		buttons.AddChild(addGroupButton)
-	}
-	if parentGroup := node.ParentGroup(); parentGroup != nil {
-		deleteButton := unison.NewSVGButton(unison.TrashSVG)
-		deleteButton.Tooltip = newWrappedTooltip(deleteFilterNodeTooltip(node))
-		deleteButton.ClickCallback = func() {
-			p.removeFromGroup(row, parentGroup, node)
-		}
-		buttons.AddChild(deleteButton)
-	}
-	buttons.SetLayout(&unison.FlexLayout{
-		Columns: len(buttons.Children()),
-	})
-}
-
-// insertIntoGroup puts child at the head of the group's children and its row at the head of the group's rows. New
-// nodes go first so that the one just added is where the eye already is, right beneath the button that made it.
-func (p *listFilterPanel) insertIntoGroup(row *unison.Panel, depth int, group *gurps.FilterGroup, child gurps.FilterNode) {
-	group.Children = slices.Insert(group.Children, 0, child)
-	p.addToGroup(row, depth+1, 0, child)
-	p.adjustAndOrForGroup(group)
-}
-
-// removeFromGroup takes the node out of the group and its row out of the panel, and forgets the and/or labels of the
-// node and, when it is a group, of everything below it.
-func (p *listFilterPanel) removeFromGroup(row *unison.Panel, group *gurps.FilterGroup, node gurps.FilterNode) {
-	if i := slices.IndexFunc(group.Children, func(elem gurps.FilterNode) bool { return elem == node }); i != -1 {
-		group.Children = slices.Delete(group.Children, i, i+1)
-	}
-	p.forgetAndOr(node)
-	row.RemoveFromParent()
-	p.adjustAndOrForGroup(group)
-}
-
-// forgetAndOr drops the and/or label of the node and of every node below it.
-func (p *listFilterPanel) forgetAndOr(node gurps.FilterNode) {
-	delete(p.andOrMap, node)
-	if group, ok := node.(*gurps.FilterGroup); ok {
-		for _, child := range group.Children {
-			p.forgetAndOr(child)
-		}
-	}
-}
-
-// addToGroup builds the row for a child of a group and adds it to the group's row panel, either at the given position
-// among the group's children or, when index is negative, at the end.
-func (p *listFilterPanel) addToGroup(parent *unison.Panel, depth, index int, child gurps.FilterNode) {
-	var panel, focus unison.Paneler
-	switch one := child.(type) {
-	case *gurps.FilterGroup:
-		panel, focus = p.createGroupPanel(depth, one)
+// describe returns the sentence of a node other than a group.
+func (p *listFilterPanel) describe(node gurps.FilterNode) string {
+	switch one := node.(type) {
 	case *gurps.FilterCondition:
-		panel, focus = p.createConditionPanel(depth, one)
+		return one.Describe(p.lookup, p.weightUnits, emphasize)
 	case *gurps.UnknownFilterNode:
-		panel, focus = p.createUnknownNodePanel(depth, one)
-	default:
-		errs.Log(errs.New("unknown filter node type"), "type", reflect.TypeOf(child).String())
-		return
+		return one.Describe()
 	}
-	panel.AsPanel().SetLayoutData(&unison.FlexLayoutData{
-		HSpan:  filterGroupColumns,
-		HAlign: align.Fill,
-		HGrab:  true,
-	})
-	if index < 0 {
-		parent.AddChild(panel)
-	} else {
-		parent.AddChildAtIndex(panel, filterGroupColumns+index)
-	}
-	focus.AsPanel().RequestFocus()
+	return ""
 }
 
-// addFieldPopup adds the popup that chooses which field a condition tests. Changing the field discards the criteria
-// that went with the old one and rebuilds the trailing part of the row, since a field of another kind needs another
-// kind of criteria.
-func (p *listFilterPanel) addFieldPopup(row *unison.Panel, cond *gurps.FilterCondition) *unison.PopupMenu[string] {
-	titles := make([]string, len(p.fields))
-	for i, info := range p.fields {
-		titles[i] = info.title
-	}
-	popup := unison.NewPopupMenu[string]()
-	popup.Accessibility.Name = i18n.Text("Field")
-	popup.AddItem(titles...)
-	popup.SelectIndex(p.fieldIndex(cond.Field))
-	popup.Tooltip = newWrappedTooltip(i18n.Text("The field to test"))
-	popup.ChoiceMadeCallback = func(pop *unison.PopupMenu[string], index int, _ string) {
-		pop.SelectIndex(index)
-		if index < 0 || index >= len(p.fields) || p.fields[index].key == cond.Field {
-			return
-		}
-		cond.Field = p.fields[index].key
-		lastFilterFieldKeyUsed[p.key] = cond.Field
-		resetFilterConditionCriteria(cond)
-		first := row.IndexOfChild(pop) + 1
-		for i := len(row.Children()) - 1; i >= first; i-- {
-			row.RemoveChildAtIndex(i)
-		}
-		p.addConditionCriteria(row, cond)
-		setFilterRowLayout(row)
-		markListFilterPanelForLayout(p)
-	}
-	row.AddChild(popup)
-	return popup
+// lookup implements gurps.FilterFieldLookup over the fields of the list type.
+func (p *listFilterPanel) lookup(key string) (title string, kind gurps.FilterFieldKind, plural, ok bool) {
+	info, ok := p.byKey[key]
+	return info.title, info.kind, info.plural, ok
 }
 
-// addConditionCriteria adds the criteria the condition's field is compared against, which is whichever one goes with
-// the field's kind. A yes/no field has nothing to compare against, so it gets none: the must/must not popup ahead of
-// the field already says all there is to say about it.
-func (p *listFilterPanel) addConditionCriteria(row *unison.Panel, cond *gurps.FilterCondition) {
-	info, ok := p.fieldInfo(cond.Field)
-	if !ok {
-		return
-	}
-	// The criteria follow the field's title, so that a row reads "must have a name that is ...".
-	prefix := i18n.Text("that")
+// knows reports whether the list type has a field with the key.
+func (p *listFilterPanel) knows(key string) bool {
+	_, ok := p.byKey[key]
+	return ok
+}
+
+// editor returns the controls for an open condition, flowing as its sentence does: whether it must or must not match,
+// the field it tests, and the criteria that go with the field's kind, worded to agree with a plural field.
+func (p *listFilterPanel) editor(cond *gurps.FilterCondition, path string) *unison.Panel {
+	box := newColumn()
+	box.RefKey = path + keyFirst
+	flow := newFlow()
+	box.AddChild(flow)
+	key := func(name string) string { return path + ":" + name }
+	addCentered(flow, compactPopup(&p.sentenceRows, key("not"), i18n.Text("Must"), []bool{false, true},
+		cond.Not, mustWord, func(not bool) { cond.Not = not }))
+	addCentered(flow, compactPopup(&p.sentenceRows, key("field"), i18n.Text("Field"), p.fieldKeys, cond.Field,
+		func(k string) string { return p.byKey[k].title },
+		func(k string) {
+			cond.Field = k
+			lastFilterFieldKeyUsed[p.listKey] = k
+			resetCriteria(cond)
+		}))
+	info := p.byKey[cond.Field]
 	switch info.kind {
 	case gurps.FilterFieldText:
-		addStringCriteriaPanel(row, prefix, prefix, i18n.Text("Text"), &cond.Text, 1, false)
-	case gurps.FilterFieldList:
-		addListCriteriaPanel(row, &cond.Text)
-	case gurps.FilterFieldNumber:
-		addNumericCriteriaPanel(row, nil, "", prefix, i18n.Text("Number"), &cond.Number, fxp.Min, fxp.Max, 1,
-			false, false)
-	case gurps.FilterFieldWeight:
-		// A weight criteria adds its parts directly to what it is given, so it needs a panel of its own to sit in.
-		addWeightCriteriaPanel(newCriteriaPanel(row, 1, false), nil, "", prefix, nil, &cond.Weight)
-	case gurps.FilterFieldBool:
-		// Nothing to compare against; the must/must not popup ahead of the field covers it.
-	}
-}
-
-// addListCriteriaPanel adds the criteria for a field holding a list of values, such as tags. A list is matched value
-// by value, so the comparison reads "where at least one" or "where all" rather than the plain "that" a single value
-// gets.
-func addListCriteriaPanel(parent *unison.Panel, text *criteria.Text) (*unison.PopupMenu[string], *StringField) {
-	popup, field := addStringCriteriaPanel(parent, i18n.Text("where at least one"), i18n.Text("where all"),
-		i18n.Text("List"), text, 1, false)
-	field.Tooltip = newWrappedTooltip(i18n.Text(`Separate multiple values with commas to match any one of them, e.g. "Sword, Axe"`))
-	return popup, field
-}
-
-// addNotPopup adds the popup that inverts a node's result. The value is stored as the negative, so that the common
-// case -- a node that has to match -- is the zero value and stays out of the JSON, which is why the second choice is
-// the one that sets it. Unlike the popups the editors in the workspace use, this one doesn't mark anything as
-// modified: the filter editor lives in a modal dialog, which has no ModifiableRoot above it to tell, and the filter is
-// only saved when the dialog is accepted. It is named for a screen reader, since the label ahead of it is the "and" or
-// "or" that joins the row to the one ahead of it, which would otherwise be taken as its name.
-func addNotPopup(parent *unison.Panel, not *bool) *unison.PopupMenu[string] {
-	popup := unison.NewPopupMenu[string]()
-	popup.Accessibility.Name = i18n.Text("Requirement")
-	popup.AddItem(i18n.Text("must"))
-	popup.AddItem(i18n.Text("must not"))
-	if *not {
-		popup.SelectIndex(1)
-	} else {
-		popup.SelectIndex(0)
-	}
-	popup.SelectionChangedCallback = func(pop *unison.PopupMenu[string]) {
-		*not = pop.SelectedIndex() == 1
-	}
-	parent.AddChild(popup)
-	return popup
-}
-
-// addAndOr adds the label that joins a row to the one ahead of it and remembers it, so that it can be brought into
-// line whenever the group it belongs to changes.
-func (p *listFilterPanel) addAndOr(row *unison.Panel, node gurps.FilterNode) {
-	label := NewFieldLeadingLabel(filterAndOrText(node), false)
-	row.AddChild(label)
-	p.andOrMap[node] = label
-}
-
-// adjustAndOrForGroup brings the and/or labels of every one of the group's children into line and lays the editor out
-// again, which is needed whether or not any of them changed, since the caller has just changed the group.
-func (p *listFilterPanel) adjustAndOrForGroup(group *gurps.FilterGroup) {
-	for _, child := range group.Children {
-		p.adjustAndOr(child)
-	}
-	markListFilterPanelForLayout(p)
-}
-
-// adjustAndOr updates the node's and/or label. The label never moves, so unlike a prerequisite's there is nothing to
-// do beyond retitling it.
-func (p *listFilterPanel) adjustAndOr(node gurps.FilterNode) {
-	if label, ok := p.andOrMap[node]; ok {
-		if text := filterAndOrText(node); text != label.String() {
-			label.SetTitle(text)
+		if info.plural {
+			p.textCriteriaWith(flow, key("text"), i18n.Text("Text"), "", criteria.StringComparison.PluralClause,
+				&cond.Text, true)
+		} else {
+			that := i18n.Text("that")
+			p.textCriteria(flow, key("text"), i18n.Text("Text"), "", that, that, &cond.Text, true)
 		}
+	case gurps.FilterFieldList:
+		if field := p.textCriteriaWith(flow, key("text"), i18n.Text("List"), "", criteria.StringComparison.ListClause,
+			&cond.Text, true); field != nil {
+			field.Tooltip = newWrappedTooltip(i18n.Text(`Separate multiple values with commas to match any one of them, e.g. "Sword, Axe"`))
+		}
+	case gurps.FilterFieldNumber:
+		p.numberCriteria(flow, key("number"), i18n.Text("Number"), filterNumericWords(info), &cond.Number, fxp.Min,
+			fxp.Max, false, true)
+	case gurps.FilterFieldWeight:
+		p.weightCriteria(flow, key("weight"), i18n.Text("Weight"), filterNumericWords(info), nil, &cond.Weight, true)
+	case gurps.FilterFieldBool:
+		// Nothing to compare against; Must or Must not covers it.
 	}
+	return box
 }
 
-// filterAndOrText returns the text of the label that joins the node to its siblings ahead of it.
-func filterAndOrText(node gurps.FilterNode) string {
-	group := node.ParentGroup()
-	if group == nil {
-		return noAndOr
+// filterNumericWords returns the words of the numeric comparison of a condition on the field: after "that", or in
+// agreement with a plural title.
+func filterNumericWords(info filterFieldInfo) numericWords {
+	if info.plural {
+		return criteria.NumericComparison.PluralClause
 	}
-	return joiningText(group.Children, node, group.All)
+	return numericWordsAfter(i18n.Text("that"))
 }
 
-// setFilterRowLayout gives a row one column per child. A condition row's trailing criteria are thrown away and rebuilt
-// whenever the field being tested changes, so the count has to be set again each time that happens.
-func setFilterRowLayout(row *unison.Panel) {
-	row.SetLayout(&unison.FlexLayout{
-		Columns:  len(row.Children()),
-		HSpacing: unison.StdHSpacing,
-		VSpacing: unison.StdVSpacing,
-	})
-}
-
-// markListFilterPanelForLayout lays the editor out again from top to bottom after a structural change.
-// MarkRootAncestorForLayoutRecursively, which the editors in the workspace use for this, is a no-op here: it looks for
-// an ancestor dock container or dockable, and the filter editor lives in a dialog, which is neither.
-func markListFilterPanelForLayout(p unison.Paneler) {
-	panel := p.AsPanel()
-	panel.MarkForLayoutRecursively()
-	panel.MarkForLayoutRecursivelyUpward()
-	panel.MarkForRedraw()
-}
-
-// preservedFilterNodeTooltip returns the tooltip that explains a row the editor shows but can't edit. It is looked up
-// when needed rather than held in a variable, since the localization isn't in place when the package initializes.
-func preservedFilterNodeTooltip() string {
-	return i18n.Text("This was most likely created by a newer version of GCS. Its original data will be written back out unchanged when this filter is saved.")
-}
-
-// deleteFilterNodeTooltip returns the tooltip for the button that deletes the node, which says what will go, since a
-// group takes everything below it along.
-func deleteFilterNodeTooltip(node gurps.FilterNode) string {
-	switch node.(type) {
-	case *gurps.FilterGroup:
-		return i18n.Text("Delete this group and everything in it")
-	case *gurps.FilterCondition:
-		return i18n.Text("Delete this condition")
-	default:
-		return i18n.Text("Delete this node")
+func mustWord(not bool) string {
+	if not {
+		return i18n.Text("Must not")
 	}
+	return i18n.Text("Must")
 }
 
-// resetFilterConditionCriteria puts the condition's criteria back to the defaults that accept anything. Only the one
-// that goes with the field's kind is ever consulted, so leaving the others as they were would keep values around that
-// nothing shows, nothing uses, and yet would still be written back out to disk.
-func resetFilterConditionCriteria(cond *gurps.FilterCondition) {
+// resetCriteria puts the condition's criteria back to where a new condition starts. Each zero criterion accepts
+// anything, and a yes/no field, which has none, then requires the value to be true. Only the criterion that goes with
+// the field's kind is ever consulted, so the others are cleared rather than kept around where nothing shows or uses
+// them, yet would still be written out to disk.
+func resetCriteria(cond *gurps.FilterCondition) {
 	cond.Text = criteria.Text{}
 	cond.Number = criteria.Number{}
 	cond.Weight = criteria.Weight{}
+}
+
+// addEntries returns what can be added to a group: under the heading condition, a condition that starts out testing
+// the field last chosen, and under the heading structure, groups.
+func (p *listFilterPanel) addEntries(group *gurps.FilterGroup, path, condition, structure string) []menuEntry {
+	at := childPath(path, len(group.Children))
+	entries := make([]menuEntry, 0, 5)
+	entries = append(entries, menuEntry{Label: condition}, menuEntry{Label: i18n.Text("New Condition"), Act: func() {
+		cond := gurps.NewFilterCondition(group, p.defaultFieldKey())
+		p.edit(i18n.Text("Add Condition"), p.addKey(group, path), at+":field", func() {
+			group.Children = append(group.Children, cond)
+			p.open = at
+		})
+	}}, menuEntry{Label: structure})
+	return append(entries, p.groupEntries(group, path, func(all bool) {
+		if all {
+			filterAllOf.apply(group)
+		} else {
+			filterAnyOf.apply(group)
+		}
+		p.headed = true
+	})...)
 }
 
 // defaultFieldKey returns the key of the field a newly added condition should start out testing: the one last chosen
@@ -422,21 +238,14 @@ func (p *listFilterPanel) defaultFieldKey() string {
 	if len(p.fields) == 0 {
 		return ""
 	}
-	if key, ok := lastFilterFieldKeyUsed[p.key]; ok && p.fieldIndex(key) != -1 {
+	if key, ok := lastFilterFieldKeyUsed[p.listKey]; ok && p.knows(key) {
 		return key
 	}
 	return p.fields[0].key
 }
 
-// fieldIndex returns the position of the field with the given key, or -1 if there is none.
-func (p *listFilterPanel) fieldIndex(key string) int {
-	return slices.IndexFunc(p.fields, func(info filterFieldInfo) bool { return info.key == key })
-}
-
-// fieldInfo returns the field with the given key, if there is one.
-func (p *listFilterPanel) fieldInfo(key string) (info filterFieldInfo, ok bool) {
-	if i := p.fieldIndex(key); i != -1 {
-		return p.fields[i], true
-	}
-	return filterFieldInfo{}, false
+// preservedFilterNodeTooltip returns the tooltip that explains a row the editor shows but can't edit. It is looked up
+// when needed rather than held in a variable, since the localization isn't in place when the package initializes.
+func preservedFilterNodeTooltip() string {
+	return i18n.Text("This was most likely created by a newer version of GCS. Its original data will be written back out unchanged when this filter is saved.")
 }

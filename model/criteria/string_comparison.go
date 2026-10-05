@@ -9,7 +9,11 @@
 
 package criteria
 
-import "strings"
+import (
+	"strings"
+
+	"github.com/richardwilkes/toolbox/v2/i18n"
+)
 
 // Describe returns a description of this StringComparison using a qualifier.
 func (enum StringComparison) Describe(qualifier string) string {
@@ -33,6 +37,74 @@ func (enum StringComparison) DescribeWithPrefix(prefix, notPrefix, qualifier str
 		return info
 	}
 	return info + ` "` + qualifier + `"`
+}
+
+// PluralClause returns the comparison as a clause that follows something plural, such as "that contain" in "notes that
+// contain".
+func (enum StringComparison) PluralClause() string {
+	switch enum.EnsureValid() {
+	case IsText:
+		return i18n.Text("that are")
+	case IsNotText:
+		return i18n.Text("that are not")
+	case ContainsText:
+		return i18n.Text("that contain")
+	case DoesNotContainText:
+		return i18n.Text("that do not contain")
+	case StartsWithText:
+		return i18n.Text("that start with")
+	case DoesNotStartWithText:
+		return i18n.Text("that do not start with")
+	case EndsWithText:
+		return i18n.Text("that end with")
+	case DoesNotEndWithText:
+		return i18n.Text("that do not end with")
+	default:
+		return i18n.Text("that are anything")
+	}
+}
+
+// ListClause returns the comparison as a clause that follows a list of values, which it is matched against value by
+// value, such as "where at least one contains" in "tags where at least one contains". A "not" comparison holds when
+// no value matches, so it reads "where none contains". "is anything" reads as a plural clause does.
+func (enum StringComparison) ListClause() string {
+	switch enum.EnsureValid() {
+	case IsText:
+		return i18n.Text("where at least one is")
+	case IsNotText:
+		return i18n.Text("where none is")
+	case ContainsText:
+		return i18n.Text("where at least one contains")
+	case DoesNotContainText:
+		return i18n.Text("where none contains")
+	case StartsWithText:
+		return i18n.Text("where at least one starts with")
+	case DoesNotStartWithText:
+		return i18n.Text("where none starts with")
+	case EndsWithText:
+		return i18n.Text("where at least one ends with")
+	case DoesNotEndWithText:
+		return i18n.Text("where none ends with")
+	default:
+		return i18n.Text("that are anything")
+	}
+}
+
+// Positive returns the comparison a "not" comparison negates, or the comparison itself when it isn't one.
+func (enum StringComparison) Positive() StringComparison {
+	v := enum.EnsureValid()
+	switch v {
+	case IsNotText:
+		return IsText
+	case DoesNotContainText:
+		return ContainsText
+	case DoesNotStartWithText:
+		return StartsWithText
+	case DoesNotEndWithText:
+		return EndsWithText
+	default:
+		return v
+	}
 }
 
 // Matches performs a comparison and returns true if the data matches.

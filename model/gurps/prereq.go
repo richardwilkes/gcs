@@ -10,7 +10,9 @@
 package gurps
 
 import (
+	"fmt"
 	"hash"
+	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/criteria"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/prereq"
@@ -56,16 +58,41 @@ func plainText(s string) string {
 }
 
 // describeText returns the comparison and qualifier of t, such as `is Fire` or `contains "Fi"`. A non-empty qualifier
-// is passed through em, and is quoted unless the comparison is "is".
+// is passed through em, and is quoted unless the comparison is "is" and the qualifier reads plainly (see
+// describeComparison).
 func describeText(t criteria.Text, replacements map[string]string, em func(string) string) string {
-	q := nameable.Apply(t.Qualifier, replacements)
-	if q == "" {
-		return t.Compare.Describe(q)
+	return describeComparison(t.Compare.String(), t.Compare, []string{nameable.Apply(t.Qualifier, replacements)}, em)
+}
+
+// describeComparison returns words, which say how the comparison compares, followed by the qualifiers, joined with
+// "or". Each is passed through em, and quoted unless the comparison is "is" and it reads plainly, without a comma, a
+// quote or space at either end that would blur where it starts and stops. One that is empty, or only space, reads as
+// "". "is anything" takes no qualifier, and no qualifiers reads as one empty one.
+func describeComparison(words string, compare criteria.StringComparison, qualifiers []string,
+	em func(string) string,
+) string {
+	if compare.EnsureValid() == criteria.AnyText {
+		return words
 	}
-	if t.Compare == criteria.IsText {
-		return t.Compare.String() + " " + em(q)
+	if len(qualifiers) == 0 {
+		qualifiers = []string{""}
 	}
-	return t.Compare.Describe(em(q))
+	parts := make([]string, len(qualifiers))
+	for i, q := range qualifiers {
+		switch {
+		case strings.TrimSpace(q) == "":
+			parts[i] = `""`
+		case compare == criteria.IsText && q == strings.TrimSpace(q) && !strings.ContainsAny(q, `,"`):
+			parts[i] = em(q)
+		default:
+			parts[i] = `"` + em(q) + `"`
+		}
+	}
+	text := parts[len(parts)-1]
+	if len(parts) > 1 {
+		text = fmt.Sprintf(i18n.Text("%s or %s"), strings.Join(parts[:len(parts)-1], i18n.Text(", ")), text)
+	}
+	return words + " " + text
 }
 
 // describeName returns how a prerequisite names what it looks for: the bare name for "is", "of any name" when any name
