@@ -52,13 +52,16 @@ var (
 // index in the list.
 const featureAddKey = "add"
 
+// featureEmptyKey is the reference key of the placeholder shown in place of the rows while there are none.
+const featureEmptyKey = "empty"
+
 // featureDropKey marks a row a dragged feature can be dropped on, holding its path.
 const featureDropKey = "feature.drop"
 
 // featuresPanel edits a list of features. Each one is a row that reads as a sentence until it is opened, one at a time,
 // to edit it. Every change, typing included, records a snapshot of the whole list with the editor's undo manager.
 type featuresPanel struct {
-	sentenceRows[gurps.Features]
+	sentenceRows[featuresState]
 	entity   *gurps.Entity
 	owner    fmt.Stringer
 	features *gurps.Features
@@ -71,6 +74,13 @@ type featuresPanel struct {
 	forEquipmentModifier bool
 }
 
+// featuresState is the data a snapshot of the panel holds: the features, and the indexes of those whose "as a %" is
+// suspended, so that undo and redo suspend it for the copies they install.
+type featuresState struct {
+	features  gurps.Features
+	suspended []int
+}
+
 func newFeaturesPanel(entity *gurps.Entity, owner fmt.Stringer, features *gurps.Features, forEquipmentModifier bool) *featuresPanel {
 	p := &featuresPanel{
 		entity:               entity,
@@ -80,15 +90,32 @@ func newFeaturesPanel(entity *gurps.Entity, owner fmt.Stringer, features *gurps.
 		forEquipmentModifier: forEquipmentModifier,
 	}
 	initTitledEditorSection(p, i18n.Text("Features"))
-	p.initRows(featureDragKey, p.build, func() gurps.Features { return p.features.Clone() },
-		func(list gurps.Features) {
-			*p.features = list.Clone()
-			// The copies installed are not the bonuses whose percentage was suspended.
-			clear(p.percentSuspended)
-		}, p.dataHash)
+	p.initRows(featureDragKey, p.build, p.state, p.setState, p.dataHash)
 	p.initDrop(p.dropAt, p.drop)
 	p.build()
 	return p
+}
+
+// state returns a copy of the panel's data, for a snapshot.
+func (p *featuresPanel) state() featuresState {
+	state := featuresState{features: p.features.Clone()}
+	for i, one := range *p.features {
+		if bonus, ok := one.(*gurps.WeaponBonus); ok && p.percentSuspended[bonus] {
+			state.suspended = append(state.suspended, i)
+		}
+	}
+	return state
+}
+
+// setState installs a copy of the data of a snapshot, suspending the percentage of the copies it held suspended.
+func (p *featuresPanel) setState(state featuresState) {
+	*p.features = state.features.Clone()
+	clear(p.percentSuspended)
+	for _, i := range state.suspended {
+		if bonus, ok := (*p.features)[i].(*gurps.WeaponBonus); ok {
+			p.percentSuspended[bonus] = true
+		}
+	}
 }
 
 // dataHash returns a hash of the features.
@@ -147,9 +174,15 @@ func (p *featuresPanel) build() {
 	// New features go at the end, so the add button sits under the last row, in line with the more buttons.
 	foot := unison.NewPanel()
 	foot.SetBorder(unison.NewEmptyBorder(geom.Insets{Left: 4, Right: 8}))
+	empty := len(*p.features) == 0
+	if empty {
+		// With no features, a placeholder that adds one as the add button does stands before it.
+		foot.AddChild(newEmptyPlaceholder(featureEmptyKey, i18n.Text("No features. Add one to get started."),
+			add.ClickCallback))
+	}
 	foot.AddChild(add)
-	hbox(foot, 0)
-	add.SetLayoutData(&unison.FlexLayoutData{HAlign: align.End, HGrab: true})
+	hbox(foot, unison.StdHSpacing)
+	add.SetLayoutData(&unison.FlexLayoutData{HAlign: align.End, VAlign: align.Middle, HGrab: !empty})
 	p.AddChild(foot)
 }
 
@@ -333,6 +366,7 @@ func (p *featuresPanel) editor(f gurps.Feature, path string) *unison.Panel {
 		selectionPopup(p, fields, path, skillsel.Types, &one.SelectionType, skillsel.ThisWeapon, &one.NameCriteria)
 		if one.SelectionType == skillsel.Name {
 			p.textChip(chips, path, "specialization", &one.SpecializationCriteria)
+			p.textChip(chips, path, "optspecialization", &one.OptionalSpecializationCriteria)
 		} else {
 			p.textChip(chips, path, "usage", &one.SpecializationCriteria)
 		}
@@ -344,6 +378,7 @@ func (p *featuresPanel) editor(f gurps.Feature, path string) *unison.Panel {
 		whose := i18n.Text("to skills whose name")
 		p.textCriteria(fields, key("name"), i18n.Text("Name"), "", whose, whose, &one.NameCriteria, true)
 		p.textChip(chips, path, "specialization", &one.SpecializationCriteria)
+		p.textChip(chips, path, "optspecialization", &one.OptionalSpecializationCriteria)
 		p.tagsChip(chips, path, &one.TagsCriteria)
 	case *gurps.SpellBonus:
 		p.amount(fields, path, &one.Amount, &one.PerLevel)
@@ -601,6 +636,8 @@ func (p *featuresPanel) situation(box, chips *unison.Panel, path string, situati
 	field.Watermark = hint
 	// Named for the hint, as it always has been.
 	field.Accessibility.Name = hint
+	// It grows to fit its text, so scrolling within it would only shift the text out of place.
+	field.AutoScroll = false
 	p.addCompact(box, field.withoutUndo())
 	field.SetLayoutData(&unison.FlexLayoutData{HAlign: align.Fill, HGrab: true})
 	p.optional(chips, path, "group", i18n.Text("+ group"), i18n.Text("Add Group"), i18n.Text("Remove Group"),
@@ -780,12 +817,10 @@ func (p *featuresPanel) weaponBonus(fields, chips *unison.Panel, path string, on
 	}
 	if one.SelectionType == wsel.WithRequiredSkill {
 		level := &one.RelativeLevelCriteria
-		// Every weapon has a relative level of at least 0, so that is the same as having no level criteria.
 		p.optional(chips, path, "level", i18n.Text("+ relative skill level"), i18n.Text("Add Relative Skill Level"),
-			i18n.Text("Remove Relative Skill Level"),
-			level.Compare != criteria.AnyNumber && (level.Compare != criteria.AtLeastNumber || level.Qualifier != 0),
+			i18n.Text("Remove Relative Skill Level"), level.Compare != criteria.AnyNumber,
 			func() { *level = criteria.Number{Compare: criteria.AtLeastNumber, Qualifier: fxp.One} },
-			func() { *level = criteria.Number{Compare: criteria.AtLeastNumber} },
+			func() { *level = criteria.Number{Compare: criteria.AnyNumber} },
 			func(chip *unison.Panel) {
 				p.numberCriteria(chip, key("level"), i18n.Text("Level"), i18n.Text("and whose relative skill level"),
 					level, -fxp.Thousand, fxp.Thousand, true)

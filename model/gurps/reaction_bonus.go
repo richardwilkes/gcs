@@ -32,7 +32,6 @@ type ReactionBonus struct {
 func NewReactionBonus() *ReactionBonus {
 	var r ReactionBonus
 	r.Type = feature.ReactionBonus
-	r.Situation = i18n.Text("from others")
 	r.Amount = fxp.One
 	return &r
 }

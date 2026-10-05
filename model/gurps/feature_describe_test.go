@@ -113,7 +113,7 @@ func TestFeatureDescribe(t *testing.T) {
 	conditional.Amount = -fxp.One
 	conditional.Situation = "on any long task"
 	conditionalNoSituation := gurps.NewConditionalModifierBonus()
-	conditionalNoSituation.Situation = ""
+	reactionNoSituation := gurps.NewReactionBonus()
 
 	weaponPerDie := weapon(feature.WeaponBonus, wsel.ThisWeapon, "")
 	weaponPerDie.Amount = -fxp.One
@@ -123,7 +123,9 @@ func TestFeatureDescribe(t *testing.T) {
 	weaponCriteria := weapon(feature.WeaponBonus, wsel.WithRequiredSkill, "Broadsword")
 	weaponCriteria.SpecializationCriteria = criteria.Text{Compare: criteria.IsText, Qualifier: "Rapier"}
 	weaponCriteria.UsageCriteria = criteria.Text{Compare: criteria.IsText, Qualifier: "Thrust"}
-	weaponCriteria.RelativeLevelCriteria.Qualifier = fxp.Two
+	weaponCriteria.RelativeLevelCriteria = criteria.Number{Compare: criteria.AtLeastNumber, Qualifier: fxp.Two}
+	weaponLevelZero := weapon(feature.WeaponBonus, wsel.WithRequiredSkill, "Broadsword")
+	weaponLevelZero.RelativeLevelCriteria = criteria.Number{Compare: criteria.AtLeastNumber}
 	weaponDice := weapon(feature.WeaponBonus, wsel.ThisWeapon, "")
 	weaponDice.Dice, _ = gurps.ParseBonusDice("1d")
 	weaponDice.Amount = fxp.Two
@@ -180,6 +182,8 @@ func TestFeatureDescribe(t *testing.T) {
 	overrideFiltered.NameCriteria.Qualifier = "Axe"
 	overrideFiltered.UsageCriteria = criteria.Text{Compare: criteria.IsText, Qualifier: "Swung"}
 	overrideFiltered.TagsCriteria = criteria.Text{Compare: criteria.ContainsText, Qualifier: "Melee"}
+	overrideNoValue := gurps.NewSelectorOverride(selector.WeaponBaseDamageDice)
+	overrideNoValue.NameCriteria.Qualifier = "Axe"
 	overrideTrait := gurps.NewSelectorOverride(selector.TraitFrequency)
 	overrideTrait.NameCriteria.Compare = criteria.AnyText
 	overrideTrait.Priority = 2
@@ -222,12 +226,17 @@ func TestFeatureDescribe(t *testing.T) {
 		{"reaction", reaction, "[-2] to reactions from others except your own kind"},
 		{"conditional", conditional, "[-1] on any long task"},
 		{"conditional without situation", conditionalNoSituation, "[+1] as a conditional modifier"},
+		{"reaction without situation", reactionNoSituation, "[+1] to reactions"},
 		{"weapon per die", weaponPerDie, "[-1] per die to this weapon's damage"},
 		{"weapon by skill", weaponBySkill, "[+1] per die to the damage of weapons using [Broadsword]"},
 		{
 			"weapon by skill with criteria", weaponCriteria,
 			"[+1] to the damage of weapons using [Broadsword] ([Rapier]) whose usage is [Thrust] whose relative " +
 				"skill level is at least 2",
+		},
+		{
+			"weapon relative skill level of at least 0", weaponLevelZero,
+			"[+1] to the damage of weapons using [Broadsword] whose relative skill level is at least 0",
 		},
 		{"weapon dice suspend percent", weaponDice, "[+1d +2] to this weapon's damage"},
 		{"weapon percent", weaponPercent, "[+10%] to the accuracy of weapons named [Bow]"},
@@ -258,6 +267,10 @@ func TestFeatureDescribe(t *testing.T) {
 			"selector override with usage and tags", overrideFiltered,
 			`Sets [weapon damage type] to [cut] on weapons named [Axe] whose usage is [Swung] with a tag that ` +
 				`contains "[Melee]" (priority 0)`,
+		},
+		{
+			"selector override without a value", overrideNoValue,
+			`Sets [weapon base damage dice] to "" on weapons named [Axe] (priority 0)`,
 		},
 		{
 			"selector override with a value title", overrideTrait,

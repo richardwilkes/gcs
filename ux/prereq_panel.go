@@ -438,7 +438,7 @@ func (p *prereqPanel) group(list *gurps.PrereqList, path string) *unison.Panel {
 		if emptyRoot {
 			text = i18n.Text("No prerequisites. Add one to get started.")
 		}
-		empty = newDashedButton(text, nil)
+		empty = newEmptyPlaceholder(path+":empty", text, nil)
 		// A click opens the menu where it lands, as a right-click does; a key opens it at the placeholder.
 		empty.ClickCallback = func() { showMenu(empty.AsPanel(), p.addEntries(list, path)) }
 		empty.ContextMenuCallback = func(geom.Point) unison.Menu { return newEntriesMenu(p.addEntries(list, path)) }
@@ -453,21 +453,7 @@ func (p *prereqPanel) group(list *gurps.PrereqList, path string) *unison.Panel {
 			}
 			return true
 		}
-		empty.HAlign = align.Start
-		empty.VMargin = 6
-		empty.CornerRadius = geom.NewUniformSize(6)
-		// The focus ring insets the text by 2.5, which moves text drawn from the start; take that out of the margins.
-		draw := empty.DrawCallback
-		empty.DrawCallback = func(gc *unison.Canvas, dirty geom.Rect) {
-			if empty.Focused() {
-				empty.HMargin, empty.VMargin = empty.HMargin-2.5, empty.VMargin-2.5
-				defer func() { empty.HMargin, empty.VMargin = empty.HMargin+2.5, empty.VMargin+2.5 }()
-			}
-			draw(gc, dirty)
-		}
-		empty.RefKey = path + ":empty"
 		empty.ClientData()[prereqDropKey] = prereqDropSpot{path: path, part: dropOnEmpty}
-		empty.SetLayoutData(&unison.FlexLayoutData{HAlign: align.Fill, HGrab: true})
 	}
 	// An untouched empty root has nothing for its pill, status or rail to speak of, so its placeholder takes their place.
 	if emptyRoot {

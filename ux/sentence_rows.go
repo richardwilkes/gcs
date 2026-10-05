@@ -222,6 +222,8 @@ func (p *sentenceRows[T]) rebuild(focus string) {
 			if s, ok := p.FindRefKey(ref.Key).Self.(Selectable); ok && ref.Selectable {
 				s.SetSelection(ref.SelStart, ref.SelEnd)
 			}
+		// With the widget that had the focus gone, the open row takes it, or else the panel's first control.
+		case ref != nil && p.open != "" && p.focusOn(p.open+keyFirst):
 		case ref != nil:
 			if first := p.FirstFocusableChild(); first != nil {
 				first.RequestFocus()
@@ -727,7 +729,7 @@ func compactPopup[S any, T comparable](p *sentenceRows[S], key, name string, ite
 	})
 	installPopupSelection(popup, current, func(v T) {
 		p.edit(name, key, "", func() { set(v) })
-		p.rebuild("")
+		p.rebuild(key)
 	})
 	return popup
 }
@@ -798,6 +800,27 @@ func newIconButton(key string, icon *unison.SVG, tooltip string) *unison.Button 
 	b.RefKey = key
 	b.Tooltip = newWrappedTooltip(tooltip)
 	return b
+}
+
+// newEmptyPlaceholder returns the dashed box, keyed key, that stands in for the rows of a panel or group that has none,
+// saying text and calling click when clicked. It fills its line.
+func newEmptyPlaceholder(key, text string, click func()) *unison.Button {
+	empty := newDashedButton(text, click)
+	empty.HAlign = align.Start
+	empty.VMargin = 6
+	empty.CornerRadius = geom.NewUniformSize(6)
+	// The focus ring insets the text by 2.5, which moves text drawn from the start; take that out of the margins.
+	draw := empty.DrawCallback
+	empty.DrawCallback = func(gc *unison.Canvas, dirty geom.Rect) {
+		if empty.Focused() {
+			empty.HMargin, empty.VMargin = empty.HMargin-2.5, empty.VMargin-2.5
+			defer func() { empty.HMargin, empty.VMargin = empty.HMargin+2.5, empty.VMargin+2.5 }()
+		}
+		draw(gc, dirty)
+	}
+	empty.RefKey = key
+	empty.SetLayoutData(&unison.FlexLayoutData{HAlign: align.Fill, HGrab: true})
+	return empty
 }
 
 // newDashedButton returns a button drawn as a dashed outline, which adds something. Under the pointer it is filled, and

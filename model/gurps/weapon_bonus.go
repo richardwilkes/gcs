@@ -113,7 +113,6 @@ func NewWeaponBonus(t feature.Type) *WeaponBonus {
 	w.NameCriteria.Compare = criteria.IsText
 	w.SpecializationCriteria.Compare = criteria.AnyText
 	w.OptionalSpecializationCriteria.Compare = criteria.AnyText
-	w.RelativeLevelCriteria.Compare = criteria.AtLeastNumber
 	w.UsageCriteria.Compare = criteria.AnyText
 	w.TagsCriteria.Compare = criteria.AnyText
 	w.Amount = fxp.One
@@ -366,8 +365,7 @@ func (w *WeaponBonus) describeWeapons(noun string, replacements map[string]strin
 				em) +
 			describeWhose(i18n.Text("whose usage"), w.UsageCriteria, replacements, em) +
 			describeTags(w.TagsCriteria, replacements, em)
-		if r := w.RelativeLevelCriteria; r.Compare != criteria.AnyNumber &&
-			(r.Compare != criteria.AtLeastNumber || r.Qualifier != 0) {
+		if r := w.RelativeLevelCriteria; r.Compare != criteria.AnyNumber {
 			text += i18n.Text(" whose relative skill level ") + r.String()
 		}
 		return text

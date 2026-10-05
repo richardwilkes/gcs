@@ -140,12 +140,18 @@ func (o *SelectorOverride) MatchesTrait(t *Trait) bool {
 		o.TagsCriteria.MatchesList(replacements, t.Tags...)
 }
 
-// Describe implements Feature. The value is shown by its title, where its field has titles for its values.
+// Describe implements Feature. The value is shown by its title, where its field has titles for its values, and as an
+// empty pair of quotes while it is empty, as an empty qualifier is.
 func (o *SelectorOverride) Describe(_ *Entity, replacements map[string]string, em func(string) string) string {
 	d := SelectorFieldDescriptorFor(o.Field)
 	value := o.Value
 	if d.StateTitle != nil {
 		value = d.StateTitle(value)
+	}
+	if value == "" {
+		value = `""`
+	} else {
+		value = em(value)
 	}
 	var target string
 	if d.Scope == SelectorScopeTrait {
@@ -155,7 +161,7 @@ func (o *SelectorOverride) Describe(_ *Entity, replacements map[string]string, e
 		target = describeNamedWeapons(o.NameCriteria, o.UsageCriteria, o.TagsCriteria, replacements, em)
 	}
 	return describeSwitchable(o.Switchable, fmt.Sprintf(i18n.Text("Sets %s to %s on %s (priority %d)"),
-		em(o.Field.String()), em(value), target, o.Priority))
+		em(o.Field.String()), value, target, o.Priority))
 }
 
 // Hash writes this object's contents into the hasher.

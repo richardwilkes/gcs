@@ -32,7 +32,6 @@ type ConditionalModifierBonus struct {
 func NewConditionalModifierBonus() *ConditionalModifierBonus {
 	var c ConditionalModifierBonus
 	c.Type = feature.ConditionalModifier
-	c.Situation = i18n.Text("triggering condition")
 	c.Amount = fxp.One
 	return &c
 }

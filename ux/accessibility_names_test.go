@@ -455,9 +455,11 @@ func seedEveryFeatureControl(list gurps.Features) {
 			f.Specialization = "crushing"
 		case *gurps.SkillBonus:
 			f.SpecializationCriteria = on
+			f.OptionalSpecializationCriteria = on
 			f.TagsCriteria = on
 		case *gurps.SkillPointBonus:
 			f.SpecializationCriteria = on
+			f.OptionalSpecializationCriteria = on
 			f.TagsCriteria = on
 		case *gurps.SpellBonus:
 			f.TagsCriteria = on
@@ -475,7 +477,7 @@ func seedEveryFeatureControl(list gurps.Features) {
 			f.SpecializationCriteria = on
 			f.UsageCriteria = on
 			f.TagsCriteria = on
-			f.RelativeLevelCriteria.Qualifier = fxp.One
+			f.RelativeLevelCriteria = criteria.Number{Compare: criteria.AtLeastNumber, Qualifier: fxp.One}
 		case *gurps.SelectorOverride:
 			f.UsageCriteria = on
 			f.TagsCriteria = on

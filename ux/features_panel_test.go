@@ -13,6 +13,7 @@ import (
 	"encoding/json/jsontext"
 	"fmt"
 	"slices"
+	"strconv"
 	"strings"
 	"testing"
 
@@ -21,6 +22,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/feature"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/selector"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/skillsel"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/wsel"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/wswitch"
 	"github.com/richardwilkes/toolbox/v2/check"
@@ -692,6 +694,205 @@ func TestFeaturesPanelChips(t *testing.T) {
 	screen.Do(func() { c.Nil(p.FindRefKey("1:group" + keyChip)) })
 }
 
+// TestFeaturesPanelEmpty checks that a list with no features shows a placeholder before the add button, that clicking
+// it adds a feature of the type last chosen and opens it, as the add button does, and that undo brings it back.
+func TestFeaturesPanelEmpty(t *testing.T) {
+	c := check.New(t)
+	screen, _ := startHeadlessWorkspace(t, c)
+	entity := gurps.NewEntity()
+	owner := gurps.NewTrait(entity, nil, false)
+	var features gurps.Features
+	c.Equal(0, len(features), "precondition: the list has no features")
+	p, host := showFeaturesPanel(t, screen, entity, owner, &features, false)
+	defer func(last feature.Type) { lastFeatureTypeUsed = last }(lastFeatureTypeUsed)
+	lastFeatureTypeUsed = feature.ReactionBonus
+	var empty *unison.Button
+	screen.Do(func() {
+		var ok bool
+		empty, ok = p.FindRefKey(featureEmptyKey).Self.(*unison.Button)
+		c.True(ok, "an empty list shows a placeholder")
+		if !ok {
+			return
+		}
+		c.Equal("No features. Add one to get started.", empty.Text.String())
+		add := p.FindRefKey(featureAddKey)
+		c.NotNil(add)
+		r, a := empty.RectToRoot(empty.ContentRect(true)), add.RectToRoot(add.ContentRect(true))
+		c.True(a.X >= r.Right(), "the add button follows it")
+		c.Equal(r.CenterY(), a.CenterY(), "on its line")
+	})
+	if empty == nil {
+		return
+	}
+	screen.Do(empty.ClickCallback)
+	c.Equal([]feature.Type{feature.ReactionBonus}, featureTypes(features), "clicking it adds a feature of the last type")
+	c.Equal("0", p.open, "and opens it")
+	screen.Do(func() {
+		c.Equal("0:amount", p.Window().Focus().RefKey, "with the focus in its first field")
+		c.Nil(p.FindRefKey(featureEmptyKey), "and the placeholder goes")
+	})
+	c.Equal("Undo Add Feature", host.mgr.UndoTitle())
+	screen.Do(host.mgr.Undo)
+	c.Equal(0, len(features))
+	screen.Do(func() { c.NotNil(p.FindRefKey(featureEmptyKey), "undo brings the placeholder back") })
+}
+
+// TestFeaturesPanelSituation checks that a new reaction bonus or conditional modifier starts with no situation, so that
+// its field shows the hint, and that the field grows to fit its text rather than scrolling within itself.
+func TestFeaturesPanelSituation(t *testing.T) {
+	c := check.New(t)
+	screen, _ := startHeadlessWorkspace(t, c)
+	entity := gurps.NewEntity()
+	owner := gurps.NewTrait(entity, nil, false)
+	var features gurps.Features
+	p, _ := showFeaturesPanel(t, screen, entity, owner, &features, false)
+	reaction, ok := p.createFeatureForType(feature.ReactionBonus).(*gurps.ReactionBonus)
+	c.True(ok)
+	conditional, ok := p.createFeatureForType(feature.ConditionalModifier).(*gurps.ConditionalModifierBonus)
+	c.True(ok)
+	if reaction == nil || conditional == nil {
+		return
+	}
+	c.Equal("", reaction.Situation, "a new reaction bonus has no situation")
+	c.Equal("", conditional.Situation, "nor does a new conditional modifier")
+	features = gurps.Features{reaction, conditional}
+	for i, hint := range []string{"from/to target", "Triggering Condition"} {
+		path := strconv.Itoa(i)
+		screen.Do(func() { p.toggle(path) })
+		screen.Do(func() {
+			field, isField := p.FindRefKey(path + ":situation").Self.(*StringField)
+			c.True(isField, "row %s has a situation field", path)
+			if !isField {
+				return
+			}
+			c.Equal("", field.Text())
+			c.Equal(hint, field.Watermark, "row %s shows its hint", path)
+			c.False(field.AutoScroll, "row %s's field doesn't scroll within itself", path)
+		})
+	}
+}
+
+// TestFeaturesPanelOptionalSpecialization checks that a skill bonus selected by name and a skill point bonus offer an
+// optional specialization criterion, which a skill bonus selected another way does not.
+func TestFeaturesPanelOptionalSpecialization(t *testing.T) {
+	c := check.New(t)
+	screen, _ := startHeadlessWorkspace(t, c)
+	entity := gurps.NewEntity()
+	owner := gurps.NewTrait(entity, nil, false)
+	byName := gurps.NewSkillBonus()
+	byName.SetOwner(owner)
+	points := gurps.NewSkillPointBonus()
+	points.SetOwner(owner)
+	thisWeapon := gurps.NewSkillBonus()
+	thisWeapon.SelectionType = skillsel.ThisWeapon
+	thisWeapon.SetOwner(owner)
+	features := gurps.Features{byName, points, thisWeapon}
+	c.Equal(skillsel.Name, byName.SelectionType, "precondition: the first skill bonus is selected by name")
+	p, _ := showFeaturesPanel(t, screen, entity, owner, &features, false)
+	for i, optional := range []*criteria.Text{
+		&byName.OptionalSpecializationCriteria, &points.OptionalSpecializationCriteria,
+	} {
+		path := strconv.Itoa(i)
+		c.Equal(criteria.AnyText, optional.Compare, "precondition: row %s has no optional specialization", path)
+		screen.Do(func() { p.toggle(path) })
+		screen.Do(func() {
+			add, ok := p.FindRefKey(path + ":add optspecialization").Self.(*unison.Button)
+			c.True(ok, "row %s offers an optional specialization", path)
+			if ok {
+				add.ClickCallback()
+			}
+		})
+		c.Equal(criteria.IsText, optional.Compare, "adding it to row %s adds the criterion", path)
+		screen.Do(func() { c.NotNil(p.FindRefKey(path + ":optspecialization" + keyChip)) })
+	}
+	screen.Do(func() { p.toggle("2") })
+	screen.Do(func() {
+		c.Nil(p.FindRefKey("2:add optspecialization"), "a skill bonus selected another way doesn't offer it")
+	})
+}
+
+// TestFeaturesPanelRelativeSkillLevel checks that a weapon bonus selected by its required skill leaves its relative
+// skill level as an optional chip, that a new one has none, that one at least 0, which a file can hold, shows as the
+// filter it is, and that removing the chip removes the criterion.
+func TestFeaturesPanelRelativeSkillLevel(t *testing.T) {
+	c := check.New(t)
+	screen, _ := startHeadlessWorkspace(t, c)
+	entity := gurps.NewEntity()
+	owner := gurps.NewTrait(entity, nil, false)
+	fresh := gurps.NewWeaponBonus(feature.WeaponBonus)
+	fresh.SetOwner(owner)
+	zero := gurps.NewWeaponBonus(feature.WeaponBonus)
+	zero.RelativeLevelCriteria = criteria.Number{Compare: criteria.AtLeastNumber}
+	zero.SetOwner(owner)
+	features := gurps.Features{fresh, zero}
+	c.Equal(wsel.WithRequiredSkill, fresh.SelectionType, "precondition: a new weapon bonus is selected by skill")
+	c.Equal(criteria.AnyNumber, fresh.RelativeLevelCriteria.Compare, "a new weapon bonus has no level criterion")
+	p, _ := showFeaturesPanel(t, screen, entity, owner, &features, false)
+	screen.Do(func() { p.toggle("0") })
+	screen.Do(func() {
+		c.Nil(p.FindRefKey("0:level"+keyChip), "a new weapon bonus shows no level chip")
+		add, ok := p.FindRefKey("0:add level").Self.(*unison.Button)
+		c.True(ok, "but offers one")
+		if ok {
+			add.ClickCallback()
+		}
+	})
+	c.Equal(criteria.Number{Compare: criteria.AtLeastNumber, Qualifier: fxp.One}, fresh.RelativeLevelCriteria)
+	screen.Do(func() { p.toggle("1") })
+	screen.Do(func() {
+		c.NotNil(p.FindRefKey("1:level"+keyChip), "a level of at least 0 is a filter, so it shows its chip")
+	})
+	screen.Do(func() {
+		buttons := panelsOfType[*unison.Button](p.FindRefKey("1:level" + keyChip))
+		c.NotEqual(0, len(buttons))
+		if len(buttons) != 0 {
+			buttons[len(buttons)-1].ClickCallback()
+		}
+	})
+	c.Equal(criteria.AnyNumber, zero.RelativeLevelCriteria.Compare, "removing the chip removes the criterion")
+}
+
+// TestFeaturesPanelFocusAfterRebuild checks that a choice from a popup leaves the focus on the popup, and that when the
+// control that had the focus goes, the open row takes it rather than the first row of the panel.
+func TestFeaturesPanelFocusAfterRebuild(t *testing.T) {
+	c := check.New(t)
+	screen, _ := startHeadlessWorkspace(t, c)
+	entity := gurps.NewEntity()
+	owner := gurps.NewTrait(entity, nil, false)
+	features := newTestFeatures(owner)
+	skill, ok := features[0].(*gurps.SkillBonus)
+	c.True(ok, "precondition: the first feature is a skill bonus")
+	if !ok {
+		return
+	}
+	p, _ := showFeaturesPanel(t, screen, entity, owner, &features, false)
+	screen.Do(func() { p.toggle("0") })
+	screen.Do(func() {
+		popup := featuresPopup[skillsel.Type](c, p, "0:selection")
+		popup.RequestFocus()
+		popup.Select(skillsel.WeaponsWithName)
+	})
+	c.Equal(skillsel.WeaponsWithName, skill.SelectionType, "precondition: the popup made its choice")
+	screen.Do(func() { c.Equal("0:selection", p.Window().Focus().RefKey, "the popup keeps the focus") })
+
+	features = append(gurps.Features{gurps.NewSkillBonus()}, features...)
+	screen.Do(func() { p.toggle("0") })
+	screen.Do(func() { p.toggle("1") })
+	screen.Do(func() {
+		field, isField := p.FindRefKey("1:name").Self.(*StringField)
+		c.True(isField, "precondition: the open row has a name field")
+		if isField {
+			field.RequestFocus()
+		}
+		skill.SelectionType = skillsel.ThisWeapon
+		p.rebuild("")
+	})
+	screen.Do(func() {
+		c.Nil(p.FindRefKey("1:name"), "precondition: the field that had the focus is gone")
+		c.Equal("1:amount", p.Window().Focus().RefKey, "the open row takes the focus")
+	})
+}
+
 // TestFeaturesPanelDRLocations checks that a DR bonus's checkbox grid adds and removes locations, refusing to remove
 // the last, that the location popup offers "to this armor" only to an equipment modifier, and that choosing a list of
 // locations from "all" starts it with the torso.
@@ -871,7 +1072,7 @@ func TestFeaturesPanelWeaponDamageBonus(t *testing.T) {
 
 // TestFeaturesPanelPercentSuspensionSurvivesRebuild checks that "as a %", suspended while a weapon damage bonus holds
 // dice, comes back once they go even after the row has been closed and reopened, or another control has rebuilt the
-// panel, and that undo leaves no suspension behind for the copies it installs.
+// panel.
 func TestFeaturesPanelPercentSuspensionSurvivesRebuild(t *testing.T) {
 	c := check.New(t)
 	screen, _ := startHeadlessWorkspace(t, c)
@@ -883,7 +1084,7 @@ func TestFeaturesPanelPercentSuspensionSurvivesRebuild(t *testing.T) {
 	damage.Percent = true
 	damage.SetOwner(owner)
 	features := gurps.Features{damage}
-	p, host := showFeaturesPanel(t, screen, entity, owner, &features, false)
+	p, _ := showFeaturesPanel(t, screen, entity, owner, &features, false)
 	setAmount := func(text string) {
 		screen.Do(func() {
 			field, ok := p.FindRefKey("0:amount").Self.(*StringField)
@@ -909,14 +1110,58 @@ func TestFeaturesPanelPercentSuspensionSurvivesRebuild(t *testing.T) {
 	c.Equal(wsel.WithRequiredSkill, damage.SelectionType, "precondition: the popup rebuilt the panel")
 	setAmount("+10")
 	c.True(damage.Percent, "the percentage comes back after another control rebuilt the panel")
+}
 
-	setAmount("+1d")
-	c.Equal(1, len(p.percentSuspended), "precondition: the percentage is suspended")
+// TestFeaturesPanelPercentSuspensionSurvivesUndo checks that undo and redo suspend "as a %" for the copies they install
+// as it was suspended in the snapshots they return to, and only for those.
+func TestFeaturesPanelPercentSuspensionSurvivesUndo(t *testing.T) {
+	c := check.New(t)
+	screen, _ := startHeadlessWorkspace(t, c)
+	entity := gurps.NewEntity()
+	owner := gurps.NewTrait(entity, nil, false)
+	damage := gurps.NewWeaponBonus(feature.WeaponBonus)
+	damage.SelectionType = wsel.ThisWeapon
+	damage.Amount = fxp.Ten
+	damage.Percent = true
+	damage.SetOwner(owner)
+	features := gurps.Features{damage}
+	p, host := showFeaturesPanel(t, screen, entity, owner, &features, false)
+	setAmount := func(text string) {
+		screen.Do(func() {
+			field, ok := p.FindRefKey("0:amount").Self.(*StringField)
+			c.True(ok, "the damage bonus amount is a text field")
+			if ok {
+				field.SetText(text)
+			}
+		})
+	}
+	installed := func() *gurps.WeaponBonus {
+		one, ok := features[0].(*gurps.WeaponBonus)
+		c.True(ok)
+		return one
+	}
+	screen.Do(func() { p.toggle("0") })
+	setAmount("1d")
+	c.False(damage.Percent, "precondition: dice suspend the percentage")
+	screen.Do(func() { clickFeatureCheckBox(featuresCheckBox(c, p, "0:perlevel"), true) })
+	c.True(damage.PerLevel, "precondition: the bonus is per level")
 	screen.Do(host.mgr.Undo)
-	installed, ok := features[0].(*gurps.WeaponBonus)
-	c.True(ok)
-	c.True(installed != damage, "undo installs a copy")
-	c.Equal(0, len(p.percentSuspended), "and no suspension is left behind")
+	c.True(installed() != damage, "precondition: undo installs a copy")
+	c.False(installed().PerLevel, "precondition: undo takes back per level")
+	setAmount("+10")
+	c.True(installed().Percent, "the percentage comes back for the copy undo installed")
+
+	screen.Do(host.mgr.Undo)
+	c.False(installed().Dice.IsZero(), "precondition: undo returns to the dice")
+	c.Equal(1, len(p.percentSuspended), "with the percentage suspended")
+	screen.Do(host.mgr.Undo)
+	c.True(installed().Percent, "precondition: undo returns to before the dice")
+	c.Equal(0, len(p.percentSuspended), "where it was not suspended")
+	screen.Do(host.mgr.Redo)
+	c.False(installed().Dice.IsZero(), "precondition: redo returns to the dice")
+	c.Equal(1, len(p.percentSuspended), "with the percentage suspended")
+	setAmount("+10")
+	c.True(installed().Percent, "the percentage comes back for the copy redo installed")
 }
 
 // TestFeaturesPanelCheckBoxUndo checks that each click on a checkbox is a step of its own to undo, rather than being

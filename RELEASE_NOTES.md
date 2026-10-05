@@ -12,6 +12,8 @@
   reorder them, new ones are added at the end of the list, and every change can be undone.
 - Weapon bonus tooltips on the sheet use shorter names, such as "to accuracy", and the rate of fire bonuses say which
   mode they apply to.
+- A new weapon bonus that picks weapons by their skill no longer starts out requiring a relative skill level of at least
+  0, which left out weapons used at a lower level. A relative skill level can still be added to it.
 
 ## Bug Fixes
 
