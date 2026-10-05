@@ -122,20 +122,21 @@ func (o *SelectorOverride) OverrideSpecificity() int {
 	return specificity
 }
 
-// MatchesWeapon returns true if this override's criteria match the given weapon. The caller is responsible for checking
-// that the override targets the field it is interested in.
+// MatchesWeapon returns true if this override's criteria match the given weapon. The criteria are filled from the
+// override owner's substitutions, as with any bonus. The caller is responsible for checking that the override targets
+// the field it is interested in.
 func (o *SelectorOverride) MatchesWeapon(w *Weapon) bool {
-	replacements := w.NameableReplacements()
+	replacements := bonusReplacements(o)
 	return o.NameCriteria.Matches(replacements, w.String()) &&
 		o.UsageCriteria.Matches(replacements, w.UsageWithReplacements()) &&
 		o.TagsCriteria.MatchesList(replacements, w.Owner.TagList()...)
 }
 
 // MatchesTrait returns true if this override's criteria match the given trait. Traits have no usage, so only the name
-// and tag criteria participate. The caller is responsible for checking that the override targets the field it is
-// interested in.
+// and tag criteria participate. The criteria are filled from the override owner's substitutions, as with any bonus.
+// The caller is responsible for checking that the override targets the field it is interested in.
 func (o *SelectorOverride) MatchesTrait(t *Trait) bool {
-	replacements := t.NameableReplacements()
+	replacements := bonusReplacements(o)
 	return o.NameCriteria.Matches(replacements, t.NameWithReplacements()) &&
 		o.TagsCriteria.MatchesList(replacements, t.Tags...)
 }
