@@ -202,7 +202,7 @@ func (p *featuresPanel) build() {
 	empty := len(*p.features) == 0
 	if empty {
 		// With no features, a placeholder that adds one as the add button does stands before it.
-		foot.AddChild(newEmptyPlaceholder(featureEmptyKey, emptyRowsText(i18n.Text("No features.")),
+		foot.AddChild(newEmptyPlaceholder(featureEmptyKey, i18n.Text("No features. Click here to add one."),
 			add.ClickCallback))
 	}
 	foot.AddChild(add)
