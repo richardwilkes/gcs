@@ -637,14 +637,6 @@ func selectionPopup[E comparable](p *featuresPanel, parent *unison.Panel, path s
 	}
 }
 
-// tagsChip adds the optional tags criterion, whose field says how to match any of several tags.
-func (p *featuresPanel) tagsChip(chips *unison.Panel, path string, c *criteria.Text) {
-	p.textChip(chips, path, "tag", c)
-	if field := chips.FindRefKey(path + ":tag"); field != nil {
-		field.Tooltip = newWrappedTooltip(i18n.Text(`Separate multiple tags with commas to match any one of them, e.g. "Sword, Axe"`))
-	}
-}
-
 // situation adds the field for the situation of a conditional modifier or reaction bonus, which shows the hint while
 // empty, on a line of its own where a long situation can wrap, and the chip for the group it is filed under in the
 // table that displays it.

@@ -1229,3 +1229,57 @@ func TestSkillDefaultDefenseLevels(t *testing.T) {
 	c.Equal(fxp.Min, missing.SkillLevel(e, nil, false, nil, false), "no matching skill means no block")
 	c.Equal(fxp.Min, missing.SkillLevelFast(e, nil, false, nil, false), "no matching skill means no fast block either")
 }
+
+// TestSkillDefaultDescribe verifies the plain-language description of each kind of default, including which parts are
+// passed through the emphasis func, that the criteria of a skill-based default are spelled out in the words the
+// features and prerequisites use, that a nameable marker shows its value where one is set and stays as it is where
+// none is, and that a tech level condition follows the modifier.
+func TestSkillDefaultDescribe(t *testing.T) {
+	c := check.New(t)
+	e := NewEntity()
+	em := func(s string) string { return "[" + s + "]" }
+	replacements := map[string]string{"Weapon": "Broadsword"}
+
+	attribute := &SkillDefault{DefaultType: DexterityID, Modifier: -fxp.Five}
+	ten := &SkillDefault{DefaultType: "10", Modifier: -fxp.Four}
+	named := newSkillDefaultTo("@Weapon@", "", true, -fxp.Two)
+	unset := newSkillDefaultTo("@Craft@", "", true, -fxp.Two)
+	specialized := newSkillDefaultTo("Fast-Draw", "Knife", false, -fxp.One)
+	anySkill := &SkillDefault{DefaultType: SkillID}
+	tagged := newTaggedSkillDefault(criteria.IsText, "Melee", -fxp.Three)
+	clauses := &SkillDefault{
+		DefaultType:    SkillID,
+		Name:           textCriteria(criteria.ContainsText, "Sword"),
+		Specialization: textCriteria(criteria.StartsWithText, "Fen"),
+		Tags:           textCriteria(criteria.IsNotText, "Cinematic"),
+		Modifier:       -fxp.Two,
+	}
+	parry := newSkillDefaultTo("Shortsword", "", true, 0)
+	parry.DefaultType = ParryID
+	block := newSkillDefaultTo("Shield", "Buckler", false, fxp.One)
+	block.DefaultType = BlockID
+	tl := &SkillDefault{
+		DefaultType: IntelligenceID,
+		Modifier:    -fxp.Six,
+		WhenTL:      criteria.Number{Compare: criteria.AtLeastNumber, Qualifier: fxp.Four},
+	}
+	for _, one := range []struct {
+		def  *SkillDefault
+		want string
+	}{
+		{attribute, "[DX] [-5]"},
+		{ten, "[10] [-4]"},
+		{named, "Skill [Broadsword] [-2]"},
+		{unset, "Skill [@Craft@] [-2]"},
+		{specialized, "Skill [Fast-Draw] ([Knife]) [-1]"},
+		{anySkill, "Skill of any name [+0]"},
+		{tagged, "Skill of any name tagged [Melee] [-3]"},
+		{clauses, `Skill whose name contains "[Sword]" with a specialization that starts with "[Fen]" with all tags that are not "[Cinematic]" [-2]`},
+		{parry, "Parry of skill [Shortsword] [+0]"},
+		{block, "Block of skill [Shield] ([Buckler]) [+1]"},
+		{tl, "[IQ] [-6], when the tech level is at least [4]"},
+	} {
+		c.Equal(one.want, one.def.Describe(e, replacements, em))
+	}
+	c.Equal("DX -5", attribute.Describe(nil, nil, plainText), "with no entity, the attributes come from the settings")
+}

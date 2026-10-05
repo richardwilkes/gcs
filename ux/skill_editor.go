@@ -256,7 +256,7 @@ func initSkillEditor(e *editor[*gurps.Skill, *gurps.SkillEditData], content *uni
 	if !e.target.Container() {
 		content.AddChild(newPrereqPanel(entity, &e.editorData.Prereq, prereq.TypesForNonEquipment, false))
 		if !e.target.IsTechnique() {
-			content.AddChild(newDefaultsPanel(entity, &e.editorData.Defaults))
+			content.AddChild(newDefaultsPanel(entity, e.target, &e.editorData.Defaults))
 		}
 		content.AddChild(newFeaturesPanel(entity, e.target, &e.editorData.Features, false))
 		e.meleeWeapons = newWeaponsPanel(e, e.target, true, &e.editorData.Weapons)

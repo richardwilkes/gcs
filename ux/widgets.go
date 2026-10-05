@@ -613,24 +613,6 @@ func adjustPopupBlank[T comparable](popup *unison.PopupMenu[T], blank bool) {
 	}
 }
 
-func addNameCriteriaPanel(parent *unison.Panel, strCriteria *criteria.Text, hSpan int, includeEmptyFiller bool) (*unison.PopupMenu[string], *StringField) {
-	prefix := i18n.Text("whose name")
-	return addStringCriteriaPanel(parent, prefix, prefix, i18n.Text("Name"), strCriteria, hSpan, includeEmptyFiller)
-}
-
-func addSpecializationCriteriaPanel(parent *unison.Panel, strCriteria *criteria.Text, hSpan int, includeEmptyFiller bool) (*unison.PopupMenu[string], *StringField) {
-	prefix := i18n.Text("and whose specialization")
-	return addStringCriteriaPanel(parent, prefix, prefix, i18n.Text("Specialization"), strCriteria, hSpan,
-		includeEmptyFiller)
-}
-
-func addTagCriteriaPanel(parent *unison.Panel, strCriteria *criteria.Text, hSpan int, includeEmptyFiller bool) (*unison.PopupMenu[string], *StringField) {
-	popup, field := addStringCriteriaPanel(parent, i18n.Text("and at least one tag"), i18n.Text("and all tags"),
-		i18n.Text("Tag"), strCriteria, hSpan, includeEmptyFiller)
-	field.Tooltip = newWrappedTooltip(i18n.Text(`Separate multiple tags with commas to match any one of them, e.g. "Sword, Axe"`))
-	return popup, field
-}
-
 // criteriaTitles returns what a criteria's two controls are called, from the subject they qualify: the comparison
 // popup's accessible name, and the qualifier field's undo title, which also serves as its accessible name. The
 // controls sit in a row that reads as a sentence, with nothing before either that could name it.

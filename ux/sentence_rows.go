@@ -588,6 +588,14 @@ func (p *sentenceRows[T]) textChip(chips *unison.Panel, path, key string, c *cri
 		})
 }
 
+// tagsChip adds the optional tags criterion, whose field says how to match any of several tags.
+func (p *sentenceRows[T]) tagsChip(chips *unison.Panel, path string, c *criteria.Text) {
+	p.textChip(chips, path, "tag", c)
+	if field := chips.FindRefKey(path + ":tag"); field != nil {
+		field.Tooltip = newWrappedTooltip(i18n.Text(`Separate multiple tags with commas to match any one of them, e.g. "Sword, Axe"`))
+	}
+}
+
 // optionalCriterion adds the optional criterion with the key to chips: as a chip of the controls populate adds while
 // on, else as a dashed button that adds it.
 func (p *sentenceRows[T]) optionalCriterion(chips *unison.Panel, path, key string, on bool, add, remove func(), populate func(chip *unison.Panel)) {

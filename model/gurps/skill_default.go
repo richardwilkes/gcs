@@ -233,6 +233,34 @@ func (s *SkillDefault) FullName(entity *Entity, replacements map[string]string) 
 	return buffer.String()
 }
 
+// Describe returns a plain-language description of this default, such as "DX -5", "Skill Broadsword -2" or "Parry of
+// skill Shortsword +0", naming attributes as the entity, which may be nil, defines them. Nameable markers take their
+// values from replacements, and those without one are left as they are. Names, qualifiers and the modifier are passed
+// through em, which may wrap them for emphasis; pass an identity func for plain text.
+func (s *SkillDefault) Describe(entity *Entity, replacements map[string]string, em func(string) string) string {
+	var text string
+	switch s.Type() {
+	case SkillID:
+		text = i18n.Text("Skill ")
+	case ParryID:
+		text = i18n.Text("Parry of skill ")
+	case BlockID:
+		text = i18n.Text("Block of skill ")
+	default:
+		text = em(ResolveAttributeName(entity, s.Type()))
+	}
+	if s.SkillBased() {
+		text += describeName(s.Name, replacements, em) +
+			describeSpecialization(s.Specialization, criteria.Text{}, replacements, em) +
+			describeTags(s.Tags, replacements, em)
+	}
+	text += " " + em(s.Modifier.StringWithSign())
+	if s.WhenTL.Compare != criteria.AnyNumber {
+		text += i18n.Text(", when the tech level ") + s.WhenTL.Compare.DescribeWith(em(s.WhenTL.Qualifier.String()))
+	}
+	return text
+}
+
 // namesSkill reports whether this default names a skill outright: its name criteria is "is" some name, its
 // specialization criteria is "is anything" or "is" some specialization (an empty one meaning a skill without one), and
 // it asks nothing of the tags. That is the ordinary kind of default, and the one FullName describes by the name alone.
