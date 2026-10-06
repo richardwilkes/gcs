@@ -40,3 +40,5 @@
   of it. A condition that the tags be anything now needs a tag that isn't blank, one that no tag be "Shield" no longer
   passes an item with no tags, and negating a condition that the notes be anything finds the items without notes. Saved
   filters with such conditions may show different results.
+- An empty group in a saved filter set to None of or Not all of hid every item. An empty group now asks for nothing,
+  whichever way it is set.

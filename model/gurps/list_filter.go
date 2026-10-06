@@ -55,8 +55,8 @@ type FilterNode interface {
 type FilterNodes []FilterNode
 
 // FilterGroup combines the results of its children, requiring either all of them or any one of them to match. A
-// group with no children matches everything, whichever way it combines. Not inverts the result; it is stored as the
-// negative so that the common case, a group that has to match, is omitted from the JSON.
+// group with no children asks for nothing, so it matches everything, negated or not. Otherwise, Not inverts the result;
+// it is stored as the negative so that the common case, a group that has to match, is omitted from the JSON.
 type FilterGroup struct {
 	Parent   *FilterGroup    `json:"-"`
 	Type     filternode.Type `json:"type"`

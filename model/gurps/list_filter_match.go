@@ -39,9 +39,12 @@ func matchesFilterNode[T Node[T]](n FilterNode, fields map[string]*FilterField[T
 }
 
 // matchesFilterGroup returns true if the node passes the group: all of its children, or any one of them, depending
-// on how the group combines them. A group with no children passes everything either way. The result is then inverted
-// if the group is negated.
+// on how the group combines them, the result then inverted if the group is negated. A group with no children asks for
+// nothing, so it passes everything, negated or not.
 func matchesFilterGroup[T Node[T]](g *FilterGroup, fields map[string]*FilterField[T], node T) bool {
+	if len(g.Children) == 0 {
+		return true
+	}
 	result := true
 	if g.All {
 		for _, child := range g.Children {
@@ -50,7 +53,7 @@ func matchesFilterGroup[T Node[T]](g *FilterGroup, fields map[string]*FilterFiel
 				break
 			}
 		}
-	} else if len(g.Children) != 0 {
+	} else {
 		result = false
 		for _, child := range g.Children {
 			if matchesFilterNode(child, fields, node) {

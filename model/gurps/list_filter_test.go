@@ -424,18 +424,25 @@ func TestListFilterMatchesByKind(t *testing.T) {
 }
 
 // TestListFilterEmptyGroupMatchesEverything verifies that a group with no children passes everything, whichever way it
-// combines its children, and that negating such a group rejects everything.
+// combines its children and whether or not it is negated, so that an empty group, at the top or nested, never hides
+// every item.
 func TestListFilterEmptyGroupMatchesEverything(t *testing.T) {
 	c := check.New(t)
 	trait := gurps.NewTrait(nil, nil, false)
 	trait.Name = "Alertness"
 	fields := gurps.TraitFilterFields()
 	for _, all := range []bool{true, false} {
-		f := gurps.NewListFilter("Empty")
-		f.Root.All = all
-		c.True(matchesListFilter(f, fields, trait), "an empty group with all=%v matches everything", all)
-		f.Root.Not = true
-		c.False(matchesListFilter(f, fields, trait), "a negated empty group with all=%v matches nothing", all)
+		for _, not := range []bool{false, true} {
+			f := gurps.NewListFilter("Empty")
+			f.Root.All, f.Root.Not = all, not
+			c.True(matchesListFilter(f, fields, trait), "an empty root with all=%v not=%v matches everything", all, not)
+			nested := gurps.NewListFilter("Nested")
+			group := gurps.NewFilterGroup(nested.Root)
+			group.All, group.Not = all, not
+			nested.Root.Children = gurps.FilterNodes{group}
+			c.True(matchesListFilter(nested, fields, trait), "an empty group with all=%v not=%v matches everything",
+				all, not)
+		}
 	}
 }
 
