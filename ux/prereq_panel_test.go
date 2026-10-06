@@ -952,9 +952,10 @@ func TestPrereqPanelEmptyRoot(t *testing.T) {
 	})
 }
 
-// TestPrereqPanelEmptyRootGroupType checks that choosing a group type or a tech level from an empty root's Add menu
-// gives the root itself that type or condition, showing its head over a group's placeholder, and that undo takes it
-// back to the single line.
+// TestPrereqPanelEmptyRootGroupType checks that choosing a group type or a tech level from the Add menu of an empty
+// root that shows its placeholder alone gives the root itself that type or condition, showing its head over a group's
+// placeholder, that undo takes it back to the single line, and that once the root shows its head, choosing a group
+// type adds a group rather than changing the root's.
 func TestPrereqPanelEmptyRootGroupType(t *testing.T) {
 	c := check.New(t)
 	screen, _ := startHeadlessWorkspace(t, c)
@@ -981,8 +982,23 @@ func TestPrereqPanelEmptyRootGroupType(t *testing.T) {
 	pill, text = headed()
 	c.True(pill, "the root takes the group type")
 	c.Equal(group, text)
-	c.Equal(0, len(root.Prereqs))
-	c.False(root.All)
+	screen.Do(func() {
+		c.Equal(0, len(root.Prereqs))
+		c.False(root.All)
+		c.Nil(p.FindRefKey(treeRootPath+keyMore), "its head has no add button")
+		adds := 0
+		var count func(panel *unison.Panel)
+		count = func(panel *unison.Panel) {
+			if panel.RefKey == treeRootPath+keyAdd {
+				adds++
+			}
+			for _, child := range panel.Children() {
+				count(child)
+			}
+		}
+		count(p.AsPanel())
+		c.Equal(1, adds, "only the one beside its placeholder")
+	})
 	screen.Do(host.mgr.Undo)
 	pill, text = headed()
 	c.False(pill, "undo goes back to the single line")
@@ -1001,12 +1017,25 @@ func TestPrereqPanelEmptyRootGroupType(t *testing.T) {
 	choose("Only When TL…")
 	pill, _ = headed()
 	c.True(pill, "a tech level condition shows the head")
-	screen.Do(func() { c.NotNil(p.FindRefKey(treeRootPath + ":tl" + keyChip)) })
-	c.Equal(0, len(root.Prereqs))
-	c.True(root.All)
+	screen.Do(func() {
+		c.NotNil(p.FindRefKey(treeRootPath + ":tl" + keyChip))
+		c.Equal(0, len(root.Prereqs))
+		c.True(root.All)
+	})
 	screen.Do(host.mgr.Undo)
 	pill, _ = headed()
 	c.False(pill, "undo takes the condition away again")
+
+	choose("Any of Group")
+	choose("All of Group")
+	screen.Do(func() {
+		c.False(root.All, "the root keeps the type it was given")
+		c.Equal(1, len(root.Prereqs), "and holds a new group")
+		if len(root.Prereqs) == 1 {
+			list, ok := root.Prereqs[0].(*gurps.PrereqList)
+			c.True(ok && list.All, "of the type chosen")
+		}
+	})
 }
 
 // TestPrereqPanelUndoReopensRow checks that a row the Add menu adds opens with the focus in its name field, and that

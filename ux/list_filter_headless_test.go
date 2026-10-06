@@ -11,6 +11,7 @@ package ux
 
 import (
 	"path/filepath"
+	"slices"
 	"strings"
 	"testing"
 
@@ -21,6 +22,7 @@ import (
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/mod"
+	"github.com/richardwilkes/unison/enums/role"
 )
 
 // The titles of the saved filter popup's commands.
@@ -64,7 +66,7 @@ func openListFilterTraitDockable(t *testing.T, screen *unison.HeadlessScreen) *T
 }
 
 // seedListFilter saves a filter for the trait list type whose lone condition compares the field with the given key
-// against the qualifier, and returns it. A text or list field is what the tests use, so the text criteria is the one
+// against the qualifier, and returns it. A text or list field is what the tests use, so the text criterion is the one
 // that is filled in.
 func seedListFilter(name, fieldKey, qualifier string) *gurps.ListFilter {
 	f := gurps.NewListFilter(name)
@@ -139,6 +141,24 @@ func dialogFilterPanel(t *testing.T, screen *unison.HeadlessScreen, dialogWnd *u
 		t.Fatal("the dialog holds no filter editor")
 	}
 	return p
+}
+
+// chooseOpenMenuItem clicks the item with the title in the popup menu open in wnd, failing the test if there is none.
+// An in-window menu item draws its title rather than holding it, so the item is found through its accessibility node.
+func chooseOpenMenuItem(t *testing.T, screen *unison.HeadlessScreen, wnd *unison.Window, title string) {
+	t.Helper()
+	var items []*unison.Panel
+	screen.Do(func() { items = slices.Clone(menuItemPanels(openMenuPopup(wnd))) })
+	if screen.AccessibilityTree(wnd) == nil {
+		t.Fatal("accessibility support must be on for the menu's items to be read")
+	}
+	for _, item := range items {
+		if node := screen.AccessibilityNodeFor(item); node != nil && node.Role == role.MenuItem && node.Name == title {
+			screen.Click(screen.PanelCenter(item))
+			return
+		}
+	}
+	t.Fatalf("no %q item in the open menu", title)
 }
 
 // dialogNameField returns the filter editor's name field, failing the test unless it is the one string field in the
@@ -271,15 +291,24 @@ func TestListFilterNewFilterDialogHeadless(t *testing.T) {
 	c.True(okEnabled(), "a name no other saved filter bears can be accepted")
 	captureScreen(t, c, screen, "list_filter_dialog")
 
-	// Add a condition to the empty root through its placeholder. It starts out testing the first field, open.
+	// Add a condition to the empty root by clicking its placeholder and choosing New Condition from the menu that
+	// opens. With no field chosen before, it starts out testing the first field, open.
 	p := dialogFilterPanel(t, screen, dialogWnd)
 	var placeholder *unison.Panel
 	screen.Do(func() { placeholder = p.FindRefKey(treeRootPath + ":empty") })
-	c.NotNil(placeholder, "an empty filter shows its placeholder")
-	screen.Do(func() { menuAction(p.treeAddEntries(p.filter.Root, treeRootPath), "New Condition")() })
+	if placeholder == nil {
+		t.Fatal("an empty filter shows its placeholder")
+	}
+	screen.Click(screen.PanelCenter(placeholder))
+	chooseOpenMenuItem(t, screen, dialogWnd, "New Condition")
 	screen.Do(func() {
 		c.Equal("r.0", p.open, "the added condition is open")
-		c.Equal("r.0:field", dialogWnd.Focus().RefKey, "with its field popup focused")
+		c.Equal("r.0:field", focusedRefKey(dialogWnd), "with its field popup focused")
+		cond, ok := p.node("r.0").(*gurps.FilterCondition)
+		c.True(ok)
+		if ok {
+			c.Equal(gurps.TraitFilterFields()[0].Key, cond.Field, "testing the first field")
+		}
 	})
 
 	screen.Click(screen.PanelCenter(okButton))
@@ -437,9 +466,23 @@ func TestListFilterEditorKeysHeadless(t *testing.T) {
 	focus(cancelButton)
 	undo()
 	c.Equal(0, read().children, "Undo on Cancel works too")
+	var inPanel bool
+	screen.Do(func() {
+		focused := dialogWnd.Focus()
+		inPanel = focused != nil && p.HasInSelfOrDescendants(func(one *unison.Panel) bool { return one == focused })
+	})
+	c.True(inPanel, "and moves the focus into the rows it rebuilds")
+	focus(cancelButton)
 	redo()
 	c.Equal(state{name: "Ranged", open: "r.0", children: 1, ok: true}, read(), "as does Redo, opening the row again")
+	focus(okButton)
+	undo()
+	c.Equal(0, read().children, "Undo works with OK focused")
+	focus(okButton)
+	redo()
+	c.Equal(1, read().children, "as does Redo")
 	focus(cancelButton)
+	c.Equal("r.0", read().open, "the row is open again")
 	screen.KeyPress(unison.KeyEscape, mod.None)
 	c.Equal("", read().open, "Escape on Cancel closes it")
 	screen.Do(func() { p.toggle("r.0") })
