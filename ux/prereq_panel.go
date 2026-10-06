@@ -77,7 +77,7 @@ type prereqPanel struct {
 	root             **gurps.PrereqList
 	placeholder      *gurps.PrereqList
 	permittedChoices []prereq.Type
-	summary          *sentenceButton
+	paragraph        *sentenceButton
 	views            []prereqView
 	target           any
 	hash             uint64
@@ -110,8 +110,13 @@ func newPrereqPanel(entity *gurps.Entity, root **gurps.PrereqList, permittedChoi
 		return target, at
 	}, p.drop)
 	p.build()
-	// The item being edited, which evaluation leaves out, can only be found once the panel is in its editor.
-	unison.InvokeTask(p.refresh)
+	// The item being edited, which evaluation leaves out, can only be found once the panel is in its editor. A collapsed
+	// panel shows no statuses, so it is left as built.
+	unison.InvokeTask(func() {
+		if len(p.views) != 0 {
+			p.refresh()
+		}
+	})
 	return p
 }
 
@@ -184,9 +189,12 @@ func (p *prereqPanel) build() {
 	}
 	p.views = p.views[:0]
 	// Collapsed, the tree reads as one paragraph, which refresh keeps current; expanded, there is none.
-	if p.summary = p.addTitleBar(p.summaryText); p.summary == nil {
-		p.AddChild(p.group(p.tree(), prereqRootPath))
+	if p.paragraph = p.addTitleBar(p.summary); p.paragraph != nil {
+		// The paragraph already describes the tree as it is, and there are no statuses to work out.
+		p.hash = gurps.Hash64(p.tree())
+		return
 	}
+	p.AddChild(p.group(p.tree(), prereqRootPath))
 	p.refresh()
 }
 
@@ -204,20 +212,22 @@ func (p *prereqPanel) Sync() {
 	}, scriptEvaluationDelay)
 }
 
-// summaryText returns the paragraph a collapsed panel shows: the whole tree as a sentence, ended with a period.
-func (p *prereqPanel) summaryText() string {
-	if text := p.tree().Describe(p.entity, nil, emphasize); text != "" {
-		return fmt.Sprintf(i18n.Text("%s."), text)
+// summary returns the paragraph a collapsed panel shows: the whole tree as a sentence, ended with a period. A tree with
+// nothing to check says so, since a tech level condition is all it would otherwise describe.
+func (p *prereqPanel) summary() string {
+	tree := p.tree()
+	if tree.HasNothingToCheck() {
+		return i18n.Text("No prerequisites.")
 	}
-	return i18n.Text("No prerequisites.")
+	return fmt.Sprintf(i18n.Text("%s."), tree.Describe(p.entity, nil, emphasize))
 }
 
-// refresh updates the summary, the sentences and the status icons from the tree, in place. The tree's scripts run only
+// refresh updates the paragraph, the sentences and the status icons from the tree, in place. The tree's scripts run only
 // when there are rows to show their status.
 func (p *prereqPanel) refresh() {
 	p.hash = gurps.Hash64(p.tree())
-	if p.summary != nil {
-		p.summary.setText(p.summaryText(), "")
+	if p.paragraph != nil {
+		p.paragraph.setText(p.summary(), "")
 	}
 	var checks map[gurps.Prereq]prereqCheck
 	if p.entity != nil && p.Parent() != nil && len(p.views) != 0 {
@@ -403,8 +413,6 @@ func (p *prereqPanel) group(list *gurps.PrereqList, path string) *unison.Panel {
 		color = colors.Grouping1
 	}
 	box := newColumn()
-	box.Accessibility.Role = role.Group
-	box.Accessibility.Name = groupName(list)
 	if path != prereqRootPath {
 		box.RefKey = path + ":group"
 		box.ClientData()[prereqDropKey] = prereqDropSpot{path: path, part: dropOnGroup}
@@ -432,16 +440,14 @@ func (p *prereqPanel) group(list *gurps.PrereqList, path string) *unison.Panel {
 		grip := p.grip(head, path)
 		putOnLine(grip.AsPanel(), controlHeight(head), grip.svg.Size.Height)
 	}
-	var empty *unison.Button
 	var emptyLine *unison.Panel
-	var emptyRoot bool
 	if len(list.Prereqs) == 0 {
-		emptyRoot = path == prereqRootPath && !p.headed
+		emptyRoot := path == prereqRootPath && !p.headed
 		text := i18n.Text("Empty group. Add a requirement or drag one here.")
 		if emptyRoot {
 			text = i18n.Text("No prerequisites. Click here to add one.")
 		}
-		empty = newEmptyPlaceholder(path+":empty", text, nil)
+		empty := newEmptyPlaceholder(path+":empty", text, nil)
 		// A click opens the menu where it lands, as a right-click does; a key opens it at the placeholder.
 		empty.ClickCallback = func() { showMenu(empty.AsPanel(), p.addEntries(list, path)) }
 		empty.ContextMenuCallback = func(geom.Point) unison.Menu { return newEntriesMenu(p.addEntries(list, path)) }
@@ -463,7 +469,7 @@ func (p *prereqPanel) group(list *gurps.PrereqList, path string) *unison.Panel {
 		fitLine(add)
 		add.SetLayoutData(&unison.FlexLayoutData{HAlign: align.End, VAlign: align.Middle})
 		// An untouched empty root has nothing for its pill, status or rail to speak of, so its placeholder takes their
-		// place.
+		// place, and it isn't a group to a screen reader.
 		if emptyRoot {
 			head.AddChild(empty)
 			head.AddChild(add)
@@ -476,6 +482,8 @@ func (p *prereqPanel) group(list *gurps.PrereqList, path string) *unison.Panel {
 		emptyLine.AddChild(add)
 		hbox(emptyLine, unison.StdHSpacing)
 	}
+	box.Accessibility.Role = role.Group
+	box.Accessibility.Name = groupName(list)
 	p.views = append(p.views, prereqView{node: list, icon: p.statusIcon(head), group: box})
 	addCentered(head, pill)
 	if list.WhenTL.Compare != criteria.AnyNumber {

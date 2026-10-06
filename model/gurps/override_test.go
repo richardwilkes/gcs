@@ -280,3 +280,37 @@ func TestSelectorFieldDescriptorForUnknownField(t *testing.T) {
 		c.Equal(field, gurps.SelectorFieldDescriptorFor(field).Field, "%v resolves to its own descriptor", field)
 	}
 }
+
+// An override's criteria are filled from its owner's substitutions, as with any bonus, not from those of the weapon or
+// trait being matched, since those are the substitutions its markers were filed under.
+func TestSelectorOverrideUsesOwnerSubstitutions(t *testing.T) {
+	c := check.New(t)
+	e := gurps.NewEntity()
+
+	weaponOverride := gurps.NewSelectorOverride(selector.WeaponDamageType)
+	weaponOverride.Value = "cut"
+	weaponOverride.NameCriteria.Qualifier = "@Weapon@"
+	traitOverride := gurps.NewSelectorOverride(selector.TraitSelfControlRoll)
+	traitOverride.Value = strconv.Itoa(int(selfctrl.CR6))
+	traitOverride.NameCriteria.Qualifier = "@Target@"
+	master := gurps.NewTrait(e, nil, false)
+	master.Name = "Master"
+	master.Features = gurps.Features{weaponOverride, traitOverride}
+	master.Replacements = map[string]string{"Weapon": "Gadget", "Target": "Greed"}
+
+	gadget := gurps.NewTrait(e, nil, false)
+	gadget.Name = "Gadget"
+	w := gurps.NewWeapon(gadget, true)
+	w.Damage.Type = "cr"
+	gadget.Weapons = []*gurps.Weapon{w}
+
+	greed := gurps.NewTrait(e, nil, false)
+	greed.Name = "Greed"
+	greed.SelfControl = selfctrl.CR12
+
+	e.Traits = append(e.Traits, master, gadget, greed)
+	e.Recalculate()
+	c.Equal("cut", w.ResolveSelector(selector.WeaponDamageType, w.Damage.Type, nil),
+		"the weapon override matches through its owner's substitution")
+	c.Equal(selfctrl.CR6, greed.ResolvedSelfControl(nil), "the trait override matches through its owner's substitution")
+}

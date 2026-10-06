@@ -430,7 +430,9 @@ func TestPrereqPanelCollapse(t *testing.T) {
 			c.Nil(p.FindRefKey(key), "collapsing hides %s", key)
 		}
 		c.Equal(0, len(p.views), "and the statuses of the rows")
-		c.Equal(stripEm.Replace(p.summaryText()), summary().Accessibility.Name, "the paragraph describes the tree")
+		c.Equal(`Has trait whose name is "" and (has skill whose name is "" at level at least 0 or a custom check) and `+
+			`meets an unknown type of prerequisite ("future") that needs a newer version of GCS.`,
+			summary().Accessibility.Name, "the paragraph describes the tree")
 		c.True(strings.HasSuffix(summary().plainText(), "."), "the paragraph ends with a period")
 		c.Equal(p.collapse.AsPanel(), p.Window().Focus(), "the focus moves from the rows to the title bar")
 		// Nothing but the title strip and the paragraph takes room: the border's insets, as under a plain title, and
@@ -448,7 +450,7 @@ func TestPrereqPanelCollapse(t *testing.T) {
 	screen.Do(func() {
 		c.True(expanded(), "Space expands the panel")
 		c.Nil(p.FindRefKey(sectionSummaryKey), "and hides the paragraph")
-		c.Nil(p.summary)
+		c.Nil(p.paragraph)
 		c.NotNil(p.FindRefKey("r.0"+keyFirst), "with the open row still open")
 		c.Equal(p.collapse.AsPanel(), p.Window().Focus(), "and the focus left on the title bar")
 	})
@@ -555,7 +557,8 @@ func TestPrereqPanelStartingState(t *testing.T) {
 	})
 }
 
-// TestPrereqPanelCollapseEmpty checks that a collapsed panel with no prerequisites says so.
+// TestPrereqPanelCollapseEmpty checks that a collapsed panel with no prerequisites says so, even when its root has a
+// tech level condition.
 func TestPrereqPanelCollapseEmpty(t *testing.T) {
 	c := check.New(t)
 	screen, _ := startHeadlessWorkspace(t, c)
@@ -571,6 +574,19 @@ func TestPrereqPanelCollapseEmpty(t *testing.T) {
 		c.Nil(p.FindRefKey(prereqRootPath+":empty"), "in place of the placeholder")
 	})
 	c.Nil(missing, "collapsing doesn't make the missing list")
+
+	// A tech level condition is all an empty root has to describe, which is still no prerequisites.
+	screen.Do(p.collapse.toggle)
+	screen.Do(func() { prereqMenuAction(p.addEntries(p.tree(), prereqRootPath), "Only When TL…")() })
+	screen.Do(p.collapse.toggle)
+	screen.Do(func() {
+		c.True(p.headed, "precondition: the root shows its head")
+		b, ok := p.FindRefKey(sectionSummaryKey).Self.(*sentenceButton)
+		c.True(ok, "a collapsed panel shows a paragraph")
+		if ok {
+			c.Equal("No prerequisites.", b.plainText(), "an empty root with a tech level condition says so too")
+		}
+	})
 }
 
 // TestPrereqPanelTitleBar checks that the title bar covers the strip the title is drawn in, and that the rows start
@@ -630,7 +646,7 @@ func TestPrereqPanelStatus(t *testing.T) {
 		sentence, ok := p.FindRefKey("r.0" + keySentence).Self.(*sentenceButton)
 		c.True(ok)
 		c.Equal("Has trait Magery, not met", sentence.Accessibility.Name)
-		c.Nil(p.summary, "an expanded panel shows no summary over the tree")
+		c.Nil(p.paragraph, "an expanded panel shows no summary over the tree")
 		checks := p.checks()
 		for path, want := range map[string]string{
 			"r.0": "Not met: Has trait Magery", "r.3": "Doesn't apply at this tech level",
@@ -881,7 +897,7 @@ func TestPrereqPanelChipOrder(t *testing.T) {
 }
 
 // TestPrereqPanelEmptyRoot checks that an empty root shows only its placeholder and add button, without a summary,
-// pill, status or more button.
+// pill, status or more button, and isn't a group to a screen reader.
 func TestPrereqPanelEmptyRoot(t *testing.T) {
 	c := check.New(t)
 	screen, _ := startHeadlessWorkspace(t, c)
@@ -895,6 +911,9 @@ func TestPrereqPanelEmptyRoot(t *testing.T) {
 		c.Equal(p.FindRefKey(prereqRootPath+":empty").Parent(), p.FindRefKey(prereqRootPath+keyAdd).Parent(),
 			"its add button beside the placeholder")
 		c.Nil(p.FindRefKey(prereqRootPath+keyMore), "and no more button")
+		box := p.FindRefKey(prereqRootPath + ":empty").Parent().Parent()
+		c.NotEqual(role.Group, box.Accessibility.Role, "nor is it a group to a screen reader")
+		c.Equal("", box.Accessibility.Name)
 	})
 }
 
@@ -1071,11 +1090,11 @@ func TestPrereqPanelGroupMenusAdd(t *testing.T) {
 			c.Equal(head, p.FindRefKey(path+keyMore).Parent(), "%s: its button is in its head", path)
 		}
 		c.Equal("More actions", tooltipText(p.FindRefKey("r.1"+keyMore).Tooltip), "a nested group's is a more button")
-		root, ok := p.FindRefKey(prereqRootPath + keyMore).Self.(*unison.Button)
+		add, ok := p.FindRefKey(prereqRootPath + keyMore).Self.(*unison.Button)
 		c.True(ok)
 		if ok {
-			c.Equal("Add to this group", tooltipText(root.Tooltip), "the root's is an add button")
-			drawable, isSVG := root.Drawable.(*unison.DrawableSVG)
+			c.Equal("Add to this group", tooltipText(add.Tooltip), "the root's is an add button")
+			drawable, isSVG := add.Drawable.(*unison.DrawableSVG)
 			c.True(isSVG && drawable.SVG == unison.CircledAddSVG, "showing the add icon")
 		}
 		right := func(key string) float32 {
@@ -1104,10 +1123,13 @@ func TestPrereqPanelGroupMenusAdd(t *testing.T) {
 	}
 	c.Equal(want, nested[:len(adds)], "a nested group's more menu starts with what can be added to it, saying so")
 	c.Equal([]string{"-", "Duplicate"}, nested[len(adds):len(adds)+2], "then the rest, after a separator")
-	c.Equal(prereqMenuLabels(p.moreEntries(p.node("r.0"), "r.0"))[0], "Duplicate", "a row's more menu is as it was")
+	c.Equal("Duplicate", prereqMenuLabels(more("r.0"))[0], "a row's more menu is as it was")
 
-	prereqMenuAction(more("r.1"), "Trait")()
-	screen.Sync()
+	// choose picks the entry with the label from the menu, on the UI thread, as a click on it would.
+	choose := func(entries []menuEntry, label string) {
+		screen.Do(prereqMenuAction(entries, label))
+	}
+	choose(more("r.1"), "Trait")
 	screen.Do(func() {
 		c.Equal(3, groupLen("r.1"), "the nested group's menu adds to it")
 		c.Equal("r.1.2", p.open, "opening the new row")
@@ -1117,8 +1139,7 @@ func TestPrereqPanelGroupMenusAdd(t *testing.T) {
 	})
 	screen.Do(host.mgr.Undo)
 	screen.Do(func() { c.Equal("r.1"+keyMore, p.Window().Focus().RefKey, "undo gives the focus to the more button") })
-	prereqMenuAction(more(prereqRootPath), "All of Group")()
-	screen.Sync()
+	choose(more(prereqRootPath), "All of Group")
 	screen.Do(func() {
 		c.Equal(4, len(p.tree().Prereqs), "the root's menu adds to the root")
 		c.Equal("r.3"+keyMore, p.Window().Focus().RefKey, "a new group takes the focus on its more button")
@@ -1133,8 +1154,7 @@ func TestPrereqPanelGroupMenusAdd(t *testing.T) {
 		c.True(add.Parent() != p.FindRefKey("r.3"+keyPill).Parent(), "not in its head")
 		c.Equal("Add to this group", tooltipText(add.Tooltip))
 	})
-	prereqMenuAction(more("r.3"), "Skill")()
-	screen.Sync()
+	choose(more("r.3"), "Skill")
 	screen.Do(func() {
 		c.Equal(1, groupLen("r.3"))
 		c.Nil(p.FindRefKey("r.3"+keyAdd), "the add button goes once the group holds something")

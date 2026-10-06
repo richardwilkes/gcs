@@ -155,15 +155,26 @@ func (e *editor[N, D]) fillContent(content *unison.Panel, initContent func(*edit
 }
 
 // rebuildContent refills the content panel after the editor's data has been replaced wholesale, which leaves the old
-// widgets bound to objects it no longer holds. The undo history is cleared, since its edits refer to those widgets and
-// objects, and only once the new content has settled, since settling may record edits of its own, as the equipment
-// editor does when it clamps the uses left to a lower maximum. Not for the weapon editor, whose initContent keeps state
-// across calls.
+// widgets bound to objects it no longer holds. Sections of rows are shown as they were, collapsed or not and with the
+// same row open. The undo history is cleared, since its edits refer to those widgets and objects, and only once the new
+// content has settled, since settling may record edits of its own, as the equipment editor does when it clamps the uses
+// left to a lower maximum. Not for the weapon editor, whose initContent keeps state across calls.
 func (e *editor[N, D]) rebuildContent() {
+	sections := rowSections(e.content)
+	views := make([]rowsView, len(sections))
+	for i, one := range sections {
+		views[i] = one.view()
+	}
 	e.content.RemoveAllChildren()
 	e.meleeWeapons = nil
 	e.rangedWeapons = nil
 	e.modificationCallback = e.initContent(e, e.content)
+	// Which sections there are depends on the target, which is the same, so they come in the same order.
+	if sections = rowSections(e.content); len(sections) == len(views) {
+		for i, one := range sections {
+			one.setView(views[i])
+		}
+	}
 	// Copying the data from another node leaves its modifiers and weapons pointed at that node.
 	for _, child := range e.content.Children() {
 		if list, ok := child.Self.(interface{ reattach() }); ok {
@@ -173,6 +184,23 @@ func (e *editor[N, D]) rebuildContent() {
 	e.Rebuild(false)
 	e.content.ValidateScrollRoot()
 	e.undoMgr.Clear()
+}
+
+// rowSection is a section of an editor's content made of sentence rows, whose view rebuildContent keeps.
+type rowSection interface {
+	view() rowsView
+	setView(view rowsView)
+}
+
+// rowSections returns the sections of the content made of sentence rows, in order.
+func rowSections(content *unison.Panel) []rowSection {
+	var sections []rowSection
+	for _, child := range content.Children() {
+		if section, ok := child.Self.(rowSection); ok {
+			sections = append(sections, section)
+		}
+	}
+	return sections
 }
 
 // editedClone returns a copy of the target with the editor's pending changes applied. It has no parent, so that nothing

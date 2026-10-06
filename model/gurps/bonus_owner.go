@@ -19,9 +19,9 @@ import (
 	"github.com/richardwilkes/toolbox/v2/xreflect"
 )
 
-// bonusReplacements returns the nameable replacements provided by the given Bonus's owner, or nil if the owner does
-// not provide any.
-func bonusReplacements(b Bonus) map[string]string {
+// bonusReplacements returns the nameable replacements provided by the owner of the given Bonus or Override, or nil if
+// the owner does not provide any.
+func bonusReplacements(b interface{ Owner() fmt.Stringer }) map[string]string {
 	if na, ok := b.Owner().(nameable.Accesser); ok {
 		return na.NameableReplacements()
 	}
