@@ -133,6 +133,31 @@ func (p *sentenceRows[T]) addTitleBar(text func() string) *sentenceButton {
 	return paragraph
 }
 
+// rowsView is how a panel of sentence rows is shown: whether it is collapsed, and which row is open.
+type rowsView struct {
+	open      string
+	collapsed bool
+}
+
+// view returns how the panel is shown, so that setView can show the panel that replaces it the same way.
+func (p *sentenceRows[T]) view() rowsView {
+	return rowsView{open: p.open, collapsed: p.collapse != nil && p.collapse.collapsed}
+}
+
+// setView shows the panel as view says, filling it again at once when that changes anything, so that what held the
+// focus can be found in it before anything else happens. The open row closes if there is no longer one at its path.
+func (p *sentenceRows[T]) setView(view rowsView) {
+	if view == p.view() {
+		return
+	}
+	p.open = view.open
+	if p.collapse != nil {
+		p.collapse.collapsed = view.collapsed
+	}
+	p.RemoveAllChildren()
+	p.fill()
+}
+
 // collapseChanged rebuilds the panel once it has been collapsed or expanded. That is no edit, so it isn't undone and
 // doesn't mark the editor modified, and the open row stays open for when the panel expands. Collapsing hands the focus
 // from what it hides to the title bar.
