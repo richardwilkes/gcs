@@ -22,6 +22,8 @@
   duplicated, moved, wrapped in a group or dragged into place, a group that isn't negated can be ungrouped, new ones are
   added at the end, and every change can be undone. Escape closes the open condition, or with none open, cancels the
   editor.
+- The saved filters popup now lists New Filter, Edit Filter and Delete Filter first, so they stay within reach of a
+  long list of filters.
 - Weapon bonus tooltips on the sheet use shorter names, such as "to accuracy", and the rate of fire bonuses say which
   mode they apply to.
 - A new weapon bonus that picks weapons by their skill no longer starts out requiring a relative skill level of at least
