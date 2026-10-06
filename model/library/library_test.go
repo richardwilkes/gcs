@@ -60,11 +60,11 @@ func TestLibraryWatchCreatesPath(t *testing.T) {
 		return err == nil && info.IsDir()
 	}
 	callback := func(_ *Library, _ string, _ notify.Event) {}
-	token := lib.Watch(callback, false)
+	token := lib.Watch(callback)
 	c.True(isDir(libPath), "a first watch creates the library directory")
 	token.Stop()
 	c.NoError(os.RemoveAll(libPath))
-	token = lib.Watch(callback, false)
+	token = lib.Watch(callback)
 	defer token.Stop()
 	c.True(isDir(libPath), "a watch established after the directory was removed puts it back")
 	moved := filepath.Join(dir, "moved")
@@ -201,7 +201,7 @@ func TestLibrarySetPathWhenWatchFails(t *testing.T) {
 		if what == EventRootSync {
 			syncs.Add(1)
 		}
-	}, false)
+	})
 	defer token.Stop()
 
 	// A regular file where a directory is needed means the new path can neither be created nor watched.
@@ -239,7 +239,7 @@ func TestLibrarySetPathAfterWatchFailsRestartsWatch(t *testing.T) {
 		case events <- fullPath:
 		default:
 		}
-	}, false)
+	})
 	defer token.Stop()
 
 	watchable := filepath.Join(dir, "watchable")
@@ -283,14 +283,14 @@ func TestLibraryWatchDeliversNothingUntilSomethingHappens(t *testing.T) {
 	dir := t.TempDir()
 	lib := NewLibrary("Test", "someone", "", "repo", filepath.Join(dir, "root"))
 	var events atomic.Int64
-	token := lib.Watch(func(_ *Library, _ string, _ notify.Event) { events.Add(1) }, false)
+	token := lib.Watch(func(_ *Library, _ string, _ notify.Event) { events.Add(1) })
 	defer token.Stop()
 
 	waitForMonitorQueue(lib)
 	c.Equal(int64(0), events.Load(), "a newly established watch reports nothing")
 
 	// A second watch on the same library must not stir up the first one either.
-	other := lib.Watch(func(_ *Library, _ string, _ notify.Event) { events.Add(1) }, false)
+	other := lib.Watch(func(_ *Library, _ string, _ notify.Event) { events.Add(1) })
 	defer other.Stop()
 	waitForMonitorQueue(lib)
 	c.Equal(int64(0), events.Load(), "adding another watch reports nothing")
@@ -315,7 +315,7 @@ func TestLibrarySetPathSyncsEachWatcherOnce(t *testing.T) {
 			if what == EventRootSync {
 				syncs[i].Add(1)
 			}
-		}, false))
+		}))
 	}
 	defer func() {
 		for _, token := range tokens {
@@ -400,7 +400,7 @@ func TestLibraryWatchReportsPathsAsTheLibraryNamesThem(t *testing.T) {
 			default:
 			}
 		}
-	}, false)
+	})
 	defer token.Stop()
 	token.AddSubPath("linked")
 
@@ -451,7 +451,7 @@ func TestLibraryWatchSurvivesCaseMismatch(t *testing.T) {
 			default:
 			}
 		}
-	}, false)
+	})
 	defer token.Stop()
 
 	created := filepath.Join(typed, "new.gcs")

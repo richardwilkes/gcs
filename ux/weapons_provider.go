@@ -14,6 +14,7 @@ import (
 	"reflect"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/v2/errs"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/toolbox/v2/uti"
@@ -77,7 +78,15 @@ func (p *weaponsProvider) DragKey() *uti.DataType {
 }
 
 func (p *weaponsProvider) DragSVG() *unison.SVG {
-	return gurps.WeaponSVG(p.melee)
+	return weaponSVG(p.melee)
+}
+
+// weaponSVG returns the SVG that should be used for the weapon type.
+func weaponSVG(melee bool) *unison.SVG {
+	if melee {
+		return svg.MeleeWeapon
+	}
+	return svg.RangedWeapon
 }
 
 func (p *weaponsProvider) ItemNames() (singular, plural string) {

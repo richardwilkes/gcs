@@ -33,7 +33,6 @@ import (
 	"github.com/richardwilkes/toolbox/v2/tid"
 	"github.com/richardwilkes/toolbox/v2/xbytes"
 	"github.com/richardwilkes/toolbox/v2/xhash"
-	"github.com/richardwilkes/unison/enums/align"
 )
 
 var (
@@ -452,7 +451,7 @@ func (s *Spell) CellData(columnID int, data *CellData) {
 	case SpellPrereqCountColumn:
 		if !s.Container() {
 			data.Type = cell.Text
-			data.Alignment = align.End
+			data.Alignment = cell.AlignEnd
 			if s.PrereqCount > 0 {
 				data.Primary = strconv.Itoa(s.PrereqCount)
 			}
@@ -469,7 +468,7 @@ func (s *Spell) CellData(columnID int, data *CellData) {
 			if level.Tooltip != "" {
 				data.Tooltip = IncludesModifiersFrom() + ":" + level.Tooltip
 			}
-			data.Alignment = align.End
+			data.Alignment = cell.AlignEnd
 		}
 	case SpellRelativeLevelColumn:
 		if !s.Container() {
@@ -531,7 +530,7 @@ func (s *Spell) CellData(columnID int, data *CellData) {
 			data.Type = cell.Switch
 			data.Name = SwitchCellName()
 			data.Checked = s.SwitchedOn
-			data.Alignment = align.Middle
+			data.Alignment = cell.AlignMiddle
 			// A container never gets here (see HasSwitchableFeatures), so there are never contents to cascade to.
 			data.Tooltip = SwitchCellTooltip(false)
 		}

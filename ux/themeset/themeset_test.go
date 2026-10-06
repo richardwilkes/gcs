@@ -93,9 +93,11 @@ func TestUnmarshalFillsInMissingKeysFromFactory(t *testing.T) {
 	c.NoError(jio.Unmarshal([]byte(`{"b":22,"extra":5}`), &s))
 	c.Equal(5, s.data["extra"], "unknown keys are retained")
 
-	err := jio.Unmarshal([]byte(`{"b":"not a number"}`), &s)
+	err := jio.Unmarshal([]byte(`{"a":11,"b":"not a number","extra":5}`), &s)
 	c.HasError(err)
-	c.Equal(map[string]int{"a": 1, "b": 2, "c": 3}, s.data, "a failed load leaves a complete factory set behind")
+	c.Contains(err.Error(), `"b"`, "the error names the value that couldn't be decoded")
+	c.Equal(map[string]int{"a": 11, "b": 2, "c": 3, "extra": 5}, s.data,
+		"a value that can't be decoded is the only one lost; it comes from the factory instead")
 }
 
 func TestUnmarshalRejectsNonObject(t *testing.T) {

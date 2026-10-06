@@ -14,6 +14,8 @@ package themeset
 import (
 	"encoding/json/jsontext"
 	"encoding/json/v2"
+	"errors"
+	"fmt"
 )
 
 // Entry is one themed value. The live theme is a list of entries whose values the settings UI edits in place. A Set
@@ -70,16 +72,23 @@ func (s *Set[V, E, P]) MarshalJSONTo(enc *jsontext.Encoder) error {
 	return enc.WriteToken(jsontext.EndObject)
 }
 
-// UnmarshalJSONFrom implements json.UnmarshalerFrom. Keys the data doesn't define are filled in with the factory
-// values, so that the result is always complete, even when an error is returned.
+// UnmarshalJSONFrom implements json.UnmarshalerFrom. Each value is decoded on its own, so that one that can't be
+// decoded costs only itself: the error returned names it and the rest are kept. Keys the data doesn't define, or whose
+// values couldn't be decoded, are filled in with the factory values, so that the result is always complete, even when
+// an error is returned.
 func (s *Set[V, E, P]) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
-	s.data = nil
-	err := json.UnmarshalDecode(dec, &s.data)
-	if err != nil {
-		s.data = nil
+	var raw map[string]jsontext.Value
+	err := json.UnmarshalDecode(dec, &raw)
+	s.data = make(map[string]V, max(len(raw), 1))
+	for key, data := range raw {
+		var v V
+		if e := json.Unmarshal(data, &v, dec.Options()); e != nil {
+			err = errors.Join(err, fmt.Errorf("%q: %w", key, e))
+			continue
+		}
+		s.data[key] = v
 	}
 	var p P
-	s.ensureData()
 	for _, one := range p.Factory() {
 		if _, ok := s.data[one.Key()]; !ok {
 			s.data[one.Key()] = one.Value()

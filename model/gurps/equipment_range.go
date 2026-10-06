@@ -16,7 +16,6 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/cell"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/picker"
-	"github.com/richardwilkes/unison/enums/align"
 )
 
 // The value and weight ranges of equipment reuse NumericRange, which is a range of fxp.Int with the picker arithmetic
@@ -309,7 +308,7 @@ func (e *Equipment) valueRangeCellData(data *CellData, r NumericRange) {
 		return
 	}
 	data.Type = cell.Text
-	data.Alignment = align.End
+	data.Alignment = cell.AlignEnd
 	data.Primary = FormatValueRange(r, fxp.Int.Comma)
 	if data.ForPage {
 		if text := FormatValueRange(r, SheetSettingsFor(EntityFromNode(e)).FormatEquipmentValue); text != data.Primary {
@@ -329,7 +328,7 @@ func (e *Equipment) weightRangeCellData(data *CellData, weigh func(defUnits fxp.
 		return
 	}
 	data.Type = cell.Text
-	data.Alignment = align.End
+	data.Alignment = cell.AlignEnd
 	data.Primary = FormatWeightRange(r, settings.DefaultWeightUnits.Format)
 	if data.ForPage {
 		if text := FormatWeightRange(r, settings.FormatEquipmentWeight); text != data.Primary {

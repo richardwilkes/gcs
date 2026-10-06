@@ -171,11 +171,11 @@ var contextMenuShortTitles = make(map[int]string)
 
 func registerActions() {
 	// Standard actions that may be assigned a key binding
-	gurps.RegisterKeyBinding("cut", unison.CutAction())
-	gurps.RegisterKeyBinding("copy", unison.CopyAction())
-	gurps.RegisterKeyBinding("paste", unison.PasteAction())
-	gurps.RegisterKeyBinding("delete", unison.DeleteAction())
-	gurps.RegisterKeyBinding("select.all", unison.SelectAllAction())
+	registerKeyBinding("cut", unison.CutAction())
+	registerKeyBinding("copy", unison.CopyAction())
+	registerKeyBinding("paste", unison.PasteAction())
+	registerKeyBinding("delete", unison.DeleteAction())
+	registerKeyBinding("select.all", unison.SelectAllAction())
 
 	// Actions that may be assigned a key binding
 	addNaturalAttacksAction = registerFocusAction("add.natural.attacks", AddNaturalAttacksItemID,
@@ -625,7 +625,7 @@ func registerActions() {
 }
 
 func registerKeyBindableAction(key string, action *unison.Action) *unison.Action {
-	gurps.RegisterKeyBinding(key, action)
+	registerKeyBinding(key, action)
 	return action
 }
 

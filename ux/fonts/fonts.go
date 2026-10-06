@@ -14,7 +14,7 @@ import (
 	"sync"
 
 	"github.com/richardwilkes/gcs/v5/model/jio"
-	"github.com/richardwilkes/gcs/v5/model/themeset"
+	"github.com/richardwilkes/gcs/v5/ux/themeset"
 	"github.com/richardwilkes/toolbox/v2/errs"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/toolbox/v2/xos"

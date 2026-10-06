@@ -38,7 +38,6 @@ import (
 	"github.com/richardwilkes/toolbox/v2/tid"
 	"github.com/richardwilkes/toolbox/v2/xbytes"
 	"github.com/richardwilkes/toolbox/v2/xhash"
-	"github.com/richardwilkes/unison/enums/align"
 )
 
 var (
@@ -562,7 +561,7 @@ func (t *Trait) CellData(columnID int, data *CellData) {
 			data.Type = cell.Switch
 			data.Name = SwitchCellName()
 			data.Checked = t.SwitchedOn
-			data.Alignment = align.Middle
+			data.Alignment = cell.AlignMiddle
 			data.Tooltip = SwitchCellTooltip(t.Container())
 			// A disabled trait -- or one inside a disabled container -- was dimmed above, which is what the switch cell
 			// wants: throwing the switch changes nothing the user can see, since every collection pass skips traits

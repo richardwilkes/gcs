@@ -655,6 +655,28 @@ var allEnums = []*enumInfo{
 		},
 	},
 	{
+		Pkg:  "model/gurps/enums/cell",
+		Name: "alignment",
+		Desc: "holds the horizontal alignment of a table cell's content",
+		Values: []*enumValue{
+			{
+				Name:       "AlignStart",
+				Key:        "start",
+				NoLocalize: true,
+			},
+			{
+				Name:       "AlignMiddle",
+				Key:        "middle",
+				NoLocalize: true,
+			},
+			{
+				Name:       "AlignEnd",
+				Key:        "end",
+				NoLocalize: true,
+			},
+		},
+	},
+	{
 		Pkg:  "model/gurps/enums/container",
 		Name: "type",
 		Desc: "holds the type of a trait container",
@@ -1606,6 +1628,19 @@ var allEnums = []*enumInfo{
 				Key:    "intensive",
 				String: "Intensive Training",
 			},
+		},
+	},
+	{
+		Pkg:  "model/gurps/enums/thememode",
+		Name: "mode",
+		Desc: "holds the theme display mode",
+		Values: []*enumValue{
+			{
+				Key:    "auto",
+				String: "Automatic",
+			},
+			{Key: "dark"},
+			{Key: "light"},
 		},
 	},
 	{

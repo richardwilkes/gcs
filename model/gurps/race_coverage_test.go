@@ -32,4 +32,5 @@ func TestRace(t *testing.T) {
 	t.Run("ScriptExecTimeLimitSyncIsConcurrencySafe", TestScriptExecTimeLimitSyncIsConcurrencySafe)
 	t.Run("GlobalSheetSettingsSyncIsConcurrencySafe", TestGlobalSheetSettingsSyncIsConcurrencySafe)
 	t.Run("ClosedStateIsConcurrencySafe", TestClosedStateIsConcurrencySafe)
+	t.Run("SetHostIsConcurrencySafe", TestSetHostIsConcurrencySafe)
 }

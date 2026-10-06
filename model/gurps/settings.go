@@ -10,6 +10,7 @@
 package gurps
 
 import (
+	"encoding/json/jsontext"
 	"errors"
 	"fmt"
 	"io/fs"
@@ -24,10 +25,9 @@ import (
 	"sync"
 	"time"
 
-	"github.com/richardwilkes/gcs/v5/model/colors"
-	"github.com/richardwilkes/gcs/v5/model/fonts"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/dgroup"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/thememode"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/gcs/v5/model/kinds"
 	"github.com/richardwilkes/gcs/v5/model/library"
@@ -35,8 +35,6 @@ import (
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/tid"
 	"github.com/richardwilkes/toolbox/v2/xos"
-	"github.com/richardwilkes/unison"
-	"github.com/richardwilkes/unison/enums/thememode"
 )
 
 const maxRecentFiles = 20
@@ -82,13 +80,15 @@ type PDFInfo struct {
 	LastOpened int64                      `json:"last"`
 }
 
-// Settings holds the application settings.
+// Settings holds the application settings. The dock states, theme colors and fonts belong to the user interface, so
+// they are carried as raw JSON the model never interprets: the Host stores and applies the theme colors and fonts, and
+// the workspace does the same for the dock states.
 type Settings struct {
 	LastSeenGCSVersion string                     `json:"last_seen_gcs_version,omitzero"`
 	General            *GeneralSettings           `json:"general,omitzero"`
 	Libraries          *library.Libraries         `json:"libraries,omitempty"`
 	LibraryExplorer    NavigatorSettings          `json:"library_explorer"`
-	ThemeMode          thememode.Enum             `json:"theme_mode"`
+	ThemeMode          thememode.Mode             `json:"theme_mode"`
 	RecentFiles        []string                   `json:"recent_files,omitempty"`
 	DeepSearch         []string                   `json:"deep_search,omitempty"`
 	LastDirs           map[string]string          `json:"last_dirs,omitempty"`
@@ -97,11 +97,11 @@ type Settings struct {
 	PageRefs           PageRefs                   `json:"page_refs,omitzero"`
 	KeyBindings        KeyBindings                `json:"key_bindings,omitzero"`
 	WorkspaceFrame     *geom.Rect                 `json:"workspace_frame,omitzero"`
-	TopDockState       *unison.DockState          `json:"top_dock_state,omitzero"`
-	DocDockState       *unison.DockState          `json:"doc_dock_state,omitzero"`
+	TopDockState       jsontext.Value             `json:"top_dock_state,omitzero"`
+	DocDockState       jsontext.Value             `json:"doc_dock_state,omitzero"`
 	FocusedDockKey     string                     `json:"focused_dock_key,omitzero"`
-	Colors             colors.Colors              `json:"theme_colors"`
-	Fonts              fonts.Fonts                `json:"fonts"`
+	Colors             jsontext.Value             `json:"theme_colors,omitzero"`
+	Fonts              jsontext.Value             `json:"fonts,omitzero"`
 	Sheet              *SheetSettings             `json:"sheet_settings,omitzero"`
 	OpenInWindow       []dgroup.Group             `json:"open_in_window,omitempty"`
 	Closed             map[string]int64           `json:"closed,omitempty"`
@@ -133,15 +133,12 @@ func GlobalSettings() *Settings {
 		// this once-initializer.
 		syncScriptExecTimeLimit(globalSettings.General)
 		syncGlobalSheetSettings(globalSettings.Sheet)
-		unison.SetThemeMode(globalSettings.ThemeMode)
-		globalSettings.Colors.MakeCurrent()
-		globalSettings.Fonts.MakeCurrent()
-		unison.DefaultScrollPanelTheme.MouseWheelMultiplier = func() float32 {
-			return globalSettings.General.ScrollWheelMultiplier.AsFloat[float32]()
-		}
-		unison.DefaultFieldTheme.InitialClickSelectsAll = func(_ *unison.Field) bool {
-			return globalSettings.General.InitialFieldClickSelectsAll
-		}
+		// Under the lock, so that a SetHost racing with this either sees the settings as not yet loaded and leaves
+		// the hand-over to this, or sees them as loaded and does it itself; never both or neither.
+		hostLock.Lock()
+		currentHost().SettingsLoaded(&globalSettings)
+		globalSettingsLoaded.Store(true)
+		hostLock.Unlock()
 	})
 	return &globalSettings
 }
@@ -229,9 +226,9 @@ func (s *Settings) Save() error {
 			delete(s.PDFs, k)
 		}
 	}
-	// The theme settings UI edits the live colors and fonts in place, so pull those edits in before writing.
-	s.Colors.CaptureCurrent()
-	s.Fonts.CaptureCurrent()
+	// The theme settings UI edits the live colors and fonts in place, so have the host pull those edits in before
+	// writing.
+	currentHost().SettingsSaving(s)
 	s.EnsureValidity()
 	return jio.SaveToFile(SettingsPath, s)
 }
@@ -285,6 +282,7 @@ func (s *Settings) EnsureValidity() {
 		s.Sheet.EnsureValidity()
 	}
 	s.OpenInWindow = SanitizeDockableGroups(s.OpenInWindow)
+	s.ThemeMode = s.ThemeMode.EnsureValid()
 }
 
 // SanitizeDockableGroups returns the passed-in groups deduplicated and sorted, with invalid ones replaced by the

@@ -10,8 +10,8 @@
 package ux
 
 import (
-	"github.com/richardwilkes/gcs/v5/model/colors"
-	"github.com/richardwilkes/gcs/v5/model/fonts"
+	"github.com/richardwilkes/gcs/v5/ux/colors"
+	"github.com/richardwilkes/gcs/v5/ux/fonts"
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/xmath"
 	"github.com/richardwilkes/unison"
