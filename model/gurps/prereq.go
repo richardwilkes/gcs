@@ -11,6 +11,7 @@ package gurps
 
 import (
 	"hash"
+	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/criteria"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/prereq"
@@ -68,28 +69,34 @@ func describeText(t criteria.Text, replacements map[string]string, em func(strin
 	return t.Compare.Describe(em(q))
 }
 
-// describeName returns how a prerequisite names what it looks for: the bare name for "is", "of any name" when any name
-// will do, and a "whose name" clause otherwise.
+// describeName returns how a prerequisite names what it looks for: the bare name for "is", or "" when that is empty
+// once its markers are replaced, "of any name" when any name will do, and a "whose name" clause otherwise.
 func describeName(t criteria.Text, replacements map[string]string, em func(string) string) string {
-	switch {
-	case t.Compare == criteria.AnyText:
+	switch t.Compare {
+	case criteria.AnyText:
 		return i18n.Text("of any name")
-	case t.Compare == criteria.IsText && t.Qualifier != "":
-		return em(nameable.Apply(t.Qualifier, replacements))
+	case criteria.IsText:
+		if q := nameable.Apply(t.Qualifier, replacements); strings.TrimSpace(q) != "" {
+			return em(q)
+		}
+		return `""`
 	default:
 		return i18n.Text("whose name ") + describeText(t, replacements, em)
 	}
 }
 
 // describeSpecialization returns how a specialization narrows a skill: the bare specialization in parentheses for
-// "is", nothing when any will do, and a "with a specialization that" clause otherwise, followed by the same kind of
-// clause for the optional specialization when it is set.
+// "is", nothing when any will do or when "is" names none once its markers are replaced, since that picks a skill
+// without one, and a "with a specialization that" clause otherwise, followed by the same kind of clause for the
+// optional specialization when it is set.
 func describeSpecialization(specialization, optional criteria.Text, replacements map[string]string, em func(string) string) string {
 	var text string
-	switch {
-	case specialization.Compare == criteria.AnyText:
-	case specialization.Compare == criteria.IsText && specialization.Qualifier != "":
-		text = " (" + em(nameable.Apply(specialization.Qualifier, replacements)) + ")"
+	switch specialization.Compare {
+	case criteria.AnyText:
+	case criteria.IsText:
+		if q := nameable.Apply(specialization.Qualifier, replacements); strings.TrimSpace(q) != "" {
+			text = " (" + em(q) + ")"
+		}
 	default:
 		text = i18n.Text(" with a specialization that ") + describeText(specialization, replacements, em)
 	}

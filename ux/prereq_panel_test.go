@@ -430,7 +430,7 @@ func TestPrereqPanelCollapse(t *testing.T) {
 			c.Nil(p.FindRefKey(key), "collapsing hides %s", key)
 		}
 		c.Equal(0, len(p.views), "and the statuses of the rows")
-		c.Equal(`Has trait whose name is "" and (has skill whose name is "" at level at least 0 or a custom check) and `+
+		c.Equal(`Has trait "" and (has skill "" at level at least 0 or a custom check) and `+
 			`meets an unknown type of prerequisite ("future") that needs a newer version of GCS.`,
 			summary().Accessibility.Name, "the paragraph describes the tree")
 		c.True(strings.HasSuffix(summary().plainText(), "."), "the paragraph ends with a period")
@@ -685,7 +685,7 @@ func TestPrereqPanelStatus(t *testing.T) {
 		c.Equal("Has trait Luck, not met", sentence.Accessibility.Name, "the sentence follows the change, in place")
 		sentence, ok = p.FindRefKey("r.3.0" + keySentence).Self.(*sentenceButton)
 		c.True(ok)
-		c.Equal(`Has trait whose name is "", doesn't apply at this tech level`, sentence.Accessibility.Name)
+		c.Equal(`Has trait "", doesn't apply at this tech level`, sentence.Accessibility.Name)
 	})
 	group := func() (name string) {
 		screen.Do(func() { name = p.FindRefKey("r.3" + keyPill).Parent().Parent().Accessibility.Name })

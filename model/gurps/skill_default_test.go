@@ -10,6 +10,7 @@
 package gurps
 
 import (
+	"encoding/json/v2"
 	"os"
 	"path/filepath"
 	"slices"
@@ -1238,15 +1239,26 @@ func TestSkillDefaultDescribe(t *testing.T) {
 	c := check.New(t)
 	e := NewEntity()
 	em := func(s string) string { return "[" + s + "]" }
-	replacements := map[string]string{"Weapon": "Broadsword"}
+	replacements := map[string]string{"Weapon": "Broadsword", "Style": "Fencing", "Kind": "Melee", "Blank": ""}
 
 	attribute := &SkillDefault{DefaultType: DexterityID, Modifier: -fxp.Five}
 	ten := &SkillDefault{DefaultType: "10", Modifier: -fxp.Four}
 	named := newSkillDefaultTo("@Weapon@", "", true, -fxp.Two)
 	unset := newSkillDefaultTo("@Craft@", "", true, -fxp.Two)
+	unresolved := newSkillDefaultTo("@Weapon|Sword|Axe|?@", "", true, 0)
 	specialized := newSkillDefaultTo("Fast-Draw", "Knife", false, -fxp.One)
+	noSpecialization := newSkillDefaultTo("Mathematics", "", false, 0)
+	blank := newSkillDefaultTo("@Blank@", "@Blank@", false, -fxp.Two)
+	newOne := &SkillDefault{DefaultType: SkillID, Name: textCriteria(criteria.IsText, "")}
 	anySkill := &SkillDefault{DefaultType: SkillID}
+	anySpecialized := &SkillDefault{
+		DefaultType:    SkillID,
+		Specialization: textCriteria(criteria.IsText, "Statistics"),
+		Modifier:       -fxp.Two,
+	}
 	tagged := newTaggedSkillDefault(criteria.IsText, "Melee", -fxp.Three)
+	twoTags := newSkillDefaultTo("Broadsword", "", true, -fxp.Two)
+	twoTags.Tags = textCriteria(criteria.IsText, "Melee, Sword")
 	clauses := &SkillDefault{
 		DefaultType:    SkillID,
 		Name:           textCriteria(criteria.ContainsText, "Sword"),
@@ -1254,32 +1266,122 @@ func TestSkillDefaultDescribe(t *testing.T) {
 		Tags:           textCriteria(criteria.IsNotText, "Cinematic"),
 		Modifier:       -fxp.Two,
 	}
+	nameClauseIs := &SkillDefault{
+		DefaultType:    SkillID,
+		Name:           textCriteria(criteria.StartsWithText, "Broad"),
+		Specialization: textCriteria(criteria.IsText, "Fencing"),
+		Tags:           textCriteria(criteria.IsText, "Melee"),
+	}
+	bareThenClauses := &SkillDefault{
+		DefaultType:    SkillID,
+		Name:           textCriteria(criteria.IsText, "Broadsword"),
+		Specialization: textCriteria(criteria.DoesNotStartWithText, "Fen"),
+		Tags:           textCriteria(criteria.IsText, "Melee"),
+	}
+	bareThenTagClause := &SkillDefault{
+		DefaultType:    SkillID,
+		Name:           textCriteria(criteria.IsText, "Broadsword"),
+		Specialization: textCriteria(criteria.IsText, "Fencing"),
+		Tags:           textCriteria(criteria.DoesNotContainText, "Cinematic"),
+	}
+	anyThenClause := &SkillDefault{DefaultType: SkillID, Specialization: textCriteria(criteria.ContainsText, "Pistol")}
+	emptyTag := newSkillDefaultTo("Brawling", "", true, 0)
+	emptyTag.Tags = textCriteria(criteria.IsText, "")
+	markers := &SkillDefault{
+		DefaultType:    SkillID,
+		Name:           textCriteria(criteria.IsText, "@Weapon@"),
+		Specialization: textCriteria(criteria.IsText, "@Style@"),
+		Tags:           textCriteria(criteria.IsText, "@Kind@"),
+	}
 	parry := newSkillDefaultTo("Shortsword", "", true, 0)
 	parry.DefaultType = ParryID
+	parryAny := &SkillDefault{DefaultType: ParryID}
+	parryContains := &SkillDefault{DefaultType: ParryID, Name: textCriteria(criteria.ContainsText, "sword")}
 	block := newSkillDefaultTo("Shield", "Buckler", false, fxp.One)
 	block.DefaultType = BlockID
+	blockAny := &SkillDefault{DefaultType: BlockID, Tags: textCriteria(criteria.IsText, "Shield")}
+	blockStarts := &SkillDefault{DefaultType: BlockID, Name: textCriteria(criteria.StartsWithText, "Cloak")}
 	tl := &SkillDefault{
 		DefaultType: IntelligenceID,
 		Modifier:    -fxp.Six,
 		WhenTL:      criteria.Number{Compare: criteria.AtLeastNumber, Qualifier: fxp.Four},
 	}
+	tlIs := &SkillDefault{DefaultType: DexterityID, WhenTL: criteria.Number{Compare: criteria.EqualsNumber, Qualifier: fxp.Two}}
+	tlIsNot := &SkillDefault{DefaultType: DexterityID, WhenTL: criteria.Number{Compare: criteria.NotEqualsNumber, Qualifier: fxp.Two}}
+	tlAtMost := &SkillDefault{DefaultType: DexterityID, WhenTL: criteria.Number{Compare: criteria.AtMostNumber, Qualifier: fxp.Two}}
+	dodge := &SkillDefault{DefaultType: DodgeID, Modifier: -fxp.Two}
+	sizeModifier := &SkillDefault{DefaultType: SizeModifierID}
+	capitalized := &SkillDefault{DefaultType: "DX", Modifier: -fxp.One}
+	unknown := &SkillDefault{DefaultType: "foo", Modifier: -fxp.Two}
+	empty := &SkillDefault{Modifier: -fxp.Two}
+	fraction := &SkillDefault{DefaultType: DexterityID, Modifier: -fxp.Half}
+	everything := &SkillDefault{
+		DefaultType:    ParryID,
+		Name:           textCriteria(criteria.IsText, "@Weapon@"),
+		Specialization: textCriteria(criteria.EndsWithText, "ing"),
+		Tags:           textCriteria(criteria.ContainsText, "Melee"),
+		Modifier:       -fxp.Three,
+		WhenTL:         criteria.Number{Compare: criteria.AtLeastNumber, Qualifier: fxp.Five},
+	}
 	for _, one := range []struct {
 		def  *SkillDefault
 		want string
 	}{
-		{attribute, "[DX] [-5]"},
-		{ten, "[10] [-4]"},
-		{named, "Skill [Broadsword] [-2]"},
-		{unset, "Skill [@Craft@] [-2]"},
-		{specialized, "Skill [Fast-Draw] ([Knife]) [-1]"},
-		{anySkill, "Skill of any name [+0]"},
-		{tagged, "Skill of any name tagged [Melee] [-3]"},
-		{clauses, `Skill whose name contains "[Sword]" with a specialization that starts with "[Fen]" with all tags that are not "[Cinematic]" [-2]`},
-		{parry, "Parry of skill [Shortsword] [+0]"},
-		{block, "Block of skill [Shield] ([Buckler]) [+1]"},
-		{tl, "[IQ] [-6], when the tech level is at least [4]"},
+		{attribute, "[DX] at [-5]"},
+		{ten, "[10] at [-4]"},
+		{named, "Skill [Broadsword] at [-2]"},
+		{unset, "Skill [@Craft@] at [-2]"},
+		{unresolved, "Skill [@Weapon@] at [+0]"},
+		{specialized, "Skill [Fast-Draw] ([Knife]) at [-1]"},
+		{noSpecialization, "Skill [Mathematics] at [+0]"},
+		{blank, `Skill "" at [-2]`},
+		{newOne, `Skill "" at [+0]`},
+		{anySkill, "Any skill at [+0]"},
+		{anySpecialized, "Any skill ([Statistics]) at [-2]"},
+		{tagged, "Any skill tagged [Melee] at [-3]"},
+		{twoTags, "Skill [Broadsword] tagged [Melee, Sword] at [-2]"},
+		{clauses, `Skill whose name contains "[Sword]" and whose specialization starts with "[Fen]" and all tags are not "[Cinematic]" at [-2]`},
+		{nameClauseIs, `Skill whose name starts with "[Broad]" and whose specialization is [Fencing] and at least one tag is [Melee] at [+0]`},
+		{bareThenClauses, `Skill [Broadsword] whose specialization does not start with "[Fen]" and at least one tag is [Melee] at [+0]`},
+		{bareThenTagClause, `Skill [Broadsword] ([Fencing]) where all tags do not contain "[Cinematic]" at [+0]`},
+		{anyThenClause, `Any skill whose specialization contains "[Pistol]" at [+0]`},
+		{emptyTag, `Skill [Brawling] where at least one tag is "" at [+0]`},
+		{markers, "Skill [Broadsword] ([Fencing]) tagged [Melee] at [+0]"},
+		{parry, "Parry of skill [Shortsword] at [+0]"},
+		{parryAny, "Parry of any skill at [+0]"},
+		{parryContains, `Parry of skill whose name contains "[sword]" at [+0]`},
+		{block, "Block of skill [Shield] ([Buckler]) at [+1]"},
+		{blockAny, "Block of any skill tagged [Shield] at [+0]"},
+		{blockStarts, `Block of skill whose name starts with "[Cloak]" at [+0]`},
+		{tl, "[IQ] at [-6], when the tech level is at least [4]"},
+		{tlIs, "[DX] at [+0], when the tech level is [2]"},
+		{tlIsNot, "[DX] at [+0], when the tech level is not [2]"},
+		{tlAtMost, "[DX] at [+0], when the tech level is at most [2]"},
+		{dodge, "[Dodge] at [-2]"},
+		{sizeModifier, "[Size Modifier] at [+0]"},
+		{capitalized, "[DX] at [-1]"},
+		{unknown, `Unknown type "[foo]" at [-2]`},
+		{empty, "No type at [-2]"},
+		{fraction, "[DX] at [-0.5]"},
+		{everything, `Parry of skill [Broadsword] whose specialization ends with "[ing]" and at least one tag contains "[Melee]" at [-3], when the tech level is at least [5]`},
 	} {
 		c.Equal(one.want, one.def.Describe(e, replacements, em))
 	}
-	c.Equal("DX -5", attribute.Describe(nil, nil, plainText), "with no entity, the attributes come from the settings")
+	c.Equal("DX at -5", attribute.Describe(nil, nil, plainText), "with no entity, the attributes come from the settings")
+	c.Equal("Skill @Weapon@ at -2", named.Describe(e, nil, plainText), "with no replacements, a marker shows as it is")
+}
+
+// TestSkillDefaultLoadNormalizesType checks that a type written in another case or with spaces around it loads in the
+// form the IDs are written in.
+func TestSkillDefaultLoadNormalizesType(t *testing.T) {
+	c := check.New(t)
+	for _, raw := range []string{"DX", " dx ", "Dx"} {
+		var def SkillDefault
+		c.NoError(json.Unmarshal([]byte(`{"type":"`+raw+`"}`), &def))
+		c.Equal(DexterityID, def.DefaultType, raw)
+	}
+	var def SkillDefault
+	c.NoError(json.Unmarshal([]byte(`{"type":"Skill","name":"Judo"}`), &def))
+	c.Equal(SkillID, def.DefaultType)
+	c.Equal("Judo", def.Name.Qualifier)
 }

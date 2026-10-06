@@ -140,10 +140,10 @@ func TestDefaultsPanelSentences(t *testing.T) {
 	p, _ := showDefaultsPanel(t, screen, entity, owner, &defaults)
 	screen.Do(func() {
 		for i, want := range []string{
-			"DX -5",
-			"Skill Broadsword (Fencing) -2",
-			"Parry of skill Shortsword +0",
-			"Skill Rapier +0, when the tech level is at least 4",
+			"DX at -5",
+			"Skill Broadsword (Fencing) at -2",
+			"Parry of skill Shortsword at +0",
+			"Skill Rapier at +0, when the tech level is at least 4",
 		} {
 			sentence, ok := p.FindRefKey(strconv.Itoa(i) + keySentence).Self.(*sentenceButton)
 			c.True(ok, "row %d is a sentence", i)
@@ -336,7 +336,7 @@ func TestDefaultsPanelChips(t *testing.T) {
 			field.SetText("Boxing")
 		}
 	})
-	c.Equal("Skill Brawling (Boxing) +0", plainDescription(entity, def))
+	c.Equal("Skill Brawling (Boxing) at +0", plainDescription(entity, def))
 	click("0:specialization" + keyChip)
 	c.True(def.Specialization.IsZero(), "removing the chip removes it")
 	click("0:add tag")
@@ -569,7 +569,7 @@ func TestDefaultsPanelCollapse(t *testing.T) {
 		paragraph, ok := p.FindRefKey(sectionSummaryKey).Self.(*sentenceButton)
 		c.True(ok, "a collapsed panel shows a paragraph")
 		if ok {
-			c.Equal("DX -5; Skill Broadsword (Fencing) -2; Parry of skill Shortsword +0.", paragraph.plainText())
+			c.Equal("DX at -5; Skill Broadsword (Fencing) at -2; Parry of skill Shortsword at +0.", paragraph.plainText())
 		}
 		c.Equal(p.collapse.AsPanel(), p.Window().Focus(), "the focus moves from the rows to the title bar")
 	})
@@ -644,7 +644,7 @@ func TestDefaultsPanelWeapon(t *testing.T) {
 				sentences = append(sentences, b.plainText())
 			}
 		}
-		c.Equal("DX -4|Skill Spear +0", strings.Join(sentences, "|"))
+		c.Equal("DX at -4|Skill Spear at +0", strings.Join(sentences, "|"))
 		prereqMenuAction(p.moreEntries("0"), "Delete")()
 	})
 	c.Equal([]string{gurps.SkillID}, defaultTypes(weapon.Defaults), "the weapon's defaults are edited")

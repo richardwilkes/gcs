@@ -12,6 +12,7 @@ package gurps
 import (
 	"encoding/json/jsontext"
 	"encoding/json/v2"
+	"fmt"
 	"hash"
 	"slices"
 	"strings"
@@ -67,9 +68,9 @@ func DefaultTypeIsSkillBased(skillDefaultType string) bool {
 	return skillBasedDefaultTypes[normalizeDefaultType(skillDefaultType)]
 }
 
-// normalizeDefaultType reduces a SkillDefault type to the form the IDs are written in. Only SetType() sanitizes the
-// type, so a file not written by GCS may hold "Parry" or " dx "; the classifiers accept those, and level resolution
-// must agree with them, or such a default would be treated as skill-based everywhere but where its level is computed.
+// normalizeDefaultType reduces a SkillDefault type to the form the IDs are written in. Loading and SetType() do so, but
+// a default built in code may still hold "Parry" or " dx "; the classifiers accept those, and level resolution must
+// agree with them, or such a default would be treated as skill-based everywhere but where its level is computed.
 func normalizeDefaultType(skillDefaultType string) string {
 	return strings.ToLower(strings.TrimSpace(skillDefaultType))
 }
@@ -133,7 +134,8 @@ func (s *SkillDefault) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 	if err := json.UnmarshalDecode(dec, &localData); err != nil {
 		return err
 	}
-	s.DefaultType = localData.DefaultType
+	// The type is kept in the form the IDs are written in, so that choosing it again in the editor changes nothing.
+	s.DefaultType = normalizeDefaultType(localData.DefaultType)
 	s.Tags = localData.Tags
 	s.Modifier = localData.Modifier
 	s.Level = localData.Level
@@ -233,32 +235,107 @@ func (s *SkillDefault) FullName(entity *Entity, replacements map[string]string) 
 	return buffer.String()
 }
 
-// Describe returns a plain-language description of this default, such as "DX -5", "Skill Broadsword -2" or "Parry of
-// skill Shortsword +0", naming attributes as the entity, which may be nil, defines them. Nameable markers take their
-// values from replacements, and those without one are left as they are. Names, qualifiers and the modifier are passed
-// through em, which may wrap them for emphasis; pass an identity func for plain text.
+// Describe returns a plain-language description of this default, such as "DX at -5", "Skill Broadsword at -2" or
+// "Parry of skill Shortsword at +0", naming attributes as the entity, which may be nil, defines them. Nameable markers
+// take their values from replacements, and those without one show as @Key@. Names, qualifiers and the modifier are
+// passed through em, which may wrap them for emphasis; pass an identity func for plain text.
 func (s *SkillDefault) Describe(entity *Entity, replacements map[string]string, em func(string) string) string {
 	var text string
-	switch s.Type() {
-	case SkillID:
-		text = i18n.Text("Skill ")
-	case ParryID:
-		text = i18n.Text("Parry of skill ")
-	case BlockID:
-		text = i18n.Text("Block of skill ")
+	switch t := s.Type(); t {
+	case SkillID, ParryID, BlockID:
+		text = s.describeSkill(replacements, em)
+	case "":
+		text = i18n.Text("No type")
 	default:
-		text = em(ResolveAttributeName(entity, s.Type()))
+		if t == "10" || t == SizeModifierID || t == DodgeID || AttributeDefsFor(entity).Set[t] != nil {
+			text = em(attributeTitle(entity, t))
+		} else {
+			text = fmt.Sprintf(i18n.Text(`Unknown type "%s"`), em(t))
+		}
 	}
-	if s.SkillBased() {
-		text += describeName(s.Name, replacements, em) +
-			describeSpecialization(s.Specialization, criteria.Text{}, replacements, em) +
-			describeTags(s.Tags, replacements, em)
-	}
-	text += " " + em(s.Modifier.StringWithSign())
+	text = fmt.Sprintf(i18n.Text("%s at %s"), text, em(s.Modifier.StringWithSign()))
 	if s.WhenTL.Compare != criteria.AnyNumber {
 		text += i18n.Text(", when the tech level ") + s.WhenTL.Compare.DescribeWith(em(s.WhenTL.Qualifier.String()))
 	}
 	return text
+}
+
+// describeSkill returns how a skill-based default names its skill, such as "Skill Broadsword (Fencing)", "Parry of any
+// skill tagged Sword" or `Skill whose name contains "Sword" and whose specialization starts with "Fen"`. Once one
+// criterion has been spelled out as a clause, those after it are joined to it by "and" in the same form.
+func (s *SkillDefault) describeSkill(replacements map[string]string, em func(string) string) string {
+	nameCompare := s.Name.Compare.EnsureValid()
+	anyName := nameCompare == criteria.AnyText
+	var text string
+	switch s.Type() {
+	case ParryID:
+		if anyName {
+			text = i18n.Text("Parry of any skill")
+		} else {
+			text = fmt.Sprintf(i18n.Text("Parry of skill %s"), describeName(s.Name, replacements, em))
+		}
+	case BlockID:
+		if anyName {
+			text = i18n.Text("Block of any skill")
+		} else {
+			text = fmt.Sprintf(i18n.Text("Block of skill %s"), describeName(s.Name, replacements, em))
+		}
+	default:
+		if anyName {
+			text = i18n.Text("Any skill")
+		} else {
+			text = fmt.Sprintf(i18n.Text("Skill %s"), describeName(s.Name, replacements, em))
+		}
+	}
+	joined := !anyName && nameCompare != criteria.IsText
+	specialization := nameable.Apply(s.Specialization.Qualifier, replacements)
+	switch compare := s.Specialization.Compare.EnsureValid(); {
+	case compare == criteria.AnyText:
+	case compare == criteria.IsText && strings.TrimSpace(specialization) == "":
+		// An empty specialization picks a skill without one, which the name alone says.
+	case compare == criteria.IsText && !joined:
+		text += " (" + em(specialization) + ")"
+	default:
+		prefix := i18n.Text("whose specialization")
+		if joined {
+			prefix = i18n.Text("and whose specialization")
+		}
+		text += " " + describeClause(s.Specialization, prefix, prefix, replacements, em)
+		joined = true
+	}
+	tags := nameable.Apply(s.Tags.Qualifier, replacements)
+	switch compare := s.Tags.Compare.EnsureValid(); {
+	case compare == criteria.AnyText:
+	case compare == criteria.IsText && strings.TrimSpace(tags) != "" && !joined:
+		text += i18n.Text(" tagged ") + em(tags)
+	default:
+		prefix, notPrefix := i18n.Text("where at least one tag"), i18n.Text("where all tags")
+		if joined {
+			prefix, notPrefix = i18n.Text("and at least one tag"), i18n.Text("and all tags")
+		}
+		text += " " + describeClause(s.Tags, prefix, notPrefix, replacements, em)
+	}
+	return text
+}
+
+// describeClause returns a criterion as a clause, such as `whose specialization starts with "Fen"`: the prefix, or
+// for a "not" comparison the notPrefix, then the comparison and the qualifier. A non-empty qualifier is passed through
+// em and quoted unless the comparison is "is"; an empty one reads as "".
+func describeClause(t criteria.Text, prefix, notPrefix string, replacements map[string]string, em func(string) string) string {
+	q := nameable.Apply(t.Qualifier, replacements)
+	compare := t.Compare.EnsureValid()
+	switch {
+	case strings.TrimSpace(q) == "":
+		q = `""`
+	case compare == criteria.IsText:
+		q = em(q)
+	default:
+		q = `"` + em(q) + `"`
+	}
+	if prefix == notPrefix || !compare.IsNotType() {
+		return prefix + " " + compare.String() + " " + q
+	}
+	return notPrefix + " " + compare.AltString() + " " + q
 }
 
 // namesSkill reports whether this default names a skill outright: its name criteria is "is" some name, its

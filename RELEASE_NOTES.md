@@ -17,7 +17,7 @@
   add button has moved into its more menu, except for the top group's, which takes the place of a more menu, and an
   empty group's, which now sits beside its placeholder.
 - The defaults section of the skill and weapon editors works like the features section. Each default is shown as a
-  short sentence, such as "Skill Broadsword -2", that opens to edit it, with the specialization, tags and tech level
+  short sentence, such as "Skill Broadsword at -2", that opens to edit it, with the specialization, tags and tech level
   added as pills. Defaults can be duplicated, moved or dragged to reorder them, new ones are added at the end of the
   list, and every change can be undone. The section opens collapsed to a paragraph of its defaults when it has any.
 - Weapon bonus tooltips on the sheet use shorter names, such as "to accuracy", and the rate of fire bonuses say which
