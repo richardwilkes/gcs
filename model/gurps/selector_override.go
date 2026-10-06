@@ -12,7 +12,6 @@ package gurps
 import (
 	"encoding/json/jsontext"
 	"encoding/json/v2"
-	"fmt"
 	"hash"
 	"strconv"
 
@@ -161,7 +160,7 @@ func (o *SelectorOverride) Describe(_ *Entity, replacements map[string]string, e
 	} else {
 		target = describeNamedWeapons(o.NameCriteria, o.UsageCriteria, o.TagsCriteria, replacements, em)
 	}
-	return describeSwitchable(o.Switchable, fmt.Sprintf(i18n.Text("Sets %s to %s on %s (priority %d)"),
+	return describeSwitchable(o.Switchable, i18n.Text("Sets %s to %s on %s (priority %d)",
 		em(o.Field.String()), value, target, o.Priority))
 }
 

@@ -10,7 +10,6 @@
 package ux
 
 import (
-	"fmt"
 	"io/fs"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
@@ -87,8 +86,7 @@ func (d *menuKeySettingsDockable) createBindingButton(binding *gurps.Binding) {
 		// The label shows only the key combination, which is empty when there is none, so it has to say what it is for
 		// itself. The combination captured so far goes in its description and is announced as each one is pressed,
 		// since nothing else would tell someone who cannot see the label that their key press registered.
-		capturePanel.Accessibility.Name = fmt.Sprintf(i18n.Text("Press the new key combination for %s"),
-			binding.Action.Title)
+		capturePanel.Accessibility.Name = i18n.Text("Press the new key combination for %s", binding.Action.Title)
 		capturePanel.Accessibility.Description = describeKeyBinding(localBinding)
 		capturePanel.HAlign = align.Middle
 		unison.InstallDefaultFieldBorder(capturePanel, capturePanel)
@@ -155,7 +153,7 @@ func (d *menuKeySettingsDockable) createBindingButton(binding *gurps.Binding) {
 // leave the button with no name at all.
 func setBindingButtonKey(b *unison.Button, binding *gurps.Binding) {
 	b.SetTitle(binding.KeyBinding.String())
-	b.Accessibility.Name = fmt.Sprintf(i18n.Text("%s: %s"), binding.Action.Title, describeKeyBinding(binding.KeyBinding))
+	b.Accessibility.Name = i18n.Text("%s: %s", binding.Action.Title, describeKeyBinding(binding.KeyBinding))
 	b.MarkForRedraw()
 }
 
@@ -171,7 +169,7 @@ func (d *menuKeySettingsDockable) createResetField(binding *gurps.Binding) {
 	b := unison.NewSVGButton(svg.Reset)
 	b.Tooltip = newWrappedTooltip(i18n.Text("Reset this key binding"))
 	b.ClickCallback = func() {
-		if unison.QuestionDialog(fmt.Sprintf(i18n.Text("Are you sure you want to reset '%s'?"), binding.Action.Title), "") == unison.ModalResponseOK {
+		if unison.QuestionDialog(i18n.Text("Are you sure you want to reset '%s'?", binding.Action.Title), "") == unison.ModalResponseOK {
 			d.resetBinding(binding, b)
 		}
 	}

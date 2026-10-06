@@ -246,7 +246,7 @@ func (d *fileEditorDockable[T]) showsFile(ref *library.NamedFileRef) bool {
 // file holds, to be saved or not, rather than a change of document, so the editor shows as modified until it is saved
 // or undone.
 func (d *fileEditorDockable[T]) reset() {
-	d.editStructure(fmt.Sprintf(i18n.Text("Reset %s"), d.TabTitle), func() {
+	d.editStructure(i18n.Text("Reset %s", d.TabTitle), func() {
 		d.model = d.spec.newModel()
 		d.model.ResetTargetKeyPrefixes(d.targetMgr.NextPrefix)
 	}, "")

@@ -10,7 +10,6 @@
 package ux
 
 import (
-	"fmt"
 	"io/fs"
 	"strings"
 
@@ -123,7 +122,7 @@ func (d *colorSettingsDockable) createColorWellField(c *colors.ThemedColor, ligh
 	if light {
 		w.SetInk(c.Color.Light)
 		w.Tooltip = newWrappedTooltip(i18n.Text("Light Mode Color"))
-		w.Accessibility.Name = fmt.Sprintf(i18n.Text("%s (Light Mode)"), c.Title)
+		w.Accessibility.Name = i18n.Text("%s (Light Mode)", c.Title)
 		w.InkChangedCallback = func() {
 			if clr, ok := w.Ink().(unison.Color); ok {
 				c.Color.Light = clr
@@ -133,7 +132,7 @@ func (d *colorSettingsDockable) createColorWellField(c *colors.ThemedColor, ligh
 	} else {
 		w.SetInk(c.Color.Dark)
 		w.Tooltip = newWrappedTooltip(i18n.Text("Dark Mode Color"))
-		w.Accessibility.Name = fmt.Sprintf(i18n.Text("%s (Dark Mode)"), c.Title)
+		w.Accessibility.Name = i18n.Text("%s (Dark Mode)", c.Title)
 		w.InkChangedCallback = func() {
 			if clr, ok := w.Ink().(unison.Color); ok {
 				c.Color.Dark = clr
@@ -148,7 +147,7 @@ func (d *colorSettingsDockable) createResetField(c *colors.ThemedColor) {
 	b := unison.NewSVGButton(svg.Reset)
 	b.Tooltip = newWrappedTooltip(i18n.Text("Reset this color"))
 	b.ClickCallback = func() {
-		if unison.QuestionDialog(fmt.Sprintf(i18n.Text("Are you sure you want to reset %s?"), c.Title), "") == unison.ModalResponseOK {
+		if unison.QuestionDialog(i18n.Text("Are you sure you want to reset %s?", c.Title), "") == unison.ModalResponseOK {
 			for _, v := range colors.Factory() {
 				if v.ID != c.ID {
 					continue

@@ -101,7 +101,7 @@ func (r Roll) ShortString() string {
 	case r == Always:
 		return i18n.Text("No CR")
 	case r >= CR6 && r <= CR15:
-		return fmt.Sprintf(i18n.Text("CR%d"), r)
+		return i18n.Text("CR%d", r)
 	default:
 		return ""
 	}

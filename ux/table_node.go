@@ -10,7 +10,6 @@
 package ux
 
 import (
-	"fmt"
 	"slices"
 	"strings"
 	"unicode"
@@ -1004,7 +1003,7 @@ func InsertItems[T gurps.Node[T]](owner Rebuildable, table *unison.Table[*Node[T
 	if len(items) == 0 {
 		return
 	}
-	undo := beginTableUndo(table, fmt.Sprintf(i18n.Text("Insert %s"), items[0].Kind()), nil, nil)
+	undo := beginTableUndo(table, i18n.Text("Insert %s", items[0].Kind()), nil, nil)
 	var target, zero T
 	i := table.FirstSelectedRowIndex()
 	if i != -1 {

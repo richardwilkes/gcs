@@ -10,7 +10,6 @@
 package ux
 
 import (
-	"fmt"
 	"strings"
 	"unicode"
 	"unicode/utf8"
@@ -176,7 +175,7 @@ func columnsAnnouncement[T unison.TableRowConstraint[T]](header *unison.TableHea
 	if len(titles) == 0 {
 		return ""
 	}
-	return fmt.Sprintf(i18n.Text("Columns: %s"), strings.Join(titles, i18n.Text(", ")))
+	return i18n.Text("Columns: %s", strings.Join(titles, i18n.Text(", ")))
 }
 
 // columnHeaderTitle returns a column header's title, chosen as unison's unexported axColumnHeaderName names the header

@@ -10,7 +10,6 @@
 package ux
 
 import (
-	"fmt"
 	"io/fs"
 	"strings"
 
@@ -204,7 +203,7 @@ func sheetSettingsTabTitle(owner EntityPanel) string {
 	if owner == nil {
 		return i18n.Text("Default Sheet Settings")
 	}
-	return fmt.Sprintf(i18n.Text("Sheet Settings: %s"), owner.Entity().Profile.Name)
+	return i18n.Text("Sheet Settings: %s", owner.Entity().Profile.Name)
 }
 
 func (d *sheetSettingsDockable) addToStartToolbar(toolbar *unison.Panel) {
@@ -368,7 +367,7 @@ func (d *sheetSettingsDockable) addNumberFormatRow(panel *unison.Panel, title, t
 		d.syncSheet(false)
 	})
 	// Every row's checkbox shows the same title, so each is named for the value it pads.
-	row.pad.Accessibility.Name = fmt.Sprintf(i18n.Text("Pad %s with zeros"), title)
+	row.pad.Accessibility.Name = i18n.Text("Pad %s with zeros", title)
 	row.pad.Tooltip = newWrappedTooltip(i18n.Text(`Show trailing zeros out to the number of decimal places chosen, e.g. "7.50" rather than "7.5" at 2 decimal places. Has no effect when "As Needed" or "0" is chosen.`))
 	return row
 }
@@ -459,7 +458,7 @@ func (d *sheetSettingsDockable) createPaperSizeField(panel *unison.Panel, curren
 		buffer.WriteString(one.Name)
 		buffer.WriteByte('"')
 	}
-	AddHelpToInfoPop(info, wrapTextForTooltip(fmt.Sprintf(i18n.Text(`Enter a standard paper size (e.g., one of %s) or a custom size (e.g., "8.5in x 11in", "210mm x 297mm")`), buffer.String())))
+	AddHelpToInfoPop(info, wrapTextForTooltip(i18n.Text(`Enter a standard paper size (e.g., one of %s) or a custom size (e.g., "8.5in x 11in", "210mm x 297mm")`, buffer.String())))
 	wrapper.AddChild(info)
 	return field
 }

@@ -10,7 +10,6 @@
 package ux
 
 import (
-	"fmt"
 	"strings"
 	"time"
 
@@ -184,7 +183,7 @@ func (a *AttrPanel) rebuild(attrs *gurps.AttributeDefs) {
 				if title == "" {
 					button.Tooltip = newWrappedTooltip(i18n.Text("Show or hide this section"))
 				} else {
-					button.Tooltip = newWrappedTooltip(fmt.Sprintf(i18n.Text("Show or hide %s"), title))
+					button.Tooltip = newWrappedTooltip(i18n.Text("Show or hide %s", title))
 				}
 				button.HideBase = true
 				button.HMargin = 0
@@ -259,7 +258,7 @@ func (a *AttrPanel) rebuild(attrs *gurps.AttributeDefs) {
 						func(v fxp.Int) { attr.Damage = (attr.Maximum() - v).Max(0) }, fxp.Min, attr.Maximum(), true)
 					// The fields of a pool row sit on either side of the word "of", with the pool's name only after
 					// both of them, so each is named outright.
-					currentField.Accessibility.Name = fmt.Sprintf(i18n.Text("Current %s"), def.ResolveFullName())
+					currentField.Accessibility.Name = i18n.Text("Current %s", def.ResolveFullName())
 					a.AddChild(currentField)
 
 					a.AddChild(NewPageLabel(i18n.Text("of")))
@@ -273,7 +272,7 @@ func (a *AttrPanel) rebuild(attrs *gurps.AttributeDefs) {
 								currentField.SetMinMax(currentField.Min(), v)
 								currentField.Sync()
 							}, fxp.Min, fxp.Max, true)
-						field.Accessibility.Name = fmt.Sprintf(i18n.Text("Maximum %s"), def.ResolveFullName())
+						field.Accessibility.Name = i18n.Text("Maximum %s", def.ResolveFullName())
 						maximumField = field
 					} else {
 						maximumField = NewNonEditablePageFieldEndFor(func() string { return attr.Maximum().String() })
@@ -344,7 +343,7 @@ func (a *AttrPanel) createPointsField(attr *gurps.Attribute) unison.Paneler {
 		// Spoken as "20 points", since the brackets are nothing to hear and a bare number does not say what it counts.
 		speakAs(f, spokenPoints(points))
 		if def := attr.AttributeDef(); def != nil {
-			f.Tooltip = newWrappedTooltip(fmt.Sprintf(i18n.Text("Points spent on %s"), def.CombinedName()))
+			f.Tooltip = newWrappedTooltip(i18n.Text("Points spent on %s", def.CombinedName()))
 		}
 	})
 	field.Font = fonts.PageFieldSecondary
@@ -355,9 +354,9 @@ func (a *AttrPanel) createPointsField(attr *gurps.Attribute) unison.Paneler {
 
 func spokenPoints(points fxp.Int) string {
 	if points == fxp.One || points == fxp.NegOne {
-		return fmt.Sprintf(i18n.Text("%s point"), points.String())
+		return i18n.Text("%s point", points.String())
 	}
-	return fmt.Sprintf(i18n.Text("%s points"), points.String())
+	return i18n.Text("%s points", points.String())
 }
 
 // Sync the panel to the current data.

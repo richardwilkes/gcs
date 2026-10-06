@@ -11,7 +11,6 @@ package ux
 
 import (
 	"cmp"
-	"fmt"
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/criteria"
@@ -598,8 +597,8 @@ func rowCriteria(key string) rowCriterion {
 
 // titles returns the titles of adding and removing the criterion.
 func (c *rowCriterion) titles() (add, remove string) {
-	return cmp.Or(c.addTitle, fmt.Sprintf(i18n.Text("Add %s"), c.subject)),
-		cmp.Or(c.removeTitle, fmt.Sprintf(i18n.Text("Remove %s"), c.subject))
+	return cmp.Or(c.addTitle, i18n.Text("Add %s", c.subject)),
+		cmp.Or(c.removeTitle, i18n.Text("Remove %s", c.subject))
 }
 
 // textChip adds the optional text criterion with the key, which is in use while its comparison isn't "is anything".

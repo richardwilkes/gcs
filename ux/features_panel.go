@@ -201,7 +201,7 @@ func (p *featuresPanel) summary() string {
 	replacements := p.replacements()
 	sentences := make([]string, 0, len(*p.features))
 	for _, one := range *p.features {
-		sentences = append(sentences, fmt.Sprintf(i18n.Text("%s."), one.Describe(p.entity, replacements, emphasize)))
+		sentences = append(sentences, i18n.Text("%s.", one.Describe(p.entity, replacements, emphasize)))
 	}
 	return strings.Join(sentences, " ")
 }
@@ -438,7 +438,7 @@ func (p *featuresPanel) editor(f gurps.Feature, path string) *unison.Panel {
 			items = append(items, one.Percentage)
 		}
 		addCentered(fields, compactPopup(&p.sentenceRows, key("reduction"), i18n.Text("Reduction"), items,
-			one.Percentage, func(v fxp.Int) string { return fmt.Sprintf(i18n.Text("by %s%%"), v.String()) },
+			one.Percentage, func(v fxp.Int) string { return i18n.Text("by %s%%", v.String()) },
 			func(v fxp.Int) { one.Percentage = v }))
 	case *gurps.ContainedWeightReduction:
 		title := i18n.Text("Contained Weight Reduction")
@@ -927,8 +927,7 @@ func (p *featuresPanel) selectorOverride(fields, chips *unison.Panel, path strin
 		// Named outright, since the words before the field would otherwise be taken as its name.
 		field.Accessibility.Name = title
 		if len(d.SuggestedStates) != 0 {
-			field.Tooltip = newWrappedTooltip(fmt.Sprintf(i18n.Text("Suggested values: %s"),
-				strings.Join(d.SuggestedStates, ", ")))
+			field.Tooltip = newWrappedTooltip(i18n.Text("Suggested values: %s", strings.Join(d.SuggestedStates, ", ")))
 		}
 		if d.Validate != nil {
 			field.ValidateCallback = func() bool { return d.Validate(field.Text()) }

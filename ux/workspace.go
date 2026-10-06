@@ -10,7 +10,6 @@
 package ux
 
 import (
-	"fmt"
 	"log/slog"
 	"path"
 	"path/filepath"
@@ -781,7 +780,7 @@ func traverseGroup(d unison.Dockable, f func(target GroupedCloser) bool) {
 func SaveDockable(d FileBackedDockable, saver func(filePath string) error, setUnmodified func()) bool {
 	filePath := d.BackingFilePath()
 	if err := saver(filePath); err != nil {
-		Workspace.ErrorHandler(fmt.Sprintf(i18n.Text("Unable to save %s"), xfilepath.BaseName(filePath)), err)
+		Workspace.ErrorHandler(i18n.Text("Unable to save %s", xfilepath.BaseName(filePath)), err)
 		return false
 	}
 	setUnmodified()
@@ -960,7 +959,7 @@ func AttemptSaveForDockable(d unison.Dockable) bool {
 	if !ok {
 		return true
 	}
-	switch unison.YesNoCancelDialog(fmt.Sprintf(i18n.Text("Save changes made to\n%s?"), d.Title()), "") {
+	switch unison.YesNoCancelDialog(i18n.Text("Save changes made to\n%s?", d.Title()), "") {
 	case unison.ModalResponseDiscard:
 	case unison.ModalResponseOK:
 		if !s.save(false) {

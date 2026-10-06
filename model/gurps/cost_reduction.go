@@ -10,7 +10,6 @@
 package gurps
 
 import (
-	"fmt"
 	"hash"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
@@ -54,7 +53,7 @@ func (c *CostReduction) FillWithNameableKeys(_, _ map[string]string) {
 
 // Describe implements Feature. The attribute is named as the entity, which may be nil, defines it.
 func (c *CostReduction) Describe(entity *Entity, _ map[string]string, em func(string) string) string {
-	return describeSwitchable(c.Switchable, fmt.Sprintf(i18n.Text("Reduces the cost of %s by %s"),
+	return describeSwitchable(c.Switchable, i18n.Text("Reduces the cost of %s by %s",
 		em(attributeTitle(entity, c.Attribute)), em(c.Percentage.String()+"%")))
 }
 

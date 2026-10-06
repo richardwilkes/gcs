@@ -11,7 +11,6 @@ package gurps
 
 import (
 	"flag"
-	"fmt"
 
 	"github.com/richardwilkes/gcs/v5/runmode"
 	"github.com/richardwilkes/toolbox/v2/i18n"
@@ -47,7 +46,7 @@ func newSyncRunMode(flagSet *flag.FlagSet) runmode.Mode {
 	if flagSet == nil {
 		flagSet = flag.CommandLine
 	}
-	sync := flagSet.Bool("sync", false, fmt.Sprintf(i18n.Text("Syncs all character sheet (%s), template (%s), and loot (%s) files specified on the command line with their library sources. If a directory is specified, it will be traversed recursively and all files found will be converted. After all files have been processed, GCS will exit"), SheetExt, TemplatesExt, LootExt))
+	sync := flagSet.Bool("sync", false, i18n.Text("Syncs all character sheet (%s), template (%s), and loot (%s) files specified on the command line with their library sources. If a directory is specified, it will be traversed recursively and all files found will be converted. After all files have been processed, GCS will exit", SheetExt, TemplatesExt, LootExt))
 	return runmode.Mode{
 		Name:      "sync",
 		Requested: func() bool { return *sync },

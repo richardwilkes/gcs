@@ -83,7 +83,7 @@ func (r Roll) ShortString() string {
 	case Constant:
 		return i18n.Text("No FR")
 	case FR6, FR9, FR12, FR15:
-		return fmt.Sprintf(i18n.Text("FR%d"), r)
+		return i18n.Text("FR%d", r)
 	default:
 		return ""
 	}

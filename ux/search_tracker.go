@@ -10,7 +10,6 @@
 package ux
 
 import (
-	"fmt"
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
@@ -122,9 +121,9 @@ func (m *matchStepper[T]) updateMatchControls() {
 	case len(m.searchResult) == 0:
 		m.matchesLabel.SetTitle("-")
 	case m.searchIndex < 0:
-		m.matchesLabel.SetTitle(fmt.Sprintf(i18n.Text("- of %d"), len(m.searchResult)))
+		m.matchesLabel.SetTitle(i18n.Text("- of %d", len(m.searchResult)))
 	default:
-		m.matchesLabel.SetTitle(fmt.Sprintf(i18n.Text("%d of %d"), m.searchIndex+1, len(m.searchResult)))
+		m.matchesLabel.SetTitle(i18n.Text("%d of %d", m.searchIndex+1, len(m.searchResult)))
 	}
 	m.matchesLabel.Parent().MarkForLayoutAndRedraw()
 }

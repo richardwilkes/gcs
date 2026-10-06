@@ -10,7 +10,6 @@
 package ux
 
 import (
-	"fmt"
 	"reflect"
 	"slices"
 
@@ -108,7 +107,7 @@ func (p *listFilterPanel) createGroupPanel(depth int, group *gurps.FilterGroup) 
 func (p *listFilterPanel) createConditionPanel(depth int, cond *gurps.FilterCondition) (main, focus unison.Paneler) {
 	if p.fieldIndex(cond.Field) == -1 {
 		return p.createPreservedNodePanel(depth, cond,
-			fmt.Sprintf(i18n.Text("Condition on unknown field %q; it will be preserved, but never matches"), cond.Field))
+			i18n.Text("Condition on unknown field %q; it will be preserved, but never matches", cond.Field))
 	}
 	row := p.beginFilterRow(depth, cond)
 	addNotPopup(row, &cond.Not)
@@ -123,7 +122,7 @@ func (p *listFilterPanel) createConditionPanel(depth int, cond *gurps.FilterCond
 // deliberately.
 func (p *listFilterPanel) createUnknownNodePanel(depth int, node *gurps.UnknownFilterNode) (main, focus unison.Paneler) {
 	return p.createPreservedNodePanel(depth, node,
-		fmt.Sprintf(i18n.Text("Unknown filter node type %q; it will be preserved, but never matches"), node.Kind))
+		i18n.Text("Unknown filter node type %q; it will be preserved, but never matches", node.Kind))
 }
 
 // createPreservedNodePanel creates the row for a node the editor can't represent: its buttons, its and/or label and a

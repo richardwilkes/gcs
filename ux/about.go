@@ -28,7 +28,7 @@ var aboutWnd *unison.Window
 func ShowAbout(_ unison.MenuItem) {
 	if aboutWnd == nil {
 		var err error
-		if aboutWnd, err = unison.NewWindow(fmt.Sprintf(i18n.Text("About %s"), xos.AppName),
+		if aboutWnd, err = unison.NewWindow(i18n.Text("About %s", xos.AppName),
 			unison.NotResizableWindowOption()); err != nil {
 			errs.Log(errs.NewWithCause("unable to create about window", err))
 			return

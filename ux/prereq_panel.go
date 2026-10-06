@@ -10,7 +10,6 @@
 package ux
 
 import (
-	"fmt"
 	"slices"
 	"strconv"
 	"strings"
@@ -219,7 +218,7 @@ func (p *prereqPanel) summary() string {
 	if tree.HasNothingToCheck() {
 		return i18n.Text("No prerequisites.")
 	}
-	return fmt.Sprintf(i18n.Text("%s."), tree.Describe(p.entity, nil, emphasize))
+	return i18n.Text("%s.", tree.Describe(p.entity, nil, emphasize))
 }
 
 // refresh updates the paragraph, the sentences and the status icons from the tree, in place. The tree's scripts run only
@@ -306,7 +305,7 @@ func (p *prereqPanel) status(node gurps.Prereq, checks map[gurps.Prereq]prereqCh
 	// One unmet item reads as a sentence; more are a list.
 	reason := buffer.String()
 	if strings.Count(reason, "\n") == 1 {
-		tip = fmt.Sprintf(i18n.Text("Not met: %s"), strings.TrimPrefix(reason, "\n- "))
+		tip = i18n.Text("Not met: %s", strings.TrimPrefix(reason, "\n- "))
 	} else {
 		tip = i18n.Text("Not met:") + reason
 	}
@@ -314,7 +313,7 @@ func (p *prereqPanel) status(node gurps.Prereq, checks map[gurps.Prereq]prereqCh
 		return gurps.PrereqUnmet, tip, i18n.Text("not met")
 	}
 	if _, isScript := node.(*gurps.ScriptPrereq); isScript {
-		return gurps.PrereqFailed, tip, fmt.Sprintf(i18n.Text("couldn't run: %s"), result.reason)
+		return gurps.PrereqFailed, tip, i18n.Text("couldn't run: %s", result.reason)
 	}
 	return gurps.PrereqFailed, tip, i18n.Text("couldn't be checked")
 }
@@ -393,7 +392,7 @@ func (p *prereqPanel) pathOf(target gurps.Prereq) string {
 func groupName(list *gurps.PrereqList) string {
 	name := groupWord(list.All)
 	if list.WhenTL.Compare != criteria.AnyNumber {
-		name += fmt.Sprintf(i18n.Text(", only when TL %s"), list.WhenTL.AltString())
+		name += i18n.Text(", only when TL %s", list.WhenTL.AltString())
 	}
 	return name
 }
@@ -719,11 +718,11 @@ func (p *prereqPanel) scriptOptions(pr *gurps.ScriptPrereq) *scriptEditorOptions
 			case status == gurps.PrereqMet:
 				return status, i18n.Text("Passed")
 			case status == gurps.PrereqFailed:
-				return status, fmt.Sprintf(i18n.Text("Couldn't run: %s"), reason)
+				return status, i18n.Text("Couldn't run: %s", reason)
 			case reason == "":
 				return status, i18n.Text("Failed")
 			default:
-				return status, fmt.Sprintf(i18n.Text("Failed: %s"), reason)
+				return status, i18n.Text("Failed: %s", reason)
 			}
 		}
 	}

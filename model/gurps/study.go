@@ -10,8 +10,6 @@
 package gurps
 
 import (
-	"fmt"
-
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/study"
 	"github.com/richardwilkes/toolbox/v2/i18n"
@@ -62,7 +60,7 @@ func StudyHoursProgressText(hours fxp.Int, needed study.Level, force bool) strin
 	if needed != study.Standard {
 		studyNeeded = needed.Key()
 	}
-	s := fmt.Sprintf(i18n.Text("Studied %s of %s hours"), hours.Comma(), studyNeeded)
+	s := i18n.Text("Studied %s of %s hours", hours.Comma(), studyNeeded)
 	if force { // Don't add emphasis if forced
 		return s
 	}

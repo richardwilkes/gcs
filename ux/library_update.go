@@ -12,7 +12,6 @@ package ux
 import (
 	"context"
 	"errors"
-	"fmt"
 	"net/http"
 	"path/filepath"
 	"strings"
@@ -29,7 +28,7 @@ import (
 const libraryUpdateTimeout = 30 * time.Minute
 
 func initiateLibraryUpdate(lib *library.Library, rel *library.Release) bool {
-	if unison.QuestionDialog(fmt.Sprintf(i18n.Text("Update %s to %s?"), lib.Data().Title, filterVersion(rel.Version)),
+	if unison.QuestionDialog(i18n.Text("Update %s to %s?", lib.Data().Title, filterVersion(rel.Version)),
 		i18n.Text(`Existing content for this library will be removed and replaced.
 Content in other libraries will not be modified`)) != unison.ModalResponseOK {
 		return false
@@ -134,9 +133,9 @@ func libraryUpdateProgress(label *unison.Label, bar *unison.ProgressBar, title, 
 
 func libraryPhaseTitle(phase library.UpdatePhase, title, version string) string {
 	if phase == library.UpdateInstalling {
-		return fmt.Sprintf(i18n.Text("Installing %s %s…"), title, filterVersion(version))
+		return i18n.Text("Installing %s %s…", title, filterVersion(version))
 	}
-	return fmt.Sprintf(i18n.Text("Downloading %s %s…"), title, filterVersion(version))
+	return i18n.Text("Downloading %s %s…", title, filterVersion(version))
 }
 
 // finishLibraryUpdate refreshes the library's list of available releases and then posts the teardown of the progress

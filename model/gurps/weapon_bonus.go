@@ -321,12 +321,12 @@ func weaponBonusNoun(featureType feature.Type) string {
 // gives. A relative skill level of "at least 0", the default, is left out.
 func (w *WeaponBonus) Describe(_ *Entity, replacements map[string]string, em func(string) string) string {
 	if w.Type == feature.WeaponSwitch {
-		flag := fmt.Sprintf(i18n.Text("%s flag"), em(w.SwitchType.String()))
+		flag := i18n.Text("%s flag", em(w.SwitchType.String()))
 		value := i18n.Text("false")
 		if w.SwitchTypeValue {
 			value = i18n.Text("true")
 		}
-		return describeSwitchable(w.Switchable, fmt.Sprintf(i18n.Text("Sets %s to %s"),
+		return describeSwitchable(w.Switchable, i18n.Text("Sets %s to %s",
 			w.describeWeapons(flag, replacements, em), em(value)))
 	}
 	var amount string
@@ -356,10 +356,10 @@ func (w *WeaponBonus) describeWeapons(noun string, replacements map[string]strin
 	case wsel.ThisWeapon:
 		return describeThisWeapon(noun, w.SpecializationCriteria, replacements, em)
 	case wsel.WithName:
-		return fmt.Sprintf(i18n.Text("the %s of %s"), noun,
+		return i18n.Text("the %s of %s", noun,
 			describeNamedWeapons(w.NameCriteria, w.SpecializationCriteria, w.TagsCriteria, replacements, em))
 	default:
-		text := fmt.Sprintf(i18n.Text("the %s of %s"), noun, describeTarget(i18n.Text("weapons using %s"),
+		text := i18n.Text("the %s of %s", noun, describeTarget(i18n.Text("weapons using %s"),
 			i18n.Text("weapons"), i18n.Text("whose skill name"), w.NameCriteria, replacements, em)) +
 			describeSpecialization(w.SpecializationCriteria, criteria.Text{Compare: criteria.AnyText}, replacements,
 				em) +
@@ -374,7 +374,7 @@ func (w *WeaponBonus) describeWeapons(noun string, replacements map[string]strin
 
 // describeThisWeapon returns the noun as it applies to the weapon a feature belongs to, with the usage it requires.
 func describeThisWeapon(noun string, usage criteria.Text, replacements map[string]string, em func(string) string) string {
-	return fmt.Sprintf(i18n.Text("this weapon's %s"), noun) +
+	return i18n.Text("this weapon's %s", noun) +
 		describeWhose(i18n.Text("when its usage"), usage, replacements, em)
 }
 

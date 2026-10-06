@@ -10,7 +10,6 @@
 package ux
 
 import (
-	"fmt"
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/svg"
@@ -65,9 +64,9 @@ func AddHelpToInfoPop(target unison.Paneler, text string) {
 
 // AddScalingHelpToInfoPop adds the help info about scaling to an InfoPop.
 func AddScalingHelpToInfoPop(target unison.Paneler) {
-	AddHelpToInfoPop(target, fmt.Sprintf(i18n.Text(`
+	AddHelpToInfoPop(target, i18n.Text(`
 Holding down the %s key while using
-the mouse wheel will change the scale.`), mod.Option.String()))
+the mouse wheel will change the scale.`, mod.Option.String()))
 }
 
 // AddKeyBindingInfoToInfoPop adds information about a key binding to an InfoPop.

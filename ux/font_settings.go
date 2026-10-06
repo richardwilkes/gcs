@@ -10,7 +10,6 @@
 package ux
 
 import (
-	"fmt"
 	"io/fs"
 
 	"github.com/richardwilkes/gcs/v5/model/fonts"
@@ -83,7 +82,7 @@ func (d *fontSettingsDockable) createResetField(index int, fp *unison.FontPanel)
 	b := unison.NewSVGButton(svg.Reset)
 	b.Tooltip = newWrappedTooltip(i18n.Text("Reset this font"))
 	b.ClickCallback = func() {
-		if unison.QuestionDialog(fmt.Sprintf(i18n.Text("Are you sure you want to reset %s?"),
+		if unison.QuestionDialog(i18n.Text("Are you sure you want to reset %s?",
 			fonts.CurrentFonts()[index].Title), "") == unison.ModalResponseOK {
 			for _, v := range fonts.FactoryFonts() {
 				if v.ID != fonts.CurrentFonts()[index].ID {

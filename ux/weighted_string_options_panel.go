@@ -10,7 +10,6 @@
 package ux
 
 import (
-	"fmt"
 	"slices"
 	"strings"
 
@@ -169,7 +168,7 @@ func (p *weightedStringOptionsPanel) removeSelected() {
 
 // rowSelectionTooltip explains how rows are selected, for the parts of a row that are not a field or a button.
 func rowSelectionTooltip() string {
-	return fmt.Sprintf(i18n.Text("Click to select this row, shift-click to select every row from the last one clicked to this one, or %s-click to add this row to the selection or take it out. The selected rows are removed together by the button beside the list's title."),
+	return i18n.Text("Click to select this row, shift-click to select every row from the last one clicked to this one, or %s-click to add this row to the selection or take it out. The selected rows are removed together by the button beside the list's title.",
 		strings.TrimSuffix(mod.OSMenuCommand().String(), "+"))
 }
 

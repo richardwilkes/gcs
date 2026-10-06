@@ -855,8 +855,7 @@ func (s *Spell) Rituals() string {
 		adj := (level - fxp.Fifteen).Div(fxp.Five).AsInteger[int]()
 		class := strings.ToLower(s.ClassWithReplacements())
 		if !strings.Contains(class, "missile") {
-			addPartToBuffer(&buffer, i18n.Text("Time"),
-				fmt.Sprintf(i18n.Text("x1/%d, rounded up (min 1 second)"), 1<<adj))
+			addPartToBuffer(&buffer, i18n.Text("Time"), i18n.Text("x1/%d, rounded up (min 1 second)", 1<<adj))
 		}
 		if !strings.Contains(class, "blocking") {
 			addPartToBuffer(&buffer, i18n.Text("Cost"), fmt.Sprintf("-%d", adj+1))

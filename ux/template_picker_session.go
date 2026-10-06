@@ -524,7 +524,7 @@ func (s *pickerSession[T]) detail(row T) pickerText {
 	case pickerError:
 		t.tip, t.state = s.ruleMiss(row), state
 	case pickerWarning:
-		t.tip = fmt.Sprintf(i18n.Text("Something picked below needs attention: %s."), rowNames(s.troubled(row)))
+		t.tip = i18n.Text("Something picked below needs attention: %s.", rowNames(s.troubled(row)))
 		t.state = state
 	default:
 	}
@@ -537,13 +537,13 @@ func (s *pickerSession[T]) ruleMiss(container T) string {
 	total := s.total(container, tp.Type)
 	target := pickerTarget(container, pickerMeasureText[T])
 	if tp.Qualifier.Compare.EnsureValid() == criteria.NotEqualsNumber {
-		target = fmt.Sprintf(i18n.Text("anything but %s"),
+		target = i18n.Text("anything but %s",
 			pickerMeasureText(container, tp.Type, gurps.NumericRangeOf(tp.Qualifier.Qualifier)))
 	}
 	if tp.Type == picker.Count {
-		return fmt.Sprintf(i18n.Text("%s picked, but this asks for %s."), total.Comma(), target)
+		return i18n.Text("%s picked, but this asks for %s.", total.Comma(), target)
 	}
-	return fmt.Sprintf(i18n.Text("The picks come to %s, but this asks for %s."),
+	return i18n.Text("The picks come to %s, but this asks for %s.",
 		pickerMeasureText(container, tp.Type, total), target)
 }
 
@@ -571,9 +571,9 @@ func (s *pickerSession[T]) cost(row T, kind picker.Type) pickerText {
 		}
 		switch {
 		case above:
-			t.tip, t.state = fmt.Sprintf(i18n.Text("Over: expected %s."), text), pickerError
+			t.tip, t.state = i18n.Text("Over: expected %s.", text), pickerError
 		case below:
-			t.tip, t.state = fmt.Sprintf(i18n.Text("Under: expected %s."), text), pickerError
+			t.tip, t.state = i18n.Text("Under: expected %s.", text), pickerError
 		default:
 		}
 	}
@@ -610,7 +610,7 @@ func (s *pickerSession[T]) hint(container T) pickerText {
 		}
 	}
 	if troubled := s.troubled(container); len(troubled) != 0 {
-		parts = append(parts, fmt.Sprintf(i18n.Text("Needs attention below: %s."), rowNames(troubled)))
+		parts = append(parts, i18n.Text("Needs attention below: %s.", rowNames(troubled)))
 	}
 	open := len(s.unresolved(container))
 	switch {
@@ -619,7 +619,7 @@ func (s *pickerSession[T]) hint(container T) pickerText {
 	case open == 1:
 		parts = append(parts, i18n.Text("1 pick still depends on choices below. Choose it now to fix its cost, or Override to answer it when the template is applied."))
 	case open > 1:
-		parts = append(parts, fmt.Sprintf(i18n.Text("%d picks still depend on choices below. Choose them now to fix the cost, or Override to answer them when the template is applied."), open))
+		parts = append(parts, i18n.Text("%d picks still depend on choices below. Choose them now to fix the cost, or Override to answer them when the template is applied.", open))
 	case t.state == pickerOpen:
 		parts = append(parts, i18n.Text("Could still meet the rule."))
 	default:

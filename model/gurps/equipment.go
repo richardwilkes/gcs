@@ -499,9 +499,9 @@ func equipmentTotalsTitle(title string, list []*Equipment, settings *SheetSettin
 	shownValue := FormatValueRange(value, settings.FormatEquipmentValue)
 	exactWeight := FormatWeightRange(weight, settings.DefaultWeightUnits.Format)
 	exactValue := FormatValueRange(value, fxp.Int.Comma)
-	fullTitle = fmt.Sprintf(i18n.Text("%s (%s; $%s)"), title, shownWeight, shownValue)
+	fullTitle = i18n.Text("%s (%s; $%s)", title, shownWeight, shownValue)
 	if shownWeight != exactWeight || shownValue != exactValue {
-		exactTotals = fmt.Sprintf(i18n.Text("%s; $%s"), exactWeight, exactValue)
+		exactTotals = i18n.Text("%s; $%s", exactWeight, exactValue)
 	}
 	return fullTitle, exactTotals
 }

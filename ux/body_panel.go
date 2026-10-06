@@ -208,7 +208,7 @@ func (p *BodyPanel) addTable(bodyType *gurps.Body, depth int) {
 		dr := NewNonEditablePageFieldCenter(func(f *NonEditablePageField) {
 			var tooltip xbytes.InsertBuffer
 			f.SetTitleIfChanged(location.DisplayDR(p.entity, &tooltip))
-			tip := fmt.Sprintf(i18n.Text("The DR covering the **%s** hit location"), location.TableName)
+			tip := i18n.Text("The DR covering the **%s** hit location", location.TableName)
 			if detail := tooltip.String(); detail != "" {
 				tip += ":" + detail
 			}
@@ -221,12 +221,12 @@ func (p *BodyPanel) addTable(bodyType *gurps.Body, depth int) {
 			p.addSeparator()
 		}
 
-		title := fmt.Sprintf(i18n.Text("Notes for the **%s** hit location"), location.TableName)
+		title := i18n.Text("Notes for the **%s** hit location", location.TableName)
 		notesField := NewStringPageField(p.targetMgr, bodyLocationRefKey(indexes), title,
 			func() string { return location.Notes }, func(value string) { location.Notes = value })
 		notesField.Tooltip = newMarkdownTooltip(title, "")
 		// The undo title, which the field would otherwise be named after, carries markdown for the tooltip.
-		notesField.Accessibility.Name = fmt.Sprintf(i18n.Text("Notes for the %s hit location"), location.TableName)
+		notesField.Accessibility.Name = i18n.Text("Notes for the %s hit location", location.TableName)
 		// The notes column takes up whatever width the block has beyond what the other columns need, so that a block
 		// made wider than its content fills out rather than leaving its notes fields at their natural width.
 		notesField.SetLayoutData(&unison.FlexLayoutData{

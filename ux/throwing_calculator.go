@@ -10,8 +10,6 @@
 package ux
 
 import (
-	"fmt"
-
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/toolbox/v2/i18n"
@@ -243,7 +241,7 @@ func (t *throwingCalculator) updateResults() {
 	var note string
 	if t.extraEffortPenalty < 0 {
 		distance, damage = t.computeThrow(0)
-		note = fmt.Sprintf(i18n.Text("The extra effort takes a Will roll, or a Will-based Throwing roll if that is better, at %d for the +%d%% ST shown, and costs 1 FP whether it succeeds or fails. A failure leaves the throw as it would be without it: %s for %s. A critical failure costs 1 HP of injury instead and the throw fails, and on a natural 18 a HT roll is needed as well to avoid a temporary disadvantage (B357)."),
+		note = i18n.Text("The extra effort takes a Will roll, or a Will-based Throwing roll if that is better, at %d for the +%d%% ST shown, and costs 1 FP whether it succeeds or fails. A failure leaves the throw as it would be without it: %s for %s. A critical failure costs 1 HP of injury instead and the throw fails, and on a natural 18 a HT roll is needed as well to avoid a temporary disadvantage (B357).",
 			t.extraEffortPenalty, -5*t.extraEffortPenalty, distance, damage)
 	} else {
 		note = i18n.Text("Extra effort adds 5% to the ST the distance and damage are worked out from per -1 taken on a Will roll, or a Will-based Throwing roll if that is better, for 1 FP per attempt (B357).")

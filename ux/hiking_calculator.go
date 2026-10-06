@@ -754,7 +754,7 @@ func (h *hikingCalculator) updateResults() {
 	day := h.computeDay(h.hikingExtraEffortPenalty)
 	units := h.unitsFor(day.distance)
 	h.hikingResult.SetTitle(fmt.Sprintf("%s %s", day.distance.Round().Comma(), units))
-	h.hikingDistanceLabel.SetTitle(fmt.Sprintf(i18n.Text("%s to travel"), units))
+	h.hikingDistanceLabel.SetTitle(i18n.Text("%s to travel", units))
 
 	if timeInDays, ok := hikingTimeInDays(h.hikingDistance, day.distance); !ok {
 		// No ground is covered at 0 Move or with no hours of travel, so the travel time is undefined.
@@ -762,7 +762,7 @@ func (h *hikingCalculator) updateResults() {
 	} else if timeInDays == fxp.One {
 		h.hikingTimeLabel.SetTitle(i18n.Text("1 day"))
 	} else {
-		h.hikingTimeLabel.SetTitle(fmt.Sprintf(i18n.Text("%s days"), timeInDays))
+		h.hikingTimeLabel.SetTitle(i18n.Text("%s days", timeInDays))
 	}
 
 	h.updateFatigue(day)
@@ -776,12 +776,12 @@ func (h *hikingCalculator) updateResults() {
 // brings with it.
 func (h *hikingCalculator) updateFatigue(day hikingDay) {
 	perHour := h.fpPerHour().Comma()
-	label := fmt.Sprintf(i18n.Text("lost by the end of the day (%s per hour)"), perHour)
+	label := i18n.Text("lost by the end of the day (%s per hour)", perHour)
 	if h.extraEffort() {
-		label = fmt.Sprintf(i18n.Text("lost by the end of the day (%s per hour, plus %d for extra effort)"), perHour,
+		label = i18n.Text("lost by the end of the day (%s per hour, plus %d for extra effort)", perHour,
 			hikingExtraEffortFP)
 	}
-	h.fpResult.SetTitle(fmt.Sprintf(i18n.Text("%s FP"), day.fpCost.Comma()))
+	h.fpResult.SetTitle(i18n.Text("%s FP", day.fpCost.Comma()))
 	h.fpLabel.SetTitle(label)
 
 	notes := []string{
@@ -791,15 +791,15 @@ func (h *hikingCalculator) updateFatigue(day hikingDay) {
 		notes = append(notes, i18n.Text("Being Very Fit, the hiker loses FP at half that rate (B55)."))
 	}
 	if day.tiredAfter > 0 {
-		notes = append(notes, fmt.Sprintf(i18n.Text("With %s FP, the hiker has fewer than a third left after %s hours; Move, Dodge and ST are halved from then on, and the hours below allow for it (B426)."),
+		notes = append(notes, i18n.Text("With %s FP, the hiker has fewer than a third left after %s hours; Move, Dodge and ST are halved from then on, and the hours below allow for it (B426).",
 			h.fp.Comma(), day.tiredAfter.Comma()))
 	}
 	if day.outAfter > 0 {
-		notes = append(notes, fmt.Sprintf(i18n.Text("The hiker is out of FP after %s hours; going on takes a Will roll, which the hours below assume is made, and each further FP lost also costs 1 HP (B426)."),
+		notes = append(notes, i18n.Text("The hiker is out of FP after %s hours; going on takes a Will roll, which the hours below assume is made, and each further FP lost also costs 1 HP (B426).",
 			day.outAfter.Comma()))
 	}
 	if day.unconsciousAfter > 0 {
-		notes = append(notes, fmt.Sprintf(i18n.Text("At -%s FP the hiker falls unconscious, after %s hours, and the day ends there; any further FP cost comes off HP instead (B426)."),
+		notes = append(notes, i18n.Text("At -%s FP the hiker falls unconscious, after %s hours, and the day ends there; any further FP cost comes off HP instead (B426).",
 			h.fp.Comma(), day.unconsciousAfter.Comma()))
 	}
 	if h.restAfter() > 0 {
@@ -807,11 +807,11 @@ func (h *hikingCalculator) updateFatigue(day hikingDay) {
 	}
 	switch {
 	case h.extraEffort():
-		notes = append(notes, fmt.Sprintf(i18n.Text("The extra effort makes the Hiking roll a single Will-based Hiking roll at %d for the +%d%% beyond the +20%% a successful roll gives, and adds %d FP to the loss when the hiker stops. A failure leaves the day at the +20%% alone: %s. A critical failure turns the whole loss, %s FP, into HP of injury at the end of the day, and on a natural 18 a HT roll is needed as well to avoid a temporary disadvantage (B357)."),
+		notes = append(notes, i18n.Text("The extra effort makes the Hiking roll a single Will-based Hiking roll at %d for the +%d%% beyond the +20%% a successful roll gives, and adds %d FP to the loss when the hiker stops. A failure leaves the day at the +20%% alone: %s. A critical failure turns the whole loss, %s FP, into HP of injury at the end of the day, and on a natural 18 a HT roll is needed as well to avoid a temporary disadvantage (B357).",
 			h.hikingExtraEffortPenalty, -5*h.hikingExtraEffortPenalty, hikingExtraEffortFP, h.distanceText(0),
 			day.fpCost.Comma()))
 	case h.successfulHikingRoll:
-		notes = append(notes, fmt.Sprintf(i18n.Text("Extra effort adds 5%% to the distance per -1 taken on the Hiking roll, made as a single Will-based Hiking roll, and %d FP to the loss when the hiker stops (B357)."),
+		notes = append(notes, i18n.Text("Extra effort adds 5%% to the distance per -1 taken on the Hiking roll, made as a single Will-based Hiking roll, and %d FP to the loss when the hiker stops (B357).",
 			hikingExtraEffortFP))
 	default:
 		notes = append(notes, i18n.Text("Extra effort needs the Hiking roll, which it makes a single Will-based Hiking roll at -1 per 5% of distance beyond the +20% a success gives (B357)."))
@@ -832,21 +832,20 @@ func (h *hikingCalculator) restNote(day hikingDay) string {
 	spell := h.recoverEnergy[h.recoverEnergyIndex].minutesPerFP
 	switch {
 	case spell > 0 && spell <= h.restMinutesPerFP():
-		sources = append(sources, fmt.Sprintf(i18n.Text("1 FP per %d minutes with Recover Energy (B248)"),
-			h.restMinutesPerFP()))
+		sources = append(sources, i18n.Text("1 FP per %d minutes with Recover Energy (B248)", h.restMinutesPerFP()))
 	case h.fitness[h.fitnessIndex].fit:
-		sources = append(sources, fmt.Sprintf(i18n.Text("1 FP per %d minutes, twice the usual rate, for being fit (B55)"),
+		sources = append(sources, i18n.Text("1 FP per %d minutes, twice the usual rate, for being fit (B55)",
 			h.restMinutesPerFP()))
 	default:
-		sources = append(sources, fmt.Sprintf(i18n.Text("1 FP per %d minutes of quiet rest"), h.restMinutesPerFP()))
+		sources = append(sources, i18n.Text("1 FP per %d minutes of quiet rest", h.restMinutesPerFP()))
 	}
 	if h.restMeal {
 		sources = append(sources, i18n.Text("1 for a decent meal"))
 	}
 	if h.restExtraFP > 0 {
-		sources = append(sources, fmt.Sprintf(i18n.Text("%d from Lend Energy, potions, etc."), h.restExtraFP))
+		sources = append(sources, i18n.Text("%d from Lend Energy, potions, etc.", h.restExtraFP))
 	}
-	return fmt.Sprintf(i18n.Text("The rest of %d minutes after %s hours recovers %s FP: %s, and never more than was lost (B427)."),
+	return i18n.Text("The rest of %d minutes after %s hours recovers %s FP: %s, and never more than was lost (B427).",
 		h.restMinutes, h.restAfter().Comma(), day.restRecovered.Comma(), strings.Join(sources, ", "))
 }
 

@@ -10,7 +10,6 @@
 package ux
 
 import (
-	"fmt"
 	"slices"
 	"strings"
 
@@ -175,7 +174,7 @@ func showModifiersDialog[T gurps.Node[T]](info *modifierPromptInfo, modifiers []
 	}
 	header := i18n.Text("Select Modifiers for:")
 	if info.steps > 1 {
-		header = fmt.Sprintf(i18n.Text("Select Modifiers (%d of %d) for:"), info.step, info.steps)
+		header = i18n.Text("Select Modifiers (%d of %d) for:", info.step, info.steps)
 	}
 	name, maxLen := info.name, maxRowNameLength
 	if len(info.locked) != 0 {
@@ -189,7 +188,7 @@ func showModifiersDialog[T gurps.Node[T]](info *modifierPromptInfo, modifiers []
 	buttons := []*unison.DialogButtonInfo{unison.NewCancelButtonInfo(), unison.NewOKButtonInfo()}
 	if early != nil {
 		if n := selection.mandatoryCount(); n != 0 {
-			text := fmt.Sprintf(i18n.Text("%d choices to make"), n)
+			text := i18n.Text("%d choices to make", n)
 			if n == 1 {
 				text = i18n.Text("1 choice to make")
 			}

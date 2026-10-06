@@ -12,7 +12,6 @@ package gurps
 import (
 	"encoding/json/jsontext"
 	"encoding/json/v2"
-	"fmt"
 	"hash"
 	"io/fs"
 	"slices"
@@ -345,7 +344,7 @@ func (n *NameGenerator) createNamerAt(where string) error {
 			if one == nil {
 				continue
 			}
-			childWhere := fmt.Sprintf(i18n.Text("compound entry #%d"), i+1)
+			childWhere := i18n.Text("compound entry #%d", i+1)
 			if where != "" {
 				childWhere = where + ", " + childWhere
 			}

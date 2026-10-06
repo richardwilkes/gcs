@@ -101,7 +101,7 @@ func describeSwitchable(switchable bool, description string) string {
 func describeTarget(one, many, whose string, t criteria.Text, replacements map[string]string, em func(string) string) string {
 	switch {
 	case t.Compare == criteria.AnyText:
-		return fmt.Sprintf(i18n.Text("all %s"), many)
+		return i18n.Text("all %s", many)
 	case t.Compare == criteria.IsText && t.Qualifier != "":
 		return fmt.Sprintf(one, em(nameable.Apply(t.Qualifier, replacements)))
 	default:

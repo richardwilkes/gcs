@@ -10,7 +10,6 @@
 package gurps
 
 import (
-	"fmt"
 	"hash"
 
 	"github.com/richardwilkes/gcs/v5/model/criteria"
@@ -105,7 +104,7 @@ func (p *EquippedEquipmentPrereq) Describe(_ *Entity, replacements map[string]st
 	var text string
 	switch {
 	case p.NameCriteria.Compare == criteria.IsText && p.NameCriteria.Qualifier != "":
-		text = fmt.Sprintf(i18n.Text("Has %s equipped"), em(nameable.Apply(p.NameCriteria.Qualifier, replacements)))
+		text = i18n.Text("Has %s equipped", em(nameable.Apply(p.NameCriteria.Qualifier, replacements)))
 	case p.NameCriteria.Compare != criteria.AnyText:
 		text = i18n.Text("Has equipped equipment whose name ") + describeText(p.NameCriteria, replacements, em)
 	case tags:

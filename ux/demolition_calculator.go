@@ -10,7 +10,6 @@
 package ux
 
 import (
-	"fmt"
 	"slices"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
@@ -65,7 +64,7 @@ func newExplosiveChoices() []explosiveChoice {
 	choices := make([]explosiveChoice, 0, len(gurps.ExplosiveTypes)+1)
 	for _, one := range gurps.ExplosiveTypes {
 		choices = append(choices, explosiveChoice{
-			name:  fmt.Sprintf(i18n.Text("TL%d %s (REF %s)"), one.TL, one.Name, one.REF.Comma()),
+			name:  i18n.Text("TL%d %s (REF %s)", one.TL, one.Name, one.REF.Comma()),
 			title: one.Name,
 			ref:   one.REF,
 		})
@@ -207,7 +206,7 @@ func (d *demolitionCalculator) updateResults() {
 	if explosive.custom {
 		ref = d.customREF
 	}
-	d.explosiveWeightLabel.SetTitle(fmt.Sprintf(i18n.Text("%s:"), explosive.title))
+	d.explosiveWeightLabel.SetTitle(i18n.Text("%s:", explosive.title))
 	if d.modeIndex == explosiveForBlastMode {
 		n := fxp.FromInteger(d.blastCount)
 		d.damageResult.SetTitle(blastDamageText(n))
@@ -228,7 +227,7 @@ func blastDamageText(n fxp.Int) string {
 		return gurps.FormatDice(dice.Dice{Count: 6, Sides: 6, Multiplier: n.AsInteger[int]()},
 			gurps.SheetSettingsFor(nil).UseModifyingDicePlusAdds) + " " + demolitionDamageType
 	}
-	return fmt.Sprintf(i18n.Text("6dx%s (about %dd) %s"), n.Mul(fxp.Hundred).Round().Div(fxp.Hundred).Comma(),
+	return i18n.Text("6dx%s (about %dd) %s", n.Mul(fxp.Hundred).Round().Div(fxp.Hundred).Comma(),
 		n.Mul(fxp.Six).Round().AsInteger[int](), demolitionDamageType)
 }
 

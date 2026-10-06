@@ -10,7 +10,6 @@
 package ux
 
 import (
-	"fmt"
 	"slices"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
@@ -311,7 +310,7 @@ func applyDrop[T gurps.Node[T]](data *unison.TableDragData[*Node[T]], table *uni
 	}
 	op := promptOperation{
 		name:        i18n.Text("Drag"),
-		description: fmt.Sprintf(i18n.Text("Dropping %s into %s"), shortNames(describeRows(part.rows), dockableTitle(table))...),
+		description: i18n.Text("Dropping %s into %s", shortNames(describeRows(part.rows), dockableTitle(table))...),
 	}
 	return applyTransfer(table, newApplyParts(part), applyOptionsFor(data.Table, table), op, i18n.Text("Drag"))
 }

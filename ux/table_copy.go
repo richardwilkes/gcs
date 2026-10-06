@@ -10,8 +10,6 @@
 package ux
 
 import (
-	"fmt"
-
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/unison"
@@ -68,13 +66,13 @@ func copySelectionTo[T gurps.Node[T], D copyDestination](table *unison.Table[*No
 	what := describeRows(rows)
 	destinations = promptForDestinations(promptOperation{
 		name:        i18n.Text("Copy"),
-		description: fmt.Sprintf(i18n.Text("Copying %s"), shortNames(what)...),
+		description: i18n.Text("Copying %s", shortNames(what)...),
 	}, destinations)
 	if len(destinations) == 0 {
 		return
 	}
 	key := blockKeyForRow(sel[0].Data())
-	editName := fmt.Sprintf(i18n.Text("Insert %s"), sel[0].Data().Kind())
+	editName := i18n.Text("Insert %s", sel[0].Data().Kind())
 	for _, d := range destinations {
 		// The assertion fails for a key that isn't a block key of this destination, since its list then comes back as
 		// an untyped nil; a destination that hasn't built the list yet yields a typed nil, which the assertion lets
@@ -85,7 +83,7 @@ func copySelectionTo[T gurps.Node[T], D copyDestination](table *unison.Table[*No
 		}
 		op := promptOperation{
 			name:        i18n.Text("Copy"),
-			description: fmt.Sprintf(i18n.Text("Copying %s to %s"), shortNames(what, d.Title())...),
+			description: i18n.Text("Copying %s to %s", shortNames(what, d.Title())...),
 		}
 		applyTransfer(target.Table, newApplyParts(newAppendPart(target.Table, sel)),
 			applyOptionsFor(table, target.Table), op, editName)

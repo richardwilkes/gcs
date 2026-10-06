@@ -73,7 +73,7 @@ func attributeSettingsTabTitle(owner EntityPanel) string {
 	if owner == nil {
 		return i18n.Text("Default Attributes")
 	}
-	return fmt.Sprintf(i18n.Text("Attributes: %s"), owner.Entity().Profile.Name)
+	return i18n.Text("Attributes: %s", owner.Entity().Profile.Name)
 }
 
 func (d *attributeSettingsDockable) CloseWithGroup(other unison.Paneler) bool {
