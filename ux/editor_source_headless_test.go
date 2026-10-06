@@ -914,3 +914,75 @@ func TestEditorSyncKeepsTheSelectionOfTheFocusedList(t *testing.T) {
 	c.True(replaced, "which is the library's weapon in place of the one that was selected")
 	screen.Click(screen.PanelCenter(e.cancelButton))
 }
+
+// TestEditorSyncKeepsSectionsAsTheyWere verifies that a sync shows the sections of rows as they were before it, each
+// collapsed or expanded as the user left it rather than as a new section starts out, with the same row open, so that
+// the field in that row that held the focus gets it back.
+func TestEditorSyncKeepsSectionsAsTheyWere(t *testing.T) {
+	c := check.New(t)
+	screen, wnd := startHeadlessWorkspace(t, c)
+	sheet, ok := openedByAction(t, screen, newCharacterSheetAction).(*Sheet)
+	if !ok {
+		t.Fatal("New Character Sheet must open a character sheet")
+	}
+	// Prerequisites, so that their section starts out collapsed, and no features, so that theirs starts out expanded.
+	e, _ := newEditedLibraryTrait(t, c, screen, sheet, func(lib *gurps.Trait) {
+		trait := gurps.NewTraitPrereq()
+		trait.NameCriteria.Qualifier = "Magery"
+		lib.Prereq = gurps.NewPrereqList()
+		lib.Prereq.Prereqs = gurps.Prereqs{trait}
+		lib.Prereq = lib.Prereq.CloneAsPrereqList(nil)
+	}, nil)
+	sections := func() (prereqs *prereqPanel, features *featuresPanel) {
+		if panels := panelsOfType[*prereqPanel](e.content); len(panels) == 1 {
+			prereqs = panels[0]
+		}
+		if panels := panelsOfType[*featuresPanel](e.content); len(panels) == 1 {
+			features = panels[0]
+		}
+		return prereqs, features
+	}
+	var oldPrereqs *prereqPanel
+	var oldFeatures *featuresPanel
+	screen.Do(func() { oldPrereqs, oldFeatures = sections() })
+	if oldPrereqs == nil || oldFeatures == nil {
+		t.Fatal("the editor must have a prerequisites section and a features section")
+	}
+	screen.Do(func() {
+		c.True(oldPrereqs.collapse.collapsed, "precondition: the prerequisites start out collapsed")
+		c.False(oldFeatures.collapse.collapsed, "precondition: the features start out expanded")
+		oldPrereqs.collapse.toggle()
+		oldFeatures.collapse.toggle()
+	})
+	screen.Do(func() { oldPrereqs.toggle("r.0") })
+	var field *unison.Panel
+	screen.Do(func() {
+		if field = oldPrereqs.FindRefKey("r.0:name"); field != nil {
+			field.RequestFocus()
+		}
+	})
+	if field == nil {
+		t.Fatal("the open prerequisite must have a name field")
+	}
+	var focused bool
+	screen.Do(func() { focused = wnd.CurrentFocus() == field })
+	c.True(focused, "precondition: the prerequisite's name field holds the focus")
+
+	chooseSyncWithSource(t, screen, wnd, e)
+	screen.Do(func() {
+		c.Equal("Claws", e.editorData.Name, "the trait is synced")
+		prereqs, features := sections()
+		if prereqs == nil || features == nil || prereqs == oldPrereqs || features == oldFeatures {
+			t.Error("the sync must rebuild both sections")
+			return
+		}
+		c.False(prereqs.collapse.collapsed, "the prerequisites stay expanded")
+		c.Equal("r.0", prereqs.open, "with the same row open")
+		rebuilt := prereqs.FindRefKey("r.0:name")
+		c.True(rebuilt != nil && rebuilt != field && wnd.CurrentFocus() == rebuilt,
+			"and the focus on its rebuilt name field")
+		c.True(features.collapse.collapsed, "the features stay collapsed")
+		c.NotNil(features.FindRefKey(sectionSummaryKey), "showing their paragraph")
+	})
+	screen.Click(screen.PanelCenter(e.cancelButton))
+}

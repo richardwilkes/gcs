@@ -39,6 +39,9 @@ const (
 	keyFirst = ":first"
 )
 
+// sectionSummaryKey is the reference key of the paragraph shown in place of the rows while the panel is collapsed.
+const sectionSummaryKey = "summary"
+
 // Where a dragged row goes in relation to what it is dropped on.
 const (
 	dropBefore = iota
@@ -69,6 +72,8 @@ type sentenceRows[T any] struct {
 	unison.Panel
 	targetMgr *TargetMgr
 	dragKey   *uti.DataType
+	// collapse is the title bar that collapses the panel to a paragraph, once initCollapse has set it up.
+	collapse *sectionToggle
 	// spotAt returns the panel a row dragged to a point would be dropped on, or nil where it can't go, and where it would
 	// go in relation to it. While a row is dragged over the panel, dropTarget and dropWhere hold what spotAt last
 	// returned.
@@ -107,13 +112,70 @@ func (p *sentenceRows[T]) initDrop(spotAt func(where geom.Point, data any) (*uni
 	p.DrawOverCallback = p.drawDrop
 }
 
-// keyDown has Escape close the open row. Escape within the panel never reaches the editor, where it would discard the
-// changes.
+// initCollapse lets the panel be collapsed to a paragraph by clicking the title its border draws, starting out collapsed
+// or not as asked. The panel's fill calls addTitleBar first.
+func (p *sentenceRows[T]) initCollapse(border *TitledBorder, collapsed bool) {
+	p.collapse = newSectionToggle(p, border, collapsed, p.collapseChanged)
+}
+
+// addTitleBar adds the title bar and, while the panel is collapsed, the paragraph of text shown in place of the rows,
+// which expands the panel again when clicked. It returns the paragraph, or nil while the panel is expanded, when the
+// caller goes on to add the rows.
+func (p *sentenceRows[T]) addTitleBar(text func() string) *sentenceButton {
+	p.AddChild(p.collapse)
+	if !p.collapse.collapsed {
+		return nil
+	}
+	paragraph := newSentenceButton(text(), p.collapse.toggle)
+	paragraph.RefKey = sectionSummaryKey
+	paragraph.SetLayoutData(&unison.FlexLayoutData{HAlign: align.Fill, HGrab: true})
+	p.AddChild(paragraph)
+	return paragraph
+}
+
+// rowsView is how a panel of sentence rows is shown: whether it is collapsed, and which row is open.
+type rowsView struct {
+	open      string
+	collapsed bool
+}
+
+// view returns how the panel is shown, so that setView can show the panel that replaces it the same way.
+func (p *sentenceRows[T]) view() rowsView {
+	return rowsView{open: p.open, collapsed: p.collapse != nil && p.collapse.collapsed}
+}
+
+// setView shows the panel as view says, filling it again at once when that changes anything, so that what held the
+// focus can be found in it before anything else happens. The open row closes if there is no longer one at its path.
+func (p *sentenceRows[T]) setView(view rowsView) {
+	if view == p.view() {
+		return
+	}
+	p.open = view.open
+	if p.collapse != nil {
+		p.collapse.collapsed = view.collapsed
+	}
+	p.RemoveAllChildren()
+	p.fill()
+}
+
+// collapseChanged rebuilds the panel once it has been collapsed or expanded. That is no edit, so it isn't undone and
+// doesn't mark the editor modified, and the open row stays open for when the panel expands. Collapsing hands the focus
+// from what it hides to the title bar.
+func (p *sentenceRows[T]) collapseChanged() {
+	var focus string
+	if p.collapse.collapsed && p.targetMgr.CurrentFocusRef() != nil {
+		focus = sectionToggleKey
+	}
+	p.rebuild(focus)
+}
+
+// keyDown has Escape close the open row, leaving it alone while the panel is collapsed. Escape within the panel never
+// reaches the editor, where it would discard the changes.
 func (p *sentenceRows[T]) keyDown(keyCode unison.KeyCode, mods mod.Modifiers, _ bool) bool {
 	if keyCode != unison.KeyEscape || !noModifiersDown(mods) {
 		return false
 	}
-	if p.open != "" {
+	if p.open != "" && (p.collapse == nil || !p.collapse.collapsed) {
 		p.toggle(p.open)
 	}
 	return true
