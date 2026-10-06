@@ -10,6 +10,9 @@
 package gurps
 
 import (
+	"slices"
+	"strings"
+
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 )
@@ -73,9 +76,17 @@ func NewTextFilterField[T Node[T]](key, title string, f func(T) string) *FilterF
 	return &FilterField[T]{Key: key, Title: title, Kind: FilterFieldText, Text: f}
 }
 
-// NewListFilterField creates a field holding a list of text values.
+// NewListFilterField creates a field holding a list of text values. Its accessor leaves out the values f returns that
+// are empty or only space, so they never match, and a list of nothing else holds nothing.
 func NewListFilterField[T Node[T]](key, title string, f func(T) []string) *FilterField[T] {
-	return &FilterField[T]{Key: key, Title: title, Kind: FilterFieldList, List: f}
+	isBlank := func(value string) bool { return strings.TrimSpace(value) == "" }
+	return &FilterField[T]{Key: key, Title: title, Kind: FilterFieldList, List: func(node T) []string {
+		values := f(node)
+		if !slices.ContainsFunc(values, isBlank) {
+			return values
+		}
+		return slices.DeleteFunc(slices.Clone(values), isBlank)
+	}}
 }
 
 // NewNumberFilterField creates a field holding a number.

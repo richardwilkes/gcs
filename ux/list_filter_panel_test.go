@@ -192,8 +192,8 @@ func TestListFilterPanelRows(t *testing.T) {
 	})
 }
 
-// TestListFilterPanelListSentences checks the sentences of list conditions that accept anything or ask for an empty
-// list, and of a value with space around it, which is quoted so that the space shows.
+// TestListFilterPanelListSentences checks the sentences of list conditions that accept anything or compare with an
+// empty value, and of a value with space around it, which is quoted so that the space shows.
 func TestListFilterPanelListSentences(t *testing.T) {
 	c := check.New(t)
 	screen, _ := startHeadlessWorkspace(t, c)
@@ -207,7 +207,7 @@ func TestListFilterPanelListSentences(t *testing.T) {
 	p, _ := showListFilterPanel(t, screen, f)
 	screen.Do(func() {
 		c.Equal(`Must have tags that are anything`, sentenceText(p, "r.0"))
-		c.Equal(`Must not have tags`, sentenceText(p, "r.1"))
+		c.Equal(`Must have tags where at least one is ""`, sentenceText(p, "r.1"))
 		c.Equal(`Must have a name that is " Axe "`, sentenceText(p, "r.2"))
 	})
 }

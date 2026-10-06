@@ -9,6 +9,8 @@
 
 package gurps
 
+import "strings"
+
 // NewListFilterMatcher returns a function that reports whether a node passes the filter, with the fields the filter
 // refers to looked up once rather than for every node. A nil filter, or one without a root, passes everything.
 func NewListFilterMatcher[T Node[T]](f *ListFilter, fields []*FilterField[T]) func(T) bool {
@@ -61,8 +63,9 @@ func matchesFilterGroup[T Node[T]](g *FilterGroup, fields map[string]*FilterFiel
 }
 
 // matchesFilterCondition returns true if the node's field satisfies the condition's criteria, inverted if the
-// condition is negated. A condition on a field this version of GCS doesn't know never passes, whatever its negation
-// says, for the same reason an unknown node never does.
+// condition is negated. A node whose text field is empty, or whose list field holds nothing, doesn't have the field,
+// as the condition's title puts it, so it satisfies no criteria. A condition on a field this version of GCS doesn't
+// know never passes, whatever its negation says, for the same reason an unknown node never does.
 func matchesFilterCondition[T Node[T]](c *FilterCondition, fields map[string]*FilterField[T], node T) bool {
 	field, ok := fields[c.Field]
 	if !ok {
@@ -71,9 +74,13 @@ func matchesFilterCondition[T Node[T]](c *FilterCondition, fields map[string]*Fi
 	var result bool
 	switch field.Kind {
 	case FilterFieldText:
-		result = c.Text.Matches(nil, field.Text(node))
+		if value := field.Text(node); strings.TrimSpace(value) != "" {
+			result = c.Text.Matches(nil, value)
+		}
 	case FilterFieldList:
-		result = c.Text.MatchesList(nil, field.List(node)...)
+		if values := field.List(node); len(values) != 0 {
+			result = c.Text.MatchesList(nil, values...)
+		}
 	case FilterFieldNumber:
 		result = c.Number.Matches(field.Number(node))
 	case FilterFieldWeight:

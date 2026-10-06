@@ -46,7 +46,7 @@ func (c *FilterCondition) Describe(lookup FilterFieldLookup, units fxp.WeightUni
 	case FilterFieldWeight:
 		criterion = describeNumber(c.Weight.Compare, em(units.Format(c.Weight.Qualifier)), plural)
 	default:
-		return c.describeHaving(title, false)
+		return c.describeHaving(title)
 	}
 	switch {
 	case plural && c.Not:
@@ -61,9 +61,9 @@ func (c *FilterCondition) Describe(lookup FilterFieldLookup, units fxp.WeightUni
 }
 
 // describeHaving returns the description of a condition that says only whether the title holds, as a yes/no field's
-// does, inverted when invert is set.
-func (c *FilterCondition) describeHaving(title string, invert bool) string {
-	if c.Not != invert {
+// does.
+func (c *FilterCondition) describeHaving(title string) string {
+	if c.Not {
 		return i18n.Text("Must not %s", title)
 	}
 	return i18n.Text("Must %s", title)
@@ -83,14 +83,10 @@ func describeNumber(compare criteria.NumericComparison, qualifier string, plural
 
 // describeList returns the description of a condition on a list of values, which is matched value by value against
 // each of the comma-separated qualifiers: a comparison holds when at least one value matches one of them, and a "not"
-// comparison when none does. An empty list is matched as a single empty value, so "is" with no qualifier holds when
-// the list is empty, which reads as not having the title.
+// comparison when none does. Either way, the list must hold something.
 func (c *FilterCondition) describeList(title string, em func(string) string) string {
 	compare := c.Text.Compare.EnsureValid()
 	qualifiers := criteria.SplitQualifiers(nameable.Apply(c.Text.Qualifier, nil))
-	if compare == criteria.IsText && len(qualifiers) == 1 && qualifiers[0] == "" {
-		return c.describeHaving(title, true)
-	}
 	text := describeComparison(compare.ListClause(), compare.Positive(), qualifiers, em)
 	if c.Not {
 		return i18n.Text("Must not %s %s", title, text)

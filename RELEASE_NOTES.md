@@ -36,3 +36,7 @@
   differing from its library source after being added to a sheet, edited or synced.
 - Unticking the last location of a DR bonus quietly turned it into one that applies to the armor it's attached to.
   The last location can no longer be unticked.
+- A saved filter's condition on text or a list, such as the notes or the tags, no longer passes an item that has none
+  of it. A condition that the tags be anything now needs a tag that isn't blank, one that no tag be "Shield" no longer
+  passes an item with no tags, and negating a condition that the notes be anything finds the items without notes. Saved
+  filters with such conditions may show different results.

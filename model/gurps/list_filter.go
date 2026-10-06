@@ -214,8 +214,9 @@ func (g *FilterGroup) Hash(h hash.Hash) {
 }
 
 // NewFilterCondition creates a new condition on the field with the given key, with every criteria at its zero value.
-// For a text, list, number or weight field that means the condition accepts anything; for a yes/no field, which has
-// no criteria, it means the condition is satisfied when the value is true.
+// For a number or weight field that means the condition accepts anything, and for a text or list field anything but
+// text that is empty or only space, or a list that holds nothing else; for a yes/no field, which has no criteria, it
+// means the condition is satisfied when the value is true.
 func NewFilterCondition(parent *FilterGroup, fieldKey string) *FilterCondition {
 	return &FilterCondition{
 		Parent: parent,

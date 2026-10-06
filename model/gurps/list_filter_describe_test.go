@@ -96,9 +96,9 @@ func TestFilterConditionDescribe(t *testing.T) {
 			`Must not have tags where none contains "[Sword]" or "[Axe]"`,
 		},
 		{newTextFilterCondition("tags", criteria.AnyText, ""), `Must have tags that are anything`},
-		{newTextFilterCondition("tags", criteria.IsText, ""), `Must not have tags`},
-		{newTextFilterCondition("tags", criteria.IsText, " , "), `Must not have tags`},
-		{negated(newTextFilterCondition("tags", criteria.IsText, "")), `Must have tags`},
+		{newTextFilterCondition("tags", criteria.IsText, ""), `Must have tags where at least one is ""`},
+		{newTextFilterCondition("tags", criteria.IsText, " , "), `Must have tags where at least one is ""`},
+		{negated(newTextFilterCondition("tags", criteria.AnyText, "")), `Must not have tags that are anything`},
 		{
 			newNumberFilterCondition("cost", criteria.AtLeastNumber, fxp.FromInteger(1000)),
 			`Must have a cost that is at least [1,000]`,
