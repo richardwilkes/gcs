@@ -79,12 +79,15 @@ func newSentenceButton(text string, onClick func()) *sentenceButton {
 	b.MouseEnterCallback = func(_ geom.Point, _ mod.Modifiers) bool { return b.hover(true) }
 	b.MouseExitCallback = func() bool { return b.hover(false) }
 	b.UpdateCursorCallback = func(_ geom.Point) *unison.Cursor { return unison.PointingCursor() }
-	b.KeyDownCallback = func(keyCode unison.KeyCode, mods mod.Modifiers, _ bool) bool {
-		if mods&mod.NonSticky != 0 ||
+	b.KeyDownCallback = func(keyCode unison.KeyCode, mods mod.Modifiers, repeat bool) bool {
+		if !noModifiersDown(mods) ||
 			(keyCode != unison.KeySpace && keyCode != unison.KeyReturn && keyCode != unison.KeyNumPadEnter) {
 			return false
 		}
-		b.onClick()
+		// A held key acts once; its repeats are taken, so that they don't reach what holds the sentence.
+		if !repeat {
+			b.onClick()
+		}
 		return true
 	}
 	addAccessibilityCallback(b, func(node *accessibility.Node) {

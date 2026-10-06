@@ -333,6 +333,20 @@ func (p *sentenceRows[T]) focusOn(key string) bool {
 	return true
 }
 
+// closeRow closes the open row as toggle does, except that it leaves the focus alone when the focus is outside the
+// panel.
+func (p *sentenceRows[T]) closeRow() {
+	if p.open == "" {
+		return
+	}
+	if wnd := p.Window(); wnd != nil && wnd.Focus() != nil && !unison.AncestorIsOrSelf(wnd.Focus(), p.AsPanel()) {
+		p.open = ""
+		p.rebuild("")
+		return
+	}
+	p.toggle(p.open)
+}
+
 // toggle opens the row at the path, closing any other, or closes it if it is the open one.
 func (p *sentenceRows[T]) toggle(path string) {
 	if p.open == path {
@@ -398,12 +412,24 @@ func (p *sentenceRows[T]) dragBy(target, row *unison.Panel, path string) {
 	}
 }
 
-// doneButton returns the button that closes the open row at the path.
+// doneButton returns the button that closes the open row at the path. It closes the row on Return or keypad Enter too,
+// as a sentence opens its row, rather than leaving those keys to what holds the panel, and closes it once while they
+// are held.
 func (p *sentenceRows[T]) doneButton(path string) *unison.Button {
 	done := unison.NewButton()
 	done.SetTitle(i18n.Text("Done"))
 	done.RefKey = path + ":done"
 	done.ClickCallback = func() { p.toggle(path) }
+	keyDown := done.KeyDownCallback
+	done.KeyDownCallback = func(keyCode unison.KeyCode, mods mod.Modifiers, repeat bool) bool {
+		if noModifiersDown(mods) && (keyCode == unison.KeyReturn || keyCode == unison.KeyNumPadEnter) {
+			if !repeat {
+				done.Click()
+			}
+			return true
+		}
+		return keyDown != nil && keyDown(keyCode, mods, repeat)
+	}
 	return done
 }
 

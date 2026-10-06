@@ -396,6 +396,28 @@ func TestPrereqPanelEscapeClosesTheOpenRow(t *testing.T) {
 	c.Equal(1, host.escapes, "Escape outside the panel reaches the editor")
 }
 
+// TestPrereqPanelDoneKeyActsOnce checks that Return on an open row's Done button closes the row, and that a held
+// Return's repeats, even once they reach another Done button, don't close that row as well.
+func TestPrereqPanelDoneKeyActsOnce(t *testing.T) {
+	c := check.New(t)
+	screen, _ := startHeadlessWorkspace(t, c)
+	root := newTestPrereqTree()
+	p, _ := showPrereqPanel(t, screen, &root, false)
+	done := func(path string) {
+		screen.Do(func() { p.toggle(path) })
+		screen.Do(func() { p.FindRefKey(path + ":done").RequestFocus() })
+	}
+	done("r.0")
+	screen.KeyDown(unison.KeyReturn, mod.None)
+	screen.Do(func() { c.Equal("", p.open, "Return closes the row") })
+	done("r.1.0")
+	screen.KeyDown(unison.KeyReturn, mod.None)
+	screen.Do(func() { c.Equal("r.1.0", p.open, "a repeat of the held Return leaves the row open") })
+	screen.KeyUp(unison.KeyReturn, mod.None)
+	screen.KeyPress(unison.KeyReturn, mod.None)
+	screen.Do(func() { c.Equal("", p.open, "until it is pressed again") })
+}
+
 // TestPrereqPanelCollapse checks that the title bar collapses the panel to a paragraph describing the tree and expands
 // it again, as does the paragraph, from a click or the keyboard, that a screen reader hears whether it is expanded, that
 // collapsing hands the focus from the rows to the title bar, and that it is no edit and keeps the open row open.

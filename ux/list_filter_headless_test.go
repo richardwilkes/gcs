@@ -485,6 +485,67 @@ func TestListFilterEditorKeysHeadless(t *testing.T) {
 	}
 }
 
+// TestListFilterEditorHeldKeysHeadless checks that a held Escape or Return acts once in the filter editor, so that it
+// can't close or open a row and then cancel or accept the dialog too; that Return on Done closes its row rather than
+// accepting the dialog; and that Escape in the name field closes the open row and leaves the focus there.
+func TestListFilterEditorHeldKeysHeadless(t *testing.T) {
+	c := check.New(t)
+	screen, wnd := startHeadlessWorkspace(t, c)
+	swapForTest(t, &gurps.GlobalSettings().ListFilters, make(map[string][]*gurps.ListFilter))
+	swapForTest(t, &lastFilterFieldKeyUsed, make(map[string]string))
+	d := openListFilterTraitDockable(t, screen)
+	choosePopupItem(t, screen, wnd, d.savedFilters.popup,
+		popupItemIndexOf(t, screen, d.savedFilters.popup, newFilterItemTitle))
+	dialogWnd, _ := modalDialog(t, screen, wnd)
+	p := dialogFilterPanel(t, screen, dialogWnd)
+	nameField := dialogNameField(t, screen, dialogWnd)
+	screen.Type("Ranged")
+	screen.Do(func() { menuAction(p.treeAddEntries(p.filter.Root, treeRootPath), "New Condition")() })
+	open := func() string {
+		var path string
+		screen.Do(func() { path = p.open })
+		return path
+	}
+	windows := func() int {
+		var n int
+		screen.Do(func() { n = len(unison.Windows()) })
+		return n
+	}
+	hold := func(key unison.KeyCode) {
+		screen.KeyDown(key, mod.None)
+		screen.KeyDown(key, mod.None)
+		screen.KeyUp(key, mod.None)
+	}
+
+	c.Equal("r.0", open(), "the new condition is open")
+	hold(unison.KeyEscape)
+	c.Equal("", open(), "a held Escape closes the row")
+	c.Equal(2, windows(), "and doesn't cancel the dialog")
+
+	screen.Do(func() { c.Equal("r.0"+keySentence, focusedRefKey(dialogWnd), "closing the row focuses its sentence") })
+	hold(unison.KeyReturn)
+	c.Equal("r.0", open(), "a held Return opens the row")
+	c.Equal(2, windows(), "and doesn't accept the dialog")
+
+	screen.Do(func() { c.True(p.focusOn("r.0:done"), "Done can take the focus") })
+	screen.KeyPress(unison.KeyReturn, mod.None)
+	c.Equal("", open(), "Return on Done closes the row")
+	c.Equal(2, windows(), "rather than accepting the dialog")
+
+	screen.Do(func() { p.toggle("r.0") })
+	screen.Do(func() { nameField.RequestFocus() })
+	screen.KeyPress(unison.KeyEscape, mod.None)
+	c.Equal("", open(), "Escape in the name field closes the row")
+	var focused bool
+	screen.Do(func() { focused = dialogWnd.Focus() == nameField.AsPanel() })
+	c.True(focused, "and leaves the focus in the name field")
+	screen.KeyPress(unison.KeyEnd, mod.None)
+	screen.Type("X")
+	var name string
+	screen.Do(func() { name = nameField.Text() })
+	c.Equal("RangedX", name, "so typing goes on in it")
+}
+
 // TestListFilterDialogUndoMenuHeadless checks that the Undo and Redo commands find the dialog's undo manager with a
 // button focused, outside the dialog's content, as macOS's menu bar looks them up, and that where the menu bar takes
 // their keys, the dialog leaves the keys to it.

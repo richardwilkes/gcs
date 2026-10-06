@@ -134,7 +134,11 @@ var dialogMenuTakesUndoKeys = runtime.GOOS == "darwin"
 // since the name field and the buttons sit outside the panel of conditions. Where the menu bar doesn't take them, it
 // also has the dialog's window handle the key bindings of Undo and Redo.
 func installListFilterDialogKeys(wnd *unison.Window, content *listFilterDialogContent, panel *listFilterPanel) {
-	wnd.KeyDownCallback = func(keyCode unison.KeyCode, mods mod.Modifiers, _ bool) bool {
+	wnd.KeyDownCallback = func(keyCode unison.KeyCode, mods mod.Modifiers, repeat bool) bool {
+		// A held Escape or Return acts once, rather than closing a row and then canceling or accepting the dialog.
+		if repeat && (keyCode == unison.KeyEscape || keyCode == unison.KeyReturn || keyCode == unison.KeyNumPadEnter) {
+			return true
+		}
 		// A cleared key binding matches no key.
 		bound := func(action *unison.Action) bool {
 			return !dialogMenuTakesUndoKeys && action != nil && action.KeyBinding.KeyCode != 0 &&
@@ -150,7 +154,7 @@ func installListFilterDialogKeys(wnd *unison.Window, content *listFilterDialogCo
 				content.undoMgr.Redo()
 			}
 		case keyCode == unison.KeyEscape && noModifiersDown(mods) && panel.open != "":
-			panel.toggle(panel.open)
+			panel.closeRow()
 		default:
 			return false
 		}
