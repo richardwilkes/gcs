@@ -29,7 +29,7 @@ type weaponEditor struct {
 // EditWeapon displays the editor for a weapon.
 func EditWeapon(owner Rebuildable, w *gurps.Weapon) {
 	var we weaponEditor
-	displayEditor(owner, w, gurps.WeaponSVG(w.IsMelee()), "md:User%20Guide/Melee%20and%20Ranged%20Weapons", nil,
+	displayEditor(owner, w, weaponSVG(w.IsMelee()), "md:User%20Guide/Melee%20and%20Ranged%20Weapons", nil,
 		we.initWeaponEditor, we.preApply)
 }
 

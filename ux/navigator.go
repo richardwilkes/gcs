@@ -797,7 +797,10 @@ func (n *Navigator) populateRows() []*NavigatorNode {
 	rows := make([]*NavigatorNode, 0, 1+len(libs))
 	rows = append(rows, NewFavoritesNode(n))
 	for _, lib := range libs {
-		n.tokens = append(n.tokens, lib.Watch(n.watchCallback, true))
+		// The watch reports changes on no particular goroutine, so hand each one off to the UI thread.
+		n.tokens = append(n.tokens, lib.Watch(func(l *library.Library, fullPath string, what notify.Event) {
+			unison.InvokeTask(func() { n.watchCallback(l, fullPath, what) })
+		}))
 		rows = append(rows, NewLibraryNode(n, lib))
 	}
 	return rows
@@ -1589,7 +1592,7 @@ func OpenFile(filePath string, initialPage gurps.PageInfo) (dockable unison.Dock
 		return nil, false
 	}
 	var d unison.Dockable
-	if d, err = fi.Load(absPath, initialPage); err != nil {
+	if d, err = fileTypeUIs[fi].load(absPath, initialPage); err != nil {
 		Workspace.ErrorHandler(i18n.Text("Unable to open file:\n")+absPath, err)
 		return nil, false
 	}

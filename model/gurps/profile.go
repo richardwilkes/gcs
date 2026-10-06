@@ -17,8 +17,6 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/stlimit"
 	"github.com/richardwilkes/toolbox/v2/errs"
-	"github.com/richardwilkes/toolbox/v2/geom"
-	"github.com/richardwilkes/unison"
 )
 
 // ProfileRandom holds the portion of the profile that is affected by the randomizer.
@@ -35,19 +33,19 @@ type ProfileRandom struct {
 	Weight     fxp.Weight `json:"weight,omitzero"`
 }
 
-// Profile holds the profile information for a character.
+// Profile holds the profile information for a character. PortraitCache is a slot for whatever the user interface
+// decodes PortraitData into; the model never looks inside it.
 type Profile struct {
 	ProfileRandom
-	PlayerName          string        `json:"player_name,omitzero"`
-	Title               string        `json:"title,omitzero"`
-	Organization        string        `json:"organization,omitzero"`
-	Religion            string        `json:"religion,omitzero"`
-	TechLevel           string        `json:"tech_level,omitzero"`
-	PortraitData        []byte        `json:"portrait,omitempty"`
-	PortraitImage       *unison.Image `json:"-"`
-	SizeModifier        int           `json:"SM,omitzero"`
-	SizeModifierBonus   fxp.Int       `json:"-"`
-	portraitUndecodable bool
+	PlayerName        string  `json:"player_name,omitzero"`
+	Title             string  `json:"title,omitzero"`
+	Organization      string  `json:"organization,omitzero"`
+	Religion          string  `json:"religion,omitzero"`
+	TechLevel         string  `json:"tech_level,omitzero"`
+	PortraitData      []byte  `json:"portrait,omitempty"`
+	PortraitCache     any     `json:"-"`
+	SizeModifier      int     `json:"SM,omitzero"`
+	SizeModifierBonus fxp.Int `json:"-"`
 }
 
 // Update any derived values.
@@ -55,27 +53,10 @@ func (p *Profile) Update(entity *Entity) {
 	p.SizeModifierBonus = entity.AttributeBonusFor(SizeModifierID, stlimit.None, nil)
 }
 
-// Portrait returns the portrait image, if there is one.
-func (p *Profile) Portrait() *unison.Image {
-	if p.PortraitImage == nil && len(p.PortraitData) != 0 && !p.portraitUndecodable {
-		img, err := unison.NewImageFromBytes(p.PortraitData, geom.NewPoint(0.5, 0.5))
-		if err != nil {
-			errs.Log(errs.NewWithCause("unable to load portrait data", err))
-			// Retain the data so it isn't lost on the next save, since another build may be able to decode it, but
-			// don't attempt to decode it again, since it would just fail and log repeatedly.
-			p.portraitUndecodable = true
-			return nil
-		}
-		p.PortraitImage = img
-	}
-	return p.PortraitImage
-}
-
-// SetPortraitData sets the portrait data, discarding any previously decoded image.
+// SetPortraitData sets the portrait data, discarding whatever was cached for the previous data.
 func (p *Profile) SetPortraitData(data []byte) {
 	p.PortraitData = data
-	p.PortraitImage = nil
-	p.portraitUndecodable = false
+	p.PortraitCache = nil
 }
 
 // CanExportPortrait returns true if the portrait can be exported.

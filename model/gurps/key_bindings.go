@@ -10,62 +10,31 @@
 package gurps
 
 import (
-	"cmp"
 	"encoding/json/jsontext"
 	"encoding/json/v2"
 	"io/fs"
-	"slices"
+	"maps"
 
 	"github.com/richardwilkes/gcs/v5/model/jio"
-	"github.com/richardwilkes/toolbox/v2/xreflect"
-	"github.com/richardwilkes/toolbox/v2/xstrings"
-	"github.com/richardwilkes/unison"
 )
 
-var factoryBindings = make(map[string]*Binding)
+// factoryBindings maps the ID of each registered key binding to its factory default.
+var factoryBindings = make(map[string]string)
 
-// KeyBindings holds a set of key bindings.
+// KeyBindings holds a set of key bindings. Each binding is held in the text form the user interface serializes it to,
+// which the model never interprets, so two bindings are the same only when their text is identical. Bindings for IDs
+// that aren't registered are carried along as they are, since a run without the user interface, such as a file
+// conversion, registers none and must not lose them; the user interface drops them with Prune once it has registered
+// its own.
 type KeyBindings struct {
-	data map[string]unison.KeyBinding
+	data map[string]string
 }
 
-// Binding holds a single key binding.
-type Binding struct {
-	ID         string
-	KeyBinding unison.KeyBinding
-	Action     *unison.Action
-}
-
-// RegisterKeyBinding registers a key binding. A second registration of the same ID is ignored.
-func RegisterKeyBinding(id string, action *unison.Action) {
-	if _, exists := factoryBindings[id]; exists {
-		return
+// RegisterKeyBinding registers the factory default for a key binding. A second registration of the same ID is ignored.
+func RegisterKeyBinding(id, binding string) {
+	if _, exists := factoryBindings[id]; !exists {
+		factoryBindings[id] = binding
 	}
-	factoryBindings[id] = &Binding{
-		ID:         id,
-		KeyBinding: action.KeyBinding,
-		Action:     action,
-	}
-}
-
-// CurrentBindings returns a sorted list with the current bindings.
-func CurrentBindings() []*Binding {
-	list := make([]*Binding, 0, len(factoryBindings))
-	for _, v := range factoryBindings {
-		list = append(list, &Binding{
-			ID:         v.ID,
-			KeyBinding: v.Action.KeyBinding,
-			Action:     v.Action,
-		})
-	}
-	slices.SortFunc(list, func(a, b *Binding) int {
-		result := xstrings.NaturalCmp(a.Action.Title, b.Action.Title, true)
-		if result == 0 {
-			result = cmp.Compare(a.ID, b.ID)
-		}
-		return result
-	})
-	return list
 }
 
 // NewKeyBindingsFromFS creates a new set of key bindings from a file. Any missing values will be filled in with
@@ -74,10 +43,11 @@ func NewKeyBindingsFromFS(fileSystem fs.FS, filePath string) (*KeyBindings, erro
 	return jio.LoadNew[KeyBindings](fileSystem, filePath)
 }
 
-// IsZero reports whether json's omitzero option should omit this value.
+// IsZero reports whether json's omitzero option should omit this value, which is when every binding is at its factory
+// default.
 func (b *KeyBindings) IsZero() bool {
 	for k, v := range b.data {
-		if info, ok := factoryBindings[k]; ok && v != info.KeyBinding {
+		if factory, ok := factoryBindings[k]; !ok || v != factory {
 			return false
 		}
 	}
@@ -89,11 +59,11 @@ func (b *KeyBindings) Save(filePath string) error {
 	return jio.SaveToFile(filePath, b)
 }
 
-// MarshalJSONTo implements json.MarshalerTo.
+// MarshalJSONTo implements json.MarshalerTo. Only the bindings that differ from their factory default are written.
 func (b *KeyBindings) MarshalJSONTo(enc *jsontext.Encoder) error {
-	data := make(map[string]unison.KeyBinding, len(b.data))
+	data := make(map[string]string, len(b.data))
 	for k, v := range b.data {
-		if info, ok := factoryBindings[k]; ok && info.KeyBinding != v {
+		if factory, ok := factoryBindings[k]; !ok || factory != v {
 			data[k] = v
 		}
 	}
@@ -102,7 +72,7 @@ func (b *KeyBindings) MarshalJSONTo(enc *jsontext.Encoder) error {
 
 // UnmarshalJSONFrom implements json.UnmarshalerFrom.
 func (b *KeyBindings) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
-	m := make(map[string]unison.KeyBinding, len(factoryBindings))
+	m := make(map[string]string, len(factoryBindings))
 	if err := json.UnmarshalDecode(dec, &m); err != nil {
 		return err
 	}
@@ -110,54 +80,24 @@ func (b *KeyBindings) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 	return nil
 }
 
-// MakeCurrent applies these key bindings to the current key bindings set.
-func (b *KeyBindings) MakeCurrent() {
-	var actions []*unison.Action
-	for k, v := range factoryBindings {
-		current, ok := b.data[k]
-		if !ok {
-			current = v.KeyBinding
-		}
-		if v.Action.KeyBinding != current {
-			v.Action.KeyBinding = current
-			actions = append(actions, v.Action)
-		}
-	}
-	if len(actions) != 0 {
-		factory := unison.DefaultMenuFactory()
-		for _, w := range unison.Windows() {
-			if bar := factory.BarForWindowNoCreate(w); !xreflect.IsNil(bar) {
-				for _, a := range actions {
-					if item := bar.Item(a.ID); item != nil {
-						item.SetKeyBinding(a.KeyBinding)
-					}
-				}
-				if !factory.BarIsPerWindow() {
-					break
-				}
-			}
-		}
-	}
-}
-
-// Current returns the binding for the given ID, or a zero KeyBinding if the ID isn't registered.
-func (b *KeyBindings) Current(id string) unison.KeyBinding {
-	if f, ok := factoryBindings[id]; ok {
+// Current returns the binding for the given ID, or an empty string if the ID isn't registered.
+func (b *KeyBindings) Current(id string) string {
+	if factory, ok := factoryBindings[id]; ok {
 		if c, ok2 := b.data[id]; ok2 {
 			return c
 		}
-		return f.KeyBinding
+		return factory
 	}
-	return unison.KeyBinding{}
+	return ""
 }
 
 // Set the binding for the given ID.
-func (b *KeyBindings) Set(id string, binding unison.KeyBinding) {
-	if f, ok := factoryBindings[id]; ok {
+func (b *KeyBindings) Set(id, binding string) {
+	if factory, ok := factoryBindings[id]; ok {
 		if b.data == nil {
-			b.data = make(map[string]unison.KeyBinding, len(factoryBindings))
+			b.data = make(map[string]string, len(factoryBindings))
 		}
-		if f.KeyBinding != binding {
+		if factory != binding {
 			b.data[id] = binding
 		} else {
 			delete(b.data, id)
@@ -168,6 +108,16 @@ func (b *KeyBindings) Set(id string, binding unison.KeyBinding) {
 // Reset all bindings to the factory defaults.
 func (b *KeyBindings) Reset() {
 	b.data = nil
+}
+
+// Prune drops the bindings for IDs that aren't registered. The user interface calls it once every binding is
+// registered, so that the IDs of actions that no longer exist don't linger in the settings and the files they are
+// exported to, where nothing lists them and a later action given the same ID would silently take on the binding.
+func (b *KeyBindings) Prune() {
+	maps.DeleteFunc(b.data, func(id, _ string) bool {
+		_, ok := factoryBindings[id]
+		return !ok
+	})
 }
 
 // ResetOne resets one key binding by ID to the factory default.

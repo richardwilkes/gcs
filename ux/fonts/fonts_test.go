@@ -106,7 +106,7 @@ func TestCaptureCurrentRecordsLiveEdits(t *testing.T) {
 	edited.Size += 3
 	CurrentFonts()[0].Font.Font = edited.Font() // As the font panel's FontModifiedCallback does.
 
-	var saved Fonts // A zero value, as first-run settings hold.
+	var saved Fonts // A zero value, which is what every capture starts from.
 	saved.CaptureCurrent()
 	c.Equal(edited, stored(t, &saved)[id], "capturing records the live edit")
 
@@ -134,9 +134,9 @@ func TestMakeCurrentAppliesToLiveFonts(t *testing.T) {
 		"fonts the file didn't mention are set to their factory values")
 }
 
-// TestResetWithNoLoadedData verifies that resetting a Fonts that has never been through UnmarshalJSONFrom -- the
-// first-run case, where no settings file exists and the map was therefore never allocated -- populates the factory
-// values rather than panicking with "assignment to entry in nil map".
+// TestResetWithNoLoadedData verifies that resetting a Fonts that has never been through UnmarshalJSONFrom -- a zero
+// value, whose map was therefore never allocated, which is what the settings view's reset starts from -- populates the
+// factory values rather than panicking with "assignment to entry in nil map".
 func TestResetWithNoLoadedData(t *testing.T) {
 	c := check.New(t)
 	preserveLiveFonts(t)
