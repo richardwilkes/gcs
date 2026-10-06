@@ -10,6 +10,7 @@
 package ux
 
 import (
+	"runtime"
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
@@ -95,6 +96,8 @@ func showListFilterDialog(title, key string, filter *gurps.ListFilter, fields []
 		return valid
 	}
 	nameField.Validate() // Here to update the OK button.
+	// Undo and Redo find the dialog's undo manager wherever the focus is, even on a button outside the content.
+	dialog.Window().ClientData()[windowUndoManagerKey] = content.undoMgr
 	installListFilterDialogKeys(dialog.Window(), content, panel)
 	nameField.RequestFocus()
 	if dialog.RunModal() != unison.ModalResponseOK {
@@ -122,16 +125,20 @@ func (c *listFilterDialogContent) UndoManager() *unison.UndoManager {
 	return c.undoMgr
 }
 
-// installListFilterDialogKeys has the dialog's window handle the key bindings of Undo and Redo, and have Escape close
-// the open condition before it cancels the dialog, wherever the focus is. The name field and the buttons sit outside
-// the panel of conditions, and the menu bar can't stand in: on Linux and Windows a dialog has none, and on macOS its
-// Undo finds no undo manager while a button has the focus.
+// dialogMenuTakesUndoKeys is true where the menu bar takes the key bindings of Undo and Redo while a dialog is up, as
+// macOS's does, matching them by the character a key types. Elsewhere a dialog has no menu bar, so it takes them
+// itself.
+var dialogMenuTakesUndoKeys = runtime.GOOS == "darwin"
+
+// installListFilterDialogKeys has Escape close the open condition before it cancels the dialog, wherever the focus is,
+// since the name field and the buttons sit outside the panel of conditions. Where the menu bar doesn't take them, it
+// also has the dialog's window handle the key bindings of Undo and Redo.
 func installListFilterDialogKeys(wnd *unison.Window, content *listFilterDialogContent, panel *listFilterPanel) {
 	wnd.KeyDownCallback = func(keyCode unison.KeyCode, mods mod.Modifiers, _ bool) bool {
 		// A cleared key binding matches no key.
 		bound := func(action *unison.Action) bool {
-			return action != nil && action.KeyBinding.KeyCode != 0 && action.KeyBinding.KeyCode == keyCode &&
-				action.KeyBinding.Modifiers == mods&mod.NonSticky
+			return !dialogMenuTakesUndoKeys && action != nil && action.KeyBinding.KeyCode != 0 &&
+				action.KeyBinding.KeyCode == keyCode && action.KeyBinding.Modifiers == mods&mod.NonSticky
 		}
 		switch {
 		case bound(undoAction):

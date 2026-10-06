@@ -379,6 +379,7 @@ func TestListFilterEditorKeysHeadless(t *testing.T) {
 	screen, wnd := startHeadlessWorkspace(t, c)
 	swapForTest(t, &gurps.GlobalSettings().ListFilters, make(map[string][]*gurps.ListFilter))
 	swapForTest(t, &lastFilterFieldKeyUsed, make(map[string]string))
+	swapForTest(t, &dialogMenuTakesUndoKeys, false)
 	seedListFilter("Mental", "tags", "Mental")
 	d := openListFilterTraitDockable(t, screen)
 	newIndex := popupItemIndexOf(t, screen, d.savedFilters.popup, newFilterItemTitle)
@@ -482,6 +483,41 @@ func TestListFilterEditorKeysHeadless(t *testing.T) {
 		c.Equal("Ranged", saved[1].Name)
 		c.Equal(1, len(saved[1].Root.Children), "with its condition")
 	}
+}
+
+// TestListFilterDialogUndoMenuHeadless checks that the Undo and Redo commands find the dialog's undo manager with a
+// button focused, outside the dialog's content, as macOS's menu bar looks them up, and that where the menu bar takes
+// their keys, the dialog leaves the keys to it.
+func TestListFilterDialogUndoMenuHeadless(t *testing.T) {
+	c := check.New(t)
+	screen, wnd := startHeadlessWorkspace(t, c)
+	swapForTest(t, &gurps.GlobalSettings().ListFilters, make(map[string][]*gurps.ListFilter))
+	swapForTest(t, &lastFilterFieldKeyUsed, make(map[string]string))
+	d := openListFilterTraitDockable(t, screen)
+	choosePopupItem(t, screen, wnd, d.savedFilters.popup,
+		popupItemIndexOf(t, screen, d.savedFilters.popup, newFilterItemTitle))
+	dialogWnd, dialog := modalDialog(t, screen, wnd)
+	p := dialogFilterPanel(t, screen, dialogWnd)
+	children := func() int {
+		var n int
+		screen.Do(func() { n = len(p.filter.Root.Children) })
+		return n
+	}
+	screen.Do(func() { menuAction(p.treeAddEntries(p.filter.Root, treeRootPath), "New Condition")() })
+	ok := dialogButton(t, screen, dialog, unison.ModalResponseOK)
+	screen.Do(func() { ok.RequestFocus() })
+	var enabled bool
+	screen.Do(func() { enabled = undoAction.Enabled(nil) })
+	c.True(enabled, "Undo is available with OK focused")
+	screen.Do(func() { undoAction.Execute(nil) })
+	c.Equal(0, children(), "and undoes")
+	screen.Do(func() { redoAction.Execute(nil) })
+	c.Equal(1, children(), "as Redo redoes")
+
+	swapForTest(t, &dialogMenuTakesUndoKeys, true)
+	screen.Do(func() { ok.RequestFocus() })
+	screen.KeyPress(unison.KeyZ, mod.OSMenuCommand())
+	c.Equal(1, children(), "where the menu bar takes the Undo key, the dialog leaves it alone")
 }
 
 // TestListFilterEditCancelHeadless edits a saved filter through the real dialog and cancels it, checking that the

@@ -690,23 +690,39 @@ func undoRedoAction(id int, key unison.KeyCode, cannotTitle func() string, title
 		Title:      cannotTitle(),
 		KeyBinding: unison.KeyBinding{KeyCode: key, Modifiers: mod.OSMenuCommand()},
 		EnabledCallback: func(action *unison.Action, _ any) bool {
-			if wnd := unison.ActiveWindow(); wnd != nil {
-				if mgr := wnd.UndoManager(); mgr != nil {
-					action.Title = title(mgr)
-					return can(mgr)
-				}
+			if mgr := activeUndoManager(); mgr != nil {
+				action.Title = title(mgr)
+				return can(mgr)
 			}
 			action.Title = cannotTitle()
 			return false
 		},
 		ExecuteCallback: func(_ *unison.Action, _ any) {
-			if wnd := unison.ActiveWindow(); wnd != nil {
-				if mgr := wnd.UndoManager(); mgr != nil {
-					do(mgr)
-				}
+			if mgr := activeUndoManager(); mgr != nil {
+				do(mgr)
 			}
 		},
 	}
+}
+
+// windowUndoManagerKey is the key of the client data of a window, such as a dialog, that holds an undo manager for
+// whatever in it has the focus but finds none above itself.
+const windowUndoManagerKey = "gcs.undo_manager"
+
+// activeUndoManager returns the undo manager of the focus in the active window or, failing that, the one the window
+// holds in its client data, or nil.
+func activeUndoManager() *unison.UndoManager {
+	wnd := unison.ActiveWindow()
+	if wnd == nil {
+		return nil
+	}
+	if mgr := wnd.UndoManager(); mgr != nil {
+		return mgr
+	}
+	if mgr, ok := wnd.ClientData()[windowUndoManagerKey].(*unison.UndoManager); ok {
+		return mgr
+	}
+	return nil
 }
 
 func actionEnabledForSheet(_ *unison.Action, _ any) bool {
