@@ -13,6 +13,8 @@ import (
 	"go/ast"
 	"go/parser"
 	"go/token"
+	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/richardwilkes/toolbox/v2/check"
@@ -162,14 +164,34 @@ func TestInstallDropReroutingWithoutATarget(t *testing.T) {
 	c.False(root.DropCallback(skillDrag, where, mod.None), "exit cleared the bare target")
 }
 
-// TestAllDragDataTypesListsEveryDragKey verifies that every private drag data type declared in drag.go is in
-// allDragDataTypes, since a window only receives drops for the types it registers.
+// TestAllDragDataTypesListsEveryDragKey verifies that every private drag data type declared in the package's source is
+// in allDragDataTypes, since a window only receives drops for the types it registers.
 func TestAllDragDataTypesListsEveryDragKey(t *testing.T) {
 	c := check.New(t)
-	file, err := parser.ParseFile(token.NewFileSet(), "drag.go", nil, 0)
+	paths, err := filepath.Glob("*.go")
 	c.NoError(err)
+	fileSet := token.NewFileSet()
 	declared := make(map[string]bool)
 	listed := make(map[string]bool)
+	for _, path := range paths {
+		if strings.HasSuffix(path, "_test.go") {
+			continue
+		}
+		file, parseErr := parser.ParseFile(fileSet, path, nil, 0)
+		c.NoError(parseErr)
+		if file != nil {
+			inspectDragKeys(file, declared, listed)
+		}
+	}
+	c.NotEqual(0, len(declared), "the package must declare drag data types")
+	for name := range declared {
+		c.True(listed[name], name+" must be in allDragDataTypes")
+	}
+}
+
+// inspectDragKeys adds the names of the private drag data types the file declares to declared, and those its
+// allDragDataTypes lists to listed.
+func inspectDragKeys(file *ast.File, declared, listed map[string]bool) {
 	ast.Inspect(file, func(node ast.Node) bool {
 		spec, ok := node.(*ast.ValueSpec)
 		if !ok {
@@ -196,8 +218,4 @@ func TestAllDragDataTypesListsEveryDragKey(t *testing.T) {
 		}
 		return true
 	})
-	c.NotEqual(0, len(declared), "drag.go must declare drag data types")
-	for name := range declared {
-		c.True(listed[name], name+" must be in allDragDataTypes")
-	}
 }

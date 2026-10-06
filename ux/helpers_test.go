@@ -209,3 +209,14 @@ func TestFirstContentFocusTarget(t *testing.T) {
 		c.Equal(field, firstContentFocusTarget(toolbar, content))
 	})
 }
+
+// selectPopupIndex selects the given index and then runs the popup's selection callback once, mirroring what happens
+// when the user picks that entry. The callback is invoked directly rather than through SelectIndex, which wraps it in
+// unison.SafeCall and would swallow a failure inside it, so it is taken off the popup while the selection is made.
+func selectPopupIndex[T comparable](popup *unison.PopupMenu[T], index int) {
+	callback := popup.SelectionChangedCallback
+	popup.SelectionChangedCallback = nil
+	popup.SelectIndex(index)
+	popup.SelectionChangedCallback = callback
+	callback(popup)
+}

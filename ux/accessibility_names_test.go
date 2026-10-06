@@ -157,10 +157,9 @@ func TestEveryControlHasAnAccessibleName(t *testing.T) {
 		w.Defaults = []*gurps.SkillDefault{{DefaultType: gurps.SkillID}}
 		EditWeapon(sheet, w)
 	})
-	audit.checkRows("ranged weapon editor", func() {
-		w := gurps.NewWeapon(gurps.NewTrait(entity, nil, false), false)
-		w.Defaults = []*gurps.SkillDefault{{DefaultType: gurps.SkillID}}
-		EditWeapon(sheet, w)
+	// With no defaults, so that the empty defaults panel's placeholder is checked.
+	audit.checkOpened("ranged weapon editor", func() {
+		EditWeapon(sheet, gurps.NewWeapon(gurps.NewTrait(entity, nil, false), false))
 	})
 	audit.checkOpened("points editor", func() {
 		entity.PointsRecord = append(entity.PointsRecord, &gurps.PointsRecord{
