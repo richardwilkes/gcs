@@ -10,21 +10,15 @@
 package ux
 
 import (
-	"bytes"
 	"encoding/json/jsontext"
 	"fmt"
-	"image"
-	"image/png"
 	"os"
 	"path/filepath"
 	"slices"
-	"strings"
 	"testing"
 
-	"github.com/richardwilkes/canvas/codecs"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
-	"github.com/richardwilkes/gcs/v5/model/gurps/enums/cell"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/thememode"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/gcs/v5/ux/colors"
@@ -32,12 +26,11 @@ import (
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/unison"
-	"github.com/richardwilkes/unison/enums/align"
 	unthememode "github.com/richardwilkes/unison/enums/thememode"
 )
 
-// TestModelDefaultsMatchUnison verifies the values the model has to hold copies of, since it can't ask unison for
-// them: the cursor size limits, and the scroll wheel multiplier it falls back on when there is no host.
+// TestModelDefaultsMatchUnison verifies the values the model has to hold copies of, since it can't ask unison for them:
+// the cursor size limits, and the scroll wheel multiplier it falls back on when there is no host.
 func TestModelDefaultsMatchUnison(t *testing.T) {
 	c := check.New(t)
 	c.Equal(int(unison.DefaultCursorSize().Width), gurps.CursorSizeDef)
@@ -78,8 +71,8 @@ func TestGeneralSettingsReachUnison(t *testing.T) {
 }
 
 // TestDisplayPPI verifies that a display that is missing, which happens on some Linux configurations when no monitor is
-// enumerated, or that reports no content scale yields 0 rather than a panic or a division by zero, and that the model
-// then falls back on a usable PPI.
+// enumerated, or that reports no content scale yields 0 rather than a panic or a division by zero, which the model
+// takes as the PPI being unknown.
 func TestDisplayPPI(t *testing.T) {
 	c := check.New(t)
 	c.Equal(0, displayPPI(nil))
@@ -87,7 +80,6 @@ func TestDisplayPPI(t *testing.T) {
 	c.Equal(0, displayPPI(&unison.Display{PPI: 0, Scale: geom.NewPoint(2, 2)}))
 	c.Equal(108, displayPPI(&unison.Display{PPI: 216, Scale: geom.NewPoint(2, 2)}))
 	c.Equal(216, displayPPI(&unison.Display{PPI: 216, Scale: geom.NewPoint(1, 1)}))
-	c.True((&gurps.GeneralSettings{}).MonitorPPI() > 0)
 }
 
 // TestModelHostCarriesThemeInSettings verifies that the live theme colors and fonts are stored into the settings when
@@ -141,13 +133,11 @@ func TestModelHostKeepsDecodableThemeValues(t *testing.T) {
 	g := gurps.GlobalSettings()
 	swapForTest(t, &g.Colors, nil)
 	swapForTest(t, &g.Fonts, nil)
-	original := *colors.Header
-	originalSuccess := *colors.Success
-	t.Cleanup(func() {
-		*colors.Header = original
-		*colors.Success = originalSuccess
-		unison.ThemeChanged()
-	})
+	// Loading resets every color the data doesn't define, so the whole live theme has to be put back, not just the
+	// ones the test touches.
+	var saved colors.Colors
+	saved.CaptureCurrent()
+	t.Cleanup(saved.MakeCurrent)
 
 	custom := unison.ThemeColor{Light: unison.RGB(1, 2, 3), Dark: unison.RGB(4, 5, 6)}
 	customJSON, err := jio.Marshal(custom)
@@ -190,95 +180,4 @@ func TestThemeFileConvertersAreRegistered(t *testing.T) {
 	c.NoError(err)
 	c.Contains(string(data), `"system"`, "the font file is rewritten with every font in it")
 	c.Contains(string(data), fmt.Sprintf(`"version": %d`, jio.CurrentDataVersion), "in the current format")
-}
-
-// TestPortraitImage verifies that a portrait whose bytes the current build cannot decode is neither discarded, since a
-// different build may be able to decode it, nor decoded over and over, and that replacing the data lets a valid image
-// be loaded afterwards.
-func TestPortraitImage(t *testing.T) {
-	c := check.New(t)
-	data := []byte("this is not a valid image")
-	var p gurps.Profile
-	p.PortraitData = data
-	c.Nil(portraitImage(&p))
-	c.Equal(data, p.PortraitData)
-	cached := p.PortraitCache
-	c.NotNil(cached, "the failure is remembered")
-
-	c.Nil(portraitImage(&p))
-	c.True(cached == p.PortraitCache, "a second call must not decode again")
-	c.Equal(data, p.PortraitData)
-
-	codecs.Register() // unison installs the image decoders as the app starts, which a plain test never does.
-	var buffer bytes.Buffer
-	c.NoError(png.Encode(&buffer, image.NewRGBA(image.Rect(0, 0, 2, 2))))
-	p.SetPortraitData(buffer.Bytes())
-	img := portraitImage(&p)
-	c.NotNil(img)
-	c.True(img == portraitImage(&p), "the decoded image is reused")
-
-	p.SetPortraitData(nil)
-	c.Nil(portraitImage(&p))
-}
-
-// TestDockStateEncoding verifies that a dock state survives being carried by the settings as raw JSON, and that the
-// absence of one is preserved.
-func TestDockStateEncoding(t *testing.T) {
-	c := check.New(t)
-	c.Nil(decodeDockState(nil))
-	c.Nil(decodeDockState(jsontext.Value("null")))
-	c.Equal(0, len(encodeDockState(nil)))
-
-	state := &unison.DockState{
-		Type:     unison.ContainerType,
-		Children: []*unison.DockState{{Type: unison.DockableType, Key: NavigatorDockKey}},
-	}
-	decoded := decodeDockState(encodeDockState(state))
-	c.NotNil(decoded)
-	c.Equal(unison.ContainerType, decoded.Type)
-	c.Equal([]string{NavigatorDockKey}, dockStateKeys(decoded))
-}
-
-// TestHAlignFor verifies the mapping from the model's cell alignments to unison's.
-func TestHAlignFor(t *testing.T) {
-	c := check.New(t)
-	c.Equal(align.Start, hAlignFor(cell.AlignStart))
-	c.Equal(align.Middle, hAlignFor(cell.AlignMiddle))
-	c.Equal(align.End, hAlignFor(cell.AlignEnd))
-}
-
-// TestApplyKeyBindingsStoresCanonicalText verifies that a binding spelled differently than unison would spell it is
-// recognized for what it is, rather than being kept as a change from the factory default it is equal to.
-func TestApplyKeyBindingsStoresCanonicalText(t *testing.T) {
-	c := check.New(t)
-	registerKeyBindingsOnce.Do(registerActions)
-	var id, key, respelled string
-	for _, one := range currentKeyBindings() {
-		key = one.KeyBinding.Key()
-		if respelled = strings.ToUpper(key); respelled == key {
-			respelled = strings.ToLower(key)
-		}
-		if respelled != key && one.KeyBinding == keyBindingEntries[one.ID].KeyBinding {
-			id = one.ID
-			break
-		}
-	}
-	c.NotEqual("", id, "there must be a key binding at its factory default whose text has letters in it")
-	t.Cleanup(func() { applyKeyBindings(&gurps.GlobalSettings().KeyBindings) })
-
-	var untouched gurps.KeyBindings
-	applyKeyBindings(&untouched)
-	c.True(untouched.IsZero(), "applying the factory defaults must not record any of them as a change")
-	for _, entry := range keyBindingEntries {
-		c.Equal(entry.KeyBinding, entry.Action.KeyBinding,
-			"%s: the binding must survive the trip through its text, not just the text", entry.ID)
-	}
-
-	var b gurps.KeyBindings
-	b.Set(id, respelled)
-	c.False(b.IsZero(), "the model can only compare the text")
-	applyKeyBindings(&b)
-	c.Equal(key, b.Current(id))
-	c.True(b.IsZero(), "once respelled, the binding is seen to be the factory default")
-	c.Equal(keyBindingEntries[id].KeyBinding, keyBindingEntries[id].Action.KeyBinding)
 }

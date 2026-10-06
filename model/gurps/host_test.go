@@ -91,11 +91,32 @@ func TestSetHostHandsOverLoadedSettings(t *testing.T) {
 	c.True(h.loaded[0] == global, "and they are the global settings")
 	c.Equal(global.General.CursorSize, h.cursorSize, "along with the cursor size")
 	c.Equal(fxp.SecondsToDuration(global.General.TooltipDelay), h.tooltipDelay, "the tooltip delay")
-	c.Equal(fxp.SecondsToDuration(global.General.TooltipDismissal), h.tooltipDismissal, "and the tooltip dismissal")
+	c.Equal(fxp.SecondsToDuration(global.General.TooltipDismissal), h.tooltipDismissal, "the tooltip dismissal")
+	c.Equal(global.General.FocusForReading, h.focusForReading, "and focus for reading")
 
 	SetHost(nil)
 	_, isDefault := currentHost().(NoHost)
 	c.True(isDefault, "a nil host restores the default")
+}
+
+// TestHandSettingsToGivesEverything verifies that the hand-over GlobalSettings and SetHost share gives a host every
+// value it keeps a copy of as well as the settings, so that a host installed while the settings were being loaded,
+// after their validation had pushed those values to the host of that moment, is given them all the same.
+func TestHandSettingsToGivesEverything(t *testing.T) {
+	c := check.New(t)
+	h := &recordingHost{}
+	s := FactorySettings()
+	s.General.CursorSize = CursorSizeMax
+	s.General.TooltipDelay = fxp.Two
+	s.General.TooltipDismissal = fxp.Ten
+	s.General.FocusForReading = true
+	handSettingsTo(h, &s)
+	c.Equal(1, len(h.loaded))
+	c.True(h.loaded[0] == &s)
+	c.Equal(CursorSizeMax, h.cursorSize)
+	c.Equal(fxp.SecondsToDuration(fxp.Two), h.tooltipDelay)
+	c.Equal(fxp.SecondsToDuration(fxp.Ten), h.tooltipDismissal)
+	c.True(h.focusForReading)
 }
 
 // TestSetHostIsConcurrencySafe verifies that the host can be replaced while other goroutines are using it, since the

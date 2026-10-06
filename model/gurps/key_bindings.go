@@ -13,6 +13,7 @@ import (
 	"encoding/json/jsontext"
 	"encoding/json/v2"
 	"io/fs"
+	"maps"
 
 	"github.com/richardwilkes/gcs/v5/model/jio"
 )
@@ -23,7 +24,8 @@ var factoryBindings = make(map[string]string)
 // KeyBindings holds a set of key bindings. Each binding is held in the text form the user interface serializes it to,
 // which the model never interprets, so two bindings are the same only when their text is identical. Bindings for IDs
 // that aren't registered are carried along as they are, since a run without the user interface, such as a file
-// conversion, registers none and must not lose them.
+// conversion, registers none and must not lose them; the user interface drops them with Prune once it has registered
+// its own.
 type KeyBindings struct {
 	data map[string]string
 }
@@ -106,6 +108,16 @@ func (b *KeyBindings) Set(id, binding string) {
 // Reset all bindings to the factory defaults.
 func (b *KeyBindings) Reset() {
 	b.data = nil
+}
+
+// Prune drops the bindings for IDs that aren't registered. The user interface calls it once every binding is
+// registered, so that the IDs of actions that no longer exist don't linger in the settings and the files they are
+// exported to, where nothing lists them and a later action given the same ID would silently take on the binding.
+func (b *KeyBindings) Prune() {
+	maps.DeleteFunc(b.data, func(id, _ string) bool {
+		_, ok := factoryBindings[id]
+		return !ok
+	})
 }
 
 // ResetOne resets one key binding by ID to the factory default.

@@ -34,8 +34,8 @@ var (
 // fileLoader opens the file at filePath in a new dockable, showing the given page if the file type has pages.
 type fileLoader func(filePath string, pageInfo gurps.PageInfo) (unison.Dockable, error)
 
-// fileTypeUI holds the icon for a file type and the function that opens a file of that type, which is nil for the
-// types that can't be opened.
+// fileTypeUI holds the icon for a file type and the function that opens a file of that type, which is nil for the types
+// that can't be opened.
 type fileTypeUI struct {
 	svg  *unison.SVG
 	load fileLoader

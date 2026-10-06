@@ -24,8 +24,9 @@ import (
 	unthememode "github.com/richardwilkes/unison/enums/thememode"
 )
 
-// The model knows nothing of unison, so everything it needs from the user interface is installed here, before anything
-// can ask for the global settings.
+// The model knows nothing of unison, so the host that connects it to the user interface, and the converters for the
+// theme files only the interface understands, are installed here, before anything can ask for the global settings. The
+// key binding defaults and the file types are registered later, by SetupMenuBar and RegisterKnownFileTypes.
 func init() {
 	gurps.SetHost(modelHost{})
 	gurps.RegisterConverter(gurps.ColorSettingsExt, colors.NewFromFS, (*colors.Colors).Save)

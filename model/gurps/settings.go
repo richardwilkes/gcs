@@ -133,10 +133,12 @@ func GlobalSettings() *Settings {
 		// this once-initializer.
 		syncScriptExecTimeLimit(globalSettings.General)
 		syncGlobalSheetSettings(globalSettings.Sheet)
-		// Under the lock, so that a SetHost racing with this either sees the settings as not yet loaded and leaves
-		// the hand-over to this, or sees them as loaded and does it itself; never both or neither.
+		// Under the lock, so that a SetHost racing with this either sees the settings as not yet loaded and leaves the
+		// hand-over to this, or sees them as loaded and does it itself; never both or neither. The host is handed the
+		// general settings again here, although EnsureValidity gave them to the host of that moment, since a host
+		// installed between the two was given nothing.
 		hostLock.Lock()
-		currentHost().SettingsLoaded(&globalSettings)
+		handSettingsTo(currentHost(), &globalSettings)
 		globalSettingsLoaded.Store(true)
 		hostLock.Unlock()
 	})

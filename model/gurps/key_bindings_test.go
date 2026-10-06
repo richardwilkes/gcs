@@ -84,3 +84,20 @@ func TestKeyBindingsKeepUnregisteredIDs(t *testing.T) {
 	c.NoError(jio.Unmarshal(data, &converted))
 	c.Equal(b.data, converted.data, "a conversion with nothing registered rewrites the file with every binding in it")
 }
+
+// TestKeyBindingsPrune verifies that pruning drops only the bindings for IDs that aren't registered.
+func TestKeyBindingsPrune(t *testing.T) {
+	c := check.New(t)
+	const id = "test.key_bindings.prune"
+	RegisterKeyBinding(id, "cmd+P")
+	t.Cleanup(func() { delete(factoryBindings, id) })
+
+	var b KeyBindings
+	b.Prune()
+	c.True(b.IsZero(), "pruning a zero value is harmless")
+	c.NoError(jio.Unmarshal([]byte(`{"test.key_bindings.prune":"cmd+Q","test.key_bindings.gone":"cmd+G"}`), &b))
+	b.Prune()
+	data, err := jio.Marshal(&b)
+	c.NoError(err)
+	c.Equal(`{"test.key_bindings.prune":"cmd+Q"}`, string(data), "only the unregistered binding is dropped")
+}

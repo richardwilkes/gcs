@@ -174,10 +174,17 @@ func (s *GeneralSettings) UpdateCursorSize() {
 	currentHost().SetCursorSize(s.CursorSize)
 }
 
-// UpdateFocusForReading hands the FocusForReading setting to the host, which keeps its own copy. EnsureValidity calls
-// it.
+// UpdateFocusForReading hands the FocusForReading setting to the host, which keeps its own copy.
 func (s *GeneralSettings) UpdateFocusForReading() {
 	currentHost().SetFocusForReading(s.FocusForReading)
+}
+
+// applyToHost hands the host every setting it keeps a copy of, which the Update methods do one at a time for the
+// current host.
+func (s *GeneralSettings) applyToHost(h Host) {
+	h.SetTooltipTiming(fxp.SecondsToDuration(s.TooltipDelay), fxp.SecondsToDuration(s.TooltipDismissal))
+	h.SetCursorSize(s.CursorSize)
+	h.SetFocusForReading(s.FocusForReading)
 }
 
 // CalendarRef returns the CalendarRef these settings refer to.
@@ -250,7 +257,5 @@ func (s *GeneralSettings) EnsureValidity() {
 	s.PDFAutoScaling = s.PDFAutoScaling.EnsureValid()
 	s.AppUpdateCheck = s.AppUpdateCheck.EnsureValid()
 	s.LibraryUpdateCheck = s.LibraryUpdateCheck.EnsureValid()
-	s.UpdateToolTipTiming()
-	s.UpdateCursorSize()
-	s.UpdateFocusForReading()
+	s.applyToHost(currentHost())
 }

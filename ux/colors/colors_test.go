@@ -103,7 +103,7 @@ func TestCaptureCurrentRecordsLiveEdits(t *testing.T) {
 	id := Current()[0].ID
 	Current()[0].Color.Light = blue // As the color well's InkChangedCallback does.
 
-	var saved Colors // A zero value, as first-run settings hold.
+	var saved Colors // A zero value, which is what every capture starts from.
 	saved.CaptureCurrent()
 	c.Equal(blue, stored(t, &saved)[id].Light, "capturing records the live edit")
 

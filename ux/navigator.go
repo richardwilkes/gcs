@@ -797,7 +797,7 @@ func (n *Navigator) populateRows() []*NavigatorNode {
 	rows := make([]*NavigatorNode, 0, 1+len(libs))
 	rows = append(rows, NewFavoritesNode(n))
 	for _, lib := range libs {
-		// The watch reports changes on a goroutine of its own, so hand each one off to the UI thread.
+		// The watch reports changes on no particular goroutine, so hand each one off to the UI thread.
 		n.tokens = append(n.tokens, lib.Watch(func(l *library.Library, fullPath string, what notify.Event) {
 			unison.InvokeTask(func() { n.watchCallback(l, fullPath, what) })
 		}))

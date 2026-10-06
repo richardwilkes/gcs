@@ -63,10 +63,12 @@ func currentKeyBindings() []*keyBindingEntry {
 	return list
 }
 
-// applyKeyBindings applies the key bindings to their actions and to the menu items that show them. Each binding is
-// also stored back in its canonical text form, since the model compares bindings by their text and would otherwise
-// take a factory default that was spelled differently for a change.
+// applyKeyBindings applies the key bindings to their actions and to the menu items that show them. Each binding is also
+// stored back in its canonical text form, since the model compares bindings by their text and would otherwise take a
+// factory default that was spelled differently for a change, and the bindings for IDs no action registered are dropped,
+// since nothing could show or reset them.
 func applyKeyBindings(b *gurps.KeyBindings) {
+	b.Prune()
 	var actions []*unison.Action
 	for id, v := range keyBindingEntries {
 		current := unison.KeyBindingFromKey(b.Current(id))

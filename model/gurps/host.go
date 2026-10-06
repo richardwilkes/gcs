@@ -30,7 +30,10 @@ var (
 )
 
 // Host is implemented by the user interface. The model hands it the settings that alter how the interface behaves and
-// asks it for what only the interface knows, which keeps the model free of any dependency on a UI toolkit.
+// asks it for what only the interface knows, which keeps the model free of any dependency on a UI toolkit. It is the
+// main route between the two: the interface also registers its theme file converters with RegisterConverter and its
+// key binding defaults with RegisterKeyBinding, and keeps its decoded portrait in Profile.PortraitCache. No method may
+// call GlobalSettings, since several are called from inside its once-initializer, which would deadlock.
 type Host interface {
 	// SetTooltipTiming sets how long the pointer must rest before a tooltip is shown and how long it then stays up.
 	SetTooltipTiming(delay, dismissal time.Duration)
@@ -47,7 +50,7 @@ type Host interface {
 	// ThemeColor returns the current value of the theme color with the given ID, in CSS form.
 	ThemeColor(id string) (css string, ok bool)
 	// SettingsLoaded is called once the global settings have been loaded and validated, so that the theme mode, colors
-	// and fonts they hold can be applied. It must not call GlobalSettings.
+	// and fonts they hold can be applied.
 	SettingsLoaded(s *Settings)
 	// SettingsSaving is called before the global settings are written, so that the live theme colors and fonts can be
 	// stored into them.
@@ -56,7 +59,9 @@ type Host interface {
 
 // SetHost sets the Host the model works with. Passing nil restores NoHost. If the global settings have already been
 // loaded, they are handed to the new host, which puts the theme they hold into effect in place of whatever the live
-// theme has become since. It may be called at any time, from any goroutine.
+// theme has become since. Storing the host is safe from any goroutine, but that hand-over reads the general settings
+// and runs the new host's callbacks on the caller's goroutine, so a host that drives a user interface must be installed
+// on its thread once the settings are loaded.
 func SetHost(h Host) {
 	if h == nil {
 		h = NoHost{}
@@ -65,11 +70,16 @@ func SetHost(h Host) {
 	defer hostLock.Unlock()
 	host.Store(&h)
 	if globalSettingsLoaded.Load() {
-		globalSettings.General.UpdateToolTipTiming()
-		globalSettings.General.UpdateCursorSize()
-		globalSettings.General.UpdateFocusForReading()
-		h.SettingsLoaded(&globalSettings)
+		handSettingsTo(h, &globalSettings)
 	}
+}
+
+// handSettingsTo gives the host the loaded global settings: first the general settings it keeps copies of, then the
+// settings as a whole. GlobalSettings uses it for the host in place when the settings are loaded and SetHost for one
+// installed afterwards, so that every host is given the same things whichever way it came by them.
+func handSettingsTo(h Host, s *Settings) {
+	s.General.applyToHost(h)
+	h.SettingsLoaded(s)
 }
 
 // currentHost returns the Host the model works with.

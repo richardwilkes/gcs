@@ -21,8 +21,9 @@ import (
 
 // TestModelDoesNotDependOnUnison verifies that nothing beneath model, its tests included, depends on unison, whether
 // directly or through another package, so that the model can be used without a user interface. Whatever the model
-// needs from one goes through gurps.Host instead. Each operating system CI builds for is checked, since the model has
-// per-platform sources, as is the race build tag, which selects the TestRace wrappers.
+// needs from one goes through gurps.Host, or is registered with the model by the interface, instead. Each operating
+// system CI builds for is checked, since the model has per-platform sources, as is the race build tag, which selects
+// the TestRace wrappers.
 func TestModelDoesNotDependOnUnison(t *testing.T) {
 	c := check.New(t)
 	// The go command on the PATH is the one build.sh and CI run the tests with. The test binary is given no GOROOT it
