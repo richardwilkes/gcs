@@ -49,7 +49,10 @@ func TestFilterConditionDescribe(t *testing.T) {
 		{newTextFilterCondition("name", criteria.ContainsText, "sword"), `Must have a name that contains "[sword]"`},
 		{newTextFilterCondition("name", criteria.IsText, "Axe"), `Must have a name that is [Axe]`},
 		{newTextFilterCondition("name", criteria.IsText, ""), `Must have a name that is ""`},
-		{newTextFilterCondition("name", criteria.IsText, "   "), `Must have a name that is ""`},
+		{newTextFilterCondition("name", criteria.IsText, "   "), `Must have a name that is "[   ]"`},
+		{newTextFilterCondition("name", criteria.ContainsText, " "), `Must have a name that contains "[ ]"`},
+		{newTextFilterCondition("name", criteria.IsText, `Say "hi"`), `Must have a name that is '[Say "hi"]'`},
+		{newTextFilterCondition("name", criteria.IsText, "Sword or Axe"), `Must have a name that is [Sword or Axe]`},
 		{newTextFilterCondition("name", criteria.IsText, " Axe"), `Must have a name that is "[ Axe]"`},
 		{newTextFilterCondition("name", criteria.IsText, "Axe, Hand"), `Must have a name that is "[Axe, Hand]"`},
 		{
@@ -77,7 +80,7 @@ func TestFilterConditionDescribe(t *testing.T) {
 		{newTextFilterCondition("tags", criteria.ContainsText, ""), `Must have tags where at least one contains ""`},
 		{
 			newTextFilterCondition("tags", criteria.IsText, "Sword, Axe"),
-			`Must have tags where at least one is [Sword] or [Axe]`,
+			`Must have tags where at least one is "[Sword]" or "[Axe]"`,
 		},
 		{
 			newTextFilterCondition("tags", criteria.ContainsText, "Sword, Axe, ,Bow"),
@@ -89,7 +92,7 @@ func TestFilterConditionDescribe(t *testing.T) {
 		},
 		{
 			newTextFilterCondition("tags", criteria.IsNotText, "Sword, Axe"),
-			`Must have tags where none is [Sword] or [Axe]`,
+			`Must have tags where none is "[Sword]" or "[Axe]"`,
 		},
 		{
 			negated(newTextFilterCondition("tags", criteria.DoesNotContainText, "Sword,Axe")),
@@ -120,15 +123,32 @@ func TestFilterConditionDescribe(t *testing.T) {
 		{negated(gurps.NewFilterCondition(nil, "container")), `Must not be a container`},
 		{
 			gurps.NewFilterCondition(nil, "future_field"),
-			`Condition on unknown field "future_field"; it will be preserved, but never matches`,
+			`Condition on unknown field "future_field"; it never matches`,
 		},
 		{
 			negated(gurps.NewFilterCondition(nil, "future_field")),
-			`Condition on unknown field "future_field"; it will be preserved, but never matches`,
+			`Condition on unknown field "future_field"; it never matches`,
 		},
 	} {
 		c.Equal(one.want, one.cond.Describe(equipmentFilterLookup, fxp.Pound, bracket), "case %d", i)
 	}
+}
+
+// TestFilterConditionDescribesCostApplication checks the sentence of the trait modifier field that says what part of
+// the cost a modifier applies to.
+func TestFilterConditionDescribesCostApplication(t *testing.T) {
+	c := check.New(t)
+	lookup := func(key string) (title string, kind gurps.FilterFieldKind, plural, ok bool) {
+		for _, field := range gurps.TraitModifierFilterFields() {
+			if field.Key == key {
+				return field.Title, field.Kind, field.Plural, true
+			}
+		}
+		return "", 0, false, false
+	}
+	cond := newTextFilterCondition("affects", criteria.IsText, "to base cost only")
+	c.Equal("Must have a cost application that is to base cost only", cond.Describe(lookup, fxp.Pound,
+		func(s string) string { return s }))
 }
 
 func TestFilterConditionDescribesWeightInUnits(t *testing.T) {

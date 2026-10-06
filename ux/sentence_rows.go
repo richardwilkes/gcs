@@ -94,9 +94,9 @@ type sentenceRows[T any] struct {
 	// passEscape lets an Escape that closes no row through to what holds the panel, such as a dialog that cancels on
 	// it.
 	passEscape bool
-	// staticTip, when set, returns the tooltip of a row that isn't editable in place of the one that speaks of saving a
-	// file.
-	staticTip func() string
+	// staticTip, when set, returns the tooltip of the row at the path when it isn't editable, in place of the one that
+	// speaks of saving a file.
+	staticTip func(path string) string
 }
 
 // initRows sets up the rows of a panel whose rows are dragged as dragKey, with the callbacks described on sentenceRows.
@@ -449,7 +449,7 @@ func (p *sentenceRows[T]) sentenceRow(path string, describe func() string, edita
 			// One this version of GCS doesn't understand can't be edited, so its sentence is static text.
 			tip := i18n.Text("This was most likely created by a newer version of GCS. Its original data will be written back out unchanged when this file is saved.")
 			if p.staticTip != nil {
-				tip = p.staticTip()
+				tip = p.staticTip(path)
 			}
 			sentence.Tooltip = newWrappedTooltip(tip)
 		}

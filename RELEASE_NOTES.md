@@ -15,13 +15,18 @@
 - The prerequisites section of the editors works the same way, opening collapsed to a paragraph describing its
   prerequisites when it has any. That paragraph no longer shows above them once the section is expanded. A group's
   add button has moved into its more menu, except for the top group's, which takes the place of a more menu, and an
-  empty group's, which now sits beside its placeholder.
+  empty group's, which now sits beside its placeholder. Choosing All of Group or Any of Group for an empty top group
+  that already shows its pill now adds a group, rather than changing the top group's type.
+- Wherever prerequisite and feature sentences compare text, as in their "whose ..." and specialization clauses, a value
+  with a comma, a double quote, or space at either end is now quoted, so that where it starts and stops shows, and one
+  holding a double quote is put in single quotes.
 - The editor for saved list filters has been rebuilt to work like the prerequisites editor. Each condition is shown as a
   short sentence, such as "Must not be a container", that opens to edit it. Each group's pill says how it combines
   what it holds: all of it must match, any of it, none of it, or not all of it. Conditions and groups can be
-  duplicated, moved, wrapped in a group or dragged into place, a group that isn't negated can be ungrouped, new ones are
-  added at the end, and every change can be undone. Escape closes the open condition, or with none open, cancels the
-  editor.
+  duplicated, moved, wrapped in a group or dragged into place, a group can be ungrouped when that keeps what the
+  filter asks for, new ones are added at the end, and every change can be undone. Escape closes the open condition,
+  or with none open, cancels the editor. A value with a comma, a double quote, or space at either end is quoted, as is
+  each of several values given as a list.
 - The saved filters popup now lists New Filter, Edit Filter and Delete Filter first, so they stay within reach of a
   long list of filters.
 - Weapon bonus tooltips on the sheet use shorter names, such as "to accuracy", and the rate of fire bonuses say which

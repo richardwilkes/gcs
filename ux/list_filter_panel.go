@@ -76,7 +76,12 @@ func newListFilterPanel(listKey string, filter *gurps.ListFilter, fields []filte
 	p.initRows(listFilterDragKey, p.build, p.state, p.setState, p.stateHash)
 	// An Escape that closes no row cancels the dialog.
 	p.passEscape = true
-	p.staticTip = preservedFilterNodeTooltip
+	p.staticTip = func(path string) string {
+		if _, ok := p.node(path).(*gurps.FilterCondition); ok {
+			return unknownFilterFieldTooltip()
+		}
+		return preservedFilterNodeTooltip()
+	}
 	p.initTree(p)
 	p.build()
 	return p
@@ -244,8 +249,16 @@ func (p *listFilterPanel) defaultFieldKey() string {
 	return p.fields[0].key
 }
 
-// preservedFilterNodeTooltip returns the tooltip that explains a row the editor shows but can't edit. It is looked up
-// when needed rather than held in a variable, since the localization isn't in place when the package initializes.
+// preservedFilterNodeTooltip returns the tooltip that explains the row of a node of a kind the editor doesn't know,
+// which it shows but can't edit. It is looked up when needed rather than held in a variable, since the localization
+// isn't in place when the package initializes.
 func preservedFilterNodeTooltip() string {
 	return i18n.Text("This was most likely created by a newer version of GCS. Its original data will be written back out unchanged when this filter is saved.")
+}
+
+// unknownFilterFieldTooltip returns the tooltip that explains the row of a condition on a field the editor doesn't
+// know. Such a condition loads as an ordinary one, so whatever else a newer version of GCS gave it may not survive a
+// save.
+func unknownFilterFieldTooltip() string {
+	return i18n.Text("This was most likely created by a newer version of GCS. This version can't tell what it asks for, so it never matches, and saving the filter may not keep all of it.")
 }

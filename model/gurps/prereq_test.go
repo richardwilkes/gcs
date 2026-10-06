@@ -158,6 +158,34 @@ func TestPrereqDescribe(t *testing.T) {
 	}
 }
 
+// TestPrereqDescribeQuotesValues checks how a "whose ..." clause shows its value: bare after "is" when it reads
+// plainly, and otherwise quoted as it is, in single quotes when it holds a double quote. The quotes sit outside what em
+// emphasizes.
+func TestPrereqDescribeQuotesValues(t *testing.T) {
+	c := check.New(t)
+	plain := func(s string) string { return s }
+	for i, one := range []struct {
+		compare criteria.StringComparison
+		notes   string
+		em      func(string) string
+		want    string
+	}{
+		{criteria.IsText, "Sharp", plain, "Has trait Acute Vision whose notes is Sharp"},
+		{criteria.IsText, "Sharp, Keen", plain, `Has trait Acute Vision whose notes is "Sharp, Keen"`},
+		{criteria.IsText, " Sharp", plain, `Has trait Acute Vision whose notes is " Sharp"`},
+		{criteria.ContainsText, " ", plain, `Has trait Acute Vision whose notes contains " "`},
+		{criteria.ContainsText, "", plain, `Has trait Acute Vision whose notes contains ""`},
+		{criteria.IsText, `Say "hi"`, plain, `Has trait Acute Vision whose notes is 'Say "hi"'`},
+		{criteria.IsText, "Sharp", bracket, "Has trait [Acute Vision] whose notes is [Sharp]"},
+		{criteria.IsText, "Sharp, Keen", bracket, `Has trait [Acute Vision] whose notes is "[Sharp, Keen]"`},
+		{criteria.IsText, `Say "hi"`, bracket, `Has trait [Acute Vision] whose notes is '[Say "hi"]'`},
+	} {
+		p := namedTrait("Acute Vision")
+		p.NotesCriteria = criteria.Text{Compare: one.compare, Qualifier: one.notes}
+		c.Equal(one.want, p.Describe(nil, nil, one.em), "case %d", i)
+	}
+}
+
 // TestPrereqDescribeReplacements verifies that a description applies the nameable replacements it is given.
 func TestPrereqDescribeReplacements(t *testing.T) {
 	c := check.New(t)

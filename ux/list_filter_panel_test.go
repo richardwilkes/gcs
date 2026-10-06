@@ -162,10 +162,10 @@ func TestListFilterPanelRows(t *testing.T) {
 		for path, want := range map[string]string{
 			"r.0":   `Must have a name that contains "sword"`,
 			"r.1":   `Must have a weight that is at most 5 lb`,
-			"r.2.0": `Must have tags where at least one is Shield or Buckler`,
+			"r.2.0": `Must have tags where at least one is "Shield" or "Buckler"`,
 			"r.2.1": `Must have a cost that is at least 1,000`,
 			"r.3":   `Must not be a container`,
-			"r.4":   `Condition on unknown field "future_field"; it will be preserved, but never matches`,
+			"r.4":   `Condition on unknown field "future_field"; it never matches`,
 			"r.5":   `Unknown filter node type "sparkle"; it will be preserved, but never matches`,
 		} {
 			c.Equal(want, sentenceText(p, path), path)
@@ -176,12 +176,16 @@ func TestListFilterPanelRows(t *testing.T) {
 				c.NotNil(pill.Tooltip, "%s's pill explains the choices", path)
 			}
 		}
-		c.Equal("None of", p.FindRefKey("r.2:group").Accessibility.Name)
-		for _, path := range []string{"r.4", "r.5"} {
-			b, ok := p.FindRefKey(path + keySentence).Self.(*sentenceButton)
-			c.True(ok && b.onClick == nil, "%s can't be opened", path)
-			if ok {
-				c.Equal(wrapTextForTooltip(preservedFilterNodeTooltip()), tooltipText(b.Tooltip), path)
+		if group, ok := refAs[*unison.Panel](t, p.AsPanel(), "r.2:group"); ok {
+			c.Equal("None of", group.Accessibility.Name)
+		}
+		for path, tip := range map[string]string{
+			"r.4": unknownFilterFieldTooltip(),
+			"r.5": preservedFilterNodeTooltip(),
+		} {
+			if b, ok := refAs[*sentenceButton](t, p.AsPanel(), path+keySentence); ok {
+				c.Nil(b.onClick, "%s can't be opened", path)
+				c.Equal(wrapTextForTooltip(tip), tooltipText(b.Tooltip), path)
 			}
 		}
 		p.toggle("r.4")
@@ -665,16 +669,15 @@ func TestListFilterPanelFieldKinds(t *testing.T) {
 	}
 }
 
-// TestListFilterPanelSavesUnknownData shows a filter loaded with a node of a kind and a condition on a field this
-// version doesn't know, changes the rest of it, and checks that saving writes both back out byte for byte.
-func TestListFilterPanelSavesUnknownData(t *testing.T) {
+// TestListFilterPanelSavesUnknownNodes shows a filter loaded with a node of a kind this version doesn't know, changes
+// the rest of it, and checks that saving writes the node back out byte for byte.
+func TestListFilterPanelSavesUnknownNodes(t *testing.T) {
 	c := check.New(t)
 	screen, _ := startHeadlessWorkspace(t, c)
 	const unknownNode = `{"type":"future_node","weird":[1,2]}`
-	const unknownField = `{"type":"condition","field":"future_field","text":{"compare":"contains","qualifier":"x"}}`
 	var f gurps.ListFilter
 	c.NoError(jio.Unmarshal([]byte(`{"name":"Saved","root":{"type":"group","all":true,"children":[`+unknownNode+
-		`,`+unknownField+`,{"type":"condition","field":"name"}]}}`), &f))
+		`,{"type":"condition","field":"tags"},{"type":"condition","field":"name"}]}}`), &f))
 	p, _ := showListFilterPanel(t, screen, &f)
 	screen.Do(func() { menuAction(p.moreEntries(p.node("r.2"), "r.2"), "Move Up")() })
 	screen.Do(func() {
@@ -687,7 +690,6 @@ func TestListFilterPanelSavesUnknownData(t *testing.T) {
 	screen.Do(func() { out, err = jio.Marshal(&f) })
 	c.NoError(err)
 	c.Contains(string(out), unknownNode, "the unknown node is saved as it was")
-	c.Contains(string(out), unknownField, "and so is the condition on an unknown field")
 	c.Contains(string(out), `"all":false`, "along with the change")
 }
 

@@ -147,7 +147,7 @@ func TraitModifierFilterFields() []*FilterField[*TraitModifier] {
 			}
 			return t.CostModifierType().Format(t.CostModifier().Simplify())
 		}),
-		NewTextFilterField("affects", i18n.Text("affect the cost"), func(t *TraitModifier) string {
+		NewTextFilterField("affects", i18n.Text("have a cost application"), func(t *TraitModifier) string {
 			if t.Container() {
 				return ""
 			}
