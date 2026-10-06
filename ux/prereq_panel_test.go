@@ -1090,11 +1090,11 @@ func TestPrereqPanelGroupMenusAdd(t *testing.T) {
 			c.Equal(head, p.FindRefKey(path+keyMore).Parent(), "%s: its button is in its head", path)
 		}
 		c.Equal("More actions", tooltipText(p.FindRefKey("r.1"+keyMore).Tooltip), "a nested group's is a more button")
-		root, ok := p.FindRefKey(prereqRootPath + keyMore).Self.(*unison.Button)
+		add, ok := p.FindRefKey(prereqRootPath + keyMore).Self.(*unison.Button)
 		c.True(ok)
 		if ok {
-			c.Equal("Add to this group", tooltipText(root.Tooltip), "the root's is an add button")
-			drawable, isSVG := root.Drawable.(*unison.DrawableSVG)
+			c.Equal("Add to this group", tooltipText(add.Tooltip), "the root's is an add button")
+			drawable, isSVG := add.Drawable.(*unison.DrawableSVG)
 			c.True(isSVG && drawable.SVG == unison.CircledAddSVG, "showing the add icon")
 		}
 		right := func(key string) float32 {
@@ -1123,10 +1123,13 @@ func TestPrereqPanelGroupMenusAdd(t *testing.T) {
 	}
 	c.Equal(want, nested[:len(adds)], "a nested group's more menu starts with what can be added to it, saying so")
 	c.Equal([]string{"-", "Duplicate"}, nested[len(adds):len(adds)+2], "then the rest, after a separator")
-	c.Equal(prereqMenuLabels(p.moreEntries(p.node("r.0"), "r.0"))[0], "Duplicate", "a row's more menu is as it was")
+	c.Equal("Duplicate", prereqMenuLabels(more("r.0"))[0], "a row's more menu is as it was")
 
-	prereqMenuAction(more("r.1"), "Trait")()
-	screen.Sync()
+	// choose picks the entry with the label from the menu, on the UI thread, as a click on it would.
+	choose := func(entries []menuEntry, label string) {
+		screen.Do(prereqMenuAction(entries, label))
+	}
+	choose(more("r.1"), "Trait")
 	screen.Do(func() {
 		c.Equal(3, groupLen("r.1"), "the nested group's menu adds to it")
 		c.Equal("r.1.2", p.open, "opening the new row")
@@ -1136,8 +1139,7 @@ func TestPrereqPanelGroupMenusAdd(t *testing.T) {
 	})
 	screen.Do(host.mgr.Undo)
 	screen.Do(func() { c.Equal("r.1"+keyMore, p.Window().Focus().RefKey, "undo gives the focus to the more button") })
-	prereqMenuAction(more(prereqRootPath), "All of Group")()
-	screen.Sync()
+	choose(more(prereqRootPath), "All of Group")
 	screen.Do(func() {
 		c.Equal(4, len(p.tree().Prereqs), "the root's menu adds to the root")
 		c.Equal("r.3"+keyMore, p.Window().Focus().RefKey, "a new group takes the focus on its more button")
@@ -1152,8 +1154,7 @@ func TestPrereqPanelGroupMenusAdd(t *testing.T) {
 		c.True(add.Parent() != p.FindRefKey("r.3"+keyPill).Parent(), "not in its head")
 		c.Equal("Add to this group", tooltipText(add.Tooltip))
 	})
-	prereqMenuAction(more("r.3"), "Skill")()
-	screen.Sync()
+	choose(more("r.3"), "Skill")
 	screen.Do(func() {
 		c.Equal(1, groupLen("r.3"))
 		c.Nil(p.FindRefKey("r.3"+keyAdd), "the add button goes once the group holds something")
