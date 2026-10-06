@@ -10,8 +10,6 @@
 package gurps
 
 import (
-	"fmt"
-
 	"github.com/richardwilkes/gcs/v5/model/criteria"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/nameable"
@@ -30,7 +28,7 @@ type FilterFieldLookup func(key string) (title string, kind FilterFieldKind, plu
 func (c *FilterCondition) Describe(lookup FilterFieldLookup, units fxp.WeightUnit, em func(string) string) string {
 	title, kind, plural, ok := lookup(c.Field)
 	if !ok {
-		return fmt.Sprintf(i18n.Text("Condition on unknown field %q; it will be preserved, but never matches"), c.Field)
+		return i18n.Text("Condition on unknown field %q; it will be preserved, but never matches", c.Field)
 	}
 	var criterion string
 	switch kind {
@@ -52,13 +50,13 @@ func (c *FilterCondition) Describe(lookup FilterFieldLookup, units fxp.WeightUni
 	}
 	switch {
 	case plural && c.Not:
-		return fmt.Sprintf(i18n.Text("Must not %s %s"), title, criterion)
+		return i18n.Text("Must not %s %s", title, criterion)
 	case plural:
-		return fmt.Sprintf(i18n.Text("Must %s %s"), title, criterion)
+		return i18n.Text("Must %s %s", title, criterion)
 	case c.Not:
-		return fmt.Sprintf(i18n.Text("Must not %s that %s"), title, criterion)
+		return i18n.Text("Must not %s that %s", title, criterion)
 	default:
-		return fmt.Sprintf(i18n.Text("Must %s that %s"), title, criterion)
+		return i18n.Text("Must %s that %s", title, criterion)
 	}
 }
 
@@ -66,9 +64,9 @@ func (c *FilterCondition) Describe(lookup FilterFieldLookup, units fxp.WeightUni
 // does, inverted when invert is set.
 func (c *FilterCondition) describeHaving(title string, invert bool) string {
 	if c.Not != invert {
-		return fmt.Sprintf(i18n.Text("Must not %s"), title)
+		return i18n.Text("Must not %s", title)
 	}
-	return fmt.Sprintf(i18n.Text("Must %s"), title)
+	return i18n.Text("Must %s", title)
 }
 
 // describeNumber returns the comparison and the qualifier, as text: for a plural title, a clause that agrees with it,
@@ -95,12 +93,12 @@ func (c *FilterCondition) describeList(title string, em func(string) string) str
 	}
 	text := describeComparison(compare.ListClause(), compare.Positive(), qualifiers, em)
 	if c.Not {
-		return fmt.Sprintf(i18n.Text("Must not %s %s"), title, text)
+		return i18n.Text("Must not %s %s", title, text)
 	}
-	return fmt.Sprintf(i18n.Text("Must %s %s"), title, text)
+	return i18n.Text("Must %s %s", title, text)
 }
 
 // Describe returns what the editor says of a node this version of GCS doesn't understand.
 func (n *UnknownFilterNode) Describe() string {
-	return fmt.Sprintf(i18n.Text("Unknown filter node type %q; it will be preserved, but never matches"), n.Kind)
+	return i18n.Text("Unknown filter node type %q; it will be preserved, but never matches", n.Kind)
 }

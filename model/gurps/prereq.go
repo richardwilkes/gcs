@@ -10,7 +10,6 @@
 package gurps
 
 import (
-	"fmt"
 	"hash"
 	"strings"
 
@@ -90,7 +89,7 @@ func describeComparison(words string, compare criteria.StringComparison, qualifi
 	}
 	text := parts[len(parts)-1]
 	if len(parts) > 1 {
-		text = fmt.Sprintf(i18n.Text("%s or %s"), strings.Join(parts[:len(parts)-1], i18n.Text(", ")), text)
+		text = i18n.Text("%s or %s", strings.Join(parts[:len(parts)-1], i18n.Text(", ")), text)
 	}
 	return words + " " + text
 }
