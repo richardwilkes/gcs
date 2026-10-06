@@ -67,6 +67,8 @@ type featuresPanel struct {
 	entity   *gurps.Entity
 	owner    fmt.Stringer
 	features *gurps.Features
+	// names, when set, gives the nameable replacements in place of the owner (see withReplacementsFrom).
+	names nameable.Accesser
 	// pending is the key of an optional criterion added to the open row that holds nothing yet. It shows until the row
 	// closes, since nothing in the data says it is there.
 	pending string
@@ -139,8 +141,18 @@ func (p *featuresPanel) index(path string) int {
 	return -1
 }
 
+// withReplacementsFrom has the panel take the values of the nameable markers in its features from source rather than
+// from the owner, such as from an editor's data, which Set Substitutions changes.
+func (p *featuresPanel) withReplacementsFrom(source nameable.Accesser) *featuresPanel {
+	p.names = source
+	return p
+}
+
 // replacements returns the values the owning item gives the nameable markers in its features.
 func (p *featuresPanel) replacements() map[string]string {
+	if p.names != nil {
+		return p.names.NameableReplacements()
+	}
 	if owner, ok := p.owner.(nameable.Accesser); ok {
 		return owner.NameableReplacements()
 	}

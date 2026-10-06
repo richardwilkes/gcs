@@ -1438,6 +1438,11 @@ func (t *TraitEditData) CopyFrom(other *Trait) {
 	t.copyFrom(other, &other.TraitEditData, false, Copy)
 }
 
+// NameableReplacements returns the replacements to be used with Nameables.
+func (t *TraitEditData) NameableReplacements() map[string]string {
+	return t.Replacements
+}
+
 // SetNameableReplacements sets the replacements to be used with Nameables.
 func (t *TraitEditData) SetNameableReplacements(replacements map[string]string) {
 	t.Replacements = replacements

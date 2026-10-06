@@ -121,7 +121,7 @@ func (e *editor[N, D]) createToolbar(helpMD string, initToolbar func(*editor[N, 
 				e.nameablesButton.Tooltip = newWrappedTooltip(i18n.Text("Set Substitutions"))
 				e.nameablesButton.ClickCallback = func() {
 					if tmp, m := e.prepareForSubstitutions(); len(m) > 0 {
-						showNameablesDialog(promptOperation{}, []nameablesSection{{Title: tmp.String(), Nameables: m}})
+						promptForNameables(promptOperation{}, []nameablesSection{{Title: tmp.String(), Nameables: m}})
 						tmp.ApplyNameableKeys(m)
 						// Applying nameable keys only alters the replacements map, so copy just that back, which the
 						// data of every kind of item that gets this button can do. CopyFrom would replace the entire
@@ -130,6 +130,10 @@ func (e *editor[N, D]) createToolbar(helpMD string, initToolbar func(*editor[N, 
 						if setter, ok2 := any(e.editorData).(nameable.Setter); ok2 {
 							setter.SetNameableReplacements(tmp.NameableReplacements())
 							e.Rebuild(false)
+							// The rows' sentences show the new values only once they are made again.
+							for _, section := range rowSections(e.content) {
+								section.rebuild("")
+							}
 						}
 					}
 				}
@@ -186,10 +190,12 @@ func (e *editor[N, D]) rebuildContent() {
 	e.undoMgr.Clear()
 }
 
-// rowSection is a section of an editor's content made of sentence rows, whose view rebuildContent keeps.
+// rowSection is a section of an editor's content made of sentence rows, whose view rebuildContent keeps, and which
+// Set Substitutions rebuilds.
 type rowSection interface {
 	view() rowsView
 	setView(view rowsView)
+	rebuild(focus string)
 }
 
 // rowSections returns the sections of the content made of sentence rows, in order.

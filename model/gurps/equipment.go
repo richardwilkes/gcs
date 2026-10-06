@@ -1301,6 +1301,11 @@ func (e *EquipmentEditData) CopyFrom(other *Equipment) {
 	e.copyFrom(other, &other.EquipmentEditData, false, Copy)
 }
 
+// NameableReplacements returns the replacements to be used with Nameables.
+func (e *EquipmentEditData) NameableReplacements() map[string]string {
+	return e.Replacements
+}
+
 // SetNameableReplacements sets the replacements to be used with Nameables.
 func (e *EquipmentEditData) SetNameableReplacements(replacements map[string]string) {
 	e.Replacements = replacements

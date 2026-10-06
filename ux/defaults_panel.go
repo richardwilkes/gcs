@@ -46,7 +46,7 @@ const defaultDropKey = "default.drop"
 //
 // The list is never changed in place, by slices.Delete, slices.Insert or a swap, but replaced with a new one: code still
 // holding the old slice, because its owner was not properly updated, would otherwise find it changed under it, with a
-// nil where slices.Delete zeroed its vacated end, and panic.
+// nil where slices.Delete zeroed its vacated end, and panic. The list holds no nils, which loading drops.
 type defaultsPanel struct {
 	sentenceRows[[]*gurps.SkillDefault]
 	entity   *gurps.Entity
@@ -75,10 +75,8 @@ func copyDefaults(list []*gurps.SkillDefault) []*gurps.SkillDefault {
 	}
 	clone := make([]*gurps.SkillDefault, len(list))
 	for i, one := range list {
-		if one != nil {
-			c := *one
-			clone[i] = &c
-		}
+		c := *one
+		clone[i] = &c
 	}
 	return clone
 }
@@ -98,9 +96,7 @@ func (p *defaultsPanel) dataHash() uint64 {
 	h := xxh3.New()
 	xhash.Num64(h, len(*p.defaults))
 	for _, one := range *p.defaults {
-		if one != nil {
-			one.Hash(h)
-		}
+		one.Hash(h)
 	}
 	return h.Sum64()
 }
@@ -112,7 +108,7 @@ func (p *defaultsPanel) replace(change func(list []*gurps.SkillDefault) []*gurps
 
 // index returns the index of the default at the path, or -1 if there is none.
 func (p *defaultsPanel) index(path string) int {
-	if i, err := strconv.Atoi(path); err == nil && i >= 0 && i < len(*p.defaults) && (*p.defaults)[i] != nil {
+	if i, err := strconv.Atoi(path); err == nil && i >= 0 && i < len(*p.defaults) {
 		return i
 	}
 	return -1
@@ -135,7 +131,7 @@ func (p *defaultsPanel) build() {
 		return
 	}
 	add := newSectionAddButton(p, i18n.Text("Add a default"), func() bool {
-		def := &gurps.SkillDefault{DefaultType: lastDefaultTypeUsed}
+		def := &gurps.SkillDefault{DefaultType: p.addType()}
 		if def.SkillBased() {
 			def.Name = criteria.Text{Compare: criteria.IsText}
 		}
@@ -148,9 +144,7 @@ func (p *defaultsPanel) build() {
 	})
 	add.RefKey = defaultAddKey
 	for i, one := range *p.defaults {
-		if one != nil {
-			p.AddChild(p.row(one, strconv.Itoa(i)))
-		}
+		p.AddChild(p.row(one, strconv.Itoa(i)))
 	}
 	// New defaults go at the end, so the add button sits under the last row, in line with the more buttons.
 	foot := unison.NewPanel()
@@ -176,9 +170,7 @@ func (p *defaultsPanel) summary() string {
 	replacements := p.replacements()
 	descriptions := make([]string, 0, len(*p.defaults))
 	for _, one := range *p.defaults {
-		if one != nil {
-			descriptions = append(descriptions, one.Describe(p.entity, replacements, emphasize))
-		}
+		descriptions = append(descriptions, one.Describe(p.entity, replacements, emphasize))
 	}
 	return fmt.Sprintf(i18n.Text("%s."), strings.Join(descriptions, i18n.Text("; ")))
 }
@@ -310,6 +302,9 @@ func (p *defaultsPanel) restructure(title, from, fallback string, change func(li
 	})
 }
 
+// defaultTypeFlags are the choices the type popup offers beside the attributes.
+const defaultTypeFlags = gurps.TenFlag | gurps.ParryFlag | gurps.BlockFlag | gurps.SkillFlag
+
 // defaultIndent is how far the lines of an open row after its first are indented, to show they belong to it.
 const defaultIndent = 12
 
@@ -356,20 +351,30 @@ func (p *defaultsPanel) editor(def *gurps.SkillDefault, path string) *unison.Pan
 	return editor
 }
 
-// techLevel returns the tech level of the entity, which a new tech level criterion starts from, or 0 without one.
+// techLevel returns the whole tech level of the entity, which a new tech level criterion starts from, or 0 without one.
 func (p *defaultsPanel) techLevel() fxp.Int {
 	if p.entity == nil {
 		return 0
 	}
 	tl, _, _ := gurps.ExtractTechLevel(p.entity.Profile.TechLevel)
-	return max(tl, 0)
+	return tl.Trunc()
+}
+
+// addType returns the type a new default takes: the one last chosen, unless the entity has no such attribute.
+func (p *defaultsPanel) addType() string {
+	choices, _ := gurps.AttributeChoices(p.entity, "", defaultTypeFlags, "")
+	for _, one := range choices {
+		if one.Key == lastDefaultTypeUsed {
+			return lastDefaultTypeUsed
+		}
+	}
+	return gurps.DexterityID
 }
 
 // typePopup adds the popup that switches a default to another type: an attribute, 10, Parry, Block or Skill. A type that
 // isn't one of them, which a file can still hold, is shown as such, and kept until another is chosen.
 func (p *defaultsPanel) typePopup(parent *unison.Panel, path string, def *gurps.SkillDefault) {
-	choices, current := gurps.AttributeChoices(p.entity, "", gurps.TenFlag|gurps.ParryFlag|gurps.BlockFlag|
-		gurps.SkillFlag, def.Type())
+	choices, current := gurps.AttributeChoices(p.entity, "", defaultTypeFlags, def.Type())
 	addCentered(parent, compactPopup(&p.sentenceRows, path+":type", i18n.Text("Default Type"), choices, current,
 		func(c *gurps.AttributeChoice) string { return c.Title }, func(c *gurps.AttributeChoice) {
 			lastDefaultTypeUsed = c.Key

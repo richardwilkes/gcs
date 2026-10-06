@@ -217,7 +217,7 @@ func TestDefaultsPanelBuildingChangesNothing(t *testing.T) {
 
 // TestDefaultsPanelAdd checks that the add button adds a default of the type last chosen at the end of the list, in a
 // new list, opened with the focus in its first field, that a skill-based one names its skill, and that the new type
-// becomes the one added next.
+// becomes the one added next, unless the entity has no such attribute.
 func TestDefaultsPanelAdd(t *testing.T) {
 	c := check.New(t)
 	screen, _ := startHeadlessWorkspace(t, c)
@@ -251,6 +251,10 @@ func TestDefaultsPanelAdd(t *testing.T) {
 	screen.Do(host.mgr.Undo)
 	c.Equal(4, len(defaults), "adding is undone in one step")
 	c.Equal("3", p.open, "undo opens the row that was open")
+
+	lastDefaultTypeUsed = "custom"
+	add()
+	c.Equal(gurps.DexterityID, defaults[4].Type(), "a type the entity has no attribute for gives way to DX")
 }
 
 // TestDefaultsPanelTypeChange checks that a skill-based default keeps its criteria between the skill-based types, loses
@@ -304,12 +308,14 @@ func TestDefaultsPanelTypeChange(t *testing.T) {
 }
 
 // TestDefaultsPanelChips checks that the specialization, tags and tech level criteria are added as chips and removed
-// again, that a tech level starts at the character's, and that an attribute default offers only the tech level.
+// again, that a tech level starts at the character's whole tech level, and that an attribute default offers only the
+// tech level.
 func TestDefaultsPanelChips(t *testing.T) {
 	c := check.New(t)
 	screen, _ := startHeadlessWorkspace(t, c)
 	entity := gurps.NewEntity()
-	entity.Profile.TechLevel = "3"
+	// A fraction, which the whole-number field would show cut off while the sentence showed it whole.
+	entity.Profile.TechLevel = "3.5"
 	defaults := []*gurps.SkillDefault{
 		{DefaultType: gurps.SkillID, Name: criteria.Text{Compare: criteria.IsText, Qualifier: "Brawling"}},
 		{DefaultType: gurps.DexterityID},
@@ -345,7 +351,7 @@ func TestDefaultsPanelChips(t *testing.T) {
 	c.True(def.Tags.IsZero())
 	click("0:add tl")
 	c.Equal(criteria.Number{Compare: criteria.AtLeastNumber, Qualifier: fxp.Three}, def.WhenTL,
-		"a tech level starts at the character's")
+		"a tech level starts at the character's, as a whole number")
 	screen.Do(func() { c.NotNil(p.FindRefKey("0:tlcmp"), "and shows its comparison") })
 	click("0:tl" + keyChip)
 	c.Equal(criteria.AnyNumber, def.WhenTL.Compare)
@@ -648,4 +654,66 @@ func TestDefaultsPanelWeapon(t *testing.T) {
 		prereqMenuAction(p.moreEntries("0"), "Delete")()
 	})
 	c.Equal([]string{gurps.SkillID}, defaultTypes(weapon.Defaults), "the weapon's defaults are edited")
+}
+
+// collapsedSummary returns the paragraph a collapsed panel of sentence rows shows, or "" if it shows none.
+func collapsedSummary(p *unison.Panel) string {
+	if b, ok := p.FindRefKey(sectionSummaryKey).Self.(*sentenceButton); ok {
+		return b.plainText()
+	}
+	return ""
+}
+
+// TestSkillEditorRowsFollowSubstitutions checks that the defaults and features of a skill editor read their nameable
+// markers with the values the editor's data holds, and show the new ones once Set Substitutions changes them.
+func TestSkillEditorRowsFollowSubstitutions(t *testing.T) {
+	c := check.New(t)
+	screen, _ := startHeadlessWorkspace(t, c)
+	sheet, ok := openedByAction(t, screen, newCharacterSheetAction).(*Sheet)
+	if !ok {
+		t.Fatal("New Character Sheet must open a character sheet")
+	}
+	bonus := gurps.NewSkillBonus()
+	bonus.NameCriteria.Qualifier = "@Weapon@"
+	var e *editor[*gurps.Skill, *gurps.SkillEditData]
+	screen.Do(func() {
+		entity := sheet.Entity()
+		skill := gurps.NewSkill(entity, nil, false)
+		skill.Replacements = map[string]string{"Weapon": "Spear"}
+		skill.Defaults = []*gurps.SkillDefault{
+			{DefaultType: gurps.SkillID, Name: criteria.Text{Compare: criteria.IsText, Qualifier: "@Weapon@"}},
+		}
+		skill.Features = gurps.Features{bonus}
+		entity.Skills = append(entity.Skills, skill)
+		sheet.Rebuild(true)
+		e = EditSkill(sheet, skill)
+	})
+	summaries := func() (defaults, features string) {
+		screen.Do(func() {
+			for _, p := range panelsOfType[*defaultsPanel](e.content) {
+				defaults = collapsedSummary(p.AsPanel())
+			}
+			for _, p := range panelsOfType[*featuresPanel](e.content) {
+				features = collapsedSummary(p.AsPanel())
+			}
+		})
+		return defaults, features
+	}
+	defaults, features := summaries()
+	c.Equal("Skill Spear at +0.", defaults, "the defaults take the skill's values")
+	c.True(strings.Contains(features, "Spear"), "as do the features: %s", features)
+
+	swapForTest(t, &promptForNameables, func(_ promptOperation, sections []nameablesSection) bool {
+		for _, section := range sections {
+			for k := range section.Nameables {
+				section.Nameables[k] = "Rapier"
+			}
+		}
+		return true
+	})
+	screen.Do(e.nameablesButton.ClickCallback)
+	c.Equal("Rapier", e.editorData.Replacements["Weapon"], "precondition: the editor's data takes the new value")
+	defaults, features = summaries()
+	c.Equal("Skill Rapier at +0.", defaults, "Set Substitutions shows the new value in the defaults")
+	c.True(strings.Contains(features, "Rapier"), "and in the features: %s", features)
 }

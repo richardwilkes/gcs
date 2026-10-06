@@ -112,7 +112,8 @@ func initEquipmentItemEditor(e *editor[*gurps.Equipment, *gurps.EquipmentEditDat
 	addPageRefHighlightLabelAndField(content, &e.editorData.PageRefHighlight)
 	adjustFieldBlank(usesField, resolvedMaxUses() <= 0)
 	content.AddChild(newPrereqPanel(entity, &e.editorData.Prereq, prereq.TypesForEquipment, false))
-	content.AddChild(newFeaturesPanel(entity, e.target, &e.editorData.Features, false))
+	content.AddChild(newFeaturesPanel(entity, e.target, &e.editorData.Features, false).
+		withReplacementsFrom(e.editorData))
 	content.AddChild(newEquipmentModifiersPanel(e, entity, e.target, &e.editorData.Modifiers))
 	e.meleeWeapons = newWeaponsPanel(e, e.target, true, &e.editorData.Weapons)
 	content.AddChild(e.meleeWeapons)
