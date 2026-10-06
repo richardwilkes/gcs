@@ -10,6 +10,7 @@
 package gurps
 
 import (
+	"encoding/json/v2"
 	"os"
 	"path/filepath"
 	"testing"
@@ -71,7 +72,7 @@ func TestKeyBindingsKeepUnregisteredIDs(t *testing.T) {
 	c.NoError(jio.Unmarshal([]byte(`{"cut":"cmd+Y","save":"ctrl+alt+S"}`), &b))
 	c.False(b.IsZero(), "unregistered bindings count as something to write")
 	c.Equal("", b.Current("cut"), "but are not answered for")
-	data, err := jio.Marshal(&b)
+	data, err := jio.Marshal(&b, json.Deterministic(true))
 	c.NoError(err)
 	c.Equal(`{"cut":"cmd+Y","save":"ctrl+alt+S"}`, string(data))
 
