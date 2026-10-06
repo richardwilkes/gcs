@@ -430,7 +430,9 @@ func TestPrereqPanelCollapse(t *testing.T) {
 			c.Nil(p.FindRefKey(key), "collapsing hides %s", key)
 		}
 		c.Equal(0, len(p.views), "and the statuses of the rows")
-		c.Equal(stripEm.Replace(p.summaryText()), summary().Accessibility.Name, "the paragraph describes the tree")
+		c.Equal(`Has trait whose name is "" and (has skill whose name is "" at level at least 0 or a custom check) and `+
+			`meets an unknown type of prerequisite ("future") that needs a newer version of GCS.`,
+			summary().Accessibility.Name, "the paragraph describes the tree")
 		c.True(strings.HasSuffix(summary().plainText(), "."), "the paragraph ends with a period")
 		c.Equal(p.collapse.AsPanel(), p.Window().Focus(), "the focus moves from the rows to the title bar")
 		// Nothing but the title strip and the paragraph takes room: the border's insets, as under a plain title, and
@@ -448,7 +450,7 @@ func TestPrereqPanelCollapse(t *testing.T) {
 	screen.Do(func() {
 		c.True(expanded(), "Space expands the panel")
 		c.Nil(p.FindRefKey(sectionSummaryKey), "and hides the paragraph")
-		c.Nil(p.summary)
+		c.Nil(p.paragraph)
 		c.NotNil(p.FindRefKey("r.0"+keyFirst), "with the open row still open")
 		c.Equal(p.collapse.AsPanel(), p.Window().Focus(), "and the focus left on the title bar")
 	})
@@ -555,7 +557,8 @@ func TestPrereqPanelStartingState(t *testing.T) {
 	})
 }
 
-// TestPrereqPanelCollapseEmpty checks that a collapsed panel with no prerequisites says so.
+// TestPrereqPanelCollapseEmpty checks that a collapsed panel with no prerequisites says so, even when its root has a
+// tech level condition.
 func TestPrereqPanelCollapseEmpty(t *testing.T) {
 	c := check.New(t)
 	screen, _ := startHeadlessWorkspace(t, c)
@@ -571,6 +574,19 @@ func TestPrereqPanelCollapseEmpty(t *testing.T) {
 		c.Nil(p.FindRefKey(prereqRootPath+":empty"), "in place of the placeholder")
 	})
 	c.Nil(missing, "collapsing doesn't make the missing list")
+
+	// A tech level condition is all an empty root has to describe, which is still no prerequisites.
+	screen.Do(p.collapse.toggle)
+	screen.Do(func() { prereqMenuAction(p.addEntries(p.tree(), prereqRootPath), "Only When TL…")() })
+	screen.Do(p.collapse.toggle)
+	screen.Do(func() {
+		c.True(p.headed, "precondition: the root shows its head")
+		b, ok := p.FindRefKey(sectionSummaryKey).Self.(*sentenceButton)
+		c.True(ok, "a collapsed panel shows a paragraph")
+		if ok {
+			c.Equal("No prerequisites.", b.plainText(), "an empty root with a tech level condition says so too")
+		}
+	})
 }
 
 // TestPrereqPanelTitleBar checks that the title bar covers the strip the title is drawn in, and that the rows start
@@ -630,7 +646,7 @@ func TestPrereqPanelStatus(t *testing.T) {
 		sentence, ok := p.FindRefKey("r.0" + keySentence).Self.(*sentenceButton)
 		c.True(ok)
 		c.Equal("Has trait Magery, not met", sentence.Accessibility.Name)
-		c.Nil(p.summary, "an expanded panel shows no summary over the tree")
+		c.Nil(p.paragraph, "an expanded panel shows no summary over the tree")
 		checks := p.checks()
 		for path, want := range map[string]string{
 			"r.0": "Not met: Has trait Magery", "r.3": "Doesn't apply at this tech level",
@@ -881,7 +897,7 @@ func TestPrereqPanelChipOrder(t *testing.T) {
 }
 
 // TestPrereqPanelEmptyRoot checks that an empty root shows only its placeholder and add button, without a summary,
-// pill, status or more button.
+// pill, status or more button, and isn't a group to a screen reader.
 func TestPrereqPanelEmptyRoot(t *testing.T) {
 	c := check.New(t)
 	screen, _ := startHeadlessWorkspace(t, c)
@@ -895,6 +911,9 @@ func TestPrereqPanelEmptyRoot(t *testing.T) {
 		c.Equal(p.FindRefKey(prereqRootPath+":empty").Parent(), p.FindRefKey(prereqRootPath+keyAdd).Parent(),
 			"its add button beside the placeholder")
 		c.Nil(p.FindRefKey(prereqRootPath+keyMore), "and no more button")
+		box := p.FindRefKey(prereqRootPath + ":empty").Parent().Parent()
+		c.NotEqual(role.Group, box.Accessibility.Role, "nor is it a group to a screen reader")
+		c.Equal("", box.Accessibility.Name)
 	})
 }
 
