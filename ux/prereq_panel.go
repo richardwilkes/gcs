@@ -811,7 +811,8 @@ func addKey(list *gurps.PrereqList, path string) string {
 
 // moreButton adds the button for the node's more menu.
 func (p *prereqPanel) moreButton(parent *unison.Panel, node gurps.Prereq, path string) {
-	addMoreButton(parent, path, func() []menuEntry { return p.moreEntries(node, path) })
+	addMoreButton(parent, path, func() string { return node.Describe(p.entity, p.replacements(), emphasize) },
+		func() []menuEntry { return p.moreEntries(node, path) })
 }
 
 // moreEntries returns the entries of the node's more menu: for a group, what can be added to it, then Duplicate, Move up and

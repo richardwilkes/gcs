@@ -1162,3 +1162,32 @@ func TestSkillEditorSyncKeepsSubstitutions(t *testing.T) {
 		}
 	})
 }
+
+// TestDefaultsPanelMoreButtonNames checks that a screen reader hears each row's more button named for the row's
+// sentence, so that no two are alike, and that the name follows the sentence as it changes.
+func TestDefaultsPanelMoreButtonNames(t *testing.T) {
+	c := check.New(t)
+	screen, _ := startHeadlessWorkspace(t, c)
+	entity := gurps.NewEntity()
+	defaults := newTestDefaults()
+	p, _ := showDefaultsPanel(t, screen, entity, nil, &defaults)
+	name := func(path string) string {
+		var button *unison.Panel
+		screen.Do(func() { button = p.FindRefKey(path + keyMore) })
+		c.NotNil(screen.AccessibilityTree(p.Window()))
+		if node := screen.AccessibilityNodeFor(button); node != nil {
+			return node.Name
+		}
+		return ""
+	}
+	c.Equal("More actions for DX at -5", name("0"))
+	c.Equal("More actions for Skill Broadsword (Fencing) at -2", name("1"))
+	c.Equal("More actions for Parry of skill Shortsword at +0", name("2"))
+	screen.Do(func() { p.toggle("1") })
+	screen.Do(func() {
+		if field := defaultNameField(c, p, "1"); field != nil {
+			field.SetText("Saber")
+		}
+	})
+	c.Equal("More actions for Skill Saber (Fencing) at -2", name("1"), "the name follows an edit to the open row")
+}

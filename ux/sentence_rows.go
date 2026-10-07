@@ -22,6 +22,7 @@ import (
 	"github.com/richardwilkes/toolbox/v2/uti"
 	"github.com/richardwilkes/toolbox/v2/xmath"
 	"github.com/richardwilkes/unison"
+	"github.com/richardwilkes/unison/accessibility"
 	"github.com/richardwilkes/unison/enums/align"
 	"github.com/richardwilkes/unison/enums/mod"
 	"github.com/richardwilkes/unison/enums/paintstyle"
@@ -396,10 +397,14 @@ func (p *sentenceRows[T]) doneButton(path string) *unison.Button {
 	return done
 }
 
-// addMoreButton adds the button for the more menu of the row at the path, which offers the entries.
-func addMoreButton(parent *unison.Panel, path string, entries func() []menuEntry) {
+// addMoreButton adds the button for the more menu of the row at the path, which offers the entries. A screen reader
+// hears it named for the sentence describe returns, as it reads when asked, so that it says which row it acts on.
+func addMoreButton(parent *unison.Panel, path string, describe func() string, entries func() []menuEntry) {
 	b := newIconButton(path+keyMore, svg.CircledVerticalEllipsis, i18n.Text("More actions"))
 	b.ClickCallback = func() { showMenu(b.AsPanel(), entries()) }
+	addAccessibilityCallback(b, func(node *accessibility.Node) {
+		node.Name = fmt.Sprintf(i18n.Text("More actions for %s"), stripEm.Replace(describe()))
+	})
 	addCentered(parent, b)
 }
 
@@ -445,7 +450,7 @@ func (p *sentenceRows[T]) sentenceRow(path string, describe func() string, edita
 		}
 		line = sentence.lineHeight()
 	}
-	addMoreButton(row, path, more)
+	addMoreButton(row, path, describe, more)
 	hbox(row, unison.StdHSpacing)
 	putOnLine(grip.AsPanel(), line, grip.svg.Size.Height)
 	if leader != nil {
