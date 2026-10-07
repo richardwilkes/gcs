@@ -656,7 +656,7 @@ func (p *prereqPanel) editor(pr gurps.Prereq, path string) *unison.Panel {
 		p.typePopup(fields, path, pr)
 		p.textCriteria(fields, key("name"), i18n.Text("Name"), i18n.Text("Item name"), whose, whose, &one.NameCriteria,
 			true)
-		p.textChip(chips, path, "tag", &one.TagsCriteria)
+		p.tagsChip(chips, path, &one.TagsCriteria)
 	case *gurps.ContainedQuantityPrereq:
 		p.hasPopup(fields, key("has"), &one.Has, false)
 		p.typePopup(fields, path, pr)

@@ -1211,3 +1211,25 @@ func TestPrereqPanelPlaceholderTextStaysPutOnFocus(t *testing.T) {
 	}
 	c.Equal(0, differ, "the text is drawn in the same place with the focus as without")
 }
+
+// TestPrereqPanelEquippedEquipmentTags checks that the tags field of an equipped equipment prerequisite says how to
+// match any of several tags, since it matches each of the comma-separated tags in turn.
+func TestPrereqPanelEquippedEquipmentTags(t *testing.T) {
+	c := check.New(t)
+	screen, _ := startHeadlessWorkspace(t, c)
+	equipped := gurps.NewEquippedEquipmentPrereq()
+	equipped.TagsCriteria = criteria.Text{Compare: criteria.IsText, Qualifier: "Sword, Axe"}
+	root := gurps.NewPrereqList()
+	root.Prereqs = gurps.Prereqs{equipped}
+	p, _ := showPrereqPanel(t, screen, &root, false)
+	path := childPath(prereqRootPath, 0)
+	screen.Do(func() { p.toggle(path) })
+	screen.Do(func() {
+		field := p.FindRefKey(path + ":tag")
+		c.NotNil(field, "the prerequisite has a tags field")
+		if field != nil {
+			c.True(strings.Contains(tooltipText(field.Tooltip), "Separate multiple tags with commas"),
+				"whose tooltip says to separate tags with commas")
+		}
+	})
+}
