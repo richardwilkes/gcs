@@ -1523,6 +1523,11 @@ func (s *SkillEditData) CopyFrom(other *Skill) {
 	s.copiedDefaultsHash = defaultsHash(s.Defaults)
 }
 
+// NameableReplacements returns the replacements to be used with Nameables.
+func (s *SkillEditData) NameableReplacements() map[string]string {
+	return s.Replacements
+}
+
 // SetNameableReplacements sets the replacements to be used with Nameables.
 func (s *SkillEditData) SetNameableReplacements(replacements map[string]string) {
 	s.Replacements = replacements

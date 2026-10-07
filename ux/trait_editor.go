@@ -159,14 +159,16 @@ func initTraitEditor(e *editor[*gurps.Trait, *gurps.TraitEditData], content *uni
 	addPageRefLabelAndField(content, &e.editorData.PageRef)
 	addPageRefHighlightLabelAndField(content, &e.editorData.PageRefHighlight)
 	if !choice {
-		content.AddChild(newPrereqPanel(entity, &e.editorData.Prereq, prereq.TypesForNonEquipment, false))
+		content.AddChild(newPrereqPanel(entity, &e.editorData.Prereq, prereq.TypesForNonEquipment, false).
+			withReplacementsFrom(e.editorData))
 	}
 	if e.target.Container() {
 		if !choice {
 			content.AddChild(newTraitModifiersPanel(e, entity, e.target, &e.editorData.Modifiers))
 		}
 	} else {
-		content.AddChild(newFeaturesPanel(entity, e.target, &e.editorData.Features, false))
+		content.AddChild(newFeaturesPanel(entity, e.target, &e.editorData.Features, false).
+			withReplacementsFrom(e.editorData))
 		content.AddChild(newTraitModifiersPanel(e, entity, e.target, &e.editorData.Modifiers))
 		e.meleeWeapons = newWeaponsPanel(e, e.target, true, &e.editorData.Weapons)
 		content.AddChild(e.meleeWeapons)

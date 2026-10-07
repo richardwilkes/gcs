@@ -96,14 +96,14 @@ func describeSwitchable(switchable bool, description string) string {
 }
 
 // describeTarget returns how a feature names what it applies to: the name in the format one, such as "skill %s", for
-// "is", "all" followed by many when any name will do, and many followed by a clause starting with whose, such as
-// "whose name", otherwise.
+// "is", as describeName gives it, "all" followed by many when any name will do, and many followed by a clause starting
+// with whose, such as "whose name", otherwise.
 func describeTarget(one, many, whose string, t criteria.Text, replacements map[string]string, em func(string) string) string {
-	switch {
-	case t.Compare == criteria.AnyText:
+	switch t.Compare {
+	case criteria.AnyText:
 		return i18n.Text("all %s", many)
-	case t.Compare == criteria.IsText && t.Qualifier != "":
-		return fmt.Sprintf(one, em(nameable.Apply(t.Qualifier, replacements)))
+	case criteria.IsText:
+		return fmt.Sprintf(one, describeName(t, replacements, em))
 	default:
 		return many + " " + whose + " " + describeText(t, replacements, em)
 	}

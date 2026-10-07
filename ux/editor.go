@@ -120,7 +120,9 @@ func (e *editor[N, D]) createToolbar(helpMD string, initToolbar func(*editor[N, 
 				e.nameablesButton.Tooltip = newWrappedTooltip(i18n.Text("Set Substitutions"))
 				e.nameablesButton.ClickCallback = func() {
 					if tmp, m := e.prepareForSubstitutions(); len(m) > 0 {
-						showNameablesDialog(promptOperation{}, []nameablesSection{{Title: tmp.String(), Nameables: m}})
+						if !promptForNameables(promptOperation{}, []nameablesSection{{Title: tmp.String(), Nameables: m}}) {
+							return
+						}
 						tmp.ApplyNameableKeys(m)
 						// Applying nameable keys only alters the replacements map, so copy just that back, which the
 						// data of every kind of item that gets this button can do. CopyFrom would replace the entire
@@ -129,6 +131,7 @@ func (e *editor[N, D]) createToolbar(helpMD string, initToolbar func(*editor[N, 
 						if setter, ok2 := any(e.editorData).(nameable.Setter); ok2 {
 							setter.SetNameableReplacements(tmp.NameableReplacements())
 							e.Rebuild(false)
+							e.showSubstitutions()
 						}
 					}
 				}
@@ -185,10 +188,38 @@ func (e *editor[N, D]) rebuildContent() {
 	e.undoMgr.Clear()
 }
 
-// rowSection is a section of an editor's content made of sentence rows, whose view rebuildContent keeps.
+// showSubstitutions makes the rows of the editor's prerequisites, defaults and features again, and those of the editors
+// open on its weapons, which take their substitutions from it, so that they show the substitutions set since they were
+// made.
+func (e *editor[N, D]) showSubstitutions() {
+	for _, section := range rowSections(e.content) {
+		section.rebuild("")
+	}
+	traverseGroup(e, func(target GroupedCloser) bool {
+		if weaponEditor, ok := target.(*editor[*gurps.Weapon, *gurps.Weapon]); ok && weaponEditor.content != nil {
+			for _, section := range rowSections(weaponEditor.content) {
+				section.rebuild("")
+			}
+		}
+		return false
+	})
+}
+
+// pendingNameables returns the editor's data as the source of the substitutions it holds, which Set Substitutions
+// changes ahead of their being applied, or nil if its data can't hold substitutions.
+func (e *editor[N, D]) pendingNameables() nameable.Accesser {
+	if source, ok := any(e.editorData).(nameable.Accesser); ok {
+		return source
+	}
+	return nil
+}
+
+// rowSection is a section of an editor's content made of sentence rows, whose view rebuildContent keeps, and which
+// Set Substitutions rebuilds.
 type rowSection interface {
 	view() rowsView
 	setView(view rowsView)
+	rebuild(focus string)
 }
 
 // rowSections returns the sections of the content made of sentence rows, in order.

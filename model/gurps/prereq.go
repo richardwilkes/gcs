@@ -11,6 +11,7 @@ package gurps
 
 import (
 	"hash"
+	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/criteria"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/prereq"
@@ -56,9 +57,10 @@ func plainText(s string) string {
 }
 
 // describeText returns the comparison and qualifier of t, such as `is Fire` or `contains "Fi"`. A non-empty qualifier
-// is passed through em, and is quoted unless the comparison is "is".
+// is passed through em, and is quoted unless the comparison is "is". "is" and "is not" drop space at either end of it,
+// as they do when matching.
 func describeText(t criteria.Text, replacements map[string]string, em func(string) string) string {
-	q := nameable.Apply(t.Qualifier, replacements)
+	q := t.Compare.EffectiveQualifier(nameable.Apply(t.Qualifier, replacements))
 	if q == "" {
 		return t.Compare.Describe(q)
 	}
@@ -68,48 +70,65 @@ func describeText(t criteria.Text, replacements map[string]string, em func(strin
 	return t.Compare.Describe(em(q))
 }
 
-// describeName returns how a prerequisite names what it looks for: the bare name for "is", "of any name" when any name
-// will do, and a "whose name" clause otherwise.
+// describeName returns how a prerequisite names what it looks for: the bare name for "is", or "" when that is blank
+// once its markers are replaced, "of any name" when any name will do, and a "whose name" clause otherwise.
 func describeName(t criteria.Text, replacements map[string]string, em func(string) string) string {
-	switch {
-	case t.Compare == criteria.AnyText:
+	switch t.Compare {
+	case criteria.AnyText:
 		return i18n.Text("of any name")
-	case t.Compare == criteria.IsText && t.Qualifier != "":
-		return em(nameable.Apply(t.Qualifier, replacements))
+	case criteria.IsText:
+		if q := strings.TrimSpace(nameable.Apply(t.Qualifier, replacements)); q != "" {
+			return em(q)
+		}
+		return `""`
 	default:
 		return i18n.Text("whose name ") + describeText(t, replacements, em)
 	}
 }
 
 // describeSpecialization returns how a specialization narrows a skill: the bare specialization in parentheses for
-// "is", nothing when any will do, and a "with a specialization that" clause otherwise, followed by the same kind of
-// clause for the optional specialization when it is set.
+// "is", "without a specialization" when "is" names none once its markers are replaced, since that picks only a skill
+// without one, nothing when any will do, and a "with a specialization that" clause otherwise, followed by the same kind
+// of clause for the optional specialization when it is set.
 func describeSpecialization(specialization, optional criteria.Text, replacements map[string]string, em func(string) string) string {
 	var text string
-	switch {
-	case specialization.Compare == criteria.AnyText:
-	case specialization.Compare == criteria.IsText && specialization.Qualifier != "":
-		text = " (" + em(nameable.Apply(specialization.Qualifier, replacements)) + ")"
+	switch specialization.Compare {
+	case criteria.AnyText:
+	case criteria.IsText:
+		if q := strings.TrimSpace(nameable.Apply(specialization.Qualifier, replacements)); q != "" {
+			text = " (" + em(q) + ")"
+		} else {
+			text = i18n.Text(" without a specialization")
+		}
 	default:
 		text = i18n.Text(" with a specialization that ") + describeText(specialization, replacements, em)
 	}
-	if optional.Compare != criteria.AnyText {
+	switch {
+	case optional.Compare == criteria.AnyText:
+	case optional.Compare == criteria.IsText && strings.TrimSpace(nameable.Apply(optional.Qualifier, replacements)) == "":
+		text += i18n.Text(" without an optional specialization")
+	default:
 		text += i18n.Text(" with an optional specialization that ") + describeText(optional, replacements, em)
 	}
 	return text
 }
 
-// describeTags returns a clause for the tags t matches, such as " tagged Weapon", or nothing when any tags will do.
+// describeTags returns a clause for the tags t matches, such as " tagged Weapon", or nothing when any tags will do. A
+// blank "is" picks only what has no tags, and a blank "is not" only what has some.
 func describeTags(t criteria.Text, replacements map[string]string, em func(string) string) string {
-	if t.Compare == criteria.AnyText {
+	q := t.Compare.EffectiveQualifier(nameable.Apply(t.Qualifier, replacements))
+	switch {
+	case t.Compare == criteria.AnyText:
 		return ""
+	case t.Compare == criteria.IsText && q == "":
+		return i18n.Text(" without tags")
+	case t.Compare == criteria.IsNotText && q == "":
+		return i18n.Text(" with at least one tag")
+	case t.Compare == criteria.IsText:
+		return i18n.Text(" tagged ") + em(q)
 	}
-	q := nameable.Apply(t.Qualifier, replacements)
 	if q != "" {
 		q = em(q)
-	}
-	if t.Compare == criteria.IsText && q != "" {
-		return i18n.Text(" tagged ") + q
 	}
 	return " " + t.Compare.DescribeWithPrefix(i18n.Text("with a tag that"), i18n.Text("with all tags that"), q)
 }

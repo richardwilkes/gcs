@@ -71,6 +71,10 @@ func TestFeatureDescribe(t *testing.T) {
 	skillSpecialized := skill("Guns", fxp.One)
 	skillSpecialized.SpecializationCriteria = criteria.Text{Compare: criteria.IsText, Qualifier: "Pistol"}
 	skillSpecialized.TagsCriteria = criteria.Text{Compare: criteria.IsText, Qualifier: "Combat"}
+	skillUntagged := skill("Guns", fxp.One)
+	skillUntagged.TagsCriteria = criteria.Text{Compare: criteria.IsText, Qualifier: " "}
+	skillTagged := skill("Guns", fxp.One)
+	skillTagged.TagsCriteria = criteria.Text{Compare: criteria.IsNotText}
 	skillContains := skill("Sword", fxp.One)
 	skillContains.NameCriteria.Compare = criteria.ContainsText
 	skillMimicry := skill("Mimicry", fxp.One)
@@ -197,6 +201,8 @@ func TestFeatureDescribe(t *testing.T) {
 		{"skill per level, marker set", skillPerLevel, "[+1] per level to skill [Streetwise]"},
 		{"skill, marker unset", skillUnset, "[+1] to skill [@Craft@]"},
 		{"skill specialized and tagged", skillSpecialized, "[+1] to skill [Guns] ([Pistol]) tagged [Combat]"},
+		{"skill without tags", skillUntagged, "[+1] to skill [Guns] without tags"},
+		{"skill with tags", skillTagged, "[+1] to skill [Guns] with at least one tag"},
 		{"skill name contains", skillContains, `[+1] to skills whose name contains "[Sword]"`},
 		{
 			"skill name contains, specialized", skillMimicry,

@@ -10,6 +10,11 @@
 package ux
 
 import (
+	"go/ast"
+	"go/parser"
+	"go/token"
+	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/richardwilkes/toolbox/v2/check"
@@ -157,4 +162,60 @@ func TestInstallDropReroutingWithoutATarget(t *testing.T) {
 	c.Equal(drag.Copy, root.DragEnteredCallback(skillDrag, where, mod.None), "re-enter the bare target")
 	root.DragExitedCallback()
 	c.False(root.DropCallback(skillDrag, where, mod.None), "exit cleared the bare target")
+}
+
+// TestAllDragDataTypesListsEveryDragKey verifies that every private drag data type declared in the package's source is
+// in allDragDataTypes, since a window only receives drops for the types it registers.
+func TestAllDragDataTypesListsEveryDragKey(t *testing.T) {
+	c := check.New(t)
+	paths, err := filepath.Glob("*.go")
+	c.NoError(err)
+	fileSet := token.NewFileSet()
+	declared := make(map[string]bool)
+	listed := make(map[string]bool)
+	for _, path := range paths {
+		if strings.HasSuffix(path, "_test.go") {
+			continue
+		}
+		file, parseErr := parser.ParseFile(fileSet, path, nil, 0)
+		c.NoError(parseErr)
+		if file != nil {
+			inspectDragKeys(file, declared, listed)
+		}
+	}
+	c.NotEqual(0, len(declared), "the package must declare drag data types")
+	for name := range declared {
+		c.True(listed[name], name+" must be in allDragDataTypes")
+	}
+}
+
+// inspectDragKeys adds the names of the private drag data types the file declares to declared, and those its
+// allDragDataTypes lists to listed.
+func inspectDragKeys(file *ast.File, declared, listed map[string]bool) {
+	ast.Inspect(file, func(node ast.Node) bool {
+		spec, ok := node.(*ast.ValueSpec)
+		if !ok {
+			return true
+		}
+		for i, name := range spec.Names {
+			if i >= len(spec.Values) {
+				continue
+			}
+			switch value := spec.Values[i].(type) {
+			case *ast.CallExpr:
+				if sel, isSel := value.Fun.(*ast.SelectorExpr); isSel && sel.Sel.Name == "CreatePrivateDataType" {
+					declared[name.Name] = true
+				}
+			case *ast.CompositeLit:
+				if name.Name == "allDragDataTypes" {
+					for _, elt := range value.Elts {
+						if ident, isIdent := elt.(*ast.Ident); isIdent {
+							listed[ident.Name] = true
+						}
+					}
+				}
+			}
+		}
+		return true
+	})
 }

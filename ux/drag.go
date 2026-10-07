@@ -38,6 +38,7 @@ var (
 	editorRowDragKey           = unison.CreatePrivateDataType("gcs.editor-row")
 	prereqDragKey              = unison.CreatePrivateDataType("gcs.prereq")
 	featureDragKey             = unison.CreatePrivateDataType("gcs.feature")
+	defaultDragKey             = unison.CreatePrivateDataType("gcs.default")
 )
 
 var (
@@ -67,6 +68,7 @@ var allDragDataTypes = []*uti.DataType{
 	editorRowDragKey,
 	prereqDragKey,
 	featureDragKey,
+	defaultDragKey,
 }
 
 // registerWindowDragTypes registers the supplied window as a target for every kind of drag payload GCS supports: the
