@@ -13,25 +13,15 @@ import (
 	"slices"
 	"testing"
 
+	"github.com/richardwilkes/gcs/v5/model/fonts"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
-	"github.com/richardwilkes/gcs/v5/model/gurps/enums/cell"
-	"github.com/richardwilkes/gcs/v5/ux/fonts"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/unison"
-	"github.com/richardwilkes/unison/enums/align"
 	"github.com/richardwilkes/unison/enums/mod"
 	"github.com/richardwilkes/unison/enums/role"
 )
-
-// TestHAlignFor verifies the mapping from the model's cell alignments to unison's.
-func TestHAlignFor(t *testing.T) {
-	c := check.New(t)
-	c.Equal(align.Start, hAlignFor(cell.AlignStart))
-	c.Equal(align.Middle, hAlignFor(cell.AlignMiddle))
-	c.Equal(align.End, hAlignFor(cell.AlignEnd))
-}
 
 // TestCellDataForAccessibilityLeavesOutTheContainerMarker verifies that a screen reader is given a container's cell
 // text without the marker the sort text keeps to group containers ahead of the other rows.
@@ -484,8 +474,8 @@ func TestMarkdownCellKeepsItsPanelsWhenSelectionChanges(t *testing.T) {
 	c.True(len(children) != 0, "the markdown must have built its content")
 	unselectedColor := markdownTextColor(c, md)
 
-	panel := rows[0].ColumnCell(0, col, unison.Red, unison.Blue, true, false, false).AsPanel()
-	c.Equal(md, findMarkdown(panel), "selecting the row must reuse the cached markdown")
+	cell := rows[0].ColumnCell(0, col, unison.Red, unison.Blue, true, false, false).AsPanel()
+	c.Equal(md, findMarkdown(cell), "selecting the row must reuse the cached markdown")
 	c.Equal(children, md.Children(), "selecting the row must not rebuild the markdown")
 	c.Equal(unison.Red, markdownTextColor(c, md),
 		"the markdown must draw with the selection's foreground")
@@ -572,8 +562,8 @@ func TestPageRefLinkTakesNoMoreRoomThanItsText(t *testing.T) {
 	c.True(col >= 0, "the traits table must have a page reference column")
 	rows := table.RootRows()
 	c.Equal(1, len(rows), "the traits table must hold the one trait")
-	panel := rows[0].ColumnCell(0, col, unison.Black, unison.White, false, false, false).AsPanel()
-	links := panelsMatching(panel, func(p *unison.Panel) bool { return p.Accessibility.Role == role.Link })
+	cell := rows[0].ColumnCell(0, col, unison.Black, unison.White, false, false, false).AsPanel()
+	links := panelsMatching(cell, func(p *unison.Panel) bool { return p.Accessibility.Role == role.Link })
 	if len(links) != 1 {
 		t.Fatalf("the page reference cell must hold one link, but holds %d", len(links))
 	}
@@ -625,20 +615,20 @@ func TestLabelCellKeepsTheNotesButtonWithinTheCell(t *testing.T) {
 	// be broken and overflows whatever the width.
 	longestWord := unison.NewText("Knowledge", &unison.TextDecoration{Font: fonts.PageFieldPrimary}).Width()
 	for width := longestWord + 20; width < 200; width += 0.35 {
-		panel := rows[0].CellFromCellData(&data, width, unison.Black, unison.White, false).AsPanel()
-		_, pref, _ := panel.Sizes(geom.Size{})
+		cell := rows[0].CellFromCellData(&data, width, unison.Black, unison.White, false).AsPanel()
+		_, pref, _ := cell.Sizes(geom.Size{})
 		if pref.Width > width {
 			t.Fatalf("at a width of %.2f the cell wants %.2f, which would push its notes button past its edge",
 				width, pref.Width)
 		}
-		panel.SetFrameRect(geom.NewRect(0, 0, width, pref.Height))
-		panel.ValidateLayout()
-		buttons := panelsMatching(panel, isButton)
+		cell.SetFrameRect(geom.NewRect(0, 0, width, pref.Height))
+		cell.ValidateLayout()
+		buttons := panelsMatching(cell, isButton)
 		if len(buttons) != 1 {
 			t.Fatalf("the cell must hold one notes button, but holds %d", len(buttons))
 		}
 		right := buttons[0].FrameRect().Right()
-		for p := buttons[0].Parent(); p != nil && p != panel; p = p.Parent() {
+		for p := buttons[0].Parent(); p != nil && p != cell; p = p.Parent() {
 			right += p.FrameRect().X
 		}
 		if right > width {

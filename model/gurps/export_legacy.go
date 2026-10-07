@@ -22,6 +22,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/richardwilkes/gcs/v5/model/colors"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/encumbrance"
 	"github.com/richardwilkes/toolbox/v2/errs"
@@ -1501,9 +1502,12 @@ func (ex *legacyExporter) subBufferExtractUpToMarker(marker string, buf []byte, 
 }
 
 func (ex *legacyExporter) handleColor(key string) {
-	if css, ok := currentHost().ThemeColor(strings.ToLower(key[len("COLOR_"):])); ok {
-		ex.out.WriteString(css)
-		return
+	id := strings.ToLower(key[len("COLOR_"):])
+	for _, c := range colors.Current() {
+		if c.ID == id {
+			ex.out.WriteString(c.Color.GetColor().String())
+			return
+		}
 	}
 	ex.unidentifiedKey(key)
 }

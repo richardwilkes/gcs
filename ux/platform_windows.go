@@ -72,7 +72,7 @@ func configureRegistry() error {
 			continue
 		}
 		var overlay image.Image
-		if overlay, err = svg.CreateImageFromSVG(FileTypeSVG(fi), 128); err != nil {
+		if overlay, err = svg.CreateImageFromSVG(fi.SVG, 128); err != nil {
 			return err
 		}
 		docPath := filepath.Join(appDataDir, fi.UTI.Extensions[0][1:]+".ico")

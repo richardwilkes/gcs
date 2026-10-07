@@ -14,6 +14,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/srcstate"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/toolbox/v2/xreflect"
+	"github.com/richardwilkes/unison/enums/align"
 )
 
 // PageRefCellAlias is the column alias used to request the page reference cell, if any.
@@ -96,7 +97,7 @@ type CellData struct {
 	Disabled            bool
 	Dim                 bool
 	Checked             bool
-	Alignment           cell.Alignment
+	Alignment           align.Enum
 	// UnresolvedChoice explains which mandatory modifier choices of an item on a sheet have yet to be made.
 	UnresolvedChoice string
 	// ChoiceRequired is true for a mandatory modifier choice on a sheet that has yet to be made.
@@ -119,7 +120,7 @@ func fillTagsCell(data *CellData, tags []string) {
 func fillPointsCell(data *CellData, r NumericRange) {
 	data.Type = cell.Text
 	data.Primary = r.String()
-	data.Alignment = cell.AlignEnd
+	data.Alignment = align.End
 	if r.IsSettled() {
 		return
 	}
@@ -148,7 +149,7 @@ func fillPageRefCell(data *CellData, pageRef, highlight string, fallback func() 
 // from, with the details in the tooltip. Only the cell type and alignment are filled in when there is no owner to ask.
 func fillLibSrcCell(data *CellData, owner DataOwner, node SrcProvider) {
 	data.Type = cell.Text
-	data.Alignment = cell.AlignMiddle
+	data.Alignment = align.Middle
 	if xreflect.IsNil(owner) {
 		return
 	}

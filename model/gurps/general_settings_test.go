@@ -13,46 +13,51 @@ import (
 	"os"
 	"path/filepath"
 	"testing"
-	"time"
 
-	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/updatecheck"
 	"github.com/richardwilkes/toolbox/v2/check"
+	"github.com/richardwilkes/toolbox/v2/geom"
+	"github.com/richardwilkes/unison"
 )
 
-// TestMonitorPPIFromHost verifies that the monitor PPI comes from the host and falls back to the default when the host
-// has no usable value. The host reports 0 when there is no display, which happens on some Linux configurations.
-func TestMonitorPPIFromHost(t *testing.T) {
+// TestMonitorPPIForDisplay verifies that deriving the monitor PPI falls back to the default rather than panicking when
+// there is no display (unison.PrimaryDisplay() returns nil on some Linux configurations when no monitor is enumerated,
+// and a panic on a background goroutine such as the markdown image loader's crashes the process) or when the content
+// scale is zero.
+func TestMonitorPPIForDisplay(t *testing.T) {
 	c := check.New(t)
-	h := installRecordingHost(t)
-	s := &GeneralSettings{}
 
-	c.Equal(defaultMonitorPPI, s.MonitorPPI(), "an unknown PPI falls back to the default")
+	// A nil display must not panic and must fall back to the default.
+	c.Equal(108, monitorPPIForDisplay(nil))
 
-	h.ppi = -72
-	c.Equal(defaultMonitorPPI, s.MonitorPPI(), "a non-positive PPI falls back to the default")
+	// A display reporting a zero content scale must not divide by zero; it falls back to the default.
+	c.Equal(108, monitorPPIForDisplay(&unison.Display{PPI: 216, Scale: geom.Point{}}))
 
-	h.ppi = 216
-	c.Equal(216, s.MonitorPPI(), "a usable PPI is passed through")
+	// A display that computes a non-positive PPI falls back to the default.
+	c.Equal(108, monitorPPIForDisplay(&unison.Display{PPI: 0, Scale: geom.NewPoint(2, 2)}))
+
+	// A normal display yields its scaled PPI.
+	c.Equal(108, monitorPPIForDisplay(&unison.Display{PPI: 216, Scale: geom.NewPoint(2, 2)}))
+	c.Equal(216, monitorPPIForDisplay(&unison.Display{PPI: 216, Scale: geom.NewPoint(1, 1)}))
 }
 
-// TestMonitorPPIUsesSettingOverride verifies that an explicit monitor resolution setting is honored and doesn't ask
-// the host at all.
+// TestMonitorPPIUsesSettingOverride verifies that an explicit monitor resolution setting is honored and doesn't touch
+// the display at all.
 func TestMonitorPPIUsesSettingOverride(t *testing.T) {
-	c := check.New(t)
-	h := installRecordingHost(t)
-	h.ppi = 216
 	s := &GeneralSettings{MonitorResolution: 150}
-	c.Equal(150, s.MonitorPPI())
-	c.Equal(0, h.ppiCalls, "the host wasn't asked")
+	check.New(t).Equal(150, s.MonitorPPI())
 }
 
-// TestCursorSizeValidation verifies that the cursor size setting is kept within the permitted range, that the zero
-// value found in settings files written before the setting existed is replaced with the default, and that validation
-// hands the resulting size to the host.
+// TestCursorSizeValidation verifies that the cursor size setting is kept within the range unison permits, that the
+// zero value found in settings files written before the setting existed is replaced with the default, and that
+// validation pushes the resulting size to unison.
 func TestCursorSizeValidation(t *testing.T) {
 	c := check.New(t)
-	h := installRecordingHost(t)
+
+	savedSize := unison.CursorSize()
+	defer unison.SetCursorSize(savedSize)
+
+	c.Equal(int(unison.DefaultCursorSize().Width), CursorSizeDef, "the default tracks unison's default cursor size")
 
 	s := NewGeneralSettings()
 	c.Equal(CursorSizeDef, s.CursorSize, "new settings start at the default cursor size")
@@ -60,7 +65,6 @@ func TestCursorSizeValidation(t *testing.T) {
 	s.CursorSize = 0 // settings files from before the setting existed load as zero
 	s.EnsureValidity()
 	c.Equal(CursorSizeDef, s.CursorSize, "a missing cursor size is reset to the default")
-	c.Equal(CursorSizeDef, h.cursorSize, "validation hands the size to the host")
 
 	s.CursorSize = CursorSizeMax + 1
 	s.EnsureValidity()
@@ -69,19 +73,7 @@ func TestCursorSizeValidation(t *testing.T) {
 	s.CursorSize = CursorSizeMin
 	s.EnsureValidity()
 	c.Equal(CursorSizeMin, s.CursorSize, "an in-range cursor size is preserved")
-	c.Equal(CursorSizeMin, h.cursorSize, "validation hands the size to the host")
-}
-
-// TestToolTipTimingValidation verifies that validation hands the tooltip timing to the host.
-func TestToolTipTimingValidation(t *testing.T) {
-	c := check.New(t)
-	h := installRecordingHost(t)
-	s := NewGeneralSettings()
-	s.TooltipDelay = fxp.Two
-	s.TooltipDismissal = fxp.Ten
-	s.EnsureValidity()
-	c.Equal(2*time.Second, h.tooltipDelay)
-	c.Equal(10*time.Second, h.tooltipDismissal)
+	c.Equal(geom.NewSize(CursorSizeMin, CursorSizeMin), unison.CursorSize(), "validation applies the size to unison")
 }
 
 // TestUpdateCheckSettings verifies the app and library update check settings: new settings start at the default, an
@@ -131,7 +123,8 @@ func TestUpdateCheckSettings(t *testing.T) {
 func TestFocusForReadingSetting(t *testing.T) {
 	c := check.New(t)
 
-	h := installRecordingHost(t)
+	saved := unison.FocusForReading()
+	defer unison.SetFocusForReading(saved)
 
 	s := NewGeneralSettings()
 	c.False(s.FocusForReading, "new settings leave static text and disabled controls out of the tab order")
@@ -139,22 +132,22 @@ func TestFocusForReadingSetting(t *testing.T) {
 	p := filepath.Join(t.TempDir(), "general.json")
 	c.NoError(os.WriteFile(p, []byte(`{"version":2}`), 0o600))
 	// Turned on first, so that the load is what turns it off.
-	h.focusForReading = true
+	unison.SetFocusForReading(true)
 	loaded, err := NewGeneralSettingsFromFile(nil, p)
 	c.NoError(err)
 	c.False(loaded.FocusForReading, "a pre-existing settings file leaves them out of the tab order")
-	c.False(h.focusForReading, "loading hands the setting to the host")
+	c.False(unison.FocusForReading(), "loading hands the setting to unison")
 
 	s.FocusForReading = true
 	s.EnsureValidity()
-	c.True(h.focusForReading, "validation hands the setting to the host")
+	c.True(unison.FocusForReading(), "validation hands the setting to unison")
 
 	c.NoError(s.Save(p))
-	h.focusForReading = false
+	unison.SetFocusForReading(false)
 	loaded, err = NewGeneralSettingsFromFile(nil, p)
 	c.NoError(err)
 	c.True(loaded.FocusForReading, "the choice survives a save and load")
-	c.True(h.focusForReading, "loading hands the choice to the host")
+	c.True(unison.FocusForReading(), "loading hands the choice to unison")
 
 	c.NoError(NewGeneralSettings().Save(p))
 	data, err := os.ReadFile(p)

@@ -12,9 +12,9 @@ package ux
 import (
 	"io/fs"
 
+	"github.com/richardwilkes/gcs/v5/model/fonts"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/svg"
-	"github.com/richardwilkes/gcs/v5/ux/fonts"
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/unison"
@@ -101,9 +101,9 @@ func (d *fontSettingsDockable) createResetField(index int, fp *unison.FontPanel)
 }
 
 func (d *fontSettingsDockable) reset() {
-	var f fonts.Fonts
-	f.Reset()
-	f.MakeCurrent()
+	g := gurps.GlobalSettings()
+	g.Fonts.Reset()
+	g.Fonts.MakeCurrent()
 	d.sync()
 }
 
@@ -133,13 +133,15 @@ func (d *fontSettingsDockable) load(fileSystem fs.FS, filePath string) error {
 	if err != nil {
 		return err
 	}
-	s.MakeCurrent()
+	g := gurps.GlobalSettings()
+	g.Fonts = *s
+	g.Fonts.MakeCurrent()
 	d.sync()
 	return nil
 }
 
 func (d *fontSettingsDockable) save(filePath string) error {
-	var f fonts.Fonts
-	f.CaptureCurrent() // The font panels edit the live fonts, so pull those edits in before exporting them.
-	return f.Save(filePath)
+	g := gurps.GlobalSettings()
+	g.Fonts.CaptureCurrent() // The font panels edit the live fonts, so pull those edits in before exporting them.
+	return g.Fonts.Save(filePath)
 }

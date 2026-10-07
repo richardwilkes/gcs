@@ -23,6 +23,7 @@ import (
 	"github.com/richardwilkes/toolbox/v2/tid"
 	"github.com/richardwilkes/toolbox/v2/xhash"
 	"github.com/richardwilkes/toolbox/v2/xstrings"
+	"github.com/richardwilkes/unison/enums/align"
 )
 
 var _ = assertNode[*ConditionalModifier]
@@ -304,7 +305,7 @@ func (c *ConditionalModifier) CellData(columnID int, data *CellData) {
 	switch columnID {
 	case ConditionalModifierValueColumn:
 		data.Type = cell.Text
-		data.Alignment = cell.AlignEnd
+		data.Alignment = align.End
 		if c.Container() {
 			return // A group doesn't total up its members, since they apply in different situations.
 		}

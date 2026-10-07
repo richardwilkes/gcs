@@ -15,6 +15,7 @@ import (
 
 	"github.com/richardwilkes/toolbox/v2/uti"
 	"github.com/richardwilkes/toolbox/v2/xstrings"
+	"github.com/richardwilkes/unison"
 )
 
 // Some special "extension" values.
@@ -62,6 +63,8 @@ type FileInfo struct {
 	Name             string
 	UTI              *uti.DataType
 	GroupWith        []string
+	SVG              *unison.SVG
+	Load             func(filePath string, pageInfo PageInfo) (unison.Dockable, error)
 	IsSpecial        bool
 	IsGCSData        bool
 	IsImage          bool

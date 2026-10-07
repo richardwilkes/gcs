@@ -13,15 +13,15 @@ import (
 	"io/fs"
 	"strings"
 
+	"github.com/richardwilkes/gcs/v5/model/colors"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
-	"github.com/richardwilkes/gcs/v5/model/gurps/enums/thememode"
 	"github.com/richardwilkes/gcs/v5/svg"
-	"github.com/richardwilkes/gcs/v5/ux/colors"
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
 	"github.com/richardwilkes/unison/enums/paintstyle"
+	"github.com/richardwilkes/unison/enums/thememode"
 	"github.com/richardwilkes/unison/enums/weight"
 )
 
@@ -56,16 +56,16 @@ func (d *colorSettingsDockable) addToStartToolbar(toolbar *unison.Panel) {
 	label := unison.NewLabel()
 	label.SetTitle(i18n.Text("Color Mode"))
 	toolbar.AddChild(label)
-	toolbar.AddChild(newPopupMenu(thememode.Modes, gurps.GlobalSettings().ThemeMode, func(mode thememode.Mode) {
+	toolbar.AddChild(newPopupMenu(thememode.All, gurps.GlobalSettings().ThemeMode, func(mode thememode.Enum) {
 		gurps.GlobalSettings().ThemeMode = mode
-		unison.SetThemeMode(unisonThemeMode(mode))
+		unison.SetThemeMode(mode)
 	}))
 }
 
 func (d *colorSettingsDockable) reset() {
-	var c colors.Colors
-	c.Reset()
-	c.MakeCurrent()
+	g := gurps.GlobalSettings()
+	g.Colors.Reset()
+	g.Colors.MakeCurrent()
 	d.sync()
 }
 
@@ -178,15 +178,17 @@ func (d *colorSettingsDockable) load(fileSystem fs.FS, filePath string) error {
 	if err != nil {
 		return err
 	}
-	s.MakeCurrent()
+	g := gurps.GlobalSettings()
+	g.Colors = *s
+	g.Colors.MakeCurrent()
 	d.sync()
 	return nil
 }
 
 func (d *colorSettingsDockable) save(filePath string) error {
-	var c colors.Colors
-	c.CaptureCurrent() // The wells edit the live colors, so pull those edits in before exporting them.
-	return c.Save(filePath)
+	g := gurps.GlobalSettings()
+	g.Colors.CaptureCurrent() // The wells edit the live colors, so pull those edits in before exporting them.
+	return g.Colors.Save(filePath)
 }
 
 // InstallTintFunc installs a tint function for the given panel and theme color.

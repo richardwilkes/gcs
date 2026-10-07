@@ -15,9 +15,9 @@ import (
 	"path/filepath"
 	"time"
 
+	"github.com/richardwilkes/gcs/v5/model/colors"
+	"github.com/richardwilkes/gcs/v5/model/fonts"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
-	"github.com/richardwilkes/gcs/v5/ux/colors"
-	"github.com/richardwilkes/gcs/v5/ux/fonts"
 	"github.com/richardwilkes/toolbox/v2/errs"
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/i18n"
@@ -124,34 +124,11 @@ func (p *PortraitPanel) sizer(hint geom.Size) (minSize, prefSize, maxSize geom.S
 	return prefSize, prefSize, geom.NewSize(width, unison.DefaultMaxSize)
 }
 
-// portraitCache is what portraitImage keeps in a profile's PortraitCache. A nil img records that the data couldn't be
-// decoded, so that the attempt isn't repeated, and logged, each time the portrait is drawn.
-type portraitCache struct {
-	img *unison.Image
-}
-
-// portraitImage returns the profile's portrait image, if there is one.
-func portraitImage(p *gurps.Profile) *unison.Image {
-	if cached, ok := p.PortraitCache.(*portraitCache); ok {
-		return cached.img
-	}
-	if len(p.PortraitData) == 0 {
-		return nil
-	}
-	img, err := unison.NewImageFromBytes(p.PortraitData, geom.NewPoint(0.5, 0.5))
-	if err != nil {
-		// The data is retained so it isn't lost on the next save, since another build may be able to decode it.
-		errs.Log(errs.NewWithCause("unable to load portrait data", err))
-	}
-	p.PortraitCache = &portraitCache{img: img}
-	return img
-}
-
 func (p *PortraitPanel) drawSelf(gc *unison.Canvas, _ geom.Rect) {
 	r := p.ContentRect(false)
 	paint := unison.ThemeBelowSurface.Paint(gc, r, paintstyle.Fill)
 	gc.DrawRect(r, paint)
-	if img := portraitImage(&p.entity.Profile); img != nil {
+	if img := p.entity.Profile.Portrait(); img != nil {
 		// The picture occupies the largest square that fits in the block, centered, with the image scaled to fit
 		// inside that square with its proportions kept. The block itself can be any shape the layout gives it.
 		side := min(r.Width, r.Height)
