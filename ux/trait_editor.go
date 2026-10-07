@@ -159,7 +159,8 @@ func initTraitEditor(e *editor[*gurps.Trait, *gurps.TraitEditData], content *uni
 	addPageRefLabelAndField(content, &e.editorData.PageRef)
 	addPageRefHighlightLabelAndField(content, &e.editorData.PageRefHighlight)
 	if !choice {
-		content.AddChild(newPrereqPanel(entity, &e.editorData.Prereq, prereq.TypesForNonEquipment, false))
+		content.AddChild(newPrereqPanel(entity, &e.editorData.Prereq, prereq.TypesForNonEquipment, false).
+			withReplacementsFrom(e.editorData))
 	}
 	if e.target.Container() {
 		if !choice {

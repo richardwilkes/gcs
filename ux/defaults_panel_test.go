@@ -815,7 +815,8 @@ func collapsedSummary(p *unison.Panel) string {
 	return ""
 }
 
-// TestSkillEditorRowsFollowSubstitutions checks that the defaults and features of a skill editor read their nameable
+// TestSkillEditorRowsFollowSubstitutions checks that the prerequisites, defaults and features of a skill editor read their
+// nameable
 // markers with the values the editor's data holds, and show the new ones once Set Substitutions changes them, but not
 // when it is canceled.
 func TestSkillEditorRowsFollowSubstitutions(t *testing.T) {
@@ -836,10 +837,23 @@ func TestSkillEditorRowsFollowSubstitutions(t *testing.T) {
 			{DefaultType: gurps.SkillID, Name: criteria.Text{Compare: criteria.IsText, Qualifier: "@Weapon@"}},
 		}
 		skill.Features = gurps.Features{bonus}
+		trait := gurps.NewTraitPrereq()
+		trait.NameCriteria.Qualifier = "@Weapon@ Mastery"
+		skill.Prereq = gurps.NewPrereqList()
+		skill.Prereq.Prereqs = gurps.Prereqs{trait}
 		entity.Skills = append(entity.Skills, skill)
 		sheet.Rebuild(true)
 		e = EditSkill(sheet, skill)
 	})
+	prereqs := func() string {
+		var text string
+		screen.Do(func() {
+			for _, p := range panelsOfType[*prereqPanel](e.content) {
+				text = collapsedSummary(p.AsPanel())
+			}
+		})
+		return text
+	}
 	summaries := func() (defaults, features string) {
 		screen.Do(func() {
 			for _, p := range panelsOfType[*defaultsPanel](e.content) {
@@ -854,6 +868,7 @@ func TestSkillEditorRowsFollowSubstitutions(t *testing.T) {
 	defaults, features := summaries()
 	c.Equal("Skill Spear at +0.", defaults, "the defaults take the skill's values")
 	c.True(strings.Contains(features, "Spear"), "as do the features: %s", features)
+	c.Equal("Has trait Spear Mastery.", prereqs(), "and the prerequisites")
 
 	answer := func(value string, accept bool) {
 		swapForTest(t, &promptForNameables, func(_ promptOperation, sections []nameablesSection) bool {
@@ -879,6 +894,7 @@ func TestSkillEditorRowsFollowSubstitutions(t *testing.T) {
 	defaults, features = summaries()
 	c.Equal("Skill Rapier at +0.", defaults, "Set Substitutions shows the new value in the defaults")
 	c.True(strings.Contains(features, "Rapier"), "and in the features: %s", features)
+	c.Equal("Has trait Rapier Mastery.", prereqs(), "and in the prerequisites")
 }
 
 // TestDefaultsPanelTechLevelWithoutEntity checks that a tech level condition added where there is no character starts
@@ -1082,6 +1098,67 @@ func TestDefaultsPanelBlankSpecialization(t *testing.T) {
 		c.True(ok, "the chip has a field")
 		if ok {
 			c.Equal("none", field.Watermark, "whose hint says the default picks a skill without one")
+		}
+	})
+}
+
+// TestSkillEditorSyncKeepsSubstitutions checks that substitutions set in a skill editor but not yet applied still show
+// in its features and defaults once Sync with Source has made them again.
+func TestSkillEditorSyncKeepsSubstitutions(t *testing.T) {
+	c := check.New(t)
+	screen, wnd := startHeadlessWorkspace(t, c)
+	sheet, ok := openedByAction(t, screen, newCharacterSheetAction).(*Sheet)
+	if !ok {
+		t.Fatal("New Character Sheet must open a character sheet")
+	}
+	user := gurps.GlobalSettings().Libraries.User()
+	lib := gurps.NewSkill(nil, nil, false)
+	lib.Name = "Fast-Draw (@Weapon@)"
+	lib.Defaults = []*gurps.SkillDefault{
+		{DefaultType: gurps.SkillID, Name: criteria.Text{Compare: criteria.IsText, Qualifier: "@Weapon@"}},
+	}
+	bonus := gurps.NewSkillBonus()
+	bonus.NameCriteria.Qualifier = "@Weapon@"
+	lib.Features = gurps.Features{bonus}
+	libFile := gurps.LibraryFile{Library: user.Key(), Path: "Skills/Test" + gurps.SkillsExt}
+	c.NoError(gurps.SaveSkills([]*gurps.Skill{lib}, filepath.Join(user.Path(false), filepath.FromSlash(libFile.Path))))
+	var e *editor[*gurps.Skill, *gurps.SkillEditData]
+	screen.Do(func() {
+		entity := sheet.Entity()
+		local := lib.Clone(libFile, entity, nil, gurps.Reference)
+		local.Replacements = map[string]string{"Weapon": "Spear"}
+		// Different from its source, so that the sync has something to do.
+		local.Name = "Fast-Draw (old)"
+		entity.Skills = append(entity.Skills, local)
+		sheet.Rebuild(true)
+		e = EditSkill(sheet, local)
+	})
+	swapForTest(t, &promptForNameables, func(_ promptOperation, sections []nameablesSection) bool {
+		for _, section := range sections {
+			for k := range section.Nameables {
+				section.Nameables[k] = "Rapier"
+			}
+		}
+		return true
+	})
+	screen.Do(e.nameablesButton.ClickCallback)
+	var old *featuresPanel
+	screen.Do(func() {
+		if panels := panelsOfType[*featuresPanel](e.content); len(panels) == 1 {
+			old = panels[0]
+		}
+	})
+	chooseSyncWithSource(t, screen, wnd, e)
+	screen.Do(func() {
+		c.Equal("Fast-Draw (@Weapon@)", e.editorData.Name, "precondition: the skill is synced")
+		c.Equal("Rapier", e.editorData.Replacements["Weapon"], "precondition: the sync keeps the substitutions")
+		c.False(slices.Contains(panelsOfType[*featuresPanel](e.content), old), "precondition: the features are made again")
+		for _, p := range panelsOfType[*defaultsPanel](e.content) {
+			c.Equal("Skill Rapier at +0.", collapsedSummary(p.AsPanel()), "the defaults show them")
+		}
+		for _, p := range panelsOfType[*featuresPanel](e.content) {
+			summary := collapsedSummary(p.AsPanel())
+			c.True(strings.Contains(summary, "Rapier"), "as do the features: %s", summary)
 		}
 	})
 }

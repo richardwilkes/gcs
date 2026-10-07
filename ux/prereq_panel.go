@@ -21,6 +21,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/prereq"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/spellcmp"
+	"github.com/richardwilkes/gcs/v5/model/nameable"
 	"github.com/richardwilkes/toolbox/v2/errs"
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/i18n"
@@ -82,6 +83,8 @@ type prereqPanel struct {
 	target           any
 	hash             uint64
 	ownerIsSpell     bool
+	// names, when set, gives the values of the nameable markers in the prerequisites (see withReplacementsFrom).
+	names nameable.Accesser
 	// headed has an empty root show its head, once a group type or tech level has been chosen for it. An empty list
 	// isn't saved, so these choices live here until it has prerequisites.
 	headed bool
@@ -212,6 +215,23 @@ func (p *prereqPanel) Sync() {
 	}, scriptEvaluationDelay)
 }
 
+// withReplacementsFrom has the panel describe the prerequisites with the values source gives their nameable markers,
+// such as an editor's data, which Set Substitutions changes, and fills it again with them.
+func (p *prereqPanel) withReplacementsFrom(source nameable.Accesser) *prereqPanel {
+	p.names = source
+	p.RemoveAllChildren()
+	p.build()
+	return p
+}
+
+// replacements returns the values of the nameable markers in the prerequisites, or nil without a source.
+func (p *prereqPanel) replacements() map[string]string {
+	if p.names != nil {
+		return p.names.NameableReplacements()
+	}
+	return nil
+}
+
 // summary returns the paragraph a collapsed panel shows: the whole tree as a sentence, ended with a period. A tree with
 // nothing to check says so, since a tech level condition is all it would otherwise describe.
 func (p *prereqPanel) summary() string {
@@ -219,7 +239,7 @@ func (p *prereqPanel) summary() string {
 	if tree.HasNothingToCheck() {
 		return i18n.Text("No prerequisites.")
 	}
-	return fmt.Sprintf(i18n.Text("%s."), tree.Describe(p.entity, nil, emphasize))
+	return fmt.Sprintf(i18n.Text("%s."), tree.Describe(p.entity, p.replacements(), emphasize))
 }
 
 // refresh updates the paragraph, the sentences and the status icons from the tree, in place. The tree's scripts run only
@@ -243,7 +263,7 @@ func (p *prereqPanel) refresh() {
 			v.icon.Tooltip = newWrappedTooltip(tip)
 		}
 		if v.sentence != nil {
-			v.sentence.setText(v.node.Describe(p.entity, nil, emphasize), suffix)
+			v.sentence.setText(v.node.Describe(p.entity, p.replacements(), emphasize), suffix)
 		}
 		if list, ok := v.node.(*gurps.PrereqList); ok && v.group != nil {
 			v.group.Accessibility.Name = groupName(list)
@@ -531,7 +551,7 @@ func (p *prereqPanel) group(list *gurps.PrereqList, path string) *unison.Panel {
 // button for more actions.
 func (p *prereqPanel) row(pr gurps.Prereq, path string) *unison.Panel {
 	var icon *unison.Label
-	row := p.sentenceRow(path, func() string { return pr.Describe(p.entity, nil, emphasize) },
+	row := p.sentenceRow(path, func() string { return pr.Describe(p.entity, p.replacements(), emphasize) },
 		pr.PrereqType() != prereq.Unknown, func() *unison.Panel { return p.editor(pr, path) },
 		func() []menuEntry { return p.moreEntries(pr, path) },
 		func(row *unison.Panel) (*unison.Panel, float32) {

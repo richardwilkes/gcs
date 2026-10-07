@@ -132,7 +132,8 @@ func (e *editor[N, D]) createToolbar(helpMD string, initToolbar func(*editor[N, 
 						if setter, ok2 := any(e.editorData).(nameable.Setter); ok2 {
 							setter.SetNameableReplacements(tmp.NameableReplacements())
 							e.Rebuild(false)
-							// The rows' sentences show the new values only once they are made again.
+							// The prerequisites, defaults and features show the new values only once their rows are made
+							// again.
 							for _, section := range rowSections(e.content) {
 								section.rebuild("")
 							}

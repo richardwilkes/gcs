@@ -142,13 +142,16 @@ func (p *featuresPanel) index(path string) int {
 }
 
 // withReplacementsFrom has the panel take the values of the nameable markers in its features from source rather than
-// from the owner, such as from an editor's data, which Set Substitutions changes.
+// from the owner, such as from an editor's data, which Set Substitutions changes, and fills it again with them.
 func (p *featuresPanel) withReplacementsFrom(source nameable.Accesser) *featuresPanel {
 	p.names = source
+	p.RemoveAllChildren()
+	p.build()
 	return p
 }
 
-// replacements returns the values the owning item gives the nameable markers in its features.
+// replacements returns the values of the nameable markers in the features: those of the source withReplacementsFrom
+// set, or else those the owning item gives them.
 func (p *featuresPanel) replacements() map[string]string {
 	if p.names != nil {
 		return p.names.NameableReplacements()

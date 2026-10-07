@@ -254,7 +254,8 @@ func initSkillEditor(e *editor[*gurps.Skill, *gurps.SkillEditData], content *uni
 	addPageRefLabelAndField(content, &e.editorData.PageRef)
 	addPageRefHighlightLabelAndField(content, &e.editorData.PageRefHighlight)
 	if !e.target.Container() {
-		content.AddChild(newPrereqPanel(entity, &e.editorData.Prereq, prereq.TypesForNonEquipment, false))
+		content.AddChild(newPrereqPanel(entity, &e.editorData.Prereq, prereq.TypesForNonEquipment, false).
+			withReplacementsFrom(e.editorData))
 		if !e.target.IsTechnique() {
 			content.AddChild(newDefaultsPanel(entity, e.editorData, &e.editorData.Defaults))
 		}
