@@ -465,7 +465,7 @@ func TestPrereqPanelCollapse(t *testing.T) {
 			c.Nil(p.FindRefKey(key), "collapsing hides %s", key)
 		}
 		c.Equal(0, len(p.views), "and the statuses of the rows")
-		c.Equal(`Has trait whose name is "" and (has skill whose name is "" at level at least 0 or a custom check) and `+
+		c.Equal(`Has trait "" and (has skill "" at level at least 0 or a custom check) and `+
 			`meets an unknown type of prerequisite ("future") that needs a newer version of GCS.`,
 			summary().Accessibility.Name, "the paragraph describes the tree")
 		c.True(strings.HasSuffix(summary().plainText(), "."), "the paragraph ends with a period")
@@ -725,7 +725,7 @@ func TestPrereqPanelStatus(t *testing.T) {
 		c.Equal("Has trait Luck, not met", sentence.Accessibility.Name, "the sentence follows the change, in place")
 		sentence, ok = p.FindRefKey("r.3.0" + keySentence).Self.(*sentenceButton)
 		c.True(ok)
-		c.Equal(`Has trait whose name is "", doesn't apply at this tech level`, sentence.Accessibility.Name)
+		c.Equal(`Has trait "", doesn't apply at this tech level`, sentence.Accessibility.Name)
 	})
 	group := func() (name string) {
 		screen.Do(func() { name = p.FindRefKey("r.3" + keyPill).Parent().Parent().Accessibility.Name })
@@ -1298,4 +1298,59 @@ func TestPrereqPanelPlaceholderTextStaysPutOnFocus(t *testing.T) {
 		}
 	}
 	c.Equal(0, differ, "the text is drawn in the same place with the focus as without")
+}
+
+// TestPrereqPanelEquippedEquipmentTags checks that the tags field of an equipped equipment prerequisite says how to
+// match any of several tags, since it matches each of the comma-separated tags in turn.
+func TestPrereqPanelEquippedEquipmentTags(t *testing.T) {
+	c := check.New(t)
+	screen, _ := startHeadlessWorkspace(t, c)
+	equipped := gurps.NewEquippedEquipmentPrereq()
+	equipped.TagsCriteria = criteria.Text{Compare: criteria.IsText, Qualifier: "Sword, Axe"}
+	root := gurps.NewPrereqList()
+	root.Prereqs = gurps.Prereqs{equipped}
+	p, _ := showPrereqPanel(t, screen, &root, false)
+	path := childPath(treeRootPath, 0)
+	screen.Do(func() { p.toggle(path) })
+	screen.Do(func() {
+		field := p.FindRefKey(path + ":tag")
+		c.NotNil(field, "the prerequisite has a tags field")
+		if field != nil {
+			c.True(strings.Contains(tooltipText(field.Tooltip), "Separate multiple tags with commas"),
+				"whose tooltip says to separate tags with commas")
+		}
+	})
+}
+
+// TestPrereqPanelGroupMoreButtonNames checks that a screen reader hears a group's more button named for the group, and
+// for what it holds when it holds anything, so that two empty groups, or a group of one and its row, aren't alike.
+func TestPrereqPanelGroupMoreButtonNames(t *testing.T) {
+	c := check.New(t)
+	screen, _ := startHeadlessWorkspace(t, c)
+	emptyAny := gurps.NewPrereqList()
+	emptyAny.All = false
+	emptyAll := gurps.NewPrereqList()
+	luck := gurps.NewTraitPrereq()
+	luck.NameCriteria.Qualifier = "Luck"
+	ofOne := gurps.NewPrereqList()
+	ofOne.Prereqs = gurps.Prereqs{luck.Clone(nil)}
+	root := gurps.NewPrereqList()
+	root.Prereqs = gurps.Prereqs{emptyAny, emptyAll, ofOne, luck}
+	root = root.CloneAsPrereqList(nil)
+	c.Equal(4, len(root.Prereqs))
+	p, _ := showPrereqPanel(t, screen, &root, false)
+	name := func(path string) string {
+		var button *unison.Panel
+		screen.Do(func() { button = p.FindRefKey(path + keyMore) })
+		c.NotNil(button, "%s has a more button", path)
+		c.NotNil(screen.AccessibilityTree(p.Window()))
+		if node := screen.AccessibilityNodeFor(button); node != nil {
+			return node.Name
+		}
+		return ""
+	}
+	c.Equal("More actions for Any of", name("r.0"))
+	c.Equal("More actions for All of", name("r.1"))
+	c.Equal("More actions for All of: Has trait Luck", name("r.2"))
+	c.Equal("More actions for Has trait Luck", name("r.3"))
 }

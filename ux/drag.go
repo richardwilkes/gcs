@@ -39,6 +39,7 @@ var (
 	prereqDragKey              = unison.CreatePrivateDataType("gcs.prereq")
 	featureDragKey             = unison.CreatePrivateDataType("gcs.feature")
 	listFilterDragKey          = unison.CreatePrivateDataType("gcs.list-filter")
+	defaultDragKey             = unison.CreatePrivateDataType("gcs.default")
 )
 
 var (
@@ -69,6 +70,7 @@ var allDragDataTypes = []*uti.DataType{
 	prereqDragKey,
 	featureDragKey,
 	listFilterDragKey,
+	defaultDragKey,
 }
 
 // registerWindowDragTypes registers the supplied window as a target for every kind of drag payload GCS supports: the

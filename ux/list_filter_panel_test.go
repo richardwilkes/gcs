@@ -199,7 +199,7 @@ func TestListFilterPanelRows(t *testing.T) {
 }
 
 // TestListFilterPanelListSentences checks the sentences of list conditions that accept anything or compare with an
-// empty value, and of a value with space around it, which is quoted so that the space shows.
+// empty value, and of values with space around them, which "is" leaves out and "contains" quotes so that it shows.
 func TestListFilterPanelListSentences(t *testing.T) {
 	c := check.New(t)
 	screen, _ := startHeadlessWorkspace(t, c)
@@ -209,12 +209,15 @@ func TestListFilterPanelListSentences(t *testing.T) {
 	none.Text = criteria.Text{Compare: criteria.IsText}
 	padded := gurps.NewFilterCondition(f.Root, "name")
 	padded.Text = criteria.Text{Compare: criteria.IsText, Qualifier: " Axe "}
-	f.Root.Children = gurps.FilterNodes{anything, none, padded}
+	spaced := gurps.NewFilterCondition(f.Root, "name")
+	spaced.Text = criteria.Text{Compare: criteria.ContainsText, Qualifier: " Axe "}
+	f.Root.Children = gurps.FilterNodes{anything, none, padded, spaced}
 	p, _ := showListFilterPanel(t, screen, f)
 	screen.Do(func() {
 		c.Equal(`Must have tags that are anything`, sentenceText(p, "r.0"))
 		c.Equal(`Must have tags where at least one is ""`, sentenceText(p, "r.1"))
-		c.Equal(`Must have a name that is " Axe "`, sentenceText(p, "r.2"))
+		c.Equal(`Must have a name that is Axe`, sentenceText(p, "r.2"))
+		c.Equal(`Must have a name that contains " Axe "`, sentenceText(p, "r.3"))
 	})
 }
 
@@ -886,4 +889,38 @@ func TestListFilterPanelControlNamesDiffer(t *testing.T) {
 		}
 		c.True(names["Must"], "%s: the Must popup is named for itself", path)
 	}
+}
+
+// TestListFilterPanelGroupMoreButtonNames checks that a group's more button is named for how the group combines its
+// children and what they are, so that two groups, or a group of one and its row, sound different.
+func TestListFilterPanelGroupMoreButtonNames(t *testing.T) {
+	c := check.New(t)
+	screen, _ := startHeadlessWorkspace(t, c)
+	f := gurps.NewListFilter("")
+	emptyAny := gurps.NewFilterGroup(f.Root)
+	emptyAny.All = false
+	emptyNone := gurps.NewFilterGroup(f.Root)
+	emptyNone.All = false
+	emptyNone.Not = true
+	ofOne := gurps.NewFilterGroup(f.Root)
+	sword := gurps.NewFilterCondition(ofOne, "name")
+	sword.Text = criteria.Text{Compare: criteria.ContainsText, Qualifier: "sword"}
+	ofOne.Children = gurps.FilterNodes{sword}
+	f.Root.Children = gurps.FilterNodes{emptyAny, emptyNone, ofOne}
+	c.Equal(3, len(f.Root.Children), "precondition: the root holds three groups")
+	p, _ := showListFilterPanel(t, screen, f)
+	name := func(path string) string {
+		var button *unison.Panel
+		screen.Do(func() { button = p.FindRefKey(path + keyMore) })
+		c.NotNil(button, "%s has a more button", path)
+		c.NotNil(screen.AccessibilityTree(p.Window()))
+		if node := screen.AccessibilityNodeFor(button); node != nil {
+			return node.Name
+		}
+		return ""
+	}
+	c.Equal("More actions for Any of", name("r.0"))
+	c.Equal("More actions for None of", name("r.1"))
+	c.Equal(`More actions for All of: Must have a name that contains "sword"`, name("r.2"))
+	c.Equal(`More actions for Must have a name that contains "sword"`, name("r.2.0"))
 }

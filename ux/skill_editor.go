@@ -254,11 +254,13 @@ func initSkillEditor(e *editor[*gurps.Skill, *gurps.SkillEditData], content *uni
 	addPageRefLabelAndField(content, &e.editorData.PageRef)
 	addPageRefHighlightLabelAndField(content, &e.editorData.PageRefHighlight)
 	if !e.target.Container() {
-		content.AddChild(newPrereqPanel(entity, &e.editorData.Prereq, prereq.TypesForNonEquipment, false))
+		content.AddChild(newPrereqPanel(entity, &e.editorData.Prereq, prereq.TypesForNonEquipment, false).
+			withReplacementsFrom(e.editorData))
 		if !e.target.IsTechnique() {
-			content.AddChild(newDefaultsPanel(entity, &e.editorData.Defaults))
+			content.AddChild(newDefaultsPanel(entity, e.editorData, &e.editorData.Defaults))
 		}
-		content.AddChild(newFeaturesPanel(entity, e.target, &e.editorData.Features, false))
+		content.AddChild(newFeaturesPanel(entity, e.target, &e.editorData.Features, false).
+			withReplacementsFrom(e.editorData))
 		e.meleeWeapons = newWeaponsPanel(e, e.target, true, &e.editorData.Weapons)
 		content.AddChild(e.meleeWeapons)
 		e.rangedWeapons = newWeaponsPanel(e, e.target, false, &e.editorData.Weapons)

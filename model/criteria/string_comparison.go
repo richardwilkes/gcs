@@ -21,7 +21,16 @@ func (enum StringComparison) Describe(qualifier string) string {
 	if v == AnyText {
 		return v.String()
 	}
-	return v.String() + ` "` + qualifier + `"`
+	return v.String() + ` "` + v.EffectiveQualifier(qualifier) + `"`
+}
+
+// EffectiveQualifier returns the qualifier as this comparison uses it: "is" and "is not" ignore space at either end,
+// while the others keep it, since a value may need to start or end with one.
+func (enum StringComparison) EffectiveQualifier(qualifier string) string {
+	if enum == IsText || enum == IsNotText {
+		return strings.TrimSpace(qualifier)
+	}
+	return qualifier
 }
 
 // DescribeWithPrefix returns a description of this StringComparison using a qualifier and prefix.
@@ -36,7 +45,7 @@ func (enum StringComparison) DescribeWithPrefix(prefix, notPrefix, qualifier str
 	if v == AnyText {
 		return info
 	}
-	return info + ` "` + qualifier + `"`
+	return info + ` "` + v.EffectiveQualifier(qualifier) + `"`
 }
 
 // PluralClause returns the comparison as a clause that follows something plural, such as "that contain" in "notes that
@@ -107,15 +116,16 @@ func (enum StringComparison) Positive() StringComparison {
 	}
 }
 
-// Matches performs a comparison and returns true if the data matches.
+// Matches performs a comparison and returns true if the data matches. "is" and "is not" ignore case and space at either
+// end of both the qualifier and the data; the others ignore only case.
 func (enum StringComparison) Matches(qualifier, data string) bool {
 	switch enum {
 	case AnyText:
 		return true
 	case IsText:
-		return strings.EqualFold(data, qualifier)
+		return strings.EqualFold(strings.TrimSpace(data), strings.TrimSpace(qualifier))
 	case IsNotText:
-		return !strings.EqualFold(data, qualifier)
+		return !strings.EqualFold(strings.TrimSpace(data), strings.TrimSpace(qualifier))
 	case ContainsText:
 		return strings.Contains(strings.ToLower(data), strings.ToLower(qualifier))
 	case DoesNotContainText:

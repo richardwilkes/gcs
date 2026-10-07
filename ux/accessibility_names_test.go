@@ -122,7 +122,13 @@ func TestEveryControlHasAnAccessibleName(t *testing.T) {
 		s.Prereq = allPrereqs(prereq.TypesForNonEquipment, false)
 		s.Features = allFeatures(s, false)
 		s.Study = studies()
-		s.Defaults = []*gurps.SkillDefault{{DefaultType: gurps.DexterityID}, {DefaultType: gurps.SkillID}}
+		s.Defaults = []*gurps.SkillDefault{{DefaultType: gurps.DexterityID}, {
+			DefaultType:    gurps.SkillID,
+			Name:           criteria.Text{Compare: criteria.IsText, Qualifier: "Audit"},
+			Specialization: criteria.Text{Compare: criteria.IsText, Qualifier: "Audit"},
+			Tags:           criteria.Text{Compare: criteria.IsText, Qualifier: "Audit"},
+			WhenTL:         criteria.Number{Compare: criteria.AtLeastNumber, Qualifier: fxp.Three},
+		}, {DefaultType: gurps.ParryID}}
 		EditSkill(sheet, s)
 	})
 	audit.checkOpened("technique editor", func() {
@@ -146,9 +152,12 @@ func TestEveryControlHasAnAccessibleName(t *testing.T) {
 		EditEquipmentModifier(sheet, m)
 	})
 	audit.checkOpened("note editor", func() { EditNote(sheet, gurps.NewNote(entity, nil, false)) })
-	audit.checkOpened("melee weapon editor", func() {
-		EditWeapon(sheet, gurps.NewWeapon(gurps.NewTrait(entity, nil, false), true))
+	audit.checkRows("melee weapon editor", func() {
+		w := gurps.NewWeapon(gurps.NewTrait(entity, nil, false), true)
+		w.Defaults = []*gurps.SkillDefault{{DefaultType: gurps.SkillID}}
+		EditWeapon(sheet, w)
 	})
+	// With no defaults, so that the empty defaults panel's placeholder is checked.
 	audit.checkOpened("ranged weapon editor", func() {
 		EditWeapon(sheet, gurps.NewWeapon(gurps.NewTrait(entity, nil, false), false))
 	})
@@ -486,9 +495,9 @@ func seedEveryFeatureControl(list gurps.Features) {
 	}
 }
 
-// checkRows opens a dockable with fn and checks the controls in it, with its prerequisites and features panels collapsed
-// as they start out, then again with them expanded and each of their rows open in turn, since a closed row shows only
-// its sentence.
+// checkRows opens a dockable with fn and checks the controls in it, with its prerequisites, defaults and features
+// panels collapsed as they start out, then again with them expanded and each of their rows open in turn, since a closed
+// row shows only its sentence.
 func (a *axNameAudit) checkRows(view string, fn func()) {
 	a.t.Helper()
 	d := a.open(fn)
@@ -496,8 +505,8 @@ func (a *axNameAudit) checkRows(view string, fn func()) {
 		return
 	}
 	a.check(view, d)
-	// A prerequisites or features panel with anything in it starts out collapsed, showing a paragraph in place of its
-	// rows, and its title bar says so.
+	// A prerequisites, defaults or features panel with anything in it starts out collapsed, showing a paragraph in
+	// place of its rows, and its title bar says so.
 	var collapsed []*sectionToggle
 	a.screen.Do(func() {
 		for _, p := range panelsOfType[*prereqPanel](d.AsPanel()) {
@@ -507,6 +516,11 @@ func (a *axNameAudit) checkRows(view string, fn func()) {
 		}
 		for _, p := range panelsOfType[*featuresPanel](d.AsPanel()) {
 			if len(*p.features) != 0 {
+				collapsed = append(collapsed, p.collapse)
+			}
+		}
+		for _, p := range panelsOfType[*defaultsPanel](d.AsPanel()) {
+			if len(*p.defaults) != 0 {
 				collapsed = append(collapsed, p.collapse)
 			}
 		}
@@ -541,6 +555,13 @@ func (a *axNameAudit) checkRows(view string, fn func()) {
 					names = append(names, "feature "+path)
 					toggles = append(toggles, func() { p.toggle(path) })
 				}
+			}
+		}
+		for _, p := range panelsOfType[*defaultsPanel](d.AsPanel()) {
+			for i := range *p.defaults {
+				path := strconv.Itoa(i)
+				names = append(names, "default "+path)
+				toggles = append(toggles, func() { p.toggle(path) })
 			}
 		}
 	})

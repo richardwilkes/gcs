@@ -75,6 +75,8 @@ type treeNodes[N comparable] interface {
 	treeHasLead() bool
 	// treeGroupName returns the name a screen reader gives the group.
 	treeGroupName(group N) string
+	// treeGroupContents returns plain text saying what the group holds, or "" while it holds nothing.
+	treeGroupContents(group N) string
 	// treeGroupHead adds what goes between a group head's grip and its more button, its pill keyed by the path and
 	// keyPill among it, and returns the color of the group. box is the panel of the whole group.
 	treeGroupHead(group N, path string, head, box *unison.Panel) *unison.ThemeColor
@@ -344,9 +346,15 @@ func (p *sentenceTree[T, N]) groupEntries(group N, path string, setRoot func(all
 	return entries
 }
 
-// moreButton adds the button for the node's more menu.
-func (p *sentenceTree[T, N]) moreButton(parent *unison.Panel, node N, path string) {
-	addMoreButton(parent, path, func() []menuEntry { return p.moreEntries(node, path) })
+// moreButton adds the button for the more menu of the group at the path. A screen reader hears it named for the group,
+// as in "More actions for All of: Has trait Luck", or for the group alone while it is empty.
+func (p *sentenceTree[T, N]) moreButton(parent *unison.Panel, group N, path string) {
+	addMoreButton(parent, path, func() string {
+		if text := p.nodes.treeGroupContents(group); text != "" {
+			return i18n.Text("More actions for %s: %s", p.nodes.treeGroupName(group), text)
+		}
+		return i18n.Text("More actions for %s", p.nodes.treeGroupName(group))
+	}, func() []menuEntry { return p.moreEntries(group, path) })
 }
 
 // moreEntries returns the entries of the node's more menu: for a group, what can be added to it, then Duplicate, Move

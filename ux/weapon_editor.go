@@ -15,6 +15,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/stdmg"
+	"github.com/richardwilkes/gcs/v5/model/nameable"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
@@ -55,7 +56,14 @@ func (we *weaponEditor) initWeaponEditor(e *editor[*gurps.Weapon, *gurps.Weapon]
 		we.addRecoilBlock(w, content)
 	}
 	we.addStrengthBlock(w, content)
-	content.AddChild(newDefaultsPanel(gurps.EntityFromNode(w), &w.Defaults))
+	// A weapon edited from its item's editor takes the substitutions that editor holds, which may not be applied yet.
+	var names nameable.Accesser = w
+	if parent, ok := e.owner.(interface{ pendingNameables() nameable.Accesser }); ok {
+		if pending := parent.pendingNameables(); pending != nil {
+			names = pending
+		}
+	}
+	content.AddChild(newDefaultsPanel(gurps.EntityFromNode(w), names, &w.Defaults))
 	if w.IsRanged() {
 		we.jetCheckBox.OnSet = func() {
 			state := we.jetCheckBox.State == check.Off

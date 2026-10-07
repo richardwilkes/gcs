@@ -590,24 +590,6 @@ func adjustPopupBlank[T comparable](popup *unison.PopupMenu[T], blank bool) {
 	}
 }
 
-func addNameCriteriaPanel(parent *unison.Panel, strCriteria *criteria.Text, hSpan int, includeEmptyFiller bool) (*unison.PopupMenu[string], *StringField) {
-	prefix := i18n.Text("whose name")
-	return addStringCriteriaPanel(parent, prefix, prefix, i18n.Text("Name"), strCriteria, hSpan, includeEmptyFiller)
-}
-
-func addSpecializationCriteriaPanel(parent *unison.Panel, strCriteria *criteria.Text, hSpan int, includeEmptyFiller bool) (*unison.PopupMenu[string], *StringField) {
-	prefix := i18n.Text("and whose specialization")
-	return addStringCriteriaPanel(parent, prefix, prefix, i18n.Text("Specialization"), strCriteria, hSpan,
-		includeEmptyFiller)
-}
-
-func addTagCriteriaPanel(parent *unison.Panel, strCriteria *criteria.Text, hSpan int, includeEmptyFiller bool) (*unison.PopupMenu[string], *StringField) {
-	popup, field := addStringCriteriaPanel(parent, i18n.Text("and at least one tag"), i18n.Text("and all tags"),
-		i18n.Text("Tag"), strCriteria, hSpan, includeEmptyFiller)
-	field.Tooltip = newWrappedTooltip(i18n.Text(`Separate multiple tags with commas to match any one of them, e.g. "Sword, Axe"`))
-	return popup, field
-}
-
 // criteriaTitles returns what a criteria's two controls are called, from the subject they qualify: the comparison
 // popup's accessible name, and the qualifier field's undo title, which also serves as its accessible name. The
 // controls sit in a row that reads as a sentence, with nothing before either that could name it.
@@ -666,34 +648,6 @@ func addStringCriteriaPanel(parent *unison.Panel, prefix, notPrefix, subject str
 	criteriaField = addStringField(panel, undoTitle, "", &strCriteria.Qualifier)
 	adjustFieldBlank(criteriaField, strCriteria.IsZero())
 	return popup, criteriaField
-}
-
-// addNumericCriteriaPanel adds a numeric criteria's comparison popup and qualifier field, titled for the subject they
-// qualify; see criteriaTitles.
-func addNumericCriteriaPanel(parent *unison.Panel, targetMgr *TargetMgr, targetKey, prefix, subject string, numCriteria *criteria.Number, minValue, maxValue fxp.Int, hSpan int, integerOnly, includeEmptyFiller bool) (popup *unison.PopupMenu[string], field unison.Paneler) {
-	panel := newCriteriaPanel(parent, hSpan, includeEmptyFiller)
-	comparisonName, undoTitle := criteriaTitles(subject)
-	popup = newComparisonPopup(comparisonName, criteria.PrefixedNumericComparisonChoices(prefix),
-		int(numCriteria.Compare.EnsureValid()))
-	popup.SelectionChangedCallback = func(p *unison.PopupMenu[string]) {
-		numCriteria.Compare = criteria.NumericComparisons[p.SelectedIndex()]
-		adjustFieldBlank(field, numCriteria.Compare == criteria.AnyNumber)
-		MarkModified(panel)
-	}
-	panel.AddChild(popup)
-	if integerOnly {
-		field = NewIntegerField(targetMgr, targetKey, undoTitle,
-			func() int { return numCriteria.Qualifier.AsInteger[int]() },
-			func(value int) {
-				numCriteria.Qualifier = fxp.FromInteger(value)
-				MarkModified(panel)
-			}, minValue.AsInteger[int](), maxValue.AsInteger[int](), false, false)
-		panel.AddChild(field)
-	} else {
-		field = addDecimalField(panel, targetMgr, targetKey, undoTitle, "", &numCriteria.Qualifier, minValue, maxValue, false)
-	}
-	adjustFieldBlank(field, numCriteria.Compare == criteria.AnyNumber)
-	return popup, field
 }
 
 func addScriptField(parent *unison.Panel, targetMgr *TargetMgr, targetKey, undoTitle, tooltip string, get func() string, set func(string), includeMarkdownButton bool) *StringField {

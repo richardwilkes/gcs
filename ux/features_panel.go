@@ -67,6 +67,8 @@ type featuresPanel struct {
 	entity   *gurps.Entity
 	owner    fmt.Stringer
 	features *gurps.Features
+	// names, when set, gives the nameable replacements in place of the owner (see withReplacementsFrom).
+	names nameable.Accesser
 	// pending is the key of an optional criterion added to the open row that holds nothing yet. It shows until the row
 	// closes, since nothing in the data says it is there.
 	pending string
@@ -139,8 +141,21 @@ func (p *featuresPanel) index(path string) int {
 	return -1
 }
 
-// replacements returns the values the owning item gives the nameable markers in its features.
+// withReplacementsFrom has the panel take the values of the nameable markers in its features from source rather than
+// from the owner, such as from an editor's data, which Set Substitutions changes, and fills it again with them.
+func (p *featuresPanel) withReplacementsFrom(source nameable.Accesser) *featuresPanel {
+	p.names = source
+	p.RemoveAllChildren()
+	p.build()
+	return p
+}
+
+// replacements returns the values of the nameable markers in the features: those of the source withReplacementsFrom
+// set, or else those the owning item gives them.
 func (p *featuresPanel) replacements() map[string]string {
+	if p.names != nil {
+		return p.names.NameableReplacements()
+	}
 	if owner, ok := p.owner.(nameable.Accesser); ok {
 		return owner.NameableReplacements()
 	}
@@ -627,21 +642,13 @@ func (p *featuresPanel) attributePopup(parent *unison.Panel, key, prefix string,
 		}))
 }
 
-// selectionPopup adds the popup that picks what a bonus applies to, followed by the criteria for their name unless this,
-// which needs none, is picked. It is a plain function because methods cannot have type parameters.
+// selectionPopup adds the popup that picks what a bonus applies to, followed by the criteria for their name unless
+// this, which needs none, is picked. It is a plain function because methods cannot have type parameters.
 func selectionPopup[E comparable](p *featuresPanel, parent *unison.Panel, path string, items []E, selection *E, this E, name *criteria.Text) {
 	addCentered(parent, compactPopup(&p.sentenceRows, path+":selection", i18n.Text("Selection Type"), items,
 		*selection, nil, func(v E) { *selection = v }))
 	if *selection != this {
 		p.textCriteria(parent, path+":name", i18n.Text("Name"), "", "", "", name, true)
-	}
-}
-
-// tagsChip adds the optional tags criterion, whose field says how to match any of several tags.
-func (p *featuresPanel) tagsChip(chips *unison.Panel, path string, c *criteria.Text) {
-	p.textChip(chips, path, "tag", c)
-	if field := chips.FindRefKey(path + ":tag"); field != nil {
-		field.Tooltip = newWrappedTooltip(i18n.Text(`Separate multiple tags with commas to match any one of them, e.g. "Sword, Axe"`))
 	}
 }
 

@@ -348,7 +348,7 @@ func TestInitTitledEditorSection(t *testing.T) {
 	entity := gurps.NewEntity()
 	owner := gurps.NewTrait(entity, nil, false)
 	defs := []*gurps.SkillDefault{{DefaultType: gurps.DexterityID}}
-	expectTitledEditorSection(c, newDefaultsPanel(entity, &defs), "Defaults")
+	expectTitledEditorSection(c, newDefaultsPanel(entity, nil, &defs), "Defaults")
 	bonus := gurps.NewAttributeBonus(gurps.StrengthID)
 	bonus.SetOwner(owner)
 	features := gurps.Features{bonus}

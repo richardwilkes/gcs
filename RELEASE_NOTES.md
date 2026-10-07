@@ -17,9 +17,13 @@
   add button has moved into its more menu, except for the top group's, which takes the place of a more menu, and an
   empty group's, which now sits beside its placeholder. Choosing All of Group or Any of Group for an empty top group
   that already shows its pill now adds a group, rather than changing the top group's type.
+- The defaults section of the skill and weapon editors works like the features section. Each default is shown as a
+  short sentence, such as "Skill Broadsword at -2", that opens to edit it, with the specialization, tags and tech level
+  added as pills. Defaults can be duplicated, moved or dragged to reorder them, new ones are added at the end of the
+  list, and every change can be undone. The section opens collapsed to a paragraph of its defaults when it has any.
 - Wherever prerequisite and feature sentences compare text, as in their "whose ..." and specialization clauses, a value
-  with a comma, a double quote, or space at either end is now quoted, so that where it starts and stops shows, and one
-  holding a double quote is put in single quotes.
+  with a comma, a double quote, or space at either end that its comparison keeps is now quoted, so that where it starts
+  and stops shows, and one holding a double quote is put in single quotes.
 - The editor for saved list filters has been rebuilt to work like the prerequisites editor. Each condition is shown as a
   short sentence, such as "Must not be a container", that opens to edit it. Each group's pill says how it combines
   what it holds: all of it must match, any of it, none of it, or not all of it. Conditions and groups can be
@@ -33,6 +37,8 @@
   mode they apply to.
 - A new weapon bonus that picks weapons by their skill no longer starts out requiring a relative skill level of at least
   0, which left out weapons used at a lower level. A relative skill level can still be added to it.
+- The "is" and "is not" comparisons of prerequisites, features and defaults now ignore space at either end of the
+  value, so a name or specialization with a stray space now matches.
 
 ## Bug Fixes
 

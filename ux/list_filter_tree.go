@@ -10,6 +10,8 @@
 package ux
 
 import (
+	"strings"
+
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/unison"
@@ -125,6 +127,21 @@ func (p *listFilterPanel) treeHasLead() bool {
 
 func (p *listFilterPanel) treeGroupName(group gurps.FilterNode) string {
 	return groupModeOf(asFilterGroup(group)).String()
+}
+
+// treeGroupContents implements treeNodes: the sentences of the group's children, a group among them named for how it
+// combines its own.
+func (p *listFilterPanel) treeGroupContents(group gurps.FilterNode) string {
+	children := asFilterGroup(group).Children
+	parts := make([]string, 0, len(children))
+	for _, child := range children {
+		if g, ok := child.(*gurps.FilterGroup); ok {
+			parts = append(parts, groupModeOf(g).String())
+		} else {
+			parts = append(parts, stripEm.Replace(p.describe(child)))
+		}
+	}
+	return strings.Join(parts, i18n.Text("; "))
 }
 
 // treeGroupHead implements treeNodes: the group's pill, which says how it combines its children. Choosing a mode for an
