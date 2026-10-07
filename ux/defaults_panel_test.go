@@ -1050,3 +1050,26 @@ func TestSkillEditorSyncKeepsDefaultsAsTheyWere(t *testing.T) {
 	})
 	screen.Click(screen.PanelCenter(e.cancelButton))
 }
+
+// TestDefaultsPanelBlankSpecialization checks that a specialization chip with no specialization yet shows that it picks
+// a skill without one, as the row's sentence says once closed.
+func TestDefaultsPanelBlankSpecialization(t *testing.T) {
+	c := check.New(t)
+	screen, _ := startHeadlessWorkspace(t, c)
+	entity := gurps.NewEntity()
+	defaults := []*gurps.SkillDefault{{
+		DefaultType:    gurps.SkillID,
+		Name:           criteria.Text{Compare: criteria.IsText, Qualifier: "Guns"},
+		Specialization: criteria.Text{Compare: criteria.IsText},
+	}}
+	p, _ := showDefaultsPanel(t, screen, entity, nil, &defaults)
+	screen.Do(func() { c.Equal("Skill Guns without a specialization at +0", rowSentence(p, "0")) })
+	screen.Do(func() { p.toggle("0") })
+	screen.Do(func() {
+		field, ok := refKeySelf(p.AsPanel(), "0:specialization").(*StringField)
+		c.True(ok, "the chip has a field")
+		if ok {
+			c.Equal("none", field.Watermark, "whose hint says the default picks a skill without one")
+		}
+	})
+}

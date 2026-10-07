@@ -292,7 +292,12 @@ func (s *SkillDefault) describeSkill(replacements map[string]string, em func(str
 	switch compare := s.Specialization.Compare.EnsureValid(); {
 	case compare == criteria.AnyText:
 	case compare == criteria.IsText && strings.TrimSpace(specialization) == "":
-		// An empty specialization picks a skill without one, which the name alone says.
+		// An empty specialization picks only a skill without one.
+		if joined {
+			text += i18n.Text(" and without a specialization")
+		} else {
+			text += i18n.Text(" without a specialization")
+		}
 	case compare == criteria.IsText && !joined:
 		text += " (" + em(specialization) + ")"
 	default:

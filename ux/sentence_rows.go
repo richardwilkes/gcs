@@ -609,7 +609,13 @@ func (p *sentenceRows[T]) textChip(chips *unison.Panel, path, key string, c *cri
 		func() { *c = criteria.Text{} },
 		func(chip *unison.Panel) {
 			one := rowCriteria(key)
-			p.textCriteria(chip, path+":"+key, one.subject, "", one.prefix, cmp.Or(one.notPrefix, one.prefix), c, false)
+			var hint string
+			// An empty "is" specialization picks only a skill without one, as the row's sentence says.
+			if c.Compare == criteria.IsText && (key == "specialization" || key == "optspecialization") {
+				hint = i18n.Text("none")
+			}
+			p.textCriteria(chip, path+":"+key, one.subject, hint, one.prefix, cmp.Or(one.notPrefix, one.prefix), c,
+				false)
 		})
 }
 

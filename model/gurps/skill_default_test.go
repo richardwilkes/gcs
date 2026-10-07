@@ -1249,6 +1249,12 @@ func TestSkillDefaultDescribe(t *testing.T) {
 	specialized := newSkillDefaultTo("Fast-Draw", "Knife", false, -fxp.One)
 	noSpecialization := newSkillDefaultTo("Mathematics", "", false, 0)
 	blank := newSkillDefaultTo("@Blank@", "@Blank@", false, -fxp.Two)
+	anyWithout := &SkillDefault{DefaultType: SkillID, Specialization: textCriteria(criteria.IsText, "")}
+	clauseWithout := &SkillDefault{
+		DefaultType:    SkillID,
+		Name:           textCriteria(criteria.ContainsText, "Sword"),
+		Specialization: textCriteria(criteria.IsText, ""),
+	}
 	newOne := &SkillDefault{DefaultType: SkillID, Name: textCriteria(criteria.IsText, "")}
 	anySkill := &SkillDefault{DefaultType: SkillID}
 	anySpecialized := &SkillDefault{
@@ -1333,8 +1339,10 @@ func TestSkillDefaultDescribe(t *testing.T) {
 		{unset, "Skill [@Craft@] at [-2]"},
 		{unresolved, "Skill [@Weapon@] at [+0]"},
 		{specialized, "Skill [Fast-Draw] ([Knife]) at [-1]"},
-		{noSpecialization, "Skill [Mathematics] at [+0]"},
-		{blank, `Skill "" at [-2]`},
+		{noSpecialization, "Skill [Mathematics] without a specialization at [+0]"},
+		{anyWithout, "Any skill without a specialization at [+0]"},
+		{clauseWithout, `Skill whose name contains "[Sword]" and without a specialization at [+0]`},
+		{blank, `Skill "" without a specialization at [-2]`},
 		{newOne, `Skill "" at [+0]`},
 		{anySkill, "Any skill at [+0]"},
 		{anySpecialized, "Any skill ([Statistics]) at [-2]"},

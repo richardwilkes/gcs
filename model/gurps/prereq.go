@@ -86,9 +86,9 @@ func describeName(t criteria.Text, replacements map[string]string, em func(strin
 }
 
 // describeSpecialization returns how a specialization narrows a skill: the bare specialization in parentheses for
-// "is", nothing when any will do or when "is" names none once its markers are replaced, since that picks a skill
-// without one, and a "with a specialization that" clause otherwise, followed by the same kind of clause for the
-// optional specialization when it is set.
+// "is", "without a specialization" when "is" names none once its markers are replaced, since that picks only a skill
+// without one, nothing when any will do, and a "with a specialization that" clause otherwise, followed by the same kind
+// of clause for the optional specialization when it is set.
 func describeSpecialization(specialization, optional criteria.Text, replacements map[string]string, em func(string) string) string {
 	var text string
 	switch specialization.Compare {
@@ -96,11 +96,17 @@ func describeSpecialization(specialization, optional criteria.Text, replacements
 	case criteria.IsText:
 		if q := nameable.Apply(specialization.Qualifier, replacements); strings.TrimSpace(q) != "" {
 			text = " (" + em(q) + ")"
+		} else {
+			text = i18n.Text(" without a specialization")
 		}
 	default:
 		text = i18n.Text(" with a specialization that ") + describeText(specialization, replacements, em)
 	}
-	if optional.Compare != criteria.AnyText {
+	switch {
+	case optional.Compare == criteria.AnyText:
+	case optional.Compare == criteria.IsText && strings.TrimSpace(nameable.Apply(optional.Qualifier, replacements)) == "":
+		text += i18n.Text(" without an optional specialization")
+	default:
 		text += i18n.Text(" with an optional specialization that ") + describeText(optional, replacements, em)
 	}
 	return text
