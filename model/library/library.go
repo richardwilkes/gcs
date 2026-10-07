@@ -398,15 +398,12 @@ func (l *Library) CleanupFavorites() {
 
 // Watch for changes in the directory tree of this library. Each change is reported with its full path as this library
 // names it -- beneath Path() and beneath any symlinked directory registered with MonitorToken.AddSubPath, rather than
-// wherever those resolve to on disk -- so it can be compared directly with paths built from Path(). The callback is
-// invoked on no particular goroutine -- usually one of the monitor's, but the root sync SetPath sends for a watch it
-// could not re-establish arrives on SetPath's own -- so one that touches the user interface has to hand off to its
-// thread.
+// wherever those resolve to on disk -- so it can be compared directly with paths built from Path().
 //
 // Establishing a watch creates the library's directory if it is missing, as Path(true) does, since a directory that
 // does not exist cannot be watched. The same goes for the watches SetPath re-establishes on the new path.
-func (l *Library) Watch(callback func(lib *Library, fullPath string, what notify.Event)) *MonitorToken {
-	return l.obtainMonitor().newWatch(callback)
+func (l *Library) Watch(callback func(lib *Library, fullPath string, what notify.Event), callbackOnUIThread bool) *MonitorToken {
+	return l.obtainMonitor().newWatch(callback, callbackOnUIThread)
 }
 
 // StopAllWatches that were previously established.

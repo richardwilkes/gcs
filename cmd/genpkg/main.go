@@ -66,7 +66,7 @@ func generateDocIcons(dir string) error {
 			continue
 		}
 		var overlay image.Image
-		if overlay, err = svg.CreateImageFromSVG(ux.FileTypeSVG(fi), overlaySize); err != nil {
+		if overlay, err = svg.CreateImageFromSVG(fi.SVG, overlaySize); err != nil {
 			return err
 		}
 		if err = writePNG(filepath.Join(dir, docIconName(fi)), ximage.Stack(docImg, overlay)); err != nil {

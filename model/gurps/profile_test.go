@@ -19,21 +19,27 @@ import (
 	"github.com/richardwilkes/toolbox/v2/check"
 )
 
-// Portrait data the user interface cannot decode must still be written out when saved, since a different build may be
-// able to decode it, and replacing the data must discard whatever the user interface cached for the old data.
-func TestProfilePortraitData(t *testing.T) {
+// A portrait whose bytes the current build cannot decode must not be discarded, since a different build may be able to
+// decode it and the data would otherwise be silently dropped by the next save.
+func TestProfilePortraitDataSurvivesDecodeFailure(t *testing.T) {
 	c := check.New(t)
 	data := []byte("this is not a valid image")
 	var p gurps.Profile
 	p.PortraitData = data
-	p.PortraitCache = "decoded"
+	c.Nil(p.Portrait())
+	c.Equal(data, p.PortraitData)
 
+	// A second call must not decode again, but must still leave the data alone.
+	c.Nil(p.Portrait())
+	c.Equal(data, p.PortraitData)
+
+	// The data must still be written out when saved.
 	var buffer bytes.Buffer
 	c.NoError(jio.MarshalWrite(&buffer, &p))
 	c.True(strings.Contains(buffer.String(), `"portrait":`))
-	c.Equal(data, p.PortraitData)
 
+	// Replacing the data must clear the undecodable state so a valid image can be loaded afterwards.
 	p.SetPortraitData(nil)
 	c.Nil(p.PortraitData)
-	c.Nil(p.PortraitCache)
+	c.Nil(p.Portrait())
 }

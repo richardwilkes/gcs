@@ -23,34 +23,7 @@ import (
 	"github.com/richardwilkes/unison/enums/imgfmt"
 )
 
-var (
-	registerKnownFileTypesOnce sync.Once
-	// fileTypeUIs holds what the user interface needs for each registered file type. Like the registry it parallels, it
-	// is written by the registration functions and read without synchronization after that, so those must not run again
-	// once anything may be reading it.
-	fileTypeUIs = make(map[*gurps.FileInfo]fileTypeUI)
-)
-
-// fileLoader opens the file at filePath in a new dockable, showing the given page if the file type has pages.
-type fileLoader func(filePath string, pageInfo gurps.PageInfo) (unison.Dockable, error)
-
-// fileTypeUI holds the icon for a file type and the function that opens a file of that type, which is nil for the types
-// that can't be opened.
-type fileTypeUI struct {
-	svg  *unison.SVG
-	load fileLoader
-}
-
-// registerFileInfo adds the file type to the central registry, along with its icon and loader.
-func registerFileInfo(fi *gurps.FileInfo, icon *unison.SVG, load fileLoader) {
-	fileTypeUIs[fi] = fileTypeUI{svg: icon, load: load}
-	fi.Register()
-}
-
-// FileTypeSVG returns the icon for the file type.
-func FileTypeSVG(fi *gurps.FileInfo) *unison.SVG {
-	return fileTypeUIs[fi].svg
-}
+var registerKnownFileTypesOnce sync.Once
 
 // RegisterKnownFileTypes registers the known file types. Only the first call registers anything: the registry is read
 // without synchronization by the deep search content cache's worker goroutines, so it must not be rewritten once
@@ -74,10 +47,12 @@ func registerSpecialFileInfo(extension string, icon *unison.SVG) {
 		UTI:        "private.gcs.nav" + extension,
 		Extensions: []string{extension},
 	})
-	registerFileInfo(&gurps.FileInfo{
+	fi := gurps.FileInfo{
 		UTI:       dt,
+		SVG:       icon,
 		IsSpecial: true,
-	}, icon, nil)
+	}
+	fi.Register()
 }
 
 // RegisterExternalFileTypes registers the external file types.
@@ -92,45 +67,53 @@ func RegisterExternalFileTypes() {
 			registerImageFileInfo(one, groupWith)
 		}
 	}
-	registerFileInfo(&gurps.FileInfo{
+	fi := gurps.FileInfo{
 		Name:      "SVG Image",
 		UTI:       uti.SVG,
 		GroupWith: groupWith,
+		SVG:       svg.ImageFile,
+		Load:      func(filePath string, _ gurps.PageInfo) (unison.Dockable, error) { return NewImageDockable(filePath) },
 		IsImage:   true,
-	}, svg.ImageFile, loadImageFile)
+	}
+	fi.Register()
 }
 
 func registerImageFileInfo(format imgfmt.Enum, groupWith []string) {
-	registerFileInfo(&gurps.FileInfo{
+	fi := gurps.FileInfo{
 		Name:      format.String() + " Image",
 		UTI:       format.UTI(),
 		GroupWith: groupWith,
+		SVG:       svg.ImageFile,
+		Load:      func(filePath string, _ gurps.PageInfo) (unison.Dockable, error) { return NewImageDockable(filePath) },
 		IsImage:   true,
-	}, svg.ImageFile, loadImageFile)
-}
-
-func loadImageFile(filePath string, _ gurps.PageInfo) (unison.Dockable, error) {
-	return NewImageDockable(filePath)
+	}
+	fi.Register()
 }
 
 func registerPDFFileInfo() {
-	registerFileInfo(&gurps.FileInfo{
+	fi := gurps.FileInfo{
 		Name:      "PDF Document",
 		UTI:       uti.PDF,
 		GroupWith: uti.PDF.Extensions,
+		SVG:       svg.PDFFile,
+		Load:      NewPDFDockable,
 		IsPDF:     true,
-	}, svg.PDFFile, NewPDFDockable)
+	}
+	fi.Register()
 }
 
 func registerMarkdownFileInfo() {
-	registerFileInfo(&gurps.FileInfo{
+	fi := gurps.FileInfo{
 		Name:             "Markdown Document",
 		UTI:              uti.Markdown,
 		GroupWith:        uti.Markdown.Extensions,
+		SVG:              svg.MarkdownFile,
 		IsDeepSearchable: true,
-	}, svg.MarkdownFile, func(filePath string, _ gurps.PageInfo) (unison.Dockable, error) {
-		return NewMarkdownDockable(filePath, true, false)
-	})
+		Load: func(filePath string, _ gurps.PageInfo) (unison.Dockable, error) {
+			return NewMarkdownDockable(filePath, true, false)
+		},
+	}
+	fi.Register()
 }
 
 // RegisterGCSFileTypes registers the GCS file types.
@@ -177,12 +160,15 @@ func registerGCSSettingsFileInfo(name, ext string, groupWith []string, icon *uni
 		MimeTypes:  []string{"application/x-gcs-" + ext[1:]},
 		Extensions: []string{ext},
 	})
-	registerFileInfo(&gurps.FileInfo{
+	fi := gurps.FileInfo{
 		Name:      name,
 		UTI:       dt,
 		GroupWith: groupWith,
+		SVG:       icon,
+		Load:      func(filePath string, _ gurps.PageInfo) (unison.Dockable, error) { return loader(filePath) },
 		IsGCSData: true,
-	}, icon, func(filePath string, _ gurps.PageInfo) (unison.Dockable, error) { return loader(filePath) })
+	}
+	fi.Register()
 }
 
 func registerGCSFileInfo(name, ext string, groupWith []string, icon *unison.SVG, loader func(filePath string) (unison.Dockable, error)) {
@@ -192,13 +178,16 @@ func registerGCSFileInfo(name, ext string, groupWith []string, icon *unison.SVG,
 		MimeTypes:  []string{"application/x-gcs-" + ext[1:]},
 		Extensions: []string{ext},
 	})
-	registerFileInfo(&gurps.FileInfo{
+	fi := gurps.FileInfo{
 		Name:             name,
 		UTI:              dt,
 		GroupWith:        groupWith,
+		SVG:              icon,
+		Load:             func(filePath string, _ gurps.PageInfo) (unison.Dockable, error) { return loader(filePath) },
 		IsGCSData:        true,
 		IsDeepSearchable: true,
-	}, icon, func(filePath string, _ gurps.PageInfo) (unison.Dockable, error) { return loader(filePath) })
+	}
+	fi.Register()
 }
 
 func registerExportableGCSFileInfo(name, ext string, icon *unison.SVG, loader func(filePath string) (unison.Dockable, error)) {
@@ -208,12 +197,15 @@ func registerExportableGCSFileInfo(name, ext string, icon *unison.SVG, loader fu
 		MimeTypes:  []string{"application/x-gcs-" + ext[1:]},
 		Extensions: []string{ext},
 	})
-	registerFileInfo(&gurps.FileInfo{
+	fi := gurps.FileInfo{
 		Name:             name,
 		UTI:              dt,
 		GroupWith:        []string{ext},
+		SVG:              icon,
+		Load:             func(filePath string, _ gurps.PageInfo) (unison.Dockable, error) { return loader(filePath) },
 		IsGCSData:        true,
 		IsExportable:     true,
 		IsDeepSearchable: true,
-	}, icon, func(filePath string, _ gurps.PageInfo) (unison.Dockable, error) { return loader(filePath) })
+	}
+	fi.Register()
 }

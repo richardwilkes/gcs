@@ -85,7 +85,7 @@ func (p *fileBackedPanel) DockKey() string {
 // TitleIcon implements unison.Dockable.
 func (p *fileBackedPanel) TitleIcon(suggestedSize geom.Size) unison.Drawable {
 	return &unison.DrawableSVG{
-		SVG:  FileTypeSVG(gurps.FileInfoFor(p.path)),
+		SVG:  gurps.FileInfoFor(p.path).SVG,
 		Size: suggestedSize,
 	}
 }

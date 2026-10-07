@@ -25,7 +25,7 @@ import (
 // second SVG opens in a new dock instead of stacking with the first.
 func TestImageFileTypesGroupWithEachOther(t *testing.T) {
 	c := check.New(t)
-	RegisterKnownFileTypes()
+	RegisterExternalFileTypes()
 	imageExts := make([]string, 0, 16)
 	for _, ext := range append(imgfmt.AllReadableExtensions(), uti.SVG.Extensions...) {
 		if !slices.Contains(imageExts, ext) {
@@ -59,20 +59,4 @@ func TestRegisterKnownFileTypesRegistersOnce(t *testing.T) {
 		c.True(known[i] == fi, "a repeated call must not replace entry %d", i)
 	}
 	c.True(sheet == gurps.FileInfoFor("x"+gurps.SheetExt), "a repeated call must not replace the registry entries")
-}
-
-// TestKnownFileTypesHaveUI verifies that every registered file type has what the user interface keeps for it in a side
-// table the registry knows nothing of: an icon, and a loader unless it is one of the navigator's special types, which
-// can't be opened. A type registered through gurps.FileInfo.Register directly would draw with no icon and panic on its
-// nil loader in OpenFile.
-func TestKnownFileTypesHaveUI(t *testing.T) {
-	c := check.New(t)
-	RegisterKnownFileTypes()
-	c.True(len(gurps.KnownFileTypes) != 0)
-	for _, fi := range gurps.KnownFileTypes {
-		ui, ok := fileTypeUIs[fi]
-		c.True(ok, "%s must have a user interface entry", fi.UTI.UTI)
-		c.NotNil(ui.svg, "%s must have an icon", fi.UTI.UTI)
-		c.Equal(fi.IsSpecial, ui.load == nil, "%s must have a loader unless it is special", fi.UTI.UTI)
-	}
 }

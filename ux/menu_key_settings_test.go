@@ -40,7 +40,7 @@ func buttonTitle(b *unison.Button) string {
 func TestMenuKeySettingsRowLayout(t *testing.T) {
 	c := check.New(t)
 	d := newTestMenuKeySettingsDockable()
-	bindings := currentKeyBindings()
+	bindings := gurps.CurrentBindings()
 	c.True(len(bindings) > 1, "there must be more than one key binding to test with")
 	children := d.content.Children()
 	c.Equal(len(bindings)*3, len(children),
@@ -66,7 +66,7 @@ func TestMenuKeySettingsResetButtonTargetsItsOwnKeyButton(t *testing.T) {
 	c := check.New(t)
 	d := newTestMenuKeySettingsDockable()
 	children := d.content.Children()
-	for i := range currentKeyBindings() {
+	for i := range gurps.CurrentBindings() {
 		keyButton, ok := children[i*3].Self.(*unison.Button)
 		c.True(ok, "child %d must be a key binding button", i*3)
 		resetButton, ok := children[i*3+2].Self.(*unison.Button)
@@ -109,7 +109,7 @@ func TestBindingButtonForResetButtonWithoutRow(t *testing.T) {
 func TestMenuKeySettingsResetUpdatesDisplayedBinding(t *testing.T) {
 	c := check.New(t)
 	registerKeyBindingsOnce.Do(registerActions)
-	bindings := currentKeyBindings()
+	bindings := gurps.CurrentBindings()
 	c.True(len(bindings) > 1, "there must be more than one key binding to test with")
 
 	// Use a binding other than the first so that an off-by-one lookup can't accidentally land on the right widget.
@@ -118,16 +118,16 @@ func TestMenuKeySettingsResetUpdatesDisplayedBinding(t *testing.T) {
 	custom := unison.KeyBinding{KeyCode: unison.KeyF19, Modifiers: mod.Shift | mod.Command}
 	c.NotEqual(defaultBinding.String(), custom.String(), "the test binding must differ from the default")
 	g := gurps.GlobalSettings()
-	g.KeyBindings.Set(target.ID, custom.Key())
-	applyKeyBindings(&g.KeyBindings)
+	g.KeyBindings.Set(target.ID, custom)
+	g.KeyBindings.MakeCurrent()
 	t.Cleanup(func() {
 		g.KeyBindings.ResetOne(target.ID)
-		applyKeyBindings(&g.KeyBindings)
+		g.KeyBindings.MakeCurrent()
 	})
 
 	d := newTestMenuKeySettingsDockable()
-	current := currentKeyBindings()
-	i := slices.IndexFunc(current, func(b *keyBindingEntry) bool { return b.ID == target.ID })
+	current := gurps.CurrentBindings()
+	i := slices.IndexFunc(current, func(b *gurps.Binding) bool { return b.ID == target.ID })
 	c.True(i >= 0, "the target binding must be present")
 	children := d.content.Children()
 	keyButton, ok := children[i*3].Self.(*unison.Button)
@@ -146,7 +146,7 @@ func TestMenuKeySettingsResetUpdatesDisplayedBinding(t *testing.T) {
 	d.resetBinding(current[i], resetButton)
 
 	c.Equal(defaultBinding.String(), buttonTitle(keyButton), "the reset must refresh the displayed key binding")
-	c.Equal(defaultBinding.Key(), g.KeyBindings.Current(target.ID), "the reset must restore the factory binding")
+	c.Equal(defaultBinding, g.KeyBindings.Current(target.ID), "the reset must restore the factory binding")
 	for j, child := range children {
 		if j == i*3 {
 			continue

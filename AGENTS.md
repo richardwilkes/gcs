@@ -23,11 +23,6 @@ Any comments you add or edit:
   new file.
 - The `*_gen.go` files are generated from the `allEnums` table in `cmd/enumgen/main.go`. They are deleted and
   rewritten by every regeneration, so never edit them by hand: change the table and run `./build.sh -G`.
-- Nothing beneath `model/` may depend on unison, whether directly or through another package, tests included. A root
-  test fails when something does. What the model needs from the user interface mostly goes through the `gurps.Host`
-  interface, which `ux/model_host.go` implements; the rest the interface registers with the model (the theme file
-  converters through `gurps.RegisterConverter`, the key binding defaults through `gurps.RegisterKeyBinding`) or keeps in
-  a slot the model leaves it (`Profile.PortraitCache`).
 - A new test that puts two or more goroutines over shared state must also be listed in its package's `TestRace`
   wrapper (see the `race_coverage_test.go` files), or the race pass never runs it.
 - Tests that start a headless workspace with `startHeadlessWorkspace` must not call `t.Parallel`: a session owns most
