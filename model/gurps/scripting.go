@@ -713,22 +713,60 @@ func storeResolvedScript(entity *Entity, key scriptResolveKey, result scriptReso
 
 // compiledProgram returns the compiled program for the given script text, compiling and caching it on first use. The
 // text is evaluated by an eval call inside an anonymous strict-mode function, so the script's value is that of its last
-// expression and any variables it declares are confined to that function. This does not sandbox the script: strict mode
-// only rejects assignment to undeclared names, so a script can still reach shared state via globalThis and the
-// built-ins. Keeping the pooled runtimes clean is handled instead by freezeBuiltInsProgram and scriptVM.restoreGlobals.
+// expression and any variables it declares are confined to that function. A text that instead hands back its value
+// with a top-level `return`, which eval rejects as a syntax error, becomes the body of that function, so its value is
+// whatever it returns and is undefined if it runs off the end. This does not sandbox the script: strict mode only
+// rejects assignment to undeclared names, so a script can still reach shared state via globalThis and the built-ins.
+// Keeping the pooled runtimes clean is handled instead by freezeBuiltInsProgram and scriptVM.restoreGlobals.
 func compiledProgram(text string) (*goja.Program, error) {
 	if program := lookupCompiledProgram(text); program != nil {
 		return program, nil
 	}
-	jsBytes, err := jio.Marshal(text)
+	var src string
+	if hasTopLevelReturn(text) {
+		// The text starts on the wrapper's first line so that the line numbers in error messages match the text; only
+		// columns on that line are offset. The program is compiled strict below, which makes the function strict too.
+		src = "(function(){" + text + "\n})();"
+	} else {
+		jsBytes, err := jio.Marshal(text)
+		if err != nil {
+			return nil, fmt.Errorf("failed to marshal script text: %w", err)
+		}
+		src = "(function() { 'use strict'; return eval(" + string(jsBytes) + "); })();"
+	}
+	// Source maps are disabled as they are for the runtimes in the pool, since loading one reads a file or URL named by
+	// the script. The eval form always parses, as the text is a string literal there; a syntax error in a function-body
+	// text surfaces here instead and is returned as is, since it reads like the one eval would have raised.
+	prg, err := goja.Parse("", src, parser.WithDisableSourceMaps)
 	if err != nil {
-		return nil, fmt.Errorf("failed to marshal script text: %w", err)
+		return nil, err
 	}
 	var program *goja.Program
-	if program, err = goja.Compile("", "(function() { 'use strict'; return eval("+string(jsBytes)+"); })();", true); err != nil {
-		return nil, fmt.Errorf("failed to compile script: %w", err)
+	if program, err = goja.CompileAST(prg, true); err != nil {
+		return nil, err
 	}
 	return storeCompiledProgram(text, program), nil
+}
+
+// illegalReturnMessage is the message goja's parser gives a `return` found outside of any function.
+const illegalReturnMessage = "Illegal return statement"
+
+// hasTopLevelReturn reports whether the text uses `return` outside of any function, the one thing a function body
+// accepts that a script does not. The parser decides, so a return inside a nested function does not count. A text with
+// other syntax errors as well still counts, so that compiling it as a function body reports those rather than the
+// return.
+func hasTopLevelReturn(text string) bool {
+	_, err := parser.ParseFile(nil, "", text, 0, parser.WithDisableSourceMaps)
+	list, ok := errors.AsType[parser.ErrorList](err)
+	if !ok {
+		return false
+	}
+	for _, e := range list {
+		if e.Message == illegalReturnMessage {
+			return true
+		}
+	}
+	return false
 }
 
 // lookupCompiledProgram returns the cached program for the given text, or nil if there isn't one. A program found in
@@ -775,8 +813,9 @@ func addToScriptCache(text string, program *goja.Program) {
 
 // runScript compiles and runs a script with the provided arguments, returning the string form of its result. A timeout
 // of 0 or less means no timeout. The script text is evaluated as a JavaScript expression or sequence of statements (see
-// compiledProgram), so its value is that of its last expression; a top-level `return` is not permitted. The arguments
-// are exposed as globals for the duration of the run and removed again afterwards. The result is converted to a string
+// compiledProgram), so its value is that of its last expression, unless it uses a top-level `return`, in which case its
+// value is what it returns. The arguments are exposed as globals for the duration of the run and removed again
+// afterwards. The result is converted to a string
 // here, rather than by the caller, because that conversion can itself run script code — an object's `toString` or
 // `valueOf` — which must happen while the runtime is still checked out of the pool and still covered by the timeout.
 func runScript(timeout time.Duration, text string, args ...ScriptArg) (string, error) {

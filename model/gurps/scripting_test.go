@@ -784,8 +784,8 @@ func TestScriptTimeoutDoesNotAffectNextRun(t *testing.T) {
 }
 
 // Pins down the contract runScript implements: the text is evaluated as an expression or sequence of statements whose
-// value is that of its last expression, declarations within it do not escape into the runtime, and — because the text
-// is evaluated rather than used as a function body — a top-level return is a syntax error.
+// value is that of its last expression, or, when it uses a top-level return, as a function body whose value is what it
+// returns. Either way, declarations within it do not escape into the runtime.
 func TestScriptEvalSemantics(t *testing.T) {
 	c := check.New(t)
 
@@ -802,9 +802,40 @@ func TestScriptEvalSemantics(t *testing.T) {
 	c.NoError(err)
 	c.Equal("undefined", v)
 
-	_, err = runScript(0, "return 42")
+	v, err = runScript(0, "return 6 * 7;")
+	c.NoError(err)
+	c.Equal("42", v)
+
+	v, err = runScript(0, "var gcsReturned = 6;\nreturn gcsReturned * 7;")
+	c.NoError(err)
+	c.Equal("42", v)
+
+	v, err = runScript(0, "typeof gcsReturned")
+	c.NoError(err)
+	c.Equal("undefined", v)
+
+	// A return inside a nested function leaves the text a script, whose value is still that of its last expression.
+	v, err = runScript(0, "function gcsSix() { return 6 }\ngcsSix() * 7")
+	c.NoError(err)
+	c.Equal("42", v)
+
+	// A function body has no completion value, so running off its end yields undefined rather than the last expression.
+	v, err = runScript(0, "if (false) return 1; 2")
+	c.NoError(err)
+	c.Equal("undefined", v)
+
+	// Strict mode applies to a function body as it does to a script.
+	_, err = runScript(0, "gcsUndeclared = 1; return gcsUndeclared")
 	c.HasError(err)
-	c.Contains(err.Error(), "Illegal return statement")
+	c.Contains(err.Error(), "gcsUndeclared is not defined")
+
+	// Another syntax error in a text with a top-level return is reported rather than the return. The line number is
+	// that of the text, since the text starts on the wrapper's first line.
+	_, err = runScript(0, "return 1;\nfoo(;")
+	c.HasError(err)
+	c.Contains(err.Error(), "SyntaxError")
+	c.Contains(err.Error(), "Line 2:5")
+	c.NotContains(err.Error(), illegalReturnMessage)
 }
 
 // Covers the shared resolution path: text the parser accepts is returned as it stands, anything else is run as a script

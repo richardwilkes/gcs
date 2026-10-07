@@ -26,6 +26,9 @@
   0, which left out weapons used at a lower level. A relative skill level can still be added to it.
 - The "is" and "is not" comparisons of prerequisites, features and defaults now ignore space at either end of the
   value, so a name or specialization with a stray space now matches.
+- Scripts may now hand back their value with a `return` statement instead of leaving it as the last expression. A
+  script that uses `return` at its top level is treated as the body of a function, so it yields nothing if it reaches
+  its end without returning.
 
 ## Bug Fixes
 
