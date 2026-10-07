@@ -120,6 +120,7 @@ var PageRefKeyNameMappings = map[string]string{
 	"DFS":     "Dungeon Fantasy RPG: Spells",
 	"DFSC":    "Dungeon Fantasy Setting: Caverntown",
 	"DFSCSM":  "Dungeon Fantasy Setting: Cold Shard Mountain",
+	"DFSU":    "Shields Up!",
 	"DFT":     "Dungeon Fantasy RPG: Traps",
 	"DFT1:":   "Dungeon Fantasy Treasures 1: Glittering Prizes",
 	"DFT2:":   "Dungeon Fantasy Treasures 2: Epic Treasures",
