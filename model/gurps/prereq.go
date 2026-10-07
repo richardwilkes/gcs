@@ -64,8 +64,8 @@ func describeText(t criteria.Text, replacements map[string]string, em func(strin
 }
 
 // describeComparison returns words, which say how the comparison compares, followed by the qualifiers, joined with
-// "or", each shown as describeValue shows it. One qualifier after "is" may be bare; several are always quoted, so that
-// they can't be read as one value holding "or", or one as several. "is anything" takes no qualifier.
+// "or", each shown as describeValue shows it. One qualifier after "is" may be bare; several are always quoted. "is
+// anything" takes no qualifier.
 func describeComparison(words string, compare criteria.StringComparison, qualifiers []string,
 	em func(string) string,
 ) string {

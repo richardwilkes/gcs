@@ -178,7 +178,11 @@ func TestFilterConditionDescribesPluralFields(t *testing.T) {
 	for i, one := range []describeCase{
 		{newTextFilterCondition("notes", criteria.ContainsText, "cheap"), `Must have notes that contain "[cheap]"`},
 		{newTextFilterCondition("notes", criteria.IsText, "Rare"), `Must have notes that are [Rare]`},
-		{newTextFilterCondition("notes", criteria.IsText, "Rare "), `Must have notes that are "[Rare ]"`},
+		{newTextFilterCondition("notes", criteria.IsText, "Rare "), `Must have notes that are [Rare]`},
+		{newTextFilterCondition("notes", criteria.IsText, "   "), `Must have notes that are ""`},
+		{newTextFilterCondition("notes", criteria.IsNotText, " Rare"), `Must have notes that are not "[Rare]"`},
+		{newTextFilterCondition("notes", criteria.ContainsText, " Rare"), `Must have notes that contain "[ Rare]"`},
+		{newTextFilterCondition("notes", criteria.StartsWithText, "Rare "), `Must have notes that start with "[Rare ]"`},
 		{newTextFilterCondition("notes", criteria.AnyText, ""), `Must have notes that are anything`},
 		{
 			negated(newTextFilterCondition("notes", criteria.DoesNotEndWithText, "x")),

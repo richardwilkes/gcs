@@ -38,7 +38,7 @@ func (c *FilterCondition) Describe(lookup FilterFieldLookup, units fxp.WeightUni
 			break
 		}
 		criterion = describeComparison(c.Text.Compare.PluralClause(), c.Text.Compare,
-			[]string{nameable.Apply(c.Text.Qualifier, nil)}, em)
+			[]string{c.Text.Compare.EffectiveQualifier(nameable.Apply(c.Text.Qualifier, nil))}, em)
 	case FilterFieldList:
 		return c.describeList(title, em)
 	case FilterFieldNumber:

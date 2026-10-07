@@ -49,8 +49,9 @@
   The last location can no longer be unticked.
 - A saved filter's condition on text or a list, such as the notes or the tags, no longer passes an item that has none
   of it. A condition that the tags be anything now needs a tag that isn't blank, one that no tag be "Shield" no longer
-  passes an item with no tags, and negating a condition that the notes be anything finds the items without notes. Saved
-  filters with such conditions may show different results.
+  passes an item with no tags, and negating a condition that the notes be anything finds the items without notes. A
+  trait that can't be leveled likewise has no levels, so negating a condition that the levels be anything finds it.
+  Saved filters with such conditions may show different results.
 - An empty group in a saved filter set to None of or Not all of hid every item. Saved filters are now checked the way
   prerequisites are: an empty group is left out, whichever way it is set, so a filter with nothing in it shows every
   item, and a condition this version of GCS can't check, from a newer version, hides an item unless the rest of the

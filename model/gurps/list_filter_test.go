@@ -425,6 +425,73 @@ func TestListFilterMatchesByKind(t *testing.T) {
 
 // TestListFilterNegation verifies that negation inverts a node's result wherever it appears, and that it composes with
 // the criteria's own "not" forms rather than being confused by them.
+// TestListFilterTraitLevels checks that a trait that can't be leveled, or a container, has no levels to a filter, so it
+// satisfies no criteria on them and a negated condition finds it, while a leveled trait at 0 levels has levels of 0.
+// A disabled leveled trait has levels, read as 0 as its points are.
+func TestListFilterTraitLevels(t *testing.T) {
+	c := check.New(t)
+	fields := gurps.TraitFilterFields()
+
+	leveled := gurps.NewTrait(nil, nil, false)
+	leveled.Name = "Leveled"
+	leveled.CanLevel = true
+	leveled.Levels = fxp.Two
+	c.True(leveled.IsLeveled(), "the leveled trait should be leveled")
+	c.Equal(fxp.Two, leveled.CurrentLevel(), "the leveled trait should have two levels")
+
+	atZero := gurps.NewTrait(nil, nil, false)
+	atZero.Name = "At Zero"
+	atZero.CanLevel = true
+	c.True(atZero.IsLeveled(), "the trait at zero should be leveled")
+	c.Equal(fxp.Int(0), atZero.CurrentLevel(), "the trait at zero should have no levels bought")
+
+	plain := gurps.NewTrait(nil, nil, false)
+	plain.Name = "Plain"
+	c.False(plain.IsLeveled(), "the plain trait should not be leveled")
+
+	container := gurps.NewTrait(nil, nil, true)
+	container.Name = "Group"
+	container.CanLevel = true
+	c.False(container.IsLeveled(), "a container should not be leveled, even when it can level")
+
+	disabled := gurps.NewTrait(nil, nil, false)
+	disabled.Name = "Disabled"
+	disabled.CanLevel = true
+	disabled.Levels = fxp.Two
+	disabled.Disabled = true
+	c.True(disabled.IsLeveled(), "the disabled trait should be leveled")
+	c.Equal(fxp.Int(0), disabled.CurrentLevel(), "the disabled trait should read zero levels")
+
+	anything := newNumberFilterCondition("levels", criteria.AnyNumber, 0)
+	notAnything := newNumberFilterCondition("levels", criteria.AnyNumber, 0)
+	notAnything.Not = true
+	isZero := newNumberFilterCondition("levels", criteria.EqualsNumber, 0)
+	atMostOne := newNumberFilterCondition("levels", criteria.AtMostNumber, fxp.One)
+	for _, one := range []struct {
+		name  string
+		cond  *gurps.FilterCondition
+		shown map[*gurps.Trait]bool
+	}{
+		{"levels that are anything", anything, map[*gurps.Trait]bool{
+			leveled: true, atZero: true, plain: false, container: false, disabled: true,
+		}},
+		{"not levels that are anything", notAnything, map[*gurps.Trait]bool{
+			leveled: false, atZero: false, plain: true, container: true, disabled: false,
+		}},
+		{"levels that are 0", isZero, map[*gurps.Trait]bool{
+			leveled: false, atZero: true, plain: false, container: false, disabled: true,
+		}},
+		{"levels that are at most 1", atMostOne, map[*gurps.Trait]bool{
+			leveled: false, atZero: true, plain: false, container: false, disabled: true,
+		}},
+	} {
+		f := newTestListFilter(one.cond)
+		for trait, want := range one.shown {
+			c.Equal(want, matchesListFilter(f, fields, trait), "%s: %s", one.name, trait.Name)
+		}
+	}
+}
+
 func TestListFilterNegation(t *testing.T) {
 	c := check.New(t)
 	trait := gurps.NewTrait(nil, nil, false)

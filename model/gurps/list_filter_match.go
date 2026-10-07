@@ -62,15 +62,19 @@ func checkFilterGroup[T Node[T]](g *FilterGroup, fields map[string]*FilterField[
 }
 
 // checkFilterCondition checks the node's field against the condition's criteria, swapping met and unmet when the
-// condition is negated. A node whose text field is empty or only space, or whose list field holds nothing, doesn't
-// have the field, as the condition's title puts it, so it satisfies no criteria. A condition on a field this version of
-// GCS doesn't know fails, for the same reason an unknown node does.
+// condition is negated. A node whose text field is empty or only space, whose list field holds nothing, or that the
+// field's Has says lacks it, such as a trait that can't be leveled, doesn't have the field, as the condition's title
+// puts it, so it satisfies no criteria. A condition on a field this version of GCS doesn't know fails, for the same
+// reason an unknown node does.
 func checkFilterCondition[T Node[T]](c *FilterCondition, fields map[string]*FilterField[T], node T) CheckResult {
 	field, ok := fields[c.Field]
 	if !ok {
 		return CheckFailed
 	}
 	var met bool
+	if field.Has != nil && !field.Has(node) {
+		return CheckUnmet.negate(c.Not)
+	}
 	switch field.Kind {
 	case FilterFieldText:
 		if value := field.Text(node); strings.TrimSpace(value) != "" {

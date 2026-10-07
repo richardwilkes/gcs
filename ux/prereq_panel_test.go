@@ -1062,6 +1062,83 @@ func TestPrereqPanelEmptiedRootKeepsItsHead(t *testing.T) {
 	})
 }
 
+// TestPrereqPanelEmptiedRootRecordsHeadEdits checks that choosing a group type in the pill of a root emptied of its
+// last prerequisite, and editing or removing its tech level condition, are each recorded as an undoable change that
+// marks the editor modified.
+func TestPrereqPanelEmptiedRootRecordsHeadEdits(t *testing.T) {
+	c := check.New(t)
+	screen, _ := startHeadlessWorkspace(t, c)
+	anyOf := gurps.NewPrereqList()
+	anyOf.All = false
+	anyOf.Prereqs = gurps.Prereqs{gurps.NewTraitPrereq()}
+	anyOf = anyOf.CloneAsPrereqList(nil)
+	c.False(anyOf.All, "precondition: the root is \"Any of\"")
+	c.Equal(1, len(anyOf.Prereqs), "precondition: the root holds one prerequisite")
+	p, host := showPrereqPanel(t, screen, &anyOf, false)
+	screen.Do(func() { menuAction(p.moreEntries(anyOf.Prereqs[0], "r.0"), "Delete")() })
+	modified := host.modified
+	screen.Do(func() {
+		c.Equal(0, len(anyOf.Prereqs))
+		if pill, ok := refAs[*unison.PopupMenu[bool]](t, p.AsPanel(), treeRootPath+keyPill); ok {
+			selectPopupIndex(pill, 0)
+		}
+	})
+	screen.Do(func() {
+		c.True(anyOf.All, "the root is now \"All of\"")
+		c.NotNil(p.FindRefKey(treeRootPath+keyPill), "and still shows its pill")
+		c.Equal("Undo Requirement", host.mgr.UndoTitle())
+		c.Equal(modified+1, host.modified, "the choice marks the editor modified")
+		focus := p.Window().Focus()
+		c.NotNil(focus)
+		if focus != nil {
+			c.Equal(treeRootPath+keyPill, focus.RefKey, "the pill keeps the focus")
+		}
+	})
+	screen.Do(host.mgr.Undo)
+	c.False(anyOf.All, "undo takes back only the choice")
+	c.Equal(0, len(anyOf.Prereqs), "leaving the prerequisite deleted")
+
+	withTL := gurps.NewPrereqList()
+	withTL.WhenTL = criteria.Number{Compare: criteria.AtMostNumber, Qualifier: fxp.FromInteger(defaultWhenTL)}
+	withTL.Prereqs = gurps.Prereqs{gurps.NewTraitPrereq()}
+	withTL = withTL.CloneAsPrereqList(nil)
+	c.True(withTL.All, "precondition: the root is \"All of\"")
+	c.Equal(fxp.FromInteger(defaultWhenTL), withTL.WhenTL.Qualifier, "precondition: the root has a tech level condition")
+	c.Equal(1, len(withTL.Prereqs), "precondition: the root holds one prerequisite")
+	p, host = showPrereqPanel(t, screen, &withTL, false)
+	screen.Do(func() { menuAction(p.moreEntries(withTL.Prereqs[0], "r.0"), "Delete")() })
+	modified = host.modified
+	screen.Do(func() {
+		c.Equal(0, len(withTL.Prereqs))
+		if field, ok := refAs[*IntegerField](t, p.AsPanel(), treeRootPath+":tl"); ok {
+			field.RequestFocus()
+			field.SelectAll()
+		}
+	})
+	screen.Type("5")
+	c.Equal(fxp.FromInteger(5), withTL.WhenTL.Qualifier)
+	c.Equal("Undo Tech Level", host.mgr.UndoTitle())
+	c.True(host.modified > modified, "editing the tech level marks the editor modified")
+	modified = host.modified
+	screen.Do(func() {
+		if chip, ok := refAs[*unison.Panel](t, p.AsPanel(), treeRootPath+":tl"+keyChip); ok {
+			children := chip.Children()
+			if remove, isButton := children[len(children)-1].Self.(*unison.Button); isButton {
+				remove.ClickCallback()
+			}
+		}
+	})
+	c.Equal(criteria.AnyNumber, withTL.WhenTL.Compare, "the tech level condition is removed")
+	c.Equal("Undo Remove Tech Level Condition", host.mgr.UndoTitle())
+	c.Equal(modified+1, host.modified, "removing it marks the editor modified")
+	screen.Do(host.mgr.Undo)
+	c.Equal(fxp.FromInteger(5), withTL.WhenTL.Qualifier, "undo brings the condition back")
+	c.Equal(criteria.AtMostNumber, withTL.WhenTL.Compare)
+	screen.Do(host.mgr.Undo)
+	c.Equal(fxp.FromInteger(defaultWhenTL), withTL.WhenTL.Qualifier, "and then its tech level")
+	c.Equal(0, len(withTL.Prereqs), "leaving the prerequisite deleted")
+}
+
 // TestPrereqPanelUndoReopensRow checks that a row the Add menu adds opens with the focus in its name field, and that
 // undo and redo open whichever row was open when the change was made, or none.
 func TestPrereqPanelUndoReopensRow(t *testing.T) {

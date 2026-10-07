@@ -62,12 +62,21 @@ type FilterField[T Node[T]] struct {
 	Number func(T) fxp.Int
 	Weight func(T) fxp.Weight
 	Bool   func(T) bool
+	// Has reports whether the node has the field at all, when it can lack one, such as the levels of a trait that
+	// can't be leveled. A node without the field satisfies no criteria on it.
+	Has func(T) bool
 }
 
 // WithPluralTitle marks the field's title as naming something plural, so that what follows it agrees, as in "have notes
 // that contain", and returns the field.
 func (f *FilterField[T]) WithPluralTitle() *FilterField[T] {
 	f.Plural = true
+	return f
+}
+
+// WithPresence sets what reports whether a node has the field at all, and returns the field.
+func (f *FilterField[T]) WithPresence(has func(T) bool) *FilterField[T] {
+	f.Has = has
 	return f
 }
 
@@ -119,7 +128,8 @@ func TraitFilterFields() []*FilterField[*Trait] {
 			func(t *Trait) string { return t.PageRef }),
 		NewNumberFilterField(filterFieldKeyPoints, i18n.Text("have points"),
 			func(t *Trait) fxp.Int { return t.AdjustedPoints(nil) }).WithPluralTitle(),
-		NewNumberFilterField("levels", i18n.Text("have levels"), (*Trait).CurrentLevel).WithPluralTitle(),
+		NewNumberFilterField("levels", i18n.Text("have levels"), (*Trait).CurrentLevel).WithPluralTitle().
+			WithPresence((*Trait).IsLeveled),
 		NewTextFilterField("cr", i18n.Text("have a self-control roll"),
 			func(t *Trait) string { return t.SelfControl.ShortString() }),
 		NewTextFilterField("container_type", i18n.Text("have a container type"), func(t *Trait) string {

@@ -133,7 +133,11 @@ func (p *prereqPanel) setState(s prereqState) {
 // stateHash returns a hash of the panel's data.
 func (p *prereqPanel) stateHash() uint64 {
 	h := xxh3.New()
-	p.tree().Hash(h)
+	root := p.tree()
+	root.Hash(h)
+	// An empty root hashes the same whatever it is, but its group type and tech level condition still show.
+	xhash.Bool(h, root.All)
+	root.WhenTL.Hash(h)
 	xhash.Bool(h, p.headed)
 	return h.Sum64()
 }
@@ -389,13 +393,17 @@ func (p *prereqPanel) treeGroupContents(group gurps.Prereq) string {
 }
 
 // treeGroupHead implements treeNodes: the group's status icon, its pill and, when it has one, the chip of its tech
-// level condition.
+// level condition. Choosing a group type in the pill of an empty root keeps its head, as choosing one from its menu
+// does.
 func (p *prereqPanel) treeGroupHead(group gurps.Prereq, path string, head, box *unison.Panel) *unison.ThemeColor {
 	list := asPrereqList(group)
 	color := groupColor(list.All)
 	p.views = append(p.views, prereqView{node: list, icon: p.statusIcon(head), group: box})
 	pill := compactPopup(&p.sentenceRows, path+keyPill, i18n.Text("Requirement"), []bool{true, false}, list.All, groupWord,
-		func(all bool) { list.All = all })
+		func(all bool) {
+			list.All = all
+			p.headed = p.headed || path == treeRootPath
+		})
 	stylePill(pill, color)
 	addCentered(head, pill)
 	if list.WhenTL.Compare != criteria.AnyNumber {
