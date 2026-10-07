@@ -10,8 +10,12 @@
 package ux
 
 import (
+	"bytes"
+	"image"
+	"image/png"
 	"testing"
 
+	"github.com/richardwilkes/canvas/codecs"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/unison"
@@ -19,6 +23,35 @@ import (
 	"github.com/richardwilkes/unison/enums/mod"
 	"github.com/richardwilkes/unison/enums/role"
 )
+
+// TestPortraitImage verifies that a portrait whose bytes the current build cannot decode is neither discarded, since a
+// different build may be able to decode it, nor decoded over and over, and that replacing the data lets a valid image
+// be loaded afterwards.
+func TestPortraitImage(t *testing.T) {
+	c := check.New(t)
+	data := []byte("this is not a valid image")
+	var p gurps.Profile
+	p.PortraitData = data
+	c.Nil(portraitImage(&p))
+	c.Equal(data, p.PortraitData)
+	cached := p.PortraitCache
+	c.NotNil(cached, "the failure is remembered")
+
+	c.Nil(portraitImage(&p))
+	c.True(cached == p.PortraitCache, "a second call must not decode again")
+	c.Equal(data, p.PortraitData)
+
+	codecs.Register() // unison installs the image decoders as the app starts, which a plain test never does.
+	var buffer bytes.Buffer
+	c.NoError(png.Encode(&buffer, image.NewRGBA(image.Rect(0, 0, 2, 2))))
+	p.SetPortraitData(buffer.Bytes())
+	img := portraitImage(&p)
+	c.NotNil(img)
+	c.True(img == portraitImage(&p), "the decoded image is reused")
+
+	p.SetPortraitData(nil)
+	c.Nil(portraitImage(&p))
+}
 
 // Space and a press open a file chooser, so only the keys and requests the portrait ignores are exercised.
 func TestPortraitPanelIsAKeyboardControl(t *testing.T) {

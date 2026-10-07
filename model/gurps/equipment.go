@@ -33,7 +33,6 @@ import (
 	"github.com/richardwilkes/toolbox/v2/tid"
 	"github.com/richardwilkes/toolbox/v2/xhash"
 	"github.com/richardwilkes/toolbox/v2/xstrings"
-	"github.com/richardwilkes/unison/enums/align"
 )
 
 var (
@@ -499,9 +498,9 @@ func equipmentTotalsTitle(title string, list []*Equipment, settings *SheetSettin
 	shownValue := FormatValueRange(value, settings.FormatEquipmentValue)
 	exactWeight := FormatWeightRange(weight, settings.DefaultWeightUnits.Format)
 	exactValue := FormatValueRange(value, fxp.Int.Comma)
-	fullTitle = fmt.Sprintf(i18n.Text("%s (%s; $%s)"), title, shownWeight, shownValue)
+	fullTitle = i18n.Text("%s (%s; $%s)", title, shownWeight, shownValue)
 	if shownWeight != exactWeight || shownValue != exactValue {
-		exactTotals = fmt.Sprintf(i18n.Text("%s; $%s"), exactWeight, exactValue)
+		exactTotals = i18n.Text("%s; $%s", exactWeight, exactValue)
 	}
 	return fullTitle, exactTotals
 }
@@ -510,7 +509,7 @@ func equipmentTotalsTitle(title string, list []*Equipment, settings *SheetSettin
 // equipment value display format, with the exact value available as a tooltip whenever the two differ.
 func (e *Equipment) valueCellData(data *CellData, value fxp.Int) {
 	data.Type = cell.Text
-	data.Alignment = align.End
+	data.Alignment = cell.AlignEnd
 	data.Primary = value.Comma()
 	if data.ForPage {
 		if text := SheetSettingsFor(EntityFromNode(e)).FormatEquipmentValue(value); text != data.Primary {
@@ -524,7 +523,7 @@ func (e *Equipment) valueCellData(data *CellData, value fxp.Int) {
 // weight display format, with the exact weight available as a tooltip whenever the two differ.
 func (e *Equipment) weightCellData(data *CellData, weigh func(forSkills bool, defUnits fxp.WeightUnit) fxp.Weight) {
 	data.Type = cell.Text
-	data.Alignment = align.End
+	data.Alignment = cell.AlignEnd
 	settings := SheetSettingsFor(EntityFromNode(e))
 	weight := weigh(false, settings.DefaultWeightUnits)
 	data.Primary = settings.DefaultWeightUnits.Format(weight)
@@ -557,7 +556,7 @@ func (e *Equipment) CellData(columnID int, data *CellData) {
 		data.Type = cell.Toggle
 		data.Name = i18n.Text("Equipped")
 		data.Checked = e.Equipped
-		data.Alignment = align.Middle
+		data.Alignment = cell.AlignMiddle
 		data.Tooltip = i18n.Text("Click to toggle whether this piece of equipment is equipped or just carried. Items that are not equipped do not apply any features they may normally contribute to the character. Note that if a parent container is not equipped, none of its contents are considered to be equipped either and any checkmark here will be dimmed to reflect this.")
 		if !e.ReallyEquipped() {
 			data.Dim = true
@@ -568,7 +567,7 @@ func (e *Equipment) CellData(columnID int, data *CellData) {
 		}
 		data.Type = cell.Text
 		data.Primary = e.Quantity.Comma()
-		data.Alignment = align.End
+		data.Alignment = cell.AlignEnd
 	case EquipmentDescriptionColumn:
 		data.Type = cell.Text
 		data.Primary = e.String()
@@ -580,11 +579,11 @@ func (e *Equipment) CellData(columnID int, data *CellData) {
 	case EquipmentTLColumn:
 		data.Type = cell.Text
 		data.Primary = e.TechLevel
-		data.Alignment = align.End
+		data.Alignment = cell.AlignEnd
 	case EquipmentLCColumn:
 		data.Type = cell.Text
 		data.Primary = e.LegalityClass
-		data.Alignment = align.End
+		data.Alignment = cell.AlignEnd
 	case EquipmentCostColumn:
 		if e.IsGroup() {
 			break
@@ -617,7 +616,7 @@ func (e *Equipment) CellData(columnID int, data *CellData) {
 			data.Type = cell.Switch
 			data.Name = SwitchCellName()
 			data.Checked = e.SwitchedOn
-			data.Alignment = align.Middle
+			data.Alignment = cell.AlignMiddle
 			data.Tooltip = SwitchCellTooltip(e.Container())
 			// Dim (but leave usable) a switch that would change nothing if thrown right now. The character only
 			// collects features from carried equipment that is really equipped, but the features the equipment

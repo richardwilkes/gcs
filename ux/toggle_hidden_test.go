@@ -10,7 +10,6 @@
 package ux
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
@@ -35,7 +34,7 @@ func checkToggleUndoRedo(c check.Checker, table unison.Paneler, isModified func(
 	mgr := unison.UndoManagerFor(table)
 	c.NotNil(mgr, "the table must be able to find the editor's undo manager")
 	c.True(mgr.CanUndo(), "the %s must be undoable", verb)
-	c.Equal(fmt.Sprintf(i18n.Text("Undo %s"), undoName), mgr.UndoTitle(),
+	c.Equal(i18n.Text("Undo %s", undoName), mgr.UndoTitle(),
 		"the Edit menu must name the change that was made")
 	mgr.Undo()
 	checkRestored()

@@ -503,7 +503,7 @@ func (t *blastTarget) rebuildExposedChoices(entity *gurps.Entity) {
 		if body := gurps.SheetSettingsFor(entity).BodyType; body != nil {
 			for _, loc := range body.UniqueHitLocations(entity) {
 				t.exposedPopup.AddItem(exposedChoice{
-					name:     fmt.Sprintf(i18n.Text("Least protected: %s"), loc.ChoiceName),
+					name:     i18n.Text("Least protected: %s", loc.ChoiceName),
 					location: loc,
 				})
 				if loc == t.exposed {
@@ -591,8 +591,7 @@ func (c *explosionCalculator) rebuildWeaponSources() {
 				continue
 			}
 			c.weaponPopup.AddItem(weaponSource{
-				name: fmt.Sprintf(i18n.Text("%s: %s, %s (%s)"), names[i], w.String(), w.UsageWithReplacements(),
-					resolved.String()),
+				name:   i18n.Text("%s: %s, %s (%s)", names[i], w.String(), w.UsageWithReplacements(), resolved.String()),
 				sheet:  sheet,
 				weapon: w,
 			})
@@ -658,7 +657,7 @@ func (c *explosionCalculator) adjustControls() {
 	c.blastField.SetEnabled(!fromWeapon)
 	c.damageTypeField.SetEnabled(!fromWeapon)
 	c.fragmentationField.SetEnabled(!fromWeapon)
-	c.blastLabel.SetTitle(fmt.Sprintf(i18n.Text("dice of damage (%s)"), c.blastText()))
+	c.blastLabel.SetTitle(i18n.Text("dice of damage (%s)", c.blastText()))
 
 	c.target.lockSheetFields()
 	if c.target.sheet != nil {
@@ -746,14 +745,14 @@ func (c *explosionCalculator) damageText(divisor fxp.Int) string {
 	if divisor <= fxp.One {
 		return text
 	}
-	return fmt.Sprintf(i18n.Text("%s ÷ %s, rounded down"), text, divisor.Comma())
+	return i18n.Text("%s ÷ %s, rounded down", text, divisor.Comma())
 }
 
 // updateExplosionResults works out what an explosion does to the target and returns the notes that go with it (BX414).
 func (c *explosionCalculator) updateExplosionResults() []string {
 	radius := gurps.CollateralDamageRadius(c.blastDice)
 	c.addResult(i18n.Text("Collateral damage radius:"),
-		fmt.Sprintf(i18n.Text("%d yards (%d dice)"), radius, gurps.DiceOfDamage(c.blastDice)))
+		i18n.Text("%d yards (%d dice)", radius, gurps.DiceOfDamage(c.blastDice)))
 	notes := []string{
 		i18n.Text("An armor divisor on the explosive applies to neither its collateral damage nor its fragments."),
 		i18n.Text("Large-Area Injury (BX400): treat the damage as a torso hit, with no hit location wounding modifier, unless only one location is exposed. Only the locations facing the blast are exposed; those behind cover or masked by the body are not."),
@@ -771,10 +770,10 @@ func (c *explosionCalculator) updateExplosionResults() []string {
 	dr := c.target.dr
 	switch c.target.situationIndex {
 	case threwSelfOnExplosive:
-		c.addResult(i18n.Text("Damage taken:"), fmt.Sprintf(i18n.Text("maximum possible damage: %d"), maximum))
-		c.addResult(i18n.Text("DR against the blast:"), fmt.Sprintf(i18n.Text("%d (DR protects normally)"), dr))
+		c.addResult(i18n.Text("Damage taken:"), i18n.Text("maximum possible damage: %d", maximum))
+		c.addResult(i18n.Text("DR against the blast:"), i18n.Text("%d (DR protects normally)", dr))
 		c.addResult(i18n.Text("Penetrating (maximum):"), fmt.Sprintf("%d", max(maximum-dr, 0)))
-		notes = append(notes, fmt.Sprintf(i18n.Text("Throwing himself onto the explosive is a Sacrificial Dodge and Drop (BX377). He takes the maximum possible damage, with his DR protecting normally, and his body gives everyone else cover DR %d (his torso DR plus his HP)."),
+		notes = append(notes, i18n.Text("Throwing himself onto the explosive is a Sacrificial Dodge and Drop (BX377). He takes the maximum possible damage, with his DR protecting normally, and his body gives everyone else cover DR %d (his torso DR plus his HP).",
 			gurps.CoverDRFromBody(c.target.torsoDR, c.target.hp)))
 	case explosiveInsideTarget:
 		c.addResult(i18n.Text("Minimum / average / maximum:"), fmt.Sprintf("%d / %d / %d", minimum, average, maximum))
@@ -784,7 +783,7 @@ func (c *explosionCalculator) updateExplosionResults() []string {
 		notes = append(notes, i18n.Text("An explosion set off inside the target is worked out as an attack on the vitals, with a ×3 wounding modifier and no DR at all."))
 	default:
 		c.addResult(i18n.Text("Minimum / average / maximum:"), fmt.Sprintf("%d / %d / %d", minimum, average, maximum))
-		c.addResult(i18n.Text("DR against the blast:"), fmt.Sprintf(i18n.Text("%d (Large-Area Injury)"), dr))
+		c.addResult(i18n.Text("DR against the blast:"), i18n.Text("%d (Large-Area Injury)", dr))
 		c.addResult(i18n.Text("Penetrating (average):"), fmt.Sprintf("%d", max(average-dr, 0)))
 	}
 	return append(notes, c.fragmentationResults()...)
@@ -803,7 +802,7 @@ func (c *explosionCalculator) blastDivisor(radius int) (divisor fxp.Int, text st
 	default:
 		distance := c.target.distance
 		if distance > fxp.FromInteger(radius) {
-			return fxp.One, fmt.Sprintf(i18n.Text("Out of range (beyond %d yards)"), radius), false
+			return fxp.One, i18n.Text("Out of range (beyond %d yards)", radius), false
 		}
 		if distance <= 0 {
 			return fxp.One, i18n.Text("None (at the center of the blast)"), true
@@ -811,11 +810,11 @@ func (c *explosionCalculator) blastDivisor(radius int) (divisor fxp.Int, text st
 		divisor = c.environments[c.environmentIndex].environment.CollateralDivisor(distance)
 		switch c.environments[c.environmentIndex].environment {
 		case gurps.ExplosionUnderwater:
-			text = fmt.Sprintf(i18n.Text("%s (%s yards, underwater)"), divisor.Comma(), distance.Comma())
+			text = i18n.Text("%s (%s yards, underwater)", divisor.Comma(), distance.Comma())
 		case gurps.ExplosionInVacuum:
-			text = fmt.Sprintf(i18n.Text("%s (10 × %s yards, in vacuum)"), divisor.Comma(), distance.Comma())
+			text = i18n.Text("%s (10 × %s yards, in vacuum)", divisor.Comma(), distance.Comma())
 		default:
-			text = fmt.Sprintf(i18n.Text("%s (3 × %s yards)"), divisor.Comma(), distance.Comma())
+			text = i18n.Text("%s (3 × %s yards)", divisor.Comma(), distance.Comma())
 		}
 		return divisor, text, true
 	}
@@ -829,7 +828,7 @@ func (c *explosionCalculator) fragmentationResults() []string {
 	}
 	radius := gurps.FragmentationRadius(c.fragmentationDice)
 	c.addResult(i18n.Text("Fragmentation radius:"),
-		fmt.Sprintf(i18n.Text("%d yards (%d dice)"), radius, gurps.DiceOfDamage(c.fragmentationDice)))
+		i18n.Text("%d yards (%d dice)", radius, gurps.DiceOfDamage(c.fragmentationDice)))
 	var notes []string
 	switch {
 	case c.target.situationIndex != caughtInBlast:
@@ -845,30 +844,30 @@ func (c *explosionCalculator) fragmentationResults() []string {
 			posturePenalty = c.target.posture().posture.FragmentPenalty(groundBurst)
 		}
 		rangePenalty := gurps.SpeedRangePenalty(c.target.distance)
-		text := fmt.Sprintf(i18n.Text("on a roll of %d or less"),
+		text := i18n.Text("on a roll of %d or less",
 			gurps.FragmentationSkill(c.target.distance, posturePenalty, c.target.sm))
 		// The arithmetic is only worth showing when a modifier changed the base skill; with nothing to add, the total
 		// says it all.
 		if rangePenalty != 0 || posturePenalty != 0 || c.target.sm != 0 {
 			parts := []string{
-				fmt.Sprintf(i18n.Text("base %d"), gurps.FragmentationBaseSkill),
-				fmt.Sprintf(i18n.Text("range %+d"), rangePenalty),
+				i18n.Text("base %d", gurps.FragmentationBaseSkill),
+				i18n.Text("range %+d", rangePenalty),
 			}
 			if !c.airburst {
-				parts = append(parts, fmt.Sprintf(i18n.Text("posture %+d"), posturePenalty))
+				parts = append(parts, i18n.Text("posture %+d", posturePenalty))
 			}
-			parts = append(parts, fmt.Sprintf(i18n.Text("SM %+d"), c.target.sm))
+			parts = append(parts, i18n.Text("SM %+d", c.target.sm))
 			text += " (" + strings.Join(parts, ", ") + ")"
 		}
 		c.addResult(i18n.Text("Fragments hit:"), text)
-		notes = append(notes, fmt.Sprintf(i18n.Text("For every %d points by which the fragmentation roll succeeds, one more fragment hits. Roll the hit location of each fragment separately. The only defense against them is diving away (Dodge and Drop, BX377)."),
+		notes = append(notes, i18n.Text("For every %d points by which the fragmentation roll succeeds, one more fragment hits. Roll the hit location of each fragment separately. The only defense against them is diving away (Dodge and Drop, BX377).",
 			gurps.ExtraFragmentMargin))
 		if groundBurst && c.target.posture().posture == gurps.ProneTarget {
 			notes = append(notes, i18n.Text("Crawling or lying down with the blast at ground level, the target shows only half of its torso, and the fragments cannot hit its groin, legs or feet, nor its neck, eyes or face if its head is down: reroll those hit locations (BX551)."))
 		}
 	}
 	c.addResult(i18n.Text("Fragment damage:"),
-		fmt.Sprintf(i18n.Text("%s cut, per fragment"), gurps.FormatDice(c.fragmentationDice, c.useExtraDice())))
+		i18n.Text("%s cut, per fragment", gurps.FormatDice(c.fragmentationDice, c.useExtraDice())))
 	if c.airburst {
 		notes = append(notes, i18n.Text("In an airburst the fragments come from above, so posture does not protect against them and only overhead cover does."))
 	}
@@ -886,8 +885,7 @@ func (c *explosionCalculator) updateAreaResults() []string {
 	divisor := gurps.AreaDamageDivisor(distance)
 	if cone {
 		divisor = gurps.ConeWidth(distance, c.coneMaxRange, c.coneMaxWidth)
-		c.addResult(fmt.Sprintf(i18n.Text("Cone width at %s yards:"), distance.Comma()),
-			fmt.Sprintf(i18n.Text("%s yards"), divisor.Comma()))
+		c.addResult(i18n.Text("Cone width at %s yards:", distance.Comma()), i18n.Text("%s yards", divisor.Comma()))
 	}
 	switch {
 	case !c.dissipates:
@@ -895,7 +893,7 @@ func (c *explosionCalculator) updateAreaResults() []string {
 		divisor = fxp.One
 	case c.htResisted:
 		// A dissipating attack that HT resists eases the roll instead of dividing the damage (BX414).
-		c.addResult(i18n.Text("Bonus to the HT roll:"), fmt.Sprintf(i18n.Text("+%s"), divisor.Comma()))
+		c.addResult(i18n.Text("Bonus to the HT roll:"), i18n.Text("+%s", divisor.Comma()))
 		divisor = fxp.One
 	default:
 		c.addResult(i18n.Text("Damage divisor:"), divisor.Comma())
@@ -903,7 +901,7 @@ func (c *explosionCalculator) updateAreaResults() []string {
 	c.addResult(i18n.Text("Damage:"), c.damageText(divisor))
 	minimum, average, maximum := gurps.DividedDamage(c.blastDice, divisor)
 	c.addResult(i18n.Text("Minimum / average / maximum:"), fmt.Sprintf("%d / %d / %d", minimum, average, maximum))
-	c.addResult(i18n.Text("DR against the attack:"), fmt.Sprintf(i18n.Text("%d (Large-Area Injury)"), c.target.dr))
+	c.addResult(i18n.Text("DR against the attack:"), i18n.Text("%d (Large-Area Injury)", c.target.dr))
 	c.addResult(i18n.Text("Penetrating (average):"), fmt.Sprintf("%d", max(average-c.target.dr, 0)))
 	notes := []string{
 		i18n.Text("Large-Area Injury (BX400): treat the damage as a torso hit, with no hit location wounding modifier, unless only one location is exposed. Only the locations facing the attack are exposed; those behind cover or masked by the body are not."),

@@ -10,7 +10,6 @@
 package gurps
 
 import (
-	"fmt"
 	"hash"
 	"strings"
 	"unicode"
@@ -332,7 +331,7 @@ func (p *PrereqList) describeWhenTL() string {
 	if p.WhenTL.Compare == criteria.AnyNumber {
 		return ""
 	}
-	return fmt.Sprintf(i18n.Text(" (only when TL %s)"), p.WhenTL.AltString())
+	return i18n.Text(" (only when TL %s)", p.WhenTL.AltString())
 }
 
 // lowerFirst lowercases the first letter of text when it begins a word that continues in lowercase or is a single

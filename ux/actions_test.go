@@ -21,10 +21,11 @@ import (
 	"github.com/richardwilkes/unison"
 )
 
-// keyBindingRegistrars names the functions in actions.go that take a key binding ID as their first argument. Every
+// keyBindingRegistrars names the functions actions.go calls with a key binding ID as their first argument. Every
 // registration helper must be listed here, or TestKeyBindingIDsAreUnique cannot see the IDs it registers; that test
 // fails on a binding registered but not found in the source, which catches a helper missing from this list.
 var keyBindingRegistrars = map[string]bool{
+	"registerKeyBinding":                  true,
 	"registerKeyBindableAction":           true,
 	"registerFocusAction":                 true,
 	"registerFocusActionWithContextTitle": true,
@@ -32,9 +33,9 @@ var keyBindingRegistrars = map[string]bool{
 	"registerSheetAction":                 true,
 }
 
-// gurps.RegisterKeyBinding silently ignores a duplicate ID, so an action that reuses one is never added to the binding
-// set: it can't be seen or assigned a binding in the Menu Keys settings, KeyBindings.MakeCurrent() never updates it,
-// and any binding the user assigns to that ID applies only to the action that claimed it first.
+// registerKeyBinding silently ignores a duplicate ID, so an action that reuses one is never added to the binding set:
+// it can't be seen or assigned a binding in the Menu Keys settings, applyKeyBindings never updates it, and any binding
+// the user assigns to that ID applies only to the action that claimed it first.
 func TestKeyBindingIDsAreUnique(t *testing.T) {
 	c := check.New(t)
 	registerKeyBindingsOnce.Do(registerActions)
@@ -46,7 +47,7 @@ func TestKeyBindingIDsAreUnique(t *testing.T) {
 		seen[id] = true
 	}
 	registered := make(map[string]bool, len(ids))
-	for _, one := range gurps.CurrentBindings() {
+	for _, one := range currentKeyBindings() {
 		registered[one.ID] = true
 	}
 	for id := range seen {
@@ -63,7 +64,7 @@ func TestEquipmentLibraryActionsAreSeparatelyBindable(t *testing.T) {
 	c := check.New(t)
 	registerKeyBindingsOnce.Do(registerActions)
 	byAction := make(map[*unison.Action]string)
-	for _, one := range gurps.CurrentBindings() {
+	for _, one := range currentKeyBindings() {
 		byAction[one.Action] = one.ID
 	}
 	equipmentID, ok := byAction[newEquipmentLibraryAction]
@@ -74,7 +75,7 @@ func TestEquipmentLibraryActionsAreSeparatelyBindable(t *testing.T) {
 }
 
 // keyBindingIDsInSource returns the key binding IDs that actions.go passes as string literals to the functions named
-// in keyBindingRegistrars and to gurps.RegisterKeyBinding.
+// in keyBindingRegistrars.
 func keyBindingIDsInSource(c check.Checker) []string {
 	file, err := parser.ParseFile(token.NewFileSet(), "actions.go", nil, 0)
 	c.NoError(err, "actions.go must be parsable")
@@ -84,16 +85,7 @@ func keyBindingIDsInSource(c check.Checker) []string {
 		if !ok || len(call.Args) == 0 {
 			return true
 		}
-		switch fn := call.Fun.(type) {
-		case *ast.Ident:
-			if !keyBindingRegistrars[fn.Name] {
-				return true
-			}
-		case *ast.SelectorExpr:
-			if fn.Sel.Name != "RegisterKeyBinding" {
-				return true
-			}
-		default:
+		if fn, isIdent := call.Fun.(*ast.Ident); !isIdent || !keyBindingRegistrars[fn.Name] {
 			return true
 		}
 		if lit, ok2 := call.Args[0].(*ast.BasicLit); ok2 && lit.Kind == token.STRING {

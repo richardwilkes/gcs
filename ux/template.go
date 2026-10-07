@@ -10,12 +10,10 @@
 package ux
 
 import (
-	"fmt"
-
-	"github.com/richardwilkes/gcs/v5/model/fonts"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/svg"
+	"github.com/richardwilkes/gcs/v5/ux/fonts"
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/toolbox/v2/uti"
@@ -183,7 +181,7 @@ func (t *Template) newSheetFromTemplate(_ any) {
 	DisplayNewDockable(sheet)
 	op := promptOperation{
 		name:        i18n.Text("New Sheet"),
-		description: fmt.Sprintf(i18n.Text("Creating a sheet from template %s"), shortNames(t.Title())...),
+		description: i18n.Text("Creating a sheet from template %s", shortNames(t.Title())...),
 	}
 	if !t.applyTemplateToSheet(sheet, op, true) {
 		// A picker was canceled, which abandons the new character too, not just the template. The sheet has been
@@ -217,12 +215,12 @@ func (t *Template) applyTemplate(_ any) {
 	name := i18n.Text("Apply Template")
 	chooseOp := promptOperation{
 		name:        name,
-		description: fmt.Sprintf(i18n.Text("Applying template %s"), shortNames(t.Title())...),
+		description: i18n.Text("Applying template %s", shortNames(t.Title())...),
 	}
 	for _, sheet := range promptForDestinations(chooseOp, OpenSheets(nil)) {
 		t.applyTemplateToSheet(sheet, promptOperation{
 			name:        name,
-			description: fmt.Sprintf(i18n.Text("Applying template %s to %s"), shortNames(t.Title(), sheet.Title())...),
+			description: i18n.Text("Applying template %s to %s", shortNames(t.Title(), sheet.Title())...),
 		}, false)
 	}
 }
@@ -445,7 +443,7 @@ func (t *Template) syncWithAllSources() {
 
 // BodySettingsTitle implements BodySettingsOwner.
 func (t *Template) BodySettingsTitle() string {
-	return fmt.Sprintf(i18n.Text("Body Type: %s"), t.Title())
+	return i18n.Text("Body Type: %s", t.Title())
 }
 
 // BodySettings implements BodySettingsOwner.

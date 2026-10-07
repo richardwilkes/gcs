@@ -10,8 +10,6 @@
 package ux
 
 import (
-	"fmt"
-
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/dgroup"
 	"github.com/richardwilkes/toolbox/v2/errs"
 	"github.com/richardwilkes/toolbox/v2/geom"
@@ -180,10 +178,10 @@ func (s *editorShell) confirmClose(isModified func() bool, apply func()) bool {
 		return true
 	}
 	if s.discardReason != "" {
-		return unison.QuestionDialog(fmt.Sprintf(i18n.Text("Discard changes made to\n%s?"), s.editor().Title()),
+		return unison.QuestionDialog(i18n.Text("Discard changes made to\n%s?", s.editor().Title()),
 			s.discardReason) == unison.ModalResponseOK
 	}
-	switch unison.YesNoCancelDialog(fmt.Sprintf(i18n.Text("Save changes made to\n%s?"), s.editor().Title()), "") {
+	switch unison.YesNoCancelDialog(i18n.Text("Save changes made to\n%s?", s.editor().Title()), "") {
 	case unison.ModalResponseDiscard:
 		return true
 	case unison.ModalResponseOK:

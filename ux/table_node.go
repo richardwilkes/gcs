@@ -10,15 +10,14 @@
 package ux
 
 import (
-	"fmt"
 	"slices"
 	"strings"
 	"unicode"
 
-	"github.com/richardwilkes/gcs/v5/model/fonts"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/cell"
 	"github.com/richardwilkes/gcs/v5/svg"
+	"github.com/richardwilkes/gcs/v5/ux/fonts"
 	"github.com/richardwilkes/toolbox/v2/errs"
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/i18n"
@@ -376,11 +375,23 @@ func asColorProvider(ink unison.Ink, fallback unison.ColorProvider) unison.Color
 	return fallback
 }
 
+// hAlignFor returns the horizontal alignment to lay a cell's content out with.
+func hAlignFor(alignment cell.Alignment) align.Enum {
+	switch alignment {
+	case cell.AlignMiddle:
+		return align.Middle
+	case cell.AlignEnd:
+		return align.End
+	default:
+		return align.Start
+	}
+}
+
 func (n *Node[T]) createLabelCell(c *gurps.CellData, width float32, foreground, background unison.Ink, selected bool) unison.Paneler {
 	p := unison.NewPanel()
 	p.SetLayout(&unison.FlexLayout{
 		Columns: 1,
-		HAlign:  c.Alignment,
+		HAlign:  hAlignFor(c.Alignment),
 	})
 	if c.Secondary != "" {
 		outer := unison.NewPanel()
@@ -391,7 +402,7 @@ func (n *Node[T]) createLabelCell(c *gurps.CellData, width float32, foreground, 
 		inner := unison.NewPanel()
 		inner.SetLayout(&unison.FlexLayout{
 			Columns: 1,
-			HAlign:  c.Alignment,
+			HAlign:  hAlignFor(c.Alignment),
 		})
 		inner.SetLayoutData(&unison.FlexLayoutData{
 			HAlign: align.Fill,
@@ -580,7 +591,7 @@ func (n *Node[T]) addLabelCell(c *gurps.CellData, parent *unison.Panel, width fl
 		label := unison.NewLabel()
 		label.Font = f
 		label.StrikeThrough = primary && c.Disabled
-		label.HAlign = c.Alignment
+		label.HAlign = hAlignFor(c.Alignment)
 		label.OnBackgroundInk = foreground
 		// A line keeps the whitespace it was broken at, which only fit because the wrapping doesn't count it; left
 		// on, the label would be measured with it and come out wider than the width the line was wrapped to.
@@ -638,7 +649,7 @@ func (n *Node[T]) newCheckCell(c *gurps.CellData, foreground unison.Ink, svgFor 
 		}
 	}
 	setDrawable(c.Checked)
-	label.HAlign = c.Alignment
+	label.HAlign = hAlignFor(c.Alignment)
 	label.OnBackgroundInk = foreground
 	if c.Tooltip != "" {
 		label.Tooltip = newWrappedTooltip(c.Tooltip)
@@ -1004,7 +1015,7 @@ func InsertItems[T gurps.Node[T]](owner Rebuildable, table *unison.Table[*Node[T
 	if len(items) == 0 {
 		return
 	}
-	undo := beginTableUndo(table, fmt.Sprintf(i18n.Text("Insert %s"), items[0].Kind()), nil, nil)
+	undo := beginTableUndo(table, i18n.Text("Insert %s", items[0].Kind()), nil, nil)
 	var target, zero T
 	i := table.FirstSelectedRowIndex()
 	if i != -1 {

@@ -11,7 +11,6 @@ package ux
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 	"path/filepath"
 	"strings"
@@ -79,7 +78,7 @@ func librarySettingsTitle(name string) string {
 	if name == "" {
 		name = i18n.Text("Untitled Library")
 	}
-	return fmt.Sprintf(i18n.Text("Library Settings: %s"), name)
+	return i18n.Text("Library Settings: %s", name)
 }
 
 func (d *librarySettingsDockable) addToStartToolbar(toolbar *unison.Panel) {
@@ -202,7 +201,7 @@ func (d *librarySettingsDockable) initContent(content *unison.Panel) {
 
 	content.AddChild(wrapper)
 
-	d.addNote(content, fmt.Sprintf(i18n.Text(`Once configured, GitHub repositories will be scanned for release tags in the form "v%d.x.y" through "v%d.x.y", where x and y can be any numeric value`),
+	d.addNote(content, i18n.Text(`Once configured, GitHub repositories will be scanned for release tags in the form "v%d.x.y" through "v%d.x.y", where x and y can be any numeric value`,
 		jio.MinimumLibraryVersion, jio.CurrentDataVersion))
 }
 
@@ -291,8 +290,7 @@ func (d *librarySettingsDockable) willClose() bool {
 	}
 	// The name as edited is what the prompt refers to, since that is what would be saved: the tab title still carries
 	// the name the library had when the view was opened, which is empty for a library that has just been added.
-	switch unison.YesNoCancelDialog(fmt.Sprintf(i18n.Text("Save changes made to\n%s?"),
-		librarySettingsTitle(d.config.Title)), "") {
+	switch unison.YesNoCancelDialog(i18n.Text("Save changes made to\n%s?", librarySettingsTitle(d.config.Title)), "") {
 	case unison.ModalResponseDiscard:
 	case unison.ModalResponseOK:
 		if !d.applyButton.Enabled() {
@@ -329,8 +327,7 @@ func (d *librarySettingsDockable) apply() bool {
 	// last ran, so check again here rather than silently replacing another library.
 	if libraryKeyTakenByOther(libs, d.config.GitHubAccountName, d.config.RepoName, d.library) {
 		unison.ErrorDialogWithMessage(i18n.Text("Unable to update library"),
-			fmt.Sprintf(i18n.Text("Another library is already using %s/%s."), d.config.GitHubAccountName,
-				d.config.RepoName))
+			i18n.Text("Another library is already using %s/%s.", d.config.GitHubAccountName, d.config.RepoName))
 		return false
 	}
 	// Rekey rather than Remove then Store, since the deep search content loaders read the library set from background

@@ -330,12 +330,12 @@ func (d *PDFDockable) createToolbar() *unison.Panel {
 	AddKeyBindingInfoToInfoPop(info, unison.KeyBinding{KeyCode: unison.KeyDown}, i18n.Text("Go to next page"))
 	AddKeyBindingInfoToInfoPop(info, unison.KeyBinding{KeyCode: unison.KeyEscape},
 		i18n.Text("Clear the text selection"))
-	AddHelpToInfoPop(info, fmt.Sprintf(i18n.Text(`
+	AddHelpToInfoPop(info, i18n.Text(`
 Dragging with the mouse selects text, which
 can then be copied with the Copy command.
 Holding down the %s key while dragging, or
 dragging with the right mouse button, pans
-the page instead.`), mod.Option.String()))
+the page instead.`, mod.Option.String()))
 	AddScalingHelpToInfoPop(info)
 	first.AddChild(info)
 
@@ -1378,7 +1378,7 @@ func (d *PDFDockable) drawOverlay(gc *unison.Canvas, dirty geom.Rect) {
 		if waitFor := maxElapsedRenderTimeWithoutOverlay - time.Since(d.loadStarted); waitFor > renderTimeSlop {
 			unison.InvokeTaskAfter(d.MarkForRedraw, waitFor)
 		} else {
-			d.drawOverlayMsg(gc, dirty, fmt.Sprintf(i18n.Text("Loading %s…"), d.Title()), false)
+			d.drawOverlayMsg(gc, dirty, i18n.Text("Loading %s…", d.Title()), false)
 		}
 		return
 	}
@@ -1409,7 +1409,7 @@ func (d *PDFDockable) drawOverlay(gc *unison.Canvas, dirty geom.Rect) {
 		if label == "" {
 			label = strconv.Itoa(pageNumber + 1)
 		}
-		d.drawOverlayMsg(gc, dirty, fmt.Sprintf(i18n.Text("Rendering page %s…"), label), false)
+		d.drawOverlayMsg(gc, dirty, i18n.Text("Rendering page %s…", label), false)
 	}
 }
 

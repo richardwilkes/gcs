@@ -10,8 +10,6 @@
 package ux
 
 import (
-	"fmt"
-
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/jio"
@@ -345,8 +343,8 @@ being selected, with larger numbers increasing the chance it is chosen.`), 400)
 		}
 		if current < minValue {
 			unison.ErrorDialogWithMessage(i18n.Text("Unable to generate treasure!"),
-				fmt.Sprintf(i18n.Text(`The minimum value of $%s could not be reached while staying at
-or under the maximum value of $%s with the available items.`),
+				i18n.Text(`The minimum value of $%s could not be reached while staying at
+or under the maximum value of $%s with the available items.`,
 					minValue.Comma(), maxValue.Comma()))
 			return
 		}

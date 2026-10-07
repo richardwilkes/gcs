@@ -11,7 +11,6 @@ package main
 
 import (
 	"flag"
-	"fmt"
 	"path/filepath"
 	"strings"
 
@@ -103,7 +102,7 @@ func main() {
 // Each run mode takes over the process and exits, so only one may be requested at a time.
 func exclusiveModeMsg(requestedModeNames []string) string {
 	if len(requestedModeNames) > 1 {
-		return fmt.Sprintf(i18n.Text("Cannot specify more than one of -%s"), strings.Join(requestedModeNames, ", -"))
+		return i18n.Text("Cannot specify more than one of -%s", strings.Join(requestedModeNames, ", -"))
 	}
 	return ""
 }

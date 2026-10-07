@@ -14,12 +14,12 @@ import (
 	"slices"
 	"time"
 
-	"github.com/richardwilkes/gcs/v5/model/fonts"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/picker"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/promptstep"
 	"github.com/richardwilkes/gcs/v5/svg"
+	"github.com/richardwilkes/gcs/v5/ux/fonts"
 	"github.com/richardwilkes/toolbox/v2/errs"
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/i18n"
@@ -517,7 +517,7 @@ func newPickerChevronButton() (*unison.Button, *unison.DrawableSVG) {
 func newPickerDisclosure(list *pickerList, sec *pickerSection, title string) *unison.Button {
 	button, chevron := newPickerChevronButton()
 	// The button is nothing but its chevron, so its tooltip is also what a screen reader calls it.
-	button.Tooltip = newWrappedTooltip(fmt.Sprintf(i18n.Text("Show or hide %s"), title))
+	button.Tooltip = newWrappedTooltip(i18n.Text("Show or hide %s", title))
 	turn := func() {
 		chevron.RotationDegrees = 0
 		if sec.open {
@@ -903,7 +903,7 @@ func pickerRowQuantityEditor(op promptOperation, eqp *gurps.Equipment, callback 
 		VAlign:   align.Middle,
 	})
 	label := unison.NewLabel()
-	label.SetTitle(fmt.Sprintf(i18n.Text("%s Quantity"), eqp.String()))
+	label.SetTitle(i18n.Text("%s Quantity", eqp.String()))
 	panel.AddChild(label)
 	panel.AddChild(NewDecimalField(nil, "", "", func() fxp.Int { return quantity },
 		func(value fxp.Int) { quantity = value }, fxp.One, fxp.Max-1, false, false))
@@ -944,9 +944,9 @@ func pickerRowLevelEditor(op promptOperation, trait *gurps.Trait, callback func(
 	})
 	label := unison.NewLabel()
 	if maximum > 0 {
-		label.SetTitle(fmt.Sprintf(i18n.Text("%s Level (max %s)"), trait.Kind(), maximum.String()))
+		label.SetTitle(i18n.Text("%s Level (max %s)", trait.Kind(), maximum.String()))
 	} else {
-		label.SetTitle(fmt.Sprintf(i18n.Text("%s Level"), trait.Kind()))
+		label.SetTitle(i18n.Text("%s Level", trait.Kind()))
 	}
 	panel.AddChild(label)
 	panel.AddChild(NewDecimalField(nil, "", "", func() fxp.Int { return levels },
@@ -978,7 +978,7 @@ func pickerRowPointEditor[T pickerRowPointEditorTypes[T]](op promptOperation, no
 		VAlign:   align.Middle,
 	})
 	label := unison.NewLabel()
-	label.SetTitle(fmt.Sprintf(i18n.Text("%s Points"), node.Kind()))
+	label.SetTitle(i18n.Text("%s Points", node.Kind()))
 	panel.AddChild(label)
 	panel.AddChild(NewDecimalField(nil, "", "", func() fxp.Int { return points },
 		func(value fxp.Int) { points = value }, 0, fxp.MaxBasePoints, false, false))

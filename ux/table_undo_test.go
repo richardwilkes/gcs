@@ -10,7 +10,6 @@
 package ux
 
 import (
-	"fmt"
 	"strings"
 	"testing"
 	"time"
@@ -52,7 +51,7 @@ func TestTableUndoBracket(t *testing.T) {
 	sheet.Traits.Table.SyncToModel()
 	commitTableUndo(sheet.Traits.Table, undo)
 	c.True(mgr.CanUndo(), "committing must record the edit")
-	c.Equal(fmt.Sprintf(i18n.Text("Undo %s"), "Rename"), mgr.UndoTitle(),
+	c.Equal(i18n.Text("Undo %s", "Rename"), mgr.UndoTitle(),
 		"the edit must carry the title it was begun with")
 	mgr.Undo()
 	c.Equal(original, entity.Traits[0].Name, "undo must put the trait's earlier name back")

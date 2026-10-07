@@ -10,7 +10,6 @@
 package ux
 
 import (
-	"fmt"
 	"os"
 	"path/filepath"
 	"slices"
@@ -219,8 +218,8 @@ func (p *nameGeneratorPanel) importTrainingNames() {
 const largeTrainingNameCount = 2000
 
 func confirmLargeImport(filePath string, count int) bool {
-	return unison.QuestionDialog(fmt.Sprintf(i18n.Text("Import %d names from %s?"), count, filepath.Base(filePath)),
-		xstrings.Wrap("", fmt.Sprintf(i18n.Text("Every training name is a row in the editor, which becomes slow to respond with more than %d of them. For a list this size, consider one of the built-in training sets instead."),
+	return unison.QuestionDialog(i18n.Text("Import %d names from %s?", count, filepath.Base(filePath)),
+		xstrings.Wrap("", i18n.Text("Every training name is a row in the editor, which becomes slow to respond with more than %d of them. For a list this size, consider one of the built-in training sets instead.",
 			largeTrainingNameCount), 100)) == unison.ModalResponseOK
 }
 

@@ -10,7 +10,6 @@
 package ux
 
 import (
-	"fmt"
 	"reflect"
 	"slices"
 
@@ -228,7 +227,7 @@ func (e *pointsEditor) copyToOtherSheet(rec *gurps.PointsRecord) {
 }
 
 func (e *pointsEditor) Title() string {
-	return fmt.Sprintf(i18n.Text("Points Record for %s"), e.owner.String())
+	return i18n.Text("Points Record for %s", e.owner.String())
 }
 
 func (e *pointsEditor) Modified() bool {

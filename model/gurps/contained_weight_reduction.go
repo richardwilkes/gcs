@@ -10,7 +10,6 @@
 package gurps
 
 import (
-	"fmt"
 	"hash"
 	"strings"
 
@@ -75,7 +74,7 @@ func (c *ContainedWeightReduction) FixedReduction(defUnits fxp.WeightUnit) fxp.W
 
 // Describe implements Feature.
 func (c *ContainedWeightReduction) Describe(_ *Entity, _ map[string]string, em func(string) string) string {
-	return describeSwitchable(c.Switchable, fmt.Sprintf(i18n.Text("Reduces the contained weight by %s"), em(c.Reduction)))
+	return describeSwitchable(c.Switchable, i18n.Text("Reduces the contained weight by %s", em(c.Reduction)))
 }
 
 // Hash writes this object's contents into the hasher.

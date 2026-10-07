@@ -10,6 +10,7 @@
 package themeset
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/richardwilkes/gcs/v5/model/jio"
@@ -93,9 +94,40 @@ func TestUnmarshalFillsInMissingKeysFromFactory(t *testing.T) {
 	c.NoError(jio.Unmarshal([]byte(`{"b":22,"extra":5}`), &s))
 	c.Equal(5, s.data["extra"], "unknown keys are retained")
 
-	err := jio.Unmarshal([]byte(`{"b":"not a number"}`), &s)
+	err := jio.Unmarshal([]byte(`{"a":11,"b":"not a number","extra":5}`), &s)
 	c.HasError(err)
-	c.Equal(map[string]int{"a": 1, "b": 2, "c": 3}, s.data, "a failed load leaves a complete factory set behind")
+	c.Contains(err.Error(), `"b"`, "the error names the value that couldn't be decoded")
+	c.Equal(map[string]int{"a": 11, "b": 2, "c": 3, "extra": 5}, s.data,
+		"a value that can't be decoded is the only one lost; it comes from the factory instead")
+}
+
+// TestUnmarshalNamesBadValuesInStableOrder verifies that the values that couldn't be decoded are named in factory
+// order, with the keys the factory doesn't define after them in sorted order, so that the logged text doesn't change
+// from one run to the next.
+func TestUnmarshalNamesBadValuesInStableOrder(t *testing.T) {
+	c := check.New(t)
+	setup(t)
+
+	var s testSet
+	for range 20 {
+		err := jio.Unmarshal([]byte(`{"zz":"x","c":"x","b":"x","extra":"x","a":"x"}`), &s)
+		c.HasError(err)
+		c.Equal([]string{"a", "b", "c", "extra", "zz"}, badKeys(err))
+	}
+}
+
+// badKeys returns the keys the error from UnmarshalJSONFrom names, in the order it names them. Each is on a line of its
+// own, quoted and followed by the error for its value; the decoder's own wrapping precedes the first.
+func badKeys(err error) []string {
+	var keys []string
+	for line := range strings.Lines(err.Error()) {
+		if _, quoted, ok := strings.Cut(line, `"`); ok {
+			if key, _, ok2 := strings.Cut(quoted, `": `); ok2 {
+				keys = append(keys, key)
+			}
+		}
+	}
+	return keys
 }
 
 func TestUnmarshalRejectsNonObject(t *testing.T) {
@@ -111,7 +143,7 @@ func TestCaptureCurrentCopiesLiveValues(t *testing.T) {
 	c := check.New(t)
 	setup(t)
 
-	var s testSet // A zero value, as first-run settings hold.
+	var s testSet // A zero value, which is what every capture starts from.
 	s.CaptureCurrent()
 	c.Equal(map[string]int{"a": 10, "b": 20, "c": 30}, s.data, "capturing records every live value")
 

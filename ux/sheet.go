@@ -10,7 +10,6 @@
 package ux
 
 import (
-	"fmt"
 	"path/filepath"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
@@ -754,7 +753,7 @@ func (s *Sheet) appendLayoutMenuItems(f unison.MenuFactory, m unison.Menu, id *i
 	m.InsertItem(-1, editItem)
 	if hideKey != "" {
 		m.InsertItem(-1, f.NewItem(nextLayoutMenuItemID(id),
-			fmt.Sprintf(i18n.Text("Hide %s"), gurps.BlockTitle(hideKey)), unison.KeyBinding{}, nil,
+			i18n.Text("Hide %s", gurps.BlockTitle(hideKey)), unison.KeyBinding{}, nil,
 			func(_ unison.MenuItem) { s.hideLayoutBlock(hideKey) }))
 	}
 	if hideKey == gurps.BlockPortraitKey && s.layoutEditing() {
@@ -845,7 +844,7 @@ func drawBandedBackground(p unison.Paneler, gc *unison.Canvas, rect geom.Rect, s
 
 // BodySettingsTitle implements BodySettingsOwner.
 func (s *Sheet) BodySettingsTitle() string {
-	return fmt.Sprintf(i18n.Text("Body Type: %s"), s.entity.Profile.Name)
+	return i18n.Text("Body Type: %s", s.entity.Profile.Name)
 }
 
 // BodySettings implements BodySettingsOwner.

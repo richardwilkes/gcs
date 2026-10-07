@@ -18,8 +18,6 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/richardwilkes/gcs/v5/model/colors"
-	"github.com/richardwilkes/gcs/v5/model/fonts"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/toolbox/v2/xfilepath"
 	"github.com/richardwilkes/toolbox/v2/xslices"
@@ -59,9 +57,11 @@ func Convert(paths ...string) error {
 }
 
 // converters maps each GCS file extension, in lowercase, to the function that rewrites a file of that type in the
-// current file format. A nil entry marks a type that carries no version information, so there is nothing to update for
-// it. Only files whose extension appears in GCSExtensions or GCSSecondaryExtensions are collected for conversion, so an
-// entry without a counterpart in one of those is never used.
+// current file format. A nil entry marks a type the model can't update: either it carries no version information, or,
+// for the theme color and font files, only the user interface understands its content and supplies the converter
+// through RegisterConverter. Files of those types are still listed as processed, but are left as they are. Only files
+// whose extension appears in GCSExtensions or GCSSecondaryExtensions are collected for conversion, so an entry without
+// a counterpart in one of those is never used.
 var converters = map[string]func(p string) error{
 	TraitsExt:             convertFile(NewTraitsFromFile, SaveTraits),
 	TraitModifiersExt:     convertFile(NewTraitModifiersFromFile, SaveTraitModifiers),
@@ -82,13 +82,19 @@ var converters = map[string]func(p string) error{
 	BodyExt:            convertFile(NewBodyFromFile, (*Body).Save),
 	BodyExtAlt:         convertFile(NewBodyFromFile, (*Body).Save),
 	CalendarExt:        nil,
-	ColorSettingsExt:   convertFile(colors.NewFromFS, (*colors.Colors).Save),
-	FontSettingsExt:    convertFile(fonts.NewFromFS, (*fonts.Fonts).Save),
+	ColorSettingsExt:   nil,
+	FontSettingsExt:    nil,
 	GeneralSettingsExt: convertFile(NewGeneralSettingsFromFile, (*GeneralSettings).Save),
 	KeySettingsExt:     convertFile(NewKeyBindingsFromFS, (*KeyBindings).Save),
 	NamesExt:           nil,
 	PageRefSettingsExt: convertFile(NewPageRefsFromFS, (*PageRefs).Save),
 	SheetSettingsExt:   convertFile(NewSheetSettingsFromFile, (*SheetSettings).Save),
+}
+
+// RegisterConverter sets how files with the given extension are brought up to the current file format: each is loaded
+// with load and written back out with save. It must not be called once Convert may be running.
+func RegisterConverter[T any](ext string, load func(fs.FS, string) (T, error), save func(T, string) error) {
+	converters[strings.ToLower(ext)] = convertFile(load, save)
 }
 
 // convertFile returns a function that loads the file at the path it is given with load and writes it back out with

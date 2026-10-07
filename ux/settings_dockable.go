@@ -10,7 +10,6 @@
 package ux
 
 import (
-	"fmt"
 	"io/fs"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
@@ -199,7 +198,7 @@ func (d *SettingsDockable) createToolbar(addToStartToolbar, addToEndToolbar func
 }
 
 func (d *SettingsDockable) handleReset() {
-	if unison.QuestionDialog(fmt.Sprintf(i18n.Text("Are you sure you want to reset the\n%s?"), d.TabTitle), "") == unison.ModalResponseOK {
+	if unison.QuestionDialog(i18n.Text("Are you sure you want to reset the\n%s?", d.TabTitle), "") == unison.ModalResponseOK {
 		d.Resetter()
 	}
 }

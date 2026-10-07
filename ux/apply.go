@@ -10,7 +10,6 @@
 package ux
 
 import (
-	"fmt"
 	"slices"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
@@ -468,8 +467,7 @@ var askToDisableExistingAncestry = func(op promptOperation, incoming, existing [
 	if len(existing) > 1 {
 		question = i18n.Text("Disable all of the character's existing ancestries?")
 	}
-	detail := fmt.Sprintf(i18n.Text("Adding: %s\nExisting: %s\n\n%s"), joinNames(incoming), joinNames(existing),
-		question)
+	detail := i18n.Text("Adding: %s\nExisting: %s\n\n%s", joinNames(incoming), joinNames(existing), question)
 	return runPromptDialog(op.at(promptstep.Ancestry), newOperationMessagePanel(op, primary, detail),
 		unison.NewNoButtonInfo(), unison.NewYesButtonInfo()) == unison.ModalResponseOK
 }
@@ -493,10 +491,10 @@ var confirmTemplatePickerDataRemoval = func(op promptOperation, containers []str
 	dialog, err := newPromptDialog(op.at(promptstep.RemoveChoices), unison.DefaultDialogTheme.WarningIcon,
 		unison.DefaultDialogTheme.WarningIconInk, newOperationMessagePanel(op,
 			i18n.Text("Template choices can only be kept in a template"),
-			fmt.Sprintf(i18n.Text(`These rows carry template choices, which only a template can hold:
+			i18n.Text(`These rows carry template choices, which only a template can hold:
 %s
 
-Continuing removes the choices, leaving the rows otherwise as they are.`), nameList(containers))),
+Continuing removes the choices, leaving the rows otherwise as they are.`, nameList(containers))),
 		unison.NewCancelButtonInfo(), remove)
 	if err != nil {
 		errs.Log(err)

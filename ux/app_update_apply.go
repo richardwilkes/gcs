@@ -11,7 +11,6 @@ package ux
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 	"sync"
 	"time"
@@ -107,7 +106,7 @@ func InitiateAppUpdate(plan *updater.Plan) {
 		errs.Log(err)
 	}
 	unison.WarningDialogWithMessage(i18n.Text("The update was not installed"),
-		xstrings.Wrap("", fmt.Sprintf(i18n.Text("%s could not quit, so the update was discarded. It will be offered again the next time you check for updates."),
+		xstrings.Wrap("", i18n.Text("%s could not quit, so the update was discarded. It will be offered again the next time you check for updates.",
 			xos.AppName), 100))
 }
 
@@ -178,6 +177,6 @@ func phaseTitle(phase updater.Phase, version string) string {
 	case updater.PhasePreparing:
 		return i18n.Text("Preparing to install…")
 	default:
-		return fmt.Sprintf(i18n.Text("Downloading %s %s…"), xos.AppName, filterVersion(version))
+		return i18n.Text("Downloading %s %s…", xos.AppName, filterVersion(version))
 	}
 }

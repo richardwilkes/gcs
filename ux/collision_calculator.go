@@ -10,8 +10,6 @@
 package ux
 
 import (
-	"fmt"
-
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/toolbox/v2/i18n"
@@ -650,7 +648,7 @@ func (c *collisionCalculator) adjustControls() {
 	// The fall can be softened by an Acrobatics roll or by a clean dive into water, but not by both (BX431).
 	c.controlledFallBox.SetTitle(i18n.Text("Made a successful Acrobatics roll for a controlled fall (-5 yards)"))
 	c.controlledFallBox.SetEnabled(c.scenarioIndex == fallScenario && !c.diving())
-	c.cleanDiveBox.SetTitle(fmt.Sprintf(i18n.Text("Made a successful Swimming roll at %d for a clean dive"),
+	c.cleanDiveBox.SetTitle(i18n.Text("Made a successful Swimming roll at %d for a clean dive",
 		gurps.SpeedRangePenalty(c.moverVelocity())))
 	c.cleanDiveBox.SetEnabled(c.inWater() && !c.controlledFallApplies())
 
@@ -701,7 +699,7 @@ func (c *collisionCalculator) fallVelocity() (velocity fxp.Int, notes []string) 
 	distance := c.fallDistance
 	if c.controlledFallApplies() {
 		distance = (distance - fxp.Five).Max(0)
-		notes = append(notes, fmt.Sprintf(i18n.Text("The controlled fall counts as a fall of %s yards (BX431)."), distance.Comma()))
+		notes = append(notes, i18n.Text("The controlled fall counts as a fall of %s yards (BX431).", distance.Comma()))
 	}
 	velocity = gurps.FallingVelocity(distance, c.gravity)
 	if c.gravity <= 0 {
@@ -722,7 +720,7 @@ func (c *collisionCalculator) fallVelocity() (velocity fxp.Int, notes []string) 
 		notes = append(notes, i18n.Text("In a vacuum there is no terminal velocity (BX431)."))
 	case velocity > limit:
 		velocity = limit
-		notes = append(notes, fmt.Sprintf(i18n.Text("The fall is limited to the terminal velocity of %s yards/second (BX431)."),
+		notes = append(notes, i18n.Text("The fall is limited to the terminal velocity of %s yards/second (BX431).",
 			limit.Comma()))
 	}
 	return velocity, notes
@@ -748,7 +746,7 @@ func (c *collisionCalculator) addResult(label, value string) {
 
 // velocityText describes a velocity in yards per second and miles per hour (2 mph is 1 yard/second, BX430).
 func velocityText(velocity fxp.Int) string {
-	return fmt.Sprintf(i18n.Text("%s yards/second (%s mph)"), velocity.Comma(), velocity.Mul(fxp.Two).Comma())
+	return i18n.Text("%s yards/second (%s mph)", velocity.Comma(), velocity.Mul(fxp.Two).Comma())
 }
 
 // damageText formats dice of the given type, using the sheet's dice notation when the numbers came from a sheet.
@@ -783,12 +781,12 @@ func (c *collisionCalculator) updateSurfaceResults() []string {
 	mover := c.mover.name(c.moverName)
 	c.addResult(i18n.Text("Velocity:"), velocityText(velocity))
 	if c.diving() {
-		c.addResult(fmt.Sprintf(i18n.Text("Damage to %s:"), mover), i18n.Text("None"))
+		c.addResult(i18n.Text("Damage to %s:", mover), i18n.Text("None"))
 		notes = append(notes, i18n.Text("The clean dive negates all damage (BX431)."))
 		return notes
 	}
 	damage := damageText(entity, count, shape.damageType)
-	c.addResult(fmt.Sprintf(i18n.Text("Damage to %s:"), mover), damage)
+	c.addResult(i18n.Text("Damage to %s:", mover), damage)
 	if c.scenarioIndex != suddenStopScenario {
 		c.addResult(i18n.Text("Damage to the surface:"), damage)
 	}
@@ -796,18 +794,18 @@ func (c *collisionCalculator) updateSurfaceResults() []string {
 		notes = append(notes, i18n.Text("The surface is hard, so the damage is worked out with twice the HP (BX431)."))
 	}
 	if c.scenarioIndex != suddenStopScenario && c.breakable {
-		notes = append(notes, fmt.Sprintf(i18n.Text("The surface can break, so neither side takes more than %s points, its HP + DR (BX431)."),
+		notes = append(notes, i18n.Text("The surface can break, so neither side takes more than %s points, its HP + DR (BX431).",
 			(c.obstacleHP+fxp.FromInteger(c.obstacleDR)).Comma()))
 	}
 	if surface.elastic {
-		notes = append(notes, fmt.Sprintf(i18n.Text("The elastic surface gives DR %d against this damage (BX431)."), c.elasticDR))
+		notes = append(notes, i18n.Text("The elastic surface gives DR %d against this damage (BX431).", c.elasticDR))
 	}
 	if c.inWater() {
 		notes = append(notes, c.swimmingNote())
 	}
 	if c.scenarioIndex == suddenStopScenario {
 		if dr := c.restraints[c.restraintIndex].dr; dr > 0 {
-			notes = append(notes, fmt.Sprintf(i18n.Text("The restraint gives DR %d against this damage (BX432)."), dr))
+			notes = append(notes, i18n.Text("The restraint gives DR %d against this damage (BX432).", dr))
 		}
 		notes = append(notes, i18n.Text("Anyone not strapped into an open vehicle is also thrown; work out knockback from this damage to see how far (BX432)."))
 	}
@@ -828,10 +826,10 @@ func (c *collisionCalculator) swimmingNote() string {
 		roll = i18n.Text("Swimming roll (or vehicle control roll, when ditching a vehicle)")
 	}
 	if c.mover.swimming > 0 {
-		return fmt.Sprintf(i18n.Text("A successful %s at %d (effective skill %d) would be a clean dive that negates all damage (BX431)."),
+		return i18n.Text("A successful %s at %d (effective skill %d) would be a clean dive that negates all damage (BX431).",
 			roll, penalty, c.mover.swimming+penalty)
 	}
-	return fmt.Sprintf(i18n.Text("A successful %s at %d would be a clean dive that negates all damage (BX431)."), roll, penalty)
+	return i18n.Text("A successful %s at %d would be a clean dive that negates all damage (BX431).", roll, penalty)
 }
 
 // armorNote describes how the mover's armor fares against falling damage: all of it counts as flexible, so it lets 1 HP
@@ -846,10 +844,10 @@ func (c *collisionCalculator) armorNote(count fxp.Int) string {
 	}
 	trauma := gurps.BluntTraumaFromFall(fxp.FromInteger(c.mover.armorDR))
 	if trauma == 0 {
-		return fmt.Sprintf(i18n.Text("Armor DR %d counts as flexible against this damage, but it cannot stop 5 full points, so no blunt trauma gets through it (BX431)."),
+		return i18n.Text("Armor DR %d counts as flexible against this damage, but it cannot stop 5 full points, so no blunt trauma gets through it (BX431).",
 			c.mover.armorDR)
 	}
-	return fmt.Sprintf(i18n.Text("Armor DR %d counts as flexible against this damage: 1 HP of injury per 5 full points it stops, even if it stops all of it, so up to %d HP gets through it as blunt trauma (BX431)."),
+	return i18n.Text("Armor DR %d counts as flexible against this damage: 1 HP of injury per 5 full points it stops, even if it stops all of it, so up to %d HP gets through it as blunt trauma (BX431).",
 		c.mover.armorDR, trauma)
 }
 
@@ -873,15 +871,15 @@ func (c *collisionCalculator) updateTwoObjectResults() []string {
 	striker := c.mover.name(i18n.Text("the striking object"))
 	struck := c.target.name(i18n.Text("the struck object"))
 	c.addResult(i18n.Text("Collision velocity:"), velocityText(result.Velocity))
-	c.addResult(fmt.Sprintf(i18n.Text("Damage to %s:"), struck),
+	c.addResult(i18n.Text("Damage to %s:", struck),
 		damageText(c.mover.entity(), result.StrikerDice, c.mover.shape().damageType))
-	c.addResult(fmt.Sprintf(i18n.Text("Damage to %s:"), striker),
+	c.addResult(i18n.Text("Damage to %s:", striker),
 		damageText(c.target.entity(), result.StruckDice, c.target.shape().damageType))
 	switch {
 	case result.StrikerCapped:
-		notes = append(notes, fmt.Sprintf(i18n.Text("As the slower object, %s cannot inflict more dice than %s (BX432)."), striker, struck))
+		notes = append(notes, i18n.Text("As the slower object, %s cannot inflict more dice than %s (BX432).", striker, struck))
 	case result.StruckCapped:
-		notes = append(notes, fmt.Sprintf(i18n.Text("As the struck object, %s cannot inflict more dice than %s (BX432)."), struck, striker))
+		notes = append(notes, i18n.Text("As the struck object, %s cannot inflict more dice than %s (BX432).", struck, striker))
 	}
 	if c.dropped {
 		if c.mover.sm >= c.target.sm {
@@ -896,7 +894,7 @@ func (c *collisionCalculator) updateTwoObjectResults() []string {
 		thrust := gurps.SheetSettingsFor(c.mover.entity()).DamageProgression.Thrust(st.AsInteger[int]())
 		c.addResult(i18n.Text("Overrun damage:"),
 			gurps.FormatDice(thrust, gurps.SheetSettingsFor(c.mover.entity()).UseModifyingDicePlusAdds)+" cr")
-		notes = append(notes, fmt.Sprintf(i18n.Text("Being at least two sizes bigger, %s overruns %s and inflicts thrust damage for ST %s as well (BX432)."),
+		notes = append(notes, i18n.Text("Being at least two sizes bigger, %s overruns %s and inflicts thrust damage for ST %s as well (BX432).",
 			striker, struck, st.Comma()))
 	}
 	return notes

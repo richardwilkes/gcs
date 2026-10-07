@@ -10,7 +10,7 @@
 package ux
 
 import (
-	"fmt"
+	"encoding/json/jsontext"
 	"log/slog"
 	"path"
 	"path/filepath"
@@ -20,6 +20,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/dgroup"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/promptstep"
+	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/toolbox/v2/errs"
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/i18n"
@@ -131,7 +132,9 @@ func finishInit() {
 // that the caller can fall back to the navigator when it was not.
 func restoreDockState() bool {
 	global := gurps.GlobalSettings()
-	keys := slices.Concat(dockStateKeys(global.TopDockState), dockStateKeys(global.DocDockState))
+	topDockState := decodeDockState(global.TopDockState)
+	docDockState := decodeDockState(global.DocDockState)
+	keys := slices.Concat(dockStateKeys(topDockState), dockStateKeys(docDockState))
 	if len(keys) == 0 {
 		return false
 	}
@@ -143,8 +146,8 @@ func restoreDockState() bool {
 			files = append(files, k[len(filePrefix):])
 		}
 	}
-	if global.TopDockState != nil {
-		global.TopDockState.Apply(Workspace.TopDock, func(key string) unison.Dockable {
+	if topDockState != nil {
+		topDockState.Apply(Workspace.TopDock, func(key string) unison.Dockable {
 			switch key {
 			case NavigatorDockKey:
 				return Workspace.Navigator
@@ -162,8 +165,8 @@ func restoreDockState() bool {
 			m[filePrefix+k] = newNotFoundDockable(k)
 		}
 	}
-	if global.DocDockState != nil {
-		global.DocDockState.Apply(Workspace.DocumentDock.Dock, func(key string) unison.Dockable {
+	if docDockState != nil {
+		docDockState.Apply(Workspace.DocumentDock.Dock, func(key string) unison.Dockable {
 			if d, ok := m[key]; ok {
 				return d
 			}
@@ -215,6 +218,33 @@ func restoreFocusedDockable(key string, m map[string]unison.Dockable) bool {
 		}
 	}
 	return unison.DockableHasFocus(d)
+}
+
+// decodeDockState decodes a dock state the settings carried as raw JSON, returning nil if there is none or it can't be
+// decoded.
+func decodeDockState(data jsontext.Value) *unison.DockState {
+	if len(data) == 0 {
+		return nil
+	}
+	var state *unison.DockState
+	if err := jio.Unmarshal(data, &state); err != nil {
+		errs.Log(errs.NewWithCause("unable to load dock state", err))
+		return nil
+	}
+	return state
+}
+
+// encodeDockState encodes a dock state as raw JSON for the settings to carry.
+func encodeDockState(state *unison.DockState) jsontext.Value {
+	if state == nil {
+		return nil
+	}
+	data, err := jio.Marshal(state)
+	if err != nil {
+		errs.Log(errs.NewWithCause("unable to store dock state", err))
+		return nil
+	}
+	return data
 }
 
 // dockStateKeys returns the keys of the dockables the dock state records, in the order it records them, which is the
@@ -326,8 +356,8 @@ func isWorkspaceAllowedToClose() bool {
 	// moves the focus to a neighbor, and it is that neighbor the user will find themselves in when the workspace comes
 	// back.
 	global := gurps.GlobalSettings()
-	global.TopDockState = unison.NewDockState(Workspace.TopDock, collectDockKeys)
-	global.DocDockState = unison.NewDockState(Workspace.DocumentDock.Dock, collectDockKeys)
+	global.TopDockState = encodeDockState(unison.NewDockState(Workspace.TopDock, collectDockKeys))
+	global.DocDockState = encodeDockState(unison.NewDockState(Workspace.DocumentDock.Dock, collectDockKeys))
 	global.FocusedDockKey = focusedDockKey()
 
 	// Finally, close the remaining dockables; grouped ones are closed by the dockable they are grouped with.
@@ -781,7 +811,7 @@ func traverseGroup(d unison.Dockable, f func(target GroupedCloser) bool) {
 func SaveDockable(d FileBackedDockable, saver func(filePath string) error, setUnmodified func()) bool {
 	filePath := d.BackingFilePath()
 	if err := saver(filePath); err != nil {
-		Workspace.ErrorHandler(fmt.Sprintf(i18n.Text("Unable to save %s"), xfilepath.BaseName(filePath)), err)
+		Workspace.ErrorHandler(i18n.Text("Unable to save %s", xfilepath.BaseName(filePath)), err)
 		return false
 	}
 	setUnmodified()
@@ -960,7 +990,7 @@ func AttemptSaveForDockable(d unison.Dockable) bool {
 	if !ok {
 		return true
 	}
-	switch unison.YesNoCancelDialog(fmt.Sprintf(i18n.Text("Save changes made to\n%s?"), d.Title()), "") {
+	switch unison.YesNoCancelDialog(i18n.Text("Save changes made to\n%s?", d.Title()), "") {
 	case unison.ModalResponseDiscard:
 	case unison.ModalResponseOK:
 		if !s.save(false) {

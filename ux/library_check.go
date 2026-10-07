@@ -12,7 +12,6 @@ package ux
 import (
 	"context"
 	"errors"
-	"fmt"
 	"net/http"
 	"sync"
 	"time"
@@ -79,7 +78,7 @@ func checkLibraryReleases(libs []*library.Library) bool {
 	}
 	for _, lib := range pending {
 		if lib.NeedsUpgradeCheck() {
-			unison.ErrorDialogWithMessage(fmt.Sprintf(i18n.Text("Unable to check for %s updates"), lib.Data().Title),
+			unison.ErrorDialogWithMessage(i18n.Text("Unable to check for %s updates", lib.Data().Title),
 				xstrings.Wrap("", i18n.Text("The library's releases could not be retrieved. Check its settings and your network connection, then try again."), 100))
 			return false
 		}
@@ -89,7 +88,7 @@ func checkLibraryReleases(libs []*library.Library) bool {
 
 func libraryCheckTitle(libs []*library.Library) string {
 	if len(libs) == 1 {
-		return fmt.Sprintf(i18n.Text("Checking for %s updates…"), libs[0].Data().Title)
+		return i18n.Text("Checking for %s updates…", libs[0].Data().Title)
 	}
 	return i18n.Text("Checking for library updates…")
 }
@@ -98,7 +97,7 @@ func libraryCheckTitle(libs []*library.Library) string {
 // release to offer. Until a check has been made the buttons are enabled on the strength of the repository alone, so
 // this is the first they hear of it.
 func reportNoLibraryReleases(lib *library.Library) {
-	unison.WarningDialogWithMessage(fmt.Sprintf(i18n.Text("No releases are available for %s"), lib.Data().Title),
-		xstrings.Wrap("", fmt.Sprintf(i18n.Text("The library's repository has no release that this version of %s can use."),
+	unison.WarningDialogWithMessage(i18n.Text("No releases are available for %s", lib.Data().Title),
+		xstrings.Wrap("", i18n.Text("The library's repository has no release that this version of %s can use.",
 			xos.AppName), 100))
 }

@@ -21,11 +21,11 @@ import (
 	"github.com/richardwilkes/toolbox/v2/check"
 )
 
-// TestI18nTextArgsAreLiterals verifies that every i18n.Text call in the source tree is passed a single string literal.
-// i18n.Text looks the whole string up in the translation catalog, so a call such as
+// TestI18nTextArgsAreLiterals verifies that every i18n.Text call in the source tree is passed a string literal as its
+// first argument. i18n.Text looks that whole string up in the translation catalog, so a call such as
 // i18n.Text("Attributes: " + profile.Name) builds a key that can never match an entry, and leaves the extraction
-// tooling nothing constant to put in the catalog. The runtime portion belongs outside the lookup, as
-// fmt.Sprintf(i18n.Text("Attributes: %s"), profile.Name).
+// tooling nothing constant to put in the catalog. The runtime portion belongs in the format arguments, as
+// i18n.Text("Attributes: %s", profile.Name).
 func TestI18nTextArgsAreLiterals(t *testing.T) {
 	c := check.New(t)
 	root, err := filepath.Abs("..")
@@ -69,14 +69,14 @@ func TestI18nTextArgsAreLiterals(t *testing.T) {
 			}
 			checked++
 			pos := fileSet.Position(call.Pos())
-			if len(call.Args) != 1 {
-				c.Equal(1, len(call.Args), "%s:%d: i18n.Text must take exactly one argument", rel, pos.Line)
-				return true
+			var first ast.Expr
+			if len(call.Args) != 0 {
+				first = call.Args[0]
 			}
-			lit, ok := call.Args[0].(*ast.BasicLit)
+			lit, ok := first.(*ast.BasicLit)
 			c.True(ok && lit.Kind == token.STRING,
-				"%s:%d: i18n.Text must be given a string literal, so the lookup key is constant; move the runtime "+
-					"portion into a fmt.Sprintf around it", rel, pos.Line)
+				"%s:%d: i18n.Text must be given a string literal first, so the lookup key is constant; move the "+
+					"runtime portion into its format arguments", rel, pos.Line)
 			return true
 		})
 		return nil

@@ -157,7 +157,7 @@ func applySelectedModifiers[T gurps.ModifiableNode[T, M], M gurps.ModifierNode[M
 	from := libraryFileFromTable(source)
 	op := promptOperation{
 		name:        i18n.Text("Apply Modifier"),
-		description: fmt.Sprintf(i18n.Text("Applying %s"), shortNames(describeRows(modifiers))...),
+		description: i18n.Text("Applying %s", shortNames(describeRows(modifiers))...),
 	}
 	dest, ok := promptForModifierDestination(op, modifierDestinations(kind, AllDockables()))
 	if !ok {
@@ -275,7 +275,7 @@ func attachModifierClones[T gurps.ModifiableNode[T, M], M gurps.ModifierNode[M, 
 	forEntity := !xreflect.IsNil(dataOwner) && dataOwner.OwningEntity() != nil
 	op := promptOperation{
 		name:        name,
-		description: fmt.Sprintf(i18n.Text("Adding %s to %s"), shortNames(describeRows(modifiers), describeRows(targets))...),
+		description: i18n.Text("Adding %s to %s", shortNames(describeRows(modifiers), describeRows(targets))...),
 	}
 	askAboutContainers := false
 	for _, m := range modifiers {
@@ -393,7 +393,7 @@ func modifierTargetChoices[T gurps.Node[T]](lists []modifierTargetList[T]) []mod
 			}
 			label := node.String()
 			if len(where) != 0 {
-				label = fmt.Sprintf(i18n.Text("%s (in %s)"), label, strings.Join(where, ", "))
+				label = i18n.Text("%s (in %s)", label, strings.Join(where, ", "))
 			}
 			choices = append(choices, modifierTargetChoice[T]{target: node, table: list.table, label: label, depth: depth})
 			return false

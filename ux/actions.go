@@ -11,7 +11,6 @@ package ux
 
 import (
 	_ "embed"
-	"fmt"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/toolbox/v2/i18n"
@@ -172,11 +171,11 @@ var contextMenuShortTitles = make(map[int]string)
 
 func registerActions() {
 	// Standard actions that may be assigned a key binding
-	gurps.RegisterKeyBinding("cut", unison.CutAction())
-	gurps.RegisterKeyBinding("copy", unison.CopyAction())
-	gurps.RegisterKeyBinding("paste", unison.PasteAction())
-	gurps.RegisterKeyBinding("delete", unison.DeleteAction())
-	gurps.RegisterKeyBinding("select.all", unison.SelectAllAction())
+	registerKeyBinding("cut", unison.CutAction())
+	registerKeyBinding("copy", unison.CopyAction())
+	registerKeyBinding("paste", unison.PasteAction())
+	registerKeyBinding("delete", unison.DeleteAction())
+	registerKeyBinding("select.all", unison.SelectAllAction())
 
 	// Actions that may be assigned a key binding
 	addNaturalAttacksAction = registerFocusAction("add.natural.attacks", AddNaturalAttacksItemID,
@@ -547,7 +546,7 @@ func registerActions() {
 	// Actions that may not be assigned a key binding
 	checkForAppUpdatesAction = &unison.Action{
 		ID:    CheckForAppUpdatesItemID,
-		Title: fmt.Sprintf(i18n.Text("Check for %s updates"), xos.AppName),
+		Title: i18n.Text("Check for %s updates", xos.AppName),
 		// Enabled whenever no check, visible or quiet, is running, whatever the setting or what is already known: with
 		// an update known, a fresh check reopens the update window, as the settings tooltip and release notes promise.
 		EnabledCallback: func(_ *unison.Action, _ any) bool {
@@ -574,7 +573,7 @@ func registerActions() {
 	}
 	makeDonationAction = &unison.Action{
 		ID:    MakeDonationItemID,
-		Title: fmt.Sprintf(i18n.Text("Make a One-time Donation for %s Development"), xos.AppName),
+		Title: i18n.Text("Make a One-time Donation for %s Development", xos.AppName),
 		ExecuteCallback: func(_ *unison.Action, _ any) {
 			showWebPage("https://paypal.me/GURPSCharacterSheet")
 		},
@@ -588,7 +587,7 @@ func registerActions() {
 	}
 	sponsorDevelopmentAction = &unison.Action{
 		ID:    SponsorGCSDevelopmentItemID,
-		Title: fmt.Sprintf(i18n.Text("Sponsor %s Development"), xos.AppName),
+		Title: i18n.Text("Sponsor %s Development", xos.AppName),
 		ExecuteCallback: func(_ *unison.Action, _ any) {
 			showWebPage("https://github.com/sponsors/richardwilkes")
 		},
@@ -626,7 +625,7 @@ func registerActions() {
 }
 
 func registerKeyBindableAction(key string, action *unison.Action) *unison.Action {
-	gurps.RegisterKeyBinding(key, action)
+	registerKeyBinding(key, action)
 	return action
 }
 

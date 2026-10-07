@@ -10,14 +10,13 @@
 package ux
 
 import (
-	"fmt"
 	"path/filepath"
 	"slices"
 	"strings"
 
-	"github.com/richardwilkes/gcs/v5/model/colors"
-	"github.com/richardwilkes/gcs/v5/model/fonts"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/ux/colors"
+	"github.com/richardwilkes/gcs/v5/ux/fonts"
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/toolbox/v2/tid"
@@ -356,7 +355,7 @@ func OpenEditor[T gurps.Node[T]](table *unison.Table[*Node[T]], edit func(item T
 	selection := table.SelectedRows(false)
 	if len(selection) > 4 {
 		if unison.QuestionDialog(i18n.Text("Are you sure you want to open all of these?"),
-			fmt.Sprintf(i18n.Text("%d editors will be opened."), len(selection))) != unison.ModalResponseOK {
+			i18n.Text("%d editors will be opened.", len(selection))) != unison.ModalResponseOK {
 			return
 		}
 	}
@@ -527,7 +526,7 @@ func copyRowsTo[T gurps.Node[T]](table *unison.Table[*Node[T]], rows []*Node[T],
 	}
 	var undo *unison.UndoEdit[*TableUndoEditData[T]]
 	if recordUndo {
-		undo = beginTableUndo(table, fmt.Sprintf(i18n.Text("Insert %s"), rows[0].Data().Kind()), nil, nil)
+		undo = beginTableUndo(table, i18n.Text("Insert %s", rows[0].Data().Kind()), nil, nil)
 	}
 	table.SetRootRows(append(slices.Clone(table.RootRows()), rows...))
 	selMap := make(map[tid.TID]bool, len(rows))

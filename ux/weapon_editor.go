@@ -10,7 +10,6 @@
 package ux
 
 import (
-	"fmt"
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
@@ -31,7 +30,7 @@ type weaponEditor struct {
 // EditWeapon displays the editor for a weapon.
 func EditWeapon(owner Rebuildable, w *gurps.Weapon) {
 	var we weaponEditor
-	displayEditor(owner, w, gurps.WeaponSVG(w.IsMelee()), "md:User%20Guide/Melee%20and%20Ranged%20Weapons", nil,
+	displayEditor(owner, w, weaponSVG(w.IsMelee()), "md:User%20Guide/Melee%20and%20Ranged%20Weapons", nil,
 		we.initWeaponEditor, we.preApply)
 }
 
@@ -259,16 +258,16 @@ func (we *weaponEditor) addRateOfFireModeBlock(content *unison.Panel, mode *gurp
 	} else {
 		wrapper, _ = addFlowWrapper(content, "", 5)
 	}
-	wrapper.AddChild(NewFieldLeadingLabel(fmt.Sprintf(i18n.Text("Mode %d"), modeNum), false))
+	wrapper.AddChild(NewFieldLeadingLabel(i18n.Text("Mode %d", modeNum), false))
 	// The row reads as a sentence, so the labels around the fields are not their names: the first would be called
 	// "Mode 1" and the second "per attack with".
 	text := i18n.Text("Shots Per Attack")
 	spa := addDecimalField(wrapper, nil, "", text, text, &mode.ShotsPerAttack, 0, fxp.MillionMinusOne, false)
-	spa.Accessibility.Name = fmt.Sprintf(i18n.Text("Mode %d Shots Per Attack"), modeNum)
+	spa.Accessibility.Name = i18n.Text("Mode %d Shots Per Attack", modeNum)
 	wrapper.AddChild(NewFieldTrailingHint(spa, i18n.Text("per attack with"), false))
 	text = i18n.Text("Secondary Projectiles")
 	sp := addDecimalField(wrapper, nil, "", text, text, &mode.SecondaryProjectiles, 0, fxp.MillionMinusOne, false)
-	sp.Accessibility.Name = fmt.Sprintf(i18n.Text("Mode %d Secondary Projectiles"), modeNum)
+	sp.Accessibility.Name = i18n.Text("Mode %d Secondary Projectiles", modeNum)
 	wrapper.AddChild(NewFieldTrailingHint(sp, i18n.Text("secondary projectiles"), false))
 	wrapper, _ = addFlowWrapper(content, "", 2)
 	auto := addCheckBox(wrapper, i18n.Text("Fully Automatic Only"), &mode.FullAutoOnly)

@@ -12,7 +12,6 @@ package ux
 import (
 	"cmp"
 	"errors"
-	"fmt"
 	"io/fs"
 	"maps"
 	"os"
@@ -192,8 +191,8 @@ func (d *generalSettingsDockable) addGeneralCheckBox(content *unison.Panel, titl
 
 func (d *generalSettingsDockable) createUpdateCheckPopups(content *unison.Panel) {
 	d.appUpdateCheckPopup = newUpdateCheckPopup(content,
-		fmt.Sprintf(i18n.Text("Check for %s Updates"), xos.AppName),
-		fmt.Sprintf(i18n.Text("How often to look for a newer version of %s. Help ▸ Check for %s updates always works."),
+		i18n.Text("Check for %s Updates", xos.AppName),
+		i18n.Text("How often to look for a newer version of %s. Help ▸ Check for %s updates always works.",
 			xos.AppName, xos.AppName),
 		func() updatecheck.Option { return gurps.GlobalSettings().General.AppUpdateCheck },
 		func(option updatecheck.Option) { gurps.GlobalSettings().General.AppUpdateCheck = option })

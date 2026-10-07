@@ -11,7 +11,6 @@ package ux
 
 import (
 	"bytes"
-	"fmt"
 	"reflect"
 	"regexp"
 
@@ -253,7 +252,7 @@ func (e *editor[N, D]) prepareForSubstitutions() (tmpNode N, m map[string]string
 }
 
 func (e *editor[N, D]) Title() string {
-	return fmt.Sprintf(i18n.Text("%s Editor for %s"), e.target.Kind(), e.owner.String())
+	return i18n.Text("%s Editor for %s", e.target.Kind(), e.owner.String())
 }
 
 func (e *editor[N, D]) Owner() Rebuildable {
@@ -405,7 +404,7 @@ func (e *editor[N, D]) applyEdits() {
 	if mgr := unison.UndoManagerFor(owner); mgr != nil {
 		mgr.Add(&unison.UndoEdit[D]{
 			ID:       unison.NextUndoID(),
-			EditName: fmt.Sprintf(i18n.Text("%s Changes"), target.Kind()),
+			EditName: i18n.Text("%s Changes", target.Kind()),
 			UndoFunc: func(edit *unison.UndoEdit[D]) {
 				edit.BeforeData.ApplyTo(target)
 				restoreSource(target, sourceBefore, sourceAfter)

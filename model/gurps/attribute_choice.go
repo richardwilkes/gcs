@@ -10,7 +10,6 @@
 package gurps
 
 import (
-	"fmt"
 	"strings"
 
 	"github.com/richardwilkes/toolbox/v2/i18n"
@@ -82,7 +81,7 @@ func AttributeChoices(entity *Entity, prefix string, flags AttributeFlags, curre
 	}
 	current = &AttributeChoice{
 		Key:   currentKey,
-		Title: fmt.Sprintf(prefix+i18n.Text("unrecognized key (%s)"), currentKey),
+		Title: prefix + i18n.Text("unrecognized key (%s)", currentKey),
 	}
 	return append(choices, current), current
 }

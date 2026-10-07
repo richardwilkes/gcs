@@ -10,7 +10,6 @@
 package ux
 
 import (
-	"fmt"
 	"slices"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
@@ -27,7 +26,7 @@ const listFilterNoneIndex = 0
 var (
 	showFilterEditor      = showListFilterDialog
 	confirmFilterDeletion = func(name string) bool {
-		return unison.QuestionDialog(fmt.Sprintf(i18n.Text("Delete the filter '%s'?"), name),
+		return unison.QuestionDialog(i18n.Text("Delete the filter '%s'?", name),
 			i18n.Text("This cannot be undone.")) == unison.ModalResponseOK
 	}
 )

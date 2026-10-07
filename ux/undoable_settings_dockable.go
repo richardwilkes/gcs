@@ -10,8 +10,6 @@
 package ux
 
 import (
-	"fmt"
-
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/unison"
@@ -86,7 +84,7 @@ func (d *undoableSettingsDockable[T]) modified() bool {
 
 func (d *undoableSettingsDockable[T]) willClose() bool {
 	if d.promptForSave && d.modelModified() {
-		switch unison.YesNoCancelDialog(fmt.Sprintf(i18n.Text("Apply changes made to\n%s?"), d.Title()), "") {
+		switch unison.YesNoCancelDialog(i18n.Text("Apply changes made to\n%s?", d.Title()), "") {
 		case unison.ModalResponseDiscard:
 		case unison.ModalResponseOK:
 			d.spec.apply()

@@ -10,7 +10,6 @@
 package gurps
 
 import (
-	"fmt"
 	"hash"
 
 	"github.com/richardwilkes/gcs/v5/model/criteria"
@@ -61,17 +60,17 @@ func (t TemplatePicker) StringWithUnits(units fxp.WeightUnit) string {
 	}
 	switch t.Type {
 	case picker.Count:
-		return fmt.Sprintf(i18n.Text("Pick %s"), t.Qualifier.AltString())
+		return i18n.Text("Pick %s", t.Qualifier.AltString())
 	case picker.Points:
 		points := i18n.Text("points")
 		if t.Qualifier.Qualifier == fxp.One {
 			points = i18n.Text("point")
 		}
-		return fmt.Sprintf(i18n.Text("Pick %s %s worth"), t.Qualifier.AltString(), points)
+		return i18n.Text("Pick %s %s worth", t.Qualifier.AltString(), points)
 	case picker.Value:
-		return fmt.Sprintf(i18n.Text("Pick %s worth"), t.Qualifier.Compare.AltDescribeWith("$"+t.Qualifier.Qualifier.Comma()))
+		return i18n.Text("Pick %s worth", t.Qualifier.Compare.AltDescribeWith("$"+t.Qualifier.Qualifier.Comma()))
 	case picker.Weight:
-		return fmt.Sprintf(i18n.Text("Pick %s in weight"),
+		return i18n.Text("Pick %s in weight",
 			t.Qualifier.Compare.AltDescribeWith(units.Format(fxp.Weight(t.Qualifier.Qualifier))))
 	default:
 		return ""

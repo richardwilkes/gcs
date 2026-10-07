@@ -10,7 +10,6 @@
 package gurps
 
 import (
-	"fmt"
 	"hash"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
@@ -48,7 +47,7 @@ func (l *LeveledAmount) Format() string {
 	if !l.PerLevel {
 		return amt
 	}
-	return fmt.Sprintf(i18n.Text("%s (%s per level)"), l.AdjustedAmount().StringWithSign(), amt)
+	return i18n.Text("%s (%s per level)", l.AdjustedAmount().StringWithSign(), amt)
 }
 
 // Hash writes this object's contents into the hasher.

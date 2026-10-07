@@ -26,7 +26,7 @@ func TestContextMenuItemsMatchTheirActions(t *testing.T) {
 	c := check.New(t)
 	registerKeyBindingsOnce.Do(registerActions)
 	actions := map[int]*unison.Action{unison.DeleteItemID: unison.DeleteAction()}
-	for _, binding := range gurps.CurrentBindings() {
+	for _, binding := range currentKeyBindings() {
 		actions[binding.Action.ID] = binding.Action
 	}
 	lists := &listsForTest{}

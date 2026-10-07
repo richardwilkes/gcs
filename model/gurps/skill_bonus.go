@@ -12,7 +12,6 @@ package gurps
 import (
 	"encoding/json/jsontext"
 	"encoding/json/v2"
-	"fmt"
 	"hash"
 
 	"github.com/richardwilkes/gcs/v5/model/criteria"
@@ -101,7 +100,7 @@ func (s *SkillBonus) Describe(_ *Entity, replacements map[string]string, em func
 	case skillsel.ThisWeapon:
 		text += describeThisWeapon(i18n.Text("skill"), s.SpecializationCriteria, replacements, em)
 	case skillsel.WeaponsWithName:
-		text += fmt.Sprintf(i18n.Text("the %s of %s"), i18n.Text("skill"),
+		text += i18n.Text("the %s of %s", i18n.Text("skill"),
 			describeNamedWeapons(s.NameCriteria, s.SpecializationCriteria, s.TagsCriteria, replacements, em))
 	default:
 		text += describeTarget(i18n.Text("skill %s"), i18n.Text("skills"), i18n.Text("whose name"), s.NameCriteria,

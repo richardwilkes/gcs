@@ -278,7 +278,7 @@ func addTagsLabelAndField(parent *unison.Panel, fieldData *[]string) {
 
 func addLabelAndListField(parent *unison.Panel, labelText, pluralForTooltip string, fieldData *[]string) {
 	get, set := pointerAccessors(parent, fieldData)
-	addMultiLineStringFieldWith(parent, labelText, fmt.Sprintf(i18n.Text("Separate multiple %s with commas"), pluralForTooltip),
+	addMultiLineStringFieldWith(parent, labelText, i18n.Text("Separate multiple %s with commas", pluralForTooltip),
 		func() string { return gurps.CombineTags(get()) },
 		func(value string) { set(gurps.ExtractTags(value)) })
 }
@@ -617,7 +617,7 @@ func adjustPopupBlank[T comparable](popup *unison.PopupMenu[T], blank bool) {
 // popup's accessible name, and the qualifier field's undo title, which also serves as its accessible name. The
 // controls sit in a row that reads as a sentence, with nothing before either that could name it.
 func criteriaTitles(subject string) (comparisonName, qualifierTitle string) {
-	return fmt.Sprintf(i18n.Text("%s Comparison"), subject), fmt.Sprintf(i18n.Text("%s Qualifier"), subject)
+	return i18n.Text("%s Comparison", subject), i18n.Text("%s Qualifier", subject)
 }
 
 // newCriteriaPanel adds a two-column panel to the parent for a criteria's comparison popup and qualifier field,
@@ -790,7 +790,7 @@ func newApplyCancelButtons(toolbar *unison.Panel, showKeys bool, apply func() bo
 	applyButton = unison.NewSVGButton(unison.CheckmarkSVG)
 	cancelButton = unison.NewSVGButton(svg.Not)
 	if showKeys {
-		applyButton.Tooltip = newWrappedTooltipWithSecondaryText(applyText, fmt.Sprintf(i18n.Text("%v%v or %v%v"),
+		applyButton.Tooltip = newWrappedTooltipWithSecondaryText(applyText, i18n.Text("%v%v or %v%v",
 			mod.OSMenuCommand(), unison.KeyReturn, mod.OSMenuCommand(), unison.KeyNumPadEnter))
 		cancelButton.Tooltip = newWrappedTooltipWithSecondaryText(cancelText, unison.KeyEscape.String())
 	} else {

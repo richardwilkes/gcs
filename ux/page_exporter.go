@@ -97,7 +97,7 @@ func doPrint(title string, printer *printing.Printer, jobAttributes *printing.Jo
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
 	defer cancel()
 	if err := printer.Print(ctx, title, "application/pdf", bytes.NewBuffer(data), len(data), jobAttributes); err != nil {
-		unison.InvokeTask(func() { Workspace.ErrorHandler(fmt.Sprintf(i18n.Text("Printing '%s' failed"), title), err) })
+		unison.InvokeTask(func() { Workspace.ErrorHandler(i18n.Text("Printing '%s' failed", title), err) })
 	}
 }
 
@@ -125,7 +125,7 @@ func ExportPage(ext string, dockable ExportDockable) {
 		err = errs.New("unsupported export format: " + ext)
 	}
 	if err != nil {
-		Workspace.ErrorHandler(fmt.Sprintf(i18n.Text("Unable to export as %s!"), ext), err)
+		Workspace.ErrorHandler(i18n.Text("Unable to export as %s!", ext), err)
 	}
 }
 

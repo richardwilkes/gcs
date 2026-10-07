@@ -10,19 +10,18 @@
 package ux
 
 import (
-	"fmt"
 	"io/fs"
 	"strings"
 
-	"github.com/richardwilkes/gcs/v5/model/colors"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/thememode"
 	"github.com/richardwilkes/gcs/v5/svg"
+	"github.com/richardwilkes/gcs/v5/ux/colors"
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
 	"github.com/richardwilkes/unison/enums/paintstyle"
-	"github.com/richardwilkes/unison/enums/thememode"
 	"github.com/richardwilkes/unison/enums/weight"
 )
 
@@ -57,16 +56,16 @@ func (d *colorSettingsDockable) addToStartToolbar(toolbar *unison.Panel) {
 	label := unison.NewLabel()
 	label.SetTitle(i18n.Text("Color Mode"))
 	toolbar.AddChild(label)
-	toolbar.AddChild(newPopupMenu(thememode.All, gurps.GlobalSettings().ThemeMode, func(mode thememode.Enum) {
+	toolbar.AddChild(newPopupMenu(thememode.Modes, gurps.GlobalSettings().ThemeMode, func(mode thememode.Mode) {
 		gurps.GlobalSettings().ThemeMode = mode
-		unison.SetThemeMode(mode)
+		unison.SetThemeMode(unisonThemeMode(mode))
 	}))
 }
 
 func (d *colorSettingsDockable) reset() {
-	g := gurps.GlobalSettings()
-	g.Colors.Reset()
-	g.Colors.MakeCurrent()
+	var c colors.Colors
+	c.Reset()
+	c.MakeCurrent()
 	d.sync()
 }
 
@@ -123,7 +122,7 @@ func (d *colorSettingsDockable) createColorWellField(c *colors.ThemedColor, ligh
 	if light {
 		w.SetInk(c.Color.Light)
 		w.Tooltip = newWrappedTooltip(i18n.Text("Light Mode Color"))
-		w.Accessibility.Name = fmt.Sprintf(i18n.Text("%s (Light Mode)"), c.Title)
+		w.Accessibility.Name = i18n.Text("%s (Light Mode)", c.Title)
 		w.InkChangedCallback = func() {
 			if clr, ok := w.Ink().(unison.Color); ok {
 				c.Color.Light = clr
@@ -133,7 +132,7 @@ func (d *colorSettingsDockable) createColorWellField(c *colors.ThemedColor, ligh
 	} else {
 		w.SetInk(c.Color.Dark)
 		w.Tooltip = newWrappedTooltip(i18n.Text("Dark Mode Color"))
-		w.Accessibility.Name = fmt.Sprintf(i18n.Text("%s (Dark Mode)"), c.Title)
+		w.Accessibility.Name = i18n.Text("%s (Dark Mode)", c.Title)
 		w.InkChangedCallback = func() {
 			if clr, ok := w.Ink().(unison.Color); ok {
 				c.Color.Dark = clr
@@ -148,7 +147,7 @@ func (d *colorSettingsDockable) createResetField(c *colors.ThemedColor) {
 	b := unison.NewSVGButton(svg.Reset)
 	b.Tooltip = newWrappedTooltip(i18n.Text("Reset this color"))
 	b.ClickCallback = func() {
-		if unison.QuestionDialog(fmt.Sprintf(i18n.Text("Are you sure you want to reset %s?"), c.Title), "") == unison.ModalResponseOK {
+		if unison.QuestionDialog(i18n.Text("Are you sure you want to reset %s?", c.Title), "") == unison.ModalResponseOK {
 			for _, v := range colors.Factory() {
 				if v.ID != c.ID {
 					continue
@@ -179,17 +178,15 @@ func (d *colorSettingsDockable) load(fileSystem fs.FS, filePath string) error {
 	if err != nil {
 		return err
 	}
-	g := gurps.GlobalSettings()
-	g.Colors = *s
-	g.Colors.MakeCurrent()
+	s.MakeCurrent()
 	d.sync()
 	return nil
 }
 
 func (d *colorSettingsDockable) save(filePath string) error {
-	g := gurps.GlobalSettings()
-	g.Colors.CaptureCurrent() // The wells edit the live colors, so pull those edits in before exporting them.
-	return g.Colors.Save(filePath)
+	var c colors.Colors
+	c.CaptureCurrent() // The wells edit the live colors, so pull those edits in before exporting them.
+	return c.Save(filePath)
 }
 
 // InstallTintFunc installs a tint function for the given panel and theme color.

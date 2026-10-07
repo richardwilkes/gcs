@@ -10,8 +10,6 @@
 package jio
 
 import (
-	"fmt"
-
 	"github.com/richardwilkes/toolbox/v2/errs"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/toolbox/v2/xos"
@@ -40,10 +38,10 @@ func CheckVersion(version int) error {
 // files older than the given minimum are refused rather than loaded.
 func CheckVersionWithMinimum(version, minimum int) error {
 	if version > CurrentDataVersion {
-		return errs.New(xstrings.Wrap("", fmt.Sprintf(i18n.Text("The data was written with a newer version of %[1]s and cannot be loaded. Please update %[1]s and try again."), xos.AppName), 76))
+		return errs.New(xstrings.Wrap("", i18n.Text("The data was written with a newer version of %[1]s and cannot be loaded. Please update %[1]s and try again.", xos.AppName), 76))
 	}
 	if version < minimum {
-		return errs.New(xstrings.Wrap("", fmt.Sprintf(i18n.Text("The data was written with an older version of %s and cannot be loaded. You will need to load it with an earlier version that can read this version of the data and write the current format."), xos.AppName), 76))
+		return errs.New(xstrings.Wrap("", i18n.Text("The data was written with an older version of %s and cannot be loaded. You will need to load it with an earlier version that can read this version of the data and write the current format.", xos.AppName), 76))
 	}
 	return nil
 }

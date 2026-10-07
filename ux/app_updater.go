@@ -89,9 +89,9 @@ func (u *appUpdater) uncheckedTitleLocked() string {
 	case u.quiet:
 		return checkingForAppUpdatesText()
 	case u.option() == updatecheck.Never:
-		return fmt.Sprintf(i18n.Text("Automatic %s update checks are off"), xos.AppName)
+		return i18n.Text("Automatic %s update checks are off", xos.AppName)
 	default:
-		return fmt.Sprintf(i18n.Text("No %s update check has run yet"), xos.AppName)
+		return i18n.Text("No %s update check has run yet", xos.AppName)
 	}
 }
 
@@ -119,25 +119,25 @@ func (u *appUpdater) SetReleases(releases []library.Release) {
 
 // setReleasesLocked records the releases an update check found. The lock must already be held.
 func (u *appUpdater) setReleasesLocked(releases []library.Release) {
-	u.result = fmt.Sprintf(i18n.Text("%s %s is available!"), xos.AppName, filterVersion(releases[0].Version))
+	u.result = i18n.Text("%s %s is available!", xos.AppName, filterVersion(releases[0].Version))
 	u.releases = releases
 	u.updating = false
 }
 
 func noAppUpdatesText() string {
-	return fmt.Sprintf(i18n.Text("No %s updates are available"), xos.AppName)
+	return i18n.Text("No %s updates are available", xos.AppName)
 }
 
 func checkingForAppUpdatesText() string {
-	return fmt.Sprintf(i18n.Text("Checking for %s updates…"), xos.AppName)
+	return i18n.Text("Checking for %s updates…", xos.AppName)
 }
 
 func unableToAccessAppUpdateSiteText() string {
-	return fmt.Sprintf(i18n.Text("Unable to access the %s update site"), xos.AppName)
+	return i18n.Text("Unable to access the %s update site", xos.AppName)
 }
 
 func devVersionAppUpdateText() string {
-	return fmt.Sprintf(i18n.Text("Development versions don't look for %s updates"), xos.AppName)
+	return i18n.Text("Development versions don't look for %s updates", xos.AppName)
 }
 
 // beginQuiet claims the right to run a quiet check, returning the sequence number to hand back to finishQuiet. It
@@ -342,7 +342,7 @@ func planAppUpdate(release *library.Release) (plan *updater.Plan, unavailableMsg
 	if unavailable, ok := errors.AsType[*updater.Unavailable](err); ok {
 		return nil, blockerMessage(unavailable.Blocker)
 	}
-	return nil, fmt.Sprintf(i18n.Text("%s can't install this update automatically."), xos.AppName)
+	return nil, i18n.Text("%s can't install this update automatically.", xos.AppName)
 }
 
 // blockerMessage explains, in the user's language, why an update cannot be installed automatically and, where possible,
@@ -352,28 +352,26 @@ func blockerMessage(blocker updater.Blocker) string {
 	case updater.BlockerDevBuild:
 		return i18n.Text("Development builds can't be updated automatically.")
 	case updater.BlockerRenamedExecutable:
-		return fmt.Sprintf(i18n.Text("This copy of %s has been renamed, so it can't be updated automatically."),
-			xos.AppName)
+		return i18n.Text("This copy of %s has been renamed, so it can't be updated automatically.", xos.AppName)
 	case updater.BlockerNotABundle:
-		return fmt.Sprintf(i18n.Text("This copy of %s isn't installed as an application, so it can't be updated automatically."),
+		return i18n.Text("This copy of %s isn't installed as an application, so it can't be updated automatically.",
 			xos.AppName)
 	case updater.BlockerTranslocated:
-		return fmt.Sprintf(i18n.Text("%s is running from a temporary copy. Move it to your Applications folder and open it from there to enable automatic updates."),
+		return i18n.Text("%s is running from a temporary copy. Move it to your Applications folder and open it from there to enable automatic updates.",
 			xos.AppName)
 	case updater.BlockerPackageManaged:
-		return fmt.Sprintf(i18n.Text("%s was installed by a package manager, which should be used to update it."),
-			xos.AppName)
+		return i18n.Text("%s was installed by a package manager, which should be used to update it.", xos.AppName)
 	case updater.BlockerHomebrew:
 		return i18n.Text("This copy was installed by Homebrew. Run `brew upgrade --cask gcs` to update it.")
 	case updater.BlockerReadOnly:
-		return fmt.Sprintf(i18n.Text("%s can't write to the folder it's installed in, so it can't update itself. Installing it somewhere you have permission to write, such as your Applications folder, enables automatic updates."),
+		return i18n.Text("%s can't write to the folder it's installed in, so it can't update itself. Installing it somewhere you have permission to write, such as your Applications folder, enables automatic updates.",
 			xos.AppName)
 	case updater.BlockerNoAsset:
 		return i18n.Text("This release doesn't include a build for this system.")
 	case updater.BlockerNoDigest:
 		return i18n.Text("This release can't be verified automatically, so it has to be installed by hand.")
 	default:
-		return fmt.Sprintf(i18n.Text("%s can't install this update automatically."), xos.AppName)
+		return i18n.Text("%s can't install this update automatically.", xos.AppName)
 	}
 }
 
@@ -390,7 +388,7 @@ func ReportAppUpdateOutcome() {
 		// already running the new version.
 		return
 	}
-	unison.WarningDialogWithMessage(fmt.Sprintf(i18n.Text("%s was not updated"), xos.AppName),
+	unison.WarningDialogWithMessage(i18n.Text("%s was not updated", xos.AppName),
 		xstrings.Wrap("", outcomeMessage(outcome.Reason), 100))
 }
 
@@ -398,15 +396,15 @@ func ReportAppUpdateOutcome() {
 func outcomeMessage(reason updater.Reason) string {
 	switch reason {
 	case updater.ReasonPredecessorRunning:
-		return fmt.Sprintf(i18n.Text("The previous copy of %s did not finish quitting, so nothing was changed. Try the update again."),
+		return i18n.Text("The previous copy of %s did not finish quitting, so nothing was changed. Try the update again.",
 			xos.AppName)
 	case updater.ReasonSwapFailed:
-		return fmt.Sprintf(i18n.Text("The update could not be installed, so the previous version was kept. Downloading it from the %s web site and installing it by hand will work."),
+		return i18n.Text("The update could not be installed, so the previous version was kept. Downloading it from the %s web site and installing it by hand will work.",
 			xos.AppName)
 	case updater.ReasonVersionMismatch:
 		return i18n.Text("The update reported success but a different version is running. The previous version has been kept.")
 	default:
-		return fmt.Sprintf(i18n.Text("The update could not be installed. Downloading it from the %s web site and installing it by hand will work."),
+		return i18n.Text("The update could not be installed. Downloading it from the %s web site and installing it by hand will work.",
 			xos.AppName)
 	}
 }

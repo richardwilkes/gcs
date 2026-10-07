@@ -10,12 +10,11 @@
 package ux
 
 import (
-	"fmt"
 	"io/fs"
 
-	"github.com/richardwilkes/gcs/v5/model/fonts"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/svg"
+	"github.com/richardwilkes/gcs/v5/ux/fonts"
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/unison"
@@ -83,7 +82,7 @@ func (d *fontSettingsDockable) createResetField(index int, fp *unison.FontPanel)
 	b := unison.NewSVGButton(svg.Reset)
 	b.Tooltip = newWrappedTooltip(i18n.Text("Reset this font"))
 	b.ClickCallback = func() {
-		if unison.QuestionDialog(fmt.Sprintf(i18n.Text("Are you sure you want to reset %s?"),
+		if unison.QuestionDialog(i18n.Text("Are you sure you want to reset %s?",
 			fonts.CurrentFonts()[index].Title), "") == unison.ModalResponseOK {
 			for _, v := range fonts.FactoryFonts() {
 				if v.ID != fonts.CurrentFonts()[index].ID {
@@ -102,9 +101,9 @@ func (d *fontSettingsDockable) createResetField(index int, fp *unison.FontPanel)
 }
 
 func (d *fontSettingsDockable) reset() {
-	g := gurps.GlobalSettings()
-	g.Fonts.Reset()
-	g.Fonts.MakeCurrent()
+	var f fonts.Fonts
+	f.Reset()
+	f.MakeCurrent()
 	d.sync()
 }
 
@@ -134,15 +133,13 @@ func (d *fontSettingsDockable) load(fileSystem fs.FS, filePath string) error {
 	if err != nil {
 		return err
 	}
-	g := gurps.GlobalSettings()
-	g.Fonts = *s
-	g.Fonts.MakeCurrent()
+	s.MakeCurrent()
 	d.sync()
 	return nil
 }
 
 func (d *fontSettingsDockable) save(filePath string) error {
-	g := gurps.GlobalSettings()
-	g.Fonts.CaptureCurrent() // The font panels edit the live fonts, so pull those edits in before exporting them.
-	return g.Fonts.Save(filePath)
+	var f fonts.Fonts
+	f.CaptureCurrent() // The font panels edit the live fonts, so pull those edits in before exporting them.
+	return f.Save(filePath)
 }

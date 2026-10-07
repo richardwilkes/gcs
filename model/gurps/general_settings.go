@@ -18,9 +18,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/gcs/v5/model/library"
 	"github.com/richardwilkes/toolbox/v2/errs"
-	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/xos"
-	"github.com/richardwilkes/unison"
 )
 
 // Default, minimum & maximum values for the general numeric settings
@@ -39,10 +37,10 @@ var (
 	PermittedScriptExecTimeDef = fxp.FromStringForced("0.05")
 	PermittedScriptExecTimeMin = fxp.FromStringForced("0.001")
 	PermittedScriptExecTimeMax = fxp.Half
-	CursorSizeDef              = int(unison.DefaultCursorSize().Width)
 )
 
-// Default, minimum & maximum values for the general numeric settings that can be constants
+// Default, minimum & maximum values for the general numeric settings that can be constants. The cursor sizes match
+// those of the user interface, which a test there verifies.
 const (
 	MonitorResolutionMin       = 72
 	MonitorResolutionMax       = 300
@@ -64,9 +62,13 @@ const (
 	AutoColWidthMin            = 50
 	AutoColWidthMax            = 9999
 	MaximumAutoColWidthDef     = 800
-	CursorSizeMin              = unison.MinCursorSize
-	CursorSizeMax              = unison.MaxCursorSize
+	CursorSizeDef              = 24
+	CursorSizeMin              = 8
+	CursorSizeMax              = 128
 )
+
+// defaultMonitorPPI is the monitor PPI used when neither the settings nor the host supply one.
+const defaultMonitorPPI = 108
 
 const currentGeneralSettingsVersion = 2
 
@@ -113,7 +115,7 @@ func NewGeneralSettings() *GeneralSettings {
 		InitialPoints:              InitialPointsDef,
 		TooltipDelay:               TooltipDelayDef,
 		TooltipDismissal:           TooltipDismissalDef,
-		ScrollWheelMultiplier:      fxp.FromFloat(unison.MouseWheelMultiplier),
+		ScrollWheelMultiplier:      fxp.FromFloat(currentHost().DefaultScrollWheelMultiplier()),
 		PermittedPerScriptExecTime: PermittedScriptExecTimeDef,
 		Version:                    currentGeneralSettingsVersion,
 		NavigatorUIScale:           InitialNavigatorUIScaleDef,
@@ -162,20 +164,27 @@ func (s *GeneralSettings) Save(filePath string) error {
 	return jio.SaveToFile(filePath, s)
 }
 
-// UpdateToolTipTiming updates the default tooltip theme to use the timing values from this object.
+// UpdateToolTipTiming hands the tooltip timing values from this object to the host.
 func (s *GeneralSettings) UpdateToolTipTiming() {
-	unison.DefaultTooltipTheme.Delay = fxp.SecondsToDuration(s.TooltipDelay)
-	unison.DefaultTooltipTheme.Dismissal = fxp.SecondsToDuration(s.TooltipDismissal)
+	currentHost().SetTooltipTiming(fxp.SecondsToDuration(s.TooltipDelay), fxp.SecondsToDuration(s.TooltipDismissal))
 }
 
-// UpdateCursorSize updates the size unison builds cursors at to the value from this object.
+// UpdateCursorSize hands the cursor size from this object to the host.
 func (s *GeneralSettings) UpdateCursorSize() {
-	unison.SetCursorSize(geom.NewSize(float32(s.CursorSize), float32(s.CursorSize)))
+	currentHost().SetCursorSize(s.CursorSize)
 }
 
-// UpdateFocusForReading hands the FocusForReading setting to unison, which keeps its own copy. EnsureValidity calls it.
+// UpdateFocusForReading hands the FocusForReading setting to the host, which keeps its own copy.
 func (s *GeneralSettings) UpdateFocusForReading() {
-	unison.SetFocusForReading(s.FocusForReading)
+	currentHost().SetFocusForReading(s.FocusForReading)
+}
+
+// applyToHost hands the host every setting it keeps a copy of, which the Update methods do one at a time for the
+// current host.
+func (s *GeneralSettings) applyToHost(h Host) {
+	h.SetTooltipTiming(fxp.SecondsToDuration(s.TooltipDelay), fxp.SecondsToDuration(s.TooltipDismissal))
+	h.SetCursorSize(s.CursorSize)
+	h.SetFocusForReading(s.FocusForReading)
 }
 
 // CalendarRef returns the CalendarRef these settings refer to.
@@ -189,24 +198,17 @@ func (s *GeneralSettings) CalendarRef(libraries *library.Libraries) *CalendarRef
 	return ref
 }
 
-// MonitorPPI returns the monitor PPI to use, either from the settings or from the primary display.
+// MonitorPPI returns the monitor PPI to use, either from the settings or from the primary display, defaulting to
+// defaultMonitorPPI when the host has no usable value for the display. It asks the host for the display, so it may
+// only be called on the UI thread.
 func (s *GeneralSettings) MonitorPPI() int {
 	if s.MonitorResolution != 0 {
 		return s.MonitorResolution
 	}
-	return monitorPPIForDisplay(unison.PrimaryDisplay())
-}
-
-// monitorPPIForDisplay derives the monitor PPI from a display, defaulting to 108 when the display is unavailable (on
-// some Linux configurations PrimaryDisplay() returns nil when no monitor is enumerated) or reports values that would
-// yield a non-positive result.
-func monitorPPIForDisplay(d *unison.Display) int {
-	if d != nil && d.Scale.X != 0 {
-		if ppi := int(float32(d.PPI) / d.Scale.X); ppi > 0 {
-			return ppi
-		}
+	if ppi := currentHost().PrimaryDisplayPPI(); ppi > 0 {
+		return ppi
 	}
-	return 108
+	return defaultMonitorPPI
 }
 
 // EnsureValidity checks the current settings for validity and if they aren't valid, makes them so.
@@ -229,7 +231,7 @@ func (s *GeneralSettings) EnsureValidity() {
 	s.PermittedPerScriptExecTime = fxp.ResetIfOutOfRange(s.PermittedPerScriptExecTime, PermittedScriptExecTimeMin,
 		PermittedScriptExecTimeMax, PermittedScriptExecTimeDef)
 	s.ScrollWheelMultiplier = fxp.ResetIfOutOfRange(s.ScrollWheelMultiplier, ScrollWheelMultiplierMin,
-		ScrollWheelMultiplierMax, fxp.FromFloat(unison.MouseWheelMultiplier))
+		ScrollWheelMultiplierMax, fxp.FromFloat(currentHost().DefaultScrollWheelMultiplier()))
 	if s.MonitorResolution != 0 {
 		s.MonitorResolution = fxp.ResetIfOutOfRange(s.MonitorResolution, MonitorResolutionMin, MonitorResolutionMax, 0)
 	}
@@ -255,7 +257,5 @@ func (s *GeneralSettings) EnsureValidity() {
 	s.PDFAutoScaling = s.PDFAutoScaling.EnsureValid()
 	s.AppUpdateCheck = s.AppUpdateCheck.EnsureValid()
 	s.LibraryUpdateCheck = s.LibraryUpdateCheck.EnsureValid()
-	s.UpdateToolTipTiming()
-	s.UpdateCursorSize()
-	s.UpdateFocusForReading()
+	s.applyToHost(currentHost())
 }

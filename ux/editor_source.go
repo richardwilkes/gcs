@@ -10,7 +10,6 @@
 package ux
 
 import (
-	"fmt"
 	"math"
 	"reflect"
 	"slices"
@@ -71,7 +70,7 @@ func (e *editor[N, D]) sourceMenuEntries() []menuEntry {
 
 func copyEntry(label, value string) menuEntry {
 	return menuEntry{
-		Label: fmt.Sprintf(i18n.Text("%s: %s"), label, value),
+		Label: i18n.Text("%s: %s", label, value),
 		Act:   func() { unison.ClipboardSetText(value) },
 	}
 }

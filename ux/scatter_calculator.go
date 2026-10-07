@@ -10,8 +10,6 @@
 package ux
 
 import (
-	"fmt"
-
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/toolbox/v2/i18n"
@@ -110,7 +108,7 @@ func (s *scatterCalculator) createContent() {
 	box.addNotes(
 		i18n.Text("The miss is squared when the target was flying or underwater, or when Artillery or Dropping was used against a target the attacker could not see; a dodge is never squared. When the target dodged, the margin is its margin of success."),
 		i18n.Text("Roll 1d for the direction: a 1 is the direction the attacker faces, and each higher number turns 60° further clockwise."),
-		fmt.Sprintf(i18n.Text("Deliberately attacking an area rather than a target standing in it is at %+d to hit. The area cannot defend, though anyone in it may dive for cover."),
+		i18n.Text("Deliberately attacking an area rather than a target standing in it is at %+d to hit. The area cannot defend, though anyone in it may dive for cover.",
 			gurps.AreaAttackBonus),
 	)
 }
@@ -118,7 +116,7 @@ func (s *scatterCalculator) createContent() {
 // changed implements calculatorTab.
 func (s *scatterCalculator) changed() {
 	yards, capped := gurps.ScatterDistance(s.margin, s.distance, s.causes[s.causeIndex].squared)
-	text := fmt.Sprintf(i18n.Text("%s yards"), yards.Comma())
+	text := i18n.Text("%s yards", yards.Comma())
 	if capped {
 		text += i18n.Text(" (limited to half the distance)")
 	}

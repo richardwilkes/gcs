@@ -1954,7 +1954,7 @@ func (e *Entity) Reactions() []*ConditionalModifier {
 			if resolvedSelfControl != selfctrl.None && t.ResolvedSelfControlAdjustment(nil) == selfctrl.ReactionPenalty {
 				// The self-control penalty is derived from the trait rather than from a bonus the user wrote, so there
 				// is no group for it to be filed under.
-				c.add(source, "", fmt.Sprintf(i18n.Text("from others when %s is triggered"), t.String()),
+				c.add(source, "", i18n.Text("from others when %s is triggered", t.String()),
 					fxp.FromInteger(selfctrl.ReactionPenalty.Adjustment(resolvedSelfControl)))
 			}
 		}, nil)

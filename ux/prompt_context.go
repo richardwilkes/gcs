@@ -14,9 +14,9 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/richardwilkes/gcs/v5/model/fonts"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/promptstep"
+	"github.com/richardwilkes/gcs/v5/ux/fonts"
 	"github.com/richardwilkes/toolbox/v2/errs"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/toolbox/v2/xreflect"
@@ -69,11 +69,11 @@ func (op promptOperation) title() string {
 	case op.name == "":
 		return op.step.String()
 	default:
-		return fmt.Sprintf(i18n.Text("%s: %s"), op.name, op.step.String())
+		return i18n.Text("%s: %s", op.name, op.step.String())
 	}
 }
 
-// shortNames returns the names cut down to maxNameLength, ready to be handed to fmt.Sprintf.
+// shortNames returns the names cut down to maxNameLength, ready to be handed to i18n.Text.
 func shortNames(names ...string) []any {
 	short := make([]any, len(names))
 	for i, name := range names {
@@ -137,7 +137,7 @@ func rowLocation[T gurps.Node[T]](row T) string {
 	if len(path) > 2 && len([]rune(joined)) > maxLocationLength {
 		joined = strings.Join([]string{path[0], "…", path[len(path)-1]}, separator)
 	}
-	return fmt.Sprintf(i18n.Text("%s in %s"), row.Kind(), joined)
+	return i18n.Text("%s in %s", row.Kind(), joined)
 }
 
 // nameList returns the names one per line, each cut down to maxNameLength, and cut short with a count of the rest when
@@ -147,7 +147,7 @@ func nameList(names []string) string {
 	lines := make([]string, 0, min(len(names), maxShown))
 	for i, name := range names {
 		if i == maxShown-1 && len(names) > maxShown {
-			lines = append(lines, fmt.Sprintf(i18n.Text("and %d more"), len(names)-i))
+			lines = append(lines, i18n.Text("and %d more", len(names)-i))
 			break
 		}
 		lines = append(lines, xstrings.Truncate(name, maxNameLength, true))

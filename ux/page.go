@@ -10,10 +10,8 @@
 package ux
 
 import (
-	"fmt"
-
-	"github.com/richardwilkes/gcs/v5/model/fonts"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/ux/fonts"
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/toolbox/v2/xmath"
@@ -139,10 +137,10 @@ func (p *Page) drawSelf(gc *unison.Canvas, _ geom.Rect) {
 	}
 
 	center := unison.NewText(p.infoProvider.PageTitle(), primaryDecorations)
-	left := unison.NewText(fmt.Sprintf(i18n.Text("%s is copyrighted ©%s by %s"), xos.AppName,
+	left := unison.NewText(i18n.Text("%s is copyrighted ©%s by %s", xos.AppName,
 		xos.CopyrightYears(), xos.CopyrightHolder), secondaryDecorations)
 	modifiedOn := p.infoProvider.ModifiedOnString()
-	right := unison.NewText(fmt.Sprintf(i18n.Text("Modified %s"), modifiedOn),
+	right := unison.NewText(i18n.Text("Modified %s", modifiedOn),
 		secondaryDecorations)
 	y := r.Y + max(left.Baseline(), right.Baseline(), center.Baseline())
 	leftX := r.X
@@ -160,7 +158,7 @@ func (p *Page) drawSelf(gc *unison.Canvas, _ geom.Rect) {
 
 	center = unison.NewText(WebSiteDomain, secondaryDecorations)
 	left = unison.NewText(i18n.Text("All rights reserved"), secondaryDecorations)
-	right = unison.NewText(fmt.Sprintf(i18n.Text("Page %d of %d"), pageNumber, pageCount), secondaryDecorations)
+	right = unison.NewText(i18n.Text("Page %d of %d", pageNumber, pageCount), secondaryDecorations)
 	if pageNumber&1 == 0 {
 		left, right = right, left
 	}

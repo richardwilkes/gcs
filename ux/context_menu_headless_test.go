@@ -10,7 +10,6 @@
 package ux
 
 import (
-	"fmt"
 	"os"
 	"path/filepath"
 	"slices"
@@ -290,7 +289,7 @@ func TestSheetLayoutEditorContextMenuHeadless(t *testing.T) {
 	titles := contextMenuTitles(t, screen, wnd)
 	c.True(slices.Contains(titles, editLayout), "a right-click on a block must open the layout menu; it offers %v",
 		titles)
-	hideTraits := fmt.Sprintf(i18n.Text("Hide %s"), gurps.BlockTitle(gurps.BlockTraitsKey))
+	hideTraits := i18n.Text("Hide %s", gurps.BlockTitle(gurps.BlockTraitsKey))
 	c.True(slices.Contains(titles, hideTraits), "the menu must offer to hide the block clicked on; it offers %v",
 		titles)
 	closeContextMenu(c, screen, wnd)

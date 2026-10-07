@@ -161,11 +161,11 @@ func (d *DRBonus) Describe(entity *Entity, replacements map[string]string, em fu
 		if len(names) == 1 {
 			text += i18n.Text("the ") + em(names[0])
 		} else {
-			text += em(fmt.Sprintf(i18n.Text("%d locations"), len(names))) + ": " + strings.Join(names, ", ")
+			text += em(i18n.Text("%d locations", len(names))) + ": " + strings.Join(names, ", ")
 		}
 	}
 	if spec := normalizeDRSpecialization(nameable.Apply(d.Specialization, replacements)); spec != AllID {
-		text += fmt.Sprintf(i18n.Text(" against %s attacks"), em(spec))
+		text += i18n.Text(" against %s attacks", em(spec))
 	}
 	return describeSwitchable(d.Switchable, text)
 }

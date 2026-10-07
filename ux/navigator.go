@@ -11,7 +11,6 @@ package ux
 
 import (
 	"bytes"
-	"fmt"
 	"maps"
 	"os"
 	"path/filepath"
@@ -320,7 +319,7 @@ func (n *Navigator) deleteSelection() {
 		case hasLibs && hasOther:
 			return
 		case hasLibs:
-			header := xstrings.Wrap("", fmt.Sprintf(i18n.Text("Are you sure you want to remove %s?"), title), 100)
+			header := xstrings.Wrap("", i18n.Text("Are you sure you want to remove %s?", title), 100)
 			if unison.QuestionDialog(header,
 				i18n.Text("Note: This action will NOT remove any files from disk.")) == unison.ModalResponseOK {
 				libs := gurps.GlobalSettings().Libraries
@@ -336,8 +335,8 @@ func (n *Navigator) deleteSelection() {
 				n.Reload()
 			}
 		case hasOther:
-			header := xstrings.Wrap("", fmt.Sprintf(i18n.Text("Are you sure you want to remove %s?"), title), 100)
-			note := xstrings.Wrap("", fmt.Sprintf(i18n.Text("Note: This action cannot be undone and will remove %s from disk."), title), 100)
+			header := xstrings.Wrap("", i18n.Text("Are you sure you want to remove %s?", title), 100)
+			note := xstrings.Wrap("", i18n.Text("Note: This action cannot be undone and will remove %s from disk.", title), 100)
 			if unison.QuestionDialog(header, note) == unison.ModalResponseOK {
 				if n.closeSelection(selection) {
 					defer n.Reload()
@@ -345,12 +344,12 @@ func (n *Navigator) deleteSelection() {
 						p := row.Path()
 						if row.IsDirectory() {
 							if err := os.RemoveAll(p); err != nil {
-								Workspace.ErrorHandler(fmt.Sprintf(i18n.Text("Unable to remove directory:\n%s"), p), err)
+								Workspace.ErrorHandler(i18n.Text("Unable to remove directory:\n%s", p), err)
 								return
 							}
 						} else {
 							if err := os.Remove(p); err != nil {
-								Workspace.ErrorHandler(fmt.Sprintf(i18n.Text("Unable to remove file:\n%s"), p), err)
+								Workspace.ErrorHandler(i18n.Text("Unable to remove file:\n%s", p), err)
 								return
 							}
 						}
@@ -502,7 +501,7 @@ func (n *Navigator) renameSelection() {
 			return
 		}
 		if err := os.Rename(oldPath, newPath); err != nil {
-			Workspace.ErrorHandler(fmt.Sprintf(i18n.Text("Unable to rename:\n%s"), oldPath), err)
+			Workspace.ErrorHandler(i18n.Text("Unable to rename:\n%s", oldPath), err)
 			return
 		}
 		n.fixupFavoritePath(row, oldPath, newPath)
@@ -596,7 +595,7 @@ func (n *Navigator) showSelectionReleaseNotes() {
 			}
 			content.WriteString(release.Notes)
 		}
-		ShowReadOnlyMarkdown(fmt.Sprintf(i18n.Text("%s Release Notes"), lib.Data().Title), content.String())
+		ShowReadOnlyMarkdown(i18n.Text("%s Release Notes", lib.Data().Title), content.String())
 	}
 }
 
@@ -798,7 +797,10 @@ func (n *Navigator) populateRows() []*NavigatorNode {
 	rows := make([]*NavigatorNode, 0, 1+len(libs))
 	rows = append(rows, NewFavoritesNode(n))
 	for _, lib := range libs {
-		n.tokens = append(n.tokens, lib.Watch(n.watchCallback, true))
+		// The watch reports changes on no particular goroutine, so hand each one off to the UI thread.
+		n.tokens = append(n.tokens, lib.Watch(func(l *library.Library, fullPath string, what notify.Event) {
+			unison.InvokeTask(func() { n.watchCallback(l, fullPath, what) })
+		}))
 		rows = append(rows, NewLibraryNode(n, lib))
 	}
 	return rows
@@ -895,7 +897,7 @@ func (n *Navigator) handleSelectionDoubleClick() {
 	selection := n.table.SelectedRows(false)
 	if len(selection) > 4 {
 		if unison.QuestionDialog(i18n.Text("Are you sure you want to open all of these?"),
-			fmt.Sprintf(i18n.Text("%d files will be opened."), len(selection))) != unison.ModalResponseOK {
+			i18n.Text("%d files will be opened.", len(selection))) != unison.ModalResponseOK {
 			return
 		}
 	}
@@ -1574,7 +1576,7 @@ func DisplayNewDockable(dockable unison.Dockable) {
 func OpenFile(filePath string, initialPage gurps.PageInfo) (dockable unison.Dockable, wasOpen bool) {
 	absPath, err := filepath.Abs(filePath)
 	if err != nil {
-		Workspace.ErrorHandler(fmt.Sprintf(i18n.Text("Unable to resolve path:\n%s"), filePath), err)
+		Workspace.ErrorHandler(i18n.Text("Unable to resolve path:\n%s", filePath), err)
 		return nil, false
 	}
 	if d := LocateFileBackedDockable(absPath); d != nil {
@@ -1590,7 +1592,7 @@ func OpenFile(filePath string, initialPage gurps.PageInfo) (dockable unison.Dock
 		return nil, false
 	}
 	var d unison.Dockable
-	if d, err = fi.Load(absPath, initialPage); err != nil {
+	if d, err = fileTypeUIs[fi].load(absPath, initialPage); err != nil {
 		Workspace.ErrorHandler(i18n.Text("Unable to open file:\n")+absPath, err)
 		return nil, false
 	}
@@ -1619,7 +1621,7 @@ func (n *Navigator) newFolder() {
 		// The library's folder is only created when a watch is established on it and a row can outlive what it shows,
 		// so whatever is missing above the new folder is created along with it.
 		if err := os.MkdirAll(dirPath, 0o750); err != nil {
-			Workspace.ErrorHandler(fmt.Sprintf(i18n.Text("Unable to create:\n%s"), dirPath), err)
+			Workspace.ErrorHandler(i18n.Text("Unable to create:\n%s", dirPath), err)
 			return
 		}
 		if !row.IsFile() && !row.IsOpen() {

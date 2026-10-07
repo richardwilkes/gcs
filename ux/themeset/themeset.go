@@ -14,6 +14,9 @@ package themeset
 import (
 	"encoding/json/jsontext"
 	"encoding/json/v2"
+	"errors"
+	"fmt"
+	"slices"
 )
 
 // Entry is one themed value. The live theme is a list of entries whose values the settings UI edits in place. A Set
@@ -28,8 +31,8 @@ type Entry[V any] interface {
 }
 
 // Provider supplies the entries a Set works with. It is a type parameter of Set rather than a field so that a zero
-// value Set is fully usable, which the global settings rely upon on a first run, when there is no settings file to
-// load. Implementations must be usable as their zero value.
+// value Set is fully usable, since every capture of the live theme, every reset and every load starts from one.
+// Implementations must be usable as their zero value.
 type Provider[V any, E Entry[V]] interface {
 	// Current returns the live entries.
 	Current() []E
@@ -70,17 +73,39 @@ func (s *Set[V, E, P]) MarshalJSONTo(enc *jsontext.Encoder) error {
 	return enc.WriteToken(jsontext.EndObject)
 }
 
-// UnmarshalJSONFrom implements json.UnmarshalerFrom. Keys the data doesn't define are filled in with the factory
-// values, so that the result is always complete, even when an error is returned.
+// UnmarshalJSONFrom implements json.UnmarshalerFrom. Each value is decoded on its own, so that one that can't be
+// decoded costs only itself: the error returned names it and the rest are kept. Keys the data doesn't define, or whose
+// values couldn't be decoded, are filled in with the factory values, so that the result is always complete, even when
+// an error is returned. The values are decoded in factory order, with the keys the factory doesn't define after them in
+// sorted order, so that the error names them in the same order from one run to the next.
 func (s *Set[V, E, P]) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
-	s.data = nil
-	err := json.UnmarshalDecode(dec, &s.data)
-	if err != nil {
-		s.data = nil
-	}
+	var raw map[string]jsontext.Value
+	err := json.UnmarshalDecode(dec, &raw)
+	s.data = make(map[string]V, max(len(raw), 1))
 	var p P
-	s.ensureData()
-	for _, one := range p.Factory() {
+	factory := p.Factory()
+	keys := make([]string, 0, len(raw))
+	for _, one := range factory {
+		if _, ok := raw[one.Key()]; ok {
+			keys = append(keys, one.Key())
+		}
+	}
+	known := len(keys)
+	for key := range raw {
+		if !slices.Contains(keys[:known], key) {
+			keys = append(keys, key)
+		}
+	}
+	slices.Sort(keys[known:])
+	for _, key := range keys {
+		var v V
+		if e := json.Unmarshal(raw[key], &v, dec.Options()); e != nil {
+			err = errors.Join(err, fmt.Errorf("%q: %w", key, e))
+			continue
+		}
+		s.data[key] = v
+	}
+	for _, one := range factory {
 		if _, ok := s.data[one.Key()]; !ok {
 			s.data[one.Key()] = one.Value()
 		}
@@ -133,8 +158,7 @@ func (s *Set[V, E, P]) assign(entries []E) {
 	}
 }
 
-// ensureData allocates the map if this object has never been through UnmarshalJSONFrom -- the first-run case, where no
-// settings file exists.
+// ensureData allocates the map if this object has never been through UnmarshalJSONFrom, as a zero value hasn't.
 func (s *Set[V, E, P]) ensureData() {
 	if s.data == nil {
 		var p P

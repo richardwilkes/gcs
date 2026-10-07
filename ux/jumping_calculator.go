@@ -10,7 +10,6 @@
 package ux
 
 import (
-	"fmt"
 	"math"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
@@ -232,7 +231,7 @@ func (j *jumpingCalculator) adjustControls() {
 	} else {
 		units = i18n.Text("yard")
 	}
-	j.runningStartLabel.SetTitle(fmt.Sprintf(i18n.Text("%s running start"), units))
+	j.runningStartLabel.SetTitle(i18n.Text("%s running start", units))
 	j.content.MarkForLayoutRecursively()
 	j.content.MarkForLayoutRecursivelyUpward()
 	j.content.MarkForRedraw()
@@ -246,7 +245,7 @@ func (j *jumpingCalculator) updateResults() {
 	j.broadJumpResult.SetTitle(lengthToText(entity, j.computeJump(true, j.extraEffortPenalty)))
 	var note string
 	if j.extraEffortPenalty < 0 {
-		note = fmt.Sprintf(i18n.Text("The extra effort takes a Will roll, or a Will-based Jumping roll if that is better, at %d for the +%d%% shown, and costs 1 FP whether it succeeds or fails. A failure leaves the jump as it would be without it: %s high and %s broad. A critical failure costs 1 HP of injury to a foot or leg instead and the jump fails, and on a natural 18 a HT roll is needed as well to avoid a temporary Crippled Leg (B357)."),
+		note = i18n.Text("The extra effort takes a Will roll, or a Will-based Jumping roll if that is better, at %d for the +%d%% shown, and costs 1 FP whether it succeeds or fails. A failure leaves the jump as it would be without it: %s high and %s broad. A critical failure costs 1 HP of injury to a foot or leg instead and the jump fails, and on a natural 18 a HT roll is needed as well to avoid a temporary Crippled Leg (B357).",
 			j.extraEffortPenalty, -5*j.extraEffortPenalty, lengthToText(entity, j.computeJump(false, 0)),
 			lengthToText(entity, j.computeJump(true, 0)))
 	} else {
