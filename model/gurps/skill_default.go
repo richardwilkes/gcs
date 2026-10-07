@@ -12,7 +12,6 @@ package gurps
 import (
 	"encoding/json/jsontext"
 	"encoding/json/v2"
-	"fmt"
 	"hash"
 	"slices"
 	"strings"
@@ -247,7 +246,7 @@ func (s *SkillDefault) Describe(entity *Entity, replacements map[string]string, 
 	default:
 		text = describeDefaultType(entity, t, em)
 	}
-	text = fmt.Sprintf(i18n.Text("%s at %s"), text, em(s.Modifier.StringWithSign()))
+	text = i18n.Text("%s at %s", text, em(s.Modifier.StringWithSign()))
 	if s.WhenTL.Compare != criteria.AnyNumber {
 		text += i18n.Text(", when the tech level ") + s.WhenTL.Compare.DescribeWith(em(s.WhenTL.Qualifier.String()))
 	}
@@ -269,7 +268,7 @@ func describeDefaultType(entity *Entity, t string, em func(string) string) strin
 	case t == "10" || t == SizeModifierID || t == DodgeID || AttributeDefsFor(entity).Set[t] != nil:
 		return em(attributeTitle(entity, t))
 	default:
-		return fmt.Sprintf(i18n.Text(`Unknown type "%s"`), em(t))
+		return i18n.Text(`Unknown type "%s"`, em(t))
 	}
 }
 
@@ -285,19 +284,19 @@ func (s *SkillDefault) describeSkill(replacements map[string]string, em func(str
 		if anyName {
 			text = i18n.Text("Parry of any skill")
 		} else {
-			text = fmt.Sprintf(i18n.Text("Parry of skill %s"), describeName(s.Name, replacements, em))
+			text = i18n.Text("Parry of skill %s", describeName(s.Name, replacements, em))
 		}
 	case BlockID:
 		if anyName {
 			text = i18n.Text("Block of any skill")
 		} else {
-			text = fmt.Sprintf(i18n.Text("Block of skill %s"), describeName(s.Name, replacements, em))
+			text = i18n.Text("Block of skill %s", describeName(s.Name, replacements, em))
 		}
 	default:
 		if anyName {
 			text = i18n.Text("Any skill")
 		} else {
-			text = fmt.Sprintf(i18n.Text("Skill %s"), describeName(s.Name, replacements, em))
+			text = i18n.Text("Skill %s", describeName(s.Name, replacements, em))
 		}
 	}
 	joined := !anyName && nameCompare != criteria.IsText

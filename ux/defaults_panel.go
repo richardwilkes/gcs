@@ -10,7 +10,6 @@
 package ux
 
 import (
-	"fmt"
 	"slices"
 	"strconv"
 	"strings"
@@ -183,7 +182,7 @@ func (p *defaultsPanel) summary() string {
 	for _, one := range *p.defaults {
 		descriptions = append(descriptions, one.Describe(p.entity, replacements, emphasize))
 	}
-	return fmt.Sprintf(i18n.Text("%s."), strings.Join(descriptions, i18n.Text("; ")))
+	return i18n.Text("%s.", strings.Join(descriptions, i18n.Text("; ")))
 }
 
 // row returns the panel for a default: its sentence, or while it is open its editor, beside a button for more actions.
