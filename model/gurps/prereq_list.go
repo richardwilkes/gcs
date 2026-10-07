@@ -140,18 +140,6 @@ func (p *PrereqList) AppliesWithParentsAt(entity *Entity) bool {
 	return true
 }
 
-// PrereqResult is the outcome of checking a prerequisite against a sheet.
-type PrereqResult uint8
-
-// Possible PrereqResult values. A skipped prerequisite is left out of the check, and a failed one couldn't be checked,
-// because a script that decides it couldn't run.
-const (
-	PrereqMet PrereqResult = iota
-	PrereqUnmet
-	PrereqSkipped
-	PrereqFailed
-)
-
 // Evaluate checks this list against the entity for the item given as exclude, returning its result. A list is skipped,
 // along with everything in it, when it does not apply at the sheet's tech level, and is also skipped when it has
 // nothing in it that isn't skipped. Its parent leaves it out, so an "all of" list is met when the rest are all met and
@@ -159,7 +147,7 @@ const (
 // unmet. visit, if not nil, is called with the result of each prerequisite in the list and then of the list itself,
 // along with the reason a script gives, which is the error when it couldn't run. Each script runs at most once, and
 // none in a skipped list does. Without an entity, the list is met and nothing is visited.
-func (p *PrereqList) Evaluate(entity *Entity, exclude any, visit func(one Prereq, result PrereqResult, reason string)) PrereqResult {
+func (p *PrereqList) Evaluate(entity *Entity, exclude any, visit func(one Prereq, result CheckResult, reason string)) CheckResult {
 	result, _ := p.evaluate(&prereqEvaluation{entity: entity, exclude: exclude, visit: visit}, nil, nil, p.All)
 	return result
 }
@@ -177,27 +165,27 @@ func (p *PrereqList) Evaluate(entity *Entity, exclude any, visit func(one Prereq
 func (p *PrereqList) Satisfied(entity *Entity, exclude any, buffer *xbytes.InsertBuffer, prefix string, hasEquipmentPenalty *bool) bool {
 	result, _ := p.evaluate(&prereqEvaluation{entity: entity, exclude: exclude, prefix: prefix}, buffer,
 		hasEquipmentPenalty, p.All)
-	return result == PrereqMet || result == PrereqSkipped
+	return result == CheckMet || result == CheckSkipped
 }
 
 // prereqEvaluation holds what stays the same throughout an evaluation of a prerequisite list.
 type prereqEvaluation struct {
 	entity  *Entity
 	exclude any
-	visit   func(one Prereq, result PrereqResult, reason string)
+	visit   func(one Prereq, result CheckResult, reason string)
 	prefix  string
 }
 
 // evaluate is Evaluate, also writing the text and setting the equipment penalty that Satisfied describes, and returning
 // how many items of text it wrote at the level of the prefix. flatten requests that the unmet items be written at that
 // level rather than under a heading.
-func (p *PrereqList) evaluate(ev *prereqEvaluation, buffer *xbytes.InsertBuffer, hasEquipmentPenalty *bool, flatten bool) (result PrereqResult, items int) {
+func (p *PrereqList) evaluate(ev *prereqEvaluation, buffer *xbytes.InsertBuffer, hasEquipmentPenalty *bool, flatten bool) (result CheckResult, items int) {
 	if ev.entity == nil {
-		return PrereqMet, 0
+		return CheckMet, 0
 	}
 	if !p.AppliesAt(ev.entity) {
 		p.visitSkipped(ev.visit)
-		return PrereqSkipped, 0
+		return CheckSkipped, 0
 	}
 	met, applicable, failed := 0, 0, false
 	var local *xbytes.InsertBuffer
@@ -206,7 +194,7 @@ func (p *PrereqList) evaluate(ev *prereqEvaluation, buffer *xbytes.InsertBuffer,
 	}
 	eqpPenalty := false
 	for _, one := range p.Prereqs {
-		childResult := PrereqMet
+		childResult := CheckMet
 		if list, ok := one.(*PrereqList); ok {
 			var n int
 			childResult, n = list.evaluate(ev, local, &eqpPenalty, list.All == p.All)
@@ -216,9 +204,9 @@ func (p *PrereqList) evaluate(ev *prereqEvaluation, buffer *xbytes.InsertBuffer,
 			if script, isScript := one.(*ScriptPrereq); isScript {
 				childResult, reason = script.evaluate(ev.entity, ev.exclude, local, ev.prefix)
 			} else if !one.Satisfied(ev.entity, ev.exclude, local, ev.prefix, &eqpPenalty) {
-				childResult = PrereqUnmet
+				childResult = CheckUnmet
 			}
-			if childResult != PrereqMet {
+			if childResult != CheckMet {
 				items++
 			}
 			if ev.visit != nil {
@@ -226,11 +214,11 @@ func (p *PrereqList) evaluate(ev *prereqEvaluation, buffer *xbytes.InsertBuffer,
 			}
 		}
 		switch childResult {
-		case PrereqSkipped:
+		case CheckSkipped:
 			continue
-		case PrereqMet:
+		case CheckMet:
 			met++
-		case PrereqFailed:
+		case CheckFailed:
 			failed = true
 		default:
 		}
@@ -238,18 +226,18 @@ func (p *PrereqList) evaluate(ev *prereqEvaluation, buffer *xbytes.InsertBuffer,
 	}
 	switch {
 	case applicable == 0:
-		result = PrereqSkipped
+		result = CheckSkipped
 	case met == applicable || (!p.All && met > 0):
-		result = PrereqMet
+		result = CheckMet
 	case failed:
-		result = PrereqFailed
+		result = CheckFailed
 	default:
-		result = PrereqUnmet
+		result = CheckUnmet
 	}
 	if ev.visit != nil {
 		ev.visit(p, result, "")
 	}
-	if result == PrereqMet || result == PrereqSkipped {
+	if result == CheckMet || result == CheckSkipped {
 		return result, 0
 	}
 	if eqpPenalty && hasEquipmentPenalty != nil {
@@ -273,7 +261,7 @@ func (p *PrereqList) evaluate(ev *prereqEvaluation, buffer *xbytes.InsertBuffer,
 }
 
 // visitSkipped calls visit, if not nil, with each prerequisite in this list and then the list itself as skipped.
-func (p *PrereqList) visitSkipped(visit func(one Prereq, result PrereqResult, reason string)) {
+func (p *PrereqList) visitSkipped(visit func(one Prereq, result CheckResult, reason string)) {
 	if visit == nil {
 		return
 	}
@@ -281,10 +269,10 @@ func (p *PrereqList) visitSkipped(visit func(one Prereq, result PrereqResult, re
 		if list, ok := one.(*PrereqList); ok {
 			list.visitSkipped(visit)
 		} else {
-			visit(one, PrereqSkipped, "")
+			visit(one, CheckSkipped, "")
 		}
 	}
-	visit(p, PrereqSkipped, "")
+	visit(p, CheckSkipped, "")
 }
 
 // Describe implements Prereq. The children are joined with "and" or "or" to match the list's mode, a nested list that

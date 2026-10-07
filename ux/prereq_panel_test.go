@@ -740,7 +740,7 @@ func TestPrereqPanelStatus(t *testing.T) {
 	screen.Do(func() {
 		p.edit("", "", "", func() { root.Prereqs = gurps.Prereqs{later} })
 		status, tip, suffix := p.status(p.node("r"), p.checks())
-		c.Equal(gurps.PrereqMet, status, "a top level with nothing left to check is met, as on the sheet")
+		c.Equal(gurps.CheckMet, status, "a top level with nothing left to check is met, as on the sheet")
 		c.Equal("Met", tip)
 		c.Equal("met", suffix)
 	})
@@ -779,7 +779,7 @@ func TestPrereqPanelScriptResult(t *testing.T) {
 	var evaluations int
 	screen.Do(func() {
 		evaluate := editor.opts.Evaluate
-		editor.opts.Evaluate = func(script string) (gurps.PrereqResult, string) {
+		editor.opts.Evaluate = func(script string) (gurps.CheckResult, string) {
 			evaluations++
 			return evaluate(script)
 		}

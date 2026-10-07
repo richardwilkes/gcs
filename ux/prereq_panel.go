@@ -188,7 +188,7 @@ func (p *prereqPanel) refresh() {
 	for _, v := range p.views {
 		var suffix string
 		if checks != nil {
-			var status gurps.PrereqResult
+			var status gurps.CheckResult
 			var tip string
 			status, tip, suffix = p.status(v.node, checks)
 			showCheckIcon(v.icon, status)
@@ -208,7 +208,7 @@ func (p *prereqPanel) refresh() {
 
 // prereqCheck is the outcome of checking a node against the sheet, with the error of a script that couldn't run.
 type prereqCheck struct {
-	status gurps.PrereqResult
+	status gurps.CheckResult
 	reason string
 }
 
@@ -216,7 +216,7 @@ type prereqCheck struct {
 func (p *prereqPanel) checks() map[gurps.Prereq]prereqCheck {
 	checks := make(map[gurps.Prereq]prereqCheck)
 	gurps.SuppressScriptResolveErrorLogging(func() {
-		p.tree().Evaluate(p.entity, p.exclude(), func(one gurps.Prereq, result gurps.PrereqResult, reason string) {
+		p.tree().Evaluate(p.entity, p.exclude(), func(one gurps.Prereq, result gurps.CheckResult, reason string) {
 			checks[one] = prereqCheck{status: result, reason: reason}
 		})
 	})
@@ -225,31 +225,31 @@ func (p *prereqPanel) checks() map[gurps.Prereq]prereqCheck {
 
 // status returns the node's status from the checks, the tooltip of its icon and what a screen reader hears after its
 // sentence.
-func (p *prereqPanel) status(node gurps.Prereq, checks map[gurps.Prereq]prereqCheck) (status gurps.PrereqResult, tip, suffix string) {
+func (p *prereqPanel) status(node gurps.Prereq, checks map[gurps.Prereq]prereqCheck) (status gurps.CheckResult, tip, suffix string) {
 	result := checks[node]
-	if result.status == gurps.PrereqSkipped && node == p.tree() {
+	if result.status == gurps.CheckSkipped && node == p.tree() {
 		// The sheet counts a top level with nothing left to check as met.
-		result.status = gurps.PrereqMet
+		result.status = gurps.CheckMet
 	}
 	switch result.status {
-	case gurps.PrereqMet:
-		return gurps.PrereqMet, i18n.Text("Met"), i18n.Text("met")
-	case gurps.PrereqSkipped:
+	case gurps.CheckMet:
+		return gurps.CheckMet, i18n.Text("Met"), i18n.Text("met")
+	case gurps.CheckSkipped:
 		if list, ok := node.(*gurps.PrereqList); ok && list.AppliesWithParentsAt(p.entity) {
 			switch {
 			case len(list.Prereqs) == 0:
-				return gurps.PrereqSkipped, i18n.Text("Empty group, left out of the check"),
+				return gurps.CheckSkipped, i18n.Text("Empty group, left out of the check"),
 					i18n.Text("empty group, left out of the check")
 			case list.HasNothingToCheck():
-				return gurps.PrereqSkipped, i18n.Text("Holds nothing to check, left out of the check"),
+				return gurps.CheckSkipped, i18n.Text("Holds nothing to check, left out of the check"),
 					i18n.Text("holds nothing to check, left out of the check")
 			default:
-				return gurps.PrereqSkipped,
+				return gurps.CheckSkipped,
 					i18n.Text("Nothing in it applies at this tech level, left out of the check"),
 					i18n.Text("nothing in it applies at this tech level, left out of the check")
 			}
 		}
-		return gurps.PrereqSkipped, i18n.Text("Doesn't apply at this tech level"),
+		return gurps.CheckSkipped, i18n.Text("Doesn't apply at this tech level"),
 			i18n.Text("doesn't apply at this tech level")
 	default:
 	}
@@ -262,13 +262,13 @@ func (p *prereqPanel) status(node gurps.Prereq, checks map[gurps.Prereq]prereqCh
 	} else {
 		tip = i18n.Text("Not met:") + reason
 	}
-	if result.status == gurps.PrereqUnmet {
-		return gurps.PrereqUnmet, tip, i18n.Text("not met")
+	if result.status == gurps.CheckUnmet {
+		return gurps.CheckUnmet, tip, i18n.Text("not met")
 	}
 	if _, isScript := node.(*gurps.ScriptPrereq); isScript {
-		return gurps.PrereqFailed, tip, i18n.Text("couldn't run: %s", result.reason)
+		return gurps.CheckFailed, tip, i18n.Text("couldn't run: %s", result.reason)
 	}
-	return gurps.PrereqFailed, tip, i18n.Text("couldn't be checked")
+	return gurps.CheckFailed, tip, i18n.Text("couldn't be checked")
 }
 
 // statusIcon adds the icon for a node's status to the parent, which shows once there is a sheet, returning nil without
@@ -415,7 +415,7 @@ func (p *prereqPanel) row(pr gurps.Prereq, path string) *unison.Panel {
 			}
 			if path == p.open {
 				// An open row shows no status, but keeps the room for it, so that its editor lines up with the sentences.
-				showCheckIcon(icon, gurps.PrereqMet)
+				showCheckIcon(icon, gurps.CheckMet)
 				icon.OnBackgroundInk = unison.Transparent
 			}
 			return icon.AsPanel(), checkIconSize()
@@ -579,15 +579,15 @@ func (p *prereqPanel) scriptOptions(pr *gurps.ScriptPrereq) *scriptEditorOptions
 		Footer: i18n.Text("The script's last value decides: true or empty text means met; false means not met; any other text means not met, with that text as the reason."),
 	}
 	if p.entity != nil {
-		opts.Evaluate = func(script string) (gurps.PrereqResult, string) {
+		opts.Evaluate = func(script string) (gurps.CheckResult, string) {
 			one := *pr
 			one.Script = script
 			status, reason := one.Evaluate(p.entity, p.exclude())
 			reason = strings.TrimSpace(reason)
 			switch {
-			case status == gurps.PrereqMet:
+			case status == gurps.CheckMet:
 				return status, i18n.Text("Passed")
-			case status == gurps.PrereqFailed:
+			case status == gurps.CheckFailed:
 				return status, i18n.Text("Couldn't run: %s", reason)
 			case reason == "":
 				return status, i18n.Text("Failed")

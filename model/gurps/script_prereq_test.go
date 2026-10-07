@@ -45,7 +45,7 @@ func TestScriptPrereqEvaluate(t *testing.T) {
 		p.Name = one.name
 		p.Script = one.script
 		result, reason := p.Evaluate(entity, nil)
-		met, failed := result == PrereqMet, result == PrereqFailed
+		met, failed := result == CheckMet, result == CheckFailed
 		c.Equal(one.met, met, one.script)
 		c.Equal(one.failed, failed, one.script)
 		if failed {
