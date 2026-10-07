@@ -808,10 +808,17 @@ func addKey(list *gurps.PrereqList, path string) string {
 	return path + keyMore
 }
 
-// moreButton adds the button for the node's more menu.
-func (p *prereqPanel) moreButton(parent *unison.Panel, node gurps.Prereq, path string) {
-	addMoreButton(parent, path, func() string { return node.Describe(p.entity, p.replacements(), emphasize) },
-		func() []menuEntry { return p.moreEntries(node, path) })
+// moreButton adds the button for the more menu of the group at the path. A screen reader hears it named for the group,
+// as in "More actions for All of: Has trait Luck", or for the group alone while it is empty.
+func (p *prereqPanel) moreButton(parent *unison.Panel, list *gurps.PrereqList, path string) {
+	addMoreButton(parent, path, func() string {
+		// The group's name already holds its tech level condition, so the description leaves it out.
+		children := &gurps.PrereqList{All: list.All, Prereqs: list.Prereqs}
+		if text := stripEm.Replace(children.Describe(p.entity, p.replacements(), emphasize)); text != "" {
+			return i18n.Text("More actions for %s: %s", groupName(list), text)
+		}
+		return i18n.Text("More actions for %s", groupName(list))
+	}, func() []menuEntry { return p.moreEntries(list, path) })
 }
 
 // moreEntries returns the entries of the node's more menu: for a group, what can be added to it, then Duplicate, Move up and

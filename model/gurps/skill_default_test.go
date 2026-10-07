@@ -507,6 +507,22 @@ func TestSkillDefaultTagsJSON(t *testing.T) {
 	c.True(loaded.Tags.IsZero(), "a legacy default must have no tag criteria")
 }
 
+// TestSkillDefaultHashNormalizesType verifies that a type written in another case or with spaces around it hashes as
+// the form loading leaves it in.
+func TestSkillDefaultHashNormalizesType(t *testing.T) {
+	c := check.New(t)
+	lower := newSkillDefaultTo("Broadsword", "", true, -fxp.Three)
+	c.Equal(SkillID, lower.DefaultType)
+	capitalized := newSkillDefaultTo("Broadsword", "", true, -fxp.Three)
+	capitalized.DefaultType = "Skill"
+	c.Equal("Skill", capitalized.DefaultType)
+	padded := newSkillDefaultTo("Broadsword", "", true, -fxp.Three)
+	padded.DefaultType = " skill "
+	c.Equal(" skill ", padded.DefaultType)
+	c.Equal(Hash64(lower), Hash64(capitalized))
+	c.Equal(Hash64(lower), Hash64(padded))
+}
+
 // TestSkillDefaultTagsHashStability verifies that the tag criteria joins the source-data hash only once it is really
 // set. Hashing it unconditionally would change the hash of every default in every library, marking data that has not
 // been touched as modified.
@@ -739,6 +755,17 @@ func TestSkillDefaultTagFullName(t *testing.T) {
 	not := newTaggedSkillDefault(criteria.IsNotText, "Combat", -fxp.Three)
 	c.Equal(`any skill where all tags are not "Combat"`, not.FullName(e, nil),
 		"a negative tag criteria is described in its plural form")
+
+	untagged := newTaggedSkillDefault(criteria.IsText, " ", -fxp.Three)
+	c.Equal(" ", untagged.Tags.Qualifier)
+	c.Equal("any skill without tags", untagged.FullName(e, nil), `a blank "is" picks a skill without tags`)
+	someTag := newTaggedSkillDefault(criteria.IsNotText, "", -fxp.Three)
+	c.Equal("", someTag.Tags.Qualifier)
+	c.Equal("any skill with at least one tag", someTag.FullName(e, nil), `a blank "is not" picks a skill with tags`)
+	namedUntagged := newSkillDefaultTo("Brawling", "", true, -fxp.Three)
+	namedUntagged.Tags = textCriteria(criteria.IsText, "")
+	c.Equal(criteria.IsText, namedUntagged.Tags.Compare)
+	c.Equal(`any skill whose name is "Brawling" and without tags`, namedUntagged.FullName(e, nil))
 
 	// The defense suffix is still appended to whichever description was produced.
 	parry := newTaggedSkillDefault(criteria.IsText, "Combat", -fxp.Three)
@@ -1296,6 +1323,19 @@ func TestSkillDefaultDescribe(t *testing.T) {
 	anyThenClause := &SkillDefault{DefaultType: SkillID, Specialization: textCriteria(criteria.ContainsText, "Pistol")}
 	emptyTag := newSkillDefaultTo("Brawling", "", true, 0)
 	emptyTag.Tags = textCriteria(criteria.IsText, "")
+	spaceTag := newSkillDefaultTo("Brawling", "", true, 0)
+	spaceTag.Tags = textCriteria(criteria.IsText, " ")
+	someTag := newSkillDefaultTo("Brawling", "", true, 0)
+	someTag.Tags = textCriteria(criteria.IsNotText, "")
+	clauseEmptyTag := &SkillDefault{
+		DefaultType: SkillID,
+		Name:        textCriteria(criteria.ContainsText, "Sword"),
+		Tags:        textCriteria(criteria.IsText, ""),
+	}
+	withoutBoth := newSkillDefaultTo("Brawling", "", false, 0)
+	withoutBoth.Tags = textCriteria(criteria.IsText, "")
+	withoutThenSome := newSkillDefaultTo("Brawling", "", false, 0)
+	withoutThenSome.Tags = textCriteria(criteria.IsNotText, " ")
 	markers := &SkillDefault{
 		DefaultType:    SkillID,
 		Name:           textCriteria(criteria.IsText, "@Weapon@"),
@@ -1320,6 +1360,8 @@ func TestSkillDefaultDescribe(t *testing.T) {
 	tlAtMost := &SkillDefault{DefaultType: DexterityID, WhenTL: criteria.Number{Compare: criteria.AtMostNumber, Qualifier: fxp.Two}}
 	dodge := &SkillDefault{DefaultType: DodgeID, Modifier: -fxp.Two}
 	sizeModifier := &SkillDefault{DefaultType: SizeModifierID}
+	twelve := &SkillDefault{DefaultType: "12", Modifier: -fxp.One}
+	fractional := &SkillDefault{DefaultType: "10.50"}
 	capitalized := &SkillDefault{DefaultType: "DX", Modifier: -fxp.One}
 	unknown := &SkillDefault{DefaultType: "foo", Modifier: -fxp.Two}
 	empty := &SkillDefault{Modifier: -fxp.Two}
@@ -1359,7 +1401,12 @@ func TestSkillDefaultDescribe(t *testing.T) {
 		{bareThenClauses, `Skill [Broadsword] whose specialization does not start with "[Fen]" and at least one tag is [Melee] at [+0]`},
 		{bareThenTagClause, `Skill [Broadsword] ([Fencing]) where all tags do not contain "[Cinematic]" at [+0]`},
 		{anyThenClause, `Any skill whose specialization contains "[Pistol]" at [+0]`},
-		{emptyTag, `Skill [Brawling] where at least one tag is "" at [+0]`},
+		{emptyTag, "Skill [Brawling] without tags at [+0]"},
+		{spaceTag, "Skill [Brawling] without tags at [+0]"},
+		{someTag, "Skill [Brawling] with at least one tag at [+0]"},
+		{clauseEmptyTag, `Skill whose name contains "[Sword]" and without tags at [+0]`},
+		{withoutBoth, "Skill [Brawling] without a specialization and without tags at [+0]"},
+		{withoutThenSome, "Skill [Brawling] without a specialization and with at least one tag at [+0]"},
 		{markers, "Skill [Broadsword] ([Fencing]) tagged [Melee] at [+0]"},
 		{parry, "Parry of skill [Shortsword] at [+0]"},
 		{parryAny, "Parry of any skill at [+0]"},
@@ -1372,7 +1419,9 @@ func TestSkillDefaultDescribe(t *testing.T) {
 		{tlIsNot, "[DX] at [+0], when the tech level is not [2]"},
 		{tlAtMost, "[DX] at [+0], when the tech level is at most [2]"},
 		{dodge, "[Dodge] at [-2]"},
-		{sizeModifier, "[Size Modifier] at [+0]"},
+		{sizeModifier, `Unknown type "[sm]" at [+0]`},
+		{twelve, "[12] at [-1]"},
+		{fractional, "[10.5] at [+0]"},
 		{capitalized, "[DX] at [-1]"},
 		{unknown, `Unknown type "[foo]" at [-2]`},
 		{empty, "No type at [-2]"},

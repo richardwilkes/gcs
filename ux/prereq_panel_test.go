@@ -1233,3 +1233,36 @@ func TestPrereqPanelEquippedEquipmentTags(t *testing.T) {
 		}
 	})
 }
+
+// TestPrereqPanelGroupMoreButtonNames checks that a screen reader hears a group's more button named for the group, and
+// for what it holds when it holds anything, so that two empty groups, or a group of one and its row, aren't alike.
+func TestPrereqPanelGroupMoreButtonNames(t *testing.T) {
+	c := check.New(t)
+	screen, _ := startHeadlessWorkspace(t, c)
+	emptyAny := gurps.NewPrereqList()
+	emptyAny.All = false
+	emptyAll := gurps.NewPrereqList()
+	luck := gurps.NewTraitPrereq()
+	luck.NameCriteria.Qualifier = "Luck"
+	ofOne := gurps.NewPrereqList()
+	ofOne.Prereqs = gurps.Prereqs{luck.Clone(nil)}
+	root := gurps.NewPrereqList()
+	root.Prereqs = gurps.Prereqs{emptyAny, emptyAll, ofOne, luck}
+	root = root.CloneAsPrereqList(nil)
+	c.Equal(4, len(root.Prereqs))
+	p, _ := showPrereqPanel(t, screen, &root, false)
+	name := func(path string) string {
+		var button *unison.Panel
+		screen.Do(func() { button = p.FindRefKey(path + keyMore) })
+		c.NotNil(button, "%s has a more button", path)
+		c.NotNil(screen.AccessibilityTree(p.Window()))
+		if node := screen.AccessibilityNodeFor(button); node != nil {
+			return node.Name
+		}
+		return ""
+	}
+	c.Equal("More actions for Any of", name("r.0"))
+	c.Equal("More actions for All of", name("r.1"))
+	c.Equal("More actions for All of: Has trait Luck", name("r.2"))
+	c.Equal("More actions for Has trait Luck", name("r.3"))
+}

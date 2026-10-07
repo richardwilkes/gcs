@@ -74,8 +74,8 @@ type sentenceRows[T any] struct {
 	dragKey   *uti.DataType
 	// collapse is the title bar that collapses the panel to a paragraph, once initCollapse has set it up.
 	collapse *sectionToggle
-	// spotAt returns the panel a row dragged to a point would be dropped on, or nil where it can't go, and where it would
-	// go in relation to it. While a row is dragged over the panel, dropTarget and dropWhere hold what spotAt last
+	// spotAt returns the panel a row dragged to a point would be dropped on, or nil where it can't go, and where it
+	// would go in relation to it. While a row is dragged over the panel, dropTarget and dropWhere hold what spotAt last
 	// returned.
 	spotAt     func(where geom.Point, data any) (target *unison.Panel, at int)
 	dropTarget *unison.Panel
@@ -112,8 +112,8 @@ func (p *sentenceRows[T]) initDrop(spotAt func(where geom.Point, data any) (*uni
 	p.DrawOverCallback = p.drawDrop
 }
 
-// initCollapse lets the panel be collapsed to a paragraph by clicking the title its border draws, starting out collapsed
-// or not as asked. The panel's fill calls addTitleBar first.
+// initCollapse lets the panel be collapsed to a paragraph by clicking the title its border draws, starting out
+// collapsed or not as asked. The panel's fill calls addTitleBar first.
 func (p *sentenceRows[T]) initCollapse(border *TitledBorder, collapsed bool) {
 	p.collapse = newSectionToggle(p, border, collapsed, p.collapseChanged)
 }
@@ -397,13 +397,11 @@ func (p *sentenceRows[T]) doneButton(path string) *unison.Button {
 }
 
 // addMoreButton adds the button for the more menu of the row at the path, which offers the entries. A screen reader
-// hears it named for the sentence describe returns, as it reads when asked, so that it says which row it acts on.
-func addMoreButton(parent *unison.Panel, path string, describe func() string, entries func() []menuEntry) {
+// hears it by the name name returns, as it reads when asked, which should say which row it acts on.
+func addMoreButton(parent *unison.Panel, path string, name func() string, entries func() []menuEntry) {
 	b := newIconButton(path+keyMore, svg.CircledVerticalEllipsis, i18n.Text("More actions"))
 	b.ClickCallback = func() { showMenu(b.AsPanel(), entries()) }
-	addAccessibilityCallback(b, func(node *accessibility.Node) {
-		node.Name = i18n.Text("More actions for %s", stripEm.Replace(describe()))
-	})
+	addAccessibilityCallback(b, func(node *accessibility.Node) { node.Name = name() })
 	addCentered(parent, b)
 }
 
@@ -449,7 +447,7 @@ func (p *sentenceRows[T]) sentenceRow(path string, describe func() string, edita
 		}
 		line = sentence.lineHeight()
 	}
-	addMoreButton(row, path, describe, more)
+	addMoreButton(row, path, func() string { return i18n.Text("More actions for %s", stripEm.Replace(describe())) }, more)
 	hbox(row, unison.StdHSpacing)
 	putOnLine(grip.AsPanel(), line, grip.svg.Size.Height)
 	if leader != nil {

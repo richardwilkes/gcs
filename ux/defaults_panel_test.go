@@ -300,6 +300,27 @@ func TestDefaultsPanelAdd(t *testing.T) {
 	c.Equal(gurps.DexterityID, defaults[4].Type(), "a type the entity has no attribute for gives way to DX")
 }
 
+// TestDefaultsPanelAddWithoutDX checks that a new default of an entity without DX takes a type the entity has rather
+// than DX.
+func TestDefaultsPanelAddWithoutDX(t *testing.T) {
+	c := check.New(t)
+	screen, _ := startHeadlessWorkspace(t, c)
+	entity := gurps.NewEntity()
+	delete(entity.SheetSettings.Attributes.Set, gurps.DexterityID)
+	c.Nil(gurps.AttributeDefsFor(entity).Set[gurps.DexterityID])
+	c.NotNil(gurps.AttributeDefsFor(entity).Set[gurps.StrengthID])
+	var defaults []*gurps.SkillDefault
+	p, _ := showDefaultsPanel(t, screen, entity, nil, &defaults)
+	defer func(last string) { lastDefaultTypeUsed = last }(lastDefaultTypeUsed)
+	lastDefaultTypeUsed = gurps.DexterityID
+	screen.Do(func() {
+		button, ok := p.FindRefKey(defaultAddKey).Self.(*unison.Button)
+		c.True(ok, "the section has an add button")
+		button.ClickCallback()
+	})
+	c.Equal([]string{gurps.StrengthID}, defaultTypes(defaults), "the entity's first attribute takes the place of DX")
+}
+
 // TestDefaultsPanelTypeChange checks that a skill-based default keeps its criteria between the skill-based types, loses
 // them on becoming an attribute default, so that a default set back to what it was is unchanged, that one becoming
 // skill-based names its skill, so that its name field shows, and that a change of type is undone in one step.
@@ -815,10 +836,9 @@ func collapsedSummary(p *unison.Panel) string {
 	return ""
 }
 
-// TestSkillEditorRowsFollowSubstitutions checks that the prerequisites, defaults and features of a skill editor read their
-// nameable
-// markers with the values the editor's data holds, and show the new ones once Set Substitutions changes them, but not
-// when it is canceled.
+// TestSkillEditorRowsFollowSubstitutions checks that the prerequisites, defaults and features of a skill editor read
+// their nameable markers with the values the editor's data holds, and show the new ones once Set Substitutions changes
+// them, but not when it is canceled.
 func TestSkillEditorRowsFollowSubstitutions(t *testing.T) {
 	c := check.New(t)
 	screen, _ := startHeadlessWorkspace(t, c)
@@ -1192,20 +1212,21 @@ func TestDefaultsPanelMoreButtonNames(t *testing.T) {
 	c.Equal("More actions for Skill Saber (Fencing) at -2", name("1"), "the name follows an edit to the open row")
 }
 
-// TestDefaultsPanelUnusualTypes checks that a type the popup doesn't offer for new defaults, such as Dodge, Size
-// Modifier or none at all from a file, shows in the popup as the row's sentence names it, and can be chosen again after
-// another type has been.
+// TestDefaultsPanelUnusualTypes checks that a type the popup doesn't offer for new defaults, such as Dodge, a number,
+// one GCS doesn't know or none at all from a file, shows in the popup as the row's sentence names it, and can be chosen
+// again after another type has been.
 func TestDefaultsPanelUnusualTypes(t *testing.T) {
 	c := check.New(t)
 	screen, _ := startHeadlessWorkspace(t, c)
 	entity := gurps.NewEntity()
 	defaults := []*gurps.SkillDefault{
 		{DefaultType: gurps.DodgeID, Modifier: -fxp.Two},
+		{DefaultType: "12"},
 		{DefaultType: gurps.SizeModifierID},
 		{},
 	}
 	p, _ := showDefaultsPanel(t, screen, entity, nil, &defaults)
-	for i, want := range []string{"Dodge", "Size Modifier", "No type"} {
+	for i, want := range []string{"Dodge", "12", `Unknown type "sm"`, "No type"} {
 		path := strconv.Itoa(i)
 		screen.Do(func() { c.Equal(want+" at "+defaults[i].Modifier.StringWithSign(), rowSentence(p, path)) })
 		screen.Do(func() { p.toggle(path) })

@@ -166,8 +166,9 @@ func TestPrereqDescribeReplacements(t *testing.T) {
 	c.Equal("Has trait Magery", p.Describe(nil, map[string]string{"Trait": "Magery"}, func(s string) string { return s }))
 }
 
-// TestPrereqDescribeEmptyNames verifies that an "is" name that is empty, or becomes empty once its markers are replaced,
-// reads as "", and that such a specialization, or optional specialization, says it picks only a skill without one.
+// TestPrereqDescribeEmptyNames verifies that an "is" name that is empty, or becomes empty once its markers are
+// replaced, reads as "", and that such a specialization, or optional specialization, says it picks only a skill without
+// one.
 func TestPrereqDescribeEmptyNames(t *testing.T) {
 	c := check.New(t)
 	plain := func(s string) string { return s }
@@ -193,6 +194,15 @@ func TestPrereqDescribeEmptyNames(t *testing.T) {
 	bonus.SpecializationCriteria = criteria.Text{Compare: criteria.IsText}
 	bonus.Amount = fxp.One
 	c.Equal("+1 to skill Guns without a specialization", bonus.Describe(nil, nil, plain))
+	blankBonus := gurps.NewSkillBonus()
+	blankBonus.NameCriteria.Qualifier = "@Blank@"
+	blankBonus.Amount = fxp.One
+	c.Equal(criteria.IsText, blankBonus.NameCriteria.Compare)
+	c.Equal(`+1 to skill ""`, blankBonus.Describe(nil, replacements, plain), "the bonus names it as the prerequisite does")
+	blankSkill := gurps.NewSkillPrereq()
+	blankSkill.NameCriteria.Qualifier = "@Blank@"
+	c.Equal(criteria.IsText, blankSkill.NameCriteria.Compare)
+	c.Equal(`Has skill "" at level at least 0`, blankSkill.Describe(nil, replacements, plain))
 }
 
 // TestPrereqListDescribe verifies that a list joins its children to match its mode, parenthesizes nested lists of more

@@ -113,17 +113,22 @@ func describeSpecialization(specialization, optional criteria.Text, replacements
 	return text
 }
 
-// describeTags returns a clause for the tags t matches, such as " tagged Weapon", or nothing when any tags will do.
+// describeTags returns a clause for the tags t matches, such as " tagged Weapon", or nothing when any tags will do. A
+// blank "is" picks only what has no tags, and a blank "is not" only what has some.
 func describeTags(t criteria.Text, replacements map[string]string, em func(string) string) string {
-	if t.Compare == criteria.AnyText {
+	q := t.Compare.EffectiveQualifier(nameable.Apply(t.Qualifier, replacements))
+	switch {
+	case t.Compare == criteria.AnyText:
 		return ""
+	case t.Compare == criteria.IsText && q == "":
+		return i18n.Text(" without tags")
+	case t.Compare == criteria.IsNotText && q == "":
+		return i18n.Text(" with at least one tag")
+	case t.Compare == criteria.IsText:
+		return i18n.Text(" tagged ") + em(q)
 	}
-	q := nameable.Apply(t.Qualifier, replacements)
 	if q != "" {
 		q = em(q)
-	}
-	if t.Compare == criteria.IsText && q != "" {
-		return i18n.Text(" tagged ") + q
 	}
 	return " " + t.Compare.DescribeWithPrefix(i18n.Text("with a tag that"), i18n.Text("with all tags that"), q)
 }

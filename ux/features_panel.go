@@ -642,8 +642,8 @@ func (p *featuresPanel) attributePopup(parent *unison.Panel, key, prefix string,
 		}))
 }
 
-// selectionPopup adds the popup that picks what a bonus applies to, followed by the criteria for their name unless this,
-// which needs none, is picked. It is a plain function because methods cannot have type parameters.
+// selectionPopup adds the popup that picks what a bonus applies to, followed by the criteria for their name unless
+// this, which needs none, is picked. It is a plain function because methods cannot have type parameters.
 func selectionPopup[E comparable](p *featuresPanel, parent *unison.Panel, path string, items []E, selection *E, this E, name *criteria.Text) {
 	addCentered(parent, compactPopup(&p.sentenceRows, path+":selection", i18n.Text("Selection Type"), items,
 		*selection, nil, func(v E) { *selection = v }))

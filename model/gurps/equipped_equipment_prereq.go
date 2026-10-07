@@ -11,6 +11,7 @@ package gurps
 
 import (
 	"hash"
+	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/criteria"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/prereq"
@@ -103,8 +104,8 @@ func (p *EquippedEquipmentPrereq) Describe(_ *Entity, replacements map[string]st
 	tags := p.TagsCriteria.Compare != criteria.AnyText
 	var text string
 	switch {
-	case p.NameCriteria.Compare == criteria.IsText && p.NameCriteria.Qualifier != "":
-		text = i18n.Text("Has %s equipped", em(nameable.Apply(p.NameCriteria.Qualifier, replacements)))
+	case p.NameCriteria.Compare == criteria.IsText && strings.TrimSpace(nameable.Apply(p.NameCriteria.Qualifier, replacements)) != "":
+		text = i18n.Text("Has %s equipped", describeName(p.NameCriteria, replacements, em))
 	case p.NameCriteria.Compare != criteria.AnyText:
 		text = i18n.Text("Has equipped equipment whose name ") + describeText(p.NameCriteria, replacements, em)
 	case tags:

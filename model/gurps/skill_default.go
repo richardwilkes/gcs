@@ -210,11 +210,18 @@ func (s *SkillDefault) FullName(entity *Entity, replacements map[string]string) 
 			clauses = append(clauses, s.Specialization.StringWithPrefix(replacements, prefix, prefix))
 		}
 		if !s.Tags.IsZero() {
-			prefix, notPrefix := i18n.Text("at least one tag"), i18n.Text("all tags")
-			if len(clauses) == 0 {
-				prefix, notPrefix = i18n.Text("where at least one tag"), i18n.Text("where all tags")
+			switch blank := strings.TrimSpace(nameable.Apply(s.Tags.Qualifier, replacements)) == ""; {
+			case blank && s.Tags.Compare == criteria.IsText:
+				clauses = append(clauses, i18n.Text("without tags"))
+			case blank && s.Tags.Compare == criteria.IsNotText:
+				clauses = append(clauses, i18n.Text("with at least one tag"))
+			default:
+				prefix, notPrefix := i18n.Text("at least one tag"), i18n.Text("all tags")
+				if len(clauses) == 0 {
+					prefix, notPrefix = i18n.Text("where at least one tag"), i18n.Text("where all tags")
+				}
+				clauses = append(clauses, s.Tags.StringWithPrefix(replacements, prefix, notPrefix))
 			}
-			clauses = append(clauses, s.Tags.StringWithPrefix(replacements, prefix, notPrefix))
 		}
 		for i, clause := range clauses {
 			if i == 0 {
@@ -259,17 +266,19 @@ func DefaultTypeTitle(entity *Entity, defaultType string) string {
 	return describeDefaultType(entity, normalizeDefaultType(defaultType), func(s string) string { return s })
 }
 
-// describeDefaultType returns DefaultTypeTitle's name for the normalized type, passing the attribute or unknown type
-// through em.
+// describeDefaultType returns DefaultTypeTitle's name for the normalized type, passing the attribute, number or unknown
+// type through em. A number is known, since it resolves to itself.
 func describeDefaultType(entity *Entity, t string, em func(string) string) string {
-	switch {
-	case t == "":
+	if t == "" {
 		return i18n.Text("No type")
-	case t == "10" || t == SizeModifierID || t == DodgeID || AttributeDefsFor(entity).Set[t] != nil:
-		return em(attributeTitle(entity, t))
-	default:
-		return i18n.Text(`Unknown type "%s"`, em(t))
 	}
+	if t == DodgeID || AttributeDefsFor(entity).Set[t] != nil {
+		return em(attributeTitle(entity, t))
+	}
+	if v, err := fxp.FromString(t); err == nil {
+		return em(v.String())
+	}
+	return i18n.Text(`Unknown type "%s"`, em(t))
 }
 
 // describeSkill returns how a skill-based default names its skill, such as "Skill Broadsword (Fencing)", "Parry of any
@@ -300,16 +309,19 @@ func (s *SkillDefault) describeSkill(replacements map[string]string, em func(str
 		}
 	}
 	joined := !anyName && nameCompare != criteria.IsText
+	// Set once "without a specialization" is written, so that a clause of the same form joins it with "and".
+	without := false
 	specialization := strings.TrimSpace(nameable.Apply(s.Specialization.Qualifier, replacements))
 	switch compare := s.Specialization.Compare.EnsureValid(); {
 	case compare == criteria.AnyText:
 	case compare == criteria.IsText && specialization == "":
-		// An empty specialization picks only a skill without one.
+		// A blank specialization picks only a skill without one.
 		if joined {
 			text += i18n.Text(" and without a specialization")
 		} else {
 			text += i18n.Text(" without a specialization")
 		}
+		without = true
 	case compare == criteria.IsText && !joined:
 		text += " (" + em(specialization) + ")"
 	default:
@@ -320,10 +332,23 @@ func (s *SkillDefault) describeSkill(replacements map[string]string, em func(str
 		text += " " + describeClause(s.Specialization, prefix, prefix, replacements, em)
 		joined = true
 	}
-	tags := nameable.Apply(s.Tags.Qualifier, replacements)
+	tags := strings.TrimSpace(nameable.Apply(s.Tags.Qualifier, replacements))
 	switch compare := s.Tags.Compare.EnsureValid(); {
 	case compare == criteria.AnyText:
-	case compare == criteria.IsText && strings.TrimSpace(tags) != "" && !joined:
+	case compare == criteria.IsText && tags == "":
+		// A blank "is" picks only a skill without tags, and a blank "is not" only one with some.
+		if joined || without {
+			text += i18n.Text(" and without tags")
+		} else {
+			text += i18n.Text(" without tags")
+		}
+	case compare == criteria.IsNotText && tags == "":
+		if joined || without {
+			text += i18n.Text(" and with at least one tag")
+		} else {
+			text += i18n.Text(" with at least one tag")
+		}
+	case compare == criteria.IsText && !joined:
 		text += i18n.Text(" tagged ") + em(tags)
 	default:
 		prefix, notPrefix := i18n.Text("where at least one tag"), i18n.Text("where all tags")
@@ -581,11 +606,12 @@ func (s *SkillDefault) finalLevel(level fxp.Int) fxp.Int {
 // Hash writes this object's contents into the hasher. Note that this only hashes the data that is considered to be
 // "source" data, i.e. not expected to be modified by the user after copying from a library. The name, specialization
 // and tags criteria of a default that isn't skill-based are left out, since Normalize drops them and a default must
-// hash the same before and after.
+// hash the same before and after. The type is hashed in its normalized form, as loading leaves it.
 func (s *SkillDefault) Hash(h hash.Hash) {
-	xhash.StringWithLen(h, s.DefaultType)
+	t := s.Type()
+	xhash.StringWithLen(h, t)
 	xhash.Num64(h, s.Modifier)
-	skillBased := DefaultTypeIsSkillBased(s.DefaultType)
+	skillBased := DefaultTypeIsSkillBased(t)
 	if skillBased {
 		s.Name.Hash(h)
 		s.Specialization.Hash(h)

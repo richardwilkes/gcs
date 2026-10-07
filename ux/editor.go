@@ -206,7 +206,7 @@ func (e *editor[N, D]) showSubstitutions() {
 }
 
 // pendingNameables returns the editor's data as the source of the substitutions it holds, which Set Substitutions
-// changes ahead of their being applied, or nil if its data holds none.
+// changes ahead of their being applied, or nil if its data can't hold substitutions.
 func (e *editor[N, D]) pendingNameables() nameable.Accesser {
 	if source, ok := any(e.editorData).(nameable.Accesser); ok {
 		return source
