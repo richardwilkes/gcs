@@ -45,5 +45,9 @@
   of it. A condition that the tags be anything now needs a tag that isn't blank, one that no tag be "Shield" no longer
   passes an item with no tags, and negating a condition that the notes be anything finds the items without notes. Saved
   filters with such conditions may show different results.
-- An empty group in a saved filter set to None of or Not all of hid every item. An empty group now asks for nothing,
-  whichever way it is set.
+- An empty group in a saved filter set to None of or Not all of hid every item. Saved filters are now checked the way
+  prerequisites are: an empty group is left out, whichever way it is set, so a filter with nothing in it shows every
+  item, and a condition this version of GCS can't check, from a newer version, hides an item unless the rest of the
+  filter decides without it.
+- A prerequisites group set to All of now counts as not met when one of its requirements isn't met, even if a script
+  in it couldn't run, rather than as one that couldn't be checked.

@@ -106,10 +106,10 @@ func TestPrereqListHasNothingToCheck(t *testing.T) {
 	}
 }
 
-// TestPrereqListEvaluate verifies the result of a list and of each prerequisite within it: a list that isn't met has
-// failed when any child it doesn't leave out has failed, a list skipped by its tech level skips everything in it
-// without running its scripts, a list leaves out its skipped children and is skipped when nothing is left, and each
-// script runs once.
+// TestPrereqListEvaluate verifies the result of a list and of each prerequisite within it: an unmet child decides an
+// "all of" list and a met one an "any of" list, even beside a failed one, a list not decided that way has failed when
+// any child it doesn't leave out has failed, a list skipped by its tech level skips everything in it without running
+// its scripts, a list leaves out its skipped children and is skipped when nothing is left, and each script runs once.
 func TestPrereqListEvaluate(t *testing.T) {
 	e := NewEntity()
 	e.Profile.TechLevel = "3"
@@ -138,8 +138,11 @@ func TestPrereqListEvaluate(t *testing.T) {
 		{"any of, one met", list(false, script("false"), script("true")), CheckMet},
 		{"any of, none met", list(false, script("false"), script("false")), CheckUnmet},
 		{"all of, one failed", list(true, script("true"), script("nope(")), CheckFailed},
-		{"all of, one failed and one unmet", list(true, script("false"), script("nope(")), CheckFailed},
+		{"all of, one failed and one unmet", list(true, script("false"), script("nope(")), CheckUnmet},
+		{"all of, one unmet after one failed", list(true, script("nope("), script("false")), CheckUnmet},
+		{"all of, a failed group and one unmet", list(true, list(false, script("nope(")), script("false")), CheckUnmet},
 		{"any of, one met and one failed", list(false, script("true"), script("nope(")), CheckMet},
+		{"any of, one met after one failed", list(false, script("nope("), script("true")), CheckMet},
 		{"any of, one failed and one unmet", list(false, script("false"), script("nope(")), CheckFailed},
 		{"failed nested two deep", list(true, list(false, list(true, script("nope(")))), CheckFailed},
 		{

@@ -12,6 +12,7 @@ package ux
 import (
 	"bytes"
 	"slices"
+	"strings"
 	"testing"
 
 	"github.com/richardwilkes/gcs/v5/model/criteria"
@@ -165,15 +166,16 @@ func TestListFilterPanelRows(t *testing.T) {
 			"r.2.0": `Must have tags where at least one is "Shield" or "Buckler"`,
 			"r.2.1": `Must have a cost that is at least 1,000`,
 			"r.3":   `Must not be a container`,
-			"r.4":   `Condition on unknown field "future_field"; it never matches`,
-			"r.5":   `Unknown filter node type "sparkle"; it will be preserved, but never matches`,
+			"r.4":   `Condition on unknown field "future_field"; it can't be checked`,
+			"r.5":   `Unknown filter node type "sparkle"; it will be preserved, but can't be checked`,
 		} {
 			c.Equal(want, sentenceText(p, path), path)
 		}
 		for path, want := range map[string]string{"r": "All of", "r.2": "None of"} {
 			if pill, ok := refAs[*unison.PopupMenu[filterGroupMode]](t, p.AsPanel(), path+keyPill); ok {
 				c.Equal(want, pill.Text(), path)
-				c.NotNil(pill.Tooltip, "%s's pill explains the choices", path)
+				c.Contains(strings.ReplaceAll(tooltipText(pill.Tooltip), "\n", " "), "An empty group is left out",
+					"%s's pill explains the choices, an empty group's among them", path)
 			}
 		}
 		if group, ok := refAs[*unison.Panel](t, p.AsPanel(), "r.2:group"); ok {

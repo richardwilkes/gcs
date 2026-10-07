@@ -123,11 +123,11 @@ func TestFilterConditionDescribe(t *testing.T) {
 		{negated(gurps.NewFilterCondition(nil, "container")), `Must not be a container`},
 		{
 			gurps.NewFilterCondition(nil, "future_field"),
-			`Condition on unknown field "future_field"; it never matches`,
+			`Condition on unknown field "future_field"; it can't be checked`,
 		},
 		{
 			negated(gurps.NewFilterCondition(nil, "future_field")),
-			`Condition on unknown field "future_field"; it never matches`,
+			`Condition on unknown field "future_field"; it can't be checked`,
 		},
 	} {
 		c.Equal(one.want, one.cond.Describe(equipmentFilterLookup, fxp.Pound, bracket), "case %d", i)
@@ -234,7 +234,7 @@ func TestFilterFieldPluralTitles(t *testing.T) {
 func TestUnknownFilterNodeDescribe(t *testing.T) {
 	c := check.New(t)
 	node := gurps.NewUnknownFilterNode("sparkle", []byte(`{"type":"sparkle"}`))
-	c.Equal(`Unknown filter node type "sparkle"; it will be preserved, but never matches`, node.Describe())
+	c.Equal(`Unknown filter node type "sparkle"; it will be preserved, but can't be checked`, node.Describe())
 }
 
 // TestFilterTextFieldKeepsCommas checks that a comma in the qualifier of a single text field is part of the text, as

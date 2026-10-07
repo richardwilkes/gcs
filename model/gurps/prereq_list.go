@@ -142,11 +142,12 @@ func (p *PrereqList) AppliesWithParentsAt(entity *Entity) bool {
 
 // Evaluate checks this list against the entity for the item given as exclude, returning its result. A list is skipped,
 // along with everything in it, when it does not apply at the sheet's tech level, and is also skipped when it has
-// nothing in it that isn't skipped. Its parent leaves it out, so an "all of" list is met when the rest are all met and
-// an "any of" list when any of the rest is. A list that isn't met has failed when any of the rest has, and is otherwise
-// unmet. visit, if not nil, is called with the result of each prerequisite in the list and then of the list itself,
-// along with the reason a script gives, which is the error when it couldn't run. Each script runs at most once, and
-// none in a skipped list does. Without an entity, the list is met and nothing is visited.
+// nothing in it that isn't skipped. Its parent leaves it out. Of the rest, one unmet item makes an "all of" list unmet,
+// and one met item makes an "any of" list met, even when others failed. Otherwise the list has failed when any of the
+// rest has, and is met or unmet as they all are. visit, if not nil, is called with the result of each prerequisite in
+// the list and then of the list itself, along with the reason a script gives, which is the error when it couldn't run.
+// Each script runs at most once, and none in a skipped list does. Without an entity, the list is met and nothing is
+// visited.
 func (p *PrereqList) Evaluate(entity *Entity, exclude any, visit func(one Prereq, result CheckResult, reason string)) CheckResult {
 	result, _ := p.evaluate(&prereqEvaluation{entity: entity, exclude: exclude, visit: visit}, nil, nil, p.All)
 	return result
@@ -187,7 +188,7 @@ func (p *PrereqList) evaluate(ev *prereqEvaluation, buffer *xbytes.InsertBuffer,
 		p.visitSkipped(ev.visit)
 		return CheckSkipped, 0
 	}
-	met, applicable, failed := 0, 0, false
+	var tally checkTally
 	var local *xbytes.InsertBuffer
 	if buffer != nil {
 		local = &xbytes.InsertBuffer{}
@@ -213,27 +214,9 @@ func (p *PrereqList) evaluate(ev *prereqEvaluation, buffer *xbytes.InsertBuffer,
 				ev.visit(one, childResult, reason)
 			}
 		}
-		switch childResult {
-		case CheckSkipped:
-			continue
-		case CheckMet:
-			met++
-		case CheckFailed:
-			failed = true
-		default:
-		}
-		applicable++
+		tally.add(childResult)
 	}
-	switch {
-	case applicable == 0:
-		result = CheckSkipped
-	case met == applicable || (!p.All && met > 0):
-		result = CheckMet
-	case failed:
-		result = CheckFailed
-	default:
-		result = CheckUnmet
-	}
+	result = tally.combine(p.All)
 	if ev.visit != nil {
 		ev.visit(p, result, "")
 	}

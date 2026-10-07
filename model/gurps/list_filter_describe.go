@@ -28,7 +28,7 @@ type FilterFieldLookup func(key string) (title string, kind FilterFieldKind, plu
 func (c *FilterCondition) Describe(lookup FilterFieldLookup, units fxp.WeightUnit, em func(string) string) string {
 	title, kind, plural, ok := lookup(c.Field)
 	if !ok {
-		return i18n.Text("Condition on unknown field %q; it never matches", c.Field)
+		return i18n.Text("Condition on unknown field %q; it can't be checked", c.Field)
 	}
 	var criterion string
 	switch kind {
@@ -96,5 +96,5 @@ func (c *FilterCondition) describeList(title string, em func(string) string) str
 
 // Describe returns what the editor says of a node this version of GCS doesn't understand.
 func (n *UnknownFilterNode) Describe() string {
-	return i18n.Text("Unknown filter node type %q; it will be preserved, but never matches", n.Kind)
+	return i18n.Text("Unknown filter node type %q; it will be preserved, but can't be checked", n.Kind)
 }

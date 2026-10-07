@@ -253,12 +253,12 @@ func (p *listFilterPanel) defaultFieldKey() string {
 // which it shows but can't edit. It is looked up when needed rather than held in a variable, since the localization
 // isn't in place when the package initializes.
 func preservedFilterNodeTooltip() string {
-	return i18n.Text("This was most likely created by a newer version of GCS. Its original data will be written back out unchanged when this filter is saved.")
+	return i18n.Text("This was most likely created by a newer version of GCS. This version can't check it, which hides an item unless the rest of the filter decides without it. Its original data will be written back out unchanged when this filter is saved.")
 }
 
 // unknownFilterFieldTooltip returns the tooltip that explains the row of a condition on a field the editor doesn't
 // know. Such a condition loads as an ordinary one, so whatever else a newer version of GCS gave it may not survive a
 // save.
 func unknownFilterFieldTooltip() string {
-	return i18n.Text("This was most likely created by a newer version of GCS. This version can't tell what it asks for, so it never matches, and saving the filter may not keep all of it.")
+	return i18n.Text("This was most likely created by a newer version of GCS. This version can't tell what it asks for, so it can't be checked, which hides an item unless the rest of the filter decides without it. Saving the filter may not keep all of it.")
 }

@@ -663,13 +663,16 @@ func TestPrereqPanelStatus(t *testing.T) {
 	holder.Prereqs = gurps.Prereqs{gurps.NewPrereqList()}
 	outOfTL := gurps.NewPrereqList()
 	outOfTL.Prereqs = gurps.Prereqs{later.Clone(nil)}
-	root.Prereqs = gurps.Prereqs{trait, met, broken, later, gurps.NewPrereqList(), holder, outOfTL}
+	limbo := gurps.NewPrereqList()
+	limbo.Prereqs = gurps.Prereqs{met.Clone(nil), broken.Clone(nil)}
+	root.Prereqs = gurps.Prereqs{trait, met, broken, later, gurps.NewPrereqList(), holder, outOfTL, limbo}
 	root = root.CloneAsPrereqList(nil)
 	p, _ := showPrereqPanel(t, screen, &root, false)
 	screen.Do(func() {
 		for path, want := range map[string]*unison.SVG{
-			"r": unison.TriangleExclamationSVG, "r.0": svg.Not, "r.1": unison.CheckmarkSVG, "r.2": unison.TriangleExclamationSVG, "r.3": svg.CircledMinus,
+			"r": svg.Not, "r.0": svg.Not, "r.1": unison.CheckmarkSVG, "r.2": unison.TriangleExclamationSVG, "r.3": svg.CircledMinus,
 			"r.3.0": svg.CircledMinus, "r.4": svg.CircledMinus, "r.5": svg.CircledMinus, "r.5.0": svg.CircledMinus,
+			"r.7": unison.TriangleExclamationSVG,
 		} {
 			for _, v := range p.views {
 				if v.node == p.node(path) {
@@ -694,10 +697,12 @@ func TestPrereqPanelStatus(t *testing.T) {
 		}
 		_, tip, suffix := p.status(p.node("r"), checks)
 		c.Contains(tip, "A custom check (couldn't run: SyntaxError: ")
-		c.Equal("couldn't be checked", suffix)
+		c.Equal("not met", suffix, "an unmet requirement decides an all of group, even beside a script that couldn't run")
 		_, tip, suffix = p.status(p.node("r.2"), checks)
 		c.True(strings.HasPrefix(tip, "Not met: A custom check (couldn't run: SyntaxError: "), tip)
 		c.True(strings.HasPrefix(suffix, "couldn't run: SyntaxError: "), suffix)
+		_, _, suffix = p.status(p.node("r.7"), checks)
+		c.Equal("couldn't be checked", suffix, "a group nothing decides fails when a script in it couldn't run")
 		p.toggle("r.0")
 	})
 	screen.Do(func() {

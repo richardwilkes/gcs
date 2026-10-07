@@ -137,7 +137,7 @@ func (p *listFilterPanel) treeGroupHead(group gurps.FilterNode, path string, hea
 			m.apply(g)
 			p.headed = p.headed || path == treeRootPath
 		})
-	pill.Tooltip = newWrappedTooltip(i18n.Text("All of: every condition in the group must match. Any of: at least one must match. None of: no condition in the group may match. Not all of: at least one must fail to match. An empty group asks for nothing, whichever it is."))
+	pill.Tooltip = newWrappedTooltip(i18n.Text("All of: everything in the group must match. Any of: at least one thing in it must match. None of: nothing in it may match. Not all of: at least one thing in it must not match. An empty group is left out, whichever it is."))
 	stylePill(pill, color)
 	addCentered(head, pill)
 	return color
