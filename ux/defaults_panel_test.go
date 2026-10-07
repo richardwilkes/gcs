@@ -816,7 +816,8 @@ func collapsedSummary(p *unison.Panel) string {
 }
 
 // TestSkillEditorRowsFollowSubstitutions checks that the defaults and features of a skill editor read their nameable
-// markers with the values the editor's data holds, and show the new ones once Set Substitutions changes them.
+// markers with the values the editor's data holds, and show the new ones once Set Substitutions changes them, but not
+// when it is canceled.
 func TestSkillEditorRowsFollowSubstitutions(t *testing.T) {
 	c := check.New(t)
 	screen, _ := startHeadlessWorkspace(t, c)
@@ -854,14 +855,25 @@ func TestSkillEditorRowsFollowSubstitutions(t *testing.T) {
 	c.Equal("Skill Spear at +0.", defaults, "the defaults take the skill's values")
 	c.True(strings.Contains(features, "Spear"), "as do the features: %s", features)
 
-	swapForTest(t, &promptForNameables, func(_ promptOperation, sections []nameablesSection) bool {
-		for _, section := range sections {
-			for k := range section.Nameables {
-				section.Nameables[k] = "Rapier"
+	answer := func(value string, accept bool) {
+		swapForTest(t, &promptForNameables, func(_ promptOperation, sections []nameablesSection) bool {
+			for _, section := range sections {
+				for k := range section.Nameables {
+					section.Nameables[k] = value
+				}
 			}
-		}
-		return true
-	})
+			return accept
+		})
+	}
+	answer("Rapier", false)
+	screen.Do(e.nameablesButton.ClickCallback)
+	c.Equal("Spear", e.editorData.Replacements["Weapon"], "Cancel leaves the editor's data alone")
+	screen.Do(func() { c.False(e.isModified(), "and the editor unmodified") })
+	defaults, features = summaries()
+	c.Equal("Skill Spear at +0.", defaults, "and the rows as they were")
+	c.True(strings.Contains(features, "Spear"), "features included: %s", features)
+
+	answer("Rapier", true)
 	screen.Do(e.nameablesButton.ClickCallback)
 	c.Equal("Rapier", e.editorData.Replacements["Weapon"], "precondition: the editor's data takes the new value")
 	defaults, features = summaries()
