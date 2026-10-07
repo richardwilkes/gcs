@@ -132,11 +132,7 @@ func (e *editor[N, D]) createToolbar(helpMD string, initToolbar func(*editor[N, 
 						if setter, ok2 := any(e.editorData).(nameable.Setter); ok2 {
 							setter.SetNameableReplacements(tmp.NameableReplacements())
 							e.Rebuild(false)
-							// The prerequisites, defaults and features show the new values only once their rows are made
-							// again.
-							for _, section := range rowSections(e.content) {
-								section.rebuild("")
-							}
+							e.showSubstitutions()
 						}
 					}
 				}
@@ -191,6 +187,32 @@ func (e *editor[N, D]) rebuildContent() {
 	e.Rebuild(false)
 	e.content.ValidateScrollRoot()
 	e.undoMgr.Clear()
+}
+
+// showSubstitutions makes the rows of the editor's prerequisites, defaults and features again, and those of the editors
+// open on its weapons, which take their substitutions from it, so that they show the substitutions set since they were
+// made.
+func (e *editor[N, D]) showSubstitutions() {
+	for _, section := range rowSections(e.content) {
+		section.rebuild("")
+	}
+	traverseGroup(e, func(target GroupedCloser) bool {
+		if weaponEditor, ok := target.(*editor[*gurps.Weapon, *gurps.Weapon]); ok && weaponEditor.content != nil {
+			for _, section := range rowSections(weaponEditor.content) {
+				section.rebuild("")
+			}
+		}
+		return false
+	})
+}
+
+// pendingNameables returns the editor's data as the source of the substitutions it holds, which Set Substitutions
+// changes ahead of their being applied, or nil if its data holds none.
+func (e *editor[N, D]) pendingNameables() nameable.Accesser {
+	if source, ok := any(e.editorData).(nameable.Accesser); ok {
+		return source
+	}
+	return nil
 }
 
 // rowSection is a section of an editor's content made of sentence rows, whose view rebuildContent keeps, and which

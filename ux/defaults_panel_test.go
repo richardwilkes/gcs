@@ -1221,3 +1221,54 @@ func TestDefaultsPanelUnusualTypes(t *testing.T) {
 	screen.Do(func() { chooseDefaultType(c, p, "0", gurps.DodgeID) })
 	c.Equal(gurps.DodgeID, defaults[0].Type(), "the type it had can be chosen again")
 }
+
+// TestWeaponEditorTakesItemSubstitutions checks that the defaults of a weapon edited from its skill's editor show the
+// substitutions that editor holds, including those Set Substitutions makes while the weapon's editor is open.
+func TestWeaponEditorTakesItemSubstitutions(t *testing.T) {
+	c := check.New(t)
+	screen, _ := startHeadlessWorkspace(t, c)
+	sheet, ok := openedByAction(t, screen, newCharacterSheetAction).(*Sheet)
+	if !ok {
+		t.Fatal("New Character Sheet must open a character sheet")
+	}
+	var e *editor[*gurps.Skill, *gurps.SkillEditData]
+	var p *defaultsPanel
+	screen.Do(func() {
+		entity := sheet.Entity()
+		skill := gurps.NewSkill(entity, nil, false)
+		skill.Replacements = map[string]string{"Weapon": "Spear"}
+		weapon := gurps.NewWeapon(skill, true)
+		weapon.Defaults = []*gurps.SkillDefault{
+			{DefaultType: gurps.SkillID, Name: criteria.Text{Compare: criteria.IsText, Qualifier: "@Weapon@"}},
+		}
+		skill.Weapons = []*gurps.Weapon{weapon}
+		entity.Skills = append(entity.Skills, skill)
+		sheet.Rebuild(true)
+		e = EditSkill(sheet, skill)
+		before := AllDockables()
+		EditWeapon(e, e.editorData.Weapons[0])
+		for _, d := range AllDockables() {
+			if !slices.Contains(before, d) {
+				if panels := panelsOfType[*defaultsPanel](d.AsPanel()); len(panels) == 1 {
+					p = panels[0]
+				}
+			}
+		}
+	})
+	if p == nil {
+		t.Fatal("the weapon editor must have a defaults panel")
+	}
+	screen.Do(func() { c.Equal("Skill Spear at +0.", collapsedSummary(p.AsPanel())) })
+	swapForTest(t, &promptForNameables, func(_ promptOperation, sections []nameablesSection) bool {
+		for _, section := range sections {
+			for k := range section.Nameables {
+				section.Nameables[k] = "Rapier"
+			}
+		}
+		return true
+	})
+	screen.Do(e.nameablesButton.ClickCallback)
+	screen.Do(func() {
+		c.Equal("Skill Rapier at +0.", collapsedSummary(p.AsPanel()), "the open weapon editor shows the new value")
+	})
+}
