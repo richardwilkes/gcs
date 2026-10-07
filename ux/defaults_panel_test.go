@@ -243,7 +243,7 @@ func TestDefaultsPanelBuildingChangesNothing(t *testing.T) {
 	}
 	screen.Do(func() {
 		if popup := defaultTypePopup(c, p, "4"); popup != nil {
-			c.Equal("unrecognized key (unknown)", popup.Text(), "the type popup shows an unknown type as such")
+			c.Equal(`Unknown type "unknown"`, popup.Text(), "the type popup shows an unknown type as such")
 		}
 		p.toggle("3")
 	})
@@ -1190,4 +1190,34 @@ func TestDefaultsPanelMoreButtonNames(t *testing.T) {
 		}
 	})
 	c.Equal("More actions for Skill Saber (Fencing) at -2", name("1"), "the name follows an edit to the open row")
+}
+
+// TestDefaultsPanelUnusualTypes checks that a type the popup doesn't offer for new defaults, such as Dodge, Size
+// Modifier or none at all from a file, shows in the popup as the row's sentence names it, and can be chosen again after
+// another type has been.
+func TestDefaultsPanelUnusualTypes(t *testing.T) {
+	c := check.New(t)
+	screen, _ := startHeadlessWorkspace(t, c)
+	entity := gurps.NewEntity()
+	defaults := []*gurps.SkillDefault{
+		{DefaultType: gurps.DodgeID, Modifier: -fxp.Two},
+		{DefaultType: gurps.SizeModifierID},
+		{},
+	}
+	p, _ := showDefaultsPanel(t, screen, entity, nil, &defaults)
+	for i, want := range []string{"Dodge", "Size Modifier", "No type"} {
+		path := strconv.Itoa(i)
+		screen.Do(func() { c.Equal(want+" at "+defaults[i].Modifier.StringWithSign(), rowSentence(p, path)) })
+		screen.Do(func() { p.toggle(path) })
+		screen.Do(func() {
+			if popup := defaultTypePopup(c, p, path); popup != nil {
+				c.Equal(want, popup.Text(), "the popup names the type as the sentence does")
+			}
+		})
+	}
+	screen.Do(func() { p.toggle("0") })
+	screen.Do(func() { chooseDefaultType(c, p, "0", gurps.DexterityID) })
+	c.Equal(gurps.DexterityID, defaults[0].Type())
+	screen.Do(func() { chooseDefaultType(c, p, "0", gurps.DodgeID) })
+	c.Equal(gurps.DodgeID, defaults[0].Type(), "the type it had can be chosen again")
 }

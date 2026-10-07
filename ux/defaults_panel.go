@@ -52,6 +52,9 @@ type defaultsPanel struct {
 	entity   *gurps.Entity
 	owner    nameable.Accesser
 	defaults *[]*gurps.SkillDefault
+	// otherTypes holds the types the defaults had when the panel was made that the type popup doesn't otherwise
+	// offer, such as Dodge from a file, so that a default changed from one can be changed back.
+	otherTypes []string
 }
 
 func newDefaultsPanel(entity *gurps.Entity, owner nameable.Accesser, defaults *[]*gurps.SkillDefault) *defaultsPanel {
@@ -64,6 +67,14 @@ func newDefaultsPanel(entity *gurps.Entity, owner nameable.Accesser, defaults *[
 	p.initRows(defaultDragKey, p.build, p.state, p.setState, p.dataHash)
 	p.initCollapse(border, len(*defaults) != 0)
 	p.initDrop(p.dropAt, p.drop)
+	choices := p.typeChoices()
+	for _, one := range *defaults {
+		t := one.Type()
+		if !slices.Contains(p.otherTypes, t) &&
+			!slices.ContainsFunc(choices, func(c *gurps.AttributeChoice) bool { return c.Key == t }) {
+			p.otherTypes = append(p.otherTypes, t)
+		}
+	}
 	p.build()
 	return p
 }
@@ -360,10 +371,16 @@ func (p *defaultsPanel) techLevel() fxp.Int {
 	return tl.Trunc()
 }
 
+// typeChoices returns the types a default can be given: an attribute, 10, Parry, Block or Skill.
+func (p *defaultsPanel) typeChoices() []*gurps.AttributeChoice {
+	// Asked with a current type that is among them, so that none is added for it.
+	choices, _ := gurps.AttributeChoices(p.entity, "", defaultTypeFlags, gurps.SkillID)
+	return choices
+}
+
 // addType returns the type a new default takes: the one last chosen, unless the entity has no such attribute.
 func (p *defaultsPanel) addType() string {
-	choices, _ := gurps.AttributeChoices(p.entity, "", defaultTypeFlags, "")
-	for _, one := range choices {
+	for _, one := range p.typeChoices() {
 		if one.Key == lastDefaultTypeUsed {
 			return lastDefaultTypeUsed
 		}
@@ -372,9 +389,21 @@ func (p *defaultsPanel) addType() string {
 }
 
 // typePopup adds the popup that switches a default to another type: an attribute, 10, Parry, Block or Skill. A type that
-// isn't one of them, which a file can still hold, is shown as such, and kept until another is chosen.
+// isn't one of them, which a file can still hold, is named as the row's sentence names it, and offered for as long as
+// the panel is open, as are the others of its kind the defaults had when the panel was made.
 func (p *defaultsPanel) typePopup(parent *unison.Panel, path string, def *gurps.SkillDefault) {
-	choices, current := gurps.AttributeChoices(p.entity, "", defaultTypeFlags, def.Type())
+	choices := p.typeChoices()
+	for _, t := range append(slices.Clone(p.otherTypes), def.Type()) {
+		if !slices.ContainsFunc(choices, func(c *gurps.AttributeChoice) bool { return c.Key == t }) {
+			choices = append(choices, &gurps.AttributeChoice{Key: t, Title: gurps.DefaultTypeTitle(p.entity, t)})
+		}
+	}
+	var current *gurps.AttributeChoice
+	for _, one := range choices {
+		if one.Key == def.Type() {
+			current = one
+		}
+	}
 	addCentered(parent, compactPopup(&p.sentenceRows, path+":type", i18n.Text("Default Type"), choices, current,
 		func(c *gurps.AttributeChoice) string { return c.Title }, func(c *gurps.AttributeChoice) {
 			lastDefaultTypeUsed = c.Key

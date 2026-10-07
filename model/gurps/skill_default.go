@@ -244,20 +244,33 @@ func (s *SkillDefault) Describe(entity *Entity, replacements map[string]string, 
 	switch t := s.Type(); t {
 	case SkillID, ParryID, BlockID:
 		text = s.describeSkill(replacements, em)
-	case "":
-		text = i18n.Text("No type")
 	default:
-		if t == "10" || t == SizeModifierID || t == DodgeID || AttributeDefsFor(entity).Set[t] != nil {
-			text = em(attributeTitle(entity, t))
-		} else {
-			text = fmt.Sprintf(i18n.Text(`Unknown type "%s"`), em(t))
-		}
+		text = describeDefaultType(entity, t, em)
 	}
 	text = fmt.Sprintf(i18n.Text("%s at %s"), text, em(s.Modifier.StringWithSign()))
 	if s.WhenTL.Compare != criteria.AnyNumber {
 		text += i18n.Text(", when the tech level ") + s.WhenTL.Compare.DescribeWith(em(s.WhenTL.Qualifier.String()))
 	}
 	return text
+}
+
+// DefaultTypeTitle returns how a default of a type that isn't skill-based names it, such as "DX", "Dodge", "No type" or
+// `Unknown type "foo"`, naming attributes as the entity, which may be nil, defines them.
+func DefaultTypeTitle(entity *Entity, defaultType string) string {
+	return describeDefaultType(entity, normalizeDefaultType(defaultType), func(s string) string { return s })
+}
+
+// describeDefaultType returns DefaultTypeTitle's name for the normalized type, passing the attribute or unknown type
+// through em.
+func describeDefaultType(entity *Entity, t string, em func(string) string) string {
+	switch {
+	case t == "":
+		return i18n.Text("No type")
+	case t == "10" || t == SizeModifierID || t == DodgeID || AttributeDefsFor(entity).Set[t] != nil:
+		return em(attributeTitle(entity, t))
+	default:
+		return fmt.Sprintf(i18n.Text(`Unknown type "%s"`), em(t))
+	}
 }
 
 // describeSkill returns how a skill-based default names its skill, such as "Skill Broadsword (Fencing)", "Parry of any
