@@ -300,10 +300,10 @@ func (s *SkillDefault) describeSkill(replacements map[string]string, em func(str
 		}
 	}
 	joined := !anyName && nameCompare != criteria.IsText
-	specialization := nameable.Apply(s.Specialization.Qualifier, replacements)
+	specialization := strings.TrimSpace(nameable.Apply(s.Specialization.Qualifier, replacements))
 	switch compare := s.Specialization.Compare.EnsureValid(); {
 	case compare == criteria.AnyText:
-	case compare == criteria.IsText && strings.TrimSpace(specialization) == "":
+	case compare == criteria.IsText && specialization == "":
 		// An empty specialization picks only a skill without one.
 		if joined {
 			text += i18n.Text(" and without a specialization")
@@ -336,13 +336,14 @@ func (s *SkillDefault) describeSkill(replacements map[string]string, em func(str
 }
 
 // describeClause returns a criterion as a clause, such as `whose specialization starts with "Fen"`: the prefix, or
-// for a "not" comparison the notPrefix, then the comparison and the qualifier. A non-empty qualifier is passed through
-// em and quoted unless the comparison is "is"; an empty one reads as "".
+// for a "not" comparison the notPrefix, then the comparison and the qualifier. "is" and "is not" drop space at either
+// end of the qualifier, as they do when matching. A non-empty qualifier is then passed through em and quoted unless the
+// comparison is "is"; an empty one reads as "".
 func describeClause(t criteria.Text, prefix, notPrefix string, replacements map[string]string, em func(string) string) string {
-	q := nameable.Apply(t.Qualifier, replacements)
 	compare := t.Compare.EnsureValid()
+	q := compare.EffectiveQualifier(nameable.Apply(t.Qualifier, replacements))
 	switch {
-	case strings.TrimSpace(q) == "":
+	case q == "":
 		q = `""`
 	case compare == criteria.IsText:
 		q = em(q)

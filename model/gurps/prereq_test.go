@@ -183,6 +183,8 @@ func TestPrereqDescribeEmptyNames(t *testing.T) {
 	c.Equal("Has skill Guns without a specialization at level at least 0", skill.Describe(nil, nil, plain))
 	skill.SpecializationCriteria.Qualifier = "@Blank@"
 	c.Equal("Has skill Guns without a specialization at level at least 0", skill.Describe(nil, replacements, plain))
+	skill.SpecializationCriteria.Qualifier = " "
+	c.Equal("Has skill Guns without a specialization at level at least 0", skill.Describe(nil, nil, plain))
 	skill.SpecializationCriteria = criteria.Text{}
 	skill.OptionalSpecializationCriteria = criteria.Text{Compare: criteria.IsText}
 	c.Equal("Has skill Guns without an optional specialization at level at least 0", skill.Describe(nil, nil, plain))

@@ -1255,6 +1255,9 @@ func TestSkillDefaultDescribe(t *testing.T) {
 		Name:           textCriteria(criteria.ContainsText, "Sword"),
 		Specialization: textCriteria(criteria.IsText, ""),
 	}
+	spaced := newSkillDefaultTo("Guns ", " ", false, 0)
+	containsSpace := &SkillDefault{DefaultType: SkillID, Specialization: textCriteria(criteria.ContainsText, " ")}
+	isNotSpace := &SkillDefault{DefaultType: SkillID, Specialization: textCriteria(criteria.IsNotText, " ")}
 	newOne := &SkillDefault{DefaultType: SkillID, Name: textCriteria(criteria.IsText, "")}
 	anySkill := &SkillDefault{DefaultType: SkillID}
 	anySpecialized := &SkillDefault{
@@ -1343,6 +1346,9 @@ func TestSkillDefaultDescribe(t *testing.T) {
 		{anyWithout, "Any skill without a specialization at [+0]"},
 		{clauseWithout, `Skill whose name contains "[Sword]" and without a specialization at [+0]`},
 		{blank, `Skill "" without a specialization at [-2]`},
+		{spaced, "Skill [Guns] without a specialization at [+0]"},
+		{containsSpace, `Any skill whose specialization contains "[ ]" at [+0]`},
+		{isNotSpace, `Any skill whose specialization is not "" at [+0]`},
 		{newOne, `Skill "" at [+0]`},
 		{anySkill, "Any skill at [+0]"},
 		{anySpecialized, "Any skill ([Statistics]) at [-2]"},
@@ -1392,4 +1398,25 @@ func TestSkillDefaultLoadNormalizesType(t *testing.T) {
 	c.NoError(json.Unmarshal([]byte(`{"type":"Skill","name":"Judo"}`), &def))
 	c.Equal(SkillID, def.DefaultType)
 	c.Equal("Judo", def.Name.Qualifier)
+}
+
+// TestSkillIsCriteriaIgnoreSurroundingSpace verifies that an "is" name or specialization with space at either end picks
+// the skills it would without that space, in prerequisites and defaults alike.
+func TestSkillIsCriteriaIgnoreSurroundingSpace(t *testing.T) {
+	c := check.New(t)
+	e := NewEntity()
+	guns := addTestSkill(e, "Guns", "", "", fxp.Four)
+	e.Recalculate()
+	c.Equal("", guns.Specialization)
+	c.NotEqual(fxp.Min, guns.LevelData.Level)
+
+	prereq := NewSkillPrereq()
+	prereq.NameCriteria.Qualifier = "Guns "
+	prereq.SpecializationCriteria = textCriteria(criteria.IsText, " ")
+	c.Equal("Guns ", prereq.NameCriteria.Qualifier)
+	c.True(prereq.Satisfied(e, nil, nil, "", nil), `"Guns " with specialization " " picks the unspecialized Guns`)
+
+	def := newSkillDefaultTo("Guns ", " ", false, 0)
+	c.Equal(" ", def.Specialization.Qualifier)
+	c.Equal(guns.LevelData.Level, def.SkillLevel(e, nil, true, nil, false))
 }

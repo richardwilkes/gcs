@@ -24,6 +24,8 @@
   mode they apply to.
 - A new weapon bonus that picks weapons by their skill no longer starts out requiring a relative skill level of at least
   0, which left out weapons used at a lower level. A relative skill level can still be added to it.
+- The "is" and "is not" comparisons of prerequisites, features and defaults now ignore space at either end of the
+  value, so a name or specialization with a stray space now matches.
 
 ## Bug Fixes
 

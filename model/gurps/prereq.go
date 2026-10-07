@@ -57,9 +57,10 @@ func plainText(s string) string {
 }
 
 // describeText returns the comparison and qualifier of t, such as `is Fire` or `contains "Fi"`. A non-empty qualifier
-// is passed through em, and is quoted unless the comparison is "is".
+// is passed through em, and is quoted unless the comparison is "is". "is" and "is not" drop space at either end of it,
+// as they do when matching.
 func describeText(t criteria.Text, replacements map[string]string, em func(string) string) string {
-	q := nameable.Apply(t.Qualifier, replacements)
+	q := t.Compare.EffectiveQualifier(nameable.Apply(t.Qualifier, replacements))
 	if q == "" {
 		return t.Compare.Describe(q)
 	}
@@ -69,14 +70,14 @@ func describeText(t criteria.Text, replacements map[string]string, em func(strin
 	return t.Compare.Describe(em(q))
 }
 
-// describeName returns how a prerequisite names what it looks for: the bare name for "is", or "" when that is empty
+// describeName returns how a prerequisite names what it looks for: the bare name for "is", or "" when that is blank
 // once its markers are replaced, "of any name" when any name will do, and a "whose name" clause otherwise.
 func describeName(t criteria.Text, replacements map[string]string, em func(string) string) string {
 	switch t.Compare {
 	case criteria.AnyText:
 		return i18n.Text("of any name")
 	case criteria.IsText:
-		if q := nameable.Apply(t.Qualifier, replacements); strings.TrimSpace(q) != "" {
+		if q := strings.TrimSpace(nameable.Apply(t.Qualifier, replacements)); q != "" {
 			return em(q)
 		}
 		return `""`
@@ -94,7 +95,7 @@ func describeSpecialization(specialization, optional criteria.Text, replacements
 	switch specialization.Compare {
 	case criteria.AnyText:
 	case criteria.IsText:
-		if q := nameable.Apply(specialization.Qualifier, replacements); strings.TrimSpace(q) != "" {
+		if q := strings.TrimSpace(nameable.Apply(specialization.Qualifier, replacements)); q != "" {
 			text = " (" + em(q) + ")"
 		} else {
 			text = i18n.Text(" without a specialization")
