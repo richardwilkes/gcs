@@ -381,10 +381,11 @@ func (p *prereqPanel) treeGroupHead(group gurps.Prereq, path string, head, box *
 	return color
 }
 
-// treeEmpty implements treeNodes. An empty root shows its placeholder alone until a group type or tech level has been
-// chosen for it.
-func (p *prereqPanel) treeEmpty(_ gurps.Prereq, path string) (text string, bare bool) {
-	if path == treeRootPath && !p.headed {
+// treeEmpty implements treeNodes. An empty root shows its placeholder alone, until a group type or tech level has been
+// chosen for it or unless it is already "Any of" or has a tech level condition.
+func (p *prereqPanel) treeEmpty(group gurps.Prereq, path string) (text string, bare bool) {
+	if list := asPrereqList(group); path == treeRootPath && !p.headed && list.All &&
+		list.WhenTL.Compare == criteria.AnyNumber {
 		return i18n.Text("No prerequisites. Click here to add one."), true
 	}
 	return i18n.Text("Empty group. Add a requirement or drag one here."), false

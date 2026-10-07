@@ -1043,6 +1043,25 @@ func TestPrereqPanelEmptyRootGroupType(t *testing.T) {
 	})
 }
 
+// TestPrereqPanelEmptiedRootKeepsItsHead checks that a root emptied of its last prerequisite still shows its head when
+// it is "Any of" or has a tech level condition, so that neither is hidden.
+func TestPrereqPanelEmptiedRootKeepsItsHead(t *testing.T) {
+	c := check.New(t)
+	screen, _ := startHeadlessWorkspace(t, c)
+	root := gurps.NewPrereqList()
+	root.All = false
+	root.WhenTL = criteria.Number{Compare: criteria.AtMostNumber, Qualifier: fxp.FromInteger(defaultWhenTL)}
+	root.Prereqs = gurps.Prereqs{gurps.NewTraitPrereq()}
+	root = root.CloneAsPrereqList(nil)
+	p, _ := showPrereqPanel(t, screen, &root, false)
+	screen.Do(func() { menuAction(p.moreEntries(root.Prereqs[0], "r.0"), "Delete")() })
+	screen.Do(func() {
+		c.Equal(0, len(root.Prereqs))
+		c.NotNil(p.FindRefKey(treeRootPath+keyPill), "its group type shows")
+		c.NotNil(p.FindRefKey(treeRootPath+":tl"+keyChip), "as does its tech level condition")
+	})
+}
+
 // TestPrereqPanelUndoReopensRow checks that a row the Add menu adds opens with the focus in its name field, and that
 // undo and redo open whichever row was open when the change was made, or none.
 func TestPrereqPanelUndoReopensRow(t *testing.T) {
