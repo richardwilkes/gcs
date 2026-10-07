@@ -31,6 +31,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/wswitch"
 	"github.com/richardwilkes/gcs/v5/model/kinds"
 	"github.com/richardwilkes/gcs/v5/model/nameable"
+	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/v2/errs"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/toolbox/v2/tid"
@@ -38,6 +39,8 @@ import (
 	"github.com/richardwilkes/toolbox/v2/xhash"
 	"github.com/richardwilkes/toolbox/v2/xreflect"
 	"github.com/richardwilkes/toolbox/v2/xstrings"
+	"github.com/richardwilkes/unison"
+	"github.com/richardwilkes/unison/enums/align"
 	"github.com/zeebo/xxh3"
 )
 
@@ -1004,7 +1007,7 @@ func (w *Weapon) CellData(columnID int, data *CellData) {
 		data.Type = cell.Toggle
 		data.Name = i18n.Text("Hidden")
 		data.Checked = w.Hide
-		data.Alignment = cell.AlignMiddle
+		data.Alignment = align.Middle
 	case WeaponDescriptionColumn:
 		data.Primary = w.String()
 		data.Secondary = w.Notes()
@@ -1137,4 +1140,12 @@ func (w *Weapon) Validate() {
 		w.Block = WeaponBlock{}
 		w.Reach = WeaponReach{}
 	}
+}
+
+// WeaponSVG returns the SVG that should be used for the weapon type.
+func WeaponSVG(melee bool) *unison.SVG {
+	if melee {
+		return svg.MeleeWeapon
+	}
+	return svg.RangedWeapon
 }

@@ -231,11 +231,12 @@ func (n *NavigatorNode) ColumnCell(_, col int, foreground, _ unison.Ink, _, _, _
 		ext = gurps.ClosedFolder
 	}
 	size := unison.LabelFont.Size() + 5
+	fi := gurps.FileInfoFor(ext)
 	label := unison.NewLabel()
 	label.OnBackgroundInk = foreground
 	label.SetTitle(title)
 	label.Drawable = &unison.DrawableSVG{
-		SVG:  FileTypeSVG(gurps.FileInfoFor(ext)),
+		SVG:  fi.SVG,
 		Size: geom.NewSize(size, size),
 	}
 	if n.IsLibrary() && !n.library.IsUser() {

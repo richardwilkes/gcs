@@ -12,8 +12,8 @@ package ux
 import (
 	_ "embed"
 
+	"github.com/richardwilkes/gcs/v5/model/colors"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
-	"github.com/richardwilkes/gcs/v5/ux/colors"
 	"github.com/richardwilkes/toolbox/v2/errs"
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/i18n"

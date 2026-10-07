@@ -21,6 +21,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/kinds"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/toolbox/v2/tid"
+	"github.com/richardwilkes/unison/enums/align"
 )
 
 // TestNewTraitsFromFileAttachesContainerModifiers verifies that loading a trait list attaches the modifiers of
@@ -195,7 +196,7 @@ func TestSharedCellAndHeaderData(t *testing.T) {
 	data = CellData{}
 	fillLibSrcCell(&data, nil, trait)
 	c.Equal(cell.Text, data.Type)
-	c.Equal(cell.AlignMiddle, data.Alignment)
+	c.Equal(align.Middle, data.Alignment)
 	c.Equal("", data.Primary)
 	c.Equal("", data.Tooltip)
 

@@ -28,6 +28,7 @@ import (
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/toolbox/v2/tid"
 	"github.com/richardwilkes/toolbox/v2/xhash"
+	"github.com/richardwilkes/unison/enums/align"
 )
 
 var (
@@ -268,7 +269,7 @@ func (e *EquipmentModifier) CellData(columnID int, data *CellData) {
 			data.Type = cell.Toggle
 			data.Name = i18n.Text("Enabled")
 			data.Checked = e.Enabled()
-			data.Alignment = cell.AlignMiddle
+			data.Alignment = align.Middle
 		}
 	case EquipmentModifierDescriptionColumn:
 		data.Type = cell.Text

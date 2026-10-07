@@ -52,7 +52,7 @@ func (d *menuKeySettingsDockable) initContent(content *unison.Panel) {
 func (d *menuKeySettingsDockable) reset() {
 	g := gurps.GlobalSettings()
 	g.KeyBindings.Reset()
-	applyKeyBindings(&g.KeyBindings)
+	g.KeyBindings.MakeCurrent()
 	d.sync()
 }
 
@@ -63,14 +63,14 @@ func (d *menuKeySettingsDockable) sync() {
 }
 
 func (d *menuKeySettingsDockable) fill() {
-	for _, b := range currentKeyBindings() {
+	for _, b := range gurps.CurrentBindings() {
 		d.createBindingButton(b)
 		d.content.AddChild(NewFieldTrailingLabel(b.Action.Title, false))
 		d.createResetField(b)
 	}
 }
 
-func (d *menuKeySettingsDockable) createBindingButton(binding *keyBindingEntry) {
+func (d *menuKeySettingsDockable) createBindingButton(binding *gurps.Binding) {
 	b := unison.NewButton()
 	b.Font = unison.KeyboardFont
 	setBindingButtonKey(b, binding)
@@ -95,11 +95,6 @@ func (d *menuKeySettingsDockable) createBindingButton(binding *keyBindingEntry) 
 			capturePanel.DefaultDraw(gc, rect)
 		}
 		capturePanel.KeyDownCallback = func(keyCode unison.KeyCode, mods mod.Modifiers, _ bool) bool {
-			if keyCode == unison.KeyNone {
-				// A key unison can't identify can't be bound. Its binding would also be stored as its modifiers alone,
-				// which reads back as a different binding when the last of them is Caps Lock or Num Lock.
-				return false
-			}
 			localBinding.KeyCode = keyCode
 			localBinding.Modifiers = mods
 			capturePanel.SetTitle(localBinding.String())
@@ -143,8 +138,8 @@ func (d *menuKeySettingsDockable) createBindingButton(binding *keyBindingEntry) 
 			case unison.ModalResponseOK:
 				binding.KeyBinding = localBinding
 				g := gurps.GlobalSettings()
-				g.KeyBindings.Set(binding.ID, localBinding.Key())
-				applyKeyBindings(&g.KeyBindings)
+				g.KeyBindings.Set(binding.ID, localBinding)
+				g.KeyBindings.MakeCurrent()
 				setBindingButtonKey(b, binding)
 			default:
 			}
@@ -156,7 +151,7 @@ func (d *menuKeySettingsDockable) createBindingButton(binding *keyBindingEntry) 
 // setBindingButtonKey shows the binding's key combination on the button that displays it. The button is named after the
 // action as well, since the combination alone would not say which action it belongs to, and an action with no key would
 // leave the button with no name at all.
-func setBindingButtonKey(b *unison.Button, binding *keyBindingEntry) {
+func setBindingButtonKey(b *unison.Button, binding *gurps.Binding) {
 	b.SetTitle(binding.KeyBinding.String())
 	b.Accessibility.Name = i18n.Text("%s: %s", binding.Action.Title, describeKeyBinding(binding.KeyBinding))
 	b.MarkForRedraw()
@@ -170,7 +165,7 @@ func describeKeyBinding(keyBinding unison.KeyBinding) string {
 	return i18n.Text("no key")
 }
 
-func (d *menuKeySettingsDockable) createResetField(binding *keyBindingEntry) {
+func (d *menuKeySettingsDockable) createResetField(binding *gurps.Binding) {
 	b := unison.NewSVGButton(svg.Reset)
 	b.Tooltip = newWrappedTooltip(i18n.Text("Reset this key binding"))
 	b.ClickCallback = func() {
@@ -186,11 +181,11 @@ func (d *menuKeySettingsDockable) createResetField(binding *keyBindingEntry) {
 }
 
 // resetBinding restores the given binding to its factory default and updates the button that displays it.
-func (d *menuKeySettingsDockable) resetBinding(binding *keyBindingEntry, resetButton *unison.Button) {
+func (d *menuKeySettingsDockable) resetBinding(binding *gurps.Binding, resetButton *unison.Button) {
 	g := gurps.GlobalSettings()
 	g.KeyBindings.ResetOne(binding.ID)
-	applyKeyBindings(&g.KeyBindings)
-	binding.KeyBinding = unison.KeyBindingFromKey(g.KeyBindings.Current(binding.ID))
+	g.KeyBindings.MakeCurrent()
+	binding.KeyBinding = g.KeyBindings.Current(binding.ID)
 	if other := bindingButtonForResetButton(resetButton); other != nil {
 		setBindingButtonKey(other, binding)
 	}
@@ -222,7 +217,7 @@ func (d *menuKeySettingsDockable) load(fileSystem fs.FS, filePath string) error 
 	}
 	g := gurps.GlobalSettings()
 	g.KeyBindings = *b
-	applyKeyBindings(&g.KeyBindings)
+	g.KeyBindings.MakeCurrent()
 	d.sync()
 	return nil
 }

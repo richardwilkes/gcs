@@ -17,6 +17,7 @@ import (
 
 	"github.com/richardwilkes/toolbox/v2/errs"
 	"github.com/richardwilkes/toolbox/v2/xos"
+	"github.com/richardwilkes/unison"
 	"github.com/rjeczalik/notify"
 )
 
@@ -51,10 +52,11 @@ func newMonitor(library *Library) *monitor {
 	return &monitor{library: library}
 }
 
-func (m *monitor) newWatch(callback func(lib *Library, fullPath string, what notify.Event)) *MonitorToken {
+func (m *monitor) newWatch(callback func(lib *Library, fullPath string, what notify.Event), callbackOnUIThread bool) *MonitorToken {
 	token := &MonitorToken{
-		monitor:  m,
-		callback: callback,
+		monitor:    m,
+		callback:   callback,
+		onUIThread: callbackOnUIThread,
 	}
 	// No root sync is sent here. See EventRootSync for why a new watch must not receive one.
 	m.startWatch(token, false)
@@ -154,7 +156,11 @@ func (m *monitor) deliver(token *MonitorToken, fullPath string, what notify.Even
 		paths = token.libraryPaths(fullPath)
 	}
 	for _, p := range paths {
-		token.callback(m.library, p, what)
+		if token.onUIThread {
+			unison.InvokeTask(func() { token.callback(m.library, p, what) })
+		} else {
+			token.callback(m.library, p, what)
+		}
 	}
 }
 
@@ -167,7 +173,8 @@ type MonitorToken struct {
 	// and reports changes in (see reportedForm). The root is always present; AddSubPath adds the rest. Guarded by the
 	// monitor's tokensLock, since it is read while events are delivered, which happens on the monitor's queue -- and
 	// the monitor's own lock is held while that queue is shut down and drained, so waiting on it there would deadlock.
-	watched map[string]string
+	watched    map[string]string
+	onUIThread bool
 }
 
 // reportedForm returns the form in which the platform watcher reports changes beneath the given path, which is also the

@@ -198,7 +198,7 @@ type ContextMenuItem struct {
 // SetupMenuBar sets up the menu bar for the window.
 func SetupMenuBar(wnd *unison.Window) {
 	registerKeyBindingsOnce.Do(func() { registerActions() })
-	applyKeyBindings(&gurps.GlobalSettings().KeyBindings)
+	gurps.GlobalSettings().KeyBindings.MakeCurrent()
 	unison.DefaultMenuFactory().BarForWindow(wnd, func(bar unison.Menu) {
 		unison.InsertStdMenus(bar, ShowAbout, nil, nil)
 		std := bar.Item(unison.PreferencesItemID)

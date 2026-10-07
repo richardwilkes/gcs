@@ -147,7 +147,7 @@ func installDesktopIcons() error {
 			continue
 		}
 		var overlay image.Image
-		overlay, err = svg.CreateImageFromSVG(FileTypeSVG(fi), 128)
+		overlay, err = svg.CreateImageFromSVG(fi.SVG, 128)
 		if err != nil {
 			return err
 		}
