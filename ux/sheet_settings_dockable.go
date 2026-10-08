@@ -119,12 +119,12 @@ func sheetOptions() []sheetOption {
 			field: func(s *gurps.SheetSettings) *bool { return &s.ShowEquipmentModifierAdj },
 		},
 		{
-			title:    i18n.Text("Show all weapons"),
+			title:    i18n.Text("Show all attacks"),
 			field:    func(s *gurps.SheetSettings) *bool { return &s.ShowAllWeapons },
 			fullSync: true,
 		},
 		{
-			title:    i18n.Text("Hide unused columns in the melee & ranged weapon tables"),
+			title:    i18n.Text("Hide unused columns in the melee & ranged attack tables"),
 			field:    func(s *gurps.SheetSettings) *bool { return &s.HideUnusedWeaponColumns },
 			fullSync: true,
 		},

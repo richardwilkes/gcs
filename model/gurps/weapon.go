@@ -391,9 +391,9 @@ func (w *Weapon) ID() tid.TID {
 // Kind returns the kind of data.
 func (w *Weapon) Kind() string {
 	if w.IsMelee() {
-		return i18n.Text("Melee Weapon")
+		return i18n.Text("Melee Attack")
 	}
-	return i18n.Text("Ranged Weapon")
+	return i18n.Text("Ranged Attack")
 }
 
 func (w *Weapon) String() string {
@@ -955,9 +955,9 @@ func WeaponHeaderData(columnID int, melee, forPage bool) HeaderData {
 		data.Title = i18n.Text("Hide")
 	case WeaponDescriptionColumn:
 		if melee {
-			data.Title = i18n.Text("Melee Weapon")
+			data.Title = i18n.Text("Melee Attack")
 		} else {
-			data.Title = i18n.Text("Ranged Weapon")
+			data.Title = i18n.Text("Ranged Attack")
 		}
 		data.Primary = true
 	case WeaponUsageColumn:
@@ -965,9 +965,9 @@ func WeaponHeaderData(columnID int, melee, forPage bool) HeaderData {
 		case forPage:
 			data.Title = i18n.Text("Usage")
 		case melee:
-			data.Title = i18n.Text("Melee Weapon Usage")
+			data.Title = i18n.Text("Melee Attack Usage")
 		default:
-			data.Title = i18n.Text("Ranged Weapon Usage")
+			data.Title = i18n.Text("Ranged Attack Usage")
 		}
 	case WeaponSLColumn:
 		data = abbreviatedHeaderData(i18n.Text("SL"), i18n.Text("Skill Level"))

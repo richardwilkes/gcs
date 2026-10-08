@@ -82,9 +82,9 @@ func (p *weaponsProvider) DragSVG() *unison.SVG {
 
 func (p *weaponsProvider) ItemNames() (singular, plural string) {
 	if p.melee {
-		return i18n.Text("Melee Weapon"), i18n.Text("Melee Weapons")
+		return i18n.Text("Melee Attack"), i18n.Text("Melee Attacks")
 	}
-	return i18n.Text("Ranged Weapon"), i18n.Text("Ranged Weapons")
+	return i18n.Text("Ranged Attack"), i18n.Text("Ranged Attacks")
 }
 
 func (p *weaponsProvider) Headers() []unison.TableColumnHeader[*Node[*gurps.Weapon]] {
