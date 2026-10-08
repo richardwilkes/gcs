@@ -187,6 +187,11 @@ func (s *Spell) clearTemplateChoiceContainerExclusions() {
 	s.Tags = nil
 }
 
+func (s *Spell) clearStudy() {
+	s.Study = nil
+	s.StudyHoursNeeded = study.Standard
+}
+
 // NewSpell creates a new Spell.
 func NewSpell(owner DataOwner, parent *Spell, container bool) *Spell {
 	var s Spell

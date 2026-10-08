@@ -206,6 +206,11 @@ func (s *Skill) clearTemplateChoiceContainerExclusions() {
 	s.Tags = nil
 }
 
+func (s *Skill) clearStudy() {
+	s.Study = nil
+	s.StudyHoursNeeded = study.Standard
+}
+
 // NewSkill creates a new Skill.
 func NewSkill(owner DataOwner, parent *Skill, container bool) *Skill {
 	var s Skill

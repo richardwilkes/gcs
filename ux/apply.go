@@ -71,6 +71,8 @@ type applyOptions struct {
 	// clearTemplateOnly removes what only a template holds: the template choices the rows still carry, once the user
 	// agrees to it, and the flags to pick a group in one separately.
 	clearTemplateOnly bool
+	// clearStudy removes the study recorded against the rows, which only means something on a character sheet.
+	clearStudy bool
 	// merge folds the points of rows that duplicate a row already present into that row.
 	merge bool
 }
@@ -78,11 +80,11 @@ type applyOptions struct {
 // applyOptionsFor returns the steps that rows moving from the source's document into the destination's go through. Rows
 // arriving on a sheet from anywhere but another sheet are fully applied; from another sheet they are a plain copy, save
 // for settling any template choices a sheet can't hold, the ancestry question and the offer to randomize. Rows arriving
-// on a template are kept as authored, save that their choice containers are normalized and those from a library have
-// their modifiers and nameables prompted for. They are never merged into a row already there: points only combine
-// once the template is applied to a sheet. Rows arriving in a library are kept as they are, Preconfigured flag
-// included, save for the template choices and the flags to pick groups in them separately, which only a template can
-// hold.
+// on a template are kept as authored, save that their choice containers are normalized, their study is removed and
+// those from a library have their modifiers and nameables prompted for. They are never merged into a row already there:
+// points only combine once the template is applied to a sheet. Rows arriving in a library are kept as they are,
+// Preconfigured flag included, save for their study and for the template choices and the flags to pick groups in them
+// separately, which only a template can hold.
 func applyOptionsFor(source, destination unison.Paneler) applyOptions {
 	from := transferKindOf(source)
 	switch transferKindOf(destination) {
@@ -107,9 +109,9 @@ func applyOptionsFor(source, destination unison.Paneler) applyOptions {
 			merge:              true,
 		}
 	case transferTemplate:
-		return applyOptions{normalizeChoices: true, promptForChoices: from == transferLibrary}
+		return applyOptions{normalizeChoices: true, promptForChoices: from == transferLibrary, clearStudy: true}
 	default:
-		return applyOptions{clearTemplateOnly: true}
+		return applyOptions{clearTemplateOnly: true, clearStudy: true}
 	}
 }
 
@@ -136,6 +138,7 @@ type applyPartOps interface {
 	resolvePickers(op promptOperation, promptChoices bool) bool
 	pickerContainers() []string
 	clearTemplateOnly()
+	clearStudy()
 	modifierTargetCount() int
 	promptForModifiers(op promptOperation, done, total int) (asked int, ok bool)
 	promptForNameables(op promptOperation) bool
@@ -241,6 +244,10 @@ func (p *applyPart[T]) pickerContainers() []string {
 
 func (p *applyPart[T]) clearTemplateOnly() {
 	gurps.ClearTemplatePickerData(p.rows...)
+}
+
+func (p *applyPart[T]) clearStudy() {
+	gurps.ClearStudy(p.rows...)
 }
 
 func (p *applyPart[T]) modifierTargetCount() int {
@@ -402,6 +409,9 @@ func applyTransfer(destination unison.Paneler, parts *applyParts, opts applyOpti
 	before := newApplyUndoEditData(sheet, parts)
 	if opts.clearTemplateOnly {
 		parts.each(applyPartOps.clearTemplateOnly)
+	}
+	if opts.clearStudy {
+		parts.each(applyPartOps.clearStudy)
 	}
 	if entity != nil && parts.bodyType != nil {
 		entity.SheetSettings.BodyType = parts.bodyType.Clone(entity, nil)

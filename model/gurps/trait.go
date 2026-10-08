@@ -242,6 +242,11 @@ func (t *Trait) clearTemplateChoiceContainerExclusions() {
 	t.Prereq = nil
 }
 
+func (t *Trait) clearStudy() {
+	t.Study = nil
+	t.StudyHoursNeeded = study.Standard
+}
+
 func traitKind(isContainer bool) byte {
 	if isContainer {
 		return kinds.TraitContainer

@@ -12,7 +12,9 @@ package ux
 import (
 	"testing"
 
+	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/study"
 	"github.com/richardwilkes/toolbox/v2/check"
 )
 
@@ -88,4 +90,43 @@ func TestCopySelectionToLandsRowsInTheListForTheirType(t *testing.T) {
 		"the template must receive a copy rather than the library's row")
 	c.Equal(1, len(template.Traits.Table.RootRows()), "the template's traits list must show the copied row")
 	c.Equal(0, len(templateData.Skills), "the trait must not have landed in any other list")
+}
+
+// TestCopyOffASheetDropsStudy verifies that a row copied from a character sheet into a template or a library loses its
+// study, which only a character sheet can show or edit, while a copy onto another sheet keeps it.
+func TestCopyOffASheetDropsStudy(t *testing.T) {
+	c := check.New(t)
+	sheet := newTestSheetForTemplate(t)
+	entity := sheet.Entity()
+	trait := gurps.NewTrait(entity, nil, false)
+	trait.Name = "Language"
+	trait.Study = []*gurps.Study{{Type: study.Teacher, Hours: fxp.Ten}}
+	trait.StudyHoursNeeded = study.Level2
+	entity.Traits = []*gurps.Trait{trait}
+	sheet.Rebuild(true)
+	source := sheet.Traits.Table
+	source.SelectAll()
+
+	templateData := gurps.NewTemplate()
+	copySelectionTo(source, []*Template{newTestTemplateDockable("Destination", templateData)})
+	c.Equal(1, len(templateData.TraitList()), "the trait must have been copied onto the template")
+	c.Equal(0, len(templateData.TraitList()[0].Study), "a copy onto a template must lose its study")
+	c.Equal(study.Standard, templateData.TraitList()[0].StudyHoursNeeded,
+		"a copy onto a template must lose its study hours needed")
+
+	library := newLibraryStyleTraitsTable()
+	c.True(applyTransfer(library, newApplyParts(newAppendPart(library, source.SelectedRows(true))),
+		applyOptionsFor(source, library), promptOperation{}, "Copy"))
+	c.Equal(1, len(library.RootRows()), "the trait must have been copied into the library")
+	c.Equal(0, len(library.RootRows()[0].Data().Study), "a copy into a library must lose its study")
+	c.Equal(study.Standard, library.RootRows()[0].Data().StudyHoursNeeded,
+		"a copy into a library must lose its study hours needed")
+
+	other := newTestSheetForTemplate(t)
+	copySelectionTo(source, []*Sheet{other})
+	copied := other.Entity().Traits[len(other.Entity().Traits)-1]
+	c.Equal("Language", copied.Name, "the trait must have been copied onto the other sheet")
+	c.Equal(1, len(copied.Study), "a copy onto another sheet must keep its study")
+	c.Equal(study.Level2, copied.StudyHoursNeeded, "a copy onto another sheet must keep its study hours needed")
+	c.Equal(1, len(trait.Study), "the source row must keep its study")
 }
