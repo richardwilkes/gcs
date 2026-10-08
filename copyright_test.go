@@ -22,8 +22,10 @@ import (
 // this line is matched instead.
 const copyrightMarker = "This Source Code Form is subject to the terms of the Mozilla Public"
 
-// TestGoSourcesHaveCopyrightHeader looks for the header within the first 512 bytes rather than at the very start, since
-// generated files carry a "Code generated" line ahead of it.
+// TestGoSourcesHaveCopyrightHeader backstops the goheader linter for the files lint never checks: generated files are
+// excluded from its issues and the files behind the race and headlessapi build tags are never loaded. It looks for the
+// header within the first 512 bytes rather than at the very start, since generated files carry a "Code generated" line
+// ahead of it.
 func TestGoSourcesHaveCopyrightHeader(t *testing.T) {
 	c := check.New(t)
 	root, err := os.OpenRoot(".")
