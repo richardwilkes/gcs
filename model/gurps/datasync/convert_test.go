@@ -7,7 +7,7 @@
 // This Source Code Form is "Incompatible With Secondary Licenses", as
 // defined by the Mozilla Public License, version 2.0.
 
-package gurps
+package datasync
 
 import (
 	"os"
@@ -16,6 +16,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/toolbox/v2/check"
 )
@@ -26,7 +27,7 @@ import (
 func TestConvertWalkerUnreadableRoot(t *testing.T) {
 	c := check.New(t)
 	pathSet := make(map[string]struct{})
-	extSet := map[string]struct{}{SheetExt: {}}
+	extSet := map[string]struct{}{gurps.SheetExt: {}}
 	missing := filepath.Join(t.TempDir(), "does-not-exist")
 	c.NotPanics(func() {
 		c.NoError(filepath.WalkDir(missing, convertWalker(pathSet, extSet)), "a missing root is skipped, not reported")
@@ -35,7 +36,7 @@ func TestConvertWalkerUnreadableRoot(t *testing.T) {
 
 	// A readable root still collects the files with matching extensions.
 	dir := t.TempDir()
-	wanted := filepath.Join(dir, "sheet"+SheetExt)
+	wanted := filepath.Join(dir, "sheet"+gurps.SheetExt)
 	c.NoError(os.WriteFile(wanted, []byte("{}"), 0o600))
 	c.NoError(os.WriteFile(filepath.Join(dir, "notes.txt"), []byte("{}"), 0o600))
 	c.NoError(filepath.WalkDir(dir, convertWalker(pathSet, extSet)))
@@ -49,17 +50,17 @@ func TestConvertWalkerIgnoresExtensionCase(t *testing.T) {
 	c := check.New(t)
 	dir := t.TempDir()
 	wanted := []string{
-		"lower" + SheetExt,
-		"upper" + strings.ToUpper(SheetExt),
+		"lower" + gurps.SheetExt,
+		"upper" + strings.ToUpper(gurps.SheetExt),
 		"Mixed.GcS",
-		"template" + strings.ToUpper(TemplatesExt),
+		"template" + strings.ToUpper(gurps.TemplatesExt),
 	}
 	for _, name := range append(slices.Clone(wanted), "notes.TXT") {
 		c.NoError(os.WriteFile(filepath.Join(dir, name), []byte("{}"), 0o600))
 	}
 
 	pathSet := make(map[string]struct{})
-	extSet := map[string]struct{}{SheetExt: {}, TemplatesExt: {}}
+	extSet := map[string]struct{}{gurps.SheetExt: {}, gurps.TemplatesExt: {}}
 	c.NoError(filepath.WalkDir(dir, convertWalker(pathSet, extSet)))
 
 	// The collected paths have been resolved through any symlinks, so compare the names rather than the paths.
@@ -76,15 +77,15 @@ func TestConvertWalkerIgnoresExtensionCase(t *testing.T) {
 
 // TestConvertersCoverCollectedExtensions verifies that every extension the conversion walker collects has an entry in
 // the converters map, so a file type GCS owns is never silently skipped because the map fell out of sync with the
-// extension lists. The primary extensions are listed here because the file type registry that GCSExtensions reads from
-// is populated by the ux package.
+// extension lists. The primary extensions are listed here because the file type registry that gurps.GCSExtensions
+// reads from is populated by the ux package.
 func TestConvertersCoverCollectedExtensions(t *testing.T) {
 	c := check.New(t)
 	primary := []string{
-		TraitsExt, TraitModifiersExt, EquipmentExt, EquipmentModifiersExt, LootExt, SkillsExt, SpellsExt, NotesExt,
-		TemplatesExt, SheetExt,
+		gurps.TraitsExt, gurps.TraitModifiersExt, gurps.EquipmentExt, gurps.EquipmentModifiersExt, gurps.LootExt,
+		gurps.SkillsExt, gurps.SpellsExt, gurps.NotesExt, gurps.TemplatesExt, gurps.SheetExt,
 	}
-	for _, ext := range append(primary, GCSSecondaryExtensions()...) {
+	for _, ext := range append(primary, gurps.GCSSecondaryExtensions()...) {
 		_, exists := converters[ext]
 		c.True(exists, "%s has a converter entry", ext)
 	}
@@ -99,12 +100,11 @@ func TestConvertersCoverCollectedExtensions(t *testing.T) {
 func TestConvertRewritesCollectedFiles(t *testing.T) {
 	c := check.New(t)
 	dir := t.TempDir()
-	oldVersion := jio.CurrentDataVersion - 1
-	bodyPath := filepath.Join(dir, "body"+BodyExtAlt)
-	c.NoError(jio.SaveToFile(bodyPath, &standaloneBodyData{Version: oldVersion, BodyData: FactoryBody().BodyData}))
-	attrPath := filepath.Join(dir, "attributes"+AttributesExtAlt1)
-	c.NoError(jio.SaveToFile(attrPath, &attributeDefsData{Version: oldVersion, Rows: FactoryAttributeDefs()}))
-	calendarPath := filepath.Join(dir, "calendar"+CalendarExt)
+	bodyPath := filepath.Join(dir, "body"+gurps.BodyExtAlt)
+	saveWithOldVersion(c, bodyPath, gurps.FactoryBody().Save)
+	attrPath := filepath.Join(dir, "attributes"+gurps.AttributesExtAlt1)
+	saveWithOldVersion(c, attrPath, gurps.FactoryAttributeDefs().Save)
+	calendarPath := filepath.Join(dir, "calendar"+gurps.CalendarExt)
 	calendarData := []byte(`{"version":1}`)
 	c.NoError(os.WriteFile(calendarPath, calendarData, 0o600))
 
@@ -121,17 +121,28 @@ func TestConvertRewritesCollectedFiles(t *testing.T) {
 // with the current data version, and that a file which cannot be loaded is reported rather than overwritten.
 func TestConvertFile(t *testing.T) {
 	c := check.New(t)
-	traitsPath := filepath.Join(t.TempDir(), "traits"+TraitsExt)
-	c.NoError(jio.SaveToFile(traitsPath, &listData[*Trait]{Version: jio.CurrentDataVersion - 1}))
-	c.NoError(converters[TraitsExt](traitsPath))
+	traitsPath := filepath.Join(t.TempDir(), "traits"+gurps.TraitsExt)
+	saveWithOldVersion(c, traitsPath, func(p string) error { return gurps.SaveTraits(nil, p) })
+	c.NoError(converters[gurps.TraitsExt](traitsPath))
 	c.Equal(jio.CurrentDataVersion, fileVersion(c, traitsPath))
 
 	broken := []byte("not json")
 	c.NoError(os.WriteFile(traitsPath, broken, 0o600))
-	c.HasError(converters[TraitsExt](traitsPath), "a file that fails to load is reported")
+	c.HasError(converters[gurps.TraitsExt](traitsPath), "a file that fails to load is reported")
 	data, err := os.ReadFile(traitsPath)
 	c.NoError(err)
 	c.Equal(broken, data, "a file that fails to load is not overwritten")
+}
+
+// saveWithOldVersion writes a file at the given path with save, the way the application does, and then rewinds the data
+// version recorded in it by one, which gives a conversion something to update.
+func saveWithOldVersion(c check.Checker, p string, save func(string) error) {
+	c.NoError(save(p))
+	var data map[string]any
+	c.NoError(jio.LoadFromFile(nil, p, &data))
+	data["version"] = jio.CurrentDataVersion - 1
+	c.NoError(jio.SaveToFile(p, data))
+	c.Equal(jio.CurrentDataVersion-1, fileVersion(c, p))
 }
 
 // fileVersion returns the data version recorded in the JSON file at the given path.

@@ -7,7 +7,7 @@
 // This Source Code Form is "Incompatible With Secondary Licenses", as
 // defined by the Mozilla Public License, version 2.0.
 
-package gurps
+package datasync
 
 import (
 	"os"
@@ -16,14 +16,26 @@ import (
 	"testing"
 	"time"
 
+	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/model/gurps/gurpstest"
 	"github.com/richardwilkes/toolbox/v2/check"
 )
+
+// newPopulatedEntity returns an entity holding a trait and a piece of carried equipment, so that a sync of it has
+// something to walk.
+func newPopulatedEntity() *gurps.Entity {
+	e := gurps.NewEntity()
+	gurpstest.AddTraitWithFeatures(e, "Claws")
+	gurpstest.AddCarriedEquipmentWithFeatures(e, "Backpack")
+	e.Recalculate()
+	return e
+}
 
 // TestLibrarySyncersCoverSyncedFileTypes verifies that the sheet, template and loot file types each have a loader in
 // the table SyncToLibraryData dispatches through, keyed the way the dispatch looks them up.
 func TestLibrarySyncersCoverSyncedFileTypes(t *testing.T) {
 	c := check.New(t)
-	for _, ext := range []string{SheetExt, TemplatesExt, LootExt} {
+	for _, ext := range []string{gurps.SheetExt, gurps.TemplatesExt, gurps.LootExt} {
 		_, exists := librarySyncers[ext]
 		c.True(exists, "%s has a loader entry", ext)
 	}
@@ -38,14 +50,14 @@ func TestLibrarySyncersCoverSyncedFileTypes(t *testing.T) {
 func TestSyncToLibraryDataProcessesEachFileType(t *testing.T) {
 	c := check.New(t)
 	dir := t.TempDir()
-	sheetPath := filepath.Join(dir, "sheet"+SheetExt)
+	sheetPath := filepath.Join(dir, "sheet"+gurps.SheetExt)
 	c.NoError(newPopulatedEntity().Save(sheetPath))
-	upperSheetPath := filepath.Join(dir, "upper"+strings.ToUpper(SheetExt))
-	c.NoError(NewEntity().Save(upperSheetPath))
-	templatePath := filepath.Join(dir, "template"+TemplatesExt)
-	c.NoError(NewTemplate().Save(templatePath))
-	lootPath := filepath.Join(dir, "loot"+LootExt)
-	c.NoError(NewLoot().Save(lootPath))
+	upperSheetPath := filepath.Join(dir, "upper"+strings.ToUpper(gurps.SheetExt))
+	c.NoError(gurps.NewEntity().Save(upperSheetPath))
+	templatePath := filepath.Join(dir, "template"+gurps.TemplatesExt)
+	c.NoError(gurps.NewTemplate().Save(templatePath))
+	lootPath := filepath.Join(dir, "loot"+gurps.LootExt)
+	c.NoError(gurps.NewLoot().Save(lootPath))
 	notesPath := filepath.Join(dir, "notes.txt")
 	c.NoError(os.WriteFile(notesPath, []byte("{}"), 0o600))
 

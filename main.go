@@ -16,6 +16,7 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/early"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	_ "github.com/richardwilkes/gcs/v5/model/gurps/datasync" // Registers the convert and sync run modes
 	"github.com/richardwilkes/gcs/v5/runmode"
 	"github.com/richardwilkes/gcs/v5/ux"
 	"github.com/richardwilkes/toolbox/v2/i18n"

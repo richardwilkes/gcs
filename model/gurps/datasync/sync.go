@@ -7,7 +7,7 @@
 // This Source Code Form is "Incompatible With Secondary Licenses", as
 // defined by the Mozilla Public License, version 2.0.
 
-package gurps
+package datasync
 
 import (
 	"fmt"
@@ -18,6 +18,7 @@ import (
 	"slices"
 	"strings"
 
+	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/toolbox/v2/xfilepath"
 	"github.com/richardwilkes/toolbox/v2/xslices"
@@ -71,9 +72,9 @@ type librarySyncable interface {
 // librarySyncers maps each GCS file extension, in lowercase, whose contents can be synced with their source libraries
 // to the function that loads a file of that type. The walker only collects files whose extensions are in this set.
 var librarySyncers = map[string]func(fs.FS, string) (librarySyncable, error){
-	LootExt:      loadLibrarySyncable(NewLootFromFile),
-	SheetExt:     loadLibrarySyncable(NewEntityFromFile),
-	TemplatesExt: loadLibrarySyncable(NewTemplateFromFile),
+	gurps.LootExt:      loadLibrarySyncable(gurps.NewLootFromFile),
+	gurps.SheetExt:     loadLibrarySyncable(gurps.NewEntityFromFile),
+	gurps.TemplatesExt: loadLibrarySyncable(gurps.NewTemplateFromFile),
 }
 
 // loadLibrarySyncable adapts a typed file loader to one that returns the loaded data as a librarySyncable.
