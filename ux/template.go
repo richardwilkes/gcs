@@ -97,13 +97,13 @@ func (t *Template) PageInfoProvider() gurps.PageInfoProvider {
 }
 
 func (t *Template) createToolbar() {
-	t.toolbar = newToolbar()
+	t.toolbar = NewToolbar()
 	t.AddChild(t.toolbar)
 	t.toolbar.AddChild(NewDefaultInfoPop())
 
 	addHelpButton(t.toolbar, "md:User%20Guide/Character%20Templates")
 
-	addUIScaleField(t.toolbar, func() int { return gurps.GlobalSettings().General.InitialSheetUIScale },
+	AddUIScaleField(t.toolbar, func() int { return gurps.GlobalSettings().General.InitialSheetUIScale },
 		func() int { return t.scale }, func(scale int) { t.scale = scale }, true, t.scroll)
 
 	hierarchyButton := unison.NewSVGButton(svg.Hierarchy)
@@ -132,7 +132,7 @@ func (t *Template) createToolbar() {
 
 	t.searchTracker = installListSearchTracker(t.toolbar, t.lists)
 
-	finishToolbarLayout(t.toolbar)
+	FinishToolbarLayout(t.toolbar)
 }
 
 func (t *Template) keyToPanel(key *uti.DataType) *unison.Panel {

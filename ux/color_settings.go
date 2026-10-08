@@ -32,7 +32,7 @@ type colorSettingsDockable struct {
 
 // ShowColorSettings shows the Color settings.
 func ShowColorSettings() {
-	if activateDockable[*colorSettingsDockable](nil) {
+	if ActivateDockableOfType[*colorSettingsDockable](nil) {
 		return
 	}
 	d := &colorSettingsDockable{}

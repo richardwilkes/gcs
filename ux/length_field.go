@@ -19,7 +19,7 @@ type LengthField = NumericField[fxp.Length]
 
 // NewLengthField creates a new field that holds a length value, shown in the entity's default length units.
 func NewLengthField(targetMgr *TargetMgr, targetKey, undoTitle string, entity *gurps.Entity, get func() fxp.Length, set func(fxp.Length), minValue, maxValue fxp.Length, noMinWidth bool) *LengthField {
-	return newUnitsField(targetMgr, targetKey, undoTitle, get, set,
+	return NewUnitsField(targetMgr, targetKey, undoTitle, get, set,
 		func(value fxp.Length) string { return gurps.SheetSettingsFor(entity).DefaultLengthUnits.Format(value) },
 		func(s string) (fxp.Length, error) {
 			return fxp.LengthFromString(s, gurps.SheetSettingsFor(entity).DefaultLengthUnits)

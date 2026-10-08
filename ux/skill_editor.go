@@ -157,13 +157,13 @@ func initSkillEditor(e *editor[*gurps.Skill, *gurps.SkillEditData], content *uni
 							var limit fxp.Int
 							e.editorData.TechniqueLimitModifier = &limit
 						}
-						adjustFieldBlank(limitField, false)
+						AdjustFieldBlank(limitField, false)
 					} else {
 						e.editorData.TechniqueLimitModifier = nil
-						adjustFieldBlank(limitField, true)
+						AdjustFieldBlank(limitField, true)
 					}
 				}))
-			adjustFieldBlank(limitField, e.editorData.TechniqueLimitModifier == nil)
+			AdjustFieldBlank(limitField, e.editorData.TechniqueLimitModifier == nil)
 			wrapper2.AddChild(limitField)
 			difficultyPopup := addLabelAndPopup(content, i18n.Text("Difficulty"), "", difficulty.TechniqueLevels,
 				&e.editorData.Difficulty.Difficulty)

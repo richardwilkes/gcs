@@ -7,7 +7,7 @@
 // This Source Code Form is "Incompatible With Secondary Licenses", as
 // defined by the Mozilla Public License, version 2.0.
 
-package ux
+package calculators
 
 import (
 	"slices"
@@ -15,6 +15,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/calculator"
+	"github.com/richardwilkes/gcs/v5/ux"
 	"github.com/richardwilkes/rpgtools/dice"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/unison"
@@ -78,11 +79,11 @@ type demolitionCalculator struct {
 	weightRow             *unison.Panel
 	damageResult          *unison.Label
 	tntResult             *unison.Label
-	explosiveWeightLabel  *textLabel
+	explosiveWeightLabel  *ux.TextLabel
 	explosiveWeightResult *unison.Label
-	blastCountField       *IntegerField
-	refField              *DecimalField
-	explosiveWeightField  *WeightField
+	blastCountField       *ux.IntegerField
+	refField              *ux.DecimalField
+	explosiveWeightField  *ux.WeightField
 	modes                 []demolitionMode
 	explosives            []explosiveChoice
 	customREF             fxp.Int
@@ -118,11 +119,11 @@ func (d *demolitionCalculator) panel() *unison.Panel {
 }
 
 // preselect implements calculatorTab. Nothing here comes from a sheet.
-func (d *demolitionCalculator) preselect(_ *Sheet) {
+func (d *demolitionCalculator) preselect(_ *ux.Sheet) {
 }
 
 // sheetChanged implements calculatorTab. Nothing here comes from a sheet.
-func (d *demolitionCalculator) sheetChanged(_ *Sheet) {
+func (d *demolitionCalculator) sheetChanged(_ *ux.Sheet) {
 }
 
 func (d *demolitionCalculator) createContent() {
@@ -134,7 +135,7 @@ func (d *demolitionCalculator) createContent() {
 	row = d.addRow(2)
 	addPlainLabel(row, i18n.Text("Explosive:"))
 	addIndexPopup(row, d.explosives, &d.explosiveIndex, d.changed)
-	d.refField = sameWidth(NewDecimalField(nil, "", i18n.Text("Relative Explosive Force"),
+	d.refField = sameWidth(ux.NewDecimalField(nil, "", i18n.Text("Relative Explosive Force"),
 		func() fxp.Int { return d.customREF },
 		func(v fxp.Int) {
 			d.customREF = v
@@ -142,7 +143,7 @@ func (d *demolitionCalculator) createContent() {
 		},
 		0, fxp.Max, false, false))
 	d.addFieldRow(d.refField, i18n.Text("relative explosive force (REF), with TNT as 1"))
-	d.blastCountField = sameWidth(NewIntegerField(nil, "", i18n.Text("Blast Multiplier"),
+	d.blastCountField = sameWidth(ux.NewIntegerField(nil, "", i18n.Text("Blast Multiplier"),
 		func() int { return d.blastCount },
 		func(v int) {
 			d.blastCount = v
@@ -150,7 +151,7 @@ func (d *demolitionCalculator) createContent() {
 		},
 		0, 9999, false, false))
 	d.addFieldRow(d.blastCountField, i18n.Text("n, where the blast is 6dxn"))
-	d.explosiveWeightField = NewWeightField(nil, "", i18n.Text("Explosive Weight"), nil,
+	d.explosiveWeightField = ux.NewWeightField(nil, "", i18n.Text("Explosive Weight"), nil,
 		func() fxp.Weight { return d.explosiveWeight },
 		func(v fxp.Weight) {
 			d.explosiveWeight = v
@@ -184,9 +185,9 @@ func (d *demolitionCalculator) changed() {
 // adjustControls enables, disables and blanks the fields to match the mode and the explosive: a control whose input
 // would not be used is blanked as well as disabled, so that a stale value cannot be read as part of the answer.
 func (d *demolitionCalculator) adjustControls() {
-	adjustFieldBlank(d.refField, !d.explosives[d.explosiveIndex].custom)
-	adjustFieldBlank(d.blastCountField, d.modeIndex != explosiveForBlastMode)
-	adjustFieldBlank(d.explosiveWeightField, d.modeIndex != blastFromExplosiveMode)
+	ux.AdjustFieldBlank(d.refField, !d.explosives[d.explosiveIndex].custom)
+	ux.AdjustFieldBlank(d.blastCountField, d.modeIndex != explosiveForBlastMode)
+	ux.AdjustFieldBlank(d.explosiveWeightField, d.modeIndex != blastFromExplosiveMode)
 	if d.modeIndex == explosiveForBlastMode {
 		fillSlot(d.weightSlot, d.weightRow)
 	} else {

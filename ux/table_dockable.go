@@ -165,9 +165,9 @@ func (d *TableDockable[T]) createToolbar() *unison.Panel {
 	// force, and is all that filters the list otherwise.
 	d.filterField = NewSearchField(i18n.Text("Quick Filter"), func(_, _ *unison.FieldState) { d.applyFilter() })
 
-	toolbar := newToolbar()
+	toolbar := NewToolbar()
 	toolbar.AddChild(NewDefaultInfoPop())
-	addUIScaleField(toolbar, func() int { return gurps.GlobalSettings().General.InitialListUIScale },
+	AddUIScaleField(toolbar, func() int { return gurps.GlobalSettings().General.InitialListUIScale },
 		func() int { return d.scale }, func(scale int) { d.scale = scale }, false, d.scroll)
 	toolbar.AddChild(d.hierarchyButton)
 	toolbar.AddChild(d.noteToggleButton)
@@ -184,7 +184,7 @@ func (d *TableDockable[T]) createToolbar() *unison.Panel {
 		})
 		toolbar.AddChild(d.savedFilters.popup)
 	}
-	finishToolbarLayout(toolbar)
+	FinishToolbarLayout(toolbar)
 	return toolbar
 }
 

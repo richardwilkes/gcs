@@ -7,7 +7,7 @@
 // This Source Code Form is "Incompatible With Secondary Licenses", as
 // defined by the Mozilla Public License, version 2.0.
 
-package ux
+package calculators
 
 import (
 	"fmt"
@@ -17,6 +17,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/calculator"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/encumbrance"
+	"github.com/richardwilkes/gcs/v5/ux"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
@@ -31,29 +32,29 @@ var _ calculatorTab = &hikingCalculator{}
 type hikingCalculator struct {
 	calculatorContent
 	source                       sheetSourcePicker
-	moveField                    *IntegerField
-	enhancedMoveField            *DecimalField
+	moveField                    *ux.IntegerField
+	enhancedMoveField            *ux.DecimalField
 	encumbrancePopup             *unison.PopupMenu[encumbrance.Level]
-	fpField                      *DecimalField
+	fpField                      *ux.DecimalField
 	fitnessPopup                 *unison.PopupMenu[calculator.HikingFitness]
 	recoverEnergyPopup           *unison.PopupMenu[calculator.HikingRecoverEnergy]
-	restField                    *IntegerField
+	restField                    *ux.IntegerField
 	restMealCheckBox             *unison.CheckBox
-	restExtraField               *IntegerField
+	restExtraField               *ux.IntegerField
 	breakdown                    *unison.Panel
 	notes                        *unison.Panel
 	hikingResult                 *unison.Label
-	hikingDistanceLabel          *textLabel
+	hikingDistanceLabel          *ux.TextLabel
 	hikingTimeLabel              *unison.Label
 	fpResult                     *unison.Label
-	fpLabel                      *textLabel
-	hikingHoursField             *DecimalField
-	hikingExtraEffortField       *IntegerField
+	fpLabel                      *ux.TextLabel
+	hikingHoursField             *ux.DecimalField
+	hikingExtraEffortField       *ux.IntegerField
 	roadsAreClearedCheckBox      *unison.CheckBox
 	usingSkisCheckBox            *unison.CheckBox
 	usingSkatesCheckBox          *unison.CheckBox
 	successfulHikingRollCheckBox *unison.CheckBox
-	hikingRollPageLabel          *textLabel
+	hikingRollPageLabel          *ux.TextLabel
 	terrain                      []calculator.TerrainModifier
 	weather                      []calculator.TerrainModifier
 	heat                         []calculator.HikingHeat
@@ -113,12 +114,12 @@ func (h *hikingCalculator) panel() *unison.Panel {
 }
 
 // preselect implements calculatorTab.
-func (h *hikingCalculator) preselect(sheet *Sheet) {
+func (h *hikingCalculator) preselect(sheet *ux.Sheet) {
 	h.source.preselect(sheet)
 }
 
 // sheetChanged implements calculatorTab.
-func (h *hikingCalculator) sheetChanged(sheet *Sheet) {
+func (h *hikingCalculator) sheetChanged(sheet *ux.Sheet) {
 	if h.source.sheet == sheet {
 		h.changed()
 	}
@@ -137,7 +138,7 @@ func (h *hikingCalculator) createContent() {
 	h.source.refreshed = h.pullFromSheet
 	h.source.changed = h.changed
 	h.source.addRow(&h.calculatorContent, i18n.Text("Source:"))
-	h.moveField = sameWidth(NewIntegerField(nil, "", i18n.Text("Move"),
+	h.moveField = sameWidth(ux.NewIntegerField(nil, "", i18n.Text("Move"),
 		func() int { return h.move },
 		func(v int) {
 			h.move = v
@@ -145,7 +146,7 @@ func (h *hikingCalculator) createContent() {
 		},
 		0, 10000, false, false))
 	h.addFieldRow(h.moveField, i18n.Text("Move, with encumbrance"))
-	h.enhancedMoveField = sameWidth(NewDecimalField(nil, "", i18n.Text("Enhanced Move"),
+	h.enhancedMoveField = sameWidth(ux.NewDecimalField(nil, "", i18n.Text("Enhanced Move"),
 		func() fxp.Int { return h.enhancedMove },
 		func(v fxp.Int) {
 			h.enhancedMove = v
@@ -156,7 +157,7 @@ func (h *hikingCalculator) createContent() {
 	row := h.addRow(2)
 	addPlainLabel(row, i18n.Text("Encumbrance:"))
 	h.encumbrancePopup = addIndexPopup(row, encumbrance.Levels, &h.encumbranceIndex, h.changed)
-	h.fpField = sameWidth(NewDecimalField(nil, "", i18n.Text("Fatigue Points"),
+	h.fpField = sameWidth(ux.NewDecimalField(nil, "", i18n.Text("Fatigue Points"),
 		func() fxp.Int { return h.fp },
 		func(v fxp.Int) {
 			h.fp = v
@@ -192,7 +193,7 @@ func (h *hikingCalculator) createContent() {
 	row.AddChild(h.successfulHikingRollCheckBox)
 	h.hikingRollPageLabel = addPlainLabel(row, "")
 
-	h.hikingHoursField = sameWidth(NewDecimalField(nil, "", i18n.Text("Traveling Hours per Day"),
+	h.hikingHoursField = sameWidth(ux.NewDecimalField(nil, "", i18n.Text("Traveling Hours per Day"),
 		func() fxp.Int { return h.hikingHours },
 		func(v fxp.Int) {
 			h.hikingHours = v
@@ -200,7 +201,7 @@ func (h *hikingCalculator) createContent() {
 		},
 		0, fxp.TwentyFour, false, false))
 	h.addFieldRow(h.hikingHoursField, i18n.Text("hours of hiking per day"))
-	h.restField = sameWidth(NewIntegerField(nil, "", i18n.Text("Rest"),
+	h.restField = sameWidth(ux.NewIntegerField(nil, "", i18n.Text("Rest"),
 		func() int { return h.restMinutes },
 		func(v int) {
 			h.restMinutes = v
@@ -209,7 +210,7 @@ func (h *hikingCalculator) createContent() {
 		0, 24*60, false, false))
 	h.addFieldRow(h.restField, i18n.Text("minutes of rest halfway through the day (0 for none)"))
 	h.restMealCheckBox = h.addCheckBox(i18n.Text("Eats a decent meal while resting (+1 FP)"), &h.restMeal, h.changed)
-	h.restExtraField = sameWidth(NewIntegerField(nil, "", i18n.Text("FP Restored While Resting"),
+	h.restExtraField = sameWidth(ux.NewIntegerField(nil, "", i18n.Text("FP Restored While Resting"),
 		func() int { return h.restExtraFP },
 		func(v int) {
 			h.restExtraFP = v
@@ -217,7 +218,7 @@ func (h *hikingCalculator) createContent() {
 		},
 		0, 1000, false, false))
 	h.addFieldRow(h.restExtraField, i18n.Text("FP restored by Lend Energy, potions, etc. while resting"))
-	h.hikingExtraEffortField = sameWidth(NewIntegerField(nil, "", i18n.Text("Hiking Extra Effort Penalty"),
+	h.hikingExtraEffortField = sameWidth(ux.NewIntegerField(nil, "", i18n.Text("Hiking Extra Effort Penalty"),
 		func() int { return h.hikingExtraEffortPenalty },
 		func(v int) {
 			h.hikingExtraEffortPenalty = v
@@ -225,7 +226,7 @@ func (h *hikingCalculator) createContent() {
 		},
 		-100, 0, false, false))
 	h.addFieldRow(h.hikingExtraEffortField, i18n.Text("penalty taken for extra effort (+5% distance per -1)"))
-	h.hikingDistanceLabel = h.addFieldRow(sameWidth(NewDecimalField(nil, "", i18n.Text("Distance to Cover"),
+	h.hikingDistanceLabel = h.addFieldRow(sameWidth(ux.NewDecimalField(nil, "", i18n.Text("Distance to Cover"),
 		func() fxp.Int { return h.hikingDistance },
 		func(v fxp.Int) {
 			h.hikingDistance = v
@@ -249,7 +250,7 @@ func (h *hikingCalculator) createContent() {
 
 // selectSheet reads the hiker's numbers from the sheet the picker has just made its source, and does nothing at all
 // when there is none.
-func (h *hikingCalculator) selectSheet(sheet *Sheet) {
+func (h *hikingCalculator) selectSheet(sheet *ux.Sheet) {
 	if sheet != nil {
 		h.pullFromSheet()
 	}
@@ -327,9 +328,9 @@ func (h *hikingCalculator) adjustControls() {
 	h.roadsAreClearedCheckBox.SetEnabled(hike.RoadsCanBeCleared())
 	// The penalty is not used without a successful roll, so the field is blanked as well as disabled, and the same
 	// goes for what the rest brings when there is no rest.
-	adjustFieldBlank(h.hikingExtraEffortField, !h.successfulHikingRoll)
+	ux.AdjustFieldBlank(h.hikingExtraEffortField, !h.successfulHikingRoll)
 	h.restMealCheckBox.SetEnabled(h.restMinutes > 0)
-	adjustFieldBlank(h.restExtraField, h.restMinutes <= 0)
+	ux.AdjustFieldBlank(h.restExtraField, h.restMinutes <= 0)
 	h.content.MarkForLayoutRecursively()
 	h.content.MarkForLayoutRecursivelyUpward()
 	h.content.MarkForRedraw()

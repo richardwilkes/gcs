@@ -7,7 +7,7 @@
 // This Source Code Form is "Incompatible With Secondary Licenses", as
 // defined by the Mozilla Public License, version 2.0.
 
-package ux
+package calculators
 
 import (
 	"slices"
@@ -15,6 +15,8 @@ import (
 	"testing"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/ux"
+	"github.com/richardwilkes/gcs/v5/ux/uxtest"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/unison"
@@ -25,14 +27,11 @@ import (
 
 func TestTextLabelLinksReachScreenReadersAndTheKeyboard(t *testing.T) {
 	c := check.New(t)
-	screen, wnd := startHeadlessWorkspace(t, c)
-	sheet, ok := openedByAction(t, screen, newCharacterSheetAction).(*Sheet)
-	if !ok {
-		t.Fatal("New Character Sheet must open a character sheet")
-	}
-	screen.Do(func() { DisplayCalculator(sheet) })
-	calc := soleEditor[*Calculator](t, screen, func(d unison.Dockable) bool {
-		_, isCalculator := d.AsPanel().Self.(*Calculator)
+	screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
+	sheet := uxtest.OpenNewCharacterSheet(t, screen)
+	screen.Do(func() { Display(sheet) })
+	calc := uxtest.SoleEditor[*Dockable](t, screen, func(d unison.Dockable) bool {
+		_, isCalculator := d.AsPanel().Self.(*Dockable)
 		return isCalculator
 	})
 	demolition := calc.demolition
@@ -40,8 +39,8 @@ func TestTextLabelLinksReachScreenReadersAndTheKeyboard(t *testing.T) {
 	if screen.AccessibilityTree(wnd) == nil {
 		t.Fatal("the window must be described")
 	}
-	current := func(l *textLabel) (index int) {
-		screen.Do(func() { index = l.current })
+	current := func(l *ux.TextLabel) (index int) {
+		screen.Do(func() { index = l.CurrentLink() })
 		return index
 	}
 	focus := func() (focus *unison.Panel) {
@@ -49,22 +48,22 @@ func TestTextLabelLinksReachScreenReadersAndTheKeyboard(t *testing.T) {
 		return focus
 	}
 
-	var multi *textLabel
+	var multi *ux.TextLabel
 	var refs []string
 	var followed []string
 	record := func(ref string) { followed = append(followed, ref) }
 	screen.Do(func() {
-		for _, one := range panelsOfType[*textLabel](demolition.content) {
-			if links := one.links(); len(links) > 1 {
+		for _, one := range uxtest.PanelsOfType[*ux.TextLabel](demolition.content) {
+			if links := one.Links(); len(links) > 1 {
 				multi = one
 				for _, link := range links {
-					refs = append(refs, link.ref)
+					refs = append(refs, link.Ref)
 				}
 				break
 			}
 		}
 		if multi != nil {
-			multi.linkHandler = record
+			multi.LinkHandler = record
 		}
 	})
 	if multi == nil {
@@ -145,7 +144,7 @@ func TestTextLabelLinksReachScreenReadersAndTheKeyboard(t *testing.T) {
 	c.Equal(last, current(multi))
 	c.Equal(node.Children[last], screen.AccessibilityTree(wnd).Focus)
 
-	setFocusForReading := focusForReadingSetter(t, screen, wnd)
+	setFocusForReading := uxtest.FocusForReadingSetter(t, screen, wnd)
 	setFocusForReading(true)
 	screen.KeyPress(unison.KeyTab, mod.None)
 	c.NotEqual(multi.AsPanel(), focus())
@@ -171,13 +170,13 @@ func TestTextLabelLinksReachScreenReadersAndTheKeyboard(t *testing.T) {
 	hiking := calc.hiking
 	selectCalculatorTab(t, screen, calc, hiking)
 	single := hiking.hikingRollPageLabel
-	screen.Do(func() { single.linkHandler = record })
-	c.Equal(1, len(single.links()), "the hiking roll's page label cites one page")
+	screen.Do(func() { single.LinkHandler = record })
+	c.Equal(1, len(single.Links()), "the hiking roll's page label cites one page")
 	screen.Do(single.RequestFocus)
 	c.Equal(single.AsPanel(), focus(), "a label holding a link takes the focus")
 	c.Equal(0, current(single), "with the keyboard on the link")
 	screen.KeyPress(unison.KeySpace, mod.None)
-	c.Equal([]string{single.links()[0].ref}, followed, "Space follows the link")
+	c.Equal([]string{single.Links()[0].Ref}, followed, "Space follows the link")
 }
 
 // Each of the header's links opens its page with the words it stands for highlighted.
@@ -185,22 +184,22 @@ func TestCalculatorHeaderIsOneHeadingHoldingItsLinks(t *testing.T) {
 	c := check.New(t)
 	type opened struct{ pageRef, highlight string }
 	var followed []opened
-	swapForTest(t, &headerPageRefOpener, func(pageRef, highlight string) {
+	uxtest.SwapForTest(t, &headerPageRefOpener, func(pageRef, highlight string) {
 		followed = append(followed, opened{pageRef: pageRef, highlight: highlight})
 	})
-	screen, wnd := startHeadlessWorkspace(t, c)
+	screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
 	calc := openCalculator(t, screen)
 	explosion := calc.explosion
 	selectCalculatorTab(t, screen, calc, explosion)
-	var header *textLabel
+	var header *ux.TextLabel
 	var texts []string
 	screen.Do(func() {
 		if children := explosion.content.Children(); len(children) > 0 {
-			if label, isLabel := children[0].Self.(*textLabel); isLabel {
+			if label, isLabel := children[0].Self.(*ux.TextLabel); isLabel {
 				header = label
 			}
 		}
-		texts = labelTexts(explosion.content)
+		texts = uxtest.LabelTexts(explosion.content)
 	})
 	if header == nil {
 		t.Fatal("the calculator must start with its header")
@@ -266,12 +265,12 @@ func TestCalculatorHeaderIsOneHeadingHoldingItsLinks(t *testing.T) {
 			if len(children) == 0 {
 				return
 			}
-			if label, isLabel := children[0].Self.(*textLabel); isLabel {
+			if label, isLabel := children[0].Self.(*ux.TextLabel); isLabel {
 				text = label.String()
 				_, pref, _ := label.Sizes(geom.Size{})
 				label.SetFrameRect(geom.NewRect(0, 0, pref.Width, pref.Height))
-				for _, link := range label.links() {
-					refs = append(refs, link.ref)
+				for _, link := range label.Links() {
+					refs = append(refs, link.Ref)
 				}
 			}
 		})
@@ -285,10 +284,10 @@ func TestCalculatorHeaderIsOneHeadingHoldingItsLinks(t *testing.T) {
 
 func TestTextLabelLinksAreTabStopsWithoutAScreenReader(t *testing.T) {
 	c := check.New(t)
-	screen, wnd := startHeadlessWorkspace(t, c)
+	screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
 	// Focus for reading is on, but must change nothing while no screen reader is listening.
 	gs := gurps.GlobalSettings().General
-	swapForTest(t, &gs.FocusForReading, true)
+	uxtest.SwapForTest(t, &gs.FocusForReading, true)
 	saved := unison.FocusForReading()
 	t.Cleanup(func() { screen.Do(func() { unison.SetFocusForReading(saved) }) })
 	screen.Do(gs.UpdateFocusForReading)
@@ -300,23 +299,23 @@ func TestTextLabelLinksAreTabStopsWithoutAScreenReader(t *testing.T) {
 	if active {
 		t.Fatal("no screen reader may be listening")
 	}
-	var header *textLabel
-	var plain []*textLabel
+	var header *ux.TextLabel
+	var plain []*ux.TextLabel
 	var stops []*unison.Panel
 	var followed []string
 	screen.Do(func() {
-		for _, one := range panelsOfType[*textLabel](explosion.content) {
-			if one.String() != "" && len(one.links()) == 0 {
+		for _, one := range uxtest.PanelsOfType[*ux.TextLabel](explosion.content) {
+			if one.String() != "" && len(one.Links()) == 0 {
 				plain = append(plain, one)
 			}
 		}
 		if children := explosion.content.Children(); len(children) > 0 {
-			if label, isLabel := children[0].Self.(*textLabel); isLabel {
+			if label, isLabel := children[0].Self.(*ux.TextLabel); isLabel {
 				header = label
-				header.linkHandler = func(ref string) { followed = append(followed, ref) }
+				header.LinkHandler = func(ref string) { followed = append(followed, ref) }
 			}
 		}
-		stops = panelsMatching(explosion.content, (*unison.Panel).Focusable)
+		stops = uxtest.PanelsMatching(explosion.content, (*unison.Panel).Focusable)
 	})
 	if header == nil {
 		t.Fatal("the calculator must start with its header")
@@ -341,7 +340,7 @@ func TestTextLabelLinksAreTabStopsWithoutAScreenReader(t *testing.T) {
 		return focus
 	}
 	current := func() (index int) {
-		screen.Do(func() { index = header.current })
+		screen.Do(func() { index = header.CurrentLink() })
 		return index
 	}
 

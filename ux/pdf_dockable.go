@@ -312,7 +312,7 @@ func (d *PDFDockable) pageLabel(pageNum int) string {
 }
 
 func (d *PDFDockable) createToolbar() *unison.Panel {
-	outer := newToolbar()
+	outer := NewToolbar()
 
 	first := unison.NewPanel()
 	first.SetLayoutData(&unison.FlexLayoutData{

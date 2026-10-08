@@ -148,7 +148,7 @@ func TestPickerDialogFitsItsContent(t *testing.T) {
 		}
 		fits("the rows' text is in place when the dialog is sized")
 		wnd.ValidateLayout()
-		hints := panelsOfType[*textLabel](wnd.Content())
+		hints := panelsOfType[*TextLabel](wnd.Content())
 		scrolls := panelsOfType[*unison.ScrollPanel](wnd.Content())
 		c.Equal(1, len(hints))
 		c.Equal(1, len(scrolls))
@@ -280,7 +280,7 @@ func TestPickerDialogHintColor(t *testing.T) {
 				return
 			}
 			defer dialog.Window().Dispose()
-			hints := panelsOfType[*textLabel](dialog.Window().Content())
+			hints := panelsOfType[*TextLabel](dialog.Window().Content())
 			c.Equal(1, len(hints))
 			c.Equal(tc.ink, hints[0].ink, tc.row)
 			c.Equal(tc.boxed, hints[0].Border() != nil, "only a warning or an error is set out in a box: %s", tc.row)

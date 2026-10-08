@@ -40,14 +40,14 @@ func panelsOfType[T any](root *unison.Panel) []T {
 }
 
 // labelTexts returns the text of every label within the subtree rooted at root, in pre-order, whether it is a
-// unison.Label or one of the calculators' link-aware textLabels.
+// unison.Label or one of the calculators' link-aware TextLabels.
 func labelTexts(root *unison.Panel) []string {
 	var texts []string
 	root.HasInSelfOrDescendants(func(p *unison.Panel) bool {
 		switch label := p.Self.(type) {
 		case *unison.Label:
 			texts = append(texts, label.String())
-		case *textLabel:
+		case *TextLabel:
 			texts = append(texts, label.String())
 		}
 		return false

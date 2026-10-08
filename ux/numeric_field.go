@@ -57,11 +57,11 @@ func NewNumericFieldWithException[T xmath.Integer | xmath.Float](targetMgr *Targ
 	return f
 }
 
-// newUnitsField creates a new field that holds a fixed-point value carrying units, such as a length or a weight. The
+// NewUnitsField creates a new field that holds a fixed-point value carrying units, such as a length or a weight. The
 // format and extract functions are expected to render and parse the value in the units the entity is using. Unlike the
 // other numeric fields, keystrokes are not validated as they are typed, since the extractor rejects the text while a
 // units suffix is being typed after the number.
-func newUnitsField[T ~int64](targetMgr *TargetMgr, targetKey, undoTitle string, get func() T, set func(T), format func(T) string, extract func(string) (T, error), minValue, maxValue T, noMinWidth bool) *NumericField[T] {
+func NewUnitsField[T ~int64](targetMgr *TargetMgr, targetKey, undoTitle string, get func() T, set func(T), format func(T) string, extract func(string) (T, error), minValue, maxValue T, noMinWidth bool) *NumericField[T] {
 	var getPrototypes func(minValue, maxValue T) []T
 	if !noMinWidth {
 		getPrototypes = fixedPointPrototypes[T]

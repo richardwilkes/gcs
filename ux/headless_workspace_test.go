@@ -59,7 +59,7 @@ func startHeadlessWorkspace(t *testing.T, c check.Checker) (*unison.HeadlessScre
 				t.Errorf("unable to create the workspace window: %v", wndErr)
 				return
 			}
-			registerWindowDragTypes(w)
+			RegisterWindowDragTypes(w)
 			SetupMenuBar(w)
 			InitWorkspace(w)
 			wnd = w

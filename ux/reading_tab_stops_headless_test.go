@@ -235,71 +235,17 @@ func TestBodyNotesHeaderIsReadAsTheOtherHeadersAre(t *testing.T) {
 }
 
 // A label that follows a field, such as its units, is the field's description rather than an element of its own, so it
-// is no tab stop with static text in the Tab order.
+// is no tab stop with static text in the Tab order. (The calculators' link-aware labels are covered by the same test
+// in ux/calculators.)
 func TestTrailingLabelsDescribeTheirFields(t *testing.T) {
 	c := check.New(t)
 	screen, wnd := startHeadlessWorkspace(t, c)
 	setFocusForReading := focusForReadingSetter(t, screen, wnd)
-	sheet, ok := openedByAction(t, screen, newCharacterSheetAction).(*Sheet)
-	if !ok {
-		t.Fatal("New Character Sheet must open a character sheet")
-	}
-	screen.Do(func() { DisplayCalculator(sheet) })
-	calc := soleEditor[*Calculator](t, screen, func(d unison.Dockable) bool {
-		_, isCalculator := d.AsPanel().Self.(*Calculator)
-		return isCalculator
-	})
-	hiking := calc.hiking
-	selectCalculatorTab(t, screen, calc, hiking)
 	setFocusForReading(true)
 	focusable := func(p unison.Paneler) (result bool) {
 		screen.Do(func() { result = p.AsPanel().Focusable() })
 		return result
 	}
-
-	var trailing *textLabel
-	screen.Do(func() {
-		children := hiking.restField.Parent().Children()
-		if len(children) == 2 {
-			if label, isLabel := children[1].Self.(*textLabel); isLabel {
-				trailing = label
-			}
-		}
-	})
-	if trailing == nil {
-		t.Fatal("the rest field must be followed by its label")
-	}
-	node := screen.AccessibilityNodeFor(hiking.restField)
-	if node == nil {
-		t.Fatal("the rest field must be described")
-	}
-	c.Equal("minutes of rest halfway through the day (0 for none)", node.Description)
-	c.False(focusable(trailing), "the label is heard with the field, so it is no tab stop")
-	if label := screen.AccessibilityNodeFor(trailing); label != nil {
-		c.True(label.Ignored, "the label is heard with the field, so it is not described, but is %+v", label)
-	}
-	// The description follows the label's text as it changes.
-	screen.Do(func() { trailing.SetTitle("minutes of rest") })
-	if screen.AccessibilityTree(wnd) == nil {
-		t.Fatal("the window must be described")
-	}
-	node = screen.AccessibilityNodeFor(hiking.restField)
-	c.Equal("minutes of rest", node.Description)
-	// A label holding a link is described, and is a tab stop so that the link can be reached.
-	screen.Do(func() { trailing.SetTitle("minutes of rest (B426)") })
-	if screen.AccessibilityTree(wnd) == nil {
-		t.Fatal("the window must be described")
-	}
-	c.True(focusable(trailing), "a label holding a link is a tab stop")
-	label := screen.AccessibilityNodeFor(trailing)
-	if label == nil {
-		t.Fatal("a label holding a link must be described")
-	}
-	c.False(label.Ignored)
-	c.Equal(role.Label, label.Role)
-	c.Equal(1, len(label.Children), "the link is an element within the label")
-	c.Equal("minutes of rest (B426)", screen.AccessibilityNodeFor(hiking.restField).Description)
-
 	screen.Do(ShowGeneralSettings)
 	var settings *generalSettingsDockable
 	screen.Do(func() { settings, _ = firstPanelOfType[*generalSettingsDockable](wnd.Content()) })
@@ -319,7 +265,7 @@ func TestTrailingLabelsDescribeTheirFields(t *testing.T) {
 		{field: settings.cursorSizeField.AsPanel(), name: "Cursor Size", hint: "points"},
 		{field: settings.exportResolutionField.AsPanel(), name: "Image Export Resolution", hint: "ppi"},
 	} {
-		node = screen.AccessibilityNodeFor(one.field)
+		node := screen.AccessibilityNodeFor(one.field)
 		if node == nil {
 			t.Fatalf("the %s field must be described", one.name)
 		}
@@ -339,7 +285,7 @@ func TestTrailingLabelsDescribeTheirFields(t *testing.T) {
 		}
 		c.Equal(one.hint, units.String())
 		c.False(focusable(units), "the units of the %s field are heard with it, so they are no tab stop", one.name)
-		if label = screen.AccessibilityNodeFor(units); label != nil {
+		if label := screen.AccessibilityNodeFor(units); label != nil {
 			c.True(label.Ignored, "the units of the %s field are not described, but are %+v", one.name, label)
 		}
 	}

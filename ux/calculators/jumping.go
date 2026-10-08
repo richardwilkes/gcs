@@ -7,12 +7,13 @@
 // This Source Code Form is "Incompatible With Secondary Licenses", as
 // defined by the Mozilla Public License, version 2.0.
 
-package ux
+package calculators
 
 import (
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/calculator"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/encumbrance"
+	"github.com/richardwilkes/gcs/v5/ux"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/unison"
 )
@@ -26,14 +27,14 @@ var _ calculatorTab = &jumpingCalculator{}
 type jumpingCalculator struct {
 	calculatorContent
 	source             sheetSourcePicker
-	basicMoveField     *DecimalField
-	liftingSTField     *DecimalField
-	weightField        *WeightField
+	basicMoveField     *ux.DecimalField
+	liftingSTField     *ux.DecimalField
+	weightField        *ux.WeightField
 	encumbrancePopup   *unison.PopupMenu[encumbrance.Level]
-	jumpingSkillField  *IntegerField
-	enhancedMoveField  *DecimalField
-	superJumpField     *DecimalField
-	runningStartLabel  *textLabel
+	jumpingSkillField  *ux.IntegerField
+	enhancedMoveField  *ux.DecimalField
+	superJumpField     *ux.DecimalField
+	runningStartLabel  *ux.TextLabel
 	highJumpResult     *unison.Label
 	broadJumpResult    *unison.Label
 	notes              *unison.Panel
@@ -70,12 +71,12 @@ func (j *jumpingCalculator) panel() *unison.Panel {
 }
 
 // preselect implements calculatorTab.
-func (j *jumpingCalculator) preselect(sheet *Sheet) {
+func (j *jumpingCalculator) preselect(sheet *ux.Sheet) {
 	j.source.preselect(sheet)
 }
 
 // sheetChanged implements calculatorTab.
-func (j *jumpingCalculator) sheetChanged(sheet *Sheet) {
+func (j *jumpingCalculator) sheetChanged(sheet *ux.Sheet) {
 	if j.source.sheet == sheet {
 		j.changed()
 	}
@@ -91,7 +92,7 @@ func (j *jumpingCalculator) createContent() {
 	j.source.changed = j.changed
 	j.source.addRow(&j.calculatorContent, i18n.Text("Source:"))
 
-	j.basicMoveField = sameWidth(NewDecimalField(nil, "", i18n.Text("Basic Move"),
+	j.basicMoveField = sameWidth(ux.NewDecimalField(nil, "", i18n.Text("Basic Move"),
 		func() fxp.Int { return j.basicMove },
 		func(v fxp.Int) {
 			j.basicMove = v
@@ -99,7 +100,7 @@ func (j *jumpingCalculator) createContent() {
 		},
 		0, fxp.Max, false, false))
 	j.addFieldRow(j.basicMoveField, i18n.Text("Basic Move"))
-	j.liftingSTField = sameWidth(NewDecimalField(nil, "", i18n.Text("Lifting ST"),
+	j.liftingSTField = sameWidth(ux.NewDecimalField(nil, "", i18n.Text("Lifting ST"),
 		func() fxp.Int { return j.liftingST },
 		func(v fxp.Int) {
 			j.liftingST = v
@@ -118,7 +119,7 @@ func (j *jumpingCalculator) createContent() {
 	row := j.addRow(2)
 	addPlainLabel(row, i18n.Text("Encumbrance:"))
 	j.encumbrancePopup = addIndexPopup(row, encumbrance.Levels, &j.encumbranceIndex, j.changed)
-	j.jumpingSkillField = sameWidth(NewIntegerField(nil, "", i18n.Text("Jumping Skill"),
+	j.jumpingSkillField = sameWidth(ux.NewIntegerField(nil, "", i18n.Text("Jumping Skill"),
 		func() int { return j.jumpingSkill },
 		func(v int) {
 			j.jumpingSkill = v
@@ -126,7 +127,7 @@ func (j *jumpingCalculator) createContent() {
 		},
 		0, 100, false, false))
 	j.addFieldRow(j.jumpingSkillField, i18n.Text("Jumping skill level (0 for none)"))
-	j.enhancedMoveField = sameWidth(NewDecimalField(nil, "", i18n.Text("Enhanced Move"),
+	j.enhancedMoveField = sameWidth(ux.NewDecimalField(nil, "", i18n.Text("Enhanced Move"),
 		func() fxp.Int { return j.enhancedMove },
 		func(v fxp.Int) {
 			j.enhancedMove = v
@@ -134,7 +135,7 @@ func (j *jumpingCalculator) createContent() {
 		},
 		0, fxp.Max, false, false))
 	j.addFieldRow(j.enhancedMoveField, i18n.Text("levels of Enhanced Move (Ground)"))
-	j.superJumpField = sameWidth(NewDecimalField(nil, "", i18n.Text("Super Jump"),
+	j.superJumpField = sameWidth(ux.NewDecimalField(nil, "", i18n.Text("Super Jump"),
 		func() fxp.Int { return j.superJump },
 		func(v fxp.Int) {
 			j.superJump = v
@@ -144,14 +145,14 @@ func (j *jumpingCalculator) createContent() {
 	j.addFieldRow(j.superJumpField, i18n.Text("levels of Super Jump"))
 
 	j.addSubheader(i18n.Text("Jump"))
-	j.runningStartLabel = j.addFieldRow(sameWidth(NewDecimalField(nil, "", i18n.Text("Jump Running Start"),
+	j.runningStartLabel = j.addFieldRow(sameWidth(ux.NewDecimalField(nil, "", i18n.Text("Jump Running Start"),
 		func() fxp.Int { return j.runningStart },
 		func(v fxp.Int) {
 			j.runningStart = v
 			j.changed()
 		},
 		0, fxp.Max, false, false)), "")
-	j.addFieldRow(sameWidth(NewIntegerField(nil, "", i18n.Text("Jumping Extra Effort Penalty"),
+	j.addFieldRow(sameWidth(ux.NewIntegerField(nil, "", i18n.Text("Jumping Extra Effort Penalty"),
 		func() int { return j.extraEffortPenalty },
 		func(v int) {
 			j.extraEffortPenalty = v
@@ -170,7 +171,7 @@ func (j *jumpingCalculator) createContent() {
 
 // selectSheet reads the jumper's numbers from the sheet the picker has just made its source, and does nothing at all
 // when there is none.
-func (j *jumpingCalculator) selectSheet(sheet *Sheet) {
+func (j *jumpingCalculator) selectSheet(sheet *ux.Sheet) {
 	if sheet != nil {
 		j.pullFromSheet()
 	}

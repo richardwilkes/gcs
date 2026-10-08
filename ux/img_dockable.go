@@ -116,7 +116,7 @@ func NewImageDockable(filePath string) (unison.Dockable, error) {
 	sizeLabel.Font = unison.DefaultFieldTheme.Font
 	sizeLabel.SetTitle(fmt.Sprintf("%d x %d pixels", int(size.Width), int(size.Height)))
 
-	toolbar := newToolbar()
+	toolbar := NewToolbar()
 	toolbar.AddChild(NewDefaultInfoPop())
 	toolbar.AddChild(
 		NewScaleField(
@@ -133,7 +133,7 @@ func NewImageDockable(filePath string) (unison.Dockable, error) {
 	)
 	toolbar.AddChild(typeLabel)
 	toolbar.AddChild(sizeLabel)
-	finishToolbarLayout(toolbar)
+	FinishToolbarLayout(toolbar)
 
 	d.AddChild(toolbar)
 	d.AddChild(d.scroll)

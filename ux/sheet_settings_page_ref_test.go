@@ -33,7 +33,7 @@ func TestSheetSettingsCheckBoxPageRefIsOnePieceOfText(t *testing.T) {
 		t.Fatalf("the wrapper must hold the checkbox and its page reference, but holds %d children", len(children))
 	}
 	c.Equal(box.AsPanel(), children[0])
-	label, ok := children[1].Self.(*textLabel)
+	label, ok := children[1].Self.(*TextLabel)
 	if !ok {
 		t.Fatalf("the page reference must be a label holding the link, not a %T", children[1].Self)
 	}
@@ -41,13 +41,13 @@ func TestSheetSettingsCheckBoxPageRefIsOnePieceOfText(t *testing.T) {
 	c.True(label.Focusable(), "the link is reached by the keyboard focus, screen reader or not")
 	_, pref, _ := label.Sizes(geom.Size{})
 	label.SetFrameRect(geom.NewRect(0, 0, pref.Width, pref.Height))
-	links := label.links()
+	links := label.Links()
 	if len(links) != 1 {
 		t.Fatalf("the page reference must hold one link, but holds %d", len(links))
 	}
-	c.Equal("B269", links[0].ref)
+	c.Equal("B269", links[0].Ref)
 	var followed []string
-	label.linkHandler = func(ref string) { followed = append(followed, ref) }
+	label.LinkHandler = func(ref string) { followed = append(followed, ref) }
 	c.True(label.keyDown(unison.KeySpace, 0, false), "Space follows the only link")
 	c.Equal([]string{"B269"}, followed)
 
@@ -56,7 +56,7 @@ func TestSheetSettingsCheckBoxPageRefIsOnePieceOfText(t *testing.T) {
 	c.Equal([]*unison.Panel{box.AsPanel()}, plain.Children(), "a checkbox without a page reference stands alone")
 }
 
-// linkPageRefs recognizes only Basic Set references, so this covers those to other books, such as "PY65:30".
+// LinkPageRefs recognizes only Basic Set references, so this covers those to other books, such as "PY65:30".
 func TestSheetSettingsPageRefsAreAllLinks(t *testing.T) {
 	c := check.New(t)
 	d := &sheetSettingsDockable{}
@@ -68,7 +68,7 @@ func TestSheetSettingsPageRefsAreAllLinks(t *testing.T) {
 		refs = append(refs, option.pageRef)
 		panel := unison.NewPanel()
 		d.addCheckBox(panel, option.title, option.pageRef, false, func(bool) {})
-		labels := panelsOfType[*textLabel](panel)
+		labels := panelsOfType[*TextLabel](panel)
 		if len(labels) != 1 {
 			t.Fatalf("%q must be followed by its page reference, but %d labels follow it", option.title, len(labels))
 		}
@@ -76,13 +76,13 @@ func TestSheetSettingsPageRefsAreAllLinks(t *testing.T) {
 		c.Equal("("+option.pageRef+")", label.String())
 		_, pref, _ := label.Sizes(geom.Size{})
 		label.SetFrameRect(geom.NewRect(0, 0, pref.Width, pref.Height))
-		links := label.links()
+		links := label.Links()
 		if len(links) != 1 {
 			t.Fatalf("the page reference of %q must hold one link, but holds %d", option.title, len(links))
 		}
-		c.Equal(option.pageRef, links[0].ref, "the link of %q is the whole of its page reference", option.title)
+		c.Equal(option.pageRef, links[0].Ref, "the link of %q is the whole of its page reference", option.title)
 		var followed []string
-		label.linkHandler = func(ref string) { followed = append(followed, ref) }
+		label.LinkHandler = func(ref string) { followed = append(followed, ref) }
 		c.True(label.keyDown(unison.KeySpace, 0, false))
 		c.Equal([]string{option.pageRef}, followed, "the link of %q opens its page", option.title)
 	}

@@ -815,7 +815,7 @@ func TestFeaturesPanelDragFromRow(t *testing.T) {
 	var sentence, row *unison.Panel
 	var below geom.Point
 	screen.Do(func() {
-		registerWindowDragTypes(p.Window())
+		RegisterWindowDragTypes(p.Window())
 		sentence = p.FindRefKey("0" + keySentence)
 		row = p.FindRefKey("2" + keyMore).Parent()
 		below = geom.NewPoint(40, row.FrameRect().Height*0.8)

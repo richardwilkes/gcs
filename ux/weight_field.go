@@ -19,7 +19,7 @@ type WeightField = NumericField[fxp.Weight]
 
 // NewWeightField creates a new field that holds a weight value, shown in the entity's default weight units.
 func NewWeightField(targetMgr *TargetMgr, targetKey, undoTitle string, entity *gurps.Entity, get func() fxp.Weight, set func(fxp.Weight), minValue, maxValue fxp.Weight, noMinWidth bool) *WeightField {
-	return newUnitsField(targetMgr, targetKey, undoTitle, get, set,
+	return NewUnitsField(targetMgr, targetKey, undoTitle, get, set,
 		func(value fxp.Weight) string { return gurps.SheetSettingsFor(entity).DefaultWeightUnits.Format(value) },
 		func(s string) (fxp.Weight, error) {
 			return fxp.WeightFromString(s, gurps.SheetSettingsFor(entity).DefaultWeightUnits)

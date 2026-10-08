@@ -89,9 +89,9 @@ func addChoiceQualifier(parent *unison.Panel, entity *gurps.Entity, tp *gurps.Te
 	panel.AddChild(field)
 	popup.SelectionChangedCallback = func(p *unison.PopupMenu[string]) {
 		tp.Qualifier.Compare = criteria.NumericComparisons[p.SelectedIndex()]
-		adjustFieldBlank(field, tp.Qualifier.Compare == criteria.AnyNumber)
+		AdjustFieldBlank(field, tp.Qualifier.Compare == criteria.AnyNumber)
 		MarkModified(panel)
 	}
-	adjustFieldBlank(field, tp.Qualifier.Compare == criteria.AnyNumber)
+	AdjustFieldBlank(field, tp.Qualifier.Compare == criteria.AnyNumber)
 	return popup, field
 }

@@ -26,7 +26,7 @@ import (
 // never asks to be smaller than what it wrapped to, and a border's insets are added around the text.
 func TestWrappingLabelSizes(t *testing.T) {
 	c := check.New(t)
-	l := newWrappingLabel()
+	l := NewWrappingLabel()
 	l.setText(strings.Repeat("lorem ipsum dolor sit amet ", 40), unison.DefaultLabelTheme.OnBackgroundInk)
 
 	atDefault := len(l.lines(defaultWrappingLabelWidth))
@@ -67,7 +67,7 @@ func TestWrappingLabelSizes(t *testing.T) {
 func TestWrappingLabelSetText(t *testing.T) {
 	c := check.New(t)
 	parent := unison.NewPanel()
-	l := newWrappingLabel()
+	l := NewWrappingLabel()
 	parent.AddChild(l)
 	c.Equal("", l.text, "a new label is empty")
 	c.Equal(unison.DefaultLabelTheme.OnBackgroundInk, l.ink, "and drawn in the label theme's ink")
@@ -113,32 +113,32 @@ func TestPageRefPattern(t *testing.T) {
 func TestWrappingLabelLinks(t *testing.T) {
 	c := check.New(t)
 	var opened []string
-	label := newWrappingLabel()
-	label.linkPageRefs(func(ref string) { opened = append(opened, ref) })
+	label := NewWrappingLabel()
+	label.LinkPageRefs(func(ref string) { opened = append(opened, ref) })
 	label.setText("The only defense is Dodge and Drop (BX377): dive away. Work out DR as in Large-Area Injury (BX400).",
 		unison.DefaultLabelTheme.OnBackgroundInk)
 	_, prefSize, _ := label.Sizes(geom.NewSize(160, 0))
 	c.True(len(label.lines(160)) > 1, "the label must wrap to the width it is offered")
 	label.SetFrameRect(geom.NewRect(0, 0, 160, prefSize.Height))
 
-	links := label.links()
+	links := label.Links()
 	if len(links) != 2 {
 		t.Fatalf("expected two links, got %d", len(links))
 	}
-	c.Equal("BX377", links[0].ref)
-	c.Equal("BX400", links[1].ref)
-	c.True(links[1].rect.Y > links[0].rect.Y, "the second reference must be on a later line")
+	c.Equal("BX377", links[0].Ref)
+	c.Equal("BX400", links[1].Ref)
+	c.True(links[1].Rect.Y > links[0].Rect.Y, "the second reference must be on a later line")
 	for _, link := range links {
-		c.True(link.rect.Width > 0 && link.rect.Height > 0, "a link must occupy space")
+		c.True(link.Rect.Width > 0 && link.Rect.Height > 0, "a link must occupy space")
 	}
 
-	second := links[1].rect.Center()
+	second := links[1].Rect.Center()
 	c.Equal("BX400", label.linkAt(second))
 	c.True(label.mouseDown(second, unison.ButtonLeft, 1, mod.None), "a press on a link is consumed")
 	c.True(label.mouseUp(second, unison.ButtonLeft, mod.None))
 	c.Equal([]string{"BX400"}, opened, "the release opens the reference the press landed on")
 
-	first := links[0].rect.Center()
+	first := links[0].Rect.Center()
 	c.True(label.mouseDown(first, unison.ButtonLeft, 1, mod.None))
 	c.True(label.mouseUp(second, unison.ButtonLeft, mod.None), "the press is still consumed")
 	c.Equal([]string{"BX400"}, opened, "a release over a different link opens nothing")
@@ -157,8 +157,8 @@ func TestWrappingLabelLinks(t *testing.T) {
 func TestSingleLineLabel(t *testing.T) {
 	c := check.New(t)
 	var opened []string
-	label := newSingleLineLabel()
-	label.linkPageRefs(func(ref string) { opened = append(opened, ref) })
+	label := NewSingleLineLabel()
+	label.LinkPageRefs(func(ref string) { opened = append(opened, ref) })
 	label.SetTitle("effective DR (Large-Area Injury, BX400)")
 	c.Equal("effective DR (Large-Area Injury, BX400)", label.Title())
 	c.Equal(unison.DefaultLabelTheme.OnBackgroundInk, label.ink, "SetTitle keeps the ink")
@@ -166,23 +166,23 @@ func TestSingleLineLabel(t *testing.T) {
 	_, prefSize, _ := label.Sizes(geom.NewSize(40, 0))
 	c.True(prefSize.Width > 40, "and asks for the width its text needs")
 	label.SetFrameRect(geom.NewRect(0, 0, prefSize.Width, prefSize.Height))
-	links := label.links()
+	links := label.Links()
 	if len(links) != 1 {
 		t.Fatalf("expected one link, got %d", len(links))
 	}
-	center := links[0].rect.Center()
+	center := links[0].Rect.Center()
 	c.True(label.mouseDown(center, unison.ButtonLeft, 1, mod.None))
 	c.True(label.mouseUp(center, unison.ButtonLeft, mod.None))
 	c.Equal([]string{"BX400"}, opened, "the reference in a single-line label opens like one in a note")
 }
 
-// A hint (see describeWithTrailingLabel) is exposed to a screen reader only while it holds a link.
+// A hint (see DescribeWithTrailingLabel) is exposed to a screen reader only while it holds a link.
 func TestTextLabelIsATabStopWhileItHoldsLinks(t *testing.T) {
 	c := check.New(t)
-	label := newSingleLineLabel()
+	label := NewSingleLineLabel()
 	label.SetTitle("See the rules (B104)")
 	c.False(label.Focusable(), "the reference is not a link yet")
-	label.linkPageRefs(func(string) {})
+	label.LinkPageRefs(func(string) {})
 	c.True(label.Focusable(), "text holding a link is a tab stop")
 	label.SetTitle("See the rules")
 	c.False(label.Focusable(), "text holding no link is not")
@@ -190,19 +190,19 @@ func TestTextLabelIsATabStopWhileItHoldsLinks(t *testing.T) {
 	c.True(label.Focusable())
 	c.Equal(role.Label, label.Accessibility.Role)
 
-	// linkRefs links the references it is given, even ones pageRefPattern would not match.
-	label = newSingleLineLabel()
+	// LinkRefs links the references it is given, even ones pageRefPattern would not match.
+	label = NewSingleLineLabel()
 	label.SetTitle("(PY65:30)")
-	label.linkRefs(func(string) {}, "PY65:30")
+	label.LinkRefs(func(string) {}, "PY65:30")
 	c.True(label.Focusable())
 	label.SetTitle("(PY65:31)")
 	c.False(label.Focusable(), "a reference the label was not told of is no link")
 
 	field := unison.NewField()
-	hint := newSingleLineLabel()
-	hint.linkPageRefs(func(string) {})
+	hint := NewSingleLineLabel()
+	hint.LinkPageRefs(func(string) {})
 	hint.SetTitle("yards fallen")
-	describeWithTrailingLabel(field, hint)
+	DescribeWithTrailingLabel(field, hint)
 	c.Equal(role.None, hint.Accessibility.Role, "a hint is heard with its control, so it is not described")
 	c.False(hint.Focusable())
 	hint.SetTitle("yards fallen (BX431)")
@@ -213,9 +213,9 @@ func TestTextLabelIsATabStopWhileItHoldsLinks(t *testing.T) {
 	c.False(hint.Focusable())
 
 	// A heading keeps its role whatever its text holds.
-	heading := newSingleLineLabel()
+	heading := NewSingleLineLabel()
 	heading.Accessibility.Role = role.Heading
-	heading.linkPageRefs(func(string) {})
+	heading.LinkPageRefs(func(string) {})
 	heading.SetTitle("Falling (BX431)")
 	c.Equal(role.Heading, heading.Accessibility.Role)
 	heading.SetTitle("Falling")

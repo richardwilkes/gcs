@@ -863,7 +863,7 @@ func TestPrereqPanelDragFromRow(t *testing.T) {
 	var sentence, head *unison.Panel
 	var below geom.Point
 	screen.Do(func() {
-		registerWindowDragTypes(p.Window())
+		RegisterWindowDragTypes(p.Window())
 		sentence = p.FindRefKey("r.0" + keySentence)
 		head = p.FindRefKey("r.1" + keyMore).Parent()
 		below = geom.NewPoint(40, head.FrameRect().Height*0.8)

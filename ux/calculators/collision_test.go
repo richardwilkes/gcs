@@ -7,7 +7,7 @@
 // This Source Code Form is "Incompatible With Secondary Licenses", as
 // defined by the Mozilla Public License, version 2.0.
 
-package ux
+package calculators
 
 import (
 	"slices"
@@ -17,6 +17,8 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/calculator"
+	"github.com/richardwilkes/gcs/v5/ux"
+	"github.com/richardwilkes/gcs/v5/ux/uxtest"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/unison"
 )
@@ -28,17 +30,14 @@ import (
 // finally closes the sheet and checks that the source drops back to Manual with the fields unlocked.
 func TestCollisionCalculatorSources(t *testing.T) {
 	c := check.New(t)
-	screen, wnd := startHeadlessWorkspace(t, c)
-	sheet, ok := openedByAction(t, screen, newCharacterSheetAction).(*Sheet)
-	if !ok {
-		t.Fatal("New Character Sheet must open a character sheet")
-	}
+	screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
+	sheet := uxtest.OpenNewCharacterSheet(t, screen)
 	dockable := openCalculator(t, screen)
 	calc := dockable.collision
 	selectCalculatorTab(t, screen, dockable, calc)
 
 	type state struct {
-		sheet                      *Sheet
+		sheet                      *ux.Sheet
 		hp                         fxp.Int
 		sourceIndex                int
 		hpEnabled, velocityEnabled bool
@@ -58,7 +57,7 @@ func TestCollisionCalculatorSources(t *testing.T) {
 			s.extrasShown = calc.mover.extras.Parent() != nil
 			s.sections = calc.sectionSlot.Children()
 			// The first damage line is the faller's, whatever it is called.
-			labels := labelTexts(calc.results)
+			labels := uxtest.LabelTexts(calc.results)
 			for i, label := range labels {
 				if strings.HasPrefix(label, "Damage to ") && i+1 < len(labels) {
 					s.damage = labels[i+1]
@@ -89,24 +88,24 @@ func TestCollisionCalculatorSources(t *testing.T) {
 	s = current()
 	c.Equal(fxp.FromInteger(19), calc.mover.velocity, "the fall velocity must come from the table")
 	c.Equal("4d cr", s.damage, "the worked example on BX431 must come out at 4d")
-	captureScreen(t, c, screen, "collision_calculator_fall")
+	uxtest.CaptureScreen(t, c, screen, "collision_calculator_fall")
 
-	choosePopupItem(t, screen, wnd, calc.mover.popup, 0)
+	uxtest.ChoosePopupItem(t, screen, wnd, calc.mover.popup, 0)
 	s = current()
 	c.Nil(s.sheet, "choosing Manual must drop the sheet")
 	c.Equal(sheetHP, s.hp, "the numbers last read from the sheet must be kept")
 	c.True(s.hpEnabled, "a typed-in field must be unlocked")
 
-	choosePopupItem(t, screen, wnd, calc.mover.popup, 1)
+	uxtest.ChoosePopupItem(t, screen, wnd, calc.mover.popup, 1)
 	s = current()
 	c.Equal(sheet, s.sheet, "choosing the sheet must make it the source again")
 	c.False(s.hpEnabled, "a field the sheet supplies must be locked again")
 
-	scenarioPopup, found := firstPanelOfType[*unison.PopupMenu[collisionScenario]](calc.content)
+	scenarioPopup, found := uxtest.FirstPanelOfType[*unison.PopupMenu[collisionScenario]](calc.content)
 	if !found {
 		t.Fatal("the calculator must offer a scenario popup")
 	}
-	choosePopupItem(t, screen, wnd, scenarioPopup, twoObjectScenario)
+	uxtest.ChoosePopupItem(t, screen, wnd, scenarioPopup, twoObjectScenario)
 	s = current()
 	c.True(s.targetShown, "a collision between two objects shows the struck object")
 	c.False(s.extrasShown, "the striking object has no use for skills or DR")
@@ -115,7 +114,7 @@ func TestCollisionCalculatorSources(t *testing.T) {
 		"a collision between two objects shows the drop, fall and angle rows")
 
 	// BX432: a 60 HP car at 25 yards/second rear-ends a 10 HP pedestrian fleeing at 5: 12d to the pedestrian, 2d back.
-	choosePopupItem(t, screen, wnd, calc.mover.popup, 0)
+	uxtest.ChoosePopupItem(t, screen, wnd, calc.mover.popup, 0)
 	screen.Do(func() {
 		calc.mover.hp = fxp.FromInteger(60)
 		calc.mover.st = 0 // A car has no ST score, so the overrun uses half its HP.
@@ -128,10 +127,10 @@ func TestCollisionCalculatorSources(t *testing.T) {
 		})
 		calc.changed()
 	})
-	captureScreen(t, c, screen, "collision_calculator_two_objects")
+	uxtest.CaptureScreen(t, c, screen, "collision_calculator_two_objects")
 	var results []string
 	screen.Do(func() {
-		results = labelTexts(calc.results)
+		results = uxtest.LabelTexts(calc.results)
 	})
 	c.Equal([]string{
 		"Collision velocity:", "20 yards/second (40 mph)",
@@ -140,14 +139,14 @@ func TestCollisionCalculatorSources(t *testing.T) {
 		"Overrun damage:", "3d cr",
 	}, results, "the worked example on BX432 must come out at 12d and 2d, with an overrun for ST 30")
 
-	choosePopupItem(t, screen, wnd, scenarioPopup, fallScenario)
-	choosePopupItem(t, screen, wnd, calc.mover.popup, 1)
-	closeEditorWithoutPrompt(t, screen, sheet)
+	uxtest.ChoosePopupItem(t, screen, wnd, scenarioPopup, fallScenario)
+	uxtest.ChoosePopupItem(t, screen, wnd, calc.mover.popup, 1)
+	uxtest.CloseEditorWithoutPrompt(t, screen, sheet)
 	screen.Do(func() { calc.changed() })
 	s = current()
 	c.Nil(s.sheet, "closing the sheet must drop it as the source")
 	c.Equal(0, s.sourceIndex, "the Source popup must show Manual once the sheet is gone")
 	c.True(s.hpEnabled, "the fields must be unlocked once the sheet is gone")
 
-	closeEditorWithoutPrompt(t, screen, dockable)
+	uxtest.CloseEditorWithoutPrompt(t, screen, dockable)
 }

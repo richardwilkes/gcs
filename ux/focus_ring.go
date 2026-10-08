@@ -31,7 +31,7 @@ func installStaticTextFocusRing(wnd *unison.Window) {
 		if prior != nil {
 			prior(gc, rect)
 		}
-		if ring, clip, ok := staticTextFocusRing(wnd, content); ok {
+		if ring, clip, ok := StaticTextFocusRing(wnd, content); ok {
 			gc.Save()
 			gc.ClipRect(clip, pathop.Intersect, false)
 			paint := unison.ThemeFocus.Paint(gc, ring, paintstyle.Stroke)
@@ -42,10 +42,10 @@ func installStaticTextFocusRing(wnd *unison.Window) {
 	}
 }
 
-// staticTextFocusRing returns, in content coordinates, the ring around the static text holding the focused window's
+// StaticTextFocusRing returns, in content coordinates, the ring around the static text holding the focused window's
 // keyboard focus and the part of it that the text's ancestors leave visible, so a ring around text partly scrolled out
 // of view stops at the view's edge. ok is false when no such text in content holds the focus or none of it is visible.
-func staticTextFocusRing(wnd *unison.Window, content *unison.Panel) (ring, clip geom.Rect, ok bool) {
+func StaticTextFocusRing(wnd *unison.Window, content *unison.Panel) (ring, clip geom.Rect, ok bool) {
 	focus := wnd.Focus()
 	if focus == nil || !wnd.Focused() || !showsNoFocus(focus) {
 		return ring, clip, false
@@ -102,9 +102,9 @@ func staticTextBounds(p *unison.Panel, bounds geom.Rect) geom.Rect {
 }
 
 // showsNoFocus reports whether a panel is static text that draws nothing to show it holds the keyboard focus: a
-// unison.Label left in the auto role, or any panel in the label or heading role. A textLabel draws its own ring.
+// unison.Label left in the auto role, or any panel in the label or heading role. A TextLabel draws its own ring.
 func showsNoFocus(p *unison.Panel) bool {
-	if _, ok := p.Self.(*textLabel); ok {
+	if _, ok := p.Self.(*TextLabel); ok {
 		return false
 	}
 	switch p.Accessibility.Role {

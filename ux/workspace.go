@@ -244,11 +244,11 @@ func Activate(matcher func(d unison.Dockable) bool) bool {
 	return false
 }
 
-// activateDockable is Activate for a dockable of a particular type: it activates the first open dockable whose panel's
+// ActivateDockableOfType is Activate for a dockable of a particular type: it activates the first open dockable whose panel's
 // Self is a T and, when match is not nil, that match accepts, such as the sheet a per-sheet settings view belongs to.
 // Self is used since what the dock hands out may be an inner layer rather than the dockable itself (see
 // resolveDockable), which a direct type assertion would not see.
-func activateDockable[T unison.Paneler](match func(T) bool) bool {
+func ActivateDockableOfType[T unison.Paneler](match func(T) bool) bool {
 	return Activate(func(d unison.Dockable) bool {
 		t, ok := d.AsPanel().Self.(T)
 		return ok && (match == nil || match(t))
@@ -600,7 +600,7 @@ func NewWindowForDockable(dockable unison.Dockable, group dgroup.Group) (*unison
 	if err != nil {
 		return nil, err
 	}
-	registerWindowDragTypes(wnd)
+	RegisterWindowDragTypes(wnd)
 	SetupMenuBar(wnd)
 	content := wnd.Content()
 	content.SetLayout(&unison.FlexLayout{Columns: 1})

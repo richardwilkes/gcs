@@ -7,12 +7,13 @@
 // This Source Code Form is "Incompatible With Secondary Licenses", as
 // defined by the Mozilla Public License, version 2.0.
 
-package ux
+package calculators
 
 import (
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/calculator"
+	"github.com/richardwilkes/gcs/v5/ux"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/unison"
 )
@@ -60,16 +61,16 @@ type collisionCalculator struct {
 	restraintRows       *unison.Panel
 	results             *unison.Panel
 	notes               *unison.Panel
-	fallDistanceField   *DecimalField
-	gravityField        *DecimalField
+	fallDistanceField   *ux.DecimalField
+	gravityField        *ux.DecimalField
 	terminalPopup       *unison.PopupMenu[calculator.TerminalVelocityChoice]
-	customTerminalField *DecimalField
-	pressureField       *DecimalField
+	customTerminalField *ux.DecimalField
+	pressureField       *ux.DecimalField
 	controlledFallBox   *unison.CheckBox
-	elasticDRField      *IntegerField
+	elasticDRField      *ux.IntegerField
 	breakableBox        *unison.CheckBox
-	obstacleHPField     *DecimalField
-	obstacleDRField     *IntegerField
+	obstacleHPField     *ux.DecimalField
+	obstacleDRField     *ux.IntegerField
 	cleanDiveBox        *unison.CheckBox
 	scenarios           []collisionScenario
 	shapes              []calculator.CollisionShape
@@ -108,15 +109,15 @@ type collisionParticipant struct {
 	calc            *collisionCalculator
 	panel           *unison.Panel
 	extras          *unison.Panel
-	hpField         *DecimalField
-	stField         *DecimalField
-	smField         *IntegerField
-	velocityField   *DecimalField
-	velocityLabel   *textLabel
-	acrobaticsField *IntegerField
-	swimmingField   *IntegerField
-	armorDRField    *IntegerField
-	innateDRField   *IntegerField
+	hpField         *ux.DecimalField
+	stField         *ux.DecimalField
+	smField         *ux.IntegerField
+	velocityField   *ux.DecimalField
+	velocityLabel   *ux.TextLabel
+	acrobaticsField *ux.IntegerField
+	swimmingField   *ux.IntegerField
+	armorDRField    *ux.IntegerField
+	innateDRField   *ux.IntegerField
 	hp              fxp.Int
 	st              fxp.Int
 	velocity        fxp.Int
@@ -159,12 +160,12 @@ func (c *collisionCalculator) panel() *unison.Panel {
 }
 
 // preselect implements calculatorTab. The sheet becomes the moving object's source.
-func (c *collisionCalculator) preselect(sheet *Sheet) {
+func (c *collisionCalculator) preselect(sheet *ux.Sheet) {
 	c.mover.preselect(sheet)
 }
 
 // sheetChanged implements calculatorTab.
-func (c *collisionCalculator) sheetChanged(sheet *Sheet) {
+func (c *collisionCalculator) sheetChanged(sheet *ux.Sheet) {
 	if c.mover.sheet == sheet || c.target.sheet == sheet {
 		c.changed()
 	}
@@ -210,7 +211,7 @@ func (p *collisionParticipant) createPanel(parent *unison.Panel) {
 	p.changed = p.calc.changed
 	p.addRow(rows, i18n.Text("Source:"))
 
-	p.hpField = sameWidth(NewDecimalField(nil, "", i18n.Text("Hit Points"),
+	p.hpField = sameWidth(ux.NewDecimalField(nil, "", i18n.Text("Hit Points"),
 		func() fxp.Int { return p.hp },
 		func(v fxp.Int) {
 			p.hp = v
@@ -218,7 +219,7 @@ func (p *collisionParticipant) createPanel(parent *unison.Panel) {
 		},
 		0, fxp.Max, false, false))
 	rows.addFieldRow(p.hpField, i18n.Text("HP"))
-	p.stField = sameWidth(NewDecimalField(nil, "", i18n.Text("Strength"),
+	p.stField = sameWidth(ux.NewDecimalField(nil, "", i18n.Text("Strength"),
 		func() fxp.Int { return p.st },
 		func(v fxp.Int) {
 			p.st = v
@@ -226,7 +227,7 @@ func (p *collisionParticipant) createPanel(parent *unison.Panel) {
 		},
 		0, fxp.Max, false, false))
 	rows.addFieldRow(p.stField, i18n.Text("ST (0 if it has no ST score)"))
-	p.smField = sameWidth(NewIntegerField(nil, "", i18n.Text("Size Modifier"),
+	p.smField = sameWidth(ux.NewIntegerField(nil, "", i18n.Text("Size Modifier"),
 		func() int { return p.sm },
 		func(v int) {
 			p.sm = v
@@ -237,7 +238,7 @@ func (p *collisionParticipant) createPanel(parent *unison.Panel) {
 	row := rows.addRow(2)
 	addPlainLabel(row, i18n.Text("Shape:"))
 	addIndexPopup(row, p.calc.shapes, &p.shapeIndex, p.calc.changed)
-	p.velocityField = sameWidth(NewDecimalField(nil, "", i18n.Text("Velocity"),
+	p.velocityField = sameWidth(ux.NewDecimalField(nil, "", i18n.Text("Velocity"),
 		func() fxp.Int { return p.velocity },
 		func(v fxp.Int) {
 			p.velocity = v
@@ -249,7 +250,7 @@ func (p *collisionParticipant) createPanel(parent *unison.Panel) {
 	p.extras = newRowGroup()
 	p.panel.AddChild(p.extras)
 	rows = &calculatorContent{content: p.extras}
-	p.acrobaticsField = sameWidth(NewIntegerField(nil, "", i18n.Text("Acrobatics"),
+	p.acrobaticsField = sameWidth(ux.NewIntegerField(nil, "", i18n.Text("Acrobatics"),
 		func() int { return p.acrobatics },
 		func(v int) {
 			p.acrobatics = v
@@ -257,7 +258,7 @@ func (p *collisionParticipant) createPanel(parent *unison.Panel) {
 		},
 		0, 100, false, false))
 	rows.addFieldRow(p.acrobaticsField, i18n.Text("Acrobatics skill level"))
-	p.swimmingField = sameWidth(NewIntegerField(nil, "", i18n.Text("Swimming"),
+	p.swimmingField = sameWidth(ux.NewIntegerField(nil, "", i18n.Text("Swimming"),
 		func() int { return p.swimming },
 		func(v int) {
 			p.swimming = v
@@ -265,7 +266,7 @@ func (p *collisionParticipant) createPanel(parent *unison.Panel) {
 		},
 		0, 100, false, false))
 	rows.addFieldRow(p.swimmingField, i18n.Text("Swimming skill level"))
-	p.armorDRField = sameWidth(NewIntegerField(nil, "", i18n.Text("Armor DR"),
+	p.armorDRField = sameWidth(ux.NewIntegerField(nil, "", i18n.Text("Armor DR"),
 		func() int { return p.armorDR },
 		func(v int) {
 			p.armorDR = v
@@ -273,7 +274,7 @@ func (p *collisionParticipant) createPanel(parent *unison.Panel) {
 		},
 		0, 10000, false, false))
 	rows.addFieldRow(p.armorDRField, i18n.Text("DR from armor (counts as flexible against a fall)"))
-	p.innateDRField = sameWidth(NewIntegerField(nil, "", i18n.Text("Innate DR"),
+	p.innateDRField = sameWidth(ux.NewIntegerField(nil, "", i18n.Text("Innate DR"),
 		func() int { return p.innateDR },
 		func(v int) {
 			p.innateDR = v
@@ -298,7 +299,7 @@ func (p *collisionParticipant) showExtras(show bool) {
 // selectSheet reads the participant's numbers from the sheet the picker has just made its source, and does nothing at
 // all when there is none. Choosing a sheet also suggests its Move as the velocity; it is only a suggestion, so a later
 // refresh leaves the velocity alone.
-func (p *collisionParticipant) selectSheet(sheet *Sheet) {
+func (p *collisionParticipant) selectSheet(sheet *ux.Sheet) {
 	if sheet == nil {
 		return
 	}
@@ -364,7 +365,7 @@ func (p *collisionParticipant) shape() calculator.CollisionShape {
 func (c *collisionCalculator) createFallRows() *unison.Panel {
 	group := newRowGroup()
 	rows := &calculatorContent{content: group}
-	c.fallDistanceField = sameWidth(NewDecimalField(nil, "", i18n.Text("Distance Fallen"),
+	c.fallDistanceField = sameWidth(ux.NewDecimalField(nil, "", i18n.Text("Distance Fallen"),
 		func() fxp.Int { return c.fallDistance },
 		func(v fxp.Int) {
 			c.fallDistance = v
@@ -372,7 +373,7 @@ func (c *collisionCalculator) createFallRows() *unison.Panel {
 		},
 		0, fxp.Max, false, false))
 	rows.addFieldRow(c.fallDistanceField, i18n.Text("yards fallen"))
-	c.gravityField = sameWidth(NewDecimalField(nil, "", i18n.Text("Gravity"),
+	c.gravityField = sameWidth(ux.NewDecimalField(nil, "", i18n.Text("Gravity"),
 		func() fxp.Int { return c.gravity },
 		func(v fxp.Int) {
 			c.gravity = v
@@ -383,7 +384,7 @@ func (c *collisionCalculator) createFallRows() *unison.Panel {
 	row := rows.addRow(4)
 	addPlainLabel(row, i18n.Text("Terminal velocity:"))
 	c.terminalPopup = addIndexPopup(row, c.terminals, &c.terminalIndex, c.changed)
-	c.customTerminalField = sameWidth(NewDecimalField(nil, "", i18n.Text("Custom Terminal Velocity"),
+	c.customTerminalField = sameWidth(ux.NewDecimalField(nil, "", i18n.Text("Custom Terminal Velocity"),
 		func() fxp.Int { return c.customTerminal },
 		func(v fxp.Int) {
 			c.customTerminal = v
@@ -392,7 +393,7 @@ func (c *collisionCalculator) createFallRows() *unison.Panel {
 		0, fxp.Max, false, false))
 	row.AddChild(c.customTerminalField)
 	addPlainLabel(row, i18n.Text("yards/second"))
-	c.pressureField = sameWidth(NewDecimalField(nil, "", i18n.Text("Atmospheric Pressure"),
+	c.pressureField = sameWidth(ux.NewDecimalField(nil, "", i18n.Text("Atmospheric Pressure"),
 		func() fxp.Int { return c.pressure },
 		func(v fxp.Int) {
 			c.pressure = v
@@ -410,7 +411,7 @@ func (c *collisionCalculator) createSurfaceRows() *unison.Panel {
 	row := rows.addRow(2)
 	addPlainLabel(row, i18n.Text("Surface:"))
 	addIndexPopup(row, c.surfaces, &c.surfaceIndex, c.changed)
-	c.elasticDRField = sameWidth(NewIntegerField(nil, "", i18n.Text("Elastic DR"),
+	c.elasticDRField = sameWidth(ux.NewIntegerField(nil, "", i18n.Text("Elastic DR"),
 		func() int { return c.elasticDR },
 		func(v int) {
 			c.elasticDR = v
@@ -421,7 +422,7 @@ func (c *collisionCalculator) createSurfaceRows() *unison.Panel {
 	c.cleanDiveBox = rows.addCheckBox("", &c.cleanDive, c.changed)
 	c.breakableBox = rows.addCheckBox(i18n.Text("The surface can break"), &c.breakable, c.changed)
 	row = rows.addRow(4)
-	c.obstacleHPField = sameWidth(NewDecimalField(nil, "", i18n.Text("Obstacle HP"),
+	c.obstacleHPField = sameWidth(ux.NewDecimalField(nil, "", i18n.Text("Obstacle HP"),
 		func() fxp.Int { return c.obstacleHP },
 		func(v fxp.Int) {
 			c.obstacleHP = v
@@ -430,7 +431,7 @@ func (c *collisionCalculator) createSurfaceRows() *unison.Panel {
 		0, fxp.Max, false, false))
 	row.AddChild(c.obstacleHPField)
 	addPlainLabel(row, i18n.Text("HP"))
-	c.obstacleDRField = sameWidth(NewIntegerField(nil, "", i18n.Text("Obstacle DR"),
+	c.obstacleDRField = sameWidth(ux.NewIntegerField(nil, "", i18n.Text("Obstacle DR"),
 		func() int { return c.obstacleDR },
 		func(v int) {
 			c.obstacleDR = v
@@ -534,16 +535,16 @@ func (c *collisionCalculator) adjustControls() {
 	// A control whose input would not be used is blanked as well as disabled, so that a stale value cannot be read as
 	// part of the answer. The moving object's velocity is the exception: when it comes from the fall, the field shows
 	// the velocity the fall reaches, which is in use.
-	adjustFieldBlank(c.target.velocityField, c.angles[c.angleIndex].Angle == calculator.SideOnCollision)
+	ux.AdjustFieldBlank(c.target.velocityField, c.angles[c.angleIndex].Angle == calculator.SideOnCollision)
 
 	// Unison does not disable a panel's children along with it, so the fall rows are switched one by one when the
 	// striking object in a two-object collision is not something that was dropped.
-	adjustFieldBlank(c.fallDistanceField, !fromFall)
-	adjustFieldBlank(c.gravityField, !fromFall)
-	adjustPopupBlank(c.terminalPopup, !fromFall)
+	ux.AdjustFieldBlank(c.fallDistanceField, !fromFall)
+	ux.AdjustFieldBlank(c.gravityField, !fromFall)
+	ux.AdjustPopupBlank(c.terminalPopup, !fromFall)
 	terminal := c.terminals[c.terminalIndex]
-	adjustFieldBlank(c.customTerminalField, !fromFall || !terminal.Custom)
-	adjustFieldBlank(c.pressureField, !fromFall || (terminal.BaseVelocity <= 0 && !terminal.Custom))
+	ux.AdjustFieldBlank(c.customTerminalField, !fromFall || !terminal.Custom)
+	ux.AdjustFieldBlank(c.pressureField, !fromFall || (terminal.BaseVelocity <= 0 && !terminal.Custom))
 	// The fall can be softened by an Acrobatics roll or by a clean dive into water, but not by both (BX431).
 	c.controlledFallBox.SetTitle(i18n.Text("Made a successful Acrobatics roll for a controlled fall (-5 yards)"))
 	c.controlledFallBox.SetEnabled(c.scenarioIndex == fallScenario && !c.diving())
@@ -552,9 +553,9 @@ func (c *collisionCalculator) adjustControls() {
 	c.cleanDiveBox.SetEnabled(c.inWater() && !c.controlledFallApplies())
 
 	surface := c.surfaces[c.surfaceIndex]
-	adjustFieldBlank(c.elasticDRField, !surface.Elastic)
-	adjustFieldBlank(c.obstacleHPField, !c.breakable)
-	adjustFieldBlank(c.obstacleDRField, !c.breakable)
+	ux.AdjustFieldBlank(c.elasticDRField, !surface.Elastic)
+	ux.AdjustFieldBlank(c.obstacleHPField, !c.breakable)
+	ux.AdjustFieldBlank(c.obstacleDRField, !c.breakable)
 
 	c.content.MarkForLayoutRecursively()
 	c.content.MarkForLayoutRecursivelyUpward()

@@ -7,7 +7,7 @@
 // This Source Code Form is "Incompatible With Secondary Licenses", as
 // defined by the Mozilla Public License, version 2.0.
 
-package ux
+package calculators
 
 import (
 	"fmt"
@@ -16,6 +16,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/colors"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/ux"
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/toolbox/v2/xmath"
@@ -39,8 +40,8 @@ type linkSpec struct {
 }
 
 // calculatorContent is the column of sections a calculator is built from, and the helpers that add rows to it. Every
-// calculator the Calculator dockable shows embeds it, so they all lay their sections out the same way: a bold header,
-// its controls indented beneath it, and the results set off in a box of their own.
+// calculator the Dockable shows embeds it, so they all lay their sections out the same way: a bold header, its controls
+// indented beneath it, and the results set off in a box of their own.
 type calculatorContent struct {
 	content    *unison.Panel
 	resultsBox *unison.Panel
@@ -48,7 +49,7 @@ type calculatorContent struct {
 }
 
 // initCalculatorContent creates the content panel and gives it the margin and the column layout that the sections are
-// added into. The Calculator's slot gives the content the full width of the view, so that the results box can span it.
+// added into. The Dockable's slot gives the content the full width of the view, so that the results box can span it.
 func (c *calculatorContent) initCalculatorContent() {
 	c.content = unison.NewPanel()
 	c.content.SetBorder(unison.NewEmptyBorder(geom.NewUniformInsets(unison.StdHSpacing * 2)))
@@ -134,11 +135,11 @@ func (c *calculatorContent) addRow(columns int) *unison.Panel {
 // addFieldRow adds a row holding the field followed by a label with the given text, and returns the label so that a
 // caller passing no text can fill it in later. A screen reader is given the label's current text as the field's
 // description.
-func (c *calculatorContent) addFieldRow(field unison.Paneler, trailing string) *textLabel {
+func (c *calculatorContent) addFieldRow(field unison.Paneler, trailing string) *ux.TextLabel {
 	row := c.addRow(2)
 	row.AddChild(field)
 	label := addPlainLabel(row, trailing)
-	describeWithTrailingLabel(field, label)
+	ux.DescribeWithTrailingLabel(field, label)
 	return label
 }
 
@@ -271,7 +272,7 @@ func (c *calculatorContent) addSubheader(text string) *unison.Label {
 }
 
 // sameWidth sizes the field to calculatorFieldPrototype and returns it.
-func sameWidth[T xmath.Integer | xmath.Float](field *NumericField[T]) *NumericField[T] {
+func sameWidth[T xmath.Integer | xmath.Float](field *ux.NumericField[T]) *ux.NumericField[T] {
 	field.SetMinimumTextWidthUsing(calculatorFieldPrototype)
 	return field
 }
@@ -295,9 +296,9 @@ func addIndexPopup[T comparable](parent *unison.Panel, items []T, index *int, ch
 
 // addPlainLabel adds a single-line label with the given text to the parent and returns it. Any page reference in the
 // text, such as "(BX400)", is a link that opens the page.
-func addPlainLabel(parent *unison.Panel, text string) *textLabel {
-	label := newSingleLineLabel()
-	label.linkPageRefs(openPageRefLink)
+func addPlainLabel(parent *unison.Panel, text string) *ux.TextLabel {
+	label := ux.NewSingleLineLabel()
+	label.LinkPageRefs(openPageRefLink)
 	label.SetTitle(text)
 	parent.AddChild(label)
 	return label
@@ -305,7 +306,7 @@ func addPlainLabel(parent *unison.Panel, text string) *textLabel {
 
 // openPageRefLink opens the page a link in a label refers to.
 func openPageRefLink(ref string) {
-	OpenPageReference(ref, "", nil)
+	ux.OpenPageReference(ref, "", nil)
 }
 
 // addResultLabel adds a bold label for showing a result to the parent and returns it.
@@ -338,9 +339,9 @@ func newNoteRow(note string) *unison.Panel {
 	bullet.SetTitle("•")
 	bullet.SetLayoutData(&unison.FlexLayoutData{VAlign: align.Start})
 	row.AddChild(bullet)
-	text := newWrappingLabel()
-	text.linkPageRefs(openPageRefLink)
-	text.setText(note, unison.DefaultLabelTheme.OnBackgroundInk)
+	text := ux.NewWrappingLabel()
+	text.LinkPageRefs(openPageRefLink)
+	text.SetTitle(note)
 	text.SetLayoutData(&unison.FlexLayoutData{HAlign: align.Fill, HGrab: true})
 	row.AddChild(text)
 	return row
@@ -389,15 +390,15 @@ func openHeaderPageRef(pageRef, highlight string) {
 		headerPageRefOpener(pageRef, highlight)
 		return
 	}
-	OpenPageReference(pageRef, highlight, nil)
+	ux.OpenPageReference(pageRef, highlight, nil)
 }
 
 // createHeader returns a section header holding the text, followed by the page references in parentheses, with the
 // given amount of empty space above it. It is a single heading with the page references as links inside it (see
-// textLabel.linkRefs), so a screen reader reads it as a whole and its heading navigation finds the section.
+// ux.TextLabel.LinkRefs), so a screen reader reads it as a whole and its heading navigation finds the section.
 func (c *calculatorContent) createHeader(text string, linkSpecs []linkSpec, topMargin float32) *unison.Panel {
-	header := newSingleLineLabel()
-	header.font = &unison.DynamicFont{
+	header := ux.NewSingleLineLabel()
+	header.Font = &unison.DynamicFont{
 		Resolver: func() unison.FontDescriptor {
 			desc := unison.LabelFont.Descriptor()
 			desc.Size += 2
@@ -405,7 +406,7 @@ func (c *calculatorContent) createHeader(text string, linkSpecs []linkSpec, topM
 			return desc
 		},
 	}
-	header.linkFont = &unison.DynamicFont{
+	header.LinkFont = &unison.DynamicFont{
 		Resolver: func() unison.FontDescriptor {
 			desc := unison.LabelFont.Descriptor()
 			desc.Weight = weight.Bold
@@ -424,7 +425,7 @@ func (c *calculatorContent) createHeader(text string, linkSpecs []linkSpec, topM
 			refs = append(refs, spec.pageRef)
 			highlights[spec.pageRef] = spec.highlight
 		}
-		header.linkRefs(func(ref string) { openHeaderPageRef(ref, highlights[ref]) }, refs...)
+		header.LinkRefs(func(ref string) { openHeaderPageRef(ref, highlights[ref]) }, refs...)
 		text += " (" + strings.Join(refs, ", ") + ")"
 	}
 	header.SetTitle(text)

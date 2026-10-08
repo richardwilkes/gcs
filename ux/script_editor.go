@@ -172,8 +172,8 @@ func newScriptEditor(get func() string, set func(string), opts *scriptEditorOpti
 		footer := unison.NewPanel()
 		footer.SetLayout(&unison.FlexLayout{Columns: 1})
 		footer.SetLayoutData(&unison.FlexLayoutData{HAlign: align.Fill, HGrab: true})
-		label := newWrappingLabel()
-		label.font = fonts.FieldSecondary
+		label := NewWrappingLabel()
+		label.Font = fonts.FieldSecondary
 		label.SetTitle(opts.Footer)
 		label.SetLayoutData(&unison.FlexLayoutData{HAlign: align.Fill, HGrab: true})
 		footer.AddChild(label)

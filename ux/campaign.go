@@ -65,11 +65,11 @@ func NewCampaign(filePath string, campaign *gurps.Campaign) *Campaign {
 		VGrab:  true,
 	})
 
-	c.toolbar = newToolbar()
+	c.toolbar = NewToolbar()
 	c.toolbar.AddChild(NewDefaultInfoPop())
-	addUIScaleField(c.toolbar, func() int { return gurps.GlobalSettings().General.InitialEditorUIScale },
+	AddUIScaleField(c.toolbar, func() int { return gurps.GlobalSettings().General.InitialEditorUIScale },
 		func() int { return c.scale }, func(scale int) { c.scale = scale }, false, c.scroll)
-	finishToolbarLayout(c.toolbar)
+	FinishToolbarLayout(c.toolbar)
 
 	c.AddChild(c.toolbar)
 	c.AddChild(c.scroll)

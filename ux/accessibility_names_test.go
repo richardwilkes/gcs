@@ -180,19 +180,6 @@ func TestEveryControlHasAnAccessibleName(t *testing.T) {
 	audit.checkOpened("page reference mappings", ShowPageRefMappings)
 	audit.checkOpened("library settings", func() { ShowLibrarySettings(gurps.GlobalSettings().Libraries.User()) })
 
-	if calc, isCalc := audit.open(func() { DisplayCalculator(sheet) }).(*Calculator); isCalc {
-		for i := range calc.tabs {
-			var title string
-			screen.Do(func() {
-				calc.tabBar.selectTab(i)
-				title = calc.tabs[i].title()
-			})
-			audit.check("calculator: "+title, calc)
-		}
-	} else {
-		t.Error("the calculator did not open")
-	}
-
 	audit.checkOpened("character template", func() { newCharacterTemplateAction.Execute(nil) })
 	audit.checkOpened("loot sheet", func() { newLootSheetAction.Execute(nil) })
 	audit.checkOpened("traits library", func() { newTraitsLibraryAction.Execute(nil) })

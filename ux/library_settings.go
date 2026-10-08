@@ -49,7 +49,7 @@ type librarySettingsDockable struct {
 
 // ShowLibrarySettings shows the Library Settings view for a specific library.
 func ShowLibrarySettings(lib *library.Library) {
-	if activateDockable(func(d *librarySettingsDockable) bool { return d.library == lib }) {
+	if ActivateDockableOfType(func(d *librarySettingsDockable) bool { return d.library == lib }) {
 		return
 	}
 	isUser := lib.IsUser()

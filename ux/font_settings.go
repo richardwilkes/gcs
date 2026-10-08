@@ -29,7 +29,7 @@ type fontSettingsDockable struct {
 
 // ShowFontSettings shows the Font settings.
 func ShowFontSettings() {
-	if activateDockable[*fontSettingsDockable](nil) {
+	if ActivateDockableOfType[*fontSettingsDockable](nil) {
 		return
 	}
 	d := &fontSettingsDockable{}

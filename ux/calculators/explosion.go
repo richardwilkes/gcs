@@ -7,7 +7,7 @@
 // This Source Code Form is "Incompatible With Secondary Licenses", as
 // defined by the Mozilla Public License, version 2.0.
 
-package ux
+package calculators
 
 import (
 	"fmt"
@@ -16,6 +16,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/calculator"
+	"github.com/richardwilkes/gcs/v5/ux"
 	"github.com/richardwilkes/rpgtools/dice"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/unison"
@@ -53,7 +54,7 @@ func (a explosionAttackType) String() string {
 // attack whose dice are typed in.
 type weaponSource struct {
 	name   string
-	sheet  *Sheet
+	sheet  *ux.Sheet
 	weapon *gurps.Weapon
 }
 
@@ -83,12 +84,12 @@ type explosionCalculator struct {
 	areaRows           *unison.Panel
 	results            *unison.Panel
 	notes              *unison.Panel
-	blastLabel         *textLabel
-	blastField         *StringField
-	damageTypeField    *StringField
-	fragmentationField *StringField
-	coneRangeField     *DecimalField
-	coneWidthField     *DecimalField
+	blastLabel         *ux.TextLabel
+	blastField         *ux.StringField
+	damageTypeField    *ux.StringField
+	fragmentationField *ux.StringField
+	coneRangeField     *ux.DecimalField
+	coneWidthField     *ux.DecimalField
 	weaponPopup        *unison.PopupMenu[weaponSource]
 	airburstBox        *unison.CheckBox
 	hotFragmentsBox    *unison.CheckBox
@@ -99,7 +100,7 @@ type explosionCalculator struct {
 	postures           []calculator.TargetPostureChoice
 	situations         []calculator.BlastSituationChoice
 	target             blastTarget
-	weaponSheet        *Sheet
+	weaponSheet        *ux.Sheet
 	weapon             *gurps.Weapon
 	blastDice          dice.Dice
 	fragmentationDice  dice.Dice
@@ -128,13 +129,13 @@ type blastTarget struct {
 	panel          *unison.Panel
 	situationSlot  *unison.Panel
 	situationRow   *unison.Panel
-	drLabel        *textLabel
-	distanceLabel  *textLabel
-	smField        *IntegerField
-	hpField        *DecimalField
-	torsoDRField   *IntegerField
-	drField        *IntegerField
-	distanceField  *DecimalField
+	drLabel        *ux.TextLabel
+	distanceLabel  *ux.TextLabel
+	smField        *ux.IntegerField
+	hpField        *ux.DecimalField
+	torsoDRField   *ux.IntegerField
+	drField        *ux.IntegerField
+	distanceField  *ux.DecimalField
 	exposedPopup   *unison.PopupMenu[exposedChoice]
 	hp             fxp.Int
 	distance       fxp.Int
@@ -174,12 +175,12 @@ func (c *explosionCalculator) panel() *unison.Panel {
 }
 
 // preselect implements calculatorTab. The sheet becomes the target's source.
-func (c *explosionCalculator) preselect(sheet *Sheet) {
+func (c *explosionCalculator) preselect(sheet *ux.Sheet) {
 	c.target.preselect(sheet)
 }
 
 // sheetChanged implements calculatorTab.
-func (c *explosionCalculator) sheetChanged(sheet *Sheet) {
+func (c *explosionCalculator) sheetChanged(sheet *ux.Sheet) {
 	if c.target.sheet == sheet || c.weaponSheet == sheet {
 		c.changed()
 	}
@@ -233,7 +234,7 @@ func (c *explosionCalculator) createAttackRows() {
 
 	c.blastField = c.newSpecField(i18n.Text("Blast Damage"), &c.blastSpec, &c.blastDice)
 	c.blastLabel = rows.addFieldRow(c.blastField, "")
-	c.damageTypeField = NewStringField(nil, "", i18n.Text("Damage Type"),
+	c.damageTypeField = ux.NewStringField(nil, "", i18n.Text("Damage Type"),
 		func() string { return c.damageType },
 		func(v string) {
 			c.damageType = v
@@ -253,8 +254,8 @@ func (c *explosionCalculator) createAttackRows() {
 
 // newSpecField returns a field holding a dice specification, which is parsed as it is typed so that the results always
 // follow the dice the spec actually names.
-func (c *explosionCalculator) newSpecField(undoTitle string, spec *string, parsed *dice.Dice) *StringField {
-	field := NewStringField(nil, "", undoTitle,
+func (c *explosionCalculator) newSpecField(undoTitle string, spec *string, parsed *dice.Dice) *ux.StringField {
+	field := ux.NewStringField(nil, "", undoTitle,
 		func() string { return *spec },
 		func(v string) {
 			*spec = v
@@ -267,7 +268,7 @@ func (c *explosionCalculator) newSpecField(undoTitle string, spec *string, parse
 
 // sizeStringField sizes a calculator's text field to the same width as its numeric fields, so that the fields line up
 // down the column, and keeps it from stretching across the rest of the row.
-func sizeStringField(field *StringField) {
+func sizeStringField(field *ux.StringField) {
 	field.SetMinimumTextWidthUsing(calculatorFieldPrototype)
 	field.SetLayoutData(&unison.FlexLayoutData{HAlign: align.Start})
 }
@@ -287,7 +288,7 @@ func (c *explosionCalculator) createExplosionRows() *unison.Panel {
 func (c *explosionCalculator) createConeRows() *unison.Panel {
 	group := newRowGroup()
 	rows := &calculatorContent{content: group}
-	c.coneRangeField = sameWidth(NewDecimalField(nil, "", i18n.Text("Maximum Range"),
+	c.coneRangeField = sameWidth(ux.NewDecimalField(nil, "", i18n.Text("Maximum Range"),
 		func() fxp.Int { return c.coneMaxRange },
 		func(v fxp.Int) {
 			c.coneMaxRange = v
@@ -295,7 +296,7 @@ func (c *explosionCalculator) createConeRows() *unison.Panel {
 		},
 		0, fxp.Max, false, false))
 	rows.addFieldRow(c.coneRangeField, i18n.Text("yards of maximum range"))
-	c.coneWidthField = sameWidth(NewDecimalField(nil, "", i18n.Text("Maximum Width"),
+	c.coneWidthField = sameWidth(ux.NewDecimalField(nil, "", i18n.Text("Maximum Width"),
 		func() fxp.Int { return c.coneMaxWidth },
 		func(v fxp.Int) {
 			c.coneMaxWidth = v
@@ -327,7 +328,7 @@ func (t *blastTarget) createPanel(parent *unison.Panel) {
 	t.changed = t.calc.changed
 	t.addRow(rows, i18n.Text("Source:"))
 
-	t.smField = sameWidth(NewIntegerField(nil, "", i18n.Text("Size Modifier"),
+	t.smField = sameWidth(ux.NewIntegerField(nil, "", i18n.Text("Size Modifier"),
 		func() int { return t.sm },
 		func(v int) {
 			t.sm = v
@@ -335,7 +336,7 @@ func (t *blastTarget) createPanel(parent *unison.Panel) {
 		},
 		-100, 100, true, false))
 	rows.addFieldRow(t.smField, i18n.Text("SM"))
-	t.hpField = sameWidth(NewDecimalField(nil, "", i18n.Text("Hit Points"),
+	t.hpField = sameWidth(ux.NewDecimalField(nil, "", i18n.Text("Hit Points"),
 		func() fxp.Int { return t.hp },
 		func(v fxp.Int) {
 			t.hp = v
@@ -343,7 +344,7 @@ func (t *blastTarget) createPanel(parent *unison.Panel) {
 		},
 		0, fxp.Max, false, false))
 	rows.addFieldRow(t.hpField, i18n.Text("HP"))
-	t.torsoDRField = sameWidth(NewIntegerField(nil, "", i18n.Text("Torso DR"),
+	t.torsoDRField = sameWidth(ux.NewIntegerField(nil, "", i18n.Text("Torso DR"),
 		func() int { return t.torsoDR },
 		func(v int) {
 			t.torsoDR = v
@@ -367,7 +368,7 @@ func (t *blastTarget) createPanel(parent *unison.Panel) {
 	row.AddChild(t.exposedPopup)
 	t.rebuildExposedChoices(nil)
 
-	t.drField = sameWidth(NewIntegerField(nil, "", i18n.Text("DR"),
+	t.drField = sameWidth(ux.NewIntegerField(nil, "", i18n.Text("DR"),
 		func() int { return t.dr },
 		func(v int) {
 			t.dr = v
@@ -387,7 +388,7 @@ func (t *blastTarget) createPanel(parent *unison.Panel) {
 	addPlainLabel(t.situationRow, i18n.Text("Situation:"))
 	addIndexPopup(t.situationRow, t.calc.situations, &t.situationIndex, t.calc.changed)
 
-	t.distanceField = sameWidth(NewDecimalField(nil, "", i18n.Text("Distance"),
+	t.distanceField = sameWidth(ux.NewDecimalField(nil, "", i18n.Text("Distance"),
 		func() fxp.Int { return t.distance },
 		func(v fxp.Int) {
 			t.distance = v
@@ -399,7 +400,7 @@ func (t *blastTarget) createPanel(parent *unison.Panel) {
 
 // selectSheet reads the target's numbers from the sheet the picker has just made its source, doing nothing when there
 // is none. The exposed location belonged to the previous sheet, so it is dropped.
-func (t *blastTarget) selectSheet(sheet *Sheet) {
+func (t *blastTarget) selectSheet(sheet *ux.Sheet) {
 	if sheet == nil {
 		return
 	}
@@ -517,7 +518,7 @@ func (c *explosionCalculator) rebuildWeaponSources() {
 	defer func() { c.rebuilding = false }()
 	c.weaponPopup.RemoveAllItems()
 	c.weaponPopup.AddItem(weaponSource{name: i18n.Text("Typed in")})
-	sheets := OpenSheets(nil)
+	sheets := ux.OpenSheets(nil)
 	names := sheetSourceNames(sheets)
 	selected := 0
 	for i, sheet := range sheets {
@@ -609,7 +610,7 @@ func (c *explosionCalculator) adjustControls() {
 	}
 	// A control whose input would not be used is blanked as well as disabled, so that a stale value cannot be read as
 	// part of the answer; one a sheet or weapon supplies keeps showing its value, since that value is in use.
-	adjustPopupBlank(c.target.exposedPopup, area || c.target.sheet == nil)
+	ux.AdjustPopupBlank(c.target.exposedPopup, area || c.target.sheet == nil)
 	switch c.attackTypeIndex {
 	case explosionAttack:
 		c.target.distanceLabel.SetTitle(i18n.Text("yards from the center of the blast"))
@@ -618,7 +619,7 @@ func (c *explosionCalculator) adjustControls() {
 	default:
 		c.target.distanceLabel.SetTitle(i18n.Text("yards from the center of the area"))
 	}
-	adjustFieldBlank(c.target.distanceField, explosion && c.target.situation() != calculator.CaughtInBlast)
+	ux.AdjustFieldBlank(c.target.distanceField, explosion && c.target.situation() != calculator.CaughtInBlast)
 
 	c.content.MarkForLayoutRecursively()
 	c.content.MarkForLayoutRecursivelyUpward()

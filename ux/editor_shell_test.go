@@ -57,7 +57,7 @@ func TestEditorShellContentKeysDriveTheButtons(t *testing.T) {
 	content := e.newContentPanel(2)
 	c.NotNil(e.scroll, "the content panel comes with the scroll panel that holds it")
 	c.Equal(content, e.scroll.Content().AsPanel(), "and the scroll panel holds the content")
-	toolbar := newToolbar()
+	toolbar := NewToolbar()
 	e.addApplyAndCancelButtons(toolbar, e.apply)
 	e.applyButton.ClickAnimationTime = 0
 	e.cancelButton.ClickAnimationTime = 0

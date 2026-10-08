@@ -189,12 +189,12 @@ func (s *Sheet) cloneSheet() {
 }
 
 func (s *Sheet) createToolbar() {
-	s.toolbar = newToolbar()
+	s.toolbar = NewToolbar()
 	s.AddChild(s.toolbar)
 	s.toolbar.AddChild(NewDefaultInfoPop())
 
 	addHelpButton(s.toolbar, "md:User%20Guide/Character%20Sheet%20Overview")
-	addUIScaleField(s.toolbar, func() int { return gurps.GlobalSettings().General.InitialSheetUIScale },
+	AddUIScaleField(s.toolbar, func() int { return gurps.GlobalSettings().General.InitialSheetUIScale },
 		func() int { return s.scale }, func(scale int) { s.scale = scale }, true, s.scroll)
 
 	hierarchyButton := unison.NewSVGButton(svg.Hierarchy)
@@ -265,12 +265,12 @@ func (s *Sheet) createToolbar() {
 		s.toolbar.AddChild(s.unsettledNotice)
 	}
 
-	finishToolbarLayout(s.toolbar)
+	FinishToolbarLayout(s.toolbar)
 }
 
 // syncUnsettledNotice shows the notice in the toolbar while the entity's data never settles (see
 // gurps.Entity.Unsettled) and removes it once it does. The toolbar's layout counts the children present when it is
-// finished, so it is finished again whenever the notice comes or goes; see finishToolbarLayout.
+// finished, so it is finished again whenever the notice comes or goes; see FinishToolbarLayout.
 func (s *Sheet) syncUnsettledNotice() {
 	if s.unsettledNotice == nil {
 		return
@@ -284,7 +284,7 @@ func (s *Sheet) syncUnsettledNotice() {
 	} else {
 		s.toolbar.AddChild(s.unsettledNotice)
 	}
-	finishToolbarLayout(s.toolbar)
+	FinishToolbarLayout(s.toolbar)
 	s.toolbar.MarkForLayoutAndRedraw()
 }
 
@@ -402,7 +402,7 @@ func (s *Sheet) MarkModified(src unison.Paneler) {
 		//       to determine that the content of a table doesn't need to be refreshed.
 		s.resync(s, s.captureViewState())
 	}
-	UpdateCalculatorsForSheet(s)
+	NotifySheetSourceUsers(s)
 }
 
 // bumpModificationTimestamp implements modificationTimestampBumper.
@@ -814,7 +814,7 @@ func (s *Sheet) Rebuild(full bool) {
 		s.layoutEditor.syncFrame()
 		s.layoutEditor.overlay.RequestFocus()
 	}
-	UpdateCalculatorsForSheet(s)
+	NotifySheetSourceUsers(s)
 }
 
 func drawBandedBackground(p unison.Paneler, gc *unison.Canvas, rect geom.Rect, start, step int, overrideFunc func(rowIndex int, ink unison.Ink) unison.Ink) {

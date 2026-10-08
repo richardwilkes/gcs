@@ -110,7 +110,7 @@ func initEquipmentItemEditor(e *editor[*gurps.Equipment, *gurps.EquipmentEditDat
 	addTagsLabelAndField(content, &e.editorData.Tags)
 	addPageRefLabelAndField(content, &e.editorData.PageRef)
 	addPageRefHighlightLabelAndField(content, &e.editorData.PageRefHighlight)
-	adjustFieldBlank(usesField, resolvedMaxUses() <= 0)
+	AdjustFieldBlank(usesField, resolvedMaxUses() <= 0)
 	content.AddChild(newPrereqPanel(entity, &e.editorData.Prereq, prereq.TypesForEquipment, false).
 		withReplacementsFrom(e.editorData))
 	content.AddChild(newFeaturesPanel(entity, e.target, &e.editorData.Features, false).
@@ -125,7 +125,7 @@ func initEquipmentItemEditor(e *editor[*gurps.Equipment, *gurps.EquipmentEditDat
 		if e.editorData.Uses > maxUses {
 			usesField.SetText(strconv.Itoa(maxUses))
 		}
-		adjustFieldBlank(usesField, maxUses <= 0)
+		AdjustFieldBlank(usesField, maxUses <= 0)
 	}
 }
 

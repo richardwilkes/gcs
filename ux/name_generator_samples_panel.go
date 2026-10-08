@@ -32,7 +32,7 @@ const sampleNameCount = 10
 type nameGeneratorSamplesPanel struct {
 	unison.Panel
 	dockable *nameGeneratorEditorDockable
-	label    *textLabel
+	label    *TextLabel
 	// shownHash is the hash of the definition the samples were last generated from, so that a Sync prompted by
 	// something other than a change to the definition -- a field committing an unchanged value, the rebuild that
 	// follows every structural edit -- does not generate them again.
@@ -50,7 +50,7 @@ func newNameGeneratorSamplesPanel(d *nameGeneratorEditorDockable) *nameGenerator
 	button.ClickCallback = p.refresh
 	p.AddChild(newEditorSectionHeader(i18n.Text("Sample Names"),
 		i18n.Text("Names generated from the current definition,\nso changes can be checked as they are made"), button))
-	p.label = newWrappingLabel()
+	p.label = NewWrappingLabel()
 	p.label.SetBorder(unison.NewCompoundBorder(unison.NewLineBorder(unison.ThemeSurfaceEdge, geom.Size{},
 		geom.NewUniformInsets(1), false),
 		unison.NewEmptyBorder(geom.NewSymmetricInsets(unison.StdHSpacing, unison.StdVSpacing))))

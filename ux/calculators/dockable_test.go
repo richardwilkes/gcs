@@ -7,7 +7,7 @@
 // This Source Code Form is "Incompatible With Secondary Licenses", as
 // defined by the Mozilla Public License, version 2.0.
 
-package ux
+package calculators
 
 import (
 	"fmt"
@@ -18,17 +18,22 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/calculator"
+	"github.com/richardwilkes/gcs/v5/ux"
+	"github.com/richardwilkes/gcs/v5/ux/uxtest"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/unison"
 )
 
+// calculatorKey is the key binding ID of the ux action that opens the calculators.
+const calculatorKey = "calculator"
+
 // openCalculator opens the calculators from their menu action, which preselects the active sheet, and returns the
 // dockable holding them.
-func openCalculator(t *testing.T, screen *unison.HeadlessScreen) *Calculator {
+func openCalculator(t *testing.T, screen *unison.HeadlessScreen) *Dockable {
 	t.Helper()
-	calc, ok := openedByAction(t, screen, calculatorAction).(*Calculator)
+	calc, ok := uxtest.OpenedByAction(t, screen, uxtest.ActionForKey(t, calculatorKey)).(*Dockable)
 	if !ok {
 		t.Fatal("the action must open the calculators")
 	}
@@ -37,18 +42,18 @@ func openCalculator(t *testing.T, screen *unison.HeadlessScreen) *Calculator {
 
 // selectCalculatorTab clicks the tab for the given calculator the way a user would and checks that its content is
 // what the dockable then shows.
-func selectCalculatorTab(t *testing.T, screen *unison.HeadlessScreen, calc *Calculator, tab calculatorTab) {
+func selectCalculatorTab(t *testing.T, screen *unison.HeadlessScreen, calc *Dockable, tab calculatorTab) {
 	t.Helper()
 	index := slices.Index(calc.tabs, tab)
 	if index < 0 {
 		t.Fatalf("%s is not one of the calculators", tab.title())
 	}
-	screen.Click(screen.PanelCenter(calc.tabBar.buttons[index]))
+	screen.Click(screen.PanelCenter(uxtest.PanelsOfType[*unison.Button](calc.tabBar.AsPanel())[index]))
 	var shown []*unison.Panel
 	var selected int
 	screen.Do(func() {
 		shown = calc.slot.Children()
-		selected = calc.tabBar.selectedIndex()
+		selected = calc.tabBar.SelectedIndex()
 	})
 	if selected != index || len(shown) != 1 || shown[0] != tab.panel() {
 		t.Fatalf("clicking the %s tab must show that calculator alone", tab.title())
@@ -61,22 +66,19 @@ func selectCalculatorTab(t *testing.T, screen *unison.HeadlessScreen, calc *Calc
 // brings the open dockable forward rather than opening another.
 func TestCalculatorTabs(t *testing.T) {
 	c := check.New(t)
-	screen, wnd := startHeadlessWorkspace(t, c)
-	sheet, ok := openedByAction(t, screen, newCharacterSheetAction).(*Sheet)
-	if !ok {
-		t.Fatal("New Character Sheet must open a character sheet")
-	}
+	screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
+	sheet := uxtest.OpenNewCharacterSheet(t, screen)
 	calc := openCalculator(t, screen)
 
 	var titles []string
 	var shown []*unison.Panel
-	var sources []*Sheet
+	var sources []*ux.Sheet
 	screen.Do(func() {
-		for _, button := range calc.tabBar.buttons {
+		for _, button := range uxtest.PanelsOfType[*unison.Button](calc.tabBar.AsPanel()) {
 			titles = append(titles, button.Text.String())
 		}
 		shown = calc.slot.Children()
-		sources = []*Sheet{
+		sources = []*ux.Sheet{
 			calc.collision.mover.sheet, calc.jumping.source.sheet, calc.throwing.source.sheet,
 			calc.hiking.source.sheet, calc.explosion.target.sheet,
 		}
@@ -85,25 +87,25 @@ func TestCalculatorTabs(t *testing.T) {
 		"Explosions & Area Attacks", "Scatter", "Demolition", "Collisions & Falls", "Jumping", "Throwing", "Hiking",
 	}, titles, "the tabs must be labeled with the calculators, in order")
 	c.Equal([]*unison.Panel{calc.explosion.content}, shown, "the first tab must be showing when the calculators open")
-	c.Equal([]*Sheet{sheet, sheet, sheet, sheet, sheet}, sources,
+	c.Equal([]*ux.Sheet{sheet, sheet, sheet, sheet, sheet}, sources,
 		"the active sheet must be preselected on every calculator that takes a character's numbers")
 
 	for _, tab := range calc.tabs {
 		selectCalculatorTab(t, screen, calc, tab)
 	}
-	captureScreen(t, c, screen, "calculator_hiking_tab")
+	uxtest.CaptureScreen(t, c, screen, "calculator_hiking_tab")
 	selectCalculatorTab(t, screen, calc, calc.jumping)
 
 	// Choosing the menu item again brings the open calculators forward, leaving the chosen tab alone.
 	var opened int
 	screen.Do(func() {
-		before := len(AllDockables())
-		calculatorAction.Execute(nil)
-		opened = len(AllDockables()) - before
+		before := len(ux.AllDockables())
+		uxtest.ActionForKey(t, calculatorKey).Execute(nil)
+		opened = len(ux.AllDockables()) - before
 	})
 	c.Equal(0, opened, "a second request must not open a second set of calculators")
 	var selected int
-	screen.Do(func() { selected = calc.tabBar.selectedIndex() })
+	screen.Do(func() { selected = calc.tabBar.SelectedIndex() })
 	c.Equal(slices.Index(calc.tabs, calculatorTab(calc.jumping)), selected,
 		"bringing the calculators forward must not change the tab")
 
@@ -130,17 +132,17 @@ func TestCalculatorTabs(t *testing.T) {
 		viewRight = view.PointToRoot(geom.NewPoint(view.FrameRect().Width, 0)).X
 		content := calc.scroll.Content().AsPanel()
 		contentRight = content.PointToRoot(geom.NewPoint(content.FrameRect().Width, 0)).X
-		if popup, found := firstPanelOfType[*unison.PopupMenu[calculator.TargetPostureChoice]](calc.explosion.content); found {
+		if popup, found := uxtest.FirstPanelOfType[*unison.PopupMenu[calculator.TargetPostureChoice]](calc.explosion.content); found {
 			popupRight = popup.PointToRoot(geom.NewPoint(popup.FrameRect().Width, 0)).X
 		}
 	})
-	captureScreen(t, c, screen, "calculator_narrow_explosion")
+	uxtest.CaptureScreen(t, c, screen, "calculator_narrow_explosion")
 	c.True(popupRight > 0, "the explosions tab must offer a posture popup")
 	c.True(popupRight > viewRight, "the narrowed view must be too narrow for the posture popup")
 	c.True(popupRight <= contentRight, "the posture popup must lie within the scroll content, however narrow the view")
 
-	closeEditorWithoutPrompt(t, screen, calc)
-	closeEditorWithoutPrompt(t, screen, sheet)
+	uxtest.CloseEditorWithoutPrompt(t, screen, calc)
+	uxtest.CloseEditorWithoutPrompt(t, screen, sheet)
 }
 
 // TestJumpingCalculatorSources drives the jumping calculator inside a headless workspace the way a user would: it
@@ -148,17 +150,14 @@ func TestCalculatorTabs(t *testing.T) {
 // typed in after switching the source to Manual, and checks that closing the sheet drops it as the source.
 func TestJumpingCalculatorSources(t *testing.T) {
 	c := check.New(t)
-	screen, wnd := startHeadlessWorkspace(t, c)
-	sheet, ok := openedByAction(t, screen, newCharacterSheetAction).(*Sheet)
-	if !ok {
-		t.Fatal("New Character Sheet must open a character sheet")
-	}
+	screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
+	sheet := uxtest.OpenNewCharacterSheet(t, screen)
 	calc := openCalculator(t, screen)
 	jumping := calc.jumping
 	selectCalculatorTab(t, screen, calc, jumping)
 
 	type state struct {
-		sheet                     *Sheet
+		sheet                     *ux.Sheet
 		basicMove, liftingST      fxp.Int
 		weight                    fxp.Weight
 		sourceIndex               int
@@ -199,10 +198,10 @@ func TestJumpingCalculatorSources(t *testing.T) {
 	c.False(s.moveEnabled, "a field the sheet supplies must be locked")
 	c.False(s.encEnabled, "the encumbrance the sheet supplies must be locked")
 	c.Equal("yard running start", s.runningStart, "a sheet in yards measures the running start in yards")
-	captureScreen(t, c, screen, "jumping_calculator")
+	uxtest.CaptureScreen(t, c, screen, "jumping_calculator")
 
 	// BX352: with Basic Move 5 and ST 10, a standing high jump is 6×5−10 = 20 inches and a broad jump 2×5−3 = 7 feet.
-	choosePopupItem(t, screen, wnd, jumping.source.popup, 0)
+	uxtest.ChoosePopupItem(t, screen, wnd, jumping.source.popup, 0)
 	s = current()
 	c.Nil(s.sheet, "choosing Manual must drop the sheet")
 	c.True(s.moveEnabled, "a typed-in field must be unlocked")
@@ -221,7 +220,7 @@ func TestJumpingCalculatorSources(t *testing.T) {
 	screen.Do(func() {
 		jumping.extraEffortPenalty = -2
 		jumping.changed()
-		notes = slices.DeleteFunc(labelTexts(jumping.notes), func(text string) bool { return text == "•" })
+		notes = slices.DeleteFunc(uxtest.LabelTexts(jumping.notes), func(text string) bool { return text == "•" })
 	})
 	s = current()
 	c.Equal("1 foot, 10 inches", s.high, "extra effort at -2 must add 10% to the high jump")
@@ -234,16 +233,16 @@ func TestJumpingCalculatorSources(t *testing.T) {
 		jumping.changed()
 	})
 
-	choosePopupItem(t, screen, wnd, jumping.source.popup, 1)
+	uxtest.ChoosePopupItem(t, screen, wnd, jumping.source.popup, 1)
 	c.Equal(sheet, current().sheet, "choosing the sheet must make it the source again")
-	closeEditorWithoutPrompt(t, screen, sheet)
+	uxtest.CloseEditorWithoutPrompt(t, screen, sheet)
 	screen.Do(func() { jumping.changed() })
 	s = current()
 	c.Nil(s.sheet, "closing the sheet must drop it as the source")
 	c.Equal(0, s.sourceIndex, "the Source popup must show Manual once the sheet is gone")
 	c.True(s.moveEnabled, "the fields must be unlocked once the sheet is gone")
 
-	closeEditorWithoutPrompt(t, screen, calc)
+	uxtest.CloseEditorWithoutPrompt(t, screen, calc)
 }
 
 // TestThrowingCalculatorSources drives the throwing calculator inside a headless workspace the way a user would: it
@@ -251,17 +250,14 @@ func TestJumpingCalculatorSources(t *testing.T) {
 // typed in after switching the source to Manual, and checks that the throwing skills add to the distance and damage.
 func TestThrowingCalculatorSources(t *testing.T) {
 	c := check.New(t)
-	screen, wnd := startHeadlessWorkspace(t, c)
-	sheet, ok := openedByAction(t, screen, newCharacterSheetAction).(*Sheet)
-	if !ok {
-		t.Fatal("New Character Sheet must open a character sheet")
-	}
+	screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
+	sheet := uxtest.OpenNewCharacterSheet(t, screen)
 	calc := openCalculator(t, screen)
 	throwing := calc.throwing
 	selectCalculatorTab(t, screen, calc, throwing)
 
 	type state struct {
-		sheet                      *Sheet
+		sheet                      *ux.Sheet
 		st, strikingST             fxp.Int
 		sourceIndex                int
 		stEnabled, throwingEnabled bool
@@ -298,7 +294,7 @@ func TestThrowingCalculatorSources(t *testing.T) {
 
 	// BX355: ST 10 throws a 1 lb object, a twentieth of its Basic Lift of 20, 3.5×ST = 35 yards, for thrust−2 per die:
 	// 1d−2 becomes 1d−4.
-	choosePopupItem(t, screen, wnd, throwing.source.popup, 0)
+	uxtest.ChoosePopupItem(t, screen, wnd, throwing.source.popup, 0)
 	s = current()
 	c.Nil(s.sheet, "choosing Manual must drop the sheet")
 	c.True(s.stEnabled, "a typed-in field must be unlocked")
@@ -311,7 +307,7 @@ func TestThrowingCalculatorSources(t *testing.T) {
 	s = current()
 	c.Equal("35 yards", s.distance, "the worked example on BX355 must come out at 35 yards")
 	c.Equal("1d-4", s.damage, "a light object does thrust−2 per die")
-	captureScreen(t, c, screen, "throwing_calculator")
+	uxtest.CaptureScreen(t, c, screen, "throwing_calculator")
 
 	// BX357: extra effort at -2 raises the ST for both distance and damage by 10%, to 11: 11 × 3.5 = 38.5 yards, and
 	// thrust for ST 11 is 1d-1, less 2 for the light object.
@@ -319,7 +315,7 @@ func TestThrowingCalculatorSources(t *testing.T) {
 	screen.Do(func() {
 		throwing.extraEffortPenalty = -2
 		throwing.changed()
-		notes = slices.DeleteFunc(labelTexts(throwing.notes), func(text string) bool { return text == "•" })
+		notes = slices.DeleteFunc(uxtest.LabelTexts(throwing.notes), func(text string) bool { return text == "•" })
 	})
 	s = current()
 	c.Equal("38 yards, 1 foot, 6 inches", s.distance, "extra effort at -2 must add 10% to the ST for distance")
@@ -333,18 +329,18 @@ func TestThrowingCalculatorSources(t *testing.T) {
 	})
 
 	// Throwing Art at DX+1 adds 2 to the ST for distance and 2 per die to the damage: 12×3.5 = 42 yards and 1d−2.
-	throwingArtPopup, found := firstPanelOfType[*unison.PopupMenu[calculator.ThrowingTier]](throwing.content)
+	throwingArtPopup, found := uxtest.FirstPanelOfType[*unison.PopupMenu[calculator.ThrowingTier]](throwing.content)
 	if !found {
 		t.Fatal("the calculator must offer a Throwing popup")
 	}
 	c.Equal(throwing.throwingPopup, throwingArtPopup, "the Throwing popup comes first")
-	choosePopupItem(t, screen, wnd, throwing.throwingArtPopup, 2)
+	uxtest.ChoosePopupItem(t, screen, wnd, throwing.throwingArtPopup, 2)
 	s = current()
 	c.Equal("42 yards", s.distance, "Throwing Art at DX+1 must add 2 to the ST the distance is worked out from")
 	c.Equal("1d-2", s.damage, "Throwing Art at DX+1 must add 2 per die to the damage")
 
-	closeEditorWithoutPrompt(t, screen, calc)
-	closeEditorWithoutPrompt(t, screen, sheet)
+	uxtest.CloseEditorWithoutPrompt(t, screen, calc)
+	uxtest.CloseEditorWithoutPrompt(t, screen, sheet)
 }
 
 // TestCalculatorHikingControls drives the hiking calculator inside a headless workspace the way a user would: it checks
@@ -353,14 +349,11 @@ func TestThrowingCalculatorSources(t *testing.T) {
 // disabled or retitled to match, and works a day's travel from numbers typed in.
 func TestCalculatorHikingControls(t *testing.T) {
 	c := check.New(t)
-	screen, wnd := startHeadlessWorkspace(t, c)
-	sheet, ok := openedByAction(t, screen, newCharacterSheetAction).(*Sheet)
-	if !ok {
-		t.Fatal("New Character Sheet must open a character sheet")
-	}
-	screen.Do(func() { DisplayCalculator(sheet) })
-	calc := soleEditor[*Calculator](t, screen, func(d unison.Dockable) bool {
-		_, isCalculator := d.AsPanel().Self.(*Calculator)
+	screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
+	sheet := uxtest.OpenNewCharacterSheet(t, screen)
+	screen.Do(func() { Display(sheet) })
+	calc := uxtest.SoleEditor[*Dockable](t, screen, func(d unison.Dockable) bool {
+		_, isCalculator := d.AsPanel().Self.(*Dockable)
 		return isCalculator
 	})
 	hiking := calc.hiking
@@ -369,10 +362,10 @@ func TestCalculatorHikingControls(t *testing.T) {
 	var terrainPopup, weatherPopup *unison.PopupMenu[calculator.TerrainModifier]
 	var intensityPopup *unison.PopupMenu[calculator.HikingIntensity]
 	screen.Do(func() {
-		if popups := panelsOfType[*unison.PopupMenu[calculator.TerrainModifier]](hiking.content); len(popups) == 2 {
+		if popups := uxtest.PanelsOfType[*unison.PopupMenu[calculator.TerrainModifier]](hiking.content); len(popups) == 2 {
 			terrainPopup, weatherPopup = popups[0], popups[1]
 		}
-		intensityPopup, _ = firstPanelOfType[*unison.PopupMenu[calculator.HikingIntensity]](hiking.content)
+		intensityPopup, _ = uxtest.FirstPanelOfType[*unison.PopupMenu[calculator.HikingIntensity]](hiking.content)
 	})
 	if terrainPopup == nil || weatherPopup == nil || intensityPopup == nil {
 		t.Fatal("the calculator must offer terrain, weather and intensity popups")
@@ -405,7 +398,7 @@ func TestCalculatorHikingControls(t *testing.T) {
 	c.Equal([]string{"Results"}, boxHeaders, "the results box must be labeled")
 
 	type state struct {
-		sheet                                                                  *Sheet
+		sheet                                                                  *ux.Sheet
 		terrain, weather, intensity, move, encumbrance                         int
 		hours, fp                                                              fxp.Int
 		moveEnabled                                                            bool
@@ -439,7 +432,7 @@ func TestCalculatorHikingControls(t *testing.T) {
 			s.rollTitle = hiking.successfulHikingRollCheckBox.Text.String() + " " + hiking.hikingRollPageLabel.Title()
 			s.perDay = hiking.hikingResult.String()
 			s.fpCost = hiking.fpResult.String() + " " + hiking.fpLabel.String()
-			s.notes = slices.DeleteFunc(labelTexts(hiking.notes), func(text string) bool { return text == "•" })
+			s.notes = slices.DeleteFunc(uxtest.LabelTexts(hiking.notes), func(text string) bool { return text == "•" })
 		})
 		return s
 	}
@@ -503,7 +496,7 @@ func TestCalculatorHikingControls(t *testing.T) {
 	breakdownRow := func(index int) []string {
 		var row []string
 		screen.Do(func() {
-			cells := labelTexts(hiking.breakdown)
+			cells := uxtest.LabelTexts(hiking.breakdown)
 			if 6*index+6 <= len(cells) {
 				row = cells[6*index : 6*index+6]
 			}
@@ -519,24 +512,24 @@ func TestCalculatorHikingControls(t *testing.T) {
 		"the 8th hour is walked at half Move")
 
 	// Snow on a road lets it be cleared; a swamp cannot be.
-	choosePopupItem(t, screen, wnd, weatherPopup, snow)
+	uxtest.ChoosePopupItem(t, screen, wnd, weatherPopup, snow)
 	s := current()
 	c.Equal(snow, s.weather, "choosing weather must store its index")
 	c.True(s.roadsEnabled, "snow on a road must allow the road to be cleared")
-	choosePopupItem(t, screen, wnd, terrainPopup, swamp)
+	uxtest.ChoosePopupItem(t, screen, wnd, terrainPopup, swamp)
 	s = current()
 	c.Equal(swamp, s.terrain, "choosing terrain must store its index")
 	c.False(s.roadsEnabled, "a swamp cannot be cleared of snow")
-	choosePopupItem(t, screen, wnd, terrainPopup, dirtRoad)
+	uxtest.ChoosePopupItem(t, screen, wnd, terrainPopup, dirtRoad)
 	c.True(current().roadsEnabled, "back on the road, it can be cleared again")
 
 	// The hours are only editable for a custom intensity; any other sets them.
-	choosePopupItem(t, screen, wnd, intensityPopup, custom)
+	uxtest.ChoosePopupItem(t, screen, wnd, intensityPopup, custom)
 	s = current()
 	c.Equal(custom, s.intensity, "choosing an intensity must store its index")
 	c.True(s.hoursEnabled, "a custom intensity must free the hours field")
 	c.Equal(fxp.Eight, s.hours, "switching to custom must keep the hours")
-	choosePopupItem(t, screen, wnd, intensityPopup, forcedMarch)
+	uxtest.ChoosePopupItem(t, screen, wnd, intensityPopup, forcedMarch)
 	s = current()
 	c.Equal(fxp.Sixteen, s.hours, "a forced march must set the hours")
 	c.False(s.hoursEnabled, "a fixed intensity must lock the hours field")
@@ -583,7 +576,7 @@ func TestCalculatorHikingControls(t *testing.T) {
 	c.Equal("Made a successful Skating roll (B220)", s.rollTitle, "on skates, the roll is against Skating")
 	clickCheckBox(hiking.roadsAreClearedCheckBox)
 	c.True(current().roadsCleared, "clicking the roads checkbox must store the choice")
-	captureScreen(t, c, screen, "hiking_calculator")
+	uxtest.CaptureScreen(t, c, screen, "hiking_calculator")
 
 	// The Move is locked while the sheet supplies it and typed in once the source is Manual: Move 6 over a normal
 	// eight-hour day on a dirt road in snow that has been cleared, on skates, after a successful Skating roll, is 4.5
@@ -592,19 +585,19 @@ func TestCalculatorHikingControls(t *testing.T) {
 	// hours at 4.875 miles, then half Move from 1 FP left, and unconsciousness at -10 FP after the 7th hour, for 24.4
 	// miles and 21 + 2 = 23 FP.
 	c.False(current().moveEnabled, "the Move the sheet supplies must be locked")
-	choosePopupItem(t, screen, wnd, hiking.source.popup, 0)
+	uxtest.ChoosePopupItem(t, screen, wnd, hiking.source.popup, 0)
 	s = current()
 	c.Nil(s.sheet, "choosing Manual must drop the sheet")
 	c.True(s.moveEnabled, "a typed-in Move must be unlocked")
-	choosePopupItem(t, screen, wnd, intensityPopup, normalIntensity)
+	uxtest.ChoosePopupItem(t, screen, wnd, intensityPopup, normalIntensity)
 	screen.Do(func() { hiking.moveField.SetText("6") })
 	c.Equal("34 miles", current().perDay, "the day's travel must follow the typed-in Move")
-	choosePopupItem(t, screen, wnd, hiking.encumbrancePopup, 1)
-	heatPopup, found := firstPanelOfType[*unison.PopupMenu[calculator.HikingHeat]](hiking.content)
+	uxtest.ChoosePopupItem(t, screen, wnd, hiking.encumbrancePopup, 1)
+	heatPopup, found := uxtest.FirstPanelOfType[*unison.PopupMenu[calculator.HikingHeat]](hiking.content)
 	if !found {
 		t.Fatal("the calculator must offer a heat popup")
 	}
-	choosePopupItem(t, screen, wnd, heatPopup, 1)
+	uxtest.ChoosePopupItem(t, screen, wnd, heatPopup, 1)
 	screen.Do(func() { hiking.hikingExtraEffortField.SetText("-2") })
 	s = current()
 	c.Equal(1, s.encumbrance, "choosing an encumbrance must store its index")
@@ -624,7 +617,7 @@ func TestCalculatorHikingControls(t *testing.T) {
 		"the collapse must be explained")
 	c.True(slices.Contains(s.notes, "The extra effort makes the Hiking roll a single Will-based Hiking roll at -2 for the +10% beyond the +20% a successful roll gives, and adds 2 FP to the loss when the hiker stops. A failure leaves the day at the +20% alone: 23 miles. A critical failure turns the whole loss, 23 FP, into HP of injury at the end of the day, and on a natural 18 a HT roll is needed as well to avoid a temporary disadvantage (B357)."),
 		"extra effort must be explained, with what a failure leaves")
-	captureScreen(t, c, screen, "hiking_calculator_fatigue")
+	uxtest.CaptureScreen(t, c, screen, "hiking_calculator_fatigue")
 
 	// BX427, BX55: an hour's rest after the 4th hour, with a decent meal, gives a Fit hiker 12 + 1 FP, capped at the 12
 	// lost, so the second half of the day goes like the first: 34.1 miles instead of a collapse. The meal and the FP
@@ -638,7 +631,7 @@ func TestCalculatorHikingControls(t *testing.T) {
 	c.True(extraBlank, "without a rest there is nothing to restore FP during")
 	screen.Do(func() { hiking.restField.SetText("60") })
 	clickCheckBox(hiking.restMealCheckBox)
-	choosePopupItem(t, screen, wnd, hiking.fitnessPopup, 1)
+	uxtest.ChoosePopupItem(t, screen, wnd, hiking.fitnessPopup, 1)
 	s = current()
 	c.Equal("34 miles", s.perDay, "the rest must let the hiker finish the day")
 	c.Equal("26 FP lost by the end of the day (3 per hour, plus 2 for extra effort)", s.fpCost,
@@ -652,7 +645,7 @@ func TestCalculatorHikingControls(t *testing.T) {
 
 	// BX55, BX248: a Very Fit hiker loses 1.5 FP an hour instead, and 3 FP from Lend Energy add to the rest, though the
 	// rest still cannot exceed the 6 FP lost by then: 39 miles for 14 FP, and only the stop leaves the hiker very tired.
-	choosePopupItem(t, screen, wnd, hiking.fitnessPopup, 2)
+	uxtest.ChoosePopupItem(t, screen, wnd, hiking.fitnessPopup, 2)
 	screen.Do(func() { hiking.restExtraField.SetText("3") })
 	s = current()
 	c.Equal("39 miles", s.perDay, "a Very Fit hiker keeps full Move all day")
@@ -663,10 +656,10 @@ func TestCalculatorHikingControls(t *testing.T) {
 		"the stop's extra effort leaves fewer than a third of the FP")
 	c.True(slices.Contains(s.notes, "Being Very Fit, the hiker loses FP at half that rate (B55)."),
 		"Very Fit must be explained")
-	captureScreen(t, c, screen, "hiking_calculator_rest")
+	uxtest.CaptureScreen(t, c, screen, "hiking_calculator_rest")
 
-	closeEditorWithoutPrompt(t, screen, calc)
-	closeEditorWithoutPrompt(t, screen, sheet)
+	uxtest.CloseEditorWithoutPrompt(t, screen, calc)
+	uxtest.CloseEditorWithoutPrompt(t, screen, sheet)
 }
 
 // TestCalculatorChoicesFollowLanguage verifies that the choices the calculators offer in their popups are translated
@@ -675,7 +668,7 @@ func TestCalculatorHikingControls(t *testing.T) {
 // system's the system's language in those popups alone.
 func TestCalculatorChoicesFollowLanguage(t *testing.T) {
 	c := check.New(t)
-	screen, _ := startHeadlessWorkspace(t, c)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
 	const mark = "»"
 	i18n.SetLocalizer(func(text string) string { return mark + text })
 	t.Cleanup(func() { i18n.SetLocalizer(nil) })

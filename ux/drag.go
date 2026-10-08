@@ -73,10 +73,10 @@ var allDragDataTypes = []*uti.DataType{
 	defaultDragKey,
 }
 
-// registerWindowDragTypes registers the supplied window as a target for every kind of drag payload GCS supports: the
+// RegisterWindowDragTypes registers the supplied window as a target for every kind of drag payload GCS supports: the
 // in-app drag keys, readable image files, file and other URLs (required for OS-level drops, such as an image onto the
 // portrait panel, to be delivered) and the dock's own drags.
-func registerWindowDragTypes(wnd *unison.Window) {
+func RegisterWindowDragTypes(wnd *unison.Window) {
 	if wnd == nil {
 		return
 	}

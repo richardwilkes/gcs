@@ -266,7 +266,7 @@ func RefreshPageRefMappingsView() {
 
 // ShowPageRefMappings shows the Page Reference Mappings.
 func ShowPageRefMappings() {
-	if activateDockable[*pageRefMappingsDockable](nil) {
+	if ActivateDockableOfType[*pageRefMappingsDockable](nil) {
 		return
 	}
 	d := &pageRefMappingsDockable{}

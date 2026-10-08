@@ -30,7 +30,7 @@ type menuKeySettingsDockable struct {
 
 // ShowMenuKeySettings shows the Menu Key settings.
 func ShowMenuKeySettings() {
-	if activateDockable[*menuKeySettingsDockable](nil) {
+	if ActivateDockableOfType[*menuKeySettingsDockable](nil) {
 		return
 	}
 	d := &menuKeySettingsDockable{}

@@ -146,7 +146,7 @@ func newMarkdownDockable(filePath, content string, allowEditing, startInEditMode
 	}
 	d.pan.install(d.scroller, d.markdown.AsPanel(), d.markdown)
 
-	toolbar := newToolbar()
+	toolbar := NewToolbar()
 	toolbar.AddChild(NewDefaultInfoPop())
 	toolbar.AddChild(NewMarkdownGuideButton())
 	toolbar.AddChild(
@@ -186,7 +186,7 @@ func newMarkdownDockable(filePath, content string, allowEditing, startInEditMode
 		toolbar.AddChild(editToggle)
 	}
 
-	finishToolbarLayout(toolbar)
+	FinishToolbarLayout(toolbar)
 
 	d.AddChild(toolbar)
 	d.AddChild(d.scroller)

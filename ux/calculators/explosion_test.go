@@ -7,7 +7,7 @@
 // This Source Code Form is "Incompatible With Secondary Licenses", as
 // defined by the Mozilla Public License, version 2.0.
 
-package ux
+package calculators
 
 import (
 	"slices"
@@ -16,6 +16,8 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/calculator"
+	"github.com/richardwilkes/gcs/v5/ux"
+	"github.com/richardwilkes/gcs/v5/ux/uxtest"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/unison"
 )
@@ -26,17 +28,14 @@ import (
 // the target back to Manual with the fields unlocked.
 func TestExplosionCalculatorSources(t *testing.T) {
 	c := check.New(t)
-	screen, wnd := startHeadlessWorkspace(t, c)
-	sheet, ok := openedByAction(t, screen, newCharacterSheetAction).(*Sheet)
-	if !ok {
-		t.Fatal("New Character Sheet must open a character sheet")
-	}
+	screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
+	sheet := uxtest.OpenNewCharacterSheet(t, screen)
 	dockable := openCalculator(t, screen)
 	calc := dockable.explosion
 	selectCalculatorTab(t, screen, dockable, calc)
 
 	type state struct {
-		sheet                           *Sheet
+		sheet                           *ux.Sheet
 		hp                              fxp.Int
 		sourceIndex                     int
 		smEnabled, hpEnabled, drEnabled bool
@@ -56,7 +55,7 @@ func TestExplosionCalculatorSources(t *testing.T) {
 			s.exposedEnabled = calc.target.exposedPopup.Enabled()
 			s.situationShown = len(calc.target.situationSlot.Children()) > 0
 			s.sections = calc.attackSlot.Children()
-			s.results = labelTexts(calc.results)
+			s.results = uxtest.LabelTexts(calc.results)
 		})
 		return s
 	}
@@ -87,7 +86,7 @@ func TestExplosionCalculatorSources(t *testing.T) {
 		"DR against the blast:", "0 (Large-Area Injury)",
 		"Penetrating (average):", "4",
 	}, s.results, "the worked example on BX414 must come out at 1/4/8")
-	captureScreen(t, c, screen, "explosion_calculator")
+	uxtest.CaptureScreen(t, c, screen, "explosion_calculator")
 
 	// BX414-BX415: [2d] fragmentation reaches 10 yards, and the fragments roll against 15 less the range penalty, which
 	// is -1 at 3 yards; the arithmetic is shown only while a modifier applies.
@@ -107,11 +106,11 @@ func TestExplosionCalculatorSources(t *testing.T) {
 		calc.target.distanceField.SetText("3")
 	})
 
-	attackTypePopup, found := firstPanelOfType[*unison.PopupMenu[explosionAttackType]](calc.content)
+	attackTypePopup, found := uxtest.FirstPanelOfType[*unison.PopupMenu[explosionAttackType]](calc.content)
 	if !found {
 		t.Fatal("the calculator must offer an attack type popup")
 	}
-	choosePopupItem(t, screen, wnd, attackTypePopup, coneAttack)
+	uxtest.ChoosePopupItem(t, screen, wnd, attackTypePopup, coneAttack)
 	// BX413: a cone with a maximum range of 100 yards and a maximum width of 5 is 3 yards wide at 60 yards.
 	screen.Do(func() {
 		calc.coneRangeField.SetText("100")
@@ -134,7 +133,7 @@ func TestExplosionCalculatorSources(t *testing.T) {
 	// would scatter 9 but is limited to half the distance.
 	scatter := dockable.scatter
 	selectCalculatorTab(t, screen, dockable, scatter)
-	causePopup, found := firstPanelOfType[*unison.PopupMenu[calculator.ScatterCause]](scatter.content)
+	causePopup, found := uxtest.FirstPanelOfType[*unison.PopupMenu[calculator.ScatterCause]](scatter.content)
 	if !found {
 		t.Fatal("the calculator must offer a cause popup")
 	}
@@ -144,10 +143,10 @@ func TestExplosionCalculatorSources(t *testing.T) {
 		scattered = scatter.result.String()
 	})
 	c.Equal("3 yards", scattered, "a miss scatters by its margin")
-	choosePopupItem(t, screen, wnd, causePopup, 1)
+	uxtest.ChoosePopupItem(t, screen, wnd, causePopup, 1)
 	screen.Do(func() { scattered = scatter.result.String() })
 	c.Equal("5 yards (limited to half the distance)", scattered, "a squared miss is limited to half the distance")
-	captureScreen(t, c, screen, "scatter_calculator")
+	uxtest.CaptureScreen(t, c, screen, "scatter_calculator")
 
 	// BX415: a 6dx8 blast takes 16 lbs of TNT, or 20 lbs of dynamite, whose REF is 0.8.
 	demolition := dockable.demolition
@@ -161,11 +160,11 @@ func TestExplosionCalculatorSources(t *testing.T) {
 	c.True(refBlank, "a preset explosive's REF field is disabled and blank, since what is typed in it is not used")
 	c.True(weightBlank, "the weight is not used when working out the explosive a blast needs, so it is blank")
 	c.False(countBlank, "the blast multiplier is in use, so it is editable and shown")
-	explosivePopup, found := firstPanelOfType[*unison.PopupMenu[explosiveChoice]](demolition.content)
+	explosivePopup, found := uxtest.FirstPanelOfType[*unison.PopupMenu[explosiveChoice]](demolition.content)
 	if !found {
 		t.Fatal("the calculator must offer an explosive popup")
 	}
-	choosePopupItem(t, screen, wnd, explosivePopup, slices.IndexFunc(demolition.explosives,
+	uxtest.ChoosePopupItem(t, screen, wnd, explosivePopup, slices.IndexFunc(demolition.explosives,
 		func(e explosiveChoice) bool { return e.title == "Dynamite" }))
 	var damage, tnt, explosiveLabel, explosiveWeight string
 	screen.Do(func() {
@@ -179,10 +178,10 @@ func TestExplosionCalculatorSources(t *testing.T) {
 	c.Equal("16 lb", tnt, "a 6dx8 blast takes (8x8)/4 lbs of TNT")
 	c.Equal("Dynamite:", explosiveLabel, "the weight is labeled with the explosive it is of")
 	c.Equal("20 lb", explosiveWeight, "the worked example on BX415 must come out at 20 lbs of dynamite")
-	captureScreen(t, c, screen, "demolition_calculator")
+	uxtest.CaptureScreen(t, c, screen, "demolition_calculator")
 
 	selectCalculatorTab(t, screen, dockable, calc)
-	closeEditorWithoutPrompt(t, screen, sheet)
+	uxtest.CloseEditorWithoutPrompt(t, screen, sheet)
 	screen.Do(func() { calc.changed() })
 	s = current()
 	c.Nil(s.sheet, "closing the sheet must drop it as the source")
@@ -192,5 +191,5 @@ func TestExplosionCalculatorSources(t *testing.T) {
 	c.True(s.drEnabled, "the DR must be typed in once the sheet is gone")
 	c.False(s.exposedEnabled, "without a sheet there are no locations to choose among")
 
-	closeEditorWithoutPrompt(t, screen, dockable)
+	uxtest.CloseEditorWithoutPrompt(t, screen, dockable)
 }

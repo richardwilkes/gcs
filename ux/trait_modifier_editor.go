@@ -59,8 +59,8 @@ func initTraitModifierEditor(e *editor[*gurps.TraitModifier, *gurps.TraitModifie
 	wrapper, _ = addFlowWrapper(content, levelLabel, 3)
 	levels := addDecimalField(wrapper, nil, "", levelLabel, "", &e.editorData.Levels, 0, fxp.Thousand, false)
 	box := addCheckBox(wrapper, i18n.Text("Use level from owner"), &e.editorData.UseLevelFromTrait)
-	box.OnSet = func() { adjustFieldBlank(levels, e.editorData.UseLevelFromTrait) }
-	adjustFieldBlank(levels, e.editorData.UseLevelFromTrait)
+	box.OnSet = func() { AdjustFieldBlank(levels, e.editorData.UseLevelFromTrait) }
+	AdjustFieldBlank(levels, e.editorData.UseLevelFromTrait)
 	multiplyBox := addInvertedCheckBox(wrapper, i18n.Text("Multiply cost by level"), &e.editorData.CostIgnoresLevel)
 	multiplyBox.Tooltip = newWrappedTooltip(i18n.Text("When checked, a leveled modifier's cost adjustment is multiplied by its level. For a modifier that takes its level from its owner, that is the owner's purchased level, not counting any levels granted by bonuses. Uncheck it to leave the cost adjustment unmultiplied, while any per-level features the modifier carries still scale with the level. Either way, a point adjustment that affects levels only is added to the owner's cost per level, so it is still charged for each of the owner's levels."))
 	total := NewNonEditableField(func(field *NonEditableField) {

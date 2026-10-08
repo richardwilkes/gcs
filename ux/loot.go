@@ -86,10 +86,10 @@ func NewLootSheet(filePath string, loot *gurps.Loot) *LootSheet {
 }
 
 func (l *LootSheet) createToolbar() {
-	l.toolbar = newToolbar()
+	l.toolbar = NewToolbar()
 	l.AddChild(l.toolbar)
 	l.toolbar.AddChild(NewDefaultInfoPop())
-	addUIScaleField(l.toolbar, func() int { return gurps.GlobalSettings().General.InitialSheetUIScale },
+	AddUIScaleField(l.toolbar, func() int { return gurps.GlobalSettings().General.InitialSheetUIScale },
 		func() int { return l.scale }, func(scale int) { l.scale = scale }, true, l.scroll)
 
 	hierarchyButton := unison.NewSVGButton(svg.Hierarchy)
@@ -114,7 +114,7 @@ func (l *LootSheet) createToolbar() {
 
 	l.searchTracker = installListSearchTracker(l.toolbar, l.lists)
 
-	finishToolbarLayout(l.toolbar)
+	FinishToolbarLayout(l.toolbar)
 }
 
 const (

@@ -836,9 +836,9 @@ func growWindowToFit(wnd *unison.Window) {
 // newPickerHint returns the line under the picker's list, which wraps to the list's width rather than widening the
 // dialog, and the function that sets its text. A warning or an error is set out as a notice, in a box of the theme's
 // color for it with text in the color drawn on that; anything else is plain text in its state's color.
-func newPickerHint(scroll *unison.ScrollPanel) (hint *textLabel, update func(t pickerText)) {
-	hint = newWrappingLabel()
-	hint.font = fonts.FieldSecondary
+func newPickerHint(scroll *unison.ScrollPanel) (hint *TextLabel, update func(t pickerText)) {
+	hint = NewWrappingLabel()
+	hint.Font = fonts.FieldSecondary
 	hint.SetSizer(func(size geom.Size) (minSize, prefSize, maxSize geom.Size) {
 		if size.Width <= 0 {
 			_, pref, _ := scroll.Sizes(geom.Size{})

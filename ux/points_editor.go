@@ -77,7 +77,7 @@ func displayPointsEditor(owner Rebuildable, entity *gurps.Entity) {
 }
 
 func (e *pointsEditor) createToolbar() unison.Paneler {
-	toolbar := newToolbar()
+	toolbar := NewToolbar()
 	addHelpButton(toolbar, "md:User%20Guide/Character%20Points")
 	e.addApplyAndCancelButtons(toolbar, e.apply)
 	toolbar.AddChild(NewToolbarSeparator())
@@ -87,7 +87,7 @@ func (e *pointsEditor) createToolbar() unison.Paneler {
 	addButton.ClickCallback = e.addEntry
 	toolbar.AddChild(addButton)
 
-	finishToolbarLayout(toolbar)
+	FinishToolbarLayout(toolbar)
 	return toolbar
 }
 

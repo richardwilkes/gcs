@@ -7,12 +7,13 @@
 // This Source Code Form is "Incompatible With Secondary Licenses", as
 // defined by the Mozilla Public License, version 2.0.
 
-package ux
+package calculators
 
 import (
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/calculator"
+	"github.com/richardwilkes/gcs/v5/ux"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/unison"
 )
@@ -25,11 +26,11 @@ var _ calculatorTab = &throwingCalculator{}
 type throwingCalculator struct {
 	calculatorContent
 	source             sheetSourcePicker
-	stField            *DecimalField
-	strikingSTField    *DecimalField
+	stField            *ux.DecimalField
+	strikingSTField    *ux.DecimalField
 	throwingPopup      *unison.PopupMenu[calculator.ThrowingTier]
 	throwingArtPopup   *unison.PopupMenu[calculator.ThrowingTier]
-	weightField        *WeightField
+	weightField        *ux.WeightField
 	distanceResult     *unison.Label
 	damageResult       *unison.Label
 	notes              *unison.Panel
@@ -67,12 +68,12 @@ func (t *throwingCalculator) panel() *unison.Panel {
 }
 
 // preselect implements calculatorTab.
-func (t *throwingCalculator) preselect(sheet *Sheet) {
+func (t *throwingCalculator) preselect(sheet *ux.Sheet) {
 	t.source.preselect(sheet)
 }
 
 // sheetChanged implements calculatorTab.
-func (t *throwingCalculator) sheetChanged(sheet *Sheet) {
+func (t *throwingCalculator) sheetChanged(sheet *ux.Sheet) {
 	if t.source.sheet == sheet {
 		t.changed()
 	}
@@ -88,7 +89,7 @@ func (t *throwingCalculator) createContent() {
 	t.source.changed = t.changed
 	t.source.addRow(&t.calculatorContent, i18n.Text("Source:"))
 
-	t.stField = sameWidth(NewDecimalField(nil, "", i18n.Text("ST"),
+	t.stField = sameWidth(ux.NewDecimalField(nil, "", i18n.Text("ST"),
 		func() fxp.Int { return t.st },
 		func(v fxp.Int) {
 			t.st = v
@@ -96,7 +97,7 @@ func (t *throwingCalculator) createContent() {
 		},
 		0, fxp.Max, false, false))
 	t.addFieldRow(t.stField, i18n.Text("ST the distance is worked out from"))
-	t.strikingSTField = sameWidth(NewDecimalField(nil, "", i18n.Text("Striking ST"),
+	t.strikingSTField = sameWidth(ux.NewDecimalField(nil, "", i18n.Text("Striking ST"),
 		func() fxp.Int { return t.strikingST },
 		func(v fxp.Int) {
 			t.strikingST = v
@@ -120,7 +121,7 @@ func (t *throwingCalculator) createContent() {
 		},
 		0, fxp.Weight(fxp.Max)))
 	t.addFieldRow(t.weightField, i18n.Text("object"))
-	t.addFieldRow(sameWidth(NewIntegerField(nil, "", i18n.Text("Throwing Extra Effort Penalty"),
+	t.addFieldRow(sameWidth(ux.NewIntegerField(nil, "", i18n.Text("Throwing Extra Effort Penalty"),
 		func() int { return t.extraEffortPenalty },
 		func(v int) {
 			t.extraEffortPenalty = v
@@ -139,7 +140,7 @@ func (t *throwingCalculator) createContent() {
 
 // selectSheet reads the thrower's numbers from the sheet the picker has just made its source, and does nothing at all
 // when there is none.
-func (t *throwingCalculator) selectSheet(sheet *Sheet) {
+func (t *throwingCalculator) selectSheet(sheet *ux.Sheet) {
 	if sheet != nil {
 		t.pullFromSheet()
 	}

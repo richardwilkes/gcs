@@ -114,9 +114,9 @@ func initTraitEditor(e *editor[*gurps.Trait, *gurps.TraitEditData], content *uni
 			MinSize: geom.NewSize(adjustedMaxLevelField.Font.SimpleWidth("9,999,999")+adjInsets.Left+adjInsets.Right, 0),
 		})
 		content.AddChild(adjustedMaxLevelField)
-		adjustFieldBlank(perLevelField, !e.editorData.CanLevel)
-		adjustFieldBlank(levelField, !e.editorData.CanLevel)
-		adjustFieldBlank(maxLevelField, !e.editorData.CanLevel)
+		AdjustFieldBlank(perLevelField, !e.editorData.CanLevel)
+		AdjustFieldBlank(levelField, !e.editorData.CanLevel)
+		AdjustFieldBlank(maxLevelField, !e.editorData.CanLevel)
 	}
 	var crAdjPopup *unison.PopupMenu[selfctrl.Adjustment]
 	if !choice {
@@ -149,7 +149,7 @@ func initTraitEditor(e *editor[*gurps.Trait, *gurps.TraitEditData], content *uni
 			// popup shows does not matter, since it is blanked for such a container.
 			e.editorData.Ancestry = ancestry
 		}
-		adjustPopupBlank(ancestryPopup, e.editorData.ContainerType != container.Ancestry)
+		AdjustPopupBlank(ancestryPopup, e.editorData.ContainerType != container.Ancestry)
 		slotsField = addLabelAndIntegerField(content, nil, "", i18n.Text("Alternative Slots"),
 			i18n.Text("How many of this container's children may be active at once; that many of the most expensive children are billed at full cost and the rest at 20%"),
 			&e.editorData.AlternativeSlots, 0, maxAlternativeSlots)
@@ -178,13 +178,13 @@ func initTraitEditor(e *editor[*gurps.Trait, *gurps.TraitEditData], content *uni
 	}
 	return func() {
 		if perLevelField != nil {
-			adjustFieldBlank(perLevelField, !e.editorData.CanLevel)
+			AdjustFieldBlank(perLevelField, !e.editorData.CanLevel)
 		}
 		if levelField != nil {
-			adjustFieldBlank(levelField, !e.editorData.CanLevel)
+			AdjustFieldBlank(levelField, !e.editorData.CanLevel)
 		}
 		if maxLevelField != nil {
-			adjustFieldBlank(maxLevelField, !e.editorData.CanLevel)
+			AdjustFieldBlank(maxLevelField, !e.editorData.CanLevel)
 		}
 		if crAdjPopup != nil {
 			if e.editorData.SelfControl == selfctrl.None {
@@ -201,14 +201,14 @@ func initTraitEditor(e *editor[*gurps.Trait, *gurps.TraitEditData], content *uni
 		if ancestryPopup != nil {
 			if e.editorData.ContainerType == container.Ancestry {
 				if !ancestryPopup.Enabled() {
-					adjustPopupBlank(ancestryPopup, false)
+					AdjustPopupBlank(ancestryPopup, false)
 					if ancestryPopup.IndexOfItem(e.editorData.Ancestry) == -1 {
 						e.editorData.Ancestry = gurps.DefaultAncestry
 					}
 					ancestryPopup.Select(e.editorData.Ancestry)
 				}
 			} else {
-				adjustPopupBlank(ancestryPopup, true)
+				AdjustPopupBlank(ancestryPopup, true)
 			}
 		}
 		if slotsField != nil {
@@ -243,7 +243,7 @@ func adjustSlotsField(field *IntegerField, containerType container.Type) {
 	}
 	field.SetMinMax(minSlots, maxAlternativeSlots)
 	field.Validate()
-	adjustFieldBlank(field, containerType != container.AlternativeAbilities)
+	AdjustFieldBlank(field, containerType != container.AlternativeAbilities)
 }
 
 func cloneTraitWithOverlay(t *gurps.Trait, overlay *gurps.TraitEditData) *gurps.Trait {

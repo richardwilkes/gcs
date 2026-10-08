@@ -7,11 +7,12 @@
 // This Source Code Form is "Incompatible With Secondary Licenses", as
 // defined by the Mozilla Public License, version 2.0.
 
-package ux
+package calculators
 
 import (
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/calculator"
+	"github.com/richardwilkes/gcs/v5/ux"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/unison"
 )
@@ -22,8 +23,8 @@ var _ calculatorTab = &scatterCalculator{}
 // is typed in, since a miss is a matter of the roll rather than of anything a sheet knows.
 type scatterCalculator struct {
 	calculatorContent
-	marginField   *IntegerField
-	distanceField *DecimalField
+	marginField   *ux.IntegerField
+	distanceField *ux.DecimalField
 	result        *unison.Label
 	causes        []calculator.ScatterCause
 	distance      fxp.Int
@@ -52,11 +53,11 @@ func (s *scatterCalculator) panel() *unison.Panel {
 }
 
 // preselect implements calculatorTab. Nothing here comes from a sheet.
-func (s *scatterCalculator) preselect(_ *Sheet) {
+func (s *scatterCalculator) preselect(_ *ux.Sheet) {
 }
 
 // sheetChanged implements calculatorTab. Nothing here comes from a sheet.
-func (s *scatterCalculator) sheetChanged(_ *Sheet) {
+func (s *scatterCalculator) sheetChanged(_ *ux.Sheet) {
 }
 
 func (s *scatterCalculator) createContent() {
@@ -65,7 +66,7 @@ func (s *scatterCalculator) createContent() {
 	row := s.addRow(2)
 	addPlainLabel(row, i18n.Text("Cause of the miss:"))
 	addIndexPopup(row, s.causes, &s.causeIndex, s.changed)
-	s.marginField = sameWidth(NewIntegerField(nil, "", i18n.Text("Margin"),
+	s.marginField = sameWidth(ux.NewIntegerField(nil, "", i18n.Text("Margin"),
 		func() int { return s.margin },
 		func(v int) {
 			s.margin = v
@@ -73,7 +74,7 @@ func (s *scatterCalculator) createContent() {
 		},
 		0, 100, false, false))
 	s.addFieldRow(s.marginField, i18n.Text("points of margin"))
-	s.distanceField = sameWidth(NewDecimalField(nil, "", i18n.Text("Distance to Target"),
+	s.distanceField = sameWidth(ux.NewDecimalField(nil, "", i18n.Text("Distance to Target"),
 		func() fxp.Int { return s.distance },
 		func(v fxp.Int) {
 			s.distance = v

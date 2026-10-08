@@ -100,14 +100,14 @@ func displayEditor[N gurps.Node[N], D gurps.EditorData[N]](owner Rebuildable, ta
 }
 
 func (e *editor[N, D]) createToolbar(helpMD string, initToolbar func(*editor[N, D], *unison.Panel)) unison.Paneler {
-	toolbar := newToolbar()
+	toolbar := NewToolbar()
 	toolbar.AddChild(NewDefaultInfoPop())
 
 	if helpMD != "" {
 		addHelpButton(toolbar, helpMD)
 	}
 
-	addUIScaleField(toolbar, func() int { return gurps.GlobalSettings().General.InitialEditorUIScale },
+	AddUIScaleField(toolbar, func() int { return gurps.GlobalSettings().General.InitialEditorUIScale },
 		func() int { return e.scale }, func(scale int) { e.scale = scale }, false, e.scroll)
 
 	e.addApplyAndCancelButtons(toolbar, e.apply)
@@ -145,7 +145,7 @@ func (e *editor[N, D]) createToolbar(helpMD string, initToolbar func(*editor[N, 
 		initToolbar(e, toolbar)
 	}
 
-	finishToolbarLayout(toolbar)
+	FinishToolbarLayout(toolbar)
 	return toolbar
 }
 

@@ -15,11 +15,11 @@ import (
 	"github.com/richardwilkes/unison/enums/align"
 )
 
-// tabBar is a row of buttons, one per tab, of which at most one is selected at a time. What the tabs switch between is
+// TabBar is a row of buttons, one per tab, of which at most one is selected at a time. What the tabs switch between is
 // the caller's business: SelectionChangedCallback runs with the index of the tab that has just been chosen, whether by
-// a click or by selectTab, and only when the choice actually changed. The buttons wrap onto further rows when the bar
+// a click or by SelectTab, and only when the choice actually changed. The buttons wrap onto further rows when the bar
 // is too narrow to hold them all on one.
-type tabBar struct {
+type TabBar struct {
 	unison.Panel
 	SelectionChangedCallback func(index int)
 	group                    *unison.Group
@@ -27,9 +27,9 @@ type tabBar struct {
 	selected                 int
 }
 
-// newTabBar returns an empty tab bar with a line along its bottom to set it off from what the tabs show.
-func newTabBar() *tabBar {
-	b := &tabBar{group: unison.NewGroup(), selected: -1}
+// NewTabBar returns an empty tab bar with a line along its bottom to set it off from what the tabs show.
+func NewTabBar() *TabBar {
+	b := &TabBar{group: unison.NewGroup(), selected: -1}
 	b.Self = b
 	b.SetBorder(unison.NewCompoundBorder(unison.NewLineBorder(unison.ThemeSurfaceEdge, geom.Size{},
 		geom.Insets{Bottom: 1}, false), unison.NewEmptyBorder(unison.StdInsets())))
@@ -38,28 +38,28 @@ func newTabBar() *tabBar {
 	return b
 }
 
-// addTab adds a tab with the given title to the end of the bar and returns its index. No tab is selected until
-// selectTab is called.
-func (b *tabBar) addTab(title string) int {
+// AddTab adds a tab with the given title to the end of the bar and returns its index. No tab is selected until
+// SelectTab is called.
+func (b *TabBar) AddTab(title string) int {
 	index := len(b.buttons)
 	button := unison.NewButton()
 	button.Sticky = true
 	button.SetTitle(title)
-	button.ClickCallback = func() { b.selectTab(index) }
+	button.ClickCallback = func() { b.SelectTab(index) }
 	b.group.Add(button)
 	b.buttons = append(b.buttons, button)
 	b.AddChild(button)
 	return index
 }
 
-// selectedIndex returns the index of the selected tab, or -1 when none has been selected yet.
-func (b *tabBar) selectedIndex() int {
+// SelectedIndex returns the index of the selected tab, or -1 when none has been selected yet.
+func (b *TabBar) SelectedIndex() int {
 	return b.selected
 }
 
-// selectTab selects the tab at the given index, running SelectionChangedCallback if that is a change. An index that
+// SelectTab selects the tab at the given index, running SelectionChangedCallback if that is a change. An index that
 // names no tab is ignored.
-func (b *tabBar) selectTab(index int) {
+func (b *TabBar) SelectTab(index int) {
 	if index < 0 || index >= len(b.buttons) {
 		return
 	}

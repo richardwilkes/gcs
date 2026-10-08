@@ -25,7 +25,7 @@ import (
 	"github.com/richardwilkes/unison/enums/role"
 )
 
-// defaultWrappingLabelWidth is the width a textLabel wraps to when its layout has not offered it one.
+// defaultWrappingLabelWidth is the width a TextLabel wraps to when its layout has not offered it one.
 const defaultWrappingLabelWidth = 400
 
 // focusRingRoom is the horizontal gap between the focus ring and what it surrounds, where the label's bounds allow.
@@ -37,55 +37,55 @@ const focusRingRoom = 2
 // plausible piece of ordinary text (C4, TL6), and the Basic Set is the only book the notes cite.
 var pageRefPattern = regexp.MustCompile(`\bBX?\d{1,3}\b`)
 
-// textLabel shows read-only text whose page references, once linkPageRefs or linkRefs has been called, are links that
+// TextLabel shows read-only text whose page references, once LinkPageRefs or LinkRefs has been called, are links that
 // can be followed with the mouse, the keyboard, or a screen reader, which a unison.Label cannot do. Made with
-// newWrappingLabel it wraps to the width it is given: within a FlexLayout it must then be given HAlign: align.Fill,
+// NewWrappingLabel it wraps to the width it is given: within a FlexLayout it must then be given HAlign: align.Fill,
 // since that is what makes the layout offer it the column's width to wrap to, and until it has been offered one it
-// wraps to defaultWrappingLabelWidth. Made with newSingleLineLabel it stays on one line, as a unison.Label does, so it
+// wraps to defaultWrappingLabelWidth. Made with NewSingleLineLabel it stays on one line, as a unison.Label does, so it
 // can stand in for one beside a field or a popup.
-type textLabel struct {
+type TextLabel struct {
 	unison.Panel
 	text string
 	ink  unison.Ink
-	font unison.Font
-	// linkFont is the font for the links, or nil for font.
-	linkFont unison.Font
+	Font unison.Font
+	// LinkFont is the font for the links, or nil for Font.
+	LinkFont unison.Font
 	// linkFinder returns the [start, end) byte offsets of the links in a piece of the text, in order. When it is nil,
 	// the links are what pageRefPattern matches.
 	linkFinder  func(text string) [][]int
-	linkHandler func(ref string)
+	LinkHandler func(ref string)
 	pressedRef  string
 	// current is the index of the link the keyboard is on, or -1 for the text as a whole.
 	current int
 	wrap    bool
 	// hint marks a label a screen reader hears as the description of the control it follows (see
-	// describeWithTrailingLabel).
+	// DescribeWithTrailingLabel).
 	hint bool
 }
 
 // linkKey is the key of a link's virtual accessibility node: the link's index within the label.
 type linkKey int
 
-// pageRefLink is where one page reference lies within the label, so that clicks and the cursor can find it.
-type pageRefLink struct {
-	ref  string
-	rect geom.Rect
+// PageRefLink is where one page reference lies within the label, so that clicks and the cursor can find it.
+type PageRefLink struct {
+	Ref  string
+	Rect geom.Rect
 }
 
-// newWrappingLabel returns a label that wraps its text to the width it is given.
-func newWrappingLabel() *textLabel {
+// NewWrappingLabel returns a label that wraps its text to the width it is given.
+func NewWrappingLabel() *TextLabel {
 	return newTextLabel(true)
 }
 
-// newSingleLineLabel returns a label that keeps its text on one line, however long it is.
-func newSingleLineLabel() *textLabel {
+// NewSingleLineLabel returns a label that keeps its text on one line, however long it is.
+func NewSingleLineLabel() *TextLabel {
 	return newTextLabel(false)
 }
 
-func newTextLabel(wrap bool) *textLabel {
-	l := &textLabel{
+func newTextLabel(wrap bool) *TextLabel {
+	l := &TextLabel{
 		ink:     unison.DefaultLabelTheme.OnBackgroundInk,
-		font:    unison.DefaultLabelTheme.Font,
+		Font:    unison.DefaultLabelTheme.Font,
 		current: -1,
 		wrap:    wrap,
 	}
@@ -99,22 +99,27 @@ func newTextLabel(wrap bool) *textLabel {
 }
 
 // SetTitle replaces the text, keeping the ink, so that the label can be used where a unison.Label was.
-func (l *textLabel) SetTitle(text string) {
+func (l *TextLabel) SetTitle(text string) {
 	l.setText(text, l.ink)
 }
 
 // Title returns the text.
-func (l *textLabel) Title() string {
+func (l *TextLabel) Title() string {
 	return l.text
 }
 
-func (l *textLabel) String() string {
+func (l *TextLabel) String() string {
 	return l.text
+}
+
+// CurrentLink returns the index of the link the keyboard is on, or -1 for the text as a whole.
+func (l *TextLabel) CurrentLink() int {
+	return l.current
 }
 
 // setText replaces the text and the ink it is drawn in, then asks for the label and its ancestors to be laid out again,
 // since the number of lines may have changed.
-func (l *textLabel) setText(text string, ink unison.Ink) {
+func (l *TextLabel) setText(text string, ink unison.Ink) {
 	l.text = text
 	l.ink = ink
 	l.Accessibility.Name = text
@@ -125,8 +130,8 @@ func (l *textLabel) setText(text string, ink unison.Ink) {
 
 // syncForLinks makes the label a tab stop while its text holds links, with or without a screen reader, as a unison link
 // is. A hint holding no links is left out of the accessibility tree, since it is heard with its control.
-func (l *textLabel) syncForLinks() {
-	hasLinks := l.linkHandler != nil && len(l.findLinks(l.text)) > 0
+func (l *TextLabel) syncForLinks() {
+	hasLinks := l.LinkHandler != nil && len(l.findLinks(l.text)) > 0
 	l.SetFocusable(hasLinks)
 	if l.hint {
 		if hasLinks {
@@ -137,28 +142,28 @@ func (l *textLabel) syncForLinks() {
 	}
 }
 
-// describeWithTrailingLabel makes the label's text part of the control's accessibility description (see
+// DescribeWithTrailingLabel makes the label's text part of the control's accessibility description (see
 // describeWithHint) and marks the label as a hint (see syncForLinks).
-func describeWithTrailingLabel(control unison.Paneler, label *textLabel) {
+func DescribeWithTrailingLabel(control unison.Paneler, label *TextLabel) {
 	label.hint = true
 	label.syncForLinks()
 	describeWithHint(control, label.String)
 }
 
-// linkPageRefs makes the page references in the text into links, drawn in the link theme, that pass the reference to
+// LinkPageRefs makes the page references in the text into links, drawn in the link theme, that pass the reference to
 // the handler when clicked.
 //
 // Each link is a keyboard stop of its own (see also textIsStop): Tab and Shift-Tab go from link to link and leave the
 // label past either end, the arrows, Home and End move among the links, and Space or Enter follows the current one. A
 // screen reader sees each link as an element within the text (see ProvideAccessibility).
-func (l *textLabel) linkPageRefs(handler func(ref string)) {
+func (l *TextLabel) LinkPageRefs(handler func(ref string)) {
 	l.linkFinder = nil
 	l.installLinks(handler)
 }
 
-// linkRefs is linkPageRefs for the given references, which may be to any book, rather than for the Basic Set references
+// LinkRefs is LinkPageRefs for the given references, which may be to any book, rather than for the Basic Set references
 // pageRefPattern finds.
-func (l *textLabel) linkRefs(handler func(ref string), refs ...string) {
+func (l *TextLabel) LinkRefs(handler func(ref string), refs ...string) {
 	l.linkFinder = func(text string) [][]int { return findRefs(text, refs) }
 	l.installLinks(handler)
 }
@@ -209,9 +214,9 @@ func isWordRune(r rune) bool {
 }
 
 // findLinks returns the [start, end) byte offsets of the links in a piece of the text, or nil when there is no handler.
-func (l *textLabel) findLinks(text string) [][]int {
+func (l *TextLabel) findLinks(text string) [][]int {
 	switch {
-	case l.linkHandler == nil:
+	case l.LinkHandler == nil:
 		return nil
 	case l.linkFinder != nil:
 		return l.linkFinder(text)
@@ -220,8 +225,8 @@ func (l *textLabel) findLinks(text string) [][]int {
 	}
 }
 
-func (l *textLabel) installLinks(handler func(ref string)) {
-	l.linkHandler = handler
+func (l *TextLabel) installLinks(handler func(ref string)) {
+	l.LinkHandler = handler
 	l.MouseDownCallback = l.mouseDown
 	l.MouseUpCallback = l.mouseUp
 	l.UpdateCursorCallback = l.updateCursor
@@ -233,11 +238,11 @@ func (l *textLabel) installLinks(handler func(ref string)) {
 
 // textIsStop reports whether the text as a whole is a keyboard stop ahead of the links, which it is while accessibility
 // is active and unison.FocusForReading is on, so that the text is heard before its links.
-func (l *textLabel) textIsStop() bool {
+func (l *TextLabel) textIsStop() bool {
 	return unison.IsAccessibilityActive() && unison.FocusForReading()
 }
 
-func (l *textLabel) firstStop(links []pageRefLink) int {
+func (l *TextLabel) firstStop(links []PageRefLink) int {
 	if len(links) == 0 || l.textIsStop() {
 		return -1
 	}
@@ -246,9 +251,9 @@ func (l *textLabel) firstStop(links []pageRefLink) int {
 
 // gainedFocus puts the keyboard on the first stop, or on the last link when Shift is down, as for Shift-Tab, so that
 // the stops are met in order from either side.
-func (l *textLabel) gainedFocus() {
+func (l *TextLabel) gainedFocus() {
 	l.ScrollIntoView()
-	links := l.links()
+	links := l.Links()
 	l.current = l.firstStop(links)
 	if wnd := l.Window(); wnd != nil && len(links) > 0 && wnd.LastKeyModifiers().ShiftDown() {
 		l.current = len(links) - 1
@@ -256,15 +261,15 @@ func (l *textLabel) gainedFocus() {
 	l.MarkForRedraw()
 }
 
-func (l *textLabel) leaveLinks() {
+func (l *TextLabel) leaveLinks() {
 	l.current = -1
 	l.MarkForRedraw()
 }
 
 // keyDown moves among the stops and follows the current link. Tab and Shift-Tab past either end are left to the window,
 // which moves the focus out of the label.
-func (l *textLabel) keyDown(keyCode unison.KeyCode, mods mod.Modifiers, _ bool) bool {
-	links := l.links()
+func (l *TextLabel) keyDown(keyCode unison.KeyCode, mods mod.Modifiers, _ bool) bool {
+	links := l.Links()
 	if len(links) == 0 {
 		return false
 	}
@@ -301,9 +306,9 @@ func (l *textLabel) keyDown(keyCode unison.KeyCode, mods mod.Modifiers, _ bool) 
 	case unison.KeySpace, unison.KeyReturn, unison.KeyNumPadEnter:
 		switch {
 		case current >= 0:
-			l.follow(links[current].ref)
+			l.follow(links[current].Ref)
 		case len(links) == 1:
-			l.follow(links[0].ref)
+			l.follow(links[0].Ref)
 		}
 	default:
 		return false
@@ -313,9 +318,9 @@ func (l *textLabel) keyDown(keyCode unison.KeyCode, mods mod.Modifiers, _ bool) 
 
 // moveToLink makes the link at the index current, or the text as a whole for -1. The redraw also republishes the
 // window's accessibility description, which is how a screen reader learns of the move.
-func (l *textLabel) moveToLink(links []pageRefLink, index int) {
+func (l *TextLabel) moveToLink(links []PageRefLink, index int) {
 	if index >= 0 && index < len(links) {
-		l.ScrollRectIntoView(links[index].rect)
+		l.ScrollRectIntoView(links[index].Rect)
 	}
 	if index != l.current {
 		l.current = index
@@ -323,19 +328,19 @@ func (l *textLabel) moveToLink(links []pageRefLink, index int) {
 	}
 }
 
-func (l *textLabel) follow(ref string) {
-	unison.SafeCall(func() { l.linkHandler(ref) })
+func (l *TextLabel) follow(ref string) {
+	unison.SafeCall(func() { l.LinkHandler(ref) })
 }
 
 // ProvideAccessibility implements unison.AccessibilityProvider, describing each link as a child element that holds the
 // focus while the keyboard is on it.
-func (l *textLabel) ProvideAccessibility(b *unison.AccessibilityBuilder) {
+func (l *TextLabel) ProvideAccessibility(b *unison.AccessibilityBuilder) {
 	focusable := l.Focusable()
-	for i, link := range l.links() {
+	for i, link := range l.Links() {
 		id := b.AddVirtualChild(linkKey(i), func(n *accessibility.Node) {
 			n.Role = role.Link
-			n.Name = link.ref
-			n.Bounds = link.rect
+			n.Name = link.Ref
+			n.Bounds = link.Rect
 			n.Actions = n.Actions.With(accessibility.Press)
 			if focusable {
 				n.Focusable = true
@@ -349,18 +354,18 @@ func (l *textLabel) ProvideAccessibility(b *unison.AccessibilityBuilder) {
 }
 
 // PerformAccessibilityAction implements unison.AccessibilityActor: Press follows a link, Focus puts the keyboard on it.
-func (l *textLabel) PerformAccessibilityAction(req accessibility.ActionRequest) bool {
+func (l *TextLabel) PerformAccessibilityAction(req accessibility.ActionRequest) bool {
 	index, ok := req.Key.(linkKey)
 	if !ok {
 		return false
 	}
-	links := l.links()
+	links := l.Links()
 	if int(index) < 0 || int(index) >= len(links) {
 		return false
 	}
 	switch req.Action {
 	case accessibility.Press:
-		l.follow(links[index].ref)
+		l.follow(links[index].Ref)
 		return true
 	case accessibility.Focus:
 		if !l.Focusable() {
@@ -379,11 +384,11 @@ func (l *textLabel) PerformAccessibilityAction(req accessibility.ActionRequest) 
 
 // paragraphs returns the text as one unison.Text per logical line, with the page references decorated as links when
 // they are clickable.
-func (l *textLabel) paragraphs() []*unison.Text {
-	base := &unison.TextDecoration{Font: l.font, OnBackgroundInk: l.ink}
-	linkFont := l.linkFont
+func (l *TextLabel) paragraphs() []*unison.Text {
+	base := &unison.TextDecoration{Font: l.Font, OnBackgroundInk: l.ink}
+	linkFont := l.LinkFont
 	if linkFont == nil {
-		linkFont = l.font
+		linkFont = l.Font
 	}
 	link := &unison.TextDecoration{Font: linkFont, OnBackgroundInk: unison.DefaultLinkTheme.OnBackgroundInk, Underline: true}
 	split := strings.Split(l.text, "\n")
@@ -404,7 +409,7 @@ func (l *textLabel) paragraphs() []*unison.Text {
 
 // lines returns the text wrapped to the width, or to the default width when no usable width is given. A single-line
 // label's paragraphs are returned as they are, however wide.
-func (l *textLabel) lines(width float32) []*unison.Text {
+func (l *TextLabel) lines(width float32) []*unison.Text {
 	paragraphs := l.paragraphs()
 	if !l.wrap {
 		return paragraphs
@@ -419,7 +424,7 @@ func (l *textLabel) lines(width float32) []*unison.Text {
 	return lines
 }
 
-func (l *textLabel) sizes(hint geom.Size) (minSize, prefSize, maxSize geom.Size) {
+func (l *TextLabel) sizes(hint geom.Size) (minSize, prefSize, maxSize geom.Size) {
 	var insets geom.Insets
 	if b := l.Border(); b != nil {
 		insets = b.Insets()
@@ -432,7 +437,7 @@ func (l *textLabel) sizes(hint geom.Size) (minSize, prefSize, maxSize geom.Size)
 	return prefSize, prefSize, unison.MaxSize(prefSize)
 }
 
-func (l *textLabel) draw(gc *unison.Canvas, _ geom.Rect) {
+func (l *TextLabel) draw(gc *unison.Canvas, _ geom.Rect) {
 	rect := l.ContentRect(false)
 	y := rect.Y
 	var width float32
@@ -444,8 +449,8 @@ func (l *textLabel) draw(gc *unison.Canvas, _ geom.Rect) {
 	// The focus ring surrounds the current link, else the text, which may be narrower than the label.
 	if l.Focused() {
 		ring := geom.NewRect(rect.X, rect.Y, width, y-rect.Y)
-		if links := l.links(); l.current >= 0 && l.current < len(links) {
-			ring = links[l.current].rect
+		if links := l.Links(); l.current >= 0 && l.current < len(links) {
+			ring = links[l.current].Rect
 		}
 		ring.X -= focusRingRoom
 		ring.Width += focusRingRoom * 2
@@ -454,14 +459,14 @@ func (l *textLabel) draw(gc *unison.Canvas, _ geom.Rect) {
 	}
 }
 
-// links returns the page references in the text as it is laid out right now, each with the rectangle it occupies. A
+// Links returns the page references in the text as it is laid out right now, each with the rectangle it occupies. A
 // reference is a single word, so wrapping never splits one across lines and each is found whole within its line.
-func (l *textLabel) links() []pageRefLink {
-	if l.linkHandler == nil {
+func (l *TextLabel) Links() []PageRefLink {
+	if l.LinkHandler == nil {
 		return nil
 	}
 	rect := l.ContentRect(false)
-	var links []pageRefLink
+	var links []PageRefLink
 	y := rect.Y
 	for _, line := range l.lines(rect.Width) {
 		s := line.String()
@@ -469,9 +474,9 @@ func (l *textLabel) links() []pageRefLink {
 			start := utf8.RuneCountInString(s[:m[0]])
 			end := start + utf8.RuneCountInString(s[m[0]:m[1]])
 			x := rect.X + line.PositionForRuneIndex(start)
-			links = append(links, pageRefLink{
-				ref:  s[m[0]:m[1]],
-				rect: geom.NewRect(x, y, rect.X+line.PositionForRuneIndex(end)-x, line.Height()),
+			links = append(links, PageRefLink{
+				Ref:  s[m[0]:m[1]],
+				Rect: geom.NewRect(x, y, rect.X+line.PositionForRuneIndex(end)-x, line.Height()),
 			})
 		}
 		y += line.Height()
@@ -480,17 +485,17 @@ func (l *textLabel) links() []pageRefLink {
 }
 
 // linkAt returns the page reference under the point, or an empty string when there is none.
-func (l *textLabel) linkAt(where geom.Point) string {
-	for _, link := range l.links() {
-		if where.In(link.rect) {
-			return link.ref
+func (l *TextLabel) linkAt(where geom.Point) string {
+	for _, link := range l.Links() {
+		if where.In(link.Rect) {
+			return link.Ref
 		}
 	}
 	return ""
 }
 
 // mouseDown remembers the link the press landed on, if any, so that mouseUp can tell a click from a drag off it.
-func (l *textLabel) mouseDown(where geom.Point, button, _ int, _ mod.Modifiers) bool {
+func (l *TextLabel) mouseDown(where geom.Point, button, _ int, _ mod.Modifiers) bool {
 	if button != unison.ButtonLeft {
 		return false
 	}
@@ -499,7 +504,7 @@ func (l *textLabel) mouseDown(where geom.Point, button, _ int, _ mod.Modifiers) 
 }
 
 // mouseUp opens the link the press landed on, provided the release is still over it, as a unison.Link does.
-func (l *textLabel) mouseUp(where geom.Point, button int, _ mod.Modifiers) bool {
+func (l *TextLabel) mouseUp(where geom.Point, button int, _ mod.Modifiers) bool {
 	if button != unison.ButtonLeft {
 		return false
 	}
@@ -514,9 +519,14 @@ func (l *textLabel) mouseUp(where geom.Point, button int, _ mod.Modifiers) bool 
 	return true
 }
 
-func (l *textLabel) updateCursor(where geom.Point) *unison.Cursor {
+func (l *TextLabel) updateCursor(where geom.Point) *unison.Cursor {
 	if l.linkAt(where) != "" {
 		return unison.PointingCursor()
 	}
 	return unison.ArrowCursor()
+}
+
+// openPageRefLink opens the page a link in a label refers to.
+func openPageRefLink(ref string) {
+	OpenPageReference(ref, "", nil)
 }

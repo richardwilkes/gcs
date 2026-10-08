@@ -7,12 +7,14 @@
 // This Source Code Form is "Incompatible With Secondary Licenses", as
 // defined by the Mozilla Public License, version 2.0.
 
-package ux
+package calculators
 
 import (
 	"image"
 	"testing"
 
+	"github.com/richardwilkes/gcs/v5/ux"
+	"github.com/richardwilkes/gcs/v5/ux/uxtest"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/unison"
@@ -21,8 +23,8 @@ import (
 
 func TestStaticTextShowsTheFocus(t *testing.T) {
 	c := check.New(t)
-	screen, wnd := startHeadlessWorkspace(t, c)
-	setFocusForReading := focusForReadingSetter(t, screen, wnd)
+	screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
+	setFocusForReading := uxtest.FocusForReadingSetter(t, screen, wnd)
 	calc := openCalculator(t, screen)
 	explosion := calc.explosion
 	selectCalculatorTab(t, screen, calc, explosion)
@@ -34,7 +36,7 @@ func TestStaticTextShowsTheFocus(t *testing.T) {
 	ringInWindow := func() (ring geom.Rect, ok bool) {
 		screen.Do(func() {
 			var clip geom.Rect
-			if ring, clip, ok = staticTextFocusRing(wnd, wnd.Content()); ok {
+			if ring, clip, ok = ux.StaticTextFocusRing(wnd, wnd.Content()); ok {
 				c.Equal(ring, ring.Intersect(clip), "all of the ring can be seen")
 				ring = wnd.Content().RectToRoot(ring)
 			}
@@ -92,10 +94,10 @@ func TestStaticTextShowsTheFocus(t *testing.T) {
 	gone := capture()
 	c.True(changedWithin(after, gone, ring) > 0, "the ring is gone once the focus has moved on")
 
-	var header *textLabel
+	var header *ux.TextLabel
 	screen.Do(func() {
 		if children := explosion.content.Children(); len(children) > 0 {
-			if label, isTextLabel := children[0].Self.(*textLabel); isTextLabel {
+			if label, isTextLabel := children[0].Self.(*ux.TextLabel); isTextLabel {
 				header = label
 			}
 		}

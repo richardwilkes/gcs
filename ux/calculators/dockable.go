@@ -7,12 +7,13 @@
 // This Source Code Form is "Incompatible With Secondary Licenses", as
 // defined by the Mozilla Public License, version 2.0.
 
-package ux
+package calculators
 
 import (
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/dgroup"
 	"github.com/richardwilkes/gcs/v5/svg"
+	"github.com/richardwilkes/gcs/v5/ux"
 	"github.com/richardwilkes/toolbox/v2/errs"
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/i18n"
@@ -22,14 +23,14 @@ import (
 )
 
 var (
-	_ unison.Dockable            = &Calculator{}
-	_ unison.TabCloser           = &Calculator{}
-	_ unison.UndoManagerProvider = &Calculator{}
-	_ sheetSourceUser            = &Calculator{}
+	_ unison.Dockable            = &Dockable{}
+	_ unison.TabCloser           = &Dockable{}
+	_ unison.UndoManagerProvider = &Dockable{}
+	_ ux.SheetSourceUser         = &Dockable{}
 )
 
-// calculatorTab is one of the calculators the Calculator dockable holds, each shown on a tab of its own. A calculator
-// belongs to no document: whatever numbers it needs are either typed in or taken from any open character sheet.
+// calculatorTab is one of the calculators the Dockable holds, each shown on a tab of its own. A calculator belongs to
+// no document: whatever numbers it needs are either typed in or taken from any open character sheet.
 type calculatorTab interface {
 	// title returns what the calculator's tab is labeled.
 	title() string
@@ -37,27 +38,27 @@ type calculatorTab interface {
 	panel() *unison.Panel
 	// preselect makes the sheet the source of whichever numbers the calculator most naturally takes from the character
 	// it was opened for. It runs once, before the calculator is first shown; changed follows it.
-	preselect(sheet *Sheet)
+	preselect(sheet *ux.Sheet)
 	// sheetChanged tells the calculator that the sheet's numbers have changed. One drawing its numbers from that sheet
 	// re-reads them; the rest do nothing.
-	sheetChanged(sheet *Sheet)
+	sheetChanged(sheet *ux.Sheet)
 	// changed re-reads the calculator's sources, brings its dependent controls into line, and recomputes its results.
-	// Every control runs it once it has stored its value, and the Calculator runs it whenever the calculator's tab is
+	// Every control runs it once it has stored its value, and the Dockable runs it whenever the calculator's tab is
 	// selected, since sheets may have come and gone while another tab was showing.
 	changed()
 }
 
-// Calculator holds the calculators for the rules that take some working out at the table, one to a tab: explosions &
+// Dockable holds the calculators for the rules that take some working out at the table, one to a tab: explosions &
 // area attacks, scatter and demolition, which come from the same rules, then collisions & falls, jumping, throwing and
 // hiking. The explosions come first because they make the tallest panel, so the dockable opens sized for the worst
 // case. Only one is open at a time; the sheet it is opened from, if any, is preselected as the source of the numbers
 // each calculator most naturally takes from a character.
-type Calculator struct {
+type Dockable struct {
 	unison.Panel
 	undoMgr    *unison.UndoManager
 	scroll     *unison.ScrollPanel
 	slot       *unison.Panel
-	tabBar     *tabBar
+	tabBar     *ux.TabBar
 	tabs       []calculatorTab
 	collision  *collisionCalculator
 	jumping    *jumpingCalculator
@@ -69,14 +70,15 @@ type Calculator struct {
 	scale      int
 }
 
-// DisplayCalculator brings the calculators forward, opening them if they are not already open. preselect, when not nil,
-// is the sheet each calculator starts out taking its numbers from; it is ignored when the calculators are already open,
-// so that re-choosing the menu item or clicking a sheet's calculator button never disturbs what has been entered.
-func DisplayCalculator(preselect *Sheet) {
-	if activateDockable[*Calculator](nil) {
+// Display brings the calculators forward, opening them if they are not already open. preselect, when not nil, is the
+// sheet each calculator starts out taking its numbers from; it is ignored when the calculators are already open, so
+// that re-choosing the menu item or clicking a sheet's calculator button never disturbs what has been entered. It is
+// what ux.OpenCalculators runs once this package has been linked in.
+func Display(preselect *ux.Sheet) {
+	if ux.ActivateDockableOfType[*Dockable](nil) {
 		return
 	}
-	c := &Calculator{scale: gurps.GlobalSettings().General.InitialEditorUIScale}
+	c := &Dockable{scale: gurps.GlobalSettings().General.InitialEditorUIScale}
 	c.Self = c
 	c.undoMgr = unison.NewUndoManager(100, func(err error) { errs.Log(err) })
 	c.SetLayout(&unison.FlexLayout{Columns: 1})
@@ -101,10 +103,10 @@ func DisplayCalculator(preselect *Sheet) {
 		VGrab:  true,
 	})
 
-	c.tabBar = newTabBar()
+	c.tabBar = ux.NewTabBar()
 	c.tabBar.SelectionChangedCallback = c.showTab
 	for _, tab := range c.tabs {
-		c.tabBar.addTab(tab.title())
+		c.tabBar.AddTab(tab.title())
 	}
 
 	c.AddChild(c.createToolbar())
@@ -116,8 +118,8 @@ func DisplayCalculator(preselect *Sheet) {
 		}
 		tab.changed()
 	}
-	c.tabBar.selectTab(0)
-	PlaceInDock(c, dgroup.Editors, false)
+	c.tabBar.SelectTab(0)
+	ux.PlaceInDock(c, dgroup.Editors, false)
 	c.slot.RequestFocus()
 	// Taking the focus scrolls the control that got it into view, and the dock has not sized the calculators yet, so
 	// that scrolls them off the top and side of a view that is still too small. The view is put back at the start,
@@ -127,7 +129,7 @@ func DisplayCalculator(preselect *Sheet) {
 
 // showTab puts the calculator at the given index into the slot beneath the tab bar, in place of whatever was there,
 // and brings it up to date, since sheets may have come and gone while another tab was showing.
-func (c *Calculator) showTab(index int) {
+func (c *Dockable) showTab(index int) {
 	tab := c.tabs[index]
 	tab.changed()
 	fillSlot(c.slot, tab.panel())
@@ -138,24 +140,24 @@ func (c *Calculator) showTab(index int) {
 	c.MarkForRedraw()
 }
 
-// sheetChanged implements sheetSourceUser.
-func (c *Calculator) sheetChanged(sheet *Sheet) {
+// SheetChanged implements ux.SheetSourceUser.
+func (c *Dockable) SheetChanged(sheet *ux.Sheet) {
 	for _, tab := range c.tabs {
 		tab.sheetChanged(sheet)
 	}
 }
 
-func (c *Calculator) createToolbar() *unison.Panel {
-	toolbar := newToolbar()
-	toolbar.AddChild(NewDefaultInfoPop())
-	addUIScaleField(toolbar, func() int { return gurps.GlobalSettings().General.InitialEditorUIScale },
+func (c *Dockable) createToolbar() *unison.Panel {
+	toolbar := ux.NewToolbar()
+	toolbar.AddChild(ux.NewDefaultInfoPop())
+	ux.AddUIScaleField(toolbar, func() int { return gurps.GlobalSettings().General.InitialEditorUIScale },
 		func() int { return c.scale }, func(scale int) { c.scale = scale }, false, c.scroll)
-	finishToolbarLayout(toolbar)
+	ux.FinishToolbarLayout(toolbar)
 	return toolbar
 }
 
 // TitleIcon implements unison.Dockable.
-func (c *Calculator) TitleIcon(suggestedSize geom.Size) unison.Drawable {
+func (c *Dockable) TitleIcon(suggestedSize geom.Size) unison.Drawable {
 	return &unison.DrawableSVG{
 		SVG:  svg.Calculator,
 		Size: suggestedSize,
@@ -163,35 +165,35 @@ func (c *Calculator) TitleIcon(suggestedSize geom.Size) unison.Drawable {
 }
 
 // Title implements unison.Dockable.
-func (c *Calculator) Title() string {
+func (c *Dockable) Title() string {
 	return i18n.Text("Calculators")
 }
 
-func (c *Calculator) String() string {
+func (c *Dockable) String() string {
 	return c.Title()
 }
 
 // Tooltip implements unison.Dockable.
-func (c *Calculator) Tooltip() string {
+func (c *Dockable) Tooltip() string {
 	return ""
 }
 
 // Modified implements unison.Dockable.
-func (c *Calculator) Modified() bool {
+func (c *Dockable) Modified() bool {
 	return false
 }
 
 // MayAttemptClose implements unison.TabCloser.
-func (c *Calculator) MayAttemptClose() bool {
+func (c *Dockable) MayAttemptClose() bool {
 	return true
 }
 
 // AttemptClose implements unison.TabCloser.
-func (c *Calculator) AttemptClose() bool {
-	return AttemptCloseForDockable(c)
+func (c *Dockable) AttemptClose() bool {
+	return ux.AttemptCloseForDockable(c)
 }
 
 // UndoManager implements unison.UndoManagerProvider.
-func (c *Calculator) UndoManager() *unison.UndoManager {
+func (c *Dockable) UndoManager() *unison.UndoManager {
 	return c.undoMgr
 }
