@@ -20,6 +20,9 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/criteria"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	traitcontainer "github.com/richardwilkes/gcs/v5/model/gurps/enums/container"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/difficulty"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/eqcontainer"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/filternode"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/toolbox/v2/check"
@@ -658,7 +661,8 @@ func TestListFilterCheckResults(t *testing.T) {
 
 // checkFilterFields verifies that a filter field table is well formed: every field has a unique, storable key and a
 // title, exactly one accessor, which is the one its kind names, and an accessor that can actually be run against a
-// node of the type the table is for.
+// node of the type the table is for. A field that offers suggestions holds text and can make them with or without
+// nodes.
 func checkFilterFields[T gurps.Node[T]](c check.Checker, name string, fields []*gurps.FilterField[T], samples ...T) {
 	c.NotEqual(0, len(fields), "%s: the field table should not be empty", name)
 	keyPattern := regexp.MustCompile(`^[a-z0-9_]+$`)
@@ -702,6 +706,15 @@ func checkFilterFields[T gurps.Node[T]](c check.Checker, name string, fields []*
 				}
 			}, "%s: field %q should evaluate against sample %d", name, field.Key, i)
 		}
+
+		if field.Suggestions != nil {
+			c.True(field.Kind == gurps.FilterFieldText || field.Kind == gurps.FilterFieldList,
+				"%s: field %q offers suggestions, so it should hold text", name, field.Key)
+			c.NotPanics(func() { _ = field.Suggestions(samples) },
+				"%s: field %q should make suggestions from the samples", name, field.Key)
+			c.NotPanics(func() { _ = field.Suggestions(nil) },
+				"%s: field %q should make suggestions from no nodes", name, field.Key)
+		}
 	}
 }
 
@@ -723,6 +736,169 @@ func TestFilterFieldTablesAreWellFormed(t *testing.T) {
 		gurps.NewEquipmentModifier(nil, nil, false), gurps.NewEquipmentModifier(nil, nil, true))
 	checkFilterFields(c, "notes", gurps.NoteFilterFields(), gurps.NewNote(nil, nil, false),
 		gurps.NewNote(nil, nil, true))
+}
+
+// suggestingKeys returns the keys of the fields that offer suggestions, in table order.
+func suggestingKeys[T gurps.Node[T]](fields []*gurps.FilterField[T]) []string {
+	keys := make([]string, 0, len(fields))
+	for _, field := range fields {
+		if field.Suggestions != nil {
+			keys = append(keys, field.Key)
+		}
+	}
+	return keys
+}
+
+// TestFilterFieldSuggestionSources pins the fields that offer suggestions for a condition's value, so that one gaining
+// or losing them is noticed.
+func TestFilterFieldSuggestionSources(t *testing.T) {
+	c := check.New(t)
+	c.Equal([]string{"tags", "container_type"}, suggestingKeys(gurps.TraitFilterFields()), "traits")
+	c.Equal([]string{"tags"}, suggestingKeys(gurps.TraitModifierFilterFields()), "trait modifiers")
+	c.Equal([]string{"tags", "difficulty"}, suggestingKeys(gurps.SkillFilterFields()), "skills")
+	c.Equal([]string{"tags", "difficulty", "college", "power_source", "class", "resist"},
+		suggestingKeys(gurps.SpellFilterFields()), "spells")
+	c.Equal([]string{"tags", "tech_level", "legality_class", "container_type"},
+		suggestingKeys(gurps.EquipmentFilterFields()), "equipment")
+	c.Equal([]string{"tags", "tech_level"}, suggestingKeys(gurps.EquipmentModifierFilterFields()),
+		"equipment modifiers")
+	c.Equal([]string{"tags"}, suggestingKeys(gurps.NoteFilterFields()), "notes")
+}
+
+// TestFilterFieldListedValues verifies that a field offering the values found in the list being filtered looks at
+// every node a filter checks, nested, container and disabled ones included, but not those that lack the field, and
+// offers each value once, trimmed and in its first spelling, sorted naturally without regard to case. Blank values
+// are left out, as are those of a list field that hold a comma, since the qualifier is split on commas.
+func TestFilterFieldListedValues(t *testing.T) {
+	c := check.New(t)
+
+	root := gurps.NewTrait(nil, nil, true)
+	root.Name = "Root"
+	root.Tags = []string{"Magic"}
+	child := gurps.NewTrait(nil, root, false)
+	child.Name = "Bow, Long"
+	child.Tags = []string{"magic", " Zebra ", "", "Odd, Tag"}
+	nested := gurps.NewTrait(nil, root, true)
+	nested.Name = "Nested"
+	grandchild := gurps.NewTrait(nil, nested, false)
+	grandchild.Name = "Arrow"
+	grandchild.Tags = []string{"apple"}
+	grandchild.Disabled = true
+	nested.Children = []*gurps.Trait{grandchild}
+	root.Children = []*gurps.Trait{child, nested}
+	list := []*gurps.Trait{root}
+
+	tags := findFilterField(gurps.TraitFilterFields(), "tags")
+	c.Equal([]string{"apple", "Magic", "Zebra"}, tags.Suggestions(list), "the tags in the list are offered")
+	c.Equal(0, len(tags.Suggestions(nil)), "no list offers no tags")
+
+	named := gurps.NewTextFilterField("name", "have a name", func(trait *gurps.Trait) string { return trait.Name }).
+		WithPresence(func(trait *gurps.Trait) bool { return !trait.Container() }).WithListedValues()
+	c.Equal([]string{"Arrow", "Bow, Long"}, named.Suggestions(list),
+		"a text field keeps a value holding a comma, and the nodes that lack the field are left out")
+
+	equipment := make([]*gurps.Equipment, 0, 5)
+	for _, techLevel := range []string{"10", "9", "2", "", "^"} {
+		e := gurps.NewEquipment(nil, nil, false)
+		e.TechLevel = techLevel
+		equipment = append(equipment, e)
+	}
+	techLevels := findFilterField(gurps.EquipmentFilterFields(), "tech_level")
+	c.Equal([]string{"2", "9", "10", "^"}, techLevels.Suggestions(equipment), "tech levels are sorted naturally")
+	c.Equal(0, len(techLevels.Suggestions(nil)), "no list offers no tech levels")
+}
+
+// checkContainerTypeChoices verifies that the field offers the String() of each of the types, in order, whatever the
+// list being filtered holds, and that what it reports for a container of each type is among them.
+func checkContainerTypeChoices[T gurps.Node[T], E fmt.Stringer](c check.Checker, name string,
+	field *gurps.FilterField[T], types []E, newContainer func(E) T,
+) {
+	want := make([]string, 0, len(types))
+	containers := make([]T, 0, len(types))
+	for _, one := range types {
+		want = append(want, one.String())
+		containers = append(containers, newContainer(one))
+	}
+	choices := field.Suggestions(nil)
+	c.Equal(want, choices, "%s: every container type is offered", name)
+	c.Equal(want, field.Suggestions(containers), "%s: the list being filtered changes nothing", name)
+	for i, one := range containers {
+		c.True(slices.Contains(choices, field.Text(one)), "%s: the type of a %s container is offered", name, types[i])
+	}
+}
+
+// TestFilterFieldContainerTypeChoices verifies that the container type fields offer every container type, spelled as
+// the fields report a container's type.
+func TestFilterFieldContainerTypeChoices(t *testing.T) {
+	c := check.New(t)
+	checkContainerTypeChoices(c, "traits", findFilterField(gurps.TraitFilterFields(), "container_type"),
+		traitcontainer.Types, func(one traitcontainer.Type) *gurps.Trait {
+			trait := gurps.NewTrait(nil, nil, true)
+			trait.ContainerType = one
+			return trait
+		})
+	checkContainerTypeChoices(c, "equipment", findFilterField(gurps.EquipmentFilterFields(), "container_type"),
+		eqcontainer.Types, func(one eqcontainer.Type) *gurps.Equipment {
+			e := gurps.NewEquipment(nil, nil, true)
+			e.ContainerType = one
+			return e
+		})
+}
+
+// TestFilterFieldDifficultyChoices verifies that the difficulty fields offer each attribute, and 10, at each difficulty
+// level, followed by the bare levels of a technique, spelled as the fields report a skill's or spell's difficulty.
+func TestFilterFieldDifficultyChoices(t *testing.T) {
+	c := check.New(t)
+	// The tests load the user's settings file, whose attributes may be anything.
+	sheet := gurps.GlobalSettings().Sheet
+	saved := sheet.Attributes
+	t.Cleanup(func() { sheet.Attributes = saved })
+	sheet.Attributes = gurps.FactoryAttributeDefs()
+
+	skillField := findFilterField(gurps.SkillFilterFields(), "difficulty")
+	spellField := findFilterField(gurps.SpellFilterFields(), "difficulty")
+	choices := skillField.Suggestions(nil)
+	for _, want := range []string{"10/E", "DX/A", "IQ/H", "HT/VH", "ST/W"} {
+		c.True(slices.Contains(choices, want), "%q is offered", want)
+	}
+	c.True(len(choices) >= 2, "there are at least the technique levels")
+	if len(choices) >= 2 {
+		c.Equal([]string{"A", "H"}, choices[len(choices)-2:], "the technique levels come last")
+	}
+	attributes := 1 // 10
+	for _, def := range sheet.Attributes.List(true) {
+		if def.DefID != gurps.DodgeID {
+			attributes++
+		}
+	}
+	c.Equal(attributes*len(difficulty.Levels)+len(difficulty.TechniqueLevels), len(choices),
+		"each attribute at each level and the technique levels are offered, and nothing else")
+	c.Equal(choices, spellField.Suggestions(nil), "skills and spells offer the same difficulties")
+
+	tenEasy := gurps.NewSkill(nil, nil, false)
+	tenEasy.Difficulty.Attribute = "10"
+	tenEasy.Difficulty.Difficulty = difficulty.Easy
+	hardTechnique := gurps.NewTechnique(nil, nil, "")
+	hardTechnique.Difficulty.Difficulty = difficulty.Hard
+	veryHardSpell := gurps.NewSpell(nil, nil, false)
+	veryHardSpell.Difficulty.Difficulty = difficulty.VeryHard
+	bareRitual := gurps.NewRitualMagicSpell(nil, nil, false)
+	bareRitual.Difficulty.Attribute = ""
+	for _, one := range []struct {
+		want  string
+		value string
+	}{
+		{"DX/A", skillField.Text(gurps.NewSkill(nil, nil, false))},
+		{"10/E", skillField.Text(tenEasy)},
+		{"A", skillField.Text(gurps.NewTechnique(nil, nil, ""))},
+		{"H", skillField.Text(hardTechnique)},
+		{"IQ/VH", spellField.Text(veryHardSpell)},
+		{"IQ/H", spellField.Text(gurps.NewRitualMagicSpell(nil, nil, false))},
+		{"H", spellField.Text(bareRitual)},
+	} {
+		c.Equal(one.want, one.value, "the field reports the difficulty")
+		c.True(slices.Contains(choices, one.value), "%q is offered", one.value)
+	}
 }
 
 // TestListFilterCloneIsDeep verifies that a clone shares nothing with the filter it came from, since the filter editor

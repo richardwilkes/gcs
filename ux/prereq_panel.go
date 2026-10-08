@@ -799,7 +799,7 @@ func (p *prereqPanel) powerSourceChip(chips *unison.Panel, path string, one *gur
 				one.PowerSourceCriteria.Compare = criteria.StringComparisons[max(slices.Index(choices, choice), 0)]
 			}))
 			if !one.SamePowerSource {
-				p.textField(chip, path+":power", title, "", &one.PowerSourceCriteria.Qualifier)
+				p.textField(chip, path+":power", title, "", &one.PowerSourceCriteria.Qualifier, nil)
 			}
 		})
 }

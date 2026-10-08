@@ -10,11 +10,16 @@
 package gurps
 
 import (
+	"fmt"
 	"slices"
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/container"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/difficulty"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/eqcontainer"
 	"github.com/richardwilkes/toolbox/v2/i18n"
+	"github.com/richardwilkes/toolbox/v2/xstrings"
 )
 
 // FilterFieldKind is the kind of value a filter field holds, which decides which criteria a condition on it uses.
@@ -65,6 +70,9 @@ type FilterField[T Node[T]] struct {
 	// Has reports whether the node has the field at all, when it can lack one, such as the levels of a trait that
 	// can't be leveled. A node without the field satisfies no criteria on it.
 	Has func(T) bool
+	// Suggestions returns the values worth offering for a condition that compares the field with a single value, drawn
+	// from list, the nodes of the list being filtered, or fixed. It is nil for a field that offers none.
+	Suggestions func(list []T) []string
 }
 
 // WithPluralTitle marks the field's title as naming something plural, so that what follows it agrees, as in "have notes
@@ -78,6 +86,92 @@ func (f *FilterField[T]) WithPluralTitle() *FilterField[T] {
 func (f *FilterField[T]) WithPresence(has func(T) bool) *FilterField[T] {
 	f.Has = has
 	return f
+}
+
+// WithListedValues makes the field suggest the distinct values it holds across the list being filtered, and returns
+// the field.
+func (f *FilterField[T]) WithListedValues() *FilterField[T] {
+	f.Suggestions = func(list []T) []string { return listedFilterValues(f, list) }
+	return f
+}
+
+// WithChoices makes the field suggest the values choices returns, whatever the list being filtered holds, and returns
+// the field.
+func (f *FilterField[T]) WithChoices(choices func() []string) *FilterField[T] {
+	f.Suggestions = func([]T) []string { return choices() }
+	return f
+}
+
+// listedFilterValues returns the values the field holds across list and everything below it, which are the nodes a
+// filter checks, made distinct by distinctFilterValues and sorted naturally without regard to case. A list value
+// holding a comma is left out: the qualifier is split on commas, so it could never match.
+func listedFilterValues[T Node[T]](field *FilterField[T], list []T) []string {
+	var values []string
+	Traverse(func(node T) bool {
+		if field.Has != nil && !field.Has(node) {
+			return false
+		}
+		switch field.Kind {
+		case FilterFieldText:
+			values = append(values, field.Text(node))
+		case FilterFieldList:
+			for _, value := range field.List(node) {
+				if !strings.Contains(value, ",") {
+					values = append(values, value)
+				}
+			}
+		default:
+		}
+		return false
+	}, false, false, list...)
+	values = distinctFilterValues(values)
+	slices.SortFunc(values, func(a, b string) int { return xstrings.NaturalCmp(a, b, true) })
+	return values
+}
+
+// distinctFilterValues returns the values trimmed, without the blank ones, and without those that differ from an
+// earlier one only in case.
+func distinctFilterValues(values []string) []string {
+	seen := make(map[string]bool, len(values))
+	result := make([]string, 0, len(values))
+	for _, value := range values {
+		value = strings.TrimSpace(value)
+		if value == "" {
+			continue
+		}
+		if key := strings.ToLower(value); !seen[key] {
+			seen[key] = true
+			result = append(result, value)
+		}
+	}
+	return result
+}
+
+// enumStrings returns the String() of each of the values, in order.
+func enumStrings[E fmt.Stringer](values []E) []string {
+	result := make([]string, len(values))
+	for i, value := range values {
+		result[i] = value.String()
+	}
+	return result
+}
+
+// difficultyChoices returns the difficulties as the difficulty fields show them for a skill or spell that belongs to no
+// entity: each attribute its editor offers, which includes 10, at each level, followed by the bare levels of a
+// technique.
+func difficultyChoices() []string {
+	attrs, _ := AttributeChoices(nil, "", TenFlag, "10")
+	choices := make([]string, 0, len(attrs)*len(difficulty.Levels)+len(difficulty.TechniqueLevels))
+	for _, attr := range attrs {
+		for _, level := range difficulty.Levels {
+			choices = append(choices, (&AttributeDifficulty{Attribute: attr.Key, Difficulty: level}).Description(nil))
+		}
+	}
+	for _, level := range difficulty.TechniqueLevels {
+		choices = append(choices, (&AttributeDifficulty{Difficulty: level}).Description(nil))
+	}
+	// Two attributes may share a name.
+	return distinctFilterValues(choices)
 }
 
 // NewTextFilterField creates a field holding a single text value.
@@ -123,7 +217,8 @@ func TraitFilterFields() []*FilterField[*Trait] {
 		NewTextFilterField(filterFieldKeyNotes, i18n.Text("have notes"),
 			(*Trait).LocalNotesWithReplacements).WithPluralTitle(),
 		NewTextFilterField("user_desc", i18n.Text("have a user description"), (*Trait).UserDescWithReplacements),
-		NewListFilterField(filterFieldKeyTags, i18n.Text("have tags"), (*Trait).TagList).WithPluralTitle(),
+		NewListFilterField(filterFieldKeyTags, i18n.Text("have tags"), (*Trait).TagList).WithPluralTitle().
+			WithListedValues(),
 		NewTextFilterField(filterFieldKeyReference, i18n.Text("have a page reference"),
 			func(t *Trait) string { return t.PageRef }),
 		NewNumberFilterField(filterFieldKeyPoints, i18n.Text("have points"),
@@ -137,7 +232,7 @@ func TraitFilterFields() []*FilterField[*Trait] {
 				return ""
 			}
 			return t.ContainerType.String()
-		}),
+		}).WithChoices(func() []string { return enumStrings(container.Types) }),
 		NewBoolFilterField(filterFieldKeyContainer, i18n.Text("be a container"), (*Trait).Container),
 	}
 }
@@ -148,7 +243,8 @@ func TraitModifierFilterFields() []*FilterField[*TraitModifier] {
 		NewTextFilterField(filterFieldKeyName, i18n.Text("have a name"), (*TraitModifier).NameWithReplacements),
 		NewTextFilterField(filterFieldKeyNotes, i18n.Text("have notes"),
 			(*TraitModifier).LocalNotesWithReplacements).WithPluralTitle(),
-		NewListFilterField(filterFieldKeyTags, i18n.Text("have tags"), (*TraitModifier).TagList).WithPluralTitle(),
+		NewListFilterField(filterFieldKeyTags, i18n.Text("have tags"), (*TraitModifier).TagList).WithPluralTitle().
+			WithListedValues(),
 		NewTextFilterField(filterFieldKeyReference, i18n.Text("have a page reference"),
 			func(t *TraitModifier) string { return t.PageRef }),
 		NewTextFilterField(filterFieldKeyCost, i18n.Text("have a cost"), func(t *TraitModifier) string {
@@ -175,7 +271,8 @@ func SkillFilterFields() []*FilterField[*Skill] {
 			(*Skill).SpecializationWithReplacements),
 		NewTextFilterField(filterFieldKeyNotes, i18n.Text("have notes"),
 			(*Skill).LocalNotesWithReplacements).WithPluralTitle(),
-		NewListFilterField(filterFieldKeyTags, i18n.Text("have tags"), (*Skill).TagList).WithPluralTitle(),
+		NewListFilterField(filterFieldKeyTags, i18n.Text("have tags"), (*Skill).TagList).WithPluralTitle().
+			WithListedValues(),
 		NewTextFilterField(filterFieldKeyReference, i18n.Text("have a page reference"),
 			func(s *Skill) string { return s.PageRef }),
 		NewTextFilterField("difficulty", i18n.Text("have a difficulty"), func(s *Skill) string {
@@ -183,7 +280,7 @@ func SkillFilterFields() []*FilterField[*Skill] {
 				return ""
 			}
 			return s.Difficulty.Description(EntityFromNode(s))
-		}),
+		}).WithChoices(difficultyChoices),
 		NewNumberFilterField(filterFieldKeyPoints, i18n.Text("have points"), (*Skill).RawPoints).WithPluralTitle(),
 		NewBoolFilterField("technique", i18n.Text("be a technique"), (*Skill).IsTechnique),
 		NewBoolFilterField(filterFieldKeyContainer, i18n.Text("be a container"), (*Skill).Container),
@@ -196,7 +293,8 @@ func SpellFilterFields() []*FilterField[*Spell] {
 		NewTextFilterField(filterFieldKeyName, i18n.Text("have a name"), (*Spell).NameWithReplacements),
 		NewTextFilterField(filterFieldKeyNotes, i18n.Text("have notes"),
 			(*Spell).LocalNotesWithReplacements).WithPluralTitle(),
-		NewListFilterField(filterFieldKeyTags, i18n.Text("have tags"), (*Spell).TagList).WithPluralTitle(),
+		NewListFilterField(filterFieldKeyTags, i18n.Text("have tags"), (*Spell).TagList).WithPluralTitle().
+			WithListedValues(),
 		NewTextFilterField(filterFieldKeyReference, i18n.Text("have a page reference"),
 			func(s *Spell) string { return s.PageRef }),
 		NewTextFilterField("difficulty", i18n.Text("have a difficulty"), func(s *Spell) string {
@@ -204,11 +302,14 @@ func SpellFilterFields() []*FilterField[*Spell] {
 				return ""
 			}
 			return s.Difficulty.Description(EntityFromNode(s))
-		}),
-		NewListFilterField("college", i18n.Text("have colleges"), (*Spell).CollegeWithReplacements).WithPluralTitle(),
-		NewTextFilterField("power_source", i18n.Text("have a power source"), (*Spell).PowerSourceWithReplacements),
-		NewTextFilterField("class", i18n.Text("have a class"), (*Spell).ClassWithReplacements),
-		NewTextFilterField("resist", i18n.Text("have a resistance"), (*Spell).ResistWithReplacements),
+		}).WithChoices(difficultyChoices),
+		NewListFilterField("college", i18n.Text("have colleges"), (*Spell).CollegeWithReplacements).WithPluralTitle().
+			WithListedValues(),
+		NewTextFilterField("power_source", i18n.Text("have a power source"),
+			(*Spell).PowerSourceWithReplacements).WithListedValues(),
+		NewTextFilterField("class", i18n.Text("have a class"), (*Spell).ClassWithReplacements).WithListedValues(),
+		NewTextFilterField("resist", i18n.Text("have a resistance"),
+			(*Spell).ResistWithReplacements).WithListedValues(),
 		NewTextFilterField("casting_cost", i18n.Text("have a casting cost"), (*Spell).CastingCostWithReplacements),
 		NewTextFilterField("maintenance_cost", i18n.Text("have a maintenance cost"),
 			(*Spell).MaintenanceCostWithReplacements),
@@ -226,14 +327,15 @@ func EquipmentFilterFields() []*FilterField[*Equipment] {
 		NewTextFilterField(filterFieldKeyName, i18n.Text("have a name"), (*Equipment).NameWithReplacements),
 		NewTextFilterField(filterFieldKeyNotes, i18n.Text("have notes"),
 			(*Equipment).LocalNotesWithReplacements).WithPluralTitle(),
-		NewListFilterField(filterFieldKeyTags, i18n.Text("have tags"), (*Equipment).TagList).WithPluralTitle(),
+		NewListFilterField(filterFieldKeyTags, i18n.Text("have tags"), (*Equipment).TagList).WithPluralTitle().
+			WithListedValues(),
 		NewTextFilterField(filterFieldKeyReference, i18n.Text("have a page reference"),
 			func(e *Equipment) string { return e.PageRef }),
 		NewTextFilterField(filterFieldKeyTechLevel, i18n.Text("have a tech level"),
-			func(e *Equipment) string { return e.TechLevel }),
+			func(e *Equipment) string { return e.TechLevel }).WithListedValues(),
 		// The raw legality class is what the LC column shows, so it is what a user will type.
 		NewTextFilterField("legality_class", i18n.Text("have a legality class"),
-			func(e *Equipment) string { return e.LegalityClass }),
+			func(e *Equipment) string { return e.LegalityClass }).WithListedValues(),
 		NewNumberFilterField(filterFieldKeyCost, i18n.Text("have a cost"), (*Equipment).AdjustedValue),
 		NewWeightFilterField(filterFieldKeyWeight, i18n.Text("have a weight"), func(e *Equipment) fxp.Weight {
 			return e.AdjustedWeight(false, SheetSettingsFor(EntityFromNode(e)).DefaultWeightUnits)
@@ -243,7 +345,7 @@ func EquipmentFilterFields() []*FilterField[*Equipment] {
 				return ""
 			}
 			return e.ContainerType.String()
-		}),
+		}).WithChoices(func() []string { return enumStrings(eqcontainer.Types) }),
 		NewBoolFilterField(filterFieldKeyContainer, i18n.Text("be a container"), (*Equipment).Container),
 	}
 }
@@ -254,11 +356,12 @@ func EquipmentModifierFilterFields() []*FilterField[*EquipmentModifier] {
 		NewTextFilterField(filterFieldKeyName, i18n.Text("have a name"), (*EquipmentModifier).NameWithReplacements),
 		NewTextFilterField(filterFieldKeyNotes, i18n.Text("have notes"),
 			(*EquipmentModifier).LocalNotesWithReplacements).WithPluralTitle(),
-		NewListFilterField(filterFieldKeyTags, i18n.Text("have tags"), (*EquipmentModifier).TagList).WithPluralTitle(),
+		NewListFilterField(filterFieldKeyTags, i18n.Text("have tags"), (*EquipmentModifier).TagList).WithPluralTitle().
+			WithListedValues(),
 		NewTextFilterField(filterFieldKeyReference, i18n.Text("have a page reference"),
 			func(e *EquipmentModifier) string { return e.PageRef }),
 		NewTextFilterField(filterFieldKeyTechLevel, i18n.Text("have a tech level"),
-			func(e *EquipmentModifier) string { return e.TechLevel }),
+			func(e *EquipmentModifier) string { return e.TechLevel }).WithListedValues(),
 		NewTextFilterField(filterFieldKeyCost, i18n.Text("have a cost"), (*EquipmentModifier).CostDescription),
 		NewTextFilterField(filterFieldKeyWeight, i18n.Text("have a weight"), (*EquipmentModifier).WeightDescription),
 		NewBoolFilterField(filterFieldKeyContainer, i18n.Text("be a container"), (*EquipmentModifier).Container),
@@ -269,7 +372,8 @@ func EquipmentModifierFilterFields() []*FilterField[*EquipmentModifier] {
 func NoteFilterFields() []*FilterField[*Note] {
 	return []*FilterField[*Note]{
 		NewTextFilterField("text", i18n.Text("have text"), (*Note).TextWithReplacements),
-		NewListFilterField(filterFieldKeyTags, i18n.Text("have tags"), (*Note).TagList).WithPluralTitle(),
+		NewListFilterField(filterFieldKeyTags, i18n.Text("have tags"), (*Note).TagList).WithPluralTitle().
+			WithListedValues(),
 		NewTextFilterField(filterFieldKeyReference, i18n.Text("have a page reference"),
 			func(n *Note) string { return n.PageRef }),
 		NewBoolFilterField(filterFieldKeyContainer, i18n.Text("be a container"), (*Note).Container),

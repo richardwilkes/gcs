@@ -1395,3 +1395,29 @@ func TestFeaturesPanelCreatesEverySelectableType(t *testing.T) {
 		})
 	}
 }
+
+// TestFeaturesPanelKeepsControlCharacters checks that opening a feature whose name holds a character the field can't
+// show, such as a newline from a file edited by hand, changes nothing: the field shows what it can, and the name stays
+// as it was, unmarked and with nothing to undo, until it is edited.
+func TestFeaturesPanelKeepsControlCharacters(t *testing.T) {
+	c := check.New(t)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
+	entity := gurps.NewEntity()
+	owner := gurps.NewTrait(entity, nil, false)
+	features := newTestFeatures(owner)
+	skill, ok := features[0].(*gurps.SkillBonus)
+	c.True(ok)
+	skill.NameCriteria.Qualifier = "Street\nwise"
+	p, host := showFeaturesPanel(t, screen, entity, owner, &features, false)
+	screen.Do(func() { p.toggle("0") })
+	screen.Do(func() {
+		field, isField := p.FindRefKey("0:name").Self.(*StringField)
+		c.True(isField, "the open skill bonus has a name field")
+		if isField {
+			c.Equal("Streetwise", field.Text(), "the field shows what it can")
+		}
+		c.Equal("Street\nwise", skill.NameCriteria.Qualifier, "opening the row changes nothing")
+		c.Equal(0, host.modified, "nothing is marked modified")
+		c.False(host.mgr.CanUndo(), "and nothing is recorded")
+	})
+}

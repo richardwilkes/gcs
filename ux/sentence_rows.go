@@ -703,22 +703,19 @@ func (p *sentenceRows[T]) chip(parent *unison.Panel, key, title, after string, r
 	addCentered(parent, hbox(chip.AsPanel(), 5))
 }
 
-// textCriteria adds the comparison of a text criterion, each choice after the prefix or, for a "not" comparison, the
-// notPrefix, and, unless it is "is anything", the field for its qualifier, which shows the hint while empty. withAny
-// offers "is anything", which a chip leaves to its remove button. With no prefix, the choices are the comparisons' own
-// words.
+// textCriteria adds the comparison of a text criterion, worded by textWordsAfter from the prefix and notPrefix, and,
+// unless it is "is anything", the field for its qualifier, which shows the hint while empty. withAny offers "is
+// anything", which a chip leaves to its remove button.
 func (p *sentenceRows[T]) textCriteria(parent *unison.Panel, key, subject, hint, prefix, notPrefix string, c *criteria.Text, withAny bool) {
-	var render func(criteria.StringComparison) string
-	if prefix != "" {
-		choices := criteria.PrefixedStringComparisonChoices(prefix, notPrefix)
-		render = func(v criteria.StringComparison) string { return choices[v] }
-	}
-	p.textCriteriaWith(parent, key, subject, hint, render, c, withAny)
+	p.textCriteriaWith(parent, key, subject, hint, textWordsAfter(prefix, notPrefix), c, withAny, nil)
 }
 
 // textCriteriaWith adds a text criterion as textCriteria does, its choices worded by render, or by the comparisons'
-// own words when render is nil. It returns the field for the qualifier, or nil while there is none.
-func (p *sentenceRows[T]) textCriteriaWith(parent *unison.Panel, key, subject, hint string, render func(criteria.StringComparison) string, c *criteria.Text, withAny bool) *StringField {
+// own words when render is nil. While the comparison is "is" or "is not", the only ones that compare with a whole
+// value, the qualifier's field offers what a non-nil suggest returns, as textField does, unless it has nothing to
+// offer when the field is built: a dropdown that opens nothing is no use. It returns the field for the qualifier, or
+// nil while there is none.
+func (p *sentenceRows[T]) textCriteriaWith(parent *unison.Panel, key, subject, hint string, render func(criteria.StringComparison) string, c *criteria.Text, withAny bool, suggest func() []string) *StringField {
 	comparison, _ := criteriaTitles(subject)
 	items := criteria.StringComparisons
 	if !withAny {
@@ -729,7 +726,20 @@ func (p *sentenceRows[T]) textCriteriaWith(parent *unison.Panel, key, subject, h
 	if c.Compare == criteria.AnyText {
 		return nil
 	}
-	return p.textField(parent, key, subject, hint, &c.Qualifier)
+	if (c.Compare != criteria.IsText && c.Compare != criteria.IsNotText) || (suggest != nil && len(suggest()) == 0) {
+		suggest = nil
+	}
+	return p.textField(parent, key, subject, hint, &c.Qualifier, suggest)
+}
+
+// textWordsAfter returns the words of a text comparison, each choice after the prefix or, for a "not" comparison, the
+// notPrefix. With no prefix, it returns nil, which leaves the comparisons' own words.
+func textWordsAfter(prefix, notPrefix string) func(criteria.StringComparison) string {
+	if prefix == "" {
+		return nil
+	}
+	choices := criteria.PrefixedStringComparisonChoices(prefix, notPrefix)
+	return func(v criteria.StringComparison) string { return choices[v] }
 }
 
 // numberCriteria adds the comparison of a numeric criterion, worded by words and offering "anything" as numberCompare
@@ -792,23 +802,44 @@ func (p *sentenceRows[T]) numberCompare(parent *unison.Panel, key, name string, 
 	addCentered(parent, compactPopup(p, key, name, items, *c, words, func(v criteria.NumericComparison) { *c = v }))
 }
 
-// textField adds a compact field for the text, which shows the hint while empty.
-func (p *sentenceRows[T]) textField(parent *unison.Panel, key, title, hint string, value *string) *StringField {
-	field := NewStringField(p.targetMgr, key, title, func() string { return *value },
-		func(s string) { p.edit(title, key, "", func() { *value = s }) })
+// textField adds a compact field for the text, which shows the hint while empty. A non-nil suggest makes it a combo box
+// whose dropdown offers what suggest returns each time it opens; choosing one is a step of its own for undo.
+func (p *sentenceRows[T]) textField(parent *unison.Panel, key, title, hint string, value *string, suggest func() []string) *StringField {
+	var field *StringField
+	var lastID int64
+	field = NewStringField(p.targetMgr, key, title, func() string { return *value },
+		func(s string) {
+			// A choice gives the field a fresh undo id, so a change of id ends the run of typing.
+			if suggest != nil {
+				if id := field.CurrentUndoID(); id != lastID {
+					lastID = id
+					p.editKey = ""
+				}
+			}
+			p.edit(title, key, "", func() { *value = s })
+		})
 	field.Watermark = hint
 	field.SetMinimumTextWidthUsing(i18n.Text("Weapon Master (Sword)"))
+	if suggest != nil {
+		// The dropdown replaces the borders, so it has to come before addCompact installs its own.
+		field.InstallDropdown(suggest)
+		// The dropdown's menu is titled with the field's name, which the fallback naming the field doesn't supply.
+		field.Accessibility.Name = title
+	}
 	p.addCompact(parent, field.withoutUndo())
 	return field
 }
 
-// addCompact adds the field, which leaves undo to edit, to the parent with rounded borders.
+// addCompact adds the field, which leaves undo to edit, to the parent with rounded borders that leave room for its
+// accessory panel, if it has one.
 func (p *sentenceRows[T]) addCompact(parent *unison.Panel, field *unison.Field) {
 	addCentered(parent, field)
 	unison.UninstallFocusBorders(field, field)
 	// Padded to the height of the controls around it, less the height of its text.
 	pad := (controlHeight(parent) - field.Font.LineHeight()) / 2
-	unison.InstallFocusBorders(field, field, compactFieldBorder(true, pad), compactFieldBorder(false, pad))
+	accessory := field.AccessoryInsets().Right
+	unison.InstallFocusBorders(field, field, compactFieldBorder(true, pad, accessory),
+		compactFieldBorder(false, pad, accessory))
 	radius := geom.NewUniformSize(compactCornerRadius)
 	draw := field.DrawCallback
 	field.DrawCallback = func(gc *unison.Canvas, dirty geom.Rect) {
@@ -821,8 +852,9 @@ func (p *sentenceRows[T]) addCompact(parent *unison.Panel, field *unison.Field) 
 	}
 }
 
-// compactFieldBorder returns the border of a compact field, which leaves pad above and below its text.
-func compactFieldBorder(focused bool, pad float32) unison.Border {
+// compactFieldBorder returns the border of a compact field, which leaves pad above and below its text and accessory
+// more on its right, for an accessory panel.
+func compactFieldBorder(focused bool, pad, accessory float32) unison.Border {
 	ink := unison.Ink(unison.ThemeSurfaceEdge)
 	var w float32 = 1
 	if focused {
@@ -831,7 +863,7 @@ func compactFieldBorder(focused bool, pad float32) unison.Border {
 	}
 	return unison.NewCompoundBorder(unison.NewLineBorder(ink, geom.NewUniformSize(compactCornerRadius),
 		geom.NewUniformInsets(w), false),
-		unison.NewEmptyBorder(geom.Insets{Top: pad - w, Left: 6 - w, Bottom: pad - w, Right: 6 - w}))
+		unison.NewEmptyBorder(geom.Insets{Top: pad - w, Left: 6 - w, Bottom: pad - w, Right: 6 - w + accessory}))
 }
 
 // controlHeight returns the height of a control in the parent: within a chip, that of a standard button; anywhere else,

@@ -55,7 +55,7 @@ func newListFilterPopupHarness(t *testing.T, names ...string) *listFilterPopupHa
 	h := &listFilterPopupHarness{}
 	h.popup = newListFilterPopup(listFilterPopupSpec{
 		key:     listFilterPopupTestKey,
-		fields:  filterFieldInfos(gurps.TraitFilterFields()),
+		fields:  filterFieldInfos(gurps.TraitFilterFields(), nil),
 		current: func() *gurps.ListFilter { return h.current },
 		choose: func(f *gurps.ListFilter) {
 			h.current = f

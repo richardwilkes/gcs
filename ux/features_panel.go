@@ -393,7 +393,7 @@ func (p *featuresPanel) editor(f gurps.Feature, path string) *unison.Panel {
 				addJoiningWords(chip, i18n.Text("against"))
 				// Named outright, since the words before the field would otherwise be taken as its name.
 				p.textField(chip, key("against"), i18n.Text("Attack Specialization"), gurps.AllID,
-					&one.Specialization).Accessibility.Name = i18n.Text("Attack Specialization")
+					&one.Specialization, nil).Accessibility.Name = i18n.Text("Attack Specialization")
 				addJoiningWords(chip, i18n.Text("attacks"))
 			})
 	case *gurps.SkillBonus:
@@ -674,7 +674,7 @@ func (p *featuresPanel) situation(box, chips *unison.Panel, path string, situati
 		func(chip *unison.Panel) {
 			addJoiningWords(chip, i18n.Text("in group"))
 			// Named outright, since the words before the field would otherwise be taken as its name.
-			p.textField(chip, key, i18n.Text("Group"), "", group).Accessibility.Name = i18n.Text("Group")
+			p.textField(chip, key, i18n.Text("Group"), "", group, nil).Accessibility.Name = i18n.Text("Group")
 		})
 }
 
@@ -931,7 +931,7 @@ func (p *featuresPanel) selectorOverride(fields, chips *unison.Panel, path strin
 		addCentered(fields, compactPopup(&p.sentenceRows, key("value"), title, items, one.Value, render,
 			func(v string) { one.Value = v }))
 	} else {
-		field := p.textField(fields, key("value"), title, "", &one.Value)
+		field := p.textField(fields, key("value"), title, "", &one.Value, nil)
 		// Named outright, since the words before the field would otherwise be taken as its name.
 		field.Accessibility.Name = title
 		if len(d.SuggestedStates) != 0 {

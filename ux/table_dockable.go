@@ -178,7 +178,7 @@ func (d *TableDockable[T]) createToolbar() *unison.Panel {
 	if key := d.provider.FilterKey(); key != "" {
 		d.savedFilters = newListFilterPopup(listFilterPopupSpec{
 			key:     key,
-			fields:  filterFieldInfos(d.provider.FilterFields()),
+			fields:  filterFieldInfos(d.provider.FilterFields(), func() []T { return d.provider.RootData() }),
 			current: func() *gurps.ListFilter { return d.selectedFilter },
 			choose:  d.chooseFilter,
 		})

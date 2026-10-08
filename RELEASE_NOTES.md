@@ -31,6 +31,10 @@
   filter asks for, new ones are added at the end, and every change can be undone. Escape closes the open condition,
   or with none open, cancels the editor. A value with a comma, a double quote, or space at either end is quoted, as is
   each of several values given as a list.
+- In the saved filter editor, a condition on the tags, colleges, tech level, legality class, power source, class,
+  resistance, container type or difficulty that compares with "is" or "is not" now has a dropdown at the right end of
+  its value. It offers the values found in the list being filtered or, for the container type and difficulty, every
+  one there is. Choosing one fills in the value, and any other value can still be typed.
 - The saved filters popup now lists New Filter, Edit Filter and Delete Filter first, so they stay within reach of a
   long list of filters.
 - Weapon bonus tooltips on the sheet use shorter names, such as "to accuracy", and the rate of fire bonuses say which
