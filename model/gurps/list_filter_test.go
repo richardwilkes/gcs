@@ -423,8 +423,6 @@ func TestListFilterMatchesByKind(t *testing.T) {
 	}
 }
 
-// TestListFilterNegation verifies that negation inverts a node's result wherever it appears, and that it composes with
-// the criteria's own "not" forms rather than being confused by them.
 // TestListFilterTraitLevels checks that a trait that can't be leveled, or a container, has no levels to a filter, so it
 // satisfies no criteria on them and a negated condition finds it, while a leveled trait at 0 levels has levels of 0.
 // A disabled leveled trait has levels, read as 0 as its points are.
@@ -492,6 +490,8 @@ func TestListFilterTraitLevels(t *testing.T) {
 	}
 }
 
+// TestListFilterNegation verifies that negation inverts a node's result wherever it appears, and that it composes with
+// the criteria's own "not" forms rather than being confused by them.
 func TestListFilterNegation(t *testing.T) {
 	c := check.New(t)
 	trait := gurps.NewTrait(nil, nil, false)
