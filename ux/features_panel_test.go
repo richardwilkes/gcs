@@ -25,6 +25,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/skillsel"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/wsel"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/wswitch"
+	"github.com/richardwilkes/gcs/v5/ux/uxtest"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/unison"
@@ -119,7 +120,7 @@ func clickFeatureCheckBox(box *unison.CheckBox, on bool) {
 // hears as a disclosure, and that an unknown feature's row is static text that doesn't open.
 func TestFeaturesPanelSentences(t *testing.T) {
 	c := check.New(t)
-	screen, _ := startHeadlessWorkspace(t, c)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
 	entity := gurps.NewEntity()
 	owner := gurps.NewTrait(entity, nil, false)
 	features := newTestFeatures(owner)
@@ -156,7 +157,7 @@ func TestFeaturesPanelSentences(t *testing.T) {
 // open at a time, and that Done and Escape close it, the latter without reaching the editor.
 func TestFeaturesPanelOpenAndClose(t *testing.T) {
 	c := check.New(t)
-	screen, _ := startHeadlessWorkspace(t, c)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
 	entity := gurps.NewEntity()
 	owner := gurps.NewTrait(entity, nil, false)
 	features := newTestFeatures(owner)
@@ -190,7 +191,7 @@ func TestFeaturesPanelOpenAndClose(t *testing.T) {
 // row open.
 func TestFeaturesPanelCollapse(t *testing.T) {
 	c := check.New(t)
-	screen, _ := startHeadlessWorkspace(t, c)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
 	entity := gurps.NewEntity()
 	owner := gurps.NewTrait(entity, nil, false)
 	features := newTestFeatures(owner)
@@ -266,7 +267,7 @@ func TestFeaturesPanelCollapse(t *testing.T) {
 // open.
 func TestFeaturesPanelStartingState(t *testing.T) {
 	c := check.New(t)
-	screen, _ := startHeadlessWorkspace(t, c)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
 	entity := gurps.NewEntity()
 	owner := gurps.NewTrait(entity, nil, false)
 	features := newTestFeatures(owner)
@@ -315,7 +316,7 @@ func TestFeaturesPanelStartingState(t *testing.T) {
 // TestFeaturesPanelCollapseEmpty checks that a collapsed panel with no features says so.
 func TestFeaturesPanelCollapseEmpty(t *testing.T) {
 	c := check.New(t)
-	screen, _ := startHeadlessWorkspace(t, c)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
 	entity := gurps.NewEntity()
 	owner := gurps.NewTrait(entity, nil, false)
 	var features gurps.Features
@@ -336,7 +337,7 @@ func TestFeaturesPanelCollapseEmpty(t *testing.T) {
 // where they would under a title that can't be clicked.
 func TestFeaturesPanelTitleBar(t *testing.T) {
 	c := check.New(t)
-	screen, _ := startHeadlessWorkspace(t, c)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
 	entity := gurps.NewEntity()
 	owner := gurps.NewTrait(entity, nil, false)
 	features := newTestFeatures(owner)
@@ -357,7 +358,7 @@ func TestFeaturesPanelTitleBar(t *testing.T) {
 // doesn't offer, and checks that none of it changes the data, since opening an editor must not mark it modified.
 func TestFeaturesPanelBuildingChangesNothing(t *testing.T) {
 	c := check.New(t)
-	screen, _ := startHeadlessWorkspace(t, c)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
 	entity := gurps.NewEntity()
 	owner := gurps.NewTrait(entity, nil, false)
 	weaponSwitch := gurps.NewWeaponBonus(feature.WeaponSwitch)
@@ -393,7 +394,7 @@ func TestFeaturesPanelBuildingChangesNothing(t *testing.T) {
 // with the focus in its first field, and that the new type becomes the one added next.
 func TestFeaturesPanelAdd(t *testing.T) {
 	c := check.New(t)
-	screen, _ := startHeadlessWorkspace(t, c)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
 	entity := gurps.NewEntity()
 	owner := gurps.NewTrait(entity, nil, false)
 	features := newTestFeatures(owner)
@@ -434,7 +435,7 @@ func TestFeaturesPanelAdd(t *testing.T) {
 // picks them, with its chips after them.
 func TestFeaturesPanelLayout(t *testing.T) {
 	c := check.New(t)
-	screen, _ := startHeadlessWorkspace(t, c)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
 	entity := gurps.NewEntity()
 	owner := gurps.NewTrait(entity, nil, false)
 	skill := gurps.NewSkillBonus()
@@ -515,7 +516,7 @@ func TestFeaturesPanelLayout(t *testing.T) {
 	screen.Do(func() {
 		popup, against := rect(p, "2:locations"), rect(p, "2:add against")
 		var locations []geom.Rect
-		for _, box := range panelsOfType[*unison.CheckBox](p.FindRefKey("2" + keyFirst)) {
+		for _, box := range uxtest.PanelsOfType[*unison.CheckBox](p.FindRefKey("2" + keyFirst)) {
 			if strings.HasPrefix(box.RefKey, "2:loc ") {
 				locations = append(locations, box.RectToRoot(box.ContentRect(true)))
 			}
@@ -537,7 +538,7 @@ func TestFeaturesPanelLayout(t *testing.T) {
 // whether it is switchable, and leaves the others alone.
 func TestFeaturesPanelTypeSwitchKeepsSwitchable(t *testing.T) {
 	c := check.New(t)
-	screen, _ := startHeadlessWorkspace(t, c)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
 	entity := gurps.NewEntity()
 	owner := gurps.NewTrait(entity, nil, false)
 	features := newTestFeatures(owner)
@@ -560,7 +561,7 @@ func TestFeaturesPanelTypeSwitchKeepsSwitchable(t *testing.T) {
 // the types within each group, with a separator between groups, and that the headings can't be chosen.
 func TestFeaturesPanelTypeHeadings(t *testing.T) {
 	c := check.New(t)
-	screen, _ := startHeadlessWorkspace(t, c)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
 	entity := gurps.NewEntity()
 	owner := gurps.NewTrait(entity, nil, false)
 	features := newTestFeatures(owner)
@@ -600,7 +601,7 @@ func TestFeaturesPanelTypeHeadings(t *testing.T) {
 // each as one step to undo, for every type of feature.
 func TestFeaturesPanelSwitchablePill(t *testing.T) {
 	c := check.New(t)
-	screen, _ := startHeadlessWorkspace(t, c)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
 	entity := gurps.NewEntity()
 	owner := gurps.NewEquipment(entity, nil, true)
 	features := make(gurps.Features, 0, len(feature.SelectableTypes))
@@ -611,7 +612,7 @@ func TestFeaturesPanelSwitchablePill(t *testing.T) {
 	p, host := showFeaturesPanel(t, screen, entity, owner, &features, false)
 	click := func(key string) {
 		screen.Do(func() {
-			buttons := panelsOfType[*unison.Button](p.FindRefKey(key))
+			buttons := uxtest.PanelsOfType[*unison.Button](p.FindRefKey(key))
 			c.NotEqual(0, len(buttons), "expected a button within %s", key)
 			if len(buttons) != 0 {
 				buttons[len(buttons)-1].ClickCallback()
@@ -641,7 +642,7 @@ func TestFeaturesPanelSwitchablePill(t *testing.T) {
 // open row stays open wherever it goes, and that the moves are offered only where there is room.
 func TestFeaturesPanelMoreMenu(t *testing.T) {
 	c := check.New(t)
-	screen, _ := startHeadlessWorkspace(t, c)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
 	entity := gurps.NewEntity()
 	owner := gurps.NewTrait(entity, nil, false)
 	features := newTestFeatures(owner)
@@ -690,7 +691,7 @@ func TestFeaturesPanelMoreMenu(t *testing.T) {
 // recorded.
 func TestFeaturesPanelUndo(t *testing.T) {
 	c := check.New(t)
-	screen, _ := startHeadlessWorkspace(t, c)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
 	entity := gurps.NewEntity()
 	owner := gurps.NewTrait(entity, nil, false)
 	features := newTestFeatures(owner)
@@ -738,7 +739,7 @@ func TestFeaturesPanelUndo(t *testing.T) {
 // itself, or of a feature from another panel, changes nothing.
 func TestFeaturesPanelDragAndDrop(t *testing.T) {
 	c := check.New(t)
-	screen, _ := startHeadlessWorkspace(t, c)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
 	entity := gurps.NewEntity()
 	owner := gurps.NewTrait(entity, nil, false)
 	features := newTestFeatures(owner)
@@ -807,7 +808,7 @@ func TestFeaturesPanelDragAndDrop(t *testing.T) {
 // click on a sentence still opens its row.
 func TestFeaturesPanelDragFromRow(t *testing.T) {
 	c := check.New(t)
-	screen, _ := startHeadlessWorkspace(t, c)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
 	entity := gurps.NewEntity()
 	owner := gurps.NewTrait(entity, nil, false)
 	features := newTestFeatures(owner)
@@ -832,7 +833,7 @@ func TestFeaturesPanelDragFromRow(t *testing.T) {
 // comparison of its own, such as a group, shows once added even before it holds anything.
 func TestFeaturesPanelChips(t *testing.T) {
 	c := check.New(t)
-	screen, _ := startHeadlessWorkspace(t, c)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
 	entity := gurps.NewEntity()
 	owner := gurps.NewTrait(entity, nil, false)
 	skill := gurps.NewSkillBonus()
@@ -845,7 +846,7 @@ func TestFeaturesPanelChips(t *testing.T) {
 	p, _ := showFeaturesPanel(t, screen, entity, owner, &features, false)
 	click := func(key string) {
 		screen.Do(func() {
-			buttons := panelsOfType[*unison.Button](p.FindRefKey(key))
+			buttons := uxtest.PanelsOfType[*unison.Button](p.FindRefKey(key))
 			c.NotEqual(0, len(buttons), "expected a button within %s", key)
 			if len(buttons) != 0 {
 				buttons[len(buttons)-1].ClickCallback()
@@ -873,7 +874,7 @@ func TestFeaturesPanelChips(t *testing.T) {
 // it adds a feature of the type last chosen and opens it, as the add button does, and that undo brings it back.
 func TestFeaturesPanelEmpty(t *testing.T) {
 	c := check.New(t)
-	screen, _ := startHeadlessWorkspace(t, c)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
 	entity := gurps.NewEntity()
 	owner := gurps.NewTrait(entity, nil, false)
 	var features gurps.Features
@@ -916,7 +917,7 @@ func TestFeaturesPanelEmpty(t *testing.T) {
 // its field shows the hint, and that the field grows to fit its text rather than scrolling within itself.
 func TestFeaturesPanelSituation(t *testing.T) {
 	c := check.New(t)
-	screen, _ := startHeadlessWorkspace(t, c)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
 	entity := gurps.NewEntity()
 	owner := gurps.NewTrait(entity, nil, false)
 	var features gurps.Features
@@ -951,7 +952,7 @@ func TestFeaturesPanelSituation(t *testing.T) {
 // optional specialization criterion, which a skill bonus selected another way does not.
 func TestFeaturesPanelOptionalSpecialization(t *testing.T) {
 	c := check.New(t)
-	screen, _ := startHeadlessWorkspace(t, c)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
 	entity := gurps.NewEntity()
 	owner := gurps.NewTrait(entity, nil, false)
 	byName := gurps.NewSkillBonus()
@@ -991,7 +992,7 @@ func TestFeaturesPanelOptionalSpecialization(t *testing.T) {
 // filter it is, and that removing the chip removes the criterion.
 func TestFeaturesPanelRelativeSkillLevel(t *testing.T) {
 	c := check.New(t)
-	screen, _ := startHeadlessWorkspace(t, c)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
 	entity := gurps.NewEntity()
 	owner := gurps.NewTrait(entity, nil, false)
 	fresh := gurps.NewWeaponBonus(feature.WeaponBonus)
@@ -1018,7 +1019,7 @@ func TestFeaturesPanelRelativeSkillLevel(t *testing.T) {
 		c.NotNil(p.FindRefKey("1:level"+keyChip), "a level of at least 0 is a filter, so it shows its chip")
 	})
 	screen.Do(func() {
-		buttons := panelsOfType[*unison.Button](p.FindRefKey("1:level" + keyChip))
+		buttons := uxtest.PanelsOfType[*unison.Button](p.FindRefKey("1:level" + keyChip))
 		c.NotEqual(0, len(buttons))
 		if len(buttons) != 0 {
 			buttons[len(buttons)-1].ClickCallback()
@@ -1031,7 +1032,7 @@ func TestFeaturesPanelRelativeSkillLevel(t *testing.T) {
 // control that had the focus goes, the open row takes it rather than the first row of the panel.
 func TestFeaturesPanelFocusAfterRebuild(t *testing.T) {
 	c := check.New(t)
-	screen, _ := startHeadlessWorkspace(t, c)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
 	entity := gurps.NewEntity()
 	owner := gurps.NewTrait(entity, nil, false)
 	features := newTestFeatures(owner)
@@ -1073,7 +1074,7 @@ func TestFeaturesPanelFocusAfterRebuild(t *testing.T) {
 // locations from "all" starts it with the torso.
 func TestFeaturesPanelDRLocations(t *testing.T) {
 	c := check.New(t)
-	screen, _ := startHeadlessWorkspace(t, c)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
 	entity := gurps.NewEntity()
 	trait := gurps.NewTrait(entity, nil, false)
 	traitDR := gurps.NewDRBonus()
@@ -1121,7 +1122,7 @@ func TestFeaturesPanelDRLocations(t *testing.T) {
 // reduction, while a feature of that type that something else holds is still shown as such.
 func TestFeaturesPanelContainedWeightReductionOnlyForContainers(t *testing.T) {
 	c := check.New(t)
-	screen, _ := startHeadlessWorkspace(t, c)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
 	entity := gurps.NewEntity()
 	container := gurps.NewEquipment(entity, nil, true)
 	containerFeatures := gurps.Features{gurps.NewContainedWeightReduction()}
@@ -1147,7 +1148,7 @@ func TestFeaturesPanelContainedWeightReductionOnlyForContainers(t *testing.T) {
 // the field's first, and clears the usage criterion when the field belongs to traits, which have no usage.
 func TestFeaturesPanelSelectorFieldChange(t *testing.T) {
 	c := check.New(t)
-	screen, _ := startHeadlessWorkspace(t, c)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
 	entity := gurps.NewEntity()
 	owner := gurps.NewTrait(entity, nil, false)
 	override := gurps.NewSelectorOverride(selector.WeaponDamageType)
@@ -1184,7 +1185,7 @@ func TestFeaturesPanelSelectorFieldChange(t *testing.T) {
 // offer no per-die choice.
 func TestFeaturesPanelWeaponDamageBonus(t *testing.T) {
 	c := check.New(t)
-	screen, _ := startHeadlessWorkspace(t, c)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
 	entity := gurps.NewEntity()
 	owner := gurps.NewTrait(entity, nil, false)
 	damage := gurps.NewWeaponBonus(feature.WeaponBonus)
@@ -1250,7 +1251,7 @@ func TestFeaturesPanelWeaponDamageBonus(t *testing.T) {
 // panel.
 func TestFeaturesPanelPercentSuspensionSurvivesRebuild(t *testing.T) {
 	c := check.New(t)
-	screen, _ := startHeadlessWorkspace(t, c)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
 	entity := gurps.NewEntity()
 	owner := gurps.NewTrait(entity, nil, false)
 	damage := gurps.NewWeaponBonus(feature.WeaponBonus)
@@ -1291,7 +1292,7 @@ func TestFeaturesPanelPercentSuspensionSurvivesRebuild(t *testing.T) {
 // as it was suspended in the snapshots they return to, and only for those.
 func TestFeaturesPanelPercentSuspensionSurvivesUndo(t *testing.T) {
 	c := check.New(t)
-	screen, _ := startHeadlessWorkspace(t, c)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
 	entity := gurps.NewEntity()
 	owner := gurps.NewTrait(entity, nil, false)
 	damage := gurps.NewWeaponBonus(feature.WeaponBonus)
@@ -1343,7 +1344,7 @@ func TestFeaturesPanelPercentSuspensionSurvivesUndo(t *testing.T) {
 // run together with the clicks before it as typing is.
 func TestFeaturesPanelCheckBoxUndo(t *testing.T) {
 	c := check.New(t)
-	screen, _ := startHeadlessWorkspace(t, c)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
 	entity := gurps.NewEntity()
 	owner := gurps.NewTrait(entity, nil, false)
 	skill := gurps.NewSkillBonus()

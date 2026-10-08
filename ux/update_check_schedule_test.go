@@ -14,6 +14,7 @@ import (
 	"time"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/updatecheck"
+	"github.com/richardwilkes/gcs/v5/ux/uxtest"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/toolbox/v2/xos"
 )
@@ -197,7 +198,7 @@ func TestAppUpdateCheckFrequencyForDevelopmentBuilds(t *testing.T) {
 	c := check.New(t)
 	gs, _ := prepareUpdateCheckSettings(t)
 
-	swapForTest(t, &xos.AppVersion, "0.0")
+	uxtest.SwapForTest(t, &xos.AppVersion, "0.0")
 	for option, want := range map[updatecheck.Option]updatecheck.Option{
 		updatecheck.Never:    updatecheck.Never,
 		updatecheck.AtLaunch: updatecheck.AtLaunch,

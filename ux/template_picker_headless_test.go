@@ -18,6 +18,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/picker"
+	"github.com/richardwilkes/gcs/v5/ux/uxtest"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/xmath"
@@ -30,7 +31,7 @@ import (
 // The picker's page reference link is outside any list, so it is an ordinary tab stop, with or without a screen reader.
 func TestPickerRowPageReferenceIsFollowedFromTheKeyboard(t *testing.T) {
 	c := check.New(t)
-	screen, wnd := startHeadlessWorkspace(t, c)
+	screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
 	const ref = "https://example.com/ref"
 	var holder, link *unison.Panel
 	var box *unison.CheckBox
@@ -42,10 +43,10 @@ func TestPickerRowPageReferenceIsFollowedFromTheKeyboard(t *testing.T) {
 		holder = unison.NewPanel()
 		list := &pickerList{panel: holder, pt: picker.Count, refresh: func() {}}
 		newPickerSession(promptOperation{}, []*gurps.Trait{trait}, false).addPickerRow(list, trait, nil, false, 0)
-		if boxes := panelsOfType[*unison.CheckBox](holder); len(boxes) == 1 {
+		if boxes := uxtest.PanelsOfType[*unison.CheckBox](holder); len(boxes) == 1 {
 			box = boxes[0]
 		}
-		links := panelsMatching(holder, func(p *unison.Panel) bool { return p.Accessibility.Role == role.Link })
+		links := uxtest.PanelsMatching(holder, func(p *unison.Panel) bool { return p.Accessibility.Role == role.Link })
 		linkCount = len(links)
 		if linkCount == 1 {
 			link = links[0]
@@ -79,7 +80,7 @@ func TestPickerRowPageReferenceIsFollowedFromTheKeyboard(t *testing.T) {
 // merged into rows already there.
 func TestPickerGroupsReachTheTable(t *testing.T) {
 	c := check.New(t)
-	screen, wnd := startHeadlessWorkspace(t, c)
+	screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
 	brawling, karate := newTestSkill("Brawling", fxp.Four, nil), newTestSkill("Karate", fxp.Four, nil)
 	group := func(name string, children ...*gurps.Skill) *gurps.Skill {
 		one := gurps.NewSkill(nil, nil, true)
@@ -108,7 +109,7 @@ func TestPickerGroupsReachTheTable(t *testing.T) {
 	screen.Sync()
 	dialogWnd, dialog := modalDialog(t, screen, wnd)
 	var boxes []*unison.CheckBox
-	screen.Do(func() { boxes = panelsOfType[*unison.CheckBox](dialogWnd.Content()) })
+	screen.Do(func() { boxes = uxtest.PanelsOfType[*unison.CheckBox](dialogWnd.Content()) })
 	for _, box := range boxes {
 		screen.Click(screen.PanelCenter(box))
 	}
@@ -127,7 +128,7 @@ func TestPickerGroupsReachTheTable(t *testing.T) {
 // does.
 func TestPickerDialogFitsItsContent(t *testing.T) {
 	c := check.New(t)
-	screen, _ := startHeadlessWorkspace(t, c)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
 	s, n := newKnightSession()
 	// Names long enough that the rows, rather than the buttons, set the dialog's width.
 	n["order"].Name = "Knightly Order of the Realm"
@@ -148,8 +149,8 @@ func TestPickerDialogFitsItsContent(t *testing.T) {
 		}
 		fits("the rows' text is in place when the dialog is sized")
 		wnd.ValidateLayout()
-		hints := panelsOfType[*TextLabel](wnd.Content())
-		scrolls := panelsOfType[*unison.ScrollPanel](wnd.Content())
+		hints := uxtest.PanelsOfType[*TextLabel](wnd.Content())
+		scrolls := uxtest.PanelsOfType[*unison.ScrollPanel](wnd.Content())
 		c.Equal(1, len(hints))
 		c.Equal(1, len(scrolls))
 		c.True(len(hints[0].lines(hints[0].ContentRect(false).Width)) > 1, "the hint wraps")
@@ -166,7 +167,7 @@ func TestPickerDialogFitsItsContent(t *testing.T) {
 // Text a row gains once the dialog is up, as what was picked from a choice, is shown whole.
 func TestPickerRowTextIsNeverCut(t *testing.T) {
 	c := check.New(t)
-	screen, _ := startHeadlessWorkspace(t, c)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
 	s, n := newKnightSession()
 	n["fit2"].Name = "Very Fit"
 	screen.Do(func() {
@@ -182,7 +183,7 @@ func TestPickerRowTextIsNeverCut(t *testing.T) {
 		s.pickerAnswered[n["fit"]] = true
 		refresh()
 		wnd.ValidateLayout()
-		for _, label := range panelsOfType[*unison.Label](wnd.Content()) {
+		for _, label := range uxtest.PanelsOfType[*unison.Label](wnd.Content()) {
 			_, pref, _ := label.Sizes(geom.Size{})
 			c.True(label.FrameRect().Width >= pref.Width, "%q is cut: %v of %v", label.String(), label.FrameRect().Width,
 				pref.Width)
@@ -193,7 +194,7 @@ func TestPickerRowTextIsNeverCut(t *testing.T) {
 // A trait's name follows its level when the level is changed while picking.
 func TestPickerRowNameFollowsLevel(t *testing.T) {
 	c := check.New(t)
-	screen, _ := startHeadlessWorkspace(t, c)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
 	screen.Do(func() {
 		trait := gurps.NewTrait(nil, nil, false)
 		trait.Name = "Fearlessness"
@@ -203,7 +204,7 @@ func TestPickerRowNameFollowsLevel(t *testing.T) {
 		update := newPickerSession(promptOperation{}, []*gurps.Trait{trait}, false).addPickerRow(list, trait, nil,
 			false, 0)
 		has := func(title string) bool {
-			return slices.ContainsFunc(panelsOfType[*unison.Label](list.panel),
+			return slices.ContainsFunc(uxtest.PanelsOfType[*unison.Label](list.panel),
 				func(label *unison.Label) bool { return label.String() == title })
 		}
 		update()
@@ -218,7 +219,7 @@ func TestPickerRowNameFollowsLevel(t *testing.T) {
 // A picker too tall for the display keeps its place in the list when a click refreshes it.
 func TestPickerDialogKeepsItsScrollPosition(t *testing.T) {
 	c := check.New(t)
-	screen, _ := startHeadlessWorkspace(t, c)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
 	choice := gurps.NewTrait(nil, nil, true)
 	choice.TemplatePicker.Type = picker.Count
 	choice.TemplatePicker.Qualifier.Qualifier = fxp.One
@@ -237,13 +238,13 @@ func TestPickerDialogKeepsItsScrollPosition(t *testing.T) {
 		wnd := dialog.Window()
 		defer wnd.Dispose()
 		wnd.ValidateLayout()
-		scroll := panelsOfType[*unison.ScrollPanel](wnd.Content())[0]
+		scroll := uxtest.PanelsOfType[*unison.ScrollPanel](wnd.Content())[0]
 		scroll.SetPosition(0, 500)
 		wnd.ValidateLayout()
 		_, before := scroll.Position()
 		c.Equal(float32(500), before, "the list scrolls")
 		size := wnd.ContentRect().Size
-		panelsOfType[*unison.CheckBox](scroll.AsPanel())[60].Click()
+		uxtest.PanelsOfType[*unison.CheckBox](scroll.AsPanel())[60].Click()
 		wnd.ValidateLayout()
 		_, after := scroll.Position()
 		c.Equal(before, after, "the list keeps its place")
@@ -257,7 +258,7 @@ func TestPickerDialogKeepsItsScrollPosition(t *testing.T) {
 // once all is well.
 func TestPickerDialogHintColor(t *testing.T) {
 	c := check.New(t)
-	screen, _ := startHeadlessWorkspace(t, c)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
 	for _, tc := range []struct {
 		row   string
 		picks []string
@@ -280,7 +281,7 @@ func TestPickerDialogHintColor(t *testing.T) {
 				return
 			}
 			defer dialog.Window().Dispose()
-			hints := panelsOfType[*TextLabel](dialog.Window().Content())
+			hints := uxtest.PanelsOfType[*TextLabel](dialog.Window().Content())
 			c.Equal(1, len(hints))
 			c.Equal(tc.ink, hints[0].ink, tc.row)
 			c.Equal(tc.boxed, hints[0].Border() != nil, "only a warning or an error is set out in a box: %s", tc.row)
@@ -292,7 +293,7 @@ func TestPickerDialogHintColor(t *testing.T) {
 // when it did.
 func TestPickerModifierPromptOverride(t *testing.T) {
 	c := check.New(t)
-	screen, wnd := startHeadlessWorkspace(t, c)
+	screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
 	s, n := newKnightSession()
 	res := n["res"]
 	override := func(pick bool) {
@@ -305,7 +306,7 @@ func TestPickerModifierPromptOverride(t *testing.T) {
 		dialogWnd, dialog := modalDialog(t, screen, wnd)
 		if pick {
 			var radios []*unison.RadioButton
-			screen.Do(func() { radios = panelsOfType[*unison.RadioButton](dialogWnd.Content()) })
+			screen.Do(func() { radios = uxtest.PanelsOfType[*unison.RadioButton](dialogWnd.Content()) })
 			screen.Click(screen.PanelCenter(radios[1]))
 		}
 		screen.Click(screen.PanelCenter(dialogButton(t, screen, dialog, unison.ModalResponseUserBase)))
@@ -324,7 +325,7 @@ func TestPickerModifierPromptOverride(t *testing.T) {
 // can't be made too small to give it that.
 func TestModifierPromptListHoldsTenRows(t *testing.T) {
 	c := check.New(t)
-	screen, wnd := startHeadlessWorkspace(t, c)
+	screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
 	s, n := newKnightSession()
 	res := n["res"]
 	done := false
@@ -334,9 +335,9 @@ func TestModifierPromptListHoldsTenRows(t *testing.T) {
 	}))
 	screen.Sync()
 	dialogWnd, dialog := modalDialog(t, screen, wnd)
-	captureScreen(t, c, screen, "modifier_prompt")
+	uxtest.CaptureScreen(t, c, screen, "modifier_prompt")
 	screen.Do(func() {
-		scroll := panelsOfType[*unison.ScrollPanel](dialogWnd.Content())[0]
+		scroll := uxtest.PanelsOfType[*unison.ScrollPanel](dialogWnd.Content())[0]
 		layout, ok := scroll.Layout().(*minSizeLayout)
 		c.True(ok, "the list's scroll panel holds its least size")
 		if !ok {
@@ -362,7 +363,7 @@ func TestModifierPromptListHoldsTenRows(t *testing.T) {
 // With no chevron among them, the picker's options leave no room for one, so their names follow their checkboxes.
 func TestPickerRowsWithoutGroupsLeaveNoRoomForChevrons(t *testing.T) {
 	c := check.New(t)
-	screen, _ := startHeadlessWorkspace(t, c)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
 	s, n := newKnightSession()
 	screen.Do(func() {
 		dialog, _ := s.newPickerDialog(n["root"], 0)
@@ -373,7 +374,7 @@ func TestPickerRowsWithoutGroupsLeaveNoRoomForChevrons(t *testing.T) {
 		wnd := dialog.Window()
 		defer wnd.Dispose()
 		wnd.ValidateLayout()
-		list := panelsOfType[*unison.CheckBox](wnd.Content())[0].Parent().Parent()
+		list := uxtest.PanelsOfType[*unison.CheckBox](wnd.Content())[0].Parent().Parent()
 		checkPickerRowPlaces(c, list, map[string]pickerPlace{
 			"ea": {}, "ep": {}, "fit": {}, "order": {}, "luck": {}, "shield": {},
 		})
@@ -384,7 +385,7 @@ func TestPickerRowsWithoutGroupsLeaveNoRoomForChevrons(t *testing.T) {
 // page reference lines up with theirs, and its chevron and name with those of the rows beside it.
 func TestPickerOrganizingGroupHeaders(t *testing.T) {
 	c := check.New(t)
-	screen, wnd := startHeadlessWorkspace(t, c)
+	screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
 	s, n := newOrganizedSession()
 	for _, name := range []string{"martial", "inner", "fear", "status", "luck"} {
 		n[name].PageRef = "B10"
@@ -403,7 +404,7 @@ func TestPickerOrganizingGroupHeaders(t *testing.T) {
 	var list *unison.Panel
 	var cells []*unison.Panel
 	screen.Do(func() {
-		for _, p := range panelsMatching(dialogWnd.Content(), func(p *unison.Panel) bool {
+		for _, p := range uxtest.PanelsMatching(dialogWnd.Content(), func(p *unison.Panel) bool {
 			return p.Accessibility.Role == role.Heading
 		}) {
 			label, ok := p.Self.(*unison.Label)
@@ -413,9 +414,9 @@ func TestPickerOrganizingGroupHeaders(t *testing.T) {
 			chevrons[label.String()] = chevron
 			c.Equal(map[string]int{"martial": 1, "social": 1, "inner": 2}[label.String()], p.Accessibility.Level,
 				"%s is a heading at its depth", label.String())
-			c.Equal(0, len(panelsOfType[*unison.CheckBox](p.Parent())), "a header has no checkbox")
+			c.Equal(0, len(uxtest.PanelsOfType[*unison.CheckBox](p.Parent())), "a header has no checkbox")
 		}
-		boxes = panelsOfType[*unison.CheckBox](dialogWnd.Content())
+		boxes = uxtest.PanelsOfType[*unison.CheckBox](dialogWnd.Content())
 		list = boxes[0].Parent().Parent()
 		cells = slices.Clone(list.Children())
 		checkPickerRowsAligned(c, list, 5)
@@ -444,7 +445,7 @@ func TestPickerOrganizingGroupHeaders(t *testing.T) {
 		return node.Expandable, node.Expanded
 	}
 	shownBoxes := func() (count int) {
-		screen.Do(func() { count = len(panelsOfType[*unison.CheckBox](list)) })
+		screen.Do(func() { count = len(uxtest.PanelsOfType[*unison.CheckBox](list)) })
 		return count
 	}
 	expandable, open := expanded("martial")
@@ -519,7 +520,7 @@ func TestPickerOrganizingGroupHeaders(t *testing.T) {
 	dialogWnd, _ = modalDialog(t, screen, wnd)
 	var chevron *unison.Button
 	screen.Do(func() {
-		for _, p := range panelsMatching(dialogWnd.Content(), func(p *unison.Panel) bool {
+		for _, p := range uxtest.PanelsMatching(dialogWnd.Content(), func(p *unison.Panel) bool {
 			label, ok := p.Self.(*unison.Label)
 			return ok && label.String() == "martial"
 		}) {
@@ -550,7 +551,7 @@ func TestPickerOrganizingGroupHeaders(t *testing.T) {
 // An organizing group with nothing in it has no chevron, but its name keeps the place of one.
 func TestPickerEmptyGroupHasNoChevron(t *testing.T) {
 	c := check.New(t)
-	screen, _ := startHeadlessWorkspace(t, c)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
 	choice := gurps.NewTrait(nil, nil, true)
 	choice.TemplatePicker.Type = picker.Count
 	choice.TemplatePicker.Qualifier.Qualifier = fxp.One
@@ -570,8 +571,8 @@ func TestPickerEmptyGroupHasNoChevron(t *testing.T) {
 		wnd := dialog.Window()
 		defer wnd.Dispose()
 		wnd.ValidateLayout()
-		list := panelsOfType[*unison.CheckBox](wnd.Content())[0].Parent().Parent()
-		c.Equal(0, len(panelsOfType[*unison.Button](list)), "there is nothing to show or hide")
+		list := uxtest.PanelsOfType[*unison.CheckBox](wnd.Content())[0].Parent().Parent()
+		c.Equal(0, len(uxtest.PanelsOfType[*unison.Button](list)), "there is nothing to show or hide")
 		checkPickerRowPlaces(c, list, map[string]pickerPlace{"empty": {slot: true}, "luck": {slot: true}})
 	})
 }
@@ -579,7 +580,7 @@ func TestPickerEmptyGroupHasNoChevron(t *testing.T) {
 // Closing a group by mouse while the focus is inside it moves the focus to its chevron, so the keyboard still works.
 func TestPickerClosingGroupKeepsFocus(t *testing.T) {
 	c := check.New(t)
-	screen, wnd := startHeadlessWorkspace(t, c)
+	screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
 	t.Cleanup(func() { unison.SetAccessibilityEnabled(true) })
 	screen.Do(func() { unison.SetAccessibilityEnabled(false) })
 	s, n := newOrganizedSession()
@@ -592,8 +593,8 @@ func TestPickerClosingGroupKeepsFocus(t *testing.T) {
 	dialogWnd, _ := modalDialog(t, screen, wnd)
 	var chevron *unison.Button
 	screen.Do(func() {
-		c.Equal("fear", labelTexts(dialogWnd.CurrentFocus().Parent())[0], "the focus starts inside martial")
-		for _, p := range panelsMatching(dialogWnd.Content(), func(p *unison.Panel) bool {
+		c.Equal("fear", uxtest.LabelTexts(dialogWnd.CurrentFocus().Parent())[0], "the focus starts inside martial")
+		for _, p := range uxtest.PanelsMatching(dialogWnd.Content(), func(p *unison.Panel) bool {
 			label, ok := p.Self.(*unison.Label)
 			return ok && label.String() == "martial"
 		}) {
@@ -616,7 +617,7 @@ func TestPickerClosingGroupKeepsFocus(t *testing.T) {
 // the options.
 func TestPickerUnitContainerInformationRows(t *testing.T) {
 	c := check.New(t)
-	screen, _ := startHeadlessWorkspace(t, c)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
 	trait := func(name string, points int, children ...*gurps.Trait) *gurps.Trait {
 		one := gurps.NewTrait(nil, nil, len(children) != 0)
 		one.Name = name
@@ -648,7 +649,7 @@ func TestPickerUnitContainerInformationRows(t *testing.T) {
 		wnd := dialog.Window()
 		defer wnd.Dispose()
 		wnd.ValidateLayout()
-		boxes := panelsOfType[*unison.CheckBox](wnd.Content())
+		boxes := uxtest.PanelsOfType[*unison.CheckBox](wnd.Content())
 		c.Equal(2, len(boxes), "only the options have checkboxes")
 		row := boxes[0].Parent()
 		c.Equal(boxes[0].AsPanel(), row.Children()[0], "the row starts with its checkbox")
@@ -657,8 +658,8 @@ func TestPickerUnitContainerInformationRows(t *testing.T) {
 		if !ok {
 			return
 		}
-		c.NotEqual("", labelTexts(row)[2], "the unit keeps its cost")
-		c.False(slices.Contains(labelTexts(wnd.Content()), "Rope"), "what it holds starts hidden")
+		c.NotEqual("", uxtest.LabelTexts(row)[2], "the unit keeps its cost")
+		c.False(slices.Contains(uxtest.LabelTexts(wnd.Content()), "Rope"), "what it holds starts hidden")
 		width := wnd.ContentRect().Width
 		chevron.Click()
 		wnd.ValidateLayout()
@@ -668,17 +669,17 @@ func TestPickerUnitContainerInformationRows(t *testing.T) {
 			"Kit": {slot: true}, "Luck": {slot: true}, long: {under: "Kit"}, "Pack": {under: "Kit"}, "Rope": {under: "Pack"},
 			"Trinket (pick 1)": {under: "Kit"},
 		})
-		texts := labelTexts(wnd.Content())
+		texts := uxtest.LabelTexts(wnd.Content())
 		c.True(slices.Contains(texts, long) && slices.Contains(texts, "Pack") && slices.Contains(texts, "Rope"),
 			"opening it shows what it holds, however deep")
 		c.False(slices.Contains(texts, "Ring"), "but a choice within it shows only its rule, not its options")
-		c.Equal(2, len(panelsOfType[*unison.CheckBox](wnd.Content())), "with nothing to pick")
+		c.Equal(2, len(uxtest.PanelsOfType[*unison.CheckBox](wnd.Content())), "with nothing to pick")
 		_, pref, _ := wnd.Content().Sizes(geom.Size{})
 		c.Equal(width, wnd.ContentRect().Width, "the dialog, sized with them in place, keeps its width")
 		c.True(pref.Width <= wnd.ContentRect().Width, "as they already fit")
 		cells := slices.Clone(row.Parent().Children())
 		chevron.Click()
-		c.False(slices.Contains(labelTexts(wnd.Content()), "Rope"), "closing it hides them again")
+		c.False(slices.Contains(uxtest.LabelTexts(wnd.Content()), "Rope"), "closing it hides them again")
 		chevron.Click()
 		c.Equal(cells, row.Parent().Children(), "and opening it puts every cell back in its place")
 	})
@@ -688,7 +689,7 @@ func TestPickerUnitContainerInformationRows(t *testing.T) {
 // in a short list shows all that it holds without the dialog growing, and the dialog can't be made smaller than that.
 func TestPickerListHoldsTenRows(t *testing.T) {
 	c := check.New(t)
-	screen, _ := startHeadlessWorkspace(t, c)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
 	choice := gurps.NewTrait(nil, nil, true)
 	choice.Name = "Choice"
 	choice.TemplatePicker.Type = picker.Count
@@ -713,14 +714,14 @@ func TestPickerListHoldsTenRows(t *testing.T) {
 		wnd := dialog.Window()
 		defer wnd.Dispose()
 		wnd.ValidateLayout()
-		list := panelsOfType[*unison.CheckBox](wnd.Content())[0].Parent().Parent()
-		scroll := panelsOfType[*unison.ScrollPanel](wnd.Content())[0]
-		chevrons := panelsOfType[*unison.Button](list)
+		list := uxtest.PanelsOfType[*unison.CheckBox](wnd.Content())[0].Parent().Parent()
+		scroll := uxtest.PanelsOfType[*unison.ScrollPanel](wnd.Content())[0]
+		chevrons := uxtest.PanelsOfType[*unison.Button](list)
 		c.Equal(1, len(chevrons), "the unit has a chevron")
 		if len(chevrons) != 1 {
 			return
 		}
-		c.False(slices.Contains(labelTexts(list), "Item 7"), "what it holds starts hidden")
+		c.False(slices.Contains(uxtest.LabelTexts(list), "Item 7"), "what it holds starts hidden")
 		layout, ok := scroll.Layout().(*minSizeLayout)
 		c.True(ok, "the list's scroll panel holds its least size")
 		if !ok {
@@ -733,7 +734,7 @@ func TestPickerListHoldsTenRows(t *testing.T) {
 		size := wnd.ContentRect().Size
 		chevrons[0].Click()
 		wnd.ValidateLayout()
-		c.True(slices.Contains(labelTexts(list), "Item 7"), "opening it shows what it holds")
+		c.True(slices.Contains(uxtest.LabelTexts(list), "Item 7"), "opening it shows what it holds")
 		_, open, _ := list.Sizes(geom.Size{})
 		c.Equal(xmath.Ceil(open.Width*listMinWidthScale), minimum.Width, "the list is wider than with everything shown")
 		c.Equal(size, wnd.ContentRect().Size, "the dialog keeps its size")
@@ -752,7 +753,7 @@ func TestPickerListHoldsTenRows(t *testing.T) {
 // its icon for the outline it draws when it has the focus, so neither is cut off.
 func TestPickerChevronsAreNotClipped(t *testing.T) {
 	c := check.New(t)
-	screen, wnd := startHeadlessWorkspace(t, c)
+	screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
 	choice := gurps.NewTrait(nil, nil, true)
 	choice.Name = "Choice"
 	choice.TemplatePicker.Type = picker.Count
@@ -779,7 +780,7 @@ func TestPickerChevronsAreNotClipped(t *testing.T) {
 	dialogWnd, _ := modalDialog(t, screen, wnd)
 	var chevrons []*unison.Button
 	screen.Do(func() {
-		chevrons = panelsOfType[*unison.Button](panelsOfType[*unison.CheckBox](dialogWnd.Content())[0].Parent().Parent())
+		chevrons = uxtest.PanelsOfType[*unison.Button](uxtest.PanelsOfType[*unison.CheckBox](dialogWnd.Content())[0].Parent().Parent())
 	})
 	c.Equal(2, len(chevrons), "the group and the unit each have a chevron")
 	checkRoom := func(focused bool) {
@@ -829,7 +830,7 @@ func checkPickerRowsAligned(c check.Checker, list *unison.Panel, want int) {
 		}
 	}
 	list.ValidateLayout()
-	links := panelsMatching(list, func(p *unison.Panel) bool { return p.Accessibility.Role == role.Link })
+	links := uxtest.PanelsMatching(list, func(p *unison.Panel) bool { return p.Accessibility.Role == role.Link })
 	c.Equal(want, len(links), "each row shown has its page reference")
 	for _, link := range links[1:] {
 		c.Equal(links[0].RectTo(links[0].ContentRect(false), list).X, link.RectTo(link.ContentRect(false), list).X,
@@ -856,7 +857,7 @@ func checkPickerRowPlaces(c check.Checker, list *unison.Panel, places map[string
 	}
 	list.ValidateLayout()
 	x := func(p *unison.Panel) float32 { return p.RectTo(p.ContentRect(false), list).X }
-	boxes := panelsOfType[*unison.CheckBox](list)
+	boxes := uxtest.PanelsOfType[*unison.CheckBox](list)
 	c.NotEqual(0, len(boxes), "there are options")
 	if len(boxes) == 0 {
 		return
@@ -870,7 +871,7 @@ func checkPickerRowPlaces(c check.Checker, list *unison.Panel, places map[string
 	}
 	step := pickerDisclosureSize().Width + unison.StdHSpacing
 	label := func(name string) *unison.Panel {
-		labels := panelsMatching(list, func(p *unison.Panel) bool {
+		labels := uxtest.PanelsMatching(list, func(p *unison.Panel) bool {
 			one, isLabel := p.Self.(*unison.Label)
 			return isLabel && one.String() == name
 		})

@@ -16,6 +16,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/fonts"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/ux/uxtest"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/unison"
@@ -563,7 +564,7 @@ func TestPageRefLinkTakesNoMoreRoomThanItsText(t *testing.T) {
 	rows := table.RootRows()
 	c.Equal(1, len(rows), "the traits table must hold the one trait")
 	cell := rows[0].ColumnCell(0, col, unison.Black, unison.White, false, false, false).AsPanel()
-	links := panelsMatching(cell, func(p *unison.Panel) bool { return p.Accessibility.Role == role.Link })
+	links := uxtest.PanelsMatching(cell, func(p *unison.Panel) bool { return p.Accessibility.Role == role.Link })
 	if len(links) != 1 {
 		t.Fatalf("the page reference cell must hold one link, but holds %d", len(links))
 	}
@@ -623,7 +624,7 @@ func TestLabelCellKeepsTheNotesButtonWithinTheCell(t *testing.T) {
 		}
 		cell.SetFrameRect(geom.NewRect(0, 0, width, pref.Height))
 		cell.ValidateLayout()
-		buttons := panelsMatching(cell, isButton)
+		buttons := uxtest.PanelsMatching(cell, isButton)
 		if len(buttons) != 1 {
 			t.Fatalf("the cell must hold one notes button, but holds %d", len(buttons))
 		}

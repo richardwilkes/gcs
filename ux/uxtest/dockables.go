@@ -13,12 +13,8 @@ import (
 	"testing"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
-	"github.com/richardwilkes/gcs/v5/ux"
 	"github.com/richardwilkes/unison"
 )
-
-// NewCharacterSheetKey is the key binding ID of the action that opens a new character sheet.
-const NewCharacterSheetKey = "new.char.sheet"
 
 // Closable is a dockable that can be closed as a tab, which is what the actions that open one hand back.
 type Closable interface {
@@ -46,11 +42,11 @@ func OpenedByAction(t *testing.T, screen *unison.HeadlessScreen, action *unison.
 	var opened []unison.Dockable
 	screen.Do(func() {
 		before := make(map[unison.Dockable]bool)
-		for _, d := range ux.AllDockables() {
+		for _, d := range workspace.AllDockables() {
 			before[d] = true
 		}
 		action.Execute(nil)
-		for _, d := range ux.AllDockables() {
+		for _, d := range workspace.AllDockables() {
 			if !before[d] {
 				opened = append(opened, d)
 			}
@@ -66,32 +62,42 @@ func OpenedByAction(t *testing.T, screen *unison.HeadlessScreen, action *unison.
 	return d
 }
 
-// OpenNewCharacterSheet opens a new character sheet through its action and returns it.
-func OpenNewCharacterSheet(t *testing.T, screen *unison.HeadlessScreen) *ux.Sheet {
-	t.Helper()
-	sheet, ok := OpenedByAction(t, screen, ActionForKey(t, NewCharacterSheetKey)).(*ux.Sheet)
-	if !ok {
-		t.Fatal("New Character Sheet must open a character sheet")
-	}
-	return sheet
-}
-
 // SoleEditor returns the one open dockable that match accepts, as a T, failing the test if there is not exactly one or
 // it is not a T. Only the lookup runs on the UI thread, so a caller reading anything from the editor does so in a
 // screen.Do of its own afterwards.
 func SoleEditor[T unison.Dockable](t *testing.T, screen *unison.HeadlessScreen, match func(unison.Dockable) bool) T {
 	t.Helper()
+	return onlyEditor[T](t, screen, match, nil)
+}
+
+// OtherEditor returns the one open dockable that match accepts besides d, as a T, failing the test if there is not
+// exactly one or it is not a T; see SoleEditor.
+func OtherEditor[T unison.Dockable](t *testing.T, screen *unison.HeadlessScreen, d T, match func(unison.Dockable) bool) T {
+	t.Helper()
+	return onlyEditor[T](t, screen, match, d)
+}
+
+// onlyEditor is what SoleEditor and OtherEditor share: it returns the one open dockable that match accepts, other than
+// except when that is not nil, failing the test if there is not exactly one or it is not a T.
+func onlyEditor[T unison.Dockable](t *testing.T, screen *unison.HeadlessScreen, match func(unison.Dockable) bool, except unison.Dockable) T {
+	t.Helper()
 	var editors []T
 	screen.Do(func() {
-		for _, one := range ux.AllMatchingDockables(match) {
-			if editor, ok := one.AsPanel().Self.(T); ok {
+		for _, one := range workspace.AllDockables() {
+			if !match(one) {
+				continue
+			}
+			if editor, ok := one.AsPanel().Self.(T); ok && (except == nil || editor.AsPanel() != except.AsPanel()) {
 				editors = append(editors, editor)
 			}
 		}
 	})
 	if len(editors) != 1 {
 		var zero T
-		t.Fatalf("expected exactly one %T, found %d", zero, len(editors))
+		if except == nil {
+			t.Fatalf("expected exactly one %T, found %d", zero, len(editors))
+		}
+		t.Fatalf("expected exactly one other %T, found %d", zero, len(editors))
 	}
 	return editors[0]
 }
@@ -106,7 +112,7 @@ func CloseEditorWithoutPrompt(t *testing.T, screen *unison.HeadlessScreen, d Clo
 	var stillOpen bool
 	var windows int
 	screen.Do(func() {
-		stillOpen = slices.ContainsFunc(ux.AllDockables(), func(open unison.Dockable) bool { return open.AsPanel().Self == d })
+		stillOpen = slices.ContainsFunc(workspace.AllDockables(), func(open unison.Dockable) bool { return open.AsPanel().Self == d })
 		windows = len(unison.Windows())
 	})
 	if stillOpen {

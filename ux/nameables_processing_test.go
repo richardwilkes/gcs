@@ -14,6 +14,7 @@ import (
 	"testing"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/ux/uxtest"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/unison"
 )
@@ -41,7 +42,7 @@ func slicedNameablesPrompt(fn func(titles []string, nameables []map[string]strin
 func stubNameablesPrompt(t *testing.T, respond func(titles []string, nameables []map[string]string) bool) *int {
 	t.Helper()
 	shown := 0
-	swapForTest(t, &promptForNameables, slicedNameablesPrompt(func(titles []string, nameables []map[string]string, _ [][]string) bool {
+	uxtest.SwapForTest(t, &promptForNameables, slicedNameablesPrompt(func(titles []string, nameables []map[string]string, _ [][]string) bool {
 		shown++
 		return respond(titles, nameables)
 	}))
@@ -220,7 +221,7 @@ func TestAltDropAsksAboutAKeySharedByATargetsModifiersOnce(t *testing.T) {
 	var asked []map[string]string
 	var visible [][]string
 	answer := "Steel"
-	swapForTest(t, &promptForNameables, slicedNameablesPrompt(func(titles []string, nameables []map[string]string, visibleKeys [][]string) bool {
+	uxtest.SwapForTest(t, &promptForNameables, slicedNameablesPrompt(func(titles []string, nameables []map[string]string, visibleKeys [][]string) bool {
 		headings = titles
 		asked = make([]map[string]string, 0, len(nameables))
 		visible = visibleKeys
@@ -282,7 +283,7 @@ func TestProcessNameableGroupsSharesOneAnswerAcrossTheEntriesThatUseIt(t *testin
 	answerVisibleKeys := func(t *testing.T, answers map[string]string) *[][]string {
 		t.Helper()
 		var visible [][]string
-		swapForTest(t, &promptForNameables, slicedNameablesPrompt(func(_ []string, nameables []map[string]string, visibleKeys [][]string) bool {
+		uxtest.SwapForTest(t, &promptForNameables, slicedNameablesPrompt(func(_ []string, nameables []map[string]string, visibleKeys [][]string) bool {
 			visible = visibleKeys
 			for i, keys := range visibleKeys {
 				for _, k := range keys {
@@ -341,7 +342,7 @@ func TestAltDropOfAContainerAsksAboutTheKeyItsChildSharesOnce(t *testing.T) {
 	group.Children = []*gurps.TraitModifier{pommel, guard}
 	var visible [][]string
 	shown := 0
-	swapForTest(t, &promptForNameables, slicedNameablesPrompt(func(_ []string, nameables []map[string]string, visibleKeys [][]string) bool {
+	uxtest.SwapForTest(t, &promptForNameables, slicedNameablesPrompt(func(_ []string, nameables []map[string]string, visibleKeys [][]string) bool {
 		shown++
 		visible = visibleKeys
 		// Only the keys shown are answered, as with the real dialog.

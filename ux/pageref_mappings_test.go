@@ -14,6 +14,7 @@ import (
 	"testing"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/ux/uxtest"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/unison"
 )
@@ -70,7 +71,7 @@ func TestAsPageRefMappingsDockable(t *testing.T) {
 func TestPageRefMappingsSyncReflectsChangedPath(t *testing.T) {
 	c := check.New(t)
 	global := gurps.GlobalSettings()
-	swapForTest(t, &global.PageRefs, gurps.PageRefs{})
+	uxtest.SwapForTest(t, &global.PageRefs, gurps.PageRefs{})
 	global.PageRefs.Set(&gurps.PageRef{ID: "B", Path: filepath.Join("pdfs", "Basic Set.pdf"), Offset: 2})
 
 	d := &pageRefMappingsDockable{}
@@ -91,7 +92,7 @@ func TestPageRefMappingsSyncReflectsChangedPath(t *testing.T) {
 func TestPageRefMappingsInitialFocus(t *testing.T) {
 	c := check.New(t)
 	global := gurps.GlobalSettings()
-	swapForTest(t, &global.PageRefs, gurps.PageRefs{})
+	uxtest.SwapForTest(t, &global.PageRefs, gurps.PageRefs{})
 	global.PageRefs.Set(&gurps.PageRef{ID: "B", Path: filepath.Join("pdfs", "Basic Set.pdf"), Offset: 2})
 
 	d := &pageRefMappingsDockable{}
@@ -116,7 +117,7 @@ func TestPageRefMappingsInitialFocus(t *testing.T) {
 func TestPageRefMappingsInitialFocusWithNoMappings(t *testing.T) {
 	c := check.New(t)
 	global := gurps.GlobalSettings()
-	swapForTest(t, &global.PageRefs, gurps.PageRefs{})
+	uxtest.SwapForTest(t, &global.PageRefs, gurps.PageRefs{})
 
 	d := &pageRefMappingsDockable{}
 	d.Self = d

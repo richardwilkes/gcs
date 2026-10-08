@@ -13,7 +13,6 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/richardwilkes/gcs/v5/ux"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/accessibility"
 	"github.com/richardwilkes/unison/enums/role"
@@ -42,11 +41,11 @@ func (a *AXNameAudit) Open(fn func()) unison.Dockable {
 	var opened []unison.Dockable
 	a.screen.Do(func() {
 		before := make(map[unison.Dockable]bool)
-		for _, d := range ux.AllDockables() {
+		for _, d := range workspace.AllDockables() {
 			before[d] = true
 		}
 		fn()
-		for _, d := range ux.AllDockables() {
+		for _, d := range workspace.AllDockables() {
 			if !before[d] {
 				opened = append(opened, d)
 			}

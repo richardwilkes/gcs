@@ -15,6 +15,7 @@ import (
 	"testing"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/ux/uxtest"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/unison"
 )
@@ -46,8 +47,8 @@ type listFilterPopupHarness struct {
 // points the global settings at a file in the test's own directory so that saving them touches nothing the user owns.
 func newListFilterPopupHarness(t *testing.T, names ...string) *listFilterPopupHarness {
 	t.Helper()
-	swapForTest(t, &gurps.SettingsPath, filepath.Join(t.TempDir(), "settings.json"))
-	swapForTest(t, &gurps.GlobalSettings().ListFilters, make(map[string][]*gurps.ListFilter))
+	uxtest.SwapForTest(t, &gurps.SettingsPath, filepath.Join(t.TempDir(), "settings.json"))
+	uxtest.SwapForTest(t, &gurps.GlobalSettings().ListFilters, make(map[string][]*gurps.ListFilter))
 	for _, name := range names {
 		gurps.GlobalSettings().AddListFilter(listFilterPopupTestKey, gurps.NewListFilter(name))
 	}
@@ -183,7 +184,7 @@ func TestListFilterPopupChooseFilter(t *testing.T) {
 func TestListFilterPopupNewFilter(t *testing.T) {
 	c := check.New(t)
 	h := newListFilterPopupHarness(t, "alpha")
-	swapForTest(t, &showFilterEditor,
+	uxtest.SwapForTest(t, &showFilterEditor,
 		func(_, _ string, filter *gurps.ListFilter, _ []filterFieldInfo, except *gurps.ListFilter) bool {
 			c.Nil(except, "a new filter has no name of its own to keep")
 			filter.Name = "Zeta"
@@ -200,7 +201,7 @@ func TestListFilterPopupNewFilter(t *testing.T) {
 	c.Equal(popupFirstSavedIndex+1, h.popup.popup.SelectedIndex(),
 		"the new filter's item, not the command, must be the selection")
 
-	swapForTest(t, &showFilterEditor,
+	uxtest.SwapForTest(t, &showFilterEditor,
 		func(_, _ string, _ *gurps.ListFilter, _ []filterFieldInfo, _ *gurps.ListFilter) bool { return false })
 	h.choose(h.popup.newIndex)
 	c.Equal(2, len(savedFilters()), "a canceled editor must save nothing")
@@ -216,7 +217,7 @@ func TestListFilterPopupEditFilter(t *testing.T) {
 	h := newListFilterPopupHarness(t, "alpha")
 	original := savedFilters()[0]
 	h.choose(popupFirstSavedIndex) // "alpha"
-	swapForTest(t, &showFilterEditor,
+	uxtest.SwapForTest(t, &showFilterEditor,
 		func(_, _ string, filter *gurps.ListFilter, _ []filterFieldInfo, except *gurps.ListFilter) bool {
 			c.True(original == except, "the filter being edited may keep its own name")
 			c.True(original != filter, "a clone must be edited, so that a cancel changes nothing")
@@ -243,7 +244,7 @@ func TestListFilterPopupEditFilter(t *testing.T) {
 	// Renaming moves the filter among its siblings, so the list has to be sorted again.
 	h = newListFilterPopupHarness(t, "alpha", "gamma")
 	h.choose(popupFirstSavedIndex) // "alpha"
-	swapForTest(t, &showFilterEditor,
+	uxtest.SwapForTest(t, &showFilterEditor,
 		func(_, _ string, filter *gurps.ListFilter, _ []filterFieldInfo, _ *gurps.ListFilter) bool {
 			filter.Name = "omega"
 			return true
@@ -273,7 +274,7 @@ func TestListFilterPopupDeleteFilter(t *testing.T) {
 	h.choose(popupFirstSavedIndex) // "alpha"
 
 	confirm := false
-	swapForTest(t, &confirmFilterDeletion, func(name string) bool {
+	uxtest.SwapForTest(t, &confirmFilterDeletion, func(name string) bool {
 		c.Equal("alpha", name, "the filter in force is the one being deleted")
 		return confirm
 	})
@@ -300,12 +301,12 @@ func TestListFilterPopupDeleteFilter(t *testing.T) {
 func TestListFilterPopupCommandsNeedAFilterInForce(t *testing.T) {
 	c := check.New(t)
 	h := newListFilterPopupHarness(t, "alpha")
-	swapForTest(t, &showFilterEditor,
+	uxtest.SwapForTest(t, &showFilterEditor,
 		func(_, _ string, _ *gurps.ListFilter, _ []filterFieldInfo, _ *gurps.ListFilter) bool {
 			c.Fatal("the editor must not be put up with no filter in force")
 			return false
 		})
-	swapForTest(t, &confirmFilterDeletion, func(_ string) bool {
+	uxtest.SwapForTest(t, &confirmFilterDeletion, func(_ string) bool {
 		c.Fatal("a deletion must not be confirmed with no filter in force")
 		return false
 	})

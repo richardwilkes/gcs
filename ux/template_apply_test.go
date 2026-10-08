@@ -13,6 +13,7 @@ import (
 	"testing"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/ux/uxtest"
 	"github.com/richardwilkes/toolbox/v2/check"
 )
 
@@ -22,7 +23,7 @@ import (
 func newTestSheetForTemplate(t *testing.T) *Sheet {
 	t.Helper()
 	registerKeyBindingsOnce.Do(func() { registerActions() })
-	swapForTest(t, &Workspace.DocumentDock, NewDocumentDock())
+	uxtest.SwapForTest(t, &Workspace.DocumentDock, NewDocumentDock())
 	return NewSheet("test"+gurps.SheetExt, gurps.NewEntity())
 }
 
@@ -50,7 +51,7 @@ func TestApplyTemplateCanceledPickerLeavesSheetUntouched(t *testing.T) {
 	originalTraitCount := len(entity.Traits)
 	template := newTestTemplateWithBodyType("Template Body")
 
-	swapForTest(t, &promptForPickers, func(_ promptOperation, _ *applyParts, _ bool) bool { return false })
+	uxtest.SwapForTest(t, &promptForPickers, func(_ promptOperation, _ *applyParts, _ bool) bool { return false })
 	c.False(template.applyTemplateToSheet(sheet, promptOperation{}, true), "a canceled picker must report that the template was not applied")
 	c.Equal(originalBody, entity.SheetSettings.BodyType, "the body type must not have been replaced")
 	c.Equal(originalTraitCount, len(entity.Traits), "no traits must have been added")
@@ -63,9 +64,9 @@ func TestApplyTemplateCanceledPickerLeavesSheetUntouched(t *testing.T) {
 // canceling abandons the whole operation.
 func TestNewSheetFromTemplateCanceledPickerClosesTheSheet(t *testing.T) {
 	c := check.New(t)
-	screen, _ := startHeadlessWorkspace(t, c)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
 	template := newTestTemplateWithBodyType("Template Body")
-	swapForTest(t, &promptForPickers, func(_ promptOperation, _ *applyParts, _ bool) bool { return false })
+	uxtest.SwapForTest(t, &promptForPickers, func(_ promptOperation, _ *applyParts, _ bool) bool { return false })
 	var open int
 	screen.Do(func() {
 		template.newSheetFromTemplate(nil)

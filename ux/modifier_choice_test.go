@@ -17,6 +17,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/picker"
+	"github.com/richardwilkes/gcs/v5/ux/uxtest"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/tid"
@@ -61,7 +62,7 @@ func traitEditorOnSheet(t *testing.T, sheet *Sheet, modifiers ...*gurps.TraitMod
 	trait := gurps.NewTrait(sheet.Entity(), nil, false)
 	trait.Modifiers = modifiers
 	e, content := buildEditorContent(sheet, trait, initTraitEditor)
-	panel, ok := firstPanelOfType[*traitModifiersPanel](content)
+	panel, ok := uxtest.FirstPanelOfType[*traitModifiersPanel](content)
 	if !ok {
 		t.Fatal("expected a trait modifiers panel in the trait editor")
 	}
@@ -70,7 +71,7 @@ func traitEditorOnSheet(t *testing.T, sheet *Sheet, modifiers ...*gurps.TraitMod
 
 // labelTitles returns the titles of every label found anywhere beneath the given panel.
 func labelTitles(p *unison.Panel) []string {
-	labels := panelsOfType[*unison.Label](p)
+	labels := uxtest.PanelsOfType[*unison.Label](p)
 	titles := make([]string, 0, len(labels))
 	for _, label := range labels {
 		titles = append(titles, label.String())
@@ -103,7 +104,7 @@ func TestModifierContainerEditorsShowOnlyWhatAContainerUses(t *testing.T) {
 	titles = labelTitles(content)
 	checkNone(titles)
 	c.True(slices.Contains(titles, "Choice"), "a choice says what it asks for")
-	popups := panelsOfType[*unison.PopupMenu[string]](content)
+	popups := uxtest.PanelsOfType[*unison.PopupMenu[string]](content)
 	c.Equal(1, len(popups))
 	popups[0].SelectIndex(1)
 	c.False(e.editorData.IsMandatoryChoice(), "the second item makes the choice optional")
@@ -142,7 +143,7 @@ func TestModifierChoiceConversionInLibrary(t *testing.T) {
 	c.False(toGroup, "a group is already a group")
 
 	var asked int
-	swapForTest(t, &askToConvertChoiceContainers, func(_, _ string) bool {
+	uxtest.SwapForTest(t, &askToConvertChoiceContainers, func(_, _ string) bool {
 		asked++
 		return true
 	})
@@ -319,7 +320,7 @@ func TestDuplicatingAnOptionKeepsThePick(t *testing.T) {
 	trait.Modifiers = []*gurps.TraitModifier{newTraitModifierChoiceFor(entity, true, []string{"A", "B"}, "A")}
 	trait.Weapons = []*gurps.Weapon{gurps.NewWeapon(trait, true)}
 	e, content := buildEditorContent(sheet, trait, initTraitEditor)
-	panel, ok := firstPanelOfType[*traitModifiersPanel](content)
+	panel, ok := uxtest.FirstPanelOfType[*traitModifiersPanel](content)
 	c.True(ok)
 	table := panel.table
 	choice := e.editorData.Modifiers[0]
@@ -345,7 +346,7 @@ func TestDuplicatingAnOptionKeepsThePick(t *testing.T) {
 	adjustModifierEnabled(e, table, pick, false)
 	c.True(pick.Enabled(), "and can't be turned off")
 
-	weapons, ok := firstPanelOfType[*weaponsPanel](content)
+	weapons, ok := uxtest.FirstPanelOfType[*weaponsPanel](content)
 	c.True(ok)
 	weaponTable := weapons.table
 	weaponTable.SetSelectionMap(map[tid.TID]bool{e.editorData.Weapons[0].ID(): true})
@@ -365,7 +366,7 @@ func TestEquipmentEditorOnALootSheet(t *testing.T) {
 	equipment := gurps.NewEquipment(sheet.loot, nil, false)
 	equipment.Modifiers = []*gurps.EquipmentModifier{newEquipmentModifierChoiceFor(sheet.loot, []string{"A", "B"}, "A")}
 	e, content := buildEditorContent(sheet, equipment, initEquipmentEditor(true))
-	panel, ok := firstPanelOfType[*equipmentModifiersPanel](content)
+	panel, ok := uxtest.FirstPanelOfType[*equipmentModifiersPanel](content)
 	c.True(ok)
 	table := panel.table
 	options := e.editorData.Modifiers[0].Children
@@ -462,7 +463,7 @@ func TestModifierSelectionTreatsChoicesByKind(t *testing.T) {
 	s.onChange = func() { changes++ }
 	c.Equal(1, len(s.boxes), "only the modifier outside every choice gets a check box")
 	c.Equal(3, len(s.choices), "each choice, nested or not, gets its own group of radio buttons")
-	c.Equal(7, len(panelsOfType[*unison.RadioButton](s.list)), "only the optional choice adds one for None")
+	c.Equal(7, len(uxtest.PanelsOfType[*unison.RadioButton](s.list)), "only the optional choice adds one for None")
 	optionsOf := func(choice *choiceRadioGroup) map[gurps.GeneralModifier]*unison.RadioButton {
 		options := make(map[gurps.GeneralModifier]*unison.RadioButton)
 		for rb, gm := range choice.options {
@@ -508,7 +509,7 @@ func TestModifierSelectionTreatsChoicesByKind(t *testing.T) {
 
 	s = newModifierSelection([]*gurps.TraitModifier{newTraitModifierChoiceFor(nil, true, []string{"Low", "High"})}, false, false)
 	c.True(s.complete(), "off a sheet a mandatory choice may be left without its pick")
-	c.Equal(3, len(panelsOfType[*unison.RadioButton](s.list)), "the options and None")
+	c.Equal(3, len(uxtest.PanelsOfType[*unison.RadioButton](s.list)), "the options and None")
 	c.Nil(s.choices[0].updateStatus)
 }
 
@@ -559,7 +560,7 @@ func TestTraitEditorShowsTheRangeOfAnOpenChoice(t *testing.T) {
 	c.Equal(fxp.FromInteger(15), trait.AdjustedPoints(nil), "the list counts the choice")
 	e, content := buildEditorContent(nil, trait, initTraitEditor)
 	// The Point Cost field is the first of the editor's non-editable fields.
-	pointCost := panelsOfType[*NonEditableField](content)[0]
+	pointCost := uxtest.PanelsOfType[*NonEditableField](content)[0]
 	c.Equal("15", pointCost.String())
 	options := e.editorData.Modifiers[0].Children
 	options[1].CostAdj = "+10"
@@ -590,7 +591,7 @@ func TestTraitEditorLeavesOutInheritedModifiers(t *testing.T) {
 	}
 	trait.AddModifiers(choice)
 	e, content := buildEditorContent(nil, trait, initTraitEditor)
-	pointCost := panelsOfType[*NonEditableField](content)[0]
+	pointCost := uxtest.PanelsOfType[*NonEditableField](content)[0]
 	c.Equal("20~40", pointCost.String())
 	e.editorData.Preconfigured = true
 	e.editorData.Modifiers[0].Children[1].SetEnabled(true)
@@ -682,7 +683,7 @@ func TestApplyingAChoiceToLootAsksForItsPick(t *testing.T) {
 	sheet.loot.Equipment = []*gurps.Equipment{eqp}
 	sheet.Rebuild(true)
 	var asked []bool
-	swapForTest(t, &promptForEquipmentModifiers,
+	uxtest.SwapForTest(t, &promptForEquipmentModifiers,
 		func(info *modifierPromptInfo, _ []*gurps.EquipmentModifier) (changed, canceled bool) {
 			asked = append(asked, info.requirePicks)
 			return false, false
@@ -779,12 +780,12 @@ func TestChoiceMadeMandatoryInItsEditorOnASheet(t *testing.T) {
 func TestPromptRequiresPicksOnlyForSheets(t *testing.T) {
 	c := check.New(t)
 	var traitAsked, equipmentAsked []bool
-	swapForTest(t, &promptForTraitModifiers,
+	uxtest.SwapForTest(t, &promptForTraitModifiers,
 		func(info *modifierPromptInfo, _ []*gurps.TraitModifier) (changed, canceled bool) {
 			traitAsked = append(traitAsked, info.requirePicks)
 			return false, false
 		})
-	swapForTest(t, &promptForEquipmentModifiers,
+	uxtest.SwapForTest(t, &promptForEquipmentModifiers,
 		func(info *modifierPromptInfo, _ []*gurps.EquipmentModifier) (changed, canceled bool) {
 			equipmentAsked = append(equipmentAsked, info.requirePicks)
 			return false, false
@@ -844,7 +845,7 @@ func TestDropIntoAChoiceInAnEditorShowsTheSettledCost(t *testing.T) {
 	choice.SetOpen(false)
 	e, content, table := traitEditorOnSheet(t, sheet, moved, choice)
 	// The Point Cost field is the first of the editor's non-editable fields.
-	pointCost := panelsOfType[*NonEditableField](content)[0]
+	pointCost := uxtest.PanelsOfType[*NonEditableField](content)[0]
 	c.Equal("15", pointCost.String())
 
 	simulateMoveDrop(table, e.editorData.Modifiers[0].ID(), e.editorData.Modifiers[1].ID(), 0)

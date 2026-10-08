@@ -16,6 +16,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/namegen"
 	"github.com/richardwilkes/gcs/v5/model/library"
+	"github.com/richardwilkes/gcs/v5/ux/uxtest"
 	"github.com/richardwilkes/toolbox/v2/check"
 )
 
@@ -69,7 +70,7 @@ func simpleNameGenerator(names ...string) *gurps.NameGenerator {
 func rootNameGeneratorPanel(t *testing.T, d *nameGeneratorEditorDockable) *nameGeneratorPanel {
 	t.Helper()
 	var roots []*nameGeneratorPanel
-	for _, p := range panelsOfType[*nameGeneratorPanel](d.AsPanel()) {
+	for _, p := range uxtest.PanelsOfType[*nameGeneratorPanel](d.AsPanel()) {
 		if p.parent == nil {
 			roots = append(roots, p)
 		}
@@ -129,7 +130,7 @@ func TestNameGeneratorEditorLoad(t *testing.T) {
 	c.NotEqual("", g.KeyPrefix, "the generator gets a key prefix")
 	c.NotEqual("", g.Compound[0].KeyPrefix, "each child gets a key prefix")
 	c.NotEqual("", g.Compound[0].Entries[1].KeyPrefix, "each training name gets a key prefix")
-	c.Equal(3, len(panelsOfType[*nameGeneratorPanel](d.AsPanel())), "the panels are built: the root and two children")
+	c.Equal(3, len(uxtest.PanelsOfType[*nameGeneratorPanel](d.AsPanel())), "the panels are built: the root and two children")
 	c.Equal("Bob", stringFieldFor(t, d, g.Compound[0].Entries[1].KeyPrefix+"value").Text())
 	c.Equal(" ", stringFieldFor(t, d, g.KeyPrefix+"separator").Text())
 }
@@ -139,7 +140,7 @@ func TestNameGeneratorEditorLoad(t *testing.T) {
 // proof.
 func TestOpenNameGeneratorInEditorIgnoresUnknownName(t *testing.T) {
 	c := check.New(t)
-	useTestLibraries(t, c)
-	swapForTest(t, &Workspace.DocumentDock, nil)
+	uxtest.UseTestLibraries(t, c)
+	uxtest.SwapForTest(t, &Workspace.DocumentDock, nil)
 	c.NotPanics(func() { OpenNameGeneratorInEditor("No Such Generator") })
 }

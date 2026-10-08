@@ -17,6 +17,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/srcstate"
+	"github.com/richardwilkes/gcs/v5/ux/uxtest"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/unison"
 )
@@ -93,7 +94,7 @@ func (w *watchedListOwner) WeightUnit() fxp.WeightUnit { return fxp.Pound }
 func TestSyncWithSourceForSelectionLoadsEachFileOnce(t *testing.T) {
 	c := check.New(t)
 	registerKeyBindingsOnce.Do(func() { registerActions() })
-	_, user := useTestLibraries(t, c)
+	_, user := uxtest.UseTestLibraries(t, c)
 	RegisterKnownFileTypes()
 	libFile := gurps.LibraryFile{Library: user.Key(), Path: "Test" + gurps.NotesExt}
 	p := filepath.Join(user.Path(false), libFile.Path)

@@ -12,39 +12,17 @@ package ux
 import (
 	"testing"
 
-	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/ux/uxtest"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/unison"
 )
-
-// focusForReadingSetter returns a function that sets the FocusForReading general setting, passes it to unison and
-// describes the window, which also activates accessibility. Both are restored when the test ends.
-func focusForReadingSetter(t *testing.T, screen *unison.HeadlessScreen, wnd *unison.Window) func(enabled bool) {
-	t.Helper()
-	gs := gurps.GlobalSettings().General
-	swapForTest(t, &gs.FocusForReading, false)
-	// Restored on the UI thread: from elsewhere, with accessibility active, unison queues a task to describe the
-	// windows again, and a task still queued at Stop runs in the next test.
-	saved := unison.FocusForReading()
-	t.Cleanup(func() { screen.Do(func() { unison.SetFocusForReading(saved) }) })
-	return func(enabled bool) {
-		t.Helper()
-		screen.Do(func() {
-			gs.FocusForReading = enabled
-			gs.UpdateFocusForReading()
-		})
-		if screen.AccessibilityTree(wnd) == nil {
-			t.Fatal("the window must be described")
-		}
-	}
-}
 
 // firstContentFocusTarget prefers a control that can be used, in the content and then the toolbar, over a disabled one,
 // and picks a disabled control only when nothing else can take the focus, so a screen reader has somewhere to start.
 func TestFirstFocusLeavesDisabledControlsUntilLast(t *testing.T) {
 	c := check.New(t)
-	screen, wnd := startHeadlessWorkspace(t, c)
-	setFocusForReading := focusForReadingSetter(t, screen, wnd)
+	screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
+	setFocusForReading := uxtest.FocusForReadingSetter(t, screen, wnd)
 	var holder, toolbar, content *unison.Panel
 	var disabledField, disabledButton, button *unison.Panel
 	var toolbarDisabledButton, toolbarButton *unison.Panel

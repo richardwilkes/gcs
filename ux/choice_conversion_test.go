@@ -15,6 +15,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/container"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/selfctrl"
+	"github.com/richardwilkes/gcs/v5/ux/uxtest"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/toolbox/v2/tid"
 	"github.com/richardwilkes/unison"
@@ -78,7 +79,7 @@ func TestChoiceConversionWarnsAndIsUndoable(t *testing.T) {
 
 	var asked int
 	answer := false
-	swapForTest(t, &askToConvertChoiceContainers, func(_, _ string) bool {
+	uxtest.SwapForTest(t, &askToConvertChoiceContainers, func(_, _ string) bool {
 		asked++
 		return answer
 	})
@@ -121,7 +122,7 @@ func TestChoiceConversionOfCleanGroupDoesNotAsk(t *testing.T) {
 	template := newTestTemplateWithTraits(group)
 	table := template.Traits.Table
 	table.SetSelectionMap(map[tid.TID]bool{group.ID(): true})
-	swapForTest(t, &askToConvertChoiceContainers, func(_, _ string) bool {
+	uxtest.SwapForTest(t, &askToConvertChoiceContainers, func(_, _ string) bool {
 		t.Error("nothing is lost, so nothing may be asked")
 		return false
 	})

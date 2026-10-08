@@ -16,6 +16,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/eqcontainer"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/picker"
+	"github.com/richardwilkes/gcs/v5/ux/uxtest"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/toolbox/v2/tid"
 	"github.com/richardwilkes/unison"
@@ -113,7 +114,7 @@ func TestEquipmentGroupConversionWarnsAndIsUndoable(t *testing.T) {
 
 	var asked int
 	answer := false
-	swapForTest(t, &askToConvertChoiceContainers, func(_, _ string) bool {
+	uxtest.SwapForTest(t, &askToConvertChoiceContainers, func(_, _ string) bool {
 		asked++
 		return answer
 	})
@@ -177,7 +178,7 @@ func TestEquipmentChoiceConversionWarnsOnlyWhenUnequipped(t *testing.T) {
 	table := template.Equipment.Table
 	table.SetSelectionMap(map[tid.TID]bool{group.ID(): true})
 	var asked int
-	swapForTest(t, &askToConvertChoiceContainers, func(_, _ string) bool {
+	uxtest.SwapForTest(t, &askToConvertChoiceContainers, func(_, _ string) bool {
 		asked++
 		return true
 	})

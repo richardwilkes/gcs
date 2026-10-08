@@ -9,28 +9,24 @@
 package calculators
 
 import (
-	"os"
 	"testing"
 
-	"github.com/richardwilkes/gcs/v5/model/fxp"
-	"github.com/richardwilkes/gcs/v5/model/gurps"
-	"github.com/richardwilkes/unison/enums/mod"
+	"github.com/richardwilkes/gcs/v5/ux"
+	"github.com/richardwilkes/gcs/v5/ux/uxtest"
+	"github.com/richardwilkes/unison"
 )
 
-// ciScriptExecTimeLimit is the per-script execution time limit, in seconds, the tests run with under CI. It matches
-// the one in model/gurps/main_test.go, which explains the choice.
-var ciScriptExecTimeLimit = fxp.FromInteger(30)
-
-// TestMain sets the tests up exactly as ux/main_test.go does, and for the same reasons: it raises the per-script
-// execution time limit, since the sheets these tests open resolve scripts as they are recalculated, and it pins the
-// platform-neutral modifier convention a headless session uses on every host, so that the menu key bindings the
-// headless tests press are the same wherever they run.
+// TestMain hands uxtest the workspace these tests drive; see uxtest.Main for the rest of what it does.
 func TestMain(m *testing.M) {
-	limit := gurps.PermittedScriptExecTimeMax
-	if os.Getenv("CI") != "" {
-		limit = ciScriptExecTimeLimit
-	}
-	gurps.SetScriptExecTimeLimitForTesting(limit)
-	mod.SetPlatformNeutral(true)
-	os.Exit(m.Run())
+	uxtest.Main(m, uxtest.Workspace{
+		Setup: func(t *testing.T, wnd *unison.Window) {
+			uxtest.SwapForTest(t, &ux.Workspace, ux.Workspace) // The session replaces most of it; put all of it back.
+			ux.RegisterKnownFileTypes()
+			ux.RegisterWindowDragTypes(wnd)
+			ux.SetupMenuBar(wnd)
+			ux.InitWorkspace(wnd)
+			ux.Workspace.ErrorHandler = func(msg string, err error) { t.Errorf("unexpected error: %s: %v", msg, err) }
+		},
+		AllDockables: ux.AllDockables,
+	})
 }

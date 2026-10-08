@@ -13,6 +13,7 @@ import (
 	"testing"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/ux/uxtest"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/unison"
@@ -22,7 +23,7 @@ import (
 // listPanelFor returns the panel editing the given weighted string list, failing the test if there is none.
 func listPanelFor(t *testing.T, d structuralEditor, list *[]*gurps.WeightedStringOption) *weightedStringOptionsPanel {
 	t.Helper()
-	for _, p := range panelsOfType[*weightedStringOptionsPanel](d.AsPanel()) {
+	for _, p := range uxtest.PanelsOfType[*weightedStringOptionsPanel](d.AsPanel()) {
 		if p.spec.list == list {
 			return p
 		}
@@ -225,7 +226,7 @@ func TestWeightedStringOptionRowClicksSelect(t *testing.T) {
 	c.Equal(0, len(list.selectedOptions()))
 	c.True(rows[0].MouseDownCallback(geom.Point{}, unison.ButtonLeft, 1, mod.None), "a left click is consumed")
 	c.Equal([]string{"Pale"}, optionValues(list.selectedOptions()))
-	handle := panelsOfType[*DragHandle](rows[1])[0]
+	handle := uxtest.PanelsOfType[*DragHandle](rows[1])[0]
 	c.True(handle.MouseDownCallback(geom.Point{}, unison.ButtonLeft, 1, mod.Shift),
 		"the handle still takes the press, so a drag can follow")
 	c.Equal([]string{"Pale", "Dark"}, optionValues(list.selectedOptions()), "pressing the handle selects too")

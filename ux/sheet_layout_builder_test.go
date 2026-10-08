@@ -17,6 +17,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/layoutnode"
 	"github.com/richardwilkes/gcs/v5/model/paper"
+	"github.com/richardwilkes/gcs/v5/ux/uxtest"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/xmath"
@@ -395,7 +396,7 @@ func TestTemplateBuildsFromTheDefaultLayout(t *testing.T) {
 	for i, list := range lists {
 		c.NotNil(list.AsPanel().Parent(), "list %d must be placed", i)
 	}
-	placed := panelsMatching(template.content.AsPanel(), func(p *unison.Panel) bool {
+	placed := uxtest.PanelsMatching(template.content.AsPanel(), func(p *unison.Panel) bool {
 		return slices.ContainsFunc(lists, func(list unison.Paneler) bool { return list.AsPanel() == p })
 	})
 	c.Equal(len(lists), len(placed), "the template shows exactly its five lists")

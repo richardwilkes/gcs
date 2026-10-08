@@ -13,6 +13,7 @@ import (
 	"testing"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/ux/uxtest"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/unison"
@@ -52,7 +53,7 @@ func TestFinishToolbarLayout(t *testing.T) {
 func TestAddUIScaleField(t *testing.T) {
 	c := check.New(t)
 	// Twice the 72 PPI baseline, so the adjusted scale is easy to predict.
-	swapForTest(t, &gurps.GlobalSettings().General.MonitorResolution, 144)
+	uxtest.SwapForTest(t, &gurps.GlobalSettings().General.MonitorResolution, 144)
 
 	for _, one := range []struct {
 		name          string

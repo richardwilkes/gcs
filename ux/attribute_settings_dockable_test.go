@@ -15,6 +15,7 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/attribute"
+	"github.com/richardwilkes/gcs/v5/ux/uxtest"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/i18n"
@@ -269,7 +270,7 @@ func TestPoolThresholdDragDropReorders(t *testing.T) {
 	}
 	d := newTestAttributeSettingsDockableFor(defs)
 	initTestSettingsContent(&d.undoableSettingsDockable)
-	pools := panelsOfType[*poolSettingsPanel](d.AsPanel())
+	pools := uxtest.PanelsOfType[*poolSettingsPanel](d.AsPanel())
 	c.Equal(1, len(pools), "only the pool attribute has a threshold list")
 	rows := pools[0].Children()
 	c.Equal(3, len(rows))
@@ -281,9 +282,9 @@ func TestPoolThresholdDragDropReorders(t *testing.T) {
 	c.Equal([]string{"Dead", "Reeling", "Collapse"}, thresholdStates(d.model.Set["hp"]))
 	c.Equal([]string{"st", "hp"}, attrDefIDs(d.model), "the definitions keep their order")
 	c.False(d.inDragOver, "the drag state is cleared")
-	pools = panelsOfType[*poolSettingsPanel](d.AsPanel())
+	pools = uxtest.PanelsOfType[*poolSettingsPanel](d.AsPanel())
 	c.Equal(1, len(pools), "the panels are rebuilt")
-	c.Equal("Dead", panelsOfType[*thresholdSettingsPanel](pools[0].AsPanel())[0].threshold.State)
+	c.Equal("Dead", uxtest.PanelsOfType[*thresholdSettingsPanel](pools[0].AsPanel())[0].threshold.State)
 
 	d.undoMgr.Undo()
 	c.Equal([]string{"Reeling", "Collapse", "Dead"}, thresholdStates(d.model.Set["hp"]), "undo restores the order")
@@ -301,14 +302,14 @@ func TestPoolThresholdAddAndDeleteAreUndoable(t *testing.T) {
 	pool.Thresholds = []*gurps.PoolThreshold{{State: "Reeling", KeyPrefix: "r"}}
 	d := newTestAttributeSettingsDockableFor(defs)
 	initTestSettingsContent(&d.undoableSettingsDockable)
-	rows := panelsOfType[*thresholdSettingsPanel](d.AsPanel())
+	rows := uxtest.PanelsOfType[*thresholdSettingsPanel](d.AsPanel())
 	c.Equal(1, len(rows))
 	c.False(rows[0].deleteButton.Enabled(), "the last threshold may not be deleted")
 
 	rows[0].pool.addThreshold()
 	c.Equal(2, len(d.model.Set["hp"].Thresholds), "the threshold is added to the pool")
 	c.Equal("Undo Add Pool Threshold", d.undoMgr.UndoTitle())
-	rows = panelsOfType[*thresholdSettingsPanel](d.AsPanel())
+	rows = uxtest.PanelsOfType[*thresholdSettingsPanel](d.AsPanel())
 	c.Equal(2, len(rows), "the rows are rebuilt")
 	c.True(rows[0].deleteButton.Enabled(), "with two thresholds, either may be deleted")
 	c.True(rows[1].deleteButton.Enabled(), "with two thresholds, either may be deleted")
@@ -318,20 +319,20 @@ func TestPoolThresholdAddAndDeleteAreUndoable(t *testing.T) {
 	d.undoMgr.Undo()
 	c.Equal([]string{"Reeling"}, thresholdStates(d.model.Set["hp"]), "undo removes the added threshold")
 	c.False(d.undoMgr.CanUndo(), "the add is a single edit")
-	rows = panelsOfType[*thresholdSettingsPanel](d.AsPanel())
+	rows = uxtest.PanelsOfType[*thresholdSettingsPanel](d.AsPanel())
 	c.Equal(1, len(rows))
 	c.False(rows[0].deleteButton.Enabled(), "undoing back to one threshold restores the guard")
 
 	d.undoMgr.Redo()
 	c.Equal(2, len(d.model.Set["hp"].Thresholds), "redo adds it back")
-	rows = panelsOfType[*thresholdSettingsPanel](d.AsPanel())
+	rows = uxtest.PanelsOfType[*thresholdSettingsPanel](d.AsPanel())
 	c.Equal(2, len(rows))
 
 	rows[0].pool.deleteThreshold(rows[0])
 	c.Equal(1, len(d.model.Set["hp"].Thresholds), "the threshold is deleted")
 	c.Equal("", d.model.Set["hp"].Thresholds[0].State, "the first threshold is the one deleted")
 	c.Equal("Undo Delete Pool Threshold", d.undoMgr.UndoTitle())
-	rows = panelsOfType[*thresholdSettingsPanel](d.AsPanel())
+	rows = uxtest.PanelsOfType[*thresholdSettingsPanel](d.AsPanel())
 	c.Equal(1, len(rows))
 	c.False(rows[0].deleteButton.Enabled(), "deleting down to one threshold restores the guard")
 

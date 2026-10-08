@@ -15,6 +15,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/criteria"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/ux/uxtest"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/unison"
 )
@@ -36,7 +37,7 @@ func TestTechniqueEditorKeepsAttributeDefaultNormalized(t *testing.T) {
 	c.False(e.isModified(), "so the editor opens unmodified")
 
 	var popup *unison.PopupMenu[*gurps.AttributeChoice]
-	for _, one := range panelsOfType[*unison.PopupMenu[*gurps.AttributeChoice]](content) {
+	for _, one := range uxtest.PanelsOfType[*unison.PopupMenu[*gurps.AttributeChoice]](content) {
 		if item, ok := one.Selected(); ok && item != nil && item.Key == gurps.DexterityID {
 			popup = one
 			break
@@ -56,7 +57,7 @@ func TestTechniqueEditorKeepsAttributeDefaultNormalized(t *testing.T) {
 		t.Fatalf("the default type popup has no %s entry", key)
 	}
 	nameField := func() *StringField {
-		for _, field := range panelsOfType[*StringField](content) {
+		for _, field := range uxtest.PanelsOfType[*StringField](content) {
 			if field.Watermark == "Skill" {
 				return field
 			}
@@ -111,7 +112,7 @@ func TestTechniqueEditorOpensUnmodifiedWithoutADefault(t *testing.T) {
 	c.Nil(technique.TechniqueDefault, "and the technique alone")
 
 	var field *StringField
-	for _, one := range panelsOfType[*StringField](content) {
+	for _, one := range uxtest.PanelsOfType[*StringField](content) {
 		if one.Watermark == "Skill" {
 			field = one
 			break

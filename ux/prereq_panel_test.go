@@ -22,6 +22,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/prereq"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/spellcmp"
 	"github.com/richardwilkes/gcs/v5/svg"
+	"github.com/richardwilkes/gcs/v5/ux/uxtest"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/unison"
@@ -88,7 +89,7 @@ func prereqShape(root *gurps.PrereqList) []prereq.Type {
 // changes the data, since opening an editor must not mark it modified.
 func TestPrereqPanelBuildingChangesNothing(t *testing.T) {
 	c := check.New(t)
-	screen, _ := startHeadlessWorkspace(t, c)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
 	root := newTestPrereqTree()
 	sp := gurps.NewSpellPrereq()
 	sp.SamePowerSource = true // Only a spell's own prerequisites should have this, but a file can hold anything.
@@ -121,7 +122,7 @@ func TestPrereqPanelBuildingChangesNothing(t *testing.T) {
 // their snapshots, and that a field's own undo is never recorded.
 func TestPrereqPanelUndo(t *testing.T) {
 	c := check.New(t)
-	screen, _ := startHeadlessWorkspace(t, c)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
 	root := newTestPrereqTree()
 	p, host := showPrereqPanel(t, screen, &root, false)
 	screen.Do(func() { p.toggle("r.0") })
@@ -165,7 +166,7 @@ func TestPrereqPanelUndo(t *testing.T) {
 // not to the chip around it, and that typing after a row closes and opens again is a step of its own.
 func TestPrereqPanelUndoFocusesChipField(t *testing.T) {
 	c := check.New(t)
-	screen, _ := startHeadlessWorkspace(t, c)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
 	root := newTestPrereqTree()
 	trait, ok := root.Prereqs[0].(*gurps.TraitPrereq)
 	c.True(ok)
@@ -198,7 +199,7 @@ func TestPrereqPanelUndoFocusesChipField(t *testing.T) {
 // and that redo gives it to where the change put it.
 func TestPrereqPanelUndoFocus(t *testing.T) {
 	c := check.New(t)
-	screen, _ := startHeadlessWorkspace(t, c)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
 	for _, one := range []struct {
 		name, undo, redo string
 		act              func(p *prereqPanel)
@@ -230,7 +231,7 @@ func TestPrereqPanelUndoFocus(t *testing.T) {
 // takes it, even within a group that is copied, and that none is open once it is deleted.
 func TestPrereqPanelOpenRowFollowsRestructures(t *testing.T) {
 	c := check.New(t)
-	screen, _ := startHeadlessWorkspace(t, c)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
 	for _, one := range []struct {
 		open, path, label, want string
 	}{
@@ -262,7 +263,7 @@ func TestPrereqPanelOpenRowFollowsRestructures(t *testing.T) {
 // hand can hold where it isn't offered, is shown rather than left blank, and that showing it changes nothing.
 func TestPrereqPanelShowsAnyNumberItCantOffer(t *testing.T) {
 	c := check.New(t)
-	screen, _ := startHeadlessWorkspace(t, c)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
 	root := gurps.NewPrereqList()
 	sp := gurps.NewSpellPrereq()
 	sp.QuantityCriteria.Compare = criteria.AnyNumber
@@ -282,7 +283,7 @@ func TestPrereqPanelShowsAnyNumberItCantOffer(t *testing.T) {
 // hold, shows its comparison without a weight field.
 func TestPrereqPanelWeightAnything(t *testing.T) {
 	c := check.New(t)
-	screen, _ := startHeadlessWorkspace(t, c)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
 	root := gurps.NewPrereqList()
 	wp := gurps.NewContainedWeightPrereq(nil)
 	wp.WeightCriteria.Compare = criteria.AnyNumber
@@ -304,7 +305,7 @@ func TestPrereqPanelWeightAnything(t *testing.T) {
 // lands in them, rather than only at the next draw.
 func TestPrereqPanelLayoutFollowsRebuild(t *testing.T) {
 	c := check.New(t)
-	screen, _ := startHeadlessWorkspace(t, c)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
 	root := newTestPrereqTree()
 	p, host := showPrereqPanel(t, screen, &root, false)
 	var before, atFocus, pref float32
@@ -325,7 +326,7 @@ func TestPrereqPanelLayoutFollowsRebuild(t *testing.T) {
 // that Ungroup is offered only where it keeps the meaning.
 func TestPrereqPanelMoves(t *testing.T) {
 	c := check.New(t)
-	screen, _ := startHeadlessWorkspace(t, c)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
 	root := newTestPrereqTree()
 	p, _ := showPrereqPanel(t, screen, &root, false)
 	move := func(path, label string) {
@@ -368,7 +369,7 @@ func TestPrereqPanelMoves(t *testing.T) {
 // panel still does.
 func TestPrereqPanelEscapeClosesTheOpenRow(t *testing.T) {
 	c := check.New(t)
-	screen, _ := startHeadlessWorkspace(t, c)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
 	root := newTestPrereqTree()
 	p, host := showPrereqPanel(t, screen, &root, false)
 	screen.Do(func() { p.toggle("r.1.0") })
@@ -400,7 +401,7 @@ func TestPrereqPanelEscapeClosesTheOpenRow(t *testing.T) {
 // Return's repeats, even once they reach another Done button, don't close that row as well.
 func TestPrereqPanelDoneKeyActsOnce(t *testing.T) {
 	c := check.New(t)
-	screen, _ := startHeadlessWorkspace(t, c)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
 	root := newTestPrereqTree()
 	p, _ := showPrereqPanel(t, screen, &root, false)
 	done := func(path string) {
@@ -423,7 +424,7 @@ func TestPrereqPanelDoneKeyActsOnce(t *testing.T) {
 // collapsing hands the focus from the rows to the title bar, and that it is no edit and keeps the open row open.
 func TestPrereqPanelCollapse(t *testing.T) {
 	c := check.New(t)
-	screen, _ := startHeadlessWorkspace(t, c)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
 	root := newTestPrereqTree()
 	c.Equal(3, len(root.Prereqs), "precondition: three prerequisites at the top")
 	p, host := showPrereqPanel(t, screen, &root, false)
@@ -509,7 +510,7 @@ func TestPrereqPanelCollapse(t *testing.T) {
 // without building the rows or their statuses.
 func TestPrereqPanelCollapsedFollowsTree(t *testing.T) {
 	c := check.New(t)
-	screen, _ := startHeadlessWorkspace(t, c)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
 	trait := gurps.NewTraitPrereq()
 	trait.NameCriteria.Qualifier = "Magery"
 	broken := gurps.NewScriptPrereq()
@@ -553,7 +554,7 @@ func TestPrereqPanelCollapsedFollowsTree(t *testing.T) {
 // deleting the last leaves it open.
 func TestPrereqPanelStartingState(t *testing.T) {
 	c := check.New(t)
-	screen, _ := startHeadlessWorkspace(t, c)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
 	root := newTestPrereqTree()
 	var missing *gurps.PrereqList
 	c.Equal(3, len(root.Prereqs), "precondition: three prerequisites at the top")
@@ -596,7 +597,7 @@ func TestPrereqPanelStartingState(t *testing.T) {
 // tech level condition.
 func TestPrereqPanelCollapseEmpty(t *testing.T) {
 	c := check.New(t)
-	screen, _ := startHeadlessWorkspace(t, c)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
 	var missing *gurps.PrereqList
 	p, _ := showPrereqPanel(t, screen, &missing, false)
 	screen.Do(p.collapse.toggle)
@@ -628,7 +629,7 @@ func TestPrereqPanelCollapseEmpty(t *testing.T) {
 // where they would under a title that can't be clicked.
 func TestPrereqPanelTitleBar(t *testing.T) {
 	c := check.New(t)
-	screen, _ := startHeadlessWorkspace(t, c)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
 	root := newTestPrereqTree()
 	p, _ := showPrereqPanel(t, screen, &root, false)
 	screen.Do(func() {
@@ -647,7 +648,7 @@ func TestPrereqPanelTitleBar(t *testing.T) {
 // accessible names, and that the sentences follow the tree when it changes.
 func TestPrereqPanelStatus(t *testing.T) {
 	c := check.New(t)
-	screen, _ := startHeadlessWorkspace(t, c)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
 	trait := gurps.NewTraitPrereq()
 	trait.NameCriteria.Qualifier = "Magery"
 	met := gurps.NewScriptPrereq()
@@ -755,7 +756,7 @@ func TestPrereqPanelStatus(t *testing.T) {
 // description evaluates it again.
 func TestPrereqPanelScriptResult(t *testing.T) {
 	c := check.New(t)
-	screen, _ := startHeadlessWorkspace(t, c)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
 	root := gurps.NewPrereqList()
 	root.Prereqs = gurps.Prereqs{gurps.NewScriptPrereq()}
 	root = root.CloneAsPrereqList(nil)
@@ -800,7 +801,7 @@ func TestPrereqPanelScriptResult(t *testing.T) {
 // nothing goes into itself, and that a drop is undone as one step.
 func TestPrereqPanelDragAndDrop(t *testing.T) {
 	c := check.New(t)
-	screen, _ := startHeadlessWorkspace(t, c)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
 	root := newTestPrereqTree()
 	p, host := showPrereqPanel(t, screen, &root, false)
 	drag := func(from, onto string, fraction float32) (accepted bool) {
@@ -835,7 +836,7 @@ func TestPrereqPanelDragAndDrop(t *testing.T) {
 // the group, at the end of the parent.
 func TestPrereqPanelDropAfterGroup(t *testing.T) {
 	c := check.New(t)
-	screen, _ := startHeadlessWorkspace(t, c)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
 	root := newTestPrereqTree()
 	root.Prereqs = root.Prereqs[:2]
 	p, _ := showPrereqPanel(t, screen, &root, false)
@@ -857,7 +858,7 @@ func TestPrereqPanelDropAfterGroup(t *testing.T) {
 // slow one, still opens its row.
 func TestPrereqPanelDragFromRow(t *testing.T) {
 	c := check.New(t)
-	screen, _ := startHeadlessWorkspace(t, c)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
 	root := newTestPrereqTree()
 	p, _ := showPrereqPanel(t, screen, &root, false)
 	var sentence, head *unison.Panel
@@ -888,12 +889,12 @@ func TestPrereqPanelDragFromRow(t *testing.T) {
 // that a skill or trait the editor adds starts with none.
 func TestPrereqPanelLevelChip(t *testing.T) {
 	c := check.New(t)
-	screen, _ := startHeadlessWorkspace(t, c)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
 	root := newTestPrereqTree()
 	p, _ := showPrereqPanel(t, screen, &root, false)
 	screen.Do(func() { p.toggle("r.1.0") })
 	screen.Do(func() {
-		buttons := panelsOfType[*unison.Button](p.FindRefKey("r.1.0:level" + keyChip))
+		buttons := uxtest.PanelsOfType[*unison.Button](p.FindRefKey("r.1.0:level" + keyChip))
 		c.NotEqual(0, len(buttons), "a skill's level of at least 0 is a chip")
 		buttons[len(buttons)-1].ClickCallback()
 		for _, label := range []string{"Skill", "Trait"} {
@@ -915,7 +916,7 @@ func TestPrereqPanelLevelChip(t *testing.T) {
 // criterion takes its place among those chips.
 func TestPrereqPanelChipOrder(t *testing.T) {
 	c := check.New(t)
-	screen, _ := startHeadlessWorkspace(t, c)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
 	root := newTestPrereqTree()
 	p, _ := showPrereqPanel(t, screen, &root, false)
 	order := func() []string {
@@ -929,7 +930,7 @@ func TestPrereqPanelChipOrder(t *testing.T) {
 	screen.Do(func() { p.toggle("r.1.0") })
 	screen.Do(func() {
 		c.Equal([]string{"level" + keyChip, "add specialization", "add optspecialization"}, order())
-		panelsOfType[*unison.Button](p.FindRefKey("r.1.0:add specialization"))[0].ClickCallback()
+		uxtest.PanelsOfType[*unison.Button](p.FindRefKey("r.1.0:add specialization"))[0].ClickCallback()
 	})
 	screen.Do(func() {
 		c.Equal([]string{"specialization" + keyChip, "level" + keyChip, "add optspecialization"}, order())
@@ -940,7 +941,7 @@ func TestPrereqPanelChipOrder(t *testing.T) {
 // pill, status or more button, and isn't a group to a screen reader.
 func TestPrereqPanelEmptyRoot(t *testing.T) {
 	c := check.New(t)
-	screen, _ := startHeadlessWorkspace(t, c)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
 	var missing *gurps.PrereqList
 	p, _ := showPrereqPanel(t, screen, &missing, false)
 	screen.Do(func() {
@@ -963,7 +964,7 @@ func TestPrereqPanelEmptyRoot(t *testing.T) {
 // type adds a group rather than changing the root's.
 func TestPrereqPanelEmptyRootGroupType(t *testing.T) {
 	c := check.New(t)
-	screen, _ := startHeadlessWorkspace(t, c)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
 	var root *gurps.PrereqList
 	p, host := showPrereqPanel(t, screen, &root, false)
 	headed := func() (pill bool, placeholder string) {
@@ -1047,7 +1048,7 @@ func TestPrereqPanelEmptyRootGroupType(t *testing.T) {
 // it is "Any of" or has a tech level condition, so that neither is hidden.
 func TestPrereqPanelEmptiedRootKeepsItsHead(t *testing.T) {
 	c := check.New(t)
-	screen, _ := startHeadlessWorkspace(t, c)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
 	root := gurps.NewPrereqList()
 	root.All = false
 	root.WhenTL = criteria.Number{Compare: criteria.AtMostNumber, Qualifier: fxp.FromInteger(defaultWhenTL)}
@@ -1067,7 +1068,7 @@ func TestPrereqPanelEmptiedRootKeepsItsHead(t *testing.T) {
 // marks the editor modified.
 func TestPrereqPanelEmptiedRootRecordsHeadEdits(t *testing.T) {
 	c := check.New(t)
-	screen, _ := startHeadlessWorkspace(t, c)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
 	anyOf := gurps.NewPrereqList()
 	anyOf.All = false
 	anyOf.Prereqs = gurps.Prereqs{gurps.NewTraitPrereq()}
@@ -1143,7 +1144,7 @@ func TestPrereqPanelEmptiedRootRecordsHeadEdits(t *testing.T) {
 // undo and redo open whichever row was open when the change was made, or none.
 func TestPrereqPanelUndoReopensRow(t *testing.T) {
 	c := check.New(t)
-	screen, _ := startHeadlessWorkspace(t, c)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
 	root := newTestPrereqTree()
 	p, host := showPrereqPanel(t, screen, &root, false)
 	screen.Do(func() { menuAction(p.addEntries(p.tree(), treeRootPath), "Trait")() })
@@ -1167,7 +1168,7 @@ func TestPrereqPanelUndoReopensRow(t *testing.T) {
 // TestPrereqPanelMenus checks the wording of the Add menu, and that a count of colleges reads as its sentence does.
 func TestPrereqPanelMenus(t *testing.T) {
 	c := check.New(t)
-	screen, _ := startHeadlessWorkspace(t, c)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
 	root := gurps.NewPrereqList()
 	sp := gurps.NewSpellPrereq()
 	sp.SubType = spellcmp.CollegeCount
@@ -1193,7 +1194,7 @@ func TestPrereqPanelMenus(t *testing.T) {
 // TestPrereqPanelControlNamesDiffer checks that no two controls of an open row share an accessible name.
 func TestPrereqPanelControlNamesDiffer(t *testing.T) {
 	c := check.New(t)
-	screen, _ := startHeadlessWorkspace(t, c)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
 	root := gurps.NewPrereqList()
 	for _, one := range prereq.TypesForNonEquipment {
 		root.Prereqs = append(root.Prereqs, (&prereqPanel{}).createPrereqForType(one, root))
@@ -1232,7 +1233,7 @@ func TestPrereqPanelControlNamesDiffer(t *testing.T) {
 // button beside its placeholder.
 func TestPrereqPanelGroupMenusAdd(t *testing.T) {
 	c := check.New(t)
-	screen, _ := startHeadlessWorkspace(t, c)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
 	root := newTestPrereqTree()
 	p, host := showPrereqPanel(t, screen, &root, false)
 	more := func(path string) []menuEntry {
@@ -1345,7 +1346,7 @@ func TestPrereqPanelGroupMenusAdd(t *testing.T) {
 // and without the focus.
 func TestPrereqPanelPlaceholderTextStaysPutOnFocus(t *testing.T) {
 	c := check.New(t)
-	screen, _ := startHeadlessWorkspace(t, c)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
 	var root *gurps.PrereqList
 	p, _ := showPrereqPanel(t, screen, &root, false)
 	var empty, add *unison.Panel
@@ -1381,7 +1382,7 @@ func TestPrereqPanelPlaceholderTextStaysPutOnFocus(t *testing.T) {
 // match any of several tags, since it matches each of the comma-separated tags in turn.
 func TestPrereqPanelEquippedEquipmentTags(t *testing.T) {
 	c := check.New(t)
-	screen, _ := startHeadlessWorkspace(t, c)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
 	equipped := gurps.NewEquippedEquipmentPrereq()
 	equipped.TagsCriteria = criteria.Text{Compare: criteria.IsText, Qualifier: "Sword, Axe"}
 	root := gurps.NewPrereqList()
@@ -1403,7 +1404,7 @@ func TestPrereqPanelEquippedEquipmentTags(t *testing.T) {
 // for what it holds when it holds anything, so that two empty groups, or a group of one and its row, aren't alike.
 func TestPrereqPanelGroupMoreButtonNames(t *testing.T) {
 	c := check.New(t)
-	screen, _ := startHeadlessWorkspace(t, c)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
 	emptyAny := gurps.NewPrereqList()
 	emptyAny.All = false
 	emptyAll := gurps.NewPrereqList()

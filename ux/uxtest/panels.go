@@ -9,7 +9,6 @@
 package uxtest
 
 import (
-	"github.com/richardwilkes/gcs/v5/ux"
 	"github.com/richardwilkes/unison"
 )
 
@@ -52,15 +51,22 @@ func FirstPanelOfType[T any](root *unison.Panel) (T, bool) {
 	return found, ok
 }
 
+// linkLabel is a label whose text may hold links the keyboard can be on, such as ux.TextLabel, which this package
+// cannot name; the CurrentLink method is what tells one from the rest of the panels that have a String method.
+type linkLabel interface {
+	CurrentLink() int
+	String() string
+}
+
 // LabelTexts returns the text of every label within the subtree rooted at root, in pre-order, whether it is a
-// unison.Label or a link-aware ux.TextLabel.
+// unison.Label or a link-aware label such as ux.TextLabel.
 func LabelTexts(root *unison.Panel) []string {
 	var texts []string
 	root.HasInSelfOrDescendants(func(p *unison.Panel) bool {
 		switch label := p.Self.(type) {
 		case *unison.Label:
 			texts = append(texts, label.String())
-		case *ux.TextLabel:
+		case linkLabel:
 			texts = append(texts, label.String())
 		}
 		return false

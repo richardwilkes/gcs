@@ -6,10 +6,11 @@
 //
 // This Source Code Form is "Incompatible With Secondary Licenses", as
 // defined by the Mozilla Public License, version 2.0.
-// Package uxtest drives the GCS workspace headlessly for the tests of the packages built on ux, such as ux/calculators.
-// It starts a headless unison session running the workspace, finds and closes the dockables a test opens, works the
-// in-window menus and popups the way a user would, and audits what a screen reader would be told.
+// Package uxtest drives the GCS workspace headlessly for the tests of ux and of the packages built on it, such as
+// ux/calculators. It starts a headless unison session running the workspace, finds and closes the dockables a test
+// opens, works the in-window menus and popups the way a user would, and audits what a screen reader would be told.
 //
-// It imports ux, so ux's own tests cannot use it: a package's internal tests may not import a package that imports
-// it. They keep copies of these helpers in their _test.go files instead, and the two must be kept in step.
+// It imports nothing from ux, since a package's own tests may not import a package that imports it. What it needs of
+// the workspace -- how to stand it up in a window, and how to list the dockables it holds -- each test package hands
+// it through Main, from its TestMain.
 package uxtest

@@ -29,7 +29,7 @@ import (
 func TestExplosionCalculatorSources(t *testing.T) {
 	c := check.New(t)
 	screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
-	sheet := uxtest.OpenNewCharacterSheet(t, screen)
+	sheet := openNewCharacterSheet(t, screen)
 	dockable := openCalculator(t, screen)
 	calc := dockable.explosion
 	selectCalculatorTab(t, screen, dockable, calc)

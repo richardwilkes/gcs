@@ -21,6 +21,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/nameable"
+	"github.com/richardwilkes/gcs/v5/ux/uxtest"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/unison"
@@ -157,7 +158,7 @@ func defaultNameField(c check.Checker, p *defaultsPanel, path string) *StringFie
 // the collapsed panel.
 func TestDefaultsPanelSentences(t *testing.T) {
 	c := check.New(t)
-	screen, _ := startHeadlessWorkspace(t, c)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
 	entity := gurps.NewEntity()
 	owner := gurps.NewSkill(entity, nil, false)
 	owner.Replacements = map[string]string{"Weapon": "Rapier"}
@@ -195,7 +196,7 @@ func TestDefaultsPanelSentences(t *testing.T) {
 // open at a time, and that Done and Escape close it, the latter without reaching the editor.
 func TestDefaultsPanelOpenAndClose(t *testing.T) {
 	c := check.New(t)
-	screen, _ := startHeadlessWorkspace(t, c)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
 	entity := gurps.NewEntity()
 	defaults := newTestDefaults()
 	p, host := showDefaultsPanel(t, screen, entity, nil, &defaults)
@@ -228,7 +229,7 @@ func TestDefaultsPanelOpenAndClose(t *testing.T) {
 // a type written as "Skill" is shown as a skill default, and that an unknown type is shown and described as such.
 func TestDefaultsPanelBuildingChangesNothing(t *testing.T) {
 	c := check.New(t)
-	screen, _ := startHeadlessWorkspace(t, c)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
 	entity := gurps.NewEntity()
 	defaults := append(newTestDefaults(), &gurps.SkillDefault{DefaultType: "Skill"},
 		&gurps.SkillDefault{DefaultType: "unknown"})
@@ -262,7 +263,7 @@ func TestDefaultsPanelBuildingChangesNothing(t *testing.T) {
 // becomes the one added next, unless the entity has no such attribute.
 func TestDefaultsPanelAdd(t *testing.T) {
 	c := check.New(t)
-	screen, _ := startHeadlessWorkspace(t, c)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
 	entity := gurps.NewEntity()
 	// With room to grow, so that appending to it in place would show through the list held before.
 	defaults := slices.Grow(newTestDefaults(), 4)
@@ -304,7 +305,7 @@ func TestDefaultsPanelAdd(t *testing.T) {
 // than DX.
 func TestDefaultsPanelAddWithoutDX(t *testing.T) {
 	c := check.New(t)
-	screen, _ := startHeadlessWorkspace(t, c)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
 	entity := gurps.NewEntity()
 	delete(entity.SheetSettings.Attributes.Set, gurps.DexterityID)
 	c.Nil(gurps.AttributeDefsFor(entity).Set[gurps.DexterityID])
@@ -326,7 +327,7 @@ func TestDefaultsPanelAddWithoutDX(t *testing.T) {
 // skill-based names its skill, so that its name field shows, and that a change of type is undone in one step.
 func TestDefaultsPanelTypeChange(t *testing.T) {
 	c := check.New(t)
-	screen, _ := startHeadlessWorkspace(t, c)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
 	entity := gurps.NewEntity()
 	defaults := newTestDefaults()
 	defaults[1].Tags = criteria.Text{Compare: criteria.IsText, Qualifier: "Melee"}
@@ -394,7 +395,7 @@ func TestDefaultsPanelTypeChange(t *testing.T) {
 // default offers only the tech level.
 func TestDefaultsPanelChips(t *testing.T) {
 	c := check.New(t)
-	screen, _ := startHeadlessWorkspace(t, c)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
 	entity := gurps.NewEntity()
 	// A fraction, which the whole-number field would show cut off while the sentence showed it whole.
 	entity.Profile.TechLevel = "3.5"
@@ -407,7 +408,7 @@ func TestDefaultsPanelChips(t *testing.T) {
 		screen.Do(func() {
 			var buttons []*unison.Button
 			if target := p.FindRefKey(key); target != nil {
-				buttons = panelsOfType[*unison.Button](target)
+				buttons = uxtest.PanelsOfType[*unison.Button](target)
 			}
 			c.NotEqual(0, len(buttons), "expected a button within %s", key)
 			if len(buttons) != 0 {
@@ -466,7 +467,7 @@ func TestDefaultsPanelChips(t *testing.T) {
 // offered only where there is room.
 func TestDefaultsPanelMoreMenu(t *testing.T) {
 	c := check.New(t)
-	screen, _ := startHeadlessWorkspace(t, c)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
 	entity := gurps.NewEntity()
 	defaults := newTestDefaults()
 	p, host := showDefaultsPanel(t, screen, entity, nil, &defaults)
@@ -537,7 +538,7 @@ func TestDefaultsPanelMoreMenu(t *testing.T) {
 // don't reach.
 func TestDefaultsPanelUndo(t *testing.T) {
 	c := check.New(t)
-	screen, _ := startHeadlessWorkspace(t, c)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
 	entity := gurps.NewEntity()
 	defaults := newTestDefaults()
 	p, host := showDefaultsPanel(t, screen, entity, nil, &defaults)
@@ -599,7 +600,7 @@ func TestDefaultsPanelUndo(t *testing.T) {
 // drop onto or beside itself, or of a row dragged from another panel, changes nothing.
 func TestDefaultsPanelDragAndDrop(t *testing.T) {
 	c := check.New(t)
-	screen, _ := startHeadlessWorkspace(t, c)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
 	entity := gurps.NewEntity()
 	defaults := newTestDefaults()
 	p, host := showDefaultsPanel(t, screen, entity, nil, &defaults)
@@ -643,7 +644,7 @@ func TestDefaultsPanelDragAndDrop(t *testing.T) {
 // it, and that a click on a sentence still opens its row.
 func TestDefaultsPanelDragFromRow(t *testing.T) {
 	c := check.New(t)
-	screen, _ := startHeadlessWorkspace(t, c)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
 	entity := gurps.NewEntity()
 	defaults := newTestDefaults()
 	p, _ := showDefaultsPanel(t, screen, entity, nil, &defaults)
@@ -667,7 +668,7 @@ func TestDefaultsPanelDragFromRow(t *testing.T) {
 // it adds a default of the type last chosen and opens it, as the add button does, and that undo brings it back.
 func TestDefaultsPanelEmpty(t *testing.T) {
 	c := check.New(t)
-	screen, _ := startHeadlessWorkspace(t, c)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
 	entity := gurps.NewEntity()
 	var defaults []*gurps.SkillDefault
 	p, host := showDefaultsPanel(t, screen, entity, nil, &defaults)
@@ -708,7 +709,7 @@ func TestDefaultsPanelEmpty(t *testing.T) {
 // screen reader hears whether it is expanded, and that it is no edit and keeps the open row open.
 func TestDefaultsPanelCollapse(t *testing.T) {
 	c := check.New(t)
-	screen, _ := startHeadlessWorkspace(t, c)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
 	entity := gurps.NewEntity()
 	defaults := newTestDefaults()
 	p, host := showDefaultsPanel(t, screen, entity, nil, &defaults)
@@ -758,7 +759,7 @@ func TestDefaultsPanelCollapse(t *testing.T) {
 // with its placeholder, and that a collapsed panel with no defaults says so.
 func TestDefaultsPanelStartingState(t *testing.T) {
 	c := check.New(t)
-	screen, _ := startHeadlessWorkspace(t, c)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
 	entity := gurps.NewEntity()
 	defaults := newTestDefaults()
 	var empty []*gurps.SkillDefault
@@ -790,8 +791,8 @@ func TestDefaultsPanelStartingState(t *testing.T) {
 // values of the weapon's owner, and edits them.
 func TestDefaultsPanelWeapon(t *testing.T) {
 	c := check.New(t)
-	screen, _ := startHeadlessWorkspace(t, c)
-	sheet, ok := openedByAction(t, screen, newCharacterSheetAction).(*Sheet)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
+	sheet, ok := uxtest.OpenedByAction(t, screen, newCharacterSheetAction).(*Sheet)
 	if !ok {
 		t.Fatal("New Character Sheet must open a character sheet")
 	}
@@ -812,7 +813,7 @@ func TestDefaultsPanelWeapon(t *testing.T) {
 		EditWeapon(sheet, weapon)
 		for _, d := range AllDockables() {
 			if !slices.Contains(before, d) {
-				if panels := panelsOfType[*defaultsPanel](d.AsPanel()); len(panels) == 1 {
+				if panels := uxtest.PanelsOfType[*defaultsPanel](d.AsPanel()); len(panels) == 1 {
 					p = panels[0]
 				}
 			}
@@ -841,8 +842,8 @@ func collapsedSummary(p *unison.Panel) string {
 // them, but not when it is canceled.
 func TestSkillEditorRowsFollowSubstitutions(t *testing.T) {
 	c := check.New(t)
-	screen, _ := startHeadlessWorkspace(t, c)
-	sheet, ok := openedByAction(t, screen, newCharacterSheetAction).(*Sheet)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
+	sheet, ok := uxtest.OpenedByAction(t, screen, newCharacterSheetAction).(*Sheet)
 	if !ok {
 		t.Fatal("New Character Sheet must open a character sheet")
 	}
@@ -868,7 +869,7 @@ func TestSkillEditorRowsFollowSubstitutions(t *testing.T) {
 	prereqs := func() string {
 		var text string
 		screen.Do(func() {
-			for _, p := range panelsOfType[*prereqPanel](e.content) {
+			for _, p := range uxtest.PanelsOfType[*prereqPanel](e.content) {
 				text = collapsedSummary(p.AsPanel())
 			}
 		})
@@ -876,10 +877,10 @@ func TestSkillEditorRowsFollowSubstitutions(t *testing.T) {
 	}
 	summaries := func() (defaults, features string) {
 		screen.Do(func() {
-			for _, p := range panelsOfType[*defaultsPanel](e.content) {
+			for _, p := range uxtest.PanelsOfType[*defaultsPanel](e.content) {
 				defaults = collapsedSummary(p.AsPanel())
 			}
-			for _, p := range panelsOfType[*featuresPanel](e.content) {
+			for _, p := range uxtest.PanelsOfType[*featuresPanel](e.content) {
 				features = collapsedSummary(p.AsPanel())
 			}
 		})
@@ -891,7 +892,7 @@ func TestSkillEditorRowsFollowSubstitutions(t *testing.T) {
 	c.Equal("Has trait Spear Mastery.", prereqs(), "and the prerequisites")
 
 	answer := func(value string, accept bool) {
-		swapForTest(t, &promptForNameables, func(_ promptOperation, sections []nameablesSection) bool {
+		uxtest.SwapForTest(t, &promptForNameables, func(_ promptOperation, sections []nameablesSection) bool {
 			for _, section := range sections {
 				for k := range section.Nameables {
 					section.Nameables[k] = value
@@ -921,14 +922,14 @@ func TestSkillEditorRowsFollowSubstitutions(t *testing.T) {
 // at 0.
 func TestDefaultsPanelTechLevelWithoutEntity(t *testing.T) {
 	c := check.New(t)
-	screen, _ := startHeadlessWorkspace(t, c)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
 	defaults := []*gurps.SkillDefault{{DefaultType: gurps.DexterityID}}
 	p, _ := showDefaultsPanel(t, screen, nil, nil, &defaults)
 	screen.Do(func() { p.toggle("0") })
 	screen.Do(func() {
 		var buttons []*unison.Button
 		if target := p.FindRefKey("0:add tl"); target != nil {
-			buttons = panelsOfType[*unison.Button](target)
+			buttons = uxtest.PanelsOfType[*unison.Button](target)
 		}
 		c.NotEqual(0, len(buttons), "an attribute default offers a tech level")
 		if len(buttons) != 0 {
@@ -942,7 +943,7 @@ func TestDefaultsPanelTechLevelWithoutEntity(t *testing.T) {
 // a skill default with every optional criterion added, a parry default, and an attribute default with a tech level.
 func TestDefaultsPanelControlNamesDiffer(t *testing.T) {
 	c := check.New(t)
-	screen, _ := startHeadlessWorkspace(t, c)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
 	entity := gurps.NewEntity()
 	defaults := []*gurps.SkillDefault{
 		{
@@ -992,8 +993,8 @@ func TestDefaultsPanelControlNamesDiffer(t *testing.T) {
 // which the file wrote in another case.
 func TestSkillEditorDefaultTypeRoundTrip(t *testing.T) {
 	c := check.New(t)
-	screen, _ := startHeadlessWorkspace(t, c)
-	sheet, ok := openedByAction(t, screen, newCharacterSheetAction).(*Sheet)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
+	sheet, ok := uxtest.OpenedByAction(t, screen, newCharacterSheetAction).(*Sheet)
 	if !ok {
 		t.Fatal("New Character Sheet must open a character sheet")
 	}
@@ -1008,7 +1009,7 @@ func TestSkillEditorDefaultTypeRoundTrip(t *testing.T) {
 		entity.Skills = append(entity.Skills, skill)
 		sheet.Rebuild(true)
 		e = EditSkill(sheet, skill)
-		if panels := panelsOfType[*defaultsPanel](e.content); len(panels) == 1 {
+		if panels := uxtest.PanelsOfType[*defaultsPanel](e.content); len(panels) == 1 {
 			p = panels[0]
 			p.collapse.toggle()
 		}
@@ -1036,8 +1037,8 @@ func TestSkillEditorDefaultTypeRoundTrip(t *testing.T) {
 // held it.
 func TestSkillEditorSyncKeepsDefaultsAsTheyWere(t *testing.T) {
 	c := check.New(t)
-	screen, wnd := startHeadlessWorkspace(t, c)
-	sheet, ok := openedByAction(t, screen, newCharacterSheetAction).(*Sheet)
+	screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
+	sheet, ok := uxtest.OpenedByAction(t, screen, newCharacterSheetAction).(*Sheet)
 	if !ok {
 		t.Fatal("New Character Sheet must open a character sheet")
 	}
@@ -1049,7 +1050,7 @@ func TestSkillEditorSyncKeepsDefaultsAsTheyWere(t *testing.T) {
 	c.NoError(gurps.SaveSkills([]*gurps.Skill{lib}, filepath.Join(user.Path(false), filepath.FromSlash(libFile.Path))))
 	var e *editor[*gurps.Skill, *gurps.SkillEditData]
 	sections := func() *defaultsPanel {
-		if panels := panelsOfType[*defaultsPanel](e.content); len(panels) == 1 {
+		if panels := uxtest.PanelsOfType[*defaultsPanel](e.content); len(panels) == 1 {
 			return panels[0]
 		}
 		return nil
@@ -1103,7 +1104,7 @@ func TestSkillEditorSyncKeepsDefaultsAsTheyWere(t *testing.T) {
 // a skill without one, as the row's sentence says once closed.
 func TestDefaultsPanelBlankSpecialization(t *testing.T) {
 	c := check.New(t)
-	screen, _ := startHeadlessWorkspace(t, c)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
 	entity := gurps.NewEntity()
 	defaults := []*gurps.SkillDefault{{
 		DefaultType:    gurps.SkillID,
@@ -1126,8 +1127,8 @@ func TestDefaultsPanelBlankSpecialization(t *testing.T) {
 // in its features and defaults once Sync with Source has made them again.
 func TestSkillEditorSyncKeepsSubstitutions(t *testing.T) {
 	c := check.New(t)
-	screen, wnd := startHeadlessWorkspace(t, c)
-	sheet, ok := openedByAction(t, screen, newCharacterSheetAction).(*Sheet)
+	screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
+	sheet, ok := uxtest.OpenedByAction(t, screen, newCharacterSheetAction).(*Sheet)
 	if !ok {
 		t.Fatal("New Character Sheet must open a character sheet")
 	}
@@ -1153,7 +1154,7 @@ func TestSkillEditorSyncKeepsSubstitutions(t *testing.T) {
 		sheet.Rebuild(true)
 		e = EditSkill(sheet, local)
 	})
-	swapForTest(t, &promptForNameables, func(_ promptOperation, sections []nameablesSection) bool {
+	uxtest.SwapForTest(t, &promptForNameables, func(_ promptOperation, sections []nameablesSection) bool {
 		for _, section := range sections {
 			for k := range section.Nameables {
 				section.Nameables[k] = "Rapier"
@@ -1164,7 +1165,7 @@ func TestSkillEditorSyncKeepsSubstitutions(t *testing.T) {
 	screen.Do(e.nameablesButton.ClickCallback)
 	var old *featuresPanel
 	screen.Do(func() {
-		if panels := panelsOfType[*featuresPanel](e.content); len(panels) == 1 {
+		if panels := uxtest.PanelsOfType[*featuresPanel](e.content); len(panels) == 1 {
 			old = panels[0]
 		}
 	})
@@ -1172,11 +1173,11 @@ func TestSkillEditorSyncKeepsSubstitutions(t *testing.T) {
 	screen.Do(func() {
 		c.Equal("Fast-Draw (@Weapon@)", e.editorData.Name, "precondition: the skill is synced")
 		c.Equal("Rapier", e.editorData.Replacements["Weapon"], "precondition: the sync keeps the substitutions")
-		c.False(slices.Contains(panelsOfType[*featuresPanel](e.content), old), "precondition: the features are made again")
-		for _, p := range panelsOfType[*defaultsPanel](e.content) {
+		c.False(slices.Contains(uxtest.PanelsOfType[*featuresPanel](e.content), old), "precondition: the features are made again")
+		for _, p := range uxtest.PanelsOfType[*defaultsPanel](e.content) {
 			c.Equal("Skill Rapier at +0.", collapsedSummary(p.AsPanel()), "the defaults show them")
 		}
-		for _, p := range panelsOfType[*featuresPanel](e.content) {
+		for _, p := range uxtest.PanelsOfType[*featuresPanel](e.content) {
 			summary := collapsedSummary(p.AsPanel())
 			c.True(strings.Contains(summary, "Rapier"), "as do the features: %s", summary)
 		}
@@ -1187,7 +1188,7 @@ func TestSkillEditorSyncKeepsSubstitutions(t *testing.T) {
 // sentence, so that no two are alike, and that the name follows the sentence as it changes.
 func TestDefaultsPanelMoreButtonNames(t *testing.T) {
 	c := check.New(t)
-	screen, _ := startHeadlessWorkspace(t, c)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
 	entity := gurps.NewEntity()
 	defaults := newTestDefaults()
 	p, _ := showDefaultsPanel(t, screen, entity, nil, &defaults)
@@ -1217,7 +1218,7 @@ func TestDefaultsPanelMoreButtonNames(t *testing.T) {
 // again after another type has been.
 func TestDefaultsPanelUnusualTypes(t *testing.T) {
 	c := check.New(t)
-	screen, _ := startHeadlessWorkspace(t, c)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
 	entity := gurps.NewEntity()
 	defaults := []*gurps.SkillDefault{
 		{DefaultType: gurps.DodgeID, Modifier: -fxp.Two},
@@ -1247,8 +1248,8 @@ func TestDefaultsPanelUnusualTypes(t *testing.T) {
 // substitutions that editor holds, including those Set Substitutions makes while the weapon's editor is open.
 func TestWeaponEditorTakesItemSubstitutions(t *testing.T) {
 	c := check.New(t)
-	screen, _ := startHeadlessWorkspace(t, c)
-	sheet, ok := openedByAction(t, screen, newCharacterSheetAction).(*Sheet)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
+	sheet, ok := uxtest.OpenedByAction(t, screen, newCharacterSheetAction).(*Sheet)
 	if !ok {
 		t.Fatal("New Character Sheet must open a character sheet")
 	}
@@ -1270,7 +1271,7 @@ func TestWeaponEditorTakesItemSubstitutions(t *testing.T) {
 		EditWeapon(e, e.editorData.Weapons[0])
 		for _, d := range AllDockables() {
 			if !slices.Contains(before, d) {
-				if panels := panelsOfType[*defaultsPanel](d.AsPanel()); len(panels) == 1 {
+				if panels := uxtest.PanelsOfType[*defaultsPanel](d.AsPanel()); len(panels) == 1 {
 					p = panels[0]
 				}
 			}
@@ -1280,7 +1281,7 @@ func TestWeaponEditorTakesItemSubstitutions(t *testing.T) {
 		t.Fatal("the weapon editor must have a defaults panel")
 	}
 	screen.Do(func() { c.Equal("Skill Spear at +0.", collapsedSummary(p.AsPanel())) })
-	swapForTest(t, &promptForNameables, func(_ promptOperation, sections []nameablesSection) bool {
+	uxtest.SwapForTest(t, &promptForNameables, func(_ promptOperation, sections []nameablesSection) bool {
 		for _, section := range sections {
 			for k := range section.Nameables {
 				section.Nameables[k] = "Rapier"

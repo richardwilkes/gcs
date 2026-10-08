@@ -14,6 +14,7 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/attribute"
+	"github.com/richardwilkes/gcs/v5/ux/uxtest"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/accessibility"
@@ -27,9 +28,9 @@ import (
 // focus, and one that is a tab stop when the screen reader goes drops out as the focus leaves it.
 func TestSheetButtonsJoinTheTabOrderForReading(t *testing.T) {
 	c := check.New(t)
-	screen, wnd := startHeadlessWorkspace(t, c)
-	setFocusForReading := focusForReadingSetter(t, screen, wnd)
-	sheet, ok := openedByAction(t, screen, newCharacterSheetAction).(*Sheet)
+	screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
+	setFocusForReading := uxtest.FocusForReadingSetter(t, screen, wnd)
+	sheet, ok := uxtest.OpenedByAction(t, screen, newCharacterSheetAction).(*Sheet)
 	if !ok {
 		t.Fatal("New Character Sheet must open a character sheet")
 	}
@@ -60,28 +61,28 @@ func TestSheetButtonsJoinTheTabOrderForReading(t *testing.T) {
 		}
 		entity.Recalculate()
 		sheet.Rebuild(true)
-		desc, _ := firstPanelOfType[*DescriptionPanel](sheet.AsPanel())
+		desc, _ := uxtest.FirstPanelOfType[*DescriptionPanel](sheet.AsPanel())
 		if desc == nil {
 			return
 		}
-		for _, one := range panelsOfType[*unison.Button](desc.AsPanel()) {
+		for _, one := range uxtest.PanelsOfType[*unison.Button](desc.AsPanel()) {
 			buttons = append(buttons, one)
 			if randomize == nil {
 				randomize = one
 			}
 		}
-		for _, one := range panelsOfType[*StringField](desc.AsPanel()) {
+		for _, one := range uxtest.PanelsOfType[*StringField](desc.AsPanel()) {
 			if one.RefKey == descriptionPanelGenderFieldRefKey {
 				gender = one
 			}
 		}
 		inDescription = len(buttons)
-		if body, found := firstPanelOfType[*BodyPanel](sheet.AsPanel()); found {
-			buttons = append(buttons, panelsOfType[*unison.Button](body.AsPanel())...)
+		if body, found := uxtest.FirstPanelOfType[*BodyPanel](sheet.AsPanel()); found {
+			buttons = append(buttons, uxtest.PanelsOfType[*unison.Button](body.AsPanel())...)
 		}
 		inBody = len(buttons) - inDescription
-		for _, one := range panelsOfType[*AttrPanel](sheet.AsPanel()) {
-			buttons = append(buttons, panelsOfType[*unison.Button](one.AsPanel())...)
+		for _, one := range uxtest.PanelsOfType[*AttrPanel](sheet.AsPanel()) {
+			buttons = append(buttons, uxtest.PanelsOfType[*unison.Button](one.AsPanel())...)
 		}
 		inAttributes = len(buttons) - inDescription - inBody
 	})
@@ -133,7 +134,7 @@ func TestSheetButtonsJoinTheTabOrderForReading(t *testing.T) {
 	// Tab goes from the tab stop ahead of the button to the button, and Space presses it.
 	var ahead *unison.Panel
 	screen.Do(func() {
-		all := panelsMatching(sheet.scroll.Content().AsPanel(), (*unison.Panel).Focusable)
+		all := uxtest.PanelsMatching(sheet.scroll.Content().AsPanel(), (*unison.Panel).Focusable)
 		for i, one := range all {
 			if one == randomize.AsPanel() && i > 0 {
 				ahead = all[i-1]
@@ -183,15 +184,15 @@ func TestSheetButtonsJoinTheTabOrderForReading(t *testing.T) {
 // stop with static text in the Tab order, as the Roll, Location and DR headers are.
 func TestBodyNotesHeaderIsReadAsTheOtherHeadersAre(t *testing.T) {
 	c := check.New(t)
-	screen, wnd := startHeadlessWorkspace(t, c)
-	setFocusForReading := focusForReadingSetter(t, screen, wnd)
-	sheet, ok := openedByAction(t, screen, newCharacterSheetAction).(*Sheet)
+	screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
+	setFocusForReading := uxtest.FocusForReadingSetter(t, screen, wnd)
+	sheet, ok := uxtest.OpenedByAction(t, screen, newCharacterSheetAction).(*Sheet)
 	if !ok {
 		t.Fatal("New Character Sheet must open a character sheet")
 	}
 	var headers []*unison.Label
 	screen.Do(func() {
-		body, found := firstPanelOfType[*BodyPanel](sheet.AsPanel())
+		body, found := uxtest.FirstPanelOfType[*BodyPanel](sheet.AsPanel())
 		if !found {
 			return
 		}
@@ -239,8 +240,8 @@ func TestBodyNotesHeaderIsReadAsTheOtherHeadersAre(t *testing.T) {
 // in ux/calculators.)
 func TestTrailingLabelsDescribeTheirFields(t *testing.T) {
 	c := check.New(t)
-	screen, wnd := startHeadlessWorkspace(t, c)
-	setFocusForReading := focusForReadingSetter(t, screen, wnd)
+	screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
+	setFocusForReading := uxtest.FocusForReadingSetter(t, screen, wnd)
 	setFocusForReading(true)
 	focusable := func(p unison.Paneler) (result bool) {
 		screen.Do(func() { result = p.AsPanel().Focusable() })
@@ -248,7 +249,7 @@ func TestTrailingLabelsDescribeTheirFields(t *testing.T) {
 	}
 	screen.Do(ShowGeneralSettings)
 	var settings *generalSettingsDockable
-	screen.Do(func() { settings, _ = firstPanelOfType[*generalSettingsDockable](wnd.Content()) })
+	screen.Do(func() { settings, _ = uxtest.FirstPanelOfType[*generalSettingsDockable](wnd.Content()) })
 	if settings == nil {
 		t.Fatal("the General Settings must be showing")
 	}

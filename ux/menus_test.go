@@ -15,26 +15,11 @@ import (
 	"slices"
 	"testing"
 
-	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/library"
+	"github.com/richardwilkes/gcs/v5/ux/uxtest"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/unison"
 )
-
-// useTestLibraries points the global settings at a fresh library set rooted in a temporary directory, restoring the
-// original set when the test finishes. It returns the master and user libraries, both of which start out with no
-// "Output Templates" directory at all.
-func useTestLibraries(t *testing.T, c check.Checker) (master, user *library.Library) {
-	t.Helper()
-	global := gurps.GlobalSettings()
-	swapForTest(t, &global.Libraries, library.NewLibraries())
-	dir := t.TempDir()
-	master = global.Libraries.Master()
-	c.NoError(master.SetPath(filepath.Join(dir, "master")))
-	user = global.Libraries.User()
-	c.NoError(user.SetPath(filepath.Join(dir, "user")))
-	return master, user
-}
 
 // addOutputTemplates creates the library's "Output Templates" directory and populates it with the named files. Passing
 // no names leaves the directory empty.
@@ -82,7 +67,7 @@ func exportToMenuTitles(c check.Checker, menu unison.Menu) []string {
 // formats and their separator already make 5.
 func TestExportToMenuWithoutTemplateDirs(t *testing.T) {
 	c := check.New(t)
-	useTestLibraries(t, c)
+	uxtest.UseTestLibraries(t, c)
 	c.Equal([]string{"No export templates available"}, exportToMenuTitles(c, newExportToMenu()), "menu body")
 }
 
@@ -91,7 +76,7 @@ func TestExportToMenuWithoutTemplateDirs(t *testing.T) {
 // case, so a check against a fixed item count would miss this and leave a dangling library title with nothing under it.
 func TestExportToMenuWithEmptyMasterTemplateDir(t *testing.T) {
 	c := check.New(t)
-	master, _ := useTestLibraries(t, c)
+	master, _ := uxtest.UseTestLibraries(t, c)
 	addOutputTemplates(c, master)
 	c.Equal([]string{master.Data().Title, "No export templates available"},
 		exportToMenuTitles(c, newExportToMenu()), "menu body")
@@ -101,7 +86,7 @@ func TestExportToMenuWithEmptyMasterTemplateDir(t *testing.T) {
 // treated the same as an empty one.
 func TestExportToMenuWithHiddenFilesOnly(t *testing.T) {
 	c := check.New(t)
-	master, _ := useTestLibraries(t, c)
+	master, _ := uxtest.UseTestLibraries(t, c)
 	addOutputTemplates(c, master, ".DS_Store")
 	c.Equal([]string{master.Data().Title, "No export templates available"},
 		exportToMenuTitles(c, newExportToMenu()), "menu body")
@@ -111,7 +96,7 @@ func TestExportToMenuWithHiddenFilesOnly(t *testing.T) {
 // the templates are listed under their library's title, and that they are sorted naturally.
 func TestExportToMenuWithTemplates(t *testing.T) {
 	c := check.New(t)
-	master, user := useTestLibraries(t, c)
+	master, user := uxtest.UseTestLibraries(t, c)
 	addOutputTemplates(c, master, "Sheet 10.gcs", "Sheet 2.gcs")
 	addOutputTemplates(c, user, "Mine.gcs")
 	c.Equal([]string{
@@ -127,7 +112,7 @@ func TestExportToMenuWithTemplates(t *testing.T) {
 // templates present at that moment rather than accumulating the previous contents.
 func TestExportToMenuRepopulates(t *testing.T) {
 	c := check.New(t)
-	master, _ := useTestLibraries(t, c)
+	master, _ := uxtest.UseTestLibraries(t, c)
 	menu := newExportToMenu()
 	c.Equal([]string{"No export templates available"}, exportToMenuTitles(c, menu), "before any template exists")
 	addOutputTemplates(c, master, "Sheet.gcs")

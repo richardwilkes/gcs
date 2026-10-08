@@ -16,19 +16,64 @@ import (
 	"slices"
 	"testing"
 
+	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/library"
-	"github.com/richardwilkes/gcs/v5/ux"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/unison"
+	"github.com/richardwilkes/unison/enums/mod"
 )
+
+// Workspace is what a test package tells uxtest about the GCS workspace, which uxtest cannot reach for itself (see the
+// package comment). ux's own tests fill it in from ux's unexported pieces; a package built on ux fills it in from what
+// ux exports.
+type Workspace struct {
+	// Setup stands the workspace up in the window StartHeadlessWorkspace has just created, as ux.Start does: it
+	// registers the file types and the window's drag types, sets up the menu bar and initializes the workspace, and
+	// points the workspace's error handler at the test, since the modal dialog it would otherwise put up has nobody
+	// to dismiss it. It runs on the UI thread, before the session is handed to the test, and should put back any
+	// process-wide state it replaces when the test ends (see SwapForTest).
+	Setup func(t *testing.T, wnd *unison.Window)
+	// AllDockables lists every open dockable, whether in the workspace or in a window of its own.
+	AllDockables func() []unison.Dockable
+}
+
+// workspace is the Workspace Main was given.
+var workspace Workspace
+
+// ciScriptExecTimeLimit is the per-script execution time limit, in seconds, the tests run with under CI. It matches
+// the one in model/gurps/main_test.go, which explains the choice.
+var ciScriptExecTimeLimit = fxp.FromInteger(30)
+
+// Main is what the TestMain of every package using this one runs, with the Workspace the package's tests drive. It
+// raises the per-script execution time limit for the duration of the tests, exactly as model/gurps/main_test.go does
+// and for the same reason: the sheets and templates the tests load resolve scripts as they are recalculated, and the
+// production default is small enough that some CI runners cannot always finish even a trivial script within it.
+//
+// It also pins the platform-neutral modifier convention a headless session uses on every host, whose menu command key
+// is Control rather than macOS's Command. ux's registerActions bakes mod.OSMenuCommand() into the key bindings once
+// per process, in whichever test gets there first; under the host's convention, a plain test doing so on macOS would
+// bind every menu shortcut to Command, and the headless tests that follow, which press Control, would never reach the
+// menu items. Pinning it keeps the bindings independent of test order and makes the tests that never start a session
+// behave the same on every host.
+func Main(m *testing.M, ws Workspace) {
+	workspace = ws
+	limit := gurps.PermittedScriptExecTimeMax
+	if os.Getenv("CI") != "" {
+		limit = ciScriptExecTimeLimit
+	}
+	gurps.SetScriptExecTimeLimitForTesting(limit)
+	mod.SetPlatformNeutral(true)
+	os.Exit(m.Run())
+}
 
 // StartHeadlessWorkspace starts a headless unison session running the GCS workspace -- menu bar, navigator and document
 // dock in one window -- as ux.Start does, minus the update checks and the handoff service. It returns the screen
 // driving the session and the workspace window. The session is stopped when the test ends and the process-wide state
-// the workspace touches is put back: the ux.Workspace global, the settings path, the libraries (see UseTestLibraries),
-// the recent files and last-used directories and the workspace-restoration setting, which is turned off so that the
-// dock does not try to restore whatever the settings hold.
+// the workspace touches is put back: the settings path, the libraries (see UseTestLibraries), the recent files and
+// last-used directories and the workspace-restoration setting, which is turned off so that the dock does not try to
+// restore whatever the settings hold. The workspace itself is stood up, and put back, by the Workspace.Setup that Main
+// was given.
 //
 // Stop clears every window's close callbacks and stops every modal loop before it quits, so a dockable left open with
 // unsaved changes cannot hang the shutdown with a save prompt, and the workspace's own close handler, which saves the
@@ -38,13 +83,13 @@ import (
 // of unison's mutable globals while they run, so a test using this must not call t.Parallel.
 func StartHeadlessWorkspace(t *testing.T, c check.Checker) (*unison.HeadlessScreen, *unison.Window) {
 	t.Helper()
-	SwapForTest(t, &ux.Workspace, ux.Workspace) // The session replaces most of the workspace; put all of it back.
+	if workspace.Setup == nil || workspace.AllDockables == nil {
+		t.Fatal("the package's TestMain must run uxtest.Main with its Workspace filled in")
+	}
 	SwapForTest(t, &gurps.SettingsPath, filepath.Join(t.TempDir(), "settings.json"))
 	SwapForTest(t, &gurps.GlobalSettings().General.RestoreWorkspaceOnStart, false)
 	UseTestLibraries(t, c)
 	preserveRecentFilesAndLastDirs(t)
-	// main registers the file types before starting the UI; the navigator looks its folder icons up in that registry.
-	ux.RegisterKnownFileTypes()
 
 	var wnd *unison.Window
 	screen, err := unison.StartHeadless(unison.HeadlessConfig{Width: 1400, Height: 900},
@@ -54,9 +99,7 @@ func StartHeadlessWorkspace(t *testing.T, c check.Checker) (*unison.HeadlessScre
 				t.Errorf("unable to create the workspace window: %v", wndErr)
 				return
 			}
-			ux.RegisterWindowDragTypes(w)
-			ux.SetupMenuBar(w)
-			ux.InitWorkspace(w)
+			workspace.Setup(t, w)
 			wnd = w
 		}))
 	if err != nil {
@@ -73,11 +116,6 @@ func StartHeadlessWorkspace(t *testing.T, c check.Checker) (*unison.HeadlessScre
 	if wnd == nil {
 		t.Fatal("the workspace window was not created")
 	}
-	// The workspace reports errors with a modal dialog once it has finished initializing. Nobody would dismiss it, so
-	// report them as test failures instead.
-	screen.Do(func() {
-		ux.Workspace.ErrorHandler = func(msg string, err error) { t.Errorf("unexpected error: %s: %v", msg, err) }
-	})
 	return screen, wnd
 }
 
@@ -92,7 +130,8 @@ func SwapForTest[T any](t *testing.T, target *T, value T) {
 }
 
 // UseTestLibraries points the global settings at a fresh library set rooted in a temporary directory, restoring the
-// original set when the test finishes. It returns the master and user libraries.
+// original set when the test finishes. It returns the master and user libraries, both of which start out with no
+// "Output Templates" directory at all.
 func UseTestLibraries(t *testing.T, c check.Checker) (master, user *library.Library) {
 	t.Helper()
 	global := gurps.GlobalSettings()

@@ -26,8 +26,22 @@ import (
 	"github.com/richardwilkes/unison"
 )
 
-// calculatorKey is the key binding ID of the ux action that opens the calculators.
-const calculatorKey = "calculator"
+// calculatorKey and newCharacterSheetKey are the key binding IDs of the ux actions that open the calculators and a new
+// character sheet.
+const (
+	calculatorKey        = "calculator"
+	newCharacterSheetKey = "new.char.sheet"
+)
+
+// openNewCharacterSheet opens a new character sheet through its action and returns it.
+func openNewCharacterSheet(t *testing.T, screen *unison.HeadlessScreen) *ux.Sheet {
+	t.Helper()
+	sheet, ok := uxtest.OpenedByAction(t, screen, uxtest.ActionForKey(t, newCharacterSheetKey)).(*ux.Sheet)
+	if !ok {
+		t.Fatal("New Character Sheet must open a character sheet")
+	}
+	return sheet
+}
 
 // openCalculator opens the calculators from their menu action, which preselects the active sheet, and returns the
 // dockable holding them.
@@ -67,7 +81,7 @@ func selectCalculatorTab(t *testing.T, screen *unison.HeadlessScreen, calc *Dock
 func TestCalculatorTabs(t *testing.T) {
 	c := check.New(t)
 	screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
-	sheet := uxtest.OpenNewCharacterSheet(t, screen)
+	sheet := openNewCharacterSheet(t, screen)
 	calc := openCalculator(t, screen)
 
 	var titles []string
@@ -151,7 +165,7 @@ func TestCalculatorTabs(t *testing.T) {
 func TestJumpingCalculatorSources(t *testing.T) {
 	c := check.New(t)
 	screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
-	sheet := uxtest.OpenNewCharacterSheet(t, screen)
+	sheet := openNewCharacterSheet(t, screen)
 	calc := openCalculator(t, screen)
 	jumping := calc.jumping
 	selectCalculatorTab(t, screen, calc, jumping)
@@ -251,7 +265,7 @@ func TestJumpingCalculatorSources(t *testing.T) {
 func TestThrowingCalculatorSources(t *testing.T) {
 	c := check.New(t)
 	screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
-	sheet := uxtest.OpenNewCharacterSheet(t, screen)
+	sheet := openNewCharacterSheet(t, screen)
 	calc := openCalculator(t, screen)
 	throwing := calc.throwing
 	selectCalculatorTab(t, screen, calc, throwing)
@@ -350,7 +364,7 @@ func TestThrowingCalculatorSources(t *testing.T) {
 func TestCalculatorHikingControls(t *testing.T) {
 	c := check.New(t)
 	screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
-	sheet := uxtest.OpenNewCharacterSheet(t, screen)
+	sheet := openNewCharacterSheet(t, screen)
 	screen.Do(func() { Display(sheet) })
 	calc := uxtest.SoleEditor[*Dockable](t, screen, func(d unison.Dockable) bool {
 		_, isCalculator := d.AsPanel().Self.(*Dockable)

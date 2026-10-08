@@ -12,6 +12,7 @@ package ux
 import (
 	"testing"
 
+	"github.com/richardwilkes/gcs/v5/ux/uxtest"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/unison"
@@ -68,7 +69,7 @@ func TestSheetSettingsPageRefsAreAllLinks(t *testing.T) {
 		refs = append(refs, option.pageRef)
 		panel := unison.NewPanel()
 		d.addCheckBox(panel, option.title, option.pageRef, false, func(bool) {})
-		labels := panelsOfType[*TextLabel](panel)
+		labels := uxtest.PanelsOfType[*TextLabel](panel)
 		if len(labels) != 1 {
 			t.Fatalf("%q must be followed by its page reference, but %d labels follow it", option.title, len(labels))
 		}

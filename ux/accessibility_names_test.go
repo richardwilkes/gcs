@@ -12,7 +12,6 @@ package ux
 import (
 	"fmt"
 	"strconv"
-	"strings"
 	"testing"
 
 	"github.com/richardwilkes/gcs/v5/model/criteria"
@@ -26,10 +25,9 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/study"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/traitsel"
 	"github.com/richardwilkes/gcs/v5/model/jio"
+	"github.com/richardwilkes/gcs/v5/ux/uxtest"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/unison"
-	"github.com/richardwilkes/unison/accessibility"
-	"github.com/richardwilkes/unison/enums/role"
 )
 
 // TestEveryControlHasAnAccessibleName opens the sheet, each editor seeded with every kind of feature and prerequisite,
@@ -43,11 +41,11 @@ import (
 // headers and the cells of its rows -- is checked along with everything else.
 func TestEveryControlHasAnAccessibleName(t *testing.T) {
 	c := check.New(t)
-	screen, wnd := startHeadlessWorkspace(t, c)
-	audit := &axNameAudit{t: t, screen: screen, wnd: wnd}
-	audit.check("workspace", wnd.Content())
+	screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
+	audit := &axNameAudit{AXNameAudit: uxtest.NewAXNameAudit(t, screen, wnd), t: t, screen: screen}
+	audit.Check("workspace", wnd.Content())
 
-	sheet, ok := openedByAction(t, screen, newCharacterSheetAction).(*Sheet)
+	sheet, ok := uxtest.OpenedByAction(t, screen, newCharacterSheetAction).(*Sheet)
 	if !ok {
 		t.Fatal("New Character Sheet must open a character sheet")
 	}
@@ -67,9 +65,9 @@ func TestEveryControlHasAnAccessibleName(t *testing.T) {
 		entity.Recalculate()
 		sheet.Rebuild(true)
 	})
-	audit.check("character sheet", sheet)
+	audit.Check("character sheet", sheet)
 	screen.Do(func() { sheet.toggleLayoutEditing() })
-	audit.check("character sheet layout editing", sheet)
+	audit.Check("character sheet layout editing", sheet)
 	screen.Do(func() { sheet.toggleLayoutEditing() })
 
 	// Every feature and prerequisite type has a row of its own in the editors, so each editor is seeded with one of
@@ -131,7 +129,7 @@ func TestEveryControlHasAnAccessibleName(t *testing.T) {
 		}, {DefaultType: gurps.ParryID}}
 		EditSkill(sheet, s)
 	})
-	audit.checkOpened("technique editor", func() {
+	audit.CheckOpened("technique editor", func() {
 		EditSkill(sheet, gurps.NewTechnique(entity, nil, "Audit Skill"))
 	})
 	audit.checkRows("spell editor", func() {
@@ -151,17 +149,17 @@ func TestEveryControlHasAnAccessibleName(t *testing.T) {
 		m.Features = allFeatures(m, true)
 		EditEquipmentModifier(sheet, m)
 	})
-	audit.checkOpened("note editor", func() { EditNote(sheet, gurps.NewNote(entity, nil, false)) })
+	audit.CheckOpened("note editor", func() { EditNote(sheet, gurps.NewNote(entity, nil, false)) })
 	audit.checkRows("melee weapon editor", func() {
 		w := gurps.NewWeapon(gurps.NewTrait(entity, nil, false), true)
 		w.Defaults = []*gurps.SkillDefault{{DefaultType: gurps.SkillID}}
 		EditWeapon(sheet, w)
 	})
 	// With no defaults, so that the empty defaults panel's placeholder is checked.
-	audit.checkOpened("ranged weapon editor", func() {
+	audit.CheckOpened("ranged weapon editor", func() {
 		EditWeapon(sheet, gurps.NewWeapon(gurps.NewTrait(entity, nil, false), false))
 	})
-	audit.checkOpened("points editor", func() {
+	audit.CheckOpened("points editor", func() {
 		entity.PointsRecord = append(entity.PointsRecord, &gurps.PointsRecord{
 			When:   jio.Now(),
 			Points: fxp.Five,
@@ -170,23 +168,23 @@ func TestEveryControlHasAnAccessibleName(t *testing.T) {
 		displayPointsEditor(sheet, entity)
 	})
 
-	audit.checkOpened("sheet settings", func() { ShowSheetSettings(sheet) })
-	audit.checkOpened("attribute settings", func() { ShowAttributeSettings(sheet) })
-	audit.checkOpened("body settings", func() { ShowBodySettings(sheet) })
-	audit.checkOpened("general settings", ShowGeneralSettings)
-	audit.checkOpened("color settings", ShowColorSettings)
-	audit.checkOpened("font settings", ShowFontSettings)
-	audit.checkOpened("menu key settings", ShowMenuKeySettings)
-	audit.checkOpened("page reference mappings", ShowPageRefMappings)
-	audit.checkOpened("library settings", func() { ShowLibrarySettings(gurps.GlobalSettings().Libraries.User()) })
+	audit.CheckOpened("sheet settings", func() { ShowSheetSettings(sheet) })
+	audit.CheckOpened("attribute settings", func() { ShowAttributeSettings(sheet) })
+	audit.CheckOpened("body settings", func() { ShowBodySettings(sheet) })
+	audit.CheckOpened("general settings", ShowGeneralSettings)
+	audit.CheckOpened("color settings", ShowColorSettings)
+	audit.CheckOpened("font settings", ShowFontSettings)
+	audit.CheckOpened("menu key settings", ShowMenuKeySettings)
+	audit.CheckOpened("page reference mappings", ShowPageRefMappings)
+	audit.CheckOpened("library settings", func() { ShowLibrarySettings(gurps.GlobalSettings().Libraries.User()) })
 
-	audit.checkOpened("character template", func() { newCharacterTemplateAction.Execute(nil) })
-	audit.checkOpened("loot sheet", func() { newLootSheetAction.Execute(nil) })
-	audit.checkOpened("traits library", func() { newTraitsLibraryAction.Execute(nil) })
-	audit.checkOpened("equipment library", func() { newEquipmentLibraryAction.Execute(nil) })
-	audit.checkOpened("markdown file", func() { newMarkdownFileAction.Execute(nil) })
+	audit.CheckOpened("character template", func() { newCharacterTemplateAction.Execute(nil) })
+	audit.CheckOpened("loot sheet", func() { newLootSheetAction.Execute(nil) })
+	audit.CheckOpened("traits library", func() { newTraitsLibraryAction.Execute(nil) })
+	audit.CheckOpened("equipment library", func() { newEquipmentLibraryAction.Execute(nil) })
+	audit.CheckOpened("markdown file", func() { newMarkdownFileAction.Execute(nil) })
 
-	if d, isOne := audit.open(func() { newAncestryAction.Execute(nil) }).(*ancestryEditorDockable); isOne {
+	if d, isOne := audit.Open(func() { newAncestryAction.Execute(nil) }).(*ancestryEditorDockable); isOne {
 		screen.Do(func() {
 			d.model.CommonOptions.HairOptions = append(d.model.CommonOptions.HairOptions,
 				&gurps.WeightedStringOption{Weight: 1, Value: "Brown"})
@@ -196,11 +194,11 @@ func TestEveryControlHasAnAccessibleName(t *testing.T) {
 			})
 			d.sync()
 		})
-		audit.check("ancestry editor", d)
+		audit.Check("ancestry editor", d)
 	} else {
 		t.Error("the ancestry editor did not open")
 	}
-	if d, isOne := audit.open(func() { newNameGeneratorAction.Execute(nil) }).(*nameGeneratorEditorDockable); isOne {
+	if d, isOne := audit.Open(func() { newNameGeneratorAction.Execute(nil) }).(*nameGeneratorEditorDockable); isOne {
 		screen.Do(func() {
 			d.model.Type = namegen.Compound
 			d.model.Compound = []*gurps.NameGenerator{
@@ -208,199 +206,12 @@ func TestEveryControlHasAnAccessibleName(t *testing.T) {
 			}
 			d.sync()
 		})
-		audit.check("name generator editor", d)
+		audit.Check("name generator editor", d)
 	} else {
 		t.Error("the name generator editor did not open")
 	}
 
-	if len(audit.failures) != 0 {
-		t.Errorf("%d controls would be announced with no name:\n%s", len(audit.failures),
-			strings.Join(audit.failures, "\n"))
-	}
-}
-
-// axNameAudit collects the controls in a headless workspace that an assistive technology would be handed with no name.
-type axNameAudit struct {
-	t        *testing.T
-	screen   *unison.HeadlessScreen
-	wnd      *unison.Window
-	failures []string
-}
-
-// open runs fn on the UI thread and returns the dockable it opened, or nil -- and a test error -- if it opened some
-// other number of them.
-func (a *axNameAudit) open(fn func()) unison.Dockable {
-	a.t.Helper()
-	var opened []unison.Dockable
-	a.screen.Do(func() {
-		before := make(map[unison.Dockable]bool)
-		for _, d := range AllDockables() {
-			before[d] = true
-		}
-		fn()
-		for _, d := range AllDockables() {
-			if !before[d] {
-				opened = append(opened, d)
-			}
-		}
-	})
-	if len(opened) != 1 {
-		a.t.Errorf("expected exactly one dockable to open; %d did", len(opened))
-		return nil
-	}
-	return opened[0]
-}
-
-// checkOpened opens a dockable with fn and checks the controls in it.
-func (a *axNameAudit) checkOpened(view string, fn func()) {
-	a.t.Helper()
-	if d := a.open(fn); d != nil {
-		a.check(view, d)
-	}
-}
-
-// check describes the window afresh and records every control under root that has no name.
-func (a *axNameAudit) check(view string, root unison.Paneler) {
-	a.t.Helper()
-	tree := a.screen.AccessibilityTree(a.wnd)
-	if tree == nil {
-		a.t.Fatalf("%s: the window was not described", view)
-	}
-	rootNode := a.screen.AccessibilityNodeFor(root)
-	if rootNode == nil {
-		a.t.Fatalf("%s: the view was not described", view)
-	}
-	// The panels that were described, by node, so that a failure can say what the control is and where it sits. What
-	// a widget describes without a panel apiece -- a table's rows and cells -- has no entry and is placed by its
-	// ancestors instead.
-	panels := make(map[accessibility.NodeID]*unison.Panel)
-	var visible []*unison.Panel
-	a.screen.Do(func() {
-		var walk func(p *unison.Panel)
-		walk = func(p *unison.Panel) {
-			if p.Hidden {
-				return
-			}
-			visible = append(visible, p)
-			for _, child := range p.Children() {
-				walk(child)
-			}
-		}
-		walk(root.AsPanel())
-	})
-	for _, p := range visible {
-		if node := a.screen.AccessibilityNodeFor(p); node != nil {
-			panels[node.ID] = p
-		}
-	}
-	seen := make(map[accessibility.NodeID]bool)
-	var walk func(id accessibility.NodeID)
-	walk = func(id accessibility.NodeID) {
-		if seen[id] {
-			return
-		}
-		seen[id] = true
-		node := tree.Node(id)
-		if node == nil {
-			return
-		}
-		if !node.Ignored && node.Name == "" && axNodeNeedsAName(node) {
-			a.failures = append(a.failures, a.describe(view, tree, node, panels))
-		}
-		for _, child := range node.Children {
-			walk(child)
-		}
-	}
-	walk(rootNode.ID)
-}
-
-// axNodeNeedsAName reports whether a node is something a person is expected to read, change or act on, and so must be
-// announced by name. A table's rows and cells are where its keyboard focus is reported, so they are focusable without
-// being controls: a cell with nothing in it is rightly announced as blank, and one with a control in it is checked
-// through that control.
-//
-// A document is listed outright rather than left to the focusable fallback, because whether it is focusable depends on
-// the platform: on Windows and Linux a markdown view takes the keyboard focus while a screen reader is running, so that
-// the reader's cursor can be moved into it, and it is then announced by name on landing there; on macOS it never does.
-// Naming it here keeps the check the same everywhere, so that a markdown view left unnamed fails on the machine the
-// change was made on rather than only in CI.
-func axNodeNeedsAName(node *accessibility.Node) bool {
-	switch node.Role {
-	case role.TextField, role.TextArea, role.SpinButton, role.ComboBox, role.PopupButton, role.Slider,
-		role.ProgressBar, role.ColorWell, role.List, role.Table, role.Tree, role.Button, role.CheckBox,
-		role.RadioButton, role.ToggleButton, role.Link, role.ColumnHeader, role.Document:
-		return true
-	case role.Row, role.Cell:
-		return false
-	default:
-		return node.Focusable
-	}
-}
-
-// describe says where an unnamed control is, in terms that point at the code that built it.
-func (a *axNameAudit) describe(view string, tree *accessibility.Tree, node *accessibility.Node, panels map[accessibility.NodeID]*unison.Panel) string {
-	var b strings.Builder
-	fmt.Fprintf(&b, "  %s: %v", view, node.Role)
-	if node.Placeholder != "" {
-		fmt.Fprintf(&b, " placeholder=%q", node.Placeholder)
-	}
-	if node.Description != "" {
-		fmt.Fprintf(&b, " description=%q", axTruncate(node.Description))
-	}
-	if p := panels[node.ID]; p != nil {
-		a.screen.Do(func() {
-			fmt.Fprintf(&b, " %s", axPanelTypeName(p))
-			if parent := p.Parent(); parent != nil {
-				if i := parent.IndexOfChild(p); i > 0 {
-					fmt.Fprintf(&b, " after %s", axPanelTypeName(parent.Children()[i-1]))
-				} else {
-					b.WriteString(" first in its parent")
-				}
-			}
-			b.WriteString(" in ")
-			for q, depth := p.Parent(), 0; q != nil && depth < 4; q, depth = q.Parent(), depth+1 {
-				if depth > 0 {
-					b.WriteString(" < ")
-				}
-				b.WriteString(axPanelTypeName(q))
-			}
-		})
-		return b.String()
-	}
-	if node.Role == role.ColumnHeader || node.Role == role.Cell {
-		fmt.Fprintf(&b, " column=%d", node.ColumnIndex)
-	}
-	b.WriteString(" (no panel of its own) in")
-	for _, id := range tree.Path(node.ID) {
-		if id == node.ID {
-			continue
-		}
-		if n := tree.Node(id); n != nil && n.Name != "" {
-			fmt.Fprintf(&b, " %v %q /", n.Role, axTruncate(n.Name))
-		}
-	}
-	return b.String()
-}
-
-// axPanelTypeName names a panel by its type, with a label's text alongside since that is what tells labels apart.
-func axPanelTypeName(p *unison.Panel) string {
-	name := fmt.Sprintf("%T", p.Self)
-	name = strings.TrimPrefix(name, "*github.com/richardwilkes/gcs/v5/ux.")
-	name = strings.TrimPrefix(name, "*github.com/richardwilkes/unison.")
-	name = strings.TrimPrefix(name, "*")
-	if label, ok := p.Self.(*unison.Label); ok {
-		name += fmt.Sprintf("(%q)", label.String())
-	}
-	return name
-}
-
-// axTruncate keeps a description short enough to read in a failure.
-func axTruncate(s string) string {
-	s = strings.Join(strings.Fields(s), " ")
-	if len(s) > 60 {
-		return s[:60] + "…"
-	}
-	return s
+	audit.Report()
 }
 
 // seedEveryPrereqControl turns on every optional criterion of the prerequisites in the root, and adds a group with a
@@ -482,31 +293,38 @@ func seedEveryFeatureControl(list gurps.Features) {
 	}
 }
 
+// axNameAudit is uxtest.AXNameAudit with checkRows, which knows the panels of ux's editors.
+type axNameAudit struct {
+	*uxtest.AXNameAudit
+	t      *testing.T
+	screen *unison.HeadlessScreen
+}
+
 // checkRows opens a dockable with fn and checks the controls in it, with its prerequisites, defaults and features
 // panels collapsed as they start out, then again with them expanded and each of their rows open in turn, since a closed
 // row shows only its sentence.
 func (a *axNameAudit) checkRows(view string, fn func()) {
 	a.t.Helper()
-	d := a.open(fn)
+	d := a.Open(fn)
 	if d == nil {
 		return
 	}
-	a.check(view, d)
+	a.Check(view, d)
 	// A prerequisites, defaults or features panel with anything in it starts out collapsed, showing a paragraph in
 	// place of its rows, and its title bar says so.
 	var collapsed []*sectionToggle
 	a.screen.Do(func() {
-		for _, p := range panelsOfType[*prereqPanel](d.AsPanel()) {
+		for _, p := range uxtest.PanelsOfType[*prereqPanel](d.AsPanel()) {
 			if len(p.tree().Prereqs) != 0 {
 				collapsed = append(collapsed, p.collapse)
 			}
 		}
-		for _, p := range panelsOfType[*featuresPanel](d.AsPanel()) {
+		for _, p := range uxtest.PanelsOfType[*featuresPanel](d.AsPanel()) {
 			if len(*p.features) != 0 {
 				collapsed = append(collapsed, p.collapse)
 			}
 		}
-		for _, p := range panelsOfType[*defaultsPanel](d.AsPanel()) {
+		for _, p := range uxtest.PanelsOfType[*defaultsPanel](d.AsPanel()) {
 			if len(*p.defaults) != 0 {
 				collapsed = append(collapsed, p.collapse)
 			}
@@ -522,11 +340,11 @@ func (a *axNameAudit) checkRows(view string, fn func()) {
 			toggle.toggle()
 		}
 	})
-	a.check(view+", expanded", d)
+	a.Check(view+", expanded", d)
 	var names []string
 	var toggles []func()
 	a.screen.Do(func() {
-		for _, p := range panelsOfType[*prereqPanel](d.AsPanel()) {
+		for _, p := range uxtest.PanelsOfType[*prereqPanel](d.AsPanel()) {
 			for i, one := range p.tree().Prereqs {
 				if one.PrereqType() != prereq.List && one.PrereqType() != prereq.Unknown {
 					path := childPath(treeRootPath, i)
@@ -535,7 +353,7 @@ func (a *axNameAudit) checkRows(view string, fn func()) {
 				}
 			}
 		}
-		for _, p := range panelsOfType[*featuresPanel](d.AsPanel()) {
+		for _, p := range uxtest.PanelsOfType[*featuresPanel](d.AsPanel()) {
 			for i, one := range *p.features {
 				if one.FeatureType() != feature.Unknown {
 					path := strconv.Itoa(i)
@@ -544,7 +362,7 @@ func (a *axNameAudit) checkRows(view string, fn func()) {
 				}
 			}
 		}
-		for _, p := range panelsOfType[*defaultsPanel](d.AsPanel()) {
+		for _, p := range uxtest.PanelsOfType[*defaultsPanel](d.AsPanel()) {
 			for i := range *p.defaults {
 				path := strconv.Itoa(i)
 				names = append(names, "default "+path)
@@ -558,6 +376,6 @@ func (a *axNameAudit) checkRows(view string, fn func()) {
 	}
 	for i, toggle := range toggles {
 		a.screen.Do(toggle)
-		a.check(view+", "+names[i]+" open", d)
+		a.Check(view+", "+names[i]+" open", d)
 	}
 }

@@ -17,6 +17,7 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/jio"
+	"github.com/richardwilkes/gcs/v5/ux/uxtest"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/toolbox/v2/tid"
 	"github.com/richardwilkes/unison"
@@ -154,7 +155,7 @@ func TestAttachModifierClonesAsksAboutContainersOnASheet(t *testing.T) {
 	recordPrompts := func(t *testing.T, respond func(title string, modifiers []*gurps.TraitModifier) (changed, canceled bool)) *[]prompt {
 		t.Helper()
 		var prompts []prompt
-		swapForTest(t, &promptForTraitModifiers, func(info *modifierPromptInfo, modifiers []*gurps.TraitModifier) (changed, canceled bool) {
+		uxtest.SwapForTest(t, &promptForTraitModifiers, func(info *modifierPromptInfo, modifiers []*gurps.TraitModifier) (changed, canceled bool) {
 			title := info.name
 			p := prompt{title: title}
 			gurps.Traverse(func(m *gurps.TraitModifier) bool {
@@ -220,7 +221,7 @@ func TestAttachModifierClonesAsksAboutContainersOnASheet(t *testing.T) {
 			return false, title == "Alpha"
 		})
 		nameablesShown := 0
-		swapForTest(t, &promptForNameables, slicedNameablesPrompt(func(_ []string, _ []map[string]string, _ [][]string) bool {
+		uxtest.SwapForTest(t, &promptForNameables, slicedNameablesPrompt(func(_ []string, _ []map[string]string, _ [][]string) bool {
 			nameablesShown++
 			return true
 		}))
@@ -284,7 +285,7 @@ func TestAttachModifierClonesCanceledPromptPutsTheTargetBack(t *testing.T) {
 	named.Name = "@Material@ Coating"
 	named.Replacements = map[string]string{"Material": "Steel"} // As an older version saved it.
 	shown := 0
-	swapForTest(t, &promptForNameables, slicedNameablesPrompt(func(_ []string, _ []map[string]string, _ [][]string) bool {
+	uxtest.SwapForTest(t, &promptForNameables, slicedNameablesPrompt(func(_ []string, _ []map[string]string, _ [][]string) bool {
 		shown++
 		c.Equal(map[string]string{"Foo": "Bar", "Material": "Steel"}, trait.Replacements,
 			"the modifier's replacements must have been moved onto the trait by the time the prompt is up")
@@ -381,7 +382,7 @@ func TestApplySelectedModifiersAppliesASelectedContainerOnceAndRecordsItsSource(
 	sheet := newApplyModifierTestSheet(t)
 	entity := sheet.Entity()
 	alpha := entity.Traits[0]
-	_, user := useTestLibraries(t, c)
+	_, user := uxtest.UseTestLibraries(t, c)
 	group := gurps.NewTraitModifier(nil, nil, true)
 	group.Name = "Group"
 	inner := gurps.NewTraitModifier(nil, group, false)
@@ -392,10 +393,10 @@ func TestApplySelectedModifiersAppliesASelectedContainerOnceAndRecordsItsSource(
 	library.table.SetSelectionMap(map[tid.TID]bool{group.ID(): true, inner.ID(): true})
 	c.Equal(2, len(library.table.SelectedRows(false)),
 		"both the container and the modifier within it must be selected for the check to mean anything")
-	swapForTest(t, &promptForModifierDestination, func(_ promptOperation, _ []FileBackedDockable) (FileBackedDockable, bool) {
+	uxtest.SwapForTest(t, &promptForModifierDestination, func(_ promptOperation, _ []FileBackedDockable) (FileBackedDockable, bool) {
 		return sheet, true
 	})
-	swapForTest(t, &showModifierTargetsPrompt, func(_ promptOperation, _ string, list unison.Paneler, _ ...*unison.Label) bool {
+	uxtest.SwapForTest(t, &showModifierTargetsPrompt, func(_ promptOperation, _ string, list unison.Paneler, _ ...*unison.Label) bool {
 		targets, ok := list.(*unison.List[modifierTargetChoice[*gurps.Trait]])
 		if !ok {
 			t.Errorf("the target prompt must hold a list of trait choices, not a %T", list)
@@ -546,7 +547,7 @@ func TestApplyModifiersToCanceledPromptChangesNothing(t *testing.T) {
 	mod := newSwitchableEquipmentModifier("Fine @Quality@")
 	forbidModifierPrompts(t)
 	shown := 0
-	swapForTest(t, &promptForNameables, slicedNameablesPrompt(func(titles []string, _ []map[string]string, _ [][]string) bool {
+	uxtest.SwapForTest(t, &promptForNameables, slicedNameablesPrompt(func(titles []string, _ []map[string]string, _ [][]string) bool {
 		shown++
 		c.Equal(2, len(titles), "one prompt covers the copy each target got")
 		c.Equal(0, counter.count, "nothing may be shown before the prompt is answered")
@@ -584,7 +585,7 @@ func TestApplyModifiersToKeepsEveryNameableAnswer(t *testing.T) {
 	color.Name = "@Color@ Paint"
 	answers := map[string]string{"Material": "Steel", "Color": "Red"}
 	shown := 0
-	swapForTest(t, &promptForNameables, slicedNameablesPrompt(func(titles []string, nameables []map[string]string, _ [][]string) bool {
+	uxtest.SwapForTest(t, &promptForNameables, slicedNameablesPrompt(func(titles []string, nameables []map[string]string, _ [][]string) bool {
 		shown++
 		c.Equal(2, len(titles), "one prompt covers both modifiers")
 		for _, one := range nameables {
@@ -611,7 +612,7 @@ func TestApplyModifiersToDestinationsWithoutAnEntity(t *testing.T) {
 	forbidPrompts := func(t *testing.T) {
 		t.Helper()
 		forbidModifierPrompts(t)
-		swapForTest(t, &promptForNameables, slicedNameablesPrompt(func(titles []string, _ []map[string]string, _ [][]string) bool {
+		uxtest.SwapForTest(t, &promptForNameables, slicedNameablesPrompt(func(titles []string, _ []map[string]string, _ [][]string) bool {
 			t.Errorf("the nameables prompt must not be shown, but was shown for %v", titles)
 			return false
 		}))
@@ -689,7 +690,7 @@ func TestApplyModifiersToDestinationsWithoutAnEntity(t *testing.T) {
 		forbidPrompts(t)
 		registerKeyBindingsOnce.Do(registerActions)
 		RegisterKnownFileTypes() // Docking asks for the library's icon, which comes from the file type registry.
-		swapForTest(t, &Workspace.DocumentDock, NewDocumentDock())
+		uxtest.SwapForTest(t, &Workspace.DocumentDock, NewDocumentDock())
 		trait := gurps.NewTrait(nil, nil, false)
 		trait.Name = "Library Trait"
 		library := NewTraitTableDockable("traits"+gurps.TraitsExt, []*gurps.Trait{trait})
@@ -827,7 +828,7 @@ func TestApplyModifierCommandNeedsASelectionAndADestination(t *testing.T) {
 	registerKeyBindingsOnce.Do(registerActions)
 	RegisterKnownFileTypes() // Docking asks for the sheet's icon, which comes from the file type registry.
 	sheet := newApplyModifierTestSheet(t)
-	swapForTest(t, &Workspace.DocumentDock, NewDocumentDock())
+	uxtest.SwapForTest(t, &Workspace.DocumentDock, NewDocumentDock())
 	mod := gurps.NewTraitModifier(nil, nil, false)
 	mod.Name = "Ranged"
 	melee := gurps.NewTraitModifier(nil, nil, false)
@@ -889,7 +890,7 @@ func TestApplySelectedModifiersAcrossBothEquipmentLists(t *testing.T) {
 	forbidModifierPrompts(t)
 	sheet := newApplyModifierTestSheet(t)
 	entity := sheet.Entity()
-	swapForTest(t, &Workspace.DocumentDock, NewDocumentDock())
+	uxtest.SwapForTest(t, &Workspace.DocumentDock, NewDocumentDock())
 	Workspace.DocumentDock.DockTo(sheet, nil, side.Left)
 	mod := gurps.NewEquipmentModifier(nil, nil, false)
 	mod.Name = "Fine"
@@ -897,7 +898,7 @@ func TestApplySelectedModifiersAcrossBothEquipmentLists(t *testing.T) {
 	library := NewEquipmentModifierTableDockable("mods"+gurps.EquipmentModifiersExt, []*gurps.EquipmentModifier{mod})
 	library.table.SelectAll()
 	var offered []string
-	swapForTest(t, &promptForModifierDestination, func(_ promptOperation, choices []FileBackedDockable) (FileBackedDockable, bool) {
+	uxtest.SwapForTest(t, &promptForModifierDestination, func(_ promptOperation, choices []FileBackedDockable) (FileBackedDockable, bool) {
 		for _, choice := range choices {
 			offered = append(offered, choice.Title())
 		}
@@ -905,7 +906,7 @@ func TestApplySelectedModifiersAcrossBothEquipmentLists(t *testing.T) {
 	})
 	var header string
 	var labels []string
-	swapForTest(t, &showModifierTargetsPrompt, func(_ promptOperation, h string, list unison.Paneler, _ ...*unison.Label) bool {
+	uxtest.SwapForTest(t, &showModifierTargetsPrompt, func(_ promptOperation, h string, list unison.Paneler, _ ...*unison.Label) bool {
 		header = h
 		targets, ok := list.(*unison.List[modifierTargetChoice[*gurps.Equipment]])
 		if !ok {

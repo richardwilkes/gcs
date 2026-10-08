@@ -28,7 +28,7 @@ func TestDisabledControlsJoinTheTabOrderForScreenReaders(t *testing.T) {
 	c := check.New(t)
 	screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
 	setFocusForReading := uxtest.FocusForReadingSetter(t, screen, wnd)
-	sheet := uxtest.OpenNewCharacterSheet(t, screen)
+	sheet := openNewCharacterSheet(t, screen)
 	screen.Do(func() { Display(sheet) })
 	calc := uxtest.SoleEditor[*Dockable](t, screen, func(d unison.Dockable) bool {
 		_, isCalculator := d.AsPanel().Self.(*Dockable)

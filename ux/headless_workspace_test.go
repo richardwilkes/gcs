@@ -10,81 +10,21 @@
 package ux
 
 import (
-	"image/png"
 	"io/fs"
-	"maps"
 	"os"
 	"path/filepath"
-	"slices"
 	"strings"
 	"testing"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/library"
+	"github.com/richardwilkes/gcs/v5/ux/uxtest"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
 	"github.com/richardwilkes/unison/enums/mod"
 )
-
-// startHeadlessWorkspace starts a headless unison session running the GCS workspace -- menu bar, navigator and document
-// dock in one window -- as Start does, minus the update checks and the handoff service. It returns the screen driving
-// the session and the workspace window. The session is stopped when the test ends and the process-wide state the
-// workspace touches is put back: the Workspace global, the settings path, the libraries (see useTestLibraries), the
-// recent files and last-used directories (see preserveRecentFilesAndLastDirs) and the workspace-restoration setting,
-// which is turned off so that the dock does not try to restore whatever the settings hold.
-//
-// Stop clears every window's close callbacks and stops every modal loop before it quits, so a dockable left open with
-// unsaved changes cannot hang the shutdown with a save prompt, and the workspace's own close handler, which saves the
-// global settings, never runs. Even so, a test should leave the dockables it opened closed or unmodified.
-//
-// Anything the session recorded through Errors() fails the test when it ends. Sessions run one at a time and own most
-// of unison's mutable globals while they run, so a test using this must not call t.Parallel.
-func startHeadlessWorkspace(t *testing.T, c check.Checker) (*unison.HeadlessScreen, *unison.Window) {
-	t.Helper()
-	swapForTest(t, &Workspace, Workspace) // The session replaces most of the workspace; put all of it back.
-	swapForTest(t, &gurps.SettingsPath, filepath.Join(t.TempDir(), "settings.json"))
-	swapForTest(t, &gurps.GlobalSettings().General.RestoreWorkspaceOnStart, false)
-	useTestLibraries(t, c)
-	preserveRecentFilesAndLastDirs(t)
-	// main registers the file types before starting the UI; the navigator looks its folder icons up in that registry.
-	RegisterKnownFileTypes()
-
-	var wnd *unison.Window
-	screen, err := unison.StartHeadless(unison.HeadlessConfig{Width: 1400, Height: 900},
-		unison.StartupFinishedCallback(func() {
-			w, wndErr := unison.NewWindow("GCS")
-			if wndErr != nil {
-				t.Errorf("unable to create the workspace window: %v", wndErr)
-				return
-			}
-			RegisterWindowDragTypes(w)
-			SetupMenuBar(w)
-			InitWorkspace(w)
-			wnd = w
-		}))
-	if err != nil {
-		t.Fatalf("unable to start the headless session: %v", err)
-	}
-	// Registered ahead of Stop so that it runs after the session has ended, by which time everything it will record
-	// has been recorded.
-	t.Cleanup(func() {
-		for _, one := range screen.Errors() {
-			t.Errorf("the headless session recorded an error: %v", one)
-		}
-	})
-	t.Cleanup(screen.Stop)
-	if wnd == nil {
-		t.Fatal("the workspace window was not created")
-	}
-	// The workspace reports errors with a modal dialog once it has finished initializing. Nobody would dismiss it, so
-	// report them as test failures instead.
-	screen.Do(func() {
-		Workspace.ErrorHandler = func(msg string, err error) { t.Errorf("unexpected error: %s: %v", msg, err) }
-	})
-	return screen, wnd
-}
 
 // showInTestWindow opens a window of the given width holding the panels, one per row, each filling the width. The
 // window is disposed of when the test ends.
@@ -117,41 +57,6 @@ func showInTestWindow(t *testing.T, screen *unison.HeadlessScreen, width float32
 	return wnd
 }
 
-// preserveRecentFilesAndLastDirs puts the global settings' recent files list and last-used directories back when the
-// test ends. Saving or opening a file records the file in the one and its directory in the other, and the global
-// settings are process-wide, so a temporary path left in either would be offered to every test that runs afterwards.
-func preserveRecentFilesAndLastDirs(t *testing.T) {
-	t.Helper()
-	global := gurps.GlobalSettings()
-	savedRecentFiles := slices.Clone(global.RecentFiles)
-	savedLastDirs := maps.Clone(global.LastDirs)
-	t.Cleanup(func() {
-		global.RecentFiles = savedRecentFiles
-		global.LastDirs = savedLastDirs
-	})
-}
-
-// captureScreen writes what the screen shows to name.png in the directory named by GCS_HEADLESS_CAPTURE_DIR, for the
-// person running the test to look at. When nothing is named there, nothing is captured.
-func captureScreen(t *testing.T, c check.Checker, screen *unison.HeadlessScreen, name string) {
-	t.Helper()
-	dir := os.Getenv("GCS_HEADLESS_CAPTURE_DIR")
-	if dir == "" {
-		return
-	}
-	img := screen.Capture()
-	if img == nil {
-		t.Fatal("the screen could not be captured")
-	}
-	path := filepath.Join(dir, name+".png")
-	f, err := os.Create(path) //nolint:gosec // G703: writing into the directory named in the environment is the point
-	if err != nil {
-		t.Fatalf("unable to create %s: %v", path, err)
-	}
-	c.NoError(png.Encode(f, img), "encoding %s", path)
-	c.NoError(f.Close(), "closing %s", path)
-}
-
 // dragRowAheadOf drags the handle of the from'th child of rows to the upper half of the to'th, which asks for the row
 // to be inserted ahead of that one. Both rows must be in view for the drag to land where it is aimed, so the span from
 // a little above the target row to the dragged row's handle is scrolled into view first; the headroom keeps the pointer
@@ -169,7 +74,7 @@ func dragRowAheadOf(t *testing.T, screen *unison.HeadlessScreen, wnd *unison.Win
 		if from < 0 || from >= count || to < 0 || to >= count {
 			return
 		}
-		handles := panelsOfType[*DragHandle](children[from])
+		handles := uxtest.PanelsOfType[*DragHandle](children[from])
 		if len(handles) == 0 {
 			return
 		}
@@ -205,7 +110,7 @@ func dragRowAheadOf(t *testing.T, screen *unison.HeadlessScreen, wnd *unison.Win
 // buttonWithSVG returns the first button within root whose icon is the given SVG, or nil if there is none. Toolbar and
 // row buttons in GCS have no title, so the icon is what identifies them.
 func buttonWithSVG(root *unison.Panel, icon *unison.SVG) *unison.Button {
-	for _, b := range panelsOfType[*unison.Button](root) {
+	for _, b := range uxtest.PanelsOfType[*unison.Button](root) {
 		if drawable, ok := b.Drawable.(*unison.DrawableSVG); ok && drawable.SVG == icon {
 			return b
 		}
@@ -216,123 +121,12 @@ func buttonWithSVG(root *unison.Panel, icon *unison.SVG) *unison.Button {
 // buttonWithTooltip returns the first button within root whose tooltip reads exactly text, or nil if there is none.
 // Where several buttons share an icon, the tooltip is what tells them apart.
 func buttonWithTooltip(root *unison.Panel, text string) *unison.Button {
-	for _, b := range panelsOfType[*unison.Button](root) {
+	for _, b := range uxtest.PanelsOfType[*unison.Button](root) {
 		if b.Tooltip != nil && tooltipText(b.Tooltip) == text {
 			return b
 		}
 	}
 	return nil
-}
-
-// In a headless session the menus are unison's pure-Go, in-window kind. The window's root panel holds, in this order,
-// any open popup menus (newest first), the menu bar, a tooltip if one is showing, and the content. A menu panel, bar or
-// popup alike, holds one scroll panel whose content has one child panel per item of the menu, in the menu's own order
-// and with the separators included, so the panel for an item is found by its index in the unison.Menu.
-
-// menuBarPanel returns the in-window menu bar of wnd. It is the one child of the root, other than the content, that
-// spans the full width of the window at the top; popups are packed to the width of their items.
-func menuBarPanel(wnd *unison.Window) *unison.Panel {
-	root := wnd.Content().Parent()
-	if root == nil {
-		return nil
-	}
-	width := root.FrameRect().Width
-	for _, child := range root.Children() {
-		if child == wnd.Content() {
-			continue
-		}
-		if r := child.FrameRect(); r.X == 0 && r.Y == 0 && r.Width == width {
-			return child
-		}
-	}
-	return nil
-}
-
-// openMenuPopup returns the most recently opened popup menu in wnd, or nil if none is open.
-func openMenuPopup(wnd *unison.Window) *unison.Panel {
-	root := wnd.Content().Parent()
-	if root == nil || len(root.Children()) == 0 {
-		return nil
-	}
-	first := root.Children()[0]
-	if first == wnd.Content() || first == menuBarPanel(wnd) {
-		return nil
-	}
-	return first
-}
-
-// menuItemPanels returns the panels of the items of a menu panel, bar or popup, one per item in the menu's order.
-func menuItemPanels(menuPanel *unison.Panel) []*unison.Panel {
-	if menuPanel == nil || len(menuPanel.Children()) == 0 {
-		return nil
-	}
-	scroller, ok := menuPanel.Children()[0].Self.(*unison.ScrollPanel)
-	if !ok || scroller.Content() == nil {
-		return nil
-	}
-	return scroller.Content().AsPanel().Children()
-}
-
-// chooseMenuBarItem chooses an item from one of the menus in wnd's menu bar the way a user would: it clicks the menu's
-// title in the bar, then the item in the popup that opens. Since every injection waits for the application to go quiet,
-// the item's handler has finished by the time this returns -- or, for a handler that puts up a modal dialog, the dialog
-// is up and idle.
-func chooseMenuBarItem(t *testing.T, screen *unison.HeadlessScreen, wnd *unison.Window, menuTitle, itemTitle string) {
-	t.Helper()
-	var titlePanel *unison.Panel
-	var menu unison.Menu
-	screen.Do(func() {
-		bar := unison.DefaultMenuFactory().BarForWindowNoCreate(wnd)
-		if bar == nil {
-			return
-		}
-		items := menuItemPanels(menuBarPanel(wnd))
-		for i := range bar.Count() {
-			item := bar.ItemAtIndex(i)
-			if item.Title() == menuTitle && item.SubMenu() != nil && i < len(items) {
-				menu = item.SubMenu()
-				titlePanel = items[i]
-				return
-			}
-		}
-	})
-	if titlePanel == nil {
-		t.Fatalf("no %q menu in the menu bar", menuTitle)
-	}
-	screen.Click(screen.PanelCenter(titlePanel))
-
-	var itemPanel *unison.Panel
-	screen.Do(func() {
-		items := menuItemPanels(openMenuPopup(wnd))
-		for i := range menu.Count() {
-			if item := menu.ItemAtIndex(i); !item.IsSeparator() && item.Title() == itemTitle && i < len(items) {
-				itemPanel = items[i]
-				return
-			}
-		}
-	})
-	if itemPanel == nil {
-		t.Fatalf("no %q item in the open %q menu", itemTitle, menuTitle)
-	}
-	screen.Click(screen.PanelCenter(itemPanel))
-}
-
-// choosePopupItem chooses the item at index from a unison.PopupMenu (or anything wrapping one, such as Popup) the way a
-// user would: it clicks the popup, which opens an in-window menu holding one item per entry in the popup's own order,
-// then clicks that menu's item. The popup's selection callback has run by the time this returns.
-func choosePopupItem(t *testing.T, screen *unison.HeadlessScreen, wnd *unison.Window, popup unison.Paneler, index int) {
-	t.Helper()
-	screen.Click(screen.PanelCenter(popup))
-	var itemPanel *unison.Panel
-	screen.Do(func() {
-		if items := menuItemPanels(openMenuPopup(wnd)); index >= 0 && index < len(items) {
-			itemPanel = items[index]
-		}
-	})
-	if itemPanel == nil {
-		t.Fatalf("no item %d in the menu the popup opened", index)
-	}
-	screen.Click(screen.PanelCenter(itemPanel))
 }
 
 // modalDialog returns the dialog window currently up alongside wnd and the unison.Dialog behind it, failing the test if
@@ -367,12 +161,12 @@ func saveDialogFields(t *testing.T, screen *unison.HeadlessScreen, dialogWnd *un
 	var title string
 	screen.Do(func() {
 		title = dialogWnd.Title()
-		if fields := panelsOfType[*unison.Field](dialogWnd.Content()); len(fields) == 1 {
+		if fields := uxtest.PanelsOfType[*unison.Field](dialogWnd.Content()); len(fields) == 1 {
 			field = fields[0]
 			fileName = field.Text()
 		}
 		// The directory popup is a PopupMenu of an unexported item type, so it is found by the methods it has.
-		if popups := panelsOfType[interface {
+		if popups := uxtest.PanelsOfType[interface {
 			Text() string
 			ItemCount() int
 		}](dialogWnd.Content()); len(popups) != 0 {
@@ -386,43 +180,6 @@ func saveDialogFields(t *testing.T, screen *unison.HeadlessScreen, dialogWnd *un
 		t.Fatal("the save dialog has no file name field")
 	}
 	return field, fileName, dirName
-}
-
-// soleEditor returns the one open dockable that match accepts, as a T, failing the test if there is not exactly one or
-// it is not a T. Only the lookup runs on the UI thread, so a caller reading anything from the editor does so in a
-// screen.Do of its own afterwards.
-func soleEditor[T unison.Dockable](t *testing.T, screen *unison.HeadlessScreen, match func(unison.Dockable) bool) T {
-	t.Helper()
-	return onlyEditor[T](t, screen, match, nil)
-}
-
-// otherEditor returns the one open dockable that match accepts besides d, as a T, failing the test if there is not
-// exactly one or it is not a T; see soleEditor.
-func otherEditor[T unison.Dockable](t *testing.T, screen *unison.HeadlessScreen, d T, match func(unison.Dockable) bool) T {
-	t.Helper()
-	return onlyEditor[T](t, screen, match, d)
-}
-
-// onlyEditor is what soleEditor and otherEditor share: it returns the one open dockable that match accepts, other than
-// except when that is not nil, failing the test if there is not exactly one or it is not a T.
-func onlyEditor[T unison.Dockable](t *testing.T, screen *unison.HeadlessScreen, match func(unison.Dockable) bool, except unison.Dockable) T {
-	t.Helper()
-	var editors []T
-	screen.Do(func() {
-		for _, one := range AllMatchingDockables(match) {
-			if editor, ok := one.AsPanel().Self.(T); ok && (except == nil || editor.AsPanel() != except.AsPanel()) {
-				editors = append(editors, editor)
-			}
-		}
-	})
-	if len(editors) != 1 {
-		var zero T
-		if except == nil {
-			t.Fatalf("expected exactly one %T, found %d", zero, len(editors))
-		}
-		t.Fatalf("expected exactly one other %T, found %d", zero, len(editors))
-	}
-	return editors[0]
 }
 
 // loadSavedFile reads the file at path with read, which is handed the file's directory and base name the way the

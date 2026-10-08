@@ -17,6 +17,7 @@ import (
 	"testing"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/ux/uxtest"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/unison"
 )
@@ -114,7 +115,7 @@ func keyBindingIDsInSource(c check.Checker) []string {
 // library.
 func TestLibraryActionsOpenAnEmptyLibraryOfTheirKind(t *testing.T) {
 	c := check.New(t)
-	screen, _ := startHeadlessWorkspace(t, c)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
 	for _, one := range []struct {
 		action *unison.Action
 		title  string
@@ -128,7 +129,7 @@ func TestLibraryActionsOpenAnEmptyLibraryOfTheirKind(t *testing.T) {
 		{newTraitModifiersLibraryAction, "Trait Modifiers", isTableDockable[*gurps.TraitModifier]},
 		{newTraitsLibraryAction, "Traits", isTableDockable[*gurps.Trait]},
 	} {
-		opened := openedByAction(t, screen, one.action)
+		opened := uxtest.OpenedByAction(t, screen, one.action)
 		var title string
 		var kind, modified bool
 		screen.Do(func() {
@@ -139,7 +140,7 @@ func TestLibraryActionsOpenAnEmptyLibraryOfTheirKind(t *testing.T) {
 		c.Equal(one.title, title, "%s must open a library named for its kind", one.action.Title)
 		c.True(kind, "%s must open a %s library", one.action.Title, one.title)
 		c.False(modified, "%s must open an unmodified library", one.action.Title)
-		closeEditorWithoutPrompt(t, screen, opened)
+		uxtest.CloseEditorWithoutPrompt(t, screen, opened)
 	}
 }
 
@@ -147,7 +148,7 @@ func TestLibraryActionsOpenAnEmptyLibraryOfTheirKind(t *testing.T) {
 // settings editor for that sheet rather than for the defaults.
 func TestPerSheetSettingsActionsFollowTheActiveSheet(t *testing.T) {
 	c := check.New(t)
-	screen, _ := startHeadlessWorkspace(t, c)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
 	actions := []*unison.Action{perSheetAttributeSettingsAction, perSheetBodyTypeSettingsAction, perSheetSettingsAction}
 	enabled := make([]bool, len(actions))
 	screen.Do(func() {
@@ -159,7 +160,7 @@ func TestPerSheetSettingsActionsFollowTheActiveSheet(t *testing.T) {
 		c.False(enabled[i], "%s must be disabled while no sheet is active", a.Title)
 	}
 
-	sheet, ok := openedByAction(t, screen, newCharacterSheetAction).(*Sheet)
+	sheet, ok := uxtest.OpenedByAction(t, screen, newCharacterSheetAction).(*Sheet)
 	if !ok {
 		t.Fatal("New Character Sheet must open a character sheet")
 	}
@@ -198,11 +199,11 @@ func TestPerSheetSettingsActionsFollowTheActiveSheet(t *testing.T) {
 			return nil
 		}},
 	} {
-		opened := openedByAction(t, screen, one.action)
+		opened := uxtest.OpenedByAction(t, screen, one.action)
 		var owner any
 		screen.Do(func() { owner = one.owner(opened) })
 		c.Equal(any(sheet), owner, "%s must open its settings editor for the active sheet", one.action.Title)
-		closeEditorWithoutPrompt(t, screen, opened)
+		uxtest.CloseEditorWithoutPrompt(t, screen, opened)
 	}
 }
 
@@ -211,8 +212,8 @@ func TestPerSheetSettingsActionsFollowTheActiveSheet(t *testing.T) {
 // two being wired to each other's.
 func TestUndoAndRedoActionsDriveTheActiveWindowUndoManager(t *testing.T) {
 	c := check.New(t)
-	screen, _ := startHeadlessWorkspace(t, c)
-	sheet, ok := openedByAction(t, screen, newCharacterSheetAction).(*Sheet)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
+	sheet, ok := uxtest.OpenedByAction(t, screen, newCharacterSheetAction).(*Sheet)
 	if !ok {
 		t.Fatal("New Character Sheet must open a character sheet")
 	}
@@ -256,39 +257,6 @@ func TestUndoAndRedoActionsDriveTheActiveWindowUndoManager(t *testing.T) {
 	c.Equal(1, redone, "Redo must redo the edit")
 	c.Equal(state{undoEnabled: true, undoTitle: "Undo Probe", redoTitle: unison.CannotRedoTitle()}, current(),
 		"redoing must make Undo available again")
-}
-
-// openedByAction executes action on the UI thread and returns the one dockable it opened, failing the test if it
-// opened any other number of them.
-func openedByAction(t *testing.T, screen *unison.HeadlessScreen, action *unison.Action) interface {
-	unison.Dockable
-	unison.TabCloser
-} {
-	t.Helper()
-	var opened []unison.Dockable
-	screen.Do(func() {
-		before := make(map[unison.Dockable]bool)
-		for _, d := range AllDockables() {
-			before[d] = true
-		}
-		action.Execute(nil)
-		for _, d := range AllDockables() {
-			if !before[d] {
-				opened = append(opened, d)
-			}
-		}
-	})
-	if len(opened) != 1 {
-		t.Fatalf("%s opened %d dockables; expected exactly one", action.Title, len(opened))
-	}
-	d, ok := opened[0].AsPanel().Self.(interface {
-		unison.Dockable
-		unison.TabCloser
-	})
-	if !ok {
-		t.Fatalf("%s opened a %T, which cannot be closed as a tab", action.Title, opened[0].AsPanel().Self)
-	}
-	return d
 }
 
 // isTableDockable reports whether d is a library table holding rows of type T.

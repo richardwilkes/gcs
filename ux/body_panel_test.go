@@ -14,6 +14,7 @@ import (
 	"testing"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/ux/uxtest"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/unison"
@@ -43,7 +44,7 @@ func TestBodyPanelNotesRefKeysAreUnique(t *testing.T) {
 	panel := NewBodyPanel(entity, NewTargetMgr(unison.NewPanel()))
 
 	isNotesField := func(p *unison.Panel) bool { return strings.HasPrefix(p.RefKey, "body:") }
-	fields := panelsMatching(panel.AsPanel(), isNotesField)
+	fields := uxtest.PanelsMatching(panel.AsPanel(), isNotesField)
 	keys := make([]string, 0, len(fields))
 	for _, field := range fields {
 		keys = append(keys, field.RefKey)

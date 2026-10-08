@@ -18,6 +18,7 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/ux/uxtest"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/i18n"
@@ -69,7 +70,7 @@ func (p *entityPanelForTest) Entity() *gurps.Entity { return p.entity }
 // with a recorder docked where syncSheet will find it. The document dock is restored when the test finishes.
 func newTestSheetSettingsDockable(t *testing.T, owner EntityPanel) (*sheetSettingsDockable, *sheetSettingsRecorder) {
 	t.Helper()
-	swapForTest(t, &Workspace.DocumentDock, NewDocumentDock())
+	uxtest.SwapForTest(t, &Workspace.DocumentDock, NewDocumentDock())
 	recorder := &sheetSettingsRecorder{}
 	recorder.Self = recorder
 	Workspace.DocumentDock.DockTo(recorder, nil, side.Left)

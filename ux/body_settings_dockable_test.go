@@ -19,6 +19,7 @@ import (
 	"testing"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/ux/uxtest"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/unison"
@@ -131,7 +132,7 @@ func TestHitLocationDragDropReordersOwningTable(t *testing.T) {
 	initTestSettingsContent(&d.undoableSettingsDockable)
 	c.Equal([]string{"1", "2-3", "4-6"}, hitLocationRollRanges(d.model))
 
-	rows := panelsOfType[*hitLocationSettingsPanel](d.AsPanel())
+	rows := uxtest.PanelsOfType[*hitLocationSettingsPanel](d.AsPanel())
 	c.Equal(5, len(rows), "every location, including those of the sub-table, has a row")
 	c.Equal("a", rows[0].loc.LocID)
 	dd := dragDataForRow(t, rows[0].AsPanel())
@@ -145,12 +146,12 @@ func TestHitLocationDragDropReordersOwningTable(t *testing.T) {
 	c.Equal(-1, d.dragInsert)
 	c.Nil(d.dragTarget)
 	c.True(d.Modified())
-	rows = panelsOfType[*hitLocationSettingsPanel](d.AsPanel())
+	rows = uxtest.PanelsOfType[*hitLocationSettingsPanel](d.AsPanel())
 	c.Equal(5, len(rows), "the rows are rebuilt")
 	c.Equal("b", rows[0].loc.LocID)
 
 	// A row of the sub-table is reordered within the sub-table alone.
-	subRows := panelsOfType[*hitLocationSettingsPanel](rows[0].AsPanel())[1:]
+	subRows := uxtest.PanelsOfType[*hitLocationSettingsPanel](rows[0].AsPanel())[1:]
 	c.Equal([]string{"x", "y"}, []string{subRows[0].loc.LocID, subRows[1].loc.LocID})
 	dd = dragDataForRow(t, subRows[1].AsPanel())
 	beginDragOver(&d.rowDragState, subRows[1].Parent(), 0)

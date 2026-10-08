@@ -13,6 +13,7 @@ import (
 	"testing"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/dgroup"
+	"github.com/richardwilkes/gcs/v5/ux/uxtest"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/unison"
@@ -139,7 +140,7 @@ func openPointsEditorForSheet(t *testing.T, screen *unison.HeadlessScreen, sheet
 		}
 		displayPointsEditor(sheet, sheet.Entity())
 	})
-	return soleEditor[*pointsEditor](t, screen, isPointsEditor)
+	return uxtest.SoleEditor[*pointsEditor](t, screen, isPointsEditor)
 }
 
 // checkReturnedToSheet verifies that the points editor is gone, leaving no prompt behind, and that the sheet is current
@@ -172,8 +173,8 @@ func checkReturnedToSheet(t *testing.T, c check.Checker, screen *unison.Headless
 // discarding at the prompt -- makes the sheet current again and hands the focus back to the field that had it.
 func TestPointsEditorOpensBesideTheSheetAndReturnsToIt(t *testing.T) {
 	c := check.New(t)
-	screen, wnd := startHeadlessWorkspace(t, c)
-	sheet, ok := openedByAction(t, screen, newCharacterSheetAction).(*Sheet)
+	screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
+	sheet, ok := uxtest.OpenedByAction(t, screen, newCharacterSheetAction).(*Sheet)
 	if !ok {
 		t.Fatal("New Character Sheet must open a character sheet")
 	}
@@ -269,7 +270,7 @@ func TestPointsEditorOpensBesideTheSheetAndReturnsToIt(t *testing.T) {
 	// Opening the editor a second time for the same sheet brings the existing one to the front instead.
 	e = openPointsEditorForSheet(t, screen, sheet)
 	screen.Do(func() { displayPointsEditor(sheet, entity) })
-	c.Equal(e, soleEditor[*pointsEditor](t, screen, isPointsEditor),
+	c.Equal(e, uxtest.SoleEditor[*pointsEditor](t, screen, isPointsEditor),
 		"asking for the editor again activates the one that is open instead of opening another")
-	closeEditorWithoutPrompt(t, screen, e)
+	uxtest.CloseEditorWithoutPrompt(t, screen, e)
 }

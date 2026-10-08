@@ -15,6 +15,7 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/criteria"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/ux/uxtest"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/unison"
 )
@@ -33,8 +34,8 @@ func newFilterTestTrait(name string, tags ...string) *gurps.Trait {
 func newFilterTestTraitDockable(t *testing.T, filters ...*gurps.ListFilter) *TableDockable[*gurps.Trait] {
 	t.Helper()
 	registerKeyBindingsOnce.Do(func() { registerActions() })
-	swapForTest(t, &gurps.SettingsPath, filepath.Join(t.TempDir(), "settings.json"))
-	swapForTest(t, &gurps.GlobalSettings().ListFilters, make(map[string][]*gurps.ListFilter))
+	uxtest.SwapForTest(t, &gurps.SettingsPath, filepath.Join(t.TempDir(), "settings.json"))
+	uxtest.SwapForTest(t, &gurps.GlobalSettings().ListFilters, make(map[string][]*gurps.ListFilter))
 	for _, f := range filters {
 		gurps.GlobalSettings().AddListFilter(gurps.ListFilterKeyForExtension(gurps.TraitsExt), f)
 	}
@@ -145,8 +146,8 @@ func TestTableDockableNewItemIsDisabledWhileFiltered(t *testing.T) {
 func TestModifierLibraryNewItemIsDisabledWhileFiltered(t *testing.T) {
 	c := check.New(t)
 	registerKeyBindingsOnce.Do(func() { registerActions() })
-	swapForTest(t, &gurps.SettingsPath, filepath.Join(t.TempDir(), "settings.json"))
-	swapForTest(t, &gurps.GlobalSettings().ListFilters, make(map[string][]*gurps.ListFilter))
+	uxtest.SwapForTest(t, &gurps.SettingsPath, filepath.Join(t.TempDir(), "settings.json"))
+	uxtest.SwapForTest(t, &gurps.GlobalSettings().ListFilters, make(map[string][]*gurps.ListFilter))
 	traitMod := gurps.NewTraitModifier(nil, nil, false)
 	traitMod.Name = "Accessibility"
 	checkNewItemsOffWhileFiltered(c,
@@ -234,7 +235,7 @@ func TestTableDockableQuickFilterMatchesTags(t *testing.T) {
 // created, renamed or deleted filter changes its size, and the toolbar has to be laid out again to show it properly.
 func TestTableDockableFilterPopupRelayoutsToolbar(t *testing.T) {
 	c := check.New(t)
-	swapForTest(t, &showFilterEditor,
+	uxtest.SwapForTest(t, &showFilterEditor,
 		func(_, _ string, filter *gurps.ListFilter, _ []filterFieldInfo, _ *gurps.ListFilter) bool {
 			filter.Name = "A filter with a name long enough to widen the popup"
 			return true
@@ -300,7 +301,7 @@ func TestTableDockableWithoutFilterKeyOmitsSavedFilters(t *testing.T) {
 	c.Equal("", d.provider.FilterKey(), "the weapon lists have no saved filters of their own")
 	c.Nil(d.savedFilters, "a list type with no filter key must get no saved filter popup, nor anything driving one")
 	c.Nil(d.provider.FilterFields(), "nor any fields for a saved filter to test")
-	for _, popup := range panelsOfType[*unison.PopupMenu[string]](d.AsPanel()) {
+	for _, popup := range uxtest.PanelsOfType[*unison.PopupMenu[string]](d.AsPanel()) {
 		c.NoPrefix(tooltipText(popup.Tooltip), "Saved Filters", "no popup in the toolbar may be the saved filter popup")
 	}
 
@@ -363,8 +364,8 @@ func TestTableDockableChoosingSavedFilterAppliesOnce(t *testing.T) {
 func TestTableDockableFilterKeepsHierarchy(t *testing.T) {
 	c := check.New(t)
 	registerKeyBindingsOnce.Do(func() { registerActions() })
-	swapForTest(t, &gurps.SettingsPath, filepath.Join(t.TempDir(), "settings.json"))
-	swapForTest(t, &gurps.GlobalSettings().ListFilters, make(map[string][]*gurps.ListFilter))
+	uxtest.SwapForTest(t, &gurps.SettingsPath, filepath.Join(t.TempDir(), "settings.json"))
+	uxtest.SwapForTest(t, &gurps.GlobalSettings().ListFilters, make(map[string][]*gurps.ListFilter))
 	container := gurps.NewTrait(nil, nil, true)
 	container.Name = "Exotic Features"
 	container.Tags = []string{"Exotic"}

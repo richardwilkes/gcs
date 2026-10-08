@@ -14,6 +14,7 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/svg"
+	"github.com/richardwilkes/gcs/v5/ux/uxtest"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/unison"
@@ -37,12 +38,12 @@ type randomizedRow struct {
 func randomizedRows(t *testing.T, root *unison.Panel) []randomizedRow {
 	t.Helper()
 	var rows []randomizedRow
-	for _, button := range panelsOfType[*unison.Button](root) {
+	for _, button := range uxtest.PanelsOfType[*unison.Button](root) {
 		if drawable, ok := button.Drawable.(*unison.DrawableSVG); !ok || drawable.SVG != svg.Randomize {
 			continue
 		}
 		wrapper := button.Parent()
-		label, ok := firstPanelOfType[*unison.Label](wrapper)
+		label, ok := uxtest.FirstPanelOfType[*unison.Label](wrapper)
 		if !ok {
 			t.Fatal("a randomizer wrapper holds no label")
 		}
@@ -176,7 +177,7 @@ func TestPageFieldRowsAlternateLabelsAndFields(t *testing.T) {
 // folded away into a label.
 func TestRandomizedPageFieldsAreNamedByTheirLabels(t *testing.T) {
 	c := check.New(t)
-	screen, _ := startHeadlessWorkspace(t, c)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
 	var wnd *unison.Window
 	var rows []randomizedRow
 	screen.Do(func() {
@@ -210,7 +211,7 @@ func TestRandomizedPageFieldsAreNamedByTheirLabels(t *testing.T) {
 		}
 		c.Equal(row.title, fieldNode.Name, "the %q field is named after its label", row.title)
 		var label *unison.Label
-		screen.Do(func() { label, _ = firstPanelOfType[*unison.Label](row.button.Parent()) })
+		screen.Do(func() { label, _ = uxtest.FirstPanelOfType[*unison.Label](row.button.Parent()) })
 		labelNode := screen.AccessibilityNodeFor(label)
 		if labelNode == nil {
 			t.Fatalf("the %q label is not described", row.title)

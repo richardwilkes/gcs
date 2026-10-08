@@ -15,6 +15,7 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/svg"
+	"github.com/richardwilkes/gcs/v5/ux/uxtest"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/unison"
@@ -95,8 +96,8 @@ func TestColumnHeaderTitle(t *testing.T) {
 // announces the columns whatever level the list was left at.
 func TestTableAnnouncesItsColumnsOnEntry(t *testing.T) {
 	c := check.New(t)
-	screen, wnd := startHeadlessWorkspace(t, c)
-	sheet, ok := openedByAction(t, screen, newCharacterSheetAction).(*Sheet)
+	screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
+	sheet, ok := uxtest.OpenedByAction(t, screen, newCharacterSheetAction).(*Sheet)
 	if !ok {
 		t.Fatal("New Character Sheet must open a character sheet")
 	}
@@ -111,9 +112,9 @@ func TestTableAnnouncesItsColumnsOnEntry(t *testing.T) {
 		entity.Traits = append(entity.Traits, tr)
 		entity.Recalculate()
 		sheet.Rebuild(true)
-		table, _ = firstPanelOfType[*unison.Table[traitRow]](sheet.AsPanel())
-		header, _ = firstPanelOfType[*unison.TableHeader[traitRow]](sheet.AsPanel())
-		field, _ = firstPanelOfType[*StringField](sheet.AsPanel())
+		table, _ = uxtest.FirstPanelOfType[*unison.Table[traitRow]](sheet.AsPanel())
+		header, _ = uxtest.FirstPanelOfType[*unison.TableHeader[traitRow]](sheet.AsPanel())
+		field, _ = uxtest.FirstPanelOfType[*StringField](sheet.AsPanel())
 	})
 	if table == nil || header == nil || field == nil {
 		t.Fatal("the character sheet must show the traits list, its header and a text field")

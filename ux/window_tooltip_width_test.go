@@ -14,6 +14,7 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/dgroup"
+	"github.com/richardwilkes/gcs/v5/ux/uxtest"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/unison"
@@ -45,18 +46,18 @@ func TestWidestTooltipWidth(t *testing.T) {
 // windows were narrower than their tooltips, which a window squeezes into its own width.
 func TestEditorWindowsFitTheirTooltips(t *testing.T) {
 	c := check.New(t)
-	screen, wnd := startHeadlessWorkspace(t, c)
-	swapForTest(t, &gurps.GlobalSettings().OpenInWindow, []dgroup.Group{dgroup.Settings})
+	screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
+	uxtest.SwapForTest(t, &gurps.GlobalSettings().OpenInWindow, []dgroup.Group{dgroup.Settings})
 
-	chooseMenuBarItem(t, screen, wnd, "File", "New Ancestry")
-	ancestry := soleEditor[*ancestryEditorDockable](t, screen, isAncestryEditor)
+	uxtest.ChooseMenuBarItem(t, screen, wnd, "File", "New Ancestry")
+	ancestry := uxtest.SoleEditor[*ancestryEditorDockable](t, screen, isAncestryEditor)
 	checkWindowFitsTooltips(t, c, screen, wnd, ancestry)
-	closeEditorWithoutPrompt(t, screen, ancestry)
+	uxtest.CloseEditorWithoutPrompt(t, screen, ancestry)
 
-	chooseMenuBarItem(t, screen, wnd, "File", "New Name Generator")
-	names := soleEditor[*nameGeneratorEditorDockable](t, screen, isNameGeneratorEditor)
+	uxtest.ChooseMenuBarItem(t, screen, wnd, "File", "New Name Generator")
+	names := uxtest.SoleEditor[*nameGeneratorEditorDockable](t, screen, isNameGeneratorEditor)
 	checkWindowFitsTooltips(t, c, screen, wnd, names)
-	closeEditorWithoutPrompt(t, screen, names)
+	uxtest.CloseEditorWithoutPrompt(t, screen, names)
 }
 
 // checkWindowFitsTooltips checks that the dockable was given a window of its own, other than the workspace window, and

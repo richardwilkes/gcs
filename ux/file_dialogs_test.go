@@ -16,6 +16,7 @@ import (
 	"testing"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/ux/uxtest"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/unison"
@@ -27,10 +28,10 @@ import (
 // is canceled.
 func TestChooseFilesToOpen(t *testing.T) {
 	c := check.New(t)
-	screen, wnd := startHeadlessWorkspace(t, c)
+	screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
 
 	// A directory holding a text file and an image, so an extension filter has something to leave out. The last-used
-	// directories are process-wide; startHeadlessWorkspace puts them back afterwards.
+	// directories are process-wide; uxtest.StartHeadlessWorkspace puts them back afterwards.
 	dir := t.TempDir()
 	textPath := filepath.Join(dir, "notes.txt")
 	imagePath := filepath.Join(dir, "picture.png")
@@ -135,7 +136,7 @@ func TestChooseFilesToOpen(t *testing.T) {
 // when canceled or when given no key.
 func TestChooseFileToSave(t *testing.T) {
 	c := check.New(t)
-	screen, wnd := startHeadlessWorkspace(t, c)
+	screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
 	dir := t.TempDir()
 	const key = "choose-file-to-save-test"
 
@@ -219,7 +220,7 @@ func openDialogFileList(t *testing.T, screen *unison.HeadlessScreen, dialogWnd *
 	var title string
 	screen.Do(func() {
 		title = dialogWnd.Title()
-		if lists := panelsOfType[fileListPanel](dialogWnd.Content()); len(lists) == 1 {
+		if lists := uxtest.PanelsOfType[fileListPanel](dialogWnd.Content()); len(lists) == 1 {
 			fileList = lists[0]
 			rowCount = fileList.Count()
 		}

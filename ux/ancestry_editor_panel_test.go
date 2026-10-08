@@ -13,12 +13,13 @@ import (
 	"testing"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/ux/uxtest"
 	"github.com/richardwilkes/toolbox/v2/check"
 )
 
 func rootAncestryPanel(t *testing.T, d *ancestryEditorDockable) *ancestryEditorPanel {
 	t.Helper()
-	roots := panelsOfType[*ancestryEditorPanel](d.AsPanel())
+	roots := uxtest.PanelsOfType[*ancestryEditorPanel](d.AsPanel())
 	if len(roots) != 1 {
 		t.Fatalf("expected exactly one root panel, found %d", len(roots))
 	}

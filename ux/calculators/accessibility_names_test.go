@@ -22,7 +22,7 @@ func TestEveryCalculatorControlHasAnAccessibleName(t *testing.T) {
 	c := check.New(t)
 	screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
 	audit := uxtest.NewAXNameAudit(t, screen, wnd)
-	sheet := uxtest.OpenNewCharacterSheet(t, screen)
+	sheet := openNewCharacterSheet(t, screen)
 	calc, isCalc := audit.Open(func() { Display(sheet) }).(*Dockable)
 	if !isCalc {
 		t.Fatal("the calculators did not open")

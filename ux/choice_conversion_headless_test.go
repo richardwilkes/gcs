@@ -13,6 +13,7 @@ import (
 	"testing"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/ux/uxtest"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/toolbox/v2/tid"
 	"github.com/richardwilkes/unison"
@@ -23,8 +24,8 @@ import (
 // since applying it would silently convert the container back and throw away what the undo or redo restored.
 func TestChoiceConversionClosesEditors(t *testing.T) {
 	c := check.New(t)
-	screen, _ := startHeadlessWorkspace(t, c)
-	swapForTest(t, &askToConvertChoiceContainers, func(_, _ string) bool { return true })
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
+	uxtest.SwapForTest(t, &askToConvertChoiceContainers, func(_, _ string) bool { return true })
 	group := gurps.NewTrait(nil, nil, true)
 	group.Name = "Advantages"
 	group.Tags = []string{"Advantage"}

@@ -12,6 +12,7 @@ package ux
 import (
 	"testing"
 
+	"github.com/richardwilkes/gcs/v5/ux/uxtest"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/unison"
@@ -22,7 +23,7 @@ import (
 // display when the frame would otherwise push it off.
 func TestPlaceWindowOver(t *testing.T) {
 	c := check.New(t)
-	screen, _ := startHeadlessWorkspace(t, c)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
 	screen.Do(func() {
 		wnd, err := unison.NewWindow("placement", unison.NotResizableWindowOption())
 		c.NoError(err)

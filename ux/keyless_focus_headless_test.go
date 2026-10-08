@@ -13,6 +13,7 @@ import (
 	"testing"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/ux/uxtest"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/role"
@@ -23,8 +24,8 @@ import (
 // made whenever the sheet's focus has to be found afresh, as when the layout editor closes.
 func TestSheetOpensWithTheFocusOnItsName(t *testing.T) {
 	c := check.New(t)
-	screen, wnd := startHeadlessWorkspace(t, c)
-	sheet, ok := openedByAction(t, screen, newCharacterSheetAction).(*Sheet)
+	screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
+	sheet, ok := uxtest.OpenedByAction(t, screen, newCharacterSheetAction).(*Sheet)
 	if !ok {
 		t.Fatal("New Character Sheet must open a character sheet")
 	}
@@ -38,7 +39,7 @@ func TestSheetOpensWithTheFocusOnItsName(t *testing.T) {
 	}
 	c.Equal(identityPanelNameFieldRefKey, focusKey(), "the sheet opens with the focus on its name")
 	var portrait *PortraitPanel
-	screen.Do(func() { portrait, _ = firstPanelOfType[*PortraitPanel](sheet.AsPanel()) })
+	screen.Do(func() { portrait, _ = uxtest.FirstPanelOfType[*PortraitPanel](sheet.AsPanel()) })
 	if portrait == nil {
 		t.Fatal("the character sheet must show the portrait")
 	}
@@ -57,7 +58,7 @@ func TestSheetOpensWithTheFocusOnItsName(t *testing.T) {
 	}
 	headingIndex, nameIndex := -1, -1
 	screen.Do(func() {
-		for i, one := range panelsMatching(sheet.scroll.Content().AsPanel(), (*unison.Panel).Focusable) {
+		for i, one := range uxtest.PanelsMatching(sheet.scroll.Content().AsPanel(), (*unison.Panel).Focusable) {
 			switch {
 			case one.Accessibility.Role == role.Heading && headingIndex < 0:
 				headingIndex = i
@@ -76,8 +77,8 @@ func TestSheetOpensWithTheFocusOnItsName(t *testing.T) {
 // leaves it in place. When the change removes it, the focus goes to the name field, as for a keyed field that is gone.
 func TestSheetKeepsTheFocusOnKeylessTabStops(t *testing.T) {
 	c := check.New(t)
-	screen, wnd := startHeadlessWorkspace(t, c)
-	sheet, ok := openedByAction(t, screen, newCharacterSheetAction).(*Sheet)
+	screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
+	sheet, ok := uxtest.OpenedByAction(t, screen, newCharacterSheetAction).(*Sheet)
 	if !ok {
 		t.Fatal("New Character Sheet must open a character sheet")
 	}
@@ -86,7 +87,7 @@ func TestSheetKeepsTheFocusOnKeylessTabStops(t *testing.T) {
 		return focus
 	}
 	var portrait *PortraitPanel
-	screen.Do(func() { portrait, _ = firstPanelOfType[*PortraitPanel](sheet.AsPanel()) })
+	screen.Do(func() { portrait, _ = uxtest.FirstPanelOfType[*PortraitPanel](sheet.AsPanel()) })
 	if portrait == nil {
 		t.Fatal("the character sheet must show the portrait")
 	}
@@ -104,7 +105,7 @@ func TestSheetKeepsTheFocusOnKeylessTabStops(t *testing.T) {
 	}
 	var heading *unison.Panel
 	screen.Do(func() {
-		for _, one := range panelsMatching(sheet.AsPanel(), func(p *unison.Panel) bool {
+		for _, one := range uxtest.PanelsMatching(sheet.AsPanel(), func(p *unison.Panel) bool {
 			return p.Accessibility.Role == role.Heading && p.Accessibility.Name == "Identity"
 		}) {
 			heading = one
@@ -120,12 +121,12 @@ func TestSheetKeepsTheFocusOnKeylessTabStops(t *testing.T) {
 
 	// An attribute block's rebuild replaces its rows and their read-only points fields, which are keyless tab stops
 	// with static text in the Tab order (the name label is not, being the value field's caption).
-	focusForReadingSetter(t, screen, wnd)(true)
+	uxtest.FocusForReadingSetter(t, screen, wnd)(true)
 	var attrs *AttrPanel
 	var points *NonEditablePageField
 	screen.Do(func() {
-		for _, one := range panelsOfType[*AttrPanel](sheet.AsPanel()) {
-			if fields := panelsOfType[*NonEditablePageField](one.AsPanel()); len(fields) > 0 {
+		for _, one := range uxtest.PanelsOfType[*AttrPanel](sheet.AsPanel()) {
+			if fields := uxtest.PanelsOfType[*NonEditablePageField](one.AsPanel()); len(fields) > 0 {
 				attrs = one
 				points = fields[0]
 				break

@@ -12,6 +12,7 @@ package ux
 import (
 	"testing"
 
+	"github.com/richardwilkes/gcs/v5/ux/uxtest"
 	"github.com/richardwilkes/toolbox/v2/check"
 )
 
@@ -20,7 +21,7 @@ import (
 // host's browser from under a test, and that no error dialog results from the recorded request.
 func TestBrowserRequestsAreRecordedHeadless(t *testing.T) {
 	c := check.New(t)
-	screen, _ := startHeadlessWorkspace(t, c)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
 	c.Nil(screen.OpenedURLs(), "nothing has asked for the browser yet")
 
 	var cancel bool

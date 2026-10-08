@@ -17,6 +17,7 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/library"
+	"github.com/richardwilkes/gcs/v5/ux/uxtest"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/unison"
 )
@@ -160,7 +161,7 @@ func TestFileEditorRecognizersTellTheEditorsApart(t *testing.T) {
 // failOnWorkspaceError makes any error the workspace would show in a dialog fail the test instead.
 func failOnWorkspaceError(t *testing.T) {
 	t.Helper()
-	swapForTest(t, &Workspace.ErrorHandler, func(msg string, err error) { t.Errorf("unexpected error: %s: %v", msg, err) })
+	uxtest.SwapForTest(t, &Workspace.ErrorHandler, func(msg string, err error) { t.Errorf("unexpected error: %s: %v", msg, err) })
 }
 
 // builtInAncestryRef returns a reference to an ancestry file that, like one built into the application, has no path on
@@ -226,7 +227,7 @@ func TestFileEditorBuiltInFileKeepsItsName(t *testing.T) {
 // no document dock to place an editor in, showing one would fail, so returning quietly proves none was shown.
 func TestOpenFileEditorBrokenFileOpensNothing(t *testing.T) {
 	c := check.New(t)
-	swapForTest(t, &Workspace.DocumentDock, nil)
+	uxtest.SwapForTest(t, &Workspace.DocumentDock, nil)
 	ref := ancestryFileRef(t, c, "Broken", "this is not an ancestry")
 	var d *ancestryEditorDockable
 	var err error

@@ -16,6 +16,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/namegen"
 	"github.com/richardwilkes/gcs/v5/svg"
+	"github.com/richardwilkes/gcs/v5/ux/uxtest"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/unison"
@@ -28,7 +29,7 @@ func hasWidget(d structuralEditor, key string) bool {
 
 // trainingNamesPanel returns the panel editing the generator's training names, or nil when there is none.
 func trainingNamesPanel(d *nameGeneratorEditorDockable, g *gurps.NameGenerator) *weightedStringOptionsPanel {
-	for _, p := range panelsOfType[*weightedStringOptionsPanel](d.AsPanel()) {
+	for _, p := range uxtest.PanelsOfType[*weightedStringOptionsPanel](d.AsPanel()) {
 		if p.spec.list == &g.Entries {
 			return p
 		}
@@ -188,13 +189,13 @@ func TestNameGeneratorPanelCompoundAddRemove(t *testing.T) {
 	c.Equal(namegen.MarkovRun, second.Type, "a nested type popup writes the nested generator")
 	c.Equal(namegen.Simple, d.model.Compound[0].Type, "and not its sibling")
 
-	rows := panelsOfType[*compoundGeneratorPanel](d.AsPanel())
+	rows := uxtest.PanelsOfType[*compoundGeneratorPanel](d.AsPanel())
 	c.Equal(2, len(rows))
 	c.True(rows[0].deleteButton.Enabled())
 	rows[0].remove()
 	c.Equal(1, len(d.model.Compound), "the first generator is removed")
 	c.Equal(namegen.MarkovRun, d.model.Compound[0].Type, "leaving the second")
-	panelsOfType[*compoundGeneratorPanel](d.AsPanel())[0].remove()
+	uxtest.PanelsOfType[*compoundGeneratorPanel](d.AsPanel())[0].remove()
 	c.Equal(0, len(d.model.Compound), "the last generator may be removed")
 	c.Nil(rootNameGeneratorPanel(t, d).rows, "the rows container is gone again")
 

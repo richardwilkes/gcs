@@ -13,6 +13,7 @@ import (
 	"testing"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/ux/uxtest"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/mod"
@@ -31,8 +32,8 @@ func columnIndexForID[T unison.TableRowConstraint[T]](table *unison.Table[T], id
 // themselves; a cell with nothing to press leaves Space to open the row's editor.
 func TestSpaceOnACellWorksWhatTheCellHolds(t *testing.T) {
 	c := check.New(t)
-	screen, _ := startHeadlessWorkspace(t, c)
-	sheet, ok := openedByAction(t, screen, newCharacterSheetAction).(*Sheet)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
+	sheet, ok := uxtest.OpenedByAction(t, screen, newCharacterSheetAction).(*Sheet)
 	if !ok {
 		t.Fatal("New Character Sheet must open a character sheet")
 	}
@@ -53,8 +54,8 @@ func TestSpaceOnACellWorksWhatTheCellHolds(t *testing.T) {
 		entity.CarriedEquipment = append(entity.CarriedEquipment, eq)
 		entity.Recalculate()
 		sheet.Rebuild(true)
-		traits, _ = firstPanelOfType[*unison.Table[*Node[*gurps.Trait]]](sheet.AsPanel())
-		for _, one := range panelsOfType[*unison.Table[*Node[*gurps.Equipment]]](sheet.AsPanel()) {
+		traits, _ = uxtest.FirstPanelOfType[*unison.Table[*Node[*gurps.Trait]]](sheet.AsPanel())
+		for _, one := range uxtest.PanelsOfType[*unison.Table[*Node[*gurps.Equipment]]](sheet.AsPanel()) {
 			if one.RootRowCount() > 0 {
 				equipment = one
 				break

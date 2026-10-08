@@ -13,6 +13,7 @@ import (
 	"testing"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/ux/uxtest"
 	"github.com/richardwilkes/toolbox/v2/check"
 )
 
@@ -26,7 +27,7 @@ func TestEditorNewItemCommandsAddToTheirPanels(t *testing.T) {
 	trait := gurps.NewTrait(entity, nil, false)
 	trait.Name = "Claws"
 	te, content := buildEditorContent(sheet, trait, initTraitEditor)
-	traitModifiers, ok := firstPanelOfType[*traitModifiersPanel](content)
+	traitModifiers, ok := uxtest.FirstPanelOfType[*traitModifiersPanel](content)
 	c.True(ok, "expected a trait modifiers panel in the trait editor")
 	te.AsPanel().PerformCmd(nil, NewTraitModifierItemID)
 	c.Equal(1, len(te.editorData.Modifiers), "the command must add a modifier to the editor's copy")
@@ -50,7 +51,7 @@ func TestEditorNewItemCommandsAddToTheirPanels(t *testing.T) {
 	equipment := gurps.NewEquipment(entity, nil, false)
 	equipment.Name = "Sword"
 	ee, content := buildEditorContent(sheet, equipment, initEquipmentEditor(true))
-	equipmentModifiers, ok := firstPanelOfType[*equipmentModifiersPanel](content)
+	equipmentModifiers, ok := uxtest.FirstPanelOfType[*equipmentModifiersPanel](content)
 	c.True(ok, "expected an equipment modifiers panel in the equipment editor")
 	ee.AsPanel().PerformCmd(nil, NewEquipmentModifierItemID)
 	ee.AsPanel().PerformCmd(nil, NewEquipmentContainerModifierItemID)

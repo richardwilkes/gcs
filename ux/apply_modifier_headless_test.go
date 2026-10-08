@@ -19,6 +19,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/dgroup"
 	"github.com/richardwilkes/gcs/v5/model/jio"
+	"github.com/richardwilkes/gcs/v5/ux/uxtest"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/unison"
@@ -44,11 +45,11 @@ func rowInView[T gurps.Node[T]](table *unison.Table[*Node[T]], row int) bool {
 // only the sheet open the command goes straight to the target prompt.
 func TestApplyModifierHeadless(t *testing.T) {
 	c := check.New(t)
-	screen, wnd := startHeadlessWorkspace(t, c)
+	screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
 	screen.EnableAccessibility()
 	forbidModifierPrompts(t)
 
-	sheet, ok := openedByAction(t, screen, newCharacterSheetAction).(*Sheet)
+	sheet, ok := uxtest.OpenedByAction(t, screen, newCharacterSheetAction).(*Sheet)
 	if !ok {
 		t.Fatal("New Character Sheet must open a character sheet")
 	}
@@ -78,7 +79,7 @@ func TestApplyModifierHeadless(t *testing.T) {
 		sheet.markUnmodified()
 		entity.ModifiedOn = jio.Time{}
 	})
-	template, ok := openedByAction(t, screen, newCharacterTemplateAction).(*Template)
+	template, ok := uxtest.OpenedByAction(t, screen, newCharacterTemplateAction).(*Template)
 	if !ok {
 		t.Fatal("New Character Template must open a template")
 	}
@@ -161,11 +162,11 @@ func TestApplyModifierHeadless(t *testing.T) {
 	destinationPrompt := func() (dialogWnd *unison.Window, dialog *unison.Dialog, list *unison.List[FileBackedDockable], sheetRow int) {
 		t.Helper()
 		selectModifier()
-		chooseMenuBarItem(t, screen, wnd, "Edit", applyModifierAction.Title)
+		uxtest.ChooseMenuBarItem(t, screen, wnd, "Edit", applyModifierAction.Title)
 		dialogWnd, dialog = modalDialog(t, screen, wnd)
 		sheetRow = -1
 		screen.Do(func() {
-			if lists := panelsOfType[*unison.List[FileBackedDockable]](dialogWnd.Content()); len(lists) == 1 {
+			if lists := uxtest.PanelsOfType[*unison.List[FileBackedDockable]](dialogWnd.Content()); len(lists) == 1 {
 				list = lists[0]
 				for i := range list.Count() {
 					if list.DataAtIndex(i).AsPanel() == sheet.AsPanel() {
@@ -201,10 +202,10 @@ func TestApplyModifierHeadless(t *testing.T) {
 		var targets *unison.List[modifierTargetChoice[*gurps.Trait]]
 		var headerFound bool
 		screen.Do(func() {
-			if lists := panelsOfType[*unison.List[modifierTargetChoice[*gurps.Trait]]](dialogWnd.Content()); len(lists) == 1 {
+			if lists := uxtest.PanelsOfType[*unison.List[modifierTargetChoice[*gurps.Trait]]](dialogWnd.Content()); len(lists) == 1 {
 				targets = lists[0]
 			}
-			for _, label := range panelsOfType[*unison.Label](dialogWnd.Content()) {
+			for _, label := range uxtest.PanelsOfType[*unison.Label](dialogWnd.Content()) {
 				if strings.Contains(label.String(), "Choose the traits in "+title) {
 					headerFound = true
 				}
@@ -264,7 +265,7 @@ func TestApplyModifierHeadless(t *testing.T) {
 		for i := range list.Count() {
 			titles = append(titles, list.DataAtIndex(i).Title())
 		}
-		for _, label := range panelsOfType[*unison.Label](dialogWnd.Content()) {
+		for _, label := range uxtest.PanelsOfType[*unison.Label](dialogWnd.Content()) {
 			if label.String() == "Choose a destination:" {
 				headerFound = true
 			}
@@ -371,7 +372,7 @@ func TestApplyModifierHeadless(t *testing.T) {
 
 	// Edit > Undo undoes the command in one step, closing the container it opened, and Edit > Redo puts everything back
 	// as the command left it.
-	chooseMenuBarItem(t, screen, wnd, "Edit", "Undo "+applyModifierAction.Title)
+	uxtest.ChooseMenuBarItem(t, screen, wnd, "Edit", "Undo "+applyModifierAction.Title)
 	var canUndo, canRedo bool
 	screen.Do(func() {
 		canUndo = sheet.undoMgr.CanUndo()
@@ -382,12 +383,12 @@ func TestApplyModifierHeadless(t *testing.T) {
 	c.False(currentSheetState().deltaOpen, "undo must close the container the command opened")
 	c.False(canUndo, "one command must make exactly one edit")
 	c.True(canRedo, "the command must be redoable")
-	chooseMenuBarItem(t, screen, wnd, "Edit", "Redo "+applyModifierAction.Title)
+	uxtest.ChooseMenuBarItem(t, screen, wnd, "Edit", "Redo "+applyModifierAction.Title)
 	c.Equal([]string{"Ranged"}, traitModifierNames("Alpha"), "redo must put the modifier back")
 	c.Equal([]string{"Ranged"}, traitModifierNames("Epsilon"), "redo must put the modifier back")
 	c.Equal(sheetState{selected: []string{"Alpha", "Epsilon"}, deltaOpen: true, focused: true}, currentSheetState(),
 		"redo must show the targets as the command did")
-	chooseMenuBarItem(t, screen, wnd, "Edit", "Undo "+applyModifierAction.Title)
+	uxtest.ChooseMenuBarItem(t, screen, wnd, "Edit", "Undo "+applyModifierAction.Title)
 	var stillModified bool
 	screen.Do(func() {
 		stillModified = sheet.Modified()
@@ -396,12 +397,12 @@ func TestApplyModifierHeadless(t *testing.T) {
 	c.False(stillModified, "undoing the command must leave the sheet as it was")
 
 	// With the template closed, the sheet is the only destination, so the command asks for its traits straight away.
-	closeEditorWithoutPrompt(t, screen, template)
+	uxtest.CloseEditorWithoutPrompt(t, screen, template)
 	var destinations int
 	screen.Do(func() { destinations = len(modifierDestinations(traitModifierTargetKind(), AllDockables())) })
 	c.Equal(1, destinations, "only the sheet must be left as a destination for the check to mean anything")
 	selectModifier()
-	chooseMenuBarItem(t, screen, wnd, "Edit", applyModifierAction.Title)
+	uxtest.ChooseMenuBarItem(t, screen, wnd, "Edit", applyModifierAction.Title)
 	targetPrompt()
 	screen.KeyPress(unison.KeyEscape, mod.None)
 	c.Equal(1, windowCount(), "the prompt has been dismissed")
@@ -413,9 +414,9 @@ func TestApplyModifierHeadless(t *testing.T) {
 // so that the next Undo goes to the sheet rather than the library.
 func TestApplyModifierHeadlessRaisesTheDestinationsWindow(t *testing.T) {
 	c := check.New(t)
-	screen, wnd := startHeadlessWorkspace(t, c)
+	screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
 	forbidModifierPrompts(t)
-	sheet, ok := openedByAction(t, screen, newCharacterSheetAction).(*Sheet)
+	sheet, ok := uxtest.OpenedByAction(t, screen, newCharacterSheetAction).(*Sheet)
 	if !ok {
 		t.Fatal("New Character Sheet must open a character sheet")
 	}
@@ -461,11 +462,11 @@ func TestApplyModifierHeadlessRaisesTheDestinationsWindow(t *testing.T) {
 	c.True(enabled, "with a modifier selected and the sheet open, the command must be available")
 
 	// The sheet being the only destination, the command asks for its traits straight away.
-	chooseMenuBarItem(t, screen, libraryWnd, "Edit", applyModifierAction.Title)
+	uxtest.ChooseMenuBarItem(t, screen, libraryWnd, "Edit", applyModifierAction.Title)
 	dialogWnd, dialog := modalDialog(t, screen, wnd)
 	var picked bool
 	screen.Do(func() {
-		if lists := panelsOfType[*unison.List[modifierTargetChoice[*gurps.Trait]]](dialogWnd.Content()); len(lists) == 1 {
+		if lists := uxtest.PanelsOfType[*unison.List[modifierTargetChoice[*gurps.Trait]]](dialogWnd.Content()); len(lists) == 1 {
 			lists[0].Select(false, 0)
 			picked = true
 		}
@@ -481,7 +482,7 @@ func TestApplyModifierHeadlessRaisesTheDestinationsWindow(t *testing.T) {
 	c.True(focused, "the focus must land on the sheet's traits list")
 
 	// The focus being on the sheet, its window's Edit > Undo undoes the command.
-	chooseMenuBarItem(t, screen, wnd, "Edit", "Undo "+applyModifierAction.Title)
+	uxtest.ChooseMenuBarItem(t, screen, wnd, "Edit", "Undo "+applyModifierAction.Title)
 	c.Equal(0, len(alphaModifiers()), "undo must take the modifier back off")
 	screen.Do(func() { libraryWnd.Dispose() })
 }
@@ -490,9 +491,9 @@ func TestApplyModifierHeadlessRaisesTheDestinationsWindow(t *testing.T) {
 // lists, the focus lands on the first list, with its target in view.
 func TestRevealModifierTargetsFocusesTheFirstListWithASelection(t *testing.T) {
 	c := check.New(t)
-	screen, wnd := startHeadlessWorkspace(t, c)
+	screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
 	forbidModifierPrompts(t)
-	sheet, ok := openedByAction(t, screen, newCharacterSheetAction).(*Sheet)
+	sheet, ok := uxtest.OpenedByAction(t, screen, newCharacterSheetAction).(*Sheet)
 	if !ok {
 		t.Fatal("New Character Sheet must open a character sheet")
 	}
@@ -552,9 +553,9 @@ func TestRevealModifierTargetsFocusesTheFirstListWithASelection(t *testing.T) {
 // be clamped to the old end of the list.
 func TestRevealModifierTargetsScrollsToATargetBelowTheOldEndOfTheList(t *testing.T) {
 	c := check.New(t)
-	screen, _ := startHeadlessWorkspace(t, c)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
 	forbidModifierPrompts(t)
-	sheet, ok := openedByAction(t, screen, newCharacterSheetAction).(*Sheet)
+	sheet, ok := uxtest.OpenedByAction(t, screen, newCharacterSheetAction).(*Sheet)
 	if !ok {
 		t.Fatal("New Character Sheet must open a character sheet")
 	}

@@ -19,6 +19,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/namegen"
 	"github.com/richardwilkes/gcs/v5/svg"
+	"github.com/richardwilkes/gcs/v5/ux/uxtest"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/unison"
@@ -41,11 +42,11 @@ type fileListPanel interface {
 // the rest cannot proceed without stops the test there.
 func TestNameGeneratorEditorHeadless(t *testing.T) {
 	c := check.New(t)
-	screen, wnd := startHeadlessWorkspace(t, c)
+	screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
 
 	// Open the editor from the File menu. With no training data, the samples can only say why there are none.
-	chooseMenuBarItem(t, screen, wnd, "File", "New Name Generator")
-	d := soleEditor[*nameGeneratorEditorDockable](t, screen, isNameGeneratorEditor)
+	uxtest.ChooseMenuBarItem(t, screen, wnd, "File", "New Name Generator")
+	d := uxtest.SoleEditor[*nameGeneratorEditorDockable](t, screen, isNameGeneratorEditor)
 	var title, samplesText, expectedMessage string
 	var modified, saveEnabled, inWorkspace, samplesInWarning bool
 	screen.Do(func() {
@@ -69,12 +70,12 @@ func TestNameGeneratorEditorHeadless(t *testing.T) {
 
 	// Choosing the item again opens a second editor, which stands on its own: the first is left as it was, and closing
 	// the second, which is untouched, prompts for nothing and leaves the first in place.
-	chooseMenuBarItem(t, screen, wnd, "File", "New Name Generator")
-	second := otherEditor(t, screen, d, isNameGeneratorEditor)
+	uxtest.ChooseMenuBarItem(t, screen, wnd, "File", "New Name Generator")
+	second := uxtest.OtherEditor(t, screen, d, isNameGeneratorEditor)
 	var secondTitle string
 	screen.Do(func() { secondTitle = second.Title() })
 	c.Equal("Name Generator: Untitled", secondTitle, "the second editor holds a new generator of its own")
-	closeEditorWithoutPrompt(t, screen, second)
+	uxtest.CloseEditorWithoutPrompt(t, screen, second)
 	var remaining []unison.Dockable
 	screen.Do(func() { remaining = AllMatchingDockables(isNameGeneratorEditor) })
 	if len(remaining) != 1 || remaining[0].AsPanel().Self != d {
@@ -243,7 +244,7 @@ func TestNameGeneratorEditorHeadless(t *testing.T) {
 	screen.Do(func() {
 		genType = d.model.Type
 		children = len(d.model.Compound)
-		compoundRows = len(panelsOfType[*compoundGeneratorPanel](d.AsPanel()))
+		compoundRows = len(uxtest.PanelsOfType[*compoundGeneratorPanel](d.AsPanel()))
 		hasBuiltIn = hasWidget(d, rootKey+"built_in")
 		if list := trainingNamesPanel(d, d.model); list != nil && list.rows != nil {
 			rootRows = len(list.rows.Children())
@@ -257,7 +258,7 @@ func TestNameGeneratorEditorHeadless(t *testing.T) {
 
 	// Import training names from a text file through the pure-Go open dialog. The dialog opens in the directory last
 	// used for files, which is pointed at the directory holding the file so that the file is the one row in its list;
-	// startHeadlessWorkspace puts the directory back afterwards. The file repeats a name already in the list, whose
+	// uxtest.StartHeadlessWorkspace puts the directory back afterwards. The file repeats a name already in the list, whose
 	// weight is added to the existing entry rather than making a second one, and has a blank line, which adds nothing.
 	importDir := t.TempDir()
 	importPath := filepath.Join(importDir, "names.txt")
@@ -400,8 +401,8 @@ func TestNameGeneratorEditorHeadless(t *testing.T) {
 	screen.Do(func() { names = plainEntries(d.model.Entries) })
 	c.Equal(imported, names, "one undo brings them both back")
 
-	// Capture the rendering for a person to look at, when one has asked for it; see captureScreen.
-	captureScreen(t, c, screen, "name_generator_editor")
+	// Capture the rendering for a person to look at, when one has asked for it; see uxtest.CaptureScreen.
+	uxtest.CaptureScreen(t, c, screen, "name_generator_editor")
 
 	// Save through the toolbar. A new generator has no file, so the pure-Go save dialog comes up, offering the user
 	// library's ancestries folder, where ancestries look for generators, and the placeholder name, which is replaced
@@ -417,13 +418,13 @@ func TestNameGeneratorEditorHeadless(t *testing.T) {
 	// Open an ancestry editor and add a name generator to its common options. The choices are gathered afresh each time
 	// the ancestry editor's content is built, so it offers the generator just saved along with the built-in ones, and
 	// the row's edit button opens the chosen one in the name generator editor.
-	chooseMenuBarItem(t, screen, wnd, "File", "New Ancestry")
-	anc := soleEditor[*ancestryEditorDockable](t, screen, isAncestryEditor)
+	uxtest.ChooseMenuBarItem(t, screen, wnd, "File", "New Ancestry")
+	anc := uxtest.SoleEditor[*ancestryEditorDockable](t, screen, isAncestryEditor)
 	var choices []string
 	var addNameGenerator *unison.Button
 	screen.Do(func() {
 		choices = slices.Clone(anc.nameGeneratorChoices)
-		for _, p := range panelsOfType[*nameGeneratorsPanel](anc.AsPanel()) {
+		for _, p := range uxtest.PanelsOfType[*nameGeneratorsPanel](anc.AsPanel()) {
 			if p.options == anc.model.CommonOptions {
 				if addNameGenerator = buttonWithSVG(p.AsPanel(), unison.CircledAddSVG); addNameGenerator != nil {
 					addNameGenerator.ScrollIntoView()
@@ -446,7 +447,7 @@ func TestNameGeneratorEditorHeadless(t *testing.T) {
 	var testNamesIndex int
 	screen.Do(func() {
 		generators = slices.Clone(anc.model.CommonOptions.NameGenerators)
-		if rows := panelsOfType[*nameGeneratorRefPanel](anc.AsPanel()); len(rows) == 1 {
+		if rows := uxtest.PanelsOfType[*nameGeneratorRefPanel](anc.AsPanel()); len(rows) == 1 {
 			row = rows[0]
 			selected = selectedGenerator(row.popup)
 			editEnabled = row.editButton.Enabled()
@@ -461,7 +462,7 @@ func TestNameGeneratorEditorHeadless(t *testing.T) {
 	c.Equal(choices[0], selected, "and the popup shows it")
 	c.True(editEnabled, "an available generator can be edited")
 	c.True(popupFocused, "the new row's popup takes the focus")
-	choosePopupItem(t, screen, wnd, row.popup, testNamesIndex)
+	uxtest.ChoosePopupItem(t, screen, wnd, row.popup, testNamesIndex)
 	var editButton *unison.Button
 	screen.Do(func() {
 		generators = slices.Clone(anc.model.CommonOptions.NameGenerators)
@@ -505,7 +506,7 @@ func TestNameGeneratorEditorHeadless(t *testing.T) {
 	if builtInIndex < 0 {
 		t.Fatalf("the built-in generator %q must be among the choices, but they are %v", builtIn, choices)
 	}
-	choosePopupItem(t, screen, wnd, row.popup, builtInIndex)
+	uxtest.ChoosePopupItem(t, screen, wnd, row.popup, builtInIndex)
 	screen.Do(func() {
 		editButton = row.editButton
 		editEnabled = editButton.Enabled()
@@ -513,7 +514,7 @@ func TestNameGeneratorEditorHeadless(t *testing.T) {
 	})
 	c.True(editEnabled, "a built-in generator can be edited")
 	screen.Click(screen.PanelCenter(editButton))
-	builtInEditor := otherEditor(t, screen, d, isNameGeneratorEditor)
+	builtInEditor := uxtest.OtherEditor(t, screen, d, isNameGeneratorEditor)
 	var builtInTitle, builtInPath, builtInName string
 	var builtInModified, builtInCanUndo, builtInCurrent bool
 	screen.Do(func() {
@@ -536,7 +537,7 @@ func TestNameGeneratorEditorHeadless(t *testing.T) {
 	c.False(builtInCanUndo, "with nothing to undo")
 	c.True(builtInCurrent, "the new editor is brought to the front")
 	c.Equal(imported, names, "the first editor is left as it was")
-	closeEditorWithoutPrompt(t, screen, builtInEditor)
+	uxtest.CloseEditorWithoutPrompt(t, screen, builtInEditor)
 
 	// A generator that no library holds cannot be opened, so its row's edit button is disabled. The name is put into
 	// the model and the content rebuilt, as loading an ancestry file that names a missing generator would.
@@ -545,7 +546,7 @@ func TestNameGeneratorEditorHeadless(t *testing.T) {
 		anc.sync()
 		selected = ""
 		editEnabled = true
-		if rows := panelsOfType[*nameGeneratorRefPanel](anc.AsPanel()); len(rows) == 1 {
+		if rows := uxtest.PanelsOfType[*nameGeneratorRefPanel](anc.AsPanel()); len(rows) == 1 {
 			selected = selectedGenerator(rows[0].popup)
 			editEnabled = rows[0].editButton.Enabled()
 		}
@@ -612,7 +613,7 @@ func chooseGeneratorType(t *testing.T, screen *unison.HeadlessScreen, wnd *uniso
 	if popup == nil {
 		t.Fatalf("no Type popup for the generator with key prefix %q", keyPrefix)
 	}
-	choosePopupItem(t, screen, wnd, popup, index)
+	uxtest.ChoosePopupItem(t, screen, wnd, popup, index)
 }
 
 // plainEntries returns copies of the options holding only what the file holds, the weight and the value, so that they
