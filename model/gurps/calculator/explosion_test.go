@@ -7,42 +7,17 @@
 // This Source Code Form is "Incompatible With Secondary Licenses", as
 // defined by the Mozilla Public License, version 2.0.
 
-package gurps
+package calculator
 
 import (
 	"testing"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
+	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/model/gurps/gurpstest"
 	"github.com/richardwilkes/rpgtools/dice"
 	"github.com/richardwilkes/toolbox/v2/check"
 )
-
-// TestIsExplosiveDamageType verifies that the Explosion modifier (B104) is recognized in every form the data libraries
-// write it in -- decorated with an asterisk, a comma or a slashed suffix, and in any position among the other damage
-// modifiers -- while a longer word that merely starts with the same two letters is not mistaken for it.
-func TestIsExplosiveDamageType(t *testing.T) {
-	c := check.New(t)
-	for _, tc := range []struct {
-		name       string
-		damageType string
-		want       bool
-	}{
-		{name: "a plain grenade", damageType: "cr ex", want: true},
-		{name: "decorated and buried among other modifiers", damageType: "burn ex* rad sur", want: true},
-		{name: "following another modifier", damageType: "cr dkb ex", want: true},
-		{name: "with a divisor suffix", damageType: "cr ex/2", want: true},
-		{name: "with a per-point suffix", damageType: "cr ex/point", want: true},
-		{name: "trailing punctuation", damageType: "ex,", want: true},
-		{name: "on its own", damageType: "ex", want: true},
-		{name: "upper case", damageType: "CR EX", want: true},
-		{name: "not explosive", damageType: "cut", want: false},
-		{name: "a longer word starting with ex", damageType: "exp", want: false},
-		{name: "ex is only part of a word", damageType: "cr exotic", want: false},
-		{name: "empty", damageType: "", want: false},
-	} {
-		c.Equal(tc.want, IsExplosiveDamageType(tc.damageType), tc.name)
-	}
-}
 
 // TestExplosionRadii verifies the two radii BX414 measures in dice: everything within twice the dice of damage is
 // vulnerable to the collateral damage, and everything within five times the dice of fragmentation damage is vulnerable
@@ -432,14 +407,14 @@ func TestCoverDRFromBody(t *testing.T) {
 // by attack, and the answers for a body with no torso, no exposed location or no body type at all.
 func TestLargeAreaDR(t *testing.T) {
 	c := check.New(t)
-	e := NewEntity()
-	addCarriedEquipmentWithFeatures(e, "Mail Hauberk", newTestDRBonus(fxp.Five, AllID, TorsoID))
+	e := gurps.NewEntity()
+	gurpstest.AddCarriedEquipmentWithFeatures(e, "Mail Hauberk", gurpstest.NewDRBonus(fxp.Five, gurps.AllID, gurps.TorsoID))
 	e.Recalculate()
-	torso := e.SheetSettings.BodyType.LookupLocationByID(e, TorsoID)
+	torso := e.SheetSettings.BodyType.LookupLocationByID(e, gurps.TorsoID)
 	c.NotNil(torso, "the default body has a torso")
-	c.Equal(5, torso.DR(e, nil, nil)[AllID], "the hauberk gives the torso DR 5")
+	c.Equal(5, torso.DR(e, nil, nil)[gurps.AllID], "the hauberk gives the torso DR 5")
 
-	onlyTorso := func(loc *HitLocation) bool { return loc.LocID == TorsoID }
+	onlyTorso := func(loc *gurps.HitLocation) bool { return loc.LocID == gurps.TorsoID }
 
 	// Everything is exposed, so the least-protected location is a bare one, such as the eyes: (5 + 0)/2 rounds up to 3.
 	c.Equal(3, LargeAreaDR(e, "", nil), "torso 5 and a bare location average to 3, rounded up")
@@ -449,37 +424,37 @@ func TestLargeAreaDR(t *testing.T) {
 	c.Equal(5, LargeAreaDR(e, "", onlyTorso), "with only the torso exposed, its own DR stands")
 
 	// DR that only stops one kind of attack counts for that attack alone.
-	addCarriedEquipmentWithFeatures(e, "Fire Cloak", newTestDRBonus(fxp.Four, "burn", TorsoID))
+	gurpstest.AddCarriedEquipmentWithFeatures(e, "Fire Cloak", gurpstest.NewDRBonus(fxp.Four, "burn", gurps.TorsoID))
 	e.Recalculate()
 	c.Equal(9, LargeAreaDR(e, "burn", onlyTorso), "the burn-specialized DR stacks on top of the general DR")
 	c.Equal(5, LargeAreaDR(e, "cr", onlyTorso), "it does nothing against crushing damage")
 	c.Equal(5, LargeAreaDR(e, "", onlyTorso), "nor when no damage type is named")
-	c.Equal(5, LargeAreaDR(e, AllID, onlyTorso), `a damage type of "all" is the general DR, not a second helping`)
+	c.Equal(5, LargeAreaDR(e, gurps.AllID, onlyTorso), `a damage type of "all" is the general DR, not a second helping`)
 	c.Equal(5, LargeAreaDR(e, " BURN ", nil), "the type is matched with the case and padding stripped: (9 + 0)/2")
 
 	// No location is exposed at all, so there is nothing to average.
-	c.Equal(0, LargeAreaDR(e, "", func(_ *HitLocation) bool { return false }), "nothing exposed, no DR")
+	c.Equal(0, LargeAreaDR(e, "", func(_ *gurps.HitLocation) bool { return false }), "nothing exposed, no DR")
 
 	// A body with no torso: the least-protected exposed location stands in for both halves of the average.
-	e2 := NewEntity()
-	arm := NewHitLocation(e2, "")
+	e2 := gurps.NewEntity()
+	arm := gurps.NewHitLocation(e2, "")
 	arm.LocID = "arm"
 	arm.ChoiceName = "Arm"
 	arm.TableName = "Arm"
 	arm.Slots = 1
 	arm.DRBonus = 4
-	armless := NewHitLocation(e2, "")
+	armless := gurps.NewHitLocation(e2, "")
 	armless.LocID = "tail"
 	armless.ChoiceName = "Tail"
 	armless.TableName = "Tail"
 	armless.Slots = 1
 	armless.DRBonus = -3 // Negative DR is nonsense, but the data allows it, so it must not subtract from the average.
-	body := &Body{Roll: dice.Dice{Count: 3, Sides: 6}, Locations: []*HitLocation{arm, armless}}
+	body := &gurps.Body{Roll: dice.Dice{Count: 3, Sides: 6}, Locations: []*gurps.HitLocation{arm, armless}}
 	body.Update(e2)
 	e2.SheetSettings.BodyType = body
 	e2.Recalculate()
 	c.Equal(0, LargeAreaDR(e2, "", nil), "the negative DR clamps to zero, and with no torso it is both halves")
-	c.Equal(4, LargeAreaDR(e2, "", func(loc *HitLocation) bool { return loc.LocID == "arm" }),
+	c.Equal(4, LargeAreaDR(e2, "", func(loc *gurps.HitLocation) bool { return loc.LocID == "arm" }),
 		"with only the armored location exposed, its own DR stands in for the missing torso")
 
 	// No body type at all yields no DR rather than falling back on the global default body.

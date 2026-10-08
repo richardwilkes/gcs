@@ -452,6 +452,26 @@ func (r *ResolvedWeaponDamage) String() string {
 	return buffer.String()
 }
 
+// IsExplosiveDamageType reports whether a damage type carries the Explosion modifier (B104), i.e. an "ex" token, as in
+// the "cr ex" of a grenade (BX414).
+//
+// Each whitespace-separated token is matched on its leading letters alone, because the damage types in the data
+// libraries decorate the token in several ways -- "burn ex* rad sur", "cr ex/2", "ex," -- and every one of those is
+// still an explosion. Matching only the leading letters keeps a longer word that merely starts with them, such as
+// "exp", from counting.
+func IsExplosiveDamageType(damageType string) bool {
+	for token := range strings.FieldsSeq(strings.ToLower(damageType)) {
+		i := 0
+		for i < len(token) && token[i] >= 'a' && token[i] <= 'z' {
+			i++
+		}
+		if token[:i] == "ex" {
+			return true
+		}
+	}
+	return false
+}
+
 // IsExplosive reports whether this damage is an explosion for the purposes of the explosion rules (BX414): its damage
 // type carries the Explosion modifier, or it throws fragments.
 func (r *ResolvedWeaponDamage) IsExplosive() bool {

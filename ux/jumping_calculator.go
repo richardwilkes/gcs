@@ -10,10 +10,8 @@
 package ux
 
 import (
-	"math"
-
 	"github.com/richardwilkes/gcs/v5/model/fxp"
-	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/model/gurps/calculator"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/encumbrance"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/unison"
@@ -181,17 +179,14 @@ func (j *jumpingCalculator) selectSheet(sheet *Sheet) {
 // pullFromSheet reads the jumper's numbers from its sheet. Each backing value is assigned before its field is synced,
 // so that the setter the sync may run sees nothing new and does not start another round of updates.
 func (j *jumpingCalculator) pullFromSheet() {
-	entity := j.source.entity()
-	j.basicMove = entity.ResolveAttributeCurrent(gurps.BasicMoveID).Max(0)
-	j.liftingST = entity.LiftingStrength().Max(0)
-	j.weight = entity.Profile.Weight
-	j.encumbranceIndex = int(entity.EncumbranceLevel(false))
-	j.jumpingSkill = 0
-	if sk := entity.BestSkillNamed("Jumping", "", false, nil); sk != nil {
-		j.jumpingSkill = sk.CalculateLevel(nil).Level.Max(0).AsInteger[int]()
-	}
-	j.enhancedMove, _ = entity.TraitLevels("enhanced move (ground)")
-	j.superJump, _ = entity.TraitLevels("super jump")
+	jumper := calculator.JumperFromEntity(j.source.entity())
+	j.basicMove = jumper.BasicMove
+	j.liftingST = jumper.LiftingST
+	j.weight = jumper.Weight
+	j.encumbranceIndex = int(jumper.Encumbrance)
+	j.jumpingSkill = jumper.JumpingSkill
+	j.enhancedMove = jumper.EnhancedMove
+	j.superJump = jumper.SuperJump
 	j.basicMoveField.Sync()
 	j.liftingSTField.Sync()
 	j.weightField.Sync()
@@ -199,6 +194,20 @@ func (j *jumpingCalculator) pullFromSheet() {
 	j.jumpingSkillField.Sync()
 	j.enhancedMoveField.Sync()
 	j.superJumpField.Sync()
+}
+
+// jumper returns the jumper the calculator's numbers describe.
+func (j *jumpingCalculator) jumper() calculator.Jumper {
+	return calculator.Jumper{
+		Entity:       j.source.entity(),
+		BasicMove:    j.basicMove,
+		LiftingST:    j.liftingST,
+		Weight:       j.weight,
+		Encumbrance:  encumbrance.Level(j.encumbranceIndex),
+		JumpingSkill: j.jumpingSkill,
+		EnhancedMove: j.enhancedMove,
+		SuperJump:    j.superJump,
+	}
 }
 
 // changed implements calculatorTab.
@@ -241,71 +250,18 @@ func (j *jumpingCalculator) adjustControls() {
 // (BX357): what it takes, what it costs, and what a failure and a critical failure leave the jumper with.
 func (j *jumpingCalculator) updateResults() {
 	entity := j.source.entity()
-	j.highJumpResult.SetTitle(lengthToText(entity, j.computeJump(false, j.extraEffortPenalty)))
-	j.broadJumpResult.SetTitle(lengthToText(entity, j.computeJump(true, j.extraEffortPenalty)))
+	jumper := j.jumper()
+	j.highJumpResult.SetTitle(lengthToText(entity, jumper.HighJump(j.runningStart, j.extraEffortPenalty)))
+	j.broadJumpResult.SetTitle(lengthToText(entity, jumper.BroadJump(j.runningStart, j.extraEffortPenalty)))
 	var note string
 	if j.extraEffortPenalty < 0 {
 		note = i18n.Text("The extra effort takes a Will roll, or a Will-based Jumping roll if that is better, at %d for the +%d%% shown, and costs 1 FP whether it succeeds or fails. A failure leaves the jump as it would be without it: %s high and %s broad. A critical failure costs 1 HP of injury to a foot or leg instead and the jump fails, and on a natural 18 a HT roll is needed as well to avoid a temporary Crippled Leg (B357).",
-			j.extraEffortPenalty, -5*j.extraEffortPenalty, lengthToText(entity, j.computeJump(false, 0)),
-			lengthToText(entity, j.computeJump(true, 0)))
+			j.extraEffortPenalty, -5*j.extraEffortPenalty, lengthToText(entity, jumper.HighJump(j.runningStart, 0)),
+			lengthToText(entity, jumper.BroadJump(j.runningStart, 0)))
 	} else {
 		note = i18n.Text("Extra effort adds 5% to the distance per -1 taken on a Will roll, or a Will-based Jumping roll if that is better, for 1 FP per attempt (B357).")
 	}
 	setNotes(j.notes, []string{note})
 	j.highJumpResult.MarkForLayoutRecursivelyUpward()
 	j.broadJumpResult.MarkForLayoutRecursivelyUpward()
-}
-
-// computeJump returns the distance of a high jump, or a broad jump when broad is set, in inches (BX352), with the
-// given extra effort penalty adding 5% per -1 to the distance but not to the Basic Move it is worked out from (BX356).
-func (j *jumpingCalculator) computeJump(broad bool, extraEffortPenalty int) fxp.Int {
-	basicMove := j.basicMove
-	basicMoveWithoutRun := basicMove
-
-	if j.runningStart > 0 {
-		basicMove += j.runningStart
-		if j.enhancedMove > 0 {
-			if adjusted := basicMoveWithoutRun.Mul(j.enhancedMove + fxp.One); adjusted > basicMove {
-				basicMove = adjusted
-			}
-		}
-	}
-
-	if j.jumpingSkill > 0 {
-		level := fxp.FromInteger(j.jumpingSkill).Div(fxp.Two).Floor()
-		basicMove = basicMove.Max(level)
-		basicMoveWithoutRun = basicMoveWithoutRun.Max(level)
-	}
-
-	// Adjust Basic Move for high strength
-	if basicLift := basicLiftFor(j.source.entity(), j.liftingST); basicLift > j.weight {
-		adjusted := j.liftingST.Div(fxp.Four).Floor()
-		basicMove = basicMove.Max(adjusted)
-		basicMoveWithoutRun = basicMoveWithoutRun.Max(adjusted)
-	}
-
-	// The base distance, which a running start can at most double.
-	var multiplier, reduction fxp.Int
-	if broad {
-		multiplier = fxp.Two
-		reduction = fxp.Three
-	} else {
-		multiplier = fxp.Six
-		reduction = fxp.Ten
-	}
-	distance := (basicMove.Mul(multiplier) - reduction).Min((basicMoveWithoutRun.Mul(multiplier) - reduction).Mul(fxp.Two))
-
-	distance = distance.Mul(fxp.One - fxp.FromInteger(j.encumbranceIndex).Mul(fxp.Two).Div(fxp.Ten))
-
-	if j.superJump > 0 {
-		distance = distance.Mul(fxp.FromFloat(math.Pow(2, j.superJump.AsFloat[float64]())))
-	}
-
-	if extraEffortPenalty < 0 {
-		distance = distance.Mul(fxp.FromInteger(-5*extraEffortPenalty).Div(fxp.Hundred) + fxp.One)
-	}
-	if broad {
-		distance = distance.Mul(fxp.Twelve)
-	}
-	return distance.Floor()
 }

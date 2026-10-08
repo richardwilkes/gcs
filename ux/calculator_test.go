@@ -17,6 +17,7 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/model/gurps/calculator"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/i18n"
@@ -129,7 +130,7 @@ func TestCalculatorTabs(t *testing.T) {
 		viewRight = view.PointToRoot(geom.NewPoint(view.FrameRect().Width, 0)).X
 		content := calc.scroll.Content().AsPanel()
 		contentRight = content.PointToRoot(geom.NewPoint(content.FrameRect().Width, 0)).X
-		if popup, found := firstPanelOfType[*unison.PopupMenu[explosionPosture]](calc.explosion.content); found {
+		if popup, found := firstPanelOfType[*unison.PopupMenu[calculator.TargetPostureChoice]](calc.explosion.content); found {
 			popupRight = popup.PointToRoot(geom.NewPoint(popup.FrameRect().Width, 0)).X
 		}
 	})
@@ -332,7 +333,7 @@ func TestThrowingCalculatorSources(t *testing.T) {
 	})
 
 	// Throwing Art at DX+1 adds 2 to the ST for distance and 2 per die to the damage: 12×3.5 = 42 yards and 1d−2.
-	throwingArtPopup, found := firstPanelOfType[*unison.PopupMenu[throwingSkillTier]](throwing.content)
+	throwingArtPopup, found := firstPanelOfType[*unison.PopupMenu[calculator.ThrowingTier]](throwing.content)
 	if !found {
 		t.Fatal("the calculator must offer a Throwing popup")
 	}
@@ -344,33 +345,6 @@ func TestThrowingCalculatorSources(t *testing.T) {
 
 	closeEditorWithoutPrompt(t, screen, calc)
 	closeEditorWithoutPrompt(t, screen, sheet)
-}
-
-// TestHikingTimeInDays verifies the hiking travel-time calculation, including the 0 Move case that previously divided by
-// zero and crashed the Calculator the moment a non-zero "Distance to Cover" was entered.
-func TestHikingTimeInDays(t *testing.T) {
-	c := check.New(t)
-	for _, one := range []struct {
-		name            string
-		distanceToCover fxp.Int
-		distancePerDay  fxp.Int
-		wantDays        fxp.Int
-		wantOK          bool
-	}{
-		// Regression: distancePerDay of 0 (Move resolved to 0) must not divide by zero, even with distance to cover.
-		{name: "0 move with distance to cover", distanceToCover: fxp.FromInteger(100), distancePerDay: 0, wantDays: 0, wantOK: false},
-		{name: "0 move with no distance to cover", distanceToCover: 0, distancePerDay: 0, wantDays: 0, wantOK: false},
-		// Nothing to cover is already "there": 0 days, and no division hazard.
-		{name: "no distance to cover", distanceToCover: 0, distancePerDay: fxp.FromInteger(20), wantDays: 0, wantOK: true},
-		// 100 miles to cover at 20 miles/day -> 5 days exactly.
-		{name: "even multiple", distanceToCover: fxp.FromInteger(100), distancePerDay: fxp.FromInteger(20), wantDays: fxp.FromInteger(5), wantOK: true},
-		// Rounds to a tenth of a day: 10 / 3 = 3.333... -> 3.3 days.
-		{name: "rounds to tenths", distanceToCover: fxp.FromInteger(10), distancePerDay: fxp.FromInteger(3), wantDays: fxp.FromStringForced("3.3"), wantOK: true},
-	} {
-		days, ok := hikingTimeInDays(one.distanceToCover, one.distancePerDay)
-		c.Equal(one.wantOK, ok, one.name)
-		c.Equal(one.wantDays, days, one.name)
-	}
 }
 
 // TestCalculatorHikingControls drives the hiking calculator inside a headless workspace the way a user would: it checks
@@ -392,13 +366,13 @@ func TestCalculatorHikingControls(t *testing.T) {
 	hiking := calc.hiking
 	selectCalculatorTab(t, screen, calc, hiking)
 
-	var terrainPopup, weatherPopup *unison.PopupMenu[terrainModifier]
-	var intensityPopup *unison.PopupMenu[hikingIntensityHours]
+	var terrainPopup, weatherPopup *unison.PopupMenu[calculator.TerrainModifier]
+	var intensityPopup *unison.PopupMenu[calculator.HikingIntensity]
 	screen.Do(func() {
-		if popups := panelsOfType[*unison.PopupMenu[terrainModifier]](hiking.content); len(popups) == 2 {
+		if popups := panelsOfType[*unison.PopupMenu[calculator.TerrainModifier]](hiking.content); len(popups) == 2 {
 			terrainPopup, weatherPopup = popups[0], popups[1]
 		}
-		intensityPopup, _ = firstPanelOfType[*unison.PopupMenu[hikingIntensityHours]](hiking.content)
+		intensityPopup, _ = firstPanelOfType[*unison.PopupMenu[calculator.HikingIntensity]](hiking.content)
 	})
 	if terrainPopup == nil || weatherPopup == nil || intensityPopup == nil {
 		t.Fatal("the calculator must offer terrain, weather and intensity popups")
@@ -626,7 +600,7 @@ func TestCalculatorHikingControls(t *testing.T) {
 	screen.Do(func() { hiking.moveField.SetText("6") })
 	c.Equal("34 miles", current().perDay, "the day's travel must follow the typed-in Move")
 	choosePopupItem(t, screen, wnd, hiking.encumbrancePopup, 1)
-	heatPopup, found := firstPanelOfType[*unison.PopupMenu[hikingHeatChoice]](hiking.content)
+	heatPopup, found := firstPanelOfType[*unison.PopupMenu[calculator.HikingHeat]](hiking.content)
 	if !found {
 		t.Fatal("the calculator must offer a heat popup")
 	}

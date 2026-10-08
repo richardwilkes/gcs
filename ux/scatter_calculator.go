@@ -11,32 +11,12 @@ package ux
 
 import (
 	"github.com/richardwilkes/gcs/v5/model/fxp"
-	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/model/gurps/calculator"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/unison"
 )
 
 var _ calculatorTab = &scatterCalculator{}
-
-// newScatterCauses returns the reasons an attack can miss (BX414).
-func newScatterCauses() []scatterCause {
-	return []scatterCause{
-		{name: i18n.Text("Failed attack roll")},
-		{name: i18n.Text("Failed attack roll, squared miss"), squared: true},
-		{name: i18n.Text("Target dodged")},
-	}
-}
-
-// scatterCause is why the attack missed, which decides whether it scatters by the margin or by its square (BX414). A
-// dodge never squares the margin.
-type scatterCause struct {
-	name    string
-	squared bool
-}
-
-func (s scatterCause) String() string {
-	return s.name
-}
 
 // scatterCalculator works out how far an attack that missed lands from where it was aimed (BX414). Everything it needs
 // is typed in, since a miss is a matter of the roll rather than of anything a sheet knows.
@@ -45,7 +25,7 @@ type scatterCalculator struct {
 	marginField   *IntegerField
 	distanceField *DecimalField
 	result        *unison.Label
-	causes        []scatterCause
+	causes        []calculator.ScatterCause
 	distance      fxp.Int
 	causeIndex    int
 	margin        int
@@ -53,7 +33,7 @@ type scatterCalculator struct {
 
 func newScatterCalculator() *scatterCalculator {
 	s := &scatterCalculator{
-		causes:   newScatterCauses(),
+		causes:   calculator.ScatterCauses(),
 		distance: fxp.Ten,
 		margin:   1,
 	}
@@ -109,13 +89,13 @@ func (s *scatterCalculator) createContent() {
 		i18n.Text("The miss is squared when the target was flying or underwater, or when Artillery or Dropping was used against a target the attacker could not see; a dodge is never squared. When the target dodged, the margin is its margin of success."),
 		i18n.Text("Roll 1d for the direction: a 1 is the direction the attacker faces, and each higher number turns 60° further clockwise."),
 		i18n.Text("Deliberately attacking an area rather than a target standing in it is at %+d to hit. The area cannot defend, though anyone in it may dive for cover.",
-			gurps.AreaAttackBonus),
+			calculator.AreaAttackBonus),
 	)
 }
 
 // changed implements calculatorTab.
 func (s *scatterCalculator) changed() {
-	yards, capped := gurps.ScatterDistance(s.margin, s.distance, s.causes[s.causeIndex].squared)
+	yards, capped := calculator.ScatterDistance(s.margin, s.distance, s.causes[s.causeIndex].Squared)
 	text := i18n.Text("%s yards", yards.Comma())
 	if capped {
 		text += i18n.Text(" (limited to half the distance)")

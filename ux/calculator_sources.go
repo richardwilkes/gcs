@@ -14,7 +14,6 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
-	"github.com/richardwilkes/rpgtools/dice"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/unison"
 )
@@ -138,35 +137,6 @@ func sheetSourceNames(sheets []*Sheet) []string {
 	return names
 }
 
-// skillLevelOrDefault returns the entity's level in the named skill, falling back to its default from the attribute
-// when the skill is not on the sheet. It is zero when even the default cannot be worked out.
-func skillLevelOrDefault(entity *gurps.Entity, name, defaultAttrID string, modifier int) int {
-	if sk := entity.BestSkillNamed(name, "", false, nil); sk != nil {
-		return sk.CalculateLevel(nil).Level.AsInteger[int]()
-	}
-	def := &gurps.SkillDefault{DefaultType: defaultAttrID, Modifier: fxp.FromInteger(modifier)}
-	level := def.SkillLevelFast(entity, nil, false, nil, true)
-	if level == fxp.Min {
-		return 0
-	}
-	return level.AsInteger[int]()
-}
-
-// basicLiftFor returns the Basic Lift the entity has with the given ST, or the one a character typed in has with it
-// when the entity is nil, worked out under the global default sheet settings.
-func basicLiftFor(entity *gurps.Entity, st fxp.Int) fxp.Weight {
-	if entity != nil {
-		return entity.BasicLiftForST(st)
-	}
-	return gurps.BasicLiftForST(st, gurps.SheetSettingsFor(nil).DamageProgression)
-}
-
-// thrustFor returns the thrust damage for the given ST under the entity's damage progression, or the global default one
-// when the entity is nil.
-func thrustFor(entity *gurps.Entity, st fxp.Int) dice.Dice {
-	return gurps.SheetSettingsFor(entity).DamageProgression.Thrust(st.AsInteger[int]())
-}
-
 // newSourcedWeightField returns a weight field shown in the weight units the sheet settings of the entity that source
 // names prefer, or the global default ones when it names none. The units follow the source as it changes, so a field
 // whose source has just changed is synced to show the new ones.
@@ -178,19 +148,6 @@ func newSourcedWeightField(undoTitle string, source func() *gurps.Entity, get fu
 		func(s string) (fxp.Weight, error) {
 			return fxp.WeightFromString(s, gurps.SheetSettingsFor(source()).DefaultWeightUnits)
 		}, minValue, maxValue, false)
-}
-
-// torsoDR returns the entity's total DR on the torso and the part of it that comes from armor.
-func torsoDR(entity *gurps.Entity) (total, armor int) {
-	body := entity.SheetSettings.BodyType
-	if body == nil {
-		return 0, 0
-	}
-	torso := body.LookupLocationByID(entity, gurps.TorsoID)
-	if torso == nil {
-		return 0, 0
-	}
-	return torso.DR(entity, nil, nil)[gurps.AllID], torso.ArmorDR(entity, nil)[gurps.AllID]
 }
 
 // sheetSourceUser is implemented by the dockables that draw their numbers from open character sheets.

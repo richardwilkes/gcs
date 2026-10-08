@@ -7,13 +7,14 @@
 // This Source Code Form is "Incompatible With Secondary Licenses", as
 // defined by the Mozilla Public License, version 2.0.
 
-package gurps
+package calculator
 
 import (
 	"math"
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
+	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/rpgtools/dice"
 )
 
@@ -96,26 +97,6 @@ func (e ExplosionEnvironment) CollateralDivisor(distanceYards fxp.Int) fxp.Int {
 	}
 }
 
-// IsExplosiveDamageType reports whether a damage type carries the Explosion modifier (B104), i.e. an "ex" token, as in
-// the "cr ex" of a grenade (BX414).
-//
-// Each whitespace-separated token is matched on its leading letters alone, because the damage types in the data
-// libraries decorate the token in several ways -- "burn ex* rad sur", "cr ex/2", "ex," -- and every one of those is
-// still an explosion. Matching only the leading letters keeps a longer word that merely starts with them, such as
-// "exp", from counting.
-func IsExplosiveDamageType(damageType string) bool {
-	for token := range strings.FieldsSeq(strings.ToLower(damageType)) {
-		i := 0
-		for i < len(token) && token[i] >= 'a' && token[i] <= 'z' {
-			i++
-		}
-		if token[:i] == "ex" {
-			return true
-		}
-	}
-	return false
-}
-
 // DiceOfDamage returns the number of dice of damage the explosion radii are measured in (BX414). A dice multiplier
 // counts toward it, so 6dx2 is twelve dice of damage rather than six. A negative count is treated as zero and a
 // multiplier below one as one, since dice are never rolled a negative number of times.
@@ -143,7 +124,7 @@ func FragmentationRadius(d dice.Dice) int {
 //
 // A target the explosive attack struck directly is hit by a fragment automatically and does not roll at all.
 func FragmentationSkill(distanceYards fxp.Int, posturePenalty, sizeModifier int) int {
-	return FragmentationBaseSkill + SpeedRangePenalty(distanceYards) + posturePenalty + sizeModifier
+	return FragmentationBaseSkill + gurps.SpeedRangePenalty(distanceYards) + posturePenalty + sizeModifier
 }
 
 // DividedDamage returns the least, average and greatest damage the given dice inflict once divided by the given divisor
@@ -178,17 +159,17 @@ func DividedDamage(d dice.Dice, divisor fxp.Int) (minimum, average, maximum int)
 //
 // Only call this with a real entity: a nil one would be answered from the global default body type rather than the
 // target's own.
-func LargeAreaDR(entity *Entity, damageType string, exposed func(*HitLocation) bool) int {
-	body := SheetSettingsFor(entity).BodyType
+func LargeAreaDR(entity *gurps.Entity, damageType string, exposed func(*gurps.HitLocation) bool) int {
+	body := gurps.SheetSettingsFor(entity).BodyType
 	if body == nil {
 		return 0
 	}
-	drFor := func(loc *HitLocation) int {
+	drFor := func(loc *gurps.HitLocation) int {
 		// The DR map is keyed by lowercased specialization, with the DR that applies to everything under AllID and
 		// each specialized bonus stacking on top of it.
 		m := loc.DR(entity, nil, nil)
-		dr := m[AllID]
-		if t := strings.ToLower(strings.TrimSpace(damageType)); t != "" && t != AllID {
+		dr := m[gurps.AllID]
+		if t := strings.ToLower(strings.TrimSpace(damageType)); t != "" && t != gurps.AllID {
 			dr += m[t]
 		}
 		return max(dr, 0)
@@ -203,7 +184,7 @@ func LargeAreaDR(entity *Entity, damageType string, exposed func(*HitLocation) b
 		return 0
 	}
 	torso := least // With no torso location, the least-protected DR stands in for both halves of the average.
-	if loc := body.LookupLocationByID(entity, TorsoID); loc != nil {
+	if loc := body.LookupLocationByID(entity, gurps.TorsoID); loc != nil {
 		torso = drFor(loc)
 	}
 	return (torso + least + 1) / 2 // BX400 rounds the average up.

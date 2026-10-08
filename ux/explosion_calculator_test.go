@@ -15,6 +15,7 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/model/gurps/calculator"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/unison"
 )
@@ -133,7 +134,7 @@ func TestExplosionCalculatorSources(t *testing.T) {
 	// would scatter 9 but is limited to half the distance.
 	scatter := dockable.scatter
 	selectCalculatorTab(t, screen, dockable, scatter)
-	causePopup, found := firstPanelOfType[*unison.PopupMenu[scatterCause]](scatter.content)
+	causePopup, found := firstPanelOfType[*unison.PopupMenu[calculator.ScatterCause]](scatter.content)
 	if !found {
 		t.Fatal("the calculator must offer a cause popup")
 	}

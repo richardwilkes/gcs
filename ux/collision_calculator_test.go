@@ -16,6 +16,7 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/model/gurps/calculator"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/unison"
 )
@@ -122,8 +123,8 @@ func TestCollisionCalculatorSources(t *testing.T) {
 		calc.mover.sm = 2
 		calc.target.hp = fxp.FromInteger(10)
 		calc.target.velocity = fxp.Five
-		calc.angleIndex = slices.IndexFunc(calc.angles, func(a collisionAngleChoice) bool {
-			return a.angle == gurps.RearEndCollision
+		calc.angleIndex = slices.IndexFunc(calc.angles, func(a calculator.CollisionAngleChoice) bool {
+			return a.Angle == calculator.RearEndCollision
 		})
 		calc.changed()
 	})

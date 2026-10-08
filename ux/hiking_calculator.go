@@ -15,7 +15,7 @@ import (
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
-	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/model/gurps/calculator"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/encumbrance"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/unison"
@@ -23,146 +23,6 @@ import (
 )
 
 var _ calculatorTab = &hikingCalculator{}
-
-// newTerrainChoices returns the kinds of ground a day's hike can cross and what each does to the distance (BX351).
-func newTerrainChoices() []terrainModifier {
-	return []terrainModifier{
-		{Name: i18n.Text("Broken Ground"), Modifier: fxp.Half},
-		{Name: i18n.Text("Deep Snow"), Modifier: fxp.Fifth, IsSnow: true},
-		{Name: i18n.Text("Desert"), Modifier: fxp.Fifth},
-		{Name: i18n.Text("Desert, Hard-packed"), Modifier: fxp.OneAndAQuarter},
-		{Name: i18n.Text("Forest"), Modifier: fxp.Half},
-		{Name: i18n.Text("Forest, Dense"), Modifier: fxp.Fifth},
-		{Name: i18n.Text("Forest, Light"), Modifier: fxp.One},
-		{Name: i18n.Text("Frozen Lake"), Modifier: fxp.Half, IsIce: true},
-		{Name: i18n.Text("Frozen River"), Modifier: fxp.Half, IsIce: true},
-		{Name: i18n.Text("Hills, Rolling"), Modifier: fxp.One},
-		{Name: i18n.Text("Hills, Steep"), Modifier: fxp.Half},
-		{Name: i18n.Text("Jungle"), Modifier: fxp.Fifth},
-		{Name: i18n.Text("Mountains"), Modifier: fxp.Fifth},
-		{Name: i18n.Text("Mud"), Modifier: fxp.Fifth},
-		{Name: i18n.Text("Plains, Level"), Modifier: fxp.OneAndAQuarter},
-		{Name: i18n.Text("Road, Cobblestone"), Modifier: fxp.One, IsRoad: true},
-		{Name: i18n.Text("Road, Dirt"), Modifier: fxp.One, ModifierInRain: fxp.Fifth, IsRoad: true, Default: true},
-		{Name: i18n.Text("Road, Gravel"), Modifier: fxp.One, ModifierInRain: fxp.Fifth, IsRoad: true},
-		{Name: i18n.Text("Road, Paved"), Modifier: fxp.OneAndAQuarter, ModifierInRain: fxp.One, IsRoad: true},
-		{Name: i18n.Text("Sand"), Modifier: fxp.Fifth},
-		{Name: i18n.Text("Sand, Hard-packed"), Modifier: fxp.OneAndAQuarter},
-		{Name: i18n.Text("Swamp"), Modifier: fxp.Fifth},
-	}
-}
-
-// newWeatherChoices returns the weather a day's hike can be made in and what each does to the distance (BX351).
-func newWeatherChoices() []terrainModifier {
-	return []terrainModifier{
-		{Name: i18n.Text("Normal"), Modifier: fxp.One, Default: true},
-		{Name: i18n.Text("Rain"), Modifier: fxp.Half, IsRain: true},
-		{Name: i18n.Text("Sleet"), Modifier: fxp.Half, IsIce: true},
-		{Name: i18n.Text("Snow"), Modifier: fxp.Half, IsSnow: true},
-		{Name: i18n.Text("Snow, Heavy"), Modifier: fxp.Quarter, IsSnow: true},
-	}
-}
-
-// newHikingIntensityChoices returns how hard the day's hike can be pushed, as the hours it spends on the march.
-func newHikingIntensityChoices() []hikingIntensityHours {
-	return []hikingIntensityHours{
-		{Name: i18n.Text("Forced March"), HoursHiking: fxp.Sixteen},
-		{Name: i18n.Text("Long March"), HoursHiking: fxp.Twelve},
-		{Name: i18n.Text("Normal"), HoursHiking: fxp.Eight, Default: true},
-		{Name: i18n.Text("Foraging"), HoursHiking: fxp.Four, IsForaging: true},
-		{Name: i18n.Text("Custom"), IsCustom: true},
-	}
-}
-
-// newHikingHeatChoices returns what the day's heat adds to each hour's FP cost (BX426).
-func newHikingHeatChoices() []hikingHeatChoice {
-	return []hikingHeatChoice{
-		{name: i18n.Text("Temperate")},
-		{name: i18n.Text("Hot (+1 FP per hour)"), fp: 1},
-		{name: i18n.Text("Hot, in plate armor, an overcoat, etc. (+2 FP per hour)"), fp: 2},
-	}
-}
-
-// newHikingFitnessChoices returns how fit the hiker can be (BX55): Fit and Very Fit recover FP at twice the usual rate,
-// and Very Fit loses FP to exertion at half the usual rate.
-func newHikingFitnessChoices() []hikingFitnessChoice {
-	return []hikingFitnessChoice{
-		{name: i18n.Text("Average")},
-		{name: i18n.Text("Fit (recovers FP twice as fast)"), fit: true},
-		{name: i18n.Text("Very Fit (recovers FP twice as fast, loses FP half as fast)"), fit: true, veryFit: true},
-	}
-}
-
-// newHikingRecoverEnergyChoices returns what the Recover Energy spell (BX248) does for the hiker's rest, by the skill it
-// is known at.
-func newHikingRecoverEnergyChoices() []hikingRecoverEnergyChoice {
-	return []hikingRecoverEnergyChoice{
-		{name: i18n.Text("None")},
-		{name: i18n.Text("Skill 15+ (1 FP per 5 minutes of rest)"), minutesPerFP: 5},
-		{name: i18n.Text("Skill 20+ (1 FP per 2 minutes of rest)"), minutesPerFP: 2},
-	}
-}
-
-// hikingExtraEffortFP is what extra effort on the march adds to the FP lost when the hiker stops (BX357).
-const hikingExtraEffortFP = 2
-
-// hikingRestMinutesPerFP is how long a rest takes to recover 1 FP for someone with no help (BX427).
-const hikingRestMinutesPerFP = 10
-
-type terrainModifier struct {
-	Name           string
-	Modifier       fxp.Int
-	ModifierInRain fxp.Int
-	IsRoad         bool
-	IsRain         bool
-	IsSnow         bool
-	IsIce          bool
-	Default        bool
-}
-
-func (t terrainModifier) String() string {
-	return t.Name
-}
-
-type hikingIntensityHours struct {
-	Name        string
-	HoursHiking fxp.Int
-	IsCustom    bool
-	IsForaging  bool
-	Default     bool
-}
-
-func (t hikingIntensityHours) String() string {
-	return t.Name
-}
-
-type hikingHeatChoice struct {
-	name string
-	fp   int
-}
-
-func (h hikingHeatChoice) String() string {
-	return h.name
-}
-
-type hikingFitnessChoice struct {
-	name    string
-	fit     bool
-	veryFit bool
-}
-
-func (h hikingFitnessChoice) String() string {
-	return h.name
-}
-
-type hikingRecoverEnergyChoice struct {
-	name         string
-	minutesPerFP int // 0 when the spell is no help
-}
-
-func (h hikingRecoverEnergyChoice) String() string {
-	return h.name
-}
 
 // hikingCalculator works out how far a character covers in a day of travel over the given ground (BX351, HT55), and
 // what the day costs in FP (BX426). The character's numbers are either typed in or taken from any open character
@@ -175,8 +35,8 @@ type hikingCalculator struct {
 	enhancedMoveField            *DecimalField
 	encumbrancePopup             *unison.PopupMenu[encumbrance.Level]
 	fpField                      *DecimalField
-	fitnessPopup                 *unison.PopupMenu[hikingFitnessChoice]
-	recoverEnergyPopup           *unison.PopupMenu[hikingRecoverEnergyChoice]
+	fitnessPopup                 *unison.PopupMenu[calculator.HikingFitness]
+	recoverEnergyPopup           *unison.PopupMenu[calculator.HikingRecoverEnergy]
 	restField                    *IntegerField
 	restMealCheckBox             *unison.CheckBox
 	restExtraField               *IntegerField
@@ -194,12 +54,12 @@ type hikingCalculator struct {
 	usingSkatesCheckBox          *unison.CheckBox
 	successfulHikingRollCheckBox *unison.CheckBox
 	hikingRollPageLabel          *textLabel
-	terrain                      []terrainModifier
-	weather                      []terrainModifier
-	heat                         []hikingHeatChoice
-	intensity                    []hikingIntensityHours
-	fitness                      []hikingFitnessChoice
-	recoverEnergy                []hikingRecoverEnergyChoice
+	terrain                      []calculator.TerrainModifier
+	weather                      []calculator.TerrainModifier
+	heat                         []calculator.HikingHeat
+	intensity                    []calculator.HikingIntensity
+	fitness                      []calculator.HikingFitness
+	recoverEnergy                []calculator.HikingRecoverEnergy
 	enhancedMove                 fxp.Int
 	fp                           fxp.Int
 	hikingHours                  fxp.Int
@@ -225,19 +85,19 @@ type hikingCalculator struct {
 
 func newHikingCalculator() *hikingCalculator {
 	h := &hikingCalculator{
-		terrain:       newTerrainChoices(),
-		weather:       newWeatherChoices(),
-		heat:          newHikingHeatChoices(),
-		intensity:     newHikingIntensityChoices(),
-		fitness:       newHikingFitnessChoices(),
-		recoverEnergy: newHikingRecoverEnergyChoices(),
+		terrain:       calculator.TerrainChoices(),
+		weather:       calculator.WeatherChoices(),
+		heat:          calculator.HikingHeatChoices(),
+		intensity:     calculator.HikingIntensityChoices(),
+		fitness:       calculator.HikingFitnessChoices(),
+		recoverEnergy: calculator.HikingRecoverEnergyChoices(),
 		move:          5,
 		fp:            fxp.Ten,
 		hikingHours:   fxp.Eight,
 	}
-	h.terrainIndex = slices.IndexFunc(h.terrain, func(t terrainModifier) bool { return t.Default })
-	h.weatherIndex = slices.IndexFunc(h.weather, func(t terrainModifier) bool { return t.Default })
-	h.hikingIntensityIndex = slices.IndexFunc(h.intensity, func(t hikingIntensityHours) bool { return t.Default })
+	h.terrainIndex = slices.IndexFunc(h.terrain, func(t calculator.TerrainModifier) bool { return t.Default })
+	h.weatherIndex = slices.IndexFunc(h.weather, func(t calculator.TerrainModifier) bool { return t.Default })
+	h.hikingIntensityIndex = slices.IndexFunc(h.intensity, func(t calculator.HikingIntensity) bool { return t.Default })
 	h.createContent()
 	return h
 }
@@ -398,45 +258,21 @@ func (h *hikingCalculator) selectSheet(sheet *Sheet) {
 // pullFromSheet reads the hiker's numbers from its sheet. Each backing value is assigned before its field is synced, so
 // that the setter the sync may run sees nothing new and does not start another round of updates.
 func (h *hikingCalculator) pullFromSheet() {
-	entity := h.source.entity()
-	h.encumbranceIndex = int(entity.EncumbranceLevel(false))
-	h.move = entity.Move(encumbrance.Level(h.encumbranceIndex))
-	h.enhancedMove, _ = entity.TraitLevels("enhanced move (ground)")
-	if entity.ResolveAttribute(gurps.FatiguePointsID) != nil {
-		h.fp = entity.Attributes.Maximum(gurps.FatiguePointsID).Max(0)
+	stats := calculator.HikerStatsFromEntity(h.source.entity())
+	h.encumbranceIndex = int(stats.Encumbrance)
+	h.move = stats.Move
+	h.enhancedMove = stats.EnhancedMove
+	if stats.HasFP {
+		h.fp = stats.FP
 	}
-	switch {
-	case entity.HasTraitNamed("Very Fit"):
-		h.fitnessIndex = 2
-	case entity.HasTraitNamed("Fit"):
-		h.fitnessIndex = 1
-	default:
-		h.fitnessIndex = 0
-	}
-	h.recoverEnergyIndex = 0
-	if level := spellLevel(entity, "Recover Energy"); level >= 20 {
-		h.recoverEnergyIndex = 2
-	} else if level >= 15 {
-		h.recoverEnergyIndex = 1
-	}
+	h.fitnessIndex = stats.FitnessIndex
+	h.recoverEnergyIndex = stats.RecoverEnergyIndex
 	h.moveField.Sync()
 	h.enhancedMoveField.Sync()
 	h.encumbrancePopup.SelectIndex(h.encumbranceIndex)
 	h.fpField.Sync()
 	h.fitnessPopup.SelectIndex(h.fitnessIndex)
 	h.recoverEnergyPopup.SelectIndex(h.recoverEnergyIndex)
-}
-
-// spellLevel returns the highest level the entity knows the named spell at, or 0 when it does not know it.
-func spellLevel(entity *gurps.Entity, name string) int {
-	var level fxp.Int
-	gurps.Traverse(func(sp *gurps.Spell) bool {
-		if strings.EqualFold(sp.NameWithReplacements(), name) {
-			level = level.Max(sp.CalculateLevel().Level)
-		}
-		return false
-	}, true, true, entity.Spells...)
-	return level.AsInteger[int]()
 }
 
 // changed implements calculatorTab.
@@ -487,8 +323,8 @@ func (h *hikingCalculator) adjustControls() {
 		h.hikingHoursField.SetEnabled(false)
 	}
 
-	w := h.weather[h.weatherIndex]
-	h.roadsAreClearedCheckBox.SetEnabled(h.terrain[h.terrainIndex].IsRoad && (w.IsIce || w.IsSnow))
+	hike := h.hike()
+	h.roadsAreClearedCheckBox.SetEnabled(hike.RoadsCanBeCleared())
 	// The penalty is not used without a successful roll, so the field is blanked as well as disabled, and the same
 	// goes for what the rest brings when there is no rest.
 	adjustFieldBlank(h.hikingExtraEffortField, !h.successfulHikingRoll)
@@ -499,72 +335,31 @@ func (h *hikingCalculator) adjustControls() {
 	h.content.MarkForRedraw()
 }
 
-// extraEffort reports whether the hiker is putting in extra effort, which takes a successful roll and a penalty on it.
-func (h *hikingCalculator) extraEffort() bool {
-	return h.successfulHikingRoll && h.hikingExtraEffortPenalty < 0
-}
-
-// distanceForHours returns the distance covered in the given hours of travel at the hiker's full pace, with the given
-// extra effort penalty, in the length units the source prefers (BX351).
-func (h *hikingCalculator) distanceForHours(hours fxp.Int, extraEffortPenalty int) fxp.Int {
-	distance := fxp.FromInteger(h.move * 10)
-
-	distance = distance.Mul(hours).Div(fxp.Sixteen)
-
-	if h.enhancedMove > 0 {
-		distance = distance.Mul(fxp.One + h.enhancedMove)
+// hike returns the day of travel the calculator's numbers describe.
+func (h *hikingCalculator) hike() calculator.Hike {
+	return calculator.Hike{
+		Hiker: calculator.Hiker{
+			Move:          h.move,
+			EnhancedMove:  h.enhancedMove,
+			Encumbrance:   encumbrance.Level(h.encumbranceIndex),
+			FP:            h.fp,
+			Fitness:       h.fitness[h.fitnessIndex],
+			RecoverEnergy: h.recoverEnergy[h.recoverEnergyIndex],
+		},
+		Terrain:            h.terrain[h.terrainIndex],
+		Weather:            h.weather[h.weatherIndex],
+		Heat:               h.heat[h.heatIndex],
+		Hours:              h.hikingHours,
+		RestMinutes:        h.restMinutes,
+		RestExtraFP:        h.restExtraFP,
+		ExtraEffortPenalty: h.hikingExtraEffortPenalty,
+		RestMeal:           h.restMeal,
+		UsingSkis:          h.usingSkis,
+		UsingSkates:        h.usingSkates,
+		RoadsAreCleared:    h.roadsAreCleared,
+		SuccessfulRoll:     h.successfulHikingRoll,
+		Metric:             useMetersFor(h.source.entity()),
 	}
-
-	t := h.terrain[h.terrainIndex]
-	mod := t.Modifier
-	if t.IsIce && h.usingSkates {
-		mod = fxp.OneAndAQuarter
-	}
-	if t.IsSnow && h.usingSkis {
-		mod = fxp.One
-	}
-
-	w := h.weather[h.weatherIndex]
-	switch {
-	case w.IsRain:
-		if t.IsRoad {
-			if t.ModifierInRain != 0 {
-				mod = t.ModifierInRain
-			}
-		} else {
-			mod = mod.Mul(w.Modifier)
-		}
-	case w.IsSnow:
-		if t.IsRoad {
-			mod = fxp.One
-		}
-		if (!t.IsRoad || !h.roadsAreCleared) && !h.usingSkis {
-			mod = mod.Mul(w.Modifier)
-		}
-	case w.IsIce:
-		if t.IsRoad {
-			mod = fxp.One
-		}
-		if (!t.IsRoad || !h.roadsAreCleared) && !h.usingSkates {
-			mod = mod.Mul(w.Modifier)
-		}
-	}
-	distance = distance.Mul(mod)
-
-	mod = fxp.One
-	if h.successfulHikingRoll {
-		mod = fxp.OnePointTwo
-		if extraEffortPenalty < 0 {
-			mod += fxp.FromInteger(-5 * extraEffortPenalty).Div(fxp.Hundred)
-		}
-	}
-	distance = distance.Mul(mod)
-
-	if useMetersFor(h.source.entity()) {
-		// miles -> inches -> GURPS kilometers
-		distance = fxp.Kilometer.FromInches(fxp.Mile.ToInches(distance))
-	}
-	return distance
 }
 
 // unitsFor returns the name of the length units the source prefers, for the given distance in them.
@@ -581,182 +376,24 @@ func (h *hikingCalculator) unitsFor(distance fxp.Int) string {
 	return i18n.Text("miles")
 }
 
-// hikingHour is one row of a day's hour-by-hour breakdown: what the hour covered, what it did to the hiker's FP, and
-// the state it left him in. The rows for the rest halfway through and for the stop at the end of the day, which is
-// where extra effort takes its toll, cover nothing.
-type hikingHour struct {
-	label       string
-	condition   string
-	distance    fxp.Int
-	total       fxp.Int
-	fpChange    fxp.Int // Negative for a loss.
-	fpLeft      fxp.Int
-	hasDistance bool
-}
-
-// hikingDay is what a day of travel comes to, worked out hour by hour with the effects of the FP lost applied as they
-// arrive (BX426): Move is halved once fewer than a third of the hiker's FP are left, going on at 0 FP or less takes a
-// Will roll, which the day assumes is made, and at -FP the hiker falls unconscious and the day ends. The hours are
-// what the hiker can be expected to manage, and the cost is what they and the stop at the end come to.
-type hikingDay struct {
-	hours            []hikingHour
-	distance         fxp.Int
-	fpCost           fxp.Int
-	restRecovered    fxp.Int // What the rest halfway through gave back; 0 when there was no rest.
-	tiredAfter       fxp.Int
-	outAfter         fxp.Int
-	unconsciousAfter fxp.Int
-}
-
-// fpPerHour returns what each hour of the march costs in FP (BX426): 1, plus 1 per level of encumbrance, plus what
-// the heat adds, halved for a Very Fit hiker (BX55).
-func (h *hikingCalculator) fpPerHour() fxp.Int {
-	perHour := fxp.FromInteger(1 + h.encumbranceIndex + h.heat[h.heatIndex].fp)
-	if h.fitness[h.fitnessIndex].veryFit {
-		perHour = perHour.Div(fxp.Two)
-	}
-	return perHour
-}
-
-// restMinutesPerFP returns how long the hiker's rest takes to recover 1 FP: 10 minutes (BX427), or 5 for a Fit or
-// Very Fit hiker (BX55), or what Recover Energy gives if that is faster (BX248).
-func (h *hikingCalculator) restMinutesPerFP() int {
-	minutes := hikingRestMinutesPerFP
-	if h.fitness[h.fitnessIndex].fit {
-		minutes /= 2
-	}
-	if spell := h.recoverEnergy[h.recoverEnergyIndex].minutesPerFP; spell > 0 && spell < minutes {
-		minutes = spell
-	}
-	return minutes
-}
-
-// restAfter returns how many hours into the march the hiker rests, or 0 when there is no rest: halfway through, at the
-// end of a whole hour, and only when some of the march is still to come.
-func (h *hikingCalculator) restAfter() fxp.Int {
-	if h.restMinutes <= 0 {
-		return 0
-	}
-	after := h.hikingHours.Div(fxp.Two).Floor().Max(fxp.One)
-	if after >= h.hikingHours {
-		return 0
-	}
-	return after
-}
-
-// restRecovery returns what the rest gives back to a hiker with the given FP left: 1 FP per restMinutesPerFP of it,
-// plus 1 for a decent meal and whatever spells and the like restore, but never more than was lost (BX427).
-func (h *hikingCalculator) restRecovery(fpLeft fxp.Int) fxp.Int {
-	recovered := h.restMinutes / h.restMinutesPerFP()
-	if h.restMeal {
-		recovered++
-	}
-	recovered += h.restExtraFP
-	amount := fxp.FromInteger(recovered)
-	if h.fp > 0 {
-		amount = amount.Min(h.fp - fpLeft).Max(0)
-	}
-	return amount
-}
-
-// computeDay works out the day of travel with the given extra effort penalty. Without FP to go on, the hiker is
-// assumed to keep his full pace all day.
-func (h *hikingCalculator) computeDay(extraEffortPenalty int) hikingDay {
-	var day hikingDay
-	hourly := h.distanceForHours(fxp.One, extraEffortPenalty)
-	perHour := h.fpPerHour()
-	known := h.fp > 0
-	fpLeft := h.fp
-	pace := fxp.One
-	restAfter := h.restAfter()
-	var elapsed fxp.Int
-	for remaining := h.hikingHours; remaining > 0; {
-		step := remaining.Min(fxp.One)
-		remaining -= step
-		elapsed += step
-		hour := hikingHour{
-			label:       elapsed.Comma(),
-			distance:    hourly.Mul(step).Mul(pace),
-			fpChange:    -perHour.Mul(step),
-			hasDistance: true,
-		}
-		day.distance += hour.distance
-		hour.total = day.distance
-		day.fpCost -= hour.fpChange
-		if known {
-			// FP never fall below -FP; whatever would take them further comes off HP instead.
-			fpLeft = (fpLeft + hour.fpChange).Max(-h.fp)
-			hour.fpLeft = fpLeft
-			hour.condition, pace = h.condition(fpLeft)
-			if day.tiredAfter == 0 && pace < fxp.One {
-				day.tiredAfter = elapsed
-			}
-			if day.outAfter == 0 && fpLeft <= 0 {
-				day.outAfter = elapsed
-			}
-			if fpLeft <= -h.fp {
-				day.unconsciousAfter = elapsed
-				remaining = 0
-			}
-		}
-		day.hours = append(day.hours, hour)
-		if remaining > 0 && elapsed == restAfter {
-			rest := hikingHour{label: i18n.Text("Rest"), fpChange: h.restRecovery(fpLeft)}
-			day.restRecovered = rest.fpChange
-			if known {
-				fpLeft += rest.fpChange
-				rest.fpLeft = fpLeft
-				rest.condition, pace = h.condition(fpLeft)
-			}
-			day.hours = append(day.hours, rest)
-		}
-	}
-	if h.successfulHikingRoll && extraEffortPenalty < 0 {
-		hour := hikingHour{label: i18n.Text("Stop"), fpChange: -fxp.FromInteger(hikingExtraEffortFP)}
-		day.fpCost -= hour.fpChange
-		if known {
-			fpLeft = (fpLeft + hour.fpChange).Max(-h.fp)
-			hour.fpLeft = fpLeft
-			hour.condition, _ = h.condition(fpLeft)
-			if day.unconsciousAfter == 0 && fpLeft <= -h.fp {
-				day.unconsciousAfter = elapsed
-			}
-		}
-		day.hours = append(day.hours, hour)
-	}
-	return day
-}
-
-// condition returns the state the hiker is in with the given FP left, and the pace he can keep up as a fraction of
-// his usual one: half once fewer than a third of his FP are left, and none once he is unconscious (BX426).
-func (h *hikingCalculator) condition(fpLeft fxp.Int) (text string, pace fxp.Int) {
-	switch {
-	case fpLeft <= -h.fp:
-		return i18n.Text("Unconscious"), 0
-	case fpLeft <= 0:
-		return i18n.Text("Exhausted: Will roll to go on, 1 HP per FP lost"), fxp.Half
-	case fpLeft.Mul(fxp.Three) < h.fp:
-		return i18n.Text("Very tired: Move halved"), fxp.Half
-	default:
-		return "", fxp.One
-	}
-}
-
-// distanceText returns the day's distance with the given extra effort penalty, as it is shown.
-func (h *hikingCalculator) distanceText(extraEffortPenalty int) string {
-	distance := h.computeDay(extraEffortPenalty).distance
+// distanceText returns the day's distance as it would be without the extra effort, as it is shown.
+func (h *hikingCalculator) distanceText(hike *calculator.Hike) string {
+	base := *hike
+	base.ExtraEffortPenalty = 0
+	distance := base.Day().Distance
 	return fmt.Sprintf("%s %s", distance.Round().Comma(), h.unitsFor(distance))
 }
 
 // updateResults recomputes the day's travel, the time the journey takes and the FP the day costs, and rewrites the
 // results.
 func (h *hikingCalculator) updateResults() {
-	day := h.computeDay(h.hikingExtraEffortPenalty)
-	units := h.unitsFor(day.distance)
-	h.hikingResult.SetTitle(fmt.Sprintf("%s %s", day.distance.Round().Comma(), units))
+	hike := h.hike()
+	day := hike.Day()
+	units := h.unitsFor(day.Distance)
+	h.hikingResult.SetTitle(fmt.Sprintf("%s %s", day.Distance.Round().Comma(), units))
 	h.hikingDistanceLabel.SetTitle(i18n.Text("%s to travel", units))
 
-	if timeInDays, ok := hikingTimeInDays(h.hikingDistance, day.distance); !ok {
+	if timeInDays, ok := calculator.HikingTimeInDays(h.hikingDistance, day.Distance); !ok {
 		// No ground is covered at 0 Move or with no hours of travel, so the travel time is undefined.
 		h.hikingTimeLabel.SetTitle("—")
 	} else if timeInDays == fxp.One {
@@ -765,7 +402,7 @@ func (h *hikingCalculator) updateResults() {
 		h.hikingTimeLabel.SetTitle(i18n.Text("%s days", timeInDays))
 	}
 
-	h.updateFatigue(day)
+	h.updateFatigue(&hike, day)
 	h.updateBreakdown(day)
 	h.hikingTimeLabel.MarkForLayoutRecursivelyUpward()
 }
@@ -774,45 +411,45 @@ func (h *hikingCalculator) updateResults() {
 // encumbrance and whatever the heat adds, and extra effort adds a flat amount when the hiker stops (BX357). The notes
 // say when the hiker tires, runs out of FP and falls unconscious (BX426), along with the other things the intensity
 // brings with it.
-func (h *hikingCalculator) updateFatigue(day hikingDay) {
-	perHour := h.fpPerHour().Comma()
+func (h *hikingCalculator) updateFatigue(hike *calculator.Hike, day calculator.HikingDay) {
+	perHour := hike.FPPerHour().Comma()
 	label := i18n.Text("lost by the end of the day (%s per hour)", perHour)
-	if h.extraEffort() {
+	if hike.ExtraEffort() {
 		label = i18n.Text("lost by the end of the day (%s per hour, plus %d for extra effort)", perHour,
-			hikingExtraEffortFP)
+			calculator.HikingExtraEffortFP)
 	}
-	h.fpResult.SetTitle(i18n.Text("%s FP", day.fpCost.Comma()))
+	h.fpResult.SetTitle(i18n.Text("%s FP", day.FPCost.Comma()))
 	h.fpLabel.SetTitle(label)
 
 	notes := []string{
 		i18n.Text("Each hour of hiking costs 1 FP, plus 1 per level of encumbrance, plus 1 on a hot day or 2 in plate armor, an overcoat, etc. (B426)."),
 	}
-	if h.fitness[h.fitnessIndex].veryFit {
+	if hike.Hiker.Fitness.VeryFit {
 		notes = append(notes, i18n.Text("Being Very Fit, the hiker loses FP at half that rate (B55)."))
 	}
-	if day.tiredAfter > 0 {
+	if day.TiredAfter > 0 {
 		notes = append(notes, i18n.Text("With %s FP, the hiker has fewer than a third left after %s hours; Move, Dodge and ST are halved from then on, and the hours below allow for it (B426).",
-			h.fp.Comma(), day.tiredAfter.Comma()))
+			h.fp.Comma(), day.TiredAfter.Comma()))
 	}
-	if day.outAfter > 0 {
+	if day.OutAfter > 0 {
 		notes = append(notes, i18n.Text("The hiker is out of FP after %s hours; going on takes a Will roll, which the hours below assume is made, and each further FP lost also costs 1 HP (B426).",
-			day.outAfter.Comma()))
+			day.OutAfter.Comma()))
 	}
-	if day.unconsciousAfter > 0 {
+	if day.UnconsciousAfter > 0 {
 		notes = append(notes, i18n.Text("At -%s FP the hiker falls unconscious, after %s hours, and the day ends there; any further FP cost comes off HP instead (B426).",
-			h.fp.Comma(), day.unconsciousAfter.Comma()))
+			h.fp.Comma(), day.UnconsciousAfter.Comma()))
 	}
-	if h.restAfter() > 0 {
-		notes = append(notes, h.restNote(day))
+	if hike.RestAfter() > 0 {
+		notes = append(notes, h.restNote(hike, day))
 	}
 	switch {
-	case h.extraEffort():
+	case hike.ExtraEffort():
 		notes = append(notes, i18n.Text("The extra effort makes the Hiking roll a single Will-based Hiking roll at %d for the +%d%% beyond the +20%% a successful roll gives, and adds %d FP to the loss when the hiker stops. A failure leaves the day at the +20%% alone: %s. A critical failure turns the whole loss, %s FP, into HP of injury at the end of the day, and on a natural 18 a HT roll is needed as well to avoid a temporary disadvantage (B357).",
-			h.hikingExtraEffortPenalty, -5*h.hikingExtraEffortPenalty, hikingExtraEffortFP, h.distanceText(0),
-			day.fpCost.Comma()))
+			h.hikingExtraEffortPenalty, -5*h.hikingExtraEffortPenalty, calculator.HikingExtraEffortFP, h.distanceText(hike),
+			day.FPCost.Comma()))
 	case h.successfulHikingRoll:
 		notes = append(notes, i18n.Text("Extra effort adds 5%% to the distance per -1 taken on the Hiking roll, made as a single Will-based Hiking roll, and %d FP to the loss when the hiker stops (B357).",
-			hikingExtraEffortFP))
+			calculator.HikingExtraEffortFP))
 	default:
 		notes = append(notes, i18n.Text("Extra effort needs the Hiking roll, which it makes a single Will-based Hiking roll at -1 per 5% of distance beyond the +20% a success gives (B357)."))
 	}
@@ -827,17 +464,17 @@ func (h *hikingCalculator) updateFatigue(day hikingDay) {
 }
 
 // restNote describes what the rest halfway through the day gives back and why (BX427, BX55, BX248).
-func (h *hikingCalculator) restNote(day hikingDay) string {
+func (h *hikingCalculator) restNote(hike *calculator.Hike, day calculator.HikingDay) string {
 	var sources []string
-	spell := h.recoverEnergy[h.recoverEnergyIndex].minutesPerFP
+	minutes := hike.Hiker.RestMinutesPerFP()
+	spell := hike.Hiker.RecoverEnergy.MinutesPerFP
 	switch {
-	case spell > 0 && spell <= h.restMinutesPerFP():
-		sources = append(sources, i18n.Text("1 FP per %d minutes with Recover Energy (B248)", h.restMinutesPerFP()))
-	case h.fitness[h.fitnessIndex].fit:
-		sources = append(sources, i18n.Text("1 FP per %d minutes, twice the usual rate, for being fit (B55)",
-			h.restMinutesPerFP()))
+	case spell > 0 && spell <= minutes:
+		sources = append(sources, i18n.Text("1 FP per %d minutes with Recover Energy (B248)", minutes))
+	case hike.Hiker.Fitness.Fit:
+		sources = append(sources, i18n.Text("1 FP per %d minutes, twice the usual rate, for being fit (B55)", minutes))
 	default:
-		sources = append(sources, i18n.Text("1 FP per %d minutes of quiet rest", h.restMinutesPerFP()))
+		sources = append(sources, i18n.Text("1 FP per %d minutes of quiet rest", minutes))
 	}
 	if h.restMeal {
 		sources = append(sources, i18n.Text("1 for a decent meal"))
@@ -846,13 +483,13 @@ func (h *hikingCalculator) restNote(day hikingDay) string {
 		sources = append(sources, i18n.Text("%d from Lend Energy, potions, etc.", h.restExtraFP))
 	}
 	return i18n.Text("The rest of %d minutes after %s hours recovers %s FP: %s, and never more than was lost (B427).",
-		h.restMinutes, h.restAfter().Comma(), day.restRecovered.Comma(), strings.Join(sources, ", "))
+		h.restMinutes, hike.RestAfter().Comma(), day.RestRecovered.Comma(), strings.Join(sources, ", "))
 }
 
 // updateBreakdown rewrites the hour-by-hour table: the hours elapsed, the distance covered in the hour and so far, the
 // change to the FP in the hour and what is left after it, and the state that leaves the hiker in. The FP left and the
 // state are only known when the hiker's FP are.
-func (h *hikingCalculator) updateBreakdown(day hikingDay) {
+func (h *hikingCalculator) updateBreakdown(day calculator.HikingDay) {
 	h.breakdown.RemoveAllChildren()
 	var units string
 	if useMetersFor(h.source.entity()) {
@@ -871,25 +508,53 @@ func (h *hikingCalculator) updateBreakdown(day hikingDay) {
 		}
 	}
 	known := h.fp > 0
-	for _, hour := range day.hours {
-		addBreakdownCell(h.breakdown, hour.label, true)
-		if hour.hasDistance {
-			addBreakdownCell(h.breakdown, tenths(hour.distance), true)
-			addBreakdownCell(h.breakdown, tenths(hour.total), true)
+	for _, hour := range day.Hours {
+		addBreakdownCell(h.breakdown, hikingHourLabel(hour), true)
+		if hour.Kind == calculator.MarchHour {
+			addBreakdownCell(h.breakdown, tenths(hour.Distance), true)
+			addBreakdownCell(h.breakdown, tenths(hour.Total), true)
 		} else {
 			addBreakdownCell(h.breakdown, "", true)
 			addBreakdownCell(h.breakdown, "", true)
 		}
-		addBreakdownCell(h.breakdown, signedTenths(hour.fpChange), true)
+		addBreakdownCell(h.breakdown, signedTenths(hour.FPChange), true)
 		if known {
-			addBreakdownCell(h.breakdown, tenths(hour.fpLeft), true)
-			addBreakdownCell(h.breakdown, hour.condition, false)
+			addBreakdownCell(h.breakdown, tenths(hour.FPLeft), true)
+			addBreakdownCell(h.breakdown, hikingConditionText(hour.Condition), false)
 		} else {
 			addBreakdownCell(h.breakdown, "—", true)
 			addBreakdownCell(h.breakdown, "", false)
 		}
 	}
 	h.breakdown.MarkForLayoutRecursivelyUpward()
+}
+
+// hikingHourLabel returns what the first column of the breakdown shows for the row: the hours elapsed, or what the
+// row stands for when it covers no distance.
+func hikingHourLabel(hour calculator.HikingHour) string {
+	switch hour.Kind {
+	case calculator.RestHour:
+		return i18n.Text("Rest")
+	case calculator.StopHour:
+		return i18n.Text("Stop")
+	default:
+		return hour.Elapsed.Comma()
+	}
+}
+
+// hikingConditionText describes the state the FP lost so far leaves the hiker in (BX426), or is empty when it leaves
+// him unaffected.
+func hikingConditionText(condition calculator.HikerCondition) string {
+	switch condition {
+	case calculator.VeryTiredHiker:
+		return i18n.Text("Very tired: Move halved")
+	case calculator.ExhaustedHiker:
+		return i18n.Text("Exhausted: Will roll to go on, 1 HP per FP lost")
+	case calculator.UnconsciousHiker:
+		return i18n.Text("Unconscious")
+	default:
+		return ""
+	}
 }
 
 // addBreakdownCell adds a cell to the hour-by-hour table, aligned to the right when it holds a number.
@@ -911,14 +576,4 @@ func signedTenths(value fxp.Int) string {
 		return "+" + tenths(value)
 	}
 	return tenths(value)
-}
-
-// hikingTimeInDays returns the number of days needed to cover distanceToCover while traveling distancePerDay each day,
-// rounded to a tenth of a day. ok is false when distancePerDay is 0, as the travel time is then undefined (and
-// fxp.Int.Div would panic).
-func hikingTimeInDays(distanceToCover, distancePerDay fxp.Int) (days fxp.Int, ok bool) {
-	if distancePerDay == 0 {
-		return 0, false
-	}
-	return distanceToCover.Mul(fxp.Ten).Div(distancePerDay).Round().Div(fxp.Ten), true
 }

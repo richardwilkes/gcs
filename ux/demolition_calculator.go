@@ -14,6 +14,7 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/model/gurps/calculator"
 	"github.com/richardwilkes/rpgtools/dice"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/unison"
@@ -24,9 +25,6 @@ const (
 	explosiveForBlastMode = iota
 	blastFromExplosiveMode
 )
-
-// demolitionDamageType is what an explosive charge inflicts: crushing damage with the Explosion modifier (BX415).
-const demolitionDamageType = "cr ex"
 
 var _ calculatorTab = &demolitionCalculator{}
 
@@ -61,8 +59,8 @@ func (e explosiveChoice) String() string {
 // newExplosiveChoices returns the Relative Explosive Force Table (BX415) as popup entries, with a custom one at the end
 // for an explosive the table does not list.
 func newExplosiveChoices() []explosiveChoice {
-	choices := make([]explosiveChoice, 0, len(gurps.ExplosiveTypes)+1)
-	for _, one := range gurps.ExplosiveTypes {
+	choices := make([]explosiveChoice, 0, len(calculator.ExplosiveTypes)+1)
+	for _, one := range calculator.ExplosiveTypes {
 		choices = append(choices, explosiveChoice{
 			name:  i18n.Text("TL%d %s (REF %s)", one.TL, one.Name, one.REF.Comma()),
 			title: one.Name,
@@ -210,11 +208,11 @@ func (d *demolitionCalculator) updateResults() {
 	if d.modeIndex == explosiveForBlastMode {
 		n := fxp.FromInteger(d.blastCount)
 		d.damageResult.SetTitle(blastDamageText(n))
-		d.tntResult.SetTitle(explosiveWeightText(gurps.TNTForBlast(n)))
-		d.explosiveWeightResult.SetTitle(explosiveWeightText(gurps.ExplosiveForBlast(n, ref)))
+		d.tntResult.SetTitle(explosiveWeightText(calculator.TNTForBlast(n)))
+		d.explosiveWeightResult.SetTitle(explosiveWeightText(calculator.ExplosiveForBlast(n, ref)))
 		return
 	}
-	d.damageResult.SetTitle(blastDamageText(gurps.BlastForExplosive(fxp.Int(d.explosiveWeight), ref)))
+	d.damageResult.SetTitle(blastDamageText(calculator.BlastForExplosive(fxp.Int(d.explosiveWeight), ref)))
 }
 
 // blastDamageText describes the 6dxn blast the demolition rules measure an explosive by. A weight of explosive rarely
@@ -225,10 +223,10 @@ func blastDamageText(n fxp.Int) string {
 	}
 	if n == n.Floor() {
 		return gurps.FormatDice(dice.Dice{Count: 6, Sides: 6, Multiplier: n.AsInteger[int]()},
-			gurps.SheetSettingsFor(nil).UseModifyingDicePlusAdds) + " " + demolitionDamageType
+			gurps.SheetSettingsFor(nil).UseModifyingDicePlusAdds) + " " + calculator.DemolitionDamageType
 	}
 	return i18n.Text("6dx%s (about %dd) %s", n.Mul(fxp.Hundred).Round().Div(fxp.Hundred).Comma(),
-		n.Mul(fxp.Six).Round().AsInteger[int](), demolitionDamageType)
+		n.Mul(fxp.Six).Round().AsInteger[int](), calculator.DemolitionDamageType)
 }
 
 // explosiveWeightText formats a weight of explosive, which the demolition rules always express in pounds, using the

@@ -12,6 +12,7 @@ package ux
 import (
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/model/gurps/calculator"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/unison"
 )
@@ -36,118 +37,12 @@ func newCollisionScenarios() []collisionScenario {
 	}
 }
 
-// newCollisionShapes returns the shapes an object in a collision can have (BX430).
-func newCollisionShapes() []collisionShape {
-	return []collisionShape{
-		{name: i18n.Text("Blunt"), damageType: "cr"},
-		{name: i18n.Text("Bullet-shaped"), damageType: "pi", halves: true},
-		{name: i18n.Text("Sharp"), damageType: "cut", halves: true},
-		{name: i18n.Text("Spiked"), damageType: "imp", halves: true},
-	}
-}
-
-// newCollisionSurfaces returns the kinds of immovable object something can fall onto or hit (BX431).
-func newCollisionSurfaces() []collisionSurface {
-	return []collisionSurface{
-		{name: i18n.Text("Hard (ground, concrete, a wall)"), hard: true},
-		{name: i18n.Text("Soft (forest litter, hay, swamp)")},
-		{name: i18n.Text("Soft and elastic (mattress, net, airbag)"), elastic: true},
-		{name: i18n.Text("Water or another fluid"), water: true},
-	}
-}
-
-// newTerminalVelocityChoices returns the terminal velocities a fall can be limited to (BX431).
-func newTerminalVelocityChoices() []terminalVelocityChoice {
-	return []terminalVelocityChoice{
-		{name: i18n.Text("Human, spread-eagled (60)"), base: fxp.Sixty},
-		{name: i18n.Text("Human, swan dive (100)"), base: fxp.Hundred},
-		{name: i18n.Text("Dense or streamlined object (200)"), base: fxp.FromInteger(200)},
-		{name: i18n.Text("None")},
-		{name: i18n.Text("Custom"), custom: true},
-	}
-}
-
-// newCollisionAngleChoices returns the angles two objects can collide at (BX432).
-func newCollisionAngleChoices() []collisionAngleChoice {
-	return []collisionAngleChoice{
-		{name: i18n.Text("Head-on"), angle: gurps.HeadOnCollision},
-		{name: i18n.Text("Rear-end"), angle: gurps.RearEndCollision},
-		{name: i18n.Text("Side-on, or the struck object is stationary"), angle: gurps.SideOnCollision},
-	}
-}
-
-// newCollisionRestraints returns what can hold an occupant in place during a sudden stop (BX432).
-func newCollisionRestraints() []collisionRestraint {
-	return []collisionRestraint{
-		{name: i18n.Text("None")},
-		{name: i18n.Text("Seatbelt or straps (DR 5)"), dr: 5},
-		{name: i18n.Text("Airbag (DR 10)"), dr: 10},
-	}
-}
-
 type collisionScenario struct {
 	name string
 }
 
 func (s collisionScenario) String() string {
 	return s.name
-}
-
-// collisionShape says what an object's shape does to the damage it inflicts: a bullet-shaped, sharp or spiked object
-// does half damage, but of its own type rather than crushing (BX430).
-type collisionShape struct {
-	name       string
-	damageType string
-	halves     bool
-}
-
-func (s collisionShape) String() string {
-	return s.name
-}
-
-// collisionSurface is a kind of immovable object (BX431): a hard one is hit as if the mover had twice its HP, an
-// elastic one gives extra DR, and water can be dived into cleanly.
-type collisionSurface struct {
-	name    string
-	hard    bool
-	elastic bool
-	water   bool
-}
-
-func (s collisionSurface) String() string {
-	return s.name
-}
-
-// terminalVelocityChoice is a terminal velocity at one G in one atmosphere (BX431); base is zero for the choice that
-// applies no limit, and custom marks the one whose value is typed in.
-type terminalVelocityChoice struct {
-	name   string
-	base   fxp.Int
-	custom bool
-}
-
-func (t terminalVelocityChoice) String() string {
-	return t.name
-}
-
-type collisionAngleChoice struct {
-	name  string
-	angle gurps.CollisionAngle
-}
-
-func (a collisionAngleChoice) String() string {
-	return a.name
-}
-
-// collisionRestraint is what holds an occupant in place during a sudden stop, and the DR it gives against the damage
-// (BX432).
-type collisionRestraint struct {
-	name string
-	dr   int
-}
-
-func (r collisionRestraint) String() string {
-	return r.name
 }
 
 // collisionCalculator works out the damage from a collision or a fall (BX430-BX431). Each of the objects involved
@@ -167,7 +62,7 @@ type collisionCalculator struct {
 	notes               *unison.Panel
 	fallDistanceField   *DecimalField
 	gravityField        *DecimalField
-	terminalPopup       *unison.PopupMenu[terminalVelocityChoice]
+	terminalPopup       *unison.PopupMenu[calculator.TerminalVelocityChoice]
 	customTerminalField *DecimalField
 	pressureField       *DecimalField
 	controlledFallBox   *unison.CheckBox
@@ -177,11 +72,11 @@ type collisionCalculator struct {
 	obstacleDRField     *IntegerField
 	cleanDiveBox        *unison.CheckBox
 	scenarios           []collisionScenario
-	shapes              []collisionShape
-	surfaces            []collisionSurface
-	terminals           []terminalVelocityChoice
-	angles              []collisionAngleChoice
-	restraints          []collisionRestraint
+	shapes              []calculator.CollisionShape
+	surfaces            []calculator.CollisionSurface
+	terminals           []calculator.TerminalVelocityChoice
+	angles              []calculator.CollisionAngleChoice
+	restraints          []calculator.CollisionRestraint
 	mover               collisionParticipant
 	target              collisionParticipant
 	fallDistance        fxp.Int
@@ -236,11 +131,11 @@ type collisionParticipant struct {
 func newCollisionCalculator() *collisionCalculator {
 	c := &collisionCalculator{
 		scenarios:      newCollisionScenarios(),
-		shapes:         newCollisionShapes(),
-		surfaces:       newCollisionSurfaces(),
-		terminals:      newTerminalVelocityChoices(),
-		angles:         newCollisionAngleChoices(),
-		restraints:     newCollisionRestraints(),
+		shapes:         calculator.CollisionShapes(),
+		surfaces:       calculator.CollisionSurfaces(),
+		terminals:      calculator.TerminalVelocityChoices(),
+		angles:         calculator.CollisionAngleChoices(),
+		restraints:     calculator.CollisionRestraints(),
 		fallDistance:   fxp.Five,
 		gravity:        fxp.One,
 		pressure:       fxp.One,
@@ -407,28 +302,32 @@ func (p *collisionParticipant) selectSheet(sheet *Sheet) {
 	if sheet == nil {
 		return
 	}
-	entity := sheet.Entity()
-	p.velocity = fxp.FromInteger(entity.Move(entity.EncumbranceLevel(false)))
+	values := calculator.CollisionParticipantFromEntity(sheet.Entity())
+	p.velocity = values.Velocity
 	p.velocityField.Sync()
-	p.pullFromSheet()
+	p.apply(values)
 }
 
-// pullFromSheet reads the participant's numbers from its sheet. Each backing value is assigned before its field is
-// synced, so that the setter the sync may run sees nothing new and does not start another round of updates.
+// pullFromSheet reads the participant's numbers from its sheet.
 func (p *collisionParticipant) pullFromSheet() {
-	entity := p.sheet.Entity()
-	if entity.ResolveAttribute(gurps.HitPointsID) != nil {
-		p.hp = entity.Attributes.Maximum(gurps.HitPointsID).Max(0)
+	p.apply(calculator.CollisionParticipantFromEntity(p.sheet.Entity()))
+}
+
+// apply stores what a sheet supplies, leaving an attribute the sheet does not define as it was, and syncs the fields.
+// Each backing value is assigned before its field is synced, so that the setter the sync may run sees nothing new and
+// does not start another round of updates.
+func (p *collisionParticipant) apply(values calculator.CollisionParticipant) {
+	if values.HasHP {
+		p.hp = values.HP
 	}
-	if entity.ResolveAttribute(gurps.StrengthID) != nil {
-		p.st = entity.Attributes.Maximum(gurps.StrengthID).Max(0)
+	if values.HasST {
+		p.st = values.ST
 	}
-	p.sm = entity.Profile.AdjustedSizeModifier()
-	p.acrobatics = skillLevelOrDefault(entity, "Acrobatics", gurps.DexterityID, -6)
-	p.swimming = skillLevelOrDefault(entity, "Swimming", gurps.HealthID, -4)
-	total, armor := torsoDR(entity)
-	p.armorDR = armor
-	p.innateDR = total - armor
+	p.sm = values.SM
+	p.acrobatics = values.Acrobatics
+	p.swimming = values.Swimming
+	p.armorDR = values.ArmorDR
+	p.innateDR = values.InnateDR
 	p.hpField.Sync()
 	p.stField.Sync()
 	p.smField.Sync()
@@ -458,7 +357,7 @@ func (p *collisionParticipant) name(role string) string {
 	return role
 }
 
-func (p *collisionParticipant) shape() collisionShape {
+func (p *collisionParticipant) shape() calculator.CollisionShape {
 	return p.calc.shapes[p.shapeIndex]
 }
 
@@ -635,7 +534,7 @@ func (c *collisionCalculator) adjustControls() {
 	// A control whose input would not be used is blanked as well as disabled, so that a stale value cannot be read as
 	// part of the answer. The moving object's velocity is the exception: when it comes from the fall, the field shows
 	// the velocity the fall reaches, which is in use.
-	adjustFieldBlank(c.target.velocityField, c.angles[c.angleIndex].angle == gurps.SideOnCollision)
+	adjustFieldBlank(c.target.velocityField, c.angles[c.angleIndex].Angle == calculator.SideOnCollision)
 
 	// Unison does not disable a panel's children along with it, so the fall rows are switched one by one when the
 	// striking object in a two-object collision is not something that was dropped.
@@ -643,8 +542,8 @@ func (c *collisionCalculator) adjustControls() {
 	adjustFieldBlank(c.gravityField, !fromFall)
 	adjustPopupBlank(c.terminalPopup, !fromFall)
 	terminal := c.terminals[c.terminalIndex]
-	adjustFieldBlank(c.customTerminalField, !fromFall || !terminal.custom)
-	adjustFieldBlank(c.pressureField, !fromFall || (terminal.base <= 0 && !terminal.custom))
+	adjustFieldBlank(c.customTerminalField, !fromFall || !terminal.Custom)
+	adjustFieldBlank(c.pressureField, !fromFall || (terminal.BaseVelocity <= 0 && !terminal.Custom))
 	// The fall can be softened by an Acrobatics roll or by a clean dive into water, but not by both (BX431).
 	c.controlledFallBox.SetTitle(i18n.Text("Made a successful Acrobatics roll for a controlled fall (-5 yards)"))
 	c.controlledFallBox.SetEnabled(c.scenarioIndex == fallScenario && !c.diving())
@@ -653,7 +552,7 @@ func (c *collisionCalculator) adjustControls() {
 	c.cleanDiveBox.SetEnabled(c.inWater() && !c.controlledFallApplies())
 
 	surface := c.surfaces[c.surfaceIndex]
-	adjustFieldBlank(c.elasticDRField, !surface.elastic)
+	adjustFieldBlank(c.elasticDRField, !surface.Elastic)
 	adjustFieldBlank(c.obstacleHPField, !c.breakable)
 	adjustFieldBlank(c.obstacleDRField, !c.breakable)
 
@@ -671,7 +570,7 @@ func (c *collisionCalculator) velocityFromFall() bool {
 // inWater reports whether the moving object lands in water, where a clean dive is possible.
 func (c *collisionCalculator) inWater() bool {
 	return (c.scenarioIndex == fallScenario || c.scenarioIndex == immovableScenario) &&
-		c.surfaces[c.surfaceIndex].water
+		c.surfaces[c.surfaceIndex].Water
 }
 
 // controlledFallApplies reports whether the Acrobatics roll shortens the fall, which only a fall allows.
@@ -687,43 +586,38 @@ func (c *collisionCalculator) diving() bool {
 
 // moverVelocity returns the velocity the moving object hits at: its own, or the one it reaches in a fall.
 func (c *collisionCalculator) moverVelocity() fxp.Int {
-	if c.scenarioIndex == fallScenario || (c.scenarioIndex == twoObjectScenario && c.dropped) {
-		v, _ := c.fallVelocity()
-		return v
+	if c.velocityFromFall() {
+		return c.fall().Velocity
 	}
 	return c.mover.velocity
 }
 
-// fallVelocity returns the velocity reached in the fall and the notes explaining anything that limited it.
-func (c *collisionCalculator) fallVelocity() (velocity fxp.Int, notes []string) {
-	distance := c.fallDistance
-	if c.controlledFallApplies() {
-		distance = (distance - fxp.Five).Max(0)
-		notes = append(notes, i18n.Text("The controlled fall counts as a fall of %s yards (BX431).", distance.Comma()))
-	}
-	velocity = gurps.FallingVelocity(distance, c.gravity)
-	if c.gravity <= 0 {
-		notes = append(notes, i18n.Text("Without gravity, there is no fall."))
-		return velocity, notes
-	}
+// fall works out the fall the moving object makes, with the terminal velocity the chosen limit allows.
+func (c *collisionCalculator) fall() calculator.FallResult {
 	choice := c.terminals[c.terminalIndex]
-	base := choice.base
-	if choice.custom {
+	base := choice.BaseVelocity
+	if choice.Custom {
 		base = c.customTerminal
 	}
-	if base <= 0 {
-		return velocity, notes
+	return calculator.Fall(c.fallDistance, c.gravity, base, c.pressure, c.controlledFallApplies())
+}
+
+// fallNotes returns the notes explaining anything that shortened or limited the fall.
+func fallNotes(fall calculator.FallResult) []string {
+	var notes []string
+	if fall.Controlled {
+		notes = append(notes, i18n.Text("The controlled fall counts as a fall of %s yards (BX431).", fall.Distance.Comma()))
 	}
-	limit, unlimited := gurps.TerminalVelocity(base, c.gravity, c.pressure)
 	switch {
-	case unlimited:
+	case fall.NoGravity:
+		notes = append(notes, i18n.Text("Without gravity, there is no fall."))
+	case fall.Vacuum:
 		notes = append(notes, i18n.Text("In a vacuum there is no terminal velocity (BX431)."))
-	case velocity > limit:
-		velocity = limit
+	case fall.TerminalLimited:
 		notes = append(notes, i18n.Text("The fall is limited to the terminal velocity of %s yards/second (BX431).",
-			limit.Comma()))
+			fall.Terminal.Comma()))
 	}
-	return velocity, notes
+	return notes
 }
 
 // updateResults recomputes the damage and rewrites the results and notes.
@@ -754,7 +648,7 @@ func damageText(entity *gurps.Entity, count fxp.Int, damageType string) string {
 	if count <= 0 {
 		return i18n.Text("None")
 	}
-	return gurps.FormatDice(gurps.CollisionDamageDice(count), gurps.SheetSettingsFor(entity).UseModifyingDicePlusAdds) +
+	return gurps.FormatDice(calculator.CollisionDamageDice(count), gurps.SheetSettingsFor(entity).UseModifyingDicePlusAdds) +
 		" " + damageType
 }
 
@@ -764,7 +658,8 @@ func (c *collisionCalculator) updateSurfaceResults() []string {
 	var notes []string
 	velocity := c.mover.velocity
 	if c.scenarioIndex == fallScenario {
-		velocity, notes = c.fallVelocity()
+		fall := c.fall()
+		velocity, notes = fall.Velocity, fallNotes(fall)
 		c.mover.velocity = velocity
 		c.mover.velocityField.Sync()
 	}
@@ -773,10 +668,11 @@ func (c *collisionCalculator) updateSurfaceResults() []string {
 		surface = c.surfaces[0]
 	}
 	shape := c.mover.shape()
-	count := gurps.CollisionDiceCount(gurps.ImmovableCollisionHP(c.mover.hp, surface.hard), velocity)
-	if shape.halves {
-		count = count.Div(fxp.Two)
-	}
+	count := calculator.ImmovableCollisionDice(calculator.CollisionObject{
+		HP:         c.mover.hp,
+		Velocity:   velocity,
+		HalfDamage: shape.HalfDamage,
+	}, surface.Hard)
 	entity := c.mover.entity()
 	mover := c.mover.name(c.moverName)
 	c.addResult(i18n.Text("Velocity:"), velocityText(velocity))
@@ -785,26 +681,26 @@ func (c *collisionCalculator) updateSurfaceResults() []string {
 		notes = append(notes, i18n.Text("The clean dive negates all damage (BX431)."))
 		return notes
 	}
-	damage := damageText(entity, count, shape.damageType)
+	damage := damageText(entity, count, shape.DamageType)
 	c.addResult(i18n.Text("Damage to %s:", mover), damage)
 	if c.scenarioIndex != suddenStopScenario {
 		c.addResult(i18n.Text("Damage to the surface:"), damage)
 	}
-	if surface.hard {
+	if surface.Hard {
 		notes = append(notes, i18n.Text("The surface is hard, so the damage is worked out with twice the HP (BX431)."))
 	}
 	if c.scenarioIndex != suddenStopScenario && c.breakable {
 		notes = append(notes, i18n.Text("The surface can break, so neither side takes more than %s points, its HP + DR (BX431).",
 			(c.obstacleHP+fxp.FromInteger(c.obstacleDR)).Comma()))
 	}
-	if surface.elastic {
+	if surface.Elastic {
 		notes = append(notes, i18n.Text("The elastic surface gives DR %d against this damage (BX431).", c.elasticDR))
 	}
 	if c.inWater() {
 		notes = append(notes, c.swimmingNote())
 	}
 	if c.scenarioIndex == suddenStopScenario {
-		if dr := c.restraints[c.restraintIndex].dr; dr > 0 {
+		if dr := c.restraints[c.restraintIndex].DR; dr > 0 {
 			notes = append(notes, i18n.Text("The restraint gives DR %d against this damage (BX432).", dr))
 		}
 		notes = append(notes, i18n.Text("Anyone not strapped into an open vehicle is also thrown; work out knockback from this damage to see how far (BX432)."))
@@ -842,7 +738,7 @@ func (c *collisionCalculator) armorNote(count fxp.Int) string {
 	if c.mover.armorDR <= 0 {
 		return i18n.Text("Any armor worn counts as flexible against this damage: 1 HP of injury per 5 full points it stops, even if it stops all of it (BX431).")
 	}
-	trauma := gurps.BluntTraumaFromFall(fxp.FromInteger(c.mover.armorDR))
+	trauma := calculator.BluntTraumaFromFall(fxp.FromInteger(c.mover.armorDR))
 	if trauma == 0 {
 		return i18n.Text("Armor DR %d counts as flexible against this damage, but it cannot stop 5 full points, so no blunt trauma gets through it (BX431).",
 			c.mover.armorDR)
@@ -856,25 +752,26 @@ func (c *collisionCalculator) updateTwoObjectResults() []string {
 	var notes []string
 	strikerVelocity := c.mover.velocity
 	if c.dropped {
-		strikerVelocity, notes = c.fallVelocity()
+		fall := c.fall()
+		strikerVelocity, notes = fall.Velocity, fallNotes(fall)
 		c.mover.velocity = strikerVelocity
 		c.mover.velocityField.Sync()
 	}
-	angle := c.angles[c.angleIndex].angle
+	angle := c.angles[c.angleIndex].Angle
 	struckVelocity := c.target.velocity
-	if angle == gurps.SideOnCollision {
+	if angle == calculator.SideOnCollision {
 		struckVelocity = 0
 	}
-	result := gurps.Collision(angle,
-		gurps.CollisionObject{HP: c.mover.hp, Velocity: strikerVelocity, HalfDamage: c.mover.shape().halves},
-		gurps.CollisionObject{HP: c.target.hp, Velocity: struckVelocity, HalfDamage: c.target.shape().halves})
+	result := calculator.Collision(angle,
+		calculator.CollisionObject{HP: c.mover.hp, Velocity: strikerVelocity, HalfDamage: c.mover.shape().HalfDamage},
+		calculator.CollisionObject{HP: c.target.hp, Velocity: struckVelocity, HalfDamage: c.target.shape().HalfDamage})
 	striker := c.mover.name(i18n.Text("the striking object"))
 	struck := c.target.name(i18n.Text("the struck object"))
 	c.addResult(i18n.Text("Collision velocity:"), velocityText(result.Velocity))
 	c.addResult(i18n.Text("Damage to %s:", struck),
-		damageText(c.mover.entity(), result.StrikerDice, c.mover.shape().damageType))
+		damageText(c.mover.entity(), result.StrikerDice, c.mover.shape().DamageType))
 	c.addResult(i18n.Text("Damage to %s:", striker),
-		damageText(c.target.entity(), result.StruckDice, c.target.shape().damageType))
+		damageText(c.target.entity(), result.StruckDice, c.target.shape().DamageType))
 	switch {
 	case result.StrikerCapped:
 		notes = append(notes, i18n.Text("As the slower object, %s cannot inflict more dice than %s (BX432).", striker, struck))
@@ -882,16 +779,11 @@ func (c *collisionCalculator) updateTwoObjectResults() []string {
 		notes = append(notes, i18n.Text("As the struck object, %s cannot inflict more dice than %s (BX432).", struck, striker))
 	}
 	if c.dropped {
-		if c.mover.sm >= c.target.sm {
+		if calculator.DroppedObjectHampers(c.mover.sm, c.target.sm) {
 			notes = append(notes, i18n.Text("The falling object is at least as big as the victim, so on the victim's next turn he may move only one yard and his active defenses are at -3 (BX431)."))
 		}
-	} else if c.mover.sm >= c.target.sm+2 {
-		st := c.mover.st
-		if st <= 0 {
-			st = c.mover.hp
-		}
-		st = st.Div(fxp.Two).Floor()
-		thrust := gurps.SheetSettingsFor(c.mover.entity()).DamageProgression.Thrust(st.AsInteger[int]())
+	} else if st, overruns := calculator.OverrunST(c.mover.sm, c.target.sm, c.mover.st, c.mover.hp); overruns {
+		thrust := calculator.ThrustFor(c.mover.entity(), st)
 		c.addResult(i18n.Text("Overrun damage:"),
 			gurps.FormatDice(thrust, gurps.SheetSettingsFor(c.mover.entity()).UseModifyingDicePlusAdds)+" cr")
 		notes = append(notes, i18n.Text("Being at least two sizes bigger, %s overruns %s and inflicts thrust damage for ST %s as well (BX432).",
