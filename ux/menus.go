@@ -18,6 +18,7 @@ import (
 	"sync"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/model/gurps/export"
 	"github.com/richardwilkes/gcs/v5/model/library"
 	"github.com/richardwilkes/toolbox/v2/errs"
 	"github.com/richardwilkes/toolbox/v2/i18n"
@@ -514,7 +515,7 @@ func (s menuBarScope) createExportToTextAction(index int, path string) *unison.A
 			if sheet := ActiveSheet(); sheet != nil {
 				if filePath, ok := chooseFileToSave(gurps.GlobalSettings().LastDir(gurps.DefaultLastDirKey),
 					xfilepath.BaseName(sheet.BackingFilePath()), filepath.Ext(path), gurps.DefaultLastDirKey); ok {
-					if err := gurps.Export(sheet.Entity(), path, filePath); err != nil {
+					if err := export.Export(sheet.Entity(), path, filePath); err != nil {
 						Workspace.ErrorHandler(i18n.Text("Export failed"), err)
 					}
 				}

@@ -7,7 +7,7 @@
 // This Source Code Form is "Incompatible With Secondary Licenses", as
 // defined by the Mozilla Public License, version 2.0.
 
-package gurps
+package export
 
 import (
 	"bufio"
@@ -23,6 +23,7 @@ import (
 	texttmpl "text/template"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
+	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/encumbrance"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/frequency"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/selfctrl"
@@ -40,13 +41,13 @@ type exportedMeleeWeapon struct {
 	Level         fxp.Int
 	Damage        string
 	Parry         string
-	ParryParts    WeaponParry
+	ParryParts    gurps.WeaponParry
 	Block         string
-	BlockParts    WeaponBlock
+	BlockParts    gurps.WeaponBlock
 	Reach         string
-	ReachParts    WeaponReach
+	ReachParts    gurps.WeaponReach
 	Strength      string
-	StrengthParts WeaponStrength
+	StrengthParts gurps.WeaponStrength
 }
 
 type exportedRangedWeapon struct {
@@ -55,20 +56,20 @@ type exportedRangedWeapon struct {
 	Usage           string
 	Level           fxp.Int
 	Accuracy        string
-	AccuracyParts   WeaponAccuracy
+	AccuracyParts   gurps.WeaponAccuracy
 	Range           string
-	RangeParts      WeaponRange
+	RangeParts      gurps.WeaponRange
 	Damage          string
 	RateOfFire      string
-	RateOfFireParts WeaponRoF
+	RateOfFireParts gurps.WeaponRoF
 	Shots           string
-	ShotsParts      WeaponShots
+	ShotsParts      gurps.WeaponShots
 	Bulk            string
-	BulkParts       WeaponBulk
+	BulkParts       gurps.WeaponBulk
 	Recoil          string
-	RecoilParts     WeaponRecoil
+	RecoilParts     gurps.WeaponRecoil
 	Strength        string
-	StrengthParts   WeaponStrength
+	StrengthParts   gurps.WeaponStrength
 }
 
 type exportedHitLocation struct {
@@ -190,7 +191,7 @@ type exportedTrait struct {
 	Notes                string
 	UnsatisfiedReason    string
 	// PrereqContradiction explains why a trait whose own prerequisites are met is nonetheless caught in a contradiction
-	// among the prerequisites; see Trait.prereqStatus. At most one of it and UnsatisfiedReason is set.
+	// among the prerequisites; see gurps.Trait.PrereqStatus. At most one of it and UnsatisfiedReason is set.
 	PrereqContradiction string
 	PageRef             string
 	Tags                []string
@@ -258,7 +259,7 @@ type exportedAttributes struct {
 type exportedPoints struct {
 	Total   fxp.Int
 	Unspent fxp.Int
-	PointsBreakdown
+	gurps.PointsBreakdown
 }
 
 type exportedMargins struct {
@@ -314,14 +315,14 @@ type exportedEntity struct {
 	Page                    exportedPage
 }
 
-// ExportSheets exports each exportable file in fileList using the template found at templatePath, writing each result
+// Sheets exports each exportable file in fileList using the template found at templatePath, writing each result
 // beside its source file.
-func ExportSheets(templatePath string, fileList []string) error {
+func Sheets(templatePath string, fileList []string) error {
 	var exported int
 	for _, one := range fileList {
-		if FileInfoFor(one).IsExportable {
+		if gurps.FileInfoFor(one).IsExportable {
 			// Only one file type is exportable today. If that changes, the right loader must be chosen here.
-			entity, err := NewEntityFromFile(os.DirFS(filepath.Dir(one)), filepath.Base(one))
+			entity, err := gurps.NewEntityFromFile(os.DirFS(filepath.Dir(one)), filepath.Base(one))
 			if err != nil {
 				return err
 			}
@@ -339,8 +340,8 @@ func ExportSheets(templatePath string, fileList []string) error {
 	return nil
 }
 
-// Export an Entity to exportPath using the template found at templatePath.
-func Export(entity *Entity, templatePath, exportPath string) error {
+// Export writes the entity to exportPath using the template found at templatePath.
+func Export(entity *gurps.Entity, templatePath, exportPath string) error {
 	tmpl, err := os.ReadFile(templatePath)
 	if err != nil {
 		return errs.Wrap(err)
@@ -420,7 +421,7 @@ type exporter interface {
 	Execute(wr io.Writer, data any) error
 }
 
-func export(entity *Entity, tmpl exporter, exportPath string) (err error) {
+func export(entity *gurps.Entity, tmpl exporter, exportPath string) (err error) {
 	var f *os.File
 	f, err = os.Create(exportPath)
 	if err != nil {
@@ -455,8 +456,8 @@ func export(entity *Entity, tmpl exporter, exportPath string) (err error) {
 		Gender:       entity.Profile.Gender,
 		Height:       entity.SheetSettings.DefaultLengthUnits.Format(entity.Profile.Height),
 		Weight:       entity.SheetSettings.DefaultWeightUnits.Format(entity.Profile.Weight),
-		Thrust:       Roller.Format(entity.Thrust()),
-		Swing:        Roller.Format(entity.Swing()),
+		Thrust:       gurps.Roller.Format(entity.Thrust()),
+		Swing:        gurps.Roller.Format(entity.Swing()),
 		Lift: exportedLift{
 			Basic:         entity.SheetSettings.DefaultWeightUnits.Format(entity.BasicLift()),
 			OneHanded:     entity.SheetSettings.DefaultWeightUnits.Format(entity.OneHandedLift()),
@@ -499,15 +500,15 @@ func export(entity *Entity, tmpl exporter, exportPath string) (err error) {
 	for _, def := range entity.SheetSettings.Attributes.List(true) {
 		if attr, ok := entity.Attributes.Set[def.DefID]; ok {
 			switch def.Kind(entity) {
-			case PrimaryAttrKind:
+			case gurps.PrimaryAttrKind:
 				a := newExportedAttribute(def, attr)
 				data.Attributes.Primary = append(data.Attributes.Primary, a)
 				data.Attributes.PrimaryByID[def.DefID] = a
-			case SecondaryAttrKind:
+			case gurps.SecondaryAttrKind:
 				a := newExportedAttribute(def, attr)
 				data.Attributes.Secondary = append(data.Attributes.Secondary, a)
 				data.Attributes.SecondaryByID[def.DefID] = a
-			case PoolAttrKind:
+			case gurps.PoolAttrKind:
 				p := &exportedPool{
 					exportedAttribute: newExportedAttribute(def, attr),
 					Current:           attr.Current(),
@@ -534,10 +535,10 @@ func export(entity *Entity, tmpl exporter, exportPath string) (err error) {
 			IsCurrent: enc == currentEnc,
 		})
 	}
-	Traverse(func(t *Trait) bool {
+	gurps.Traverse(func(t *gurps.Trait) bool {
 		resolvedSelfControl := t.ResolvedSelfControl(nil)
 		resolvedFrequency := t.ResolvedFrequency(nil)
-		unsatisfiedReason, contradiction := t.prereqStatus()
+		unsatisfiedReason, contradiction := t.PrereqStatus()
 		trait := &exportedTrait{
 			ID:                   t.TID,
 			Points:               t.AdjustedPoints(nil),
@@ -546,9 +547,9 @@ func export(entity *Entity, tmpl exporter, exportPath string) (err error) {
 			CR:                   resolvedSelfControl.Number(),
 			FR:                   resolvedFrequency.Number(),
 			ModifierNotes:        t.ModifierNotes(),
-			ModifierNotesNoCR:    t.modifierNotes(false, true),
-			ModifierNotesNoFR:    t.modifierNotes(true, false),
-			ModifierNotesNoRolls: t.modifierNotes(false, false),
+			ModifierNotesNoCR:    t.ModifierNotesIncluding(false, true),
+			ModifierNotesNoFR:    t.ModifierNotesIncluding(true, false),
+			ModifierNotesNoRolls: t.ModifierNotesIncluding(false, false),
 			Notes:                t.Notes(),
 			UnsatisfiedReason:    unsatisfiedReason,
 			PrereqContradiction:  contradiction,
@@ -578,7 +579,7 @@ func export(entity *Entity, tmpl exporter, exportPath string) (err error) {
 		data.Traits = append(data.Traits, trait)
 		return false
 	}, true, false, entity.Traits...)
-	Traverse(func(s *Skill) bool {
+	gurps.Traverse(func(s *gurps.Skill) bool {
 		skill := &exportedSkill{
 			ID:                s.TID,
 			Type:              groupOrItem(s.Container()),
@@ -602,7 +603,7 @@ func export(entity *Entity, tmpl exporter, exportPath string) (err error) {
 		data.Skills = append(data.Skills, skill)
 		return false
 	}, true, false, entity.Skills...)
-	Traverse(func(s *Spell) bool {
+	gurps.Traverse(func(s *gurps.Spell) bool {
 		spell := &exportedSpell{
 			ID:            s.TID,
 			Type:          groupOrItem(s.Container()),
@@ -635,7 +636,7 @@ func export(entity *Entity, tmpl exporter, exportPath string) (err error) {
 		data.Spells = append(data.Spells, spell)
 		return false
 	}, true, false, entity.Spells...)
-	Traverse(func(n *Note) bool {
+	gurps.Traverse(func(n *gurps.Note) bool {
 		note := &exportedNote{
 			ID:          n.TID,
 			Type:        groupOrItem(n.Container()),
@@ -708,7 +709,7 @@ func export(entity *Entity, tmpl exporter, exportPath string) (err error) {
 	return nil
 }
 
-func newExportedAttribute(def *AttributeDef, attr *Attribute) *exportedAttribute {
+func newExportedAttribute(def *gurps.AttributeDef, attr *gurps.Attribute) *exportedAttribute {
 	return &exportedAttribute{
 		ID:           def.DefID,
 		Name:         def.Name,
@@ -722,9 +723,9 @@ func newExportedAttribute(def *AttributeDef, attr *Attribute) *exportedAttribute
 
 // newExportedConditionalModifiers returns the modifiers flat: the group containers are skipped and the modifiers they
 // hold take their place, each naming its group, so that templates written before groups existed keep working.
-func newExportedConditionalModifiers(list []*ConditionalModifier) []*exportedConditionalModifier {
+func newExportedConditionalModifiers(list []*gurps.ConditionalModifier) []*exportedConditionalModifier {
 	result := make([]*exportedConditionalModifier, 0, len(list))
-	Traverse(func(one *ConditionalModifier) bool {
+	gurps.Traverse(func(one *gurps.ConditionalModifier) bool {
 		r := &exportedConditionalModifier{
 			ID:        one.TID,
 			Situation: one.From,
@@ -744,9 +745,9 @@ func newExportedConditionalModifiers(list []*ConditionalModifier) []*exportedCon
 	return result
 }
 
-func newExportedEquipment(entity *Entity, list []*Equipment, carried bool) []*exportedEquipment {
+func newExportedEquipment(entity *gurps.Entity, list []*gurps.Equipment, carried bool) []*exportedEquipment {
 	var result []*exportedEquipment
-	Traverse(func(e *Equipment) bool {
+	gurps.Traverse(func(e *gurps.Equipment) bool {
 		equipment := &exportedEquipment{
 			ID:                e.TID,
 			Type:              groupOrItem(false),
@@ -780,8 +781,8 @@ func newExportedEquipment(entity *Entity, list []*Equipment, carried bool) []*ex
 	return result
 }
 
-func newExportedPage(settings *PageSettings) exportedPage {
-	adjustedWidth, adjustedHeight := settings.Orientation.Dimensions(MustParsePageSize(settings.Size))
+func newExportedPage(settings *gurps.PageSettings) exportedPage {
+	adjustedWidth, adjustedHeight := settings.Orientation.Dimensions(gurps.MustParsePageSize(settings.Size))
 	return exportedPage{
 		Width:  adjustedWidth.CSSString(),
 		Height: adjustedHeight.CSSString(),
@@ -801,7 +802,7 @@ func groupOrItem(isContainer bool) string {
 	return "item"
 }
 
-func addToHitLocations(entity *Entity, locations []*exportedHitLocation, depth int, hitLocations []*HitLocation) []*exportedHitLocation {
+func addToHitLocations(entity *gurps.Entity, locations []*exportedHitLocation, depth int, hitLocations []*gurps.HitLocation) []*exportedHitLocation {
 	for _, location := range hitLocations {
 		loc := &exportedHitLocation{
 			RollRange: location.RollRange,

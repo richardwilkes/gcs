@@ -800,7 +800,7 @@ func (e *Equipment) switchMattersWhileUnequipped() bool {
 	if e.anySwitchableMattersWhileUnequipped(e.Features) {
 		return true
 	}
-	return anyEnabledNonContainerModifier(e.Modifiers, func(mod *EquipmentModifier) bool {
+	return AnyEnabledNonContainerModifier(e.Modifiers, func(mod *EquipmentModifier) bool {
 		return e.anySwitchableMattersWhileUnequipped(mod.Features)
 	})
 }

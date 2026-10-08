@@ -88,7 +88,7 @@ type CellData struct {
 	// UnsatisfiedReason explains why the node's prerequisites are unmet.
 	UnsatisfiedReason string
 	// PrereqContradiction explains why a trait whose own prerequisites are met is nonetheless caught in a contradiction
-	// among the prerequisites; see Trait.prereqStatus. At most one of it and UnsatisfiedReason is set.
+	// among the prerequisites; see Trait.PrereqStatus. At most one of it and UnsatisfiedReason is set.
 	PrereqContradiction string
 	TemplateInfo        string
 	ChoiceInfo          string

@@ -323,7 +323,7 @@ func (t *Trait) MarshalJSONTo(enc *jsontext.Encoder) error {
 	t.ClearUnusedFieldsForType()
 	return marshalNodeData(enc, &t.TraitData, func() *calc {
 		// The "calc" object is always written, even when empty.
-		unsatisfiedReason, contradiction := t.prereqStatus()
+		unsatisfiedReason, contradiction := t.PrereqStatus()
 		c := &calc{
 			Points:              t.AdjustedPoints(nil),
 			UnsatisfiedReason:   unsatisfiedReason,
@@ -439,7 +439,7 @@ func (t *Trait) selfDisabled() bool {
 	return t.Disabled || t.prereqVerdict == prereqsDisable
 }
 
-// prereqStatus returns what to show for the trait's prerequisites, in the trait table, the "calc" object and the
+// PrereqStatus returns what to show for the trait's prerequisites, in the trait table, the "calc" object and the
 // exports alike. unsatisfiedReason is the reason they are unmet, followed by a note when the sheet disabled the trait
 // for it or found the trait caught in a contradiction among the prerequisites, and is empty when they are met.
 // contradiction explains, for a trait whose own prerequisites are met but which is nonetheless caught in a
@@ -447,7 +447,7 @@ func (t *Trait) selfDisabled() bool {
 // nothing would otherwise look amiss with the trait. It is empty otherwise, so at most one of the two is set. The two
 // are kept apart because whatever shows unsatisfiedReason flags it as an unsatisfied prerequisite, which the
 // contradiction is not.
-func (t *Trait) prereqStatus() (unsatisfiedReason, contradiction string) {
+func (t *Trait) PrereqStatus() (unsatisfiedReason, contradiction string) {
 	unsatisfiedReason = t.UnsatisfiedReason
 	switch {
 	case t.DisabledByPrereqs():
@@ -511,7 +511,7 @@ func (t *Trait) CellData(columnID int, data *CellData) {
 		}
 		data.Secondary = t.SecondaryText(func(option display.Option) bool { return option.Inline() })
 		data.Disabled = t.EffectivelyDisabled()
-		data.UnsatisfiedReason, data.PrereqContradiction = t.prereqStatus()
+		data.UnsatisfiedReason, data.PrereqContradiction = t.PrereqStatus()
 		data.UnresolvedChoice = unresolvedModifierChoiceText(t, t.Modifiers)
 		data.Tooltip = t.SecondaryText(func(option display.Option) bool { return option.Tooltip() })
 		if tooltip.Len() != 0 {
@@ -1128,12 +1128,12 @@ func (t *Trait) ActiveModifierFor(name string) *TraitModifier {
 
 // ModifierNotes returns the notes due to modifiers, including the self-control and frequency rolls, if any.
 func (t *Trait) ModifierNotes() string {
-	return t.modifierNotes(true, true)
+	return t.ModifierNotesIncluding(true, true)
 }
 
-// modifierNotes returns the notes due to modifiers. The self-control roll and frequency roll lines may be individually
-// suppressed, for export templates that emit those rolls separately via the CR and FR fields.
-func (t *Trait) modifierNotes(includeSelfControl, includeFrequency bool) string {
+// ModifierNotesIncluding returns the notes due to modifiers. The self-control roll and frequency roll lines may be
+// individually suppressed, for export templates that emit those rolls separately via the CR and FR fields.
+func (t *Trait) ModifierNotesIncluding(includeSelfControl, includeFrequency bool) string {
 	var lines []string
 	if resolvedSelfControl := t.ResolvedSelfControl(nil); includeSelfControl && resolvedSelfControl != selfctrl.None {
 		resolvedAdjustment := t.ResolvedSelfControlAdjustment(nil)

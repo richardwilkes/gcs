@@ -18,7 +18,7 @@ import (
 )
 
 func init() {
-	runmode.Factories = append(runmode.Factories, newConvertRunMode, newSyncRunMode, newExportSheetsRunMode)
+	runmode.Factories = append(runmode.Factories, newConvertRunMode, newSyncRunMode)
 }
 
 // newConvertRunMode registers 'convert' on flagSet as a side effect of being called, and returns the
@@ -52,28 +52,6 @@ func newSyncRunMode(flagSet *flag.FlagSet) runmode.Mode {
 		Requested: func() bool { return *sync },
 		Start: func(files []string) {
 			if err := SyncToLibraryData(files...); err != nil {
-				xos.ExitWithMsg(err.Error())
-			}
-			xos.Exit(0)
-		},
-	}
-}
-
-// newExportSheetsRunMode registers 'text' on flagSet as a side effect of being called, and returns the
-// runmode.Mode that exports the sheets given on the command line using the specified text template.
-func newExportSheetsRunMode(flagSet *flag.FlagSet) runmode.Mode {
-	if flagSet == nil {
-		flagSet = flag.CommandLine
-	}
-	textTmplPath := flagSet.String("text", "", i18n.Text("Export sheets using the specified text template `file`"))
-	return runmode.Mode{
-		Name:      "text",
-		Requested: func() bool { return *textTmplPath != "" },
-		Start: func(files []string) {
-			if len(files) == 0 {
-				xos.ExitWithMsg(i18n.Text("No files to process."))
-			}
-			if err := ExportSheets(*textTmplPath, files); err != nil {
 				xos.ExitWithMsg(err.Error())
 			}
 			xos.Exit(0)

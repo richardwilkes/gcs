@@ -15,7 +15,7 @@ import (
 	"github.com/richardwilkes/toolbox/v2/check"
 )
 
-// TestCountNodes verifies that countNodes descends into containers, honors the enabled-only flag the way Traverse does,
+// TestCountNodes verifies that CountNodes descends into containers, honors the enabled-only flag the way Traverse does,
 // and applies the optional filter.
 func TestCountNodes(t *testing.T) {
 	c := check.New(t)
@@ -28,8 +28,8 @@ func TestCountNodes(t *testing.T) {
 	hidden := NewTrait(e, disabled, false)
 	disabled.Children = append(disabled.Children, hidden)
 	list := []*Trait{group, disabled}
-	c.Equal(4, countNodes(list, false, nil), "a nil filter counts every node, containers included")
-	c.Equal(2, countNodes(list, true, nil), "a disabled node and its descendants are skipped")
-	c.Equal(2, countNodes(list, false, func(t *Trait) bool { return !t.Container() }), "the filter picks the nodes")
-	c.Equal(0, countNodes[*Trait](nil, false, nil))
+	c.Equal(4, CountNodes(list, false, nil), "a nil filter counts every node, containers included")
+	c.Equal(2, CountNodes(list, true, nil), "a disabled node and its descendants are skipped")
+	c.Equal(2, CountNodes(list, false, func(t *Trait) bool { return !t.Container() }), "the filter picks the nodes")
+	c.Equal(0, CountNodes[*Trait](nil, false, nil))
 }

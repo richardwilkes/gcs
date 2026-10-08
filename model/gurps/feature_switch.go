@@ -59,7 +59,7 @@ type FeatureSwitcher interface {
 // non-container modifiers are considered, matching what is collected for a character (see Entity.processFeatures), so
 // this always agrees with what will actually be applied.
 func anyModifierSwitchable[M ModifierNode[M, T], T ModifiableNode[T, M], S ~[]M](modifiers S, features func(M) Features) bool {
-	return anyEnabledNonContainerModifier(modifiers, func(mod M) bool { return features(mod).AnySwitchable() })
+	return AnyEnabledNonContainerModifier(modifiers, func(mod M) bool { return features(mod).AnySwitchable() })
 }
 
 // visitEnabledModifiers calls visit for each enabled, non-container modifier among the given ones, at any depth, in
@@ -72,12 +72,12 @@ func visitEnabledModifiers[M ModifierNode[M, T], T ModifiableNode[T, M], S ~[]M]
 	}, true, true, modifiers...)
 }
 
-// anyEnabledNonContainerModifier returns true if the given predicate holds for any enabled, non-container modifier
+// AnyEnabledNonContainerModifier returns true if the given predicate holds for any enabled, non-container modifier
 // among the given ones, at any depth, descending only through enabled containers -- exactly the set Traverse(f, true,
 // true, modifiers...) visits. It is a plain recursion rather than a Traverse call, since Traverse clones the children
 // of every container it descends into and this runs from CellData for every row on every sort and every keystroke of a
 // search.
-func anyEnabledNonContainerModifier[M ModifierNode[M, T], T ModifiableNode[T, M], S ~[]M](modifiers S, predicate func(M) bool) bool {
+func AnyEnabledNonContainerModifier[M ModifierNode[M, T], T ModifiableNode[T, M], S ~[]M](modifiers S, predicate func(M) bool) bool {
 	for _, mod := range modifiers {
 		if !mod.Enabled() {
 			continue
@@ -85,7 +85,7 @@ func anyEnabledNonContainerModifier[M ModifierNode[M, T], T ModifiableNode[T, M]
 		if !mod.Container() && predicate(mod) {
 			return true
 		}
-		if mod.HasChildren() && anyEnabledNonContainerModifier(mod.NodeChildren(), predicate) {
+		if mod.HasChildren() && AnyEnabledNonContainerModifier(mod.NodeChildren(), predicate) {
 			return true
 		}
 	}

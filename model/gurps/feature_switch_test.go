@@ -784,32 +784,6 @@ func TestScriptSwitchedOn(t *testing.T) {
 	}
 }
 
-// TestLegacyExportSkipsSwitchedOffDRBonuses verifies that the legacy text export's hit-location armor list is built
-// from the equipment's active features, so a switched-off DR bonus doesn't show up in an exported sheet.
-func TestLegacyExportSkipsSwitchedOffDRBonuses(t *testing.T) {
-	c := check.New(t)
-	e := NewEntity()
-
-	bonus := NewDRBonus()
-	bonus.Locations = []string{TorsoID}
-	bonus.Specialization = AllID
-	bonus.Amount = fxp.Four
-	bonus.Switchable = true
-
-	eqp := addCarriedEquipmentWithFeatures(e, "Mail Hauberk", bonus)
-	e.Recalculate()
-
-	ex := &legacyExporter{entity: e}
-	location := e.SheetSettings.BodyType.LookupLocationByID(e, TorsoID)
-	c.NotNil(location, "the torso location should exist")
-
-	c.Equal(0, len(ex.hitLocationEquipment(location)),
-		"a switched-off DR bonus contributes no armor to the export")
-	eqp.SetSwitchedOn(true)
-	c.True(strings.Contains(strings.Join(ex.hitLocationEquipment(location), ","), "Mail Hauberk"),
-		"a switched-on DR bonus contributes its equipment to the export")
-}
-
 // TestAnyModifierSwitchable covers the modifier scan that decides whether an item with no switchable features of its
 // own still gets a switch. The answer must not depend on where the switchable modifier sits in the list or how deep it
 // sits in the container tree, and it must ignore both disabled modifiers and the containers' own features, matching

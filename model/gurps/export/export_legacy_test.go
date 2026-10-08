@@ -7,7 +7,7 @@
 // This Source Code Form is "Incompatible With Secondary Licenses", as
 // defined by the Mozilla Public License, version 2.0.
 
-package gurps
+package export
 
 import (
 	"os"
@@ -16,14 +16,16 @@ import (
 	"testing"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
+	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/attribute"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/container"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/selfctrl"
+	"github.com/richardwilkes/gcs/v5/model/gurps/gurpstest"
 	"github.com/richardwilkes/toolbox/v2/check"
 )
 
 // runLegacyExport runs the legacy (non-Go-template) exporter over the given template text and returns its output.
-func runLegacyExport(t *testing.T, c check.Checker, entity *Entity, tmpl string) string {
+func runLegacyExport(t *testing.T, c check.Checker, entity *gurps.Entity, tmpl string) string {
 	t.Helper()
 	entity.Recalculate()
 	outPath := filepath.Join(t.TempDir(), "out.txt")
@@ -37,7 +39,7 @@ func runLegacyExport(t *testing.T, c check.Checker, entity *Entity, tmpl string)
 // a non-existent "perception" ID, which would always yield 0.
 func TestLegacyExportPerceptionPoints(t *testing.T) {
 	c := check.New(t)
-	e := NewEntity()
+	e := gurps.NewEntity()
 	e.Attributes.Set["per"].Adjustment = fxp.Two // "per" costs 5/point, so 2 levels == 10 points
 	c.Equal("10", runLegacyExport(t, c, e, "@PERCEPTION_POINTS"))
 	c.Equal(e.Attributes.Cost("per").String(), runLegacyExport(t, c, e, "@PERCEPTION_POINTS"))
@@ -47,8 +49,8 @@ func TestLegacyExportPerceptionPoints(t *testing.T) {
 // text-emitting key rather than dumping it raw into the output.
 func TestLegacyExportOptionalParensEncoding(t *testing.T) {
 	c := check.New(t)
-	e := NewEntity()
-	s := NewSkill(e, nil, false)
+	e := gurps.NewEntity()
+	s := gurps.NewSkill(e, nil, false)
 	s.Name = "Brawling"
 	s.LocalNotes = "a<b & \"c\"\nd"
 	e.Skills = append(e.Skills, s)
@@ -64,10 +66,10 @@ func TestLegacyExportOptionalParensEncoding(t *testing.T) {
 // iterates over, i.e. containers are included in both.
 func TestLegacyExportSkillsLoopCount(t *testing.T) {
 	c := check.New(t)
-	e := NewEntity()
-	group := NewSkill(e, nil, true)
+	e := gurps.NewEntity()
+	group := gurps.NewSkill(e, nil, true)
 	group.Name = "Group"
-	child := NewSkill(e, group, false)
+	child := gurps.NewSkill(e, group, false)
 	child.Name = "Child"
 	group.Children = append(group.Children, child)
 	e.Skills = append(e.Skills, group)
@@ -78,14 +80,14 @@ func TestLegacyExportSkillsLoopCount(t *testing.T) {
 // modifiers out flat -- the loop counts and IDs cover the members, not the group containers -- and that a member can
 // name its group with @GROUP.
 func TestLegacyExportConditionalModifierGroups(t *testing.T) {
-	withGroupContainersOnSort(t, true)
+	gurpstest.WithGroupContainersOnSort(t, true)
 	c := check.New(t)
-	e := NewEntity()
-	addReaction(e, "A", "from everyone", "", fxp.One)
-	addReaction(e, "B", "from foes", "Combat", fxp.Two)
-	addReaction(e, "C", "from allies", "Combat", fxp.Three)
-	addGroupedConditionalModifier(e, "D", "to hit", "Combat", fxp.One)
-	addGroupedConditionalModifier(e, "E", "to dodge", "", fxp.Two)
+	e := gurps.NewEntity()
+	gurpstest.AddReaction(e, "A", "from everyone", "", fxp.One)
+	gurpstest.AddReaction(e, "B", "from foes", "Combat", fxp.Two)
+	gurpstest.AddReaction(e, "C", "from allies", "Combat", fxp.Three)
+	gurpstest.AddGroupedConditionalModifier(e, "D", "to hit", "Combat", fxp.One)
+	gurpstest.AddGroupedConditionalModifier(e, "E", "to dodge", "", fxp.Two)
 	c.Equal("3|<0:from allies|Combat|+3><1:from foes|Combat|+2><2:from everyone||+1>",
 		runLegacyExport(t, c, e, "@REACTION_LOOP_COUNT|@REACTION_LOOP_START<@ID:@SITUATION|@GROUP|@MODIFIER>@REACTION_LOOP_END"))
 	c.Equal("2|<0:to hit|Combat|+1><1:to dodge||+2>",
@@ -96,8 +98,8 @@ func TestLegacyExportConditionalModifierGroups(t *testing.T) {
 // is made from the loop body itself, not from a fixed byte in the outer template.
 func TestLegacyExportLoopBodyKeyDetection(t *testing.T) {
 	c := check.New(t)
-	e := NewEntity()
-	n := NewNote(e, nil, false)
+	e := gurps.NewEntity()
+	n := gurps.NewNote(e, nil, false)
 	n.MarkDown = "Note1"
 	e.Notes = append(e.Notes, n)
 
@@ -112,10 +114,10 @@ func TestLegacyExportLoopBodyKeyDetection(t *testing.T) {
 // themselves, so that HTML exports keep the blank line between them.
 func TestLegacyExportNotesSeparator(t *testing.T) {
 	c := check.New(t)
-	e := NewEntity()
-	first := NewNote(e, nil, false)
+	e := gurps.NewEntity()
+	first := gurps.NewNote(e, nil, false)
 	first.MarkDown = "First"
-	second := NewNote(e, nil, false)
+	second := gurps.NewNote(e, nil, false)
 	second.MarkDown = "Second"
 	e.Notes = append(e.Notes, first, second)
 	c.Equal("First<br><br>Second", runLegacyExport(t, c, e, "@NOTES"))
@@ -126,8 +128,8 @@ func TestLegacyExportNotesSeparator(t *testing.T) {
 // rather than on the carried-equipment one, which is a substring of it.
 func TestLegacyExportOtherEquipmentLoopMarker(t *testing.T) {
 	c := check.New(t)
-	e := NewEntity()
-	eqp := NewEquipment(e, nil, false)
+	e := gurps.NewEntity()
+	eqp := gurps.NewEquipment(e, nil, false)
 	eqp.Name = "Rock"
 	e.OtherEquipment = append(e.OtherEquipment, eqp)
 	c.Equal("|EQUIPMENT_LOOP_END|Rock|", runLegacyExport(t, c, e,
@@ -138,19 +140,19 @@ func TestLegacyExportOtherEquipmentLoopMarker(t *testing.T) {
 // less specific ones, and that a suffix match that doesn't resolve to an attribute falls through to the next candidate.
 func TestLegacyExportAttributeNameSuffixes(t *testing.T) {
 	c := check.New(t)
-	e := NewEntity()
+	e := gurps.NewEntity()
 	c.Equal("ST|Strength|Strength (ST)|10", runLegacyExport(t, c, e,
 		"@ST_NAME|@ST_FULL_NAME|@ST_COMBINED_NAME|@ST_CURRENT"))
 
 	// An attribute whose own ID ends with "_full" must still resolve via the "_name" suffix.
-	e.SheetSettings.Attributes.Set["hit_full"] = &AttributeDef{
+	e.SheetSettings.Attributes.Set["hit_full"] = &gurps.AttributeDef{
 		DefID: "hit_full",
 		Type:  attribute.Integer,
 		Name:  "Hit Full",
 		Base:  "3",
 		Order: len(e.SheetSettings.Attributes.Set),
 	}
-	e.Attributes.Set["hit_full"] = NewAttribute(e, "hit_full", len(e.Attributes.Set))
+	e.Attributes.Set["hit_full"] = gurps.NewAttribute(e, "hit_full", len(e.Attributes.Set))
 	c.Equal("Hit Full|3", runLegacyExport(t, c, e, "@HIT_FULL_NAME|@HIT_FULL_CURRENT"))
 }
 
@@ -159,11 +161,11 @@ func TestLegacyExportAttributeNameSuffixes(t *testing.T) {
 // the model had already embedded.
 func TestLegacyExportModifierNotesLineBreaks(t *testing.T) {
 	c := check.New(t)
-	e := NewEntity()
-	trait := NewTrait(e, nil, false)
+	e := gurps.NewEntity()
+	trait := gurps.NewTrait(e, nil, false)
 	trait.Name = "Greed"
 	trait.SelfControl = selfctrl.CR12
-	mod := NewTraitModifier(e, nil, false)
+	mod := gurps.NewTraitModifier(e, nil, false)
 	mod.Name = "Mitigator"
 	trait.AddModifiers(mod)
 	e.Traits = append(e.Traits, trait)
@@ -177,16 +179,16 @@ func TestLegacyExportModifierNotesLineBreaks(t *testing.T) {
 // flat loop-count keys report.
 func TestLegacyExportHierarchicalWeaponLoopCount(t *testing.T) {
 	c := check.New(t)
-	e := NewEntity()
+	e := gurps.NewEntity()
 
 	// "Karate" contributes two melee attack modes and two ranged ones; "Innate Attack" contributes one of each. The
 	// hierarchical loops collapse each trait's modes into a single row. A new entity already carries the three
 	// unarmed melee modes of "Natural Attacks", so melee has 6 modes across 3 weapons and ranged has 3 across 2.
-	karate := NewTrait(e, nil, false)
+	karate := gurps.NewTrait(e, nil, false)
 	karate.Name = "Karate"
 	karate.Weapons = append(karate.Weapons, newTestWeapon(karate, true, "Punch"), newTestWeapon(karate, true, "Kick"),
 		newTestWeapon(karate, false, "Spit"), newTestWeapon(karate, false, "Sneeze"))
-	innate := NewTrait(e, nil, false)
+	innate := gurps.NewTrait(e, nil, false)
 	innate.Name = "Innate Attack"
 	innate.Weapons = append(innate.Weapons, newTestWeapon(innate, true, "Slam"),
 		newTestWeapon(innate, false, "Bolt"))
@@ -200,8 +202,8 @@ func TestLegacyExportHierarchicalWeaponLoopCount(t *testing.T) {
 			"@HIERARCHICAL_RANGED_LOOP_START(@DESCRIPTION_PRIMARY:@ATTACK_MODES_LOOP_COUNT)@HIERARCHICAL_RANGED_LOOP_END"))
 }
 
-func newTestWeapon(owner WeaponOwner, melee bool, usage string) *Weapon {
-	w := NewWeapon(owner, melee)
+func newTestWeapon(owner gurps.WeaponOwner, melee bool, usage string) *gurps.Weapon {
+	w := gurps.NewWeapon(owner, melee)
 	w.Usage = usage
 	return w
 }
@@ -212,12 +214,12 @@ func newTestWeapon(owner WeaponOwner, melee bool, usage string) *Weapon {
 // same melee or ranged key set as the enclosing loop.
 func TestLegacyExportWeaponLoops(t *testing.T) {
 	c := check.New(t)
-	e := NewEntity()
-	karate := NewTrait(e, nil, false)
+	e := gurps.NewEntity()
+	karate := gurps.NewTrait(e, nil, false)
 	karate.Name = "Karate"
 	karate.Weapons = append(karate.Weapons, newTestWeapon(karate, true, "Punch"), newTestWeapon(karate, true, "Kick"),
 		newTestWeapon(karate, false, "Spit"), newTestWeapon(karate, false, "Sneeze"))
-	innate := NewTrait(e, nil, false)
+	innate := gurps.NewTrait(e, nil, false)
 	innate.Name = "Innate Attack"
 	innate.Weapons = append(innate.Weapons, newTestWeapon(innate, false, "Bolt"))
 	e.Traits = append(e.Traits, karate, innate)
@@ -245,8 +247,8 @@ func TestLegacyExportWeaponLoops(t *testing.T) {
 // is a closing '@' -- and that a key running up to the very end of the template is still emitted.
 func TestLegacyExportKeyScanner(t *testing.T) {
 	c := check.New(t)
-	e := NewEntity()
-	n := NewNote(e, nil, false)
+	e := gurps.NewEntity()
+	n := gurps.NewNote(e, nil, false)
 	n.MarkDown = "Note1"
 	e.Notes = append(e.Notes, n)
 	c.Equal("10 x10", runLegacyExport(t, c, e, "@ST x@DX"))
@@ -259,10 +261,10 @@ func TestLegacyExportKeyScanner(t *testing.T) {
 // contribution.
 func TestLegacyExportHitLocationEquipmentFromModifier(t *testing.T) {
 	c := check.New(t)
-	e := NewEntity()
-	helm := NewEquipment(e, nil, false)
+	e := gurps.NewEntity()
+	helm := gurps.NewEquipment(e, nil, false)
 	helm.Name = "Helmet"
-	helm.AddModifiers(newTestDRBonusModifier(e, "Face Guard", newTestDRBonus(fxp.Three, AllID, "skull")))
+	helm.AddModifiers(newTestDRBonusModifier(e, "Face Guard", gurpstest.NewDRBonus(fxp.Three, gurps.AllID, "skull")))
 	e.CarriedEquipment = append(e.CarriedEquipment, helm)
 	e.Recalculate()
 
@@ -272,7 +274,7 @@ func TestLegacyExportHitLocationEquipmentFromModifier(t *testing.T) {
 	c.Equal("5", skull.DisplayDR(e, nil), "the modifier's DR reaches the location, on top of the skull's own 2")
 	c.Equal([]string{"Helmet"}, ex.hitLocationEquipment(skull), "the armor providing that DR is listed")
 
-	torso := e.SheetSettings.BodyType.LookupLocationByID(e, TorsoID)
+	torso := e.SheetSettings.BodyType.LookupLocationByID(e, gurps.TorsoID)
 	c.NotNil(torso, "the default body has a torso location")
 	c.Equal("0", torso.DisplayDR(e, nil), "no DR reaches a location the modifier doesn't name")
 	c.Equal(0, len(ex.hitLocationEquipment(torso)), "and nothing is listed for it")
@@ -284,42 +286,43 @@ func TestLegacyExportHitLocationEquipmentFromModifier(t *testing.T) {
 // many of its bonuses reach the location.
 func TestLegacyExportHitLocationEquipment(t *testing.T) {
 	c := check.New(t)
-	e := NewEntity()
+	e := gurps.NewEntity()
 
 	// Two DR bonuses that both reach the torso; the item must still only be listed once.
-	addCarriedEquipmentWithFeatures(e, "Plate Armor",
-		newTestDRBonus(fxp.Two, AllID, TorsoID),
-		newTestDRBonus(fxp.One, AllID, "Torso"), // the same location, with a different case
+	gurpstest.AddCarriedEquipmentWithFeatures(
+		e, "Plate Armor",
+		gurpstest.NewDRBonus(fxp.Two, gurps.AllID, gurps.TorsoID),
+		gurpstest.NewDRBonus(fxp.One, gurps.AllID, "Torso"), // the same location, with a different case
 	)
 
 	// DR that only reaches the skull through an enabled modifier.
-	helm := addCarriedEquipmentWithFeatures(e, "Helmet")
-	helm.AddModifiers(newTestDRBonusModifier(e, "Face Guard", newTestDRBonus(fxp.Three, AllID, "skull")))
+	helm := gurpstest.AddCarriedEquipmentWithFeatures(e, "Helmet")
+	helm.AddModifiers(newTestDRBonusModifier(e, "Face Guard", gurpstest.NewDRBonus(fxp.Three, gurps.AllID, "skull")))
 
 	// A disabled modifier contributes nothing, exactly as it does when features are collected.
-	cloak := addCarriedEquipmentWithFeatures(e, "Cloak")
-	disabled := newTestDRBonusModifier(e, "Hood", newTestDRBonus(fxp.Five, AllID, "skull"))
+	cloak := gurpstest.AddCarriedEquipmentWithFeatures(e, "Cloak")
+	disabled := newTestDRBonusModifier(e, "Hood", gurpstest.NewDRBonus(fxp.Five, gurps.AllID, "skull"))
 	disabled.Disabled = true
 	cloak.AddModifiers(disabled)
 
 	// Switchable bonuses, on the item and on one of its modifiers, only count while the item's switch is on.
-	switchable := newTestDRBonus(fxp.Seven, AllID, "skull")
+	switchable := gurpstest.NewDRBonus(fxp.Seven, gurps.AllID, "skull")
 	switchable.Switchable = true
-	cape := addCarriedEquipmentWithFeatures(e, "Cape", switchable)
-	switchableOnMod := newTestDRBonus(fxp.Nine, AllID, "skull")
+	cape := gurpstest.AddCarriedEquipmentWithFeatures(e, "Cape", switchable)
+	switchableOnMod := gurpstest.NewDRBonus(fxp.Nine, gurps.AllID, "skull")
 	switchableOnMod.Switchable = true
 	cape.AddModifiers(newTestDRBonusModifier(e, "Lining", switchableOnMod))
 
 	// A "this armor" bonus needs no examination of its own: it covers the locations the item's and its modifiers'
 	// located bonuses name, and those are what get scanned, so the modifier's skull bonus is what lists the robe.
-	robe := addCarriedEquipmentWithFeatures(e, "Robe", newTestDRBonus(fxp.Six, AllID)) // no locations, i.e. "this armor"
-	robe.AddModifiers(newTestDRBonusModifier(e, "Cowl", newTestDRBonus(fxp.One, AllID, "skull")))
+	robe := gurpstest.AddCarriedEquipmentWithFeatures(e, "Robe", gurpstest.NewDRBonus(fxp.Six, gurps.AllID)) // no locations, i.e. "this armor"
+	robe.AddModifiers(newTestDRBonusModifier(e, "Cowl", gurpstest.NewDRBonus(fxp.One, gurps.AllID, "skull")))
 
 	// Neither an unequipped carried item nor an item in the other equipment list contributes DR to the character.
-	addCarriedEquipmentWithFeatures(e, "Stowed Helm", newTestDRBonus(fxp.Eight, AllID, "skull")).Equipped = false
-	spare := NewEquipment(e, nil, false)
+	gurpstest.AddCarriedEquipmentWithFeatures(e, "Stowed Helm", gurpstest.NewDRBonus(fxp.Eight, gurps.AllID, "skull")).Equipped = false
+	spare := gurps.NewEquipment(e, nil, false)
 	spare.Name = "Spare Helm"
-	spare.Features = Features{newTestDRBonus(fxp.Eight, AllID, "skull")}
+	spare.Features = gurps.Features{gurpstest.NewDRBonus(fxp.Eight, gurps.AllID, "skull")}
 	e.OtherEquipment = append(e.OtherEquipment, spare)
 	e.Recalculate()
 
@@ -329,7 +332,7 @@ func TestLegacyExportHitLocationEquipment(t *testing.T) {
 	c.Equal([]string{"Helmet", "Robe"}, ex.hitLocationEquipment(skull),
 		"only the armor actually granting DR to the skull is listed")
 
-	torso := e.SheetSettings.BodyType.LookupLocationByID(e, TorsoID)
+	torso := e.SheetSettings.BodyType.LookupLocationByID(e, gurps.TorsoID)
 	c.NotNil(torso, "the default body has a torso location")
 	c.Equal([]string{"Plate Armor"}, ex.hitLocationEquipment(torso),
 		"an item with two DR bonuses reaching the same location is listed once")
@@ -344,10 +347,10 @@ func TestLegacyExportHitLocationEquipment(t *testing.T) {
 		"["+skull.TableName+":Helmet, Cape, Robe]")
 }
 
-func newTestDRBonusModifier(owner DataOwner, name string, bonus *DRBonus) *EquipmentModifier {
-	mod := NewEquipmentModifier(owner, nil, false)
+func newTestDRBonusModifier(owner gurps.DataOwner, name string, bonus *gurps.DRBonus) *gurps.EquipmentModifier {
+	mod := gurps.NewEquipmentModifier(owner, nil, false)
 	mod.Name = name
-	mod.Features = Features{bonus}
+	mod.Features = gurps.Features{bonus}
 	return mod
 }
 
@@ -355,42 +358,42 @@ func newTestDRBonusModifier(owner DataOwner, name string, bonus *DRBonus) *Equip
 // behave identically across those loops while each loop's deliberate differences are preserved.
 func TestLegacyExportSharedNodeKeys(t *testing.T) {
 	c := check.New(t)
-	e := NewEntity()
+	e := gurps.NewEntity()
 
-	group := NewTrait(e, nil, true)
+	group := gurps.NewTrait(e, nil, true)
 	group.Name = "Group"
 	group.ContainerType = container.AlternativeAbilities
 	group.PageRef = "B1"
-	trait := newTraitNeedingMissingTrait(e, "Greed")
+	trait := gurpstest.NewTraitNeedingMissingTrait(e, "Greed")
 	trait.SetParent(group)
 	group.Children = append(group.Children, trait)
-	mod := NewTraitModifier(e, nil, false)
+	mod := gurps.NewTraitModifier(e, nil, false)
 	mod.Name = "Mitigator"
 	mod.LocalNotes = "mod note"
 	trait.Modifiers = append(trait.Modifiers, mod)
-	e.Traits = []*Trait{group}
+	e.Traits = []*gurps.Trait{group}
 
-	skill := NewSkill(e, nil, false)
+	skill := gurps.NewSkill(e, nil, false)
 	skill.Name = "Brawling"
 	skill.PageRef = "B2"
 	e.Skills = append(e.Skills, skill)
 
-	spell := NewSpell(e, nil, false)
+	spell := gurps.NewSpell(e, nil, false)
 	spell.Name = "Fireball"
 	spell.LocalNotes = "spell note"
 	e.Spells = append(e.Spells, spell)
 
-	eqp := NewEquipment(e, nil, false)
+	eqp := gurps.NewEquipment(e, nil, false)
 	eqp.Name = "Rock"
-	eqpMod := NewEquipmentModifier(e, nil, false)
+	eqpMod := gurps.NewEquipmentModifier(e, nil, false)
 	eqpMod.Name = "Sharp"
 	eqpMod.LocalNotes = "eqp mod note"
 	eqp.Modifiers = append(eqp.Modifiers, eqpMod)
 	e.CarriedEquipment = append(e.CarriedEquipment, eqp)
 
-	noteGroup := NewNote(e, nil, true)
+	noteGroup := gurps.NewNote(e, nil, true)
 	noteGroup.MarkDown = "Notes"
-	note := NewNote(e, noteGroup, false)
+	note := gurps.NewNote(e, noteGroup, false)
 	note.MarkDown = "Note1"
 	note.PageRef = "B3"
 	noteGroup.Children = append(noteGroup.Children, note)
@@ -437,14 +440,14 @@ func TestLegacyExportSharedNodeKeys(t *testing.T) {
 // is omitted just as it is from the Go-template export.
 func TestLegacyExportAttributeLoops(t *testing.T) {
 	c := check.New(t)
-	e := NewEntity()
-	addDef := func(def *AttributeDef) {
+	e := gurps.NewEntity()
+	addDef := func(def *gurps.AttributeDef) {
 		def.Order = len(e.SheetSettings.Attributes.Set)
 		e.SheetSettings.Attributes.Set[def.DefID] = def
-		e.Attributes.Set[def.DefID] = NewAttribute(e, def.DefID, len(e.Attributes.Set))
+		e.Attributes.Set[def.DefID] = gurps.NewAttribute(e, def.DefID, len(e.Attributes.Set))
 	}
-	addDef(&AttributeDef{DefID: "forced", Type: attribute.Integer, Name: "Forced", Base: "$iq", Placement: attribute.Primary})
-	addDef(&AttributeDef{DefID: "mana", Type: attribute.Pool, Name: "Mana", Base: "10", Placement: attribute.Hidden})
+	addDef(&gurps.AttributeDef{DefID: "forced", Type: attribute.Integer, Name: "Forced", Base: "$iq", Placement: attribute.Primary})
+	addDef(&gurps.AttributeDef{DefID: "mana", Type: attribute.Pool, Name: "Mana", Base: "10", Placement: attribute.Hidden})
 	c.Equal("5|<st=10><dx=10><iq=10><ht=10><forced=10>|"+
 		"9|<will><fright_check><per><vision><hearing><taste_smell><touch><basic_speed><basic_move>|"+
 		"2|<fp:10/10><hp:10/10>",
@@ -458,15 +461,15 @@ func TestLegacyExportAttributeLoops(t *testing.T) {
 // weight of a group, which has none of its own, while still giving the totals of what it holds.
 func TestLegacyExportLeavesAGroupsOwnFiguresEmpty(t *testing.T) {
 	c := check.New(t)
-	e := NewEntity()
-	group := NewEquipmentGroup(e, nil)
+	e := gurps.NewEntity()
+	group := gurps.NewEquipmentGroup(e, nil)
 	group.Name = "Kit"
-	rope := NewEquipment(e, group, false)
+	rope := gurps.NewEquipment(e, group, false)
 	rope.Name = "Rope"
 	rope.BaseValue = "5"
 	rope.BaseWeight = "2 lb"
-	group.Children = []*Equipment{rope}
-	e.CarriedEquipment = []*Equipment{group}
+	group.Children = []*gurps.Equipment{rope}
+	e.CarriedEquipment = []*gurps.Equipment{group}
 	c.Equal("Kit||||2 lb|5|\nRope|1|5|2 lb|2 lb|5|\n", runLegacyExport(t, c, e,
 		"@EQUIPMENT_LOOP_START@DESCRIPTION|@QTY|@COST|@WEIGHT|@WEIGHT_SUMMARY|@COST_SUMMARY|\n@EQUIPMENT_LOOP_END"))
 }
@@ -475,14 +478,40 @@ func TestLegacyExportLeavesAGroupsOwnFiguresEmpty(t *testing.T) {
 // trait containers apart by their type.
 func TestLegacyExportEquipmentType(t *testing.T) {
 	c := check.New(t)
-	e := NewEntity()
-	backpack := NewEquipment(e, nil, true)
+	e := gurps.NewEntity()
+	backpack := gurps.NewEquipment(e, nil, true)
 	backpack.Name = "Backpack"
-	group := NewEquipmentGroup(e, nil)
+	group := gurps.NewEquipmentGroup(e, nil)
 	group.Name = "Kit"
-	rope := NewEquipment(e, nil, false)
+	rope := gurps.NewEquipment(e, nil, false)
 	rope.Name = "Rope"
-	e.CarriedEquipment = []*Equipment{backpack, group, rope}
+	e.CarriedEquipment = []*gurps.Equipment{backpack, group, rope}
 	c.Equal("Backpack|CONTAINER\nKit|GROUP\nRope|ITEM\n", runLegacyExport(t, c, e,
 		"@EQUIPMENT_LOOP_START@DESCRIPTION|@TYPE\n@EQUIPMENT_LOOP_END"))
+}
+
+// TestLegacyExportSkipsSwitchedOffDRBonuses verifies that the legacy text export's hit-location armor list is built
+// from the equipment's active features, so a switched-off DR bonus doesn't show up in an exported sheet.
+func TestLegacyExportSkipsSwitchedOffDRBonuses(t *testing.T) {
+	c := check.New(t)
+	e := gurps.NewEntity()
+
+	bonus := gurps.NewDRBonus()
+	bonus.Locations = []string{gurps.TorsoID}
+	bonus.Specialization = gurps.AllID
+	bonus.Amount = fxp.Four
+	bonus.Switchable = true
+
+	eqp := gurpstest.AddCarriedEquipmentWithFeatures(e, "Mail Hauberk", bonus)
+	e.Recalculate()
+
+	ex := &legacyExporter{entity: e}
+	location := e.SheetSettings.BodyType.LookupLocationByID(e, gurps.TorsoID)
+	c.NotNil(location, "the torso location should exist")
+
+	c.Equal(0, len(ex.hitLocationEquipment(location)),
+		"a switched-off DR bonus contributes no armor to the export")
+	eqp.SetSwitchedOn(true)
+	c.True(strings.Contains(strings.Join(ex.hitLocationEquipment(location), ","), "Mail Hauberk"),
+		"a switched-on DR bonus contributes its equipment to the export")
 }

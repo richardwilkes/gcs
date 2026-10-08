@@ -7,7 +7,7 @@
 // This Source Code Form is "Incompatible With Secondary Licenses", as
 // defined by the Mozilla Public License, version 2.0.
 
-package gurps
+package export
 
 import (
 	"bufio"
@@ -24,6 +24,7 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/colors"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
+	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/encumbrance"
 	"github.com/richardwilkes/toolbox/v2/errs"
 	"github.com/richardwilkes/toolbox/v2/xbytes"
@@ -50,18 +51,18 @@ const (
 // longer suffixes that end with a shorter one must come first.
 var attributeKeySuffixes = []struct {
 	suffix string
-	value  func(attr *Attribute, def *AttributeDef) string
+	value  func(attr *gurps.Attribute, def *gurps.AttributeDef) string
 }{
-	{suffix: "_full_name", value: func(_ *Attribute, def *AttributeDef) string { return def.ResolveFullName() }},
-	{suffix: "_combined_name", value: func(_ *Attribute, def *AttributeDef) string { return def.CombinedName() }},
-	{suffix: "_name", value: func(_ *Attribute, def *AttributeDef) string { return def.Name }},
-	{suffix: "_points", value: func(attr *Attribute, _ *AttributeDef) string { return attr.PointCost().String() }},
-	{suffix: "_current", value: func(attr *Attribute, _ *AttributeDef) string { return attr.Current().String() }},
+	{suffix: "_full_name", value: func(_ *gurps.Attribute, def *gurps.AttributeDef) string { return def.ResolveFullName() }},
+	{suffix: "_combined_name", value: func(_ *gurps.Attribute, def *gurps.AttributeDef) string { return def.CombinedName() }},
+	{suffix: "_name", value: func(_ *gurps.Attribute, def *gurps.AttributeDef) string { return def.Name }},
+	{suffix: "_points", value: func(attr *gurps.Attribute, _ *gurps.AttributeDef) string { return attr.PointCost().String() }},
+	{suffix: "_current", value: func(attr *gurps.Attribute, _ *gurps.AttributeDef) string { return attr.Current().String() }},
 }
 
 type legacyExporter struct {
-	entity             *Entity
-	points             *PointsBreakdown
+	entity             *gurps.Entity
+	points             *gurps.PointsBreakdown
 	template           []byte
 	pos                int
 	exportPath         string
@@ -73,7 +74,7 @@ type legacyExporter struct {
 }
 
 // legacyTextExport performs the text template export function that matches the old Java code base.
-func legacyTextExport(entity *Entity, tmpl []byte, exportPath string) (err error) {
+func legacyTextExport(entity *gurps.Entity, tmpl []byte, exportPath string) (err error) {
 	ex := &legacyExporter{
 		entity:       entity,
 		points:       entity.PointsBreakdown(),
@@ -164,13 +165,13 @@ func (ex *legacyExporter) emitKey(key string) error {
 	case "ATTRIBUTE_POINTS":
 		ex.writeEncodedText(ex.points.Attributes.String())
 	case "ST_POINTS":
-		ex.writeEncodedText(ex.entity.Attributes.Cost(StrengthID).String())
+		ex.writeEncodedText(ex.entity.Attributes.Cost(gurps.StrengthID).String())
 	case "DX_POINTS":
-		ex.writeEncodedText(ex.entity.Attributes.Cost(DexterityID).String())
+		ex.writeEncodedText(ex.entity.Attributes.Cost(gurps.DexterityID).String())
 	case "IQ_POINTS":
-		ex.writeEncodedText(ex.entity.Attributes.Cost(IntelligenceID).String())
+		ex.writeEncodedText(ex.entity.Attributes.Cost(gurps.IntelligenceID).String())
 	case "HT_POINTS":
-		ex.writeEncodedText(ex.entity.Attributes.Cost(HealthID).String())
+		ex.writeEncodedText(ex.entity.Attributes.Cost(gurps.HealthID).String())
 	case "PERCEPTION_POINTS":
 		ex.writeEncodedText(ex.entity.Attributes.Cost("per").String())
 	case "WILL_POINTS":
@@ -178,11 +179,11 @@ func (ex *legacyExporter) emitKey(key string) error {
 	case "FP_POINTS":
 		ex.writeEncodedText(ex.entity.Attributes.Cost(fpAttrID).String())
 	case "HP_POINTS":
-		ex.writeEncodedText(ex.entity.Attributes.Cost(HitPointsID).String())
+		ex.writeEncodedText(ex.entity.Attributes.Cost(gurps.HitPointsID).String())
 	case "BASIC_SPEED_POINTS":
-		ex.writeEncodedText(ex.entity.Attributes.Cost(BasicSpeedID).String())
+		ex.writeEncodedText(ex.entity.Attributes.Cost(gurps.BasicSpeedID).String())
 	case "BASIC_MOVE_POINTS":
-		ex.writeEncodedText(ex.entity.Attributes.Cost(BasicMoveID).String())
+		ex.writeEncodedText(ex.entity.Attributes.Cost(gurps.BasicMoveID).String())
 	case "ADVANTAGE_POINTS":
 		ex.writeEncodedText(ex.points.Advantages.String())
 	case "DISADVANTAGE_POINTS":
@@ -220,29 +221,29 @@ func (ex *legacyExporter) emitKey(key string) error {
 	case "HAND":
 		ex.writeEncodedText(ex.entity.Profile.Handedness)
 	case "ST":
-		ex.writeEncodedText(ex.entity.Attributes.Current(StrengthID).String())
+		ex.writeEncodedText(ex.entity.Attributes.Current(gurps.StrengthID).String())
 	case "DX":
-		ex.writeEncodedText(ex.entity.Attributes.Current(DexterityID).String())
+		ex.writeEncodedText(ex.entity.Attributes.Current(gurps.DexterityID).String())
 	case "IQ":
-		ex.writeEncodedText(ex.entity.Attributes.Current(IntelligenceID).String())
+		ex.writeEncodedText(ex.entity.Attributes.Current(gurps.IntelligenceID).String())
 	case "HT":
-		ex.writeEncodedText(ex.entity.Attributes.Current(HealthID).String())
+		ex.writeEncodedText(ex.entity.Attributes.Current(gurps.HealthID).String())
 	case "FP":
 		ex.writeEncodedText(ex.entity.Attributes.Current(fpAttrID).String())
 	case "BASIC_FP":
 		ex.writeEncodedText(ex.entity.Attributes.Maximum(fpAttrID).String())
 	case "HP":
-		ex.writeEncodedText(ex.entity.Attributes.Current(HitPointsID).String())
+		ex.writeEncodedText(ex.entity.Attributes.Current(gurps.HitPointsID).String())
 	case "BASIC_HP":
-		ex.writeEncodedText(ex.entity.Attributes.Maximum(HitPointsID).String())
+		ex.writeEncodedText(ex.entity.Attributes.Maximum(gurps.HitPointsID).String())
 	case "WILL":
 		ex.writeEncodedText(ex.entity.Attributes.Current("will").String())
 	case "FRIGHT_CHECK":
 		ex.writeEncodedText(ex.entity.Attributes.Current("fright_check").String())
 	case "BASIC_SPEED":
-		ex.writeEncodedText(ex.entity.Attributes.Current(BasicSpeedID).String())
+		ex.writeEncodedText(ex.entity.Attributes.Current(gurps.BasicSpeedID).String())
 	case "BASIC_MOVE":
-		ex.writeEncodedText(ex.entity.Attributes.Current(BasicMoveID).String())
+		ex.writeEncodedText(ex.entity.Attributes.Current(gurps.BasicMoveID).String())
 	case "PERCEPTION":
 		ex.writeEncodedText(ex.entity.Attributes.Current("per").String())
 	case "VISION":
@@ -254,13 +255,13 @@ func (ex *legacyExporter) emitKey(key string) error {
 	case "TOUCH":
 		ex.writeEncodedText(ex.entity.Attributes.Current("touch").String())
 	case "THRUST":
-		ex.writeEncodedText(Roller.Format(ex.entity.Thrust()))
+		ex.writeEncodedText(gurps.Roller.Format(ex.entity.Thrust()))
 	case "SWING":
-		ex.writeEncodedText(Roller.Format(ex.entity.Swing()))
+		ex.writeEncodedText(gurps.Roller.Format(ex.entity.Swing()))
 	case "GENERAL_DR":
 		dr := 0
-		if torso := ex.entity.SheetSettings.BodyType.LookupLocationByID(ex.entity, TorsoID); torso != nil {
-			dr = torso.DR(ex.entity, nil, nil)[AllID]
+		if torso := ex.entity.SheetSettings.BodyType.LookupLocationByID(ex.entity, gurps.TorsoID); torso != nil {
+			dr = torso.DR(ex.entity, nil, nil)[gurps.AllID]
 		}
 		ex.writeEncodedText(strconv.Itoa(dr))
 	case "CURRENT_DODGE":
@@ -294,19 +295,19 @@ func (ex *legacyExporter) emitKey(key string) error {
 	case "UNCONSCIOUS":
 		ex.writeEncodedText(ex.entity.Attributes.PoolThreshold(fpAttrID, "unconscious").String())
 	case "REELING":
-		ex.writeEncodedText(ex.entity.Attributes.PoolThreshold(HitPointsID, "reeling").String())
+		ex.writeEncodedText(ex.entity.Attributes.PoolThreshold(gurps.HitPointsID, "reeling").String())
 	case "HP_COLLAPSE":
-		ex.writeEncodedText(ex.entity.Attributes.PoolThreshold(HitPointsID, "collapse").String())
+		ex.writeEncodedText(ex.entity.Attributes.PoolThreshold(gurps.HitPointsID, "collapse").String())
 	case "DEATH_CHECK_1":
-		ex.writeEncodedText(ex.entity.Attributes.PoolThreshold(HitPointsID, "dying #1").String())
+		ex.writeEncodedText(ex.entity.Attributes.PoolThreshold(gurps.HitPointsID, "dying #1").String())
 	case "DEATH_CHECK_2":
-		ex.writeEncodedText(ex.entity.Attributes.PoolThreshold(HitPointsID, "dying #2").String())
+		ex.writeEncodedText(ex.entity.Attributes.PoolThreshold(gurps.HitPointsID, "dying #2").String())
 	case "DEATH_CHECK_3":
-		ex.writeEncodedText(ex.entity.Attributes.PoolThreshold(HitPointsID, "dying #3").String())
+		ex.writeEncodedText(ex.entity.Attributes.PoolThreshold(gurps.HitPointsID, "dying #3").String())
 	case "DEATH_CHECK_4":
-		ex.writeEncodedText(ex.entity.Attributes.PoolThreshold(HitPointsID, "dying #4").String())
+		ex.writeEncodedText(ex.entity.Attributes.PoolThreshold(gurps.HitPointsID, "dying #4").String())
 	case "DEAD":
-		ex.writeEncodedText(ex.entity.Attributes.PoolThreshold(HitPointsID, "dead").String())
+		ex.writeEncodedText(ex.entity.Attributes.PoolThreshold(gurps.HitPointsID, "dead").String())
 	case "BASIC_LIFT":
 		ex.writeEncodedText(ex.entity.SheetSettings.DefaultWeightUnits.Format(ex.entity.BasicLift()))
 	case "ONE_HANDED_LIFT":
@@ -329,7 +330,7 @@ func (ex *legacyExporter) emitKey(key string) error {
 		ex.writeEncodedText("$" + ex.entity.WealthNotCarried().String())
 	case "NOTES":
 		needBlanks := false
-		Traverse(func(n *Note) bool {
+		gurps.Traverse(func(n *gurps.Note) bool {
 			if needBlanks {
 				ex.writeEncodedText("\n\n")
 			} else {
@@ -387,11 +388,11 @@ func (ex *legacyExporter) emitKey(key string) error {
 	case "CULTURAL_FAMILIARITIES_LOOP_START":
 		ex.processTraitLoop(ex.extractUpToMarker("CULTURAL_FAMILIARITIES_LOOP_END"), ex.includeCulturalFamiliarities)
 	case "SKILLS_LOOP_COUNT":
-		ex.writeEncodedText(strconv.Itoa(countNodes(ex.entity.Skills, false, nil)))
+		ex.writeEncodedText(strconv.Itoa(gurps.CountNodes(ex.entity.Skills, false, nil)))
 	case "SKILLS_LOOP_START":
 		ex.processSkillsLoop(ex.extractUpToMarker("SKILLS_LOOP_END"))
 	case "SPELLS_LOOP_COUNT":
-		ex.writeEncodedText(strconv.Itoa(countNodes(ex.entity.Spells, false, nil)))
+		ex.writeEncodedText(strconv.Itoa(gurps.CountNodes(ex.entity.Spells, false, nil)))
 	case "SPELLS_LOOP_START":
 		ex.processSpellsLoop(ex.extractUpToMarker("SPELLS_LOOP_END"))
 	case "MELEE_LOOP_COUNT":
@@ -413,15 +414,15 @@ func (ex *legacyExporter) emitKey(key string) error {
 	case "HIERARCHICAL_RANGED_LOOP_START":
 		ex.processWeaponLoop(ex.extractUpToMarker("HIERARCHICAL_RANGED_LOOP_END"), false, true)
 	case "EQUIPMENT_LOOP_COUNT":
-		ex.writeEncodedText(strconv.Itoa(countNodes(ex.entity.CarriedEquipment, false, ex.includeByEquipmentTags)))
+		ex.writeEncodedText(strconv.Itoa(gurps.CountNodes(ex.entity.CarriedEquipment, false, ex.includeByEquipmentTags)))
 	case "EQUIPMENT_LOOP_START":
 		ex.processEquipmentLoop(ex.extractUpToMarker("EQUIPMENT_LOOP_END"), true)
 	case "OTHER_EQUIPMENT_LOOP_COUNT":
-		ex.writeEncodedText(strconv.Itoa(countNodes(ex.entity.OtherEquipment, false, ex.includeByEquipmentTags)))
+		ex.writeEncodedText(strconv.Itoa(gurps.CountNodes(ex.entity.OtherEquipment, false, ex.includeByEquipmentTags)))
 	case "OTHER_EQUIPMENT_LOOP_START":
 		ex.processEquipmentLoop(ex.extractUpToMarker("OTHER_EQUIPMENT_LOOP_END"), false)
 	case "NOTES_LOOP_COUNT":
-		ex.writeEncodedText(strconv.Itoa(countNodes(ex.entity.Notes, false, nil)))
+		ex.writeEncodedText(strconv.Itoa(gurps.CountNodes(ex.entity.Notes, false, nil)))
 	case "NOTES_LOOP_START":
 		ex.processNotesLoop(ex.extractUpToMarker("NOTES_LOOP_END"))
 	case "REACTION_LOOP_COUNT":
@@ -433,15 +434,15 @@ func (ex *legacyExporter) emitKey(key string) error {
 	case "CONDITIONAL_MODIFIERS_LOOP_START":
 		ex.processConditionalModifiersLoop(ex.entity.ConditionalModifiers(), ex.extractUpToMarker("CONDITIONAL_MODIFIERS_LOOP_END"))
 	case "PRIMARY_ATTRIBUTE_LOOP_COUNT":
-		ex.writeEncodedText(strconv.Itoa(len(ex.attributeDefsOfKind(PrimaryAttrKind))))
+		ex.writeEncodedText(strconv.Itoa(len(ex.attributeDefsOfKind(gurps.PrimaryAttrKind))))
 	case "PRIMARY_ATTRIBUTE_LOOP_START":
-		ex.processAttributesLoop(ex.extractUpToMarker("PRIMARY_ATTRIBUTE_LOOP_END"), PrimaryAttrKind)
+		ex.processAttributesLoop(ex.extractUpToMarker("PRIMARY_ATTRIBUTE_LOOP_END"), gurps.PrimaryAttrKind)
 	case "SECONDARY_ATTRIBUTE_LOOP_COUNT":
-		ex.writeEncodedText(strconv.Itoa(len(ex.attributeDefsOfKind(SecondaryAttrKind))))
+		ex.writeEncodedText(strconv.Itoa(len(ex.attributeDefsOfKind(gurps.SecondaryAttrKind))))
 	case "SECONDARY_ATTRIBUTE_LOOP_START":
-		ex.processAttributesLoop(ex.extractUpToMarker("SECONDARY_ATTRIBUTE_LOOP_END"), SecondaryAttrKind)
+		ex.processAttributesLoop(ex.extractUpToMarker("SECONDARY_ATTRIBUTE_LOOP_END"), gurps.SecondaryAttrKind)
 	case "POINT_POOL_LOOP_COUNT":
-		ex.writeEncodedText(strconv.Itoa(len(ex.attributeDefsOfKind(PoolAttrKind))))
+		ex.writeEncodedText(strconv.Itoa(len(ex.attributeDefsOfKind(gurps.PoolAttrKind))))
 	case "POINT_POOL_LOOP_START":
 		ex.processPointPoolLoop(ex.extractUpToMarker("POINT_POOL_LOOP_END"))
 	case "CONTINUE_ID", "CAMPAIGN", "OPTIONS_CODE":
@@ -538,13 +539,13 @@ func (ex *legacyExporter) writeEncodedText(text string) {
 
 // writeTraitLoopCount writes the number of traits the matching trait loop will visit: enabled traits, descending into
 // containers, that f accepts.
-func (ex *legacyExporter) writeTraitLoopCount(f func(*Trait) bool) {
-	ex.writeEncodedText(strconv.Itoa(countNodes(ex.entity.Traits, true, f)))
+func (ex *legacyExporter) writeTraitLoopCount(f func(*gurps.Trait) bool) {
+	ex.writeEncodedText(strconv.Itoa(gurps.CountNodes(ex.entity.Traits, true, f)))
 }
 
 func (ex *legacyExporter) includeByTags(tags []string) bool {
 	for cat := range ex.onlyTags {
-		if HasTag(cat, tags) {
+		if gurps.HasTag(cat, tags) {
 			return true
 		}
 	}
@@ -552,50 +553,50 @@ func (ex *legacyExporter) includeByTags(tags []string) bool {
 		return false
 	}
 	for cat := range ex.excludedTags {
-		if HasTag(cat, tags) {
+		if gurps.HasTag(cat, tags) {
 			return false
 		}
 	}
 	return true
 }
 
-func (ex *legacyExporter) includeByTraitTags(t *Trait) bool {
+func (ex *legacyExporter) includeByTraitTags(t *gurps.Trait) bool {
 	return ex.includeByTags(t.Tags)
 }
 
-func (ex *legacyExporter) includeByEquipmentTags(eqp *Equipment) bool {
+func (ex *legacyExporter) includeByEquipmentTags(eqp *gurps.Equipment) bool {
 	return ex.includeByTags(eqp.Tags)
 }
 
-func (ex *legacyExporter) includeAdvantages(t *Trait) bool {
+func (ex *legacyExporter) includeAdvantages(t *gurps.Trait) bool {
 	return t.AdjustedPoints(nil) > fxp.One && ex.includeByTraitTags(t)
 }
 
-func (ex *legacyExporter) includePerks(t *Trait) bool {
+func (ex *legacyExporter) includePerks(t *gurps.Trait) bool {
 	return t.AdjustedPoints(nil) == fxp.One && ex.includeByTraitTags(t)
 }
 
-func (ex *legacyExporter) includeAdvantagesAndPerks(t *Trait) bool {
+func (ex *legacyExporter) includeAdvantagesAndPerks(t *gurps.Trait) bool {
 	return t.AdjustedPoints(nil) > 0 && ex.includeByTraitTags(t)
 }
 
-func (ex *legacyExporter) includeDisadvantages(t *Trait) bool {
+func (ex *legacyExporter) includeDisadvantages(t *gurps.Trait) bool {
 	return t.AdjustedPoints(nil) < -fxp.One && ex.includeByTraitTags(t)
 }
 
-func (ex *legacyExporter) includeQuirks(t *Trait) bool {
+func (ex *legacyExporter) includeQuirks(t *gurps.Trait) bool {
 	return t.AdjustedPoints(nil) == -fxp.One && ex.includeByTraitTags(t)
 }
 
-func (ex *legacyExporter) includeDisadvantagesAndQuirks(t *Trait) bool {
+func (ex *legacyExporter) includeDisadvantagesAndQuirks(t *gurps.Trait) bool {
 	return t.AdjustedPoints(nil) < 0 && ex.includeByTraitTags(t)
 }
 
-func (ex *legacyExporter) includeLanguages(t *Trait) bool {
-	return HasTag("Language", t.Tags) && ex.includeByTraitTags(t)
+func (ex *legacyExporter) includeLanguages(t *gurps.Trait) bool {
+	return gurps.HasTag("Language", t.Tags) && ex.includeByTraitTags(t)
 }
 
-func (ex *legacyExporter) includeCulturalFamiliarities(t *Trait) bool {
+func (ex *legacyExporter) includeCulturalFamiliarities(t *gurps.Trait) bool {
 	return strings.HasPrefix(strings.ToLower(t.NameWithReplacements()), "cultural familiarity (") &&
 		ex.includeByTraitTags(t)
 }
@@ -675,25 +676,25 @@ func (ex *legacyExporter) processHitLocationLoop(buffer []byte) {
 
 // hitLocationEquipment returns the names of the carried, really-equipped pieces of equipment that grant DR to the given
 // hit location, in the order they appear in the carried equipment list and each named at most once. What counts as
-// granting DR mirrors how the DR printed for the location is arrived at (see Entity.AddDRBonusesFor), so that the two
-// agree:
+// granting DR mirrors how the DR printed for the location is arrived at (see gurps.Entity.AddDRBonusesFor), so that the
+// two agree:
 //
 //   - The DR bonuses of an item's enabled, non-container modifiers count alongside the item's own, subject to the
-//     item's switch, exactly as when the entity collects features (see Entity.processFeatures), so armor that reaches
-//     the location only through a modifier -- a hood adding DR to the skull, say -- is listed.
+//     item's switch, exactly as when the entity collects features (see gurps.Entity.processFeatures), so armor that
+//     reaches the location only through a modifier -- a hood adding DR to the skull, say -- is listed.
 //   - A bonus naming the "all" location covers every location this is called for, since the hit location loop visits
 //     only the top-level locations of the body (see processHitLocationLoop).
 //   - A "this armor" DR bonus (one naming no locations) needs no examination of its own, since it reaches exactly the
-//     locations named by the item's and its enabled modifiers' located DR bonuses (see Entity.expandThisArmorDRBonus),
-//     all of which are already scanned here.
-func (ex *legacyExporter) hitLocationEquipment(location *HitLocation) []string {
+//     locations named by the item's and its enabled modifiers' located DR bonuses (see
+//     gurps.Entity.expandThisArmorDRBonus), all of which are already scanned here.
+func (ex *legacyExporter) hitLocationEquipment(location *gurps.HitLocation) []string {
 	var list []string
-	Traverse(func(eqp *Equipment) bool {
+	gurps.Traverse(func(eqp *gurps.Equipment) bool {
 		if !eqp.ReallyEquipped() {
 			return false
 		}
 		grantsDR := drBonusCoversLocation(eqp.Features, eqp.SwitchedOn, location.LocID) ||
-			anyEnabledNonContainerModifier(eqp.Modifiers, func(mod *EquipmentModifier) bool {
+			gurps.AnyEnabledNonContainerModifier(eqp.Modifiers, func(mod *gurps.EquipmentModifier) bool {
 				return drBonusCoversLocation(mod.Features, eqp.SwitchedOn, location.LocID)
 			})
 		if grantsDR {
@@ -706,16 +707,16 @@ func (ex *legacyExporter) hitLocationEquipment(location *HitLocation) []string {
 
 // drBonusCoversLocation returns true if any of the given features that is active for an owner whose switch is in the
 // given state is a DR bonus naming the given hit location ID, either explicitly or via the "all" location. The switch
-// is applied here rather than via Features.Active, since this runs once per hit location for every piece of equipment
-// during an export and Features.Active allocates whenever it has something to filter out.
-func drBonusCoversLocation(features Features, switchedOn bool, locID string) bool {
+// is applied here rather than via gurps.Features.Active, since this runs once per hit location for every piece of
+// equipment during an export and gurps.Features.Active allocates whenever it has something to filter out.
+func drBonusCoversLocation(features gurps.Features, switchedOn bool, locID string) bool {
 	for _, f := range features {
 		if f.IsSwitchable() && !switchedOn {
 			continue
 		}
-		if bonus, ok := f.(*DRBonus); ok {
+		if bonus, ok := f.(*gurps.DRBonus); ok {
 			for _, loc := range bonus.Locations {
-				if loc == AllID || strings.EqualFold(loc, locID) {
+				if loc == gurps.AllID || strings.EqualFold(loc, locID) {
 					return true
 				}
 			}
@@ -724,8 +725,8 @@ func drBonusCoversLocation(features Features, switchedOn bool, locID string) boo
 	return false
 }
 
-// legacyNodeKeys supplies what processLegacyNodeKey needs from a node beyond the methods every Node has. A nil func
-// marks a key family the node type doesn't support, leaving those keys to be reported as unidentified.
+// legacyNodeKeys supplies what processLegacyNodeKey needs from a node beyond the methods every gurps.Node has. A nil
+// func marks a key family the node type doesn't support, leaving those keys to be reported as unidentified.
 type legacyNodeKeys struct {
 	// containerType is what the TYPE key emits for a container node, defaulting to "GROUP" when empty.
 	containerType string
@@ -743,9 +744,9 @@ type legacyNodeKeys struct {
 	modifierNotesFor func(name string) string
 }
 
-// legacyExportNode adds to Node the Depth method processLegacyNodeKey needs.
-type legacyExportNode[T Node[T]] interface {
-	Node[T]
+// legacyExportNode adds to gurps.Node the Depth method processLegacyNodeKey needs.
+type legacyExportNode[T gurps.Node[T]] interface {
+	gurps.Node[T]
 	Depth() int
 }
 
@@ -818,8 +819,8 @@ func processLegacyNodeKey[T legacyExportNode[T]](ex *legacyExporter, key string,
 	return true
 }
 
-func (ex *legacyExporter) processTraitLoop(buffer []byte, f func(*Trait) bool) {
-	Traverse(func(t *Trait) bool {
+func (ex *legacyExporter) processTraitLoop(buffer []byte, f func(*gurps.Trait) bool) {
+	gurps.Traverse(func(t *gurps.Trait) bool {
 		if f(t) {
 			keys := legacyNodeKeys{
 				containerType: strings.ToUpper(t.ContainerType.Key()),
@@ -857,7 +858,7 @@ func (ex *legacyExporter) processTraitLoop(buffer []byte, f func(*Trait) bool) {
 }
 
 func (ex *legacyExporter) processSkillsLoop(buffer []byte) {
-	Traverse(func(s *Skill) bool {
+	gurps.Traverse(func(s *gurps.Skill) bool {
 		keys := legacyNodeKeys{
 			pageRef:       s.PageRef,
 			satisfied:     func() bool { return s.UnsatisfiedReason == "" },
@@ -874,7 +875,7 @@ func (ex *legacyExporter) processSkillsLoop(buffer []byte) {
 				ex.writeEncodedText(s.RelativeLevel())
 			case "DIFFICULTY":
 				if !s.Container() {
-					ex.writeEncodedText(s.Difficulty.Description(EntityFromNode(s)))
+					ex.writeEncodedText(s.Difficulty.Description(gurps.EntityFromNode(s)))
 				}
 			default:
 				if !processLegacyNodeKey(ex, key, s, &keys) {
@@ -888,7 +889,7 @@ func (ex *legacyExporter) processSkillsLoop(buffer []byte) {
 }
 
 func (ex *legacyExporter) processSpellsLoop(buffer []byte) {
-	Traverse(func(s *Spell) bool {
+	gurps.Traverse(func(s *gurps.Spell) bool {
 		keys := legacyNodeKeys{
 			pageRef:   s.PageRef,
 			satisfied: func() bool { return s.UnsatisfiedReason == "" },
@@ -917,7 +918,7 @@ func (ex *legacyExporter) processSpellsLoop(buffer []byte) {
 				ex.writeEncodedText(s.RelativeLevel())
 			case "DIFFICULTY":
 				if !s.Container() {
-					ex.writeEncodedText(s.Difficulty.Description(EntityFromNode(s)))
+					ex.writeEncodedText(s.Difficulty.Description(gurps.EntityFromNode(s)))
 				}
 			case "CLASS":
 				ex.writeEncodedText(s.ClassWithReplacements())
@@ -948,13 +949,13 @@ func (ex *legacyExporter) processSpellsLoop(buffer []byte) {
 }
 
 func (ex *legacyExporter) processEquipmentLoop(buffer []byte, carried bool) {
-	var eqpList []*Equipment
+	var eqpList []*gurps.Equipment
 	if carried {
 		eqpList = ex.entity.CarriedEquipment
 	} else {
 		eqpList = ex.entity.OtherEquipment
 	}
-	Traverse(func(eqp *Equipment) bool {
+	gurps.Traverse(func(eqp *gurps.Equipment) bool {
 		if ex.includeByEquipmentTags(eqp) {
 			keys := legacyNodeKeys{
 				containerType: strings.ToUpper(eqp.ContainerType.Key()),
@@ -1030,7 +1031,7 @@ func (ex *legacyExporter) processEquipmentLoop(buffer []byte, carried bool) {
 				case "LEGALITY_CLASS", "LC":
 					ex.writeEncodedText(eqp.LegalityClass)
 				case "TAGS", "CATEGORIES":
-					ex.writeEncodedText(CombineTags(eqp.Tags))
+					ex.writeEncodedText(gurps.CombineTags(eqp.Tags))
 				case "LOCATION":
 					parent := eqp.Parent()
 					if parent != nil {
@@ -1055,7 +1056,7 @@ func (ex *legacyExporter) processEquipmentLoop(buffer []byte, carried bool) {
 }
 
 func (ex *legacyExporter) processNotesLoop(buffer []byte) {
-	Traverse(func(n *Note) bool {
+	gurps.Traverse(func(n *gurps.Note) bool {
 		keys := legacyNodeKeys{
 			pageRef: n.PageRef,
 		}
@@ -1079,9 +1080,9 @@ func (ex *legacyExporter) processNotesLoop(buffer []byte) {
 // processConditionalModifiersLoop writes the modifiers out flat: the group containers are skipped and the modifiers
 // they hold take their place, each able to name its group, so that templates written before groups existed keep
 // working.
-func (ex *legacyExporter) processConditionalModifiersLoop(list []*ConditionalModifier, buffer []byte) {
+func (ex *legacyExporter) processConditionalModifiersLoop(list []*gurps.ConditionalModifier, buffer []byte) {
 	i := 0
-	Traverse(func(one *ConditionalModifier) bool {
+	gurps.Traverse(func(one *gurps.ConditionalModifier) bool {
 		ex.processBuffer(buffer, func(key string, _ []byte, index int) int {
 			switch key {
 			case idExportKey:
@@ -1104,14 +1105,14 @@ func (ex *legacyExporter) processConditionalModifiersLoop(list []*ConditionalMod
 
 // countConditionalModifiers returns the number of rows the modifier loops will write: the modifiers themselves, since
 // the group containers are not written out.
-func countConditionalModifiers(list []*ConditionalModifier) int {
-	return countNodes(list, false, func(one *ConditionalModifier) bool { return !one.Container() })
+func countConditionalModifiers(list []*gurps.ConditionalModifier) int {
+	return gurps.CountNodes(list, false, func(one *gurps.ConditionalModifier) bool { return !one.Container() })
 }
 
 // attributeDefsOfKind returns the attribute definitions (excluding separators) that resolve to the given kind and have
 // a corresponding attribute on the entity, in sheet order.
-func (ex *legacyExporter) attributeDefsOfKind(kind int) []*AttributeDef {
-	var defs []*AttributeDef
+func (ex *legacyExporter) attributeDefsOfKind(kind int) []*gurps.AttributeDef {
+	var defs []*gurps.AttributeDef
 	for _, def := range ex.entity.SheetSettings.Attributes.List(true) {
 		if def.Kind(ex.entity) == kind {
 			if _, ok := ex.entity.Attributes.Set[def.DefID]; ok {
@@ -1124,7 +1125,7 @@ func (ex *legacyExporter) attributeDefsOfKind(kind int) []*AttributeDef {
 
 // processAttributeKey handles the keys shared by the primary, secondary and point pool attribute loops, returning false
 // if the key was not one of them.
-func (ex *legacyExporter) processAttributeKey(key string, def *AttributeDef, attr *Attribute) bool {
+func (ex *legacyExporter) processAttributeKey(key string, def *gurps.AttributeDef, attr *gurps.Attribute) bool {
 	switch key {
 	case idExportKey:
 		ex.writeEncodedText(def.DefID)
@@ -1159,7 +1160,7 @@ func (ex *legacyExporter) processAttributesLoop(buffer []byte, kind int) {
 }
 
 func (ex *legacyExporter) processPointPoolLoop(buffer []byte) {
-	for _, def := range ex.attributeDefsOfKind(PoolAttrKind) {
+	for _, def := range ex.attributeDefsOfKind(gurps.PoolAttrKind) {
 		attr := ex.entity.Attributes.Set[def.DefID]
 		ex.processBuffer(buffer, func(key string, _ []byte, index int) int {
 			switch {
@@ -1179,10 +1180,10 @@ func (ex *legacyExporter) processPointPoolLoop(buffer []byte) {
 // weaponKeyFunc is the signature shared by the melee and ranged key handlers: it handles one key for the weapon at
 // currentID, whose attack modes (if the loop is hierarchical) are attackModes, and returns the index in buf to resume
 // scanning from.
-type weaponKeyFunc func(key string, currentID int, w *Weapon, attackModes []*Weapon, buf []byte, index int) int
+type weaponKeyFunc func(key string, currentID int, w *gurps.Weapon, attackModes []*gurps.Weapon, buf []byte, index int) int
 
 // weapons returns the melee or ranged weapons the flat loops iterate over, honoring the show-all-weapons setting.
-func (ex *legacyExporter) weapons(melee bool) []*Weapon {
+func (ex *legacyExporter) weapons(melee bool) []*gurps.Weapon {
 	return ex.entity.Weapons(melee, ex.entity.SheetSettings.ShowAllWeapons, true)
 }
 
@@ -1194,15 +1195,15 @@ func (ex *legacyExporter) processWeaponLoop(buffer []byte, melee, hierarchical b
 	if melee {
 		keys = ex.processMeleeKeys
 	}
-	var list []*Weapon
-	var attackModes map[string][]*Weapon
+	var list []*gurps.Weapon
+	var attackModes map[string][]*gurps.Weapon
 	if hierarchical {
 		list, attackModes = ex.hierarchicalWeapons(melee)
 	} else {
 		list = ex.weapons(melee)
 	}
 	for i, w := range list {
-		var modes []*Weapon
+		var modes []*gurps.Weapon
 		if hierarchical {
 			modes = attackModes[w.String()]
 		}
@@ -1215,17 +1216,17 @@ func (ex *legacyExporter) processWeaponLoop(buffer []byte, melee, hierarchical b
 // hierarchicalWeapons returns the weapons of the requested type collapsed down to one entry per distinct weapon, along
 // with a map from each weapon's description to all of its attack modes. This is what the hierarchical loops iterate,
 // so the matching loop-count keys must report the length of this list rather than the total number of attack modes.
-func (ex *legacyExporter) hierarchicalWeapons(melee bool) (list []*Weapon, attackModes map[string][]*Weapon) {
-	attackModes = make(map[string][]*Weapon)
+func (ex *legacyExporter) hierarchicalWeapons(melee bool) (list []*gurps.Weapon, attackModes map[string][]*gurps.Weapon) {
+	attackModes = make(map[string][]*gurps.Weapon)
 	for _, w := range ex.weapons(melee) {
 		key := w.String()
 		attackModes[key] = append(attackModes[key], w)
 	}
-	list = make([]*Weapon, 0, len(attackModes))
+	list = make([]*gurps.Weapon, 0, len(attackModes))
 	for _, v := range attackModes {
 		list = append(list, v[0])
 	}
-	slices.SortFunc(list, func(a, b *Weapon) int { return a.Compare(b) })
+	slices.SortFunc(list, func(a, b *gurps.Weapon) int { return a.Compare(b) })
 	return list, attackModes
 }
 
@@ -1233,7 +1234,7 @@ func (ex *legacyExporter) hierarchicalWeapons(melee bool) (list []*Weapon, attac
 // ranged key handlers, returning the index to resume scanning from and false if the key was not one of them. Each
 // attack mode's body is dispatched through keys, so that a melee weapon's modes see the melee keys and a ranged
 // weapon's the ranged ones.
-func (ex *legacyExporter) processAttackModes(key string, attackModes []*Weapon, buf []byte, index int, keys weaponKeyFunc) (int, bool) {
+func (ex *legacyExporter) processAttackModes(key string, attackModes []*gurps.Weapon, buf []byte, index int, keys weaponKeyFunc) (int, bool) {
 	switch key {
 	case "ATTACK_MODES_LOOP_COUNT":
 		ex.writeEncodedText(strconv.Itoa(len(attackModes)))
@@ -1254,7 +1255,7 @@ func (ex *legacyExporter) processAttackModes(key string, attackModes []*Weapon, 
 	return index, true
 }
 
-func (ex *legacyExporter) processMeleeKeys(key string, currentID int, w *Weapon, attackModes []*Weapon, buf []byte, index int) int {
+func (ex *legacyExporter) processMeleeKeys(key string, currentID int, w *gurps.Weapon, attackModes []*gurps.Weapon, buf []byte, index int) int {
 	switch key {
 	case "PARRY":
 		ex.writeEncodedText(w.Parry.Resolve(w, nil).String())
@@ -1271,7 +1272,7 @@ func (ex *legacyExporter) processMeleeKeys(key string, currentID int, w *Weapon,
 	return index
 }
 
-func (ex *legacyExporter) processRangedKeys(key string, currentID int, w *Weapon, attackModes []*Weapon, buf []byte, index int) int {
+func (ex *legacyExporter) processRangedKeys(key string, currentID int, w *gurps.Weapon, attackModes []*gurps.Weapon, buf []byte, index int) int {
 	switch key {
 	case "BULK":
 		ex.writeEncodedText(w.Bulk.Resolve(w, nil).String())
@@ -1294,7 +1295,7 @@ func (ex *legacyExporter) processRangedKeys(key string, currentID int, w *Weapon
 	return index
 }
 
-func (ex *legacyExporter) processWeaponKeys(key string, currentID int, w *Weapon) {
+func (ex *legacyExporter) processWeaponKeys(key string, currentID int, w *gurps.Weapon) {
 	switch key {
 	case idExportKey:
 		ex.writeEncodedText(strconv.Itoa(currentID))
@@ -1319,23 +1320,23 @@ func (ex *legacyExporter) processWeaponKeys(key string, currentID int, w *Weapon
 			ex.writeEncodedText(st.String())
 		}
 	case "COST":
-		if eqp, ok := w.Owner.(*Equipment); ok {
+		if eqp, ok := w.Owner.(*gurps.Equipment); ok {
 			ex.writeEncodedText(eqp.AdjustedValue().String())
 		}
 	case "LEGALITY_CLASS", "LC":
-		if eqp, ok := w.Owner.(*Equipment); ok {
+		if eqp, ok := w.Owner.(*gurps.Equipment); ok {
 			ex.writeEncodedText(eqp.LegalityClass)
 		}
 	case techLevelExportKey:
-		if eqp, ok := w.Owner.(*Equipment); ok {
+		if eqp, ok := w.Owner.(*gurps.Equipment); ok {
 			ex.writeEncodedText(eqp.TechLevel)
 		}
 	case weightExportKey:
-		if eqp, ok := w.Owner.(*Equipment); ok {
+		if eqp, ok := w.Owner.(*gurps.Equipment); ok {
 			ex.writeEncodedText(ex.entity.SheetSettings.DefaultWeightUnits.Format(eqp.AdjustedWeight(false, ex.entity.SheetSettings.DefaultWeightUnits)))
 		}
 	case "AMMO":
-		if eqp, ok := w.Owner.(*Equipment); ok {
+		if eqp, ok := w.Owner.(*gurps.Equipment); ok {
 			ex.writeEncodedText(ex.ammoFor(eqp).String())
 		}
 	default:
@@ -1348,7 +1349,7 @@ func (ex *legacyExporter) processWeaponKeys(key string, currentID int, w *Weapon
 	}
 }
 
-func (ex *legacyExporter) ammoFor(weaponEqp *Equipment) fxp.Int {
+func (ex *legacyExporter) ammoFor(weaponEqp *gurps.Equipment) fxp.Int {
 	uses := ""
 	for _, cat := range weaponEqp.TagList() {
 		if strings.HasPrefix(strings.ToLower(cat), "usesammotype:") {
@@ -1360,7 +1361,7 @@ func (ex *legacyExporter) ammoFor(weaponEqp *Equipment) fxp.Int {
 		return 0
 	}
 	var total fxp.Int
-	Traverse(func(eqp *Equipment) bool {
+	gurps.Traverse(func(eqp *gurps.Equipment) bool {
 		if eqp.ReallyEquipped() {
 			for _, cat := range eqp.Tags {
 				if strings.HasPrefix(strings.ToLower(cat), "ammotype:") {
