@@ -38,6 +38,7 @@ var (
 	editorRowDragKey           = unison.CreatePrivateDataType("gcs.editor-row")
 	prereqDragKey              = unison.CreatePrivateDataType("gcs.prereq")
 	featureDragKey             = unison.CreatePrivateDataType("gcs.feature")
+	listFilterDragKey          = unison.CreatePrivateDataType("gcs.list-filter")
 	defaultDragKey             = unison.CreatePrivateDataType("gcs.default")
 )
 
@@ -68,6 +69,7 @@ var allDragDataTypes = []*uti.DataType{
 	editorRowDragKey,
 	prereqDragKey,
 	featureDragKey,
+	listFilterDragKey,
 	defaultDragKey,
 }
 

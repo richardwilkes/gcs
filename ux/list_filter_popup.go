@@ -18,10 +18,6 @@ import (
 	"github.com/richardwilkes/unison/enums/align"
 )
 
-// listFilterNoneIndex is the index of the "None" entry, which stands for no saved filter and is always the first item
-// in the popup.
-const listFilterNoneIndex = 0
-
 // Seams so the commands can be exercised without a window.
 var (
 	showFilterEditor      = showListFilterDialog
@@ -70,7 +66,10 @@ type listFilterPopup struct {
 	spec  listFilterPopupSpec
 	// filters runs parallel to the popup's items, holding the filter each item stands for. It is nil for the None
 	// entry, the separators and the three commands, since separators occupy an index of their own.
-	filters     []*gurps.ListFilter
+	filters []*gurps.ListFilter
+	// noneIndex is the index of the "None" entry, which stands for no saved filter. It follows the three commands,
+	// which lead the popup so that they stay in reach of a long list of filters, and the separator after them.
+	noneIndex   int
 	newIndex    int
 	editIndex   int
 	deleteIndex int
@@ -109,7 +108,7 @@ func newListFilterPopup(spec listFilterPopupSpec) *listFilterPopup {
 			return
 		}
 		i := popup.SelectedIndex()
-		p.enableCommands(i != listFilterNoneIndex)
+		p.enableCommands(i != p.noneIndex)
 		p.spec.choose(p.filterAt(i))
 	}
 	savedFilters := i18n.Text("Saved Filters")
@@ -145,8 +144,12 @@ func (p *listFilterPopup) rebuildItems() (lostCurrent bool) {
 		p.popup.AddSeparator()
 		p.filters = append(p.filters, nil)
 	}
-	addItem(i18n.Text("None"), nil)
-	index := listFilterNoneIndex
+	p.newIndex = addItem(i18n.Text("New Filter…"), nil)
+	p.editIndex = addItem(i18n.Text("Edit Filter…"), nil)
+	p.deleteIndex = addItem(i18n.Text("Delete Filter…"), nil)
+	addSeparator()
+	p.noneIndex = addItem(i18n.Text("None"), nil)
+	index := p.noneIndex
 	if saved := gurps.GlobalSettings().ListFiltersFor(p.spec.key); len(saved) != 0 {
 		addSeparator()
 		for _, f := range saved {
@@ -157,18 +160,14 @@ func (p *listFilterPopup) rebuildItems() (lostCurrent bool) {
 			}
 		}
 	}
-	addSeparator()
-	p.newIndex = addItem(i18n.Text("New Filter…"), nil)
-	p.editIndex = addItem(i18n.Text("Edit Filter…"), nil)
-	p.deleteIndex = addItem(i18n.Text("Delete Filter…"), nil)
 	p.popup.SelectIndex(index)
-	p.enableCommands(index != listFilterNoneIndex)
+	p.enableCommands(index != p.noneIndex)
 	// The popup is as wide as its widest item, so adding, removing or renaming a filter can change its size, and the
 	// toolbar it sits in has to be laid out again to make room. Marking the popup alone wouldn't do it: a parent that
 	// is laid out again doesn't revisit its children, so the whole chain up to the window is marked.
 	p.popup.MarkForLayoutRecursivelyUpward()
 	p.popup.MarkForRedraw()
-	return current != nil && index == listFilterNoneIndex
+	return current != nil && index == p.noneIndex
 }
 
 // filterAt returns the filter the item at the given index stands for, or nil when the item is None, a separator, a
@@ -194,14 +193,14 @@ func (p *listFilterPopup) selectFilter(f *gurps.ListFilter) {
 		defer func(saved bool) { p.rebuilding = saved }(p.rebuilding)
 		p.rebuilding = true
 		p.rebuildItems()
-		index := listFilterNoneIndex
+		index := p.noneIndex
 		if f != nil {
 			if i := slices.Index(p.filters, f); i != -1 {
 				index = i
 			}
 		}
 		p.popup.SelectIndex(index)
-		p.enableCommands(index != listFilterNoneIndex)
+		p.enableCommands(index != p.noneIndex)
 	}()
 	// The filter is put in force unconditionally: editing a filter without renaming it doesn't move the selection, so
 	// the selection callback would not fire, yet the contents changed and the list has to be filtered again.

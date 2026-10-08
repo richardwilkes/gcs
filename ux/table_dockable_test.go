@@ -250,7 +250,7 @@ func TestTableDockableFilterPopupRelayoutsToolbar(t *testing.T) {
 		p.NeedsLayout = false
 	}
 
-	d.savedFilters.popup.ChoiceMadeCallback(d.savedFilters.popup, d.savedFilters.popup.ItemCount()-3, "")
+	d.savedFilters.popup.ChoiceMadeCallback(d.savedFilters.popup, d.savedFilters.newIndex, "")
 	c.NotNil(d.selectedFilter, "the new filter must be in force")
 	for _, p := range chain {
 		c.True(p.NeedsLayout, "%T must be marked for layout after the popup's items changed", p.Self)

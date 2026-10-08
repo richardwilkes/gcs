@@ -54,9 +54,11 @@ type FilterNode interface {
 // FilterNodes holds a list of filter nodes.
 type FilterNodes []FilterNode
 
-// FilterGroup combines the results of its children, requiring either all of them or any one of them to match. A
-// group with no children matches everything, whichever way it combines. Not inverts the result; it is stored as the
-// negative so that the common case, a group that has to match, is omitted from the JSON.
+// FilterGroup combines the results of its children, requiring either all of them or any one of them to be met. A child
+// that is skipped is left out, and a group with no children, or whose children are all skipped, is skipped itself, so
+// its parent leaves it out. A child that can't be checked fails the group unless another child decides it: one that is
+// unmet when all are required, or met when any one is. Not then swaps only met and unmet; it is stored as the negative
+// so that the common case, a group that has to be met, is omitted from the JSON.
 type FilterGroup struct {
 	Parent   *FilterGroup    `json:"-"`
 	Type     filternode.Type `json:"type"`
@@ -66,8 +68,9 @@ type FilterGroup struct {
 }
 
 // FilterCondition compares one field of a node against a criteria. Which of the criteria is consulted depends on the
-// kind of the field named by Field; the others are left at their zero values and omitted from the JSON. Not inverts
-// the result, and is stored as the negative for the same reason as on a FilterGroup.
+// kind of the field named by Field; the others are left at their zero values and omitted from the JSON. A condition on
+// a field this version of GCS doesn't know can't be checked, and so fails. Not swaps met and unmet, and is stored as
+// the negative for the same reason as on a FilterGroup.
 type FilterCondition struct {
 	Parent *FilterGroup    `json:"-"`
 	Type   filternode.Type `json:"type"`
@@ -78,7 +81,7 @@ type FilterCondition struct {
 	Weight criteria.Weight `json:"weight,omitzero"`
 }
 
-// UnknownFilterNode holds a filter node whose type this version of GCS doesn't recognize. It never matches, and its
+// UnknownFilterNode holds a filter node whose type this version of GCS doesn't recognize. It can't be checked, and its
 // original data is written back out unchanged so that a newer version can still use it.
 type UnknownFilterNode struct {
 	// Parent is the owning group.
@@ -214,8 +217,9 @@ func (g *FilterGroup) Hash(h hash.Hash) {
 }
 
 // NewFilterCondition creates a new condition on the field with the given key, with every criteria at its zero value.
-// For a text, list, number or weight field that means the condition accepts anything; for a yes/no field, which has
-// no criteria, it means the condition is satisfied when the value is true.
+// For a number or weight field that means the condition accepts anything, and for a text or list field anything but
+// text that is empty or only space, or a list that holds nothing else; for a yes/no field, which has no criteria, it
+// means the condition is satisfied when the value is true.
 func NewFilterCondition(parent *FilterGroup, fieldKey string) *FilterCondition {
 	return &FilterCondition{
 		Parent: parent,

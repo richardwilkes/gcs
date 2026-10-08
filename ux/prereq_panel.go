@@ -11,10 +11,8 @@ package ux
 
 import (
 	"slices"
-	"strconv"
 	"strings"
 
-	"github.com/richardwilkes/gcs/v5/model/colors"
 	"github.com/richardwilkes/gcs/v5/model/criteria"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
@@ -29,35 +27,8 @@ import (
 	"github.com/richardwilkes/toolbox/v2/xstrings"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
-	"github.com/richardwilkes/unison/enums/mod"
 	"github.com/richardwilkes/unison/enums/role"
-	"github.com/richardwilkes/unison/enums/weight"
 	"github.com/zeebo/xxh3"
-)
-
-// A node of the tree is found by its path: prereqRootPath for the root, then the index of each child on the way down,
-// separated by dots. A widget's reference key is the path of its node followed by one of the suffixes below, one of
-// those of sentenceRows, or a colon and a name of its own.
-const (
-	prereqRootPath = "r"
-	keyAdd         = ":add"
-	keyPill        = ":pill"
-)
-
-// prereqDropKey marks what a dragged prerequisite can be dropped on, holding a prereqDropSpot: the path of the node it
-// shows and which part of the node it is, one of the dropOn values.
-const prereqDropKey = "prereq.drop"
-
-type prereqDropSpot struct {
-	path string
-	part int
-}
-
-const (
-	dropOnRow = iota
-	dropOnHead
-	dropOnGroup
-	dropOnEmpty
 )
 
 const (
@@ -72,7 +43,7 @@ const (
 // collapses the panel to a paragraph describing the whole tree. It starts out collapsed when there are prerequisites,
 // and open to add one when there are none.
 type prereqPanel struct {
-	sentenceRows[prereqState]
+	sentenceTree[prereqState, gurps.Prereq]
 	entity           *gurps.Entity
 	root             **gurps.PrereqList
 	placeholder      *gurps.PrereqList
@@ -107,10 +78,7 @@ func newPrereqPanel(entity *gurps.Entity, root **gurps.PrereqList, permittedChoi
 	border := initTitledEditorSection(p, i18n.Text("Prerequisites"))
 	p.initRows(prereqDragKey, p.build, p.state, p.setState, p.stateHash)
 	p.initCollapse(border, len(p.tree().Prereqs) != 0)
-	p.initDrop(func(where geom.Point, data any) (*unison.Panel, int) {
-		target, _, at := p.dropAt(where, data)
-		return target, at
-	}, p.drop)
+	p.initTree(p)
 	p.build()
 	// The item being edited, which evaluation leaves out, can only be found once the panel is in its editor. A collapsed
 	// panel shows no statuses, so it is left as built.
@@ -165,24 +133,13 @@ func (p *prereqPanel) setState(s prereqState) {
 // stateHash returns a hash of the panel's data.
 func (p *prereqPanel) stateHash() uint64 {
 	h := xxh3.New()
-	p.tree().Hash(h)
+	root := p.tree()
+	root.Hash(h)
+	// An empty root hashes the same whatever it is, but its group type and tech level condition still show.
+	xhash.Bool(h, root.All)
+	root.WhenTL.Hash(h)
 	xhash.Bool(h, p.headed)
 	return h.Sum64()
-}
-
-// restructure changes the shape of the tree through the widget with the reference key from, then rebuilds. change
-// returns the node that is the result, whose more button takes the focus; with none, the widget with the reference key
-// fallback does. The open row stays open wherever it ends up, and closes if it is removed.
-func (p *prereqPanel) restructure(title, from, fallback string, change func() (dst gurps.Prereq)) {
-	open := p.node(p.open)
-	p.sentenceRows.restructure(title, from, fallback, func() string {
-		dst := change()
-		p.open = p.pathOf(open)
-		if dst == nil {
-			return ""
-		}
-		return p.pathOf(dst) + keyMore
-	})
 }
 
 func (p *prereqPanel) build() {
@@ -196,7 +153,7 @@ func (p *prereqPanel) build() {
 		p.hash = gurps.Hash64(p.tree())
 		return
 	}
-	p.AddChild(p.group(p.tree(), prereqRootPath))
+	p.AddChild(p.group(p.tree(), treeRootPath))
 	p.refresh()
 }
 
@@ -255,7 +212,7 @@ func (p *prereqPanel) refresh() {
 	for _, v := range p.views {
 		var suffix string
 		if checks != nil {
-			var status gurps.PrereqResult
+			var status gurps.CheckResult
 			var tip string
 			status, tip, suffix = p.status(v.node, checks)
 			showCheckIcon(v.icon, status)
@@ -275,7 +232,7 @@ func (p *prereqPanel) refresh() {
 
 // prereqCheck is the outcome of checking a node against the sheet, with the error of a script that couldn't run.
 type prereqCheck struct {
-	status gurps.PrereqResult
+	status gurps.CheckResult
 	reason string
 }
 
@@ -283,7 +240,7 @@ type prereqCheck struct {
 func (p *prereqPanel) checks() map[gurps.Prereq]prereqCheck {
 	checks := make(map[gurps.Prereq]prereqCheck)
 	gurps.SuppressScriptResolveErrorLogging(func() {
-		p.tree().Evaluate(p.entity, p.exclude(), func(one gurps.Prereq, result gurps.PrereqResult, reason string) {
+		p.tree().Evaluate(p.entity, p.exclude(), func(one gurps.Prereq, result gurps.CheckResult, reason string) {
 			checks[one] = prereqCheck{status: result, reason: reason}
 		})
 	})
@@ -292,31 +249,31 @@ func (p *prereqPanel) checks() map[gurps.Prereq]prereqCheck {
 
 // status returns the node's status from the checks, the tooltip of its icon and what a screen reader hears after its
 // sentence.
-func (p *prereqPanel) status(node gurps.Prereq, checks map[gurps.Prereq]prereqCheck) (status gurps.PrereqResult, tip, suffix string) {
+func (p *prereqPanel) status(node gurps.Prereq, checks map[gurps.Prereq]prereqCheck) (status gurps.CheckResult, tip, suffix string) {
 	result := checks[node]
-	if result.status == gurps.PrereqSkipped && node == p.tree() {
+	if result.status == gurps.CheckSkipped && node == p.tree() {
 		// The sheet counts a top level with nothing left to check as met.
-		result.status = gurps.PrereqMet
+		result.status = gurps.CheckMet
 	}
 	switch result.status {
-	case gurps.PrereqMet:
-		return gurps.PrereqMet, i18n.Text("Met"), i18n.Text("met")
-	case gurps.PrereqSkipped:
+	case gurps.CheckMet:
+		return gurps.CheckMet, i18n.Text("Met"), i18n.Text("met")
+	case gurps.CheckSkipped:
 		if list, ok := node.(*gurps.PrereqList); ok && list.AppliesWithParentsAt(p.entity) {
 			switch {
 			case len(list.Prereqs) == 0:
-				return gurps.PrereqSkipped, i18n.Text("Empty group, left out of the check"),
+				return gurps.CheckSkipped, i18n.Text("Empty group, left out of the check"),
 					i18n.Text("empty group, left out of the check")
 			case list.HasNothingToCheck():
-				return gurps.PrereqSkipped, i18n.Text("Holds nothing to check, left out of the check"),
+				return gurps.CheckSkipped, i18n.Text("Holds nothing to check, left out of the check"),
 					i18n.Text("holds nothing to check, left out of the check")
 			default:
-				return gurps.PrereqSkipped,
+				return gurps.CheckSkipped,
 					i18n.Text("Nothing in it applies at this tech level, left out of the check"),
 					i18n.Text("nothing in it applies at this tech level, left out of the check")
 			}
 		}
-		return gurps.PrereqSkipped, i18n.Text("Doesn't apply at this tech level"),
+		return gurps.CheckSkipped, i18n.Text("Doesn't apply at this tech level"),
 			i18n.Text("doesn't apply at this tech level")
 	default:
 	}
@@ -329,13 +286,13 @@ func (p *prereqPanel) status(node gurps.Prereq, checks map[gurps.Prereq]prereqCh
 	} else {
 		tip = i18n.Text("Not met:") + reason
 	}
-	if result.status == gurps.PrereqUnmet {
-		return gurps.PrereqUnmet, tip, i18n.Text("not met")
+	if result.status == gurps.CheckUnmet {
+		return gurps.CheckUnmet, tip, i18n.Text("not met")
 	}
 	if _, isScript := node.(*gurps.ScriptPrereq); isScript {
-		return gurps.PrereqFailed, tip, i18n.Text("couldn't run: %s", result.reason)
+		return gurps.CheckFailed, tip, i18n.Text("couldn't run: %s", result.reason)
 	}
-	return gurps.PrereqFailed, tip, i18n.Text("couldn't be checked")
+	return gurps.CheckFailed, tip, i18n.Text("couldn't be checked")
 }
 
 // statusIcon adds the icon for a node's status to the parent, which shows once there is a sheet, returning nil without
@@ -349,63 +306,6 @@ func (p *prereqPanel) statusIcon(parent *unison.Panel) *unison.Label {
 	icon.SetBorder(unison.NewEmptyBorder(geom.Insets{Left: 4}))
 	addCentered(parent, icon)
 	return icon
-}
-
-func childPath(path string, i int) string {
-	return path + "." + strconv.Itoa(i)
-}
-
-// node returns the prerequisite at the path, or nil if there is none.
-func (p *prereqPanel) node(path string) gurps.Prereq {
-	parts := strings.Split(path, ".")
-	if parts[0] != prereqRootPath {
-		return nil
-	}
-	var node gurps.Prereq = p.tree()
-	for _, part := range parts[1:] {
-		list, ok := node.(*gurps.PrereqList)
-		i, err := strconv.Atoi(part)
-		if !ok || err != nil || i < 0 || i >= len(list.Prereqs) {
-			return nil
-		}
-		node = list.Prereqs[i]
-	}
-	return node
-}
-
-// locate returns the list holding the node at the path, other than the root, and the node's index within it.
-func (p *prereqPanel) locate(path string) (parent *gurps.PrereqList, index int) {
-	parentPath, last, found := strings.CutLast(path, ".")
-	if !found {
-		return nil, -1
-	}
-	index, err := strconv.Atoi(last)
-	if list, ok := p.node(parentPath).(*gurps.PrereqList); ok && err == nil {
-		return list, index
-	}
-	return nil, -1
-}
-
-// pathOf returns the path of the node, or an empty string if it is not in the tree.
-func (p *prereqPanel) pathOf(target gurps.Prereq) string {
-	if target == nil {
-		return ""
-	}
-	var find func(node gurps.Prereq, path string) string
-	find = func(node gurps.Prereq, path string) string {
-		if node == target {
-			return path
-		}
-		if list, ok := node.(*gurps.PrereqList); ok {
-			for i, child := range list.Prereqs {
-				if found := find(child, childPath(path, i)); found != "" {
-					return found
-				}
-			}
-		}
-		return ""
-	}
-	return find(p.tree(), prereqRootPath)
 }
 
 // groupName returns the accessible name of a group.
@@ -424,126 +324,119 @@ func groupWord(all bool) string {
 	return i18n.Text("Any of")
 }
 
-// group returns the panel for a list: its head, over its children hanging from a rail in the head's color. Its more
-// menu adds to it, as do the root's add button and the add button beside the placeholder of an empty group.
-func (p *prereqPanel) group(list *gurps.PrereqList, path string) *unison.Panel {
-	color := colors.Grouping2
-	if list.All {
-		color = colors.Grouping1
+// asPrereqList returns the node as a list, or nil if it isn't one.
+func asPrereqList(node gurps.Prereq) *gurps.PrereqList {
+	if list, ok := node.(*gurps.PrereqList); ok {
+		return list
 	}
-	box := newColumn()
-	if path != prereqRootPath {
-		box.RefKey = path + ":group"
-		box.ClientData()[prereqDropKey] = prereqDropSpot{path: path, part: dropOnGroup}
+	return nil
+}
+
+func (p *prereqPanel) treeRoot() gurps.Prereq {
+	return p.tree()
+}
+
+func (p *prereqPanel) treeChildren(node gurps.Prereq) (*[]gurps.Prereq, bool) {
+	if list := asPrereqList(node); list != nil {
+		return (*[]gurps.Prereq)(&list.Prereqs), true
 	}
-	head := unison.NewPanel()
-	// The same insets on the sides as a row's, so that the grips and the buttons on the right line up down the panel.
-	insets := geom.Insets{Top: 2, Left: 4, Bottom: 2, Right: 8}
-	if path == prereqRootPath && p.entity == nil {
-		// Without a status icon before it, the root's pill keeps the icon's lead from the edge.
-		insets.Left += 4
+	return nil, false
+}
+
+func (p *prereqPanel) treeSetParent(node, group gurps.Prereq) {
+	node.SetParentList(asPrereqList(group))
+}
+
+func (p *prereqPanel) treeClone(node, parent gurps.Prereq) gurps.Prereq {
+	return node.Clone(asPrereqList(parent))
+}
+
+func (p *prereqPanel) treeAll(group gurps.Prereq) bool {
+	list := asPrereqList(group)
+	return list != nil && list.All
+}
+
+func (p *prereqPanel) treeNewGroup(parent gurps.Prereq, all bool) gurps.Prereq {
+	return &gurps.PrereqList{Type: prereq.List, Parent: asPrereqList(parent), All: all}
+}
+
+// treeCanUngroup implements treeNodes. A group with a tech level condition can't be ungrouped, since its children
+// would lose the condition.
+func (p *prereqPanel) treeCanUngroup(group gurps.Prereq) bool {
+	list := asPrereqList(group)
+	return list != nil && list.WhenTL.Compare == criteria.AnyNumber
+}
+
+func (p *prereqPanel) treeTitles(_ gurps.Prereq) treeEditTitles {
+	return treeEditTitles{
+		duplicate: i18n.Text("Duplicate Prerequisite"),
+		move:      i18n.Text("Move Prerequisite"),
+		delete:    i18n.Text("Delete Prerequisite"),
 	}
-	head.SetBorder(unison.NewEmptyBorder(insets))
-	pill := compactPopup(&p.sentenceRows, path+keyPill, i18n.Text("Requirement"), []bool{true, false}, list.All, groupWord,
-		func(all bool) { list.All = all })
-	pill.HMargin = 10
-	pill.CornerRadius = geom.NewUniformSize(pillCornerRadius)
-	pill.BackgroundInk = color
-	pill.OnBackgroundInk = color.DeriveOn()
-	pill.EdgeInk = unison.Transparent
-	desc := pill.Font.Descriptor()
-	desc.Weight = weight.Bold
-	pill.Font = desc.Font()
-	head.ClientData()[prereqDropKey] = prereqDropSpot{path: path, part: dropOnHead}
-	if path != prereqRootPath {
-		grip := p.grip(head, path)
-		putOnLine(grip.AsPanel(), controlHeight(head), grip.svg.Size.Height)
-	}
-	var emptyLine *unison.Panel
-	if len(list.Prereqs) == 0 {
-		emptyRoot := path == prereqRootPath && !p.headed
-		text := i18n.Text("Empty group. Add a requirement or drag one here.")
-		if emptyRoot {
-			text = i18n.Text("No prerequisites. Click here to add one.")
-		}
-		empty := newEmptyPlaceholder(path+":empty", text, nil)
-		// A click opens the menu where it lands, as a right-click does; a key opens it at the placeholder.
-		empty.ClickCallback = func() { showMenu(empty.AsPanel(), p.addEntries(list, path)) }
-		empty.ContextMenuCallback = func(geom.Point) unison.Menu { return newEntriesMenu(p.addEntries(list, path)) }
-		empty.MouseUpCallback = func(where geom.Point, _ int, _ mod.Modifiers) bool {
-			empty.Pressed = false
-			empty.MarkForRedraw()
-			if where.In(empty.ContentRect(false)) {
-				if unison.IsAccessibilityActive() {
-					empty.RequestFocus()
-				}
-				empty.ShowContextMenu(where)
-			}
-			return true
-		}
-		empty.ClientData()[prereqDropKey] = prereqDropSpot{path: path, part: dropOnEmpty}
-		// The placeholder shares its line with an add button, in line with the more buttons.
-		add := newIconButton(path+keyAdd, unison.CircledAddSVG, i18n.Text("Add to this group"))
-		add.ClickCallback = func() { showMenu(add.AsPanel(), p.addEntries(list, path)) }
-		fitLine(add)
-		add.SetLayoutData(&unison.FlexLayoutData{HAlign: align.End, VAlign: align.Middle})
-		// An untouched empty root has nothing for its pill, status or rail to speak of, so its placeholder takes their
-		// place, and it isn't a group to a screen reader.
-		if emptyRoot {
-			head.AddChild(empty)
-			head.AddChild(add)
-			box.AddChild(hbox(head, unison.StdHSpacing))
-			return box
-		}
-		emptyLine = unison.NewPanel()
-		emptyLine.SetBorder(unison.NewEmptyBorder(geom.Insets{Right: 8}))
-		emptyLine.AddChild(empty)
-		emptyLine.AddChild(add)
-		hbox(emptyLine, unison.StdHSpacing)
-	}
-	box.Accessibility.Role = role.Group
-	box.Accessibility.Name = groupName(list)
+}
+
+// treeHasLead implements treeNodes. With a sheet, each head starts with its status icon.
+func (p *prereqPanel) treeHasLead() bool {
+	return p.entity != nil
+}
+
+func (p *prereqPanel) treeGroupName(group gurps.Prereq) string {
+	return groupName(asPrereqList(group))
+}
+
+// treeGroupContents implements treeNodes. The group's name already holds its tech level condition, so the description
+// leaves it out.
+func (p *prereqPanel) treeGroupContents(group gurps.Prereq) string {
+	list := asPrereqList(group)
+	children := &gurps.PrereqList{All: list.All, Prereqs: list.Prereqs}
+	return stripEm.Replace(children.Describe(p.entity, p.replacements(), emphasize))
+}
+
+// treeGroupHead implements treeNodes: the group's status icon, its pill and, when it has one, the chip of its tech
+// level condition. Choosing a group type in the pill of an empty root keeps its head, as choosing one from its menu
+// does.
+func (p *prereqPanel) treeGroupHead(group gurps.Prereq, path string, head, box *unison.Panel) *unison.ThemeColor {
+	list := asPrereqList(group)
+	color := groupColor(list.All)
 	p.views = append(p.views, prereqView{node: list, icon: p.statusIcon(head), group: box})
+	pill := compactPopup(&p.sentenceRows, path+keyPill, i18n.Text("Requirement"), []bool{true, false}, list.All, groupWord,
+		func(all bool) {
+			list.All = all
+			p.headed = p.headed || path == treeRootPath
+		})
+	stylePill(pill, color)
 	addCentered(head, pill)
 	if list.WhenTL.Compare != criteria.AnyNumber {
-		p.chip(head, path+":tl", i18n.Text("Remove Tech Level Condition"), addKey(list, path),
+		p.chip(head, path+":tl", i18n.Text("Remove Tech Level Condition"), p.addKey(list, path),
 			func() { list.WhenTL = criteria.Number{} },
 			func(chip *unison.Panel) {
-				p.numberCriteria(chip, path+":tl", i18n.Text("Tech Level"), i18n.Text("When TL"), &list.WhenTL, 0,
-					fxp.Twelve, true)
+				p.numberCriteria(chip, path+":tl", i18n.Text("Tech Level"), numericWordsAfter(i18n.Text("When TL")),
+					&list.WhenTL, 0, fxp.Twelve, true, false)
 			})
 	}
-	if path != prereqRootPath {
-		p.moreButton(head, list, path)
-	} else {
-		// The root can't be moved or deleted, so in place of a more button it has an add button, keyed as one.
-		add := newIconButton(path+keyMore, unison.CircledAddSVG, i18n.Text("Add to this group"))
-		add.ClickCallback = func() { showMenu(add.AsPanel(), p.addEntries(list, path)) }
-		addCentered(head, add)
-	}
-	more := head.Children()[len(head.Children())-1]
-	more.SetLayoutData(&unison.FlexLayoutData{HAlign: align.End, VAlign: align.Middle, HGrab: true})
-	// Fitted to its line, since centering a shorter button could put its icon on a half pixel, blurring it.
-	fitLine(more)
-	box.AddChild(hbox(head, unison.StdHSpacing))
+	return color
+}
 
-	rail := newColumn()
-	// Lighter than the pill in dark mode, so that the rail has a contrast of at least 3:1 with the surface.
-	rail.SetBorder(unison.NewCompoundBorder(unison.NewEmptyBorder(geom.Insets{Left: 14}),
-		unison.NewLineBorder(color.DeriveLightness(0, 0.08), geom.Size{}, geom.Insets{Left: 3}, false),
-		unison.NewEmptyBorder(geom.Insets{Left: 6, Bottom: 2})))
-	for i, child := range list.Prereqs {
-		if sub, ok := child.(*gurps.PrereqList); ok {
-			rail.AddChild(p.group(sub, childPath(path, i)))
-		} else {
-			rail.AddChild(p.row(child, childPath(path, i)))
-		}
+// treeEmpty implements treeNodes. An empty root shows its placeholder alone, until a group type or tech level has been
+// chosen for it or unless it is already "Any of" or has a tech level condition.
+func (p *prereqPanel) treeEmpty(group gurps.Prereq, path string) (text string, bare bool) {
+	if list := asPrereqList(group); path == treeRootPath && !p.headed && list.All &&
+		list.WhenTL.Compare == criteria.AnyNumber {
+		return i18n.Text("No prerequisites. Click here to add one."), true
 	}
-	if emptyLine != nil {
-		rail.AddChild(emptyLine)
-	}
-	box.AddChild(rail)
-	return box
+	return i18n.Text("Empty group. Add a requirement or drag one here."), false
+}
+
+func (p *prereqPanel) treeRow(node gurps.Prereq, path string) *unison.Panel {
+	return p.row(node, path)
+}
+
+func (p *prereqPanel) treeAddEntries(group gurps.Prereq, path string) []menuEntry {
+	return p.addEntries(asPrereqList(group), path)
+}
+
+func (p *prereqPanel) treeGroupAdds(group gurps.Prereq, path string) []menuEntry {
+	return p.addEntriesUnder(asPrereqList(group), path, i18n.Text("Add Requirement"), i18n.Text("Add Structure"))
 }
 
 // row returns the panel for a prerequisite other than a list: its sentence, or while it is open its editor, beside a
@@ -559,7 +452,7 @@ func (p *prereqPanel) row(pr gurps.Prereq, path string) *unison.Panel {
 			}
 			if path == p.open {
 				// An open row shows no status, but keeps the room for it, so that its editor lines up with the sentences.
-				showCheckIcon(icon, gurps.PrereqMet)
+				showCheckIcon(icon, gurps.CheckMet)
 				icon.OnBackgroundInk = unison.Transparent
 			}
 			return icon.AsPanel(), checkIconSize()
@@ -575,7 +468,6 @@ func (p *prereqPanel) row(pr gurps.Prereq, path string) *unison.Panel {
 			}
 			p.views = append(p.views, prereqView{node: pr, icon: icon, sentence: sentence})
 		})
-	row.ClientData()[prereqDropKey] = prereqDropSpot{path: path, part: dropOnRow}
 	return row
 }
 
@@ -612,8 +504,8 @@ func (p *prereqPanel) editor(pr gurps.Prereq, path string) *unison.Panel {
 	case *gurps.SpellPrereq:
 		p.hasPopup(fields, key("has"), &one.Has, true)
 		quantity := func() {
-			p.numberCriteria(fields, key("quantity"), i18n.Text("Quantity"), "", &one.QuantityCriteria, 0,
-				fxp.FromInteger(maxPrereqQuantity), true)
+			p.numberCriteria(fields, key("quantity"), i18n.Text("Quantity"), numericWordsAfter(""),
+				&one.QuantityCriteria, 0, fxp.FromInteger(maxPrereqQuantity), true, false)
 		}
 		// A count of colleges follows the match, as in "spells from at least 2 colleges".
 		colleges := one.SubType == spellcmp.CollegeCount
@@ -642,8 +534,8 @@ func (p *prereqPanel) editor(pr gurps.Prereq, path string) *unison.Panel {
 		flags := gurps.SizeFlag | gurps.DodgeFlag | gurps.ParryFlag | gurps.BlockFlag
 		p.attributePopup(fields, key("which"), i18n.Text("Attribute"), "", &one.Which, flags)
 		// Named apart from the attribute popup before it.
-		p.numberCriteria(fields, key("value"), i18n.Text("Value"), i18n.Text("which"), &one.QualifierCriteria, fxp.Min,
-			fxp.Max, false)
+		p.numberCriteria(fields, key("value"), i18n.Text("Value"), numericWordsAfter(i18n.Text("which")),
+			&one.QualifierCriteria, fxp.Min, fxp.Max, false, false)
 		p.optionalCriterion(chips, path, "combined", one.CombinedWith != "",
 			func() { one.CombinedWith = gurps.AttributeIDFor(p.entity, gurps.DexterityID) },
 			func() { one.CombinedWith = "" },
@@ -659,18 +551,13 @@ func (p *prereqPanel) editor(pr gurps.Prereq, path string) *unison.Panel {
 	case *gurps.ContainedQuantityPrereq:
 		p.hasPopup(fields, key("has"), &one.Has, false)
 		p.typePopup(fields, path, pr)
-		p.numberCriteria(fields, key("quantity"), i18n.Text("Quantity"), "", &one.QualifierCriteria, 0,
-			fxp.FromInteger(maxPrereqQuantity), true)
+		p.numberCriteria(fields, key("quantity"), i18n.Text("Quantity"), numericWordsAfter(""),
+			&one.QualifierCriteria, 0, fxp.FromInteger(maxPrereqQuantity), true, false)
 	case *gurps.ContainedWeightPrereq:
 		p.hasPopup(fields, key("has"), &one.Has, false)
 		p.typePopup(fields, path, pr)
-		title := i18n.Text("Weight")
-		comparison, _ := criteriaTitles(title)
-		p.numberCompare(fields, key("weightcmp"), comparison, i18n.Text("which"), &one.WeightCriteria.Compare)
-		p.addCompact(fields, NewWeightField(p.targetMgr, key("weight"), title, p.entity,
-			func() fxp.Weight { return one.WeightCriteria.Qualifier },
-			func(w fxp.Weight) { p.edit(title, key("weight"), "", func() { one.WeightCriteria.Qualifier = w }) },
-			0, fxp.Weight(fxp.Max), false).withoutUndo())
+		p.weightCriteria(fields, key("weight"), i18n.Text("Weight"), numericWordsAfter(i18n.Text("which")), p.entity,
+			&one.WeightCriteria, false)
 	case *gurps.ScriptPrereq:
 		p.typePopup(fields, path, pr)
 		addJoiningWords(fields, i18n.Text("described as"))
@@ -729,15 +616,15 @@ func (p *prereqPanel) scriptOptions(pr *gurps.ScriptPrereq) *scriptEditorOptions
 		Footer: i18n.Text("The script's last value decides: true or empty text means met; false means not met; any other text means not met, with that text as the reason."),
 	}
 	if p.entity != nil {
-		opts.Evaluate = func(script string) (gurps.PrereqResult, string) {
+		opts.Evaluate = func(script string) (gurps.CheckResult, string) {
 			one := *pr
 			one.Script = script
 			status, reason := one.Evaluate(p.entity, p.exclude())
 			reason = strings.TrimSpace(reason)
 			switch {
-			case status == gurps.PrereqMet:
+			case status == gurps.CheckMet:
 				return status, i18n.Text("Passed")
-			case status == gurps.PrereqFailed:
+			case status == gurps.CheckFailed:
 				return status, i18n.Text("Couldn't run: %s", reason)
 			case reason == "":
 				return status, i18n.Text("Failed")
@@ -757,18 +644,12 @@ func (p *prereqPanel) addEntries(list *gurps.PrereqList, path string) []menuEntr
 // addEntriesUnder returns what can be added to a list, the prerequisites under the heading requirement and groups and
 // conditions under the heading structure.
 func (p *prereqPanel) addEntriesUnder(list *gurps.PrereqList, path, requirement, structure string) []menuEntry {
+	// What is added opens at once; groups are added by groupEntries.
 	add := func(title string, created gurps.Prereq) {
 		at := childPath(path, len(list.Prereqs))
-		opens := created.PrereqType() != prereq.List
-		focus := at + keyMore
-		if opens {
-			focus = at + keyFirst
-		}
-		p.edit(title, addKey(list, path), focus, func() {
+		p.edit(title, p.addKey(list, path), at+keyFirst, func() {
 			list.Prereqs = append(list.Prereqs, created)
-			if opens {
-				p.open = at
-			}
+			p.open = at
 		})
 	}
 	entries := []menuEntry{{Label: requirement}}
@@ -778,219 +659,16 @@ func (p *prereqPanel) addEntriesUnder(list *gurps.PrereqList, path, requirement,
 		}})
 	}
 	entries = append(entries, menuEntry{Label: structure})
-	for i, label := range []string{i18n.Text("All of Group"), i18n.Text("Any of Group")} {
-		entries = append(entries, menuEntry{Label: label, Act: func() {
-			if path != prereqRootPath || len(list.Prereqs) != 0 {
-				add(i18n.Text("Add Group"), &gurps.PrereqList{Type: prereq.List, Parent: list, All: i == 0})
-				return
-			}
-			// An empty root takes the group type itself, rather than holding a group of that type.
-			p.edit(label, path+keyPill, path+keyPill, func() { list.All, p.headed = i == 0, true })
-		}})
-	}
+	entries = append(entries, p.groupEntries(list, path, func(all bool) { list.All, p.headed = all, true })...)
 	if list.WhenTL.Compare == criteria.AnyNumber {
 		entries = append(entries, menuEntry{Label: i18n.Text("Only When TL…"), Act: func() {
-			p.edit(i18n.Text("Add Tech Level Condition"), addKey(list, path), path+":tl"+keyChip, func() {
+			p.edit(i18n.Text("Add Tech Level Condition"), p.addKey(list, path), path+":tl"+keyChip, func() {
 				list.WhenTL = criteria.Number{Compare: criteria.AtMostNumber, Qualifier: fxp.FromInteger(defaultWhenTL)}
-				p.headed = p.headed || path == prereqRootPath
+				p.headed = p.headed || path == treeRootPath
 			})
 		}})
 	}
 	return entries
-}
-
-// addKey returns the reference key of what adds to the group at the path: the add button beside its placeholder while
-// it is empty, or else its more button, or the root's add button in its place.
-func addKey(list *gurps.PrereqList, path string) string {
-	if len(list.Prereqs) == 0 {
-		return path + keyAdd
-	}
-	return path + keyMore
-}
-
-// moreButton adds the button for the more menu of the group at the path. A screen reader hears it named for the group,
-// as in "More actions for All of: Has trait Luck", or for the group alone while it is empty.
-func (p *prereqPanel) moreButton(parent *unison.Panel, list *gurps.PrereqList, path string) {
-	addMoreButton(parent, path, func() string {
-		// The group's name already holds its tech level condition, so the description leaves it out.
-		children := &gurps.PrereqList{All: list.All, Prereqs: list.Prereqs}
-		if text := stripEm.Replace(children.Describe(p.entity, p.replacements(), emphasize)); text != "" {
-			return i18n.Text("More actions for %s: %s", groupName(list), text)
-		}
-		return i18n.Text("More actions for %s", groupName(list))
-	}, func() []menuEntry { return p.moreEntries(list, path) })
-}
-
-// moreEntries returns the entries of the node's more menu: for a group, what can be added to it, then Duplicate, Move up and
-// down, which step into and out of groups, Wrap in group, Ungroup when that keeps what the group means, and Delete.
-func (p *prereqPanel) moreEntries(node gurps.Prereq, path string) []menuEntry {
-	list, i := p.locate(path)
-	from := path + keyMore
-	var entries []menuEntry
-	if g, ok := node.(*gurps.PrereqList); ok {
-		entries = append(p.addEntriesUnder(g, path, i18n.Text("Add Requirement"), i18n.Text("Add Structure")),
-			menuEntry{})
-	}
-	entries = append(entries, menuEntry{Label: i18n.Text("Duplicate"), Act: func() {
-		p.restructure(i18n.Text("Duplicate Prerequisite"), from, "", func() gurps.Prereq {
-			dst := node.Clone(list)
-			list.Prereqs = slices.Insert(list.Prereqs, i+1, dst)
-			return dst
-		})
-	}})
-	titles := []string{i18n.Text("Move Up"), i18n.Text("Move Down")}
-	for k, dir := range []int{-1, 1} {
-		to, at, ok := p.moveTarget(path, dir)
-		if !ok {
-			continue
-		}
-		title := titles[k]
-		entries = append(entries, menuEntry{Label: title, Act: func() {
-			p.restructure(title, from, "", func() gurps.Prereq { return relocate(list, i, to, at) })
-		}})
-	}
-	entries = append(entries, menuEntry{Label: i18n.Text("Wrap in Group"), Act: func() {
-		p.restructure(i18n.Text("Wrap in Group"), from, "", func() gurps.Prereq {
-			group := &gurps.PrereqList{Type: prereq.List, Parent: list, All: !list.All, Prereqs: gurps.Prereqs{node}}
-			node.SetParentList(group)
-			list.Prereqs[i] = group
-			return node
-		})
-	}})
-	if g, ok := node.(*gurps.PrereqList); ok && len(g.Prereqs) != 0 && g.WhenTL.Compare == criteria.AnyNumber &&
-		(g.All == list.All || len(g.Prereqs) == 1) {
-		entries = append(entries, menuEntry{Label: i18n.Text("Ungroup"), Act: func() {
-			p.restructure(i18n.Text("Ungroup"), from, "", func() gurps.Prereq {
-				for _, child := range g.Prereqs {
-					child.SetParentList(list)
-				}
-				list.Prereqs = slices.Replace(list.Prereqs, i, i+1, g.Prereqs...)
-				return g.Prereqs[0]
-			})
-		}})
-	}
-	entries = append(entries, menuEntry{}, menuEntry{Label: i18n.Text("Delete"), Act: func() {
-		parentPath := path[:strings.LastIndexByte(path, '.')]
-		// What adds to the parent takes the focus when nothing comes after, which is its placeholder's add button once
-		// it is empty.
-		fallback := parentPath + keyMore
-		if len(list.Prereqs) == 1 {
-			fallback = parentPath + keyAdd
-		}
-		p.restructure(i18n.Text("Delete Prerequisite"), from, fallback, func() gurps.Prereq {
-			list.Prereqs = slices.Delete(list.Prereqs, i, i+1)
-			if i < len(list.Prereqs) {
-				return list.Prereqs[i]
-			}
-			return nil
-		})
-	}})
-	return entries
-}
-
-// dropAt returns the panel a prerequisite dragged to where would be dropped on, the path of its node and where it would
-// go: before or after a row, before a group over the top of its head and into it below that, after a group beside or
-// below its last child, or into an empty group. The panel is nil where nothing can go, such as into itself.
-func (p *prereqPanel) dropAt(where geom.Point, data any) (target *unison.Panel, path string, at int) {
-	from := p.dragPath(data)
-	if p.node(from) == nil {
-		return nil, "", 0
-	}
-	for target = p.PanelAt(where); target != nil && target != p.AsPanel(); target = target.Parent() {
-		spot, isTarget := target.ClientData()[prereqDropKey].(prereqDropSpot)
-		if !isTarget {
-			continue
-		}
-		if spot.path == from || strings.HasPrefix(spot.path, from+".") {
-			return nil, "", 0
-		}
-		y := target.PointFromRoot(p.PointToRoot(where)).Y
-		height := target.FrameRect().Height
-		switch spot.part {
-		case dropOnEmpty:
-			return target, spot.path, dropInto
-		case dropOnGroup:
-			// Only the rail's margins reach the group itself; beside or below its last child is after it.
-			rows := target.Children()[len(target.Children())-1].Children()
-			last := rows[len(rows)-1]
-			if where.Y > p.RectFromRoot(last.RectToRoot(last.ContentRect(true))).CenterY() {
-				return target, spot.path, dropAfter
-			}
-			return nil, "", 0
-		case dropOnHead:
-			if spot.path != prereqRootPath && y < height*0.3 {
-				return target, spot.path, dropBefore
-			}
-			return target, spot.path, dropInto
-		default:
-			if y < height/2 {
-				return target, spot.path, dropBefore
-			}
-			return target, spot.path, dropAfter
-		}
-	}
-	return nil, "", 0
-}
-
-// drop moves the dragged prerequisite to where it would go.
-func (p *prereqPanel) drop(where geom.Point, data any) {
-	target, path, at := p.dropAt(where, data)
-	p.dragExit()
-	if target == nil {
-		return
-	}
-	to, index := p.locate(path)
-	if group, isList := p.node(path).(*gurps.PrereqList); isList && at == dropInto {
-		to, index = group, len(group.Prereqs)
-	} else if at == dropAfter {
-		index++
-	}
-	dragged := p.dragPath(data)
-	from, i := p.locate(dragged)
-	if from == to && i < index {
-		// Taking the node out moves what comes after it up by one.
-		index--
-	}
-	p.restructure(i18n.Text("Move Prerequisite"), dragged+keyMore, "", func() gurps.Prereq {
-		if from == to && i == index {
-			return nil
-		}
-		return relocate(from, i, to, index)
-	})
-}
-
-// moveTarget returns where Move up (dir -1) or Move down (dir 1) takes the node at the path: into an adjacent group,
-// at its near end, past an adjacent sibling, or out of its list at either end. at is an index into to once the node is
-// out of its list. ok is false at either end of the root list.
-func (p *prereqPanel) moveTarget(path string, dir int) (to *gurps.PrereqList, at int, ok bool) {
-	list, i := p.locate(path)
-	if j := i + dir; j >= 0 && j < len(list.Prereqs) {
-		if group, isList := list.Prereqs[j].(*gurps.PrereqList); isList {
-			if dir < 0 {
-				return group, len(group.Prereqs), true
-			}
-			return group, 0, true
-		}
-		return list, j, true
-	}
-	if parentPath := path[:strings.LastIndexByte(path, '.')]; parentPath != prereqRootPath {
-		to, at = p.locate(parentPath)
-		if dir > 0 {
-			at++
-		}
-		return to, at, true
-	}
-	return nil, 0, false
-}
-
-// relocate moves the node at index i of the list from to index at of the list to, as that list stands once the node is
-// out, returning the node.
-func relocate(from *gurps.PrereqList, i int, to *gurps.PrereqList, at int) gurps.Prereq {
-	node := from.Prereqs[i]
-	from.Prereqs = slices.Delete(from.Prereqs, i, i+1)
-	node.SetParentList(to)
-	to.Prereqs = slices.Insert(to.Prereqs, at, node)
-	return node
 }
 
 // typePopup adds the popup that switches a prerequisite to another of the permitted types. A type that isn't permitted,
@@ -1008,7 +686,8 @@ func (p *prereqPanel) typePopup(parent *unison.Panel, path string, pr gurps.Prer
 	}
 	addCentered(parent, compactPopup(&p.sentenceRows, path+":type", i18n.Text("Prerequisite Type"), items, current, render,
 		func(t prereq.Type) {
-			list, i := p.locate(path)
+			owner, i := p.locate(path)
+			list := asPrereqList(owner)
 			if created := p.createPrereqForType(t, list); created != nil {
 				if from, to := nameCriteria(pr), nameCriteria(created); from != nil && to != nil {
 					*to = *from
@@ -1131,7 +810,7 @@ func (p *prereqPanel) levelChip(chips *unison.Panel, path string, level *criteri
 		func() { *level = criteria.Number{Compare: criteria.AtLeastNumber, Qualifier: fxp.One} },
 		func() { *level = criteria.Number{} },
 		func(chip *unison.Panel) {
-			p.numberCriteria(chip, path+":level", i18n.Text("Level"), rowCriteria("level").prefix, level, 0,
-				fxp.Thousand, false)
+			p.numberCriteria(chip, path+":level", i18n.Text("Level"), numericWordsAfter(rowCriteria("level").prefix),
+				level, 0, fxp.Thousand, false, false)
 		})
 }

@@ -542,7 +542,7 @@ func (a *axNameAudit) checkRows(view string, fn func()) {
 		for _, p := range panelsOfType[*prereqPanel](d.AsPanel()) {
 			for i, one := range p.tree().Prereqs {
 				if one.PrereqType() != prereq.List && one.PrereqType() != prereq.Unknown {
-					path := childPath(prereqRootPath, i)
+					path := childPath(treeRootPath, i)
 					names = append(names, "prerequisite "+path)
 					toggles = append(toggles, func() { p.toggle(path) })
 				}

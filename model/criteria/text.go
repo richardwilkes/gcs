@@ -51,7 +51,7 @@ func (t Text) Matches(replacements map[string]string, value string) bool {
 // list of qualifiers; a positive comparison (e.g. "is", "contains") needs a match against any one of them, while a
 // negative comparison (e.g. "is not", "does not contain") matches only if no value matches any of them.
 func (t Text) MatchesList(replacements map[string]string, value ...string) bool {
-	qualifiers := splitQualifiers(nameable.Apply(t.Qualifier, replacements))
+	qualifiers := SplitQualifiers(nameable.Apply(t.Qualifier, replacements))
 	if len(value) == 0 {
 		value = []string{""}
 	}
@@ -75,9 +75,9 @@ func (t Text) MatchesList(replacements map[string]string, value ...string) bool 
 	return false
 }
 
-// splitQualifiers splits a qualifier on commas, trimming surrounding whitespace and dropping empty entries. If nothing
+// SplitQualifiers splits a qualifier on commas, trimming surrounding whitespace and dropping empty entries. If nothing
 // remains, a single empty qualifier is returned so that comparisons still function.
-func splitQualifiers(qualifier string) []string {
+func SplitQualifiers(qualifier string) []string {
 	parts := strings.Split(qualifier, ",")
 	list := make([]string, 0, len(parts))
 	for _, part := range parts {

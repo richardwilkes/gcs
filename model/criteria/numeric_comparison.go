@@ -9,7 +9,10 @@
 
 package criteria
 
-import "github.com/richardwilkes/gcs/v5/model/fxp"
+import (
+	"github.com/richardwilkes/gcs/v5/model/fxp"
+	"github.com/richardwilkes/toolbox/v2/i18n"
+)
 
 // Describe returns a description of this NumericComparison using a qualifier.
 func (enum NumericComparison) Describe(qualifier fxp.Int) string {
@@ -60,6 +63,23 @@ func (enum NumericComparison) Matches(qualifier, data fxp.Int) bool {
 		return data <= qualifier
 	default:
 		return AnyNumber.Matches(qualifier, data)
+	}
+}
+
+// PluralClause returns the comparison as a clause that follows something plural, such as "that are at least" in "points
+// that are at least".
+func (enum NumericComparison) PluralClause() string {
+	switch enum.EnsureValid() {
+	case EqualsNumber:
+		return i18n.Text("that are")
+	case NotEqualsNumber:
+		return i18n.Text("that are not")
+	case AtLeastNumber:
+		return i18n.Text("that are at least")
+	case AtMostNumber:
+		return i18n.Text("that are at most")
+	default:
+		return i18n.Text("that are anything")
 	}
 }
 

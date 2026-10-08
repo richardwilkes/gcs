@@ -460,12 +460,6 @@ func addDecimalField(parent *unison.Panel, targetMgr *TargetMgr, targetKey, labe
 		false), tooltip)
 }
 
-func addWeightField(parent *unison.Panel, targetMgr *TargetMgr, targetKey, labelText, tooltip string, entity *gurps.Entity, fieldData *fxp.Weight, noMinWidth bool) *WeightField {
-	get, set := pointerAccessors(parent, fieldData)
-	return installField(parent, NewWeightField(targetMgr, targetKey, labelText, entity, get, set, 0, fxp.Weight(fxp.Max),
-		noMinWidth), tooltip)
-}
-
 func addCheckBox(parent *unison.Panel, labelText string, fieldData *bool) *CheckBox {
 	checkBox := NewCheckBox(nil, "", labelText,
 		func() check.Enum { return check.FromBool(*fieldData) },
@@ -566,23 +560,6 @@ func installPopupSelection[T comparable](popup *unison.PopupMenu[T], current T, 
 	}
 }
 
-func addBoolPopup(parent *unison.Panel, trueChoice, falseChoice string, fieldData *bool) *unison.PopupMenu[string] {
-	popup := unison.NewPopupMenu[string]()
-	popup.AddItem(trueChoice)
-	popup.AddItem(falseChoice)
-	if *fieldData {
-		popup.SelectIndex(0)
-	} else {
-		popup.SelectIndex(1)
-	}
-	popup.SelectionChangedCallback = func(p *unison.PopupMenu[string]) {
-		*fieldData = p.SelectedIndex() == 0
-		MarkModified(parent)
-	}
-	parent.AddChild(popup)
-	return popup
-}
-
 func adjustFieldBlank(field unison.Paneler, blank bool) {
 	panel := field.AsPanel()
 	panel.SetEnabled(!blank)
@@ -671,51 +648,6 @@ func addStringCriteriaPanel(parent *unison.Panel, prefix, notPrefix, subject str
 	criteriaField = addStringField(panel, undoTitle, "", &strCriteria.Qualifier)
 	adjustFieldBlank(criteriaField, strCriteria.IsZero())
 	return popup, criteriaField
-}
-
-// addNumericCriteriaPanel adds a numeric criteria's comparison popup and qualifier field, titled for the subject they
-// qualify; see criteriaTitles.
-func addNumericCriteriaPanel(parent *unison.Panel, targetMgr *TargetMgr, targetKey, prefix, subject string, numCriteria *criteria.Number, minValue, maxValue fxp.Int, hSpan int, integerOnly, includeEmptyFiller bool) (popup *unison.PopupMenu[string], field unison.Paneler) {
-	panel := newCriteriaPanel(parent, hSpan, includeEmptyFiller)
-	comparisonName, undoTitle := criteriaTitles(subject)
-	popup = newComparisonPopup(comparisonName, criteria.PrefixedNumericComparisonChoices(prefix),
-		int(numCriteria.Compare.EnsureValid()))
-	popup.SelectionChangedCallback = func(p *unison.PopupMenu[string]) {
-		numCriteria.Compare = criteria.NumericComparisons[p.SelectedIndex()]
-		adjustFieldBlank(field, numCriteria.Compare == criteria.AnyNumber)
-		MarkModified(panel)
-	}
-	panel.AddChild(popup)
-	if integerOnly {
-		field = NewIntegerField(targetMgr, targetKey, undoTitle,
-			func() int { return numCriteria.Qualifier.AsInteger[int]() },
-			func(value int) {
-				numCriteria.Qualifier = fxp.FromInteger(value)
-				MarkModified(panel)
-			}, minValue.AsInteger[int](), maxValue.AsInteger[int](), false, false)
-		panel.AddChild(field)
-	} else {
-		field = addDecimalField(panel, targetMgr, targetKey, undoTitle, "", &numCriteria.Qualifier, minValue, maxValue, false)
-	}
-	adjustFieldBlank(field, numCriteria.Compare == criteria.AnyNumber)
-	return popup, field
-}
-
-// addWeightCriteriaPanel adds a weight criteria's comparison popup and qualifier field directly to the parent, which is
-// expected to lay them out itself.
-func addWeightCriteriaPanel(parent *unison.Panel, targetMgr *TargetMgr, targetKey, prefix string, entity *gurps.Entity, weightCriteria *criteria.Weight) (popup *unison.PopupMenu[string], field *WeightField) {
-	comparisonName, undoTitle := criteriaTitles(i18n.Text("Weight"))
-	popup = newComparisonPopup(comparisonName, criteria.PrefixedNumericComparisonChoices(prefix),
-		int(weightCriteria.Compare.EnsureValid()))
-	parent.AddChild(popup)
-	field = addWeightField(parent, targetMgr, targetKey, undoTitle, "", entity, &weightCriteria.Qualifier, false)
-	popup.SelectionChangedCallback = func(p *unison.PopupMenu[string]) {
-		weightCriteria.Compare = criteria.NumericComparisons[p.SelectedIndex()]
-		adjustFieldBlank(field, weightCriteria.Compare == criteria.AnyNumber)
-		MarkModified(parent)
-	}
-	adjustFieldBlank(field, weightCriteria.Compare == criteria.AnyNumber)
-	return popup, field
 }
 
 func addScriptField(parent *unison.Panel, targetMgr *TargetMgr, targetKey, undoTitle, tooltip string, get func() string, set func(string), includeMarkdownButton bool) *StringField {

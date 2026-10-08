@@ -46,6 +46,12 @@ func TestSentenceButton(t *testing.T) {
 	c.Equal(3, clicks, "Space and Enter activate it")
 	screen.KeyPress(unison.KeySpace, mod.Command)
 	c.Equal(3, clicks, "a modified Space does not")
+	for _, key := range []unison.KeyCode{unison.KeySpace, unison.KeyReturn} {
+		screen.KeyDown(key, mod.None)
+		screen.KeyDown(key, mod.None)
+		screen.KeyUp(key, mod.None)
+	}
+	c.Equal(5, clicks, "a held key acts once")
 
 	screen.AccessibilityTree(wnd)
 	node := screen.AccessibilityNodeFor(button)
@@ -59,9 +65,9 @@ func TestSentenceButton(t *testing.T) {
 	c.True(node.Actions.Has(accessibility.Press))
 	c.Equal("Has trait Magery at level at least 1, along with enough other words to need wrapping", node.Name)
 	c.True(screen.PerformAccessibilityAction(accessibility.ActionRequest{Node: node.ID, Action: accessibility.Collapse}))
-	c.Equal(3, clicks, "collapsing what is already collapsed does nothing")
+	c.Equal(5, clicks, "collapsing what is already collapsed does nothing")
 	c.True(screen.PerformAccessibilityAction(accessibility.ActionRequest{Node: node.ID, Action: accessibility.Expand}))
-	c.Equal(4, clicks)
+	c.Equal(6, clicks)
 
 	screen.Do(func() { button.setText("Plain "+emphasize("bold"), "met") })
 	screen.AccessibilityTree(wnd)

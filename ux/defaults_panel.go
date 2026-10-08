@@ -347,8 +347,8 @@ func (p *defaultsPanel) editor(def *gurps.SkillDefault, path string) *unison.Pan
 		func() { def.WhenTL = criteria.Number{Compare: criteria.AtLeastNumber, Qualifier: p.techLevel()} },
 		func() { def.WhenTL = criteria.Number{} },
 		func(chip *unison.Panel) {
-			p.numberCriteria(chip, key("tl"), i18n.Text("Tech Level"), i18n.Text("when the tech level"), &def.WhenTL, 0,
-				fxp.Twelve, true)
+			p.numberCriteria(chip, key("tl"), i18n.Text("Tech Level"),
+				numericWordsAfter(i18n.Text("when the tech level")), &def.WhenTL, 0, fxp.Twelve, true, false)
 		})
 	// The buttons that add unused criteria go after the chips in use, so an added one takes its place among them.
 	for _, child := range slices.Clone(chips.Children()) {

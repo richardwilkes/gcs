@@ -15,6 +15,7 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/criteria"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
+	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/i18n"
@@ -91,6 +92,12 @@ type sentenceRows[T any] struct {
 	editKey    string
 	editID     int64
 	rebuilding bool
+	// passEscape lets an Escape that closes no row through to what holds the panel, such as a dialog that cancels on
+	// it.
+	passEscape bool
+	// staticTip, when set, returns the tooltip of the row at the path when it isn't editable, in place of the one that
+	// speaks of saving a file.
+	staticTip func(path string) string
 }
 
 // initRows sets up the rows of a panel whose rows are dragged as dragKey, with the callbacks described on sentenceRows.
@@ -169,16 +176,17 @@ func (p *sentenceRows[T]) collapseChanged() {
 	p.rebuild(focus)
 }
 
-// keyDown has Escape close the open row, leaving it alone while the panel is collapsed. Escape within the panel never
-// reaches the editor, where it would discard the changes.
+// keyDown has Escape close the open row, leaving it alone while the panel is collapsed. Unless passEscape is set,
+// Escape within the panel never reaches the editor, where it would discard the changes.
 func (p *sentenceRows[T]) keyDown(keyCode unison.KeyCode, mods mod.Modifiers, _ bool) bool {
 	if keyCode != unison.KeyEscape || !noModifiersDown(mods) {
 		return false
 	}
 	if p.open != "" && (p.collapse == nil || !p.collapse.collapsed) {
 		p.toggle(p.open)
+		return true
 	}
-	return true
+	return !p.passEscape
 }
 
 // edit applies change to the data and records snapshots of the panel before and after it, under the title. Undo gives
@@ -272,6 +280,10 @@ func (p *sentenceRows[T]) rebuild(focus string) {
 		top := p.AsPanel()
 		if d := unison.Ancestor[unison.Dockable](p); d != nil {
 			top = d.AsPanel()
+		} else if w := p.Window(); w != nil {
+			// Outside a dock, such as in a dialog, the window's content is laid out again, so that a scroll panel
+			// holding the rows follows their size.
+			top = w.Content()
 		}
 		top.MarkForLayoutRecursively()
 		top.ValidateLayout()
@@ -320,6 +332,20 @@ func (p *sentenceRows[T]) focusOn(key string) bool {
 	target.RequestFocus()
 	target.ScrollIntoView()
 	return true
+}
+
+// closeRow closes the open row as toggle does, except that it leaves the focus alone when the focus is outside the
+// panel.
+func (p *sentenceRows[T]) closeRow() {
+	if p.open == "" {
+		return
+	}
+	if wnd := p.Window(); wnd != nil && wnd.Focus() != nil && !unison.AncestorIsOrSelf(wnd.Focus(), p.AsPanel()) {
+		p.open = ""
+		p.rebuild("")
+		return
+	}
+	p.toggle(p.open)
 }
 
 // toggle opens the row at the path, closing any other, or closes it if it is the open one.
@@ -387,12 +413,24 @@ func (p *sentenceRows[T]) dragBy(target, row *unison.Panel, path string) {
 	}
 }
 
-// doneButton returns the button that closes the open row at the path.
+// doneButton returns the button that closes the open row at the path. It closes the row on Return or keypad Enter too,
+// as a sentence opens its row, rather than leaving those keys to what holds the panel, and closes it once while they
+// are held.
 func (p *sentenceRows[T]) doneButton(path string) *unison.Button {
 	done := unison.NewButton()
 	done.SetTitle(i18n.Text("Done"))
 	done.RefKey = path + ":done"
 	done.ClickCallback = func() { p.toggle(path) }
+	keyDown := done.KeyDownCallback
+	done.KeyDownCallback = func(keyCode unison.KeyCode, mods mod.Modifiers, repeat bool) bool {
+		if noModifiersDown(mods) && (keyCode == unison.KeyReturn || keyCode == unison.KeyNumPadEnter) {
+			if !repeat {
+				done.Click()
+			}
+			return true
+		}
+		return keyDown != nil && keyDown(keyCode, mods, repeat)
+	}
 	return done
 }
 
@@ -407,9 +445,9 @@ func addMoreButton(parent *unison.Panel, path string, name func() string, entrie
 
 // sentenceRow returns the panel of the row at the path: the sentence describe returns, or while the row is open the
 // controls editor returns, beside a button for the entries of its more menu. A row that isn't editable, such as one
-// this version of GCS doesn't understand, has a sentence that doesn't open it. lead, when set, adds what goes between
-// the row's grip and its sentence, returning it and its height, to put it on the first line. trail, when set, adds
-// what follows the sentence of a closed row.
+// this version of GCS doesn't understand, has a sentence that doesn't open it, whose tooltip says why (see staticTip).
+// lead, when set, adds what goes between the row's grip and its sentence, returning it and its height, to put it on the
+// first line. trail, when set, adds what follows the sentence of a closed row.
 func (p *sentenceRows[T]) sentenceRow(path string, describe func() string, editable bool, editor func() *unison.Panel, more func() []menuEntry, lead func(row *unison.Panel) (*unison.Panel, float32), trail func(row *unison.Panel, sentence *sentenceButton)) *unison.Panel {
 	open := path == p.open
 	row := unison.NewPanel()
@@ -438,7 +476,11 @@ func (p *sentenceRows[T]) sentenceRow(path string, describe func() string, edita
 		p.dragBy(sentence.AsPanel(), row, path)
 		if click == nil {
 			// One this version of GCS doesn't understand can't be edited, so its sentence is static text.
-			sentence.Tooltip = newWrappedTooltip(i18n.Text("This was most likely created by a newer version of GCS. Its original data will be written back out unchanged when this file is saved."))
+			tip := i18n.Text("This was most likely created by a newer version of GCS. Its original data will be written back out unchanged when this file is saved.")
+			if p.staticTip != nil {
+				tip = p.staticTip(path)
+			}
+			sentence.Tooltip = newWrappedTooltip(tip)
 		}
 		main = sentence.AsPanel()
 		row.AddChild(main)
@@ -663,30 +705,38 @@ func (p *sentenceRows[T]) chip(parent *unison.Panel, key, title, after string, r
 
 // textCriteria adds the comparison of a text criterion, each choice after the prefix or, for a "not" comparison, the
 // notPrefix, and, unless it is "is anything", the field for its qualifier, which shows the hint while empty. withAny
-// offers "is anything", which a chip leaves to its remove button.
+// offers "is anything", which a chip leaves to its remove button. With no prefix, the choices are the comparisons' own
+// words.
 func (p *sentenceRows[T]) textCriteria(parent *unison.Panel, key, subject, hint, prefix, notPrefix string, c *criteria.Text, withAny bool) {
-	comparison, _ := criteriaTitles(subject)
-	items := criteria.StringComparisons
-	if !withAny {
-		items = items[1:]
-	}
 	var render func(criteria.StringComparison) string
 	if prefix != "" {
 		choices := criteria.PrefixedStringComparisonChoices(prefix, notPrefix)
 		render = func(v criteria.StringComparison) string { return choices[v] }
 	}
-	addCentered(parent, compactPopup(p, key+"cmp", comparison, items, c.Compare, render,
-		func(v criteria.StringComparison) { c.Compare = v }))
-	if c.Compare != criteria.AnyText {
-		p.textField(parent, key, subject, hint, &c.Qualifier)
-	}
+	p.textCriteriaWith(parent, key, subject, hint, render, c, withAny)
 }
 
-// numberCriteria adds the comparison of a numeric criterion, worded as numberCompare words it, and, unless it is
-// "anything", the field for its qualifier, which takes whole numbers when integer is true.
-func (p *sentenceRows[T]) numberCriteria(parent *unison.Panel, key, subject, prefix string, c *criteria.Number, minValue, maxValue fxp.Int, integer bool) {
+// textCriteriaWith adds a text criterion as textCriteria does, its choices worded by render, or by the comparisons'
+// own words when render is nil. It returns the field for the qualifier, or nil while there is none.
+func (p *sentenceRows[T]) textCriteriaWith(parent *unison.Panel, key, subject, hint string, render func(criteria.StringComparison) string, c *criteria.Text, withAny bool) *StringField {
 	comparison, _ := criteriaTitles(subject)
-	p.numberCompare(parent, key+"cmp", comparison, prefix, &c.Compare)
+	items := criteria.StringComparisons
+	if !withAny {
+		items = items[1:]
+	}
+	addCentered(parent, compactPopup(p, key+"cmp", comparison, items, c.Compare, render,
+		func(v criteria.StringComparison) { c.Compare = v }))
+	if c.Compare == criteria.AnyText {
+		return nil
+	}
+	return p.textField(parent, key, subject, hint, &c.Qualifier)
+}
+
+// numberCriteria adds the comparison of a numeric criterion, worded by words and offering "anything" as numberCompare
+// does, and, unless it is "anything", the field for its qualifier, which takes whole numbers when integer is true.
+func (p *sentenceRows[T]) numberCriteria(parent *unison.Panel, key, subject string, words numericWords, c *criteria.Number, minValue, maxValue fxp.Int, integer, withAny bool) {
+	comparison, _ := criteriaTitles(subject)
+	p.numberCompare(parent, key+"cmp", comparison, words, &c.Compare, withAny)
 	if c.Compare == criteria.AnyNumber {
 		return
 	}
@@ -701,24 +751,45 @@ func (p *sentenceRows[T]) numberCriteria(parent *unison.Panel, key, subject, pre
 		maxValue, false, false).withoutUndo())
 }
 
-// numberCompare adds the popup for a numeric comparison: with a prefix, each choice after it, as in "and whose level is
-// at least"; otherwise in the short words that come before a quantity, as in "at least 2 spells".
-func (p *sentenceRows[T]) numberCompare(parent *unison.Panel, key, name, prefix string, c *criteria.NumericComparison) {
-	items := criteria.NumericComparisons
-	// "anything" is left to a chip's remove button, but is shown when a file edited by hand holds it.
-	if *c != criteria.AnyNumber {
-		items = items[1:]
+// weightCriteria adds the comparison of a weight criterion, worded by words and offering "anything" as numberCompare
+// does, and, unless it is "anything", the field for its qualifier, in the entity's weight units.
+func (p *sentenceRows[T]) weightCriteria(parent *unison.Panel, key, subject string, words numericWords, entity *gurps.Entity, c *criteria.Weight, withAny bool) {
+	comparison, _ := criteriaTitles(subject)
+	p.numberCompare(parent, key+"cmp", comparison, words, &c.Compare, withAny)
+	if c.Compare == criteria.AnyNumber {
+		return
 	}
-	choices := criteria.PrefixedNumericComparisonChoices(prefix)
-	addCentered(parent, compactPopup(p, key, name, items, *c, func(v criteria.NumericComparison) string {
-		if prefix != "" {
-			return choices[v]
-		}
+	p.addCompact(parent, NewWeightField(p.targetMgr, key, subject, entity, func() fxp.Weight { return c.Qualifier },
+		func(w fxp.Weight) { p.edit(subject, key, "", func() { c.Qualifier = w }) }, 0, fxp.Weight(fxp.Max),
+		false).withoutUndo())
+}
+
+// numericWords words the choices of a numeric comparison.
+type numericWords func(criteria.NumericComparison) string
+
+// numericWordsAfter returns the words of a numeric comparison: with a prefix, each choice after it, as in "and whose
+// level is at least"; otherwise the short words that come before a quantity, as in "at least 2 spells".
+func numericWordsAfter(prefix string) numericWords {
+	if prefix != "" {
+		choices := criteria.PrefixedNumericComparisonChoices(prefix)
+		return func(v criteria.NumericComparison) string { return choices[v] }
+	}
+	return func(v criteria.NumericComparison) string {
 		if v == criteria.EqualsNumber {
 			return i18n.Text("exactly")
 		}
 		return v.AltString()
-	}, func(v criteria.NumericComparison) { *c = v }))
+	}
+}
+
+// numberCompare adds the popup for a numeric comparison, its choices worded by words. "anything" is offered when
+// withAny is set, and otherwise left to a chip's remove button, but shown when a file edited by hand holds it.
+func (p *sentenceRows[T]) numberCompare(parent *unison.Panel, key, name string, words numericWords, c *criteria.NumericComparison, withAny bool) {
+	items := criteria.NumericComparisons
+	if !withAny && *c != criteria.AnyNumber {
+		items = items[1:]
+	}
+	addCentered(parent, compactPopup(p, key, name, items, *c, words, func(v criteria.NumericComparison) { *c = v }))
 }
 
 // textField adds a compact field for the text, which shows the hint while empty.

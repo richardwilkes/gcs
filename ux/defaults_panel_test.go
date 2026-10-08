@@ -32,9 +32,9 @@ import (
 // showDefaultsPanel shows a defaultsPanel for the defaults in a window, within a host, so that its rebuilds run and its
 // edits can be undone. The panel is expanded, as most tests look at its rows; see TestDefaultsPanelStartingState for
 // how it starts out.
-func showDefaultsPanel(t *testing.T, screen *unison.HeadlessScreen, entity *gurps.Entity, owner nameable.Accesser, defaults *[]*gurps.SkillDefault) (*defaultsPanel, *prereqUndoHost) {
+func showDefaultsPanel(t *testing.T, screen *unison.HeadlessScreen, entity *gurps.Entity, owner nameable.Accesser, defaults *[]*gurps.SkillDefault) (*defaultsPanel, *sentenceUndoHost) {
 	var p *defaultsPanel
-	host := &prereqUndoHost{mgr: unison.NewUndoManager(100, func(error) {})}
+	host := &sentenceUndoHost{mgr: unison.NewUndoManager(100, func(error) {})}
 	screen.Do(func() {
 		host.Self = host
 		host.SetLayout(&unison.FlexLayout{Columns: 1})
@@ -126,7 +126,7 @@ func refKeySelf(root *unison.Panel, key string) any {
 // actOnDefault runs the entry of the more menu of the default at the path with the label, failing the test if there is
 // none.
 func actOnDefault(c check.Checker, p *defaultsPanel, path, label string) {
-	action := prereqMenuAction(p.moreEntries(path), label)
+	action := menuAction(p.moreEntries(path), label)
 	c.NotNil(action, "%s offers %s", path, label)
 	if action != nil {
 		action()
@@ -488,8 +488,8 @@ func TestDefaultsPanelMoreMenu(t *testing.T) {
 		c.Equal(after, defaultTypes(defaults), "and redo makes the change again")
 	}
 	screen.Do(func() {
-		c.Nil(prereqMenuAction(p.moreEntries("0"), "Move Up"), "nothing above the top")
-		c.Nil(prereqMenuAction(p.moreEntries("2"), "Move Down"), "nothing below the bottom")
+		c.Nil(menuAction(p.moreEntries("0"), "Move Up"), "nothing above the top")
+		c.Nil(menuAction(p.moreEntries("2"), "Move Down"), "nothing below the bottom")
 		p.toggle("1")
 	})
 	start := []string{gurps.DexterityID, gurps.SkillID, gurps.ParryID}

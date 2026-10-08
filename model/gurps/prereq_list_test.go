@@ -106,10 +106,10 @@ func TestPrereqListHasNothingToCheck(t *testing.T) {
 	}
 }
 
-// TestPrereqListEvaluate verifies the result of a list and of each prerequisite within it: a list that isn't met has
-// failed when any child it doesn't leave out has failed, a list skipped by its tech level skips everything in it
-// without running its scripts, a list leaves out its skipped children and is skipped when nothing is left, and each
-// script runs once.
+// TestPrereqListEvaluate verifies the result of a list and of each prerequisite within it: an unmet child decides an
+// "all of" list and a met one an "any of" list, even beside a failed one, a list not decided that way has failed when
+// any child it doesn't leave out has failed, a list skipped by its tech level skips everything in it without running
+// its scripts, a list leaves out its skipped children and is skipped when nothing is left, and each script runs once.
 func TestPrereqListEvaluate(t *testing.T) {
 	e := NewEntity()
 	e.Profile.TechLevel = "3"
@@ -131,33 +131,36 @@ func TestPrereqListEvaluate(t *testing.T) {
 	for _, one := range []struct {
 		name string
 		list *PrereqList
-		want PrereqResult
+		want CheckResult
 	}{
-		{"all of, all met", list(true, script("true"), script("true")), PrereqMet},
-		{"all of, one unmet", list(true, script("true"), script("false")), PrereqUnmet},
-		{"any of, one met", list(false, script("false"), script("true")), PrereqMet},
-		{"any of, none met", list(false, script("false"), script("false")), PrereqUnmet},
-		{"all of, one failed", list(true, script("true"), script("nope(")), PrereqFailed},
-		{"all of, one failed and one unmet", list(true, script("false"), script("nope(")), PrereqFailed},
-		{"any of, one met and one failed", list(false, script("true"), script("nope(")), PrereqMet},
-		{"any of, one failed and one unmet", list(false, script("false"), script("nope(")), PrereqFailed},
-		{"failed nested two deep", list(true, list(false, list(true, script("nope(")))), PrereqFailed},
+		{"all of, all met", list(true, script("true"), script("true")), CheckMet},
+		{"all of, one unmet", list(true, script("true"), script("false")), CheckUnmet},
+		{"any of, one met", list(false, script("false"), script("true")), CheckMet},
+		{"any of, none met", list(false, script("false"), script("false")), CheckUnmet},
+		{"all of, one failed", list(true, script("true"), script("nope(")), CheckFailed},
+		{"all of, one failed and one unmet", list(true, script("false"), script("nope(")), CheckUnmet},
+		{"all of, one unmet after one failed", list(true, script("nope("), script("false")), CheckUnmet},
+		{"all of, a failed group and one unmet", list(true, list(false, script("nope(")), script("false")), CheckUnmet},
+		{"any of, one met and one failed", list(false, script("true"), script("nope(")), CheckMet},
+		{"any of, one met after one failed", list(false, script("nope("), script("true")), CheckMet},
+		{"any of, one failed and one unmet", list(false, script("false"), script("nope(")), CheckFailed},
+		{"failed nested two deep", list(true, list(false, list(true, script("nope(")))), CheckFailed},
 		{
 			"any of, a failed branch and a met one",
-			list(false, list(true, script("nope(")), list(true, script("true"))), PrereqMet,
+			list(false, list(true, script("nope(")), list(true, script("true"))), CheckMet,
 		},
-		{"skipped by its tech level, with one that would fail", later, PrereqSkipped},
-		{"any of, a skipped group and one unmet", list(false, later, script("false")), PrereqUnmet},
-		{"any of, only skipped groups", list(false, later, list(true, list(true))), PrereqSkipped},
-		{"any of, an empty group and one unmet", list(false, list(true), script("false")), PrereqUnmet},
-		{"empty", list(true), PrereqSkipped},
+		{"skipped by its tech level, with one that would fail", later, CheckSkipped},
+		{"any of, a skipped group and one unmet", list(false, later, script("false")), CheckUnmet},
+		{"any of, only skipped groups", list(false, later, list(true, list(true))), CheckSkipped},
+		{"any of, an empty group and one unmet", list(false, list(true), script("false")), CheckUnmet},
+		{"empty", list(true), CheckSkipped},
 	} {
 		t.Run(one.name, func(t *testing.T) {
 			c := check.New(t)
 			visits := make(map[Prereq]int)
-			var result PrereqResult
+			var result CheckResult
 			SuppressScriptResolveErrorLogging(func() {
-				result = one.list.Evaluate(e, nil, func(node Prereq, nodeResult PrereqResult, _ string) {
+				result = one.list.Evaluate(e, nil, func(node Prereq, nodeResult CheckResult, _ string) {
 					visits[node]++
 					if node == one.list {
 						c.Equal(one.want, nodeResult, "the visited result of the list")
@@ -172,7 +175,7 @@ func TestPrereqListEvaluate(t *testing.T) {
 		})
 	}
 	c := check.New(t)
-	visited := make(map[Prereq]PrereqResult)
+	visited := make(map[Prereq]CheckResult)
 	var reason string
 	root := list(true, later, script("true"), broken.Clone(nil), stuck.Clone(nil))
 	// A script that runs out of time is counted each time it is resolved, even when its result comes from the cache.
@@ -181,16 +184,16 @@ func TestPrereqListEvaluate(t *testing.T) {
 	defer scriptExecTimeLimitOverride.Store(prev)
 	stopped := abandonedScripts(e)
 	SuppressScriptResolveErrorLogging(func() {
-		root.Evaluate(e, nil, func(node Prereq, result PrereqResult, why string) {
+		root.Evaluate(e, nil, func(node Prereq, result CheckResult, why string) {
 			visited[node] = result
 			if node == root.Prereqs[2] {
 				reason = why
 			}
 		})
 	})
-	c.Equal(map[Prereq]PrereqResult{
-		later: PrereqSkipped, broken: PrereqSkipped, stuck: PrereqSkipped, root.Prereqs[1]: PrereqMet,
-		root.Prereqs[2]: PrereqFailed, root.Prereqs[3]: PrereqFailed, root: PrereqFailed,
+	c.Equal(map[Prereq]CheckResult{
+		later: CheckSkipped, broken: CheckSkipped, stuck: CheckSkipped, root.Prereqs[1]: CheckMet,
+		root.Prereqs[2]: CheckFailed, root.Prereqs[3]: CheckFailed, root: CheckFailed,
 	}, visited, "each prerequisite is visited with its own result")
 	c.Equal(int64(1), abandonedScripts(e)-stopped, "each script runs once, and none in a skipped list does")
 	c.Contains(reason, "SyntaxError", "a script that couldn't run gives its error")

@@ -9,79 +9,93 @@
 
 package gurps
 
-// NewListFilterMatcher returns a function that reports whether a node passes the filter, with the fields the filter
-// refers to looked up once rather than for every node. A nil filter, or one without a root, passes everything.
-func NewListFilterMatcher[T Node[T]](f *ListFilter, fields []*FilterField[T]) func(T) bool {
+import "strings"
+
+// NewListFilterChecker returns a function that checks a node against the filter, with the fields the filter refers to
+// looked up once rather than for every node. A nil filter, or one without a root, is skipped for every node.
+func NewListFilterChecker[T Node[T]](f *ListFilter, fields []*FilterField[T]) func(T) CheckResult {
 	if f == nil || f.Root == nil {
-		return func(T) bool { return true }
+		return func(T) CheckResult { return CheckSkipped }
 	}
 	byKey := make(map[string]*FilterField[T], len(fields))
 	for _, field := range fields {
 		byKey[field.Key] = field
 	}
 	root := f.Root
-	return func(node T) bool { return matchesFilterNode(root, byKey, node) }
+	return func(node T) CheckResult { return checkFilterNode(root, byKey, node) }
 }
 
-// matchesFilterNode returns true if the node passes the filter node. A node kind this version of GCS doesn't
-// understand never passes, whatever its negation says, since its intent can't be known.
-func matchesFilterNode[T Node[T]](n FilterNode, fields map[string]*FilterField[T], node T) bool {
+// NewListFilterMatcher returns a function that reports whether a node passes the filter: whether NewListFilterChecker
+// finds the filter met or skipped for it. A filter with nothing in it is skipped, so it passes everything, while one
+// that is unmet or can't be checked hides the node.
+func NewListFilterMatcher[T Node[T]](f *ListFilter, fields []*FilterField[T]) func(T) bool {
+	check := NewListFilterChecker(f, fields)
+	return func(node T) bool {
+		result := check(node)
+		return result == CheckMet || result == CheckSkipped
+	}
+}
+
+// checkFilterNode checks the node against the filter node. A node kind this version of GCS doesn't understand fails,
+// since its intent can't be known.
+func checkFilterNode[T Node[T]](n FilterNode, fields map[string]*FilterField[T], node T) CheckResult {
 	switch one := n.(type) {
 	case *FilterGroup:
-		return matchesFilterGroup(one, fields, node)
+		return checkFilterGroup(one, fields, node)
 	case *FilterCondition:
-		return matchesFilterCondition(one, fields, node)
+		return checkFilterCondition(one, fields, node)
 	default:
-		return false
+		return CheckFailed
 	}
 }
 
-// matchesFilterGroup returns true if the node passes the group: all of its children, or any one of them, depending
-// on how the group combines them. A group with no children passes everything either way. The result is then inverted
-// if the group is negated.
-func matchesFilterGroup[T Node[T]](g *FilterGroup, fields map[string]*FilterField[T], node T) bool {
-	result := true
-	if g.All {
-		for _, child := range g.Children {
-			if !matchesFilterNode(child, fields, node) {
-				result = false
-				break
-			}
-		}
-	} else if len(g.Children) != 0 {
-		result = false
-		for _, child := range g.Children {
-			if matchesFilterNode(child, fields, node) {
-				result = true
-				break
-			}
-		}
+// checkFilterGroup checks the node against the group, as a list of prerequisites is checked: children that are skipped
+// are left out, and a group with nothing left is skipped. Of the rest, one unmet child makes an "all of" group unmet,
+// and one met child makes an "any of" group met, even when others failed. Otherwise the group has failed when any of
+// the rest has, and is met or unmet as they all are. Negating the group then swaps met and unmet.
+func checkFilterGroup[T Node[T]](g *FilterGroup, fields map[string]*FilterField[T], node T) CheckResult {
+	var tally checkTally
+	for _, child := range g.Children {
+		tally.add(checkFilterNode(child, fields, node))
 	}
-	return result != g.Not
+	return tally.combine(g.All).negate(g.Not)
 }
 
-// matchesFilterCondition returns true if the node's field satisfies the condition's criteria, inverted if the
-// condition is negated. A condition on a field this version of GCS doesn't know never passes, whatever its negation
-// says, for the same reason an unknown node never does.
-func matchesFilterCondition[T Node[T]](c *FilterCondition, fields map[string]*FilterField[T], node T) bool {
+// checkFilterCondition checks the node's field against the condition's criteria, swapping met and unmet when the
+// condition is negated. A node whose text field is empty or only space, whose list field holds nothing, or that the
+// field's Has says lacks it, such as a trait that can't be leveled, doesn't have the field, as the condition's title
+// puts it, so it satisfies no criteria. A condition on a field this version of GCS doesn't know fails, for the same
+// reason an unknown node does.
+func checkFilterCondition[T Node[T]](c *FilterCondition, fields map[string]*FilterField[T], node T) CheckResult {
 	field, ok := fields[c.Field]
 	if !ok {
-		return false
+		return CheckFailed
 	}
-	var result bool
+	var met bool
+	if field.Has != nil && !field.Has(node) {
+		return CheckUnmet.negate(c.Not)
+	}
 	switch field.Kind {
 	case FilterFieldText:
-		result = c.Text.Matches(nil, field.Text(node))
+		if value := field.Text(node); strings.TrimSpace(value) != "" {
+			met = c.Text.Matches(nil, value)
+		}
 	case FilterFieldList:
-		result = c.Text.MatchesList(nil, field.List(node)...)
+		if values := field.List(node); len(values) != 0 {
+			met = c.Text.MatchesList(nil, values...)
+		}
 	case FilterFieldNumber:
-		result = c.Number.Matches(field.Number(node))
+		met = c.Number.Matches(field.Number(node))
 	case FilterFieldWeight:
-		result = c.Weight.Matches(field.Weight(node))
+		met = c.Weight.Matches(field.Weight(node))
 	case FilterFieldBool:
-		result = field.Bool(node)
+		met = field.Bool(node)
 	default:
-		return false
+		return CheckFailed
 	}
-	return result != c.Not
+	result := CheckUnmet
+	if met {
+		result = CheckMet
+	}
+	return result.negate(c.Not)
 }

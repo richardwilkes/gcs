@@ -15,20 +15,21 @@ import (
 	"github.com/richardwilkes/toolbox/v2/i18n"
 )
 
-// filterFieldInfo is the part of a gurps.FilterField that the filter editor needs: what the field is called, the key
-// it is stored under, and the kind of criteria it takes. Reducing the fields to this lets the popup, the dialog and
-// the editor be written once rather than once per kind of node.
+// filterFieldInfo is the part of a gurps.FilterField that the filter editor needs: what the field is called and
+// whether that names something plural, the key it is stored under, and the kind of criteria it takes. Reducing the
+// fields to this lets the popup, the dialog and the editor be written once rather than once per kind of node.
 type filterFieldInfo struct {
-	key   string
-	title string
-	kind  gurps.FilterFieldKind
+	key    string
+	title  string
+	kind   gurps.FilterFieldKind
+	plural bool
 }
 
 // filterFieldInfos reduces a list type's filter fields to what the editor needs, in the order they were given.
 func filterFieldInfos[T gurps.Node[T]](fields []*gurps.FilterField[T]) []filterFieldInfo {
 	infos := make([]filterFieldInfo, len(fields))
 	for i, field := range fields {
-		infos[i] = filterFieldInfo{key: field.Key, title: field.Title, kind: field.Kind}
+		infos[i] = filterFieldInfo{key: field.Key, title: field.Title, kind: field.Kind, plural: field.Plural}
 	}
 	return infos
 }

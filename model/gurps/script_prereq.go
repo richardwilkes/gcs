@@ -93,14 +93,14 @@ func (s *ScriptPrereq) Describe(_ *Entity, replacements map[string]string, _ fun
 // A reason of more than one line goes on the lines below it, one level deeper.
 func (s *ScriptPrereq) Satisfied(entity *Entity, exclude any, tooltip *xbytes.InsertBuffer, prefix string, _ *bool) bool {
 	result, _ := s.evaluate(entity, exclude, tooltip, prefix)
-	return result == PrereqMet
+	return result == CheckMet
 }
 
 // evaluate is Satisfied, returning the script's result and the reason it gives.
-func (s *ScriptPrereq) evaluate(entity *Entity, exclude any, tooltip *xbytes.InsertBuffer, prefix string) (result PrereqResult, reason string) {
+func (s *ScriptPrereq) evaluate(entity *Entity, exclude any, tooltip *xbytes.InsertBuffer, prefix string) (result CheckResult, reason string) {
 	result, reason = s.Evaluate(entity, exclude)
 	reason = strings.TrimSpace(reason)
-	if result == PrereqMet || tooltip == nil {
+	if result == CheckMet || tooltip == nil {
 		return result, reason
 	}
 	var replacements map[string]string
@@ -113,9 +113,9 @@ func (s *ScriptPrereq) evaluate(entity *Entity, exclude any, tooltip *xbytes.Ins
 	switch {
 	case reason == "":
 		tooltip.WriteString(name)
-	case result == PrereqFailed && multiLine:
+	case result == CheckFailed && multiLine:
 		fmt.Fprintf(tooltip, i18n.Text("%s (couldn't run):"), name)
-	case result == PrereqFailed:
+	case result == CheckFailed:
 		fmt.Fprintf(tooltip, i18n.Text("%s (couldn't run: %s)"), name, reason)
 	case multiLine:
 		fmt.Fprintf(tooltip, i18n.Text("%s:"), name)
@@ -135,7 +135,7 @@ func (s *ScriptPrereq) evaluate(entity *Entity, exclude any, tooltip *xbytes.Ins
 // Evaluate runs the script against the entity for the item given as exclude. A result of "" or "true" is met, "false"
 // is unmet with no reason, and any other result is unmet, with that text as the reason. It has failed when the script
 // could not produce a result, because it threw, timed out or nested too deeply; the reason is then the error.
-func (s *ScriptPrereq) Evaluate(entity *Entity, exclude any) (result PrereqResult, reason string) {
+func (s *ScriptPrereq) Evaluate(entity *Entity, exclude any) (result CheckResult, reason string) {
 	script := s.Script
 	if na, ok := exclude.(nameable.Accesser); ok {
 		script = nameable.Apply(script, na.NameableReplacements())
@@ -158,12 +158,12 @@ func (s *ScriptPrereq) Evaluate(entity *Entity, exclude any) (result PrereqResul
 	text, failed := resolveText(entity, self, script)
 	switch {
 	case failed:
-		return PrereqFailed, text
+		return CheckFailed, text
 	case text == "" || text == "true":
-		return PrereqMet, ""
+		return CheckMet, ""
 	case text == "false":
-		return PrereqUnmet, ""
+		return CheckUnmet, ""
 	default:
-		return PrereqUnmet, text
+		return CheckUnmet, text
 	}
 }

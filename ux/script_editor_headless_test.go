@@ -38,12 +38,12 @@ func TestScriptEditor(t *testing.T) {
 			KeepFirstLinePrefix: "// prereq count:",
 			Inserts:             []scriptMenuEntry{{Label: "Fn", Text: "fn()", CaretFromEnd: 1}},
 			Snippets:            []scriptMenuEntry{{Label: "Pick one", Heading: true}, {Label: "True", Text: "true"}},
-			Evaluate: func(s string) (gurps.PrereqResult, string) {
+			Evaluate: func(s string) (gurps.CheckResult, string) {
 				evaluations++
 				if strings.Contains(s, "true") {
-					return gurps.PrereqMet, "Met"
+					return gurps.CheckMet, "Met"
 				}
-				return gurps.PrereqUnmet, "Not met"
+				return gurps.CheckUnmet, "Not met"
 			},
 		})
 	})
@@ -138,7 +138,7 @@ func TestShowCheckIconMakesRoom(t *testing.T) {
 	})
 	w := showInTestWindow(t, screen, 300, row)
 	screen.Do(func() {
-		showCheckIcon(icon, gurps.PrereqMet)
+		showCheckIcon(icon, gurps.CheckMet)
 		w.ValidateLayout()
 		c.True(icon.FrameRect().Width > 0)
 	})

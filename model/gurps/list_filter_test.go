@@ -269,13 +269,33 @@ func TestListFilterMatchesByKind(t *testing.T) {
 	trait.Name = "Alertness"
 	trait.Tags = []string{"Mental", "Physical"}
 	trait.BasePoints = fxp.FromInteger(5)
+	trait.LocalNotes = "Sharp"
 	c.Equal(fxp.FromInteger(5), trait.AdjustedPoints(nil), "the trait should be worth the points it was given")
+	c.Equal("Sharp", trait.LocalNotesWithReplacements(), "the trait should have the notes it was given")
 
 	untagged := gurps.NewTrait(nil, nil, false)
 	untagged.Name = "Untagged"
+	c.Equal(0, len(untagged.TagList()), "the untagged trait should have no tags")
+	c.Equal("", untagged.LocalNotesWithReplacements(), "the untagged trait should have no notes")
+
+	spaced := gurps.NewTrait(nil, nil, false)
+	spaced.Name = "Spaced"
+	spaced.LocalNotes = "  "
+	c.Equal("  ", spaced.LocalNotesWithReplacements(), "the spaced trait's notes should be only space")
+
+	blankTagged := gurps.NewTrait(nil, nil, false)
+	blankTagged.Name = "Blank Tagged"
+	blankTagged.Tags = []string{"", "  "}
+	c.Equal(2, len(blankTagged.TagList()), "the blank tagged trait should have only blank tags")
+
+	shield := gurps.NewTrait(nil, nil, false)
+	shield.Name = "Shield"
+	shield.Tags = []string{"", "Shield"}
+	c.Equal(2, len(shield.TagList()), "the shield trait should have a blank tag and a tag")
 
 	container := gurps.NewTrait(nil, nil, true)
 	container.Name = "Group"
+	c.True(container.Container(), "the container trait should be a container")
 
 	for _, one := range []struct {
 		name  string
@@ -319,9 +339,38 @@ func TestListFilterMatchesByKind(t *testing.T) {
 			"list does not contain, no match", trait,
 			newTextFilterCondition("tags", criteria.DoesNotContainText, "ment"), false,
 		},
+		// An item with no tags doesn't have tags, so no comparison holds for it, though a negated one does.
 		{"list is, empty tag list", untagged, newTextFilterCondition("tags", criteria.IsText, "Mental"), false},
-		{"list is not, empty tag list", untagged, newTextFilterCondition("tags", criteria.IsNotText, "Mental"), true},
-		{"list anything, empty tag list", untagged, gurps.NewFilterCondition(nil, "tags"), true},
+		{"list is not, empty tag list", untagged, newTextFilterCondition("tags", criteria.IsNotText, "Mental"), false},
+		{"list is empty, empty tag list", untagged, newTextFilterCondition("tags", criteria.IsText, ""), false},
+		{"list anything, empty tag list", untagged, gurps.NewFilterCondition(nil, "tags"), false},
+		{"list anything, tagged", trait, gurps.NewFilterCondition(nil, "tags"), true},
+		{"not list anything, empty tag list", untagged, negated(gurps.NewFilterCondition(nil, "tags")), true},
+		{"not list anything, tagged", trait, negated(gurps.NewFilterCondition(nil, "tags")), false},
+
+		// A tag that is empty or only space doesn't count, so it never matches, and one holding only those has none.
+		{"list anything, only blank tags", blankTagged, gurps.NewFilterCondition(nil, "tags"), false},
+		{"list is empty, only blank tags", blankTagged, newTextFilterCondition("tags", criteria.IsText, ""), false},
+		{
+			"list is not, only blank tags", blankTagged,
+			newTextFilterCondition("tags", criteria.IsNotText, "Mental"), false,
+		},
+		{"not list anything, only blank tags", blankTagged, negated(gurps.NewFilterCondition(nil, "tags")), true},
+		{"list is, a blank tag and a tag", shield, newTextFilterCondition("tags", criteria.IsText, "Shield"), true},
+		{"list is empty, a blank tag and a tag", shield, newTextFilterCondition("tags", criteria.IsText, ""), false},
+		{"list is not, a blank tag and a tag", shield, newTextFilterCondition("tags", criteria.IsNotText, "Mental"), true},
+		{"list anything, a blank tag and a tag", shield, gurps.NewFilterCondition(nil, "tags"), true},
+
+		// Text that is empty, or only space, is not had either.
+		{"text anything, no notes", untagged, gurps.NewFilterCondition(nil, "notes"), false},
+		{"text is empty, no notes", untagged, newTextFilterCondition("notes", criteria.IsText, ""), false},
+		{
+			"text does not contain, no notes", untagged,
+			newTextFilterCondition("notes", criteria.DoesNotContainText, "x"), false,
+		},
+		{"not text anything, no notes", untagged, negated(gurps.NewFilterCondition(nil, "notes")), true},
+		{"not text anything, space only", spaced, negated(gurps.NewFilterCondition(nil, "notes")), true},
+		{"text anything, notes", trait, gurps.NewFilterCondition(nil, "notes"), true},
 
 		// Number.
 		{"number is", trait, newNumberFilterCondition("points", criteria.EqualsNumber, fxp.FromInteger(5)), true},
@@ -374,19 +423,70 @@ func TestListFilterMatchesByKind(t *testing.T) {
 	}
 }
 
-// TestListFilterEmptyGroupMatchesEverything verifies that a group with no children passes everything, whichever way it
-// combines its children, and that negating such a group rejects everything.
-func TestListFilterEmptyGroupMatchesEverything(t *testing.T) {
+// TestListFilterTraitLevels checks that a trait that can't be leveled, or a container, has no levels to a filter, so it
+// satisfies no criteria on them and a negated condition finds it, while a leveled trait at 0 levels has levels of 0.
+// A disabled leveled trait has levels, read as 0 as its points are.
+func TestListFilterTraitLevels(t *testing.T) {
 	c := check.New(t)
-	trait := gurps.NewTrait(nil, nil, false)
-	trait.Name = "Alertness"
 	fields := gurps.TraitFilterFields()
-	for _, all := range []bool{true, false} {
-		f := gurps.NewListFilter("Empty")
-		f.Root.All = all
-		c.True(matchesListFilter(f, fields, trait), "an empty group with all=%v matches everything", all)
-		f.Root.Not = true
-		c.False(matchesListFilter(f, fields, trait), "a negated empty group with all=%v matches nothing", all)
+
+	leveled := gurps.NewTrait(nil, nil, false)
+	leveled.Name = "Leveled"
+	leveled.CanLevel = true
+	leveled.Levels = fxp.Two
+	c.True(leveled.IsLeveled(), "the leveled trait should be leveled")
+	c.Equal(fxp.Two, leveled.CurrentLevel(), "the leveled trait should have two levels")
+
+	atZero := gurps.NewTrait(nil, nil, false)
+	atZero.Name = "At Zero"
+	atZero.CanLevel = true
+	c.True(atZero.IsLeveled(), "the trait at zero should be leveled")
+	c.Equal(fxp.Int(0), atZero.CurrentLevel(), "the trait at zero should have no levels bought")
+
+	plain := gurps.NewTrait(nil, nil, false)
+	plain.Name = "Plain"
+	c.False(plain.IsLeveled(), "the plain trait should not be leveled")
+
+	container := gurps.NewTrait(nil, nil, true)
+	container.Name = "Group"
+	container.CanLevel = true
+	c.False(container.IsLeveled(), "a container should not be leveled, even when it can level")
+
+	disabled := gurps.NewTrait(nil, nil, false)
+	disabled.Name = "Disabled"
+	disabled.CanLevel = true
+	disabled.Levels = fxp.Two
+	disabled.Disabled = true
+	c.True(disabled.IsLeveled(), "the disabled trait should be leveled")
+	c.Equal(fxp.Int(0), disabled.CurrentLevel(), "the disabled trait should read zero levels")
+
+	anything := newNumberFilterCondition("levels", criteria.AnyNumber, 0)
+	notAnything := newNumberFilterCondition("levels", criteria.AnyNumber, 0)
+	notAnything.Not = true
+	isZero := newNumberFilterCondition("levels", criteria.EqualsNumber, 0)
+	atMostOne := newNumberFilterCondition("levels", criteria.AtMostNumber, fxp.One)
+	for _, one := range []struct {
+		name  string
+		cond  *gurps.FilterCondition
+		shown map[*gurps.Trait]bool
+	}{
+		{"levels that are anything", anything, map[*gurps.Trait]bool{
+			leveled: true, atZero: true, plain: false, container: false, disabled: true,
+		}},
+		{"not levels that are anything", notAnything, map[*gurps.Trait]bool{
+			leveled: false, atZero: false, plain: true, container: true, disabled: false,
+		}},
+		{"levels that are 0", isZero, map[*gurps.Trait]bool{
+			leveled: false, atZero: true, plain: false, container: false, disabled: true,
+		}},
+		{"levels that are at most 1", atMostOne, map[*gurps.Trait]bool{
+			leveled: false, atZero: true, plain: false, container: false, disabled: true,
+		}},
+	} {
+		f := newTestListFilter(one.cond)
+		for trait, want := range one.shown {
+			c.Equal(want, matchesListFilter(f, fields, trait), "%s: %s", one.name, trait.Name)
+		}
 	}
 }
 
@@ -446,95 +546,114 @@ func TestListFilterNegation(t *testing.T) {
 		`negating a failing "does not contain" accepts the node`)
 }
 
-// TestListFilterUnknownFieldNeverMatches verifies that a condition naming a field this build doesn't know about never
-// passes, whatever its negation says. This is deliberate: the condition's intent can't be known, so it fails closed
-// rather than quietly turning into "everything" for whichever half of the negation it landed on.
-func TestListFilterUnknownFieldNeverMatches(t *testing.T) {
+// TestListFilterCheckResults verifies that a filter is checked as a list of prerequisites is: a condition is met or
+// unmet, which its negation swaps, a condition on an unknown field or a node of an unknown kind fails, and a group
+// leaves out the children that are skipped and is skipped when nothing is left. Of the rest, an unmet child decides an
+// "all of" group and a met one an "any of" group, even beside a failed one; otherwise the group has failed when one of
+// the rest has, and is met or unmet as they all are. Negating a group then swaps met and unmet only. A node is shown
+// when the filter is met or skipped.
+func TestListFilterCheckResults(t *testing.T) {
 	c := check.New(t)
 	trait := gurps.NewTrait(nil, nil, false)
 	trait.Name = "Alertness"
 	fields := gurps.TraitFilterFields()
-
-	cond := newTextFilterCondition("field_from_a_newer_gcs", criteria.IsText, "Alertness")
-	c.False(matchesListFilter(newTestListFilter(cond), fields, trait),
-		"a condition on an unknown field never matches")
-	cond.Not = true
-	c.False(matchesListFilter(newTestListFilter(cond), fields, trait),
-		"negating a condition on an unknown field still never matches")
-
-	anything := gurps.NewFilterCondition(nil, "field_from_a_newer_gcs")
-	c.False(matchesListFilter(newTestListFilter(anything), fields, trait),
-		"a condition on an unknown field never matches, even when its criteria accept anything")
-	c.Nil(findFilterField(fields, "field_from_a_newer_gcs"), "the field really is unknown")
-}
-
-// TestListFilterUnknownNodeNeverMatches verifies that a node type this build doesn't understand never passes, so that
-// an all-of group holding one fails and an any-of group holding one gains nothing from it, and that a negation applied
-// to the group inverts that result rather than the unknown node's.
-func TestListFilterUnknownNodeNeverMatches(t *testing.T) {
-	c := check.New(t)
-	trait := gurps.NewTrait(nil, nil, false)
-	trait.Name = "Alertness"
-	fields := gurps.TraitFilterFields()
-	matches := func() *gurps.FilterCondition {
-		return newTextFilterCondition("name", criteria.IsText, "Alertness")
+	met := func() *gurps.FilterCondition { return newTextFilterCondition("name", criteria.IsText, "Alertness") }
+	unmet := func() *gurps.FilterCondition { return newTextFilterCondition("name", criteria.IsText, "Acute Vision") }
+	unknownField := func() *gurps.FilterCondition { return gurps.NewFilterCondition(nil, "field_from_a_newer_gcs") }
+	notCond := func(cond *gurps.FilterCondition) *gurps.FilterCondition {
+		cond.Not = true
+		return cond
 	}
-	doesNotMatch := func() *gurps.FilterCondition {
-		return newTextFilterCondition("name", criteria.IsText, "Acute Vision")
+	group := func(all, not bool, children ...gurps.FilterNode) *gurps.FilterGroup {
+		g := gurps.NewFilterGroup(nil)
+		g.All, g.Not = all, not
+		g.Children = children
+		return g
 	}
-
+	empty := func() *gurps.FilterGroup { return group(true, false) }
+	emptyNoneOf := func() *gurps.FilterGroup { return group(false, true) }
 	for _, one := range []struct {
-		name     string
-		all      bool
-		not      bool
-		children gurps.FilterNodes
-		want     bool
+		name  string
+		root  *gurps.FilterGroup
+		want  gurps.CheckResult
+		shown bool
 	}{
-		{"all-of with an unknown node alone", true, false, gurps.FilterNodes{newTestUnknownFilterNode()}, false},
+		{"empty root", empty(), gurps.CheckSkipped, true},
+		{"empty negated root", emptyNoneOf(), gurps.CheckSkipped, true},
+		{"met", group(true, false, met()), gurps.CheckMet, true},
+		{"unmet", group(true, false, unmet()), gurps.CheckUnmet, false},
+		{"negated met", group(true, false, notCond(met())), gurps.CheckUnmet, false},
+		{"negated unmet", group(true, false, notCond(unmet())), gurps.CheckMet, true},
+		{"unknown field", group(true, false, unknownField()), gurps.CheckFailed, false},
+		{"negated unknown field", group(true, false, notCond(unknownField())), gurps.CheckFailed, false},
+		{"unknown node", group(true, false, newTestUnknownFilterNode()), gurps.CheckFailed, false},
+
+		{"all of met and met", group(true, false, met(), met()), gurps.CheckMet, true},
+		{"all of met and unmet", group(true, false, met(), unmet()), gurps.CheckUnmet, false},
+		{"all of met and unknown field", group(true, false, met(), unknownField()), gurps.CheckFailed, false},
+		{"all of unmet and unknown field", group(true, false, unmet(), unknownField()), gurps.CheckUnmet, false},
 		{
-			"all-of with an unknown node beside a match", true, false,
-			gurps.FilterNodes{newTestUnknownFilterNode(), matches()},
-			false,
+			"all of unmet and unknown node", group(true, false, unmet(), newTestUnknownFilterNode()),
+			gurps.CheckUnmet, false,
 		},
-		{"any-of with an unknown node alone", false, false, gurps.FilterNodes{newTestUnknownFilterNode()}, false},
+		{"all of met and empty", group(true, false, met(), empty()), gurps.CheckMet, true},
+		{"all of unmet and empty", group(true, false, unmet(), empty()), gurps.CheckUnmet, false},
+		{"any of met and unmet", group(false, false, met(), unmet()), gurps.CheckMet, true},
+		{"any of unmet and unmet", group(false, false, unmet(), unmet()), gurps.CheckUnmet, false},
+		{"any of met and unknown field", group(false, false, met(), unknownField()), gurps.CheckMet, true},
+		{"any of unmet and unknown field", group(false, false, unmet(), unknownField()), gurps.CheckFailed, false},
+		{"any of met and unknown node", group(false, false, met(), newTestUnknownFilterNode()), gurps.CheckMet, true},
 		{
-			"any-of with an unknown node beside a match", false, false,
-			gurps.FilterNodes{newTestUnknownFilterNode(), matches()},
-			true,
+			"any of unmet and unknown node", group(false, false, unmet(), newTestUnknownFilterNode()),
+			gurps.CheckFailed, false,
+		},
+		{"any of unmet and empty", group(false, false, unmet(), empty()), gurps.CheckUnmet, false},
+
+		{"not all of met and met", group(true, true, met(), met()), gurps.CheckUnmet, false},
+		{"not all of met and unmet", group(true, true, met(), unmet()), gurps.CheckMet, true},
+		{"not all of met and unknown field", group(true, true, met(), unknownField()), gurps.CheckFailed, false},
+		{"not all of unmet and unknown field", group(true, true, unmet(), unknownField()), gurps.CheckMet, true},
+		{"none of met and unknown field", group(false, true, met(), unknownField()), gurps.CheckUnmet, false},
+		{"none of unmet and unknown field", group(false, true, unmet(), unknownField()), gurps.CheckFailed, false},
+		{"none of met and unmet", group(false, true, met(), unmet()), gurps.CheckUnmet, false},
+		{"none of unmet and unmet", group(false, true, unmet(), unmet()), gurps.CheckMet, true},
+		{
+			"none of met and unknown node", group(false, true, met(), newTestUnknownFilterNode()),
+			gurps.CheckUnmet, false,
 		},
 		{
-			"any-of with an unknown node beside a non-match", false, false,
-			gurps.FilterNodes{newTestUnknownFilterNode(), doesNotMatch()},
-			false,
+			"none of unmet and unknown node", group(false, true, unmet(), newTestUnknownFilterNode()),
+			gurps.CheckFailed, false,
+		},
+
+		{"nested empty group", group(true, false, empty()), gurps.CheckSkipped, true},
+		{"nested negated empty group", group(true, false, emptyNoneOf()), gurps.CheckSkipped, true},
+		{
+			"group of empty groups", group(false, false, group(true, false, empty(), emptyNoneOf())),
+			gurps.CheckSkipped, true,
 		},
 		{
-			"negated all-of with an unknown node alone", true, true,
-			gurps.FilterNodes{newTestUnknownFilterNode()},
-			true,
+			"met beside a group of empty groups", group(true, false, met(), group(true, true, empty())),
+			gurps.CheckMet, true,
 		},
 		{
-			"negated all-of with an unknown node beside a match", true, true,
-			gurps.FilterNodes{newTestUnknownFilterNode(), matches()},
-			true,
+			"nested failed group in any of", group(false, false, group(true, false, newTestUnknownFilterNode()), met()),
+			gurps.CheckMet, true,
 		},
 		{
-			"negated any-of with an unknown node beside a match", false, true,
-			gurps.FilterNodes{newTestUnknownFilterNode(), matches()},
-			false,
-		},
-		{
-			"negated any-of with an unknown node alone", false, true,
-			gurps.FilterNodes{newTestUnknownFilterNode()},
-			true,
+			"nested failed group in all of", group(true, false, group(false, true, unknownField()), met()),
+			gurps.CheckFailed, false,
 		},
 	} {
 		f := gurps.NewListFilter("Test")
-		f.Root.All = one.all
-		f.Root.Not = one.not
-		f.Root.Children = one.children
+		f.Root = one.root
 		f.EnsureValidity()
-		c.Equal(one.want, matchesListFilter(f, fields, trait), "%s", one.name)
+		c.Equal(one.want, gurps.NewListFilterChecker(f, fields)(trait), "%s", one.name)
+		c.Equal(one.shown, matchesListFilter(f, fields, trait), "%s shown", one.name)
 	}
+	c.Equal(gurps.CheckSkipped, gurps.NewListFilterChecker(nil, fields)(trait), "no filter is skipped")
+	c.True(matchesListFilter(nil, fields, trait), "so it shows everything")
+	c.Nil(findFilterField(fields, "field_from_a_newer_gcs"), "the field really is unknown")
 }
 
 // checkFilterFields verifies that a filter field table is well formed: every field has a unique, storable key and a

@@ -34,14 +34,14 @@ import (
 const scriptEvaluationDelay = 250 * time.Millisecond
 
 // showCheckIcon has the label show the icon of the status.
-func showCheckIcon(label *unison.Label, status gurps.PrereqResult) {
+func showCheckIcon(label *unison.Label, status gurps.CheckResult) {
 	icon, ink := unison.CheckmarkSVG, unison.Ink(colors.Success)
 	switch status {
-	case gurps.PrereqUnmet:
+	case gurps.CheckUnmet:
 		icon, ink = svg.Not, colors.Failure
-	case gurps.PrereqFailed:
+	case gurps.CheckFailed:
 		icon, ink = unison.TriangleExclamationSVG, unison.ThemeWarning
-	case gurps.PrereqSkipped:
+	case gurps.CheckSkipped:
 		// Half as strong as text, for a contrast of at least 3:1 with the surface.
 		icon = svg.CircledMinus
 		ink = &unison.ColorFilteredInk{OriginalInk: unison.ThemeOnSurface, ColorFilter: unison.Alpha50Filter()}
@@ -86,7 +86,7 @@ type scriptEditorOptions struct {
 	Inserts  []scriptMenuEntry
 	Snippets []scriptMenuEntry
 	// Evaluate, when set, runs the script for the result line, whose text should say the outcome.
-	Evaluate func(script string) (status gurps.PrereqResult, text string)
+	Evaluate func(script string) (status gurps.CheckResult, text string)
 }
 
 // scriptEditor edits a script in a monospaced field under a toolbar of Insert and Snippets menus, with an optional line
@@ -262,7 +262,7 @@ func (e *scriptEditor) refresh() {
 
 // evaluate shows the result of evaluating the script.
 func (e *scriptEditor) evaluate(script string) {
-	var status gurps.PrereqResult
+	var status gurps.CheckResult
 	var text string
 	gurps.SuppressScriptResolveErrorLogging(func() { status, text = e.opts.Evaluate(script) })
 	showCheckIcon(e.icon, status)

@@ -56,18 +56,49 @@ func plainText(s string) string {
 	return s
 }
 
-// describeText returns the comparison and qualifier of t, such as `is Fire` or `contains "Fi"`. A non-empty qualifier
-// is passed through em, and is quoted unless the comparison is "is". "is" and "is not" drop space at either end of it,
-// as they do when matching.
+// describeText returns the comparison and qualifier of t, such as `is Fire` or `contains "Fi"`, the qualifier shown as
+// describeValue shows it. "is" and "is not" drop space at either end of it, as they do when matching.
 func describeText(t criteria.Text, replacements map[string]string, em func(string) string) string {
 	q := t.Compare.EffectiveQualifier(nameable.Apply(t.Qualifier, replacements))
-	if q == "" {
-		return t.Compare.Describe(q)
+	return describeComparison(t.Compare.String(), t.Compare, []string{q}, em)
+}
+
+// describeComparison returns words, which say how the comparison compares, followed by the qualifiers, joined with
+// "or", each shown as describeValue shows it. One qualifier after "is" may be bare; several are always quoted. "is
+// anything" takes no qualifier.
+func describeComparison(words string, compare criteria.StringComparison, qualifiers []string,
+	em func(string) string,
+) string {
+	if compare.EnsureValid() == criteria.AnyText {
+		return words
 	}
-	if t.Compare == criteria.IsText {
-		return t.Compare.String() + " " + em(q)
+	bare := compare == criteria.IsText && len(qualifiers) == 1
+	parts := make([]string, len(qualifiers))
+	for i, q := range qualifiers {
+		parts[i] = describeValue(q, bare, em)
 	}
-	return t.Compare.Describe(em(q))
+	text := parts[len(parts)-1]
+	if len(parts) > 1 {
+		text = i18n.Text("%s or %s", strings.Join(parts[:len(parts)-1], i18n.Text(", ")), text)
+	}
+	return words + " " + text
+}
+
+// describeValue returns a qualifier as a sentence shows it, passed through em: bare when bare is set and it reads
+// plainly, without a comma, a double quote or space at either end that would blur where it starts and stops, and
+// otherwise in double quotes, or in single quotes when it holds a double quote. An empty one reads "", and one that is
+// only space is quoted as it is, since it matches as it is.
+func describeValue(q string, bare bool, em func(string) string) string {
+	switch {
+	case q == "":
+		return `""`
+	case bare && q == strings.TrimSpace(q) && !strings.ContainsAny(q, `,"`):
+		return em(q)
+	case strings.Contains(q, `"`):
+		return "'" + em(q) + "'"
+	default:
+		return `"` + em(q) + `"`
+	}
 }
 
 // describeName returns how a prerequisite names what it looks for: the bare name for "is", or "" when that is blank
