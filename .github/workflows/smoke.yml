@@ -1,0 +1,59 @@
+name: Smoke Tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  smoke:
+    name: Smoke Tests (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        # The smoke tests check how the application behaves, not how a platform renders it: they run it headless, and
+        # unison's headless mode behaves the same on every host, so the same goldens apply everywhere. They run on every
+        # platform GCS is built for, so that any difference between them shows up and can be fixed.
+        os: [ubuntu-22.04, ubuntu-22.04-arm, macos-26-intel, macos-26, windows-2022, windows-11-arm]
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Set up Go
+        uses: actions/setup-go@v7
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - name: Run the smoke tests
+        env:
+          # A failure is a warning rather than a failed job until the goldens have proven stable on every platform.
+          # Drop GCS_SMOKE_WARN_ONLY then, so that a smoke test failure fails the job. What a failing test saw is kept
+          # here, for the upload below.
+          GCS_SMOKE_WARN_ONLY: 1
+          GCS_SMOKE_ARTIFACTS: ${{ runner.temp }}/smoke
+        run: |
+          # The smoke tests run the whole application with its background goroutines live, so they are race-checked
+          # wherever the race detector is supported. On Windows, that is only windows/amd64. GOFLAGS carries -race to
+          # the smoke run alone, where `build.sh --race` would run every other test as well.
+          if [ "$RUNNER_OS" = "Windows" ] && [ "$RUNNER_ARCH" = "ARM64" ]; then
+            ./build.sh --smoke
+          else
+            GOFLAGS="$GOFLAGS -race" ./build.sh --smoke
+          fi
+
+      - name: Upload smoke test failures
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: smoke-test-failures-${{ matrix.os }}
+          path: ${{ runner.temp }}/smoke
+          if-no-files-found: ignore

@@ -1,0 +1,149 @@
+{
+	"version": 5,
+	"colors": {
+		"surface": {
+			"light": "#E8E8E8",
+			"dark": "#282828"
+		},
+		"header": {
+			"light": "#505050",
+			"dark": "#404040"
+		},
+		"banding": {
+			"light": "#E8E8D8",
+			"dark": "#282820"
+		},
+		"focus": {
+			"light": "#006199",
+			"dark": "#0080CC"
+		},
+		"tooltip": {
+			"light": "#FFF4C6",
+			"dark": "#FFF299"
+		},
+		"error": {
+			"light": "#851414",
+			"dark": "#851414"
+		},
+		"warning": {
+			"light": "#D94C00",
+			"dark": "#BF4300"
+		},
+		"alert": {
+			"light": "#E8C860",
+			"dark": "#CCAC4C"
+		},
+		"success": {
+			"light": "Green",
+			"dark": "#50B45A"
+		},
+		"failure": {
+			"light": "#851414",
+			"dark": "#E66E6E"
+		},
+		"cursor_fg": {
+			"light": "Black",
+			"dark": "Black"
+		},
+		"cursor_bg": {
+			"light": "White",
+			"dark": "White"
+		},
+		"grouping_1": {
+			"light": "#6A2FB0",
+			"dark": "#843BDC"
+		},
+		"grouping_2": {
+			"light": "#006B66",
+			"dark": "#00726D"
+		},
+		"tint_portrait": {
+			"light": "None",
+			"dark": "None"
+		},
+		"tint_identity": {
+			"light": "None",
+			"dark": "None"
+		},
+		"tint_misc": {
+			"light": "None",
+			"dark": "None"
+		},
+		"tint_points": {
+			"light": "None",
+			"dark": "None"
+		},
+		"tint_description": {
+			"light": "None",
+			"dark": "None"
+		},
+		"tint_primary_attributes": {
+			"light": "None",
+			"dark": "None"
+		},
+		"tint_secondary_attributes": {
+			"light": "None",
+			"dark": "None"
+		},
+		"tint_body": {
+			"light": "None",
+			"dark": "None"
+		},
+		"tint_encumbrance": {
+			"light": "None",
+			"dark": "None"
+		},
+		"tint_lifting": {
+			"light": "None",
+			"dark": "None"
+		},
+		"tint_damage": {
+			"light": "None",
+			"dark": "None"
+		},
+		"tint_pools": {
+			"light": "None",
+			"dark": "None"
+		},
+		"tint_reactions": {
+			"light": "None",
+			"dark": "None"
+		},
+		"tint_conditions": {
+			"light": "None",
+			"dark": "None"
+		},
+		"tint_melee": {
+			"light": "None",
+			"dark": "None"
+		},
+		"tint_ranged": {
+			"light": "None",
+			"dark": "None"
+		},
+		"tint_traits": {
+			"light": "None",
+			"dark": "None"
+		},
+		"tint_skills": {
+			"light": "None",
+			"dark": "None"
+		},
+		"tint_spells": {
+			"light": "None",
+			"dark": "None"
+		},
+		"tint_carried_equipment": {
+			"light": "None",
+			"dark": "None"
+		},
+		"tint_other_equipment": {
+			"light": "None",
+			"dark": "None"
+		},
+		"tint_notes": {
+			"light": "None",
+			"dark": "None"
+		}
+	}
+}

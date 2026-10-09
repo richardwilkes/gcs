@@ -1,0 +1,151 @@
+{
+	"version": 5,
+	"rows": [
+		{
+			"id": "metgZL8_EGlv59_U7",
+			"name": "Cost +5",
+			"cost_adj": "+5"
+		},
+		{
+			"id": "mzMSUi-_WZ942WQ6t",
+			"name": "Cost -10",
+			"cost_adj": "-10",
+			"affects": "base_only"
+		},
+		{
+			"id": "mu5_bSSwvLe8ouPk1",
+			"name": "Cost +10%",
+			"cost_adj": "+10%",
+			"affects": "levels_only"
+		},
+		{
+			"id": "mYIdW9MrgwXBGbJbK",
+			"name": "Cost -25%",
+			"cost_adj": "-25%"
+		},
+		{
+			"id": "mQyZkrNi_PzL5abaf",
+			"name": "Cost x2",
+			"cost_adj": "x2",
+			"affects": "base_only"
+		},
+		{
+			"id": "mPtgx-cM4Q2ua0rBV",
+			"name": "Cost x1/2",
+			"cost_adj": "x1/2",
+			"affects": "levels_only"
+		},
+		{
+			"id": "m3Hbp1cDgYQgb6cos",
+			"name": "Leveled Modifier",
+			"cost_adj": "+5%",
+			"levels": 2
+		},
+		{
+			"id": "mLDxFnEcZ672bXMLh",
+			"name": "Uses Trait Level",
+			"cost_adj": "+1",
+			"use_level_from_trait": true,
+			"cost_ignores_level": true
+		},
+		{
+			"id": "mIOFbOFzR4yrBZ69j",
+			"name": "Shows On Weapon",
+			"local_notes": "Visible on weapons",
+			"cost_adj": "+10%",
+			"show_notes_on_weapon": true,
+			"features": [
+				{
+					"type": "weapon_bonus",
+					"selection_type": "weapons_with_required_skill",
+					"name": {
+						"compare": "is",
+						"qualifier": "Broadsword"
+					},
+					"level": {
+						"compare": "at_least",
+						"qualifier": 10
+					},
+					"amount": 1,
+					"per_die": true
+				}
+			]
+		},
+		{
+			"id": "mVgbpAxaI4zwkjHtg",
+			"name": "Disabled Modifier",
+			"cost_adj": "+20%",
+			"disabled": true
+		},
+		{
+			"id": "mN1PrsL5IJtOxAjYE",
+			"name": "Accessibility (@Condition@)",
+			"cost_adj": "-10%"
+		},
+		{
+			"id": "M3xR9v0wdrL6rRC5t",
+			"name": "Modifier Group",
+			"children": [
+				{
+					"id": "mI2AguABb4wnc9mpb",
+					"name": "Grouped A",
+					"cost_adj": "+5%"
+				},
+				{
+					"id": "mzijJt83Ik7HjjtUa",
+					"name": "Grouped B",
+					"cost_adj": "-5%"
+				}
+			]
+		},
+		{
+			"id": "MskSD6tVJULeAtlJP",
+			"name": "Mandatory Modifier Choice",
+			"choice": {
+				"type": "count",
+				"qualifier": {
+					"compare": "is",
+					"qualifier": 1
+				}
+			},
+			"children": [
+				{
+					"id": "m3OKt2RsJ5e9LCpRr",
+					"name": "Option One",
+					"cost_adj": "+10%"
+				},
+				{
+					"id": "m9wue_RSB6Yt-_irb",
+					"name": "Option Two",
+					"cost_adj": "+20%",
+					"disabled": true
+				}
+			]
+		},
+		{
+			"id": "MH858S06y4R_5wzTG",
+			"name": "Optional Modifier Choice",
+			"choice": {
+				"type": "count",
+				"qualifier": {
+					"compare": "at_most",
+					"qualifier": 1
+				}
+			},
+			"children": [
+				{
+					"id": "mkWx2naiFXgyCPFSR",
+					"name": "Maybe This",
+					"cost_adj": "-10%",
+					"disabled": true
+				},
+				{
+					"id": "mSBwyXBwksX9rCtm4",
+					"name": "Maybe That",
+					"cost_adj": "-20%",
+					"disabled": true
+				}
+			]
+		}
+	]
+}

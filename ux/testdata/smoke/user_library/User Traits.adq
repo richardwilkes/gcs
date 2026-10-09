@@ -1,0 +1,16 @@
+{
+	"version": 5,
+	"rows": [
+		{
+			"id": "tyvg564eWmW--2EWJ",
+			"name": "User Library Trait",
+			"tags": [
+				"Custom"
+			],
+			"base_points": 5,
+			"calc": {
+				"points": 5
+			}
+		}
+	]
+}

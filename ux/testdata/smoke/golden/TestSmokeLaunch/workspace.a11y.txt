@@ -1,0 +1,88 @@
+window "GCS" [focused]
+  menu-bar
+    menu-item "File" [collapsed]
+    menu-item "Edit" [collapsed]
+    menu-item "Item" [collapsed]
+    menu-item "Settings" [collapsed]
+    menu-item "View" [collapsed]
+    menu-item "Window" [collapsed]
+    menu-item "Help" [collapsed]
+  group
+    group "Library Explorer"
+      tab-list
+        tab "Library Explorer" [selected]
+        button "Maximize"
+      tab-panel "Library Explorer"
+        image "Holding down the Alt+ key while using the mouse wheel will change the scale."
+        button "Help"
+        text-field "Scale" value="100%"
+        button "Opens/closes all hierarchical rows"
+        separator
+        button "Add Library"
+        button "Update" [disabled]
+        button "Release Notes" [disabled]
+        button "Configure" [disabled]
+        separator
+        button "New Folder" [disabled]
+        button "Rename" [disabled]
+        button "Delete" [disabled]
+        button "Toggle Favorite" [disabled]
+        button "Previous Match" [disabled]
+        button "Next Match" [disabled]
+        text-field "Search" desc="Search\nPress RETURN to select the next match\nPress SHIFT-RETURN to select the previous match" placeholder="Search"
+          button "Clear" [disabled]
+        label "-" text="-" desc="Number of matches found"
+        scroll-area
+          tree "Library Explorer" [focused]
+            row "Favorites" [expanded]
+              disclosure-triangle "Disclosure Triangle" [pressed] [expanded]
+              cell
+                label "Favorites" text="Favorites"
+            row "User Library" [expanded]
+              disclosure-triangle "Disclosure Triangle" [pressed] [expanded]
+              cell
+                label "User Library" text="User Library"
+            row "User Traits"
+              cell
+                label "User Traits" text="User Traits"
+            row "Master Library" [expanded]
+              disclosure-triangle "Disclosure Triangle" [pressed] [expanded]
+              cell
+                label "Master Library" text="Master Library"
+            row "Fixture Equipment"
+              cell
+                label "Fixture Equipment" text="Fixture Equipment"
+            row "Fixture Equipment Modifiers"
+              cell
+                label "Fixture Equipment Modifiers" text="Fixture Equipment Modifiers"
+            row "Fixture Notes"
+              cell
+                label "Fixture Notes" text="Fixture Notes"
+            row "Fixture Readme"
+              cell
+                label "Fixture Readme" text="Fixture Readme"
+            row "Fixture Skills"
+              cell
+                label "Fixture Skills" text="Fixture Skills"
+            row "Fixture Spells"
+              cell
+                label "Fixture Spells" text="Fixture Spells"
+            row "Fixture Trait Modifiers"
+              cell
+                label "Fixture Trait Modifiers" text="Fixture Trait Modifiers"
+            row "Fixture Traits"
+              cell
+                label "Fixture Traits" text="Fixture Traits"
+            row "Templates" [expanded]
+              disclosure-triangle "Disclosure Triangle" [pressed] [expanded]
+              cell
+                label "Templates" text="Templates"
+            row "Fixture Template"
+              cell
+                label "Fixture Template" text="Fixture Template"
+    group "Document Workspace"
+      tab-list
+        tab "Document Workspace" [selected]
+        button "Maximize"
+      tab-panel "Document Workspace"
+        group

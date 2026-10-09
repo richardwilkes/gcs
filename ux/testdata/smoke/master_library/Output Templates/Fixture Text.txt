@@ -1,0 +1,5 @@
+GCS Text Template v1
+Name: {{.Name}}
+Player: {{.Player}}
+{{range .Skills}}{{.Description}} {{.Level}}
+{{end}}

@@ -2,6 +2,9 @@ version: '2'
 run:
   modules-download-mode: readonly
   tests: true
+  # The smoke tests (ux/smoke_*_test.go) are compiled only with the smoke tag, so without it they would never be linted.
+  build-tags:
+    - smoke
 linters:
   default: none
   enable:

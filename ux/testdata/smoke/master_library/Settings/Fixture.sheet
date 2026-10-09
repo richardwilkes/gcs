@@ -1,0 +1,570 @@
+{
+	"page": {
+		"paper_size": "letter",
+		"orientation": "portrait",
+		"top_margin": "0.25 in",
+		"left_margin": "0.25 in",
+		"bottom_margin": "0.25 in",
+		"right_margin": "0.25 in"
+	},
+	"layout": {
+		"root": {
+			"type": "column",
+			"weight": 1,
+			"children": [
+				{
+					"type": "row",
+					"weight": 1,
+					"children": [
+						{
+							"type": "block",
+							"key": "portrait",
+							"weight": 1,
+							"square": true
+						},
+						{
+							"type": "column",
+							"weight": 4.3,
+							"children": [
+								{
+									"type": "row",
+									"weight": 1,
+									"children": [
+										{
+											"type": "block",
+											"key": "identity",
+											"weight": 1.6
+										},
+										{
+											"type": "block",
+											"key": "miscellaneous",
+											"weight": 1
+										}
+									]
+								},
+								{
+									"type": "block",
+									"key": "description",
+									"weight": 1
+								}
+							]
+						},
+						{
+							"type": "block",
+							"key": "points",
+							"weight": 1
+						}
+					]
+				},
+				{
+					"type": "row",
+					"weight": 1,
+					"children": [
+						{
+							"type": "column",
+							"weight": 1.6,
+							"children": [
+								{
+									"type": "row",
+									"weight": 1,
+									"children": [
+										{
+											"type": "column",
+											"weight": 1,
+											"children": [
+												{
+													"type": "block",
+													"key": "primary_attributes",
+													"weight": 1
+												},
+												{
+													"type": "block",
+													"key": "damage",
+													"weight": 1
+												}
+											]
+										},
+										{
+											"type": "block",
+											"key": "secondary_attributes",
+											"weight": 1
+										}
+									]
+								},
+								{
+									"type": "block",
+									"key": "point_pools",
+									"weight": 1
+								}
+							]
+						},
+						{
+							"type": "block",
+							"key": "body",
+							"weight": 1.25
+						},
+						{
+							"type": "column",
+							"weight": 1.3,
+							"children": [
+								{
+									"type": "block",
+									"key": "encumbrance",
+									"weight": 1
+								},
+								{
+									"type": "block",
+									"key": "lifting",
+									"weight": 1
+								}
+							]
+						}
+					]
+				},
+				{
+					"type": "row",
+					"weight": 1,
+					"children": [
+						{
+							"type": "block",
+							"key": "reactions",
+							"weight": 1
+						},
+						{
+							"type": "block",
+							"key": "conditional_modifiers",
+							"weight": 1
+						}
+					]
+				},
+				{
+					"type": "block",
+					"key": "melee",
+					"weight": 1
+				},
+				{
+					"type": "block",
+					"key": "ranged",
+					"weight": 1
+				},
+				{
+					"type": "row",
+					"weight": 1,
+					"children": [
+						{
+							"type": "block",
+							"key": "traits",
+							"weight": 1
+						},
+						{
+							"type": "block",
+							"key": "skills",
+							"weight": 0.875
+						}
+					]
+				},
+				{
+					"type": "block",
+					"key": "spells",
+					"weight": 1
+				},
+				{
+					"type": "block",
+					"key": "equipment",
+					"weight": 1
+				},
+				{
+					"type": "block",
+					"key": "other_equipment",
+					"weight": 1
+				},
+				{
+					"type": "block",
+					"key": "notes",
+					"weight": 1
+				}
+			]
+		}
+	},
+	"attributes": [
+		{
+			"id": "st",
+			"type": "integer",
+			"name": "ST",
+			"full_name": "Strength",
+			"base": "10",
+			"cost_per_point": 10,
+			"cost_adj_percent_per_sm": 10
+		},
+		{
+			"id": "dx",
+			"type": "integer",
+			"name": "DX",
+			"full_name": "Dexterity",
+			"base": "10",
+			"cost_per_point": 20
+		},
+		{
+			"id": "iq",
+			"type": "integer",
+			"name": "IQ",
+			"full_name": "Intelligence",
+			"base": "10",
+			"cost_per_point": 20
+		},
+		{
+			"id": "ht",
+			"type": "integer",
+			"name": "HT",
+			"full_name": "Health",
+			"base": "10",
+			"cost_per_point": 10
+		},
+		{
+			"id": "will",
+			"type": "integer",
+			"name": "Will",
+			"base": "$iq",
+			"cost_per_point": 5
+		},
+		{
+			"id": "fright_check",
+			"type": "integer",
+			"name": "Fright Check",
+			"base": "$will",
+			"cost_per_point": 2
+		},
+		{
+			"id": "per",
+			"type": "integer",
+			"name": "Per",
+			"full_name": "Perception",
+			"base": "$iq",
+			"cost_per_point": 5
+		},
+		{
+			"id": "vision",
+			"type": "integer",
+			"name": "Vision",
+			"base": "$per",
+			"cost_per_point": 2
+		},
+		{
+			"id": "hearing",
+			"type": "integer",
+			"name": "Hearing",
+			"base": "$per",
+			"cost_per_point": 2
+		},
+		{
+			"id": "taste_smell",
+			"type": "integer",
+			"name": "Taste & Smell",
+			"base": "$per",
+			"cost_per_point": 2
+		},
+		{
+			"id": "touch",
+			"type": "integer",
+			"name": "Touch",
+			"base": "$per",
+			"cost_per_point": 2
+		},
+		{
+			"id": "basic_speed",
+			"type": "decimal",
+			"name": "Basic Speed",
+			"base": "($dx + $ht) / 4",
+			"cost_per_point": 20
+		},
+		{
+			"id": "basic_move",
+			"type": "integer",
+			"name": "Basic Move",
+			"base": "Math.floor($basic_speed)",
+			"cost_per_point": 5
+		},
+		{
+			"id": "fp",
+			"type": "pool",
+			"name": "FP",
+			"full_name": "Fatigue Points",
+			"base": "$ht",
+			"cost_per_point": 3,
+			"thresholds": [
+				{
+					"state": "Unconscious",
+					"value": "-$fp",
+					"ops": [
+						"halve_move",
+						"halve_dodge",
+						"halve_st"
+					]
+				},
+				{
+					"state": "Collapse",
+					"value": "0",
+					"explanation": "- Roll vs. Will to do anything besides talk or rest; failure causes unconsciousness\n- Each FP you lose below 0 also causes 1 HP of injury\n- Move, Dodge and ST are halved (B426)",
+					"ops": [
+						"halve_move",
+						"halve_dodge",
+						"halve_st"
+					]
+				},
+				{
+					"state": "Tired",
+					"value": "Math.ceil($fp / 3) - 1",
+					"explanation": "Move, Dodge and ST are halved (B426)",
+					"ops": [
+						"halve_move",
+						"halve_dodge",
+						"halve_st"
+					]
+				},
+				{
+					"state": "Tiring",
+					"value": "$fp - 1"
+				},
+				{
+					"state": "Rested",
+					"value": "$fp"
+				}
+			]
+		},
+		{
+			"id": "hp",
+			"type": "pool",
+			"name": "HP",
+			"full_name": "Hit Points",
+			"base": "$st",
+			"cost_per_point": 2,
+			"cost_adj_percent_per_sm": 10,
+			"thresholds": [
+				{
+					"state": "Dead",
+					"value": "Math.round(-$hp * 5)",
+					"ops": [
+						"halve_move",
+						"halve_dodge"
+					]
+				},
+				{
+					"state": "Dying #4",
+					"value": "Math.round(-$hp * 4)",
+					"explanation": "- Roll vs. HT to avoid death\n- Roll vs. HT-4 every second to avoid falling unconscious\n- Move and Dodge are halved (B419)",
+					"ops": [
+						"halve_move",
+						"halve_dodge"
+					]
+				},
+				{
+					"state": "Dying #3",
+					"value": "Math.round(-$hp * 3)",
+					"explanation": "- Roll vs. HT to avoid death\n- Roll vs. HT-3 every second to avoid falling unconscious\n- Move and Dodge are halved (B419)",
+					"ops": [
+						"halve_move",
+						"halve_dodge"
+					]
+				},
+				{
+					"state": "Dying #2",
+					"value": "Math.round(-$hp * 2)",
+					"explanation": "- Roll vs. HT to avoid death\n- Roll vs. HT-2 every second to avoid falling unconscious\n- Move and Dodge are halved (B419)",
+					"ops": [
+						"halve_move",
+						"halve_dodge"
+					]
+				},
+				{
+					"state": "Dying #1",
+					"value": "-$hp",
+					"explanation": "- Roll vs. HT to avoid death\n- Roll vs. HT-1 every second to avoid falling unconscious\n- Move and Dodge are halved (B419)",
+					"ops": [
+						"halve_move",
+						"halve_dodge"
+					]
+				},
+				{
+					"state": "Collapse",
+					"value": "0",
+					"explanation": "- Roll vs. HT every second to avoid falling unconscious\n- Move and Dodge are halved (B419)",
+					"ops": [
+						"halve_move",
+						"halve_dodge"
+					]
+				},
+				{
+					"state": "Reeling",
+					"value": "Math.ceil($hp / 3) - 1",
+					"explanation": "Move and Dodge are halved (B419)",
+					"ops": [
+						"halve_move",
+						"halve_dodge"
+					]
+				},
+				{
+					"state": "Wounded",
+					"value": "$hp - 1"
+				},
+				{
+					"state": "Healthy",
+					"value": "$hp"
+				}
+			]
+		}
+	],
+	"body_type": {
+		"name": "Humanoid",
+		"roll": "3d",
+		"locations": [
+			{
+				"id": "eye",
+				"choice_name": "Eyes",
+				"table_name": "Eyes",
+				"hit_penalty": -9,
+				"description": "An attack that misses by 1 hits the torso instead. Only\nimpaling (imp), piercing (pi-, pi, pi+, pi++), and\ntight-beam burning (burn) attacks can target the eye – and\nonly from the front or sides. Injury over HP÷10 blinds the\neye. Otherwise, treat as skull, but without the extra DR!",
+				"calc": {
+					"roll_range": "-"
+				}
+			},
+			{
+				"id": "skull",
+				"choice_name": "Skull",
+				"table_name": "Skull",
+				"slots": 2,
+				"hit_penalty": -7,
+				"dr_bonus": 2,
+				"description": "An attack that misses by 1 hits the torso instead. Wounding\nmodifier is x4. Knockdown rolls are at -10. Critical hits\nuse the Critical Head Blow Table (B556). Exception: These\nspecial effects do not apply to toxic (tox) damage.",
+				"calc": {
+					"roll_range": "3-4"
+				}
+			},
+			{
+				"id": "face",
+				"choice_name": "Face",
+				"table_name": "Face",
+				"slots": 1,
+				"hit_penalty": -5,
+				"description": "An attack that misses by 1 hits the torso instead. Jaw,\ncheeks, nose, ears, etc. If the target has an open-faced\nhelmet, ignore its DR. Knockdown rolls are at -5. Critical\nhits use the Critical Head Blow Table (B556). Corrosion\n(cor) damage gets a x1½ wounding modifier, and if it\ninflicts a major wound, it also blinds one eye (both eyes on\ndamage over full HP). Random attacks from behind hit the\nskull instead.",
+				"calc": {
+					"roll_range": "5"
+				}
+			},
+			{
+				"id": "leg",
+				"choice_name": "Leg",
+				"table_name": "Right Leg",
+				"slots": 2,
+				"hit_penalty": -2,
+				"description": "Reduce the wounding multiplier of large piercing (pi+), huge\npiercing (pi++), and impaling (imp) damage to x1. Any major\nwound (loss of over ½ HP from one blow) cripples the limb.\nDamage beyond that threshold is lost.",
+				"calc": {
+					"roll_range": "6-7"
+				}
+			},
+			{
+				"id": "arm",
+				"choice_name": "Arm",
+				"table_name": "Right Arm",
+				"slots": 1,
+				"hit_penalty": -2,
+				"description": "Reduce the wounding multiplier of large piercing (pi+), huge\npiercing (pi++), and impaling (imp) damage to x1. Any major\nwound (loss of over ½ HP from one blow) cripples the limb.\nDamage beyond that threshold is lost. If holding a shield,\ndouble the penalty to hit: -4 for shield arm instead of -2.",
+				"calc": {
+					"roll_range": "8"
+				}
+			},
+			{
+				"id": "torso",
+				"choice_name": "Torso",
+				"table_name": "Torso",
+				"slots": 2,
+				"calc": {
+					"roll_range": "9-10"
+				}
+			},
+			{
+				"id": "groin",
+				"choice_name": "Groin",
+				"table_name": "Groin",
+				"slots": 1,
+				"hit_penalty": -3,
+				"description": "An attack that misses by 1 hits the torso instead. Human\nmales and the males of similar species suffer double shock\nfrom crushing (cr) damage, and get -5 to knockdown rolls.\nOtherwise, treat as a torso hit.",
+				"calc": {
+					"roll_range": "11"
+				}
+			},
+			{
+				"id": "arm",
+				"choice_name": "Arm",
+				"table_name": "Left Arm",
+				"slots": 1,
+				"hit_penalty": -2,
+				"description": "Reduce the wounding multiplier of large piercing (pi+), huge\npiercing (pi++), and impaling (imp) damage to x1. Any major\nwound (loss of over ½ HP from one blow) cripples the limb.\nDamage beyond that threshold is lost. If holding a shield,\ndouble the penalty to hit: -4 for shield arm instead of -2.",
+				"calc": {
+					"roll_range": "12"
+				}
+			},
+			{
+				"id": "leg",
+				"choice_name": "Leg",
+				"table_name": "Left Leg",
+				"slots": 2,
+				"hit_penalty": -2,
+				"description": "Reduce the wounding multiplier of large piercing (pi+), huge\npiercing (pi++), and impaling (imp) damage to x1. Any major\nwound (loss of over ½ HP from one blow) cripples the limb.\nDamage beyond that threshold is lost.",
+				"calc": {
+					"roll_range": "13-14"
+				}
+			},
+			{
+				"id": "hand",
+				"choice_name": "Hand",
+				"table_name": "Hand",
+				"slots": 1,
+				"hit_penalty": -4,
+				"description": "If holding a shield, double the penalty to hit: -8 for\nshield hand instead of -4. Reduce the wounding multiplier of\nlarge piercing (pi+), huge piercing (pi++), and impaling\n(imp) damage to x1. Any major wound (loss of over ⅓ HP\nfrom one blow) cripples the extremity. Damage beyond that\nthreshold is lost.",
+				"calc": {
+					"roll_range": "15"
+				}
+			},
+			{
+				"id": "foot",
+				"choice_name": "Foot",
+				"table_name": "Foot",
+				"slots": 1,
+				"hit_penalty": -4,
+				"description": "Reduce the wounding multiplier of large piercing (pi+), huge\npiercing (pi++), and impaling (imp) damage to x1. Any major\nwound (loss of over ⅓ HP from one blow) cripples the\nextremity. Damage beyond that threshold is lost.",
+				"calc": {
+					"roll_range": "16"
+				}
+			},
+			{
+				"id": "neck",
+				"choice_name": "Neck",
+				"table_name": "Neck",
+				"slots": 2,
+				"hit_penalty": -5,
+				"description": "An attack that misses by 1 hits the torso instead. Neck and\nthroat. Increase the wounding multiplier of crushing (cr)\nand corrosion (cor) attacks to x1½, and that of cutting\n(cut) damage to x2. At the GM’s option, anyone killed by a\ncutting (cut) blow to the neck is decapitated!",
+				"calc": {
+					"roll_range": "17-18"
+				}
+			},
+			{
+				"id": "vitals",
+				"choice_name": "Vitals",
+				"table_name": "Vitals",
+				"hit_penalty": -3,
+				"description": "An attack that misses by 1 hits the torso instead. Heart,\nlungs, kidneys, etc. Increase the wounding modifier for an\nimpaling (imp) or any piercing (pi-, pi, pi+, pi++) attack\nto x3. Increase the wounding modifier for a tight-beam\nburning (burn) attack to x2. Other attacks cannot target the\nvitals.",
+				"calc": {
+					"roll_range": "-"
+				}
+			}
+		]
+	},
+	"damage_progression": "basic_set",
+	"default_length_units": "ft_in",
+	"default_weight_units": "lb",
+	"user_description_display": "not_shown",
+	"modifiers_display": "inline_and_tooltip",
+	"notes_display": "tooltip",
+	"skill_level_adj_display": "inline",
+	"show_spell_adj": true
+}
