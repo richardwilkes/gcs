@@ -266,7 +266,7 @@ func initSkillEditor(e *editor[*gurps.Skill, *gurps.SkillEditData], content *uni
 		e.rangedWeapons = newWeaponsPanel(e, e.target, false, &e.editorData.Weapons)
 		content.AddChild(e.rangedWeapons)
 		if entity != nil {
-			content.AddChild(newStudyPanel(entity, &e.editorData.StudyHoursNeeded, &e.editorData.Study))
+			content.AddChild(newStudyPanel(&e.editorData.StudyHoursNeeded, &e.editorData.Study))
 		}
 	}
 	return nil

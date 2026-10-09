@@ -358,7 +358,7 @@ func TestInitTitledEditorSection(t *testing.T) {
 	expectTitledEditorSection(c, newPrereqPanel(entity, &root, prereq.TypesForNonEquipment, false), "Prerequisites")
 	level := study.Standard
 	studies := []*gurps.Study{{Type: study.Self}}
-	expectTitledEditorSection(c, newStudyPanel(entity, &level, &studies), "Study")
+	expectTitledEditorSection(c, newStudyPanel(&level, &studies), "Study")
 }
 
 func TestNewSectionAddButton(t *testing.T) {

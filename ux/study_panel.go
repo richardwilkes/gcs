@@ -25,15 +25,13 @@ var lastStudyTypeUsed = study.Self
 
 type studyPanel struct {
 	unison.Panel
-	entity      *gurps.Entity
 	studyNeeded *study.Level
 	study       *[]*gurps.Study
 	total       *unison.Label
 }
 
-func newStudyPanel(entity *gurps.Entity, studyNeeded *study.Level, s *[]*gurps.Study) *studyPanel {
+func newStudyPanel(studyNeeded *study.Level, s *[]*gurps.Study) *studyPanel {
 	p := &studyPanel{
-		entity:      entity,
 		studyNeeded: studyNeeded,
 		study:       s,
 	}
