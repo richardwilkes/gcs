@@ -1,5 +1,10 @@
 {
 	"go.toolsEnvVars": {
 		"GOEXPERIMENT": "simd"
+	},
+	"gopls": {
+		"analyses": {
+			"SA5008": false
+		}
 	}
 }

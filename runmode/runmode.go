@@ -7,8 +7,6 @@
 // This Source Code Form is "Incompatible With Secondary Licenses", as
 // defined by the Mozilla Public License, version 2.0.
 
-// Package runmode lets any package register an alternate mode main() can dispatch to instead of the normal UI --
-// something that takes over the process and exits, the way -convert, -sync and -text already do.
 package runmode
 
 import "flag"

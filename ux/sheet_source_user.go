@@ -6,6 +6,7 @@
 //
 // This Source Code Form is "Incompatible With Secondary Licenses", as
 // defined by the Mozilla Public License, version 2.0.
+
 package ux
 
 // SheetSourceUser is implemented by the dockables that draw their numbers from open character sheets, such as the

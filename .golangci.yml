@@ -80,19 +80,15 @@ linters:
         defined by the Mozilla Public License, version 2.0.
     gosec:
       excludes:
-        - G103
-        - G104
-        - G110
-        - G115
-        - G204
-        - G301
-        - G302
-        - G303
-        - G304
-        - G306
-        - G307
-        - G601
-        - G602
+        - G103 # Use of unsafe
+        - G104 # Errors not checked
+        - G115 # Integer conversion that may overflow
+        - G204 # Command execution with variable arguments
+        - G301 # Poor file permissions when creating a directory
+        - G302 # Poor file permissions when creating a file or using chmod
+        - G304 # File path from a variable (path traversal)
+        - G306 # Poor file permissions when writing a file
+        - G602 # Possible slice bounds out of range
     govet:
       disable:
         - composites
@@ -166,9 +162,6 @@ linters:
     staticcheck:
       checks:
         - all
-        - -ST1000
-        - -SA3000
-        - -SA5008
   exclusions:
     generated: lax
 issues:
