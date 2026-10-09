@@ -13,6 +13,7 @@ import (
 	"testing"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/ux/uxtest"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/unison"
 )
@@ -39,7 +40,7 @@ func TestStudyPanelOnlyOnSheets(t *testing.T) {
 		_, contents["skill"] = buildEditorContent(one.rebuilder, gurps.NewSkill(one.owner, nil, false), initSkillEditor)
 		_, contents["spell"] = buildEditorContent(one.rebuilder, gurps.NewSpell(one.owner, nil, false), initSpellEditor)
 		for kind, content := range contents {
-			c.Equal(one.want, len(panelsOfType[*studyPanel](content)), "%s in a %s", kind, one.name)
+			c.Equal(one.want, len(uxtest.PanelsOfType[*studyPanel](content)), "%s in a %s", kind, one.name)
 		}
 	}
 }
