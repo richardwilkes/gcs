@@ -68,6 +68,8 @@ func checkModifierProvider[T gurps.Node[T]](t *testing.T, one modifierProviderCa
 // enabled and library source columns that only an editor's table adds around the fixed run of columns, and the
 // new-item actions that lead the context menu.
 func TestModifierProvidersUseTheirOwnSpec(t *testing.T) {
+	// The shared context menu items name actions that registerActions creates.
+	registerKeyBindingsOnce.Do(func() { registerActions() })
 	checkModifierProvider(t, modifierProviderCase[*gurps.TraitModifier]{
 		name: "trait modifiers",
 		provider: func(forEditor bool) TableProvider[*gurps.TraitModifier] {
