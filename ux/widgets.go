@@ -18,7 +18,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/difficulty"
-	"github.com/richardwilkes/gcs/v5/svg"
+	"github.com/richardwilkes/gcs/v5/ux/svg"
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/toolbox/v2/xmath"
@@ -560,7 +560,9 @@ func installPopupSelection[T comparable](popup *unison.PopupMenu[T], current T, 
 	}
 }
 
-func adjustFieldBlank(field unison.Paneler, blank bool) {
+// AdjustFieldBlank disables the field and paints over it in its background ink when blank, so that it shows nothing,
+// and restores it otherwise.
+func AdjustFieldBlank(field unison.Paneler, blank bool) {
 	panel := field.AsPanel()
 	panel.SetEnabled(!blank)
 	if blank {
@@ -579,7 +581,9 @@ func adjustFieldBlank(field unison.Paneler, blank bool) {
 	}
 }
 
-func adjustPopupBlank[T comparable](popup *unison.PopupMenu[T], blank bool) {
+// AdjustPopupBlank disables the popup and paints over it in its background ink when blank, so that it shows nothing,
+// and restores it otherwise.
+func AdjustPopupBlank[T comparable](popup *unison.PopupMenu[T], blank bool) {
 	popup.SetEnabled(!blank)
 	if blank {
 		popup.DrawOverCallback = func(gc *unison.Canvas, _ geom.Rect) {
@@ -641,12 +645,12 @@ func addStringCriteriaPanel(parent *unison.Panel, prefix, notPrefix, subject str
 		int(strCriteria.Compare.EnsureValid()))
 	popup.SelectionChangedCallback = func(p *unison.PopupMenu[string]) {
 		strCriteria.Compare = criteria.StringComparisons[p.SelectedIndex()]
-		adjustFieldBlank(criteriaField, strCriteria.IsZero())
+		AdjustFieldBlank(criteriaField, strCriteria.IsZero())
 		MarkModified(panel)
 	}
 	panel.AddChild(popup)
 	criteriaField = addStringField(panel, undoTitle, "", &strCriteria.Qualifier)
-	adjustFieldBlank(criteriaField, strCriteria.IsZero())
+	AdjustFieldBlank(criteriaField, strCriteria.IsZero())
 	return popup, criteriaField
 }
 

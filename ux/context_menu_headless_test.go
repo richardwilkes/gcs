@@ -18,6 +18,7 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/ux/uxtest"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/i18n"
@@ -29,7 +30,7 @@ import (
 
 // These tests ask for GCS's context menus every way a user can -- a right-click, shift+F10, the Menu key and a screen
 // reader's request -- and check that the menu each opens is the one the panel builds. A headless session uses in-window
-// menus, so an open one can be seen with openMenuPopup and closed with Escape.
+// menus, so an open one can be seen with uxtest.OpenMenuPopup and closed with Escape.
 
 // contextMenuTitles returns the titles of the items of the popup menu open in wnd, without the separators, or nil when
 // none is open. An in-window menu item draws its title rather than holding it in a panel, so the titles are read from
@@ -38,7 +39,7 @@ import (
 func contextMenuTitles(t *testing.T, screen *unison.HeadlessScreen, wnd *unison.Window) []string {
 	t.Helper()
 	var items []*unison.Panel
-	screen.Do(func() { items = slices.Clone(menuItemPanels(openMenuPopup(wnd))) })
+	screen.Do(func() { items = slices.Clone(uxtest.MenuItemPanels(uxtest.OpenMenuPopup(wnd))) })
 	if len(items) == 0 {
 		return nil
 	}
@@ -59,7 +60,7 @@ func closeContextMenu(c check.Checker, screen *unison.HeadlessScreen, wnd *uniso
 	c.Helper()
 	screen.KeyPress(unison.KeyEscape, mod.None)
 	var open bool
-	screen.Do(func() { open = openMenuPopup(wnd) != nil })
+	screen.Do(func() { open = uxtest.OpenMenuPopup(wnd) != nil })
 	c.False(open, "Escape must close the menu")
 }
 
@@ -91,9 +92,9 @@ func cellScreenPoint[T gurps.Node[T]](t *testing.T, screen *unison.HeadlessScree
 // either puts the focus on the list, since the menu's commands act on what holds it.
 func TestSheetListContextMenuHeadless(t *testing.T) {
 	c := check.New(t)
-	screen, wnd := startHeadlessWorkspace(t, c)
+	screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
 	screen.EnableAccessibility()
-	sheet, ok := openedByAction(t, screen, newCharacterSheetAction).(*Sheet)
+	sheet, ok := uxtest.OpenedByAction(t, screen, newCharacterSheetAction).(*Sheet)
 	if !ok {
 		t.Fatal("New Character Sheet must open a character sheet")
 	}
@@ -242,9 +243,9 @@ func TestSheetListContextMenuHeadless(t *testing.T) {
 // block, offering to hide that block, and for shift+F10 while the editor has the focus.
 func TestSheetLayoutEditorContextMenuHeadless(t *testing.T) {
 	c := check.New(t)
-	screen, wnd := startHeadlessWorkspace(t, c)
+	screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
 	screen.EnableAccessibility()
-	sheet, ok := openedByAction(t, screen, newCharacterSheetAction).(*Sheet)
+	sheet, ok := uxtest.OpenedByAction(t, screen, newCharacterSheetAction).(*Sheet)
 	if !ok {
 		t.Fatal("New Character Sheet must open a character sheet")
 	}
@@ -307,9 +308,9 @@ func TestSheetLayoutEditorContextMenuHeadless(t *testing.T) {
 // asking for the menu, and then opens the menu.
 func TestSheetLayoutEditorMenuDuringADragHeadless(t *testing.T) {
 	c := check.New(t)
-	screen, wnd := startHeadlessWorkspace(t, c)
+	screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
 	screen.EnableAccessibility()
-	sheet, ok := openedByAction(t, screen, newCharacterSheetAction).(*Sheet)
+	sheet, ok := uxtest.OpenedByAction(t, screen, newCharacterSheetAction).(*Sheet)
 	if !ok {
 		t.Fatal("New Character Sheet must open a character sheet")
 	}
@@ -391,9 +392,9 @@ func TestSheetLayoutEditorMenuDuringADragHeadless(t *testing.T) {
 // anything to undo.
 func TestCheckCellRightClickOpensMenuHeadless(t *testing.T) {
 	c := check.New(t)
-	screen, wnd := startHeadlessWorkspace(t, c)
+	screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
 	screen.EnableAccessibility()
-	sheet, ok := openedByAction(t, screen, newCharacterSheetAction).(*Sheet)
+	sheet, ok := uxtest.OpenedByAction(t, screen, newCharacterSheetAction).(*Sheet)
 	if !ok {
 		t.Fatal("New Character Sheet must open a character sheet")
 	}
@@ -482,8 +483,8 @@ func TestCheckCellRightClickOpensMenuHeadless(t *testing.T) {
 func TestNavigatorContextMenuHeadless(t *testing.T) {
 	c := check.New(t)
 	// Every library row starts out disclosed, so that the file put in the user library below is a row of its own.
-	swapForTest(t, &gurps.GlobalSettings().Closed, make(map[string]int64))
-	screen, wnd := startHeadlessWorkspace(t, c)
+	uxtest.SwapForTest(t, &gurps.GlobalSettings().Closed, make(map[string]int64))
+	screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
 	screen.EnableAccessibility()
 	user := gurps.GlobalSettings().Libraries.User()
 	c.NoError(os.MkdirAll(user.Path(false), 0o750))
@@ -520,6 +521,6 @@ func TestNavigatorContextMenuHeadless(t *testing.T) {
 	c.True(focused, "the navigator's list must still have the focus for the chord to be asking it")
 	screen.KeyPress(unison.KeyF10, mod.Shift)
 	var open bool
-	screen.Do(func() { open = openMenuPopup(wnd) != nil })
+	screen.Do(func() { open = uxtest.OpenMenuPopup(wnd) != nil })
 	c.False(open, "shift+F10 must open nothing while nothing is selected")
 }

@@ -12,6 +12,7 @@ package ux
 import (
 	"testing"
 
+	"github.com/richardwilkes/gcs/v5/ux/uxtest"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/role"
@@ -26,14 +27,14 @@ import (
 // which unison makes a heading a tab stop whenever a screen reader is listening, since that is how Orca reaches it.
 func TestReadOnlyFieldsJoinTheTabOrderForScreenReaders(t *testing.T) {
 	c := check.New(t)
-	screen, wnd := startHeadlessWorkspace(t, c)
-	setFocusable := focusForReadingSetter(t, screen, wnd)
+	screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
+	setFocusable := uxtest.FocusForReadingSetter(t, screen, wnd)
 	focusable := func(p unison.Paneler) (result bool) {
 		screen.Do(func() { result = p.AsPanel().Focusable() })
 		return result
 	}
 
-	sheet, ok := openedByAction(t, screen, newCharacterSheetAction).(*Sheet)
+	sheet, ok := uxtest.OpenedByAction(t, screen, newCharacterSheetAction).(*Sheet)
 	if !ok {
 		t.Fatal("New Character Sheet must open a character sheet")
 	}
@@ -44,17 +45,17 @@ func TestReadOnlyFieldsJoinTheTabOrderForScreenReaders(t *testing.T) {
 	var labels, blank []*unison.Label
 	var notes []*StringField
 	screen.Do(func() {
-		portrait, _ = firstPanelOfType[*PortraitPanel](sheet.AsPanel())
-		headings = panelsMatching(sheet.AsPanel(), func(p *unison.Panel) bool {
+		portrait, _ = uxtest.FirstPanelOfType[*PortraitPanel](sheet.AsPanel())
+		headings = uxtest.PanelsMatching(sheet.AsPanel(), func(p *unison.Panel) bool {
 			return p.Accessibility.Role == role.Heading
 		})
-		body, ok = firstPanelOfType[*BodyPanel](sheet.AsPanel())
+		body, ok = uxtest.FirstPanelOfType[*BodyPanel](sheet.AsPanel())
 		if !ok {
 			return
 		}
-		readOnly = panelsOfType[*NonEditablePageField](body.AsPanel())
+		readOnly = uxtest.PanelsOfType[*NonEditablePageField](body.AsPanel())
 		// The notes header has no text; TestBodyNotesHeaderIsReadAsTheOtherHeadersAre covers it.
-		for _, one := range panelsOfType[*unison.Label](body.AsPanel()) {
+		for _, one := range uxtest.PanelsOfType[*unison.Label](body.AsPanel()) {
 			switch one.String() {
 			case "":
 			case " ":
@@ -63,7 +64,7 @@ func TestReadOnlyFieldsJoinTheTabOrderForScreenReaders(t *testing.T) {
 				labels = append(labels, one)
 			}
 		}
-		notes = panelsOfType[*StringField](body.AsPanel())
+		notes = uxtest.PanelsOfType[*StringField](body.AsPanel())
 	})
 	if body == nil {
 		t.Fatal("the character sheet must show the body table")
@@ -126,7 +127,7 @@ func TestReadOnlyFieldsJoinTheTabOrderForScreenReaders(t *testing.T) {
 	var paths, empty []*NonEditableField
 	screen.Do(func() {
 		// The log path is empty here, since only main sets it.
-		for _, one := range panelsOfType[*NonEditableField](wnd.Content()) {
+		for _, one := range uxtest.PanelsOfType[*NonEditableField](wnd.Content()) {
 			if one.Text.String() != "" {
 				paths = append(paths, one)
 			} else {

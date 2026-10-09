@@ -119,12 +119,12 @@ func sheetOptions() []sheetOption {
 			field: func(s *gurps.SheetSettings) *bool { return &s.ShowEquipmentModifierAdj },
 		},
 		{
-			title:    i18n.Text("Show all weapons"),
+			title:    i18n.Text("Show all attacks"),
 			field:    func(s *gurps.SheetSettings) *bool { return &s.ShowAllWeapons },
 			fullSync: true,
 		},
 		{
-			title:    i18n.Text("Hide unused columns in the melee & ranged weapon tables"),
+			title:    i18n.Text("Hide unused columns in the melee & ranged attack tables"),
 			field:    func(s *gurps.SheetSettings) *bool { return &s.HideUnusedWeaponColumns },
 			fullSync: true,
 		},
@@ -180,7 +180,7 @@ func sheetOptions() []sheetOption {
 
 // ShowSheetSettings shows the Sheet Settings. Pass nil to edit the defaults, or a sheet to edit that sheet's.
 func ShowSheetSettings(owner EntityPanel) {
-	if activateDockable(func(s *sheetSettingsDockable) bool { return s.owner == owner }) {
+	if ActivateDockableOfType(func(s *sheetSettingsDockable) bool { return s.owner == owner }) {
 		return
 	}
 	d := &sheetSettingsDockable{owner: owner}
@@ -300,9 +300,9 @@ func (d *sheetSettingsDockable) addCheckBox(panel *unison.Panel, title, pageRef 
 	wrapper := unison.NewPanel()
 	wrapper.SetLayout(&unison.FlexLayout{Columns: 2, HSpacing: unison.StdHSpacing})
 	wrapper.AddChild(checkbox)
-	label := newSingleLineLabel()
-	label.font = checkbox.Font
-	label.linkRefs(openPageRefLink, pageRef)
+	label := NewSingleLineLabel()
+	label.Font = checkbox.Font
+	label.LinkRefs(openPageRefLink, pageRef)
 	label.SetTitle("(" + pageRef + ")")
 	wrapper.AddChild(label)
 	panel.AddChild(wrapper)

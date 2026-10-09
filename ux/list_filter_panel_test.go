@@ -19,10 +19,12 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/jio"
+	"github.com/richardwilkes/gcs/v5/ux/uxtest"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/mod"
+	"github.com/richardwilkes/unison/enums/role"
 )
 
 // listFilterPanelTestKey is the list type the panel tests edit filters for: equipment, which has a field of every kind.
@@ -33,13 +35,13 @@ const listFilterPanelTestKey = "eqp"
 // one test can't influence another.
 func showListFilterPanel(t *testing.T, screen *unison.HeadlessScreen, filter *gurps.ListFilter) (*listFilterPanel, *listFilterDialogContent) {
 	t.Helper()
-	return showListFilterPanelFor(t, screen, filter, filterFieldInfos(gurps.EquipmentFilterFields()))
+	return showListFilterPanelFor(t, screen, filter, filterFieldInfos(gurps.EquipmentFilterFields(), nil))
 }
 
 // showListFilterPanelFor shows a filter editor as showListFilterPanel does, offering the fields.
 func showListFilterPanelFor(t *testing.T, screen *unison.HeadlessScreen, filter *gurps.ListFilter, fields []filterFieldInfo) (*listFilterPanel, *listFilterDialogContent) {
 	t.Helper()
-	swapForTest(t, &lastFilterFieldKeyUsed, make(map[string]string))
+	uxtest.SwapForTest(t, &lastFilterFieldKeyUsed, make(map[string]string))
 	var p *listFilterPanel
 	var host *listFilterDialogContent
 	screen.Do(func() {
@@ -155,7 +157,7 @@ func sentenceText(p *listFilterPanel, path string) string {
 
 func TestListFilterPanelRows(t *testing.T) {
 	c := check.New(t)
-	screen, _ := startHeadlessWorkspace(t, c)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
 	f := newTestListFilter()
 	before := gurps.Hash64(f.Root)
 	p, _ := showListFilterPanel(t, screen, f)
@@ -202,7 +204,7 @@ func TestListFilterPanelRows(t *testing.T) {
 // empty value, and of values with space around them, which "is" leaves out and "contains" quotes so that it shows.
 func TestListFilterPanelListSentences(t *testing.T) {
 	c := check.New(t)
-	screen, _ := startHeadlessWorkspace(t, c)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
 	f := gurps.NewListFilter("")
 	anything := gurps.NewFilterCondition(f.Root, "tags")
 	none := gurps.NewFilterCondition(f.Root, "tags")
@@ -225,7 +227,7 @@ func TestListFilterPanelListSentences(t *testing.T) {
 // sentence and in the choices of its comparison, for text and numbers alike.
 func TestListFilterPanelPluralFields(t *testing.T) {
 	c := check.New(t)
-	screen, _ := startHeadlessWorkspace(t, c)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
 	f := gurps.NewListFilter("")
 	notes := gurps.NewFilterCondition(f.Root, "notes")
 	notes.Not = true
@@ -235,7 +237,7 @@ func TestListFilterPanelPluralFields(t *testing.T) {
 	name := gurps.NewFilterCondition(f.Root, "name")
 	name.Text = criteria.Text{Compare: criteria.StartsWithText, Qualifier: "A"}
 	f.Root.Children = gurps.FilterNodes{notes, points, name}
-	p, _ := showListFilterPanelFor(t, screen, f, filterFieldInfos(gurps.TraitFilterFields()))
+	p, _ := showListFilterPanelFor(t, screen, f, filterFieldInfos(gurps.TraitFilterFields(), nil))
 	screen.Do(func() {
 		c.Equal(`Must not have notes that start with "Cheap"`, sentenceText(p, "r.0"))
 		c.Equal(`Must have points that are at least 5`, sentenceText(p, "r.1"))
@@ -279,7 +281,7 @@ func TestListFilterPanelPluralFields(t *testing.T) {
 
 func TestListFilterPanelEmptyRoot(t *testing.T) {
 	c := check.New(t)
-	screen, _ := startHeadlessWorkspace(t, c)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
 	f := gurps.NewListFilter("")
 	p, host := showListFilterPanel(t, screen, f)
 	screen.Do(func() {
@@ -399,7 +401,7 @@ func TestListFilterPanelEmptyRoot(t *testing.T) {
 
 func TestListFilterPanelAddCondition(t *testing.T) {
 	c := check.New(t)
-	screen, _ := startHeadlessWorkspace(t, c)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
 	f := newTestListFilter()
 	p, host := showListFilterPanel(t, screen, f)
 	screen.Do(func() {
@@ -433,7 +435,7 @@ func TestListFilterPanelAddCondition(t *testing.T) {
 
 func TestListFilterPanelFieldChange(t *testing.T) {
 	c := check.New(t)
-	screen, _ := startHeadlessWorkspace(t, c)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
 	f := newTestListFilter()
 	p, host := showListFilterPanel(t, screen, f)
 	screen.Do(func() { p.toggle("r.0") })
@@ -475,7 +477,7 @@ func TestListFilterPanelFieldChange(t *testing.T) {
 
 func TestListFilterPanelPill(t *testing.T) {
 	c := check.New(t)
-	screen, _ := startHeadlessWorkspace(t, c)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
 	f := newTestListFilter()
 	p, _ := showListFilterPanel(t, screen, f)
 	for _, one := range []struct {
@@ -506,7 +508,7 @@ func TestListFilterPanelPill(t *testing.T) {
 
 func TestListFilterPanelMoreMenu(t *testing.T) {
 	c := check.New(t)
-	screen, _ := startHeadlessWorkspace(t, c)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
 	f := newTestListFilter()
 	p, host := showListFilterPanel(t, screen, f)
 	screen.Do(func() { menuAction(p.moreEntries(p.node("r.0"), "r.0"), "Wrap in Group")() })
@@ -560,7 +562,7 @@ func TestListFilterPanelMoreMenu(t *testing.T) {
 
 func TestListFilterPanelKeepsUnknownData(t *testing.T) {
 	c := check.New(t)
-	screen, _ := startHeadlessWorkspace(t, c)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
 	f := newTestListFilter()
 	p, _ := showListFilterPanel(t, screen, f)
 	var original *gurps.UnknownFilterNode
@@ -589,7 +591,7 @@ func TestListFilterPanelKeepsUnknownData(t *testing.T) {
 
 func TestListFilterPanelDragAndDrop(t *testing.T) {
 	c := check.New(t)
-	screen, _ := startHeadlessWorkspace(t, c)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
 	f := newTestListFilter()
 	p, host := showListFilterPanel(t, screen, f)
 	drag := func(from, onto string, fraction float32, capture string) (accepted bool) {
@@ -607,7 +609,7 @@ func TestListFilterPanelDragAndDrop(t *testing.T) {
 			accepted = p.dropTarget != nil
 		})
 		if capture != "" {
-			captureScreen(t, c, screen, capture)
+			uxtest.CaptureScreen(t, c, screen, capture)
 		}
 		screen.Do(func() { p.drop(where, data) })
 		return accepted
@@ -675,7 +677,7 @@ func TestListFilterPanelDragAndDrop(t *testing.T) {
 // the open row before the rows see the key, which TestListFilterEditorKeysHeadless covers.
 func TestListFilterPanelPassesEscape(t *testing.T) {
 	c := check.New(t)
-	screen, _ := startHeadlessWorkspace(t, c)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
 	p, _ := showListFilterPanel(t, screen, newTestListFilter())
 	screen.Do(func() { p.toggle("r.0") })
 	screen.Do(func() { c.True(p.keyDown(unison.KeyEscape, mod.None, false), "Escape closes the open row") })
@@ -690,7 +692,7 @@ func TestListFilterPanelPassesEscape(t *testing.T) {
 // clears what the last one had. A switch between two fields of the same kind, points and levels, clears it too.
 func TestListFilterPanelFieldKinds(t *testing.T) {
 	c := check.New(t)
-	screen, _ := startHeadlessWorkspace(t, c)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
 	setCriteria := func(cond *gurps.FilterCondition) {
 		cond.Text = criteria.Text{Compare: criteria.ContainsText, Qualifier: "x"}
 		cond.Number = criteria.Number{Compare: criteria.AtLeastNumber, Qualifier: fxp.FromInteger(5)}
@@ -730,7 +732,7 @@ func TestListFilterPanelFieldKinds(t *testing.T) {
 
 	f := gurps.NewListFilter("")
 	f.Root.Children = gurps.FilterNodes{gurps.NewFilterCondition(f.Root, "points")}
-	p, _ = showListFilterPanelFor(t, screen, f, filterFieldInfos(gurps.TraitFilterFields()))
+	p, _ = showListFilterPanelFor(t, screen, f, filterFieldInfos(gurps.TraitFilterFields(), nil))
 	screen.Do(func() { p.toggle("r.0") })
 	switchTo(p, "levels", "r.0:numbercmp")
 }
@@ -739,7 +741,7 @@ func TestListFilterPanelFieldKinds(t *testing.T) {
 // field whose tooltip says how to give several values.
 func TestListFilterPanelListEditor(t *testing.T) {
 	c := check.New(t)
-	screen, _ := startHeadlessWorkspace(t, c)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
 	f := gurps.NewListFilter("")
 	tags := gurps.NewFilterCondition(f.Root, "tags")
 	tags.Text = criteria.Text{Compare: criteria.IsText, Qualifier: "Shield"}
@@ -765,11 +767,263 @@ func TestListFilterPanelListEditor(t *testing.T) {
 	})
 }
 
+// newSuggestionTestEquipment returns equipment tagged "Weapon", "weapon" and "Melee Weapon", the first of tech level 3,
+// followed by a container holding equipment tagged "Armor".
+func newSuggestionTestEquipment() []*gurps.Equipment {
+	list := make([]*gurps.Equipment, 0, 4)
+	for i, tag := range []string{"Weapon", "weapon", "Melee Weapon"} {
+		e := gurps.NewEquipment(nil, nil, false)
+		e.Tags = []string{tag}
+		if i == 0 {
+			e.TechLevel = "3"
+		}
+		list = append(list, e)
+	}
+	box := gurps.NewEquipment(nil, nil, true)
+	armor := gurps.NewEquipment(nil, box, false)
+	armor.Tags = []string{"Armor"}
+	box.Children = []*gurps.Equipment{armor}
+	return append(list, box)
+}
+
+// showSuggestionTestPanel shows a filter editor for the conditions as showListFilterPanel does, filtering the list
+// newSuggestionTestEquipment returns, and opens the first condition.
+func showSuggestionTestPanel(t *testing.T, screen *unison.HeadlessScreen, conditions ...*gurps.FilterCondition) (*listFilterPanel, *listFilterDialogContent) {
+	t.Helper()
+	list := newSuggestionTestEquipment()
+	f := gurps.NewListFilter("")
+	f.Root.Children = make(gurps.FilterNodes, 0, len(conditions))
+	for _, one := range conditions {
+		one.Parent = f.Root
+		f.Root.Children = append(f.Root.Children, one)
+	}
+	p, host := showListFilterPanelFor(t, screen, f,
+		filterFieldInfos(gurps.EquipmentFilterFields(), func() []*gurps.Equipment { return list }))
+	screen.Do(func() { p.toggle("r.0") })
+	return p, host
+}
+
+// newSuggestionTestCondition returns a condition on the field with the key that compares it with the qualifier.
+func newSuggestionTestCondition(key string, compare criteria.StringComparison, qualifier string) *gurps.FilterCondition {
+	cond := gurps.NewFilterCondition(nil, key)
+	cond.Text = criteria.Text{Compare: compare, Qualifier: qualifier}
+	return cond
+}
+
+// hasDropdown reports whether the field with the ref key has a dropdown: an accessory panel, which nothing else gives a
+// compact field. Without the field, it fails the test. Call it on the UI thread.
+func hasDropdown(t *testing.T, p *listFilterPanel, key string) bool {
+	t.Helper()
+	field, ok := refAs[*unison.Panel](t, p.AsPanel(), key)
+	return ok && len(field.Children()) == 1
+}
+
+// TestListFilterPanelSuggestionsOnlyForIs checks that the value of a condition on a field that offers suggestions has a
+// dropdown only while it is compared with "is" or "is not", the only comparisons with a whole value, that a field
+// offering none never has one, and that a field offering a fixed set has one with no list to draw from.
+func TestListFilterPanelSuggestionsOnlyForIs(t *testing.T) {
+	c := check.New(t)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
+	p, _ := showSuggestionTestPanel(t, screen, newSuggestionTestCondition("tags", criteria.ContainsText, "Weapon"),
+		newSuggestionTestCondition("name", criteria.IsText, "Axe"))
+	screen.Do(func() { c.False(hasDropdown(t, p, "r.0:text"), "contains has no dropdown") })
+	for _, one := range []struct {
+		compare  criteria.StringComparison
+		dropdown bool
+	}{
+		{criteria.IsText, true},
+		{criteria.IsNotText, true},
+		{criteria.StartsWithText, false},
+	} {
+		screen.Do(func() {
+			if popup, ok := refAs[*unison.PopupMenu[criteria.StringComparison]](t, p.AsPanel(), "r.0:textcmp"); ok {
+				popup.Select(one.compare)
+			}
+		})
+		screen.Do(func() {
+			c.Equal(one.compare, filterConditionAt(t, p, "r.0").Text.Compare)
+			c.Equal(one.dropdown, hasDropdown(t, p, "r.0:text"), "%s", one.compare)
+		})
+	}
+	screen.Do(func() {
+		if popup, ok := refAs[*unison.PopupMenu[criteria.StringComparison]](t, p.AsPanel(), "r.0:textcmp"); ok {
+			popup.Select(criteria.AnyText)
+		}
+	})
+	screen.Do(func() {
+		c.Nil(p.FindRefKey("r.0:text"), "anything has no value to suggest one for")
+		p.toggle("r.1")
+	})
+	screen.Do(func() { c.False(hasDropdown(t, p, "r.1:text"), "a name has nothing to suggest") })
+
+	f := gurps.NewListFilter("")
+	kind := gurps.NewFilterCondition(f.Root, "container_type")
+	kind.Text = criteria.Text{Compare: criteria.IsText}
+	f.Root.Children = gurps.FilterNodes{kind}
+	p, _ = showListFilterPanelFor(t, screen, f, filterFieldInfos(gurps.TraitFilterFields(), nil))
+	screen.Do(func() { p.toggle("r.0") })
+	screen.Do(func() {
+		c.True(hasDropdown(t, p, "r.0:text"), "the container types are offered with no list to draw from")
+	})
+}
+
+// TestListFilterPanelSuggestionChoice checks that the dropdown of a condition's value offers the values in the list
+// being filtered, that choosing one replaces the value without rebuilding the panel, and that undo takes back the
+// choice as a step of its own, apart from the typing before it. It also checks what a screen reader is told of the
+// field and its menu.
+func TestListFilterPanelSuggestionChoice(t *testing.T) {
+	c := check.New(t)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
+	screen.EnableAccessibility()
+	p, host := showSuggestionTestPanel(t, screen, newSuggestionTestCondition("tags", criteria.IsText, "Shi"),
+		newSuggestionTestCondition("tech_level", criteria.IsNotText, ""))
+	var wnd *unison.Window
+	var field *StringField
+	var button *unison.Panel
+	screen.Do(func() {
+		wnd = p.Window()
+		if one, ok := refAs[*StringField](t, p.AsPanel(), "r.0:text"); ok && len(one.Children()) == 1 {
+			field = one
+			button = one.Children()[0]
+		}
+	})
+	if field == nil {
+		t.Fatal("the tags condition's value must have a dropdown")
+	}
+	c.NotNil(screen.AccessibilityTree(wnd))
+	node := screen.AccessibilityNodeFor(field)
+	c.NotNil(node)
+	if node != nil {
+		c.Equal(role.ComboBox, node.Role, "the value is a combo box")
+		c.Equal("List", node.Name, "named for what it holds")
+	}
+	c.Nil(screen.AccessibilityNodeFor(button), "the button is not a control of its own")
+
+	screen.Click(screen.PanelCenter(field))
+	screen.Type("x")
+	screen.Do(func() { c.Equal("Shix", filterConditionAt(t, p, "r.0").Text.Qualifier) })
+	screen.Click(screen.PanelCenter(button))
+	c.Equal([]string{"Armor", "Melee Weapon", "Weapon"}, contextMenuTitles(t, screen, wnd),
+		"the tags in the list, nested ones included, each once")
+	tree := screen.AccessibilityTree(wnd)
+	c.NotNil(tree)
+	node = screen.AccessibilityNodeFor(field)
+	c.NotNil(node)
+	if tree != nil && node != nil {
+		c.Equal(1, len(node.Controls), "the field points at its menu")
+		if len(node.Controls) == 1 {
+			menu := tree.Node(node.Controls[0])
+			c.NotNil(menu, "the menu is described")
+			if menu != nil {
+				c.Equal("List", menu.Name, "the menu is named for the field")
+			}
+		}
+	}
+	chooseOpenMenuItem(t, screen, wnd, "Melee Weapon")
+	screen.Do(func() {
+		c.Nil(uxtest.OpenMenuPopup(wnd), "choosing closes the menu")
+		c.Equal("Melee Weapon", filterConditionAt(t, p, "r.0").Text.Qualifier)
+		c.Equal("Melee Weapon", field.Text())
+		c.True(p.FindRefKey("r.0:text") == field.AsPanel(), "the panel isn't rebuilt")
+		c.Equal("r.0", p.open, "the row stays open")
+		c.Equal("r.0:text", focusedRefKey(wnd), "with the focus on the value")
+		host.undoMgr.Undo()
+	})
+	screen.Do(func() {
+		c.Equal("Shix", filterConditionAt(t, p, "r.0").Text.Qualifier, "undo takes back the choice alone")
+		host.undoMgr.Undo()
+	})
+	screen.Do(func() {
+		c.Equal("Shi", filterConditionAt(t, p, "r.0").Text.Qualifier, "and then the typing")
+		p.toggle("r.1")
+	})
+	var techLevel *unison.Panel
+	screen.Do(func() {
+		if hasDropdown(t, p, "r.1:text") {
+			techLevel = p.FindRefKey("r.1:text")
+		}
+	})
+	if techLevel == nil {
+		t.Fatal("the tech level condition's value must have a dropdown")
+	}
+	c.NotNil(screen.AccessibilityTree(wnd))
+	node = screen.AccessibilityNodeFor(techLevel)
+	c.NotNil(node)
+	if node != nil {
+		c.Equal(role.ComboBox, node.Role)
+		c.Equal("Text", node.Name)
+	}
+}
+
+// TestListFilterPanelSuggestionKeys checks that the down arrow opens the dropdown of a condition's value and that
+// Escape then closes only the dropdown, leaving the row open and its value alone.
+func TestListFilterPanelSuggestionKeys(t *testing.T) {
+	c := check.New(t)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
+	p, _ := showSuggestionTestPanel(t, screen, newSuggestionTestCondition("tags", criteria.IsText, "Shi"))
+	var wnd *unison.Window
+	screen.Do(func() {
+		wnd = p.Window()
+		if field, ok := refAs[*unison.Panel](t, p.AsPanel(), "r.0:text"); ok {
+			field.RequestFocus()
+		}
+	})
+	screen.Do(func() { c.Equal("r.0:text", focusedRefKey(wnd)) })
+	screen.KeyPress(unison.KeyDown, mod.None)
+	var open bool
+	screen.Do(func() { open = uxtest.OpenMenuPopup(wnd) != nil })
+	c.True(open, "the down arrow opens the dropdown")
+	screen.KeyPress(unison.KeyEscape, mod.None)
+	screen.Do(func() {
+		c.Nil(uxtest.OpenMenuPopup(wnd), "Escape closes it")
+		c.Equal("r.0", p.open, "and nothing else")
+		c.Equal("Shi", filterConditionAt(t, p, "r.0").Text.Qualifier)
+		c.Equal("r.0:text", focusedRefKey(wnd), "the focus is back on the value")
+	})
+}
+
+// TestListFilterPanelSuggestionLayout checks that the compact borders of a value with a dropdown leave room for its
+// button, focused or not, and that the button sits within the field, clear of its text, and never takes the focus.
+func TestListFilterPanelSuggestionLayout(t *testing.T) {
+	c := check.New(t)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
+	p, _ := showSuggestionTestPanel(t, screen, newSuggestionTestCondition("tags", criteria.IsText, "Shi"))
+	var field, button, popup *unison.Panel
+	screen.Do(func() {
+		popup = p.FindRefKey("r.0:textcmp")
+		if field = p.FindRefKey("r.0:text"); field != nil && len(field.Children()) == 1 {
+			button = field.Children()[0]
+		}
+	})
+	if popup == nil || button == nil {
+		t.Fatal("the tags condition must have its comparison and a value with a dropdown")
+	}
+	uxtest.CaptureScreen(t, c, screen, "list_filter_suggestion_dropdown")
+	checkLayout := func(focused bool) {
+		screen.Do(func() {
+			c.Equal(focused, field.Focused())
+			_, pref, _ := button.Sizes(geom.Size{})
+			c.True(field.Border().Insets().Right >= pref.Width, "focused %v: the border leaves room for the button",
+				focused)
+			c.True(field.ContentRect(true).Contains(button.FrameRect()), "focused %v: the button is within the field",
+				focused)
+			c.True(button.FrameRect().X >= field.ContentRect(false).Right(), "focused %v: clear of the text", focused)
+		})
+	}
+	screen.Do(func() {
+		c.False(button.Focusable(), "the button never takes the focus")
+		field.RequestFocus()
+	})
+	checkLayout(true)
+	screen.Do(func() { popup.RequestFocus() })
+	checkLayout(false)
+}
+
 // TestListFilterPanelSavesUnknownNodes shows a filter loaded with a node of a kind this version doesn't know, changes
 // the rest of it, and checks that saving writes the node back out byte for byte.
 func TestListFilterPanelSavesUnknownNodes(t *testing.T) {
 	c := check.New(t)
-	screen, _ := startHeadlessWorkspace(t, c)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
 	const unknownNode = `{"type":"future_node","weird":[1,2]}`
 	var f gurps.ListFilter
 	c.NoError(jio.Unmarshal([]byte(`{"name":"Saved","root":{"type":"group","all":true,"children":[`+unknownNode+
@@ -793,7 +1047,7 @@ func TestListFilterPanelSavesUnknownNodes(t *testing.T) {
 // the rest of it, and checks that saving keeps the condition's field, its negation and its criteria.
 func TestListFilterPanelKeepsUnknownField(t *testing.T) {
 	c := check.New(t)
-	screen, _ := startHeadlessWorkspace(t, c)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
 	f := gurps.NewListFilter("Saved")
 	text := criteria.Text{Compare: criteria.IsText, Qualifier: "Sword"}
 	number := criteria.Number{Compare: criteria.AtLeastNumber, Qualifier: fxp.FromInteger(3)}
@@ -847,7 +1101,7 @@ func TestListFilterPanelKeepsUnknownField(t *testing.T) {
 // pills, have names of their own for a screen reader.
 func TestListFilterPanelControlNamesDiffer(t *testing.T) {
 	c := check.New(t)
-	screen, _ := startHeadlessWorkspace(t, c)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
 	p, _ := showListFilterPanel(t, screen, newTestListFilter())
 	var pill *unison.Panel
 	var wnd *unison.Window
@@ -895,7 +1149,7 @@ func TestListFilterPanelControlNamesDiffer(t *testing.T) {
 // children and what they are, so that two groups, or a group of one and its row, sound different.
 func TestListFilterPanelGroupMoreButtonNames(t *testing.T) {
 	c := check.New(t)
-	screen, _ := startHeadlessWorkspace(t, c)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
 	f := gurps.NewListFilter("")
 	emptyAny := gurps.NewFilterGroup(f.Root)
 	emptyAny.All = false
@@ -923,4 +1177,56 @@ func TestListFilterPanelGroupMoreButtonNames(t *testing.T) {
 	c.Equal("More actions for None of", name("r.1"))
 	c.Equal(`More actions for All of: Must have a name that contains "sword"`, name("r.2"))
 	c.Equal(`More actions for Must have a name that contains "sword"`, name("r.2.0"))
+}
+
+// TestListFilterPanelSuggestionKeepsControlCharacters checks that opening a condition whose value holds a character the
+// field can't show, such as a newline from a file edited by hand, neither crashes nor changes the value: the field
+// shows what it can, and the value stays as it was until it is edited.
+func TestListFilterPanelSuggestionKeepsControlCharacters(t *testing.T) {
+	c := check.New(t)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
+	p, host := showSuggestionTestPanel(t, screen, newSuggestionTestCondition("tags", criteria.IsText, "Wea\npon"))
+	screen.Do(func() {
+		if field, ok := refAs[*StringField](t, p.AsPanel(), "r.0:text"); ok {
+			c.Equal("Weapon", field.Text(), "the field shows what it can")
+		}
+		c.Equal("Wea\npon", filterConditionAt(t, p, "r.0").Text.Qualifier, "opening the row changes nothing")
+		c.False(host.undoMgr.CanUndo(), "and records nothing")
+	})
+}
+
+// TestListFilterPanelSuggestionsNeedValues checks that the value of a condition on a field that draws its suggestions
+// from the list has no dropdown while the list holds nothing to suggest, since an arrow that opens nothing is no use
+// and a screen reader would be told the field expands when it doesn't.
+func TestListFilterPanelSuggestionsNeedValues(t *testing.T) {
+	c := check.New(t)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
+	screen.EnableAccessibility()
+	list := []*gurps.Equipment{gurps.NewEquipment(nil, nil, false)}
+	f := gurps.NewListFilter("")
+	cond := newSuggestionTestCondition("tech_level", criteria.IsText, "")
+	cond.Parent = f.Root
+	f.Root.Children = gurps.FilterNodes{cond}
+	p, _ := showListFilterPanelFor(t, screen, f,
+		filterFieldInfos(gurps.EquipmentFilterFields(), func() []*gurps.Equipment { return list }))
+	screen.Do(func() { p.toggle("r.0") })
+	var field *unison.Panel
+	screen.Do(func() {
+		c.False(hasDropdown(t, p, "r.0:text"), "no item has a tech level")
+		field = p.FindRefKey("r.0:text")
+	})
+	c.NotNil(screen.AccessibilityTree(p.Window()))
+	node := screen.AccessibilityNodeFor(field)
+	c.NotNil(node)
+	if node != nil {
+		c.Equal(role.TextField, node.Role, "the value is a plain field")
+	}
+
+	f = gurps.NewListFilter("")
+	cond = newSuggestionTestCondition("tags", criteria.IsText, "")
+	cond.Parent = f.Root
+	f.Root.Children = gurps.FilterNodes{cond}
+	p, _ = showListFilterPanel(t, screen, f)
+	screen.Do(func() { p.toggle("r.0") })
+	screen.Do(func() { c.False(hasDropdown(t, p, "r.0:text"), "with no list to draw from") })
 }

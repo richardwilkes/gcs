@@ -147,7 +147,8 @@ func (p *listFilterPanel) knows(key string) bool {
 }
 
 // editor returns the controls for an open condition, flowing as its sentence does: whether it must or must not match,
-// the field it tests, and the criteria that go with the field's kind, worded to agree with a plural field.
+// the field it tests, and the criteria that go with the field's kind, worded to agree with a plural field and offering
+// the field's suggestions, if it has any, for the value it is compared with.
 func (p *listFilterPanel) editor(cond *gurps.FilterCondition, path string) *unison.Panel {
 	box := newColumn()
 	box.RefKey = path + keyFirst
@@ -166,16 +167,15 @@ func (p *listFilterPanel) editor(cond *gurps.FilterCondition, path string) *unis
 	info := p.byKey[cond.Field]
 	switch info.kind {
 	case gurps.FilterFieldText:
-		if info.plural {
-			p.textCriteriaWith(flow, key("text"), i18n.Text("Text"), "", criteria.StringComparison.PluralClause,
-				&cond.Text, true)
-		} else {
+		render := criteria.StringComparison.PluralClause
+		if !info.plural {
 			that := i18n.Text("that")
-			p.textCriteria(flow, key("text"), i18n.Text("Text"), "", that, that, &cond.Text, true)
+			render = textWordsAfter(that, that)
 		}
+		p.textCriteriaWith(flow, key("text"), i18n.Text("Text"), "", render, &cond.Text, true, info.suggestions)
 	case gurps.FilterFieldList:
 		if field := p.textCriteriaWith(flow, key("text"), i18n.Text("List"), "", criteria.StringComparison.ListClause,
-			&cond.Text, true); field != nil {
+			&cond.Text, true, info.suggestions); field != nil {
 			field.Tooltip = newWrappedTooltip(i18n.Text(`Separate multiple values with commas to match any one of them, e.g. "Sword, Axe"`))
 		}
 	case gurps.FilterFieldNumber:

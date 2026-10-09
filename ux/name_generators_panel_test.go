@@ -13,6 +13,7 @@ import (
 	"testing"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/ux/uxtest"
 	"github.com/richardwilkes/toolbox/v2/check"
 )
 
@@ -20,7 +21,7 @@ import (
 // there is none.
 func nameGeneratorsPanelFor(t *testing.T, d *ancestryEditorDockable, options *gurps.AncestryOptions) *nameGeneratorsPanel {
 	t.Helper()
-	for _, p := range panelsOfType[*nameGeneratorsPanel](d.AsPanel()) {
+	for _, p := range uxtest.PanelsOfType[*nameGeneratorsPanel](d.AsPanel()) {
 		if p.options == options {
 			return p
 		}
@@ -62,7 +63,7 @@ func TestNameGeneratorRowKeepsUnknownGenerator(t *testing.T) {
 	a := gurps.NewAncestry()
 	a.CommonOptions.NameGenerators = []string{"Missing Names"}
 	d := newTestAncestryEditorDockable(a, "Human First - Male", "Human Last")
-	rows := panelsOfType[*nameGeneratorRefPanel](d.AsPanel())
+	rows := uxtest.PanelsOfType[*nameGeneratorRefPanel](d.AsPanel())
 	c.Equal(1, len(rows), "one row per generator")
 	row := rows[0]
 	c.Equal("Missing Names", selectedGenerator(row.popup), "the unknown generator is selected")
@@ -87,7 +88,7 @@ func TestNameGeneratorRowEditButtonFollowsAvailability(t *testing.T) {
 	a := gurps.NewAncestry()
 	a.CommonOptions.NameGenerators = []string{"Missing Names", "Human Last"}
 	d := newTestAncestryEditorDockable(a, "Human First - Male", "Human Last")
-	rows := panelsOfType[*nameGeneratorRefPanel](d.AsPanel())
+	rows := uxtest.PanelsOfType[*nameGeneratorRefPanel](d.AsPanel())
 	c.Equal(2, len(rows))
 	c.Equal(4, len(rows[0].Children()), "a row holds the drag handle, the remove button, the popup and the edit button")
 	c.False(rows[0].editButton.Enabled(), "a generator no library holds cannot be edited")
@@ -160,7 +161,7 @@ func TestNameGeneratorsAddWithoutChoices(t *testing.T) {
 	d := newTestAncestryEditorDockable(gurps.NewAncestry())
 	nameGeneratorsPanelFor(t, d, d.model.CommonOptions).addGenerator()
 	c.Equal([]string{""}, d.model.CommonOptions.NameGenerators)
-	c.Equal(1, len(panelsOfType[*nameGeneratorRefPanel](d.AsPanel())), "the empty entry still gets a row")
+	c.Equal(1, len(uxtest.PanelsOfType[*nameGeneratorRefPanel](d.AsPanel())), "the empty entry still gets a row")
 }
 
 // TestNameGeneratorsPerGenderListBindsToGender verifies that a gender's name generator list edits that gender's options

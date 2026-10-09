@@ -18,7 +18,7 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/autoscale"
-	"github.com/richardwilkes/gcs/v5/svg"
+	"github.com/richardwilkes/gcs/v5/ux/svg"
 	"github.com/richardwilkes/toolbox/v2/errs"
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/i18n"
@@ -312,7 +312,7 @@ func (d *PDFDockable) pageLabel(pageNum int) string {
 }
 
 func (d *PDFDockable) createToolbar() *unison.Panel {
-	outer := newToolbar()
+	outer := NewToolbar()
 
 	first := unison.NewPanel()
 	first.SetLayoutData(&unison.FlexLayoutData{

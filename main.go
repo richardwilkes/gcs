@@ -19,6 +19,7 @@ import (
 	_ "github.com/richardwilkes/gcs/v5/model/gurps/datasync" // Registers the convert and sync run modes
 	"github.com/richardwilkes/gcs/v5/runmode"
 	"github.com/richardwilkes/gcs/v5/ux"
+	_ "github.com/richardwilkes/gcs/v5/ux/calculators" // Installs the calculators dockable
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/toolbox/v2/xflag"
 	"github.com/richardwilkes/toolbox/v2/xos"

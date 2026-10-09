@@ -1,0 +1,152 @@
+// Copyright (c) 1998-2026 by Richard A. Wilkes. All rights reserved.
+//
+// This Source Code Form is subject to the terms of the Mozilla Public
+// License, version 2.0. If a copy of the MPL was not distributed with
+// this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+//
+// This Source Code Form is "Incompatible With Secondary Licenses", as
+// defined by the Mozilla Public License, version 2.0.
+
+package calculators
+
+import (
+	"slices"
+
+	"github.com/richardwilkes/gcs/v5/model/fxp"
+	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/ux"
+	"github.com/richardwilkes/toolbox/v2/i18n"
+	"github.com/richardwilkes/unison"
+)
+
+// sheetSource is an entry in a Source popup: the sheet the numbers come from, or none for numbers that are typed in.
+type sheetSource struct {
+	name  string
+	sheet *ux.Sheet
+}
+
+func (s sheetSource) String() string {
+	return s.name
+}
+
+// sheetSourcePicker owns a Source popup and the sheet it names, and drops a sheet that has been closed. What is read
+// from the sheet is the caller's business: selected runs when the user picks a source, so that it can seed suggestions
+// as well as read values, while refreshed runs when the current sheet's numbers must be re-read. changed is what every
+// other control of the calculator runs once it has stored its value.
+type sheetSourcePicker struct {
+	popup      *unison.PopupMenu[sheetSource]
+	sheet      *ux.Sheet
+	selected   func(sheet *ux.Sheet)
+	refreshed  func()
+	changed    func()
+	rebuilding bool
+}
+
+// addRow adds the Source popup, labeled with the given text, as a row of its own.
+func (p *sheetSourcePicker) addRow(rows *calculatorContent, label string) {
+	row := rows.addRow(2)
+	addPlainLabel(row, label)
+	p.popup = unison.NewPopupMenu[sheetSource]()
+	p.popup.WillShowMenuCallback = func(_ *unison.PopupMenu[sheetSource]) { p.rebuild() }
+	p.popup.SelectionChangedCallback = func(popup *unison.PopupMenu[sheetSource]) {
+		if p.rebuilding {
+			return
+		}
+		if source, ok := popup.Selected(); ok {
+			p.sheet = source.sheet
+			if p.selected != nil {
+				p.selected(source.sheet)
+			}
+		}
+		p.changed()
+	}
+	row.AddChild(p.popup)
+	p.rebuild()
+}
+
+// preselect makes the sheet the source before the popup has ever been shown, reading the numbers from it as choosing it
+// would. It is for a calculator opened from a sheet, which starts out with that sheet chosen.
+func (p *sheetSourcePicker) preselect(sheet *ux.Sheet) {
+	p.sheet = sheet
+	if p.selected != nil {
+		p.selected(sheet)
+	}
+	p.rebuild()
+}
+
+// rebuild fills the Source popup with the sheets that are open right now, keeping the current sheet selected if it is
+// still among them and otherwise dropping back to typed-in numbers.
+func (p *sheetSourcePicker) rebuild() {
+	p.rebuilding = true
+	defer func() { p.rebuilding = false }()
+	p.popup.RemoveAllItems()
+	p.popup.AddItem(sheetSource{name: i18n.Text("Manual")})
+	sheets := ux.OpenSheets(nil)
+	names := sheetSourceNames(sheets)
+	selected := 0
+	for i, sheet := range sheets {
+		p.popup.AddItem(sheetSource{name: names[i], sheet: sheet})
+		if sheet == p.sheet {
+			selected = i + 1
+		}
+	}
+	if selected == 0 {
+		p.sheet = nil
+	}
+	p.popup.SelectIndex(selected)
+}
+
+// refresh drops the sheet if it has been closed, and otherwise re-reads its numbers.
+func (p *sheetSourcePicker) refresh() {
+	if p.sheet == nil {
+		return
+	}
+	if !slices.Contains(ux.OpenSheets(nil), p.sheet) {
+		p.sheet = nil
+		p.rebuild()
+		return
+	}
+	if p.refreshed != nil {
+		p.refreshed()
+	}
+}
+
+// entity returns the entity the numbers come from, or nil when they are typed in.
+func (p *sheetSourcePicker) entity() *gurps.Entity {
+	if p.sheet == nil {
+		return nil
+	}
+	return p.sheet.Entity()
+}
+
+// sheetSourceNames returns a name for each sheet: its title, or its full path when another open sheet has the same
+// title.
+func sheetSourceNames(sheets []*ux.Sheet) []string {
+	counts := make(map[string]int, len(sheets))
+	for _, sheet := range sheets {
+		counts[sheet.String()]++
+	}
+	names := make([]string, len(sheets))
+	for i, sheet := range sheets {
+		names[i] = sheet.String()
+		if counts[names[i]] > 1 {
+			if path := sheet.BackingFilePath(); path != "" {
+				names[i] = path
+			}
+		}
+	}
+	return names
+}
+
+// newSourcedWeightField returns a weight field shown in the weight units the sheet settings of the entity that source
+// names prefer, or the global default ones when it names none. The units follow the source as it changes, so a field
+// whose source has just changed is synced to show the new ones.
+func newSourcedWeightField(undoTitle string, source func() *gurps.Entity, get func() fxp.Weight, set func(fxp.Weight), minValue, maxValue fxp.Weight) *ux.WeightField {
+	return ux.NewUnitsField(nil, "", undoTitle, get, set,
+		func(value fxp.Weight) string {
+			return gurps.SheetSettingsFor(source()).DefaultWeightUnits.Format(value)
+		},
+		func(s string) (fxp.Weight, error) {
+			return fxp.WeightFromString(s, gurps.SheetSettingsFor(source()).DefaultWeightUnits)
+		}, minValue, maxValue, false)
+}

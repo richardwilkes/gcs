@@ -14,6 +14,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/richardwilkes/gcs/v5/ux/uxtest"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/unison"
 )
@@ -109,12 +110,12 @@ func TestRunInBackgroundDoesNotBlockWithoutAReceiver(t *testing.T) {
 
 func TestProgressWindowCancelButton(t *testing.T) {
 	c := check.New(t)
-	screen, _ := startHeadlessWorkspace(t, c)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
 	screen.Do(func() {
 		wnd, label, err := newProgressWindow("Downloading…", "Downloading the data…", unison.NewProgressBar(0), nil)
 		c.NoError(err)
 		defer wnd.Dispose()
-		c.Equal(0, len(panelsOfType[*unison.Button](wnd.Content())), "no Cancel button without a cancel function")
+		c.Equal(0, len(uxtest.PanelsOfType[*unison.Button](wnd.Content())), "no Cancel button without a cancel function")
 		c.Equal("Downloading the data…", label.String())
 	})
 	screen.Do(func() {
@@ -123,7 +124,7 @@ func TestProgressWindowCancelButton(t *testing.T) {
 			func() { canceled = true })
 		c.NoError(err)
 		defer wnd.Dispose()
-		buttons := panelsOfType[*unison.Button](wnd.Content())
+		buttons := uxtest.PanelsOfType[*unison.Button](wnd.Content())
 		c.Equal(1, len(buttons), "exactly one Cancel button with a cancel function")
 		c.True(buttons[0].Enabled())
 		buttons[0].Click()

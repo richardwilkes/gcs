@@ -17,7 +17,8 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/srcstate"
-	"github.com/richardwilkes/gcs/v5/svg"
+	"github.com/richardwilkes/gcs/v5/ux/svg"
+	"github.com/richardwilkes/gcs/v5/ux/uxtest"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/tid"
@@ -49,7 +50,7 @@ func openSourceMenu(t *testing.T, screen *unison.HeadlessScreen, wnd *unison.Win
 	}
 	screen.Click(screen.PanelCenter(button))
 	var items []*unison.Panel
-	screen.Do(func() { items = slices.Clone(menuItemPanels(openMenuPopup(wnd))) })
+	screen.Do(func() { items = slices.Clone(uxtest.MenuItemPanels(uxtest.OpenMenuPopup(wnd))) })
 	if len(items) == 0 {
 		t.Fatal("the source button opened no menu")
 	}
@@ -62,8 +63,8 @@ func openSourceMenu(t *testing.T, screen *unison.HeadlessScreen, wnd *unison.Win
 // discarded. A weapon's editor has no such menu, since a weapon has no source.
 func TestEditorSourceMenu(t *testing.T) {
 	c := check.New(t)
-	screen, wnd := startHeadlessWorkspace(t, c)
-	sheet, ok := openedByAction(t, screen, newCharacterSheetAction).(*Sheet)
+	screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
+	sheet, ok := uxtest.OpenedByAction(t, screen, newCharacterSheetAction).(*Sheet)
 	if !ok {
 		t.Fatal("New Character Sheet must open a character sheet")
 	}
@@ -99,12 +100,12 @@ func TestEditorSourceMenu(t *testing.T) {
 	var modified, menuOpen bool
 	screen.Do(func() {
 		modified = customEditor.isModified()
-		menuOpen = openMenuPopup(wnd) != nil
+		menuOpen = uxtest.OpenMenuPopup(wnd) != nil
 	})
 	c.False(modified, "choosing a disabled command does nothing")
 	// So there is no menu for an Escape to close: it would go to the editor instead, which discards its changes.
 	c.False(menuOpen, "other than close the menu")
-	closeEditorWithoutPrompt(t, screen, customEditor)
+	uxtest.CloseEditorWithoutPrompt(t, screen, customEditor)
 
 	screen.Do(func() { e = EditTrait(sheet, trait) })
 	items = openSourceMenu(t, screen, wnd, e)
@@ -167,7 +168,7 @@ func TestEditorSourceMenu(t *testing.T) {
 		unison.Dockable
 		unison.TabCloser
 	}); isCloser {
-		closeEditorWithoutPrompt(t, screen, closer)
+		uxtest.CloseEditorWithoutPrompt(t, screen, closer)
 	}
 }
 
@@ -226,13 +227,13 @@ func chooseSyncWithSource(t *testing.T, screen *unison.HeadlessScreen, wnd *unis
 // is still part of the editor.
 func TestEditorSyncKeepsTheEditInProgress(t *testing.T) {
 	c := check.New(t)
-	screen, wnd := startHeadlessWorkspace(t, c)
-	sheet, ok := openedByAction(t, screen, newCharacterSheetAction).(*Sheet)
+	screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
+	sheet, ok := uxtest.OpenedByAction(t, screen, newCharacterSheetAction).(*Sheet)
 	if !ok {
 		t.Fatal("New Character Sheet must open a character sheet")
 	}
 	// Enlarged, so that the editor's content is bigger than its view, which can then be scrolled past the field.
-	swapForTest(t, &gurps.GlobalSettings().General.InitialEditorUIScale, 300)
+	uxtest.SwapForTest(t, &gurps.GlobalSettings().General.InitialEditorUIScale, 300)
 	e, local := newEditedLibraryTrait(t, c, screen, sheet, nil, nil)
 	vttNotes := editorField(t, screen, e, "VTT Notes")
 	// Brought into view to be clicked on, since at this size the editor opens scrolled past the start of its fields.
@@ -298,7 +299,7 @@ func TestEditorSyncKeepsTheEditInProgress(t *testing.T) {
 	c.Equal("Claws", local.Name, "applying the changes syncs the trait")
 	c.Equal("TypXed", local.VTTNotes, "typing carried on where it left off")
 	c.Equal(srcstate.Matched, state)
-	// Applying the changes modified the sheet, which is to be left unmodified (see startHeadlessWorkspace).
+	// Applying the changes modified the sheet, which is to be left unmodified (see uxtest.StartHeadlessWorkspace).
 	screen.Do(sheet.markUnmodified)
 }
 
@@ -307,8 +308,8 @@ func TestEditorSyncKeepsTheEditInProgress(t *testing.T) {
 // popup of a modifier choice is once the sync has made the choice a group, the nearest control gets it.
 func TestEditorSyncPutsTheFocusBack(t *testing.T) {
 	c := check.New(t)
-	screen, wnd := startHeadlessWorkspace(t, c)
-	sheet, ok := openedByAction(t, screen, newCharacterSheetAction).(*Sheet)
+	screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
+	sheet, ok := uxtest.OpenedByAction(t, screen, newCharacterSheetAction).(*Sheet)
 	if !ok {
 		t.Fatal("New Character Sheet must open a character sheet")
 	}
@@ -367,11 +368,11 @@ func TestEditorSyncPutsTheFocusBack(t *testing.T) {
 		sheet.Rebuild(true)
 		EditTraitModifier(sheet, choice)
 	})
-	choiceEditor := soleEditor[*editor[*gurps.TraitModifier, *gurps.TraitModifierEditData]](t, screen, isChoiceEditor)
+	choiceEditor := uxtest.SoleEditor[*editor[*gurps.TraitModifier, *gurps.TraitModifierEditData]](t, screen, isChoiceEditor)
 	var popup *unison.Panel
 	var popupInView bool
 	screen.Do(func() {
-		if popups := panelsOfType[*unison.PopupMenu[string]](choiceEditor.content); len(popups) == 1 {
+		if popups := uxtest.PanelsOfType[*unison.PopupMenu[string]](choiceEditor.content); len(popups) == 1 {
 			popup = popups[0].AsPanel()
 			popup.RequestFocus()
 			focused = wnd.CurrentFocus() == popup
@@ -405,8 +406,8 @@ func TestEditorSyncPutsTheFocusBack(t *testing.T) {
 // was within the view rather than being pushed out of it.
 func TestEditorSyncKeepsTheFocusInPlaceAsContentGrows(t *testing.T) {
 	c := check.New(t)
-	screen, wnd := startHeadlessWorkspace(t, c)
-	sheet, ok := openedByAction(t, screen, newCharacterSheetAction).(*Sheet)
+	screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
+	sheet, ok := uxtest.OpenedByAction(t, screen, newCharacterSheetAction).(*Sheet)
 	if !ok {
 		t.Fatal("New Character Sheet must open a character sheet")
 	}
@@ -462,13 +463,13 @@ func TestEditorSyncKeepsTheFocusInPlaceAsContentGrows(t *testing.T) {
 // were when the sync was chosen.
 func TestEditorSyncClosesItsSubEditors(t *testing.T) {
 	c := check.New(t)
-	screen, wnd := startHeadlessWorkspace(t, c)
-	sheet, ok := openedByAction(t, screen, newCharacterSheetAction).(*Sheet)
+	screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
+	sheet, ok := uxtest.OpenedByAction(t, screen, newCharacterSheetAction).(*Sheet)
 	if !ok {
 		t.Fatal("New Character Sheet must open a character sheet")
 	}
 	// Enlarged, so that the lists at the end of the editor are out of view while a field near its start is in view.
-	swapForTest(t, &gurps.GlobalSettings().General.InitialEditorUIScale, 300)
+	uxtest.SwapForTest(t, &gurps.GlobalSettings().General.InitialEditorUIScale, 300)
 	e, _ := newEditedLibraryTrait(t, c, screen, sheet, nil, func(local *gurps.Trait) {
 		local.Weapons = []*gurps.Weapon{gurps.NewWeapon(local, true)}
 		local.Weapons[0].Usage = "Thrust"
@@ -490,7 +491,7 @@ func TestEditorSyncClosesItsSubEditors(t *testing.T) {
 		e.meleeWeapons.table.RequestFocus()
 		EditWeapon(e, e.editorData.Weapons[0])
 	})
-	weaponEditor := soleEditor[*editor[*gurps.Weapon, *gurps.Weapon]](t, screen, isWeaponEditor)
+	weaponEditor := uxtest.SoleEditor[*editor[*gurps.Weapon, *gurps.Weapon]](t, screen, isWeaponEditor)
 	screen.Do(func() {
 		weaponEditor.editorData.Usage = "Swung"
 		weaponEditor.MarkModified(nil)
@@ -519,7 +520,7 @@ func TestEditorSyncClosesItsSubEditors(t *testing.T) {
 	var prompt []string
 	var offersSave bool
 	screen.Do(func() {
-		prompt = labelTexts(dialogWnd.Content())
+		prompt = uxtest.LabelTexts(dialogWnd.Content())
 		offersSave = dialog.Button(unison.ModalResponseDiscard) != nil
 	})
 	c.True(slices.Contains(prompt, "Discard changes made to"), "the prompt asks whether to discard the weapon's "+
@@ -595,7 +596,7 @@ func TestEditorSyncClosesItsSubEditors(t *testing.T) {
 		e.editorData.Name = "Claws (changed)"
 		e.meleeWeapons.table.RequestFocus()
 		EditWeapon(e, e.editorData.Weapons[0])
-		if panels := panelsOfType[*traitModifiersPanel](e.content); len(panels) == 1 {
+		if panels := uxtest.PanelsOfType[*traitModifiersPanel](e.content); len(panels) == 1 {
 			modifiers = panels[0]
 			modifiers.table.RequestFocus()
 			EditTraitModifier(e, e.editorData.Modifiers[0])
@@ -615,8 +616,8 @@ func TestEditorSyncClosesItsSubEditors(t *testing.T) {
 	}
 	c.True(focused, "precondition: the source button holds the focus")
 	c.False(listInView, "precondition: the list of weapons is out of view")
-	soleEditor[*editor[*gurps.Weapon, *gurps.Weapon]](t, screen, isWeaponEditor)
-	soleEditor[*editor[*gurps.TraitModifier, *gurps.TraitModifierEditData]](t, screen, isModifierEditor)
+	uxtest.SoleEditor[*editor[*gurps.Weapon, *gurps.Weapon]](t, screen, isWeaponEditor)
+	uxtest.SoleEditor[*editor[*gurps.TraitModifier, *gurps.TraitModifierEditData]](t, screen, isModifierEditor)
 	chooseSyncWithSource(t, screen, wnd, e)
 	var modifierEditors int
 	screen.Do(func() {
@@ -639,7 +640,7 @@ func TestEditorSyncClosesItsSubEditors(t *testing.T) {
 		e.editorData.Name = "Claws (changed)"
 		e.meleeWeapons.table.RequestFocus()
 		EditWeapon(e, e.editorData.Weapons[0])
-		if fields := panelsOfType[*PercentageField](e.Children()[0]); len(fields) == 1 {
+		if fields := uxtest.PanelsOfType[*PercentageField](e.Children()[0]); len(fields) == 1 {
 			scaleField = fields[0]
 			scaleField.RequestFocus()
 			scaleField.SetSelection(1, 1)
@@ -671,8 +672,8 @@ func TestEditorSyncClosesItsSubEditors(t *testing.T) {
 // to something else.
 func TestEditorSyncTakesTheFocusFromAClosedSubEditor(t *testing.T) {
 	c := check.New(t)
-	screen, wnd := startHeadlessWorkspace(t, c)
-	sheet, ok := openedByAction(t, screen, newCharacterSheetAction).(*Sheet)
+	screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
+	sheet, ok := uxtest.OpenedByAction(t, screen, newCharacterSheetAction).(*Sheet)
 	if !ok {
 		t.Fatal("New Character Sheet must open a character sheet")
 	}
@@ -687,10 +688,10 @@ func TestEditorSyncTakesTheFocusFromAClosedSubEditor(t *testing.T) {
 	// typeIntoWeaponEditor types into the first field of the one weapon editor open, leaving the focus there.
 	typeIntoWeaponEditor := func() {
 		t.Helper()
-		weaponEditor := soleEditor[*editor[*gurps.Weapon, *gurps.Weapon]](t, screen, isWeaponEditor)
+		weaponEditor := uxtest.SoleEditor[*editor[*gurps.Weapon, *gurps.Weapon]](t, screen, isWeaponEditor)
 		var field *StringField
 		screen.Do(func() {
-			if fields := panelsOfType[*StringField](weaponEditor.content); len(fields) != 0 {
+			if fields := uxtest.PanelsOfType[*StringField](weaponEditor.content); len(fields) != 0 {
 				field = fields[0]
 			}
 		})
@@ -772,8 +773,8 @@ func TestEditorSyncTakesTheFocusFromAClosedSubEditor(t *testing.T) {
 // alone.
 func TestEditorSyncKeepsSavedModifierChanges(t *testing.T) {
 	c := check.New(t)
-	screen, wnd := startHeadlessWorkspace(t, c)
-	sheet, ok := openedByAction(t, screen, newCharacterSheetAction).(*Sheet)
+	screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
+	sheet, ok := uxtest.OpenedByAction(t, screen, newCharacterSheetAction).(*Sheet)
 	if !ok {
 		t.Fatal("New Character Sheet must open a character sheet")
 	}
@@ -788,7 +789,7 @@ func TestEditorSyncKeepsSavedModifierChanges(t *testing.T) {
 		return isEditor
 	}
 	screen.Do(func() { EditTraitModifier(e, e.editorData.Modifiers[0]) })
-	modifierEditor := soleEditor[*editor[*gurps.TraitModifier, *gurps.TraitModifierEditData]](t, screen,
+	modifierEditor := uxtest.SoleEditor[*editor[*gurps.TraitModifier, *gurps.TraitModifierEditData]](t, screen,
 		isModifierEditor)
 	screen.Do(func() {
 		modifierEditor.editorData.Name = "Longer"
@@ -798,7 +799,7 @@ func TestEditorSyncKeepsSavedModifierChanges(t *testing.T) {
 	chooseSyncWithSource(t, screen, wnd, e)
 	dialogWnd, dialog := modalDialog(t, screen, wnd)
 	var prompt []string
-	screen.Do(func() { prompt = labelTexts(dialogWnd.Content()) })
+	screen.Do(func() { prompt = uxtest.LabelTexts(dialogWnd.Content()) })
 	c.True(slices.Contains(prompt, "Save changes made to"), "the prompt asks whether to save the modifier's "+
 		"changes: %v", prompt)
 	screen.Click(screen.PanelCenter(dialogButton(t, screen, dialog, unison.ModalResponseOK)))
@@ -822,8 +823,8 @@ func TestEditorSyncKeepsSavedModifierChanges(t *testing.T) {
 // since a sync replaces the weapons with the library's.
 func TestEditorSyncKeepsTheSelectionOfTheFocusedList(t *testing.T) {
 	c := check.New(t)
-	screen, wnd := startHeadlessWorkspace(t, c)
-	sheet, ok := openedByAction(t, screen, newCharacterSheetAction).(*Sheet)
+	screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
+	sheet, ok := uxtest.OpenedByAction(t, screen, newCharacterSheetAction).(*Sheet)
 	if !ok {
 		t.Fatal("New Character Sheet must open a character sheet")
 	}
@@ -839,7 +840,7 @@ func TestEditorSyncKeepsTheSelectionOfTheFocusedList(t *testing.T) {
 		gurps.AttachModifiers(local, local.Modifiers)
 	})
 	modifiersTable := func() *unison.Table[*Node[*gurps.TraitModifier]] {
-		if panels := panelsOfType[*traitModifiersPanel](e.content); len(panels) == 1 {
+		if panels := uxtest.PanelsOfType[*traitModifiersPanel](e.content); len(panels) == 1 {
 			return panels[0].table
 		}
 		return nil
@@ -920,8 +921,8 @@ func TestEditorSyncKeepsTheSelectionOfTheFocusedList(t *testing.T) {
 // the field in that row that held the focus gets it back.
 func TestEditorSyncKeepsSectionsAsTheyWere(t *testing.T) {
 	c := check.New(t)
-	screen, wnd := startHeadlessWorkspace(t, c)
-	sheet, ok := openedByAction(t, screen, newCharacterSheetAction).(*Sheet)
+	screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
+	sheet, ok := uxtest.OpenedByAction(t, screen, newCharacterSheetAction).(*Sheet)
 	if !ok {
 		t.Fatal("New Character Sheet must open a character sheet")
 	}
@@ -934,10 +935,10 @@ func TestEditorSyncKeepsSectionsAsTheyWere(t *testing.T) {
 		lib.Prereq = lib.Prereq.CloneAsPrereqList(nil)
 	}, nil)
 	sections := func() (prereqs *prereqPanel, features *featuresPanel) {
-		if panels := panelsOfType[*prereqPanel](e.content); len(panels) == 1 {
+		if panels := uxtest.PanelsOfType[*prereqPanel](e.content); len(panels) == 1 {
 			prereqs = panels[0]
 		}
-		if panels := panelsOfType[*featuresPanel](e.content); len(panels) == 1 {
+		if panels := uxtest.PanelsOfType[*featuresPanel](e.content); len(panels) == 1 {
 			features = panels[0]
 		}
 		return prereqs, features

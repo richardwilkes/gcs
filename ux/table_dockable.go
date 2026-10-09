@@ -15,7 +15,7 @@ import (
 	"time"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
-	"github.com/richardwilkes/gcs/v5/svg"
+	"github.com/richardwilkes/gcs/v5/ux/svg"
 	"github.com/richardwilkes/toolbox/v2/errs"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/unison"
@@ -165,9 +165,9 @@ func (d *TableDockable[T]) createToolbar() *unison.Panel {
 	// force, and is all that filters the list otherwise.
 	d.filterField = NewSearchField(i18n.Text("Quick Filter"), func(_, _ *unison.FieldState) { d.applyFilter() })
 
-	toolbar := newToolbar()
+	toolbar := NewToolbar()
 	toolbar.AddChild(NewDefaultInfoPop())
-	addUIScaleField(toolbar, func() int { return gurps.GlobalSettings().General.InitialListUIScale },
+	AddUIScaleField(toolbar, func() int { return gurps.GlobalSettings().General.InitialListUIScale },
 		func() int { return d.scale }, func(scale int) { d.scale = scale }, false, d.scroll)
 	toolbar.AddChild(d.hierarchyButton)
 	toolbar.AddChild(d.noteToggleButton)
@@ -178,13 +178,13 @@ func (d *TableDockable[T]) createToolbar() *unison.Panel {
 	if key := d.provider.FilterKey(); key != "" {
 		d.savedFilters = newListFilterPopup(listFilterPopupSpec{
 			key:     key,
-			fields:  filterFieldInfos(d.provider.FilterFields()),
+			fields:  filterFieldInfos(d.provider.FilterFields(), func() []T { return d.provider.RootData() }),
 			current: func() *gurps.ListFilter { return d.selectedFilter },
 			choose:  d.chooseFilter,
 		})
 		toolbar.AddChild(d.savedFilters.popup)
 	}
-	finishToolbarLayout(toolbar)
+	FinishToolbarLayout(toolbar)
 	return toolbar
 }
 

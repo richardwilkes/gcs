@@ -14,6 +14,7 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/display"
+	"github.com/richardwilkes/gcs/v5/ux/uxtest"
 	"github.com/richardwilkes/toolbox/v2/check"
 )
 
@@ -128,7 +129,7 @@ func TestTemplateToggleHierarchyFlipsEveryList(t *testing.T) {
 // list's, going by the first container or note in the table and applying the opposite state to every row.
 func TestTableDockableToggles(t *testing.T) {
 	c := check.New(t)
-	swapForTest(t, &gurps.GlobalSettings().SheetSettings().NotesDisplay, display.Inline)
+	uxtest.SwapForTest(t, &gurps.GlobalSettings().SheetSettings().NotesDisplay, display.Inline)
 	registerKeyBindingsOnce.Do(func() { registerActions() })
 	first := newTestContainer("First", true)
 	second := newTestContainer("Second", false)
@@ -159,7 +160,7 @@ func TestTableDockableToggles(t *testing.T) {
 // that nothing shows until the filter is cleared.
 func TestTableDockableTogglesAreOffWhileFiltered(t *testing.T) {
 	c := check.New(t)
-	swapForTest(t, &gurps.GlobalSettings().SheetSettings().NotesDisplay, display.Inline)
+	uxtest.SwapForTest(t, &gurps.GlobalSettings().SheetSettings().NotesDisplay, display.Inline)
 	registerKeyBindingsOnce.Do(func() { registerActions() })
 	first := newTestContainer("First", true)
 	first.LocalNotes = "A note"

@@ -18,7 +18,8 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/picker"
-	"github.com/richardwilkes/gcs/v5/svg"
+	"github.com/richardwilkes/gcs/v5/ux/svg"
+	"github.com/richardwilkes/gcs/v5/ux/uxtest"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/unison"
 )
@@ -206,7 +207,7 @@ func TestPickerSessionChoosesModifiers(t *testing.T) {
 	c := check.New(t)
 	var answer func(mods []*gurps.TraitModifier) (canceled bool)
 	var asked []string
-	swapForTest(t, &promptForTraitModifiers, func(info *modifierPromptInfo, mods []*gurps.TraitModifier) (changed, canceled bool) {
+	uxtest.SwapForTest(t, &promptForTraitModifiers, func(info *modifierPromptInfo, mods []*gurps.TraitModifier) (changed, canceled bool) {
 		text := fmt.Sprintf("%s (%d of %d) %d", info.name, info.step, info.steps, len(mods))
 		if info.early != nil {
 			text += " " + info.early.cost()
@@ -263,7 +264,7 @@ func TestPickerSessionPreconfiguredModifiers(t *testing.T) {
 	var early *earlyModifierPrompt
 	var asked [][]*gurps.TraitModifier
 	var locked []string
-	swapForTest(t, &promptForTraitModifiers, func(info *modifierPromptInfo, mods []*gurps.TraitModifier) (changed, canceled bool) {
+	uxtest.SwapForTest(t, &promptForTraitModifiers, func(info *modifierPromptInfo, mods []*gurps.TraitModifier) (changed, canceled bool) {
 		early = info.early
 		asked = append(asked, mods)
 		locked = info.locked
@@ -464,7 +465,7 @@ func TestPickerSessionAnsweredWithNothingPicked(t *testing.T) {
 func TestPickerSessionChoosesEquipmentModifiers(t *testing.T) {
 	c := check.New(t)
 	var cost string
-	swapForTest(t, &promptForEquipmentModifiers, func(info *modifierPromptInfo, mods []*gurps.EquipmentModifier) (changed, canceled bool) {
+	uxtest.SwapForTest(t, &promptForEquipmentModifiers, func(info *modifierPromptInfo, mods []*gurps.EquipmentModifier) (changed, canceled bool) {
 		cost = info.early.cost()
 		mods[0].Children[1].SetEnabled(true)
 		return false, false
@@ -564,7 +565,7 @@ func TestPickerSessionChoosesPicks(t *testing.T) {
 // changed under it, and that Override with nothing picked leaves it to be asked later.
 func TestPickerSessionChoosesPicksBacksOut(t *testing.T) {
 	c := check.New(t)
-	swapForTest(t, &promptForTraitModifiers, func(_ *modifierPromptInfo, mods []*gurps.TraitModifier) (changed, canceled bool) {
+	uxtest.SwapForTest(t, &promptForTraitModifiers, func(_ *modifierPromptInfo, mods []*gurps.TraitModifier) (changed, canceled bool) {
 		mods[0].Children[4].SetEnabled(true)
 		return false, false
 	})
@@ -912,7 +913,7 @@ func TestPickerSessionOrganizingGroupsRollUp(t *testing.T) {
 // choices above it now stand, not as they stood when the dialog opened.
 func TestPickerSessionUnansweredChoiceCostsLive(t *testing.T) {
 	c := check.New(t)
-	swapForTest(t, &promptForTraitModifiers, func(_ *modifierPromptInfo, mods []*gurps.TraitModifier) (changed, canceled bool) {
+	uxtest.SwapForTest(t, &promptForTraitModifiers, func(_ *modifierPromptInfo, mods []*gurps.TraitModifier) (changed, canceled bool) {
 		mods[0].Children[0].SetEnabled(false)
 		mods[0].Children[1].SetEnabled(true)
 		return false, false
@@ -950,7 +951,7 @@ func TestPickerSessionUnansweredChoiceCostsLive(t *testing.T) {
 // row's modifiers once they are chosen, and goes back with them when the dialog they were chosen in is canceled.
 func TestPickerSessionExpectedFollowsModifiers(t *testing.T) {
 	c := check.New(t)
-	swapForTest(t, &promptForTraitModifiers, func(_ *modifierPromptInfo, mods []*gurps.TraitModifier) (changed, canceled bool) {
+	uxtest.SwapForTest(t, &promptForTraitModifiers, func(_ *modifierPromptInfo, mods []*gurps.TraitModifier) (changed, canceled bool) {
 		mods[0].Children[0].SetEnabled(false)
 		mods[0].Children[1].SetEnabled(true)
 		return false, false
@@ -1071,7 +1072,7 @@ func TestPickerSessionTroubleInsidePlainContainer(t *testing.T) {
 func TestPickerSessionChooseWithinSkipsAnsweredModifiers(t *testing.T) {
 	c := check.New(t)
 	var asked []string
-	swapForTest(t, &promptForTraitModifiers, func(info *modifierPromptInfo, mods []*gurps.TraitModifier) (changed, canceled bool) {
+	uxtest.SwapForTest(t, &promptForTraitModifiers, func(info *modifierPromptInfo, mods []*gurps.TraitModifier) (changed, canceled bool) {
 		asked = append(asked, info.name)
 		mods[0].Children[1].SetEnabled(true)
 		return false, false

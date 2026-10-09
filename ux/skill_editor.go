@@ -16,7 +16,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/difficulty"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/prereq"
 	"github.com/richardwilkes/gcs/v5/model/nameable"
-	"github.com/richardwilkes/gcs/v5/svg"
+	"github.com/richardwilkes/gcs/v5/ux/svg"
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/unison"
@@ -157,13 +157,13 @@ func initSkillEditor(e *editor[*gurps.Skill, *gurps.SkillEditData], content *uni
 							var limit fxp.Int
 							e.editorData.TechniqueLimitModifier = &limit
 						}
-						adjustFieldBlank(limitField, false)
+						AdjustFieldBlank(limitField, false)
 					} else {
 						e.editorData.TechniqueLimitModifier = nil
-						adjustFieldBlank(limitField, true)
+						AdjustFieldBlank(limitField, true)
 					}
 				}))
-			adjustFieldBlank(limitField, e.editorData.TechniqueLimitModifier == nil)
+			AdjustFieldBlank(limitField, e.editorData.TechniqueLimitModifier == nil)
 			wrapper2.AddChild(limitField)
 			difficultyPopup := addLabelAndPopup(content, i18n.Text("Difficulty"), "", difficulty.TechniqueLevels,
 				&e.editorData.Difficulty.Difficulty)

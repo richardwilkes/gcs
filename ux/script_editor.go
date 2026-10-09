@@ -18,7 +18,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/colors"
 	"github.com/richardwilkes/gcs/v5/model/fonts"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
-	"github.com/richardwilkes/gcs/v5/svg"
+	"github.com/richardwilkes/gcs/v5/ux/svg"
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/toolbox/v2/xmath"
@@ -172,8 +172,8 @@ func newScriptEditor(get func() string, set func(string), opts *scriptEditorOpti
 		footer := unison.NewPanel()
 		footer.SetLayout(&unison.FlexLayout{Columns: 1})
 		footer.SetLayoutData(&unison.FlexLayoutData{HAlign: align.Fill, HGrab: true})
-		label := newWrappingLabel()
-		label.font = fonts.FieldSecondary
+		label := NewWrappingLabel()
+		label.Font = fonts.FieldSecondary
 		label.SetTitle(opts.Footer)
 		label.SetLayoutData(&unison.FlexLayoutData{HAlign: align.Fill, HGrab: true})
 		footer.AddChild(label)

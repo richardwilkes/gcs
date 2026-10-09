@@ -13,6 +13,7 @@ import (
 	"testing"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/ux/uxtest"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/i18n"
@@ -38,7 +39,7 @@ func newTraitEditorWithModifiers(t *testing.T) (*editor[*gurps.Trait, *gurps.Tra
 	container.Name = "Variations"
 	trait.Modifiers = []*gurps.TraitModifier{modifier, container}
 	e, content := buildEditorContent(sheet, trait, initTraitEditor)
-	panel, ok := firstPanelOfType[*traitModifiersPanel](content)
+	panel, ok := uxtest.FirstPanelOfType[*traitModifiersPanel](content)
 	c.True(ok, "expected a trait modifiers panel in the trait editor")
 	return e, panel.table, modifier
 }
@@ -59,7 +60,7 @@ func newEquipmentEditorWithModifiers(t *testing.T) (*editor[*gurps.Equipment, *g
 	container.Name = "Variations"
 	equipment.Modifiers = []*gurps.EquipmentModifier{modifier, container}
 	e, content := buildEditorContent(sheet, equipment, initEquipmentEditor(true))
-	panel, ok := firstPanelOfType[*equipmentModifiersPanel](content)
+	panel, ok := uxtest.FirstPanelOfType[*equipmentModifiersPanel](content)
 	c.True(ok, "expected an equipment modifiers panel in the equipment editor")
 	return e, panel.table, modifier
 }

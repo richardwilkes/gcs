@@ -13,7 +13,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/jio"
-	"github.com/richardwilkes/gcs/v5/svg"
+	"github.com/richardwilkes/gcs/v5/ux/svg"
 	"github.com/richardwilkes/toolbox/v2/errs"
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/i18n"
@@ -86,10 +86,10 @@ func NewLootSheet(filePath string, loot *gurps.Loot) *LootSheet {
 }
 
 func (l *LootSheet) createToolbar() {
-	l.toolbar = newToolbar()
+	l.toolbar = NewToolbar()
 	l.AddChild(l.toolbar)
 	l.toolbar.AddChild(NewDefaultInfoPop())
-	addUIScaleField(l.toolbar, func() int { return gurps.GlobalSettings().General.InitialSheetUIScale },
+	AddUIScaleField(l.toolbar, func() int { return gurps.GlobalSettings().General.InitialSheetUIScale },
 		func() int { return l.scale }, func(scale int) { l.scale = scale }, true, l.scroll)
 
 	hierarchyButton := unison.NewSVGButton(svg.Hierarchy)
@@ -114,7 +114,7 @@ func (l *LootSheet) createToolbar() {
 
 	l.searchTracker = installListSearchTracker(l.toolbar, l.lists)
 
-	finishToolbarLayout(l.toolbar)
+	FinishToolbarLayout(l.toolbar)
 }
 
 const (

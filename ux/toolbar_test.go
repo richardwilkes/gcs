@@ -13,6 +13,7 @@ import (
 	"testing"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/ux/uxtest"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/unison"
@@ -22,7 +23,7 @@ import (
 
 func TestNewToolbar(t *testing.T) {
 	c := check.New(t)
-	toolbar := newToolbar()
+	toolbar := NewToolbar()
 	c.NotNil(toolbar.Border(), "toolbar has a border")
 	want := unison.StdInsets()
 	want.Bottom++
@@ -37,11 +38,11 @@ func TestNewToolbar(t *testing.T) {
 // The column count is taken from the children present when the layout is installed, so every child lands on one row.
 func TestFinishToolbarLayout(t *testing.T) {
 	c := check.New(t)
-	toolbar := newToolbar()
+	toolbar := NewToolbar()
 	for range 3 {
 		toolbar.AddChild(unison.NewPanel())
 	}
-	finishToolbarLayout(toolbar)
+	FinishToolbarLayout(toolbar)
 	layout, ok := toolbar.Layout().(*unison.FlexLayout)
 	c.True(ok, "layout is a flex layout")
 	c.Equal(3, layout.Columns, "one column per child")
@@ -52,7 +53,7 @@ func TestFinishToolbarLayout(t *testing.T) {
 func TestAddUIScaleField(t *testing.T) {
 	c := check.New(t)
 	// Twice the 72 PPI baseline, so the adjusted scale is easy to predict.
-	swapForTest(t, &gurps.GlobalSettings().General.MonitorResolution, 144)
+	uxtest.SwapForTest(t, &gurps.GlobalSettings().General.MonitorResolution, 144)
 
 	for _, one := range []struct {
 		name          string
@@ -66,11 +67,11 @@ func TestAddUIScaleField(t *testing.T) {
 			scroller := unison.NewScrollPanel()
 			content := unison.NewPanel()
 			scroller.SetContent(content, behavior.Unmodified, behavior.Unmodified)
-			toolbar := newToolbar()
+			toolbar := NewToolbar()
 			toolbar.AddChild(NewDefaultInfoPop())
 			scale := 100
 			var setTo []int
-			field := addUIScaleField(toolbar, func() int { return 75 }, func() int { return scale },
+			field := AddUIScaleField(toolbar, func() int { return 75 }, func() int { return scale },
 				func(v int) { scale = v; setTo = append(setTo, v) }, one.adjustForPPI, scroller)
 			children := toolbar.Children()
 			c.Equal(2, len(children), "scale field was added to the toolbar")

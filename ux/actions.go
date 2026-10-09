@@ -404,7 +404,7 @@ func registerActions() {
 			DisplayNewDockable(NewMarkdownDockableWithContent("untitled.md", "", true, true))
 		},
 	})
-	newMeleeWeaponAction = registerFocusAction("new.melee", NewMeleeWeaponItemID, i18n.Text("New Melee Weapon"),
+	newMeleeWeaponAction = registerFocusAction("new.melee", NewMeleeWeaponItemID, i18n.Text("New Melee Attack"),
 		unison.KeyBinding{KeyCode: unison.KeyM, Modifiers: mod.Shift | mod.OSMenuCommand()})
 	newNameGeneratorAction = registerKeyBindableAction("new.names", &unison.Action{
 		ID:              NewNameGeneratorItemID,
@@ -427,7 +427,7 @@ func registerActions() {
 	newOtherEquipmentGroupAction = registerFocusActionWithContextTitle("new.eqp.other.group",
 		NewOtherEquipmentGroupItemID, i18n.Text("New Other Equipment Group"), i18n.Text("New Group"),
 		unison.KeyBinding{})
-	newRangedWeaponAction = registerFocusAction("new.ranged", NewRangedWeaponItemID, i18n.Text("New Ranged Weapon"),
+	newRangedWeaponAction = registerFocusAction("new.ranged", NewRangedWeaponItemID, i18n.Text("New Ranged Attack"),
 		unison.KeyBinding{KeyCode: unison.KeyR, Modifiers: mod.Shift | mod.OSMenuCommand()})
 	newRitualMagicSpellAction = registerFocusAction("new.spl.ritual", NewRitualMagicSpellItemID,
 		i18n.Text("New Ritual Magic Spell"),

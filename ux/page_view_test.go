@@ -15,6 +15,7 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/jio"
+	"github.com/richardwilkes/gcs/v5/ux/uxtest"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/unison"
 )
@@ -54,12 +55,12 @@ func TestLootSheetMarkModifiedBumpsTheTimestamp(t *testing.T) {
 // its own would jump the page back up to the top of the list.
 func TestTemplateRebuildKeepsTheScrollPosition(t *testing.T) {
 	c := check.New(t)
-	screen, wnd := startHeadlessWorkspace(t, c)
+	screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
 	settings := gurps.GlobalSettings().SheetSettings()
 	saved := settings.HideTLColumn
 	t.Cleanup(func() { screen.Do(func() { settings.HideTLColumn = saved }) })
 	screen.Do(func() { settings.HideTLColumn = false })
-	template, ok := openedByAction(t, screen, newCharacterTemplateAction).(*Template)
+	template, ok := uxtest.OpenedByAction(t, screen, newCharacterTemplateAction).(*Template)
 	if !ok {
 		t.Fatal("New Character Template must open a template")
 	}
@@ -119,7 +120,7 @@ type pageDockableFixture struct {
 func newPageDockableFixtures(t *testing.T) []pageDockableFixture {
 	t.Helper()
 	registerKeyBindingsOnce.Do(func() { registerActions() })
-	swapForTest(t, &Workspace.DocumentDock, NewDocumentDock())
+	uxtest.SwapForTest(t, &Workspace.DocumentDock, NewDocumentDock())
 	entity := gurps.NewEntity()
 	sheet := NewSheet("test"+gurps.SheetExt, entity)
 	templateData := gurps.NewTemplate()

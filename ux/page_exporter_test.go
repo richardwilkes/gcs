@@ -19,6 +19,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/layoutnode"
 	"github.com/richardwilkes/gcs/v5/model/paper"
+	"github.com/richardwilkes/gcs/v5/ux/uxtest"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/xreflect"
@@ -578,7 +579,7 @@ func countBlockPanels(p *pageExporter, key string) int {
 
 // blockPanels returns the panels showing the block with the given key within the given panel.
 func blockPanels(panel *unison.Panel, key string) []*unison.Panel {
-	return panelsMatching(panel, func(p *unison.Panel) bool { return pageKeyOf(p) == key })
+	return uxtest.PanelsMatching(panel, func(p *unison.Panel) bool { return pageKeyOf(p) == key })
 }
 
 // TestPageExporterSplitsBothListsOfARow verifies that the two lists standing side by side in a band are each split at

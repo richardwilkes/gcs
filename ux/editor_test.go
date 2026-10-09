@@ -16,6 +16,7 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/container"
+	"github.com/richardwilkes/gcs/v5/ux/uxtest"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/i18n"
@@ -85,7 +86,7 @@ func buildEditorContent[N gurps.Node[N], D gurps.EditorData[N]](owner Rebuildabl
 // checkBoxesTitled returns every checkbox bearing the given title found anywhere beneath the given panel.
 func checkBoxesTitled(p *unison.Panel, title string) []*CheckBox {
 	var boxes []*CheckBox
-	for _, box := range panelsOfType[*CheckBox](p) {
+	for _, box := range uxtest.PanelsOfType[*CheckBox](p) {
 		if box.Text.String() == title {
 			boxes = append(boxes, box)
 		}
@@ -109,7 +110,7 @@ func clickCheckBox(box *CheckBox, on bool) {
 
 // findFeaturesPanel returns the first features panel found anywhere beneath the given panel.
 func findFeaturesPanel(p *unison.Panel) *featuresPanel {
-	panel, _ := firstPanelOfType[*featuresPanel](p)
+	panel, _ := uxtest.FirstPanelOfType[*featuresPanel](p)
 	return panel
 }
 

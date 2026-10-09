@@ -18,7 +18,7 @@ import (
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
-	"github.com/richardwilkes/gcs/v5/svg"
+	"github.com/richardwilkes/gcs/v5/ux/svg"
 	"github.com/richardwilkes/toolbox/v2/errs"
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/i18n"
@@ -146,7 +146,7 @@ func newMarkdownDockable(filePath, content string, allowEditing, startInEditMode
 	}
 	d.pan.install(d.scroller, d.markdown.AsPanel(), d.markdown)
 
-	toolbar := newToolbar()
+	toolbar := NewToolbar()
 	toolbar.AddChild(NewDefaultInfoPop())
 	toolbar.AddChild(NewMarkdownGuideButton())
 	toolbar.AddChild(
@@ -186,7 +186,7 @@ func newMarkdownDockable(filePath, content string, allowEditing, startInEditMode
 		toolbar.AddChild(editToggle)
 	}
 
-	finishToolbarLayout(toolbar)
+	FinishToolbarLayout(toolbar)
 
 	d.AddChild(toolbar)
 	d.AddChild(d.scroller)

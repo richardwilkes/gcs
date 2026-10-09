@@ -84,7 +84,7 @@ func StartOptions(files []string, config *GCSStartupConfig) []unison.StartupOpti
 			ApplyUpdateCheckSettings()
 			wnd, err := unison.NewWindow(xos.AppName)
 			xos.ExitIfErr(err)
-			registerWindowDragTypes(wnd)
+			RegisterWindowDragTypes(wnd)
 			SetupMenuBar(wnd)
 			InitWorkspace(wnd)
 			OpenFiles(files)

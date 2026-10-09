@@ -145,9 +145,9 @@ func BlockTitle(key string) string {
 	case BlockConditionalModifiersKey:
 		return i18n.Text("Conditional Modifiers")
 	case BlockMeleeKey:
-		return i18n.Text("Melee Weapons")
+		return i18n.Text("Melee Attacks")
 	case BlockRangedKey:
-		return i18n.Text("Ranged Weapons")
+		return i18n.Text("Ranged Attacks")
 	case BlockTraitsKey:
 		return i18n.Text("Traits")
 	case BlockSkillsKey:

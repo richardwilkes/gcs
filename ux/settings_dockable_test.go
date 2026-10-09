@@ -18,6 +18,7 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/library"
+	"github.com/richardwilkes/gcs/v5/ux/uxtest"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/unison"
 )
@@ -65,7 +66,7 @@ func TestSettingsDockableDoLoadPrefersRefLoader(t *testing.T) {
 
 	var gotMsg string
 	var gotErr error
-	swapForTest(t, &Workspace.ErrorHandler, func(msg string, err error) {
+	uxtest.SwapForTest(t, &Workspace.ErrorHandler, func(msg string, err error) {
 		gotMsg = msg
 		gotErr = err
 	})
@@ -95,8 +96,8 @@ func TestSettingsDockableCanLoad(t *testing.T) {
 // check that the owner is part of a per-sheet view's identity: the defaults view and the sheet's must both stay open.
 func TestShowSettingsViewsOpenOnceAndActivate(t *testing.T) {
 	c := check.New(t)
-	screen, _ := startHeadlessWorkspace(t, c)
-	sheet, ok := openedByAction(t, screen, newCharacterSheetAction).(*Sheet)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
+	sheet, ok := uxtest.OpenedByAction(t, screen, newCharacterSheetAction).(*Sheet)
 	if !ok {
 		t.Fatal("New Character Sheet must open a character sheet")
 	}
@@ -203,7 +204,7 @@ func TestShowSettingsViewsOpenOnceAndActivate(t *testing.T) {
 	}
 	for _, one := range views {
 		screen.Do(one.show)
-		d := soleEditor[unison.Dockable](t, screen, one.is)
+		d := uxtest.SoleEditor[unison.Dockable](t, screen, one.is)
 		var base *SettingsDockable
 		var isSettings bool
 		var title string
@@ -239,7 +240,7 @@ func TestShowSettingsViewsOpenOnceAndActivate(t *testing.T) {
 	// Opening every view again activates the one already open rather than adding another.
 	for _, one := range views {
 		screen.Do(one.show)
-		d := soleEditor[unison.Dockable](t, screen, one.is)
+		d := uxtest.SoleEditor[unison.Dockable](t, screen, one.is)
 		var current bool
 		screen.Do(func() {
 			if dc := unison.Ancestor[*unison.DockContainer](d.AsPanel()); dc != nil {

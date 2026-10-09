@@ -20,7 +20,7 @@ import (
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
-	"github.com/richardwilkes/gcs/v5/svg"
+	"github.com/richardwilkes/gcs/v5/ux/svg"
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/toolbox/v2/uti"
@@ -266,7 +266,7 @@ func RefreshPageRefMappingsView() {
 
 // ShowPageRefMappings shows the Page Reference Mappings.
 func ShowPageRefMappings() {
-	if activateDockable[*pageRefMappingsDockable](nil) {
+	if ActivateDockableOfType[*pageRefMappingsDockable](nil) {
 		return
 	}
 	d := &pageRefMappingsDockable{}

@@ -20,6 +20,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/eqcontainer"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/selfctrl"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/srcstate"
+	"github.com/richardwilkes/gcs/v5/ux/uxtest"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/unison"
 )
@@ -72,7 +73,7 @@ func requireSourceMenuAction(t *testing.T, entries []menuEntry, label, why strin
 // from that file.
 func newLibrarySourcedTrait(t *testing.T, c check.Checker, lib *gurps.Trait) (*Sheet, *gurps.Trait) {
 	t.Helper()
-	_, user := useTestLibraries(t, c)
+	_, user := uxtest.UseTestLibraries(t, c)
 	RegisterKnownFileTypes()
 	libFile := gurps.LibraryFile{Library: user.Key(), Path: "Traits/Test" + gurps.TraitsExt}
 	c.NoError(gurps.SaveTraits([]*gurps.Trait{lib}, filepath.Join(user.Path(false), filepath.FromSlash(libFile.Path))))
@@ -149,7 +150,7 @@ func TestEditorsShowNoSourceFields(t *testing.T) {
 	_, contents["equipment modifier group"] = buildEditorContent(sheet, eqpModGroup, initEquipmentModifierEditor)
 
 	for name, content := range contents {
-		texts := labelTexts(content)
+		texts := uxtest.LabelTexts(content)
 		c.NotEqual(0, len(texts), name+" editor must have built its content")
 		for _, label := range []string{"ID", "Source ID", "Source Library", "Source Path"} {
 			c.False(slices.Contains(texts, label), name+" editor must not show "+label)
@@ -209,7 +210,7 @@ func TestSourceMenuEntries(t *testing.T) {
 // sheet yet, or a node of a library list file, which has no data owner, or one without a source matcher.
 func TestSourceMenuMatchesWhatNoSheetPrepared(t *testing.T) {
 	c := check.New(t)
-	_, user := useTestLibraries(t, c)
+	_, user := uxtest.UseTestLibraries(t, c)
 	RegisterKnownFileTypes()
 	libMod := gurps.NewTraitModifier(nil, nil, false)
 	libMod.Name = "Long"
@@ -388,7 +389,7 @@ func TestEditorSyncThatOnlyRevertsPendingEdits(t *testing.T) {
 // kind.
 func TestEditorSyncLeavesEquipmentKindChangesToTheList(t *testing.T) {
 	c := check.New(t)
-	_, user := useTestLibraries(t, c)
+	_, user := uxtest.UseTestLibraries(t, c)
 	RegisterKnownFileTypes()
 	lib := gurps.NewEquipment(nil, nil, true)
 	lib.ContainerType = eqcontainer.Group
@@ -564,7 +565,7 @@ func TestEditorSyncLeavesTheUsersOwnChoiceChangeToBeSettled(t *testing.T) {
 // maximum as the new content settles, which leaves nothing in the editor's undo history.
 func TestEditorSyncWithSourceForEquipment(t *testing.T) {
 	c := check.New(t)
-	_, user := useTestLibraries(t, c)
+	_, user := uxtest.UseTestLibraries(t, c)
 	RegisterKnownFileTypes()
 	lib := gurps.NewEquipment(nil, nil, false)
 	lib.Name = "Rope"
@@ -652,7 +653,7 @@ func TestEditorSyncSurvivesTheContentItRebuilds(t *testing.T) {
 	state, _ := gurps.MatchSource(local)
 	c.Equal(srcstate.Matched, state, "as does the trait once the changes are applied")
 
-	rolls := panelsOfType[*unison.PopupMenu[selfctrl.Roll]](content)
+	rolls := uxtest.PanelsOfType[*unison.PopupMenu[selfctrl.Roll]](content)
 	if len(rolls) != 1 {
 		t.Fatalf("expected the trait editor to have one self-control popup, found %d", len(rolls))
 	}
@@ -662,7 +663,7 @@ func TestEditorSyncSurvivesTheContentItRebuilds(t *testing.T) {
 	c.Equal(selfctrl.NoAdjustment, e.editorData.SelfControlAdj, "and taking the roll away clears it")
 
 	for _, defaultType := range []string{gurps.DexterityID, gurps.SkillID} {
-		_, user := useTestLibraries(t, c)
+		_, user := uxtest.UseTestLibraries(t, c)
 		libTechnique := gurps.NewTechnique(nil, nil, "Karate")
 		libTechnique.Name = "Kicking"
 		libTechnique.PageRef = "B230"
@@ -704,7 +705,7 @@ func TestContentFocusIsFoundAgain(t *testing.T) {
 		}
 		return f.AsPanel()
 	}
-	popups := panelsOfType[*unison.PopupMenu[string]](content)
+	popups := uxtest.PanelsOfType[*unison.PopupMenu[string]](content)
 	if len(popups) != 1 {
 		t.Fatalf("expected the choice's editor to have one popup, found %d", len(popups))
 	}
@@ -792,7 +793,7 @@ func newOptionalChoiceWithinChoice(t *testing.T, c check.Checker) (sheet *Sheet,
 // it as the other kind.
 func newChoiceWithinChoice(t *testing.T, c check.Checker, innerIsChoice bool) (sheet *Sheet, outer, inner *gurps.TraitModifier) {
 	t.Helper()
-	_, user := useTestLibraries(t, c)
+	_, user := uxtest.UseTestLibraries(t, c)
 	RegisterKnownFileTypes()
 	sheet = newTestSheetForTemplate(t)
 	entity := sheet.Entity()

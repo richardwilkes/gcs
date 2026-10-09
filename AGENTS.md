@@ -19,8 +19,10 @@ Any comments you add or edit:
 ## Source conventions
 
 - Every `.go` file carries the MPL 2.0 copyright header found at the top of any existing source file (generated files
-  put their "Code generated" line ahead of it). A root test fails when a file lacks it, so copy the header into every
-  new file.
+  put their "Code generated" line ahead of it), with a blank line after it so that a package comment does not merge
+  into it. The `goheader` linter checks the exact text, including a year range that ends in the current year, and a
+  root test backstops it for the files lint never loads (generated files and those behind build tags), so copy the
+  header into every new file.
 - The `*_gen.go` files are generated from the `allEnums` table in `cmd/enumgen/main.go`. They are deleted and
   rewritten by every regeneration, so never edit them by hand: change the table and run `./build.sh -G`.
 - A new test that puts two or more goroutines over shared state must also be listed in its package's `TestRace`

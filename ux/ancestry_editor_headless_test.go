@@ -12,12 +12,12 @@ package ux
 import (
 	"os"
 	"path/filepath"
-	"slices"
 	"strings"
 	"testing"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
-	"github.com/richardwilkes/gcs/v5/svg"
+	"github.com/richardwilkes/gcs/v5/ux/svg"
+	"github.com/richardwilkes/gcs/v5/ux/uxtest"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/mod"
@@ -29,12 +29,12 @@ import (
 // unsaved changes. The phases build on one another, so a failure the rest cannot proceed without stops the test there.
 func TestAncestryEditorHeadless(t *testing.T) {
 	c := check.New(t)
-	screen, wnd := startHeadlessWorkspace(t, c)
+	screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
 	user := gurps.GlobalSettings().Libraries.User()
 
 	// Open the editor from the File menu.
-	chooseMenuBarItem(t, screen, wnd, "File", "New Ancestry")
-	d := soleEditor[*ancestryEditorDockable](t, screen, isAncestryEditor)
+	uxtest.ChooseMenuBarItem(t, screen, wnd, "File", "New Ancestry")
+	d := uxtest.SoleEditor[*ancestryEditorDockable](t, screen, isAncestryEditor)
 	var title string
 	var modified, saveEnabled, inWorkspace bool
 	screen.Do(func() {
@@ -50,12 +50,12 @@ func TestAncestryEditorHeadless(t *testing.T) {
 
 	// Choosing the item again opens a second editor, which stands on its own: the first is left as it was, and closing
 	// the second, which is untouched, prompts for nothing and leaves the first in place.
-	chooseMenuBarItem(t, screen, wnd, "File", "New Ancestry")
-	second := otherEditor(t, screen, d, isAncestryEditor)
+	uxtest.ChooseMenuBarItem(t, screen, wnd, "File", "New Ancestry")
+	second := uxtest.OtherEditor(t, screen, d, isAncestryEditor)
 	var secondTitle string
 	screen.Do(func() { secondTitle = second.Title() })
 	c.Equal("Ancestry: Untitled", secondTitle, "the second editor holds a new ancestry of its own")
-	closeEditorWithoutPrompt(t, screen, second)
+	uxtest.CloseEditorWithoutPrompt(t, screen, second)
 	var remaining []unison.Dockable
 	screen.Do(func() { remaining = AllMatchingDockables(isAncestryEditor) })
 	if len(remaining) != 1 || remaining[0].AsPanel().Self != d {
@@ -123,7 +123,7 @@ func TestAncestryEditorHeadless(t *testing.T) {
 	// Add a hair option to the common options, give it a value and a weight.
 	var addHair *unison.Button
 	screen.Do(func() {
-		for _, list := range panelsOfType[*weightedStringOptionsPanel](d.AsPanel()) {
+		for _, list := range uxtest.PanelsOfType[*weightedStringOptionsPanel](d.AsPanel()) {
 			if list.spec.list == &d.model.CommonOptions.HairOptions {
 				if addHair = buttonWithSVG(list.AsPanel(), unison.CircledAddSVG); addHair != nil {
 					addHair.ScrollIntoView()
@@ -169,7 +169,7 @@ func TestAncestryEditorHeadless(t *testing.T) {
 	// exactly the gender rows, which is what lets the drag be aimed by row index.
 	var genderList *unison.Panel
 	screen.Do(func() {
-		if roots := panelsOfType[*ancestryEditorPanel](d.AsPanel()); len(roots) == 1 {
+		if roots := uxtest.PanelsOfType[*ancestryEditorPanel](d.AsPanel()); len(roots) == 1 {
 			genderList = roots[0].genders
 		}
 	})
@@ -192,7 +192,7 @@ func TestAncestryEditorHeadless(t *testing.T) {
 	c.Equal([]string{"Male", "Female", "Other"}, names, "undo restores the original order")
 
 	// Capture the rendering for a person to look at, when one has asked for it.
-	captureScreen(t, c, screen, "ancestry_editor")
+	uxtest.CaptureScreen(t, c, screen, "ancestry_editor")
 
 	// Save through the toolbar. A new ancestry has no file, so the pure-Go save dialog comes up, offering the user
 	// library's ancestries folder and the ancestry's name as the file name, which is accepted as it stands.
@@ -262,7 +262,7 @@ func TestAncestryEditorHeadless(t *testing.T) {
 	}
 	screen.Click(screen.PanelCenter(menuButton))
 	var items []*unison.Panel
-	screen.Do(func() { items = menuItemPanels(openMenuPopup(wnd)) })
+	screen.Do(func() { items = uxtest.MenuItemPanels(uxtest.OpenMenuPopup(wnd)) })
 	// The menu holds Open…, a separator, the user library's title, and its two ancestries in name order: Dwarf, then
 	// Elf. The master library has no ancestries, so it is not listed. The items are panels without titles of their own,
 	// so the one to click is found by its position.
@@ -285,12 +285,12 @@ func TestAncestryEditorHeadless(t *testing.T) {
 
 	// Choosing the other ancestry opens it in an editor of its own, leaving this one as it is.
 	screen.Click(screen.PanelCenter(menuButton))
-	screen.Do(func() { items = menuItemPanels(openMenuPopup(wnd)) })
+	screen.Do(func() { items = uxtest.MenuItemPanels(uxtest.OpenMenuPopup(wnd)) })
 	if len(items) != 5 {
 		t.Fatalf("expected the toolbar menu to hold 5 items again, found %d", len(items))
 	}
 	screen.Click(screen.PanelCenter(items[3]))
-	dwarf := otherEditor(t, screen, d, isAncestryEditor)
+	dwarf := uxtest.OtherEditor(t, screen, d, isAncestryEditor)
 	var dwarfName, dwarfPathShown, dwarfTitle string
 	var dwarfModified, dwarfCanUndo, dwarfCurrent bool
 	screen.Do(func() {
@@ -315,7 +315,7 @@ func TestAncestryEditorHeadless(t *testing.T) {
 	c.True(dwarfCurrent, "the new editor is brought to the front")
 	c.Equal("Elf2", name, "the first editor still holds its edit")
 	c.True(modified)
-	closeEditorWithoutPrompt(t, screen, dwarf)
+	uxtest.CloseEditorWithoutPrompt(t, screen, dwarf)
 
 	// Close the tab with the unsaved change and discard it. The close runs a modal prompt, so it is posted rather than
 	// run through Do, which would wait for it to return.
@@ -335,31 +335,6 @@ func TestAncestryEditorHeadless(t *testing.T) {
 	c.Equal(0, editors, "discarding closes the editor")
 	c.Equal(1, windows, "the prompt has been dismissed")
 	c.Equal("Elf", loadSavedFile(t, c, savedPath, gurps.NewAncestryFromFile).Name, "discarding leaves the file as it was saved")
-}
-
-// closeEditorWithoutPrompt closes a dockable that is expected to close without a prompt, failing the test if it is
-// still open or a dialog came up. The close is posted rather than run through Do, since a prompt would be modal and Do
-// would wait for it.
-func closeEditorWithoutPrompt(t *testing.T, screen *unison.HeadlessScreen, d interface {
-	unison.Dockable
-	unison.TabCloser
-},
-) {
-	t.Helper()
-	screen.Post(func() { d.AttemptClose() })
-	screen.Sync()
-	var stillOpen bool
-	var windows int
-	screen.Do(func() {
-		stillOpen = slices.ContainsFunc(AllDockables(), func(open unison.Dockable) bool { return open.AsPanel().Self == d })
-		windows = len(unison.Windows())
-	})
-	if stillOpen {
-		t.Fatalf("%s is still open", d.Title())
-	}
-	if windows != 1 {
-		t.Fatalf("closing %s left %d windows open; expected the workspace alone", d.Title(), windows)
-	}
 }
 
 // dockTabTitle returns the text of the tab the dock shows for the dockable, or "" if it cannot be found. The tab's

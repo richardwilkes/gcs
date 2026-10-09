@@ -16,6 +16,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/picker"
+	"github.com/richardwilkes/gcs/v5/ux/uxtest"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/unison"
 )
@@ -25,7 +26,7 @@ import (
 // change replaced, whose own limits were those of the old type.
 func TestChoiceQualifierUndoAfterTypeChange(t *testing.T) {
 	c := check.New(t)
-	screen, _ := startHeadlessWorkspace(t, c)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
 	trait := gurps.NewTraitChoiceContainer(nil, nil)
 	trait.TemplatePicker.Type = picker.Points
 	trait.TemplatePicker.Qualifier.Compare = criteria.AtMostNumber
@@ -42,12 +43,12 @@ func TestChoiceQualifierUndoAfterTypeChange(t *testing.T) {
 	var field *DecimalField
 	var typePopup *unison.PopupMenu[picker.Type]
 	screen.Do(func() {
-		for _, one := range panelsOfType[*DecimalField](e.AsPanel()) {
+		for _, one := range uxtest.PanelsOfType[*DecimalField](e.AsPanel()) {
 			if one.Min() == fxp.Min {
 				field = one
 			}
 		}
-		for _, one := range panelsOfType[*unison.PopupMenu[picker.Type]](e.AsPanel()) {
+		for _, one := range uxtest.PanelsOfType[*unison.PopupMenu[picker.Type]](e.AsPanel()) {
 			typePopup = one
 		}
 	})

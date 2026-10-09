@@ -16,7 +16,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/jio"
-	"github.com/richardwilkes/gcs/v5/svg"
+	"github.com/richardwilkes/gcs/v5/ux/svg"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
@@ -77,7 +77,7 @@ func displayPointsEditor(owner Rebuildable, entity *gurps.Entity) {
 }
 
 func (e *pointsEditor) createToolbar() unison.Paneler {
-	toolbar := newToolbar()
+	toolbar := NewToolbar()
 	addHelpButton(toolbar, "md:User%20Guide/Character%20Points")
 	e.addApplyAndCancelButtons(toolbar, e.apply)
 	toolbar.AddChild(NewToolbarSeparator())
@@ -87,7 +87,7 @@ func (e *pointsEditor) createToolbar() unison.Paneler {
 	addButton.ClickCallback = e.addEntry
 	toolbar.AddChild(addButton)
 
-	finishToolbarLayout(toolbar)
+	FinishToolbarLayout(toolbar)
 	return toolbar
 }
 

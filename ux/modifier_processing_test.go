@@ -13,6 +13,7 @@ import (
 	"testing"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/ux/uxtest"
 	"github.com/richardwilkes/toolbox/v2/check"
 )
 
@@ -27,7 +28,7 @@ type modifierPrompt struct {
 func captureModifierPrompts(t *testing.T) *[]modifierPrompt {
 	t.Helper()
 	var prompts []modifierPrompt
-	swapForTest(t, &promptForTraitModifiers, func(info *modifierPromptInfo, modifiers []*gurps.TraitModifier) (changed, canceled bool) {
+	uxtest.SwapForTest(t, &promptForTraitModifiers, func(info *modifierPromptInfo, modifiers []*gurps.TraitModifier) (changed, canceled bool) {
 		title := info.name
 		p := modifierPrompt{title: title}
 		for _, one := range modifiers {
@@ -36,7 +37,7 @@ func captureModifierPrompts(t *testing.T) *[]modifierPrompt {
 		prompts = append(prompts, p)
 		return false, false
 	})
-	swapForTest(t, &promptForEquipmentModifiers, func(info *modifierPromptInfo, modifiers []*gurps.EquipmentModifier) (changed, canceled bool) {
+	uxtest.SwapForTest(t, &promptForEquipmentModifiers, func(info *modifierPromptInfo, modifiers []*gurps.EquipmentModifier) (changed, canceled bool) {
 		title := info.name
 		p := modifierPrompt{title: title}
 		for _, one := range modifiers {
@@ -96,17 +97,17 @@ func tabledProvider[T gurps.Node[T]](provider TableProvider[T]) TableProvider[T]
 // responder after calling this.
 func forbidModifierPrompts(t *testing.T) {
 	t.Helper()
-	swapForTest(t, &promptForTraitModifiers, func(info *modifierPromptInfo, _ []*gurps.TraitModifier) (changed, canceled bool) {
+	uxtest.SwapForTest(t, &promptForTraitModifiers, func(info *modifierPromptInfo, _ []*gurps.TraitModifier) (changed, canceled bool) {
 		title := info.name
 		t.Errorf("the modifier prompt must not be shown, but was shown for %q", title)
 		return false, false
 	})
-	swapForTest(t, &promptForEquipmentModifiers, func(info *modifierPromptInfo, _ []*gurps.EquipmentModifier) (changed, canceled bool) {
+	uxtest.SwapForTest(t, &promptForEquipmentModifiers, func(info *modifierPromptInfo, _ []*gurps.EquipmentModifier) (changed, canceled bool) {
 		title := info.name
 		t.Errorf("the modifier prompt must not be shown, but was shown for %q", title)
 		return false, false
 	})
-	swapForTest(t, &promptForNameables, slicedNameablesPrompt(func(titles []string, _ []map[string]string, _ [][]string) bool {
+	uxtest.SwapForTest(t, &promptForNameables, slicedNameablesPrompt(func(titles []string, _ []map[string]string, _ [][]string) bool {
 		t.Errorf("the nameables prompt must not be shown, but was shown for %v", titles)
 		return false
 	}))
@@ -147,7 +148,7 @@ func TestProcessModifiersIgnoresModifierRows(t *testing.T) {
 func TestModifierPromptsCountOnlyRowsWithModifiers(t *testing.T) {
 	c := check.New(t)
 	var steps [][2]int
-	swapForTest(t, &promptForTraitModifiers, func(info *modifierPromptInfo, _ []*gurps.TraitModifier) (changed, canceled bool) {
+	uxtest.SwapForTest(t, &promptForTraitModifiers, func(info *modifierPromptInfo, _ []*gurps.TraitModifier) (changed, canceled bool) {
 		steps = append(steps, [2]int{info.step, info.steps})
 		return false, false
 	})

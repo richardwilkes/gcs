@@ -154,6 +154,33 @@ func TestResolveDamageMatchesResolvedDamage(t *testing.T) {
 	c.Equal(unowned.String(), unowned.ResolvedDamage(nil), "and its damage falls back on the unresolved form")
 }
 
+// TestIsExplosiveDamageType verifies that the Explosion modifier (B104) is recognized in every form the data libraries
+// write it in -- decorated with an asterisk, a comma or a slashed suffix, and in any position among the other damage
+// modifiers -- while a longer word that merely starts with the same two letters is not mistaken for it.
+func TestIsExplosiveDamageType(t *testing.T) {
+	c := check.New(t)
+	for _, tc := range []struct {
+		name       string
+		damageType string
+		want       bool
+	}{
+		{name: "a plain grenade", damageType: "cr ex", want: true},
+		{name: "decorated and buried among other modifiers", damageType: "burn ex* rad sur", want: true},
+		{name: "following another modifier", damageType: "cr dkb ex", want: true},
+		{name: "with a divisor suffix", damageType: "cr ex/2", want: true},
+		{name: "with a per-point suffix", damageType: "cr ex/point", want: true},
+		{name: "trailing punctuation", damageType: "ex,", want: true},
+		{name: "on its own", damageType: "ex", want: true},
+		{name: "upper case", damageType: "CR EX", want: true},
+		{name: "not explosive", damageType: "cut", want: false},
+		{name: "a longer word starting with ex", damageType: "exp", want: false},
+		{name: "ex is only part of a word", damageType: "cr exotic", want: false},
+		{name: "empty", damageType: "", want: false},
+	} {
+		c.Equal(tc.want, gurps.IsExplosiveDamageType(tc.damageType), tc.name)
+	}
+}
+
 // TestResolvedWeaponDamageIsExplosive verifies that damage counts as an explosion (BX414) when its type carries the
 // Explosion modifier or when it throws fragments, and not otherwise.
 func TestResolvedWeaponDamageIsExplosive(t *testing.T) {

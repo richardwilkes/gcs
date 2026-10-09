@@ -148,7 +148,7 @@ func newContradictoryTraitRing(entity *gurps.Entity) []*gurps.Trait {
 	return ring
 }
 
-// toolbarColumns returns how many children the toolbar's layout was finished for; see finishToolbarLayout.
+// toolbarColumns returns how many children the toolbar's layout was finished for; see FinishToolbarLayout.
 func toolbarColumns(c check.Checker, toolbar *unison.Panel) int {
 	c.Helper()
 	layout, ok := toolbar.Layout().(*unison.FlexLayout)

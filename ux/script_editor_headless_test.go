@@ -15,6 +15,7 @@ import (
 	"time"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/ux/uxtest"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/mod"
@@ -28,7 +29,7 @@ func waitForEvaluation(screen *unison.HeadlessScreen) {
 
 func TestScriptEditor(t *testing.T) {
 	c := check.New(t)
-	screen, _ := startHeadlessWorkspace(t, c)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
 	script := "a\nb"
 	var editor *scriptEditor
 	var evaluations int
@@ -96,7 +97,7 @@ func TestScriptEditor(t *testing.T) {
 
 	var snippets *unison.Button
 	screen.Do(func() {
-		for _, one := range panelsOfType[*unison.Button](editor.AsPanel()) {
+		for _, one := range uxtest.PanelsOfType[*unison.Button](editor.AsPanel()) {
 			if one.Text != nil && one.Text.String() == "Snippets" {
 				snippets = one
 			}
@@ -127,7 +128,7 @@ func TestScriptEditor(t *testing.T) {
 // given room at the next layout.
 func TestShowCheckIconMakesRoom(t *testing.T) {
 	c := check.New(t)
-	screen, _ := startHeadlessWorkspace(t, c)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
 	var row *unison.Panel
 	var icon *unison.Label
 	screen.Do(func() {

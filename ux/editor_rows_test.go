@@ -15,6 +15,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/prereq"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/study"
+	"github.com/richardwilkes/gcs/v5/ux/uxtest"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/unison"
@@ -94,7 +95,7 @@ func TestMoveEntry(t *testing.T) {
 // dragDataForRow returns the drag payload the row's drag handle would deliver.
 func dragDataForRow(t *testing.T, row *unison.Panel) *editorRowDragData {
 	t.Helper()
-	handles := panelsOfType[*DragHandle](row)
+	handles := uxtest.PanelsOfType[*DragHandle](row)
 	if len(handles) == 0 {
 		t.Fatal("the row has no drag handle")
 	}

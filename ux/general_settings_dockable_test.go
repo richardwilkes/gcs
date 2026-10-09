@@ -16,6 +16,7 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/updatecheck"
+	"github.com/richardwilkes/gcs/v5/ux/uxtest"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/unison"
 	uncheck "github.com/richardwilkes/unison/enums/check"
@@ -250,7 +251,7 @@ func newTestGeneralSettingsDockable(t *testing.T) *generalSettingsDockable {
 		gs.EnsureValidity() // Restores unison's copies of the settings, which a reset in the test may have changed.
 		gurps.SyncScriptExecTimeLimit()
 	})
-	swapForTest(t, &languageSetting, "")
+	uxtest.SwapForTest(t, &languageSetting, "")
 	d := &generalSettingsDockable{}
 	d.initContent(unison.NewPanel())
 	return d

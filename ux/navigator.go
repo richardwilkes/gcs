@@ -24,7 +24,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/dgroup"
 	"github.com/richardwilkes/gcs/v5/model/library"
-	"github.com/richardwilkes/gcs/v5/svg"
+	"github.com/richardwilkes/gcs/v5/ux/svg"
 	"github.com/richardwilkes/toolbox/v2/errs"
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/i18n"
@@ -85,7 +85,7 @@ type Navigator struct {
 
 func newNavigator() *Navigator {
 	n := &Navigator{
-		toolbar:     newToolbar(),
+		toolbar:     NewToolbar(),
 		scroll:      unison.NewScrollPanel(),
 		table:       unison.NewTable(&unison.SimpleTableModel[*NavigatorNode]{}),
 		deepSearch:  make(map[string]bool),
@@ -205,7 +205,7 @@ func (n *Navigator) setupToolBar() {
 	first := unison.NewPanel()
 	first.AddChild(NewDefaultInfoPop())
 	first.AddChild(helpButton)
-	addUIScaleField(first, func() int { return gurps.InitialNavigatorUIScaleDef },
+	AddUIScaleField(first, func() int { return gurps.InitialNavigatorUIScaleDef },
 		func() int { return gurps.GlobalSettings().General.NavigatorUIScale },
 		func(scale int) { gurps.GlobalSettings().General.NavigatorUIScale = scale }, false, n.scroll)
 	first.AddChild(hierarchyButton)

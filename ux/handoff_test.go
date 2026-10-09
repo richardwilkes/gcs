@@ -20,6 +20,7 @@ import (
 	"time"
 
 	"github.com/richardwilkes/gcs/v5/model/jio"
+	"github.com/richardwilkes/gcs/v5/ux/uxtest"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/toolbox/v2/xio"
 	"github.com/richardwilkes/toolbox/v2/xos"
@@ -113,7 +114,7 @@ func TestReadHandoffPathsAcceptsMaximumSizedPayload(t *testing.T) {
 // so it is empty in the test binary, and the handoff handshake exchanges it before anything else.
 func useTestAppIdentifier(t *testing.T) {
 	t.Helper()
-	swapForTest(t, &xos.AppIdentifier, "com.trollworks.gcs")
+	uxtest.SwapForTest(t, &xos.AppIdentifier, "com.trollworks.gcs")
 }
 
 // The sending side applies the same bound, so it reports the problem against the paths it can name instead of writing

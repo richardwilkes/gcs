@@ -14,6 +14,7 @@ import (
 	"testing"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/ux/uxtest"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/toolbox/v2/xreflect"
 	"github.com/richardwilkes/unison"
@@ -26,12 +27,12 @@ import (
 // remembers which of its own tabs is in front; what has to be remembered is which container the focus was in.
 func TestWorkspaceRestoresTheFocusedTab(t *testing.T) {
 	c := check.New(t)
-	screen, wnd := startHeadlessWorkspace(t, c)
+	screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
 	global := gurps.GlobalSettings()
-	swapForTest(t, &global.TopDockState, nil)
-	swapForTest(t, &global.DocDockState, nil)
-	swapForTest(t, &global.FocusedDockKey, "")
-	swapForTest(t, &global.OpenInWindow, nil) // The files must land in the dock for the dock state to record them.
+	uxtest.SwapForTest(t, &global.TopDockState, nil)
+	uxtest.SwapForTest(t, &global.DocDockState, nil)
+	uxtest.SwapForTest(t, &global.FocusedDockKey, "")
+	uxtest.SwapForTest(t, &global.OpenInWindow, nil) // The files must land in the dock for the dock state to record them.
 
 	// Two sheets share a container, and the trait library is put in a container of its own to their right, so the
 	// library is the last tab reopened whenever the dock state is restored.
@@ -127,8 +128,8 @@ func TestWorkspaceRestoresTheFocusedTab(t *testing.T) {
 // window with nothing focused, which left the keyboard with nothing to act on until the mouse put the focus somewhere.
 func TestClosingTheLastTabFocusesTheNavigator(t *testing.T) {
 	c := check.New(t)
-	screen, wnd := startHeadlessWorkspace(t, c)
-	swapForTest(t, &gurps.GlobalSettings().OpenInWindow, nil) // The sheets must land in the dock to be tabs.
+	screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
+	uxtest.SwapForTest(t, &gurps.GlobalSettings().OpenInWindow, nil) // The sheets must land in the dock to be tabs.
 
 	dir := t.TempDir()
 	first := filepath.Join(dir, "first"+gurps.SheetExt)
@@ -151,13 +152,13 @@ func TestClosingTheLastTabFocusesTheNavigator(t *testing.T) {
 	c.Equal(first, focusedPath, "the first sheet starts out with the focus")
 
 	// With another tab beside it, the focus passes to that tab.
-	closeEditorWithoutPrompt(t, screen, firstSheet)
+	uxtest.CloseEditorWithoutPrompt(t, screen, firstSheet)
 	screen.Do(func() { focusedPath = focusedFilePath(wnd) })
 	c.Equal(second, focusedPath, "closing the focused tab hands the focus to the remaining tab")
 
 	// With no tab left, the focus goes to the navigator's table, as at startup.
 	var navigatorTableFocused bool
-	closeEditorWithoutPrompt(t, screen, secondSheet)
+	uxtest.CloseEditorWithoutPrompt(t, screen, secondSheet)
 	screen.Do(func() { navigatorTableFocused = wnd.CurrentFocus() == Workspace.Navigator.table.AsPanel() })
 	c.True(navigatorTableFocused, "closing the last tab hands the focus to the navigator's table")
 }

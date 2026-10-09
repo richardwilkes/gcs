@@ -13,6 +13,7 @@ import (
 	"testing"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/ux/uxtest"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/toolbox/v2/tid"
 	"github.com/richardwilkes/unison"
@@ -24,7 +25,7 @@ import (
 // between, whose ID's kind the conversion changes, and redo brings back the legality class new equipment starts with.
 func TestContainerConversionClosesEditorsAndUndoesTheKind(t *testing.T) {
 	c := check.New(t)
-	screen, _ := startHeadlessWorkspace(t, c)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
 	entity := gurps.NewEntity()
 	group := gurps.NewEquipmentGroup(entity, nil)
 	group.Name = "Kit"

@@ -16,6 +16,7 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/library"
+	"github.com/richardwilkes/gcs/v5/ux/uxtest"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/behavior"
@@ -122,7 +123,7 @@ func integerFieldFor(t *testing.T, d structuralEditor, key string) *IntegerField
 }
 
 func genderRows(d *ancestryEditorDockable) []*genderOptionsPanel {
-	return panelsOfType[*genderOptionsPanel](d.AsPanel())
+	return uxtest.PanelsOfType[*genderOptionsPanel](d.AsPanel())
 }
 
 // TestAncestryEditorContract runs the checks every file editor must pass against the ancestry editor.

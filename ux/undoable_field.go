@@ -159,12 +159,23 @@ func (f *undoableField[T]) setWithoutUndo(state *unison.FieldState, focus bool) 
 
 // Sync the field to the current value. While the field has the focus, the text in it is what the user is working on, so
 // it is re-parsed rather than replaced. Nothing can be typed into a disabled field, which may hold the focus for a
-// screen reader to read it (see unison.SetFocusForReading), so its text is always replaced.
+// screen reader to read it (see unison.SetFocusForReading), so its text is always replaced. Replaced text the field
+// can't show in full leaves the value as it is until the field is edited.
 func (f *undoableField[T]) Sync() {
 	if !f.hasFocus || !f.Enabled() {
 		f.useGet = true
 	}
 	state := f.GetFieldState()
+	fromValue := f.useGet
 	state.Text = f.getData()
+	if fromValue {
+		f.ApplyFieldState(state)
+		if shown := f.Text(); shown != state.Text {
+			// The field dropped what it can't show, such as a newline. What is left is not the value, so it is not
+			// handed to the setter: the value stays as it is until the field is edited, which hands over its text then.
+			f.last = f.parse(shown)
+			MarkForLayoutWithinDockable(f)
+		}
+	}
 	f.self.setWithoutUndo(state, false)
 }

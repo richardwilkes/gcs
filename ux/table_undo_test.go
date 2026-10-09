@@ -16,6 +16,7 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/jio"
+	"github.com/richardwilkes/gcs/v5/ux/uxtest"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/i18n"
@@ -640,8 +641,8 @@ func TestUndoRestoresAConditionallyPresentList(t *testing.T) {
 func TestAltDropOntoASelectionIsASingleUndoableEdit(t *testing.T) {
 	c := check.New(t)
 	forbidModifierPrompts(t)
-	swapForTest(t, &flushDragFeedback, func(_ *unison.Panel) {})
-	swapForTest(t, &draggedTableData, draggedTableData) // The drop leaves its data behind; put the prior data back.
+	uxtest.SwapForTest(t, &flushDragFeedback, func(_ *unison.Panel) {})
+	uxtest.SwapForTest(t, &draggedTableData, draggedTableData) // The drop leaves its data behind; put the prior data back.
 
 	sheet := newTestSheetForTemplate(t)
 	entity := sheet.Entity()
@@ -700,10 +701,10 @@ func TestAltDropOntoASelectionIsASingleUndoableEdit(t *testing.T) {
 func TestAltDropWithACanceledPromptLeavesNothingBehind(t *testing.T) {
 	c := check.New(t)
 	forbidModifierPrompts(t)
-	swapForTest(t, &flushDragFeedback, func(_ *unison.Panel) {})
-	swapForTest(t, &draggedTableData, draggedTableData) // The drop leaves its data behind; put the prior data back.
+	uxtest.SwapForTest(t, &flushDragFeedback, func(_ *unison.Panel) {})
+	uxtest.SwapForTest(t, &draggedTableData, draggedTableData) // The drop leaves its data behind; put the prior data back.
 	shown := 0
-	swapForTest(t, &promptForNameables, slicedNameablesPrompt(func(_ []string, _ []map[string]string, _ [][]string) bool {
+	uxtest.SwapForTest(t, &promptForNameables, slicedNameablesPrompt(func(_ []string, _ []map[string]string, _ [][]string) bool {
 		shown++
 		return false
 	}))

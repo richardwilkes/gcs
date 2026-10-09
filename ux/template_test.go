@@ -14,6 +14,7 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/ux/uxtest"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/unison"
 )
@@ -26,9 +27,9 @@ import (
 func TestTemplateReplacesAListWhoseColumnsChanged(t *testing.T) {
 	c := check.New(t)
 	settings := gurps.GlobalSettings().SheetSettings()
-	swapForTest(t, &settings.HideTLColumn, false)
+	uxtest.SwapForTest(t, &settings.HideTLColumn, false)
 	// Creating an item opens its editor, which looks for a dock to go into.
-	swapForTest(t, &Workspace.DocumentDock, NewDocumentDock())
+	uxtest.SwapForTest(t, &Workspace.DocumentDock, NewDocumentDock())
 
 	data := gurps.NewTemplate()
 	template := newTestTemplateDockable("My Template", data)
@@ -67,12 +68,12 @@ func TestTemplateReplacesAListWhoseColumnsChanged(t *testing.T) {
 // The rebuild's ordinary focus restoration finds the replacement table by the reference key it shares with the old one.
 func TestTemplateRebuildKeepsTheFocusInAReplacedList(t *testing.T) {
 	c := check.New(t)
-	screen, wnd := startHeadlessWorkspace(t, c)
+	screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
 	settings := gurps.GlobalSettings().SheetSettings()
 	saved := settings.HideTLColumn
 	t.Cleanup(func() { screen.Do(func() { settings.HideTLColumn = saved }) })
 	screen.Do(func() { settings.HideTLColumn = false })
-	template, ok := openedByAction(t, screen, newCharacterTemplateAction).(*Template)
+	template, ok := uxtest.OpenedByAction(t, screen, newCharacterTemplateAction).(*Template)
 	if !ok {
 		t.Fatal("New Character Template must open a template")
 	}
@@ -102,7 +103,7 @@ func TestTemplateRebuildKeepsTheFocusInAReplacedList(t *testing.T) {
 func TestTemplateSearchSkipsAListTheLayoutDoesNotShow(t *testing.T) {
 	c := check.New(t)
 	sheetSettings := gurps.GlobalSettings().Sheet
-	swapForTest(t, &sheetSettings.Layout, sheetSettings.Layout.Clone())
+	uxtest.SwapForTest(t, &sheetSettings.Layout, sheetSettings.Layout.Clone())
 
 	data := gurps.NewTemplate()
 	trait := gurps.NewTrait(nil, nil, false)

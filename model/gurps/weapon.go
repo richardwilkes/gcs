@@ -31,7 +31,6 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/wswitch"
 	"github.com/richardwilkes/gcs/v5/model/kinds"
 	"github.com/richardwilkes/gcs/v5/model/nameable"
-	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/v2/errs"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/toolbox/v2/tid"
@@ -39,7 +38,6 @@ import (
 	"github.com/richardwilkes/toolbox/v2/xhash"
 	"github.com/richardwilkes/toolbox/v2/xreflect"
 	"github.com/richardwilkes/toolbox/v2/xstrings"
-	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
 	"github.com/zeebo/xxh3"
 )
@@ -391,9 +389,9 @@ func (w *Weapon) ID() tid.TID {
 // Kind returns the kind of data.
 func (w *Weapon) Kind() string {
 	if w.IsMelee() {
-		return i18n.Text("Melee Weapon")
+		return i18n.Text("Melee Attack")
 	}
-	return i18n.Text("Ranged Weapon")
+	return i18n.Text("Ranged Attack")
 }
 
 func (w *Weapon) String() string {
@@ -955,9 +953,9 @@ func WeaponHeaderData(columnID int, melee, forPage bool) HeaderData {
 		data.Title = i18n.Text("Hide")
 	case WeaponDescriptionColumn:
 		if melee {
-			data.Title = i18n.Text("Melee Weapon")
+			data.Title = i18n.Text("Melee Attack")
 		} else {
-			data.Title = i18n.Text("Ranged Weapon")
+			data.Title = i18n.Text("Ranged Attack")
 		}
 		data.Primary = true
 	case WeaponUsageColumn:
@@ -965,9 +963,9 @@ func WeaponHeaderData(columnID int, melee, forPage bool) HeaderData {
 		case forPage:
 			data.Title = i18n.Text("Usage")
 		case melee:
-			data.Title = i18n.Text("Melee Weapon Usage")
+			data.Title = i18n.Text("Melee Attack Usage")
 		default:
-			data.Title = i18n.Text("Ranged Weapon Usage")
+			data.Title = i18n.Text("Ranged Attack Usage")
 		}
 	case WeaponSLColumn:
 		data = abbreviatedHeaderData(i18n.Text("SL"), i18n.Text("Skill Level"))
@@ -1140,12 +1138,4 @@ func (w *Weapon) Validate() {
 		w.Block = WeaponBlock{}
 		w.Reach = WeaponReach{}
 	}
-}
-
-// WeaponSVG returns the SVG that should be used for the weapon type.
-func WeaponSVG(melee bool) *unison.SVG {
-	if melee {
-		return svg.MeleeWeapon
-	}
-	return svg.RangedWeapon
 }

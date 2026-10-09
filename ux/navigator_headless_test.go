@@ -17,6 +17,7 @@ import (
 	"time"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/ux/uxtest"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/mod"
@@ -28,7 +29,7 @@ import (
 // is the one the caller acts on, a current name is shown in a disabled row of its own, and canceling returns nothing.
 func TestPromptForFileSystemNameGatesOKOnTarget(t *testing.T) {
 	c := check.New(t)
-	screen, wnd := startHeadlessWorkspace(t, c)
+	screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
 	dir := t.TempDir()
 	c.NoError(os.Mkdir(filepath.Join(dir, "taken"), 0o750))
 	targetPath := func(name string) string { return newFolderPath(dir, name) }
@@ -46,7 +47,7 @@ func TestPromptForFileSystemNameGatesOKOnTarget(t *testing.T) {
 	var fields []*StringField
 	var okButton *unison.Button
 	screen.Do(func() {
-		fields = panelsOfType[*StringField](dialogWnd.Content())
+		fields = uxtest.PanelsOfType[*StringField](dialogWnd.Content())
 		okButton = dialog.Button(unison.ModalResponseOK)
 	})
 	if len(fields) != 2 {
@@ -88,7 +89,7 @@ func TestPromptForFileSystemNameGatesOKOnTarget(t *testing.T) {
 	screen.Sync()
 	dialogWnd, dialog = modalDialog(t, screen, wnd)
 	screen.Do(func() {
-		fields = panelsOfType[*StringField](dialogWnd.Content())
+		fields = uxtest.PanelsOfType[*StringField](dialogWnd.Content())
 		okButton = dialog.Button(unison.ModalResponseOK)
 	})
 	c.Equal(1, len(fields), "with no current name, only the entry is shown")
@@ -111,16 +112,16 @@ func TestPromptForFileSystemNameGatesOKOnTarget(t *testing.T) {
 // it must have let go of its library watches.
 func TestReloadOfADiscardedNavigatorLeavesTheLiveOneAlone(t *testing.T) {
 	c := check.New(t)
-	swapForTest(t, &gurps.GlobalSettings().Closed, make(map[string]int64))
+	uxtest.SwapForTest(t, &gurps.GlobalSettings().Closed, make(map[string]int64))
 	var discarded *Navigator
 	t.Run("earlier workspace", func(t *testing.T) {
-		screen, _ := startHeadlessWorkspace(t, check.New(t))
+		screen, _ := uxtest.StartHeadlessWorkspace(t, check.New(t))
 		screen.Do(func() { discarded = Workspace.Navigator })
 	})
 	if discarded == nil {
 		t.Fatal("the earlier workspace must have had a navigator")
 	}
-	screen, _ := startHeadlessWorkspace(t, c)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
 	var discardedInWindow bool
 	var watches int
 	var closedLibraries []string
@@ -175,7 +176,7 @@ func stopNavigatorWatches(t *testing.T, screen *unison.HeadlessScreen, n *Naviga
 // reload is still honored.
 func TestReloadServesInPlaceOfAPendingOne(t *testing.T) {
 	c := check.New(t)
-	screen, _ := startHeadlessWorkspace(t, c)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
 	var n *Navigator
 	screen.Do(func() { n = Workspace.Navigator })
 	// Waits out the reload a new navigator asks for of itself.
@@ -210,7 +211,7 @@ func TestReloadServesInPlaceOfAPendingOne(t *testing.T) {
 // land in the process's working directory.
 func TestNewFolderIsUnavailableForFavorites(t *testing.T) {
 	c := check.New(t)
-	screen, _ := startHeadlessWorkspace(t, c)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
 	var n *Navigator
 	var favoritesSelected, enabledForLibrary, enabledForFavorites bool
 	screen.Do(func() {
@@ -242,8 +243,8 @@ func TestNewFolderIsUnavailableForFavorites(t *testing.T) {
 func TestNewFolderCreatesWhatIsMissingAboveIt(t *testing.T) {
 	c := check.New(t)
 	// Every row starts out disclosed, so that what is put in the user library below gets rows of its own.
-	swapForTest(t, &gurps.GlobalSettings().Closed, make(map[string]int64))
-	screen, wnd := startHeadlessWorkspace(t, c)
+	uxtest.SwapForTest(t, &gurps.GlobalSettings().Closed, make(map[string]int64))
+	screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
 	libPath := gurps.GlobalSettings().Libraries.User().Path(false)
 	staleDir := filepath.Join(libPath, "stale")
 	staleFile := filepath.Join(libPath, "stale"+gurps.SheetExt)

@@ -15,6 +15,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/jio"
+	"github.com/richardwilkes/gcs/v5/ux/uxtest"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/unison"
 )
@@ -75,7 +76,7 @@ func TestTreasureGenPanelValidateOKWithoutDialog(t *testing.T) {
 func newTestLootSheet(t *testing.T) *LootSheet {
 	t.Helper()
 	registerKeyBindingsOnce.Do(func() { registerActions() })
-	swapForTest(t, &Workspace.DocumentDock, NewDocumentDock())
+	uxtest.SwapForTest(t, &Workspace.DocumentDock, NewDocumentDock())
 	return NewLootSheet("test"+gurps.LootExt, gurps.NewLoot())
 }
 

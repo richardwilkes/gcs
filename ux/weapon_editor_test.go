@@ -13,6 +13,7 @@ import (
 	"testing"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/ux/uxtest"
 	"github.com/richardwilkes/toolbox/v2/check"
 )
 
@@ -28,7 +29,7 @@ func TestWeaponEditorFragmentationFieldsFollowTheDice(t *testing.T) {
 		var we weaponEditor
 		e, content := buildEditorContent(sheet, weapon, we.initWeaponEditor)
 		var dice, fragType *StringField
-		for _, field := range panelsOfType[*StringField](content) {
+		for _, field := range uxtest.PanelsOfType[*StringField](content) {
 			switch field.undoTitle {
 			case "Fragmentation Base Damage":
 				dice = field
@@ -37,7 +38,7 @@ func TestWeaponEditorFragmentationFieldsFollowTheDice(t *testing.T) {
 			}
 		}
 		var divisor *DecimalField
-		for _, field := range panelsOfType[*DecimalField](content) {
+		for _, field := range uxtest.PanelsOfType[*DecimalField](content) {
 			if field.undoTitle == "Fragmentation Armor Divisor" {
 				divisor = field
 			}
