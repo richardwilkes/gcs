@@ -99,6 +99,10 @@ func (t *Template) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 	NormalizeTemplateChoiceContainers(t.Skills...)
 	NormalizeTemplateChoiceContainers(t.Spells...)
 	NormalizeTemplateChoiceContainers(t.Equipment...)
+	// Study only means something on a character sheet, so any a template carries is removed.
+	ClearStudy(t.Traits...)
+	ClearStudy(t.Skills...)
+	ClearStudy(t.Spells...)
 	if !tid.IsKindAndValid(t.ID, kinds.Template) {
 		t.ID = tid.MustNewTID(kinds.Template)
 	}

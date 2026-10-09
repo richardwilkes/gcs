@@ -10,10 +10,13 @@
 package gurps
 
 import (
+	"encoding/json/v2"
 	"testing"
+	"testing/fstest"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/study"
+	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/toolbox/v2/check"
 )
 
@@ -33,4 +36,53 @@ func TestCloneStudyList(t *testing.T) {
 	}
 	clone[0].Hours = fxp.One
 	c.Equal(fxp.Four, list[0].Hours, "editing the clone leaves the source alone")
+}
+
+// TestLoadingOffASheetClearsStudy verifies that a template and a trait, skill or spell list have any study and study
+// hours needed removed when loaded, while a character sheet keeps both.
+func TestLoadingOffASheetClearsStudy(t *testing.T) {
+	c := check.New(t)
+	studied := func() ([]*Study, study.Level) {
+		return []*Study{{Type: study.Teacher, Hours: fxp.Ten}}, study.Level2
+	}
+	trait := NewTrait(nil, nil, false)
+	trait.Study, trait.StudyHoursNeeded = studied()
+	skill := NewSkill(nil, nil, false)
+	skill.Study, skill.StudyHoursNeeded = studied()
+	spell := NewSpell(nil, nil, false)
+	spell.Study, spell.StudyHoursNeeded = studied()
+
+	entity := NewEntity()
+	entity.Traits = []*Trait{trait}
+	entity.Skills = []*Skill{skill}
+	entity.Spells = []*Spell{spell}
+	data, err := json.Marshal(entity)
+	c.NoError(err)
+	var loadedEntity Entity
+	c.NoError(json.Unmarshal(data, &loadedEntity))
+	c.Equal(1, len(loadedEntity.Traits[0].Study), "a character sheet must keep a trait's study")
+	c.Equal(study.Level2, loadedEntity.Skills[0].StudyHoursNeeded, "a character sheet must keep a skill's hours needed")
+	c.Equal(1, len(loadedEntity.Spells[0].Study), "a character sheet must keep a spell's study")
+
+	template := NewTemplate()
+	template.Traits = []*Trait{trait}
+	template.Skills = []*Skill{skill}
+	template.Spells = []*Spell{spell}
+	data, err = json.Marshal(template)
+	c.NoError(err)
+	var loadedTemplate Template
+	c.NoError(json.Unmarshal(data, &loadedTemplate))
+	c.Equal(0, len(loadedTemplate.Traits[0].Study), "a template must not keep a trait's study")
+	c.Equal(study.Standard, loadedTemplate.Traits[0].StudyHoursNeeded, "a template must not keep a trait's hours needed")
+	c.Equal(0, len(loadedTemplate.Skills[0].Study), "a template must not keep a skill's study")
+	c.Equal(study.Standard, loadedTemplate.Skills[0].StudyHoursNeeded, "a template must not keep a skill's hours needed")
+	c.Equal(0, len(loadedTemplate.Spells[0].Study), "a template must not keep a spell's study")
+	c.Equal(study.Standard, loadedTemplate.Spells[0].StudyHoursNeeded, "a template must not keep a spell's hours needed")
+
+	list, err := json.Marshal(&listData[*Skill]{Version: jio.CurrentDataVersion, Rows: []*Skill{skill}})
+	c.NoError(err)
+	rows, err := NewSkillsFromFile(fstest.MapFS{"list.skl": &fstest.MapFile{Data: list}}, "list.skl")
+	c.NoError(err)
+	c.Equal(0, len(rows[0].Study), "a skill list must not keep study")
+	c.Equal(study.Standard, rows[0].StudyHoursNeeded, "a skill list must not keep study hours needed")
 }

@@ -39,6 +39,22 @@ func cloneStudyList(list []*Study) []*Study {
 	return clone
 }
 
+// studier is implemented by the node types that track study toward them.
+type studier interface {
+	clearStudy()
+}
+
+// ClearStudy removes the study recorded against the nodes and their children, along with the hours each needs per
+// point. Study tracks a character's progress, so it only means something on a character sheet.
+func ClearStudy[T Node[T]](nodes ...T) {
+	Traverse(func(node T) bool {
+		if s, ok := any(node).(studier); ok {
+			s.clearStudy()
+		}
+		return false
+	}, false, false, nodes...)
+}
+
 // ResolveStudyHours returns the resolved total study hours.
 func ResolveStudyHours(s []*Study) fxp.Int {
 	var total fxp.Int
