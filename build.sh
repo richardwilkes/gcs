@@ -333,13 +333,20 @@ fi
 # Race instrumentation slows the test packages down 3-10x, yet the detector can only ever report an access made while
 # two or more goroutines are live, which almost none of the tests produce. So the full suite runs uninstrumented and the
 # race pass is limited to the TestRace wrappers (see the race_coverage_test.go files), which re-run just the tests
-# that actually put multiple goroutines over shared state.
+# that actually put multiple goroutines over shared state. Only the packages that define a wrapper are passed to that
+# run: with ./... every other package still had its race-instrumented test binary compiled and linked just to report
+# that it had no tests to run, which was about 40% of the pass.
 if [ "$TEST"x == "1x" ]; then
 	echo -e "\033[33mTesting...\033[0m"
 	go test ./... | grep -v "no test files"
 	if [ -n "$RACE" ]; then
 		echo -e "\033[33mRace-checking the concurrency tests...\033[0m"
-		go test -race -run '^TestRace$' ./... | grep -Ev "no test files|no tests to run"
+		RACE_PKGS=$(grep -rl --include='*_test.go' '^func TestRace(' . | xargs -n1 dirname | sort -u)
+		if [ -z "$RACE_PKGS" ]; then
+			echo "No TestRace wrappers found" >&2
+			exit 1
+		fi
+		go test -race -run '^TestRace$' $RACE_PKGS
 	fi
 fi
 
