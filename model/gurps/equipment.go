@@ -1268,7 +1268,9 @@ func (e *Equipment) SyncWithSource() {
 // "source" data, i.e. not expected to be modified by the user after copying from a library.
 func (e *Equipment) Hash(h hash.Hash) {
 	e.hash(h)
-	if e.Container() {
+	// We exclude the container type from the hash of a non-container and from containers whose ContainerType is
+	// Container to allow for equipment to be converted to/from a physical container without changing its hash.
+	if e.Container() && e.ContainerType != eqcontainer.Container {
 		e.TemplatePicker.Hash(h)
 		xhash.Num8(h, e.ContainerType)
 	}
