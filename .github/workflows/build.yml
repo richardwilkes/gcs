@@ -45,7 +45,11 @@ jobs:
       - name: Build
         run: |
           # The race detector supports only windows/amd64 on Windows, so build & test without it on windows/arm64.
-          if [ "$RUNNER_OS" = "Windows" ] && [ "$RUNNER_ARCH" = "ARM64" ]; then
+          # macOS/intel skips the race pass too. Its runner is the slowest in the matrix, the pass was the largest part
+          # of a job that took nearly twice as long as any other, and darwin/amd64 is the only combination the pass
+          # covered there: amd64 is still race-checked on ubuntu-22.04 and windows-2022, and darwin on macos-26.
+          if { [ "$RUNNER_OS" = "Windows" ] && [ "$RUNNER_ARCH" = "ARM64" ]; } ||
+            { [ "$RUNNER_OS" = "macOS" ] && [ "$RUNNER_ARCH" = "X64" ]; }; then
             ./build.sh --go --test
           else
             ./build.sh --go --race
