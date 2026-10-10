@@ -148,80 +148,80 @@ func rebuildAsModified(owner Rebuildable, full bool) {
 	owner.Rebuild(full)
 }
 
-func addNameLabelAndField(parent *unison.Panel, fieldData *string) {
+func addNameLabelAndField[F fieldAccess[string]](parent *unison.Panel, fieldData F) {
 	addLabelAndStringField(parent, i18n.Text("Name"), "", fieldData)
 }
 
-func addSpecializationLabelAndField(parent *unison.Panel, fieldData *string) {
+func addSpecializationLabelAndField[F fieldAccess[string]](parent *unison.Panel, fieldData F) {
 	addLabelAndStringField(parent, i18n.Text("Required Specialization"), "", fieldData)
 }
 
-func addOptionalSpecializationLabelAndField(parent *unison.Panel, fieldData *string) {
+func addOptionalSpecializationLabelAndField[F fieldAccess[string]](parent *unison.Panel, fieldData F) {
 	addLabelAndStringField(parent, i18n.Text("Optional Specialization"), "", fieldData)
 }
 
-func addPageRefLabelAndField(parent *unison.Panel, fieldData *string) {
+func addPageRefLabelAndField[F fieldAccess[string]](parent *unison.Panel, fieldData F) {
 	addLabelAndStringField(parent, i18n.Text("Page Reference"), gurps.PageRefTooltip(), fieldData)
 }
 
-func addPageRefHighlightLabelAndField(parent *unison.Panel, fieldData *string) {
+func addPageRefHighlightLabelAndField[F fieldAccess[string]](parent *unison.Panel, fieldData F) {
 	addLabelAndStringField(parent, i18n.Text("Page Highlight"),
 		i18n.Text(`A snippet of text to highlight on the page when opening the page reference; only needed if the default behavior isn't highlighting the expected area`),
 		fieldData)
 }
 
-func addNotesLabelAndField(parent *unison.Panel, fieldData *string) {
+func addNotesLabelAndField[F fieldAccess[string]](parent *unison.Panel, fieldData F) {
+	get, set := modifyingAccessors[string](parent, fieldData)
 	addLabelAndScriptField(parent, nil, "", i18n.Text("Notes"),
 		i18n.Text("These notes may have scripts embedded in them by wrapping each script in <script>your script goes here</script> tags."),
-		func() string { return *fieldData },
+		get,
 		func(value string) {
-			*fieldData = value
 			parent.MarkForLayoutAndRedraw()
-			MarkModified(parent)
+			set(value)
 		}, true)
 }
 
-func addVTTNotesLabelAndField(parent *unison.Panel, fieldData *string) {
+func addVTTNotesLabelAndField[F fieldAccess[string]](parent *unison.Panel, fieldData F) {
 	addLabelAndMultiLineStringField(parent, i18n.Text("VTT Notes"),
 		i18n.Text("Any notes for VTT use; see the instructions for your VTT to determine if/how these can be used"),
 		fieldData)
 }
 
-func addUserDescLabelAndField(parent *unison.Panel, fieldData *string) {
+func addUserDescLabelAndField[F fieldAccess[string]](parent *unison.Panel, fieldData F) {
 	addLabelAndMultiLineStringField(parent, i18n.Text("User Description"),
 		i18n.Text("Additional notes for your own reference. These only exist in character sheets and will be removed if transferred to a data list or template"),
 		fieldData)
 }
 
-func addTechLevelRequired(parent *unison.Panel, fieldData **string, ownerIsSheet bool) {
+func addTechLevelRequired[F fieldAccess[*string]](parent *unison.Panel, fieldData F, ownerIsSheet bool) {
 	tl := i18n.Text("Tech Level")
 	var field *StringField
 	wrapper, label := addFlowWrapper(parent, tl, 2)
+	access := toFieldAccessor[*string](fieldData)
 	field = NewStringField(nil, "", tl, func() string {
-		if *fieldData == nil {
-			return ""
+		if data := access.Get(); data != nil {
+			return *data
 		}
-		return **fieldData
+		return ""
 	}, func(value string) {
-		if *fieldData == nil {
-			return
+		if data := access.Get(); data != nil {
+			*data = value
+			MarkModified(parent)
 		}
-		**fieldData = value
-		MarkModified(parent)
 	})
 	tip := gurps.TechLevelInfo()
 	if !ownerIsSheet {
 		tip = xstrings.Wrap("", i18n.Text("Leave field blank to auto-populate with the character's TL when added to a character sheet."), 60) + "\n\n" + tip
 	}
 	field.Tooltip = newWrappedTooltip(tip)
-	if *fieldData == nil {
+	last := access.Get()
+	if last == nil {
 		field.SetEnabled(false)
 	}
 	field.SetMinimumTextWidthUsing("12^")
 	field.Accessibility.LabeledBy = label
 	wrapper.AddChild(field)
 	parent = wrapper
-	last := *fieldData
 	required := last != nil
 	parent.AddChild(NewCheckBox(nil, "", i18n.Text("Required"),
 		func() check.Enum { return check.FromBool(required) },
@@ -231,13 +231,13 @@ func addTechLevelRequired(parent *unison.Panel, fieldData **string, ownerIsSheet
 					var data string
 					last = &data
 				}
-				*fieldData = last
+				access.Set(last)
 				if field != nil {
 					field.SetEnabled(true)
 				}
 			} else {
-				last = *fieldData
-				*fieldData = nil
+				last = access.Get()
+				access.Set(nil)
 				if field != nil {
 					field.SetEnabled(false)
 				}
@@ -245,13 +245,13 @@ func addTechLevelRequired(parent *unison.Panel, fieldData **string, ownerIsSheet
 		}))
 }
 
-func addAttributeChoicePopup(parent *unison.Panel, entity *gurps.Entity, prefix string, fieldData *string, flags gurps.AttributeFlags) *unison.PopupMenu[*gurps.AttributeChoice] {
-	choices, current := gurps.AttributeChoices(entity, prefix, flags, *fieldData)
+func addAttributeChoicePopup[F fieldAccess[string]](parent *unison.Panel, entity *gurps.Entity, prefix string, fieldData F, flags gurps.AttributeFlags) *unison.PopupMenu[*gurps.AttributeChoice] {
+	get, set := modifyingAccessors[string](parent, fieldData)
+	choices, current := gurps.AttributeChoices(entity, prefix, flags, get())
 	popup := addPopup(parent, choices, &current)
 	popup.SelectionChangedCallback = func(p *unison.PopupMenu[*gurps.AttributeChoice]) {
 		if choice, ok := p.Selected(); ok {
-			*fieldData = choice.Key
-			MarkModified(parent)
+			set(choice.Key)
 		}
 	}
 	return popup
@@ -266,24 +266,24 @@ func addDifficultyLabelAndFields(parent *unison.Panel, entity *gurps.Entity, att
 
 // addDifficultyLevelPopup adds the popup for the level half of a difficulty, naming it for a screen reader, since the
 // "/" label that separates it from the attribute half would otherwise be taken as its name.
-func addDifficultyLevelPopup(parent *unison.Panel, level *difficulty.Level) *unison.PopupMenu[difficulty.Level] {
+func addDifficultyLevelPopup[F fieldAccess[difficulty.Level]](parent *unison.Panel, level F) *unison.PopupMenu[difficulty.Level] {
 	popup := addPopup(parent, difficulty.Levels, level)
 	popup.Accessibility.Name = i18n.Text("Difficulty Level")
 	return popup
 }
 
-func addTagsLabelAndField(parent *unison.Panel, fieldData *[]string) {
+func addTagsLabelAndField[F fieldAccess[[]string]](parent *unison.Panel, fieldData F) {
 	addLabelAndListField(parent, i18n.Text("Tags"), i18n.Text("tags"), fieldData)
 }
 
-func addLabelAndListField(parent *unison.Panel, labelText, pluralForTooltip string, fieldData *[]string) {
-	get, set := pointerAccessors(parent, fieldData)
+func addLabelAndListField[F fieldAccess[[]string]](parent *unison.Panel, labelText, pluralForTooltip string, fieldData F) {
+	get, set := modifyingAccessors[[]string](parent, fieldData)
 	addMultiLineStringFieldWith(parent, labelText, i18n.Text("Separate multiple %s with commas", pluralForTooltip),
 		func() string { return gurps.CombineTags(get()) },
 		func(value string) { set(gurps.ExtractTags(value)) })
 }
 
-func addLabelAndStringField(parent *unison.Panel, labelText, tooltip string, fieldData *string) *StringField {
+func addLabelAndStringField[F fieldAccess[string]](parent *unison.Panel, labelText, tooltip string, fieldData F) *StringField {
 	addLabel(parent, labelText, tooltip)
 	return addStringField(parent, labelText, tooltip, fieldData)
 }
@@ -326,12 +326,48 @@ func wrapTextForTooltip(tooltip string) string {
 	return strings.ReplaceAll(xstrings.Wrap("", strings.ReplaceAll(tooltip, " ", "␣"), 80), "␣", " ")
 }
 
-// pointerAccessors returns accessors for the value the pointer refers to. The setter stores the value and then marks
-// the parent modified.
-func pointerAccessors[T any](parent *unison.Panel, fieldData *T) (get func() T, set func(T)) {
-	return func() T { return *fieldData },
+// fieldAccessor holds the functions that read and write the value a widget edits, for a caller that would rather not
+// hand the widget a pointer to it.
+type fieldAccessor[T any] struct {
+	Get func() T
+	Set func(T)
+}
+
+// fieldAccess is satisfied by the ways a widget helper can be given the value it edits: a pointer to it, or a
+// fieldAccessor for it.
+type fieldAccess[T any] interface {
+	*T | fieldAccessor[T]
+}
+
+// newFieldAccessor returns a fieldAccessor that reads and writes the value through the given functions.
+func newFieldAccessor[T any](get func() T, set func(T)) fieldAccessor[T] {
+	return fieldAccessor[T]{Get: get, Set: set}
+}
+
+// pointerAccessor returns a fieldAccessor that reads and writes the value the pointer refers to.
+func pointerAccessor[T any](fieldData *T) fieldAccessor[T] {
+	return newFieldAccessor(func() T { return *fieldData }, func(value T) { *fieldData = value })
+}
+
+// toFieldAccessor returns the fieldData as a fieldAccessor.
+func toFieldAccessor[T any, F fieldAccess[T]](fieldData F) fieldAccessor[T] {
+	switch data := any(fieldData).(type) {
+	case *T:
+		return pointerAccessor(data)
+	case fieldAccessor[T]:
+		return data
+	}
+	// The constraint admits only the two types handled above.
+	panic("unreachable")
+}
+
+// modifyingAccessors returns accessors for the fieldData. The setter stores the value and then marks the parent
+// modified.
+func modifyingAccessors[T any, F fieldAccess[T]](parent *unison.Panel, fieldData F) (get func() T, set func(T)) {
+	access := toFieldAccessor[T](fieldData)
+	return access.Get,
 		func(value T) {
-			*fieldData = value
+			access.Set(value)
 			MarkModified(parent)
 		}
 }
@@ -410,13 +446,13 @@ func addLabelAndScriptField(parent *unison.Panel, targetMgr *TargetMgr, targetKe
 	return field
 }
 
-func addStringField(parent *unison.Panel, labelText, tooltip string, fieldData *string) *StringField {
-	get, set := pointerAccessors(parent, fieldData)
+func addStringField[F fieldAccess[string]](parent *unison.Panel, labelText, tooltip string, fieldData F) *StringField {
+	get, set := modifyingAccessors[string](parent, fieldData)
 	return installField(parent, NewStringField(nil, "", labelText, get, set), tooltip)
 }
 
-func addLabelAndMultiLineStringField(parent *unison.Panel, labelText, tooltip string, fieldData *string) {
-	get, set := pointerAccessors(parent, fieldData)
+func addLabelAndMultiLineStringField[F fieldAccess[string]](parent *unison.Panel, labelText, tooltip string, fieldData F) {
+	get, set := modifyingAccessors[string](parent, fieldData)
 	addMultiLineStringFieldWith(parent, labelText, tooltip, get, set)
 }
 
@@ -432,13 +468,13 @@ func addMultiLineStringFieldWith(parent *unison.Panel, labelText, tooltip string
 	return installField(parent, field, tooltip)
 }
 
-func addLabelAndIntegerField(parent *unison.Panel, targetMgr *TargetMgr, targetKey, labelText, tooltip string, fieldData *int, minValue, maxValue int) *IntegerField {
+func addLabelAndIntegerField[F fieldAccess[int]](parent *unison.Panel, targetMgr *TargetMgr, targetKey, labelText, tooltip string, fieldData F, minValue, maxValue int) *IntegerField {
 	addLabel(parent, labelText, tooltip)
 	return addIntegerField(parent, targetMgr, targetKey, labelText, tooltip, fieldData, minValue, maxValue)
 }
 
-func addIntegerField(parent *unison.Panel, targetMgr *TargetMgr, targetKey, labelText, tooltip string, fieldData *int, minValue, maxValue int) *IntegerField {
-	get, set := pointerAccessors(parent, fieldData)
+func addIntegerField[F fieldAccess[int]](parent *unison.Panel, targetMgr *TargetMgr, targetKey, labelText, tooltip string, fieldData F, minValue, maxValue int) *IntegerField {
+	get, set := modifyingAccessors[int](parent, fieldData)
 	return installField(parent, NewIntegerField(targetMgr, targetKey, labelText, get, set, minValue, maxValue, false, false),
 		tooltip)
 }
@@ -449,38 +485,40 @@ func addLabel(parent *unison.Panel, labelText, tooltip string) *unison.Label {
 	return installField(parent, NewFieldLeadingLabel(labelText, false), tooltip)
 }
 
-func addLabelAndDecimalField(parent *unison.Panel, targetMgr *TargetMgr, targetKey, labelText, tooltip string, fieldData *fxp.Int, minValue, maxValue fxp.Int) *DecimalField {
+func addLabelAndDecimalField[F fieldAccess[fxp.Int]](parent *unison.Panel, targetMgr *TargetMgr, targetKey, labelText, tooltip string, fieldData F, minValue, maxValue fxp.Int) *DecimalField {
 	addLabel(parent, labelText, tooltip)
 	return addDecimalField(parent, targetMgr, targetKey, labelText, tooltip, fieldData, minValue, maxValue, false)
 }
 
-func addDecimalField(parent *unison.Panel, targetMgr *TargetMgr, targetKey, labelText, tooltip string, fieldData *fxp.Int, minValue, maxValue fxp.Int, forceSign bool) *DecimalField {
-	get, set := pointerAccessors(parent, fieldData)
+func addDecimalField[F fieldAccess[fxp.Int]](parent *unison.Panel, targetMgr *TargetMgr, targetKey, labelText, tooltip string, fieldData F, minValue, maxValue fxp.Int, forceSign bool) *DecimalField {
+	get, set := modifyingAccessors[fxp.Int](parent, fieldData)
 	return installField(parent, NewDecimalField(targetMgr, targetKey, labelText, get, set, minValue, maxValue, forceSign,
 		false), tooltip)
 }
 
-func addCheckBox(parent *unison.Panel, labelText string, fieldData *bool) *CheckBox {
+func addCheckBox[F fieldAccess[bool]](parent *unison.Panel, labelText string, fieldData F) *CheckBox {
+	access := toFieldAccessor[bool](fieldData)
 	checkBox := NewCheckBox(nil, "", labelText,
-		func() check.Enum { return check.FromBool(*fieldData) },
-		func(state check.Enum) { *fieldData = state == check.On })
+		func() check.Enum { return check.FromBool(access.Get()) },
+		func(state check.Enum) { access.Set(state == check.On) })
 	parent.AddChild(checkBox)
 	return checkBox
 }
 
 // addSwitchedOnCheckBox adds the "Switched On" checkbox used by the editors of items that can hold switchable features,
 // preceded by an empty panel to keep it in the field column of a two-column layout.
-func addSwitchedOnCheckBox(parent *unison.Panel, fieldData *bool) *CheckBox {
+func addSwitchedOnCheckBox[F fieldAccess[bool]](parent *unison.Panel, fieldData F) *CheckBox {
 	parent.AddChild(unison.NewPanel())
 	checkBox := addCheckBox(parent, i18n.Text("Switched On"), fieldData)
 	checkBox.Tooltip = newWrappedTooltip(gurps.SwitchedOnTooltip())
 	return checkBox
 }
 
-func addInvertedCheckBox(parent *unison.Panel, labelText string, fieldData *bool) *CheckBox {
+func addInvertedCheckBox[F fieldAccess[bool]](parent *unison.Panel, labelText string, fieldData F) *CheckBox {
+	access := toFieldAccessor[bool](fieldData)
 	checkBox := NewCheckBox(nil, "", labelText,
-		func() check.Enum { return check.FromBool(!*fieldData) },
-		func(state check.Enum) { *fieldData = state == check.Off })
+		func() check.Enum { return check.FromBool(!access.Get()) },
+		func(state check.Enum) { access.Set(state == check.Off) })
 	parent.AddChild(checkBox)
 	return checkBox
 }
@@ -523,17 +561,18 @@ func labelControl[C unison.Paneler](control C, label *unison.Label) C {
 	return control
 }
 
-func addLabelAndPopup[T comparable](parent *unison.Panel, labelText, tooltip string, choices []T, fieldData *T) *unison.PopupMenu[T] {
+func addLabelAndPopup[T comparable, F fieldAccess[T]](parent *unison.Panel, labelText, tooltip string, choices []T, fieldData F) *unison.PopupMenu[T] {
 	addLabel(parent, labelText, tooltip)
 	return addPopup(parent, choices, fieldData)
 }
 
-func addPopup[T comparable](parent *unison.Panel, choices []T, fieldData *T) *unison.PopupMenu[T] {
-	if fieldData != nil && len(choices) > 0 && !slices.Contains(choices, *fieldData) {
-		*fieldData = choices[0]
+func addPopup[T comparable, F fieldAccess[T]](parent *unison.Panel, choices []T, fieldData F) *unison.PopupMenu[T] {
+	access := toFieldAccessor[T](fieldData)
+	if len(choices) > 0 && !slices.Contains(choices, access.Get()) {
+		access.Set(choices[0])
 	}
-	popup := newPopupMenu(choices, *fieldData, func(item T) {
-		*fieldData = item
+	popup := newPopupMenu(choices, access.Get(), func(item T) {
+		access.Set(item)
 		MarkModified(parent)
 	})
 	parent.AddChild(popup)
