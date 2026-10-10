@@ -315,3 +315,33 @@ func TestAddLabelAndScriptField(t *testing.T) {
 	c.Equal(2, len(lastLabeledPair(t, parent, "Plain").Children()), "no markdown guide button was asked for")
 	c.True(mgr.Find("k:plain").Is(plain))
 }
+
+// TestWidgetHelpersAcceptPointerOrAccessor verifies that a widget helper edits its value the same way whether it is
+// given a pointer to the value or a fieldAccessor for it.
+func TestWidgetHelpersAcceptPointerOrAccessor(t *testing.T) {
+	c := check.New(t)
+	parent := unison.NewPanel()
+
+	byPointer := "start"
+	field := addStringField(parent, "Name", "", &byPointer)
+	c.Equal("start", field.Text())
+	field.SetText("changed")
+	c.Equal("changed", byPointer, "a pointer is written through")
+
+	var stored string
+	reads := 0
+	access := newFieldAccessor(func() string {
+		reads++
+		return stored
+	}, func(value string) { stored = "set:" + value })
+	field = addStringField(parent, "Name", "", access)
+	c.True(reads > 0, "the accessor's getter supplies the starting text")
+	field.SetText("typed")
+	c.Equal("set:typed", stored, "the accessor's setter receives the edit")
+
+	level := 2
+	popup := addPopup(parent, []int{1, 3}, newFieldAccessor(func() int { return level }, func(v int) { level = v }))
+	c.Equal(1, level, "a value missing from the choices is replaced by the first one through the setter")
+	popup.Select(3)
+	c.Equal(3, level, "a choice is stored through the setter")
+}
