@@ -1267,6 +1267,7 @@ func (e *Equipment) SyncWithSource() {
 // Hash writes this object's contents into the hasher. Note that this only hashes the data that is considered to be
 // "source" data, i.e. not expected to be modified by the user after copying from a library.
 func (e *Equipment) Hash(h hash.Hash) {
+	xhash.Num8(h, syncKind(e))
 	e.hash(h)
 	// We exclude the container type from the hash of a non-container and from containers whose ContainerType is
 	// Container to allow for equipment to be converted to/from a physical container without changing its hash.

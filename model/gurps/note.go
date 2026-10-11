@@ -365,6 +365,7 @@ func (n *Note) SyncWithSource() {
 // Hash writes this object's contents into the hasher. Note that this only hashes the data that is considered to be
 // "source" data, i.e. not expected to be modified by the user after copying from a library.
 func (n *Note) Hash(h hash.Hash) {
+	xhash.Num8(h, syncKind(n))
 	n.hash(h)
 }
 

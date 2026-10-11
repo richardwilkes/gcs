@@ -18,6 +18,7 @@ import (
 	"hash"
 
 	"github.com/richardwilkes/gcs/v5/model/jio"
+	"github.com/richardwilkes/gcs/v5/model/kinds"
 	"github.com/richardwilkes/toolbox/v2/errs"
 	"github.com/richardwilkes/toolbox/v2/tid"
 	"github.com/richardwilkes/toolbox/v2/xhash"
@@ -57,6 +58,30 @@ func omitCalc(enc *jsontext.Encoder) bool {
 // Hashable is an object that can be hashed.
 type Hashable interface {
 	Hash(hash.Hash)
+}
+
+// syncKind returns the kind that starts the hash of the data. It is the kind of the data's TID, except that a physical
+// equipment container has the kind of plain equipment (see isPlainOrPhysicalEquipment).
+func syncKind(data interface{ ID() tid.TID }) byte {
+	if isPlainOrPhysicalEquipment(data) {
+		return kinds.Equipment
+	}
+	return tidKind(data.ID())
+}
+
+// isPlainOrPhysicalEquipment returns true if the data is plain equipment or a physical container, which have the same
+// data to sync and can be converted into one another.
+func isPlainOrPhysicalEquipment(data any) bool {
+	eqp, ok := data.(*Equipment)
+	return ok && (!eqp.Container() || eqp.IsPhysicalContainer())
+}
+
+// tidKind returns the kind of the TID, or 0 if it is empty.
+func tidKind(id tid.TID) byte {
+	if id != "" {
+		return id[0]
+	}
+	return 0
 }
 
 // hashList writes a length-prefixed list of Hashable objects into the hasher.

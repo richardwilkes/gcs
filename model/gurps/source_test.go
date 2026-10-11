@@ -712,3 +712,79 @@ func TestLoadedTechniqueCopiesHashTheSame(t *testing.T) {
 		c.Equal(srcstate.Matched, state, one.Name+": syncing makes a copy match its source")
 	}
 }
+
+// matchAndSyncWith makes lib the library copy local is sourced from, then returns how local matched it before trying to
+// sync local with it.
+func matchAndSyncWith[T interface {
+	Node[T]
+	ID() tid.TID
+	SetSource(Source)
+}](t *testing.T, entity *Entity, local, lib T) srcstate.Value {
+	t.Helper()
+	libFile := LibraryFile{Library: "Test Library", Path: "Test"}
+	local.SetSource(Source{LibraryFile: libFile, TID: lib.ID()})
+	stubLibrarySources(t, entity.SourceMatcher(), libFile, lib)
+	state, _ := MatchSource(local)
+	local.SyncWithSource()
+	return state
+}
+
+// TestSyncRefusesIncompatibleKinds verifies that data whose library copy has a different TID kind is incompatible with
+// it and left alone by a sync, which would otherwise lose data, except for plain equipment and a physical container,
+// which sync both ways without changing kind.
+func TestSyncRefusesIncompatibleKinds(t *testing.T) {
+	c := check.New(t)
+	entity := NewEntity()
+
+	trait := NewTrait(entity, nil, false)
+	trait.BasePoints = fxp.Five
+	libTraitContainer := NewTrait(nil, nil, true)
+	c.Equal(srcstate.Incompatible, matchAndSyncWith(t, entity, trait, libTraitContainer), "trait vs trait container")
+	c.Equal(fxp.Five, trait.BasePoints, "the trait keeps its points")
+
+	skill := NewSkill(entity, nil, false)
+	libTechnique := NewTechnique(nil, nil, "Karate")
+	c.Equal(srcstate.Incompatible, matchAndSyncWith(t, entity, skill, libTechnique), "skill vs technique")
+	c.Nil(skill.TechniqueDefault, "the skill doesn't pick up a technique's default")
+
+	plain := NewEquipment(entity, nil, false)
+	plain.BaseValue = "10"
+	libGroup := NewEquipmentGroup(nil, nil)
+	c.Equal(srcstate.Incompatible, matchAndSyncWith(t, entity, plain, libGroup), "plain equipment vs group")
+	c.Equal("10", plain.BaseValue, "the equipment keeps its value")
+
+	group := NewEquipmentGroup(entity, nil)
+	libPlainForGroup := NewEquipment(nil, nil, false)
+	libPlainForGroup.BaseValue = "10"
+	c.Equal(srcstate.Incompatible, matchAndSyncWith(t, entity, group, libPlainForGroup), "group vs plain equipment")
+	c.True(group.IsGroup(), "the group stays a group")
+
+	note := NewNote(entity, nil, false)
+	note.MarkDown = "Mine"
+	libNoteContainer := NewNote(nil, nil, true)
+	libNoteContainer.MarkDown = "Library"
+	c.Equal(srcstate.Incompatible, matchAndSyncWith(t, entity, note, libNoteContainer), "note vs note container")
+	c.Equal("Mine", note.MarkDown, "the note keeps its text")
+
+	converted := NewEquipment(entity, nil, false)
+	converted.BaseValue = "10"
+	libPhysical := NewEquipment(nil, nil, true)
+	libPhysical.BaseValue = "20"
+	c.Equal(srcstate.Mismatched, matchAndSyncWith(t, entity, converted, libPhysical),
+		"plain equipment vs physical container")
+	c.Equal("20", converted.BaseValue, "the equipment is synced")
+	c.False(converted.Container(), "and stays plain equipment")
+	state, _ := MatchSource(converted)
+	c.Equal(srcstate.Matched, state, "the synced equipment matches its source")
+
+	physical := NewEquipment(entity, nil, true)
+	physical.BaseValue = "10"
+	libPlainForPhysical := NewEquipment(nil, nil, false)
+	libPlainForPhysical.BaseValue = "20"
+	c.Equal(srcstate.Mismatched, matchAndSyncWith(t, entity, physical, libPlainForPhysical),
+		"physical container vs plain equipment")
+	c.Equal("20", physical.BaseValue, "the container is synced")
+	c.True(physical.IsPhysicalContainer(), "and stays a physical container")
+	state, _ = MatchSource(physical)
+	c.Equal(srcstate.Matched, state, "the synced container matches its source")
+}

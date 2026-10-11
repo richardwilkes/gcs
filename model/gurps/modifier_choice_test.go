@@ -21,6 +21,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/container"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/picker"
+	"github.com/richardwilkes/gcs/v5/model/kinds"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/toolbox/v2/tid"
 	"github.com/richardwilkes/toolbox/v2/xhash"
@@ -78,16 +79,17 @@ type hashOf func(h hash.Hash)
 func (f hashOf) Hash(h hash.Hash) { f(h) }
 
 // TestModifierContainerKinds verifies that a new modifier container is a group and a new modifier choice a mandatory
-// one, that only a group converts to a choice and back, and that a group hashes as a modifier container always has, so
-// that copies on existing sheets don't show as out of step with their library after an upgrade.
+// one, that only a group converts to a choice and back, and that a group's hash holds nothing of a choice, so that
+// copies on existing sheets don't show as out of step with their library after an upgrade.
 func TestModifierContainerKinds(t *testing.T) {
 	c := check.New(t)
 	group := NewTraitModifier(nil, nil, true)
 	c.False(IsModifierChoice(group))
 	c.Equal(Hash64(hashOf(func(h hash.Hash) {
+		xhash.Num8(h, byte(kinds.TraitModifierContainer))
 		group.TraitModifierSyncData.hash(h)
 		xhash.Num8(h, uint8(255))
-	})), Hash64(group), "a group hashes as a container always has")
+	})), Hash64(group), "a group hashes as a modifier container with no choice")
 	c.True(CanConvertToModifierChoice(group))
 	ConvertToModifierChoice(group)
 	c.True(IsMandatoryModifierChoice(group))
