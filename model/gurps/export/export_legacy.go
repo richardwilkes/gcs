@@ -272,7 +272,7 @@ func (ex *legacyExporter) emitKey(key string) error {
 		best := "-"
 		bestValue := fxp.Min
 		for _, w := range ex.entity.Weapons(true, false, true) {
-			if parry := w.Parry.Resolve(w, nil); parry.CanParry && parry.Modifier > bestValue {
+			if parry := w.ResolvedParry(nil); parry.CanParry && parry.Modifier > bestValue {
 				best = parry.String()
 				bestValue = parry.Modifier
 			}
@@ -282,7 +282,7 @@ func (ex *legacyExporter) emitKey(key string) error {
 		best := "-"
 		bestValue := fxp.Min
 		for _, w := range ex.entity.Weapons(true, false, true) {
-			if block := w.Block.Resolve(w, nil); block.CanBlock && block.Modifier > bestValue {
+			if block := w.ResolvedBlock(nil); block.CanBlock && block.Modifier > bestValue {
 				best = block.String()
 				bestValue = block.Modifier
 			}
@@ -1258,11 +1258,11 @@ func (ex *legacyExporter) processAttackModes(key string, attackModes []*gurps.We
 func (ex *legacyExporter) processMeleeKeys(key string, currentID int, w *gurps.Weapon, attackModes []*gurps.Weapon, buf []byte, index int) int {
 	switch key {
 	case "PARRY":
-		ex.writeEncodedText(w.Parry.Resolve(w, nil).String())
+		ex.writeEncodedText(w.ResolvedParry(nil).String())
 	case "BLOCK":
-		ex.writeEncodedText(w.Block.Resolve(w, nil).String())
+		ex.writeEncodedText(w.ResolvedBlock(nil).String())
 	case "REACH":
-		ex.writeEncodedText(w.Reach.Resolve(w, nil).String())
+		ex.writeEncodedText(w.ResolvedReach(nil).String())
 	default:
 		var handled bool
 		if index, handled = ex.processAttackModes(key, attackModes, buf, index, ex.processMeleeKeys); !handled {
@@ -1275,17 +1275,17 @@ func (ex *legacyExporter) processMeleeKeys(key string, currentID int, w *gurps.W
 func (ex *legacyExporter) processRangedKeys(key string, currentID int, w *gurps.Weapon, attackModes []*gurps.Weapon, buf []byte, index int) int {
 	switch key {
 	case "BULK":
-		ex.writeEncodedText(w.Bulk.Resolve(w, nil).String())
+		ex.writeEncodedText(w.ResolvedBulk(nil).String())
 	case "ACCURACY":
-		ex.writeEncodedText(w.Accuracy.Resolve(w, nil).String())
+		ex.writeEncodedText(w.ResolvedAccuracy(nil).String())
 	case "RANGE":
-		ex.writeEncodedText(w.Range.Resolve(w, nil).String(true))
+		ex.writeEncodedText(w.ResolvedRange(nil).String(true))
 	case "ROF":
-		ex.writeEncodedText(w.RateOfFire.Resolve(w, nil).String())
+		ex.writeEncodedText(w.ResolvedRateOfFire(nil).String())
 	case "SHOTS":
-		ex.writeEncodedText(w.Shots.Resolve(w, nil).String())
+		ex.writeEncodedText(w.ResolvedShots(nil).String())
 	case "RECOIL":
-		ex.writeEncodedText(w.Recoil.Resolve(w, nil).String())
+		ex.writeEncodedText(w.ResolvedRecoil(nil).String())
 	default:
 		var handled bool
 		if index, handled = ex.processAttackModes(key, attackModes, buf, index, ex.processRangedKeys); !handled {
@@ -1313,9 +1313,9 @@ func (ex *legacyExporter) processWeaponKeys(key string, currentID int, w *gurps.
 	case "UNMODIFIED_DAMAGE":
 		ex.writeEncodedText(w.Damage.String())
 	case "STRENGTH":
-		ex.writeEncodedText(w.Strength.Resolve(w, nil).String())
+		ex.writeEncodedText(w.ResolvedStrength(nil).String())
 	case "WEAPON_STRENGTH":
-		st := w.Strength.Resolve(w, nil).Min
+		st := w.ResolvedStrength(nil).Min
 		if st > 0 {
 			ex.writeEncodedText(st.String())
 		}

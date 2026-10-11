@@ -29,6 +29,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/wsel"
 	"github.com/richardwilkes/gcs/v5/model/kinds"
 	"github.com/richardwilkes/gcs/v5/model/nameable"
+	"github.com/richardwilkes/gcs/v5/model/txtutil"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/toolbox/v2/tid"
 	"github.com/richardwilkes/toolbox/v2/xhash"
@@ -732,7 +733,7 @@ func (e *Equipment) SecondaryText(optionChecker func(display.Option) bool) strin
 	var buffer strings.Builder
 	settings := SheetSettingsFor(EntityFromNode(e))
 	if optionChecker(settings.ModifiersDisplay) {
-		AppendStringOntoNewLine(&buffer, e.ModifierNotes())
+		txtutil.AppendStringOntoNewLine(&buffer, e.ModifierNotes())
 	}
 	if optionChecker(settings.NotesDisplay) {
 		var localBuffer strings.Builder
@@ -752,7 +753,7 @@ func (e *Equipment) SecondaryText(optionChecker func(display.Option) bool) strin
 			}
 			localBuffer.WriteString(localNotes)
 		}
-		AppendBufferOntoNewLine(&buffer, &localBuffer)
+		txtutil.AppendBufferOntoNewLine(&buffer, &localBuffer)
 	}
 	return buffer.String()
 }

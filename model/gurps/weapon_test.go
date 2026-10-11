@@ -16,6 +16,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/criteria"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/model/gurps/attack"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/difficulty"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/feature"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/progression"
@@ -41,8 +42,8 @@ func TestWeaponParryAndBlockStorage(t *testing.T) {
 
 	var loadedWeapon gurps.Weapon
 	c.NoError(jio.Unmarshal(data, &loadedWeapon))
-	c.Equal(gurps.WeaponParry{}, loadedWeapon.Parry)
-	c.Equal(gurps.WeaponBlock{}, loadedWeapon.Block)
+	c.Equal(attack.Parry{}, loadedWeapon.Parry)
+	c.Equal(attack.Block{}, loadedWeapon.Block)
 
 	w.Parry.CanParry = true
 	w.Block.CanBlock = true
@@ -61,8 +62,8 @@ func TestWeaponParryAndBlockStorage(t *testing.T) {
 
 	loadedWeapon = gurps.Weapon{}
 	c.NoError(jio.Unmarshal(data, &loadedWeapon))
-	c.Equal(gurps.WeaponParry{}, loadedWeapon.Parry)
-	c.Equal(gurps.WeaponBlock{}, loadedWeapon.Block)
+	c.Equal(attack.Parry{}, loadedWeapon.Parry)
+	c.Equal(attack.Block{}, loadedWeapon.Block)
 }
 
 // TestWeaponWithNullDefaultEntry verifies that a JSON null in a weapon's "defaults" array is dropped rather than
@@ -119,7 +120,7 @@ func TestWeaponColumnHasData(t *testing.T) {
 
 	// A blank ranged weapon (with rate of fire cleared) uses none of its hideable columns.
 	ranged := gurps.NewWeapon(nil, false)
-	ranged.RateOfFire = gurps.WeaponRoF{}
+	ranged.RateOfFire = attack.RoF{}
 	for _, columnID := range []int{
 		gurps.WeaponAccColumn,
 		gurps.WeaponRangeColumn,
@@ -213,24 +214,6 @@ func TestWeaponHideIsNotSourceData(t *testing.T) {
 	c.Equal(traitHash, gurps.Hash64(trait), "hiding a weapon should not alter its owner's source-data hash")
 }
 
-// parseCase pairs an input with the string a weapon field parsed from it is expected to render as.
-type parseCase struct {
-	input    string
-	expected string
-}
-
-// checkWeaponFieldParsing verifies parse, which parses one kind of weapon field and renders it back to a string: each
-// of the same strings must come back unchanged, and each adjusted input must come back as its expected string.
-func checkWeaponFieldParsing(c check.Checker, parse func(string) string, same []string, adjusted []parseCase) {
-	c.Helper()
-	for i, s := range same {
-		c.Equal(s, parse(s), "same[%d] %q", i, s)
-	}
-	for i, one := range adjusted {
-		c.Equal(one.expected, parse(one.input), "adjusted[%d] %q", i, one.input)
-	}
-}
-
 // addDXSkill adds a DX-based skill of the given difficulty, points and tags to the entity's skills and returns it. The
 // entity is not recalculated.
 func addDXSkill(e *gurps.Entity, name string, diff difficulty.Level, points fxp.Int, tags ...string) *gurps.Skill {
@@ -265,17 +248,17 @@ func newWeaponWithBonuses(melee bool, bonuses ...*gurps.WeaponBonus) *gurps.Weap
 // weapon switch could act on populated so that flipping the switch has something visible to change.
 func newSwitchProbeWeapon(melee bool, sw *gurps.WeaponBonus) *gurps.Weapon {
 	w := newWeaponWithBonuses(melee, sw)
-	w.Strength = gurps.ParseWeaponStrength("10")
+	w.Strength = attack.ParseStrength("10")
 	if melee {
-		w.Parry = gurps.ParseWeaponParry("0")
-		w.Block = gurps.ParseWeaponBlock("0")
-		w.Reach = gurps.ParseWeaponReach("1-2")
+		w.Parry = attack.ParseParry("0")
+		w.Block = attack.ParseBlock("0")
+		w.Reach = attack.ParseReach("1-2")
 	} else {
-		w.Accuracy = gurps.ParseWeaponAccuracy("3")
-		w.Range = gurps.ParseWeaponRange("100/1000")
-		w.RateOfFire = gurps.ParseWeaponRoF("3/2")
-		w.Shots = gurps.ParseWeaponShots("20(3)")
-		w.Bulk = gurps.ParseWeaponBulk("-4")
+		w.Accuracy = attack.ParseAccuracy("3")
+		w.Range = attack.ParseRange("100/1000")
+		w.RateOfFire = attack.ParseRoF("3/2")
+		w.Shots = attack.ParseShots("20(3)")
+		w.Bulk = attack.ParseBulk("-4")
 	}
 	return w
 }
@@ -285,15 +268,15 @@ func newSwitchProbeWeapon(melee bool, sw *gurps.WeaponBonus) *gurps.Weapon {
 // empty.
 func weaponSwitchProbe(w *gurps.Weapon) string {
 	return strings.Join([]string{
-		w.Parry.Resolve(w, nil).String(),
-		w.Block.Resolve(w, nil).String(),
-		w.Reach.Resolve(w, nil).String(),
-		w.Accuracy.Resolve(w, nil).String(),
-		w.Range.Resolve(w, nil).String(false),
-		w.RateOfFire.Resolve(w, nil).String(),
-		w.Shots.Resolve(w, nil).String(),
-		w.Bulk.Resolve(w, nil).String(),
-		w.Strength.Resolve(w, nil).String(),
+		w.ResolvedParry(nil).String(),
+		w.ResolvedBlock(nil).String(),
+		w.ResolvedReach(nil).String(),
+		w.ResolvedAccuracy(nil).String(),
+		w.ResolvedRange(nil).String(false),
+		w.ResolvedRateOfFire(nil).String(),
+		w.ResolvedShots(nil).String(),
+		w.ResolvedBulk(nil).String(),
+		w.ResolvedStrength(nil).String(),
 	}, "|")
 }
 
@@ -350,8 +333,8 @@ func newDefenseTestWeaponWithBonuses(c check.Checker, parryBonus, blockBonus int
 	owner := gurps.NewTrait(e, nil, false)
 	owner.Name = "Cloak"
 	w := gurps.NewWeapon(owner, true)
-	w.Parry = gurps.WeaponParry{CanParry: true}
-	w.Block = gurps.WeaponBlock{CanBlock: true}
+	w.Parry = attack.Parry{CanParry: true}
+	w.Block = attack.Block{CanBlock: true}
 	owner.Weapons = []*gurps.Weapon{w}
 	e.Traits = append(e.Traits, owner)
 
@@ -384,7 +367,7 @@ func TestWeaponSkillLevelIgnoresDefenseTypeDefaults(t *testing.T) {
 	c.Equal(fxp.FromInteger(13), w.SkillLevel(nil), "a parry-type default must not take over the attack skill")
 
 	// The parry, meanwhile, is the better of Tonfa's (13/2 + 3 + 1) and Cloak's (14/2 + 3 + 1).
-	c.Equal("11", w.Parry.Resolve(w, nil).String(), "the parry-type default still feeds the parry")
+	c.Equal("11", w.ResolvedParry(nil).String(), "the parry-type default still feeds the parry")
 }
 
 // newDefenseTestDefault creates a skill default of the given type that matches the "Cloak" skill created by
@@ -415,7 +398,7 @@ var (
 		ownID:         gurps.ParryID,
 		otherID:       gurps.BlockID,
 		distinctBonus: 2,
-		resolve:       func(w *gurps.Weapon) string { return w.Parry.Resolve(w, nil).String() },
+		resolve:       func(w *gurps.Weapon) string { return w.ResolvedParry(nil).String() },
 		setModifier:   func(w *gurps.Weapon, modifier fxp.Int) { w.Parry.Modifier = modifier },
 	}
 	blockUnderTest = defenseUnderTest{
@@ -423,12 +406,12 @@ var (
 		ownID:         gurps.BlockID,
 		otherID:       gurps.ParryID,
 		distinctBonus: 1,
-		resolve:       func(w *gurps.Weapon) string { return w.Block.Resolve(w, nil).String() },
+		resolve:       func(w *gurps.Weapon) string { return w.ResolvedBlock(nil).String() },
 		setModifier:   func(w *gurps.Weapon, modifier fxp.Int) { w.Block.Modifier = modifier },
 	}
 )
 
-// runDefenseResolveTests runs the Resolve() regression tests shared by the parry and block calculations against the
+// runDefenseResolveTests runs the resolution regression tests shared by the parry and block calculations against the
 // given defense.
 func runDefenseResolveTests(t *testing.T, d defenseUnderTest) {
 	t.Helper()
@@ -498,7 +481,7 @@ func runDefenseResolveTests(t *testing.T, d defenseUnderTest) {
 	t.Run("MinSTPenaltyAtSkillScale", func(t *testing.T) {
 		c := check.New(t)
 		w := newDefenseTestWeapon(c)
-		w.Strength = gurps.WeaponStrength{Min: fxp.FromInteger(12)} // -2 to skill for the ST 10 character
+		w.Strength = attack.Strength{Min: fxp.FromInteger(12)} // -2 to skill for the ST 10 character
 
 		// (14 - 2)/2 + 3 + 1, not (14/2 + 3 + 1) - 2.
 		for _, defaultType := range allDefaultTypes {
@@ -516,7 +499,7 @@ func runDefenseResolveTests(t *testing.T, d defenseUnderTest) {
 		e.Skills[0].Points = fxp.FromInteger(20) // DX+5, i.e. level 15
 		e.Recalculate()
 		c.Equal(fxp.FromInteger(15), e.Skills[0].LevelData.Level, "the Cloak skill should be at level 15")
-		w.Strength = gurps.WeaponStrength{Min: fxp.FromInteger(11)} // -1 to skill for the ST 10 character
+		w.Strength = attack.Strength{Min: fxp.FromInteger(11)} // -1 to skill for the ST 10 character
 
 		// (15 - 1)/2 + 3 + 1: the penalty costs nothing, since 15/2 also rounds down to 7.
 		for _, defaultType := range allDefaultTypes {
@@ -527,7 +510,7 @@ func runDefenseResolveTests(t *testing.T, d defenseUnderTest) {
 
 	// The same for a skill bonus aimed at this weapon, the other half of the base adjustment. This is the layout the
 	// High Tech library's Tonfa uses -- a skill default paired with a matching parry-type default -- so an over-weighted
-	// adjustment on the defense-type default won the max in Resolve() and inflated the displayed defense.
+	// adjustment on the defense-type default won the max in the defense resolution and inflated the displayed defense.
 	t.Run("ThisWeaponSkillBonusAtSkillScale", func(t *testing.T) {
 		c := check.New(t)
 		w := newDefenseTestWeapon(c)
@@ -684,16 +667,16 @@ func TestWeaponPerDieBonusTooltip(t *testing.T) {
 	bulk.Amount = fxp.NegOne
 	w := newWeaponWithBonuses(false, acc, bulk)
 	w.Damage.Base = "3d"
-	w.Accuracy = gurps.ParseWeaponAccuracy("3")
-	w.Bulk = gurps.ParseWeaponBulk("-4")
+	w.Accuracy = attack.ParseAccuracy("3")
+	w.Bulk = attack.ParseBulk("-4")
 
 	var accTooltip xbytes.InsertBuffer
-	c.Equal("6", w.Accuracy.Resolve(w, &accTooltip).String(), "+1 per die on a 3d weapon raises Acc 3 to 6")
+	c.Equal("6", w.ResolvedAccuracy(&accTooltip).String(), "+1 per die on a 3d weapon raises Acc 3 to 6")
 	c.Contains(accTooltip.String(), "+3 (+1 per die) to accuracy", "the tooltip reports the amount applied")
 
 	// The same holds for the other stats, which share the collection that writes these tooltips.
 	var bulkTooltip xbytes.InsertBuffer
-	c.Equal("-7", w.Bulk.Resolve(w, &bulkTooltip).String(), "-1 per die on a 3d weapon takes Bulk -4 to -7")
+	c.Equal("-7", w.ResolvedBulk(&bulkTooltip).String(), "-1 per die on a 3d weapon takes Bulk -4 to -7")
 	c.Contains(bulkTooltip.String(), "-3 (-1 per die) to bulk", "the tooltip reports the amount applied")
 }
 
@@ -707,10 +690,10 @@ func TestWeaponPerDieSTBonusTooltip(t *testing.T) {
 	minST.PerDie = true
 	w := newWeaponWithBonuses(false, minST)
 	w.Damage.Base = "3d"
-	w.Strength = gurps.ParseWeaponStrength("10")
+	w.Strength = attack.ParseStrength("10")
 
 	var tooltip xbytes.InsertBuffer
-	c.Equal("11", w.Strength.Resolve(w, &tooltip).String(), "a per-die minimum ST bonus counts as a single die")
+	c.Equal("11", w.ResolvedStrength(&tooltip).String(), "a per-die minimum ST bonus counts as a single die")
 	c.Contains(tooltip.String(), "+1 (+1 per die) to minimum ST", "the tooltip reports the amount applied")
 }
 
@@ -734,13 +717,13 @@ func TestWeaponPerLevelBonusFromTraitModifier(t *testing.T) {
 	mod.Features = gurps.Features{acc}
 	trait.Modifiers = []*gurps.TraitModifier{mod}
 	w := gurps.NewWeapon(trait, false)
-	w.Accuracy = gurps.ParseWeaponAccuracy("3")
+	w.Accuracy = attack.ParseAccuracy("3")
 	trait.Weapons = []*gurps.Weapon{w}
 	e.Traits = append(e.Traits, trait)
 	e.Recalculate()
 
 	var tooltip xbytes.InsertBuffer
-	c.Equal("3", w.Accuracy.Resolve(w, &tooltip).String(),
+	c.Equal("3", w.ResolvedAccuracy(&tooltip).String(),
 		"a per-level bonus on a modifier with no levels adds nothing, no matter the trait's level")
 	c.Equal("\nInnate Attack 3 (Targeting) [+0 (+1 per level) to accuracy]", tooltip.String(),
 		"the tooltip reports the amount applied rather than scaling by the trait's level")
@@ -749,7 +732,7 @@ func TestWeaponPerLevelBonusFromTraitModifier(t *testing.T) {
 	mod.Levels = fxp.Two
 	e.Recalculate()
 	tooltip.Reset()
-	c.Equal("5", w.Accuracy.Resolve(w, &tooltip).String(), "+1 per level on a level 2 modifier raises Acc 3 to 5")
+	c.Equal("5", w.ResolvedAccuracy(&tooltip).String(), "+1 per level on a level 2 modifier raises Acc 3 to 5")
 	c.Equal("\nInnate Attack 3 (Targeting 2) [+2 (+1 per level) to accuracy]", tooltip.String(),
 		"the tooltip names the modifier with its level and agrees with the amount applied")
 
@@ -758,7 +741,7 @@ func TestWeaponPerLevelBonusFromTraitModifier(t *testing.T) {
 	mod.UseLevelFromTrait = true
 	e.Recalculate()
 	tooltip.Reset()
-	c.Equal("6", w.Accuracy.Resolve(w, &tooltip).String(),
+	c.Equal("6", w.ResolvedAccuracy(&tooltip).String(),
 		"a modifier that takes the trait's level of 3 raises Acc 3 to 6")
 	c.Equal("\nInnate Attack 3 (Targeting 3) [+3 (+1 per level) to accuracy]", tooltip.String(),
 		"the tooltip agrees with the amount applied when the level comes from the trait")
@@ -957,7 +940,7 @@ func TestWeaponEffectiveStrength(t *testing.T) {
 	w := gurps.NewWeapon(eqp, false)
 	w.Damage.Base = "" // Just the ST-based damage, so the ST used is plain to see
 	w.Damage.StrengthType = stdmg.Thrust
-	w.Range = gurps.ParseWeaponRange("x1/x2")
+	w.Range = attack.ParseRange("x1/x2")
 	eqp.Weapons = []*gurps.Weapon{w}
 	e.CarriedEquipment = append(e.CarriedEquipment, eqp)
 	e.Recalculate()
@@ -966,7 +949,7 @@ func TestWeaponEffectiveStrength(t *testing.T) {
 	expect := func(expectedDamage, expectedRange, msg string) {
 		c.Helper()
 		c.Equal(expectedDamage, w.Damage.ResolvedDamage(nil), msg)
-		c.Equal(expectedRange, w.Range.Resolve(w, nil).String(true), msg)
+		c.Equal(expectedRange, w.ResolvedRange(nil).String(true), msg)
 	}
 	expect("1d-2 cr", "10/20", "the entity's ST 10 is used when there is no rated ST")
 
@@ -979,10 +962,10 @@ func TestWeaponEffectiveStrength(t *testing.T) {
 	eqp.Features = gurps.Features{bonus}
 	expect("1d+1 cr", "16/32", "an effective ST bonus raises the rated ST")
 
-	w.Strength = gurps.ParseWeaponStrength("5")
+	w.Strength = attack.ParseStrength("5")
 	expect("1d+1 cr", "15/30", "the effective ST is capped at three times the weapon's minimum ST")
 
 	var tooltip xbytes.InsertBuffer
-	w.Range.Resolve(w, &tooltip)
+	w.ResolvedRange(&tooltip)
 	c.Contains(tooltip.String(), "+2 to effective ST", "range resolution explains the effective ST bonus")
 }

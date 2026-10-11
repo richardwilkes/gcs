@@ -223,8 +223,8 @@ func TestLegacyExportWeaponLoops(t *testing.T) {
 	innate.Name = "Innate Attack"
 	innate.Weapons = append(innate.Weapons, newTestWeapon(innate, false, "Bolt"))
 	e.Traits = append(e.Traits, karate, innate)
-	reach := karate.Weapons[0].Reach.Resolve(karate.Weapons[0], nil).String()
-	rof := karate.Weapons[2].RateOfFire.Resolve(karate.Weapons[2], nil).String()
+	reach := karate.Weapons[0].ResolvedReach(nil).String()
+	rof := karate.Weapons[2].ResolvedRateOfFire(nil).String()
 
 	// Flat loops number every attack mode in sorted order and reject the attack modes keys.
 	c.Equal("(0:Bolt)(1:Sneeze)(2:Spit)", runLegacyExport(t, c, e, "@RANGED_LOOP_START(@ID:@USAGE)@RANGED_LOOP_END"))

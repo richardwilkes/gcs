@@ -7,7 +7,7 @@
 // This Source Code Form is "Incompatible With Secondary Licenses", as
 // defined by the Mozilla Public License, version 2.0.
 
-package gurps
+package attack
 
 import (
 	"encoding/json/jsontext"
@@ -17,25 +17,22 @@ import (
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
-	"github.com/richardwilkes/gcs/v5/model/gurps/enums/feature"
-	"github.com/richardwilkes/gcs/v5/model/gurps/enums/wswitch"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/toolbox/v2/i18n"
-	"github.com/richardwilkes/toolbox/v2/xbytes"
 	"github.com/richardwilkes/toolbox/v2/xhash"
 )
 
-// WeaponParry holds the parry data for a weapon.
-type WeaponParry struct {
+// Parry holds the parry data for a weapon.
+type Parry struct {
 	CanParry   bool
 	Fencing    bool
 	Unbalanced bool
 	Modifier   fxp.Int
 }
 
-// ParseWeaponParry parses a string into a WeaponParry.
-func ParseWeaponParry(s string) WeaponParry {
-	var wp WeaponParry
+// ParseParry parses a string into a Parry.
+func ParseParry(s string) Parry {
+	var wp Parry
 	s = strings.TrimSpace(s)
 	s = strings.ToLower(s)
 	if s != "" && s != "-" && s != "–" && s != "—" && !strings.Contains(s, "no") {
@@ -49,47 +46,31 @@ func ParseWeaponParry(s string) WeaponParry {
 }
 
 // IsZero reports whether json's omitzero option should omit this value.
-func (wp WeaponParry) IsZero() bool {
+func (wp Parry) IsZero() bool {
 	return !wp.CanParry
 }
 
 // MarshalJSONTo implements json.MarshalerTo.
-func (wp WeaponParry) MarshalJSONTo(enc *jsontext.Encoder) error {
+func (wp Parry) MarshalJSONTo(enc *jsontext.Encoder) error {
 	return json.MarshalEncode(enc, wp.String())
 }
 
 // UnmarshalJSONFrom implements json.UnmarshalerFrom.
-func (wp *WeaponParry) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
-	return jio.UnmarshalStringFromInfallible(dec, wp, ParseWeaponParry)
+func (wp *Parry) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
+	return jio.UnmarshalStringFromInfallible(dec, wp, ParseParry)
 }
 
 // Hash writes this object's contents into the hasher.
-func (wp WeaponParry) Hash(h hash.Hash) {
+func (wp Parry) Hash(h hash.Hash) {
 	xhash.Bool(h, wp.CanParry)
 	xhash.Bool(h, wp.Fencing)
 	xhash.Bool(h, wp.Unbalanced)
 	xhash.Num64(h, wp.Modifier)
 }
 
-// Resolve any bonuses that apply.
-func (wp WeaponParry) Resolve(w *Weapon, modifiersTooltip *xbytes.InsertBuffer) WeaponParry {
-	result := wp
-	result.CanParry = w.ResolveBoolFlag(wswitch.CanParry, result.CanParry)
-	if result.CanParry {
-		result.Fencing = w.ResolveBoolFlag(wswitch.Fencing, result.Fencing)
-		result.Unbalanced = w.ResolveBoolFlag(wswitch.Unbalanced, result.Unbalanced)
-		if entity := w.Entity(); entity != nil {
-			result.Modifier = w.resolveDefenseModifier(entity, modifiersTooltip, result.Modifier, ParryID,
-				feature.WeaponParryBonus, entity.ParryBonusTooltip)
-		}
-	}
-	result.Validate()
-	return result
-}
-
 // String returns a string suitable for presentation, matching the standard GURPS weapon table entry format for this
-// data. Call .Resolve() prior to calling this method if you want the resolved values.
-func (wp WeaponParry) String() string {
+// data. Use the weapon's ResolvedParry method first if you want the resolved values.
+func (wp Parry) String() string {
 	if !wp.CanParry {
 		return "No"
 	}
@@ -104,9 +85,9 @@ func (wp WeaponParry) String() string {
 	return buffer.String()
 }
 
-// Tooltip returns a tooltip for the data, if any. Call .Resolve() prior to calling this method if you want the tooltip
+// Tooltip returns a tooltip for the data, if any. Use the weapon's ResolvedParry method first if you want the tooltip
 // to be based on the resolved values.
-func (wp WeaponParry) Tooltip() string {
+func (wp Parry) Tooltip() string {
 	if !wp.CanParry || (!wp.Fencing && !wp.Unbalanced) {
 		return ""
 	}
@@ -124,7 +105,7 @@ func (wp WeaponParry) Tooltip() string {
 }
 
 // Validate ensures that the data is valid.
-func (wp *WeaponParry) Validate() {
+func (wp *Parry) Validate() {
 	if !wp.CanParry {
 		wp.Modifier = 0
 		wp.Fencing = false

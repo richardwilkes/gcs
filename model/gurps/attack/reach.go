@@ -7,7 +7,7 @@
 // This Source Code Form is "Incompatible With Secondary Licenses", as
 // defined by the Mozilla Public License, version 2.0.
 
-package gurps
+package attack
 
 import (
 	"encoding/json/jsontext"
@@ -16,25 +16,22 @@ import (
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
-	"github.com/richardwilkes/gcs/v5/model/gurps/enums/feature"
-	"github.com/richardwilkes/gcs/v5/model/gurps/enums/wswitch"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/toolbox/v2/i18n"
-	"github.com/richardwilkes/toolbox/v2/xbytes"
 	"github.com/richardwilkes/toolbox/v2/xhash"
 )
 
-// WeaponReach holds the reach data for a weapon.
-type WeaponReach struct {
+// Reach holds the reach data for a weapon.
+type Reach struct {
 	Min                 fxp.Int
 	Max                 fxp.Int
 	CloseCombat         bool
 	ChangeRequiresReady bool
 }
 
-// ParseWeaponReach parses a string into a WeaponReach.
-func ParseWeaponReach(s string) WeaponReach {
-	var wr WeaponReach
+// ParseReach parses a string into a Reach.
+func ParseReach(s string) Reach {
+	var wr Reach
 	s = strings.ReplaceAll(s, " ", "")
 	if s != "" {
 		s = strings.ToLower(s)
@@ -65,44 +62,31 @@ func ParseWeaponReach(s string) WeaponReach {
 }
 
 // MarshalJSONTo implements json.MarshalerTo.
-func (wr WeaponReach) MarshalJSONTo(enc *jsontext.Encoder) error {
+func (wr Reach) MarshalJSONTo(enc *jsontext.Encoder) error {
 	return json.MarshalEncode(enc, wr.String())
 }
 
 // UnmarshalJSONFrom implements json.UnmarshalerFrom.
-func (wr *WeaponReach) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
-	return jio.UnmarshalStringFromInfallible(dec, wr, ParseWeaponReach)
+func (wr *Reach) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
+	return jio.UnmarshalStringFromInfallible(dec, wr, ParseReach)
 }
 
 // IsZero reports whether json's omitzero option should omit this value.
-func (wr WeaponReach) IsZero() bool {
-	return wr == WeaponReach{}
+func (wr Reach) IsZero() bool {
+	return wr == Reach{}
 }
 
 // Hash writes this object's contents into the hasher.
-func (wr WeaponReach) Hash(h hash.Hash) {
+func (wr Reach) Hash(h hash.Hash) {
 	xhash.Num64(h, wr.Min)
 	xhash.Num64(h, wr.Max)
 	xhash.Bool(h, wr.CloseCombat)
 	xhash.Bool(h, wr.ChangeRequiresReady)
 }
 
-// Resolve any bonuses that apply.
-func (wr WeaponReach) Resolve(w *Weapon, modifiersTooltip *xbytes.InsertBuffer) WeaponReach {
-	result := wr
-	result.CloseCombat = w.ResolveBoolFlag(wswitch.CloseCombat, result.CloseCombat)
-	result.ChangeRequiresReady = w.ResolveBoolFlag(wswitch.ReachChangeRequiresReady, result.ChangeRequiresReady)
-	adj := w.weaponAdjustments(w.baseDamageDieCount, modifiersTooltip, feature.WeaponMinReachBonus,
-		feature.WeaponMaxReachBonus)
-	result.Min = adj[feature.WeaponMinReachBonus].applyTo(result.Min)
-	result.Max = adj[feature.WeaponMaxReachBonus].applyTo(result.Max)
-	result.Validate()
-	return result
-}
-
 // String returns a string suitable for presentation, matching the standard GURPS weapon table entry format for this
-// data. Call .Resolve() prior to calling this method if you want the resolved values.
-func (wr WeaponReach) String() string {
+// data. Use the weapon's ResolvedReach method first if you want the resolved values.
+func (wr Reach) String() string {
 	var buffer strings.Builder
 	if wr.CloseCombat {
 		buffer.WriteByte('C')
@@ -123,9 +107,9 @@ func (wr WeaponReach) String() string {
 	return buffer.String()
 }
 
-// Tooltip returns a tooltip for the data, if any. Call .Resolve() prior to calling this method if you want the tooltip
+// Tooltip returns a tooltip for the data, if any. Use the weapon's ResolvedReach method first if you want the tooltip
 // to be based on the resolved values.
-func (wr WeaponReach) Tooltip() string {
+func (wr Reach) Tooltip() string {
 	if wr.ChangeRequiresReady {
 		return i18n.Text("*: Changing reach requires a Ready maneuver.")
 	}
@@ -133,7 +117,7 @@ func (wr WeaponReach) Tooltip() string {
 }
 
 // Validate ensures that the data is valid.
-func (wr *WeaponReach) Validate() {
+func (wr *Reach) Validate() {
 	wr.Min = wr.Min.Max(0)
 	wr.Max = wr.Max.Max(0)
 	if wr.Min == 0 && wr.Max != 0 {

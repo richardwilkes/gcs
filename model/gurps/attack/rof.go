@@ -7,7 +7,7 @@
 // This Source Code Form is "Incompatible With Secondary Licenses", as
 // defined by the Mozilla Public License, version 2.0.
 
-package gurps
+package attack
 
 import (
 	"encoding/json/jsontext"
@@ -15,32 +15,30 @@ import (
 	"hash"
 	"strings"
 
-	"github.com/richardwilkes/gcs/v5/model/gurps/enums/wswitch"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/toolbox/v2/i18n"
-	"github.com/richardwilkes/toolbox/v2/xbytes"
 	"github.com/richardwilkes/toolbox/v2/xhash"
 )
 
-// WeaponRoF holds the rate of fire data for a weapon.
-type WeaponRoF struct {
-	Mode1 WeaponRoFMode
-	Mode2 WeaponRoFMode
+// RoF holds the rate of fire data for a weapon.
+type RoF struct {
+	Mode1 RoFMode
+	Mode2 RoFMode
 	Jet   bool
 }
 
-// ParseWeaponRoF parses a string into a WeaponRoF.
-func ParseWeaponRoF(s string) WeaponRoF {
-	var wr WeaponRoF
+// ParseRoF parses a string into a RoF.
+func ParseRoF(s string) RoF {
+	var wr RoF
 	s = strings.ReplaceAll(s, " ", "")
 	s = strings.ToLower(s)
 	if strings.Contains(s, "jet") {
 		wr.Jet = true
 	} else {
 		parts := strings.Split(s, "/")
-		wr.Mode1 = ParseWeaponRoFMode(parts[0])
+		wr.Mode1 = ParseRoFMode(parts[0])
 		if len(parts) > 1 {
-			wr.Mode2 = ParseWeaponRoFMode(parts[1])
+			wr.Mode2 = ParseRoFMode(parts[1])
 		}
 	}
 	wr.Validate()
@@ -48,57 +46,30 @@ func ParseWeaponRoF(s string) WeaponRoF {
 }
 
 // MarshalJSONTo implements json.MarshalerTo.
-func (wr WeaponRoF) MarshalJSONTo(enc *jsontext.Encoder) error {
+func (wr RoF) MarshalJSONTo(enc *jsontext.Encoder) error {
 	return json.MarshalEncode(enc, wr.String())
 }
 
 // UnmarshalJSONFrom implements json.UnmarshalerFrom.
-func (wr *WeaponRoF) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
-	return jio.UnmarshalStringFromInfallible(dec, wr, ParseWeaponRoF)
+func (wr *RoF) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
+	return jio.UnmarshalStringFromInfallible(dec, wr, ParseRoF)
 }
 
 // IsZero reports whether json's omitzero option should omit this value.
-func (wr WeaponRoF) IsZero() bool {
-	return wr == WeaponRoF{}
+func (wr RoF) IsZero() bool {
+	return wr == RoF{}
 }
 
 // Hash writes this object's contents into the hasher.
-func (wr WeaponRoF) Hash(h hash.Hash) {
+func (wr RoF) Hash(h hash.Hash) {
 	wr.Mode1.Hash(h)
 	wr.Mode2.Hash(h)
 	xhash.Bool(h, wr.Jet)
 }
 
-// Resolve any bonuses that apply.
-func (wr WeaponRoF) Resolve(w *Weapon, modifiersTooltip *xbytes.InsertBuffer) WeaponRoF {
-	result := wr
-	result.Jet = w.ResolveBoolFlag(wswitch.Jet, result.Jet)
-	if !result.Jet {
-		var buf1, buf2 xbytes.InsertBuffer
-		result.Mode1 = result.Mode1.Resolve(w, &buf1, true)
-		result.Mode2 = result.Mode2.Resolve(w, &buf2, false)
-		if modifiersTooltip != nil {
-			if buf1.Len() != 0 {
-				if buf2.Len() != 0 {
-					modifiersTooltip.WriteString(i18n.Text("First mode:\n"))
-				}
-				modifiersTooltip.WriteString(buf1.String())
-			}
-			if buf2.Len() != 0 {
-				if buf1.Len() != 0 {
-					modifiersTooltip.WriteString(i18n.Text("\n\nSecond mode:\n"))
-				}
-				modifiersTooltip.WriteString(buf2.String())
-			}
-		}
-	}
-	result.Validate()
-	return result
-}
-
 // String returns a string suitable for presentation, matching the standard GURPS weapon table entry format for this
-// data. Call .Resolve() prior to calling this method if you want the resolved values.
-func (wr WeaponRoF) String() string {
+// data. Use the weapon's ResolvedRateOfFire method first if you want the resolved values.
+func (wr RoF) String() string {
 	if wr.Jet {
 		return "Jet" // Not localized, since it is part of the data
 	}
@@ -113,9 +84,9 @@ func (wr WeaponRoF) String() string {
 	return s1
 }
 
-// Tooltip returns a tooltip for the data, if any. Call .Resolve() prior to calling this method if you want the tooltip
-// to be based on the resolved values.
-func (wr WeaponRoF) Tooltip() string {
+// Tooltip returns a tooltip for the data, if any. Use the weapon's ResolvedRateOfFire method first if you want the
+// tooltip to be based on the resolved values.
+func (wr RoF) Tooltip() string {
 	if wr.Jet {
 		return ""
 	}
@@ -138,10 +109,10 @@ func (wr WeaponRoF) Tooltip() string {
 }
 
 // Validate ensures that the data is valid.
-func (wr *WeaponRoF) Validate() {
+func (wr *RoF) Validate() {
 	if wr.Jet {
-		wr.Mode1 = WeaponRoFMode{}
-		wr.Mode2 = WeaponRoFMode{}
+		wr.Mode1 = RoFMode{}
+		wr.Mode2 = RoFMode{}
 		return
 	}
 	wr.Mode1.Validate()

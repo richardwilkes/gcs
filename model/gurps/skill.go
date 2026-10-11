@@ -29,6 +29,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/study"
 	"github.com/richardwilkes/gcs/v5/model/kinds"
 	"github.com/richardwilkes/gcs/v5/model/nameable"
+	"github.com/richardwilkes/gcs/v5/model/txtutil"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/toolbox/v2/tid"
 	"github.com/richardwilkes/toolbox/v2/xbytes"
@@ -583,14 +584,14 @@ func (s *Skill) SecondaryText(optionChecker func(display.Option) bool) string {
 		}
 	}
 	if optionChecker(prefs.NotesDisplay) {
-		AppendStringOntoNewLine(&buffer, strings.TrimSpace(s.Notes()))
-		AppendStringOntoNewLine(&buffer, StudyHoursProgressText(ResolveStudyHours(s.Study), s.StudyHoursNeeded, false))
+		txtutil.AppendStringOntoNewLine(&buffer, strings.TrimSpace(s.Notes()))
+		txtutil.AppendStringOntoNewLine(&buffer, StudyHoursProgressText(ResolveStudyHours(s.Study), s.StudyHoursNeeded, false))
 	}
 	addTooltipForSkillLevelAdj(optionChecker, prefs, s.LevelData, &buffer)
 	return buffer.String()
 }
 
-func addTooltipForSkillLevelAdj(optionChecker func(display.Option) bool, prefs *SheetSettings, level Level, to LineBuilder) {
+func addTooltipForSkillLevelAdj(optionChecker func(display.Option) bool, prefs *SheetSettings, level Level, to txtutil.LineBuilder) {
 	if optionChecker(prefs.SkillLevelAdjDisplay) {
 		if level.Tooltip != "" && level.Tooltip != NoAdditionalModifiers() {
 			levelTooltip := level.Tooltip
@@ -601,7 +602,7 @@ func addTooltipForSkillLevelAdj(optionChecker func(display.Option) bool, prefs *
 			if optionChecker(display.Inline) {
 				levelTooltip = strings.ReplaceAll(strings.ReplaceAll(levelTooltip, ":\n", ": "), "\n", ", ")
 			}
-			AppendStringOntoNewLine(to, levelTooltip)
+			txtutil.AppendStringOntoNewLine(to, levelTooltip)
 		}
 	}
 }

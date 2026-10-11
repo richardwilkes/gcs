@@ -650,7 +650,7 @@ func TestUnsavedWeaponsMatchOnceLoaded(t *testing.T) {
 	c.Equal(1, len(loaded))
 	c.Equal(len(sk.Weapons), len(loaded[0].Weapons))
 	for i, w := range loaded[0].Weapons {
-		c.Equal(sk.Weapons[i].Damage.WeaponDamageData, w.Damage.WeaponDamageData,
+		c.Equal(sk.Weapons[i].Damage.DamageData, w.Damage.DamageData,
 			"weapon %d: the damage is the same once loaded", i)
 	}
 	c.Equal(Hash64(sk), Hash64(loaded[0]), "the skill hashes the same once loaded")

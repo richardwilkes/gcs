@@ -29,6 +29,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/study"
 	"github.com/richardwilkes/gcs/v5/model/kinds"
 	"github.com/richardwilkes/gcs/v5/model/nameable"
+	"github.com/richardwilkes/gcs/v5/model/txtutil"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/toolbox/v2/tid"
 	"github.com/richardwilkes/toolbox/v2/xbytes"
@@ -905,9 +906,9 @@ func (s *Spell) SecondaryText(optionChecker func(display.Option) bool) string {
 	var buffer strings.Builder
 	prefs := SheetSettingsFor(EntityFromNode(s))
 	if optionChecker(prefs.NotesDisplay) {
-		AppendStringOntoNewLine(&buffer, strings.TrimSpace(s.Notes()))
-		AppendStringOntoNewLine(&buffer, s.Rituals())
-		AppendStringOntoNewLine(&buffer, StudyHoursProgressText(ResolveStudyHours(s.Study), s.StudyHoursNeeded, false))
+		txtutil.AppendStringOntoNewLine(&buffer, strings.TrimSpace(s.Notes()))
+		txtutil.AppendStringOntoNewLine(&buffer, s.Rituals())
+		txtutil.AppendStringOntoNewLine(&buffer, StudyHoursProgressText(ResolveStudyHours(s.Study), s.StudyHoursNeeded, false))
 	}
 	addTooltipForSkillLevelAdj(optionChecker, prefs, s.LevelData, &buffer)
 	return buffer.String()

@@ -7,7 +7,7 @@
 // This Source Code Form is "Incompatible With Secondary Licenses", as
 // defined by the Mozilla Public License, version 2.0.
 
-package gurps
+package attack
 
 import (
 	"encoding/json/jsontext"
@@ -16,22 +16,20 @@ import (
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
-	"github.com/richardwilkes/gcs/v5/model/gurps/enums/feature"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/toolbox/v2/i18n"
-	"github.com/richardwilkes/toolbox/v2/xbytes"
 	"github.com/richardwilkes/toolbox/v2/xhash"
 )
 
-// WeaponRecoil holds the recoil data for a weapon.
-type WeaponRecoil struct {
+// Recoil holds the recoil data for a weapon.
+type Recoil struct {
 	Shot fxp.Int
 	Slug fxp.Int
 }
 
-// ParseWeaponRecoil parses a string into a WeaponRecoil.
-func ParseWeaponRecoil(s string) WeaponRecoil {
-	var wr WeaponRecoil
+// ParseRecoil parses a string into a Recoil.
+func ParseRecoil(s string) Recoil {
+	var wr Recoil
 	s = strings.ReplaceAll(s, " ", "")
 	s = strings.ReplaceAll(s, ",", "")
 	parts := strings.Split(s, "/")
@@ -43,52 +41,29 @@ func ParseWeaponRecoil(s string) WeaponRecoil {
 }
 
 // MarshalJSONTo implements json.MarshalerTo.
-func (wr WeaponRecoil) MarshalJSONTo(enc *jsontext.Encoder) error {
+func (wr Recoil) MarshalJSONTo(enc *jsontext.Encoder) error {
 	return json.MarshalEncode(enc, wr.String())
 }
 
 // UnmarshalJSONFrom implements json.UnmarshalerFrom.
-func (wr *WeaponRecoil) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
-	return jio.UnmarshalStringFromInfallible(dec, wr, ParseWeaponRecoil)
+func (wr *Recoil) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
+	return jio.UnmarshalStringFromInfallible(dec, wr, ParseRecoil)
 }
 
 // IsZero reports whether json's omitzero option should omit this value.
-func (wr WeaponRecoil) IsZero() bool {
-	return wr == WeaponRecoil{}
+func (wr Recoil) IsZero() bool {
+	return wr == Recoil{}
 }
 
 // Hash writes this object's contents into the hasher.
-func (wr WeaponRecoil) Hash(h hash.Hash) {
+func (wr Recoil) Hash(h hash.Hash) {
 	xhash.Num64(h, wr.Shot)
 	xhash.Num64(h, wr.Slug)
 }
 
-// Resolve any bonuses that apply.
-func (wr WeaponRecoil) Resolve(w *Weapon, modifiersTooltip *xbytes.InsertBuffer) WeaponRecoil {
-	result := wr
-	// 0 means recoil isn't used; 1+ means it is.
-	if wr.Shot > 0 || wr.Slug > 0 {
-		adj := w.weaponAdjustment(w.baseDamageDieCount, modifiersTooltip, feature.WeaponRecoilBonus)
-		result.Shot = adj.applyTo(result.Shot)
-		result.Slug = adj.applyTo(result.Slug)
-		if wr.Shot > 0 {
-			result.Shot = result.Shot.Max(fxp.One)
-		} else {
-			result.Shot = 0
-		}
-		if wr.Slug > 0 {
-			result.Slug = result.Slug.Max(fxp.One)
-		} else {
-			result.Slug = 0
-		}
-	}
-	result.Validate()
-	return result
-}
-
 // String returns a string suitable for presentation, matching the standard GURPS weapon table entry format for this
-// data. Call .Resolve() prior to calling this method if you want the resolved values.
-func (wr WeaponRecoil) String() string {
+// data. Use the weapon's ResolvedRecoil method first if you want the resolved values.
+func (wr Recoil) String() string {
 	if wr.Shot == 0 && wr.Slug == 0 {
 		return ""
 	}
@@ -101,9 +76,9 @@ func (wr WeaponRecoil) String() string {
 	return buffer.String()
 }
 
-// Tooltip returns a tooltip for the data, if any. Call .Resolve() prior to calling this method if you want the tooltip
+// Tooltip returns a tooltip for the data, if any. Use the weapon's ResolvedRecoil method first if you want the tooltip
 // to be based on the resolved values.
-func (wr WeaponRecoil) Tooltip() string {
+func (wr Recoil) Tooltip() string {
 	if wr.Shot != 0 && wr.Slug != 0 && wr.Shot != wr.Slug {
 		return i18n.Text("First Recoil value is for shot, second is for slugs")
 	}
@@ -111,7 +86,7 @@ func (wr WeaponRecoil) Tooltip() string {
 }
 
 // Validate ensures that the data is valid.
-func (wr *WeaponRecoil) Validate() {
+func (wr *Recoil) Validate() {
 	wr.Shot = wr.Shot.Max(0)
 	wr.Slug = wr.Slug.Max(0)
 }

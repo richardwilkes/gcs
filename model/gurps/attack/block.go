@@ -7,7 +7,7 @@
 // This Source Code Form is "Incompatible With Secondary Licenses", as
 // defined by the Mozilla Public License, version 2.0.
 
-package gurps
+package attack
 
 import (
 	"encoding/json/jsontext"
@@ -16,22 +16,19 @@ import (
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
-	"github.com/richardwilkes/gcs/v5/model/gurps/enums/feature"
-	"github.com/richardwilkes/gcs/v5/model/gurps/enums/wswitch"
 	"github.com/richardwilkes/gcs/v5/model/jio"
-	"github.com/richardwilkes/toolbox/v2/xbytes"
 	"github.com/richardwilkes/toolbox/v2/xhash"
 )
 
-// WeaponBlock holds the block data for a weapon.
-type WeaponBlock struct {
+// Block holds the block data for a weapon.
+type Block struct {
 	CanBlock bool
 	Modifier fxp.Int
 }
 
-// ParseWeaponBlock parses a string into a WeaponBlock.
-func ParseWeaponBlock(s string) WeaponBlock {
-	var wb WeaponBlock
+// ParseBlock parses a string into a Block.
+func ParseBlock(s string) Block {
+	var wb Block
 	s = strings.TrimSpace(s)
 	s = strings.ToLower(s)
 	if s != "" && s != "-" && s != "–" && s != "—" && !strings.Contains(s, "no") {
@@ -43,43 +40,29 @@ func ParseWeaponBlock(s string) WeaponBlock {
 }
 
 // IsZero reports whether json's omitzero option should omit this value.
-func (wb WeaponBlock) IsZero() bool {
+func (wb Block) IsZero() bool {
 	return !wb.CanBlock
 }
 
 // MarshalJSONTo implements json.MarshalerTo.
-func (wb WeaponBlock) MarshalJSONTo(enc *jsontext.Encoder) error {
+func (wb Block) MarshalJSONTo(enc *jsontext.Encoder) error {
 	return json.MarshalEncode(enc, wb.String())
 }
 
 // UnmarshalJSONFrom implements json.UnmarshalerFrom.
-func (wb *WeaponBlock) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
-	return jio.UnmarshalStringFromInfallible(dec, wb, ParseWeaponBlock)
+func (wb *Block) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
+	return jio.UnmarshalStringFromInfallible(dec, wb, ParseBlock)
 }
 
 // Hash writes this object's contents into the hasher.
-func (wb WeaponBlock) Hash(h hash.Hash) {
+func (wb Block) Hash(h hash.Hash) {
 	xhash.Bool(h, wb.CanBlock)
 	xhash.Num64(h, wb.Modifier)
 }
 
-// Resolve any bonuses that apply.
-func (wb WeaponBlock) Resolve(w *Weapon, modifiersTooltip *xbytes.InsertBuffer) WeaponBlock {
-	result := wb
-	result.CanBlock = w.ResolveBoolFlag(wswitch.CanBlock, result.CanBlock)
-	if result.CanBlock {
-		if entity := w.Entity(); entity != nil {
-			result.Modifier = w.resolveDefenseModifier(entity, modifiersTooltip, result.Modifier, BlockID,
-				feature.WeaponBlockBonus, entity.BlockBonusTooltip)
-		}
-	}
-	result.Validate()
-	return result
-}
-
 // String returns a string suitable for presentation, matching the standard GURPS weapon table entry format for this
-// data. Call .Resolve() prior to calling this method if you want the resolved values.
-func (wb WeaponBlock) String() string {
+// data. Use the weapon's ResolvedBlock method first if you want the resolved values.
+func (wb Block) String() string {
 	if !wb.CanBlock {
 		return "No"
 	}
@@ -87,7 +70,7 @@ func (wb WeaponBlock) String() string {
 }
 
 // Validate ensures that the data is valid.
-func (wb *WeaponBlock) Validate() {
+func (wb *Block) Validate() {
 	if !wb.CanBlock {
 		wb.Modifier = 0
 	}

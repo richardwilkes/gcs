@@ -7,7 +7,7 @@
 // This Source Code Form is "Incompatible With Secondary Licenses", as
 // defined by the Mozilla Public License, version 2.0.
 
-package gurps
+package attack
 
 import (
 	"encoding/json/jsontext"
@@ -17,16 +17,13 @@ import (
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
-	"github.com/richardwilkes/gcs/v5/model/gurps/enums/feature"
-	"github.com/richardwilkes/gcs/v5/model/gurps/enums/wswitch"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/toolbox/v2/i18n"
-	"github.com/richardwilkes/toolbox/v2/xbytes"
 	"github.com/richardwilkes/toolbox/v2/xhash"
 )
 
-// WeaponStrength holds the minimum strength data for a weapon.
-type WeaponStrength struct {
+// Strength holds the minimum strength data for a weapon.
+type Strength struct {
 	Min              fxp.Int
 	Bipod            bool
 	Mounted          bool
@@ -35,9 +32,9 @@ type WeaponStrength struct {
 	TwoHandedUnready bool
 }
 
-// ParseWeaponStrength parses a string into a WeaponStrength.
-func ParseWeaponStrength(s string) WeaponStrength {
-	var ws WeaponStrength
+// ParseStrength parses a string into a Strength.
+func ParseStrength(s string) Strength {
+	var ws Strength
 	s = strings.ReplaceAll(s, " ", "")
 	if s != "" {
 		s = strings.ToLower(s)
@@ -53,22 +50,22 @@ func ParseWeaponStrength(s string) WeaponStrength {
 }
 
 // MarshalJSONTo implements json.MarshalerTo.
-func (ws WeaponStrength) MarshalJSONTo(enc *jsontext.Encoder) error {
+func (ws Strength) MarshalJSONTo(enc *jsontext.Encoder) error {
 	return json.MarshalEncode(enc, ws.String())
 }
 
 // UnmarshalJSONFrom implements json.UnmarshalerFrom.
-func (ws *WeaponStrength) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
-	return jio.UnmarshalStringFromInfallible(dec, ws, ParseWeaponStrength)
+func (ws *Strength) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
+	return jio.UnmarshalStringFromInfallible(dec, ws, ParseStrength)
 }
 
 // IsZero reports whether json's omitzero option should omit this value.
-func (ws WeaponStrength) IsZero() bool {
-	return ws == WeaponStrength{}
+func (ws Strength) IsZero() bool {
+	return ws == Strength{}
 }
 
 // Hash writes this object's contents into the hasher.
-func (ws WeaponStrength) Hash(h hash.Hash) {
+func (ws Strength) Hash(h hash.Hash) {
 	xhash.Num64(h, ws.Min)
 	xhash.Bool(h, ws.Bipod)
 	xhash.Bool(h, ws.Mounted)
@@ -77,22 +74,9 @@ func (ws WeaponStrength) Hash(h hash.Hash) {
 	xhash.Bool(h, ws.TwoHandedUnready)
 }
 
-// Resolve any bonuses that apply.
-func (ws WeaponStrength) Resolve(w *Weapon, modifiersTooltip *xbytes.InsertBuffer) WeaponStrength {
-	result := ws
-	result.Bipod = w.ResolveBoolFlag(wswitch.Bipod, result.Bipod)
-	result.Mounted = w.ResolveBoolFlag(wswitch.Mounted, result.Mounted)
-	result.MusketRest = w.ResolveBoolFlag(wswitch.MusketRest, result.MusketRest)
-	result.TwoHanded = w.ResolveBoolFlag(wswitch.TwoHanded, result.TwoHanded)
-	result.TwoHandedUnready = w.ResolveBoolFlag(wswitch.TwoHandedAndUnreadyAfterAttack, result.TwoHandedUnready)
-	result.Min = w.weaponAdjustment(oneDieCount, modifiersTooltip, feature.WeaponMinSTBonus).applyTo(result.Min)
-	result.Validate()
-	return result
-}
-
 // String returns a string suitable for presentation, matching the standard GURPS weapon table entry format for this
-// data. Call .Resolve() prior to calling this method if you want the resolved values.
-func (ws WeaponStrength) String() string {
+// data. Use the weapon's ResolvedStrength method first if you want the resolved values.
+func (ws Strength) String() string {
 	var buffer strings.Builder
 	if ws.Min > 0 {
 		buffer.WriteString(ws.Min.String())
@@ -116,14 +100,12 @@ func (ws WeaponStrength) String() string {
 	return buffer.String()
 }
 
-// Tooltip returns a tooltip for the data, if any. Call .Resolve() prior to calling this method if you want the tooltip
-// to be based on the resolved values.
-func (ws WeaponStrength) Tooltip(w *Weapon) string {
+// Tooltip returns a tooltip for the data, if any. Use the weapon's ResolvedStrength method first if you want the
+// tooltip to be based on the resolved values. ratedStrength is the owner's rated ST, or 0 when it has none.
+func (ws Strength) Tooltip(ratedStrength fxp.Int) string {
 	var tooltip strings.Builder
-	if w.Owner != nil {
-		if st := w.Owner.RatedStrength(); st > 0 {
-			fmt.Fprintf(&tooltip, i18n.Text("The weapon has a rated ST of %v, which is used instead of the user's ST for all calculations except minimum ST."), st)
-		}
+	if ratedStrength > 0 {
+		fmt.Fprintf(&tooltip, i18n.Text("The weapon has a rated ST of %v, which is used instead of the user's ST for all calculations except minimum ST."), ratedStrength)
 	}
 	if ws.Min > 0 {
 		if tooltip.Len() != 0 {
@@ -168,7 +150,7 @@ func (ws WeaponStrength) Tooltip(w *Weapon) string {
 }
 
 // Validate ensures that the data is valid.
-func (ws *WeaponStrength) Validate() {
+func (ws *Strength) Validate() {
 	ws.Min = ws.Min.Max(0)
 	if ws.TwoHanded && ws.TwoHandedUnready {
 		ws.TwoHanded = false

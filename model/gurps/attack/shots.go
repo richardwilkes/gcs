@@ -7,7 +7,7 @@
 // This Source Code Form is "Incompatible With Secondary Licenses", as
 // defined by the Mozilla Public License, version 2.0.
 
-package gurps
+package attack
 
 import (
 	"encoding/json/jsontext"
@@ -16,16 +16,13 @@ import (
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
-	"github.com/richardwilkes/gcs/v5/model/gurps/enums/feature"
-	"github.com/richardwilkes/gcs/v5/model/gurps/enums/wswitch"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/toolbox/v2/i18n"
-	"github.com/richardwilkes/toolbox/v2/xbytes"
 	"github.com/richardwilkes/toolbox/v2/xhash"
 )
 
-// WeaponShots holds the shots data for a weapon.
-type WeaponShots struct {
+// Shots holds the shots data for a weapon.
+type Shots struct {
 	Count               fxp.Int
 	InChamber           fxp.Int
 	Duration            fxp.Int
@@ -34,9 +31,9 @@ type WeaponShots struct {
 	Thrown              bool
 }
 
-// ParseWeaponShots parses a string into a WeaponShots.
-func ParseWeaponShots(s string) WeaponShots {
-	var ws WeaponShots
+// ParseShots parses a string into a Shots.
+func ParseShots(s string) Shots {
+	var ws Shots
 	s = strings.ToLower(s)
 	s = strings.ReplaceAll(s, " ", "")
 	s = strings.ReplaceAll(s, ",", "")
@@ -66,22 +63,22 @@ func ParseWeaponShots(s string) WeaponShots {
 }
 
 // MarshalJSONTo implements json.MarshalerTo.
-func (ws WeaponShots) MarshalJSONTo(enc *jsontext.Encoder) error {
+func (ws Shots) MarshalJSONTo(enc *jsontext.Encoder) error {
 	return json.MarshalEncode(enc, ws.String())
 }
 
 // UnmarshalJSONFrom implements json.UnmarshalerFrom.
-func (ws *WeaponShots) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
-	return jio.UnmarshalStringFromInfallible(dec, ws, ParseWeaponShots)
+func (ws *Shots) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
+	return jio.UnmarshalStringFromInfallible(dec, ws, ParseShots)
 }
 
 // IsZero reports whether json's omitzero option should omit this value.
-func (ws WeaponShots) IsZero() bool {
-	return ws == WeaponShots{}
+func (ws Shots) IsZero() bool {
+	return ws == Shots{}
 }
 
 // Hash writes this object's contents into the hasher.
-func (ws WeaponShots) Hash(h hash.Hash) {
+func (ws Shots) Hash(h hash.Hash) {
 	xhash.Num64(h, ws.Count)
 	xhash.Num64(h, ws.InChamber)
 	xhash.Num64(h, ws.Duration)
@@ -90,24 +87,9 @@ func (ws WeaponShots) Hash(h hash.Hash) {
 	xhash.Bool(h, ws.Thrown)
 }
 
-// Resolve any bonuses that apply.
-func (ws WeaponShots) Resolve(w *Weapon, modifiersTooltip *xbytes.InsertBuffer) WeaponShots {
-	result := ws
-	result.ReloadTimeIsPerShot = w.ResolveBoolFlag(wswitch.ReloadTimeIsPerShot, result.ReloadTimeIsPerShot)
-	result.Thrown = w.ResolveBoolFlag(wswitch.Thrown, result.Thrown)
-	adj := w.weaponAdjustments(w.baseDamageDieCount, modifiersTooltip, feature.WeaponNonChamberShotsBonus,
-		feature.WeaponChamberShotsBonus, feature.WeaponShotDurationBonus, feature.WeaponReloadTimeBonus)
-	result.Count = adj[feature.WeaponNonChamberShotsBonus].applyTo(result.Count)
-	result.InChamber = adj[feature.WeaponChamberShotsBonus].applyTo(result.InChamber)
-	result.Duration = adj[feature.WeaponShotDurationBonus].applyTo(result.Duration)
-	result.ReloadTime = adj[feature.WeaponReloadTimeBonus].applyTo(result.ReloadTime)
-	result.Validate()
-	return result
-}
-
 // String returns a string suitable for presentation, matching the standard GURPS weapon table entry format for this
-// data. Call .Resolve() prior to calling this method if you want the resolved values.
-func (ws WeaponShots) String() string {
+// data. Use the weapon's ResolvedShots method first if you want the resolved values.
+func (ws Shots) String() string {
 	var buffer strings.Builder
 	if ws.Thrown {
 		buffer.WriteByte('T')
@@ -137,9 +119,9 @@ func (ws WeaponShots) String() string {
 	return buffer.String()
 }
 
-// Tooltip returns a tooltip for the data, if any. Call .Resolve() prior to calling this method if you want the tooltip
+// Tooltip returns a tooltip for the data, if any. Use the weapon's ResolvedShots method first if you want the tooltip
 // to be based on the resolved values.
-func (ws WeaponShots) Tooltip() string {
+func (ws Shots) Tooltip() string {
 	if ws.ReloadTimeIsPerShot {
 		return i18n.Text("i: Reload time is per shot")
 	}
@@ -147,7 +129,7 @@ func (ws WeaponShots) Tooltip() string {
 }
 
 // Validate ensures that the data is valid.
-func (ws *WeaponShots) Validate() {
+func (ws *Shots) Validate() {
 	ws.ReloadTime = ws.ReloadTime.Max(0)
 	if ws.Thrown {
 		ws.Count = 0

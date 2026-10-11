@@ -7,7 +7,7 @@
 // This Source Code Form is "Incompatible With Secondary Licenses", as
 // defined by the Mozilla Public License, version 2.0.
 
-package gurps
+package attack
 
 import (
 	"encoding/json/jsontext"
@@ -16,24 +16,21 @@ import (
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
-	"github.com/richardwilkes/gcs/v5/model/gurps/enums/feature"
-	"github.com/richardwilkes/gcs/v5/model/gurps/enums/wswitch"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/toolbox/v2/i18n"
-	"github.com/richardwilkes/toolbox/v2/xbytes"
 	"github.com/richardwilkes/toolbox/v2/xhash"
 )
 
-// WeaponBulk holds the bulk data for a weapon.
-type WeaponBulk struct {
+// Bulk holds the bulk data for a weapon.
+type Bulk struct {
 	Normal          fxp.Int
 	Giant           fxp.Int
 	RetractingStock bool
 }
 
-// ParseWeaponBulk parses a string into a WeaponBulk.
-func ParseWeaponBulk(s string) WeaponBulk {
-	var wb WeaponBulk
+// ParseBulk parses a string into a Bulk.
+func ParseBulk(s string) Bulk {
+	var wb Bulk
 	s = strings.ReplaceAll(s, " ", "")
 	s = strings.ReplaceAll(s, ",", "")
 	wb.RetractingStock = strings.Contains(s, "*")
@@ -47,43 +44,30 @@ func ParseWeaponBulk(s string) WeaponBulk {
 }
 
 // IsZero reports whether json's omitzero option should omit this value.
-func (wb WeaponBulk) IsZero() bool {
-	return wb == WeaponBulk{}
+func (wb Bulk) IsZero() bool {
+	return wb == Bulk{}
 }
 
 // MarshalJSONTo implements json.MarshalerTo.
-func (wb WeaponBulk) MarshalJSONTo(enc *jsontext.Encoder) error {
+func (wb Bulk) MarshalJSONTo(enc *jsontext.Encoder) error {
 	return json.MarshalEncode(enc, wb.String())
 }
 
 // UnmarshalJSONFrom implements json.UnmarshalerFrom.
-func (wb *WeaponBulk) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
-	return jio.UnmarshalStringFromInfallible(dec, wb, ParseWeaponBulk)
+func (wb *Bulk) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
+	return jio.UnmarshalStringFromInfallible(dec, wb, ParseBulk)
 }
 
 // Hash writes this object's contents into the hasher.
-func (wb WeaponBulk) Hash(h hash.Hash) {
+func (wb Bulk) Hash(h hash.Hash) {
 	xhash.Num64(h, wb.Normal)
 	xhash.Num64(h, wb.Giant)
 	xhash.Bool(h, wb.RetractingStock)
 }
 
-// Resolve any bonuses that apply.
-func (wb WeaponBulk) Resolve(w *Weapon, modifiersTooltip *xbytes.InsertBuffer) WeaponBulk {
-	result := wb
-	result.RetractingStock = w.ResolveBoolFlag(wswitch.RetractingStock, result.RetractingStock)
-	adj := w.weaponAdjustment(w.baseDamageDieCount, modifiersTooltip, feature.WeaponBulkBonus)
-	result.Normal = adj.applyTo(result.Normal)
-	if wb.Giant != 0 { // 0 means there is no separate giant bulk, so don't let the bonuses materialize one.
-		result.Giant = adj.applyTo(result.Giant)
-	}
-	result.Validate()
-	return result
-}
-
 // String returns a string suitable for presentation, matching the standard GURPS weapon table entry format for this
-// data. Call .Resolve() prior to calling this method if you want the resolved values.
-func (wb WeaponBulk) String() string {
+// data. Use the weapon's ResolvedBulk method first if you want the resolved values.
+func (wb Bulk) String() string {
 	if wb.Normal >= 0 && wb.Giant >= 0 {
 		return ""
 	}
@@ -99,9 +83,10 @@ func (wb WeaponBulk) String() string {
 	return buffer.String()
 }
 
-// Tooltip returns a tooltip for the data, if any. Call .Resolve() prior to calling this method if you want the tooltip
-// to be based on the resolved values.
-func (wb WeaponBulk) Tooltip(w *Weapon) string {
+// Tooltip returns a tooltip for the data, if any. Use the weapon's ResolvedBulk method first if you want the tooltip to
+// be based on the resolved values. accuracy, recoil and strength are the weapon's resolved values, which the
+// folded-stock figures are derived from.
+func (wb Bulk) Tooltip(accuracy Accuracy, recoil Recoil, strength Strength) string {
 	if !wb.RetractingStock {
 		return ""
 	}
@@ -112,10 +97,8 @@ func (wb WeaponBulk) Tooltip(w *Weapon) string {
 		wb.Giant += fxp.One
 	}
 	wb.Validate()
-	accuracy := w.Accuracy.Resolve(w, nil)
 	accuracy.Base -= fxp.One
 	accuracy.Validate()
-	recoil := w.Recoil.Resolve(w, nil)
 	if recoil.Shot > fxp.One {
 		recoil.Shot += fxp.One
 	}
@@ -123,7 +106,7 @@ func (wb WeaponBulk) Tooltip(w *Weapon) string {
 		recoil.Slug += fxp.One
 	}
 	recoil.Validate()
-	minST := w.Strength.Resolve(w, nil)
+	minST := strength
 	minST.Min = minST.Min.Mul(fxp.OnePointTwo).Ceil()
 	minST.Validate()
 	return i18n.Text("*: Has a retracting stock. With the stock folded, the weapon's stats change to Bulk %s, Accuracy %s, Recoil %s, and minimum ST %s. Folding or unfolding the stock takes one Ready maneuver.",
@@ -131,7 +114,7 @@ func (wb WeaponBulk) Tooltip(w *Weapon) string {
 }
 
 // Validate ensures that the data is valid.
-func (wb *WeaponBulk) Validate() {
+func (wb *Bulk) Validate() {
 	wb.Normal = wb.Normal.Min(0)
 	wb.Giant = wb.Giant.Min(0)
 }

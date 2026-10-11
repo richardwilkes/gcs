@@ -24,6 +24,7 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/model/gurps/attack"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/encumbrance"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/frequency"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/selfctrl"
@@ -41,13 +42,13 @@ type exportedMeleeWeapon struct {
 	Level         fxp.Int
 	Damage        string
 	Parry         string
-	ParryParts    gurps.WeaponParry
+	ParryParts    attack.Parry
 	Block         string
-	BlockParts    gurps.WeaponBlock
+	BlockParts    attack.Block
 	Reach         string
-	ReachParts    gurps.WeaponReach
+	ReachParts    attack.Reach
 	Strength      string
-	StrengthParts gurps.WeaponStrength
+	StrengthParts attack.Strength
 }
 
 type exportedRangedWeapon struct {
@@ -56,20 +57,20 @@ type exportedRangedWeapon struct {
 	Usage           string
 	Level           fxp.Int
 	Accuracy        string
-	AccuracyParts   gurps.WeaponAccuracy
+	AccuracyParts   attack.Accuracy
 	Range           string
-	RangeParts      gurps.WeaponRange
+	RangeParts      attack.Range
 	Damage          string
 	RateOfFire      string
-	RateOfFireParts gurps.WeaponRoF
+	RateOfFireParts attack.RoF
 	Shots           string
-	ShotsParts      gurps.WeaponShots
+	ShotsParts      attack.Shots
 	Bulk            string
-	BulkParts       gurps.WeaponBulk
+	BulkParts       attack.Bulk
 	Recoil          string
-	RecoilParts     gurps.WeaponRecoil
+	RecoilParts     attack.Recoil
 	Strength        string
-	StrengthParts   gurps.WeaponStrength
+	StrengthParts   attack.Strength
 }
 
 type exportedHitLocation struct {
@@ -652,10 +653,10 @@ func export(entity *gurps.Entity, tmpl exporter, exportPath string) (err error) 
 		return false
 	}, true, false, entity.Notes...)
 	for _, w := range entity.Weapons(true, entity.SheetSettings.ShowAllWeapons, true) {
-		weaponST := w.Strength.Resolve(w, nil)
-		parry := w.Parry.Resolve(w, nil)
-		block := w.Block.Resolve(w, nil)
-		reach := w.Reach.Resolve(w, nil)
+		weaponST := w.ResolvedStrength(nil)
+		parry := w.ResolvedParry(nil)
+		block := w.ResolvedBlock(nil)
+		reach := w.ResolvedReach(nil)
 		data.MeleeWeapons = append(data.MeleeWeapons, &exportedMeleeWeapon{
 			Description:   w.String(),
 			Notes:         w.Notes(),
@@ -673,13 +674,13 @@ func export(entity *gurps.Entity, tmpl exporter, exportPath string) (err error) 
 		})
 	}
 	for _, w := range entity.Weapons(false, entity.SheetSettings.ShowAllWeapons, true) {
-		accuracy := w.Accuracy.Resolve(w, nil)
-		weaponRange := w.Range.Resolve(w, nil)
-		rof := w.RateOfFire.Resolve(w, nil)
-		shots := w.Shots.Resolve(w, nil)
-		bulk := w.Bulk.Resolve(w, nil)
-		recoil := w.Recoil.Resolve(w, nil)
-		weaponST := w.Strength.Resolve(w, nil)
+		accuracy := w.ResolvedAccuracy(nil)
+		weaponRange := w.ResolvedRange(nil)
+		rof := w.ResolvedRateOfFire(nil)
+		shots := w.ResolvedShots(nil)
+		bulk := w.ResolvedBulk(nil)
+		recoil := w.ResolvedRecoil(nil)
+		weaponST := w.ResolvedStrength(nil)
 		data.RangedWeapons = append(data.RangedWeapons, &exportedRangedWeapon{
 			Description:     w.String(),
 			Notes:           w.Notes(),

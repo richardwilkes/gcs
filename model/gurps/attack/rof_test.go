@@ -7,27 +7,27 @@
 // This Source Code Form is "Incompatible With Secondary Licenses", as
 // defined by the Mozilla Public License, version 2.0.
 
-package gurps_test
+package attack_test
 
 import (
 	"slices"
 	"testing"
 
-	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/model/gurps/attack"
 	"github.com/richardwilkes/toolbox/v2/check"
 )
 
 func parseRoF(s string) string {
-	return gurps.ParseWeaponRoF(s).String()
+	return attack.ParseRoF(s).String()
 }
 
-// TestWeaponRoF verifies that a single-mode rate of fire parses exactly as a mode does, and accepts "Jet" besides.
-func TestWeaponRoF(t *testing.T) {
-	checkWeaponFieldParsing(check.New(t), parseRoF, append(slices.Clone(rofModeSameTests), "Jet"),
+// TestRoF verifies that a single-mode rate of fire parses exactly as a mode does, and accepts "Jet" besides.
+func TestRoF(t *testing.T) {
+	checkFieldParsing(check.New(t), parseRoF, append(slices.Clone(rofModeSameTests), "Jet"),
 		rofModeAdjustedTests)
 }
 
-func TestWeaponRoFMultiMode(t *testing.T) {
+func TestRoFMultiMode(t *testing.T) {
 	cases := make([]parseCase, 0, len(rofModeSameTests)*len(rofModeAdjustedTests))
 	for _, c1 := range rofModeSameTests {
 		if c1 != "" {
@@ -52,5 +52,5 @@ func TestWeaponRoFMultiMode(t *testing.T) {
 			expected: "1",
 		},
 	)
-	checkWeaponFieldParsing(check.New(t), parseRoF, nil, cases)
+	checkFieldParsing(check.New(t), parseRoF, nil, cases)
 }

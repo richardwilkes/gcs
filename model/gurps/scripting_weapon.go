@@ -41,21 +41,21 @@ func newScriptWeapon(r *goja.Runtime, w *Weapon) *goja.Object {
 	m["usageNotes"] = func() goja.Value { return r.ToValue(w.ResolveUsageNotes()) }
 	m["level"] = func() goja.Value { return r.ToValue(w.SkillLevel(nil).Max(0).AsInteger[int]()) }
 	m["damage"] = func() goja.Value { return r.ToValue(w.Damage.ResolvedDamage(nil)) }
-	m["strength"] = func() goja.Value { return r.ToValue(w.Strength.Resolve(w, nil).String()) }
+	m["strength"] = func() goja.Value { return r.ToValue(w.ResolvedStrength(nil).String()) }
 	m["hidden"] = func() goja.Value { return r.ToValue(w.Hide) }
 	if w.IsMelee() {
 		m["kind"] = func() goja.Value { return r.ToValue("melee") }
-		m["block"] = func() goja.Value { return r.ToValue(w.Block.Resolve(w, nil).String()) }
-		m["parry"] = func() goja.Value { return r.ToValue(w.Parry.Resolve(w, nil).String()) }
-		m["reach"] = func() goja.Value { return r.ToValue(w.Reach.Resolve(w, nil).String()) }
+		m["block"] = func() goja.Value { return r.ToValue(w.ResolvedBlock(nil).String()) }
+		m["parry"] = func() goja.Value { return r.ToValue(w.ResolvedParry(nil).String()) }
+		m["reach"] = func() goja.Value { return r.ToValue(w.ResolvedReach(nil).String()) }
 	} else {
 		m["kind"] = func() goja.Value { return r.ToValue("ranged") }
-		m["accuracy"] = func() goja.Value { return r.ToValue(w.Accuracy.Resolve(w, nil).String()) }
-		m["bulk"] = func() goja.Value { return r.ToValue(w.Bulk.Resolve(w, nil).String()) }
-		m["range"] = func() goja.Value { return r.ToValue(w.Range.Resolve(w, nil).String(w.musclePowerIsResolved())) }
-		m["rateOfFire"] = func() goja.Value { return r.ToValue(w.RateOfFire.Resolve(w, nil).String()) }
-		m["recoil"] = func() goja.Value { return r.ToValue(w.Recoil.Resolve(w, nil).String()) }
-		m["shots"] = func() goja.Value { return r.ToValue(w.Shots.Resolve(w, nil).String()) }
+		m["accuracy"] = func() goja.Value { return r.ToValue(w.ResolvedAccuracy(nil).String()) }
+		m["bulk"] = func() goja.Value { return r.ToValue(w.ResolvedBulk(nil).String()) }
+		m["range"] = func() goja.Value { return r.ToValue(w.ResolvedRange(nil).String(w.musclePowerIsResolved())) }
+		m["rateOfFire"] = func() goja.Value { return r.ToValue(w.ResolvedRateOfFire(nil).String()) }
+		m["recoil"] = func() goja.Value { return r.ToValue(w.ResolvedRecoil(nil).String()) }
+		m["shots"] = func() goja.Value { return r.ToValue(w.ResolvedShots(nil).String()) }
 	}
 	return r.NewDynamicObject(NewScriptObject(r, m))
 }

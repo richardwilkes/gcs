@@ -34,6 +34,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/traitsel"
 	"github.com/richardwilkes/gcs/v5/model/kinds"
 	"github.com/richardwilkes/gcs/v5/model/nameable"
+	"github.com/richardwilkes/gcs/v5/model/txtutil"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/toolbox/v2/tid"
 	"github.com/richardwilkes/toolbox/v2/xbytes"
@@ -1173,11 +1174,11 @@ func (t *Trait) SecondaryText(optionChecker func(display.Option) bool) string {
 		}
 	}
 	if optionChecker(settings.ModifiersDisplay) {
-		AppendStringOntoNewLine(&buffer, t.ModifierNotes())
+		txtutil.AppendStringOntoNewLine(&buffer, t.ModifierNotes())
 	}
 	if optionChecker(settings.NotesDisplay) {
-		AppendStringOntoNewLine(&buffer, strings.TrimSpace(t.Notes()))
-		AppendStringOntoNewLine(&buffer, StudyHoursProgressText(ResolveStudyHours(t.Study), t.StudyHoursNeeded, false))
+		txtutil.AppendStringOntoNewLine(&buffer, strings.TrimSpace(t.Notes()))
+		txtutil.AppendStringOntoNewLine(&buffer, StudyHoursProgressText(ResolveStudyHours(t.Study), t.StudyHoursNeeded, false))
 	}
 	return buffer.String()
 }

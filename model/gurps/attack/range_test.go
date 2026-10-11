@@ -7,17 +7,17 @@
 // This Source Code Form is "Incompatible With Secondary Licenses", as
 // defined by the Mozilla Public License, version 2.0.
 
-package gurps_test
+package attack_test
 
 import (
 	"testing"
 
-	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/model/gurps/attack"
 	"github.com/richardwilkes/toolbox/v2/check"
 )
 
-func TestWeaponRange(t *testing.T) {
-	parse := func(s string) string { return gurps.ParseWeaponRange(s).String(false) }
+func TestRange(t *testing.T) {
+	parse := func(s string) string { return attack.ParseRange(s).String(false) }
 	same := []string{
 		"",
 		"1",
@@ -62,5 +62,5 @@ func TestWeaponRange(t *testing.T) {
 		{"spec.", ""},
 		{"x0.5/x0.5", "x0.5"},
 	}
-	checkWeaponFieldParsing(check.New(t), parse, same, adjusted)
+	checkFieldParsing(check.New(t), parse, same, adjusted)
 }

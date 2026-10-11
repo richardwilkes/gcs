@@ -7,7 +7,7 @@
 // This Source Code Form is "Incompatible With Secondary Licenses", as
 // defined by the Mozilla Public License, version 2.0.
 
-package gurps
+package attack
 
 import (
 	"fmt"
@@ -15,24 +15,22 @@ import (
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
-	"github.com/richardwilkes/gcs/v5/model/gurps/enums/feature"
-	"github.com/richardwilkes/gcs/v5/model/gurps/enums/wswitch"
+	"github.com/richardwilkes/gcs/v5/model/txtutil"
 	"github.com/richardwilkes/toolbox/v2/i18n"
-	"github.com/richardwilkes/toolbox/v2/xbytes"
 	"github.com/richardwilkes/toolbox/v2/xhash"
 )
 
-// WeaponRoFMode holds the rate of fire data for one firing mode of a weapon.
-type WeaponRoFMode struct {
+// RoFMode holds the rate of fire data for one firing mode of a weapon.
+type RoFMode struct {
 	ShotsPerAttack             fxp.Int
 	SecondaryProjectiles       fxp.Int
 	FullAutoOnly               bool
 	HighCyclicControlledBursts bool
 }
 
-// ParseWeaponRoFMode parses a string into a WeaponRoFMode.
-func ParseWeaponRoFMode(s string) WeaponRoFMode {
-	var wr WeaponRoFMode
+// ParseRoFMode parses a string into a RoFMode.
+func ParseRoFMode(s string) RoFMode {
+	var wr RoFMode
 	s = strings.ReplaceAll(s, " ", "")
 	s = strings.ToLower(s)
 	s = strings.ReplaceAll(s, ".", "x")
@@ -54,38 +52,16 @@ func ParseWeaponRoFMode(s string) WeaponRoFMode {
 }
 
 // Hash writes this object's contents into the hasher.
-func (wr WeaponRoFMode) Hash(h hash.Hash) {
+func (wr RoFMode) Hash(h hash.Hash) {
 	xhash.Num64(h, wr.ShotsPerAttack)
 	xhash.Num64(h, wr.SecondaryProjectiles)
 	xhash.Bool(h, wr.FullAutoOnly)
 	xhash.Bool(h, wr.HighCyclicControlledBursts)
 }
 
-// Resolve any bonuses that apply.
-func (wr WeaponRoFMode) Resolve(w *Weapon, modifiersTooltip *xbytes.InsertBuffer, firstMode bool) WeaponRoFMode {
-	result := wr
-	var shotsFeature, secondaryFeature feature.Type
-	if firstMode {
-		shotsFeature = feature.WeaponRofMode1ShotsBonus
-		secondaryFeature = feature.WeaponRofMode1SecondaryBonus
-		result.FullAutoOnly = w.ResolveBoolFlag(wswitch.FullAuto1, wr.FullAutoOnly)
-		result.HighCyclicControlledBursts = w.ResolveBoolFlag(wswitch.ControlledBursts1, wr.HighCyclicControlledBursts)
-	} else {
-		shotsFeature = feature.WeaponRofMode2ShotsBonus
-		secondaryFeature = feature.WeaponRofMode2SecondaryBonus
-		result.FullAutoOnly = w.ResolveBoolFlag(wswitch.FullAuto2, wr.FullAutoOnly)
-		result.HighCyclicControlledBursts = w.ResolveBoolFlag(wswitch.ControlledBursts2, wr.HighCyclicControlledBursts)
-	}
-	adj := w.weaponAdjustments(w.baseDamageDieCount, modifiersTooltip, shotsFeature, secondaryFeature)
-	result.ShotsPerAttack = adj[shotsFeature].applyTo(result.ShotsPerAttack)
-	result.SecondaryProjectiles = adj[secondaryFeature].applyTo(result.SecondaryProjectiles)
-	result.Validate()
-	return result
-}
-
 // String returns a string suitable for presentation, matching the standard GURPS weapon table entry format for this
-// data. Call .Resolve() prior to calling this method if you want the resolved values.
-func (wr WeaponRoFMode) String() string {
+// data. Use the weapon's ResolvedRateOfFire method first if you want the resolved values.
+func (wr RoFMode) String() string {
 	if wr.ShotsPerAttack <= 0 {
 		return ""
 	}
@@ -104,9 +80,9 @@ func (wr WeaponRoFMode) String() string {
 	return buffer.String()
 }
 
-// Tooltip returns a tooltip for the data, if any. Call .Resolve() prior to calling this method if you want the tooltip
-// to be based on the resolved values.
-func (wr WeaponRoFMode) Tooltip() string {
+// Tooltip returns a tooltip for the data, if any. Use the weapon's ResolvedRateOfFire method first if you want the
+// tooltip to be based on the resolved values.
+func (wr RoFMode) Tooltip() string {
 	if wr.ShotsPerAttack <= 0 || (wr.SecondaryProjectiles <= 0 && !wr.FullAutoOnly && !wr.HighCyclicControlledBursts) {
 		return ""
 	}
@@ -123,16 +99,16 @@ func (wr WeaponRoFMode) Tooltip() string {
 		fmt.Fprintf(&buffer, i18n.Text("This weapon fires %v %s per attack and each shot releases %v smaller %s."), wr.ShotsPerAttack, shotsText, wr.SecondaryProjectiles, projectilesText)
 	}
 	if wr.FullAutoOnly {
-		AppendStringOntoNewLine(&buffer, i18n.Text("!: This weapon can only fire on full automatic. Minimum RoF is %v.", wr.ShotsPerAttack.Div(fxp.Four).Ceil()))
+		txtutil.AppendStringOntoNewLine(&buffer, i18n.Text("!: This weapon can only fire on full automatic. Minimum RoF is %v.", wr.ShotsPerAttack.Div(fxp.Four).Ceil()))
 	}
 	if wr.HighCyclicControlledBursts {
-		AppendStringOntoNewLine(&buffer, i18n.Text("#: This weapon can fire in high cyclic controlled bursts, reducing Recoil to 1."))
+		txtutil.AppendStringOntoNewLine(&buffer, i18n.Text("#: This weapon can fire in high cyclic controlled bursts, reducing Recoil to 1."))
 	}
 	return buffer.String()
 }
 
 // Validate ensures that the data is valid.
-func (wr *WeaponRoFMode) Validate() {
+func (wr *RoFMode) Validate() {
 	wr.ShotsPerAttack = wr.ShotsPerAttack.Ceil().Max(0)
 	if wr.ShotsPerAttack == 0 {
 		wr.SecondaryProjectiles = 0

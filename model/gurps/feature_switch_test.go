@@ -17,6 +17,7 @@ import (
 
 	"github.com/dop251/goja"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
+	"github.com/richardwilkes/gcs/v5/model/gurps/attack"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/cell"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/equipmentsel"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/feature"
@@ -622,17 +623,17 @@ func TestSwitchableWeaponLocalBonuses(t *testing.T) {
 
 	trait := addTraitWithFeatures(e, "Gadget", accBonus, skillBonus)
 	w := NewWeapon(trait, false)
-	w.Accuracy = ParseWeaponAccuracy("3")
+	w.Accuracy = attack.ParseAccuracy("3")
 	w.Defaults = []*SkillDefault{{DefaultType: DexterityID}}
 	trait.Weapons = []*Weapon{w}
 	e.Recalculate()
 
-	c.Equal("3", w.Accuracy.Resolve(w, nil).String(), "a switchable weapon bonus is ignored while the switch is off")
+	c.Equal("3", w.ResolvedAccuracy(nil).String(), "a switchable weapon bonus is ignored while the switch is off")
 	c.Equal(fxp.Ten, w.SkillLevel(nil), "a switchable skill bonus is ignored while the switch is off")
 
 	trait.SetSwitchedOn(true)
 	e.Recalculate()
-	c.Equal("5", w.Accuracy.Resolve(w, nil).String(), "a switchable weapon bonus applies while the switch is on")
+	c.Equal("5", w.ResolvedAccuracy(nil).String(), "a switchable weapon bonus applies while the switch is on")
 	c.Equal(fxp.Twelve, w.SkillLevel(nil), "a switchable skill bonus applies while the switch is on")
 }
 
@@ -653,15 +654,15 @@ func TestSwitchableWeaponBonusFromModifier(t *testing.T) {
 	mod.Features = Features{accBonus}
 	trait.Modifiers = []*TraitModifier{mod}
 	w := NewWeapon(trait, false)
-	w.Accuracy = ParseWeaponAccuracy("3")
+	w.Accuracy = attack.ParseAccuracy("3")
 	trait.Weapons = []*Weapon{w}
 	e.Recalculate()
 
-	c.Equal("3", w.Accuracy.Resolve(w, nil).String(),
+	c.Equal("3", w.ResolvedAccuracy(nil).String(),
 		"a modifier's switchable weapon bonus is ignored while the trait's switch is off")
 	trait.SetSwitchedOn(true)
 	e.Recalculate()
-	c.Equal("5", w.Accuracy.Resolve(w, nil).String(),
+	c.Equal("5", w.ResolvedAccuracy(nil).String(),
 		"a modifier's switchable weapon bonus applies while the trait's switch is on")
 }
 

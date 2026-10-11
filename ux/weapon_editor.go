@@ -14,6 +14,7 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/model/gurps/attack"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/stdmg"
 	"github.com/richardwilkes/gcs/v5/model/nameable"
 	"github.com/richardwilkes/toolbox/v2/i18n"
@@ -167,7 +168,7 @@ func (we *weaponEditor) addDamageBlock(w *gurps.Weapon, content *unison.Panel) {
 	var fragArmorDivisor *DecimalField
 	var fragType *StringField
 	// A fragmentation armor divisor and type apply only to fragmentation dice of the weapon's own and are dropped
-	// without them (see gurps.WeaponDamageData.Normalize), so their fields are only usable once there are some.
+	// without them (see attack.DamageData.Normalize), so their fields are only usable once there are some.
 	adjustFragFields := func() {
 		enabled := damage.Fragmentation != ""
 		fragArmorDivisor.SetEnabled(enabled)
@@ -251,7 +252,7 @@ func (we *weaponEditor) addRateOfFireBlock(w *gurps.Weapon, content *unison.Pane
 	we.addRateOfFireModeBlock(content, &rof.Mode2, 2)
 }
 
-func (we *weaponEditor) addRateOfFireModeBlock(content *unison.Panel, mode *gurps.WeaponRoFMode, modeNum int) {
+func (we *weaponEditor) addRateOfFireModeBlock(content *unison.Panel, mode *attack.RoFMode, modeNum int) {
 	var wrapper *unison.Panel
 	if modeNum == 1 {
 		wrapper, _ = addFlowWrapper(content, i18n.Text("Rate of Fire"), 5)

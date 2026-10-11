@@ -22,6 +22,7 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/criteria"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
+	"github.com/richardwilkes/gcs/v5/model/gurps/attack"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/cell"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/feature"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/selector"
@@ -31,6 +32,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/wswitch"
 	"github.com/richardwilkes/gcs/v5/model/kinds"
 	"github.com/richardwilkes/gcs/v5/model/nameable"
+	"github.com/richardwilkes/gcs/v5/model/txtutil"
 	"github.com/richardwilkes/toolbox/v2/errs"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/toolbox/v2/tid"
@@ -83,18 +85,18 @@ type WeaponData struct {
 	TID        tid.TID         `json:"id"`
 	SubVersion int             `json:"sv"`
 	Damage     WeaponDamage    `json:"damage"`
-	Strength   WeaponStrength  `json:"strength,omitzero"`
+	Strength   attack.Strength `json:"strength,omitzero"`
 	Usage      string          `json:"usage,omitzero"`
 	UsageNotes string          `json:"usage_notes,omitzero"`
-	Reach      WeaponReach     `json:"reach,omitzero"`
-	Parry      WeaponParry     `json:"parry,omitzero"`
-	Block      WeaponBlock     `json:"block,omitzero"`
-	Accuracy   WeaponAccuracy  `json:"accuracy,omitzero"`
-	Range      WeaponRange     `json:"range,omitzero"`
-	RateOfFire WeaponRoF       `json:"rate_of_fire,omitzero"`
-	Shots      WeaponShots     `json:"shots,omitzero"`
-	Bulk       WeaponBulk      `json:"bulk,omitzero"`
-	Recoil     WeaponRecoil    `json:"recoil,omitzero"`
+	Reach      attack.Reach    `json:"reach,omitzero"`
+	Parry      attack.Parry    `json:"parry,omitzero"`
+	Block      attack.Block    `json:"block,omitzero"`
+	Accuracy   attack.Accuracy `json:"accuracy,omitzero"`
+	Range      attack.Range    `json:"range,omitzero"`
+	RateOfFire attack.RoF      `json:"rate_of_fire,omitzero"`
+	Shots      attack.Shots    `json:"shots,omitzero"`
+	Bulk       attack.Bulk     `json:"bulk,omitzero"`
+	Recoil     attack.Recoil   `json:"recoil,omitzero"`
 	Defaults   []*SkillDefault `json:"defaults,omitempty"`
 	Hide       bool            `json:"hide,omitzero"`
 }
@@ -225,18 +227,18 @@ func (w *Weapon) HashDisplayedState() uint64 {
 	xhash.StringWithLen(h, w.UsageWithReplacements())
 	xhash.Num64(h, w.SkillLevel(nil))
 	xhash.StringWithLen(h, w.Damage.ResolvedDamage(nil))
-	xhash.StringWithLen(h, w.Strength.Resolve(w, nil).String())
+	xhash.StringWithLen(h, w.ResolvedStrength(nil).String())
 	if w.IsMelee() {
-		xhash.StringWithLen(h, w.Parry.Resolve(w, nil).String())
-		xhash.StringWithLen(h, w.Block.Resolve(w, nil).String())
-		xhash.StringWithLen(h, w.Reach.Resolve(w, nil).String())
+		xhash.StringWithLen(h, w.ResolvedParry(nil).String())
+		xhash.StringWithLen(h, w.ResolvedBlock(nil).String())
+		xhash.StringWithLen(h, w.ResolvedReach(nil).String())
 	} else {
-		xhash.StringWithLen(h, w.Accuracy.Resolve(w, nil).String())
-		xhash.StringWithLen(h, w.Range.Resolve(w, nil).String(w.musclePowerIsResolved()))
-		xhash.StringWithLen(h, w.RateOfFire.Resolve(w, nil).String())
-		xhash.StringWithLen(h, w.Shots.Resolve(w, nil).String())
-		xhash.StringWithLen(h, w.Bulk.Resolve(w, nil).String())
-		xhash.StringWithLen(h, w.Recoil.Resolve(w, nil).String())
+		xhash.StringWithLen(h, w.ResolvedAccuracy(nil).String())
+		xhash.StringWithLen(h, w.ResolvedRange(nil).String(w.musclePowerIsResolved()))
+		xhash.StringWithLen(h, w.ResolvedRateOfFire(nil).String())
+		xhash.StringWithLen(h, w.ResolvedShots(nil).String())
+		xhash.StringWithLen(h, w.ResolvedBulk(nil).String())
+		xhash.StringWithLen(h, w.ResolvedRecoil(nil).String())
 	}
 	return h.Sum64()
 }
@@ -286,52 +288,52 @@ func (w *Weapon) MarshalJSONTo(enc *jsontext.Encoder) error {
 	// whether or not the derived values are wanted.
 	melee := w.IsMelee()
 	if melee {
-		data.Accuracy = WeaponAccuracy{}
-		data.Range = WeaponRange{}
-		data.RateOfFire = WeaponRoF{}
-		data.Shots = WeaponShots{}
-		data.Bulk = WeaponBulk{}
-		data.Recoil = WeaponRecoil{}
+		data.Accuracy = attack.Accuracy{}
+		data.Range = attack.Range{}
+		data.RateOfFire = attack.RoF{}
+		data.Shots = attack.Shots{}
+		data.Bulk = attack.Bulk{}
+		data.Recoil = attack.Recoil{}
 	} else {
-		data.Parry = WeaponParry{}
-		data.Block = WeaponBlock{}
-		data.Reach = WeaponReach{}
+		data.Parry = attack.Parry{}
+		data.Block = attack.Block{}
+		data.Reach = attack.Reach{}
 	}
 	return marshalNodeData(enc, &data, func() *calc {
 		c := &calc{
 			Level:  w.SkillLevel(nil).Max(0),
 			Damage: w.Damage.ResolvedDamage(nil),
 		}
-		if c.Strength = w.Strength.Resolve(w, nil).String(); c.Strength == w.Strength.String() {
+		if c.Strength = w.ResolvedStrength(nil).String(); c.Strength == w.Strength.String() {
 			c.Strength = ""
 		}
 		if melee {
-			if c.Parry = w.Parry.Resolve(w, nil).String(); c.Parry == w.Parry.String() {
+			if c.Parry = w.ResolvedParry(nil).String(); c.Parry == w.Parry.String() {
 				c.Parry = ""
 			}
-			if c.Block = w.Block.Resolve(w, nil).String(); c.Block == w.Block.String() {
+			if c.Block = w.ResolvedBlock(nil).String(); c.Block == w.Block.String() {
 				c.Block = ""
 			}
-			if c.Reach = w.Reach.Resolve(w, nil).String(); c.Reach == w.Reach.String() {
+			if c.Reach = w.ResolvedReach(nil).String(); c.Reach == w.Reach.String() {
 				c.Reach = ""
 			}
 		} else {
-			if c.Accuracy = w.Accuracy.Resolve(w, nil).String(); c.Accuracy == w.Accuracy.String() {
+			if c.Accuracy = w.ResolvedAccuracy(nil).String(); c.Accuracy == w.Accuracy.String() {
 				c.Accuracy = ""
 			}
-			if c.Range = w.Range.Resolve(w, nil).String(w.musclePowerIsResolved()); c.Range == w.Range.String(false) {
+			if c.Range = w.ResolvedRange(nil).String(w.musclePowerIsResolved()); c.Range == w.Range.String(false) {
 				c.Range = ""
 			}
-			if c.RateOfFire = w.RateOfFire.Resolve(w, nil).String(); c.RateOfFire == w.RateOfFire.String() {
+			if c.RateOfFire = w.ResolvedRateOfFire(nil).String(); c.RateOfFire == w.RateOfFire.String() {
 				c.RateOfFire = ""
 			}
-			if c.Shots = w.Shots.Resolve(w, nil).String(); c.Shots == w.Shots.String() {
+			if c.Shots = w.ResolvedShots(nil).String(); c.Shots == w.Shots.String() {
 				c.Shots = ""
 			}
-			if c.Bulk = w.Bulk.Resolve(w, nil).String(); c.Bulk == w.Bulk.String() {
+			if c.Bulk = w.ResolvedBulk(nil).String(); c.Bulk == w.Bulk.String() {
 				c.Bulk = ""
 			}
-			if c.Recoil = w.Recoil.Resolve(w, nil).String(); c.Recoil == w.Recoil.String() {
+			if c.Recoil = w.ResolvedRecoil(nil).String(); c.Recoil == w.Recoil.String() {
 				c.Recoil = ""
 			}
 		}
@@ -343,7 +345,7 @@ func (w *Weapon) MarshalJSONTo(enc *jsontext.Encoder) error {
 }
 
 func (w *Weapon) musclePowerIsResolved() bool {
-	return w.Entity() != nil || (w.Owner != nil && w.Owner.RatedStrength() > 0)
+	return w.Entity() != nil || w.ratedStrength() > 0
 }
 
 // UnmarshalJSONFrom implements json.UnmarshalerFrom.
@@ -412,10 +414,10 @@ func (w *Weapon) Notes() string {
 	var buffer strings.Builder
 	w.forEachOwnerModifier(func(mod ownerModifier, _ Features) {
 		if mod.ShowsNotesOnWeapon() {
-			AppendStringOntoNewLine(&buffer, strings.TrimSpace(mod.ResolveLocalNotes()))
+			txtutil.AppendStringOntoNewLine(&buffer, strings.TrimSpace(mod.ResolveLocalNotes()))
 		}
 	})
-	AppendStringOntoNewLine(&buffer, strings.TrimSpace(w.ResolveUsageNotes()))
+	txtutil.AppendStringOntoNewLine(&buffer, strings.TrimSpace(w.ResolveUsageNotes()))
 	return buffer.String()
 }
 
@@ -488,17 +490,14 @@ func (w *Weapon) Entity() *Entity {
 // the entity's ST as chosen by defaultST (0 when there is no entity). The weapon's effective ST bonuses are then
 // applied, explained in tooltip when it is not nil, and the result is capped at three times the weapon's minimum ST.
 func (w *Weapon) effectiveStrength(defaultST func(entity *Entity) fxp.Int, tooltip *xbytes.InsertBuffer) fxp.Int {
-	var st fxp.Int
-	if w.Owner != nil {
-		st = w.Owner.RatedStrength()
-	}
+	st := w.ratedStrength()
 	if st == 0 {
 		if entity := w.Entity(); entity != nil {
 			st = defaultST(entity)
 		}
 	}
 	st = max(w.weaponAdjustment(oneDieCount, tooltip, feature.WeaponEffectiveSTBonus).applyTo(st), 0)
-	if maxST := w.Strength.Resolve(w, nil).Min.Mul(fxp.Three); maxST > 0 && maxST < st {
+	if maxST := w.ResolvedStrength(nil).Min.Mul(fxp.Three); maxST > 0 && maxST < st {
 		st = maxST
 	}
 	return st
@@ -532,7 +531,7 @@ func (w *Weapon) SkillLevel(tooltip *xbytes.InsertBuffer) fxp.Int {
 	if best == fxp.Min {
 		return 0
 	}
-	AppendBufferOntoNewLine(tooltip, primaryTooltip)
+	txtutil.AppendBufferOntoNewLine(tooltip, primaryTooltip)
 	if best < 0 {
 		best = 0
 	}
@@ -560,7 +559,7 @@ func (w *Weapon) usesCrossbowSkill(e *Entity) bool {
 
 func (w *Weapon) skillLevelBaseAdjustment(e *Entity, tooltip *xbytes.InsertBuffer) fxp.Int {
 	var adj fxp.Int
-	minST := w.Strength.Resolve(w, nil).Min
+	minST := w.ResolvedStrength(nil).Min
 	switch w.Damage.resolvedStrengthType(nil) {
 	case stdmg.TelekineticThrust, stdmg.TelekineticSwing:
 		minST -= e.TelekineticStrength()
@@ -601,7 +600,7 @@ func (w *Weapon) skillLevelBaseAdjustment(e *Entity, tooltip *xbytes.InsertBuffe
 
 func (w *Weapon) skillLevelPostAdjustment(e *Entity, tooltip *xbytes.InsertBuffer) fxp.Int {
 	if w.IsMelee() &&
-		// Cannot use w.Parry.Resolve() here, because it ends up calling this
+		// Cannot use w.ResolvedParry() here, because it ends up calling this
 		w.ResolveBoolFlag(wswitch.CanParry, w.Parry.CanParry) &&
 		w.ResolveBoolFlag(wswitch.Fencing, w.Parry.Fencing) {
 		return w.EncumbrancePenalty(e, tooltip)
@@ -651,8 +650,8 @@ func (w *Weapon) resolveDefenseModifier(entity *Entity, modifiersTooltip *xbytes
 	if best == fxp.Min {
 		return 0
 	}
-	AppendBufferOntoNewLine(modifiersTooltip, primaryTooltip)
-	AppendStringOntoNewLine(modifiersTooltip, defenseBonusTooltip)
+	txtutil.AppendBufferOntoNewLine(modifiersTooltip, primaryTooltip)
+	txtutil.AppendStringOntoNewLine(modifiersTooltip, defenseBonusTooltip)
 	adj := w.weaponAdjustment(w.baseDamageDieCount, modifiersTooltip, bonusType)
 	return adj.applyTo(current + best).Max(0).Floor()
 }
@@ -1014,39 +1013,39 @@ func (w *Weapon) CellData(columnID int, data *CellData) {
 	case WeaponSLColumn:
 		data.Primary = w.SkillLevel(&buffer).String()
 	case WeaponParryColumn:
-		parry := w.Parry.Resolve(w, &buffer)
+		parry := w.ResolvedParry(&buffer)
 		data.Primary = parry.String()
 		data.Tooltip = parry.Tooltip()
 	case WeaponBlockColumn:
-		data.Primary = w.Block.Resolve(w, &buffer).String()
+		data.Primary = w.ResolvedBlock(&buffer).String()
 	case WeaponDamageColumn:
 		data.Primary = w.Damage.ResolvedDamage(&buffer)
 	case WeaponReachColumn:
-		reach := w.Reach.Resolve(w, &buffer)
+		reach := w.ResolvedReach(&buffer)
 		data.Primary = reach.String()
 		data.Tooltip = reach.Tooltip()
 	case WeaponSTColumn:
-		weaponST := w.Strength.Resolve(w, &buffer)
+		weaponST := w.ResolvedStrength(&buffer)
 		data.Primary = weaponST.String()
-		data.Tooltip = weaponST.Tooltip(w)
+		data.Tooltip = weaponST.Tooltip(w.ratedStrength())
 	case WeaponAccColumn:
-		data.Primary = w.Accuracy.Resolve(w, &buffer).String()
+		data.Primary = w.ResolvedAccuracy(&buffer).String()
 	case WeaponRangeColumn:
-		data.Primary = w.Range.Resolve(w, &buffer).String(w.musclePowerIsResolved())
+		data.Primary = w.ResolvedRange(&buffer).String(w.musclePowerIsResolved())
 	case WeaponRoFColumn:
-		rof := w.RateOfFire.Resolve(w, &buffer)
+		rof := w.ResolvedRateOfFire(&buffer)
 		data.Primary = rof.String()
 		data.Tooltip = rof.Tooltip()
 	case WeaponShotsColumn:
-		shots := w.Shots.Resolve(w, &buffer)
+		shots := w.ResolvedShots(&buffer)
 		data.Primary = shots.String()
 		data.Tooltip = shots.Tooltip()
 	case WeaponBulkColumn:
-		bulk := w.Bulk.Resolve(w, &buffer)
+		bulk := w.ResolvedBulk(&buffer)
 		data.Primary = bulk.String()
-		data.Tooltip = bulk.Tooltip(w)
+		data.Tooltip = bulk.Tooltip(w.ResolvedAccuracy(nil), w.ResolvedRecoil(nil), w.ResolvedStrength(nil))
 	case WeaponRecoilColumn:
-		recoil := w.Recoil.Resolve(w, &buffer)
+		recoil := w.ResolvedRecoil(&buffer)
 		data.Primary = recoil.String()
 		data.Tooltip = recoil.Tooltip()
 	case PageRefCellAlias:
@@ -1068,26 +1067,26 @@ func (w *Weapon) ColumnHasData(columnID int) bool {
 	case WeaponUsageColumn:
 		return w.UsageWithReplacements() != ""
 	case WeaponParryColumn:
-		return w.Parry.Resolve(w, &buffer).CanParry
+		return w.ResolvedParry(&buffer).CanParry
 	case WeaponBlockColumn:
-		return w.Block.Resolve(w, &buffer).CanBlock
+		return w.ResolvedBlock(&buffer).CanBlock
 	case WeaponReachColumn:
-		return w.Reach.Resolve(w, &buffer).String() != ""
+		return w.ResolvedReach(&buffer).String() != ""
 	case WeaponAccColumn:
-		acc := w.Accuracy.Resolve(w, &buffer)
+		acc := w.ResolvedAccuracy(&buffer)
 		return acc.Jet || acc.Base != 0 || acc.Scope != 0
 	case WeaponRangeColumn:
-		return w.Range.Resolve(w, &buffer).String(w.musclePowerIsResolved()) != ""
+		return w.ResolvedRange(&buffer).String(w.musclePowerIsResolved()) != ""
 	case WeaponRoFColumn:
-		return w.RateOfFire.Resolve(w, &buffer).String() != ""
+		return w.ResolvedRateOfFire(&buffer).String() != ""
 	case WeaponShotsColumn:
-		return w.Shots.Resolve(w, &buffer).String() != ""
+		return w.ResolvedShots(&buffer).String() != ""
 	case WeaponBulkColumn:
-		return w.Bulk.Resolve(w, &buffer).String() != ""
+		return w.ResolvedBulk(&buffer).String() != ""
 	case WeaponRecoilColumn:
-		return w.Recoil.Resolve(w, &buffer).String() != ""
+		return w.ResolvedRecoil(&buffer).String() != ""
 	case WeaponSTColumn:
-		return w.Strength.Resolve(w, &buffer).String() != ""
+		return w.ResolvedStrength(&buffer).String() != ""
 	default:
 		return true
 	}
@@ -1117,12 +1116,12 @@ func (w *Weapon) Validate() {
 		w.Parry.Validate()
 		w.Block.Validate()
 		w.Reach.Validate()
-		w.Accuracy = WeaponAccuracy{}
-		w.Range = WeaponRange{}
-		w.RateOfFire = WeaponRoF{}
-		w.Shots = WeaponShots{}
-		w.Bulk = WeaponBulk{}
-		w.Recoil = WeaponRecoil{}
+		w.Accuracy = attack.Accuracy{}
+		w.Range = attack.Range{}
+		w.RateOfFire = attack.RoF{}
+		w.Shots = attack.Shots{}
+		w.Bulk = attack.Bulk{}
+		w.Recoil = attack.Recoil{}
 	} else {
 		if w.Accuracy.Jet || w.RateOfFire.Jet {
 			w.Accuracy.Jet = true
@@ -1134,8 +1133,8 @@ func (w *Weapon) Validate() {
 		w.Shots.Validate()
 		w.Bulk.Validate()
 		w.Recoil.Validate()
-		w.Parry = WeaponParry{}
-		w.Block = WeaponBlock{}
-		w.Reach = WeaponReach{}
+		w.Parry = attack.Parry{}
+		w.Block = attack.Block{}
+		w.Reach = attack.Reach{}
 	}
 }

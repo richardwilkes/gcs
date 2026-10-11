@@ -18,6 +18,7 @@ import (
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
+	"github.com/richardwilkes/gcs/v5/model/gurps/attack"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/feature"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/progression"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/selector"
@@ -28,24 +29,9 @@ import (
 	"github.com/richardwilkes/toolbox/v2/xhash"
 )
 
-// WeaponDamageData holds the WeaponDamage data that is written to disk.
-type WeaponDamageData struct {
-	Type                      string       `json:"type"`
-	StrengthType              stdmg.Option `json:"st,omitzero"`
-	Leveled                   bool         `json:"leveled,omitzero"`
-	StrengthMultiplier        fxp.Int      `json:"st_mul,omitzero"`
-	Base                      string       `json:"base,omitzero"`
-	BaseLeveled               string       `json:"base_leveled,omitzero"`
-	ArmorDivisor              fxp.Int      `json:"armor_divisor,omitzero"`
-	Fragmentation             string       `json:"fragmentation,omitzero"`
-	FragmentationArmorDivisor fxp.Int      `json:"fragmentation_armor_divisor,omitzero"`
-	FragmentationType         string       `json:"fragmentation_type,omitzero"`
-	ModifierPerDie            fxp.Int      `json:"modifier_per_die,omitzero"`
-}
-
 // WeaponDamage holds the damage information for a weapon.
 type WeaponDamage struct {
-	WeaponDamageData
+	attack.DamageData
 	Owner *Weapon
 }
 
@@ -68,29 +54,6 @@ func (w *WeaponDamage) Hash(h hash.Hash) {
 	xhash.Num64(h, w.ModifierPerDie)
 }
 
-// Normalize puts the data into the one form used for it in memory, which is the form it has once loaded from a file,
-// so that a weapon hashes the same and shows the same damage whether or not it has been saved and loaded since it was
-// created or edited. A ST multiplier or armor divisor of 0 is not valid and becomes 1. Without any fragmentation, its
-// armor divisor and type have nothing to apply to and aren't written to disk, so they become 1 and empty. Fragmentation
-// dice supplied by a selector.WeaponFragmentationDice override don't count as the weapon's own: ResolveDamage then
-// starts from an armor divisor of 1 and no type, so such an override has to bring its own through
-// selector.WeaponFragmentationArmorDivisor and selector.WeaponFragmentationType.
-func (w *WeaponDamageData) Normalize() {
-	if w.StrengthMultiplier == 0 {
-		w.StrengthMultiplier = fxp.One
-	}
-	if w.ArmorDivisor == 0 {
-		w.ArmorDivisor = fxp.One
-	}
-	w.Fragmentation = strings.TrimSpace(w.Fragmentation)
-	if w.Fragmentation == "" {
-		w.FragmentationType = ""
-	}
-	if w.Fragmentation == "" || w.FragmentationArmorDivisor == 0 {
-		w.FragmentationArmorDivisor = fxp.One
-	}
-}
-
 // Clone creates a normalized copy of this data.
 func (w *WeaponDamage) Clone(owner *Weapon) *WeaponDamage {
 	other := *w
@@ -102,7 +65,7 @@ func (w *WeaponDamage) Clone(owner *Weapon) *WeaponDamage {
 // MarshalJSONTo implements json.MarshalerTo.
 func (w *WeaponDamage) MarshalJSONTo(enc *jsontext.Encoder) error {
 	// Marshal a copy so that suppressing "default" values for output doesn't mutate the receiver.
-	data := w.WeaponDamageData
+	data := w.DamageData
 	data.Normalize()
 	// A ST multiplier or armor divisor of 1 is very common, so suppress its output.
 	if data.StrengthMultiplier == fxp.One {
@@ -119,7 +82,7 @@ func (w *WeaponDamage) MarshalJSONTo(enc *jsontext.Encoder) error {
 
 // UnmarshalJSONFrom implements json.UnmarshalerFrom.
 func (w *WeaponDamage) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
-	if err := json.UnmarshalDecode(dec, &w.WeaponDamageData); err != nil {
+	if err := json.UnmarshalDecode(dec, &w.DamageData); err != nil {
 		return err
 	}
 	switch w.StrengthType {

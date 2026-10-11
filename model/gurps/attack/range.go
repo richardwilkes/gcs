@@ -7,7 +7,7 @@
 // This Source Code Form is "Incompatible With Secondary Licenses", as
 // defined by the Mozilla Public License, version 2.0.
 
-package gurps
+package attack
 
 import (
 	"encoding/json/jsontext"
@@ -16,16 +16,12 @@ import (
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
-	"github.com/richardwilkes/gcs/v5/model/gurps/enums/feature"
-	"github.com/richardwilkes/gcs/v5/model/gurps/enums/stdmg"
-	"github.com/richardwilkes/gcs/v5/model/gurps/enums/wswitch"
 	"github.com/richardwilkes/gcs/v5/model/jio"
-	"github.com/richardwilkes/toolbox/v2/xbytes"
 	"github.com/richardwilkes/toolbox/v2/xhash"
 )
 
-// WeaponRange holds the range data for a weapon.
-type WeaponRange struct {
+// Range holds the range data for a weapon.
+type Range struct {
 	HalfDamage    fxp.Int
 	Min           fxp.Int
 	Max           fxp.Int
@@ -33,9 +29,9 @@ type WeaponRange struct {
 	InMiles       bool
 }
 
-// ParseWeaponRange parses a string into a WeaponRange.
-func ParseWeaponRange(s string) WeaponRange {
-	var wr WeaponRange
+// ParseRange parses a string into a Range.
+func ParseRange(s string) Range {
+	var wr Range
 	s = strings.ToLower(s)
 	s = strings.ReplaceAll(s, " ", "")
 	s = strings.ReplaceAll(s, fxp.MultiplicationSign, "x")
@@ -75,24 +71,24 @@ func ParseWeaponRange(s string) WeaponRange {
 
 // MarshalJSONTo implements json.MarshalerTo.
 //
-// The unresolved display string is persisted so that the "x" prefixes (e.g. "x10/x100") survive: ParseWeaponRange
+// The unresolved display string is persisted so that the "x" prefixes (e.g. "x10/x100") survive: ParseRange
 // detects them on load to restore the MusclePowered flag.
-func (wr WeaponRange) MarshalJSONTo(enc *jsontext.Encoder) error {
+func (wr Range) MarshalJSONTo(enc *jsontext.Encoder) error {
 	return json.MarshalEncode(enc, wr.String(false))
 }
 
 // UnmarshalJSONFrom implements json.UnmarshalerFrom.
-func (wr *WeaponRange) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
-	return jio.UnmarshalStringFromInfallible(dec, wr, ParseWeaponRange)
+func (wr *Range) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
+	return jio.UnmarshalStringFromInfallible(dec, wr, ParseRange)
 }
 
 // IsZero reports whether json's omitzero option should omit this value.
-func (wr WeaponRange) IsZero() bool {
-	return wr == WeaponRange{}
+func (wr Range) IsZero() bool {
+	return wr == Range{}
 }
 
 // Hash writes this object's contents into the hasher.
-func (wr WeaponRange) Hash(h hash.Hash) {
+func (wr Range) Hash(h hash.Hash) {
 	xhash.Num64(h, wr.HalfDamage)
 	xhash.Num64(h, wr.Min)
 	xhash.Num64(h, wr.Max)
@@ -100,43 +96,12 @@ func (wr WeaponRange) Hash(h hash.Hash) {
 	xhash.Bool(h, wr.InMiles)
 }
 
-// Resolve any bonuses that apply.
-func (wr WeaponRange) Resolve(w *Weapon, modifiersTooltip *xbytes.InsertBuffer) WeaponRange {
-	result := wr
-	result.MusclePowered = w.ResolveBoolFlag(wswitch.MusclePowered, result.MusclePowered)
-	result.InMiles = w.ResolveBoolFlag(wswitch.RangeInMiles, result.InMiles)
-	if result.MusclePowered {
-		st := w.effectiveStrength(func(entity *Entity) fxp.Int {
-			switch w.Damage.resolvedStrengthType(nil) {
-			case stdmg.TelekineticThrust, stdmg.TelekineticSwing:
-				return entity.TelekineticStrength()
-			case stdmg.IQThrust, stdmg.IQSwing:
-				return entity.ResolveAttributeCurrent(IntelligenceID).Max(0).Floor()
-			default:
-				return entity.ThrowingStrength()
-			}
-		}, modifiersTooltip)
-		if st > 0 {
-			result.HalfDamage = result.HalfDamage.Mul(st).Floor().Max(0)
-			result.Min = result.Min.Mul(st).Floor().Max(0)
-			result.Max = result.Max.Mul(st).Floor().Max(0)
-		}
-	}
-	adj := w.weaponAdjustments(w.baseDamageDieCount, modifiersTooltip, feature.WeaponHalfDamageRangeBonus,
-		feature.WeaponMinRangeBonus, feature.WeaponMaxRangeBonus)
-	result.HalfDamage = adj[feature.WeaponHalfDamageRangeBonus].applyTo(result.HalfDamage)
-	result.Min = adj[feature.WeaponMinRangeBonus].applyTo(result.Min)
-	result.Max = adj[feature.WeaponMaxRangeBonus].applyTo(result.Max)
-	result.Validate()
-	return result
-}
-
 // String returns a string suitable for presentation, matching the standard GURPS weapon table entry format for this
-// data. Call .Resolve() prior to calling this method if you want the resolved values.
+// data. Use the weapon's ResolvedRange method first if you want the resolved values.
 //
 // When MusclePowered is set, passing false for musclePowerIsResolved prefixes the range values with "x" (the GURPS
 // notation for "multiply by ST"); pass true once the ranges have already been multiplied by ST so the "x" is omitted.
-func (wr WeaponRange) String(musclePowerIsResolved bool) string {
+func (wr Range) String(musclePowerIsResolved bool) string {
 	var buffer strings.Builder
 	if wr.HalfDamage != 0 {
 		if wr.MusclePowered && !musclePowerIsResolved {
@@ -166,7 +131,7 @@ func (wr WeaponRange) String(musclePowerIsResolved bool) string {
 }
 
 // Validate ensures that the data is valid.
-func (wr *WeaponRange) Validate() {
+func (wr *Range) Validate() {
 	wr.HalfDamage = wr.HalfDamage.Max(0)
 	wr.Min = wr.Min.Max(0)
 	wr.Max = wr.Max.Max(0)

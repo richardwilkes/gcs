@@ -7,18 +7,18 @@
 // This Source Code Form is "Incompatible With Secondary Licenses", as
 // defined by the Mozilla Public License, version 2.0.
 
-package gurps_test
+package attack_test
 
 import (
 	"testing"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
-	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/model/gurps/attack"
 	"github.com/richardwilkes/toolbox/v2/check"
 )
 
-func TestWeaponShots(t *testing.T) {
-	parse := func(s string) string { return gurps.ParseWeaponShots(s).String() }
+func TestShots(t *testing.T) {
+	parse := func(s string) string { return attack.ParseShots(s).String() }
 	same := []string{
 		"",
 		"1",
@@ -57,26 +57,26 @@ func TestWeaponShots(t *testing.T) {
 		{"T(spec)", "T"},
 		{"n/a", ""},
 	}
-	checkWeaponFieldParsing(check.New(t), parse, same, adjusted)
+	checkFieldParsing(check.New(t), parse, same, adjusted)
 }
 
-// TestWeaponShotsReloadTimeParsing verifies that the reload time is recovered even when something separates it from
+// TestShotsReloadTimeParsing verifies that the reload time is recovered even when something separates it from
 // the shot count, i.e. the thrown marker or the duration's trailing "s". Both are emitted by String(), so failing to
 // parse them back loses the reload time on every save/load round trip.
-func TestWeaponShotsReloadTimeParsing(t *testing.T) {
+func TestShotsReloadTimeParsing(t *testing.T) {
 	c := check.New(t)
 
-	ws := gurps.ParseWeaponShots("T(2)")
+	ws := attack.ParseShots("T(2)")
 	c.True(ws.Thrown)
 	c.Equal(fxp.Two, ws.ReloadTime)
 	c.False(ws.ReloadTimeIsPerShot)
 
-	ws = gurps.ParseWeaponShots("T(2i)")
+	ws = attack.ParseShots("T(2i)")
 	c.True(ws.Thrown)
 	c.Equal(fxp.Two, ws.ReloadTime)
 	c.True(ws.ReloadTimeIsPerShot)
 
-	ws = gurps.ParseWeaponShots("3x3s(2)")
+	ws = attack.ParseShots("3x3s(2)")
 	c.False(ws.Thrown)
 	c.Equal(fxp.Three, ws.Count)
 	c.Equal(fxp.Three, ws.Duration)

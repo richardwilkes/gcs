@@ -14,6 +14,7 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/criteria"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
+	"github.com/richardwilkes/gcs/v5/model/gurps/attack"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/feature"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/spellmatch"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/stlimit"
@@ -257,19 +258,19 @@ func TestSpellWeaponBonusFromSpellFeatures(t *testing.T) {
 	spell.Points = fxp.Four
 	spell.Features = Features{accBonus}
 	w := NewWeapon(spell, false)
-	w.Accuracy = ParseWeaponAccuracy("3")
+	w.Accuracy = attack.ParseAccuracy("3")
 	spell.Weapons = []*Weapon{w}
 	e.Spells = append(e.Spells, spell)
 	e.Recalculate()
-	c.Equal("5", w.Accuracy.Resolve(w, nil).String(), "the spell's own weapon bonus reaches its weapon")
+	c.Equal("5", w.ResolvedAccuracy(nil).String(), "the spell's own weapon bonus reaches its weapon")
 
 	// And the switch gates it, just as it does for a trait or a piece of equipment.
 	accBonus.Switchable = true
 	e.Recalculate()
-	c.Equal("3", w.Accuracy.Resolve(w, nil).String(), "a switchable bonus is held back while the spell's switch is off")
+	c.Equal("3", w.ResolvedAccuracy(nil).String(), "a switchable bonus is held back while the spell's switch is off")
 	spell.SetSwitchedOn(true)
 	e.Recalculate()
-	c.Equal("5", w.Accuracy.Resolve(w, nil).String(), "a switchable bonus applies while the spell's switch is on")
+	c.Equal("5", w.ResolvedAccuracy(nil).String(), "a switchable bonus applies while the spell's switch is on")
 }
 
 // TestSpellBonusFromItsOwnSpell verifies that a spell carrying a bonus that names itself resolves to a sane level

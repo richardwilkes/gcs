@@ -15,6 +15,7 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/model/gurps/attack"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/feature"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/progression"
 	"github.com/richardwilkes/toolbox/v2/check"
@@ -358,12 +359,12 @@ func TestWeaponDamageBonusDicePhoenixFlame(t *testing.T) {
 // never been saved match the same weapon read back from a file.
 func TestWeaponDamageNormalize(t *testing.T) {
 	c := check.New(t)
-	plain := gurps.WeaponDamageData{
+	plain := attack.DamageData{
 		StrengthMultiplier:        fxp.One,
 		ArmorDivisor:              fxp.One,
 		FragmentationArmorDivisor: fxp.One,
 	}
-	withFragmentation := gurps.WeaponDamageData{
+	withFragmentation := attack.DamageData{
 		Type:                      "cr ex",
 		StrengthMultiplier:        fxp.Two,
 		ArmorDivisor:              fxp.Three,
@@ -375,14 +376,14 @@ func TestWeaponDamageNormalize(t *testing.T) {
 	withDefaultedDivisor.FragmentationArmorDivisor = fxp.One
 	for _, tc := range []struct {
 		name string
-		in   gurps.WeaponDamageData
-		want gurps.WeaponDamageData
+		in   attack.DamageData
+		want attack.DamageData
 	}{
 		{name: "nothing set", want: plain},
 		{name: "already normalized", in: plain, want: plain},
 		{
 			name: "an armor divisor and type left behind by fragmentation that was removed",
-			in: gurps.WeaponDamageData{
+			in: attack.DamageData{
 				StrengthMultiplier:        fxp.One,
 				ArmorDivisor:              fxp.One,
 				FragmentationArmorDivisor: fxp.Two,
@@ -392,13 +393,13 @@ func TestWeaponDamageNormalize(t *testing.T) {
 		},
 		{
 			name: "blank fragmentation",
-			in:   gurps.WeaponDamageData{Fragmentation: " \t", FragmentationArmorDivisor: fxp.Two, FragmentationType: "cut"},
+			in:   attack.DamageData{Fragmentation: " \t", FragmentationArmorDivisor: fxp.Two, FragmentationType: "cut"},
 			want: plain,
 		},
 		{name: "fragmentation keeps its armor divisor and type", in: withFragmentation, want: withFragmentation},
 		{
 			name: "fragmentation is trimmed and given an armor divisor when it has none",
-			in: gurps.WeaponDamageData{
+			in: attack.DamageData{
 				Type:               "cr ex",
 				StrengthMultiplier: fxp.Two,
 				ArmorDivisor:       fxp.Three,
@@ -414,9 +415,9 @@ func TestWeaponDamageNormalize(t *testing.T) {
 	}
 	for _, melee := range []bool{true, false} {
 		w := gurps.NewWeapon(nil, melee)
-		want := w.Damage.WeaponDamageData
+		want := w.Damage.DamageData
 		w.Damage.Normalize()
-		c.Equal(want, w.Damage.WeaponDamageData, "a new weapon's damage is already normalized")
+		c.Equal(want, w.Damage.DamageData, "a new weapon's damage is already normalized")
 	}
 }
 
@@ -434,7 +435,7 @@ func TestWeaponCopyNormalizesDamage(t *testing.T) {
 	c.Equal("thr(0) cr", edited.Damage.String(), "precondition: an armor divisor of 0 shows")
 
 	clone := edited.Clone(gurps.LibraryFile{}, nil, nil, gurps.Copy)
-	c.Equal(plain.Damage.WeaponDamageData, clone.Damage.WeaponDamageData, "the copy's damage is normalized")
+	c.Equal(plain.Damage.DamageData, clone.Damage.DamageData, "the copy's damage is normalized")
 	c.Equal(gurps.Hash64(plain), gurps.Hash64(clone), "so the copy hashes the same as a weapon without the leftovers")
 	c.Equal("thr cr", clone.Damage.String(), "and shows no armor divisor")
 	c.Equal(fxp.Two, edited.Damage.FragmentationArmorDivisor, "the weapon copied from is left alone")
