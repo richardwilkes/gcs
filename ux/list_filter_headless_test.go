@@ -238,8 +238,9 @@ func TestListFilterPopupAppliesSavedFilterHeadless(t *testing.T) {
 }
 
 // TestListFilterNewFilterDialogHeadless drives the editor for a new filter inside a headless workspace: OK is held
-// back until the name is one no other saved filter bears, the editor opens with room for a few levels of nesting, a
-// condition can be added to the root group, and accepting saves the filter and puts it in force.
+// back until the name is one no other saved filter bears and the filter has a condition, groups alone not counting,
+// the editor opens with room for a few levels of nesting, a condition can be added to the root group, and accepting
+// saves the filter and puts it in force.
 func TestListFilterNewFilterDialogHeadless(t *testing.T) {
 	c := check.New(t)
 	screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
@@ -289,12 +290,35 @@ func TestListFilterNewFilterDialogHeadless(t *testing.T) {
 	var name string
 	screen.Do(func() { name = nameField.Text() })
 	c.Equal("Ranged", name, "select-all followed by typing replaces the name")
-	c.True(okEnabled(), "a name no other saved filter bears can be accepted")
+	c.False(okEnabled(), "a name no other saved filter bears is not enough while the filter tests nothing")
 	uxtest.CaptureScreen(t, c, screen, "list_filter_dialog")
+
+	// Groups holding nothing but other groups still test nothing. The first group chosen for the bare root sets the
+	// root's own type, so it takes a second to add one within it.
+	p := dialogFilterPanel(t, screen, dialogWnd)
+	screen.Do(func() { menuAction(p.treeAddEntries(p.filter.Root, treeRootPath), "Any of Group")() })
+	screen.Do(func() { menuAction(p.treeAddEntries(p.filter.Root, treeRootPath), "All of Group")() })
+	var sub *gurps.FilterGroup
+	screen.Do(func() { sub = asFilterGroup(p.node("r.0")) })
+	if sub == nil {
+		t.Fatal("a group has been added within the root")
+	}
+	screen.Do(func() { menuAction(p.treeAddEntries(sub, "r.0"), "Any of Group")() })
+	var nested bool
+	screen.Do(func() { nested = asFilterGroup(p.node("r.0.0")) != nil })
+	c.True(nested, "a group has been nested within it")
+	c.False(okEnabled(), "a filter of empty groups cannot be accepted")
+	var undoMgr *unison.UndoManager
+	screen.Do(func() { undoMgr = unison.UndoManagerFor(p) })
+	if undoMgr == nil {
+		t.Fatal("the dialog has an undo manager")
+	}
+	for range 3 {
+		screen.Do(undoMgr.Undo)
+	}
 
 	// Add a condition to the empty root by clicking its placeholder and choosing New Condition from the menu that
 	// opens. With no field chosen before, it starts out testing the first field, open.
-	p := dialogFilterPanel(t, screen, dialogWnd)
 	var placeholder *unison.Panel
 	screen.Do(func() { placeholder = p.FindRefKey(treeRootPath + ":empty") })
 	if placeholder == nil {
@@ -311,6 +335,7 @@ func TestListFilterNewFilterDialogHeadless(t *testing.T) {
 			c.Equal(gurps.TraitFilterFields()[0].Key, cond.Field, "testing the first field")
 		}
 	})
+	c.True(okEnabled(), "with a condition to test, the filter can be accepted")
 
 	screen.Click(screen.PanelCenter(okButton))
 	var windows int
@@ -452,11 +477,11 @@ func TestListFilterEditorKeysHeadless(t *testing.T) {
 
 	focus(nameField)
 	undo()
-	c.Equal(0, read().children, "Undo in the name field takes the condition back")
+	c.Equal(state{name: "Ranged"}, read(), "Undo in the name field takes the condition back, and OK off with it")
 	undo()
 	c.Equal(state{}, read(), "and then the name, which leaves OK off")
 	redo()
-	c.Equal(state{name: "Ranged", ok: true}, read(), "Redo puts the name back, and OK on")
+	c.Equal(state{name: "Ranged"}, read(), "Redo puts the name back, with OK still off for want of a condition")
 	redo()
 	c.Equal(state{name: "Ranged", open: "r.0", children: 1, ok: true}, read(), "and then the condition, open")
 

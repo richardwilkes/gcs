@@ -216,6 +216,17 @@ func (g *FilterGroup) Hash(h hash.Hash) {
 	hashList(h, g.Children)
 }
 
+// Empty returns true if nothing but groups lies within this group, at any depth, so that it tests nothing. A condition
+// counts even when its field is unknown, as does a node this version of GCS doesn't recognize.
+func (g *FilterGroup) Empty() bool {
+	for _, child := range g.Children {
+		if sub, ok := child.(*FilterGroup); !ok || !sub.Empty() {
+			return false
+		}
+	}
+	return true
+}
+
 // NewFilterCondition creates a new condition on the field with the given key, with every criteria at its zero value.
 // For a number or weight field that means the condition accepts anything, and for a text or list field anything but
 // text that is empty or only space, or a list that holds nothing else; for a yes/no field, which has no criteria, it

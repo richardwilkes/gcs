@@ -10,3 +10,5 @@
   source is a trait container or equipment whose source is an equipment group, which used to lose data. The library
   source column marks such data with "≠" instead. Equipment and a physical container still sync with each other, as do
   a note and a note container, and the editor's Sync with Source now allows that for equipment as well.
+- The saved filter editor no longer accepts a filter with no conditions, including one holding only empty groups. OK
+  stays off until at least one condition has been added.
