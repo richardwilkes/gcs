@@ -250,6 +250,7 @@ func (w *WeaponData) Hash(h hash.Hash) {
 		xhash.Num8(h, uint8(255))
 		return
 	}
+	xhash.Num8(h, syncKind(w))
 	w.Damage.Hash(h)
 	w.Strength.Hash(h)
 	xhash.StringWithLen(h, w.Usage)
@@ -384,7 +385,7 @@ func (w *Weapon) SyncWithSource() {
 }
 
 // ID returns the local ID of this data.
-func (w *Weapon) ID() tid.TID {
+func (w *WeaponData) ID() tid.TID {
 	return w.TID
 }
 

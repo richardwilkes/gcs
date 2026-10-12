@@ -176,8 +176,8 @@ func (c *ConditionalModifier) ID() tid.TID {
 
 // Hash writes this object's contents into the hasher.
 func (c *ConditionalModifier) Hash(h hash.Hash) {
+	xhash.Num8(h, syncKind(c))
 	xhash.StringWithLen(h, c.From)
-	xhash.Bool(h, c.Container())
 	xhash.Num64(h, len(c.Amounts))
 	for _, amt := range c.Amounts {
 		xhash.Num64(h, amt)

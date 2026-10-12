@@ -19,8 +19,11 @@ import (
 	"testing"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/eqcontainer"
 	"github.com/richardwilkes/gcs/v5/model/jio"
+	"github.com/richardwilkes/gcs/v5/model/kinds"
 	"github.com/richardwilkes/toolbox/v2/check"
+	"github.com/richardwilkes/toolbox/v2/tid"
 )
 
 // recordingHasher captures what would be hashed, so that the tests can inspect it. Only the io.Writer portion of
@@ -269,4 +272,98 @@ func TestEditDataMarshalsWithoutDerivedValues(t *testing.T) {
 		c.NoError(err2, "the edit data marshals while its scripts are being stopped")
 		c.Equal(string(compared), string(stopped), "a failure to resolve the scripts must not alter the bytes")
 	})
+}
+
+// TestHashStartsWithSyncKind verifies that a node of each type hashes differently once its TID is given another kind,
+// even though everything else it holds stays the same, except for plain equipment and a physical container, and a note
+// and a note container, which hash the same so that one can be converted into the other.
+func TestHashStartsWithSyncKind(t *testing.T) {
+	c := check.New(t)
+	for _, one := range []struct {
+		name string
+		pair func() (Hashable, Hashable)
+		same bool
+	}{
+		{name: "trait vs trait container", pair: func() (Hashable, Hashable) {
+			trait := NewTrait(nil, nil, false)
+			other := trait.Clone(LibraryFile{}, nil, nil, Copy)
+			other.TID = tid.TID(kinds.TraitContainer) + trait.TID[1:]
+			return trait, other
+		}},
+		{name: "trait modifier vs trait modifier container", pair: func() (Hashable, Hashable) {
+			modifier := NewTraitModifier(nil, nil, false)
+			other := modifier.Clone(LibraryFile{}, nil, nil, Copy)
+			other.TID = tid.TID(kinds.TraitModifierContainer) + modifier.TID[1:]
+			return modifier, other
+		}},
+		{name: "skill vs technique", pair: func() (Hashable, Hashable) {
+			skill := NewSkill(nil, nil, false)
+			other := skill.Clone(LibraryFile{}, nil, nil, Copy)
+			other.TID = tid.TID(kinds.Technique) + skill.TID[1:]
+			return skill, other
+		}},
+		{name: "skill vs skill container", pair: func() (Hashable, Hashable) {
+			skill := NewSkill(nil, nil, false)
+			other := skill.Clone(LibraryFile{}, nil, nil, Copy)
+			other.TID = tid.TID(kinds.SkillContainer) + skill.TID[1:]
+			return skill, other
+		}},
+		{name: "spell vs ritual magic spell", pair: func() (Hashable, Hashable) {
+			spell := NewSpell(nil, nil, false)
+			other := spell.Clone(LibraryFile{}, nil, nil, Copy)
+			other.TID = tid.TID(kinds.RitualMagicSpell) + spell.TID[1:]
+			return spell, other
+		}},
+		{name: "spell vs spell container", pair: func() (Hashable, Hashable) {
+			spell := NewSpell(nil, nil, false)
+			other := spell.Clone(LibraryFile{}, nil, nil, Copy)
+			other.TID = tid.TID(kinds.SpellContainer) + spell.TID[1:]
+			return spell, other
+		}},
+		{name: "equipment vs physical container", same: true, pair: func() (Hashable, Hashable) {
+			eqp := NewEquipment(nil, nil, false)
+			other := eqp.Clone(LibraryFile{}, nil, nil, Copy)
+			other.TID = tid.TID(kinds.EquipmentContainer) + eqp.TID[1:]
+			return eqp, other
+		}},
+		{name: "equipment vs group", pair: func() (Hashable, Hashable) {
+			eqp := NewEquipment(nil, nil, false)
+			other := eqp.Clone(LibraryFile{}, nil, nil, Copy)
+			other.TID = tid.TID(kinds.EquipmentContainer) + eqp.TID[1:]
+			other.ContainerType = eqcontainer.Group
+			return eqp, other
+		}},
+		{name: "equipment modifier vs equipment modifier container", pair: func() (Hashable, Hashable) {
+			modifier := NewEquipmentModifier(nil, nil, false)
+			other := modifier.Clone(LibraryFile{}, nil, nil, Copy)
+			other.TID = tid.TID(kinds.EquipmentModifierContainer) + modifier.TID[1:]
+			return modifier, other
+		}},
+		{name: "note vs note container", same: true, pair: func() (Hashable, Hashable) {
+			note := NewNote(nil, nil, false)
+			other := note.Clone(LibraryFile{}, nil, nil, Copy)
+			other.TID = tid.TID(kinds.NoteContainer) + note.TID[1:]
+			return note, other
+		}},
+		{name: "conditional modifier vs conditional modifier container", pair: func() (Hashable, Hashable) {
+			modifier := NewConditionalModifier("Source", "From", fxp.One)
+			other := modifier.Clone(LibraryFile{}, nil, nil, Copy)
+			other.TID = tid.TID(kinds.ConditionalModifierContainer) + modifier.TID[1:]
+			return modifier, other
+		}},
+		{name: "melee vs ranged weapon", pair: func() (Hashable, Hashable) {
+			melee := NewWeapon(nil, true)
+			other := NewWeapon(nil, false)
+			other.WeaponData = melee.WeaponData
+			other.TID = tid.TID(kinds.WeaponRanged) + melee.TID[1:]
+			return melee, other
+		}},
+	} {
+		a, b := one.pair()
+		if one.same {
+			c.Equal(Hash64(a), Hash64(b), one.name+" hash the same")
+		} else {
+			c.NotEqual(Hash64(a), Hash64(b), one.name+" hash differently")
+		}
+	}
 }

@@ -1491,6 +1491,7 @@ func (s *Skill) SyncWithSource() {
 // Hash writes this object's contents into the hasher. Note that this only hashes the data that is considered to be
 // "source" data, i.e. not expected to be modified by the user after copying from a library.
 func (s *Skill) Hash(h hash.Hash) {
+	xhash.Num8(h, syncKind(s))
 	s.SkillSyncData.hash(h)
 	if s.Container() {
 		s.SkillContainerOnlySyncData.hash(h)

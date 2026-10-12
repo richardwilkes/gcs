@@ -6,4 +6,7 @@
 
 ## Bug Fixes
 
-- (none yet)
+- Syncing with library sources no longer overwrites data whose kind differs from its source's, such as a trait whose
+  source is a trait container or equipment whose source is an equipment group, which used to lose data. The library
+  source column marks such data with "≠" instead. Equipment and a physical container still sync with each other, as do
+  a note and a note container, and the editor's Sync with Source now allows that for equipment as well.

@@ -700,6 +700,7 @@ func (e *EquipmentModifier) SyncWithSource() {
 // Hash writes this object's contents into the hasher. Note that this only hashes the data that is considered to be
 // "source" data, i.e. not expected to be modified by the user after copying from a library.
 func (e *EquipmentModifier) Hash(h hash.Hash) {
+	xhash.Num8(h, syncKind(e))
 	e.EquipmentModifierSyncData.hash(h)
 	if e.Container() {
 		e.ModifierContainerSyncData.hash(h)

@@ -384,51 +384,87 @@ func TestEditorSyncThatOnlyRevertsPendingEdits(t *testing.T) {
 	c.False(e.isModified(), "nothing is left to apply")
 }
 
-// TestEditorSyncLeavesEquipmentKindChangesToTheList verifies that the editor won't sync equipment with a source of
-// another kind, whether another kind of container or a container when it isn't one, since its data can't carry the
-// kind.
-func TestEditorSyncLeavesEquipmentKindChangesToTheList(t *testing.T) {
+// TestEditorSyncFollowsEquipmentKinds verifies that the editor syncs plain equipment and a physical container with each
+// other in both directions, since the two have the same data to sync, but won't sync a container whose source has
+// another container type, since its data can't carry the container type, nor anything whose source is incompatible.
+func TestEditorSyncFollowsEquipmentKinds(t *testing.T) {
 	c := check.New(t)
 	_, user := uxtest.UseTestLibraries(t, c)
 	RegisterKnownFileTypes()
-	lib := gurps.NewEquipment(nil, nil, true)
-	lib.ContainerType = eqcontainer.Group
-	lib.Name = "Pack"
-	libContainer := gurps.NewEquipment(nil, nil, true)
-	libContainer.Name = "Sack"
+	libGroup := gurps.NewEquipmentGroup(nil, nil)
+	libGroup.Name = "Pack"
+	libPhysical := gurps.NewEquipment(nil, nil, true)
+	libPhysical.Name = "Sack"
+	libPhysical.BaseValue = "20"
+	libPlain := gurps.NewEquipment(nil, nil, false)
+	libPlain.Name = "Rope"
+	libPlain.BaseValue = "30"
 	libFile := gurps.LibraryFile{Library: user.Key(), Path: "Equipment/Test" + gurps.EquipmentExt}
-	c.NoError(gurps.SaveEquipment([]*gurps.Equipment{lib, libContainer},
+	c.NoError(gurps.SaveEquipment([]*gurps.Equipment{libGroup, libPhysical, libPlain},
 		filepath.Join(user.Path(false), filepath.FromSlash(libFile.Path))))
 	sheet := newTestSheetForTemplate(t)
 	entity := sheet.Entity()
-	local := lib.Clone(libFile, entity, nil, gurps.Reference)
-	local.ContainerType = eqcontainer.Container
-	local.BaseValue = "10"
-	local.Modifiers = []*gurps.EquipmentModifier{gurps.NewEquipmentModifier(entity, nil, false)}
-	converted := libContainer.Clone(libFile, entity, nil, gurps.Reference)
-	converted.ConvertToNonContainer()
-	converted.BaseValue = "5"
-	entity.CarriedEquipment = append(entity.CarriedEquipment, local, converted)
+	physicalFromGroup := libGroup.Clone(libFile, entity, nil, gurps.Reference)
+	physicalFromGroup.ConvertToPhysicalContainer()
+	physicalFromGroup.BaseValue = "10"
+	physicalFromGroup.Modifiers = []*gurps.EquipmentModifier{gurps.NewEquipmentModifier(entity, nil, false)}
+	plainFromPhysical := libPhysical.Clone(libFile, entity, nil, gurps.Reference)
+	plainFromPhysical.ConvertToNonContainer()
+	plainFromPhysical.BaseValue = "5"
+	physicalFromPlain := libPlain.Clone(libFile, entity, nil, gurps.Reference)
+	physicalFromPlain.ConvertToContainer()
+	physicalFromPlain.BaseValue = "5"
+	physicalFromPlain.Children = []*gurps.Equipment{gurps.NewEquipment(entity, physicalFromPlain, false)}
+	plainFromGroup := libGroup.Clone(libFile, entity, nil, gurps.Reference)
+	plainFromGroup.ConvertToNonContainer()
+	plainFromGroup.BaseValue = "5"
+	entity.CarriedEquipment = append(entity.CarriedEquipment, physicalFromGroup, plainFromPhysical, physicalFromPlain,
+		plainFromGroup)
 	entity.Recalculate()
+	c.True(physicalFromGroup.IsPhysicalContainer(), "precondition: the copy of the group is a physical container")
+	c.True(physicalFromPlain.IsPhysicalContainer(), "precondition: the copy of the equipment is a physical container")
 
-	e, _ := buildEditorContent(sheet, local, initEquipmentEditor(true))
-	entries := e.sourceMenuEntries()
-	summary := sourceMenuSummary(entries)
+	e, _ := buildEditorContent(sheet, physicalFromGroup, initEquipmentEditor(true))
+	summary := sourceMenuSummary(e.sourceMenuEntries())
 	c.True(slices.Contains(summary, "# "+srcstate.Mismatched.String()), "the container differs from its source")
-	c.True(slices.Contains(summary, "Sync with Source (disabled)"), "but only the list can change its kind")
+	c.True(slices.Contains(summary, "Sync with Source (disabled)"), "but only the list can change its container type")
 	e.syncWithSource()
 	c.Equal("10", e.editorData.BaseValue, "nothing is synced")
-	c.Equal(1, len(e.editorData.Modifiers))
-	c.False(e.isModified())
+	c.Equal(1, len(e.editorData.Modifiers), "the modifiers are kept")
+	c.False(e.isModified(), "nothing is left to apply")
 
-	e, _ = buildEditorContent(sheet, converted, initEquipmentEditor(true))
+	e, _ = buildEditorContent(sheet, plainFromPhysical, initEquipmentEditor(true))
+	entries := e.sourceMenuEntries()
+	c.True(slices.Contains(sourceMenuSummary(entries), "# "+srcstate.Mismatched.String()),
+		"the plain equipment differs from its source, a physical container")
+	requireSourceMenuAction(t, entries, "Sync with Source", "plain equipment can be synced with a physical container")()
+	c.Equal("20", e.editorData.BaseValue, "the synced fields come from the library")
+	e.applyEdits()
+	c.Equal("20", plainFromPhysical.BaseValue, "the synced value is applied")
+	state, _ := gurps.MatchSource(plainFromPhysical)
+	c.Equal(srcstate.Matched, state, "once applied, the plain equipment matches its source")
+
+	e, _ = buildEditorContent(sheet, physicalFromPlain, initEquipmentEditor(true))
+	entries = e.sourceMenuEntries()
+	c.True(slices.Contains(sourceMenuSummary(entries), "# "+srcstate.Mismatched.String()),
+		"the container differs from its source, plain equipment")
+	requireSourceMenuAction(t, entries, "Sync with Source", "a physical container can be synced with plain equipment")()
+	c.Equal("30", e.editorData.BaseValue, "the synced fields come from the library")
+	e.applyEdits()
+	c.Equal("30", physicalFromPlain.BaseValue, "the synced value is applied")
+	c.True(physicalFromPlain.IsPhysicalContainer(), "the container stays a physical container")
+	c.Equal(1, len(physicalFromPlain.Children), "and keeps what it holds")
+	state, _ = gurps.MatchSource(physicalFromPlain)
+	c.Equal(srcstate.Matched, state, "once applied, the container matches its source")
+
+	e, _ = buildEditorContent(sheet, plainFromGroup, initEquipmentEditor(true))
 	summary = sourceMenuSummary(e.sourceMenuEntries())
-	c.True(slices.Contains(summary, "# "+srcstate.Mismatched.String()), "the converted item differs from its source")
-	c.True(slices.Contains(summary, "Sync with Source (disabled)"),
-		"but its source is a container, which only the list can make it again")
+	c.True(slices.Contains(summary, "# "+srcstate.Incompatible.String()), "plain equipment can't sync with a group")
+	c.True(slices.Contains(summary, "Sync with Source (disabled)"), "so the sync is disabled")
+	c.True(slices.Contains(summary, "Clear Source"), "but the source can still be cleared")
 	e.syncWithSource()
 	c.Equal("5", e.editorData.BaseValue, "nothing is synced")
-	c.False(e.isModified())
+	c.False(e.isModified(), "nothing is left to apply")
 }
 
 // TestEditorSyncThatUnmakesAModifierChoice verifies that applying an editor's sync that makes a modifier choice a

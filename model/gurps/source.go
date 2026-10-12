@@ -54,6 +54,7 @@ type libSrcData struct {
 // SrcProvider defines the methods needed for a source provider that can be used with the SrcMatcher.Match() function.
 type SrcProvider interface {
 	Hashable
+	ID() tid.TID
 	GetSource() Source
 }
 
@@ -215,8 +216,8 @@ func (sm *SrcMatcher) prepareHashesFor(libFile LibraryFile) {
 	sm.libHashes[libFile] = srcData
 }
 
-// Match returns the source state of the given data, along with the library's copy of it when one was found. A nil
-// matcher finds nothing.
+// Match returns the source state of the given data, along with the library's copy of it when one was found. A library
+// copy the data can't be synced with (see canSyncKinds) is incompatible. A nil matcher finds nothing.
 func (sm *SrcMatcher) Match(data SrcProvider) (state srcstate.Value, match any) {
 	src := data.GetSource()
 	if src.IsZero() {
@@ -228,6 +229,9 @@ func (sm *SrcMatcher) Match(data SrcProvider) (state srcstate.Value, match any) 
 	if srcData, ok := sm.libHashes[src.LibraryFile]; ok {
 		var dataHash HashAndData
 		if dataHash, ok = srcData.dataHashes[src.TID]; ok {
+			if lib, isProvider := dataHash.Data.(SrcProvider); !isProvider || !canSyncKinds(data, lib) {
+				return srcstate.Incompatible, dataHash.Data
+			}
 			if dataHash.Hash == Hash64(data) {
 				return srcstate.Matched, dataHash.Data
 			}
@@ -235,6 +239,18 @@ func (sm *SrcMatcher) Match(data SrcProvider) (state srcstate.Value, match any) 
 		}
 	}
 	return srcstate.Missing, nil
+}
+
+// canSyncKinds returns true if the data can be synced with its library copy without changing what kind of node it is:
+// the two have the same TID kind, or share a kind with the other form they convert into (see sharedSyncKind). This
+// doesn't group kinds into classes: plain equipment syncs with a physical container, and a physical container with a
+// group, since the two have the same TID kind, but plain equipment doesn't sync with a group.
+func canSyncKinds(data, lib SrcProvider) bool {
+	if tidKind(data.ID()) == tidKind(lib.ID()) {
+		return true
+	}
+	kind := sharedSyncKind(data)
+	return kind != 0 && kind == sharedSyncKind(lib)
 }
 
 // maxUnownedSrcFiles is the most library files unownedSrcMatcher holds on to.

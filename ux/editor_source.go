@@ -57,7 +57,7 @@ func (e *editor[N, D]) sourceMenuEntries() []menuEntry {
 		menuEntry{
 			Label:    i18n.Text("Sync with Source"),
 			Act:      e.syncWithSource,
-			Disabled: state != srcstate.Mismatched || syncChangesKind(edited, data),
+			Disabled: state != srcstate.Mismatched || syncChangesContainerType(edited, data),
 		},
 		menuEntry{
 			Label: i18n.Text("Clear Source"),
@@ -75,10 +75,10 @@ func copyEntry(label, value string) menuEntry {
 	}
 }
 
-// syncChangesKind returns true if target and source, the library's copy of it, are equipment of different kinds: one a
-// container and the other not, or two kinds of container. An editor can't stage such a sync, since its data doesn't
-// carry the kind.
-func syncChangesKind(target, source any) bool {
+// syncChangesContainerType returns true if target and source, the library's copy of it, are equipment containers of
+// different types. An editor can't stage such a sync, since its data doesn't carry the container type. Which kinds can
+// be synced at all is up to gurps.MatchSource.
+func syncChangesContainerType(target, source any) bool {
 	eqp, ok := target.(*gurps.Equipment)
 	if !ok {
 		return false
@@ -87,7 +87,7 @@ func syncChangesKind(target, source any) bool {
 	if other, ok = source.(*gurps.Equipment); !ok {
 		return false
 	}
-	return eqp.Container() != other.Container() || (eqp.Container() && other.ContainerType != eqp.ContainerType)
+	return eqp.Container() && other.Container() && other.ContainerType != eqp.ContainerType
 }
 
 // syncWithSource syncs the editor's data with the library's copy as a pending change, keeping the pending changes to
@@ -112,7 +112,7 @@ func (e *editor[N, D]) syncWithSource() {
 		// editor and before the data is replaced.
 		e.releaseContentFocus()
 		edited := e.editedClone()
-		if state, data := gurps.MatchSource(edited); state == srcstate.Mismatched && !syncChangesKind(edited, data) {
+		if state, data := gurps.MatchSource(edited); state == srcstate.Mismatched && !syncChangesContainerType(edited, data) {
 			before := modifierChoicePicker(edited)
 			edited.SyncWithSource()
 			e.editorData.CopyFrom(edited)

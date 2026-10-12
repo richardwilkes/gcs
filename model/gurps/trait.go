@@ -1398,6 +1398,7 @@ func (t *Trait) SyncWithSource() {
 // Hash writes this object's contents into the hasher. Note that this only hashes the data that is considered to be
 // "source" data, i.e. not expected to be modified by the user after copying from a library.
 func (t *Trait) Hash(h hash.Hash) {
+	xhash.Num8(h, syncKind(t))
 	t.TraitSyncData.hash(h)
 	if t.Container() {
 		t.TraitContainerSyncData.hash(h)

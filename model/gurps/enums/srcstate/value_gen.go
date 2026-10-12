@@ -23,6 +23,7 @@ const (
 	Matched
 	Mismatched
 	Missing
+	Incompatible
 )
 
 // DefaultValue is the default value.
@@ -32,7 +33,7 @@ const DefaultValue Value = Custom
 const FirstValue Value = Custom
 
 // LastValue is the last valid value.
-const LastValue Value = Missing
+const LastValue Value = Incompatible
 
 // Values holds all possible values.
 var Values = []Value{
@@ -40,6 +41,7 @@ var Values = []Value{
 	Matched,
 	Mismatched,
 	Missing,
+	Incompatible,
 }
 
 // Value describes the state of a source compared to a piece of data.
@@ -64,6 +66,8 @@ func (enum Value) Key() string {
 		return "mismatched"
 	case Missing:
 		return "missing"
+	case Incompatible:
+		return "incompatible"
 	default:
 		return DefaultValue.Key()
 	}
@@ -80,6 +84,8 @@ func (enum Value) String() string {
 		return i18n.Text(`Data does NOT match library source data`)
 	case Missing:
 		return i18n.Text(`Unable to locate the library source data to compare against`)
+	case Incompatible:
+		return i18n.Text(`Data is of a different kind than the library source data and can't be synced with it`)
 	default:
 		return DefaultValue.String()
 	}
@@ -96,6 +102,8 @@ func (enum Value) AltString() string {
 		return `!`
 	case Missing:
 		return `?`
+	case Incompatible:
+		return `≠`
 	default:
 		return DefaultValue.AltString()
 	}

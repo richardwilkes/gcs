@@ -1463,6 +1463,12 @@ var allEnums = []*enumInfo{
 				Alt:           "?",
 				NoLocalizeAlt: true,
 			},
+			{
+				Key:           "incompatible",
+				String:        "Data is of a different kind than the library source data and can't be synced with it",
+				Alt:           "≠",
+				NoLocalizeAlt: true,
+			},
 		},
 	},
 	{
