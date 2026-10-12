@@ -31,9 +31,10 @@ const (
 	listFilterDialogMinHeight = 400
 )
 
-// showListFilterDialog puts up the modal editor for a saved filter and reports whether it was accepted. The filter is
-// edited in place, so a caller that has to survive a cancel hands over a clone. except is the filter whose name the
-// entered name may match without counting as a duplicate -- the one being edited -- and is nil for a new filter.
+// showListFilterDialog puts up the modal editor for a saved filter and reports whether it was accepted. It can't be
+// accepted until the filter has a name and at least one condition. The filter is edited in place, so a caller that has
+// to survive a cancel hands over a clone. except is the filter whose name the entered name may match without counting
+// as a duplicate -- the one being edited -- and is nil for a new filter.
 func showListFilterDialog(title, key string, filter *gurps.ListFilter, fields []filterFieldInfo, except *gurps.ListFilter) bool {
 	content := newListFilterDialogContent()
 	content.SetLayout(&unison.FlexLayout{
@@ -89,12 +90,17 @@ func showListFilterDialog(title, key string, filter *gurps.ListFilter, fields []
 	dialog.Window().SetTitle(title)
 	// Rows are dragged within the dialog, which is a window of its own.
 	dialog.Window().RegisterForDragTypes(listFilterDragKey)
+	// The name field's error mark reflects only the name, but the OK button also needs a condition to test.
+	updateOK := func(nameValid bool) {
+		dialog.Button(unison.ModalResponseOK).SetEnabled(nameValid && !filter.Root.Empty())
+	}
 	nameField.ValidateCallback = func() bool {
 		name := strings.TrimSpace(filter.Name)
 		valid := name != "" && !gurps.GlobalSettings().ListFilterNameInUse(key, name, except)
-		dialog.Button(unison.ModalResponseOK).SetEnabled(valid)
+		updateOK(valid)
 		return valid
 	}
+	panel.rebuilt = func() { updateOK(!nameField.Invalid()) }
 	nameField.Validate() // Here to update the OK button.
 	// Undo and Redo find the dialog's undo manager wherever the focus is, even on a button outside the content.
 	dialog.Window().ClientData()[windowUndoManagerKey] = content.undoMgr

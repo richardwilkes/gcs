@@ -42,6 +42,8 @@ type listFilterPanel struct {
 	weightUnits fxp.WeightUnit
 	// headed has an empty root show its head, once a group type has been chosen for it.
 	headed bool
+	// rebuilt, if set, is called after each build, which follows every change to the tree.
+	rebuilt func()
 }
 
 // filterTreeState is the data a snapshot of the panel holds: the tree, and whether an empty root shows its head.
@@ -109,6 +111,9 @@ func (p *listFilterPanel) build() {
 	}
 	p.weightUnits = gurps.SheetSettingsFor(nil).DefaultWeightUnits
 	p.AddChild(p.group(p.filter.Root, treeRootPath))
+	if p.rebuilt != nil {
+		p.rebuilt()
+	}
 }
 
 // row returns the panel for a node other than a group: its sentence, or while it is open its editor, beside a button

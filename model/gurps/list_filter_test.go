@@ -946,6 +946,32 @@ func TestListFilterCloneIsDeep(t *testing.T) {
 	checkFilterParents(c, clone.Root, "mutated clone root")
 }
 
+// TestFilterGroupEmpty verifies that a group counts as empty while it holds nothing but groups, however deeply nested,
+// and that a condition or a node of a kind this version doesn't recognize anywhere within it makes it non-empty, since
+// a filter that tests nothing is not one the editor accepts.
+func TestFilterGroupEmpty(t *testing.T) {
+	c := check.New(t)
+
+	root := gurps.NewListFilter("Empty").Root
+	c.True(root.Empty(), "a new filter's root is empty")
+
+	inner := gurps.NewFilterGroup(nil)
+	root.Children = gurps.FilterNodes{gurps.NewFilterGroup(nil), inner}
+	c.True(root.Empty(), "groups holding nothing leave it empty")
+
+	inner.Children = gurps.FilterNodes{gurps.NewFilterGroup(nil)}
+	c.True(root.Empty(), "however deeply they nest")
+
+	inner.Children = append(inner.Children, gurps.NewFilterCondition(inner, "name"))
+	c.False(root.Empty(), "a condition nested within makes it non-empty")
+
+	inner.Children = gurps.FilterNodes{gurps.NewFilterCondition(inner, "no_such_field")}
+	c.False(root.Empty(), "even one on a field that isn't known")
+
+	inner.Children = gurps.FilterNodes{gurps.NewUnknownFilterNode("future", jsontext.Value(`{"type":"future"}`))}
+	c.False(root.Empty(), "as does a node of a kind that isn't recognized")
+}
+
 // TestListFilterHash verifies that the hash covers everything a filter is made of, since it is what decides whether a
 // filter has unsaved changes, and that it copes with the nils a partially built filter may hold.
 func TestListFilterHash(t *testing.T) {
