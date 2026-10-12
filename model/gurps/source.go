@@ -242,12 +242,15 @@ func (sm *SrcMatcher) Match(data SrcProvider) (state srcstate.Value, match any) 
 }
 
 // canSyncKinds returns true if the data can be synced with its library copy without changing what kind of node it is:
-// the two have the same TID kind, or are both plain equipment or physical containers. This doesn't group kinds into
-// classes: plain equipment syncs with a physical container, and a physical container with a group, since the two have
-// the same TID kind, but plain equipment doesn't sync with a group.
+// the two have the same TID kind, or share a kind with the other form they convert into (see sharedSyncKind). This
+// doesn't group kinds into classes: plain equipment syncs with a physical container, and a physical container with a
+// group, since the two have the same TID kind, but plain equipment doesn't sync with a group.
 func canSyncKinds(data, lib SrcProvider) bool {
-	return tidKind(data.ID()) == tidKind(lib.ID()) ||
-		(isPlainOrPhysicalEquipment(data) && isPlainOrPhysicalEquipment(lib))
+	if tidKind(data.ID()) == tidKind(lib.ID()) {
+		return true
+	}
+	kind := sharedSyncKind(data)
+	return kind != 0 && kind == sharedSyncKind(lib)
 }
 
 // maxUnownedSrcFiles is the most library files unownedSrcMatcher holds on to.

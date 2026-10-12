@@ -60,20 +60,28 @@ type Hashable interface {
 	Hash(hash.Hash)
 }
 
-// syncKind returns the kind that starts the hash of the data. It is the kind of the data's TID, except that a physical
-// equipment container has the kind of plain equipment (see isPlainOrPhysicalEquipment).
+// syncKind returns the kind that starts the hash of the data. It is the kind of the data's TID, except for data that
+// shares a kind with the other form it converts into (see sharedSyncKind).
 func syncKind(data interface{ ID() tid.TID }) byte {
-	if isPlainOrPhysicalEquipment(data) {
-		return kinds.Equipment
+	if kind := sharedSyncKind(data); kind != 0 {
+		return kind
 	}
 	return tidKind(data.ID())
 }
 
-// isPlainOrPhysicalEquipment returns true if the data is plain equipment or a physical container, which have the same
-// data to sync and can be converted into one another.
-func isPlainOrPhysicalEquipment(data any) bool {
-	eqp, ok := data.(*Equipment)
-	return ok && (!eqp.Container() || eqp.IsPhysicalContainer())
+// sharedSyncKind returns the kind the data shares with the other form it can be converted into, since the two have the
+// same data to sync, or 0 if it shares none: plain equipment and a physical container share the kind of plain
+// equipment, and a note and a note container the kind of a note.
+func sharedSyncKind(data any) byte {
+	switch one := data.(type) {
+	case *Equipment:
+		if !one.Container() || one.IsPhysicalContainer() {
+			return kinds.Equipment
+		}
+	case *Note:
+		return kinds.Note
+	}
+	return 0
 }
 
 // tidKind returns the kind of the TID, or 0 if it is empty.

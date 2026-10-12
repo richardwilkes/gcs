@@ -275,8 +275,8 @@ func TestEditDataMarshalsWithoutDerivedValues(t *testing.T) {
 }
 
 // TestHashStartsWithSyncKind verifies that a node of each type hashes differently once its TID is given another kind,
-// even though everything else it holds stays the same, except for plain equipment and a physical container, which hash
-// the same so that one can be converted into the other.
+// even though everything else it holds stays the same, except for plain equipment and a physical container, and a note
+// and a note container, which hash the same so that one can be converted into the other.
 func TestHashStartsWithSyncKind(t *testing.T) {
 	c := check.New(t)
 	for _, one := range []struct {
@@ -339,7 +339,7 @@ func TestHashStartsWithSyncKind(t *testing.T) {
 			other.TID = tid.TID(kinds.EquipmentModifierContainer) + modifier.TID[1:]
 			return modifier, other
 		}},
-		{name: "note vs note container", pair: func() (Hashable, Hashable) {
+		{name: "note vs note container", same: true, pair: func() (Hashable, Hashable) {
 			note := NewNote(nil, nil, false)
 			other := note.Clone(LibraryFile{}, nil, nil, Copy)
 			other.TID = tid.TID(kinds.NoteContainer) + note.TID[1:]

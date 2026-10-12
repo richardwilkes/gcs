@@ -731,7 +731,7 @@ func matchAndSyncWith[T interface {
 
 // TestSyncRefusesIncompatibleKinds verifies that data whose library copy has a different TID kind is incompatible with
 // it and left alone by a sync, which would otherwise lose data, except for plain equipment and a physical container,
-// which sync both ways without changing kind.
+// and a note and a note container, which sync both ways without changing kind.
 func TestSyncRefusesIncompatibleKinds(t *testing.T) {
 	c := check.New(t)
 	entity := NewEntity()
@@ -759,13 +759,6 @@ func TestSyncRefusesIncompatibleKinds(t *testing.T) {
 	c.Equal(srcstate.Incompatible, matchAndSyncWith(t, entity, group, libPlainForGroup), "group vs plain equipment")
 	c.True(group.IsGroup(), "the group stays a group")
 
-	note := NewNote(entity, nil, false)
-	note.MarkDown = "Mine"
-	libNoteContainer := NewNote(nil, nil, true)
-	libNoteContainer.MarkDown = "Library"
-	c.Equal(srcstate.Incompatible, matchAndSyncWith(t, entity, note, libNoteContainer), "note vs note container")
-	c.Equal("Mine", note.MarkDown, "the note keeps its text")
-
 	converted := NewEquipment(entity, nil, false)
 	converted.BaseValue = "10"
 	libPhysical := NewEquipment(nil, nil, true)
@@ -787,4 +780,24 @@ func TestSyncRefusesIncompatibleKinds(t *testing.T) {
 	c.True(physical.IsPhysicalContainer(), "and stays a physical container")
 	state, _ = MatchSource(physical)
 	c.Equal(srcstate.Matched, state, "the synced container matches its source")
+
+	note := NewNote(entity, nil, false)
+	note.MarkDown = "Mine"
+	libNoteContainer := NewNote(nil, nil, true)
+	libNoteContainer.MarkDown = "Library"
+	c.Equal(srcstate.Mismatched, matchAndSyncWith(t, entity, note, libNoteContainer), "note vs note container")
+	c.Equal("Library", note.MarkDown, "the note is synced")
+	c.False(note.Container(), "and stays a note")
+	state, _ = MatchSource(note)
+	c.Equal(srcstate.Matched, state, "the synced note matches its source")
+
+	noteContainer := NewNote(entity, nil, true)
+	noteContainer.MarkDown = "Mine"
+	libNote := NewNote(nil, nil, false)
+	libNote.MarkDown = "Library"
+	c.Equal(srcstate.Mismatched, matchAndSyncWith(t, entity, noteContainer, libNote), "note container vs note")
+	c.Equal("Library", noteContainer.MarkDown, "the note container is synced")
+	c.True(noteContainer.Container(), "and stays a note container")
+	state, _ = MatchSource(noteContainer)
+	c.Equal(srcstate.Matched, state, "the synced note container matches its source")
 }
