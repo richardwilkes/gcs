@@ -12,11 +12,13 @@ package ux
 import (
 	"path/filepath"
 	"slices"
+	"strings"
 	"testing"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/ux/uxtest"
 	"github.com/richardwilkes/toolbox/v2/check"
+	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/unison"
 )
 
@@ -383,4 +385,32 @@ func TestListFilterPopupFilterNamedNone(t *testing.T) {
 	c.True(savedFilters()[0] == chosen, "the saved filter, not None, must be in force")
 	c.False(h.popup.rebuildItems(), "the saved filter is still there")
 	c.Equal(popupFirstSavedIndex, h.popup.popup.SelectedIndex(), "the saved filter's own item must stay selected")
+}
+
+// TestListFilterPopupCapsWidth verifies that a long filter name doesn't widen the popup's button to fit it, that the
+// button shows twenty Ms whole and cuts anything wider to as much of its start as fits, with the ellipsis counted in
+// the width and no space before it, and that the tooltip leads with a filter name only while the button cuts it short.
+func TestListFilterPopupCapsWidth(t *testing.T) {
+	c := check.New(t)
+	long := "Mental or Social Advantages Worth Keeping"
+	h := newListFilterPopupHarness(t, long, "Short")
+	popup := h.popup.popup
+	_, uncapped, _ := popup.DefaultSizes(geom.Size{})
+	_, pref, _ := popup.Sizes(geom.Size{})
+	c.True(pref.Width < uncapped.Width, "the long name may not widen the button to fit it")
+
+	twenty := strings.Repeat("M", 20)
+	c.Equal(twenty, popupFittedText(popup, twenty), "twenty Ms are shown whole")
+	c.Equal(strings.Repeat("M", 19)+"…", popupFittedText(popup, twenty+"M"), "twenty-one are cut to fit the ellipsis")
+	c.Equal("Mental…", popupFittedText(popup, "Mental"+strings.Repeat(" ", 200)+"x"),
+		"no space is left before the ellipsis")
+
+	h.choose(popupFirstSavedIndex)
+	if _, cut := popupTextCut(popup); !cut {
+		t.Fatal("the button must cut the long name short")
+	}
+	c.Contains(tooltipText(popup.Tooltip), long, "the tooltip leads with the long name in full")
+	h.choose(popupFirstSavedIndex + 1)
+	c.NotContains(tooltipText(popup.Tooltip), long, "the tooltip drops the long name once another is chosen")
+	c.NotContains(tooltipText(popup.Tooltip), "Short", "a name the button shows whole is kept out of the tooltip")
 }

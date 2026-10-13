@@ -768,7 +768,8 @@ func TestFilterFieldSuggestionSources(t *testing.T) {
 // TestFilterFieldListedValues verifies that a field offering the values found in the list being filtered looks at
 // every node a filter checks, nested, container and disabled ones included, but not those that lack the field, and
 // offers each value once, trimmed and in its first spelling, sorted naturally without regard to case. Blank values
-// are left out, as are those of a list field that hold a comma, since the qualifier is split on commas.
+// are left out, as are those of a list field that an "is" condition naming them couldn't match: one holding a comma,
+// since the qualifier is split on commas, or a nameable marker with choices, since it is rewritten before comparing.
 func TestFilterFieldListedValues(t *testing.T) {
 	c := check.New(t)
 
@@ -777,7 +778,7 @@ func TestFilterFieldListedValues(t *testing.T) {
 	root.Tags = []string{"Magic"}
 	child := gurps.NewTrait(nil, root, false)
 	child.Name = "Bow, Long"
-	child.Tags = []string{"magic", " Zebra ", "", "Odd, Tag"}
+	child.Tags = []string{"magic", " Zebra ", "", "Odd, Tag", "@Kind|A|B@", "@Kind@"}
 	nested := gurps.NewTrait(nil, root, true)
 	nested.Name = "Nested"
 	grandchild := gurps.NewTrait(nil, nested, false)
@@ -789,7 +790,7 @@ func TestFilterFieldListedValues(t *testing.T) {
 	list := []*gurps.Trait{root}
 
 	tags := findFilterField(gurps.TraitFilterFields(), "tags")
-	c.Equal([]string{"apple", "Magic", "Zebra"}, tags.Suggestions(list), "the tags in the list are offered")
+	c.Equal([]string{"@Kind@", "apple", "Magic", "Zebra"}, tags.Suggestions(list), "the tags in the list are offered")
 	c.Equal(0, len(tags.Suggestions(nil)), "no list offers no tags")
 
 	named := gurps.NewTextFilterField("name", "have a name", func(trait *gurps.Trait) string { return trait.Name }).
@@ -806,6 +807,92 @@ func TestFilterFieldListedValues(t *testing.T) {
 	techLevels := findFilterField(gurps.EquipmentFilterFields(), "tech_level")
 	c.Equal([]string{"2", "9", "10", "^"}, techLevels.Suggestions(equipment), "tech levels are sorted naturally")
 	c.Equal(0, len(techLevels.Suggestions(nil)), "no list offers no tech levels")
+}
+
+// TestListFilterTags verifies that the tags offered by ListFilterTags come only from the nodes, at any depth, that pass
+// the filter, and that a nil filter offers the tags of every node.
+func TestListFilterTags(t *testing.T) {
+	c := check.New(t)
+	root := gurps.NewTrait(nil, nil, true)
+	root.Tags = []string{"Group"}
+	vision := gurps.NewTrait(nil, root, false)
+	vision.Name = "Acute Vision"
+	vision.Tags = []string{"Physical", "Sense"}
+	root.Children = []*gurps.Trait{vision}
+	reflexes := gurps.NewTrait(nil, nil, false)
+	reflexes.Tags = []string{"Mental"}
+	list := []*gurps.Trait{root, reflexes}
+	fields := gurps.TraitFilterFields()
+
+	c.Equal([]string{"Group", "Mental", "Physical", "Sense"}, gurps.ListFilterTags(nil, fields, list),
+		"with no filter, the tags of every node are offered")
+	visionOnly := newTestListFilter(newTextFilterCondition("name", criteria.ContainsText, "vision"))
+	c.Equal([]string{"Physical", "Sense"}, gurps.ListFilterTags(visionOnly, fields, list),
+		"only the tags of the nested node that passes are offered, not those of the container above it")
+	nothing := newTestListFilter(newTextFilterCondition("name", criteria.ContainsText, "nothing"))
+	c.Equal(0, len(gurps.ListFilterTags(nothing, fields, list)), "a filter that passes nothing offers no tags")
+	withoutTags := slices.DeleteFunc(slices.Clone(fields), func(field *gurps.FilterField[*gurps.Trait]) bool {
+		return field.Key == "tags"
+	})
+	c.Nil(gurps.ListFilterTags(nil, withoutTags, list), "fields without a tags field offer none")
+}
+
+// TestNewCombinedListFilter verifies that NewCombinedListFilter adds one "is" condition per tag to an unnamed copy of
+// its base, joining the base's conditions when its root requires all of them and isn't negated, nesting it otherwise,
+// and leaving out a base without conditions, while never touching the base itself.
+func TestNewCombinedListFilter(t *testing.T) {
+	c := check.New(t)
+	tag := func(name string) gurps.FilterNode { return newTextFilterCondition("tags", criteria.IsText, name) }
+	name := func() gurps.FilterNode { return newTextFilterCondition("name", criteria.ContainsText, "fur") }
+	withRoot := func(all, not bool, nodes ...gurps.FilterNode) *gurps.ListFilter {
+		f := newTestListFilter(nodes...)
+		f.Root.All, f.Root.Not = all, not
+		return f
+	}
+	nested := func(all, not bool) gurps.FilterNode { return withRoot(all, not, name()).Root }
+	physical := []string{"Physical"}
+	for i, one := range []struct {
+		base *gurps.ListFilter
+		tags []string
+		want *gurps.ListFilter
+	}{
+		{nil, nil, withRoot(true, false)},
+		{nil, []string{"Physical", "Exotic"}, withRoot(true, false, tag("Physical"), tag("Exotic"))},
+		{&gurps.ListFilter{Name: "No root"}, physical, withRoot(true, false, tag("Physical"))},
+		{withRoot(false, false), physical, withRoot(true, false, tag("Physical"))},
+		{withRoot(true, false, gurps.NewFilterGroup(nil)), physical, withRoot(true, false, tag("Physical"))},
+		{withRoot(true, false, name()), physical, withRoot(true, false, name(), tag("Physical"))},
+		{withRoot(false, false, name()), physical, withRoot(true, false, nested(false, false), tag("Physical"))},
+		{withRoot(true, true, name()), physical, withRoot(true, false, nested(true, true), tag("Physical"))},
+	} {
+		var before uint64
+		if one.base != nil && one.base.Root != nil {
+			before = gurps.Hash64(one.base)
+		}
+		f := gurps.NewCombinedListFilter(one.base, one.tags)
+		one.want.Name = ""
+		c.Equal(gurps.Hash64(one.want), gurps.Hash64(f), "case %d", i)
+		checkFilterParents(c, f.Root, "root")
+		if one.base != nil && one.base.Root != nil {
+			c.True(one.base.Root.ParentGroup() == nil, "case %d leaves its base's root without a parent", i)
+			checkFilterParents(c, one.base.Root, "base")
+			scrambleFilterGroup(f.Root)
+			c.Equal(before, gurps.Hash64(one.base), "case %d shares nothing with its base", i)
+		}
+	}
+}
+
+// scrambleFilterGroup changes the criteria of every condition below group, at any depth, and then empties it.
+func scrambleFilterGroup(group *gurps.FilterGroup) {
+	for _, child := range group.Children {
+		switch node := child.(type) {
+		case *gurps.FilterCondition:
+			node.Text.Qualifier += "!"
+		case *gurps.FilterGroup:
+			scrambleFilterGroup(node)
+		}
+	}
+	group.Children = nil
 }
 
 // checkContainerTypeChoices verifies that the field offers the String() of each of the types, in order, whatever the

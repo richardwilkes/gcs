@@ -11,9 +11,13 @@ package ux
 
 import (
 	"slices"
+	"strings"
+	"unicode"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/i18n"
+	"github.com/richardwilkes/toolbox/v2/xmath"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
 )
@@ -94,7 +98,7 @@ func newListFilterPopup(spec listFilterPopupSpec) *listFilterPopup {
 		// The commands act and leave the selection where it was; only a filter, or None, becomes the selection.
 		switch index {
 		case p.newIndex:
-			p.newFilter()
+			p.newFilter(gurps.NewListFilter(""))
 		case p.editIndex:
 			p.editFilter()
 		case p.deleteIndex:
@@ -104,6 +108,7 @@ func newListFilterPopup(spec listFilterPopupSpec) *listFilterPopup {
 		}
 	}
 	p.popup.SelectionChangedCallback = func(popup *unison.PopupMenu[string]) {
+		p.syncTooltip()
 		if p.rebuilding {
 			return
 		}
@@ -111,11 +116,9 @@ func newListFilterPopup(spec listFilterPopupSpec) *listFilterPopup {
 		p.enableCommands(i != p.noneIndex)
 		p.spec.choose(p.filterAt(i))
 	}
-	savedFilters := i18n.Text("Saved Filters")
-	p.popup.Tooltip = newWrappedTooltipWithSecondaryText(savedFilters,
-		i18n.Text("Choose a saved filter, or create, edit and delete them"))
-	// The popup follows the quick filter field in the toolbar, with no label of its own to name it by.
-	p.popup.Accessibility.Name = savedFilters
+	capPopupWidth(p.popup)
+	// The popup sits at the end of the toolbar, with no label of its own to name it by.
+	p.popup.Accessibility.Name = i18n.Text("Saved Filters")
 	p.popup.SetLayoutData(&unison.FlexLayoutData{
 		HAlign: align.Fill,
 		VAlign: align.Middle,
@@ -162,12 +165,23 @@ func (p *listFilterPopup) rebuildItems() (lostCurrent bool) {
 	}
 	p.popup.SelectIndex(index)
 	p.enableCommands(index != p.noneIndex)
+	p.syncTooltip() // A rename keeps the selection where it was, yet changes the name shown.
 	// The popup is as wide as its widest item, so adding, removing or renaming a filter can change its size, and the
 	// toolbar it sits in has to be laid out again to make room. Marking the popup alone wouldn't do it: a parent that
 	// is laid out again doesn't revisit its children, so the whole chain up to the window is marked.
 	p.popup.MarkForLayoutRecursivelyUpward()
 	p.popup.MarkForRedraw()
 	return current != nil && index == p.noneIndex
+}
+
+// syncTooltip puts a filter name the button cuts short at the head of the tooltip, so that it can still be read in
+// full.
+func (p *listFilterPopup) syncTooltip() {
+	detail := i18n.Text("Choose a saved filter, or create, edit and delete them")
+	if name, cut := popupTextCut(p.popup); cut {
+		detail = name + "\n\n" + detail
+	}
+	p.popup.Tooltip = newWrappedTooltipWithSecondaryText(p.popup.Accessibility.Name, detail)
 }
 
 // filterAt returns the filter the item at the given index stands for, or nil when the item is None, a separator, a
@@ -218,9 +232,8 @@ func (p *listFilterPopup) refresh() {
 	}
 }
 
-// newFilter puts up the editor for a new filter and, if it is accepted, saves it and puts it in force.
-func (p *listFilterPopup) newFilter() {
-	f := gurps.NewListFilter("")
+// newFilter puts up the editor for f as a new filter and, if it is accepted, saves it and puts it in force.
+func (p *listFilterPopup) newFilter(f *gurps.ListFilter) {
 	if showFilterEditor(i18n.Text("New Filter"), p.spec.key, f, p.spec.fields, nil) {
 		gurps.GlobalSettings().AddListFilter(p.spec.key, f)
 		p.filtersChanged(f)
@@ -262,4 +275,64 @@ func (p *listFilterPopup) filtersChanged(f *gurps.ListFilter) {
 	saveGlobalSettings()
 	p.selectFilter(f)
 	notifyListFiltersChanged(p.spec.key, p)
+}
+
+// popupWidthSample is the text whose width, in a popup's font, caps how wide a filter popup's button grows and how much
+// of the chosen item it shows.
+const popupWidthSample = "MMMMMMMMMMMMMMMMMMMM"
+
+// capPopupWidth keeps the popup's button from growing wider than it needs to show popupWidthSample, cutting the chosen
+// item short with an ellipsis past that. The menu it opens still shows every item in full.
+func capPopupWidth(popup *unison.PopupMenu[string]) {
+	popup.SetSizer(func(hint geom.Size) (minSize, prefSize, maxSize geom.Size) {
+		_, prefSize, maxSize = popup.DefaultSizes(hint)
+		// The space around the text is added as unison.PopupMenu.DefaultSizes adds it.
+		limit := popupTextWidth(popup, popupWidthSample) + popup.HMargin*2 + 2 + prefSize.Height*0.75
+		if border := popup.Border(); border != nil {
+			limit += border.Insets().Width()
+		}
+		prefSize.Width = min(prefSize.Width, xmath.Ceil(limit))
+		return prefSize, prefSize, maxSize
+	})
+	popup.DrawCallback = func(canvas *unison.Canvas, dirty geom.Rect) {
+		// The button draws the chosen item through the renderer the menu uses too, so it is swapped only while drawing.
+		render := popup.ItemRendererCallback
+		defer func() { popup.ItemRendererCallback = render }()
+		popup.ItemRendererCallback = func(item string) string {
+			if render != nil {
+				item = render(item)
+			}
+			return popupFittedText(popup, item)
+		}
+		popup.DefaultDraw(canvas, dirty)
+	}
+}
+
+// popupTextCut returns the text of the popup's chosen item, and whether its button has to cut that text short.
+func popupTextCut(popup *unison.PopupMenu[string]) (text string, cut bool) {
+	text = popup.Text()
+	return text, popupFittedText(popup, text) != text
+}
+
+// popupFittedText returns text as the popup's button shows it. Text wider than popupWidthSample is cut to as much of
+// its start as fits that width with an ellipsis after it, the ellipsis counted in the width and no space left before
+// it.
+func popupFittedText(popup *unison.PopupMenu[string], text string) string {
+	t := unison.NewText(text, &unison.TextDecoration{Font: popup.Font})
+	room := popupTextWidth(popup, popupWidthSample)
+	if t.Width() <= room {
+		return text
+	}
+	room -= popupTextWidth(popup, "…")
+	runes := t.Runes()
+	n := len(runes)
+	for n > 0 && t.PositionForRuneIndex(n) > room {
+		n--
+	}
+	return strings.TrimRightFunc(string(runes[:n]), unicode.IsSpace) + "…"
+}
+
+// popupTextWidth returns the width of text in the popup's font.
+func popupTextWidth(popup *unison.PopupMenu[string], text string) float32 {
+	return unison.NewText(text, &unison.TextDecoration{Font: popup.Font}).Width()
 }

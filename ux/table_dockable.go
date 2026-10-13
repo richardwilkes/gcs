@@ -17,11 +17,16 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/ux/svg"
 	"github.com/richardwilkes/toolbox/v2/errs"
+	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
 	"github.com/richardwilkes/unison/enums/behavior"
 )
+
+// quickFilterWidthSample is the text whose width, in the quick filter's font, is the least room the field keeps for its
+// text.
+const quickFilterWidthSample = "MMMMMMMMMM"
 
 var (
 	_ FileBackedDockable         = &TableDockable[*gurps.Trait]{}
@@ -45,6 +50,7 @@ type TableDockable[T gurps.Node[T]] struct {
 	filterBanner     *filterBanner
 	savedFilters     *listFilterPopup
 	selectedFilter   *gurps.ListFilter
+	tagFilter        *listTagFilterPopup
 	scroll           *unison.ScrollPanel
 	tableHeader      *unison.TableHeader[*Node[T]]
 	table            *unison.Table[*Node[T]]
@@ -161,9 +167,16 @@ func (d *TableDockable[T]) createToolbar() *unison.Panel {
 	sizeToFitButton.Tooltip = newWrappedTooltip(i18n.Text("Sets the width of each column to fit its contents"))
 	sizeToFitButton.ClickCallback = d.sizeToFit
 
-	// The quick filter is always in play: what is typed here narrows the list on top of a saved filter when one is in
-	// force, and is all that filters the list otherwise.
+	// The quick filter is always in play: what is typed here narrows what the saved filter and the chosen tags let
+	// through when either is in force, and is all that filters the list otherwise.
 	d.filterField = NewSearchField(i18n.Text("Quick Filter"), func(_, _ *unison.FieldState) { d.applyFilter() })
+	// The field grabs width, and a column that does so in a FlexLayout shrinks no further than an explicit MinSize,
+	// ignoring the field's own minimum, so that minimum is copied there to keep the field from shrinking out of sight.
+	d.filterField.SetMinimumTextWidthUsing(quickFilterWidthSample)
+	if data, ok := d.filterField.LayoutData().(*unison.FlexLayoutData); ok {
+		minSize, _, _ := d.filterField.Sizes(geom.Size{})
+		data.MinSize.Width = minSize.Width
+	}
 
 	toolbar := NewToolbar()
 	toolbar.AddChild(NewDefaultInfoPop())
@@ -182,6 +195,14 @@ func (d *TableDockable[T]) createToolbar() *unison.Panel {
 			current: func() *gurps.ListFilter { return d.selectedFilter },
 			choose:  d.chooseFilter,
 		})
+		d.tagFilter = newListTagFilterPopup(listTagFilterPopupSpec{
+			tags: func() []string {
+				return gurps.ListFilterTags(d.selectedFilter, d.provider.FilterFields(), d.provider.RootData())
+			},
+			changed: func() { d.applyFilter() },
+			save:    d.saveTagFilter,
+		})
+		toolbar.AddChild(d.tagFilter.popup)
 		toolbar.AddChild(d.savedFilters.popup)
 	}
 	FinishToolbarLayout(toolbar)
@@ -274,6 +295,7 @@ func (d *TableDockable[T]) Rebuild(_ bool) {
 	gurps.DiscardGlobalResolveCache()
 	h, v := d.scroll.Position()
 	sel := d.table.CopySelectionMap()
+	d.dropUnofferedTags()
 	// The filter stays in force across a rebuild, and applying it syncs the table itself, so sync here only when it
 	// didn't. Syncing first regardless would measure every row of the stale filtered set only to throw that away.
 	if !d.applyFilter() {
@@ -295,10 +317,29 @@ func (d *TableDockable[T]) Hash(h hash.Hash) {
 }
 
 // chooseFilter puts the given saved filter in force, or drops the current one when f is nil. The quick filter's text is
-// left alone, since it narrows the list on top of the saved filter.
+// left alone, since it narrows the list on top of the saved filter. The chosen tags are dropped when another saved
+// filter is chosen, and otherwise kept as long as the filter still offers them.
 func (d *TableDockable[T]) chooseFilter(f *gurps.ListFilter) {
+	if d.tagFilter != nil && f != d.selectedFilter {
+		d.tagFilter.clear()
+	}
 	d.selectedFilter = f
+	d.dropUnofferedTags()
 	d.applyFilter()
+}
+
+// dropUnofferedTags drops the chosen tags the list no longer offers. With no tag chosen there is nothing to drop, and
+// the tag filter gathers the tags afresh when its menu is opened, so the list isn't gathered from here for nothing.
+func (d *TableDockable[T]) dropUnofferedTags() {
+	if d.tagFilter != nil && len(d.tagFilter.selected) != 0 {
+		d.tagFilter.rebuildItems()
+	}
+}
+
+// saveTagFilter puts up the editor for a new saved filter that requires what the saved filter in force does and the
+// chosen tags as well.
+func (d *TableDockable[T]) saveTagFilter() {
+	d.savedFilters.newFilter(gurps.NewCombinedListFilter(d.selectedFilter, d.tagFilter.chosenTags()))
 }
 
 // listFiltersChanged implements listFilterObserver.
@@ -308,19 +349,24 @@ func (d *TableDockable[T]) listFiltersChanged(key string, source *listFilterPopu
 	}
 }
 
-// applyFilter applies the saved filter in force and the quick filter's text together, showing a row only when it passes
-// both, and reports whether the table was synced to its model, which unison.Table.ApplyHierarchicalFilter does whenever
-// it is given a filter or has one to clear. The hierarchy is kept so a matching row is seen beneath the containers that
-// hold it; a container shown only for that reason is dimmed (see Node.cellData).
+// applyFilter applies the saved filter in force, requiring the chosen tags as well, and the quick filter's text
+// together, showing a row only when it passes both, and reports whether the table was synced to its model, which
+// unison.Table.ApplyHierarchicalFilter does whenever it is given a filter or has one to clear. The hierarchy is kept so
+// a matching row is seen beneath the containers that hold it; a container shown only for that reason is dimmed (see
+// Node.cellData).
 func (d *TableDockable[T]) applyFilter() (synced bool) {
 	if d.filterField == nil {
 		return false
 	}
 	// The table's filter is told which rows to drop, so each of these rejects the rows that fail its filter.
 	var saved, quick func(row *Node[T]) bool
-	if d.selectedFilter != nil {
+	var tags []string
+	if d.tagFilter != nil {
+		tags = d.tagFilter.chosenTags()
+	}
+	if d.selectedFilter != nil || len(tags) != 0 {
 		// The fields are looked up once here rather than once per row.
-		m := gurps.NewListFilterMatcher(d.selectedFilter, d.provider.FilterFields())
+		m := gurps.NewListFilterMatcher(gurps.NewCombinedListFilter(d.selectedFilter, tags), d.provider.FilterFields())
 		saved = func(row *Node[T]) bool { return !m(row.Data()) }
 	}
 	if text := strings.ToLower(strings.TrimSpace(d.filterField.GetFieldState().Text)); text != "" {

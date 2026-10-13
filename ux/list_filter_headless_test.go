@@ -820,3 +820,62 @@ func popupWidth(screen *unison.HeadlessScreen, d *TableDockable[*gurps.Trait]) f
 	screen.Do(func() { width = d.savedFilters.popup.FrameRect().Width })
 	return width
 }
+
+// TestListTagFilterHeadless drives the tag filter of a trait list inside a headless workspace, where the modifier keys
+// are read from the window as they are for a person's clicks: a click chooses a tag, and a Shift-click on another adds
+// it, so a trait has to carry both.
+func TestListTagFilterHeadless(t *testing.T) {
+	c := check.New(t)
+	screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
+	uxtest.SwapForTest(t, &gurps.GlobalSettings().ListFilters, make(map[string][]*gurps.ListFilter))
+	d := openListFilterTraitDockable(t, screen)
+	var physical, exotic int
+	screen.Do(func() {
+		physical = d.tagFilter.popup.IndexOfItem("physical")
+		exotic = d.tagFilter.popup.IndexOfItem("exotic")
+	})
+	read := func() (checked, names []string, text string) {
+		screen.Do(func() { checked, names, text = checkedTags(d), visibleTraitNames(d), d.tagFilter.popup.Text() })
+		return checked, names, text
+	}
+
+	uxtest.ChoosePopupItem(t, screen, wnd, d.tagFilter.popup, physical)
+	checked, names, _ := read()
+	c.Equal([]string{"Physical"}, checked, "the click chooses the tag")
+	c.Equal([]string{"Acute Vision"}, names, "only the trait tagged Physical is shown")
+
+	screen.Click(screen.PanelCenter(d.tagFilter.popup))
+	var item *unison.Panel
+	screen.Do(func() {
+		if items := uxtest.MenuItemPanels(uxtest.OpenMenuPopup(wnd)); exotic >= 0 && exotic < len(items) {
+			item = items[exotic]
+		}
+	})
+	if item == nil {
+		t.Fatal("the tag filter's menu has no Exotic item")
+	}
+	screen.ClickWith(screen.PanelCenter(item), unison.ButtonLeft, mod.Shift)
+	checked, names, text := read()
+	c.Equal([]string{"Exotic", "Physical"}, checked, "the Shift-click adds the tag")
+	c.Equal("Multiple", text, "the popup says that more than one tag is chosen")
+	c.Equal(0, len(names), "no trait carries both tags")
+}
+
+// TestListFilterPopupCutsNameHeadless verifies, with the popup drawn in a headless workspace, that a filter name too
+// long for the button is cut short there while the menu it opens still lists it in full.
+func TestListFilterPopupCutsNameHeadless(t *testing.T) {
+	c := check.New(t)
+	screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
+	uxtest.SwapForTest(t, &gurps.GlobalSettings().ListFilters, make(map[string][]*gurps.ListFilter))
+	long := "Mental or Social Advantages Worth Keeping"
+	seedListFilter(long, "tags", "Mental")
+	d := openListFilterTraitDockable(t, screen)
+
+	uxtest.ChoosePopupItem(t, screen, wnd, d.savedFilters.popup, popupFirstSavedIndex)
+	var cut bool
+	screen.Do(func() { _, cut = popupTextCut(d.savedFilters.popup) })
+	c.True(cut, "the button cuts the long name short")
+
+	screen.Click(screen.PanelCenter(d.savedFilters.popup))
+	chooseOpenMenuItem(t, screen, wnd, long) // Fails unless the menu lists the long name in full.
+}
