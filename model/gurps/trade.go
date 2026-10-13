@@ -11,6 +11,7 @@ package gurps
 
 import (
 	"maps"
+	"math"
 	"slices"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
@@ -48,9 +49,10 @@ func (e *Entity) MoneyItems() []*Equipment {
 }
 
 // SellMoneyItems returns a copy of the library equipment each of the sheet's sell money sources refers to, with a
-// quantity of one, as the denominations to give PayoutFor. Each copy is owned by this entity, has the source it came
-// from as its Source and isn't in any list. Sources that don't refer to non-container equipment in the library are
-// skipped.
+// quantity of one, as the denominations to give PayoutFor. Each copy is owned by this entity, isn't in any list and has
+// the source it came from as its Source, unless the library's item has a Source of its own, from another library, which
+// the copy keeps instead (see SourcedID.AdjustSource). Sources that don't refer to non-container equipment in the
+// library are skipped.
 func (e *Entity) SellMoneyItems() []*Equipment {
 	sm := e.SourceMatcher()
 	list := make([]*Equipment, 0, len(e.SheetSettings.SellMoney))
@@ -80,7 +82,22 @@ func (e *Equipment) MergeMatches(other *Equipment) bool {
 		e.Preconfigured == other.Preconfigured &&
 		e.PickSeparately == other.PickSeparately &&
 		maps.Equal(e.Replacements, other.Replacements) &&
+		weaponsMatch(e.Weapons, other.Weapons) &&
 		equipmentModifiersMatch(e.Modifiers, other.Modifiers)
+}
+
+// weaponsMatch returns true if the weapons match in what WeaponData.Hash leaves out: whether each is hidden. The rest of
+// their data, and their number, is compared through the hash of the equipment holding them.
+func weaponsMatch(a, b []*Weapon) bool {
+	if len(a) != len(b) {
+		return false
+	}
+	for i, one := range a {
+		if one.Hide != b[i].Hide {
+			return false
+		}
+	}
+	return true
 }
 
 func equipmentModifiersMatch(a, b []*EquipmentModifier) bool {
@@ -109,20 +126,34 @@ func TradePrice(eqp *Equipment, qty, percent fxp.Int) fxp.Int {
 	return eqp.ExtendedValueOfJustOne().Mul(qty).Mul(percent).Div(fxp.Hundred)
 }
 
-// TradeQuantity returns the most of this equipment that can be sold: its quantity, or one for a group.
+// TradeQuantity returns how many of this equipment there are to trade: its quantity times that of each container
+// holding it, since every copy of a container holds its own contents, which is how the extended value counts them. A
+// group, which has no quantity of its own, comes once for each copy of the containers holding it.
 func (e *Equipment) TradeQuantity() fxp.Int {
+	copies := e.containerCopies()
 	if e.IsGroup() {
-		return fxp.One
+		return copies
 	}
-	return e.Quantity
+	return e.Quantity.Mul(copies)
+}
+
+// containerCopies returns how many copies there are of the containers holding this equipment: the product of their
+// quantities, or one for equipment held by none.
+func (e *Equipment) containerCopies() fxp.Int {
+	copies := fxp.One
+	for parent := e.Parent(); parent != nil; parent = parent.Parent() {
+		copies = copies.Mul(parent.Quantity)
+	}
+	return copies
 }
 
 // CommitSale sells the items from the carried equipment and adds the payouts to it, then records the sale under name
 // and when in the shopping record and returns the entry. Each item's quantity is limited to its TradeQuantity; selling
-// all of an item removes it, along with anything it contains, and selling less reduces its quantity. Items that are not
-// carried, such as the contents of a container sold earlier in the list, are skipped. Each payout's Money is a
-// denomination from SellMoneyItems: when merge is true, its quantity is added to the first carried item it
-// MergeMatches, if any, and otherwise a copy of it is carried, equipped.
+// all of an item removes it, along with anything it contains, and selling less reduces its quantity by what each copy
+// of the containers holding it gives up. A group is sold in full. Items that are not carried, such as the contents of a
+// container sold earlier in the list, are skipped. Each payout's Money is a denomination from SellMoneyItems: when
+// merge is true, its quantity is added to the first carried item it MergeMatches, if any (see addToCarried), and
+// otherwise a copy of it is carried, equipped.
 func (e *Entity) CommitSale(items []SaleItem, payouts []Payout, merge bool, name string, when jio.Time) *ShoppingRecordEntry {
 	entry := &ShoppingRecordEntry{When: when, Name: name, Kind: ShoppingSold}
 	for _, item := range items {
@@ -135,6 +166,9 @@ func (e *Entity) CommitSale(items []SaleItem, payouts []Payout, merge bool, name
 		if qty <= 0 {
 			continue
 		}
+		if eqp.IsGroup() {
+			qty = most
+		}
 		entry.Items = append(entry.Items, ShoppingRecordItem{
 			Name:     eqp.String(),
 			Quantity: qty,
@@ -143,7 +177,7 @@ func (e *Entity) CommitSale(items []SaleItem, payouts []Payout, merge bool, name
 		if qty >= most {
 			e.removeCarried(eqp)
 		} else {
-			eqp.Quantity -= qty
+			eqp.Quantity -= qty.Div(eqp.containerCopies())
 		}
 	}
 	entry.Exchanged = e.receiveMoney(entry, payouts, merge)
@@ -154,10 +188,12 @@ func (e *Entity) CommitSale(items []SaleItem, payouts []Payout, merge bool, name
 
 // CommitPurchase spends the payments from the carried equipment and carries the items and the change, then records the
 // purchase under name and when in the shopping record and returns the entry. Each payment's Money is a carried money
-// item, such as one from MoneyItems, found again by its ID, since the pointer may be stale; no more is spent than is
-// carried, and a money item with none left is removed. Each item is bought at least once, and a group just once. Each
-// change payout's Money is a denomination from SellMoneyItems. When merge is true, each item and change payout adds its
-// quantity to the first carried item it MergeMatches, if any; otherwise a copy of it is carried, equipped.
+// item, such as one from MoneyItems, found again by its ID, since the pointer may be stale; no more is spent than its
+// TradeQuantity, spending less takes from every copy of the containers holding it, and a money item with none left is
+// removed. Each item is bought at least once, and a group just once. Each change payout's Money is a denomination from
+// ChangeFor: one of the sheet's sell money, or a copy of money paid. When merge is true, each item and change payout
+// adds its quantity to the first carried item it MergeMatches, if any (see addToCarried); otherwise a copy of it is
+// carried, equipped.
 func (e *Entity) CommitPurchase(items []PurchaseItem, payments, change []Payout, merge bool, name string, when jio.Time) *ShoppingRecordEntry {
 	entry := &ShoppingRecordEntry{When: when, Name: name, Kind: ShoppingBought}
 	var paid fxp.Int
@@ -169,16 +205,18 @@ func (e *Entity) CommitPurchase(items []PurchaseItem, payments, change []Payout,
 		if money == nil {
 			continue
 		}
-		qty := min(fxp.FromInteger(payment.Quantity), money.Quantity)
+		most := money.TradeQuantity()
+		qty := min(fxp.FromInteger(payment.Quantity), most)
 		if qty <= 0 {
 			continue
 		}
 		value := money.AdjustedValue()
 		entry.Money = append(entry.Money, ShoppingRecordItem{Name: money.String(), Quantity: -qty, Value: value})
 		paid += value.Mul(qty)
-		money.Quantity -= qty
-		if money.Quantity <= 0 {
+		if qty >= most {
 			e.removeCarried(money)
+		} else {
+			money.Quantity -= qty.Div(money.containerCopies())
 		}
 	}
 	for _, item := range items {
@@ -205,27 +243,44 @@ func (e *Entity) CommitPurchase(items []PurchaseItem, payments, change []Payout,
 
 // ChangeFor returns the change for an overpayment of over, and what it comes to: the money items from sellMoney, the
 // sheet's sell money denominations (see SellMoneyItems), that PayoutFor picks. When those can't return all of it, the
-// money given in payments is drawn on as well, since whoever is paid can hand some of it back: a copy of each payment's
-// money that none of the denominations MergeMatches is added to them, owned by this entity, with a quantity of one and
-// in no list.
+// money given in payments is drawn on as well, since whoever is paid can hand some of it back, though no more of it
+// than was paid: a copy of each payment's money that none of the denominations MergeMatches is added to them, owned by
+// this entity, with a quantity of one and in no list, and the quantities of the payments whose money it MergeMatches
+// are the most of it that is returned.
 func (e *Entity) ChangeFor(over fxp.Int, sellMoney []*Equipment, payments []Payout) (change []Payout, paid fxp.Int) {
 	change, paid = PayoutFor(over, sellMoney)
 	if paid >= over {
 		return change, paid
 	}
 	money := slices.Clone(sellMoney)
+	limits := make(map[*Equipment]int64)
 	for _, payment := range payments {
-		if payment.Money == nil || payment.Quantity <= 0 || slices.ContainsFunc(money, payment.Money.MergeMatches) {
+		if payment.Money == nil || payment.Quantity <= 0 {
+			continue
+		}
+		if i := slices.IndexFunc(money, payment.Money.MergeMatches); i != -1 {
+			if _, limited := limits[money[i]]; limited {
+				limits[money[i]] += int64(payment.Quantity)
+			}
 			continue
 		}
 		given := payment.Money.Clone(LibraryFile{}, e, nil, Duplicate)
 		given.Quantity = fxp.One
 		money = append(money, given)
+		limits[given] = int64(payment.Quantity)
 	}
 	if len(money) == len(sellMoney) {
 		return change, paid
 	}
-	return PayoutFor(over, money)
+	coins := payoutCoins(money)
+	for i := range coins {
+		if limit, limited := limits[coins[i].eqp]; limited {
+			coins[i].limit = limit
+		} else {
+			coins[i].limit = math.MaxInt64
+		}
+	}
+	return payoutWithin(over, coins)
 }
 
 // receiveMoney adds the money to the carried equipment (see addToCarried), recording each in the entry, and returns its
@@ -246,7 +301,8 @@ func (e *Entity) receiveMoney(entry *ShoppingRecordEntry, money []Payout, merge 
 }
 
 // addToCarried marks the equipment and anything it contains as equipped, as carried equipment normally is, then, when
-// merge is true, adds qty to the first carried item it MergeMatches. Otherwise, or when there is none, it carries a
+// merge is true, adds qty to the first carried item it MergeMatches that isn't held by a container with more than one
+// copy, since every copy would gain the quantity (see TradeQuantity). Otherwise, or when there is none, it carries a
 // copy of the equipment with a quantity of qty.
 func (e *Entity) addToCarried(eqp *Equipment, qty fxp.Int, merge bool) {
 	Traverse(func(one *Equipment) bool {
@@ -256,7 +312,7 @@ func (e *Entity) addToCarried(eqp *Equipment, qty fxp.Int, merge bool) {
 	if merge {
 		var match *Equipment
 		Traverse(func(one *Equipment) bool {
-			if one.MergeMatches(eqp) {
+			if one.MergeMatches(eqp) && one.containerCopies() == fxp.One {
 				match = one
 				return true
 			}

@@ -68,10 +68,11 @@ type manualPaymentRow struct {
 }
 
 // manualPaymentChange is the change worked out for an overpayment, kept for as long as the amount and the money paid
-// with stay the same, since the search is costly.
+// with, and how much of it, stay the same, since the search is costly. The money items are the dialog's own rows, so
+// they can be compared as they are.
 type manualPaymentChange struct {
 	over    fxp.Int
-	given   []tid.TID
+	given   []gurps.Payout
 	payouts []gurps.Payout
 	paid    fxp.Int
 	valid   bool
@@ -117,12 +118,13 @@ func newManualPaymentDialog(sheet *Sheet, owed fxp.Int, what string, current map
 	money := entity.MoneyItems()
 	for _, one := range money {
 		row := &manualPaymentRow{money: one, value: one.AdjustedValue()}
-		most := max(one.Quantity.Floor().AsInteger[int](), 0)
+		carried := one.TradeQuantity()
+		most := max(carried.Floor().AsInteger[int](), 0)
 		row.spend = min(max(current[one.TID], 0), most)
 		d.rows = append(d.rows, row)
 		name := one.String()
 		list.AddChild(newManualPaymentText(name, align.Start))
-		list.AddChild(newManualPaymentText(one.Quantity.Comma(), align.End))
+		list.AddChild(newManualPaymentText(carried.Comma(), align.End))
 		list.AddChild(newManualPaymentText(i18n.Text("$%s", d.format(row.value)), align.End))
 		field := NewIntegerField(nil, "", i18n.Text("Spend"),
 			func() int { return row.spend },
@@ -240,7 +242,7 @@ func (d *manualPaymentDialog) refresh() {
 func (d *manualPaymentDialog) describeChange(over fxp.Int) {
 	change, paid := d.changeFor(over)
 	if unreturned := over - paid; unreturned > 0 {
-		text := unreturnedChangeNotice(d.format(unreturned), len(d.sellMoney) != 0)
+		text := unreturnedChangeNotice(d.format(unreturned), len(d.entity.SheetSettings.SellMoney), len(d.sellMoney))
 		if paid > 0 {
 			text = i18n.Text("Change will be returned as %s ($%s). ", describePayouts(change), d.format(paid)) + text
 		}
@@ -254,13 +256,9 @@ func (d *manualPaymentDialog) describeChange(over fxp.Int) {
 // changeFor returns the change for an overpayment of over, and what it comes to (see gurps.Entity.ChangeFor).
 func (d *manualPaymentDialog) changeFor(over fxp.Int) (change []gurps.Payout, paid fxp.Int) {
 	payments := d.payments()
-	given := make([]tid.TID, 0, len(payments))
-	for _, one := range payments {
-		given = append(given, one.Money.TID)
-	}
-	if !d.change.valid || d.change.over != over || !slices.Equal(d.change.given, given) {
+	if !d.change.valid || d.change.over != over || !slices.Equal(d.change.given, payments) {
 		payouts, found := d.entity.ChangeFor(over, d.sellMoney, payments)
-		d.change = manualPaymentChange{over: over, given: given, payouts: payouts, paid: found, valid: true}
+		d.change = manualPaymentChange{over: over, given: payments, payouts: payouts, paid: found, valid: true}
 	}
 	return d.change.payouts, d.change.paid
 }

@@ -10,6 +10,8 @@
 package ux
 
 import (
+	"slices"
+
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/unison"
@@ -44,10 +46,24 @@ func blockKeyForRow(data any) string {
 }
 
 // canCopySelectionTo returns true if the table has a selection whose rows can be copied onto a sheet or template and
-// there is at least one destination to copy them to.
+// there is at least one destination to copy them to (see copyDestinationsFor).
 func canCopySelectionTo[T gurps.Node[T], D copyDestination](table *unison.Table[*Node[T]], destinations []D) bool {
 	var t T
-	return table.HasSelection() && len(destinations) > 0 && blockKeyForRow(t) != ""
+	return table.HasSelection() && blockKeyForRow(t) != "" && len(copyDestinationsFor[T](destinations)) > 0
+}
+
+// copyDestinationsFor returns the destinations that rows of type T can be copied onto: those given, less, for
+// equipment, any sheet whose carried equipment list the buy panel stands in for, since equipment arriving on such a
+// sheet is to be bought (see Sheet.startBuying) and the list it would land in is off the page.
+func copyDestinationsFor[T gurps.Node[T], D copyDestination](destinations []D) []D {
+	var t T
+	if blockKeyForRow(t) != gurps.BlockEquipmentKey {
+		return destinations
+	}
+	return slices.DeleteFunc(slices.Clone(destinations), func(d D) bool {
+		sheet, ok := any(d).(*Sheet)
+		return ok && sheet.buying()
+	})
 }
 
 // copySelectionTo copies the table's selected rows onto each of the destinations the user picks from those given (see
@@ -67,7 +83,7 @@ func copySelectionTo[T gurps.Node[T], D copyDestination](table *unison.Table[*No
 	destinations = promptForDestinations(promptOperation{
 		name:        i18n.Text("Copy"),
 		description: i18n.Text("Copying %s", shortNames(what)...),
-	}, destinations)
+	}, copyDestinationsFor[T](destinations))
 	if len(destinations) == 0 {
 		return
 	}

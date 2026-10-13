@@ -58,16 +58,15 @@ func TestTreasureGenPanelWithOutOfRangeValues(t *testing.T) {
 	c.Equal(fxp.One, p.maxValue, "maximum value clamped up into range")
 }
 
-// TestTreasureGenPanelValidateOKWithoutDialog verifies that asking for the OK button state before the dialog has been
-// created is a no-op rather than a panic, which is the state the fields are in while they are being created.
+// TestTreasureGenPanelValidateOKWithoutDialog verifies that bringing the OK button up to date before the dialog has
+// been created, whether directly or through a field's validation, is a no-op rather than a panic.
 func TestTreasureGenPanelValidateOKWithoutDialog(t *testing.T) {
 	c := check.New(t)
 	p := newTreasureGenPanel(fxp.Thousand, fxp.TenThousand)
 	c.Nil(p.dialog, "no dialog yet")
 	p.validateOK()
-	p.minField = nil
-	p.maxField = nil
-	p.validateOK()
+	p.minField.Validate()
+	p.maxField.Validate()
 }
 
 // newTestLootSheet returns a loot sheet that can be built and rebuilt without a window, the way

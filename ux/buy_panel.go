@@ -158,13 +158,39 @@ type buyAutoPayment struct {
 }
 
 // buyChange remembers the last change worked out, for the same reason as buyAutoPayment. The money paid with can be
-// drawn on for change, so given is its state, without the quantities, which don't matter to it.
+// drawn on for change, so given is its state and how much of it was paid.
 type buyChange struct {
-	given  []buyMoneyState
+	given  []buyGivenMoney
 	change []gurps.Payout
 	target fxp.Int
 	paid   fxp.Int
 	valid  bool
+}
+
+// buyGivenMoney is what the change depends on for one carried money item paid with: a copy of it as it stood, since
+// the change may be made up of copies of it and depends on everything about it that gurps.Equipment.MergeMatches
+// compares, along with its value and the quantity paid, which is the most of it the change may return.
+type buyGivenMoney struct {
+	id       tid.TID
+	value    fxp.Int
+	money    *gurps.Equipment
+	quantity int
+}
+
+// newBuyGivenMoney returns the state of the money paid with.
+func newBuyGivenMoney(payment gurps.Payout) buyGivenMoney {
+	return buyGivenMoney{
+		id:       payment.Money.TID,
+		value:    payment.Money.AdjustedValue(),
+		money:    payment.Money.Clone(gurps.LibraryFile{}, nil, nil, gurps.Duplicate),
+		quantity: payment.Quantity,
+	}
+}
+
+// matches returns true if the payment is as it stood when the change was worked out.
+func (g buyGivenMoney) matches(payment gurps.Payout) bool {
+	return g.id == payment.Money.TID && g.quantity == payment.Quantity && g.value == payment.Money.AdjustedValue() &&
+		g.money.MergeMatches(payment.Money)
 }
 
 func newBuyPanel(sheet *Sheet) *buyPanel {
@@ -264,7 +290,8 @@ func (p *buyPanel) createDropArea() *unison.Panel {
 		r := p.dropArea.ContentRect(true)
 		var ink unison.Ink = unison.ThemeSurfaceEdge
 		if p.dragOver {
-			ink = unison.ThemeFocus
+			// The drop target is tinted as the lists tint theirs (see InstallTableDropSupport).
+			ink = unison.ThemeWarning
 			paint := ink.Paint(gc, r, paintstyle.Fill)
 			paint.SetColorFilter(unison.Alpha30Filter())
 			gc.DrawRect(r, paint)
@@ -550,7 +577,8 @@ func (p *buyPanel) attachModifiers(item *buyItem, data *unison.TableDragData[*No
 	return true
 }
 
-// removeModifier takes the modifier back off the item.
+// removeModifier takes the modifier back off the item. The focus, if it was on the modifier's row, goes to the item's
+// (see layoutRows).
 func (p *buyPanel) removeModifier(item *buyItem, modifier *gurps.EquipmentModifier) {
 	item.eqp.Modifiers = slices.DeleteFunc(item.eqp.Modifiers,
 		func(one *gurps.EquipmentModifier) bool { return one == modifier })
@@ -675,23 +703,50 @@ func (p *buyPanel) addItem(eqp *gurps.Equipment) {
 	p.layoutRows()
 }
 
+// removeItem takes the item off the purchase. The focus, if it was on the item's rows, goes to the row that takes its
+// place, or to the last row, or to the percent field once no row is left, since the focus would otherwise be left on a
+// panel that is no longer in the window.
 func (p *buyPanel) removeItem(item *buyItem) {
 	i := slices.Index(p.items, item)
 	if i == -1 {
 		return
 	}
+	focus := p.currentFocus()
+	hadFocus := focus != nil && slices.ContainsFunc(item.allWidgets(), func(w unison.Paneler) bool {
+		return w.AsPanel() == focus
+	})
 	p.items = slices.Delete(p.items, i, i+1)
 	if len(p.items) == 0 {
 		// A manual choice of money was made for items no longer being bought.
 		p.manual = nil
 	}
 	p.layoutRows()
+	if hadFocus {
+		var target *unison.Panel
+		if len(p.items) != 0 {
+			target = p.items[min(i, len(p.items)-1)].focusTarget()
+		}
+		if target == nil {
+			target = p.percentField.AsPanel()
+		}
+		target.RequestFocus()
+	}
 	p.Sync()
 }
 
+// currentFocus returns the panel holding the keyboard focus in the panel's window, or nil.
+func (p *buyPanel) currentFocus() *unison.Panel {
+	if wnd := p.Window(); wnd != nil {
+		return wnd.CurrentFocus()
+	}
+	return nil
+}
+
 // layoutRows fills the drop area with the hint, then each item's row followed by a row for each of its modifiers,
-// which are built afresh so that they match the modifiers the item now has.
+// which are built afresh so that they match the modifiers the item now has. The focus, if it was on a modifier's row,
+// goes to the row built anew for the modifier, or to its item's row when the modifier is gone (see removeModifier).
 func (p *buyPanel) layoutRows() {
+	focusedItem, focusedModifier, focusedWidget := p.focusedModifierRow()
 	p.dropArea.RemoveAllChildren()
 	p.dropArea.AddChild(p.hint)
 	for _, item := range p.items {
@@ -705,6 +760,37 @@ func (p *buyPanel) layoutRows() {
 	}
 	p.dropArea.MarkForLayoutRecursivelyUpward()
 	p.dropArea.MarkForRedraw()
+	if focusedItem != nil {
+		target := focusedItem.focusTarget()
+		for _, row := range focusedItem.modifierRows {
+			if row.modifier == focusedModifier {
+				target = row.widgets[focusedWidget].AsPanel()
+				break
+			}
+		}
+		if target != nil {
+			target.RequestFocus()
+		}
+	}
+}
+
+// focusedModifierRow returns the item and modifier of the modifier row holding the keyboard focus, along with the index
+// of the widget holding it, or a nil item when no modifier row holds it.
+func (p *buyPanel) focusedModifierRow() (item *buyItem, modifier *gurps.EquipmentModifier, widget int) {
+	focus := p.currentFocus()
+	if focus == nil {
+		return nil, nil, 0
+	}
+	for _, one := range p.items {
+		for _, row := range one.modifierRows {
+			for i, w := range row.widgets {
+				if w.AsPanel() == focus {
+					return one, row.modifier, i
+				}
+			}
+		}
+	}
+	return nil, nil, 0
 }
 
 // newModifierRow returns the row shown under an item for one of its modifiers: its description, set in from the
@@ -743,6 +829,17 @@ func newBuyPanelText(text string) *unison.Label {
 
 func (item *buyItem) widgets() []unison.Paneler {
 	return []unison.Paneler{item.field, item.name, item.each, item.total, item.remove}
+}
+
+// focusTarget returns the first of the item's own widgets that can take the keyboard focus: its quantity field, or its
+// remove button for a group, whose field is disabled. Nil is returned when the item isn't in a window.
+func (item *buyItem) focusTarget() *unison.Panel {
+	for _, w := range item.widgets() {
+		if panel := w.AsPanel(); panel.Focusable() && panel.Window() != nil {
+			return panel
+		}
+	}
+	return nil
 }
 
 // allWidgets returns the item's widgets followed by those of its modifier rows.
@@ -820,7 +917,8 @@ func (p *buyPanel) syncSummary() {
 			summary += i18n.Text("; change: %s ($%s)", describePayouts(plan.change), p.formatValue(plan.changePaid))
 		}
 		if unreturned := plan.paid - plan.total - plan.changePaid; unreturned > 0 {
-			notice = unreturnedChangeNotice(p.formatValue(unreturned), len(p.sellMoney) != 0)
+			notice = unreturnedChangeNotice(p.formatValue(unreturned), len(p.sheet.Entity().SheetSettings.SellMoney),
+				len(p.sellMoneyItems()))
 		}
 	}
 	p.setSummary(summary, warn)
@@ -860,7 +958,7 @@ func (p *buyPanel) planPayment() buyPlan {
 func (p *buyPanel) automaticPayment(total fxp.Int, money []*gurps.Equipment) (payments []gurps.Payout, paid fxp.Int) {
 	state := make([]buyMoneyState, len(money))
 	for i, one := range money {
-		state[i] = buyMoneyState{id: one.TID, value: one.AdjustedValue(), quantity: one.Quantity}
+		state[i] = buyMoneyState{id: one.TID, value: one.AdjustedValue(), quantity: one.TradeQuantity()}
 	}
 	if !p.auto.valid || p.auto.total != total || !slices.Equal(p.auto.money, state) {
 		found, foundPaid := gurps.PaymentFor(total, money)
@@ -887,7 +985,7 @@ func (p *buyPanel) automaticPayment(total fxp.Int, money []*gurps.Equipment) (pa
 func manualPayouts(chosen map[tid.TID]int, money []*gurps.Equipment) (payments []gurps.Payout, paid fxp.Int) {
 	for _, one := range money {
 		qty := chosen[one.TID]
-		if qty <= 0 || fxp.FromInteger(qty) > one.Quantity {
+		if qty <= 0 || fxp.FromInteger(qty) > one.TradeQuantity() {
 			continue
 		}
 		payments = append(payments, gurps.Payout{Money: one, Quantity: qty})
@@ -900,25 +998,31 @@ func manualPayouts(chosen map[tid.TID]int, money []*gurps.Equipment) (payments [
 // is worked out again only when the amount or the money paid with has changed since the last time.
 func (p *buyPanel) changeFor(target fxp.Int, payments []gurps.Payout) (change []gurps.Payout, paid fxp.Int) {
 	money := p.sellMoneyItems()
-	given := make([]buyMoneyState, 0, len(payments))
-	for _, one := range payments {
-		given = append(given, buyMoneyState{id: one.Money.TID, value: one.Money.AdjustedValue()})
-	}
-	if !p.change.valid || p.change.target != target || !slices.Equal(p.change.given, given) {
+	if !p.change.valid || p.change.target != target || !slices.EqualFunc(p.change.given, payments, buyGivenMoney.matches) {
+		given := make([]buyGivenMoney, 0, len(payments))
+		for _, one := range payments {
+			given = append(given, newBuyGivenMoney(one))
+		}
 		found, foundPaid := p.sheet.Entity().ChangeFor(target, money, payments)
 		p.change = buyChange{given: given, change: found, target: target, paid: foundPaid, valid: true}
 	}
 	return p.change.change, p.change.paid
 }
 
-// unreturnedChangeNotice warns that unreturned of the change can't be returned, saying how to get change when the
-// sheet has no sell money.
-func unreturnedChangeNotice(unreturned string, hasSellMoney bool) string {
-	if hasSellMoney {
+// unreturnedChangeNotice warns that unreturned of the change can't be returned, given how many sell money items the
+// sheet's settings list and how many of them were found in the libraries (see gurps.Entity.SellMoneyItems): it says how
+// to get change when the sheet has no sell money, and that none of it could be found when it has some but none was.
+func unreturnedChangeNotice(unreturned string, configured, found int) string {
+	switch {
+	case configured == 0:
+		return i18n.Text("$%s of change can't be returned from the money paid, and the sheet has no sell money. Add some in Sheet Settings to receive change.",
+			unreturned)
+	case found == 0:
+		return i18n.Text("$%s of change can't be returned from the money paid, and none of the sheet's sell money could be found in the libraries.",
+			unreturned)
+	default:
 		return i18n.Text("$%s of change can't be returned with the sheet's sell money or the money paid.", unreturned)
 	}
-	return i18n.Text("$%s of change can't be returned from the money paid, and the sheet has no sell money. Add some in Sheet Settings to receive change.",
-		unreturned)
 }
 
 // sellMoneyItems returns the denominations of the sheet's sell money (see gurps.Entity.SellMoneyItems). They are looked
@@ -938,7 +1042,7 @@ func (p *buyPanel) sellMoneyItems() []*gurps.Equipment {
 func (p *buyPanel) carriedMoney() fxp.Int {
 	var total fxp.Int
 	for _, one := range p.sheet.Entity().MoneyItems() {
-		total += one.AdjustedValue().Mul(one.Quantity.Floor())
+		total += one.AdjustedValue().Mul(one.TradeQuantity().Floor())
 	}
 	return total
 }

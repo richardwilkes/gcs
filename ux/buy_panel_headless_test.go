@@ -11,6 +11,7 @@ package ux
 
 import (
 	"fmt"
+	"image/color"
 	"os"
 	"path/filepath"
 	"slices"
@@ -741,6 +742,14 @@ func TestManualPaymentDialog(t *testing.T) {
 	c.True(state.okOn, "an overpayment can still be made")
 	click(dialog, unison.ModalResponseCancel)
 	sources := buyTestMoneyLibrary(t, c)
+	missing := gurps.Source{LibraryFile: sources[0].LibraryFile, TID: "missing"}
+	screen.Do(func() { sheet.Entity().SheetSettings.SellMoney = []gurps.Source{missing} })
+	dialog, fields = open(map[tid.TID]int{eagleID: 3})
+	state = read(dialog, fields)
+	c.Equal("$15 of change can't be returned from the money paid, and none of the sheet's sell money could be found in the libraries.",
+		state.note, "sell money that can't be found is told apart from none at all")
+	c.True(state.noteWarn)
+	click(dialog, unison.ModalResponseCancel)
 	screen.Do(func() { sheet.Entity().SheetSettings.SellMoney = sources[1:] })
 	dialog, fields = open(map[tid.TID]int{eagleID: 3})
 	state = read(dialog, fields)
@@ -883,12 +892,31 @@ func TestBuyPanelAttachesAndRemovesModifiers(t *testing.T) {
 	c.Contains(readBuyPanel(t, screen, sheet).rows[0], "$100")
 }
 
+// startRowDrag presses on the table's row and moves the pointer far enough to start dragging the row, so that unison and
+// the lists see the drag session a real drag makes, and returns a function that cancels the drag and releases the
+// button. The table's dockable is activated first, since the row must be in view to be pressed.
+func startRowDrag[T gurps.Node[T]](t *testing.T, screen *unison.HeadlessScreen, wnd *unison.Window, table *unison.Table[*Node[T]], row int) (cancel func()) {
+	t.Helper()
+	screen.Do(func() {
+		if d := unison.AncestorOrSelf[unison.Dockable](table); d != nil {
+			ActivateDockable(d)
+		}
+	})
+	from := cellScreenPoint(t, screen, wnd, table, row, 0)
+	screen.MouseDown(from, unison.ButtonLeft, 0)
+	screen.MouseMove(from.Add(geom.NewPoint(30, 30)), 0)
+	return func() {
+		screen.KeyPress(unison.KeyEscape, 0)
+		screen.MouseUp(from.Add(geom.NewPoint(30, 30)), unison.ButtonLeft, 0)
+	}
+}
+
 // TestBuyPanelClaimsEquipmentDroppedElsewhereOnTheSheet checks that, while the buy panel is up, equipment dragged from
 // elsewhere onto the sheet's other equipment list is left to the sheet, which reroutes it to the buy panel, while the
 // sheet's own equipment, which can't be bought, is still taken by the list.
 func TestBuyPanelClaimsEquipmentDroppedElsewhereOnTheSheet(t *testing.T) {
 	c := check.New(t)
-	screen, _, sheet := buyTestSheet(t, c, func(entity *gurps.Entity) []*gurps.Equipment {
+	screen, wnd, sheet := buyTestSheet(t, c, func(entity *gurps.Entity) []*gurps.Equipment {
 		return buyTestCoins(entity, 7, 11)
 	})
 	var own *gurps.Equipment
@@ -900,27 +928,28 @@ func TestBuyPanelClaimsEquipmentDroppedElsewhereOnTheSheet(t *testing.T) {
 	})
 	sword := buyTestItem(nil, "Shortsword", "100", 1)
 	library := buyTestLibrary(t, screen, "", sword)
-	var libraryRows, ownRows []*Node[*gurps.Equipment]
-	screen.Do(func() {
-		libraryRows = library.RootRows()
-		ownRows = sheet.OtherEquipment.Table.RootRows()
-	})
-	// The list's own answer can't be read directly, since the drag data unison keeps for itself is only set during a
-	// real drag session, so it is read with a drag the buy panel never claims and must come back unchanged.
+	// A list answers for a drag only during a drag session, which unison tracks for itself, so the rows are really
+	// dragged, and the drag data the test leaves behind is cleared afterwards.
+	uxtest.SwapForTest(t, &draggedTableData, nil)
 	di := &fakeDragInfo{types: []string{equipmentDragKey.UTI}}
-	accepts := func(data *unison.TableDragData[*Node[*gurps.Equipment]]) bool {
-		uxtest.SwapForTest(t, &draggedTableData, any(data))
+	accepts := func() bool {
 		var accepted bool
 		screen.Do(func() { accepted = sheet.OtherEquipment.Table.CanAcceptDropCallback(di) })
 		return accepted
 	}
-	fromLibrary := &unison.TableDragData[*Node[*gurps.Equipment]]{Table: library, Rows: libraryRows}
-	fromOwn := &unison.TableDragData[*Node[*gurps.Equipment]]{Table: sheet.OtherEquipment.Table, Rows: ownRows}
-	ownAnswer := accepts(fromOwn)
-	c.Equal(ownAnswer, accepts(fromLibrary), "while not buying, the list answers for itself whatever is dragged")
-	screen.Do(func() { sheet.startBuying() })
-	c.False(accepts(fromLibrary), "other equipment leaves library equipment to the buy panel while buying")
-	c.Equal(ownAnswer, accepts(fromOwn), "other equipment still answers for the sheet's own equipment while buying")
+
+	cancel := startRowDrag(t, screen, wnd, library, 0)
+	c.True(accepts(), "while not buying, the list takes library equipment")
+	screen.Do(sheet.startBuying)
+	c.False(accepts(), "other equipment leaves library equipment to the buy panel while buying")
+	cancel()
+
+	cancel = startRowDrag(t, screen, wnd, sheet.OtherEquipment.Table, 0)
+	c.True(accepts(), "other equipment still takes the sheet's own equipment while buying")
+	cancel()
+	var otherAfterDrags int
+	screen.Do(func() { otherAfterDrags = len(sheet.Entity().OtherEquipment) })
+	c.Equal(1, otherAfterDrags, "the canceled drags must change nothing")
 
 	if op, dropped := buyTestDrop(t, screen, sheet, library, sword); op == drag.None || !dropped {
 		t.Fatal("the sword must be dropped into the buy panel")
@@ -932,4 +961,307 @@ func TestBuyPanelClaimsEquipmentDroppedElsewhereOnTheSheet(t *testing.T) {
 	})
 	c.Equal(1, bought, "the drop must land in the buy panel")
 	c.Equal(1, other, "the other equipment must be untouched")
+}
+
+// TestBuyPanelChangeFollowsEditsToTheMoneyPaid checks that change drawn from the money paid is worked out again when
+// that money is edited without its value changing, such as by being renamed, so that the change carried is a copy of
+// the money as it now is and merges with it.
+func TestBuyPanelChangeFollowsEditsToTheMoneyPaid(t *testing.T) {
+	c := check.New(t)
+	var ten, penny *gurps.Equipment
+	screen, _, sheet := buyTestSheet(t, c, func(entity *gurps.Entity) []*gurps.Equipment {
+		ten = buyTestItem(entity, "Ten", "10", 1, gurps.MoneyTag)
+		penny = buyTestItem(entity, "Copper Penny", "1", 5, gurps.MoneyTag)
+		return []*gurps.Equipment{ten, penny}
+	})
+	dagger := buyTestItem(nil, "Dagger", "10", 1)
+	library := buyTestLibrary(t, screen, "", dagger)
+	screen.Do(func() {
+		sheet.Entity().SheetSettings.SellMoney = nil
+		sheet.startBuying()
+	})
+	_, dropped := buyTestDrop(t, screen, sheet, library, dagger)
+	c.True(dropped)
+	screen.Do(func() {
+		sheet.buyPanel.manual = map[tid.TID]int{ten.TID: 1, penny.TID: 2}
+		sheet.buyPanel.refresh()
+	})
+	c.Equal("Pay manually: Ten ×1, Copper Penny ×2 ($12); change: Copper Penny ×2 ($2)",
+		readBuyPanel(t, screen, sheet).summary)
+
+	screen.Do(func() {
+		penny.Name = "Penny"
+		sheet.Rebuild(true)
+	})
+	c.Equal("Pay manually: Ten ×1, Penny ×2 ($12); change: Penny ×2 ($2)", readBuyPanel(t, screen, sheet).summary,
+		"the change is a copy of the money as it now is")
+	screen.Do(func() { sheet.buyPanel.finalize.Click() })
+	c.Equal([]string{"Penny ×5", "Dagger ×1"}, buyTestCarried(screen, sheet),
+		"the change merges with the money it was copied from")
+}
+
+// buyTestDropModifier drags the modifier table's rows onto the buy panel's item and drops them there, returning whether
+// the drop was taken.
+func buyTestDropModifier(t *testing.T, screen *unison.HeadlessScreen, sheet *Sheet, modifiers *unison.Table[*Node[*gurps.EquipmentModifier]], item *buyItem) bool {
+	t.Helper()
+	var rows []*Node[*gurps.EquipmentModifier]
+	screen.Do(func() { rows = modifiers.RootRows() })
+	uxtest.SwapForTest(t, &draggedTableData, any(&unison.TableDragData[*Node[*gurps.EquipmentModifier]]{
+		Table: modifiers,
+		Rows:  rows,
+	}))
+	di := &fakeDragInfo{types: []string{equipmentModifierDragKey.UTI}}
+	var dropped bool
+	screen.Do(func() {
+		p := sheet.buyPanel
+		p.ValidateLayout()
+		row := p.PointFromRoot(item.name.PointToRoot(item.name.ContentRect(true).Center()))
+		p.DragUpdatedCallback(di, row, 0)
+		dropped = p.DropCallback(di, row, 0)
+	})
+	return dropped
+}
+
+// TestBuyPanelKeepsTheFocusWhenRowsChange checks that the keyboard focus is not left on a button the panel has discarded:
+// removing a row with its own button moves the focus to the row that takes its place, or to the percent field once no
+// row is left; a modifier's button keeps the focus when the rows are built anew for another item; and removing a
+// modifier with its button moves the focus to its item's row.
+func TestBuyPanelKeepsTheFocusWhenRowsChange(t *testing.T) {
+	c := check.New(t)
+	screen, wnd, sheet := buyTestSheet(t, c, func(entity *gurps.Entity) []*gurps.Equipment {
+		return buyTestCoins(entity, 70, 11)
+	})
+	sword := buyTestItem(nil, "Shortsword", "100", 1)
+	dagger := buyTestItem(nil, "Dagger", "15", 1)
+	rope := buyTestItem(nil, "Rope", "5", 1)
+	library := buyTestLibrary(t, screen, "", sword, dagger, rope)
+	fine := gurps.NewEquipmentModifier(nil, nil, false)
+	fine.Name = "Fine"
+	modifiers := buyTestModifierLibrary(t, screen, fine)
+	screen.Do(sheet.startBuying)
+	if _, dropped := buyTestDrop(t, screen, sheet, library, sword, dagger); !dropped {
+		t.Fatal("the sword and dagger must be dropped into the buy panel")
+	}
+	focusIs := func(what string, expected func(p *buyPanel) unison.Paneler) {
+		t.Helper()
+		var ok bool
+		screen.Do(func() {
+			target := expected(sheet.buyPanel)
+			ok = target != nil && wnd.CurrentFocus() == target.AsPanel()
+		})
+		c.True(ok, "the focus must be on %s", what)
+	}
+
+	screen.Do(func() {
+		remove := sheet.buyPanel.items[1].remove
+		remove.RequestFocus()
+		remove.Click()
+	})
+	focusIs("the first row's quantity field after removing the last row", func(p *buyPanel) unison.Paneler {
+		if len(p.items) != 1 {
+			return nil
+		}
+		return p.items[0].field
+	})
+
+	if !buyTestDropModifier(t, screen, sheet, modifiers, sheet.buyPanel.items[0]) {
+		t.Fatal("the modifier must be dropped onto the sword")
+	}
+	modifierButton := func(p *buyPanel) unison.Paneler {
+		if len(p.items) != 0 && len(p.items[0].modifierRows) == 1 {
+			return p.items[0].modifierRows[0].widgets[2]
+		}
+		return nil
+	}
+	screen.Do(func() { modifierButton(sheet.buyPanel).AsPanel().RequestFocus() })
+	if _, dropped := buyTestDrop(t, screen, sheet, library, rope); !dropped {
+		t.Fatal("the rope must be dropped into the buy panel")
+	}
+	focusIs("the modifier's button, built anew, after another item is dropped", modifierButton)
+
+	screen.Do(func() {
+		if button, ok := modifierButton(sheet.buyPanel).(*unison.Button); ok {
+			button.Click()
+		}
+	})
+	focusIs("the item's quantity field after removing its modifier", func(p *buyPanel) unison.Paneler {
+		if len(p.items) != 2 || len(p.items[0].modifierRows) != 0 {
+			return nil
+		}
+		return p.items[0].field
+	})
+
+	for range 2 {
+		screen.Do(func() {
+			remove := sheet.buyPanel.items[0].remove
+			remove.RequestFocus()
+			remove.Click()
+		})
+	}
+	focusIs("the percent field once no row is left", func(p *buyPanel) unison.Paneler {
+		if len(p.items) != 0 {
+			return nil
+		}
+		return p.percentField
+	})
+}
+
+// rerouteHighlightDrawn reports whether the sheet's drop rerouting draws its highlight (see installDropRerouting): the
+// sheet's DrawOverCallback is run on a canvas of its own, which starts out clear, and the result is searched for any
+// pixel it painted.
+func rerouteHighlightDrawn(t *testing.T, screen *unison.HeadlessScreen, sheet *Sheet) bool {
+	t.Helper()
+	var drawn bool
+	screen.Do(func() {
+		root := sheet.AsPanel()
+		size := root.ContentRect(true).Size
+		img, err := unison.NewImageFromDrawing(int(size.Width), int(size.Height), 72, func(gc *unison.Canvas) {
+			root.DrawOverCallback(gc, geom.Rect{Size: size})
+		})
+		if err != nil {
+			t.Error(err)
+			return
+		}
+		defer img.Dispose()
+		pixels, err := img.ToNRGBA()
+		if err != nil {
+			t.Error(err)
+			return
+		}
+		for i := 3; i < len(pixels.Pix); i += 4 {
+			if pixels.Pix[i] != 0 {
+				drawn = true
+				return
+			}
+		}
+	})
+	return drawn
+}
+
+// TestSheetDropReroutingHighlightsOnlyAWillingTarget checks that the sheet highlights the panel it reroutes a drag to
+// only while that panel will take the drop: the buy panel is highlighted for equipment it would buy, not for the sheet's
+// own equipment, which it declines, and not once the drag has left.
+func TestSheetDropReroutingHighlightsOnlyAWillingTarget(t *testing.T) {
+	c := check.New(t)
+	screen, _, sheet := buyTestSheet(t, c, func(entity *gurps.Entity) []*gurps.Equipment {
+		return buyTestCoins(entity, 7, 11)
+	})
+	screen.Do(func() {
+		entity := sheet.Entity()
+		entity.OtherEquipment = []*gurps.Equipment{buyTestItem(entity, "Tent", "50", 1)}
+		sheet.Rebuild(true)
+		sheet.startBuying()
+	})
+	library := buyTestLibrary(t, screen, "", buyTestItem(nil, "Shortsword", "100", 1))
+	var fromLibrary, fromOwn *unison.TableDragData[*Node[*gurps.Equipment]]
+	screen.Do(func() {
+		fromLibrary = &unison.TableDragData[*Node[*gurps.Equipment]]{Table: library, Rows: library.RootRows()}
+		own := sheet.OtherEquipment.Table
+		fromOwn = &unison.TableDragData[*Node[*gurps.Equipment]]{Table: own, Rows: own.RootRows()}
+	})
+	di := &fakeDragInfo{types: []string{equipmentDragKey.UTI}}
+	enter := func(data *unison.TableDragData[*Node[*gurps.Equipment]]) drag.Op {
+		uxtest.SwapForTest(t, &draggedTableData, any(data))
+		var op drag.Op
+		screen.Do(func() { op = sheet.DragEnteredCallback(di, geom.NewPoint(10, 10), 0) })
+		return op
+	}
+
+	c.Equal(drag.Copy, enter(fromLibrary), "the buy panel takes library equipment")
+	c.True(rerouteHighlightDrawn(t, screen, sheet), "the buy panel is highlighted for equipment it will take")
+	screen.Do(sheet.DragExitedCallback)
+	c.False(rerouteHighlightDrawn(t, screen, sheet), "nothing is highlighted once the drag has left")
+
+	c.Equal(drag.None, enter(fromOwn), "the buy panel declines the sheet's own equipment")
+	c.False(rerouteHighlightDrawn(t, screen, sheet), "the buy panel is not highlighted for equipment it declines")
+	screen.Do(sheet.DragExitedCallback)
+}
+
+// TestBuyPanelNoticeTellsMissingSellMoneyApart checks that the notice about change that can't be returned says the
+// sheet's sell money couldn't be found when it has some but none of it is in the libraries, rather than that it has
+// none and should add some.
+func TestBuyPanelNoticeTellsMissingSellMoneyApart(t *testing.T) {
+	c := check.New(t)
+	screen, _, sheet := buyTestSheet(t, c, func(entity *gurps.Entity) []*gurps.Equipment {
+		return buyTestCoins(entity, 7, 0)[:1]
+	})
+	sources := buyTestMoneyLibrary(t, c)
+	dagger := buyTestItem(nil, "Dagger", "15", 1)
+	library := buyTestLibrary(t, screen, "", dagger)
+	screen.Do(func() {
+		sheet.Entity().SheetSettings.SellMoney = []gurps.Source{{LibraryFile: sources[0].LibraryFile, TID: "missing"}}
+		sheet.startBuying()
+	})
+	_, dropped := buyTestDrop(t, screen, sheet, library, dagger)
+	c.True(dropped)
+	state := readBuyPanel(t, screen, sheet)
+	c.True(state.noticeShown, "change that can't be returned is warned about")
+	c.Equal("$5 of change can't be returned from the money paid, and none of the sheet's sell money could be found in the libraries.",
+		state.notice)
+}
+
+// TestBuyPanelTakesTheFocusFromTheListItReplaces checks that starting to buy while the keyboard focus is in the carried
+// equipment list, which leaves the page, moves the focus into the buy panel that takes its place rather than to the top
+// of the sheet, and that a focus elsewhere on the sheet is left where it is.
+func TestBuyPanelTakesTheFocusFromTheListItReplaces(t *testing.T) {
+	c := check.New(t)
+	screen, wnd, sheet := buyTestSheet(t, c, func(entity *gurps.Entity) []*gurps.Equipment {
+		return buyTestCoins(entity, 7, 11)
+	})
+	var inPanel, onPercent bool
+	screen.Do(func() {
+		sheet.CarriedEquipment.Table.RequestFocus()
+		sheet.startBuying()
+		focus := wnd.CurrentFocus()
+		inPanel = focus != nil && unison.AncestorIsOrSelf(focus, sheet.buyPanel)
+		onPercent = focus == sheet.buyPanel.percentField.AsPanel()
+	})
+	c.True(inPanel, "the focus must move into the buy panel")
+	c.True(onPercent, "the focus must land on the first field of the buy panel")
+
+	var stays bool
+	screen.Do(func() {
+		sheet.stopBuying()
+		sheet.OtherEquipment.Table.RequestFocus()
+		sheet.startBuying()
+		stays = wnd.CurrentFocus() == sheet.OtherEquipment.Table.AsPanel()
+	})
+	c.True(stays, "a focus elsewhere on the sheet stays where it is")
+}
+
+// TestBuyPanelDropHighlightUsesTheDropColor checks that the buy panel tints its drop area, while equipment is dragged
+// over it, in the color the lists tint their drop targets with.
+func TestBuyPanelDropHighlightUsesTheDropColor(t *testing.T) {
+	c := check.New(t)
+	screen, _, sheet := buyTestSheet(t, c, func(entity *gurps.Entity) []*gurps.Equipment {
+		return buyTestCoins(entity, 7, 11)
+	})
+	var center color.NRGBA
+	expected := unison.ThemeWarning.GetColor()
+	screen.Do(func() {
+		sheet.startBuying()
+		p := sheet.buyPanel
+		p.ValidateLayout()
+		p.dragOver = true
+		area := p.dropArea
+		size := area.ContentRect(true).Size
+		img, err := unison.NewImageFromDrawing(int(size.Width), int(size.Height), 72, func(gc *unison.Canvas) {
+			area.DrawCallback(gc, geom.Rect{Size: size})
+		})
+		if err != nil {
+			t.Error(err)
+			return
+		}
+		defer img.Dispose()
+		pixels, err := img.ToNRGBA()
+		if err != nil {
+			t.Error(err)
+			return
+		}
+		center = pixels.NRGBAAt(pixels.Rect.Dx()/2, pixels.Rect.Dy()/2)
+	})
+	near := func(a uint8, b int) bool { return max(int(a), b)-min(int(a), b) <= 2 }
+	c.True(near(center.R, expected.Red()) && near(center.G, expected.Green()) && near(center.B, expected.Blue()),
+		"the drop area must be tinted with the drop color %v, not %v", expected, center)
+	c.True(center.A > 0 && center.A < 255, "the tint must be translucent, not %d", center.A)
 }

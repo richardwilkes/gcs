@@ -349,7 +349,8 @@ func MatchSource[T Node[T]](node T) (state srcstate.Value, match any) {
 // EquipmentForSource returns the library's copy of the non-container equipment the source refers to, or nil if there
 // is none. It uses the source matcher MatchSource would use for a node without a data owner. The result is the
 // library's cached node and must not be mutated: clone it with Clone(src.LibraryFile, owner, nil, Reference), which
-// gives the clone src as its Source.
+// gives the clone src as its Source unless the item has a Source of its own, from another library, which the clone
+// keeps instead (see SourcedID.AdjustSource).
 func EquipmentForSource(src Source) *Equipment {
 	if src.IsZero() {
 		return nil

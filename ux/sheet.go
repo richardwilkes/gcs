@@ -659,14 +659,25 @@ func (s *Sheet) canStartBuying() bool {
 	return !s.buying() && s.entity.SheetSettings.Layout.Contains(gurps.BlockEquipmentKey) && !s.layoutEditing()
 }
 
-// startBuying puts the buy panel in place of the carried equipment list, if it can (see canStartBuying).
+// startBuying puts the buy panel in place of the carried equipment list, if it can (see canStartBuying). The keyboard
+// focus, if it was in the list, which leaves the page, moves to the first field of the panel, since the rebuild would
+// otherwise put it at the top of the sheet.
 func (s *Sheet) startBuying() {
 	if s.canStartBuying() {
 		s.buyPanel = newBuyPanel(s)
+		hadFocus := false
 		if list := s.CarriedEquipment; list != nil && list.Parent() != nil {
 			s.buyPanel.holdHeight(list.FrameRect().Height)
+			if wnd := s.Window(); wnd != nil {
+				if focus := wnd.CurrentFocus(); focus != nil {
+					hadFocus = unison.AncestorIsOrSelf(focus, list)
+				}
+			}
 		}
 		s.Rebuild(true)
+		if hadFocus {
+			FocusFirstContent(s.toolbar, s.buyPanel)
+		}
 	}
 }
 

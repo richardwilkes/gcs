@@ -179,7 +179,12 @@ func installDropRerouting(panel *unison.Panel, keys []*uti.DataType, keyToPanel 
 						reroutePanel = nil
 						return drag.None
 					}
-					return reroutePanel.DragUpdatedCallback(di, geom.Point{Y: 100000000}, mods)
+					op := reroutePanel.DragUpdatedCallback(di, geom.Point{Y: 100000000}, mods)
+					if op == drag.None {
+						// A target that declines the drag gets no drop and so isn't highlighted as about to.
+						reroutePanel = nil
+					}
+					return op
 				}
 				break
 			}

@@ -241,3 +241,83 @@ func TestSheetSettingsSellMoneyWithoutOwner(t *testing.T) {
 	c.Equal(0, len(global.Sheet.SellMoney), "the button removes the entry from the defaults")
 	c.Equal(2, len(recorder.updates), "the removal is reported")
 }
+
+// TestSheetSettingsSellMoneyDropKeepsTheItemDragged checks that an item dragged from a library that was itself copied
+// into that library from another, and so carries that other library's source, is added as the item dragged rather than
+// as the item it was copied from.
+func TestSheetSettingsSellMoneyDropKeepsTheItemDragged(t *testing.T) {
+	c := check.New(t)
+	money, _ := newTradingSettingsTest(t, c)
+	owner := newEntityPanelWithFlaggedSettings()
+	d, _ := newTestSheetSettingsDockable(t, owner)
+	user := gurps.GlobalSettings().Libraries.User()
+	name := "Local Coins" + gurps.EquipmentExt
+	path := filepath.Join(user.Path(false), name)
+	local := money.eagle.Clone(money.libFile, nil, nil, gurps.Reference)
+	local.Name = "Local Eagle"
+	local.BaseValue = "25"
+	c.Equal(money.source(money.eagle), local.Source, "the copy keeps the source it was copied from")
+	c.NoError(gurps.SaveEquipment([]*gurps.Equipment{local}, path))
+	library := NewEquipmentTableDockable(path, []*gurps.Equipment{local})
+
+	c.True(dropOnSellMoney(t, c, d, library.table, local), "the copied item is added")
+	c.Equal([]gurps.Source{{Library: user.Key(), Path: name, TID: local.TID}},
+		owner.entity.SheetSettings.SellMoney, "the item dragged is what is kept, not the item it was copied from")
+	c.Equal([]string{"Local Eagle"}, uxtest.LabelTexts(d.sellMoneyPanel), "the list shows the item dragged")
+}
+
+// TestSheetSettingsSellMoneyRemoveKeepsTheFocus checks that removing a sell money entry with its button while the button
+// holds the keyboard focus moves the focus to the button that takes its place, or to the sell percent field once no
+// entry is left, rather than leaving it on the button the rebuilt list no longer holds.
+func TestSheetSettingsSellMoneyRemoveKeepsTheFocus(t *testing.T) {
+	c := check.New(t)
+	screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
+	money := newTradeTestMoney(t, c)
+	sheet := openSellTestSheet(t, screen, []gurps.Source{money.source(money.eagle), money.source(money.penny)},
+		func(_ *gurps.Entity) []*gurps.Equipment { return nil })
+	var d *sheetSettingsDockable
+	screen.Do(func() {
+		ShowSheetSettings(sheet)
+		for _, one := range AllDockables() {
+			if s, ok := one.AsPanel().Self.(*sheetSettingsDockable); ok && s.owner == sheet {
+				d = s
+			}
+		}
+	})
+	if d == nil {
+		t.Fatal("the sheet's settings must be open")
+	}
+	removeButton := func(name string) *unison.Button {
+		var button *unison.Button
+		screen.Do(func() {
+			for _, b := range uxtest.PanelsOfType[*unison.Button](d.sellMoneyPanel) {
+				if b.Accessibility.Name == "Remove "+name {
+					button = b
+				}
+			}
+		})
+		return button
+	}
+	press := func(name string) {
+		t.Helper()
+		button := removeButton(name)
+		if button == nil {
+			t.Fatalf("the sell money list has no button to remove %s", name)
+		}
+		screen.Do(func() {
+			button.RequestFocus()
+			button.Click()
+		})
+	}
+
+	press("Silver Eagle")
+	var focus *unison.Panel
+	screen.Do(func() { focus = wnd.CurrentFocus() })
+	c.Equal([]string{"Copper Penny"}, uxtest.LabelTexts(d.sellMoneyPanel), "the entry is removed")
+	c.True(focus != nil && focus == removeButton("Copper Penny").AsPanel(),
+		"the focus must move to the button that takes the removed one's place")
+
+	press("Copper Penny")
+	screen.Do(func() { focus = wnd.CurrentFocus() })
+	c.True(focus == d.sellPercentField.AsPanel(), "the focus must move to the sell percent field once no entry is left")
+}

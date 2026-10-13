@@ -13,6 +13,8 @@ import (
 	"slices"
 	"testing"
 
+	"github.com/richardwilkes/gcs/v5/model/fxp"
+
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/ux/uxtest"
 	"github.com/richardwilkes/toolbox/v2/check"
@@ -401,4 +403,61 @@ func TestBuyModeGatesListCommands(t *testing.T) {
 	c.False(buyingAfterHide, "hiding the carried equipment block must end buying")
 	c.False(canStartAfterHide, "buying must not start while the layout hides the carried equipment")
 	c.True(canStartAfterUndo, "buying must be possible again once the block is shown")
+}
+
+// TestCarriedEquipmentHeaderKeepsItsOwnDescription checks that a trailing button's tooltip, lent to the column header
+// while the pointer is over the button (see PageTableColumnHeader.buttonTooltip), doesn't become the column's
+// description for assistive technologies, which stays the header's own tooltip although nothing has redrawn the header.
+func TestCarriedEquipmentHeaderKeepsItsOwnDescription(t *testing.T) {
+	c := check.New(t)
+	screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
+	screen.EnableAccessibility()
+	sheet, ok := uxtest.OpenedByAction(t, screen, newCharacterSheetAction).(*Sheet)
+	if !ok {
+		t.Fatal("New Character Sheet must open a character sheet")
+	}
+	screen.Do(func() {
+		// The header has a tooltip of its own, the exact totals, only while the display format rounds them.
+		entity := sheet.Entity()
+		entity.CarriedEquipment = []*gurps.Equipment{newTradeTestItem(entity, "Gem", "10.5", fxp.One)}
+		entity.SheetSettings.EquipmentValueFormat = fxp.NumberFormat{Places: fxp.ZeroPlaces}
+		entity.Recalculate()
+		sheet.Rebuild(true)
+	})
+	// The redraw the rebuild asked for is over, and nothing below redraws the header before the window is described.
+	var tooltip, buyTooltip string
+	lent := false
+	screen.Do(func() {
+		th, header, col := carriedDescriptionHeader(sheet.CarriedEquipment)
+		if header == nil || len(header.buttons) == 0 {
+			return
+		}
+		tooltip = header.TooltipText()
+		frame := layOutColumnHeader(th, header, col)
+		buy := header.buttons[0]
+		buyTooltip = buy.Accessibility.Name
+		th.UpdateTooltipCallback(buy.FrameRect().Center().Add(frame.Point), geom.Rect{})
+		lent = header.Tooltip == buy.Tooltip
+	})
+	if !lent {
+		t.Fatal("the column must lend the buy button's tooltip while the pointer is over it")
+	}
+	c.NotEqual("", tooltip, "the header must have a tooltip of its own")
+
+	tree := screen.AccessibilityTree(wnd)
+	if tree == nil {
+		t.Fatal("the window must be described")
+	}
+	var column *accessibility.Node
+	tree.Walk(func(n *accessibility.Node) bool {
+		if n.Role == role.Button && n.Name == buyTooltip {
+			column = tree.Node(n.Parent)
+			return false
+		}
+		return true
+	})
+	if column == nil {
+		t.Fatal("the column header holding the buy button must be described")
+	}
+	c.Equal(tooltip, column.Description, "the column must be described by its own tooltip, not the button's")
 }

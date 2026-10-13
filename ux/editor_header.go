@@ -19,6 +19,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/ux/svg"
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/unison"
+	"github.com/richardwilkes/unison/accessibility"
 	"github.com/richardwilkes/unison/enums/align"
 	"github.com/richardwilkes/unison/enums/mod"
 	"github.com/richardwilkes/unison/enums/paintstyle"
@@ -232,10 +233,6 @@ func (h *PageTableColumnHeader[T]) DefaultSizes(hint geom.Size) (minSize, prefSi
 
 // DefaultDraw provides the default drawing.
 func (h *PageTableColumnHeader[T]) DefaultDraw(gc *unison.Canvas, dirty geom.Rect) {
-	if len(h.buttons) != 0 {
-		// A button's tooltip lent to the column must not stay behind as the column's description.
-		h.Tooltip = h.textTooltip
-	}
 	if h.sortState.Order == 0 {
 		r := h.ContentRect(false)
 		y := r.Y
@@ -325,6 +322,18 @@ func (h *PageTableColumnHeader[T]) addTrailingButtons(buttons ...*unison.Button)
 	h.SetBorder(unison.NewEmptyBorder(geom.Insets{Right: width}))
 	h.SetLayout(&trailingButtonsLayout[T]{header: h})
 	h.Accessibility.Role = role.Group
+	// A description falls back to whatever Tooltip holds, which is a button's tooltip for as long as it is lent (see
+	// buttonTooltip), so the column is described by its own tooltip outright.
+	describe := h.Accessibility.Callback
+	h.Accessibility.Callback = func(node *accessibility.Node) {
+		node.Description = ""
+		if h.tooltipText != node.Name {
+			node.Description = h.tooltipText
+		}
+		if describe != nil {
+			describe(node)
+		}
+	}
 	h.MouseDownCallback = h.buttonMouseDown
 	h.MouseUpCallback = h.buttonMouseUp
 	h.UpdateCursorCallback = h.buttonCursor
@@ -366,7 +375,8 @@ func (h *PageTableColumnHeader[T]) buttonCursor(where geom.Point) *unison.Cursor
 }
 
 // buttonTooltip lends the column the tooltip of the trailing button under the point, or else the header's own. The
-// table header takes whatever Tooltip holds once this returns.
+// table header takes whatever Tooltip holds once this returns, and what it holds stays until the pointer moves within
+// the header again, so the column's description doesn't rely on it (see addTrailingButtons).
 func (h *PageTableColumnHeader[T]) buttonTooltip(where geom.Point, suggestedAvoidInRoot geom.Rect) geom.Rect {
 	if b := h.buttonAt(where); b != nil {
 		h.Tooltip = b.Tooltip

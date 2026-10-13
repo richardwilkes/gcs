@@ -136,10 +136,14 @@ func (s *sellTestDialog) sellEnabled() bool {
 	return enabled
 }
 
-// replaceText types text into the field in place of what it holds.
+// replaceText types text into the field in place of what it holds, or clears the field when text is empty.
 func (s *sellTestDialog) replaceText(field unison.Paneler, text string) {
 	s.screen.Click(s.screen.PanelCenter(field))
 	s.screen.KeyPress(unison.KeyA, mod.OSMenuCommand())
+	if text == "" {
+		s.screen.KeyPress(unison.KeyBackspace, 0)
+		return
+	}
 	s.screen.Type(text)
 }
 
@@ -300,4 +304,147 @@ func TestSellDialogGatesSale(t *testing.T) {
 	c.True(slices.Contains(s.texts(), "You receive: Copper Penny ×15 ($15.00)"), "one knife brings in $15")
 	s.dismiss(c, s.cancel)
 	unchanged("when canceled")
+}
+
+// TestSellDialogClampsTheSheetsSellPercent checks that a sell percentage outside the range the dialog's field accepts,
+// which the settings allow, opens the dialog at the nearest the field accepts rather than failing to open it.
+func TestSellDialogClampsTheSheetsSellPercent(t *testing.T) {
+	c := check.New(t)
+	screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
+	money := newTradeTestMoney(t, c)
+	var knife *gurps.Equipment
+	sheet := openSellTestSheet(t, screen, []gurps.Source{money.source(money.penny)},
+		func(entity *gurps.Entity) []*gurps.Equipment {
+			knife = newTradeTestItem(entity, "Small Knife", "30", fxp.Two)
+			return []*gurps.Equipment{knife}
+		})
+	for _, tt := range []struct {
+		percent  string
+		expected string
+	}{
+		{percent: "2000", expected: "1000"},
+		{percent: "0.5", expected: "1"},
+	} {
+		screen.Do(func() { sheet.Entity().SheetSettings.SellPercent = fxp.FromStringForced(tt.percent) })
+		s := openSellTestDialog(t, screen, wnd, sheet, knife)
+		var text string
+		screen.Do(func() { text = s.percent.Text() })
+		c.Equal(tt.expected, text, "a sell percent of %s opens the dialog at %s", tt.percent, tt.expected)
+		s.dismiss(c, s.cancel)
+	}
+}
+
+// TestSellDialogNamesWhatIsSold checks that the suggested transaction name follows the quantities, naming only the items
+// of which something is to be sold, until the name is edited, after which it is left alone, and that a name left empty
+// falls back to the suggestion.
+func TestSellDialogNamesWhatIsSold(t *testing.T) {
+	c := check.New(t)
+	screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
+	money := newTradeTestMoney(t, c)
+	var sword, knife *gurps.Equipment
+	sheet := openSellTestSheet(t, screen, []gurps.Source{money.source(money.penny)},
+		func(entity *gurps.Entity) []*gurps.Equipment {
+			sword = newTradeTestItem(entity, "Shortsword", "400", fxp.One)
+			knife = newTradeTestItem(entity, "Small Knife", "30", fxp.Two)
+			return []*gurps.Equipment{sword, knife}
+		})
+	name := func(s *sellTestDialog) string {
+		var text string
+		screen.Do(func() { text = s.name.Text() })
+		return text
+	}
+
+	s := openSellTestDialog(t, screen, wnd, sheet, sword, knife)
+	c.Equal("Sold Shortsword, Small Knife", name(s))
+	s.replaceText(s.quantities[1], "0")
+	c.Equal("Sold Shortsword", name(s), "an item of which nothing is sold leaves the name")
+	s.replaceText(s.quantities[1], "1")
+	c.Equal("Sold Shortsword, Small Knife", name(s), "and comes back once some of it is")
+	s.replaceText(s.name, "Market day")
+	s.replaceText(s.quantities[1], "0")
+	c.Equal("Market day", name(s), "an edited name is left alone")
+	s.replaceText(s.name, "")
+	s.dismiss(c, s.sell)
+	screen.Do(func() {
+		record := sheet.Entity().ShoppingRecord
+		c.Equal(1, len(record))
+		if len(record) == 1 {
+			c.Equal("Sold Shortsword", record[0].Name, "an empty name falls back to naming what was sold")
+		}
+	})
+}
+
+// TestSellDialogClosesEditorsOfWhatIsSold checks that selling an item in full, or a container along with what it holds,
+// first closes the editors open on them, as deleting them does, while the editor of an item only partly sold stays open.
+func TestSellDialogClosesEditorsOfWhatIsSold(t *testing.T) {
+	c := check.New(t)
+	screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
+	money := newTradeTestMoney(t, c)
+	var sword, knives, backpack, rope *gurps.Equipment
+	sheet := openSellTestSheet(t, screen, []gurps.Source{money.source(money.penny)},
+		func(entity *gurps.Entity) []*gurps.Equipment {
+			sword = newTradeTestItem(entity, "Shortsword", "400", fxp.One)
+			knives = newTradeTestItem(entity, "Small Knife", "30", fxp.Two)
+			backpack = gurps.NewEquipment(entity, nil, true)
+			backpack.Name = "Backpack"
+			rope = newTradeTestItem(entity, "Rope", "5", fxp.One)
+			rope.SetParent(backpack)
+			backpack.Children = []*gurps.Equipment{rope}
+			return []*gurps.Equipment{sword, knives, backpack}
+		})
+	editorsOpenFor := func(items ...*gurps.Equipment) int {
+		var count int
+		screen.Do(func() {
+			count = len(AllMatchingDockables(func(d unison.Dockable) bool {
+				e, ok := d.(*editor[*gurps.Equipment, *gurps.EquipmentEditData])
+				return ok && slices.Contains(items, e.target)
+			}))
+		})
+		return count
+	}
+	screen.Do(func() {
+		for _, eqp := range []*gurps.Equipment{sword, knives, rope} {
+			EditEquipment(sheet, eqp, true)
+		}
+	})
+	c.Equal(3, editorsOpenFor(sword, knives, rope), "the editors must be open")
+
+	s := openSellTestDialog(t, screen, wnd, sheet, sword, knives, backpack)
+	s.replaceText(s.quantities[1], "1")
+	s.dismiss(c, s.sell)
+	screen.Do(func() {
+		c.Equal([]string{"Small Knife ×1", "Copper Penny ×217"}, carriedSummary(sheet),
+			"the sword and the backpack are sold in full and one of the knives")
+	})
+	c.Equal(0, editorsOpenFor(sword, rope), "the editors of the sword and of the rope in the backpack are closed")
+	c.Equal(1, editorsOpenFor(knives), "the editor of the knives, one of which is left, stays open")
+}
+
+// TestSellDialogGatesSaleOnValidFields checks that Sell is unavailable while the percent field or a quantity field holds
+// text that isn't a valid value, since the sale would otherwise go through at a value other than the one typed, and is
+// available again once the text is valid.
+func TestSellDialogGatesSaleOnValidFields(t *testing.T) {
+	c := check.New(t)
+	screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
+	money := newTradeTestMoney(t, c)
+	var sword, knives *gurps.Equipment
+	sheet := openSellTestSheet(t, screen, []gurps.Source{money.source(money.penny)},
+		func(entity *gurps.Entity) []*gurps.Equipment {
+			sword = newTradeTestItem(entity, "Shortsword", "400", fxp.One)
+			knives = newTradeTestItem(entity, "Small Knife", "30", fxp.Two)
+			return []*gurps.Equipment{sword, knives}
+		})
+	s := openSellTestDialog(t, screen, wnd, sheet, sword, knives)
+	c.True(s.sellEnabled())
+	s.replaceText(s.percent, "")
+	c.False(s.sellEnabled(), "an empty percent field holds no valid value")
+	s.replaceText(s.percent, "5000")
+	c.False(s.sellEnabled(), "a percent above the field's maximum isn't valid")
+	s.replaceText(s.percent, "50")
+	c.True(s.sellEnabled(), "a valid percent allows the sale again")
+	s.replaceText(s.quantities[1], "")
+	c.False(s.sellEnabled(), "an empty quantity field holds no valid value, even while another item is to be sold")
+	s.replaceText(s.quantities[1], "2")
+	c.True(s.sellEnabled())
+	s.dismiss(c, s.cancel)
 }

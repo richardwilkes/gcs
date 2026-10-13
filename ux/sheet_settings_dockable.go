@@ -486,9 +486,12 @@ func (d *sheetSettingsDockable) addSellMoney(data any) bool {
 	s := d.settings()
 	added := false
 	for _, row := range tableData.Rows {
-		// A library's own items have no source, so the clone is made by reference, which points its source at the
-		// item in the library file.
-		if s.AddSellMoney(row.Data().Clone(libFile, nil, nil, gurps.Reference)) {
+		eqp := row.Data()
+		money := eqp.Clone(libFile, nil, nil, gurps.Reference)
+		// The item dragged is the one meant, even when it was itself copied into the library from another and so has
+		// a source of its own, which the clone keeps.
+		money.Source = gurps.Source{LibraryFile: libFile, TID: eqp.TID}
+		if s.AddSellMoney(money) {
 			added = true
 		}
 	}
@@ -513,7 +516,7 @@ func (d *sheetSettingsDockable) rebuildSellMoney() {
 		hint.SetLayoutData(&unison.FlexLayoutData{HSpan: 2})
 		p.AddChild(hint)
 	}
-	for _, src := range sources {
+	for i, src := range sources {
 		label := unison.NewLabel()
 		var name string
 		if eqp := gurps.EquipmentForSource(src); eqp != nil {
@@ -531,9 +534,19 @@ func (d *sheetSettingsDockable) rebuildSellMoney() {
 		remove.Accessibility.Name = i18n.Text("Remove %s", name)
 		remove.Tooltip = newWrappedTooltip(remove.Accessibility.Name)
 		remove.ClickCallback = func() {
-			if d.settings().RemoveSellMoney(src) {
-				d.rebuildSellMoney()
-				d.syncSheet(false)
+			if !d.settings().RemoveSellMoney(src) {
+				return
+			}
+			// The rebuild takes every button off the page, this one included, and the focus doesn't leave a removed
+			// panel of its own accord, so it is moved on when it was here.
+			hadFocus := false
+			if wnd := remove.Window(); wnd != nil {
+				hadFocus = wnd.CurrentFocus() == remove.AsPanel()
+			}
+			d.rebuildSellMoney()
+			d.syncSheet(false)
+			if hadFocus {
+				d.focusSellMoneyRemoveButton(i)
 			}
 		}
 		remove.SetLayoutData(&unison.FlexLayoutData{VAlign: align.Middle})
@@ -541,6 +554,22 @@ func (d *sheetSettingsDockable) rebuildSellMoney() {
 	}
 	p.MarkForLayoutRecursivelyUpward()
 	p.MarkForRedraw()
+}
+
+// focusSellMoneyRemoveButton gives the keyboard focus to the button that removes the sell money entry at index, or the
+// last entry when there are fewer, or to the sell percent field when there are none.
+func (d *sheetSettingsDockable) focusSellMoneyRemoveButton(index int) {
+	var buttons []*unison.Button
+	for _, child := range d.sellMoneyPanel.Children() {
+		if b, ok := child.Self.(*unison.Button); ok {
+			buttons = append(buttons, b)
+		}
+	}
+	if len(buttons) == 0 {
+		d.sellPercentField.RequestFocus()
+		return
+	}
+	buttons[min(index, len(buttons)-1)].RequestFocus()
 }
 
 func (d *sheetSettingsDockable) createWhereToDisplay(content *unison.Panel) {

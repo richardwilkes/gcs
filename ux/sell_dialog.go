@@ -19,6 +19,7 @@ import (
 	"github.com/richardwilkes/toolbox/v2/errs"
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/i18n"
+	"github.com/richardwilkes/toolbox/v2/tid"
 	"github.com/richardwilkes/toolbox/v2/xstrings"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
@@ -55,7 +56,9 @@ type sellDialog struct {
 	money   []*gurps.Equipment
 	percent fxp.Int
 	name    string
-	merge   bool
+	// nameEdited is set once the user changes the transaction name, which until then names the items being sold.
+	nameEdited bool
+	merge      bool
 	// payouts were last computed for total, and paid is their value. PayoutFor can be costly, so they are computed
 	// again only when the total changes.
 	total       fxp.Int
@@ -66,6 +69,9 @@ type sellDialog struct {
 	totalLabel  *unison.Label
 	payoutLabel *unison.Label
 	warning     *TextLabel
+	nameField   *StringField
+	// invalid holds the fields whose text isn't a valid value, which keeps the sale from being made (see gateOnValidity).
+	invalid map[*DecimalField]bool
 }
 
 type sellRow struct {
@@ -83,16 +89,17 @@ func showSellDialog(sheet *Sheet, list []*gurps.Equipment) {
 	d := &sellDialog{
 		sheet:   sheet,
 		money:   entity.SellMoneyItems(),
-		percent: entity.SheetSettings.SellPercent,
+		invalid: make(map[*DecimalField]bool),
+		// The settings only keep the percentage positive, while the field clamps what it is given to its range and
+		// reports the result through its setter, which updates labels that don't exist yet.
+		percent: min(max(entity.SheetSettings.SellPercent, fxp.One), fxp.Thousand),
 		merge:   true,
 	}
-	names := make([]string, 0, len(list))
 	for _, eqp := range list {
 		most := eqp.TradeQuantity()
 		d.rows = append(d.rows, &sellRow{eqp: eqp, most: most, quantity: most})
-		names = append(names, eqp.String())
 	}
-	d.name = i18n.Text("Sold %s", xstrings.Truncate(strings.Join(names, ", "), maxSaleNamesLength, true))
+	d.name = d.defaultName()
 	content := d.newContent()
 	d.update() // Before the dialog is made, so that it is sized for the text.
 	var err error
@@ -110,12 +117,27 @@ func showSellDialog(sheet *Sheet, list []*gurps.Equipment) {
 		return
 	}
 	items := make([]gurps.SaleItem, 0, len(d.rows))
+	// An item sold in full is removed, along with what it holds, so any editors open on them are closed first, as they
+	// are for a deletion, and the sale is abandoned if one can't be closed.
+	removed := make(map[tid.TID]bool)
 	for _, row := range d.rows {
 		if row.quantity > 0 {
 			items = append(items, gurps.SaleItem{Equipment: row.eqp, Quantity: row.quantity})
+			if row.quantity >= row.most {
+				gurps.Traverse(func(eqp *gurps.Equipment) bool {
+					removed[eqp.TID] = true
+					return false
+				}, false, false, row.eqp)
+			}
 		}
 	}
+	if !CloseID(removed) {
+		return
+	}
 	name := strings.TrimSpace(d.name)
+	if name == "" {
+		name = d.defaultName()
+	}
 	recordTrade(sheet, i18n.Text("Sell Equipment"), func() {
 		entity.CommitSale(items, d.payouts, d.merge, name, jio.Now())
 	})
@@ -137,6 +159,7 @@ func (d *sellDialog) newContent() *unison.Panel {
 			d.update()
 		}, fxp.One, fxp.Thousand, false, false)
 	percent.SetMarksModified(false)
+	d.gateOnValidity(percent)
 	content.AddChild(percent)
 
 	d.scroll = unison.NewScrollPanel()
@@ -172,7 +195,13 @@ func (d *sellDialog) newContent() *unison.Panel {
 	content.AddChild(d.warning)
 
 	content.AddChild(NewFieldLeadingLabel(i18n.Text("Transaction name"), false))
-	content.AddChild(NewStringField(nil, "", "", func() string { return d.name }, func(s string) { d.name = s }))
+	d.nameField = NewStringField(nil, "", "", func() string { return d.name }, func(s string) {
+		if s != d.name {
+			d.name = s
+			d.nameEdited = true
+		}
+	})
+	content.AddChild(d.nameField)
 	merge := unison.NewCheckBox()
 	merge.SetTitle(i18n.Text("Merge with matching money already carried"))
 	merge.State = check.On
@@ -227,7 +256,9 @@ func (d *sellDialog) newList() *unison.Panel {
 		quantity.SetMarksModified(false)
 		quantity.refuseAboveMax()
 		quantity.Accessibility.Name = i18n.Text("%s quantity to sell", name)
-		quantity.SetEnabled(row.most > fxp.One)
+		d.gateOnValidity(quantity)
+		// A group is sold in full (see gurps.Entity.CommitSale).
+		quantity.SetEnabled(!row.eqp.IsGroup() && row.most > fxp.One)
 		list.AddChild(quantity)
 		carried := unison.NewLabel()
 		carried.SetTitle(i18n.Text("of %s", row.most.Comma()))
@@ -245,8 +276,38 @@ func (d *sellDialog) newList() *unison.Panel {
 	return list
 }
 
+// defaultName returns the transaction name suggested for the sale, naming the items of which something is to be sold, or
+// nothing when there are none.
+func (d *sellDialog) defaultName() string {
+	names := make([]string, 0, len(d.rows))
+	for _, row := range d.rows {
+		if row.quantity > 0 {
+			names = append(names, row.eqp.String())
+		}
+	}
+	if len(names) == 0 {
+		return ""
+	}
+	return i18n.Text("Sold %s", xstrings.Truncate(strings.Join(names, ", "), maxSaleNamesLength, true))
+}
+
+// gateOnValidity keeps the sale from being made while the field's text isn't a valid value, since the field then reports
+// the nearest value it allows rather than what was typed. The field validates after it has reported a change, so the
+// dialog is brought up to date from the validation rather than from the value alone.
+func (d *sellDialog) gateOnValidity(field *DecimalField) {
+	validate := field.ValidateCallback
+	field.ValidateCallback = func() bool {
+		valid := validate()
+		if d.invalid[field] == valid {
+			d.invalid[field] = !valid
+			d.update()
+		}
+		return valid
+	}
+}
+
 // update brings what the dialog shows, and whether the sale can be made, up to date with the quantities and percentage
-// entered.
+// entered. The suggested transaction name follows the quantities until the user edits it.
 func (d *sellDialog) update() {
 	settings := d.sheet.Entity().SheetSettings
 	dollars := func(value fxp.Int) string { return i18n.Text("$%s", settings.FormatEquipmentValue(value)) }
@@ -259,6 +320,14 @@ func (d *sellDialog) update() {
 			selling = true
 		}
 		setSellLabelTitle(row.youGet, dollars(price))
+	}
+	if !d.nameEdited {
+		if name := d.defaultName(); name != d.name {
+			d.name = name
+			if d.nameField != nil {
+				d.nameField.Sync()
+			}
+		}
 	}
 	if !d.computed || total != d.total {
 		d.total = total
@@ -289,9 +358,19 @@ func (d *sellDialog) update() {
 		d.warning.setText(warning, unison.ThemeWarning)
 	}
 	if d.dialog != nil {
-		d.dialog.Button(unison.ModalResponseOK).SetEnabled(selling && len(d.money) != 0)
+		d.dialog.Button(unison.ModalResponseOK).SetEnabled(selling && len(d.money) != 0 && !d.anyInvalid())
 		growToFitContent(d.dialog.Window())
 	}
+}
+
+// anyInvalid returns true if any field's text isn't a valid value.
+func (d *sellDialog) anyInvalid() bool {
+	for _, invalid := range d.invalid {
+		if invalid {
+			return true
+		}
+	}
+	return false
 }
 
 // setSellLabelTitle replaces the label's text, if it differs, and has it laid out again for its new width.

@@ -105,6 +105,7 @@ func mergeBase() *Equipment {
 	eqp.SwitchedOn = true
 	eqp.Source = Source{Library: "Lib", Path: "Gear.eqp", TID: eqp.TID}
 	eqp.ThirdParty = map[string]any{"a": 1}
+	eqp.Weapons = []*Weapon{NewWeapon(eqp, true)}
 	hooded := NewEquipmentModifier(nil, nil, false)
 	hooded.Name = "Hooded"
 	hooded.CostAmount = "+5"
@@ -151,6 +152,8 @@ func TestMergeMatches(t *testing.T) {
 			eqp.Prereq.Prereqs = append(eqp.Prereq.Prereqs, NewTraitPrereq())
 		}},
 		{name: "weapons", change: func(eqp *Equipment) { eqp.Weapons = append(eqp.Weapons, NewWeapon(eqp, true)) }},
+		{name: "weapon data", change: func(eqp *Equipment) { eqp.Weapons[0].Usage = "Thrust" }},
+		{name: "weapon hidden", change: func(eqp *Equipment) { eqp.Weapons[0].Hide = true }},
 		{name: "features", change: func(eqp *Equipment) { eqp.Features = append(eqp.Features, NewDRBonus()) }},
 		{name: "weight ignored for skills", change: func(eqp *Equipment) { eqp.WeightIgnoredForSkills = true }},
 		{name: "equipped", change: func(eqp *Equipment) { eqp.Equipped = false }},
@@ -216,13 +219,21 @@ func flattenedFields(typ reflect.Type) []string {
 	return names
 }
 
-// TestMergeMatchesCoversEveryField fails when the equipment or equipment modifier data gains or loses a field, so that
-// MergeMatches and equipmentModifiersMatch are revisited to compare the new field or deliberately ignore it.
+// TestMergeMatchesCoversEveryField fails when the equipment, equipment modifier or weapon data gains or loses a field,
+// so that MergeMatches, equipmentModifiersMatch and weaponsMatch are revisited to compare the new field or deliberately
+// ignore it.
 func TestMergeMatchesCoversEveryField(t *testing.T) {
 	tests := []struct {
 		typ      reflect.Type
 		expected []string
 	}{
+		{
+			typ: reflect.TypeFor[WeaponData](),
+			expected: []string{
+				"TID", "SubVersion", "Damage", "Strength", "Usage", "UsageNotes", "Reach", "Parry", "Block", "Accuracy",
+				"Range", "RateOfFire", "Shots", "Bulk", "Recoil", "Defaults", "Hide",
+			},
+		},
 		{
 			typ: reflect.TypeFor[EquipmentData](),
 			expected: []string{
@@ -246,8 +257,9 @@ func TestMergeMatchesCoversEveryField(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.typ.Name(), func(t *testing.T) {
 			check.New(t).Equal(tt.expected, flattenedFields(tt.typ),
-				"%s's fields have changed: revisit MergeMatches and equipmentModifiersMatch (model/gurps/trade.go) so that "+
-					"each new field is either compared or deliberately ignored, then update this list", tt.typ.Name())
+				"%s's fields have changed: revisit MergeMatches, equipmentModifiersMatch and weaponsMatch "+
+					"(model/gurps/trade.go) so that each new field is either compared or deliberately ignored, then update "+
+					"this list", tt.typ.Name())
 		})
 	}
 }
@@ -616,4 +628,157 @@ func TestSellMoneyItems(t *testing.T) {
 	c.Equal(0, len(e.CarriedEquipment), "the copies aren't put in any list")
 	c.Equal(1, len(money.Modifiers))
 	c.Equal(fxp.FromInteger(50), e.SourceMatcher().libraryEquipment(src).Quantity, "the library's copy is untouched")
+}
+
+// TestTradeQuantityCountsEveryCopyOfAContainer checks that equipment inside a container is counted once for each copy of
+// the container, as its extended value is, and that a sale of it takes it out of every copy.
+func TestTradeQuantityCountsEveryCopyOfAContainer(t *testing.T) {
+	c := check.New(t)
+	e := NewEntity()
+	backpack := withQuantity(newContainerItem("Backpack", "5"), "2")
+	torches := withQuantity(newEquipmentItem("Torch", "10", "1 lb"), "2")
+	pouch := withQuantity(newContainerItem("Pouch", "1"), "3")
+	gems := NewEquipmentGroup(nil, nil)
+	gems.Name = "Gems"
+	ruby := newEquipmentItem("Ruby", "250", "0")
+	carry(e, nil, backpack)
+	carry(e, backpack, torches, pouch, gems)
+	carry(e, gems, ruby)
+	c.Equal(fxp.Two, backpack.TradeQuantity())
+	c.Equal(fxp.Four, torches.TradeQuantity(), "two torches come with each of the two backpacks")
+	c.Equal(fxp.Six, pouch.TradeQuantity(), "a container inside another counts the same way")
+	c.Equal(fxp.Two, gems.TradeQuantity(), "a group comes once with each backpack")
+	c.Equal(fxp.Two, ruby.TradeQuantity())
+	c.Equal(fxp.FromInteger(40), TradePrice(torches, torches.TradeQuantity(), fxp.Hundred))
+	when := mustTime(t, "2026-10-13T09:40:00Z")
+
+	wealth := e.WealthCarried()
+	entry := e.CommitSale([]SaleItem{{Equipment: torches, Quantity: fxp.Ten}}, nil, true, "", when)
+	c.Equal([]ShoppingRecordItem{{Name: "Torch", Quantity: fxp.Four, Value: fxp.Ten}}, entry.Items,
+		"selling all of the torches sells those in every backpack")
+	c.False(slices.Contains(backpack.Children, torches), "sold in full, the torches are gone")
+	c.Equal(wealth-fxp.FromInteger(40), e.WealthCarried(), "the wealth falls by what was sold")
+
+	wealth = e.WealthCarried()
+	entry = e.CommitSale([]SaleItem{{Equipment: pouch, Quantity: fxp.Two}}, nil, true, "", when)
+	c.Equal([]ShoppingRecordItem{{Name: "Pouch", Quantity: fxp.Two, Value: fxp.One}}, entry.Items)
+	c.Equal(fxp.Two, pouch.Quantity, "selling two of six pouches takes one out of each backpack")
+	c.Equal(wealth-fxp.Two, e.WealthCarried())
+
+	wealth = e.WealthCarried()
+	entry = e.CommitSale([]SaleItem{{Equipment: gems, Quantity: fxp.One}}, nil, true, "", when)
+	c.Equal([]ShoppingRecordItem{{Name: "Gems", Quantity: fxp.Two, Value: fxp.FromInteger(250)}}, entry.Items,
+		"a group is sold in full, once for each backpack")
+	c.False(slices.Contains(backpack.Children, gems))
+	c.Equal(wealth-fxp.FromInteger(500), e.WealthCarried())
+}
+
+// TestCommitPurchaseSpendsFromEveryCopyOfAContainer checks that money inside a container can be spent as many times as
+// the container has copies, since each copy holds its own, and that spending takes it out of every copy.
+func TestCommitPurchaseSpendsFromEveryCopyOfAContainer(t *testing.T) {
+	c := check.New(t)
+	e := NewEntity()
+	silver := denomination("Silver Eagle", "20")
+	pouch := withQuantity(newContainerItem("Pouch", "0"), "2")
+	eagles := withQuantity(silver.Clone(LibraryFile{}, nil, nil, Duplicate), "5")
+	carry(e, nil, pouch)
+	carry(e, pouch, eagles)
+	when := mustTime(t, "2026-10-13T09:40:00Z")
+	c.Equal(fxp.Ten, eagles.TradeQuantity())
+	c.Equal(fxp.FromInteger(200), e.WealthCarried())
+
+	payments, paid := PaymentFor(fxp.FromInteger(120), e.MoneyItems())
+	c.Equal([]Payout{{Money: eagles, Quantity: 6}}, payments, "the eagles in both pouches can be spent")
+	c.Equal(fxp.FromInteger(120), paid)
+
+	entry := e.CommitPurchase(nil, payments, nil, true, "", when)
+	c.Equal([]ShoppingRecordItem{{Name: "Silver Eagle", Quantity: fxp.FromInteger(-6), Value: fxp.Twenty}}, entry.Money)
+	c.Equal(fxp.FromInteger(120), entry.Exchanged)
+	c.Equal(fxp.Two, eagles.Quantity, "three of the six come out of each pouch")
+	c.Equal(fxp.FromInteger(80), e.WealthCarried(), "the wealth falls by what was spent")
+
+	entry = e.CommitPurchase(nil, []Payout{{Money: eagles, Quantity: 7}}, nil, true, "", when)
+	c.Equal([]ShoppingRecordItem{{Name: "Silver Eagle", Quantity: fxp.FromInteger(-4), Value: fxp.Twenty}}, entry.Money,
+		"no more than is in every pouch together is spent")
+	c.Equal(0, len(pouch.Children), "spent in full, the eagles are gone")
+	c.Equal(fxp.Int(0), e.WealthCarried())
+}
+
+// TestMergeSkipsMatchesInsideCopiedContainers checks that money and items received are never merged into a match held
+// by a container with more than one copy, since every copy would gain them, but go to a match held by none or by single
+// containers, and are otherwise carried anew.
+func TestMergeSkipsMatchesInsideCopiedContainers(t *testing.T) {
+	c := check.New(t)
+	e := NewEntity()
+	silver := denomination("Silver Eagle", "20")
+	pouch := withQuantity(newContainerItem("Pouch", "0"), "2")
+	eagles := withQuantity(silver.Clone(LibraryFile{}, nil, nil, Duplicate), "5")
+	carry(e, nil, pouch)
+	carry(e, pouch, eagles)
+	when := mustTime(t, "2026-10-13T09:40:00Z")
+
+	entry := e.CommitSale(nil, []Payout{{Money: silver, Quantity: 10}}, true, "", when)
+	c.Equal(fxp.FromInteger(200), entry.Exchanged)
+	c.Equal(fxp.Five, eagles.Quantity, "the eagles in the pouches are left alone")
+	c.Equal(fxp.FromInteger(400), e.WealthCarried(), "the wealth rises by what was received")
+	c.Equal(2, len(e.CarriedEquipment))
+	if len(e.CarriedEquipment) == 2 {
+		added := e.CarriedEquipment[1]
+		c.Equal("Silver Eagle", added.Name)
+		c.Equal(fxp.Ten, added.Quantity, "the eagles received are carried anew")
+	}
+
+	purse := newContainerItem("Purse", "0")
+	loose := withQuantity(silver.Clone(LibraryFile{}, nil, nil, Duplicate), "3")
+	e.CarriedEquipment = e.CarriedEquipment[:1]
+	carry(e, nil, purse)
+	carry(e, purse, loose)
+	e.CommitPurchase(nil, nil, []Payout{{Money: silver, Quantity: 2}}, true, "", when)
+	c.Equal(fxp.Five, eagles.Quantity)
+	c.Equal(fxp.Five, loose.Quantity, "a match in a container with one copy takes the merge")
+	c.Equal(2, len(e.CarriedEquipment))
+}
+
+// TestChangeForReturnsNoMoreThanWasPaid checks that change drawn from the money paid hands back no more of each item than
+// was paid with, however many of it are carried, while the sell money denominations are drawn on without limit, and that
+// payments of matching money add up.
+func TestChangeForReturnsNoMoreThanWasPaid(t *testing.T) {
+	c := check.New(t)
+	e := NewEntity()
+	copper := denomination("Copper Penny", "1")
+	tens := withQuantity(denomination("Ten", "10"), "3")
+	pennies := withQuantity(copper.Clone(LibraryFile{}, nil, nil, Duplicate), "11")
+	more := withQuantity(copper.Clone(LibraryFile{}, nil, nil, Duplicate), "11")
+	carry(e, nil, tens, pennies, more)
+
+	change, paid := e.ChangeFor(fxp.Eight, nil, []Payout{{Money: tens, Quantity: 1}, {Money: pennies, Quantity: 1}})
+	c.Equal(fxp.One, paid, "only the one penny paid can be handed back")
+	c.Equal(1, len(change))
+	if len(change) == 1 {
+		c.Equal("Copper Penny", change[0].Money.Name)
+		c.Equal(1, change[0].Quantity)
+	}
+
+	change, paid = e.ChangeFor(fxp.Eight, nil, []Payout{
+		{Money: tens, Quantity: 1},
+		{Money: pennies, Quantity: 2},
+		{Money: more, Quantity: 3},
+	})
+	c.Equal(fxp.Five, paid, "payments of matching money are handed back together")
+	c.Equal(1, len(change))
+	if len(change) == 1 {
+		c.Equal(5, change[0].Quantity)
+	}
+
+	change, paid = e.ChangeFor(fxp.Eight, []*Equipment{copper}, []Payout{{Money: tens, Quantity: 1}})
+	c.Equal(fxp.Eight, paid, "sell money is drawn on without limit")
+	c.Equal([]Payout{{Money: copper, Quantity: 8}}, change)
+
+	// An overpayment too large for the exact search still hands back no more than was paid.
+	change, paid = e.ChangeFor(fxp.FromInteger(2_500_000), nil, []Payout{{Money: pennies, Quantity: 5}})
+	c.Equal(fxp.Five, paid)
+	c.Equal(1, len(change))
+	if len(change) == 1 {
+		c.Equal(5, change[0].Quantity)
+	}
 }

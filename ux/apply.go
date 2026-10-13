@@ -36,12 +36,7 @@ func transferKindOf(panel unison.Paneler) transferKind {
 	if xreflect.IsNil(panel) {
 		return transferLibrary
 	}
-	var owner any = unison.AncestorOrSelf[unison.Dockable](panel)
-	if xreflect.IsNil(owner) {
-		// A list the page layout leaves off the page is never attached to it, so ask the table's owner.
-		owner = panel.AsPanel().ClientData()[TableOwnerClientKey]
-	}
-	switch owner.(type) {
+	switch transferOwnerOf(panel).(type) {
 	case *Sheet, *LootSheet:
 		return transferSheet
 	case *Template:
@@ -49,6 +44,17 @@ func transferKindOf(panel unison.Paneler) transferKind {
 	default:
 		return transferLibrary
 	}
+}
+
+// transferOwnerOf returns the document the panel belongs to: the dockable holding it, or, for a list the page layout
+// leaves off the page, which is never attached to it, the table's owner. The result is untyped nil when there is
+// neither.
+func transferOwnerOf(panel unison.Paneler) any {
+	var owner any = unison.AncestorOrSelf[unison.Dockable](panel)
+	if xreflect.IsNil(owner) {
+		owner = panel.AsPanel().ClientData()[TableOwnerClientKey]
+	}
+	return owner
 }
 
 // applyOptions selects the steps of applyTransfer that rows arriving in a document go through.
@@ -370,7 +376,8 @@ func applyTransfer(destination unison.Paneler, parts *applyParts, opts applyOpti
 	// of the options of a choice and not be chosen. They are named by their containers rather than by the ancestries
 	// the containers link to, since many containers may link to the same ancestry, each with details of its own, and
 	// the names are only final once the nameables have been settled.
-	sheet, isSheet := unison.AncestorOrSelf[unison.Dockable](destination).(*Sheet)
+	owner := transferOwnerOf(destination)
+	sheet, isSheet := owner.(*Sheet)
 	var entity *gurps.Entity
 	var incomingAncestries []*gurps.Trait
 	if isSheet {
@@ -388,8 +395,14 @@ func applyTransfer(destination unison.Paneler, parts *applyParts, opts applyOpti
 		(opts.suppressRandomizePrompt || askToRandomizeAgain(op))
 
 	// Every answer is in, so the destination is changed from this point on. The undo manager is found first, since the
-	// rebuild that reports the change can replace the table it would otherwise be found through.
+	// rebuild that reports the change can replace the table it would otherwise be found through. A list off the page
+	// has nothing to find it through, so its owner's is used.
 	mgr := unison.UndoManagerFor(destination)
+	if mgr == nil {
+		if provider, ok := owner.(unison.UndoManagerProvider); ok {
+			mgr = provider.UndoManager()
+		}
+	}
 	before := newApplyUndoEditData(sheet, parts)
 	if opts.clearTemplateOnly {
 		parts.each(applyPartOps.clearTemplateOnly)
