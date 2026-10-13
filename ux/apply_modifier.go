@@ -268,11 +268,34 @@ func selectModifierTargets[T gurps.Node[T]](tables []*unison.Table[*Node[T]], ta
 // titles (see promptOperation). Returns false if nothing was changed: a prompt was canceled, in which case every target
 // has been put back as it was, or there was nothing to do.
 func attachModifierClones[T gurps.ModifiableNode[T, M], M gurps.ModifierNode[M, T]](name string, tables []*unison.Table[*Node[T]], dataOwner gurps.DataOwner, targets []T, modifiers []M, from gurps.LibraryFile) bool {
-	targets = slices.DeleteFunc(slices.Clone(targets), func(node T) bool { return !gurps.CanTakeModifiers(node) })
-	if len(tables) == 0 || len(targets) == 0 || len(modifiers) == 0 {
+	if len(tables) == 0 || !attachModifiers(name, dataOwner, targets, modifiers, from) {
 		return false
 	}
-	forEntity := !xreflect.IsNil(dataOwner) && dataOwner.OwningEntity() != nil
+	// Looked up afresh in case a table was replaced while a prompt was up.
+	for _, table := range tables {
+		liveTable(table).SyncToModel()
+	}
+	if ownedByEntity(dataOwner) {
+		rebuildAsModified(dropRebuilder(liveTable(tables[0])), true)
+	}
+	return true
+}
+
+// ownedByEntity returns true if the data owner is, or belongs to, an entity.
+func ownedByEntity(dataOwner gurps.DataOwner) bool {
+	return !xreflect.IsNil(dataOwner) && dataOwner.OwningEntity() != nil
+}
+
+// attachModifiers appends to each target its own clones of the modifiers, asking the questions attachModifierClones
+// describes, but leaves showing and reporting the change to the caller, so that targets that sit in no table, such as
+// the equipment waiting to be bought, can take modifiers too. Returns false if nothing was changed: a prompt was
+// canceled, in which case every target has been put back as it was, or there was nothing to do.
+func attachModifiers[T gurps.ModifiableNode[T, M], M gurps.ModifierNode[M, T]](name string, dataOwner gurps.DataOwner, targets []T, modifiers []M, from gurps.LibraryFile) bool {
+	targets = slices.DeleteFunc(slices.Clone(targets), func(node T) bool { return !gurps.CanTakeModifiers(node) })
+	if len(targets) == 0 || len(modifiers) == 0 {
+		return false
+	}
+	forEntity := ownedByEntity(dataOwner)
 	op := promptOperation{
 		name:        name,
 		description: i18n.Text("Adding %s to %s", shortNames(describeRows(modifiers), describeRows(targets))...),
@@ -329,13 +352,6 @@ func attachModifierClones[T gurps.ModifiableNode[T, M], M gurps.ModifierNode[M, 
 	if forEntity && !processNameableGroups(op, groups) {
 		restore()
 		return false
-	}
-	// Looked up afresh in case a table was replaced while a prompt was up.
-	for _, table := range tables {
-		liveTable(table).SyncToModel()
-	}
-	if forEntity {
-		rebuildAsModified(dropRebuilder(liveTable(tables[0])), true)
 	}
 	return true
 }

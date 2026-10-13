@@ -123,6 +123,11 @@ func (f *undoableField[T]) CurrentValue() T {
 	return f.get()
 }
 
+// SetMarksModified sets whether this field will attempt to mark its ModifiableRoot as modified. Default is true.
+func (f *undoableField[T]) SetMarksModified(marksModified bool) {
+	f.marksModified = marksModified
+}
+
 // withoutUndo has the field leave undo to its setter, returning the field.
 func (f *undoableField[T]) withoutUndo() *unison.Field {
 	f.skipUndo = true

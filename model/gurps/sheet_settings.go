@@ -68,8 +68,8 @@ type SheetSettingsData struct {
 	EquipmentValueFormat          fxp.NumberFormat   `json:"equipment_value_format,omitzero"`
 	BuyPercent                    fxp.Int            `json:"buy_percent,omitzero"`
 	SellPercent                   fxp.Int            `json:"sell_percent,omitzero"`
-	// SellMoney lists the library equipment paid out when selling, each by its source so it can be found again. Containers
-	// are never included.
+	// SellMoney lists the library equipment paid out when selling, each by its source so it can be found again.
+	// Containers are never included.
 	SellMoney []Source `json:"sell_money,omitempty"`
 }
 
@@ -179,6 +179,13 @@ func (s *SheetSettings) AddSellMoney(eqp *Equipment) bool {
 	}
 	s.SellMoney = append(s.SellMoney, eqp.Source)
 	return true
+}
+
+// RemoveSellMoney removes the source from the sell money list. Returns true if it was there.
+func (s *SheetSettings) RemoveSellMoney(src Source) bool {
+	before := len(s.SellMoney)
+	s.SellMoney = slices.DeleteFunc(s.SellMoney, func(one Source) bool { return one == src })
+	return len(s.SellMoney) != before
 }
 
 // FormatHeight formats a height for display on the sheet, using the default length units and the height display

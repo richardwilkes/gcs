@@ -13,15 +13,20 @@ import (
 	"io/fs"
 	"strings"
 
+	"github.com/richardwilkes/gcs/v5/model/fonts"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/display"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/progression"
 	"github.com/richardwilkes/gcs/v5/model/paper"
+	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/unison"
+	"github.com/richardwilkes/unison/drag"
 	"github.com/richardwilkes/unison/enums/align"
 	"github.com/richardwilkes/unison/enums/check"
+	"github.com/richardwilkes/unison/enums/mod"
+	"github.com/richardwilkes/unison/enums/paintstyle"
 	"github.com/richardwilkes/unison/enums/weight"
 )
 
@@ -45,6 +50,10 @@ type sheetSettingsDockable struct {
 	modifiersDisplayPopup     *unison.PopupMenu[display.Option]
 	notesDisplayPopup         *unison.PopupMenu[display.Option]
 	skillLevelAdjDisplayPopup *unison.PopupMenu[display.Option]
+	buyPercentField           *DecimalField
+	sellPercentField          *DecimalField
+	sellMoneyPanel            *unison.Panel
+	sellMoneyDropping         bool
 	orientationPopup          *unison.PopupMenu[paper.Orientation]
 	paperSizeField            *unison.Field
 	topMarginField            *unison.Field
@@ -231,6 +240,7 @@ func (d *sheetSettingsDockable) initContent(content *unison.Panel) {
 	d.createOptions(content)
 	d.createUnitsOfMeasurement(content)
 	d.createDecimalPlaces(content)
+	d.createTrading(content)
 	d.createWhereToDisplay(content)
 	d.createPageSettings(content)
 }
@@ -370,6 +380,167 @@ func (d *sheetSettingsDockable) addNumberFormatRow(panel *unison.Panel, title, t
 	row.pad.Accessibility.Name = i18n.Text("Pad %s with zeros", title)
 	row.pad.Tooltip = newWrappedTooltip(i18n.Text(`Show trailing zeros out to the number of decimal places chosen, e.g. "7.50" rather than "7.5" at 2 decimal places. Has no effect when "As Needed" or "0" is chosen.`))
 	return row
+}
+
+// createTrading adds the section that controls buying and selling equipment: the percentages of full price offered by
+// default and the money that sales pay out in.
+func (d *sheetSettingsDockable) createTrading(content *unison.Panel) {
+	panel := unison.NewPanel()
+	panel.SetLayout(&unison.FlexLayout{
+		Columns:  2,
+		HSpacing: unison.StdHSpacing,
+		VSpacing: unison.StdVSpacing,
+	})
+	panel.SetLayoutData(&unison.FlexLayoutData{HAlign: align.Fill})
+	d.createHeader(panel, i18n.Text("Trading"), 2)
+	d.buyPercentField = d.createPercentField(panel, i18n.Text("Buy Percent"),
+		i18n.Text("The percentage of an item's full price that buying it costs, unless another is chosen when buying"),
+		func(s *gurps.SheetSettings) *fxp.Int { return &s.BuyPercent })
+	d.sellPercentField = d.createPercentField(panel, i18n.Text("Sell Percent"),
+		i18n.Text("The percentage of an item's full price that selling it brings in, unless another is chosen when selling"),
+		func(s *gurps.SheetSettings) *fxp.Int { return &s.SellPercent })
+	listBorder := unison.NewCompoundBorder(
+		unison.NewLineBorder(unison.ThemeSurfaceEdge, geom.Size{}, geom.NewUniformInsets(1), false),
+		unison.NewEmptyBorder(geom.NewUniformInsets(unison.StdHSpacing)),
+	)
+	label := NewFieldLeadingLabel(i18n.Text("Sell Money"), false)
+	// Level with the list's first row rather than its border.
+	label.SetBorder(unison.NewEmptyBorder(geom.Insets{Top: listBorder.Insets().Top}))
+	label.SetLayoutData(&unison.FlexLayoutData{HAlign: align.End, VAlign: align.Start})
+	panel.AddChild(label)
+	d.sellMoneyPanel = unison.NewPanel()
+	d.sellMoneyPanel.SetLayout(&unison.FlexLayout{
+		Columns:  2,
+		HSpacing: unison.StdHSpacing,
+		VSpacing: unison.StdVSpacing,
+	})
+	d.sellMoneyPanel.SetBorder(listBorder)
+	d.sellMoneyPanel.SetLayoutData(&unison.FlexLayoutData{HAlign: align.Fill, HGrab: true})
+	d.sellMoneyPanel.Tooltip = newWrappedTooltip(i18n.Text("The money that selling equipment pays out in, using as few items as possible. Drag money items from an equipment library here to add them."))
+	d.installSellMoneyDropSupport()
+	d.rebuildSellMoney()
+	panel.AddChild(d.sellMoneyPanel)
+	content.AddChild(panel)
+}
+
+// createPercentField adds a field for the percentage of the settings that value reaches, with the given title and
+// tooltip, and returns it. The open sheets are told only of a change, since sync() hands the field the value it already
+// holds.
+func (d *sheetSettingsDockable) createPercentField(panel *unison.Panel, title, tooltip string, value func(s *gurps.SheetSettings) *fxp.Int) *DecimalField {
+	panel.AddChild(NewFieldLeadingLabel(title, false))
+	field := NewDecimalField(nil, "", title, func() fxp.Int { return *value(d.settings()) },
+		func(v fxp.Int) {
+			if current := value(d.settings()); *current != v {
+				*current = v
+				d.syncSheet(false)
+			}
+		}, fxp.One, fxp.Thousand, false, false)
+	field.Tooltip = newWrappedTooltip(tooltip)
+	panel.AddChild(field)
+	return field
+}
+
+// installSellMoneyDropSupport has the sell money list take equipment dragged from a list, adding what it can.
+func (d *sheetSettingsDockable) installSellMoneyDropSupport() {
+	p := d.sellMoneyPanel
+	p.CanAcceptDropCallback = func(di drag.Info) bool { return di.HasDataType(equipmentDragKey.UTI) }
+	over := func(di drag.Info, _ geom.Point, _ mod.Modifiers) drag.Op {
+		if !di.HasDataType(equipmentDragKey.UTI) {
+			return drag.None
+		}
+		d.showSellMoneyDropTarget(true)
+		return drag.Copy
+	}
+	p.DragEnteredCallback = over
+	p.DragUpdatedCallback = over
+	p.DragExitedCallback = func() { d.showSellMoneyDropTarget(false) }
+	p.DropCallback = func(di drag.Info, _ geom.Point, _ mod.Modifiers) bool {
+		d.showSellMoneyDropTarget(false)
+		return di.HasDataType(equipmentDragKey.UTI) && d.addSellMoney(draggedTableData)
+	}
+	p.DrawOverCallback = func(gc *unison.Canvas, _ geom.Rect) {
+		if d.sellMoneyDropping {
+			r := p.ContentRect(true)
+			paint := unison.ThemeWarning.Paint(gc, r, paintstyle.Fill)
+			paint.SetColorFilter(unison.Alpha30Filter())
+			gc.DrawRect(r, paint)
+		}
+	}
+}
+
+func (d *sheetSettingsDockable) showSellMoneyDropTarget(show bool) {
+	if d.sellMoneyDropping != show {
+		d.sellMoneyDropping = show
+		flushDragFeedback(d.sellMoneyPanel)
+	}
+}
+
+// addSellMoney adds the equipment rows of the drag data to the sell money, returning true if any were added.
+// Containers, items already listed and items that come from no library are left out.
+func (d *sheetSettingsDockable) addSellMoney(data any) bool {
+	tableData, ok := data.(*unison.TableDragData[*Node[*gurps.Equipment]])
+	if !ok || tableData == nil {
+		return false
+	}
+	libFile := libraryFileFromTable(tableData.Table)
+	s := d.settings()
+	added := false
+	for _, row := range tableData.Rows {
+		// A library's own items have no source, so the clone is made by reference, which points its source at the
+		// item in the library file.
+		if s.AddSellMoney(row.Data().Clone(libFile, nil, nil, gurps.Reference)) {
+			added = true
+		}
+	}
+	if added {
+		d.rebuildSellMoney()
+		d.syncSheet(false)
+	}
+	return added
+}
+
+// rebuildSellMoney fills the sell money list from the settings: a row for each item, named as the library names it,
+// with a button that removes it, or a hint saying how to add one when there are none.
+func (d *sheetSettingsDockable) rebuildSellMoney() {
+	p := d.sellMoneyPanel
+	p.RemoveAllChildren()
+	sources := d.settings().SellMoney
+	if len(sources) == 0 {
+		hint := unison.NewLabel()
+		hint.Font = fonts.FieldSecondary
+		hint.OnBackgroundInk = dimmedTextColor
+		hint.SetTitle(i18n.Text("Drag money items from an equipment library here."))
+		hint.SetLayoutData(&unison.FlexLayoutData{HSpan: 2})
+		p.AddChild(hint)
+	}
+	for _, src := range sources {
+		label := unison.NewLabel()
+		var name string
+		if eqp := gurps.EquipmentForSource(src); eqp != nil {
+			name = eqp.String()
+			label.SetTitle(name)
+		} else {
+			name = i18n.Text("%s (%s)", src.Path, src.TID)
+			label.SetTitle(i18n.Text("%s — not found", name))
+			label.OnBackgroundInk = dimmedTextColor
+			label.Tooltip = newWrappedTooltip(src.String())
+		}
+		label.SetLayoutData(&unison.FlexLayoutData{HAlign: align.Fill, VAlign: align.Middle, HGrab: true})
+		p.AddChild(label)
+		remove := unison.NewSVGButton(unison.TrashSVG)
+		remove.Accessibility.Name = i18n.Text("Remove %s", name)
+		remove.Tooltip = newWrappedTooltip(remove.Accessibility.Name)
+		remove.ClickCallback = func() {
+			if d.settings().RemoveSellMoney(src) {
+				d.rebuildSellMoney()
+				d.syncSheet(false)
+			}
+		}
+		remove.SetLayoutData(&unison.FlexLayoutData{VAlign: align.Middle})
+		p.AddChild(remove)
+	}
+	p.MarkForLayoutRecursivelyUpward()
+	p.MarkForRedraw()
 }
 
 func (d *sheetSettingsDockable) createWhereToDisplay(content *unison.Panel) {
@@ -540,6 +711,9 @@ func (d *sheetSettingsDockable) sync() {
 	d.modifiersDisplayPopup.Select(s.ModifiersDisplay)
 	d.notesDisplayPopup.Select(s.NotesDisplay)
 	d.skillLevelAdjDisplayPopup.Select(s.SkillLevelAdjDisplay)
+	SetFieldValue(d.buyPercentField.Field, d.buyPercentField.Format(s.BuyPercent))
+	SetFieldValue(d.sellPercentField.Field, d.sellPercentField.Format(s.SellPercent))
+	d.rebuildSellMoney()
 	d.paperSizeField.SetText(s.Page.Size)
 	d.orientationPopup.Select(s.Page.Orientation)
 	d.topMarginField.SetText(s.Page.TopMargin.String())

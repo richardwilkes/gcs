@@ -27,8 +27,8 @@ Any comments you add or edit:
   rewritten by every regeneration, so never edit them by hand: change the table and run `./build.sh -G`.
 - A new test that puts two or more goroutines over shared state must also be listed in its package's `TestRace`
   wrapper (see the `race_coverage_test.go` files), or the race pass never runs it.
-- Tests that start a headless workspace with `startHeadlessWorkspace` must not call `t.Parallel`: a session owns most
-  of unison's mutable globals while it runs.
+- Tests that start a headless workspace with `uxtest.StartHeadlessWorkspace` must not call `t.Parallel`: a session
+  owns most of unison's mutable globals while it runs.
 
 ## Building, testing and linting
 

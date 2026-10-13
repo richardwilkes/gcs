@@ -30,6 +30,7 @@ var (
 	addNaturalAttacksAction        *unison.Action
 	applyModifierAction            *unison.Action
 	applyTemplateAction            *unison.Action
+	buyEquipmentAction             *unison.Action
 	calculatorAction               *unison.Action
 	clearPortraitAction            *unison.Action
 	clearSourceAction              *unison.Action
@@ -144,6 +145,8 @@ var (
 	scaleDefaultAction                  *unison.Action
 	scaleDownAction                     *unison.Action
 	scaleUpAction                       *unison.Action
+	sellEquipmentAction                 *unison.Action
+	shoppingRecordAction                *unison.Action
 	syncWithSourceAction                *unison.Action
 	swapDefaultsAction                  *unison.Action
 	toggleStateAction                   *unison.Action
@@ -233,6 +236,9 @@ func registerActions() {
 			}
 		},
 	})
+	buyEquipmentAction = registerSheetAction("buy.eqp", BuyEquipmentItemID, i18n.Text("Buy Equipment…"),
+		unison.KeyBinding{}, (*Sheet).startBuying)
+	buyEquipmentAction.EnabledCallback = sheetActionEnabledWhen((*Sheet).canStartBuying)
 	calculatorAction = registerKeyBindableAction("calculator", &unison.Action{
 		ID:              CalculatorItemID,
 		Title:           i18n.Text("Calculators"),
@@ -534,6 +540,10 @@ func registerActions() {
 		unison.KeyBinding{KeyCode: unison.KeyMinus, Modifiers: mod.OSMenuCommand() | mod.Option})
 	scaleUpAction = registerFocusAction("scale.up", ScaleUpItemID, i18n.Text("Scale Up"),
 		unison.KeyBinding{KeyCode: unison.KeyEqual, Modifiers: mod.OSMenuCommand() | mod.Option})
+	sellEquipmentAction = registerFocusActionWithContextTitle("sell.eqp", SellEquipmentItemID,
+		i18n.Text("Sell Equipment…"), i18n.Text("Sell…"), unison.KeyBinding{})
+	shoppingRecordAction = registerSheetAction("shopping.record", ShoppingRecordItemID, i18n.Text("Shopping Record"),
+		unison.KeyBinding{}, showShoppingRecord)
 	syncWithSourceAction = registerFocusAction("clear.sync", SyncWithSourceItemID, i18n.Text("Sync with Source"),
 		unison.KeyBinding{})
 	swapDefaultsAction = registerFocusAction("swap.defaults", SwapDefaultsItemID, i18n.Text("Swap Defaults"),
@@ -727,6 +737,15 @@ func activeUndoManager() *unison.UndoManager {
 
 func actionEnabledForSheet(_ *unison.Action, _ any) bool {
 	return ActiveSheet() != nil
+}
+
+// sheetActionEnabledWhen returns an enabled callback for a sheet action that also requires the active sheet to pass the
+// check.
+func sheetActionEnabledWhen(check func(*Sheet) bool) func(*unison.Action, any) bool {
+	return func(_ *unison.Action, _ any) bool {
+		s := ActiveSheet()
+		return s != nil && check(s)
+	}
 }
 
 func showWebPage(uri string) {

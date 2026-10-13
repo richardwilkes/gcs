@@ -18,7 +18,8 @@ import (
 // payoutScale converts a fixed-point amount into whole units of its smallest decimal place. fxp keeps four places.
 const payoutScale = 10000
 
-// maxPayoutCells limits the size of the table PayoutFor builds. Beyond it, PayoutFor falls back to largest value first.
+// maxPayoutCells limits the size of the table PayoutFor and PaymentFor build. Beyond it, they fall back to largest
+// value first.
 const maxPayoutCells = 2_000_000
 
 // unreachable marks an amount no combination of money items can make.
@@ -34,6 +35,8 @@ type payoutCoin struct {
 	eqp   *Equipment
 	value fxp.Int
 	units int64
+	// limit is the most of the item PaymentFor may use.
+	limit int64
 }
 
 // PayoutFor returns the money items, drawn from money in any quantity, whose total value is as close to target as
@@ -45,13 +48,8 @@ func PayoutFor(target fxp.Int, money []*Equipment) (payouts []Payout, paid fxp.I
 	if len(coins) == 0 || target <= zero {
 		return nil, zero
 	}
-	scale := fxp.FromInteger(payoutScale)
-	var g int64
-	for i := range coins {
-		coins[i].units = coins[i].value.Mul(scale).AsInteger[int64]()
-		g = gcd(g, coins[i].units)
-	}
-	limit := target.Mul(scale).AsInteger[int64]() / g
+	g := toUnits(coins)
+	limit := target.Mul(fxp.FromInteger(payoutScale)).AsInteger[int64]() / g
 	if limit > maxPayoutCells {
 		return largestFirstPayout(target, coins)
 	}
@@ -80,7 +78,47 @@ func PayoutFor(target fxp.Int, money []*Equipment) (payouts []Payout, paid fxp.I
 	return buildPayout(coins, best, last)
 }
 
-// payoutCoins returns the money items that have a positive value, largest value first.
+// PaymentFor returns the money items, drawn from money, whose total value is the smallest that is at least target,
+// along with that total. Each item may be used no more often than the whole units of its quantity. Where more than one
+// combination reaches that total, the one with the fewest items is used. Items without a positive value or without a
+// whole unit of quantity are ignored. Returns nil and zero when target isn't positive or no combination reaches it.
+func PaymentFor(target fxp.Int, money []*Equipment) (payments []Payout, paid fxp.Int) {
+	if target <= 0 {
+		return nil, 0
+	}
+	all := payoutCoins(money)
+	coins := all[:0]
+	for _, c := range all {
+		if c.limit = c.eqp.Quantity.Floor().AsInteger[int64](); c.limit > 0 {
+			coins = append(coins, c)
+		}
+	}
+	if len(coins) == 0 {
+		return nil, 0
+	}
+	g := toUnits(coins)
+	goal := ceilDiv(target.Mul(fxp.FromInteger(payoutScale)).AsInteger[int64](), g)
+	var available int64
+	for i := range coins {
+		coins[i].units /= g
+		// More of an item than reaches the goal by itself is never needed, since one could be left out.
+		coins[i].limit = min(coins[i].limit, ceilDiv(goal, coins[i].units))
+		available += coins[i].limit * coins[i].units
+	}
+	if available < goal {
+		return nil, 0
+	}
+	// The smallest total that reaches the goal exceeds it by less than the largest item, or any one item could be left
+	// out. The table holds a count of each item for every total, so its size is that range times the items.
+	size := goal + coins[0].units
+	if size > maxPayoutCells/int64(len(coins)) {
+		return payoutsFrom(coins, largestFirstPayment(coins, goal))
+	}
+	return payoutsFrom(coins, exactPayment(coins, goal, size))
+}
+
+// payoutCoins returns the money items that have a positive value, largest value first. Items of the same value keep
+// the order they had.
 func payoutCoins(money []*Equipment) []payoutCoin {
 	zero := fxp.FromInteger(0)
 	coins := make([]payoutCoin, 0, len(money))
@@ -92,7 +130,7 @@ func payoutCoins(money []*Equipment) []payoutCoin {
 			coins = append(coins, payoutCoin{eqp: m, value: v})
 		}
 	}
-	slices.SortFunc(coins, func(a, b payoutCoin) int {
+	slices.SortStableFunc(coins, func(a, b payoutCoin) int {
 		switch {
 		case a.value > b.value:
 			return -1
@@ -105,19 +143,121 @@ func payoutCoins(money []*Equipment) []payoutCoin {
 	return coins
 }
 
+// toUnits sets the units of each coin to its value in whole units of fxp's smallest decimal place and returns their
+// greatest common divisor, of which every amount the coins can make is a multiple.
+func toUnits(coins []payoutCoin) int64 {
+	scale := fxp.FromInteger(payoutScale)
+	var g int64
+	for i := range coins {
+		coins[i].units = coins[i].value.Mul(scale).AsInteger[int64]()
+		g = gcd(g, coins[i].units)
+	}
+	return g
+}
+
 // buildPayout turns the item chosen for each amount into the payout for best units.
 func buildPayout(coins []payoutCoin, best int64, last []int32) (payouts []Payout, paid fxp.Int) {
-	quantities := make([]int, len(coins))
+	quantities := make([]int64, len(coins))
 	for s := best; s > 0; s -= coins[last[s]].units {
 		quantities[last[s]]++
 	}
+	return payoutsFrom(coins, quantities)
+}
+
+// payoutsFrom returns a payout for each coin with a positive quantity, along with their total value.
+func payoutsFrom(coins []payoutCoin, quantities []int64) (payouts []Payout, paid fxp.Int) {
 	for i, q := range quantities {
 		if q > 0 {
-			payouts = append(payouts, Payout{Money: coins[i].eqp, Quantity: q})
+			payouts = append(payouts, Payout{Money: coins[i].eqp, Quantity: int(q)})
 			paid = paid.Add(coins[i].value.Mul(fxp.FromInteger(q)))
 		}
 	}
 	return payouts, paid
+}
+
+// exactPayment returns the quantity of each coin, up to its limit, for the smallest total of at least goal units, using
+// the fewest coins for that total and, where those can be made up more than one way, as many of the larger coins as
+// they can. The total must be below size.
+func exactPayment(coins []payoutCoin, goal, size int64) []int64 {
+	// count[s] is the fewest coins summing to s units from the coins taken so far, smallest first, and used[i][s] is
+	// how many of coin i that takes. Taking coin i, count[s] becomes the least of count[s-k*units]+k for k up to its
+	// limit, which is the least of count[r+t*units]-t over a sliding window of t, plus j, for s = r+j*units. A window
+	// that keeps the earliest of equal candidates takes as many of the coin as it can on a tie.
+	type candidate struct {
+		j, key int64
+	}
+	count := make([]int32, size)
+	for s := range count {
+		count[s] = unreachable
+	}
+	count[0] = 0
+	used := make([][]int32, len(coins))
+	var window []candidate
+	for i := len(coins) - 1; i >= 0; i-- {
+		c := coins[i]
+		used[i] = make([]int32, size)
+		for r := range min(c.units, size) {
+			window = window[:0]
+			head := 0
+			for j, s := int64(0), r; s < size; j, s = j+1, s+c.units {
+				if count[s] != unreachable {
+					key := int64(count[s]) - j
+					for len(window) > head && window[len(window)-1].key > key {
+						window = window[:len(window)-1]
+					}
+					window = append(window, candidate{j: j, key: key})
+				}
+				for len(window) > head && window[head].j < j-c.limit {
+					head++
+				}
+				if len(window) > head {
+					count[s] = int32(window[head].key + j)
+					used[i][s] = int32(j - window[head].j)
+				}
+			}
+		}
+	}
+	best := goal
+	for count[best] == unreachable {
+		best++
+	}
+	// The largest coin was taken last, so the coins are unwound largest first.
+	quantities := make([]int64, len(coins))
+	for i := range coins {
+		quantities[i] = int64(used[i][best])
+		best -= quantities[i] * coins[i].units
+	}
+	return quantities
+}
+
+// largestFirstPayment returns the quantity of each coin, up to its limit, for a total of at least goal units. It takes
+// as many of each coin as fit within what remains, largest first, then one more of the smallest coin with any left to
+// cover a shortfall, and finally leaves out as many of the smallest coins as the total can spare. It is used only when
+// goal is too large for the exact search, and need not find the smallest total nor the fewest coins: given one 25 and
+// two 20s, it pays 40 with 25+20 rather than 20+20. The coins must be able to reach goal.
+func largestFirstPayment(coins []payoutCoin, goal int64) []int64 {
+	quantities := make([]int64, len(coins))
+	remaining := goal
+	for i, c := range coins {
+		quantities[i] = min(c.limit, remaining/c.units)
+		remaining -= quantities[i] * c.units
+	}
+	if remaining > 0 {
+		// Every coin with any left is larger than what remains, so one more of the smallest of them covers it.
+		for i := len(coins) - 1; i >= 0; i-- {
+			if quantities[i] < coins[i].limit {
+				quantities[i]++
+				remaining -= coins[i].units
+				break
+			}
+		}
+		for i := len(coins) - 1; i >= 0 && remaining < 0; i-- {
+			spare := min(quantities[i], -remaining/coins[i].units)
+			quantities[i] -= spare
+			remaining += spare * coins[i].units
+		}
+	}
+	return quantities
 }
 
 // largestFirstPayout gives the target using the largest items first, then fills what remains. It is used only when the
@@ -142,6 +282,10 @@ func largestFirstPayout(target fxp.Int, coins []payoutCoin) (payouts []Payout, p
 		}
 	}
 	return payouts, paid
+}
+
+func ceilDiv(a, b int64) int64 {
+	return (a + b - 1) / b
 }
 
 func gcd(a, b int64) int64 {

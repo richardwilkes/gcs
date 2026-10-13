@@ -321,6 +321,7 @@ func (e *Entity) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 		})
 		slices.SortFunc(e.PointsRecord, func(a, b *PointsRecord) int { return b.When.Compare(a.When) })
 	}
+	e.ShoppingRecord = normalizeShoppingRecord(e.ShoppingRecord)
 	if !keepSavedCalc(dec) {
 		e.Recalculate()
 	}
