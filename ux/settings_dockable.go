@@ -47,11 +47,16 @@ type SettingsDockable struct {
 	Resetter          func()
 	ModifiedCallback  func() bool
 	WillCloseCallback func() bool
+	// SelectionSaver, when set along with Saver, adds Export Selected… to the toolbar menu, which writes only what is
+	// selected, and Export… is then called Export All…. HasSelection must be set with it.
+	SelectionSaver func(filePath string) error
+	// HasSelection reports whether anything is selected, which Export Selected… needs to be enabled.
+	HasSelection func() bool
 }
 
-// settingsSpec is what distinguishes one of the views that edit a global setting in place -- the colors, fonts, menu
-// keys, general settings, page reference mappings, sheet defaults and library settings -- from another; everything else
-// about them is in SettingsDockable. Their tab icon is always the settings icon, so the spec does not name one. Any of
+// settingsSpec is what distinguishes one of the views that edit a global setting in place (the colors, fonts, menu keys,
+// general settings, page reference mappings, saved filters, sheet defaults and library settings) from another;
+// everything else about them is in SettingsDockable. Their tab icon is always the settings icon, so the spec does not name one. Any of
 // the functions but initContent may be nil, in which case the base omits what it would have done with it: with no
 // loader, saver or resetter the toolbar has no menu or reset button, and with no willClose the view closes without
 // being asked.
@@ -213,8 +218,18 @@ func (d *SettingsDockable) showMenu(b *unison.Button) {
 		id++
 	}
 	if d.Saver != nil {
-		m.InsertItem(-1, f.NewItem(id, i18n.Text("Export…"), unison.KeyBinding{}, nil, d.handleExport))
+		title := i18n.Text("Export…")
+		if d.SelectionSaver != nil {
+			title = i18n.Text("Export All…")
+		}
+		m.InsertItem(-1, f.NewItem(id, title, unison.KeyBinding{}, nil, func(_ unison.MenuItem) { d.export(d.Saver) }))
 		id++
+		if d.SelectionSaver != nil {
+			m.InsertItem(-1, f.NewItem(id, i18n.Text("Export Selected…"), unison.KeyBinding{},
+				func(_ unison.MenuItem) bool { return d.HasSelection() },
+				func(_ unison.MenuItem) { d.export(d.SelectionSaver) }))
+			id++
+		}
 	}
 	if d.canLoad() {
 		libraries := gurps.GlobalSettings().Libraries
@@ -274,10 +289,10 @@ func (d *SettingsDockable) handleImport(_ unison.MenuItem) {
 	}
 }
 
-func (d *SettingsDockable) handleExport(_ unison.MenuItem) {
+func (d *SettingsDockable) export(saver func(filePath string) error) {
 	if filePath, ok := chooseFileToSave(gurps.GlobalSettings().LastDir(gurps.SettingsLastDirKey),
 		xfilepath.BaseName(d.Title()), d.Extensions[0], gurps.SettingsLastDirKey); ok {
-		if err := d.Saver(filePath); err != nil {
+		if err := saver(filePath); err != nil {
 			Workspace.ErrorHandler(i18n.Text("Unable to save ")+d.TabTitle, err)
 		}
 	}

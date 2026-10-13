@@ -2,7 +2,9 @@
 
 ## New & Improved
 
-- (none yet)
+- Settings > Saved Filters… lists the saved filters of every library list type in one place, where they can be
+  created, edited, duplicated, merged and deleted, with each change undoable. Filters can also be exported to and
+  imported from a `.filters` file, all of them or only those selected.
 
 ## Bug Fixes
 

@@ -21,7 +21,6 @@ func NewToolbarSeparator() *unison.Separator {
 	spacer := unison.NewSeparator()
 	spacer.LineInk = unison.ThemeSurfaceEdge
 	spacer.Vertical = true
-	spacer.SetBorder(unison.NewEmptyBorder(geom.NewHorizontalInsets(unison.StdHSpacing)))
 	spacer.SetLayoutData(&unison.FlexLayoutData{VAlign: align.Fill})
 	spacer.SetSizer(func(hint geom.Size) (minSize, prefSize, maxSize geom.Size) {
 		minSize, prefSize, maxSize = spacer.DefaultSizes(hint)
@@ -35,7 +34,9 @@ func NewToolbarSeparator() *unison.Separator {
 		rect := spacer.ContentRect(false)
 		paint := spacer.LineInk.Paint(canvas, rect, paintstyle.Stroke)
 		paint.SetPathEffect(unison.NewDashPathEffect([]float32{2, 2}, 0))
-		canvas.DrawLine(rect.Point, rect.BottomLeft(), paint)
+		// Drawn through the middle of the pixel, so that the whole line falls inside the separator.
+		x := rect.CenterX()
+		canvas.DrawLine(geom.NewPoint(x, rect.Y), geom.NewPoint(x, rect.Bottom()), paint)
 	}
 	return spacer
 }

@@ -196,6 +196,10 @@ var (
 	menuData string
 	Menu     = unison.MustSVGFromContentString(menuData)
 
+	//go:embed merge.svg
+	mergeData string
+	Merge     = unison.MustSVGFromContentString(mergeData)
+
 	//go:embed naming.svg
 	namingData string
 	Naming     = unison.MustSVGFromContentString(namingData)

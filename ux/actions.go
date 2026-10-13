@@ -67,6 +67,7 @@ var (
 	increaseUsesAction             *unison.Action
 	incrementAction                *unison.Action
 	jumpToSearchFilterAction       *unison.Action
+	listFilterSettingsAction       *unison.Action
 	menuKeySettingsAction          *unison.Action
 	moveDownAction                 *unison.Action
 	moveIntoContainerAction        *unison.Action
@@ -317,6 +318,11 @@ func registerActions() {
 		i18n.Text("Reset Uses to Maximum"), unison.KeyBinding{})
 	incrementAction = registerFocusAction("inc", IncrementItemID, i18n.Text("Increment"),
 		unison.KeyBinding{KeyCode: unison.KeyEqual, Modifiers: mod.OSMenuCommand()})
+	listFilterSettingsAction = registerKeyBindableAction("settings.list_filters", &unison.Action{
+		ID:              ListFilterSettingsItemID,
+		Title:           i18n.Text("Saved Filters…"),
+		ExecuteCallback: func(_ *unison.Action, _ any) { ShowListFilterSettings() },
+	})
 	menuKeySettingsAction = registerKeyBindableAction("settings.keys", &unison.Action{
 		ID:              MenuKeySettingsItemID,
 		Title:           i18n.Text("Menu Keys…"),
