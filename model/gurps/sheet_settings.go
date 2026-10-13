@@ -13,6 +13,7 @@ import (
 	"encoding/json/jsontext"
 	"encoding/json/v2"
 	"io/fs"
+	"slices"
 	"sync/atomic"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
@@ -65,6 +66,11 @@ type SheetSettingsData struct {
 	BodyWeightFormat              fxp.NumberFormat   `json:"body_weight_format,omitzero"`
 	EquipmentWeightFormat         fxp.NumberFormat   `json:"equipment_weight_format,omitzero"`
 	EquipmentValueFormat          fxp.NumberFormat   `json:"equipment_value_format,omitzero"`
+	BuyPercent                    fxp.Int            `json:"buy_percent,omitzero"`
+	SellPercent                   fxp.Int            `json:"sell_percent,omitzero"`
+	// SellMoney lists the library equipment paid out when selling, each by its source so it can be found again. Containers
+	// are never included.
+	SellMoney []Source `json:"sell_money,omitempty"`
 }
 
 // SheetSettings holds sheet settings.
@@ -97,6 +103,8 @@ func FactorySheetSettings() *SheetSettings {
 		SkillLevelAdjDisplay:    display.Tooltip,
 		ShowSpellAdj:            true,
 		HideUnusedWeaponColumns: false,
+		BuyPercent:              fxp.Hundred,
+		SellPercent:             fxp.Fifty,
 	}
 }
 
@@ -155,6 +163,22 @@ func (s *SheetSettings) EnsureValidity() {
 	s.BodyWeightFormat = s.BodyWeightFormat.EnsureValid()
 	s.EquipmentWeightFormat = s.EquipmentWeightFormat.EnsureValid()
 	s.EquipmentValueFormat = s.EquipmentValueFormat.EnsureValid()
+	if s.BuyPercent <= 0 {
+		s.BuyPercent = fxp.Hundred
+	}
+	if s.SellPercent <= 0 {
+		s.SellPercent = fxp.Fifty
+	}
+}
+
+// AddSellMoney adds the library equipment to the sell money list. Containers and items already listed are ignored.
+// Returns true if the item was added.
+func (s *SheetSettings) AddSellMoney(eqp *Equipment) bool {
+	if eqp == nil || eqp.Container() || eqp.Source.IsZero() || slices.Contains(s.SellMoney, eqp.Source) {
+		return false
+	}
+	s.SellMoney = append(s.SellMoney, eqp.Source)
+	return true
 }
 
 // FormatHeight formats a height for display on the sheet, using the default length units and the height display
@@ -218,6 +242,7 @@ func (s *SheetSettings) Clone(entity *Entity) *SheetSettings {
 	clone.Layout = s.Layout.Clone()
 	clone.Attributes = s.Attributes.Clone()
 	clone.BodyType = s.BodyType.Clone(entity, nil)
+	clone.SellMoney = slices.Clone(s.SellMoney)
 	return &clone
 }
 
