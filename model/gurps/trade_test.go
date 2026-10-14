@@ -65,12 +65,18 @@ func TestMoneyItems(t *testing.T) {
 	pouch := newContainerItem("Pouch", "0")
 	crown := withTags(newEquipmentItem("Crown", "100", "0"), "MONEY")
 	stray := withTags(newEquipmentItem("Stray Coin", "5", "0"), "Money")
-	carry(e, nil, sword, eagle, purse)
+	dull := withTags(newEquipmentItem("Dull Coin", "5", "0"), "Money")
+	dull.SetDisabled(true)
+	sack := newContainerItem("Sack", "0")
+	sack.SetDisabled(true)
+	hidden := withTags(newEquipmentItem("Hidden Coin", "5", "0"), "Money")
+	carry(e, nil, sword, eagle, purse, dull, sack)
 	carry(e, purse, penny, token, pouch)
 	carry(e, pouch, crown)
+	carry(e, sack, hidden)
 	e.OtherEquipment = append(e.OtherEquipment, stray)
 	money := e.MoneyItems()
-	c.Equal(3, len(money))
+	c.Equal(3, len(money), "money that is disabled, or in a disabled container, isn't to be spent")
 	for i, expected := range []*Equipment{eagle, penny, crown} {
 		c.True(expected == money[i], "expected %v at %d, got %v", expected, i, money[i])
 	}
@@ -241,8 +247,8 @@ func TestMergeMatchesCoversEveryField(t *testing.T) {
 				"TID", "Source", "ContainerType", "Name", "PageRef", "PageRefHighlight", "LocalNotes", "TechLevel",
 				"LegalityClass", "Tags", "BaseValue", "BaseWeight", "MaxUses", "Prereq", "Weapons", "Features",
 				"WeightIgnoredForSkills", "TemplatePicker", "VTTNotes", "Replacements", "Modifiers", "RatedST", "Quantity",
-				"Level", "Uses", "Equipped", "SwitchedOn", "Preconfigured", "PickSeparately", "ThirdParty", "Children",
-				"parent",
+				"Level", "Uses", "Equipped", "Disabled", "SwitchedOn", "Preconfigured", "PickSeparately", "ThirdParty",
+				"Children", "parent",
 			},
 		},
 		{
@@ -1055,4 +1061,85 @@ func TestChangeForNeverReturnsLessThanTheSellMoneyAlone(t *testing.T) {
 	change, paid := e.ChangeFor(over, []*Equipment{twenty, fifteen}, []Payout{{Money: one, Quantity: 1}})
 	c.Equal(alone, paid, "the sell money's own change is kept when the money paid can't better it")
 	c.Equal([]Payout{{Money: twenty, Quantity: 199_999}, {Money: fifteen, Quantity: 2}}, change)
+}
+
+// TestCommitSaleSkipsDisabledEquipment checks that a sale skips what is disabled, and what is held by a disabled
+// container, since either counts as if it weren't on the sheet, while a container holding something disabled sells
+// without the value of that.
+func TestCommitSaleSkipsDisabledEquipment(t *testing.T) {
+	c := check.New(t)
+	e := NewEntity()
+	sword := newEquipmentItem("Sword", "500", "3 lb")
+	sword.SetDisabled(true)
+	sack := newContainerItem("Sack", "1")
+	sack.SetDisabled(true)
+	torch := newEquipmentItem("Torch", "3", "1 lb")
+	rope := newEquipmentItem("Rope", "5", "1 lb")
+	kit := newContainerItem("Kit", "10")
+	bandage := newEquipmentItem("Bandage", "2", "0")
+	bandage.SetDisabled(true)
+	carry(e, nil, sword, sack, rope, kit)
+	carry(e, sack, torch)
+	carry(e, kit, bandage)
+
+	c.Nil(e.SaleSplits([]SaleItem{{Equipment: sword, Quantity: fxp.One}}))
+	entry := e.CommitSale([]SaleItem{
+		{Equipment: sword, Quantity: fxp.One},
+		{Equipment: torch, Quantity: fxp.One},
+		{Equipment: rope, Quantity: fxp.One},
+		{Equipment: kit, Quantity: fxp.One},
+	}, nil, true, "Clear out", mustTime(t, "2026-10-14T10:00:00Z"))
+
+	c.Equal([]string{"Sword ×1", "Sack ×1[Torch ×1]"}, describeCarried(e),
+		"the disabled sword and the torch in the disabled sack aren't sold")
+	c.Equal([]ShoppingRecordItem{
+		{Name: "Rope", Quantity: fxp.One, Value: fxp.Five},
+		{Name: "Kit", Quantity: fxp.One, Value: fxp.FromInteger(10)},
+	}, entry.Items, "the kit sells without the value of its disabled bandage")
+}
+
+// TestCommitPurchaseEnablesWhatIsBought checks that a purchase enables what it buys, along with anything it contains,
+// before pricing, matching and carrying it, since it may have been copied from a sheet where it was disabled, and that
+// nothing merges into a carried match held by a disabled container, which counts as if it weren't on the sheet.
+func TestCommitPurchaseEnablesWhatIsBought(t *testing.T) {
+	c := check.New(t)
+	e := NewEntity()
+	rope := newEquipmentItem("Rope", "5", "1 lb")
+	sack := newContainerItem("Sack", "1")
+	sack.SetDisabled(true)
+	torch := newEquipmentItem("Torch", "3", "1 lb")
+	carry(e, nil, rope, sack)
+	carry(e, sack, torch)
+
+	library := LibraryFile{Library: "Lib", Path: "Gear.eqp"}
+	boughtRope := rope.Clone(library, e, nil, Reference)
+	boughtRope.SetDisabled(true)
+	boughtTorch := torch.Clone(library, e, nil, Reference)
+	kit := newContainerItem("Kit", "10")
+	kit.SetDisabled(true)
+	bandage := newEquipmentItem("Bandage", "2", "0")
+	bandage.SetDisabled(true)
+	bandage.Equipped = false
+	carry(e, kit, bandage)
+	boughtKit := kit.Clone(library, e, nil, Reference)
+	c.True(boughtKit.IsDisabled() && boughtKit.Children[0].IsDisabled(), "a copy for a sheet keeps the flags")
+
+	entry := e.CommitPurchase([]PurchaseItem{
+		{Equipment: boughtRope, Quantity: fxp.Two},
+		{Equipment: boughtTorch, Quantity: fxp.One},
+		{Equipment: boughtKit, Quantity: fxp.One},
+	}, nil, nil, true, "Restock", mustTime(t, "2026-10-14T10:00:00Z"))
+
+	c.Equal([]string{"Rope ×3", "Sack ×1[Torch ×1]", "Torch ×1", "Kit ×1[Bandage ×1]"}, describeCarried(e),
+		"the rope merges into the enabled rope once enabled itself; the torch doesn't merge into the disabled sack")
+	Traverse(func(eqp *Equipment) bool {
+		c.True(eqp.Enabled(), "%s is carried enabled", eqp.Name)
+		c.True(eqp.Equipped, "%s is carried equipped", eqp.Name)
+		return false
+	}, false, false, e.CarriedEquipment[2:]...)
+	c.Equal([]ShoppingRecordItem{
+		{Name: "Rope", Quantity: fxp.Two, Value: fxp.Five},
+		{Name: "Torch", Quantity: fxp.One, Value: fxp.Three},
+		{Name: "Kit", Quantity: fxp.One, Value: fxp.FromInteger(12)},
+	}, entry.Items, "the kit is priced with its bandage enabled")
 }

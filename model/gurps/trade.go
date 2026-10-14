@@ -35,8 +35,9 @@ type PurchaseItem struct {
 	Quantity  fxp.Int
 }
 
-// MoneyItems returns the carried equipment, at any depth, that is tagged as money (see MoneyTag) and has a positive
-// value, in the order it is listed. Containers are never included.
+// MoneyItems returns the enabled carried equipment, at any depth, that is tagged as money (see MoneyTag) and has a
+// positive value, in the order it is listed. Containers are never included, nor is anything disabled or held by a
+// disabled container, which counts as if it weren't on the sheet.
 func (e *Entity) MoneyItems() []*Equipment {
 	var list []*Equipment
 	Traverse(func(eqp *Equipment) bool {
@@ -44,7 +45,7 @@ func (e *Entity) MoneyItems() []*Equipment {
 			list = append(list, eqp)
 		}
 		return false
-	}, false, true, e.CarriedEquipment...)
+	}, true, true, e.CarriedEquipment...)
 	return list
 }
 
@@ -151,10 +152,11 @@ func (e *Equipment) containerCopies() fxp.Int {
 // and when in the shopping record and returns the entry. Each item's quantity is limited to its TradeQuantity, and a
 // group is sold in full. Selling all of an item removes it, along with anything it contains, and selling less leaves
 // the copies of the containers holding it with the rest, splitting the containers apart when the copies can't share it
-// without fractions (see tradeTakes). Items that are not carried are skipped, as are those held by another item in the
-// list, since selling a container sells what it holds. Each payout's Money is a denomination from SellMoneyItems: when
-// merge is true, its quantity is added to the first carried item it MergeMatches, if any, as matched before the items
-// are taken out (see MergeTarget), and otherwise a copy of it is carried, equipped (see addToCarried).
+// without fractions (see tradeTakes). Items that are not carried or not enabled are skipped, as are those held by
+// another item in the list, since selling a container sells what it holds. Each payout's Money is a denomination from
+// SellMoneyItems: when merge is true, its quantity is added to the first carried item it MergeMatches, if any, as
+// matched before the items are taken out (see MergeTarget), and otherwise a copy of it is carried, enabled and equipped
+// (see addToCarried).
 func (e *Entity) CommitSale(items []SaleItem, payouts []Payout, merge bool, name string, when jio.Time) *ShoppingRecordEntry {
 	entry := &ShoppingRecordEntry{When: when, Name: name, Kind: ShoppingSold}
 	takes := e.newTradeTakes()
@@ -191,10 +193,11 @@ func (e *Entity) SaleSplits(items []SaleItem) []*Equipment {
 // item, such as one from MoneyItems, found again by its ID, since the pointer may be stale. No more is spent than its
 // TradeQuantity; spending less leaves the copies of the containers holding it with the rest, splitting the containers
 // apart when the copies can't share it without fractions (see tradeTakes), and a money item with none left is removed.
-// Each item is bought at least once, and a group just once. Each change payout's Money is a denomination from
-// ChangeFor: one of the sheet's sell money, or a copy of money paid. When merge is true, each item and change payout
-// adds its quantity to the first carried item it MergeMatches, if any (see MergeTarget); otherwise a copy of it is
-// carried, equipped (see addToCarried).
+// Each item is bought at least once, and a group just once. It is enabled and equipped first, along with anything it
+// contains, whatever it was copied from, so that it is priced, matched and carried as something in use. Each change
+// payout's Money is a denomination from ChangeFor: one of the sheet's sell money, or a copy of money paid. When merge
+// is true, each item and change payout adds its quantity to the first carried item it MergeMatches, if any (see
+// MergeTarget); otherwise a copy of it is carried (see addToCarried).
 func (e *Entity) CommitPurchase(items []PurchaseItem, payments, change []Payout, merge bool, name string, when jio.Time) *ShoppingRecordEntry {
 	entry := &ShoppingRecordEntry{When: when, Name: name, Kind: ShoppingBought}
 	takes := e.newTradeTakes()
@@ -215,6 +218,7 @@ func (e *Entity) CommitPurchase(items []PurchaseItem, payments, change []Payout,
 		if eqp == nil {
 			continue
 		}
+		enableAndEquip(eqp)
 		qty := fxp.One
 		if !eqp.IsGroup() {
 			qty = max(fxp.One, item.Quantity)
@@ -226,7 +230,6 @@ func (e *Entity) CommitPurchase(items []PurchaseItem, payments, change []Payout,
 		})
 		var target *Equipment
 		if merge {
-			equip(eqp)
 			target = e.MergeTarget(eqp, nil)
 		}
 		e.addToCarried(eqp, qty, target)
@@ -301,13 +304,14 @@ func (e *Entity) receiveMoney(entry *ShoppingRecordEntry, money []Payout, target
 }
 
 // mergeTargets returns the MergeTarget of each payout's money, passing over the IDs in except, or nil for each when
-// merge is false. The money is marked equipped first, as it will be when carried, since MergeMatches compares that.
+// merge is false. The money is marked enabled and equipped first, as it will be when carried, since MergeMatches
+// compares both.
 func (e *Entity) mergeTargets(payouts []Payout, merge bool, except map[tid.TID]bool) []*Equipment {
 	targets := make([]*Equipment, len(payouts))
 	if merge {
 		for i, payout := range payouts {
 			if payout.Money != nil && payout.Quantity > 0 {
-				equip(payout.Money)
+				enableAndEquip(payout.Money)
 				targets[i] = e.MergeTarget(payout.Money, except)
 			}
 		}
@@ -315,10 +319,11 @@ func (e *Entity) mergeTargets(payouts []Payout, merge bool, except map[tid.TID]b
 	return targets
 }
 
-// MergeTarget returns the carried item that a sale or purchase merging the equipment adds its quantity to: the first,
-// at any depth, that it MergeMatches and that isn't held by a container with more than one copy, since every copy would
-// gain the quantity (see TradeQuantity). Items whose IDs are in except, such as those the trade removes first, are
-// passed over. Returns nil if there is none.
+// MergeTarget returns the carried item that a sale or purchase merging the equipment adds its quantity to: the first
+// enabled one, at any depth, that it MergeMatches and that isn't held by a container with more than one copy, since
+// every copy would gain the quantity (see TradeQuantity). Items whose IDs are in except, such as those the trade removes
+// first, are passed over, as is anything held by a disabled container, which counts as if it weren't on the sheet.
+// Returns nil if there is none.
 func (e *Entity) MergeTarget(eqp *Equipment, except map[tid.TID]bool) *Equipment {
 	var match *Equipment
 	Traverse(func(one *Equipment) bool {
@@ -327,22 +332,25 @@ func (e *Entity) MergeTarget(eqp *Equipment, except map[tid.TID]bool) *Equipment
 			return true
 		}
 		return false
-	}, false, true, e.CarriedEquipment...)
+	}, true, true, e.CarriedEquipment...)
 	return match
 }
 
-// equip marks the equipment and anything it contains as equipped, as carried equipment normally is.
-func equip(eqp *Equipment) {
+// enableAndEquip marks the equipment and anything it contains as enabled and equipped, as carried equipment normally
+// is. Something bought or received may have been copied from a sheet where it was disabled.
+func enableAndEquip(eqp *Equipment) {
 	Traverse(func(one *Equipment) bool {
+		one.SetDisabled(false)
 		one.Equipped = true
 		return false
 	}, false, false, eqp)
 }
 
-// addToCarried marks the equipment and anything it contains as equipped (see equip), then adds qty to the target, a
-// carried item it MergeMatches, or, when that is nil, carries a copy of the equipment with a quantity of qty.
+// addToCarried marks the equipment and anything it contains as enabled and equipped (see enableAndEquip), then adds qty
+// to the target, a carried item it MergeMatches, or, when that is nil, carries a copy of the equipment with a quantity
+// of qty.
 func (e *Entity) addToCarried(eqp *Equipment, qty fxp.Int, target *Equipment) {
-	equip(eqp)
+	enableAndEquip(eqp)
 	if target != nil {
 		target.Quantity += qty
 		return
@@ -402,10 +410,11 @@ func (e *Entity) newTradeTakes() *tradeTakes {
 }
 
 // add records taking qty more of the carried equipment's TradeQuantity, though never more than is left of it, and all
-// of a group. Nothing is recorded for equipment that isn't carried or that is held by equipment already recorded, and
-// recording a container drops what was recorded for anything it holds, since taking a container takes what it holds.
+// of a group. Nothing is recorded for equipment that isn't carried, isn't enabled or is held by equipment already
+// recorded, and recording a container drops what was recorded for anything it holds, since taking a container takes
+// what it holds.
 func (t *tradeTakes) add(eqp *Equipment, qty fxp.Int) {
-	if eqp == nil || qty <= 0 || !t.entity.carries(eqp) {
+	if eqp == nil || qty <= 0 || !eqp.Enabled() || !t.entity.carries(eqp) {
 		return
 	}
 	take := t.byEqp[eqp]

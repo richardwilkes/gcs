@@ -436,7 +436,7 @@ func (p *PageList[T]) installSellEquipmentHandler(owner Rebuildable) {
 		var t *unison.Table[*Node[*gurps.Equipment]]
 		if t, ok = any(p.Table).(*unison.Table[*Node[*gurps.Equipment]]); ok {
 			p.InstallCmdHandlers(SellEquipmentItemID,
-				func(_ any) bool { return t.HasSelection() && !t.IsFiltered() },
+				func(_ any) bool { return !t.IsFiltered() && len(selectedSaleRows(t)) != 0 },
 				func(_ any) { sellSelectedEquipment(sheet, t) })
 		}
 	}

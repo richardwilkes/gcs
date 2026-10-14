@@ -1337,3 +1337,54 @@ func TestBuyPanelFollowsChangesToTheSellMoneyLibrary(t *testing.T) {
 		"the change comes from the library file once it exists")
 	c.False(state.noticeShown)
 }
+
+// TestBuyPanelEnablesWhatItBuys checks that equipment copied into the buy panel from a sheet where it was disabled, or
+// where a container held something disabled, is enabled on the way in, so that it is priced in full and carried
+// enabled, and that the original is left as it was.
+func TestBuyPanelEnablesWhatItBuys(t *testing.T) {
+	c := check.New(t)
+	screen, _, sheet := buyTestSheet(t, c, func(entity *gurps.Entity) []*gurps.Equipment {
+		return buyTestCoins(entity, 0, 20)
+	})
+	var rope, kit, bandage *gurps.Equipment
+	screen.Do(func() {
+		entity := sheet.Entity()
+		rope = buyTestItem(entity, "Rope", "5", 1)
+		rope.SetDisabled(true)
+		kit = gurps.NewEquipment(entity, nil, true)
+		kit.Name = "Kit"
+		kit.BaseValue = "10"
+		bandage = gurps.NewEquipment(entity, kit, false)
+		bandage.Name = "Bandage"
+		bandage.BaseValue = "2"
+		bandage.SetDisabled(true)
+		kit.Children = []*gurps.Equipment{bandage}
+		entity.OtherEquipment = []*gurps.Equipment{rope, kit}
+		entity.Recalculate()
+		sheet.Rebuild(true)
+		sheet.startBuying()
+	})
+	_, dropped := buyTestDrop(t, screen, sheet, sheet.OtherEquipment.Table, rope, kit)
+	c.True(dropped, "the drop is taken")
+	state := readBuyPanel(t, screen, sheet)
+	c.Equal([]string{"1 | Rope | $5 each | Total $5", "1 | Kit | $12 each | Total $12"}, state.rows,
+		"the disabled rope is priced, as is the kit with its disabled bandage")
+	c.Equal("Pay automatically: Copper Penny ×17 ($17)", state.summary)
+
+	screen.Do(func() { sheet.buyPanel.finalize.Click() })
+	c.Equal([]string{"Silver Eagle ×0", "Copper Penny ×3", "Rope ×1", "Kit ×1"}, buyTestCarried(screen, sheet))
+	screen.Do(func() {
+		carried := sheet.Entity().CarriedEquipment
+		gurps.Traverse(func(eqp *gurps.Equipment) bool {
+			c.True(eqp.Enabled(), "%s is carried enabled", eqp.Name)
+			c.True(eqp.Equipped, "%s is carried equipped", eqp.Name)
+			return false
+		}, false, false, carried[2:]...)
+		c.Equal(1, len(carried[3].Children), "the kit is carried with its bandage")
+		if len(carried[3].Children) == 1 {
+			c.Equal("Bandage", carried[3].Children[0].Name)
+		}
+		c.True(rope.IsDisabled(), "the original rope stays disabled")
+		c.True(bandage.IsDisabled(), "the original bandage stays disabled")
+	})
+}

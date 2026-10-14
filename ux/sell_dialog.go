@@ -37,13 +37,16 @@ var sellSelectedEquipment = func(sheet *Sheet, table *unison.Table[*Node[*gurps.
 	showSellDialog(sheet, selectedSaleRows(table))
 }
 
-// selectedSaleRows returns the equipment of the table's selected rows, leaving out any within a selected container,
-// since selling a container sells what it holds.
+// selectedSaleRows returns the equipment of the table's selected rows that can be sold, leaving out any within a
+// selected container, since selling a container sells what it holds, and any that is disabled or held by a disabled
+// container, which counts as if it weren't on the sheet.
 func selectedSaleRows(table *unison.Table[*Node[*gurps.Equipment]]) []*gurps.Equipment {
 	rows := table.SelectedRows(true)
 	list := make([]*gurps.Equipment, 0, len(rows))
 	for _, row := range rows {
-		list = append(list, row.Data())
+		if eqp := row.Data(); eqp.Enabled() {
+			list = append(list, eqp)
+		}
 	}
 	return list
 }

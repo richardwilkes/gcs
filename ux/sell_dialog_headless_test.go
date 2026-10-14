@@ -69,12 +69,14 @@ type sellTestDialog struct {
 
 // openSellTestDialog selects the equipment in the sheet's carried equipment list and opens the sell dialog for it as
 // the list's Sell command does. The dialog runs a nested modal loop, so it is opened from a posted task, which is done
-// once the dialog has been dismissed and its sale, if any, made.
+// once the dialog has been dismissed and its sale, if any, made. The dialog must have a quantity field for each item
+// selected that can be sold (see selectedSaleRows).
 func openSellTestDialog(t *testing.T, screen *unison.HeadlessScreen, wnd *unison.Window, sheet *Sheet, items ...*gurps.Equipment) *sellTestDialog {
 	t.Helper()
 	done := false
 	s := &sellTestDialog{t: t, screen: screen, done: &done}
 	var table *unison.Table[*Node[*gurps.Equipment]]
+	var sellable int
 	screen.Do(func() {
 		table = sheet.CarriedEquipment.Table
 		selection := make(map[tid.TID]bool, len(items))
@@ -82,6 +84,7 @@ func openSellTestDialog(t *testing.T, screen *unison.HeadlessScreen, wnd *unison
 			selection[eqp.TID] = true
 		}
 		table.SetSelectionMap(selection)
+		sellable = len(selectedSaleRows(table))
 	})
 	if !screen.Post(func() {
 		sellSelectedEquipment(sheet, table)
@@ -105,9 +108,9 @@ func openSellTestDialog(t *testing.T, screen *unison.HeadlessScreen, wnd *unison
 	if s.percent == nil || s.name == nil || s.merge == nil {
 		t.Fatal("the sell dialog must have a percent field, a transaction name field and a merge checkbox")
 	}
-	if len(s.quantities) != len(items) {
-		t.Fatalf("the sell dialog must have a quantity field for each of the %d items; it has %d", len(items),
-			len(s.quantities))
+	if len(s.quantities) != sellable {
+		t.Fatalf("the sell dialog must have a quantity field for each of the %d items that can be sold; it has %d",
+			sellable, len(s.quantities))
 	}
 	return s
 }
@@ -538,4 +541,54 @@ func TestSellDialogRefusesPastedQuantitiesAboveTheMaximum(t *testing.T) {
 	screen.Do(func() { text = quantity.Text() })
 	c.Equal("5", text, "a pasted quantity within the number carried is taken")
 	s.dismiss(c, s.cancel)
+}
+
+// TestSellSkipsDisabledEquipment checks that disabled equipment, and equipment held by a disabled container, can't be
+// sold: the Sell command is off while nothing else is selected, and the dialog leaves it out of a wider selection.
+func TestSellSkipsDisabledEquipment(t *testing.T) {
+	c := check.New(t)
+	screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
+	money := newTradeTestMoney(t, c)
+	var knife, dagger, sack, gem *gurps.Equipment
+	sheet := openSellTestSheet(t, screen, []gurps.Source{money.source(money.penny)},
+		func(entity *gurps.Entity) []*gurps.Equipment {
+			knife = newTradeTestItem(entity, "Small Knife", "30", fxp.Two)
+			dagger = newTradeTestItem(entity, "Dagger", "20", fxp.One)
+			dagger.SetDisabled(true)
+			sack = gurps.NewEquipment(entity, nil, true)
+			sack.Name = "Sack"
+			sack.SetDisabled(true)
+			gem = gurps.NewEquipment(entity, sack, false)
+			gem.Name = "Gem"
+			gem.BaseValue = "100"
+			sack.Children = []*gurps.Equipment{gem}
+			return []*gurps.Equipment{knife, dagger, sack}
+		})
+	canSell := func(items ...*gurps.Equipment) bool {
+		var enabled bool
+		screen.Do(func() {
+			table := sheet.CarriedEquipment.Table
+			selection := make(map[tid.TID]bool, len(items))
+			for _, eqp := range items {
+				selection[eqp.TID] = true
+			}
+			table.SetSelectionMap(selection)
+			enabled = table.CanPerformCmd(table, SellEquipmentItemID)
+		})
+		return enabled
+	}
+	c.True(canSell(knife), "the knives can be sold")
+	c.False(canSell(dagger), "a disabled item can't be sold")
+	c.False(canSell(sack), "nor can a disabled container")
+	c.False(canSell(gem), "nor can an item in a disabled container")
+	c.True(canSell(dagger, gem, knife), "the knives can be sold from a selection holding them")
+
+	s := openSellTestDialog(t, screen, wnd, sheet, dagger, gem, knife)
+	texts := s.texts()
+	c.True(slices.Contains(texts, "Small Knife"), "the dialog lists the knives; it shows %v", texts)
+	c.False(slices.Contains(texts, "Dagger"), "the dialog leaves out the disabled dagger")
+	c.False(slices.Contains(texts, "Gem"), "the dialog leaves out the gem in the disabled sack")
+	s.dismiss(c, s.sell)
+	c.Equal([]string{"Dagger ×1", "Sack ×1", "Copper Penny ×30"}, carriedSummary(sheet),
+		"only the knives are sold")
 }

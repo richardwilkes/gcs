@@ -656,7 +656,10 @@ func (p *buyPanel) addDropped(data *unison.TableDragData[*Node[*gurps.Equipment]
 		gurps.ClearPreconfigured(rows...)
 	}
 	for _, eqp := range rows {
+		// What is bought is enabled and equipped, as the purchase carries it (see gurps.Entity.CommitPurchase), so
+		// that it is priced that way, even when copied from a sheet where it was disabled.
 		gurps.Traverse(func(one *gurps.Equipment) bool {
+			one.SetDisabled(false)
 			one.Equipped = true
 			return false
 		}, false, false, eqp)
