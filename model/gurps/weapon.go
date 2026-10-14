@@ -121,20 +121,6 @@ func ExtractWeaponsOfType(melee, excludeHidden bool, list []*Weapon) []*Weapon {
 	return result
 }
 
-// SeparateWeapons returns separate lists for melee and ranged weapons found in the input list.
-func SeparateWeapons(excludeHidden bool, list []*Weapon) (melee, ranged []*Weapon) {
-	for _, w := range list {
-		if !excludeHidden || !w.Hide {
-			if w.IsMelee() {
-				melee = append(melee, w)
-			} else {
-				ranged = append(ranged, w)
-			}
-		}
-	}
-	return melee, ranged
-}
-
 // NewWeapon creates a new weapon of the given type.
 func NewWeapon(owner WeaponOwner, melee bool) *Weapon {
 	var w Weapon
@@ -1102,7 +1088,7 @@ func (w *Weapon) CopyFrom(t *Weapon) {
 func (w *Weapon) ApplyTo(t *Weapon) {
 	// Unlike the other EditorData implementations, a Weapon serves as its own editor data, so it carries the TID minted
 	// for it by CopyFrom. Applying an edit must not disturb the target's identity: the TID is persisted as the "id" and
-	// keys table selections, and ClonedFromTID ties a copy in its owner's editor back to the weapon it came from.
+	// keys table selections, and ClonedFromTID records the weapon a duplicate or reference was cloned from.
 	savedTID := t.TID
 	savedClonedFromTID := t.ClonedFromTID
 	*t = *w.Clone(LibraryFile{}, t.DataOwner(), nil, Copy)

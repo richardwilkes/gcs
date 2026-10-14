@@ -17,7 +17,7 @@ import (
 
 func techLevelExtractor[T gurps.Node[T]](amount fxp.Int) func(T) (gurps.TechLevelProvider, bool) {
 	return func(data T) (gurps.TechLevelProvider, bool) {
-		if provider, ok := any(data).(gurps.TechLevelProvider); ok && provider.RequiresTL() {
+		if provider, ok := any(data).(gurps.TechLevelProvider); ok && data.Enabled() && provider.RequiresTL() {
 			if _, changed := gurps.AdjustTechLevel(provider.TL(), amount); changed {
 				return provider, true
 			}

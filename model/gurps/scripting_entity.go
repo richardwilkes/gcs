@@ -64,8 +64,8 @@ func newScriptEntity(r *goja.Runtime, entity *Entity) *goja.Object {
 			return r.ToValue(entity.WealthNotCarried().AsFloat[float64]())
 		}
 		m["notes"] = func() goja.Value { return scriptObjects(r, entity.Notes, nil, newScriptNote) }
-		m["skills"] = func() goja.Value { return scriptObjects(r, entity.Skills, nil, newScriptSkill) }
-		m["spells"] = func() goja.Value { return scriptObjects(r, entity.Spells, nil, newScriptSpell) }
+		m["skills"] = func() goja.Value { return scriptObjects(r, entity.Skills, (*Skill).Enabled, newScriptSkill) }
+		m["spells"] = func() goja.Value { return scriptObjects(r, entity.Spells, (*Spell).Enabled, newScriptSpell) }
 		m["traits"] = func() goja.Value { return scriptObjects(r, entity.Traits, (*Trait).Enabled, newScriptTrait) }
 		m["attribute"] = func() goja.Value {
 			return r.ToValue(func(call goja.FunctionCall) goja.Value {

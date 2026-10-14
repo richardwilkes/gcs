@@ -42,7 +42,7 @@ func newTraitModifierChoiceWith(mandatory bool, costs ...string) *TraitModifier 
 	choice := NewTraitModifierChoice(nil, nil)
 	choice.SetMandatoryChoice(mandatory)
 	for _, cost := range costs {
-		newTraitModifierOption(choice, "Option "+cost, cost).SetEnabled(false)
+		newTraitModifierOption(choice, "Option "+cost, cost).SetDisabled(true)
 	}
 	return choice
 }
@@ -55,7 +55,7 @@ func newEquipmentModifierChoiceWith(options ...[2]string) *EquipmentModifier {
 		option := NewEquipmentModifier(nil, choice, false)
 		option.CostAmount = one[0]
 		option.WeightAmount = one[1]
-		option.SetEnabled(false)
+		option.SetDisabled(true)
 		choice.Children = append(choice.Children, option)
 	}
 	return choice
@@ -212,13 +212,13 @@ func TestTraitPointsRangeWithMandatoryModifierChoice(t *testing.T) {
 	trait := newTrait(nil, true)
 	c.Equal("15~20", trait.PointsRange(nil).String(), "each option is costed on its own")
 	c.Equal(fxp.FromInteger(15), trait.AdjustedPoints(nil), "a single cost is the least the choice may come to")
-	trait.Modifiers[0].Children[1].SetEnabled(true)
+	trait.Modifiers[0].Children[1].SetDisabled(false)
 	c.Equal("15~20", trait.PointsRange(nil).String(), "a pick made outside a sheet is only a default until asked")
 
 	trait.Preconfigured = true
 	c.Equal("20", trait.PointsRange(nil).String(), "a preconfigured trait takes the pick already made")
 	c.Equal(fxp.FromInteger(20), trait.AdjustedPoints(nil))
-	trait.Modifiers[0].Children[1].SetEnabled(false)
+	trait.Modifiers[0].Children[1].SetDisabled(true)
 	c.Equal("15~20", trait.PointsRange(nil).String(), "an unresolved choice is still to be made when preconfigured")
 
 	c.Equal("10", newTrait(nil, false).PointsRange(nil).String(), "an optional choice doesn't open the cost")
@@ -236,7 +236,7 @@ func TestTraitPointsRangeWithMandatoryModifierChoice(t *testing.T) {
 
 	// The container is asked about its own modifiers, so whether their choice counts as made is up to its preconfigured
 	// mark, not the child's.
-	parent.Modifiers[0].Children[0].SetEnabled(true)
+	parent.Modifiers[0].Children[0].SetDisabled(false)
 	child.Preconfigured = true
 	c.Equal("11~13", child.PointsRange(nil).String(), "a preconfigured child doesn't settle its container's choice")
 	parent.Preconfigured = true
@@ -281,7 +281,7 @@ func TestTraitContainerChoiceIsCostedAsAWhole(t *testing.T) {
 	c.Equal("4~12", abilities.PointsRange(nil).String())
 	c.Equal(fxp.FromInteger(4), abilities.AdjustedPoints(nil))
 
-	abilities.Modifiers[0].Children[1].SetEnabled(true)
+	abilities.Modifiers[0].Children[1].SetDisabled(false)
 	c.Equal("4~12", abilities.PointsRange(nil).String(), "a pick made outside a sheet is only a default until asked")
 	abilities.Preconfigured = true
 	c.Equal("12", abilities.PointsRange(nil).String(), "a preconfigured container takes the pick already made")
@@ -298,7 +298,7 @@ func TestTraitContainerChoiceIsCostedAsAWhole(t *testing.T) {
 	c.Equal(fxp.FromInteger(-3), outer.AdjustedPoints(nil))
 	c.Equal("6~16", inner.PointsRange(nil).String(), "the inner container alone works through both choices")
 	outer.Preconfigured = true
-	outer.Modifiers[0].Children[1].SetEnabled(true)
+	outer.Modifiers[0].Children[1].SetDisabled(false)
 	c.Equal("-2~8", outer.PointsRange(nil).String(), "a preconfigured outer container settles only its own choice")
 	c.Equal("6~16", inner.PointsRange(nil).String())
 }
@@ -389,7 +389,7 @@ func TestUnresolvedModifierChoiceOnASheet(t *testing.T) {
 	c.False(data.ChoiceRequired, "and so isn't marked as required there")
 
 	pick := choice.Children[0]
-	pick.SetEnabled(true)
+	pick.SetDisabled(false)
 	c.True(ModifierChoiceIsResolved(choice))
 	data = CellData{}
 	trait.CellData(TraitDescriptionColumn, &data)
@@ -402,7 +402,7 @@ func TestUnresolvedModifierChoiceOnASheet(t *testing.T) {
 	c.False(IsLockedModifierChoiceSelection(library.Modifiers[0].Children[0]), "off a sheet anything can be")
 	optional := newTraitModifierChoiceWith(false, "+1")
 	trait.AddModifiers(optional)
-	optional.Children[0].SetEnabled(true)
+	optional.Children[0].SetDisabled(false)
 	c.False(IsLockedModifierChoiceSelection(optional.Children[0]), "an optional choice may be left without a pick")
 	c.True(ModifierChoiceIsResolved(NewTraitModifierChoice(nil, nil)), "a choice with no options has nothing to pick")
 }
@@ -413,7 +413,7 @@ func TestSettleModifierChoices(t *testing.T) {
 	c := check.New(t)
 	choice := newTraitModifierChoiceWith(false, "+1", "+2", "+3")
 	for _, one := range choice.Children {
-		one.SetEnabled(true)
+		one.SetDisabled(false)
 	}
 	arrived := choice.Children[0]
 	c.True(SettleModifierChoices(func(m *TraitModifier) bool { return m == arrived }, choice))
@@ -460,7 +460,7 @@ func TestEquipmentRangesWithMandatoryModifierChoice(t *testing.T) {
 	eqp.Preconfigured = true
 	c.Equal("300~400", FormatValueRange(eqp.ExtendedValueRange(), fxp.Int.Comma),
 		"a preconfigured item still has an unresolved choice to make")
-	choice.Children[0].SetEnabled(true)
+	choice.Children[0].SetDisabled(false)
 	c.Equal("300", FormatValueRange(eqp.ExtendedValueRange(), fxp.Int.Comma), "and takes a pick already made")
 	c.Equal("8 lb", FormatWeightRange(eqp.ExtendedWeightRange(fxp.Pound), fxp.Pound.Format))
 	c.Equal(fxp.FromInteger(300), eqp.ExtendedValue(), "once made, the options enabled count as they always have")
@@ -485,7 +485,7 @@ func TestPromptedRanges(t *testing.T) {
 		trait := newTrait(owner)
 		c.Equal("15~20", prompted(trait, nil).String())
 		c.Equal("15~20", prompted(trait, all).String(), "a choice with no pick is still open when taken")
-		trait.Modifiers[0].Children[1].SetEnabled(true)
+		trait.Modifiers[0].Children[1].SetDisabled(false)
 		c.Equal("15~20", prompted(trait, nil).String(), "a pick is only a default until asked")
 		c.Equal("20", prompted(trait, all).String(), "a taken trait keeps its pick")
 		trait.Preconfigured = true
@@ -496,17 +496,17 @@ func TestPromptedRanges(t *testing.T) {
 	// A choice inherited from a container is taken with the container, not the trait asked about.
 	parent := NewTrait(entity, nil, true)
 	parent.AddModifiers(newTraitModifierChoiceWith(true, "+1", "+3"))
-	parent.Modifiers[0].Children[0].SetEnabled(true)
+	parent.Modifiers[0].Children[0].SetDisabled(false)
 	child := newTraitWithPoints(parent, 10)
 	child.SetDataOwner(entity)
 	c.Equal("11~13", prompted(parent, nil).String())
 	c.Equal("11~13", prompted(child, func(one *Trait, _ bool) bool { return one == child }).String())
 	c.Equal("11", prompted(child, func(one *Trait, _ bool) bool { return one == parent }).String())
-	parent.Modifiers[0].Children[0].SetEnabled(false)
+	parent.Modifiers[0].Children[0].SetDisabled(true)
 	c.Equal("10", prompted(child, func(one *Trait, _ bool) bool { return one == parent }).String(),
 		"the container answers it for the trait, picked or not")
 	c.Equal("11~13", prompted(parent, func(one *Trait, _ bool) bool { return one == parent }).String())
-	parent.Modifiers[0].Children[0].SetEnabled(true)
+	parent.Modifiers[0].Children[0].SetDisabled(false)
 	inherited := func(one *Trait, inherited bool) bool { return one == parent && inherited }
 	c.Equal("11", prompted(child, inherited).String(), "taken only for what is inside it")
 	c.Equal("11~13", prompted(parent, inherited).String(), "but not for its own cost")
@@ -518,7 +518,7 @@ func TestPromptedRanges(t *testing.T) {
 		eqp.Quantity = fxp.FromInteger(2)
 		choice := newEquipmentModifierChoiceWith([2]string{"+50", "+1 lb"}, [2]string{"+100", "+2 lb"})
 		eqp.AddModifiers(choice)
-		choice.Children[1].SetEnabled(true)
+		choice.Children[1].SetDisabled(false)
 		c.Equal("300~400", FormatValueRange(PickerMeasureRange(eqp, picker.Value, true, nil), fxp.Int.Comma))
 		c.Equal("8~10 lb", FormatWeightRange(PickerMeasureRange(eqp, picker.Weight, true, nil), fxp.Pound.Format))
 		c.Equal("400", FormatValueRange(PickerMeasureRange(eqp, picker.Value, true, taken), fxp.Int.Comma))
@@ -543,9 +543,9 @@ func TestPromptedTraitRangeUsesTheSheetSettings(t *testing.T) {
 	trait.AddModifiers(fixed, choice)
 	c.Equal("8~12", PickerMeasureRange(trait, picker.Points, true, nil).String())
 	for i, want := range []int{8, 12} {
-		choice.Children[i].SetEnabled(true)
+		choice.Children[i].SetDisabled(false)
 		c.Equal(fxp.FromInteger(want), trait.AdjustedPoints(nil))
-		choice.Children[i].SetEnabled(false)
+		choice.Children[i].SetDisabled(true)
 	}
 }
 
@@ -574,7 +574,7 @@ func TestPerPoundCostWithOpenChoices(t *testing.T) {
 	eqp.AddModifiers(newPerPoundModifier("+10"), choice)
 	c.Equal("120~130", FormatValueRange(eqp.adjustedValueRange(), fxp.Int.Comma), "the heavier option costs more")
 	eqp.Preconfigured = true
-	choice.Children[1].SetEnabled(true)
+	choice.Children[1].SetDisabled(false)
 	c.Equal(fxp.FromInteger(130), eqp.AdjustedValue(), "picking it costs what the range said it would")
 
 	eqp = newEquipmentItem("Thing", "100", "3 lb")
@@ -627,7 +627,7 @@ func TestWeightIgnoredForSkillsWithAnOpenChoice(t *testing.T) {
 func TestUnnestingAChoiceKeepsTheOuterPick(t *testing.T) {
 	c := check.New(t)
 	outer := newTraitModifierChoiceWith(false, "+1")
-	outer.Children[0].SetEnabled(true)
+	outer.Children[0].SetDisabled(false)
 	inner := NewTraitModifierChoice(nil, outer)
 	outer.Children = append(outer.Children, inner)
 	innerOption := newTraitModifierOption(inner, "Inner", "+2")
@@ -644,7 +644,7 @@ func TestModifierEnabledChanges(t *testing.T) {
 	c := check.New(t)
 	choice := newTraitModifierChoiceWith(false, "+1", "+2", "+3")
 	a, b, cc := choice.Children[0], choice.Children[1], choice.Children[2]
-	a.SetEnabled(true)
+	a.SetDisabled(false)
 	targets, enabled := ModifierEnabledChanges([]*TraitModifier{b, cc}, func(*TraitModifier) bool { return true })
 	c.Equal([]*TraitModifier{a, cc}, targets, "b is turned on and off again, so it doesn't change")
 	c.Equal(map[*TraitModifier]bool{a: false, cc: true}, enabled)
@@ -654,7 +654,7 @@ func TestModifierEnabledChanges(t *testing.T) {
 	trait := NewTrait(NewEntity(), nil, false)
 	onSheet := newTraitModifierChoiceWith(true, "+1")
 	trait.AddModifiers(onSheet)
-	onSheet.Children[0].SetEnabled(true)
+	onSheet.Children[0].SetDisabled(false)
 	targets, _ = ModifierEnabledChanges(onSheet.Children, func(*TraitModifier) bool { return false })
 	c.Equal(0, len(targets), "the pick of a mandatory choice on a sheet can't be turned off")
 }
@@ -670,8 +670,8 @@ func TestSyncSettlesAModifierChoice(t *testing.T) {
 		local := NewTraitModifier(entity, nil, true)
 		a := NewTraitModifier(entity, local, false)
 		b := NewTraitModifier(entity, local, false)
-		a.SetEnabled(enabled)
-		b.SetEnabled(enabled)
+		a.SetDisabled(!enabled)
+		b.SetDisabled(!enabled)
 		local.Children = []*TraitModifier{a, b}
 		linkToLibrarySource(t, entity, &local.Source, source)
 		local.SyncWithSource()
@@ -729,11 +729,11 @@ func TestContainedWeightReductionOfEachOption(t *testing.T) {
 func TestEditorCopyAsksAboutInheritedChoicesOnTheContainer(t *testing.T) {
 	c := check.New(t)
 	parent := newTraitContainerWithChoice(container.Group, []string{"+1", "+3"})
-	parent.Modifiers[0].Children[1].SetEnabled(true)
+	parent.Modifiers[0].Children[1].SetDisabled(false)
 	parent.Preconfigured = true
 	child := newTraitWithPoints(parent, 10)
 	child.AddModifiers(newTraitModifierChoiceWith(true, "+5", "+10"))
-	child.Modifiers[0].Children[1].SetEnabled(true)
+	child.Modifiers[0].Children[1].SetDisabled(false)
 	editorCopy := child.Clone(LibraryFile{}, child.DataOwner(), parent, Copy)
 	editorCopy.TraitEditData = child.TraitEditData
 	c.Equal(child, editorCopy.Modifiers[0].Target(), "the copy's modifiers still belong to the original")
@@ -769,7 +769,7 @@ func TestConvertingAGroupWithinAChoiceOnASheet(t *testing.T) {
 	pick := NewTraitModifier(entity, group, false)
 	group.Children = []*TraitModifier{pick}
 	other := NewTraitModifier(entity, outer, false)
-	other.SetEnabled(false)
+	other.SetDisabled(true)
 	outer.Children = []*TraitModifier{group, other}
 	trait := NewTrait(entity, nil, false)
 	trait.AddModifiers(outer)

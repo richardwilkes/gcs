@@ -42,8 +42,7 @@ func initTraitEditor(e *editor[*gurps.Trait, *gurps.TraitEditData], content *uni
 		addTagsLabelAndField(content, &e.editorData.Tags)
 		addPreconfigurable(e, content)
 		addPickSeparately(content, e.target, &e.editorData.PickSeparately)
-		content.AddChild(unison.NewPanel())
-		addInvertedCheckBox(content, i18n.Text("Enabled"), &e.editorData.Disabled)
+		addEnabledCheckBox(content, e.editorData)
 		addSwitchedOnCheckBox(content, &e.editorData.SwitchedOn)
 	}
 	var perLevelField, levelField *DecimalField

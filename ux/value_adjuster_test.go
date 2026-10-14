@@ -97,7 +97,7 @@ func TestToggleDisabledUpdatesTheSheetOnlyOnce(t *testing.T) {
 	counter := installSyncCounter(sheet)
 	entity.ModifiedOn = jio.Time{}
 	toggleDisabled(sheet, table)
-	c.True(trait.Disabled, "the trait must have been turned off")
+	c.True(trait.IsDisabled(), "the trait must have been turned off")
 	c.Equal(1, counter.count, "toggling enablement must update the sheet exactly once")
 	c.Equal(boosted-fxp.One, skill.LevelData.Level,
 		"the entity must have been recalculated with the trait's bonus out of play")
@@ -109,7 +109,7 @@ func TestToggleDisabledUpdatesTheSheetOnlyOnce(t *testing.T) {
 	entity.ModifiedOn = jio.Time{}
 	c.True(mgr.CanUndo(), "toggling enablement must be undoable")
 	mgr.Undo()
-	c.False(trait.Disabled, "undo must turn the trait back on")
+	c.False(trait.IsDisabled(), "undo must turn the trait back on")
 	c.Equal(1, counter.count, "the undo must update the sheet exactly once as well")
 	c.Equal(boosted, skill.LevelData.Level, "undo must bring the bonus back into play")
 	c.True(listAttachedToSheet(sheet, sheet.MeleeWeapons), "undo must put the melee weapons list back on the page")

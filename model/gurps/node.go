@@ -68,6 +68,31 @@ type Node[T Node[T]] interface {
 
 func assertNode[T Node[T]]() {}
 
+// Disableable is implemented by the nodes that can be disabled.
+type Disableable interface {
+	// IsDisabled returns true if this node itself has been disabled. A node that isn't may still not be in effect, which
+	// is what Node.Enabled reports.
+	IsDisabled() bool
+	// SetDisabled sets whether this node itself is disabled.
+	SetDisabled(disabled bool)
+}
+
+// ClearDisabled enables the skills, spells and equipment among the nodes and their children, since disabling one only
+// means something on a sheet. Traits and modifiers are left alone, since library data relies on disabling them.
+func ClearDisabled[T Node[T]](nodes ...T) {
+	Traverse(func(node T) bool {
+		switch n := any(node).(type) {
+		case *Skill:
+			n.SetDisabled(false)
+		case *Spell:
+			n.SetDisabled(false)
+		case *Equipment:
+			n.SetDisabled(false)
+		}
+		return false
+	}, false, false, nodes...)
+}
+
 // NodeSyncData holds the sync data the skill, spell, trait, trait modifier and equipment modifier types share: the
 // fields a library copy is expected to keep in step with its source. Their SyncData types are either aliases of it or
 // structs that embed it, which json/v2 inlines, so the on-disk format is the same as if each declared the fields
@@ -201,7 +226,7 @@ type listData[T any] struct {
 // loadRows loads the rows of a standalone list file. Giving each top-level row a nil data owner attaches the weapons
 // and modifiers throughout the tree, containers included, since SetDataOwner recurses into the children. Only a
 // template may hold template picker data or the flag to pick from a group separately, and only a character sheet may
-// hold study, so any of these a list file carries is removed.
+// hold study or a disabled skill, spell or piece of equipment, so any of these a list file carries is removed.
 func loadRows[T Node[T]](fileSystem fs.FS, filePath string, opts ...json.Options) ([]T, error) {
 	var data listData[T]
 	if err := jio.LoadVersionedFile(fileSystem, filePath, &data, &data.Version, opts...); err != nil {
@@ -210,6 +235,7 @@ func loadRows[T Node[T]](fileSystem fs.FS, filePath string, opts ...json.Options
 	SetDataOwnerAll(nil, data.Rows)
 	ClearTemplatePickerData(data.Rows...)
 	ClearStudy(data.Rows...)
+	ClearDisabled(data.Rows...)
 	return data.Rows, nil
 }
 

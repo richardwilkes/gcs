@@ -159,7 +159,7 @@ func (m equipmentMeasure) oneOf(e *Equipment, contents *NumericRange) NumericRan
 
 // contentsOf returns the range of the measure of what a single piece of the container holds, before any reduction the
 // container makes to it. A container that isn't a choice holds all of its children; a choice offers its options (see
-// TemplateChoiceOptions).
+// TemplateChoiceOptions). A disabled child is left out, as if it weren't there.
 //
 // A choice picked by count takes its options as they are, so its range is worked out just as it is for points.
 //
@@ -170,7 +170,12 @@ func (m equipmentMeasure) oneOf(e *Equipment, contents *NumericRange) NumericRan
 // picked by the other measure has no upper limit to this one once any option can be raised, and otherwise may hold
 // anything from none of its options to all of them.
 func (m equipmentMeasure) contentsOf(e *Equipment) NumericRange {
-	options := TemplateChoiceOptions(e)
+	var options []*Equipment
+	for _, one := range TemplateChoiceOptions(e) {
+		if !one.IsDisabled() {
+			options = append(options, one)
+		}
+	}
 	children := make([]NumericRange, len(options))
 	for i, one := range options {
 		children[i] = m.rangeOf(one, one.Quantity)
@@ -339,13 +344,15 @@ func (e *Equipment) weightRangeCellData(data *CellData, weigh func(defUnits fxp.
 	}
 }
 
-// equipmentRangeTotals returns the total extended weight and value of the equipment, as ranges.
+// equipmentRangeTotals returns the total extended weight and value of the enabled equipment, as ranges.
 func equipmentRangeTotals(list []*Equipment, defUnits fxp.WeightUnit) (weight, value NumericRange) {
 	weight = NumericRangeOf(0)
 	value = NumericRangeOf(0)
 	for _, one := range list {
-		weight = weight.Add(one.ExtendedWeightRange(defUnits))
-		value = value.Add(one.ExtendedValueRange())
+		if one.Enabled() {
+			weight = weight.Add(one.ExtendedWeightRange(defUnits))
+			value = value.Add(one.ExtendedValueRange())
+		}
 	}
 	return weight, value
 }

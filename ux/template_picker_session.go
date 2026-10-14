@@ -356,7 +356,7 @@ func snapshotEnabled[M gurps.Node[M]](undo []func(), modifiers []M) []func() {
 	gurps.Traverse(func(one M) bool {
 		if gm, ok := any(one).(gurps.GeneralModifier); ok {
 			enabled := gm.Enabled()
-			undo = append(undo, func() { gm.SetEnabled(enabled) })
+			undo = append(undo, func() { gm.SetDisabled(!enabled) })
 		}
 		return false
 	}, false, false, modifiers...)

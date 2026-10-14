@@ -211,7 +211,7 @@ func (t *Trait) templateChoiceContainerExclusions() []string {
 	if t.Preconfigured {
 		list = append(list, i18n.Text("preconfigured mark"))
 	}
-	if t.Disabled {
+	if t.IsDisabled() {
 		list = append(list, i18n.Text("disabled state"))
 	}
 	if t.SwitchedOn {
@@ -238,7 +238,7 @@ func (t *Trait) clearTemplateChoiceContainerExclusions() {
 	t.SelfControlAdj = selfctrl.NoAdjustment
 	t.Frequency = frequency.None
 	t.Preconfigured = false
-	t.Disabled = false
+	t.SetDisabled(false)
 	t.SwitchedOn = false
 	t.Prereq = nil
 }
@@ -419,7 +419,7 @@ const (
 // DisabledByPrereqs returns true if this trait is enabled by the user but is being treated as disabled because the
 // sheet enforces trait prerequisites and this trait's are unsatisfied. Parents are not consulted.
 func (t *Trait) DisabledByPrereqs() bool {
-	return t.prereqVerdict == prereqsDisable && !t.Disabled
+	return t.prereqVerdict == prereqsDisable && !t.IsDisabled()
 }
 
 // ContradictedPrereqs returns true if the sheet found this trait caught in a contradiction among the prerequisites,
@@ -442,7 +442,7 @@ func (t *Trait) resetPrereqVerdict() {
 // selfDisabled returns true if this trait itself is disabled, either by the user or because the sheet enforces
 // prerequisites and this trait's are unsatisfied. Parents are not consulted; see Enabled for that.
 func (t *Trait) selfDisabled() bool {
-	return t.Disabled || t.prereqVerdict == prereqsDisable
+	return t.IsDisabled() || t.prereqVerdict == prereqsDisable
 }
 
 // PrereqStatus returns what to show for the trait's prerequisites, in the trait table, the "calc" object and the
@@ -969,6 +969,16 @@ func (t *Trait) Enabled() bool {
 		}
 	}
 	return true
+}
+
+// IsDisabled implements Disableable.
+func (t *TraitEditData) IsDisabled() bool {
+	return t.Disabled
+}
+
+// SetDisabled implements Disableable.
+func (t *TraitEditData) SetDisabled(disabled bool) {
+	t.Disabled = disabled
 }
 
 // NameWithReplacements returns the name with any replacements applied.

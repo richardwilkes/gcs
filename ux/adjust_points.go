@@ -18,7 +18,7 @@ import (
 
 func rawPointsExtractor[T gurps.Node[T]](increment bool) func(T) (gurps.RawPointsAdjuster, bool) {
 	return func(data T) (gurps.RawPointsAdjuster, bool) {
-		if provider, ok := any(data).(gurps.RawPointsAdjuster); ok && !provider.Container() &&
+		if provider, ok := any(data).(gurps.RawPointsAdjuster); ok && !provider.Container() && data.Enabled() &&
 			(increment || provider.RawPoints() > 0) {
 			return provider, true
 		}

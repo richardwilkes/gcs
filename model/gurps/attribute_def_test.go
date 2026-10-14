@@ -36,14 +36,14 @@ func TestEntityHasTraitNamed(t *testing.T) {
 	c.False((*Entity)(nil).HasTraitNamed("Magery"), "nil entity never matches")
 
 	disabled := newTraitNamed(e, "Sense of Duty")
-	disabled.Disabled = true
+	disabled.SetDisabled(true)
 	e.Traits = append(e.Traits, disabled)
 	c.False(e.HasTraitNamed("Sense of Duty"), "disabled traits are ignored")
 
 	// A trait nested under a disabled container is also ignored.
 	container := NewTrait(e, nil, true)
 	container.Name = "Package"
-	container.Disabled = true
+	container.SetDisabled(true)
 	child := newTraitNamed(e, "Racial Memory")
 	child.parent = container
 	container.Children = append(container.Children, child)

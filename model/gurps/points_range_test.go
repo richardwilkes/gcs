@@ -1160,7 +1160,7 @@ func TestPointsRangeForPlainContainers(t *testing.T) {
 
 	disabled := NewTrait(nil, nil, false)
 	disabled.BasePoints = fxp.FromInteger(15)
-	disabled.Disabled = true
+	disabled.SetDisabled(true)
 	checkRange(c, 0, 0, disabled.PointsRange(nil), "a disabled trait costs nothing")
 }
 

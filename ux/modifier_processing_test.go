@@ -171,19 +171,19 @@ func TestAltDropOnTraitSwitchesTheDroppedModifierOn(t *testing.T) {
 	target := traits[0]
 	existing := gurps.NewTraitModifier(entity, nil, false)
 	existing.Name = "Existing"
-	existing.Disabled = true
+	existing.SetDisabled(true)
 	target.Modifiers = []*gurps.TraitModifier{existing}
 	dropped := gurps.NewTraitModifier(entity, nil, false)
 	dropped.Name = "Dropped"
-	dropped.Disabled = true
+	dropped.SetDisabled(true)
 
 	altDrop(tabledProvider(NewTraitsProvider(entity, false)).AltDropSupport(), []int{0}, dropped)
 
 	c.Equal(2, len(target.Modifiers), "the dropped modifier must be added to the target trait")
 	c.Equal("Dropped", target.Modifiers[1].Name, "the dropped modifier must be added to the target trait")
-	c.False(target.Modifiers[1].Disabled, "the copy must be switched on")
-	c.True(target.Modifiers[0].Disabled, "the trait's existing modifiers must be left alone")
-	c.True(dropped.Disabled, "the dragged modifier itself must be left alone")
+	c.False(target.Modifiers[1].IsDisabled(), "the copy must be switched on")
+	c.True(target.Modifiers[0].IsDisabled(), "the trait's existing modifiers must be left alone")
+	c.True(dropped.IsDisabled(), "the dragged modifier itself must be left alone")
 }
 
 // TestAltDropOnEquipmentSwitchesTheDroppedModifierOn verifies the same for dropping an equipment modifier onto an
@@ -195,19 +195,19 @@ func TestAltDropOnEquipmentSwitchesTheDroppedModifierOn(t *testing.T) {
 	target := equipment[0]
 	existing := gurps.NewEquipmentModifier(entity, nil, false)
 	existing.Name = "Existing"
-	existing.Disabled = true
+	existing.SetDisabled(true)
 	target.Modifiers = []*gurps.EquipmentModifier{existing}
 	dropped := gurps.NewEquipmentModifier(entity, nil, false)
 	dropped.Name = "Dropped"
-	dropped.Disabled = true
+	dropped.SetDisabled(true)
 
 	altDrop(tabledProvider(NewEquipmentProvider(entity, true, false)).AltDropSupport(), []int{0}, dropped)
 
 	c.Equal(2, len(target.Modifiers), "the dropped modifier must be added to the target equipment")
 	c.Equal("Dropped", target.Modifiers[1].Name, "the dropped modifier must be added to the target equipment")
-	c.False(target.Modifiers[1].Disabled, "the copy must be switched on")
-	c.True(target.Modifiers[0].Disabled, "the item's existing modifiers must be left alone")
-	c.True(dropped.Disabled, "the dragged modifier itself must be left alone")
+	c.False(target.Modifiers[1].IsDisabled(), "the copy must be switched on")
+	c.True(target.Modifiers[0].IsDisabled(), "the item's existing modifiers must be left alone")
+	c.True(dropped.IsDisabled(), "the dragged modifier itself must be left alone")
 }
 
 // TestAltDropOnSeveralTraitsGivesEachItsOwnCopy verifies that dropping a trait modifier onto several selected traits

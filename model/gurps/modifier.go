@@ -57,7 +57,7 @@ type GeneralModifier interface {
 	FullDescription() string
 	FullCostDescription() string
 	Enabled() bool
-	SetEnabled(enabled bool)
+	Disableable
 }
 
 // assertModifierNode is used at compile time to check a *constraint*.

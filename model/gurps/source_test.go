@@ -81,7 +81,7 @@ func TestForEachSourcedNodeVisitsEveryNodeOnce(t *testing.T) {
 	tmpl := NewTemplate()
 	traitContainer := NewTrait(tmpl, nil, true)
 	trait := NewTrait(tmpl, traitContainer, false)
-	trait.Disabled = true
+	trait.SetDisabled(true)
 	traitMod := NewTraitModifier(tmpl, nil, false)
 	trait.Modifiers = append(trait.Modifiers, traitMod)
 	traitContainer.Children = append(traitContainer.Children, trait)
