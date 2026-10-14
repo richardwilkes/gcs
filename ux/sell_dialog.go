@@ -280,17 +280,27 @@ func (d *sellDialog) newList() *unison.Panel {
 		} else {
 			list.AddChild(label)
 		}
-		quantity := NewDecimalField(nil, "", "", func() fxp.Int { return row.quantity },
+		// Any item can be left out of the sale by setting its quantity to zero. A container is sold by the copy, so its
+		// field refuses fractions unless the quantity carried is itself a fraction, and a group is sold in full (see
+		// gurps.Entity.CommitSale), so any other quantity of one is the whole of it, and the field is made to show that.
+		var quantity *DecimalField
+		quantity = NewDecimalField(nil, "", "", func() fxp.Int { return row.quantity },
 			func(v fxp.Int) {
+				if row.eqp.IsGroup() && v > 0 && v != row.most {
+					row.quantity = row.most
+					quantity.syncFromValue()
+					return
+				}
 				row.quantity = v
 				d.update()
 			}, 0, row.most, false, false)
 		quantity.SetMarksModified(false)
 		quantity.refuseAboveMax()
+		if row.eqp.Container() && row.most.Floor() == row.most {
+			refuseFractions(quantity)
+		}
 		quantity.Accessibility.Name = i18n.Text("%s quantity to sell", name)
 		d.gateOnValidity(quantity)
-		// A group is sold in full (see gurps.Entity.CommitSale).
-		quantity.SetEnabled(!row.eqp.IsGroup() && row.most > fxp.One)
 		list.AddChild(quantity)
 		carried := unison.NewLabel()
 		carried.SetTitle(i18n.Text("of %s", row.most.Comma()))

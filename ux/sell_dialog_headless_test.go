@@ -187,7 +187,7 @@ func TestSellDialogSellsAndUndoes(t *testing.T) {
 		c.Equal("Sell Equipment", s.wnd.Title(), "the dialog is titled for what it does")
 		c.Equal("50", s.percent.Text(), "the percentage starts at the sheet's sell percent")
 		c.Equal("1", s.quantities[0].Text(), "all of the sword is to be sold")
-		c.False(s.quantities[0].Enabled(), "a quantity that can only be one can't be changed")
+		c.True(s.quantities[0].Enabled(), "a quantity of one can be changed, to leave the item out")
 		c.Equal("2", s.quantities[1].Text(), "all of the knives are to be sold")
 		c.True(s.quantities[1].Enabled(), "a quantity of more than one can be changed")
 		c.Equal("Small Knife quantity to sell", s.quantities[1].Accessibility.Name)
@@ -484,6 +484,88 @@ func TestSellDialogClosesTheEditorOfAContainerTheSaleSplits(t *testing.T) {
 	})
 	c.Equal(0, editorsOpenFor(box), "the editor of the box, whose quantity the split reduces, is closed")
 	c.Equal(1, editorsOpenFor(crate), "the editor of the crate, which the sale doesn't split, stays open")
+}
+
+// TestSellDialogLeavesOutWhatIsSetToZero checks that any item is left out of the sale when its quantity is set to zero,
+// one of which only one is carried and a group included; that an item can be sold in part, a fraction of it included,
+// while a container, which is sold by the copy, refuses a fraction; and that a group, which is sold in full, takes any
+// other quantity as the whole of it.
+func TestSellDialogLeavesOutWhatIsSetToZero(t *testing.T) {
+	c := check.New(t)
+	screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
+	money := newTradeTestMoney(t, c)
+	var sword, box, crate, tools *gurps.Equipment
+	sheet := openSellTestSheet(t, screen, []gurps.Source{money.source(money.penny)},
+		func(entity *gurps.Entity) []*gurps.Equipment {
+			sword = newTradeTestItem(entity, "Shortsword", "400", fxp.One)
+			box = gurps.NewEquipment(entity, nil, true)
+			box.Name = "Box"
+			box.BaseValue = "10"
+			box.Quantity = fxp.Three
+			crate = gurps.NewEquipment(entity, nil, true)
+			crate.Name = "Crate"
+			crate.Quantity = fxp.Three
+			tools = gurps.NewEquipmentGroup(entity, crate)
+			tools.Name = "Tools"
+			hammer := newTradeTestItem(entity, "Hammer", "15", fxp.One)
+			hammer.SetParent(tools)
+			tools.Children = []*gurps.Equipment{hammer}
+			crate.Children = []*gurps.Equipment{tools}
+			return []*gurps.Equipment{sword, box, crate}
+		})
+	s := openSellTestDialog(t, screen, wnd, sheet, sword, box, tools)
+	text := func(field *DecimalField) string {
+		var text string
+		screen.Do(func() { text = field.Text() })
+		return text
+	}
+	total := func(want, why string) {
+		t.Helper()
+		texts := s.texts()
+		c.True(slices.Contains(texts, "Target total: "+want), "%s; the dialog shows %v", why, texts)
+	}
+	screen.Do(func() {
+		c.Equal("1", s.quantities[0].Text())
+		c.True(s.quantities[0].Enabled(), "a quantity of one can be changed")
+		c.Equal("3", s.quantities[1].Text(), "every copy of the box is to be sold")
+		c.Equal("3", s.quantities[2].Text(), "the group comes once for each copy of the crate")
+		c.True(s.quantities[2].Enabled(), "a group's quantity can be changed")
+	})
+	total("$237.50", "the sword, the boxes and the tools in each crate are to be sold")
+	s.replaceText(s.quantities[0], "0")
+	total("$37.50", "the sword set to zero is left out")
+	c.True(s.sellEnabled(), "the rest can still be sold")
+	screen.Do(func() { c.Equal("Sold Box, Tools", s.name.Text(), "the name leaves out the sword") })
+	s.replaceText(s.quantities[0], "0.5")
+	c.Equal("0.5", text(s.quantities[0]), "an item can be sold in part, a fraction of it included")
+	total("$137.50", "half the sword is to be sold")
+	s.replaceText(s.quantities[1], "2.5")
+	c.Equal("2", text(s.quantities[1]), "a container refuses the decimal point, and then a quantity above the copies carried")
+	total("$132.50", "two of the boxes are to be sold")
+	screen.Do(func() { unison.ClipboardSetText("1.5") })
+	screen.KeyPress(unison.KeyA, mod.OSMenuCommand())
+	screen.KeyPress(unison.KeyV, mod.OSMenuCommand())
+	c.Equal("1.5", text(s.quantities[1]), "a pasted fraction shows")
+	c.False(s.sellEnabled(), "a container's pasted fraction isn't a valid quantity")
+	s.replaceText(s.quantities[1], "2")
+	c.True(s.sellEnabled(), "a whole number is valid again")
+	s.replaceText(s.quantities[2], "1")
+	c.Equal("3", text(s.quantities[2]), "any quantity of a group is the whole of it")
+	total("$132.50", "the tools are still sold in full")
+	s.replaceText(s.quantities[2], "0")
+	total("$110.00", "the tools set to zero are left out")
+	s.replaceText(s.quantities[1], "0")
+	s.replaceText(s.quantities[0], "0")
+	c.False(s.sellEnabled(), "with everything set to zero, nothing can be sold")
+	total("$0.00", "nothing is to be sold")
+	s.replaceText(s.quantities[0], "1")
+	c.True(s.sellEnabled(), "the sword set back to one can be sold")
+	s.dismiss(c, s.sell)
+	screen.Do(func() {
+		c.Equal([]string{"Box ×3", "Crate ×3", "Copper Penny ×200"}, carriedSummary(sheet),
+			"the sword is sold and the boxes and tools kept")
+		c.Equal([]*gurps.Equipment{tools}, crate.Children, "the tools stay in the crates")
+	})
 }
 
 // TestSellDialogGatesSaleOnValidFields checks that Sell is unavailable while the percent field or a quantity field holds
