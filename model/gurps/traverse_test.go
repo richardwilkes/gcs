@@ -24,7 +24,7 @@ func TestCountNodes(t *testing.T) {
 	child := NewTrait(e, group, false)
 	group.Children = append(group.Children, child)
 	disabled := NewTrait(e, nil, true)
-	disabled.Disabled = true
+	disabled.SetDisabled(true)
 	hidden := NewTrait(e, disabled, false)
 	disabled.Children = append(disabled.Children, hidden)
 	list := []*Trait{group, disabled}

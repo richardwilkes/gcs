@@ -127,7 +127,7 @@ func TestExtendedPreviewsHonorModifierEnablement(t *testing.T) {
 	c.Equal(fxp.WeightFromInteger(3, fxp.Pound), extendedWeightForEditor(equipment, data, fxp.Pound),
 		"weight preview with the modifier enabled")
 
-	data.Modifiers[0].Disabled = true
+	data.Modifiers[0].SetDisabled(true)
 	c.Equal(fxp.FromInteger(100), extendedValueForEditor(equipment, data), "value preview with the modifier disabled")
 	c.Equal(fxp.WeightFromInteger(2, fxp.Pound), extendedWeightForEditor(equipment, data, fxp.Pound),
 		"weight preview with the modifier disabled")
@@ -190,7 +190,7 @@ func newEditorEquipmentWithChoice(options ...[2]string) (*gurps.Equipment, *gurp
 		option.CostAmount = one[0]
 		option.WeightType = emweight.Original
 		option.WeightAmount = one[1]
-		option.Disabled = true
+		option.SetDisabled(true)
 		choice.Children = append(choice.Children, option)
 	}
 	equipment.Modifiers = []*gurps.EquipmentModifier{choice}
@@ -221,7 +221,7 @@ func TestExtendedPreviewsCountAnOpenChoice(t *testing.T) {
 func TestExtendedPreviewsLeaveTheModifiersOnTheEditedItem(t *testing.T) {
 	c := check.New(t)
 	equipment, _ := newEditorEquipmentWithChoice([2]string{"", "+1 lb"}, [2]string{"", "+1 lb"})
-	equipment.Modifiers[0].Children[0].Disabled = false
+	equipment.Modifiers[0].Children[0].SetDisabled(false)
 	mod := gurps.NewEquipmentModifier(nil, nil, false)
 	mod.CostType = emcost.Original
 	mod.CostAmount = "+10"

@@ -17,10 +17,10 @@ import (
 )
 
 // quantityExtractor accepts the equipment whose quantity can be adjusted in the given direction, which leaves out
-// anything without a quantity of its own, such as a group.
+// anything disabled or without a quantity of its own, such as a group.
 func quantityExtractor(increment bool) func(*gurps.Equipment) (*gurps.Equipment, bool) {
 	return func(eqp *gurps.Equipment) (*gurps.Equipment, bool) {
-		if eqp != nil && !eqp.IsGroup() && (increment || eqp.Quantity > 0) {
+		if eqp != nil && eqp.Enabled() && !eqp.IsGroup() && (increment || eqp.Quantity > 0) {
 			return eqp, true
 		}
 		return nil, false

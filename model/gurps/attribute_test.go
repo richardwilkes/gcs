@@ -51,7 +51,7 @@ func TestAttributeBonusTooltipListsSources(t *testing.T) {
 		"each active bonus is listed with its source and amount")
 	c.Equal(fxp.Three, st.Bonus, "the tooltip reflects the bonus that was applied")
 
-	trait.Disabled = true
+	trait.SetDisabled(true)
 	e.Recalculate()
 	c.Equal("Includes modifiers from:\nSmart Gloves (AR software) [+1]", st.BonusTooltip(),
 		"a disabled trait's bonus is not listed")
@@ -60,7 +60,7 @@ func TestAttributeBonusTooltipListsSources(t *testing.T) {
 	e.Recalculate()
 	c.Equal("", st.BonusTooltip(), "an unequipped item's bonus is not listed")
 
-	trait.Disabled = false
+	trait.SetDisabled(false)
 	e.Recalculate()
 	c.Equal("Includes modifiers from:\nIncreased Strength [+2]", st.BonusTooltip(),
 		"a re-enabled trait's bonus is listed again, while the unequipped item's stays out")
@@ -91,7 +91,7 @@ func TestAttributeBonusTooltipTraitModifierSource(t *testing.T) {
 		st.BonusTooltip(), "a trait modifier's bonus is attributed to both the trait and the modifier")
 	c.Equal(fxp.Three, st.Bonus, "the tooltip reflects the bonus that was applied")
 
-	mod.Disabled = true
+	mod.SetDisabled(true)
 	e.Recalculate()
 	c.Equal("Includes modifiers from:\nIncreased Strength [+2]", st.BonusTooltip(),
 		"a disabled modifier's bonus is not listed")

@@ -163,7 +163,7 @@ func TestTemplateLoadNormalizesChoiceContainers(t *testing.T) {
 	choice.Tags = []string{"Advantage"}
 	choice.SelfControl = selfctrl.CR12
 	choice.Frequency = frequency.FR9
-	choice.Disabled = true
+	choice.SetDisabled(true)
 	choice.Prereq = NewPrereqList()
 	choice.Prereq.Prereqs = append(choice.Prereq.Prereqs, NewTraitPrereq())
 	choice.Source = Source{Library: "lib", Path: "choice.adq", TID: choice.ID()}
@@ -197,7 +197,7 @@ func TestTemplateLoadNormalizesChoiceContainers(t *testing.T) {
 	c.Equal(0, len(loadedChoice.Tags), "a choice container must not keep tags")
 	c.Equal(selfctrl.None, loadedChoice.SelfControl, "a choice container must not keep a self-control roll")
 	c.Equal(frequency.None, loadedChoice.Frequency, "a choice container must not keep a frequency")
-	c.False(loadedChoice.Disabled, "a choice container must not stay disabled")
+	c.False(loadedChoice.IsDisabled(), "a choice container must not stay disabled")
 	c.True(loadedChoice.Prereq.IsZero(), "a choice container must not keep prerequisites")
 	c.True(loadedChoice.Source.IsZero(), "a choice container must not keep a source")
 	c.Equal(container.Group, loadedChoice.ContainerType, "a nested choice container must become a group")
@@ -258,7 +258,7 @@ func TestTemplateChoiceConversion(t *testing.T) {
 	c.Equal(0, len(TemplateChoiceConversionLosses(group)), "a bare group loses nothing")
 	group.Frequency = frequency.FR9
 	group.Preconfigured = true
-	group.Disabled = true
+	group.SetDisabled(true)
 	group.SwitchedOn = true
 	group.Prereq = NewPrereqList()
 	group.Prereq.Prereqs = append(group.Prereq.Prereqs, NewTraitPrereq())
@@ -270,7 +270,7 @@ func TestTemplateChoiceConversion(t *testing.T) {
 	c.Equal("Pick 1", group.TemplatePicker.String())
 	c.Equal(frequency.None, group.Frequency)
 	c.False(group.Preconfigured)
-	c.False(group.Disabled)
+	c.False(group.IsDisabled())
 	c.False(group.SwitchedOn)
 	c.True(group.Prereq.IsZero())
 	c.Equal(Source{}, group.Source)

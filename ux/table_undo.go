@@ -282,11 +282,12 @@ func NewTableDragUndoEditData[T gurps.Node[T]](from, to *unison.Table[*Node[T]])
 // Apply the undo edit data to a table.
 func (t *TableDragUndoEditData[T]) Apply() {
 	// Both lists have to be back in place before either of them is reported: a row dragged from one list to the other
-	// is in neither of them while only the first has been restored, so reporting there would re-sync the whole sheet
-	// against a state the user never had. One report covers both, because the two tables always belong to the same
-	// owner: a drag only counts as a move -- the only case that leaves anything to put back in the list the rows came
-	// from, which is why From is nil for the rest -- when both tables are in the same dockable, and only equipment can
-	// move between two different tables at all (see the providers' DropShouldMoveData). A nil From restores nothing.
+	// is in neither of them on undo, or in both of them on redo, while only the first has been restored, so reporting
+	// there would re-sync the whole sheet against a state the user never had. One report covers both, because the two
+	// tables always belong to the same owner: a drag only counts as a move -- the only case that leaves anything to put
+	// back in the list the rows came from, which is why From is nil for the rest -- when both tables are in the same
+	// dockable, and only equipment can move between two different tables at all (see the providers'
+	// DropShouldMoveData). A nil From restores nothing.
 	var restored restoredTables
 	restored.add(t.To.restore())
 	restored.add(t.From.restore())

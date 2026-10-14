@@ -347,7 +347,7 @@ func SettleModifierChoices[T Node[T]](incoming func(T) bool, nodes ...T) bool {
 // SetModifierEnabled sets the enabled state of the node, if it is a modifier.
 func SetModifierEnabled[T Node[T]](node T, enabled bool) {
 	if gm, ok := any(node).(GeneralModifier); ok {
-		gm.SetEnabled(enabled)
+		gm.SetDisabled(!enabled)
 	}
 }
 

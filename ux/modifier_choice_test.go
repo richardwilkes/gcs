@@ -34,7 +34,7 @@ func newTraitModifierChoiceFor(owner gurps.DataOwner, mandatory bool, names []st
 	for _, name := range names {
 		option := gurps.NewTraitModifier(owner, choice, false)
 		option.Name = name
-		option.SetEnabled(slices.Contains(enabled, name))
+		option.SetDisabled(!slices.Contains(enabled, name))
 		choice.Children = append(choice.Children, option)
 	}
 	return choice
@@ -47,7 +47,7 @@ func newEquipmentModifierChoiceFor(owner gurps.DataOwner, names []string, enable
 	for _, name := range names {
 		option := gurps.NewEquipmentModifier(owner, choice, false)
 		option.Name = name
-		option.SetEnabled(slices.Contains(enabled, name))
+		option.SetDisabled(!slices.Contains(enabled, name))
 		choice.Children = append(choice.Children, option)
 	}
 	return choice
@@ -292,7 +292,7 @@ func TestPreconfiguredAsksOnlyAboutUnresolvedChoices(t *testing.T) {
 		"only the unresolved mandatory choice is asked about")
 
 	*prompts = nil
-	open.Children[0].SetEnabled(true)
+	open.Children[0].SetDisabled(false)
 	c.True(processModifiers([]*gurps.Trait{trait}, true))
 	c.Equal(0, len(*prompts), "with every mandatory choice made, a preconfigured trait isn't asked at all")
 
@@ -303,7 +303,7 @@ func TestPreconfiguredAsksOnlyAboutUnresolvedChoices(t *testing.T) {
 		"a trait that isn't preconfigured is asked about everything")
 
 	*prompts = nil
-	open.Children[0].SetEnabled(false)
+	open.Children[0].SetDisabled(true)
 	trait.Preconfigured = true
 	c.True(processModifiers([]*gurps.Trait{trait}, false))
 	c.Equal(0, len(*prompts), "a preconfigured row headed for a template isn't asked about its choices")
@@ -438,13 +438,13 @@ func TestModifierSelectionTreatsChoicesByKind(t *testing.T) {
 	named := func(parent *gurps.TraitModifier, name string) *gurps.TraitModifier {
 		m := gurps.NewTraitModifier(nil, parent, false)
 		m.Name = name
-		m.SetEnabled(false)
+		m.SetDisabled(true)
 		parent.Children = append(parent.Children, m)
 		return m
 	}
 	outer := gurps.NewTraitModifier(nil, nil, true)
 	plain := named(outer, "Plain")
-	plain.SetEnabled(true)
+	plain.SetDisabled(false)
 	choice := gurps.NewTraitModifierChoice(nil, outer)
 	outer.Children = append(outer.Children, choice)
 	direct := named(choice, "Direct")
@@ -569,7 +569,7 @@ func TestTraitEditorShowsTheRangeOfAnOpenChoice(t *testing.T) {
 	e.editorData.Preconfigured = true
 	DeepSync(e)
 	c.Equal("15~20", pointCost.String(), "a preconfigured trait still has a choice with no pick to make")
-	options[1].SetEnabled(true)
+	options[1].SetDisabled(false)
 	DeepSync(e)
 	c.Equal("20", pointCost.String(), "a preconfigured trait takes the pick already made")
 }
@@ -594,11 +594,11 @@ func TestTraitEditorLeavesOutInheritedModifiers(t *testing.T) {
 	pointCost := uxtest.PanelsOfType[*NonEditableField](content)[0]
 	c.Equal("20~40", pointCost.String())
 	e.editorData.Preconfigured = true
-	e.editorData.Modifiers[0].Children[1].SetEnabled(true)
+	e.editorData.Modifiers[0].Children[1].SetDisabled(false)
 	DeepSync(e)
 	c.Equal("40", pointCost.String())
-	e.editorData.Modifiers[0].Children[1].SetEnabled(false)
-	e.editorData.Modifiers[0].Children[0].SetEnabled(true)
+	e.editorData.Modifiers[0].Children[1].SetDisabled(true)
+	e.editorData.Modifiers[0].Children[0].SetDisabled(false)
 	DeepSync(e)
 	c.Equal("20", pointCost.String())
 }
@@ -887,7 +887,7 @@ func TestNewModifierInAChoiceArrivesOff(t *testing.T) {
 	withGroup := newTraitModifierChoiceFor(entity, true, []string{"y"}, "y")
 	group := gurps.NewTraitModifier(entity, withGroup, true)
 	x := gurps.NewTraitModifier(entity, group, false)
-	x.SetEnabled(false)
+	x.SetDisabled(true)
 	group.Children = []*gurps.TraitModifier{x}
 	group.SetOpen(false)
 	withGroup.Children = slices.Insert(withGroup.Children, 0, group)
@@ -987,7 +987,7 @@ func TestPickerCostsSheetRowsAsPrompted(t *testing.T) {
 
 	sword, _ := newEditorEquipmentWithChoice([2]string{"+50", "+1 lb"}, [2]string{"+100", "+2 lb"})
 	sword.SetDataOwner(entity)
-	sword.Modifiers[0].Children[0].Disabled = false
+	sword.Modifiers[0].Children[0].SetDisabled(false)
 	for prompted, want := range map[bool][2]string{false: {"$150", "3 lb"}, true: {"$150~200", "3~4 lb"}} {
 		s := newPickerSession(promptOperation{}, []*gurps.Equipment{sword}, prompted)
 		c.Equal(want, [2]string{s.cost(sword, picker.Value).text, s.cost(sword, picker.Weight).text})

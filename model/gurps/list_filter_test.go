@@ -459,7 +459,7 @@ func TestListFilterTraitLevels(t *testing.T) {
 	disabled.Name = "Disabled"
 	disabled.CanLevel = true
 	disabled.Levels = fxp.Two
-	disabled.Disabled = true
+	disabled.SetDisabled(true)
 	c.True(disabled.IsLeveled(), "the disabled trait should be leveled")
 	c.Equal(fxp.Int(0), disabled.CurrentLevel(), "the disabled trait should read zero levels")
 
@@ -784,7 +784,7 @@ func TestFilterFieldListedValues(t *testing.T) {
 	grandchild := gurps.NewTrait(nil, nested, false)
 	grandchild.Name = "Arrow"
 	grandchild.Tags = []string{"apple"}
-	grandchild.Disabled = true
+	grandchild.SetDisabled(true)
 	nested.Children = []*gurps.Trait{grandchild}
 	root.Children = []*gurps.Trait{child, nested}
 	list := []*gurps.Trait{root}

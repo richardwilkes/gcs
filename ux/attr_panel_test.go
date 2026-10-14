@@ -50,10 +50,10 @@ func TestAttrPanelHashReflectsTraitDrivenVisibility(t *testing.T) {
 	revealed := panel.computeHash(defs)
 	c.NotEqual(hidden, revealed, "adding the trait must change the hash")
 
-	trait.Disabled = true
+	trait.SetDisabled(true)
 	c.Equal(hidden, panel.computeHash(defs), "disabling the trait must restore the hidden hash")
 
-	trait.Disabled = false
+	trait.SetDisabled(false)
 	c.Equal(revealed, panel.computeHash(defs), "re-enabling the trait must restore the revealed hash")
 
 	e.Traits = nil

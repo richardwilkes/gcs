@@ -514,6 +514,13 @@ func addSwitchedOnCheckBox[F fieldAccess[bool]](parent *unison.Panel, fieldData 
 	return checkBox
 }
 
+// addEnabledCheckBox adds the check box that enables or disables an item, preceded by an empty panel to keep it in the
+// field column of a two-column layout.
+func addEnabledCheckBox(parent *unison.Panel, data gurps.Disableable) {
+	parent.AddChild(unison.NewPanel())
+	addInvertedCheckBox(parent, i18n.Text("Enabled"), newFieldAccessor(data.IsDisabled, data.SetDisabled))
+}
+
 func addInvertedCheckBox[F fieldAccess[bool]](parent *unison.Panel, labelText string, fieldData F) *CheckBox {
 	access := toFieldAccessor[bool](fieldData)
 	checkBox := NewCheckBox(nil, "", labelText,
