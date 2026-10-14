@@ -14,9 +14,9 @@
   the character's items tagged "Money", either automatically or by choosing which to spend, with change returned in the
   sheet's sell money or, when that can't make it, the money paid. The record button beside it shows the shopping record
   of every sale and purchase, where entries can be selected and deleted. Selling part of what several copies of a
-  container hold, or paying with it, splits the copies apart as needed rather than leaving each with a fraction.
-  Disabled equipment can't be sold or spent, and whatever is bought is enabled, even when copied from a sheet where it
-  was disabled.
+  container hold, or paying with it, splits the copies apart as needed rather than leaving each with a fraction. An
+  information icon beside a container for sale lists what it holds, which is sold along with it. Disabled equipment
+  can't be sold or spent, and whatever is bought is enabled, even when copied from a sheet where it was disabled.
 
 ## Bug Fixes
 

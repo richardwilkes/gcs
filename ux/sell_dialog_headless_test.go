@@ -10,11 +10,13 @@
 package ux
 
 import (
+	"fmt"
 	"slices"
 	"testing"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/eqcontainer"
 	"github.com/richardwilkes/gcs/v5/ux/uxtest"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/toolbox/v2/tid"
@@ -591,4 +593,86 @@ func TestSellSkipsDisabledEquipment(t *testing.T) {
 	s.dismiss(c, s.sell)
 	c.Equal([]string{"Dagger ×1", "Sack ×1", "Copper Penny ×30"}, carriedSummary(sheet),
 		"only the knives are sold")
+}
+
+// TestSellDialogListsWhatAContainerHolds checks that a container with something in it has an information icon beside
+// its name whose tooltip lists what it holds: each item with its quantity, indented beneath the container holding it, a
+// group without a quantity and a disabled item struck through, with the rest counted past maxSaleContentsLines of them.
+// An item that holds nothing has no icon.
+func TestSellDialogListsWhatAContainerHolds(t *testing.T) {
+	c := check.New(t)
+	screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
+	money := newTradeTestMoney(t, c)
+	var pack, sack, crate, knife, box *gurps.Equipment
+	sheet := openSellTestSheet(t, screen, []gurps.Source{money.source(money.penny)},
+		func(entity *gurps.Entity) []*gurps.Equipment {
+			container := func(parent *gurps.Equipment, name string, quantity fxp.Int, children ...*gurps.Equipment) *gurps.Equipment {
+				eqp := gurps.NewEquipment(entity, parent, true)
+				eqp.Name = name
+				eqp.BaseValue = "10"
+				eqp.Quantity = quantity
+				eqp.Children = children
+				for _, child := range children {
+					child.SetParent(eqp)
+				}
+				return eqp
+			}
+			hammer := newTradeTestItem(entity, "Hammer", "15", fxp.One)
+			hammer.SetDisabled(true)
+			tools := container(nil, "Tools", fxp.One, hammer)
+			tools.ContainerType = eqcontainer.Group
+			pack = container(nil, "Backpack", fxp.Two, newTradeTestItem(entity, "Rope", "5", fxp.Three), tools)
+			sack = container(nil, "Sack", fxp.One,
+				container(nil, "Pouch", fxp.One, newTradeTestItem(entity, "Gem", "100", fxp.Five)))
+			nails := make([]*gurps.Equipment, maxSaleContentsLines+2)
+			for i := range nails {
+				nails[i] = newTradeTestItem(entity, fmt.Sprintf("Nail %d", i+1), "1", fxp.One)
+			}
+			crate = container(nil, "Crate", fxp.One, nails...)
+			knife = newTradeTestItem(entity, "Small Knife", "30", fxp.Two)
+			box = container(nil, "Box", fxp.One)
+			return []*gurps.Equipment{pack, sack, crate, knife, box}
+		})
+	s := openSellTestDialog(t, screen, wnd, sheet, pack, sack, crate, knife, box)
+	type tip struct {
+		texts  []string
+		struck []string
+		indent map[string]float32
+	}
+	var tips []tip
+	screen.Do(func() {
+		for _, label := range uxtest.PanelsOfType[*unison.Label](s.wnd.Content()) {
+			if label.Drawable == nil {
+				continue
+			}
+			one := tip{texts: uxtest.LabelTexts(label.Tooltip), indent: make(map[string]float32)}
+			for _, line := range uxtest.PanelsOfType[*unison.Label](label.Tooltip) {
+				if line.StrikeThrough {
+					one.struck = append(one.struck, line.String())
+				}
+				if border := line.Border(); border != nil {
+					one.indent[line.String()] = border.Insets().Left
+				}
+			}
+			tips = append(tips, one)
+		}
+	})
+	c.Equal(3, len(tips), "the backpack, sack and crate have an information icon apiece; the knife and empty box have none")
+	if len(tips) != 3 {
+		s.dismiss(c, s.cancel)
+		return
+	}
+	c.Equal([]string{"Sold with each one:", "Rope ×3", "Tools", "Hammer ×1"}, tips[0].texts,
+		"the tooltip for the two backpacks lists what each holds, the group without a quantity")
+	c.Equal([]string{"Hammer ×1"}, tips[0].struck, "the disabled hammer is struck through")
+	c.True(tips[0].indent["Hammer ×1"] > tips[0].indent["Tools"], "the hammer is indented beneath the tools")
+	c.Equal(tips[0].indent["Rope ×3"], tips[0].indent["Tools"], "the rope and tools are indented alike")
+	c.Equal([]string{"Sold with it:", "Pouch ×1", "Gem ×5"}, tips[1].texts,
+		"the tooltip for the one sack lists what it holds")
+	c.True(tips[1].indent["Gem ×5"] > tips[1].indent["Pouch ×1"], "the gem is indented beneath the pouch")
+	c.Equal(maxSaleContentsLines+2, len(tips[2].texts), "the crate's tooltip lists the first nails and counts the rest")
+	c.Equal("Nail 1 ×1", tips[2].texts[1])
+	c.Equal(fmt.Sprintf("Nail %d ×1", maxSaleContentsLines), tips[2].texts[maxSaleContentsLines])
+	c.Equal("…and 2 more", tips[2].texts[maxSaleContentsLines+1])
+	s.dismiss(c, s.cancel)
 }

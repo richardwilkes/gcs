@@ -26,10 +26,17 @@ import (
 	"github.com/richardwilkes/unison/enums/align"
 	"github.com/richardwilkes/unison/enums/behavior"
 	"github.com/richardwilkes/unison/enums/check"
+	"github.com/richardwilkes/unison/enums/role"
 )
 
-// maxSaleNamesLength is the most characters of item names the suggested transaction name of a sale holds.
-const maxSaleNamesLength = 100
+const (
+	// maxSaleNamesLength is the most characters of item names the suggested transaction name of a sale holds.
+	maxSaleNamesLength = 100
+	// maxSaleContentsLines is the most items the tooltip beside a container for sale lists before counting the rest.
+	maxSaleContentsLines = 30
+	// saleContentsIndent is how far each level of what a container for sale holds is indented in its tooltip.
+	saleContentsIndent = unison.StdHSpacing * 2
+)
 
 // sellSelectedEquipment asks how much of the equipment selected in the sheet's carried equipment table to sell, and at
 // what price, then sells it. It is a variable so that tests can substitute it.
@@ -268,7 +275,11 @@ func (d *sellDialog) newList() *unison.Panel {
 		name := row.eqp.String()
 		label := newTruncatedLabel(name, maxContextLineLength, unison.DefaultLabelTheme.Font)
 		label.SetLayoutData(&unison.FlexLayoutData{VAlign: align.Middle})
-		list.AddChild(label)
+		if row.eqp.HasChildren() {
+			list.AddChild(withSaleContentsInfo(label, row))
+		} else {
+			list.AddChild(label)
+		}
 		quantity := NewDecimalField(nil, "", "", func() fxp.Int { return row.quantity },
 			func(v fxp.Int) {
 				row.quantity = v
@@ -295,6 +306,72 @@ func (d *sellDialog) newList() *unison.Panel {
 		list.AddChild(row.youGet)
 	}
 	return list
+}
+
+// withSaleContentsInfo returns a panel holding the label of a container for sale and, beside it, an information icon
+// whose tooltip lists what the container holds, since that is sold along with it (see gurps.Entity.CommitSale).
+func withSaleContentsInfo(label *unison.Label, row *sellRow) *unison.Panel {
+	panel := unison.NewPanel()
+	panel.SetLayout(&unison.FlexLayout{Columns: 2, HSpacing: unison.StdHSpacing})
+	panel.SetLayoutData(&unison.FlexLayoutData{VAlign: align.Middle})
+	panel.AddChild(label)
+	info := NewInfoPop()
+	info.Accessibility.Name = i18n.Text("What %s holds", row.eqp.String())
+	info.SetLayoutData(&unison.FlexLayoutData{VAlign: align.Middle})
+	info.Tooltip = newSaleContentsTooltip(row)
+	info.TooltipImmediate = true
+	panel.AddChild(info)
+	return panel
+}
+
+// newSaleContentsTooltip returns a tooltip listing what the row's container holds, each item with its quantity, indented
+// beneath the container holding it and struck through when disabled, as the equipment table shows it. A group has no
+// quantity of its own. Past maxSaleContentsLines items, the rest are counted instead. Like unison.NewTooltipWithText,
+// the tooltip is named with the whole of the text, so the labels say nothing of their own to an assistive technology.
+func newSaleContentsTooltip(row *sellRow) *unison.Panel {
+	tip := unison.NewTooltipBase()
+	tip.SetLayout(&unison.FlexLayout{Columns: 1, VSpacing: unison.StdVSpacing})
+	var lines []string
+	addLine := func(text string, depth int, disabled bool) {
+		lines = append(lines, text)
+		label := unison.NewLabel()
+		label.LabelTheme = unison.DefaultTooltipTheme.Label
+		label.StrikeThrough = disabled
+		label.Accessibility.Role = role.None
+		label.SetTitle(text)
+		if depth > 0 {
+			label.SetBorder(unison.NewEmptyBorder(geom.Insets{Left: float32(depth) * saleContentsIndent}))
+		}
+		tip.AddChild(label)
+	}
+	if row.most == fxp.One {
+		addLine(i18n.Text("Sold with it:"), 0, false)
+	} else {
+		addLine(i18n.Text("Sold with each one:"), 0, false)
+	}
+	listed, more := 0, 0
+	var add func(list []*gurps.Equipment, depth int)
+	add = func(list []*gurps.Equipment, depth int) {
+		for _, child := range list {
+			if listed < maxSaleContentsLines {
+				text := xstrings.Truncate(child.String(), maxContextLineLength, true)
+				if !child.IsGroup() {
+					text = i18n.Text("%s ×%s", text, child.Quantity.Comma())
+				}
+				addLine(text, depth, !child.Enabled())
+				listed++
+			} else {
+				more++
+			}
+			add(child.Children, depth+1)
+		}
+	}
+	add(row.eqp.Children, 1)
+	if more != 0 {
+		addLine(i18n.Text("…and %d more", more), 1, false)
+	}
+	tip.Accessibility.Name = strings.Join(lines, "\n")
+	return tip
 }
 
 // defaultName returns the transaction name suggested for the sale, naming the items of which something is to be sold, or
