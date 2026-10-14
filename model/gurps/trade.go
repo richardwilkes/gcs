@@ -148,69 +148,68 @@ func (e *Equipment) containerCopies() fxp.Int {
 }
 
 // CommitSale sells the items from the carried equipment and adds the payouts to it, then records the sale under name
-// and when in the shopping record and returns the entry. Each item's quantity is limited to its TradeQuantity; selling
-// all of an item removes it, along with anything it contains, and selling less leaves each copy of the containers
-// holding it with its share of the rest (see takeCarried). A group is sold in full. Items that are not carried, such as
-// the contents of a container sold earlier in the list, are skipped. Each payout's Money is a denomination from
-// SellMoneyItems: when merge is true, its quantity is added to the first carried item it MergeMatches, if any (see
-// addToCarried), and otherwise a copy of it is carried, equipped.
+// and when in the shopping record and returns the entry. Each item's quantity is limited to its TradeQuantity, and a
+// group is sold in full. Selling all of an item removes it, along with anything it contains, and selling less leaves
+// the copies of the containers holding it with the rest, splitting the containers apart when the copies can't share it
+// without fractions (see tradeTakes). Items that are not carried are skipped, as are those held by another item in the
+// list, since selling a container sells what it holds. Each payout's Money is a denomination from SellMoneyItems: when
+// merge is true, its quantity is added to the first carried item it MergeMatches, if any, as matched before the items
+// are taken out (see MergeTarget), and otherwise a copy of it is carried, equipped (see addToCarried).
 func (e *Entity) CommitSale(items []SaleItem, payouts []Payout, merge bool, name string, when jio.Time) *ShoppingRecordEntry {
 	entry := &ShoppingRecordEntry{When: when, Name: name, Kind: ShoppingSold}
+	takes := e.newTradeTakes()
 	for _, item := range items {
-		eqp := item.Equipment
-		if eqp == nil || !e.carries(eqp) {
-			continue
-		}
-		most := eqp.TradeQuantity()
-		qty := min(item.Quantity, most)
-		if qty <= 0 {
-			continue
-		}
-		if eqp.IsGroup() {
-			qty = most
-		}
-		entry.Items = append(entry.Items, ShoppingRecordItem{
-			Name:     eqp.String(),
-			Quantity: qty,
-			Value:    eqp.ExtendedValueOfJustOne(),
-		})
-		e.takeCarried(eqp, qty, most)
+		takes.add(item.Equipment, item.Quantity)
 	}
-	entry.Exchanged = e.receiveMoney(entry, payouts, merge)
+	for _, take := range takes.list {
+		entry.Items = append(entry.Items, ShoppingRecordItem{
+			Name:     take.eqp.String(),
+			Quantity: take.quantity,
+			Value:    take.eqp.ExtendedValueOfJustOne(),
+		})
+	}
+	targets := e.mergeTargets(payouts, merge, takes.removed())
+	takes.apply()
+	entry.Exchanged = e.receiveMoney(entry, payouts, targets)
 	e.Recalculate()
 	e.AddShoppingRecord(entry)
 	return entry
 }
 
+// SaleSplits returns the carried containers that a CommitSale of the items would split apart, leaving each with fewer
+// copies and the rest to new copies of it (see tradeTakes). Nothing is changed.
+func (e *Entity) SaleSplits(items []SaleItem) []*Equipment {
+	takes := e.newTradeTakes()
+	for _, item := range items {
+		takes.add(item.Equipment, item.Quantity)
+	}
+	return takes.splits()
+}
+
 // CommitPurchase spends the payments from the carried equipment and carries the items and the change, then records the
 // purchase under name and when in the shopping record and returns the entry. Each payment's Money is a carried money
-// item, such as one from MoneyItems, found again by its ID, since the pointer may be stale; no more is spent than its
-// TradeQuantity, spending less leaves each copy of the containers holding it with its share of the rest, and a money
-// item with none left is removed (see takeCarried). Each item is bought at least once, and a group just once. Each
-// change payout's Money is a denomination from ChangeFor: one of the sheet's sell money, or a copy of money paid. When
-// merge is true, each item and change payout adds its quantity to the first carried item it MergeMatches, if any (see
-// addToCarried); otherwise a copy of it is carried, equipped.
+// item, such as one from MoneyItems, found again by its ID, since the pointer may be stale. No more is spent than its
+// TradeQuantity; spending less leaves the copies of the containers holding it with the rest, splitting the containers
+// apart when the copies can't share it without fractions (see tradeTakes), and a money item with none left is removed.
+// Each item is bought at least once, and a group just once. Each change payout's Money is a denomination from
+// ChangeFor: one of the sheet's sell money, or a copy of money paid. When merge is true, each item and change payout
+// adds its quantity to the first carried item it MergeMatches, if any (see MergeTarget); otherwise a copy of it is
+// carried, equipped (see addToCarried).
 func (e *Entity) CommitPurchase(items []PurchaseItem, payments, change []Payout, merge bool, name string, when jio.Time) *ShoppingRecordEntry {
 	entry := &ShoppingRecordEntry{When: when, Name: name, Kind: ShoppingBought}
-	var paid fxp.Int
+	takes := e.newTradeTakes()
 	for _, payment := range payments {
-		if payment.Money == nil || payment.Quantity <= 0 {
-			continue
+		if payment.Money != nil && payment.Quantity > 0 {
+			takes.add(e.carriedByID(payment.Money.TID), fxp.FromInteger(payment.Quantity))
 		}
-		money := e.carriedByID(payment.Money.TID)
-		if money == nil {
-			continue
-		}
-		most := money.TradeQuantity()
-		qty := min(fxp.FromInteger(payment.Quantity), most)
-		if qty <= 0 {
-			continue
-		}
-		value := money.AdjustedValue()
-		entry.Money = append(entry.Money, ShoppingRecordItem{Name: money.String(), Quantity: -qty, Value: value})
-		paid += value.Mul(qty)
-		e.takeCarried(money, qty, most)
 	}
+	var paid fxp.Int
+	for _, take := range takes.list {
+		value := take.eqp.AdjustedValue()
+		entry.Money = append(entry.Money, ShoppingRecordItem{Name: take.eqp.String(), Quantity: -take.quantity, Value: value})
+		paid += value.Mul(take.quantity)
+	}
+	takes.apply()
 	for _, item := range items {
 		eqp := item.Equipment
 		if eqp == nil {
@@ -225,9 +224,14 @@ func (e *Entity) CommitPurchase(items []PurchaseItem, payments, change []Payout,
 			Quantity: qty,
 			Value:    eqp.ExtendedValueOfJustOne(),
 		})
-		e.addToCarried(eqp, qty, merge)
+		var target *Equipment
+		if merge {
+			equip(eqp)
+			target = e.MergeTarget(eqp, nil)
+		}
+		e.addToCarried(eqp, qty, target)
 	}
-	entry.Exchanged = (paid - e.receiveMoney(entry, change, merge)).Abs()
+	entry.Exchanged = (paid - e.receiveMoney(entry, change, e.mergeTargets(change, merge, nil))).Abs()
 	e.Recalculate()
 	e.AddShoppingRecord(entry)
 	return entry
@@ -279,11 +283,11 @@ func (e *Entity) ChangeFor(over fxp.Int, sellMoney []*Equipment, payments []Payo
 	return change, paid
 }
 
-// receiveMoney adds the money to the carried equipment (see addToCarried), recording each in the entry, and returns its
-// total value.
-func (e *Entity) receiveMoney(entry *ShoppingRecordEntry, money []Payout, merge bool) fxp.Int {
+// receiveMoney adds the money to the carried equipment, each payout going to its entry in targets or, when that is nil,
+// being carried anew (see addToCarried), recording each in the entry, and returns its total value.
+func (e *Entity) receiveMoney(entry *ShoppingRecordEntry, money []Payout, targets []*Equipment) fxp.Int {
 	var total fxp.Int
-	for _, one := range money {
+	for i, one := range money {
 		if one.Money == nil || one.Quantity <= 0 {
 			continue
 		}
@@ -291,9 +295,24 @@ func (e *Entity) receiveMoney(entry *ShoppingRecordEntry, money []Payout, merge 
 		value := one.Money.AdjustedValue()
 		entry.Money = append(entry.Money, ShoppingRecordItem{Name: one.Money.String(), Quantity: qty, Value: value})
 		total += value.Mul(qty)
-		e.addToCarried(one.Money, qty, merge)
+		e.addToCarried(one.Money, qty, targets[i])
 	}
 	return total
+}
+
+// mergeTargets returns the MergeTarget of each payout's money, passing over the IDs in except, or nil for each when
+// merge is false. The money is marked equipped first, as it will be when carried, since MergeMatches compares that.
+func (e *Entity) mergeTargets(payouts []Payout, merge bool, except map[tid.TID]bool) []*Equipment {
+	targets := make([]*Equipment, len(payouts))
+	if merge {
+		for i, payout := range payouts {
+			if payout.Money != nil && payout.Quantity > 0 {
+				equip(payout.Money)
+				targets[i] = e.MergeTarget(payout.Money, except)
+			}
+		}
+	}
+	return targets
 }
 
 // MergeTarget returns the carried item that a sale or purchase merging the equipment adds its quantity to: the first,
@@ -312,19 +331,21 @@ func (e *Entity) MergeTarget(eqp *Equipment, except map[tid.TID]bool) *Equipment
 	return match
 }
 
-// addToCarried marks the equipment and anything it contains as equipped, as carried equipment normally is, then, when
-// merge is true, adds qty to its MergeTarget. Otherwise, or when there is none, it carries a copy of the equipment with
-// a quantity of qty.
-func (e *Entity) addToCarried(eqp *Equipment, qty fxp.Int, merge bool) {
+// equip marks the equipment and anything it contains as equipped, as carried equipment normally is.
+func equip(eqp *Equipment) {
 	Traverse(func(one *Equipment) bool {
 		one.Equipped = true
 		return false
 	}, false, false, eqp)
-	if merge {
-		if match := e.MergeTarget(eqp, nil); match != nil {
-			match.Quantity += qty
-			return
-		}
+}
+
+// addToCarried marks the equipment and anything it contains as equipped (see equip), then adds qty to the target, a
+// carried item it MergeMatches, or, when that is nil, carries a copy of the equipment with a quantity of qty.
+func (e *Entity) addToCarried(eqp *Equipment, qty fxp.Int, target *Equipment) {
+	equip(eqp)
+	if target != nil {
+		target.Quantity += qty
+		return
 	}
 	clone := eqp.Clone(LibraryFile{}, e, nil, Duplicate)
 	clone.Quantity = qty
@@ -355,26 +376,370 @@ func (e *Entity) carriedByID(id tid.TID) *Equipment {
 	return found
 }
 
-// takeCarried takes qty of the carried equipment's TradeQuantity, which is most, out of the carried equipment. Taking
-// all of it removes it, along with anything it contains. Otherwise each copy of the containers holding it keeps its
-// share of what is left, rounded up to fxp's precision so that no whole unit is lost to rounding, unless less than one
-// of fxp's smallest units per copy is left, which removes the equipment rather than leaving a fraction behind.
-func (e *Entity) takeCarried(eqp *Equipment, qty, most fxp.Int) {
-	if qty >= most {
-		e.removeCarried(eqp)
+// tradeTake is how much of a carried item's TradeQuantity a trade takes.
+type tradeTake struct {
+	eqp      *Equipment
+	most     fxp.Int
+	quantity fxp.Int
+}
+
+// tradeTakes collects what a trade takes out of the carried equipment, so that it can all be applied at once. Taking
+// all of an item removes it, along with anything it contains. Taking less leaves the copies of the containers holding
+// it with the rest, shared out as tradeShares describes, and where that leaves some copies of a container holding
+// different amounts than the others, the container is split apart: the first run of copies left alike keeps it, and
+// each further run gets a copy of it, inserted after it in the list holding it. Containers whose quantities aren't
+// whole numbers can't be split apart, so each copy of those keeps an even share of the rest, rounded up to fxp's
+// precision so that no whole unit is lost, unless less than one of fxp's smallest units per copy is left, which removes
+// the item instead.
+type tradeTakes struct {
+	entity *Entity
+	list   []*tradeTake
+	byEqp  map[*Equipment]*tradeTake
+}
+
+func (e *Entity) newTradeTakes() *tradeTakes {
+	return &tradeTakes{entity: e, byEqp: make(map[*Equipment]*tradeTake)}
+}
+
+// add records taking qty more of the carried equipment's TradeQuantity, though never more than is left of it, and all
+// of a group. Nothing is recorded for equipment that isn't carried or that is held by equipment already recorded, and
+// recording a container drops what was recorded for anything it holds, since taking a container takes what it holds.
+func (t *tradeTakes) add(eqp *Equipment, qty fxp.Int) {
+	if eqp == nil || qty <= 0 || !t.entity.carries(eqp) {
 		return
 	}
-	left := most - qty
-	copies := eqp.containerCopies()
-	each := left.Div(copies)
-	if each <= 0 {
+	take := t.byEqp[eqp]
+	if take == nil {
+		for parent := eqp.Parent(); parent != nil; parent = parent.Parent() {
+			if t.byEqp[parent] != nil {
+				return
+			}
+		}
+		most := eqp.TradeQuantity()
+		if most <= 0 {
+			return
+		}
+		if eqp.HasChildren() {
+			t.list = slices.DeleteFunc(t.list, func(other *tradeTake) bool {
+				if !heldBy(other.eqp, eqp) {
+					return false
+				}
+				delete(t.byEqp, other.eqp)
+				return true
+			})
+		}
+		take = &tradeTake{eqp: eqp, most: most}
+		t.list = append(t.list, take)
+		t.byEqp[eqp] = take
+	}
+	if eqp.IsGroup() {
+		qty = take.most
+	}
+	take.quantity = min(take.quantity+qty, take.most)
+}
+
+// heldBy returns true if the container holds the equipment, at any depth.
+func heldBy(eqp, container *Equipment) bool {
+	for parent := eqp.Parent(); parent != nil; parent = parent.Parent() {
+		if parent == container {
+			return true
+		}
+	}
+	return false
+}
+
+// removed returns the IDs of the carried equipment the takes remove: each item taken in full and anything it contains.
+func (t *tradeTakes) removed() map[tid.TID]bool {
+	ids := make(map[tid.TID]bool)
+	for _, take := range t.list {
+		if take.leaves() == nil {
+			Traverse(func(one *Equipment) bool {
+				ids[one.TID] = true
+				return false
+			}, false, false, take.eqp)
+		}
+	}
+	return ids
+}
+
+// apply makes the takes, changing the carried equipment as tradeTakes describes.
+func (t *tradeTakes) apply() {
+	tops, held := t.held()
+	for _, take := range t.list {
+		if shares := take.leaves(); len(shares) == 1 {
+			t.entity.leave(take.eqp, shares[0].quantity)
+		} else if shares == nil {
+			t.entity.removeCarried(take.eqp)
+		}
+	}
+	for _, top := range tops {
+		t.entity.splitHeld(top, held[top])
+	}
+}
+
+// splits returns the containers that apply would split apart, in no particular order. Nothing is changed.
+func (t *tradeTakes) splits() []*Equipment {
+	var list []*Equipment
+	tops, held := t.held()
+	for _, top := range tops {
+		wouldSplit(top, held[top], func(c *Equipment) { list = append(list, c) })
+	}
+	return list
+}
+
+// held returns the takes that leave the copies of the containers holding their items unalike (see tradeShares), by the
+// carried container at the top of each, in the order first seen.
+func (t *tradeTakes) held() (tops []*Equipment, held map[*Equipment][]heldTake) {
+	held = make(map[*Equipment][]heldTake)
+	for _, take := range t.list {
+		if shares := take.leaves(); len(shares) > 1 {
+			top := take.eqp
+			for top.Parent() != nil {
+				top = top.Parent()
+			}
+			if _, seen := held[top]; !seen {
+				tops = append(tops, top)
+			}
+			held[top] = append(held[top], heldTake{eqp: take.eqp, shares: shares})
+		}
+	}
+	return tops, held
+}
+
+// leaves returns what the take leaves the item at in each copy of the containers holding it, in order, or nil when it
+// takes all of it. A single share stands for every copy, including the one copy of an item held by no container, and
+// is all there can be when the copies can't be split apart (see tradeTakes); otherwise see tradeShares.
+func (take *tradeTake) leaves() []tradeShare {
+	if take.quantity >= take.most {
+		return nil
+	}
+	left := take.most - take.quantity
+	copies := take.eqp.containerCopies()
+	if !heldByWholeCopies(take.eqp) {
+		each := left.Div(copies)
+		if each <= 0 {
+			return nil
+		}
+		if each.Mul(copies) < left {
+			each++
+		}
+		return []tradeShare{{quantity: each, copies: 1}}
+	}
+	return tradeShares(take.eqp.Quantity, left, copies.AsInteger[int64]())
+}
+
+// heldByWholeCopies returns true if each container holding the equipment has a whole number of copies, one or more,
+// which is what lets them be split apart.
+func heldByWholeCopies(eqp *Equipment) bool {
+	for parent := eqp.Parent(); parent != nil; parent = parent.Parent() {
+		if parent.Quantity < fxp.One || parent.Quantity.Floor() != parent.Quantity {
+			return false
+		}
+	}
+	return true
+}
+
+// tradeShare is a run of the copies of the containers holding an item that a trade leaves holding the same quantity
+// of it.
+type tradeShare struct {
+	quantity fxp.Int
+	copies   int64
+}
+
+// tradeShares returns what each of the n copies of the containers holding an item is left with when they hold each of
+// it apiece and left of it between them. A whole amount is shared out as evenly as whole numbers allow, the copies that
+// get one more coming first, so that part of something countable is never left as a fraction. Otherwise, and when
+// evening out would give a copy more than it held, the copies are emptied one at a time: those left holding what they
+// held come first, then the one left holding the remainder, if any, then those left holding none.
+func tradeShares(each, left fxp.Int, n int64) []tradeShare {
+	if left.Floor() == left {
+		whole := left.AsInteger[int64]()
+		lo := whole / n
+		more := whole - lo*n
+		if more == 0 {
+			return []tradeShare{{quantity: fxp.FromInteger(lo), copies: n}}
+		}
+		if hi := fxp.FromInteger(lo + 1); hi <= each {
+			return []tradeShare{{quantity: hi, copies: more}, {quantity: fxp.FromInteger(lo), copies: n - more}}
+		}
+	}
+	full := min(left.Div(each).Floor(), fxp.FromInteger(n-1))
+	rest := n - full.AsInteger[int64]()
+	shares := make([]tradeShare, 0, 3)
+	if full > 0 {
+		shares = append(shares, tradeShare{quantity: each, copies: full.AsInteger[int64]()})
+	}
+	if remainder := left - each.Mul(full); remainder > 0 {
+		shares = append(shares, tradeShare{quantity: remainder, copies: 1})
+		rest--
+	}
+	if rest > 0 {
+		shares = append(shares, tradeShare{quantity: 0, copies: rest})
+	}
+	return shares
+}
+
+// heldTake is a take from an item held by the container being split apart, with what each copy of the container is
+// left holding of it (see tradeShares): one entry for each copy of the container times those of each container between
+// it and the item.
+type heldTake struct {
+	eqp    *Equipment
+	shares []tradeShare
+}
+
+// copyGroup is a run of copies of a container that the takes it holds leave alike.
+type copyGroup struct {
+	copies int64
+	takes  []heldTake // each take's shares for one copy of the run
+}
+
+// groupCopies splits the n copies of a container into runs that the takes it holds leave alike.
+func groupCopies(n int64, takes []heldTake) []copyGroup {
+	per := make([]int64, len(takes))
+	for i, take := range takes {
+		per[i] = countShares(take.shares) / n
+	}
+	var groups []copyGroup
+	for i := range n {
+		one := make([]heldTake, len(takes))
+		for j, take := range takes {
+			one[j] = heldTake{eqp: take.eqp, shares: sliceShares(take.shares, i*per[j], (i+1)*per[j])}
+		}
+		if last := len(groups) - 1; last >= 0 && sameTakes(groups[last].takes, one) {
+			groups[last].copies++
+		} else {
+			groups = append(groups, copyGroup{copies: 1, takes: one})
+		}
+	}
+	return groups
+}
+
+// countShares returns how many copies the shares cover.
+func countShares(shares []tradeShare) int64 {
+	var count int64
+	for _, share := range shares {
+		count += share.copies
+	}
+	return count
+}
+
+// sliceShares returns the part of the shares covering the copies from from up to, but not including, to.
+func sliceShares(shares []tradeShare, from, to int64) []tradeShare {
+	var part []tradeShare
+	var start int64
+	for _, share := range shares {
+		end := start + share.copies
+		if lo, hi := max(start, from), min(end, to); lo < hi {
+			part = append(part, tradeShare{quantity: share.quantity, copies: hi - lo})
+		}
+		if start = end; start >= to {
+			break
+		}
+	}
+	return part
+}
+
+func sameTakes(a, b []heldTake) bool {
+	if len(a) != len(b) {
+		return false
+	}
+	for i, one := range a {
+		if one.eqp != b[i].eqp || !slices.Equal(one.shares, b[i].shares) {
+			return false
+		}
+	}
+	return true
+}
+
+// splitHeld leaves each copy of the container holding its share of the takes, which it holds at some depth, splitting
+// the container apart where its copies are left unalike (see tradeTakes).
+func (e *Entity) splitHeld(c *Equipment, takes []heldTake) {
+	groups := groupCopies(c.Quantity.AsInteger[int64](), takes)
+	holders := make([]*Equipment, len(groups))
+	holders[0] = c
+	if len(groups) > 1 {
+		c.Quantity = fxp.FromInteger(groups[0].copies)
+		for i, group := range groups[1:] {
+			holder := c.Clone(LibraryFile{}, e, c.Parent(), Duplicate)
+			holder.Quantity = fxp.FromInteger(group.copies)
+			copies := make(map[*Equipment]*Equipment)
+			mapCopies(c, holder, copies)
+			for j := range group.takes {
+				group.takes[j].eqp = copies[group.takes[j].eqp]
+			}
+			holders[i+1] = holder
+		}
+		e.insertAfter(c, holders[1:])
+	}
+	for i, group := range groups {
+		own, containers, below := childTakes(holders[i], group.takes)
+		for _, take := range own {
+			e.leave(take.eqp, take.shares[0].quantity)
+		}
+		for _, child := range containers {
+			e.splitHeld(child, below[child])
+		}
+	}
+}
+
+// wouldSplit calls split with the container if splitHeld would split it apart, then goes on to the containers below it
+// in the copies that keep it, the only ones that exist to be edited.
+func wouldSplit(c *Equipment, takes []heldTake, split func(*Equipment)) {
+	groups := groupCopies(c.Quantity.AsInteger[int64](), takes)
+	if len(groups) > 1 {
+		split(c)
+	}
+	_, containers, below := childTakes(c, groups[0].takes)
+	for _, child := range containers {
+		wouldSplit(child, below[child], split)
+	}
+}
+
+// childTakes sorts the takes the container holds into those of its own children and those held by containers among its
+// children, the latter by container, in the order first seen.
+func childTakes(c *Equipment, takes []heldTake) (own []heldTake, containers []*Equipment, below map[*Equipment][]heldTake) {
+	below = make(map[*Equipment][]heldTake)
+	for _, take := range takes {
+		child := take.eqp
+		for child.Parent() != c {
+			child = child.Parent()
+		}
+		if child == take.eqp {
+			own = append(own, take)
+			continue
+		}
+		if _, seen := below[child]; !seen {
+			containers = append(containers, child)
+		}
+		below[child] = append(below[child], take)
+	}
+	return own, containers, below
+}
+
+// mapCopies maps the equipment and everything it holds to the same in its copy.
+func mapCopies(eqp, cp *Equipment, m map[*Equipment]*Equipment) {
+	m[eqp] = cp
+	for i, child := range eqp.Children {
+		mapCopies(child, cp.Children[i], m)
+	}
+}
+
+// insertAfter puts the equipment, whose parent must already be eqp's, into the list holding eqp, right after it.
+func (e *Entity) insertAfter(eqp *Equipment, list []*Equipment) {
+	if parent := eqp.Parent(); parent != nil {
+		parent.Children = slices.Insert(parent.Children, slices.Index(parent.Children, eqp)+1, list...)
+	} else {
+		e.CarriedEquipment = slices.Insert(e.CarriedEquipment, slices.Index(e.CarriedEquipment, eqp)+1, list...)
+	}
+}
+
+// leave sets the carried equipment's quantity, removing it instead when nothing is left.
+func (e *Entity) leave(eqp *Equipment, qty fxp.Int) {
+	if qty <= 0 {
 		e.removeCarried(eqp)
-		return
+	} else {
+		eqp.Quantity = qty
 	}
-	if each.Mul(copies) < left {
-		each++
-	}
-	eqp.Quantity = each
 }
 
 // removeCarried removes the carried equipment, along with anything it contains.

@@ -14,6 +14,7 @@ import (
 	"path/filepath"
 	"reflect"
 	"slices"
+	"strings"
 	"testing"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
@@ -783,10 +784,29 @@ func TestChangeForReturnsNoMoreThanWasPaid(t *testing.T) {
 	}
 }
 
-// TestPartialTradesInCopiedContainersLeaveNoDust checks that selling or spending part of an item held by a container
-// with several copies, in an amount the copies can't share evenly, leaves each copy the ceiling of its share, so no
-// whole unit is lost, and that trading the rest removes the item instead of leaving a fraction behind.
-func TestPartialTradesInCopiedContainersLeaveNoDust(t *testing.T) {
+// describeCarried describes the entity's carried equipment as the name and quantity of each item, in order, with what
+// each container holds in brackets after it.
+func describeCarried(e *Entity) []string {
+	var describe func(list []*Equipment) []string
+	describe = func(list []*Equipment) []string {
+		out := make([]string, 0, len(list))
+		for _, eqp := range list {
+			s := eqp.Name + " ×" + eqp.Quantity.String()
+			if len(eqp.Children) != 0 {
+				s += "[" + strings.Join(describe(eqp.Children), ", ") + "]"
+			}
+			out = append(out, s)
+		}
+		return out
+	}
+	return describe(e.CarriedEquipment)
+}
+
+// TestPartialTradesSplitCopiedContainers checks that selling or spending part of an item held by a container with
+// several copies, in an amount the copies can't share without fractions, splits the container apart: the copies left
+// alike keep it and the rest get a copy of it, inserted after it, so that no copy is left holding a fraction, and that
+// the copies trade on as separate items.
+func TestPartialTradesSplitCopiedContainers(t *testing.T) {
 	c := check.New(t)
 	e := NewEntity()
 	box := withQuantity(newContainerItem("Box", "0"), "3")
@@ -795,26 +815,228 @@ func TestPartialTradesInCopiedContainersLeaveNoDust(t *testing.T) {
 	carry(e, box, gem)
 	when := mustTime(t, "2026-10-13T09:40:00Z")
 
-	e.CommitSale([]SaleItem{{Equipment: gem, Quantity: fxp.One}}, nil, true, "", when)
-	c.Equal(fxp.FromStringForced("0.6667"), gem.Quantity, "each box keeps the ceiling of its share of the two left")
-	c.Equal(fxp.FromStringForced("2.0001"), gem.TradeQuantity())
+	entry := e.CommitSale([]SaleItem{{Equipment: gem, Quantity: fxp.One}}, nil, true, "", when)
+	c.Equal([]ShoppingRecordItem{{Name: "Gem", Quantity: fxp.One, Value: fxp.Hundred}}, entry.Items)
+	c.Equal([]string{"Box ×2[Gem ×1]", "Box ×1"}, describeCarried(e),
+		"the gem comes out of one box, which is split off empty after the two still holding one")
+	c.Equal(fxp.Two, box.Quantity, "the boxes still holding a gem keep the original")
+	c.True(gem.Parent() == box)
+	empty := e.CarriedEquipment[1]
+	c.NotEqual(box.TID, empty.TID, "the box split off is a new copy")
+	c.True(empty.DataOwner() == DataOwner(e))
+	c.Nil(empty.Parent())
+	c.Equal(fxp.Two, gem.TradeQuantity())
+	c.Equal(fxp.FromInteger(200), e.WealthCarried())
 	e.CommitSale([]SaleItem{{Equipment: gem, Quantity: fxp.Two}}, nil, true, "", when)
-	c.Equal(0, len(box.Children), "selling the two gems removes them rather than leaving a fraction in each box")
+	c.Equal([]string{"Box ×2", "Box ×1"}, describeCarried(e), "selling the two gems left removes them")
+	c.Equal(fxp.Int(0), e.WealthCarried())
 
 	silver := denomination("Silver Eagle", "20")
 	pouch := withQuantity(newContainerItem("Pouch", "0"), "3")
 	eagles := withQuantity(silver.Clone(LibraryFile{}, nil, nil, Duplicate), "5")
+	e.CarriedEquipment = nil
 	carry(e, nil, pouch)
 	carry(e, pouch, eagles)
-	e.CommitPurchase(nil, []Payout{{Money: eagles, Quantity: 2}}, nil, true, "", when)
-	c.Equal(fxp.FromStringForced("4.3334"), eagles.Quantity)
-	c.Equal(fxp.FromInteger(13), eagles.TradeQuantity().Floor(), "every whole eagle left can still be spent")
+	entry = e.CommitPurchase(nil, []Payout{{Money: eagles, Quantity: 2}}, nil, true, "", when)
+	c.Equal([]ShoppingRecordItem{{Name: "Silver Eagle", Quantity: -fxp.Two, Value: fxp.Twenty}}, entry.Money)
+	c.Equal([]string{"Pouch ×1[Silver Eagle ×5]", "Pouch ×2[Silver Eagle ×4]"}, describeCarried(e),
+		"the two eagles come out of two pouches, one each, which are split off after the one left untouched")
+	c.Equal(fxp.One, pouch.Quantity)
+	c.Equal(fxp.Five, eagles.Quantity)
+	c.Equal(fxp.FromInteger(260), e.WealthCarried())
 	payments, paid := PaymentFor(fxp.FromInteger(260), e.MoneyItems())
-	c.Equal([]Payout{{Money: eagles, Quantity: 13}}, payments)
-	c.Equal(fxp.FromInteger(260), paid)
+	c.Equal(fxp.FromInteger(260), paid, "every eagle left can still be spent")
 	e.CommitPurchase(nil, payments, nil, true, "", when)
-	c.Equal(0, len(pouch.Children), "spending the thirteen eagles removes them rather than leaving dust in each pouch")
+	c.Equal([]string{"Pouch ×1", "Pouch ×2"}, describeCarried(e), "spending the thirteen eagles removes them")
 	c.Equal(fxp.Int(0), e.WealthCarried())
+}
+
+// TestPartialTradesSplitNestedContainers checks that an item held by containers within containers is shared out over
+// every copy of them, as evenly as whole numbers allow, and that only the containers whose copies are left holding
+// different amounts are split apart, at whichever depth that happens, which SaleSplits predicts without changing
+// anything.
+func TestPartialTradesSplitNestedContainers(t *testing.T) {
+	c := check.New(t)
+	when := mustTime(t, "2026-10-13T09:40:00Z")
+	setup := func() (e *Entity, backpack, quiver, arrows *Equipment) {
+		e = NewEntity()
+		backpack = withQuantity(newContainerItem("Backpack", "10"), "2")
+		quiver = withQuantity(newContainerItem("Quiver", "2"), "3")
+		arrows = withQuantity(newEquipmentItem("Arrows", "1", "0"), "5")
+		carry(e, nil, backpack)
+		carry(e, backpack, quiver)
+		carry(e, quiver, arrows)
+		c.Equal(fxp.FromInteger(30), arrows.TradeQuantity())
+		c.Equal(fxp.FromInteger(62), e.WealthCarried())
+		return e, backpack, quiver, arrows
+	}
+
+	e, backpack, quiver, arrows := setup()
+	items := []SaleItem{{Equipment: arrows, Quantity: fxp.Seven}}
+	splits := e.SaleSplits(items)
+	c.Equal(1, len(splits))
+	if len(splits) == 1 {
+		c.True(splits[0] == backpack, "the backpack is split, as one holds quivers left with four arrows and three")
+	}
+	c.Equal([]string{"Backpack ×2[Quiver ×3[Arrows ×5]]"}, describeCarried(e), "predicting the splits changes nothing")
+	e.CommitSale(items, nil, true, "", when)
+	c.Equal([]string{
+		"Backpack ×1[Quiver ×3[Arrows ×4]]",
+		"Backpack ×1[Quiver ×2[Arrows ×4], Quiver ×1[Arrows ×3]]",
+	}, describeCarried(e), "five quivers are left with four arrows and one with three")
+	c.Equal(fxp.One, backpack.Quantity)
+	c.Equal(fxp.Three, quiver.Quantity, "the quivers in the backpack that keeps the original aren't split")
+	c.Equal(fxp.Four, arrows.Quantity)
+	c.Equal(fxp.FromInteger(12), arrows.TradeQuantity())
+	c.Equal(fxp.FromInteger(55), e.WealthCarried(), "the wealth falls by the seven arrows sold")
+
+	e, backpack, quiver, arrows = setup()
+	items = []SaleItem{{Equipment: arrows, Quantity: fxp.FromInteger(29)}}
+	splits = e.SaleSplits(items)
+	c.Equal(2, len(splits))
+	if len(splits) == 2 {
+		c.True(splits[0] == backpack && splits[1] == quiver,
+			"both the backpack and the quiver within the one that keeps the original are split")
+	}
+	e.CommitSale(items, nil, true, "", when)
+	c.Equal([]string{
+		"Backpack ×1[Quiver ×1[Arrows ×1], Quiver ×2]",
+		"Backpack ×1[Quiver ×3]",
+	}, describeCarried(e), "the one arrow left stays in the original quiver")
+	c.Equal(fxp.One, quiver.Quantity)
+	c.Equal(fxp.One, arrows.Quantity)
+	c.True(arrows.Parent() == quiver && quiver.Parent() == backpack)
+	c.Equal(fxp.FromInteger(33), e.WealthCarried())
+}
+
+// TestSaleOfSeveralItemsInACopiedContainerSplitsItOnce checks that selling parts of several items held by the same
+// container splits it apart just once, into the copies left alike in all of them, each item being shared out over the
+// copies as it was before the sale.
+func TestSaleOfSeveralItemsInACopiedContainerSplitsItOnce(t *testing.T) {
+	c := check.New(t)
+	e := NewEntity()
+	backpack := withQuantity(newContainerItem("Backpack", "10"), "3")
+	arrows := withQuantity(newEquipmentItem("Arrows", "1", "0"), "5")
+	torches := withQuantity(newEquipmentItem("Torch", "2", "1 lb"), "2")
+	carry(e, nil, backpack)
+	carry(e, backpack, arrows, torches)
+	when := mustTime(t, "2026-10-13T09:40:00Z")
+
+	entry := e.CommitSale([]SaleItem{
+		{Equipment: arrows, Quantity: fxp.Seven},
+		{Equipment: torches, Quantity: fxp.Three},
+	}, nil, true, "", when)
+	c.Equal([]ShoppingRecordItem{
+		{Name: "Arrows", Quantity: fxp.Seven, Value: fxp.One},
+		{Name: "Torch", Quantity: fxp.Three, Value: fxp.Two},
+	}, entry.Items)
+	c.Equal([]string{"Backpack ×2[Arrows ×3, Torch ×1]", "Backpack ×1[Arrows ×2, Torch ×1]"}, describeCarried(e),
+		"the torches share out evenly, so only the arrows split the backpacks")
+	c.Equal(fxp.FromInteger(30+8+6), e.WealthCarried())
+}
+
+// TestPartialTradesOfFractionsEmptyCopiesOneAtATime checks that when what is left of an item can't be shared out over
+// the copies of its containers in whole numbers, because what is sold or what each copy holds is a fraction, the copies
+// are emptied one at a time, so that the only copy left with an amount other than what it held is the one the remainder
+// is in, while an amount the copies can share evenly in whole numbers needs no split.
+func TestPartialTradesOfFractionsEmptyCopiesOneAtATime(t *testing.T) {
+	c := check.New(t)
+	e := NewEntity()
+	sack := withQuantity(newContainerItem("Sack", "0"), "3")
+	flour := withQuantity(newEquipmentItem("Flour", "1", "1 lb"), "0.5")
+	box := withQuantity(newContainerItem("Box", "0"), "3")
+	arrows := withQuantity(newEquipmentItem("Arrows", "1", "0"), "5")
+	bag := withQuantity(newContainerItem("Bag", "0"), "2")
+	grain := withQuantity(newEquipmentItem("Grain", "1", "1 lb"), "1.5")
+	carry(e, nil, sack, box, bag)
+	carry(e, sack, flour)
+	carry(e, box, arrows)
+	carry(e, bag, grain)
+	when := mustTime(t, "2026-10-13T09:40:00Z")
+
+	e.CommitSale([]SaleItem{
+		{Equipment: flour, Quantity: fxp.Half},
+		{Equipment: arrows, Quantity: fxp.FromStringForced("0.25")},
+		{Equipment: grain, Quantity: fxp.One},
+	}, nil, true, "", when)
+	c.Equal([]string{
+		"Sack ×2[Flour ×0.5]", "Sack ×1",
+		"Box ×2[Arrows ×5]", "Box ×1[Arrows ×4.75]",
+		"Bag ×2[Grain ×1]",
+	}, describeCarried(e))
+}
+
+// TestPartialTradesInContainersWithFractionalQuantitiesShareEvenly checks that an item held by a container whose
+// quantity isn't a whole number, which can't be split apart, has each copy keep an even share of what is left, rounded
+// up to fxp's precision so that no whole unit is lost, even when the copies of the containers holding it multiply out
+// to a whole number.
+func TestPartialTradesInContainersWithFractionalQuantitiesShareEvenly(t *testing.T) {
+	c := check.New(t)
+	e := NewEntity()
+	crate := withQuantity(newContainerItem("Crate", "0"), "1.5")
+	gems := withQuantity(newEquipmentItem("Gem", "100", "0"), "2")
+	carry(e, nil, crate)
+	carry(e, crate, gems)
+	c.Equal(fxp.Three, gems.TradeQuantity())
+	when := mustTime(t, "2026-10-13T09:40:00Z")
+
+	c.Equal(0, len(e.SaleSplits([]SaleItem{{Equipment: gems, Quantity: fxp.One}})))
+	e.CommitSale([]SaleItem{{Equipment: gems, Quantity: fxp.One}}, nil, true, "", when)
+	c.Equal([]string{"Crate ×1.5[Gem ×1.3334]"}, describeCarried(e))
+	c.True(gems.TradeQuantity() >= fxp.Two, "both gems left can still be sold")
+	e.CommitSale([]SaleItem{{Equipment: gems, Quantity: fxp.Two}}, nil, true, "", when)
+	c.Equal([]string{"Crate ×1.5"}, describeCarried(e), "selling the two gems removes them rather than leaving dust")
+
+	pouch := withQuantity(newContainerItem("Pouch", "0"), "2")
+	rubies := withQuantity(newEquipmentItem("Ruby", "100", "0"), "2")
+	carry(e, crate, pouch)
+	carry(e, pouch, rubies)
+	c.Equal(fxp.Six, rubies.TradeQuantity())
+	c.Equal(0, len(e.SaleSplits([]SaleItem{{Equipment: rubies, Quantity: fxp.One}})))
+	e.CommitSale([]SaleItem{{Equipment: rubies, Quantity: fxp.One}}, nil, true, "", when)
+	c.Equal([]string{"Crate ×1.5[Pouch ×2[Ruby ×1.6667]]"}, describeCarried(e),
+		"the pouches, held by a crate and a half, can't be split apart either")
+}
+
+// TestCommitSaleOfAContainerTakesPrecedenceOverItsContents checks that when a sale lists both a container and
+// something it holds, in either order, only the container is sold, since selling it sells what it holds.
+func TestCommitSaleOfAContainerTakesPrecedenceOverItsContents(t *testing.T) {
+	c := check.New(t)
+	when := mustTime(t, "2026-10-13T09:40:00Z")
+	for _, contentsFirst := range []bool{true, false} {
+		e := NewEntity()
+		backpack := withQuantity(newContainerItem("Backpack", "10"), "3")
+		rope := withQuantity(newEquipmentItem("Rope", "5", "1 lb"), "2")
+		carry(e, nil, backpack)
+		carry(e, backpack, rope)
+		items := []SaleItem{{Equipment: backpack, Quantity: fxp.One}, {Equipment: rope, Quantity: fxp.One}}
+		if contentsFirst {
+			slices.Reverse(items)
+		}
+		entry := e.CommitSale(items, nil, true, "", when)
+		c.Equal([]ShoppingRecordItem{{Name: "Backpack", Quantity: fxp.One, Value: fxp.Twenty}}, entry.Items)
+		c.Equal([]string{"Backpack ×2[Rope ×2]"}, describeCarried(e))
+	}
+}
+
+// TestCommitSalePayoutsMergeAsMatchedBeforeTheSale checks that a payout merges into the carried money it matched
+// before the sale's items were taken out, so that money held by a container with several copies, which a merge passes
+// over, isn't merged into when the sale splits the container and leaves the money in a single copy.
+func TestCommitSalePayoutsMergeAsMatchedBeforeTheSale(t *testing.T) {
+	c := check.New(t)
+	e := NewEntity()
+	silver := denomination("Silver Eagle", "20")
+	box := withQuantity(newContainerItem("Box", "0"), "3")
+	gem := newEquipmentItem("Gem", "100", "0")
+	eagles := withQuantity(silver.Clone(LibraryFile{}, nil, nil, Duplicate), "2")
+	carry(e, nil, box)
+	carry(e, box, gem, eagles)
+	when := mustTime(t, "2026-10-13T09:40:00Z")
+
+	e.CommitSale([]SaleItem{{Equipment: gem, Quantity: fxp.Two}}, []Payout{{Money: silver, Quantity: 10}}, true, "",
+		when)
+	c.Equal([]string{"Box ×1[Gem ×1, Silver Eagle ×2]", "Box ×2[Silver Eagle ×2]", "Silver Eagle ×10"},
+		describeCarried(e), "the eagles paid are carried anew rather than merged into those in the box left with the gem")
 }
 
 // TestChangeForNeverReturnsLessThanTheSellMoneyAlone checks that drawing on the money paid, which may have to settle

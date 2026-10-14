@@ -121,8 +121,8 @@ func showSellDialog(sheet *Sheet, list []*gurps.Equipment) {
 	// An editor doesn't follow changes to its item, so one left open on an item the sale changes would put its stale
 	// quantity back when applied. The editors open on everything the sale changes are closed first, as they are for a
 	// deletion, and the sale is abandoned if one can't be closed: an item sold in full is removed, along with what it
-	// holds, an item sold in part has its quantity reduced, and the carried money a payout merges into gains the
-	// payout.
+	// holds, an item sold in part has its quantity reduced, as does each container the sale splits apart to do that,
+	// and the carried money a payout merges into gains the payout.
 	removed := make(map[tid.TID]bool)
 	changed := make(map[tid.TID]bool)
 	for _, row := range d.rows {
@@ -137,6 +137,9 @@ func showSellDialog(sheet *Sheet, list []*gurps.Equipment) {
 				changed[row.eqp.TID] = true
 			}
 		}
+	}
+	for _, eqp := range entity.SaleSplits(items) {
+		changed[eqp.TID] = true
 	}
 	if d.merge {
 		for _, payout := range d.payouts {

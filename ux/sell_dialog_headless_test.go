@@ -427,6 +427,60 @@ func TestSellDialogClosesEditorsOfWhatTheSaleChanges(t *testing.T) {
 	c.Equal(1, editorsOpenFor(gems), "the editor of money the sale doesn't touch stays open")
 }
 
+// TestSellDialogClosesTheEditorOfAContainerTheSaleSplits checks that selling part of what a container with several
+// copies holds, in an amount that splits the container apart, closes the editor open on the container, whose quantity
+// the split reduces, while the editor of a container whose copies share the sale evenly stays open.
+func TestSellDialogClosesTheEditorOfAContainerTheSaleSplits(t *testing.T) {
+	c := check.New(t)
+	screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
+	money := newTradeTestMoney(t, c)
+	var box, gem, crate, torches *gurps.Equipment
+	sheet := openSellTestSheet(t, screen, []gurps.Source{money.source(money.eagle), money.source(money.penny)},
+		func(entity *gurps.Entity) []*gurps.Equipment {
+			box = gurps.NewEquipment(entity, nil, true)
+			box.Name = "Box"
+			box.Quantity = fxp.Three
+			gem = newTradeTestItem(entity, "Gem", "40", fxp.One)
+			gem.SetParent(box)
+			box.Children = []*gurps.Equipment{gem}
+			crate = gurps.NewEquipment(entity, nil, true)
+			crate.Name = "Crate"
+			crate.Quantity = fxp.Two
+			torches = newTradeTestItem(entity, "Torch", "2", fxp.Two)
+			torches.SetParent(crate)
+			crate.Children = []*gurps.Equipment{torches}
+			return []*gurps.Equipment{box, crate}
+		})
+	editorsOpenFor := func(items ...*gurps.Equipment) int {
+		var count int
+		screen.Do(func() {
+			count = len(AllMatchingDockables(func(d unison.Dockable) bool {
+				e, ok := d.(*editor[*gurps.Equipment, *gurps.EquipmentEditData])
+				return ok && slices.Contains(items, e.target)
+			}))
+		})
+		return count
+	}
+	screen.Do(func() {
+		for _, eqp := range []*gurps.Equipment{box, crate} {
+			EditEquipment(sheet, eqp, true)
+		}
+	})
+	c.Equal(2, editorsOpenFor(box, crate), "the editors must be open")
+
+	s := openSellTestDialog(t, screen, wnd, sheet, gem, torches)
+	s.replaceText(s.quantities[0], "1")
+	s.replaceText(s.quantities[1], "2")
+	s.dismiss(c, s.sell)
+	screen.Do(func() {
+		c.Equal([]string{"Box ×2", "Box ×1", "Crate ×2", "Silver Eagle ×1", "Copper Penny ×2"}, carriedSummary(sheet),
+			"the gem comes out of one box, which is split off, and a torch out of each crate")
+		c.Equal(fxp.One, torches.Quantity)
+	})
+	c.Equal(0, editorsOpenFor(box), "the editor of the box, whose quantity the split reduces, is closed")
+	c.Equal(1, editorsOpenFor(crate), "the editor of the crate, which the sale doesn't split, stays open")
+}
+
 // TestSellDialogGatesSaleOnValidFields checks that Sell is unavailable while the percent field or a quantity field holds
 // text that isn't a valid value, since the sale would otherwise go through at a value other than the one typed, and is
 // available again once the text is valid.
