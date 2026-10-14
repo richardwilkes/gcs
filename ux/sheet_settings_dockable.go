@@ -416,7 +416,8 @@ func (d *sheetSettingsDockable) createTrading(content *unison.Panel) {
 	})
 	d.sellMoneyPanel.SetBorder(listBorder)
 	d.sellMoneyPanel.SetLayoutData(&unison.FlexLayoutData{HAlign: align.Fill, HGrab: true})
-	d.sellMoneyPanel.Tooltip = newWrappedTooltip(i18n.Text("The money that selling equipment pays out in, using as few items as possible. Drag money items from an equipment library here to add them."))
+	d.sellMoneyPanel.Tooltip = newWrappedTooltip(i18n.Text("The money that selling equipment pays out in, using as few items as possible. Drag equipment tagged \"%s\", which is what buying spends, from an equipment library here to add it.",
+		gurps.MoneyTag))
 	d.installSellMoneyDropSupport()
 	d.rebuildSellMoney()
 	panel.AddChild(d.sellMoneyPanel)
@@ -434,18 +435,20 @@ func (d *sheetSettingsDockable) createPercentField(panel *unison.Panel, title, t
 				*current = v
 				d.syncSheet(false)
 			}
-		}, fxp.One, fxp.Thousand, false, false)
+		}, gurps.MinTradePercent, gurps.MaxTradePercent, false, false)
 	field.Tooltip = newWrappedTooltip(tooltip)
 	panel.AddChild(field)
 	return field
 }
 
-// installSellMoneyDropSupport has the sell money list take equipment dragged from a list, adding what it can.
+// installSellMoneyDropSupport has the sell money list take equipment dragged from a list, adding what it can, and
+// decline a drag that holds nothing it can add, so that the pointer says so.
 func (d *sheetSettingsDockable) installSellMoneyDropSupport() {
 	p := d.sellMoneyPanel
 	p.CanAcceptDropCallback = func(di drag.Info) bool { return di.HasDataType(equipmentDragKey.UTI) }
 	over := func(di drag.Info, _ geom.Point, _ mod.Modifiers) drag.Op {
-		if !di.HasDataType(equipmentDragKey.UTI) {
+		if !di.HasDataType(equipmentDragKey.UTI) || len(d.sellMoneyFrom(draggedTableData)) == 0 {
+			d.showSellMoneyDropTarget(false)
 			return drag.None
 		}
 		d.showSellMoneyDropTarget(true)
@@ -475,22 +478,35 @@ func (d *sheetSettingsDockable) showSellMoneyDropTarget(show bool) {
 	}
 }
 
-// addSellMoney adds the equipment rows of the drag data to the sell money, returning true if any were added.
-// Containers, items already listed and items that come from no library are left out.
-func (d *sheetSettingsDockable) addSellMoney(data any) bool {
+// sellMoneyFrom returns the equipment rows of the drag data that can be added to the sell money (see
+// gurps.SheetSettings.CanAddSellMoney), each as the copy that would be added.
+func (d *sheetSettingsDockable) sellMoneyFrom(data any) []*gurps.Equipment {
 	tableData, ok := data.(*unison.TableDragData[*Node[*gurps.Equipment]])
 	if !ok || tableData == nil {
-		return false
+		return nil
 	}
 	libFile := libraryFileFromTable(tableData.Table)
 	s := d.settings()
-	added := false
+	var list []*gurps.Equipment
 	for _, row := range tableData.Rows {
 		eqp := row.Data()
 		money := eqp.Clone(libFile, nil, nil, gurps.Reference)
 		// The item dragged is the one meant, even when it was itself copied into the library from another and so has
 		// a source of its own, which the clone keeps.
 		money.Source = gurps.Source{LibraryFile: libFile, TID: eqp.TID}
+		if s.CanAddSellMoney(money) {
+			list = append(list, money)
+		}
+	}
+	return list
+}
+
+// addSellMoney adds the equipment rows of the drag data that can be sell money (see sellMoneyFrom) to it, returning
+// true if any were added.
+func (d *sheetSettingsDockable) addSellMoney(data any) bool {
+	s := d.settings()
+	added := false
+	for _, money := range d.sellMoneyFrom(data) {
 		if s.AddSellMoney(money) {
 			added = true
 		}
@@ -512,7 +528,7 @@ func (d *sheetSettingsDockable) rebuildSellMoney() {
 		hint := unison.NewLabel()
 		hint.Font = fonts.FieldSecondary
 		hint.OnBackgroundInk = dimmedTextColor
-		hint.SetTitle(i18n.Text("Drag money items from an equipment library here."))
+		hint.SetTitle(i18n.Text("Drag equipment tagged \"%s\" from an equipment library here.", gurps.MoneyTag))
 		hint.SetLayoutData(&unison.FlexLayoutData{HSpan: 2})
 		p.AddChild(hint)
 	}

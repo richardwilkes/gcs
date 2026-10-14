@@ -133,12 +133,12 @@ func NewSheet(filePath string, entity *gurps.Entity) *Sheet {
 	s.finishPageDockable(s, s.content)
 
 	installListItemCmdHandlers(s, listItemCreators{
-		traits:           func() itemCreator { return s.Traits },
-		skills:           func() itemCreator { return s.Skills },
-		spells:           func() itemCreator { return s.Spells },
+		traits:           s.onPageCreator(gurps.BlockTraitsKey, func() itemCreator { return s.Traits }),
+		skills:           s.onPageCreator(gurps.BlockSkillsKey, func() itemCreator { return s.Skills }),
+		spells:           s.onPageCreator(gurps.BlockSpellsKey, func() itemCreator { return s.Spells }),
 		carriedEquipment: s.carriedEquipmentCreator,
-		otherEquipment:   func() itemCreator { return s.OtherEquipment },
-		notes:            func() itemCreator { return s.Notes },
+		otherEquipment:   s.onPageCreator(gurps.BlockOtherEquipmentKey, func() itemCreator { return s.OtherEquipment }),
+		notes:            s.onPageCreator(gurps.BlockNotesKey, func() itemCreator { return s.Notes }),
 	})
 	installTraitListCmdHandlers(s, s.entity, s.entity, func() *PageList[*gurps.Trait] { return s.Traits })
 	s.InstallCmdHandlers(SwapDefaultsItemID, s.canSwapDefaults, s.swapDefaults)
@@ -690,10 +690,27 @@ func (s *Sheet) stopBuying() {
 	}
 }
 
-// carriedEquipmentCreator returns the list the "New Carried Equipment" commands add to, or nil while the buy panel
-// stands in for it, which disables them.
+// showsBlock returns true if the layout shows the block with the key on the page.
+func (s *Sheet) showsBlock(key string) bool {
+	return s.entity.SheetSettings.Layout.Contains(key)
+}
+
+// onPageCreator returns a creator for the list that the block with the key shows, which returns nil while the layout
+// leaves the block off the page, disabling the "New ..." commands for it, since they would otherwise add to a list the
+// user can't see, and one with no undo manager to record the edit with.
+func (s *Sheet) onPageCreator(key string, list func() itemCreator) func() itemCreator {
+	return func() itemCreator {
+		if !s.showsBlock(key) {
+			return nil
+		}
+		return list()
+	}
+}
+
+// carriedEquipmentCreator returns the list the "New Carried Equipment" commands add to, or nil while the layout leaves
+// it off the page or the buy panel stands in for it, which disables them (see onPageCreator).
 func (s *Sheet) carriedEquipmentCreator() itemCreator {
-	if s.buying() {
+	if s.buying() || !s.showsBlock(gurps.BlockEquipmentKey) {
 		return nil
 	}
 	return s.CarriedEquipment

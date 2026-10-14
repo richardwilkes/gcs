@@ -10,6 +10,7 @@
 package ux
 
 import (
+	"maps"
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/fonts"
@@ -90,9 +91,9 @@ func showSellDialog(sheet *Sheet, list []*gurps.Equipment) {
 		sheet:   sheet,
 		money:   entity.SellMoneyItems(),
 		invalid: make(map[*DecimalField]bool),
-		// The settings only keep the percentage positive, while the field clamps what it is given to its range and
-		// reports the result through its setter, which updates labels that don't exist yet.
-		percent: min(max(entity.SheetSettings.SellPercent, fxp.One), fxp.Thousand),
+		// The field clamps what it is given to its range and reports the result through its setter, which updates
+		// labels that don't exist yet, so the percentage is kept within the range before the field sees it.
+		percent: min(max(entity.SheetSettings.SellPercent, gurps.MinTradePercent), gurps.MaxTradePercent),
 		merge:   true,
 	}
 	for _, eqp := range list {
@@ -117,9 +118,13 @@ func showSellDialog(sheet *Sheet, list []*gurps.Equipment) {
 		return
 	}
 	items := make([]gurps.SaleItem, 0, len(d.rows))
-	// An item sold in full is removed, along with what it holds, so any editors open on them are closed first, as they
-	// are for a deletion, and the sale is abandoned if one can't be closed.
+	// An editor doesn't follow changes to its item, so one left open on an item the sale changes would put its stale
+	// quantity back when applied. The editors open on everything the sale changes are closed first, as they are for a
+	// deletion, and the sale is abandoned if one can't be closed: an item sold in full is removed, along with what it
+	// holds, an item sold in part has its quantity reduced, and the carried money a payout merges into gains the
+	// payout.
 	removed := make(map[tid.TID]bool)
+	changed := make(map[tid.TID]bool)
 	for _, row := range d.rows {
 		if row.quantity > 0 {
 			items = append(items, gurps.SaleItem{Equipment: row.eqp, Quantity: row.quantity})
@@ -128,10 +133,20 @@ func showSellDialog(sheet *Sheet, list []*gurps.Equipment) {
 					removed[eqp.TID] = true
 					return false
 				}, false, false, row.eqp)
+			} else {
+				changed[row.eqp.TID] = true
 			}
 		}
 	}
-	if !CloseID(removed) {
+	if d.merge {
+		for _, payout := range d.payouts {
+			if target := entity.MergeTarget(payout.Money, removed); target != nil {
+				changed[target.TID] = true
+			}
+		}
+	}
+	maps.Copy(changed, removed)
+	if !CloseID(changed) {
 		return
 	}
 	name := strings.TrimSpace(d.name)
@@ -157,7 +172,7 @@ func (d *sellDialog) newContent() *unison.Panel {
 		func(v fxp.Int) {
 			d.percent = v
 			d.update()
-		}, fxp.One, fxp.Thousand, false, false)
+		}, gurps.MinTradePercent, gurps.MaxTradePercent, false, false)
 	percent.SetMarksModified(false)
 	d.gateOnValidity(percent)
 	content.AddChild(percent)

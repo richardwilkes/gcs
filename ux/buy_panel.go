@@ -32,8 +32,6 @@ import (
 const (
 	// maxBuyQuantity is the most of one item the buy panel buys at once.
 	maxBuyQuantity = 9999
-	// maxBuyPercent is the highest percentage of the full price the buy panel accepts.
-	maxBuyPercent = 1000
 	// buyRowColumns is the number of columns of a row of items to buy: quantity, name, price of each, total and remove.
 	buyRowColumns = 5
 )
@@ -69,11 +67,7 @@ type buyPanel struct {
 	manual map[tid.TID]int
 	auto   buyAutoPayment
 	change buyChange
-	// sellSources is the sheet's sell money as it stood when sellMoney was resolved from it.
-	sellSources  []gurps.Source
-	sellMoney    []*gurps.Equipment
-	sellResolved bool
-	plan         buyPlan
+	plan   buyPlan
 	// percentEdited and nameEdited are set once the user changes the percentage or the transaction name, which until
 	// then follow the sheet's buy percentage and the items being bought.
 	percentEdited bool
@@ -130,6 +124,9 @@ type buyPlan struct {
 	changePaid fxp.Int
 	payments   []gurps.Payout
 	change     []gurps.Payout
+	// sellMoney holds the denominations of the sheet's sell money found in the libraries (see
+	// gurps.Entity.SellMoneyItems), which the change is returned in.
+	sellMoney []*gurps.Equipment
 	// short is set when the money paid doesn't cover the total.
 	short bool
 }
@@ -158,13 +155,27 @@ type buyAutoPayment struct {
 }
 
 // buyChange remembers the last change worked out, for the same reason as buyAutoPayment. The money paid with can be
-// drawn on for change, so given is its state and how much of it was paid.
+// drawn on for change, so given is its state and how much of it was paid, and sellMoney is the state of the sell money
+// denominations it was worked out from.
 type buyChange struct {
-	given  []buyGivenMoney
-	change []gurps.Payout
-	target fxp.Int
-	paid   fxp.Int
-	valid  bool
+	given     []buyGivenMoney
+	sellMoney []buySellMoneyState
+	change    []gurps.Payout
+	target    fxp.Int
+	paid      fxp.Int
+	valid     bool
+}
+
+// buySellMoneyState is what the change depends on for one sell money denomination: the source it was found through,
+// since each lookup makes a fresh copy, and its value.
+type buySellMoneyState struct {
+	source gurps.Source
+	value  fxp.Int
+}
+
+// newBuySellMoneyState returns the state of the sell money denomination.
+func newBuySellMoneyState(money *gurps.Equipment) buySellMoneyState {
+	return buySellMoneyState{source: money.Source, value: money.AdjustedValue()}
 }
 
 // buyGivenMoney is what the change depends on for one carried money item paid with: a copy of it as it stood, since
@@ -349,7 +360,7 @@ func (p *buyPanel) createFooter() *unison.Panel {
 				p.percentEdited = true
 				p.refresh()
 			}
-		}, fxp.One, fxp.FromInteger(maxBuyPercent), false)
+		}, gurps.MinTradePercent, gurps.MaxTradePercent, false)
 	p.percentField.withoutUndo()
 	p.percentField.SetMarksModified(false)
 	p.percentField.Accessibility.Name = i18n.Text("Percent of full price")
@@ -860,16 +871,21 @@ func (item *buyItem) quantity() fxp.Int {
 }
 
 // Sync implements Syncer. The percentage and the transaction name follow the sheet's buy percentage and the items until
-// the user changes them, and the payment follows the money carried.
+// the user changes them, even while their fields have the focus, since the buttons that change the items don't take
+// it, and the payment follows the money carried.
 func (p *buyPanel) Sync() {
-	if !p.percentEdited {
+	if p.percentEdited {
+		p.percentField.Sync()
+	} else {
 		p.percent = p.sheetPercent()
+		p.percentField.syncFromValue()
 	}
-	if !p.nameEdited {
+	if p.nameEdited {
+		p.nameField.Sync()
+	} else {
 		p.name = p.defaultName()
+		p.nameField.syncFromValue()
 	}
-	p.percentField.Sync()
-	p.nameField.Sync()
 	p.refresh()
 }
 
@@ -918,7 +934,7 @@ func (p *buyPanel) syncSummary() {
 		}
 		if unreturned := plan.paid - plan.total - plan.changePaid; unreturned > 0 {
 			notice = unreturnedChangeNotice(p.formatValue(unreturned), len(p.sheet.Entity().SheetSettings.SellMoney),
-				len(p.sellMoneyItems()))
+				len(plan.sellMoney))
 		}
 	}
 	p.setSummary(summary, warn)
@@ -931,7 +947,9 @@ func (p *buyPanel) syncSummary() {
 	}
 }
 
-// planPayment works out the total price of the items and how it is paid for.
+// planPayment works out the total price of the items and how it is paid for. The sheet's sell money is looked up in
+// the libraries each time, since they may have changed; the lookup is cheap once the library files are loaded, as the
+// entity's source matcher reloads one only when it has changed on disk.
 func (p *buyPanel) planPayment() buyPlan {
 	var plan buyPlan
 	if len(p.items) == 0 {
@@ -940,15 +958,17 @@ func (p *buyPanel) planPayment() buyPlan {
 	for _, item := range p.items {
 		plan.total += gurps.TradePrice(item.eqp, item.quantity(), p.percent)
 	}
-	money := p.sheet.Entity().MoneyItems()
+	entity := p.sheet.Entity()
+	money := entity.MoneyItems()
 	if p.manual != nil {
 		plan.payments, plan.paid = manualPayouts(p.manual, money)
 	} else {
 		plan.payments, plan.paid = p.automaticPayment(plan.total, money)
 	}
 	plan.short = plan.paid < plan.total
+	plan.sellMoney = entity.SellMoneyItems()
 	if !plan.short && plan.paid > plan.total {
-		plan.change, plan.changePaid = p.changeFor(plan.paid-plan.total, plan.payments)
+		plan.change, plan.changePaid = p.changeFor(plan.paid-plan.total, plan.payments, plan.sellMoney)
 	}
 	return plan
 }
@@ -994,17 +1014,29 @@ func manualPayouts(chosen map[tid.TID]int, money []*gurps.Equipment) (payments [
 	return payments, paid
 }
 
-// changeFor returns the change for an overpayment of target, and what it comes to (see gurps.Entity.ChangeFor). It
-// is worked out again only when the amount or the money paid with has changed since the last time.
-func (p *buyPanel) changeFor(target fxp.Int, payments []gurps.Payout) (change []gurps.Payout, paid fxp.Int) {
-	money := p.sellMoneyItems()
-	if !p.change.valid || p.change.target != target || !slices.EqualFunc(p.change.given, payments, buyGivenMoney.matches) {
+// changeFor returns the change for an overpayment of target, returned in the sell money denominations (see
+// gurps.Entity.ChangeFor), and what it comes to. It is worked out again only when the amount, the money paid with or
+// the sell money has changed since the last time.
+func (p *buyPanel) changeFor(target fxp.Int, payments []gurps.Payout, sellMoney []*gurps.Equipment) (change []gurps.Payout, paid fxp.Int) {
+	denominations := make([]buySellMoneyState, 0, len(sellMoney))
+	for _, one := range sellMoney {
+		denominations = append(denominations, newBuySellMoneyState(one))
+	}
+	if !p.change.valid || p.change.target != target || !slices.Equal(p.change.sellMoney, denominations) ||
+		!slices.EqualFunc(p.change.given, payments, buyGivenMoney.matches) {
 		given := make([]buyGivenMoney, 0, len(payments))
 		for _, one := range payments {
 			given = append(given, newBuyGivenMoney(one))
 		}
-		found, foundPaid := p.sheet.Entity().ChangeFor(target, money, payments)
-		p.change = buyChange{given: given, change: found, target: target, paid: foundPaid, valid: true}
+		found, foundPaid := p.sheet.Entity().ChangeFor(target, sellMoney, payments)
+		p.change = buyChange{
+			given:     given,
+			sellMoney: denominations,
+			change:    found,
+			target:    target,
+			paid:      foundPaid,
+			valid:     true,
+		}
 	}
 	return p.change.change, p.change.paid
 }
@@ -1023,19 +1055,6 @@ func unreturnedChangeNotice(unreturned string, configured, found int) string {
 	default:
 		return i18n.Text("$%s of change can't be returned with the sheet's sell money or the money paid.", unreturned)
 	}
-}
-
-// sellMoneyItems returns the denominations of the sheet's sell money (see gurps.Entity.SellMoneyItems). They are looked
-// up in the libraries only when first needed and again whenever the sheet's sell money changes.
-func (p *buyPanel) sellMoneyItems() []*gurps.Equipment {
-	entity := p.sheet.Entity()
-	if !p.sellResolved || !slices.Equal(p.sellSources, entity.SheetSettings.SellMoney) {
-		p.sellMoney = entity.SellMoneyItems()
-		p.sellSources = slices.Clone(entity.SheetSettings.SellMoney)
-		p.sellResolved = true
-		p.change = buyChange{}
-	}
-	return p.sellMoney
 }
 
 // carriedMoney returns the value of the whole units of money carried, which is all a payment can use.
@@ -1077,7 +1096,7 @@ func (p *buyPanel) defaultName() string {
 }
 
 func (p *buyPanel) sheetPercent() fxp.Int {
-	return min(max(p.sheet.Entity().SheetSettings.BuyPercent, fxp.One), fxp.FromInteger(maxBuyPercent))
+	return min(max(p.sheet.Entity().SheetSettings.BuyPercent, gurps.MinTradePercent), gurps.MaxTradePercent)
 }
 
 func (p *buyPanel) formatValue(value fxp.Int) string {
@@ -1138,8 +1157,6 @@ func (p *buyPanel) finalizePurchase() {
 	for _, item := range p.items {
 		items = append(items, gurps.PurchaseItem{Equipment: item.eqp, Quantity: item.quantity()})
 	}
-	// The field's text is what the user sees, which differs from the name while the field has the focus and the items
-	// have changed.
 	name := strings.TrimSpace(p.nameField.Text())
 	if name == "" {
 		name = p.defaultName()

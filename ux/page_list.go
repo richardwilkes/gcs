@@ -406,10 +406,12 @@ func (p *PageList[T]) installMoveToCarriedEquipmentHandler(owner Rebuildable) {
 	if sheet, ok := owner.AsPanel().Self.(*Sheet); ok {
 		var t *unison.Table[*Node[*gurps.Equipment]]
 		if t, ok = any(p.Table).(*unison.Table[*Node[*gurps.Equipment]]); ok {
-			// While the buy panel stands in for the carried equipment list, the list's table has no undo manager, so a
-			// move would do nothing.
+			// While the layout leaves the carried equipment list off the page or the buy panel stands in for it, the
+			// list's table has no undo manager, so a move would do nothing.
 			p.InstallCmdHandlers(MoveToCarriedEquipmentItemID,
-				func(_ any) bool { return t.HasSelection() && !sheet.buying() },
+				func(_ any) bool {
+					return t.HasSelection() && !sheet.buying() && sheet.showsBlock(gurps.BlockEquipmentKey)
+				},
 				func(_ any) { moveSelectedEquipment(sheet, t, sheet.CarriedEquipment.Table) })
 		}
 	}
@@ -419,8 +421,10 @@ func (p *PageList[T]) installMoveToOtherEquipmentHandler(owner Rebuildable) {
 	if sheet, ok := owner.AsPanel().Self.(*Sheet); ok {
 		var t *unison.Table[*Node[*gurps.Equipment]]
 		if t, ok = any(p.Table).(*unison.Table[*Node[*gurps.Equipment]]); ok {
+			// While the layout leaves the other equipment list off the page, its table has no undo manager, so a move
+			// would do nothing.
 			p.InstallCmdHandlers(MoveToOtherEquipmentItemID,
-				func(_ any) bool { return t.HasSelection() },
+				func(_ any) bool { return t.HasSelection() && sheet.showsBlock(gurps.BlockOtherEquipmentKey) },
 				func(_ any) { moveSelectedEquipment(sheet, t, sheet.OtherEquipment.Table) })
 		}
 	}

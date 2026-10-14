@@ -78,8 +78,8 @@ func TestMoneyItems(t *testing.T) {
 func TestRemoveSellMoney(t *testing.T) {
 	c := check.New(t)
 	var s SheetSettings
-	silver := librarySourced(newEquipmentItem("Silver Eagle", "20", "0"))
-	copper := librarySourced(newEquipmentItem("Copper Penny", "1", "0"))
+	silver := librarySourced(denomination("Silver Eagle", "20"))
+	copper := librarySourced(denomination("Copper Penny", "1"))
 	c.True(s.AddSellMoney(silver))
 	c.True(s.AddSellMoney(copper))
 	c.True(s.RemoveSellMoney(silver.Source))
@@ -781,4 +781,56 @@ func TestChangeForReturnsNoMoreThanWasPaid(t *testing.T) {
 	if len(change) == 1 {
 		c.Equal(5, change[0].Quantity)
 	}
+}
+
+// TestPartialTradesInCopiedContainersLeaveNoDust checks that selling or spending part of an item held by a container
+// with several copies, in an amount the copies can't share evenly, leaves each copy the ceiling of its share, so no
+// whole unit is lost, and that trading the rest removes the item instead of leaving a fraction behind.
+func TestPartialTradesInCopiedContainersLeaveNoDust(t *testing.T) {
+	c := check.New(t)
+	e := NewEntity()
+	box := withQuantity(newContainerItem("Box", "0"), "3")
+	gem := newEquipmentItem("Gem", "100", "0")
+	carry(e, nil, box)
+	carry(e, box, gem)
+	when := mustTime(t, "2026-10-13T09:40:00Z")
+
+	e.CommitSale([]SaleItem{{Equipment: gem, Quantity: fxp.One}}, nil, true, "", when)
+	c.Equal(fxp.FromStringForced("0.6667"), gem.Quantity, "each box keeps the ceiling of its share of the two left")
+	c.Equal(fxp.FromStringForced("2.0001"), gem.TradeQuantity())
+	e.CommitSale([]SaleItem{{Equipment: gem, Quantity: fxp.Two}}, nil, true, "", when)
+	c.Equal(0, len(box.Children), "selling the two gems removes them rather than leaving a fraction in each box")
+
+	silver := denomination("Silver Eagle", "20")
+	pouch := withQuantity(newContainerItem("Pouch", "0"), "3")
+	eagles := withQuantity(silver.Clone(LibraryFile{}, nil, nil, Duplicate), "5")
+	carry(e, nil, pouch)
+	carry(e, pouch, eagles)
+	e.CommitPurchase(nil, []Payout{{Money: eagles, Quantity: 2}}, nil, true, "", when)
+	c.Equal(fxp.FromStringForced("4.3334"), eagles.Quantity)
+	c.Equal(fxp.FromInteger(13), eagles.TradeQuantity().Floor(), "every whole eagle left can still be spent")
+	payments, paid := PaymentFor(fxp.FromInteger(260), e.MoneyItems())
+	c.Equal([]Payout{{Money: eagles, Quantity: 13}}, payments)
+	c.Equal(fxp.FromInteger(260), paid)
+	e.CommitPurchase(nil, payments, nil, true, "", when)
+	c.Equal(0, len(pouch.Children), "spending the thirteen eagles removes them rather than leaving dust in each pouch")
+	c.Equal(fxp.Int(0), e.WealthCarried())
+}
+
+// TestChangeForNeverReturnsLessThanTheSellMoneyAlone checks that drawing on the money paid, which may have to settle
+// for an approximate search where the sell money alone could search exactly, never hands back less change than the sell
+// money alone would.
+func TestChangeForNeverReturnsLessThanTheSellMoneyAlone(t *testing.T) {
+	c := check.New(t)
+	e := NewEntity()
+	twenty := denomination("Twenty", "20")
+	fifteen := denomination("Fifteen", "15")
+	one := withQuantity(denomination("One", "1"), "1")
+	carry(e, nil, one)
+	over := fxp.FromInteger(4_000_011)
+	_, alone := PayoutFor(over, []*Equipment{twenty, fifteen})
+	c.Equal(fxp.FromInteger(4_000_010), alone)
+	change, paid := e.ChangeFor(over, []*Equipment{twenty, fifteen}, []Payout{{Money: one, Quantity: 1}})
+	c.Equal(alone, paid, "the sell money's own change is kept when the money paid can't better it")
+	c.Equal([]Payout{{Money: twenty, Quantity: 199_999}, {Money: fifteen, Quantity: 2}}, change)
 }

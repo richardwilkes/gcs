@@ -89,7 +89,8 @@ func equipmentRowsFor(t *testing.T, table *unison.Table[*Node[*gurps.Equipment]]
 }
 
 // dropOnSellMoney drags the rows of the equipment from the table over the dockable's sell money list and drops them,
-// returning what the drop reported.
+// checking that the list offers to take the drag exactly when the drop adds something, and returning what the drop
+// reported.
 func dropOnSellMoney(t *testing.T, c check.Checker, d *sheetSettingsDockable, table *unison.Table[*Node[*gurps.Equipment]], items ...*gurps.Equipment) bool {
 	t.Helper()
 	uxtest.SwapForTest(t, &draggedTableData, any(&unison.TableDragData[*Node[*gurps.Equipment]]{
@@ -99,10 +100,11 @@ func dropOnSellMoney(t *testing.T, c check.Checker, d *sheetSettingsDockable, ta
 	di := &fakeDragInfo{types: []string{equipmentDragKey.UTI}}
 	p := d.sellMoneyPanel
 	c.True(p.CanAcceptDropCallback(di), "the sell money list must accept equipment")
-	c.Equal(drag.Copy, p.DragEnteredCallback(di, geom.Point{}, 0), "entering offers to copy")
-	c.Equal(drag.Copy, p.DragUpdatedCallback(di, geom.Point{}, 0), "moving within offers to copy")
-	c.True(d.sellMoneyDropping, "the list is highlighted while equipment is dragged over it")
+	op := p.DragEnteredCallback(di, geom.Point{}, 0)
+	c.Equal(op, p.DragUpdatedCallback(di, geom.Point{}, 0), "moving within offers what entering did")
+	c.Equal(op == drag.Copy, d.sellMoneyDropping, "the list is highlighted only while a drag it can take is over it")
 	dropped := p.DropCallback(di, geom.Point{}, 0)
+	c.Equal(dropped, op == drag.Copy, "a copy is offered exactly when the drop adds something")
 	c.False(d.sellMoneyDropping, "the highlight goes once the drop is made")
 	return dropped
 }
@@ -166,21 +168,29 @@ func TestSheetSettingsTradingPercentFields(t *testing.T) {
 }
 
 // TestSheetSettingsSellMoneyDrop checks that dropping library equipment onto the sell money list adds a source for
-// each item that can be money, once, and tells the open sheets, while containers and equipment from outside the
-// libraries are refused; that each entry's button removes it; that an entry the library no longer has is still shown;
-// and that sync() shows the list of replaced settings.
+// each item that can be money, once, and tells the open sheets, while containers, equipment that isn't tagged as money
+// and equipment from outside the libraries are refused, with a drag of nothing but those declined outright; that each
+// entry's button removes it; that an entry the library no longer has is still shown; and that sync() shows the list of
+// replaced settings.
 func TestSheetSettingsSellMoneyDrop(t *testing.T) {
 	c := check.New(t)
 	money, library := newTradingSettingsTest(t, c)
 	owner := newEntityPanelWithFlaggedSettings()
 	d, recorder := newTestSheetSettingsDockable(t, owner)
 	s := owner.entity.SheetSettings
-	hint := []string{"Drag money items from an equipment library here."}
+	hint := []string{"Drag equipment tagged \"Money\" from an equipment library here."}
 	c.Equal(hint, uxtest.LabelTexts(d.sellMoneyPanel), "an empty list explains how to add to it")
 
 	other := &fakeDragInfo{types: []string{traitDragKey.UTI}}
 	c.False(d.sellMoneyPanel.CanAcceptDropCallback(other), "the list takes nothing but equipment")
 	c.Equal(drag.None, d.sellMoneyPanel.DragUpdatedCallback(other, geom.Point{}, 0), "nor offers to")
+
+	bead := newTradeTestItem(nil, "Trade Bead", "2", fxp.One)
+	beadPath := filepath.Join(filepath.Dir(money.path), "Beads"+gurps.EquipmentExt)
+	c.NoError(gurps.SaveEquipment([]*gurps.Equipment{bead}, beadPath))
+	beads := NewEquipmentTableDockable(beadPath, []*gurps.Equipment{bead})
+	c.False(dropOnSellMoney(t, c, d, beads.table, bead), "equipment that isn't tagged as money is refused")
+	c.Equal(0, len(s.SellMoney))
 
 	c.True(dropOnSellMoney(t, c, d, library.table, money.eagle), "a money item from a library is added")
 	c.Equal([]gurps.Source{money.source(money.eagle)}, s.SellMoney, "the item is kept by its library source")
@@ -192,7 +202,8 @@ func TestSheetSettingsSellMoneyDrop(t *testing.T) {
 	c.Equal(1, len(s.SellMoney), "neither changes the list")
 	c.Equal(1, len(recorder.updates), "nor is reported")
 
-	c.True(dropOnSellMoney(t, c, d, library.table, money.purse, money.penny), "of several rows, those that can be money are added")
+	c.True(dropOnSellMoney(t, c, d, library.table, money.purse, money.penny),
+		"of several rows, those that can be money are added")
 	c.Equal([]gurps.Source{money.source(money.eagle), money.source(money.penny)}, s.SellMoney,
 		"the money item is added after the one already there")
 	c.Equal([]string{"Silver Eagle", "Copper Penny"}, uxtest.LabelTexts(d.sellMoneyPanel))

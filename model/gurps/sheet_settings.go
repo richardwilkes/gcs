@@ -169,12 +169,27 @@ func (s *SheetSettings) EnsureValidity() {
 	if s.SellPercent <= 0 {
 		s.SellPercent = fxp.Fifty
 	}
+	s.BuyPercent = min(max(s.BuyPercent, MinTradePercent), MaxTradePercent)
+	s.SellPercent = min(max(s.SellPercent, MinTradePercent), MaxTradePercent)
 }
 
-// AddSellMoney adds the library equipment to the sell money list. Containers and items already listed are ignored.
-// Returns true if the item was added.
+// MinTradePercent and MaxTradePercent bound the percentage of its full price that equipment is bought or sold at.
+var (
+	MinTradePercent = fxp.One
+	MaxTradePercent = fxp.Thousand
+)
+
+// CanAddSellMoney returns true if the equipment can be added to the sell money list: library equipment that isn't a
+// container, isn't already listed and is tagged as money (see MoneyTag), since buying spends only money so tagged.
+func (s *SheetSettings) CanAddSellMoney(eqp *Equipment) bool {
+	return eqp != nil && !eqp.Container() && !eqp.Source.IsZero() && HasTag(MoneyTag, eqp.Tags) &&
+		!slices.Contains(s.SellMoney, eqp.Source)
+}
+
+// AddSellMoney adds the library equipment to the sell money list, if it can be (see CanAddSellMoney). Returns true if
+// the item was added.
 func (s *SheetSettings) AddSellMoney(eqp *Equipment) bool {
-	if eqp == nil || eqp.Container() || eqp.Source.IsZero() || slices.Contains(s.SellMoney, eqp.Source) {
+	if !s.CanAddSellMoney(eqp) {
 		return false
 	}
 	s.SellMoney = append(s.SellMoney, eqp.Source)

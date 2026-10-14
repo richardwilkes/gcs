@@ -171,7 +171,7 @@ type PageTableColumnHeader[T gurps.Node[T]] struct {
 	*unison.Label
 	less func(a, b string) bool
 	// textTooltip is the tooltip for the header's text. Tooltip is normally the same, but holds a trailing button's
-	// tooltip while the pointer is over that button (see buttonTooltip).
+	// tooltip for as long as it is lent (see buttonTooltip).
 	textTooltip *unison.Panel
 	buttons     []*unison.Button
 	// pressed is the trailing button that took the last mouse down, which the matching mouse up goes to.
@@ -322,8 +322,8 @@ func (h *PageTableColumnHeader[T]) addTrailingButtons(buttons ...*unison.Button)
 	h.SetBorder(unison.NewEmptyBorder(geom.Insets{Right: width}))
 	h.SetLayout(&trailingButtonsLayout[T]{header: h})
 	h.Accessibility.Role = role.Group
-	// A description falls back to whatever Tooltip holds, which is a button's tooltip for as long as it is lent (see
-	// buttonTooltip), so the column is described by its own tooltip outright.
+	// A description falls back to whatever Tooltip holds, which is a button's tooltip while it is lent (see
+	// buttonTooltip), so the header's own node is described by its own tooltip outright.
 	describe := h.Accessibility.Callback
 	h.Accessibility.Callback = func(node *accessibility.Node) {
 		node.Description = ""
@@ -375,11 +375,17 @@ func (h *PageTableColumnHeader[T]) buttonCursor(where geom.Point) *unison.Cursor
 }
 
 // buttonTooltip lends the column the tooltip of the trailing button under the point, or else the header's own. The
-// table header takes whatever Tooltip holds once this returns, and what it holds stays until the pointer moves within
-// the header again, so the column's description doesn't rely on it (see addTrailingButtons).
+// table header takes whatever Tooltip holds as soon as this returns, so a lent tooltip is given back in a task posted
+// behind it: the table header describes the column to assistive technologies by whatever Tooltip holds when the window
+// is next described, which would otherwise be the button's until the pointer moved within the header again.
 func (h *PageTableColumnHeader[T]) buttonTooltip(where geom.Point, suggestedAvoidInRoot geom.Rect) geom.Rect {
 	if b := h.buttonAt(where); b != nil {
 		h.Tooltip = b.Tooltip
+		unison.InvokeTask(func() {
+			if h.Tooltip == b.Tooltip {
+				h.Tooltip = h.textTooltip
+			}
+		})
 		return b.RectToRoot(b.ContentRect(true)).Align()
 	}
 	h.Tooltip = h.textTooltip

@@ -20,6 +20,7 @@ import (
 // Self.
 type undoableFieldSelf interface {
 	unison.Paneler
+	Syncer
 	gainedFocus()
 	lostFocus()
 	setWithoutUndo(state *unison.FieldState, focus bool)
@@ -183,4 +184,12 @@ func (f *undoableField[T]) Sync() {
 		}
 	}
 	f.self.setWithoutUndo(state, false)
+}
+
+// syncFromValue is Sync for a field whose text is a suggestion that follows its value until the user edits it: the text
+// is replaced even while the field has the focus, since nothing has been typed into it, and controls that don't take
+// the focus, such as buttons, may have changed the value while it is focused.
+func (f *undoableField[T]) syncFromValue() {
+	f.useGet = true
+	f.self.Sync()
 }

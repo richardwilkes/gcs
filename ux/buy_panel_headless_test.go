@@ -1265,3 +1265,69 @@ func TestBuyPanelDropHighlightUsesTheDropColor(t *testing.T) {
 		"the drop area must be tinted with the drop color %v, not %v", expected, center)
 	c.True(center.A > 0 && center.A < 255, "the tint must be translucent, not %d", center.A)
 }
+
+// TestBuyPanelNameFollowsTheItemsWhileFocused checks that the suggested transaction name follows the items until the
+// user edits it even while the name field has the keyboard focus, since the buttons that remove items don't take the
+// focus from it, and that the purchase is recorded under the name shown.
+func TestBuyPanelNameFollowsTheItemsWhileFocused(t *testing.T) {
+	c := check.New(t)
+	screen, _, sheet := buyTestSheet(t, c, func(entity *gurps.Entity) []*gurps.Equipment {
+		return buyTestCoins(entity, 70, 11)
+	})
+	sword := buyTestItem(nil, "Shortsword", "100", 1)
+	dagger := buyTestItem(nil, "Dagger", "15", 1)
+	library := buyTestLibrary(t, screen, "", sword, dagger)
+	screen.Do(sheet.startBuying)
+	if _, dropped := buyTestDrop(t, screen, sheet, library, sword, dagger); !dropped {
+		t.Fatal("the sword and dagger must be dropped into the buy panel")
+	}
+	c.Equal("Bought Shortsword, Dagger", readBuyPanel(t, screen, sheet).name)
+	screen.Do(func() {
+		sheet.buyPanel.nameField.RequestFocus()
+		sheet.buyPanel.items[1].remove.Click()
+	})
+	c.Equal("Bought Shortsword", readBuyPanel(t, screen, sheet).name,
+		"the name follows the items although the field has the focus")
+
+	screen.Do(func() { sheet.buyPanel.finalize.Click() })
+	var record []*gurps.ShoppingRecordEntry
+	screen.Do(func() { record = gurps.CloneShoppingRecordList(sheet.Entity().ShoppingRecord) })
+	c.Equal(1, len(record))
+	if len(record) == 1 {
+		c.Equal("Bought Shortsword", record[0].Name, "the purchase is recorded under the name shown")
+		c.Equal(1, len(record[0].Items))
+	}
+}
+
+// TestBuyPanelFollowsChangesToTheSellMoneyLibrary checks that the change follows the libraries while the panel is up: a
+// sell money source whose library file doesn't exist yet can't return change, and once the file is written the next
+// sync returns change from it, as the entity's own lookup does.
+func TestBuyPanelFollowsChangesToTheSellMoneyLibrary(t *testing.T) {
+	c := check.New(t)
+	screen, _, sheet := buyTestSheet(t, c, func(entity *gurps.Entity) []*gurps.Equipment {
+		return buyTestCoins(entity, 7, 0)[:1]
+	})
+	user := gurps.GlobalSettings().Libraries.User()
+	libFile := gurps.LibraryFile{Library: user.Key(), Path: "Late Money" + gurps.EquipmentExt}
+	path := filepath.Join(user.Path(false), filepath.FromSlash(libFile.Path))
+	penny := buyTestItem(nil, "Copper Penny", "1", 1, gurps.MoneyTag)
+	dagger := buyTestItem(nil, "Dagger", "15", 1)
+	library := buyTestLibrary(t, screen, "", dagger)
+	screen.Do(func() {
+		sheet.Entity().SheetSettings.SellMoney = []gurps.Source{{LibraryFile: libFile, TID: penny.TID}}
+		sheet.startBuying()
+	})
+	_, dropped := buyTestDrop(t, screen, sheet, library, dagger)
+	c.True(dropped)
+	state := readBuyPanel(t, screen, sheet)
+	c.Equal("$5 of change can't be returned from the money paid, and none of the sheet's sell money could be found in the libraries.",
+		state.notice, "the library file doesn't exist yet")
+
+	c.NoError(os.MkdirAll(filepath.Dir(path), 0o750))
+	c.NoError(gurps.SaveEquipment([]*gurps.Equipment{penny}, path))
+	screen.Do(func() { sheet.Rebuild(true) })
+	state = readBuyPanel(t, screen, sheet)
+	c.Equal("Pay automatically: Silver Eagle ×1 ($20); change: Copper Penny ×5 ($5)", state.summary,
+		"the change comes from the library file once it exists")
+	c.False(state.noticeShown)
+}

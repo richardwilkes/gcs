@@ -374,14 +374,16 @@ func TestSellDialogNamesWhatIsSold(t *testing.T) {
 	})
 }
 
-// TestSellDialogClosesEditorsOfWhatIsSold checks that selling an item in full, or a container along with what it holds,
-// first closes the editors open on them, as deleting them does, while the editor of an item only partly sold stays open.
-func TestSellDialogClosesEditorsOfWhatIsSold(t *testing.T) {
+// TestSellDialogClosesEditorsOfWhatTheSaleChanges checks that a sale first closes the editors open on everything it
+// changes, as deleting them does: the items sold in full, along with what a container sold holds, the items sold in
+// part and the carried money the payouts merge into, since an editor left open would put its stale quantity back when
+// applied. The editor of carried money the payouts don't touch stays open.
+func TestSellDialogClosesEditorsOfWhatTheSaleChanges(t *testing.T) {
 	c := check.New(t)
 	screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
 	money := newTradeTestMoney(t, c)
-	var sword, knives, backpack, rope *gurps.Equipment
-	sheet := openSellTestSheet(t, screen, []gurps.Source{money.source(money.penny)},
+	var sword, knives, backpack, rope, eagles, gems *gurps.Equipment
+	sheet := openSellTestSheet(t, screen, []gurps.Source{money.source(money.eagle), money.source(money.penny)},
 		func(entity *gurps.Entity) []*gurps.Equipment {
 			sword = newTradeTestItem(entity, "Shortsword", "400", fxp.One)
 			knives = newTradeTestItem(entity, "Small Knife", "30", fxp.Two)
@@ -390,7 +392,10 @@ func TestSellDialogClosesEditorsOfWhatIsSold(t *testing.T) {
 			rope = newTradeTestItem(entity, "Rope", "5", fxp.One)
 			rope.SetParent(backpack)
 			backpack.Children = []*gurps.Equipment{rope}
-			return []*gurps.Equipment{sword, knives, backpack}
+			eagles = money.eagle.Clone(money.libFile, entity, nil, gurps.Reference)
+			eagles.Quantity = fxp.FromInteger(7)
+			gems = newTradeTestItem(entity, "Gem", "100", fxp.Three, gurps.MoneyTag)
+			return []*gurps.Equipment{sword, knives, backpack, eagles, gems}
 		})
 	editorsOpenFor := func(items ...*gurps.Equipment) int {
 		var count int
@@ -403,21 +408,23 @@ func TestSellDialogClosesEditorsOfWhatIsSold(t *testing.T) {
 		return count
 	}
 	screen.Do(func() {
-		for _, eqp := range []*gurps.Equipment{sword, knives, rope} {
+		for _, eqp := range []*gurps.Equipment{sword, knives, rope, eagles, gems} {
 			EditEquipment(sheet, eqp, true)
 		}
 	})
-	c.Equal(3, editorsOpenFor(sword, knives, rope), "the editors must be open")
+	c.Equal(5, editorsOpenFor(sword, knives, rope, eagles, gems), "the editors must be open")
 
 	s := openSellTestDialog(t, screen, wnd, sheet, sword, knives, backpack)
 	s.replaceText(s.quantities[1], "1")
 	s.dismiss(c, s.sell)
 	screen.Do(func() {
-		c.Equal([]string{"Small Knife ×1", "Copper Penny ×217"}, carriedSummary(sheet),
-			"the sword and the backpack are sold in full and one of the knives")
+		c.Equal([]string{"Small Knife ×1", "Silver Eagle ×17", "Gem ×3", "Copper Penny ×17"}, carriedSummary(sheet),
+			"the sword and the backpack are sold in full and one of the knives, and the eagles paid merge into those carried")
 	})
 	c.Equal(0, editorsOpenFor(sword, rope), "the editors of the sword and of the rope in the backpack are closed")
-	c.Equal(1, editorsOpenFor(knives), "the editor of the knives, one of which is left, stays open")
+	c.Equal(0, editorsOpenFor(knives), "the editor of the knives, one of which is sold, is closed")
+	c.Equal(0, editorsOpenFor(eagles), "the editor of the eagles the payout merges into is closed")
+	c.Equal(1, editorsOpenFor(gems), "the editor of money the sale doesn't touch stays open")
 }
 
 // TestSellDialogGatesSaleOnValidFields checks that Sell is unavailable while the percent field or a quantity field holds
@@ -446,5 +453,35 @@ func TestSellDialogGatesSaleOnValidFields(t *testing.T) {
 	c.False(s.sellEnabled(), "an empty quantity field holds no valid value, even while another item is to be sold")
 	s.replaceText(s.quantities[1], "2")
 	c.True(s.sellEnabled())
+	s.dismiss(c, s.cancel)
+}
+
+// TestSellDialogRefusesPastedQuantitiesAboveTheMaximum checks that a quantity field refuses text pasted with the
+// keyboard shortcut that would put it above the quantity carried, as it does text typed or pasted by command: the
+// dialog is modal and so has no menu bar to route the shortcut through, and the field pastes on it itself.
+func TestSellDialogRefusesPastedQuantitiesAboveTheMaximum(t *testing.T) {
+	c := check.New(t)
+	screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
+	money := newTradeTestMoney(t, c)
+	var knives *gurps.Equipment
+	sheet := openSellTestSheet(t, screen, []gurps.Source{money.source(money.penny)},
+		func(entity *gurps.Entity) []*gurps.Equipment {
+			knives = newTradeTestItem(entity, "Small Knife", "30", fxp.FromInteger(11))
+			return []*gurps.Equipment{knives}
+		})
+	s := openSellTestDialog(t, screen, wnd, sheet, knives)
+	screen.Do(func() { unison.ClipboardSetText("500") })
+	quantity := s.quantities[0]
+	screen.Click(screen.PanelCenter(quantity))
+	screen.KeyPress(unison.KeyA, mod.OSMenuCommand())
+	screen.KeyPress(unison.KeyV, mod.OSMenuCommand())
+	var text string
+	screen.Do(func() { text = quantity.Text() })
+	c.Equal("11", text, "a pasted quantity above the number carried is refused")
+	screen.Do(func() { unison.ClipboardSetText("5") })
+	screen.KeyPress(unison.KeyA, mod.OSMenuCommand())
+	screen.KeyPress(unison.KeyV, mod.OSMenuCommand())
+	screen.Do(func() { text = quantity.Text() })
+	c.Equal("5", text, "a pasted quantity within the number carried is taken")
 	s.dismiss(c, s.cancel)
 }

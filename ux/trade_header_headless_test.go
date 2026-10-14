@@ -407,7 +407,9 @@ func TestBuyModeGatesListCommands(t *testing.T) {
 
 // TestCarriedEquipmentHeaderKeepsItsOwnDescription checks that a trailing button's tooltip, lent to the column header
 // while the pointer is over the button (see PageTableColumnHeader.buttonTooltip), doesn't become the column's
-// description for assistive technologies, which stays the header's own tooltip although nothing has redrawn the header.
+// description for assistive technologies, neither of the column header node the table header describes the column
+// with nor of the header's own node within it, which both keep the header's own tooltip although nothing has redrawn
+// the header.
 func TestCarriedEquipmentHeaderKeepsItsOwnDescription(t *testing.T) {
 	c := check.New(t)
 	screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
@@ -448,16 +450,22 @@ func TestCarriedEquipmentHeaderKeepsItsOwnDescription(t *testing.T) {
 	if tree == nil {
 		t.Fatal("the window must be described")
 	}
-	var column *accessibility.Node
+	var group, column *accessibility.Node
 	tree.Walk(func(n *accessibility.Node) bool {
 		if n.Role == role.Button && n.Name == buyTooltip {
-			column = tree.Node(n.Parent)
+			group = tree.Node(n.Parent)
 			return false
 		}
 		return true
 	})
-	if column == nil {
+	if group == nil {
 		t.Fatal("the column header holding the buy button must be described")
 	}
+	for column = tree.Node(group.Parent); column != nil && column.Role != role.ColumnHeader; column = tree.Node(column.Parent) {
+	}
+	if column == nil {
+		t.Fatal("the column header must be described as a column header")
+	}
+	c.Equal(tooltip, group.Description, "the header must be described by its own tooltip, not the button's")
 	c.Equal(tooltip, column.Description, "the column must be described by its own tooltip, not the button's")
 }

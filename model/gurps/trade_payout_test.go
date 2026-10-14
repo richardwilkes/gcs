@@ -104,16 +104,22 @@ func TestPayoutForIgnoresNilAndWorthlessItems(t *testing.T) {
 	c.Equal(fxp.FromInteger(40), paid)
 }
 
-func TestAddSellMoneyRejectsContainersUnsourcedAndDuplicates(t *testing.T) {
+// TestAddSellMoneyRejectsWhatCanNotBeMoney checks that only library equipment tagged as money (see MoneyTag) that isn't
+// a container and isn't already listed can be sell money, since buying spends only money so tagged, and sell money that
+// buying can't spend would be dead weight.
+func TestAddSellMoneyRejectsWhatCanNotBeMoney(t *testing.T) {
 	c := check.New(t)
 	var s SheetSettings
-	silver := librarySourced(newEquipmentItem("Silver Eagle", "20", "0"))
-	unsourced := newEquipmentItem("Homebrew Coin", "5", "0")
+	silver := librarySourced(denomination("Silver Eagle", "20"))
+	unsourced := denomination("Homebrew Coin", "5")
+	untagged := librarySourced(newEquipmentItem("Gold Crown", "100", "0"))
 	container := NewEquipment(nil, nil, true)
 	container.Source = silver.Source
+	container.Tags = []string{MoneyTag}
 	c.True(s.AddSellMoney(silver))
 	c.False(s.AddSellMoney(silver))
 	c.False(s.AddSellMoney(unsourced))
+	c.False(s.AddSellMoney(untagged), "an item that isn't tagged as money can't be spent and so isn't sell money")
 	c.False(s.AddSellMoney(container))
 	c.False(s.AddSellMoney(nil))
 	c.Equal([]Source{silver.Source}, s.SellMoney)
@@ -386,4 +392,62 @@ func TestPaymentForMatchesExhaustiveSearch(t *testing.T) {
 		c.Equal(paid, total)
 		c.Equal(bestCount, count, "values %v, limits %v, target %d", values, limits, target)
 	}
+}
+
+// TestPayoutsHandleHugeAmounts checks that amounts and values large enough to saturate a fixed-point multiplication are
+// still turned into units exactly, so huge targets are reached and huge coins are counted.
+func TestPayoutsHandleHugeAmounts(t *testing.T) {
+	c := check.New(t)
+	bond := moneyItem("Bond", "1000000000", "1000")
+	payments, paid := PaymentFor(fxp.FromInteger(200_000_000_000), []*Equipment{bond})
+	c.Equal([]Payout{{Money: bond, Quantity: 200}}, payments)
+	c.Equal(fxp.FromInteger(200_000_000_000), paid)
+
+	payouts, paid := PayoutFor(fxp.FromInteger(500_000_000_000), []*Equipment{bond})
+	c.Equal([]Payout{{Money: bond, Quantity: 500}}, payouts)
+	c.Equal(fxp.FromInteger(500_000_000_000), paid)
+
+	penny := moneyItem("Copper Penny", "1", "1")
+	payments, paid = PaymentFor(fxp.FromInteger(300_000_000_000), []*Equipment{bond, penny})
+	c.Equal([]Payout{{Money: bond, Quantity: 300}}, payments)
+	c.Equal(fxp.FromInteger(300_000_000_000), paid)
+	payments, paid = PaymentFor(fxp.FromInteger(2_000_000_000_000), []*Equipment{bond})
+	c.Nil(payments, "the bonds can't reach two trillion")
+	c.Equal(fxp.Int(0), paid)
+
+	e := NewEntity()
+	change, paid := e.ChangeFor(fxp.FromInteger(400_000_000_000), nil, []Payout{{Money: bond, Quantity: 500}})
+	c.Equal(1, len(change))
+	if len(change) == 1 {
+		c.Equal(400, change[0].Quantity)
+	}
+	c.Equal(fxp.FromInteger(400_000_000_000), paid)
+}
+
+// TestPaymentForSetsApartCoinsThatPayTheTargetAlone checks that a money item worth the target or more, which can only
+// ever be the whole payment, doesn't force the approximate search on the rest, and that it is still paid when it is the
+// smallest payment or ties the smallest with fewer items.
+func TestPaymentForSetsApartCoinsThatPayTheTargetAlone(t *testing.T) {
+	c := check.New(t)
+	gem := moneyItem("Gem", "1000000", "1")
+	twentyFive := moneyItem("Twenty-Five", "25", "1")
+	tens := moneyItem("Ten", "10", "3")
+	cent := moneyItem("Cent", "0.01", "1")
+	payments, paid := PaymentFor(fxp.FromInteger(30), []*Equipment{gem, twentyFive, tens, cent})
+	c.Equal([]Payout{{Money: tens, Quantity: 3}}, payments, "the gem doesn't keep the rest from being searched exactly")
+	c.Equal(fxp.FromInteger(30), paid)
+
+	thirtyOne := moneyItem("Thirty-One", "31", "1")
+	payments, paid = PaymentFor(fxp.FromInteger(30), []*Equipment{thirtyOne, twentyFive, twentyFive})
+	c.Equal([]Payout{{Money: thirtyOne, Quantity: 1}}, payments, "a coin that overpays by less than the rest is paid")
+	c.Equal(fxp.FromInteger(31), paid)
+
+	thirty := moneyItem("Thirty", "30", "1")
+	payments, paid = PaymentFor(fxp.FromInteger(30), []*Equipment{tens, thirty})
+	c.Equal([]Payout{{Money: thirty, Quantity: 1}}, payments, "one coin beats three that pay the same")
+	c.Equal(fxp.FromInteger(30), paid)
+
+	payments, paid = PaymentFor(fxp.FromInteger(30), []*Equipment{gem, cent})
+	c.Equal([]Payout{{Money: gem, Quantity: 1}}, payments, "the gem pays when the rest can't reach the target")
+	c.Equal(fxp.FromInteger(1_000_000), paid)
 }

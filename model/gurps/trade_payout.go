@@ -15,9 +15,6 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 )
 
-// payoutScale converts a fixed-point amount into whole units of its smallest decimal place. fxp keeps four places.
-const payoutScale = 10000
-
 // maxPayoutCells limits the size of the table PayoutFor and PaymentFor build. Beyond it, they fall back to largest
 // value first.
 const maxPayoutCells = 2_000_000
@@ -49,7 +46,7 @@ func PayoutFor(target fxp.Int, money []*Equipment) (payouts []Payout, paid fxp.I
 		return nil, zero
 	}
 	g := toUnits(coins)
-	limit := target.Mul(fxp.FromInteger(payoutScale)).AsInteger[int64]() / g
+	limit := units(target) / g
 	if limit > maxPayoutCells {
 		return largestFirstPayout(target, coins)
 	}
@@ -97,7 +94,7 @@ func PaymentFor(target fxp.Int, money []*Equipment) (payments []Payout, paid fxp
 		return nil, 0
 	}
 	g := toUnits(coins)
-	goal := ceilDiv(target.Mul(fxp.FromInteger(payoutScale)).AsInteger[int64](), g)
+	goal := ceilDiv(units(target), g)
 	var available int64
 	for i := range coins {
 		coins[i].units /= g
@@ -108,13 +105,39 @@ func PaymentFor(target fxp.Int, money []*Equipment) (payments []Payout, paid fxp
 	if available < goal {
 		return nil, 0
 	}
-	// The smallest total that reaches the goal exceeds it by less than the largest item, or any one item could be left
-	// out. The table holds a count of each item for every total, so its size is that range times the items.
-	size := goal + coins[0].units
-	if size > maxPayoutCells/int64(len(coins)) {
-		return payoutsFrom(coins, largestFirstPayment(coins, goal))
+	// An item worth the goal or more pays it by itself, and paying anything along with it only pays more, so the least
+	// of them is the only one that can be part of the smallest payment. They are set apart so that the table searching
+	// the rest is bounded by the largest of the rest rather than by them.
+	quantities := make([]int64, len(coins))
+	first := 0
+	for first < len(coins) && coins[first].units >= goal {
+		first++
 	}
-	return payoutsFrom(coins, exactPayment(coins, goal, size))
+	rest := coins[first:]
+	var restAvailable int64
+	for _, c := range rest {
+		restAvailable += c.limit * c.units
+	}
+	if restAvailable >= goal {
+		// The smallest total that reaches the goal exceeds it by less than the largest item, or any one item could be
+		// left out. The table holds a count of each item for every total, so its size is that range times the items.
+		var found []int64
+		if size := goal + rest[0].units; size > maxPayoutCells/int64(len(rest)) {
+			found = largestFirstPayment(rest, goal)
+		} else {
+			found = exactPayment(rest, goal, size)
+		}
+		var total int64
+		for i, q := range found {
+			total += q * rest[i].units
+		}
+		if first == 0 || total < coins[first-1].units {
+			copy(quantities[first:], found)
+			return payoutsFrom(coins, quantities)
+		}
+	}
+	quantities[first-1] = 1
+	return payoutsFrom(coins, quantities)
 }
 
 // payoutWithin is PayoutFor for coins each of which may be used no more often than its limit. The coins must be
@@ -124,7 +147,7 @@ func payoutWithin(target fxp.Int, coins []payoutCoin) (payouts []Payout, paid fx
 		return nil, 0
 	}
 	g := toUnits(coins)
-	goal := target.Mul(fxp.FromInteger(payoutScale)).AsInteger[int64]() / g
+	goal := units(target) / g
 	for i := range coins {
 		coins[i].units /= g
 		coins[i].limit = min(coins[i].limit, goal/coins[i].units)
@@ -161,13 +184,18 @@ func payoutCoins(money []*Equipment) []payoutCoin {
 	return coins
 }
 
+// units returns the amount in whole units of fxp's smallest decimal place, which is how an fxp.Int is stored, so no
+// multiplication that could saturate is needed.
+func units(amount fxp.Int) int64 {
+	return int64(amount)
+}
+
 // toUnits sets the units of each coin to its value in whole units of fxp's smallest decimal place and returns their
 // greatest common divisor, of which every amount the coins can make is a multiple.
 func toUnits(coins []payoutCoin) int64 {
-	scale := fxp.FromInteger(payoutScale)
 	var g int64
 	for i := range coins {
-		coins[i].units = coins[i].value.Mul(scale).AsInteger[int64]()
+		coins[i].units = units(coins[i].value)
 		g = gcd(g, coins[i].units)
 	}
 	return g

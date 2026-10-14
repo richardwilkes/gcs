@@ -309,6 +309,7 @@ func (e *Entity) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 	if e.Version < noNeedForRewrapVersion {
 		e.SheetSettings.BodyType.Rewrap()
 	}
+	e.PointsRecord = slices.DeleteFunc(e.PointsRecord, func(rec *PointsRecord) bool { return rec == nil })
 	var total fxp.Int
 	for _, rec := range e.PointsRecord {
 		total += rec.Points

@@ -17,6 +17,7 @@ import (
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/toolbox/v2/xmath"
 	"github.com/richardwilkes/unison"
+	"github.com/richardwilkes/unison/enums/mod"
 )
 
 // NumericField holds a numeric value that can be edited.
@@ -236,7 +237,9 @@ func (f *NumericField[T]) runeTyped(ch rune) bool {
 }
 
 // refuseAboveMax has the field refuse, with a beep, typed or pasted text that would put its value above the maximum,
-// rather than show it as invalid, for a maximum that is a hard limit, such as the quantity of an item carried.
+// rather than show it as invalid, for a maximum that is a hard limit, such as the quantity of an item carried. Pasting
+// is refused both by the Paste command and by its keyboard shortcut, which unison.Field.DefaultKeyDown handles itself
+// for a field with no menu bar to route it through, such as one in a modal dialog.
 func (f *NumericField[T]) refuseAboveMax() {
 	f.limitToMax = true
 	f.InstallCmdHandlers(unison.PasteItemID, func(_ any) bool { return f.CanPaste() }, func(_ any) {
@@ -246,6 +249,15 @@ func (f *NumericField[T]) refuseAboveMax() {
 		}
 		f.Paste()
 	})
+	keyDown := f.KeyDownCallback
+	f.KeyDownCallback = func(keyCode unison.KeyCode, mods mod.Modifiers, repeat bool) bool {
+		if keyCode == unison.KeyV && mods&mod.NonSticky == mod.OSMenuCommand() && f.CanPaste() &&
+			f.wouldExceedMax(unison.ClipboardGetText()) {
+			unison.Beep()
+			return true
+		}
+		return keyDown(keyCode, mods, repeat)
+	}
 }
 
 // wouldExceedMax returns true if the field refuses values above its maximum and inserting the text in place of the
