@@ -159,7 +159,7 @@ func (p *SpellPrereq) Satisfied(entity *Entity, exclude any, tooltip *xbytes.Ins
 			}
 		case spellcmp.CollegeCount:
 			for _, one := range sp.CollegeWithReplacements() {
-				colleges[one] = true
+				colleges[strings.ToLower(one)] = true
 			}
 		case spellcmp.Any:
 			count++
