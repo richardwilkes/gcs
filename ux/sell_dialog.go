@@ -13,7 +13,6 @@ import (
 	"maps"
 	"strings"
 
-	"github.com/richardwilkes/gcs/v5/model/colors"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/jio"
@@ -24,9 +23,7 @@ import (
 	"github.com/richardwilkes/toolbox/v2/xstrings"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
-	"github.com/richardwilkes/unison/enums/behavior"
 	"github.com/richardwilkes/unison/enums/check"
-	"github.com/richardwilkes/unison/enums/paintstyle"
 	"github.com/richardwilkes/unison/enums/role"
 )
 
@@ -37,8 +34,9 @@ const (
 	maxSaleContentsLines = 30
 	// saleContentsIndent is how far each level of what a container for sale holds is indented in its tooltip.
 	saleContentsIndent = unison.StdHSpacing * 2
-	// maxSaleRowsShown is the most items the list of items for sale shows at once, beyond which it scrolls.
-	maxSaleRowsShown = 10
+	// saleColumnCount is the number of columns in the list of items for sale: the item, the quantity to sell, the
+	// quantity carried, the full price of one and what the quantity sells for.
+	saleColumnCount = 5
 	// saleNameWidthPrototype is the text the transaction name field is made wide enough to show. The field would
 	// otherwise be as wide as the suggested name, which runs to maxSaleNamesLength characters.
 	saleNameWidthPrototype = "Sold Boots, Crossbow, Hip Quiver, Leather Gloves"
@@ -78,12 +76,11 @@ type sellDialog struct {
 	merge      bool
 	// payouts were last computed for total, and paid is their value. PayoutFor can be costly, so they are computed
 	// again only when the total changes.
-	total    fxp.Int
-	paid     fxp.Int
-	payouts  []gurps.Payout
-	computed bool
-	// box holds the list of items for sale, under a header naming its columns and over a footer giving the total.
-	box          *unison.Panel
+	total        fxp.Int
+	paid         fxp.Int
+	payouts      []gurps.Payout
+	computed     bool
+	list         *tradeList
 	youGetHeader *unison.Label
 	totalLabel   *unison.Label
 	// summary holds the payout and, while there is something to warn of, the warning.
@@ -193,7 +190,7 @@ func (d *sellDialog) newContent() *unison.Panel {
 	percentLabel := NewFieldLeadingLabel(i18n.Text("Percent of full price"), false)
 	content.AddChild(percentLabel)
 	content.AddChild(d.newPercentField(percentLabel))
-	content.AddChild(d.newListBox())
+	content.AddChild(d.newList())
 
 	d.summary = unison.NewPanel()
 	d.summary.SetLayout(&unison.FlexLayout{Columns: 1, VSpacing: unison.StdVSpacing})
@@ -227,17 +224,11 @@ func (d *sellDialog) newPercentField(label *unison.Label) *unison.Panel {
 	return WrapWithSpan(1, labelControl(percent, label), NewFieldTrailingHint(percent, i18n.Text("%"), false))
 }
 
-// newListWidthLabel returns a label that wraps to the width of the list of items for sale rather than widening the
-// dialog, for the lines below the list.
+// newListWidthLabel returns a label, for a line below the list of items for sale, that wraps to the list's width rather
+// than widening the dialog.
 func (d *sellDialog) newListWidthLabel() *TextLabel {
 	label := NewWrappingLabel()
-	label.SetSizer(func(size geom.Size) (minSize, prefSize, maxSize geom.Size) {
-		if size.Width <= 0 {
-			_, pref, _ := d.box.Sizes(geom.Size{})
-			size.Width = pref.Width
-		}
-		return label.sizes(size)
-	})
+	wrapToWidthOf(label.AsPanel(), d.list.box)
 	label.SetLayoutData(&unison.FlexLayoutData{HAlign: align.Fill})
 	return label
 }
@@ -268,102 +259,24 @@ func (d *sellDialog) newNameField() *StringField {
 	return d.nameField
 }
 
-// newListBox returns the box holding the list of items for sale: a header naming the columns, the rows, which scroll
-// once there are more than maxSaleRowsShown of them, and a footer giving the total. Each is a panel of its own, laid
-// out in the columns they share.
-func (d *sellDialog) newListBox() *unison.Panel {
-	d.box = unison.NewPanel()
-	d.box.SetBorder(unison.NewLineBorder(unison.ThemeSurfaceEdge, geom.Size{}, geom.NewUniformInsets(1), false))
-	d.box.SetLayout(&unison.FlexLayout{Columns: 1})
-	d.box.SetLayoutData(&unison.FlexLayoutData{
+// newList returns the list of items for sale, under a header naming its columns and over a footer giving the total.
+// Each row holds the item's name, the quantity to sell and how many are carried, the full price of one and what the
+// quantity sells for.
+func (d *sellDialog) newList() *unison.Panel {
+	d.list = newTradeList(saleColumnCount)
+	d.list.box.SetLayoutData(&unison.FlexLayoutData{
 		HSpan:  2,
 		HAlign: align.Fill,
 		VAlign: align.Fill,
 		HGrab:  true,
 		VGrab:  true,
 	})
-	columns := &saleColumns{}
-	header := d.newListHeader(columns)
-	layout := &saleColumnsLayout{columns: columns}
-	list := d.newList(layout)
-	footer := d.newListFooter(columns)
-	columns.panels = []*unison.Panel{header, list, footer}
-	scroll := unison.NewScrollPanel()
-	scroll.SetContent(list, behavior.Fill, behavior.Fill)
-	scroll.BackgroundInk = unison.ThemeSurface
-	scroll.SetLayout(&sellListLayout{Layout: scroll, list: list, rows: layout})
-	scroll.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: align.Fill,
-		VAlign: align.Fill,
-		HGrab:  true,
-		VGrab:  true,
-	})
-	d.box.AddChild(header)
-	d.box.AddChild(scroll)
-	d.box.AddChild(footer)
-	return d.box
-}
-
-// newSaleColumnsPanel returns a panel laid out by layout in the list's columns, inset from its sides as the header, the
-// rows and the footer all are, so that their columns line up, and from its top and bottom by vertical. The right inset
-// leaves room for the scroll bar over the rows, so that it never covers the last column.
-func newSaleColumnsPanel(layout *saleColumnsLayout, vertical float32) *unison.Panel {
-	panel := unison.NewPanel()
-	panel.SetLayout(layout)
-	panel.SetBorder(unison.NewEmptyBorder(geom.Insets{
-		Top:    vertical,
-		Left:   unison.StdHSpacing,
-		Bottom: vertical,
-		Right:  max(unison.StdHSpacing, unison.DefaultScrollBarTheme.MinimumThickness),
-	}))
-	panel.SetLayoutData(&unison.FlexLayoutData{HAlign: align.Fill, HGrab: true})
-	return panel
-}
-
-// newListHeader returns the row of column headers, drawn as the sheet's tables draw theirs.
-func (d *sellDialog) newListHeader(columns *saleColumns) *unison.Panel {
-	header := newSaleColumnsPanel(&saleColumnsLayout{columns: columns}, unison.StdVSpacing)
-	header.DrawCallback = func(gc *unison.Canvas, rect geom.Rect) {
-		gc.DrawRect(rect, colors.Header.Paint(gc, rect, paintstyle.Fill))
-	}
-	add := func(title string, span int, hAlign align.Enum) *unison.Label {
-		label := unison.NewLabel()
-		label.OnBackgroundInk = colors.OnHeader
-		label.SetTitle(title)
-		label.SetLayoutData(&unison.FlexLayoutData{HSpan: span, HAlign: hAlign, VAlign: align.Middle})
-		header.AddChild(label)
-		return label
-	}
-	add(i18n.Text("Item"), 1, align.Start)
-	add(i18n.Text("Quantity"), 2, align.Start)
-	add(i18n.Text("Full Price Each"), 1, align.End)
-	d.youGetHeader = add("", 1, align.End) // Titled by update, since it names the percentage.
-	return header
-}
-
-// newListFooter returns the row under the list giving the total, right-aligned under what each item sells for.
-func (d *sellDialog) newListFooter(columns *saleColumns) *unison.Panel {
-	footer := newSaleColumnsPanel(&saleColumnsLayout{columns: columns}, unison.StdVSpacing)
-	footer.SetBorder(unison.NewCompoundBorder(
-		unison.NewLineBorder(unison.ThemeSurfaceEdge, geom.Size{}, geom.Insets{Top: 1}, false), footer.Border(),
-	))
-	d.totalLabel = unison.NewLabel()
-	d.totalLabel.SetLayoutData(&unison.FlexLayoutData{HSpan: saleColumnCount, HAlign: align.End, VAlign: align.Middle})
-	footer.AddChild(d.totalLabel)
-	return footer
-}
-
-// newList returns the panel listing the items for sale, a row each, banded alternately. Each row holds the item's name,
-// the quantity to sell and how many are carried, the full price of one and what the quantity sells for.
-func (d *sellDialog) newList(layout *saleColumnsLayout) *unison.Panel {
-	list := newSaleColumnsPanel(layout, unison.StdVSpacing/2)
-	list.DrawCallback = func(gc *unison.Canvas, _ geom.Rect) {
-		for i, band := range layout.bands {
-			if i&1 == 1 {
-				gc.DrawRect(band, unison.ThemeBanding.Paint(gc, band, paintstyle.Fill))
-			}
-		}
-	}
+	d.list.addHeader(i18n.Text("Item"), 1, align.Start)
+	d.list.addHeader(i18n.Text("Quantity"), 2, align.Start)
+	d.list.addHeader(i18n.Text("Full Price Each"), 1, align.End)
+	d.youGetHeader = d.list.addHeader("", 1, align.End) // Titled by update, since it names the percentage.
+	d.totalLabel = d.list.addTotal()
+	list := d.list.rows
 	settings := d.sheet.Entity().SheetSettings
 	for _, row := range d.rows {
 		name := row.eqp.String()
@@ -409,7 +322,7 @@ func (d *sellDialog) newList(layout *saleColumnsLayout) *unison.Panel {
 		row.youGet.SetLayoutData(&unison.FlexLayoutData{HAlign: align.End, VAlign: align.Middle})
 		list.AddChild(row.youGet)
 	}
-	return list
+	return d.list.box
 }
 
 // withSaleContentsInfo returns a panel holding the label of a container for sale and, beside it, an information icon
@@ -513,7 +426,7 @@ func (d *sellDialog) gateOnValidity(field *DecimalField) {
 func (d *sellDialog) update() {
 	settings := d.sheet.Entity().SheetSettings
 	dollars := func(value fxp.Int) string { return i18n.Text("$%s", settings.FormatEquipmentValue(value)) }
-	setSellLabelTitle(d.youGetHeader, i18n.Text("You Get (%s%%)", d.percent.String()))
+	setLabelTitle(d.youGetHeader, i18n.Text("You Get (%s%%)", d.percent.String()))
 	var total fxp.Int
 	selling := false
 	for _, row := range d.rows {
@@ -522,7 +435,7 @@ func (d *sellDialog) update() {
 		if row.quantity > 0 {
 			selling = true
 		}
-		setSellLabelTitle(row.youGet, dollars(price))
+		setLabelTitle(row.youGet, dollars(price))
 	}
 	if !d.nameEdited {
 		if name := d.defaultName(); name != d.name {
@@ -537,7 +450,7 @@ func (d *sellDialog) update() {
 		d.payouts, d.paid = gurps.PayoutFor(total, d.money)
 		d.computed = true
 	}
-	setSellLabelTitle(d.totalLabel, i18n.Text("Total: %s", dollars(total)))
+	setLabelTitle(d.totalLabel, i18n.Text("Total: %s", dollars(total)))
 	received := i18n.Text("nothing")
 	if len(d.payouts) != 0 {
 		parts := make([]string, 0, len(d.payouts))
@@ -593,50 +506,4 @@ func (d *sellDialog) anyInvalid() bool {
 		}
 	}
 	return false
-}
-
-// setSellLabelTitle replaces the label's text, if it differs, and has it laid out again for its new width.
-func setSellLabelTitle(label *unison.Label, text string) {
-	if label.String() != text {
-		label.SetTitle(text)
-		label.MarkForLayoutRecursivelyUpward()
-		label.MarkForRedraw()
-	}
-}
-
-// growToFitContent enlarges the window, should its content now want more room in either direction than it has, as far
-// as its display allows.
-func growToFitContent(wnd *unison.Window) {
-	_, pref, _ := wnd.Content().Sizes(geom.Size{})
-	r := wnd.ContentRect()
-	if display := wnd.Display(); display != nil {
-		frame := wnd.FrameRect()
-		pref.Width = min(pref.Width, display.Usable.Width-(frame.Width-r.Width))
-		pref.Height = min(pref.Height, display.Usable.Height-(frame.Height-r.Height))
-	}
-	if pref.Width > r.Width || pref.Height > r.Height {
-		r.Width = max(r.Width, pref.Width)
-		r.Height = max(r.Height, pref.Height)
-		wnd.SetContentRect(r)
-		wnd.EnsureOnDisplay()
-	}
-}
-
-// sellListLayout sizes the scroll panel holding the rows of items for sale to show them all, up to maxSaleRowsShown
-// of them, beyond which it scrolls.
-type sellListLayout struct {
-	unison.Layout
-	list *unison.Panel
-	rows *saleColumnsLayout
-}
-
-func (l *sellListLayout) LayoutSizes(target *unison.Panel, hint geom.Size) (minSize, prefSize, maxSize geom.Size) {
-	_, prefSize, maxSize = l.Layout.LayoutSizes(target, hint)
-	most := l.rows.heightShowing(l.list, maxSaleRowsShown)
-	if border := target.Border(); border != nil {
-		most += border.Insets().Height()
-	}
-	prefSize.Height = min(prefSize.Height, most)
-	maxSize = geom.NewSize(max(maxSize.Width, prefSize.Width), max(maxSize.Height, prefSize.Height))
-	return prefSize, prefSize, maxSize
 }

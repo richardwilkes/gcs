@@ -13,7 +13,6 @@ import (
 	"slices"
 
 	"github.com/richardwilkes/gcs/v5/model/colors"
-	"github.com/richardwilkes/gcs/v5/model/fonts"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/ux/svg"
@@ -24,9 +23,12 @@ import (
 	"github.com/richardwilkes/toolbox/v2/xmath"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
-	"github.com/richardwilkes/unison/enums/behavior"
 	"github.com/richardwilkes/unison/enums/paintstyle"
 )
+
+// paymentColumnCount is the number of columns in the list of money to pay with: the money item, the quantity carried,
+// the value of one, the quantity to spend and what that comes to.
+const paymentColumnCount = 5
 
 // chooseManualPayment asks the user which of the money the sheet's character carries (see gurps.Entity.MoneyItems) to
 // pay owed with, for what, which names the items being bought, starting from the quantities in current, by money item
@@ -62,9 +64,10 @@ type manualPaymentDialog struct {
 
 // manualPaymentRow is one carried money item and the quantity of it to spend.
 type manualPaymentRow struct {
-	money *gurps.Equipment
-	value fxp.Int
-	spend int
+	money    *gurps.Equipment
+	value    fxp.Int
+	spend    int
+	spending *unison.Label
 }
 
 // manualPaymentChange is the change worked out for an overpayment, kept for as long as the amount and the money paid
@@ -89,32 +92,12 @@ func newManualPaymentDialog(sheet *Sheet, owed fxp.Int, what string, current map
 		HAlign:   align.Fill,
 		VAlign:   align.Fill,
 	})
-	intro := NewWrappingLabel()
-	intro.SetTitle(i18n.Text("Money-tagged items carried by this character.\nOwed: $%s for %s.", d.format(owed), what))
-	intro.SetLayoutData(&unison.FlexLayoutData{HAlign: align.Fill, HGrab: true})
-	panel.AddChild(intro)
-
-	list := unison.NewPanel()
-	list.SetBorder(unison.NewEmptyBorder(geom.NewUniformInsets(unison.StdHSpacing)))
-	list.SetLayout(&unison.FlexLayout{
-		Columns:  4,
-		HSpacing: unison.StdHSpacing * 2,
-		VSpacing: unison.StdVSpacing,
-	})
-	for i, title := range []string{
-		i18n.Text("Money Item"),
-		i18n.Text("Carried"),
-		i18n.Text("Value Each"),
-		i18n.Text("Spend"),
-	} {
-		label := unison.NewLabel()
-		label.Font = fonts.FieldSecondary
-		label.SetTitle(title)
-		if i != 0 {
-			label.SetLayoutData(&unison.FlexLayoutData{HAlign: align.End})
-		}
-		list.AddChild(label)
-	}
+	list := newTradeList(paymentColumnCount)
+	list.addHeader(i18n.Text("Money Item"), 1, align.Start)
+	list.addHeader(i18n.Text("Carried"), 1, align.End)
+	list.addHeader(i18n.Text("Value Each"), 1, align.End)
+	list.addHeader(i18n.Text("Spend"), 1, align.Start)
+	list.addHeader(i18n.Text("Spending"), 1, align.End)
 	money := entity.MoneyItems()
 	for _, one := range money {
 		row := &manualPaymentRow{money: one, value: one.AdjustedValue()}
@@ -123,9 +106,9 @@ func newManualPaymentDialog(sheet *Sheet, owed fxp.Int, what string, current map
 		row.spend = min(max(current[one.TID], 0), most)
 		d.rows = append(d.rows, row)
 		name := one.String()
-		list.AddChild(newManualPaymentText(name, align.Start))
-		list.AddChild(newManualPaymentText(carried.Comma(), align.End))
-		list.AddChild(newManualPaymentText(i18n.Text("$%s", d.format(row.value)), align.End))
+		list.rows.AddChild(newManualPaymentText(name, align.Start))
+		list.rows.AddChild(newManualPaymentText(carried.Comma(), align.End))
+		list.rows.AddChild(newManualPaymentText(i18n.Text("$%s", d.format(row.value)), align.End))
 		field := NewIntegerField(nil, "", i18n.Text("Spend"),
 			func() int { return row.spend },
 			func(v int) {
@@ -138,53 +121,30 @@ func newManualPaymentDialog(sheet *Sheet, owed fxp.Int, what string, current map
 		field.Accessibility.Name = i18n.Text("%s to spend", name)
 		field.Tooltip = newWrappedTooltip(i18n.Text("The number of %s to spend, up to the %d carried", name, most))
 		field.SetLayoutData(&unison.FlexLayoutData{HAlign: align.Fill, VAlign: align.Middle})
-		list.AddChild(field)
+		list.rows.AddChild(field)
+		row.spending = newManualPaymentText("", align.End)
+		list.rows.AddChild(row.spending)
 	}
 	if len(money) == 0 {
 		label := newManualPaymentText(i18n.Text("This character carries no money-tagged items."), align.Start)
-		label.SetLayoutData(&unison.FlexLayoutData{HSpan: 4})
-		list.AddChild(label)
+		label.SetLayoutData(&unison.FlexLayoutData{HSpan: paymentColumnCount})
+		list.rows.AddChild(label)
 	}
-	scroll := unison.NewScrollPanel()
-	scroll.SetBorder(unison.NewLineBorder(unison.ThemeSurfaceEdge, geom.Size{}, geom.NewUniformInsets(1), false))
-	scroll.SetContent(list, behavior.Fill, behavior.Fill)
-	scroll.BackgroundInk = unison.ThemeSurface
-	scroll.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: align.Fill,
-		VAlign: align.Fill,
-		HGrab:  true,
-		VGrab:  true,
-	})
-	panel.AddChild(scroll)
-
-	totals := unison.NewPanel()
-	totals.SetLayout(&unison.FlexLayout{
-		Columns:  2,
-		HSpacing: unison.StdHSpacing * 4,
-		VSpacing: unison.StdVSpacing,
-	})
-	totals.SetLayoutData(&unison.FlexLayoutData{HAlign: align.Fill, HGrab: true})
-	amounts := unison.NewPanel()
-	amounts.SetLayout(&unison.FlexLayout{
-		Columns:  1,
-		VSpacing: unison.StdVSpacing,
-	})
-	amounts.SetLayoutData(&unison.FlexLayoutData{VAlign: align.Start})
-	amounts.AddChild(newManualPaymentText(i18n.Text("Owed: $%s", d.format(owed)), align.Start))
-	d.spending = newManualPaymentText("", align.Start)
-	amounts.AddChild(d.spending)
-	d.changeDue = newManualPaymentText("", align.Start)
+	list.addTotal().SetTitle(i18n.Text("Owed: $%s", d.format(owed)))
+	d.spending = list.addTotal()
+	d.changeDue = list.addTotal()
 	d.changeDue.Font = unison.EmphasizedSystemFont
-	amounts.AddChild(d.changeDue)
-	totals.AddChild(amounts)
+
+	intro := NewWrappingLabel()
+	intro.SetTitle(i18n.Text("Money-tagged items carried by this character.\nOwed: $%s for %s.", d.format(owed), what))
+	wrapToWidthOf(intro.AsPanel(), list.box)
+	intro.SetLayoutData(&unison.FlexLayoutData{HAlign: align.Fill, HGrab: true})
+	panel.AddChild(intro)
+	panel.AddChild(list.box)
 	d.note = newManualPaymentNote()
-	d.note.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: align.Fill,
-		VAlign: align.Start,
-		HGrab:  true,
-	})
-	totals.AddChild(d.note)
-	panel.AddChild(totals)
+	wrapToWidthOf(d.note.AsPanel(), list.box)
+	d.note.SetLayoutData(&unison.FlexLayoutData{HAlign: align.Fill, HGrab: true})
+	panel.AddChild(d.note)
 
 	var err error
 	if d.dialog, err = newPromptDialog(promptOperation{name: i18n.Text("Choose Money to Spend")}, nil, nil, panel,
@@ -215,11 +175,13 @@ func newManualPaymentText(text string, hAlign align.Enum) *unison.Label {
 func (d *manualPaymentDialog) refresh() {
 	var spending fxp.Int
 	for _, row := range d.rows {
-		spending += row.value.Mul(fxp.FromInteger(row.spend))
+		amount := row.value.Mul(fxp.FromInteger(row.spend))
+		setLabelTitle(row.spending, i18n.Text("$%s", d.format(amount)))
+		spending += amount
 	}
-	d.spending.SetTitle(i18n.Text("Spending: $%s", d.format(spending)))
+	setLabelTitle(d.spending, i18n.Text("Spending: $%s", d.format(spending)))
 	over := max(spending-d.owed, 0)
-	d.changeDue.SetTitle(i18n.Text("Change due: $%s", d.format(over)))
+	setLabelTitle(d.changeDue, i18n.Text("Change due: $%s", d.format(over)))
 	short := spending < d.owed
 	switch {
 	case short:
@@ -232,8 +194,7 @@ func (d *manualPaymentDialog) refresh() {
 	}
 	if d.dialog != nil {
 		d.dialog.Button(unison.ModalResponseOK).SetEnabled(!short)
-		d.spending.MarkForLayoutRecursivelyUpward()
-		d.changeDue.MarkForLayoutRecursivelyUpward()
+		growToFitContent(d.dialog.Window())
 	}
 }
 

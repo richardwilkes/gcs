@@ -81,6 +81,24 @@ func holdMinSizeOnDisplay(wnd *unison.Window) {
 	}
 }
 
+// growToFitContent enlarges the window, should its content now want more room in either direction than it has, as far
+// as its display allows.
+func growToFitContent(wnd *unison.Window) {
+	_, pref, _ := wnd.Content().Sizes(geom.Size{})
+	r := wnd.ContentRect()
+	if display := wnd.Display(); display != nil {
+		frame := wnd.FrameRect()
+		pref.Width = min(pref.Width, display.Usable.Width-(frame.Width-r.Width))
+		pref.Height = min(pref.Height, display.Usable.Height-(frame.Height-r.Height))
+	}
+	if pref.Width > r.Width || pref.Height > r.Height {
+		r.Width = max(r.Width, pref.Width)
+		r.Height = max(r.Height, pref.Height)
+		wnd.SetContentRect(r)
+		wnd.EnsureOnDisplay()
+	}
+}
+
 // listMinRows is how many rows of options the lists of the template picker and the modifier prompt have room for,
 // however few they hold.
 const listMinRows = 10

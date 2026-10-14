@@ -748,6 +748,7 @@ func TestManualPaymentDialog(t *testing.T) {
 	// The note says what the change will be, or how much of it neither the sell money nor the money paid can return.
 	dialog, fields = open(map[tid.TID]int{eagleID: 3})
 	state = read(dialog, fields)
+	uxtest.CaptureScreen(t, c, screen, "manual_payment_unreturned")
 	c.Equal("$15 of change can't be returned from the money paid, and the sheet has no sell money. Add some in Sheet Settings to receive change.",
 		state.note)
 	c.True(state.noteIcon == unison.TriangleExclamationSVG, "change that can't be returned is warned about")

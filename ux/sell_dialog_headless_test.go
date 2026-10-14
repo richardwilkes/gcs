@@ -771,7 +771,7 @@ func TestSellDialogLinesUpTheList(t *testing.T) {
 	var items []*gurps.Equipment
 	sheet := openSellTestSheet(t, screen, []gurps.Source{money.source(money.penny)},
 		func(entity *gurps.Entity) []*gurps.Equipment {
-			for i := range maxSaleRowsShown + 5 {
+			for i := range maxTradeRowsShown + 5 {
 				items = append(items, newTradeTestItem(entity, fmt.Sprintf("Item %d", i+1), "10", fxp.One))
 			}
 			return items
@@ -787,8 +787,8 @@ func TestSellDialogLinesUpTheList(t *testing.T) {
 		view := scroll.ContentView().RectToRoot(scroll.ContentView().ContentRect(false))
 		list := scroll.Content().AsPanel()
 		c.True(list.FrameRect().Height > view.Height, "the list has more rows than it shows")
-		shown := s.quantities[maxSaleRowsShown-1].RectToRoot(s.quantities[maxSaleRowsShown-1].ContentRect(true))
-		hidden := s.quantities[maxSaleRowsShown].RectToRoot(s.quantities[maxSaleRowsShown].ContentRect(true))
+		shown := s.quantities[maxTradeRowsShown-1].RectToRoot(s.quantities[maxTradeRowsShown-1].ContentRect(true))
+		hidden := s.quantities[maxTradeRowsShown].RectToRoot(s.quantities[maxTradeRowsShown].ContentRect(true))
 		c.True(shown.Bottom() <= view.Bottom(), "the last row shown is shown whole: %v within %v", shown, view)
 		c.True(hidden.Y >= view.Bottom(), "the first row past those shown is hidden whole: %v below %v", hidden, view)
 		rights := make(map[string]float32)
