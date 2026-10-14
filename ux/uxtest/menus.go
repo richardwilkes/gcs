@@ -10,18 +10,16 @@
 package uxtest
 
 import (
-	"slices"
 	"testing"
 
-	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/unison"
 )
 
 // In a headless session the menus are unison's pure-Go kind. The window's root panel holds the menu bar, a tooltip if
 // one is showing, and the content. Each open popup menu is shown in a borderless window of its own, which unison keeps
-// out of its window list. A menu panel, bar or popup alike, holds one scroll panel whose content has one child panel
-// per item of the menu, in the menu's own order and with the separators included, so the panel for an item is found by
-// its index in the unison.Menu.
+// out of its window list and hands back through HeadlessScreen.MenuWindows. A menu panel, bar or popup alike, holds
+// one scroll panel whose content has one child panel per item of the menu, in the menu's own order and with the
+// separators included, so the panel for an item is found by its index in the unison.Menu.
 
 // MenuBarPanel returns the in-window menu bar of wnd, or nil if it has none.
 func MenuBarPanel(wnd *unison.Window) *unison.Panel {
@@ -35,16 +33,9 @@ func MenuBarPanel(wnd *unison.Window) *unison.Panel {
 	return nil
 }
 
-// popupProbeStep is the spacing of the points OpenMenuPopup probes the screen at. It is smaller than any menu, so none
-// is missed: an item is taller than its font plus the standard insets, and wider than the room a popup's items leave
-// for their check marks, and the probes are costly enough that a finer spacing slows every check that finds no menu.
-const popupProbeStep = 16
-
-// OpenMenuPopup returns the panel of the popup menu open for wnd, or nil if none is open. The window showing a popup
-// menu is kept out of unison's window list, so it is found by probing the screen for a visible window that is not in
-// that list. Menus open for the active window alone, so nil is returned for any other. When several are open, as when
-// a sub-menu is showing, the one the probe, which runs from the top left, meets first is returned. May be called from
-// the UI thread or the test's goroutine.
+// OpenMenuPopup returns the panel of the popup menu open for wnd, or nil if none is open. When several are open, as
+// when a sub-menu is showing, the outermost is returned; HeadlessScreen.MenuWindows hands back the whole stack. May be
+// called from the UI thread or the test's goroutine.
 func OpenMenuPopup(wnd *unison.Window) *unison.Panel {
 	screen := unison.ActiveHeadlessScreen()
 	if screen == nil || wnd == nil {
@@ -52,18 +43,8 @@ func OpenMenuPopup(wnd *unison.Window) *unison.Panel {
 	}
 	var popup *unison.Panel
 	screen.Do(func() {
-		if unison.ActiveWindow() != wnd {
-			return
-		}
-		windows := unison.Windows()
-		size := screen.Size()
-		for y := float32(popupProbeStep / 2); y < size.Height; y += popupProbeStep {
-			for x := float32(popupProbeStep / 2); x < size.Width; x += popupProbeStep {
-				if w := screen.WindowAt(geom.NewPoint(x, y)); w != nil && !slices.Contains(windows, w) {
-					popup = w.Content()
-					return
-				}
-			}
+		if menus := screen.MenuWindows(wnd); len(menus) != 0 {
+			popup = menus[0].Content()
 		}
 	})
 	return popup
