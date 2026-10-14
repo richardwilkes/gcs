@@ -6,11 +6,6 @@
   editor, and skills and spells also with Toggle State. A disabled item, along with everything in a disabled
   container, is treated as if it weren't on the sheet: it costs no points, has no level, adds no features, weapons,
   weight or value, and satisfies no prerequisites or defaults. Copying one into a library or template enables it again.
-- The tag filter popup is back in the toolbar of library lists, between the search field and the saved filters. It
-  offers the tags of the items the saved filter in force lets through, and shows only the items carrying every tag
-  chosen (Shift-click, or Command-click on macOS and Ctrl-click elsewhere, to choose more than one). The chosen tags
-  are cleared when another saved filter, or None, is chosen, and are not saved. Its Save Filter command opens the New
-  Filter editor with the saved filter and the chosen tags combined.
 
 ## Bug Fixes
 
@@ -25,5 +20,3 @@
   a note and a note container, and the editor's Sync with Source now allows that for equipment as well.
 - The saved filter editor no longer accepts a filter with no conditions, including one holding only empty groups. OK
   stays off until at least one condition has been added.
-- The saved filter editor no longer offers values for "is" and "is not" that a condition could never match, such as a
-  tag holding a nameable marker with choices.
