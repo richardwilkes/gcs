@@ -102,12 +102,12 @@ func TestAttachModifierClonesGivesEachTargetItsOwnCopies(t *testing.T) {
 	owner := provider.DataOwner()
 	mod := gurps.NewTraitModifier(nil, nil, false)
 	mod.Name = "Ranged"
-	mod.Disabled = true
+	mod.SetDisabled(true)
 	container := gurps.NewTraitModifier(nil, nil, true)
 	container.Name = "Group"
 	inner := gurps.NewTraitModifier(nil, container, false)
 	inner.Name = "Inner"
-	inner.Disabled = true
+	inner.SetDisabled(true)
 	container.Children = []*gurps.TraitModifier{inner}
 
 	c.True(attachModifierClones("", tables, owner, []*gurps.Trait{first, second}, []*gurps.TraitModifier{mod, container},
@@ -119,12 +119,12 @@ func TestAttachModifierClonesGivesEachTargetItsOwnCopies(t *testing.T) {
 	c.NotEqual(first.Modifiers[0], second.Modifiers[0], "each target must get a clone of its own")
 	c.Equal(first, first.Modifiers[0].Target(), "the clone must know the trait it was attached to")
 	c.Equal(second, second.Modifiers[0].Target(), "the clone must know the trait it was attached to")
-	c.False(first.Modifiers[0].Disabled, "the clone is switched on")
-	c.True(first.Modifiers[1].Children[0].Disabled,
+	c.False(first.Modifiers[0].IsDisabled(), "the clone is switched on")
+	c.True(first.Modifiers[1].Children[0].IsDisabled(),
 		"the modifiers within a container are left as the library has them, since nothing asked about them")
 	c.Nil(mod.Target(), "the original must be left untouched")
-	c.True(mod.Disabled, "the original must be left untouched")
-	c.True(inner.Disabled, "the original must be left untouched")
+	c.True(mod.IsDisabled(), "the original must be left untouched")
+	c.True(inner.IsDisabled(), "the original must be left untouched")
 }
 
 // TestAttachModifierClonesAsksAboutContainersOnASheet verifies that a container among the modifiers applied to a
@@ -135,13 +135,13 @@ func TestAttachModifierClonesAsksAboutContainersOnASheet(t *testing.T) {
 	newModifiers := func() []*gurps.TraitModifier {
 		ranged := gurps.NewTraitModifier(nil, nil, false)
 		ranged.Name = "Ranged"
-		ranged.Disabled = true
+		ranged.SetDisabled(true)
 		group := gurps.NewTraitModifier(nil, nil, true)
 		group.Name = "Group"
 		for _, name := range []string{"First", "Second", "Third"} {
 			child := gurps.NewTraitModifier(nil, group, false)
 			child.Name = name
-			child.Disabled = name != "Second"
+			child.SetDisabled(name != "Second")
 			group.Children = append(group.Children, child)
 		}
 		return []*gurps.TraitModifier{ranged, group}
@@ -184,8 +184,8 @@ func TestAttachModifierClonesAsksAboutContainersOnASheet(t *testing.T) {
 		prompts := recordPrompts(t, func(title string, modifiers []*gurps.TraitModifier) (changed, canceled bool) {
 			if title == "Alpha" {
 				// Alpha takes the first alternative instead of the second.
-				modifiers[1].Children[0].Disabled = false
-				modifiers[1].Children[1].Disabled = true
+				modifiers[1].Children[0].SetDisabled(false)
+				modifiers[1].Children[1].SetDisabled(true)
 				return true, false
 			}
 			return false, false
@@ -196,13 +196,13 @@ func TestAttachModifierClonesAsksAboutContainersOnASheet(t *testing.T) {
 		c.Equal([]prompt{wantPrompt("Alpha"), wantPrompt("Beta")}, *prompts,
 			"each target must be asked about its own copies, the ones pointed at directly already switched on")
 		c.Equal([]string{"Ranged", "Group"}, appliedModifierNames(alpha.Modifiers))
-		c.False(alpha.Modifiers[1].Children[0].Disabled, "Alpha's answer must be kept")
-		c.True(alpha.Modifiers[1].Children[1].Disabled, "Alpha's answer must be kept")
-		c.True(alpha.Modifiers[1].Children[2].Disabled, "Alpha's answer must be kept")
+		c.False(alpha.Modifiers[1].Children[0].IsDisabled(), "Alpha's answer must be kept")
+		c.True(alpha.Modifiers[1].Children[1].IsDisabled(), "Alpha's answer must be kept")
+		c.True(alpha.Modifiers[1].Children[2].IsDisabled(), "Alpha's answer must be kept")
 		c.Equal([]string{"Ranged", "Group"}, appliedModifierNames(beta.Modifiers))
-		c.True(beta.Modifiers[1].Children[0].Disabled, "Beta keeps the library's choice")
-		c.False(beta.Modifiers[1].Children[1].Disabled, "Beta keeps the library's choice")
-		c.True(beta.Modifiers[1].Children[2].Disabled, "Beta keeps the library's choice")
+		c.True(beta.Modifiers[1].Children[0].IsDisabled(), "Beta keeps the library's choice")
+		c.False(beta.Modifiers[1].Children[1].IsDisabled(), "Beta keeps the library's choice")
+		c.True(beta.Modifiers[1].Children[2].IsDisabled(), "Beta keeps the library's choice")
 		c.True(sheet.Modified(), "the sheet has been changed")
 	})
 
@@ -256,8 +256,8 @@ func TestAttachModifierClonesOnASheetRebuildsWithoutPrompting(t *testing.T) {
 
 	c.True(attachModifierClones("", []*unison.Table[*Node[*gurps.Trait]]{stale}, entity,
 		[]*gurps.Trait{entity.Traits[0], entity.Traits[1]}, []*gurps.TraitModifier{mod}, gurps.LibraryFile{}))
-	c.False(entity.Traits[0].Modifiers[0].Disabled, "the clone is switched on")
-	c.False(entity.Traits[1].Modifiers[0].Disabled, "the clone is switched on")
+	c.False(entity.Traits[0].Modifiers[0].IsDisabled(), "the clone is switched on")
+	c.False(entity.Traits[1].Modifiers[0].IsDisabled(), "the clone is switched on")
 	c.True(sheet.Modified(), "attaching modifiers to a sheet's traits must mark the sheet as modified")
 	c.NotEqual(jio.Time{}, entity.ModifiedOn, "the rebuild must report the change by bumping the timestamp")
 	live := sheet.Traits.Table
@@ -499,7 +499,7 @@ func TestApplyModifiersToBothEquipmentListsIsOneEdit(t *testing.T) {
 	c.False(mgr.CanUndo())
 	mod := gurps.NewEquipmentModifier(nil, nil, false)
 	mod.Name = "Fine"
-	mod.Disabled = true
+	mod.SetDisabled(true)
 	forbidModifierPrompts(t)
 	rope := equipmentNamed("Rope", entity.CarriedEquipment)
 	coin := equipmentNamed("Coin", entity.OtherEquipment)
@@ -508,8 +508,8 @@ func TestApplyModifiersToBothEquipmentListsIsOneEdit(t *testing.T) {
 		[]*gurps.Equipment{rope, coin}, []*gurps.EquipmentModifier{mod}, gurps.LibraryFile{}))
 	c.Equal([]string{"Fine"}, appliedModifierNames(equipmentNamed("Rope", entity.CarriedEquipment).Modifiers))
 	c.Equal([]string{"Fine"}, appliedModifierNames(equipmentNamed("Coin", entity.OtherEquipment).Modifiers))
-	c.False(equipmentNamed("Rope", entity.CarriedEquipment).Modifiers[0].Disabled, "the applied copy is switched on")
-	c.False(equipmentNamed("Coin", entity.OtherEquipment).Modifiers[0].Disabled, "the applied copy is switched on")
+	c.False(equipmentNamed("Rope", entity.CarriedEquipment).Modifiers[0].IsDisabled(), "the applied copy is switched on")
+	c.False(equipmentNamed("Coin", entity.OtherEquipment).Modifiers[0].IsDisabled(), "the applied copy is switched on")
 	c.Equal(0, len(equipmentNamed("Knife", entity.CarriedEquipment).Modifiers), "only the chosen targets are touched")
 	c.True(sheet.Modified(), "the sheet has been changed")
 	c.NotEqual(jio.Time{}, entity.ModifiedOn, "the change must be reported")
@@ -649,12 +649,12 @@ func TestApplyModifiersToDestinationsWithoutAnEntity(t *testing.T) {
 		template.AsPanel().AddChild(counter)
 		mod := gurps.NewTraitModifier(nil, nil, false)
 		mod.Name = "@Material@ Coating"
-		mod.Disabled = true
+		mod.SetDisabled(true)
 
 		c.True(applyModifiersTo([]*unison.Table[*Node[*gurps.Trait]]{template.Traits.Table},
 			[]*gurps.Trait{trait}, []*gurps.TraitModifier{mod}, gurps.LibraryFile{}))
 		c.Equal([]string{"@Material@ Coating"}, appliedModifierNames(trait.Modifiers))
-		c.False(trait.Modifiers[0].Disabled, "the clone is switched on")
+		c.False(trait.Modifiers[0].IsDisabled(), "the clone is switched on")
 		c.True(template.Modified(), "the template has been changed")
 		c.True(counter.count > 0, "the change must be reported to the template, which brings its page up to date")
 		checkUndo(c, template, unison.UndoManagerFor(template.Traits.Table),
@@ -673,12 +673,12 @@ func TestApplyModifiersToDestinationsWithoutAnEntity(t *testing.T) {
 		loot.loot.ModifiedOn = jio.Time{}
 		mod := gurps.NewEquipmentModifier(nil, nil, false)
 		mod.Name = "@Material@ Coating"
-		mod.Disabled = true
+		mod.SetDisabled(true)
 
 		c.True(applyModifiersTo([]*unison.Table[*Node[*gurps.Equipment]]{loot.Equipment.Table},
 			[]*gurps.Equipment{item}, []*gurps.EquipmentModifier{mod}, gurps.LibraryFile{}))
 		c.Equal([]string{"@Material@ Coating"}, appliedModifierNames(item.Modifiers))
-		c.False(item.Modifiers[0].Disabled, "the clone is switched on")
+		c.False(item.Modifiers[0].IsDisabled(), "the clone is switched on")
 		c.True(loot.Modified(), "the loot sheet has been changed")
 		c.NotEqual(jio.Time{}, loot.loot.ModifiedOn, "the change must be reported to the loot sheet")
 		checkUndo(c, loot, unison.UndoManagerFor(loot.Equipment.Table),
@@ -708,12 +708,12 @@ func TestApplyModifiersToDestinationsWithoutAnEntity(t *testing.T) {
 		c.False(tabShowsModified(), "the library's tab starts out showing it as unmodified")
 		mod := gurps.NewTraitModifier(nil, nil, false)
 		mod.Name = "@Material@ Coating"
-		mod.Disabled = true
+		mod.SetDisabled(true)
 
 		c.True(applyModifiersTo([]*unison.Table[*Node[*gurps.Trait]]{library.table}, []*gurps.Trait{trait},
 			[]*gurps.TraitModifier{mod}, gurps.LibraryFile{}))
 		c.Equal([]string{"@Material@ Coating"}, appliedModifierNames(trait.Modifiers))
-		c.False(trait.Modifiers[0].Disabled, "the clone is switched on")
+		c.False(trait.Modifiers[0].IsDisabled(), "the clone is switched on")
 		c.True(library.Modified(), "the library has been changed")
 		c.True(tabShowsModified(), "the change must be reported to the library, which marks its tab as modified")
 		checkUndo(c, library, unison.UndoManagerFor(library.table),
@@ -894,7 +894,7 @@ func TestApplySelectedModifiersAcrossBothEquipmentLists(t *testing.T) {
 	Workspace.DocumentDock.DockTo(sheet, nil, side.Left)
 	mod := gurps.NewEquipmentModifier(nil, nil, false)
 	mod.Name = "Fine"
-	mod.Disabled = true
+	mod.SetDisabled(true)
 	library := NewEquipmentModifierTableDockable("mods"+gurps.EquipmentModifiersExt, []*gurps.EquipmentModifier{mod})
 	library.table.SelectAll()
 	var offered []string
@@ -936,7 +936,7 @@ func TestApplySelectedModifiersAcrossBothEquipmentLists(t *testing.T) {
 	}, labels, "the target prompt must offer the equipment of both lists")
 	c.Equal([]string{"Fine"}, appliedModifierNames(equipmentNamed("Rope", entity.CarriedEquipment).Modifiers))
 	c.Equal([]string{"Fine"}, appliedModifierNames(equipmentNamed("Coin", entity.OtherEquipment).Modifiers))
-	c.False(equipmentNamed("Rope", entity.CarriedEquipment).Modifiers[0].Disabled, "the applied copy is switched on")
+	c.False(equipmentNamed("Rope", entity.CarriedEquipment).Modifiers[0].IsDisabled(), "the applied copy is switched on")
 	c.Equal(0, len(equipmentNamed("Backpack", entity.CarriedEquipment).Modifiers), "only the chosen targets are touched")
 	c.Equal(0, len(equipmentNamed("Knife", entity.CarriedEquipment).Modifiers), "only the chosen targets are touched")
 	selectedNames := func(table *unison.Table[*Node[*gurps.Equipment]]) []string {

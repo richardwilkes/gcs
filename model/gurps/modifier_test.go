@@ -86,7 +86,7 @@ func TestModifierContainersContributeNameableKeys(t *testing.T) {
 	leaf.Name = "@Leaf@"
 	off := NewTraitModifier(nil, group, false)
 	off.Name = "@Off@"
-	off.Disabled = true
+	off.SetDisabled(true)
 	group.Children = []*TraitModifier{leaf, off}
 	trait.Modifiers = []*TraitModifier{group}
 	keys := make(map[string]string)
@@ -106,7 +106,7 @@ func TestModifierContainersContributeNameableKeys(t *testing.T) {
 	eleaf.Name = "@Leaf@"
 	eoff := NewEquipmentModifier(nil, egroup, false)
 	eoff.Name = "@Off@"
-	eoff.Disabled = true
+	eoff.SetDisabled(true)
 	egroup.Children = []*EquipmentModifier{eleaf, eoff}
 	equipment.Modifiers = []*EquipmentModifier{egroup}
 	keys = make(map[string]string)

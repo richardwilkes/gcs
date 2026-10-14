@@ -74,10 +74,10 @@ func TestTraitMaxLevelBonusFromModifier(t *testing.T) {
 	mod.Features = Features{newMaxLevelBonus(traitsel.ThisTrait, "+3")}
 	trait.Modifiers = []*TraitModifier{mod}
 
-	mod.Disabled = false
+	mod.SetDisabled(false)
 	c.Equal(fxp.FromInteger(13), trait.ResolvedMaxLevels(), "enabled modifier bonus applies")
 
-	mod.Disabled = true
+	mod.SetDisabled(true)
 	c.Equal(fxp.FromInteger(10), trait.ResolvedMaxLevels(), "disabled modifier bonus ignored")
 }
 

@@ -17,7 +17,7 @@ import (
 
 func skillLevelExtractor[T gurps.Node[T]](increment bool) func(T) (gurps.SkillAdjustmentProvider, bool) {
 	return func(data T) (gurps.SkillAdjustmentProvider, bool) {
-		if provider, ok := any(data).(gurps.SkillAdjustmentProvider); ok && !provider.Container() &&
+		if provider, ok := any(data).(gurps.SkillAdjustmentProvider); ok && !provider.Container() && data.Enabled() &&
 			(increment || provider.RawPoints() > 0) {
 			return provider, true
 		}

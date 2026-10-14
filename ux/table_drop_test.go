@@ -503,7 +503,7 @@ func stubTraitModifierPrompt(t *testing.T, respond func(modifiers []*gurps.Trait
 // prompt offers, and reporting that it changed them, as the real prompt would.
 func enableAllModifiers(modifiers []*gurps.TraitModifier) bool {
 	for _, one := range modifiers {
-		one.Disabled = false
+		one.SetDisabled(false)
 	}
 	return true
 }

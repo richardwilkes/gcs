@@ -385,7 +385,7 @@ func TestTraitApplyNameableKeysKeepsAnswersForDisabledModifiers(t *testing.T) {
 	trait.Name = "@Foo@ Sword"
 	finish := NewTraitModifier(nil, nil, false)
 	finish.Name = "@Finish@ Coating"
-	finish.Disabled = true
+	finish.SetDisabled(true)
 	color := NewTraitModifier(nil, nil, false)
 	color.Name = "@Color@ Paint"
 	trait.AddModifiers(finish, color)
@@ -399,11 +399,11 @@ func TestTraitApplyNameableKeysKeepsAnswersForDisabledModifiers(t *testing.T) {
 	trait.ApplyNameableKeys(m)
 	c.Equal(map[string]string{"Foo": "Bar", "Color": "Red", "Finish": "Gilded"}, trait.Replacements,
 		"the answers are applied, the switched-off modifier's answer is kept and the unused one is dropped")
-	finish.Disabled = false
+	finish.SetDisabled(false)
 	c.Equal("Gilded Coating", finish.NameWithReplacements(), "switching the modifier back on must find its answer")
 
 	// With nothing in use and nothing held for a disabled modifier, nothing is held at all.
-	finish.Disabled = true
+	finish.SetDisabled(true)
 	trait.Name = "Sword"
 	trait.ApplyNameableKeys(map[string]string{})
 	c.Equal(map[string]string{"Finish": "Gilded"}, trait.Replacements, "the switched-off modifier's answer survives")

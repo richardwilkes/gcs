@@ -364,7 +364,7 @@ func TestEntityThisArmorDRBonusIncludesModifierLocations(t *testing.T) {
 	c.Equal(3, e.AddDRBonusesFor("arm", nil, nil)[AllID],
 		"arm: the modifier's 2 base DR, plus the 'this armor' bonus")
 
-	mod.Disabled = true
+	mod.SetDisabled(true)
 	e.Recalculate()
 	c.Equal(5, e.AddDRBonusesFor(TorsoID, nil, nil)[AllID],
 		"torso: only the equipment's own 4 base DR remains, plus the 'this armor' bonus")
@@ -455,11 +455,11 @@ func TestEntityProcessTraitPrereqsClearsUnsatisfiedReasonWhenDisabled(t *testing
 	e.Recalculate()
 	c.NotEqual("", trait.UnsatisfiedReason, "an enabled trait with an unmet prereq is flagged")
 
-	trait.Disabled = true
+	trait.SetDisabled(true)
 	e.Recalculate()
 	c.Equal("", trait.UnsatisfiedReason, "disabling the trait clears the stale reason")
 
-	trait.Disabled = false
+	trait.SetDisabled(false)
 	e.Recalculate()
 	c.NotEqual("", trait.UnsatisfiedReason, "re-enabling the trait flags it again")
 
@@ -475,7 +475,7 @@ func TestEntityProcessTraitPrereqsClearsUnsatisfiedReasonWhenDisabled(t *testing
 	e.Recalculate()
 	c.NotEqual("", nested.UnsatisfiedReason, "a trait inside an enabled container is flagged")
 
-	container.Disabled = true
+	container.SetDisabled(true)
 	e.Recalculate()
 	c.Equal("", nested.UnsatisfiedReason, "disabling the container clears the nested trait's stale reason")
 
@@ -491,7 +491,7 @@ func TestEntityProcessTraitPrereqsClearsUnsatisfiedReasonWhenDisabled(t *testing
 	e.Recalculate()
 	c.NotEqual("", trait.UnsatisfiedReason, "a trait above its maximum level is flagged")
 
-	trait.Disabled = true
+	trait.SetDisabled(true)
 	e.Recalculate()
 	c.Equal("", trait.UnsatisfiedReason, "disabling the trait clears the maximum-level reason")
 }
@@ -599,7 +599,7 @@ func checkRecalculationConsistency(c check.Checker, e *Entity, label string) {
 	}, false, true, e.Spells...)
 	Traverse(func(t *Trait) bool {
 		c.Helper()
-		if t.Disabled || (t.parent != nil && !t.parent.Enabled()) {
+		if t.IsDisabled() || (t.parent != nil && !t.parent.Enabled()) {
 			c.Equal("", t.UnsatisfiedReason,
 				"%s: trait %s: a trait that is disabled, itself or by way of a container, has no reason", label, t.Name)
 			c.False(t.DisabledByPrereqs(),
@@ -666,7 +666,7 @@ func TestEntityEnforceTraitPrereqsDisablesUnsatisfiedTraits(t *testing.T) {
 	c.False(trait.Enabled(), "the setting disables the trait")
 	c.True(trait.EffectivelyDisabled(), "the setting disables the trait")
 	c.True(trait.DisabledByPrereqs(), "the trait reports that its prereqs disabled it")
-	c.False(trait.Disabled, "the user's own enabled state is left alone")
+	c.False(trait.IsDisabled(), "the user's own enabled state is left alone")
 	c.Equal(fxp.Int(0), trait.AdjustedPoints(nil), "a disabled trait is worth no points")
 	c.Equal(fxp.Int(0), e.PointsBreakdown().Advantages, "a disabled trait's points leave the total")
 	c.Equal(fxp.Int(0), e.AttributeBonusFor(StrengthID, stlimit.None, nil), "its features are no longer active")
@@ -1476,7 +1476,7 @@ func TestEntityRecalculateSeesLevelsScriptsRecompute(t *testing.T) {
 	c.Equal("", scripted.UnsatisfiedReason, "the script prerequisite is met")
 	checkRecalculationConsistency(c, e, "bonus in effect")
 
-	bonus.Disabled = true
+	bonus.SetDisabled(true)
 	e.Recalculate()
 	c.Equal(fxp.Eleven, broadsword.LevelData.Level, "without the bonus, Broadsword is at 11")
 	c.NotEqual("", scripted.UnsatisfiedReason, "the script prerequisite is unmet")
@@ -1525,13 +1525,13 @@ func TestEntityEnforceTraitPrereqsHonorsUserDisabling(t *testing.T) {
 	e.Recalculate()
 	c.True(trait.DisabledByPrereqs(), "an enabled trait with an unmet prereq is disabled by the setting")
 
-	trait.Disabled = true
+	trait.SetDisabled(true)
 	e.Recalculate()
 	c.Equal("", trait.UnsatisfiedReason, "a trait the user disabled has no prerequisites to enforce")
 	c.Equal(prereqsNotJudged, trait.prereqVerdict, "disabling the trait clears the verdict the setting had reached")
 	c.False(trait.DisabledByPrereqs(), "a trait the user disabled is not reported as disabled by its prereqs")
 
-	trait.Disabled = false
+	trait.SetDisabled(false)
 	e.Recalculate()
 	c.True(trait.DisabledByPrereqs(), "re-enabling the trait lets the setting disable it again")
 
@@ -1539,7 +1539,7 @@ func TestEntityEnforceTraitPrereqsHonorsUserDisabling(t *testing.T) {
 	e.SheetSettings.EnforceTraitPrereqs = true
 	container := NewTrait(e, nil, true)
 	container.Name = "Martial Arts"
-	container.Disabled = true
+	container.SetDisabled(true)
 	nested := newTraitNeedingMissingTrait(e, "Weapon Master")
 	nested.SetParent(container)
 	container.Children = append(container.Children, nested)
@@ -1695,7 +1695,7 @@ func TestEntityTraitLevels(t *testing.T) {
 	container.Children = append(container.Children, newLeveledTrait("telekinesis", fxp.Two, container))
 	e.Traits = append(e.Traits, container)
 	disabled := newLeveledTrait("Telekinesis", fxp.Ten, nil)
-	disabled.Disabled = true
+	disabled.SetDisabled(true)
 	e.Traits = append(e.Traits, disabled)
 	unleveled := NewTrait(e, nil, false)
 	unleveled.Name = "Telekinesis"

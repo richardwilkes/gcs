@@ -418,7 +418,7 @@ func applyTransfer(destination unison.Paneler, parts *applyParts, opts applyOpti
 	}
 	if disableExistingAncestries {
 		for _, one := range gurps.ActiveAncestryTraits(entity.Traits) {
-			one.Disabled = true
+			one.SetDisabled(true)
 		}
 	}
 	// The change is reported once for the whole of it, after every table has been changed (see restoredTables). A sheet

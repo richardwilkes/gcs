@@ -78,7 +78,7 @@ func TestCopySelectionToLandsRowsInTheListForTheirType(t *testing.T) {
 	copied := entity.Traits[len(entity.Traits)-1]
 	c.Equal("Claws", copied.Name)
 	c.NotEqual(trait.ID(), copied.ID(), "the sheet must receive a copy rather than the library's row")
-	c.False(copied.Modifiers[0].Disabled, "the answer to the modifier prompt must have been kept")
+	c.False(copied.Modifiers[0].IsDisabled(), "the answer to the modifier prompt must have been kept")
 	c.True(sheet.Traits.Table.CopySelectionMap()[copied.ID()],
 		"the copied row must be selected in the sheet's traits list")
 

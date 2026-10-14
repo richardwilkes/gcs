@@ -727,8 +727,12 @@ func (n *Node[T]) createToggleCell(c *gurps.CellData, foreground unison.Ink) uni
 		},
 		func(label *unison.Label, _ mod.Modifiers) bool {
 			// The pick of a mandatory modifier choice on a sheet can't be turned off (see
-			// gurps.IsLockedModifierChoiceSelection), so the click is refused, which puts the checkmark back.
+			// gurps.IsLockedModifierChoiceSelection), nor can disabled equipment be equipped or unequipped, so the
+			// click is refused, which puts the checkmark back.
 			if gurps.IsLockedModifierChoiceSelection(n.data) {
+				return false
+			}
+			if eqp, ok := any(n.data).(*gurps.Equipment); ok && !eqp.Enabled() {
 				return false
 			}
 			if !handleCheck(n.data, label, c.Checked) {

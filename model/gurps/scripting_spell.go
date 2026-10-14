@@ -23,7 +23,7 @@ func newScriptSpell(r *goja.Runtime, spell *Spell) *goja.Object {
 	m["name"] = func() goja.Value { return r.ToValue(spell.NameWithReplacements()) }
 	m["notes"] = scriptNotes(r, spell)
 	if spell.Container() {
-		m["children"] = func() goja.Value { return scriptObjects(r, spell.Children, nil, newScriptSpell) }
+		m["children"] = func() goja.Value { return scriptObjects(r, spell.Children, (*Spell).Enabled, newScriptSpell) }
 		m["find"] = scriptNameTagFinder(r, func(name, tag string) goja.Value {
 			return findScriptSpells(r, name, tag, spell.Children...)
 		})

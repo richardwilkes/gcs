@@ -504,20 +504,30 @@ func (e *EquipmentModifier) enabledVariant() *EquipmentModifier { //nolint:unuse
 		return e
 	}
 	variant := *e
-	variant.Disabled = false
+	variant.SetDisabled(false)
 	return &variant
 }
 
 // Enabled returns true if this node is enabled.
 func (e *EquipmentModifier) Enabled() bool {
-	return !e.Disabled || e.Container()
+	return !e.IsDisabled() || e.Container()
 }
 
-// SetEnabled makes the node enabled, if possible.
-func (e *EquipmentModifier) SetEnabled(enabled bool) {
+// SetDisabled implements Disableable. A container can't be disabled.
+func (e *EquipmentModifier) SetDisabled(disabled bool) {
 	if !e.Container() {
-		e.Disabled = !enabled
+		e.EquipmentModifierEditDataNonContainerOnly.SetDisabled(disabled)
 	}
+}
+
+// IsDisabled implements Disableable.
+func (d *EquipmentModifierEditDataNonContainerOnly) IsDisabled() bool {
+	return d.Disabled
+}
+
+// SetDisabled implements Disableable.
+func (d *EquipmentModifierEditDataNonContainerOnly) SetDisabled(disabled bool) {
+	d.Disabled = disabled
 }
 
 // CostMultiplier returns the amount to multiply the cost by. A per-pound cost is multiplied by weight, what the

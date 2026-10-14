@@ -18,7 +18,7 @@ import (
 
 func traitLevelExtractor(increment bool) func(*gurps.Trait) (*gurps.Trait, bool) {
 	return func(t *gurps.Trait) (*gurps.Trait, bool) {
-		if t != nil && t.IsLeveled() && (increment || t.Levels > 0) {
+		if t != nil && t.Enabled() && t.IsLeveled() && (increment || t.Levels > 0) {
 			return t, true
 		}
 		return nil, false

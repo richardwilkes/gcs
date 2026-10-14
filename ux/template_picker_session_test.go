@@ -59,7 +59,7 @@ func newKnightSession() (s *pickerSession[*gurps.Trait], n map[string]*gurps.Tra
 	}
 	resPart := mods("resPart", []string{"+30", "+15", "+10", "+5"}, []string{"x1", "x0.5"})
 	resPart.Preconfigured = true
-	resPart.Modifiers[0].Children[2].SetEnabled(true)
+	resPart.Modifiers[0].Children[2].SetDisabled(false)
 	root := pick("root", picker.Points, 60,
 		leaf("ea", 25), leaf("ep", 5),
 		pick("fit", picker.Count, 1, leaf("fit1", 5), leaf("fit2", 15)),
@@ -102,7 +102,7 @@ func TestPickerSessionExpectsByTheRules(t *testing.T) {
 	c.Equal("74~109 / 60", s.pillText(n["root"]))
 	c.Equal(pickerError, s.state(n["root"]))
 
-	n["wm"].Modifiers[0].Children[4].SetEnabled(true)
+	n["wm"].Modifiers[0].Children[4].SetDisabled(false)
 	c.Equal("39~64", s.actual(n["lion"], picker.Points).String(), "a pick is only a default until answered")
 	s.modsAnswered[n["wm"]] = true
 	c.Equal("59", s.actual(n["lion"], picker.Points).String())
@@ -142,9 +142,9 @@ func TestPickerSessionStates(t *testing.T) {
 	c.Equal(pickerOpen, s.state(n["root"]))
 
 	c.False(s.resolved(n["resPart"]), "a preconfigured row with a mandatory pick missing")
-	n["resPart"].Modifiers[1].Children[0].SetEnabled(true)
+	n["resPart"].Modifiers[1].Children[0].SetDisabled(false)
 	c.True(s.resolved(n["resPart"]))
-	n["wm"].Modifiers[0].Children[0].SetEnabled(true)
+	n["wm"].Modifiers[0].Children[0].SetDisabled(false)
 	c.False(s.resolved(n["wm"]))
 	s.modsAnswered[n["wm"]] = true
 	c.True(s.resolved(n["wm"]))
@@ -218,7 +218,7 @@ func TestPickerSessionChoosesModifiers(t *testing.T) {
 	s, n := newKnightSession()
 	wm, res := n["wm"], n["res"]
 	answer = func(mods []*gurps.TraitModifier) bool {
-		mods[0].Children[1].SetEnabled(true)
+		mods[0].Children[1].SetDisabled(false)
 		return false
 	}
 	s.chooseModifiers(wm)
@@ -228,8 +228,8 @@ func TestPickerSessionChoosesModifiers(t *testing.T) {
 
 	s.chosen[wm] = false
 	answer = func(mods []*gurps.TraitModifier) bool {
-		mods[0].Children[1].SetEnabled(false)
-		mods[0].Children[2].SetEnabled(true)
+		mods[0].Children[1].SetDisabled(true)
+		mods[0].Children[2].SetDisabled(false)
 		return true
 	}
 	s.chooseModifiers(wm)
@@ -240,7 +240,7 @@ func TestPickerSessionChoosesModifiers(t *testing.T) {
 
 	// A partial answer narrows the row, which is asked about the rest later.
 	answer = func(mods []*gurps.TraitModifier) bool {
-		mods[0].Children[3].SetEnabled(true)
+		mods[0].Children[3].SetDisabled(false)
 		return false
 	}
 	s.chooseModifiers(res)
@@ -275,7 +275,7 @@ func TestPickerSessionPreconfiguredModifiers(t *testing.T) {
 	for _, name := range []string{"Fixed", "Off"} {
 		mod := gurps.NewTraitModifier(nil, nil, false)
 		mod.Name = name
-		mod.SetEnabled(name == "Fixed")
+		mod.SetDisabled(name != "Fixed")
 		resPart.AddModifiers(mod)
 	}
 	s := newPickerSession(promptOperation{}, []*gurps.Trait{n["root"]}, true)
@@ -286,7 +286,7 @@ func TestPickerSessionPreconfiguredModifiers(t *testing.T) {
 	c.Equal([][]*gurps.TraitModifier{{resPart.Modifiers[1]}}, asked)
 	c.Equal([]string{"+10", "Fixed"}, locked, "the enabled modifiers it doesn't ask about follow the name")
 
-	resPart.Modifiers[1].Children[0].SetEnabled(true)
+	resPart.Modifiers[1].Children[0].SetDisabled(false)
 	s = newPickerSession(promptOperation{}, []*gurps.Trait{n["root"]}, true)
 	c.Equal(0, len(s.modTargets(resPart)), "fully picked, it has nothing to ask")
 	c.True(s.resolved(resPart))
@@ -467,7 +467,7 @@ func TestPickerSessionChoosesEquipmentModifiers(t *testing.T) {
 	var cost string
 	uxtest.SwapForTest(t, &promptForEquipmentModifiers, func(info *modifierPromptInfo, mods []*gurps.EquipmentModifier) (changed, canceled bool) {
 		cost = info.early.cost()
-		mods[0].Children[1].SetEnabled(true)
+		mods[0].Children[1].SetDisabled(false)
 		return false, false
 	})
 	choice := gurps.NewEquipmentChoiceContainer(nil, nil)
@@ -566,7 +566,7 @@ func TestPickerSessionChoosesPicks(t *testing.T) {
 func TestPickerSessionChoosesPicksBacksOut(t *testing.T) {
 	c := check.New(t)
 	uxtest.SwapForTest(t, &promptForTraitModifiers, func(_ *modifierPromptInfo, mods []*gurps.TraitModifier) (changed, canceled bool) {
-		mods[0].Children[4].SetEnabled(true)
+		mods[0].Children[4].SetDisabled(false)
 		return false, false
 	})
 	s, n := newKnightSession()
@@ -707,11 +707,11 @@ func TestPickerSessionRowText(t *testing.T) {
 		mod.Name = name
 		wm.AddModifiers(mod)
 	}
-	wm.Modifiers[2].SetEnabled(false)
+	wm.Modifiers[2].SetDisabled(true)
 	open := newTraitModifierChoiceFor(nil, true, []string{"x1", "x2"})
 	wm.AddModifiers(open)
 	c.Equal(pickerText{text: " [Fixed]"}, s.detail(wm))
-	wm.Modifiers[0].Children[1].SetEnabled(true)
+	wm.Modifiers[0].Children[1].SetDisabled(false)
 	c.Equal(pickerText{text: " [+25, Fixed]"}, s.detail(wm), "the pick shows while the other choice is open")
 	s.modsAnswered[wm] = true
 	c.Equal(pickerText{text: " [+25, Fixed]"}, s.detail(wm))
@@ -914,8 +914,8 @@ func TestPickerSessionOrganizingGroupsRollUp(t *testing.T) {
 func TestPickerSessionUnansweredChoiceCostsLive(t *testing.T) {
 	c := check.New(t)
 	uxtest.SwapForTest(t, &promptForTraitModifiers, func(_ *modifierPromptInfo, mods []*gurps.TraitModifier) (changed, canceled bool) {
-		mods[0].Children[0].SetEnabled(false)
-		mods[0].Children[1].SetEnabled(true)
+		mods[0].Children[0].SetDisabled(true)
+		mods[0].Children[1].SetDisabled(false)
 		return false, false
 	})
 	root := gurps.NewTrait(nil, nil, true)
@@ -952,8 +952,8 @@ func TestPickerSessionUnansweredChoiceCostsLive(t *testing.T) {
 func TestPickerSessionExpectedFollowsModifiers(t *testing.T) {
 	c := check.New(t)
 	uxtest.SwapForTest(t, &promptForTraitModifiers, func(_ *modifierPromptInfo, mods []*gurps.TraitModifier) (changed, canceled bool) {
-		mods[0].Children[0].SetEnabled(false)
-		mods[0].Children[1].SetEnabled(true)
+		mods[0].Children[0].SetDisabled(true)
+		mods[0].Children[1].SetDisabled(false)
 		return false, false
 	})
 	pick := func(trait *gurps.Trait, children ...*gurps.Trait) *gurps.Trait {
@@ -1074,7 +1074,7 @@ func TestPickerSessionChooseWithinSkipsAnsweredModifiers(t *testing.T) {
 	var asked []string
 	uxtest.SwapForTest(t, &promptForTraitModifiers, func(info *modifierPromptInfo, mods []*gurps.TraitModifier) (changed, canceled bool) {
 		asked = append(asked, info.name)
-		mods[0].Children[1].SetEnabled(true)
+		mods[0].Children[1].SetDisabled(false)
 		return false, false
 	})
 	root := gurps.NewTrait(nil, nil, true)

@@ -257,9 +257,9 @@ func TestHasSwitchableFeatures(t *testing.T) {
 	mod.Features = Features{switchableBonus()}
 	container.Modifiers = []*TraitModifier{mod}
 	c.True(container.HasSwitchableFeatures(), "an enabled modifier's switchable feature counts")
-	mod.Disabled = true
+	mod.SetDisabled(true)
 	c.False(container.HasSwitchableFeatures(), "a disabled modifier's switchable feature doesn't count")
-	mod.Disabled = false
+	mod.SetDisabled(false)
 
 	// A modifier with nothing switchable ahead of one that has something must not mask it.
 	plainMod := NewTraitModifier(e, nil, false)
@@ -299,7 +299,7 @@ func TestHasSwitchableFeatures(t *testing.T) {
 	eqpMod.Features = Features{switchableBonus()}
 	eqp.Modifiers = []*EquipmentModifier{eqpMod}
 	c.True(eqp.HasSwitchableFeatures(), "an enabled equipment modifier's switchable feature counts")
-	eqpMod.Disabled = true
+	eqpMod.SetDisabled(true)
 	c.False(eqp.HasSwitchableFeatures(), "a disabled equipment modifier's switchable feature doesn't count")
 }
 
@@ -806,7 +806,7 @@ func TestAnyModifierSwitchable(t *testing.T) {
 	}
 	disabled := func() *TraitModifier {
 		mod := switchable()
-		mod.Disabled = true
+		mod.SetDisabled(true)
 		return mod
 	}
 	container := func(children ...*TraitModifier) *TraitModifier {
@@ -871,7 +871,7 @@ func TestVisitEnabledModifiers(t *testing.T) {
 		return mod
 	}
 	disabled := newMod("disabled", false, false)
-	disabled.Disabled = true
+	disabled.SetDisabled(true)
 	container := newMod("container", true, false) // A container's own features never apply.
 	container.Children = []*TraitModifier{newMod("nested", false, true, false), newMod("empty", false)}
 	modifiers := []*TraitModifier{newMod("mixed", false, false, true), disabled, container}
@@ -1254,7 +1254,7 @@ func TestTraitSwitchCellDimming(t *testing.T) {
 			name: "disabled trait",
 			build: func() *Trait {
 				one := trait(attributeBonus())
-				one.Disabled = true
+				one.SetDisabled(true)
 				return one
 			},
 			dim: true,
@@ -1269,7 +1269,7 @@ func TestTraitSwitchCellDimming(t *testing.T) {
 			name: "enabled trait inside a disabled container",
 			build: func() *Trait {
 				one := inContainer(trait(attributeBonus()))
-				one.Parent().Disabled = true
+				one.Parent().SetDisabled(true)
 				return one
 			},
 			dim: true,
@@ -1282,7 +1282,7 @@ func TestTraitSwitchCellDimming(t *testing.T) {
 				mod.Name = "Blessed"
 				mod.Features = Features{attributeBonus()}
 				one.Modifiers = []*TraitModifier{mod}
-				one.Disabled = true
+				one.SetDisabled(true)
 				return one
 			},
 			dim: true,
@@ -1297,7 +1297,7 @@ func TestTraitSwitchCellDimming(t *testing.T) {
 				one.CanLevel = true
 				one.MaxLevels = "3"
 				one.Levels = fxp.One
-				one.Disabled = true
+				one.SetDisabled(true)
 				return one
 			},
 			dim: true,
