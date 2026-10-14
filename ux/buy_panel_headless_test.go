@@ -330,9 +330,10 @@ func TestBuyPanelHoldsTheHeightOfTheCarriedEquipmentList(t *testing.T) {
 	c.Equal(listHeight, sheet.CarriedEquipment.FrameRect().Height)
 }
 
-// TestBuyPanelRejectsTheSheetsOwnEquipment checks that equipment dragged from the sheet's own lists is declined, both
-// when it reaches the buy panel through the sheet's rerouting of drops and when it reaches the panel directly.
-func TestBuyPanelRejectsTheSheetsOwnEquipment(t *testing.T) {
+// TestBuyPanelBuysTheSheetsOwnEquipment checks that equipment dragged from the sheet's own other equipment list is
+// bought like any other, both when it reaches the buy panel through the sheet's rerouting of drops and when it reaches
+// the panel directly, and that finalizing carries a copy while the original stays in the other equipment list.
+func TestBuyPanelBuysTheSheetsOwnEquipment(t *testing.T) {
 	c := check.New(t)
 	screen, _, sheet := buyTestSheet(t, c, func(entity *gurps.Entity) []*gurps.Equipment {
 		return buyTestCoins(entity, 7, 11)
@@ -347,8 +348,11 @@ func TestBuyPanelRejectsTheSheetsOwnEquipment(t *testing.T) {
 		sheet.startBuying()
 	})
 	op, dropped := buyTestDrop(t, screen, sheet, sheet.OtherEquipment.Table, rope)
-	c.Equal(drag.None, op, "the sheet's own equipment is declined")
-	c.False(dropped)
+	c.Equal(drag.Copy, op, "the sheet's own equipment is offered as a copy")
+	c.True(dropped, "the drop is taken")
+	state := readBuyPanel(t, screen, sheet)
+	c.Equal([]string{"1 | Rope | $5 each | Total $5"}, state.rows)
+	c.Equal("Pay automatically: Copper Penny ×5 ($5)", state.summary)
 
 	di := &fakeDragInfo{types: []string{equipmentDragKey.UTI}}
 	var canAccept, droppedDirectly bool
@@ -359,11 +363,20 @@ func TestBuyPanelRejectsTheSheetsOwnEquipment(t *testing.T) {
 		updated = p.DragUpdatedCallback(di, geom.Point{}, 0)
 		droppedDirectly = p.DropCallback(di, geom.Point{}, 0)
 	})
-	c.False(canAccept, "the panel doesn't accept the sheet's own equipment")
-	c.Equal(drag.None, updated, "moving over the panel doesn't offer to take it")
-	c.False(droppedDirectly, "dropping it on the panel does nothing")
-	c.Nil(readBuyPanel(t, screen, sheet).rows)
-	c.Equal([]string{"Silver Eagle ×7", "Copper Penny ×11"}, buyTestCarried(screen, sheet))
+	c.True(canAccept, "the panel accepts the sheet's own equipment")
+	c.Equal(drag.Copy, updated, "moving over the panel offers to take it")
+	c.True(droppedDirectly, "dropping it on the panel adds it")
+	state = readBuyPanel(t, screen, sheet)
+	c.Equal([]string{"1 | Rope | $5 each | Total $5", "1 | Rope | $5 each | Total $5"}, state.rows)
+	c.Equal("Pay automatically: Copper Penny ×10 ($10)", state.summary)
+
+	screen.Do(func() { sheet.buyPanel.finalize.Click() })
+	c.Equal([]string{"Silver Eagle ×7", "Copper Penny ×1", "Rope ×2"}, buyTestCarried(screen, sheet),
+		"the money is spent and the ropes bought are carried")
+	var other []*gurps.Equipment
+	screen.Do(func() { other = sheet.Entity().OtherEquipment })
+	c.Equal([]*gurps.Equipment{rope}, other, "the other equipment list keeps the original")
+	c.Equal(fxp.One, rope.Quantity, "the original's quantity is unchanged")
 }
 
 // buyTestMoneyLibrary writes Silver Eagles and Copper Pennies into a file of the user library and returns the sources
@@ -892,8 +905,8 @@ func TestBuyPanelAttachesAndRemovesModifiers(t *testing.T) {
 	c.Contains(readBuyPanel(t, screen, sheet).rows[0], "$100")
 }
 
-// startRowDrag presses on the table's row and moves the pointer far enough to start dragging the row, so that unison and
-// the lists see the drag session a real drag makes, and returns a function that cancels the drag and releases the
+// startRowDrag presses on the table's row and moves the pointer far enough to start dragging the row, so that unison
+// and the lists see the drag session a real drag makes, and returns a function that cancels the drag and releases the
 // button. The table's dockable is activated first, since the row must be in view to be pressed.
 func startRowDrag[T gurps.Node[T]](t *testing.T, screen *unison.HeadlessScreen, wnd *unison.Window, table *unison.Table[*Node[T]], row int) (cancel func()) {
 	t.Helper()
@@ -913,7 +926,7 @@ func startRowDrag[T gurps.Node[T]](t *testing.T, screen *unison.HeadlessScreen, 
 
 // TestBuyPanelClaimsEquipmentDroppedElsewhereOnTheSheet checks that, while the buy panel is up, equipment dragged from
 // elsewhere onto the sheet's other equipment list is left to the sheet, which reroutes it to the buy panel, while the
-// sheet's own equipment, which can't be bought, is still taken by the list.
+// sheet's own equipment is still taken by the list, so that its rows can be moved about.
 func TestBuyPanelClaimsEquipmentDroppedElsewhereOnTheSheet(t *testing.T) {
 	c := check.New(t)
 	screen, wnd, sheet := buyTestSheet(t, c, func(entity *gurps.Entity) []*gurps.Equipment {
@@ -1022,10 +1035,10 @@ func buyTestDropModifier(t *testing.T, screen *unison.HeadlessScreen, sheet *She
 	return dropped
 }
 
-// TestBuyPanelKeepsTheFocusWhenRowsChange checks that the keyboard focus is not left on a button the panel has discarded:
-// removing a row with its own button moves the focus to the row that takes its place, or to the percent field once no
-// row is left; a modifier's button keeps the focus when the rows are built anew for another item; and removing a
-// modifier with its button moves the focus to its item's row.
+// TestBuyPanelKeepsTheFocusWhenRowsChange checks that the keyboard focus is not left on a button the panel has
+// discarded: removing a row with its own button moves the focus to the row that takes its place, or to the percent
+// field once no row is left; a modifier's button keeps the focus when the rows are built anew for another item; and
+// removing a modifier with its button moves the focus to its item's row.
 func TestBuyPanelKeepsTheFocusWhenRowsChange(t *testing.T) {
 	c := check.New(t)
 	screen, wnd, sheet := buyTestSheet(t, c, func(entity *gurps.Entity) []*gurps.Equipment {
@@ -1139,25 +1152,18 @@ func rerouteHighlightDrawn(t *testing.T, screen *unison.HeadlessScreen, sheet *S
 }
 
 // TestSheetDropReroutingHighlightsOnlyAWillingTarget checks that the sheet highlights the panel it reroutes a drag to
-// only while that panel will take the drop: the buy panel is highlighted for equipment it would buy, not for the sheet's
-// own equipment, which it declines, and not once the drag has left.
+// only while that panel will take the drop: the buy panel is highlighted for equipment it would buy, not for an
+// equipment drag with no rows behind it, which it declines, and not once the drag has left.
 func TestSheetDropReroutingHighlightsOnlyAWillingTarget(t *testing.T) {
 	c := check.New(t)
 	screen, _, sheet := buyTestSheet(t, c, func(entity *gurps.Entity) []*gurps.Equipment {
 		return buyTestCoins(entity, 7, 11)
 	})
-	screen.Do(func() {
-		entity := sheet.Entity()
-		entity.OtherEquipment = []*gurps.Equipment{buyTestItem(entity, "Tent", "50", 1)}
-		sheet.Rebuild(true)
-		sheet.startBuying()
-	})
+	screen.Do(sheet.startBuying)
 	library := buyTestLibrary(t, screen, "", buyTestItem(nil, "Shortsword", "100", 1))
-	var fromLibrary, fromOwn *unison.TableDragData[*Node[*gurps.Equipment]]
+	var fromLibrary *unison.TableDragData[*Node[*gurps.Equipment]]
 	screen.Do(func() {
 		fromLibrary = &unison.TableDragData[*Node[*gurps.Equipment]]{Table: library, Rows: library.RootRows()}
-		own := sheet.OtherEquipment.Table
-		fromOwn = &unison.TableDragData[*Node[*gurps.Equipment]]{Table: own, Rows: own.RootRows()}
 	})
 	di := &fakeDragInfo{types: []string{equipmentDragKey.UTI}}
 	enter := func(data *unison.TableDragData[*Node[*gurps.Equipment]]) drag.Op {
@@ -1172,8 +1178,8 @@ func TestSheetDropReroutingHighlightsOnlyAWillingTarget(t *testing.T) {
 	screen.Do(sheet.DragExitedCallback)
 	c.False(rerouteHighlightDrawn(t, screen, sheet), "nothing is highlighted once the drag has left")
 
-	c.Equal(drag.None, enter(fromOwn), "the buy panel declines the sheet's own equipment")
-	c.False(rerouteHighlightDrawn(t, screen, sheet), "the buy panel is not highlighted for equipment it declines")
+	c.Equal(drag.None, enter(nil), "the buy panel declines an equipment drag with no rows behind it")
+	c.False(rerouteHighlightDrawn(t, screen, sheet), "the buy panel is not highlighted for a drag it declines")
 	screen.Do(sheet.DragExitedCallback)
 }
 

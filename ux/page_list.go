@@ -249,7 +249,8 @@ func NewOtherEquipmentPageList(owner Rebuildable, provider gurps.ListProvider) *
 // installBuyPanelDragDeferral has a sheet's list decline the equipment drags its buy panel would take while the panel
 // stands in for the carried equipment list, so that the drag goes on up to the sheet, which reroutes it to the panel
 // (see Sheet.keyToPanel): equipment dragged anywhere onto a sheet that is buying is to be bought, not carried. The
-// sheet's own equipment, which can't be bought, is still taken, so rows can be moved about while buying.
+// sheet's own equipment is still taken, so rows can be moved about while buying; dropped on the panel itself, it is
+// bought like any other (see buyPanel.claimsDrag).
 func (p *PageList[T]) installBuyPanelDragDeferral(owner Rebuildable) {
 	if sheet, ok := owner.AsPanel().Self.(*Sheet); ok {
 		accept := p.Table.CanAcceptDropCallback

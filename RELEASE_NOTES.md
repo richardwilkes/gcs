@@ -10,10 +10,10 @@
   context menu or the Item menu to sell it at a percentage of its full price, paid out in the money items chosen in the
   new Trading section of the sheet settings, which also holds the default buy and sell percentages. The coin button in
   the Carried Equipment header opens a buy panel in place of the list: drop equipment onto it from any library,
-  template, loot sheet or other sheet, and the purchase is paid for with the character's items tagged "Money", either
-  automatically or by choosing which to spend, with change returned in the sheet's sell money or, when that can't
-  make it, the money paid. The record button beside it shows the shopping record of every sale and purchase, where
-  entries can be selected and deleted.
+  template, loot sheet or sheet, the character's own Other Equipment list included, and the purchase is paid for with
+  the character's items tagged "Money", either automatically or by choosing which to spend, with change returned in the
+  sheet's sell money or, when that can't make it, the money paid. The record button beside it shows the shopping record
+  of every sale and purchase, where entries can be selected and deleted.
 
 ## Bug Fixes
 

@@ -39,10 +39,10 @@ const (
 var _ Syncer = &buyPanel{}
 
 // buyPanel stands in for a sheet's carried equipment list while the character buys equipment (see Sheet.startBuying).
-// It lists the equipment dropped on it from any list but the sheet's own, with the quantity of each to buy, and pays
-// for it with the carried money (see gurps.Entity.MoneyItems), chosen automatically or by the user, returning any
-// change in the sheet's sell money. Nothing on the sheet changes until the purchase is finalized: the panel's fields
-// neither record undo nor mark the sheet as modified.
+// It lists the equipment dropped on it from any equipment list, the sheet's own included, with the quantity of each to
+// buy, and pays for it with the carried money (see gurps.Entity.MoneyItems), chosen automatically or by the user,
+// returning any change in the sheet's sell money. Nothing on the sheet changes until the purchase is finalized: the
+// panel's fields neither record undo nor mark the sheet as modified.
 type buyPanel struct {
 	unison.Panel
 	sheet        *Sheet
@@ -315,7 +315,7 @@ func (p *buyPanel) createDropArea() *unison.Panel {
 	// The hint wraps, since the panel is no wider than the sheet's list and the hint is longer than a line of it.
 	hint := NewWrappingLabel()
 	hint.Font = fonts.PageFieldSecondary
-	hint.setText(i18n.Text("Drop equipment here from any equipment list other than this sheet's own. Drop equipment modifiers onto an item to adjust it."),
+	hint.setText(i18n.Text("Drop equipment here from any equipment list. Drop equipment modifiers onto an item to adjust it."),
 		unison.ThemeOnSurface)
 	hint.SetLayoutData(&unison.FlexLayoutData{
 		HSpan:  buyRowColumns,
@@ -519,10 +519,22 @@ func (p *buyPanel) installDropSupport() {
 	}
 }
 
-// claimsDrag returns true if the equipment being dragged would be bought were it dropped on this panel, in which case
-// the rest of the sheet leaves the drag to it (see Sheet.keyToPanel and NewOtherEquipmentPageList).
+// claimsDrag returns true if the equipment being dragged comes from elsewhere than this sheet and would be bought were
+// it dropped on this panel, in which case the rest of the sheet leaves the drag to it (see Sheet.keyToPanel and
+// NewOtherEquipmentPageList). The sheet's own equipment is left to its lists, so rows can be moved about while buying;
+// dropped on the panel, it is bought like any other.
 func (p *buyPanel) claimsDrag(di drag.Info) bool {
-	return p.dropData(di) != nil
+	data := p.dropData(di)
+	if data == nil {
+		return false
+	}
+	entity := p.sheet.Entity()
+	for _, row := range data.Rows {
+		if gurps.EntityFromNode(row.Data()) == entity {
+			return false
+		}
+	}
+	return true
 }
 
 // modifierDropData returns the equipment modifier rows being dragged, or nil if the drag holds none.
@@ -597,8 +609,7 @@ func (p *buyPanel) removeModifier(item *buyItem, modifier *gurps.EquipmentModifi
 	p.Sync()
 }
 
-// dropData returns the equipment rows being dragged, or nil if the drag holds none or any of them belongs to this
-// sheet, whose own equipment it can't buy.
+// dropData returns the equipment rows being dragged, or nil if the drag holds none.
 func (p *buyPanel) dropData(di drag.Info) *unison.TableDragData[*Node[*gurps.Equipment]] {
 	if !di.HasDataType(equipmentDragKey.UTI) {
 		return nil
@@ -606,12 +617,6 @@ func (p *buyPanel) dropData(di drag.Info) *unison.TableDragData[*Node[*gurps.Equ
 	data, ok := draggedTableData.(*unison.TableDragData[*Node[*gurps.Equipment]])
 	if !ok || data == nil || len(data.Rows) == 0 {
 		return nil
-	}
-	entity := p.sheet.Entity()
-	for _, row := range data.Rows {
-		if gurps.EntityFromNode(row.Data()) == entity {
-			return nil
-		}
 	}
 	return data
 }
