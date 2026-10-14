@@ -6,10 +6,6 @@
   editor, and skills and spells also with Toggle State. A disabled item, along with everything in a disabled
   container, is treated as if it weren't on the sheet: it costs no points, has no level, adds no features, weapons,
   weight or value, and satisfies no prerequisites or defaults. Copying one into a library or template enables it again.
-- The saved filter editor is easier to get started with. The name field shows an example of a name, and a duplicate
-  name gets a red edge instead of filling the field red. Why OK is off, a duplicate name or a filter with nothing in it,
-  is spelled out beside the buttons. The editor's rows are now called filters rather than conditions, and clicking the
-  "No filters" placeholder adds one directly.
 
 ## Bug Fixes
 
