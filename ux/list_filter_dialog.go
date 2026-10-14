@@ -58,6 +58,17 @@ func showListFilterDialog(title, key string, filter *gurps.ListFilter, fields []
 	nameRow.AddChild(NewFieldLeadingLabel(i18n.Text("Name"), false))
 	nameField := NewStringField(nil, "", i18n.Text("Name"), func() string { return filter.Name },
 		func(s string) { filter.Name = s })
+	nameField.Watermark = i18n.Text(`Give this filter a name, like "Allowed in My Campaign"`)
+	// A problem with the name shows as a red edge and a message beside the buttons, rather than as the field's usual
+	// red fill, which buries the watermark and says nothing about what is wrong.
+	nameField.ErrorInk = nameField.EditableInk
+	nameField.OnErrorInk = nameField.OnEditableInk
+	errorEdge := unison.NewLineBorder(unison.ThemeError, geom.Size{}, geom.NewUniformInsets(2), false)
+	nameField.DrawOverCallback = func(gc *unison.Canvas, _ geom.Rect) {
+		if nameField.Invalid() {
+			errorEdge.Draw(gc, nameField.ContentRect(true))
+		}
+	}
 	nameField.SetLayoutData(&unison.FlexLayoutData{
 		HAlign: align.Fill,
 		HGrab:  true,
@@ -90,18 +101,27 @@ func showListFilterDialog(title, key string, filter *gurps.ListFilter, fields []
 	dialog.Window().SetTitle(title)
 	// Rows are dragged within the dialog, which is a window of its own.
 	dialog.Window().RegisterForDragTypes(listFilterDragKey)
-	// The name field's error mark reflects only the name, but the OK button also needs a condition to test.
-	updateOK := func(nameValid bool) {
-		dialog.Button(unison.ModalResponseOK).SetEnabled(nameValid && !filter.Root.Empty())
-	}
+	errorLabel := addListFilterDialogMessage(dialog)
+	// OK needs a name no other saved filter bears and something to test. A blank name is unfinished rather than wrong,
+	// so it only holds back the OK button; the watermark says what is wanted.
 	nameField.ValidateCallback = func() bool {
 		name := strings.TrimSpace(filter.Name)
-		valid := name != "" && !gurps.GlobalSettings().ListFilterNameInUse(key, name, except)
-		updateOK(valid)
-		return valid
+		inUse := name != "" && gurps.GlobalSettings().ListFilterNameInUse(key, name, except)
+		empty := filter.Root.Empty()
+		dialog.Button(unison.ModalResponseOK).SetEnabled(name != "" && !inUse && !empty)
+		var message string
+		switch {
+		case inUse:
+			message = i18n.Text("Another saved filter already has this name.")
+		case empty:
+			message = i18n.Text("Add at least one filter before saving.")
+		}
+		errorLabel.SetTitle(message)
+		errorLabel.Parent().MarkForLayoutAndRedraw()
+		return !inUse
 	}
-	panel.rebuilt = func() { updateOK(!nameField.Invalid()) }
-	nameField.Validate() // Here to update the OK button.
+	panel.rebuilt = nameField.Validate
+	nameField.Validate() // Here to update the OK button and the message.
 	// Undo and Redo find the dialog's undo manager wherever the focus is, even on a button outside the content.
 	dialog.Window().ClientData()[windowUndoManagerKey] = content.undoMgr
 	installListFilterDialogKeys(dialog.Window(), content, panel)
@@ -111,6 +131,36 @@ func showListFilterDialog(title, key string, filter *gurps.ListFilter, fields []
 	}
 	filter.Name = strings.TrimSpace(filter.Name)
 	return true
+}
+
+// addListFilterDialogMessage puts an empty label for error messages at the start of the dialog's row of buttons and
+// returns it.
+func addListFilterDialogMessage(dialog *unison.Dialog) *unison.Label {
+	buttons := dialog.Button(unison.ModalResponseOK).Parent()
+	parent := buttons.Parent()
+	index := parent.IndexOfChild(buttons)
+	buttons.RemoveFromParent()
+	row := unison.NewPanel()
+	row.SetLayout(&unison.FlexLayout{
+		Columns:  2,
+		HSpacing: unison.StdHSpacing,
+	})
+	row.SetLayoutData(&unison.FlexLayoutData{
+		HAlign: align.Fill,
+		VAlign: align.Middle,
+		HGrab:  true,
+	})
+	label := unison.NewLabel()
+	label.OnBackgroundInk = unison.ThemeError
+	label.SetLayoutData(&unison.FlexLayoutData{
+		HAlign: align.Start,
+		VAlign: align.Middle,
+		HGrab:  true,
+	})
+	row.AddChild(label)
+	row.AddChild(buttons)
+	parent.AddChildAtIndex(row, index)
+	return label
 }
 
 // listFilterDialogContent holds the filter editor's dialog content, and provides the undo manager its edits are
