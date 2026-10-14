@@ -12,6 +12,7 @@ package ux
 import (
 	"fmt"
 	"slices"
+	"strings"
 	"testing"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
@@ -124,12 +125,13 @@ func (s *sellTestDialog) texts() []string {
 	return texts
 }
 
-// warning returns the text of the dialog's warning, which is empty while there is nothing to warn of.
+// warning returns the text of the dialog's warning, which is empty while there is nothing to warn of. The warning is
+// then not in the dialog at all; when it is, it follows the payout, the first of the dialog's wrapping labels.
 func (s *sellTestDialog) warning() string {
 	var text string
 	s.screen.Do(func() {
-		if label, ok := uxtest.FirstPanelOfType[*TextLabel](s.wnd.Content()); ok {
-			text = label.Title()
+		if labels := uxtest.PanelsOfType[*TextLabel](s.wnd.Content()); len(labels) > 1 {
+			text = labels[1].Title()
 		}
 	})
 	return text
@@ -196,7 +198,7 @@ func TestSellDialogSellsAndUndoes(t *testing.T) {
 	})
 	texts := s.texts()
 	for _, want := range []string{
-		"of 1", "of 2", "$400.00", "$30.00", "$200.00", "Target total: $230.00",
+		"of 1", "of 2", "$400.00", "$30.00", "$200.00", "Total: $230.00",
 		"You receive: Silver Eagle ×11, Copper Penny ×10 ($230.00)",
 	} {
 		c.True(slices.Contains(texts, want), "the dialog must show %q; it shows %v", want, texts)
@@ -207,11 +209,11 @@ func TestSellDialogSellsAndUndoes(t *testing.T) {
 	s.replaceText(s.percent, "52")
 	texts = s.texts()
 	for _, want := range []string{
-		"$208.00", "$31.20", "Target total: $239.20", "You receive: Silver Eagle ×11, Copper Penny ×19 ($239.00)",
+		"$208.00", "$31.20", "Total: $239.20", "You receive: Silver Eagle ×11, Copper Penny ×19 ($239.00)",
 	} {
 		c.True(slices.Contains(texts, want), "at 52%%, the dialog must show %q; it shows %v", want, texts)
 	}
-	c.Equal("$0.20 can't be paid with the configured sell money. Receiving $239.00, the closest amount not over the target.",
+	c.Equal("$0.20 can't be paid with the configured sell money. Receiving $239.00, the closest amount not over the total.",
 		s.warning(), "what can't be paid is explained")
 	c.True(s.sellEnabled(), "a sale that can't be paid exactly can still be made")
 	uxtest.CaptureScreen(t, c, screen, "sell_dialog")
@@ -522,7 +524,7 @@ func TestSellDialogLeavesOutWhatIsSetToZero(t *testing.T) {
 	total := func(want, why string) {
 		t.Helper()
 		texts := s.texts()
-		c.True(slices.Contains(texts, "Target total: "+want), "%s; the dialog shows %v", why, texts)
+		c.True(slices.Contains(texts, "Total: "+want), "%s; the dialog shows %v", why, texts)
 	}
 	screen.Do(func() {
 		c.Equal("1", s.quantities[0].Text())
@@ -756,5 +758,49 @@ func TestSellDialogListsWhatAContainerHolds(t *testing.T) {
 	c.Equal("Nail 1 ×1", tips[2].texts[1])
 	c.Equal(fmt.Sprintf("Nail %d ×1", maxSaleContentsLines), tips[2].texts[maxSaleContentsLines])
 	c.Equal("…and 2 more", tips[2].texts[maxSaleContentsLines+1])
+	s.dismiss(c, s.cancel)
+}
+
+// TestSellDialogLinesUpTheList checks the look of the list of items for sale: with more items than it shows at once, it
+// scrolls, cut between rows rather than through one, and its header and its total, which don't scroll, line up with the
+// rows' columns. With nothing to warn of, no warning takes up room.
+func TestSellDialogLinesUpTheList(t *testing.T) {
+	c := check.New(t)
+	screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
+	money := newTradeTestMoney(t, c)
+	var items []*gurps.Equipment
+	sheet := openSellTestSheet(t, screen, []gurps.Source{money.source(money.penny)},
+		func(entity *gurps.Entity) []*gurps.Equipment {
+			for i := range maxSaleRowsShown + 5 {
+				items = append(items, newTradeTestItem(entity, fmt.Sprintf("Item %d", i+1), "10", fxp.One))
+			}
+			return items
+		})
+	s := openSellTestDialog(t, screen, wnd, sheet, items...)
+	uxtest.CaptureScreen(t, c, screen, "sell_dialog_long")
+	screen.Do(func() {
+		content := s.wnd.Content()
+		scroll, ok := uxtest.FirstPanelOfType[*unison.ScrollPanel](content)
+		if !ok {
+			t.Fatal("the dialog must scroll its list")
+		}
+		view := scroll.ContentView().RectToRoot(scroll.ContentView().ContentRect(false))
+		list := scroll.Content().AsPanel()
+		c.True(list.FrameRect().Height > view.Height, "the list has more rows than it shows")
+		shown := s.quantities[maxSaleRowsShown-1].RectToRoot(s.quantities[maxSaleRowsShown-1].ContentRect(true))
+		hidden := s.quantities[maxSaleRowsShown].RectToRoot(s.quantities[maxSaleRowsShown].ContentRect(true))
+		c.True(shown.Bottom() <= view.Bottom(), "the last row shown is shown whole: %v within %v", shown, view)
+		c.True(hidden.Y >= view.Bottom(), "the first row past those shown is hidden whole: %v below %v", hidden, view)
+		rights := make(map[string]float32)
+		for _, label := range uxtest.PanelsOfType[*unison.Label](content) {
+			if text := label.String(); text == "You Get (50%)" || text == "$5.00" || strings.HasPrefix(text, "Total: ") {
+				rights[text] = label.RectToRoot(label.ContentRect(true)).Right()
+			}
+		}
+		c.Equal(3, len(rights), "the header, a row and the footer are found: %v", rights)
+		c.Equal(rights["You Get (50%)"], rights["$5.00"], "the header lines up with the rows")
+		c.Equal(rights["You Get (50%)"], rights["Total: $75.00"], "the total lines up with the rows")
+		c.Equal(1, len(uxtest.PanelsOfType[*TextLabel](content)), "with nothing to warn of, only the payout is shown")
+	})
 	s.dismiss(c, s.cancel)
 }
