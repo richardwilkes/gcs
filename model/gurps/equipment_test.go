@@ -347,7 +347,7 @@ func TestEquipmentApplyNameableKeysKeepsAnswersForDisabledModifiers(t *testing.T
 	equipment.Name = "@Foo@ Sword"
 	finish := NewEquipmentModifier(nil, nil, false)
 	finish.Name = "@Finish@ Coating"
-	finish.Disabled = true
+	finish.SetDisabled(true)
 	color := NewEquipmentModifier(nil, nil, false)
 	color.Name = "@Color@ Paint"
 	equipment.AddModifiers(finish, color)
@@ -361,11 +361,11 @@ func TestEquipmentApplyNameableKeysKeepsAnswersForDisabledModifiers(t *testing.T
 	equipment.ApplyNameableKeys(m)
 	c.Equal(map[string]string{"Foo": "Bar", "Color": "Red", "Finish": "Gilded"}, equipment.Replacements,
 		"the answers are applied, the switched-off modifier's answer is kept and the unused one is dropped")
-	finish.Disabled = false
+	finish.SetDisabled(false)
 	c.Equal("Gilded Coating", finish.NameWithReplacements(), "switching the modifier back on must find its answer")
 
 	// With nothing in use and nothing held for a disabled modifier, nothing is held at all.
-	finish.Disabled = true
+	finish.SetDisabled(true)
 	equipment.Name = "Sword"
 	equipment.ApplyNameableKeys(map[string]string{})
 	c.Equal(map[string]string{"Finish": "Gilded"}, equipment.Replacements, "the switched-off modifier's answer survives")

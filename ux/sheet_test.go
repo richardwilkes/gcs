@@ -177,7 +177,7 @@ func TestSheetToolbarNotesUnsettledData(t *testing.T) {
 	c.Equal(sheet.unsettledNotice.AsPanel(), sheet.toolbar.Children()[len(sheet.toolbar.Children())-1],
 		"at the end of the toolbar")
 
-	ring[1].Disabled = true
+	ring[1].SetDisabled(true)
 	sheet.MarkModified(nil)
 	c.False(entity.Unsettled(), "precondition: disabling one of the ring settles the data")
 	c.Nil(sheet.unsettledNotice.Parent(), "the notice is taken down once the data settles")

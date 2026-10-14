@@ -375,7 +375,7 @@ func TestDropOnSheetIsAppliedWhereItLanded(t *testing.T) {
 	var childrenWhenPrompted int
 	uxtest.SwapForTest(t, &promptForTraitModifiers, func(_ *modifierPromptInfo, modifiers []*gurps.TraitModifier) (changed, canceled bool) {
 		childrenWhenPrompted = len(group.Children)
-		modifiers[0].Disabled = false
+		modifiers[0].SetDisabled(false)
 		return true, false
 	})
 
@@ -385,7 +385,7 @@ func TestDropOnSheetIsAppliedWhereItLanded(t *testing.T) {
 	c.Equal(2, len(group.Children), "the dropped row must have been placed once")
 	c.Equal("Claws", group.Children[0].Name, "the dropped row must be where it was dropped")
 	c.Equal(group, group.Children[0].Parent(), "the dropped row must belong to the container it was dropped into")
-	c.False(group.Children[0].Modifiers[0].Disabled, "the answer to the modifier prompt must have been kept")
+	c.False(group.Children[0].Modifiers[0].IsDisabled(), "the answer to the modifier prompt must have been kept")
 	c.True(sheet.undoMgr.CanUndo(), "the drop must be undoable")
 
 	sheet.undoMgr.Undo()
@@ -677,7 +677,7 @@ func TestApplyTemplateCountsModifierPromptsBeforeAskingThem(t *testing.T) {
 	uxtest.SwapForTest(t, &promptForTraitModifiers, func(info *modifierPromptInfo, modifiers []*gurps.TraitModifier) (changed, canceled bool) {
 		steps = append(steps, step{row: info.name, step: info.step, steps: info.steps})
 		// Answer as the user must, by making the choice.
-		gurps.ModifierChoiceOptions(modifiers[0])[0].SetEnabled(true)
+		gurps.ModifierChoiceOptions(modifiers[0])[0].SetDisabled(false)
 		return true, false
 	})
 	uxtest.SwapForTest(t, &promptForEquipmentModifiers, func(info *modifierPromptInfo, _ []*gurps.EquipmentModifier) (changed, canceled bool) {

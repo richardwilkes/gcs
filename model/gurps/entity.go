@@ -711,11 +711,11 @@ func (e *Entity) processFeatures() {
 }
 
 // forEachActiveFeatureList calls fn with each list of features currently in effect on the entity: those of every
-// enabled, non-container trait, of every non-container skill and spell, of every carried piece of equipment that is
-// really equipped, and of the enabled modifiers of every enabled trait, containers included, and of that equipment.
-// Switchable features, whether on an item or on one of its modifiers, only take effect while the switch of the primary
-// item is on. The owner is the primary item and mod is the modifier carrying the list, or nil when the list is the
-// item's own. The leveled owner is the node whose level drives a per-level amount: the modifier itself for trait
+// enabled, non-container trait, of every enabled, non-container skill and spell, of every carried piece of equipment
+// that is really equipped, and of the enabled modifiers of every enabled trait, containers included, and of that
+// equipment. Switchable features, whether on an item or on one of its modifiers, only take effect while the switch of
+// the primary item is on. The owner is the primary item and mod is the modifier carrying the list, or nil when the list
+// is the item's own. The leveled owner is the node whose level drives a per-level amount: the modifier itself for trait
 // modifiers, which can have levels of their own, and the equipment for equipment modifiers, which cannot. Everything
 // that gathers features from the entity goes through this walk, so they all agree on which features are in effect.
 func (e *Entity) forEachActiveFeatureList(fn func(owner, mod fmt.Stringer, leveled LeveledOwner, list Features)) {
@@ -732,11 +732,11 @@ func (e *Entity) forEachActiveFeatureList(fn func(owner, mod fmt.Stringer, level
 	Traverse(func(s *Skill) bool {
 		fn(s, nil, s, s.ActiveFeatures())
 		return false
-	}, false, true, e.Skills...)
+	}, true, true, e.Skills...)
 	Traverse(func(s *Spell) bool {
 		fn(s, nil, s, s.ActiveFeatures())
 		return false
-	}, false, true, e.Spells...)
+	}, true, true, e.Spells...)
 	Traverse(func(eqp *Equipment) bool {
 		if eqp.ReallyEquipped() {
 			forEachActiveEquipmentFeatureList(eqp, func(mod fmt.Stringer, list Features) {
@@ -890,7 +890,7 @@ func (e *Entity) applyEquipmentPenalties() {
 			e.features.skillBonuses = append(e.features.skillBonuses, penalty)
 		}
 		return false
-	}, false, true, e.Skills...)
+	}, true, true, e.Skills...)
 	Traverse(func(s *Spell) bool {
 		if s.takesEquipmentPenalty {
 			penalty := NewSpellBonus()
@@ -901,16 +901,17 @@ func (e *Entity) applyEquipmentPenalties() {
 			e.features.spellBonuses = append(e.features.spellBonuses, penalty)
 		}
 		return false
-	}, false, true, e.Spells...)
+	}, true, true, e.Spells...)
 }
 
 // processSkillAndSpellPrereqs evaluates the prerequisites of every skill and spell, recording the reason each is
 // unsatisfied. A skill or spell left unsatisfied by an equipped-equipment prerequisite is noted as taking the
 // missing-equipment penalty to its level, which applyEquipmentPenalties adds to the collected features in the next
-// pass. A technique or ritual magic spell whose prerequisites are met must also have the skill it is based on.
+// pass. A technique or ritual magic spell whose prerequisites are met must also have the skill it is based on. A
+// disabled one is not judged, and has any reason recorded before it was disabled cleared.
 func (e *Entity) processSkillAndSpellPrereqs() {
 	Traverse(func(s *Skill) bool {
-		if s.Container() {
+		if s.Container() || !s.Enabled() {
 			s.UnsatisfiedReason = ""
 			s.takesEquipmentPenalty = false
 			return false
@@ -924,7 +925,7 @@ func (e *Entity) processSkillAndSpellPrereqs() {
 		return false
 	}, false, false, e.Skills...)
 	Traverse(func(s *Spell) bool {
-		if s.Container() {
+		if s.Container() || !s.Enabled() {
 			s.UnsatisfiedReason = ""
 			s.takesEquipmentPenalty = false
 			return false
@@ -940,10 +941,14 @@ func (e *Entity) processSkillAndSpellPrereqs() {
 }
 
 // processEquipmentPrereqs evaluates the prerequisites of every piece of equipment, recording the reason each is
-// unsatisfied.
+// unsatisfied. A disabled one is not judged, and has any reason recorded before it was disabled cleared.
 func (e *Entity) processEquipmentPrereqs() {
 	equipmentFunc := func(eqp *Equipment) bool {
-		eqp.UnsatisfiedReason = e.evaluatePrereqs(eqp.Prereq, eqp, nil)
+		if eqp.Enabled() {
+			eqp.UnsatisfiedReason = e.evaluatePrereqs(eqp.Prereq, eqp, nil)
+		} else {
+			eqp.UnsatisfiedReason = ""
+		}
 		return false
 	}
 	Traverse(equipmentFunc, false, false, e.CarriedEquipment...)
@@ -967,7 +972,7 @@ func (e *Entity) processTraitPrereqs() {
 	Traverse(func(t *Trait) bool {
 		t.UnsatisfiedReason = ""
 		verdict := prereqsNotJudged
-		if !t.Disabled && (t.parent == nil || t.parent.Enabled()) {
+		if !t.IsDisabled() && (t.parent == nil || t.parent.Enabled()) {
 			t.UnsatisfiedReason = e.evaluatePrereqs(t.Prereq, t, nil)
 			if maximum := t.ResolvedMaxLevels(); maximum > 0 && t.Levels > maximum {
 				reason := levelExceedsMaximumReason(maximum)
@@ -1068,11 +1073,11 @@ func (e *Entity) PointsBreakdown() *PointsBreakdown {
 	Traverse(func(s *Skill) bool {
 		pb.Skills += s.Points
 		return false
-	}, false, true, e.Skills...)
+	}, true, true, e.Skills...)
 	Traverse(func(s *Spell) bool {
 		pb.Spells += s.Points
 		return false
-	}, false, true, e.Spells...)
+	}, true, true, e.Spells...)
 	return &pb
 }
 
@@ -1111,7 +1116,9 @@ func calculateSingleTraitPoints(t *Trait, pb *PointsBreakdown) {
 func (e *Entity) WealthCarried() fxp.Int {
 	var value fxp.Int
 	for _, one := range e.CarriedEquipment {
-		value += one.ExtendedValue()
+		if one.Enabled() {
+			value += one.ExtendedValue()
+		}
 	}
 	return value
 }
@@ -1120,7 +1127,9 @@ func (e *Entity) WealthCarried() fxp.Int {
 func (e *Entity) WealthNotCarried() fxp.Int {
 	var value fxp.Int
 	for _, one := range e.OtherEquipment {
-		value += one.ExtendedValue()
+		if one.Enabled() {
+			value += one.ExtendedValue()
+		}
 	}
 	return value
 }
@@ -1507,7 +1516,7 @@ func (e *Entity) SkillNamed(name, specialization string, requirePoints bool, exc
 			}
 		}
 		return false
-	}, false, true, e.Skills...)
+	}, true, true, e.Skills...)
 	return list
 }
 
@@ -1554,7 +1563,7 @@ func (e *Entity) SkillMatching(nameCriteria, specializationCriteria criteria.Tex
 			}
 		}
 		return false
-	}, false, true, e.Skills...)
+	}, true, true, e.Skills...)
 	return list
 }
 
@@ -1611,7 +1620,9 @@ func (e *Entity) WeightUnit() fxp.WeightUnit {
 func (e *Entity) WeightCarried(forSkills bool) fxp.Weight {
 	var total fxp.Weight
 	for _, one := range e.CarriedEquipment {
-		total += one.ExtendedWeight(forSkills, e.SheetSettings.DefaultWeightUnits)
+		if one.Enabled() {
+			total += one.ExtendedWeight(forSkills, e.SheetSettings.DefaultWeightUnits)
+		}
 	}
 	return total
 }
@@ -1859,7 +1870,7 @@ func (e *Entity) Weapons(melee, includeUnequipped, excludeHidden bool) []*Weapon
 			}
 		}
 		return false
-	}, false, false, e.CarriedEquipment...)
+	}, true, false, e.CarriedEquipment...)
 	if includeUnequipped {
 		Traverse(func(eqp *Equipment) bool {
 			if eqp.Quantity > 0 {
@@ -1872,7 +1883,7 @@ func (e *Entity) Weapons(melee, includeUnequipped, excludeHidden bool) []*Weapon
 				}
 			}
 			return false
-		}, false, false, e.OtherEquipment...)
+		}, true, false, e.OtherEquipment...)
 	}
 	Traverse(func(s *Skill) bool {
 		for _, w := range s.Weapons {
@@ -1881,7 +1892,7 @@ func (e *Entity) Weapons(melee, includeUnequipped, excludeHidden bool) []*Weapon
 			}
 		}
 		return false
-	}, false, true, e.Skills...)
+	}, true, true, e.Skills...)
 	Traverse(func(s *Spell) bool {
 		for _, w := range s.Weapons {
 			if w.IsMelee() == melee && (!excludeHidden || !w.Hide) {
@@ -1889,7 +1900,7 @@ func (e *Entity) Weapons(melee, includeUnequipped, excludeHidden bool) []*Weapon
 			}
 		}
 		return false
-	}, false, true, e.Spells...)
+	}, true, true, e.Spells...)
 	list := make([]*Weapon, 0, len(m))
 	for _, v := range m {
 		list = append(list, v)

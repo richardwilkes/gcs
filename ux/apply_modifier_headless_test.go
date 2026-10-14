@@ -93,7 +93,7 @@ func TestApplyModifierHeadless(t *testing.T) {
 	})
 	ranged := gurps.NewTraitModifier(nil, nil, false)
 	ranged.Name = "Ranged"
-	ranged.Disabled = true
+	ranged.SetDisabled(true)
 	melee := gurps.NewTraitModifier(nil, nil, false)
 	melee.Name = "Melee"
 	var library *TableDockable[*gurps.TraitModifier]

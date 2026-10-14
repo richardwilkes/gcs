@@ -76,6 +76,36 @@ func TestLegacyExportSkillsLoopCount(t *testing.T) {
 	c.Equal("2|<GROUP><ITEM>", runLegacyExport(t, c, e, "@SKILLS_LOOP_COUNT|@SKILLS_LOOP_START<@TYPE>@SKILLS_LOOP_END"))
 }
 
+// TestLegacyExportLoopCountsSkipDisabled verifies that the skills, spells and equipment loop counts leave out disabled
+// items, as their loops do.
+func TestLegacyExportLoopCountsSkipDisabled(t *testing.T) {
+	c := check.New(t)
+	e := gurps.NewEntity()
+	for _, name := range []string{"A", "B"} {
+		skill := gurps.NewSkill(e, nil, false)
+		skill.Name = name
+		e.Skills = append(e.Skills, skill)
+		spell := gurps.NewSpell(e, nil, false)
+		spell.Name = name
+		e.Spells = append(e.Spells, spell)
+		carried := gurps.NewEquipment(e, nil, false)
+		carried.Name = name
+		e.CarriedEquipment = append(e.CarriedEquipment, carried)
+		other := gurps.NewEquipment(e, nil, false)
+		other.Name = name
+		e.OtherEquipment = append(e.OtherEquipment, other)
+	}
+	e.Skills[1].SetDisabled(true)
+	e.Spells[1].SetDisabled(true)
+	e.CarriedEquipment[1].SetDisabled(true)
+	e.OtherEquipment[1].SetDisabled(true)
+	c.Equal("1|<A>1|<A>1|<A>1|<A>", runLegacyExport(t, c, e,
+		"@SKILLS_LOOP_COUNT|@SKILLS_LOOP_START<@DESCRIPTION>@SKILLS_LOOP_END"+
+			"@SPELLS_LOOP_COUNT|@SPELLS_LOOP_START<@DESCRIPTION_PRIMARY>@SPELLS_LOOP_END"+
+			"@EQUIPMENT_LOOP_COUNT|@EQUIPMENT_LOOP_START<@DESCRIPTION>@EQUIPMENT_LOOP_END"+
+			"@OTHER_EQUIPMENT_LOOP_COUNT|@OTHER_EQUIPMENT_LOOP_START<@DESCRIPTION>@OTHER_EQUIPMENT_LOOP_END"))
+}
+
 // TestLegacyExportConditionalModifierGroups verifies that the legacy exporter writes the reactions and conditional
 // modifiers out flat -- the loop counts and IDs cover the members, not the group containers -- and that a member can
 // name its group with @GROUP.
@@ -302,7 +332,7 @@ func TestLegacyExportHitLocationEquipment(t *testing.T) {
 	// A disabled modifier contributes nothing, exactly as it does when features are collected.
 	cloak := gurpstest.AddCarriedEquipmentWithFeatures(e, "Cloak")
 	disabled := newTestDRBonusModifier(e, "Hood", gurpstest.NewDRBonus(fxp.Five, gurps.AllID, "skull"))
-	disabled.Disabled = true
+	disabled.SetDisabled(true)
 	cloak.AddModifiers(disabled)
 
 	// Switchable bonuses, on the item and on one of its modifiers, only count while the item's switch is on.

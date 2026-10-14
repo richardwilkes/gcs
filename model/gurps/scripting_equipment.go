@@ -61,17 +61,21 @@ func newScriptEquipment(r *goja.Runtime, item *Equipment) *goja.Object {
 	return r.NewDynamicObject(NewScriptObject(r, m))
 }
 
-// hasQuantity reports whether the item has a positive quantity, which is what makes it present as far as a script is
-// concerned.
+// hasQuantity reports whether the item is enabled, which takes in the containers it sits in, and has a positive
+// quantity, which is what makes it present as far as a script is concerned.
 func hasQuantity(item *Equipment) bool {
-	return item.Quantity > 0
+	return item.Enabled() && item.Quantity > 0
 }
 
-// hasQuantityThroughAncestors reports whether the item and every container it sits in have a positive quantity.
-// Traverse descends into a container regardless of its quantity, so a search has to check the chain itself.
+// hasQuantityThroughAncestors reports whether the item is enabled and it and every container it sits in have a
+// positive quantity. Traverse descends into a container regardless of its quantity, so a search has to check the chain
+// itself.
 func hasQuantityThroughAncestors(item *Equipment) bool {
+	if !item.Enabled() {
+		return false
+	}
 	for ; item != nil; item = item.parent {
-		if !hasQuantity(item) {
+		if item.Quantity <= 0 {
 			return false
 		}
 	}

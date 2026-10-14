@@ -338,6 +338,6 @@ func modifierEnabledStates[T gurps.Node[T]](nodes []T) map[gurps.GeneralModifier
 // restoreModifierEnabledStates puts back the enabled states modifierEnabledStates returned.
 func restoreModifierEnabledStates(states map[gurps.GeneralModifier]bool) {
 	for gm, enabled := range states {
-		gm.SetEnabled(enabled)
+		gm.SetDisabled(!enabled)
 	}
 }

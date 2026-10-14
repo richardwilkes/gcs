@@ -40,7 +40,7 @@ func newSwitchableTrait(entity *gurps.Entity, name string) *gurps.Trait {
 func newSwitchableTraitModifier(name string) *gurps.TraitModifier {
 	modifier := gurps.NewTraitModifier(nil, nil, false)
 	modifier.Name = name
-	modifier.Disabled = true
+	modifier.SetDisabled(true)
 	modifier.Features = gurps.Features{switchableSTBonus(nil)}
 	return modifier
 }
@@ -50,7 +50,7 @@ func newSwitchableTraitModifier(name string) *gurps.TraitModifier {
 func newSwitchableEquipmentModifier(name string) *gurps.EquipmentModifier {
 	modifier := gurps.NewEquipmentModifier(nil, nil, false)
 	modifier.Name = name
-	modifier.Disabled = true
+	modifier.SetDisabled(true)
 	modifier.Features = gurps.Features{switchableSTBonus(nil)}
 	return modifier
 }

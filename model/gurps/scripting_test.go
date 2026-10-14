@@ -93,6 +93,50 @@ func TestScriptEntityPoints(t *testing.T) {
 	}
 }
 
+// entity.skills and entity.spells leave out disabled items, as entity.traits, a container's children and the find
+// functions do.
+func TestScriptEntitySkillsAndSpellsSkipDisabled(t *testing.T) {
+	c := check.New(t)
+	e := NewEntity()
+	_, skill, spell, _ := newSwitchableItemSet(e)
+	e.Recalculate()
+	entityArg := ScriptArg{Name: entityScriptArgName, Value: func(r *goja.Runtime) any { return newScriptEntity(r, e) }}
+	for _, field := range []string{"skills", "spells"} {
+		v, err := runScript(0, "entity."+field+".length", entityArg)
+		c.NoError(err)
+		c.Equal("1", v, field)
+	}
+	skill.SetDisabled(true)
+	spell.SetDisabled(true)
+	e.Recalculate()
+	for _, field := range []string{"skills", "spells"} {
+		v, err := runScript(0, "entity."+field+".length", entityArg)
+		c.NoError(err)
+		c.Equal("0", v, field)
+	}
+}
+
+// A container's children leave out what a disabled container above it holds, as the find functions do.
+func TestScriptEquipmentChildrenSkipDisabledAncestor(t *testing.T) {
+	c := check.New(t)
+	e := NewEntity()
+	outer := NewEquipment(e, nil, true)
+	inner := NewEquipment(e, outer, true)
+	item := NewEquipment(e, inner, false)
+	inner.Children = []*Equipment{item}
+	outer.Children = []*Equipment{inner}
+	e.CarriedEquipment = append(e.CarriedEquipment, outer)
+	e.Recalculate()
+	selfArg := ScriptArg{Name: "self", Value: func(r *goja.Runtime) any { return newScriptEquipment(r, inner) }}
+	v, err := runScript(0, "self.children.length", selfArg)
+	c.NoError(err)
+	c.Equal("1", v)
+	outer.SetDisabled(true)
+	v, err = runScript(0, "self.children.length", selfArg)
+	c.NoError(err)
+	c.Equal("0", v)
+}
+
 // Exercises the entity.thrustFor and entity.swingFor bindings, which format their dice using the
 // UseModifyingDicePlusAdds flag from the entity's sheet settings. The GURPS damage progression keeps thrust/swing
 // modifiers within -3..+2, so the plain and modifying-dice formats never diverge for these dice; what is guarded here
@@ -894,7 +938,7 @@ func TestScriptFindActiveModifier(t *testing.T) {
 	traitMod.Name = "Trait Mod"
 	disabledTraitMod := NewTraitModifier(e, nil, false)
 	disabledTraitMod.Name = "Off"
-	disabledTraitMod.Disabled = true
+	disabledTraitMod.SetDisabled(true)
 	trait.Modifiers = []*TraitModifier{traitMod, disabledTraitMod}
 	e.Traits = []*Trait{trait}
 
@@ -904,7 +948,7 @@ func TestScriptFindActiveModifier(t *testing.T) {
 	itemMod.Name = "Gear Mod"
 	disabledItemMod := NewEquipmentModifier(e, nil, false)
 	disabledItemMod.Name = "Off"
-	disabledItemMod.Disabled = true
+	disabledItemMod.SetDisabled(true)
 	item.Modifiers = []*EquipmentModifier{itemMod, disabledItemMod}
 	e.CarriedEquipment = []*Equipment{item}
 	e.Recalculate()

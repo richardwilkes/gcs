@@ -25,7 +25,7 @@ func newScriptSkill(r *goja.Runtime, skill *Skill) *goja.Object {
 	m["name"] = func() goja.Value { return r.ToValue(skill.NameWithReplacements()) }
 	m["notes"] = scriptNotes(r, skill)
 	if skill.Container() {
-		m["children"] = func() goja.Value { return scriptObjects(r, skill.Children, nil, newScriptSkill) }
+		m["children"] = func() goja.Value { return scriptObjects(r, skill.Children, (*Skill).Enabled, newScriptSkill) }
 		m["find"] = func() goja.Value {
 			return r.ToValue(func(call goja.FunctionCall) goja.Value {
 				name := callArgAsString(call, 0)

@@ -16,7 +16,7 @@ import (
 
 func usesExtractor(amount int) func(*gurps.Equipment) (*gurps.Equipment, bool) {
 	return func(eqp *gurps.Equipment) (*gurps.Equipment, bool) {
-		if eqp != nil {
+		if eqp != nil && eqp.Enabled() {
 			// Adjust relative to the displayed (capped) value so the action matches what the user sees, even when a
 			// feature has reduced the maximum below the stored Uses value.
 			if total := eqp.ResolvedUses() + amount; total >= 0 && total <= eqp.ResolvedMaxUses() {
@@ -44,7 +44,7 @@ func adjustUses(owner Rebuildable, table *unison.Table[*Node[*gurps.Equipment]],
 }
 
 func usesResetExtractor(eqp *gurps.Equipment) (*gurps.Equipment, bool) {
-	if eqp != nil {
+	if eqp != nil && eqp.Enabled() {
 		// Compare against the displayed (capped) value so the action reflects what the user sees.
 		if maxUses := eqp.ResolvedMaxUses(); maxUses > 0 && eqp.ResolvedUses() != maxUses {
 			return eqp, true
