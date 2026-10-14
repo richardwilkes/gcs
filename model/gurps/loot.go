@@ -96,10 +96,12 @@ func (l *Loot) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 	if !tid.IsKindAndValid(l.ID, kinds.Loot) {
 		l.ID = tid.MustNewTID(kinds.Loot)
 	}
-	// Only a template may hold template picker data or the flag to pick from a group separately, and the preconfigured
-	// mark means nothing on a sheet, so clear any of these a loot sheet carries.
+	// Only a template may hold template picker data or the flag to pick from a group separately, the preconfigured mark
+	// means nothing on a sheet and disabling only means something on a character sheet, so clear any of these a loot
+	// sheet carries.
 	ClearTemplatePickerData(l.Equipment...)
 	ClearPreconfigured(l.Equipment...)
+	ClearDisabled(l.Equipment...)
 	ClearPreconfigured(l.Notes...)
 	l.EnsureAttachments()
 	return nil

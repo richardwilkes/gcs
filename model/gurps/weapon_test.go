@@ -887,7 +887,7 @@ func TestWeaponNotesFromOwnerModifiers(t *testing.T) {
 	disabled.Name = "Poisoned"
 	disabled.LocalNotes = "Follow-up toxic"
 	disabled.ShowNotesOnWeapon = true
-	disabled.Disabled = true
+	disabled.SetDisabled(true)
 	nested := gurps.NewTraitModifier(e, nil, false)
 	nested.Name = "Retractable"
 	nested.LocalNotes = "Takes a Ready"
@@ -917,7 +917,7 @@ func TestWeaponNotesFromOwnerModifiers(t *testing.T) {
 	off.Name = "Poisoned"
 	off.LocalNotes = "Follow-up toxic"
 	off.ShowNotesOnWeapon = true
-	off.Disabled = true
+	off.SetDisabled(true)
 	eqp.Modifiers = []*gurps.EquipmentModifier{fine, silvered, off}
 	sword := gurps.NewWeapon(eqp, true)
 	eqp.Weapons = []*gurps.Weapon{sword}

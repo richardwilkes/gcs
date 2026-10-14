@@ -104,7 +104,7 @@ func (p *SkillPrereq) Satisfied(entity *Entity, exclude any, tooltip *xbytes.Ins
 			satisfied = sk.TechLevel == nil || *techLevel == *sk.TechLevel
 		}
 		return satisfied
-	}, false, true, entity.Skills...)
+	}, true, true, entity.Skills...)
 	if !p.Has {
 		satisfied = !satisfied
 	}

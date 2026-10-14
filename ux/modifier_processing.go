@@ -507,7 +507,7 @@ func (s *modifierSelection) preview(fn func() string) string {
 	}
 	defer func() {
 		for gm, on := range was {
-			gm.SetEnabled(on)
+			gm.SetDisabled(!on)
 		}
 	}()
 	s.apply()
@@ -518,7 +518,7 @@ func (s *modifierSelection) preview(fn func() string) string {
 func (s *modifierSelection) apply() (changed bool) {
 	set := func(gm gurps.GeneralModifier, on bool) {
 		if gm.Enabled() != on {
-			gm.SetEnabled(on)
+			gm.SetDisabled(!on)
 			changed = true
 		}
 	}

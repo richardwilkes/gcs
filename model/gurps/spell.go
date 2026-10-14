@@ -103,6 +103,7 @@ type SpellEditData struct {
 	SpellSyncData
 	VTTNotes     string            `json:"vtt_notes,omitzero"`
 	Replacements map[string]string `json:"replacements,omitempty"`
+	Disabled     bool              `json:"disabled,omitzero"`
 	ItemSwitch
 	preconfigurable
 	choiceGrouping
@@ -305,6 +306,10 @@ func (s *Spell) Clone(from LibraryFile, owner DataOwner, parent *Spell, mode Clo
 	other.AdjustSource(from, s.SourcedID, mode)
 	other.ThirdParty = s.ThirdParty
 	other.copyFrom(other, &s.SpellEditData, s.Container(), false, mode)
+	if EntityFromNode(other) == nil {
+		// Disabling only means something on a sheet.
+		other.SetDisabled(false)
+	}
 	PropagateNodeNoteClosedState(s, other)
 	if s.HasChildren() {
 		other.Children = make([]*Spell, 0, len(s.Children))
@@ -407,10 +412,12 @@ func SpellsHeaderData(columnID int) HeaderData {
 // CellData returns the cell data information for the given column.
 func (s *Spell) CellData(columnID int, data *CellData) {
 	data.Self = s
+	data.Dim = !s.Enabled()
 	switch columnID {
 	case SpellDescriptionColumn:
 		data.Type = cell.Text
 		data.Primary = s.String()
+		data.Disabled = data.Dim
 		data.Secondary = s.SecondaryText(func(option display.Option) bool { return option.Inline() })
 		data.UnsatisfiedReason = s.UnsatisfiedReason
 		data.Tooltip = s.SecondaryText(func(option display.Option) bool { return option.Tooltip() })
@@ -470,7 +477,11 @@ func (s *Spell) CellData(columnID int, data *CellData) {
 	case SpellLevelColumn:
 		if !s.Container() {
 			data.Type = cell.Text
-			level := s.CalculateLevel()
+			// A disabled one has no level, which LevelAsString shows as "-".
+			var level Level
+			if s.Enabled() {
+				level = s.CalculateLevel()
+			}
 			data.Primary = level.LevelAsString(s.Container())
 			if level.Tooltip != "" {
 				data.Tooltip = IncludesModifiersFrom() + ":" + level.Tooltip
@@ -484,8 +495,10 @@ func (s *Spell) CellData(columnID int, data *CellData) {
 			// attribute, so it is shown as a bare signed number, just as RelativeLevel() and the spell editor do.
 			data.Primary = FormatRelativeSkill(EntityFromNode(s), s.IsRitualMagic(), s.Difficulty,
 				s.AdjustedRelativeLevel())
-			if tooltip := s.CalculateLevel().Tooltip; tooltip != "" {
-				data.Tooltip = IncludesModifiersFrom() + ":" + tooltip
+			if s.Enabled() {
+				if tooltip := s.CalculateLevel().Tooltip; tooltip != "" {
+					data.Tooltip = IncludesModifiersFrom() + ":" + tooltip
+				}
 			}
 		}
 	case SpellPointsColumn:
@@ -597,6 +610,10 @@ func (s *Spell) AdjustedRelativeLevel() fxp.Int {
 // UpdateLevel updates the level of the spell, returning true if it has changed.
 func (s *Spell) UpdateLevel() bool {
 	saved := s.LevelData
+	if !s.Enabled() {
+		s.LevelData = Level{}
+		return saved != s.LevelData
+	}
 	colleges := s.CollegeWithReplacements()
 	var level Level
 	// A level computed from a script that was stopped before it could produce an answer is not kept, for the reasons
@@ -942,9 +959,12 @@ func (s *Spell) SetRawPoints(points fxp.Int) bool {
 	return s.UpdateLevel()
 }
 
-// AdjustedPoints returns the points, adjusted for any bonuses. A container whose choice outcomes all cost the same
-// reports that cost; see PointsRange for one whose outcomes differ.
+// AdjustedPoints returns the points, adjusted for any bonuses, or nothing when disabled. A container whose choice
+// outcomes all cost the same reports that cost; see PointsRange for one whose outcomes differ.
 func (s *Spell) AdjustedPoints(tooltip *xbytes.InsertBuffer) fxp.Int {
+	if !s.Enabled() {
+		return 0
+	}
 	if s.Container() {
 		// The tooltip goes no further: a container never puts anything into it; see PointsRange for why.
 		if !s.TemplatePicker.IsZero() {
@@ -1015,9 +1035,24 @@ func (s *Spell) SetTL(tl string) {
 	}
 }
 
-// Enabled returns true if this node is enabled.
+// Enabled returns true if this Spell and all of its parents are enabled.
 func (s *Spell) Enabled() bool {
+	for p := s; p != nil; p = p.parent {
+		if p.IsDisabled() {
+			return false
+		}
+	}
 	return true
+}
+
+// IsDisabled implements Disableable.
+func (s *SpellEditData) IsDisabled() bool {
+	return s.Disabled
+}
+
+// SetDisabled implements Disableable.
+func (s *SpellEditData) SetDisabled(disabled bool) {
+	s.Disabled = disabled
 }
 
 // NameableReplacements returns the replacements to be used with Nameables.

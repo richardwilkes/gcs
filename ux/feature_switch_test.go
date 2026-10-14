@@ -526,7 +526,7 @@ func TestSwitchCellIsClickableThroughTheTable(t *testing.T) {
 			trait := newSwitchableTrait(entity, "Claws")
 			// A trait that is turned off contributes nothing, which is what dims its switch cell; whether it has a
 			// switch to throw at all doesn't depend on that.
-			trait.Disabled = tc.dim
+			trait.SetDisabled(tc.dim)
 			entity.Traits = []*gurps.Trait{trait}
 			sheet.Rebuild(true)
 			table := sheet.Traits.Table

@@ -317,7 +317,7 @@ func TestOrganizeTraitsDisabledTrait(t *testing.T) {
 	c := check.New(t)
 	e := NewEntity()
 	disabled := newOrganizableTrait(e, "Sleepy", -10)
-	disabled.Disabled = true
+	disabled.SetDisabled(true)
 	c.Equal(fxp.Int(0), disabled.AdjustedPoints(nil), "a disabled trait reports no cost")
 	organized, changed := OrganizeTraits(e, []*Trait{disabled})
 	c.True(changed, "filing the trait changes the list")

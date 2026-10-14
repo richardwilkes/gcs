@@ -145,12 +145,12 @@ func TestToggleDisabledSkipsChoiceContainers(t *testing.T) {
 	table.SetSelectionMap(map[tid.TID]bool{choice.ID(): true, plain.ID(): true})
 	c.True(canToggleDisabled(table), "the rest of the selection may still be toggled")
 	toggleDisabled(template, table)
-	c.False(choice.Disabled, "the choice must be left enabled")
-	c.True(plain.Disabled, "the plain trait must be disabled")
+	c.False(choice.IsDisabled(), "the choice must be left enabled")
+	c.True(plain.IsDisabled(), "the plain trait must be disabled")
 
-	choice.Disabled = true
+	choice.SetDisabled(true)
 	table.SetSelectionMap(map[tid.TID]bool{choice.ID(): true})
 	c.True(canToggleDisabled(table), "a disabled choice must offer to be enabled")
 	toggleDisabled(template, table)
-	c.False(choice.Disabled, "the disabled choice must be enabled")
+	c.False(choice.IsDisabled(), "the disabled choice must be enabled")
 }

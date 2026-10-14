@@ -550,20 +550,30 @@ func (t *TraitModifier) enabledVariant() *TraitModifier { //nolint:unused // Onl
 		return t
 	}
 	variant := *t
-	variant.Disabled = false
+	variant.SetDisabled(false)
 	return &variant
 }
 
 // Enabled returns true if this node is enabled.
 func (t *TraitModifier) Enabled() bool {
-	return !t.Disabled || t.Container()
+	return !t.IsDisabled() || t.Container()
 }
 
-// SetEnabled makes the node enabled, if possible.
-func (t *TraitModifier) SetEnabled(enabled bool) {
+// SetDisabled implements Disableable. A container can't be disabled.
+func (t *TraitModifier) SetDisabled(disabled bool) {
 	if !t.Container() {
-		t.Disabled = !enabled
+		t.TraitModifierEditDataNonContainerOnly.SetDisabled(disabled)
 	}
+}
+
+// IsDisabled implements Disableable.
+func (d *TraitModifierEditDataNonContainerOnly) IsDisabled() bool {
+	return d.Disabled
+}
+
+// SetDisabled implements Disableable.
+func (d *TraitModifierEditDataNonContainerOnly) SetDisabled(disabled bool) {
+	d.Disabled = disabled
 }
 
 // Kind returns the kind of data.

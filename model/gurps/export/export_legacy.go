@@ -388,11 +388,11 @@ func (ex *legacyExporter) emitKey(key string) error {
 	case "CULTURAL_FAMILIARITIES_LOOP_START":
 		ex.processTraitLoop(ex.extractUpToMarker("CULTURAL_FAMILIARITIES_LOOP_END"), ex.includeCulturalFamiliarities)
 	case "SKILLS_LOOP_COUNT":
-		ex.writeEncodedText(strconv.Itoa(gurps.CountNodes(ex.entity.Skills, false, nil)))
+		ex.writeEncodedText(strconv.Itoa(gurps.CountNodes(ex.entity.Skills, true, nil)))
 	case "SKILLS_LOOP_START":
 		ex.processSkillsLoop(ex.extractUpToMarker("SKILLS_LOOP_END"))
 	case "SPELLS_LOOP_COUNT":
-		ex.writeEncodedText(strconv.Itoa(gurps.CountNodes(ex.entity.Spells, false, nil)))
+		ex.writeEncodedText(strconv.Itoa(gurps.CountNodes(ex.entity.Spells, true, nil)))
 	case "SPELLS_LOOP_START":
 		ex.processSpellsLoop(ex.extractUpToMarker("SPELLS_LOOP_END"))
 	case "MELEE_LOOP_COUNT":
@@ -414,11 +414,11 @@ func (ex *legacyExporter) emitKey(key string) error {
 	case "HIERARCHICAL_RANGED_LOOP_START":
 		ex.processWeaponLoop(ex.extractUpToMarker("HIERARCHICAL_RANGED_LOOP_END"), false, true)
 	case "EQUIPMENT_LOOP_COUNT":
-		ex.writeEncodedText(strconv.Itoa(gurps.CountNodes(ex.entity.CarriedEquipment, false, ex.includeByEquipmentTags)))
+		ex.writeEncodedText(strconv.Itoa(gurps.CountNodes(ex.entity.CarriedEquipment, true, ex.includeByEquipmentTags)))
 	case "EQUIPMENT_LOOP_START":
 		ex.processEquipmentLoop(ex.extractUpToMarker("EQUIPMENT_LOOP_END"), true)
 	case "OTHER_EQUIPMENT_LOOP_COUNT":
-		ex.writeEncodedText(strconv.Itoa(gurps.CountNodes(ex.entity.OtherEquipment, false, ex.includeByEquipmentTags)))
+		ex.writeEncodedText(strconv.Itoa(gurps.CountNodes(ex.entity.OtherEquipment, true, ex.includeByEquipmentTags)))
 	case "OTHER_EQUIPMENT_LOOP_START":
 		ex.processEquipmentLoop(ex.extractUpToMarker("OTHER_EQUIPMENT_LOOP_END"), false)
 	case "NOTES_LOOP_COUNT":
@@ -885,7 +885,7 @@ func (ex *legacyExporter) processSkillsLoop(buffer []byte) {
 			return index
 		})
 		return false
-	}, false, false, ex.entity.Skills...)
+	}, true, false, ex.entity.Skills...)
 }
 
 func (ex *legacyExporter) processSpellsLoop(buffer []byte) {
@@ -945,7 +945,7 @@ func (ex *legacyExporter) processSpellsLoop(buffer []byte) {
 			return index
 		})
 		return false
-	}, false, false, ex.entity.Spells...)
+	}, true, false, ex.entity.Spells...)
 }
 
 func (ex *legacyExporter) processEquipmentLoop(buffer []byte, carried bool) {
@@ -1050,7 +1050,7 @@ func (ex *legacyExporter) processEquipmentLoop(buffer []byte, carried bool) {
 			})
 		}
 		return false
-	}, false, false, eqpList...)
+	}, true, false, eqpList...)
 	ex.onlyTags = make(map[string]bool)
 	ex.excludedTags = make(map[string]bool)
 }

@@ -308,7 +308,7 @@ func attachModifierClones[T gurps.ModifiableNode[T, M], M gurps.ModifierNode[M, 
 			clone := m.Clone(from, dataOwner, noParent, gurps.Reference)
 			// A container has no switch of its own; its contents are asked about below.
 			if !clone.Container() {
-				clone.SetEnabled(true)
+				clone.SetDisabled(false)
 			}
 			clones = append(clones, clone)
 		}

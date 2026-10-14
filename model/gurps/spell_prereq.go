@@ -165,7 +165,7 @@ func (p *SpellPrereq) Satisfied(entity *Entity, exclude any, tooltip *xbytes.Ins
 			count++
 		}
 		return false
-	}, false, true, entity.Spells...)
+	}, true, true, entity.Spells...)
 	if p.SubType == spellcmp.CollegeCount {
 		count = len(colleges)
 	}
