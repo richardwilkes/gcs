@@ -221,7 +221,7 @@ func openWeaponEditor[T gurps.Node[T], D gurps.EditorData[T]](sheet *Sheet, page
 				if p != nil {
 					wt := p.table
 					for _, row := range wt.RootRows() {
-						if row.data.ClonedFromTID == item.TID {
+						if row.data.TID == item.TID {
 							wt.ClearSelection()
 							wt.SelectByIndex(wt.RowToIndex(row))
 							OpenEditor(wt, func(w *gurps.Weapon) { EditWeapon(editor, w) })

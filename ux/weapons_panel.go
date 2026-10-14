@@ -55,12 +55,20 @@ func (p *weaponsPanel) Weapons(melee, _, excludeHidden bool) []*gurps.Weapon {
 	return gurps.ExtractWeaponsOfType(melee, excludeHidden, *p.list)
 }
 
+// SetWeapons replaces this panel's kind of weapon in the shared list. The replacements take the places the old list
+// gave that kind, so that the other kind stays where it was, and any left over go on the end.
 func (p *weaponsPanel) SetWeapons(melee bool, list []*gurps.Weapon) {
-	m, r := gurps.SeparateWeapons(false, *p.list)
-	if melee {
-		m = list
-	} else {
-		r = list
+	old := *p.list
+	merged := make([]*gurps.Weapon, 0, len(old)+len(list))
+	next := 0
+	for _, w := range old {
+		switch {
+		case w.IsMelee() != melee:
+			merged = append(merged, w)
+		case next < len(list):
+			merged = append(merged, list[next])
+			next++
+		}
 	}
-	p.setList(append(append(make([]*gurps.Weapon, 0, len(m)+len(r)), m...), r...))
+	p.setList(append(merged, list[next:]...))
 }

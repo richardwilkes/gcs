@@ -116,8 +116,8 @@ func MoveSelection[T gurps.Node[T]](table *unison.Table[*Node[T]], dir MoveDirec
 	//
 	// The containers the move opened are closed again before undo puts the data back, so that undo leaves no trace, and
 	// reopened before redo does, so that the rows redo moves into them are showing and can be selected. Their open
-	// state is kept in the global settings under their IDs, so it makes no difference that the objects themselves are
-	// replaced when the data is deserialized.
+	// state is kept in the global settings under their IDs, so it reaches whichever objects putting the data back
+	// leaves in the list (see PreservedTableData.Restore).
 	var opened []T
 	undo := beginTableUndo(table, dir.Title(),
 		func() { setContainersOpen(opened, false) },
