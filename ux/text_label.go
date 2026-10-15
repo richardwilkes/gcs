@@ -98,6 +98,30 @@ func newTextLabel(wrap bool) *TextLabel {
 	return l
 }
 
+// newNoticeLabel returns a wrapping label and the function that sets its text and the ink it is drawn in. Given a box
+// ink as well, the text is set out as a notice in a box of that color; without one, it is plain text.
+func newNoticeLabel() (label *TextLabel, update func(text string, box, ink unison.Ink)) {
+	label = NewWrappingLabel()
+	var boxInk unison.Ink
+	label.DrawCallback = func(gc *unison.Canvas, dirty geom.Rect) {
+		if boxInk != nil {
+			r := label.ContentRect(true)
+			gc.DrawRoundedRect(r, geom.NewUniformSize(4), boxInk.Paint(gc, r, paintstyle.Fill))
+		}
+		label.draw(gc, dirty)
+	}
+	update = func(text string, box, ink unison.Ink) {
+		boxInk = box
+		if box != nil {
+			label.SetBorder(unison.NewEmptyBorder(geom.NewSymmetricInsets(unison.StdHSpacing, unison.StdVSpacing)))
+		} else {
+			label.SetBorder(nil)
+		}
+		label.setText(text, ink)
+	}
+	return label, update
+}
+
 // SetTitle replaces the text, keeping the ink, so that the label can be used where a unison.Label was.
 func (l *TextLabel) SetTitle(text string) {
 	l.setText(text, l.ink)

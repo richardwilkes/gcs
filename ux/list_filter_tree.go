@@ -115,9 +115,9 @@ func (p *listFilterPanel) treeTitles(node gurps.FilterNode) treeEditTitles {
 		}
 	}
 	return treeEditTitles{
-		duplicate: i18n.Text("Duplicate Condition"),
-		move:      i18n.Text("Move Condition"),
-		delete:    i18n.Text("Delete Condition"),
+		duplicate: i18n.Text("Duplicate Filter"),
+		move:      i18n.Text("Move Filter"),
+		delete:    i18n.Text("Delete Filter"),
 	}
 }
 
@@ -164,9 +164,15 @@ func (p *listFilterPanel) treeGroupHead(group gurps.FilterNode, path string, hea
 // or unless it already says something other than "All of".
 func (p *listFilterPanel) treeEmpty(group gurps.FilterNode, path string) (text string, bare bool) {
 	if g := asFilterGroup(group); path == treeRootPath && !p.headed && g.All && !g.Not {
-		return i18n.Text("No conditions. Click here to add one."), true
+		return i18n.Text("No filters. Click here to add one."), true
 	}
-	return i18n.Text("Empty group. Add a condition or drag one here."), false
+	return i18n.Text("Empty group. Add a filter or drag one here."), false
+}
+
+// treeEmptyClick implements treeNodes. A condition is the only kind of row a filter has, so the placeholder adds one
+// rather than offering a menu.
+func (p *listFilterPanel) treeEmptyClick(group gurps.FilterNode, path string) func() {
+	return func() { p.addCondition(asFilterGroup(group), path) }
 }
 
 func (p *listFilterPanel) treeRow(node gurps.FilterNode, path string) *unison.Panel {
@@ -174,9 +180,9 @@ func (p *listFilterPanel) treeRow(node gurps.FilterNode, path string) *unison.Pa
 }
 
 func (p *listFilterPanel) treeAddEntries(group gurps.FilterNode, path string) []menuEntry {
-	return p.addEntries(asFilterGroup(group), path, i18n.Text("Condition"), i18n.Text("Structure"))
+	return p.addEntries(asFilterGroup(group), path, i18n.Text("Filter"), i18n.Text("Structure"))
 }
 
 func (p *listFilterPanel) treeGroupAdds(group gurps.FilterNode, path string) []menuEntry {
-	return p.addEntries(asFilterGroup(group), path, i18n.Text("Add Condition"), i18n.Text("Add Structure"))
+	return p.addEntries(asFilterGroup(group), path, i18n.Text("Add Filter"), i18n.Text("Add Structure"))
 }

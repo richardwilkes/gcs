@@ -223,15 +223,10 @@ func resetCriteria(cond *gurps.FilterCondition) {
 // addEntries returns what can be added to a group: under the heading condition, a condition that starts out testing
 // the field last chosen, and under the heading structure, groups.
 func (p *listFilterPanel) addEntries(group *gurps.FilterGroup, path, condition, structure string) []menuEntry {
-	at := childPath(path, len(group.Children))
 	entries := make([]menuEntry, 0, 5)
-	entries = append(entries, menuEntry{Label: condition}, menuEntry{Label: i18n.Text("New Condition"), Act: func() {
-		cond := gurps.NewFilterCondition(group, p.defaultFieldKey())
-		p.edit(i18n.Text("Add Condition"), p.addKey(group, path), at+":field", func() {
-			group.Children = append(group.Children, cond)
-			p.open = at
-		})
-	}}, menuEntry{Label: structure})
+	entries = append(entries, menuEntry{Label: condition},
+		menuEntry{Label: i18n.Text("New Filter"), Act: func() { p.addCondition(group, path) }},
+		menuEntry{Label: structure})
 	return append(entries, p.groupEntries(group, path, func(all bool) {
 		if all {
 			filterAllOf.apply(group)
@@ -240,6 +235,16 @@ func (p *listFilterPanel) addEntries(group *gurps.FilterGroup, path, condition, 
 		}
 		p.headed = true
 	})...)
+}
+
+// addCondition adds a condition to the end of the group, testing the field last chosen, and opens it.
+func (p *listFilterPanel) addCondition(group *gurps.FilterGroup, path string) {
+	at := childPath(path, len(group.Children))
+	cond := gurps.NewFilterCondition(group, p.defaultFieldKey())
+	p.edit(i18n.Text("Add Filter"), p.addKey(group, path), at+":field", func() {
+		group.Children = append(group.Children, cond)
+		p.open = at
+	})
 }
 
 // defaultFieldKey returns the key of the field a newly added condition should start out testing: the one last chosen

@@ -58,6 +58,7 @@ func showListFilterDialog(title, key string, filter *gurps.ListFilter, fields []
 	nameRow.AddChild(NewFieldLeadingLabel(i18n.Text("Name"), false))
 	nameField := NewStringField(nil, "", i18n.Text("Name"), func() string { return filter.Name },
 		func(s string) { filter.Name = s })
+	nameField.Watermark = i18n.Text(`Give this filter a name, like "Allowed in My Campaign"`)
 	nameField.SetLayoutData(&unison.FlexLayoutData{
 		HAlign: align.Fill,
 		HGrab:  true,
@@ -90,18 +91,27 @@ func showListFilterDialog(title, key string, filter *gurps.ListFilter, fields []
 	dialog.Window().SetTitle(title)
 	// Rows are dragged within the dialog, which is a window of its own.
 	dialog.Window().RegisterForDragTypes(listFilterDragKey)
-	// The name field's error mark reflects only the name, but the OK button also needs a condition to test.
-	updateOK := func(nameValid bool) {
-		dialog.Button(unison.ModalResponseOK).SetEnabled(nameValid && !filter.Root.Empty())
-	}
+	setMessage := addListFilterDialogMessage(dialog)
+	// OK needs a name no other saved filter bears and something to test. A blank name gets no message, since the
+	// watermark already says what is wanted.
 	nameField.ValidateCallback = func() bool {
 		name := strings.TrimSpace(filter.Name)
-		valid := name != "" && !gurps.GlobalSettings().ListFilterNameInUse(key, name, except)
-		updateOK(valid)
+		inUse := name != "" && gurps.GlobalSettings().ListFilterNameInUse(key, name, except)
+		empty := filter.Root.Empty()
+		valid := name != "" && !inUse
+		dialog.Button(unison.ModalResponseOK).SetEnabled(valid && !empty)
+		var message string
+		switch {
+		case inUse:
+			message = i18n.Text("Another saved filter already has this name.")
+		case empty:
+			message = i18n.Text("Add at least one filter before saving.")
+		}
+		setMessage(message)
 		return valid
 	}
-	panel.rebuilt = func() { updateOK(!nameField.Invalid()) }
-	nameField.Validate() // Here to update the OK button.
+	panel.rebuilt = nameField.Validate
+	nameField.Validate() // Here to update the OK button and the message.
 	// Undo and Redo find the dialog's undo manager wherever the focus is, even on a button outside the content.
 	dialog.Window().ClientData()[windowUndoManagerKey] = content.undoMgr
 	installListFilterDialogKeys(dialog.Window(), content, panel)
@@ -111,6 +121,42 @@ func showListFilterDialog(title, key string, filter *gurps.ListFilter, fields []
 	}
 	filter.Name = strings.TrimSpace(filter.Name)
 	return true
+}
+
+// addListFilterDialogMessage puts an empty label for error messages at the start of the dialog's row of buttons and
+// returns the function that sets its message, which is set out as a notice, or hidden when empty.
+func addListFilterDialogMessage(dialog *unison.Dialog) func(message string) {
+	buttons := dialog.Button(unison.ModalResponseOK).Parent()
+	parent := buttons.Parent()
+	index := parent.IndexOfChild(buttons)
+	buttons.RemoveFromParent()
+	row := unison.NewPanel()
+	row.SetLayout(&unison.FlexLayout{
+		Columns:  2,
+		HSpacing: unison.StdHSpacing,
+	})
+	row.SetLayoutData(&unison.FlexLayoutData{
+		HAlign: align.Fill,
+		VAlign: align.Middle,
+		HGrab:  true,
+	})
+	label, setNotice := newNoticeLabel()
+	label.SetLayoutData(&unison.FlexLayoutData{
+		HAlign: align.Start,
+		VAlign: align.Middle,
+		HGrab:  true,
+	})
+	row.AddChild(label)
+	row.AddChild(buttons)
+	parent.AddChildAtIndex(row, index)
+	return func(message string) {
+		if message == "" {
+			setNotice("", nil, unison.ThemeOnSurface)
+		} else {
+			setNotice(message, unison.ThemeError, unison.ThemeOnError)
+		}
+		row.MarkForLayoutAndRedraw()
+	}
 }
 
 // listFilterDialogContent holds the filter editor's dialog content, and provides the undo manager its edits are

@@ -28,7 +28,7 @@ type FilterFieldLookup func(key string) (title string, kind FilterFieldKind, plu
 func (c *FilterCondition) Describe(lookup FilterFieldLookup, units fxp.WeightUnit, em func(string) string) string {
 	title, kind, plural, ok := lookup(c.Field)
 	if !ok {
-		return i18n.Text("Condition on unknown field %q; it can't be checked", c.Field)
+		return i18n.Text("Filter on unknown field %q; it can't be checked", c.Field)
 	}
 	var criterion string
 	switch kind {

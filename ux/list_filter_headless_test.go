@@ -267,6 +267,11 @@ func TestListFilterNewFilterDialogHeadless(t *testing.T) {
 	}
 
 	nameField := dialogNameField(t, screen, dialogWnd)
+	nameInvalid := func() bool {
+		var invalid bool
+		screen.Do(func() { invalid = nameField.Invalid() })
+		return invalid
+	}
 	var contentWidth, contentHeight float32
 	screen.Do(func() {
 		rect := dialogWnd.ContentRect()
@@ -274,6 +279,7 @@ func TestListFilterNewFilterDialogHeadless(t *testing.T) {
 		contentHeight = rect.Height
 	})
 	c.False(okEnabled(), "a filter with no name cannot be accepted")
+	c.True(nameInvalid(), "a blank name is marked")
 	c.True(contentWidth >= listFilterDialogMinWidth,
 		"the editor opens at least %d wide, but is %v", listFilterDialogMinWidth, contentWidth)
 	c.True(contentHeight >= listFilterDialogMinHeight,
@@ -283,6 +289,7 @@ func TestListFilterNewFilterDialogHeadless(t *testing.T) {
 	screen.Click(screen.PanelCenter(nameField))
 	screen.Type("melee")
 	c.False(okEnabled(), "a name a saved filter already bears cannot be accepted, whatever its case")
+	c.True(nameInvalid(), "a name a saved filter already bears is marked")
 
 	// Replace it with a name of its own, which is accepted.
 	screen.KeyPress(unison.KeyA, mod.OSMenuCommand())
@@ -290,6 +297,7 @@ func TestListFilterNewFilterDialogHeadless(t *testing.T) {
 	var name string
 	screen.Do(func() { name = nameField.Text() })
 	c.Equal("Ranged", name, "select-all followed by typing replaces the name")
+	c.False(nameInvalid(), "a name of its own is not marked")
 	c.False(okEnabled(), "a name no other saved filter bears is not enough while the filter tests nothing")
 	uxtest.CaptureScreen(t, c, screen, "list_filter_dialog")
 
@@ -317,15 +325,14 @@ func TestListFilterNewFilterDialogHeadless(t *testing.T) {
 		screen.Do(undoMgr.Undo)
 	}
 
-	// Add a condition to the empty root by clicking its placeholder and choosing New Condition from the menu that
-	// opens. With no field chosen before, it starts out testing the first field, open.
+	// Add a condition to the empty root by clicking its placeholder, which adds one without a menu. With no field
+	// chosen before, it starts out testing the first field, open.
 	var placeholder *unison.Panel
 	screen.Do(func() { placeholder = p.FindRefKey(treeRootPath + ":empty") })
 	if placeholder == nil {
 		t.Fatal("an empty filter shows its placeholder")
 	}
 	screen.Click(screen.PanelCenter(placeholder))
-	chooseOpenMenuItem(t, screen, dialogWnd, "New Condition")
 	screen.Do(func() {
 		c.Equal("r.0", p.open, "the added condition is open")
 		c.Equal("r.0:field", focusedRefKey(dialogWnd), "with its field popup focused")
@@ -472,7 +479,7 @@ func TestListFilterEditorKeysHeadless(t *testing.T) {
 	redo := func() { screen.KeyPress(unison.KeyY, mod.OSMenuCommand()) }
 
 	screen.Type("Ranged")
-	screen.Do(func() { menuAction(p.treeAddEntries(p.filter.Root, treeRootPath), "New Condition")() })
+	screen.Do(func() { menuAction(p.treeAddEntries(p.filter.Root, treeRootPath), "New Filter")() })
 	c.Equal(state{name: "Ranged", open: "r.0", children: 1, ok: true}, read(), "a named filter with a condition")
 
 	focus(nameField)
@@ -541,7 +548,7 @@ func TestListFilterEditorKeysHeadless(t *testing.T) {
 	p = dialogFilterPanel(t, screen, dialogWnd)
 	nameField = dialogNameField(t, screen, dialogWnd)
 	screen.Type("Ranged")
-	screen.Do(func() { menuAction(p.treeAddEntries(p.filter.Root, treeRootPath), "New Condition")() })
+	screen.Do(func() { menuAction(p.treeAddEntries(p.filter.Root, treeRootPath), "New Filter")() })
 	focus(nameField)
 	c.Equal("r.0", read().open, "a row is open")
 	screen.KeyPress(unison.KeyReturn, mod.None)
@@ -569,7 +576,7 @@ func TestListFilterEditorHeldKeysHeadless(t *testing.T) {
 	p := dialogFilterPanel(t, screen, dialogWnd)
 	nameField := dialogNameField(t, screen, dialogWnd)
 	screen.Type("Ranged")
-	screen.Do(func() { menuAction(p.treeAddEntries(p.filter.Root, treeRootPath), "New Condition")() })
+	screen.Do(func() { menuAction(p.treeAddEntries(p.filter.Root, treeRootPath), "New Filter")() })
 	open := func() string {
 		var path string
 		screen.Do(func() { path = p.open })
@@ -633,7 +640,7 @@ func TestListFilterDialogUndoMenuHeadless(t *testing.T) {
 		screen.Do(func() { n = len(p.filter.Root.Children) })
 		return n
 	}
-	screen.Do(func() { menuAction(p.treeAddEntries(p.filter.Root, treeRootPath), "New Condition")() })
+	screen.Do(func() { menuAction(p.treeAddEntries(p.filter.Root, treeRootPath), "New Filter")() })
 	ok := dialogButton(t, screen, dialog, unison.ModalResponseOK)
 	screen.Do(func() { ok.RequestFocus() })
 	var enabled bool
@@ -666,7 +673,7 @@ func TestListFilterEditCancelHeadless(t *testing.T) {
 	p := dialogFilterPanel(t, screen, dialogWnd)
 	screen.Type("Changed")
 	screen.Do(func() {
-		menuAction(p.treeAddEntries(p.filter.Root, treeRootPath), "New Condition")()
+		menuAction(p.treeAddEntries(p.filter.Root, treeRootPath), "New Filter")()
 		menuAction(p.moreEntries(p.node("r.0"), "r.0"), "Delete")()
 	})
 	screen.Do(func() {
@@ -698,8 +705,8 @@ func TestListFilterDialogDragHeadless(t *testing.T) {
 	p := dialogFilterPanel(t, screen, dialogWnd)
 	var first, second gurps.FilterNode
 	screen.Do(func() {
-		menuAction(p.treeAddEntries(p.filter.Root, treeRootPath), "New Condition")()
-		menuAction(p.treeAddEntries(p.filter.Root, treeRootPath), "New Condition")()
+		menuAction(p.treeAddEntries(p.filter.Root, treeRootPath), "New Filter")()
+		menuAction(p.treeAddEntries(p.filter.Root, treeRootPath), "New Filter")()
 		p.toggle("r.1")
 	})
 	var sentence, target *unison.Panel

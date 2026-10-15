@@ -168,7 +168,7 @@ func TestListFilterPanelRows(t *testing.T) {
 			"r.2.0": `Must have tags where at least one is "Shield" or "Buckler"`,
 			"r.2.1": `Must have a cost that is at least 1,000`,
 			"r.3":   `Must not be a container`,
-			"r.4":   `Condition on unknown field "future_field"; it can't be checked`,
+			"r.4":   `Filter on unknown field "future_field"; it can't be checked`,
 			"r.5":   `Unknown filter node type "sparkle"; it will be preserved, but can't be checked`,
 		} {
 			c.Equal(want, sentenceText(p, path), path)
@@ -287,9 +287,9 @@ func TestListFilterPanelEmptyRoot(t *testing.T) {
 	screen.Do(func() {
 		c.Nil(p.FindRefKey("r"+keyPill), "an untouched empty root shows no pill")
 		if empty, ok := refAs[*unison.Button](t, p.AsPanel(), "r:empty"); ok {
-			c.Equal("No conditions. Click here to add one.", empty.Text.String())
+			c.Equal("No filters. Click here to add one.", empty.Text.String())
 		}
-		c.Equal([]string{"Condition", "New Condition", "Structure", "All of Group", "Any of Group"},
+		c.Equal([]string{"Filter", "New Filter", "Structure", "All of Group", "Any of Group"},
 			menuLabels(p.treeAddEntries(f.Root, "r")))
 		menuAction(p.treeAddEntries(f.Root, "r"), "All of Group")()
 	})
@@ -311,7 +311,7 @@ func TestListFilterPanelEmptyRoot(t *testing.T) {
 		screen.Do(func() {
 			c.NotNil(p.FindRefKey("r"+keyPill), "an empty root that is %s shows its pill", mode)
 			if empty, ok := refAs[*unison.Button](t, p.AsPanel(), "r:empty"); ok {
-				c.Equal("Empty group. Add a condition or drag one here.", empty.Text.String())
+				c.Equal("Empty group. Add a filter or drag one here.", empty.Text.String())
 			}
 		})
 	}
@@ -347,7 +347,7 @@ func TestListFilterPanelEmptyRoot(t *testing.T) {
 	})
 	screen.Do(func() {
 		c.Equal(filterNoneOf, groupModeOf(f.Root), "the pill makes it none of")
-		menuAction(p.treeAddEntries(f.Root, "r"), "New Condition")()
+		menuAction(p.treeAddEntries(f.Root, "r"), "New Filter")()
 	})
 	screen.Do(func() {
 		c.Equal(1, len(f.Root.Children))
@@ -369,7 +369,7 @@ func TestListFilterPanelEmptyRoot(t *testing.T) {
 	// A root that only a pill choice gave a head keeps it once it is empty again, even back at All of.
 	f = gurps.NewListFilter("")
 	p, _ = showListFilterPanel(t, screen, f)
-	screen.Do(func() { menuAction(p.treeAddEntries(f.Root, "r"), "New Condition")() })
+	screen.Do(func() { menuAction(p.treeAddEntries(f.Root, "r"), "New Filter")() })
 	for _, mode := range []filterGroupMode{filterAnyOf, filterAllOf} {
 		screen.Do(func() {
 			if pill, ok := refAs[*unison.PopupMenu[filterGroupMode]](t, p.AsPanel(), "r"+keyPill); ok {
@@ -407,10 +407,10 @@ func TestListFilterPanelAddCondition(t *testing.T) {
 	screen.Do(func() {
 		lastFilterFieldKeyUsed[listFilterPanelTestKey] = "weight"
 		c.Equal([]string{
-			"Add Condition", "New Condition", "Add Structure", "All of Group", "Any of Group", "-", "Duplicate",
+			"Add Filter", "New Filter", "Add Structure", "All of Group", "Any of Group", "-", "Duplicate",
 			"Move Up", "Move Down", "Wrap in Group", "-", "Delete",
 		}, menuLabels(p.moreEntries(p.node("r.2"), "r.2")))
-		menuAction(p.treeAddEntries(f.Root, "r"), "New Condition")()
+		menuAction(p.treeAddEntries(f.Root, "r"), "New Filter")()
 	})
 	screen.Do(func() {
 		c.Equal("r.6", p.open, "a new condition goes at the end, open")

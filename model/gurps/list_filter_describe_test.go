@@ -124,11 +124,11 @@ func TestFilterConditionDescribe(t *testing.T) {
 		{negated(gurps.NewFilterCondition(nil, "container")), `Must not be a container`},
 		{
 			gurps.NewFilterCondition(nil, "future_field"),
-			`Condition on unknown field "future_field"; it can't be checked`,
+			`Filter on unknown field "future_field"; it can't be checked`,
 		},
 		{
 			negated(gurps.NewFilterCondition(nil, "future_field")),
-			`Condition on unknown field "future_field"; it can't be checked`,
+			`Filter on unknown field "future_field"; it can't be checked`,
 		},
 	} {
 		c.Equal(one.want, one.cond.Describe(equipmentFilterLookup, fxp.Pound, bracket), "case %d", i)

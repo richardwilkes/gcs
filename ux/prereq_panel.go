@@ -427,6 +427,10 @@ func (p *prereqPanel) treeEmpty(group gurps.Prereq, path string) (text string, b
 	return i18n.Text("Empty group. Add a requirement or drag one here."), false
 }
 
+func (p *prereqPanel) treeEmptyClick(_ gurps.Prereq, _ string) func() {
+	return nil
+}
+
 func (p *prereqPanel) treeRow(node gurps.Prereq, path string) *unison.Panel {
 	return p.row(node, path)
 }

@@ -83,6 +83,9 @@ type treeNodes[N comparable] interface {
 	// treeEmpty returns the text of the placeholder of an empty group, and whether the group shows the placeholder
 	// alone, with no head, as an untouched empty root does.
 	treeEmpty(group N, path string) (text string, bare bool)
+	// treeEmptyClick returns what a click on the placeholder of an empty group does, or nil to have the click open the
+	// menu of what can be added to it.
+	treeEmptyClick(group N, path string) func()
 	// treeRow returns the panel of a node that isn't a group.
 	treeRow(node N, path string) *unison.Panel
 	// treeAddEntries returns what an add button offers to add to the group.
@@ -235,21 +238,25 @@ func (p *sentenceTree[T, N]) group(group N, path string) *unison.Panel {
 	if len(*children) == 0 {
 		text, bare := p.nodes.treeEmpty(group, path)
 		empty := newEmptyPlaceholder(path+":empty", text, nil)
-		// A click opens the menu where it lands, as a right-click does; a key opens it at the placeholder.
-		empty.ClickCallback = func() { showMenu(empty.AsPanel(), p.nodes.treeAddEntries(group, path)) }
 		empty.ContextMenuCallback = func(geom.Point) unison.Menu {
 			return newEntriesMenu(p.nodes.treeAddEntries(group, path))
 		}
-		empty.MouseUpCallback = func(where geom.Point, _ int, _ mod.Modifiers) bool {
-			empty.Pressed = false
-			empty.MarkForRedraw()
-			if where.In(empty.ContentRect(false)) {
-				if unison.IsAccessibilityActive() {
-					empty.RequestFocus()
+		if act := p.nodes.treeEmptyClick(group, path); act != nil {
+			empty.ClickCallback = act
+		} else {
+			// A click opens the menu where it lands, as a right-click does; a key opens it at the placeholder.
+			empty.ClickCallback = func() { showMenu(empty.AsPanel(), p.nodes.treeAddEntries(group, path)) }
+			empty.MouseUpCallback = func(where geom.Point, _ int, _ mod.Modifiers) bool {
+				empty.Pressed = false
+				empty.MarkForRedraw()
+				if where.In(empty.ContentRect(false)) {
+					if unison.IsAccessibilityActive() {
+						empty.RequestFocus()
+					}
+					empty.ShowContextMenu(where)
 				}
-				empty.ShowContextMenu(where)
+				return true
 			}
-			return true
 		}
 		empty.ClientData()[treeDropKey] = treeDropSpot{path: path, part: dropOnEmpty}
 		// The placeholder shares its line with an add button, in line with the more buttons.
