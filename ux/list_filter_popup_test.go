@@ -388,7 +388,7 @@ func TestListFilterPopupFilterNamedNone(t *testing.T) {
 }
 
 // TestListFilterPopupCapsWidth verifies that a long filter name doesn't widen the popup's button to fit it, that the
-// button shows twenty Ms whole and cuts anything wider to as much of its start as fits, with the ellipsis counted in
+// button shows ten Ms whole and cuts anything wider to as much of its start as fits, with the ellipsis counted in
 // the width and no space before it, and that the tooltip leads with a filter name only while the button cuts it short.
 func TestListFilterPopupCapsWidth(t *testing.T) {
 	c := check.New(t)
@@ -399,9 +399,9 @@ func TestListFilterPopupCapsWidth(t *testing.T) {
 	_, pref, _ := popup.Sizes(geom.Size{})
 	c.True(pref.Width < uncapped.Width, "the long name may not widen the button to fit it")
 
-	twenty := strings.Repeat("M", 20)
-	c.Equal(twenty, popupFittedText(popup, twenty), "twenty Ms are shown whole")
-	c.Equal(strings.Repeat("M", 19)+"…", popupFittedText(popup, twenty+"M"), "twenty-one are cut to fit the ellipsis")
+	ten := strings.Repeat("M", 10)
+	c.Equal(ten, popupFittedText(popup, ten), "ten Ms are shown whole")
+	c.Equal(strings.Repeat("M", 9)+"…", popupFittedText(popup, ten+"M"), "eleven are cut to fit the ellipsis")
 	c.Equal("Mental…", popupFittedText(popup, "Mental"+strings.Repeat(" ", 200)+"x"),
 		"no space is left before the ellipsis")
 

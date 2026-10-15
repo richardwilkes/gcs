@@ -166,9 +166,10 @@ func (p *listFilterPopup) rebuildItems() (lostCurrent bool) {
 	p.popup.SelectIndex(index)
 	p.enableCommands(index != p.noneIndex)
 	p.syncTooltip() // A rename keeps the selection where it was, yet changes the name shown.
-	// The popup is as wide as its widest item, so adding, removing or renaming a filter can change its size, and the
-	// toolbar it sits in has to be laid out again to make room. Marking the popup alone wouldn't do it: a parent that
-	// is laid out again doesn't revisit its children, so the whole chain up to the window is marked.
+	// The popup is as wide as its widest item, up to the cap capPopupWidth sets, so adding, removing or renaming a
+	// filter can change its size, and the toolbar it sits in has to be laid out again to make room. Marking the popup
+	// alone wouldn't do it: a parent that is laid out again doesn't revisit its children, so the whole chain up to the
+	// window is marked.
 	p.popup.MarkForLayoutRecursivelyUpward()
 	p.popup.MarkForRedraw()
 	return current != nil && index == p.noneIndex
@@ -279,7 +280,7 @@ func (p *listFilterPopup) filtersChanged(f *gurps.ListFilter) {
 
 // popupWidthSample is the text whose width, in a popup's font, caps how wide a filter popup's button grows and how much
 // of the chosen item it shows.
-const popupWidthSample = "MMMMMMMMMMMMMMMMMMMM"
+const popupWidthSample = "MMMMMMMMMM"
 
 // capPopupWidth keeps the popup's button from growing wider than it needs to show popupWidthSample, cutting the chosen
 // item short with an ellipsis past that. The menu it opens still shows every item in full.
