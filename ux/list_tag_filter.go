@@ -88,7 +88,7 @@ func newListTagFilterPopup(spec listTagFilterPopupSpec) *listTagFilterPopup {
 	}
 	p.popup.Accessibility.Name = i18n.Text("Tag Filter")
 	// A tag the button cuts short is already listed in full in the tooltip, among the chosen tags.
-	capPopupWidth(p.popup)
+	fixPopupWidth(p.popup)
 	p.popup.SetLayoutData(&unison.FlexLayoutData{
 		HAlign: align.Fill,
 		VAlign: align.Middle,

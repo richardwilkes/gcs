@@ -116,7 +116,7 @@ func newListFilterPopup(spec listFilterPopupSpec) *listFilterPopup {
 		p.enableCommands(i != p.noneIndex)
 		p.spec.choose(p.filterAt(i))
 	}
-	capPopupWidth(p.popup)
+	fixPopupWidth(p.popup)
 	// The popup sits at the end of the toolbar, with no label of its own to name it by.
 	p.popup.Accessibility.Name = i18n.Text("Saved Filters")
 	p.popup.SetLayoutData(&unison.FlexLayoutData{
@@ -166,11 +166,6 @@ func (p *listFilterPopup) rebuildItems() (lostCurrent bool) {
 	p.popup.SelectIndex(index)
 	p.enableCommands(index != p.noneIndex)
 	p.syncTooltip() // A rename keeps the selection where it was, yet changes the name shown.
-	// The popup is as wide as its widest item, up to the cap capPopupWidth sets, so adding, removing or renaming a
-	// filter can change its size, and the toolbar it sits in has to be laid out again to make room. Marking the popup
-	// alone wouldn't do it: a parent that is laid out again doesn't revisit its children, so the whole chain up to the
-	// window is marked.
-	p.popup.MarkForLayoutRecursivelyUpward()
 	p.popup.MarkForRedraw()
 	return current != nil && index == p.noneIndex
 }
@@ -278,22 +273,22 @@ func (p *listFilterPopup) filtersChanged(f *gurps.ListFilter) {
 	notifyListFiltersChanged(p.spec.key, p)
 }
 
-// popupWidthSample is the text whose width, in a popup's font, caps how wide a filter popup's button grows and how much
-// of the chosen item it shows.
+// popupWidthSample is the text whose width, in a popup's font, sets how wide a filter popup's button is and how much of
+// the chosen item it shows.
 const popupWidthSample = "MMMMMMMMMM"
 
-// capPopupWidth keeps the popup's button from growing wider than it needs to show popupWidthSample, cutting the chosen
-// item short with an ellipsis past that. The menu it opens still shows every item in full.
-func capPopupWidth(popup *unison.PopupMenu[string]) {
+// fixPopupWidth makes the popup's button just wide enough to show popupWidthSample, whatever its items, cutting the
+// chosen item short with an ellipsis past that. The menu it opens still shows every item in full.
+func fixPopupWidth(popup *unison.PopupMenu[string]) {
 	popup.SetSizer(func(hint geom.Size) (minSize, prefSize, maxSize geom.Size) {
-		_, prefSize, maxSize = popup.DefaultSizes(hint)
+		_, prefSize, _ = popup.DefaultSizes(hint)
 		// The space around the text is added as unison.PopupMenu.DefaultSizes adds it.
-		limit := popupTextWidth(popup, popupWidthSample) + popup.HMargin*2 + 2 + prefSize.Height*0.75
+		width := popupTextWidth(popup, popupWidthSample) + popup.HMargin*2 + 2 + prefSize.Height*0.75
 		if border := popup.Border(); border != nil {
-			limit += border.Insets().Width()
+			width += border.Insets().Width()
 		}
-		prefSize.Width = min(prefSize.Width, xmath.Ceil(limit))
-		return prefSize, prefSize, maxSize
+		prefSize.Width = xmath.Ceil(width)
+		return prefSize, prefSize, prefSize
 	})
 	popup.DrawCallback = func(canvas *unison.Canvas, dirty geom.Rect) {
 		// The button draws the chosen item through the renderer the menu uses too, so it is swapped only while drawing.

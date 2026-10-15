@@ -387,10 +387,10 @@ func TestListFilterPopupFilterNamedNone(t *testing.T) {
 	c.Equal(popupFirstSavedIndex, h.popup.popup.SelectedIndex(), "the saved filter's own item must stay selected")
 }
 
-// TestListFilterPopupCapsWidth verifies that a long filter name doesn't widen the popup's button to fit it, that the
-// button shows ten Ms whole and cuts anything wider to as much of its start as fits, with the ellipsis counted in
+// TestListFilterPopupFixesWidth verifies that the popup's button keeps the same width whatever its filter names, that
+// the button shows ten Ms whole and cuts anything wider to as much of its start as fits, with the ellipsis counted in
 // the width and no space before it, and that the tooltip leads with a filter name only while the button cuts it short.
-func TestListFilterPopupCapsWidth(t *testing.T) {
+func TestListFilterPopupFixesWidth(t *testing.T) {
 	c := check.New(t)
 	long := "Mental or Social Advantages Worth Keeping"
 	h := newListFilterPopupHarness(t, long, "Short")
@@ -398,6 +398,8 @@ func TestListFilterPopupCapsWidth(t *testing.T) {
 	_, uncapped, _ := popup.DefaultSizes(geom.Size{})
 	_, pref, _ := popup.Sizes(geom.Size{})
 	c.True(pref.Width < uncapped.Width, "the long name may not widen the button to fit it")
+	_, short, _ := newListFilterPopupHarness(t, "Short").popup.popup.Sizes(geom.Size{})
+	c.Equal(short.Width, pref.Width, "the button keeps its width whatever the filter names")
 
 	ten := strings.Repeat("M", 10)
 	c.Equal(ten, popupFittedText(popup, ten), "ten Ms are shown whole")

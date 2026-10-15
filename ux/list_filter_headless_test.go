@@ -728,10 +728,9 @@ func TestListFilterDialogDragHeadless(t *testing.T) {
 // TestListFilterChangesReachOtherDockablesHeadless verifies that a change made to the saved filters through one
 // list's popup reaches every other open list of the same type: a renamed filter that is in force there keeps its
 // place under its new name, a new filter appears in its popup, and a deleted filter that was in force there leaves the
-// list with no saved filter. Each time, the other list's toolbar is laid out again, which shows in the width of
-// its popup, since that follows the widest item. The two lists share a tab group, so only the second, in front, can
-// be clicked; the first is driven through its popup's callback directly. The editor is stubbed, since it is the
-// popups' bookkeeping that is under test here.
+// list with no saved filter. Each time, the other list's popup keeps its width. The two lists share a tab group, so
+// only the second, in front, can be clicked; the first is driven through its popup's callback directly. The editor is
+// stubbed, since it is the popups' bookkeeping that is under test here.
 func TestListFilterChangesReachOtherDockablesHeadless(t *testing.T) {
 	c := check.New(t)
 	screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
@@ -759,8 +758,8 @@ func TestListFilterChangesReachOtherDockablesHeadless(t *testing.T) {
 	c.Equal("Mind", state.popupText, "under its new name")
 	c.Equal([]string{"Combat Reflexes"}, state.names, "and still filtering it")
 
-	// Create a filter through the list behind. The popup in front lists it, and grows to fit its long name, while the
-	// list keeps what it had in force.
+	// Create a filter through the list behind. The popup in front lists it without growing to fit its long name, while
+	// the list keeps what it had in force.
 	uxtest.SwapForTest(t, &showFilterEditor,
 		func(_, _ string, filter *gurps.ListFilter, _ []filterFieldInfo, _ *gurps.ListFilter) bool {
 			filter.Name = "A much longer filter name"
@@ -778,8 +777,7 @@ func TestListFilterChangesReachOtherDockablesHeadless(t *testing.T) {
 	state = readListFilterState(screen, second)
 	c.True(mental == state.selected, "the list in front must keep the very filter it had in force")
 	c.Equal("Mind", state.popupText, "and show it")
-	widthAfterAdd := popupWidth(screen, second)
-	c.True(widthAfterAdd > widthBefore, "the popup in front must have been laid out again to fit the new item")
+	c.Equal(widthBefore, popupWidth(screen, second), "the popup in front must keep its width")
 
 	// Delete the filter in force through the list behind, which put the new one in force when it created it, so it
 	// has to be put back first. The list in front, still on the deleted filter, falls back to No Filter.
@@ -793,15 +791,14 @@ func TestListFilterChangesReachOtherDockablesHeadless(t *testing.T) {
 	c.Equal(listFilterHeadlessTraitNames, state.names, "so every trait is shown there again")
 	c.Nil(readListFilterState(screen, first).selected, "the list behind must be on no saved filter as well")
 
-	// Delete the remaining filter too. The popup in front shrinks back, having only No Filter and the commands left to
-	// fit.
+	// Delete the remaining filter too. The popup in front still keeps its width.
 	choosePopupItemDirectly(screen, first, popupFirstSavedIndex) // "A much longer filter name"
 	deleteIndex = popupItemIndexOf(t, screen, first.savedFilters.popup, deleteFilterItemTitle)
 	choosePopupItemDirectly(screen, first, deleteIndex)
 	screen.Do(func() { titles = popupItemTitles(second.savedFilters.popup) })
 	c.Equal([]string{newFilterItemTitle, editFilterItemTitle, deleteFilterItemTitle, separatorTitle, "No Filter"},
 		titles, "the popup in front must have lost the deleted filter")
-	c.True(popupWidth(screen, second) < widthAfterAdd, "the popup in front must have been laid out again to shrink")
+	c.Equal(widthBefore, popupWidth(screen, second), "the popup in front must still keep its width")
 }
 
 // choosePopupItemDirectly makes the choice at the given index in the dockable's saved filter popup through the popup's

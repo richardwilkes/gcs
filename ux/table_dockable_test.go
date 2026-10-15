@@ -234,34 +234,6 @@ func TestTableDockableQuickFilterMatchesTags(t *testing.T) {
 	c.Equal([]string{"Combat Reflexes"}, visibleTraitNames(d), "the trait tagged \"Mental\" must be kept")
 }
 
-// TestTableDockableFilterPopupRelayoutsToolbar verifies that changing the saved filters through the popup marks the
-// popup and everything above it, up to the dockable, for layout. The popup is as wide as its widest item, so a
-// created, renamed or deleted filter changes its size, and the toolbar has to be laid out again to show it properly.
-func TestTableDockableFilterPopupRelayoutsToolbar(t *testing.T) {
-	c := check.New(t)
-	uxtest.SwapForTest(t, &showFilterEditor,
-		func(_, _ string, filter *gurps.ListFilter, _ []filterFieldInfo, _ *gurps.ListFilter) bool {
-			filter.Name = "A filter with a name long enough to widen the popup"
-			return true
-		})
-	d := newFilterTestTraitDockable(t)
-	c.NotNil(d.savedFilters.popup, "a trait list must offer saved filters")
-	chain := []*unison.Panel{d.savedFilters.popup.AsPanel()}
-	for p := d.savedFilters.popup.Parent(); p != nil; p = p.Parent() {
-		chain = append(chain, p)
-	}
-	c.True(len(chain) >= 3, "the popup must sit in a toolbar within the dockable")
-	for _, p := range chain {
-		p.NeedsLayout = false
-	}
-
-	d.savedFilters.popup.ChoiceMadeCallback(d.savedFilters.popup, d.savedFilters.newIndex, "")
-	c.NotNil(d.selectedFilter, "the new filter must be in force")
-	for _, p := range chain {
-		c.True(p.NeedsLayout, "%T must be marked for layout after the popup's items changed", p.Self)
-	}
-}
-
 // TestTableDockableFilterSuggestionsFollowTheList verifies that the filter editor a list opens suggests the values the
 // list holds when they are asked for, so that a change made to the list after the editor was given its fields shows up,
 // that a field with nothing to suggest has no suggestions, and that the container type offers every type there is.
@@ -605,18 +577,20 @@ func TestTableDockableTagFilter(t *testing.T) {
 	c.False(d.table.IsFiltered(), "the list is filtered again without it")
 }
 
-// TestTableDockableTagFilterCapsWidth verifies that a long tag doesn't widen the tag filter's button to fit it.
-func TestTableDockableTagFilterCapsWidth(t *testing.T) {
+// TestTableDockableTagFilterFixesWidth verifies that the tag filter's button keeps the same width whatever its tags.
+func TestTableDockableTagFilterFixesWidth(t *testing.T) {
 	c := check.New(t)
 	d := newFilterTestTraitDockable(t)
 	vision, _, _ := filterTestTraits(t, d)
+	popup := d.tagFilter.popup
+	_, short, _ := popup.Sizes(geom.Size{})
 	vision.Tags = []string{"Sensory Enhancements of Every Kind and Description"}
 	d.Rebuild(false)
-	popup := d.tagFilter.popup
 	popup.WillShowMenuCallback(popup)
 	_, uncapped, _ := popup.DefaultSizes(geom.Size{})
 	_, pref, _ := popup.Sizes(geom.Size{})
 	c.True(pref.Width < uncapped.Width, "the long tag may not widen the button to fit it")
+	c.Equal(short.Width, pref.Width, "the button keeps its width whatever the tags")
 }
 
 // TestTableDockableQuickFilterKeepsItsMinimumWidth verifies that the quick filter in a toolbar too narrow for its row
