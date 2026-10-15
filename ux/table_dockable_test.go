@@ -11,6 +11,8 @@ package ux
 
 import (
 	"path/filepath"
+	"slices"
+	"strings"
 	"testing"
 
 	"github.com/richardwilkes/gcs/v5/model/criteria"
@@ -18,7 +20,9 @@ import (
 	traitcontainer "github.com/richardwilkes/gcs/v5/model/gurps/enums/container"
 	"github.com/richardwilkes/gcs/v5/ux/uxtest"
 	"github.com/richardwilkes/toolbox/v2/check"
+	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/unison"
+	"github.com/richardwilkes/unison/enums/mod"
 )
 
 func newFilterTestTrait(name string, tags ...string) *gurps.Trait {
@@ -221,42 +225,13 @@ func TestTableDockableSavedFilterAndQuickFilterCombine(t *testing.T) {
 	c.Equal(3, len(visibleTraitNames(d)), "every trait is shown again")
 }
 
-// TestTableDockableQuickFilterMatchesTags verifies that the quick filter looks at the tags column, which the tag popup
-// it replaced used to be needed for.
+// TestTableDockableQuickFilterMatchesTags verifies that the quick filter looks at the tags column.
 func TestTableDockableQuickFilterMatchesTags(t *testing.T) {
 	c := check.New(t)
 	d := newFilterTestTraitDockable(t)
 	d.filterField.SetText("mental")
 	c.True(d.table.IsFiltered(), "typing in the quick filter must filter the table")
 	c.Equal([]string{"Combat Reflexes"}, visibleTraitNames(d), "the trait tagged \"Mental\" must be kept")
-}
-
-// TestTableDockableFilterPopupRelayoutsToolbar verifies that changing the saved filters through the popup marks the
-// popup and everything above it, up to the dockable, for layout. The popup is as wide as its widest item, so a
-// created, renamed or deleted filter changes its size, and the toolbar has to be laid out again to show it properly.
-func TestTableDockableFilterPopupRelayoutsToolbar(t *testing.T) {
-	c := check.New(t)
-	uxtest.SwapForTest(t, &showFilterEditor,
-		func(_, _ string, filter *gurps.ListFilter, _ []filterFieldInfo, _ *gurps.ListFilter) bool {
-			filter.Name = "A filter with a name long enough to widen the popup"
-			return true
-		})
-	d := newFilterTestTraitDockable(t)
-	c.NotNil(d.savedFilters.popup, "a trait list must offer saved filters")
-	chain := []*unison.Panel{d.savedFilters.popup.AsPanel()}
-	for p := d.savedFilters.popup.Parent(); p != nil; p = p.Parent() {
-		chain = append(chain, p)
-	}
-	c.True(len(chain) >= 3, "the popup must sit in a toolbar within the dockable")
-	for _, p := range chain {
-		p.NeedsLayout = false
-	}
-
-	d.savedFilters.popup.ChoiceMadeCallback(d.savedFilters.popup, d.savedFilters.newIndex, "")
-	c.NotNil(d.selectedFilter, "the new filter must be in force")
-	for _, p := range chain {
-		c.True(p.NeedsLayout, "%T must be marked for layout after the popup's items changed", p.Self)
-	}
 }
 
 // TestTableDockableFilterSuggestionsFollowTheList verifies that the filter editor a list opens suggests the values the
@@ -271,7 +246,7 @@ func TestTableDockableFilterSuggestionsFollowTheList(t *testing.T) {
 			return false
 		})
 	d := newFilterTestTraitDockable(t)
-	d.savedFilters.newFilter()
+	d.savedFilters.newFilter(gurps.NewListFilter(""))
 	info := func(key string) filterFieldInfo {
 		for _, one := range fields {
 			if one.key == key {
@@ -342,9 +317,11 @@ func TestTableDockableWithoutFilterKeyOmitsSavedFilters(t *testing.T) {
 		func(_ string) error { return nil })
 	c.Equal("", d.provider.FilterKey(), "the weapon lists have no saved filters of their own")
 	c.Nil(d.savedFilters, "a list type with no filter key must get no saved filter popup, nor anything driving one")
+	c.Nil(d.tagFilter, "nor a tag filter")
 	c.Nil(d.provider.FilterFields(), "nor any fields for a saved filter to test")
 	for _, popup := range uxtest.PanelsOfType[*unison.PopupMenu[string]](d.AsPanel()) {
 		c.NoPrefix(tooltipText(popup.Tooltip), "Saved Filters", "no popup in the toolbar may be the saved filter popup")
+		c.NoPrefix(tooltipText(popup.Tooltip), "Tag Filter", "nor the tag filter")
 	}
 
 	d.filterField.SetText("punch")
@@ -448,4 +425,330 @@ func TestTableDockableFilterKeepsHierarchy(t *testing.T) {
 	c.False(d.table.IsFiltered(), "emptying the quick filter must show everything")
 	c.Equal(2, d.table.LastRowIndex()+1, "the closed container must hide its children again")
 	c.False(container.IsOpen(), "the container must still be closed")
+}
+
+// filterTestTraits returns the three traits newFilterTestTraitDockable fills its list with, failing the test unless
+// each is the one expected.
+func filterTestTraits(t *testing.T, d *TableDockable[*gurps.Trait]) (vision, reflexes, fur *gurps.Trait) {
+	t.Helper()
+	traits := d.provider.RootData()
+	vision, reflexes, fur = traits[0], traits[1], traits[2]
+	for _, one := range []struct {
+		trait *gurps.Trait
+		name  string
+	}{{vision, "Acute Vision"}, {reflexes, "Combat Reflexes"}, {fur, "Fur"}} {
+		if one.trait.Name != one.name {
+			t.Fatalf("expected the trait %q, found %q", one.name, one.trait.Name)
+		}
+	}
+	return vision, reflexes, fur
+}
+
+// chooseTag picks the tag filter's item with the given value the way its menu does when the user clicks it, with the
+// given modifier keys held.
+func chooseTag(t *testing.T, d *TableDockable[*gurps.Trait], value string, mods mod.Modifiers) {
+	t.Helper()
+	uxtest.SwapForTest(t, &tagFilterModifiers, func(*unison.PopupMenu[string]) mod.Modifiers { return mods })
+	popup := d.tagFilter.popup
+	popup.WillShowMenuCallback(popup)
+	i := popup.IndexOfItem(value)
+	if i == -1 || !popup.ItemEnabledAt(i) {
+		t.Fatalf("the tag filter has no item %q that its menu would choose", value)
+	}
+	popup.ChoiceMadeCallback(popup, i, value)
+}
+
+// tagFilterItems prepares the tag filter's menu as opening it does, and returns what its items show.
+func tagFilterItems(d *TableDockable[*gurps.Trait]) []string {
+	d.tagFilter.popup.WillShowMenuCallback(d.tagFilter.popup)
+	titles := popupItemTitles(d.tagFilter.popup)
+	for i, value := range titles {
+		if value != separatorTitle {
+			titles[i] = d.tagFilter.title(value)
+		}
+	}
+	return titles
+}
+
+// checkedTags returns what the tag filter's checked items show.
+func checkedTags(d *TableDockable[*gurps.Trait]) []string {
+	indexes := d.tagFilter.popup.SelectedIndexes()
+	titles := make([]string, 0, len(indexes))
+	for _, i := range indexes {
+		value, _ := d.tagFilter.popup.ItemAt(i)
+		titles = append(titles, d.tagFilter.title(value))
+	}
+	return titles
+}
+
+// swapFilterEditor has the filter editor apply change to the filter it is given and close with accept, returning the
+// filter it was given through edited.
+func swapFilterEditor(t *testing.T, accept bool, change func(f *gurps.ListFilter)) (edited **gurps.ListFilter) {
+	t.Helper()
+	edited = new(*gurps.ListFilter)
+	uxtest.SwapForTest(t, &showFilterEditor,
+		func(_, _ string, filter *gurps.ListFilter, _ []filterFieldInfo, _ *gurps.ListFilter) bool {
+			*edited = filter
+			change(filter)
+			return accept
+		})
+	return edited
+}
+
+// conditionAt returns the condition at the given index of the filter's root, failing the test if there is none.
+func conditionAt(t *testing.T, f *gurps.ListFilter, index int) *gurps.FilterCondition {
+	t.Helper()
+	if f == nil || index >= len(f.Root.Children) {
+		t.Fatalf("the filter has no node at %d", index)
+	}
+	condition, ok := f.Root.Children[index].(*gurps.FilterCondition)
+	if !ok {
+		t.Fatalf("the node at %d is not a condition", index)
+	}
+	return condition
+}
+
+// TestTableDockableTagFilter verifies that the tag filter sits between the quick filter and the saved filters and
+// offers the list's tags, that a plain click chooses just one tag while a Shift-click or a menu command click adds or
+// takes off one, that a row has to carry every chosen tag and pass the quick filter too, that Any Tag drops them all,
+// and that a chosen tag no trait carries any more is dropped.
+func TestTableDockableTagFilter(t *testing.T) {
+	c := check.New(t)
+	d := newFilterTestTraitDockable(t)
+	_, reflexes, fur := filterTestTraits(t, d)
+	toolbar := d.filterField.Parent().Children()
+	c.True(slices.Equal([]*unison.Panel{
+		d.filterField.AsPanel(), d.tagFilter.popup.AsPanel(),
+		d.savedFilters.popup.AsPanel(),
+	}, toolbar[len(toolbar)-3:]),
+		"the tag filter sits between the quick filter and the saved filters")
+	c.Equal([]string{"Any Tag", separatorTitle, "Exotic", "Mental", "Physical", separatorTitle, "Save Filter…"},
+		tagFilterItems(d), "every tag in the list is offered, between Any Tag and Save Filter")
+	c.Equal([]string{"Any Tag"}, checkedTags(d), "Any Tag is checked while no tag is chosen")
+	c.False(d.tagFilter.popup.ItemEnabledAt(d.tagFilter.popup.IndexOfItem(saveFilterValue)),
+		"with no tag chosen there is nothing to save")
+	c.Contains(tooltipText(d.tagFilter.popup.Tooltip),
+		"Shift-Click or "+strings.TrimSuffix(mod.OSMenuCommand().String(), "+")+"-Click",
+		"the tooltip says how to choose more than one tag")
+
+	chooseTag(t, d, "physical", 0)
+	c.Equal([]string{"Acute Vision", "Fur"}, visibleTraitNames(d), "the traits tagged Physical are shown")
+	chooseTag(t, d, "exotic", mod.Shift)
+	c.Equal([]string{"Exotic", "Physical"}, checkedTags(d), "a Shift-click adds a tag")
+	c.Equal([]string{"Fur"}, visibleTraitNames(d), "a trait has to carry every chosen tag")
+	c.Contains(tooltipText(d.tagFilter.popup.Tooltip), "Physical\n● Exotic",
+		"the tooltip lists the chosen tags in the order chosen")
+	chooseTag(t, d, "mental", mod.OSMenuCommand())
+	c.Equal([]string{"Exotic", "Mental", "Physical"}, checkedTags(d), "a menu command click adds a tag")
+	chooseTag(t, d, "mental", mod.OSMenuCommand())
+	c.Equal([]string{"Exotic", "Physical"}, checkedTags(d), "a menu command click on a chosen tag takes it off")
+	chooseTag(t, d, "physical", mod.Shift)
+	c.Equal([]string{"Exotic"}, checkedTags(d), "a Shift-click on a chosen tag takes it off")
+	chooseTag(t, d, "physical", mod.Shift)
+
+	chooseTag(t, d, "mental", 0)
+	c.Equal([]string{"Mental"}, checkedTags(d), "a plain click chooses just the one tag")
+	c.Equal([]string{"Combat Reflexes"}, visibleTraitNames(d), "the trait tagged Mental is shown")
+	d.filterField.SetText("vision")
+	c.Equal(0, len(visibleTraitNames(d)), "a trait has to pass the quick filter as well as carry the tags")
+	d.filterField.SetText("")
+
+	chooseTag(t, d, "mental", mod.Shift)
+	c.Equal([]string{"Any Tag"}, checkedTags(d), "taking off the last tag checks Any Tag")
+	c.False(d.table.IsFiltered(), "with no tag chosen, nothing filters the table")
+	chooseTag(t, d, "mental", 0)
+	chooseTag(t, d, anyTagValue, 0)
+	c.Equal([]string{"Any Tag"}, checkedTags(d), "Any Tag drops every chosen tag")
+	c.False(d.table.IsFiltered(), "with no tag chosen, nothing filters the table")
+
+	chooseTag(t, d, "exotic", 0)
+	chooseTag(t, d, "physical", mod.Shift)
+	fur.Tags = []string{"Physical"}
+	d.Rebuild(false)
+	c.Equal([]string{"Physical"}, checkedTags(d), "a chosen tag no trait carries any more is dropped")
+	c.Equal([]string{"Acute Vision", "Fur"}, visibleTraitNames(d), "the tag still carried alone filters the list")
+
+	reflexes.Tags = []string{"Mental", "Rare"}
+	d.Rebuild(false)
+	chooseTag(t, d, "rare", 0)
+	reflexes.Tags = []string{"Mental"}
+	c.Equal([]string{"Any Tag", separatorTitle, "Mental", "Physical", separatorTitle, "Save Filter…"},
+		tagFilterItems(d), "opening the menu drops a chosen tag no trait carries any more")
+	c.False(d.table.IsFiltered(), "the list is filtered again without it")
+}
+
+// TestTableDockableTagFilterFixesWidth verifies that the tag filter's button keeps the same width whatever its tags.
+func TestTableDockableTagFilterFixesWidth(t *testing.T) {
+	c := check.New(t)
+	d := newFilterTestTraitDockable(t)
+	vision, _, _ := filterTestTraits(t, d)
+	popup := d.tagFilter.popup
+	_, short, _ := popup.Sizes(geom.Size{})
+	vision.Tags = []string{"Sensory Enhancements of Every Kind and Description"}
+	d.Rebuild(false)
+	popup.WillShowMenuCallback(popup)
+	_, uncapped, _ := popup.DefaultSizes(geom.Size{})
+	_, pref, _ := popup.Sizes(geom.Size{})
+	c.True(pref.Width < uncapped.Width, "the long tag may not widen the button to fit it")
+	c.Equal(short.Width, pref.Width, "the button keeps its width whatever the tags")
+}
+
+// TestTableDockableQuickFilterKeepsItsMinimumWidth verifies that the quick filter in a toolbar too narrow for its row
+// shrinks no further than the room for quickFilterWidthSample, rather than out of sight.
+func TestTableDockableQuickFilterKeepsItsMinimumWidth(t *testing.T) {
+	c := check.New(t)
+	d := newFilterTestTraitDockable(t)
+	toolbar := d.filterField.Parent()
+	toolbar.SetFrameRect(geom.NewRect(0, 0, 100, 30))
+	toolbar.ValidateLayout()
+	sample := unison.NewText(quickFilterWidthSample, &unison.TextDecoration{Font: d.filterField.Font}).Width()
+	width := d.filterField.FrameRect().Width
+	c.True(width >= sample, "the quick filter is %v wide, less than the sample's %v", width, sample)
+}
+
+// TestTableDockableFilterPopupsTurnCompact verifies that the filter popups turn into icons while the toolbar is too
+// narrow to show them in full, that the saved filter's name then leads its tooltip, and that they turn back once the
+// toolbar is wide enough again.
+func TestTableDockableFilterPopupsTurnCompact(t *testing.T) {
+	c := check.New(t)
+	d := newFilterTestTraitDockable(t)
+	toolbar := d.filterField.Parent()
+	minSize, _, _ := toolbar.Sizes(geom.Size{})
+	layOut := func(width float32) {
+		toolbar.SetFrameRect(geom.NewRect(0, 0, width, 30))
+		toolbar.ValidateLayout()
+	}
+
+	layOut(minSize.Width - 1)
+	for _, b := range []*filterPopupButton{d.tagFilter.button, d.savedFilters.button} {
+		c.True(b.compact, "%s must turn compact in a toolbar too narrow for it", b.popup.Accessibility.Name)
+		size := b.popup.FrameRect().Size
+		c.Equal(size.Height, size.Width, "%s must be a square icon", b.popup.Accessibility.Name)
+	}
+	c.Contains(tooltipText(d.savedFilters.popup.Tooltip), "No Filter", "the icon's tooltip names the saved filter")
+
+	layOut(minSize.Width)
+	c.False(d.tagFilter.button.compact, "the tag filter must turn back once the toolbar is wide enough")
+	c.False(d.savedFilters.button.compact, "and so must the saved filters")
+	c.NotContains(tooltipText(d.savedFilters.popup.Tooltip), "No Filter", "a name shown whole is kept out of the tooltip")
+}
+
+// TestTableDockableTagFilterIgnoresCase verifies that tags differing only in case are offered once, and that a chosen
+// tag stays chosen, and is saved as the list now spells it, when the spelling it is offered under changes.
+func TestTableDockableTagFilterIgnoresCase(t *testing.T) {
+	c := check.New(t)
+	d := newFilterTestTraitDockable(t)
+	vision, _, _ := filterTestTraits(t, d)
+	vision.Tags = []string{"exotic"}
+	d.Rebuild(false)
+	c.Equal([]string{"Any Tag", separatorTitle, "exotic", "Mental", "Physical", separatorTitle, "Save Filter…"},
+		tagFilterItems(d), "tags that differ only in case are offered once, as first found")
+	chooseTag(t, d, "exotic", 0)
+	c.Equal([]string{"Acute Vision", "Fur"}, visibleTraitNames(d), "the tag matches whatever its case")
+
+	vision.Tags = []string{"Physical"}
+	d.Rebuild(false)
+	c.Equal([]string{"Exotic"}, checkedTags(d), "the chosen tag stays checked under its new spelling")
+	edited := swapFilterEditor(t, false, func(*gurps.ListFilter) {})
+	chooseTag(t, d, saveFilterValue, 0)
+	c.Equal("Exotic", conditionAt(t, *edited, 0).Text.Qualifier, "the tag is saved as the list now spells it")
+}
+
+// TestTableDockableTagNamedAnyTag verifies that a tag bearing the title of the Any Tag entry is offered and chosen as a
+// tag, and that a tag holding the value of one of the popup's own entries is never offered.
+func TestTableDockableTagNamedAnyTag(t *testing.T) {
+	c := check.New(t)
+	d := newFilterTestTraitDockable(t)
+	_, reflexes, _ := filterTestTraits(t, d)
+	reflexes.Tags = []string{"Any Tag", anyTagValue, saveFilterValue}
+	d.Rebuild(false)
+	c.Equal([]string{"Any Tag", separatorTitle, "Any Tag", "Exotic", "Physical", separatorTitle, "Save Filter…"},
+		tagFilterItems(d), "the tag is offered beside the entry, and the tags holding the entries' values are not")
+
+	chooseTag(t, d, "any tag", 0)
+	c.Equal([]int{2}, d.tagFilter.popup.SelectedIndexes(), "the tag's own item is checked, not the Any Tag entry")
+	c.Equal([]string{"Combat Reflexes"}, visibleTraitNames(d), "the trait carrying the tag is shown")
+	chooseTag(t, d, anyTagValue, 0)
+	c.False(d.table.IsFiltered(), "the Any Tag entry still drops the chosen tags")
+}
+
+// TestTableDockableTagFilterFollowsSavedFilter verifies that the tag filter offers only the tags of the traits the
+// saved filter in force lets through, that editing or renaming that filter keeps the chosen tags it still offers, and
+// that choosing another saved filter, or deleting the one in force, drops them.
+func TestTableDockableTagFilterFollowsSavedFilter(t *testing.T) {
+	c := check.New(t)
+	fur := newNameContainsFilter("Fur", "fur")
+	physical := newContainsFilter("Physical", "tags", "physical")
+	d := newFilterTestTraitDockable(t, fur, physical)
+	uxtest.SwapForTest(t, &confirmFilterDeletion, func(string) bool { return true })
+	qualifier := func(text string) func(f *gurps.ListFilter) {
+		return func(f *gurps.ListFilter) { conditionAt(t, f, 0).Text.Qualifier = text }
+	}
+
+	d.chooseFilter(fur)
+	c.Equal([]string{"Any Tag", separatorTitle, "Exotic", "Physical", separatorTitle, "Save Filter…"},
+		tagFilterItems(d), "only the tags of the traits the saved filter lets through are offered")
+	chooseTag(t, d, "exotic", 0)
+	swapFilterEditor(t, true, func(f *gurps.ListFilter) { f.Name = "Furry" })
+	d.savedFilters.editFilter()
+	c.Equal([]string{"Exotic"}, checkedTags(d), "renaming the saved filter keeps the chosen tags")
+	swapFilterEditor(t, true, qualifier("u"))
+	d.savedFilters.editFilter()
+	c.Equal([]string{"Exotic"}, checkedTags(d), "editing the saved filter keeps a chosen tag it still offers")
+	swapFilterEditor(t, true, qualifier("vision"))
+	d.savedFilters.editFilter()
+	c.Equal([]string{"Any Tag"}, checkedTags(d), "editing the saved filter drops a chosen tag it no longer offers")
+	c.Equal([]string{"Acute Vision"}, visibleTraitNames(d), "the edited saved filter alone filters the list")
+
+	chooseTag(t, d, "physical", 0)
+	d.chooseFilter(physical)
+	c.Equal([]string{"Any Tag"}, checkedTags(d), "another saved filter drops the chosen tags, though it offers them")
+	chooseTag(t, d, "physical", 0)
+	d.savedFilters.deleteFilter()
+	c.Nil(d.selectedFilter, "deleting the saved filter in force leaves none")
+	c.Equal([]string{"Any Tag"}, checkedTags(d), "deleting the saved filter in force drops the chosen tags")
+}
+
+// TestTableDockableEmptySavedFilterFilters verifies that a saved filter with no conditions, whether it requires all or
+// any of them, still counts as filtering the list while it is in force, as it did before there were tags to choose.
+func TestTableDockableEmptySavedFilterFilters(t *testing.T) {
+	c := check.New(t)
+	all := gurps.NewListFilter("All")
+	anyOf := gurps.NewListFilter("Any")
+	anyOf.Root.All = false
+	d := newFilterTestTraitDockable(t, all, anyOf)
+	for _, f := range []*gurps.ListFilter{all, anyOf} {
+		d.chooseFilter(f)
+		c.True(d.table.IsFiltered(), "the empty saved filter %q filters the list", f.Name)
+		c.Equal(3, len(visibleTraitNames(d)), "the empty saved filter %q passes every trait", f.Name)
+	}
+}
+
+// TestTableDockableSaveTagFilter verifies that Save Filter puts up the editor for a new filter that requires what the
+// saved filter in force does and the chosen tags as well, and once it is accepted, saves it and puts it in force in
+// their place.
+func TestTableDockableSaveTagFilter(t *testing.T) {
+	c := check.New(t)
+	physical := newContainsFilter("Physical", "tags", "physical")
+	d := newFilterTestTraitDockable(t, physical)
+	d.chooseFilter(physical)
+	chooseTag(t, d, "exotic", 0)
+	key := gurps.ListFilterKeyForExtension(gurps.TraitsExt)
+
+	edited := swapFilterEditor(t, false, func(f *gurps.ListFilter) { f.Name = "Exotic Physical" })
+	chooseTag(t, d, saveFilterValue, 0)
+	c.Equal(2, len((*edited).Root.Children), "the new filter holds the saved filter's condition and the tag's")
+	c.Equal("physical", conditionAt(t, *edited, 0).Text.Qualifier, "the saved filter's condition comes first")
+	c.Equal("Exotic", conditionAt(t, *edited, 1).Text.Qualifier, "the tag follows, spelled as the list spells it")
+	c.Equal(1, len(gurps.GlobalSettings().ListFiltersFor(key)), "a canceled editor saves nothing")
+	c.Equal([]string{"Exotic"}, checkedTags(d), "a canceled editor leaves the chosen tags alone")
+
+	swapFilterEditor(t, true, func(f *gurps.ListFilter) { f.Name = "Exotic Physical" })
+	chooseTag(t, d, saveFilterValue, 0)
+	saved := gurps.GlobalSettings().ListFiltersFor(key)
+	c.Equal(2, len(saved), "the new filter is saved")
+	c.True(slices.Contains(saved, d.selectedFilter), "the new filter is put in force")
+	c.Equal("Exotic Physical", d.selectedFilter.Name, "the filter in force is the new one")
+	c.Equal([]string{"Any Tag"}, checkedTags(d), "the chosen tags are dropped, since the new filter holds them")
+	c.Equal([]string{"Fur"}, visibleTraitNames(d), "the new filter shows what the two did together")
 }

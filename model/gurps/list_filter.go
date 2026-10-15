@@ -227,6 +227,30 @@ func (g *FilterGroup) Empty() bool {
 	return true
 }
 
+// NewCombinedListFilter returns an unnamed filter that passes what base passes and also requires each of the given
+// tags, with one "is" condition on the tags per tag. The tags are expected to come from ListFilterTags, since a tag
+// that an "is" condition couldn't match, such as one holding a comma, would never be found. base may be nil, and is
+// copied rather than shared. When base's root requires all of its children and isn't negated, the tag conditions join
+// them, so a saved filter stays flat in the editor; otherwise it is kept whole as a group of its own. A base without
+// conditions adds nothing.
+func NewCombinedListFilter(base *ListFilter, tags []string) *ListFilter {
+	f := NewListFilter("")
+	if base != nil && base.Root != nil && !base.Root.Empty() {
+		if root := base.Root.CloneAsFilterGroup(nil); root.All && !root.Not {
+			f.Root = root
+		} else {
+			f.Root.Children = append(f.Root.Children, root)
+		}
+	}
+	for _, tag := range tags {
+		condition := NewFilterCondition(nil, filterFieldKeyTags)
+		condition.Text = criteria.Text{Compare: criteria.IsText, Qualifier: tag}
+		f.Root.Children = append(f.Root.Children, condition)
+	}
+	f.EnsureValidity()
+	return f
+}
+
 // NewFilterCondition creates a new condition on the field with the given key, with every criteria at its zero value.
 // For a number or weight field that means the condition accepts anything, and for a text or list field anything but
 // text that is empty or only space, or a list that holds nothing else; for a yes/no field, which has no criteria, it

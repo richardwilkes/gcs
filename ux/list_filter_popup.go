@@ -11,11 +11,17 @@ package ux
 
 import (
 	"slices"
+	"strings"
+	"unicode"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/ux/svg"
+	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/i18n"
+	"github.com/richardwilkes/toolbox/v2/xmath"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
+	"github.com/richardwilkes/unison/enums/paintstyle"
 )
 
 // Seams so the commands can be exercised without a window.
@@ -62,12 +68,13 @@ type listFilterPopupSpec struct {
 // them. The popup's items are rebuilt from the global settings each time it is about to be shown, since another
 // dockable showing the same list type may have changed them in the meantime.
 type listFilterPopup struct {
-	popup *unison.PopupMenu[string]
-	spec  listFilterPopupSpec
-	// filters runs parallel to the popup's items, holding the filter each item stands for. It is nil for the None
+	popup  *unison.PopupMenu[string]
+	button *filterPopupButton
+	spec   listFilterPopupSpec
+	// filters runs parallel to the popup's items, holding the filter each item stands for. It is nil for the No Filter
 	// entry, the separators and the three commands, since separators occupy an index of their own.
 	filters []*gurps.ListFilter
-	// noneIndex is the index of the "None" entry, which stands for no saved filter. It follows the three commands,
+	// noneIndex is the index of the "No Filter" entry, which stands for no saved filter. It follows the three commands,
 	// which lead the popup so that they stay in reach of a long list of filters, and the separator after them.
 	noneIndex   int
 	newIndex    int
@@ -91,10 +98,10 @@ func newListFilterPopup(spec listFilterPopupSpec) *listFilterPopup {
 		}
 	}
 	p.popup.ChoiceMadeCallback = func(popup *unison.PopupMenu[string], index int, _ string) {
-		// The commands act and leave the selection where it was; only a filter, or None, becomes the selection.
+		// The commands act and leave the selection where it was; only a filter, or No Filter, becomes the selection.
 		switch index {
 		case p.newIndex:
-			p.newFilter()
+			p.newFilter(gurps.NewListFilter(""))
 		case p.editIndex:
 			p.editFilter()
 		case p.deleteIndex:
@@ -104,6 +111,7 @@ func newListFilterPopup(spec listFilterPopupSpec) *listFilterPopup {
 		}
 	}
 	p.popup.SelectionChangedCallback = func(popup *unison.PopupMenu[string]) {
+		p.syncTooltip()
 		if p.rebuilding {
 			return
 		}
@@ -111,23 +119,21 @@ func newListFilterPopup(spec listFilterPopupSpec) *listFilterPopup {
 		p.enableCommands(i != p.noneIndex)
 		p.spec.choose(p.filterAt(i))
 	}
-	savedFilters := i18n.Text("Saved Filters")
-	p.popup.Tooltip = newWrappedTooltipWithSecondaryText(savedFilters,
-		i18n.Text("Choose a saved filter, or create, edit and delete them"))
-	// The popup follows the quick filter field in the toolbar, with no label of its own to name it by.
-	p.popup.Accessibility.Name = savedFilters
+	p.button = newFilterPopupButton(p.popup, svg.Filter, func() bool { return p.spec.current() != nil })
+	// The popup sits at the end of the toolbar, with no label of its own to name it by.
+	p.popup.Accessibility.Name = i18n.Text("Saved Filters")
 	p.popup.SetLayoutData(&unison.FlexLayoutData{
 		HAlign: align.Fill,
 		VAlign: align.Middle,
 	})
-	// Fill the popup in now so that it shows "None" before it has ever been opened.
+	// Fill the popup in now so that it shows "No Filter" before it has ever been opened.
 	p.rebuildItems()
 	return p
 }
 
 // rebuildItems replaces the popup's items with the saved filters as they now stand, keeping the filter in force
 // selected. It reports whether that filter is no longer among them, which happens when another dockable showing the
-// same list type deleted it, in which case the selection has fallen back to None.
+// same list type deleted it, in which case the selection has fallen back to No Filter.
 func (p *listFilterPopup) rebuildItems() (lostCurrent bool) {
 	defer func(saved bool) { p.rebuilding = saved }(p.rebuilding)
 	p.rebuilding = true
@@ -148,7 +154,7 @@ func (p *listFilterPopup) rebuildItems() (lostCurrent bool) {
 	p.editIndex = addItem(i18n.Text("Edit Filter…"), nil)
 	p.deleteIndex = addItem(i18n.Text("Delete Filter…"), nil)
 	addSeparator()
-	p.noneIndex = addItem(i18n.Text("None"), nil)
+	p.noneIndex = addItem(i18n.Text("No Filter"), nil)
 	index := p.noneIndex
 	if saved := gurps.GlobalSettings().ListFiltersFor(p.spec.key); len(saved) != 0 {
 		addSeparator()
@@ -162,15 +168,22 @@ func (p *listFilterPopup) rebuildItems() (lostCurrent bool) {
 	}
 	p.popup.SelectIndex(index)
 	p.enableCommands(index != p.noneIndex)
-	// The popup is as wide as its widest item, so adding, removing or renaming a filter can change its size, and the
-	// toolbar it sits in has to be laid out again to make room. Marking the popup alone wouldn't do it: a parent that
-	// is laid out again doesn't revisit its children, so the whole chain up to the window is marked.
-	p.popup.MarkForLayoutRecursivelyUpward()
+	p.syncTooltip() // A rename keeps the selection where it was, yet changes the name shown.
 	p.popup.MarkForRedraw()
 	return current != nil && index == p.noneIndex
 }
 
-// filterAt returns the filter the item at the given index stands for, or nil when the item is None, a separator, a
+// syncTooltip puts a filter name the button cuts short at the head of the tooltip, so that it can still be read in
+// full.
+func (p *listFilterPopup) syncTooltip() {
+	detail := i18n.Text("Choose a saved filter, or create, edit and delete them")
+	if name, cut := p.button.textCut(); cut {
+		detail = name + "\n\n" + detail
+	}
+	p.popup.Tooltip = newWrappedTooltipWithSecondaryText(p.popup.Accessibility.Name, detail)
+}
+
+// filterAt returns the filter the item at the given index stands for, or nil when the item is No Filter, a separator, a
 // command or out of range.
 func (p *listFilterPopup) filterAt(index int) *gurps.ListFilter {
 	if index < 0 || index >= len(p.filters) {
@@ -218,9 +231,8 @@ func (p *listFilterPopup) refresh() {
 	}
 }
 
-// newFilter puts up the editor for a new filter and, if it is accepted, saves it and puts it in force.
-func (p *listFilterPopup) newFilter() {
-	f := gurps.NewListFilter("")
+// newFilter puts up the editor for f as a new filter and, if it is accepted, saves it and puts it in force.
+func (p *listFilterPopup) newFilter(f *gurps.ListFilter) {
 	if showFilterEditor(i18n.Text("New Filter"), p.spec.key, f, p.spec.fields, nil) {
 		gurps.GlobalSettings().AddListFilter(p.spec.key, f)
 		p.filtersChanged(f)
@@ -262,4 +274,131 @@ func (p *listFilterPopup) filtersChanged(f *gurps.ListFilter) {
 	saveGlobalSettings()
 	p.selectFilter(f)
 	notifyListFiltersChanged(p.spec.key, p)
+}
+
+// popupWidthSample is the text whose width, in a popup's font, sets how wide a filter popup's button is and how much of
+// the chosen item it shows.
+const popupWidthSample = "MMMMMMMMMM"
+
+// filterPopupButton draws a filter popup's button. It is normally just wide enough to show popupWidthSample, whatever
+// the popup's items, cutting the chosen item short with an ellipsis past that, but shows only its icon while compact.
+// The menu it opens still shows every item in full.
+type filterPopupButton struct {
+	popup *unison.PopupMenu[string]
+	icon  *unison.SVG
+	// inEffect reports whether the popup narrows the list, which is when the compact icon takes the focus color.
+	inEffect func() bool
+	compact  bool
+}
+
+// newFilterPopupButton takes over the sizing and drawing of the popup's button.
+func newFilterPopupButton(popup *unison.PopupMenu[string], icon *unison.SVG, inEffect func() bool) *filterPopupButton {
+	b := &filterPopupButton{popup: popup, icon: icon, inEffect: inEffect}
+	popup.SetSizer(b.sizes)
+	popup.DrawCallback = b.draw
+	return b
+}
+
+func (b *filterPopupButton) sizes(hint geom.Size) (minSize, prefSize, maxSize geom.Size) {
+	_, prefSize, _ = b.popup.DefaultSizes(hint)
+	if b.compact {
+		prefSize.Width = prefSize.Height
+	} else {
+		// The space around the text is added as unison.PopupMenu.DefaultSizes adds it.
+		width := popupTextWidth(b.popup, popupWidthSample) + b.popup.HMargin*2 + 2 + prefSize.Height*0.75
+		if border := b.popup.Border(); border != nil {
+			width += border.Insets().Width()
+		}
+		prefSize.Width = xmath.Ceil(width)
+	}
+	return prefSize, prefSize, prefSize
+}
+
+func (b *filterPopupButton) draw(canvas *unison.Canvas, dirty geom.Rect) {
+	if b.compact {
+		// Drawn as unison.Button draws an icon with no base.
+		r := b.popup.ContentRect(false)
+		if b.popup.Focused() {
+			unison.DrawRoundedRectBase(canvas, r, b.popup.CornerRadius, 2, unison.Transparent, b.popup.SelectionInk)
+		}
+		ink := b.popup.OnBackgroundInk
+		if b.inEffect() {
+			ink = unison.ThemeFocus
+		}
+		size := b.popup.Font.Baseline()
+		r = geom.NewRect(r.X+(r.Width-size)/2, r.Y+(r.Height-size)/2, size, size)
+		b.icon.DrawInRectPreservingAspectRatio(canvas, r, nil, ink.Paint(canvas, r, paintstyle.Fill))
+		return
+	}
+	// The button draws the chosen item through the renderer the menu uses too, so it is swapped only while drawing.
+	render := b.popup.ItemRendererCallback
+	defer func() { b.popup.ItemRendererCallback = render }()
+	b.popup.ItemRendererCallback = func(item string) string {
+		if render != nil {
+			item = render(item)
+		}
+		return popupFittedText(b.popup, item)
+	}
+	b.popup.DefaultDraw(canvas, dirty)
+}
+
+// textCut returns the text of the popup's chosen item, and whether its button cuts that text short, which a compact
+// one always does, showing none of it.
+func (b *filterPopupButton) textCut() (text string, cut bool) {
+	text = b.popup.Text()
+	return text, b.compact || popupFittedText(b.popup, text) != text
+}
+
+// compactingToolbarLayout lays a toolbar out in one row, as FinishToolbarLayout does, but turns its filter popups into
+// icons while the toolbar is too narrow to show them in full beside its other controls at their least widths.
+type compactingToolbarLayout struct {
+	*unison.FlexLayout
+	buttons []*filterPopupButton
+	// changed is called after the buttons turn compact or back.
+	changed func()
+}
+
+// PerformLayout implements unison.Layout.
+func (l *compactingToolbarLayout) PerformLayout(target *unison.Panel) {
+	was := l.buttons[0].compact
+	l.setCompact(false)
+	minSize, _, _ := l.LayoutSizes(target, geom.Size{})
+	compact := minSize.Width > target.FrameRect().Width
+	l.setCompact(compact)
+	if compact != was {
+		for _, b := range l.buttons {
+			b.popup.MarkForRedraw()
+		}
+		l.changed()
+	}
+	l.FlexLayout.PerformLayout(target)
+}
+
+func (l *compactingToolbarLayout) setCompact(compact bool) {
+	for _, b := range l.buttons {
+		b.compact = compact
+	}
+}
+
+// popupFittedText returns text as the popup's button shows it. Text wider than popupWidthSample is cut to as much of
+// its start as fits that width with an ellipsis after it, the ellipsis counted in the width and no space left before
+// it.
+func popupFittedText(popup *unison.PopupMenu[string], text string) string {
+	t := unison.NewText(text, &unison.TextDecoration{Font: popup.Font})
+	room := popupTextWidth(popup, popupWidthSample)
+	if t.Width() <= room {
+		return text
+	}
+	room -= popupTextWidth(popup, "…")
+	runes := t.Runes()
+	n := len(runes)
+	for n > 0 && t.PositionForRuneIndex(n) > room {
+		n--
+	}
+	return strings.TrimRightFunc(string(runes[:n]), unicode.IsSpace) + "…"
+}
+
+// popupTextWidth returns the width of text in the popup's font.
+func popupTextWidth(popup *unison.PopupMenu[string], text string) float32 {
+	return unison.NewText(text, &unison.TextDecoration{Font: popup.Font}).Width()
 }

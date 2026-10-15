@@ -33,12 +33,14 @@ func NewToolbar() *unison.Panel {
 }
 
 // FinishToolbarLayout lays out the toolbar's current children in a single row. Call it after the last child has been
-// added, since the column count is taken from the children present at the time of the call.
-func FinishToolbarLayout(toolbar *unison.Panel) {
-	toolbar.SetLayout(&unison.FlexLayout{
+// added, since the column count is taken from the children present at the time of the call. It returns the layout.
+func FinishToolbarLayout(toolbar *unison.Panel) *unison.FlexLayout {
+	layout := &unison.FlexLayout{
 		Columns:  len(toolbar.Children()),
 		HSpacing: unison.StdHSpacing,
-	})
+	}
+	toolbar.SetLayout(layout)
+	return layout
 }
 
 // addHelpButton adds the standard Help button, which opens the given link (see HandleLink), to the toolbar.

@@ -176,7 +176,7 @@ func dialogNameField(t *testing.T, screen *unison.HeadlessScreen, dialogWnd *uni
 
 // TestListFilterPopupAppliesSavedFilterHeadless drives the saved filter popup of a trait list inside a headless
 // workspace: choosing a saved filter narrows the list and leaves the quick filter's field usable, what is typed there
-// narrows the list further while the saved filter is in force, choosing None drops the saved filter alone, and the
+// narrows the list further while the saved filter is in force, choosing No Filter drops the saved filter alone, and the
 // quick filter searches the tags column as well as the name.
 func TestListFilterPopupAppliesSavedFilterHeadless(t *testing.T) {
 	c := check.New(t)
@@ -193,13 +193,13 @@ func TestListFilterPopupAppliesSavedFilterHeadless(t *testing.T) {
 	})
 	c.True(inWorkspace, "the trait list opens in the workspace window")
 	c.Equal([]string{
-		newFilterItemTitle, editFilterItemTitle, deleteFilterItemTitle, separatorTitle, "None", separatorTitle,
+		newFilterItemTitle, editFilterItemTitle, deleteFilterItemTitle, separatorTitle, "No Filter", separatorTitle,
 		"Mental",
-	}, titles, "the commands lead, and the separator after None puts the saved filter at index 6")
+	}, titles, "the commands lead, and the separator after No Filter puts the saved filter at index 6")
 
 	state := readListFilterState(screen, d)
 	c.Equal(listFilterHeadlessTraitNames, state.names, "every trait is shown before any filtering")
-	c.Equal("None", state.popupText, "no saved filter is in force to start with")
+	c.Equal("No Filter", state.popupText, "no saved filter is in force to start with")
 	c.True(state.fieldEnabled, "and the quick filter's field is usable")
 	c.False(state.filtered, "and nothing is filtering the table")
 
@@ -225,7 +225,7 @@ func TestListFilterPopupAppliesSavedFilterHeadless(t *testing.T) {
 	c.Equal(0, len(state.names), "no trait passes both the saved filter and the quick filter")
 	uxtest.CaptureScreen(t, c, screen, "list_filter_combined")
 
-	// Choose None, which drops the saved filter and leaves the quick filter's text to filter the list on its own.
+	// Choose No Filter, which drops the saved filter and leaves the quick filter's text to filter the list on its own.
 	// Only one trait is tagged "Physical" and no trait's name holds the word, so keeping exactly that one shows the
 	// quick filter searching the tags column.
 	uxtest.ChoosePopupItem(t, screen, wnd, d.savedFilters.popup, popupNoneIndex)
@@ -416,11 +416,11 @@ func TestListFilterDeleteAsksAndFallsBackHeadless(t *testing.T) {
 	c.Equal(0, len(savedFilters()), "confirming must remove the filter")
 	state = readListFilterState(screen, d)
 	c.Nil(state.selected, "the list must be left with no saved filter")
-	c.Equal("None", state.popupText, "which the popup must show")
+	c.Equal("No Filter", state.popupText, "which the popup must show")
 	c.False(state.filtered, "with the quick filter empty, nothing filters the table")
 	c.Equal(listFilterHeadlessTraitNames, state.names, "so every trait is shown again")
 	c.Equal([]string{
-		newFilterItemTitle, editFilterItemTitle, deleteFilterItemTitle, separatorTitle, "None",
+		newFilterItemTitle, editFilterItemTitle, deleteFilterItemTitle, separatorTitle, "No Filter",
 	}, titles, "the deleted filter and the separator that set the saved filters apart must both be gone")
 	c.Equal(itemCount-2, len(titles), "so the popup holds two items fewer than it did")
 }
@@ -728,10 +728,9 @@ func TestListFilterDialogDragHeadless(t *testing.T) {
 // TestListFilterChangesReachOtherDockablesHeadless verifies that a change made to the saved filters through one
 // list's popup reaches every other open list of the same type: a renamed filter that is in force there keeps its
 // place under its new name, a new filter appears in its popup, and a deleted filter that was in force there leaves the
-// list with no saved filter. Each time, the other list's toolbar is laid out again, which shows in the width of
-// its popup, since that follows the widest item. The two lists share a tab group, so only the second, in front, can
-// be clicked; the first is driven through its popup's callback directly. The editor is stubbed, since it is the
-// popups' bookkeeping that is under test here.
+// list with no saved filter. Each time, the other list's popup keeps its width. The two lists share a tab group, so
+// only the second, in front, can be clicked; the first is driven through its popup's callback directly. The editor is
+// stubbed, since it is the popups' bookkeeping that is under test here.
 func TestListFilterChangesReachOtherDockablesHeadless(t *testing.T) {
 	c := check.New(t)
 	screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
@@ -759,8 +758,8 @@ func TestListFilterChangesReachOtherDockablesHeadless(t *testing.T) {
 	c.Equal("Mind", state.popupText, "under its new name")
 	c.Equal([]string{"Combat Reflexes"}, state.names, "and still filtering it")
 
-	// Create a filter through the list behind. The popup in front lists it, and grows to fit its long name, while the
-	// list keeps what it had in force.
+	// Create a filter through the list behind. The popup in front lists it without growing to fit its long name, while
+	// the list keeps what it had in force.
 	uxtest.SwapForTest(t, &showFilterEditor,
 		func(_, _ string, filter *gurps.ListFilter, _ []filterFieldInfo, _ *gurps.ListFilter) bool {
 			filter.Name = "A much longer filter name"
@@ -772,36 +771,34 @@ func TestListFilterChangesReachOtherDockablesHeadless(t *testing.T) {
 	var titles []string
 	screen.Do(func() { titles = popupItemTitles(second.savedFilters.popup) })
 	c.Equal([]string{
-		newFilterItemTitle, editFilterItemTitle, deleteFilterItemTitle, separatorTitle, "None", separatorTitle,
+		newFilterItemTitle, editFilterItemTitle, deleteFilterItemTitle, separatorTitle, "No Filter", separatorTitle,
 		"A much longer filter name", "Mind",
 	}, titles, "the popup in front must list the new filter")
 	state = readListFilterState(screen, second)
 	c.True(mental == state.selected, "the list in front must keep the very filter it had in force")
 	c.Equal("Mind", state.popupText, "and show it")
-	widthAfterAdd := popupWidth(screen, second)
-	c.True(widthAfterAdd > widthBefore, "the popup in front must have been laid out again to fit the new item")
+	c.Equal(widthBefore, popupWidth(screen, second), "the popup in front must keep its width")
 
 	// Delete the filter in force through the list behind, which put the new one in force when it created it, so it
-	// has to be put back first. The list in front, still on the deleted filter, falls back to None.
+	// has to be put back first. The list in front, still on the deleted filter, falls back to No Filter.
 	choosePopupItemDirectly(screen, first, popupFirstSavedIndex+1) // "Mind"
 	uxtest.SwapForTest(t, &confirmFilterDeletion, func(_ string) bool { return true })
 	deleteIndex := popupItemIndexOf(t, screen, first.savedFilters.popup, deleteFilterItemTitle)
 	choosePopupItemDirectly(screen, first, deleteIndex)
 	state = readListFilterState(screen, second)
 	c.Nil(state.selected, "the list in front must fall back to no saved filter once its filter is gone")
-	c.Equal("None", state.popupText, "and its popup must say so")
+	c.Equal("No Filter", state.popupText, "and its popup must say so")
 	c.Equal(listFilterHeadlessTraitNames, state.names, "so every trait is shown there again")
 	c.Nil(readListFilterState(screen, first).selected, "the list behind must be on no saved filter as well")
 
-	// Delete the remaining filter too. The popup in front shrinks back, having only None and the commands left to
-	// fit.
+	// Delete the remaining filter too. The popup in front still keeps its width.
 	choosePopupItemDirectly(screen, first, popupFirstSavedIndex) // "A much longer filter name"
 	deleteIndex = popupItemIndexOf(t, screen, first.savedFilters.popup, deleteFilterItemTitle)
 	choosePopupItemDirectly(screen, first, deleteIndex)
 	screen.Do(func() { titles = popupItemTitles(second.savedFilters.popup) })
-	c.Equal([]string{newFilterItemTitle, editFilterItemTitle, deleteFilterItemTitle, separatorTitle, "None"},
+	c.Equal([]string{newFilterItemTitle, editFilterItemTitle, deleteFilterItemTitle, separatorTitle, "No Filter"},
 		titles, "the popup in front must have lost the deleted filter")
-	c.True(popupWidth(screen, second) < widthAfterAdd, "the popup in front must have been laid out again to shrink")
+	c.Equal(widthBefore, popupWidth(screen, second), "the popup in front must still keep its width")
 }
 
 // choosePopupItemDirectly makes the choice at the given index in the dockable's saved filter popup through the popup's
@@ -819,4 +816,63 @@ func popupWidth(screen *unison.HeadlessScreen, d *TableDockable[*gurps.Trait]) f
 	var width float32
 	screen.Do(func() { width = d.savedFilters.popup.FrameRect().Width })
 	return width
+}
+
+// TestListTagFilterHeadless drives the tag filter of a trait list inside a headless workspace, where the modifier keys
+// are read from the window as they are for a person's clicks: a click chooses a tag, and a Shift-click on another adds
+// it, so a trait has to carry both.
+func TestListTagFilterHeadless(t *testing.T) {
+	c := check.New(t)
+	screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
+	uxtest.SwapForTest(t, &gurps.GlobalSettings().ListFilters, make(map[string][]*gurps.ListFilter))
+	d := openListFilterTraitDockable(t, screen)
+	var physical, exotic int
+	screen.Do(func() {
+		physical = d.tagFilter.popup.IndexOfItem("physical")
+		exotic = d.tagFilter.popup.IndexOfItem("exotic")
+	})
+	read := func() (checked, names []string, text string) {
+		screen.Do(func() { checked, names, text = checkedTags(d), visibleTraitNames(d), d.tagFilter.popup.Text() })
+		return checked, names, text
+	}
+
+	uxtest.ChoosePopupItem(t, screen, wnd, d.tagFilter.popup, physical)
+	checked, names, _ := read()
+	c.Equal([]string{"Physical"}, checked, "the click chooses the tag")
+	c.Equal([]string{"Acute Vision"}, names, "only the trait tagged Physical is shown")
+
+	screen.Click(screen.PanelCenter(d.tagFilter.popup))
+	var item *unison.Panel
+	screen.Do(func() {
+		if items := uxtest.MenuItemPanels(uxtest.OpenMenuPopup(wnd)); exotic >= 0 && exotic < len(items) {
+			item = items[exotic]
+		}
+	})
+	if item == nil {
+		t.Fatal("the tag filter's menu has no Exotic item")
+	}
+	screen.ClickWith(screen.PanelCenter(item), unison.ButtonLeft, mod.Shift)
+	checked, names, text := read()
+	c.Equal([]string{"Exotic", "Physical"}, checked, "the Shift-click adds the tag")
+	c.Equal("Multiple", text, "the popup says that more than one tag is chosen")
+	c.Equal(0, len(names), "no trait carries both tags")
+}
+
+// TestListFilterPopupCutsNameHeadless verifies, with the popup drawn in a headless workspace, that a filter name too
+// long for the button is cut short there while the menu it opens still lists it in full.
+func TestListFilterPopupCutsNameHeadless(t *testing.T) {
+	c := check.New(t)
+	screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
+	uxtest.SwapForTest(t, &gurps.GlobalSettings().ListFilters, make(map[string][]*gurps.ListFilter))
+	long := "Mental or Social Advantages Worth Keeping"
+	seedListFilter(long, "tags", "Mental")
+	d := openListFilterTraitDockable(t, screen)
+
+	uxtest.ChoosePopupItem(t, screen, wnd, d.savedFilters.popup, popupFirstSavedIndex)
+	var cut bool
+	screen.Do(func() { _, cut = d.savedFilters.button.textCut() })
+	c.True(cut, "the button cuts the long name short")
+
+	screen.Click(screen.PanelCenter(d.savedFilters.popup))
+	chooseOpenMenuItem(t, screen, wnd, long) // Fails unless the menu lists the long name in full.
 }

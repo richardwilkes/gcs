@@ -14,6 +14,7 @@ import (
 	"slices"
 	"strings"
 
+	"github.com/richardwilkes/gcs/v5/model/criteria"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/container"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/difficulty"
@@ -91,7 +92,7 @@ func (f *FilterField[T]) WithPresence(has func(T) bool) *FilterField[T] {
 // WithListedValues makes the field suggest the distinct values it holds across the list being filtered, and returns
 // the field.
 func (f *FilterField[T]) WithListedValues() *FilterField[T] {
-	f.Suggestions = func(list []T) []string { return listedFilterValues(f, list) }
+	f.Suggestions = func(list []T) []string { return listedFilterValues(f, list, nil) }
 	return f
 }
 
@@ -102,13 +103,25 @@ func (f *FilterField[T]) WithChoices(choices func() []string) *FilterField[T] {
 	return f
 }
 
+// ListFilterTags returns the tags held by the nodes of list, at any depth, that pass the filter, gathered as the tags
+// field's suggestions are. A nil filter passes every node. It returns nil when fields has no tags field.
+func ListFilterTags[T Node[T]](f *ListFilter, fields []*FilterField[T], list []T) []string {
+	for _, field := range fields {
+		if field.Key == filterFieldKeyTags {
+			return listedFilterValues(field, list, NewListFilterMatcher(f, fields))
+		}
+	}
+	return nil
+}
+
 // listedFilterValues returns the values the field holds across list and everything below it, which are the nodes a
-// filter checks, made distinct by distinctFilterValues and sorted naturally without regard to case. A list value
-// holding a comma is left out: the qualifier is split on commas, so it could never match.
-func listedFilterValues[T Node[T]](field *FilterField[T], list []T) []string {
+// filter checks, made distinct by distinctFilterValues and sorted naturally without regard to case. When keep is not
+// nil, only the nodes it accepts contribute. A list value that an "is" condition naming it couldn't match, such as one
+// holding a comma or a nameable marker with choices, is left out.
+func listedFilterValues[T Node[T]](field *FilterField[T], list []T, keep func(T) bool) []string {
 	var values []string
 	Traverse(func(node T) bool {
-		if field.Has != nil && !field.Has(node) {
+		if (field.Has != nil && !field.Has(node)) || (keep != nil && !keep(node)) {
 			return false
 		}
 		switch field.Kind {
@@ -116,7 +129,7 @@ func listedFilterValues[T Node[T]](field *FilterField[T], list []T) []string {
 			values = append(values, field.Text(node))
 		case FilterFieldList:
 			for _, value := range field.List(node) {
-				if !strings.Contains(value, ",") {
+				if (criteria.Text{Compare: criteria.IsText, Qualifier: value}).MatchesList(nil, value) {
 					values = append(values, value)
 				}
 			}
