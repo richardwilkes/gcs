@@ -691,50 +691,6 @@ func TestApplyTemplateCountsModifierPromptsBeforeAskingThem(t *testing.T) {
 	c.Equal([]step{{row: "Talent", step: 1, steps: 2}, {row: "Sword", step: 2, steps: 2}}, steps)
 }
 
-// newLibraryStyleEquipmentTable returns a table of the given equipment that stands outside any sheet or template, as a
-// library's does.
-func newLibraryStyleEquipmentTable(items ...*gurps.Equipment) *unison.Table[*Node[*gurps.Equipment]] {
-	data := gurps.NewTemplate()
-	data.SetCarriedEquipmentList(items)
-	provider := NewEquipmentProvider(data, true, false)
-	table := newProviderTable(provider)
-	table.ClientData()[TableProviderClientKey] = provider
-	return table
-}
-
-// TestCopyToSheetLeavesOutCarriedEquipmentWhileBuying verifies that a sheet whose carried equipment list the buy panel
-// stands in for is neither offered nor used as a destination for copying equipment, since equipment arriving on such a
-// sheet is to be bought (see Sheet.startBuying), while it still takes other rows and takes equipment again once buying
-// ends.
-func TestCopyToSheetLeavesOutCarriedEquipmentWhileBuying(t *testing.T) {
-	c := check.New(t)
-	sheet := newTestSheetForTemplate(t)
-	entity := sheet.Entity()
-	rope := gurps.NewEquipment(nil, nil, false)
-	rope.Name = "Rope"
-	equipment := newLibraryStyleEquipmentTable(rope)
-	equipment.SelectAll()
-	claws := gurps.NewTrait(nil, nil, false)
-	claws.Name = "Claws"
-	traits := newLibraryStyleTraitsTable(claws)
-	traits.SelectAll()
-	sheets := []*Sheet{sheet}
-
-	sheet.startBuying()
-	c.True(sheet.buying(), "the sheet must be buying")
-	c.False(canCopySelectionTo(equipment, sheets), "equipment can't be copied to a sheet that is buying")
-	c.True(canCopySelectionTo(traits, sheets), "other rows still can be")
-	copySelectionTo(equipment, sheets)
-	c.Equal(0, len(entity.CarriedEquipment), "equipment copied to a sheet that is buying goes nowhere")
-	c.False(sheet.undoMgr.CanUndo(), "nothing was changed, so there must be nothing to undo")
-
-	sheet.stopBuying()
-	c.True(canCopySelectionTo(equipment, sheets), "equipment can be copied again once buying ends")
-	copySelectionTo(equipment, sheets)
-	c.Equal(1, len(entity.CarriedEquipment), "the equipment must have been copied")
-	c.True(sheet.undoMgr.CanUndo(), "the copy must be undoable")
-}
-
 // TestCopyToSheetListOffThePageIsAppliedAsToASheet verifies that rows copied onto a sheet whose layout leaves their list
 // off the page are still applied as to a sheet, with the ancestry question put, and recorded for undo, although the list
 // is attached to neither the sheet nor its undo manager.

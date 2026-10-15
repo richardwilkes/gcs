@@ -17,8 +17,8 @@ import (
 
 // tradeUndoEditData holds what a sale or purchase changes: the sheet's carried equipment and its shopping record. The
 // carried equipment is restored into whichever table the sheet holds for it when the edit is applied rather than one
-// captured when the edit was made, since the list may be off the page while the buy panel stands in for it, where
-// liveTable can't find it, and a rebuild can replace it.
+// captured when the edit was made, since the layout may leave the list off the page, where liveTable can't find it,
+// and a rebuild can replace it.
 type tradeUndoEditData struct {
 	sheet  *Sheet
 	record []*gurps.ShoppingRecordEntry

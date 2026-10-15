@@ -19,7 +19,6 @@ import (
 	"github.com/richardwilkes/gcs/v5/ux/uxtest"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/toolbox/v2/geom"
-	"github.com/richardwilkes/toolbox/v2/xreflect"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/accessibility"
 	"github.com/richardwilkes/unison/enums/mod"
@@ -81,8 +80,8 @@ func carriedHeaderPoints(wnd *unison.Window, sheet *Sheet) (title geom.Point, bu
 
 // TestCarriedEquipmentHeaderButtons verifies that the buy and shopping record buttons in the header of a sheet's
 // carried equipment list take clicks of their own without making the header taller or keeping a click on its title
-// from sorting the list, that the buy button swaps the list for the buy panel and its Back button swaps it back, and
-// that an assistive technology can press the buttons.
+// from sorting the list, that the buy button opens the sheet's buy dockable while the list stays on the page, and that
+// an assistive technology can press the buttons.
 func TestCarriedEquipmentHeaderButtons(t *testing.T) {
 	c := check.New(t)
 	screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
@@ -148,11 +147,10 @@ func TestCarriedEquipmentHeaderButtons(t *testing.T) {
 		})
 		return state
 	}
-	var buying, panelOnPage, listOnPage bool
+	var buying, listOnPage bool
 	readState := func() {
 		screen.Do(func() {
-			buying = sheet.buying()
-			panelOnPage = sheet.buyPanel != nil && unison.AncestorIs(sheet.buyPanel, sheet.page)
+			buying = buyDockableFor(sheet) != nil
 			listOnPage = unison.AncestorIs(sheet.CarriedEquipment, sheet.page)
 		})
 	}
@@ -173,30 +171,15 @@ func TestCarriedEquipmentHeaderButtons(t *testing.T) {
 	screen.Click(buy)
 	c.Equal(sorted, sortState(), "a click on the buy button must not sort the list")
 	readState()
-	c.True(buying, "the buy button must start buying")
-	c.True(panelOnPage, "the buy panel must be on the page while buying")
-	c.False(listOnPage, "the carried equipment list must leave the page while buying")
+	c.True(buying, "the buy button must open the buy dockable")
+	c.True(listOnPage, "the carried equipment list must stay on the page while buying")
 	if !buying {
 		t.FailNow()
 	}
-
-	var back *unison.Button
-	var backVisible bool
-	screen.Do(func() {
-		if back = sheet.buyPanel.back; back != nil {
-			back.ScrollIntoView()
-			back.ValidateScrollRoot()
-			backVisible = fullyVisible(back.AsPanel())
-		}
-	})
-	if back == nil || !backVisible {
-		t.Fatal("the buy panel's Back button must be in view to be clicked")
-	}
-	screen.Click(screen.PanelCenter(back))
+	screen.Do(func() { closeBuyDockable(sheet) })
 	readState()
-	c.False(buying, "the Back button must stop buying")
-	c.False(panelOnPage, "the buy panel must leave the page")
-	c.True(listOnPage, "the carried equipment list must return to the page")
+	c.False(buying, "closing the buy dockable must end buying")
+	c.True(listOnPage, "the carried equipment list must still be on the page")
 
 	// An assistive technology reaches the buttons through the column header, which is described as a group holding
 	// them, and pressing one clicks it.
@@ -219,7 +202,7 @@ func TestCarriedEquipmentHeaderButtons(t *testing.T) {
 		"the buy button must carry out a press")
 	readState()
 	c.True(buying, "pressing the buy button must start buying")
-	screen.Do(sheet.stopBuying)
+	screen.Do(func() { closeBuyDockable(sheet) })
 
 	// A template's carried equipment list has no buttons, and its header is just as tall.
 	template, ok := uxtest.OpenedByAction(t, screen, newCharacterTemplateAction).(*Template)
@@ -315,96 +298,6 @@ func TestSellInCarriedEquipmentContextMenu(t *testing.T) {
 	closeContextMenu(c, screen, wnd)
 }
 
-// TestBuyModeGatesListCommands verifies that while the buy panel stands in for a sheet's carried equipment list, the
-// commands that would add to that list are disabled, the panel takes the list's place for the layout editor and for
-// drops, and buying ends if the layout stops showing the carried equipment.
-func TestBuyModeGatesListCommands(t *testing.T) {
-	c := check.New(t)
-	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
-	sheet, ok := uxtest.OpenedByAction(t, screen, newCharacterSheetAction).(*Sheet)
-	if !ok {
-		t.Fatal("New Character Sheet must open a character sheet")
-	}
-	newCarriedIDs := []int{
-		NewCarriedEquipmentItemID,
-		NewCarriedEquipmentContainerItemID,
-		NewCarriedEquipmentGroupItemID,
-	}
-	type gates struct {
-		canStart, buyEnabled, moveToCarried bool
-		newCarried                          []bool
-	}
-	readGates := func() gates {
-		var g gates
-		g.canStart = sheet.canStartBuying()
-		g.buyEnabled = buyEquipmentAction.EnabledCallback(buyEquipmentAction, nil)
-		g.moveToCarried = sheet.OtherEquipment.CanPerformCmd(nil, MoveToCarriedEquipmentItemID)
-		for _, id := range newCarriedIDs {
-			g.newCarried = append(g.newCarried, sheet.CanPerformCmd(nil, id))
-		}
-		return g
-	}
-	var before, during, after gates
-	var blockPanelIsBuyPanel, dropTargetIsBuyPanel, editorFindsBuyPanel, listsBuilt, canStartWhileEditing bool
-	var buyingAfterHide, canStartAfterHide, canStartAfterUndo bool
-	screen.Do(func() {
-		entity := sheet.Entity()
-		eqp := gurps.NewEquipment(entity, nil, false)
-		eqp.Name = "Rope"
-		entity.OtherEquipment = append(entity.OtherEquipment, eqp)
-		entity.Recalculate()
-		sheet.Rebuild(true)
-		sheet.OtherEquipment.Table.SelectByIndex(0)
-		before = readGates()
-
-		sheet.startBuying()
-		during = readGates()
-		blockPanelIsBuyPanel = sheet.blockPanel(gurps.BlockEquipmentKey) == unison.Paneler(sheet.buyPanel)
-		dropTargetIsBuyPanel = sheet.keyToPanel(equipmentDragKey) == sheet.buyPanel.AsPanel()
-		listsBuilt = !slices.ContainsFunc(sheet.lists(), func(l sheetList) bool { return xreflect.IsNil(l) })
-		sheet.toggleLayoutEditing()
-		if sheet.layoutEditing() {
-			editorFindsBuyPanel = sheet.layoutEditor.ensureRegions().leafFor(gurps.BlockEquipmentKey) != nil
-			sheet.toggleLayoutEditing()
-		}
-		sheet.stopBuying()
-		after = readGates()
-
-		sheet.toggleLayoutEditing()
-		if sheet.layoutEditing() {
-			canStartWhileEditing = sheet.canStartBuying()
-			sheet.toggleLayoutEditing()
-		}
-
-		sheet.startBuying()
-		sheet.hideLayoutBlock(gurps.BlockEquipmentKey)
-		buyingAfterHide = sheet.buying()
-		canStartAfterHide = sheet.canStartBuying()
-		sheet.UndoManager().Undo()
-		canStartAfterUndo = sheet.canStartBuying()
-	})
-	c.True(before.canStart, "a new sheet must be able to start buying")
-	c.True(before.buyEnabled, "Buy Equipment must be enabled for a new sheet")
-	c.True(before.moveToCarried, "moving the selected other equipment to the carried list must be enabled")
-	c.Equal([]bool{true, true, true}, before.newCarried, "the New Carried Equipment commands must be enabled")
-
-	c.False(during.canStart, "buying must not start again while under way")
-	c.False(during.buyEnabled, "Buy Equipment must be disabled while buying")
-	c.False(during.moveToCarried, "moving equipment to the carried list must be disabled while buying")
-	c.Equal([]bool{false, false, false}, during.newCarried,
-		"the New Carried Equipment commands must be disabled while buying")
-	c.True(blockPanelIsBuyPanel, "the buy panel must stand for the carried equipment block in the layout editor")
-	c.True(dropTargetIsBuyPanel, "equipment dropped on the sheet must go to the buy panel")
-	c.True(listsBuilt, "every list must still exist while buying")
-	c.True(editorFindsBuyPanel, "the layout editor must find the carried equipment block while buying")
-
-	c.Equal(before, after, "stopping must enable everything again")
-	c.False(canStartWhileEditing, "buying must not start while the layout is being edited")
-	c.False(buyingAfterHide, "hiding the carried equipment block must end buying")
-	c.False(canStartAfterHide, "buying must not start while the layout hides the carried equipment")
-	c.True(canStartAfterUndo, "buying must be possible again once the block is shown")
-}
-
 // TestCarriedEquipmentHeaderKeepsItsOwnDescription checks that a trailing button's tooltip, lent to the column header
 // while the pointer is over the button (see PageTableColumnHeader.buttonTooltip), doesn't become the column's
 // description for assistive technologies, neither of the column header node the table header describes the column
@@ -468,4 +361,73 @@ func TestCarriedEquipmentHeaderKeepsItsOwnDescription(t *testing.T) {
 	}
 	c.Equal(tooltip, group.Description, "the header must be described by its own tooltip, not the button's")
 	c.Equal(tooltip, column.Description, "the column must be described by its own tooltip, not the button's")
+}
+
+// TestBuyingLeavesTheSheetEditable verifies that a sheet stays editable while its buy dockable is open: the commands that
+// add to the carried equipment list stay enabled, the list stays the carried equipment block's panel for the layout
+// editor, equipment dropped on the sheet goes to the dockable, and hiding the block neither ends buying nor takes the
+// dockable out of the sheet's drop rerouting.
+func TestBuyingLeavesTheSheetEditable(t *testing.T) {
+	c := check.New(t)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
+	sheet, ok := uxtest.OpenedByAction(t, screen, newCharacterSheetAction).(*Sheet)
+	if !ok {
+		t.Fatal("New Character Sheet must open a character sheet")
+	}
+	newCarriedIDs := []int{
+		NewCarriedEquipmentItemID,
+		NewCarriedEquipmentContainerItemID,
+		NewCarriedEquipmentGroupItemID,
+	}
+	type gates struct {
+		moveToCarried bool
+		newCarried    []bool
+	}
+	readGates := func() gates {
+		var g gates
+		g.moveToCarried = sheet.OtherEquipment.CanPerformCmd(nil, MoveToCarriedEquipmentItemID)
+		for _, id := range newCarriedIDs {
+			g.newCarried = append(g.newCarried, sheet.CanPerformCmd(nil, id))
+		}
+		return g
+	}
+	var before, during, after gates
+	var buyEnabled, blockPanelIsList, dropTargetIsDockable, editorFindsList, buyingAfterHide, dropTargetAfterHide bool
+	screen.Do(func() {
+		entity := sheet.Entity()
+		eqp := gurps.NewEquipment(entity, nil, false)
+		eqp.Name = "Rope"
+		entity.OtherEquipment = append(entity.OtherEquipment, eqp)
+		entity.Recalculate()
+		sheet.Rebuild(true)
+		sheet.OtherEquipment.Table.SelectByIndex(0)
+		before = readGates()
+		buyEnabled = buyEquipmentAction.EnabledCallback(buyEquipmentAction, nil)
+
+		d := showBuyDockable(sheet)
+		during = readGates()
+		blockPanelIsList = sheet.blockPanel(gurps.BlockEquipmentKey) == unison.Paneler(sheet.CarriedEquipment)
+		dropTargetIsDockable = sheet.keyToPanel(equipmentDragKey) == d.AsPanel()
+		sheet.toggleLayoutEditing()
+		if sheet.layoutEditing() {
+			editorFindsList = sheet.layoutEditor.ensureRegions().leafFor(gurps.BlockEquipmentKey) != nil
+			sheet.toggleLayoutEditing()
+		}
+		sheet.hideLayoutBlock(gurps.BlockEquipmentKey)
+		buyingAfterHide = buyDockableFor(sheet) == d
+		dropTargetAfterHide = sheet.keyToPanel(equipmentDragKey) == d.AsPanel()
+		sheet.UndoManager().Undo()
+		closeBuyDockable(sheet)
+		after = readGates()
+	})
+	c.True(buyEnabled, "Buy Equipment must be enabled for a new sheet")
+	c.True(before.moveToCarried, "moving the selected other equipment to the carried list must be enabled")
+	c.Equal([]bool{true, true, true}, before.newCarried, "the New Carried Equipment commands must be enabled")
+	c.Equal(before, during, "buying must leave the commands that add to the carried equipment list enabled")
+	c.True(blockPanelIsList, "the carried equipment list must stay the block's panel while buying")
+	c.True(dropTargetIsDockable, "equipment dropped on the sheet must go to the buy dockable")
+	c.True(editorFindsList, "the layout editor must find the carried equipment block while buying")
+	c.True(buyingAfterHide, "hiding the carried equipment block must not end buying")
+	c.True(dropTargetAfterHide, "equipment dropped on the sheet must still go to the buy dockable with the list hidden")
+	c.Equal(before, after, "closing the dockable must leave everything as it was")
 }

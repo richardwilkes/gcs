@@ -229,6 +229,8 @@ func NewCarriedEquipmentPageList(owner Rebuildable, provider gurps.ListProvider)
 	installEquipmentContainerConversionHandlers(p, p.Table, owner)
 	p.installMoveToOtherEquipmentHandler(owner)
 	p.installSellEquipmentHandler(owner)
+	p.installBuyEquipmentHandler()
+	p.installBuyDragDeferral(owner)
 	installEquipmentLevelHandlers(p, owner)
 	InstallTintFunc(p, colors.TintCarriedEquipment)
 	return p
@@ -242,22 +244,31 @@ func NewOtherEquipmentPageList(owner Rebuildable, provider gurps.ListProvider) *
 	p.installContainerConversionHandlers(owner)
 	installEquipmentContainerConversionHandlers(p, p.Table, owner)
 	p.installMoveToCarriedEquipmentHandler(owner)
-	p.installBuyPanelDragDeferral(owner)
+	p.installBuyEquipmentHandler()
+	p.installBuyDragDeferral(owner)
 	installEquipmentLevelHandlers(p, owner)
 	InstallTintFunc(p, colors.TintOtherEquipment)
 	return p
 }
 
-// installBuyPanelDragDeferral has a sheet's list decline the equipment drags its buy panel would take while the panel
-// stands in for the carried equipment list, so that the drag goes on up to the sheet, which reroutes it to the panel
-// (see Sheet.keyToPanel): equipment dragged anywhere onto a sheet that is buying is to be bought, not carried. The
-// sheet's own equipment is still taken, so rows can be moved about while buying; dropped on the panel itself, it is
-// bought like any other (see buyPanel.claimsDrag).
-func (p *PageList[T]) installBuyPanelDragDeferral(owner Rebuildable) {
+// installBuyEquipmentHandler has an equipment list buy its selected equipment for a character sheet (see
+// buySelectedEquipment).
+func (p *PageList[T]) installBuyEquipmentHandler() {
+	if t, ok := any(p.Table).(*unison.Table[*Node[*gurps.Equipment]]); ok {
+		installBuyEquipmentHandler(p, t)
+	}
+}
+
+// installBuyDragDeferral has a sheet's list decline the equipment drags the sheet's buy dockable would take while it is
+// open, so that the drag goes on up to the sheet, which reroutes it to the dockable (see Sheet.keyToPanel): equipment
+// dragged anywhere onto a sheet that is buying is to be bought, not carried. The sheet's own equipment is still taken,
+// so rows can be moved about while buying; dropped on the dockable itself, it is bought like any other (see
+// buyDockable.claimsDrag).
+func (p *PageList[T]) installBuyDragDeferral(owner Rebuildable) {
 	if sheet, ok := owner.AsPanel().Self.(*Sheet); ok {
 		accept := p.Table.CanAcceptDropCallback
 		p.Table.CanAcceptDropCallback = func(di drag.Info) bool {
-			if sheet.buying() && sheet.buyPanel.claimsDrag(di) {
+			if d := buyDockableFor(sheet); d != nil && d.claimsDrag(di) {
 				return false
 			}
 			return accept(di)
@@ -409,12 +420,10 @@ func (p *PageList[T]) installMoveToCarriedEquipmentHandler(owner Rebuildable) {
 	if sheet, ok := owner.AsPanel().Self.(*Sheet); ok {
 		var t *unison.Table[*Node[*gurps.Equipment]]
 		if t, ok = any(p.Table).(*unison.Table[*Node[*gurps.Equipment]]); ok {
-			// While the layout leaves the carried equipment list off the page or the buy panel stands in for it, the
-			// list's table has no undo manager, so a move would do nothing.
+			// While the layout leaves the carried equipment list off the page, the list's table has no undo manager,
+			// so a move would do nothing.
 			p.InstallCmdHandlers(MoveToCarriedEquipmentItemID,
-				func(_ any) bool {
-					return t.HasSelection() && !sheet.buying() && sheet.showsBlock(gurps.BlockEquipmentKey)
-				},
+				func(_ any) bool { return t.HasSelection() && sheet.showsBlock(gurps.BlockEquipmentKey) },
 				func(_ any) { moveSelectedEquipment(sheet, t, sheet.CarriedEquipment.Table) })
 		}
 	}

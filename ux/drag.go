@@ -216,7 +216,12 @@ func installDropRerouting(panel *unison.Panel, keys []*uti.DataType, keyToPanel 
 	}
 	panel.DrawOverCallback = func(gc *unison.Canvas, _ geom.Rect) {
 		if reroutePanel != nil {
-			r := panel.RectFromRoot(reroutePanel.RectToRoot(reroutePanel.ContentRect(true)))
+			// A target outside the dockable, such as a sheet's buy dockable, can't be pointed out within it, so the
+			// whole dockable is highlighted as taking the drop instead.
+			r := panel.ContentRect(true)
+			if unison.AncestorIs(reroutePanel, panel) {
+				r = panel.RectFromRoot(reroutePanel.RectToRoot(reroutePanel.ContentRect(true)))
+			}
 			paint := unison.ThemeWarning.Paint(gc, r, paintstyle.Fill)
 			paint.SetColorFilter(unison.Alpha30Filter())
 			gc.DrawRect(r, paint)

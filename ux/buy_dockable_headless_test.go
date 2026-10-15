@@ -12,6 +12,7 @@ package ux
 import (
 	"fmt"
 	"image/color"
+	"math"
 	"os"
 	"path/filepath"
 	"slices"
@@ -19,6 +20,7 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/dgroup"
 	"github.com/richardwilkes/gcs/v5/ux/svg"
 	"github.com/richardwilkes/gcs/v5/ux/uxtest"
 	"github.com/richardwilkes/toolbox/v2/check"
@@ -27,6 +29,7 @@ import (
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/drag"
 	uncheck "github.com/richardwilkes/unison/enums/check"
+	"github.com/richardwilkes/unison/enums/mod"
 )
 
 // buyTestItem returns a piece of equipment owned by owner with the name, value, quantity and tags.
@@ -123,7 +126,7 @@ func buyTestDrop(t *testing.T, screen *unison.HeadlessScreen, sheet *Sheet, tabl
 	return op, dropped
 }
 
-// buyTestState is what a test reads from the buy panel.
+// buyTestState is what a test reads from the buy dockable.
 type buyTestState struct {
 	summary     string
 	notice      string
@@ -134,13 +137,13 @@ type buyTestState struct {
 	noticeShown bool
 }
 
-// readBuyPanel reads the state of the sheet's buy panel, failing the test if it has none.
-func readBuyPanel(t *testing.T, screen *unison.HeadlessScreen, sheet *Sheet) buyTestState {
+// readBuyDockable reads the state of the sheet's buy dockable, failing the test if it has none.
+func readBuyDockable(t *testing.T, screen *unison.HeadlessScreen, sheet *Sheet) buyTestState {
 	t.Helper()
 	var state buyTestState
 	found := false
 	screen.Do(func() {
-		p := sheet.buyPanel
+		p := buyDockableFor(sheet)
 		if p == nil {
 			return
 		}
@@ -175,16 +178,23 @@ func buyTestCarried(screen *unison.HeadlessScreen, sheet *Sheet) []string {
 	return list
 }
 
-// buyTestSetQuantity types text into the quantity field of the buy panel's row at index.
+// buyTestSetQuantity types text into the quantity field of the buy dockable's row at index.
 func buyTestSetQuantity(screen *unison.HeadlessScreen, sheet *Sheet, index int, text string) {
-	screen.Do(func() { sheet.buyPanel.items[index].field.SetText(text) })
+	screen.Do(func() { buyDockableFor(sheet).items[index].field.SetText(text) })
 }
 
-// TestBuyPanelDropAndAutomaticPayment checks that equipment dropped on the sheet while buying lands in the buy panel
+// closeBuyDockable closes the sheet's buy dockable, if it has one, abandoning the purchase.
+func closeBuyDockable(sheet *Sheet) {
+	if d := buyDockableFor(sheet); d != nil {
+		d.discardAndClose()
+	}
+}
+
+// TestBuyDockableDropAndAutomaticPayment checks that equipment dropped on the sheet while buying lands in the buy dockable
 // with a quantity of one and its price, that the carried money pays for it automatically, that the payment follows the
 // quantities and the percentage, that a purchase the money can't cover can't be finalized, that a group's quantity
 // can't be changed, and that a row can be removed again, all without touching the sheet or its undo.
-func TestBuyPanelDropAndAutomaticPayment(t *testing.T) {
+func TestBuyDockableDropAndAutomaticPayment(t *testing.T) {
 	c := check.New(t)
 	screen, _, sheet := buyTestSheet(t, c, func(entity *gurps.Entity) []*gurps.Equipment {
 		return buyTestCoins(entity, 7, 11)
@@ -200,9 +210,9 @@ func TestBuyPanelDropAndAutomaticPayment(t *testing.T) {
 	var modified bool
 	screen.Do(func() {
 		sheet.markUnmodified()
-		sheet.startBuying()
+		showBuyDockable(sheet)
 	})
-	state := readBuyPanel(t, screen, sheet)
+	state := readBuyDockable(t, screen, sheet)
 	c.Equal("Nothing to buy yet.", state.summary)
 	c.False(state.finalizeOn, "nothing can be bought before something is dropped")
 	c.False(state.manualOn, "there is nothing to pay for yet")
@@ -210,7 +220,7 @@ func TestBuyPanelDropAndAutomaticPayment(t *testing.T) {
 	op, dropped := buyTestDrop(t, screen, sheet, library, longbow)
 	c.Equal(drag.Copy, op, "a drop from an equipment list is offered as a copy")
 	c.True(dropped, "the drop is taken")
-	state = readBuyPanel(t, screen, sheet)
+	state = readBuyDockable(t, screen, sheet)
 	c.Equal([]string{"1 | Longbow | $45 each | Total $45"}, state.rows)
 	c.Equal("Pay automatically: Silver Eagle ×2, Copper Penny ×5 ($45)", state.summary)
 	c.False(state.noticeShown, "the payment is exact, so there is no change to warn about")
@@ -219,25 +229,25 @@ func TestBuyPanelDropAndAutomaticPayment(t *testing.T) {
 	c.True(state.manualOn, "the money to pay with can be chosen")
 
 	buyTestSetQuantity(screen, sheet, 0, "2")
-	state = readBuyPanel(t, screen, sheet)
+	state = readBuyDockable(t, screen, sheet)
 	c.Equal([]string{"2 | Longbow | $45 each | Total $90"}, state.rows)
 	c.Equal("Pay automatically: Silver Eagle ×4, Copper Penny ×10 ($90)", state.summary)
 
 	buyTestSetQuantity(screen, sheet, 0, "4")
-	state = readBuyPanel(t, screen, sheet)
+	state = readBuyDockable(t, screen, sheet)
 	c.Equal("Not enough money carried: $180 needed, $151 carried.", state.summary)
 	c.False(state.finalizeOn, "a purchase the money carried can't cover can't be finalized")
 
 	buyTestSetQuantity(screen, sheet, 0, "1")
-	screen.Do(func() { sheet.buyPanel.percentField.SetText("200") })
-	state = readBuyPanel(t, screen, sheet)
+	screen.Do(func() { buyDockableFor(sheet).percentField.SetText("200") })
+	state = readBuyDockable(t, screen, sheet)
 	c.Equal([]string{"1 | Longbow | $90 each | Total $90"}, state.rows, "the prices follow the percentage")
-	screen.Do(func() { sheet.buyPanel.percentField.SetText("100") })
+	screen.Do(func() { buyDockableFor(sheet).percentField.SetText("100") })
 
 	op, dropped = buyTestDrop(t, screen, sheet, library, kit)
 	c.Equal(drag.Copy, op)
 	c.True(dropped)
-	state = readBuyPanel(t, screen, sheet)
+	state = readBuyDockable(t, screen, sheet)
 	c.Equal([]string{"1 | Longbow | $45 each | Total $45", "1 | Kit | $10 each | Total $10"}, state.rows,
 		"a group is bought once, its price that of what it holds")
 	c.Equal("Pay automatically: Silver Eagle ×3 ($60)", state.summary,
@@ -246,94 +256,32 @@ func TestBuyPanelDropAndAutomaticPayment(t *testing.T) {
 		state.notice)
 	c.Equal("Bought Longbow, Kit", state.name)
 	var groupFieldEnabled bool
-	screen.Do(func() { groupFieldEnabled = sheet.buyPanel.items[1].field.Enabled() })
+	screen.Do(func() { groupFieldEnabled = buyDockableFor(sheet).items[1].field.Enabled() })
 	c.False(groupFieldEnabled, "a group's quantity can't be changed")
 
 	screen.Do(func() {
-		sheet.buyPanel.nameField.SetText("Archery")
-		sheet.buyPanel.items[1].remove.Click()
+		buyDockableFor(sheet).nameField.SetText("Archery")
+		buyDockableFor(sheet).items[1].remove.Click()
 	})
-	state = readBuyPanel(t, screen, sheet)
+	state = readBuyDockable(t, screen, sheet)
 	c.Equal([]string{"1 | Longbow | $45 each | Total $45"}, state.rows, "the row is removed")
 	c.Equal("Archery", state.name, "a name the user typed is kept")
-	screen.Do(func() { sheet.buyPanel.items[0].remove.Click() })
-	state = readBuyPanel(t, screen, sheet)
+	screen.Do(func() { buyDockableFor(sheet).items[0].remove.Click() })
+	state = readBuyDockable(t, screen, sheet)
 	c.Nil(state.rows)
 	c.Equal("Nothing to buy yet.", state.summary)
 	c.False(state.finalizeOn)
 
 	screen.Do(func() { modified = sheet.Modified() })
-	c.False(modified, "nothing done in the buy panel marks the sheet as modified")
-	c.False(sheet.UndoManager().CanUndo(), "nothing done in the buy panel is recorded for undo")
+	c.False(modified, "nothing done in the buy dockable marks the sheet as modified")
+	c.False(sheet.UndoManager().CanUndo(), "nothing done in the buy dockable is recorded for undo")
 	c.Equal([]string{"Silver Eagle ×7", "Copper Penny ×11"}, buyTestCarried(screen, sheet))
 }
 
-// TestBuyPanelHoldsTheHeightOfTheCarriedEquipmentList checks that the buy panel takes the place of the carried
-// equipment list at the list's height, so that what lies below it on the page stays put, unless it needs more room, and
-// that it grows past that height once it does.
-func TestBuyPanelHoldsTheHeightOfTheCarriedEquipmentList(t *testing.T) {
-	c := check.New(t)
-	screen, wnd, sheet := buyTestSheet(t, c, func(entity *gurps.Entity) []*gurps.Equipment {
-		items := buyTestCoins(entity, 7, 11)
-		for i := range 20 {
-			items = append(items, buyTestItem(entity, fmt.Sprintf("Item %d", i), "1", 1))
-		}
-		return items
-	})
-	var listHeight, otherTop float32
-	screen.Do(func() {
-		wnd.Content().ValidateLayout()
-		listHeight = sheet.CarriedEquipment.FrameRect().Height
-		otherTop = sheet.OtherEquipment.FrameRect().Y
-		sheet.startBuying()
-		wnd.Content().ValidateLayout()
-	})
-	c.True(listHeight > 0)
-	var natural, held, frame geom.Size
-	var otherTopAfter float32
-	screen.Do(func() {
-		p := sheet.buyPanel
-		frame = p.FrameRect().Size
-		_, natural, _ = p.held.Layout.LayoutSizes(p.AsPanel(), geom.Size{Width: frame.Width})
-		_, held, _ = p.held.LayoutSizes(p.AsPanel(), geom.Size{Width: frame.Width})
-		otherTopAfter = sheet.OtherEquipment.FrameRect().Y
-	})
-	c.True(natural.Height < listHeight, "the empty panel must want less room than a long list, or the test proves nothing")
-	c.Equal(listHeight, held.Height, "the panel asks for the list's height")
-	c.Equal(listHeight, frame.Height, "the panel stands at the list's height")
-	c.Equal(otherTop, otherTopAfter, "what lies below the list stays put")
-
-	// Once the panel needs more room than the list had, it grows.
-	items := make([]*gurps.Equipment, 0, 40)
-	for i := range 40 {
-		items = append(items, buyTestItem(nil, fmt.Sprintf("Gear %d", i), "1", 1))
-	}
-	library := buyTestLibrary(t, screen, "", items...)
-	for _, item := range items {
-		if _, dropped := buyTestDrop(t, screen, sheet, library, item); !dropped {
-			t.Fatalf("%s must be dropped", item.Name)
-		}
-	}
-	screen.Do(func() {
-		wnd.Content().ValidateLayout()
-		frame = sheet.buyPanel.FrameRect().Size
-		_, natural, _ = sheet.buyPanel.held.Layout.LayoutSizes(sheet.buyPanel.AsPanel(), geom.Size{Width: frame.Width})
-	})
-	c.True(natural.Height > listHeight, "the full panel must want more room than the list, or the test proves nothing")
-	c.Equal(natural.Height, frame.Height, "the panel grows to what it needs")
-
-	// Going back puts the list back at its own height.
-	screen.Do(func() {
-		sheet.stopBuying()
-		wnd.Content().ValidateLayout()
-	})
-	c.Equal(listHeight, sheet.CarriedEquipment.FrameRect().Height)
-}
-
-// TestBuyPanelBuysTheSheetsOwnEquipment checks that equipment dragged from the sheet's own other equipment list is
-// bought like any other, both when it reaches the buy panel through the sheet's rerouting of drops and when it reaches
-// the panel directly, and that finalizing carries a copy while the original stays in the other equipment list.
-func TestBuyPanelBuysTheSheetsOwnEquipment(t *testing.T) {
+// TestBuyDockableBuysTheSheetsOwnEquipment checks that equipment dragged from the sheet's own other equipment list is
+// bought like any other, both when it reaches the buy dockable through the sheet's rerouting of drops and when it reaches
+// the dockable directly, and that finalizing carries a copy while the original stays in the other equipment list.
+func TestBuyDockableBuysTheSheetsOwnEquipment(t *testing.T) {
 	c := check.New(t)
 	screen, _, sheet := buyTestSheet(t, c, func(entity *gurps.Entity) []*gurps.Equipment {
 		return buyTestCoins(entity, 7, 11)
@@ -345,12 +293,12 @@ func TestBuyPanelBuysTheSheetsOwnEquipment(t *testing.T) {
 		entity.OtherEquipment = []*gurps.Equipment{rope}
 		entity.Recalculate()
 		sheet.Rebuild(true)
-		sheet.startBuying()
+		showBuyDockable(sheet)
 	})
 	op, dropped := buyTestDrop(t, screen, sheet, sheet.OtherEquipment.Table, rope)
 	c.Equal(drag.Copy, op, "the sheet's own equipment is offered as a copy")
 	c.True(dropped, "the drop is taken")
-	state := readBuyPanel(t, screen, sheet)
+	state := readBuyDockable(t, screen, sheet)
 	c.Equal([]string{"1 | Rope | $5 each | Total $5"}, state.rows)
 	c.Equal("Pay automatically: Copper Penny ×5 ($5)", state.summary)
 
@@ -358,19 +306,19 @@ func TestBuyPanelBuysTheSheetsOwnEquipment(t *testing.T) {
 	var canAccept, droppedDirectly bool
 	var updated drag.Op
 	screen.Do(func() {
-		p := sheet.buyPanel.AsPanel()
+		p := buyDockableFor(sheet).AsPanel()
 		canAccept = p.CanAcceptDropCallback(di)
 		updated = p.DragUpdatedCallback(di, geom.Point{}, 0)
 		droppedDirectly = p.DropCallback(di, geom.Point{}, 0)
 	})
-	c.True(canAccept, "the panel accepts the sheet's own equipment")
-	c.Equal(drag.Copy, updated, "moving over the panel offers to take it")
-	c.True(droppedDirectly, "dropping it on the panel adds it")
-	state = readBuyPanel(t, screen, sheet)
+	c.True(canAccept, "the dockable accepts the sheet's own equipment")
+	c.Equal(drag.Copy, updated, "moving over the dockable offers to take it")
+	c.True(droppedDirectly, "dropping it on the dockable adds it")
+	state = readBuyDockable(t, screen, sheet)
 	c.Equal([]string{"1 | Rope | $5 each | Total $5", "1 | Rope | $5 each | Total $5"}, state.rows)
 	c.Equal("Pay automatically: Copper Penny ×10 ($10)", state.summary)
 
-	screen.Do(func() { sheet.buyPanel.finalize.Click() })
+	screen.Do(func() { buyDockableFor(sheet).finalize.Click() })
 	c.Equal([]string{"Silver Eagle ×7", "Copper Penny ×1", "Rope ×2"}, buyTestCarried(screen, sheet),
 		"the money is spent and the ropes bought are carried")
 	var other []*gurps.Equipment
@@ -393,11 +341,11 @@ func buyTestMoneyLibrary(t *testing.T, c check.Checker) []gurps.Source {
 	return []gurps.Source{{LibraryFile: libFile, TID: eagle.TID}, {LibraryFile: libFile, TID: penny.TID}}
 }
 
-// TestBuyPanelReturnsChange checks that an overpayment warns that the change can't be returned while the sheet has no
+// TestBuyDockableReturnsChange checks that an overpayment warns that the change can't be returned while the sheet has no
 // sell money, that the change is worked out from the sell money once the sheet has some, and that finalizing spends
-// the money, carries the item and the change, records the purchase, ends buying with the focus on the carried
+// the money, carries the item and the change, records the purchase, closes the dockable with the focus on the carried
 // equipment list and can be undone and redone as one edit.
-func TestBuyPanelReturnsChange(t *testing.T) {
+func TestBuyDockableReturnsChange(t *testing.T) {
 	c := check.New(t)
 	screen, wnd, sheet := buyTestSheet(t, c, func(entity *gurps.Entity) []*gurps.Equipment {
 		return buyTestCoins(entity, 7, 0)[:1]
@@ -407,11 +355,11 @@ func TestBuyPanelReturnsChange(t *testing.T) {
 	library := buyTestLibrary(t, screen, "", dagger)
 	screen.Do(func() {
 		sheet.Entity().SheetSettings.SellMoney = nil
-		sheet.startBuying()
+		showBuyDockable(sheet)
 	})
 	_, dropped := buyTestDrop(t, screen, sheet, library, dagger)
 	c.True(dropped)
-	state := readBuyPanel(t, screen, sheet)
+	state := readBuyDockable(t, screen, sheet)
 	c.Equal("Pay automatically: Silver Eagle ×1 ($20)", state.summary)
 	c.True(state.noticeShown, "change that can't be returned is warned about")
 	c.Equal("$5 of change can't be returned from the money paid, and the sheet has no sell money. Add some in Sheet Settings to receive change.",
@@ -422,31 +370,29 @@ func TestBuyPanelReturnsChange(t *testing.T) {
 		sheet.Entity().SheetSettings.SellMoney = sources[:1]
 		sheet.Rebuild(true)
 	})
-	state = readBuyPanel(t, screen, sheet)
+	state = readBuyDockable(t, screen, sheet)
 	c.Equal("$5 of change can't be returned with the sheet's sell money or the money paid.", state.notice,
-		"the panel follows a change to the sell money")
+		"the dockable follows a change to the sell money")
 
 	screen.Do(func() {
 		sheet.Entity().SheetSettings.SellMoney = sources
 		sheet.Rebuild(true)
 	})
-	state = readBuyPanel(t, screen, sheet)
+	state = readBuyDockable(t, screen, sheet)
 	c.Equal("Pay automatically: Silver Eagle ×1 ($20); change: Copper Penny ×5 ($5)", state.summary)
 	c.False(state.noticeShown, "the change can be returned in full")
 
 	screen.Do(func() {
-		sheet.buyPanel.finalize.RequestFocus()
-		sheet.buyPanel.finalize.Click()
+		buyDockableFor(sheet).finalize.RequestFocus()
+		buyDockableFor(sheet).finalize.Click()
 	})
-	var buying, listOnPage, listFocused bool
+	var buying, listFocused bool
 	screen.Do(func() {
-		buying = sheet.buying()
-		listOnPage = unison.AncestorIs(sheet.CarriedEquipment, sheet.page)
+		buying = buyDockableFor(sheet) != nil
 		listFocused = wnd.Focus() == sheet.CarriedEquipment.Table.AsPanel()
 	})
-	c.False(buying, "finalizing ends buying")
+	c.False(buying, "finalizing closes the buy dockable")
 	c.True(listFocused, "the focus moves from the button that finalized to the carried equipment list")
-	c.True(listOnPage, "the carried equipment list is back on the page")
 	after := []string{"Silver Eagle ×6", "Dagger ×1", "Copper Penny ×5"}
 	c.Equal(after, buyTestCarried(screen, sheet))
 	var record []*gurps.ShoppingRecordEntry
@@ -492,9 +438,9 @@ func TestBuyPanelReturnsChange(t *testing.T) {
 	c.Equal(1, recordCount, "redo records the purchase again")
 }
 
-// TestBuyPanelFinalizeMerges checks that a purchase merges into a matching carried item when asked to and is carried
+// TestBuyDockableFinalizeMerges checks that a purchase merges into a matching carried item when asked to and is carried
 // separately otherwise.
-func TestBuyPanelFinalizeMerges(t *testing.T) {
+func TestBuyDockableFinalizeMerges(t *testing.T) {
 	c := check.New(t)
 	screen, _, sheet := buyTestSheet(t, c, func(entity *gurps.Entity) []*gurps.Equipment {
 		return append(buyTestCoins(entity, 7, 11), buyTestItem(entity, "Leather Gloves", "30", 1))
@@ -502,11 +448,11 @@ func TestBuyPanelFinalizeMerges(t *testing.T) {
 	gloves := buyTestItem(nil, "Leather Gloves", "30", 1)
 	library := buyTestLibrary(t, screen, "", gloves)
 
-	screen.Do(sheet.startBuying)
+	screen.Do(func() { showBuyDockable(sheet) })
 	_, dropped := buyTestDrop(t, screen, sheet, library, gloves)
 	c.True(dropped)
-	c.Equal("Pay automatically: Silver Eagle ×1, Copper Penny ×10 ($30)", readBuyPanel(t, screen, sheet).summary)
-	screen.Do(func() { sheet.buyPanel.finalize.Click() })
+	c.Equal("Pay automatically: Silver Eagle ×1, Copper Penny ×10 ($30)", readBuyDockable(t, screen, sheet).summary)
+	screen.Do(func() { buyDockableFor(sheet).finalize.Click() })
 	c.Equal([]string{"Silver Eagle ×6", "Copper Penny ×1", "Leather Gloves ×2"}, buyTestCarried(screen, sheet),
 		"the money is spent and the gloves merge into those carried")
 	var exchanged fxp.Int
@@ -519,29 +465,29 @@ func TestBuyPanelFinalizeMerges(t *testing.T) {
 
 	screen.Do(func() {
 		sheet.UndoManager().Undo()
-		sheet.startBuying()
+		showBuyDockable(sheet)
 	})
 	_, dropped = buyTestDrop(t, screen, sheet, library, gloves)
 	c.True(dropped)
 	screen.Do(func() {
-		sheet.buyPanel.merge.State = uncheck.Off
-		sheet.buyPanel.finalize.Click()
+		buyDockableFor(sheet).merge.State = uncheck.Off
+		buyDockableFor(sheet).finalize.Click()
 	})
 	c.Equal([]string{"Silver Eagle ×6", "Copper Penny ×1", "Leather Gloves ×1", "Leather Gloves ×1"},
 		buyTestCarried(screen, sheet), "without merging, the gloves bought are carried separately")
 }
 
-// TestBuyPanelManualPayment checks that the money chosen by hand pays for the purchase in place of the automatic
+// TestBuyDockableManualPayment checks that the money chosen by hand pays for the purchase in place of the automatic
 // choice, starting from it, that a choice that no longer covers the price, or whose money is no longer carried, stops
 // the purchase, and that the automatic choice can be had back.
-func TestBuyPanelManualPayment(t *testing.T) {
+func TestBuyDockableManualPayment(t *testing.T) {
 	c := check.New(t)
 	screen, _, sheet := buyTestSheet(t, c, func(entity *gurps.Entity) []*gurps.Equipment {
 		return buyTestCoins(entity, 7, 11)
 	})
 	longbow := buyTestItem(nil, "Longbow", "45", 1)
 	library := buyTestLibrary(t, screen, "", longbow)
-	screen.Do(sheet.startBuying)
+	screen.Do(func() { showBuyDockable(sheet) })
 	_, dropped := buyTestDrop(t, screen, sheet, library, longbow)
 	c.True(dropped)
 
@@ -573,8 +519,8 @@ func TestBuyPanelManualPayment(t *testing.T) {
 	choose := func(a answer) buyTestState {
 		t.Helper()
 		next = a
-		screen.Do(func() { sheet.buyPanel.manualButton.Click() })
-		return readBuyPanel(t, screen, sheet)
+		screen.Do(func() { buyDockableFor(sheet).manualButton.Click() })
+		return readBuyDockable(t, screen, sheet)
 	}
 
 	state := choose(answer{chosen: map[tid.TID]int{eagleID: 3}, ok: true})
@@ -607,7 +553,7 @@ func TestBuyPanelManualPayment(t *testing.T) {
 		entity.Recalculate()
 		sheet.Rebuild(true)
 	})
-	state = readBuyPanel(t, screen, sheet)
+	state = readBuyDockable(t, screen, sheet)
 	c.Equal("The money chosen is short by $45: $45 needed, $0 chosen.", state.summary,
 		"a choice of more money than is carried is dropped")
 	c.False(state.finalizeOn)
@@ -815,10 +761,10 @@ func buyTestModifierLibrary(t *testing.T, screen *unison.HeadlessScreen, modifie
 	return table
 }
 
-// TestBuyPanelAttachesAndRemovesModifiers drops an equipment modifier from a library onto an item waiting to be bought
+// TestBuyDockableAttachesAndRemovesModifiers drops an equipment modifier from a library onto an item waiting to be bought
 // and takes it off again: the modifier goes only to the item it is dropped on, the price follows it, the row under the
 // item shows it with a button that removes it, and a plain modifier asks nothing.
-func TestBuyPanelAttachesAndRemovesModifiers(t *testing.T) {
+func TestBuyDockableAttachesAndRemovesModifiers(t *testing.T) {
 	c := check.New(t)
 	forbidModifierPrompts(t)
 	screen, _, sheet := buyTestSheet(t, c, func(entity *gurps.Entity) []*gurps.Equipment {
@@ -826,9 +772,9 @@ func TestBuyPanelAttachesAndRemovesModifiers(t *testing.T) {
 	})
 	sword := buyTestItem(nil, "Shortsword", "100", 1)
 	library := buyTestLibrary(t, screen, "", sword)
-	screen.Do(func() { sheet.startBuying() })
+	screen.Do(func() { showBuyDockable(sheet) })
 	if op, dropped := buyTestDrop(t, screen, sheet, library, sword); op == drag.None || !dropped {
-		t.Fatal("the sword must be dropped into the buy panel")
+		t.Fatal("the sword must be dropped into the buy dockable")
 	}
 	fine := gurps.NewEquipmentModifier(nil, nil, false)
 	fine.Name = "Fine"
@@ -845,12 +791,12 @@ func TestBuyPanelAttachesAndRemovesModifiers(t *testing.T) {
 	var overHint, overRow drag.Op
 	var targeted, dropped bool
 	screen.Do(func() {
-		p := sheet.buyPanel
+		p := buyDockableFor(sheet)
 		p.ValidateLayout()
 		item := p.items[0]
 		hint := p.PointFromRoot(p.hint.PointToRoot(p.hint.ContentRect(true).Center()))
 		row := p.PointFromRoot(item.name.PointToRoot(item.name.ContentRect(true).Center()))
-		c.True(p.CanAcceptDropCallback(di), "the panel must take equipment modifier drags")
+		c.True(p.CanAcceptDropCallback(di), "the dockable must take equipment modifier drags")
 		overHint = p.DragUpdatedCallback(di, hint, 0)
 		overRow = p.DragUpdatedCallback(di, row, 0)
 		targeted = p.modifierTarget == item
@@ -867,7 +813,7 @@ func TestBuyPanelAttachesAndRemovesModifiers(t *testing.T) {
 	var description string
 	var remove *unison.Button
 	screen.Do(func() {
-		item := sheet.buyPanel.items[0]
+		item := buyDockableFor(sheet).items[0]
 		modifierCount = len(item.eqp.Modifiers)
 		if modifierCount == 1 {
 			enabled = item.eqp.Modifiers[0].Enabled()
@@ -888,14 +834,14 @@ func TestBuyPanelAttachesAndRemovesModifiers(t *testing.T) {
 	c.Equal(fxp.FromInteger(150), value, "the modifier must raise the item's value")
 	c.Equal(1, rowCount, "the modifier must have a row under the item")
 	c.Equal(fine.FullDescription(), description)
-	c.Contains(readBuyPanel(t, screen, sheet).rows[0], "$150", "the price must follow the modifier")
+	c.Contains(readBuyDockable(t, screen, sheet).rows[0], "$150", "the price must follow the modifier")
 	if remove == nil {
 		t.Fatal("the modifier's row must have a remove button")
 	}
 
 	screen.Do(func() { remove.Click() })
 	screen.Do(func() {
-		item := sheet.buyPanel.items[0]
+		item := buyDockableFor(sheet).items[0]
 		modifierCount = len(item.eqp.Modifiers)
 		rowCount = len(item.modifierRows)
 		value = item.eqp.AdjustedValue()
@@ -903,7 +849,7 @@ func TestBuyPanelAttachesAndRemovesModifiers(t *testing.T) {
 	c.Equal(0, modifierCount, "removing takes the modifier off the item")
 	c.Equal(0, rowCount, "removing takes the modifier's row away")
 	c.Equal(fxp.FromInteger(100), value)
-	c.Contains(readBuyPanel(t, screen, sheet).rows[0], "$100")
+	c.Contains(readBuyDockable(t, screen, sheet).rows[0], "$100")
 }
 
 // startRowDrag presses on the table's row and moves the pointer far enough to start dragging the row, so that unison
@@ -925,10 +871,10 @@ func startRowDrag[T gurps.Node[T]](t *testing.T, screen *unison.HeadlessScreen, 
 	}
 }
 
-// TestBuyPanelClaimsEquipmentDroppedElsewhereOnTheSheet checks that, while the buy panel is up, equipment dragged from
-// elsewhere onto the sheet's other equipment list is left to the sheet, which reroutes it to the buy panel, while the
+// TestBuyDockableClaimsEquipmentDroppedElsewhereOnTheSheet checks that, while the buy dockable is up, equipment dragged from
+// elsewhere onto the sheet's other equipment list is left to the sheet, which reroutes it to the buy dockable, while the
 // sheet's own equipment is still taken by the list, so that its rows can be moved about.
-func TestBuyPanelClaimsEquipmentDroppedElsewhereOnTheSheet(t *testing.T) {
+func TestBuyDockableClaimsEquipmentDroppedElsewhereOnTheSheet(t *testing.T) {
 	c := check.New(t)
 	screen, wnd, sheet := buyTestSheet(t, c, func(entity *gurps.Entity) []*gurps.Equipment {
 		return buyTestCoins(entity, 7, 11)
@@ -954,8 +900,8 @@ func TestBuyPanelClaimsEquipmentDroppedElsewhereOnTheSheet(t *testing.T) {
 
 	cancel := startRowDrag(t, screen, wnd, library, 0)
 	c.True(accepts(), "while not buying, the list takes library equipment")
-	screen.Do(sheet.startBuying)
-	c.False(accepts(), "other equipment leaves library equipment to the buy panel while buying")
+	screen.Do(func() { showBuyDockable(sheet) })
+	c.False(accepts(), "other equipment leaves library equipment to the buy dockable while buying")
 	cancel()
 
 	cancel = startRowDrag(t, screen, wnd, sheet.OtherEquipment.Table, 0)
@@ -966,21 +912,21 @@ func TestBuyPanelClaimsEquipmentDroppedElsewhereOnTheSheet(t *testing.T) {
 	c.Equal(1, otherAfterDrags, "the canceled drags must change nothing")
 
 	if op, dropped := buyTestDrop(t, screen, sheet, library, sword); op == drag.None || !dropped {
-		t.Fatal("the sword must be dropped into the buy panel")
+		t.Fatal("the sword must be dropped into the buy dockable")
 	}
 	var bought, other int
 	screen.Do(func() {
-		bought = len(sheet.buyPanel.items)
+		bought = len(buyDockableFor(sheet).items)
 		other = len(sheet.Entity().OtherEquipment)
 	})
-	c.Equal(1, bought, "the drop must land in the buy panel")
+	c.Equal(1, bought, "the drop must land in the buy dockable")
 	c.Equal(1, other, "the other equipment must be untouched")
 }
 
-// TestBuyPanelChangeFollowsEditsToTheMoneyPaid checks that change drawn from the money paid is worked out again when
+// TestBuyDockableChangeFollowsEditsToTheMoneyPaid checks that change drawn from the money paid is worked out again when
 // that money is edited without its value changing, such as by being renamed, so that the change carried is a copy of
 // the money as it now is and merges with it.
-func TestBuyPanelChangeFollowsEditsToTheMoneyPaid(t *testing.T) {
+func TestBuyDockableChangeFollowsEditsToTheMoneyPaid(t *testing.T) {
 	c := check.New(t)
 	var ten, penny *gurps.Equipment
 	screen, _, sheet := buyTestSheet(t, c, func(entity *gurps.Entity) []*gurps.Equipment {
@@ -992,29 +938,29 @@ func TestBuyPanelChangeFollowsEditsToTheMoneyPaid(t *testing.T) {
 	library := buyTestLibrary(t, screen, "", dagger)
 	screen.Do(func() {
 		sheet.Entity().SheetSettings.SellMoney = nil
-		sheet.startBuying()
+		showBuyDockable(sheet)
 	})
 	_, dropped := buyTestDrop(t, screen, sheet, library, dagger)
 	c.True(dropped)
 	screen.Do(func() {
-		sheet.buyPanel.manual = map[tid.TID]int{ten.TID: 1, penny.TID: 2}
-		sheet.buyPanel.refresh()
+		buyDockableFor(sheet).manual = map[tid.TID]int{ten.TID: 1, penny.TID: 2}
+		buyDockableFor(sheet).refresh()
 	})
 	c.Equal("Pay manually: Ten ×1, Copper Penny ×2 ($12); change: Copper Penny ×2 ($2)",
-		readBuyPanel(t, screen, sheet).summary)
+		readBuyDockable(t, screen, sheet).summary)
 
 	screen.Do(func() {
 		penny.Name = "Penny"
 		sheet.Rebuild(true)
 	})
-	c.Equal("Pay manually: Ten ×1, Penny ×2 ($12); change: Penny ×2 ($2)", readBuyPanel(t, screen, sheet).summary,
+	c.Equal("Pay manually: Ten ×1, Penny ×2 ($12); change: Penny ×2 ($2)", readBuyDockable(t, screen, sheet).summary,
 		"the change is a copy of the money as it now is")
-	screen.Do(func() { sheet.buyPanel.finalize.Click() })
+	screen.Do(func() { buyDockableFor(sheet).finalize.Click() })
 	c.Equal([]string{"Penny ×5", "Dagger ×1"}, buyTestCarried(screen, sheet),
 		"the change merges with the money it was copied from")
 }
 
-// buyTestDropModifier drags the modifier table's rows onto the buy panel's item and drops them there, returning whether
+// buyTestDropModifier drags the modifier table's rows onto the buy dockable's item and drops them there, returning whether
 // the drop was taken.
 func buyTestDropModifier(t *testing.T, screen *unison.HeadlessScreen, sheet *Sheet, modifiers *unison.Table[*Node[*gurps.EquipmentModifier]], item *buyItem) bool {
 	t.Helper()
@@ -1027,7 +973,7 @@ func buyTestDropModifier(t *testing.T, screen *unison.HeadlessScreen, sheet *She
 	di := &fakeDragInfo{types: []string{equipmentModifierDragKey.UTI}}
 	var dropped bool
 	screen.Do(func() {
-		p := sheet.buyPanel
+		p := buyDockableFor(sheet)
 		p.ValidateLayout()
 		row := p.PointFromRoot(item.name.PointToRoot(item.name.ContentRect(true).Center()))
 		p.DragUpdatedCallback(di, row, 0)
@@ -1036,11 +982,11 @@ func buyTestDropModifier(t *testing.T, screen *unison.HeadlessScreen, sheet *She
 	return dropped
 }
 
-// TestBuyPanelKeepsTheFocusWhenRowsChange checks that the keyboard focus is not left on a button the panel has
+// TestBuyDockableKeepsTheFocusWhenRowsChange checks that the keyboard focus is not left on a button the dockable has
 // discarded: removing a row with its own button moves the focus to the row that takes its place, or to the percent
 // field once no row is left; a modifier's button keeps the focus when the rows are built anew for another item; and
 // removing a modifier with its button moves the focus to its item's row.
-func TestBuyPanelKeepsTheFocusWhenRowsChange(t *testing.T) {
+func TestBuyDockableKeepsTheFocusWhenRowsChange(t *testing.T) {
 	c := check.New(t)
 	screen, wnd, sheet := buyTestSheet(t, c, func(entity *gurps.Entity) []*gurps.Equipment {
 		return buyTestCoins(entity, 70, 11)
@@ -1052,53 +998,53 @@ func TestBuyPanelKeepsTheFocusWhenRowsChange(t *testing.T) {
 	fine := gurps.NewEquipmentModifier(nil, nil, false)
 	fine.Name = "Fine"
 	modifiers := buyTestModifierLibrary(t, screen, fine)
-	screen.Do(sheet.startBuying)
+	screen.Do(func() { showBuyDockable(sheet) })
 	if _, dropped := buyTestDrop(t, screen, sheet, library, sword, dagger); !dropped {
-		t.Fatal("the sword and dagger must be dropped into the buy panel")
+		t.Fatal("the sword and dagger must be dropped into the buy dockable")
 	}
-	focusIs := func(what string, expected func(p *buyPanel) unison.Paneler) {
+	focusIs := func(what string, expected func(p *buyDockable) unison.Paneler) {
 		t.Helper()
 		var ok bool
 		screen.Do(func() {
-			target := expected(sheet.buyPanel)
+			target := expected(buyDockableFor(sheet))
 			ok = target != nil && wnd.CurrentFocus() == target.AsPanel()
 		})
 		c.True(ok, "the focus must be on %s", what)
 	}
 
 	screen.Do(func() {
-		remove := sheet.buyPanel.items[1].remove
+		remove := buyDockableFor(sheet).items[1].remove
 		remove.RequestFocus()
 		remove.Click()
 	})
-	focusIs("the first row's quantity field after removing the last row", func(p *buyPanel) unison.Paneler {
+	focusIs("the first row's quantity field after removing the last row", func(p *buyDockable) unison.Paneler {
 		if len(p.items) != 1 {
 			return nil
 		}
 		return p.items[0].field
 	})
 
-	if !buyTestDropModifier(t, screen, sheet, modifiers, sheet.buyPanel.items[0]) {
+	if !buyTestDropModifier(t, screen, sheet, modifiers, buyDockableFor(sheet).items[0]) {
 		t.Fatal("the modifier must be dropped onto the sword")
 	}
-	modifierButton := func(p *buyPanel) unison.Paneler {
+	modifierButton := func(p *buyDockable) unison.Paneler {
 		if len(p.items) != 0 && len(p.items[0].modifierRows) == 1 {
 			return p.items[0].modifierRows[0].widgets[2]
 		}
 		return nil
 	}
-	screen.Do(func() { modifierButton(sheet.buyPanel).AsPanel().RequestFocus() })
+	screen.Do(func() { modifierButton(buyDockableFor(sheet)).AsPanel().RequestFocus() })
 	if _, dropped := buyTestDrop(t, screen, sheet, library, rope); !dropped {
-		t.Fatal("the rope must be dropped into the buy panel")
+		t.Fatal("the rope must be dropped into the buy dockable")
 	}
 	focusIs("the modifier's button, built anew, after another item is dropped", modifierButton)
 
 	screen.Do(func() {
-		if button, ok := modifierButton(sheet.buyPanel).(*unison.Button); ok {
+		if button, ok := modifierButton(buyDockableFor(sheet)).(*unison.Button); ok {
 			button.Click()
 		}
 	})
-	focusIs("the item's quantity field after removing its modifier", func(p *buyPanel) unison.Paneler {
+	focusIs("the item's quantity field after removing its modifier", func(p *buyDockable) unison.Paneler {
 		if len(p.items) != 2 || len(p.items[0].modifierRows) != 0 {
 			return nil
 		}
@@ -1107,12 +1053,12 @@ func TestBuyPanelKeepsTheFocusWhenRowsChange(t *testing.T) {
 
 	for range 2 {
 		screen.Do(func() {
-			remove := sheet.buyPanel.items[0].remove
+			remove := buyDockableFor(sheet).items[0].remove
 			remove.RequestFocus()
 			remove.Click()
 		})
 	}
-	focusIs("the percent field once no row is left", func(p *buyPanel) unison.Paneler {
+	focusIs("the percent field once no row is left", func(p *buyDockable) unison.Paneler {
 		if len(p.items) != 0 {
 			return nil
 		}
@@ -1152,15 +1098,15 @@ func rerouteHighlightDrawn(t *testing.T, screen *unison.HeadlessScreen, sheet *S
 	return drawn
 }
 
-// TestSheetDropReroutingHighlightsOnlyAWillingTarget checks that the sheet highlights the panel it reroutes a drag to
-// only while that panel will take the drop: the buy panel is highlighted for equipment it would buy, not for an
-// equipment drag with no rows behind it, which it declines, and not once the drag has left.
+// TestSheetDropReroutingHighlightsOnlyAWillingTarget checks that the sheet highlights itself, as the whole of it stands
+// for the buy dockable it reroutes a drag to, only while the dockable will take the drop: for equipment it would buy, not
+// for an equipment drag with no rows behind it, which it declines, and not once the drag has left.
 func TestSheetDropReroutingHighlightsOnlyAWillingTarget(t *testing.T) {
 	c := check.New(t)
 	screen, _, sheet := buyTestSheet(t, c, func(entity *gurps.Entity) []*gurps.Equipment {
 		return buyTestCoins(entity, 7, 11)
 	})
-	screen.Do(sheet.startBuying)
+	screen.Do(func() { showBuyDockable(sheet) })
 	library := buyTestLibrary(t, screen, "", buyTestItem(nil, "Shortsword", "100", 1))
 	var fromLibrary *unison.TableDragData[*Node[*gurps.Equipment]]
 	screen.Do(func() {
@@ -1174,20 +1120,20 @@ func TestSheetDropReroutingHighlightsOnlyAWillingTarget(t *testing.T) {
 		return op
 	}
 
-	c.Equal(drag.Copy, enter(fromLibrary), "the buy panel takes library equipment")
-	c.True(rerouteHighlightDrawn(t, screen, sheet), "the buy panel is highlighted for equipment it will take")
+	c.Equal(drag.Copy, enter(fromLibrary), "the buy dockable takes library equipment")
+	c.True(rerouteHighlightDrawn(t, screen, sheet), "the sheet is highlighted for equipment the buy dockable will take")
 	screen.Do(sheet.DragExitedCallback)
 	c.False(rerouteHighlightDrawn(t, screen, sheet), "nothing is highlighted once the drag has left")
 
-	c.Equal(drag.None, enter(nil), "the buy panel declines an equipment drag with no rows behind it")
-	c.False(rerouteHighlightDrawn(t, screen, sheet), "the buy panel is not highlighted for a drag it declines")
+	c.Equal(drag.None, enter(nil), "the buy dockable declines an equipment drag with no rows behind it")
+	c.False(rerouteHighlightDrawn(t, screen, sheet), "the sheet is not highlighted for a drag the buy dockable declines")
 	screen.Do(sheet.DragExitedCallback)
 }
 
-// TestBuyPanelNoticeTellsMissingSellMoneyApart checks that the notice about change that can't be returned says the
+// TestBuyDockableNoticeTellsMissingSellMoneyApart checks that the notice about change that can't be returned says the
 // sheet's sell money couldn't be found when it has some but none of it is in the libraries, rather than that it has
 // none and should add some.
-func TestBuyPanelNoticeTellsMissingSellMoneyApart(t *testing.T) {
+func TestBuyDockableNoticeTellsMissingSellMoneyApart(t *testing.T) {
 	c := check.New(t)
 	screen, _, sheet := buyTestSheet(t, c, func(entity *gurps.Entity) []*gurps.Equipment {
 		return buyTestCoins(entity, 7, 0)[:1]
@@ -1197,57 +1143,80 @@ func TestBuyPanelNoticeTellsMissingSellMoneyApart(t *testing.T) {
 	library := buyTestLibrary(t, screen, "", dagger)
 	screen.Do(func() {
 		sheet.Entity().SheetSettings.SellMoney = []gurps.Source{{LibraryFile: sources[0].LibraryFile, TID: "missing"}}
-		sheet.startBuying()
+		showBuyDockable(sheet)
 	})
 	_, dropped := buyTestDrop(t, screen, sheet, library, dagger)
 	c.True(dropped)
-	state := readBuyPanel(t, screen, sheet)
+	state := readBuyDockable(t, screen, sheet)
 	c.True(state.noticeShown, "change that can't be returned is warned about")
 	c.Equal("$5 of change can't be returned from the money paid, and none of the sheet's sell money could be found in the libraries.",
 		state.notice)
 }
 
-// TestBuyPanelTakesTheFocusFromTheListItReplaces checks that starting to buy while the keyboard focus is in the carried
-// equipment list, which leaves the page, moves the focus into the buy panel that takes its place rather than to the top
-// of the sheet, and that a focus elsewhere on the sheet is left where it is.
-func TestBuyPanelTakesTheFocusFromTheListItReplaces(t *testing.T) {
+// TestBuyDockableOpensOncePerSheet checks that opening the buy dockable puts the keyboard focus on its first field, that
+// asking for it again brings the one already open forward rather than opening another, that its title follows the
+// character's name, and that it closes with its sheet.
+func TestBuyDockableOpensOncePerSheet(t *testing.T) {
 	c := check.New(t)
 	screen, wnd, sheet := buyTestSheet(t, c, func(entity *gurps.Entity) []*gurps.Equipment {
 		return buyTestCoins(entity, 7, 11)
 	})
-	var inPanel, onPercent bool
+	var first, again *buyDockable
+	var onPercent bool
+	var title, renamed string
+	var count int
 	screen.Do(func() {
 		sheet.CarriedEquipment.Table.RequestFocus()
-		sheet.startBuying()
-		focus := wnd.CurrentFocus()
-		inPanel = focus != nil && unison.AncestorIsOrSelf(focus, sheet.buyPanel)
-		onPercent = focus == sheet.buyPanel.percentField.AsPanel()
-	})
-	c.True(inPanel, "the focus must move into the buy panel")
-	c.True(onPercent, "the focus must land on the first field of the buy panel")
-
-	var stays bool
-	screen.Do(func() {
-		sheet.stopBuying()
+		first = showBuyDockable(sheet)
+		onPercent = wnd.CurrentFocus() == first.percentField.AsPanel()
+		title = first.Title()
 		sheet.OtherEquipment.Table.RequestFocus()
-		sheet.startBuying()
-		stays = wnd.CurrentFocus() == sheet.OtherEquipment.Table.AsPanel()
+		again = showBuyDockable(sheet)
+		for _, d := range AllDockables() {
+			if _, ok := d.AsPanel().Self.(*buyDockable); ok {
+				count++
+			}
+		}
+		sheet.Entity().Profile.Name = "Bob"
+		sheet.Rebuild(true)
+		renamed = first.Title()
 	})
-	c.True(stays, "a focus elsewhere on the sheet stays where it is")
+	c.True(onPercent, "the focus must land on the first field of the buy dockable")
+	c.True(first == again, "asking to buy again must bring the open dockable forward")
+	c.Equal(1, count, "a sheet must have one buy dockable at most")
+	c.Equal("Buy Equipment: "+sheet.Entity().Profile.Name, renamed)
+	c.NotEqual(title, renamed, "the title must follow the character's name")
+
+	var open bool
+	screen.Do(func() {
+		sheet.markUnmodified()
+		sheet.AttemptClose()
+		open = buyDockableFor(sheet) != nil
+	})
+	c.False(open, "closing the sheet must close its buy dockable")
 }
 
-// TestBuyPanelDropHighlightUsesTheDropColor checks that the buy panel tints its drop area, while equipment is dragged
-// over it, in the color the lists tint their drop targets with.
-func TestBuyPanelDropHighlightUsesTheDropColor(t *testing.T) {
+// TestBuyDockableDropHighlightUsesTheDropColor checks that the buy dockable tints its drop area, while equipment is dragged
+// over it, in the color the lists tint their drop targets with, laid translucently over the background a table gives
+// its rows, which the drop area shares so that its banding stands out as a table's does.
+func TestBuyDockableDropHighlightUsesTheDropColor(t *testing.T) {
 	c := check.New(t)
 	screen, _, sheet := buyTestSheet(t, c, func(entity *gurps.Entity) []*gurps.Equipment {
 		return buyTestCoins(entity, 7, 11)
 	})
 	var center color.NRGBA
-	expected := unison.ThemeWarning.GetColor()
+	background := unison.ThemeBelowSurface.GetColor()
+	tint := unison.ThemeWarning.GetColor()
+	blend := func(bg, fg int) int { return int(math.Round(float64(bg)*0.7 + float64(fg)*0.3)) }
+	expected := color.NRGBA{
+		R: uint8(blend(background.Red(), tint.Red())),
+		G: uint8(blend(background.Green(), tint.Green())),
+		B: uint8(blend(background.Blue(), tint.Blue())),
+		A: 255,
+	}
 	screen.Do(func() {
-		sheet.startBuying()
-		p := sheet.buyPanel
+		showBuyDockable(sheet)
+		p := buyDockableFor(sheet)
 		p.ValidateLayout()
 		p.dragOver = true
 		area := p.dropArea
@@ -1267,16 +1236,16 @@ func TestBuyPanelDropHighlightUsesTheDropColor(t *testing.T) {
 		}
 		center = pixels.NRGBAAt(pixels.Rect.Dx()/2, pixels.Rect.Dy()/2)
 	})
-	near := func(a uint8, b int) bool { return max(int(a), b)-min(int(a), b) <= 2 }
-	c.True(near(center.R, expected.Red()) && near(center.G, expected.Green()) && near(center.B, expected.Blue()),
-		"the drop area must be tinted with the drop color %v, not %v", expected, center)
-	c.True(center.A > 0 && center.A < 255, "the tint must be translucent, not %d", center.A)
+	near := func(a, b uint8) bool { return max(a, b)-min(a, b) <= 3 }
+	c.True(near(center.R, expected.R) && near(center.G, expected.G) && near(center.B, expected.B),
+		"the drop area must be tinted with the drop color over its background, %v, not %v", expected, center)
+	c.Equal(uint8(255), center.A, "the background under the tint must be opaque")
 }
 
-// TestBuyPanelNameFollowsTheItemsWhileFocused checks that the suggested transaction name follows the items until the
+// TestBuyDockableNameFollowsTheItemsWhileFocused checks that the suggested transaction name follows the items until the
 // user edits it even while the name field has the keyboard focus, since the buttons that remove items don't take the
 // focus from it, and that the purchase is recorded under the name shown.
-func TestBuyPanelNameFollowsTheItemsWhileFocused(t *testing.T) {
+func TestBuyDockableNameFollowsTheItemsWhileFocused(t *testing.T) {
 	c := check.New(t)
 	screen, _, sheet := buyTestSheet(t, c, func(entity *gurps.Entity) []*gurps.Equipment {
 		return buyTestCoins(entity, 70, 11)
@@ -1284,19 +1253,19 @@ func TestBuyPanelNameFollowsTheItemsWhileFocused(t *testing.T) {
 	sword := buyTestItem(nil, "Shortsword", "100", 1)
 	dagger := buyTestItem(nil, "Dagger", "15", 1)
 	library := buyTestLibrary(t, screen, "", sword, dagger)
-	screen.Do(sheet.startBuying)
+	screen.Do(func() { showBuyDockable(sheet) })
 	if _, dropped := buyTestDrop(t, screen, sheet, library, sword, dagger); !dropped {
-		t.Fatal("the sword and dagger must be dropped into the buy panel")
+		t.Fatal("the sword and dagger must be dropped into the buy dockable")
 	}
-	c.Equal("Bought Shortsword, Dagger", readBuyPanel(t, screen, sheet).name)
+	c.Equal("Bought Shortsword, Dagger", readBuyDockable(t, screen, sheet).name)
 	screen.Do(func() {
-		sheet.buyPanel.nameField.RequestFocus()
-		sheet.buyPanel.items[1].remove.Click()
+		buyDockableFor(sheet).nameField.RequestFocus()
+		buyDockableFor(sheet).items[1].remove.Click()
 	})
-	c.Equal("Bought Shortsword", readBuyPanel(t, screen, sheet).name,
+	c.Equal("Bought Shortsword", readBuyDockable(t, screen, sheet).name,
 		"the name follows the items although the field has the focus")
 
-	screen.Do(func() { sheet.buyPanel.finalize.Click() })
+	screen.Do(func() { buyDockableFor(sheet).finalize.Click() })
 	var record []*gurps.ShoppingRecordEntry
 	screen.Do(func() { record = gurps.CloneShoppingRecordList(sheet.Entity().ShoppingRecord) })
 	c.Equal(1, len(record))
@@ -1306,10 +1275,10 @@ func TestBuyPanelNameFollowsTheItemsWhileFocused(t *testing.T) {
 	}
 }
 
-// TestBuyPanelFollowsChangesToTheSellMoneyLibrary checks that the change follows the libraries while the panel is up: a
+// TestBuyDockableFollowsChangesToTheSellMoneyLibrary checks that the change follows the libraries while the dockable is up: a
 // sell money source whose library file doesn't exist yet can't return change, and once the file is written the next
 // sync returns change from it, as the entity's own lookup does.
-func TestBuyPanelFollowsChangesToTheSellMoneyLibrary(t *testing.T) {
+func TestBuyDockableFollowsChangesToTheSellMoneyLibrary(t *testing.T) {
 	c := check.New(t)
 	screen, _, sheet := buyTestSheet(t, c, func(entity *gurps.Entity) []*gurps.Equipment {
 		return buyTestCoins(entity, 7, 0)[:1]
@@ -1322,27 +1291,27 @@ func TestBuyPanelFollowsChangesToTheSellMoneyLibrary(t *testing.T) {
 	library := buyTestLibrary(t, screen, "", dagger)
 	screen.Do(func() {
 		sheet.Entity().SheetSettings.SellMoney = []gurps.Source{{LibraryFile: libFile, TID: penny.TID}}
-		sheet.startBuying()
+		showBuyDockable(sheet)
 	})
 	_, dropped := buyTestDrop(t, screen, sheet, library, dagger)
 	c.True(dropped)
-	state := readBuyPanel(t, screen, sheet)
+	state := readBuyDockable(t, screen, sheet)
 	c.Equal("$5 of change can't be returned from the money paid, and none of the sheet's sell money could be found in the libraries.",
 		state.notice, "the library file doesn't exist yet")
 
 	c.NoError(os.MkdirAll(filepath.Dir(path), 0o750))
 	c.NoError(gurps.SaveEquipment([]*gurps.Equipment{penny}, path))
 	screen.Do(func() { sheet.Rebuild(true) })
-	state = readBuyPanel(t, screen, sheet)
+	state = readBuyDockable(t, screen, sheet)
 	c.Equal("Pay automatically: Silver Eagle ×1 ($20); change: Copper Penny ×5 ($5)", state.summary,
 		"the change comes from the library file once it exists")
 	c.False(state.noticeShown)
 }
 
-// TestBuyPanelEnablesWhatItBuys checks that equipment copied into the buy panel from a sheet where it was disabled, or
+// TestBuyDockableEnablesWhatItBuys checks that equipment copied into the buy dockable from a sheet where it was disabled, or
 // where a container held something disabled, is enabled on the way in, so that it is priced in full and carried
 // enabled, and that the original is left as it was.
-func TestBuyPanelEnablesWhatItBuys(t *testing.T) {
+func TestBuyDockableEnablesWhatItBuys(t *testing.T) {
 	c := check.New(t)
 	screen, _, sheet := buyTestSheet(t, c, func(entity *gurps.Entity) []*gurps.Equipment {
 		return buyTestCoins(entity, 0, 20)
@@ -1363,16 +1332,16 @@ func TestBuyPanelEnablesWhatItBuys(t *testing.T) {
 		entity.OtherEquipment = []*gurps.Equipment{rope, kit}
 		entity.Recalculate()
 		sheet.Rebuild(true)
-		sheet.startBuying()
+		showBuyDockable(sheet)
 	})
 	_, dropped := buyTestDrop(t, screen, sheet, sheet.OtherEquipment.Table, rope, kit)
 	c.True(dropped, "the drop is taken")
-	state := readBuyPanel(t, screen, sheet)
+	state := readBuyDockable(t, screen, sheet)
 	c.Equal([]string{"1 | Rope | $5 each | Total $5", "1 | Kit | $12 each | Total $12"}, state.rows,
 		"the disabled rope is priced, as is the kit with its disabled bandage")
 	c.Equal("Pay automatically: Copper Penny ×17 ($17)", state.summary)
 
-	screen.Do(func() { sheet.buyPanel.finalize.Click() })
+	screen.Do(func() { buyDockableFor(sheet).finalize.Click() })
 	c.Equal([]string{"Silver Eagle ×0", "Copper Penny ×3", "Rope ×1", "Kit ×1"}, buyTestCarried(screen, sheet))
 	screen.Do(func() {
 		carried := sheet.Entity().CarriedEquipment
@@ -1390,10 +1359,10 @@ func TestBuyPanelEnablesWhatItBuys(t *testing.T) {
 	})
 }
 
-// TestBuyPanelTotalSaturatesRatherThanWrapping checks that a total made of prices too large for fxp to hold saturates at
+// TestBuyDockableTotalSaturatesRatherThanWrapping checks that a total made of prices too large for fxp to hold saturates at
 // its maximum, so that the money carried is seen to fall short and the purchase can't be finalized, rather than wrapping
 // around to a negative total that nothing pays for and that lets everything be carried for free.
-func TestBuyPanelTotalSaturatesRatherThanWrapping(t *testing.T) {
+func TestBuyDockableTotalSaturatesRatherThanWrapping(t *testing.T) {
 	c := check.New(t)
 	screen, _, sheet := buyTestSheet(t, c, func(entity *gurps.Entity) []*gurps.Equipment {
 		return buyTestCoins(entity, 7, 11)
@@ -1403,19 +1372,19 @@ func TestBuyPanelTotalSaturatesRatherThanWrapping(t *testing.T) {
 		hoards[i] = buyTestItem(nil, fmt.Sprintf("Hoard %d", i+1), "9000000000000", 1)
 	}
 	library := buyTestLibrary(t, screen, "", hoards...)
-	screen.Do(func() { sheet.startBuying() })
+	screen.Do(func() { showBuyDockable(sheet) })
 	_, dropped := buyTestDrop(t, screen, sheet, library, hoards...)
 	c.True(dropped)
-	state := readBuyPanel(t, screen, sheet)
+	state := readBuyDockable(t, screen, sheet)
 	c.Equal("Not enough money carried: $922,337,203,685,477.5807 needed, $151 carried.", state.summary,
 		"the total is held at fxp's maximum")
 	c.False(state.finalizeOn, "the purchase can't be finalized")
 }
 
-// TestBuyPanelChangeFollowsEditsToTheSellMoneyLibrary checks that the change follows a change to the sell money in the
-// library that leaves its value alone, such as renaming the coin: the panel looks the sell money up each time, so the
+// TestBuyDockableChangeFollowsEditsToTheSellMoneyLibrary checks that the change follows a change to the sell money in the
+// library that leaves its value alone, such as renaming the coin: the dockable looks the sell money up each time, so the
 // change it shows and hands over must be made of the copies that lookup returns, not of those an earlier lookup did.
-func TestBuyPanelChangeFollowsEditsToTheSellMoneyLibrary(t *testing.T) {
+func TestBuyDockableChangeFollowsEditsToTheSellMoneyLibrary(t *testing.T) {
 	c := check.New(t)
 	screen, _, sheet := buyTestSheet(t, c, func(entity *gurps.Entity) []*gurps.Equipment {
 		return buyTestCoins(entity, 7, 0)[:1]
@@ -1430,19 +1399,19 @@ func TestBuyPanelChangeFollowsEditsToTheSellMoneyLibrary(t *testing.T) {
 	library := buyTestLibrary(t, screen, "", dagger)
 	screen.Do(func() {
 		sheet.Entity().SheetSettings.SellMoney = []gurps.Source{{LibraryFile: libFile, TID: penny.TID}}
-		sheet.startBuying()
+		showBuyDockable(sheet)
 	})
 	_, dropped := buyTestDrop(t, screen, sheet, library, dagger)
 	c.True(dropped)
 	c.Equal("Pay automatically: Silver Eagle ×1 ($20); change: Copper Penny ×5 ($5)",
-		readBuyPanel(t, screen, sheet).summary)
+		readBuyDockable(t, screen, sheet).summary)
 
 	penny.Name = "Penny"
 	c.NoError(gurps.SaveEquipment([]*gurps.Equipment{penny}, path))
 	screen.Do(func() { sheet.Rebuild(true) })
-	c.Equal("Pay automatically: Silver Eagle ×1 ($20); change: Penny ×5 ($5)", readBuyPanel(t, screen, sheet).summary,
+	c.Equal("Pay automatically: Silver Eagle ×1 ($20); change: Penny ×5 ($5)", readBuyDockable(t, screen, sheet).summary,
 		"the change is made of the coin as the library now has it")
-	screen.Do(func() { sheet.buyPanel.finalize.Click() })
+	screen.Do(func() { buyDockableFor(sheet).finalize.Click() })
 	c.Equal([]string{"Silver Eagle ×6", "Dagger ×1", "Penny ×5"}, buyTestCarried(screen, sheet))
 }
 
@@ -1458,11 +1427,11 @@ func buyTestEditorsOpenFor(screen *unison.HeadlessScreen, items ...*gurps.Equipm
 	return count
 }
 
-// TestBuyPanelFinalizeClosesTheEditorsOfWhatItChanges checks that finalizing closes the editors open on everything the
+// TestBuyDockableFinalizeClosesTheEditorsOfWhatItChanges checks that finalizing closes the editors open on everything the
 // purchase changes, as a sale does, since an editor doesn't follow changes to its item and would put its stale quantity
 // back when applied: the carried money spent, a container the payment splits apart, and the carried items the purchase
 // and the change merge into. The editor of an item the purchase leaves alone stays open.
-func TestBuyPanelFinalizeClosesTheEditorsOfWhatItChanges(t *testing.T) {
+func TestBuyDockableFinalizeClosesTheEditorsOfWhatItChanges(t *testing.T) {
 	c := check.New(t)
 	var eagles, pile, purse, pursePennies, gloves, rope *gurps.Equipment
 	screen, _, sheet := buyTestSheet(t, c, func(entity *gurps.Entity) []*gurps.Equipment {
@@ -1485,7 +1454,7 @@ func TestBuyPanelFinalizeClosesTheEditorsOfWhatItChanges(t *testing.T) {
 		for _, eqp := range []*gurps.Equipment{eagles, pile, purse, pursePennies, gloves, rope} {
 			EditEquipment(sheet, eqp, true)
 		}
-		sheet.startBuying()
+		showBuyDockable(sheet)
 	})
 	c.Equal(6, buyTestEditorsOpenFor(screen, eagles, pile, purse, pursePennies, gloves, rope), "the editors must be open")
 	var rows []*Node[*gurps.Equipment]
@@ -1493,12 +1462,12 @@ func TestBuyPanelFinalizeClosesTheEditorsOfWhatItChanges(t *testing.T) {
 	_, dropped := buyTestDrop(t, screen, sheet, library, rows[0].Data())
 	c.True(dropped)
 	screen.Do(func() {
-		sheet.buyPanel.manual = map[tid.TID]int{eagles.TID: 2, pursePennies.TID: 1}
-		sheet.buyPanel.refresh()
+		buyDockableFor(sheet).manual = map[tid.TID]int{eagles.TID: 2, pursePennies.TID: 1}
+		buyDockableFor(sheet).refresh()
 	})
 	c.Equal("Pay manually: Silver Eagle ×2, Copper Penny ×1 ($41); change: Copper Penny ×11 ($11)",
-		readBuyPanel(t, screen, sheet).summary)
-	screen.Do(func() { sheet.buyPanel.finalize.Click() })
+		readBuyDockable(t, screen, sheet).summary)
+	screen.Do(func() { buyDockableFor(sheet).finalize.Click() })
 	c.Equal([]string{"Silver Eagle ×5", "Copper Penny ×22", "Purse ×1", "Purse ×1", "Leather Gloves ×2", "Rope ×1"},
 		buyTestCarried(screen, sheet), "the eagles and a purse's penny are spent, splitting the purse, and the gloves "+
 			"and the change merge into those carried")
@@ -1509,10 +1478,10 @@ func TestBuyPanelFinalizeClosesTheEditorsOfWhatItChanges(t *testing.T) {
 	c.Equal(1, buyTestEditorsOpenFor(screen, rope), "the editor of an item the purchase leaves alone stays open")
 }
 
-// TestBuyPanelDoesNotFinalizeOnAPaymentASavedEditorChanged checks that when an editor open on the money paid with is
+// TestBuyDockableDoesNotFinalizeOnAPaymentASavedEditorChanged checks that when an editor open on the money paid with is
 // saved at the prompt put up as finalizing closes it, and saving changes the payment, the purchase isn't made on the
-// terms the user accepted: the panel, brought up to date by the save, stays for the user to look over.
-func TestBuyPanelDoesNotFinalizeOnAPaymentASavedEditorChanged(t *testing.T) {
+// terms the user accepted: the dockable, brought up to date by the save, stays for the user to look over.
+func TestBuyDockableDoesNotFinalizeOnAPaymentASavedEditorChanged(t *testing.T) {
 	c := check.New(t)
 	var eagles *gurps.Equipment
 	screen, wnd, sheet := buyTestSheet(t, c, func(entity *gurps.Entity) []*gurps.Equipment {
@@ -1525,53 +1494,55 @@ func TestBuyPanelDoesNotFinalizeOnAPaymentASavedEditorChanged(t *testing.T) {
 		e := EditEquipment(sheet, eagles, true)
 		e.editorData.Quantity = 0
 		e.MarkModified(nil)
-		sheet.startBuying()
+		showBuyDockable(sheet)
 	})
 	_, dropped := buyTestDrop(t, screen, sheet, library, dagger)
 	c.True(dropped)
-	c.Equal("Pay automatically: Silver Eagle ×1 ($20)", readBuyPanel(t, screen, sheet).summary)
-	screen.Do(func() { sheet.buyPanel.finalize.Click() })
+	c.Equal("Pay automatically: Silver Eagle ×1 ($20)", readBuyDockable(t, screen, sheet).summary)
+	screen.Do(func() { buyDockableFor(sheet).finalize.Click() })
 	screen.Sync() // Finalizing is posted as a task, which puts up the editor's prompt.
 	_, prompt := modalDialog(t, screen, wnd)
 	screen.Click(screen.PanelCenter(dialogButton(t, screen, prompt, unison.ModalResponseOK)))
 	c.Equal(0, buyTestEditorsOpenFor(screen, eagles), "the editor is saved and closed")
 	c.Equal([]string{"Silver Eagle ×0"}, buyTestCarried(screen, sheet), "the eagles are as saved and nothing is bought")
-	state := readBuyPanel(t, screen, sheet)
-	c.Equal("Not enough money carried: $15 needed, $0 carried.", state.summary, "the panel shows the payment as it now stands")
+	state := readBuyDockable(t, screen, sheet)
+	c.Equal("Not enough money carried: $15 needed, $0 carried.", state.summary, "the dockable shows the payment as it now stands")
 	c.False(state.finalizeOn)
 	var records int
 	screen.Do(func() { records = len(sheet.Entity().ShoppingRecord) })
 	c.Equal(0, records)
 }
 
-// TestBuyPanelLeavingDoesNotMoveAnAbsentFocus checks that leaving the panel reads the keyboard focus without moving it:
-// asking the window for its focus moves it to the next focusable panel when nothing holds it, which would put the focus
-// on an arbitrary panel on the way out.
-func TestBuyPanelLeavingDoesNotMoveAnAbsentFocus(t *testing.T) {
+// TestBuyDockableFinalizingLeavesAFocusElsewhereAlone checks that finalizing a purchase while the keyboard focus is
+// outside the buy dockable, as when an assistive technology presses the button, closes the dockable without moving the
+// focus to the carried equipment list.
+func TestBuyDockableFinalizingLeavesAFocusElsewhereAlone(t *testing.T) {
 	c := check.New(t)
 	screen, wnd, sheet := buyTestSheet(t, c, func(entity *gurps.Entity) []*gurps.Equipment {
 		return buyTestCoins(entity, 7, 11)
 	})
-	var before, after *unison.Panel
-	var left bool
-	// Drawing the window gives the focus to the first focusable panel when nothing holds it, so the focus is cleared,
-	// the panel left and the focus read without a redraw in between.
+	dagger := buyTestItem(nil, "Dagger", "15", 1)
+	library := buyTestLibrary(t, screen, "", dagger)
+	screen.Do(func() { showBuyDockable(sheet) })
+	if _, dropped := buyTestDrop(t, screen, sheet, library, dagger); !dropped {
+		t.Fatal("the dagger must be dropped into the buy dockable")
+	}
+	var open, stays bool
 	screen.Do(func() {
-		sheet.startBuying()
-		wnd.SetFocus(nil)
-		before = wnd.CurrentFocus()
-		sheet.buyPanel.leave(func() { left = true })
-		after = wnd.CurrentFocus()
+		library.RequestFocus()
+		buyDockableFor(sheet).finalizePurchase()
+		open = buyDockableFor(sheet) != nil
+		stays = wnd.CurrentFocus() == library.AsPanel()
 	})
-	c.True(before == nil, "precondition: nothing holds the focus")
-	c.True(left)
-	c.True(after == nil, "nothing holds the focus still; it is on %v", after)
+	c.False(open, "finalizing must close the dockable")
+	c.True(stays, "a focus outside the dockable must stay where it is")
+	c.Equal([]string{"Silver Eagle ×6", "Copper Penny ×11", "Dagger ×1"}, buyTestCarried(screen, sheet))
 }
 
-// TestBuyPanelFinalizesWithUnequippedSellMoney checks that a purchase returning change in a library coin saved without
+// TestBuyDockableFinalizesWithUnequippedSellMoney checks that a purchase returning change in a library coin saved without
 // being equipped, as the Dungeon Fantasy RPG coins are, is finalized: predicting where the change merges must not change
 // the coin, or the payment would no longer look like the one the user accepted.
-func TestBuyPanelFinalizesWithUnequippedSellMoney(t *testing.T) {
+func TestBuyDockableFinalizesWithUnequippedSellMoney(t *testing.T) {
 	c := check.New(t)
 	screen, _, sheet := buyTestSheet(t, c, func(entity *gurps.Entity) []*gurps.Equipment {
 		return buyTestCoins(entity, 7, 0)[:1]
@@ -1587,15 +1558,248 @@ func TestBuyPanelFinalizesWithUnequippedSellMoney(t *testing.T) {
 	library := buyTestLibrary(t, screen, "", dagger)
 	screen.Do(func() {
 		sheet.Entity().SheetSettings.SellMoney = []gurps.Source{{LibraryFile: libFile, TID: penny.TID}}
-		sheet.startBuying()
+		showBuyDockable(sheet)
 	})
 	_, dropped := buyTestDrop(t, screen, sheet, library, dagger)
 	c.True(dropped)
 	c.Equal("Pay automatically: Silver Eagle ×1 ($20); change: Copper Penny ×5 ($5)",
-		readBuyPanel(t, screen, sheet).summary)
-	screen.Do(func() { sheet.buyPanel.finalize.Click() })
+		readBuyDockable(t, screen, sheet).summary)
+	screen.Do(func() { buyDockableFor(sheet).finalize.Click() })
 	var buying bool
-	screen.Do(func() { buying = sheet.buying() })
+	screen.Do(func() { buying = (buyDockableFor(sheet) != nil) })
 	c.False(buying, "the purchase is finalized")
 	c.Equal([]string{"Silver Eagle ×6", "Dagger ×1", "Copper Penny ×5"}, buyTestCarried(screen, sheet))
+}
+
+// TestBuyDockableFollowsEditsToTheCarriedEquipment checks that the carried equipment list stays editable while the buy
+// dockable is open and that the payment follows what is done to it: deleting the money paid with through the list
+// leaves the purchase short and unable to be finalized, and undoing the deletion restores the payment.
+func TestBuyDockableFollowsEditsToTheCarriedEquipment(t *testing.T) {
+	c := check.New(t)
+	screen, _, sheet := buyTestSheet(t, c, func(entity *gurps.Entity) []*gurps.Equipment {
+		return append(buyTestCoins(entity, 2, 5), buyTestItem(entity, "Tent", "50", 1))
+	})
+	longbow := buyTestItem(nil, "Longbow", "45", 1)
+	library := buyTestLibrary(t, screen, "", longbow)
+	screen.Do(func() { showBuyDockable(sheet) })
+	if _, dropped := buyTestDrop(t, screen, sheet, library, longbow); !dropped {
+		t.Fatal("the longbow must be dropped into the buy dockable")
+	}
+	paid := "Pay automatically: Silver Eagle ×2, Copper Penny ×5 ($45)"
+	state := readBuyDockable(t, screen, sheet)
+	c.Equal(paid, state.summary)
+	c.True(state.finalizeOn)
+
+	table := sheet.CarriedEquipment.Table
+	var canDelete bool
+	screen.Do(func() {
+		table.SelectByIndex(0)
+		canDelete = table.CanPerformCmd(table, unison.DeleteItemID)
+		table.PerformCmd(table, unison.DeleteItemID)
+	})
+	c.True(canDelete, "the carried equipment list must stay editable while buying")
+	c.Equal([]string{"Copper Penny ×5", "Tent ×1"}, buyTestCarried(screen, sheet), "the money must be deleted")
+	state = readBuyDockable(t, screen, sheet)
+	c.Equal("Not enough money carried: $45 needed, $5 carried.", state.summary, "the payment must follow the deletion")
+	c.False(state.finalizeOn, "the purchase can't be finalized once the money is gone")
+
+	screen.Do(func() { sheet.UndoManager().Undo() })
+	c.Equal([]string{"Silver Eagle ×2", "Copper Penny ×5", "Tent ×1"}, buyTestCarried(screen, sheet))
+	state = readBuyDockable(t, screen, sheet)
+	c.Equal(paid, state.summary, "undoing the deletion must restore the payment")
+	c.True(state.finalizeOn)
+}
+
+// TestBuySelectedEquipmentCommand checks the way to buy without dragging: an equipment list's menu offers Buy, which
+// sends the selected rows to the buy dockable of the one open sheet, opening it, or of the sheet the list is on, and
+// asks which sheet to buy for when several are open. The command is disabled while no sheet is open.
+func TestBuySelectedEquipmentCommand(t *testing.T) {
+	c := check.New(t)
+	screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
+	screen.EnableAccessibility()
+	forbidModifierPrompts(t)
+	uxtest.SwapForTest(t, &flushDragFeedback, func(*unison.Panel) {})
+	sword := buyTestItem(nil, "Shortsword", "100", 1)
+	dagger := buyTestItem(nil, "Dagger", "15", 1)
+	library := buyTestLibrary(t, screen, "", sword, dagger)
+	var enabledWithoutSheet bool
+	screen.Do(func() {
+		library.SelectAll()
+		enabledWithoutSheet = library.CanPerformCmd(library, BuySelectedEquipmentItemID)
+	})
+	c.False(enabledWithoutSheet, "Buy must be disabled while no sheet is open")
+
+	sheet, ok := uxtest.OpenedByAction(t, screen, newCharacterSheetAction).(*Sheet)
+	if !ok {
+		t.Fatal("New Character Sheet must open a character sheet")
+	}
+	screen.Do(func() {
+		entity := sheet.Entity()
+		entity.CarriedEquipment = buyTestCoins(entity, 7, 11)
+		entity.Recalculate()
+		sheet.Rebuild(true)
+	})
+	screen.Click(cellScreenPoint(t, screen, wnd, library, 0, gurps.EquipmentDescriptionColumn))
+	screen.KeyPress(unison.KeyF10, mod.Shift)
+	titles := contextMenuTitles(t, screen, wnd)
+	c.True(slices.Contains(titles, "Buy…"), "an equipment library's menu must offer Buy; it offers %v", titles)
+	closeContextMenu(c, screen, wnd)
+	screen.Do(func() { library.PerformCmd(library, BuySelectedEquipmentItemID) })
+	swordRow := "1 | Shortsword | $100 each | Total $100"
+	state := readBuyDockable(t, screen, sheet)
+	c.Equal([]string{swordRow}, state.rows, "Buy must open the one sheet's buy dockable with the selection")
+
+	// From the sheet's own list, the sheet buys for itself.
+	screen.Do(func() {
+		entity := sheet.Entity()
+		entity.OtherEquipment = []*gurps.Equipment{buyTestItem(entity, "Rope", "5", 1)}
+		sheet.Rebuild(true)
+		other := sheet.OtherEquipment.Table
+		other.SelectByIndex(0)
+		other.PerformCmd(other, BuySelectedEquipmentItemID)
+	})
+	ropeRow := "1 | Rope | $5 each | Total $5"
+	state = readBuyDockable(t, screen, sheet)
+	c.Equal([]string{swordRow, ropeRow}, state.rows, "a sheet's own list must buy for that sheet")
+
+	// With another sheet open, a library asks which sheet to buy for. Canceling buys for none of them; accepting buys
+	// for the one chosen.
+	other, ok := uxtest.OpenedByAction(t, screen, newCharacterSheetAction).(*Sheet)
+	if !ok {
+		t.Fatal("New Character Sheet must open a character sheet")
+	}
+	buyDagger := func(response int) {
+		t.Helper()
+		screen.Do(func() { library.SelectByIndex(1) })
+		if !screen.Post(func() { library.PerformCmd(library, BuySelectedEquipmentItemID) }) {
+			t.Fatal("Buy could not be performed")
+		}
+		screen.Sync()
+		_, dialog := modalDialog(t, screen, wnd)
+		screen.Do(func() { dialog.StopModal(response) })
+	}
+	daggerRows := func() (count int) {
+		screen.Do(func() {
+			for _, s := range []*Sheet{sheet, other} {
+				if d := buyDockableFor(s); d != nil {
+					for _, item := range d.items {
+						if item.eqp.Name == "Dagger" {
+							count++
+						}
+					}
+				}
+			}
+		})
+		return count
+	}
+	buyDagger(unison.ModalResponseCancel)
+	c.Equal(0, daggerRows(), "canceling the choice of sheet must buy nothing")
+	buyDagger(unison.ModalResponseOK)
+	c.Equal(1, daggerRows(), "accepting the choice of sheet must buy for that one sheet")
+}
+
+// TestBuyDockableAsksBeforeDiscardingAPurchase checks that closing the dockable with a purchase under way asks, as
+// closing an editor with pending changes does: Cancel keeps the dockable open, No discards the purchase and Yes
+// finalizes it; that closing the sheet asks the same way; that a purchase the money carried doesn't cover is only
+// offered for discarding; and that the dockable is marked modified only while a purchase is under way.
+func TestBuyDockableAsksBeforeDiscardingAPurchase(t *testing.T) {
+	c := check.New(t)
+	screen, wnd, sheet := buyTestSheet(t, c, func(entity *gurps.Entity) []*gurps.Equipment {
+		return buyTestCoins(entity, 7, 11)
+	})
+	dagger := buyTestItem(nil, "Dagger", "15", 1)
+	library := buyTestLibrary(t, screen, "", dagger)
+	before := []string{"Silver Eagle ×7", "Copper Penny ×11"}
+	var d *buyDockable
+	modified := func() bool {
+		var result bool
+		screen.Do(func() { result = d.Modified() })
+		return result
+	}
+	open := func() bool {
+		var result bool
+		screen.Do(func() { result = buyDockableFor(sheet) == d })
+		return result
+	}
+	startBuying := func() {
+		t.Helper()
+		screen.Do(func() { d = showBuyDockable(sheet) })
+		c.False(modified(), "an empty purchase must not mark the dockable modified")
+		if _, dropped := buyTestDrop(t, screen, sheet, library, dagger); !dropped {
+			t.Fatal("the dagger must be dropped into the buy dockable")
+		}
+		c.True(modified(), "a purchase under way must mark the dockable modified")
+	}
+	// closeWith posts the close, which runs a modal prompt, answers the prompt with the response and reports whether the
+	// prompt offered to discard, as the Yes/No/Cancel prompt does and the plain question does not.
+	closeWith := func(attempt func(), response int) (offeredNo bool) {
+		t.Helper()
+		if !screen.Post(attempt) {
+			t.Fatal("the close could not be posted")
+		}
+		screen.Sync()
+		_, dialog := modalDialog(t, screen, wnd)
+		screen.Do(func() {
+			offeredNo = dialog.Button(unison.ModalResponseDiscard) != nil
+			dialog.StopModal(response)
+		})
+		return offeredNo
+	}
+
+	startBuying()
+	c.True(closeWith(func() { d.AttemptClose() }, unison.ModalResponseCancel), "closing must offer to discard")
+	c.True(open(), "Cancel must keep the dockable open")
+	c.True(closeWith(func() { sheet.AttemptClose() }, unison.ModalResponseCancel),
+		"closing the sheet must ask about the purchase")
+	c.True(open(), "Cancel must keep the dockable open when the sheet is closing")
+	var sheetOpen bool
+	screen.Do(func() { sheetOpen = slices.Contains(OpenSheets(nil), sheet) })
+	c.True(sheetOpen, "Cancel must keep the sheet open")
+	c.True(closeWith(func() { d.AttemptClose() }, unison.ModalResponseDiscard))
+	c.False(open(), "No must close the dockable")
+	c.Equal(before, buyTestCarried(screen, sheet), "No must discard the purchase")
+
+	startBuying()
+	c.True(closeWith(func() { d.AttemptClose() }, unison.ModalResponseOK))
+	c.False(open(), "Yes must close the dockable")
+	c.Equal([]string{"Silver Eagle ×6", "Copper Penny ×11", "Dagger ×1"}, buyTestCarried(screen, sheet),
+		"Yes must finalize the purchase")
+
+	screen.Do(func() {
+		sheet.Entity().CarriedEquipment = nil
+		sheet.Rebuild(true)
+	})
+	startBuying()
+	c.False(closeWith(func() { d.AttemptClose() }, unison.ModalResponseCancel),
+		"a purchase the money can't cover must only be offered for discarding")
+	c.True(open(), "Cancel must keep the dockable open")
+	c.False(closeWith(func() { d.AttemptClose() }, unison.ModalResponseOK))
+	c.False(open(), "OK must discard the purchase and close the dockable")
+	c.Nil(buyTestCarried(screen, sheet), "nothing must be bought")
+}
+
+// TestBuyDockableWindowHasRoomForItems checks that a window packed around the buy dockable, as when the Editors group
+// opens in a window, is big enough to list items rather than closing up around the empty drop area and the footer.
+func TestBuyDockableWindowHasRoomForItems(t *testing.T) {
+	c := check.New(t)
+	screen, _, sheet := buyTestSheet(t, c, func(entity *gurps.Entity) []*gurps.Equipment {
+		return buyTestCoins(entity, 7, 11)
+	})
+	var content, hint geom.Size
+	var rowHeight float32
+	screen.Do(func() {
+		d := newBuyDockable(sheet)
+		wnd, err := NewWindowForDockable(d, dgroup.Editors)
+		if err != nil {
+			t.Errorf("unable to open the buy dockable in a window of its own: %v", err)
+			return
+		}
+		defer wnd.Dispose()
+		content = wnd.ContentRect().Size
+		hint = d.sizeHint()
+		rowHeight = unison.DefaultLabelTheme.Font.LineHeight() + unison.StdVSpacing
+	})
+	c.True(content.Width >= hint.Width && content.Height >= hint.Height,
+		"the window must be at least as big as the hint %v, not %v", hint, content)
+	c.True(hint.Height > rowHeight*float32(buyHintRows), "the hint must have room for %d rows", buyHintRows)
 }

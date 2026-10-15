@@ -67,6 +67,7 @@ func NewEquipmentTableDockable(filePath string, equipment []*gurps.Equipment) *T
 		NewOtherEquipmentItemID, NewOtherEquipmentContainerItemID, NewOtherEquipmentGroupItemID)
 	InstallContainerConversionHandlers(d, d, d.table)
 	installEquipmentContainerConversionHandlers(d, d.table, d)
+	installBuyEquipmentHandler(d, d.table)
 	d.InstallCmdHandlers(IncrementTechLevelItemID,
 		func(_ any) bool { return canAdjustTechLevel(d.table, fxp.One) },
 		func(_ any) { adjustTechLevel(d, d.table, fxp.One) })

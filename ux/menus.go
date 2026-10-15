@@ -138,6 +138,7 @@ const (
 	CalculatorItemID
 	SellEquipmentItemID
 	BuyEquipmentItemID
+	BuySelectedEquipmentItemID
 	ShoppingRecordItemID
 
 	FirstNonContainerMarker // Keep this block grouped together
@@ -360,6 +361,7 @@ func (s menuBarScope) createItemMenu(f unison.MenuFactory) unison.Menu {
 	m.InsertSeparator(-1, false)
 	m.InsertItem(-1, sellEquipmentAction.NewMenuItem(f))
 	m.InsertItem(-1, buyEquipmentAction.NewMenuItem(f))
+	m.InsertItem(-1, buySelectedEquipmentAction.NewMenuItem(f))
 	m.InsertItem(-1, shoppingRecordAction.NewMenuItem(f))
 	m.InsertSeparator(-1, false)
 	m.InsertItem(-1, newEquipmentModifierAction.NewMenuItem(f))

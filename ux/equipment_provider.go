@@ -122,7 +122,7 @@ func (p *equipmentProvider) Headers() []unison.TableColumnHeader[*Node[*gurps.Eq
 				sheet := p.sheet
 				header.addTrailingButtons(
 					newHeaderButton(svg.ShoppingCart, i18n.Text("Buy equipment"),
-						func() { unison.InvokeTask(sheet.startBuying) }),
+						func() { unison.InvokeTask(func() { showBuyDockable(sheet) }) }),
 					newHeaderButton(svg.ReleaseNotes, i18n.Text("Shopping record"),
 						func() { unison.InvokeTask(func() { showShoppingRecord(sheet) }) }),
 				)
@@ -207,6 +207,7 @@ func (p *equipmentProvider) ContextMenuItems() []ContextMenuItem {
 			contextMenuItemFor(newEquipmentChoiceContainerAction),
 			ContextMenuItem{ID: -1},
 			contextMenuItemFor(sellEquipmentAction),
+			contextMenuItemFor(buySelectedEquipmentAction),
 		)
 	} else {
 		list = append(
@@ -214,6 +215,8 @@ func (p *equipmentProvider) ContextMenuItems() []ContextMenuItem {
 			contextMenuItemFor(newOtherEquipmentAction),
 			contextMenuItemFor(newOtherEquipmentContainerAction),
 			contextMenuItemFor(newOtherEquipmentGroupAction),
+			ContextMenuItem{ID: -1},
+			contextMenuItemFor(buySelectedEquipmentAction),
 		)
 	}
 	return AppendDefaultContextMenuItems(list)

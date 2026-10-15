@@ -71,13 +71,14 @@ func TestEveryControlHasAnAccessibleName(t *testing.T) {
 	screen.Do(func() { sheet.toggleLayoutEditing() })
 	audit.Check("character sheet layout editing", sheet)
 	screen.Do(func() { sheet.toggleLayoutEditing() })
+	var buy *buyDockable
 	screen.Do(func() {
-		sheet.startBuying()
-		sheet.buyPanel.addItem(eq.Clone(gurps.LibraryFile{}, entity, nil, gurps.Duplicate))
-		sheet.buyPanel.Sync()
+		buy = showBuyDockable(sheet)
+		buy.addItem(eq.Clone(gurps.LibraryFile{}, entity, nil, gurps.Duplicate))
+		buy.Sync()
 	})
-	audit.Check("character sheet buying", sheet)
-	screen.Do(func() { sheet.stopBuying() })
+	audit.Check("buy dockable", buy)
+	screen.Do(func() { buy.discardAndClose() })
 
 	// The dialogs run a nested modal loop, so each is posted rather than run through Do, checked in its own window,
 	// and canceled.

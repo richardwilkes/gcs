@@ -31,6 +31,7 @@ var (
 	applyModifierAction            *unison.Action
 	applyTemplateAction            *unison.Action
 	buyEquipmentAction             *unison.Action
+	buySelectedEquipmentAction     *unison.Action
 	calculatorAction               *unison.Action
 	clearPortraitAction            *unison.Action
 	clearSourceAction              *unison.Action
@@ -237,8 +238,9 @@ func registerActions() {
 		},
 	})
 	buyEquipmentAction = registerSheetAction("buy.eqp", BuyEquipmentItemID, i18n.Text("Buy Equipment…"),
-		unison.KeyBinding{}, (*Sheet).startBuying)
-	buyEquipmentAction.EnabledCallback = sheetActionEnabledWhen((*Sheet).canStartBuying)
+		unison.KeyBinding{}, func(sheet *Sheet) { showBuyDockable(sheet) })
+	buySelectedEquipmentAction = registerFocusActionWithContextTitle("buy.selected", BuySelectedEquipmentItemID,
+		i18n.Text("Buy Selected Equipment…"), i18n.Text("Buy…"), unison.KeyBinding{})
 	calculatorAction = registerKeyBindableAction("calculator", &unison.Action{
 		ID:              CalculatorItemID,
 		Title:           i18n.Text("Calculators"),
@@ -737,15 +739,6 @@ func activeUndoManager() *unison.UndoManager {
 
 func actionEnabledForSheet(_ *unison.Action, _ any) bool {
 	return ActiveSheet() != nil
-}
-
-// sheetActionEnabledWhen returns an enabled callback for a sheet action that also requires the active sheet to pass the
-// check.
-func sheetActionEnabledWhen(check func(*Sheet) bool) func(*unison.Action, any) bool {
-	return func(_ *unison.Action, _ any) bool {
-		s := ActiveSheet()
-		return s != nil && check(s)
-	}
 }
 
 func showWebPage(uri string) {

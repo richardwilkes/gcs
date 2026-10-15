@@ -63,7 +63,6 @@ type Sheet struct {
 	page                 *Page
 	blocks               map[string]unison.Paneler
 	layoutEditor         *sheetLayoutEditor
-	buyPanel             *buyPanel
 	layoutButton         *unison.Button
 	layoutButtonGroup    *unison.Group
 	unsettledNotice      *unison.Tag
@@ -341,11 +340,12 @@ func (s *Sheet) keyToPanel(key *uti.DataType) *unison.Panel {
 	var p unison.Paneler
 	switch key {
 	case equipmentDragKey:
-		if s.buying() {
-			p = s.buyPanel
-		} else {
-			p = s.CarriedEquipment.Table
+		if d := buyDockableFor(s); d != nil {
+			// Equipment dropped anywhere on a sheet that is buying is to be bought, so the drag goes to the buy
+			// dockable, wherever it is docked (see buyDockable.claimsDrag).
+			return d.AsPanel()
 		}
+		p = s.CarriedEquipment.Table
 	case skillDragKey:
 		p = s.Skills.Table
 	case spellDragKey:
@@ -434,13 +434,6 @@ func (s *Sheet) buildLayout() {
 		}
 	}
 	layout := s.entity.SheetSettings.Layout
-	if s.buying() {
-		s.buyPanel.RemoveFromParent()
-		if !layout.Contains(gurps.BlockEquipmentKey) {
-			// Nothing would show the buy panel, which would leave no way back to the carried equipment.
-			s.buyPanel = nil
-		}
-	}
 	s.page.RemoveAllChildren()
 	for _, band := range buildLayoutBands(layout.Root, s.layoutLeaf) {
 		s.page.AddChild(band)
@@ -486,16 +479,9 @@ func (s *Sheet) layoutLeaf(key string) unison.Paneler {
 	case gurps.BlockSpellsKey:
 		return syncOrRebuildList(&s.Spells, func() *PageList[*gurps.Spell] { return NewSpellsPageList(s, s.entity) })
 	case gurps.BlockEquipmentKey:
-		list := syncOrRebuildList(&s.CarriedEquipment, func() *PageList[*gurps.Equipment] {
+		return syncOrRebuildList(&s.CarriedEquipment, func() *PageList[*gurps.Equipment] {
 			return NewCarriedEquipmentPageList(s, s.entity)
 		})
-		if s.buying() {
-			// The list is still kept up to date, since everything that reaches for all ten lists expects to find it,
-			// but the buy panel stands in for it on the page.
-			s.buyPanel.RemoveFromParent()
-			return s.buyPanel
-		}
-		return list
 	case gurps.BlockOtherEquipmentKey:
 		return syncOrRebuildList(&s.OtherEquipment, func() *PageList[*gurps.Equipment] {
 			return NewOtherEquipmentPageList(s, s.entity)
@@ -530,9 +516,6 @@ func derivedListLeaf[T gurps.Node[T]](s *Sheet, list **PageList[T], build func()
 // layoutLeaf, it neither creates nor synchronizes anything, so it is what the layout editor maps a panel found on the
 // page back to a block key with.
 func (s *Sheet) blockPanel(key string) unison.Paneler {
-	if key == gurps.BlockEquipmentKey && s.buying() {
-		return s.buyPanel
-	}
 	if gurps.IsListBlockKey(key) {
 		return s.list(key)
 	}
@@ -653,48 +636,6 @@ func (s *Sheet) layoutEditing() bool {
 	return s.layoutEditor != nil
 }
 
-// buying reports whether the buy panel stands in for the carried equipment list.
-func (s *Sheet) buying() bool {
-	return s.buyPanel != nil
-}
-
-// canStartBuying reports whether the buy panel may take the place of the carried equipment list: it hasn't already,
-// the layout shows the list, and the layout isn't being edited.
-func (s *Sheet) canStartBuying() bool {
-	return !s.buying() && s.entity.SheetSettings.Layout.Contains(gurps.BlockEquipmentKey) && !s.layoutEditing()
-}
-
-// startBuying puts the buy panel in place of the carried equipment list, if it can (see canStartBuying). The keyboard
-// focus, if it was in the list, which leaves the page, moves to the first field of the panel, since the rebuild would
-// otherwise put it at the top of the sheet.
-func (s *Sheet) startBuying() {
-	if s.canStartBuying() {
-		s.buyPanel = newBuyPanel(s)
-		hadFocus := false
-		if list := s.CarriedEquipment; list != nil && list.Parent() != nil {
-			s.buyPanel.holdHeight(list.FrameRect().Height)
-			if wnd := s.Window(); wnd != nil {
-				if focus := wnd.CurrentFocus(); focus != nil {
-					hadFocus = unison.AncestorIsOrSelf(focus, list)
-				}
-			}
-		}
-		s.Rebuild(true)
-		if hadFocus {
-			FocusFirstContent(s.toolbar, s.buyPanel)
-		}
-	}
-}
-
-// stopBuying puts the carried equipment list back in place of the buy panel.
-func (s *Sheet) stopBuying() {
-	if s.buying() {
-		s.buyPanel.RemoveFromParent()
-		s.buyPanel = nil
-		s.Rebuild(true)
-	}
-}
-
 // showsBlock returns true if the layout shows the block with the key on the page.
 func (s *Sheet) showsBlock(key string) bool {
 	return s.entity.SheetSettings.Layout.Contains(key)
@@ -729,9 +670,9 @@ func (s *Sheet) onPageTraits() *PageList[*gurps.Trait] {
 }
 
 // carriedEquipmentCreator returns the list the "New Carried Equipment" commands add to, or nil while the layout leaves
-// it off the page or the buy panel stands in for it, which disables them (see onPageCreator).
+// it off the page, which disables them (see onPageCreator).
 func (s *Sheet) carriedEquipmentCreator() itemCreator {
-	if s.buying() || !s.showsBlock(gurps.BlockEquipmentKey) {
+	if !s.showsBlock(gurps.BlockEquipmentKey) {
 		return nil
 	}
 	return s.CarriedEquipment
