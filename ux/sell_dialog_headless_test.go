@@ -878,7 +878,8 @@ func TestSellDialogShowsTheSaleAgainWhenASavedEditorChangesIt(t *testing.T) {
 
 // TestSellDialogClosesTheEditorOfMoneyAnUnequippedCoinMergesInto checks that the dialog predicts the merge of a payout
 // as the sale makes it: a library coin saved without being equipped, as the Dungeon Fantasy RPG coins are, still merges
-// into the equipped pile carried, since what is received is carried equipped, so the editor open on the pile is closed.
+// into the equipped pile carried, since the equipped state plays no part in matching, so the editor open on the pile is
+// closed.
 func TestSellDialogClosesTheEditorOfMoneyAnUnequippedCoinMergesInto(t *testing.T) {
 	c := check.New(t)
 	screen, wnd := uxtest.StartHeadlessWorkspace(t, c)

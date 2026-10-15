@@ -790,11 +790,12 @@ func (d *buyDockable) add(table *unison.Table[*Node[*gurps.Equipment]], list []*
 		gurps.ClearPreconfigured(rows...)
 	}
 	for _, eqp := range rows {
-		// What is bought is enabled and equipped, as the purchase carries it (see gurps.Entity.CommitPurchase), so
-		// that it is priced that way, even when copied from a sheet where it was disabled.
+		// What is bought is enabled, as the purchase carries it (see gurps.Entity.CommitPurchase), so that it is priced
+		// that way, even when copied from a sheet where it was disabled, and unequipped, as the purchase carries it
+		// too.
 		gurps.Traverse(func(one *gurps.Equipment) bool {
 			one.SetDisabled(false)
-			one.Equipped = true
+			one.Equipped = false
 			return false
 		}, false, false, eqp)
 		if eqp.IsGroup() {

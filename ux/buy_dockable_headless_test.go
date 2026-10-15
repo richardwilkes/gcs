@@ -389,7 +389,7 @@ func TestBuyDockableReturnsChange(t *testing.T) {
 		daggerEquipped = entity.CarriedEquipment[1].Equipped
 	})
 	c.Equal(sources[1], pennySource, "the change comes from the sell money in the library")
-	c.True(daggerEquipped, "the item bought is carried equipped")
+	c.False(daggerEquipped, "the item bought is carried unequipped")
 	c.Equal(1, len(record))
 	if len(record) == 1 {
 		entry := record[0]
@@ -1046,7 +1046,7 @@ func TestBuyDockableEnablesWhatItBuys(t *testing.T) {
 		carried := sheet.Entity().CarriedEquipment
 		gurps.Traverse(func(eqp *gurps.Equipment) bool {
 			c.True(eqp.Enabled(), "%s is carried enabled", eqp.Name)
-			c.True(eqp.Equipped, "%s is carried equipped", eqp.Name)
+			c.False(eqp.Equipped, "%s is carried unequipped", eqp.Name)
 			return false
 		}, false, false, carried[2:]...)
 		c.Equal(1, len(carried[3].Children), "the kit is carried with its bandage")
@@ -1310,6 +1310,32 @@ func TestBuyDockableFollowsEditsToTheCarriedEquipment(t *testing.T) {
 	state = readBuyDockable(t, screen, sheet)
 	c.Equal(total, state.summary, "undoing the deletion must restore the payment")
 	c.True(state.finalizeOn)
+}
+
+// TestBuyMoreOfUnequippedCarriedEquipment checks the purchase of more of something carried unequipped, such as bolts in
+// a quiver, from the sheet's own carried list: what is bought merges into it, since the equipped state plays no part in
+// matching, and leaves it unequipped.
+func TestBuyMoreOfUnequippedCarriedEquipment(t *testing.T) {
+	c := check.New(t)
+	var bolts *gurps.Equipment
+	screen, _, sheet := buyTestSheet(t, c, func(entity *gurps.Entity) []*gurps.Equipment {
+		bolts = buyTestItem(entity, "Crossbow Bolt", "2", 20)
+		bolts.Equipped = false
+		return append(buyTestCoins(entity, 7, 11), bolts)
+	})
+	screen.Do(func() {
+		table := sheet.CarriedEquipment.Table
+		table.SelectByIndex(2)
+		table.PerformCmd(table, BuySelectedEquipmentItemID)
+	})
+	state := readBuyDockable(t, screen, sheet)
+	c.Equal([]string{"20 | Crossbow Bolt | $2 each | Total $40"}, state.rows)
+	screen.Do(func() { buyDockableFor(sheet).finalize.Click() })
+	c.Equal([]string{"Silver Eagle ×5", "Copper Penny ×11", "Crossbow Bolt ×40"}, buyTestCarried(screen, sheet),
+		"the bolts bought merge into the unequipped bolts carried")
+	var equipped bool
+	screen.Do(func() { equipped = bolts.Equipped })
+	c.False(equipped, "the bolts stay unequipped")
 }
 
 // TestBuySelectedEquipmentCommand checks the way to buy without dragging: an equipment list's menu offers Buy, which
@@ -1698,7 +1724,8 @@ func TestPurchaseDialog(t *testing.T) {
 	state := read(dialog, fields)
 	c.Equal([]string{"2", "5"}, state.spend, "the dialog starts from the automatic payment")
 	contains(state, "Money Item", "Carried", "Value Each", "Spend", "Silver Eagle", "7", "$20", "Copper Penny", "11",
-		"$1", "Buying Longbow ×1 for $45.\nThe money-tagged items carried pay for it, chosen automatically unless you change the quantities to spend.",
+		"$1", "Buying Longbow ×1 for $45.",
+		"The money-tagged items carried pay for it, chosen automatically unless you change the quantities to spend.",
 		"Owed: $45", "Spending: $45", "Change due: $0")
 	c.True(state.okOn)
 	c.False(state.automaticOn, "the automatic payment is what is chosen to begin with")

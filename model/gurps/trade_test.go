@@ -135,9 +135,10 @@ func TestMergeMatches(t *testing.T) {
 	same := base.Clone(LibraryFile{}, nil, nil, Duplicate)
 	same.Quantity = fxp.Ten
 	same.Source = Source{}
+	same.Equipped = !base.Equipped
 	same.ThirdParty = nil
 	c.NotEqual(base.TID, same.TID)
-	c.True(base.MergeMatches(same), "only the ID, quantity, source and third-party data differ")
+	c.True(base.MergeMatches(same), "only the ID, quantity, source, equipped state and third-party data differ")
 	c.True(same.MergeMatches(base))
 	c.False(base.MergeMatches(nil))
 	c.False((*Equipment)(nil).MergeMatches(base))
@@ -165,7 +166,6 @@ func TestMergeMatches(t *testing.T) {
 		{name: "weapon hidden", change: func(eqp *Equipment) { eqp.Weapons[0].Hide = true }},
 		{name: "features", change: func(eqp *Equipment) { eqp.Features = append(eqp.Features, NewDRBonus()) }},
 		{name: "weight ignored for skills", change: func(eqp *Equipment) { eqp.WeightIgnoredForSkills = true }},
-		{name: "equipped", change: func(eqp *Equipment) { eqp.Equipped = false }},
 		{name: "level", change: func(eqp *Equipment) { eqp.Level = fxp.Three }},
 		{name: "uses", change: func(eqp *Equipment) { eqp.Uses = 3 }},
 		{name: "rated strength", change: func(eqp *Equipment) { eqp.RatedST = fxp.Eleven }},
@@ -433,7 +433,6 @@ func TestCommitPurchase(t *testing.T) {
 	library := LibraryFile{Library: "Lib", Path: "Gear.eqp"}
 	boughtRope := rope.Clone(library, e, nil, Reference)
 	lantern := newEquipmentItem("Lantern", "15", "2 lb")
-	lantern.Equipped = false
 	boughtLantern := lantern.Clone(library, e, nil, Reference)
 	when := mustTime(t, "2026-10-13T09:40:00Z")
 
@@ -453,17 +452,18 @@ func TestCommitPurchase(t *testing.T) {
 	c.Equal(1, len(pouch.Children), "money spent in full is removed")
 	c.True(pouch.Children[0] == eagles)
 	c.Equal(fxp.Three, rope.Quantity, "a bought item merges into the carried item it matches")
+	c.True(rope.Equipped, "merging into an equipped item leaves it equipped")
 	c.Equal(4, len(e.CarriedEquipment))
 	addedLantern := e.CarriedEquipment[2]
 	c.Equal("Lantern", addedLantern.Name)
 	c.Equal(fxp.One, addedLantern.Quantity, "an item is bought at least once")
-	c.True(addedLantern.Equipped, "a bought item is carried equipped")
+	c.False(addedLantern.Equipped, "a bought item is carried unequipped")
 	c.Equal(Source{LibraryFile: library, TID: lantern.TID}, addedLantern.Source, "a bought item keeps its source")
 	c.True(addedLantern.DataOwner() == DataOwner(e))
 	addedPennies := e.CarriedEquipment[3]
 	c.Equal("Copper Penny", addedPennies.Name)
 	c.Equal(fxp.FromInteger(6), addedPennies.Quantity, "change with nothing to merge into is carried")
-	c.True(addedPennies.Equipped)
+	c.True(addedPennies.Equipped, "change is carried equipped")
 
 	c.True(tid.IsKindAndValid(entry.ID, kinds.ShoppingRecord))
 	c.Equal(ShoppingBought, entry.Kind)
@@ -481,6 +481,34 @@ func TestCommitPurchase(t *testing.T) {
 	}, entry.Money)
 	c.Equal(fxp.FromInteger(25), entry.Exchanged, "the money exchanged is what was paid less the change")
 	c.Equal([]*ShoppingRecordEntry{entry}, e.ShoppingRecord)
+}
+
+// TestCommitPurchaseMergesWhateverTheEquippedState checks that what is bought, and the change, merges into a carried
+// match whether or not either is equipped, and that the match keeps its equipped state.
+func TestCommitPurchaseMergesWhateverTheEquippedState(t *testing.T) {
+	c := check.New(t)
+	e := NewEntity()
+	bolts := withQuantity(newEquipmentItem("Crossbow Bolt", "2", "0.06 lb"), "20")
+	bolts.Equipped = false
+	arrows := withQuantity(newEquipmentItem("Arrow", "2", "0.1 lb"), "10")
+	copper := denomination("Copper Penny", "1")
+	pennies := withQuantity(copper.Clone(LibraryFile{}, nil, nil, Duplicate), "5")
+	pennies.Equipped = false
+	carry(e, nil, bolts, arrows, pennies)
+	boughtBolts := bolts.Clone(LibraryFile{}, e, nil, Reference)
+	boughtBolts.Equipped = true
+	boughtArrows := arrows.Clone(LibraryFile{}, e, nil, Reference)
+	boughtArrows.Equipped = false
+
+	e.CommitPurchase([]PurchaseItem{
+		{Equipment: boughtBolts, Quantity: fxp.FromInteger(20)},
+		{Equipment: boughtArrows, Quantity: fxp.Ten},
+	}, nil, []Payout{{Money: copper, Quantity: 3}}, true, "Ammunition", mustTime(t, "2026-10-15T12:00:00Z"))
+
+	c.Equal([]string{"Crossbow Bolt ×40", "Arrow ×20", "Copper Penny ×8"}, describeCarried(e))
+	c.False(bolts.Equipped, "an unequipped match stays unequipped")
+	c.True(arrows.Equipped, "an equipped match stays equipped")
+	c.False(pennies.Equipped, "unequipped money stays unequipped")
 }
 
 func TestChangeFor(t *testing.T) {
@@ -1101,8 +1129,9 @@ func TestCommitSaleSkipsDisabledEquipment(t *testing.T) {
 }
 
 // TestCommitPurchaseEnablesWhatIsBought checks that a purchase enables what it buys, along with anything it contains,
-// before pricing, matching and carrying it, since it may have been copied from a sheet where it was disabled, and that
-// nothing merges into a carried match held by a disabled container, which counts as if it weren't on the sheet.
+// before pricing, matching and carrying it, since it may have been copied from a sheet where it was disabled, carries
+// it unequipped, and that nothing merges into a carried match held by a disabled container, which counts as if it
+// weren't on the sheet.
 func TestCommitPurchaseEnablesWhatIsBought(t *testing.T) {
 	c := check.New(t)
 	e := NewEntity()
@@ -1121,7 +1150,6 @@ func TestCommitPurchaseEnablesWhatIsBought(t *testing.T) {
 	kit.SetDisabled(true)
 	bandage := newEquipmentItem("Bandage", "2", "0")
 	bandage.SetDisabled(true)
-	bandage.Equipped = false
 	carry(e, kit, bandage)
 	boughtKit := kit.Clone(library, e, nil, Reference)
 	c.True(boughtKit.IsDisabled() && boughtKit.Children[0].IsDisabled(), "a copy for a sheet keeps the flags")
@@ -1136,7 +1164,7 @@ func TestCommitPurchaseEnablesWhatIsBought(t *testing.T) {
 		"the rope merges into the enabled rope once enabled itself; the torch doesn't merge into the disabled sack")
 	Traverse(func(eqp *Equipment) bool {
 		c.True(eqp.Enabled(), "%s is carried enabled", eqp.Name)
-		c.True(eqp.Equipped, "%s is carried equipped", eqp.Name)
+		c.False(eqp.Equipped, "%s is carried unequipped", eqp.Name)
 		return false
 	}, false, false, e.CarriedEquipment[2:]...)
 	c.Equal([]ShoppingRecordItem{

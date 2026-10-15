@@ -68,13 +68,13 @@ func (e *Entity) SellMoneyItems() []*Equipment {
 }
 
 // MergeMatches returns true if other may be merged into this equipment by adding its quantity to this one's: neither is
-// a container, and they match in everything but their IDs, quantities, sources, open states and third-party data.
+// a container, and they match in everything but their IDs, quantities, sources, open states, equipped states and
+// third-party data.
 func (e *Equipment) MergeMatches(other *Equipment) bool {
 	if e == nil || other == nil || e.Container() || other.Container() {
 		return false
 	}
 	return Hash64(e) == Hash64(other) &&
-		e.Equipped == other.Equipped &&
 		e.Level == other.Level &&
 		e.Uses == other.Uses &&
 		e.RatedST == other.RatedST &&
@@ -175,8 +175,8 @@ func (e *Equipment) containerCopies() fxp.Int {
 // without fractions (see tradeTakes). Items that are not carried or not enabled are skipped, as are those held by
 // another item in the list, since selling a container sells what it holds. Each payout's Money is a denomination from
 // SellMoneyItems: when merge is true, its quantity is added to the first carried item it MergeMatches, if any, as
-// matched before the items are taken out (see MergeTarget), and otherwise a copy of it is carried, enabled and equipped
-// (see addToCarried).
+// matched before the items are taken out (see MergeTarget), which keeps its equipped state, and otherwise a copy of it
+// is carried, enabled and equipped (see addToCarried).
 func (e *Entity) CommitSale(items []SaleItem, payouts []Payout, merge bool, name string, when jio.Time) *ShoppingRecordEntry {
 	entry := &ShoppingRecordEntry{When: when, Name: name, Kind: ShoppingSold}
 	takes := e.saleTakes(items)
@@ -232,11 +232,12 @@ func (e *Entity) paymentTakes(payments []Payout) *tradeTakes {
 // item, such as one from MoneyItems, found again by its ID, since the pointer may be stale. No more is spent than its
 // TradeQuantity; spending less leaves the copies of the containers holding it with the rest, splitting the containers
 // apart when the copies can't share it without fractions (see tradeTakes), and a money item with none left is removed.
-// Each item is bought at least once, and a group just once. It is enabled and equipped first, along with anything it
-// contains, whatever it was copied from, so that it is priced, matched and carried as something in use. Each change
-// payout's Money is a denomination from ChangeFor: one of the sheet's sell money, or a copy of money paid. When merge
-// is true, each item and change payout adds its quantity to the first carried item it MergeMatches, if any (see
-// MergeTarget); otherwise a copy of it is carried (see addToCarried).
+// Each item is bought at least once, and a group just once. It is enabled first, along with anything it contains,
+// whatever it was copied from, so that it is priced as something in use, but it is carried unequipped, since what is
+// bought isn't yet in use. Each change payout's Money is a denomination from ChangeFor: one of the sheet's sell money,
+// or a copy of money paid, and is carried enabled and equipped. When merge is true, each item and change payout adds
+// its quantity to the first carried item it MergeMatches, if any (see MergeTarget), which keeps its equipped state;
+// otherwise a copy of it is carried (see addToCarried).
 func (e *Entity) CommitPurchase(items []PurchaseItem, payments, change []Payout, merge bool, name string, when jio.Time) *ShoppingRecordEntry {
 	entry := &ShoppingRecordEntry{When: when, Name: name, Kind: ShoppingBought}
 	takes := e.paymentTakes(payments)
@@ -252,7 +253,7 @@ func (e *Entity) CommitPurchase(items []PurchaseItem, payments, change []Payout,
 		if eqp == nil {
 			continue
 		}
-		enableAndEquip(eqp)
+		prepareToCarry(eqp, false)
 		qty := fxp.One
 		if !eqp.IsGroup() {
 			qty = max(fxp.One, item.Quantity)
@@ -266,7 +267,7 @@ func (e *Entity) CommitPurchase(items []PurchaseItem, payments, change []Payout,
 		if merge {
 			target = e.MergeTarget(eqp, nil)
 		}
-		e.addToCarried(eqp, qty, target)
+		e.addToCarried(eqp, qty, target, false)
 	}
 	entry.Exchanged = (paid - e.receiveMoney(entry, change, e.mergeTargets(change, merge, nil))).Abs()
 	e.Recalculate()
@@ -321,7 +322,8 @@ func (e *Entity) ChangeFor(over fxp.Int, sellMoney []*Equipment, payments []Payo
 }
 
 // receiveMoney adds the money to the carried equipment, each payout going to its entry in targets or, when that is nil,
-// being carried anew (see addToCarried), recording each in the entry, and returns its total value.
+// being carried anew, enabled and equipped (see addToCarried), recording each in the entry, and returns its total
+// value.
 func (e *Entity) receiveMoney(entry *ShoppingRecordEntry, money []Payout, targets []*Equipment) fxp.Int {
 	var total fxp.Int
 	for i, one := range money {
@@ -332,34 +334,25 @@ func (e *Entity) receiveMoney(entry *ShoppingRecordEntry, money []Payout, target
 		value := one.Money.AdjustedValue()
 		entry.Money = append(entry.Money, ShoppingRecordItem{Name: one.Money.String(), Quantity: qty, Value: value})
 		total = fxp.SaturatingAdd(total, value.Mul(qty))
-		e.addToCarried(one.Money, qty, targets[i])
+		e.addToCarried(one.Money, qty, targets[i], true)
 	}
 	return total
 }
 
 // PayoutMergeTargets returns the carried item each payout's money would merge into were the payouts received now with
 // merging on, as CommitSale and CommitPurchase match them (see MergeTarget), passing over the IDs in except, or nil for
-// each that would be carried anew. The money is matched as it will be when carried, enabled and equipped, but is left
-// as it is, since the caller may go on comparing it with other copies of it.
+// each that would be carried anew. Nothing is changed.
 func (e *Entity) PayoutMergeTargets(payouts []Payout, except map[tid.TID]bool) []*Equipment {
-	copies := make([]Payout, len(payouts))
-	for i, payout := range payouts {
-		if payout.Money != nil {
-			copies[i] = Payout{Money: payout.Money.Clone(LibraryFile{}, e, nil, Duplicate), Quantity: payout.Quantity}
-		}
-	}
-	return e.mergeTargets(copies, true, except)
+	return e.mergeTargets(payouts, true, except)
 }
 
 // mergeTargets returns the MergeTarget of each payout's money, passing over the IDs in except, or nil for each when
-// merge is false. The money is marked enabled and equipped first, as it will be when carried, since MergeMatches
-// compares both.
+// merge is false.
 func (e *Entity) mergeTargets(payouts []Payout, merge bool, except map[tid.TID]bool) []*Equipment {
 	targets := make([]*Equipment, len(payouts))
 	if merge {
 		for i, payout := range payouts {
 			if payout.Money != nil && payout.Quantity > 0 {
-				enableAndEquip(payout.Money)
 				targets[i] = e.MergeTarget(payout.Money, except)
 			}
 		}
@@ -384,21 +377,21 @@ func (e *Entity) MergeTarget(eqp *Equipment, except map[tid.TID]bool) *Equipment
 	return match
 }
 
-// enableAndEquip marks the equipment and anything it contains as enabled and equipped, as carried equipment normally
-// is. Something bought or received may have been copied from a sheet where it was disabled.
-func enableAndEquip(eqp *Equipment) {
+// prepareToCarry marks the equipment and anything it contains as enabled, since something bought or received may have
+// been copied from a sheet where it was disabled, and as equipped or not.
+func prepareToCarry(eqp *Equipment, equipped bool) {
 	Traverse(func(one *Equipment) bool {
 		one.SetDisabled(false)
-		one.Equipped = true
+		one.Equipped = equipped
 		return false
 	}, false, false, eqp)
 }
 
-// addToCarried marks the equipment and anything it contains as enabled and equipped (see enableAndEquip), then adds qty
-// to the target, a carried item it MergeMatches, or, when that is nil, carries a copy of the equipment with a quantity
-// of qty.
-func (e *Entity) addToCarried(eqp *Equipment, qty fxp.Int, target *Equipment) {
-	enableAndEquip(eqp)
+// addToCarried marks the equipment and anything it contains as enabled and as equipped or not (see prepareToCarry),
+// then adds qty to the target, a carried item it MergeMatches, which keeps its own equipped state, or, when that is
+// nil, carries a copy of the equipment with a quantity of qty.
+func (e *Entity) addToCarried(eqp *Equipment, qty fxp.Int, target *Equipment, equipped bool) {
+	prepareToCarry(eqp, equipped)
 	if target != nil {
 		target.Quantity += qty
 		return
