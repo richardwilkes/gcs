@@ -217,6 +217,12 @@ func EntityFromNode[T Node[T]](node T) *Entity {
 	return owner.OwningEntity()
 }
 
+// dropNilNodes returns the list without the nil entries a JSON null in it decodes to, which would otherwise panic the
+// first thing to walk the list.
+func dropNilNodes[T Node[T]](list []T) []T {
+	return slices.DeleteFunc(list, func(one T) bool { return xreflect.IsNil(one) })
+}
+
 // listData is the on-disk form of a standalone list file: the data version and the top-level rows.
 type listData[T any] struct {
 	Version int `json:"version"`
@@ -232,6 +238,7 @@ func loadRows[T Node[T]](fileSystem fs.FS, filePath string, opts ...json.Options
 	if err := jio.LoadVersionedFile(fileSystem, filePath, &data, &data.Version, opts...); err != nil {
 		return nil, err
 	}
+	data.Rows = dropNilNodes(data.Rows)
 	SetDataOwnerAll(nil, data.Rows)
 	ClearTemplatePickerData(data.Rows...)
 	ClearStudy(data.Rows...)
@@ -283,6 +290,7 @@ func finishNodeUnmarshal[T Node[T]](node T, tags *[]string, legacyCategories []s
 		}
 	}
 	if node.Container() {
+		node.SetChildren(dropNilNodes(node.NodeChildren()))
 		for _, child := range node.NodeChildren() {
 			child.SetParent(node)
 		}

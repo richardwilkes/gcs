@@ -16,9 +16,12 @@ import (
 	"github.com/richardwilkes/unison"
 )
 
+// traitLevelExtractor picks out the leveled traits whose level the command may step. A disabled trait is not left out:
+// its levels are plain data, decrementing is the one-step fix for a level above the maximum, which is what disables a
+// trait on a sheet enforcing prerequisites, and a template keeps disabled alternatives whose levels still need setting.
 func traitLevelExtractor(increment bool) func(*gurps.Trait) (*gurps.Trait, bool) {
 	return func(t *gurps.Trait) (*gurps.Trait, bool) {
-		if t != nil && t.Enabled() && t.IsLeveled() && (increment || t.Levels > 0) {
+		if t != nil && t.IsLeveled() && (increment || t.Levels > 0) {
 			return t, true
 		}
 		return nil, false

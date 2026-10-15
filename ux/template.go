@@ -168,6 +168,10 @@ func (t *Template) keyToPanel(key *uti.DataType) *unison.Panel {
 	default:
 		return nil
 	}
+	if !unison.AncestorIs(p, t.content) {
+		// The layout doesn't place the list, so it isn't a drop target and there is nothing to draw feedback over.
+		return nil
+	}
 	return p.AsPanel()
 }
 

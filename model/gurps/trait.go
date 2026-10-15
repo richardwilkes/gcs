@@ -366,6 +366,8 @@ func (t *Trait) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 	}
 	open := fixupLegacyTID(&localData.TID, localData.Type, traitKind) && localData.IsOpen
 	t.TraitData = localData.TraitData
+	t.Modifiers = dropNilNodes(t.Modifiers)
+	t.Weapons = dropNilNodes(t.Weapons)
 	if keepSavedCalc(dec) {
 		t.savedCurrentLevel = savedCalc[savedTraitCalc](localData.Calc).CurrentLevel
 	}

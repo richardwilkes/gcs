@@ -93,6 +93,8 @@ func (l *Loot) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 	if err := json.UnmarshalDecode(dec, &l.LootData); err != nil {
 		return err
 	}
+	l.Equipment = dropNilNodes(l.Equipment)
+	l.Notes = dropNilNodes(l.Notes)
 	if !tid.IsKindAndValid(l.ID, kinds.Loot) {
 		l.ID = tid.MustNewTID(kinds.Loot)
 	}

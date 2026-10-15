@@ -281,6 +281,12 @@ func (e *Entity) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 	if e.Traits == nil && content.OldTraits != nil {
 		e.Traits = content.OldTraits
 	}
+	e.Traits = dropNilNodes(e.Traits)
+	e.Skills = dropNilNodes(e.Skills)
+	e.Spells = dropNilNodes(e.Spells)
+	e.CarriedEquipment = dropNilNodes(e.CarriedEquipment)
+	e.OtherEquipment = dropNilNodes(e.OtherEquipment)
+	e.Notes = dropNilNodes(e.Notes)
 	if !tid.IsKindAndValid(e.ID, kinds.Entity) {
 		e.ID = tid.MustNewTID(kinds.Entity)
 	}
@@ -1863,7 +1869,7 @@ func (e *Entity) Weapons(melee, includeUnequipped, excludeHidden bool) []*Weapon
 		return false
 	}, true, true, e.Traits...)
 	Traverse(func(eqp *Equipment) bool {
-		if eqp.Quantity > 0 && (includeUnequipped || eqp.ReallyEquipped()) {
+		if hasQuantityThroughAncestors(eqp) && (includeUnequipped || eqp.ReallyEquipped()) {
 			for _, w := range eqp.Weapons {
 				if w.IsMelee() == melee && (!excludeHidden || !w.Hide) {
 					w.NotEquipped = !eqp.ReallyEquipped()
@@ -1876,7 +1882,7 @@ func (e *Entity) Weapons(melee, includeUnequipped, excludeHidden bool) []*Weapon
 	}, true, false, e.CarriedEquipment...)
 	if includeUnequipped {
 		Traverse(func(eqp *Equipment) bool {
-			if eqp.Quantity > 0 {
+			if hasQuantityThroughAncestors(eqp) {
 				for _, w := range eqp.Weapons {
 					if w.IsMelee() == melee && (!excludeHidden || !w.Hide) {
 						w.NotEquipped = true

@@ -159,7 +159,8 @@ func (m equipmentMeasure) oneOf(e *Equipment, contents *NumericRange) NumericRan
 
 // contentsOf returns the range of the measure of what a single piece of the container holds, before any reduction the
 // container makes to it. A container that isn't a choice holds all of its children; a choice offers its options (see
-// TemplateChoiceOptions). A disabled child is left out, as if it weren't there.
+// TemplateChoiceOptions). A disabled option, or one inside a disabled group picked from separately, is left out, as if
+// it weren't there.
 //
 // A choice picked by count takes its options as they are, so its range is worked out just as it is for points.
 //
@@ -172,7 +173,7 @@ func (m equipmentMeasure) oneOf(e *Equipment, contents *NumericRange) NumericRan
 func (m equipmentMeasure) contentsOf(e *Equipment) NumericRange {
 	var options []*Equipment
 	for _, one := range TemplateChoiceOptions(e) {
-		if !one.IsDisabled() {
+		if enabledWithin(one, e) {
 			options = append(options, one)
 		}
 	}
@@ -211,6 +212,17 @@ func (m equipmentMeasure) contentsOf(e *Equipment) NumericRange {
 		return bounded
 	}
 	return capNumericRange(bounded, reachable)
+}
+
+// enabledWithin returns true if the option and every group between it and the container holding it are enabled. The
+// container itself is not looked at: what it holds is measured the same whether or not it is in effect.
+func enabledWithin(option, container *Equipment) bool {
+	for p := option; p != nil && p != container; p = p.parent {
+		if p.IsDisabled() {
+			return false
+		}
+	}
+	return true
 }
 
 // capNumericRange returns the part of the range within the limits of another. A range with no part within them, as a

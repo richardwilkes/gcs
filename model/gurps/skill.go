@@ -79,6 +79,7 @@ type SkillAdjustmentProvider interface {
 // SkillLevelStepper is what the shared bodies of IncrementSkillLevel and DecrementSkillLevel need from a skill or
 // spell, so that the point-stepping search lives once rather than in each type.
 type SkillLevelStepper interface {
+	Enabled() bool
 	RawPoints() fxp.Int
 	SetRawPoints(points fxp.Int) bool
 	WildcardDifficulty() bool
@@ -369,6 +370,7 @@ func (s *Skill) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 		return skillKind(container)
 	}) && localData.IsOpen
 	s.SkillData = localData.SkillData
+	s.Weapons = dropNilNodes(s.Weapons)
 	s.Replacements = nameable.Normalize(s.Replacements)
 	s.Defaults = slices.DeleteFunc(s.Defaults, func(one *SkillDefault) bool { return one == nil })
 	if s.TechniqueDefault != nil && s.TechniqueDefault.SkillBased() {
@@ -738,6 +740,9 @@ func (s *Skill) AdjustedDifficulty() AttributeDifficulty {
 // fills it: the notes name each bonus source without saying which row it landed on, so rolling up a container's
 // children would give an unattributed, repetitive pile.
 func (s *Skill) PointsRange(tooltip *xbytes.InsertBuffer) NumericRange {
+	if !s.Enabled() {
+		return NumericRangeOf(0)
+	}
 	if !s.Container() {
 		return NumericRangeOf(s.AdjustedPoints(tooltip))
 	}
@@ -753,6 +758,9 @@ func (s *Skill) PointsRange(tooltip *xbytes.InsertBuffer) NumericRange {
 // its adjusted ones. This is what a template picker counts, since it measures what is being bought rather than what
 // the sheet's bonuses make of it.
 func (s *Skill) RawPointsRange() NumericRange {
+	if !s.Enabled() {
+		return NumericRangeOf(0)
+	}
 	if !s.Container() {
 		return NumericRangeOf(s.RawPoints())
 	}
@@ -768,14 +776,16 @@ func AdjustedPointsForNonContainerSkillOrTechnique(e *Entity, points fxp.Int, na
 	return points
 }
 
-// IncrementSkillLevel adds enough points to increment the skill level to the next level.
+// IncrementSkillLevel adds enough points to increment the skill level to the next level. Containers and disabled
+// skills are left alone.
 func (s *Skill) IncrementSkillLevel() {
 	if !s.Container() {
 		incrementSkillLevel(s)
 	}
 }
 
-// DecrementSkillLevel removes enough points to decrement the skill level to the previous level.
+// DecrementSkillLevel removes enough points to decrement the skill level to the previous level. Containers and
+// disabled skills are left alone.
 func (s *Skill) DecrementSkillLevel() {
 	if !s.Container() {
 		decrementSkillLevel(s)
@@ -801,8 +811,12 @@ func skillLevelStride(p SkillLevelStepper) fxp.Int {
 	return fxp.Four
 }
 
-// incrementSkillLevel is the shared body of Skill.IncrementSkillLevel and Spell.IncrementSkillLevel.
+// incrementSkillLevel is the shared body of Skill.IncrementSkillLevel and Spell.IncrementSkillLevel. A disabled item
+// has no level to step, since AdjustedPoints reports nothing for it, so it is left alone.
 func incrementSkillLevel(p SkillLevelStepper) {
+	if !p.Enabled() {
+		return
+	}
 	basePoints := p.RawPoints().Floor() + fxp.One
 	maxPoints := basePoints + skillLevelStride(p)
 	oldLevel := p.CurrentCalculatedLevel()
@@ -814,9 +828,10 @@ func incrementSkillLevel(p SkillLevelStepper) {
 	}
 }
 
-// decrementSkillLevel is the shared body of Skill.DecrementSkillLevel and Spell.DecrementSkillLevel.
+// decrementSkillLevel is the shared body of Skill.DecrementSkillLevel and Spell.DecrementSkillLevel. A disabled item
+// is left alone for the same reason as in incrementSkillLevel.
 func decrementSkillLevel(p SkillLevelStepper) {
-	if p.RawPoints() <= 0 {
+	if !p.Enabled() || p.RawPoints() <= 0 {
 		return
 	}
 	basePoints := p.RawPoints().Floor()

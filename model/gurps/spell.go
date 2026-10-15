@@ -349,6 +349,7 @@ func (s *Spell) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 		return spellKind(container)
 	}) && localData.IsOpen
 	s.SpellData = localData.SpellData
+	s.Weapons = dropNilNodes(s.Weapons)
 	s.Replacements = nameable.Normalize(s.Replacements)
 	migrateLegacyText(&s.LocalNotes, localData.ExprNotes)
 	s.ClearUnusedFieldsForType()
@@ -645,14 +646,16 @@ func (s *Spell) CalculateLevel() Level {
 		s.CollegeWithReplacements(), s.Tags, s.Difficulty, s.AdjustedPoints(nil))
 }
 
-// IncrementSkillLevel adds enough points to increment the skill level to the next level.
+// IncrementSkillLevel adds enough points to increment the skill level to the next level. Containers and disabled
+// spells are left alone.
 func (s *Spell) IncrementSkillLevel() {
 	if !s.Container() {
 		incrementSkillLevel(s)
 	}
 }
 
-// DecrementSkillLevel removes enough points to decrement the skill level to the previous level.
+// DecrementSkillLevel removes enough points to decrement the skill level to the previous level. Containers and
+// disabled spells are left alone.
 func (s *Spell) DecrementSkillLevel() {
 	if !s.Container() {
 		decrementSkillLevel(s)
@@ -985,6 +988,9 @@ func (s *Spell) AdjustedPoints(tooltip *xbytes.InsertBuffer) fxp.Int {
 // fills it: the notes name each bonus source without saying which row it landed on, so rolling up a container's
 // children would give an unattributed, repetitive pile.
 func (s *Spell) PointsRange(tooltip *xbytes.InsertBuffer) NumericRange {
+	if !s.Enabled() {
+		return NumericRangeOf(0)
+	}
 	if !s.Container() {
 		return NumericRangeOf(s.AdjustedPoints(tooltip))
 	}
@@ -1000,6 +1006,9 @@ func (s *Spell) PointsRange(tooltip *xbytes.InsertBuffer) NumericRange {
 // its adjusted ones. This is what a template picker counts, since it measures what is being bought rather than what
 // the sheet's bonuses make of it.
 func (s *Spell) RawPointsRange() NumericRange {
+	if !s.Enabled() {
+		return NumericRangeOf(0)
+	}
 	if !s.Container() {
 		return NumericRangeOf(s.RawPoints())
 	}

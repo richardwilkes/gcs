@@ -101,3 +101,38 @@ func TestSpellLevelStepping(t *testing.T) {
 	container.IncrementSkillLevel()
 	c.Equal(fxp.Int(0), container.Points)
 }
+
+func TestDisabledSkillLevelStepping(t *testing.T) {
+	c := check.New(t)
+	e := NewEntity()
+	sk := NewSkill(e, nil, false)
+	sk.Name = "Stepping"
+	sk.Difficulty.Attribute = IntelligenceID
+	sk.Difficulty.Difficulty = difficulty.Average
+	e.Skills = append(e.Skills, sk)
+	sk.SetRawPoints(fxp.Eight)
+	sk.Disabled = true
+	sk.DecrementSkillLevel()
+	c.Equal(fxp.Eight, sk.Points, "decrementing a disabled skill must leave its points alone")
+	sk.IncrementSkillLevel()
+	c.Equal(fxp.Eight, sk.Points, "incrementing a disabled skill must leave its points alone")
+
+	// A disabled parent disables the skill, too.
+	sk.Disabled = false
+	container := NewSkill(e, nil, true)
+	container.Disabled = true
+	container.Children = append(container.Children, sk)
+	sk.SetParent(container)
+	sk.DecrementSkillLevel()
+	c.Equal(fxp.Eight, sk.Points, "decrementing a skill under a disabled container must leave its points alone")
+
+	sp := NewSpell(e, nil, false)
+	sp.Name = "Stepping"
+	e.Spells = append(e.Spells, sp)
+	sp.SetRawPoints(fxp.Eight)
+	sp.Disabled = true
+	sp.DecrementSkillLevel()
+	c.Equal(fxp.Eight, sp.Points, "decrementing a disabled spell must leave its points alone")
+	sp.IncrementSkillLevel()
+	c.Equal(fxp.Eight, sp.Points, "incrementing a disabled spell must leave its points alone")
+}

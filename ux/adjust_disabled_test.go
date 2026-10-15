@@ -20,17 +20,12 @@ import (
 	"github.com/richardwilkes/unison/enums/mod"
 )
 
-// A disabled trait, skill, spell or piece of equipment offers none of the increment and decrement adjustments, in
-// either direction, and neither does one inside a disabled container. Disabled equipment can't be equipped or
-// unequipped either.
+// A disabled skill, spell or piece of equipment offers none of the increment and decrement adjustments, in either
+// direction, and neither does one inside a disabled container. Disabled equipment can't be equipped or unequipped
+// either. A trait's levels stay adjustable; see TestTraitLevelsStayAdjustableWhileDisabled.
 func TestAdjustmentsSkipDisabledItems(t *testing.T) {
 	c := check.New(t)
 	entity := gurps.NewEntity()
-
-	trait := gurps.NewTrait(entity, nil, false)
-	trait.CanLevel = true
-	trait.Levels = fxp.Two
-	entity.Traits = []*gurps.Trait{trait}
 
 	skill := gurps.NewSkill(entity, nil, false)
 	skill.Points = fxp.Four
@@ -54,10 +49,6 @@ func TestAdjustmentsSkipDisabledItems(t *testing.T) {
 	type adjustment struct {
 		name    string
 		allowed func() bool
-	}
-	traitChecks := []adjustment{
-		{"trait level up", func() bool { _, ok := traitLevelExtractor(true)(trait); return ok }},
-		{"trait level down", func() bool { _, ok := traitLevelExtractor(false)(trait); return ok }},
 	}
 	skillChecks := []adjustment{
 		{"skill points up", func() bool { _, ok := rawPointsExtractor[*gurps.Skill](true)(skill); return ok }},
@@ -91,16 +82,13 @@ func TestAdjustmentsSkipDisabledItems(t *testing.T) {
 		}
 	}
 
-	expect(traitChecks, true, "enabled")
 	expect(skillChecks, true, "enabled")
 	expect(spellChecks, true, "enabled")
 	expect(eqpChecks, true, "enabled")
 
-	trait.SetDisabled(true)
 	skill.SetDisabled(true)
 	spell.SetDisabled(true)
 	eqp.SetDisabled(true)
-	expect(traitChecks, false, "disabled")
 	expect(skillChecks, false, "disabled")
 	expect(spellChecks, false, "disabled")
 	expect(eqpChecks, false, "disabled")
@@ -108,6 +96,43 @@ func TestAdjustmentsSkipDisabledItems(t *testing.T) {
 	eqp.SetDisabled(false)
 	parent.SetDisabled(true)
 	expect(eqpChecks, false, "inside a disabled container")
+}
+
+// A trait's levels are plain data that no disabling changes the meaning of, so the level commands stay available for a
+// disabled trait: on a sheet enforcing trait prerequisites, decrementing is the one-step fix for a level above the
+// maximum, which is what disabled the trait, and on a template, disabled alternatives are kept on purpose and still
+// need their levels set.
+func TestTraitLevelsStayAdjustableWhileDisabled(t *testing.T) {
+	c := check.New(t)
+	allowed := func(trait *gurps.Trait, increment bool) bool {
+		_, ok := traitLevelExtractor(increment)(trait)
+		return ok
+	}
+
+	entity := gurps.NewEntity()
+	entity.SheetSettings.EnforceTraitPrereqs = true
+	trait := gurps.NewTrait(entity, nil, false)
+	trait.CanLevel = true
+	trait.Levels = fxp.Four
+	trait.MaxLevels = "3"
+	entity.Traits = []*gurps.Trait{trait}
+	entity.Recalculate()
+	c.True(trait.DisabledByPrereqs(), "a level above the maximum disables the trait")
+	c.True(allowed(trait, false), "decrementing the level of a trait its level disabled")
+	c.True(allowed(trait, true), "incrementing the level of a trait its level disabled")
+
+	trait.SetDisabled(true)
+	c.True(allowed(trait, false), "decrementing the level of a trait the user disabled")
+	c.True(allowed(trait, true), "incrementing the level of a trait the user disabled")
+
+	tmpl := gurps.NewTemplate()
+	alternative := gurps.NewTrait(tmpl, nil, false)
+	alternative.CanLevel = true
+	alternative.Levels = fxp.Two
+	alternative.SetDisabled(true)
+	tmpl.Traits = []*gurps.Trait{alternative}
+	c.True(allowed(alternative, false), "decrementing the level of a disabled alternative on a template")
+	c.True(allowed(alternative, true), "incrementing the level of a disabled alternative on a template")
 }
 
 // Clicking the equipped checkmark of disabled equipment is refused, leaving the item and the checkmark as they were.

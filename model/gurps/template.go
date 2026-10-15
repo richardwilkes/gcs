@@ -95,6 +95,11 @@ func (t *Template) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 	if t.Traits == nil && content.OldTraits != nil {
 		t.Traits = content.OldTraits
 	}
+	t.Traits = dropNilNodes(t.Traits)
+	t.Skills = dropNilNodes(t.Skills)
+	t.Spells = dropNilNodes(t.Spells)
+	t.Equipment = dropNilNodes(t.Equipment)
+	t.Notes = dropNilNodes(t.Notes)
 	NormalizeTemplateChoiceContainers(t.Traits...)
 	NormalizeTemplateChoiceContainers(t.Skills...)
 	NormalizeTemplateChoiceContainers(t.Spells...)

@@ -419,6 +419,8 @@ func (e *Equipment) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 	}
 	open := fixupLegacyTID(&localData.TID, localData.Type, equipmentKind) && localData.IsOpen
 	e.EquipmentData = localData.EquipmentData
+	e.Modifiers = dropNilNodes(e.Modifiers)
+	e.Weapons = dropNilNodes(e.Weapons)
 	e.Replacements = nameable.Normalize(e.Replacements)
 	if e.BaseValue == "" && localData.Value != 0 {
 		e.BaseValue = localData.Value.String()

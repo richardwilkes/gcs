@@ -1736,3 +1736,35 @@ func TestNewEntityFromFileDropsNullPointsRecords(t *testing.T) {
 		c.Equal(fxp.FromInteger(150), e.PointsRecord[0].Points)
 	}
 }
+
+// TestEntityWeaponsLeaveOutItemsInEmptyContainers verifies that the weapons of equipment inside a container none of
+// which is carried are left out, as the item itself is, whether or not unequipped weapons are included and whichever
+// list the container is in.
+func TestEntityWeaponsLeaveOutItemsInEmptyContainers(t *testing.T) {
+	c := check.New(t)
+	e := NewEntity()
+	natural := len(e.Weapons(true, true, false))
+	swords := make([]*Equipment, 0, 2)
+	for _, carried := range []bool{true, false} {
+		box := NewEquipment(e, nil, true)
+		box.Name = "Box"
+		sword := NewEquipment(e, box, false)
+		sword.Name = "Sword"
+		sword.Weapons = []*Weapon{NewWeapon(sword, true)}
+		box.Children = []*Equipment{sword}
+		if carried {
+			e.CarriedEquipment = append(e.CarriedEquipment, box)
+		} else {
+			e.OtherEquipment = append(e.OtherEquipment, box)
+		}
+		swords = append(swords, sword)
+	}
+	c.Equal(natural+2, len(e.Weapons(true, true, false)), "both swords' weapons are in play while the boxes are carried")
+	c.Equal(natural+1, len(e.Weapons(true, false, false)), "only the carried sword's weapon is equipped")
+
+	for _, sword := range swords {
+		sword.parent.Quantity = 0
+	}
+	c.Equal(natural, len(e.Weapons(true, true, false)), "a sword in a box none of which is carried is as if absent")
+	c.Equal(natural, len(e.Weapons(true, false, false)))
+}

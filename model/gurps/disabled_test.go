@@ -14,7 +14,9 @@ import (
 	"testing"
 	"testing/fstest"
 
+	"github.com/richardwilkes/gcs/v5/model/criteria"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/picker"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/stlimit"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/toolbox/v2/check"
@@ -288,4 +290,70 @@ func TestLoadingOffASheetClearsDisabled(t *testing.T) {
 	traits, err := NewTraitsFromFile(fstest.MapFS{"list.adq": &fstest.MapFile{Data: list}}, "list.adq")
 	c.NoError(err)
 	c.True(traits[0].IsDisabled(), "a trait list keeps a disabled trait")
+}
+
+// TestDisabledGroupIsLeftOutOfAnEquipmentChoice verifies that the contents of a disabled group picked from separately
+// are left out of the choice's range, just as a disabled option sitting directly in the choice is.
+func TestDisabledGroupIsLeftOutOfAnEquipmentChoice(t *testing.T) {
+	c := check.New(t)
+	choice := NewEquipmentChoiceContainer(nil, nil)
+	choice.TemplatePicker.Type = picker.Count
+	choice.TemplatePicker.Qualifier.Compare = criteria.EqualsNumber
+	choice.TemplatePicker.Qualifier.Qualifier = fxp.One
+	group := NewEquipmentGroup(nil, choice)
+	group.PickSeparately = true
+	item(group, "Rope", "10", "1 lb")
+	choice.Children = append(choice.Children, group)
+	item(choice, "Knife", "20", "2 lb")
+	c.Equal("10~20", choice.ExtendedValueRange().String())
+	c.Equal("1~2 lb", FormatWeightRange(choice.ExtendedWeightRange(fxp.Pound), fxp.Pound.Format))
+
+	group.SetDisabled(true)
+	c.Equal("20", choice.ExtendedValueRange().String(), "the contents of a disabled group are not options")
+	c.Equal("2 lb", FormatWeightRange(choice.ExtendedWeightRange(fxp.Pound), fxp.Pound.Format))
+}
+
+// TestDisabledContainersWithPickersCostNothing verifies that a disabled skill or spell container reports no points
+// through its ranges either, whatever its picker would be worth, so the points column agrees with the points total.
+func TestDisabledContainersWithPickersCostNothing(t *testing.T) {
+	c := check.New(t)
+	e := NewEntity()
+	skills := NewSkill(e, nil, true)
+	skills.TemplatePicker.Type = picker.Points
+	skills.TemplatePicker.Qualifier.Compare = criteria.EqualsNumber
+	skills.TemplatePicker.Qualifier.Qualifier = fxp.FromInteger(20)
+	brawling := NewSkill(e, skills, false)
+	brawling.Points = fxp.Four
+	skills.Children = []*Skill{brawling}
+	e.Skills = append(e.Skills, skills)
+	spells := NewSpell(e, nil, true)
+	spells.TemplatePicker = skills.TemplatePicker
+	light := NewSpell(e, spells, false)
+	light.Points = fxp.One
+	spells.Children = []*Spell{light}
+	e.Spells = append(e.Spells, spells)
+	e.Recalculate()
+	twenty := NumericRangeOf(fxp.FromInteger(20))
+	c.Equal(twenty, skills.PointsRange(nil))
+	c.Equal(twenty, skills.RawPointsRange())
+	c.Equal(twenty, spells.PointsRange(nil))
+	c.Equal(twenty, spells.RawPointsRange())
+
+	skills.SetDisabled(true)
+	spells.SetDisabled(true)
+	e.Recalculate()
+	none := NumericRangeOf(0)
+	c.Equal(none, skills.PointsRange(nil), "a disabled skill container's range holds its AdjustedPoints")
+	c.Equal(none, skills.RawPointsRange())
+	c.Equal(none, brawling.RawPointsRange(), "a skill under a disabled container is counted as nothing")
+	c.Equal(none, spells.PointsRange(nil), "a disabled spell container's range holds its AdjustedPoints")
+	c.Equal(none, spells.RawPointsRange())
+	c.Equal(none, light.RawPointsRange(), "a spell under a disabled container is counted as nothing")
+
+	// A disabled child of an enabled container is counted as nothing, as AdjustedPoints counts it.
+	skills.SetDisabled(false)
+	skills.TemplatePicker = TemplatePicker{}
+	brawling.SetDisabled(true)
+	c.Equal(none, skills.PointsRange(nil))
+	c.Equal(none, skills.RawPointsRange())
 }

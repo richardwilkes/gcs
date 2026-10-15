@@ -10,10 +10,9 @@
 package ux
 
 import (
-	"strings"
-
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/toolbox/v2/errs"
+	"github.com/richardwilkes/unison"
 )
 
 // DecimalField is a field that holds a decimal (fixed-point) number.
@@ -36,14 +35,23 @@ func NewDecimalField(targetMgr *TargetMgr, targetKey, undoTitle string, get func
 }
 
 // refuseFractions has the field refuse, with a beep, a typed decimal point, and treat text holding a fractional part,
-// such as pasted text, as invalid, for a quantity that counts whole things, such as the copies of a container.
+// such as pasted text, as invalid, for a quantity that counts whole things, such as the copies of a container. Text
+// that spells a whole number with a decimal point, such as pasted "3.0", is valid.
 func refuseFractions(f *DecimalField) {
 	extract := f.extract
 	f.extract = func(s string) (fxp.Int, error) {
 		v, err := extract(s)
-		if err == nil && (strings.Contains(s, ".") || v.Floor() != v) {
+		if err == nil && v.Floor() != v {
 			return 0, errs.New("not a whole number")
 		}
 		return v, err
+	}
+	runeTyped := f.RuneTypedCallback
+	f.RuneTypedCallback = func(ch rune) bool {
+		if ch == '.' {
+			unison.Beep()
+			return false
+		}
+		return runeTyped(ch)
 	}
 }

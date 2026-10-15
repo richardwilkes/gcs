@@ -749,7 +749,11 @@ func TestCopyToSheetListOffThePageIsAppliedAsToASheet(t *testing.T) {
 	sheet.undoMgr.Clear()
 	c.Nil(sheet.Traits.Parent(), "the traits list must be off the page")
 	before := len(entity.Traits)
-	source := newLibraryStyleTraitsTable(newAncestryTrait("Elf"))
+	// The arriving container links to the embedded Human ancestry, the one ancestry sure to resolve with no library
+	// installed, as in CI, under a name of its own.
+	elf := newAncestryTrait("Human")
+	elf.Name = "Elf"
+	source := newLibraryStyleTraitsTable(elf)
 	source.SelectAll()
 	asked := 0
 	uxtest.SwapForTest(t, &askToDisableExistingAncestry, func(_ promptOperation, _, _ []string) bool {

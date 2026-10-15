@@ -501,3 +501,25 @@ func TestSwapDefaultsFollowsTheLayout(t *testing.T) {
 	sheet.Rebuild(true)
 	c.True(sheet.CanPerformCmd(sheet, SwapDefaultsItemID), "the command is enabled again once the list is back")
 }
+
+// TestTemplateHidingABlockTakesItOffTheDropTargets checks that a list the default layout leaves off a template's page is
+// not a drop target, as it isn't on a sheet, and becomes one again once the layout shows it.
+func TestTemplateHidingABlockTakesItOffTheDropTargets(t *testing.T) {
+	c := check.New(t)
+	global := gurps.GlobalSettings()
+	restoreDefaultSheetLayout(t, global.Sheet.Layout)
+	layout := global.Sheet.Layout.Clone()
+	global.Sheet.Layout = layout
+	template := newTestTemplateDockable("Source", gurps.NewTemplate())
+	c.NotNil(template.keyToPanel(spellDragKey), "a spell can be dropped onto the template")
+
+	c.True(layout.Hide(gurps.BlockSpellsKey))
+	template.Rebuild(true)
+	c.Nil(template.Spells.AsPanel().Parent(), "a list that isn't on the page has no parent")
+	c.Nil(template.keyToPanel(spellDragKey), "a list that isn't on the page is not a drop target")
+	c.NotNil(template.keyToPanel(traitDragKey), "the lists that are still on the page remain drop targets")
+
+	c.True(layout.Show(gurps.BlockSpellsKey))
+	template.Rebuild(true)
+	c.NotNil(template.keyToPanel(spellDragKey), "showing the block makes it a drop target again")
+}
