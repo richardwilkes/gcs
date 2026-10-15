@@ -68,10 +68,10 @@ type listFilterPopupSpec struct {
 type listFilterPopup struct {
 	popup *unison.PopupMenu[string]
 	spec  listFilterPopupSpec
-	// filters runs parallel to the popup's items, holding the filter each item stands for. It is nil for the None
+	// filters runs parallel to the popup's items, holding the filter each item stands for. It is nil for the No Filter
 	// entry, the separators and the three commands, since separators occupy an index of their own.
 	filters []*gurps.ListFilter
-	// noneIndex is the index of the "None" entry, which stands for no saved filter. It follows the three commands,
+	// noneIndex is the index of the "No Filter" entry, which stands for no saved filter. It follows the three commands,
 	// which lead the popup so that they stay in reach of a long list of filters, and the separator after them.
 	noneIndex   int
 	newIndex    int
@@ -95,7 +95,7 @@ func newListFilterPopup(spec listFilterPopupSpec) *listFilterPopup {
 		}
 	}
 	p.popup.ChoiceMadeCallback = func(popup *unison.PopupMenu[string], index int, _ string) {
-		// The commands act and leave the selection where it was; only a filter, or None, becomes the selection.
+		// The commands act and leave the selection where it was; only a filter, or No Filter, becomes the selection.
 		switch index {
 		case p.newIndex:
 			p.newFilter(gurps.NewListFilter(""))
@@ -123,14 +123,14 @@ func newListFilterPopup(spec listFilterPopupSpec) *listFilterPopup {
 		HAlign: align.Fill,
 		VAlign: align.Middle,
 	})
-	// Fill the popup in now so that it shows "None" before it has ever been opened.
+	// Fill the popup in now so that it shows "No Filter" before it has ever been opened.
 	p.rebuildItems()
 	return p
 }
 
 // rebuildItems replaces the popup's items with the saved filters as they now stand, keeping the filter in force
 // selected. It reports whether that filter is no longer among them, which happens when another dockable showing the
-// same list type deleted it, in which case the selection has fallen back to None.
+// same list type deleted it, in which case the selection has fallen back to No Filter.
 func (p *listFilterPopup) rebuildItems() (lostCurrent bool) {
 	defer func(saved bool) { p.rebuilding = saved }(p.rebuilding)
 	p.rebuilding = true
@@ -151,7 +151,7 @@ func (p *listFilterPopup) rebuildItems() (lostCurrent bool) {
 	p.editIndex = addItem(i18n.Text("Edit Filter…"), nil)
 	p.deleteIndex = addItem(i18n.Text("Delete Filter…"), nil)
 	addSeparator()
-	p.noneIndex = addItem(i18n.Text("None"), nil)
+	p.noneIndex = addItem(i18n.Text("No Filter"), nil)
 	index := p.noneIndex
 	if saved := gurps.GlobalSettings().ListFiltersFor(p.spec.key); len(saved) != 0 {
 		addSeparator()
@@ -185,7 +185,7 @@ func (p *listFilterPopup) syncTooltip() {
 	p.popup.Tooltip = newWrappedTooltipWithSecondaryText(p.popup.Accessibility.Name, detail)
 }
 
-// filterAt returns the filter the item at the given index stands for, or nil when the item is None, a separator, a
+// filterAt returns the filter the item at the given index stands for, or nil when the item is No Filter, a separator, a
 // command or out of range.
 func (p *listFilterPopup) filterAt(index int) *gurps.ListFilter {
 	if index < 0 || index >= len(p.filters) {

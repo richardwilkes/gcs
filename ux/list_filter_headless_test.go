@@ -176,7 +176,7 @@ func dialogNameField(t *testing.T, screen *unison.HeadlessScreen, dialogWnd *uni
 
 // TestListFilterPopupAppliesSavedFilterHeadless drives the saved filter popup of a trait list inside a headless
 // workspace: choosing a saved filter narrows the list and leaves the quick filter's field usable, what is typed there
-// narrows the list further while the saved filter is in force, choosing None drops the saved filter alone, and the
+// narrows the list further while the saved filter is in force, choosing No Filter drops the saved filter alone, and the
 // quick filter searches the tags column as well as the name.
 func TestListFilterPopupAppliesSavedFilterHeadless(t *testing.T) {
 	c := check.New(t)
@@ -193,13 +193,13 @@ func TestListFilterPopupAppliesSavedFilterHeadless(t *testing.T) {
 	})
 	c.True(inWorkspace, "the trait list opens in the workspace window")
 	c.Equal([]string{
-		newFilterItemTitle, editFilterItemTitle, deleteFilterItemTitle, separatorTitle, "None", separatorTitle,
+		newFilterItemTitle, editFilterItemTitle, deleteFilterItemTitle, separatorTitle, "No Filter", separatorTitle,
 		"Mental",
-	}, titles, "the commands lead, and the separator after None puts the saved filter at index 6")
+	}, titles, "the commands lead, and the separator after No Filter puts the saved filter at index 6")
 
 	state := readListFilterState(screen, d)
 	c.Equal(listFilterHeadlessTraitNames, state.names, "every trait is shown before any filtering")
-	c.Equal("None", state.popupText, "no saved filter is in force to start with")
+	c.Equal("No Filter", state.popupText, "no saved filter is in force to start with")
 	c.True(state.fieldEnabled, "and the quick filter's field is usable")
 	c.False(state.filtered, "and nothing is filtering the table")
 
@@ -225,7 +225,7 @@ func TestListFilterPopupAppliesSavedFilterHeadless(t *testing.T) {
 	c.Equal(0, len(state.names), "no trait passes both the saved filter and the quick filter")
 	uxtest.CaptureScreen(t, c, screen, "list_filter_combined")
 
-	// Choose None, which drops the saved filter and leaves the quick filter's text to filter the list on its own.
+	// Choose No Filter, which drops the saved filter and leaves the quick filter's text to filter the list on its own.
 	// Only one trait is tagged "Physical" and no trait's name holds the word, so keeping exactly that one shows the
 	// quick filter searching the tags column.
 	uxtest.ChoosePopupItem(t, screen, wnd, d.savedFilters.popup, popupNoneIndex)
@@ -416,11 +416,11 @@ func TestListFilterDeleteAsksAndFallsBackHeadless(t *testing.T) {
 	c.Equal(0, len(savedFilters()), "confirming must remove the filter")
 	state = readListFilterState(screen, d)
 	c.Nil(state.selected, "the list must be left with no saved filter")
-	c.Equal("None", state.popupText, "which the popup must show")
+	c.Equal("No Filter", state.popupText, "which the popup must show")
 	c.False(state.filtered, "with the quick filter empty, nothing filters the table")
 	c.Equal(listFilterHeadlessTraitNames, state.names, "so every trait is shown again")
 	c.Equal([]string{
-		newFilterItemTitle, editFilterItemTitle, deleteFilterItemTitle, separatorTitle, "None",
+		newFilterItemTitle, editFilterItemTitle, deleteFilterItemTitle, separatorTitle, "No Filter",
 	}, titles, "the deleted filter and the separator that set the saved filters apart must both be gone")
 	c.Equal(itemCount-2, len(titles), "so the popup holds two items fewer than it did")
 }
@@ -772,7 +772,7 @@ func TestListFilterChangesReachOtherDockablesHeadless(t *testing.T) {
 	var titles []string
 	screen.Do(func() { titles = popupItemTitles(second.savedFilters.popup) })
 	c.Equal([]string{
-		newFilterItemTitle, editFilterItemTitle, deleteFilterItemTitle, separatorTitle, "None", separatorTitle,
+		newFilterItemTitle, editFilterItemTitle, deleteFilterItemTitle, separatorTitle, "No Filter", separatorTitle,
 		"A much longer filter name", "Mind",
 	}, titles, "the popup in front must list the new filter")
 	state = readListFilterState(screen, second)
@@ -782,24 +782,24 @@ func TestListFilterChangesReachOtherDockablesHeadless(t *testing.T) {
 	c.True(widthAfterAdd > widthBefore, "the popup in front must have been laid out again to fit the new item")
 
 	// Delete the filter in force through the list behind, which put the new one in force when it created it, so it
-	// has to be put back first. The list in front, still on the deleted filter, falls back to None.
+	// has to be put back first. The list in front, still on the deleted filter, falls back to No Filter.
 	choosePopupItemDirectly(screen, first, popupFirstSavedIndex+1) // "Mind"
 	uxtest.SwapForTest(t, &confirmFilterDeletion, func(_ string) bool { return true })
 	deleteIndex := popupItemIndexOf(t, screen, first.savedFilters.popup, deleteFilterItemTitle)
 	choosePopupItemDirectly(screen, first, deleteIndex)
 	state = readListFilterState(screen, second)
 	c.Nil(state.selected, "the list in front must fall back to no saved filter once its filter is gone")
-	c.Equal("None", state.popupText, "and its popup must say so")
+	c.Equal("No Filter", state.popupText, "and its popup must say so")
 	c.Equal(listFilterHeadlessTraitNames, state.names, "so every trait is shown there again")
 	c.Nil(readListFilterState(screen, first).selected, "the list behind must be on no saved filter as well")
 
-	// Delete the remaining filter too. The popup in front shrinks back, having only None and the commands left to
+	// Delete the remaining filter too. The popup in front shrinks back, having only No Filter and the commands left to
 	// fit.
 	choosePopupItemDirectly(screen, first, popupFirstSavedIndex) // "A much longer filter name"
 	deleteIndex = popupItemIndexOf(t, screen, first.savedFilters.popup, deleteFilterItemTitle)
 	choosePopupItemDirectly(screen, first, deleteIndex)
 	screen.Do(func() { titles = popupItemTitles(second.savedFilters.popup) })
-	c.Equal([]string{newFilterItemTitle, editFilterItemTitle, deleteFilterItemTitle, separatorTitle, "None"},
+	c.Equal([]string{newFilterItemTitle, editFilterItemTitle, deleteFilterItemTitle, separatorTitle, "No Filter"},
 		titles, "the popup in front must have lost the deleted filter")
 	c.True(popupWidth(screen, second) < widthAfterAdd, "the popup in front must have been laid out again to shrink")
 }
