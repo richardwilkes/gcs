@@ -52,6 +52,9 @@ type SettingsDockable struct {
 	SelectionSaver func(filePath string) error
 	// HasSelection reports whether anything is selected, which Export Selected… needs to be enabled.
 	HasSelection func() bool
+	// ContentFollowsWidth, when set, makes the content as wide as the view, never wider, so that it doesn't scroll
+	// sideways however narrow the view becomes; it must then fit its content to whatever width it is given.
+	ContentFollowsWidth bool
 }
 
 // settingsSpec is what distinguishes one of the views that edit a global setting in place (the colors, fonts, menu keys,
@@ -109,7 +112,11 @@ func (d *SettingsDockable) Setup(addToStartToolbar, addToEndToolbar, initContent
 	content.SetBorder(unison.NewEmptyBorder(geom.NewUniformInsets(unison.StdHSpacing * 2)))
 	initContent(content)
 	scroller := unison.NewScrollPanel()
-	scroller.SetContent(content, behavior.Fill, behavior.Fill)
+	widthBehavior := behavior.Fill
+	if d.ContentFollowsWidth {
+		widthBehavior = behavior.Follow
+	}
+	scroller.SetContent(content, widthBehavior, behavior.Fill)
 	scroller.SetLayoutData(&unison.FlexLayoutData{
 		HAlign: align.Fill,
 		VAlign: align.Fill,

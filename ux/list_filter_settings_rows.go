@@ -84,7 +84,7 @@ func (r *listFilterRows) build() []*listFilterRow {
 		default:
 			summary = i18n.Text("%d filters", len(filters))
 		}
-		rows = append(rows, &listFilterRow{id: idFor(kind.key), name: kind.title, summary: summary})
+		rows = append(rows, &listFilterRow{id: idFor(kind.key), key: kind.key, name: kind.title, summary: summary})
 		fields := kind.fields()
 		for _, f := range filters {
 			r.kinds[f] = kind
@@ -113,9 +113,11 @@ func (r *listFilterRows) selectionFor(filters []*gurps.ListFilter) map[tid.TID]b
 	return sel
 }
 
-// listFilterRow is a row of the Saved Filters view: a list type, or one of its filters when filter is set.
+// listFilterRow is a row of the Saved Filters view: the list type with the key, or one of its filters when filter is
+// set.
 type listFilterRow struct {
 	id      tid.TID
+	key     string
 	filter  *gurps.ListFilter
 	name    string
 	summary string

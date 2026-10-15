@@ -20,7 +20,11 @@ import (
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
+	"github.com/richardwilkes/unison/enums/mod"
 )
+
+// listFilterSummaryPrefWidth is the width the table asks for to show the summaries in, which wrap to fit it.
+const listFilterSummaryPrefWidth = 400
 
 var (
 	_ unison.UndoManagerProvider = &listFilterSettingsDockable{}
@@ -65,6 +69,7 @@ func ShowListFilterSettings() {
 	d.RefLoader = d.load
 	d.SelectionSaver = d.saveSelected
 	d.HasSelection = func() bool { return len(d.selectedFilters()) != 0 }
+	d.ContentFollowsWidth = true
 	d.initSettings(d, &settingsSpec{
 		title: i18n.Text("Saved Filters"),
 		ext:   gurps.ListFiltersExt,
@@ -101,6 +106,8 @@ func (d *listFilterSettingsDockable) addToStartToolbar(toolbar *unison.Panel) {
 
 func (d *listFilterSettingsDockable) initContent(content *unison.Panel) {
 	content.SetLayout(&unison.FlexLayout{Columns: 1})
+	content.SetBorder(unison.NewCompoundBorder(content.Border(),
+		unison.NewLineBorder(unison.ThemeSurfaceEdge, geom.Size{}, geom.NewUniformInsets(1), false)))
 	d.table = unison.NewTable(&unison.SimpleTableModel[*listFilterRow]{})
 	d.table.Accessibility.Name = i18n.Text("Saved Filters")
 	d.table.Columns = []unison.ColumnInfo{{ID: 0}, {ID: 1}}
@@ -108,6 +115,16 @@ func (d *listFilterSettingsDockable) initContent(content *unison.Panel) {
 	d.table.ShowLastColumnDivider = false
 	d.table.SelectionChangedCallback = d.updateButtons
 	d.table.DoubleClickCallback = d.editFilter
+	d.table.KeyDownCallback = func(keyCode unison.KeyCode, mods mod.Modifiers, repeat bool) bool {
+		if noModifiersDown(mods) && (keyCode == unison.KeyBackspace || keyCode == unison.KeyDelete) {
+			d.table.PerformCmd(d.table, unison.DeleteItemID)
+			return true
+		}
+		return d.table.DefaultKeyDown(keyCode, mods, repeat)
+	}
+	d.InstallCmdHandlers(unison.DeleteItemID,
+		func(_ any) bool { return len(d.selectedFilters()) != 0 },
+		func(_ any) { d.deleteFilters() })
 	d.table.ContextMenuCallback = func(_ geom.Point) unison.Menu {
 		f := unison.DefaultMenuFactory()
 		cm := f.NewMenu(unison.PopupMenuTemporaryBaseID|unison.ContextMenuIDFlag, "", nil)
@@ -118,12 +135,13 @@ func (d *listFilterSettingsDockable) initContent(content *unison.Panel) {
 		return cm
 	}
 	d.table.FrameChangeCallback = func() { d.table.SizeColumnsToFitWithExcessIn(1) }
-	// The table asks for no width of its own, which would otherwise be the width of its columns as last sized, so that
-	// it takes the width it is given and the summaries wrap to fit it, however narrow the view becomes.
+	// The table needs no width of its own, so that the summaries wrap to fit whatever width the view gives it, however
+	// narrow. It asks for room for the names and a set width for the summaries, so that a window of its own starts out
+	// wide enough to read them; the width of its columns as last sized may leave no room for the summaries.
 	d.table.SetSizer(func(hint geom.Size) (minSize, prefSize, maxSize geom.Size) {
 		minSize, prefSize, maxSize = d.table.DefaultSizes(hint)
 		minSize.Width = 0
-		prefSize.Width = 0
+		prefSize.Width = d.table.Columns[0].Current + listFilterSummaryPrefWidth
 		return minSize, prefSize, maxSize
 	})
 	d.table.SetLayoutData(&unison.FlexLayoutData{
@@ -142,6 +160,12 @@ func (d *listFilterSettingsDockable) sync() {
 	d.table.SetRootRows(d.rows.build())
 	d.table.SetSelectionMap(sel)
 	d.table.SizeColumnsToFitWithExcessIn(1)
+	if d.table.Window() == nil {
+		// Until the table is shown, and so given a width, the summaries are wrapped to the width it asks for, so that
+		// the height it asks for fits them.
+		d.table.Columns[1].Current = listFilterSummaryPrefWidth
+		d.table.SyncRowHeights()
+	}
 	d.updateButtons()
 }
 
@@ -150,12 +174,17 @@ func (d *listFilterSettingsDockable) selectFilters(filters []*gurps.ListFilter) 
 	d.table.SetSelectionMap(d.rows.selectionFor(filters))
 }
 
-// selectedFilters returns the filters whose rows are selected, in the order shown, leaving out the list type rows.
+// selectedFilters returns the filters whose rows are selected, along with every filter of a selected list type, in the
+// order shown.
 func (d *listFilterSettingsDockable) selectedFilters() []*gurps.ListFilter {
 	var filters []*gurps.ListFilter
 	for _, row := range d.table.SelectedRows(false) {
 		if row.filter != nil {
-			filters = append(filters, row.filter)
+			if !slices.Contains(filters, row.filter) {
+				filters = append(filters, row.filter)
+			}
+		} else {
+			filters = append(filters, gurps.GlobalSettings().ListFilters[row.key]...)
 		}
 	}
 	return filters

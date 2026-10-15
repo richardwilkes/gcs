@@ -17,6 +17,8 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/ux/uxtest"
 	"github.com/richardwilkes/toolbox/v2/check"
+	"github.com/richardwilkes/toolbox/v2/geom"
+	"github.com/richardwilkes/toolbox/v2/tid"
 	"github.com/richardwilkes/unison"
 )
 
@@ -111,6 +113,33 @@ func TestListFilterSettingsCommands(t *testing.T) {
 		v.undoMgr.Undo()
 		c.True(gurps.GlobalSettings().ListFiltersFor("adq")[0] == f.alpha, "undoing the deletion restores the original")
 		c.True(gurps.GlobalSettings().ListFiltersFor("skl")[0] == f.gamma, "for every list type")
+	})
+}
+
+// TestListFilterSettingsListTypeSelection verifies that selecting a list type's row selects every filter of that type,
+// that the Delete key deletes the selection, and that the table asks for some width of its own.
+func TestListFilterSettingsListTypeSelection(t *testing.T) {
+	c := check.New(t)
+	f := newListFilterSettingsFixture(t, c)
+	var asked string
+	uxtest.SwapForTest(t, &confirmDeletion, func(question string) bool {
+		asked = question
+		return true
+	})
+	f.screen.Do(func() {
+		v := f.view
+		_, pref, _ := v.table.Sizes(geom.Size{})
+		c.True(pref.Width > v.table.Columns[0].Current, "the table asks for room for the summaries")
+
+		v.table.SetSelectionMap(map[tid.TID]bool{v.rows.ids["adq"]: true, v.rows.ids[f.alpha]: true})
+		c.Equal([]*gurps.ListFilter{f.alpha, f.beta}, v.selectedFilters(),
+			"a selected list type brings in each of its filters once")
+		c.True(v.HasSelection(), "Export Selected is offered for a selected list type")
+
+		c.True(v.table.KeyDownCallback(unison.KeyDelete, 0, false), "the Delete key is handled")
+		c.Equal("Delete the 2 selected filters?", asked, "the Delete key asks to delete the selection")
+		c.Equal(0, len(savedNames("adq")), "every filter of the list type is deleted")
+		c.Equal([]string{"Gamma"}, savedNames("skl"), "other list types are left alone")
 	})
 }
 
