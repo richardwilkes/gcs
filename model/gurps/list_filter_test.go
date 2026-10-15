@@ -12,6 +12,8 @@ package gurps_test
 import (
 	"encoding/json/jsontext"
 	"fmt"
+	"os"
+	"path/filepath"
 	"regexp"
 	"slices"
 	"strings"
@@ -1284,4 +1286,83 @@ func TestListFilterMatchesEquipmentContainerType(t *testing.T) {
 	c.False(matchesListFilter(newTestListFilter(isGroup), fields, backpack))
 	c.True(matchesListFilter(newTestListFilter(isContainer), fields, backpack))
 	c.False(matchesListFilter(newTestListFilter(isContainer), fields, item), "an item is no kind of container")
+}
+
+// TestListFilterManagementHelpers verifies numbering names that are in use and spotting a filter that is already
+// saved.
+func TestListFilterManagementHelpers(t *testing.T) {
+	c := check.New(t)
+	const key = "adq"
+	s := &gurps.Settings{}
+	alpha := gurps.NewListFilter("Alpha")
+	alpha.Root.Children = append(alpha.Root.Children, gurps.NewFilterCondition(alpha.Root, "name"))
+	beta := gurps.NewListFilter("Beta")
+	beta.Root.All = false
+	s.AddListFilter(key, alpha)
+	s.AddListFilter(key, beta)
+
+	c.Equal("Gamma", s.UniqueListFilterName(key, " Gamma "), "an unused name is kept, trimmed")
+	c.Equal("alpha (2)", s.UniqueListFilterName(key, "alpha"), "a name in use, in any case, gets a number")
+	s.AddListFilter(key, gurps.NewListFilter("Alpha (2)"))
+	c.Equal("Alpha (3)", s.UniqueListFilterName(key, "Alpha"), "the lowest free number is used")
+	c.Equal("Alpha (3)", s.UniqueListFilterName(key, "Alpha (2)"), "a number already there is replaced")
+	c.Equal("Alpha", s.UniqueListFilterName("skl", "Alpha"), "names are tracked per list type")
+
+	c.True(s.HasIdenticalListFilter(key, alpha.Clone()), "a copy is identical")
+	other := alpha.Clone()
+	other.Name = "ALPHA"
+	c.True(s.HasIdenticalListFilter(key, other), "the name is compared without regard to case")
+	other.Root.All = false
+	c.False(s.HasIdenticalListFilter(key, other), "different conditions aren't identical")
+	c.False(s.HasIdenticalListFilter("skl", alpha), "filters are compared per list type")
+}
+
+// TestListFiltersFileRoundTrip verifies that saved filters survive a trip through a file, and that loading drops the
+// ones the settings would.
+func TestListFiltersFileRoundTrip(t *testing.T) {
+	c := check.New(t)
+	dir := t.TempDir()
+	filters := map[string][]*gurps.ListFilter{
+		"adq": {gurps.NewListFilter("Alpha"), gurps.NewListFilter("alpha"), gurps.NewListFilter(" ")},
+		"skl": {gurps.NewListFilter("Beta")},
+	}
+	c.NoError(gurps.SaveListFilters(filters, filepath.Join(dir, "x"+gurps.ListFiltersExt)))
+	loaded, err := gurps.NewListFiltersFromFile(os.DirFS(dir), "x"+gurps.ListFiltersExt)
+	c.NoError(err)
+	c.Equal([]string{"Alpha"}, listFilterNames(loaded["adq"]), "duplicate and empty names are dropped")
+	c.Equal([]string{"Beta"}, listFilterNames(loaded["skl"]), "every list type is kept")
+}
+
+// TestNewMergedListFilter verifies that a merge folds in a source that combines its conditions the same way, or holds
+// only one, and keeps any other source as a group of its own.
+func TestNewMergedListFilter(t *testing.T) {
+	c := check.New(t)
+	newSource := func(all, not bool, conditions int) *gurps.ListFilter {
+		f := gurps.NewListFilter("x")
+		f.Root.All = all
+		f.Root.Not = not
+		for range conditions {
+			f.Root.Children = append(f.Root.Children, gurps.NewFilterCondition(f.Root, "name"))
+		}
+		return f
+	}
+	single := newSource(true, false, 1)
+	sameMode := newSource(false, false, 2)
+	otherMode := newSource(true, false, 2)
+	negated := newSource(false, true, 1)
+	merged := gurps.NewMergedListFilter("Merged", false, []*gurps.ListFilter{single, sameMode, otherMode, negated})
+	c.False(merged.Root.All, "the merged filter requires any one source, as asked")
+	c.Equal(5, len(merged.Root.Children), "single and same-mode sources are folded in, the others kept as groups")
+	for i, child := range merged.Root.Children {
+		c.True(child.ParentGroup() == merged.Root, "child %d belongs to the merged root", i)
+	}
+	for i := range 3 {
+		_, isCondition := merged.Root.Children[i].(*gurps.FilterCondition)
+		c.True(isCondition, "child %d is a folded-in condition", i)
+	}
+	c.False(merged.Root.Children[0] == single.Root.Children[0], "the sources are copied, not shared")
+	group, ok := merged.Root.Children[3].(*gurps.FilterGroup)
+	c.True(ok && group.All, "a source that combines its conditions another way stays a group")
+	group, ok = merged.Root.Children[4].(*gurps.FilterGroup)
+	c.True(ok && group.Not, "a negated source stays a group")
 }

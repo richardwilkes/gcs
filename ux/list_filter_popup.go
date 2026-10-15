@@ -28,8 +28,7 @@ import (
 var (
 	showFilterEditor      = showListFilterDialog
 	confirmFilterDeletion = func(name string) bool {
-		return unison.QuestionDialog(i18n.Text("Delete the filter '%s'?", name),
-			i18n.Text("This cannot be undone.")) == unison.ModalResponseOK
+		return unison.QuestionDialog(i18n.Text("Delete the filter '%s'?", name), "") == unison.ModalResponseOK
 	}
 )
 

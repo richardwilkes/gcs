@@ -12,7 +12,9 @@ package gurps
 import (
 	"encoding/json/jsontext"
 	"encoding/json/v2"
+	"fmt"
 	"hash"
+	"regexp"
 	"slices"
 	"strings"
 
@@ -472,4 +474,53 @@ func (s *Settings) ensureListFiltersValidity() {
 		})
 		s.SetListFiltersFor(key, filters)
 	}
+}
+
+// NewMergedListFilter creates a filter named name whose root holds a copy of the root of each of the sources, requiring
+// all of them to match, or any one of them when all is false. A source root that isn't negated and either combines its
+// children the same way or holds only one is replaced by its children, which matches the same nodes.
+func NewMergedListFilter(name string, all bool, sources []*ListFilter) *ListFilter {
+	f := NewListFilter(name)
+	f.Root.All = all
+	for _, src := range sources {
+		root := src.Root.CloneAsFilterGroup(f.Root)
+		if root.Not || (root.All != all && len(root.Children) != 1) {
+			f.Root.Children = append(f.Root.Children, root)
+			continue
+		}
+		for _, child := range root.Children {
+			child.SetParentGroup(f.Root)
+		}
+		f.Root.Children = append(f.Root.Children, root.Children...)
+	}
+	return f
+}
+
+var numberedListFilterName = regexp.MustCompile(` \(\d+\)$`)
+
+// UniqueListFilterName returns name if no saved filter for the list type with the given key has it, and otherwise the
+// name with the lowest number after it, as in "Name (2)", that none has. A number the name already ends with is
+// replaced.
+func (s *Settings) UniqueListFilterName(key, name string) string {
+	name = strings.TrimSpace(name)
+	if !s.ListFilterNameInUse(key, name, nil) {
+		return name
+	}
+	base := numberedListFilterName.ReplaceAllString(name, "")
+	for i := 2; ; i++ {
+		if candidate := fmt.Sprintf("%s (%d)", base, i); !s.ListFilterNameInUse(key, candidate, nil) {
+			return candidate
+		}
+	}
+}
+
+// HasIdenticalListFilter returns true if a saved filter for the list type with the given key has the same name as f,
+// ignoring case, and the same conditions.
+func (s *Settings) HasIdenticalListFilter(key string, f *ListFilter) bool {
+	for _, one := range s.ListFilters[key] {
+		if strings.EqualFold(one.Name, f.Name) && Hash64(one.Root) == Hash64(f.Root) {
+			return true
+		}
+	}
+	return false
 }

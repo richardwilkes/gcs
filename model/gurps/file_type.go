@@ -53,6 +53,7 @@ const (
 	FontSettingsExt    = ".fonts"
 	GeneralSettingsExt = ".general"
 	KeySettingsExt     = ".keys"
+	ListFiltersExt     = ".filters"
 	NamesExt           = ".names"
 	PageRefSettingsExt = ".refs"
 	SheetSettingsExt   = ".sheet"
@@ -140,6 +141,7 @@ func GCSSecondaryExtensions() []string {
 		FontSettingsExt,
 		GeneralSettingsExt,
 		KeySettingsExt,
+		ListFiltersExt,
 		NamesExt,
 		PageRefSettingsExt,
 		SheetSettingsExt,

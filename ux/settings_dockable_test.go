@@ -165,6 +165,15 @@ func TestShowSettingsViewsOpenOnceAndActivate(t *testing.T) {
 			toolbarButton: true,
 		},
 		{
+			name:          "saved filters",
+			show:          ShowListFilterSettings,
+			is:            func(d unison.Dockable) bool { _, isOne := d.AsPanel().Self.(*listFilterSettingsDockable); return isOne },
+			title:         "Saved Filters",
+			ext:           gurps.ListFiltersExt,
+			loads:         true,
+			toolbarButton: true,
+		},
+		{
 			name: "default sheet settings",
 			show: func() { ShowSheetSettings(nil) },
 			is: func(d unison.Dockable) bool {
@@ -218,7 +227,7 @@ func TestShowSettingsViewsOpenOnceAndActivate(t *testing.T) {
 			}
 			title = d.Title()
 			exts = base.Extensions
-			loads = base.Loader != nil
+			loads = base.canLoad()
 			saves = base.Saver != nil
 			resets = base.Resetter != nil
 			asksOnClose = base.WillCloseCallback != nil
@@ -274,6 +283,8 @@ func settingsDockableOf(d unison.Dockable) (*SettingsDockable, bool) {
 	case *generalSettingsDockable:
 		return &v.SettingsDockable, true
 	case *pageRefMappingsDockable:
+		return &v.SettingsDockable, true
+	case *listFilterSettingsDockable:
 		return &v.SettingsDockable, true
 	case *sheetSettingsDockable:
 		return &v.SettingsDockable, true

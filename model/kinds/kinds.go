@@ -19,6 +19,7 @@ const (
 	EquipmentContainer           = 'E'
 	EquipmentModifier            = 'f'
 	EquipmentModifierContainer   = 'F'
+	ListFilter                   = '4'
 	Loot                         = 'L'
 	NavigatorFavorites           = '0'
 	NavigatorLibrary             = '1'

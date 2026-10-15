@@ -108,6 +108,7 @@ const (
 	DefaultBodyTypeSettingsItemID
 	GeneralSettingsItemID
 	PageRefMappingsItemID
+	ListFilterSettingsItemID
 	ColorSettingsItemID
 	FontSettingsItemID
 	MenuKeySettingsItemID
@@ -394,6 +395,7 @@ func (s menuBarScope) createSettingsMenu(f unison.MenuFactory) unison.Menu {
 	m.InsertSeparator(-1, false)
 	m.InsertItem(-1, generalSettingsAction.NewMenuItem(f))
 	m.InsertItem(-1, pageRefMappingsAction.NewMenuItem(f))
+	m.InsertItem(-1, listFilterSettingsAction.NewMenuItem(f))
 	m.InsertItem(-1, colorSettingsAction.NewMenuItem(f))
 	m.InsertItem(-1, fontSettingsAction.NewMenuItem(f))
 	m.InsertItem(-1, menuKeySettingsAction.NewMenuItem(f))

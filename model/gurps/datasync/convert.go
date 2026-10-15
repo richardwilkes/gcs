@@ -87,6 +87,7 @@ var converters = map[string]func(p string) error{
 	gurps.FontSettingsExt:    convertFile(fonts.NewFromFS, (*fonts.Fonts).Save),
 	gurps.GeneralSettingsExt: convertFile(gurps.NewGeneralSettingsFromFile, (*gurps.GeneralSettings).Save),
 	gurps.KeySettingsExt:     convertFile(gurps.NewKeyBindingsFromFS, (*gurps.KeyBindings).Save),
+	gurps.ListFiltersExt:     convertFile(gurps.NewListFiltersFromFile, gurps.SaveListFilters),
 	gurps.NamesExt:           nil,
 	gurps.PageRefSettingsExt: convertFile(gurps.NewPageRefsFromFS, (*gurps.PageRefs).Save),
 	gurps.SheetSettingsExt:   convertFile(gurps.NewSheetSettingsFromFile, (*gurps.SheetSettings).Save),

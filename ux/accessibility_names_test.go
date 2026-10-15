@@ -218,6 +218,7 @@ func TestEveryControlHasAnAccessibleName(t *testing.T) {
 	audit.CheckOpened("font settings", ShowFontSettings)
 	audit.CheckOpened("menu key settings", ShowMenuKeySettings)
 	audit.CheckOpened("page reference mappings", ShowPageRefMappings)
+	audit.CheckOpened("saved filters", ShowListFilterSettings)
 	audit.CheckOpened("library settings", func() { ShowLibrarySettings(gurps.GlobalSettings().Libraries.User()) })
 
 	audit.CheckOpened("character template", func() { newCharacterTemplateAction.Execute(nil) })
