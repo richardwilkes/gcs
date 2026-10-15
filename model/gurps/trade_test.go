@@ -276,11 +276,11 @@ func TestMergeMatchesCoversEveryField(t *testing.T) {
 func TestTradePriceAndQuantity(t *testing.T) {
 	c := check.New(t)
 	knife := withQuantity(newEquipmentItem("Small Knife", "30", "1 lb"), "3")
-	c.Equal(fxp.FromInteger(30), TradePrice(knife, fxp.Two, fxp.Fifty))
-	c.Equal(fxp.FromStringForced("31.2"), TradePrice(knife, fxp.Two, fxp.FromInteger(52)))
-	c.Equal(fxp.FromInteger(0), TradePrice(knife, 0, fxp.Hundred))
-	c.Equal(fxp.FromInteger(0), TradePrice(knife, fxp.NegOne, fxp.Hundred))
-	c.Equal(fxp.FromInteger(0), TradePrice(nil, fxp.One, fxp.Hundred))
+	c.Equal(fxp.FromInteger(30), TradePrice(knife, fxp.Two, 50))
+	c.Equal(fxp.FromStringForced("31.2"), TradePrice(knife, fxp.Two, 52))
+	c.Equal(fxp.FromInteger(0), TradePrice(knife, 0, 100))
+	c.Equal(fxp.FromInteger(0), TradePrice(knife, fxp.NegOne, 100))
+	c.Equal(fxp.FromInteger(0), TradePrice(nil, fxp.One, 100))
 	c.Equal(fxp.Three, knife.TradeQuantity())
 
 	// Each backpack holds 2 torches and 3 ropes, so one is worth 5+2*10+3*1.
@@ -290,9 +290,9 @@ func TestTradePriceAndQuantity(t *testing.T) {
 	torch.SetParent(backpack)
 	rope.SetParent(backpack)
 	backpack.Children = []*Equipment{torch, rope}
-	c.Equal(fxp.FromInteger(28), TradePrice(backpack, fxp.One, fxp.Hundred))
-	c.Equal(fxp.FromInteger(56), TradePrice(backpack, fxp.Two, fxp.Hundred))
-	c.Equal(fxp.FromInteger(14), TradePrice(backpack, fxp.One, fxp.Fifty))
+	c.Equal(fxp.FromInteger(28), TradePrice(backpack, fxp.One, 100))
+	c.Equal(fxp.FromInteger(56), TradePrice(backpack, fxp.Two, 100))
+	c.Equal(fxp.FromInteger(14), TradePrice(backpack, fxp.One, 50))
 	c.Equal(fxp.Two, backpack.TradeQuantity())
 
 	group := NewEquipmentGroup(nil, nil)
@@ -300,7 +300,7 @@ func TestTradePriceAndQuantity(t *testing.T) {
 	gem.SetParent(group)
 	group.Children = []*Equipment{gem}
 	c.Equal(fxp.One, group.TradeQuantity())
-	c.Equal(fxp.FromInteger(200), TradePrice(group, fxp.One, fxp.Hundred))
+	c.Equal(fxp.FromInteger(200), TradePrice(group, fxp.One, 100))
 }
 
 // denomination returns a money item as SellMoneyItems would: a quantity of one, in no list.
@@ -658,7 +658,7 @@ func TestTradeQuantityCountsEveryCopyOfAContainer(t *testing.T) {
 	c.Equal(fxp.Six, pouch.TradeQuantity(), "a container inside another counts the same way")
 	c.Equal(fxp.Two, gems.TradeQuantity(), "a group comes once with each backpack")
 	c.Equal(fxp.Two, ruby.TradeQuantity())
-	c.Equal(fxp.FromInteger(40), TradePrice(torches, torches.TradeQuantity(), fxp.Hundred))
+	c.Equal(fxp.FromInteger(40), TradePrice(torches, torches.TradeQuantity(), 100))
 	when := mustTime(t, "2026-10-13T09:40:00Z")
 
 	wealth := e.WealthCarried()

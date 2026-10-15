@@ -63,7 +63,7 @@ type sellTestDialog struct {
 	screen     *unison.HeadlessScreen
 	wnd        *unison.Window
 	dialog     *unison.Dialog
-	percent    *DecimalField
+	percent    *PercentageField
 	quantities []*DecimalField
 	name       *StringField
 	merge      *unison.CheckBox
@@ -111,10 +111,8 @@ func attachSellTestDialog(t *testing.T, screen *unison.HeadlessScreen, wnd *unis
 	s.cancel = dialogButton(t, screen, s.dialog, unison.ModalResponseCancel)
 	screen.Do(func() {
 		content := s.wnd.Content()
-		if fields := uxtest.PanelsOfType[*DecimalField](content); len(fields) != 0 {
-			s.percent = fields[0]
-			s.quantities = fields[1:]
-		}
+		s.percent, _ = uxtest.FirstPanelOfType[*PercentageField](content)
+		s.quantities = uxtest.PanelsOfType[*DecimalField](content)
 		s.name, _ = uxtest.FirstPanelOfType[*StringField](content)
 		s.merge, _ = uxtest.FirstPanelOfType[*unison.CheckBox](content)
 	})
@@ -197,7 +195,7 @@ func TestSellDialogSellsAndUndoes(t *testing.T) {
 	s := openSellTestDialog(t, screen, wnd, sheet, sword, knife)
 	screen.Do(func() {
 		c.Equal("Sell Equipment", s.wnd.Title(), "the dialog is titled for what it does")
-		c.Equal("50", s.percent.Text(), "the percentage starts at the sheet's sell percent")
+		c.Equal("50%", s.percent.Text(), "the percentage starts at the sheet's sell percent")
 		c.Equal("1", s.quantities[0].Text(), "all of the sword is to be sold")
 		c.True(s.quantities[0].Enabled(), "a quantity of one can be changed, to leave the item out")
 		c.Equal("2", s.quantities[1].Text(), "all of the knives are to be sold")
@@ -339,10 +337,12 @@ func TestSellDialogClampsTheSheetsSellPercent(t *testing.T) {
 		percent  string
 		expected string
 	}{
-		{percent: "2000", expected: "1000"},
-		{percent: "0.5", expected: "1"},
+		{percent: "2000", expected: "1000%"},
+		{percent: "0.5", expected: "1%"},
 	} {
-		screen.Do(func() { sheet.Entity().SheetSettings.SellPercent = fxp.FromStringForced(tt.percent) })
+		screen.Do(func() {
+			sheet.Entity().SheetSettings.SellPercent = fxp.FromStringForced(tt.percent).AsInteger[int]()
+		})
 		s := openSellTestDialog(t, screen, wnd, sheet, knife)
 		var text string
 		screen.Do(func() { text = s.percent.Text() })
@@ -856,7 +856,7 @@ func TestSellDialogShowsTheSaleAgainWhenASavedEditorChangesIt(t *testing.T) {
 
 	again := attachSellTestDialog(t, screen, wnd, s.done, 1)
 	screen.Do(func() {
-		c.Equal("40", again.percent.Text(), "the percentage is kept")
+		c.Equal("40%", again.percent.Text(), "the percentage is kept")
 		c.Equal("2", again.quantities[0].Text(), "the quantity is kept to what there now is to sell")
 	})
 	texts = again.texts()

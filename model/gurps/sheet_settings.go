@@ -66,8 +66,8 @@ type SheetSettingsData struct {
 	BodyWeightFormat              fxp.NumberFormat   `json:"body_weight_format,omitzero"`
 	EquipmentWeightFormat         fxp.NumberFormat   `json:"equipment_weight_format,omitzero"`
 	EquipmentValueFormat          fxp.NumberFormat   `json:"equipment_value_format,omitzero"`
-	BuyPercent                    fxp.Int            `json:"buy_percent,omitzero"`
-	SellPercent                   fxp.Int            `json:"sell_percent,omitzero"`
+	BuyPercent                    int                `json:"buy_percent,omitzero"`
+	SellPercent                   int                `json:"sell_percent,omitzero"`
 	// SellMoney lists the library equipment paid out when selling, each by its source so it can be found again.
 	// Containers are never included.
 	SellMoney []Source `json:"sell_money,omitempty"`
@@ -103,8 +103,8 @@ func FactorySheetSettings() *SheetSettings {
 		SkillLevelAdjDisplay:    display.Tooltip,
 		ShowSpellAdj:            true,
 		HideUnusedWeaponColumns: false,
-		BuyPercent:              fxp.Hundred,
-		SellPercent:             fxp.Fifty,
+		BuyPercent:              100,
+		SellPercent:             50,
 	}
 }
 
@@ -164,10 +164,10 @@ func (s *SheetSettings) EnsureValidity() {
 	s.EquipmentWeightFormat = s.EquipmentWeightFormat.EnsureValid()
 	s.EquipmentValueFormat = s.EquipmentValueFormat.EnsureValid()
 	if s.BuyPercent <= 0 {
-		s.BuyPercent = fxp.Hundred
+		s.BuyPercent = 100
 	}
 	if s.SellPercent <= 0 {
-		s.SellPercent = fxp.Fifty
+		s.SellPercent = 50
 	}
 	s.BuyPercent = min(max(s.BuyPercent, MinTradePercent), MaxTradePercent)
 	s.SellPercent = min(max(s.SellPercent, MinTradePercent), MaxTradePercent)
@@ -175,8 +175,8 @@ func (s *SheetSettings) EnsureValidity() {
 
 // MinTradePercent and MaxTradePercent bound the percentage of its full price that equipment is bought or sold at.
 var (
-	MinTradePercent = fxp.One
-	MaxTradePercent = fxp.Thousand
+	MinTradePercent = 1
+	MaxTradePercent = 1000
 )
 
 // CanAddSellMoney returns true if the equipment can be added to the sell money list: library equipment that isn't a

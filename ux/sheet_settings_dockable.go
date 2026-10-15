@@ -50,8 +50,8 @@ type sheetSettingsDockable struct {
 	modifiersDisplayPopup     *unison.PopupMenu[display.Option]
 	notesDisplayPopup         *unison.PopupMenu[display.Option]
 	skillLevelAdjDisplayPopup *unison.PopupMenu[display.Option]
-	buyPercentField           *DecimalField
-	sellPercentField          *DecimalField
+	buyPercentField           *PercentageField
+	sellPercentField          *PercentageField
 	sellMoneyPanel            *unison.Panel
 	sellMoneyDropping         bool
 	orientationPopup          *unison.PopupMenu[paper.Orientation]
@@ -395,10 +395,10 @@ func (d *sheetSettingsDockable) createTrading(content *unison.Panel) {
 	d.createHeader(panel, i18n.Text("Trading"), 2)
 	d.buyPercentField = d.createPercentField(panel, i18n.Text("Buy Percent"),
 		i18n.Text("The percentage of an item's full price that buying it costs, unless another is chosen when buying"),
-		func(s *gurps.SheetSettings) *fxp.Int { return &s.BuyPercent })
+		func(s *gurps.SheetSettings) *int { return &s.BuyPercent })
 	d.sellPercentField = d.createPercentField(panel, i18n.Text("Sell Percent"),
 		i18n.Text("The percentage of an item's full price that selling it brings in, unless another is chosen when selling"),
-		func(s *gurps.SheetSettings) *fxp.Int { return &s.SellPercent })
+		func(s *gurps.SheetSettings) *int { return &s.SellPercent })
 	listBorder := unison.NewCompoundBorder(
 		unison.NewLineBorder(unison.ThemeSurfaceEdge, geom.Size{}, geom.NewUniformInsets(1), false),
 		unison.NewEmptyBorder(geom.NewUniformInsets(unison.StdHSpacing)),
@@ -427,10 +427,10 @@ func (d *sheetSettingsDockable) createTrading(content *unison.Panel) {
 // createPercentField adds a field for the percentage of the settings that value reaches, with the given title and
 // tooltip, and returns it. The open sheets are told only of a change, since sync() hands the field the value it already
 // holds.
-func (d *sheetSettingsDockable) createPercentField(panel *unison.Panel, title, tooltip string, value func(s *gurps.SheetSettings) *fxp.Int) *DecimalField {
+func (d *sheetSettingsDockable) createPercentField(panel *unison.Panel, title, tooltip string, value func(s *gurps.SheetSettings) *int) *PercentageField {
 	panel.AddChild(NewFieldLeadingLabel(title, false))
-	field := NewDecimalField(nil, "", title, func() fxp.Int { return *value(d.settings()) },
-		func(v fxp.Int) {
+	field := NewPercentageField(nil, "", title, func() int { return *value(d.settings()) },
+		func(v int) {
 			if current := value(d.settings()); *current != v {
 				*current = v
 				d.syncSheet(false)

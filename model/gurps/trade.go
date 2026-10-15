@@ -120,11 +120,11 @@ func equipmentModifiersMatch(a, b []*EquipmentModifier) bool {
 
 // TradePrice returns the price of qty of the equipment, including what each one contains, at percent of its full
 // value. Returns 0 for nil equipment or a quantity that isn't positive.
-func TradePrice(eqp *Equipment, qty, percent fxp.Int) fxp.Int {
+func TradePrice(eqp *Equipment, qty fxp.Int, percent int) fxp.Int {
 	if eqp == nil || qty <= 0 {
 		return 0
 	}
-	return eqp.ExtendedValueOfJustOne().Mul(qty).Mul(percent).Div(fxp.Hundred)
+	return eqp.ExtendedValueOfJustOne().Mul(qty).Mul(fxp.FromInteger(percent)).Div(fxp.Hundred)
 }
 
 // TradeQuantity returns how many of this equipment there are to trade: its quantity times that of each container

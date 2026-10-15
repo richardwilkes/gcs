@@ -65,13 +65,13 @@ type buyDockable struct {
 	hint         *TextLabel
 	header       *unison.Panel
 	footer       *unison.Panel
-	percentField *DecimalField
+	percentField *PercentageField
 	summary      *TextLabel
 	setSummary   func(text string, warn bool)
 	nameField    *StringField
 	finalize     *unison.Button
 	items        []*buyItem
-	percent      fxp.Int
+	percent      int
 	name         string
 	title        string
 	// merge is whether what is bought is to merge with matching carried items, as last settled when finalizing (see
@@ -419,9 +419,9 @@ func (d *buyDockable) createHeader() *unison.Panel {
 	d.header.AddChild(d.nameField)
 	label = NewFieldInteriorLeadingLabel(i18n.Text("Percent of Full Price"), false)
 	d.header.AddChild(label)
-	d.percentField = NewDecimalField(d.targetMgr, "buy.percent", i18n.Text("Percent of Full Price"),
-		func() fxp.Int { return d.percent },
-		func(v fxp.Int) {
+	d.percentField = NewPercentageField(d.targetMgr, "buy.percent", i18n.Text("Percent of Full Price"),
+		func() int { return d.percent },
+		func(v int) {
 			if v != d.percent {
 				d.percent = v
 				d.percentEdited = true
@@ -1209,7 +1209,7 @@ func (d *buyDockable) defaultName() string {
 	return i18n.Text("Bought %s", tradeNames(names))
 }
 
-func (d *buyDockable) sheetPercent() fxp.Int {
+func (d *buyDockable) sheetPercent() int {
 	return min(max(d.sheet.Entity().SheetSettings.BuyPercent, gurps.MinTradePercent), gurps.MaxTradePercent)
 }
 

@@ -221,7 +221,7 @@ func NewCarriedEquipmentPageList(owner Rebuildable, provider gurps.ListProvider)
 	if sheet, ok := owner.AsPanel().Self.(*Sheet); ok {
 		eqpProvider.sheet = sheet
 	}
-	p := newPageList[*gurps.Equipment](owner, eqpProvider)
+	p := newPageList(owner, eqpProvider)
 	p.installToggleEquippedHandler(owner)
 	p.installIncrementTechLevelHandler(owner)
 	p.installDecrementTechLevelHandler(owner)

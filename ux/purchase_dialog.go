@@ -164,11 +164,19 @@ func newPurchaseDialog(buy *buyDockable, plan *buyPlan) *purchaseDialog {
 	d.changeDue.Font = unison.EmphasizedSystemFont
 
 	intro := NewWrappingLabel()
-	intro.SetTitle(i18n.Text("Buying %s for $%s.\nThe money-tagged items carried pay for it, chosen automatically unless you change the quantities to spend.",
-		buy.describeItems(), d.format(plan.total)))
+	intro.SetTitle(i18n.Text("Buying %s for $%s.", buy.describeItems(), d.format(plan.total)))
 	wrapToWidthOf(intro.AsPanel(), list.box)
 	intro.SetLayoutData(&unison.FlexLayoutData{HAlign: align.Fill, HGrab: true})
+	intro.SetBorder(unison.NewEmptyBorder(geom.Insets{Bottom: unison.StdVSpacing}))
 	panel.AddChild(intro)
+	note := NewWrappingLabel()
+	fd := note.Font.Descriptor()
+	fd.Size--
+	note.Font = fd.Font()
+	note.SetTitle(i18n.Text("The money-tagged items carried pay for it, chosen automatically unless you change the quantities to spend."))
+	wrapToWidthOf(note.AsPanel(), list.box)
+	note.SetLayoutData(&unison.FlexLayoutData{HAlign: align.Fill, HGrab: true})
+	panel.AddChild(note)
 	panel.AddChild(list.box)
 	d.note = newPurchaseNote()
 	wrapToWidthOf(d.note.AsPanel(), list.box)
@@ -177,7 +185,8 @@ func newPurchaseDialog(buy *buyDockable, plan *buyPlan) *purchaseDialog {
 	panel.AddChild(d.createOptions(buy.merge))
 
 	var err error
-	if d.dialog, err = newPromptDialog(promptOperation{name: i18n.Text("Finalize Purchase")}, nil, nil, panel,
+	if d.dialog, err = newPromptDialog(
+		promptOperation{name: i18n.Text("Finalize Purchase")}, nil, nil, panel,
 		unison.NewCancelButtonInfo(),
 		unison.NewOKButtonInfoWithTitle(i18n.Text("Finalize")),
 	); err != nil {

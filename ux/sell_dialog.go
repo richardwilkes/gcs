@@ -68,7 +68,7 @@ type sellDialog struct {
 	// money holds the denominations the sale pays out in. It is resolved from the sheet's sell money just once, as
 	// each lookup may load a library file.
 	money   []*gurps.Equipment
-	percent fxp.Int
+	percent int
 	name    string
 	// nameEdited is set once the user changes the transaction name, which until then names the items being sold.
 	nameEdited bool
@@ -87,8 +87,7 @@ type sellDialog struct {
 	payoutLabel *TextLabel
 	warning     *TextLabel
 	nameField   *StringField
-	// invalid holds the fields whose text isn't a valid value, which keeps the sale from being made (see gateOnValidity).
-	invalid map[*DecimalField]bool
+	invalid     map[unison.Paneler]bool
 }
 
 type sellRow struct {
@@ -126,7 +125,7 @@ func newSellDialog(sheet *Sheet, list []*gurps.Equipment) *sellDialog {
 	d := &sellDialog{
 		sheet:   sheet,
 		money:   entity.SellMoneyItems(),
-		invalid: make(map[*DecimalField]bool),
+		invalid: make(map[unison.Paneler]bool),
 		// The field clamps what it is given to its range and reports the result through its setter, which updates
 		// labels that don't exist yet, so the percentage is kept within the range before the field sees it.
 		percent: min(max(entity.SheetSettings.SellPercent, gurps.MinTradePercent), gurps.MaxTradePercent),
@@ -283,13 +282,13 @@ func (d *sellDialog) newContent() *unison.Panel {
 
 // newPercentField returns the percentage field, named by its label, with its unit beside it.
 func (d *sellDialog) newPercentField(label *unison.Label) *unison.Panel {
-	percent := NewDecimalField(nil, "", "", func() fxp.Int { return d.percent },
-		func(v fxp.Int) {
+	percent := NewPercentageField(nil, "", "", func() int { return d.percent },
+		func(v int) {
 			d.percent = v
 			d.update()
 		}, gurps.MinTradePercent, gurps.MaxTradePercent, false, false)
 	percent.SetMarksModified(false)
-	d.gateOnValidity(percent)
+	percent.ValidateCallback = d.chainValidateCallback(percent, percent.ValidateCallback)
 	return WrapWithSpan(1, labelControl(percent, label), NewFieldTrailingHint(percent, i18n.Text("%"), false))
 }
 
@@ -377,7 +376,7 @@ func (d *sellDialog) newList() *unison.Panel {
 			refuseFractions(quantity)
 		}
 		quantity.Accessibility.Name = i18n.Text("%s quantity to sell", name)
-		d.gateOnValidity(quantity)
+		quantity.ValidateCallback = d.chainValidateCallback(quantity, quantity.ValidateCallback)
 		list.AddChild(quantity)
 		carried := unison.NewLabel()
 		carried.SetTitle(i18n.Text("of %s", row.most.Comma()))
@@ -385,7 +384,7 @@ func (d *sellDialog) newList() *unison.Panel {
 		list.AddChild(carried)
 		each := unison.NewLabel()
 		each.SetTitle(i18n.Text("$%s",
-			settings.FormatEquipmentValue(gurps.TradePrice(row.eqp, fxp.One, fxp.Hundred))))
+			settings.FormatEquipmentValue(gurps.TradePrice(row.eqp, fxp.One, 100))))
 		each.SetLayoutData(&unison.FlexLayoutData{HAlign: align.End, VAlign: align.Middle})
 		list.AddChild(each)
 		row.youGet = unison.NewLabel()
@@ -476,13 +475,9 @@ func (d *sellDialog) defaultName() string {
 	return i18n.Text("Sold %s", tradeNames(names))
 }
 
-// gateOnValidity keeps the sale from being made while the field's text isn't a valid value, since the field then reports
-// the nearest value it allows rather than what was typed. The field validates after it has reported a change, so the
-// dialog is brought up to date from the validation rather than from the value alone.
-func (d *sellDialog) gateOnValidity(field *DecimalField) {
-	validate := field.ValidateCallback
-	field.ValidateCallback = func() bool {
-		valid := validate()
+func (d *sellDialog) chainValidateCallback(field unison.Paneler, callback func() bool) func() bool {
+	return func() bool {
+		valid := callback()
 		if d.invalid[field] == valid {
 			d.invalid[field] = !valid
 			d.update()
@@ -496,7 +491,7 @@ func (d *sellDialog) gateOnValidity(field *DecimalField) {
 func (d *sellDialog) update() {
 	settings := d.sheet.Entity().SheetSettings
 	dollars := func(value fxp.Int) string { return i18n.Text("$%s", settings.FormatEquipmentValue(value)) }
-	setLabelTitle(d.youGetHeader, i18n.Text("You Get (%s%%)", d.percent.String()))
+	setLabelTitle(d.youGetHeader, i18n.Text("You Get (%d%%)", d.percent))
 	var total fxp.Int
 	selling := false
 	for _, row := range d.rows {

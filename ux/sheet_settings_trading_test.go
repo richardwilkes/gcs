@@ -141,29 +141,29 @@ func TestSheetSettingsTradingPercentFields(t *testing.T) {
 	d, recorder := newTestSheetSettingsDockable(t, owner)
 	s := owner.entity.SheetSettings
 	sellBefore := s.SellPercent
-	c.Equal(s.BuyPercent.String(), d.buyPercentField.Text(), "the buy percent field shows the setting")
-	c.Equal(s.SellPercent.String(), d.sellPercentField.Text(), "the sell percent field shows the setting")
+	c.Equal(s.BuyPercent, d.buyPercentField.CurrentValue(), "the buy percent field shows the setting")
+	c.Equal(s.SellPercent, d.sellPercentField.CurrentValue(), "the sell percent field shows the setting")
 
 	d.buyPercentField.SetText("75")
-	c.Equal(fxp.FromInteger(75), s.BuyPercent, "the buy percent field writes the buy percent")
+	c.Equal(75, s.BuyPercent, "the buy percent field writes the buy percent")
 	c.Equal(sellBefore, s.SellPercent, "the buy percent field leaves the sell percent alone")
 	c.Equal([]bool{false}, recorder.updates, "a new buy percent is reported, without a full rebuild")
 
 	d.sellPercentField.SetText("40")
-	c.Equal(fxp.FromInteger(40), s.SellPercent, "the sell percent field writes the sell percent")
-	c.Equal(fxp.FromInteger(75), s.BuyPercent, "the sell percent field leaves the buy percent alone")
+	c.Equal(40, s.SellPercent, "the sell percent field writes the sell percent")
+	c.Equal(75, s.BuyPercent, "the sell percent field leaves the buy percent alone")
 	c.Equal([]bool{false, false}, recorder.updates, "a new sell percent is reported, without a full rebuild")
 
 	replacement := s.Clone(owner.entity)
-	replacement.BuyPercent = fxp.FromInteger(120)
-	replacement.SellPercent = fxp.FromInteger(30)
+	replacement.BuyPercent = 120
+	replacement.SellPercent = 30
 	owner.entity.SheetSettings = replacement
 	replacement.SetOwningEntity(owner.entity)
 	d.sync()
-	c.Equal("120", d.buyPercentField.Text(), "sync shows the replacement's buy percent")
-	c.Equal("30", d.sellPercentField.Text(), "sync shows the replacement's sell percent")
-	c.Equal(fxp.FromInteger(120), replacement.BuyPercent, "sync leaves the buy percent as it was")
-	c.Equal(fxp.FromInteger(30), replacement.SellPercent, "sync leaves the sell percent as it was")
+	c.Equal(120, d.buyPercentField.CurrentValue(), "sync shows the replacement's buy percent")
+	c.Equal(30, d.sellPercentField.CurrentValue(), "sync shows the replacement's sell percent")
+	c.Equal(120, replacement.BuyPercent, "sync leaves the buy percent as it was")
+	c.Equal(30, replacement.SellPercent, "sync leaves the sell percent as it was")
 	c.Equal(2, len(recorder.updates), "sync tells the sheets nothing")
 }
 

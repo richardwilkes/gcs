@@ -210,7 +210,7 @@ func TestSheetSettingsEnsureValidityBoundsTradePercents(t *testing.T) {
 	data := fmt.Appendf(nil, `{
 	"version": %d,
 	"profile": {"name": "Plain"},
-	"settings": {"sell_percent": 2000, "buy_percent": 0.5}
+	"settings": {"sell_percent": 2000, "buy_percent": 1}
 }`, jio.CurrentDataVersion)
 	c.NoError(os.WriteFile(filepath.Join(dir, "plain.gcs"), data, 0o600))
 	e, err := NewEntityFromFile(os.DirFS(dir), "plain.gcs")
@@ -219,14 +219,14 @@ func TestSheetSettingsEnsureValidityBoundsTradePercents(t *testing.T) {
 	c.Equal(MinTradePercent, e.SheetSettings.BuyPercent, "a positive buy percent below the range is brought up to it")
 
 	s := FactorySheetSettings()
-	s.BuyPercent = fxp.FromInteger(-5)
+	s.BuyPercent = -5
 	s.SellPercent = 0
 	s.EnsureValidity()
-	c.Equal(fxp.Hundred, s.BuyPercent, "a buy percent that isn't positive takes the default")
-	c.Equal(fxp.Fifty, s.SellPercent, "a sell percent that isn't positive takes the default")
-	s.BuyPercent = fxp.FromInteger(250)
-	s.SellPercent = fxp.FromInteger(35)
+	c.Equal(100, s.BuyPercent, "a buy percent that isn't positive takes the default")
+	c.Equal(50, s.SellPercent, "a sell percent that isn't positive takes the default")
+	s.BuyPercent = 250
+	s.SellPercent = 35
 	s.EnsureValidity()
-	c.Equal(fxp.FromInteger(250), s.BuyPercent, "a buy percent within the range is left alone")
-	c.Equal(fxp.FromInteger(35), s.SellPercent, "a sell percent within the range is left alone")
+	c.Equal(250, s.BuyPercent, "a buy percent within the range is left alone")
+	c.Equal(35, s.SellPercent, "a sell percent within the range is left alone")
 }
