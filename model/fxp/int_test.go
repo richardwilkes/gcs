@@ -31,6 +31,22 @@ func TestApplyRounding(t *testing.T) {
 	c.Equal(fxp.Two, fxp.ApplyRounding(fxp.Two, true))
 }
 
+func TestSaturatingAdd(t *testing.T) {
+	c := check.New(t)
+	c.Equal(fxp.Fifteen, fxp.SaturatingAdd(fxp.Ten, fxp.Five))
+	c.Equal(-fxp.Fifteen, fxp.SaturatingAdd(-fxp.Ten, -fxp.Five))
+	c.Equal(fxp.Five, fxp.SaturatingAdd(fxp.Ten, -fxp.Five))
+	c.Equal(fxp.Max, fxp.SaturatingAdd(fxp.Max, 0))
+	c.Equal(fxp.Max-1, fxp.SaturatingAdd(fxp.Max, -1))
+	c.Equal(fxp.Max, fxp.SaturatingAdd(fxp.Max, 1), "a sum above the maximum saturates")
+	c.Equal(fxp.Max, fxp.SaturatingAdd(fxp.Max, fxp.Max))
+	c.Equal(fxp.Max, fxp.SaturatingAdd(fxp.One, fxp.Max))
+	c.Equal(fxp.Min, fxp.SaturatingAdd(fxp.Min, -1), "a sum below the minimum saturates")
+	c.Equal(fxp.Min, fxp.SaturatingAdd(fxp.Min, fxp.Min))
+	c.Equal(fxp.Min+1, fxp.SaturatingAdd(fxp.Min, 1))
+	c.Equal(fxp.Int(-1), fxp.SaturatingAdd(fxp.Max, fxp.Min))
+}
+
 func TestResetIfOutOfRange(t *testing.T) {
 	c := check.New(t)
 	c.Equal(15, fxp.ResetIfOutOfRange(5, 10, 20, 15))

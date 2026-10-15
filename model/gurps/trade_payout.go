@@ -38,7 +38,9 @@ type payoutCoin struct {
 
 // PayoutFor returns the money items, drawn from money in any quantity, whose total value is as close to target as
 // possible without exceeding it, along with that total. Where more than one combination reaches that total, the one
-// with the fewest items is used. Items without a positive value are ignored.
+// with the fewest items is used. Items without a positive value are ignored. A target too large for the exact search
+// (see maxPayoutCells) is paid with the largest items first instead, which may fall further short of it and use more
+// items (see largestFirstPayout).
 func PayoutFor(target fxp.Int, money []*Equipment) (payouts []Payout, paid fxp.Int) {
 	zero := fxp.FromInteger(0)
 	coins := payoutCoins(money)
@@ -78,7 +80,9 @@ func PayoutFor(target fxp.Int, money []*Equipment) (payouts []Payout, paid fxp.I
 // PaymentFor returns the money items, drawn from money, whose total value is the smallest that is at least target,
 // along with that total. Each item may be used no more often than the whole units of its TradeQuantity. Where more than
 // one combination reaches that total, the one with the fewest items is used. Items without a positive value or without a
-// whole unit to trade are ignored. Returns nil and zero when target isn't positive or no combination reaches it.
+// whole unit to trade are ignored. Returns nil and zero when target isn't positive or no combination reaches it. A
+// target too large for the exact search (see maxPayoutCells) is paid with the largest items first instead, which may
+// pay more than the smallest total and use more items (see largestFirstPayment).
 func PaymentFor(target fxp.Int, money []*Equipment) (payments []Payout, paid fxp.Int) {
 	if target <= 0 {
 		return nil, 0
@@ -122,10 +126,11 @@ func PaymentFor(target fxp.Int, money []*Equipment) (payments []Payout, paid fxp
 		// The smallest total that reaches the goal exceeds it by less than the largest item, or any one item could be
 		// left out. The table holds a count of each item for every total, so its size is that range times the items.
 		var found []int64
-		if size := goal + rest[0].units; size > maxPayoutCells/int64(len(rest)) {
+		// The size is compared before it is formed, since a goal near the top of int64 would wrap it.
+		if goal > maxPayoutCells/int64(len(rest))-rest[0].units {
 			found = largestFirstPayment(rest, goal)
 		} else {
-			found = exactPayment(rest, goal, size)
+			found = exactPayment(rest, goal, goal+rest[0].units)
 		}
 		var total int64
 		for i, q := range found {
@@ -136,7 +141,13 @@ func PaymentFor(target fxp.Int, money []*Equipment) (payments []Payout, paid fxp
 			return payoutsFrom(coins, quantities)
 		}
 	}
-	quantities[first-1] = 1
+	// Of the coins that pay the goal alone, the least is spent, and the first listed of those worth the same, as the
+	// exact search spends the first listed on a tie.
+	least := first - 1
+	for least > 0 && coins[least-1].units == coins[least].units {
+		least--
+	}
+	quantities[least] = 1
 	return payoutsFrom(coins, quantities)
 }
 
@@ -152,7 +163,7 @@ func payoutWithin(target fxp.Int, coins []payoutCoin) (payouts []Payout, paid fx
 		coins[i].units /= g
 		coins[i].limit = min(coins[i].limit, goal/coins[i].units)
 	}
-	if goal+1 > maxPayoutCells/int64(len(coins)) {
+	if goal > maxPayoutCells/int64(len(coins))-1 {
 		return payoutsFrom(coins, largestFirstBoundedPayout(coins, goal))
 	}
 	return payoutsFrom(coins, exactPayout(coins, goal))
@@ -215,7 +226,7 @@ func payoutsFrom(coins []payoutCoin, quantities []int64) (payouts []Payout, paid
 	for i, q := range quantities {
 		if q > 0 {
 			payouts = append(payouts, Payout{Money: coins[i].eqp, Quantity: int(q)})
-			paid = paid.Add(coins[i].value.Mul(fxp.FromInteger(q)))
+			paid = fxp.SaturatingAdd(paid, coins[i].value.Mul(fxp.FromInteger(q)))
 		}
 	}
 	return payouts, paid
@@ -367,8 +378,14 @@ func largestFirstPayout(target fxp.Int, coins []payoutCoin) (payouts []Payout, p
 	return payouts, paid
 }
 
+// ceilDiv returns a divided by b, rounded up. Both must be positive. The remainder is tested rather than b-1 added to
+// a, which would wrap for an a near the top of int64, such as the units of a saturated fxp.Int.
 func ceilDiv(a, b int64) int64 {
-	return (a + b - 1) / b
+	q := a / b
+	if a%b != 0 {
+		q++
+	}
+	return q
 }
 
 func gcd(a, b int64) int64 {

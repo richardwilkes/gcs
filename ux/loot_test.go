@@ -148,3 +148,18 @@ func TestLootCandidatesUseWhatGroupsHold(t *testing.T) {
 	}
 	c.Equal([]string{"Ruby", "Diamond", "Chest"}, names)
 }
+
+// TestTreasureGenPanelRecordsTheValidityOfAFieldBuiltOutOfRange checks that a field built from a stored value outside
+// its range, which it shows flagged as invalid, is recorded as invalid as soon as its validity is gated, so that the OK
+// button can't be enabled while the field shows a value other than the one generation would use.
+func TestTreasureGenPanelRecordsTheValidityOfAFieldBuiltOutOfRange(t *testing.T) {
+	c := check.New(t)
+	p := newTreasureGenPanel(fxp.TenMillionMinusOne+fxp.One, fxp.TenThousand)
+	c.True(p.minField.Invalid(), "the field shows the stored value flagged as invalid")
+	c.True(p.invalid[p.minField], "and is recorded as invalid")
+	c.False(p.maxField.Invalid())
+	c.False(p.invalid[p.maxField])
+	p = newTreasureGenPanel(fxp.Thousand, fxp.Half)
+	c.True(p.maxField.Invalid())
+	c.True(p.invalid[p.maxField], "a field built below its range is recorded as invalid too")
+}

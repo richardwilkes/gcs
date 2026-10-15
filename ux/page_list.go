@@ -138,16 +138,18 @@ func installChoiceContainerCmdHandlers(owner Rebuildable, creators listItemCreat
 
 // installTraitListCmdHandlers installs on the owner the handlers for the commands that act on its trait list as a
 // whole: adding the natural attacks and organizing the traits. The list is looked up when a command is invoked, for
-// the same reason as in installNewItemCmdHandlers. The entity is the one the natural attacks are made for, and is nil
-// for a template, whose traits have no entity until the template is applied.
+// the same reason as in installNewItemCmdHandlers, and the commands are disabled while the lookup returns nil, which
+// it does while the layout leaves the list off the page (see onPageCreator). The entity is the one the natural attacks
+// are made for, and is nil for a template, whose traits have no entity until the template is applied.
 func installTraitListCmdHandlers(owner Rebuildable, provider gurps.TraitListProvider, entity *gurps.Entity, traits func() *PageList[*gurps.Trait]) {
 	p := owner.AsPanel()
-	p.InstallCmdHandlers(AddNaturalAttacksItemID, unison.AlwaysEnabled, func(_ any) {
+	enabled := func(_ any) bool { return traits() != nil }
+	p.InstallCmdHandlers(AddNaturalAttacksItemID, enabled, func(_ any) {
 		InsertItems(owner, traits().Table, provider.TraitList, provider.SetTraitList,
 			func(_ *unison.Table[*Node[*gurps.Trait]]) []*Node[*gurps.Trait] { return traits().provider.RootRows() },
 			gurps.NewNaturalAttacks(entity, nil))
 	})
-	p.InstallCmdHandlers(OrganizeTraitsItemID, unison.AlwaysEnabled, func(_ any) { organizeTraits(owner, traits().Table) })
+	p.InstallCmdHandlers(OrganizeTraitsItemID, enabled, func(_ any) { organizeTraits(owner, traits().Table) })
 }
 
 // listsForKeys returns the lists for the block keys the predicate accepts, in the canonical block order (see

@@ -167,15 +167,21 @@ type buyChange struct {
 }
 
 // buySellMoneyState is what the change depends on for one sell money denomination: the source it was found through,
-// since each lookup makes a fresh copy, and its value.
+// since each lookup makes a fresh copy, and the copy itself, which the change is made of and which the next lookup's
+// copy must match in everything gurps.Equipment.MergeMatches compares, as the library may have changed in between.
 type buySellMoneyState struct {
 	source gurps.Source
-	value  fxp.Int
+	money  *gurps.Equipment
 }
 
 // newBuySellMoneyState returns the state of the sell money denomination.
 func newBuySellMoneyState(money *gurps.Equipment) buySellMoneyState {
-	return buySellMoneyState{source: money.Source, value: money.AdjustedValue()}
+	return buySellMoneyState{source: money.Source, money: money}
+}
+
+// matches returns true if the denomination is as it stood when the change was worked out.
+func (s buySellMoneyState) matches(money *gurps.Equipment) bool {
+	return s.source == money.Source && s.money.MergeMatches(money)
 }
 
 // buyGivenMoney is what the change depends on for one carried money item paid with: a copy of it as it stood, since
@@ -964,7 +970,7 @@ func (p *buyPanel) planPayment() buyPlan {
 		return plan
 	}
 	for _, item := range p.items {
-		plan.total += gurps.TradePrice(item.eqp, item.quantity(), p.percent)
+		plan.total = fxp.SaturatingAdd(plan.total, gurps.TradePrice(item.eqp, item.quantity(), p.percent))
 	}
 	entity := p.sheet.Entity()
 	money := entity.MoneyItems()
@@ -1017,7 +1023,7 @@ func manualPayouts(chosen map[tid.TID]int, money []*gurps.Equipment) (payments [
 			continue
 		}
 		payments = append(payments, gurps.Payout{Money: one, Quantity: qty})
-		paid += one.AdjustedValue().Mul(fxp.FromInteger(qty))
+		paid = fxp.SaturatingAdd(paid, one.AdjustedValue().Mul(fxp.FromInteger(qty)))
 	}
 	return payments, paid
 }
@@ -1026,12 +1032,13 @@ func manualPayouts(chosen map[tid.TID]int, money []*gurps.Equipment) (payments [
 // gurps.Entity.ChangeFor), and what it comes to. It is worked out again only when the amount, the money paid with or
 // the sell money has changed since the last time.
 func (p *buyPanel) changeFor(target fxp.Int, payments []gurps.Payout, sellMoney []*gurps.Equipment) (change []gurps.Payout, paid fxp.Int) {
-	denominations := make([]buySellMoneyState, 0, len(sellMoney))
-	for _, one := range sellMoney {
-		denominations = append(denominations, newBuySellMoneyState(one))
-	}
-	if !p.change.valid || p.change.target != target || !slices.Equal(p.change.sellMoney, denominations) ||
+	if !p.change.valid || p.change.target != target ||
+		!slices.EqualFunc(p.change.sellMoney, sellMoney, buySellMoneyState.matches) ||
 		!slices.EqualFunc(p.change.given, payments, buyGivenMoney.matches) {
+		denominations := make([]buySellMoneyState, 0, len(sellMoney))
+		for _, one := range sellMoney {
+			denominations = append(denominations, newBuySellMoneyState(one))
+		}
 		given := make([]buyGivenMoney, 0, len(payments))
 		for _, one := range payments {
 			given = append(given, newBuyGivenMoney(one))
@@ -1069,7 +1076,7 @@ func unreturnedChangeNotice(unreturned string, configured, found int) string {
 func (p *buyPanel) carriedMoney() fxp.Int {
 	var total fxp.Int
 	for _, one := range p.sheet.Entity().MoneyItems() {
-		total += one.AdjustedValue().Mul(one.TradeQuantity().Floor())
+		total = fxp.SaturatingAdd(total, one.AdjustedValue().Mul(one.TradeQuantity().Floor()))
 	}
 	return total
 }
@@ -1138,10 +1145,8 @@ func (p *buyPanel) choosePaymentManually() {
 // that is no longer in the window.
 func (p *buyPanel) leave(fn func()) {
 	var hadFocus bool
-	if wnd := p.Window(); wnd != nil {
-		if focus := wnd.Focus(); focus != nil {
-			hadFocus = unison.AncestorIsOrSelf(focus, p)
-		}
+	if focus := p.currentFocus(); focus != nil {
+		hadFocus = unison.AncestorIsOrSelf(focus, p)
 	}
 	fn()
 	if hadFocus && p.Parent() == nil {
@@ -1151,6 +1156,13 @@ func (p *buyPanel) leave(fn func()) {
 
 // finalizePurchase pays for the items, adds them and any change to the carried equipment and records the purchase, as
 // one undoable edit, then puts the carried equipment list back in place of the panel.
+//
+// An editor doesn't follow changes to its item, so one left open on an item the purchase changes would put its stale
+// quantity back when applied. The editors open on everything the purchase changes are closed first, as they are for a
+// sale, and the purchase is abandoned if one can't be closed: the carried money spent, each container the payment
+// splits apart to spend it, and the carried items the purchase and the change merge into. An editor saved at its prompt
+// applies its changes, which may alter the money carried, so the purchase is made only if the payment stands as the
+// user accepted it; otherwise the panel, which the save brought up to date, stays for the user to look over.
 func (p *buyPanel) finalizePurchase() {
 	sheet := p.sheet
 	if sheet.buyPanel != p {
@@ -1165,16 +1177,61 @@ func (p *buyPanel) finalizePurchase() {
 	for _, item := range p.items {
 		items = append(items, gurps.PurchaseItem{Equipment: item.eqp, Quantity: item.quantity()})
 	}
+	merge := p.merge.State == check.On
+	entity := sheet.Entity()
+	removed := make(map[tid.TID]bool)
+	changed := make(map[tid.TID]bool)
+	for _, payment := range plan.payments {
+		changed[payment.Money.TID] = true
+		if fxp.FromInteger(payment.Quantity) >= payment.Money.TradeQuantity() {
+			removed[payment.Money.TID] = true
+		}
+	}
+	for _, eqp := range entity.PaymentSplits(plan.payments) {
+		changed[eqp.TID] = true
+	}
+	if merge {
+		for _, item := range items {
+			if target := entity.MergeTarget(item.Equipment, removed); target != nil {
+				changed[target.TID] = true
+			}
+		}
+		for _, target := range entity.PayoutMergeTargets(plan.change, removed) {
+			if target != nil {
+				changed[target.TID] = true
+			}
+		}
+	}
+	if !CloseID(changed) || sheet.buyPanel != p {
+		return
+	}
+	if p.plan = p.planPayment(); !p.plan.same(&plan) {
+		return
+	}
 	name := strings.TrimSpace(p.nameField.Text())
 	if name == "" {
 		name = p.defaultName()
 	}
-	merge := p.merge.State == check.On
-	entity := sheet.Entity()
 	// The panel leaves the page in the rebuild that reports the purchase rather than in one of its own.
 	p.RemoveFromParent()
 	sheet.buyPanel = nil
 	recordTrade(sheet, i18n.Text("Buy Equipment"), func() {
 		entity.CommitPurchase(items, plan.payments, plan.change, merge, name, jio.Now())
+	})
+}
+
+// same returns true if the other plan is this one: the same total, paid for with the same payments and returning the
+// same change.
+func (plan *buyPlan) same(other *buyPlan) bool {
+	return plan.total == other.total && plan.paid == other.paid && plan.changePaid == other.changePaid &&
+		plan.short == other.short && samePayouts(plan.payments, other.payments) && samePayouts(plan.change, other.change)
+}
+
+// samePayouts returns true if the payouts are of the same quantities of the same money, in order. The money is the same
+// when it is the one item, or when it matches in everything but identity (see gurps.Equipment.MergeMatches), since the
+// sell money is copied afresh from the library each time it is looked up (see gurps.Entity.SellMoneyItems).
+func samePayouts(a, b []gurps.Payout) bool {
+	return slices.EqualFunc(a, b, func(x, y gurps.Payout) bool {
+		return x.Quantity == y.Quantity && (x.Money == y.Money || x.Money.MergeMatches(y.Money))
 	})
 }

@@ -1389,3 +1389,213 @@ func TestBuyPanelEnablesWhatItBuys(t *testing.T) {
 		c.True(bandage.IsDisabled(), "the original bandage stays disabled")
 	})
 }
+
+// TestBuyPanelTotalSaturatesRatherThanWrapping checks that a total made of prices too large for fxp to hold saturates at
+// its maximum, so that the money carried is seen to fall short and the purchase can't be finalized, rather than wrapping
+// around to a negative total that nothing pays for and that lets everything be carried for free.
+func TestBuyPanelTotalSaturatesRatherThanWrapping(t *testing.T) {
+	c := check.New(t)
+	screen, _, sheet := buyTestSheet(t, c, func(entity *gurps.Entity) []*gurps.Equipment {
+		return buyTestCoins(entity, 7, 11)
+	})
+	hoards := make([]*gurps.Equipment, 103)
+	for i := range hoards {
+		hoards[i] = buyTestItem(nil, fmt.Sprintf("Hoard %d", i+1), "9000000000000", 1)
+	}
+	library := buyTestLibrary(t, screen, "", hoards...)
+	screen.Do(func() { sheet.startBuying() })
+	_, dropped := buyTestDrop(t, screen, sheet, library, hoards...)
+	c.True(dropped)
+	state := readBuyPanel(t, screen, sheet)
+	c.Equal("Not enough money carried: $922,337,203,685,477.5807 needed, $151 carried.", state.summary,
+		"the total is held at fxp's maximum")
+	c.False(state.finalizeOn, "the purchase can't be finalized")
+}
+
+// TestBuyPanelChangeFollowsEditsToTheSellMoneyLibrary checks that the change follows a change to the sell money in the
+// library that leaves its value alone, such as renaming the coin: the panel looks the sell money up each time, so the
+// change it shows and hands over must be made of the copies that lookup returns, not of those an earlier lookup did.
+func TestBuyPanelChangeFollowsEditsToTheSellMoneyLibrary(t *testing.T) {
+	c := check.New(t)
+	screen, _, sheet := buyTestSheet(t, c, func(entity *gurps.Entity) []*gurps.Equipment {
+		return buyTestCoins(entity, 7, 0)[:1]
+	})
+	user := gurps.GlobalSettings().Libraries.User()
+	libFile := gurps.LibraryFile{Library: user.Key(), Path: "Renamed Money" + gurps.EquipmentExt}
+	path := filepath.Join(user.Path(false), filepath.FromSlash(libFile.Path))
+	penny := buyTestItem(nil, "Copper Penny", "1", 1, gurps.MoneyTag)
+	c.NoError(os.MkdirAll(filepath.Dir(path), 0o750))
+	c.NoError(gurps.SaveEquipment([]*gurps.Equipment{penny}, path))
+	dagger := buyTestItem(nil, "Dagger", "15", 1)
+	library := buyTestLibrary(t, screen, "", dagger)
+	screen.Do(func() {
+		sheet.Entity().SheetSettings.SellMoney = []gurps.Source{{LibraryFile: libFile, TID: penny.TID}}
+		sheet.startBuying()
+	})
+	_, dropped := buyTestDrop(t, screen, sheet, library, dagger)
+	c.True(dropped)
+	c.Equal("Pay automatically: Silver Eagle ×1 ($20); change: Copper Penny ×5 ($5)",
+		readBuyPanel(t, screen, sheet).summary)
+
+	penny.Name = "Penny"
+	c.NoError(gurps.SaveEquipment([]*gurps.Equipment{penny}, path))
+	screen.Do(func() { sheet.Rebuild(true) })
+	c.Equal("Pay automatically: Silver Eagle ×1 ($20); change: Penny ×5 ($5)", readBuyPanel(t, screen, sheet).summary,
+		"the change is made of the coin as the library now has it")
+	screen.Do(func() { sheet.buyPanel.finalize.Click() })
+	c.Equal([]string{"Silver Eagle ×6", "Dagger ×1", "Penny ×5"}, buyTestCarried(screen, sheet))
+}
+
+// buyTestEditorsOpenFor returns how many equipment editors are open on the items.
+func buyTestEditorsOpenFor(screen *unison.HeadlessScreen, items ...*gurps.Equipment) int {
+	var count int
+	screen.Do(func() {
+		count = len(AllMatchingDockables(func(d unison.Dockable) bool {
+			e, ok := d.(*editor[*gurps.Equipment, *gurps.EquipmentEditData])
+			return ok && slices.Contains(items, e.target)
+		}))
+	})
+	return count
+}
+
+// TestBuyPanelFinalizeClosesTheEditorsOfWhatItChanges checks that finalizing closes the editors open on everything the
+// purchase changes, as a sale does, since an editor doesn't follow changes to its item and would put its stale quantity
+// back when applied: the carried money spent, a container the payment splits apart, and the carried items the purchase
+// and the change merge into. The editor of an item the purchase leaves alone stays open.
+func TestBuyPanelFinalizeClosesTheEditorsOfWhatItChanges(t *testing.T) {
+	c := check.New(t)
+	var eagles, pile, purse, pursePennies, gloves, rope *gurps.Equipment
+	screen, _, sheet := buyTestSheet(t, c, func(entity *gurps.Entity) []*gurps.Equipment {
+		eagles = buyTestItem(entity, "Silver Eagle", "20", 7, gurps.MoneyTag)
+		pile = buyTestItem(entity, "Copper Penny", "1", 11, gurps.MoneyTag)
+		purse = gurps.NewEquipment(entity, nil, true)
+		purse.Name = "Purse"
+		purse.Quantity = fxp.Two
+		pursePennies = buyTestItem(entity, "Copper Penny", "1", 3, gurps.MoneyTag)
+		pursePennies.SetParent(purse)
+		purse.Children = []*gurps.Equipment{pursePennies}
+		gloves = buyTestItem(entity, "Leather Gloves", "30", 1)
+		rope = buyTestItem(entity, "Rope", "5", 1)
+		return []*gurps.Equipment{eagles, pile, purse, gloves, rope}
+	})
+	sources := buyTestMoneyLibrary(t, c)
+	library := buyTestLibrary(t, screen, "", buyTestItem(nil, "Leather Gloves", "30", 1))
+	screen.Do(func() {
+		sheet.Entity().SheetSettings.SellMoney = sources
+		for _, eqp := range []*gurps.Equipment{eagles, pile, purse, pursePennies, gloves, rope} {
+			EditEquipment(sheet, eqp, true)
+		}
+		sheet.startBuying()
+	})
+	c.Equal(6, buyTestEditorsOpenFor(screen, eagles, pile, purse, pursePennies, gloves, rope), "the editors must be open")
+	var rows []*Node[*gurps.Equipment]
+	screen.Do(func() { rows = library.RootRows() })
+	_, dropped := buyTestDrop(t, screen, sheet, library, rows[0].Data())
+	c.True(dropped)
+	screen.Do(func() {
+		sheet.buyPanel.manual = map[tid.TID]int{eagles.TID: 2, pursePennies.TID: 1}
+		sheet.buyPanel.refresh()
+	})
+	c.Equal("Pay manually: Silver Eagle ×2, Copper Penny ×1 ($41); change: Copper Penny ×11 ($11)",
+		readBuyPanel(t, screen, sheet).summary)
+	screen.Do(func() { sheet.buyPanel.finalize.Click() })
+	c.Equal([]string{"Silver Eagle ×5", "Copper Penny ×22", "Purse ×1", "Purse ×1", "Leather Gloves ×2", "Rope ×1"},
+		buyTestCarried(screen, sheet), "the eagles and a purse's penny are spent, splitting the purse, and the gloves "+
+			"and the change merge into those carried")
+	c.Equal(0, buyTestEditorsOpenFor(screen, eagles, pursePennies), "the editors of the money spent are closed")
+	c.Equal(0, buyTestEditorsOpenFor(screen, purse), "the editor of the purse the payment splits apart is closed")
+	c.Equal(0, buyTestEditorsOpenFor(screen, gloves), "the editor of the gloves the purchase merges into is closed")
+	c.Equal(0, buyTestEditorsOpenFor(screen, pile), "the editor of the pennies the change merges into is closed")
+	c.Equal(1, buyTestEditorsOpenFor(screen, rope), "the editor of an item the purchase leaves alone stays open")
+}
+
+// TestBuyPanelDoesNotFinalizeOnAPaymentASavedEditorChanged checks that when an editor open on the money paid with is
+// saved at the prompt put up as finalizing closes it, and saving changes the payment, the purchase isn't made on the
+// terms the user accepted: the panel, brought up to date by the save, stays for the user to look over.
+func TestBuyPanelDoesNotFinalizeOnAPaymentASavedEditorChanged(t *testing.T) {
+	c := check.New(t)
+	var eagles *gurps.Equipment
+	screen, wnd, sheet := buyTestSheet(t, c, func(entity *gurps.Entity) []*gurps.Equipment {
+		eagles = buyTestItem(entity, "Silver Eagle", "20", 7, gurps.MoneyTag)
+		return []*gurps.Equipment{eagles}
+	})
+	dagger := buyTestItem(nil, "Dagger", "15", 1)
+	library := buyTestLibrary(t, screen, "", dagger)
+	screen.Do(func() {
+		e := EditEquipment(sheet, eagles, true)
+		e.editorData.Quantity = 0
+		e.MarkModified(nil)
+		sheet.startBuying()
+	})
+	_, dropped := buyTestDrop(t, screen, sheet, library, dagger)
+	c.True(dropped)
+	c.Equal("Pay automatically: Silver Eagle ×1 ($20)", readBuyPanel(t, screen, sheet).summary)
+	screen.Do(func() { sheet.buyPanel.finalize.Click() })
+	screen.Sync() // Finalizing is posted as a task, which puts up the editor's prompt.
+	_, prompt := modalDialog(t, screen, wnd)
+	screen.Click(screen.PanelCenter(dialogButton(t, screen, prompt, unison.ModalResponseOK)))
+	c.Equal(0, buyTestEditorsOpenFor(screen, eagles), "the editor is saved and closed")
+	c.Equal([]string{"Silver Eagle ×0"}, buyTestCarried(screen, sheet), "the eagles are as saved and nothing is bought")
+	state := readBuyPanel(t, screen, sheet)
+	c.Equal("Not enough money carried: $15 needed, $0 carried.", state.summary, "the panel shows the payment as it now stands")
+	c.False(state.finalizeOn)
+	var records int
+	screen.Do(func() { records = len(sheet.Entity().ShoppingRecord) })
+	c.Equal(0, records)
+}
+
+// TestBuyPanelLeavingDoesNotMoveAnAbsentFocus checks that leaving the panel reads the keyboard focus without moving it:
+// asking the window for its focus moves it to the next focusable panel when nothing holds it, which would put the focus
+// on an arbitrary panel on the way out.
+func TestBuyPanelLeavingDoesNotMoveAnAbsentFocus(t *testing.T) {
+	c := check.New(t)
+	screen, wnd, sheet := buyTestSheet(t, c, func(entity *gurps.Entity) []*gurps.Equipment {
+		return buyTestCoins(entity, 7, 11)
+	})
+	var before, after *unison.Panel
+	var left bool
+	// Drawing the window gives the focus to the first focusable panel when nothing holds it, so the focus is cleared,
+	// the panel left and the focus read without a redraw in between.
+	screen.Do(func() {
+		sheet.startBuying()
+		wnd.SetFocus(nil)
+		before = wnd.CurrentFocus()
+		sheet.buyPanel.leave(func() { left = true })
+		after = wnd.CurrentFocus()
+	})
+	c.True(before == nil, "precondition: nothing holds the focus")
+	c.True(left)
+	c.True(after == nil, "nothing holds the focus still; it is on %v", after)
+}
+
+// TestBuyPanelFinalizesWithUnequippedSellMoney checks that a purchase returning change in a library coin saved without
+// being equipped, as the Dungeon Fantasy RPG coins are, is finalized: predicting where the change merges must not change
+// the coin, or the payment would no longer look like the one the user accepted.
+func TestBuyPanelFinalizesWithUnequippedSellMoney(t *testing.T) {
+	c := check.New(t)
+	screen, _, sheet := buyTestSheet(t, c, func(entity *gurps.Entity) []*gurps.Equipment {
+		return buyTestCoins(entity, 7, 0)[:1]
+	})
+	user := gurps.GlobalSettings().Libraries.User()
+	libFile := gurps.LibraryFile{Library: user.Key(), Path: "Unequipped Change" + gurps.EquipmentExt}
+	path := filepath.Join(user.Path(false), filepath.FromSlash(libFile.Path))
+	penny := buyTestItem(nil, "Copper Penny", "1", 1, gurps.MoneyTag)
+	penny.Equipped = false
+	c.NoError(os.MkdirAll(filepath.Dir(path), 0o750))
+	c.NoError(gurps.SaveEquipment([]*gurps.Equipment{penny}, path))
+	dagger := buyTestItem(nil, "Dagger", "15", 1)
+	library := buyTestLibrary(t, screen, "", dagger)
+	screen.Do(func() {
+		sheet.Entity().SheetSettings.SellMoney = []gurps.Source{{LibraryFile: libFile, TID: penny.TID}}
+		sheet.startBuying()
+	})
+	_, dropped := buyTestDrop(t, screen, sheet, library, dagger)
+	c.True(dropped)
+	c.Equal("Pay automatically: Silver Eagle ×1 ($20); change: Copper Penny ×5 ($5)",
+		readBuyPanel(t, screen, sheet).summary)
+	screen.Do(func() { sheet.buyPanel.finalize.Click() })
+	var buying bool
+	screen.Do(func() { buying = sheet.buying() })
+	c.False(buying, "the purchase is finalized")
+	c.Equal([]string{"Silver Eagle ×6", "Dagger ×1", "Copper Penny ×5"}, buyTestCarried(screen, sheet))
+}

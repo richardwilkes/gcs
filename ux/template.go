@@ -73,22 +73,39 @@ func NewTemplate(filePath string, template *gurps.Template) *Template {
 	t.initPageDockable(t, filePath, gurps.TemplatesExt, template.Save, template)
 	t.finishPageDockable(t, t.createContent())
 
+	// A creator returns nil while the default layout leaves its list off the page (see createLists), which disables the
+	// commands that would add to it, as a sheet's do (see Sheet.onPageCreator).
 	creators := listItemCreators{
-		traits:           func() itemCreator { return t.Traits },
-		skills:           func() itemCreator { return t.Skills },
-		spells:           func() itemCreator { return t.Spells },
-		carriedEquipment: func() itemCreator { return t.Equipment },
-		notes:            func() itemCreator { return t.Notes },
+		traits:           onPageCreator(t.showsBlock, gurps.BlockTraitsKey, func() itemCreator { return t.Traits }),
+		skills:           onPageCreator(t.showsBlock, gurps.BlockSkillsKey, func() itemCreator { return t.Skills }),
+		spells:           onPageCreator(t.showsBlock, gurps.BlockSpellsKey, func() itemCreator { return t.Spells }),
+		carriedEquipment: onPageCreator(t.showsBlock, gurps.BlockEquipmentKey, func() itemCreator { return t.Equipment }),
+		notes:            onPageCreator(t.showsBlock, gurps.BlockNotesKey, func() itemCreator { return t.Notes }),
 	}
 	installListItemCmdHandlers(t, creators)
 	installChoiceContainerCmdHandlers(t, creators)
-	installTraitListCmdHandlers(t, t.template, nil, func() *PageList[*gurps.Trait] { return t.Traits })
+	installTraitListCmdHandlers(t, t.template, nil, t.onPageTraits)
 	t.InstallCmdHandlers(ApplyTemplateItemID, t.canApplyTemplate, t.applyTemplate)
 	t.InstallCmdHandlers(NewSheetFromTemplateItemID, unison.AlwaysEnabled, t.newSheetFromTemplate)
 	InstallExportCmdHandlers(t)
 
 	prepareForPage(t.template)
 	return t
+}
+
+// showsBlock returns true if the default layout, which templates follow (see createLists), shows the block with the key
+// on the page.
+func (t *Template) showsBlock(key string) bool {
+	return gurps.GlobalSettings().Sheet.Layout.Contains(key)
+}
+
+// onPageTraits returns the trait list, or nil while the default layout leaves it off the page, which disables the
+// commands that act on it (see installTraitListCmdHandlers).
+func (t *Template) onPageTraits() *PageList[*gurps.Trait] {
+	if !t.showsBlock(gurps.BlockTraitsKey) {
+		return nil
+	}
+	return t.Traits
 }
 
 // PageInfoProvider returns the page info provider for this template.
@@ -160,7 +177,18 @@ func CanApplyTemplate() bool {
 }
 
 func (t *Template) canApplyTemplate(_ any) bool {
-	return CanApplyTemplate()
+	return len(t.applyDestinations()) > 0
+}
+
+// applyDestinations returns the open sheets the template may be applied to: every one of them, unless the template
+// brings equipment, when a sheet whose carried equipment list the buy panel stands in for is left out, as Copy to Sheet
+// leaves it out (see copyDestinationsFor), since the equipment would land in the list hidden behind the panel.
+func (t *Template) applyDestinations() []*Sheet {
+	sheets := OpenSheets(nil)
+	if len(t.template.Equipment) == 0 {
+		return sheets
+	}
+	return copyDestinationsFor[*gurps.Equipment](sheets)
 }
 
 // NewSheetFromTemplate loads the specified template file and creates a new character sheet from it.
@@ -208,16 +236,17 @@ func ApplyTemplate(filePath string) {
 	}
 }
 
-// applyTemplate applies the template to the sheets the user picks, offering to randomize the profile again when the
-// template brings an ancestry. Creating a new sheet from a template is the one path that randomizes without making that
-// offer, which it does by calling applyTemplateToSheet directly.
+// applyTemplate applies the template to the sheets the user picks from those it may be applied to (see
+// applyDestinations), offering to randomize the profile again when the template brings an ancestry. Creating a new
+// sheet from a template is the one path that randomizes without making that offer, which it does by calling
+// applyTemplateToSheet directly.
 func (t *Template) applyTemplate(_ any) {
 	name := i18n.Text("Apply Template")
 	chooseOp := promptOperation{
 		name:        name,
 		description: i18n.Text("Applying template %s", shortNames(t.Title())...),
 	}
-	for _, sheet := range promptForDestinations(chooseOp, OpenSheets(nil)) {
+	for _, sheet := range promptForDestinations(chooseOp, t.applyDestinations()) {
 		t.applyTemplateToSheet(sheet, promptOperation{
 			name:        name,
 			description: i18n.Text("Applying template %s to %s", shortNames(t.Title(), sheet.Title())...),

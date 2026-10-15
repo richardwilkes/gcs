@@ -451,3 +451,41 @@ func TestPaymentForSetsApartCoinsThatPayTheTargetAlone(t *testing.T) {
 	c.Equal([]Payout{{Money: gem, Quantity: 1}}, payments, "the gem pays when the rest can't reach the target")
 	c.Equal(fxp.FromInteger(1_000_000), paid)
 }
+
+// TestPayoutSearchesTakeTheMaximumTarget checks that a target at fxp's maximum, which a saturated total comes to, is
+// searched without the sizes of the tables wrapping around: the payment reports that the money falls short, the payout
+// pays out as far as the money reaches, and so does the change, even when the money's unit is fxp's smallest.
+func TestPayoutSearchesTakeTheMaximumTarget(t *testing.T) {
+	c := check.New(t)
+	silver := moneyItem("Silver Eagle", "20", "5")
+	copper := moneyItem("Copper Penny", "1", "20")
+	sliver := moneyItem("Sliver", "0.0001", "1")
+	payments, paid := PaymentFor(fxp.Max, []*Equipment{silver})
+	c.Nil(payments)
+	c.Equal(fxp.Int(0), paid)
+	payments, paid = PaymentFor(fxp.Max, []*Equipment{silver, copper})
+	c.Nil(payments)
+	c.Equal(fxp.Int(0), paid)
+	payouts, paid := PayoutFor(fxp.Max, []*Equipment{silver, copper})
+	c.Equal(2, len(payouts))
+	c.True(paid > 0 && paid <= fxp.Max)
+	e := NewEntity()
+	change, paid := e.ChangeFor(fxp.Max, []*Equipment{sliver}, []Payout{{Money: copper, Quantity: 3}})
+	c.True(len(change) >= 1, "the slivers are paid out as far as they reach")
+	c.True(paid > 0 && paid <= fxp.Max)
+}
+
+// TestPaymentForSingleCoinUsesTheFirstListedOfEqualValue checks that where one coin pays the target by itself and
+// several equal-valued coins could, the first listed is spent, as the exact search spends the first listed on a tie.
+func TestPaymentForSingleCoinUsesTheFirstListedOfEqualValue(t *testing.T) {
+	c := check.New(t)
+	purse := moneyItem("Purse Gold", "100", "1")
+	pouch := moneyItem("Pouch Gold", "100", "1")
+	payments, paid := PaymentFor(fxp.Fifty, []*Equipment{purse, pouch})
+	c.Equal([]Payout{{Money: purse, Quantity: 1}}, payments)
+	c.Equal(fxp.Hundred, paid)
+	crown := moneyItem("Crown", "500", "1")
+	payments, paid = PaymentFor(fxp.Fifty, []*Equipment{crown, purse, pouch})
+	c.Equal([]Payout{{Money: purse, Quantity: 1}}, payments, "the least of the coins that pay the target alone is spent")
+	c.Equal(fxp.Hundred, paid)
+}

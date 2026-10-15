@@ -127,6 +127,19 @@ func ApplyRounding(value Int, roundDown bool) Int {
 	return value.Ceil()
 }
 
+// SaturatingAdd returns a + b, or Max or Min when the sum is out of range, rather than wrapping around as + does. Mul
+// and Div already saturate, so this keeps a sum of their results from wrapping.
+func SaturatingAdd(a, b Int) Int {
+	sum := a + b
+	if (a >= 0) == (b >= 0) && (sum >= 0) != (a >= 0) {
+		if a >= 0 {
+			return Max
+		}
+		return Min
+	}
+	return sum
+}
+
 // ResetIfOutOfRange checks the value and if it is lower than minValue or greater than maxValue, returns defValue,
 // otherwise returns value.
 func ResetIfOutOfRange[T xmath.Integer | xmath.Float | Int](value, minValue, maxValue, defValue T) T {

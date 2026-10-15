@@ -18,6 +18,8 @@ import (
 	"testing"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/eqcontainer"
+	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/gcs/v5/model/kinds"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/toolbox/v2/tid"
@@ -1142,4 +1144,60 @@ func TestCommitPurchaseEnablesWhatIsBought(t *testing.T) {
 		{Name: "Torch", Quantity: fxp.One, Value: fxp.Three},
 		{Name: "Kit", Quantity: fxp.One, Value: fxp.FromInteger(12)},
 	}, entry.Items, "the kit is priced with its bandage enabled")
+}
+
+// TestSellMoneyItemsSkipLibraryItemsNoLongerTaggedAsMoney checks that a sell money source whose library item has lost
+// the Money tag, which CanAddSellMoney requires, is skipped: were it paid out, MoneyItems would never list what was
+// received, so it couldn't be spent.
+func TestSellMoneyItemsSkipLibraryItemsNoLongerTaggedAsMoney(t *testing.T) {
+	c := check.New(t)
+	isolateUnownedSrcMatcher(t)
+	registerTestFileTypes(t, EquipmentExt)
+	libFile, silver, _ := writeMoneyLibrary(t)
+	src := Source{LibraryFile: libFile, TID: silver.TID}
+	e := NewEntity()
+	e.SheetSettings.SellMoney = []Source{src}
+	c.Equal(1, len(e.SellMoneyItems()), "the tagged coin is found")
+
+	silver.Tags = nil
+	p := filepath.Join(useTestLibrary(t, libFile.Library), filepath.FromSlash(libFile.Path))
+	c.NoError(SaveEquipment([]*Equipment{silver}, p))
+	c.Equal(0, len(e.SellMoneyItems()), "the coin is skipped once it is no longer tagged as money")
+}
+
+// TestTradeTakeKeepsToWhatCopiesThatCantBeSplitGiveUp checks that where the containers holding an item can't be split
+// apart, a trade takes only what leaving each copy an even share, rounded up to fxp's precision, gives up: a trade of
+// less than one of fxp's smallest units per copy takes nothing, and a sale of it changes nothing and records nothing,
+// rather than paying out for an item still carried in full.
+func TestTradeTakeKeepsToWhatCopiesThatCantBeSplitGiveUp(t *testing.T) {
+	c := check.New(t)
+	e := NewEntity()
+	box := withQuantity(newContainerItem("Box", "0"), "2.5")
+	gem := withQuantity(newEquipmentItem("Gem", "10000", "0"), "1")
+	carry(e, nil, box)
+	carry(e, box, gem)
+	c.Equal(fxp.TwoAndAHalf, gem.TradeQuantity())
+	c.Equal(fxp.Int(0), gem.TradeTake(fxp.FromStringForced("0.0001")), "less than one unit per copy takes nothing")
+	c.Equal(fxp.FromStringForced("0.0003"), gem.TradeTake(fxp.FromStringForced("0.0003")))
+	c.Equal(fxp.FromStringForced("0.0003"), gem.TradeTake(fxp.FromStringForced("0.0004")), "a little less is taken")
+	c.Equal(fxp.One, gem.TradeTake(fxp.One))
+	c.Equal(fxp.TwoAndAHalf, gem.TradeTake(fxp.Three), "no more than there is")
+	c.Equal(fxp.Int(0), gem.TradeTake(0))
+	knife := withQuantity(newEquipmentItem("Knife", "30", "0"), "10")
+	carry(e, nil, knife)
+	c.Equal(fxp.FromStringForced("0.0001"), knife.TradeTake(fxp.FromStringForced("0.0001")),
+		"an item held by no container is taken as asked")
+	group := NewEquipment(nil, nil, true)
+	group.Name = "Group"
+	group.ContainerType = eqcontainer.Group
+	carry(e, box, group)
+	c.Equal(fxp.TwoAndAHalf, group.TradeTake(fxp.One), "a group is taken in full")
+
+	entry := e.CommitSale([]SaleItem{{Equipment: gem, Quantity: fxp.FromStringForced("0.0001")}}, nil, true, "", jio.Now())
+	c.Equal(0, len(entry.Items), "a sale that takes nothing records nothing")
+	c.Equal(fxp.One, gem.Quantity)
+	entry = e.CommitSale([]SaleItem{{Equipment: gem, Quantity: fxp.FromStringForced("0.0004")}}, nil, true, "", jio.Now())
+	c.Equal([]ShoppingRecordItem{{Name: "Gem", Quantity: fxp.FromStringForced("0.0003"), Value: fxp.TenThousand}},
+		entry.Items, "the sale records what it takes")
+	c.Equal(fxp.FromStringForced("0.9999"), gem.Quantity)
 }

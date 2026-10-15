@@ -320,7 +320,7 @@ func (e *Entity) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 			When:   jio.Now(),
 			Reason: i18n.Text("Reconciliation"),
 		})
-		slices.SortFunc(e.PointsRecord, func(a, b *PointsRecord) int { return b.When.Compare(a.When) })
+		SortPointsRecordList(e.PointsRecord)
 	}
 	e.ShoppingRecord = normalizeShoppingRecord(e.ShoppingRecord)
 	if !keepSavedCalc(dec) {

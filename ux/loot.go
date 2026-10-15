@@ -369,8 +369,8 @@ type treasureGenPanel struct {
 	minValue fxp.Int
 	maxValue fxp.Int
 	// invalid records each field's validity as its validation reports it, since the field records the result only after
-	// its validation callback has returned. A field is created holding the rendering of a value within its range, so
-	// one that has not been validated through gateOnValidity yet is valid.
+	// its validation callback has returned. A field built from a stored value outside its range starts out invalid, and
+	// gateOnValidity records that when it is installed.
 	invalid map[*DecimalField]bool
 }
 
@@ -412,8 +412,9 @@ func newTreasureGenPanel(minValue, maxValue fxp.Int) *treasureGenPanel {
 // gateOnValidity brings the OK button up to date from the field's validation rather than from its value. The field
 // reports a changed value before it validates the text it was given, and reports no value at all when the text parses
 // to the value it already held, so the validation is the one point that follows every change and sees the text as it
-// is now.
+// is now. The field has already validated the text it was built with, so that result is recorded first.
 func (p *treasureGenPanel) gateOnValidity(field *DecimalField) {
+	p.invalid[field] = field.Invalid()
 	validate := field.ValidateCallback
 	field.ValidateCallback = func() bool {
 		valid := validate()

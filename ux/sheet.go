@@ -140,7 +140,7 @@ func NewSheet(filePath string, entity *gurps.Entity) *Sheet {
 		otherEquipment:   s.onPageCreator(gurps.BlockOtherEquipmentKey, func() itemCreator { return s.OtherEquipment }),
 		notes:            s.onPageCreator(gurps.BlockNotesKey, func() itemCreator { return s.Notes }),
 	})
-	installTraitListCmdHandlers(s, s.entity, s.entity, func() *PageList[*gurps.Trait] { return s.Traits })
+	installTraitListCmdHandlers(s, s.entity, s.entity, s.onPageTraits)
 	s.InstallCmdHandlers(SwapDefaultsItemID, s.canSwapDefaults, s.swapDefaults)
 	InstallExportCmdHandlers(s)
 	s.InstallCmdHandlers(ClearPortraitItemID, s.canClearPortrait, s.clearPortrait)
@@ -595,7 +595,12 @@ func (s *Sheet) syncDisclosure() {
 	}
 }
 
+// canSwapDefaults returns true if the skills selected in the skill list can have their defaults swapped. The list has to
+// be on the page: off it, the list keeps its selection but has no undo manager to record the swap with.
 func (s *Sheet) canSwapDefaults(_ any) bool {
+	if !s.showsBlock(gurps.BlockSkillsKey) {
+		return false
+	}
 	canSwap := false
 	for _, skillNode := range s.Skills.SelectedNodes(true) {
 		skill := skillNode.Data()
@@ -699,12 +704,28 @@ func (s *Sheet) showsBlock(key string) bool {
 // leaves the block off the page, disabling the "New ..." commands for it, since they would otherwise add to a list the
 // user can't see, and one with no undo manager to record the edit with.
 func (s *Sheet) onPageCreator(key string, list func() itemCreator) func() itemCreator {
+	return onPageCreator(s.showsBlock, key, list)
+}
+
+// onPageCreator returns a creator for the list that the block with the key shows, which returns nil while shows reports
+// that the layout leaves the block off the page, disabling the "New ..." commands for it, since they would otherwise add
+// to a list the user can't see, and one with no undo manager to record the edit with.
+func onPageCreator(shows func(key string) bool, key string, list func() itemCreator) func() itemCreator {
 	return func() itemCreator {
-		if !s.showsBlock(key) {
+		if !shows(key) {
 			return nil
 		}
 		return list()
 	}
+}
+
+// onPageTraits returns the trait list, or nil while the layout leaves it off the page, which disables the commands that
+// act on it (see installTraitListCmdHandlers).
+func (s *Sheet) onPageTraits() *PageList[*gurps.Trait] {
+	if !s.showsBlock(gurps.BlockTraitsKey) {
+		return nil
+	}
+	return s.Traits
 }
 
 // carriedEquipmentCreator returns the list the "New Carried Equipment" commands add to, or nil while the layout leaves

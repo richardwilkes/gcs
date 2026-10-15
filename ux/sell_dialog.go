@@ -11,6 +11,7 @@ package ux
 
 import (
 	"maps"
+	"slices"
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
@@ -99,10 +100,30 @@ type sellRow struct {
 	youGet   *unison.Label
 }
 
+// saleTerms is what the sale of an item rests on: how much of it there is to sell, what each is worth and whether it is
+// enabled, since a disabled item isn't sold (see gurps.Entity.CommitSale). Saving an editor can change any of them.
+type saleTerms struct {
+	most    fxp.Int
+	value   fxp.Int
+	enabled bool
+}
+
 // showSellDialog asks how much of each piece of the sheet's carried equipment to sell, all of it to start with, and at
 // what percentage of its full price, then sells it as a single undoable edit, paid in the sheet's sell money. Nothing
-// is changed unless the sale is accepted.
+// is changed unless the sale is accepted. Where an editor saved as the sale closes it changes what is for sale, the sale
+// is shown again as it now stands rather than made on terms the user didn't see (see sell).
 func showSellDialog(sheet *Sheet, list []*gurps.Equipment) {
+	d := newSellDialog(sheet, list)
+	for d.run() {
+		if d.sell() || !d.renew() {
+			return
+		}
+	}
+}
+
+// newSellDialog returns the dialog for selling the equipment, all of each item to start with, at the sheet's sell
+// percentage.
+func newSellDialog(sheet *Sheet, list []*gurps.Equipment) *sellDialog {
 	entity := sheet.Entity()
 	d := &sellDialog{
 		sheet:   sheet,
@@ -118,6 +139,12 @@ func showSellDialog(sheet *Sheet, list []*gurps.Equipment) {
 		d.rows = append(d.rows, &sellRow{eqp: eqp, most: most, quantity: most})
 	}
 	d.name = d.defaultName()
+	return d
+}
+
+// run shows the dialog, built anew from the rows, and returns true if the sale was accepted.
+func (d *sellDialog) run() bool {
+	d.dialog = nil // update must not reach the dialog of an earlier run while the content is built.
 	content := d.newContent()
 	d.update() // Before the dialog is made, so that it is sized for the text.
 	var err error
@@ -125,21 +152,28 @@ func showSellDialog(sheet *Sheet, list []*gurps.Equipment) {
 		[]*unison.DialogButtonInfo{unison.NewCancelButtonInfo(), unison.NewOKButtonInfoWithTitle(i18n.Text("Sell"))},
 		unison.FloatingWindowOption()); err != nil {
 		errs.Log(err)
-		return
+		return false
 	}
 	wnd := d.dialog.Window()
 	wnd.SetTitle(i18n.Text("Sell Equipment"))
 	holdMinSizeOnDisplay(wnd)
 	d.update() // The fields couldn't set the button's state while they were being created, so do it now.
-	if d.dialog.RunModal() != unison.ModalResponseOK {
-		return
-	}
+	return d.dialog.RunModal() == unison.ModalResponseOK
+}
+
+// sell makes the accepted sale and returns true, or returns true without selling anything when an editor refused to
+// close. It returns false, again without selling anything, when closing the editors changed the terms of the sale, which
+// is then to be shown again (see renew).
+//
+// An editor doesn't follow changes to its item, so one left open on an item the sale changes would put its stale
+// quantity back when applied. The editors open on everything the sale changes are closed first, as they are for a
+// deletion: an item sold in full is removed, along with what it holds, an item sold in part has its quantity reduced,
+// as does each container the sale splits apart to do that, and the carried money a payout merges into gains the payout.
+// An editor saved at its prompt applies its changes, which may alter what is for sale or what it is worth, while the
+// payout was worked out for the sale as accepted, so the sale is only made on the terms it was accepted on.
+func (d *sellDialog) sell() bool {
+	entity := d.sheet.Entity()
 	items := make([]gurps.SaleItem, 0, len(d.rows))
-	// An editor doesn't follow changes to its item, so one left open on an item the sale changes would put its stale
-	// quantity back when applied. The editors open on everything the sale changes are closed first, as they are for a
-	// deletion, and the sale is abandoned if one can't be closed: an item sold in full is removed, along with what it
-	// holds, an item sold in part has its quantity reduced, as does each container the sale splits apart to do that,
-	// and the carried money a payout merges into gains the payout.
 	removed := make(map[tid.TID]bool)
 	changed := make(map[tid.TID]bool)
 	for _, row := range d.rows {
@@ -159,23 +193,60 @@ func showSellDialog(sheet *Sheet, list []*gurps.Equipment) {
 		changed[eqp.TID] = true
 	}
 	if d.merge {
-		for _, payout := range d.payouts {
-			if target := entity.MergeTarget(payout.Money, removed); target != nil {
+		for _, target := range entity.PayoutMergeTargets(d.payouts, removed) {
+			if target != nil {
 				changed[target.TID] = true
 			}
 		}
 	}
 	maps.Copy(changed, removed)
+	terms := d.terms()
 	if !CloseID(changed) {
-		return
+		return true
+	}
+	if !slices.Equal(terms, d.terms()) {
+		return false
 	}
 	name := strings.TrimSpace(d.name)
 	if name == "" {
 		name = d.defaultName()
 	}
-	recordTrade(sheet, i18n.Text("Sell Equipment"), func() {
+	recordTrade(d.sheet, i18n.Text("Sell Equipment"), func() {
 		entity.CommitSale(items, d.payouts, d.merge, name, jio.Now())
 	})
+	return true
+}
+
+// terms returns the terms the sale of each row's item rests on, as they stand now.
+func (d *sellDialog) terms() []saleTerms {
+	terms := make([]saleTerms, len(d.rows))
+	for i, row := range d.rows {
+		terms[i] = saleTerms{
+			most:    row.eqp.TradeQuantity(),
+			value:   row.eqp.ExtendedValueOfJustOne(),
+			enabled: row.eqp.Enabled(),
+		}
+	}
+	return terms
+}
+
+// renew brings the rows up to date with their items as they now stand, for the dialog to be run again: an item that is
+// no longer enabled is dropped, and the quantity of each is kept to what a sale of it now takes (see
+// gurps.Equipment.TradeTake). Returns false if nothing is left to sell.
+func (d *sellDialog) renew() bool {
+	rows := d.rows[:0]
+	for _, row := range d.rows {
+		if !row.eqp.Enabled() {
+			continue
+		}
+		row.most = row.eqp.TradeQuantity()
+		row.quantity = row.eqp.TradeTake(row.quantity)
+		rows = append(rows, row)
+	}
+	d.rows = rows
+	clear(d.invalid)
+	d.computed = false
+	return len(rows) != 0
 }
 
 func (d *sellDialog) newContent() *unison.Panel {
@@ -288,13 +359,14 @@ func (d *sellDialog) newList() *unison.Panel {
 			list.AddChild(label)
 		}
 		// Any item can be left out of the sale by setting its quantity to zero. A container is sold by the copy, so its
-		// field refuses fractions unless the quantity carried is itself a fraction, and a group is sold in full (see
-		// gurps.Entity.CommitSale), so any other quantity of one is the whole of it, and the field is made to show that.
+		// field refuses fractions unless the quantity carried is itself a fraction. Any other quantity is kept to what
+		// the sale takes (see gurps.Equipment.TradeTake): the whole of a group, and only what the copies of containers
+		// that can't be split apart give up, so that the payout is for what is sold, and the field is made to show that.
 		var quantity *DecimalField
 		quantity = NewDecimalField(nil, "", "", func() fxp.Int { return row.quantity },
 			func(v fxp.Int) {
-				if row.eqp.IsGroup() && v > 0 && v != row.most {
-					row.quantity = row.most
+				if take := row.eqp.TradeTake(v); take != v {
+					row.quantity = take
 					quantity.syncFromValue()
 					return
 				}
@@ -431,7 +503,7 @@ func (d *sellDialog) update() {
 	selling := false
 	for _, row := range d.rows {
 		price := gurps.TradePrice(row.eqp, row.quantity, d.percent)
-		total += price
+		total = fxp.SaturatingAdd(total, price)
 		if row.quantity > 0 {
 			selling = true
 		}

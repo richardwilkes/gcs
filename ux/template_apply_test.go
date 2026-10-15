@@ -119,3 +119,47 @@ func TestApplyTemplateWithoutBodyTypeLeavesBodyTypeAlone(t *testing.T) {
 	sheet.undoMgr.Undo()
 	c.Equal(originalBody.Name, entity.SheetSettings.BodyType.Name, "undo must leave the body type alone as well")
 }
+
+// TestApplyTemplateLeavesOutASheetThatIsBuying checks that a template with equipment is neither offered to nor applied
+// to a sheet whose carried equipment list the buy panel stands in for, as Copy to Sheet leaves such a sheet out, since
+// the equipment would land in the list hidden behind the panel. A template without equipment is still applied to it,
+// and the template with equipment is applied once the sheet is done buying.
+func TestApplyTemplateLeavesOutASheetThatIsBuying(t *testing.T) {
+	c := check.New(t)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
+	forbidModifierPrompts(t)
+	sheet, ok := uxtest.OpenedByAction(t, screen, newCharacterSheetAction).(*Sheet)
+	if !ok {
+		t.Fatal("New Character Sheet must open a character sheet")
+	}
+	gear := gurps.NewTemplate()
+	rope := gurps.NewEquipment(nil, nil, false)
+	rope.Name = "Rope"
+	gear.Equipment = []*gurps.Equipment{rope}
+	gearTemplate := NewTemplate("gear"+gurps.TemplatesExt, gear)
+	traitTemplate := newTestTemplateWithBodyType("Humanoid")
+	var canApplyGear, canApplyTrait bool
+	var carried, traits int
+	screen.Do(func() {
+		sheet.startBuying()
+		traits = len(sheet.Entity().Traits)
+		canApplyGear = gearTemplate.canApplyTemplate(nil)
+		canApplyTrait = traitTemplate.canApplyTemplate(nil)
+		gearTemplate.applyTemplate(nil)
+		traitTemplate.applyTemplate(nil)
+		carried = len(sheet.Entity().CarriedEquipment)
+		traits = len(sheet.Entity().Traits) - traits
+	})
+	c.False(canApplyGear, "a template with equipment can't be applied while the only sheet is buying")
+	c.Equal(0, carried, "the equipment doesn't land in the hidden list")
+	c.True(canApplyTrait, "a template without equipment can be applied to a sheet that is buying")
+	c.Equal(1, traits, "and is")
+	screen.Do(func() {
+		sheet.stopBuying()
+		canApplyGear = gearTemplate.canApplyTemplate(nil)
+		gearTemplate.applyTemplate(nil)
+		carried = len(sheet.Entity().CarriedEquipment)
+	})
+	c.True(canApplyGear, "the template with equipment can be applied once the sheet is done buying")
+	c.Equal(1, carried, "and is")
+}

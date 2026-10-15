@@ -11,6 +11,8 @@ package ux
 
 import (
 	"fmt"
+	"os"
+	"path/filepath"
 	"slices"
 	"strings"
 	"testing"
@@ -77,7 +79,6 @@ type sellTestDialog struct {
 func openSellTestDialog(t *testing.T, screen *unison.HeadlessScreen, wnd *unison.Window, sheet *Sheet, items ...*gurps.Equipment) *sellTestDialog {
 	t.Helper()
 	done := false
-	s := &sellTestDialog{t: t, screen: screen, done: &done}
 	var table *unison.Table[*Node[*gurps.Equipment]]
 	var sellable int
 	screen.Do(func() {
@@ -96,6 +97,15 @@ func openSellTestDialog(t *testing.T, screen *unison.HeadlessScreen, wnd *unison
 		t.Fatal("the sell command could not be posted")
 	}
 	screen.Sync()
+	return attachSellTestDialog(t, screen, wnd, &done, sellable)
+}
+
+// attachSellTestDialog returns the sell dialog open in a window other than wnd, with the controls a test drives. The
+// dialog must have a quantity field for each of the sellable items, and done is where the task that opened it records
+// that it has finished.
+func attachSellTestDialog(t *testing.T, screen *unison.HeadlessScreen, wnd *unison.Window, done *bool, sellable int) *sellTestDialog {
+	t.Helper()
+	s := &sellTestDialog{t: t, screen: screen, done: done}
 	s.wnd, s.dialog = modalDialog(t, screen, wnd)
 	s.sell = dialogButton(t, screen, s.dialog, unison.ModalResponseOK)
 	s.cancel = dialogButton(t, screen, s.dialog, unison.ModalResponseCancel)
@@ -803,4 +813,177 @@ func TestSellDialogLinesUpTheList(t *testing.T) {
 		c.Equal(1, len(uxtest.PanelsOfType[*TextLabel](content)), "with nothing to warn of, only the payout is shown")
 	})
 	s.dismiss(c, s.cancel)
+}
+
+// TestSellDialogShowsTheSaleAgainWhenASavedEditorChangesIt checks that when an editor open on an item for sale is saved
+// at the prompt put up as the sale closes it, and saving changes what is for sale, the sale isn't made on the terms the
+// user accepted, which the payout was worked out for, but shown again as it now stands, keeping the percentage and the
+// quantities as far as they go.
+func TestSellDialogShowsTheSaleAgainWhenASavedEditorChangesIt(t *testing.T) {
+	c := check.New(t)
+	screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
+	money := newTradeTestMoney(t, c)
+	var knives *gurps.Equipment
+	sheet := openSellTestSheet(t, screen, []gurps.Source{money.source(money.penny)},
+		func(entity *gurps.Entity) []*gurps.Equipment {
+			knives = newTradeTestItem(entity, "Small Knife", "30", fxp.Ten)
+			return []*gurps.Equipment{knives}
+		})
+	var e *editor[*gurps.Equipment, *gurps.EquipmentEditData]
+	screen.Do(func() {
+		e = EditEquipment(sheet, knives, true)
+		e.editorData.Quantity = fxp.Two
+		e.MarkModified(nil)
+	})
+	s := openSellTestDialog(t, screen, wnd, sheet, knives)
+	s.replaceText(s.percent, "40")
+	s.replaceText(s.quantities[0], "5")
+	texts := s.texts()
+	c.True(slices.Contains(texts, "You receive: Copper Penny ×60 ($60.00)"), "the dialog shows %v", texts)
+	screen.Click(screen.PanelCenter(s.sell))
+
+	// The editor asks whether to save its changes, and saving them leaves two knives, not the five to be sold.
+	promptWnd, prompt := modalDialog(t, screen, wnd)
+	var promptTexts []string
+	screen.Do(func() { promptTexts = uxtest.LabelTexts(promptWnd.Content()) })
+	c.True(slices.Contains(promptTexts, "Save changes made to"), "the editor asks whether to save: %v", promptTexts)
+	screen.Click(screen.PanelCenter(dialogButton(t, screen, prompt, unison.ModalResponseOK)))
+	c.False(*s.done, "the sale isn't made on terms that no longer hold")
+	screen.Do(func() {
+		c.Equal([]string{"Small Knife ×2"}, carriedSummary(sheet), "the editor's changes are saved and nothing is sold")
+		c.Equal(0, len(sheet.Entity().ShoppingRecord))
+	})
+
+	again := attachSellTestDialog(t, screen, wnd, s.done, 1)
+	screen.Do(func() {
+		c.Equal("40", again.percent.Text(), "the percentage is kept")
+		c.Equal("2", again.quantities[0].Text(), "the quantity is kept to what there now is to sell")
+	})
+	texts = again.texts()
+	for _, want := range []string{"of 2", "You receive: Copper Penny ×24 ($24.00)"} {
+		c.True(slices.Contains(texts, want), "the dialog must show %q; it shows %v", want, texts)
+	}
+	again.dismiss(c, again.sell)
+	screen.Do(func() {
+		entity := sheet.Entity()
+		c.Equal([]string{"Copper Penny ×24"}, carriedSummary(sheet), "the knives are sold for what two are worth")
+		c.Equal(1, len(entity.ShoppingRecord))
+		if len(entity.ShoppingRecord) == 1 {
+			c.Equal([]gurps.ShoppingRecordItem{{Name: "Small Knife", Quantity: fxp.Two, Value: fxp.FromInteger(30)}},
+				entity.ShoppingRecord[0].Items)
+			c.Equal(fxp.FromInteger(24), entity.ShoppingRecord[0].Exchanged)
+		}
+	})
+}
+
+// TestSellDialogClosesTheEditorOfMoneyAnUnequippedCoinMergesInto checks that the dialog predicts the merge of a payout
+// as the sale makes it: a library coin saved without being equipped, as the Dungeon Fantasy RPG coins are, still merges
+// into the equipped pile carried, since what is received is carried equipped, so the editor open on the pile is closed.
+func TestSellDialogClosesTheEditorOfMoneyAnUnequippedCoinMergesInto(t *testing.T) {
+	c := check.New(t)
+	screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
+	user := gurps.GlobalSettings().Libraries.User()
+	libFile := gurps.LibraryFile{Library: user.Key(), Path: "Unequipped Money" + gurps.EquipmentExt}
+	coin := newTradeTestItem(nil, "Silver Coin", "1", fxp.One, gurps.MoneyTag)
+	coin.Equipped = false
+	path := filepath.Join(user.Path(false), libFile.Path)
+	c.NoError(os.MkdirAll(filepath.Dir(path), 0o750))
+	c.NoError(gurps.SaveEquipment([]*gurps.Equipment{coin}, path))
+	var dagger, pile *gurps.Equipment
+	sheet := openSellTestSheet(t, screen, []gurps.Source{{LibraryFile: libFile, TID: coin.TID}},
+		func(entity *gurps.Entity) []*gurps.Equipment {
+			dagger = newTradeTestItem(entity, "Dagger", "20", fxp.One)
+			pile = coin.Clone(libFile, entity, nil, gurps.Reference)
+			pile.Quantity = fxp.FromInteger(50)
+			pile.Equipped = true
+			return []*gurps.Equipment{dagger, pile}
+		})
+	var open func() int
+	screen.Do(func() {
+		EditEquipment(sheet, pile, true)
+		open = func() int {
+			return len(AllMatchingDockables(func(d unison.Dockable) bool {
+				e, ok := d.(*editor[*gurps.Equipment, *gurps.EquipmentEditData])
+				return ok && e.target == pile
+			}))
+		}
+	})
+	s := openSellTestDialog(t, screen, wnd, sheet, dagger)
+	s.dismiss(c, s.sell)
+	var editors int
+	screen.Do(func() {
+		editors = open()
+		c.Equal([]string{"Silver Coin ×60"}, carriedSummary(sheet), "the payout merges into the equipped pile")
+	})
+	c.Equal(0, editors, "the editor of the pile the payout merges into is closed")
+}
+
+// TestSellDialogTotalSaturatesRatherThanWrapping checks that a total made of prices too large for fxp to hold saturates
+// at its maximum and is paid out as far as the sell money reaches, rather than wrapping around to a negative total that
+// sells everything for nothing without a word of warning.
+func TestSellDialogTotalSaturatesRatherThanWrapping(t *testing.T) {
+	c := check.New(t)
+	screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
+	money := newTradeTestMoney(t, c)
+	var hoards []*gurps.Equipment
+	sheet := openSellTestSheet(t, screen, []gurps.Source{money.source(money.penny)},
+		func(entity *gurps.Entity) []*gurps.Equipment {
+			hoards = make([]*gurps.Equipment, 103)
+			for i := range hoards {
+				hoards[i] = newTradeTestItem(entity, fmt.Sprintf("Hoard %d", i+1), "9000000000000", fxp.One)
+			}
+			return hoards
+		})
+	s := openSellTestDialog(t, screen, wnd, sheet, hoards...)
+	s.replaceText(s.percent, "100")
+	texts := s.texts()
+	for _, want := range []string{
+		"Total: $922,337,203,685,477.5807",
+		"You receive: Copper Penny ×922337203685477 ($922,337,203,685,477.00)",
+	} {
+		c.True(slices.Contains(texts, want), "the dialog must show %q; it shows %v", want, texts[len(texts)-4:])
+	}
+	c.Equal("$0.58 can't be paid with the configured sell money. Receiving $922,337,203,685,477.00, the closest amount not over the total.",
+		s.warning())
+	s.dismiss(c, s.cancel)
+}
+
+// TestSellDialogKeepsQuantitiesToWhatTheSaleTakes checks that the quantity of an item held by containers that can't be
+// split apart, whose copies each keep an even share of the rest, is kept to what the sale takes: a quantity too small to
+// change any copy is made zero, leaving the item out of the sale, and a quantity the copies can't give up exactly is
+// made the amount they can, so that the payout is for what is sold.
+func TestSellDialogKeepsQuantitiesToWhatTheSaleTakes(t *testing.T) {
+	c := check.New(t)
+	screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
+	money := newTradeTestMoney(t, c)
+	var box, gem *gurps.Equipment
+	sheet := openSellTestSheet(t, screen, []gurps.Source{money.source(money.penny)},
+		func(entity *gurps.Entity) []*gurps.Equipment {
+			box = gurps.NewEquipment(entity, nil, true)
+			box.Name = "Box"
+			box.Quantity = fxp.TwoAndAHalf
+			gem = newTradeTestItem(entity, "Gem", "10000", fxp.One)
+			gem.SetParent(box)
+			box.Children = []*gurps.Equipment{gem}
+			return []*gurps.Equipment{box}
+		})
+	s := openSellTestDialog(t, screen, wnd, sheet, gem)
+	texts := s.texts()
+	c.True(slices.Contains(texts, "of 2.5"), "the gem comes once for each copy of the box; the dialog shows %v", texts)
+	s.replaceText(s.quantities[0], "0.0001")
+	var text string
+	screen.Do(func() { text = s.quantities[0].Text() })
+	c.Equal("0", text, "a quantity too small to change any copy is made zero")
+	c.False(s.sellEnabled(), "nothing is left to sell")
+	s.replaceText(s.quantities[0], "0.0004")
+	screen.Do(func() { text = s.quantities[0].Text() })
+	c.Equal("0.0003", text, "a quantity the copies can't give up exactly is made the amount they can")
+	texts = s.texts()
+	c.True(slices.Contains(texts, "You receive: Copper Penny ×1 ($1.00)"), "the payout is for what is sold: %v", texts)
+	s.replaceText(s.quantities[0], "1")
+	s.dismiss(c, s.sell)
+	screen.Do(func() {
+		c.Equal([]string{"Box ×2.5", "Copper Penny ×5000"}, carriedSummary(sheet))
+		c.Equal(fxp.FromStringForced("0.6"), gem.Quantity, "each copy of the box keeps its share of the rest")
+	})
 }

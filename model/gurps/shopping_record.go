@@ -90,11 +90,17 @@ func (s *ShoppingRecordEntry) ensureID() {
 }
 
 // normalizeShoppingRecord drops the missing entries of a record loaded from disk, gives an ID to each entry without a
-// valid one, and puts the record in presentation order.
+// valid one or with one an earlier entry has, since the record's viewers identify entries by ID, and puts the record in
+// presentation order.
 func normalizeShoppingRecord(list []*ShoppingRecordEntry) []*ShoppingRecordEntry {
 	list = slices.DeleteFunc(list, func(entry *ShoppingRecordEntry) bool { return entry == nil })
+	seen := make(map[tid.TID]bool, len(list))
 	for _, entry := range list {
+		if seen[entry.ID] {
+			entry.ID = ""
+		}
 		entry.ensureID()
+		seen[entry.ID] = true
 	}
 	SortShoppingRecordList(list)
 	return list
