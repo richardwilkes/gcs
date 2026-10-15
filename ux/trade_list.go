@@ -59,7 +59,7 @@ func newTradeList(columns int) *tradeList {
 	l.columns.panels = []*unison.Panel{l.header, l.rows, l.footer}
 	scroll := unison.NewScrollPanel()
 	scroll.SetContent(l.rows, behavior.Fill, behavior.Fill)
-	scroll.BackgroundInk = unison.ThemeSurface
+	scroll.BackgroundInk = unison.ThemeBelowSurface
 	scroll.SetLayout(&tradeRowsLayout{Layout: scroll, rows: l.rows, layout: rowsLayout})
 	scroll.SetLayoutData(&unison.FlexLayoutData{
 		HAlign: align.Fill,

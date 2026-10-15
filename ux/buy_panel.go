@@ -304,6 +304,12 @@ func (p *buyPanel) createDropArea() *unison.Panel {
 	})
 	p.dropArea.SetBorder(unison.NewEmptyBorder(geom.NewUniformInsets(2 * unison.StdHSpacing)))
 	p.dropArea.DrawCallback = func(gc *unison.Canvas, _ geom.Rect) {
+		for i, item := range p.items {
+			if i&1 == 1 {
+				band := p.itemBounds(item)
+				gc.DrawRect(band, unison.ThemeBanding.Paint(gc, band, paintstyle.Fill))
+			}
+		}
 		r := p.dropArea.ContentRect(true)
 		var ink unison.Ink = unison.ThemeSurfaceEdge
 		if p.dragOver {
@@ -566,8 +572,9 @@ func (p *buyPanel) itemAt(where geom.Point) *buyItem {
 	return nil
 }
 
-// itemBounds returns the rows of the item -- its own and those of its modifiers -- across the whole width of the drop
-// area, in the drop area's coordinates.
+// itemBounds returns the rows of the item -- its own and those of its modifiers -- in the drop area's coordinates,
+// across the whole of its width within the dashed edge and extended halfway to the rows above and below, so that the
+// bounds of one item meet the next's.
 func (p *buyPanel) itemBounds(item *buyItem) geom.Rect {
 	var bounds geom.Rect
 	for _, w := range item.allWidgets() {
@@ -577,9 +584,11 @@ func (p *buyPanel) itemBounds(item *buyItem) geom.Rect {
 			bounds = bounds.Union(w.AsPanel().FrameRect())
 		}
 	}
-	area := p.dropArea.ContentRect(false)
+	area := p.dropArea.ContentRect(true).Inset(geom.NewUniformInsets(1))
 	bounds.X = area.X
 	bounds.Width = area.Width
+	bounds.Y -= unison.StdVSpacing / 2
+	bounds.Height += unison.StdVSpacing
 	return bounds
 }
 
