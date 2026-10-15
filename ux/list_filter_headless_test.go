@@ -870,7 +870,7 @@ func TestListFilterPopupCutsNameHeadless(t *testing.T) {
 
 	uxtest.ChoosePopupItem(t, screen, wnd, d.savedFilters.popup, popupFirstSavedIndex)
 	var cut bool
-	screen.Do(func() { _, cut = popupTextCut(d.savedFilters.popup) })
+	screen.Do(func() { _, cut = d.savedFilters.button.textCut() })
 	c.True(cut, "the button cuts the long name short")
 
 	screen.Click(screen.PanelCenter(d.savedFilters.popup))

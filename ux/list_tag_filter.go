@@ -13,6 +13,7 @@ import (
 	"slices"
 	"strings"
 
+	"github.com/richardwilkes/gcs/v5/ux/svg"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
@@ -47,8 +48,9 @@ const (
 // listTagFilterPopup is the toolbar popup that narrows a list to the items carrying every tag chosen in it. The choice
 // belongs to the dockable alone and is never saved, though its last entry turns it into a saved filter.
 type listTagFilterPopup struct {
-	popup *unison.PopupMenu[string]
-	spec  listTagFilterPopupSpec
+	popup  *unison.PopupMenu[string]
+	button *filterPopupButton
+	spec   listTagFilterPopupSpec
 	// selected holds the values of the chosen tags, in the order chosen.
 	selected []string
 	// titles maps the value of each tag on offer to the tag as the list spells it, which is what its item shows.
@@ -88,7 +90,7 @@ func newListTagFilterPopup(spec listTagFilterPopupSpec) *listTagFilterPopup {
 	}
 	p.popup.Accessibility.Name = i18n.Text("Tag Filter")
 	// A tag the button cuts short is already listed in full in the tooltip, among the chosen tags.
-	fixPopupWidth(p.popup)
+	p.button = newFilterPopupButton(p.popup, svg.Tag, func() bool { return len(p.selected) != 0 })
 	p.popup.SetLayoutData(&unison.FlexLayoutData{
 		HAlign: align.Fill,
 		VAlign: align.Middle,

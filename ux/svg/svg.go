@@ -88,6 +88,10 @@ var (
 	editData string
 	Edit     = unison.MustSVGFromContentString(editData)
 
+	//go:embed filter.svg
+	filterData string
+	Filter     = unison.MustSVGFromContentString(filterData)
+
 	//go:embed first.svg
 	firstData string
 	First     = unison.MustSVGFromContentString(firstData)
@@ -291,6 +295,10 @@ var (
 	//go:embed star.svg
 	starData string
 	Star     = unison.MustSVGFromContentString(starData)
+
+	//go:embed tag.svg
+	tagData string
+	Tag     = unison.MustSVGFromContentString(tagData)
 
 	//go:embed magic_wand.svg
 	magicWandData string

@@ -606,6 +606,33 @@ func TestTableDockableQuickFilterKeepsItsMinimumWidth(t *testing.T) {
 	c.True(width >= sample, "the quick filter is %v wide, less than the sample's %v", width, sample)
 }
 
+// TestTableDockableFilterPopupsTurnCompact verifies that the filter popups turn into icons while the toolbar is too
+// narrow to show them in full, that the saved filter's name then leads its tooltip, and that they turn back once the
+// toolbar is wide enough again.
+func TestTableDockableFilterPopupsTurnCompact(t *testing.T) {
+	c := check.New(t)
+	d := newFilterTestTraitDockable(t)
+	toolbar := d.filterField.Parent()
+	minSize, _, _ := toolbar.Sizes(geom.Size{})
+	layOut := func(width float32) {
+		toolbar.SetFrameRect(geom.NewRect(0, 0, width, 30))
+		toolbar.ValidateLayout()
+	}
+
+	layOut(minSize.Width - 1)
+	for _, b := range []*filterPopupButton{d.tagFilter.button, d.savedFilters.button} {
+		c.True(b.compact, "%s must turn compact in a toolbar too narrow for it", b.popup.Accessibility.Name)
+		size := b.popup.FrameRect().Size
+		c.Equal(size.Height, size.Width, "%s must be a square icon", b.popup.Accessibility.Name)
+	}
+	c.Contains(tooltipText(d.savedFilters.popup.Tooltip), "No Filter", "the icon's tooltip names the saved filter")
+
+	layOut(minSize.Width)
+	c.False(d.tagFilter.button.compact, "the tag filter must turn back once the toolbar is wide enough")
+	c.False(d.savedFilters.button.compact, "and so must the saved filters")
+	c.NotContains(tooltipText(d.savedFilters.popup.Tooltip), "No Filter", "a name shown whole is kept out of the tooltip")
+}
+
 // TestTableDockableTagFilterIgnoresCase verifies that tags differing only in case are offered once, and that a chosen
 // tag stays chosen, and is saved as the list now spells it, when the spelling it is offered under changes.
 func TestTableDockableTagFilterIgnoresCase(t *testing.T) {

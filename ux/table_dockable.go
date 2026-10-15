@@ -205,7 +205,14 @@ func (d *TableDockable[T]) createToolbar() *unison.Panel {
 		toolbar.AddChild(d.tagFilter.popup)
 		toolbar.AddChild(d.savedFilters.popup)
 	}
-	FinishToolbarLayout(toolbar)
+	layout := FinishToolbarLayout(toolbar)
+	if d.savedFilters != nil {
+		toolbar.SetLayout(&compactingToolbarLayout{
+			FlexLayout: layout,
+			buttons:    []*filterPopupButton{d.tagFilter.button, d.savedFilters.button},
+			changed:    d.savedFilters.syncTooltip,
+		})
+	}
 	return toolbar
 }
 

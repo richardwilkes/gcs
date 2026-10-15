@@ -15,11 +15,13 @@ import (
 	"unicode"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/ux/svg"
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/toolbox/v2/xmath"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
+	"github.com/richardwilkes/unison/enums/paintstyle"
 )
 
 // Seams so the commands can be exercised without a window.
@@ -66,8 +68,9 @@ type listFilterPopupSpec struct {
 // them. The popup's items are rebuilt from the global settings each time it is about to be shown, since another
 // dockable showing the same list type may have changed them in the meantime.
 type listFilterPopup struct {
-	popup *unison.PopupMenu[string]
-	spec  listFilterPopupSpec
+	popup  *unison.PopupMenu[string]
+	button *filterPopupButton
+	spec   listFilterPopupSpec
 	// filters runs parallel to the popup's items, holding the filter each item stands for. It is nil for the No Filter
 	// entry, the separators and the three commands, since separators occupy an index of their own.
 	filters []*gurps.ListFilter
@@ -116,7 +119,7 @@ func newListFilterPopup(spec listFilterPopupSpec) *listFilterPopup {
 		p.enableCommands(i != p.noneIndex)
 		p.spec.choose(p.filterAt(i))
 	}
-	fixPopupWidth(p.popup)
+	p.button = newFilterPopupButton(p.popup, svg.Filter, func() bool { return p.spec.current() != nil })
 	// The popup sits at the end of the toolbar, with no label of its own to name it by.
 	p.popup.Accessibility.Name = i18n.Text("Saved Filters")
 	p.popup.SetLayoutData(&unison.FlexLayoutData{
@@ -174,7 +177,7 @@ func (p *listFilterPopup) rebuildItems() (lostCurrent bool) {
 // full.
 func (p *listFilterPopup) syncTooltip() {
 	detail := i18n.Text("Choose a saved filter, or create, edit and delete them")
-	if name, cut := popupTextCut(p.popup); cut {
+	if name, cut := p.button.textCut(); cut {
 		detail = name + "\n\n" + detail
 	}
 	p.popup.Tooltip = newWrappedTooltipWithSecondaryText(p.popup.Accessibility.Name, detail)
@@ -277,37 +280,104 @@ func (p *listFilterPopup) filtersChanged(f *gurps.ListFilter) {
 // the chosen item it shows.
 const popupWidthSample = "MMMMMMMMMM"
 
-// fixPopupWidth makes the popup's button just wide enough to show popupWidthSample, whatever its items, cutting the
-// chosen item short with an ellipsis past that. The menu it opens still shows every item in full.
-func fixPopupWidth(popup *unison.PopupMenu[string]) {
-	popup.SetSizer(func(hint geom.Size) (minSize, prefSize, maxSize geom.Size) {
-		_, prefSize, _ = popup.DefaultSizes(hint)
+// filterPopupButton draws a filter popup's button. It is normally just wide enough to show popupWidthSample, whatever
+// the popup's items, cutting the chosen item short with an ellipsis past that, but shows only its icon while compact.
+// The menu it opens still shows every item in full.
+type filterPopupButton struct {
+	popup *unison.PopupMenu[string]
+	icon  *unison.SVG
+	// inEffect reports whether the popup narrows the list, which is when the compact icon takes the focus color.
+	inEffect func() bool
+	compact  bool
+}
+
+// newFilterPopupButton takes over the sizing and drawing of the popup's button.
+func newFilterPopupButton(popup *unison.PopupMenu[string], icon *unison.SVG, inEffect func() bool) *filterPopupButton {
+	b := &filterPopupButton{popup: popup, icon: icon, inEffect: inEffect}
+	popup.SetSizer(b.sizes)
+	popup.DrawCallback = b.draw
+	return b
+}
+
+func (b *filterPopupButton) sizes(hint geom.Size) (minSize, prefSize, maxSize geom.Size) {
+	_, prefSize, _ = b.popup.DefaultSizes(hint)
+	if b.compact {
+		prefSize.Width = prefSize.Height
+	} else {
 		// The space around the text is added as unison.PopupMenu.DefaultSizes adds it.
-		width := popupTextWidth(popup, popupWidthSample) + popup.HMargin*2 + 2 + prefSize.Height*0.75
-		if border := popup.Border(); border != nil {
+		width := popupTextWidth(b.popup, popupWidthSample) + b.popup.HMargin*2 + 2 + prefSize.Height*0.75
+		if border := b.popup.Border(); border != nil {
 			width += border.Insets().Width()
 		}
 		prefSize.Width = xmath.Ceil(width)
-		return prefSize, prefSize, prefSize
-	})
-	popup.DrawCallback = func(canvas *unison.Canvas, dirty geom.Rect) {
-		// The button draws the chosen item through the renderer the menu uses too, so it is swapped only while drawing.
-		render := popup.ItemRendererCallback
-		defer func() { popup.ItemRendererCallback = render }()
-		popup.ItemRendererCallback = func(item string) string {
-			if render != nil {
-				item = render(item)
-			}
-			return popupFittedText(popup, item)
-		}
-		popup.DefaultDraw(canvas, dirty)
 	}
+	return prefSize, prefSize, prefSize
 }
 
-// popupTextCut returns the text of the popup's chosen item, and whether its button has to cut that text short.
-func popupTextCut(popup *unison.PopupMenu[string]) (text string, cut bool) {
-	text = popup.Text()
-	return text, popupFittedText(popup, text) != text
+func (b *filterPopupButton) draw(canvas *unison.Canvas, dirty geom.Rect) {
+	if b.compact {
+		// Drawn as unison.Button draws an icon with no base.
+		r := b.popup.ContentRect(false)
+		if b.popup.Focused() {
+			unison.DrawRoundedRectBase(canvas, r, b.popup.CornerRadius, 2, unison.Transparent, b.popup.SelectionInk)
+		}
+		ink := b.popup.OnBackgroundInk
+		if b.inEffect() {
+			ink = unison.ThemeFocus
+		}
+		size := b.popup.Font.Baseline()
+		r = geom.NewRect(r.X+(r.Width-size)/2, r.Y+(r.Height-size)/2, size, size)
+		b.icon.DrawInRectPreservingAspectRatio(canvas, r, nil, ink.Paint(canvas, r, paintstyle.Fill))
+		return
+	}
+	// The button draws the chosen item through the renderer the menu uses too, so it is swapped only while drawing.
+	render := b.popup.ItemRendererCallback
+	defer func() { b.popup.ItemRendererCallback = render }()
+	b.popup.ItemRendererCallback = func(item string) string {
+		if render != nil {
+			item = render(item)
+		}
+		return popupFittedText(b.popup, item)
+	}
+	b.popup.DefaultDraw(canvas, dirty)
+}
+
+// textCut returns the text of the popup's chosen item, and whether its button cuts that text short, which a compact
+// one always does, showing none of it.
+func (b *filterPopupButton) textCut() (text string, cut bool) {
+	text = b.popup.Text()
+	return text, b.compact || popupFittedText(b.popup, text) != text
+}
+
+// compactingToolbarLayout lays a toolbar out in one row, as FinishToolbarLayout does, but turns its filter popups into
+// icons while the toolbar is too narrow to show them in full beside its other controls at their least widths.
+type compactingToolbarLayout struct {
+	*unison.FlexLayout
+	buttons []*filterPopupButton
+	// changed is called after the buttons turn compact or back.
+	changed func()
+}
+
+// PerformLayout implements unison.Layout.
+func (l *compactingToolbarLayout) PerformLayout(target *unison.Panel) {
+	was := l.buttons[0].compact
+	l.setCompact(false)
+	minSize, _, _ := l.LayoutSizes(target, geom.Size{})
+	compact := minSize.Width > target.FrameRect().Width
+	l.setCompact(compact)
+	if compact != was {
+		for _, b := range l.buttons {
+			b.popup.MarkForRedraw()
+		}
+		l.changed()
+	}
+	l.FlexLayout.PerformLayout(target)
+}
+
+func (l *compactingToolbarLayout) setCompact(compact bool) {
+	for _, b := range l.buttons {
+		b.compact = compact
+	}
 }
 
 // popupFittedText returns text as the popup's button shows it. Text wider than popupWidthSample is cut to as much of

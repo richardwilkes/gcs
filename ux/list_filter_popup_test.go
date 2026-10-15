@@ -408,7 +408,7 @@ func TestListFilterPopupFixesWidth(t *testing.T) {
 		"no space is left before the ellipsis")
 
 	h.choose(popupFirstSavedIndex)
-	if _, cut := popupTextCut(popup); !cut {
+	if _, cut := h.popup.button.textCut(); !cut {
 		t.Fatal("the button must cut the long name short")
 	}
 	c.Contains(tooltipText(popup.Tooltip), long, "the tooltip leads with the long name in full")
