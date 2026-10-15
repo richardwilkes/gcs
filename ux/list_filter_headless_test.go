@@ -267,6 +267,11 @@ func TestListFilterNewFilterDialogHeadless(t *testing.T) {
 	}
 
 	nameField := dialogNameField(t, screen, dialogWnd)
+	nameInvalid := func() bool {
+		var invalid bool
+		screen.Do(func() { invalid = nameField.Invalid() })
+		return invalid
+	}
 	var contentWidth, contentHeight float32
 	screen.Do(func() {
 		rect := dialogWnd.ContentRect()
@@ -274,6 +279,7 @@ func TestListFilterNewFilterDialogHeadless(t *testing.T) {
 		contentHeight = rect.Height
 	})
 	c.False(okEnabled(), "a filter with no name cannot be accepted")
+	c.True(nameInvalid(), "a blank name is marked")
 	c.True(contentWidth >= listFilterDialogMinWidth,
 		"the editor opens at least %d wide, but is %v", listFilterDialogMinWidth, contentWidth)
 	c.True(contentHeight >= listFilterDialogMinHeight,
@@ -283,6 +289,7 @@ func TestListFilterNewFilterDialogHeadless(t *testing.T) {
 	screen.Click(screen.PanelCenter(nameField))
 	screen.Type("melee")
 	c.False(okEnabled(), "a name a saved filter already bears cannot be accepted, whatever its case")
+	c.True(nameInvalid(), "a name a saved filter already bears is marked")
 
 	// Replace it with a name of its own, which is accepted.
 	screen.KeyPress(unison.KeyA, mod.OSMenuCommand())
@@ -290,6 +297,7 @@ func TestListFilterNewFilterDialogHeadless(t *testing.T) {
 	var name string
 	screen.Do(func() { name = nameField.Text() })
 	c.Equal("Ranged", name, "select-all followed by typing replaces the name")
+	c.False(nameInvalid(), "a name of its own is not marked")
 	c.False(okEnabled(), "a name no other saved filter bears is not enough while the filter tests nothing")
 	uxtest.CaptureScreen(t, c, screen, "list_filter_dialog")
 

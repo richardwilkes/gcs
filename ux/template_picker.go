@@ -837,7 +837,7 @@ func growWindowToFit(wnd *unison.Window) {
 // dialog, and the function that sets its text. A warning or an error is set out as a notice, in a box of the theme's
 // color for it with text in the color drawn on that; anything else is plain text in its state's color.
 func newPickerHint(scroll *unison.ScrollPanel) (hint *TextLabel, update func(t pickerText)) {
-	hint = NewWrappingLabel()
+	hint, setNotice := newNoticeLabel()
 	hint.Font = fonts.FieldSecondary
 	hint.SetSizer(func(size geom.Size) (minSize, prefSize, maxSize geom.Size) {
 		if size.Width <= 0 {
@@ -847,25 +847,13 @@ func newPickerHint(scroll *unison.ScrollPanel) (hint *TextLabel, update func(t p
 		return hint.sizes(size)
 	})
 	hint.SetLayoutData(&unison.FlexLayoutData{HSpan: 2, HAlign: align.Fill})
-	var box unison.Ink
-	hint.DrawCallback = func(gc *unison.Canvas, dirty geom.Rect) {
-		if box != nil {
-			r := hint.ContentRect(true)
-			gc.DrawRoundedRect(r, geom.NewUniformSize(4), box.Paint(gc, r, paintstyle.Fill))
-		}
-		hint.draw(gc, dirty)
-	}
 	update = func(t pickerText) {
 		if t.state == pickerWarning || t.state == pickerError {
 			look := pickerPillLooks[t.state]
-			box = look.background
-			hint.SetBorder(unison.NewEmptyBorder(geom.NewSymmetricInsets(unison.StdHSpacing, unison.StdVSpacing)))
-			hint.setText(t.text, look.onBackground)
+			setNotice(t.text, look.background, look.onBackground)
 			return
 		}
-		box = nil
-		hint.SetBorder(nil)
-		hint.setText(t.text, pickerStateInks[t.state])
+		setNotice(t.text, nil, pickerStateInks[t.state])
 	}
 	return hint, update
 }
