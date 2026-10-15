@@ -21,6 +21,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/attack"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/difficulty"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/feature"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/grantmerge"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/spellmatch"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/stdmg"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/stlimit"
@@ -42,6 +43,7 @@ const LargeEntitySizeEnvVar = "GCS_BENCH_SIZE"
 // trait to hold them. Reactions and ConditionalModifiers are how many of each bonus the traits carry, which is also
 // the number of rows the two derived lists show; they go one to a trait until the traits run out, then around again.
 // The weapons are spread over the equipment, traits, skills and spells, so they are not extra rows of their own.
+// Grants is how many grant features the traits and equipment carry; see addGrants for the rows they add.
 // PerContainer is how many rows a container holds before the next one is started.
 type LargeEntitySize struct {
 	Traits               int
@@ -55,6 +57,7 @@ type LargeEntitySize struct {
 	ConditionalModifiers int
 	MeleeWeapons         int
 	RangedWeapons        int
+	Grants               int
 	PerContainer         int
 }
 
@@ -72,6 +75,7 @@ var DefaultLargeEntitySize = LargeEntitySize{
 	ConditionalModifiers: 40,
 	MeleeWeapons:         60,
 	RangedWeapons:        50,
+	Grants:               60,
 	PerContainer:         8,
 }
 
@@ -91,6 +95,7 @@ func (s *LargeEntitySize) Scaled(factor float64) LargeEntitySize {
 		ConditionalModifiers: scale(s.ConditionalModifiers),
 		MeleeWeapons:         scale(s.MeleeWeapons),
 		RangedWeapons:        scale(s.RangedWeapons),
+		Grants:               scale(s.Grants),
 		PerContainer:         s.PerContainer,
 	}
 }
@@ -223,9 +228,10 @@ type largeEntityBuilder struct {
 // whose names carry nameable markers (every college has a "Ritual Magic (@Specialty@)" skill the ritual magic spells
 // resolve through); the traits carry modifiers and the features behind the reactions, conditional modifiers and
 // weapon bonuses; the equipment is nested three deep with modifiers, some of it unequipped; the weapons default to
-// the weapon skills and sit on equipment, traits, skills and spells; every few rows carry page references and local
-// notes; and every fourth trait, piece of equipment and note defines a nameable its text uses, some answered and some
-// not, which the traits' and equipment's modifiers share or are linked to, beside a marker that defines itself.
+// the weapon skills and sit on equipment, traits, skills and spells; traits and equipment carry grants of traits,
+// skills and spells; every few rows carry page references and local notes; and every fourth trait, piece of equipment
+// and note defines a nameable its text uses, some answered and some not, which the traits' and equipment's modifiers
+// share or are linked to, beside a marker that defines itself.
 func NewLargeEntity(size *LargeEntitySize) *gurps.Entity {
 	b := &largeEntityBuilder{entity: gurps.NewEntity(), size: *size}
 	b.size.PerContainer = max(1, b.size.PerContainer)
@@ -253,6 +259,7 @@ func NewLargeEntity(size *LargeEntitySize) *gurps.Entity {
 	b.addEquipment(b.size.CarriedEquipment, true)
 	b.addEquipment(b.size.OtherEquipment, false)
 	b.addNotes()
+	b.addGrants()
 	b.addWeapons()
 	b.entity.Recalculate()
 	return b.entity
@@ -720,6 +727,69 @@ func (b *largeEntityBuilder) addNotes() {
 			}
 		}
 		container.Children = append(container.Children, n)
+	}
+}
+
+// addGrants hands out the grants, cycling through traits, skills and spells: half go to traits, a quarter to equipped
+// equipment and a quarter to unequipped equipment, whose grants are not in effect. Every other trait or skill grant
+// puts a new item on the sheet, the new skills taking their specialization from what carries the grant; the rest, and
+// every spell grant, copy an item already there so that they merge with it.
+func (b *largeEntityBuilder) addGrants() {
+	if len(b.traits) == 0 || len(b.spells) == 0 {
+		return
+	}
+	modes := []grantmerge.Mode{grantmerge.MergeLevels, grantmerge.MergePoints, grantmerge.KeepHighest}
+	for i := range b.size.Grants {
+		var g *gurps.Grant
+		merge := i%2 == 1
+		switch i % 3 {
+		case 0:
+			g = gurps.NewGrant(feature.GrantTrait)
+			if t := b.traits[i*3%len(b.traits)]; merge && t.CanLevel {
+				g.Trait = t.Clone(gurps.LibraryFile{}, nil, nil, gurps.Duplicate)
+			} else {
+				g.Trait = gurps.NewTrait(nil, nil, false)
+				g.Trait.Name = fmt.Sprintf("Granted Trait %d", i+1)
+				g.Trait.CanLevel = true
+				g.Trait.PointsPerLevel = fxp.Five
+				g.Trait.Levels = fxp.One
+			}
+		case 1:
+			g = gurps.NewGrant(feature.GrantSkill)
+			if merge {
+				g.Skill = b.skills[i%len(b.skills)].Clone(gurps.LibraryFile{}, nil, nil, gurps.Duplicate)
+			} else {
+				g.Skill = gurps.NewSkill(nil, nil, false)
+				g.Skill.Name = fmt.Sprintf("Granted Skill %d", i+1)
+				g.Skill.Specialization = "@Topic@"
+			}
+		default:
+			g = gurps.NewGrant(feature.GrantSpell)
+			g.Spell = b.spells[i%len(b.spells)].Clone(gurps.LibraryFile{}, nil, nil, gurps.Duplicate)
+		}
+		g.Level = fxp.FromInteger(i%3 + 1)
+		g.Merge = modes[i%len(modes)]
+		// The carrier may already answer nameables of its own, so the topic is added to its replacements.
+		addTopic := func(replacements *map[string]string) {
+			if *replacements == nil {
+				*replacements = make(map[string]string)
+			}
+			(*replacements)["Topic"] = fmt.Sprintf("Topic %d", i+1)
+		}
+		switch {
+		case i%4 < 2 || len(b.equipped) == 0 || len(b.unequipped) == 0:
+			t := b.traits[i%len(b.traits)]
+			addTopic(&t.Replacements)
+			t.Features = append(t.Features, g)
+		case i%4 == 2:
+			eqp := b.equipped[i%len(b.equipped)]
+			addTopic(&eqp.Replacements)
+			eqp.Features = append(eqp.Features, g)
+		default:
+			eqp := b.unequipped[i%len(b.unequipped)]
+			addTopic(&eqp.Replacements)
+			eqp.Features = append(eqp.Features, g)
+		}
 	}
 }
 

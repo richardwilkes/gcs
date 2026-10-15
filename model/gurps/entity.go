@@ -105,6 +105,7 @@ type features struct {
 	traitMaxLevelBonuses []*TraitMaxLevelBonus
 	weaponBonuses        []*WeaponBonus
 	selectorOverrides    []*SelectorOverride
+	grants               map[*Grant]bool
 }
 
 // Entity holds the base information for various types of entities: PC, NPC, Creature, etc.
@@ -120,6 +121,9 @@ type Entity struct {
 	BlockBonusTooltip              string
 	srcMatcher                     *SrcMatcher
 	features                       features
+	grantPlans                     []grantPlan
+	grantHolders                   []grantHolder
+	grantCarriersJudged            bool
 	variableResolverExclusions     map[string]bool
 	skillResolverExclusions        map[string]bool
 	scriptCache                    map[scriptResolveKey]scriptResolveResult // not safe for concurrent use
@@ -498,6 +502,7 @@ func (e *Entity) recalculate(passBudget int) int {
 		e.recalculating--
 		e.derivedGeneration++
 	}()
+	e.reconcileGrants()
 	e.EnsureAttachments()
 	e.DiscardCaches()
 	e.SourceMatcher().PrepareHashes(e)
@@ -522,6 +527,7 @@ func (e *Entity) recalculate(passBudget int) int {
 			break
 		}
 	}
+	e.removeSuppressedItems()
 	if contradicted && !e.unsettled {
 		slog.Warn("the sheet's data never settles: no state of the sheet satisfies all of its prerequisites, "+
 			"defaults, features and scripts at once", "name", e.Profile.Name)
@@ -659,6 +665,7 @@ func (e *Entity) markContradictedTraits(verdicts [][]traitPrereqVerdict, cyclic 
 func (e *Entity) recalculationPass() {
 	e.discardCaches(true)
 	e.processFeatures()
+	e.applyGrants()
 	e.applyEquipmentPenalties()
 	e.processSkillAndSpellPrereqs()
 	e.UpdateSkills()
@@ -714,13 +721,17 @@ func (e *Entity) derivedState(capacity int) []uint64 {
 		state = append(state, h.Sum64())
 	}
 	Traverse(func(t *Trait) bool {
-		fingerprint(t.TID, func() { xhash.Bool(h, t.prereqVerdict == prereqsDisable) })
+		fingerprint(t.TID, func() {
+			xhash.Bool(h, t.prereqVerdict == prereqsDisable)
+			t.grant.hash(h)
+		})
 		return false
 	}, false, false, e.Traits...)
 	Traverse(func(s *Skill) bool {
 		fingerprint(s.TID, func() {
 			s.LevelData.Hash(h)
 			xhash.Bool(h, s.takesEquipmentPenalty)
+			s.grant.hash(h)
 			xhash.Bool(h, s.DefaultedFrom != nil)
 			if s.DefaultedFrom != nil {
 				s.DefaultedFrom.Hash(h)
@@ -735,6 +746,7 @@ func (e *Entity) derivedState(capacity int) []uint64 {
 		fingerprint(s.TID, func() {
 			s.LevelData.Hash(h)
 			xhash.Bool(h, s.takesEquipmentPenalty)
+			s.grant.hash(h)
 		})
 		return false
 	}, false, true, e.Spells...)
@@ -891,6 +903,11 @@ func (e *Entity) processFeature(owner, subOwner fmt.Stringer, f Feature, leveled
 		e.features.weaponBonuses = append(e.features.weaponBonuses, actual)
 	case *SelectorOverride:
 		e.features.selectorOverrides = append(e.features.selectorOverrides, actual)
+	case *Grant:
+		if e.features.grants == nil {
+			e.features.grants = make(map[*Grant]bool)
+		}
+		e.features.grants[actual] = true
 	case *ConditionalModifierBonus, *ContainedWeightReduction, *ReactionBonus:
 		// Not collected at this stage
 	case *UnknownFeature:
@@ -997,10 +1014,11 @@ func (e *Entity) applyEquipmentPenalties() {
 // unsatisfied. A skill or spell left unsatisfied by equipment it requires to be equipped is noted as taking the
 // missing-equipment penalty to its level, which applyEquipmentPenalties adds to the collected features in the next
 // pass. A technique or ritual magic spell whose prerequisites are met must also have the skill it is based on. A
-// disabled one is not judged, and has any reason recorded before it was disabled cleared.
+// disabled one is not judged, and has any reason recorded before it was disabled cleared, as does one put on the sheet
+// by a grant that bypasses its prerequisites.
 func (e *Entity) processSkillAndSpellPrereqs() {
 	Traverse(func(s *Skill) bool {
-		if s.Container() || !s.Enabled() {
+		if s.Container() || !s.Enabled() || s.grant.bypass {
 			s.UnsatisfiedReason = ""
 			s.takesEquipmentPenalty = false
 			return false
@@ -1014,7 +1032,7 @@ func (e *Entity) processSkillAndSpellPrereqs() {
 		return false
 	}, false, false, e.Skills...)
 	Traverse(func(s *Spell) bool {
-		if s.Container() || !s.Enabled() {
+		if s.Container() || !s.Enabled() || s.grant.bypass {
 			s.UnsatisfiedReason = ""
 			s.takesEquipmentPenalty = false
 			return false
@@ -1055,14 +1073,18 @@ func (e *Entity) processTraitPrereqs() {
 	// recorded unsatisfied reason cleared. Prerequisites are only judged for traits the user has enabled that are not
 	// inside a disabled container. That the sheet disabled a trait does not exempt it: the verdict is what this pass
 	// computes, and honoring the previous one would keep the trait disabled after its prerequisites are met. The
-	// reason is kept for a trait disabled this way, so the sheet can show why it is disabled.
+	// reason is kept for a trait disabled this way, so the sheet can show why it is disabled. A trait put on the sheet
+	// by a grant not in effect is not judged either, and one put there by a grant that bypasses its prerequisites is
+	// treated as having them met.
 	enforce := e.SheetSettings.EnforceTraitPrereqs
 	var verdicts []traitPrereqVerdict
 	Traverse(func(t *Trait) bool {
 		t.UnsatisfiedReason = ""
 		verdict := prereqsNotJudged
-		if !t.IsDisabled() && (t.parent == nil || t.parent.Enabled()) {
-			t.UnsatisfiedReason = e.evaluatePrereqs(t.Prereq, t, nil)
+		if !t.IsDisabled() && !t.grantNotInEffect() && (t.parent == nil || t.parent.Enabled()) {
+			if !t.grant.bypass {
+				t.UnsatisfiedReason = e.evaluatePrereqs(t.Prereq, t, nil)
+			}
 			if maximum := t.ResolvedMaxLevels(); maximum > 0 && t.Levels > maximum {
 				reason := levelExceedsMaximumReason(maximum)
 				if t.UnsatisfiedReason == "" {

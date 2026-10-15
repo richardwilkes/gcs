@@ -445,13 +445,13 @@ func (n *Node[T]) CellFromCellData(c *gurps.CellData, width float32, foreground,
 	case cell.PageRef:
 		return n.createPageRefCell(c, width, foreground)
 	case cell.Markdown:
-		return n.createMarkdownCell(c.Primary, width, fonts.PageFieldPrimary, foreground, background, selected)
+		return n.createMarkdownCell(c.Primary, width, fonts.PageFieldPrimary, foreground, background, selected, c.Dim)
 	default:
 		return unison.NewPanel()
 	}
 }
 
-func (n *Node[T]) createMarkdownCell(content string, width float32, font unison.Font, foreground, background unison.Ink, selected bool) unison.Paneler {
+func (n *Node[T]) createMarkdownCell(content string, width float32, font unison.Font, foreground, background unison.Ink, selected, dim bool) unison.Paneler {
 	m := unison.NewMarkdown(false)
 	m.StripBottomEmptyMargin = true
 	if wd, ok := n.table.ClientData()[WorkingDirKey]; ok {
@@ -465,6 +465,13 @@ func (n *Node[T]) createMarkdownCell(content string, width float32, font unison.
 	m.OnBackgroundInk = &inks.onBackground
 	m.LinkInk = &inks.link
 	m.LinkOnPressedInk = &inks.linkOnPressed
+	if dim {
+		// The notes of a dimmed row still work, but are drawn as the rest of the row is.
+		filter := unison.Grayscale30Filter()
+		m.OnBackgroundInk = &unison.ColorFilteredInk{OriginalInk: m.OnBackgroundInk, ColorFilter: filter}
+		m.LinkInk = &unison.ColorFilteredInk{OriginalInk: m.LinkInk, ColorFilter: filter}
+		m.LinkOnPressedInk = &unison.ColorFilteredInk{OriginalInk: m.LinkOnPressedInk, ColorFilter: filter}
+	}
 	adjustMarkdownInk(m, foreground, background, selected)
 	// Wrapped to a whole-pixel width for the same reason addLabelCell wraps to one: each line becomes a label, which
 	// reports a width rounded up to whole pixels.
@@ -502,6 +509,29 @@ func adjustMarkdownInk(md *unison.Markdown, foreground, background unison.Ink, s
 		inks.link.Target = asColorProvider(unison.DefaultMarkdownTheme.LinkInk, unison.ThemeFocus)
 		inks.linkOnPressed.Target = asColorProvider(unison.DefaultMarkdownTheme.LinkOnPressedInk, unison.ThemeOnFocus)
 	}
+}
+
+// dimmedDrawable draws a drawable as a disabled control draws its own, for a control of a dimmed row that still works.
+// Dimming the drawable rather than the control's ink keeps it dimmed when the row's selection changes that ink.
+type dimmedDrawable struct {
+	unison.Drawable
+}
+
+// DrawInRect implements unison.Drawable.
+func (d *dimmedDrawable) DrawInRect(canvas *unison.Canvas, rect geom.Rect, sampling *unison.SamplingOptions, paint *unison.Paint) {
+	if paint != nil {
+		paint = paint.Clone()
+		paint.SetColorFilter(unison.Grayscale30Filter())
+	}
+	d.Drawable.DrawInRect(canvas, rect, sampling, paint)
+}
+
+// dimmedIf returns the drawable, dimmed if dim is true.
+func dimmedIf(drawable unison.Drawable, dim bool) unison.Drawable {
+	if dim {
+		return &dimmedDrawable{Drawable: drawable}
+	}
+	return drawable
 }
 
 // asColorProvider returns the ink as a color provider, or the fallback if the ink is something else, such as a
@@ -555,10 +585,10 @@ func (n *Node[T]) createLabelCell(c *gurps.CellData, width float32, foreground, 
 			s = svg.NotesCollapse
 			button.Tooltip = newWrappedTooltip(i18n.Text("Hide notes"))
 		}
-		button.Drawable = &unison.DrawableSVG{
+		button.Drawable = dimmedIf(&unison.DrawableSVG{
 			SVG:  s,
 			Size: geom.NewSize(size, size).Ceil(),
-		}
+		}, c.Dim)
 		button.ClickCallback = func() {
 			key := n.noteKey()
 			gurps.SetClosedState(key, !gurps.IsClosed(key))
@@ -575,7 +605,7 @@ func (n *Node[T]) createLabelCell(c *gurps.CellData, width float32, foreground, 
 			n.primaryFieldFont(), foreground, background, true)
 		if !isClosed {
 			p.AddChild(n.createMarkdownCell(c.Secondary, width, n.secondaryFieldFont(), foreground, background,
-				selected))
+				selected, c.Dim))
 		}
 	} else {
 		n.addLabelCell(c, p, width, c.Primary, c.InlineTag, n.primaryFieldFont(), foreground, background, true)
@@ -632,13 +662,14 @@ func (n *Node[T]) createLabelCell(c *gurps.CellData, width float32, foreground, 
 // replaces the cell's own tooltip, since the row is flagged as broken and the reason is what the user needs to put it
 // right. The explanation of a contradiction among the prerequisites is put ahead of the cell's own tooltip instead,
 // since the row is enabled and in use, so what its own tooltip says still applies. The explanation of a mandatory
-// modifier choice left unresolved on a sheet goes ahead of all of that.
+// modifier choice left unresolved on a sheet goes ahead of all of that, and where a granted item came from ahead of
+// that. What the grants the item carries did comes last.
 func labelCellTooltip(c *gurps.CellData) string {
 	tooltip := c.UnsatisfiedReason
 	if tooltip == "" {
 		tooltip = joinTooltipBlocks(c.PrereqContradiction, c.Tooltip)
 	}
-	return joinTooltipBlocks(c.UnresolvedChoice, tooltip)
+	return joinTooltipBlocks(joinTooltipBlocks(c.GrantedBy, joinTooltipBlocks(c.UnresolvedChoice, tooltip)), c.Grants)
 }
 
 // joinTooltipBlocks joins two blocks of a tooltip under the separator Trait.CellData uses between them, or returns the
@@ -681,9 +712,10 @@ func (n *Node[T]) addLabelCell(c *gurps.CellData, parent *unison.Panel, width fl
 		Font:          f,
 		StrikeThrough: primary && c.Disabled,
 	}
-	var tag *unison.Tag
+	// What follows the first line of text: the inline tag, and the mark of a granted item.
+	var trailing []unison.Paneler
 	if inlineTag != "" {
-		tag = unison.NewTag()
+		tag := unison.NewTag()
 		tag.BackgroundInk = foreground
 		tag.OnBackgroundInk = background
 		tag.Font = &unison.DynamicFont{
@@ -695,15 +727,23 @@ func (n *Node[T]) addLabelCell(c *gurps.CellData, parent *unison.Panel, width fl
 		}
 		tag.SetTitle(inlineTag)
 		tag.SetEnabled(!c.Dim)
+		trailing = append(trailing, tag)
+	}
+	if primary && c.GrantedBy != "" {
+		trailing = append(trailing, n.newGrantedMark(c, f, foreground))
 	}
 	// A label reports its width rounded up to whole pixels, so the text is wrapped to a whole-pixel width. Wrapped to
 	// the fractional width a cell usually has, a line that fit could still come out a fraction too wide and push what
-	// sits beside it, the notes disclosure button or the inline tag, past the edge of the cell.
+	// sits beside it, the notes disclosure button or what trails the first line, past the edge of the cell.
 	var lines []*unison.Text
 	if width > 0 {
-		if tag != nil {
-			_, size, _ := tag.Sizes(geom.Size{})
-			lines = unison.NewTextWrappedLines(text, decoration, xmath.Floor(width-(size.Width+unison.StdHSpacing)))
+		if len(trailing) != 0 {
+			var trailingWidth float32
+			for _, one := range trailing {
+				_, size, _ := one.AsPanel().Sizes(geom.Size{})
+				trailingWidth += size.Width + unison.StdHSpacing
+			}
+			lines = unison.NewTextWrappedLines(text, decoration, xmath.Floor(width-trailingWidth))
 			if len(lines) > 1 {
 				lines = lines[:1]
 				lines = append(lines, unison.NewTextWrappedLines(strings.TrimPrefix(text, lines[0].String()),
@@ -725,21 +765,76 @@ func (n *Node[T]) addLabelCell(c *gurps.CellData, parent *unison.Panel, width fl
 		// on, the label would be measured with it and come out wider than the width the line was wrapped to.
 		label.SetTitle(strings.TrimRightFunc(line.String(), unicode.IsSpace))
 		label.SetEnabled(!c.Dim)
-		if tag != nil {
+		if len(trailing) != 0 {
 			wrapper := unison.NewPanel()
 			wrapper.SetLayout(&unison.FlexLayout{
-				Columns:  2,
+				Columns:  1 + len(trailing),
 				HSpacing: unison.StdHSpacing,
 				HAlign:   align.Start,
 				VAlign:   align.Middle,
 			})
 			wrapper.AddChild(label)
-			wrapper.AddChild(tag)
+			for _, one := range trailing {
+				wrapper.AddChild(one)
+			}
 			parent.AddChild(wrapper)
-			tag = nil
+			trailing = nil
 		} else {
 			parent.AddChild(label)
 		}
+	}
+}
+
+// newGrantedMark returns the mark that follows the name of an item a grant put on the sheet. Its tooltip names the
+// grant, and clicking it selects the item carrying the grant.
+func (n *Node[T]) newGrantedMark(c *gurps.CellData, f unison.Font, foreground unison.Ink) *unison.Label {
+	theme := unison.DefaultLinkTheme
+	theme.OnBackgroundInk = foreground
+	// The selection changes once the click has been handled, since opening containers to show the item re-syncs the
+	// table, which throws this mark away.
+	mark := newLink("", "", "", &theme, func(unison.Paneler, string) {
+		unison.InvokeTask(func() { selectGrantingItem(n.table, gurps.GrantingItem(n.data)) })
+	})
+	// As for a page reference, the focus stays with the table.
+	mark.SetFocusable(false)
+	mark.SetBorder(nil)
+	size := max(f.Baseline()-2, 6)
+	mark.Drawable = dimmedIf(&unison.DrawableSVG{
+		SVG:  svg.ChainLink,
+		Size: geom.NewSize(size, size).Ceil(),
+	}, c.Dim)
+	mark.Tooltip = newWrappedTooltip(c.GrantedBy + "\n" + i18n.Text("Click to select the item that grants it."))
+	mark.Accessibility.Name = c.GrantedBy
+	return mark
+}
+
+// selectGrantingItem selects the item, the carrier of a grant, in the sheet holding the table, opening the containers
+// holding it and bringing it into view.
+func selectGrantingItem[T gurps.Node[T]](table *unison.Table[*Node[T]], item any) {
+	sheet := unison.Ancestor[*Sheet](liveTable(table))
+	if sheet == nil {
+		return
+	}
+	switch one := item.(type) {
+	case *gurps.Trait:
+		selectAndReveal(sheet, sheet.Traits, one)
+	case *gurps.Skill:
+		selectAndReveal(sheet, sheet.Skills, one)
+	case *gurps.Spell:
+		selectAndReveal(sheet, sheet.Spells, one)
+	case *gurps.Equipment:
+		// Only carried equipment grants anything.
+		selectAndReveal(sheet, sheet.CarriedEquipment, one)
+	}
+}
+
+// selectAndReveal selects the target in the list's table, opening the containers holding it, as Apply Modifier does
+// its targets.
+func selectAndReveal[T gurps.Node[T]](sheet *Sheet, list *PageList[T], target T) {
+	if list != nil {
+		tables := []*unison.Table[*Node[T]]{list.Table}
+		selectModifierTargets(tables, []T{target})
+		revealModifierTargets(sheet, tables)
 	}
 }
 

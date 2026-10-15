@@ -34,6 +34,18 @@ func countLeaves[T gurps.Node[T]](list []T) int {
 	return n
 }
 
+// countGranted returns the number of rows a grant put on the sheet.
+func countGranted[T gurps.Node[T]](list []T) int {
+	n := 0
+	gurps.Traverse(func(one T) bool {
+		if gurps.IsGranted(one) {
+			n++
+		}
+		return false
+	}, false, true, list...)
+	return n
+}
+
 // countConditionalModifierRows returns the number of rows in a derived list, leaving out the groups they are filed
 // under.
 func countConditionalModifierRows(list []*gurps.ConditionalModifier) int {
@@ -67,8 +79,8 @@ func checkParents[T gurps.Node[T]](c check.Checker, name string, list []T, paren
 }
 
 // volatileFields matches the parts of a character's JSON that differ between two builds of the same character: its
-// IDs and its timestamps.
-var volatileFields = regexp.MustCompile(`"(id|created_date|modified_date|when)":\s*"[^"]*"`)
+// IDs, what is derived from them and its timestamps.
+var volatileFields = regexp.MustCompile(`"(id|grantor|key|hash|created_date|modified_date|when)":\s*"[^"]*"`)
 
 // linkKeys matches the keys of the nameable links, which are the IDs of the modifiers they are for.
 var linkKeys = regexp.MustCompile(`"[a-zA-Z][\w-]{16}":\s*\{`)
@@ -92,12 +104,14 @@ func TestNewLargeEntityFillsEveryList(t *testing.T) {
 	// The traits list also holds the natural attacks and the traits with unsatisfied prerequisites.
 	c.True(countLeaves(e.Traits) >= size.Traits, "traits: %d < %d", countLeaves(e.Traits), size.Traits)
 	c.True(countLeaves(e.Skills) >= size.Skills, "skills: %d < %d", countLeaves(e.Skills), size.Skills)
-	c.Equal(size.Spells+size.RitualMagicSpells, countLeaves(e.Spells), "spells")
+	c.Equal(size.Spells+size.RitualMagicSpells, countLeaves(e.Spells)-countGranted(e.Spells), "spells")
 	c.Equal(size.CarriedEquipment, countLeaves(e.CarriedEquipment), "carried equipment")
 	c.Equal(size.OtherEquipment, countLeaves(e.OtherEquipment), "other equipment")
 	c.Equal(size.Notes, countLeaves(e.Notes), "notes")
 	c.Equal(size.Reactions, countConditionalModifierRows(e.Reactions()), "reactions")
 	c.Equal(size.ConditionalModifiers, countConditionalModifierRows(e.ConditionalModifiers()), "conditional modifiers")
+	c.True(countGranted(e.Traits) > 0, "no granted traits")
+	c.True(countGranted(e.Skills) > 0, "no granted skills")
 
 	// The weapons on unequipped and uncarried equipment stay off the page, so the page shows most, not all, of them;
 	// the natural attacks add three melee weapons.

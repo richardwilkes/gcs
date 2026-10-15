@@ -87,11 +87,13 @@ type Spell struct {
 	// of equipment they require to be equipped, so that the next pass applies the missing-equipment penalty to its
 	// level (see Entity.applyEquipmentPenalties). It is never saved.
 	takesEquipmentPenalty bool
+	grant                 grantState
 }
 
 // SpellData holds the Spell data that is written to disk.
 type SpellData struct {
 	SourcedID
+	Granted *GrantedBy `json:"granted_by,omitempty"`
 	SpellEditData
 	ThirdParty map[string]any `json:"third_party,omitempty"`
 	Children   []*Spell       `json:"children,omitempty"` // Only for containers
@@ -306,6 +308,7 @@ func (s *Spell) Clone(from LibraryFile, owner DataOwner, parent *Spell, mode Clo
 	other.AdjustSource(from, s.SourcedID, mode)
 	other.ThirdParty = s.ThirdParty
 	other.copyFrom(other, &s.SpellEditData, s.Container(), false, mode)
+	other.Granted = cloneGrantedBy(s.Granted, other)
 	if EntityFromNode(other) == nil {
 		// Disabling only means something on a sheet.
 		other.SetDisabled(false)
@@ -420,7 +423,10 @@ func (s *Spell) CellData(columnID int, data *CellData) {
 	case SpellDescriptionColumn:
 		data.Type = cell.Text
 		data.Primary = s.String()
-		data.Disabled = data.Dim
+		// A granted one whose grant is not in effect is dimmed but not struck through.
+		data.Disabled = data.Dim && !s.grantNotInEffect()
+		data.GrantedBy = grantedByText(s.Granted, &s.grant)
+		data.Grants = EntityFromNode(s).grantSummary(s)
 		data.Secondary = s.SecondaryText(func(option display.Option) bool { return option.Inline() })
 		data.UnsatisfiedReason = s.UnsatisfiedReason
 		data.Tooltip = s.SecondaryText(func(option display.Option) bool { return option.Tooltip() })
@@ -612,20 +618,10 @@ func (s *Spell) UpdateLevel() bool {
 		s.LevelData = Level{}
 		return saved != s.LevelData
 	}
-	colleges := s.CollegeWithReplacements()
 	var level Level
 	// A level computed from a script that was stopped before it could produce an answer is not kept, for the reasons
 	// given in Skill.UpdateLevel; the level already here is out of date rather than wrong.
-	if anyScriptAbandonedDuring(EntityFromNode(s), func() {
-		if s.IsRitualMagic() {
-			level = CalculateRitualMagicSpellLevel(EntityFromNode(s), s.NameWithReplacements(),
-				s.PowerSourceWithReplacements(), s.RitualSkillNameWithReplacements(), s.PrereqCount, colleges,
-				s.Tags, s.Difficulty, s.AdjustedPoints(nil))
-		} else {
-			level = CalculateSpellLevel(EntityFromNode(s), s.NameWithReplacements(),
-				s.PowerSourceWithReplacements(), colleges, s.Tags, s.Difficulty, s.AdjustedPoints(nil))
-		}
-	}) {
+	if anyScriptAbandonedDuring(EntityFromNode(s), func() { level = s.CalculateLevel() }) {
 		return false
 	}
 	s.LevelData = level
@@ -640,12 +636,12 @@ func (s *Spell) CalculateLevel() Level {
 // calculateLevel returns the level the spell has with the given adjusted points.
 func (s *Spell) calculateLevel(points fxp.Int) Level {
 	if s.IsRitualMagic() {
-		return CalculateRitualMagicSpellLevel(EntityFromNode(s), s.NameWithReplacements(),
+		return s.grant.applyLevels(CalculateRitualMagicSpellLevel(EntityFromNode(s), s.NameWithReplacements(),
 			s.PowerSourceWithReplacements(), s.RitualSkillNameWithReplacements(), s.PrereqCount,
-			s.CollegeWithReplacements(), s.Tags, s.Difficulty, points)
+			s.CollegeWithReplacements(), s.Tags, s.Difficulty, points))
 	}
-	return CalculateSpellLevel(EntityFromNode(s), s.NameWithReplacements(), s.PowerSourceWithReplacements(),
-		s.CollegeWithReplacements(), s.Tags, s.Difficulty, points)
+	return s.grant.applyLevels(CalculateSpellLevel(EntityFromNode(s), s.NameWithReplacements(),
+		s.PowerSourceWithReplacements(), s.CollegeWithReplacements(), s.Tags, s.Difficulty, points))
 }
 
 // IncrementSkillLevel adds enough points to increment the skill level to the next level. Containers and disabled
@@ -982,12 +978,15 @@ func (s *Spell) AdjustedPoints(tooltip *xbytes.InsertBuffer) fxp.Int {
 		}
 		var total fxp.Int
 		for _, one := range s.Children {
-			total += one.AdjustedPoints(nil)
+			// A granted spell costs nothing, whatever points its tier stands for.
+			if one.Granted == nil {
+				total += one.AdjustedPoints(nil)
+			}
 		}
 		return total
 	}
-	return AdjustedPointsForNonContainerSpell(EntityFromNode(s), s.Points, s.NameWithReplacements(),
-		s.PowerSourceWithReplacements(), s.CollegeWithReplacements(), s.Tags, tooltip)
+	return s.grant.applyPoints(AdjustedPointsForNonContainerSpell(EntityFromNode(s), s.Points, s.NameWithReplacements(),
+		s.PowerSourceWithReplacements(), s.CollegeWithReplacements(), s.Tags, tooltip), tooltip)
 }
 
 // PointsRange returns the span of point costs this spell may end up being worth once every choice in or under it has
@@ -995,7 +994,8 @@ func (s *Spell) AdjustedPoints(tooltip *xbytes.InsertBuffer) fxp.Int {
 // fills it: the notes name each bonus source without saying which row it landed on, so rolling up a container's
 // children would give an unattributed, repetitive pile.
 func (s *Spell) PointsRange(tooltip *xbytes.InsertBuffer) NumericRange {
-	if !s.Enabled() {
+	if !s.Enabled() || s.Granted != nil {
+		// A granted spell costs nothing, whatever points its tier stands for.
 		return NumericRangeOf(0)
 	}
 	if !s.Container() {
@@ -1051,10 +1051,11 @@ func (s *Spell) SetTL(tl string) {
 	}
 }
 
-// Enabled returns true if this Spell and all of its parents are enabled.
+// Enabled returns true if this Spell and all of its parents are enabled, and, for a granted spell, its grant is in
+// effect.
 func (s *Spell) Enabled() bool {
 	for p := s; p != nil; p = p.parent {
-		if p.IsDisabled() {
+		if p.IsDisabled() || p.grantNotInEffect() {
 			return false
 		}
 	}

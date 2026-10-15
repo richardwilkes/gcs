@@ -1037,12 +1037,35 @@ var allEnums = []*enumInfo{
 				String: "Reduces the contained weight by",
 			},
 			{
+				Key:    "grant_trait",
+				String: "Grants the trait",
+			},
+			{
+				Key:    "grant_skill",
+				String: "Grants the skill",
+			},
+			{
+				Key:    "grant_spell",
+				String: "Grants the spell",
+			},
+			{
 				Key:    "unknown",
 				String: "Is an unknown feature type",
 			},
 		},
 		DefaultLast:    true,
 		DefaultUnknown: true,
+	},
+	{
+		Pkg:  "model/gurps/enums/grantmerge",
+		Name: "mode",
+		Desc: "holds what a grant does when the character already has the item it grants",
+		Values: []*enumValue{
+			{Key: "ignore"},
+			{Key: "merge_levels"},
+			{Key: "merge_points"},
+			{Key: "keep_highest"},
+		},
 	},
 	{
 		Pkg:  "model/gurps/enums/layoutedge",

@@ -91,7 +91,7 @@ func (p *TraitPrereq) Satisfied(entity *Entity, exclude any, tooltip *xbytes.Ins
 	}
 	satisfied := false
 	Traverse(func(t *Trait) bool {
-		if exclude == t || !p.NameCriteria.Matches(replacements, t.NameWithReplacements()) ||
+		if excludedFromPrereqs(exclude, t) || !p.NameCriteria.Matches(replacements, t.NameWithReplacements()) ||
 			(p.PointsCriteria.Compare != criteria.AnyNumber && !p.PointsCriteria.Matches(t.AdjustedPoints(nil))) ||
 			(p.TagsCriteria.Compare != criteria.AnyText && !p.TagsCriteria.MatchesList(replacements, t.Tags...)) ||
 			// A container's modifiers apply to the traits it holds.
