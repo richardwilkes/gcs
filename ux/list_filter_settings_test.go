@@ -117,7 +117,7 @@ func TestListFilterSettingsCommands(t *testing.T) {
 }
 
 // TestListFilterSettingsListTypeSelection verifies that selecting a list type's row selects every filter of that type,
-// that the Delete key deletes the selection, and that the table asks for some width of its own.
+// that the Delete key deletes the selection, and that the view asks for a width and keeps a minimum size.
 func TestListFilterSettingsListTypeSelection(t *testing.T) {
 	c := check.New(t)
 	f := newListFilterSettingsFixture(t, c)
@@ -130,6 +130,9 @@ func TestListFilterSettingsListTypeSelection(t *testing.T) {
 		v := f.view
 		_, pref, _ := v.table.Sizes(geom.Size{})
 		c.True(pref.Width > v.table.Columns[0].Current, "the table asks for room for the summaries")
+		minSize, _, _ := v.Sizes(geom.Size{})
+		c.True(minSize.Width >= listFilterSettingsMinSize.Width && minSize.Height > listFilterSettingsMinSize.Height,
+			"the view can't be shrunk past the toolbar and a few rows, nor too narrow for the summaries")
 
 		v.table.SetSelectionMap(map[tid.TID]bool{v.rows.ids["adq"]: true, v.rows.ids[f.alpha]: true})
 		c.Equal([]*gurps.ListFilter{f.alpha, f.beta}, v.selectedFilters(),

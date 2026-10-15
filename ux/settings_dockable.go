@@ -55,6 +55,9 @@ type SettingsDockable struct {
 	// ContentFollowsWidth, when set, makes the content as wide as the view, never wider, so that it doesn't scroll
 	// sideways however narrow the view becomes; it must then fit its content to whatever width it is given.
 	ContentFollowsWidth bool
+	// ContentMinSize is the smallest size the view lets its content be shrunk to, below which the content would be
+	// hidden or too cramped to use. The view scrolls rather than shrinking it further.
+	ContentMinSize geom.Size
 }
 
 // settingsSpec is what distinguishes one of the views that edit a global setting in place (the colors, fonts, menu keys,
@@ -118,10 +121,11 @@ func (d *SettingsDockable) Setup(addToStartToolbar, addToEndToolbar, initContent
 	}
 	scroller.SetContent(content, widthBehavior, behavior.Fill)
 	scroller.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: align.Fill,
-		VAlign: align.Fill,
-		HGrab:  true,
-		VGrab:  true,
+		MinSize: d.ContentMinSize,
+		HAlign:  align.Fill,
+		VAlign:  align.Fill,
+		HGrab:   true,
+		VGrab:   true,
 	})
 	d.AddChild(scroller)
 	PlaceInDock(d, dgroup.Settings, false)

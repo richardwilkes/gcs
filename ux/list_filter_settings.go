@@ -26,6 +26,10 @@ import (
 // listFilterSummaryPrefWidth is the width the table asks for to show the summaries in, which wrap to fit it.
 const listFilterSummaryPrefWidth = 400
 
+// listFilterSettingsMinSize is the smallest the view's content can be shrunk to: room for the names beside a usable
+// width of summary, and for a few rows.
+var listFilterSettingsMinSize = geom.NewSize(480, 160)
+
 var (
 	_ unison.UndoManagerProvider = &listFilterSettingsDockable{}
 	_ listFilterObserver         = &listFilterSettingsDockable{}
@@ -70,6 +74,7 @@ func ShowListFilterSettings() {
 	d.SelectionSaver = d.saveSelected
 	d.HasSelection = func() bool { return len(d.selectedFilters()) != 0 }
 	d.ContentFollowsWidth = true
+	d.ContentMinSize = listFilterSettingsMinSize
 	d.initSettings(d, &settingsSpec{
 		title: i18n.Text("Saved Filters"),
 		ext:   gurps.ListFiltersExt,
