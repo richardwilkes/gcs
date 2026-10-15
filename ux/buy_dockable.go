@@ -26,7 +26,6 @@ import (
 	"github.com/richardwilkes/unison/drag"
 	"github.com/richardwilkes/unison/enums/align"
 	"github.com/richardwilkes/unison/enums/behavior"
-	"github.com/richardwilkes/unison/enums/check"
 	"github.com/richardwilkes/unison/enums/mod"
 	"github.com/richardwilkes/unison/enums/paintstyle"
 )
@@ -51,11 +50,12 @@ var (
 
 // buyDockable is the dockable in which a sheet's character buys equipment (see showBuyDockable). It lists the equipment
 // dropped on it, or sent to it with the Buy command (see buySelectedEquipment), from any equipment list, the sheet's
-// own included, with the quantity of each to buy, and pays for it with the carried money (see gurps.Entity.MoneyItems),
-// chosen automatically or by the user, returning any change in the sheet's sell money. Nothing on the sheet changes
-// until the purchase is finalized: the dockable's fields neither record undo nor mark the sheet as modified. The sheet
-// stays editable meanwhile, so the payment is worked out again from the money carried on every change to the sheet
-// (see SheetChanged) and checked once more as the purchase is finalized.
+// own included, with the quantity of each to buy, and warns when the carried money (see gurps.Entity.MoneyItems) doesn't
+// cover the total. The money paid with, and whether what is bought merges with matching carried items, are settled when
+// the purchase is finalized (see confirmPurchase). Nothing on the sheet changes until then: the dockable's fields
+// neither record undo nor mark the sheet as modified. The sheet stays editable meanwhile, so the payment is worked out
+// again from the money carried on every change to the sheet (see SheetChanged) and checked once more as the purchase is
+// finalized.
 type buyDockable struct {
 	unison.Panel
 	sheet        *Sheet
@@ -63,23 +63,20 @@ type buyDockable struct {
 	scroll       *unison.ScrollPanel
 	dropArea     *unison.Panel
 	hint         *TextLabel
+	header       *unison.Panel
 	footer       *unison.Panel
 	percentField *DecimalField
 	summary      *TextLabel
 	setSummary   func(text string, warn bool)
-	notice       *TextLabel
-	setNotice    func(text string, warn bool)
-	manualButton *unison.Button
 	nameField    *StringField
-	merge        *unison.CheckBox
 	finalize     *unison.Button
 	items        []*buyItem
 	percent      fxp.Int
 	name         string
 	title        string
-	// manual holds the quantity of each carried money item, by ID, the user chose to pay with, or is nil to pay
-	// automatically. Money items are kept by ID rather than by pointer, since undoing an edit replaces them.
-	manual map[tid.TID]int
+	// merge is whether what is bought is to merge with matching carried items, as last settled when finalizing (see
+	// confirmPurchase), which the next attempt starts from.
+	merge  bool
 	auto   buyAutoPayment
 	change buyChange
 	plan   buyPlan
@@ -270,7 +267,7 @@ func buySelectedEquipment(table *unison.Table[*Node[*gurps.Equipment]]) {
 }
 
 func newBuyDockable(sheet *Sheet) *buyDockable {
-	d := &buyDockable{sheet: sheet}
+	d := &buyDockable{sheet: sheet, merge: true}
 	d.Self = d
 	d.targetMgr = NewTargetMgr(d)
 	d.SetLayout(&unison.FlexLayout{Columns: 1})
@@ -279,9 +276,13 @@ func newBuyDockable(sheet *Sheet) *buyDockable {
 	content := unison.NewPanel()
 	content.SetLayout(&unison.FlexLayout{
 		Columns:  1,
-		VSpacing: unison.StdVSpacing,
+		VSpacing: 2 * unison.StdVSpacing,
 	})
-	content.SetBorder(unison.NewEmptyBorder(unison.StdInsets()))
+	insets := unison.StdInsets()
+	insets.Top *= 2
+	insets.Bottom *= 2
+	content.SetBorder(unison.NewEmptyBorder(insets))
+	content.AddChild(d.createHeader())
 	content.AddChild(d.createDropArea())
 	content.AddChild(d.createFooter())
 	d.scroll = unison.NewScrollPanel()
@@ -300,8 +301,9 @@ func newBuyDockable(sheet *Sheet) *buyDockable {
 }
 
 // sizeHint returns the room the dockable asks for however little it lists: rows of typical width for buyHintRows items,
-// or the footer's payment row shown on one line if that is wider, above the footer. A window packed around the dockable
-// would otherwise close up around the hint and the footer, since an empty drop area asks for no room of its own.
+// or the header or footer row shown on one line if that is wider, between the header and the footer. A window packed
+// around the dockable would otherwise close up around the hint and those rows, since an empty drop area asks for no
+// room of its own.
 func (d *buyDockable) sizeHint() geom.Size {
 	font := unison.DefaultLabelTheme.Font
 	measure := func(samples ...string) float32 {
@@ -315,12 +317,15 @@ func (d *buyDockable) sizeHint() geom.Size {
 	// The remove button takes a row's height; the drop area's and the content's borders flank the row.
 	row := measure("9999", "Leather Armor (Fine, Ornate, Waterproofed)", i18n.Text("$%s each", "1,234.56"),
 		i18n.Text("Total $%s", "12,345.67")) + rowHeight + 6*unison.StdHSpacing
-	payment := measure(i18n.Text("Percent of Full Price"), "100",
-		"Pay automatically: Silver Eagle ×12, Copper Penny ×19 ($259); change: Copper Penny ×5 ($5)",
-		i18n.Text("Choose Manually…"))
-	_, footer, _ := d.footer.Sizes(geom.Size{})
+	header := measure(i18n.Text("Transaction"), "Bought Leather Armor, Longbow, Rope", i18n.Text("Percent of Full Price"),
+		"100")
+	footer := measure(i18n.Text("Not enough money carried: $%s needed, $%s carried.", "12,345.67", "1,234.56"),
+		i18n.Text("Finalize Purchase…"))
+	_, headerSize, _ := d.header.Sizes(geom.Size{})
+	_, footerSize, _ := d.footer.Sizes(geom.Size{})
 	// The hint takes a row of its own above the items.
-	return geom.NewSize(xmath.Ceil(max(row, payment)), xmath.Ceil(rowHeight*(buyHintRows+1)+footer.Height))
+	return geom.NewSize(xmath.Ceil(max(row, header, footer)),
+		xmath.Ceil(rowHeight*(buyHintRows+1)+headerSize.Height+footerSize.Height))
 }
 
 func (d *buyDockable) createDropArea() *unison.Panel {
@@ -387,56 +392,12 @@ func (d *buyDockable) createDropArea() *unison.Panel {
 	return d.dropArea
 }
 
-func (d *buyDockable) createFooter() *unison.Panel {
-	d.footer = unison.NewPanel()
-	d.footer.SetLayout(&unison.FlexLayout{
-		Columns:  1,
-		VSpacing: unison.StdVSpacing,
-	})
-	d.footer.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: align.Fill,
-		HGrab:  true,
-	})
-
-	payment := newBuyFooterRow(4)
-	label := NewFieldLeadingLabel(i18n.Text("Percent of Full Price"), false)
-	payment.AddChild(label)
-	d.percentField = NewDecimalField(d.targetMgr, "buy.percent", i18n.Text("Percent of Full Price"),
-		func() fxp.Int { return d.percent },
-		func(v fxp.Int) {
-			if v != d.percent {
-				d.percent = v
-				d.percentEdited = true
-				d.refresh()
-			}
-		}, gurps.MinTradePercent, gurps.MaxTradePercent, false, false)
-	d.percentField.withoutUndo()
-	d.percentField.SetMarksModified(false)
-	d.percentField.Accessibility.Name = i18n.Text("Percent of full price")
-	d.percentField.Tooltip = newWrappedTooltip(i18n.Text("The percentage of each item's full price to pay"))
-	d.percentField.Accessibility.LabeledBy = label
-	payment.AddChild(d.percentField)
-	d.summary, d.setSummary = newBuyNoticeLabel()
-	d.summary.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: align.Fill,
-		VAlign: align.Middle,
-		HGrab:  true,
-	})
-	payment.AddChild(d.summary)
-	d.manualButton = newBuyButton(i18n.Text("Choose Manually…"),
-		i18n.Text("Choose the carried money to pay with"), d.choosePaymentManually)
-	payment.AddChild(d.manualButton)
-	d.footer.AddChild(payment)
-
-	d.notice, d.setNotice = newBuyNoticeLabel()
-	d.notice.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: align.Fill,
-		HGrab:  true,
-	})
-
-	finish := newBuyFooterRow(4)
-	label = NewFieldLeadingLabel(i18n.Text("Transaction"), false)
-	finish.AddChild(label)
+// createHeader returns the row above the drop area: the transaction name, which the shopping record gives the purchase,
+// with the percentage of full price to pay at the right.
+func (d *buyDockable) createHeader() *unison.Panel {
+	d.header = newBuyRow(4)
+	label := NewFieldLeadingLabel(i18n.Text("Transaction"), false)
+	d.header.AddChild(label)
 	d.nameField = NewStringField(d.targetMgr, "buy.name", i18n.Text("Transaction Name"),
 		func() string { return d.name },
 		func(s string) {
@@ -455,25 +416,48 @@ func (d *buyDockable) createFooter() *unison.Panel {
 		VAlign: align.Middle,
 		HGrab:  true,
 	})
-	finish.AddChild(d.nameField)
-	d.merge = unison.NewCheckBox()
-	d.merge.SetTitle(i18n.Text("Merge with matching items"))
-	d.merge.State = check.On
-	d.merge.Accessibility.Name = i18n.Text("Merge with matching items")
-	d.merge.Tooltip = newWrappedTooltip(i18n.Text("Add the quantity of each item bought, and of the change, to a carried item that matches it, rather than carrying a separate copy"))
-	d.merge.SetLayoutData(&unison.FlexLayoutData{VAlign: align.Middle})
-	finish.AddChild(d.merge)
+	d.header.AddChild(d.nameField)
+	label = NewFieldInteriorLeadingLabel(i18n.Text("Percent of Full Price"), false)
+	d.header.AddChild(label)
+	d.percentField = NewDecimalField(d.targetMgr, "buy.percent", i18n.Text("Percent of Full Price"),
+		func() fxp.Int { return d.percent },
+		func(v fxp.Int) {
+			if v != d.percent {
+				d.percent = v
+				d.percentEdited = true
+				d.refresh()
+			}
+		}, gurps.MinTradePercent, gurps.MaxTradePercent, false, false)
+	d.percentField.withoutUndo()
+	d.percentField.SetMarksModified(false)
+	d.percentField.Accessibility.Name = i18n.Text("Percent of full price")
+	d.percentField.Tooltip = newWrappedTooltip(i18n.Text("The percentage of each item's full price to pay"))
+	d.percentField.Accessibility.LabeledBy = label
+	d.header.AddChild(d.percentField)
+	return d.header
+}
+
+// createFooter returns the row below the drop area: the summary of the purchase (see syncSummary) and the button that
+// finalizes it.
+func (d *buyDockable) createFooter() *unison.Panel {
+	d.footer = newBuyRow(2)
+	d.summary, d.setSummary = newBuyNoticeLabel()
+	d.summary.SetLayoutData(&unison.FlexLayoutData{
+		HAlign: align.Fill,
+		VAlign: align.Middle,
+		HGrab:  true,
+	})
+	d.footer.AddChild(d.summary)
 	// Finalizing closes the dockable, which is left until the click that asked for it is over.
-	d.finalize = newBuyButton(i18n.Text("Finalize Purchase"),
-		i18n.Text("Pay for the items and add them to the carried equipment"),
+	d.finalize = newBuyButton(i18n.Text("Finalize Purchase…"),
+		i18n.Text("Settle the money to pay with, then pay for the items and add them to the carried equipment"),
 		func() { unison.InvokeTask(func() { d.finalizePurchase() }) })
-	finish.AddChild(d.finalize)
-	d.footer.AddChild(finish)
+	d.footer.AddChild(d.finalize)
 	return d.footer
 }
 
-// newBuyFooterRow returns a panel laying out the given number of columns in a row of the buy dockable's footer.
-func newBuyFooterRow(columns int) *unison.Panel {
+// newBuyRow returns a panel laying out the given number of columns in a row above or below the buy dockable's drop area.
+func newBuyRow(columns int) *unison.Panel {
 	row := unison.NewPanel()
 	row.SetLayout(&unison.FlexLayout{
 		Columns:  columns,
@@ -569,7 +553,7 @@ func (d *buyDockable) confirmClose() bool {
 	if !d.Modified() {
 		return true
 	}
-	d.plan = d.planPayment()
+	d.plan = d.planPayment(nil)
 	if d.plan.short {
 		if unison.QuestionDialog(i18n.Text("Discard the purchase for\n%s?", dockableTitle(d.sheet)),
 			i18n.Text("The money carried doesn't cover it, so it can't be finalized.")) != unison.ModalResponseOK {
@@ -885,10 +869,6 @@ func (d *buyDockable) removeItem(item *buyItem) {
 		return w.AsPanel() == focus
 	})
 	d.items = slices.Delete(d.items, i, i+1)
-	if len(d.items) == 0 {
-		// A manual choice of money was made for items no longer being bought.
-		d.manual = nil
-	}
 	d.layoutRows()
 	if hadFocus {
 		var target *unison.Panel
@@ -1058,60 +1038,32 @@ func (d *buyDockable) refresh() {
 		item.total.SetTitle(i18n.Text("Total $%s",
 			d.formatValue(gurps.TradePrice(item.eqp, item.quantity(), d.percent))))
 	}
-	d.plan = d.planPayment()
+	d.plan = d.planPayment(nil)
 	d.syncSummary()
-	d.manualButton.SetEnabled(len(d.items) != 0)
 	d.finalize.SetEnabled(len(d.items) != 0 && !d.plan.short)
 	d.MarkForLayoutRecursively()
 	d.MarkForRedraw()
 }
 
+// syncSummary has the summary show the total price of the items, or warn that the money carried doesn't cover it. How
+// the total is paid is settled when the purchase is finalized (see confirmPurchase), so nothing of that is shown here.
 func (d *buyDockable) syncSummary() {
-	plan := d.plan
-	var summary, notice string
-	warn := false
 	switch {
 	case len(d.items) == 0:
-		summary = i18n.Text("Nothing to buy yet.")
-	case plan.short && d.manual == nil:
-		summary = i18n.Text("Not enough money carried: $%s needed, $%s carried.", d.formatValue(plan.total),
-			d.formatValue(d.carriedMoney()))
-		warn = true
-	case plan.short:
-		summary = i18n.Text("The money chosen is short by $%s: $%s needed, $%s chosen.",
-			d.formatValue(plan.total-plan.paid), d.formatValue(plan.total), d.formatValue(plan.paid))
-		warn = true
-	case plan.paid == 0:
-		summary = i18n.Text("Nothing to pay.")
+		d.setSummary(i18n.Text("Nothing to buy yet."), false)
+	case d.plan.short:
+		d.setSummary(i18n.Text("Not enough money carried: $%s needed, $%s carried.", d.formatValue(d.plan.total),
+			d.formatValue(d.carriedMoney())), true)
 	default:
-		if d.manual == nil {
-			summary = i18n.Text("Pay automatically: %s ($%s)", describePayouts(plan.payments),
-				d.formatValue(plan.paid))
-		} else {
-			summary = i18n.Text("Pay manually: %s ($%s)", describePayouts(plan.payments), d.formatValue(plan.paid))
-		}
-		if plan.changePaid > 0 {
-			summary += i18n.Text("; change: %s ($%s)", describePayouts(plan.change), d.formatValue(plan.changePaid))
-		}
-		if unreturned := plan.paid - plan.total - plan.changePaid; unreturned > 0 {
-			notice = unreturnedChangeNotice(d.formatValue(unreturned), len(d.sheet.Entity().SheetSettings.SellMoney),
-				len(plan.sellMoney))
-		}
-	}
-	d.setSummary(summary, warn)
-	d.setNotice(notice, notice != "")
-	switch {
-	case notice == "":
-		d.notice.RemoveFromParent()
-	case d.notice.Parent() == nil:
-		d.footer.AddChildAtIndex(d.notice, 1)
+		d.setSummary(i18n.Text("Total: $%s", d.formatValue(d.plan.total)), false)
 	}
 }
 
-// planPayment works out the total price of the items and how it is paid for. The sheet's sell money is looked up in
-// the libraries each time, since they may have changed; the lookup is cheap once the library files are loaded, as the
-// entity's source matcher reloads one only when it has changed on disk.
-func (d *buyDockable) planPayment() buyPlan {
+// planPayment works out the total price of the items and how it is paid for: with the quantity of each carried money
+// item given in chosen, by ID, or automatically when chosen is nil. The sheet's sell money is looked up in the libraries
+// each time, since they may have changed; the lookup is cheap once the library files are loaded, as the entity's source
+// matcher reloads one only when it has changed on disk.
+func (d *buyDockable) planPayment(chosen map[tid.TID]int) buyPlan {
 	var plan buyPlan
 	if len(d.items) == 0 {
 		return plan
@@ -1121,8 +1073,8 @@ func (d *buyDockable) planPayment() buyPlan {
 	}
 	entity := d.sheet.Entity()
 	money := entity.MoneyItems()
-	if d.manual != nil {
-		plan.payments, plan.paid = manualPayouts(d.manual, money)
+	if chosen != nil {
+		plan.payments, plan.paid = manualPayouts(chosen, money)
 	} else {
 		plan.payments, plan.paid = d.automaticPayment(plan.total, money)
 	}
@@ -1254,7 +1206,7 @@ func (d *buyDockable) defaultName() string {
 	for _, item := range d.items {
 		names = append(names, item.eqp.String())
 	}
-	return i18n.Text("Bought %s", joinNames(names))
+	return i18n.Text("Bought %s", tradeNames(names))
 }
 
 func (d *buyDockable) sheetPercent() fxp.Int {
@@ -1265,31 +1217,10 @@ func (d *buyDockable) formatValue(value fxp.Int) string {
 	return d.sheet.Entity().SheetSettings.FormatEquipmentValue(value)
 }
 
-// choosePaymentManually lets the user choose the carried money to pay with, starting from the payment as it stands.
-func (d *buyDockable) choosePaymentManually() {
-	d.plan = d.planPayment()
-	current := make(map[tid.TID]int, len(d.plan.payments))
-	for _, one := range d.plan.payments {
-		current[one.Money.TID] = one.Quantity
-	}
-	chosen, useAutomatic, ok := chooseManualPayment(d.sheet, d.plan.total, d.describeItems(), current)
-	if !ok {
-		return
-	}
-	switch {
-	case useAutomatic:
-		d.manual = nil
-	case chosen == nil:
-		d.manual = make(map[tid.TID]int)
-	default:
-		d.manual = chosen
-	}
-	d.refresh()
-}
-
-// finalizePurchase pays for the items, adds them and any change to the carried equipment and records the purchase, as
-// one undoable edit, then closes the dockable, returning to the sheet if the focus was within the dockable. It returns
-// false if the purchase was not made, for any of the reasons below, in which case the dockable stays open.
+// finalizePurchase settles the money to pay with and whether to merge what is bought (see confirmPurchase), then pays
+// for the items, adds them and any change to the carried equipment and records the purchase, as one undoable edit, and
+// closes the dockable, returning to the sheet if the focus was within the dockable. It returns false if the purchase
+// was not made, for any of the reasons below, in which case the dockable stays open.
 //
 // An editor doesn't follow changes to its item, so one left open on an item the purchase changes would put its stale
 // quantity back when applied. The editors open on everything the purchase changes are closed first, as they are for a
@@ -1301,16 +1232,24 @@ func (d *buyDockable) finalizePurchase() bool {
 	if d.settled || buyDockableFor(d.sheet) != d {
 		return false
 	}
-	d.plan = d.planPayment()
+	d.plan = d.planPayment(nil)
 	if len(d.items) == 0 || d.plan.short {
 		return false
 	}
-	plan := d.plan
+	terms, ok := confirmPurchase(d, &d.plan)
+	if !ok || d.settled || buyDockableFor(d.sheet) != d {
+		return false
+	}
+	d.merge = terms.merge
+	plan := d.planPayment(terms.chosen)
+	if plan.short {
+		return false
+	}
 	items := make([]gurps.PurchaseItem, 0, len(d.items))
 	for _, item := range d.items {
 		items = append(items, gurps.PurchaseItem{Equipment: item.eqp, Quantity: item.quantity()})
 	}
-	merge := d.merge.State == check.On
+	merge := terms.merge
 	entity := d.sheet.Entity()
 	removed := make(map[tid.TID]bool)
 	changed := make(map[tid.TID]bool)
@@ -1338,7 +1277,7 @@ func (d *buyDockable) finalizePurchase() bool {
 	if !CloseID(changed) || d.settled || buyDockableFor(d.sheet) != d {
 		return false
 	}
-	if d.plan = d.planPayment(); !d.plan.same(&plan) {
+	if again := d.planPayment(terms.chosen); !again.same(&plan) {
 		return false
 	}
 	name := strings.TrimSpace(d.nameField.Text())

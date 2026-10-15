@@ -78,7 +78,6 @@ func TestEveryControlHasAnAccessibleName(t *testing.T) {
 		buy.Sync()
 	})
 	audit.Check("buy dockable", buy)
-	screen.Do(func() { buy.discardAndClose() })
 
 	// The dialogs run a nested modal loop, so each is posted rather than run through Do, checked in its own window,
 	// and canceled.
@@ -94,8 +93,9 @@ func TestEveryControlHasAnAccessibleName(t *testing.T) {
 		screen.Do(func() { dialog.StopModal(unison.ModalResponseCancel) })
 		screen.Sync()
 	}
+	checkDialog("purchase dialog", func() { confirmPurchaseWithDialog(buy, &buy.plan) })
+	screen.Do(func() { buy.discardAndClose() })
 	checkDialog("sell dialog", func() { showSellDialog(sheet, []*gurps.Equipment{eq}) })
-	checkDialog("manual payment dialog", func() { chooseManualPayment(sheet, fxp.Ten, "Audit Equipment ×1", nil) })
 	audit.CheckOpened("shopping record", func() {
 		entity.AddShoppingRecord(&gurps.ShoppingRecordEntry{
 			When:      jio.Now(),

@@ -49,6 +49,7 @@ func buyTestSheet(t *testing.T, c check.Checker, carried func(entity *gurps.Enti
 	screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
 	forbidModifierPrompts(t)
 	uxtest.SwapForTest(t, &flushDragFeedback, func(*unison.Panel) {})
+	uxtest.SwapForTest(t, &confirmPurchase, acceptPurchaseAsPlanned)
 	sheet, ok := uxtest.OpenedByAction(t, screen, newCharacterSheetAction).(*Sheet)
 	if !ok {
 		t.Fatal("New Character Sheet must open a character sheet")
@@ -60,6 +61,12 @@ func buyTestSheet(t *testing.T, c check.Checker, carried func(entity *gurps.Enti
 		sheet.Rebuild(true)
 	})
 	return screen, wnd, sheet
+}
+
+// acceptPurchaseAsPlanned stands in for the dialog that finalizes a purchase (see confirmPurchaseWithDialog), accepting
+// the automatic payment and the dockable's merge setting without asking.
+func acceptPurchaseAsPlanned(d *buyDockable, plan *buyPlan) (purchaseTerms, bool) {
+	return purchaseTerms{chosen: paymentQuantities(plan.payments), merge: d.merge}, true
 }
 
 // buyTestCoins returns Silver Eagles worth $20 and Copper Pennies worth $1, both tagged as money, in the quantities
@@ -128,13 +135,10 @@ func buyTestDrop(t *testing.T, screen *unison.HeadlessScreen, sheet *Sheet, tabl
 
 // buyTestState is what a test reads from the buy dockable.
 type buyTestState struct {
-	summary     string
-	notice      string
-	name        string
-	rows        []string
-	finalizeOn  bool
-	manualOn    bool
-	noticeShown bool
+	summary    string
+	name       string
+	rows       []string
+	finalizeOn bool
 }
 
 // readBuyDockable reads the state of the sheet's buy dockable, failing the test if it has none.
@@ -149,13 +153,8 @@ func readBuyDockable(t *testing.T, screen *unison.HeadlessScreen, sheet *Sheet) 
 		}
 		found = true
 		state.summary = p.summary.Title()
-		state.noticeShown = p.notice.Parent() != nil
-		if state.noticeShown {
-			state.notice = p.notice.Title()
-		}
 		state.name = p.nameField.Text()
 		state.finalizeOn = p.finalize.Enabled()
-		state.manualOn = p.manualButton.Enabled()
 		for _, item := range p.items {
 			state.rows = append(state.rows, fmt.Sprintf("%s | %s | %s | %s", item.field.Text(), item.name.Text.String(),
 				item.each.Text.String(), item.total.Text.String()))
@@ -215,23 +214,20 @@ func TestBuyDockableDropAndAutomaticPayment(t *testing.T) {
 	state := readBuyDockable(t, screen, sheet)
 	c.Equal("Nothing to buy yet.", state.summary)
 	c.False(state.finalizeOn, "nothing can be bought before something is dropped")
-	c.False(state.manualOn, "there is nothing to pay for yet")
 
 	op, dropped := buyTestDrop(t, screen, sheet, library, longbow)
 	c.Equal(drag.Copy, op, "a drop from an equipment list is offered as a copy")
 	c.True(dropped, "the drop is taken")
 	state = readBuyDockable(t, screen, sheet)
 	c.Equal([]string{"1 | Longbow | $45 each | Total $45"}, state.rows)
-	c.Equal("Pay automatically: Silver Eagle ×2, Copper Penny ×5 ($45)", state.summary)
-	c.False(state.noticeShown, "the payment is exact, so there is no change to warn about")
+	c.Equal("Total: $45", state.summary)
 	c.Equal("Bought Longbow", state.name, "the transaction is named after what is bought")
 	c.True(state.finalizeOn, "the purchase can be finalized")
-	c.True(state.manualOn, "the money to pay with can be chosen")
 
 	buyTestSetQuantity(screen, sheet, 0, "2")
 	state = readBuyDockable(t, screen, sheet)
 	c.Equal([]string{"2 | Longbow | $45 each | Total $90"}, state.rows)
-	c.Equal("Pay automatically: Silver Eagle ×4, Copper Penny ×10 ($90)", state.summary)
+	c.Equal("Total: $90", state.summary)
 
 	buyTestSetQuantity(screen, sheet, 0, "4")
 	state = readBuyDockable(t, screen, sheet)
@@ -250,10 +246,7 @@ func TestBuyDockableDropAndAutomaticPayment(t *testing.T) {
 	state = readBuyDockable(t, screen, sheet)
 	c.Equal([]string{"1 | Longbow | $45 each | Total $45", "1 | Kit | $10 each | Total $10"}, state.rows,
 		"a group is bought once, its price that of what it holds")
-	c.Equal("Pay automatically: Silver Eagle ×3 ($60)", state.summary,
-		"the smallest total the money carried can make that covers the price is paid")
-	c.Equal("$5 of change can't be returned from the money paid, and the sheet has no sell money. Add some in Sheet Settings to receive change.",
-		state.notice)
+	c.Equal("Total: $55", state.summary)
 	c.Equal("Bought Longbow, Kit", state.name)
 	var groupFieldEnabled bool
 	screen.Do(func() { groupFieldEnabled = buyDockableFor(sheet).items[1].field.Enabled() })
@@ -300,7 +293,7 @@ func TestBuyDockableBuysTheSheetsOwnEquipment(t *testing.T) {
 	c.True(dropped, "the drop is taken")
 	state := readBuyDockable(t, screen, sheet)
 	c.Equal([]string{"1 | Rope | $5 each | Total $5"}, state.rows)
-	c.Equal("Pay automatically: Copper Penny ×5 ($5)", state.summary)
+	c.Equal("Total: $5", state.summary)
 
 	di := &fakeDragInfo{types: []string{equipmentDragKey.UTI}}
 	var canAccept, droppedDirectly bool
@@ -316,7 +309,7 @@ func TestBuyDockableBuysTheSheetsOwnEquipment(t *testing.T) {
 	c.True(droppedDirectly, "dropping it on the dockable adds it")
 	state = readBuyDockable(t, screen, sheet)
 	c.Equal([]string{"1 | Rope | $5 each | Total $5", "1 | Rope | $5 each | Total $5"}, state.rows)
-	c.Equal("Pay automatically: Copper Penny ×10 ($10)", state.summary)
+	c.Equal("Total: $10", state.summary)
 
 	screen.Do(func() { buyDockableFor(sheet).finalize.Click() })
 	c.Equal([]string{"Silver Eagle ×7", "Copper Penny ×1", "Rope ×2"}, buyTestCarried(screen, sheet),
@@ -360,27 +353,18 @@ func TestBuyDockableReturnsChange(t *testing.T) {
 	_, dropped := buyTestDrop(t, screen, sheet, library, dagger)
 	c.True(dropped)
 	state := readBuyDockable(t, screen, sheet)
-	c.Equal("Pay automatically: Silver Eagle ×1 ($20)", state.summary)
-	c.True(state.noticeShown, "change that can't be returned is warned about")
-	c.Equal("$5 of change can't be returned from the money paid, and the sheet has no sell money. Add some in Sheet Settings to receive change.",
-		state.notice)
-	c.True(state.finalizeOn, "the purchase can still be finalized")
-
-	screen.Do(func() {
-		sheet.Entity().SheetSettings.SellMoney = sources[:1]
-		sheet.Rebuild(true)
-	})
-	state = readBuyDockable(t, screen, sheet)
-	c.Equal("$5 of change can't be returned with the sheet's sell money or the money paid.", state.notice,
-		"the dockable follows a change to the sell money")
+	c.Equal("Total: $15", state.summary)
+	c.True(state.finalizeOn, "an overpayment can still be finalized")
+	var change string
+	screen.Do(func() { change = describePayouts(buyDockableFor(sheet).planPayment(nil).change) })
+	c.Equal("", change, "without sell money, no change can be returned from an eagle")
 
 	screen.Do(func() {
 		sheet.Entity().SheetSettings.SellMoney = sources
 		sheet.Rebuild(true)
+		change = describePayouts(buyDockableFor(sheet).planPayment(nil).change)
 	})
-	state = readBuyDockable(t, screen, sheet)
-	c.Equal("Pay automatically: Silver Eagle ×1 ($20); change: Copper Penny ×5 ($5)", state.summary)
-	c.False(state.noticeShown, "the change can be returned in full")
+	c.Equal("Copper Penny ×5", change, "the dockable follows a change to the sell money")
 
 	screen.Do(func() {
 		buyDockableFor(sheet).finalize.RequestFocus()
@@ -451,7 +435,7 @@ func TestBuyDockableFinalizeMerges(t *testing.T) {
 	screen.Do(func() { showBuyDockable(sheet) })
 	_, dropped := buyTestDrop(t, screen, sheet, library, gloves)
 	c.True(dropped)
-	c.Equal("Pay automatically: Silver Eagle ×1, Copper Penny ×10 ($30)", readBuyDockable(t, screen, sheet).summary)
+	c.Equal("Total: $30", readBuyDockable(t, screen, sheet).summary)
 	screen.Do(func() { buyDockableFor(sheet).finalize.Click() })
 	c.Equal([]string{"Silver Eagle ×6", "Copper Penny ×1", "Leather Gloves ×2"}, buyTestCarried(screen, sheet),
 		"the money is spent and the gloves merge into those carried")
@@ -469,281 +453,12 @@ func TestBuyDockableFinalizeMerges(t *testing.T) {
 	})
 	_, dropped = buyTestDrop(t, screen, sheet, library, gloves)
 	c.True(dropped)
-	screen.Do(func() {
-		buyDockableFor(sheet).merge.State = uncheck.Off
-		buyDockableFor(sheet).finalize.Click()
+	uxtest.SwapForTest(t, &confirmPurchase, func(_ *buyDockable, plan *buyPlan) (purchaseTerms, bool) {
+		return purchaseTerms{chosen: paymentQuantities(plan.payments), merge: false}, true
 	})
+	screen.Do(func() { buyDockableFor(sheet).finalize.Click() })
 	c.Equal([]string{"Silver Eagle ×6", "Copper Penny ×1", "Leather Gloves ×1", "Leather Gloves ×1"},
 		buyTestCarried(screen, sheet), "without merging, the gloves bought are carried separately")
-}
-
-// TestBuyDockableManualPayment checks that the money chosen by hand pays for the purchase in place of the automatic
-// choice, starting from it, that a choice that no longer covers the price, or whose money is no longer carried, stops
-// the purchase, and that the automatic choice can be had back.
-func TestBuyDockableManualPayment(t *testing.T) {
-	c := check.New(t)
-	screen, _, sheet := buyTestSheet(t, c, func(entity *gurps.Entity) []*gurps.Equipment {
-		return buyTestCoins(entity, 7, 11)
-	})
-	longbow := buyTestItem(nil, "Longbow", "45", 1)
-	library := buyTestLibrary(t, screen, "", longbow)
-	screen.Do(func() { showBuyDockable(sheet) })
-	_, dropped := buyTestDrop(t, screen, sheet, library, longbow)
-	c.True(dropped)
-
-	var ids []tid.TID
-	screen.Do(func() {
-		for _, one := range sheet.Entity().MoneyItems() {
-			ids = append(ids, one.TID)
-		}
-	})
-	if len(ids) != 2 {
-		t.Fatal("the sheet must carry two kinds of money")
-	}
-	eagleID, pennyID := ids[0], ids[1]
-
-	type answer struct {
-		chosen       map[tid.TID]int
-		useAutomatic bool
-		ok           bool
-	}
-	var next answer
-	var gotOwed fxp.Int
-	var gotWhat string
-	var gotCurrent map[tid.TID]int
-	uxtest.SwapForTest(t, &chooseManualPayment,
-		func(_ *Sheet, owed fxp.Int, what string, current map[tid.TID]int) (map[tid.TID]int, bool, bool) {
-			gotOwed, gotWhat, gotCurrent = owed, what, current
-			return next.chosen, next.useAutomatic, next.ok
-		})
-	choose := func(a answer) buyTestState {
-		t.Helper()
-		next = a
-		screen.Do(func() { buyDockableFor(sheet).manualButton.Click() })
-		return readBuyDockable(t, screen, sheet)
-	}
-
-	state := choose(answer{chosen: map[tid.TID]int{eagleID: 3}, ok: true})
-	c.Equal(fxp.FromInteger(45), gotOwed, "the dialog is told what is owed")
-	c.Equal("Longbow ×1", gotWhat, "the dialog is told what is being bought")
-	c.Equal(map[tid.TID]int{eagleID: 2, pennyID: 5}, gotCurrent, "the dialog starts from the automatic payment")
-	c.Equal("Pay manually: Silver Eagle ×3 ($60)", state.summary)
-	c.Equal("$15 of change can't be returned from the money paid, and the sheet has no sell money. Add some in Sheet Settings to receive change.",
-		state.notice)
-	c.True(state.finalizeOn)
-
-	state = choose(answer{ok: false})
-	c.Equal("Pay manually: Silver Eagle ×3 ($60)", state.summary, "canceling keeps the choice")
-	c.Equal(map[tid.TID]int{eagleID: 3}, gotCurrent, "the dialog starts from the manual choice")
-
-	state = choose(answer{chosen: map[tid.TID]int{eagleID: 2, pennyID: 10}, ok: true})
-	c.Equal("Pay manually: Silver Eagle ×2, Copper Penny ×10 ($50); change: Copper Penny ×5 ($5)", state.summary,
-		"change comes from the money paid when the sheet has no sell money")
-	c.False(state.noticeShown)
-
-	state = choose(answer{chosen: map[tid.TID]int{pennyID: 5}, ok: true})
-	c.Equal("The money chosen is short by $40: $45 needed, $5 chosen.", state.summary)
-	c.False(state.finalizeOn, "a manual choice that doesn't cover the price can't be finalized")
-
-	state = choose(answer{chosen: map[tid.TID]int{eagleID: 3}, ok: true})
-	c.True(state.finalizeOn)
-	screen.Do(func() {
-		entity := sheet.Entity()
-		entity.CarriedEquipment[0].Quantity = fxp.Two
-		entity.Recalculate()
-		sheet.Rebuild(true)
-	})
-	state = readBuyDockable(t, screen, sheet)
-	c.Equal("The money chosen is short by $45: $45 needed, $0 chosen.", state.summary,
-		"a choice of more money than is carried is dropped")
-	c.False(state.finalizeOn)
-
-	state = choose(answer{useAutomatic: true, ok: true})
-	c.Equal("Pay automatically: Silver Eagle ×2, Copper Penny ×5 ($45)", state.summary,
-		"the automatic choice can be had back")
-	c.True(state.finalizeOn)
-}
-
-// TestManualPaymentDialog drives the dialog that chooses the money to spend: it lists the money carried with the
-// quantities it starts from, keeps OK disabled while the money chosen is short, notes whether the payment is short,
-// exact or due change, with what the change will be, and returns the choice, the request to pay automatically again,
-// or nothing when canceled.
-func TestManualPaymentDialog(t *testing.T) {
-	c := check.New(t)
-	screen, wnd, sheet := buyTestSheet(t, c, func(entity *gurps.Entity) []*gurps.Equipment {
-		return append(buyTestCoins(entity, 7, 11), buyTestItem(entity, "Rope", "5", 1))
-	})
-	var ids []tid.TID
-	screen.Do(func() {
-		for _, one := range sheet.Entity().MoneyItems() {
-			ids = append(ids, one.TID)
-		}
-	})
-	if len(ids) != 2 {
-		t.Fatal("the sheet must carry two kinds of money")
-	}
-	eagleID, pennyID := ids[0], ids[1]
-
-	var chosen map[tid.TID]int
-	var useAutomatic, ok, returned bool
-	open := func(current map[tid.TID]int) (*unison.Dialog, []*IntegerField) {
-		t.Helper()
-		returned = false
-		c.True(screen.Post(func() {
-			chosen, useAutomatic, ok = chooseManualPayment(sheet, fxp.FromInteger(45), "Longbow ×1", current)
-			returned = true
-		}))
-		screen.Sync()
-		dialogWnd, dialog := modalDialog(t, screen, wnd)
-		var fields []*IntegerField
-		screen.Do(func() { fields = uxtest.PanelsOfType[*IntegerField](dialogWnd.Content()) })
-		if len(fields) != 2 {
-			t.Fatalf("the dialog must have a field for each kind of money carried, not %d", len(fields))
-		}
-		return dialog, fields
-	}
-	type dialogState struct {
-		labels   []string
-		okOn     bool
-		spend    []string
-		note     string
-		noteIcon *unison.SVG
-		noteWarn bool
-	}
-	read := func(dialog *unison.Dialog, fields []*IntegerField) dialogState {
-		t.Helper()
-		var s dialogState
-		screen.Do(func() {
-			content := dialog.Window().Content()
-			s.labels = uxtest.LabelTexts(content)
-			s.okOn = dialog.Button(unison.ModalResponseOK).Enabled()
-			for _, f := range fields {
-				s.spend = append(s.spend, f.Text())
-			}
-			if notes := uxtest.PanelsOfType[*manualPaymentNote](content); len(notes) == 1 {
-				s.note = notes[0].text.Title()
-				if icon, isSVG := notes[0].icon.Drawable.(*unison.DrawableSVG); isSVG {
-					s.noteIcon = icon.SVG
-				}
-				s.noteWarn = notes[0].warning
-			}
-		})
-		if s.noteIcon == nil {
-			t.Fatal("the dialog must have a note with an icon")
-		}
-		return s
-	}
-	click := func(dialog *unison.Dialog, code int) {
-		t.Helper()
-		var b *unison.Button
-		screen.Do(func() { b = dialog.Button(code) })
-		screen.Click(screen.PanelCenter(b))
-		if !returned {
-			t.Fatal("the dialog must close")
-		}
-	}
-
-	dialog, fields := open(map[tid.TID]int{eagleID: 2, pennyID: 50})
-	uxtest.CaptureScreen(t, c, screen, "manual_payment_dialog")
-	state := read(dialog, fields)
-	c.Equal([]string{"2", "11"}, state.spend, "the dialog starts from the quantities given, up to what is carried")
-	for _, want := range []string{
-		"Money Item", "Carried", "Value Each", "Spend", "Silver Eagle", "7", "$20", "Copper Penny", "11", "$1",
-		"Money-tagged items carried by this character.\nOwed: $45 for Longbow ×1.", "Owed: $45", "Spending: $51",
-		"Change due: $6",
-	} {
-		c.True(slices.Contains(state.labels, want), "the dialog must show %q; it shows %v", want, state.labels)
-	}
-	c.True(state.okOn)
-	c.Equal("Change will be returned as Copper Penny ×6.", state.note,
-		"without sell money, the change comes from the money paid")
-	c.True(state.noteIcon == svg.Info, "change that will be returned is noted")
-	c.False(state.noteWarn)
-	var typed, refused bool
-	screen.Do(func() {
-		fields[1].SetText("1")
-		fields[1].SetSelectionToEnd()
-		refused = !fields[1].RuneTypedCallback('2')
-		typed = fields[1].RuneTypedCallback('1')
-	})
-	c.True(refused, "more of a money item than is carried can't be typed")
-	c.True(typed)
-	c.Equal("11", read(dialog, fields).spend[1])
-	screen.Do(func() { fields[1].SetText("0") })
-	state = read(dialog, fields)
-	c.True(slices.Contains(state.labels, "Spending: $40"), "the dialog shows %v", state.labels)
-	c.True(slices.Contains(state.labels, "Change due: $0"), "the dialog shows %v", state.labels)
-	uxtest.CaptureScreen(t, c, screen, "manual_payment_short")
-	c.Equal("Short by $5.", state.note)
-	c.True(state.noteIcon == svg.Not, "a shortfall shows the not symbol")
-	c.True(state.noteWarn)
-	c.False(state.okOn, "OK is disabled while the money chosen is short")
-	screen.Do(func() { fields[1].SetText("5") })
-	state = read(dialog, fields)
-	c.True(slices.Contains(state.labels, "Spending: $45"), "the dialog shows %v", state.labels)
-	uxtest.CaptureScreen(t, c, screen, "manual_payment_exact")
-	c.Equal("Covered exactly. Money you do not spend stays on the sheet.", state.note)
-	c.True(state.noteIcon == unison.CheckmarkSVG, "an exact payment shows a checkmark")
-	c.False(state.noteWarn)
-	c.True(state.okOn)
-	click(dialog, unison.ModalResponseOK)
-	c.True(ok)
-	c.False(useAutomatic)
-	c.Equal(map[tid.TID]int{eagleID: 2, pennyID: 5}, chosen)
-
-	// The note says what the change will be, or how much of it neither the sell money nor the money paid can return.
-	dialog, fields = open(map[tid.TID]int{eagleID: 3})
-	state = read(dialog, fields)
-	uxtest.CaptureScreen(t, c, screen, "manual_payment_unreturned")
-	c.Equal("$15 of change can't be returned from the money paid, and the sheet has no sell money. Add some in Sheet Settings to receive change.",
-		state.note)
-	c.True(state.noteIcon == unison.TriangleExclamationSVG, "change that can't be returned is warned about")
-	c.True(state.noteWarn)
-	c.True(state.okOn, "an overpayment can still be made")
-	click(dialog, unison.ModalResponseCancel)
-	sources := buyTestMoneyLibrary(t, c)
-	missing := gurps.Source{LibraryFile: sources[0].LibraryFile, TID: "missing"}
-	screen.Do(func() { sheet.Entity().SheetSettings.SellMoney = []gurps.Source{missing} })
-	dialog, fields = open(map[tid.TID]int{eagleID: 3})
-	state = read(dialog, fields)
-	c.Equal("$15 of change can't be returned from the money paid, and none of the sheet's sell money could be found in the libraries.",
-		state.note, "sell money that can't be found is told apart from none at all")
-	c.True(state.noteWarn)
-	click(dialog, unison.ModalResponseCancel)
-	screen.Do(func() { sheet.Entity().SheetSettings.SellMoney = sources[1:] })
-	dialog, fields = open(map[tid.TID]int{eagleID: 3})
-	state = read(dialog, fields)
-	uxtest.CaptureScreen(t, c, screen, "manual_payment_change")
-	c.Equal("Change will be returned as Copper Penny ×15.", state.note, "the sell money returns the change")
-	c.True(state.noteIcon == svg.Info)
-	c.False(state.noteWarn)
-	click(dialog, unison.ModalResponseCancel)
-	screen.Do(func() { sheet.Entity().SheetSettings.SellMoney = sources[:1] })
-	dialog, fields = open(map[tid.TID]int{eagleID: 4})
-	state = read(dialog, fields)
-	c.Equal("Change will be returned as Silver Eagle ×1 ($20). $15 of change can't be returned with the sheet's sell money or the money paid.",
-		state.note)
-	c.True(state.noteIcon == unison.TriangleExclamationSVG)
-	c.True(state.noteWarn)
-	screen.Do(func() { fields[1].SetText("10") })
-	state = read(dialog, fields)
-	c.Equal("Change will be returned as Silver Eagle ×2, Copper Penny ×5.", state.note,
-		"the money paid is drawn on when the sell money falls short")
-	c.True(state.noteIcon == svg.Info)
-	c.False(state.noteWarn)
-	c.True(state.okOn)
-	click(dialog, unison.ModalResponseCancel)
-	screen.Do(func() { sheet.Entity().SheetSettings.SellMoney = nil })
-
-	dialog, _ = open(nil)
-	click(dialog, unison.ModalResponseUserBase)
-	c.True(ok)
-	c.True(useAutomatic, "Use Automatic asks for the automatic choice")
-	c.Nil(chosen)
-
-	dialog, _ = open(nil)
-	click(dialog, unison.ModalResponseCancel)
-	c.False(ok, "canceling chooses nothing")
 }
 
 // buyTestModifierLibrary opens an equipment modifier library holding the modifiers and returns its table.
@@ -942,19 +657,20 @@ func TestBuyDockableChangeFollowsEditsToTheMoneyPaid(t *testing.T) {
 	})
 	_, dropped := buyTestDrop(t, screen, sheet, library, dagger)
 	c.True(dropped)
-	screen.Do(func() {
-		buyDockableFor(sheet).manual = map[tid.TID]int{ten.TID: 1, penny.TID: 2}
-		buyDockableFor(sheet).refresh()
+	chosen := map[tid.TID]int{ten.TID: 1, penny.TID: 2}
+	uxtest.SwapForTest(t, &confirmPurchase, func(_ *buyDockable, _ *buyPlan) (purchaseTerms, bool) {
+		return purchaseTerms{chosen: chosen, merge: true}, true
 	})
-	c.Equal("Pay manually: Ten ×1, Copper Penny ×2 ($12); change: Copper Penny ×2 ($2)",
-		readBuyDockable(t, screen, sheet).summary)
-
+	// The change is worked out, and remembered, before the money is renamed, as it is while the dialog is up.
+	var before, after string
 	screen.Do(func() {
+		before = describePayouts(buyDockableFor(sheet).planPayment(chosen).change)
 		penny.Name = "Penny"
 		sheet.Rebuild(true)
+		after = describePayouts(buyDockableFor(sheet).planPayment(chosen).change)
 	})
-	c.Equal("Pay manually: Ten ×1, Penny ×2 ($12); change: Penny ×2 ($2)", readBuyDockable(t, screen, sheet).summary,
-		"the change is a copy of the money as it now is")
+	c.Equal("Copper Penny ×2", before)
+	c.Equal("Penny ×2", after, "the change is a copy of the money as it now is")
 	screen.Do(func() { buyDockableFor(sheet).finalize.Click() })
 	c.Equal([]string{"Penny ×5", "Dagger ×1"}, buyTestCarried(screen, sheet),
 		"the change merges with the money it was copied from")
@@ -1130,29 +846,6 @@ func TestSheetDropReroutingHighlightsOnlyAWillingTarget(t *testing.T) {
 	screen.Do(sheet.DragExitedCallback)
 }
 
-// TestBuyDockableNoticeTellsMissingSellMoneyApart checks that the notice about change that can't be returned says the
-// sheet's sell money couldn't be found when it has some but none of it is in the libraries, rather than that it has
-// none and should add some.
-func TestBuyDockableNoticeTellsMissingSellMoneyApart(t *testing.T) {
-	c := check.New(t)
-	screen, _, sheet := buyTestSheet(t, c, func(entity *gurps.Entity) []*gurps.Equipment {
-		return buyTestCoins(entity, 7, 0)[:1]
-	})
-	sources := buyTestMoneyLibrary(t, c)
-	dagger := buyTestItem(nil, "Dagger", "15", 1)
-	library := buyTestLibrary(t, screen, "", dagger)
-	screen.Do(func() {
-		sheet.Entity().SheetSettings.SellMoney = []gurps.Source{{LibraryFile: sources[0].LibraryFile, TID: "missing"}}
-		showBuyDockable(sheet)
-	})
-	_, dropped := buyTestDrop(t, screen, sheet, library, dagger)
-	c.True(dropped)
-	state := readBuyDockable(t, screen, sheet)
-	c.True(state.noticeShown, "change that can't be returned is warned about")
-	c.Equal("$5 of change can't be returned from the money paid, and none of the sheet's sell money could be found in the libraries.",
-		state.notice)
-}
-
 // TestBuyDockableOpensOncePerSheet checks that opening the buy dockable puts the keyboard focus on its first field, that
 // asking for it again brings the one already open forward rather than opening another, that its title follows the
 // character's name, and that it closes with its sheet.
@@ -1295,17 +988,23 @@ func TestBuyDockableFollowsChangesToTheSellMoneyLibrary(t *testing.T) {
 	})
 	_, dropped := buyTestDrop(t, screen, sheet, library, dagger)
 	c.True(dropped)
-	state := readBuyDockable(t, screen, sheet)
-	c.Equal("$5 of change can't be returned from the money paid, and none of the sheet's sell money could be found in the libraries.",
-		state.notice, "the library file doesn't exist yet")
+	change := func() (found int, change string) {
+		screen.Do(func() {
+			plan := buyDockableFor(sheet).planPayment(nil)
+			found, change = len(plan.sellMoney), describePayouts(plan.change)
+		})
+		return found, change
+	}
+	found, returned := change()
+	c.Equal(0, found, "the library file doesn't exist yet")
+	c.Equal("", returned, "so no change can be returned")
 
 	c.NoError(os.MkdirAll(filepath.Dir(path), 0o750))
 	c.NoError(gurps.SaveEquipment([]*gurps.Equipment{penny}, path))
 	screen.Do(func() { sheet.Rebuild(true) })
-	state = readBuyDockable(t, screen, sheet)
-	c.Equal("Pay automatically: Silver Eagle ×1 ($20); change: Copper Penny ×5 ($5)", state.summary,
-		"the change comes from the library file once it exists")
-	c.False(state.noticeShown)
+	found, returned = change()
+	c.Equal(1, found, "the sell money is found once the file exists")
+	c.Equal("Copper Penny ×5", returned, "and the change comes from it")
 }
 
 // TestBuyDockableEnablesWhatItBuys checks that equipment copied into the buy dockable from a sheet where it was disabled, or
@@ -1339,7 +1038,7 @@ func TestBuyDockableEnablesWhatItBuys(t *testing.T) {
 	state := readBuyDockable(t, screen, sheet)
 	c.Equal([]string{"1 | Rope | $5 each | Total $5", "1 | Kit | $12 each | Total $12"}, state.rows,
 		"the disabled rope is priced, as is the kit with its disabled bandage")
-	c.Equal("Pay automatically: Copper Penny ×17 ($17)", state.summary)
+	c.Equal("Total: $17", state.summary)
 
 	screen.Do(func() { buyDockableFor(sheet).finalize.Click() })
 	c.Equal([]string{"Silver Eagle ×0", "Copper Penny ×3", "Rope ×1", "Kit ×1"}, buyTestCarried(screen, sheet))
@@ -1403,14 +1102,17 @@ func TestBuyDockableChangeFollowsEditsToTheSellMoneyLibrary(t *testing.T) {
 	})
 	_, dropped := buyTestDrop(t, screen, sheet, library, dagger)
 	c.True(dropped)
-	c.Equal("Pay automatically: Silver Eagle ×1 ($20); change: Copper Penny ×5 ($5)",
-		readBuyDockable(t, screen, sheet).summary)
+	var before, after string
+	screen.Do(func() { before = describePayouts(buyDockableFor(sheet).planPayment(nil).change) })
+	c.Equal("Copper Penny ×5", before)
 
 	penny.Name = "Penny"
 	c.NoError(gurps.SaveEquipment([]*gurps.Equipment{penny}, path))
-	screen.Do(func() { sheet.Rebuild(true) })
-	c.Equal("Pay automatically: Silver Eagle ×1 ($20); change: Penny ×5 ($5)", readBuyDockable(t, screen, sheet).summary,
-		"the change is made of the coin as the library now has it")
+	screen.Do(func() {
+		sheet.Rebuild(true)
+		after = describePayouts(buyDockableFor(sheet).planPayment(nil).change)
+	})
+	c.Equal("Penny ×5", after, "the change is made of the coin as the library now has it")
 	screen.Do(func() { buyDockableFor(sheet).finalize.Click() })
 	c.Equal([]string{"Silver Eagle ×6", "Dagger ×1", "Penny ×5"}, buyTestCarried(screen, sheet))
 }
@@ -1461,12 +1163,13 @@ func TestBuyDockableFinalizeClosesTheEditorsOfWhatItChanges(t *testing.T) {
 	screen.Do(func() { rows = library.RootRows() })
 	_, dropped := buyTestDrop(t, screen, sheet, library, rows[0].Data())
 	c.True(dropped)
-	screen.Do(func() {
-		buyDockableFor(sheet).manual = map[tid.TID]int{eagles.TID: 2, pursePennies.TID: 1}
-		buyDockableFor(sheet).refresh()
+	chosen := map[tid.TID]int{eagles.TID: 2, pursePennies.TID: 1}
+	uxtest.SwapForTest(t, &confirmPurchase, func(_ *buyDockable, _ *buyPlan) (purchaseTerms, bool) {
+		return purchaseTerms{chosen: chosen, merge: true}, true
 	})
-	c.Equal("Pay manually: Silver Eagle ×2, Copper Penny ×1 ($41); change: Copper Penny ×11 ($11)",
-		readBuyDockable(t, screen, sheet).summary)
+	var change string
+	screen.Do(func() { change = describePayouts(buyDockableFor(sheet).planPayment(chosen).change) })
+	c.Equal("Copper Penny ×11", change, "the change for the money chosen comes back in pennies")
 	screen.Do(func() { buyDockableFor(sheet).finalize.Click() })
 	c.Equal([]string{"Silver Eagle ×5", "Copper Penny ×22", "Purse ×1", "Purse ×1", "Leather Gloves ×2", "Rope ×1"},
 		buyTestCarried(screen, sheet), "the eagles and a purse's penny are spent, splitting the purse, and the gloves "+
@@ -1498,7 +1201,7 @@ func TestBuyDockableDoesNotFinalizeOnAPaymentASavedEditorChanged(t *testing.T) {
 	})
 	_, dropped := buyTestDrop(t, screen, sheet, library, dagger)
 	c.True(dropped)
-	c.Equal("Pay automatically: Silver Eagle ×1 ($20)", readBuyDockable(t, screen, sheet).summary)
+	c.Equal("Total: $15", readBuyDockable(t, screen, sheet).summary)
 	screen.Do(func() { buyDockableFor(sheet).finalize.Click() })
 	screen.Sync() // Finalizing is posted as a task, which puts up the editor's prompt.
 	_, prompt := modalDialog(t, screen, wnd)
@@ -1562,8 +1265,7 @@ func TestBuyDockableFinalizesWithUnequippedSellMoney(t *testing.T) {
 	})
 	_, dropped := buyTestDrop(t, screen, sheet, library, dagger)
 	c.True(dropped)
-	c.Equal("Pay automatically: Silver Eagle ×1 ($20); change: Copper Penny ×5 ($5)",
-		readBuyDockable(t, screen, sheet).summary)
+	c.Equal("Total: $15", readBuyDockable(t, screen, sheet).summary)
 	screen.Do(func() { buyDockableFor(sheet).finalize.Click() })
 	var buying bool
 	screen.Do(func() { buying = (buyDockableFor(sheet) != nil) })
@@ -1585,9 +1287,9 @@ func TestBuyDockableFollowsEditsToTheCarriedEquipment(t *testing.T) {
 	if _, dropped := buyTestDrop(t, screen, sheet, library, longbow); !dropped {
 		t.Fatal("the longbow must be dropped into the buy dockable")
 	}
-	paid := "Pay automatically: Silver Eagle ×2, Copper Penny ×5 ($45)"
+	total := "Total: $45"
 	state := readBuyDockable(t, screen, sheet)
-	c.Equal(paid, state.summary)
+	c.Equal(total, state.summary)
 	c.True(state.finalizeOn)
 
 	table := sheet.CarriedEquipment.Table
@@ -1606,7 +1308,7 @@ func TestBuyDockableFollowsEditsToTheCarriedEquipment(t *testing.T) {
 	screen.Do(func() { sheet.UndoManager().Undo() })
 	c.Equal([]string{"Silver Eagle ×2", "Copper Penny ×5", "Tent ×1"}, buyTestCarried(screen, sheet))
 	state = readBuyDockable(t, screen, sheet)
-	c.Equal(paid, state.summary, "undoing the deletion must restore the payment")
+	c.Equal(total, state.summary, "undoing the deletion must restore the payment")
 	c.True(state.finalizeOn)
 }
 
@@ -1802,4 +1504,300 @@ func TestBuyDockableWindowHasRoomForItems(t *testing.T) {
 	c.True(content.Width >= hint.Width && content.Height >= hint.Height,
 		"the window must be at least as big as the hint %v, not %v", hint, content)
 	c.True(hint.Height > rowHeight*float32(buyHintRows), "the hint must have room for %d rows", buyHintRows)
+}
+
+// TestBuyDockableFinalizesOnTheTermsChosen checks that finalizing hands the dialog the automatic payment to start from
+// and makes the purchase on the terms it returns: the money chosen pays in place of the automatic choice, with change
+// drawn from it, terms that no longer cover the price make no purchase, the merge choice is kept for the next attempt,
+// and canceling leaves the dockable as it was.
+func TestBuyDockableFinalizesOnTheTermsChosen(t *testing.T) {
+	c := check.New(t)
+	screen, _, sheet := buyTestSheet(t, c, func(entity *gurps.Entity) []*gurps.Equipment {
+		return buyTestCoins(entity, 7, 11)
+	})
+	longbow := buyTestItem(nil, "Longbow", "45", 1)
+	library := buyTestLibrary(t, screen, "", longbow)
+	screen.Do(func() { showBuyDockable(sheet) })
+	if _, dropped := buyTestDrop(t, screen, sheet, library, longbow); !dropped {
+		t.Fatal("the longbow must be dropped into the buy dockable")
+	}
+	var ids []tid.TID
+	screen.Do(func() {
+		for _, one := range sheet.Entity().MoneyItems() {
+			ids = append(ids, one.TID)
+		}
+	})
+	if len(ids) != 2 {
+		t.Fatal("the sheet must carry two kinds of money")
+	}
+	eagleID, pennyID := ids[0], ids[1]
+	before := []string{"Silver Eagle ×7", "Copper Penny ×11"}
+
+	var next purchaseTerms
+	var nextOK, gotMerge bool
+	var gotPlan buyPlan
+	uxtest.SwapForTest(t, &confirmPurchase, func(d *buyDockable, plan *buyPlan) (purchaseTerms, bool) {
+		gotPlan = *plan
+		gotMerge = d.merge
+		return next, nextOK
+	})
+	finalize := func(terms purchaseTerms, ok bool) (made, open bool) {
+		t.Helper()
+		next, nextOK = terms, ok
+		screen.Do(func() {
+			made = buyDockableFor(sheet).finalizePurchase()
+			open = buyDockableFor(sheet) != nil
+		})
+		return made, open
+	}
+
+	made, open := finalize(purchaseTerms{}, false)
+	c.False(made, "canceling makes no purchase")
+	c.True(open, "canceling leaves the dockable open")
+	c.Equal(fxp.FromInteger(45), gotPlan.total, "the dialog is told what is owed")
+	c.Equal(map[tid.TID]int{eagleID: 2, pennyID: 5}, paymentQuantities(gotPlan.payments),
+		"the dialog starts from the automatic payment")
+	c.True(gotMerge, "merging is on to begin with")
+	c.Equal(before, buyTestCarried(screen, sheet))
+
+	made, open = finalize(purchaseTerms{chosen: map[tid.TID]int{pennyID: 5}, merge: false}, true)
+	c.False(made, "terms that don't cover the price make no purchase")
+	c.True(open)
+	c.Equal(before, buyTestCarried(screen, sheet))
+	finalize(purchaseTerms{}, false)
+	c.False(gotMerge, "the merge choice is kept for the next attempt")
+
+	made, open = finalize(purchaseTerms{chosen: map[tid.TID]int{eagleID: 3}, merge: false}, true)
+	c.True(made, "the purchase is made on the terms chosen")
+	c.False(open, "the dockable closes once the purchase is made")
+	c.Equal([]string{"Silver Eagle ×4", "Copper Penny ×11", "Longbow ×1"}, buyTestCarried(screen, sheet),
+		"the money chosen is spent in place of the automatic choice")
+	var record []*gurps.ShoppingRecordEntry
+	screen.Do(func() { record = gurps.CloneShoppingRecordList(sheet.Entity().ShoppingRecord) })
+	c.Equal(1, len(record))
+	if len(record) == 1 {
+		c.Equal([]gurps.ShoppingRecordItem{{Name: "Silver Eagle", Quantity: -fxp.Three, Value: fxp.FromInteger(20)}},
+			record[0].Money, "the record shows the money chosen")
+		c.Equal(fxp.FromInteger(60), record[0].Exchanged, "change that can't be returned is still exchanged")
+	}
+}
+
+// TestPurchaseDialog drives the dialog that finalizes a purchase: it lists the money carried with the quantities the
+// automatic payment spends, keeps Finalize disabled while the money chosen is short, notes whether the payment is
+// short, exact or due change, with what the change will be, puts the automatic payment back on request, and returns the
+// money chosen and whether to merge, or nothing when canceled.
+func TestPurchaseDialog(t *testing.T) {
+	c := check.New(t)
+	screen, wnd, sheet := buyTestSheet(t, c, func(entity *gurps.Entity) []*gurps.Equipment {
+		return append(buyTestCoins(entity, 7, 11), buyTestItem(entity, "Rope", "5", 1))
+	})
+	longbow := buyTestItem(nil, "Longbow", "45", 1)
+	library := buyTestLibrary(t, screen, "", longbow)
+	var buy *buyDockable
+	screen.Do(func() {
+		sheet.Entity().SheetSettings.SellMoney = nil
+		buy = showBuyDockable(sheet)
+	})
+	if _, dropped := buyTestDrop(t, screen, sheet, library, longbow); !dropped {
+		t.Fatal("the longbow must be dropped into the buy dockable")
+	}
+	var ids []tid.TID
+	screen.Do(func() {
+		for _, one := range sheet.Entity().MoneyItems() {
+			ids = append(ids, one.TID)
+		}
+	})
+	if len(ids) != 2 {
+		t.Fatal("the sheet must carry two kinds of money")
+	}
+	eagleID, pennyID := ids[0], ids[1]
+
+	var terms purchaseTerms
+	var ok, returned bool
+	open := func() (*unison.Dialog, []*IntegerField) {
+		t.Helper()
+		returned = false
+		c.True(screen.Post(func() {
+			terms, ok = confirmPurchaseWithDialog(buy, &buy.plan)
+			returned = true
+		}))
+		screen.Sync()
+		dialogWnd, dialog := modalDialog(t, screen, wnd)
+		var fields []*IntegerField
+		screen.Do(func() { fields = uxtest.PanelsOfType[*IntegerField](dialogWnd.Content()) })
+		if len(fields) != 2 {
+			t.Fatalf("the dialog must have a field for each kind of money carried, not %d", len(fields))
+		}
+		return dialog, fields
+	}
+	controls := func(dialog *unison.Dialog) (automatic *unison.Button, merge *unison.CheckBox) {
+		content := dialog.Window().Content()
+		for _, b := range uxtest.PanelsOfType[*unison.Button](content) {
+			if b.Accessibility.Name == "Choose Automatically" {
+				automatic = b
+			}
+		}
+		merge, _ = uxtest.FirstPanelOfType[*unison.CheckBox](content)
+		return automatic, merge
+	}
+	type dialogState struct {
+		labels      []string
+		okOn        bool
+		automaticOn bool
+		merge       uncheck.Enum
+		spend       []string
+		note        string
+		noteIcon    *unison.SVG
+		noteWarn    bool
+	}
+	read := func(dialog *unison.Dialog, fields []*IntegerField) dialogState {
+		t.Helper()
+		var s dialogState
+		screen.Do(func() {
+			content := dialog.Window().Content()
+			s.labels = uxtest.LabelTexts(content)
+			s.okOn = dialog.Button(unison.ModalResponseOK).Enabled()
+			automatic, merge := controls(dialog)
+			if automatic == nil || merge == nil {
+				return
+			}
+			s.automaticOn = automatic.Enabled()
+			s.merge = merge.State
+			for _, f := range fields {
+				s.spend = append(s.spend, f.Text())
+			}
+			if notes := uxtest.PanelsOfType[*purchaseNote](content); len(notes) == 1 {
+				s.note = notes[0].text.Title()
+				if icon, isSVG := notes[0].icon.Drawable.(*unison.DrawableSVG); isSVG {
+					s.noteIcon = icon.SVG
+				}
+				s.noteWarn = notes[0].warning
+			}
+		})
+		if s.noteIcon == nil {
+			t.Fatal("the dialog must have a note with an icon, a Choose Automatically button and a merge checkbox")
+		}
+		return s
+	}
+	click := func(dialog *unison.Dialog, code int) {
+		t.Helper()
+		screen.Click(screen.PanelCenter(dialogButton(t, screen, dialog, code)))
+		if !returned {
+			t.Fatal("the dialog must close")
+		}
+	}
+	contains := func(state dialogState, wants ...string) {
+		t.Helper()
+		for _, want := range wants {
+			c.True(slices.Contains(state.labels, want), "the dialog must show %q; it shows %v", want, state.labels)
+		}
+	}
+
+	dialog, fields := open()
+	uxtest.CaptureScreen(t, c, screen, "purchase_dialog")
+	state := read(dialog, fields)
+	c.Equal([]string{"2", "5"}, state.spend, "the dialog starts from the automatic payment")
+	contains(state, "Money Item", "Carried", "Value Each", "Spend", "Silver Eagle", "7", "$20", "Copper Penny", "11",
+		"$1", "Buying Longbow ×1 for $45.\nThe money-tagged items carried pay for it, chosen automatically unless you change the quantities to spend.",
+		"Owed: $45", "Spending: $45", "Change due: $0")
+	c.True(state.okOn)
+	c.False(state.automaticOn, "the automatic payment is what is chosen to begin with")
+	c.Equal(uncheck.On, state.merge, "merging is on to begin with")
+	c.Equal("Covered exactly. Money you do not spend stays on the sheet.", state.note)
+	c.True(state.noteIcon == unison.CheckmarkSVG, "an exact payment shows a checkmark")
+	c.False(state.noteWarn)
+
+	screen.Do(func() { fields[1].SetText("11") })
+	state = read(dialog, fields)
+	contains(state, "Spending: $51", "Change due: $6")
+	c.Equal("Change will be returned as Copper Penny ×6.", state.note,
+		"without sell money, the change comes from the money paid")
+	c.True(state.noteIcon == svg.Info, "change that will be returned is noted")
+	c.False(state.noteWarn)
+	c.True(state.automaticOn, "a change to the money chosen offers the automatic payment back")
+	var typed, refused bool
+	screen.Do(func() {
+		fields[1].SetText("1")
+		fields[1].SetSelectionToEnd()
+		refused = !fields[1].RuneTypedCallback('2')
+		typed = fields[1].RuneTypedCallback('1')
+	})
+	c.True(refused, "more of a money item than is carried can't be typed")
+	c.True(typed)
+	c.Equal("11", read(dialog, fields).spend[1])
+	screen.Do(func() { fields[1].SetText("0") })
+	state = read(dialog, fields)
+	contains(state, "Spending: $40", "Change due: $0")
+	uxtest.CaptureScreen(t, c, screen, "purchase_short")
+	c.Equal("Short by $5.", state.note)
+	c.True(state.noteIcon == svg.Not, "a shortfall shows the not symbol")
+	c.True(state.noteWarn)
+	c.False(state.okOn, "Finalize is disabled while the money chosen is short")
+	screen.Do(func() {
+		automatic, merge := controls(dialog)
+		automatic.Click()
+		merge.Click()
+	})
+	state = read(dialog, fields)
+	c.Equal([]string{"2", "5"}, state.spend, "Choose Automatically puts the automatic payment back")
+	c.False(state.automaticOn)
+	c.True(state.okOn)
+	c.Equal(uncheck.Off, state.merge)
+	click(dialog, unison.ModalResponseOK)
+	c.True(ok)
+	c.Equal(map[tid.TID]int{eagleID: 2, pennyID: 5}, terms.chosen)
+	c.False(terms.merge, "the merge choice is returned")
+
+	// The note says what the change will be, or how much of it neither the sell money nor the money paid can return.
+	payWithEagles := func(count string) (*unison.Dialog, []*IntegerField) {
+		t.Helper()
+		dialog, fields = open()
+		screen.Do(func() {
+			fields[0].SetText(count)
+			fields[1].SetText("0")
+		})
+		return dialog, fields
+	}
+	dialog, fields = payWithEagles("3")
+	state = read(dialog, fields)
+	uxtest.CaptureScreen(t, c, screen, "purchase_unreturned")
+	c.Equal("$15 of change can't be returned from the money paid, and the sheet has no sell money. Add some in Sheet Settings to receive change.",
+		state.note)
+	c.True(state.noteIcon == unison.TriangleExclamationSVG, "change that can't be returned is warned about")
+	c.True(state.noteWarn)
+	c.True(state.okOn, "an overpayment can still be made")
+	click(dialog, unison.ModalResponseCancel)
+	c.False(ok, "canceling chooses nothing")
+	sources := buyTestMoneyLibrary(t, c)
+	missing := gurps.Source{LibraryFile: sources[0].LibraryFile, TID: "missing"}
+	screen.Do(func() { sheet.Entity().SheetSettings.SellMoney = []gurps.Source{missing} })
+	dialog, fields = payWithEagles("3")
+	state = read(dialog, fields)
+	c.Equal("$15 of change can't be returned from the money paid, and none of the sheet's sell money could be found in the libraries.",
+		state.note, "sell money that can't be found is told apart from none at all")
+	c.True(state.noteWarn)
+	click(dialog, unison.ModalResponseCancel)
+	screen.Do(func() { sheet.Entity().SheetSettings.SellMoney = sources[1:] })
+	dialog, fields = payWithEagles("3")
+	state = read(dialog, fields)
+	uxtest.CaptureScreen(t, c, screen, "purchase_change")
+	c.Equal("Change will be returned as Copper Penny ×15.", state.note, "the sell money returns the change")
+	c.True(state.noteIcon == svg.Info)
+	c.False(state.noteWarn)
+	click(dialog, unison.ModalResponseCancel)
+	screen.Do(func() { sheet.Entity().SheetSettings.SellMoney = sources[:1] })
+	dialog, fields = payWithEagles("4")
+	state = read(dialog, fields)
+	c.Equal("Change will be returned as Silver Eagle ×1 ($20). $15 of change can't be returned with the sheet's sell money or the money paid.",
+		state.note)
+	c.True(state.noteIcon == unison.TriangleExclamationSVG)
+	c.True(state.noteWarn)
+	screen.Do(func() { fields[1].SetText("10") })
+	state = read(dialog, fields)
+	c.Equal("Change will be returned as Silver Eagle ×2, Copper Penny ×5.", state.note,
+		"the money paid is drawn on when the sell money falls short")
+	c.True(state.noteIcon == svg.Info)
+	c.False(state.noteWarn)
+	c.True(state.okOn)
+	click(dialog, unison.ModalResponseCancel)
 }

@@ -29,8 +29,6 @@ import (
 )
 
 const (
-	// maxSaleNamesLength is the most characters of item names the suggested transaction name of a sale holds.
-	maxSaleNamesLength = 100
 	// maxSaleContentsLines is the most items the tooltip beside a container for sale lists before counting the rest.
 	maxSaleContentsLines = 30
 	// saleContentsIndent is how far each level of what a container for sale holds is indented in its tooltip.
@@ -39,7 +37,7 @@ const (
 	// quantity carried, the full price of one and what the quantity sells for.
 	saleColumnCount = 5
 	// saleNameWidthPrototype is the text the transaction name field is made wide enough to show. The field would
-	// otherwise be as wide as the suggested name, which runs to maxSaleNamesLength characters.
+	// otherwise be as wide as the suggested name, which runs to maxTradeNameLength characters.
 	saleNameWidthPrototype = "Sold Boots, Crossbow, Hip Quiver, Leather Gloves"
 )
 
@@ -475,7 +473,7 @@ func (d *sellDialog) defaultName() string {
 	if len(names) == 0 {
 		return ""
 	}
-	return i18n.Text("Sold %s", xstrings.Truncate(strings.Join(names, ", "), maxSaleNamesLength, true))
+	return i18n.Text("Sold %s", tradeNames(names))
 }
 
 // gateOnValidity keeps the sale from being made while the field's text isn't a valid value, since the field then reports
