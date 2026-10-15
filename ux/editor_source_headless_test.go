@@ -103,8 +103,8 @@ func TestEditorSourceMenu(t *testing.T) {
 		menuOpen = uxtest.OpenMenuPopup(wnd) != nil
 	})
 	c.False(modified, "choosing a disabled command does nothing")
-	// So there is no menu for an Escape to close: it would go to the editor instead, which discards its changes.
-	c.False(menuOpen, "other than close the menu")
+	c.True(menuOpen, "and leaves the menu open")
+	closeContextMenu(c, screen, wnd)
 	uxtest.CloseEditorWithoutPrompt(t, screen, customEditor)
 
 	screen.Do(func() { e = EditTrait(sheet, trait) })

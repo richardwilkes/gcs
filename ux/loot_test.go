@@ -58,16 +58,15 @@ func TestTreasureGenPanelWithOutOfRangeValues(t *testing.T) {
 	c.Equal(fxp.One, p.maxValue, "maximum value clamped up into range")
 }
 
-// TestTreasureGenPanelValidateOKWithoutDialog verifies that asking for the OK button state before the dialog has been
-// created is a no-op rather than a panic, which is the state the fields are in while they are being created.
+// TestTreasureGenPanelValidateOKWithoutDialog verifies that bringing the OK button up to date before the dialog has
+// been created, whether directly or through a field's validation, is a no-op rather than a panic.
 func TestTreasureGenPanelValidateOKWithoutDialog(t *testing.T) {
 	c := check.New(t)
 	p := newTreasureGenPanel(fxp.Thousand, fxp.TenThousand)
 	c.Nil(p.dialog, "no dialog yet")
 	p.validateOK()
-	p.minField = nil
-	p.maxField = nil
-	p.validateOK()
+	p.minField.Validate()
+	p.maxField.Validate()
 }
 
 // newTestLootSheet returns a loot sheet that can be built and rebuilt without a window, the way
@@ -148,4 +147,19 @@ func TestLootCandidatesUseWhatGroupsHold(t *testing.T) {
 		names = append(names, one.Name)
 	}
 	c.Equal([]string{"Ruby", "Diamond", "Chest"}, names)
+}
+
+// TestTreasureGenPanelRecordsTheValidityOfAFieldBuiltOutOfRange checks that a field built from a stored value outside
+// its range, which it shows flagged as invalid, is recorded as invalid as soon as its validity is gated, so that the OK
+// button can't be enabled while the field shows a value other than the one generation would use.
+func TestTreasureGenPanelRecordsTheValidityOfAFieldBuiltOutOfRange(t *testing.T) {
+	c := check.New(t)
+	p := newTreasureGenPanel(fxp.TenMillionMinusOne+fxp.One, fxp.TenThousand)
+	c.True(p.minField.Invalid(), "the field shows the stored value flagged as invalid")
+	c.True(p.invalid[p.minField], "and is recorded as invalid")
+	c.False(p.maxField.Invalid())
+	c.False(p.invalid[p.maxField])
+	p = newTreasureGenPanel(fxp.Thousand, fxp.Half)
+	c.True(p.maxField.Invalid())
+	c.True(p.invalid[p.maxField], "a field built below its range is recorded as invalid too")
 }

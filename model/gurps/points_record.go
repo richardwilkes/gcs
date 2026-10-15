@@ -33,7 +33,7 @@ func ClonePointsRecordList(list []*PointsRecord) []*PointsRecord {
 }
 
 // SortPointsRecordList sorts the provided PointsRecord list into the order GCS presents and stores them in, which is
-// most recent first.
+// most recent first. Times are kept only to the second, so records made in the same second keep the order they had.
 func SortPointsRecordList(list []*PointsRecord) {
-	slices.SortFunc(list, func(a, b *PointsRecord) int { return b.When.Compare(a.When) })
+	slices.SortStableFunc(list, func(a, b *PointsRecord) int { return b.When.Compare(a.When) })
 }

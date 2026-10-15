@@ -10,6 +10,7 @@
 package ux
 
 import (
+	"slices"
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/colors"
@@ -18,10 +19,19 @@ import (
 	"github.com/richardwilkes/gcs/v5/ux/svg"
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/unison"
+	"github.com/richardwilkes/unison/accessibility"
 	"github.com/richardwilkes/unison/enums/align"
 	"github.com/richardwilkes/unison/enums/mod"
 	"github.com/richardwilkes/unison/enums/paintstyle"
+	"github.com/richardwilkes/unison/enums/role"
 	"github.com/richardwilkes/unison/enums/side"
+)
+
+// The spacing of the buttons at the end of a page table column header (see PageTableColumnHeader.addTrailingButtons):
+// the gap that keeps the first clear of the title and the gap between neighbors.
+const (
+	headerButtonLeadingGap = 4
+	headerButtonGap        = 2
 )
 
 // NewEditorListHeader creates a new list header for an editor.
@@ -159,7 +169,13 @@ var _ unison.TableColumnHeader[*Node[*gurps.Trait]] = &PageTableColumnHeader[*gu
 // PageTableColumnHeader provides a default page table column header panel.
 type PageTableColumnHeader[T gurps.Node[T]] struct {
 	*unison.Label
-	less        func(a, b string) bool
+	less func(a, b string) bool
+	// textTooltip is the tooltip for the header's text. Tooltip is normally the same, but holds a trailing button's
+	// tooltip for as long as it is lent (see buttonTooltip).
+	textTooltip *unison.Panel
+	buttons     []*unison.Button
+	// pressed is the trailing button that took the last mouse down, which the matching mouse up goes to.
+	pressed     *unison.Button
 	sortState   unison.SortState
 	tooltipText string
 }
@@ -202,20 +218,17 @@ func (h *PageTableColumnHeader[T]) SetTooltipText(text string) {
 	}
 	h.tooltipText = text
 	if text == "" {
-		h.Tooltip = nil
+		h.textTooltip = nil
 	} else {
-		h.Tooltip = newWrappedTooltip(text)
+		h.textTooltip = newWrappedTooltip(text)
 	}
+	h.Tooltip = h.textTooltip
 }
 
-// DefaultSizes provides the default sizing.
+// DefaultSizes provides the default sizing, which includes the border, and with it the room reserved for any trailing
+// buttons.
 func (h *PageTableColumnHeader[T]) DefaultSizes(hint geom.Size) (minSize, prefSize, maxSize geom.Size) {
-	_, prefSize, _ = h.Label.DefaultSizes(hint)
-	if b := h.Border(); b != nil {
-		prefSize = prefSize.Add(b.Insets().Size())
-	}
-	prefSize = prefSize.Ceil().ConstrainForHint(hint)
-	return prefSize, prefSize, prefSize
+	return h.Label.DefaultSizes(hint)
 }
 
 // DefaultDraw provides the default drawing.
@@ -264,4 +277,140 @@ func (h *PageTableColumnHeader[T]) DefaultMouseUp(where geom.Point, _ int, _ mod
 		}
 	}
 	return true
+}
+
+// newHeaderButton returns an icon button sized to sit at the end of a page table column header without making it any
+// taller. See PageTableColumnHeader.addTrailingButtons.
+func newHeaderButton(icon *unison.SVG, tooltip string, onClick func()) *unison.Button {
+	b := unison.NewSVGButton(icon)
+	b.OnBackgroundInk = colors.OnHeader
+	b.OnSelectionInk = colors.OnHeader
+	b.Font = fonts.PageLabelPrimary
+	b.DrawableOnlyVMargin = 0
+	b.DrawableOnlyHMargin = 1
+	if drawable, ok := b.Drawable.(*unison.DrawableSVG); ok {
+		size := fonts.PageLabelPrimary.Baseline() - 2
+		drawable.Size = geom.NewSize(size, size)
+	}
+	b.Tooltip = newWrappedTooltip(tooltip)
+	b.Accessibility.Name = tooltip
+	// The header is attached to the window only while it is drawn or handed an event, so the keyboard can't reach the
+	// button, and a click that focused it would leave the focus on a panel about to be detached again.
+	b.SetFocusable(false)
+	b.ClickCallback = onClick
+	return b
+}
+
+// addTrailingButtons adds the buttons to the end of the header, in a strip its border reserves, which keeps the title,
+// the sort indicator and a click to sort clear of them. The header is not one of its table header's children but is
+// installed only long enough to be drawn or handed an event (see unison.TableHeader), so the buttons never receive
+// events of their own: the header passes on to them the mouse presses, cursor and tooltip requests it is given. It is
+// described as a group, so that assistive technologies reach the buttons inside it.
+func (h *PageTableColumnHeader[T]) addTrailingButtons(buttons ...*unison.Button) {
+	for _, b := range buttons {
+		h.AddChild(b)
+	}
+	h.buttons = append(h.buttons, buttons...)
+	width := float32(headerButtonLeadingGap)
+	for i, b := range h.buttons {
+		if i != 0 {
+			width += headerButtonGap
+		}
+		_, pref, _ := b.Sizes(geom.Size{})
+		width += pref.Width
+	}
+	h.SetBorder(unison.NewEmptyBorder(geom.Insets{Right: width}))
+	h.SetLayout(&trailingButtonsLayout[T]{header: h})
+	h.Accessibility.Role = role.Group
+	// A description falls back to whatever Tooltip holds, which is a button's tooltip while it is lent (see
+	// buttonTooltip), so the header's own node is described by its own tooltip outright.
+	describe := h.Accessibility.Callback
+	h.Accessibility.Callback = func(node *accessibility.Node) {
+		node.Description = ""
+		if h.tooltipText != node.Name {
+			node.Description = h.tooltipText
+		}
+		if describe != nil {
+			describe(node)
+		}
+	}
+	h.MouseDownCallback = h.buttonMouseDown
+	h.MouseUpCallback = h.buttonMouseUp
+	h.UpdateCursorCallback = h.buttonCursor
+	h.UpdateTooltipCallback = h.buttonTooltip
+}
+
+// buttonAt returns the visible trailing button under the point, which is in the header's coordinates, or nil.
+func (h *PageTableColumnHeader[T]) buttonAt(where geom.Point) *unison.Button {
+	for _, b := range h.buttons {
+		if !b.Hidden && where.In(b.FrameRect()) {
+			return b
+		}
+	}
+	return nil
+}
+
+func (h *PageTableColumnHeader[T]) buttonMouseDown(where geom.Point, button, clickCount int, mods mod.Modifiers) bool {
+	h.pressed = nil
+	if b := h.buttonAt(where); b != nil && b.Enabled() {
+		h.pressed = b
+		return b.MouseDownCallback(where.Sub(b.FrameRect().Point), button, clickCount, mods)
+	}
+	return true
+}
+
+func (h *PageTableColumnHeader[T]) buttonMouseUp(where geom.Point, button int, mods mod.Modifiers) bool {
+	if b := h.pressed; b != nil {
+		h.pressed = nil
+		return b.MouseUpCallback(where.Sub(b.FrameRect().Point), button, mods)
+	}
+	return h.DefaultMouseUp(where, button, mods)
+}
+
+func (h *PageTableColumnHeader[T]) buttonCursor(where geom.Point) *unison.Cursor {
+	if b := h.buttonAt(where); b != nil && b.UpdateCursorCallback != nil {
+		return b.UpdateCursorCallback(where.Sub(b.FrameRect().Point))
+	}
+	return nil
+}
+
+// buttonTooltip lends the column the tooltip of the trailing button under the point, or else the header's own. The
+// table header takes whatever Tooltip holds as soon as this returns, so a lent tooltip is given back in a task posted
+// behind it: the table header describes the column to assistive technologies by whatever Tooltip holds when the window
+// is next described, which would otherwise be the button's until the pointer moved within the header again.
+func (h *PageTableColumnHeader[T]) buttonTooltip(where geom.Point, suggestedAvoidInRoot geom.Rect) geom.Rect {
+	if b := h.buttonAt(where); b != nil {
+		h.Tooltip = b.Tooltip
+		unison.InvokeTask(func() {
+			if h.Tooltip == b.Tooltip {
+				h.Tooltip = h.textTooltip
+			}
+		})
+		return b.RectToRoot(b.ContentRect(true)).Align()
+	}
+	h.Tooltip = h.textTooltip
+	return suggestedAvoidInRoot
+}
+
+// trailingButtonsLayout sizes a page table column header just as its sizer would and lines up its trailing buttons at
+// its right edge, centered vertically.
+type trailingButtonsLayout[T gurps.Node[T]] struct {
+	header *PageTableColumnHeader[T]
+}
+
+// LayoutSizes implements unison.Layout.
+func (l *trailingButtonsLayout[T]) LayoutSizes(_ *unison.Panel, hint geom.Size) (minSize, prefSize, maxSize geom.Size) {
+	return l.header.DefaultSizes(hint)
+}
+
+// PerformLayout implements unison.Layout.
+func (l *trailingButtonsLayout[T]) PerformLayout(target *unison.Panel) {
+	bounds := target.ContentRect(true)
+	x := bounds.Right()
+	for _, b := range slices.Backward(l.header.buttons) {
+		_, pref, _ := b.Sizes(geom.Size{})
+		x -= pref.Width
+		b.SetFrameRect(geom.NewRect(x, bounds.Y+(bounds.Height-pref.Height)/2, pref.Width, pref.Height))
+		x -= headerButtonGap
+	}
 }

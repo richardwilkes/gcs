@@ -73,22 +73,23 @@ func (pb *PointsBreakdown) Total() fxp.Int {
 
 // EntityData holds the Entity data that is written to disk.
 type EntityData struct {
-	Version          int             `json:"version"`
-	ID               tid.TID         `json:"id"`
-	TotalPoints      fxp.Int         `json:"total_points"`
-	PointsRecord     []*PointsRecord `json:"points_record,omitempty"`
-	Profile          Profile         `json:"profile"`
-	SheetSettings    *SheetSettings  `json:"settings,omitzero"`
-	Attributes       *Attributes     `json:"attributes,omitzero"`
-	Traits           []*Trait        `json:"traits,omitempty"`
-	Skills           []*Skill        `json:"skills,omitempty"`
-	Spells           []*Spell        `json:"spells,omitempty"`
-	CarriedEquipment []*Equipment    `json:"equipment,omitempty"`
-	OtherEquipment   []*Equipment    `json:"other_equipment,omitempty"`
-	Notes            []*Note         `json:"notes,omitempty"`
-	CreatedOn        jio.Time        `json:"created_date"`
-	ModifiedOn       jio.Time        `json:"modified_date"`
-	ThirdParty       map[string]any  `json:"third_party,omitempty"`
+	Version          int                    `json:"version"`
+	ID               tid.TID                `json:"id"`
+	TotalPoints      fxp.Int                `json:"total_points"`
+	PointsRecord     []*PointsRecord        `json:"points_record,omitempty"`
+	ShoppingRecord   []*ShoppingRecordEntry `json:"shopping_record,omitempty"`
+	Profile          Profile                `json:"profile"`
+	SheetSettings    *SheetSettings         `json:"settings,omitzero"`
+	Attributes       *Attributes            `json:"attributes,omitzero"`
+	Traits           []*Trait               `json:"traits,omitempty"`
+	Skills           []*Skill               `json:"skills,omitempty"`
+	Spells           []*Spell               `json:"spells,omitempty"`
+	CarriedEquipment []*Equipment           `json:"equipment,omitempty"`
+	OtherEquipment   []*Equipment           `json:"other_equipment,omitempty"`
+	Notes            []*Note                `json:"notes,omitempty"`
+	CreatedOn        jio.Time               `json:"created_date"`
+	ModifiedOn       jio.Time               `json:"modified_date"`
+	ThirdParty       map[string]any         `json:"third_party,omitempty"`
 }
 
 type features struct {
@@ -308,6 +309,7 @@ func (e *Entity) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 	if e.Version < noNeedForRewrapVersion {
 		e.SheetSettings.BodyType.Rewrap()
 	}
+	e.PointsRecord = slices.DeleteFunc(e.PointsRecord, func(rec *PointsRecord) bool { return rec == nil })
 	var total fxp.Int
 	for _, rec := range e.PointsRecord {
 		total += rec.Points
@@ -318,8 +320,9 @@ func (e *Entity) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 			When:   jio.Now(),
 			Reason: i18n.Text("Reconciliation"),
 		})
-		slices.SortFunc(e.PointsRecord, func(a, b *PointsRecord) int { return b.When.Compare(a.When) })
+		SortPointsRecordList(e.PointsRecord)
 	}
+	e.ShoppingRecord = normalizeShoppingRecord(e.ShoppingRecord)
 	if !keepSavedCalc(dec) {
 		e.Recalculate()
 	}

@@ -690,3 +690,92 @@ func TestApplyTemplateCountsModifierPromptsBeforeAskingThem(t *testing.T) {
 	c.True(template.applyTemplateToSheet(sheet, promptOperation{}, false))
 	c.Equal([]step{{row: "Talent", step: 1, steps: 2}, {row: "Sword", step: 2, steps: 2}}, steps)
 }
+
+// newLibraryStyleEquipmentTable returns a table of the given equipment that stands outside any sheet or template, as a
+// library's does.
+func newLibraryStyleEquipmentTable(items ...*gurps.Equipment) *unison.Table[*Node[*gurps.Equipment]] {
+	data := gurps.NewTemplate()
+	data.SetCarriedEquipmentList(items)
+	provider := NewEquipmentProvider(data, true, false)
+	table := newProviderTable(provider)
+	table.ClientData()[TableProviderClientKey] = provider
+	return table
+}
+
+// TestCopyToSheetLeavesOutCarriedEquipmentWhileBuying verifies that a sheet whose carried equipment list the buy panel
+// stands in for is neither offered nor used as a destination for copying equipment, since equipment arriving on such a
+// sheet is to be bought (see Sheet.startBuying), while it still takes other rows and takes equipment again once buying
+// ends.
+func TestCopyToSheetLeavesOutCarriedEquipmentWhileBuying(t *testing.T) {
+	c := check.New(t)
+	sheet := newTestSheetForTemplate(t)
+	entity := sheet.Entity()
+	rope := gurps.NewEquipment(nil, nil, false)
+	rope.Name = "Rope"
+	equipment := newLibraryStyleEquipmentTable(rope)
+	equipment.SelectAll()
+	claws := gurps.NewTrait(nil, nil, false)
+	claws.Name = "Claws"
+	traits := newLibraryStyleTraitsTable(claws)
+	traits.SelectAll()
+	sheets := []*Sheet{sheet}
+
+	sheet.startBuying()
+	c.True(sheet.buying(), "the sheet must be buying")
+	c.False(canCopySelectionTo(equipment, sheets), "equipment can't be copied to a sheet that is buying")
+	c.True(canCopySelectionTo(traits, sheets), "other rows still can be")
+	copySelectionTo(equipment, sheets)
+	c.Equal(0, len(entity.CarriedEquipment), "equipment copied to a sheet that is buying goes nowhere")
+	c.False(sheet.undoMgr.CanUndo(), "nothing was changed, so there must be nothing to undo")
+
+	sheet.stopBuying()
+	c.True(canCopySelectionTo(equipment, sheets), "equipment can be copied again once buying ends")
+	copySelectionTo(equipment, sheets)
+	c.Equal(1, len(entity.CarriedEquipment), "the equipment must have been copied")
+	c.True(sheet.undoMgr.CanUndo(), "the copy must be undoable")
+}
+
+// TestCopyToSheetListOffThePageIsAppliedAsToASheet verifies that rows copied onto a sheet whose layout leaves their list
+// off the page are still applied as to a sheet, with the ancestry question put, and recorded for undo, although the list
+// is attached to neither the sheet nor its undo manager.
+func TestCopyToSheetListOffThePageIsAppliedAsToASheet(t *testing.T) {
+	c := check.New(t)
+	sheet := newTestSheetForTemplate(t)
+	entity := sheet.Entity()
+	existing := newAncestryTrait("Human")
+	existing.SetDataOwner(entity)
+	entity.Traits = append(entity.Traits, existing)
+	sheet.hideLayoutBlock(gurps.BlockTraitsKey)
+	sheet.undoMgr.Clear()
+	c.Nil(sheet.Traits.Parent(), "the traits list must be off the page")
+	before := len(entity.Traits)
+	source := newLibraryStyleTraitsTable(newAncestryTrait("Elf"))
+	source.SelectAll()
+	asked := 0
+	uxtest.SwapForTest(t, &askToDisableExistingAncestry, func(_ promptOperation, _, _ []string) bool {
+		asked++
+		return true
+	})
+	uxtest.SwapForTest(t, &askToRandomizeAgain, func(_ promptOperation) bool { return false })
+	// Undo puts back copies of the rows, so the existing ancestry is found again by name.
+	humanDisabled := func() bool {
+		for _, trait := range entity.Traits {
+			if trait.Name == "Human" {
+				return trait.Disabled
+			}
+		}
+		t.Fatal("the existing ancestry must still be on the sheet")
+		return false
+	}
+
+	copySelectionTo(source, []*Sheet{sheet})
+
+	c.Equal(1, asked, "the ancestry question must be put, as it is for a list on the page")
+	c.True(humanDisabled(), "the answer must be acted on")
+	c.Equal(before+1, len(entity.Traits), "the ancestry must have been copied")
+	c.True(sheet.undoMgr.CanUndo(), "the copy must be recorded for undo")
+	c.Equal("Undo Insert Trait Container", sheet.undoMgr.UndoTitle())
+	sheet.undoMgr.Undo()
+	c.Equal(before, len(entity.Traits), "undo must take the copy back")
+	c.False(humanDisabled(), "undo must enable the existing ancestry again")
+}

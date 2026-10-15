@@ -28,6 +28,7 @@ const (
 	NoteContainer                = 'N'
 	RitualMagicSpell             = 'r'
 	Session                      = '9'
+	ShoppingRecord               = 'h'
 	Skill                        = 's'
 	SkillContainer               = 'S'
 	Spell                        = 'p'

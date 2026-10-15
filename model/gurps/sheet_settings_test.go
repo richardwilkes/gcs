@@ -10,6 +10,7 @@
 package gurps
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
@@ -198,4 +199,34 @@ func TestSheetSettingsEnsureValidityRepairsNumberFormats(t *testing.T) {
 	c.Equal(repaired, s.BodyWeightFormat)
 	c.Equal(repaired, s.EquipmentWeightFormat)
 	c.Equal(repaired, s.EquipmentValueFormat)
+}
+
+// TestSheetSettingsEnsureValidityBoundsTradePercents verifies that EnsureValidity brings the buy and sell percentages
+// into the range the sheet offers for them, as a file may hold any value, while a missing or non-positive one takes the
+// default, so that nothing showing them has to clamp, and record, a value nobody edited.
+func TestSheetSettingsEnsureValidityBoundsTradePercents(t *testing.T) {
+	c := check.New(t)
+	dir := t.TempDir()
+	data := fmt.Appendf(nil, `{
+	"version": %d,
+	"profile": {"name": "Plain"},
+	"settings": {"sell_percent": 2000, "buy_percent": 0.5}
+}`, jio.CurrentDataVersion)
+	c.NoError(os.WriteFile(filepath.Join(dir, "plain.gcs"), data, 0o600))
+	e, err := NewEntityFromFile(os.DirFS(dir), "plain.gcs")
+	c.NoError(err)
+	c.Equal(MaxTradePercent, e.SheetSettings.SellPercent, "a sell percent above the range is brought down to it")
+	c.Equal(MinTradePercent, e.SheetSettings.BuyPercent, "a positive buy percent below the range is brought up to it")
+
+	s := FactorySheetSettings()
+	s.BuyPercent = fxp.FromInteger(-5)
+	s.SellPercent = 0
+	s.EnsureValidity()
+	c.Equal(fxp.Hundred, s.BuyPercent, "a buy percent that isn't positive takes the default")
+	c.Equal(fxp.Fifty, s.SellPercent, "a sell percent that isn't positive takes the default")
+	s.BuyPercent = fxp.FromInteger(250)
+	s.SellPercent = fxp.FromInteger(35)
+	s.EnsureValidity()
+	c.Equal(fxp.FromInteger(250), s.BuyPercent, "a buy percent within the range is left alone")
+	c.Equal(fxp.FromInteger(35), s.SellPercent, "a sell percent within the range is left alone")
 }

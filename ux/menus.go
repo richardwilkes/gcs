@@ -136,6 +136,9 @@ const (
 	EditSheetLayoutItemID
 	DockUnDockItemID
 	CalculatorItemID
+	SellEquipmentItemID
+	BuyEquipmentItemID
+	ShoppingRecordItemID
 
 	FirstNonContainerMarker // Keep this block grouped together
 	NewCarriedEquipmentItemID
@@ -354,6 +357,11 @@ func (s menuBarScope) createItemMenu(f unison.MenuFactory) unison.Menu {
 	m.InsertItem(-1, newOtherEquipmentAction.NewMenuItem(f))
 	m.InsertItem(-1, newOtherEquipmentContainerAction.NewMenuItem(f))
 	m.InsertItem(-1, newOtherEquipmentGroupAction.NewMenuItem(f))
+	m.InsertSeparator(-1, false)
+	m.InsertItem(-1, sellEquipmentAction.NewMenuItem(f))
+	m.InsertItem(-1, buyEquipmentAction.NewMenuItem(f))
+	m.InsertItem(-1, shoppingRecordAction.NewMenuItem(f))
+	m.InsertSeparator(-1, false)
 	m.InsertItem(-1, newEquipmentModifierAction.NewMenuItem(f))
 	m.InsertItem(-1, newEquipmentContainerModifierAction.NewMenuItem(f))
 	m.InsertItem(-1, newEquipmentModifierChoiceAction.NewMenuItem(f))

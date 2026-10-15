@@ -15,41 +15,39 @@ import (
 	"github.com/richardwilkes/unison"
 )
 
-// In a headless session the menus are unison's pure-Go, in-window kind. The window's root panel holds, in this order,
-// any open popup menus (newest first), the menu bar, a tooltip if one is showing, and the content. A menu panel, bar or
-// popup alike, holds one scroll panel whose content has one child panel per item of the menu, in the menu's own order
-// and with the separators included, so the panel for an item is found by its index in the unison.Menu.
+// In a headless session the menus are unison's pure-Go kind. The window's root panel holds the menu bar, a tooltip if
+// one is showing, and the content. Each open popup menu is shown in a borderless window of its own, which unison keeps
+// out of its window list and hands back through HeadlessScreen.MenuWindows. A menu panel, bar or popup alike, holds
+// one scroll panel whose content has one child panel per item of the menu, in the menu's own order and with the
+// separators included, so the panel for an item is found by its index in the unison.Menu.
 
-// MenuBarPanel returns the in-window menu bar of wnd. It is the one child of the root, other than the content, that
-// spans the full width of the window at the top; popups are packed to the width of their items.
+// MenuBarPanel returns the in-window menu bar of wnd, or nil if it has none.
 func MenuBarPanel(wnd *unison.Window) *unison.Panel {
 	root := wnd.Content().Parent()
 	if root == nil {
 		return nil
 	}
-	width := root.FrameRect().Width
-	for _, child := range root.Children() {
-		if child == wnd.Content() {
-			continue
-		}
-		if r := child.FrameRect(); r.X == 0 && r.Y == 0 && r.Width == width {
-			return child
-		}
+	if bar, ok := root.Self.(interface{ MenuBar() *unison.Panel }); ok {
+		return bar.MenuBar()
 	}
 	return nil
 }
 
-// OpenMenuPopup returns the most recently opened popup menu in wnd, or nil if none is open.
+// OpenMenuPopup returns the panel of the popup menu open for wnd, or nil if none is open. When several are open, as
+// when a sub-menu is showing, the outermost is returned; HeadlessScreen.MenuWindows hands back the whole stack. May be
+// called from the UI thread or the test's goroutine.
 func OpenMenuPopup(wnd *unison.Window) *unison.Panel {
-	root := wnd.Content().Parent()
-	if root == nil || len(root.Children()) == 0 {
+	screen := unison.ActiveHeadlessScreen()
+	if screen == nil || wnd == nil {
 		return nil
 	}
-	first := root.Children()[0]
-	if first == wnd.Content() || first == MenuBarPanel(wnd) {
-		return nil
-	}
-	return first
+	var popup *unison.Panel
+	screen.Do(func() {
+		if menus := screen.MenuWindows(wnd); len(menus) != 0 {
+			popup = menus[0].Content()
+		}
+	})
+	return popup
 }
 
 // MenuItemPanels returns the panels of the items of a menu panel, bar or popup, one per item in the menu's order.

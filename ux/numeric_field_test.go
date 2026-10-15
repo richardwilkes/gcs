@@ -196,3 +196,33 @@ func TestDisabledFieldIsLeftAloneByTheFocus(t *testing.T) {
 	c.Equal("10", f.Text(), "a field that was being edited is brought into range")
 	c.Equal(10, *value)
 }
+
+// TestNumericFieldRefusesValuesAboveItsMaximum verifies that a field told to refuse values above its maximum turns
+// away typed and pasted text that would exceed it, rather than showing it as invalid, while one that isn't still
+// accepts the text.
+func TestNumericFieldRefusesValuesAboveItsMaximum(t *testing.T) {
+	c := check.New(t)
+	f, value := newTestIntegerField(0, 0, 11)
+	f.refuseAboveMax()
+	f.gainedFocus()
+	f.SetText("1")
+	f.SetSelectionToEnd()
+	c.False(f.RuneTypedCallback('5'), "15 is above the maximum")
+	c.Equal("1", f.Text())
+	c.True(f.RuneTypedCallback('1'))
+	c.Equal("11", f.Text())
+	c.Equal(11, *value)
+	c.True(f.wouldExceedMax("5"), "pasting at the end would make 115")
+	f.SelectAll()
+	c.False(f.wouldExceedMax("9"), "pasting over the selection would make 9")
+	c.False(f.wouldExceedMax("x"), "text that isn't a number is left to validation")
+	f.lostFocus()
+
+	plain, _ := newTestIntegerField(1, 0, 11)
+	plain.gainedFocus()
+	plain.SetSelectionToEnd()
+	c.True(plain.RuneTypedCallback('5'), "a field that doesn't refuse values above its maximum accepts the text")
+	c.Equal("15", plain.Text())
+	c.False(plain.wouldExceedMax("5"))
+	plain.lostFocus()
+}

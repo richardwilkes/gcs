@@ -50,6 +50,7 @@ func TestEveryControlHasAnAccessibleName(t *testing.T) {
 		t.Fatal("New Character Sheet must open a character sheet")
 	}
 	var entity *gurps.Entity
+	var eq *gurps.Equipment
 	screen.Do(func() {
 		entity = sheet.Entity()
 		// Give the sheet's lists a row apiece so that their cells are described.
@@ -59,8 +60,9 @@ func TestEveryControlHasAnAccessibleName(t *testing.T) {
 		sk := gurps.NewSkill(entity, nil, false)
 		sk.Name = "Audit Skill"
 		entity.Skills = append(entity.Skills, sk)
-		eq := gurps.NewEquipment(entity, nil, false)
+		eq = gurps.NewEquipment(entity, nil, false)
 		eq.Name = "Audit Equipment"
+		eq.BaseValue = "10"
 		entity.CarriedEquipment = append(entity.CarriedEquipment, eq)
 		entity.Recalculate()
 		sheet.Rebuild(true)
@@ -69,6 +71,41 @@ func TestEveryControlHasAnAccessibleName(t *testing.T) {
 	screen.Do(func() { sheet.toggleLayoutEditing() })
 	audit.Check("character sheet layout editing", sheet)
 	screen.Do(func() { sheet.toggleLayoutEditing() })
+	screen.Do(func() {
+		sheet.startBuying()
+		sheet.buyPanel.addItem(eq.Clone(gurps.LibraryFile{}, entity, nil, gurps.Duplicate))
+		sheet.buyPanel.Sync()
+	})
+	audit.Check("character sheet buying", sheet)
+	screen.Do(func() { sheet.stopBuying() })
+
+	// The dialogs run a nested modal loop, so each is posted rather than run through Do, checked in its own window,
+	// and canceled.
+	checkDialog := func(view string, open func()) {
+		if !screen.Post(open) {
+			t.Fatalf("%s: the dialog could not be opened", view)
+		}
+		screen.Sync()
+		dialogWnd, dialog := modalDialog(t, screen, wnd)
+		dialogAudit := uxtest.NewAXNameAudit(t, screen, dialogWnd)
+		dialogAudit.Check(view, dialogWnd.Content())
+		dialogAudit.Report()
+		screen.Do(func() { dialog.StopModal(unison.ModalResponseCancel) })
+		screen.Sync()
+	}
+	checkDialog("sell dialog", func() { showSellDialog(sheet, []*gurps.Equipment{eq}) })
+	checkDialog("manual payment dialog", func() { chooseManualPayment(sheet, fxp.Ten, "Audit Equipment ×1", nil) })
+	audit.CheckOpened("shopping record", func() {
+		entity.AddShoppingRecord(&gurps.ShoppingRecordEntry{
+			When:      jio.Now(),
+			Name:      "Audit Sale",
+			Kind:      gurps.ShoppingSold,
+			Items:     []gurps.ShoppingRecordItem{{Name: "Audit Equipment", Quantity: fxp.One, Value: fxp.Ten}},
+			Money:     []gurps.ShoppingRecordItem{{Name: "Audit Coin", Quantity: fxp.Five, Value: fxp.One}},
+			Exchanged: fxp.Five,
+		})
+		showShoppingRecord(sheet)
+	})
 
 	// Every feature and prerequisite type has a row of its own in the editors, so each editor is seeded with one of
 	// every kind it can hold.
@@ -168,7 +205,11 @@ func TestEveryControlHasAnAccessibleName(t *testing.T) {
 		displayPointsEditor(sheet, entity)
 	})
 
-	audit.CheckOpened("sheet settings", func() { ShowSheetSettings(sheet) })
+	audit.CheckOpened("sheet settings", func() {
+		// A sell money entry that can't be found still has a row, with its remove button.
+		entity.SheetSettings.SellMoney = []gurps.Source{{Library: "Audit", Path: "Money.eqp", TID: eq.TID}}
+		ShowSheetSettings(sheet)
+	})
 	audit.CheckOpened("attribute settings", func() { ShowAttributeSettings(sheet) })
 	audit.CheckOpened("body settings", func() { ShowBodySettings(sheet) })
 	audit.CheckOpened("general settings", ShowGeneralSettings)

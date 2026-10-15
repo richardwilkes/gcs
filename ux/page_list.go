@@ -19,6 +19,7 @@ import (
 	"github.com/richardwilkes/toolbox/v2/tid"
 	"github.com/richardwilkes/toolbox/v2/xreflect"
 	"github.com/richardwilkes/unison"
+	"github.com/richardwilkes/unison/drag"
 	"github.com/richardwilkes/unison/enums/align"
 )
 
@@ -61,10 +62,24 @@ func installNewItemCmdHandlers(owner Rebuildable, itemID, containerID int, creat
 	if containerID == -1 {
 		variant = AlternateItemVariant
 	} else {
-		p.InstallCmdHandlers(containerID, unison.AlwaysEnabled,
-			func(_ any) { creator().CreateItem(owner, ContainerItemVariant) })
+		installCreateItemCmdHandler(p, containerID, owner, ContainerItemVariant, creator)
 	}
-	p.InstallCmdHandlers(itemID, unison.AlwaysEnabled, func(_ any) { creator().CreateItem(owner, variant) })
+	installCreateItemCmdHandler(p, itemID, owner, variant, creator)
+}
+
+// installCreateItemCmdHandler installs on the panel the handler for a command that creates an item of the given variant
+// in the list the creator returns. The command is disabled while the creator returns nil, which a dockable does for a
+// list that can't take new items just now.
+func installCreateItemCmdHandler(p *unison.Panel, id int, owner Rebuildable, variant ItemVariant,
+	creator func() itemCreator,
+) {
+	p.InstallCmdHandlers(id,
+		func(_ any) bool { return !xreflect.IsNil(creator()) },
+		func(_ any) {
+			if c := creator(); !xreflect.IsNil(c) {
+				c.CreateItem(owner, variant)
+			}
+		})
 }
 
 // listItemCreators names the lists of a page dockable that the "New ..." commands add items to, each looked up when a
@@ -98,9 +113,7 @@ func installListItemCmdHandlers(owner Rebuildable, creators listItemCreators) {
 	install(NewNoteItemID, NewNoteContainerItemID, creators.notes)
 	installGroup := func(id int, creator func() itemCreator) {
 		if creator != nil {
-			p := owner.AsPanel()
-			p.InstallCmdHandlers(id, unison.AlwaysEnabled,
-				func(_ any) { creator().CreateItem(owner, GroupContainerItemVariant) })
+			installCreateItemCmdHandler(owner.AsPanel(), id, owner, GroupContainerItemVariant, creator)
 		}
 	}
 	installGroup(NewCarriedEquipmentGroupItemID, creators.carriedEquipment)
@@ -114,8 +127,7 @@ func installChoiceContainerCmdHandlers(owner Rebuildable, creators listItemCreat
 	p := owner.AsPanel()
 	install := func(id int, creator func() itemCreator) {
 		if creator != nil {
-			p.InstallCmdHandlers(id, unison.AlwaysEnabled,
-				func(_ any) { creator().CreateItem(owner, ChoiceContainerItemVariant) })
+			installCreateItemCmdHandler(p, id, owner, ChoiceContainerItemVariant, creator)
 		}
 	}
 	install(NewTraitChoiceContainerItemID, creators.traits)
@@ -126,16 +138,18 @@ func installChoiceContainerCmdHandlers(owner Rebuildable, creators listItemCreat
 
 // installTraitListCmdHandlers installs on the owner the handlers for the commands that act on its trait list as a
 // whole: adding the natural attacks and organizing the traits. The list is looked up when a command is invoked, for
-// the same reason as in installNewItemCmdHandlers. The entity is the one the natural attacks are made for, and is nil
-// for a template, whose traits have no entity until the template is applied.
+// the same reason as in installNewItemCmdHandlers, and the commands are disabled while the lookup returns nil, which
+// it does while the layout leaves the list off the page (see onPageCreator). The entity is the one the natural attacks
+// are made for, and is nil for a template, whose traits have no entity until the template is applied.
 func installTraitListCmdHandlers(owner Rebuildable, provider gurps.TraitListProvider, entity *gurps.Entity, traits func() *PageList[*gurps.Trait]) {
 	p := owner.AsPanel()
-	p.InstallCmdHandlers(AddNaturalAttacksItemID, unison.AlwaysEnabled, func(_ any) {
+	enabled := func(_ any) bool { return traits() != nil }
+	p.InstallCmdHandlers(AddNaturalAttacksItemID, enabled, func(_ any) {
 		InsertItems(owner, traits().Table, provider.TraitList, provider.SetTraitList,
 			func(_ *unison.Table[*Node[*gurps.Trait]]) []*Node[*gurps.Trait] { return traits().provider.RootRows() },
 			gurps.NewNaturalAttacks(entity, nil))
 	})
-	p.InstallCmdHandlers(OrganizeTraitsItemID, unison.AlwaysEnabled, func(_ any) { organizeTraits(owner, traits().Table) })
+	p.InstallCmdHandlers(OrganizeTraitsItemID, enabled, func(_ any) { organizeTraits(owner, traits().Table) })
 }
 
 // listsForKeys returns the lists for the block keys the predicate accepts, in the canonical block order (see
@@ -203,13 +217,18 @@ func NewTraitsPageList(owner Rebuildable, provider gurps.ListProvider) *PageList
 
 // NewCarriedEquipmentPageList creates the carried equipment page list.
 func NewCarriedEquipmentPageList(owner Rebuildable, provider gurps.ListProvider) *PageList[*gurps.Equipment] {
-	p := newPageList(owner, NewEquipmentProvider(provider, true, true))
+	eqpProvider := newEquipmentProvider(provider, true, true)
+	if sheet, ok := owner.AsPanel().Self.(*Sheet); ok {
+		eqpProvider.sheet = sheet
+	}
+	p := newPageList[*gurps.Equipment](owner, eqpProvider)
 	p.installToggleEquippedHandler(owner)
 	p.installIncrementTechLevelHandler(owner)
 	p.installDecrementTechLevelHandler(owner)
 	p.installContainerConversionHandlers(owner)
 	installEquipmentContainerConversionHandlers(p, p.Table, owner)
 	p.installMoveToOtherEquipmentHandler(owner)
+	p.installSellEquipmentHandler(owner)
 	installEquipmentLevelHandlers(p, owner)
 	InstallTintFunc(p, colors.TintCarriedEquipment)
 	return p
@@ -223,9 +242,27 @@ func NewOtherEquipmentPageList(owner Rebuildable, provider gurps.ListProvider) *
 	p.installContainerConversionHandlers(owner)
 	installEquipmentContainerConversionHandlers(p, p.Table, owner)
 	p.installMoveToCarriedEquipmentHandler(owner)
+	p.installBuyPanelDragDeferral(owner)
 	installEquipmentLevelHandlers(p, owner)
 	InstallTintFunc(p, colors.TintOtherEquipment)
 	return p
+}
+
+// installBuyPanelDragDeferral has a sheet's list decline the equipment drags its buy panel would take while the panel
+// stands in for the carried equipment list, so that the drag goes on up to the sheet, which reroutes it to the panel
+// (see Sheet.keyToPanel): equipment dragged anywhere onto a sheet that is buying is to be bought, not carried. The
+// sheet's own equipment is still taken, so rows can be moved about while buying; dropped on the panel itself, it is
+// bought like any other (see buyPanel.claimsDrag).
+func (p *PageList[T]) installBuyPanelDragDeferral(owner Rebuildable) {
+	if sheet, ok := owner.AsPanel().Self.(*Sheet); ok {
+		accept := p.Table.CanAcceptDropCallback
+		p.Table.CanAcceptDropCallback = func(di drag.Info) bool {
+			if sheet.buying() && sheet.buyPanel.claimsDrag(di) {
+				return false
+			}
+			return accept(di)
+		}
+	}
 }
 
 // NewSkillsPageList creates the skills page list.
@@ -372,8 +409,12 @@ func (p *PageList[T]) installMoveToCarriedEquipmentHandler(owner Rebuildable) {
 	if sheet, ok := owner.AsPanel().Self.(*Sheet); ok {
 		var t *unison.Table[*Node[*gurps.Equipment]]
 		if t, ok = any(p.Table).(*unison.Table[*Node[*gurps.Equipment]]); ok {
+			// While the layout leaves the carried equipment list off the page or the buy panel stands in for it, the
+			// list's table has no undo manager, so a move would do nothing.
 			p.InstallCmdHandlers(MoveToCarriedEquipmentItemID,
-				func(_ any) bool { return t.HasSelection() },
+				func(_ any) bool {
+					return t.HasSelection() && !sheet.buying() && sheet.showsBlock(gurps.BlockEquipmentKey)
+				},
 				func(_ any) { moveSelectedEquipment(sheet, t, sheet.CarriedEquipment.Table) })
 		}
 	}
@@ -383,9 +424,22 @@ func (p *PageList[T]) installMoveToOtherEquipmentHandler(owner Rebuildable) {
 	if sheet, ok := owner.AsPanel().Self.(*Sheet); ok {
 		var t *unison.Table[*Node[*gurps.Equipment]]
 		if t, ok = any(p.Table).(*unison.Table[*Node[*gurps.Equipment]]); ok {
+			// While the layout leaves the other equipment list off the page, its table has no undo manager, so a move
+			// would do nothing.
 			p.InstallCmdHandlers(MoveToOtherEquipmentItemID,
-				func(_ any) bool { return t.HasSelection() },
+				func(_ any) bool { return t.HasSelection() && sheet.showsBlock(gurps.BlockOtherEquipmentKey) },
 				func(_ any) { moveSelectedEquipment(sheet, t, sheet.OtherEquipment.Table) })
+		}
+	}
+}
+
+func (p *PageList[T]) installSellEquipmentHandler(owner Rebuildable) {
+	if sheet, ok := owner.AsPanel().Self.(*Sheet); ok {
+		var t *unison.Table[*Node[*gurps.Equipment]]
+		if t, ok = any(p.Table).(*unison.Table[*Node[*gurps.Equipment]]); ok {
+			p.InstallCmdHandlers(SellEquipmentItemID,
+				func(_ any) bool { return !t.IsFiltered() && len(selectedSaleRows(t)) != 0 },
+				func(_ any) { sellSelectedEquipment(sheet, t) })
 		}
 	}
 }

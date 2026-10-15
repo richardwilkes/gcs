@@ -13,6 +13,7 @@ import (
 	"slices"
 	"testing"
 
+	"github.com/richardwilkes/gcs/v5/model/criteria"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/layoutnode"
@@ -20,6 +21,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/ux/uxtest"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/toolbox/v2/geom"
+	"github.com/richardwilkes/toolbox/v2/tid"
 	"github.com/richardwilkes/toolbox/v2/xmath"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
@@ -461,4 +463,41 @@ func TestBuildLayoutSquareBlockInAStretchedRowStaysSquare(t *testing.T) {
 	c.Equal(inner.FrameRect().Height, portraitPanel.FrameRect().Height, "the portrait is given the full height of its row")
 	content := portraitPanel.ContentRect(false).Size
 	c.True(nearlySquare(content), "the portrait's content must be square at that height, but is %v", content)
+}
+
+// TestSwapDefaultsFollowsTheLayout checks that Swap Defaults is disabled while the layout leaves the skill list off the
+// page, where the list keeps its selection but has no undo manager, so the command would swap the hidden skills'
+// defaults where the user can't see and can't undo.
+func TestSwapDefaultsFollowsTheLayout(t *testing.T) {
+	c := check.New(t)
+	sheet := newTestSheetForTemplate(t)
+	entity := sheet.Entity()
+	newSkill := func(name, defaultsTo string, points fxp.Int) *gurps.Skill {
+		sk := gurps.NewSkill(entity, nil, false)
+		sk.Name = name
+		sk.Points = points
+		sk.Defaults = []*gurps.SkillDefault{{
+			DefaultType: gurps.SkillID,
+			Name:        criteria.Text{TextData: criteria.TextData{Compare: criteria.IsText, Qualifier: defaultsTo}},
+			Modifier:    -fxp.Four,
+		}}
+		return sk
+	}
+	broadsword := newSkill("Broadsword", "Rapier", fxp.Four)
+	rapier := newSkill("Rapier", "Broadsword", fxp.Eight)
+	entity.Skills = []*gurps.Skill{broadsword, rapier}
+	entity.Recalculate()
+	sheet.Rebuild(true)
+	c.NotNil(broadsword.DefaultedFrom, "precondition: Broadsword defaults to Rapier")
+	sheet.Skills.Table.SetSelectionMap(map[tid.TID]bool{broadsword.TID: true})
+	c.True(sheet.CanPerformCmd(sheet, SwapDefaultsItemID), "the defaults can be swapped while the list is on the page")
+
+	layout := entity.SheetSettings.Layout
+	c.True(layout.Hide(gurps.BlockSkillsKey))
+	sheet.Rebuild(true)
+	c.True(sheet.Skills.Table.HasSelection(), "precondition: the hidden list keeps its selection")
+	c.False(sheet.CanPerformCmd(sheet, SwapDefaultsItemID), "the command is disabled while the list is off the page")
+	c.True(layout.Show(gurps.BlockSkillsKey))
+	sheet.Rebuild(true)
+	c.True(sheet.CanPerformCmd(sheet, SwapDefaultsItemID), "the command is enabled again once the list is back")
 }

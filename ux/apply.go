@@ -36,12 +36,7 @@ func transferKindOf(panel unison.Paneler) transferKind {
 	if xreflect.IsNil(panel) {
 		return transferLibrary
 	}
-	var owner any = unison.AncestorOrSelf[unison.Dockable](panel)
-	if xreflect.IsNil(owner) {
-		// A list the page layout leaves off the page is never attached to it, so ask the table's owner.
-		owner = panel.AsPanel().ClientData()[TableOwnerClientKey]
-	}
-	switch owner.(type) {
+	switch transferOwnerOf(panel).(type) {
 	case *Sheet, *LootSheet:
 		return transferSheet
 	case *Template:
@@ -49,6 +44,17 @@ func transferKindOf(panel unison.Paneler) transferKind {
 	default:
 		return transferLibrary
 	}
+}
+
+// transferOwnerOf returns the document the panel belongs to: the dockable holding it, or, for a list the page layout
+// leaves off the page, which is never attached to it, the table's owner. The result is untyped nil when there is
+// neither.
+func transferOwnerOf(panel unison.Paneler) any {
+	var owner any = unison.AncestorOrSelf[unison.Dockable](panel)
+	if xreflect.IsNil(owner) {
+		owner = panel.AsPanel().ClientData()[TableOwnerClientKey]
+	}
+	return owner
 }
 
 // applyOptions selects the steps of applyTransfer that rows arriving in a document go through.
@@ -363,30 +369,15 @@ func (p *applyPart[T]) changed() (unison.Paneler, Rebuildable) {
 // the transfer, such as "Copying Broadsword to Sir Bob", and each question shows it (see newOperationLabel), since the
 // questions are otherwise asked with nothing around them to say what they are part of.
 func applyTransfer(destination unison.Paneler, parts *applyParts, opts applyOptions, op promptOperation, editName string) bool {
-	// The incoming rows are clones, so normalizing them changes nothing elsewhere, even if a later prompt is canceled. It
-	// comes first so that no prompt asks about modifiers or nameables a choice container is about to lose.
-	if opts.normalizeChoices {
-		parts.each(applyPartOps.normalizeChoices)
-	}
-	if opts.resolvePickers && !promptForPickers(op, parts, opts.promptForChoices) {
-		return false
-	}
-	if opts.clearTemplateOnly {
-		if pickerContainers := parts.pickerContainers(); len(pickerContainers) != 0 &&
-			!confirmTemplatePickerDataRemoval(op, pickerContainers) {
-			return false
-		}
-	}
-	if opts.promptForChoices &&
-		!(parts.promptForModifiers(op) &&
-			parts.all(func(part applyPartOps) bool { return part.promptForNameables(op) })) {
+	if !promptForTransfer(parts, opts, op) {
 		return false
 	}
 	// The ancestries arriving are only known once the template choices have been settled, since an ancestry may be one
 	// of the options of a choice and not be chosen. They are named by their containers rather than by the ancestries
 	// the containers link to, since many containers may link to the same ancestry, each with details of its own, and
 	// the names are only final once the nameables have been settled.
-	sheet, isSheet := unison.AncestorOrSelf[unison.Dockable](destination).(*Sheet)
+	owner := transferOwnerOf(destination)
+	sheet, isSheet := owner.(*Sheet)
 	var entity *gurps.Entity
 	var incomingAncestries []*gurps.Trait
 	if isSheet {
@@ -404,8 +395,14 @@ func applyTransfer(destination unison.Paneler, parts *applyParts, opts applyOpti
 		(opts.suppressRandomizePrompt || askToRandomizeAgain(op))
 
 	// Every answer is in, so the destination is changed from this point on. The undo manager is found first, since the
-	// rebuild that reports the change can replace the table it would otherwise be found through.
+	// rebuild that reports the change can replace the table it would otherwise be found through. A list off the page
+	// has nothing to find it through, so its owner's is used.
 	mgr := unison.UndoManagerFor(destination)
+	if mgr == nil {
+		if provider, ok := owner.(unison.UndoManagerProvider); ok {
+			mgr = provider.UndoManager()
+		}
+	}
 	before := newApplyUndoEditData(sheet, parts)
 	if opts.clearTemplateOnly {
 		parts.each(applyPartOps.clearTemplateOnly)
@@ -455,6 +452,27 @@ func applyTransfer(destination unison.Paneler, parts *applyParts, opts applyOpti
 		})
 	}
 	return true
+}
+
+// promptForTransfer puts the questions about the incoming rows alone to the user, as opts selects: the template
+// choices, the removal of template-only data, the modifiers and the nameables. It returns false if any of them is
+// canceled. The rows must be clones, since the answers change them even when a later question is canceled.
+func promptForTransfer(parts *applyParts, opts applyOptions, op promptOperation) bool {
+	// Normalizing comes first so that no prompt asks about modifiers or nameables a choice container is about to lose.
+	if opts.normalizeChoices {
+		parts.each(applyPartOps.normalizeChoices)
+	}
+	if opts.resolvePickers && !promptForPickers(op, parts, opts.promptForChoices) {
+		return false
+	}
+	if opts.clearTemplateOnly {
+		if pickerContainers := parts.pickerContainers(); len(pickerContainers) != 0 &&
+			!confirmTemplatePickerDataRemoval(op, pickerContainers) {
+			return false
+		}
+	}
+	return !opts.promptForChoices ||
+		(parts.promptForModifiers(op) && parts.all(func(part applyPartOps) bool { return part.promptForNameables(op) }))
 }
 
 // ancestryNames returns the names of the ancestry containers, with their nameables replaced.

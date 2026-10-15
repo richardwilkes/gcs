@@ -268,6 +268,10 @@ var (
 	settingsData string
 	Settings     = unison.MustSVGFromContentString(settingsData)
 
+	//go:embed shopping_cart.svg
+	shoppingCartData string
+	ShoppingCart     = unison.MustSVGFromContentString(shoppingCartData)
+
 	//go:embed side_bar.svg
 	sideBarData string
 	SideBar     = unison.MustSVGFromContentString(sideBarData)

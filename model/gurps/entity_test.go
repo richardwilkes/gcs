@@ -12,6 +12,8 @@ package gurps
 import (
 	"fmt"
 	"log/slog"
+	"os"
+	"path/filepath"
 	"slices"
 	"strconv"
 	"strings"
@@ -23,6 +25,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/selector"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/selfctrl"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/stlimit"
+	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/toolbox/v2/check"
 )
 
@@ -1712,4 +1715,24 @@ func TestEntityTraitLevels(t *testing.T) {
 	levels, found = e.TraitLevels("Telekinesis (Reach)")
 	c.False(found, "the name must match in full")
 	c.Equal(fxp.Int(0), levels, "a non-matching name contributes no levels")
+}
+
+// TestNewEntityFromFileDropsNullPointsRecords checks that a sheet file whose points record holds a null entry loads,
+// with the entry dropped, rather than failing on it.
+func TestNewEntityFromFileDropsNullPointsRecords(t *testing.T) {
+	c := check.New(t)
+	dir := t.TempDir()
+	data := fmt.Appendf(nil, `{
+	"version": %d,
+	"profile": {"name": "Plain"},
+	"total_points": 150,
+	"points_record": [null, {"when": "2026-10-13T09:40:00Z", "points": 150, "reason": "Initial points"}]
+}`, jio.CurrentDataVersion)
+	c.NoError(os.WriteFile(filepath.Join(dir, "plain.gcs"), data, 0o600))
+	e, err := NewEntityFromFile(os.DirFS(dir), "plain.gcs")
+	c.NoError(err)
+	c.Equal(1, len(e.PointsRecord), "the null entry is dropped and the points need no reconciliation")
+	if len(e.PointsRecord) == 1 {
+		c.Equal(fxp.FromInteger(150), e.PointsRecord[0].Points)
+	}
 }

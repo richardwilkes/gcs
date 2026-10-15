@@ -1801,3 +1801,57 @@ func TestSquarePortraitButton(t *testing.T) {
 	c.True(nearlySquare(portraitContentSize(t, editor)), "pressing the square button must square the picture area")
 	c.Equal(1, undoEditCount(sheet.UndoManager()), "pressing the square button must be one undoable edit")
 }
+
+// TestHiddenListsOfferNoCommands checks that the commands that add to a list, or move equipment into it, are disabled
+// while the layout leaves the list off the page, since they would otherwise change a list the user can't see without
+// recording an undo edit, and are enabled again once the list is shown.
+func TestHiddenListsOfferNoCommands(t *testing.T) {
+	c := check.New(t)
+	sheet, _ := newTestSheetForLayoutEditing(t)
+	entity := sheet.Entity()
+	carried := gurps.NewEquipment(entity, nil, false)
+	carried.Name = "Rope"
+	entity.CarriedEquipment = append(entity.CarriedEquipment, carried)
+	other := gurps.NewEquipment(entity, nil, false)
+	other.Name = "Tent"
+	entity.OtherEquipment = append(entity.OtherEquipment, other)
+	entity.Recalculate()
+	sheet.Rebuild(true)
+	sheet.CarriedEquipment.Table.SelectByIndex(0)
+	sheet.OtherEquipment.Table.SelectByIndex(0)
+	type gates struct {
+		newOther, newOtherContainer, newOtherGroup, moveToOther         bool
+		newCarried, newCarriedContainer, newCarriedGroup, moveToCarried bool
+		newTrait                                                        bool
+	}
+	readGates := func() gates {
+		return gates{
+			newOther:            sheet.CanPerformCmd(nil, NewOtherEquipmentItemID),
+			newOtherContainer:   sheet.CanPerformCmd(nil, NewOtherEquipmentContainerItemID),
+			newOtherGroup:       sheet.CanPerformCmd(nil, NewOtherEquipmentGroupItemID),
+			moveToOther:         sheet.CarriedEquipment.CanPerformCmd(nil, MoveToOtherEquipmentItemID),
+			newCarried:          sheet.CanPerformCmd(nil, NewCarriedEquipmentItemID),
+			newCarriedContainer: sheet.CanPerformCmd(nil, NewCarriedEquipmentContainerItemID),
+			newCarriedGroup:     sheet.CanPerformCmd(nil, NewCarriedEquipmentGroupItemID),
+			moveToCarried:       sheet.OtherEquipment.CanPerformCmd(nil, MoveToCarriedEquipmentItemID),
+			newTrait:            sheet.CanPerformCmd(nil, NewTraitItemID),
+		}
+	}
+	all := gates{true, true, true, true, true, true, true, true, true}
+	c.Equal(all, readGates(), "every command is enabled while every list is shown")
+
+	sheet.hideLayoutBlock(gurps.BlockOtherEquipmentKey)
+	c.Equal(gates{false, false, false, false, true, true, true, true, true}, readGates(),
+		"hiding the other equipment disables adding to it and moving equipment into it")
+	sheet.showLayoutBlock(gurps.BlockOtherEquipmentKey)
+	c.Equal(all, readGates(), "showing it enables them again")
+
+	sheet.hideLayoutBlock(gurps.BlockEquipmentKey)
+	c.Equal(gates{true, true, true, true, false, false, false, false, true}, readGates(),
+		"hiding the carried equipment disables adding to it and moving equipment into it")
+	sheet.showLayoutBlock(gurps.BlockEquipmentKey)
+	c.Equal(all, readGates())
+
+	sheet.hideLayoutBlock(gurps.BlockTraitsKey)
+	c.False(readGates().newTrait, "hiding the traits disables adding to them")
+}

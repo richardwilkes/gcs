@@ -10,6 +10,8 @@
 package ux
 
 import (
+	"slices"
+
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/ux/svg"
 	"github.com/richardwilkes/toolbox/v2/i18n"
@@ -22,12 +24,20 @@ var _ TableProvider[*gurps.Equipment] = &equipmentProvider{}
 type equipmentProvider struct {
 	listProvider[*gurps.Equipment]
 	provider gurps.EquipmentListProvider
-	carried  bool
+	// sheet is the character sheet whose carried equipment list this provides, which gives the list's header the
+	// buttons for buying and the shopping record, or nil, as on a template or an exported page. It must be set before
+	// the table is built, since the columns' minimum widths come from the headers.
+	sheet   *Sheet
+	carried bool
 }
 
 // NewEquipmentProvider creates a new table provider for equipment, drawing on the carried equipment list when 'carried'
 // is true and the other equipment list when it is not.
 func NewEquipmentProvider(provider gurps.EquipmentListProvider, carried, forPage bool) TableProvider[*gurps.Equipment] {
+	return newEquipmentProvider(provider, carried, forPage)
+}
+
+func newEquipmentProvider(provider gurps.EquipmentListProvider, carried, forPage bool) *equipmentProvider {
 	p := &equipmentProvider{provider: provider, carried: carried}
 	list, setList := provider.OtherEquipmentList, provider.SetOtherEquipmentList
 	if carried {
@@ -98,6 +108,28 @@ func (p *equipmentProvider) ItemNames() (singular, plural string) {
 		return i18n.Text("Carried Equipment Item"), i18n.Text("Carried Equipment Items")
 	}
 	return i18n.Text("Other Equipment Item"), i18n.Text("Other Equipment Items")
+}
+
+// Headers implements TableProvider. On a character sheet, the carried equipment list's description column also offers
+// the buttons for buying and for the shopping record.
+func (p *equipmentProvider) Headers() []unison.TableColumnHeader[*Node[*gurps.Equipment]] {
+	headers := p.listProvider.Headers()
+	if p.sheet != nil && p.carried && p.forPage {
+		if i := slices.Index(p.ColumnIDs(), gurps.EquipmentDescriptionColumn); i != -1 {
+			if header, ok := headers[i].(*PageTableColumnHeader[*gurps.Equipment]); ok {
+				// A click is handled from within the header's mouse up, and either command rebuilds or adds to what
+				// is on screen, so each is deferred until the event is over.
+				sheet := p.sheet
+				header.addTrailingButtons(
+					newHeaderButton(svg.ShoppingCart, i18n.Text("Buy equipment"),
+						func() { unison.InvokeTask(sheet.startBuying) }),
+					newHeaderButton(svg.ReleaseNotes, i18n.Text("Shopping record"),
+						func() { unison.InvokeTask(func() { showShoppingRecord(sheet) }) }),
+				)
+			}
+		}
+	}
+	return headers
 }
 
 func (p *equipmentProvider) SyncHeader(headers []unison.TableColumnHeader[*Node[*gurps.Equipment]]) {
@@ -173,6 +205,8 @@ func (p *equipmentProvider) ContextMenuItems() []ContextMenuItem {
 			contextMenuItemFor(newCarriedEquipmentContainerAction),
 			contextMenuItemFor(newCarriedEquipmentGroupAction),
 			contextMenuItemFor(newEquipmentChoiceContainerAction),
+			ContextMenuItem{ID: -1},
+			contextMenuItemFor(sellEquipmentAction),
 		)
 	} else {
 		list = append(

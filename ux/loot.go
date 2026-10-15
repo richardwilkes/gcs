@@ -368,6 +368,10 @@ type treasureGenPanel struct {
 	maxField *DecimalField
 	minValue fxp.Int
 	maxValue fxp.Int
+	// invalid records each field's validity as its validation reports it, since the field records the result only after
+	// its validation callback has returned. A field built from a stored value outside its range starts out invalid, and
+	// gateOnValidity records that when it is installed.
+	invalid map[*DecimalField]bool
 }
 
 func newTreasureGenPanel(minValue, maxValue fxp.Int) *treasureGenPanel {
@@ -375,6 +379,7 @@ func newTreasureGenPanel(minValue, maxValue fxp.Int) *treasureGenPanel {
 		panel:    unison.NewPanel(),
 		minValue: minValue,
 		maxValue: maxValue,
+		invalid:  make(map[*DecimalField]bool),
 	}
 	p.panel.SetLayout(&unison.FlexLayout{
 		Columns:  2,
@@ -389,31 +394,44 @@ func newTreasureGenPanel(minValue, maxValue fxp.Int) *treasureGenPanel {
 	p.panel.AddChild(NewFieldLeadingLabel(label, false))
 	p.minField = NewDecimalField(nil, "", label,
 		func() fxp.Int { return p.minValue },
-		func(value fxp.Int) {
-			p.minValue = value
-			p.validateOK()
-		},
+		func(value fxp.Int) { p.minValue = value },
 		fxp.One, fxp.TenMillionMinusOne, false, false)
+	p.gateOnValidity(p.minField)
 	p.panel.AddChild(p.minField)
 	label = i18n.Text("Maximum Value")
 	p.panel.AddChild(NewFieldLeadingLabel(label, false))
 	p.maxField = NewDecimalField(nil, "", label,
 		func() fxp.Int { return p.maxValue },
-		func(value fxp.Int) {
-			p.maxValue = value
-			p.validateOK()
-		},
+		func(value fxp.Int) { p.maxValue = value },
 		fxp.One, fxp.TenMillionMinusOne, false, false)
+	p.gateOnValidity(p.maxField)
 	p.panel.AddChild(p.maxField)
 	return p
 }
 
+// gateOnValidity brings the OK button up to date from the field's validation rather than from its value. The field
+// reports a changed value before it validates the text it was given, and reports no value at all when the text parses
+// to the value it already held, so the validation is the one point that follows every change and sees the text as it
+// is now. The field has already validated the text it was built with, so that result is recorded first.
+func (p *treasureGenPanel) gateOnValidity(field *DecimalField) {
+	p.invalid[field] = field.Invalid()
+	validate := field.ValidateCallback
+	field.ValidateCallback = func() bool {
+		valid := validate()
+		p.invalid[field] = !valid
+		p.validateOK()
+		return valid
+	}
+}
+
+// validateOK enables the OK button only while both fields hold valid values and the minimum is not above the maximum.
+// Nothing is done before the dialog exists.
 func (p *treasureGenPanel) validateOK() {
-	if p.dialog == nil || p.minField == nil || p.maxField == nil {
+	if p.dialog == nil {
 		return
 	}
-	p.dialog.Button(unison.ModalResponseOK).SetEnabled(p.minValue <= p.maxValue && !p.minField.Invalid() &&
-		!p.maxField.Invalid())
+	p.dialog.Button(unison.ModalResponseOK).SetEnabled(p.minValue <= p.maxValue && !p.invalid[p.minField] &&
+		!p.invalid[p.maxField])
 }
 
 // lootCandidates returns the equipment treasure may be generated from: the items given, save that a group is replaced

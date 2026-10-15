@@ -17,6 +17,7 @@ import (
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/toolbox/v2/xmath"
 	"github.com/richardwilkes/unison"
+	"github.com/richardwilkes/unison/enums/mod"
 )
 
 // NumericField holds a numeric value that can be edited.
@@ -36,6 +37,8 @@ type NumericField[T xmath.Integer | xmath.Float] struct {
 	exception          T
 	hasException       bool
 	showingDisplayText bool
+	// limitToMax has typed or pasted text that would put the value above the maximum refused; see refuseAboveMax.
+	limitToMax bool
 }
 
 // NewNumericField creates a new field that formats its content.
@@ -224,13 +227,50 @@ func (f *NumericField[T]) runeTyped(ch rune) bool {
 			return false
 		}
 		if text := strings.TrimSpace(string(f.RunesIfPasted([]rune{ch}))); text != "-" && text != "+" {
-			if _, err := f.extract(text); err != nil {
+			if _, err := f.extract(text); err != nil || f.wouldExceedMax(string(ch)) {
 				unison.Beep()
 				return false
 			}
 		}
 	}
 	return f.DefaultRuneTyped(ch)
+}
+
+// refuseAboveMax has the field refuse, with a beep, typed or pasted text that would put its value above the maximum,
+// rather than show it as invalid, for a maximum that is a hard limit, such as the quantity of an item carried. Pasting
+// is refused both by the Paste command and by its keyboard shortcut, which unison.Field.DefaultKeyDown handles itself
+// for a field with no menu bar to route it through, such as one in a modal dialog.
+func (f *NumericField[T]) refuseAboveMax() {
+	f.limitToMax = true
+	f.InstallCmdHandlers(unison.PasteItemID, func(_ any) bool { return f.CanPaste() }, func(_ any) {
+		if f.wouldExceedMax(unison.ClipboardGetText()) {
+			unison.Beep()
+			return
+		}
+		f.Paste()
+	})
+	keyDown := f.KeyDownCallback
+	f.KeyDownCallback = func(keyCode unison.KeyCode, mods mod.Modifiers, repeat bool) bool {
+		if keyCode == unison.KeyV && mods&mod.NonSticky == mod.OSMenuCommand() && f.CanPaste() &&
+			f.wouldExceedMax(unison.ClipboardGetText()) {
+			unison.Beep()
+			return true
+		}
+		return keyDown(keyCode, mods, repeat)
+	}
+}
+
+// wouldExceedMax returns true if the field refuses values above its maximum and inserting the text in place of the
+// selection would put its value above it.
+func (f *NumericField[T]) wouldExceedMax(text string) bool {
+	if !f.limitToMax {
+		return false
+	}
+	v, err := f.extract(strings.TrimSpace(string(f.RunesIfPasted([]rune(text)))))
+	if err != nil || (f.hasException && v == f.exception) {
+		return false
+	}
+	return v > f.maxValue
 }
 
 func (f *NumericField[T]) setWithoutUndo(state *unison.FieldState, focus bool) {
@@ -296,9 +336,4 @@ func (f *NumericField[T]) adjustMinimumTextWidth() {
 		}
 		f.SetMinimumTextWidthUsing(candidates...)
 	}
-}
-
-// SetMarksModified sets whether this field will attempt to mark its ModifiableRoot as modified. Default is true.
-func (f *NumericField[T]) SetMarksModified(marksModified bool) {
-	f.marksModified = marksModified
 }
