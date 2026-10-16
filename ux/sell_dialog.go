@@ -65,8 +65,7 @@ type sellDialog struct {
 	sheet  *Sheet
 	dialog *unison.Dialog
 	rows   []*sellRow
-	// money holds the denominations the sale pays out in. It is resolved from the sheet's sell money just once, as
-	// each lookup may load a library file.
+	// money holds the denominations the sale pays out in, copied from the sheet's sell money just once.
 	money   []*gurps.Equipment
 	percent int
 	name    string
@@ -537,10 +536,8 @@ func (d *sellDialog) update() {
 	}
 	var warning string
 	switch {
-	case len(settings.SellMoney) == 0:
-		warning = i18n.Text("No sell money is configured. Add money items to the Trading section of this sheet's settings.")
 	case len(d.money) == 0:
-		warning = i18n.Text("None of the configured sell money could be found in the libraries.")
+		warning = i18n.Text("No sell money is configured. Add money items to the Trading section of this sheet's settings.")
 	case d.paid < total:
 		warning = i18n.Text("%s can't be paid with the configured sell money. Receiving %s, the closest amount not over the total.",
 			dollars(total-d.paid), dollars(d.paid))

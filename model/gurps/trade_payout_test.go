@@ -104,25 +104,42 @@ func TestPayoutForIgnoresNilAndWorthlessItems(t *testing.T) {
 	c.Equal(fxp.FromInteger(40), paid)
 }
 
-// TestAddSellMoneyRejectsWhatCanNotBeMoney checks that only library equipment tagged as money (see MoneyTag) that isn't
-// a container and isn't already listed can be sell money, since buying spends only money so tagged, and sell money that
-// buying can't spend would be dead weight.
+// TestAddSellMoneyRejectsWhatCanNotBeMoney checks that only equipment tagged as money (see MoneyTag) that isn't a
+// container and that no entry already listed MergeMatches can be sell money, since buying spends only money so tagged,
+// and sell money that buying can't spend would be dead weight. Where the equipment comes from doesn't matter, and what
+// is listed is a copy of it, made as a drop into a list makes one.
 func TestAddSellMoneyRejectsWhatCanNotBeMoney(t *testing.T) {
 	c := check.New(t)
 	var s SheetSettings
 	silver := librarySourced(denomination("Silver Eagle", "20"))
-	unsourced := denomination("Homebrew Coin", "5")
+	carried := silver.Clone(LibraryFile{}, NewEntity(), nil, Reference)
+	carried.Quantity = fxp.Ten
+	carried.Equipped = false
+	preconfigured := denomination("Silver Eagle", "20")
+	preconfigured.Preconfigured = true
+	homebrew := denomination("Homebrew Coin", "5")
 	untagged := librarySourced(newEquipmentItem("Gold Crown", "100", "0"))
 	container := NewEquipment(nil, nil, true)
-	container.Source = silver.Source
 	container.Tags = []string{MoneyTag}
-	c.True(s.AddSellMoney(silver))
-	c.False(s.AddSellMoney(silver))
-	c.False(s.AddSellMoney(unsourced))
-	c.False(s.AddSellMoney(untagged), "an item that isn't tagged as money can't be spent and so isn't sell money")
-	c.False(s.AddSellMoney(container))
-	c.False(s.AddSellMoney(nil))
-	c.Equal([]Source{silver.Source}, s.SellMoney)
+	c.True(s.CanAddSellMoney(silver))
+	c.True(s.AddSellMoney(silver, LibraryFile{}))
+	c.False(s.CanAddSellMoney(silver))
+	c.False(s.AddSellMoney(silver, LibraryFile{}), "an item already listed isn't added again")
+	c.False(s.AddSellMoney(carried, LibraryFile{}), "nor a sheet's copy of it, whatever its quantity and equipped state")
+	c.False(s.AddSellMoney(preconfigured, LibraryFile{}), "nor one marked preconfigured, since the copy clears the mark")
+	c.True(s.AddSellMoney(homebrew, LibraryFile{}), "equipment from anywhere can be money")
+	c.False(s.AddSellMoney(untagged, LibraryFile{}), "an item that isn't tagged as money can't be spent and so isn't sell money")
+	c.False(s.AddSellMoney(container, LibraryFile{}))
+	c.False(s.AddSellMoney(nil, LibraryFile{}))
+	c.Equal(2, len(s.SellMoney))
+	c.Equal("Silver Eagle", s.SellMoney[0].Name)
+	c.True(s.SellMoney[0] != silver, "a copy is listed, not the item itself")
+	c.NotEqual(silver.TID, s.SellMoney[0].TID)
+	c.Equal(silver.Source, s.SellMoney[0].Source, "the copy keeps the item's Source")
+	c.Equal("Homebrew Coin", s.SellMoney[1].Name)
+	c.True(s.SellMoney[1].Source.IsZero(), "a copy of an item with no Source, from no library, has none")
+	c.False(s.SellMoney[1].Preconfigured)
+	c.Nil(s.SellMoney[1].DataOwner())
 }
 
 func moneyItem(name, value, quantity string) *Equipment {

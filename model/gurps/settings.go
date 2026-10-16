@@ -22,6 +22,7 @@ import (
 	"slices"
 	"strings"
 	"sync"
+	"sync/atomic"
 	"time"
 
 	"github.com/richardwilkes/gcs/v5/model/colors"
@@ -63,6 +64,13 @@ var (
 	// in Settings is shared that way: the other fields are UI-thread only, or are published for background use via
 	// SyncScriptExecTimeLimit and SyncGlobalSheetSettings.
 	closedLock sync.Mutex
+	// initializingGoroutine is the ID of the goroutine running GlobalSettings' initializer while it runs, and 0
+	// otherwise. Unmarshaling the settings can record closed states, as the open flags of legacy-format data held in
+	// them do, and IsClosed and SetClosedState would deadlock by calling GlobalSettings() from inside its initializer,
+	// so on that goroutine they use closedDuringInit instead (see closedStateMap), which the initializer folds into the
+	// settings once they are loaded.
+	initializingGoroutine atomic.Uint64
+	closedDuringInit      = make(map[string]int64)
 )
 
 // NavigatorSettings holds settings for the navigator view.
@@ -126,9 +134,12 @@ type Openable interface {
 // GlobalSettings returns the global settings.
 func GlobalSettings() *Settings {
 	globalOnce.Do(func() {
+		initializingGoroutine.Store(currentGoroutineID())
+		defer initializingGoroutine.Store(0)
 		xos.ExitIfErr(InitRollers())
 		globalSettings = loadSettingsOrDefaults(SettingsPath)
 		globalSettings.EnsureValidity()
+		globalSettings.foldClosedDuringInit()
 		// The private variants are used because the exported ones call GlobalSettings(), which would deadlock inside
 		// this once-initializer.
 		syncScriptExecTimeLimit(globalSettings.General)
@@ -395,12 +406,12 @@ func SetNodeOpen(node Openable, open bool) bool {
 
 // IsClosed returns true if the specified key is closed. Safe to call from any goroutine.
 func IsClosed(key string) bool {
-	settings := GlobalSettings()
+	states := closedStateMap()
 	closedLock.Lock()
 	defer closedLock.Unlock()
-	_, closed := settings.Closed[key]
+	_, closed := states[key]
 	if closed {
-		settings.Closed[key] = time.Now().Unix()
+		states[key] = time.Now().Unix()
 	}
 	return closed
 }
@@ -408,22 +419,40 @@ func IsClosed(key string) bool {
 // SetClosedState sets the current closed state for a key. Returns true if a change was made. Safe to call from any
 // goroutine.
 func SetClosedState(key string, closed bool) bool {
-	settings := GlobalSettings()
+	states := closedStateMap()
 	closedLock.Lock()
 	defer closedLock.Unlock()
-	_, wasClosed := settings.Closed[key]
+	_, wasClosed := states[key]
 	if wasClosed == closed {
 		if closed {
-			settings.Closed[key] = time.Now().Unix()
+			states[key] = time.Now().Unix()
 		}
 		return false
 	}
 	if closed {
-		settings.Closed[key] = time.Now().Unix()
+		states[key] = time.Now().Unix()
 	} else {
-		delete(settings.Closed, key)
+		delete(states, key)
 	}
 	return true
+}
+
+// closedStateMap returns the map the closed states are kept in: the global settings' map, or closedDuringInit on the
+// goroutine running GlobalSettings' initializer (see initializingGoroutine). It must be called before taking
+// closedLock, since loading the global settings takes it.
+func closedStateMap() map[string]int64 {
+	if id := initializingGoroutine.Load(); id != 0 && id == currentGoroutineID() {
+		return closedDuringInit
+	}
+	return GlobalSettings().Closed
+}
+
+// foldClosedDuringInit moves the closed states recorded while the settings were loading (see closedStateMap) into them.
+func (s *Settings) foldClosedDuringInit() {
+	closedLock.Lock()
+	defer closedLock.Unlock()
+	maps.Copy(s.Closed, closedDuringInit)
+	clear(closedDuringInit)
 }
 
 // IDForPDFTOC returns the ID for the specified PDF TOC entry.

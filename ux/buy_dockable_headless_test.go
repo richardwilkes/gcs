@@ -13,7 +13,6 @@ import (
 	"fmt"
 	"image/color"
 	"math"
-	"os"
 	"path/filepath"
 	"slices"
 	"testing"
@@ -320,18 +319,15 @@ func TestBuyDockableBuysTheSheetsOwnEquipment(t *testing.T) {
 	c.Equal(fxp.One, rope.Quantity, "the original's quantity is unchanged")
 }
 
-// buyTestMoneyLibrary writes Silver Eagles and Copper Pennies into a file of the user library and returns the sources
-// of the two, in that order.
-func buyTestMoneyLibrary(t *testing.T, c check.Checker) []gurps.Source {
-	t.Helper()
-	user := gurps.GlobalSettings().Libraries.User()
-	libFile := gurps.LibraryFile{Library: user.Key(), Path: "Buy Money" + gurps.EquipmentExt}
-	path := filepath.Join(user.Path(false), filepath.FromSlash(libFile.Path))
+// buyTestSellMoney returns a Silver Eagle and a Copper Penny, in that order, as a sheet's settings hold its sell money:
+// owned by no one, with a quantity of one, each with a source in a library file.
+func buyTestSellMoney() []*gurps.Equipment {
+	libFile := gurps.LibraryFile{Library: "Buy Money", Path: "Coins" + gurps.EquipmentExt}
 	eagle := buyTestItem(nil, "Silver Eagle", "20", 1, gurps.MoneyTag)
+	eagle.Source = gurps.Source{LibraryFile: libFile, TID: eagle.TID}
 	penny := buyTestItem(nil, "Copper Penny", "1", 1, gurps.MoneyTag)
-	c.NoError(os.MkdirAll(filepath.Dir(path), 0o750))
-	c.NoError(gurps.SaveEquipment([]*gurps.Equipment{eagle, penny}, path))
-	return []gurps.Source{{LibraryFile: libFile, TID: eagle.TID}, {LibraryFile: libFile, TID: penny.TID}}
+	penny.Source = gurps.Source{LibraryFile: libFile, TID: penny.TID}
+	return []*gurps.Equipment{eagle, penny}
 }
 
 // TestBuyDockableReturnsChange checks that an overpayment warns that the change can't be returned while the sheet has no
@@ -343,7 +339,7 @@ func TestBuyDockableReturnsChange(t *testing.T) {
 	screen, wnd, sheet := buyTestSheet(t, c, func(entity *gurps.Entity) []*gurps.Equipment {
 		return buyTestCoins(entity, 7, 0)[:1]
 	})
-	sources := buyTestMoneyLibrary(t, c)
+	sellMoney := buyTestSellMoney()
 	dagger := buyTestItem(nil, "Dagger", "15", 1)
 	library := buyTestLibrary(t, screen, "", dagger)
 	screen.Do(func() {
@@ -360,7 +356,7 @@ func TestBuyDockableReturnsChange(t *testing.T) {
 	c.Equal("", change, "without sell money, no change can be returned from an eagle")
 
 	screen.Do(func() {
-		sheet.Entity().SheetSettings.SellMoney = sources
+		sheet.Entity().SheetSettings.SellMoney = sellMoney
 		sheet.Rebuild(true)
 		change = describePayouts(buyDockableFor(sheet).planPayment(nil).change)
 	})
@@ -388,7 +384,7 @@ func TestBuyDockableReturnsChange(t *testing.T) {
 		pennySource = entity.CarriedEquipment[2].Source
 		daggerEquipped = entity.CarriedEquipment[1].Equipped
 	})
-	c.Equal(sources[1], pennySource, "the change comes from the sell money in the library")
+	c.Equal(sellMoney[1].Source, pennySource, "the change keeps the source of the sell money it is copied from")
 	c.False(daggerEquipped, "the item bought is carried unequipped")
 	c.Equal(1, len(record))
 	if len(record) == 1 {
@@ -968,45 +964,6 @@ func TestBuyDockableNameFollowsTheItemsWhileFocused(t *testing.T) {
 	}
 }
 
-// TestBuyDockableFollowsChangesToTheSellMoneyLibrary checks that the change follows the libraries while the dockable is up: a
-// sell money source whose library file doesn't exist yet can't return change, and once the file is written the next
-// sync returns change from it, as the entity's own lookup does.
-func TestBuyDockableFollowsChangesToTheSellMoneyLibrary(t *testing.T) {
-	c := check.New(t)
-	screen, _, sheet := buyTestSheet(t, c, func(entity *gurps.Entity) []*gurps.Equipment {
-		return buyTestCoins(entity, 7, 0)[:1]
-	})
-	user := gurps.GlobalSettings().Libraries.User()
-	libFile := gurps.LibraryFile{Library: user.Key(), Path: "Late Money" + gurps.EquipmentExt}
-	path := filepath.Join(user.Path(false), filepath.FromSlash(libFile.Path))
-	penny := buyTestItem(nil, "Copper Penny", "1", 1, gurps.MoneyTag)
-	dagger := buyTestItem(nil, "Dagger", "15", 1)
-	library := buyTestLibrary(t, screen, "", dagger)
-	screen.Do(func() {
-		sheet.Entity().SheetSettings.SellMoney = []gurps.Source{{LibraryFile: libFile, TID: penny.TID}}
-		showBuyDockable(sheet)
-	})
-	_, dropped := buyTestDrop(t, screen, sheet, library, dagger)
-	c.True(dropped)
-	change := func() (found int, change string) {
-		screen.Do(func() {
-			plan := buyDockableFor(sheet).planPayment(nil)
-			found, change = len(plan.sellMoney), describePayouts(plan.change)
-		})
-		return found, change
-	}
-	found, returned := change()
-	c.Equal(0, found, "the library file doesn't exist yet")
-	c.Equal("", returned, "so no change can be returned")
-
-	c.NoError(os.MkdirAll(filepath.Dir(path), 0o750))
-	c.NoError(gurps.SaveEquipment([]*gurps.Equipment{penny}, path))
-	screen.Do(func() { sheet.Rebuild(true) })
-	found, returned = change()
-	c.Equal(1, found, "the sell money is found once the file exists")
-	c.Equal("Copper Penny ×5", returned, "and the change comes from it")
-}
-
 // TestBuyDockableEnablesWhatItBuys checks that equipment copied into the buy dockable from a sheet where it was disabled, or
 // where a container held something disabled, is enabled on the way in, so that it is priced in full and carried
 // enabled, and that the original is left as it was.
@@ -1080,24 +1037,20 @@ func TestBuyDockableTotalSaturatesRatherThanWrapping(t *testing.T) {
 	c.False(state.finalizeOn, "the purchase can't be finalized")
 }
 
-// TestBuyDockableChangeFollowsEditsToTheSellMoneyLibrary checks that the change follows a change to the sell money in the
-// library that leaves its value alone, such as renaming the coin: the dockable looks the sell money up each time, so the
-// change it shows and hands over must be made of the copies that lookup returns, not of those an earlier lookup did.
-func TestBuyDockableChangeFollowsEditsToTheSellMoneyLibrary(t *testing.T) {
+// TestBuyDockableChangeFollowsEditsToTheSellMoney checks that the change follows a change to the sheet's sell money
+// that leaves its value alone, such as replacing a coin with one of another name: the dockable copies the sell money
+// each time, so the change it shows and hands over must be made of the copies the latest lookup returns, not of those
+// an earlier one did.
+func TestBuyDockableChangeFollowsEditsToTheSellMoney(t *testing.T) {
 	c := check.New(t)
 	screen, _, sheet := buyTestSheet(t, c, func(entity *gurps.Entity) []*gurps.Equipment {
 		return buyTestCoins(entity, 7, 0)[:1]
 	})
-	user := gurps.GlobalSettings().Libraries.User()
-	libFile := gurps.LibraryFile{Library: user.Key(), Path: "Renamed Money" + gurps.EquipmentExt}
-	path := filepath.Join(user.Path(false), filepath.FromSlash(libFile.Path))
 	penny := buyTestItem(nil, "Copper Penny", "1", 1, gurps.MoneyTag)
-	c.NoError(os.MkdirAll(filepath.Dir(path), 0o750))
-	c.NoError(gurps.SaveEquipment([]*gurps.Equipment{penny}, path))
 	dagger := buyTestItem(nil, "Dagger", "15", 1)
 	library := buyTestLibrary(t, screen, "", dagger)
 	screen.Do(func() {
-		sheet.Entity().SheetSettings.SellMoney = []gurps.Source{{LibraryFile: libFile, TID: penny.TID}}
+		sheet.Entity().SheetSettings.SellMoney = []*gurps.Equipment{penny}
 		showBuyDockable(sheet)
 	})
 	_, dropped := buyTestDrop(t, screen, sheet, library, dagger)
@@ -1106,13 +1059,13 @@ func TestBuyDockableChangeFollowsEditsToTheSellMoneyLibrary(t *testing.T) {
 	screen.Do(func() { before = describePayouts(buyDockableFor(sheet).planPayment(nil).change) })
 	c.Equal("Copper Penny ×5", before)
 
-	penny.Name = "Penny"
-	c.NoError(gurps.SaveEquipment([]*gurps.Equipment{penny}, path))
+	renamed := buyTestItem(nil, "Penny", "1", 1, gurps.MoneyTag)
 	screen.Do(func() {
+		sheet.Entity().SheetSettings.SellMoney = []*gurps.Equipment{renamed}
 		sheet.Rebuild(true)
 		after = describePayouts(buyDockableFor(sheet).planPayment(nil).change)
 	})
-	c.Equal("Penny ×5", after, "the change is made of the coin as the library now has it")
+	c.Equal("Penny ×5", after, "the change is made of the coin as the sheet's settings now hold it")
 	screen.Do(func() { buyDockableFor(sheet).finalize.Click() })
 	c.Equal([]string{"Silver Eagle ×6", "Dagger ×1", "Penny ×5"}, buyTestCarried(screen, sheet))
 }
@@ -1149,10 +1102,10 @@ func TestBuyDockableFinalizeClosesTheEditorsOfWhatItChanges(t *testing.T) {
 		rope = buyTestItem(entity, "Rope", "5", 1)
 		return []*gurps.Equipment{eagles, pile, purse, gloves, rope}
 	})
-	sources := buyTestMoneyLibrary(t, c)
+	sellMoney := buyTestSellMoney()
 	library := buyTestLibrary(t, screen, "", buyTestItem(nil, "Leather Gloves", "30", 1))
 	screen.Do(func() {
-		sheet.Entity().SheetSettings.SellMoney = sources
+		sheet.Entity().SheetSettings.SellMoney = sellMoney
 		for _, eqp := range []*gurps.Equipment{eagles, pile, purse, pursePennies, gloves, rope} {
 			EditEquipment(sheet, eqp, true)
 		}
@@ -1242,25 +1195,20 @@ func TestBuyDockableFinalizingLeavesAFocusElsewhereAlone(t *testing.T) {
 	c.Equal([]string{"Silver Eagle ×6", "Copper Penny ×11", "Dagger ×1"}, buyTestCarried(screen, sheet))
 }
 
-// TestBuyDockableFinalizesWithUnequippedSellMoney checks that a purchase returning change in a library coin saved without
-// being equipped, as the Dungeon Fantasy RPG coins are, is finalized: predicting where the change merges must not change
-// the coin, or the payment would no longer look like the one the user accepted.
+// TestBuyDockableFinalizesWithUnequippedSellMoney checks that a purchase returning change in a sell money coin held
+// unequipped, as copies of the Dungeon Fantasy RPG coins are, is finalized: predicting where the change merges must not
+// change the coin, or the payment would no longer look like the one the user accepted.
 func TestBuyDockableFinalizesWithUnequippedSellMoney(t *testing.T) {
 	c := check.New(t)
 	screen, _, sheet := buyTestSheet(t, c, func(entity *gurps.Entity) []*gurps.Equipment {
 		return buyTestCoins(entity, 7, 0)[:1]
 	})
-	user := gurps.GlobalSettings().Libraries.User()
-	libFile := gurps.LibraryFile{Library: user.Key(), Path: "Unequipped Change" + gurps.EquipmentExt}
-	path := filepath.Join(user.Path(false), filepath.FromSlash(libFile.Path))
 	penny := buyTestItem(nil, "Copper Penny", "1", 1, gurps.MoneyTag)
 	penny.Equipped = false
-	c.NoError(os.MkdirAll(filepath.Dir(path), 0o750))
-	c.NoError(gurps.SaveEquipment([]*gurps.Equipment{penny}, path))
 	dagger := buyTestItem(nil, "Dagger", "15", 1)
 	library := buyTestLibrary(t, screen, "", dagger)
 	screen.Do(func() {
-		sheet.Entity().SheetSettings.SellMoney = []gurps.Source{{LibraryFile: libFile, TID: penny.TID}}
+		sheet.Entity().SheetSettings.SellMoney = []*gurps.Equipment{penny}
 		showBuyDockable(sheet)
 	})
 	_, dropped := buyTestDrop(t, screen, sheet, library, dagger)
@@ -1808,16 +1756,8 @@ func TestPurchaseDialog(t *testing.T) {
 	c.True(state.okOn, "an overpayment can still be made")
 	click(dialog, unison.ModalResponseCancel)
 	c.False(ok, "canceling chooses nothing")
-	sources := buyTestMoneyLibrary(t, c)
-	missing := gurps.Source{LibraryFile: sources[0].LibraryFile, TID: "missing"}
-	screen.Do(func() { sheet.Entity().SheetSettings.SellMoney = []gurps.Source{missing} })
-	dialog, fields = payWithEagles("3")
-	state = read(dialog, fields)
-	c.Equal("$15 of change can't be returned from the money paid, and none of the sheet's sell money could be found in the libraries.",
-		state.note, "sell money that can't be found is told apart from none at all")
-	c.True(state.noteWarn)
-	click(dialog, unison.ModalResponseCancel)
-	screen.Do(func() { sheet.Entity().SheetSettings.SellMoney = sources[1:] })
+	sellMoney := buyTestSellMoney()
+	screen.Do(func() { sheet.Entity().SheetSettings.SellMoney = sellMoney[1:] })
 	dialog, fields = payWithEagles("3")
 	state = read(dialog, fields)
 	uxtest.CaptureScreen(t, c, screen, "purchase_change")
@@ -1825,7 +1765,7 @@ func TestPurchaseDialog(t *testing.T) {
 	c.True(state.noteIcon == svg.Info)
 	c.False(state.noteWarn)
 	click(dialog, unison.ModalResponseCancel)
-	screen.Do(func() { sheet.Entity().SheetSettings.SellMoney = sources[:1] })
+	screen.Do(func() { sheet.Entity().SheetSettings.SellMoney = sellMoney[:1] })
 	dialog, fields = payWithEagles("4")
 	state = read(dialog, fields)
 	c.Equal("Change will be returned as Silver Eagle ×1 ($20). $15 of change can't be returned with the sheet's sell money or the money paid.",
@@ -1840,4 +1780,19 @@ func TestPurchaseDialog(t *testing.T) {
 	c.False(state.noteWarn)
 	c.True(state.okOn)
 	click(dialog, unison.ModalResponseCancel)
+}
+
+// TestBuySellMoneyStateFollowsTheValue checks that the change cache sees a sell money denomination as changed when its
+// value changes though nothing gurps.Equipment.MergeMatches compares does, as a value scripted from the sheet can.
+func TestBuySellMoneyStateFollowsTheValue(t *testing.T) {
+	c := check.New(t)
+	entity := gurps.NewEntity()
+	coin := buyTestItem(entity, "Strength Coin", "$st", 1, gurps.MoneyTag)
+	c.Equal(fxp.Ten, coin.AdjustedValue(), "the coin is worth the character's ST")
+	state := newBuySellMoneyState(coin)
+	c.True(state.matches(coin))
+	entity.Attributes.Set["st"].SetMaximum(fxp.FromInteger(12))
+	entity.Recalculate()
+	c.Equal(fxp.FromInteger(12), coin.AdjustedValue())
+	c.False(state.matches(coin), "a denomination whose value changed no longer matches")
 }

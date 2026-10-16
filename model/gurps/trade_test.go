@@ -10,8 +10,6 @@
 package gurps
 
 import (
-	"os"
-	"path/filepath"
 	"reflect"
 	"slices"
 	"strings"
@@ -87,14 +85,13 @@ func TestMoneyItems(t *testing.T) {
 func TestRemoveSellMoney(t *testing.T) {
 	c := check.New(t)
 	var s SheetSettings
-	silver := librarySourced(denomination("Silver Eagle", "20"))
-	copper := librarySourced(denomination("Copper Penny", "1"))
-	c.True(s.AddSellMoney(silver))
-	c.True(s.AddSellMoney(copper))
-	c.True(s.RemoveSellMoney(silver.Source))
-	c.False(s.RemoveSellMoney(silver.Source))
-	c.False(s.RemoveSellMoney(Source{}))
-	c.Equal([]Source{copper.Source}, s.SellMoney)
+	c.True(s.AddSellMoney(denomination("Silver Eagle", "20"), LibraryFile{}))
+	c.True(s.AddSellMoney(denomination("Copper Penny", "1"), LibraryFile{}))
+	silver, copper := s.SellMoney[0], s.SellMoney[1]
+	c.True(s.RemoveSellMoney(silver.TID))
+	c.False(s.RemoveSellMoney(silver.TID))
+	c.False(s.RemoveSellMoney(""))
+	c.Equal(SellMoneyList{copper}, s.SellMoney)
 }
 
 // mergeBase returns a non-container with every field MergeMatches compares set, along with modifiers that nest.
@@ -594,77 +591,70 @@ func TestCommitPurchaseWithoutMerge(t *testing.T) {
 	c.Equal([]*ShoppingRecordEntry{refund, entry}, e.ShoppingRecord)
 }
 
-// writeMoneyLibrary saves a library equipment file holding a non-container with a modifier, and a container.
-func writeMoneyLibrary(t *testing.T) (libFile LibraryFile, silver, purse *Equipment) {
-	t.Helper()
-	libFile = LibraryFile{Library: "Test Library", Path: "Money/Coins" + EquipmentExt}
-	silver = withQuantity(withTags(newEquipmentItem("Silver Eagle", "20", "0.01 lb"), MoneyTag), "50")
-	silver.AddModifiers(NewEquipmentModifier(nil, nil, false))
-	purse = newContainerItem("Purse", "2")
-	p := filepath.Join(useTestLibrary(t, libFile.Library), filepath.FromSlash(libFile.Path))
-	if err := os.MkdirAll(filepath.Dir(p), 0o750); err != nil {
-		t.Fatal(err)
-	}
-	if err := SaveEquipment([]*Equipment{silver, purse}, p); err != nil {
-		t.Fatal(err)
-	}
-	return libFile, silver, purse
-}
-
-func TestEquipmentForSource(t *testing.T) {
-	c := check.New(t)
-	isolateUnownedSrcMatcher(t)
-	registerTestFileTypes(t, EquipmentExt)
-	libFile, silver, purse := writeMoneyLibrary(t)
-
-	found := EquipmentForSource(Source{LibraryFile: libFile, TID: silver.TID})
-	c.NotNil(found)
-	c.Equal("Silver Eagle", found.Name)
-	c.Equal(silver.TID, found.TID)
-	c.True(found == EquipmentForSource(Source{LibraryFile: libFile, TID: silver.TID}), "the library's cached copy")
-	c.Nil(EquipmentForSource(Source{LibraryFile: libFile, TID: purse.TID}), "a container isn't returned")
-	c.Nil(EquipmentForSource(Source{LibraryFile: libFile, TID: silver.Modifiers[0].TID}), "a modifier isn't returned")
-	c.Nil(EquipmentForSource(Source{LibraryFile: libFile, TID: tid.MustNewTID(kinds.Equipment)}))
-	c.Nil(EquipmentForSource(Source{Library: "Nowhere", Path: "x.eqp", TID: silver.TID}))
-	c.Nil(EquipmentForSource(Source{}))
-
-	done := BatchSourceMatches()
-	inBatch := EquipmentForSource(Source{LibraryFile: libFile, TID: silver.TID})
-	done()
-	c.NotNil(inBatch, "a batch of matches finds it too")
-	c.Equal("Silver Eagle", inBatch.Name)
-
-	var sm *SrcMatcher
-	c.Nil(sm.libraryEquipment(Source{LibraryFile: libFile, TID: silver.TID}), "a nil matcher finds nothing")
-}
-
+// TestSellMoneyItems checks that each sell money entry is handed out as a copy owned by the entity, with a quantity of
+// one and its modifiers, keeping the entry's Source and in no list, and that the entry and the item it was copied from
+// are left as they were. Entries that can't be money, which only a direct assignment can hold, are skipped.
 func TestSellMoneyItems(t *testing.T) {
 	c := check.New(t)
-	isolateUnownedSrcMatcher(t)
-	registerTestFileTypes(t, EquipmentExt)
-	libFile, silver, purse := writeMoneyLibrary(t)
-	src := Source{LibraryFile: libFile, TID: silver.TID}
-
+	libFile := LibraryFile{Library: "Test Library", Path: "Money/Coins" + EquipmentExt}
+	silver := withQuantity(withTags(newEquipmentItem("Silver Eagle", "20", "0.01 lb"), MoneyTag), "50")
+	silver.AddModifiers(NewEquipmentModifier(nil, nil, false))
 	e := NewEntity()
-	e.SheetSettings.SellMoney = []Source{
-		{LibraryFile: libFile, TID: tid.MustNewTID(kinds.Equipment)},
-		src,
-		{LibraryFile: libFile, TID: purse.TID},
-		{LibraryFile: libFile, TID: silver.Modifiers[0].TID},
-	}
+	c.True(e.SheetSettings.AddSellMoney(silver, libFile))
+	entry := e.SheetSettings.SellMoney[0]
+	src := Source{LibraryFile: libFile, TID: silver.TID}
+	c.Equal(src, entry.Source, "the entry points back at the item it was copied from")
+	e.SheetSettings.SellMoney = append(SellMoneyList{
+		nil,
+		withTags(newContainerItem("Purse", "2"), MoneyTag),
+		newEquipmentItem("Gold Crown", "100", "0"),
+	}, e.SheetSettings.SellMoney...)
 	items := e.SellMoneyItems()
-	c.Equal(1, len(items), "missing items, containers and modifiers are skipped")
+	c.Equal(1, len(items), "nil entries, containers and items not tagged as money are skipped")
 	money := items[0]
 	c.Equal("Silver Eagle", money.Name)
-	c.Equal(src, money.Source)
-	c.NotEqual(silver.TID, money.TID)
+	c.Equal(src, money.Source, "the copy keeps the entry's Source")
+	c.NotEqual(entry.TID, money.TID)
 	c.Equal(fxp.One, money.Quantity)
 	c.Equal(fxp.FromInteger(20), money.AdjustedValue())
 	c.True(money.DataOwner() == DataOwner(e))
 	c.Nil(money.Parent())
 	c.Equal(0, len(e.CarriedEquipment), "the copies aren't put in any list")
 	c.Equal(1, len(money.Modifiers))
-	c.Equal(fxp.FromInteger(50), e.SourceMatcher().libraryEquipment(src).Quantity, "the library's copy is untouched")
+	c.Nil(entry.DataOwner(), "the entry has no owner")
+	c.Equal(fxp.One, entry.Quantity, "the entry holds one of the coin, however many were copied")
+	c.Equal(fxp.FromInteger(50), silver.Quantity, "the item copied from is untouched")
+}
+
+// TestTradesLeaveTheSellMoneyEntriesAlone checks that paying out and returning change in the sell money, which marks
+// what is handed out as equipped and carries it, changes nothing about the entries the settings hold, since clones of
+// the settings share them.
+func TestTradesLeaveTheSellMoneyEntriesAlone(t *testing.T) {
+	c := check.New(t)
+	e := NewEntity()
+	penny := denomination("Copper Penny", "1")
+	penny.Equipped = false
+	c.True(e.SheetSettings.AddSellMoney(penny, LibraryFile{}))
+	entry := e.SheetSettings.SellMoney[0]
+	c.False(entry.Equipped)
+	knife := withQuantity(newEquipmentItem("Small Knife", "30", "1 lb"), "2")
+	carry(e, nil, knife)
+	when := mustTime(t, "2026-10-16T09:00:00Z")
+	payouts, paid := PayoutFor(fxp.FromInteger(15), e.SellMoneyItems())
+	c.Equal(fxp.FromInteger(15), paid)
+	e.CommitSale([]SaleItem{{Equipment: knife, Quantity: fxp.One}}, payouts, false, "", when)
+	c.Equal(2, len(e.CarriedEquipment))
+	c.True(e.CarriedEquipment[1].Equipped, "the pennies received are equipped")
+	c.Equal(fxp.FromInteger(15), e.CarriedEquipment[1].Quantity)
+	change, returned := e.ChangeFor(fxp.Three, e.SellMoneyItems(), nil)
+	c.Equal(fxp.Three, returned)
+	e.CommitPurchase(nil, nil, change, false, "", when)
+	c.Equal(3, len(e.CarriedEquipment))
+	c.True(e.CarriedEquipment[2].Equipped, "the change is equipped")
+	c.False(entry.Equipped, "the entry isn't marked equipped by being paid out")
+	c.Equal(fxp.One, entry.Quantity)
+	c.Nil(entry.DataOwner())
+	c.Equal(SellMoneyList{entry}, e.SheetSettings.SellMoney, "the entry is still the one listed")
 }
 
 // TestTradeQuantityCountsEveryCopyOfAContainer checks that equipment inside a container is counted once for each copy of
@@ -1172,25 +1162,6 @@ func TestCommitPurchaseEnablesWhatIsBought(t *testing.T) {
 		{Name: "Torch", Quantity: fxp.One, Value: fxp.Three},
 		{Name: "Kit", Quantity: fxp.One, Value: fxp.FromInteger(12)},
 	}, entry.Items, "the kit is priced with its bandage enabled")
-}
-
-// TestSellMoneyItemsSkipLibraryItemsNoLongerTaggedAsMoney checks that a sell money source whose library item has lost
-// the Money tag, which CanAddSellMoney requires, is skipped: were it paid out, MoneyItems would never list what was
-// received, so it couldn't be spent.
-func TestSellMoneyItemsSkipLibraryItemsNoLongerTaggedAsMoney(t *testing.T) {
-	c := check.New(t)
-	isolateUnownedSrcMatcher(t)
-	registerTestFileTypes(t, EquipmentExt)
-	libFile, silver, _ := writeMoneyLibrary(t)
-	src := Source{LibraryFile: libFile, TID: silver.TID}
-	e := NewEntity()
-	e.SheetSettings.SellMoney = []Source{src}
-	c.Equal(1, len(e.SellMoneyItems()), "the tagged coin is found")
-
-	silver.Tags = nil
-	p := filepath.Join(useTestLibrary(t, libFile.Library), filepath.FromSlash(libFile.Path))
-	c.NoError(SaveEquipment([]*Equipment{silver}, p))
-	c.Equal(0, len(e.SellMoneyItems()), "the coin is skipped once it is no longer tagged as money")
 }
 
 // TestTradeTakeKeepsToWhatCopiesThatCantBeSplitGiveUp checks that where the containers holding an item can't be split

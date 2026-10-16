@@ -11,8 +11,6 @@ package ux
 
 import (
 	"fmt"
-	"os"
-	"path/filepath"
 	"slices"
 	"strings"
 	"testing"
@@ -29,8 +27,9 @@ import (
 )
 
 // openSellTestSheet opens a new character sheet carrying the given equipment, which is made with the entity as its
-// owner, showing equipment values to two decimal places, padded, and paying sales out in the sell money given.
-func openSellTestSheet(t *testing.T, screen *unison.HeadlessScreen, sellMoney []gurps.Source, carried func(entity *gurps.Entity) []*gurps.Equipment) *Sheet {
+// owner, showing equipment values to two decimal places, padded, and paying sales out in the sell money given, which
+// its settings hold as given.
+func openSellTestSheet(t *testing.T, screen *unison.HeadlessScreen, sellMoney []*gurps.Equipment, carried func(entity *gurps.Entity) []*gurps.Equipment) *Sheet {
 	t.Helper()
 	sheet, ok := uxtest.OpenedByAction(t, screen, newCharacterSheetAction).(*Sheet)
 	if !ok {
@@ -181,7 +180,7 @@ func TestSellDialogSellsAndUndoes(t *testing.T) {
 	screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
 	money := newTradeTestMoney(t, c)
 	var sword, knife *gurps.Equipment
-	sheet := openSellTestSheet(t, screen, []gurps.Source{money.source(money.eagle), money.source(money.penny)},
+	sheet := openSellTestSheet(t, screen, []*gurps.Equipment{money.eagle, money.penny},
 		func(entity *gurps.Entity) []*gurps.Equipment {
 			sword = newTradeTestItem(entity, "Shortsword", "400", fxp.One)
 			knife = newTradeTestItem(entity, "Small Knife", "30", fxp.Two)
@@ -269,9 +268,8 @@ func TestSellDialogSellsAndUndoes(t *testing.T) {
 	})
 }
 
-// TestSellDialogGatesSale checks that Sell is unavailable, with the reason given, while the sheet has no sell money or
-// none of it can be found in the libraries, and while nothing is to be sold, and that canceling the dialog changes
-// nothing.
+// TestSellDialogGatesSale checks that Sell is unavailable, with the reason given, while the sheet has no sell money,
+// and while nothing is to be sold, and that canceling the dialog changes nothing.
 func TestSellDialogGatesSale(t *testing.T) {
 	c := check.New(t)
 	screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
@@ -298,17 +296,7 @@ func TestSellDialogGatesSale(t *testing.T) {
 	s.dismiss(c, s.cancel)
 	unchanged("with no sell money")
 
-	screen.Do(func() {
-		sheet.Entity().SheetSettings.SellMoney = []gurps.Source{{LibraryFile: money.libFile, TID: "missing"}}
-	})
-	s = openSellTestDialog(t, screen, wnd, sheet, knife)
-	c.False(s.sellEnabled(), "with sell money that can't be found, nothing can be sold")
-	c.Equal("None of the configured sell money could be found in the libraries.", s.warning(),
-		"the dialog says the sell money can't be found")
-	s.dismiss(c, s.cancel)
-	unchanged("with missing sell money")
-
-	screen.Do(func() { sheet.Entity().SheetSettings.SellMoney = []gurps.Source{money.source(money.penny)} })
+	screen.Do(func() { sheet.Entity().SheetSettings.SellMoney = []*gurps.Equipment{money.penny} })
 	s = openSellTestDialog(t, screen, wnd, sheet, knife)
 	c.True(s.sellEnabled(), "with sell money, the knives can be sold")
 	c.Equal("", s.warning())
@@ -328,7 +316,7 @@ func TestSellDialogClampsTheSheetsSellPercent(t *testing.T) {
 	screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
 	money := newTradeTestMoney(t, c)
 	var knife *gurps.Equipment
-	sheet := openSellTestSheet(t, screen, []gurps.Source{money.source(money.penny)},
+	sheet := openSellTestSheet(t, screen, []*gurps.Equipment{money.penny},
 		func(entity *gurps.Entity) []*gurps.Equipment {
 			knife = newTradeTestItem(entity, "Small Knife", "30", fxp.Two)
 			return []*gurps.Equipment{knife}
@@ -359,7 +347,7 @@ func TestSellDialogNamesWhatIsSold(t *testing.T) {
 	screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
 	money := newTradeTestMoney(t, c)
 	var sword, knife *gurps.Equipment
-	sheet := openSellTestSheet(t, screen, []gurps.Source{money.source(money.penny)},
+	sheet := openSellTestSheet(t, screen, []*gurps.Equipment{money.penny},
 		func(entity *gurps.Entity) []*gurps.Equipment {
 			sword = newTradeTestItem(entity, "Shortsword", "400", fxp.One)
 			knife = newTradeTestItem(entity, "Small Knife", "30", fxp.Two)
@@ -400,7 +388,7 @@ func TestSellDialogClosesEditorsOfWhatTheSaleChanges(t *testing.T) {
 	screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
 	money := newTradeTestMoney(t, c)
 	var sword, knives, backpack, rope, eagles, gems *gurps.Equipment
-	sheet := openSellTestSheet(t, screen, []gurps.Source{money.source(money.eagle), money.source(money.penny)},
+	sheet := openSellTestSheet(t, screen, []*gurps.Equipment{money.eagle, money.penny},
 		func(entity *gurps.Entity) []*gurps.Equipment {
 			sword = newTradeTestItem(entity, "Shortsword", "400", fxp.One)
 			knives = newTradeTestItem(entity, "Small Knife", "30", fxp.Two)
@@ -452,7 +440,7 @@ func TestSellDialogClosesTheEditorOfAContainerTheSaleSplits(t *testing.T) {
 	screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
 	money := newTradeTestMoney(t, c)
 	var box, gem, crate, torches *gurps.Equipment
-	sheet := openSellTestSheet(t, screen, []gurps.Source{money.source(money.eagle), money.source(money.penny)},
+	sheet := openSellTestSheet(t, screen, []*gurps.Equipment{money.eagle, money.penny},
 		func(entity *gurps.Entity) []*gurps.Equipment {
 			box = gurps.NewEquipment(entity, nil, true)
 			box.Name = "Box"
@@ -507,7 +495,7 @@ func TestSellDialogLeavesOutWhatIsSetToZero(t *testing.T) {
 	screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
 	money := newTradeTestMoney(t, c)
 	var sword, box, crate, tools *gurps.Equipment
-	sheet := openSellTestSheet(t, screen, []gurps.Source{money.source(money.penny)},
+	sheet := openSellTestSheet(t, screen, []*gurps.Equipment{money.penny},
 		func(entity *gurps.Entity) []*gurps.Equipment {
 			sword = newTradeTestItem(entity, "Shortsword", "400", fxp.One)
 			box = gurps.NewEquipment(entity, nil, true)
@@ -588,7 +576,7 @@ func TestSellDialogGatesSaleOnValidFields(t *testing.T) {
 	screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
 	money := newTradeTestMoney(t, c)
 	var sword, knives *gurps.Equipment
-	sheet := openSellTestSheet(t, screen, []gurps.Source{money.source(money.penny)},
+	sheet := openSellTestSheet(t, screen, []*gurps.Equipment{money.penny},
 		func(entity *gurps.Entity) []*gurps.Equipment {
 			sword = newTradeTestItem(entity, "Shortsword", "400", fxp.One)
 			knives = newTradeTestItem(entity, "Small Knife", "30", fxp.Two)
@@ -617,7 +605,7 @@ func TestSellDialogRefusesPastedQuantitiesAboveTheMaximum(t *testing.T) {
 	screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
 	money := newTradeTestMoney(t, c)
 	var knives *gurps.Equipment
-	sheet := openSellTestSheet(t, screen, []gurps.Source{money.source(money.penny)},
+	sheet := openSellTestSheet(t, screen, []*gurps.Equipment{money.penny},
 		func(entity *gurps.Entity) []*gurps.Equipment {
 			knives = newTradeTestItem(entity, "Small Knife", "30", fxp.FromInteger(11))
 			return []*gurps.Equipment{knives}
@@ -646,7 +634,7 @@ func TestSellSkipsDisabledEquipment(t *testing.T) {
 	screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
 	money := newTradeTestMoney(t, c)
 	var knife, dagger, sack, gem *gurps.Equipment
-	sheet := openSellTestSheet(t, screen, []gurps.Source{money.source(money.penny)},
+	sheet := openSellTestSheet(t, screen, []*gurps.Equipment{money.penny},
 		func(entity *gurps.Entity) []*gurps.Equipment {
 			knife = newTradeTestItem(entity, "Small Knife", "30", fxp.Two)
 			dagger = newTradeTestItem(entity, "Dagger", "20", fxp.One)
@@ -698,7 +686,7 @@ func TestSellDialogListsWhatAContainerHolds(t *testing.T) {
 	screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
 	money := newTradeTestMoney(t, c)
 	var pack, sack, crate, knife, box *gurps.Equipment
-	sheet := openSellTestSheet(t, screen, []gurps.Source{money.source(money.penny)},
+	sheet := openSellTestSheet(t, screen, []*gurps.Equipment{money.penny},
 		func(entity *gurps.Entity) []*gurps.Equipment {
 			container := func(parent *gurps.Equipment, name string, quantity fxp.Int, children ...*gurps.Equipment) *gurps.Equipment {
 				eqp := gurps.NewEquipment(entity, parent, true)
@@ -779,7 +767,7 @@ func TestSellDialogLinesUpTheList(t *testing.T) {
 	screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
 	money := newTradeTestMoney(t, c)
 	var items []*gurps.Equipment
-	sheet := openSellTestSheet(t, screen, []gurps.Source{money.source(money.penny)},
+	sheet := openSellTestSheet(t, screen, []*gurps.Equipment{money.penny},
 		func(entity *gurps.Entity) []*gurps.Equipment {
 			for i := range maxTradeRowsShown + 5 {
 				items = append(items, newTradeTestItem(entity, fmt.Sprintf("Item %d", i+1), "10", fxp.One))
@@ -824,7 +812,7 @@ func TestSellDialogShowsTheSaleAgainWhenASavedEditorChangesIt(t *testing.T) {
 	screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
 	money := newTradeTestMoney(t, c)
 	var knives *gurps.Equipment
-	sheet := openSellTestSheet(t, screen, []gurps.Source{money.source(money.penny)},
+	sheet := openSellTestSheet(t, screen, []*gurps.Equipment{money.penny},
 		func(entity *gurps.Entity) []*gurps.Equipment {
 			knives = newTradeTestItem(entity, "Small Knife", "30", fxp.Ten)
 			return []*gurps.Equipment{knives}
@@ -877,24 +865,19 @@ func TestSellDialogShowsTheSaleAgainWhenASavedEditorChangesIt(t *testing.T) {
 }
 
 // TestSellDialogClosesTheEditorOfMoneyAnUnequippedCoinMergesInto checks that the dialog predicts the merge of a payout
-// as the sale makes it: a library coin saved without being equipped, as the Dungeon Fantasy RPG coins are, still merges
+// as the sale makes it: a sell money coin held unequipped, as copies of the Dungeon Fantasy RPG coins are, still merges
 // into the equipped pile carried, since the equipped state plays no part in matching, so the editor open on the pile is
 // closed.
 func TestSellDialogClosesTheEditorOfMoneyAnUnequippedCoinMergesInto(t *testing.T) {
 	c := check.New(t)
 	screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
-	user := gurps.GlobalSettings().Libraries.User()
-	libFile := gurps.LibraryFile{Library: user.Key(), Path: "Unequipped Money" + gurps.EquipmentExt}
 	coin := newTradeTestItem(nil, "Silver Coin", "1", fxp.One, gurps.MoneyTag)
 	coin.Equipped = false
-	path := filepath.Join(user.Path(false), libFile.Path)
-	c.NoError(os.MkdirAll(filepath.Dir(path), 0o750))
-	c.NoError(gurps.SaveEquipment([]*gurps.Equipment{coin}, path))
 	var dagger, pile *gurps.Equipment
-	sheet := openSellTestSheet(t, screen, []gurps.Source{{LibraryFile: libFile, TID: coin.TID}},
+	sheet := openSellTestSheet(t, screen, []*gurps.Equipment{coin},
 		func(entity *gurps.Entity) []*gurps.Equipment {
 			dagger = newTradeTestItem(entity, "Dagger", "20", fxp.One)
-			pile = coin.Clone(libFile, entity, nil, gurps.Reference)
+			pile = coin.Clone(gurps.LibraryFile{}, entity, nil, gurps.Reference)
 			pile.Quantity = fxp.FromInteger(50)
 			pile.Equipped = true
 			return []*gurps.Equipment{dagger, pile}
@@ -927,7 +910,7 @@ func TestSellDialogTotalSaturatesRatherThanWrapping(t *testing.T) {
 	screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
 	money := newTradeTestMoney(t, c)
 	var hoards []*gurps.Equipment
-	sheet := openSellTestSheet(t, screen, []gurps.Source{money.source(money.penny)},
+	sheet := openSellTestSheet(t, screen, []*gurps.Equipment{money.penny},
 		func(entity *gurps.Entity) []*gurps.Equipment {
 			hoards = make([]*gurps.Equipment, 103)
 			for i := range hoards {
@@ -958,7 +941,7 @@ func TestSellDialogKeepsQuantitiesToWhatTheSaleTakes(t *testing.T) {
 	screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
 	money := newTradeTestMoney(t, c)
 	var box, gem *gurps.Equipment
-	sheet := openSellTestSheet(t, screen, []gurps.Source{money.source(money.penny)},
+	sheet := openSellTestSheet(t, screen, []*gurps.Equipment{money.penny},
 		func(entity *gurps.Entity) []*gurps.Equipment {
 			box = gurps.NewEquipment(entity, nil, true)
 			box.Name = "Box"
