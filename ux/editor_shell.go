@@ -161,6 +161,26 @@ func (s *editorShell) placeInDock(id tid.TID) {
 	PlaceInDock(s.editor(), group, false)
 }
 
+// focusAtStart lays out the editor's window before giving p the focus, so that p scrolls within the view it will have,
+// then scrolls back as far left as keeps the start of the focused panel in sight, up to half the view's width of it.
+// Selecting a field's text on focus scrolls to the end of that text instead.
+func (s *editorShell) focusAtStart(p *unison.Panel) {
+	wnd := s.Window()
+	if wnd == nil {
+		return
+	}
+	wnd.ValidateLayout()
+	p.RequestFocus()
+	h, v := s.scroll.Position()
+	if focus := wnd.CurrentFocus(); focus != nil {
+		view := s.scroll.ContentView()
+		r := focus.RectTo(focus.ContentRect(true), view)
+		width := view.ContentRect(false).Width
+		h = max(h+r.X+min(r.Width, width/2)-width, 0)
+	}
+	s.scroll.SetPosition(h, v)
+}
+
 // enableApplyAndCancel enables the Apply and Discard buttons when there are changes to apply and disables them when
 // there are none, returning what it was given so that a Modified method can end with it.
 func (s *editorShell) enableApplyAndCancel(modified bool) bool {
