@@ -210,6 +210,16 @@ func stylePill[V comparable](pill *unison.PopupMenu[V], color *unison.ThemeColor
 	desc := pill.Font.Descriptor()
 	desc.Weight = weight.Bold
 	pill.Font = desc.Font()
+	// A disabled popup dims its text but not its background, which as the pill's color would leave it looking live.
+	draw := pill.DrawCallback
+	dimmed := &unison.ColorFilteredInk{OriginalInk: color, ColorFilter: unison.Grayscale30Filter()}
+	pill.DrawCallback = func(gc *unison.Canvas, dirty geom.Rect) {
+		if !pill.Enabled() {
+			pill.BackgroundInk = dimmed
+			defer func() { pill.BackgroundInk = color }()
+		}
+		draw(gc, dirty)
+	}
 }
 
 // group returns the panel for a group: its head, over its children hanging from a rail in the head's color. Its more

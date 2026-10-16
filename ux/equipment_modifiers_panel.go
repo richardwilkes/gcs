@@ -22,7 +22,7 @@ type equipmentModifiersPanel struct {
 // it.
 func newEquipmentModifiersPanel(cmdRoot Rebuildable, owner gurps.DataOwner, equipment *gurps.Equipment, modifiers *[]*gurps.EquipmentModifier) *equipmentModifiersPanel {
 	p := &equipmentModifiersPanel{}
-	p.init(p, owner, modifiers, NewEquipmentModifiersProvider(p, true), "equipment-modifiers-"+uuid.New().String())
+	p.init(p, cmdRoot, owner, modifiers, NewEquipmentModifiersProvider(p, true), "equipment-modifiers-"+uuid.New().String())
 	p.attach = func(list []*gurps.EquipmentModifier) { gurps.AttachModifiers(equipment, list) }
 	p.installNewItemHandler(cmdRoot, NewEquipmentModifierItemID, NoItemVariant)
 	p.installNewItemHandler(cmdRoot, NewEquipmentContainerModifierItemID, ContainerItemVariant)
