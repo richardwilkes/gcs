@@ -22,6 +22,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/selector"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/selfctrl"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/stdmg"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/wsel"
 	"github.com/richardwilkes/gcs/v5/model/nameable"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/toolbox/v2/xhash"
@@ -44,38 +45,58 @@ var _ Override = &SelectorOverride{}
 // that field (see SelectorFieldDescriptorFor for the field's suggested states). This subsumes what would otherwise be a
 // separate feature type per field — damage type is just Field == selector.WeaponDamageType.
 //
-// Matching is a self-contained name/usage/tags comparison, with one matcher per scope (MatchesWeapon, MatchesTrait).
-// Adding a field that lives on some other kind of node means giving that scope its own matcher and resolve site; the
-// Override design (priority + specificity ladder, tooltip contest) is unchanged.
+// Matching is a self-contained criteria comparison, with one matcher per scope. A trait-scoped field matches traits by
+// name and tags (MatchesTrait). A weapon-scoped field selects weapons the way a WeaponBonus does, by SelectionType: the
+// weapons used with a required skill (matchesRequiredSkill), the weapons of the item carrying the override
+// (matchesThisWeapon), or the weapons with a name (MatchesWeapon). Adding a field that lives on some other kind of node
+// means giving that scope its own matcher and resolve site; the Override design (priority + specificity ladder, tooltip
+// contest) is unchanged.
 type SelectorOverride struct {
 	SelectorOverrideData
 	BonusOwner
 }
 
-// SelectorOverrideData is the persisted portion.
+// SelectorOverrideData is the persisted portion. SelectionType says how a weapon-scoped override selects its weapons
+// and is ignored by a trait-scoped one. The specialization and relative level criteria only take part when selecting
+// by required skill; the usage criterion does in every selection, unlike a weapon bonus's.
 type SelectorOverrideData struct { //nolint:govet // Field order is kept readable for the on-disk JSON rather than packed
 	Type feature.Type `json:"type"`
 	FeatureSwitch
-	Field         selector.Field `json:"field"`
-	Priority      int            `json:"priority,omitzero"`
-	Value         string         `json:"value"`
-	NameCriteria  criteria.Text  `json:"name,omitzero"`
-	UsageCriteria criteria.Text  `json:"usage,omitzero"`
-	TagsCriteria  criteria.Text  `json:"tags,omitzero"`
+	Field                  selector.Field  `json:"field"`
+	Priority               int             `json:"priority,omitzero"`
+	Value                  string          `json:"value"`
+	SelectionType          wsel.Type       `json:"selection_type"`
+	NameCriteria           criteria.Text   `json:"name,omitzero"`
+	SpecializationCriteria criteria.Text   `json:"specialization,omitzero"`
+	UsageCriteria          criteria.Text   `json:"usage,omitzero"`
+	TagsCriteria           criteria.Text   `json:"tags,omitzero"`
+	RelativeLevelCriteria  criteria.Number `json:"level,omitzero"`
 }
 
-// NewSelectorOverride creates a new SelectorOverride targeting the given field.
+// NewSelectorOverride creates a new SelectorOverride targeting the given field. A weapon-scoped one starts out
+// selecting weapons by their required skill, as a new weapon bonus does.
 func NewSelectorOverride(field selector.Field) *SelectorOverride {
 	var o SelectorOverride
 	o.Type = feature.SelectorOverride
 	o.Field = field
+	o.SelectionType = wsel.WithName
+	if o.weaponScoped() {
+		o.SelectionType = wsel.WithRequiredSkill
+	}
 	o.NameCriteria.Compare = criteria.IsText
+	o.SpecializationCriteria.Compare = criteria.AnyText
 	o.UsageCriteria.Compare = criteria.AnyText
 	o.TagsCriteria.Compare = criteria.AnyText
+	o.RelativeLevelCriteria.Compare = criteria.AnyNumber
 	if d := SelectorFieldDescriptorFor(field); len(d.SuggestedStates) != 0 {
 		o.Value = d.SuggestedStates[0]
 	}
 	return &o
+}
+
+// weaponScoped reports whether the override's field lives on weapons, in which case SelectionType says which ones.
+func (o *SelectorOverride) weaponScoped() bool {
+	return SelectorFieldDescriptorFor(o.Field).Scope != SelectorScopeTrait
 }
 
 // FeatureType implements Feature.
@@ -88,14 +109,19 @@ func (o *SelectorOverride) Clone() Feature {
 	return clonePtr(o)
 }
 
-// FillWithNameableKeys implements Feature.
+// FillWithNameableKeys implements Feature. Only the criteria the override matches on are consulted.
 func (o *SelectorOverride) FillWithNameableKeys(m, existing map[string]string) {
-	nameable.Extract(
-		m, existing,
-		o.NameCriteria.Qualifier,
-		o.UsageCriteria.Qualifier,
-		o.TagsCriteria.Qualifier,
-	)
+	switch {
+	case !o.weaponScoped():
+		nameable.Extract(m, existing, o.NameCriteria.Qualifier, o.TagsCriteria.Qualifier)
+	case o.SelectionType == wsel.ThisWeapon:
+		nameable.Extract(m, existing, o.UsageCriteria.Qualifier)
+	case o.SelectionType == wsel.WithName:
+		nameable.Extract(m, existing, o.NameCriteria.Qualifier, o.UsageCriteria.Qualifier, o.TagsCriteria.Qualifier)
+	default:
+		nameable.Extract(m, existing, o.NameCriteria.Qualifier, o.SpecializationCriteria.Qualifier,
+			o.UsageCriteria.Qualifier, o.TagsCriteria.Qualifier)
+	}
 }
 
 // OverridePriority implements Override.
@@ -105,14 +131,27 @@ func (o *SelectorOverride) OverridePriority() int {
 
 // OverrideSpecificity implements Override. Each criterion that actually constrains something (isn't "any") makes the
 // match one notch more specific, so a rule that pins name+usage out-ranks one that only pins name. Only the criteria
-// the field's scope actually matches on are counted -- a trait-scoped override never consults the usage criterion (see
-// MatchesTrait), so a leftover usage criterion must not win a tie-break it doesn't constrain.
+// the override actually matches on are counted -- a trait-scoped override never consults the usage criterion (see
+// MatchesTrait), and a weapon-scoped one consults the specialization and relative skill level only when selecting by
+// required skill -- so a leftover criterion must not win a tie-break it doesn't constrain. An override selecting the
+// weapons of its own item pins their name and tags by identity, so it counts as having pinned both.
 func (o *SelectorOverride) OverrideSpecificity() int {
-	list := []criteria.Text{o.NameCriteria, o.TagsCriteria}
-	if SelectorFieldDescriptorFor(o.Field).Scope != SelectorScopeTrait {
-		list = append(list, o.UsageCriteria)
-	}
+	var list []criteria.Text
 	specificity := 0
+	switch {
+	case !o.weaponScoped():
+		list = []criteria.Text{o.NameCriteria, o.TagsCriteria}
+	case o.SelectionType == wsel.ThisWeapon:
+		specificity = 2
+		list = []criteria.Text{o.UsageCriteria}
+	case o.SelectionType == wsel.WithName:
+		list = []criteria.Text{o.NameCriteria, o.UsageCriteria, o.TagsCriteria}
+	default:
+		list = []criteria.Text{o.NameCriteria, o.SpecializationCriteria, o.UsageCriteria, o.TagsCriteria}
+		if !o.RelativeLevelCriteria.IsZero() {
+			specificity++
+		}
+	}
 	for _, c := range list {
 		if !c.IsZero() {
 			specificity++
@@ -121,14 +160,33 @@ func (o *SelectorOverride) OverrideSpecificity() int {
 	return specificity
 }
 
-// MatchesWeapon returns true if this override's criteria match the given weapon. The criteria are filled from the
-// override owner's substitutions, as with any bonus. The caller is responsible for checking that the override targets
-// the field it is interested in.
+// MatchesWeapon returns true if this override's name, usage and tag criteria match the given weapon, which is how an
+// override selecting weapons by name picks them. The criteria are filled from the override owner's substitutions, as
+// with any bonus. The caller is responsible for checking that the override targets the field it is interested in.
 func (o *SelectorOverride) MatchesWeapon(w *Weapon) bool {
 	replacements := bonusReplacements(o)
 	return o.NameCriteria.Matches(replacements, w.String()) &&
 		o.UsageCriteria.Matches(replacements, w.UsageWithReplacements()) &&
 		o.TagsCriteria.MatchesList(replacements, w.Owner.TagList()...)
+}
+
+// matchesThisWeapon returns true if this override, carried by the weapon's owner and selecting that owner's weapons,
+// applies to the given weapon: only the usage criterion takes part.
+func (o *SelectorOverride) matchesThisWeapon(w *Weapon) bool {
+	return o.UsageCriteria.Matches(bonusReplacements(o), w.UsageWithReplacements())
+}
+
+// matchesRequiredSkill returns true if this override, selecting weapons by their required skill, matches a weapon
+// with the given usage and tags that is used with the named skill, which is empty when the weapon uses none. rsl
+// supplies that skill's relative level, and is only called when the relative level criterion constrains it, since
+// finding it means walking the skills.
+func (o *SelectorOverride) matchesRequiredSkill(name, specialization, usage string, tags []string, rsl func() fxp.Int) bool {
+	replacements := bonusReplacements(o)
+	return matchesRequiredSkillName(o.NameCriteria, replacements, name) &&
+		o.SpecializationCriteria.Matches(replacements, specialization) &&
+		o.UsageCriteria.Matches(replacements, usage) &&
+		o.TagsCriteria.MatchesList(replacements, tags...) &&
+		(o.RelativeLevelCriteria.IsZero() || o.RelativeLevelCriteria.Matches(rsl()))
 }
 
 // MatchesTrait returns true if this override's criteria match the given trait. Traits have no usage, so only the name
@@ -154,11 +212,17 @@ func (o *SelectorOverride) Describe(_ *Entity, replacements map[string]string, e
 		value = em(value)
 	}
 	var target string
-	if d.Scope == SelectorScopeTrait {
+	switch {
+	case d.Scope == SelectorScopeTrait:
 		target = describeTarget(i18n.Text("traits named %s"), i18n.Text("traits"), i18n.Text("whose name"),
 			o.NameCriteria, replacements, em) + describeTags(o.TagsCriteria, replacements, em)
-	} else {
+	case o.SelectionType == wsel.ThisWeapon:
+		target = i18n.Text("this weapon") + describeWhose(i18n.Text("when its usage"), o.UsageCriteria, replacements, em)
+	case o.SelectionType == wsel.WithName:
 		target = describeNamedWeapons(o.NameCriteria, o.UsageCriteria, o.TagsCriteria, replacements, em)
+	default:
+		target = describeSkillSelectedWeapons(o.NameCriteria, o.SpecializationCriteria, o.UsageCriteria,
+			o.TagsCriteria, o.RelativeLevelCriteria, replacements, em)
 	}
 	return describeSwitchable(o.Switchable, i18n.Text("Sets %s to %s on %s (priority %d)",
 		em(o.Field.String()), value, target, o.Priority))
@@ -175,9 +239,12 @@ func (o *SelectorOverride) Hash(h hash.Hash) {
 	xhash.Num8(h, o.Field)
 	xhash.Num64(h, int64(o.Priority))
 	xhash.StringWithLen(h, o.Value)
+	xhash.Num8(h, o.SelectionType)
 	o.NameCriteria.Hash(h)
+	o.SpecializationCriteria.Hash(h)
 	o.UsageCriteria.Hash(h)
 	o.TagsCriteria.Hash(h)
+	o.RelativeLevelCriteria.Hash(h)
 }
 
 // MarshalJSONTo implements json.MarshalerTo.
@@ -185,8 +252,10 @@ func (o *SelectorOverride) MarshalJSONTo(enc *jsontext.Encoder) error {
 	return json.MarshalEncode(enc, &o.SelectorOverrideData)
 }
 
-// UnmarshalJSONFrom implements json.UnmarshalerFrom.
+// UnmarshalJSONFrom implements json.UnmarshalerFrom. Before there was a selection type, an override selected weapons
+// by name, so a file without one reads as that.
 func (o *SelectorOverride) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
+	o.SelectionType = wsel.WithName
 	return json.UnmarshalDecode(dec, &o.SelectorOverrideData)
 }
 

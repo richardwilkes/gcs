@@ -18,6 +18,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/attack"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/selector"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/stdmg"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/wsel"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/toolbox/v2/xbytes"
 )
@@ -35,6 +36,7 @@ func newStrengthBasisWeapon(melee bool, tkLevels int, overrideTo string) *gurps.
 	owner.Weapons = []*gurps.Weapon{w}
 	if overrideTo != "" {
 		override := gurps.NewSelectorOverride(selector.WeaponDamageStrengthBasis)
+		override.SelectionType = wsel.WithName
 		override.Value = overrideTo
 		override.NameCriteria.Compare = criteria.AnyText
 		owner.Features = append(owner.Features, override)

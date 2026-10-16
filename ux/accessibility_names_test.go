@@ -24,6 +24,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/stlimit"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/study"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/traitsel"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/wsel"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/gcs/v5/ux/uxtest"
 	"github.com/richardwilkes/toolbox/v2/check"
@@ -329,8 +330,11 @@ func seedEveryFeatureControl(list gurps.Features) {
 			f.TagsCriteria = on
 			f.RelativeLevelCriteria = criteria.Number{Compare: criteria.AtLeastNumber, Qualifier: fxp.One}
 		case *gurps.SelectorOverride:
+			f.SelectionType = wsel.WithRequiredSkill
+			f.SpecializationCriteria = on
 			f.UsageCriteria = on
 			f.TagsCriteria = on
+			f.RelativeLevelCriteria = criteria.Number{Compare: criteria.AtLeastNumber, Qualifier: fxp.One}
 		default:
 		}
 	}

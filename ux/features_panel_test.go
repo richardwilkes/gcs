@@ -1152,7 +1152,9 @@ func TestFeaturesPanelSelectorFieldChange(t *testing.T) {
 	entity := gurps.NewEntity()
 	owner := gurps.NewTrait(entity, nil, false)
 	override := gurps.NewSelectorOverride(selector.WeaponDamageType)
+	override.SpecializationCriteria = criteria.Text{Compare: criteria.IsText, Qualifier: "Rapier"}
 	override.UsageCriteria = criteria.Text{Compare: criteria.IsText, Qualifier: "Thrown"}
+	override.RelativeLevelCriteria = criteria.Number{Compare: criteria.AtLeastNumber, Qualifier: fxp.One}
 	override.SetOwner(owner)
 	features := gurps.Features{override}
 	p, _ := showFeaturesPanel(t, screen, entity, owner, &features, false)
@@ -1175,8 +1177,45 @@ func TestFeaturesPanelSelectorFieldChange(t *testing.T) {
 	}
 	c.Equal(want, override.Value, "the value starts over")
 	c.Equal(criteria.Text{Compare: criteria.AnyText}, override.UsageCriteria, "the usage criterion is cleared")
+	c.Equal(criteria.Text{Compare: criteria.AnyText}, override.SpecializationCriteria, "so is the specialization")
+	c.Equal(criteria.Number{Compare: criteria.AnyNumber}, override.RelativeLevelCriteria, "and the relative skill level")
 	c.Equal(traitField, lastSelectorFieldUsed)
-	screen.Do(func() { c.Nil(p.FindRefKey("0:add usage"), "and isn't offered") })
+	screen.Do(func() {
+		c.Nil(p.FindRefKey("0:add usage"), "and isn't offered")
+		c.Nil(p.FindRefKey("0:selection"), "a trait-scoped override has no selection")
+		c.NotNil(p.FindRefKey("0:name"), "but names its traits")
+	})
+}
+
+// TestFeaturesPanelSelectorSelection checks that a weapon-scoped selector override offers the selection a weapon bonus
+// does, with the chips of each: specialization, usage, tags and relative skill level when selected by required skill,
+// usage alone for this weapon, which also drops the name, and usage and tags when selected by name.
+func TestFeaturesPanelSelectorSelection(t *testing.T) {
+	c := check.New(t)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
+	entity := gurps.NewEntity()
+	owner := gurps.NewTrait(entity, nil, false)
+	override := gurps.NewSelectorOverride(selector.WeaponDamageType)
+	override.SetOwner(owner)
+	features := gurps.Features{override}
+	c.Equal(wsel.WithRequiredSkill, override.SelectionType, "precondition: a new override is selected by skill")
+	p, _ := showFeaturesPanel(t, screen, entity, owner, &features, false)
+	offered := func(keys ...string) {
+		for _, key := range []string{"add specialization", "add usage", "add tag", "add level", "name"} {
+			c.Equal(slices.Contains(keys, key), p.FindRefKey("0:"+key) != nil, "%v offers %s", override.SelectionType, key)
+		}
+	}
+	screen.Do(func() { p.toggle("0") })
+	screen.Do(func() {
+		c.NotNil(p.FindRefKey("0:selection"), "a weapon-scoped override offers the selection")
+		offered("add specialization", "add usage", "add tag", "add level", "name")
+	})
+	screen.Do(func() { featuresPopup[wsel.Type](c, p, "0:selection").Select(wsel.ThisWeapon) })
+	c.Equal(wsel.ThisWeapon, override.SelectionType)
+	screen.Do(func() { offered("add usage") })
+	screen.Do(func() { featuresPopup[wsel.Type](c, p, "0:selection").Select(wsel.WithName) })
+	c.Equal(wsel.WithName, override.SelectionType)
+	screen.Do(func() { offered("add usage", "add tag", "name") })
 }
 
 // TestFeaturesPanelWeaponDamageBonus checks that the amount of a weapon damage bonus takes a dice specification as well

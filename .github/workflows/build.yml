@@ -88,9 +88,8 @@ jobs:
           go-version-file: go.mod
           cache: true
 
-      # Installed through the action rather than build.sh --fmt for the same reason the lint job does it that way: the
-      # upstream install.sh that build.sh drives fails its checksum verification for unauthenticated release downloads
-      # in CI. The action has no input for the fmt subcommand, so it only installs and the check runs as its own step.
+      # Installed through the action rather than build.sh --fmt for the same reason the lint job does it that way. The
+      # action has no input for the fmt subcommand, so it only installs and the check runs as its own step.
       - name: Install golangci-lint
         uses: golangci/golangci-lint-action@v9
         with:
@@ -126,8 +125,8 @@ jobs:
           go-version-file: go.mod
           cache: true
 
-      # Lint via the official action rather than build.sh's --lint step: the latter downloads golangci-lint through its
-      # upstream install.sh, whose checksum verification fails for unauthenticated release downloads in CI.
+      # Lint via the official action rather than build.sh's --lint step: the action is the supported way to run
+      # golangci-lint under GitHub Actions and caches the binary between runs.
       - name: Lint
         uses: golangci/golangci-lint-action@v9
         env:

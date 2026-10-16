@@ -318,7 +318,7 @@ func weaponBonusNoun(featureType feature.Type) string {
 }
 
 // Describe implements Feature. A weapon switch describes the flag it sets, and any other weapon bonus the amount it
-// gives. A relative skill level of "at least 0", the default, is left out.
+// gives. A relative skill level criterion that is "is anything", the default, is left out.
 func (w *WeaponBonus) Describe(_ *Entity, replacements map[string]string, em func(string) string) string {
 	if w.Type == feature.WeaponSwitch {
 		flag := i18n.Text("%s flag", em(w.SwitchType.String()))
@@ -359,17 +359,24 @@ func (w *WeaponBonus) describeWeapons(noun string, replacements map[string]strin
 		return i18n.Text("the %s of %s", noun,
 			describeNamedWeapons(w.NameCriteria, w.SpecializationCriteria, w.TagsCriteria, replacements, em))
 	default:
-		text := i18n.Text("the %s of %s", noun, describeTarget(i18n.Text("weapons using %s"),
-			i18n.Text("weapons"), i18n.Text("whose skill name"), w.NameCriteria, replacements, em)) +
-			describeSpecialization(w.SpecializationCriteria, criteria.Text{Compare: criteria.AnyText}, replacements,
-				em) +
-			describeWhose(i18n.Text("whose usage"), w.UsageCriteria, replacements, em) +
-			describeTags(w.TagsCriteria, replacements, em)
-		if r := w.RelativeLevelCriteria; r.Compare != criteria.AnyNumber {
-			text += i18n.Text(" whose relative skill level ") + r.String()
-		}
-		return text
+		return i18n.Text("the %s of %s", noun, describeSkillSelectedWeapons(w.NameCriteria, w.SpecializationCriteria,
+			w.UsageCriteria, w.TagsCriteria, w.RelativeLevelCriteria, replacements, em))
 	}
+}
+
+// describeSkillSelectedWeapons returns how a feature names the weapons it selects by their required skill: the skill,
+// with its specialization, followed by the usage, tags and relative skill level that narrow them, each left out when
+// anything will do.
+func describeSkillSelectedWeapons(name, specialization, usage, tags criteria.Text, level criteria.Number, replacements map[string]string, em func(string) string) string {
+	text := describeTarget(i18n.Text("weapons using %s"), i18n.Text("weapons"), i18n.Text("whose skill name"), name,
+		replacements, em) +
+		describeSpecialization(specialization, criteria.Text{Compare: criteria.AnyText}, replacements, em) +
+		describeWhose(i18n.Text("whose usage"), usage, replacements, em) +
+		describeTags(tags, replacements, em)
+	if level.Compare != criteria.AnyNumber {
+		text += i18n.Text(" whose relative skill level ") + level.String()
+	}
+	return text
 }
 
 // describeThisWeapon returns the noun as it applies to the weapon a feature belongs to, with the usage it requires.

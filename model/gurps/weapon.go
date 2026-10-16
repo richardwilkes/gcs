@@ -698,21 +698,91 @@ func (w *Weapon) ResolveBoolFlag(switchType wswitch.Type, initial bool) bool {
 }
 
 // ResolveSelector resolves a weapon-scoped multi-state field, applying any SelectorOverride features that target the
-// given field and match this weapon. base is the field's intrinsic value. When more than one override matches, the
-// winner is chosen by the override-resolution ladder (priority, then specificity), and, if tooltip is non-nil, the full
-// contest is reported.
+// given field and select this weapon: by the skill it is used with, by its name, or by being a weapon of the item
+// carrying the override. base is the field's intrinsic value. When more than one override matches, the winner is
+// chosen by the override-resolution ladder (priority, then specificity), and, if tooltip is non-nil, the full contest
+// is reported.
 func (w *Weapon) ResolveSelector(field selector.Field, base string, tooltip *xbytes.InsertBuffer) string {
 	entity := w.Entity()
 	if entity == nil {
 		return base
 	}
+	return ResolveOverride(base, w.collectSelectorOverrides(entity, field), func(s string) string { return s }, tooltip)
+}
+
+// collectSelectorOverrides returns the candidates for the given field: the entity's overrides selecting weapons by
+// required skill or by name that match this weapon, and those of the weapon's owner, and of its enabled modifiers, that
+// select the owner's weapons or name this one. The skills the weapon is used with are only resolved when an override
+// selects by them, since this runs for every field of every weapon displayed.
+func (w *Weapon) collectSelectorOverrides(entity *Entity, field selector.Field) []OverrideCandidate[string] {
 	var candidates []OverrideCandidate[string]
-	for _, override := range entity.features.selectorOverrides {
-		if override.Field == field && override.MatchesWeapon(w) {
-			candidates = append(candidates, OverrideCandidate[string]{Value: override.Value, Override: override})
+	seen := make(map[*SelectorOverride]bool)
+	add := func(o *SelectorOverride) {
+		if !seen[o] {
+			seen[o] = true
+			candidates = append(candidates, OverrideCandidate[string]{Value: o.Value, Override: o})
 		}
 	}
-	return ResolveOverride(base, candidates, func(s string) string { return s }, tooltip)
+	var bySkill []*SelectorOverride
+	for _, o := range entity.features.selectorOverrides {
+		if o.Field != field {
+			continue
+		}
+		switch o.SelectionType {
+		case wsel.ThisWeapon: // Collected from the owner below
+		case wsel.WithName:
+			if o.MatchesWeapon(w) {
+				add(o)
+			}
+		default:
+			bySkill = append(bySkill, o)
+		}
+	}
+	if len(bySkill) != 0 {
+		usage := w.UsageWithReplacements()
+		tags := w.Owner.TagList()
+		w.forEachRequiredSkill(entity, func(name, specialization string) {
+			rsl := sync.OnceValue(func() fxp.Int { return entity.relativeSkillLevel(name, specialization) })
+			for _, o := range bySkill {
+				if o.matchesRequiredSkill(name, specialization, usage, tags, rsl) {
+					add(o)
+				}
+			}
+		})
+	}
+	for _, f := range w.Owner.ActiveFeatures() {
+		w.extractSelectorOverride(f, field, nil, add)
+	}
+	w.forEachOwnerModifier(func(mod ownerModifier, active Features) {
+		for _, f := range active {
+			w.extractSelectorOverride(f, field, mod, add)
+		}
+	})
+	return candidates
+}
+
+// extractSelectorOverride hands f to add if it is an override of the given field, carried by the weapon's owner or by
+// the owner's modifier sub, that selects the owner's weapons or names this one. The owner is set first: an override of
+// equipment that isn't equipped never reaches the entity's lists, so nothing else sets it, and it supplies the
+// substitutions the criteria are filled from and the name the tooltip reports.
+func (w *Weapon) extractSelectorOverride(f Feature, field selector.Field, sub fmt.Stringer, add func(*SelectorOverride)) {
+	o, ok := f.(*SelectorOverride)
+	if !ok || o.Field != field {
+		return
+	}
+	o.SetOwner(w.Owner)
+	o.SetSubOwner(sub)
+	switch o.SelectionType {
+	case wsel.ThisWeapon:
+		if o.matchesThisWeapon(w) {
+			add(o)
+		}
+	case wsel.WithName:
+		if o.MatchesWeapon(w) {
+			add(o)
+		}
+	default: // Selected by required skill, which only the entity's lists resolve
+	}
 }
 
 // dieCountFunc supplies the number of dice that a per-die weapon bonus is multiplied by when reporting what it
@@ -745,54 +815,12 @@ func (w *Weapon) collectWeaponBonuses(dieCount dieCountFunc, tooltip *xbytes.Ins
 	for _, one := range allowedFeatureTypes {
 		allowed[one] = true
 	}
-	var bestDef *SkillDefault
-	best := fxp.Min
-	replacements := w.NameableReplacements()
-	for _, one := range w.Defaults {
-		if one.SkillBased() {
-			// Ranked exactly the way SkillLevel() ranks them, so that the skill whose bonuses are collected is the one
-			// the weapon actually attacks with. That includes leaving a parry- or block-type default scored by its
-			// defense level; see the note in SkillLevel().
-			if level := one.SkillLevelFast(entity, replacements, false, nil, true); best < level {
-				best = level
-				bestDef = one
-			}
-		}
-	}
 	bonusSet := make(map[*WeaponBonus]bool)
 	tags := w.Owner.TagList()
-	var name, specialization string
-	if bestDef != nil {
-		name = bestDef.NameWithReplacements(replacements)
-		specialization = bestDef.SpecializationWithReplacements(replacements)
-		// The qualifiers only name a skill when the default names one outright. Resolving the default to the skill it
-		// actually scored -- the same one bestFast picked when it won the ranking above -- lets a default that selects
-		// its skill by tag, or by any other criteria, still collect the weapon bonuses qualified by the skill the
-		// weapon really attacks with.
-		if sk := bestDef.bestFastMatchingSkill(entity, replacements, false, nil); sk != nil {
-			name = sk.NameWithReplacements()
-			specialization = sk.SpecializationWithReplacements()
-		}
-	}
 	usage := w.UsageWithReplacements()
-	entity.AddWeaponWithSkillBonusesFor(name, specialization, usage, tags, dieCount, tooltip, bonusSet, allowed)
-	// When the weapon's best skill default resolves to a technique, also apply weapon bonuses that are qualified by the
-	// skill the technique is based on, evaluated against that base skill's relative level rather than the technique's.
-	// Per the rules, certain bonuses are determined by the base skill, not the technique - e.g. a Kick that defaults to
-	// the Kicking technique still gets the Brawling/Karate damage bonus based on the Brawling/Karate relative skill
-	// level (issue #767).
-	sk := entity.BestSkillNamed(name, specialization, false, nil)
-	seen := make(map[*Skill]bool)
-	for sk != nil && sk.IsTechnique() && !seen[sk] {
-		seen[sk] = true
-		base := sk.DefaultSkill()
-		if base == nil {
-			break
-		}
-		entity.AddWeaponWithSkillBonusesFor(base.NameWithReplacements(), base.SpecializationWithReplacements(), usage,
-			tags, dieCount, tooltip, bonusSet, allowed)
-		sk = base
-	}
+	w.forEachRequiredSkill(entity, func(name, specialization string) {
+		entity.AddWeaponWithSkillBonusesFor(name, specialization, usage, tags, dieCount, tooltip, bonusSet, allowed)
+	})
 	nameQualifier := w.String()
 	entity.AddNamedWeaponBonusesFor(nameQualifier, usage, tags, dieCount, tooltip, bonusSet, allowed)
 	for _, f := range w.Owner.ActiveFeatures() {
@@ -814,6 +842,69 @@ func (w *Weapon) collectWeaponBonuses(dieCount dieCountFunc, tooltip *xbytes.Ins
 		result = append(result, bonus)
 	}
 	return result
+}
+
+// forEachRequiredSkill calls visit with the name and specialization of the skill the weapon attacks with, by which the
+// features selecting weapons by their required skill are qualified, then with those of each skill in the chain that a
+// technique it resolves to is based on. The name is empty when no skill-based default resolves, and must then be
+// matched with matchesRequiredSkillName. Only the defaults are ranked and skills looked up here; nothing of the weapon
+// itself is resolved, since this runs while its fields are.
+func (w *Weapon) forEachRequiredSkill(entity *Entity, visit func(name, specialization string)) {
+	var bestDef *SkillDefault
+	best := fxp.Min
+	replacements := w.NameableReplacements()
+	for _, one := range w.Defaults {
+		if one.SkillBased() {
+			// Ranked exactly the way SkillLevel() ranks them, so that the skill whose bonuses are collected is the one
+			// the weapon actually attacks with. That includes leaving a parry- or block-type default scored by its
+			// defense level; see the note in SkillLevel().
+			if level := one.SkillLevelFast(entity, replacements, false, nil, true); best < level {
+				best = level
+				bestDef = one
+			}
+		}
+	}
+	var name, specialization string
+	if bestDef != nil {
+		name = bestDef.NameWithReplacements(replacements)
+		specialization = bestDef.SpecializationWithReplacements(replacements)
+		// The qualifiers only name a skill when the default names one outright. Resolving the default to the skill it
+		// actually scored -- the same one bestFast picked when it won the ranking above -- lets a default that selects
+		// its skill by tag, or by any other criteria, still collect the weapon bonuses qualified by the skill the
+		// weapon really attacks with.
+		if sk := bestDef.bestFastMatchingSkill(entity, replacements, false, nil); sk != nil {
+			name = sk.NameWithReplacements()
+			specialization = sk.SpecializationWithReplacements()
+		}
+	}
+	visit(name, specialization)
+	// When the weapon's best skill default resolves to a technique, also apply weapon bonuses that are qualified by the
+	// skill the technique is based on, evaluated against that base skill's relative level rather than the technique's.
+	// Per the rules, certain bonuses are determined by the base skill, not the technique - e.g. a Kick that defaults to
+	// the Kicking technique still gets the Brawling/Karate damage bonus based on the Brawling/Karate relative skill
+	// level (issue #767).
+	sk := entity.BestSkillNamed(name, specialization, false, nil)
+	seen := make(map[*Skill]bool)
+	for sk != nil && sk.IsTechnique() && !seen[sk] {
+		seen[sk] = true
+		base := sk.DefaultSkill()
+		if base == nil {
+			break
+		}
+		visit(base.NameWithReplacements(), base.SpecializationWithReplacements())
+		sk = base
+	}
+}
+
+// matchesRequiredSkillName reports whether a feature's required-skill name criterion matches a skill name visited by
+// forEachRequiredSkill. An empty skill means none resolved, which a criterion naming a skill outright cannot match: an
+// empty "is" qualifier is the unfilled state a new feature starts in, not a skill name. The other comparisons see the
+// empty name, so "is anything" and "is not X" select such a weapon, as they do every other.
+func matchesRequiredSkillName(name criteria.Text, replacements map[string]string, skill string) bool {
+	if skill == "" && name.Compare == criteria.IsText {
+		return false
+	}
+	return name.Matches(replacements, skill)
 }
 
 func (w *Weapon) extractWeaponBonus(f Feature, set map[*WeaponBonus]bool, allowedFeatureTypes map[feature.Type]bool, dieCount dieCountFunc, tooltip *xbytes.InsertBuffer) {

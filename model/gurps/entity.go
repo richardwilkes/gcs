@@ -1408,23 +1408,19 @@ func (e *Entity) TraitBonusFor(name string, tags []string, tooltip *xbytes.Inser
 	})
 }
 
-// AddWeaponWithSkillBonusesFor adds the bonuses for matching weapons to m, creating it if nil, and returns it.
+// AddWeaponWithSkillBonusesFor adds the bonuses for matching weapons to m, creating it if nil, and returns it. An empty
+// name means the weapon uses no skill, which only a name criterion that would select any skill matches.
 func (e *Entity) AddWeaponWithSkillBonusesFor(name, specialization, usage string, tags []string, dieCount dieCountFunc, tooltip *xbytes.InsertBuffer, m map[*WeaponBonus]bool, allowedFeatureTypes map[feature.Type]bool) map[*WeaponBonus]bool {
 	if m == nil {
 		m = make(map[*WeaponBonus]bool)
 	}
-	rsl := fxp.Min
-	for _, sk := range e.SkillNamed(name, specialization, true, nil) {
-		if rsl < sk.LevelData.RelativeLevel {
-			rsl = sk.LevelData.RelativeLevel
-		}
-	}
+	rsl := e.relativeSkillLevel(name, specialization)
 	for _, bonus := range e.features.weaponBonuses {
 		if allowedFeatureTypes[bonus.Type] &&
 			bonus.SelectionType == wsel.WithRequiredSkill &&
 			bonus.RelativeLevelCriteria.Matches(rsl) {
 			replacements := bonusReplacements(bonus)
-			if bonus.NameCriteria.Matches(replacements, name) &&
+			if matchesRequiredSkillName(bonus.NameCriteria, replacements, name) &&
 				bonus.SpecializationCriteria.Matches(replacements, specialization) &&
 				bonus.UsageCriteria.Matches(replacements, usage) &&
 				bonus.TagsCriteria.MatchesList(replacements, tags...) {
@@ -1433,6 +1429,18 @@ func (e *Entity) AddWeaponWithSkillBonusesFor(name, specialization, usage string
 		}
 	}
 	return m
+}
+
+// relativeSkillLevel returns the best relative level among the skills with the given name and specialization, or
+// fxp.Min when there are none.
+func (e *Entity) relativeSkillLevel(name, specialization string) fxp.Int {
+	rsl := fxp.Min
+	for _, sk := range e.SkillNamed(name, specialization, true, nil) {
+		if rsl < sk.LevelData.RelativeLevel {
+			rsl = sk.LevelData.RelativeLevel
+		}
+	}
+	return rsl
 }
 
 // AddNamedWeaponBonusesFor adds the bonuses for matching weapons to m, creating it if nil, and returns it.

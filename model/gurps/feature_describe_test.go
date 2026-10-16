@@ -179,18 +179,37 @@ func TestFeatureDescribe(t *testing.T) {
 	weightReduction := gurps.NewContainedWeightReduction()
 	weightReduction.Reduction = "80%"
 	override := gurps.NewSelectorOverride(selector.WeaponDamageType)
+	override.SelectionType = wsel.WithName
 	override.Value = "cut"
 	override.NameCriteria.Qualifier = "Axe"
 	overrideFiltered := gurps.NewSelectorOverride(selector.WeaponDamageType)
+	overrideFiltered.SelectionType = wsel.WithName
 	overrideFiltered.Value = "cut"
 	overrideFiltered.NameCriteria.Qualifier = "Axe"
 	overrideFiltered.UsageCriteria = criteria.Text{Compare: criteria.IsText, Qualifier: "Swung"}
 	overrideFiltered.TagsCriteria = criteria.Text{Compare: criteria.ContainsText, Qualifier: "Melee"}
 	overrideNoValue := gurps.NewSelectorOverride(selector.WeaponBaseDamageDice)
+	overrideNoValue.SelectionType = wsel.WithName
 	overrideNoValue.NameCriteria.Qualifier = "Axe"
 	overrideTrait := gurps.NewSelectorOverride(selector.TraitFrequency)
 	overrideTrait.NameCriteria.Compare = criteria.AnyText
 	overrideTrait.Priority = 2
+	overrideThisWeapon := gurps.NewSelectorOverride(selector.WeaponDamageType)
+	overrideThisWeapon.SelectionType = wsel.ThisWeapon
+	overrideThisWeapon.Value = "cut"
+	overrideThisWeaponUsage := gurps.NewSelectorOverride(selector.WeaponDamageType)
+	overrideThisWeaponUsage.SelectionType = wsel.ThisWeapon
+	overrideThisWeaponUsage.Value = "cut"
+	overrideThisWeaponUsage.UsageCriteria = criteria.Text{Compare: criteria.IsText, Qualifier: "Thrown"}
+	overrideBySkill := gurps.NewSelectorOverride(selector.WeaponArmorDivisor)
+	overrideBySkill.Value = "2"
+	overrideBySkill.NameCriteria.Qualifier = "Broadsword"
+	overrideBySkillCriteria := gurps.NewSelectorOverride(selector.WeaponArmorDivisor)
+	overrideBySkillCriteria.Value = "2"
+	overrideBySkillCriteria.NameCriteria.Qualifier = "Broadsword"
+	overrideBySkillCriteria.SpecializationCriteria = criteria.Text{Compare: criteria.IsText, Qualifier: "Rapier"}
+	overrideBySkillCriteria.UsageCriteria = criteria.Text{Compare: criteria.IsText, Qualifier: "Thrust"}
+	overrideBySkillCriteria.RelativeLevelCriteria = criteria.Number{Compare: criteria.AtLeastNumber, Qualifier: fxp.Two}
 	unknown := gurps.NewUnknownFeature("x", []byte(`{"type":"x"}`))
 
 	for _, one := range []struct {
@@ -281,6 +300,23 @@ func TestFeatureDescribe(t *testing.T) {
 		{
 			"selector override with a value title", overrideTrait,
 			"Sets [trait frequency of appearance] to [None required] on all traits (priority 2)",
+		},
+		{
+			"selector override this weapon", overrideThisWeapon,
+			"Sets [weapon damage type] to [cut] on this weapon (priority 0)",
+		},
+		{
+			"selector override this weapon with usage", overrideThisWeaponUsage,
+			"Sets [weapon damage type] to [cut] on this weapon when its usage is [Thrown] (priority 0)",
+		},
+		{
+			"selector override by skill", overrideBySkill,
+			"Sets [weapon armor divisor] to [2] on weapons using [Broadsword] (priority 0)",
+		},
+		{
+			"selector override by skill with criteria", overrideBySkillCriteria,
+			"Sets [weapon armor divisor] to [2] on weapons using [Broadsword] ([Rapier]) whose usage is [Thrust] whose " +
+				"relative skill level is at least 2 (priority 0)",
 		},
 		{"unknown", unknown, `Unknown feature type "x"; it will be preserved, but ignored`},
 	} {

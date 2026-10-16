@@ -843,17 +843,22 @@ func (p *featuresPanel) weaponBonus(fields, chips *unison.Panel, path string, on
 		p.tagsChip(chips, path, &one.TagsCriteria)
 	}
 	if one.SelectionType == wsel.WithRequiredSkill {
-		level := &one.RelativeLevelCriteria
-		p.optional(chips, path, "level", i18n.Text("+ relative skill level"), i18n.Text("Add Relative Skill Level"),
-			i18n.Text("Remove Relative Skill Level"), level.Compare != criteria.AnyNumber,
-			func() { *level = criteria.Number{Compare: criteria.AtLeastNumber, Qualifier: fxp.One} },
-			func() { *level = criteria.Number{Compare: criteria.AnyNumber} },
-			func(chip *unison.Panel) {
-				p.numberCriteria(chip, key("level"), i18n.Text("Level"),
-					numericWordsAfter(i18n.Text("and whose relative skill level")), level, -fxp.Thousand, fxp.Thousand,
-					true, false)
-			})
+		p.relativeSkillLevelChip(chips, path, &one.RelativeLevelCriteria)
 	}
+}
+
+// relativeSkillLevelChip adds the optional relative skill level criterion of a feature that selects weapons by their
+// required skill.
+func (p *featuresPanel) relativeSkillLevelChip(chips *unison.Panel, path string, level *criteria.Number) {
+	p.optional(chips, path, "level", i18n.Text("+ relative skill level"), i18n.Text("Add Relative Skill Level"),
+		i18n.Text("Remove Relative Skill Level"), level.Compare != criteria.AnyNumber,
+		func() { *level = criteria.Number{Compare: criteria.AtLeastNumber, Qualifier: fxp.One} },
+		func() { *level = criteria.Number{Compare: criteria.AnyNumber} },
+		func(chip *unison.Panel) {
+			p.numberCriteria(chip, path+":level", i18n.Text("Level"),
+				numericWordsAfter(i18n.Text("and whose relative skill level")), level, -fxp.Thousand, fxp.Thousand,
+				true, false)
+		})
 }
 
 // damageField adds the amount field of a weapon damage bonus, which accepts a dice specification as well as a flat
@@ -897,8 +902,9 @@ func (p *featuresPanel) damageField(parent *unison.Panel, path string, one *gurp
 }
 
 // selectorOverride adds the controls of a selector override: "[field] to [value] with priority [n]", followed by the
-// items it applies to. Changing the field resets the value, since another field may take other values, and clears the
-// usage criteria of a field that applies to traits, which have no usage.
+// items it applies to: the traits whose name matches, or the weapons selected as a weapon bonus selects them, with the
+// criteria of that selection as chips. Changing the field resets the value, since another field may take other values,
+// and clears the criteria a field that applies to traits can't use: traits have no usage and aren't selected by skill.
 func (p *featuresPanel) selectorOverride(fields, chips *unison.Panel, path string, one *gurps.SelectorOverride) {
 	key := func(name string) string { return path + ":" + name }
 	addCentered(fields, compactPopup(&p.sentenceRows, key("field"), i18n.Text("Field"), selector.Fields, one.Field, nil,
@@ -911,7 +917,9 @@ func (p *featuresPanel) selectorOverride(fields, chips *unison.Panel, path strin
 				one.Value = d.SuggestedStates[0]
 			}
 			if d.Scope == gurps.SelectorScopeTrait {
+				one.SpecializationCriteria = criteria.Text{Compare: criteria.AnyText}
 				one.UsageCriteria = criteria.Text{Compare: criteria.AnyText}
+				one.RelativeLevelCriteria = criteria.Number{Compare: criteria.AnyNumber}
 			}
 		}))
 	addJoiningWords(fields, i18n.Text("to"))
@@ -948,14 +956,25 @@ func (p *featuresPanel) selectorOverride(fields, chips *unison.Panel, path strin
 	// Named outright, since the words before the field would otherwise be taken as its name.
 	priority.Accessibility.Name = priorityTitle
 	p.addCompact(fields, priority.withoutUndo())
-	whose := i18n.Text("on weapons whose name")
 	if d.Scope == gurps.SelectorScopeTrait {
-		whose = i18n.Text("on traits whose name")
-	} else {
-		p.textChip(chips, path, "usage", &one.UsageCriteria)
+		whose := i18n.Text("to traits whose name")
+		p.textCriteria(fields, key("name"), i18n.Text("Name"), "", whose, whose, &one.NameCriteria, true)
+		p.tagsChip(chips, path, &one.TagsCriteria)
+		return
 	}
-	p.textCriteria(fields, key("name"), i18n.Text("Name"), "", whose, whose, &one.NameCriteria, true)
-	p.tagsChip(chips, path, &one.TagsCriteria)
+	selectionPopup(p, fields, path, wsel.Types, &one.SelectionType, wsel.ThisWeapon, &one.NameCriteria)
+	switch one.SelectionType {
+	case wsel.ThisWeapon:
+		p.textChip(chips, path, "usage", &one.UsageCriteria)
+	case wsel.WithName:
+		p.textChip(chips, path, "usage", &one.UsageCriteria)
+		p.tagsChip(chips, path, &one.TagsCriteria)
+	default:
+		p.textChip(chips, path, "specialization", &one.SpecializationCriteria)
+		p.textChip(chips, path, "usage", &one.UsageCriteria)
+		p.tagsChip(chips, path, &one.TagsCriteria)
+		p.relativeSkillLevelChip(chips, path, &one.RelativeLevelCriteria)
+	}
 }
 
 func (p *featuresPanel) featureTypesList() []feature.Type {

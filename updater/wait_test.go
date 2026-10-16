@@ -57,8 +57,8 @@ func TestWaitForPredecessorWaitsUntilThePortIsReleased(t *testing.T) {
 
 	// The wait must still be in progress while the port is held.
 	select {
-	case <-done:
-		t.Fatal("the wait finished while the port was still held")
+	case err := <-done:
+		t.Fatalf("the wait finished while the port was still held: %v", err)
 	case <-time.After(500 * time.Millisecond):
 	}
 

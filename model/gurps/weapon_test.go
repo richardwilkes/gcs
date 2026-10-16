@@ -804,6 +804,45 @@ func TestWeaponTagDefaultCollectsSkillBonuses(t *testing.T) {
 		"a tag default must collect the same skill-qualified bonuses as a default naming the same skill")
 }
 
+// TestWeaponBonusWithRequiredSkillAndNoSkill verifies how a weapon bonus selecting weapons by required skill treats a
+// weapon for which no skill-based default resolves: the unfilled name criterion a new bonus starts with selects
+// nothing, while a name criterion of anything selects it.
+func TestWeaponBonusWithRequiredSkillAndNoSkill(t *testing.T) {
+	c := check.New(t)
+	e := gurps.NewEntity()
+	master := gurps.NewTrait(e, nil, false)
+	master.Name = "Weapon Master"
+	bonus := gurps.NewWeaponBonus(feature.WeaponBonus) // Selects by required skill, with the name left blank
+	master.Features = gurps.Features{bonus}
+	e.Traits = append(e.Traits, master)
+	owner := gurps.NewTrait(e, nil, false)
+	owner.Name = "Natural Attacks"
+	byAttribute := gurps.NewWeapon(owner, true)
+	byAttribute.Usage = "Punch"
+	byAttribute.Damage.StrengthType = stdmg.None
+	byAttribute.Damage.Base = "1d"
+	byAttribute.Defaults = []*gurps.SkillDefault{{DefaultType: gurps.DexterityID}}
+	byAbsentSkill := gurps.NewWeapon(owner, true)
+	byAbsentSkill.Usage = "Kick"
+	byAbsentSkill.Damage.StrengthType = stdmg.None
+	byAbsentSkill.Damage.Base = "1d"
+	byAbsentSkill.Defaults = []*gurps.SkillDefault{{
+		DefaultType: gurps.SkillID,
+		Name:        criteria.Text{Compare: criteria.IsText, Qualifier: "Brawling"},
+	}}
+	owner.Weapons = []*gurps.Weapon{byAttribute, byAbsentSkill}
+	e.Traits = append(e.Traits, owner)
+	e.Recalculate()
+	c.Equal("1d cr", byAttribute.Damage.ResolvedDamage(nil),
+		"a bonus whose skill name is left blank does not apply to a weapon whose defaults are all attribute-based")
+	c.Equal("1d cr", byAbsentSkill.Damage.ResolvedDamage(nil),
+		"nor to one whose skill default names a skill the character lacks")
+
+	bonus.NameCriteria = criteria.Text{Compare: criteria.AnyText}
+	c.Equal("1d+1 cr", byAttribute.Damage.ResolvedDamage(nil), "a skill name of anything applies to both")
+	c.Equal("1d+1 cr", byAbsentSkill.Damage.ResolvedDamage(nil), "a skill name of anything applies to both")
+}
+
 // newCrossbowTestWeapon builds an entity whose ST is 10 for striking and 12 for lifting, holding a Crossbow skill
 // tagged "Missile Weapon" at level 12, and returns a muscle-powered ranged weapon with a minimum ST of 12 whose only
 // default is the one given. The weapon is penalized 2 for its minimum ST unless it is recognized as a crossbow, which

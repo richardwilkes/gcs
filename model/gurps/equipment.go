@@ -842,6 +842,12 @@ func (e *Equipment) anySwitchableMattersWhileUnequipped(features Features) bool 
 			if f.SelectionType == skillsel.ThisWeapon && len(e.Weapons) != 0 {
 				return true
 			}
+		case *SelectorOverride:
+			// And for an override aimed at this equipment's own weapons, whether it selects them or names them.
+			if f.weaponScoped() && (f.SelectionType == wsel.ThisWeapon || f.SelectionType == wsel.WithName) &&
+				len(e.Weapons) != 0 {
+				return true
+			}
 		}
 	}
 	return false

@@ -17,12 +17,14 @@ import (
 	"testing"
 
 	"github.com/richardwilkes/gcs/v5/model/criteria"
+	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/feature"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/frequency"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/selector"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/selfctrl"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/stdmg"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/wsel"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/toolbox/v2/xbytes"
 )
@@ -238,9 +240,11 @@ func TestSelectorFieldDescriptors(t *testing.T) {
 	}
 }
 
-// Only the criteria the field's scope actually matches on count toward specificity. A trait-scoped override never
-// consults the usage criterion (traits have no usage), so a leftover usage criterion -- which the editor hides once the
-// field switches to a trait-scoped one -- must not silently win a tie-break it does nothing to constrain.
+// Only the criteria the override actually matches on count toward specificity. A trait-scoped override never consults
+// the usage criterion (traits have no usage), and a weapon-scoped one consults the specialization and relative skill
+// level only when selecting by required skill, so a leftover criterion -- which the editor hides once the field or the
+// selection no longer uses it -- must not silently win a tie-break it does nothing to constrain. An override selecting
+// the weapons of its own item counts as having pinned their name and tags, since it is at least that narrow.
 func TestSelectorOverrideSpecificityScope(t *testing.T) {
 	c := check.New(t)
 
@@ -254,10 +258,23 @@ func TestSelectorOverrideSpecificityScope(t *testing.T) {
 	c.Equal(2, trait.OverrideSpecificity(), "the tag criterion does constrain a trait-scoped override")
 
 	weapon := gurps.NewSelectorOverride(selector.WeaponDamageType)
+	c.Equal(wsel.WithRequiredSkill, weapon.SelectionType, "precondition: a new weapon-scoped override selects by skill")
 	c.Equal(1, weapon.OverrideSpecificity(), "only the name criterion is set initially")
 	weapon.UsageCriteria.Compare = criteria.IsText
 	weapon.UsageCriteria.Qualifier = "Swung"
 	c.Equal(2, weapon.OverrideSpecificity(), "usage still counts for a weapon-scoped override")
+	weapon.SpecializationCriteria = criteria.Text{Compare: criteria.IsText, Qualifier: "Rapier"}
+	c.Equal(3, weapon.OverrideSpecificity(), "the specialization constrains a selection by required skill")
+	weapon.RelativeLevelCriteria = criteria.Number{Compare: criteria.AtLeastNumber, Qualifier: fxp.One}
+	c.Equal(4, weapon.OverrideSpecificity(), "as does the relative skill level")
+	weapon.SelectionType = wsel.WithName
+	c.Equal(2, weapon.OverrideSpecificity(), "neither constrains a selection by name")
+	weapon.SelectionType = wsel.ThisWeapon
+	c.Equal(3, weapon.OverrideSpecificity(), "this weapon counts as name and tags, plus the usage")
+	weapon.UsageCriteria = criteria.Text{Compare: criteria.AnyText}
+	c.Equal(2, weapon.OverrideSpecificity(), "and as name and tags alone without one")
+	weapon.SelectionType = wsel.WithName
+	c.Equal(1, weapon.OverrideSpecificity(), "where a selection by name with the same criteria counts the name alone")
 }
 
 // An unrecognized field falls back to the zero-value free-form descriptor. Normalizing the field first mapped every
@@ -288,6 +305,7 @@ func TestSelectorOverrideUsesOwnerSubstitutions(t *testing.T) {
 	e := gurps.NewEntity()
 
 	weaponOverride := gurps.NewSelectorOverride(selector.WeaponDamageType)
+	weaponOverride.SelectionType = wsel.WithName
 	weaponOverride.Value = "cut"
 	weaponOverride.NameCriteria.Qualifier = "@Weapon@"
 	traitOverride := gurps.NewSelectorOverride(selector.TraitSelfControlRoll)
