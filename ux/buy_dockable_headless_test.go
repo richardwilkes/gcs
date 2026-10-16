@@ -1608,8 +1608,8 @@ func TestBuyDockableFinalizesOnTheTermsChosen(t *testing.T) {
 	}
 }
 
-// TestPurchaseDialog drives the dialog that finalizes a purchase: it lists the money carried with the quantities the
-// automatic payment spends, keeps Finalize disabled while the money chosen is short, notes whether the payment is
+// TestPurchaseDialog drives the dialog that finalizes a purchase: it lists the money carried, by increasing value, with
+// the quantities the automatic payment spends, keeps Finalize disabled while the money chosen is short, notes whether the payment is
 // short, exact or due change, with what the change will be, puts the automatic payment back on request, and returns the
 // money chosen and whether to merge, or nothing when canceled.
 func TestPurchaseDialog(t *testing.T) {
@@ -1637,6 +1637,8 @@ func TestPurchaseDialog(t *testing.T) {
 		t.Fatal("the sheet must carry two kinds of money")
 	}
 	eagleID, pennyID := ids[0], ids[1]
+	// The dialog lists the money by increasing value, so the penny's field comes before the eagle's.
+	const penny, eagle = 0, 1
 
 	var terms purchaseTerms
 	var ok, returned bool
@@ -1650,10 +1652,18 @@ func TestPurchaseDialog(t *testing.T) {
 		screen.Sync()
 		dialogWnd, dialog := modalDialog(t, screen, wnd)
 		var fields []*IntegerField
-		screen.Do(func() { fields = uxtest.PanelsOfType[*IntegerField](dialogWnd.Content()) })
+		var names []string
+		screen.Do(func() {
+			fields = uxtest.PanelsOfType[*IntegerField](dialogWnd.Content())
+			for _, f := range fields {
+				names = append(names, f.Accessibility.Name)
+			}
+		})
 		if len(fields) != 2 {
 			t.Fatalf("the dialog must have a field for each kind of money carried, not %d", len(fields))
 		}
+		c.Equal([]string{"Copper Penny to spend", "Silver Eagle to spend"}, names,
+			"the money is listed by increasing value")
 		return dialog, fields
 	}
 	controls := func(dialog *unison.Dialog) (automatic *unison.Button, merge *unison.CheckBox) {
@@ -1722,7 +1732,7 @@ func TestPurchaseDialog(t *testing.T) {
 	dialog, fields := open()
 	uxtest.CaptureScreen(t, c, screen, "purchase_dialog")
 	state := read(dialog, fields)
-	c.Equal([]string{"2", "5"}, state.spend, "the dialog starts from the automatic payment")
+	c.Equal([]string{"5", "2"}, state.spend, "the dialog starts from the automatic payment")
 	contains(state, "Money Item", "Carried", "Value Each", "Spend", "Silver Eagle", "7", "$20", "Copper Penny", "11",
 		"$1", "Buying Longbow ×1 for $45.",
 		"The money-tagged items carried pay for it, chosen automatically unless you change the quantities to spend.",
@@ -1734,7 +1744,7 @@ func TestPurchaseDialog(t *testing.T) {
 	c.True(state.noteIcon == unison.CheckmarkSVG, "an exact payment shows a checkmark")
 	c.False(state.noteWarn)
 
-	screen.Do(func() { fields[1].SetText("11") })
+	screen.Do(func() { fields[penny].SetText("11") })
 	state = read(dialog, fields)
 	contains(state, "Spending: $51", "Change due: $6")
 	c.Equal("Change will be returned as Copper Penny ×6.", state.note,
@@ -1744,15 +1754,15 @@ func TestPurchaseDialog(t *testing.T) {
 	c.True(state.automaticOn, "a change to the money chosen offers the automatic payment back")
 	var typed, refused bool
 	screen.Do(func() {
-		fields[1].SetText("1")
-		fields[1].SetSelectionToEnd()
-		refused = !fields[1].RuneTypedCallback('2')
-		typed = fields[1].RuneTypedCallback('1')
+		fields[penny].SetText("1")
+		fields[penny].SetSelectionToEnd()
+		refused = !fields[penny].RuneTypedCallback('2')
+		typed = fields[penny].RuneTypedCallback('1')
 	})
 	c.True(refused, "more of a money item than is carried can't be typed")
 	c.True(typed)
-	c.Equal("11", read(dialog, fields).spend[1])
-	screen.Do(func() { fields[1].SetText("0") })
+	c.Equal("11", read(dialog, fields).spend[penny])
+	screen.Do(func() { fields[penny].SetText("0") })
 	state = read(dialog, fields)
 	contains(state, "Spending: $40", "Change due: $0")
 	uxtest.CaptureScreen(t, c, screen, "purchase_short")
@@ -1760,13 +1770,16 @@ func TestPurchaseDialog(t *testing.T) {
 	c.True(state.noteIcon == svg.Not, "a shortfall shows the not symbol")
 	c.True(state.noteWarn)
 	c.False(state.okOn, "Finalize is disabled while the money chosen is short")
+	var focused bool
 	screen.Do(func() {
+		focused = dialog.Window().CurrentFocus() == fields[penny].AsPanel()
 		automatic, merge := controls(dialog)
 		automatic.Click()
 		merge.Click()
 	})
+	c.True(focused, "the first field holds the focus, so the button must replace the text of a focused field")
 	state = read(dialog, fields)
-	c.Equal([]string{"2", "5"}, state.spend, "Choose Automatically puts the automatic payment back")
+	c.Equal([]string{"5", "2"}, state.spend, "Choose Automatically puts the automatic payment back")
 	c.False(state.automaticOn)
 	c.True(state.okOn)
 	c.Equal(uncheck.Off, state.merge)
@@ -1780,8 +1793,8 @@ func TestPurchaseDialog(t *testing.T) {
 		t.Helper()
 		dialog, fields = open()
 		screen.Do(func() {
-			fields[0].SetText(count)
-			fields[1].SetText("0")
+			fields[eagle].SetText(count)
+			fields[penny].SetText("0")
 		})
 		return dialog, fields
 	}
@@ -1819,7 +1832,7 @@ func TestPurchaseDialog(t *testing.T) {
 		state.note)
 	c.True(state.noteIcon == unison.TriangleExclamationSVG)
 	c.True(state.noteWarn)
-	screen.Do(func() { fields[1].SetText("10") })
+	screen.Do(func() { fields[penny].SetText("10") })
 	state = read(dialog, fields)
 	c.Equal("Change will be returned as Silver Eagle ×2, Copper Penny ×5.", state.note,
 		"the money paid is drawn on when the sell money falls short")

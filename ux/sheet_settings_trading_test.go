@@ -10,6 +10,7 @@
 package ux
 
 import (
+	"image/color"
 	"os"
 	"path/filepath"
 	"testing"
@@ -21,6 +22,7 @@ import (
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/drag"
+	uncheck "github.com/richardwilkes/unison/enums/check"
 )
 
 // tradeTestMoney is an equipment library file, in the user library, of the money the trading tests pay out in: a Silver
@@ -195,7 +197,7 @@ func TestSheetSettingsSellMoneyDrop(t *testing.T) {
 	c.True(dropOnSellMoney(t, c, d, library.table, money.eagle), "a money item from a library is added")
 	c.Equal([]gurps.Source{money.source(money.eagle)}, s.SellMoney, "the item is kept by its library source")
 	c.Equal([]bool{false}, recorder.updates, "the addition is reported, without a full rebuild")
-	c.Equal([]string{"Silver Eagle"}, uxtest.LabelTexts(d.sellMoneyPanel), "the list shows the item")
+	c.Equal([]string{"Silver Eagle", "$20"}, uxtest.LabelTexts(d.sellMoneyPanel), "the list shows the item and its value")
 
 	c.False(dropOnSellMoney(t, c, d, library.table, money.eagle), "an item already listed is not added again")
 	c.False(dropOnSellMoney(t, c, d, library.table, money.purse), "a container is refused")
@@ -206,7 +208,8 @@ func TestSheetSettingsSellMoneyDrop(t *testing.T) {
 		"of several rows, those that can be money are added")
 	c.Equal([]gurps.Source{money.source(money.eagle), money.source(money.penny)}, s.SellMoney,
 		"the money item is added after the one already there")
-	c.Equal([]string{"Silver Eagle", "Copper Penny"}, uxtest.LabelTexts(d.sellMoneyPanel))
+	c.Equal([]string{"Copper Penny", "$1", "Silver Eagle", "$20"}, uxtest.LabelTexts(d.sellMoneyPanel),
+		"the list shows the items by increasing value")
 
 	elsewhere := newTradeTestItem(nil, "Gold Crown", "100", fxp.One, gurps.MoneyTag)
 	outside := NewEquipmentTableDockable(filepath.Join(t.TempDir(), "Coins"+gurps.EquipmentExt),
@@ -217,20 +220,50 @@ func TestSheetSettingsSellMoneyDrop(t *testing.T) {
 	sellMoneyRemoveButton(t, d, "Silver Eagle").ClickCallback()
 	c.Equal([]gurps.Source{money.source(money.penny)}, s.SellMoney, "the button removes its own entry")
 	c.Equal(3, len(recorder.updates), "the removal is reported")
-	c.Equal([]string{"Copper Penny"}, uxtest.LabelTexts(d.sellMoneyPanel), "the list no longer shows it")
+	c.Equal([]string{"Copper Penny", "$1"}, uxtest.LabelTexts(d.sellMoneyPanel), "the list no longer shows it")
 
 	missing := gurps.Source{LibraryFile: money.libFile, TID: "missing"}
 	s.SellMoney = append(s.SellMoney, missing)
 	d.rebuildSellMoney()
 	gone := "Money" + gurps.EquipmentExt + " (missing)"
-	c.Equal([]string{"Copper Penny", gone + " — not found"}, uxtest.LabelTexts(d.sellMoneyPanel),
-		"an entry the library lacks is shown by its file and ID")
+	c.Equal([]string{"Copper Penny", "$1", gone + " — not found"}, uxtest.LabelTexts(d.sellMoneyPanel),
+		"an entry the library lacks is shown last, by its file and ID, without a value")
 	sellMoneyRemoveButton(t, d, gone).ClickCallback()
 	c.Equal([]gurps.Source{money.source(money.penny)}, s.SellMoney, "an entry the library lacks can be removed")
 
 	d.reset()
 	c.Equal(0, len(owner.entity.SheetSettings.SellMoney), "reset restores the defaults, which have no sell money")
 	c.Equal(hint, uxtest.LabelTexts(d.sellMoneyPanel), "sync shows the list of the reset settings")
+}
+
+// TestSheetSettingsSellMoneyFollowsTheValueFormat checks that the sell money list shows the values in the equipment
+// value format of the settings and follows a change to that format made in the same dockable.
+func TestSheetSettingsSellMoneyFollowsTheValueFormat(t *testing.T) {
+	c := check.New(t)
+	money, _ := newTradingSettingsTest(t, c)
+	owner := newEntityPanelWithFlaggedSettings()
+	d, _ := newTestSheetSettingsDockable(t, owner)
+	s := owner.entity.SheetSettings
+	s.EquipmentValueFormat = fxp.NumberFormat{}
+	halfCrown := newTradeTestItem(nil, "Half Crown", "2.5", fxp.One, gurps.MoneyTag)
+	path := filepath.Join(filepath.Dir(money.path), "Crowns"+gurps.EquipmentExt)
+	c.NoError(gurps.SaveEquipment([]*gurps.Equipment{halfCrown}, path))
+	crowns := NewEquipmentTableDockable(path, []*gurps.Equipment{halfCrown})
+	c.True(dropOnSellMoney(t, c, d, crowns.table, halfCrown))
+	c.Equal([]string{"Half Crown", "$2.5"}, uxtest.LabelTexts(d.sellMoneyPanel),
+		"the value is shown with as many decimal places as it has")
+
+	row := d.numberFormats[3]
+	row.popup.Select(fxp.ZeroPlaces)
+	c.Equal(fxp.ZeroPlaces, s.EquipmentValueFormat.Places, "the equipment value popup must be the fourth row")
+	c.Equal([]string{"Half Crown", "$3"}, uxtest.LabelTexts(d.sellMoneyPanel),
+		"the list follows a change to the decimal places")
+
+	row.popup.Select(fxp.TwoPlaces)
+	row.pad.State = uncheck.On
+	row.pad.ClickCallback()
+	c.Equal([]string{"Half Crown", "$2.50"}, uxtest.LabelTexts(d.sellMoneyPanel),
+		"the list follows a change to the padding")
 }
 
 // TestSheetSettingsSellMoneyWithoutOwner checks that the defaults' sell money list, which no sheet owns, takes drops
@@ -246,7 +279,7 @@ func TestSheetSettingsSellMoneyWithoutOwner(t *testing.T) {
 	c.True(dropOnSellMoney(t, c, d, library.table, money.penny), "a money item from a library is added")
 	c.Equal([]gurps.Source{money.source(money.penny)}, global.Sheet.SellMoney, "the defaults hold its source")
 	c.Equal([]*gurps.Entity{nil}, recorder.entities, "the change is reported as one to the defaults")
-	c.Equal([]string{"Copper Penny"}, uxtest.LabelTexts(d.sellMoneyPanel))
+	c.Equal([]string{"Copper Penny", "$1"}, uxtest.LabelTexts(d.sellMoneyPanel))
 
 	sellMoneyRemoveButton(t, d, "Copper Penny").ClickCallback()
 	c.Equal(0, len(global.Sheet.SellMoney), "the button removes the entry from the defaults")
@@ -274,18 +307,13 @@ func TestSheetSettingsSellMoneyDropKeepsTheItemDragged(t *testing.T) {
 	c.True(dropOnSellMoney(t, c, d, library.table, local), "the copied item is added")
 	c.Equal([]gurps.Source{{Library: user.Key(), Path: name, TID: local.TID}},
 		owner.entity.SheetSettings.SellMoney, "the item dragged is what is kept, not the item it was copied from")
-	c.Equal([]string{"Local Eagle"}, uxtest.LabelTexts(d.sellMoneyPanel), "the list shows the item dragged")
+	c.Equal([]string{"Local Eagle", "$25"}, uxtest.LabelTexts(d.sellMoneyPanel), "the list shows the item dragged")
 }
 
-// TestSheetSettingsSellMoneyRemoveKeepsTheFocus checks that removing a sell money entry with its button while the button
-// holds the keyboard focus moves the focus to the button that takes its place, or to the sell percent field once no
-// entry is left, rather than leaving it on the button the rebuilt list no longer holds.
-func TestSheetSettingsSellMoneyRemoveKeepsTheFocus(t *testing.T) {
-	c := check.New(t)
-	screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
-	money := newTradeTestMoney(t, c)
-	sheet := openSellTestSheet(t, screen, []gurps.Source{money.source(money.eagle), money.source(money.penny)},
-		func(_ *gurps.Entity) []*gurps.Equipment { return nil })
+// openSheetSettingsFor opens the sheet's settings in the headless workspace and returns their dockable, failing the test
+// if it can't be found.
+func openSheetSettingsFor(t *testing.T, screen *unison.HeadlessScreen, sheet *Sheet) *sheetSettingsDockable {
+	t.Helper()
 	var d *sheetSettingsDockable
 	screen.Do(func() {
 		ShowSheetSettings(sheet)
@@ -298,6 +326,67 @@ func TestSheetSettingsSellMoneyRemoveKeepsTheFocus(t *testing.T) {
 	if d == nil {
 		t.Fatal("the sheet's settings must be open")
 	}
+	return d
+}
+
+// TestSheetSettingsSellMoneyBanding checks that the sell money list of a sheet whose settings show two decimal places
+// shows the values so, by increasing value, and that it draws the rows on the background a table gives its rows, with
+// every other row banded.
+func TestSheetSettingsSellMoneyBanding(t *testing.T) {
+	c := check.New(t)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
+	money := newTradeTestMoney(t, c)
+	sheet := openSellTestSheet(t, screen, []gurps.Source{money.source(money.eagle), money.source(money.penny)},
+		func(_ *gurps.Entity) []*gurps.Equipment { return nil })
+	d := openSheetSettingsFor(t, screen, sheet)
+	var texts []string
+	var rows int
+	var samples []color.NRGBA
+	screen.Do(func() {
+		p := d.sellMoneyPanel
+		texts = uxtest.LabelTexts(p)
+		rows = len(d.sellMoneyRows)
+		d.ValidateLayout()
+		area := p.ContentRect(true)
+		img, err := unison.NewImageFromDrawing(int(area.Width), int(area.Height), 72, func(gc *unison.Canvas) {
+			p.DrawCallback(gc, area)
+		})
+		if err != nil {
+			t.Error(err)
+			return
+		}
+		defer img.Dispose()
+		pixels, err := img.ToNRGBA()
+		if err != nil {
+			t.Error(err)
+			return
+		}
+		for _, row := range d.sellMoneyRows {
+			center := sellMoneyRowBounds(row, area).Center()
+			samples = append(samples, pixels.NRGBAAt(int(center.X), int(center.Y)))
+		}
+	})
+	c.Equal([]string{"Copper Penny", "$1.00", "Silver Eagle", "$20.00"}, texts,
+		"the list shows the items by increasing value, formatted as the sheet formats equipment values")
+	c.Equal(2, rows, "the list keeps the widgets of each row")
+	nrgba := func(ink unison.ColorProvider) color.NRGBA {
+		clr := ink.GetColor()
+		return color.NRGBA{R: uint8(clr.Red()), G: uint8(clr.Green()), B: uint8(clr.Blue()), A: 255}
+	}
+	c.Equal([]color.NRGBA{nrgba(unison.ThemeBelowSurface), nrgba(unison.ThemeBanding)}, samples,
+		"the first row sits on the background a table gives its rows and the second is banded")
+}
+
+// TestSheetSettingsSellMoneyRemoveKeepsTheFocus checks that removing a sell money entry with its button while the button
+// holds the keyboard focus moves the focus to the button that takes its place, or to the sell percent field once no
+// entry is left, rather than leaving it on the button the rebuilt list no longer holds.
+func TestSheetSettingsSellMoneyRemoveKeepsTheFocus(t *testing.T) {
+	c := check.New(t)
+	screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
+	money := newTradeTestMoney(t, c)
+	sheet := openSellTestSheet(t, screen, []gurps.Source{money.source(money.eagle), money.source(money.penny)},
+		func(_ *gurps.Entity) []*gurps.Equipment { return nil })
+	d := openSheetSettingsFor(t, screen, sheet)
 	removeButton := func(name string) *unison.Button {
 		var button *unison.Button
 		screen.Do(func() {
@@ -324,7 +413,7 @@ func TestSheetSettingsSellMoneyRemoveKeepsTheFocus(t *testing.T) {
 	press("Silver Eagle")
 	var focus *unison.Panel
 	screen.Do(func() { focus = wnd.CurrentFocus() })
-	c.Equal([]string{"Copper Penny"}, uxtest.LabelTexts(d.sellMoneyPanel), "the entry is removed")
+	c.Equal([]string{"Copper Penny", "$1.00"}, uxtest.LabelTexts(d.sellMoneyPanel), "the entry is removed")
 	c.True(focus != nil && focus == removeButton("Copper Penny").AsPanel(),
 		"the focus must move to the button that takes the removed one's place")
 

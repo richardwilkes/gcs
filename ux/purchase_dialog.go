@@ -10,6 +10,7 @@
 package ux
 
 import (
+	"cmp"
 	"maps"
 	"slices"
 
@@ -43,10 +44,10 @@ type purchaseTerms struct {
 // that tests can substitute it.
 var confirmPurchase = confirmPurchaseWithDialog
 
-// confirmPurchaseWithDialog puts up the dialog that finalizes the dockable's purchase. It lists the carried money with
-// the quantity of each that the automatic payment in plan spends, which the user may change, or go back to, and asks
-// whether to merge what is bought with matching carried items. It returns the terms chosen, with ok false when the user
-// canceled.
+// confirmPurchaseWithDialog puts up the dialog that finalizes the dockable's purchase. It lists the carried money, by
+// increasing value, with the quantity of each that the automatic payment in plan spends, which the user may change, or
+// go back to, and asks whether to merge what is bought with matching carried items. It returns the terms chosen, with
+// ok false when the user canceled.
 func confirmPurchaseWithDialog(d *buyDockable, plan *buyPlan) (terms purchaseTerms, ok bool) {
 	dlg := newPurchaseDialog(d, plan)
 	if dlg == nil || dlg.dialog.RunModal() != unison.ModalResponseOK {
@@ -126,13 +127,17 @@ func newPurchaseDialog(buy *buyDockable, plan *buyPlan) *purchaseDialog {
 	list.addHeader(i18n.Text("Value Each"), 1, align.End)
 	list.addHeader(i18n.Text("Spend"), 1, align.Start)
 	list.addHeader(i18n.Text("Spending"), 1, align.End)
-	money := entity.MoneyItems()
-	for _, one := range money {
-		row := &purchaseMoneyRow{money: one, value: one.AdjustedValue()}
+	for _, one := range entity.MoneyItems() {
+		d.rows = append(d.rows, &purchaseMoneyRow{money: one, value: one.AdjustedValue()})
+	}
+	// The money is listed by increasing value, as the sheet settings list the sell money, those of equal value in the
+	// order they are carried.
+	slices.SortStableFunc(d.rows, func(a, b *purchaseMoneyRow) int { return cmp.Compare(a.value, b.value) })
+	for _, row := range d.rows {
+		one := row.money
 		carried := one.TradeQuantity()
 		most := max(carried.Floor().AsInteger[int](), 0)
 		row.spend = min(max(d.auto[one.TID], 0), most)
-		d.rows = append(d.rows, row)
 		name := one.String()
 		list.rows.AddChild(newPurchaseText(name, align.Start))
 		list.rows.AddChild(newPurchaseText(carried.Comma(), align.End))
@@ -153,7 +158,7 @@ func newPurchaseDialog(buy *buyDockable, plan *buyPlan) *purchaseDialog {
 		row.spending = newPurchaseText("", align.End)
 		list.rows.AddChild(row.spending)
 	}
-	if len(money) == 0 {
+	if len(d.rows) == 0 {
 		label := newPurchaseText(i18n.Text("This character carries no money-tagged items."), align.Start)
 		label.SetLayoutData(&unison.FlexLayoutData{HSpan: paymentColumnCount})
 		list.rows.AddChild(label)
@@ -219,7 +224,8 @@ func (d *purchaseDialog) createOptions(merge bool) *unison.Panel {
 	d.automatic.ClickCallback = func() {
 		for _, row := range d.rows {
 			row.spend = d.auto[row.money.TID]
-			row.field.Sync()
+			// The button doesn't take the focus, so the field that has it is replaced too.
+			row.field.syncFromValue()
 		}
 		d.refresh()
 	}

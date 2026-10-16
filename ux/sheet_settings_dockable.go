@@ -10,7 +10,9 @@
 package ux
 
 import (
+	"cmp"
 	"io/fs"
+	"slices"
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/fonts"
@@ -31,6 +33,10 @@ import (
 )
 
 var _ GroupedCloser = &sheetSettingsDockable{}
+
+// sellMoneyColumns is the number of columns in the sell money list: the item's name, its value and a button to remove
+// it.
+const sellMoneyColumns = 3
 
 // EntityPanel defines methods for a panel that can hold an entity.
 type EntityPanel interface {
@@ -53,6 +59,7 @@ type sheetSettingsDockable struct {
 	buyPercentField           *PercentageField
 	sellPercentField          *PercentageField
 	sellMoneyPanel            *unison.Panel
+	sellMoneyRows             [][]unison.Paneler // the widgets of each row of the sell money list, for banding
 	sellMoneyDropping         bool
 	orientationPopup          *unison.PopupMenu[paper.Orientation]
 	paperSizeField            *unison.Field
@@ -350,30 +357,38 @@ func (d *sheetSettingsDockable) createDecimalPlaces(content *unison.Panel) {
 	d.numberFormats = []sheetNumberFormatRow{
 		d.addNumberFormatRow(panel, i18n.Text("Height"),
 			i18n.Text(`How many decimal places the height in the Description block on the sheet is rounded to for display. "As Needed" shows every decimal place the value has.`),
-			func(s *gurps.SheetSettings) *fxp.NumberFormat { return &s.HeightFormat }),
+			func(s *gurps.SheetSettings) *fxp.NumberFormat { return &s.HeightFormat }, nil),
 		d.addNumberFormatRow(panel, i18n.Text("Body Weight"),
 			i18n.Text("How many decimal places the character's weight in the Description block on the sheet is rounded to for display"),
-			func(s *gurps.SheetSettings) *fxp.NumberFormat { return &s.BodyWeightFormat }),
+			func(s *gurps.SheetSettings) *fxp.NumberFormat { return &s.BodyWeightFormat }, nil),
 		d.addNumberFormatRow(panel, i18n.Text("Equipment Weight"),
 			i18n.Text("How many decimal places the weight columns and the carried & other equipment totals on the sheet are rounded to for display"),
-			func(s *gurps.SheetSettings) *fxp.NumberFormat { return &s.EquipmentWeightFormat }),
+			func(s *gurps.SheetSettings) *fxp.NumberFormat { return &s.EquipmentWeightFormat }, nil),
 		d.addNumberFormatRow(panel, i18n.Text("Equipment Value"),
 			i18n.Text("How many decimal places the value columns and the carried & other equipment totals on the sheet are rounded to for display"),
-			func(s *gurps.SheetSettings) *fxp.NumberFormat { return &s.EquipmentValueFormat }),
+			func(s *gurps.SheetSettings) *fxp.NumberFormat { return &s.EquipmentValueFormat },
+			d.rebuildSellMoney), // The sell money list shows its values in this format.
 	}
 	content.AddChild(panel)
 }
 
 // addNumberFormatRow adds the popup that chooses how many decimal places one of the sheet's number formats rounds to,
-// with the given tooltip, and the checkbox that has it pad with zeros out to that many.
-func (d *sheetSettingsDockable) addNumberFormatRow(panel *unison.Panel, title, tooltip string, format func(s *gurps.SheetSettings) *fxp.NumberFormat) sheetNumberFormatRow {
+// with the given tooltip, and the checkbox that has it pad with zeros out to that many. Either change calls changed,
+// if given, before the open sheets are told of it.
+func (d *sheetSettingsDockable) addNumberFormatRow(panel *unison.Panel, title, tooltip string, format func(s *gurps.SheetSettings) *fxp.NumberFormat, changed func()) sheetNumberFormatRow {
 	row := sheetNumberFormatRow{format: format}
 	current := format(d.settings())
+	apply := func(change func(f *fxp.NumberFormat)) {
+		change(format(d.settings()))
+		if changed != nil {
+			changed()
+		}
+	}
 	row.popup = d.createSettingPopup(panel, title, fxp.DecimalPlaces, current.Places,
-		func(item fxp.DecimalPlace) { format(d.settings()).Places = item })
+		func(item fxp.DecimalPlace) { apply(func(f *fxp.NumberFormat) { f.Places = item }) })
 	row.popup.Tooltip = newWrappedTooltip(tooltip)
 	row.pad = d.addCheckBox(panel, i18n.Text("Pad with zeros"), "", current.PadWithZeros, func(checked bool) {
-		format(d.settings()).PadWithZeros = checked
+		apply(func(f *fxp.NumberFormat) { f.PadWithZeros = checked })
 		d.syncSheet(false)
 	})
 	// Every row's checkbox shows the same title, so each is named for the value it pads.
@@ -410,7 +425,7 @@ func (d *sheetSettingsDockable) createTrading(content *unison.Panel) {
 	panel.AddChild(label)
 	d.sellMoneyPanel = unison.NewPanel()
 	d.sellMoneyPanel.SetLayout(&unison.FlexLayout{
-		Columns:  2,
+		Columns:  sellMoneyColumns,
 		HSpacing: unison.StdHSpacing,
 		VSpacing: unison.StdVSpacing,
 	})
@@ -418,6 +433,7 @@ func (d *sheetSettingsDockable) createTrading(content *unison.Panel) {
 	d.sellMoneyPanel.SetLayoutData(&unison.FlexLayoutData{HAlign: align.Fill, HGrab: true})
 	d.sellMoneyPanel.Tooltip = newWrappedTooltip(i18n.Text("The money that selling equipment pays out in, using as few items as possible. Drag equipment tagged \"%s\", which is what buying spends, from an equipment library here to add it.",
 		gurps.MoneyTag))
+	d.installSellMoneyBanding()
 	d.installSellMoneyDropSupport()
 	d.rebuildSellMoney()
 	panel.AddChild(d.sellMoneyPanel)
@@ -518,34 +534,113 @@ func (d *sheetSettingsDockable) addSellMoney(data any) bool {
 	return added
 }
 
-// rebuildSellMoney fills the sell money list from the settings: a row for each item, named as the library names it,
-// with a button that removes it, or a hint saying how to add one when there are none.
+// installSellMoneyBanding has the sell money list draw its rows on the background a table gives its rows, banding
+// every other one as a table does. The border is drawn after this, over the edge of the fill.
+func (d *sheetSettingsDockable) installSellMoneyBanding() {
+	p := d.sellMoneyPanel
+	p.DrawCallback = func(gc *unison.Canvas, _ geom.Rect) {
+		area := p.ContentRect(true)
+		gc.DrawRect(area, unison.ThemeBelowSurface.Paint(gc, area, paintstyle.Fill))
+		for i, row := range d.sellMoneyRows {
+			if i&1 == 1 {
+				band := sellMoneyRowBounds(row, area)
+				gc.DrawRect(band, unison.ThemeBanding.Paint(gc, band, paintstyle.Fill))
+			}
+		}
+	}
+}
+
+// sellMoneyRowBounds returns the band a row of the sell money list is drawn on: as wide as the list, and as tall as the
+// row's widgets plus half of the spacing to the rows on either side, so that the bands of neighboring rows meet.
+func sellMoneyRowBounds(row []unison.Paneler, area geom.Rect) geom.Rect {
+	var bounds geom.Rect
+	for i, w := range row {
+		if i == 0 {
+			bounds = w.AsPanel().FrameRect()
+		} else {
+			bounds = bounds.Union(w.AsPanel().FrameRect())
+		}
+	}
+	bounds.X = area.X
+	bounds.Width = area.Width
+	bounds.Y -= unison.StdVSpacing / 2
+	bounds.Height += unison.StdVSpacing
+	return bounds
+}
+
+// sellMoneyEntry is a sell money source along with the library item it refers to, nil when the library lacks it, and
+// the item's value.
+type sellMoneyEntry struct {
+	src   gurps.Source
+	eqp   *gurps.Equipment
+	value fxp.Int
+}
+
+// sortedSellMoney returns the sell money of the settings in the order the list shows it: by increasing value, those of
+// equal value in the order they were added, with the entries the library lacks last.
+func (d *sheetSettingsDockable) sortedSellMoney() []sellMoneyEntry {
+	sources := d.settings().SellMoney
+	entries := make([]sellMoneyEntry, 0, len(sources))
+	for _, src := range sources {
+		entry := sellMoneyEntry{src: src, eqp: gurps.EquipmentForSource(src)}
+		if entry.eqp != nil {
+			entry.value = entry.eqp.AdjustedValue()
+		}
+		entries = append(entries, entry)
+	}
+	slices.SortStableFunc(entries, func(a, b sellMoneyEntry) int {
+		if (a.eqp == nil) != (b.eqp == nil) {
+			if a.eqp == nil {
+				return 1
+			}
+			return -1
+		}
+		return cmp.Compare(a.value, b.value)
+	})
+	return entries
+}
+
+// rebuildSellMoney fills the sell money list from the settings: a row for each item, in increasing order of value (see
+// sortedSellMoney), named as the library names it and showing its value, with a button that removes it, or a hint
+// saying how to add one when there are none.
 func (d *sheetSettingsDockable) rebuildSellMoney() {
 	p := d.sellMoneyPanel
 	p.RemoveAllChildren()
-	sources := d.settings().SellMoney
-	if len(sources) == 0 {
+	d.sellMoneyRows = nil
+	entries := d.sortedSellMoney()
+	if len(entries) == 0 {
 		hint := unison.NewLabel()
 		hint.Font = fonts.FieldSecondary
 		hint.OnBackgroundInk = dimmedTextColor
 		hint.SetTitle(i18n.Text("Drag equipment tagged \"%s\" from an equipment library here.", gurps.MoneyTag))
-		hint.SetLayoutData(&unison.FlexLayoutData{HSpan: 2})
+		hint.SetLayoutData(&unison.FlexLayoutData{HSpan: sellMoneyColumns})
 		p.AddChild(hint)
 	}
-	for i, src := range sources {
+	for i, entry := range entries {
+		src := entry.src
 		label := unison.NewLabel()
+		label.OnBackgroundInk = unison.ThemeOnBelowSurface
+		layout := &unison.FlexLayoutData{HAlign: align.Fill, VAlign: align.Middle, HGrab: true}
+		p.AddChild(label)
+		row := []unison.Paneler{label}
 		var name string
-		if eqp := gurps.EquipmentForSource(src); eqp != nil {
-			name = eqp.String()
+		if entry.eqp != nil {
+			name = entry.eqp.String()
 			label.SetTitle(name)
+			value := unison.NewLabel()
+			value.OnBackgroundInk = unison.ThemeOnBelowSurface
+			value.SetTitle(i18n.Text("$%s", d.settings().FormatEquipmentValue(entry.value)))
+			value.SetLayoutData(&unison.FlexLayoutData{HAlign: align.End, VAlign: align.Middle})
+			p.AddChild(value)
+			row = append(row, value)
 		} else {
 			name = i18n.Text("%s (%s)", src.Path, src.TID)
 			label.SetTitle(i18n.Text("%s — not found", name))
 			label.OnBackgroundInk = dimmedTextColor
 			label.Tooltip = newWrappedTooltip(src.String())
+			layout.HSpan = 2 // There is no value to show, so the name takes its column too.
 		}
-		label.SetLayoutData(&unison.FlexLayoutData{HAlign: align.Fill, VAlign: align.Middle, HGrab: true})
-		p.AddChild(label)
+		label.SetLayoutData(layout)
 		remove := unison.NewSVGButton(unison.TrashSVG)
 		remove.Accessibility.Name = i18n.Text("Remove %s", name)
 		remove.Tooltip = newWrappedTooltip(remove.Accessibility.Name)
@@ -567,6 +662,7 @@ func (d *sheetSettingsDockable) rebuildSellMoney() {
 		}
 		remove.SetLayoutData(&unison.FlexLayoutData{VAlign: align.Middle})
 		p.AddChild(remove)
+		d.sellMoneyRows = append(d.sellMoneyRows, append(row, remove))
 	}
 	p.MarkForLayoutRecursivelyUpward()
 	p.MarkForRedraw()
