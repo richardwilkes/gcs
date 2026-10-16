@@ -95,7 +95,7 @@ func displayEditor[N gurps.Node[N], D gurps.EditorData[N]](owner Rebuildable, ta
 	e.AddChild(e.scroll)
 	e.fillContent(content, initContent)
 	e.placeInDock(target.ID())
-	content.RequestFocus()
+	e.focusAtStart(content)
 	return e
 }
 

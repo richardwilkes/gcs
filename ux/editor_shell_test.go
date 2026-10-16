@@ -10,8 +10,11 @@
 package ux
 
 import (
+	"math"
+	"slices"
 	"testing"
 
+	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/dgroup"
 	"github.com/richardwilkes/gcs/v5/ux/uxtest"
 	"github.com/richardwilkes/toolbox/v2/check"
@@ -273,4 +276,47 @@ func TestPointsEditorOpensBesideTheSheetAndReturnsToIt(t *testing.T) {
 	c.Equal(e, uxtest.SoleEditor[*pointsEditor](t, screen, isPointsEditor),
 		"asking for the editor again activates the one that is open instead of opening another")
 	uxtest.CloseEditorWithoutPrompt(t, screen, e)
+}
+
+// An editor opening in a new slice of the dock that is narrower than its content gets the focus on its name field
+// without being scrolled down. It starts at the content's left edge when the start of the field fits there, and
+// otherwise scrolls only far enough to show the start of the field across half the view, which keeps its label in view.
+func TestEditorOpensScrolledToTheStart(t *testing.T) {
+	c := check.New(t)
+	screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
+	sheet, ok := uxtest.OpenedByAction(t, screen, newCharacterSheetAction).(*Sheet)
+	if !ok {
+		t.Fatal("New Character Sheet must open a character sheet")
+	}
+	for _, scale := range []int{100, 300} {
+		uxtest.SwapForTest(t, &gurps.GlobalSettings().General.InitialEditorUIScale, scale)
+		var e *editor[*gurps.Trait, *gurps.TraitEditData]
+		var h, v float32
+		var wider, nameFocused, labelVisible, fieldStartVisible bool
+		screen.Do(func() {
+			trait := gurps.NewTrait(sheet.Entity(), nil, false)
+			trait.Name = "A trait whose name is long enough to run past the edge of a narrow view"
+			e = EditTrait(sheet, trait)
+			h, v = e.scroll.Position()
+			wider = e.content.FrameRect().Width > e.scroll.ContentView().FrameRect().Width
+			name := stringFieldLabeled(e.content, "Name")
+			if name == nil {
+				return
+			}
+			nameFocused = wnd.CurrentFocus() == name.AsPanel()
+			children := e.content.Children()
+			labelVisible = fullyVisible(children[slices.Index(children, name.AsPanel())-1])
+			fieldStart := name.RectToRoot(name.ContentRect(false))
+			fieldStartVisible = math.Abs(float64(visibleRect(name.AsPanel()).X-fieldStart.X)) <= viewSlop
+		})
+		uxtest.CloseEditorWithoutPrompt(t, screen, e)
+		c.True(wider, "precondition: at %d%% the content is wider than its view", scale)
+		c.True(nameFocused, "at %d%% the name field has the focus", scale)
+		c.True(labelVisible, "at %d%% its label is in view", scale)
+		c.True(fieldStartVisible, "at %d%% and so is its start", scale)
+		c.Equal(float32(0), v, "at %d%% the editor is scrolled to its top", scale)
+		if scale == 100 {
+			c.Equal(float32(0), h, "and at %d%% to its left edge, where the start of the field fits", scale)
+		}
+	}
 }
