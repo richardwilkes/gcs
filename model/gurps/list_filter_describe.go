@@ -88,10 +88,16 @@ func (c *FilterCondition) describeList(title string, em func(string) string) str
 	compare := c.Text.Compare.EnsureValid()
 	qualifiers := criteria.SplitQualifiers(nameable.Apply(c.Text.Qualifier, nil))
 	text := describeComparison(compare.ListClause(), compare.Positive(), qualifiers, em)
-	if c.Not {
+	switch {
+	case c.Not && c.IncludeDisabled:
+		return i18n.Text("Must not %s %s, including disabled modifiers", title, text)
+	case c.Not:
 		return i18n.Text("Must not %s %s", title, text)
+	case c.IncludeDisabled:
+		return i18n.Text("Must %s %s, including disabled modifiers", title, text)
+	default:
+		return i18n.Text("Must %s %s", title, text)
 	}
-	return i18n.Text("Must %s %s", title, text)
 }
 
 // Describe returns what the editor says of a node this version of GCS doesn't understand.

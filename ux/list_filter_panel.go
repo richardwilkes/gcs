@@ -183,6 +183,13 @@ func (p *listFilterPanel) editor(cond *gurps.FilterCondition, path string) *unis
 			&cond.Text, true, info.suggestions); field != nil {
 			field.Tooltip = newWrappedTooltip(i18n.Text(`Separate multiple values with commas to match any one of them, e.g. "Sword, Axe"`))
 		}
+		if info.disableable {
+			p.optional(flow, path, "disabled", i18n.Text("+ disabled modifiers"), i18n.Text("Include Disabled Modifiers"),
+				i18n.Text("Exclude Disabled Modifiers"), cond.IncludeDisabled,
+				func() { cond.IncludeDisabled = true },
+				func() { cond.IncludeDisabled = false },
+				func(chip *unison.Panel) { addJoiningWords(chip, i18n.Text("including disabled modifiers")) })
+		}
 	case gurps.FilterFieldNumber:
 		p.numberCriteria(flow, key("number"), i18n.Text("Number"), filterNumericWords(info), &cond.Number, fxp.Min,
 			fxp.Max, false, true)
@@ -213,8 +220,9 @@ func mustWord(not bool) string {
 // resetCriteria puts the condition's criteria back to where a new condition starts. Each zero criterion accepts
 // anything, and a yes/no field, which has none, then requires the value to be true. Only the criterion that goes with
 // the field's kind is ever consulted, so the others are cleared rather than kept around where nothing shows or uses
-// them, yet would still be written out to disk.
+// them, yet would still be written out to disk. The same goes for including disabled modifiers.
 func resetCriteria(cond *gurps.FilterCondition) {
+	cond.IncludeDisabled = false
 	cond.Text = criteria.Text{}
 	cond.Number = criteria.Number{}
 	cond.Weight = criteria.Weight{}

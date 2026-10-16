@@ -755,12 +755,13 @@ func suggestingKeys[T gurps.Node[T]](fields []*gurps.FilterField[T]) []string {
 // or losing them is noticed.
 func TestFilterFieldSuggestionSources(t *testing.T) {
 	c := check.New(t)
-	c.Equal([]string{"tags", "container_type"}, suggestingKeys(gurps.TraitFilterFields()), "traits")
+	c.Equal([]string{"tags", "modifier_names", "modifier_tags", "container_type"},
+		suggestingKeys(gurps.TraitFilterFields()), "traits")
 	c.Equal([]string{"tags"}, suggestingKeys(gurps.TraitModifierFilterFields()), "trait modifiers")
 	c.Equal([]string{"tags", "difficulty"}, suggestingKeys(gurps.SkillFilterFields()), "skills")
 	c.Equal([]string{"tags", "difficulty", "college", "power_source", "class", "resist"},
 		suggestingKeys(gurps.SpellFilterFields()), "spells")
-	c.Equal([]string{"tags", "tech_level", "legality_class", "container_type"},
+	c.Equal([]string{"tags", "tech_level", "legality_class", "modifier_names", "modifier_tags", "container_type"},
 		suggestingKeys(gurps.EquipmentFilterFields()), "equipment")
 	c.Equal([]string{"tags", "tech_level"}, suggestingKeys(gurps.EquipmentModifierFilterFields()),
 		"equipment modifiers")
@@ -1097,6 +1098,7 @@ func TestListFilterHash(t *testing.T) {
 		{"group combining mode", func(f *gurps.ListFilter) { f.Root.All = false }},
 		{"condition negation", func(f *gurps.ListFilter) { condAt(f, 0).Not = true }},
 		{"condition field", func(f *gurps.ListFilter) { condAt(f, 0).Field = "notes" }},
+		{"including disabled modifiers", func(f *gurps.ListFilter) { condAt(f, 0).IncludeDisabled = true }},
 		{"text comparison", func(f *gurps.ListFilter) { condAt(f, 0).Text.Compare = criteria.ContainsText }},
 		{"text qualifier", func(f *gurps.ListFilter) { condAt(f, 0).Text.Qualifier = "Acute Vision" }},
 		{"number comparison", func(f *gurps.ListFilter) { condAt(f, 1).Number.Compare = criteria.AtMostNumber }},

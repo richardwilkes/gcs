@@ -81,6 +81,8 @@ type FilterCondition struct {
 	Text   criteria.Text   `json:"text,omitzero"`
 	Number criteria.Number `json:"number,omitzero"`
 	Weight criteria.Weight `json:"weight,omitzero"`
+	// IncludeDisabled makes a field drawn from modifiers include the disabled ones; other fields ignore it.
+	IncludeDisabled bool `json:"include_disabled,omitzero"`
 }
 
 // UnknownFilterNode holds a filter node whose type this version of GCS doesn't recognize. It can't be checked, and its
@@ -296,6 +298,7 @@ func (c *FilterCondition) Hash(h hash.Hash) {
 	xhash.Num8(h, filternode.Condition)
 	xhash.Bool(h, c.Not)
 	xhash.StringWithLen(h, c.Field)
+	xhash.Bool(h, c.IncludeDisabled)
 	c.Text.Hash(h)
 	c.Number.Hash(h)
 	c.Weight.Hash(h)

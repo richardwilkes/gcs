@@ -506,6 +506,76 @@ func TestListFilterPanelPill(t *testing.T) {
 	}
 }
 
+// TestListFilterPanelDisabledModifiersPill checks that only a field drawn from modifiers offers the pill that includes
+// disabled modifiers, that adding and removing it are each one step to undo, that the chip and the sentence say so, and
+// that a change of field drops it.
+func TestListFilterPanelDisabledModifiersPill(t *testing.T) {
+	c := check.New(t)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
+	f := gurps.NewListFilter("")
+	names := gurps.NewFilterCondition(f.Root, "modifier_names")
+	names.Text = criteria.Text{Compare: criteria.IsText, Qualifier: "Cheap"}
+	tags := gurps.NewFilterCondition(f.Root, "tags")
+	f.Root.Children = gurps.FilterNodes{names, tags}
+	p, host := showListFilterPanel(t, screen, f)
+	c.False(names.IncludeDisabled, "precondition: the condition starts out on enabled modifiers only")
+	c.False(tags.IncludeDisabled, "precondition: the tags condition doesn't include disabled modifiers")
+	click := func(key string) {
+		screen.Do(func() {
+			buttons := uxtest.PanelsOfType[*unison.Button](p.FindRefKey(key))
+			c.NotEqual(0, len(buttons), "expected a button within %s", key)
+			if len(buttons) != 0 {
+				buttons[len(buttons)-1].ClickCallback()
+			}
+		})
+	}
+	screen.Do(func() { p.toggle("r.1") })
+	screen.Do(func() {
+		c.NotNil(p.FindRefKey("r.1:field"), "precondition: the tags condition is open")
+		c.Nil(p.FindRefKey("r.1:add disabled"), "a field not drawn from modifiers has no pill")
+	})
+	screen.Do(func() { p.toggle("r.0") })
+	click("r.0:add disabled")
+	screen.Do(func() {
+		cond := filterConditionAt(t, p, "r.0")
+		c.True(cond.IncludeDisabled, "the pill includes disabled modifiers")
+		c.Equal("Undo Include Disabled Modifiers", host.undoMgr.UndoTitle())
+		c.Nil(p.FindRefKey("r.0:add disabled"), "the chip shows instead of the pill")
+		labels := uxtest.PanelsOfType[*unison.Label](p.FindRefKey("r.0:disabled" + keyChip))
+		words := make([]string, 0, len(labels))
+		for _, label := range labels {
+			words = append(words, label.Text.String())
+		}
+		c.Equal([]string{"including disabled modifiers"}, words, "the chip says what it does")
+		host.undoMgr.Undo()
+	})
+	screen.Do(func() {
+		c.False(filterConditionAt(t, p, "r.0").IncludeDisabled, "undoing the addition drops disabled modifiers")
+		host.undoMgr.Redo()
+	})
+	screen.Do(func() { p.toggle("r.0") })
+	screen.Do(func() {
+		c.Equal("Must have modifier names where at least one is Cheap, including disabled modifiers",
+			sentenceText(p, "r.0"))
+	})
+	screen.Do(func() { p.toggle("r.0") })
+	click("r.0:disabled" + keyChip)
+	screen.Do(func() {
+		c.False(filterConditionAt(t, p, "r.0").IncludeDisabled, "removing the chip drops disabled modifiers")
+		c.Equal("Undo Exclude Disabled Modifiers", host.undoMgr.UndoTitle())
+		host.undoMgr.Undo()
+	})
+	screen.Do(func() {
+		c.True(filterConditionAt(t, p, "r.0").IncludeDisabled, "undoing the removal includes them again")
+		if popup, ok := refAs[*unison.PopupMenu[string]](t, p.AsPanel(), "r.0:field"); ok {
+			popup.Select("modifier_tags")
+		}
+	})
+	screen.Do(func() {
+		c.False(filterConditionAt(t, p, "r.0").IncludeDisabled, "a change of field drops it, as it does the criteria")
+	})
+}
+
 func TestListFilterPanelMoreMenu(t *testing.T) {
 	c := check.New(t)
 	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
