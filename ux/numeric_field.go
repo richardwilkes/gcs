@@ -20,6 +20,10 @@ import (
 	"github.com/richardwilkes/unison/enums/mod"
 )
 
+// Beep plays the system beep sound when a field refuses typed or pasted input. Tests replace it with a no-op so that
+// running them makes no noise.
+var Beep = unison.Beep
+
 // NumericField holds a numeric value that can be edited.
 type NumericField[T xmath.Integer | xmath.Float] struct {
 	undoableField[T]
@@ -223,12 +227,12 @@ func (f *NumericField[T]) tooltipTextForValidation() string {
 func (f *NumericField[T]) runeTyped(ch rune) bool {
 	if !unicode.IsControl(ch) {
 		if f.minValue >= 0 && ch == '-' {
-			unison.Beep()
+			Beep()
 			return false
 		}
 		if text := strings.TrimSpace(string(f.RunesIfPasted([]rune{ch}))); text != "-" && text != "+" {
 			if _, err := f.extract(text); err != nil || f.wouldExceedMax(string(ch)) {
-				unison.Beep()
+				Beep()
 				return false
 			}
 		}
@@ -244,7 +248,7 @@ func (f *NumericField[T]) refuseAboveMax() {
 	f.limitToMax = true
 	f.InstallCmdHandlers(unison.PasteItemID, func(_ any) bool { return f.CanPaste() }, func(_ any) {
 		if f.wouldExceedMax(unison.ClipboardGetText()) {
-			unison.Beep()
+			Beep()
 			return
 		}
 		f.Paste()
@@ -253,7 +257,7 @@ func (f *NumericField[T]) refuseAboveMax() {
 	f.KeyDownCallback = func(keyCode unison.KeyCode, mods mod.Modifiers, repeat bool) bool {
 		if keyCode == unison.KeyV && mods&mod.NonSticky == mod.OSMenuCommand() && f.CanPaste() &&
 			f.wouldExceedMax(unison.ClipboardGetText()) {
-			unison.Beep()
+			Beep()
 			return true
 		}
 		return keyDown(keyCode, mods, repeat)

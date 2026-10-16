@@ -12,7 +12,6 @@ package ux
 import (
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/toolbox/v2/errs"
-	"github.com/richardwilkes/unison"
 )
 
 // DecimalField is a field that holds a decimal (fixed-point) number.
@@ -49,7 +48,7 @@ func refuseFractions(f *DecimalField) {
 	runeTyped := f.RuneTypedCallback
 	f.RuneTypedCallback = func(ch rune) bool {
 		if ch == '.' {
-			unison.Beep()
+			Beep()
 			return false
 		}
 		return runeTyped(ch)
