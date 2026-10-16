@@ -17,6 +17,7 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/criteria"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/prereq"
+	"github.com/richardwilkes/gcs/v5/model/nameable"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/toolbox/v2/xbytes"
 	"github.com/richardwilkes/toolbox/v2/xhash"
@@ -25,11 +26,13 @@ import (
 
 var _ Prereq = &PrereqList{}
 
-// PrereqList holds a prereq that contains a list of prerequisites.
+// PrereqList holds a prereq that contains a list of prerequisites. Not swaps met and unmet, making "all of" into "not
+// all of" and "any of" into "none of".
 type PrereqList struct {
 	Parent  *PrereqList     `json:"-"`
 	Type    prereq.Type     `json:"type"`
 	All     bool            `json:"all"`
+	Not     bool            `json:"not,omitzero"`
 	WhenTL  criteria.Number `json:"when_tl,omitzero"`
 	Prereqs Prereqs         `json:"prereqs,omitempty"`
 }
@@ -156,13 +159,14 @@ func (p *PrereqList) Evaluate(entity *Entity, exclude any, visit func(one Prereq
 // Satisfied implements Prereq. A list is satisfied when Evaluate finds it met or skipped. hasEquipmentPenalty, if not
 // nil, is set to true when this list is unsatisfied and an unmet equipped-equipment prerequisite is among what made it
 // so: one of its own, or one reached through nested lists that are each unsatisfied. An "all of" list that also fails
-// for some other prerequisite sets it, while an unmet equipment prerequisite inside a satisfied or skipped nested list
-// never does.
+// for some other prerequisite sets it, while an unmet equipment prerequisite inside a satisfied, skipped or negated
+// nested list never does.
 //
-// The text written to buffer lists what is unmet. A skipped list writes nothing, a list with a single unmet item
-// writes just that item, and a nested list with the same mode as its parent writes its items alongside its parent's.
-// Any other list writes a heading with its items indented beneath it. This list is treated as though its caller were
-// an "all of" list, so the items of an "all of" list are written without a heading.
+// The text written to buffer lists what is unmet. A skipped list writes nothing, a list with a single unmet item writes
+// just that item, and a nested list with the same mode as its parent writes its items alongside its parent's. Any other
+// list writes a heading with its items indented beneath it, which for a negated list are those that are met, or those
+// that failed when the list did. This list is treated as though its caller were an "all of" list, so the items of an
+// "all of" list are written without a heading.
 func (p *PrereqList) Satisfied(entity *Entity, exclude any, buffer *xbytes.InsertBuffer, prefix string, hasEquipmentPenalty *bool) bool {
 	result, _ := p.evaluate(&prereqEvaluation{entity: entity, exclude: exclude, prefix: prefix}, buffer,
 		hasEquipmentPenalty, p.All)
@@ -193,18 +197,24 @@ func (p *PrereqList) evaluate(ev *prereqEvaluation, buffer *xbytes.InsertBuffer,
 	if buffer != nil {
 		local = &xbytes.InsertBuffer{}
 	}
+	var met []Prereq
 	eqpPenalty := false
 	for _, one := range p.Prereqs {
+		out := local
+		if p.Not && local != nil {
+			// What is unmet doesn't count against a negated list, so only what failed is kept.
+			out = &xbytes.InsertBuffer{}
+		}
 		childResult := CheckMet
 		if list, ok := one.(*PrereqList); ok {
 			var n int
-			childResult, n = list.evaluate(ev, local, &eqpPenalty, list.All == p.All)
+			childResult, n = list.evaluate(ev, out, &eqpPenalty, list.All == p.All)
 			items += n
 		} else {
 			var reason string
 			if script, isScript := one.(*ScriptPrereq); isScript {
-				childResult, reason = script.evaluate(ev.entity, ev.exclude, local, ev.prefix)
-			} else if !one.Satisfied(ev.entity, ev.exclude, local, ev.prefix, &eqpPenalty) {
+				childResult, reason = script.evaluate(ev.entity, ev.exclude, out, ev.prefix)
+			} else if !one.Satisfied(ev.entity, ev.exclude, out, ev.prefix, &eqpPenalty) {
 				childResult = CheckUnmet
 			}
 			if childResult != CheckMet {
@@ -214,20 +224,50 @@ func (p *PrereqList) evaluate(ev *prereqEvaluation, buffer *xbytes.InsertBuffer,
 				ev.visit(one, childResult, reason)
 			}
 		}
+		if p.Not && local != nil {
+			switch childResult {
+			case CheckMet:
+				met = append(met, one)
+			case CheckFailed:
+				local.WriteString(out.String())
+			default:
+			}
+		}
 		tally.add(childResult)
 	}
-	result = tally.combine(p.All)
+	result = tally.combine(p.All).negate(p.Not)
 	if ev.visit != nil {
 		ev.visit(p, result, "")
 	}
 	if result == CheckMet || result == CheckSkipped {
 		return result, 0
 	}
-	if eqpPenalty && hasEquipmentPenalty != nil {
+	if eqpPenalty && hasEquipmentPenalty != nil && !p.Not {
 		*hasEquipmentPenalty = true
 	}
 	if buffer == nil {
 		return result, 0
+	}
+	if p.Not {
+		buffer.WriteString(ev.prefix)
+		if p.All {
+			buffer.WriteString(i18n.Text("Requires not all of:"))
+		} else {
+			buffer.WriteString(i18n.Text("Requires none of:"))
+		}
+		if result == CheckFailed {
+			buffer.WriteString(strings.ReplaceAll(local.String(), "\n", "\n\t"))
+			return result, 1
+		}
+		var replacements map[string]string
+		if na, ok := ev.exclude.(nameable.Accesser); ok {
+			replacements = na.NameableReplacements()
+		}
+		for _, one := range met {
+			buffer.WriteString(strings.ReplaceAll(ev.prefix+one.Describe(ev.entity, replacements, plainText), "\n",
+				"\n\t"))
+		}
+		return result, 1
 	}
 	if flatten || items == 1 {
 		buffer.WriteString(local.String())
@@ -259,9 +299,13 @@ func (p *PrereqList) visitSkipped(visit func(one Prereq, result CheckResult, rea
 }
 
 // Describe implements Prereq. The children are joined with "and" or "or" to match the list's mode, a nested list that
-// joins more than one is parenthesized, a tech level condition is noted at the end, and empty lists are left out.
+// joins more than one is parenthesized, a negated list says so, a tech level condition is noted at the end, and empty
+// lists are left out.
 func (p *PrereqList) Describe(entity *Entity, replacements map[string]string, em func(string) string) string {
-	text, _ := p.describeChildren(entity, replacements, em, false)
+	text, n := p.describeChildren(entity, replacements, em, p.Not)
+	if n != 0 {
+		text = p.describeNot(text)
+	}
 	return text + p.describeWhenTL()
 }
 
@@ -274,10 +318,15 @@ func (p *PrereqList) describeChildren(entity *Entity, replacements map[string]st
 		lower = lower || len(parts) != 0
 		if list, isList := one.(*PrereqList); isList {
 			var n int
-			if text, n = list.describeChildren(entity, replacements, em, lower); n == 0 {
+			if text, n = list.describeChildren(entity, replacements, em, lower || list.Not); n == 0 {
 				continue
 			}
-			if n > 1 {
+			switch {
+			case list.Not:
+				if text = list.describeNot(text); lower {
+					text = lowerFirst(text)
+				}
+			case n > 1:
 				text = "(" + text + ")"
 			}
 			text += list.describeWhenTL()
@@ -294,6 +343,18 @@ func (p *PrereqList) describeChildren(entity *Entity, replacements map[string]st
 		joiner = i18n.Text(" and ")
 	}
 	return strings.Join(parts, joiner), len(parts)
+}
+
+// describeNot returns the text of the children of a negated list as the list says them, or unchanged when it isn't one.
+func (p *PrereqList) describeNot(text string) string {
+	switch {
+	case !p.Not:
+		return text
+	case p.All:
+		return i18n.Text("Not all of (%s)", text)
+	default:
+		return i18n.Text("None of (%s)", text)
+	}
 }
 
 // describeWhenTL returns the note that ends a description of this list when it has a tech level condition, or an empty
@@ -323,6 +384,7 @@ func (p *PrereqList) Hash(h hash.Hash) {
 	}
 	xhash.Num8(h, p.Type)
 	xhash.Bool(h, p.All)
+	xhash.Bool(h, p.Not)
 	p.WhenTL.Hash(h)
 	hashList(h, p.Prereqs)
 }

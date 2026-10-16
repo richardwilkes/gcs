@@ -111,6 +111,10 @@ func TestPrereqListHasNothingToCheck(t *testing.T) {
 // any child it doesn't leave out has failed, a list skipped by its tech level skips everything in it without running
 // its scripts, a list leaves out its skipped children and is skipped when nothing is left, and each script runs once.
 func TestPrereqListEvaluate(t *testing.T) {
+	negated := func(p *PrereqList) *PrereqList {
+		p.Not = true
+		return p
+	}
 	e := NewEntity()
 	e.Profile.TechLevel = "3"
 	script := func(text string) *ScriptPrereq {
@@ -154,6 +158,12 @@ func TestPrereqListEvaluate(t *testing.T) {
 		{"any of, only skipped groups", list(false, later, list(true, list(true))), CheckSkipped},
 		{"any of, an empty group and one unmet", list(false, list(true), script("false")), CheckUnmet},
 		{"empty", list(true), CheckSkipped},
+		{"none of, none met", negated(list(false, script("false"), script("false"))), CheckMet},
+		{"none of, one met", negated(list(false, script("false"), script("true"))), CheckUnmet},
+		{"not all of, all met", negated(list(true, script("true"), script("true"))), CheckUnmet},
+		{"not all of, one unmet", negated(list(true, script("true"), script("false"))), CheckMet},
+		{"none of, one failed", negated(list(false, script("false"), script("nope("))), CheckFailed},
+		{"none of, empty", negated(list(false)), CheckSkipped},
 	} {
 		t.Run(one.name, func(t *testing.T) {
 			c := check.New(t)

@@ -11,6 +11,7 @@ package gurps
 
 import (
 	"hash"
+	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/criteria"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
@@ -23,14 +24,19 @@ import (
 
 var _ Prereq = &TraitPrereq{}
 
-// TraitPrereq holds a prereq against a Trait.
+// TraitPrereq holds a prereq against a Trait. Its modifier criteria are met by an enabled modifier that meets them all.
 type TraitPrereq struct {
-	Parent        *PrereqList     `json:"-"`
-	Type          prereq.Type     `json:"type"`
-	Has           bool            `json:"has"`
-	NameCriteria  criteria.Text   `json:"name,omitzero"`
-	LevelCriteria criteria.Number `json:"level,omitzero"`
-	NotesCriteria criteria.Text   `json:"notes,omitzero"`
+	Parent                *PrereqList     `json:"-"`
+	Type                  prereq.Type     `json:"type"`
+	Has                   bool            `json:"has"`
+	NameCriteria          criteria.Text   `json:"name,omitzero"`
+	LevelCriteria         criteria.Number `json:"level,omitzero"`
+	PointsCriteria        criteria.Number `json:"points,omitzero"`
+	TagsCriteria          criteria.Text   `json:"tags,omitzero"`
+	NotesCriteria         criteria.Text   `json:"notes,omitzero"`
+	ModifierNameCriteria  criteria.Text   `json:"modifier_name,omitzero"`
+	ModifierNotesCriteria criteria.Text   `json:"modifier_notes,omitzero"`
+	ModifierTagsCriteria  criteria.Text   `json:"modifier_tags,omitzero"`
 }
 
 // NewTraitPrereq creates a new TraitPrereq.
@@ -71,7 +77,11 @@ func (p *TraitPrereq) FillWithNameableKeys(m, existing map[string]string) {
 	nameable.Extract(
 		m, existing,
 		p.NameCriteria.Qualifier,
+		p.TagsCriteria.Qualifier,
 		p.NotesCriteria.Qualifier,
+		p.ModifierNameCriteria.Qualifier,
+		p.ModifierNotesCriteria.Qualifier,
+		p.ModifierTagsCriteria.Qualifier,
 	)
 }
 
@@ -86,7 +96,10 @@ func (p *TraitPrereq) Satisfied(entity *Entity, exclude any, tooltip *xbytes.Ins
 	}
 	satisfied := false
 	Traverse(func(t *Trait) bool {
-		if exclude == t || !p.NameCriteria.Matches(replacements, t.NameWithReplacements()) {
+		if exclude == t || !p.NameCriteria.Matches(replacements, t.NameWithReplacements()) ||
+			(p.PointsCriteria.Compare != criteria.AnyNumber && !p.PointsCriteria.Matches(t.AdjustedPoints(nil))) ||
+			(p.TagsCriteria.Compare != criteria.AnyText && !p.TagsCriteria.MatchesList(replacements, t.Tags...)) ||
+			!p.modifierMatches(replacements, t.Modifiers) {
 			return false
 		}
 		notes := t.Notes()
@@ -120,10 +133,48 @@ func (p *TraitPrereq) Describe(_ *Entity, replacements map[string]string, em fun
 		(p.LevelCriteria.Compare != criteria.AtLeastNumber || p.LevelCriteria.Qualifier > 0) {
 		text += i18n.Text(" at level ") + p.LevelCriteria.AltString()
 	}
+	if p.PointsCriteria.Compare != criteria.AnyNumber {
+		text += i18n.Text(" whose point total is ") + p.PointsCriteria.AltString()
+	}
+	text += describeTags(p.TagsCriteria, replacements, em)
 	if p.NotesCriteria.Compare != criteria.AnyText {
 		text += i18n.Text(" whose notes ") + describeText(p.NotesCriteria, replacements, em)
 	}
+	if p.hasModifierCriteria() {
+		var parts []string
+		for _, part := range []string{
+			describeWhose(i18n.Text("whose name"), p.ModifierNameCriteria, replacements, em),
+			describeWhose(i18n.Text("whose notes"), p.ModifierNotesCriteria, replacements, em),
+			describeTags(p.ModifierTagsCriteria, replacements, em),
+		} {
+			if part != "" {
+				parts = append(parts, strings.TrimSpace(part))
+			}
+		}
+		text += i18n.Text(" with a modifier ") + strings.Join(parts, i18n.Text(" and "))
+	}
 	return text
+}
+
+func (p *TraitPrereq) hasModifierCriteria() bool {
+	return p.ModifierNameCriteria.Compare != criteria.AnyText || p.ModifierNotesCriteria.Compare != criteria.AnyText ||
+		p.ModifierTagsCriteria.Compare != criteria.AnyText
+}
+
+// modifierMatches returns true if there are no modifier criteria, or one of the enabled modifiers, containers left
+// out, meets them all.
+func (p *TraitPrereq) modifierMatches(replacements map[string]string, modifiers []*TraitModifier) bool {
+	if !p.hasModifierCriteria() {
+		return true
+	}
+	found := false
+	Traverse(func(mod *TraitModifier) bool {
+		found = p.ModifierNameCriteria.Matches(replacements, mod.NameWithReplacements()) &&
+			p.ModifierNotesCriteria.Matches(replacements, mod.LocalNotesWithReplacements()) &&
+			p.ModifierTagsCriteria.MatchesList(replacements, mod.Tags...)
+		return found
+	}, true, true, modifiers...)
+	return found
 }
 
 // Hash writes this object's contents into the hasher.
@@ -136,5 +187,10 @@ func (p *TraitPrereq) Hash(h hash.Hash) {
 	xhash.Bool(h, p.Has)
 	p.NameCriteria.Hash(h)
 	p.LevelCriteria.Hash(h)
+	p.PointsCriteria.Hash(h)
+	p.TagsCriteria.Hash(h)
 	p.NotesCriteria.Hash(h)
+	p.ModifierNameCriteria.Hash(h)
+	p.ModifierNotesCriteria.Hash(h)
+	p.ModifierTagsCriteria.Hash(h)
 }

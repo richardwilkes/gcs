@@ -71,6 +71,19 @@ func TestCountPrereqsForSpellWithNilEntryInList(t *testing.T) {
 	c.Equal(1, count)
 }
 
+// TestCountPrereqsForSpellSkipsNegatedList verifies that what a negated list holds is not counted, since it is ruled
+// out rather than required.
+func TestCountPrereqsForSpellSkipsNegatedList(t *testing.T) {
+	c := check.New(t)
+	e := NewEntity()
+	addTestSpell(e, "Light", fxp.One)
+	continualLight := addTestSpell(e, "Continual Light", fxp.One)
+	addSpellNamePrereq(continualLight, "Light")
+	c.Equal(1, CountPrereqsForSpell(continualLight, e.Spells), "precondition: Light is counted")
+	continualLight.Prereq.Not = true
+	c.Equal(0, CountPrereqsForSpell(continualLight, e.Spells))
+}
+
 // TestCountPrereqsForSpellSkipsEmptyOption verifies that a list in an "any of" list with nothing to check, whether
 // empty or holding only such lists and nil entries, isn't taken as its cheapest option.
 func TestCountPrereqsForSpellSkipsEmptyOption(t *testing.T) {

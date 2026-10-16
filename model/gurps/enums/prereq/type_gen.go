@@ -26,6 +26,7 @@ const (
 	ContainedQuantity
 	ContainedWeight
 	EquippedEquipment
+	CarriedEquipment
 	Skill
 	Spell
 	Script
@@ -49,6 +50,7 @@ var Types = []Type{
 	ContainedQuantity,
 	ContainedWeight,
 	EquippedEquipment,
+	CarriedEquipment,
 	Skill,
 	Spell,
 	Script,
@@ -80,6 +82,8 @@ func (enum Type) Key() string {
 		return "contained_weight_prereq"
 	case EquippedEquipment:
 		return "equipped_equipment"
+	case CarriedEquipment:
+		return "carried_equipment"
 	case Skill:
 		return "skill_prereq"
 	case Spell:
@@ -104,6 +108,8 @@ func (enum Type) oldKeys() []string {
 	case ContainedWeight:
 		return nil
 	case EquippedEquipment:
+		return nil
+	case CarriedEquipment:
 		return nil
 	case Skill:
 		return nil
@@ -130,7 +136,9 @@ func (enum Type) String() string {
 	case ContainedWeight:
 		return i18n.Text(`a contained weight`)
 	case EquippedEquipment:
-		return i18n.Text(`has equipped equipment`)
+		return i18n.Text(`equipped equipment`)
+	case CarriedEquipment:
+		return i18n.Text(`unequipped carried equipment`)
 	case Skill:
 		return i18n.Text(`a skill`)
 	case Spell:
@@ -159,6 +167,8 @@ func (enum Type) AltString() string {
 		return i18n.Text(`Contained Weight`)
 	case EquippedEquipment:
 		return i18n.Text(`Equipped Equipment`)
+	case CarriedEquipment:
+		return i18n.Text(`Carried Equipment`)
 	case Skill:
 		return i18n.Text(`Skill`)
 	case Spell:

@@ -43,7 +43,7 @@ func showMergeListFiltersDialog(key string, filters []*gurps.ListFilter) (name s
 
 	content.AddChild(NewFieldLeadingLabel(i18n.Text("Match"), false))
 	modes := unison.NewPopupMenu[string]()
-	modes.AddItem(filterAllOf.String(), filterAnyOf.String())
+	modes.AddItem(groupAllOf.String(), groupAnyOf.String())
 	modes.SelectIndex(0)
 	modes.SelectionChangedCallback = func(popup *unison.PopupMenu[string]) { all = popup.SelectedIndex() == 0 }
 	content.AddChild(modes)

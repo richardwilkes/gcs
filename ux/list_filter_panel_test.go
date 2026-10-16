@@ -174,7 +174,7 @@ func TestListFilterPanelRows(t *testing.T) {
 			c.Equal(want, sentenceText(p, path), path)
 		}
 		for path, want := range map[string]string{"r": "All of", "r.2": "None of"} {
-			if pill, ok := refAs[*unison.PopupMenu[filterGroupMode]](t, p.AsPanel(), path+keyPill); ok {
+			if pill, ok := refAs[*unison.PopupMenu[groupMode]](t, p.AsPanel(), path+keyPill); ok {
 				c.Equal(want, pill.Text(), path)
 				c.Contains(strings.ReplaceAll(tooltipText(pill.Tooltip), "\n", " "), "An empty group is left out",
 					"%s's pill explains the choices, an empty group's among them", path)
@@ -304,7 +304,7 @@ func TestListFilterPanelEmptyRoot(t *testing.T) {
 		c.Equal("r"+keyAdd, focusedRefKey(p.Window()), "giving the focus to what adds to the root")
 	})
 
-	for _, mode := range []filterGroupMode{filterAnyOf, filterNoneOf, filterNotAllOf} {
+	for _, mode := range []groupMode{groupAnyOf, groupNoneOf, groupNotAllOf} {
 		f = gurps.NewListFilter("")
 		mode.apply(f.Root)
 		p, _ = showListFilterPanel(t, screen, f)
@@ -319,7 +319,7 @@ func TestListFilterPanelEmptyRoot(t *testing.T) {
 	// An empty root that shows its pill has one add button, beside its placeholder, and adding a group to it adds a
 	// group rather than changing its own type.
 	f = gurps.NewListFilter("")
-	filterNoneOf.apply(f.Root)
+	groupNoneOf.apply(f.Root)
 	p, _ = showListFilterPanel(t, screen, f)
 	screen.Do(func() {
 		c.Nil(p.FindRefKey("r"+keyMore), "the head has no add button of its own")
@@ -327,7 +327,7 @@ func TestListFilterPanelEmptyRoot(t *testing.T) {
 		menuAction(p.treeAddEntries(f.Root, "r"), "All of Group")()
 	})
 	screen.Do(func() {
-		c.Equal(filterNoneOf, groupModeOf(f.Root), "the root keeps its type")
+		c.Equal(groupNoneOf, groupModeOf(f.Root), "the root keeps its type")
 		group, ok := p.node("r.0").(*gurps.FilterGroup)
 		c.True(ok && group.All && !group.Not, "and holds a new all of group")
 		c.NotNil(p.FindRefKey("r"+keyMore), "which brings back the head's add button")
@@ -340,13 +340,13 @@ func TestListFilterPanelEmptyRoot(t *testing.T) {
 	p, host = showListFilterPanel(t, screen, f)
 	screen.Do(func() { menuAction(p.treeAddEntries(f.Root, "r"), "Any of Group")() })
 	screen.Do(func() {
-		c.Equal(filterAnyOf, groupModeOf(f.Root), "Any of Group makes the bare root any of")
-		if pill, ok := refAs[*unison.PopupMenu[filterGroupMode]](t, p.AsPanel(), "r"+keyPill); ok {
-			pill.Select(filterNoneOf)
+		c.Equal(groupAnyOf, groupModeOf(f.Root), "Any of Group makes the bare root any of")
+		if pill, ok := refAs[*unison.PopupMenu[groupMode]](t, p.AsPanel(), "r"+keyPill); ok {
+			pill.Select(groupNoneOf)
 		}
 	})
 	screen.Do(func() {
-		c.Equal(filterNoneOf, groupModeOf(f.Root), "the pill makes it none of")
+		c.Equal(groupNoneOf, groupModeOf(f.Root), "the pill makes it none of")
 		menuAction(p.treeAddEntries(f.Root, "r"), "New Filter")()
 	})
 	screen.Do(func() {
@@ -361,18 +361,18 @@ func TestListFilterPanelEmptyRoot(t *testing.T) {
 	})
 	screen.Do(func() {
 		c.Nil(p.FindRefKey("r"+keyPill), "undoing the choices too leaves the placeholder alone")
-		c.Equal(filterAllOf, groupModeOf(f.Root))
+		c.Equal(groupAllOf, groupModeOf(f.Root))
 		menuAction(p.treeAddEntries(f.Root, "r"), "Any of Group")()
 	})
-	screen.Do(func() { c.Equal(filterAnyOf, groupModeOf(f.Root), "choosing a group type then sets it again") })
+	screen.Do(func() { c.Equal(groupAnyOf, groupModeOf(f.Root), "choosing a group type then sets it again") })
 
 	// A root that only a pill choice gave a head keeps it once it is empty again, even back at All of.
 	f = gurps.NewListFilter("")
 	p, _ = showListFilterPanel(t, screen, f)
 	screen.Do(func() { menuAction(p.treeAddEntries(f.Root, "r"), "New Filter")() })
-	for _, mode := range []filterGroupMode{filterAnyOf, filterAllOf} {
+	for _, mode := range []groupMode{groupAnyOf, groupAllOf} {
 		screen.Do(func() {
-			if pill, ok := refAs[*unison.PopupMenu[filterGroupMode]](t, p.AsPanel(), "r"+keyPill); ok {
+			if pill, ok := refAs[*unison.PopupMenu[groupMode]](t, p.AsPanel(), "r"+keyPill); ok {
 				pill.Select(mode)
 			}
 		})
@@ -386,11 +386,11 @@ func TestListFilterPanelEmptyRoot(t *testing.T) {
 
 	// Choosing All of in the pill of an empty root keeps the pill.
 	f = gurps.NewListFilter("")
-	filterAnyOf.apply(f.Root)
+	groupAnyOf.apply(f.Root)
 	p, _ = showListFilterPanel(t, screen, f)
 	screen.Do(func() {
-		if pill, ok := refAs[*unison.PopupMenu[filterGroupMode]](t, p.AsPanel(), "r"+keyPill); ok {
-			pill.Select(filterAllOf)
+		if pill, ok := refAs[*unison.PopupMenu[groupMode]](t, p.AsPanel(), "r"+keyPill); ok {
+			pill.Select(groupAllOf)
 		}
 	})
 	screen.Do(func() {
@@ -481,16 +481,16 @@ func TestListFilterPanelPill(t *testing.T) {
 	f := newTestListFilter()
 	p, _ := showListFilterPanel(t, screen, f)
 	for _, one := range []struct {
-		mode     filterGroupMode
+		mode     groupMode
 		all, not bool
 	}{
-		{filterAllOf, true, false},
-		{filterAnyOf, false, false},
-		{filterNotAllOf, true, true},
-		{filterNoneOf, false, true},
+		{groupAllOf, true, false},
+		{groupAnyOf, false, false},
+		{groupNotAllOf, true, true},
+		{groupNoneOf, false, true},
 	} {
 		screen.Do(func() {
-			if pill, ok := refAs[*unison.PopupMenu[filterGroupMode]](t, p.AsPanel(), "r.2"+keyPill); ok {
+			if pill, ok := refAs[*unison.PopupMenu[groupMode]](t, p.AsPanel(), "r.2"+keyPill); ok {
 				pill.Select(one.mode)
 			}
 		})
@@ -519,8 +519,8 @@ func TestListFilterPanelMoreMenu(t *testing.T) {
 		}, filterShape(f.Root), "a wrapped node goes in a group of the other kind")
 		c.True(slices.Contains(menuLabels(p.moreEntries(p.node("r.0"), "r.0")), "Ungroup"),
 			"a group of one can be ungrouped")
-		if pill, ok := refAs[*unison.PopupMenu[filterGroupMode]](t, p.AsPanel(), "r.0"+keyPill); ok {
-			pill.Select(filterNoneOf)
+		if pill, ok := refAs[*unison.PopupMenu[groupMode]](t, p.AsPanel(), "r.0"+keyPill); ok {
+			pill.Select(groupNoneOf)
 		}
 	})
 	screen.Do(func() {
@@ -1031,8 +1031,8 @@ func TestListFilterPanelSavesUnknownNodes(t *testing.T) {
 	p, _ := showListFilterPanel(t, screen, &f)
 	screen.Do(func() { menuAction(p.moreEntries(p.node("r.2"), "r.2"), "Move Up")() })
 	screen.Do(func() {
-		if pill, ok := refAs[*unison.PopupMenu[filterGroupMode]](t, p.AsPanel(), "r"+keyPill); ok {
-			pill.Select(filterAnyOf)
+		if pill, ok := refAs[*unison.PopupMenu[groupMode]](t, p.AsPanel(), "r"+keyPill); ok {
+			pill.Select(groupAnyOf)
 		}
 	})
 	var out []byte
@@ -1066,8 +1066,8 @@ func TestListFilterPanelKeepsUnknownField(t *testing.T) {
 		menuAction(p.moreEntries(p.node("r.2"), "r.2"), "Move Up")()
 	})
 	screen.Do(func() {
-		if pill, ok := refAs[*unison.PopupMenu[filterGroupMode]](t, p.AsPanel(), "r"+keyPill); ok {
-			pill.Select(filterAnyOf)
+		if pill, ok := refAs[*unison.PopupMenu[groupMode]](t, p.AsPanel(), "r"+keyPill); ok {
+			pill.Select(groupAnyOf)
 		}
 	})
 	screen.Do(func() { p.toggle("r.2") })

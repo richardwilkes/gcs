@@ -33,6 +33,10 @@ func collectPrereqsForPrereq(one Prereq, allSpells []*Spell, collect map[string]
 	}
 	switch p := one.(type) {
 	case *PrereqList:
+		// What a negated list holds is ruled out, not required.
+		if p.Not {
+			return
+		}
 		if p.All {
 			for _, one := range p.Prereqs {
 				collectPrereqsForPrereq(one, allSpells, collect)

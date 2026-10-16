@@ -37,8 +37,8 @@ const (
 )
 
 // prereqPanel edits a tree of prerequisites. Each one is a row that reads as a sentence until it is opened, one at a
-// time, to edit it. Each list is a group, whose head says whether all or any of its children must be met and whose
-// children hang from a rail in the head's color. Every change, typing included, records a snapshot of the whole tree
+// time, to edit it. Each list is a group, whose head says how it combines its children and whose children hang from a
+// rail in the head's color. Every change, typing included, records a snapshot of the whole tree
 // with the editor's undo manager, and changes to the tree's shape rebuild the panel's content. Clicking the title
 // collapses the panel to a paragraph describing the whole tree. It starts out collapsed when there are prerequisites,
 // and open to add one when there are none.
@@ -137,6 +137,7 @@ func (p *prereqPanel) stateHash() uint64 {
 	root.Hash(h)
 	// An empty root hashes the same whatever it is, but its group type and tech level condition still show.
 	xhash.Bool(h, root.All)
+	xhash.Bool(h, root.Not)
 	root.WhenTL.Hash(h)
 	xhash.Bool(h, p.headed)
 	return h.Sum64()
@@ -310,18 +311,11 @@ func (p *prereqPanel) statusIcon(parent *unison.Panel) *unison.Label {
 
 // groupName returns the accessible name of a group.
 func groupName(list *gurps.PrereqList) string {
-	name := groupWord(list.All)
+	name := groupModeFor(list.All, list.Not).String()
 	if list.WhenTL.Compare != criteria.AnyNumber {
 		name += i18n.Text(", only when TL %s", list.WhenTL.AltString())
 	}
 	return name
-}
-
-func groupWord(all bool) string {
-	if all {
-		return i18n.Text("All of")
-	}
-	return i18n.Text("Any of")
 }
 
 // asPrereqList returns the node as a list, or nil if it isn't one.
@@ -360,11 +354,11 @@ func (p *prereqPanel) treeNewGroup(parent gurps.Prereq, all bool) gurps.Prereq {
 	return &gurps.PrereqList{Type: prereq.List, Parent: asPrereqList(parent), All: all}
 }
 
-// treeCanUngroup implements treeNodes. A group with a tech level condition can't be ungrouped, since its children
-// would lose the condition.
+// treeCanUngroup implements treeNodes. A negated group, or one with a tech level condition, can't be ungrouped, since
+// its children would lose the negation or the condition.
 func (p *prereqPanel) treeCanUngroup(group gurps.Prereq) bool {
 	list := asPrereqList(group)
-	return list != nil && list.WhenTL.Compare == criteria.AnyNumber
+	return list != nil && !list.Not && list.WhenTL.Compare == criteria.AnyNumber
 }
 
 func (p *prereqPanel) treeTitles(_ gurps.Prereq) treeEditTitles {
@@ -384,8 +378,8 @@ func (p *prereqPanel) treeGroupName(group gurps.Prereq) string {
 	return groupName(asPrereqList(group))
 }
 
-// treeGroupContents implements treeNodes. The group's name already holds its tech level condition, so the description
-// leaves it out.
+// treeGroupContents implements treeNodes. The group's name already holds its negation and tech level condition, so the
+// description leaves them out.
 func (p *prereqPanel) treeGroupContents(group gurps.Prereq) string {
 	list := asPrereqList(group)
 	children := &gurps.PrereqList{All: list.All, Prereqs: list.Prereqs}
@@ -399,9 +393,9 @@ func (p *prereqPanel) treeGroupHead(group gurps.Prereq, path string, head, box *
 	list := asPrereqList(group)
 	color := groupColor(list.All)
 	p.views = append(p.views, prereqView{node: list, icon: p.statusIcon(head), group: box})
-	pill := compactPopup(&p.sentenceRows, path+keyPill, i18n.Text("Requirement"), []bool{true, false}, list.All, groupWord,
-		func(all bool) {
-			list.All = all
+	pill := compactPopup(&p.sentenceRows, path+keyPill, i18n.Text("Requirement"), groupModes,
+		groupModeFor(list.All, list.Not), groupMode.String, func(m groupMode) {
+			list.All, list.Not = m.flags()
 			p.headed = p.headed || path == treeRootPath
 		})
 	stylePill(pill, color)
@@ -418,9 +412,9 @@ func (p *prereqPanel) treeGroupHead(group gurps.Prereq, path string, head, box *
 }
 
 // treeEmpty implements treeNodes. An empty root shows its placeholder alone, until a group type or tech level has been
-// chosen for it or unless it is already "Any of" or has a tech level condition.
+// chosen for it or unless it is already something other than "All of" or has a tech level condition.
 func (p *prereqPanel) treeEmpty(group gurps.Prereq, path string) (text string, bare bool) {
-	if list := asPrereqList(group); path == treeRootPath && !p.headed && list.All &&
+	if list := asPrereqList(group); path == treeRootPath && !p.headed && list.All && !list.Not &&
 		list.WhenTL.Compare == criteria.AnyNumber {
 		return i18n.Text("No prerequisites. Click here to add one."), true
 	}
@@ -493,9 +487,19 @@ func (p *prereqPanel) editor(pr gurps.Prereq, path string) *unison.Panel {
 			true)
 		level := &one.LevelCriteria
 		// Every trait has a level of at least 0, so that is the same as having no level criteria.
-		p.levelChip(chips, path, level,
+		p.numberChip(chips, path, "level", level, 0, fxp.Thousand,
 			level.Compare != criteria.AnyNumber && (level.Compare != criteria.AtLeastNumber || level.Qualifier > 0))
+		// A disadvantage is worth negative points.
+		p.numberChip(chips, path, "points", &one.PointsCriteria, fxp.Min, fxp.Max,
+			one.PointsCriteria.Compare != criteria.AnyNumber)
+		p.tagsChip(chips, path, &one.TagsCriteria)
 		p.textChip(chips, path, "notes", &one.NotesCriteria)
+		p.textChip(chips, path, "modname", &one.ModifierNameCriteria)
+		p.textChip(chips, path, "modnotes", &one.ModifierNotesCriteria)
+		p.textChip(chips, path, "modtag", &one.ModifierTagsCriteria)
+		if field := chips.FindRefKey(path + ":modtag"); field != nil {
+			field.Tooltip = newWrappedTooltip(i18n.Text(`Separate multiple tags with commas to match any one of them, e.g. "Sword, Axe"`))
+		}
 	case *gurps.SkillPrereq:
 		p.hasPopup(fields, key("has"), &one.Has, false)
 		p.typePopup(fields, path, pr)
@@ -504,7 +508,11 @@ func (p *prereqPanel) editor(pr gurps.Prereq, path string) *unison.Panel {
 		p.textChip(chips, path, "specialization", &one.SpecializationCriteria)
 		p.textChip(chips, path, "optspecialization", &one.OptionalSpecializationCriteria)
 		// Unlike a trait's, "at least 0" is a real criterion here, leaving out skills with no usable level.
-		p.levelChip(chips, path, &one.LevelCriteria, one.LevelCriteria.Compare != criteria.AnyNumber)
+		p.numberChip(chips, path, "level", &one.LevelCriteria, 0, fxp.Thousand,
+			one.LevelCriteria.Compare != criteria.AnyNumber)
+		p.numberChip(chips, path, "points", &one.PointsCriteria, 0, fxp.Thousand,
+			one.PointsCriteria.Compare != criteria.AnyNumber)
+		p.tagsChip(chips, path, &one.TagsCriteria)
 	case *gurps.SpellPrereq:
 		p.hasPopup(fields, key("has"), &one.Has, true)
 		quantity := func() {
@@ -532,6 +540,8 @@ func (p *prereqPanel) editor(pr gurps.Prereq, path string) *unison.Panel {
 			p.textCriteria(fields, key("qualifier"), i18n.Text("Spell"), "", "", "", &one.QualifierCriteria, true)
 		}
 		p.powerSourceChip(chips, path, one)
+		p.numberChip(chips, path, "level", &one.LevelCriteria, 0, fxp.Thousand,
+			one.LevelCriteria.Compare != criteria.AnyNumber)
 	case *gurps.AttributePrereq:
 		p.hasPopup(fields, key("has"), &one.Has, false)
 		p.typePopup(fields, path, pr)
@@ -548,6 +558,7 @@ func (p *prereqPanel) editor(pr gurps.Prereq, path string) *unison.Panel {
 					&one.CombinedWith, flags)
 			})
 	case *gurps.EquippedEquipmentPrereq:
+		p.hasPopup(fields, key("has"), &one.Has, false)
 		p.typePopup(fields, path, pr)
 		p.textCriteria(fields, key("name"), i18n.Text("Name"), i18n.Text("Item name"), whose, whose, &one.NameCriteria,
 			true)
@@ -684,7 +695,7 @@ func (p *prereqPanel) typePopup(parent *unison.Panel, path string, pr gurps.Prer
 		items = append(slices.Clone(items), current)
 	}
 	var render func(prereq.Type) string
-	if current == prereq.EquippedEquipment || current == prereq.Script {
+	if current == prereq.Script {
 		// With no "has" popup ahead of it, it starts the sentence.
 		render = func(t prereq.Type) string { return xstrings.FirstToUpper(t.String()) }
 	}
@@ -695,6 +706,12 @@ func (p *prereqPanel) typePopup(parent *unison.Panel, path string, pr gurps.Prer
 			if created := p.createPrereqForType(t, list); created != nil {
 				if from, to := nameCriteria(pr), nameCriteria(created); from != nil && to != nil {
 					*to = *from
+				}
+				// Equipped and carried equipment differ only in their type.
+				if from, ok := pr.(*gurps.EquippedEquipmentPrereq); ok {
+					if to, same := created.(*gurps.EquippedEquipmentPrereq); same {
+						to.Has, to.TagsCriteria = from.Has, from.TagsCriteria
+					}
 				}
 				list.Prereqs[i] = created
 			}
@@ -718,6 +735,8 @@ func (p *prereqPanel) createPrereqForType(t prereq.Type, parent *gurps.PrereqLis
 		one = gurps.NewContainedWeightPrereq(p.entity)
 	case prereq.EquippedEquipment:
 		one = gurps.NewEquippedEquipmentPrereq()
+	case prereq.CarriedEquipment:
+		one = gurps.NewCarriedEquipmentPrereq()
 	case prereq.Skill:
 		skill := gurps.NewSkillPrereq()
 		skill.LevelCriteria = criteria.Number{}
@@ -808,13 +827,13 @@ func (p *prereqPanel) powerSourceChip(chips *unison.Panel, path string, one *gur
 		})
 }
 
-// levelChip adds an optional level criterion.
-func (p *prereqPanel) levelChip(chips *unison.Panel, path string, level *criteria.Number, on bool) {
-	p.optionalCriterion(chips, path, "level", on,
-		func() { *level = criteria.Number{Compare: criteria.AtLeastNumber, Qualifier: fxp.One} },
-		func() { *level = criteria.Number{} },
+// numberChip adds the optional number criterion with the key, such as a level, which runs from minimum to maximum.
+func (p *prereqPanel) numberChip(chips *unison.Panel, path, key string, n *criteria.Number, minimum, maximum fxp.Int, on bool) {
+	p.optionalCriterion(chips, path, key, on,
+		func() { *n = criteria.Number{Compare: criteria.AtLeastNumber, Qualifier: fxp.One} },
+		func() { *n = criteria.Number{} },
 		func(chip *unison.Panel) {
-			p.numberCriteria(chip, path+":level", i18n.Text("Level"), numericWordsAfter(rowCriteria("level").prefix),
-				level, 0, fxp.Thousand, false, false)
+			c := rowCriteria(key)
+			p.numberCriteria(chip, path+":"+key, c.subject, numericWordsAfter(c.prefix), n, minimum, maximum, false, false)
 		})
 }

@@ -10,6 +10,8 @@
 package gurps
 
 import (
+	"encoding/json/jsontext"
+	"encoding/json/v2"
 	"hash"
 	"strings"
 
@@ -23,10 +25,12 @@ import (
 
 var _ Prereq = &EquippedEquipmentPrereq{}
 
-// EquippedEquipmentPrereq holds a prerequisite for an equipped piece of equipment.
+// EquippedEquipmentPrereq holds a prerequisite for a piece of carried equipment that is equipped or, when its type is
+// prereq.CarriedEquipment, carried but not equipped.
 type EquippedEquipmentPrereq struct {
 	Parent       *PrereqList   `json:"-"`
 	Type         prereq.Type   `json:"type"`
+	Has          bool          `json:"has"`
 	NameCriteria criteria.Text `json:"name,omitzero"`
 	TagsCriteria criteria.Text `json:"tags,omitzero"`
 }
@@ -35,9 +39,28 @@ type EquippedEquipmentPrereq struct {
 func NewEquippedEquipmentPrereq() *EquippedEquipmentPrereq {
 	var p EquippedEquipmentPrereq
 	p.Type = prereq.EquippedEquipment
+	p.Has = true
 	p.NameCriteria.Compare = criteria.IsText
 	p.TagsCriteria.Compare = criteria.AnyText
 	return &p
+}
+
+// NewCarriedEquipmentPrereq creates a new EquippedEquipmentPrereq for equipment that is carried but not equipped.
+func NewCarriedEquipmentPrereq() *EquippedEquipmentPrereq {
+	p := NewEquippedEquipmentPrereq()
+	p.Type = prereq.CarriedEquipment
+	return p
+}
+
+// UnmarshalJSONFrom implements json.UnmarshalerFrom. One saved before it could be negated has no "has", and is had.
+func (p *EquippedEquipmentPrereq) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
+	type equippedEquipmentPrereqData EquippedEquipmentPrereq // Avoids recursion into this method.
+	data := equippedEquipmentPrereqData{Has: true}
+	if err := json.UnmarshalDecode(dec, &data); err != nil {
+		return err
+	}
+	*p = EquippedEquipmentPrereq(data)
+	return nil
 }
 
 // PrereqType implements Prereq.
@@ -71,7 +94,7 @@ func (p *EquippedEquipmentPrereq) FillWithNameableKeys(m, existing map[string]st
 	)
 }
 
-// Satisfied implements Prereq.
+// Satisfied implements Prereq. Only an unmet prerequisite to have equipment equipped sets hasEquipmentPenalty.
 func (p *EquippedEquipmentPrereq) Satisfied(entity *Entity, exclude any, tooltip *xbytes.InsertBuffer, prefix string, hasEquipmentPenalty *bool) bool {
 	if entity == nil {
 		return true
@@ -80,15 +103,25 @@ func (p *EquippedEquipmentPrereq) Satisfied(entity *Entity, exclude any, tooltip
 	if na, ok := exclude.(nameable.Accesser); ok {
 		replacements = na.NameableReplacements()
 	}
+	carried := p.Type == prereq.CarriedEquipment
 	satisfied := false
 	Traverse(func(eqp *Equipment) bool {
-		satisfied = exclude != eqp && eqp.ReallyEquipped() &&
-			p.NameCriteria.Matches(replacements, eqp.NameWithReplacements()) &&
+		held := eqp.ReallyEquipped()
+		if carried {
+			held = !held && eqp.Enabled()
+			for one := eqp; held && one != nil; one = one.parent {
+				held = one.Quantity > 0
+			}
+		}
+		satisfied = exclude != eqp && held && p.NameCriteria.Matches(replacements, eqp.NameWithReplacements()) &&
 			p.TagsCriteria.MatchesList(replacements, eqp.Tags...)
 		return satisfied
 	}, false, false, entity.CarriedEquipment...)
+	if !p.Has {
+		satisfied = !satisfied
+	}
 	if !satisfied {
-		if hasEquipmentPenalty != nil {
+		if p.Has && !carried && hasEquipmentPenalty != nil {
 			*hasEquipmentPenalty = true
 		}
 		if tooltip != nil {
@@ -101,17 +134,34 @@ func (p *EquippedEquipmentPrereq) Satisfied(entity *Entity, exclude any, tooltip
 
 // Describe implements Prereq.
 func (p *EquippedEquipmentPrereq) Describe(_ *Entity, replacements map[string]string, em func(string) string) string {
-	tags := p.TagsCriteria.Compare != criteria.AnyText
+	has := HasText(p.Has)
+	carried := p.Type == prereq.CarriedEquipment
 	var text string
 	switch {
 	case p.NameCriteria.Compare == criteria.IsText && strings.TrimSpace(nameable.Apply(p.NameCriteria.Qualifier, replacements)) != "":
-		text = i18n.Text("Has %s equipped", describeName(p.NameCriteria, replacements, em))
+		name := describeName(p.NameCriteria, replacements, em)
+		if carried {
+			text = i18n.Text("%s %s carried but not equipped", has, name)
+		} else {
+			text = i18n.Text("%s %s equipped", has, name)
+		}
 	case p.NameCriteria.Compare != criteria.AnyText:
-		text = i18n.Text("Has equipped equipment whose name ") + describeText(p.NameCriteria, replacements, em)
-	case tags:
-		text = i18n.Text("Has equipped equipment")
+		whose := describeText(p.NameCriteria, replacements, em)
+		if carried {
+			text = i18n.Text("%s unequipped carried equipment whose name %s", has, whose)
+		} else {
+			text = i18n.Text("%s equipped equipment whose name %s", has, whose)
+		}
+	case p.TagsCriteria.Compare != criteria.AnyText:
+		if carried {
+			text = i18n.Text("%s unequipped carried equipment", has)
+		} else {
+			text = i18n.Text("%s equipped equipment", has)
+		}
+	case carried:
+		return i18n.Text("%s any equipment carried but not equipped", has)
 	default:
-		return i18n.Text("Has any equipment equipped")
+		return i18n.Text("%s any equipment equipped", has)
 	}
 	return text + describeTags(p.TagsCriteria, replacements, em)
 }
@@ -123,6 +173,7 @@ func (p *EquippedEquipmentPrereq) Hash(h hash.Hash) {
 		return
 	}
 	xhash.Num8(h, p.Type)
+	xhash.Bool(h, p.Has)
 	p.NameCriteria.Hash(h)
 	p.TagsCriteria.Hash(h)
 }

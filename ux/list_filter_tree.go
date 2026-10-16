@@ -17,49 +17,58 @@ import (
 	"github.com/richardwilkes/unison"
 )
 
-// filterGroupMode is how a filter group combines its children, which its pill offers: a group's All and Not taken
-// together.
-type filterGroupMode byte
+// groupMode is how a group of filters or prerequisites combines its children, which its pill offers: a group's All and
+// Not taken together.
+type groupMode byte
 
 const (
-	filterAllOf filterGroupMode = iota
-	filterAnyOf
-	filterNoneOf
-	filterNotAllOf
+	groupAllOf groupMode = iota
+	groupAnyOf
+	groupNoneOf
+	groupNotAllOf
 )
 
-var filterGroupModes = []filterGroupMode{filterAllOf, filterAnyOf, filterNoneOf, filterNotAllOf}
+var groupModes = []groupMode{groupAllOf, groupAnyOf, groupNoneOf, groupNotAllOf}
 
-func groupModeOf(group *gurps.FilterGroup) filterGroupMode {
+func groupModeOf(group *gurps.FilterGroup) groupMode {
+	return groupModeFor(group.All, group.Not)
+}
+
+// groupModeFor returns the mode of a group with the given All and Not.
+func groupModeFor(all, not bool) groupMode {
 	switch {
-	case group.All && group.Not:
-		return filterNotAllOf
-	case group.Not:
-		return filterNoneOf
-	case group.All:
-		return filterAllOf
+	case all && not:
+		return groupNotAllOf
+	case not:
+		return groupNoneOf
+	case all:
+		return groupAllOf
 	default:
-		return filterAnyOf
+		return groupAnyOf
 	}
 }
 
-func (m filterGroupMode) String() string {
+func (m groupMode) String() string {
 	switch m {
-	case filterAnyOf:
+	case groupAnyOf:
 		return i18n.Text("Any of")
-	case filterNoneOf:
+	case groupNoneOf:
 		return i18n.Text("None of")
-	case filterNotAllOf:
+	case groupNotAllOf:
 		return i18n.Text("Not all of")
 	default:
 		return i18n.Text("All of")
 	}
 }
 
+// flags returns the All and Not of a group with the mode.
+func (m groupMode) flags() (all, not bool) {
+	return m == groupAllOf || m == groupNotAllOf, m == groupNoneOf || m == groupNotAllOf
+}
+
 // apply sets the group's All and Not to the mode's.
-func (m filterGroupMode) apply(group *gurps.FilterGroup) {
-	group.All = m == filterAllOf || m == filterNotAllOf
-	group.Not = m == filterNoneOf || m == filterNotAllOf
+func (m groupMode) apply(group *gurps.FilterGroup) {
+	group.All, group.Not = m.flags()
 }
 
 // asFilterGroup returns the node as a group, or nil if it isn't one.
@@ -149,8 +158,8 @@ func (p *listFilterPanel) treeGroupContents(group gurps.FilterNode) string {
 func (p *listFilterPanel) treeGroupHead(group gurps.FilterNode, path string, head, _ *unison.Panel) *unison.ThemeColor {
 	g := asFilterGroup(group)
 	color := groupColor(g.All)
-	pill := compactPopup(&p.sentenceRows, path+keyPill, i18n.Text("Match"), filterGroupModes, groupModeOf(g),
-		filterGroupMode.String, func(m filterGroupMode) {
+	pill := compactPopup(&p.sentenceRows, path+keyPill, i18n.Text("Match"), groupModes, groupModeOf(g),
+		groupMode.String, func(m groupMode) {
 			m.apply(g)
 			p.headed = p.headed || path == treeRootPath
 		})
