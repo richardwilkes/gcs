@@ -206,8 +206,8 @@ func (p *equipmentProvider) ContextMenuItems() []ContextMenuItem {
 			contextMenuItemFor(newCarriedEquipmentGroupAction),
 			contextMenuItemFor(newEquipmentChoiceContainerAction),
 			ContextMenuItem{ID: -1},
-			contextMenuItemFor(sellEquipmentAction),
 			contextMenuItemFor(buySelectedEquipmentAction),
+			contextMenuItemFor(sellEquipmentAction),
 		)
 	} else {
 		list = append(

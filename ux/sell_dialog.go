@@ -246,31 +246,27 @@ func (d *sellDialog) renew() bool {
 	return len(rows) != 0
 }
 
+// newContent returns the dialog's content: the transaction name and percentage above the list of items for sale, and
+// the payout, any warning and the merge checkbox below it.
 func (d *sellDialog) newContent() *unison.Panel {
 	content := unison.NewPanel()
 	content.SetLayout(&unison.FlexLayout{
-		Columns:  2,
-		HSpacing: unison.StdHSpacing,
+		Columns:  1,
 		VSpacing: unison.StdVSpacing,
 		HAlign:   align.Fill,
 		VAlign:   align.Fill,
 	})
-	percentLabel := NewFieldLeadingLabel(i18n.Text("Percent of full price"), false)
-	content.AddChild(percentLabel)
-	content.AddChild(d.newPercentField(percentLabel))
+	content.AddChild(d.newHeader())
 	content.AddChild(d.newList())
 
 	d.summary = unison.NewPanel()
 	d.summary.SetLayout(&unison.FlexLayout{Columns: 1, VSpacing: unison.StdVSpacing})
-	d.summary.SetLayoutData(&unison.FlexLayoutData{HSpan: 2, HAlign: align.Fill})
+	d.summary.SetLayoutData(&unison.FlexLayoutData{HAlign: align.Fill})
 	content.AddChild(d.summary)
 	d.payoutLabel = d.newListWidthLabel()
 	d.summary.AddChild(d.payoutLabel)
 	d.warning = d.newListWidthLabel() // Added to the summary by update while there is something to warn of.
 
-	content.AddChild(NewFieldLeadingLabel(i18n.Text("Transaction name"), false))
-	content.AddChild(d.newNameField())
-	content.AddChild(unison.NewPanel()) // Keeps the checkbox in the field column, under the name.
 	merge := unison.NewCheckBox()
 	merge.SetTitle(i18n.Text("Merge with matching money already carried"))
 	merge.State = check.On
@@ -280,8 +276,20 @@ func (d *sellDialog) newContent() *unison.Panel {
 	return content
 }
 
-// newPercentField returns the percentage field, named by its label, with its unit beside it.
-func (d *sellDialog) newPercentField(label *unison.Label) *unison.Panel {
+// newHeader returns the row above the list: the transaction name, with the percentage of full price at the right.
+func (d *sellDialog) newHeader() *unison.Panel {
+	header := unison.NewPanel()
+	header.SetLayout(&unison.FlexLayout{Columns: 4, HSpacing: unison.StdHSpacing})
+	header.SetLayoutData(&unison.FlexLayoutData{HAlign: align.Fill, HGrab: true})
+	header.AddChild(NewFieldLeadingLabel(i18n.Text("Transaction name"), false))
+	header.AddChild(d.newNameField())
+	header.AddChild(NewFieldInteriorLeadingLabel(i18n.Text("Percent of full price"), false))
+	header.AddChild(d.newPercentField())
+	return header
+}
+
+// newPercentField returns the percentage field.
+func (d *sellDialog) newPercentField() *PercentageField {
 	percent := NewPercentageField(nil, "", "", func() int { return d.percent },
 		func(v int) {
 			d.percent = v
@@ -289,7 +297,7 @@ func (d *sellDialog) newPercentField(label *unison.Label) *unison.Panel {
 		}, gurps.MinTradePercent, gurps.MaxTradePercent, false, false)
 	percent.SetMarksModified(false)
 	percent.ValidateCallback = d.chainValidateCallback(percent, percent.ValidateCallback)
-	return WrapWithSpan(1, labelControl(percent, label), NewFieldTrailingHint(percent, i18n.Text("%"), false))
+	return percent
 }
 
 // newListWidthLabel returns a label, for a line below the list of items for sale, that wraps to the list's width rather
@@ -301,8 +309,8 @@ func (d *sellDialog) newListWidthLabel() *TextLabel {
 	return label
 }
 
-// newNameField returns the transaction name field. The name it suggests is shown in a lighter ink until the user
-// edits it, since until then it follows the quantities.
+// newNameField returns the transaction name field, which takes the width the percentage leaves it. The name it
+// suggests is shown in a lighter ink until the user edits it, since until then it follows the quantities.
 func (d *sellDialog) newNameField() *StringField {
 	var ink unison.Ink
 	d.nameField = NewStringField(nil, "", "", func() string { return d.name }, func(s string) {
@@ -324,6 +332,7 @@ func (d *sellDialog) newNameField() *StringField {
 		minSize, _, maxSize = d.nameField.DefaultSizes(hint)
 		return minSize, minSize, maxSize
 	})
+	d.nameField.SetLayoutData(&unison.FlexLayoutData{HAlign: align.Fill, VAlign: align.Middle, HGrab: true})
 	return d.nameField
 }
 
@@ -333,7 +342,6 @@ func (d *sellDialog) newNameField() *StringField {
 func (d *sellDialog) newList() *unison.Panel {
 	d.list = newTradeList(saleColumnCount)
 	d.list.box.SetLayoutData(&unison.FlexLayoutData{
-		HSpan:  2,
 		HAlign: align.Fill,
 		VAlign: align.Fill,
 		HGrab:  true,
