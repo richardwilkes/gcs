@@ -340,6 +340,93 @@ func wrapComment(in string, cols int) string {
 
 var allEnums = []*enumInfo{
 	{
+		Pkg:  "model/condition",
+		Name: "aggregate",
+		Desc: "holds the way an operand combines the members of a collection",
+		Values: []*enumValue{
+			{
+				Name:          "AggregateNone",
+				Key:           "",
+				EmptyStringOK: true,
+				NoLocalize:    true,
+			},
+			{
+				Name:   "AggregateCount",
+				Key:    "count",
+				String: "count",
+			},
+			{
+				Name:   "AggregateSum",
+				Key:    "sum",
+				String: "sum",
+			},
+			{
+				Name:   "AggregateMax",
+				Key:    "max",
+				String: "maximum",
+			},
+		},
+	},
+	{
+		Pkg:  "model/condition",
+		Name: "compare_op",
+		Desc: "holds the operator a compare node applies to its operands",
+		Values: []*enumValue{
+			{
+				Name:   "OpIs",
+				Key:    "is",
+				String: "is",
+			},
+			{
+				Name:   "OpIsNot",
+				Key:    "is_not",
+				String: "is not",
+			},
+			{
+				Name:   "OpAtLeast",
+				Key:    "at_least",
+				String: "is at least",
+			},
+			{
+				Name:   "OpAtMost",
+				Key:    "at_most",
+				String: "is at most",
+			},
+			{
+				Name:   "OpMoreThan",
+				Key:    "more_than",
+				String: "is more than",
+			},
+			{
+				Name:   "OpLessThan",
+				Key:    "less_than",
+				String: "is less than",
+			},
+		},
+	},
+	{
+		Pkg:  "model/condition",
+		Name: "group_mode",
+		Desc: "holds how many of a group's children must be met",
+		Values: []*enumValue{
+			{
+				Name:   "GroupAll",
+				Key:    "all",
+				String: "all",
+			},
+			{
+				Name:   "GroupAny",
+				Key:    "any",
+				String: "any",
+			},
+			{
+				Name:   "GroupAtLeast",
+				Key:    "at_least",
+				String: "at least",
+			},
+		},
+	},
+	{
 		Pkg:  "model/criteria",
 		Name: "numeric_comparison",
 		Desc: "holds the type for a numeric comparison",
