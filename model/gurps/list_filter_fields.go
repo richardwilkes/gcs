@@ -307,7 +307,8 @@ func TraitFilterFields() []*FilterField[*Trait] {
 	}
 }
 
-func traitModifiers(t *Trait) []*TraitModifier { return t.Modifiers }
+// traitModifiers returns the modifiers of the trait and of the containers holding it, which apply to it as well.
+func traitModifiers(t *Trait) []*TraitModifier { return t.AllModifiers() }
 
 // TraitModifierFilterFields returns the fields a saved filter for a trait modifier list may test.
 func TraitModifierFilterFields() []*FilterField[*TraitModifier] {

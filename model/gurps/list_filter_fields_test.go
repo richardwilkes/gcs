@@ -120,6 +120,34 @@ func TestFilterModifierFieldsOnTraits(t *testing.T) {
 		"the tags of disabled modifiers are offered too")
 }
 
+// TestFilterModifierFieldsSeeContainerModifiers checks that a trait's modifier fields hold the modifiers of the
+// containers holding it, which apply to it, enabled ones only unless a condition includes disabled ones.
+func TestFilterModifierFieldsSeeContainerModifiers(t *testing.T) {
+	c := check.New(t)
+	container := gurps.NewTrait(nil, nil, true)
+	container.Name = "Breath Weapons"
+	cone := gurps.NewTraitModifier(nil, nil, false)
+	cone.Name = "Cone"
+	jet := gurps.NewTraitModifier(nil, nil, false)
+	jet.Name = "Jet"
+	jet.SetDisabled(true)
+	container.Modifiers = []*gurps.TraitModifier{cone, jet}
+	breath := gurps.NewTrait(nil, container, false)
+	breath.Name = "Innate Attack"
+	container.Children = []*gurps.Trait{breath}
+	c.True(cone.Enabled(), "precondition: Cone is enabled")
+	c.False(jet.Enabled(), "precondition: Jet is disabled")
+	c.Equal(0, len(breath.Modifiers), "precondition: the trait has no modifiers of its own")
+
+	fields := gurps.TraitFilterFields()
+	c.True(matchesListFilter(newTestListFilter(newTextFilterCondition("modifier_names", criteria.IsText, "Cone")),
+		fields, breath), "the container's enabled modifier applies to the trait")
+	c.False(matchesListFilter(newTestListFilter(newTextFilterCondition("modifier_names", criteria.IsText, "Jet")),
+		fields, breath), "its disabled one doesn't")
+	c.True(matchesListFilter(newTestListFilter(includingDisabled(newTextFilterCondition("modifier_names",
+		criteria.IsText, "Jet"))), fields, breath), "unless the condition includes disabled modifiers")
+}
+
 // TestFilterModifierFieldsOnEquipment checks that equipment offers the same fields over its own modifiers.
 func TestFilterModifierFieldsOnEquipment(t *testing.T) {
 	c := check.New(t)
