@@ -331,6 +331,12 @@ func (e *editor[N, D]) Rebuild(_ bool) {
 	} else {
 		gurps.DiscardGlobalResolveCache()
 	}
+	// An item edited in its own editor may now need a taller or shorter row.
+	for _, child := range e.content.Children() {
+		if list, ok := child.Self.(interface{ syncRows() }); ok {
+			list.syncRows()
+		}
+	}
 	e.MarkModified(nil)
 	e.MarkForLayoutRecursively()
 }

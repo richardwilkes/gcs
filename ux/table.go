@@ -150,7 +150,14 @@ func NewNodeTable[T gurps.Node[T]](provider TableProvider[T], font unison.Font) 
 	}
 	if font != nil {
 		table.FrameChangeCallback = func() {
+			_, before, _ := table.Sizes(geom.Size{})
 			sizePageTableColumns(table, provider.ExcessWidthColumnID())
+			// The layout that set this frame sized the table by its old row heights, so lay it out again when the new
+			// column widths changed how its rows wrap, or the rows that no longer fit are cut off at the bottom.
+			if _, after, _ := table.Sizes(geom.Size{}); after.Height != before.Height {
+				table.MarkForLayoutRecursivelyUpward()
+				table.MarkForRedraw()
+			}
 		}
 	}
 
