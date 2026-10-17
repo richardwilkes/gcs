@@ -652,6 +652,9 @@ func (n *Node[T]) newCheckCell(c *gurps.CellData, foreground unison.Ink, svgFor 
 		node.Checked = check.FromBool(c.Checked)
 	}
 	toggle := func(mods mod.Modifiers) {
+		if inReadOnlyEditor(label) {
+			return
+		}
 		c.Checked = !c.Checked
 		// The new state is drawn and a layout asked for before the click is reported, since reporting it marks the
 		// owner as modified, which re-syncs the table and recreates every cell, leaving this label detached from the
