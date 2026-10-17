@@ -10,6 +10,8 @@
 package gurps_test
 
 import (
+	"os"
+	"path/filepath"
 	"testing"
 
 	"github.com/richardwilkes/gcs/v5/model/criteria"
@@ -267,4 +269,48 @@ func TestFilterIncludeDisabledOnDisk(t *testing.T) {
 	var restored gurps.FilterCondition
 	c.NoError(jio.Unmarshal(data, &restored), "the including condition should unmarshal")
 	c.True(restored.IncludeDisabled, "IncludeDisabled survives a round trip")
+}
+
+// TestFilterIncludeDisabledDroppedWhereUnused checks that loading saved filters clears IncludeDisabled on a condition
+// whose field can't include disabled modifiers, at any depth, while keeping it where it can, on a field this version
+// doesn't know, and under a list type this version doesn't know.
+func TestFilterIncludeDisabledDroppedWhereUnused(t *testing.T) {
+	c := check.New(t)
+	tags := includingDisabled(gurps.NewFilterCondition(nil, "tags"))
+	names := includingDisabled(gurps.NewFilterCondition(nil, "modifier_names"))
+	future := includingDisabled(gurps.NewFilterCondition(nil, "future_field"))
+	nestedTags := includingDisabled(gurps.NewFilterCondition(nil, "tags"))
+	nested := gurps.NewFilterGroup(nil)
+	nested.Children = gurps.FilterNodes{nestedTags}
+	traits := newTestListFilter(tags, names, future, nested)
+	futureListTags := includingDisabled(gurps.NewFilterCondition(nil, "tags"))
+	futureList := newTestListFilter(futureListTags)
+	for _, one := range []*gurps.FilterCondition{tags, names, future, nestedTags, futureListTags} {
+		c.True(one.IncludeDisabled, "precondition: %s starts out including disabled modifiers", one.Field)
+	}
+
+	dir := t.TempDir()
+	c.NoError(gurps.SaveListFilters(map[string][]*gurps.ListFilter{"adq": {traits}, "zzz": {futureList}},
+		filepath.Join(dir, "x"+gurps.ListFiltersExt)), "the filters should save")
+	loaded, err := gurps.NewListFiltersFromFile(os.DirFS(dir), "x"+gurps.ListFiltersExt)
+	c.NoError(err, "the filters should load")
+	c.Equal(1, len(loaded["adq"]), "the trait filter loads")
+	c.Equal(1, len(loaded["zzz"]), "the filter of an unknown list type loads")
+	if len(loaded["adq"]) != 1 || len(loaded["zzz"]) != 1 {
+		return
+	}
+	root := loaded["adq"][0].Root
+	includes := func(node gurps.FilterNode) bool {
+		cond, ok := node.(*gurps.FilterCondition)
+		return ok && cond.IncludeDisabled
+	}
+	c.False(includes(root.Children[0]), "a tags condition drops it")
+	c.True(includes(root.Children[1]), "a modifier names condition keeps it")
+	c.True(includes(root.Children[2]), "a condition on an unknown field keeps it")
+	group, ok := root.Children[3].(*gurps.FilterGroup)
+	c.True(ok, "the nested group loads")
+	if ok {
+		c.False(includes(group.Children[0]), "a nested tags condition drops it")
+	}
+	c.True(includes(loaded["zzz"][0].Root.Children[0]), "a condition under an unknown list type keeps it")
 }

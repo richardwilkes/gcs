@@ -463,11 +463,13 @@ func sortListFilters(filters []*ListFilter) {
 func (s *Settings) ensureListFiltersValidity() {
 	for key, filters := range s.ListFilters {
 		seen := make(map[string]bool)
+		disableable := disableableFilterFields(key)
 		filters = slices.DeleteFunc(filters, func(f *ListFilter) bool {
 			if f == nil {
 				return true
 			}
 			f.EnsureValidity()
+			dropUnusedIncludeDisabled(f.Root, disableable)
 			lowered := strings.ToLower(f.Name)
 			if lowered == "" || seen[lowered] {
 				return true
@@ -476,6 +478,53 @@ func (s *Settings) ensureListFiltersValidity() {
 			return false
 		})
 		s.SetListFiltersFor(key, filters)
+	}
+}
+
+// disableableFilterFields returns whether a condition on each of the fields of the list type with the given key may
+// include disabled modifiers, or nil when the key isn't one this version of GCS knows.
+func disableableFilterFields(key string) map[string]bool {
+	switch "." + key {
+	case TraitsExt:
+		return disableableFields(TraitFilterFields())
+	case TraitModifiersExt:
+		return disableableFields(TraitModifierFilterFields())
+	case SkillsExt:
+		return disableableFields(SkillFilterFields())
+	case SpellsExt:
+		return disableableFields(SpellFilterFields())
+	case EquipmentExt:
+		return disableableFields(EquipmentFilterFields())
+	case EquipmentModifiersExt:
+		return disableableFields(EquipmentModifierFilterFields())
+	case NotesExt:
+		return disableableFields(NoteFilterFields())
+	default:
+		return nil
+	}
+}
+
+func disableableFields[T Node[T]](fields []*FilterField[T]) map[string]bool {
+	m := make(map[string]bool, len(fields))
+	for _, field := range fields {
+		m[field.Key] = field.ListWithDisabled != nil
+	}
+	return m
+}
+
+// dropUnusedIncludeDisabled clears IncludeDisabled on each condition below the group whose field can't include
+// disabled modifiers, which only a file edited by hand can hold. A field disableable doesn't know is left alone, since
+// a newer version of GCS may have written it.
+func dropUnusedIncludeDisabled(group *FilterGroup, disableable map[string]bool) {
+	for _, child := range group.Children {
+		switch one := child.(type) {
+		case *FilterGroup:
+			dropUnusedIncludeDisabled(one, disableable)
+		case *FilterCondition:
+			if allowed, known := disableable[one.Field]; known && !allowed {
+				one.IncludeDisabled = false
+			}
+		}
 	}
 }
 
