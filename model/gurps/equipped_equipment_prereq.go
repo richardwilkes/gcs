@@ -10,8 +10,6 @@
 package gurps
 
 import (
-	"encoding/json/jsontext"
-	"encoding/json/v2"
 	"hash"
 	"strings"
 
@@ -26,11 +24,11 @@ import (
 var _ Prereq = &EquippedEquipmentPrereq{}
 
 // EquippedEquipmentPrereq holds a prerequisite for a piece of carried equipment that is equipped or, when its type is
-// prereq.CarriedEquipment, carried but not equipped.
+// prereq.CarriedEquipment, carried but not equipped. Not requires that there be no such equipment instead.
 type EquippedEquipmentPrereq struct {
 	Parent       *PrereqList   `json:"-"`
 	Type         prereq.Type   `json:"type"`
-	Has          bool          `json:"has"`
+	Not          bool          `json:"not,omitzero"`
 	NameCriteria criteria.Text `json:"name,omitzero"`
 	TagsCriteria criteria.Text `json:"tags,omitzero"`
 	ModifierCriteria
@@ -40,7 +38,6 @@ type EquippedEquipmentPrereq struct {
 func NewEquippedEquipmentPrereq() *EquippedEquipmentPrereq {
 	var p EquippedEquipmentPrereq
 	p.Type = prereq.EquippedEquipment
-	p.Has = true
 	p.NameCriteria.Compare = criteria.IsText
 	p.TagsCriteria.Compare = criteria.AnyText
 	return &p
@@ -51,17 +48,6 @@ func NewCarriedEquipmentPrereq() *EquippedEquipmentPrereq {
 	p := NewEquippedEquipmentPrereq()
 	p.Type = prereq.CarriedEquipment
 	return p
-}
-
-// UnmarshalJSONFrom implements json.UnmarshalerFrom. One saved before it could be negated has no "has", and is had.
-func (p *EquippedEquipmentPrereq) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
-	type equippedEquipmentPrereqData EquippedEquipmentPrereq // Avoids recursion into this method.
-	data := equippedEquipmentPrereqData{Has: true}
-	if err := json.UnmarshalDecode(dec, &data); err != nil {
-		return err
-	}
-	*p = EquippedEquipmentPrereq(data)
-	return nil
 }
 
 // PrereqType implements Prereq.
@@ -120,11 +106,11 @@ func (p *EquippedEquipmentPrereq) Satisfied(entity *Entity, exclude any, tooltip
 			modifiersMeet(&p.ModifierCriteria, replacements, eqp.Modifiers)
 		return satisfied
 	}, false, false, entity.CarriedEquipment...)
-	if !p.Has {
+	if p.Not {
 		satisfied = !satisfied
 	}
 	if !satisfied {
-		if p.Has && !carried && hasEquipmentPenalty != nil {
+		if !p.Not && !carried && hasEquipmentPenalty != nil {
 			*hasEquipmentPenalty = true
 		}
 		if tooltip != nil {
@@ -137,7 +123,7 @@ func (p *EquippedEquipmentPrereq) Satisfied(entity *Entity, exclude any, tooltip
 
 // Describe implements Prereq.
 func (p *EquippedEquipmentPrereq) Describe(_ *Entity, replacements map[string]string, em func(string) string) string {
-	has := HasText(p.Has)
+	has := HasText(!p.Not)
 	carried := p.Type == prereq.CarriedEquipment
 	var text string
 	switch {
@@ -176,7 +162,7 @@ func (p *EquippedEquipmentPrereq) Hash(h hash.Hash) {
 		return
 	}
 	xhash.Num8(h, p.Type)
-	xhash.Bool(h, p.Has)
+	xhash.Bool(h, p.Not)
 	p.NameCriteria.Hash(h)
 	p.TagsCriteria.Hash(h)
 	p.hashModifier(h)

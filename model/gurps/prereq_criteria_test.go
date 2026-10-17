@@ -240,7 +240,7 @@ func TestEquipmentPrereqs(t *testing.T) {
 			p = gurps.NewCarriedEquipmentPrereq()
 		}
 		p.NameCriteria = isText(one.item)
-		p.Has = one.has
+		p.Not = !one.has
 		var penalty bool
 		c.Equal(one.want, p.Satisfied(e, nil, nil, "", &penalty), one.name)
 		c.Equal(one.penalty, penalty, "%s: penalty", one.name)
@@ -250,7 +250,7 @@ func TestEquipmentPrereqs(t *testing.T) {
 	carried := gurps.NewCarriedEquipmentPrereq()
 	carried.NameCriteria = isText("Kit")
 	c.Equal("Has Kit carried but not equipped", carried.Describe(nil, nil, em))
-	carried.Has = false
+	carried.Not = true
 	carried.NameCriteria.Compare = criteria.AnyText
 	c.Equal("Does not have any equipment carried but not equipped", carried.Describe(nil, nil, em))
 	carried.NameCriteria = criteria.Text{Compare: criteria.ContainsText, Qualifier: "Ki"}
@@ -279,7 +279,7 @@ func TestNewPrereqCriteriaHashAndKeys(t *testing.T) {
 	c.NotEqual(base, gurps.Hash64(list), "negating a list changes its hash")
 	equipped := gurps.NewEquippedEquipmentPrereq()
 	base = gurps.Hash64(equipped)
-	equipped.Has = false
+	equipped.Not = true
 	c.NotEqual(base, gurps.Hash64(equipped), "negating an equipment prerequisite changes its hash")
 
 	trait := namedTrait("Magery")
@@ -301,30 +301,36 @@ func TestNewPrereqCriteriaHashAndKeys(t *testing.T) {
 	c.True(found, "the skill's tag key is found")
 }
 
-// TestEquipmentPrereqHasOnDisk checks that an equipment prerequisite saved before it could be negated loads as one to
-// have, that a negated one keeps its negation, and that the carried type loads as an equipment prerequisite.
-func TestEquipmentPrereqHasOnDisk(t *testing.T) {
+// TestEquipmentPrereqNotOnDisk checks that an equipment prerequisite saved before it could be negated loads as one to
+// have, that a negated one keeps its negation, that the carried type loads as an equipment prerequisite, and that the
+// negation is written only when set.
+func TestEquipmentPrereqNotOnDisk(t *testing.T) {
 	c := check.New(t)
 	var list gurps.PrereqList
 	c.NoError(jio.Unmarshal([]byte(`{"type":"prereq_list","all":true,"prereqs":[
 		{"type":"equipped_equipment","name":{"compare":"is","qualifier":"Sword"}},
-		{"type":"equipped_equipment","has":false},
-		{"type":"carried_equipment","has":true}]}`), &list), "the list should load")
+		{"type":"equipped_equipment","not":true},
+		{"type":"carried_equipment"}]}`), &list), "the list should load")
 	c.Equal(3, len(list.Prereqs), "every prerequisite loads")
 	for i, want := range []struct {
 		kind prereq.Type
-		has  bool
-	}{{prereq.EquippedEquipment, true}, {prereq.EquippedEquipment, false}, {prereq.CarriedEquipment, true}} {
+		not  bool
+	}{{prereq.EquippedEquipment, false}, {prereq.EquippedEquipment, true}, {prereq.CarriedEquipment, false}} {
 		p, ok := list.Prereqs[i].(*gurps.EquippedEquipmentPrereq)
 		c.True(ok, "prerequisite %d is an equipment prerequisite", i)
 		if ok {
 			c.Equal(want.kind, p.Type, "prerequisite %d type", i)
-			c.Equal(want.has, p.Has, "prerequisite %d has", i)
+			c.Equal(want.not, p.Not, "prerequisite %d negation", i)
 		}
 	}
 	data, err := jio.Marshal(gurps.NewEquippedEquipmentPrereq())
 	c.NoError(err, "a new equipment prerequisite should marshal")
-	c.Contains(string(data), `"has":true`, "has is always written")
+	c.NotContains(string(data), `"not"`, "an absent negation isn't written")
+	negated := gurps.NewEquippedEquipmentPrereq()
+	negated.Not = true
+	data, err = jio.Marshal(negated)
+	c.NoError(err, "a negated equipment prerequisite should marshal")
+	c.Contains(string(data), `"not":true`, "a negation is written")
 }
 
 // TestEquipmentPrereqModifiers checks the modifier criteria of an equipment prerequisite, which a single enabled

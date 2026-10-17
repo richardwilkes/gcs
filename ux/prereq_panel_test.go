@@ -1415,7 +1415,7 @@ func TestPrereqPanelEquipmentHasAndCarried(t *testing.T) {
 	root := gurps.NewPrereqList()
 	root.Prereqs = gurps.Prereqs{equipped}
 	p, _ := showPrereqPanel(t, screen, &root, false)
-	c.True(equipped.Has, "precondition: the prerequisite starts out to be had")
+	c.False(equipped.Not, "precondition: the prerequisite starts out to be had")
 	screen.Do(func() { p.toggle("r.0") })
 	screen.Do(func() {
 		if has, ok := refAs[*unison.PopupMenu[bool]](t, p.AsPanel(), "r.0:has"); ok {
@@ -1423,7 +1423,7 @@ func TestPrereqPanelEquipmentHasAndCarried(t *testing.T) {
 		}
 	})
 	screen.Do(func() {
-		c.False(equipped.Has, "the has popup negates it")
+		c.True(equipped.Not, "the has popup negates it")
 		if kind, ok := refAs[*unison.PopupMenu[prereq.Type]](t, p.AsPanel(), "r.0:type"); ok {
 			kind.Select(prereq.CarriedEquipment)
 		}
@@ -1433,7 +1433,7 @@ func TestPrereqPanelEquipmentHasAndCarried(t *testing.T) {
 		c.True(ok, "the carried type is an equipment prerequisite")
 		if ok {
 			c.Equal(prereq.CarriedEquipment, carried.Type, "the type is switched")
-			c.False(carried.Has, "the negation is kept")
+			c.True(carried.Not, "the negation is kept")
 			c.Equal("Shield", carried.NameCriteria.Qualifier, "the name is kept")
 			c.Equal("Armor", carried.TagsCriteria.Qualifier, "the tags are kept")
 			c.Equal("Fine", carried.ModifierNameCriteria.Qualifier, "the modifier criteria are kept")

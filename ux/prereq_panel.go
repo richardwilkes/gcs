@@ -553,7 +553,7 @@ func (p *prereqPanel) editor(pr gurps.Prereq, path string) *unison.Panel {
 					&one.CombinedWith, flags)
 			})
 	case *gurps.EquippedEquipmentPrereq:
-		p.hasPopup(fields, key("has"), &one.Has, false)
+		p.notPopup(fields, key("has"), &one.Not)
 		p.typePopup(fields, path, pr)
 		p.textCriteria(fields, key("name"), i18n.Text("Name"), i18n.Text("Item name"), whose, whose, &one.NameCriteria,
 			true)
@@ -706,7 +706,7 @@ func (p *prereqPanel) typePopup(parent *unison.Panel, path string, pr gurps.Prer
 				// Equipped and carried equipment differ only in their type.
 				if from, ok := pr.(*gurps.EquippedEquipmentPrereq); ok {
 					if to, same := created.(*gurps.EquippedEquipmentPrereq); same {
-						to.Has, to.TagsCriteria, to.ModifierCriteria = from.Has, from.TagsCriteria, from.ModifierCriteria
+						to.Not, to.TagsCriteria, to.ModifierCriteria = from.Not, from.TagsCriteria, from.ModifierCriteria
 					}
 				}
 				list.Prereqs[i] = created
@@ -767,16 +767,25 @@ func nameCriteria(pr gurps.Prereq) *criteria.Text {
 
 // hasPopup adds the popup that says whether the prerequisite is to be had or not.
 func (p *prereqPanel) hasPopup(parent *unison.Panel, key string, has *bool, spell bool) {
+	p.havePopup(parent, key, *has, spell, func(v bool) { *has = v })
+}
+
+// notPopup adds the has popup for a prerequisite that stores whether it is not to be had.
+func (p *prereqPanel) notPopup(parent *unison.Panel, key string, not *bool) {
+	p.havePopup(parent, key, !*not, false, func(v bool) { *not = !v })
+}
+
+func (p *prereqPanel) havePopup(parent *unison.Panel, key string, has, spell bool, set func(bool)) {
 	yes, no := i18n.Text("Has"), i18n.Text("Doesn't have")
 	if spell {
 		yes, no = i18n.Text("Knows"), i18n.Text("Doesn't know")
 	}
-	addCentered(parent, compactPopup(&p.sentenceRows, key, i18n.Text("Has"), []bool{true, false}, *has, func(v bool) string {
+	addCentered(parent, compactPopup(&p.sentenceRows, key, i18n.Text("Has"), []bool{true, false}, has, func(v bool) string {
 		if v {
 			return yes
 		}
 		return no
-	}, func(v bool) { *has = v }))
+	}, set))
 }
 
 // attributePopup adds a popup of attributes, each after the prefix. A key that isn't one of them is shown as such, and

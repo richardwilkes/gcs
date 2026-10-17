@@ -100,7 +100,7 @@ func TestPrereqDescribe(t *testing.T) {
 	skillPoints.PointsCriteria = criteria.Number{Compare: criteria.AtLeastNumber, Qualifier: fxp.Four}
 	skillPoints.TagsCriteria = criteria.Text{Compare: criteria.IsText, Qualifier: "Combat"}
 	notEquipped := equipped("Shield", criteria.IsText, "", criteria.AnyText)
-	notEquipped.Has = false
+	notEquipped.Not = true
 
 	for _, one := range []struct {
 		name     string
