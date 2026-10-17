@@ -1404,13 +1404,14 @@ func TestPrereqPanelEquippedEquipmentTags(t *testing.T) {
 }
 
 // TestPrereqPanelEquipmentHasAndCarried checks that an equipment prerequisite can be negated and switched to carried
-// equipment, keeping its negation, name and tags.
+// equipment, keeping its negation, name, tags and modifier criteria.
 func TestPrereqPanelEquipmentHasAndCarried(t *testing.T) {
 	c := check.New(t)
 	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
 	equipped := gurps.NewEquippedEquipmentPrereq()
 	equipped.NameCriteria.Qualifier = "Shield"
 	equipped.TagsCriteria = criteria.Text{Compare: criteria.IsText, Qualifier: "Armor"}
+	equipped.ModifierNameCriteria = criteria.Text{Compare: criteria.IsText, Qualifier: "Fine"}
 	root := gurps.NewPrereqList()
 	root.Prereqs = gurps.Prereqs{equipped}
 	p, _ := showPrereqPanel(t, screen, &root, false)
@@ -1435,20 +1436,22 @@ func TestPrereqPanelEquipmentHasAndCarried(t *testing.T) {
 			c.False(carried.Has, "the negation is kept")
 			c.Equal("Shield", carried.NameCriteria.Qualifier, "the name is kept")
 			c.Equal("Armor", carried.TagsCriteria.Qualifier, "the tags are kept")
+			c.Equal("Fine", carried.ModifierNameCriteria.Qualifier, "the modifier criteria are kept")
 		}
 	})
 }
 
-// TestPrereqPanelNewCriteriaChips checks that each new optional criterion of a trait, a skill and a spell has a chip
-// that, once added, sets that criterion.
+// TestPrereqPanelNewCriteriaChips checks that each new optional criterion of a trait, a skill, a spell and equipment
+// has a chip that, once added, sets that criterion.
 func TestPrereqPanelNewCriteriaChips(t *testing.T) {
 	c := check.New(t)
 	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
 	trait := gurps.NewTraitPrereq()
 	skill := gurps.NewSkillPrereq()
 	spell := gurps.NewSpellPrereq()
+	equipped := gurps.NewEquippedEquipmentPrereq()
 	root := gurps.NewPrereqList()
-	root.Prereqs = gurps.Prereqs{trait, skill, spell}
+	root.Prereqs = gurps.Prereqs{trait, skill, spell, equipped}
 	for _, one := range root.Prereqs {
 		one.SetParentList(root)
 	}
@@ -1467,6 +1470,9 @@ func TestPrereqPanelNewCriteriaChips(t *testing.T) {
 		{"r.1", "points", numberOn(&skill.PointsCriteria)},
 		{"r.1", "tag", textOn(&skill.TagsCriteria)},
 		{"r.2", "level", numberOn(&spell.LevelCriteria)},
+		{"r.3", "modname", textOn(&equipped.ModifierNameCriteria)},
+		{"r.3", "modnotes", textOn(&equipped.ModifierNotesCriteria)},
+		{"r.3", "modtag", textOn(&equipped.ModifierTagsCriteria)},
 	} {
 		c.False(one.on(), "precondition: %s %s starts out off", one.path, one.key)
 		screen.Do(func() {

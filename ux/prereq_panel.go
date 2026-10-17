@@ -494,12 +494,7 @@ func (p *prereqPanel) editor(pr gurps.Prereq, path string) *unison.Panel {
 			one.PointsCriteria.Compare != criteria.AnyNumber)
 		p.tagsChip(chips, path, &one.TagsCriteria)
 		p.textChip(chips, path, "notes", &one.NotesCriteria)
-		p.textChip(chips, path, "modname", &one.ModifierNameCriteria)
-		p.textChip(chips, path, "modnotes", &one.ModifierNotesCriteria)
-		p.textChip(chips, path, "modtag", &one.ModifierTagsCriteria)
-		if field := chips.FindRefKey(path + ":modtag"); field != nil {
-			field.Tooltip = newWrappedTooltip(i18n.Text(`Separate multiple tags with commas to match any one of them, e.g. "Sword, Axe"`))
-		}
+		p.modifierChips(chips, path, &one.ModifierCriteria)
 	case *gurps.SkillPrereq:
 		p.hasPopup(fields, key("has"), &one.Has, false)
 		p.typePopup(fields, path, pr)
@@ -563,6 +558,7 @@ func (p *prereqPanel) editor(pr gurps.Prereq, path string) *unison.Panel {
 		p.textCriteria(fields, key("name"), i18n.Text("Name"), i18n.Text("Item name"), whose, whose, &one.NameCriteria,
 			true)
 		p.tagsChip(chips, path, &one.TagsCriteria)
+		p.modifierChips(chips, path, &one.ModifierCriteria)
 	case *gurps.ContainedQuantityPrereq:
 		p.hasPopup(fields, key("has"), &one.Has, false)
 		p.typePopup(fields, path, pr)
@@ -710,7 +706,7 @@ func (p *prereqPanel) typePopup(parent *unison.Panel, path string, pr gurps.Prer
 				// Equipped and carried equipment differ only in their type.
 				if from, ok := pr.(*gurps.EquippedEquipmentPrereq); ok {
 					if to, same := created.(*gurps.EquippedEquipmentPrereq); same {
-						to.Has, to.TagsCriteria = from.Has, from.TagsCriteria
+						to.Has, to.TagsCriteria, to.ModifierCriteria = from.Has, from.TagsCriteria, from.ModifierCriteria
 					}
 				}
 				list.Prereqs[i] = created
@@ -825,6 +821,16 @@ func (p *prereqPanel) powerSourceChip(chips *unison.Panel, path string, one *gur
 				p.textField(chip, path+":power", title, "", &one.PowerSourceCriteria.Qualifier, nil)
 			}
 		})
+}
+
+// modifierChips adds the optional criteria a single modifier of the matched item has to meet.
+func (p *prereqPanel) modifierChips(chips *unison.Panel, path string, c *gurps.ModifierCriteria) {
+	p.textChip(chips, path, "modname", &c.ModifierNameCriteria)
+	p.textChip(chips, path, "modnotes", &c.ModifierNotesCriteria)
+	p.textChip(chips, path, "modtag", &c.ModifierTagsCriteria)
+	if field := chips.FindRefKey(path + ":modtag"); field != nil {
+		field.Tooltip = newWrappedTooltip(i18n.Text(`Separate multiple tags with commas to match any one of them, e.g. "Sword, Axe"`))
+	}
 }
 
 // numberChip adds the optional number criterion with the key, such as a level, which runs from minimum to maximum.

@@ -33,6 +33,7 @@ type EquippedEquipmentPrereq struct {
 	Has          bool          `json:"has"`
 	NameCriteria criteria.Text `json:"name,omitzero"`
 	TagsCriteria criteria.Text `json:"tags,omitzero"`
+	ModifierCriteria
 }
 
 // NewEquippedEquipmentPrereq creates a new EquippedEquipmentPrereq.
@@ -92,6 +93,7 @@ func (p *EquippedEquipmentPrereq) FillWithNameableKeys(m, existing map[string]st
 		p.NameCriteria.Qualifier,
 		p.TagsCriteria.Qualifier,
 	)
+	p.fillWithModifierNameableKeys(m, existing)
 }
 
 // Satisfied implements Prereq. Only an unmet prerequisite to have equipment equipped sets hasEquipmentPenalty.
@@ -114,7 +116,8 @@ func (p *EquippedEquipmentPrereq) Satisfied(entity *Entity, exclude any, tooltip
 			}
 		}
 		satisfied = exclude != eqp && held && p.NameCriteria.Matches(replacements, eqp.NameWithReplacements()) &&
-			p.TagsCriteria.MatchesList(replacements, eqp.Tags...)
+			p.TagsCriteria.MatchesList(replacements, eqp.Tags...) &&
+			modifiersMeet(&p.ModifierCriteria, replacements, eqp.Modifiers)
 		return satisfied
 	}, false, false, entity.CarriedEquipment...)
 	if !p.Has {
@@ -159,11 +162,11 @@ func (p *EquippedEquipmentPrereq) Describe(_ *Entity, replacements map[string]st
 			text = i18n.Text("%s equipped equipment", has)
 		}
 	case carried:
-		return i18n.Text("%s any equipment carried but not equipped", has)
+		text = i18n.Text("%s any equipment carried but not equipped", has)
 	default:
-		return i18n.Text("%s any equipment equipped", has)
+		text = i18n.Text("%s any equipment equipped", has)
 	}
-	return text + describeTags(p.TagsCriteria, replacements, em)
+	return text + describeTags(p.TagsCriteria, replacements, em) + p.describeModifier(replacements, em)
 }
 
 // Hash writes this object's contents into the hasher.
@@ -176,4 +179,5 @@ func (p *EquippedEquipmentPrereq) Hash(h hash.Hash) {
 	xhash.Bool(h, p.Has)
 	p.NameCriteria.Hash(h)
 	p.TagsCriteria.Hash(h)
+	p.hashModifier(h)
 }

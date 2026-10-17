@@ -298,3 +298,76 @@ func TestEquipmentPrereqHasOnDisk(t *testing.T) {
 	c.NoError(err, "a new equipment prerequisite should marshal")
 	c.Contains(string(data), `"has":true`, "has is always written")
 }
+
+// TestEquipmentPrereqModifiers checks the modifier criteria of an equipment prerequisite, which a single enabled
+// modifier has to meet together, and that they are saved and described alongside the others.
+func TestEquipmentPrereqModifiers(t *testing.T) {
+	c := check.New(t)
+	e := gurps.NewEntity()
+	sword := gurps.NewEquipment(e, nil, false)
+	sword.Name = "Sword"
+	sword.Equipped = true
+	fine := gurps.NewEquipmentModifier(e, nil, false)
+	fine.Name = "Fine"
+	fine.LocalNotes = "Edge"
+	fine.Tags = []string{"Quality"}
+	ornate := gurps.NewEquipmentModifier(e, nil, false)
+	ornate.Name = "Ornate"
+	ornate.LocalNotes = "Gold"
+	cheap := gurps.NewEquipmentModifier(e, nil, false)
+	cheap.Name = "Cheap"
+	cheap.SetDisabled(true)
+	sword.Modifiers = []*gurps.EquipmentModifier{fine, ornate, cheap}
+	e.CarriedEquipment = []*gurps.Equipment{sword}
+	c.True(sword.ReallyEquipped(), "precondition: the sword is equipped")
+	c.True(fine.Enabled(), "precondition: Fine is enabled")
+	c.True(ornate.Enabled(), "precondition: Ornate is enabled")
+	c.False(cheap.Enabled(), "precondition: Cheap is disabled")
+
+	for _, one := range []struct {
+		name  string
+		setup func(p *gurps.EquippedEquipmentPrereq)
+		want  bool
+	}{
+		{"modifier name", func(p *gurps.EquippedEquipmentPrereq) { p.ModifierNameCriteria = isText("Fine") }, true},
+		{"disabled modifier name", func(p *gurps.EquippedEquipmentPrereq) { p.ModifierNameCriteria = isText("Cheap") }, false},
+		{"modifier notes", func(p *gurps.EquippedEquipmentPrereq) { p.ModifierNotesCriteria = isText("Gold") }, true},
+		{"modifier tag", func(p *gurps.EquippedEquipmentPrereq) { p.ModifierTagsCriteria = isText("Quality") }, true},
+		{"one modifier meets all", func(p *gurps.EquippedEquipmentPrereq) {
+			p.ModifierNameCriteria = isText("Fine")
+			p.ModifierNotesCriteria = isText("Edge")
+		}, true},
+		{"no one modifier meets all", func(p *gurps.EquippedEquipmentPrereq) {
+			p.ModifierNameCriteria = isText("Fine")
+			p.ModifierNotesCriteria = isText("Gold")
+		}, false},
+	} {
+		p := gurps.NewEquippedEquipmentPrereq()
+		p.NameCriteria = isText("Sword")
+		one.setup(p)
+		c.Equal(one.want, p.Satisfied(e, nil, nil, "", nil), one.name)
+	}
+
+	p := gurps.NewEquippedEquipmentPrereq()
+	p.NameCriteria = isText("Sword")
+	p.ModifierNameCriteria = isText("Fine")
+	p.ModifierTagsCriteria = isText("Quality")
+	c.Equal("Has Sword equipped with a modifier whose name is Fine and tagged Quality",
+		p.Describe(nil, nil, func(s string) string { return s }))
+	data, err := jio.Marshal(p)
+	c.NoError(err, "the prerequisite should marshal")
+	c.Contains(string(data), `"modifier_name":{"compare":"is","qualifier":"Fine"}`,
+		"the modifier criteria are saved beside the others")
+	var restored gurps.EquippedEquipmentPrereq
+	c.NoError(jio.Unmarshal(data, &restored), "the prerequisite should unmarshal")
+	c.Equal(p.ModifierCriteria, restored.ModifierCriteria, "the modifier criteria survive a round trip")
+
+	base := gurps.Hash64(p)
+	p.ModifierNotesCriteria = isText("Edge")
+	c.NotEqual(base, gurps.Hash64(p), "the modifier criteria change the hash")
+	p.ModifierNameCriteria = isText("@Name@")
+	keys := make(map[string]string)
+	p.FillWithNameableKeys(keys, nil)
+	_, found := keys["Name"]
+	c.True(found, "the modifier name's key is found")
+}

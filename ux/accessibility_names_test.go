@@ -286,6 +286,9 @@ func seedEveryPrereqControl(root *gurps.PrereqList) {
 			pr.CombinedWith = gurps.DexterityID
 		case *gurps.EquippedEquipmentPrereq:
 			pr.TagsCriteria = on
+			pr.ModifierNameCriteria = on
+			pr.ModifierNotesCriteria = on
+			pr.ModifierTagsCriteria = on
 		default:
 		}
 	}
