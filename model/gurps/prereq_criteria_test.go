@@ -405,3 +405,67 @@ func TestEquipmentPrereqModifiers(t *testing.T) {
 	_, found := keys["Name"]
 	c.True(found, "the modifier name's key is found")
 }
+
+// TestEquipmentPenaltyThroughNegation checks that equipment a prerequisite list requires to be equipped, through any
+// number of negations, earns the missing equipment penalty when it isn't, even when the list it is in has failed, and
+// that equipment it forbids never does.
+func TestEquipmentPenaltyThroughNegation(t *testing.T) {
+	c := check.New(t)
+	e := gurps.NewEntity()
+	shield := gurps.NewEquipment(e, nil, false)
+	shield.Name = "Shield"
+	shield.Equipped = true
+	e.CarriedEquipment = []*gurps.Equipment{shield}
+	c.True(shield.ReallyEquipped(), "precondition: the shield is equipped")
+	equipped := func(name string, not bool) *gurps.EquippedEquipmentPrereq {
+		p := gurps.NewEquippedEquipmentPrereq()
+		p.NameCriteria = isText(name)
+		p.Not = not
+		return p
+	}
+	carried := func(name string, not bool) *gurps.EquippedEquipmentPrereq {
+		p := gurps.NewCarriedEquipmentPrereq()
+		p.NameCriteria = isText(name)
+		p.Not = not
+		return p
+	}
+	list := func(all, not bool, children ...gurps.Prereq) *gurps.PrereqList {
+		p := gurps.NewPrereqList()
+		p.All = all
+		p.Not = not
+		p.Prereqs = children
+		return p
+	}
+	noneOf := func(children ...gurps.Prereq) *gurps.PrereqList { return list(false, true, children...) }
+	allOf := func(children ...gurps.Prereq) *gurps.PrereqList { return list(true, false, children...) }
+	anyOf := func(children ...gurps.Prereq) *gurps.PrereqList { return list(false, false, children...) }
+	for _, one := range []struct {
+		name      string
+		list      *gurps.PrereqList
+		satisfied bool
+		penalty   bool
+	}{
+		{"none of not having a longarm", noneOf(equipped("Longarm", true)), false, true},
+		{"none of none of having a longarm", noneOf(noneOf(equipped("Longarm", false))), false, true},
+		{"none of having the shield", noneOf(equipped("Shield", false)), false, false},
+		{"none of none of not having the shield", noneOf(noneOf(equipped("Shield", true))), false, false},
+		{"none of not having the shield", noneOf(equipped("Shield", true)), true, false},
+		{"none of not having a kit carried", noneOf(carried("Kit", true)), false, false},
+		{
+			"none of a failed all of not having a longarm",
+			noneOf(allOf(equipped("Longarm", true), gurps.NewUnknownPrereq("future", []byte(`{"type":"future"}`)))),
+			false, true,
+		},
+		{
+			"any of having a longarm and a failure",
+			anyOf(equipped("Longarm", false), gurps.NewUnknownPrereq("future", []byte(`{"type":"future"}`))),
+			false, true,
+		},
+	} {
+		root := gurps.NewPrereqList()
+		root.Prereqs = gurps.Prereqs{one.list}
+		var penalty bool
+		c.Equal(one.satisfied, root.Satisfied(e, nil, nil, "", &penalty), "%s: satisfied", one.name)
+		c.Equal(one.penalty, penalty, "%s: penalty", one.name)
+	}
+}

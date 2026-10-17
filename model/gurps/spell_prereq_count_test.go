@@ -12,6 +12,7 @@ package gurps
 import (
 	"testing"
 
+	"github.com/richardwilkes/gcs/v5/model/criteria"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/toolbox/v2/check"
 )
@@ -82,6 +83,72 @@ func TestCountPrereqsForSpellSkipsNegatedList(t *testing.T) {
 	c.Equal(1, CountPrereqsForSpell(continualLight, e.Spells), "precondition: Light is counted")
 	continualLight.Prereq.Not = true
 	c.Equal(0, CountPrereqsForSpell(continualLight, e.Spells))
+}
+
+// TestCountPrereqsForSpellSeesThroughDoubleNegation verifies that a spell required through two negations is counted,
+// whether they are two negated lists or a negated list holding a prerequisite not to know it.
+func TestCountPrereqsForSpellSeesThroughDoubleNegation(t *testing.T) {
+	c := check.New(t)
+	e := NewEntity()
+	addTestSpell(e, "Light", fxp.One)
+	continualLight := addTestSpell(e, "Continual Light", fxp.One)
+	light := addSpellNamePrereq(continualLight, "Light")
+	c.Equal(1, CountPrereqsForSpell(continualLight, e.Spells), "precondition: Light is counted")
+	inner := NewPrereqList()
+	inner.Not = true
+	inner.Prereqs = Prereqs{light}
+	continualLight.Prereq.Prereqs = Prereqs{inner}
+	continualLight.Prereq.Not = true
+	c.Equal(1, CountPrereqsForSpell(continualLight, e.Spells), "none of none of knowing Light requires it")
+	light.Has = false
+	continualLight.Prereq.Prereqs = Prereqs{light}
+	c.Equal(1, CountPrereqsForSpell(continualLight, e.Spells), "none of not knowing Light requires it")
+}
+
+// TestCountPrereqsForSpellUnderNegation verifies how a negated list counts what it holds: traits and other
+// prerequisites turn around as spells do, a negated list asks for every one or any one of its children turned around,
+// a script under a negation is left out, and a spell required through a negation brings its own prerequisites along.
+func TestCountPrereqsForSpellUnderNegation(t *testing.T) {
+	c := check.New(t)
+	e := NewEntity()
+	ignite := addTestSpell(e, "Ignite Fire", fxp.One)
+	light := addTestSpell(e, "Light", fxp.One)
+	addSpellNamePrereq(light, "Ignite Fire")
+	target := addTestSpell(e, "Target", fxp.One)
+	c.Nil(ignite.Prereq, "precondition: Ignite Fire has no prerequisites")
+	notKnowing := func(name string) *SpellPrereq {
+		p := NewSpellPrereq()
+		p.QualifierCriteria.Qualifier = name
+		p.Has = false
+		return p
+	}
+	negated := func(all bool, children ...Prereq) *PrereqList {
+		p := NewPrereqList()
+		p.All = all
+		p.Not = true
+		p.Prereqs = children
+		return p
+	}
+	trait := NewTraitPrereq()
+	trait.NameCriteria.Qualifier = "Magery"
+	trait.Has = false
+	trait.LevelCriteria.Compare = criteria.AnyNumber
+	script := NewScriptPrereq()
+	script.Script = "true"
+	for _, one := range []struct {
+		name string
+		list *PrereqList
+		want int
+	}{
+		{"none of not having a trait requires it", negated(false, trait), 1},
+		{"none of not knowing two spells requires both", negated(false, notKnowing("Ignite Fire"), notKnowing("Other")), 2},
+		{"not all of not knowing two spells requires either", negated(true, notKnowing("Ignite Fire"), notKnowing("Other")), 1},
+		{"a script under a negation isn't counted", negated(false, script), 0},
+		{"a spell required through a negation brings its own", negated(false, notKnowing("Light")), 2},
+	} {
+		target.Prereq = one.list
+		c.Equal(one.want, CountPrereqsForSpell(target, e.Spells), one.name)
+	}
 }
 
 // TestCountPrereqsForSpellSkipsEmptyOption verifies that a list in an "any of" list with nothing to check, whether

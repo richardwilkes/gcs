@@ -280,6 +280,27 @@ func TestPrereqListDescribe(t *testing.T) {
 	c.Equal("", gurps.NewPrereqList().Describe(nil, nil, func(s string) string { return s }))
 	noneOf := &gurps.PrereqList{Not: true, Prereqs: gurps.Prereqs{namedTrait("Luck"), namedTrait("DX")}}
 	c.Equal("None of (has trait Luck or has trait DX)", noneOf.Describe(nil, nil, func(s string) string { return s }))
+	allOf := &gurps.PrereqList{All: true, Prereqs: gurps.Prereqs{namedTrait("Luck"), namedTrait("DX")}}
+	noneOfAll := &gurps.PrereqList{Not: true, Prereqs: gurps.Prereqs{allOf}}
+	c.Equal("Not all of (has trait Luck and has trait DX)",
+		noneOfAll.Describe(nil, nil, func(s string) string { return s }),
+		"a negated list holding only an all of group says not all of its items, without parenthesizing them twice")
+	anyOfLuck := &gurps.PrereqList{Prereqs: gurps.Prereqs{namedTrait("Luck"), namedTrait("DX")}}
+	holdingAnyOf := &gurps.PrereqList{All: true, Prereqs: gurps.Prereqs{anyOfLuck}}
+	c.Equal("(Has trait Luck or has trait DX)", holdingAnyOf.Describe(nil, nil, func(s string) string { return s }),
+		"a list that isn't negated keeps the parentheses of a lone group")
+	notAllOfAny := &gurps.PrereqList{All: true, Not: true, Prereqs: gurps.Prereqs{anyOfLuck}}
+	c.Equal("None of (has trait Luck or has trait DX)",
+		notAllOfAny.Describe(nil, nil, func(s string) string { return s }),
+		"and one holding only an any of group says none of its items")
+	allOfAtTL := &gurps.PrereqList{
+		All: true, WhenTL: criteria.Number{Compare: criteria.AtLeastNumber, Qualifier: fxp.Three},
+		Prereqs: gurps.Prereqs{namedTrait("Luck"), namedTrait("DX")},
+	}
+	noneOfAtTL := &gurps.PrereqList{Not: true, Prereqs: gurps.Prereqs{allOfAtTL}}
+	c.Equal("None of ((has trait Luck and has trait DX) (only when TL at least 3))",
+		noneOfAtTL.Describe(nil, nil, func(s string) string { return s }),
+		"but keeps the group's own parentheses when its tech level condition follows them")
 
 	named := gurps.NewScriptPrereq()
 	named.Name = "Elf ancestry"
@@ -418,6 +439,22 @@ func TestPrereqListFailureText(t *testing.T) {
 	heading := "\n- Requires none of:"
 	c.True(strings.HasPrefix(buffer.String(), heading+"\n\t- "), "a failed none of list says why: %q", buffer.String())
 	c.False(strings.Contains(buffer.String(), "Has trait A"), "but not what was unmet")
+	buffer = xbytes.InsertBuffer{}
+	gurps.SuppressScriptResolveErrorLogging(func() {
+		c.False(not(false, list(false, broken, a)).Satisfied(entity, nil, &buffer, "\n- ", nil),
+			"a none of list holding a failed any of list is unmet")
+	})
+	c.True(strings.Contains(buffer.String(), "\n\t- Requires at least one of:"),
+		"a failed list of the same mode keeps its own heading: %q", buffer.String())
+	c.False(strings.Contains(buffer.String(), "\n\t- Has trait A"),
+		"so what was unmet in it isn't listed as forbidden: %q", buffer.String())
+
+	future := gurps.NewUnknownPrereq("future", []byte(`{"type":"future"}`))
+	buffer = xbytes.InsertBuffer{}
+	c.False(not(false, future).Satisfied(entity, nil, &buffer, "\n- ", nil),
+		"a negated list can't make a prerequisite it doesn't know into a pass")
+	c.True(strings.Contains(buffer.String(), "future"), "and says what it couldn't check: %q", buffer.String())
+	c.Equal(gurps.CheckFailed, not(false, future).Evaluate(entity, nil, nil), "it fails rather than being unmet")
 }
 
 // TestPrereqListAppliesAt verifies that a list applies only at the tech levels its condition allows, and always when

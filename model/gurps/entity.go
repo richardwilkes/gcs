@@ -882,9 +882,9 @@ func (e *Entity) expandThisArmorDRBonus(owner, subOwner fmt.Stringer, leveledOwn
 const unsatisfiedReasonPrefix = "\n- "
 
 // applyEquipmentPenalties adds to the collected features the missing-equipment penalty of every skill and spell that
-// processSkillAndSpellPrereqs last found unsatisfied on account of an equipped-equipment prerequisite. It runs before
-// the prerequisites are judged again, so that every level computed during the pass counts the same penalties; see
-// recalculationPass.
+// processSkillAndSpellPrereqs last found unsatisfied on account of equipment they require to be equipped. It runs
+// before the prerequisites are judged again, so that every level computed during the pass counts the same penalties;
+// see recalculationPass.
 func (e *Entity) applyEquipmentPenalties() {
 	Traverse(func(s *Skill) bool {
 		if s.takesEquipmentPenalty {
@@ -914,7 +914,7 @@ func (e *Entity) applyEquipmentPenalties() {
 }
 
 // processSkillAndSpellPrereqs evaluates the prerequisites of every skill and spell, recording the reason each is
-// unsatisfied. A skill or spell left unsatisfied by an equipped-equipment prerequisite is noted as taking the
+// unsatisfied. A skill or spell left unsatisfied by equipment it requires to be equipped is noted as taking the
 // missing-equipment penalty to its level, which applyEquipmentPenalties adds to the collected features in the next
 // pass. A technique or ritual magic spell whose prerequisites are met must also have the skill it is based on. A
 // disabled one is not judged, and has any reason recorded before it was disabled cleared.
@@ -1013,7 +1013,8 @@ func levelExceedsMaximumReason(maximum fxp.Int) string {
 
 // evaluatePrereqs evaluates the prerequisites, which may be nil, of the node given as exclude and returns the reason to
 // record when they are not met, or "" when they are. hasEquipmentPenalty, if non-nil, is set to whether they are unmet
-// on account of an equipped-equipment prerequisite, which is what earns a skill or spell the missing-equipment penalty.
+// on account of equipment they require to be equipped, which is what earns a skill or spell the missing-equipment
+// penalty.
 func (e *Entity) evaluatePrereqs(prereq *PrereqList, exclude any, hasEquipmentPenalty *bool) string {
 	if hasEquipmentPenalty != nil {
 		*hasEquipmentPenalty = false

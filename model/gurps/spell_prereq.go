@@ -254,29 +254,31 @@ func spellDirectlyRequiresNamed(candidate *Spell, targetName, targetPowerSource 
 		return false
 	}
 	candidatePowerSource := candidate.PowerSourceWithReplacements()
-	return prereqListRequiresSpell(candidate.Prereq, candidate.NameableReplacements(), &candidatePowerSource, targetName,
-		targetPowerSource)
+	return prereqListRequiresSpell(candidate.Prereq, false, candidate.NameableReplacements(), &candidatePowerSource,
+		targetName, targetPowerSource)
 }
 
 // prereqListRequiresSpell returns true if the given prereq list holds a spell-by-name prerequisite (at any nesting
-// depth, outside negated lists) that is required (Has), matches the target spell's name, and whose power source filter,
-// if any, the target spell's power source passes. The replacements and owner power source are those of the spell the
-// prereq list belongs to: its qualifiers resolve against the former, and a "same power source as this spell" filter
-// compares to the latter.
-func prereqListRequiresSpell(list *PrereqList, replacements map[string]string, ownerPowerSource *string, targetName,
-	targetPowerSource string,
+// depth) that is required, matches the target spell's name, and whose power source filter, if any, the target spell's
+// power source passes. A prerequisite is required when it is to be had (Has) and the lists holding it, along with
+// negated, are negated an even number of times, or the other way around. The replacements and owner power source are
+// those of the spell the prereq list belongs to: its qualifiers resolve against the former, and a "same power source as
+// this spell" filter compares to the latter.
+func prereqListRequiresSpell(list *PrereqList, negated bool, replacements map[string]string, ownerPowerSource *string,
+	targetName, targetPowerSource string,
 ) bool {
-	if list == nil || list.Not {
+	if list == nil {
 		return false
 	}
+	negated = negated != list.Not
 	for _, one := range list.Prereqs {
 		switch p := one.(type) {
 		case *PrereqList:
-			if prereqListRequiresSpell(p, replacements, ownerPowerSource, targetName, targetPowerSource) {
+			if prereqListRequiresSpell(p, negated, replacements, ownerPowerSource, targetName, targetPowerSource) {
 				return true
 			}
 		case *SpellPrereq:
-			if p.Has && p.SubType == spellcmp.Name && p.QualifierCriteria.Matches(replacements, targetName) &&
+			if p.Has != negated && p.SubType == spellcmp.Name && p.QualifierCriteria.Matches(replacements, targetName) &&
 				p.powerSourceMatches(replacements, targetPowerSource, ownerPowerSource) {
 				return true
 			}

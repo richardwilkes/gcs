@@ -147,20 +147,21 @@ func (p *PrereqList) AppliesWithParentsAt(entity *Entity) bool {
 // along with everything in it, when it does not apply at the sheet's tech level, and is also skipped when it has
 // nothing in it that isn't skipped. Its parent leaves it out. Of the rest, one unmet item makes an "all of" list unmet,
 // and one met item makes an "any of" list met, even when others failed. Otherwise the list has failed when any of the
-// rest has, and is met or unmet as they all are. visit, if not nil, is called with the result of each prerequisite in
-// the list and then of the list itself, along with the reason a script gives, which is the error when it couldn't run.
-// Each script runs at most once, and none in a skipped list does. Without an entity, the list is met and nothing is
-// visited.
+// rest has, and is met or unmet as they all are. A negated list then swaps met and unmet, leaving skipped and failed
+// alone. A prerequisite of a type this version of GCS doesn't know has failed, so that negating it can't satisfy it.
+// visit, if not nil, is called with the result of each prerequisite in the list and then of the list itself, along with
+// the reason a script gives, which is the error when it couldn't run. Each script runs at most once, and none in a
+// skipped list does. Without an entity, the list is met and nothing is visited.
 func (p *PrereqList) Evaluate(entity *Entity, exclude any, visit func(one Prereq, result CheckResult, reason string)) CheckResult {
-	result, _ := p.evaluate(&prereqEvaluation{entity: entity, exclude: exclude, visit: visit}, nil, nil, p.All)
+	result, _ := p.evaluate(&prereqEvaluation{entity: entity, exclude: exclude, visit: visit}, nil, nil, p.All, false)
 	return result
 }
 
 // Satisfied implements Prereq. A list is satisfied when Evaluate finds it met or skipped. hasEquipmentPenalty, if not
-// nil, is set to true when this list is unsatisfied and an unmet equipped-equipment prerequisite is among what made it
-// so: one of its own, or one reached through nested lists that are each unsatisfied. An "all of" list that also fails
-// for some other prerequisite sets it, while an unmet equipment prerequisite inside a satisfied, skipped or negated
-// nested list never does.
+// nil, is set to true when this list is unsatisfied partly because equipment it requires to be equipped isn't: an unmet
+// prerequisite to have it equipped, or, inside a negated list, a met prerequisite not to, reached through nested lists
+// that each count against the one holding them. An "all of" list that also fails for some other prerequisite sets it,
+// while one inside a nested list that doesn't count against its parent never does.
 //
 // The text written to buffer lists what is unmet. A skipped list writes nothing, a list with a single unmet item writes
 // just that item, and a nested list with the same mode as its parent writes its items alongside its parent's. Any other
@@ -169,7 +170,7 @@ func (p *PrereqList) Evaluate(entity *Entity, exclude any, visit func(one Prereq
 // "all of" list are written without a heading.
 func (p *PrereqList) Satisfied(entity *Entity, exclude any, buffer *xbytes.InsertBuffer, prefix string, hasEquipmentPenalty *bool) bool {
 	result, _ := p.evaluate(&prereqEvaluation{entity: entity, exclude: exclude, prefix: prefix}, buffer,
-		hasEquipmentPenalty, p.All)
+		hasEquipmentPenalty, p.All, false)
 	return result == CheckMet || result == CheckSkipped
 }
 
@@ -182,9 +183,11 @@ type prereqEvaluation struct {
 }
 
 // evaluate is Evaluate, also writing the text and setting the equipment penalty that Satisfied describes, and returning
-// how many items of text it wrote at the level of the prefix. flatten requests that the unmet items be written at that
-// level rather than under a heading.
-func (p *PrereqList) evaluate(ev *prereqEvaluation, buffer *xbytes.InsertBuffer, hasEquipmentPenalty *bool, flatten bool) (result CheckResult, items int) {
+// how many items of text it wrote at the level of the prefix. flatten requests that the unmet items of a list that
+// isn't negated be written at that level rather than under a heading. negated is set when the lists holding this one
+// are negated an odd number of times, which turns what each prerequisite asks for around: a met one then counts
+// against the outermost list, and one that doesn't have equipment equipped asks that it be equipped.
+func (p *PrereqList) evaluate(ev *prereqEvaluation, buffer *xbytes.InsertBuffer, hasEquipmentPenalty *bool, flatten, negated bool) (result CheckResult, items int) {
 	if ev.entity == nil {
 		return CheckMet, 0
 	}
@@ -199,6 +202,7 @@ func (p *PrereqList) evaluate(ev *prereqEvaluation, buffer *xbytes.InsertBuffer,
 	}
 	var met []Prereq
 	eqpPenalty := false
+	inner := negated != p.Not
 	for _, one := range p.Prereqs {
 		out := local
 		if p.Not && local != nil {
@@ -208,14 +212,29 @@ func (p *PrereqList) evaluate(ev *prereqEvaluation, buffer *xbytes.InsertBuffer,
 		childResult := CheckMet
 		if list, ok := one.(*PrereqList); ok {
 			var n int
-			childResult, n = list.evaluate(ev, out, &eqpPenalty, list.All == p.All)
+			childResult, n = list.evaluate(ev, out, &eqpPenalty, list.All == p.All && !p.Not, inner)
 			items += n
 		} else {
 			var reason string
-			if script, isScript := one.(*ScriptPrereq); isScript {
-				childResult, reason = script.evaluate(ev.entity, ev.exclude, out, ev.prefix)
-			} else if !one.Satisfied(ev.entity, ev.exclude, out, ev.prefix, &eqpPenalty) {
-				childResult = CheckUnmet
+			penalty := &eqpPenalty
+			if inner {
+				penalty = nil
+			}
+			switch typed := one.(type) {
+			case *ScriptPrereq:
+				childResult, reason = typed.evaluate(ev.entity, ev.exclude, out, ev.prefix)
+			case *UnknownPrereq:
+				typed.Satisfied(ev.entity, ev.exclude, out, ev.prefix, nil)
+				childResult = CheckFailed
+			default:
+				if !one.Satisfied(ev.entity, ev.exclude, out, ev.prefix, penalty) {
+					childResult = CheckUnmet
+				}
+			}
+			// Negated, one that doesn't have equipment equipped asks that it be, and is unmet when it is met.
+			if eqp, isEqp := one.(*EquippedEquipmentPrereq); isEqp && inner && childResult == CheckMet && eqp.Not &&
+				eqp.Type == prereq.EquippedEquipment {
+				eqpPenalty = true
 			}
 			if childResult != CheckMet {
 				items++
@@ -239,11 +258,14 @@ func (p *PrereqList) evaluate(ev *prereqEvaluation, buffer *xbytes.InsertBuffer,
 	if ev.visit != nil {
 		ev.visit(p, result, "")
 	}
+	// The penalty goes up when this list counts against the lists holding it: when it has failed, which no negation
+	// changes, when it is unmet and they don't negate it, or when it is met and they do.
+	if eqpPenalty && hasEquipmentPenalty != nil && result != CheckSkipped &&
+		(result == CheckFailed || (result == CheckMet) == negated) {
+		*hasEquipmentPenalty = true
+	}
 	if result == CheckMet || result == CheckSkipped {
 		return result, 0
-	}
-	if eqpPenalty && hasEquipmentPenalty != nil && !p.Not {
-		*hasEquipmentPenalty = true
 	}
 	if buffer == nil {
 		return result, 0
@@ -302,31 +324,39 @@ func (p *PrereqList) visitSkipped(visit func(one Prereq, result CheckResult, rea
 // joins more than one is parenthesized, a negated list says so, a tech level condition is noted at the end, and empty
 // lists are left out.
 func (p *PrereqList) Describe(entity *Entity, replacements map[string]string, em func(string) string) string {
-	text, n := p.describeChildren(entity, replacements, em, p.Not)
+	text, n, all := p.describeChildren(entity, replacements, em, p.Not)
 	if n != 0 {
-		text = p.describeNot(text)
+		text = p.describeNot(text, all)
 	}
 	return text + p.describeWhenTL()
 }
 
-// describeChildren joins the descriptions of the children, returning how many it joined. When lower is true, the first
-// of them follows a joining word, as every other one does, and so begins in lowercase unless it is a name someone
-// wrote.
-func (p *PrereqList) describeChildren(entity *Entity, replacements map[string]string, em func(string) string, lower bool) (text string, count int) {
+// describeChildren joins the descriptions of the children, returning how many it joined and whether they are joined
+// with "and". When lower is true, the first of them follows a joining word, as every other one does, and so begins in
+// lowercase unless it is a name someone wrote. A negated list that holds only a nested list joining several items
+// joins those items instead, in that list's mode, since negating one thing is the same whichever way it is combined.
+func (p *PrereqList) describeChildren(entity *Entity, replacements map[string]string, em func(string) string, lower bool) (text string, count int, all bool) {
 	parts := make([]string, 0, len(p.Prereqs))
+	// bare is the text of a nested list that joins more than one item, without its parentheses, and bareAll its mode.
+	var bare string
+	var bareAll bool
 	for _, one := range p.Prereqs {
 		lower = lower || len(parts) != 0
 		if list, isList := one.(*PrereqList); isList {
 			var n int
-			if text, n = list.describeChildren(entity, replacements, em, lower || list.Not); n == 0 {
+			var listAll bool
+			if text, n, listAll = list.describeChildren(entity, replacements, em, lower || list.Not); n == 0 {
 				continue
 			}
 			switch {
 			case list.Not:
-				if text = list.describeNot(text); lower {
+				if text = list.describeNot(text, listAll); lower {
 					text = lowerFirst(text)
 				}
 			case n > 1:
+				if list.WhenTL.Compare == criteria.AnyNumber {
+					bare, bareAll = text, listAll
+				}
 				text = "(" + text + ")"
 			}
 			text += list.describeWhenTL()
@@ -338,19 +368,23 @@ func (p *PrereqList) describeChildren(entity *Entity, replacements map[string]st
 		}
 		parts = append(parts, text)
 	}
+	if p.Not && len(parts) == 1 && bare != "" {
+		return bare, 1, bareAll
+	}
 	joiner := i18n.Text(" or ")
 	if p.All {
 		joiner = i18n.Text(" and ")
 	}
-	return strings.Join(parts, joiner), len(parts)
+	return strings.Join(parts, joiner), len(parts), p.All
 }
 
-// describeNot returns the text of the children of a negated list as the list says them, or unchanged when it isn't one.
-func (p *PrereqList) describeNot(text string) string {
+// describeNot returns the text of the children of a negated list, joined with "and" when all is set, as the list says
+// them, or unchanged when it isn't one.
+func (p *PrereqList) describeNot(text string, all bool) string {
 	switch {
 	case !p.Not:
 		return text
-	case p.All:
+	case all:
 		return i18n.Text("Not all of (%s)", text)
 	default:
 		return i18n.Text("None of (%s)", text)
