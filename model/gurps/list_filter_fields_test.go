@@ -29,7 +29,8 @@ func includingDisabled(cond *gurps.FilterCondition) *gurps.FilterCondition {
 }
 
 // TestFilterModifierFieldsOnTraits checks the fields a trait filter draws from the trait's modifiers: the enabled ones
-// only, unless a condition includes disabled ones, with containers and blank values left out either way.
+// only, unless a condition includes disabled ones, with containers and blank values left out either way. Notes are
+// compared with the whole of a condition's text, commas and all.
 func TestFilterModifierFieldsOnTraits(t *testing.T) {
 	c := check.New(t)
 	trait := gurps.NewTrait(nil, nil, false)
@@ -47,6 +48,7 @@ func TestFilterModifierFieldsOnTraits(t *testing.T) {
 	group.Name = "Group"
 	nested := gurps.NewTraitModifier(nil, group, false)
 	nested.Name = "Nested"
+	nested.LocalNotes = "Melee, Ranged"
 	group.Children = []*gurps.TraitModifier{nested}
 	trait.Modifiers = []*gurps.TraitModifier{accurate, cheap, group}
 	c.True(accurate.Enabled(), "precondition: the accurate modifier is enabled")
@@ -73,6 +75,19 @@ func TestFilterModifierFieldsOnTraits(t *testing.T) {
 			includingDisabled(newTextFilterCondition("modifier_names", criteria.IsText, "Group")), false,
 		},
 		{"enabled notes", newTextFilterCondition("modifier_notes", criteria.ContainsText, "sharp"), true},
+		{"notes with a comma", newTextFilterCondition("modifier_notes", criteria.IsText, "Melee, Ranged"), true},
+		{
+			"notes contain a comma", newTextFilterCondition("modifier_notes", criteria.ContainsText, "Melee, Ranged"),
+			true,
+		},
+		{
+			"notes contain a part only", newTextFilterCondition("modifier_notes", criteria.ContainsText, "Melee, Thrown"),
+			false,
+		},
+		{
+			"notes don't contain a comma",
+			newTextFilterCondition("modifier_notes", criteria.DoesNotContainText, "Melee, Ranged"), false,
+		},
 		{"disabled notes", newTextFilterCondition("modifier_notes", criteria.ContainsText, "brittle"), false},
 		{
 			"disabled notes, including disabled",

@@ -837,6 +837,25 @@ func TestListFilterPanelListEditor(t *testing.T) {
 	})
 }
 
+// TestListFilterPanelWholeTextListEditor checks that a list of free text, such as modifier notes, doesn't say to
+// separate several values with commas, since it compares the whole of its value.
+func TestListFilterPanelWholeTextListEditor(t *testing.T) {
+	c := check.New(t)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
+	f := gurps.NewListFilter("")
+	notes := gurps.NewFilterCondition(f.Root, "modifier_notes")
+	notes.Text = criteria.Text{Compare: criteria.ContainsText, Qualifier: "Melee, Ranged"}
+	f.Root.Children = gurps.FilterNodes{notes}
+	p, _ := showListFilterPanel(t, screen, f)
+	screen.Do(func() { p.toggle("r.0") })
+	screen.Do(func() {
+		if field, ok := refAs[*unison.Panel](t, p.AsPanel(), "r.0:text"); ok {
+			c.NotContains(tooltipText(field.Tooltip), "commas", "the field doesn't offer to split on commas")
+		}
+		c.Equal(`Must have modifier notes where at least one contains "Melee, Ranged"`, stripEm.Replace(p.describe(notes)))
+	})
+}
+
 // newSuggestionTestEquipment returns equipment tagged "Weapon", "weapon" and "Melee Weapon", the first of tech level 3,
 // followed by a container holding equipment tagged "Armor".
 func newSuggestionTestEquipment() []*gurps.Equipment {

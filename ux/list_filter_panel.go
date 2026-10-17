@@ -178,9 +178,9 @@ func (p *listFilterPanel) editor(cond *gurps.FilterCondition, path string) *unis
 			render = textWordsAfter(that, that)
 		}
 		p.textCriteriaWith(flow, key("text"), i18n.Text("Text"), "", render, &cond.Text, true, info.suggestions)
-	case gurps.FilterFieldList:
+	case gurps.FilterFieldList, gurps.FilterFieldTextList:
 		if field := p.textCriteriaWith(flow, key("text"), i18n.Text("List"), "", criteria.StringComparison.ListClause,
-			&cond.Text, true, info.suggestions); field != nil {
+			&cond.Text, true, info.suggestions); field != nil && info.kind == gurps.FilterFieldList {
 			field.Tooltip = newWrappedTooltip(i18n.Text(`Separate multiple values with commas to match any one of them, e.g. "Sword, Axe"`))
 		}
 		if info.disableable {

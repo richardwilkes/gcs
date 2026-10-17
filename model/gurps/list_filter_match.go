@@ -80,13 +80,17 @@ func checkFilterCondition[T Node[T]](c *FilterCondition, fields map[string]*Filt
 		if value := field.Text(node); strings.TrimSpace(value) != "" {
 			met = c.Text.Matches(nil, value)
 		}
-	case FilterFieldList:
+	case FilterFieldList, FilterFieldTextList:
 		list := field.List
 		if c.IncludeDisabled && field.ListWithDisabled != nil {
 			list = field.ListWithDisabled
 		}
 		if values := list(node); len(values) != 0 {
-			met = c.Text.MatchesList(nil, values...)
+			if field.Kind == FilterFieldList {
+				met = c.Text.MatchesList(nil, values...)
+			} else {
+				met = c.Text.MatchesEach(nil, values...)
+			}
 		}
 	case FilterFieldNumber:
 		met = c.Number.Matches(field.Number(node))

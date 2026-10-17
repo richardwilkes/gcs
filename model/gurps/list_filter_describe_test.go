@@ -132,6 +132,14 @@ func TestFilterConditionDescribe(t *testing.T) {
 			negated(includingDisabled(newTextFilterCondition("modifier_tags", criteria.ContainsText, "Lim"))),
 			`Must not have modifier tags where at least one contains "[Lim]", including disabled modifiers`,
 		},
+		{
+			newTextFilterCondition("modifier_notes", criteria.ContainsText, "Melee, Ranged"),
+			`Must have modifier notes where at least one contains "[Melee, Ranged]"`,
+		},
+		{
+			newTextFilterCondition("modifier_notes", criteria.IsText, " Cheap "),
+			`Must have modifier notes where at least one is [Cheap]`,
+		},
 		{gurps.NewFilterCondition(nil, "container"), `Must be a container`},
 		{negated(gurps.NewFilterCondition(nil, "container")), `Must not be a container`},
 		{

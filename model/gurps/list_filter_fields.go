@@ -33,6 +33,9 @@ const (
 	FilterFieldText FilterFieldKind = iota
 	// FilterFieldList is a list of text values, such as tags, compared with a criteria.Text using its list semantics.
 	FilterFieldList
+	// FilterFieldTextList is a list of free text values, such as notes, each compared with the whole of a
+	// criteria.Text, which isn't split on commas.
+	FilterFieldTextList
 	// FilterFieldNumber is a number, compared with a criteria.Number.
 	FilterFieldNumber
 	// FilterFieldWeight is a weight, compared with a criteria.Weight.
@@ -61,7 +64,8 @@ const (
 
 // FilterField describes one field of a list type that a saved filter may test: the key it is stored under, the title
 // the filter editor shows for it (phrased to follow "must" or "must not"), whether that title names something plural,
-// such as "have notes", its kind, and the accessor for its kind, which is the only one of the five that is set.
+// such as "have notes", its kind, and the accessor for its kind, which is the only one of the five that is set. Both
+// list kinds use List.
 type FilterField[T Node[T]] struct {
 	Key    string
 	Title  string
@@ -87,6 +91,13 @@ type FilterField[T Node[T]] struct {
 // that contain", and returns the field.
 func (f *FilterField[T]) WithPluralTitle() *FilterField[T] {
 	f.Plural = true
+	return f
+}
+
+// WithWholeValues makes a list field compare each of its values with the whole of a condition's text, rather than with
+// each of its comma-separated parts, for values of free text such as notes, and returns the field.
+func (f *FilterField[T]) WithWholeValues() *FilterField[T] {
+	f.Kind = FilterFieldTextList
 	return f
 }
 
@@ -277,7 +288,7 @@ func TraitFilterFields() []*FilterField[*Trait] {
 		NewModifierFilterField(filterFieldKeyModifierNames, i18n.Text("have modifier names"), traitModifiers,
 			func(m *TraitModifier) []string { return []string{m.NameWithReplacements()} }).WithListedValues(),
 		NewModifierFilterField(filterFieldKeyModifierNotes, i18n.Text("have modifier notes"), traitModifiers,
-			func(m *TraitModifier) []string { return []string{m.LocalNotesWithReplacements()} }),
+			func(m *TraitModifier) []string { return []string{m.LocalNotesWithReplacements()} }).WithWholeValues(),
 		NewModifierFilterField(filterFieldKeyModifierTags, i18n.Text("have modifier tags"), traitModifiers,
 			(*TraitModifier).TagList).WithListedValues(),
 		NewNumberFilterField(filterFieldKeyPoints, i18n.Text("have points"),
@@ -404,7 +415,7 @@ func EquipmentFilterFields() []*FilterField[*Equipment] {
 		NewModifierFilterField(filterFieldKeyModifierNames, i18n.Text("have modifier names"), equipmentModifiers,
 			func(m *EquipmentModifier) []string { return []string{m.NameWithReplacements()} }).WithListedValues(),
 		NewModifierFilterField(filterFieldKeyModifierNotes, i18n.Text("have modifier notes"), equipmentModifiers,
-			func(m *EquipmentModifier) []string { return []string{m.LocalNotesWithReplacements()} }),
+			func(m *EquipmentModifier) []string { return []string{m.LocalNotesWithReplacements()} }).WithWholeValues(),
 		NewModifierFilterField(filterFieldKeyModifierTags, i18n.Text("have modifier tags"), equipmentModifiers,
 			(*EquipmentModifier).TagList).WithListedValues(),
 		// A group's quantity is always 1, and isn't shown.

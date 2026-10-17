@@ -690,14 +690,19 @@ func checkFilterFields[T gurps.Node[T]](c check.Checker, name string, fields []*
 			}
 		}
 		c.Equal(1, count, "%s: field %q should have exactly one accessor", name, field.Key)
-		c.True(present[field.Kind], "%s: field %q should have the accessor its kind names", name, field.Key)
+		kind := field.Kind
+		if kind == gurps.FilterFieldTextList {
+			// Both list kinds use List.
+			kind = gurps.FilterFieldList
+		}
+		c.True(present[kind], "%s: field %q should have the accessor its kind names", name, field.Key)
 
 		for i, sample := range samples {
 			c.NotPanics(func() {
 				switch field.Kind {
 				case gurps.FilterFieldText:
 					_ = field.Text(sample)
-				case gurps.FilterFieldList:
+				case gurps.FilterFieldList, gurps.FilterFieldTextList:
 					_ = field.List(sample)
 				case gurps.FilterFieldNumber:
 					_ = field.Number(sample)
