@@ -94,7 +94,8 @@ func (p *TraitPrereq) Satisfied(entity *Entity, exclude any, tooltip *xbytes.Ins
 		if exclude == t || !p.NameCriteria.Matches(replacements, t.NameWithReplacements()) ||
 			(p.PointsCriteria.Compare != criteria.AnyNumber && !p.PointsCriteria.Matches(t.AdjustedPoints(nil))) ||
 			(p.TagsCriteria.Compare != criteria.AnyText && !p.TagsCriteria.MatchesList(replacements, t.Tags...)) ||
-			!modifiersMeet(&p.ModifierCriteria, replacements, t.Modifiers) {
+			// A container's modifiers apply to the traits it holds.
+			(p.hasModifierCriteria() && !modifiersMeet(&p.ModifierCriteria, replacements, t.AllModifiers())) {
 			return false
 		}
 		notes := t.Notes()

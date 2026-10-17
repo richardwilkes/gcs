@@ -90,6 +90,34 @@ func TestTraitPrereqCriteria(t *testing.T) {
 	}
 }
 
+// TestTraitPrereqContainerModifiers checks that a trait's modifier criteria see the enabled modifiers of the containers
+// holding it, which apply to it.
+func TestTraitPrereqContainerModifiers(t *testing.T) {
+	c := check.New(t)
+	e := gurps.NewEntity()
+	container := gurps.NewTrait(e, nil, true)
+	container.Name = "Breath Weapons"
+	cone := gurps.NewTraitModifier(e, nil, false)
+	cone.Name = "Cone"
+	jet := gurps.NewTraitModifier(e, nil, false)
+	jet.Name = "Jet"
+	jet.SetDisabled(true)
+	container.Modifiers = []*gurps.TraitModifier{cone, jet}
+	breath := gurps.NewTrait(e, container, false)
+	breath.Name = "Innate Attack"
+	container.Children = []*gurps.Trait{breath}
+	e.Traits = []*gurps.Trait{container}
+	c.True(cone.Enabled(), "precondition: Cone is enabled")
+	c.False(jet.Enabled(), "precondition: Jet is disabled")
+	c.Equal(0, len(breath.Modifiers), "precondition: the trait has no modifiers of its own")
+
+	p := namedTrait("Innate Attack")
+	p.ModifierNameCriteria = isText("Cone")
+	c.True(p.Satisfied(e, nil, nil, "", nil), "the container's enabled modifier applies to the trait")
+	p.ModifierNameCriteria = isText("Jet")
+	c.False(p.Satisfied(e, nil, nil, "", nil), "its disabled one doesn't")
+}
+
 // TestSkillPrereqCriteria checks the points and tags of a skill prerequisite.
 func TestSkillPrereqCriteria(t *testing.T) {
 	c := check.New(t)
