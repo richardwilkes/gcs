@@ -112,12 +112,16 @@ func TestFilterModifierFieldsOnTraits(t *testing.T) {
 	} {
 		c.Equal(one.want, matchesListFilter(newTestListFilter(one.cond), fields, trait), "%s", one.name)
 	}
-	c.Equal([]string{"Accurate", "Cheap", "Nested"},
-		findFilterField(fields, "modifier_names").Suggestions([]*gurps.Trait{trait}),
-		"the names of disabled modifiers are offered too, but not those of containers")
-	c.Equal([]string{"Enhancement", "Limitation"},
-		findFilterField(fields, "modifier_tags").Suggestions([]*gurps.Trait{trait}),
-		"the tags of disabled modifiers are offered too")
+	names := findFilterField(fields, "modifier_names")
+	tags := findFilterField(fields, "modifier_tags")
+	list := []*gurps.Trait{trait}
+	c.Equal([]string{"Accurate", "Nested"}, names.Suggestions(list, false),
+		"the names of enabled modifiers are offered, but not those of containers")
+	c.Equal([]string{"Accurate", "Cheap", "Nested"}, names.Suggestions(list, true),
+		"and those of disabled ones too for a condition that includes them")
+	c.Equal([]string{"Enhancement"}, tags.Suggestions(list, false), "the tags of enabled modifiers are offered")
+	c.Equal([]string{"Enhancement", "Limitation"}, tags.Suggestions(list, true),
+		"and those of disabled ones too for a condition that includes them")
 }
 
 // TestFilterModifierFieldsSeeContainerModifiers checks that a trait's modifier fields hold the modifiers of the
@@ -180,9 +184,11 @@ func TestFilterModifierFieldsOnEquipment(t *testing.T) {
 	} {
 		c.Equal(one.want, matchesListFilter(newTestListFilter(one.cond), fields, equipment), "%s", one.name)
 	}
-	c.Equal([]string{"Accurate", "Cheap"},
-		findFilterField(fields, "modifier_names").Suggestions([]*gurps.Equipment{equipment}),
-		"the names of disabled modifiers are offered too")
+	names := findFilterField(fields, "modifier_names")
+	list := []*gurps.Equipment{equipment}
+	c.Equal([]string{"Accurate"}, names.Suggestions(list, false), "the names of enabled modifiers are offered")
+	c.Equal([]string{"Accurate", "Cheap"}, names.Suggestions(list, true),
+		"and those of disabled ones too for a condition that includes them")
 }
 
 // TestFilterIncludeDisabledIgnoredElsewhere checks that a field not drawn from modifiers ignores IncludeDisabled.

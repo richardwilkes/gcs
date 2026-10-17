@@ -170,6 +170,10 @@ func (p *listFilterPanel) editor(cond *gurps.FilterCondition, path string) *unis
 			resetCriteria(cond)
 		}))
 	info := p.byKey[cond.Field]
+	var suggest func() []string
+	if info.suggestions != nil {
+		suggest = func() []string { return info.suggestions(cond.IncludeDisabled) }
+	}
 	switch info.kind {
 	case gurps.FilterFieldText:
 		render := criteria.StringComparison.PluralClause
@@ -177,10 +181,10 @@ func (p *listFilterPanel) editor(cond *gurps.FilterCondition, path string) *unis
 			that := i18n.Text("that")
 			render = textWordsAfter(that, that)
 		}
-		p.textCriteriaWith(flow, key("text"), i18n.Text("Text"), "", render, &cond.Text, true, info.suggestions)
+		p.textCriteriaWith(flow, key("text"), i18n.Text("Text"), "", render, &cond.Text, true, suggest)
 	case gurps.FilterFieldList, gurps.FilterFieldTextList:
 		if field := p.textCriteriaWith(flow, key("text"), i18n.Text("List"), "", criteria.StringComparison.ListClause,
-			&cond.Text, true, info.suggestions); field != nil && info.kind == gurps.FilterFieldList {
+			&cond.Text, true, suggest); field != nil && info.kind == gurps.FilterFieldList {
 			field.Tooltip = newWrappedTooltip(i18n.Text(`Separate multiple values with commas to match any one of them, e.g. "Sword, Axe"`))
 		}
 		if info.disableable {

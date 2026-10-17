@@ -258,7 +258,7 @@ func TestTableDockableFilterSuggestionsFollowTheList(t *testing.T) {
 	}
 	suggested := func(key string) []string {
 		if one := info(key); one.suggestions != nil {
-			return one.suggestions()
+			return one.suggestions(false)
 		}
 		return nil
 	}

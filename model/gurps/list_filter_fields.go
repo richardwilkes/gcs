@@ -83,8 +83,9 @@ type FilterField[T Node[T]] struct {
 	// a condition that includes them; List then returns those of the enabled modifiers only.
 	ListWithDisabled func(T) []string
 	// Suggestions returns the values worth offering for a condition that compares the field with a single value, drawn
-	// from list, the nodes of the list being filtered, or fixed. It is nil for a field that offers none.
-	Suggestions func(list []T) []string
+	// from list, the nodes of the list being filtered, or fixed. A field drawn from modifiers offers those of the
+	// disabled ones too when includeDisabled is set. It is nil for a field that offers none.
+	Suggestions func(list []T, includeDisabled bool) []string
 }
 
 // WithPluralTitle marks the field's title as naming something plural, so that what follows it agrees, as in "have notes
@@ -110,14 +111,16 @@ func (f *FilterField[T]) WithPresence(has func(T) bool) *FilterField[T] {
 // WithListedValues makes the field suggest the distinct values it holds across the list being filtered, and returns
 // the field.
 func (f *FilterField[T]) WithListedValues() *FilterField[T] {
-	f.Suggestions = func(list []T) []string { return listedFilterValues(f, list, nil) }
+	f.Suggestions = func(list []T, includeDisabled bool) []string {
+		return listedFilterValues(f, list, nil, includeDisabled)
+	}
 	return f
 }
 
 // WithChoices makes the field suggest the values choices returns, whatever the list being filtered holds, and returns
 // the field.
 func (f *FilterField[T]) WithChoices(choices func() []string) *FilterField[T] {
-	f.Suggestions = func([]T) []string { return choices() }
+	f.Suggestions = func([]T, bool) []string { return choices() }
 	return f
 }
 
@@ -126,7 +129,7 @@ func (f *FilterField[T]) WithChoices(choices func() []string) *FilterField[T] {
 func ListFilterTags[T Node[T]](f *ListFilter, fields []*FilterField[T], list []T) []string {
 	for _, field := range fields {
 		if field.Key == filterFieldKeyTags {
-			return listedFilterValues(field, list, NewListFilterMatcher(f, fields))
+			return listedFilterValues(field, list, NewListFilterMatcher(f, fields), false)
 		}
 	}
 	return nil
@@ -134,10 +137,10 @@ func ListFilterTags[T Node[T]](f *ListFilter, fields []*FilterField[T], list []T
 
 // listedFilterValues returns the values the field holds across list and everything below it, which are the nodes a
 // filter checks, made distinct by distinctFilterValues and sorted naturally without regard to case. A field drawn from
-// modifiers offers those of the disabled ones too. When keep is not nil, only the nodes it accepts contribute. A list
-// value that an "is" condition naming it couldn't match, such as one holding a comma or a nameable marker with choices,
-// is left out.
-func listedFilterValues[T Node[T]](field *FilterField[T], list []T, keep func(T) bool) []string {
+// modifiers offers those of the disabled ones too when includeDisabled is set. When keep is not nil, only the nodes it
+// accepts contribute. A list value that an "is" condition naming it couldn't match, such as one holding a comma or a
+// nameable marker with choices, is left out.
+func listedFilterValues[T Node[T]](field *FilterField[T], list []T, keep func(T) bool, includeDisabled bool) []string {
 	var values []string
 	Traverse(func(node T) bool {
 		if (field.Has != nil && !field.Has(node)) || (keep != nil && !keep(node)) {
@@ -148,7 +151,7 @@ func listedFilterValues[T Node[T]](field *FilterField[T], list []T, keep func(T)
 			values = append(values, field.Text(node))
 		case FilterFieldList:
 			get := field.List
-			if field.ListWithDisabled != nil {
+			if includeDisabled && field.ListWithDisabled != nil {
 				get = field.ListWithDisabled
 			}
 			for _, value := range get(node) {

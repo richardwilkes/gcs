@@ -837,6 +837,60 @@ func TestListFilterPanelListEditor(t *testing.T) {
 	})
 }
 
+// TestListFilterPanelSuggestionsFollowDisabledPill checks that a modifier field suggests the names of enabled modifiers
+// only, until the condition includes disabled modifiers.
+func TestListFilterPanelSuggestionsFollowDisabledPill(t *testing.T) {
+	c := check.New(t)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
+	sword := gurps.NewEquipment(nil, nil, false)
+	fine := gurps.NewEquipmentModifier(nil, nil, false)
+	fine.Name = "Fine"
+	cheap := gurps.NewEquipmentModifier(nil, nil, false)
+	cheap.Name = "Cheap"
+	cheap.SetDisabled(true)
+	sword.Modifiers = []*gurps.EquipmentModifier{fine, cheap}
+	c.True(fine.Enabled(), "precondition: Fine is enabled")
+	c.False(cheap.Enabled(), "precondition: Cheap is disabled")
+	list := []*gurps.Equipment{sword}
+	f := gurps.NewListFilter("")
+	names := gurps.NewFilterCondition(f.Root, "modifier_names")
+	names.Text = criteria.Text{Compare: criteria.IsText}
+	f.Root.Children = gurps.FilterNodes{names}
+	p, _ := showListFilterPanelFor(t, screen, f,
+		filterFieldInfos(gurps.EquipmentFilterFields(), func() []*gurps.Equipment { return list }))
+	screen.Do(func() { p.toggle("r.0") })
+	offered := func() []string {
+		var wnd *unison.Window
+		var button *unison.Panel
+		screen.Do(func() {
+			wnd = p.Window()
+			if one, ok := refAs[*StringField](t, p.AsPanel(), "r.0:text"); ok && len(one.Children()) == 1 {
+				button = one.Children()[0]
+			}
+		})
+		if button == nil {
+			t.Error("the value must have a dropdown")
+			return nil
+		}
+		screen.Click(screen.PanelCenter(button))
+		titles := contextMenuTitles(t, screen, wnd)
+		if len(titles) != 0 {
+			chooseOpenMenuItem(t, screen, wnd, titles[0])
+		}
+		return titles
+	}
+	c.Equal([]string{"Fine"}, offered(), "only the enabled modifier is offered")
+	screen.Do(func() {
+		buttons := uxtest.PanelsOfType[*unison.Button](p.FindRefKey("r.0:add disabled"))
+		c.NotEqual(0, len(buttons), "the pill is offered")
+		if len(buttons) != 0 {
+			buttons[len(buttons)-1].ClickCallback()
+		}
+	})
+	c.True(names.IncludeDisabled, "precondition: the condition now includes disabled modifiers")
+	c.Equal([]string{"Cheap", "Fine"}, offered(), "with the pill, the disabled modifier is offered too")
+}
+
 // TestListFilterPanelWholeTextListEditor checks that a list of free text, such as modifier notes, doesn't say to
 // separate several values with commas, since it compares the whole of its value.
 func TestListFilterPanelWholeTextListEditor(t *testing.T) {

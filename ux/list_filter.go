@@ -26,7 +26,7 @@ type filterFieldInfo struct {
 	kind        gurps.FilterFieldKind
 	plural      bool
 	disableable bool
-	suggestions func() []string
+	suggestions func(includeDisabled bool) []string
 }
 
 // filterFieldInfos reduces a list type's filter fields to what the editor needs, in the order they were given. data
@@ -38,12 +38,12 @@ func filterFieldInfos[T gurps.Node[T]](fields []*gurps.FilterField[T], data func
 		infos[i] = filterFieldInfo{key: field.Key, title: field.Title, kind: field.Kind, plural: field.Plural}
 		infos[i].disableable = field.ListWithDisabled != nil
 		if field.Suggestions != nil {
-			infos[i].suggestions = func() []string {
+			infos[i].suggestions = func(includeDisabled bool) []string {
 				var list []T
 				if data != nil {
 					list = data()
 				}
-				return field.Suggestions(list)
+				return field.Suggestions(list, includeDisabled)
 			}
 		}
 	}
