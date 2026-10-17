@@ -45,7 +45,7 @@ func TestNameGeneratorEditorHeadless(t *testing.T) {
 	screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
 
 	// Open the editor from the File menu. With no training data, the samples can only say why there are none.
-	uxtest.ChooseMenuBarItem(t, screen, wnd, "File", "New Name Generator")
+	uxtest.ChooseMenuBarItem(t, screen, wnd, "File", "New", "New Name Generator")
 	d := uxtest.SoleEditor[*nameGeneratorEditorDockable](t, screen, isNameGeneratorEditor)
 	var title, samplesText, expectedMessage string
 	var modified, saveEnabled, inWorkspace, samplesInWarning bool
@@ -70,7 +70,7 @@ func TestNameGeneratorEditorHeadless(t *testing.T) {
 
 	// Choosing the item again opens a second editor, which stands on its own: the first is left as it was, and closing
 	// the second, which is untouched, prompts for nothing and leaves the first in place.
-	uxtest.ChooseMenuBarItem(t, screen, wnd, "File", "New Name Generator")
+	uxtest.ChooseMenuBarItem(t, screen, wnd, "File", "New", "New Name Generator")
 	second := uxtest.OtherEditor(t, screen, d, isNameGeneratorEditor)
 	var secondTitle string
 	screen.Do(func() { secondTitle = second.Title() })
@@ -418,7 +418,7 @@ func TestNameGeneratorEditorHeadless(t *testing.T) {
 	// Open an ancestry editor and add a name generator to its common options. The choices are gathered afresh each time
 	// the ancestry editor's content is built, so it offers the generator just saved along with the built-in ones, and
 	// the row's edit button opens the chosen one in the name generator editor.
-	uxtest.ChooseMenuBarItem(t, screen, wnd, "File", "New Ancestry")
+	uxtest.ChooseMenuBarItem(t, screen, wnd, "File", "New", "New Ancestry")
 	anc := uxtest.SoleEditor[*ancestryEditorDockable](t, screen, isAncestryEditor)
 	var choices []string
 	var addNameGenerator *unison.Button

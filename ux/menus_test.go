@@ -12,7 +12,6 @@ package ux
 import (
 	"os"
 	"path/filepath"
-	"slices"
 	"testing"
 
 	"github.com/richardwilkes/gcs/v5/model/library"
@@ -53,18 +52,18 @@ func newExportToMenu() unison.Menu {
 }
 
 // exportToMenuTitles builds and populates the "Export To…" menu, returning the titles of the items following the fixed
-// prologue of image export formats and the separator after them.
+// prologue of image export formats, the portrait export and the separators after them.
 func exportToMenuTitles(c check.Checker, menu unison.Menu) []string {
 	var s menuBarScope
 	s.exportToUpdater(menu)
 	titles := menuItemTitles(menu)
-	c.Equal([]string{"PDF", "WEBP", "PNG", "JPEG", "---"}, titles[:5], "fixed prologue")
-	return titles[5:]
+	c.Equal([]string{"PDF", "WEBP", "PNG", "JPEG", "---", "Export Portrait", "---"}, titles[:7], "fixed prologue")
+	return titles[7:]
 }
 
 // TestExportToMenuWithoutTemplateDirs verifies that the placeholder is shown when no library has an "Output Templates"
-// directory at all. A stale check for an item count of 2 once kept it from ever showing, since the four fixed export
-// formats and their separator already make 5.
+// directory at all. A stale check for an item count of 2 once kept it from ever showing, since the fixed prologue alone
+// already holds more items than that.
 func TestExportToMenuWithoutTemplateDirs(t *testing.T) {
 	c := check.New(t)
 	uxtest.UseTestLibraries(t, c)
@@ -119,22 +118,192 @@ func TestExportToMenuRepopulates(t *testing.T) {
 	c.Equal([]string{master.Data().Title, "    Sheet"}, exportToMenuTitles(c, menu), "after a template is added")
 }
 
-// TestFileMenuNewAncestryFollowsNewMarkdownFile verifies that "New Ancestry" and then "New Name Generator" sit directly
-// after "New Markdown File" in the File menu, at the end of the group of new-document items and before the separator
-// that ends it.
-func TestFileMenuNewAncestryFollowsNewMarkdownFile(t *testing.T) {
-	c := check.New(t)
+// menuBarTitles builds the menu bar the way SetupMenuBar does, with the in-window menu factory, and returns the titles
+// of the menus in it, along with the bar itself for looking into those menus.
+func menuBarTitles() (bar unison.Menu, titles []string) {
 	registerKeyBindingsOnce.Do(registerActions)
-	f := unison.NewInWindowMenuFactory()
-	bar := f.NewMenu(0, "", nil)
-	bar.InsertMenu(-1, unison.NewFileMenu(f, nil))
-	var s menuBarScope
-	s.setupFileMenu(bar)
-	titles := menuItemTitles(bar.Menu(unison.FileMenuID))
-	i := slices.Index(titles, "New Markdown File")
-	c.True(i != -1, "the File menu must contain New Markdown File; got %v", titles)
-	c.True(i+3 < len(titles), "there must be items after New Markdown File; got %v", titles)
-	c.Equal("New Ancestry", titles[i+1], "New Ancestry follows New Markdown File")
-	c.Equal("New Name Generator", titles[i+2], "New Name Generator follows New Ancestry")
-	c.Equal("---", titles[i+3], "New Name Generator ends the group of new-document items")
+	bar = unison.NewInWindowMenuFactory().NewMenu(0, "", nil)
+	menuBarScope{}.populate(bar)
+	return bar, menuItemTitles(bar)
+}
+
+// TestMenuBarStructure pins down the arrangement of the menu bar: which menus it holds, in what order, and what each
+// of the application's own menus and sub-menus holds. The items the platform contributes, such as Quit and the Window
+// menu's own entries, are left to unison, so the File menu is checked only up to its last application item.
+func TestMenuBarStructure(t *testing.T) {
+	c := check.New(t)
+	bar, titles := menuBarTitles()
+	c.Equal([]string{"File", "Edit", "Insert", "Item", "Sheet", "Settings", "View", "Window", "Help"}, titles, "menu bar")
+
+	file := bar.Menu(unison.FileMenuID)
+	titles = menuItemTitles(file)
+	c.Equal([]string{"New", "Open…", "Open Recent", "Close", "---", "Save", "Save As…", "Export", "Print…", "---"},
+		titles[:10], "File menu, up to the separator before the Quit item unison adds to a per-window bar")
+	c.Equal([]string{
+		"New Character Sheet",
+		"New Character Template",
+		"New Loot Sheet",
+		"---",
+		"New Traits Library",
+		"New Trait Modifiers Library",
+		"New Skills Library",
+		"New Spells Library",
+		"New Equipment Library",
+		"New Equipment Modifiers Library",
+		"New Notes Library",
+		"---",
+		"New Ancestry",
+		"New Name Generator",
+		"New Markdown File",
+	}, menuItemTitles(file.Menu(FileNewMenuID)), "File > New")
+
+	c.Equal([]string{
+		undoAction.Title,
+		redoAction.Title,
+		"---",
+		"Cut",
+		"Copy",
+		"Paste",
+		"Duplicate",
+		"Delete",
+		"Select All",
+		"---",
+		"Jump to Search/Filter Field",
+	}, menuItemTitles(bar.Menu(unison.EditMenuID)), "Edit menu")
+
+	insert := bar.Menu(InsertMenuID)
+	c.Equal([]string{"Trait", "Skill", "Spell", "Equipment", "Note", "---", "New Melee Attack", "New Ranged Attack"},
+		menuItemTitles(insert), "Insert menu")
+	c.Equal([]string{
+		"New Trait",
+		"New Trait Container",
+		"New Trait Choice",
+		"---",
+		"New Trait Modifier",
+		"New Trait Modifier Group",
+		"New Trait Modifier Choice",
+	}, menuItemTitles(insert.Menu(InsertTraitMenuID)), "Insert > Trait")
+	c.Equal([]string{"New Skill", "New Skill Container", "New Skill Choice", "New Technique"},
+		menuItemTitles(insert.Menu(InsertSkillMenuID)), "Insert > Skill")
+	c.Equal([]string{"New Spell", "New Spell Container", "New Spell Choice", "New Ritual Magic Spell"},
+		menuItemTitles(insert.Menu(InsertSpellMenuID)), "Insert > Spell")
+	c.Equal([]string{
+		"New Carried Equipment",
+		"New Carried Equipment Container",
+		"New Carried Equipment Group",
+		"---",
+		"New Other Equipment",
+		"New Other Equipment Container",
+		"New Other Equipment Group",
+		"---",
+		"New Equipment Choice",
+		"---",
+		"New Equipment Modifier",
+		"New Equipment Modifier Group",
+		"New Equipment Modifier Choice",
+	}, menuItemTitles(insert.Menu(InsertEquipmentMenuID)), "Insert > Equipment")
+	c.Equal([]string{"New Note", "New Note Container"}, menuItemTitles(insert.Menu(InsertNoteMenuID)), "Insert > Note")
+
+	item := bar.Menu(ItemMenuID)
+	c.Equal([]string{
+		"Open Detail Editor",
+		"Open Page Reference",
+		"Open Each Page Reference",
+		"---",
+		"Move",
+		"Adjust",
+		"Convert",
+		"Toggle State",
+		"Swap Defaults",
+		"Apply Modifier",
+		"---",
+		"Copy to Character Sheet",
+		"Copy to Template",
+		"---",
+		"Sync with Source",
+		"Clear Source",
+	}, menuItemTitles(item), "Item menu")
+	c.Equal([]string{
+		"Move Up",
+		"Move Down",
+		"Move Out of Container",
+		"Move Into Container",
+		"---",
+		"Move to Carried Equipment",
+		"Move to Other Equipment",
+	}, menuItemTitles(item.Menu(MoveMenuID)), "Item > Move")
+	c.Equal([]string{
+		"Increment",
+		"Decrement",
+		"---",
+		"Increase Uses",
+		"Decrease Uses",
+		"Reset Uses to Maximum",
+		"---",
+		"Increase Skill Level",
+		"Decrease Skill Level",
+		"---",
+		"Increase Tech Level",
+		"Decrease Tech Level",
+		"---",
+		"Increase Equipment Level",
+		"Decrease Equipment Level",
+	}, menuItemTitles(item.Menu(AdjustMenuID)), "Item > Adjust")
+	c.Equal([]string{"Convert to Container", "Convert to Non-Container", "Convert to Choice", "Convert to Group"},
+		menuItemTitles(item.Menu(ConvertMenuID)), "Item > Convert")
+
+	c.Equal([]string{
+		"Apply Template to Character Sheet",
+		"New Character Sheet from Template",
+		"Clone Character Sheet & Re-Randomize Fields",
+		"---",
+		"Add Natural Attacks",
+		"Organize Traits",
+		"---",
+		"Buy Equipment…",
+		"Buy Selected Equipment…",
+		"Sell Equipment…",
+		"Shopping Record",
+		"---",
+		"Clear Portrait",
+		"---",
+		"Sheet Settings…",
+		"Attributes…",
+		"Body Type…",
+		"Edit Sheet Layout",
+	}, menuItemTitles(bar.Menu(SheetMenuID)), "Sheet menu")
+
+	c.Equal([]string{
+		"General Settings…",
+		"Colors…",
+		"Fonts…",
+		"Menu Keys…",
+		"Saved Filters…",
+		"---",
+		"Default Sheet Settings…",
+		"Default Attributes…",
+		"Default Body Type…",
+		"---",
+		"Page Reference Mappings…",
+		"Download GURPS Rules Lookup File",
+	}, menuItemTitles(bar.Menu(SettingsMenuID)), "Settings menu")
+
+	view := bar.Menu(ViewMenuID)
+	titles = menuItemTitles(view)
+	c.Equal([]string{"Default Scale", "Scale Up", "Scale Down", "Scale To", "---", "Calculators"}, titles[:6],
+		"View menu, up to the separator macOS adds ahead of the items the system contributes")
+	c.Equal([]string{
+		"25% Scale",
+		"50% Scale",
+		"75% Scale",
+		"100% Scale",
+		"200% Scale",
+		"300% Scale",
+		"400% Scale",
+		"500% Scale",
+		"600% Scale",
+	}, menuItemTitles(view.Menu(ScaleToMenuID)), "View > Scale To")
+
+	window := menuItemTitles(bar.Menu(unison.WindowMenuID))
+	c.Equal("Undock From Workspace", window[len(window)-1], "the Window menu ends with the undock item")
 }

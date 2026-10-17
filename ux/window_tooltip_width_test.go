@@ -49,12 +49,12 @@ func TestEditorWindowsFitTheirTooltips(t *testing.T) {
 	screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
 	uxtest.SwapForTest(t, &gurps.GlobalSettings().OpenInWindow, []dgroup.Group{dgroup.Settings})
 
-	uxtest.ChooseMenuBarItem(t, screen, wnd, "File", "New Ancestry")
+	uxtest.ChooseMenuBarItem(t, screen, wnd, "File", "New", "New Ancestry")
 	ancestry := uxtest.SoleEditor[*ancestryEditorDockable](t, screen, isAncestryEditor)
 	checkWindowFitsTooltips(t, c, screen, wnd, ancestry)
 	uxtest.CloseEditorWithoutPrompt(t, screen, ancestry)
 
-	uxtest.ChooseMenuBarItem(t, screen, wnd, "File", "New Name Generator")
+	uxtest.ChooseMenuBarItem(t, screen, wnd, "File", "New", "New Name Generator")
 	names := uxtest.SoleEditor[*nameGeneratorEditorDockable](t, screen, isNameGeneratorEditor)
 	checkWindowFitsTooltips(t, c, screen, wnd, names)
 	uxtest.CloseEditorWithoutPrompt(t, screen, names)
