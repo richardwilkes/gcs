@@ -58,6 +58,11 @@ func (p *editorListPanel[T]) setList(list []T) {
 		p.attach(list)
 	}
 	*p.list = list
+	p.syncRows()
+}
+
+// syncRows re-syncs the table to the list, keeping the selection, so rows whose items changed get their new heights.
+func (p *editorListPanel[T]) syncRows() {
 	syncTablePreservingSelection(p.table)
 }
 
