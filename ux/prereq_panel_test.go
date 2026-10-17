@@ -1540,6 +1540,144 @@ func TestPrereqPanelNegatedGroup(t *testing.T) {
 	})
 }
 
+// TestPrereqPanelEmptyNestedGroupMode checks that changing the mode of an empty nested group, which hashes like any
+// other empty group, is still recorded as a step to undo.
+func TestPrereqPanelEmptyNestedGroupMode(t *testing.T) {
+	c := check.New(t)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
+	empty := gurps.NewPrereqList()
+	root := gurps.NewPrereqList()
+	root.Prereqs = gurps.Prereqs{gurps.NewTraitPrereq(), empty}
+	root = root.CloneAsPrereqList(nil)
+	empty, ok := root.Prereqs[1].(*gurps.PrereqList)
+	c.True(ok, "precondition: the second child is a group")
+	if !ok {
+		return
+	}
+	c.Equal(0, len(empty.Prereqs), "precondition: the group is empty")
+	c.False(empty.Not, "precondition: the group isn't negated")
+	p, host := showPrereqPanel(t, screen, &root, false)
+	modified := host.modified
+	screen.Do(func() {
+		if pill, found := refAs[*unison.PopupMenu[groupMode]](t, p.AsPanel(), "r.1"+keyPill); found {
+			pill.Select(groupNoneOf)
+		}
+	})
+	screen.Do(func() {
+		c.True(empty.Not, "the pill negates the empty group")
+		c.Equal(modified+1, host.modified, "the change marks the editor modified")
+		c.Equal("Undo Requirement", host.mgr.UndoTitle(), "and can be undone")
+		host.mgr.Undo()
+	})
+	screen.Do(func() {
+		empty, ok = p.tree().Prereqs[1].(*gurps.PrereqList)
+		c.True(ok, "the group is still there after undo")
+		if ok {
+			c.False(empty.Not, "undo takes the negation back")
+		}
+	})
+}
+
+// TestPrereqPanelTypeChangeKeepsWhatItCan checks that a change of type keeps the name, tags, modifier criteria and
+// negation that both types have, even when one stores its negation the other way around.
+func TestPrereqPanelTypeChangeKeepsWhatItCan(t *testing.T) {
+	c := check.New(t)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
+	equipped := gurps.NewEquippedEquipmentPrereq()
+	equipped.Not = true
+	equipped.NameCriteria.Qualifier = "Shield"
+	equipped.TagsCriteria = criteria.Text{Compare: criteria.IsText, Qualifier: "Armor"}
+	equipped.ModifierNameCriteria = criteria.Text{Compare: criteria.IsText, Qualifier: "Fine"}
+	root := gurps.NewPrereqList()
+	root.Prereqs = gurps.Prereqs{equipped}
+	p, _ := showPrereqPanel(t, screen, &root, false)
+	selectType := func(kind prereq.Type) {
+		screen.Do(func() {
+			if p.open != "r.0" {
+				p.toggle("r.0")
+			}
+		})
+		screen.Do(func() {
+			if popup, ok := refAs[*unison.PopupMenu[prereq.Type]](t, p.AsPanel(), "r.0:type"); ok {
+				popup.Select(kind)
+			}
+		})
+	}
+	selectType(prereq.Trait)
+	screen.Do(func() {
+		trait, ok := p.node("r.0").(*gurps.TraitPrereq)
+		c.True(ok, "the row is now a trait prerequisite")
+		if ok {
+			c.False(trait.Has, "the negation is kept, though a trait stores it the other way around")
+			c.Equal("Shield", trait.NameCriteria.Qualifier, "the name is kept")
+			c.Equal("Armor", trait.TagsCriteria.Qualifier, "the tags are kept")
+			c.Equal("Fine", trait.ModifierNameCriteria.Qualifier, "the modifier criteria are kept")
+		}
+	})
+	selectType(prereq.Skill)
+	screen.Do(func() {
+		skill, ok := p.node("r.0").(*gurps.SkillPrereq)
+		c.True(ok, "the row is now a skill prerequisite")
+		if ok {
+			c.False(skill.Has, "the negation is kept")
+			c.Equal("Armor", skill.TagsCriteria.Qualifier, "the tags are kept")
+		}
+	})
+	selectType(prereq.Spell)
+	screen.Do(func() {
+		spell, ok := p.node("r.0").(*gurps.SpellPrereq)
+		c.True(ok, "the row is now a spell prerequisite")
+		if ok {
+			c.Equal(spellcmp.Name, spell.SubType, "precondition: a new spell prerequisite matches by name")
+			c.False(spell.Has, "the negation is kept")
+			c.Equal("Shield", spell.QualifierCriteria.Qualifier, "the name is kept as the spell's name")
+		}
+	})
+	selectType(prereq.Attribute)
+	screen.Do(func() {
+		attribute, ok := p.node("r.0").(*gurps.AttributePrereq)
+		c.True(ok, "the row is now an attribute prerequisite")
+		if ok {
+			c.False(attribute.Has, "the negation is kept")
+		}
+	})
+	selectType(prereq.Trait)
+	screen.Do(func() {
+		trait, ok := p.node("r.0").(*gurps.TraitPrereq)
+		c.True(ok, "the row is a trait prerequisite again")
+		if ok {
+			c.False(trait.Has, "the negation survives a type without a name")
+		}
+	})
+}
+
+// TestPrereqPanelScriptTypeAfterHas checks that the type popup of a row that starts with the has popup names a script
+// without repeating "has", while a script's own row still starts with its words.
+func TestPrereqPanelScriptTypeAfterHas(t *testing.T) {
+	c := check.New(t)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
+	root := gurps.NewPrereqList()
+	root.Prereqs = gurps.Prereqs{gurps.NewEquippedEquipmentPrereq(), gurps.NewScriptPrereq()}
+	root = root.CloneAsPrereqList(nil)
+	p, _ := showPrereqPanel(t, screen, &root, false)
+	rendered := func(path string, kind prereq.Type) string {
+		var text string
+		screen.Do(func() {
+			if p.open != path {
+				p.toggle(path)
+			}
+		})
+		screen.Do(func() {
+			if popup, ok := refAs[*unison.PopupMenu[prereq.Type]](t, p.AsPanel(), path+":type"); ok {
+				text = popup.ItemRendererCallback(kind)
+			}
+		})
+		return text
+	}
+	c.Equal("a script", rendered("r.0", prereq.Script), "after the has popup, a script isn't said to have")
+	c.Equal("Has script", rendered("r.1", prereq.Script), "a script's own row starts with its words")
+}
+
 // TestPrereqPanelGroupMoreButtonNames checks that a screen reader hears a group's more button named for the group, and
 // for what it holds when it holds anything, so that two empty groups, or a group of one and its row, aren't alike.
 func TestPrereqPanelGroupMoreButtonNames(t *testing.T) {

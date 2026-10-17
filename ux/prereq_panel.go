@@ -135,10 +135,19 @@ func (p *prereqPanel) stateHash() uint64 {
 	h := xxh3.New()
 	root := p.tree()
 	root.Hash(h)
-	// An empty root hashes the same whatever it is, but its group type and tech level condition still show.
-	xhash.Bool(h, root.All)
-	xhash.Bool(h, root.Not)
-	root.WhenTL.Hash(h)
+	// An empty list hashes the same whatever it is, but its group type and tech level condition still show.
+	var lists func(list *gurps.PrereqList)
+	lists = func(list *gurps.PrereqList) {
+		xhash.Bool(h, list.All)
+		xhash.Bool(h, list.Not)
+		list.WhenTL.Hash(h)
+		for _, one := range list.Prereqs {
+			if sub, ok := one.(*gurps.PrereqList); ok {
+				lists(sub)
+			}
+		}
+	}
+	lists(root)
 	xhash.Bool(h, p.headed)
 	return h.Sum64()
 }
@@ -690,7 +699,13 @@ func (p *prereqPanel) typePopup(parent *unison.Panel, path string, pr gurps.Prer
 	if !slices.Contains(items, current) {
 		items = append(slices.Clone(items), current)
 	}
-	var render func(prereq.Type) string
+	// Script's own words, "has script", would repeat the "has" popup ahead of it.
+	render := func(t prereq.Type) string {
+		if t == prereq.Script {
+			return i18n.Text("a script")
+		}
+		return t.String()
+	}
 	if current == prereq.Script {
 		// With no "has" popup ahead of it, it starts the sentence.
 		render = func(t prereq.Type) string { return xstrings.FirstToUpper(t.String()) }
@@ -700,15 +715,7 @@ func (p *prereqPanel) typePopup(parent *unison.Panel, path string, pr gurps.Prer
 			owner, i := p.locate(path)
 			list := asPrereqList(owner)
 			if created := p.createPrereqForType(t, list); created != nil {
-				if from, to := nameCriteria(pr), nameCriteria(created); from != nil && to != nil {
-					*to = *from
-				}
-				// Equipped and carried equipment differ only in their type.
-				if from, ok := pr.(*gurps.EquippedEquipmentPrereq); ok {
-					if to, same := created.(*gurps.EquippedEquipmentPrereq); same {
-						to.Not, to.TagsCriteria, to.ModifierCriteria = from.Not, from.TagsCriteria, from.ModifierCriteria
-					}
-				}
+				handOnOf(created).take(handOnOf(pr))
 				list.Prereqs[i] = created
 			}
 		}))
@@ -751,17 +758,56 @@ func (p *prereqPanel) createPrereqForType(t prereq.Type, parent *gurps.PrereqLis
 	return one.Clone(parent)
 }
 
-// nameCriteria returns the name criteria of a prerequisite that has one, so it can survive a change of type.
-func nameCriteria(pr gurps.Prereq) *criteria.Text {
+// prereqHandOn holds what of a prerequisite survives a change of its type, each part nil when it has none: its name
+// and tags criteria, its modifier criteria, and whether it is to be had, which a prerequisite that stores whether it is
+// not to be had marks as negated.
+type prereqHandOn struct {
+	name, tags *criteria.Text
+	modifiers  *gurps.ModifierCriteria
+	has        *bool
+	negated    bool
+}
+
+func handOnOf(pr gurps.Prereq) prereqHandOn {
 	switch one := pr.(type) {
 	case *gurps.TraitPrereq:
-		return &one.NameCriteria
+		return prereqHandOn{name: &one.NameCriteria, tags: &one.TagsCriteria, modifiers: &one.ModifierCriteria, has: &one.Has}
 	case *gurps.SkillPrereq:
-		return &one.NameCriteria
+		return prereqHandOn{name: &one.NameCriteria, tags: &one.TagsCriteria, has: &one.Has}
 	case *gurps.EquippedEquipmentPrereq:
-		return &one.NameCriteria
+		return prereqHandOn{
+			name: &one.NameCriteria, tags: &one.TagsCriteria, modifiers: &one.ModifierCriteria, has: &one.Not,
+			negated: true,
+		}
+	case *gurps.SpellPrereq:
+		if one.SubType == spellcmp.Name {
+			return prereqHandOn{name: &one.QualifierCriteria, has: &one.Has}
+		}
+		return prereqHandOn{has: &one.Has}
+	case *gurps.AttributePrereq:
+		return prereqHandOn{has: &one.Has}
+	case *gurps.ContainedQuantityPrereq:
+		return prereqHandOn{has: &one.Has}
+	case *gurps.ContainedWeightPrereq:
+		return prereqHandOn{has: &one.Has}
 	default:
-		return nil
+		return prereqHandOn{}
+	}
+}
+
+// take copies into h each part that it and from both have.
+func (h prereqHandOn) take(from prereqHandOn) {
+	if h.name != nil && from.name != nil {
+		*h.name = *from.name
+	}
+	if h.tags != nil && from.tags != nil {
+		*h.tags = *from.tags
+	}
+	if h.modifiers != nil && from.modifiers != nil {
+		*h.modifiers = *from.modifiers
+	}
+	if h.has != nil && from.has != nil {
+		*h.has = (*from.has != from.negated) != h.negated
 	}
 }
 
