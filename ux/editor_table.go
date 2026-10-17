@@ -14,25 +14,29 @@ import (
 	"github.com/richardwilkes/unison"
 )
 
-func newEditorTable[T gurps.Node[T]](parent *unison.Panel, provider TableProvider[T]) *unison.Table[*Node[T]] {
+// newEditorTable adds a table for the provider's list to parent. A table that isn't editable can only have its rows
+// selected and opened.
+func newEditorTable[T gurps.Node[T]](parent *unison.Panel, provider TableProvider[T], editable bool) *unison.Table[*Node[T]] {
 	header, table := NewNodeTable(provider, unison.FieldFont)
 	installStandardTableCmdHandlers(parent, table, provider,
-		func() Rebuildable { return table.AncestorOrSelf[Rebuildable]() }, true)
-	// Toggle State is installed here rather than in NewNodeTable because only the editor tables carry the checkmark
-	// columns it flips: modifier tables show the enabled column only when built for an editor, and weapon tables show
-	// the Hide column only when not built for a page. The owner is resolved inside the execute closure, since this
-	// table's parent is not yet attached to the editor that owns it.
-	switch t := any(table).(type) {
-	case *unison.Table[*Node[*gurps.TraitModifier]]:
-		installToggleModifierEnabledHandler(t)
-		installModifierChoiceConversionHandlers[*gurps.TraitModifier, *gurps.TraitModifierEditData](t, t)
-	case *unison.Table[*Node[*gurps.EquipmentModifier]]:
-		installToggleModifierEnabledHandler(t)
-		installModifierChoiceConversionHandlers[*gurps.EquipmentModifier, *gurps.EquipmentModifierEditData](t, t)
-	case *unison.Table[*Node[*gurps.Weapon]]:
-		installToggleHiddenHandler(t)
+		func() Rebuildable { return table.AncestorOrSelf[Rebuildable]() }, editable)
+	if editable {
+		// Toggle State is installed here rather than in NewNodeTable because only the editor tables carry the checkmark
+		// columns it flips: modifier tables show the enabled column only when built for an editor, and weapon tables show
+		// the Hide column only when not built for a page. The owner is resolved inside the execute closure, since this
+		// table's parent is not yet attached to the editor that owns it.
+		switch t := any(table).(type) {
+		case *unison.Table[*Node[*gurps.TraitModifier]]:
+			installToggleModifierEnabledHandler(t)
+			installModifierChoiceConversionHandlers[*gurps.TraitModifier, *gurps.TraitModifierEditData](t, t)
+		case *unison.Table[*Node[*gurps.EquipmentModifier]]:
+			installToggleModifierEnabledHandler(t)
+			installModifierChoiceConversionHandlers[*gurps.EquipmentModifier, *gurps.EquipmentModifierEditData](t, t)
+		case *unison.Table[*Node[*gurps.Weapon]]:
+			installToggleHiddenHandler(t)
+		}
+		InstallTableDropSupport(table, provider)
 	}
-	InstallTableDropSupport(table, provider)
 	table.SyncToModel()
 	parent.AddChild(header)
 	parent.AddChild(table)

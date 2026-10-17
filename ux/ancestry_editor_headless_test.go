@@ -33,7 +33,7 @@ func TestAncestryEditorHeadless(t *testing.T) {
 	user := gurps.GlobalSettings().Libraries.User()
 
 	// Open the editor from the File menu.
-	uxtest.ChooseMenuBarItem(t, screen, wnd, "File", "New Ancestry")
+	uxtest.ChooseMenuBarItem(t, screen, wnd, "File", "New", "New Ancestry")
 	d := uxtest.SoleEditor[*ancestryEditorDockable](t, screen, isAncestryEditor)
 	var title string
 	var modified, saveEnabled, inWorkspace bool
@@ -50,7 +50,7 @@ func TestAncestryEditorHeadless(t *testing.T) {
 
 	// Choosing the item again opens a second editor, which stands on its own: the first is left as it was, and closing
 	// the second, which is untouched, prompts for nothing and leaves the first in place.
-	uxtest.ChooseMenuBarItem(t, screen, wnd, "File", "New Ancestry")
+	uxtest.ChooseMenuBarItem(t, screen, wnd, "File", "New", "New Ancestry")
 	second := uxtest.OtherEditor(t, screen, d, isAncestryEditor)
 	var secondTitle string
 	screen.Do(func() { secondTitle = second.Title() })

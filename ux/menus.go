@@ -46,6 +46,7 @@ const (
 	NewNameGeneratorItemID
 	OpenItemID
 	CloseTabID
+	FileNewMenuID
 	RecentFilesMenuID
 	SaveItemID
 	SaveAsItemID
@@ -87,7 +88,17 @@ const (
 	MoveDownItemID
 	MoveOutOfContainerItemID
 	MoveIntoContainerItemID
+	InsertMenuID
+	InsertTraitMenuID
+	InsertSkillMenuID
+	InsertSpellMenuID
+	InsertEquipmentMenuID
+	InsertNoteMenuID
 	ItemMenuID
+	MoveMenuID
+	AdjustMenuID
+	ConvertMenuID
+	SheetMenuID
 	AddNaturalAttacksItemID
 	OrganizeTraitsItemID
 	OpenEditorItemID
@@ -122,6 +133,7 @@ const (
 	MailingListItemID
 	UserGuideItemID
 	ViewMenuID
+	ScaleToMenuID
 	ScaleDefaultItemID
 	ScaleUpItemID
 	ScaleDownItemID
@@ -205,222 +217,242 @@ type ContextMenuItem struct {
 func SetupMenuBar(wnd *unison.Window) {
 	registerKeyBindingsOnce.Do(func() { registerActions() })
 	gurps.GlobalSettings().KeyBindings.MakeCurrent()
-	unison.DefaultMenuFactory().BarForWindow(wnd, func(bar unison.Menu) {
-		unison.InsertStdMenus(bar, ShowAbout, nil, nil)
-		std := bar.Item(unison.PreferencesItemID)
-		if std != nil {
-			std.Menu().RemoveItem(std.Index())
-		}
-		var s menuBarScope
-		s.setupFileMenu(bar)
-		s.setupEditMenu(bar)
-		f := bar.Factory()
-		i := s.insertMenu(bar, bar.Item(unison.EditMenuID).Index()+1, s.createItemMenu(f))
-		i = s.insertMenu(bar, i, s.createSettingsMenu(f))
-		s.insertMenu(bar, i, s.createViewMenu(f))
-		s.setupWindowMenu(bar)
-		s.setupHelpMenu(bar)
-	})
+	unison.DefaultMenuFactory().BarForWindow(wnd, menuBarScope{}.populate)
 }
 
 type menuBarScope struct{} // Just here to provide some level of scoping
 
+// populate fills bar with the application's menus: the standard ones, less the Preferences item, and between Edit and
+// Window the Insert, Item, Sheet, Settings and View menus.
+func (s menuBarScope) populate(bar unison.Menu) {
+	unison.InsertStdMenus(bar, ShowAbout, nil, nil)
+	if std := bar.Item(unison.PreferencesItemID); std != nil {
+		std.Menu().RemoveItem(std.Index())
+	}
+	s.setupFileMenu(bar)
+	s.setupEditMenu(bar)
+	f := bar.Factory()
+	i := s.insertMenu(bar, bar.Item(unison.EditMenuID).Index()+1, s.createInsertMenu(f))
+	i = s.insertMenu(bar, i, s.createItemMenu(f))
+	i = s.insertMenu(bar, i, s.createSheetMenu(f))
+	i = s.insertMenu(bar, i, s.createSettingsMenu(f))
+	s.insertMenu(bar, i, s.createViewMenu(f))
+	s.setupWindowMenu(bar)
+	s.setupHelpMenu(bar)
+}
+
 func (s menuBarScope) setupFileMenu(bar unison.Menu) {
 	f := bar.Factory()
 	m := bar.Menu(unison.FileMenuID)
-	i := s.insertMenuItem(m, 0, newCharacterSheetAction.NewMenuItem(f))
-	i = s.insertMenuItem(m, i, newCharacterTemplateAction.NewMenuItem(f))
-	i = s.insertMenuItem(m, i, newLootSheetAction.NewMenuItem(f))
-	// TODO: Re-enable Campaign files
-	// i = s.insertMenuItem(m, i, newCampaignAction.NewMenuItem(f))
-	i = s.insertMenuItem(m, i, newMarkdownFileAction.NewMenuItem(f))
-	i = s.insertMenuItem(m, i, newAncestryAction.NewMenuItem(f))
-	i = s.insertMenuItem(m, i, newNameGeneratorAction.NewMenuItem(f))
-
-	i = s.insertMenuSeparator(m, i)
-	i = s.insertMenuItem(m, i, newTraitsLibraryAction.NewMenuItem(f))
-	i = s.insertMenuItem(m, i, newTraitModifiersLibraryAction.NewMenuItem(f))
-	i = s.insertMenuItem(m, i, newSkillsLibraryAction.NewMenuItem(f))
-	i = s.insertMenuItem(m, i, newSpellsLibraryAction.NewMenuItem(f))
-	i = s.insertMenuItem(m, i, newEquipmentLibraryAction.NewMenuItem(f))
-	i = s.insertMenuItem(m, i, newEquipmentModifiersLibraryAction.NewMenuItem(f))
-	i = s.insertMenuItem(m, i, newNotesLibraryAction.NewMenuItem(f))
-
-	i = s.insertMenuSeparator(m, i)
+	i := s.insertMenu(m, 0, s.createFileNewMenu(f))
 	i = s.insertMenuItem(m, i, openAction.NewMenuItem(f))
-	s.insertMenu(m, i, f.NewMenu(RecentFilesMenuID, i18n.Text("Recent Files"), s.recentFilesUpdater))
+	s.insertMenu(m, i, f.NewMenu(RecentFilesMenuID, i18n.Text("Open Recent"), s.recentFilesUpdater))
 
 	i = m.Item(unison.CloseItemID).Index()
 	m.RemoveItem(i)
 	i = s.insertMenuItem(m, i, closeTabAction.NewMenuItem(f))
 
 	i = s.insertMenuSeparator(m, i)
-	i = s.insertMenuItem(m, i, downloadRulesFileAction.NewMenuItem(f))
-
-	i = s.insertMenuSeparator(m, i)
 	i = s.insertMenuItem(m, i, saveAction.NewMenuItem(f))
 	i = s.insertMenuItem(m, i, saveAsAction.NewMenuItem(f))
-	i = s.insertMenuItem(m, i, exportPortraitAction.NewMenuItem(f))
-	i = s.insertMenu(m, i, f.NewMenu(ExportToMenuID, i18n.Text("Export To…"), s.exportToUpdater))
-
-	i = s.insertMenuSeparator(m, i)
+	i = s.insertMenu(m, i, f.NewMenu(ExportToMenuID, i18n.Text("Export"), s.exportToUpdater))
 	s.insertMenuItem(m, i, printAction.NewMenuItem(f))
+}
+
+func (s menuBarScope) createFileNewMenu(f unison.MenuFactory) unison.Menu {
+	return s.newActionMenu(f, FileNewMenuID, i18n.Text("New"),
+		newCharacterSheetAction,
+		newCharacterTemplateAction,
+		newLootSheetAction,
+		// TODO: Re-enable Campaign files
+		// newCampaignAction,
+		nil,
+		newTraitsLibraryAction,
+		newTraitModifiersLibraryAction,
+		newSkillsLibraryAction,
+		newSpellsLibraryAction,
+		newEquipmentLibraryAction,
+		newEquipmentModifiersLibraryAction,
+		newNotesLibraryAction,
+		nil,
+		newAncestryAction,
+		newNameGeneratorAction,
+		newMarkdownFileAction,
+	)
 }
 
 func (s menuBarScope) setupEditMenu(bar unison.Menu) {
 	f := bar.Factory()
 	m := bar.Menu(unison.EditMenuID)
-
 	i := s.insertMenuItem(m, 0, undoAction.NewMenuItem(f))
 	i = s.insertMenuItem(m, i, redoAction.NewMenuItem(f))
 	s.insertMenuSeparator(m, i)
-
-	deleteIndex := m.Item(unison.DeleteItemID).Index()
-	m.InsertItem(deleteIndex+1, clearPortraitAction.NewMenuItem(f))
-	m.InsertItem(deleteIndex, duplicateAction.NewMenuItem(f))
-
+	m.InsertItem(m.Item(unison.DeleteItemID).Index(), duplicateAction.NewMenuItem(f))
 	i = s.insertMenuSeparator(m, m.Item(unison.SelectAllItemID).Index()+1)
-	i = s.insertMenuItem(m, i, openEditorAction.NewMenuItem(f))
+	s.insertMenuItem(m, i, jumpToSearchFilterAction.NewMenuItem(f))
+}
 
-	i = s.insertMenuSeparator(m, i)
-	i = s.insertMenuItem(m, i, jumpToSearchFilterAction.NewMenuItem(f))
-
-	i = s.insertMenuSeparator(m, i)
-	i = s.insertMenuItem(m, i, moveToCarriedEquipmentAction.NewMenuItem(f))
-	i = s.insertMenuItem(m, i, moveToOtherEquipmentAction.NewMenuItem(f))
-	i = s.insertMenuItem(m, i, copyToSheetAction.NewMenuItem(f))
-	i = s.insertMenuItem(m, i, copyToTemplateAction.NewMenuItem(f))
-	i = s.insertMenuItem(m, i, applyTemplateAction.NewMenuItem(f))
-	i = s.insertMenuItem(m, i, applyModifierAction.NewMenuItem(f))
-	i = s.insertMenuItem(m, i, newSheetFromTemplateAction.NewMenuItem(f))
-	i = s.insertMenuItem(m, i, cloneSheetAction.NewMenuItem(f))
-	i = s.insertMenuItem(m, i, organizeTraitsAction.NewMenuItem(f))
-
-	i = s.insertMenuSeparator(m, i)
-	i = s.insertMenuItem(m, i, moveUpAction.NewMenuItem(f))
-	i = s.insertMenuItem(m, i, moveDownAction.NewMenuItem(f))
-	i = s.insertMenuItem(m, i, moveOutOfContainerAction.NewMenuItem(f))
-	i = s.insertMenuItem(m, i, moveIntoContainerAction.NewMenuItem(f))
-
-	i = s.insertMenuSeparator(m, i)
-	i = s.insertMenuItem(m, i, incrementAction.NewMenuItem(f))
-	i = s.insertMenuItem(m, i, decrementAction.NewMenuItem(f))
-	i = s.insertMenuItem(m, i, increaseUsesAction.NewMenuItem(f))
-	i = s.insertMenuItem(m, i, decreaseUsesAction.NewMenuItem(f))
-	i = s.insertMenuItem(m, i, resetUsesToMaxAction.NewMenuItem(f))
-	i = s.insertMenuItem(m, i, increaseSkillLevelAction.NewMenuItem(f))
-	i = s.insertMenuItem(m, i, decreaseSkillLevelAction.NewMenuItem(f))
-	i = s.insertMenuItem(m, i, increaseTechLevelAction.NewMenuItem(f))
-	i = s.insertMenuItem(m, i, decreaseTechLevelAction.NewMenuItem(f))
-	i = s.insertMenuItem(m, i, increaseEquipmentLevelAction.NewMenuItem(f))
-	i = s.insertMenuItem(m, i, decreaseEquipmentLevelAction.NewMenuItem(f))
-
-	i = s.insertMenuSeparator(m, i)
-	i = s.insertMenuItem(m, i, toggleStateAction.NewMenuItem(f))
-	i = s.insertMenuItem(m, i, swapDefaultsAction.NewMenuItem(f))
-	i = s.insertMenuItem(m, i, convertToContainerAction.NewMenuItem(f))
-	i = s.insertMenuItem(m, i, convertToNonContainerAction.NewMenuItem(f))
-	i = s.insertMenuItem(m, i, convertToChoiceContainerAction.NewMenuItem(f))
-	i = s.insertMenuItem(m, i, convertToGroupContainerAction.NewMenuItem(f))
-
-	i = s.insertMenuSeparator(m, i)
-	i = s.insertMenuItem(m, i, syncWithSourceAction.NewMenuItem(f))
-	s.insertMenuItem(m, i, clearSourceAction.NewMenuItem(f))
+func (s menuBarScope) createInsertMenu(f unison.MenuFactory) unison.Menu {
+	m := f.NewMenu(InsertMenuID, i18n.Text("Insert"), nil)
+	m.InsertMenu(-1, s.newActionMenu(f, InsertTraitMenuID, i18n.Text("Trait"),
+		newTraitAction,
+		newTraitContainerAction,
+		newTraitChoiceContainerAction,
+		nil,
+		newTraitModifierAction,
+		newTraitContainerModifierAction,
+		newTraitModifierChoiceAction,
+	))
+	m.InsertMenu(-1, s.newActionMenu(f, InsertSkillMenuID, i18n.Text("Skill"),
+		newSkillAction,
+		newSkillContainerAction,
+		newSkillChoiceContainerAction,
+		newTechniqueAction,
+	))
+	m.InsertMenu(-1, s.newActionMenu(f, InsertSpellMenuID, i18n.Text("Spell"),
+		newSpellAction,
+		newSpellContainerAction,
+		newSpellChoiceContainerAction,
+		newRitualMagicSpellAction,
+	))
+	m.InsertMenu(-1, s.newActionMenu(f, InsertEquipmentMenuID, i18n.Text("Equipment"),
+		newCarriedEquipmentAction,
+		newCarriedEquipmentContainerAction,
+		newCarriedEquipmentGroupAction,
+		nil,
+		newOtherEquipmentAction,
+		newOtherEquipmentContainerAction,
+		newOtherEquipmentGroupAction,
+		nil,
+		newEquipmentChoiceContainerAction,
+		nil,
+		newEquipmentModifierAction,
+		newEquipmentContainerModifierAction,
+		newEquipmentModifierChoiceAction,
+	))
+	m.InsertMenu(-1, s.newActionMenu(f, InsertNoteMenuID, i18n.Text("Note"),
+		newNoteAction,
+		newNoteContainerAction,
+	))
+	s.appendActions(m,
+		nil,
+		newMeleeWeaponAction,
+		newRangedWeaponAction,
+	)
+	return m
 }
 
 func (s menuBarScope) createItemMenu(f unison.MenuFactory) unison.Menu {
-	m := f.NewMenu(ItemMenuID, i18n.Text("Item"), nil)
-
-	m.InsertItem(-1, newTraitAction.NewMenuItem(f))
-	m.InsertItem(-1, newTraitContainerAction.NewMenuItem(f))
-	m.InsertItem(-1, newTraitChoiceContainerAction.NewMenuItem(f))
-	m.InsertItem(-1, newTraitModifierAction.NewMenuItem(f))
-	m.InsertItem(-1, newTraitContainerModifierAction.NewMenuItem(f))
-	m.InsertItem(-1, newTraitModifierChoiceAction.NewMenuItem(f))
-	m.InsertItem(-1, addNaturalAttacksAction.NewMenuItem(f))
-
-	m.InsertSeparator(-1, false)
-	m.InsertItem(-1, newSkillAction.NewMenuItem(f))
-	m.InsertItem(-1, newSkillContainerAction.NewMenuItem(f))
-	m.InsertItem(-1, newSkillChoiceContainerAction.NewMenuItem(f))
-	m.InsertItem(-1, newTechniqueAction.NewMenuItem(f))
-
-	m.InsertSeparator(-1, false)
-	m.InsertItem(-1, newSpellAction.NewMenuItem(f))
-	m.InsertItem(-1, newSpellContainerAction.NewMenuItem(f))
-	m.InsertItem(-1, newSpellChoiceContainerAction.NewMenuItem(f))
-	m.InsertItem(-1, newRitualMagicSpellAction.NewMenuItem(f))
-
-	m.InsertSeparator(-1, false)
-	m.InsertItem(-1, newCarriedEquipmentAction.NewMenuItem(f))
-	m.InsertItem(-1, newCarriedEquipmentContainerAction.NewMenuItem(f))
-	m.InsertItem(-1, newCarriedEquipmentGroupAction.NewMenuItem(f))
-	m.InsertItem(-1, newEquipmentChoiceContainerAction.NewMenuItem(f))
-	m.InsertItem(-1, newOtherEquipmentAction.NewMenuItem(f))
-	m.InsertItem(-1, newOtherEquipmentContainerAction.NewMenuItem(f))
-	m.InsertItem(-1, newOtherEquipmentGroupAction.NewMenuItem(f))
-	m.InsertSeparator(-1, false)
-	m.InsertItem(-1, buyEquipmentAction.NewMenuItem(f))
-	m.InsertItem(-1, buySelectedEquipmentAction.NewMenuItem(f))
-	m.InsertItem(-1, sellEquipmentAction.NewMenuItem(f))
-	m.InsertItem(-1, shoppingRecordAction.NewMenuItem(f))
-	m.InsertSeparator(-1, false)
-	m.InsertItem(-1, newEquipmentModifierAction.NewMenuItem(f))
-	m.InsertItem(-1, newEquipmentContainerModifierAction.NewMenuItem(f))
-	m.InsertItem(-1, newEquipmentModifierChoiceAction.NewMenuItem(f))
-
-	m.InsertSeparator(-1, false)
-	m.InsertItem(-1, newNoteAction.NewMenuItem(f))
-	m.InsertItem(-1, newNoteContainerAction.NewMenuItem(f))
-
-	m.InsertSeparator(-1, false)
-	m.InsertItem(-1, newMeleeWeaponAction.NewMenuItem(f))
-	m.InsertItem(-1, newRangedWeaponAction.NewMenuItem(f))
-
-	m.InsertSeparator(-1, false)
-	m.InsertItem(-1, openOnePageReferenceAction.NewMenuItem(f))
-	m.InsertItem(-1, openEachPageReferenceAction.NewMenuItem(f))
+	m := s.newActionMenu(f, ItemMenuID, i18n.Text("Item"),
+		openEditorAction,
+		openOnePageReferenceAction,
+		openEachPageReferenceAction,
+		nil,
+	)
+	m.InsertMenu(-1, s.newActionMenu(f, MoveMenuID, i18n.Text("Move"),
+		moveUpAction,
+		moveDownAction,
+		moveOutOfContainerAction,
+		moveIntoContainerAction,
+		nil,
+		moveToCarriedEquipmentAction,
+		moveToOtherEquipmentAction,
+	))
+	m.InsertMenu(-1, s.newActionMenu(f, AdjustMenuID, i18n.Text("Adjust"),
+		incrementAction,
+		decrementAction,
+		nil,
+		increaseUsesAction,
+		decreaseUsesAction,
+		resetUsesToMaxAction,
+		nil,
+		increaseSkillLevelAction,
+		decreaseSkillLevelAction,
+		nil,
+		increaseTechLevelAction,
+		decreaseTechLevelAction,
+		nil,
+		increaseEquipmentLevelAction,
+		decreaseEquipmentLevelAction,
+	))
+	m.InsertMenu(-1, s.newActionMenu(f, ConvertMenuID, i18n.Text("Convert"),
+		convertToContainerAction,
+		convertToNonContainerAction,
+		convertToChoiceContainerAction,
+		convertToGroupContainerAction,
+	))
+	s.appendActions(m,
+		toggleStateAction,
+		swapDefaultsAction,
+		applyModifierAction,
+		nil,
+		copyToSheetAction,
+		copyToTemplateAction,
+		nil,
+		syncWithSourceAction,
+		clearSourceAction,
+	)
 	return m
+}
+
+func (s menuBarScope) createSheetMenu(f unison.MenuFactory) unison.Menu {
+	return s.newActionMenu(f, SheetMenuID, i18n.Text("Sheet"),
+		applyTemplateAction,
+		newSheetFromTemplateAction,
+		cloneSheetAction,
+		nil,
+		addNaturalAttacksAction,
+		organizeTraitsAction,
+		nil,
+		buyEquipmentAction,
+		buySelectedEquipmentAction,
+		sellEquipmentAction,
+		shoppingRecordAction,
+		nil,
+		clearPortraitAction,
+		nil,
+		perSheetSettingsAction,
+		perSheetAttributeSettingsAction,
+		perSheetBodyTypeSettingsAction,
+		editSheetLayoutAction,
+	)
 }
 
 func (s menuBarScope) createSettingsMenu(f unison.MenuFactory) unison.Menu {
-	m := f.NewMenu(SettingsMenuID, i18n.Text("Settings"), nil)
-	m.InsertItem(-1, perSheetSettingsAction.NewMenuItem(f))
-	m.InsertItem(-1, perSheetAttributeSettingsAction.NewMenuItem(f))
-	m.InsertItem(-1, perSheetBodyTypeSettingsAction.NewMenuItem(f))
-	m.InsertSeparator(-1, false)
-	m.InsertItem(-1, defaultSheetSettingsAction.NewMenuItem(f))
-	m.InsertItem(-1, defaultAttributeSettingsAction.NewMenuItem(f))
-	m.InsertItem(-1, defaultBodyTypeSettingsAction.NewMenuItem(f))
-	m.InsertSeparator(-1, false)
-	m.InsertItem(-1, generalSettingsAction.NewMenuItem(f))
-	m.InsertItem(-1, pageRefMappingsAction.NewMenuItem(f))
-	m.InsertItem(-1, listFilterSettingsAction.NewMenuItem(f))
-	m.InsertItem(-1, colorSettingsAction.NewMenuItem(f))
-	m.InsertItem(-1, fontSettingsAction.NewMenuItem(f))
-	m.InsertItem(-1, menuKeySettingsAction.NewMenuItem(f))
-	return m
+	return s.newActionMenu(f, SettingsMenuID, i18n.Text("Settings"),
+		generalSettingsAction,
+		colorSettingsAction,
+		fontSettingsAction,
+		menuKeySettingsAction,
+		listFilterSettingsAction,
+		nil,
+		defaultSheetSettingsAction,
+		defaultAttributeSettingsAction,
+		defaultBodyTypeSettingsAction,
+		nil,
+		pageRefMappingsAction,
+		downloadRulesFileAction,
+	)
 }
 
 func (s menuBarScope) createViewMenu(f unison.MenuFactory) unison.Menu {
-	m := f.NewMenu(ViewMenuID, i18n.Text("View"), nil)
-	m.InsertItem(-1, scaleDefaultAction.NewMenuItem(f))
-	m.InsertItem(-1, scaleUpAction.NewMenuItem(f))
-	m.InsertItem(-1, scaleDownAction.NewMenuItem(f))
-	m.InsertSeparator(-1, false)
-	m.InsertItem(-1, scale25Action.NewMenuItem(f))
-	m.InsertItem(-1, scale50Action.NewMenuItem(f))
-	m.InsertItem(-1, scale75Action.NewMenuItem(f))
-	m.InsertItem(-1, scale100Action.NewMenuItem(f))
-	m.InsertItem(-1, scale200Action.NewMenuItem(f))
-	m.InsertItem(-1, scale300Action.NewMenuItem(f))
-	m.InsertItem(-1, scale400Action.NewMenuItem(f))
-	m.InsertItem(-1, scale500Action.NewMenuItem(f))
-	m.InsertItem(-1, scale600Action.NewMenuItem(f))
-	m.InsertSeparator(-1, false)
-	m.InsertItem(-1, editSheetLayoutAction.NewMenuItem(f))
-	m.InsertSeparator(-1, false)
-	m.InsertItem(-1, calculatorAction.NewMenuItem(f))
+	m := s.newActionMenu(f, ViewMenuID, i18n.Text("View"),
+		scaleDefaultAction,
+		scaleUpAction,
+		scaleDownAction,
+	)
+	m.InsertMenu(-1, s.newActionMenu(f, ScaleToMenuID, i18n.Text("Scale To"),
+		scale25Action,
+		scale50Action,
+		scale75Action,
+		scale100Action,
+		scale200Action,
+		scale300Action,
+		scale400Action,
+		scale500Action,
+		scale600Action,
+	))
+	s.appendActions(m, nil, calculatorAction)
 	platformViewMenuAddition(m)
 	return m
 }
@@ -432,20 +464,40 @@ func (s menuBarScope) setupWindowMenu(bar unison.Menu) {
 }
 
 func (s menuBarScope) setupHelpMenu(bar unison.Menu) {
-	f := bar.Factory()
 	m := bar.Menu(unison.HelpMenuID)
-	m.InsertItem(-1, userGuideAction.NewMenuItem(f))
-	m.InsertSeparator(-1, false)
-	m.InsertItem(-1, sponsorDevelopmentAction.NewMenuItem(f))
-	m.InsertItem(-1, makeDonationAction.NewMenuItem(f))
-	m.InsertSeparator(-1, false)
-	m.InsertItem(-1, updateAppStatusAction.NewMenuItem(f))
-	m.InsertItem(-1, checkForAppUpdatesAction.NewMenuItem(f))
-	m.InsertItem(-1, releaseNotesAction.NewMenuItem(f))
-	m.InsertItem(-1, licenseAction.NewMenuItem(f))
-	m.InsertSeparator(-1, false)
-	m.InsertItem(-1, webSiteAction.NewMenuItem(f))
-	m.InsertItem(-1, mailingListAction.NewMenuItem(f))
+	s.appendActions(m,
+		userGuideAction,
+		nil,
+		sponsorDevelopmentAction,
+		makeDonationAction,
+		nil,
+		updateAppStatusAction,
+		checkForAppUpdatesAction,
+		releaseNotesAction,
+		licenseAction,
+		nil,
+		webSiteAction,
+		mailingListAction,
+	)
+}
+
+// newActionMenu returns a new menu holding an item for each of actions, in order, with a separator for each nil.
+func (s menuBarScope) newActionMenu(f unison.MenuFactory, id int, title string, actions ...*unison.Action) unison.Menu {
+	m := f.NewMenu(id, title, nil)
+	s.appendActions(m, actions...)
+	return m
+}
+
+// appendActions appends an item for each of actions to m, in order, with a separator for each nil.
+func (s menuBarScope) appendActions(m unison.Menu, actions ...*unison.Action) {
+	f := m.Factory()
+	for _, action := range actions {
+		if action == nil {
+			m.InsertSeparator(-1, false)
+		} else {
+			m.InsertItem(-1, action.NewMenuItem(f))
+		}
+	}
 }
 
 func (s menuBarScope) recentFilesUpdater(menu unison.Menu) {
@@ -483,6 +535,8 @@ func (s menuBarScope) exportToUpdater(menu unison.Menu) {
 	menu.InsertItem(-1, exportAsWEBPAction.NewMenuItem(factory))
 	menu.InsertItem(-1, exportAsPNGAction.NewMenuItem(factory))
 	menu.InsertItem(-1, exportAsJPEGAction.NewMenuItem(factory))
+	menu.InsertSeparator(-1, false)
+	menu.InsertItem(-1, exportPortraitAction.NewMenuItem(factory))
 	menu.InsertSeparator(-1, false)
 	index := 0
 	for _, lib := range gurps.GlobalSettings().Libraries.List() {

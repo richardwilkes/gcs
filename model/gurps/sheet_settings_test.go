@@ -15,12 +15,15 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/display"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/progression"
 	"github.com/richardwilkes/gcs/v5/model/jio"
+	"github.com/richardwilkes/gcs/v5/model/kinds"
 	"github.com/richardwilkes/toolbox/v2/check"
+	"github.com/richardwilkes/toolbox/v2/tid"
 )
 
 func writeSheetSettingsFile(t *testing.T, content string) string {
@@ -229,4 +232,181 @@ func TestSheetSettingsEnsureValidityBoundsTradePercents(t *testing.T) {
 	s.EnsureValidity()
 	c.Equal(250, s.BuyPercent, "a buy percent within the range is left alone")
 	c.Equal(35, s.SellPercent, "a sell percent within the range is left alone")
+}
+
+// TestSheetSettingsEnsureValidityDropsWhatCanNotBeSellMoney checks that sell money entries a file can hold but that
+// can't be money (see SheetSettings.CanAddSellMoney) are dropped, since were one paid out, MoneyItems would never list
+// what was received, so it couldn't be spent, and that entries repeating an ID are dropped too.
+func TestSheetSettingsEnsureValidityDropsWhatCanNotBeSellMoney(t *testing.T) {
+	c := check.New(t)
+	s := FactorySheetSettings()
+	penny := denomination("Copper Penny", "1")
+	s.SellMoney = SellMoneyList{
+		nil,
+		withTags(newContainerItem("Purse", "2"), MoneyTag),
+		newEquipmentItem("Gold Crown", "100", "0"),
+		penny,
+	}
+	s.EnsureValidity()
+	c.Equal(SellMoneyList{penny}, s.SellMoney)
+
+	twin := denomination("Copper Penny", "1")
+	twin.TID = penny.TID
+	s.SellMoney = SellMoneyList{penny, twin, penny}
+	s.EnsureValidity()
+	c.Equal(SellMoneyList{penny}, s.SellMoney, "entries repeating an ID, which the list is keyed on, are dropped")
+}
+
+// newTestSellMoney returns a coin with a modifier and a weapon, the parts of equipment that are attached to it when
+// loaded, tagged as money.
+func newTestSellMoney() *Equipment {
+	silver := withTags(newEquipmentItem("Silver Eagle", "20", "0.01 lb"), MoneyTag)
+	silver.AddModifiers(NewEquipmentModifier(nil, nil, false))
+	silver.Weapons = []*Weapon{NewWeapon(silver, true)}
+	return silver
+}
+
+// TestSheetSettingsSellMoneyRoundTrip checks that the sell money is written without the derived "calc" values and read
+// back as copies with their IDs and sources, no data owner, their weapons and modifiers attached, and the preconfigured
+// mark and disabled state cleared; and that what a file can hold but can't be money is dropped without error: null,
+// containers, equipment not tagged as money, and the entries of the unreleased format that named a library item by its
+// source, which decode as equipment with nothing but an ID.
+func TestSheetSettingsSellMoneyRoundTrip(t *testing.T) {
+	c := check.New(t)
+	libFile := LibraryFile{Library: "Test Library", Path: "Coins" + EquipmentExt}
+	silver := newTestSellMoney()
+	s := FactorySheetSettings()
+	c.True(s.AddSellMoney(silver, libFile))
+	entry := s.SellMoney[0]
+	data, err := jio.Marshal(s)
+	c.NoError(err)
+	moneyData, err := jio.Marshal(s.SellMoney)
+	c.NoError(err)
+	c.False(strings.Contains(string(moneyData), `"calc"`), "the derived values aren't written")
+	c.True(strings.Contains(string(data), `"sell_money":`+string(moneyData)), "the settings write the list the same way")
+	var loaded SheetSettings
+	c.NoError(jio.Unmarshal(data, &loaded))
+	c.Equal(1, len(loaded.SellMoney))
+	got := loaded.SellMoney[0]
+	c.Equal(entry.TID, got.TID)
+	c.Equal(Source{LibraryFile: libFile, TID: silver.TID}, got.Source)
+	c.Equal("Silver Eagle", got.Name)
+	c.Equal(fxp.FromInteger(20), got.AdjustedValue())
+	c.Nil(got.DataOwner())
+	c.Nil(got.Parent())
+	c.Equal(1, len(got.Weapons))
+	c.True(got.Weapons[0].Owner == WeaponOwner(got), "the weapon is attached to the copy")
+	c.Equal(1, len(got.Modifiers))
+	c.True(entry.MergeMatches(got), "the copy read back is the one written")
+
+	penny := denomination("Copper Penny", "1")
+	penny.Preconfigured = true
+	penny.Disabled = true
+	s.SellMoney = SellMoneyList{
+		nil, withTags(newContainerItem("Purse", "2"), MoneyTag),
+		newEquipmentItem("Gold Crown", "100", "0"), penny,
+	}
+	data, err = jio.Marshal(s)
+	c.NoError(err)
+	loaded = SheetSettings{}
+	c.NoError(jio.Unmarshal(data, &loaded))
+	c.Equal(1, len(loaded.SellMoney), "null, containers and items not tagged as money are dropped")
+	c.Equal("Copper Penny", loaded.SellMoney[0].Name)
+	c.False(loaded.SellMoney[0].Preconfigured, "the preconfigured mark is cleared")
+	c.False(loaded.SellMoney[0].Disabled, "the disabled state is cleared")
+
+	old := fmt.Sprintf(`{"sell_money":[{"library":"Lib","path":"Coins.eqp","id":%q}]}`, tid.MustNewTID(kinds.Equipment))
+	loaded = SheetSettings{}
+	c.NoError(jio.Unmarshal([]byte(old), &loaded), "an entry of the unreleased format must not fail the load")
+	c.Equal(0, len(loaded.SellMoney), "it is dropped")
+
+	empty, err := jio.Marshal(FactorySheetSettings())
+	c.NoError(err)
+	c.False(strings.Contains(string(empty), `"sell_money"`), "no sell money writes nothing")
+}
+
+// TestSheetSettingsSellMoneyPathsAvoidTheClosedStateLock checks that cloning, validating, writing and reading settings
+// that hold sell money never consult the closed states the global settings hold: Settings.Save does all of that while
+// holding their lock, and loading the global settings does it inside GlobalSettings' initializer, which cloning
+// equipment would re-enter.
+func TestSheetSettingsSellMoneyPathsAvoidTheClosedStateLock(t *testing.T) {
+	c := check.New(t)
+	GlobalSettings()
+	s := FactorySheetSettings()
+	c.True(s.AddSellMoney(newTestSellMoney(), LibraryFile{}))
+	closedLock.Lock()
+	defer closedLock.Unlock()
+	done := make(chan error, 1)
+	go func() {
+		done <- func() error {
+			clone := s.Clone(nil)
+			clone.EnsureValidity()
+			data, err := jio.Marshal(clone)
+			if err != nil {
+				return err
+			}
+			var loaded SheetSettings
+			if err = jio.Unmarshal(data, &loaded); err != nil {
+				return err
+			}
+			if len(loaded.SellMoney) != 1 {
+				return fmt.Errorf("expected 1 sell money entry, got %d", len(loaded.SellMoney))
+			}
+			return nil
+		}()
+	}()
+	select {
+	case err := <-done:
+		c.NoError(err)
+	case <-time.After(10 * time.Second):
+		t.Fatal("the sell money paths must not take the closed-state lock")
+	}
+}
+
+// TestSellMoneyCopiesLeaveNoClosedStates checks that the copies made to check a drag, to list an entry and to pay out
+// (see SheetSettings.CanAddSellMoney, SheetSettings.AddSellMoney and Entity.SellMoneyItems) record no closed states,
+// which a clone of an item whose notes are collapsed records for its copy (see Equipment.Clone): none of them is shown
+// with notes to collapse, so the states would only pile up in the settings.
+func TestSellMoneyCopiesLeaveNoClosedStates(t *testing.T) {
+	c := check.New(t)
+	settings := GlobalSettings()
+	coin := denomination("Copper Penny", "1")
+	coin.AddModifiers(NewEquipmentModifier(nil, nil, false))
+	keys := []string{"N:" + string(coin.TID), "N:" + string(coin.Modifiers[0].TID)}
+	for _, key := range keys {
+		SetClosedState(key, true)
+	}
+	t.Cleanup(func() {
+		for _, key := range keys {
+			SetClosedState(key, false)
+		}
+	})
+	count := func() int {
+		closedLock.Lock()
+		defer closedLock.Unlock()
+		return len(settings.Closed)
+	}
+	before := count()
+	s := FactorySheetSettings()
+	c.True(s.CanAddSellMoney(coin))
+	c.Equal(before, count(), "checking an item records nothing")
+	c.True(s.AddSellMoney(coin, LibraryFile{}))
+	c.Equal(before, count(), "listing an item records nothing")
+	c.False(s.AddSellMoney(coin, LibraryFile{}))
+	c.Equal(before, count(), "refusing an item records nothing")
+	e := NewEntity()
+	e.SheetSettings.SellMoney = SellMoneyList{coin}
+	c.Equal(1, len(e.SellMoneyItems()))
+	c.Equal(before, count(), "paying out records nothing")
+}
+
+// TestSheetSettingsCloneTakesTheEntity checks that a clone made for an entity belongs to it, and one made for none to
+// none, whatever the settings cloned belonged to.
+func TestSheetSettingsCloneTakesTheEntity(t *testing.T) {
+	c := check.New(t)
+	e := NewEntity()
+	s := FactorySheetSettings()
+	c.True(s.Clone(e).Entity == e, "a clone made for an entity belongs to it")
+	s.Entity = e
+	c.True(s.Clone(nil).Entity == nil, "a clone made for no entity belongs to none")
 }

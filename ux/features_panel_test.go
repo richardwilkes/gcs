@@ -1460,3 +1460,27 @@ func TestFeaturesPanelKeepsControlCharacters(t *testing.T) {
 		c.False(host.mgr.CanUndo(), "and nothing is recorded")
 	})
 }
+
+// TestFeaturesPanelReadOnly checks that a read-only panel still opens and closes its rows to read them in full, but
+// offers no way to change them, through rebuilds too.
+func TestFeaturesPanelReadOnly(t *testing.T) {
+	c := check.New(t)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
+	entity := gurps.NewEntity()
+	owner := gurps.NewTrait(entity, nil, false)
+	features := newTestFeatures(owner)
+	p, _ := showFeaturesPanel(t, screen, entity, owner, &features, false)
+	screen.Do(func() {
+		p.makeReadOnly()
+		c.True(p.FindRefKey("0"+keySentence).Enabled(), "a sentence still opens its row")
+		c.False(p.FindRefKey("0"+keyMore).Enabled(), "the more menu is off")
+		p.toggle("0")
+	})
+	screen.Do(func() {
+		c.Equal("0", p.open)
+		c.False(p.FindRefKey("0:amount").Enabled(), "the open row's fields stay off after the rebuild")
+		c.True(p.FindRefKey("0"+keyDone).Enabled(), "Done still closes the row")
+		p.toggle("0")
+	})
+	screen.Do(func() { c.Equal("", p.open) })
+}

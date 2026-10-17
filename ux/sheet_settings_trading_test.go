@@ -90,15 +90,20 @@ func equipmentRowsFor(t *testing.T, table *unison.Table[*Node[*gurps.Equipment]]
 	return rows
 }
 
-// dropOnSellMoney drags the rows of the equipment from the table over the dockable's sell money list and drops them,
-// checking that the list offers to take the drag exactly when the drop adds something, and returning what the drop
-// reported.
+// dropOnSellMoney drags the rows of the equipment from the table over the dockable's sell money list and drops them
+// (see dropRowsOnSellMoney), returning what the drop reported. It must run on the test goroutine, since it fails the
+// test outright when the table lacks a row for an item.
 func dropOnSellMoney(t *testing.T, c check.Checker, d *sheetSettingsDockable, table *unison.Table[*Node[*gurps.Equipment]], items ...*gurps.Equipment) bool {
 	t.Helper()
-	uxtest.SwapForTest(t, &draggedTableData, any(&unison.TableDragData[*Node[*gurps.Equipment]]{
-		Table: table,
-		Rows:  equipmentRowsFor(t, table, items...),
-	}))
+	return dropRowsOnSellMoney(t, c, d, table, equipmentRowsFor(t, table, items...))
+}
+
+// dropRowsOnSellMoney drags the table's rows over the dockable's sell money list and drops them, checking that the list
+// offers to take the drag exactly when the drop adds something, and returning what the drop reported. It may run on
+// the UI goroutine of a headless workspace, since it only ever reports failures rather than ending the test.
+func dropRowsOnSellMoney(t *testing.T, c check.Checker, d *sheetSettingsDockable, table *unison.Table[*Node[*gurps.Equipment]], rows []*Node[*gurps.Equipment]) bool {
+	t.Helper()
+	uxtest.SwapForTest(t, &draggedTableData, any(&unison.TableDragData[*Node[*gurps.Equipment]]{Table: table, Rows: rows}))
 	di := &fakeDragInfo{types: []string{equipmentDragKey.UTI}}
 	p := d.sellMoneyPanel
 	c.True(p.CanAcceptDropCallback(di), "the sell money list must accept equipment")
@@ -169,18 +174,26 @@ func TestSheetSettingsTradingPercentFields(t *testing.T) {
 	c.Equal(2, len(recorder.updates), "sync tells the sheets nothing")
 }
 
-// TestSheetSettingsSellMoneyDrop checks that dropping library equipment onto the sell money list adds a source for
-// each item that can be money, once, and tells the open sheets, while containers, equipment that isn't tagged as money
-// and equipment from outside the libraries are refused, with a drag of nothing but those declined outright; that each
-// entry's button removes it; that an entry the library no longer has is still shown; and that sync() shows the list of
-// replaced settings.
+// sellMoneyNames returns the names of the settings' sell money, in the order held.
+func sellMoneyNames(s *gurps.SheetSettings) []string {
+	names := make([]string, 0, len(s.SellMoney))
+	for _, eqp := range s.SellMoney {
+		names = append(names, eqp.Name)
+	}
+	return names
+}
+
+// TestSheetSettingsSellMoneyDrop checks that dropping equipment onto the sell money list adds a copy of each item that
+// can be money, once, wherever it comes from, and tells the open sheets, while containers and equipment that isn't
+// tagged as money are refused, with a drag of nothing but those declined outright; that each entry's button removes it;
+// and that sync() shows the list of replaced settings.
 func TestSheetSettingsSellMoneyDrop(t *testing.T) {
 	c := check.New(t)
 	money, library := newTradingSettingsTest(t, c)
 	owner := newEntityPanelWithFlaggedSettings()
 	d, recorder := newTestSheetSettingsDockable(t, owner)
 	s := owner.entity.SheetSettings
-	hint := []string{"Drag equipment tagged \"Money\" from an equipment library here."}
+	hint := []string{"Drag equipment tagged \"Money\" from any equipment list here."}
 	c.Equal(hint, uxtest.LabelTexts(d.sellMoneyPanel), "an empty list explains how to add to it")
 
 	other := &fakeDragInfo{types: []string{traitDragKey.UTI}}
@@ -195,9 +208,16 @@ func TestSheetSettingsSellMoneyDrop(t *testing.T) {
 	c.Equal(0, len(s.SellMoney))
 
 	c.True(dropOnSellMoney(t, c, d, library.table, money.eagle), "a money item from a library is added")
-	c.Equal([]gurps.Source{money.source(money.eagle)}, s.SellMoney, "the item is kept by its library source")
+	c.Equal([]string{"Silver Eagle"}, sellMoneyNames(s))
 	c.Equal([]bool{false}, recorder.updates, "the addition is reported, without a full rebuild")
 	c.Equal([]string{"Silver Eagle", "$20"}, uxtest.LabelTexts(d.sellMoneyPanel), "the list shows the item and its value")
+	if len(s.SellMoney) == 1 {
+		eagle := s.SellMoney[0]
+		c.True(eagle != money.eagle, "a copy is kept, not the library's item")
+		c.NotEqual(money.eagle.TID, eagle.TID)
+		c.Equal(money.source(money.eagle), eagle.Source, "the copy points back at the library's item")
+		c.Nil(eagle.DataOwner(), "the copy has no owner")
+	}
 
 	c.False(dropOnSellMoney(t, c, d, library.table, money.eagle), "an item already listed is not added again")
 	c.False(dropOnSellMoney(t, c, d, library.table, money.purse), "a container is refused")
@@ -206,7 +226,7 @@ func TestSheetSettingsSellMoneyDrop(t *testing.T) {
 
 	c.True(dropOnSellMoney(t, c, d, library.table, money.purse, money.penny),
 		"of several rows, those that can be money are added")
-	c.Equal([]gurps.Source{money.source(money.eagle), money.source(money.penny)}, s.SellMoney,
+	c.Equal([]string{"Silver Eagle", "Copper Penny"}, sellMoneyNames(s),
 		"the money item is added after the one already there")
 	c.Equal([]string{"Copper Penny", "$1", "Silver Eagle", "$20"}, uxtest.LabelTexts(d.sellMoneyPanel),
 		"the list shows the items by increasing value")
@@ -214,22 +234,19 @@ func TestSheetSettingsSellMoneyDrop(t *testing.T) {
 	elsewhere := newTradeTestItem(nil, "Gold Crown", "100", fxp.One, gurps.MoneyTag)
 	outside := NewEquipmentTableDockable(filepath.Join(t.TempDir(), "Coins"+gurps.EquipmentExt),
 		[]*gurps.Equipment{elsewhere})
-	c.False(dropOnSellMoney(t, c, d, outside.table, elsewhere), "equipment from outside the libraries is refused")
-	c.Equal(2, len(s.SellMoney))
+	c.True(dropOnSellMoney(t, c, d, outside.table, elsewhere), "equipment from outside the libraries is added too")
+	c.Equal([]string{"Silver Eagle", "Copper Penny", "Gold Crown"}, sellMoneyNames(s))
+	if len(s.SellMoney) == 3 {
+		c.True(s.SellMoney[2].Source.IsZero(), "a copy of an item from no library, with no Source of its own, has none")
+	}
+	c.Equal([]string{"Copper Penny", "$1", "Silver Eagle", "$20", "Gold Crown", "$100"},
+		uxtest.LabelTexts(d.sellMoneyPanel))
 
 	sellMoneyRemoveButton(t, d, "Silver Eagle").ClickCallback()
-	c.Equal([]gurps.Source{money.source(money.penny)}, s.SellMoney, "the button removes its own entry")
-	c.Equal(3, len(recorder.updates), "the removal is reported")
-	c.Equal([]string{"Copper Penny", "$1"}, uxtest.LabelTexts(d.sellMoneyPanel), "the list no longer shows it")
-
-	missing := gurps.Source{LibraryFile: money.libFile, TID: "missing"}
-	s.SellMoney = append(s.SellMoney, missing)
-	d.rebuildSellMoney()
-	gone := "Money" + gurps.EquipmentExt + " (missing)"
-	c.Equal([]string{"Copper Penny", "$1", gone + " — not found"}, uxtest.LabelTexts(d.sellMoneyPanel),
-		"an entry the library lacks is shown last, by its file and ID, without a value")
-	sellMoneyRemoveButton(t, d, gone).ClickCallback()
-	c.Equal([]gurps.Source{money.source(money.penny)}, s.SellMoney, "an entry the library lacks can be removed")
+	c.Equal([]string{"Copper Penny", "Gold Crown"}, sellMoneyNames(s), "the button removes its own entry")
+	c.Equal(4, len(recorder.updates), "the removal is reported")
+	c.Equal([]string{"Copper Penny", "$1", "Gold Crown", "$100"}, uxtest.LabelTexts(d.sellMoneyPanel),
+		"the list no longer shows it")
 
 	d.reset()
 	c.Equal(0, len(owner.entity.SheetSettings.SellMoney), "reset restores the defaults, which have no sell money")
@@ -277,7 +294,7 @@ func TestSheetSettingsSellMoneyWithoutOwner(t *testing.T) {
 	d, recorder := newTestSheetSettingsDockable(t, nil)
 
 	c.True(dropOnSellMoney(t, c, d, library.table, money.penny), "a money item from a library is added")
-	c.Equal([]gurps.Source{money.source(money.penny)}, global.Sheet.SellMoney, "the defaults hold its source")
+	c.Equal([]string{"Copper Penny"}, sellMoneyNames(global.Sheet), "the defaults hold a copy of it")
 	c.Equal([]*gurps.Entity{nil}, recorder.entities, "the change is reported as one to the defaults")
 	c.Equal([]string{"Copper Penny", "$1"}, uxtest.LabelTexts(d.sellMoneyPanel))
 
@@ -286,10 +303,10 @@ func TestSheetSettingsSellMoneyWithoutOwner(t *testing.T) {
 	c.Equal(2, len(recorder.updates), "the removal is reported")
 }
 
-// TestSheetSettingsSellMoneyDropKeepsTheItemDragged checks that an item dragged from a library that was itself copied
-// into that library from another, and so carries that other library's source, is added as the item dragged rather than
-// as the item it was copied from.
-func TestSheetSettingsSellMoneyDropKeepsTheItemDragged(t *testing.T) {
+// TestSheetSettingsSellMoneyDropCopiesTheItemDragged checks that an item dragged from a library that was itself copied
+// into that library from another, and so carries that other library's source, is added as the item dragged, with its
+// own name and value, keeping the source it carries as any copy of it does (see gurps.Reference).
+func TestSheetSettingsSellMoneyDropCopiesTheItemDragged(t *testing.T) {
 	c := check.New(t)
 	money, _ := newTradingSettingsTest(t, c)
 	owner := newEntityPanelWithFlaggedSettings()
@@ -305,9 +322,64 @@ func TestSheetSettingsSellMoneyDropKeepsTheItemDragged(t *testing.T) {
 	library := NewEquipmentTableDockable(path, []*gurps.Equipment{local})
 
 	c.True(dropOnSellMoney(t, c, d, library.table, local), "the copied item is added")
-	c.Equal([]gurps.Source{{Library: user.Key(), Path: name, TID: local.TID}},
-		owner.entity.SheetSettings.SellMoney, "the item dragged is what is kept, not the item it was copied from")
+	s := owner.entity.SheetSettings
+	c.Equal([]string{"Local Eagle"}, sellMoneyNames(s), "the item dragged is what is copied, not the item it was copied from")
+	if len(s.SellMoney) == 1 {
+		c.Equal("25", s.SellMoney[0].BaseValue)
+		c.NotEqual(local.TID, s.SellMoney[0].TID)
+		c.Equal(money.source(money.eagle), s.SellMoney[0].Source, "the copy keeps the source the item carries")
+	}
 	c.Equal([]string{"Local Eagle", "$25"}, uxtest.LabelTexts(d.sellMoneyPanel), "the list shows the item dragged")
+}
+
+// TestSheetSettingsSellMoneyDropFromASheet checks that equipment dragged from a sheet's carried equipment list, which
+// no library holds, is added as a copy owned by no one with a quantity of one, leaving the item carried as it was.
+func TestSheetSettingsSellMoneyDropFromASheet(t *testing.T) {
+	c := check.New(t)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
+	uxtest.SwapForTest(t, &flushDragFeedback, func(*unison.Panel) {})
+	var bar *gurps.Equipment
+	sheet := openSellTestSheet(t, screen, nil, func(entity *gurps.Entity) []*gurps.Equipment {
+		bar = newTradeTestItem(entity, "Trade Bar", "50", fxp.Five, gurps.MoneyTag)
+		return []*gurps.Equipment{bar}
+	})
+	d := openSheetSettingsFor(t, screen, sheet)
+	// The row is looked up here and the test failed on this goroutine, as testing requires, rather than by
+	// dropOnSellMoney on the UI goroutine, which would leave the headless screen without its event loop.
+	var rows []*Node[*gurps.Equipment]
+	screen.Do(func() {
+		for _, row := range sheet.CarriedEquipment.Table.RootRows() {
+			if row.Data() == bar {
+				rows = append(rows, row)
+			}
+		}
+	})
+	if len(rows) != 1 {
+		t.Fatal("the sheet's carried equipment list must have a row for the bar")
+	}
+	var dropped bool
+	var names, texts []string
+	var entry *gurps.Equipment
+	screen.Do(func() {
+		dropped = dropRowsOnSellMoney(t, c, d, sheet.CarriedEquipment.Table, rows)
+		s := sheet.Entity().SheetSettings
+		names = sellMoneyNames(s)
+		if len(s.SellMoney) == 1 {
+			entry = s.SellMoney[0]
+		}
+		texts = uxtest.LabelTexts(d.sellMoneyPanel)
+	})
+	c.True(dropped, "money carried on a sheet can be dropped on its own settings")
+	c.Equal([]string{"Trade Bar"}, names)
+	if entry != nil {
+		c.True(entry != bar, "a copy is kept, not the carried item")
+		c.NotEqual(bar.TID, entry.TID)
+		c.Equal(fxp.One, entry.Quantity, "the copy holds one, however many are carried")
+		c.Nil(entry.DataOwner(), "the copy has no owner")
+		c.True(entry.Source.IsZero(), "a copy of an item from no library, with no Source of its own, has none")
+	}
+	c.Equal(fxp.Five, bar.Quantity, "the carried item is untouched")
+	c.Equal([]string{"Trade Bar", "$50.00"}, texts, "the list shows the copy, formatted as the sheet formats values")
 }
 
 // openSheetSettingsFor opens the sheet's settings in the headless workspace and returns their dockable, failing the test
@@ -336,7 +408,7 @@ func TestSheetSettingsSellMoneyBanding(t *testing.T) {
 	c := check.New(t)
 	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
 	money := newTradeTestMoney(t, c)
-	sheet := openSellTestSheet(t, screen, []gurps.Source{money.source(money.eagle), money.source(money.penny)},
+	sheet := openSellTestSheet(t, screen, []*gurps.Equipment{money.eagle, money.penny},
 		func(_ *gurps.Entity) []*gurps.Equipment { return nil })
 	d := openSheetSettingsFor(t, screen, sheet)
 	var texts []string
@@ -384,7 +456,7 @@ func TestSheetSettingsSellMoneyRemoveKeepsTheFocus(t *testing.T) {
 	c := check.New(t)
 	screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
 	money := newTradeTestMoney(t, c)
-	sheet := openSellTestSheet(t, screen, []gurps.Source{money.source(money.eagle), money.source(money.penny)},
+	sheet := openSellTestSheet(t, screen, []*gurps.Equipment{money.eagle, money.penny},
 		func(_ *gurps.Entity) []*gurps.Equipment { return nil })
 	d := openSheetSettingsFor(t, screen, sheet)
 	removeButton := func(name string) *unison.Button {

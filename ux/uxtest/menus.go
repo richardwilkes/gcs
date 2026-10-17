@@ -63,11 +63,14 @@ func MenuItemPanels(menuPanel *unison.Panel) []*unison.Panel {
 }
 
 // ChooseMenuBarItem chooses an item from one of the menus in wnd's menu bar the way a user would: it clicks the menu's
-// title in the bar, then the item in the popup that opens. Since every injection waits for the application to go quiet,
-// the item's handler has finished by the time this returns -- or, for a handler that puts up a modal dialog, the dialog
-// is up and idle.
-func ChooseMenuBarItem(t *testing.T, screen *unison.HeadlessScreen, wnd *unison.Window, menuTitle, itemTitle string) {
+// title in the bar, then each title of path in turn in the popup that the previous click opened, so every title but the
+// last names a sub-menu. Since every injection waits for the application to go quiet, the item's handler has finished
+// by the time this returns -- or, for a handler that puts up a modal dialog, the dialog is up and idle.
+func ChooseMenuBarItem(t *testing.T, screen *unison.HeadlessScreen, wnd *unison.Window, menuTitle string, path ...string) {
 	t.Helper()
+	if len(path) == 0 {
+		t.Fatal("no item title to choose")
+	}
 	var titlePanel *unison.Panel
 	var menu unison.Menu
 	screen.Do(func() {
@@ -90,20 +93,41 @@ func ChooseMenuBarItem(t *testing.T, screen *unison.HeadlessScreen, wnd *unison.
 	}
 	screen.Click(screen.PanelCenter(titlePanel))
 
-	var itemPanel *unison.Panel
-	screen.Do(func() {
-		items := MenuItemPanels(OpenMenuPopup(wnd))
-		for i := range menu.Count() {
-			if item := menu.ItemAtIndex(i); !item.IsSeparator() && item.Title() == itemTitle && i < len(items) {
-				itemPanel = items[i]
-				return
+	for depth, itemTitle := range path {
+		var itemPanel *unison.Panel
+		var subMenu unison.Menu
+		screen.Do(func() {
+			items := MenuItemPanels(innermostMenuPopup(wnd))
+			for i := range menu.Count() {
+				if item := menu.ItemAtIndex(i); !item.IsSeparator() && item.Title() == itemTitle && i < len(items) {
+					itemPanel = items[i]
+					subMenu = item.SubMenu()
+					return
+				}
 			}
+		})
+		if itemPanel == nil {
+			t.Fatalf("no %q item in the open %q menu", itemTitle, menu.Title())
 		}
-	})
-	if itemPanel == nil {
-		t.Fatalf("no %q item in the open %q menu", itemTitle, menuTitle)
+		if depth < len(path)-1 && subMenu == nil {
+			t.Fatalf("%q in the %q menu has no sub-menu", itemTitle, menu.Title())
+		}
+		screen.Click(screen.PanelCenter(itemPanel))
+		menu = subMenu
 	}
-	screen.Click(screen.PanelCenter(itemPanel))
+}
+
+// innermostMenuPopup returns the panel of the innermost popup menu open for wnd, which is the one a click on a sub-menu
+// item opened last, or nil if none is open. Must be called from the UI thread.
+func innermostMenuPopup(wnd *unison.Window) *unison.Panel {
+	screen := unison.ActiveHeadlessScreen()
+	if screen == nil || wnd == nil {
+		return nil
+	}
+	if menus := screen.MenuWindows(wnd); len(menus) != 0 {
+		return menus[len(menus)-1].Content()
+	}
+	return nil
 }
 
 // ChoosePopupItem chooses the item at index from a unison.PopupMenu (or anything wrapping one, such as ux.Popup) the

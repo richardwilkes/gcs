@@ -431,7 +431,7 @@ func (d *sheetSettingsDockable) createTrading(content *unison.Panel) {
 	})
 	d.sellMoneyPanel.SetBorder(listBorder)
 	d.sellMoneyPanel.SetLayoutData(&unison.FlexLayoutData{HAlign: align.Fill, HGrab: true})
-	d.sellMoneyPanel.Tooltip = newWrappedTooltip(i18n.Text("The money that selling equipment pays out in, using as few items as possible. Drag equipment tagged \"%s\", which is what buying spends, from an equipment library here to add it.",
+	d.sellMoneyPanel.Tooltip = newWrappedTooltip(i18n.Text("The money that selling equipment pays out in, using as few items as possible. Drag equipment tagged \"%s\", which is what buying spends, from any equipment list here to add a copy of it.",
 		gurps.MoneyTag))
 	d.installSellMoneyBanding()
 	d.installSellMoneyDropSupport()
@@ -463,7 +463,7 @@ func (d *sheetSettingsDockable) installSellMoneyDropSupport() {
 	p := d.sellMoneyPanel
 	p.CanAcceptDropCallback = func(di drag.Info) bool { return di.HasDataType(equipmentDragKey.UTI) }
 	over := func(di drag.Info, _ geom.Point, _ mod.Modifiers) drag.Op {
-		if !di.HasDataType(equipmentDragKey.UTI) || len(d.sellMoneyFrom(draggedTableData)) == 0 {
+		if !di.HasDataType(equipmentDragKey.UTI) || len(d.sellMoneyFrom(draggedEquipmentTableData())) == 0 {
 			d.showSellMoneyDropTarget(false)
 			return drag.None
 		}
@@ -475,7 +475,7 @@ func (d *sheetSettingsDockable) installSellMoneyDropSupport() {
 	p.DragExitedCallback = func() { d.showSellMoneyDropTarget(false) }
 	p.DropCallback = func(di drag.Info, _ geom.Point, _ mod.Modifiers) bool {
 		d.showSellMoneyDropTarget(false)
-		return di.HasDataType(equipmentDragKey.UTI) && d.addSellMoney(draggedTableData)
+		return di.HasDataType(equipmentDragKey.UTI) && d.addSellMoney(draggedEquipmentTableData())
 	}
 	p.DrawOverCallback = func(gc *unison.Canvas, _ geom.Rect) {
 		if d.sellMoneyDropping {
@@ -494,36 +494,43 @@ func (d *sheetSettingsDockable) showSellMoneyDropTarget(show bool) {
 	}
 }
 
+// draggedEquipmentTableData returns the data of the equipment table drag in progress, or nil if what is being dragged
+// is something else.
+func draggedEquipmentTableData() *unison.TableDragData[*Node[*gurps.Equipment]] {
+	if tableData, ok := draggedTableData.(*unison.TableDragData[*Node[*gurps.Equipment]]); ok {
+		return tableData
+	}
+	return nil
+}
+
 // sellMoneyFrom returns the equipment rows of the drag data that can be added to the sell money (see
-// gurps.SheetSettings.CanAddSellMoney), each as the copy that would be added.
-func (d *sheetSettingsDockable) sellMoneyFrom(data any) []*gurps.Equipment {
-	tableData, ok := data.(*unison.TableDragData[*Node[*gurps.Equipment]])
-	if !ok || tableData == nil {
+// gurps.SheetSettings.CanAddSellMoney).
+func (d *sheetSettingsDockable) sellMoneyFrom(tableData *unison.TableDragData[*Node[*gurps.Equipment]]) []*gurps.Equipment {
+	if tableData == nil {
 		return nil
 	}
-	libFile := libraryFileFromTable(tableData.Table)
 	s := d.settings()
 	var list []*gurps.Equipment
 	for _, row := range tableData.Rows {
-		eqp := row.Data()
-		money := eqp.Clone(libFile, nil, nil, gurps.Reference)
-		// The item dragged is the one meant, even when it was itself copied into the library from another and so has
-		// a source of its own, which the clone keeps.
-		money.Source = gurps.Source{LibraryFile: libFile, TID: eqp.TID}
-		if s.CanAddSellMoney(money) {
-			list = append(list, money)
+		if eqp := row.Data(); s.CanAddSellMoney(eqp) {
+			list = append(list, eqp)
 		}
 	}
 	return list
 }
 
-// addSellMoney adds the equipment rows of the drag data that can be sell money (see sellMoneyFrom) to it, returning
-// true if any were added.
-func (d *sheetSettingsDockable) addSellMoney(data any) bool {
+// addSellMoney adds a copy of each equipment row of the drag data that can be sell money (see sellMoneyFrom) to it,
+// returning true if any were added.
+func (d *sheetSettingsDockable) addSellMoney(tableData *unison.TableDragData[*Node[*gurps.Equipment]]) bool {
+	list := d.sellMoneyFrom(tableData)
+	if len(list) == 0 {
+		return false
+	}
 	s := d.settings()
+	from := libraryFileFromTable(tableData.Table)
 	added := false
-	for _, money := range d.sellMoneyFrom(data) {
-		if s.AddSellMoney(money) {
+	for _, eqp := range list {
+		if s.AddSellMoney(eqp, from) {
 			added = true
 		}
 	}
@@ -568,41 +575,27 @@ func sellMoneyRowBounds(row []unison.Paneler, area geom.Rect) geom.Rect {
 	return bounds
 }
 
-// sellMoneyEntry is a sell money source along with the library item it refers to, nil when the library lacks it, and
-// the item's value.
+// sellMoneyEntry is a sell money item along with its value, worked out once for sorting and display.
 type sellMoneyEntry struct {
-	src   gurps.Source
 	eqp   *gurps.Equipment
 	value fxp.Int
 }
 
 // sortedSellMoney returns the sell money of the settings in the order the list shows it: by increasing value, those of
-// equal value in the order they were added, with the entries the library lacks last.
+// equal value in the order they were added.
 func (d *sheetSettingsDockable) sortedSellMoney() []sellMoneyEntry {
-	sources := d.settings().SellMoney
-	entries := make([]sellMoneyEntry, 0, len(sources))
-	for _, src := range sources {
-		entry := sellMoneyEntry{src: src, eqp: gurps.EquipmentForSource(src)}
-		if entry.eqp != nil {
-			entry.value = entry.eqp.AdjustedValue()
-		}
-		entries = append(entries, entry)
+	money := d.settings().SellMoney
+	entries := make([]sellMoneyEntry, 0, len(money))
+	for _, eqp := range money {
+		entries = append(entries, sellMoneyEntry{eqp: eqp, value: eqp.AdjustedValue()})
 	}
-	slices.SortStableFunc(entries, func(a, b sellMoneyEntry) int {
-		if (a.eqp == nil) != (b.eqp == nil) {
-			if a.eqp == nil {
-				return 1
-			}
-			return -1
-		}
-		return cmp.Compare(a.value, b.value)
-	})
+	slices.SortStableFunc(entries, func(a, b sellMoneyEntry) int { return cmp.Compare(a.value, b.value) })
 	return entries
 }
 
 // rebuildSellMoney fills the sell money list from the settings: a row for each item, in increasing order of value (see
-// sortedSellMoney), named as the library names it and showing its value, with a button that removes it, or a hint
-// saying how to add one when there are none.
+// sortedSellMoney), showing its name and value, with a button that removes it, or a hint saying how to add one when
+// there are none.
 func (d *sheetSettingsDockable) rebuildSellMoney() {
 	p := d.sellMoneyPanel
 	p.RemoveAllChildren()
@@ -612,40 +605,28 @@ func (d *sheetSettingsDockable) rebuildSellMoney() {
 		hint := unison.NewLabel()
 		hint.Font = fonts.FieldSecondary
 		hint.OnBackgroundInk = dimmedTextColor
-		hint.SetTitle(i18n.Text("Drag equipment tagged \"%s\" from an equipment library here.", gurps.MoneyTag))
+		hint.SetTitle(i18n.Text("Drag equipment tagged \"%s\" from any equipment list here.", gurps.MoneyTag))
 		hint.SetLayoutData(&unison.FlexLayoutData{HSpan: sellMoneyColumns})
 		p.AddChild(hint)
 	}
 	for i, entry := range entries {
-		src := entry.src
+		id := entry.eqp.TID
+		name := entry.eqp.String()
 		label := unison.NewLabel()
 		label.OnBackgroundInk = unison.ThemeOnBelowSurface
-		layout := &unison.FlexLayoutData{HAlign: align.Fill, VAlign: align.Middle, HGrab: true}
+		label.SetTitle(name)
+		label.SetLayoutData(&unison.FlexLayoutData{HAlign: align.Fill, VAlign: align.Middle, HGrab: true})
 		p.AddChild(label)
-		row := []unison.Paneler{label}
-		var name string
-		if entry.eqp != nil {
-			name = entry.eqp.String()
-			label.SetTitle(name)
-			value := unison.NewLabel()
-			value.OnBackgroundInk = unison.ThemeOnBelowSurface
-			value.SetTitle(i18n.Text("$%s", d.settings().FormatEquipmentValue(entry.value)))
-			value.SetLayoutData(&unison.FlexLayoutData{HAlign: align.End, VAlign: align.Middle})
-			p.AddChild(value)
-			row = append(row, value)
-		} else {
-			name = i18n.Text("%s (%s)", src.Path, src.TID)
-			label.SetTitle(i18n.Text("%s — not found", name))
-			label.OnBackgroundInk = dimmedTextColor
-			label.Tooltip = newWrappedTooltip(src.String())
-			layout.HSpan = 2 // There is no value to show, so the name takes its column too.
-		}
-		label.SetLayoutData(layout)
+		value := unison.NewLabel()
+		value.OnBackgroundInk = unison.ThemeOnBelowSurface
+		value.SetTitle(i18n.Text("$%s", d.settings().FormatEquipmentValue(entry.value)))
+		value.SetLayoutData(&unison.FlexLayoutData{HAlign: align.End, VAlign: align.Middle})
+		p.AddChild(value)
 		remove := unison.NewSVGButton(unison.TrashSVG)
 		remove.Accessibility.Name = i18n.Text("Remove %s", name)
 		remove.Tooltip = newWrappedTooltip(remove.Accessibility.Name)
 		remove.ClickCallback = func() {
-			if !d.settings().RemoveSellMoney(src) {
+			if !d.settings().RemoveSellMoney(id) {
 				return
 			}
 			// The rebuild takes every button off the page, this one included, and the focus doesn't leave a removed
@@ -662,7 +643,7 @@ func (d *sheetSettingsDockable) rebuildSellMoney() {
 		}
 		remove.SetLayoutData(&unison.FlexLayoutData{VAlign: align.Middle})
 		p.AddChild(remove)
-		d.sellMoneyRows = append(d.sellMoneyRows, append(row, remove))
+		d.sellMoneyRows = append(d.sellMoneyRows, []unison.Paneler{label, value, remove})
 	}
 	p.MarkForLayoutRecursivelyUpward()
 	p.MarkForRedraw()

@@ -57,13 +57,13 @@ func (e *editor[N, D]) sourceMenuEntries() []menuEntry {
 		menuEntry{
 			Label:    i18n.Text("Sync with Source"),
 			Act:      e.syncWithSource,
-			Disabled: state != srcstate.Mismatched || syncChangesContainerType(edited, data),
+			Disabled: e.readOnly || state != srcstate.Mismatched || syncChangesContainerType(edited, data),
 		},
 		menuEntry{
 			Label: i18n.Text("Clear Source"),
 			Act:   e.clearSource,
 			// Not src.IsZero(), which is also true of a partial source, and that can still be cleared.
-			Disabled: src == gurps.Source{},
+			Disabled: e.readOnly || src == gurps.Source{},
 		},
 	)
 }

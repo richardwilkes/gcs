@@ -85,12 +85,14 @@ func TestScriptExecTimeLimitSyncIsConcurrencySafe(t *testing.T) {
 }
 
 // TestGlobalSheetSettingsSyncIsConcurrencySafe verifies that an entity without embedded sheet settings can be
-// unmarshaled on a background goroutine while the UI thread mutates the global sheet settings in place, replaces them
-// wholesale, and republishes the snapshot -- the combination the deep search content cache and the settings dockables
-// produce. The unmarshal must clone only published snapshots, never the live settings being edited.
+// unmarshaled on a background goroutine while the UI thread mutates the global sheet settings in place, adds and
+// removes sell money, writes them out, replaces them wholesale, and republishes the snapshot -- the combination the
+// deep search content cache and the settings dockables produce. The unmarshal must clone only published snapshots,
+// never the live settings being edited.
 func TestGlobalSheetSettingsSyncIsConcurrencySafe(t *testing.T) {
 	c := check.New(t)
 	settings := GlobalSettings()
+	penny := withTags(newEquipmentItem("Copper Penny", "1", "0"), MoneyTag)
 	// A clone must be captured for the restore, since the writer below mutates the live object in place.
 	prevSheet := settings.Sheet.Clone(nil)
 	defer func() {
@@ -118,6 +120,13 @@ func TestGlobalSheetSettingsSyncIsConcurrencySafe(t *testing.T) {
 			} else {
 				settings.Sheet.ShowAllWeapons = !settings.Sheet.ShowAllWeapons
 				settings.Sheet.Attributes = FactoryAttributeDefs()
+				if len(settings.Sheet.SellMoney) == 0 {
+					settings.Sheet.AddSellMoney(penny, LibraryFile{})
+				} else {
+					settings.Sheet.RemoveSellMoney(settings.Sheet.SellMoney[0].TID)
+				}
+				_, err := jio.Marshal(settings.Sheet)
+				c.NoError(err)
 			}
 			SyncGlobalSheetSettings()
 		}

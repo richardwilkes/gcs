@@ -275,7 +275,7 @@ func (d *purchaseDialog) refresh() {
 func (d *purchaseDialog) describeChange(over fxp.Int) {
 	change, paid := d.changeFor(over)
 	if unreturned := over - paid; unreturned > 0 {
-		text := unreturnedChangeNotice(d.format(unreturned), len(d.entity.SheetSettings.SellMoney), len(d.sellMoney))
+		text := unreturnedChangeNotice(d.format(unreturned), len(d.sellMoney) != 0)
 		if paid > 0 {
 			text = i18n.Text("Change will be returned as %s ($%s). ", describePayouts(change), d.format(paid)) + text
 		}

@@ -21,6 +21,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/progression"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/toolbox/v2/errs"
+	"github.com/richardwilkes/toolbox/v2/tid"
 )
 
 // SheetSettingsResponder defines the method required to be notified of updates to the SheetSettings.
@@ -68,9 +69,54 @@ type SheetSettingsData struct {
 	EquipmentValueFormat          fxp.NumberFormat   `json:"equipment_value_format,omitzero"`
 	BuyPercent                    int                `json:"buy_percent,omitzero"`
 	SellPercent                   int                `json:"sell_percent,omitzero"`
-	// SellMoney lists the library equipment paid out when selling, each by its source so it can be found again.
-	// Containers are never included.
-	SellMoney []Source `json:"sell_money,omitempty"`
+	// SellMoney holds the equipment selling pays out in: copies, each tagged as money (see MoneyTag), that are never
+	// containers and have no data owner or parent. Clones of the settings share the copies, which are never edited,
+	// though writing them out and working out their values write back what they already hold, so, like the settings
+	// themselves, they are for the UI thread only. Entries are only added (see AddSellMoney) or removed (see
+	// RemoveSellMoney).
+	SellMoney SellMoneyList `json:"sell_money,omitempty"`
+}
+
+// SellMoneyList holds the sell money of a SheetSettings (see SheetSettingsData.SellMoney). It marshals without the
+// "calc" objects, which are derived values that mean nothing for equipment held by no sheet.
+type SellMoneyList []*Equipment
+
+// MarshalJSONTo implements json.MarshalerTo.
+func (l SellMoneyList) MarshalJSONTo(enc *jsontext.Encoder) error {
+	return json.MarshalEncode(enc, []*Equipment(l), json.WithMarshalers(omitCalcMarker))
+}
+
+// UnmarshalJSONFrom implements json.UnmarshalerFrom. An entry that can't be read is logged and left out rather than
+// failing the whole document, which would set a settings file aside, or keep a sheet from opening, over one coin.
+func (l *SellMoneyList) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
+	*l = nil
+	if dec.PeekKind() != '[' {
+		value, err := dec.ReadValue()
+		if err != nil {
+			return err
+		}
+		if value.Kind() != 'n' {
+			errs.Log(errs.New("ignoring the sell money, which isn't a list"))
+		}
+		return nil
+	}
+	if _, err := dec.ReadToken(); err != nil {
+		return err
+	}
+	for dec.PeekKind() != ']' {
+		value, err := dec.ReadValue()
+		if err != nil {
+			return err
+		}
+		var eqp *Equipment
+		if err = jio.Unmarshal(value, &eqp); err != nil {
+			errs.Log(errs.NewWithCause("ignoring a sell money entry that can't be read", err))
+			continue
+		}
+		*l = append(*l, eqp)
+	}
+	_, err := dec.ReadToken()
+	return err
 }
 
 // SheetSettings holds sheet settings.
@@ -171,6 +217,17 @@ func (s *SheetSettings) EnsureValidity() {
 	}
 	s.BuyPercent = min(max(s.BuyPercent, MinTradePercent), MaxTradePercent)
 	s.SellPercent = min(max(s.SellPercent, MinTradePercent), MaxTradePercent)
+	// Nothing here may reach GlobalSettings(): Settings.Save runs this while holding closedLock, and loading the global
+	// settings runs it inside GlobalSettings' own initializer. Checking the kind, the tags and the IDs is safe; cloning
+	// an item or working out its value is not.
+	seen := make(map[tid.TID]bool, len(s.SellMoney))
+	s.SellMoney = slices.DeleteFunc(s.SellMoney, func(one *Equipment) bool {
+		if one == nil || one.Container() || !HasTag(MoneyTag, one.Tags) || seen[one.TID] {
+			return true
+		}
+		seen[one.TID] = true
+		return false
+	})
 }
 
 // MinTradePercent and MaxTradePercent bound the percentage of its full price that equipment is bought or sold at.
@@ -179,27 +236,67 @@ var (
 	MaxTradePercent = 1000
 )
 
-// CanAddSellMoney returns true if the equipment can be added to the sell money list: library equipment that isn't a
-// container, isn't already listed and is tagged as money (see MoneyTag), since buying spends only money so tagged.
+// CanAddSellMoney returns true if a copy of the equipment can be added to the sell money list (see AddSellMoney): it
+// isn't a container, it is tagged as money (see MoneyTag), since buying spends only money so tagged, and no entry
+// already listed MergeMatches the copy.
 func (s *SheetSettings) CanAddSellMoney(eqp *Equipment) bool {
-	return eqp != nil && !eqp.Container() && !eqp.Source.IsZero() && HasTag(MoneyTag, eqp.Tags) &&
-		!slices.Contains(s.SellMoney, eqp.Source)
+	return s.newSellMoney(eqp, LibraryFile{}) != nil
 }
 
-// AddSellMoney adds the library equipment to the sell money list, if it can be (see CanAddSellMoney). Returns true if
-// the item was added.
-func (s *SheetSettings) AddSellMoney(eqp *Equipment) bool {
-	if !s.CanAddSellMoney(eqp) {
+// newSellMoney returns the copy of the equipment that AddSellMoney would add, or nil if it can't be added (see
+// CanAddSellMoney). The copy is made as a drop into a list makes one (see Reference), with no data owner or parent and
+// a quantity of one. Its preconfigured mark is cleared, since carried equipment never has one and MergeMatches compares
+// it, so change paid out from a copy that kept it would never merge into what is carried.
+func (s *SheetSettings) newSellMoney(eqp *Equipment, from LibraryFile) *Equipment {
+	if eqp == nil || eqp.Container() || !HasTag(MoneyTag, eqp.Tags) {
+		return nil
+	}
+	money := eqp.Clone(from, nil, nil, Reference)
+	forgetClosedStates(money)
+	money.Quantity = fxp.One
+	ClearPreconfigured(money)
+	if slices.ContainsFunc(s.SellMoney, money.MergeMatches) {
+		return nil
+	}
+	return money
+}
+
+// forgetClosedStates removes the closed states recorded for the equipment and its modifiers, which a clone records for
+// its copy (see Equipment.Clone). Sell money, and the copies of it that are paid out, is never shown with notes or
+// modifiers to collapse, so what its copies record would only pile up in the settings.
+func forgetClosedStates(eqp *Equipment) {
+	Traverse(func(one *Equipment) bool {
+		forgetNodeClosedStates(one)
+		Traverse(forgetNodeClosedStates[*EquipmentModifier], false, false, one.Modifiers...)
+		return false
+	}, false, false, eqp)
+}
+
+// forgetNodeClosedStates removes the closed states recorded for the node's notes and, for a container, its children.
+// It never stops a Traverse.
+func forgetNodeClosedStates[T Node[T]](node T) bool {
+	id := string(node.ID())
+	SetClosedState("N:"+id, false)
+	SetClosedState("n:"+id, false)
+	return false
+}
+
+// AddSellMoney adds a copy of the equipment to the sell money list, if it can be added (see CanAddSellMoney). from is
+// the library file the equipment is shown from, if any, which a copy of an item with no Source of its own takes as its
+// Source (see Reference). Returns true if it was added.
+func (s *SheetSettings) AddSellMoney(eqp *Equipment, from LibraryFile) bool {
+	money := s.newSellMoney(eqp, from)
+	if money == nil {
 		return false
 	}
-	s.SellMoney = append(s.SellMoney, eqp.Source)
+	s.SellMoney = append(s.SellMoney, money)
 	return true
 }
 
-// RemoveSellMoney removes the source from the sell money list. Returns true if it was there.
-func (s *SheetSettings) RemoveSellMoney(src Source) bool {
+// RemoveSellMoney removes the entry with the ID from the sell money list. Returns true if it was there.
+func (s *SheetSettings) RemoveSellMoney(id tid.TID) bool {
 	before := len(s.SellMoney)
-	s.SellMoney = slices.DeleteFunc(s.SellMoney, func(one Source) bool { return one == src })
+	s.SellMoney = slices.DeleteFunc(s.SellMoney, func(one *Equipment) bool { return one != nil && one.TID == id })
 	return len(s.SellMoney) != before
 }
 
@@ -254,12 +351,20 @@ func (s *SheetSettings) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 		s.ShowTraitModifierAdj = true
 	}
 	s.EnsureValidity()
+	// The sell money copies left are fresh objects, shared with no one yet. Like library rows, they have no data owner,
+	// and attaching them to that points their weapons and modifiers back at them. The preconfigured mark and disabled
+	// state mean nothing for them, so any a file holds is cleared.
+	SetDataOwnerAll(nil, s.SellMoney)
+	ClearPreconfigured(s.SellMoney...)
+	ClearDisabled(s.SellMoney...)
 	return nil
 }
 
-// Clone creates a copy of this.
+// Clone creates a copy of this. The sell money entries are shared rather than cloned, which is safe since they are
+// never edited (see SheetSettingsData.SellMoney) and keeps the clone cheap, as one is made for every entity loaded.
 func (s *SheetSettings) Clone(entity *Entity) *SheetSettings {
 	clone := *s
+	clone.Entity = entity
 	clone.Page = s.Page.Clone()
 	clone.Layout = s.Layout.Clone()
 	clone.Attributes = s.Attributes.Clone()

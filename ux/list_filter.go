@@ -16,15 +16,17 @@ import (
 )
 
 // filterFieldInfo is the part of a gurps.FilterField that the filter editor needs: what the field is called and
-// whether that names something plural, the key it is stored under, the kind of criteria it takes, and a function
-// returning the values to suggest for it, which is nil when it offers none. Reducing the fields to this lets the popup,
-// the dialog and the editor be written once rather than once per kind of node.
+// whether that names something plural, the key it is stored under, the kind of criteria it takes, whether a condition
+// on it may include disabled modifiers, and a function returning the values to suggest for it, which is nil when it
+// offers none. Reducing the fields to this lets the popup, the dialog and the editor be written once rather than once
+// per kind of node.
 type filterFieldInfo struct {
 	key         string
 	title       string
 	kind        gurps.FilterFieldKind
 	plural      bool
-	suggestions func() []string
+	disableable bool
+	suggestions func(includeDisabled bool) []string
 }
 
 // filterFieldInfos reduces a list type's filter fields to what the editor needs, in the order they were given. data
@@ -34,13 +36,14 @@ func filterFieldInfos[T gurps.Node[T]](fields []*gurps.FilterField[T], data func
 	infos := make([]filterFieldInfo, len(fields))
 	for i, field := range fields {
 		infos[i] = filterFieldInfo{key: field.Key, title: field.Title, kind: field.Kind, plural: field.Plural}
+		infos[i].disableable = field.ListWithDisabled != nil
 		if field.Suggestions != nil {
-			infos[i].suggestions = func() []string {
+			infos[i].suggestions = func(includeDisabled bool) []string {
 				var list []T
 				if data != nil {
 					list = data()
 				}
-				return field.Suggestions(list)
+				return field.Suggestions(list, includeDisabled)
 			}
 		}
 	}

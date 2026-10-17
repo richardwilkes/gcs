@@ -236,8 +236,6 @@ func TestEditorSyncKeepsTheEditInProgress(t *testing.T) {
 	uxtest.SwapForTest(t, &gurps.GlobalSettings().General.InitialEditorUIScale, 300)
 	e, local := newEditedLibraryTrait(t, c, screen, sheet, nil, nil)
 	vttNotes := editorField(t, screen, e, "VTT Notes")
-	// Brought into view to be clicked on, since at this size the editor opens scrolled past the start of its fields.
-	screen.Do(vttNotes.ScrollIntoView)
 	// Near its start, since at this size the middle of the field lies beyond the window's edge.
 	screen.Click(screen.PanelPoint(vttNotes, geom.Point{X: 4, Y: 4}))
 	var focused bool

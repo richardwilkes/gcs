@@ -34,6 +34,7 @@ import (
 const (
 	keyMore     = ":more"
 	keySentence = ":sentence"
+	keyDone     = ":done"
 	// keyChip follows the key of a chip's criterion, so that the chip doesn't share the key of the field within it.
 	keyChip = ":chip"
 	// keyFirst marks the editor of an open row; focusing it focuses its first text field, or else its first control.
@@ -98,6 +99,36 @@ type sentenceRows[T any] struct {
 	// staticTip, when set, returns the tooltip of the row at the path when it isn't editable, in place of the one that
 	// speaks of saving a file.
 	staticTip func(path string) string
+	// readOnly lets rows be opened and closed to read them, but not changed; see makeReadOnly.
+	readOnly bool
+}
+
+// makeReadOnly disables every control of the panel but those that open and close its rows and collapse it, so that its
+// rows can still be read in full, and keeps it that way as the panel is rebuilt. The panel itself stays enabled, since
+// its Escape closes the open row.
+func (p *sentenceRows[T]) makeReadOnly() {
+	p.readOnly = true
+	for _, child := range p.Children() {
+		disableAllBut(child, func(panel *unison.Panel) bool {
+			switch panel.Self.(type) {
+			case *sentenceButton, *sectionToggle:
+				return true
+			}
+			return panel.RefKey == p.open+keyDone
+		})
+	}
+}
+
+// disableAllBut disables the panel and everything within it, other than the panels keep says to leave alone, along
+// with everything within those.
+func disableAllBut(panel *unison.Panel, keep func(*unison.Panel) bool) {
+	if keep(panel) {
+		return
+	}
+	panel.SetEnabled(false)
+	for _, child := range panel.Children() {
+		disableAllBut(child, keep)
+	}
 }
 
 // initRows sets up the rows of a panel whose rows are dragged as dragKey, with the callbacks described on sentenceRows.
@@ -277,6 +308,9 @@ func (p *sentenceRows[T]) rebuild(focus string) {
 		}
 		p.RemoveAllChildren()
 		p.fill()
+		if p.readOnly {
+			p.makeReadOnly()
+		}
 		top := p.AsPanel()
 		if d := unison.Ancestor[unison.Dockable](p); d != nil {
 			top = d.AsPanel()
@@ -396,7 +430,7 @@ func (p *sentenceRows[T]) dragBy(target, row *unison.Panel, path string) {
 	}
 	target.MouseDragCallback = func(where geom.Point, button int, _ mod.Modifiers) bool {
 		_, drift := unison.DragGestureParameters()
-		if dragged || button != unison.ButtonLeft ||
+		if p.readOnly || dragged || button != unison.ButtonLeft ||
 			(xmath.Abs(where.X-start.X) <= drift && xmath.Abs(where.Y-start.Y) <= drift) {
 			return true
 		}
@@ -419,7 +453,7 @@ func (p *sentenceRows[T]) dragBy(target, row *unison.Panel, path string) {
 func (p *sentenceRows[T]) doneButton(path string) *unison.Button {
 	done := unison.NewButton()
 	done.SetTitle(i18n.Text("Done"))
-	done.RefKey = path + ":done"
+	done.RefKey = path + keyDone
 	done.ClickCallback = func() { p.toggle(path) }
 	keyDown := done.KeyDownCallback
 	done.KeyDownCallback = func(keyCode unison.KeyCode, mods mod.Modifiers, repeat bool) bool {

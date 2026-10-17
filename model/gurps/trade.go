@@ -49,17 +49,17 @@ func (e *Entity) MoneyItems() []*Equipment {
 	return list
 }
 
-// SellMoneyItems returns a copy of the library equipment each of the sheet's sell money sources refers to, with a
-// quantity of one, as the denominations to give PayoutFor. Each copy is owned by this entity, isn't in any list and has
-// the source it came from as its Source, unless the library's item has a Source of its own, from another library, which
-// the copy keeps instead (see SourcedID.AdjustSource). Sources that don't refer to non-container equipment tagged as
-// money in the library (see SheetSettings.CanAddSellMoney) are skipped, since buying spends only money so tagged.
+// SellMoneyItems returns a copy of each of the sheet's sell money entries (see SheetSettingsData.SellMoney), with a
+// quantity of one, as the denominations to give PayoutFor. Each copy is owned by this entity, isn't in any list and
+// keeps the entry's Source (see Duplicate). Entries that aren't non-container equipment tagged as money, which only a
+// direct assignment can hold, since SheetSettings.EnsureValidity drops them from a file, are skipped, since buying
+// spends only money so tagged.
 func (e *Entity) SellMoneyItems() []*Equipment {
-	sm := e.SourceMatcher()
 	list := make([]*Equipment, 0, len(e.SheetSettings.SellMoney))
-	for _, src := range e.SheetSettings.SellMoney {
-		if lib := sm.libraryEquipment(src); lib != nil && HasTag(MoneyTag, lib.Tags) {
-			money := lib.Clone(src.LibraryFile, e, nil, Reference)
+	for _, one := range e.SheetSettings.SellMoney {
+		if one != nil && !one.Container() && HasTag(MoneyTag, one.Tags) {
+			money := one.Clone(LibraryFile{}, e, nil, Duplicate)
+			forgetClosedStates(money)
 			money.Quantity = fxp.One
 			list = append(list, money)
 		}

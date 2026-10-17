@@ -157,12 +157,12 @@ func TestApplyModifierHeadless(t *testing.T) {
 		})
 		c.True(enabled, "with a modifier selected and a destination open, the command must be available")
 	}
-	// destinationPrompt chooses the command from the Edit menu and returns the destination prompt it puts up, along
+	// destinationPrompt chooses the command from the Item menu and returns the destination prompt it puts up, along
 	// with the prompt's list and the row of the sheet in it.
 	destinationPrompt := func() (dialogWnd *unison.Window, dialog *unison.Dialog, list *unison.List[FileBackedDockable], sheetRow int) {
 		t.Helper()
 		selectModifier()
-		uxtest.ChooseMenuBarItem(t, screen, wnd, "Edit", applyModifierAction.Title)
+		uxtest.ChooseMenuBarItem(t, screen, wnd, "Item", applyModifierAction.Title)
 		dialogWnd, dialog = modalDialog(t, screen, wnd)
 		sheetRow = -1
 		screen.Do(func() {
@@ -402,7 +402,7 @@ func TestApplyModifierHeadless(t *testing.T) {
 	screen.Do(func() { destinations = len(modifierDestinations(traitModifierTargetKind(), AllDockables())) })
 	c.Equal(1, destinations, "only the sheet must be left as a destination for the check to mean anything")
 	selectModifier()
-	uxtest.ChooseMenuBarItem(t, screen, wnd, "Edit", applyModifierAction.Title)
+	uxtest.ChooseMenuBarItem(t, screen, wnd, "Item", applyModifierAction.Title)
 	targetPrompt()
 	screen.KeyPress(unison.KeyEscape, mod.None)
 	c.Equal(1, windowCount(), "the prompt has been dismissed")
@@ -441,7 +441,7 @@ func TestApplyModifierHeadlessRaisesTheDestinationsWindow(t *testing.T) {
 			t.Errorf("unable to open the library in a window of its own: %v", err)
 			return
 		}
-		// A window packed around one modifier is too small to hold its Edit menu's popup, which would then open
+		// A window packed around one modifier is too small to hold its Item menu's popup, which would then open
 		// past its edge, over the workspace window, where a click on an item lands in the workspace instead.
 		libraryWnd.SetFrameRect(geom.NewRect(200, 100, 900, 700))
 		libraryWnd.ToFront()
@@ -462,7 +462,7 @@ func TestApplyModifierHeadlessRaisesTheDestinationsWindow(t *testing.T) {
 	c.True(enabled, "with a modifier selected and the sheet open, the command must be available")
 
 	// The sheet being the only destination, the command asks for its traits straight away.
-	uxtest.ChooseMenuBarItem(t, screen, libraryWnd, "Edit", applyModifierAction.Title)
+	uxtest.ChooseMenuBarItem(t, screen, libraryWnd, "Item", applyModifierAction.Title)
 	dialogWnd, dialog := modalDialog(t, screen, wnd)
 	var picked bool
 	screen.Do(func() {

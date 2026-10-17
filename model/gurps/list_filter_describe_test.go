@@ -120,6 +120,26 @@ func TestFilterConditionDescribe(t *testing.T) {
 			negated(newWeightFilterCondition("weight", criteria.AtLeastNumber, fxp.WeightFromInteger(2, fxp.Pound))),
 			`Must not have a weight that is at least [2 lb]`,
 		},
+		{
+			newTextFilterCondition("modifier_names", criteria.IsText, "Cheap"),
+			`Must have modifier names where at least one is [Cheap]`,
+		},
+		{
+			includingDisabled(newTextFilterCondition("modifier_names", criteria.IsText, "Cheap")),
+			`Must have modifier names where at least one is [Cheap], including disabled modifiers`,
+		},
+		{
+			negated(includingDisabled(newTextFilterCondition("modifier_tags", criteria.ContainsText, "Lim"))),
+			`Must not have modifier tags where at least one contains "[Lim]", including disabled modifiers`,
+		},
+		{
+			newTextFilterCondition("modifier_notes", criteria.ContainsText, "Melee, Ranged"),
+			`Must have modifier notes where at least one contains "[Melee, Ranged]"`,
+		},
+		{
+			newTextFilterCondition("modifier_notes", criteria.IsText, " Cheap "),
+			`Must have modifier notes where at least one is [Cheap]`,
+		},
 		{gurps.NewFilterCondition(nil, "container"), `Must be a container`},
 		{negated(gurps.NewFilterCondition(nil, "container")), `Must not be a container`},
 		{
@@ -208,7 +228,7 @@ func TestFilterFieldPluralTitles(t *testing.T) {
 	c := check.New(t)
 	plural := map[string]bool{
 		"have notes": true, "have points": true, "have levels": true, "have tags": true,
-		"have colleges": true,
+		"have colleges": true, "have modifier names": true, "have modifier notes": true, "have modifier tags": true,
 	}
 	verify := func(title string, isPlural bool) {
 		c.Equal(plural[title], isPlural, "%q is marked plural only if it is", title)

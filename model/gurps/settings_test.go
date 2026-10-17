@@ -10,10 +10,15 @@
 package gurps
 
 import (
+	"context"
+	"fmt"
 	"log/slog"
 	"os"
+	"os/exec"
 	"path/filepath"
+	"strings"
 	"testing"
+	"time"
 
 	"github.com/richardwilkes/gcs/v5/model/kinds"
 	"github.com/richardwilkes/toolbox/v2/check"
@@ -215,4 +220,94 @@ func readOnlyTimestampedBackup(t *testing.T, dir string) string {
 		t.Fatal(err)
 	}
 	return string(data)
+}
+
+// legacyOpenSellMoneyEnv names the settings file the child process of TestGlobalSettingsLoadWithLegacyOpenSellMoney
+// loads.
+const legacyOpenSellMoneyEnv = "GCS_TEST_LEGACY_OPEN_SELL_MONEY"
+
+// TestGlobalSettingsLoadWithLegacyOpenSellMoney checks that loading the global settings doesn't hang on sell money
+// holding legacy-format data with an open flag, which the unmarshal records as a closed state from inside
+// GlobalSettings' initializer, where calling GlobalSettings() again would deadlock (see closedStateMap). The load runs
+// in a child process, since this process's global settings are already loaded.
+func TestGlobalSettingsLoadWithLegacyOpenSellMoney(t *testing.T) {
+	c := check.New(t)
+	if path := os.Getenv(legacyOpenSellMoneyEnv); path != "" {
+		SettingsPath = path
+		settings := GlobalSettings()
+		c.Equal(1, len(settings.Sheet.SellMoney), "the coin is kept and the legacy container dropped")
+		if len(settings.Sheet.SellMoney) == 1 {
+			c.Equal("Coin", settings.Sheet.SellMoney[0].Name)
+		}
+		return
+	}
+	path := filepath.Join(t.TempDir(), "settings.json")
+	data := fmt.Sprintf(`{"sheet_settings":{"sell_money":[
+	{"id":%q,"description":"Coin","tags":["Money"],
+	 "modifiers":[{"type":"eqp_modifier_container","name":"Group","open":true}]},
+	{"type":"equipment_container","description":"Purse","tags":["Money"],"open":true}
+]}}`, tid.MustNewTID(kinds.Equipment))
+	c.NoError(os.WriteFile(path, []byte(data), 0o600))
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+	//nolint:gosec // Re-executing this test binary, so that the global settings are loaded afresh
+	cmd := exec.CommandContext(ctx, os.Args[0], "-test.run", "^TestGlobalSettingsLoadWithLegacyOpenSellMoney$", "-test.v")
+	cmd.Env = append(os.Environ(), legacyOpenSellMoneyEnv+"="+path)
+	out, err := cmd.CombinedOutput()
+	c.NoError(ctx.Err(), "loading the settings must not hang")
+	c.NoError(err, string(out))
+	c.True(strings.Contains(string(out), "--- PASS"), string(out))
+}
+
+// TestClosedStateDuringSettingsInitialization checks that closed states set on the goroutine loading the global
+// settings are kept aside and folded into them once loaded (see closedStateMap), while other goroutines keep using the
+// loaded states.
+func TestClosedStateDuringSettingsInitialization(t *testing.T) {
+	c := check.New(t)
+	settings := GlobalSettings()
+	const key = "n:closed-during-init-test"
+	t.Cleanup(func() {
+		initializingGoroutine.Store(0)
+		SetClosedState(key, false)
+	})
+	initializingGoroutine.Store(currentGoroutineID())
+	c.True(SetClosedState(key, true))
+	c.True(IsClosed(key), "the state is seen on the initializing goroutine")
+	closedLock.Lock()
+	_, loaded := settings.Closed[key]
+	closedLock.Unlock()
+	c.False(loaded, "the loaded settings are left alone while loading")
+	var seenElsewhere bool
+	done := make(chan struct{})
+	go func() {
+		seenElsewhere = IsClosed(key)
+		close(done)
+	}()
+	<-done
+	c.False(seenElsewhere, "another goroutine reads the loaded settings")
+	initializingGoroutine.Store(0)
+	settings.foldClosedDuringInit()
+	c.True(IsClosed(key), "the state is folded into the settings once loaded")
+	c.Equal(0, len(closedDuringInit))
+}
+
+// TestLoadSettingsKeepsTheFileWhenASellMoneyEntryIsUnreadable checks that an entry of the sell money that can't be
+// decoded is dropped, with the rest loaded, rather than failing the whole load, which would set the user's settings
+// file aside and start from factory defaults over one coin.
+func TestLoadSettingsKeepsTheFileWhenASellMoneyEntryIsUnreadable(t *testing.T) {
+	c := check.New(t)
+	path := filepath.Join(t.TempDir(), "settings.json")
+	data := fmt.Sprintf(`{"general":{"default_player_name":"Keep Me"},"sheet_settings":{"sell_money":[
+	{"id":%q,"description":"Bad Coin","tags":["Money"],"quantity":"abc"},
+	{"id":%q,"description":"Copper Penny","tags":["Money"],"base_value":"1"}
+]}}`, tid.MustNewTID(kinds.Equipment), tid.MustNewTID(kinds.Equipment))
+	c.NoError(os.WriteFile(path, []byte(data), 0o600))
+	settings := loadSettingsOrDefaults(path)
+	c.Equal("Keep Me", settings.General.DefaultPlayerName, "the rest of the settings are loaded")
+	c.Equal(1, len(settings.Sheet.SellMoney), "the unreadable entry is dropped")
+	if len(settings.Sheet.SellMoney) == 1 {
+		c.Equal("Copper Penny", settings.Sheet.SellMoney[0].Name)
+	}
+	c.True(xos.FileExists(path), "the settings file is left where it was")
+	c.False(xos.FileExists(path+".bad"), "and not set aside")
 }

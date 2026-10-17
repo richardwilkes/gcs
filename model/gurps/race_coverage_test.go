@@ -31,5 +31,7 @@ func TestRace(t *testing.T) {
 	t.Run("ScriptExecTimeLimitOverride", TestScriptExecTimeLimitOverride)
 	t.Run("ScriptExecTimeLimitSyncIsConcurrencySafe", TestScriptExecTimeLimitSyncIsConcurrencySafe)
 	t.Run("GlobalSheetSettingsSyncIsConcurrencySafe", TestGlobalSheetSettingsSyncIsConcurrencySafe)
+	t.Run("SheetSettingsSellMoneyPathsAvoidTheClosedStateLock", TestSheetSettingsSellMoneyPathsAvoidTheClosedStateLock)
 	t.Run("ClosedStateIsConcurrencySafe", TestClosedStateIsConcurrencySafe)
+	t.Run("ClosedStateDuringSettingsInitialization", TestClosedStateDuringSettingsInitialization)
 }

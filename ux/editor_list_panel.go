@@ -31,7 +31,7 @@ type editorListPanel[T gurps.Node[T]] struct {
 
 // init sets up the panel and builds its table. self is the concrete panel embedding this one, which provider must
 // already be bound to, since building the table reads the list through the provider.
-func (p *editorListPanel[T]) init(self unison.Paneler, owner gurps.DataOwner, list *[]T, provider TableProvider[T], refKey string) {
+func (p *editorListPanel[T]) init(self unison.Paneler, cmdRoot Rebuildable, owner gurps.DataOwner, list *[]T, provider TableProvider[T], refKey string) {
 	p.Self = self
 	p.owner = owner
 	p.list = list
@@ -43,9 +43,13 @@ func (p *editorListPanel[T]) init(self unison.Paneler, owner gurps.DataOwner, li
 		HGrab:  true,
 	})
 	p.SetBorder(unison.NewLineBorder(unison.ThemeAboveSurface, geom.Size{}, geom.NewUniformInsets(1), false))
-	p.table = newEditorTable(p.AsPanel(), provider)
+	p.table = newEditorTable(p.AsPanel(), provider, !inReadOnlyEditor(cmdRoot))
 	p.table.RefKey = refKey
 }
+
+// makeReadOnly leaves the panel on, so that the rows of its table can still be selected and opened. In a read-only
+// editor, the table is built without the commands that change the list.
+func (p *editorListPanel[T]) makeReadOnly() {}
 
 // DataOwner implements gurps.DataOwnerProvider.
 func (p *editorListPanel[T]) DataOwner() gurps.DataOwner {
@@ -58,6 +62,11 @@ func (p *editorListPanel[T]) setList(list []T) {
 		p.attach(list)
 	}
 	*p.list = list
+	p.syncRows()
+}
+
+// syncRows re-syncs the table to the list, keeping the selection, so rows whose items changed get their new heights.
+func (p *editorListPanel[T]) syncRows() {
 	syncTablePreservingSelection(p.table)
 }
 
@@ -72,6 +81,6 @@ func (p *editorListPanel[T]) reattach() {
 // installNewItemHandler makes the command create a new item of the given variant in this panel's table. The handler is
 // installed on cmdRoot, the editor holding the panel, which the creation is also undone and rebuilt through.
 func (p *editorListPanel[T]) installNewItemHandler(cmdRoot Rebuildable, id int, variant ItemVariant) {
-	cmdRoot.AsPanel().InstallCmdHandlers(id, unison.AlwaysEnabled,
+	cmdRoot.AsPanel().InstallCmdHandlers(id, func(_ any) bool { return !inReadOnlyEditor(cmdRoot) },
 		func(_ any) { p.provider.CreateItem(cmdRoot, p.table, variant) })
 }

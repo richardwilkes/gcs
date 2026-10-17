@@ -208,8 +208,12 @@ func TestEveryControlHasAnAccessibleName(t *testing.T) {
 	})
 
 	audit.CheckOpened("sheet settings", func() {
-		// A sell money entry that can't be found still has a row, with its remove button.
-		entity.SheetSettings.SellMoney = []gurps.Source{{Library: "Audit", Path: "Money.eqp", TID: eq.TID}}
+		// A sell money entry has a row, with its remove button.
+		coin := gurps.NewEquipment(nil, nil, false)
+		coin.Name = "Audit Coin"
+		coin.BaseValue = "1"
+		coin.Tags = []string{gurps.MoneyTag}
+		entity.SheetSettings.SellMoney = []*gurps.Equipment{coin}
 		ShowSheetSettings(sheet)
 	})
 	audit.CheckOpened("attribute settings", func() { ShowAttributeSettings(sheet) })

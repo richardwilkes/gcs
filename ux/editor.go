@@ -62,6 +62,8 @@ type editor[N gurps.Node[N], D gurps.EditorData[N]] struct {
 	syncedChoice *gurps.TemplatePicker
 	// sourceCleared is a pending "Clear Source", since the source isn't part of the editor's data.
 	sourceCleared bool
+	// readOnly is set for an editor that only shows its target; see makeReadOnly.
+	readOnly bool
 }
 
 func displayEditor[N gurps.Node[N], D gurps.EditorData[N]](owner Rebuildable, target N, icon *unison.SVG, helpMD string, initToolbar func(*editor[N, D], *unison.Panel), initContent func(*editor[N, D], *unison.Panel) func(), preApplyCallback func(D)) *editor[N, D] {
@@ -86,6 +88,10 @@ func displayEditor[N gurps.Node[N], D gurps.EditorData[N]](owner Rebuildable, ta
 		preApplyCallback: preApplyCallback,
 	}
 	e.Self = e
+	// An editor opened from a read-only one, such as for one of its modifiers, is read-only too. This is known before
+	// the content is built, since its tables are built without the commands that change them in a read-only editor.
+	ro, ok := any(target).(interface{ ReadOnly() bool })
+	e.readOnly = (ok && ro.ReadOnly()) || inReadOnlyEditor(owner)
 
 	e.beforeData = newEditorData[N, D](target)
 	e.editorData = newEditorData[N, D](target)
@@ -94,9 +100,36 @@ func displayEditor[N gurps.Node[N], D gurps.EditorData[N]](owner Rebuildable, ta
 	e.AddChild(e.createToolbar(helpMD, initToolbar))
 	e.AddChild(e.scroll)
 	e.fillContent(content, initContent)
+	if e.readOnly {
+		e.makeReadOnly()
+	}
 	e.placeInDock(target.ID())
-	content.RequestFocus()
+	e.focusAtStart(content)
 	return e
+}
+
+// makeReadOnly makes the editor only show its target. Every widget of its content is disabled, but for the panels
+// that make themselves read-only instead, so that their rows can still be read in full or opened. MarkModified calls
+// it again, since the editor turns some of its widgets back on then.
+func (e *editor[N, D]) makeReadOnly() {
+	e.readOnly = true
+	disableAllBut(e.content, func(panel *unison.Panel) bool {
+		p, ok := panel.Self.(interface{ makeReadOnly() })
+		if ok {
+			p.makeReadOnly()
+		}
+		return ok
+	})
+}
+
+func (e *editor[N, D]) isReadOnly() bool {
+	return e.readOnly
+}
+
+// inReadOnlyEditor returns true if the panel is within an editor that only shows its target.
+func inReadOnlyEditor(panel unison.Paneler) bool {
+	e := unison.AncestorOrSelf[interface{ isReadOnly() bool }](panel)
+	return e != nil && e.isReadOnly()
 }
 
 func (e *editor[N, D]) createToolbar(helpMD string, initToolbar func(*editor[N, D], *unison.Panel)) unison.Paneler {
@@ -266,6 +299,9 @@ func (e *editor[N, D]) Target() N {
 var pruneIDFields = regexp.MustCompile(`\s*"id":\s*"[^"]+",?\s*`)
 
 func (e *editor[N, D]) isModified() bool {
+	if e.readOnly {
+		return false
+	}
 	if e.sourceCleared {
 		return true
 	}
@@ -289,7 +325,7 @@ func (e *editor[N, D]) isModified() bool {
 func (e *editor[N, D]) Modified() bool {
 	modified := e.enableApplyAndCancel(e.isModified())
 	if e.nameablesButton != nil {
-		e.nameablesButton.SetEnabled(e.hasNameableKeys())
+		e.nameablesButton.SetEnabled(!e.readOnly && e.hasNameableKeys())
 	}
 	return modified
 }
@@ -318,6 +354,9 @@ func (e *editor[N, D]) MarkModified(_ unison.Paneler) {
 			e.modificationCallback()
 		}
 	})
+	if e.readOnly {
+		e.makeReadOnly()
+	}
 	// The editor's tables show row state -- a modifier's enabled checkmark, a weapon's Hide checkmark -- that DeepSync
 	// misses, since neither unison.Table nor the panels wrapping the editor's tables is a Syncer. A cell click flips
 	// its own drawable, but toggling by command, undo or redo would otherwise leave a stale checkmark. Node.ColumnCell
@@ -330,6 +369,12 @@ func (e *editor[N, D]) Rebuild(_ bool) {
 		entity.DiscardCaches()
 	} else {
 		gurps.DiscardGlobalResolveCache()
+	}
+	// An item edited in its own editor may now need a taller or shorter row.
+	for _, child := range e.content.Children() {
+		if list, ok := child.Self.(interface{ syncRows() }); ok {
+			list.syncRows()
+		}
 	}
 	e.MarkModified(nil)
 	e.MarkForLayoutRecursively()

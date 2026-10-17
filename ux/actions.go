@@ -287,7 +287,6 @@ func registerActions() {
 	defaultSheetSettingsAction = registerKeyBindableAction("settings.sheet.default", &unison.Action{
 		ID:              DefaultSheetSettingsItemID,
 		Title:           i18n.Text("Default Sheet Settings…"),
-		KeyBinding:      unison.KeyBinding{KeyCode: unison.KeyComma, Modifiers: mod.OSMenuCommand()},
 		ExecuteCallback: func(_ *unison.Action, _ any) { ShowSheetSettings(nil) },
 	})
 	dockUnDockAction = registerFocusAction("dock_undock", DockUnDockItemID, i18n.Text("Undock From Workspace"),
@@ -312,6 +311,7 @@ func registerActions() {
 	generalSettingsAction = registerKeyBindableAction("settings.general", &unison.Action{
 		ID:              GeneralSettingsItemID,
 		Title:           i18n.Text("General Settings…"),
+		KeyBinding:      unison.KeyBinding{KeyCode: unison.KeyComma, Modifiers: mod.OSMenuCommand()},
 		ExecuteCallback: func(_ *unison.Action, _ any) { ShowGeneralSettings() },
 	})
 	increaseEquipmentLevelAction = registerFocusAction("inc.eqp.lvl", IncrementEquipmentLevelItemID,
@@ -514,7 +514,7 @@ func registerActions() {
 		i18n.Text("Body Type…"), unison.KeyBinding{}, func(s *Sheet) { ShowBodySettings(s) })
 	perSheetSettingsAction = registerSheetAction("settings.sheet.per_sheet", PerSheetSettingsItemID,
 		i18n.Text("Sheet Settings…"),
-		unison.KeyBinding{KeyCode: unison.KeyComma, Modifiers: mod.Shift | mod.OSMenuCommand()},
+		unison.KeyBinding{},
 		func(s *Sheet) { ShowSheetSettings(s) })
 	printAction = registerFocusAction("print", PrintItemID, i18n.Text("Print…"),
 		unison.KeyBinding{KeyCode: unison.KeyP, Modifiers: mod.OSMenuCommand()})

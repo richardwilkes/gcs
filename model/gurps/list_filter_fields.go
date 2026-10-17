@@ -33,6 +33,9 @@ const (
 	FilterFieldText FilterFieldKind = iota
 	// FilterFieldList is a list of text values, such as tags, compared with a criteria.Text using its list semantics.
 	FilterFieldList
+	// FilterFieldTextList is a list of free text values, such as notes, each compared with the whole of a
+	// criteria.Text, which isn't split on commas.
+	FilterFieldTextList
 	// FilterFieldNumber is a number, compared with a criteria.Number.
 	FilterFieldNumber
 	// FilterFieldWeight is a weight, compared with a criteria.Weight.
@@ -53,11 +56,16 @@ const (
 	filterFieldKeyContainer = "container"
 	filterFieldKeyCost      = "cost"
 	filterFieldKeyWeight    = "weight"
+
+	filterFieldKeyModifierNames = "modifier_names"
+	filterFieldKeyModifierNotes = "modifier_notes"
+	filterFieldKeyModifierTags  = "modifier_tags"
 )
 
 // FilterField describes one field of a list type that a saved filter may test: the key it is stored under, the title
 // the filter editor shows for it (phrased to follow "must" or "must not"), whether that title names something plural,
-// such as "have notes", its kind, and the accessor for its kind, which is the only one of the five that is set.
+// such as "have notes", its kind, and the accessor for its kind, which is the only one of the five that is set. Both
+// list kinds use List.
 type FilterField[T Node[T]] struct {
 	Key    string
 	Title  string
@@ -71,15 +79,26 @@ type FilterField[T Node[T]] struct {
 	// Has reports whether the node has the field at all, when it can lack one, such as the levels of a trait that
 	// can't be leveled. A node without the field satisfies no criteria on it.
 	Has func(T) bool
+	// ListWithDisabled, when set, returns the values of a list field drawn from modifiers, disabled ones included, for
+	// a condition that includes them; List then returns those of the enabled modifiers only.
+	ListWithDisabled func(T) []string
 	// Suggestions returns the values worth offering for a condition that compares the field with a single value, drawn
-	// from list, the nodes of the list being filtered, or fixed. It is nil for a field that offers none.
-	Suggestions func(list []T) []string
+	// from list, the nodes of the list being filtered, or fixed. A field drawn from modifiers offers those of the
+	// disabled ones too when includeDisabled is set. It is nil for a field that offers none.
+	Suggestions func(list []T, includeDisabled bool) []string
 }
 
 // WithPluralTitle marks the field's title as naming something plural, so that what follows it agrees, as in "have notes
 // that contain", and returns the field.
 func (f *FilterField[T]) WithPluralTitle() *FilterField[T] {
 	f.Plural = true
+	return f
+}
+
+// WithWholeValues makes a list field compare each of its values with the whole of a condition's text, rather than with
+// each of its comma-separated parts, for values of free text such as notes, and returns the field.
+func (f *FilterField[T]) WithWholeValues() *FilterField[T] {
+	f.Kind = FilterFieldTextList
 	return f
 }
 
@@ -92,14 +111,16 @@ func (f *FilterField[T]) WithPresence(has func(T) bool) *FilterField[T] {
 // WithListedValues makes the field suggest the distinct values it holds across the list being filtered, and returns
 // the field.
 func (f *FilterField[T]) WithListedValues() *FilterField[T] {
-	f.Suggestions = func(list []T) []string { return listedFilterValues(f, list, nil) }
+	f.Suggestions = func(list []T, includeDisabled bool) []string {
+		return listedFilterValues(f, list, nil, includeDisabled)
+	}
 	return f
 }
 
 // WithChoices makes the field suggest the values choices returns, whatever the list being filtered holds, and returns
 // the field.
 func (f *FilterField[T]) WithChoices(choices func() []string) *FilterField[T] {
-	f.Suggestions = func([]T) []string { return choices() }
+	f.Suggestions = func([]T, bool) []string { return choices() }
 	return f
 }
 
@@ -108,17 +129,18 @@ func (f *FilterField[T]) WithChoices(choices func() []string) *FilterField[T] {
 func ListFilterTags[T Node[T]](f *ListFilter, fields []*FilterField[T], list []T) []string {
 	for _, field := range fields {
 		if field.Key == filterFieldKeyTags {
-			return listedFilterValues(field, list, NewListFilterMatcher(f, fields))
+			return listedFilterValues(field, list, NewListFilterMatcher(f, fields), false)
 		}
 	}
 	return nil
 }
 
 // listedFilterValues returns the values the field holds across list and everything below it, which are the nodes a
-// filter checks, made distinct by distinctFilterValues and sorted naturally without regard to case. When keep is not
-// nil, only the nodes it accepts contribute. A list value that an "is" condition naming it couldn't match, such as one
-// holding a comma or a nameable marker with choices, is left out.
-func listedFilterValues[T Node[T]](field *FilterField[T], list []T, keep func(T) bool) []string {
+// filter checks, made distinct by distinctFilterValues and sorted naturally without regard to case. A field drawn from
+// modifiers offers those of the disabled ones too when includeDisabled is set. When keep is not nil, only the nodes it
+// accepts contribute. A list value that an "is" condition naming it couldn't match, such as one holding a comma or a
+// nameable marker with choices, is left out.
+func listedFilterValues[T Node[T]](field *FilterField[T], list []T, keep func(T) bool, includeDisabled bool) []string {
 	var values []string
 	Traverse(func(node T) bool {
 		if (field.Has != nil && !field.Has(node)) || (keep != nil && !keep(node)) {
@@ -128,7 +150,11 @@ func listedFilterValues[T Node[T]](field *FilterField[T], list []T, keep func(T)
 		case FilterFieldText:
 			values = append(values, field.Text(node))
 		case FilterFieldList:
-			for _, value := range field.List(node) {
+			get := field.List
+			if includeDisabled && field.ListWithDisabled != nil {
+				get = field.ListWithDisabled
+			}
+			for _, value := range get(node) {
 				if (criteria.Text{Compare: criteria.IsText, Qualifier: value}).MatchesList(nil, value) {
 					values = append(values, value)
 				}
@@ -205,6 +231,34 @@ func NewListFilterField[T Node[T]](key, title string, f func(T) []string) *Filte
 	}}
 }
 
+// NewModifierFilterField creates a list field holding the values that value returns for the modifiers that mods
+// returns, containers left out: those of the enabled modifiers, or of all of them for a condition that includes
+// disabled ones. Values that are empty or only space are left out, as NewListFilterField does.
+func NewModifierFilterField[T Node[T], M Node[M]](key, title string, mods func(T) []M, value func(M) []string) *FilterField[T] {
+	collect := func(onlyEnabled bool) func(T) []string {
+		return func(node T) []string {
+			var values []string
+			Traverse(func(mod M) bool {
+				for _, one := range value(mod) {
+					if strings.TrimSpace(one) != "" {
+						values = append(values, one)
+					}
+				}
+				return false
+			}, onlyEnabled, true, mods(node)...)
+			return values
+		}
+	}
+	return &FilterField[T]{
+		Key:              key,
+		Title:            title,
+		Plural:           true,
+		Kind:             FilterFieldList,
+		List:             collect(true),
+		ListWithDisabled: collect(false),
+	}
+}
+
 // NewNumberFilterField creates a field holding a number.
 func NewNumberFilterField[T Node[T]](key, title string, f func(T) fxp.Int) *FilterField[T] {
 	return &FilterField[T]{Key: key, Title: title, Kind: FilterFieldNumber, Number: f}
@@ -234,6 +288,12 @@ func TraitFilterFields() []*FilterField[*Trait] {
 			WithListedValues(),
 		NewTextFilterField(filterFieldKeyReference, i18n.Text("have a page reference"),
 			func(t *Trait) string { return t.PageRef }),
+		NewModifierFilterField(filterFieldKeyModifierNames, i18n.Text("have modifier names"), traitModifiers,
+			func(m *TraitModifier) []string { return []string{m.NameWithReplacements()} }).WithListedValues(),
+		NewModifierFilterField(filterFieldKeyModifierNotes, i18n.Text("have modifier notes"), traitModifiers,
+			func(m *TraitModifier) []string { return []string{m.LocalNotesWithReplacements()} }).WithWholeValues(),
+		NewModifierFilterField(filterFieldKeyModifierTags, i18n.Text("have modifier tags"), traitModifiers,
+			(*TraitModifier).TagList).WithListedValues(),
 		NewNumberFilterField(filterFieldKeyPoints, i18n.Text("have points"),
 			func(t *Trait) fxp.Int { return t.AdjustedPoints(nil) }).WithPluralTitle(),
 		NewNumberFilterField("levels", i18n.Text("have levels"), (*Trait).CurrentLevel).WithPluralTitle().
@@ -249,6 +309,9 @@ func TraitFilterFields() []*FilterField[*Trait] {
 		NewBoolFilterField(filterFieldKeyContainer, i18n.Text("be a container"), (*Trait).Container),
 	}
 }
+
+// traitModifiers returns the modifiers of the trait and of the containers holding it, which apply to it as well.
+func traitModifiers(t *Trait) []*TraitModifier { return t.AllModifiers() }
 
 // TraitModifierFilterFields returns the fields a saved filter for a trait modifier list may test.
 func TraitModifierFilterFields() []*FilterField[*TraitModifier] {
@@ -282,6 +345,8 @@ func SkillFilterFields() []*FilterField[*Skill] {
 		NewTextFilterField(filterFieldKeyName, i18n.Text("have a name"), (*Skill).NameWithReplacements),
 		NewTextFilterField("specialization", i18n.Text("have a specialization"),
 			(*Skill).SpecializationWithReplacements),
+		NewTextFilterField("optional_specialization", i18n.Text("have an optional specialization"),
+			(*Skill).OptionalSpecializationWithReplacements),
 		NewTextFilterField(filterFieldKeyNotes, i18n.Text("have notes"),
 			(*Skill).LocalNotesWithReplacements).WithPluralTitle(),
 		NewListFilterField(filterFieldKeyTags, i18n.Text("have tags"), (*Skill).TagList).WithPluralTitle().
@@ -295,6 +360,7 @@ func SkillFilterFields() []*FilterField[*Skill] {
 			return s.Difficulty.Description(EntityFromNode(s))
 		}).WithChoices(difficultyChoices),
 		NewNumberFilterField(filterFieldKeyPoints, i18n.Text("have points"), (*Skill).RawPoints).WithPluralTitle(),
+		NewBoolFilterField(filterFieldKeyTechLevel, i18n.Text("require a tech level"), (*Skill).RequiresTL),
 		NewBoolFilterField("technique", i18n.Text("be a technique"), (*Skill).IsTechnique),
 		NewBoolFilterField(filterFieldKeyContainer, i18n.Text("be a container"), (*Skill).Container),
 	}
@@ -329,6 +395,7 @@ func SpellFilterFields() []*FilterField[*Spell] {
 		NewTextFilterField("casting_time", i18n.Text("have a casting time"), (*Spell).CastingTimeWithReplacements),
 		NewTextFilterField("duration", i18n.Text("have a duration"), (*Spell).DurationWithReplacements),
 		NewNumberFilterField(filterFieldKeyPoints, i18n.Text("have points"), (*Spell).RawPoints).WithPluralTitle(),
+		NewBoolFilterField(filterFieldKeyTechLevel, i18n.Text("require a tech level"), (*Spell).RequiresTL),
 		NewBoolFilterField("ritual_magic", i18n.Text("be ritual magic"), (*Spell).IsRitualMagic),
 		NewBoolFilterField(filterFieldKeyContainer, i18n.Text("be a container"), (*Spell).Container),
 	}
@@ -349,10 +416,24 @@ func EquipmentFilterFields() []*FilterField[*Equipment] {
 		// The raw legality class is what the LC column shows, so it is what a user will type.
 		NewTextFilterField("legality_class", i18n.Text("have a legality class"),
 			func(e *Equipment) string { return e.LegalityClass }).WithListedValues(),
+		NewModifierFilterField(filterFieldKeyModifierNames, i18n.Text("have modifier names"), equipmentModifiers,
+			func(m *EquipmentModifier) []string { return []string{m.NameWithReplacements()} }).WithListedValues(),
+		NewModifierFilterField(filterFieldKeyModifierNotes, i18n.Text("have modifier notes"), equipmentModifiers,
+			func(m *EquipmentModifier) []string { return []string{m.LocalNotesWithReplacements()} }).WithWholeValues(),
+		NewModifierFilterField(filterFieldKeyModifierTags, i18n.Text("have modifier tags"), equipmentModifiers,
+			(*EquipmentModifier).TagList).WithListedValues(),
+		// A group's quantity is always 1, and isn't shown.
+		NewNumberFilterField("quantity", i18n.Text("have a quantity"), func(e *Equipment) fxp.Int { return e.Quantity }).
+			WithPresence(func(e *Equipment) bool { return !e.IsGroup() }),
 		NewNumberFilterField(filterFieldKeyCost, i18n.Text("have a cost"), (*Equipment).AdjustedValue),
 		NewWeightFilterField(filterFieldKeyWeight, i18n.Text("have a weight"), func(e *Equipment) fxp.Weight {
 			return e.AdjustedWeight(false, SheetSettingsFor(EntityFromNode(e)).DefaultWeightUnits)
 		}),
+		NewNumberFilterField("contained_quantity", i18n.Text("have a contained quantity"),
+			func(e *Equipment) fxp.Int { return containedQuantity(e.Children) }).WithPresence((*Equipment).Container),
+		NewWeightFilterField("contained_weight", i18n.Text("have a contained weight"), func(e *Equipment) fxp.Weight {
+			return e.ContainedWeight(false, SheetSettingsFor(EntityFromNode(e)).DefaultWeightUnits)
+		}).WithPresence((*Equipment).Container),
 		NewTextFilterField("container_type", i18n.Text("have a container type"), func(e *Equipment) string {
 			if !e.Container() {
 				return ""
@@ -362,6 +443,8 @@ func EquipmentFilterFields() []*FilterField[*Equipment] {
 		NewBoolFilterField(filterFieldKeyContainer, i18n.Text("be a container"), (*Equipment).Container),
 	}
 }
+
+func equipmentModifiers(e *Equipment) []*EquipmentModifier { return e.Modifiers }
 
 // EquipmentModifierFilterFields returns the fields a saved filter for an equipment modifier list may test.
 func EquipmentModifierFilterFields() []*FilterField[*EquipmentModifier] {

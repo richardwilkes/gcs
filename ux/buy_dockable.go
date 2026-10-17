@@ -124,8 +124,8 @@ type buyPlan struct {
 	changePaid fxp.Int
 	payments   []gurps.Payout
 	change     []gurps.Payout
-	// sellMoney holds the denominations of the sheet's sell money found in the libraries (see
-	// gurps.Entity.SellMoneyItems), which the change is returned in.
+	// sellMoney holds the denominations of the sheet's sell money (see gurps.Entity.SellMoneyItems), which the change
+	// is returned in.
 	sellMoney []*gurps.Equipment
 	// short is set when the money paid doesn't cover the total.
 	short bool
@@ -166,22 +166,23 @@ type buyChange struct {
 	valid     bool
 }
 
-// buySellMoneyState is what the change depends on for one sell money denomination: the source it was found through,
-// since each lookup makes a fresh copy, and the copy itself, which the change is made of and which the next lookup's
-// copy must match in everything gurps.Equipment.MergeMatches compares, as the library may have changed in between.
+// buySellMoneyState is what the change depends on for one sell money denomination: the copy of it the change is made
+// of, which the next lookup's copy must match in its Source and in everything gurps.Equipment.MergeMatches compares,
+// since each lookup makes a fresh copy and the sheet's sell money may have been changed in between, along with its
+// value, which a value scripted from the sheet can change without any of that changing.
 type buySellMoneyState struct {
-	source gurps.Source
-	money  *gurps.Equipment
+	money *gurps.Equipment
+	value fxp.Int
 }
 
 // newBuySellMoneyState returns the state of the sell money denomination.
 func newBuySellMoneyState(money *gurps.Equipment) buySellMoneyState {
-	return buySellMoneyState{source: money.Source, money: money}
+	return buySellMoneyState{money: money, value: money.AdjustedValue()}
 }
 
 // matches returns true if the denomination is as it stood when the change was worked out.
 func (s buySellMoneyState) matches(money *gurps.Equipment) bool {
-	return s.source == money.Source && s.money.MergeMatches(money)
+	return s.value == money.AdjustedValue() && s.money.Source == money.Source && s.money.MergeMatches(money)
 }
 
 // buyGivenMoney is what the change depends on for one carried money item paid with: a copy of it as it stood, since
@@ -1061,9 +1062,8 @@ func (d *buyDockable) syncSummary() {
 }
 
 // planPayment works out the total price of the items and how it is paid for: with the quantity of each carried money
-// item given in chosen, by ID, or automatically when chosen is nil. The sheet's sell money is looked up in the libraries
-// each time, since they may have changed; the lookup is cheap once the library files are loaded, as the entity's source
-// matcher reloads one only when it has changed on disk.
+// item given in chosen, by ID, or automatically when chosen is nil. The sheet's sell money is copied afresh each time,
+// since the sheet's settings may have changed.
 func (d *buyDockable) planPayment(chosen map[tid.TID]int) buyPlan {
 	var plan buyPlan
 	if len(d.items) == 0 {
@@ -1156,20 +1156,14 @@ func (d *buyDockable) changeFor(target fxp.Int, payments []gurps.Payout, sellMon
 	return d.change.change, d.change.paid
 }
 
-// unreturnedChangeNotice warns that unreturned of the change can't be returned, given how many sell money items the
-// sheet's settings list and how many of them were found in the libraries (see gurps.Entity.SellMoneyItems): it says how
-// to get change when the sheet has no sell money, and that none of it could be found when it has some but none was.
-func unreturnedChangeNotice(unreturned string, configured, found int) string {
-	switch {
-	case configured == 0:
+// unreturnedChangeNotice warns that unreturned of the change can't be returned, saying how to get change when the sheet
+// has no sell money (see gurps.Entity.SellMoneyItems).
+func unreturnedChangeNotice(unreturned string, hasSellMoney bool) string {
+	if !hasSellMoney {
 		return i18n.Text("$%s of change can't be returned from the money paid, and the sheet has no sell money. Add some in Sheet Settings to receive change.",
 			unreturned)
-	case found == 0:
-		return i18n.Text("$%s of change can't be returned from the money paid, and none of the sheet's sell money could be found in the libraries.",
-			unreturned)
-	default:
-		return i18n.Text("$%s of change can't be returned with the sheet's sell money or the money paid.", unreturned)
 	}
+	return i18n.Text("$%s of change can't be returned with the sheet's sell money or the money paid.", unreturned)
 }
 
 // carriedMoney returns the value of the whole units of money carried, which is all a payment can use.
@@ -1318,7 +1312,7 @@ func (plan *buyPlan) same(other *buyPlan) bool {
 
 // samePayouts returns true if the payouts are the same money in the same quantities, in the same order. Money is the same
 // when it is the one item, or when it matches in everything but identity (see gurps.Equipment.MergeMatches), since the
-// sell money is copied afresh from the library each time it is looked up (see gurps.Entity.SellMoneyItems).
+// sell money is copied afresh each time it is looked up (see gurps.Entity.SellMoneyItems).
 func samePayouts(a, b []gurps.Payout) bool {
 	return slices.EqualFunc(a, b, func(x, y gurps.Payout) bool {
 		return x.Quantity == y.Quantity && (x.Money == y.Money || x.Money.MergeMatches(y.Money))

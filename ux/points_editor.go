@@ -72,7 +72,7 @@ func displayPointsEditor(owner Rebuildable, entity *gurps.Entity) {
 	e.initContent()
 	e.placeInDock(entity.ID)
 	if children := e.content.Children(); len(children) != 0 {
-		children[3].RequestFocus()
+		e.focusAtStart(children[3])
 	}
 }
 
