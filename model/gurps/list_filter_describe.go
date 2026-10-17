@@ -39,8 +39,8 @@ func (c *FilterCondition) Describe(lookup FilterFieldLookup, units fxp.WeightUni
 		}
 		criterion = describeComparison(c.Text.Compare.PluralClause(), c.Text.Compare,
 			[]string{c.Text.Compare.EffectiveQualifier(nameable.Apply(c.Text.Qualifier, nil))}, em)
-	case FilterFieldList:
-		return c.describeList(title, em)
+	case FilterFieldList, FilterFieldTextList:
+		return c.describeList(title, kind == FilterFieldTextList, em)
 	case FilterFieldNumber:
 		criterion = describeNumber(c.Number.Compare, em(c.Number.Qualifier.Comma()), plural)
 	case FilterFieldWeight:
@@ -82,16 +82,26 @@ func describeNumber(compare criteria.NumericComparison, qualifier string, plural
 }
 
 // describeList returns the description of a condition on a list of values, which is matched value by value against
-// each of the comma-separated qualifiers: a comparison holds when at least one value matches one of them, and a "not"
-// comparison when none does. Either way, the list must hold something.
-func (c *FilterCondition) describeList(title string, em func(string) string) string {
+// each of the comma-separated qualifiers, or against the whole qualifier when whole is set: a comparison holds when at
+// least one value matches one of them, and a "not" comparison when none does. Either way, the list must hold something.
+func (c *FilterCondition) describeList(title string, whole bool, em func(string) string) string {
 	compare := c.Text.Compare.EnsureValid()
-	qualifiers := criteria.SplitQualifiers(nameable.Apply(c.Text.Qualifier, nil))
-	text := describeComparison(compare.ListClause(), compare.Positive(), qualifiers, em)
-	if c.Not {
-		return i18n.Text("Must not %s %s", title, text)
+	qualifier := nameable.Apply(c.Text.Qualifier, nil)
+	qualifiers := []string{compare.EffectiveQualifier(qualifier)}
+	if !whole {
+		qualifiers = criteria.SplitQualifiers(qualifier)
 	}
-	return i18n.Text("Must %s %s", title, text)
+	text := describeComparison(compare.ListClause(), compare.Positive(), qualifiers, em)
+	switch {
+	case c.Not && c.IncludeDisabled:
+		return i18n.Text("Must not %s %s, including disabled modifiers", title, text)
+	case c.Not:
+		return i18n.Text("Must not %s %s", title, text)
+	case c.IncludeDisabled:
+		return i18n.Text("Must %s %s, including disabled modifiers", title, text)
+	default:
+		return i18n.Text("Must %s %s", title, text)
+	}
 }
 
 // Describe returns what the editor says of a node this version of GCS doesn't understand.

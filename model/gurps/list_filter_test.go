@@ -690,14 +690,19 @@ func checkFilterFields[T gurps.Node[T]](c check.Checker, name string, fields []*
 			}
 		}
 		c.Equal(1, count, "%s: field %q should have exactly one accessor", name, field.Key)
-		c.True(present[field.Kind], "%s: field %q should have the accessor its kind names", name, field.Key)
+		kind := field.Kind
+		if kind == gurps.FilterFieldTextList {
+			// Both list kinds use List.
+			kind = gurps.FilterFieldList
+		}
+		c.True(present[kind], "%s: field %q should have the accessor its kind names", name, field.Key)
 
 		for i, sample := range samples {
 			c.NotPanics(func() {
 				switch field.Kind {
 				case gurps.FilterFieldText:
 					_ = field.Text(sample)
-				case gurps.FilterFieldList:
+				case gurps.FilterFieldList, gurps.FilterFieldTextList:
 					_ = field.List(sample)
 				case gurps.FilterFieldNumber:
 					_ = field.Number(sample)
@@ -712,9 +717,9 @@ func checkFilterFields[T gurps.Node[T]](c check.Checker, name string, fields []*
 		if field.Suggestions != nil {
 			c.True(field.Kind == gurps.FilterFieldText || field.Kind == gurps.FilterFieldList,
 				"%s: field %q offers suggestions, so it should hold text", name, field.Key)
-			c.NotPanics(func() { _ = field.Suggestions(samples) },
+			c.NotPanics(func() { _ = field.Suggestions(samples, false) },
 				"%s: field %q should make suggestions from the samples", name, field.Key)
-			c.NotPanics(func() { _ = field.Suggestions(nil) },
+			c.NotPanics(func() { _ = field.Suggestions(nil, false) },
 				"%s: field %q should make suggestions from no nodes", name, field.Key)
 		}
 	}
@@ -755,12 +760,13 @@ func suggestingKeys[T gurps.Node[T]](fields []*gurps.FilterField[T]) []string {
 // or losing them is noticed.
 func TestFilterFieldSuggestionSources(t *testing.T) {
 	c := check.New(t)
-	c.Equal([]string{"tags", "container_type"}, suggestingKeys(gurps.TraitFilterFields()), "traits")
+	c.Equal([]string{"tags", "modifier_names", "modifier_tags", "container_type"},
+		suggestingKeys(gurps.TraitFilterFields()), "traits")
 	c.Equal([]string{"tags"}, suggestingKeys(gurps.TraitModifierFilterFields()), "trait modifiers")
 	c.Equal([]string{"tags", "difficulty"}, suggestingKeys(gurps.SkillFilterFields()), "skills")
 	c.Equal([]string{"tags", "difficulty", "college", "power_source", "class", "resist"},
 		suggestingKeys(gurps.SpellFilterFields()), "spells")
-	c.Equal([]string{"tags", "tech_level", "legality_class", "container_type"},
+	c.Equal([]string{"tags", "tech_level", "legality_class", "modifier_names", "modifier_tags", "container_type"},
 		suggestingKeys(gurps.EquipmentFilterFields()), "equipment")
 	c.Equal([]string{"tags", "tech_level"}, suggestingKeys(gurps.EquipmentModifierFilterFields()),
 		"equipment modifiers")
@@ -792,12 +798,12 @@ func TestFilterFieldListedValues(t *testing.T) {
 	list := []*gurps.Trait{root}
 
 	tags := findFilterField(gurps.TraitFilterFields(), "tags")
-	c.Equal([]string{"@Kind@", "apple", "Magic", "Zebra"}, tags.Suggestions(list), "the tags in the list are offered")
-	c.Equal(0, len(tags.Suggestions(nil)), "no list offers no tags")
+	c.Equal([]string{"@Kind@", "apple", "Magic", "Zebra"}, tags.Suggestions(list, false), "the tags in the list are offered")
+	c.Equal(0, len(tags.Suggestions(nil, false)), "no list offers no tags")
 
 	named := gurps.NewTextFilterField("name", "have a name", func(trait *gurps.Trait) string { return trait.Name }).
 		WithPresence(func(trait *gurps.Trait) bool { return !trait.Container() }).WithListedValues()
-	c.Equal([]string{"Arrow", "Bow, Long"}, named.Suggestions(list),
+	c.Equal([]string{"Arrow", "Bow, Long"}, named.Suggestions(list, false),
 		"a text field keeps a value holding a comma, and the nodes that lack the field are left out")
 
 	equipment := make([]*gurps.Equipment, 0, 5)
@@ -807,8 +813,8 @@ func TestFilterFieldListedValues(t *testing.T) {
 		equipment = append(equipment, e)
 	}
 	techLevels := findFilterField(gurps.EquipmentFilterFields(), "tech_level")
-	c.Equal([]string{"2", "9", "10", "^"}, techLevels.Suggestions(equipment), "tech levels are sorted naturally")
-	c.Equal(0, len(techLevels.Suggestions(nil)), "no list offers no tech levels")
+	c.Equal([]string{"2", "9", "10", "^"}, techLevels.Suggestions(equipment, false), "tech levels are sorted naturally")
+	c.Equal(0, len(techLevels.Suggestions(nil, false)), "no list offers no tech levels")
 }
 
 // TestListFilterTags verifies that the tags offered by ListFilterTags come only from the nodes, at any depth, that pass
@@ -908,9 +914,9 @@ func checkContainerTypeChoices[T gurps.Node[T], E fmt.Stringer](c check.Checker,
 		want = append(want, one.String())
 		containers = append(containers, newContainer(one))
 	}
-	choices := field.Suggestions(nil)
+	choices := field.Suggestions(nil, false)
 	c.Equal(want, choices, "%s: every container type is offered", name)
-	c.Equal(want, field.Suggestions(containers), "%s: the list being filtered changes nothing", name)
+	c.Equal(want, field.Suggestions(containers, false), "%s: the list being filtered changes nothing", name)
 	for i, one := range containers {
 		c.True(slices.Contains(choices, field.Text(one)), "%s: the type of a %s container is offered", name, types[i])
 	}
@@ -946,7 +952,7 @@ func TestFilterFieldDifficultyChoices(t *testing.T) {
 
 	skillField := findFilterField(gurps.SkillFilterFields(), "difficulty")
 	spellField := findFilterField(gurps.SpellFilterFields(), "difficulty")
-	choices := skillField.Suggestions(nil)
+	choices := skillField.Suggestions(nil, false)
 	for _, want := range []string{"10/E", "DX/A", "IQ/H", "HT/VH", "ST/W"} {
 		c.True(slices.Contains(choices, want), "%q is offered", want)
 	}
@@ -962,7 +968,7 @@ func TestFilterFieldDifficultyChoices(t *testing.T) {
 	}
 	c.Equal(attributes*len(difficulty.Levels)+len(difficulty.TechniqueLevels), len(choices),
 		"each attribute at each level and the technique levels are offered, and nothing else")
-	c.Equal(choices, spellField.Suggestions(nil), "skills and spells offer the same difficulties")
+	c.Equal(choices, spellField.Suggestions(nil, false), "skills and spells offer the same difficulties")
 
 	tenEasy := gurps.NewSkill(nil, nil, false)
 	tenEasy.Difficulty.Attribute = "10"
@@ -1097,6 +1103,7 @@ func TestListFilterHash(t *testing.T) {
 		{"group combining mode", func(f *gurps.ListFilter) { f.Root.All = false }},
 		{"condition negation", func(f *gurps.ListFilter) { condAt(f, 0).Not = true }},
 		{"condition field", func(f *gurps.ListFilter) { condAt(f, 0).Field = "notes" }},
+		{"including disabled modifiers", func(f *gurps.ListFilter) { condAt(f, 0).IncludeDisabled = true }},
 		{"text comparison", func(f *gurps.ListFilter) { condAt(f, 0).Text.Compare = criteria.ContainsText }},
 		{"text qualifier", func(f *gurps.ListFilter) { condAt(f, 0).Text.Qualifier = "Acute Vision" }},
 		{"number comparison", func(f *gurps.ListFilter) { condAt(f, 1).Number.Compare = criteria.AtMostNumber }},

@@ -78,6 +78,18 @@ func TestTextMatchesListEmptyValues(t *testing.T) {
 	c.True(text(criteria.IsNotText, "Sword").MatchesList(nil))
 }
 
+func TestTextMatchesEachKeepsCommas(t *testing.T) {
+	c := check.New(t)
+	// The qualifier is taken whole, so a comma is part of what is matched rather than a separator.
+	c.True(text(criteria.IsText, "Melee, Ranged").MatchesEach(nil, "Thrown", "Melee, Ranged"))
+	c.False(text(criteria.IsText, "Melee, Ranged").MatchesEach(nil, "Melee", "Ranged"))
+	c.True(text(criteria.ContainsText, "e, R").MatchesEach(nil, "Melee, Ranged"))
+	c.False(text(criteria.ContainsText, "Melee, Thrown").MatchesEach(nil, "Melee, Ranged"))
+	// A negative comparison holds only when every value meets it.
+	c.True(text(criteria.DoesNotContainText, "Melee, Ranged").MatchesEach(nil, "Melee", "Ranged"))
+	c.False(text(criteria.DoesNotContainText, "Melee, Ranged").MatchesEach(nil, "Melee", "Melee, Ranged"))
+}
+
 func TestTextIsIgnoresSurroundingSpace(t *testing.T) {
 	c := check.New(t)
 	blank := text(criteria.IsText, " ")
