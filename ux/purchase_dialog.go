@@ -29,8 +29,8 @@ import (
 	"github.com/richardwilkes/unison/enums/paintstyle"
 )
 
-// paymentColumnCount is the number of columns in the list of money to pay with: the money item, the quantity carried,
-// the value of one, the quantity to spend and what that comes to.
+// paymentColumnCount is the number of columns in the list of money to pay with: the money item, with whether to pay
+// with it, the quantity carried, the value of one, the quantity to spend and what that comes to.
 const paymentColumnCount = 5
 
 // purchaseTerms is what the user settles when finalizing a purchase: the quantity of each carried money item to pay
@@ -45,9 +45,9 @@ type purchaseTerms struct {
 var confirmPurchase = confirmPurchaseWithDialog
 
 // confirmPurchaseWithDialog puts up the dialog that finalizes the dockable's purchase. It lists the carried money, by
-// increasing value, with the quantity of each that the automatic payment in plan spends, which the user may change, or
-// go back to, and asks whether to merge what is bought with matching carried items. It returns the terms chosen, with
-// ok false when the user canceled.
+// increasing value, with the quantity of each that the automatic payment in plan spends, which the user may change, go
+// back to, or leave money out of, and asks whether to merge what is bought with matching carried items. It returns the
+// terms chosen, with ok false when the user canceled.
 func confirmPurchaseWithDialog(d *buyDockable, plan *buyPlan) (terms purchaseTerms, ok bool) {
 	dlg := newPurchaseDialog(d, plan)
 	if dlg == nil || dlg.dialog.RunModal() != unison.ModalResponseOK {
@@ -76,7 +76,7 @@ type purchaseDialog struct {
 	sellMoney []*gurps.Equipment
 	change    purchaseChange
 	// auto is the quantity of each money item the automatic payment spends, by ID, which the rows start from and the
-	// automatic button puts back.
+	// automatic button puts back. It is worked out again whenever the money to pay with changes.
 	auto      map[tid.TID]int
 	automatic *unison.Button
 	spending  *unison.Label
@@ -85,11 +85,12 @@ type purchaseDialog struct {
 	merge     *unison.CheckBox
 }
 
-// purchaseMoneyRow is one carried money item and the quantity of it to spend.
+// purchaseMoneyRow is one carried money item, whether to pay with it and the quantity of it to spend.
 type purchaseMoneyRow struct {
 	money    *gurps.Equipment
 	value    fxp.Int
 	spend    int
+	use      *unison.CheckBox
 	field    *IntegerField
 	spending *unison.Label
 }
@@ -139,7 +140,14 @@ func newPurchaseDialog(buy *buyDockable, plan *buyPlan) *purchaseDialog {
 		most := max(carried.Floor().AsInteger[int](), 0)
 		row.spend = min(max(d.auto[one.TID], 0), most)
 		name := one.String()
-		list.rows.AddChild(newPurchaseText(name, align.Start))
+		row.use = unison.NewCheckBox()
+		row.use.SetTitle(name)
+		row.use.State = check.On
+		row.use.Accessibility.Name = i18n.Text("Pay with %s", name)
+		row.use.Tooltip = newWrappedTooltip(i18n.Text("Turn off to spend none of the %s", name))
+		row.use.ClickCallback = func() { d.useChanged(row) }
+		row.use.SetLayoutData(&unison.FlexLayoutData{HAlign: align.Start, VAlign: align.Middle})
+		list.rows.AddChild(row.use)
 		list.rows.AddChild(newPurchaseText(carried.Comma(), align.End))
 		list.rows.AddChild(newPurchaseText(i18n.Text("$%s", d.format(row.value)), align.End))
 		row.field = NewIntegerField(nil, "", i18n.Text("Spend"),
@@ -178,7 +186,7 @@ func newPurchaseDialog(buy *buyDockable, plan *buyPlan) *purchaseDialog {
 	fd := note.Font.Descriptor()
 	fd.Size--
 	note.Font = fd.Font()
-	note.SetTitle(i18n.Text("The money-tagged items carried pay for it, chosen automatically unless you change the quantities to spend."))
+	note.SetTitle(i18n.Text("The checked money-tagged items carried pay for it, chosen automatically unless you change the quantities to spend."))
 	wrapToWidthOf(note.AsPanel(), list.box)
 	note.SetLayoutData(&unison.FlexLayoutData{HAlign: align.Fill, HGrab: true})
 	panel.AddChild(note)
@@ -199,6 +207,10 @@ func newPurchaseDialog(buy *buyDockable, plan *buyPlan) *purchaseDialog {
 		return nil
 	}
 	holdMinSizeOnDisplay(d.dialog.Window())
+	// The focus starts on the first quantity rather than the checkbox ahead of it, so that it can be typed right away.
+	if len(d.rows) != 0 {
+		d.rows[0].field.RequestFocus()
+	}
 	// The fields couldn't reach the buttons while they were being created, so the state is brought up to date now.
 	d.refresh()
 	return d
@@ -221,17 +233,56 @@ func (d *purchaseDialog) createOptions(merge bool) *unison.Panel {
 	d.automatic.SetTitle(i18n.Text("Choose Automatically"))
 	d.automatic.Accessibility.Name = i18n.Text("Choose Automatically")
 	d.automatic.Tooltip = newWrappedTooltip(i18n.Text("Go back to the money chosen automatically, which makes the smallest total that covers what is owed"))
-	d.automatic.ClickCallback = func() {
-		for _, row := range d.rows {
-			row.spend = d.auto[row.money.TID]
-			// The button doesn't take the focus, so the field that has it is replaced too.
-			row.field.syncFromValue()
-		}
-		d.refresh()
-	}
+	d.automatic.ClickCallback = d.chooseAutomatically
 	d.automatic.SetLayoutData(&unison.FlexLayoutData{HAlign: align.End, VAlign: align.Middle})
 	options.AddChild(d.automatic)
 	return options
+}
+
+// chooseAutomatically puts the automatic payment into the rows.
+func (d *purchaseDialog) chooseAutomatically() {
+	for _, row := range d.rows {
+		row.spend = d.auto[row.money.TID]
+		// Neither the button nor a checkbox takes the focus, so the field that has it is replaced too.
+		row.field.syncFromValue()
+	}
+	d.refresh()
+}
+
+// useChanged follows a change to whether to pay with the row's money. None of it is spent, and its field is disabled,
+// while it is not to be paid with. The automatic payment is worked out again from the money that is, and when it was
+// what was chosen, it is chosen again.
+func (d *purchaseDialog) useChanged(row *purchaseMoneyRow) {
+	automatic := maps.Equal(d.chosen(), d.auto)
+	use := row.use.State == check.On
+	row.field.SetEnabled(use)
+	if !use {
+		row.spend = 0
+		// A disabled field can't be typed into, so the focus leaves one that is disabled while it has it.
+		if row.field.Focused() {
+			row.use.RequestFocus()
+		}
+	}
+	d.auto = d.automaticPayment()
+	if automatic {
+		d.chooseAutomatically()
+		return
+	}
+	row.field.syncFromValue()
+	d.refresh()
+}
+
+// automaticPayment returns the quantity of each money item to pay with that the automatic payment spends, by ID (see
+// gurps.PaymentFor).
+func (d *purchaseDialog) automaticPayment() map[tid.TID]int {
+	money := make([]*gurps.Equipment, 0, len(d.rows))
+	for _, row := range d.rows {
+		if row.use.State == check.On {
+			money = append(money, row.money)
+		}
+	}
+	payouts, _ := gurps.PaymentFor(d.owed, money)
+	return paymentQuantities(payouts)
 }
 
 // newPurchaseText returns a label showing text, aligned within its cell as given.

@@ -15,6 +15,7 @@ import (
 	"math"
 	"path/filepath"
 	"slices"
+	"strings"
 	"testing"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
@@ -1557,9 +1558,10 @@ func TestBuyDockableFinalizesOnTheTermsChosen(t *testing.T) {
 }
 
 // TestPurchaseDialog drives the dialog that finalizes a purchase: it lists the money carried, by increasing value, with
-// the quantities the automatic payment spends, keeps Finalize disabled while the money chosen is short, notes whether the payment is
-// short, exact or due change, with what the change will be, puts the automatic payment back on request, and returns the
-// money chosen and whether to merge, or nothing when canceled.
+// the quantities the automatic payment spends, keeps Finalize disabled while the money chosen is short, notes whether
+// the payment is short, exact or due change, with what the change will be, puts the automatic payment back on request,
+// leaves out money whose checkbox is turned off, and returns the money chosen and whether to merge, or nothing when
+// canceled.
 func TestPurchaseDialog(t *testing.T) {
 	c := check.New(t)
 	screen, wnd, sheet := buyTestSheet(t, c, func(entity *gurps.Entity) []*gurps.Equipment {
@@ -1590,6 +1592,9 @@ func TestPurchaseDialog(t *testing.T) {
 
 	var terms purchaseTerms
 	var ok, returned bool
+	// uses are the checkboxes of the dialog last opened that say whether to pay with each kind of money, in the order
+	// the money is listed.
+	var uses []*unison.CheckBox
 	open := func() (*unison.Dialog, []*IntegerField) {
 		t.Helper()
 		returned = false
@@ -1600,11 +1605,19 @@ func TestPurchaseDialog(t *testing.T) {
 		screen.Sync()
 		dialogWnd, dialog := modalDialog(t, screen, wnd)
 		var fields []*IntegerField
-		var names []string
+		var names, useNames, useTitles []string
+		uses = nil
 		screen.Do(func() {
 			fields = uxtest.PanelsOfType[*IntegerField](dialogWnd.Content())
 			for _, f := range fields {
 				names = append(names, f.Accessibility.Name)
+			}
+			for _, box := range uxtest.PanelsOfType[*unison.CheckBox](dialogWnd.Content()) {
+				if strings.HasPrefix(box.Accessibility.Name, "Pay with ") {
+					uses = append(uses, box)
+					useNames = append(useNames, box.Accessibility.Name)
+					useTitles = append(useTitles, box.Text.String())
+				}
 			}
 		})
 		if len(fields) != 2 {
@@ -1612,6 +1625,9 @@ func TestPurchaseDialog(t *testing.T) {
 		}
 		c.Equal([]string{"Copper Penny to spend", "Silver Eagle to spend"}, names,
 			"the money is listed by increasing value")
+		c.Equal([]string{"Pay with Copper Penny", "Pay with Silver Eagle"}, useNames,
+			"each kind of money has a checkbox saying whether to pay with it")
+		c.Equal([]string{"Copper Penny", "Silver Eagle"}, useTitles, "the checkbox names the money")
 		return dialog, fields
 	}
 	controls := func(dialog *unison.Dialog) (automatic *unison.Button, merge *unison.CheckBox) {
@@ -1621,7 +1637,11 @@ func TestPurchaseDialog(t *testing.T) {
 				automatic = b
 			}
 		}
-		merge, _ = uxtest.FirstPanelOfType[*unison.CheckBox](content)
+		for _, box := range uxtest.PanelsOfType[*unison.CheckBox](content) {
+			if box.Accessibility.Name == "Merge with matching items" {
+				merge = box
+			}
+		}
 		return automatic, merge
 	}
 	type dialogState struct {
@@ -1629,7 +1649,9 @@ func TestPurchaseDialog(t *testing.T) {
 		okOn        bool
 		automaticOn bool
 		merge       uncheck.Enum
+		use         []uncheck.Enum
 		spend       []string
+		spendOn     []bool
 		note        string
 		noteIcon    *unison.SVG
 		noteWarn    bool
@@ -1647,8 +1669,12 @@ func TestPurchaseDialog(t *testing.T) {
 			}
 			s.automaticOn = automatic.Enabled()
 			s.merge = merge.State
+			for _, box := range uses {
+				s.use = append(s.use, box.State)
+			}
 			for _, f := range fields {
 				s.spend = append(s.spend, f.Text())
+				s.spendOn = append(s.spendOn, f.Enabled())
 			}
 			if notes := uxtest.PanelsOfType[*purchaseNote](content); len(notes) == 1 {
 				s.note = notes[0].text.Title()
@@ -1681,9 +1707,11 @@ func TestPurchaseDialog(t *testing.T) {
 	uxtest.CaptureScreen(t, c, screen, "purchase_dialog")
 	state := read(dialog, fields)
 	c.Equal([]string{"5", "2"}, state.spend, "the dialog starts from the automatic payment")
-	contains(state, "Money Item", "Carried", "Value Each", "Spend", "Silver Eagle", "7", "$20", "Copper Penny", "11",
-		"$1", "Buying Longbow ×1 for $45.",
-		"The money-tagged items carried pay for it, chosen automatically unless you change the quantities to spend.",
+	c.Equal([]uncheck.Enum{uncheck.On, uncheck.On}, state.use, "every kind of money is paid with to begin with")
+	c.Equal([]bool{true, true}, state.spendOn)
+	contains(state, "Money Item", "Carried", "Value Each", "Spend", "7", "$20", "11", "$1",
+		"Buying Longbow ×1 for $45.",
+		"The checked money-tagged items carried pay for it, chosen automatically unless you change the quantities to spend.",
 		"Owed: $45", "Spending: $45", "Change due: $0")
 	c.True(state.okOn)
 	c.False(state.automaticOn, "the automatic payment is what is chosen to begin with")
@@ -1780,6 +1808,60 @@ func TestPurchaseDialog(t *testing.T) {
 	c.False(state.noteWarn)
 	c.True(state.okOn)
 	click(dialog, unison.ModalResponseCancel)
+
+	// Turning off a kind of money spends none of it. While the payment is the automatic one, it is worked out again
+	// from the money left; once it has been changed, the rest is left as it is.
+	screen.Do(func() { sheet.Entity().SheetSettings.SellMoney = nil })
+	dialog, fields = open()
+	screen.Do(func() { focused = dialog.Window().CurrentFocus() == fields[penny].AsPanel() })
+	c.True(focused, "the penny field holds the focus to begin with")
+	screen.Click(screen.PanelCenter(uses[penny]))
+	state = read(dialog, fields)
+	uxtest.CaptureScreen(t, c, screen, "purchase_left_out")
+	c.Equal([]uncheck.Enum{uncheck.Off, uncheck.On}, state.use)
+	c.Equal([]string{"0", "3"}, state.spend, "the automatic payment is worked out again without the pennies")
+	c.Equal([]bool{false, true}, state.spendOn, "money that is not paid with can't have a quantity")
+	contains(state, "Spending: $60", "Change due: $15")
+	c.False(state.automaticOn, "the payment is still the automatic one")
+	screen.Do(func() { focused = dialog.Window().CurrentFocus() == uses[penny].AsPanel() })
+	c.True(focused, "the focus leaves the field disabled while it had it for the checkbox")
+	screen.Click(screen.PanelCenter(uses[eagle]))
+	state = read(dialog, fields)
+	c.Equal([]string{"0", "0"}, state.spend, "the pennies alone can't pay, so nothing is chosen")
+	c.Equal("Short by $45.", state.note)
+	c.False(state.okOn)
+	c.False(state.automaticOn)
+	screen.Click(screen.PanelCenter(uses[eagle]))
+	state = read(dialog, fields)
+	c.Equal([]string{"0", "3"}, state.spend, "the automatic payment is worked out again with the eagles back")
+	screen.Click(screen.PanelCenter(uses[penny]))
+	state = read(dialog, fields)
+	c.Equal([]uncheck.Enum{uncheck.On, uncheck.On}, state.use)
+	c.Equal([]string{"5", "2"}, state.spend, "the automatic payment is worked out again with the pennies back")
+	c.Equal([]bool{true, true}, state.spendOn)
+	screen.Do(func() { fields[eagle].SetText("1") })
+	screen.Click(screen.PanelCenter(uses[penny]))
+	state = read(dialog, fields)
+	c.Equal([]string{"0", "1"}, state.spend, "a payment that was changed keeps the money still paid with")
+	c.Equal([]bool{false, true}, state.spendOn)
+	c.Equal("Short by $25.", state.note)
+	c.True(state.automaticOn, "the automatic payment from the money left is offered")
+	screen.Click(screen.PanelCenter(uses[penny]))
+	state = read(dialog, fields)
+	c.Equal([]string{"0", "1"}, state.spend, "money turned back on isn't spent until its quantity is changed")
+	c.Equal([]bool{true, true}, state.spendOn)
+	screen.Do(func() {
+		automatic, _ := controls(dialog)
+		automatic.Click()
+	})
+	state = read(dialog, fields)
+	c.Equal([]string{"5", "2"}, state.spend)
+	screen.Click(screen.PanelCenter(uses[penny]))
+	state = read(dialog, fields)
+	c.Equal([]string{"0", "3"}, state.spend)
+	click(dialog, unison.ModalResponseOK)
+	c.True(ok)
+	c.Equal(map[tid.TID]int{eagleID: 3}, terms.chosen, "money turned off is left out of the terms")
 }
 
 // TestBuySellMoneyStateFollowsTheValue checks that the change cache sees a sell money denomination as changed when its
