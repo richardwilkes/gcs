@@ -126,8 +126,9 @@ func finishInit() {
 }
 
 // restoreDockState puts the docks back the way they were when the workspace was last closed, reopening the files that
-// were open, and returns the focus to the tab that had it then. Reports whether the focus was given to something, so
-// that the caller can fall back to the navigator when it was not.
+// were open, and returns the focus to the tab that had it then, or to a document when a document came back but none
+// held it; see restoreFocusedDockable. Reports whether the focus was given to something, so that the caller can fall
+// back to the navigator when it was not.
 func restoreDockState() bool {
 	global := gurps.GlobalSettings()
 	keys := slices.Concat(dockStateKeys(global.TopDockState), dockStateKeys(global.DocDockState))
@@ -191,29 +192,50 @@ func focusedDockKey() string {
 // restoreFocusedDockable gives the keyboard focus to the dockable with the given key, found in m when it is one of the
 // file-backed dockables the dock state reopened, and reports whether the focus ended up within it. A dockable that
 // follows the toolbar and content convention has its content focused, just as it does when it is first opened, rather
-// than whatever focusable widget happens to come first in its toolbar. The navigator is focused the way it is when
-// nothing is restored.
+// than whatever focusable widget happens to come first in its toolbar.
+//
+// The navigator is only ever focused when no document came back. When the navigator was recorded, or nothing was, or
+// the document dock itself or a dockable that did not come back was, the front tab of the first document container is
+// focused instead, since a person who left documents open expects to find themselves in one of them rather than in the
+// navigator. With no documents to fall back to, the navigator is focused the way it is when nothing is restored, but
+// only when it was the one recorded; otherwise nothing is focused and the caller decides.
 func restoreFocusedDockable(key string, m map[string]unison.Dockable) bool {
-	var d unison.Dockable
-	switch key {
-	case "":
-		return false
-	case NavigatorDockKey:
-		d = Workspace.Navigator
-		Workspace.Navigator.InitialFocus()
-	case DocumentsDockKey:
-		d = Workspace.DocumentDock
-		ActivateDockable(d)
-	default:
-		if d = m[key]; xreflect.IsNil(d) {
-			return false
-		}
-		ActivateDockable(d)
-		if children := d.AsPanel().Children(); len(children) > 1 {
-			FocusFirstContent(children[0], children[1])
+	d := m[key]
+	if xreflect.IsNil(d) {
+		if d = frontDocumentDockable(); xreflect.IsNil(d) {
+			if key != NavigatorDockKey {
+				return false
+			}
+			Workspace.Navigator.InitialFocus()
+			return unison.DockableHasFocus(Workspace.Navigator)
 		}
 	}
+	ActivateDockable(d)
+	focusDockableContent(d)
 	return unison.DockableHasFocus(d)
+}
+
+// frontDocumentDockable returns the tab that is in front in the first container of the document dock, or nil when the
+// dock holds nothing.
+func frontDocumentDockable() unison.Dockable {
+	var front unison.Dockable
+	Workspace.DocumentDock.RootDockLayout().ForEachDockContainer(func(dc *unison.DockContainer) bool {
+		if front = dc.CurrentDockable(); xreflect.IsNil(front) {
+			if list := dc.Dockables(); len(list) > 0 {
+				front = list[0]
+			}
+		}
+		return !xreflect.IsNil(front)
+	})
+	return front
+}
+
+// focusDockableContent focuses the content of a dockable that follows the toolbar and content convention, as
+// FocusFirstContent describes. A dockable laid out some other way is left alone.
+func focusDockableContent(d unison.Dockable) {
+	if children := d.AsPanel().Children(); len(children) > 1 {
+		FocusFirstContent(children[0], children[1])
+	}
 }
 
 // dockStateKeys returns the keys of the dockables the dock state records, in the order it records them, which is the
@@ -557,9 +579,7 @@ func placeInWindow(dockable unison.Dockable, group dgroup.Group) (*unison.Window
 			}
 			// There was no window when the Dockable was placed, so any request to focus its content made then went
 			// nowhere. Make it now, so a deferred window ends up with the focus where an immediate one would have it.
-			if children := dockable.AsPanel().Children(); len(children) > 1 {
-				FocusFirstContent(children[0], children[1])
-			}
+			focusDockableContent(dockable)
 		})
 		return nil, nil
 	}

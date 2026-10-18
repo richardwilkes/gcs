@@ -21,10 +21,11 @@ import (
 )
 
 // TestWorkspaceRestoresTheFocusedTab verifies that closing the workspace records which tab has the keyboard focus along
-// with the dock state, and that restoring the dock state hands the focus back to that tab: a sheet when a sheet had it,
-// the navigator's table when the navigator had it, and nothing when nothing was recorded, so that startup can fall
-// back to the navigator as it always has. The files are spread over two dock containers, since each container already
-// remembers which of its own tabs is in front; what has to be remembered is which container the focus was in.
+// with the dock state, and that restoring the dock state hands the focus back to that tab when a file had it. When the
+// navigator had it, or nothing was recorded, the focus goes to the front tab of the first document container instead,
+// and only a workspace that comes back with no documents at all starts in the navigator. The files are spread over two
+// dock containers, since each container already remembers which of its own tabs is in front; what has to be remembered
+// is which container the focus was in.
 func TestWorkspaceRestoresTheFocusedTab(t *testing.T) {
 	c := check.New(t)
 	screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
@@ -91,8 +92,8 @@ func TestWorkspaceRestoresTheFocusedTab(t *testing.T) {
 	c.True(restored, "restoring must report that the library was given the focus")
 	c.Equal(library, focusedPath, "restoring must hand the focus back to the library")
 
-	// The navigator is recorded and restored the same way, ending up with its table focused, as at a fresh start.
-	var navigatorTableFocused bool
+	// The navigator is recorded, but since documents come back, the focus goes to the front tab of the first document
+	// container -- the first sheet, in the container to the left of the library's -- rather than to the navigator.
 	screen.Do(func() {
 		Workspace.Navigator.InitialFocus()
 		allowed = isWorkspaceAllowedToClose()
@@ -102,25 +103,45 @@ func TestWorkspaceRestoresTheFocusedTab(t *testing.T) {
 	c.Equal(NavigatorDockKey, key, "closing with the navigator focused must record the navigator")
 	screen.Do(func() {
 		restored = restoreDockState()
-		navigatorTableFocused = wnd.CurrentFocus() == Workspace.Navigator.table.AsPanel()
+		focusedPath = focusedFilePath(wnd)
 		open = len(AllDockables())
 	})
-	c.True(restored, "restoring must report that the navigator was given the focus")
-	c.True(navigatorTableFocused, "restoring must hand the focus back to the navigator's table")
+	c.True(restored, "restoring with the navigator recorded must report that a document was given the focus")
+	c.Equal(first, focusedPath, "restoring with the navigator recorded must focus the front tab of the first container")
 	c.Equal(3, open, "restoring must reopen every file")
 
-	// With nothing recorded, the files still come back, but the focus is left for the caller to place.
+	// With nothing recorded, the files still come back and the focus goes to the same document.
 	screen.Do(func() {
 		allowed = isWorkspaceAllowedToClose()
 		global.FocusedDockKey = ""
 		restored = restoreDockState()
+		focusedPath = focusedFilePath(wnd)
 		open = len(AllDockables())
 	})
 	c.True(allowed, "the workspace must be allowed to close")
-	c.False(restored, "restoring with no focus recorded must not claim to have placed the focus")
+	c.True(restored, "restoring with no focus recorded must report that a document was given the focus")
+	c.Equal(first, focusedPath, "restoring with no focus recorded must focus the front tab of the first container")
 	c.Equal(3, open, "restoring must reopen every file")
 
-	screen.Do(func() { isWorkspaceAllowedToClose() }) // Leave nothing open for the session to stop with.
+	// Only a workspace that comes back with no documents starts in the navigator, with its table focused as at a fresh
+	// start. Closing once leaves nothing open, so closing again records a dock state without files.
+	var navigatorTableFocused bool
+	screen.Do(func() {
+		isWorkspaceAllowedToClose()
+		Workspace.Navigator.InitialFocus()
+		allowed = isWorkspaceAllowedToClose()
+		key = global.FocusedDockKey
+	})
+	c.True(allowed, "the workspace must be allowed to close")
+	c.Equal(NavigatorDockKey, key, "closing with the navigator focused and nothing open must record the navigator")
+	screen.Do(func() {
+		restored = restoreDockState()
+		navigatorTableFocused = wnd.CurrentFocus() == Workspace.Navigator.table.AsPanel()
+		open = len(AllDockables())
+	})
+	c.True(restored, "restoring with no documents must report that the navigator was given the focus")
+	c.True(navigatorTableFocused, "restoring with no documents must hand the focus to the navigator's table")
+	c.Equal(0, open, "restoring a dock state without files must open nothing")
 }
 
 // TestClosingTheLastTabFocusesTheNavigator verifies that closing the tab that holds the keyboard focus hands the focus

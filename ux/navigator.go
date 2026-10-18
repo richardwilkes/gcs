@@ -1506,11 +1506,7 @@ func DisplayNewDockable(dockable unison.Dockable) {
 		return
 	}
 	InstallDockUndockCmd(dockable)
-	defer func() {
-		if children := dockable.AsPanel().Children(); len(children) > 1 {
-			FocusFirstContent(children[0], children[1])
-		}
-	}()
+	defer focusDockableContent(dockable)
 	if fbd, ok := dockable.(FileBackedDockable); ok {
 		var group *dgroup.Group
 		fi := gurps.FileInfoFor(fbd.BackingFilePath())
