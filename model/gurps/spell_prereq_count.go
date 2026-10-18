@@ -23,19 +23,24 @@ import (
 // CountPrereqsForSpell returns the number of prerequisites for the specified spell.
 func CountPrereqsForSpell(spell *Spell, allSpells []*Spell) int {
 	collect := make(map[string]int)
-	collectPrereqsForPrereq(spell.Prereq, allSpells, collect)
+	collectPrereqsForPrereq(spell.Prereq, false, allSpells, collect)
 	return countPrereqSet(collect)
 }
 
-func collectPrereqsForPrereq(one Prereq, allSpells []*Spell, collect map[string]int) {
+// collectPrereqsForPrereq adds what the prerequisite requires to collect. negated is set when the lists holding it are
+// negated an odd number of times, which turns what it asks for around: a prerequisite to have something then rules it
+// out instead, and one not to have something requires it. A negated list asks for none, or not all, of its children,
+// which is the same as asking for every one, or any one, of them turned around.
+func collectPrereqsForPrereq(one Prereq, negated bool, allSpells []*Spell, collect map[string]int) {
 	if xreflect.IsNil(one) {
 		return
 	}
 	switch p := one.(type) {
 	case *PrereqList:
-		if p.All {
+		negated = negated != p.Not
+		if p.All != negated {
 			for _, one := range p.Prereqs {
-				collectPrereqsForPrereq(one, allSpells, collect)
+				collectPrereqsForPrereq(one, negated, allSpells, collect)
 			}
 		} else {
 			var current map[string]int
@@ -45,7 +50,7 @@ func collectPrereqsForPrereq(one Prereq, allSpells []*Spell, collect map[string]
 				}
 				set := make(map[string]int)
 				maps.Copy(set, collect)
-				collectPrereqsForPrereq(one, allSpells, set)
+				collectPrereqsForPrereq(one, negated, allSpells, set)
 				if current == nil || countPrereqSet(set) < countPrereqSet(current) {
 					current = set
 				}
@@ -53,7 +58,7 @@ func collectPrereqsForPrereq(one Prereq, allSpells []*Spell, collect map[string]
 			maps.Copy(collect, current)
 		}
 	case *TraitPrereq:
-		if p.Has {
+		if p.Has != negated {
 			switch p.LevelCriteria.Compare {
 			case criteria.EqualsNumber, criteria.AtLeastNumber:
 				levels := p.LevelCriteria.Qualifier.AsInteger[int]()
@@ -69,15 +74,15 @@ func collectPrereqsForPrereq(one Prereq, allSpells []*Spell, collect map[string]
 			}
 		}
 	case *AttributePrereq:
-		if p.Has {
+		if p.Has != negated {
 			collect["A:"+strings.ToLower(p.Which+p.CombinedWith)] = 1
 		}
 	case *SkillPrereq:
-		if p.Has {
+		if p.Has != negated {
 			collect["Sk:"+strings.ToLower(p.NameCriteria.Qualifier)] = 1
 		}
 	case *SpellPrereq:
-		if p.Has {
+		if p.Has != negated {
 			count := 1
 			if p.QuantityCriteria.Compare == criteria.EqualsNumber ||
 				p.QuantityCriteria.Compare == criteria.AtLeastNumber {
@@ -98,12 +103,16 @@ func collectPrereqsForPrereq(one Prereq, allSpells []*Spell, collect map[string]
 					if !strings.EqualFold(s.Name, p.QualifierCriteria.Qualifier) {
 						return false
 					}
-					collectPrereqsForPrereq(s.Prereq, allSpells, collect)
+					collectPrereqsForPrereq(s.Prereq, false, allSpells, collect)
 					return true
 				}, false, true, allSpells...)
 			}
 		}
 	case *ScriptPrereq:
+		// What a script rules out can't be told.
+		if negated {
+			return
+		}
 		count := 1
 		script := strings.ToLower(p.Script)
 		if revised, found := strings.CutPrefix(script, "// prereq count:"); found {

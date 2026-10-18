@@ -93,8 +93,8 @@ type Skill struct {
 	LevelData         Level
 	UnsatisfiedReason string
 	// takesEquipmentPenalty records that the last recalculation pass found this skill's prerequisites unmet on account
-	// of an equipped-equipment prerequisite, so that the next pass applies the missing-equipment penalty to its level
-	// (see Entity.applyEquipmentPenalties). It is never saved.
+	// of equipment they require to be equipped, so that the next pass applies the missing-equipment penalty to its
+	// level (see Entity.applyEquipmentPenalties). It is never saved.
 	takesEquipmentPenalty bool
 }
 

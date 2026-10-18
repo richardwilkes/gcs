@@ -25,12 +25,15 @@ var _ Prereq = &TraitPrereq{}
 
 // TraitPrereq holds a prereq against a Trait.
 type TraitPrereq struct {
-	Parent        *PrereqList     `json:"-"`
-	Type          prereq.Type     `json:"type"`
-	Has           bool            `json:"has"`
-	NameCriteria  criteria.Text   `json:"name,omitzero"`
-	LevelCriteria criteria.Number `json:"level,omitzero"`
-	NotesCriteria criteria.Text   `json:"notes,omitzero"`
+	Parent         *PrereqList     `json:"-"`
+	Type           prereq.Type     `json:"type"`
+	Has            bool            `json:"has"`
+	NameCriteria   criteria.Text   `json:"name,omitzero"`
+	LevelCriteria  criteria.Number `json:"level,omitzero"`
+	PointsCriteria criteria.Number `json:"points,omitzero"`
+	TagsCriteria   criteria.Text   `json:"tags,omitzero"`
+	NotesCriteria  criteria.Text   `json:"notes,omitzero"`
+	ModifierCriteria
 }
 
 // NewTraitPrereq creates a new TraitPrereq.
@@ -71,8 +74,10 @@ func (p *TraitPrereq) FillWithNameableKeys(m, existing map[string]string) {
 	nameable.Extract(
 		m, existing,
 		p.NameCriteria.Qualifier,
+		p.TagsCriteria.Qualifier,
 		p.NotesCriteria.Qualifier,
 	)
+	p.fillWithModifierNameableKeys(m, existing)
 }
 
 // Satisfied implements Prereq.
@@ -86,7 +91,11 @@ func (p *TraitPrereq) Satisfied(entity *Entity, exclude any, tooltip *xbytes.Ins
 	}
 	satisfied := false
 	Traverse(func(t *Trait) bool {
-		if exclude == t || !p.NameCriteria.Matches(replacements, t.NameWithReplacements()) {
+		if exclude == t || !p.NameCriteria.Matches(replacements, t.NameWithReplacements()) ||
+			(p.PointsCriteria.Compare != criteria.AnyNumber && !p.PointsCriteria.Matches(t.AdjustedPoints(nil))) ||
+			(p.TagsCriteria.Compare != criteria.AnyText && !p.TagsCriteria.MatchesList(replacements, t.Tags...)) ||
+			// A container's modifiers apply to the traits it holds.
+			(p.hasModifierCriteria() && !modifiersMeet(&p.ModifierCriteria, replacements, t.AllModifiers())) {
 			return false
 		}
 		notes := t.Notes()
@@ -120,10 +129,14 @@ func (p *TraitPrereq) Describe(_ *Entity, replacements map[string]string, em fun
 		(p.LevelCriteria.Compare != criteria.AtLeastNumber || p.LevelCriteria.Qualifier > 0) {
 		text += i18n.Text(" at level ") + p.LevelCriteria.AltString()
 	}
+	if p.PointsCriteria.Compare != criteria.AnyNumber {
+		text += i18n.Text(" whose point total is ") + p.PointsCriteria.AltString()
+	}
+	text += describeTags(p.TagsCriteria, replacements, em)
 	if p.NotesCriteria.Compare != criteria.AnyText {
 		text += i18n.Text(" whose notes ") + describeText(p.NotesCriteria, replacements, em)
 	}
-	return text
+	return text + p.describeModifier(replacements, em)
 }
 
 // Hash writes this object's contents into the hasher.
@@ -136,5 +149,8 @@ func (p *TraitPrereq) Hash(h hash.Hash) {
 	xhash.Bool(h, p.Has)
 	p.NameCriteria.Hash(h)
 	p.LevelCriteria.Hash(h)
+	p.PointsCriteria.Hash(h)
+	p.TagsCriteria.Hash(h)
 	p.NotesCriteria.Hash(h)
+	p.hashModifier(h)
 }

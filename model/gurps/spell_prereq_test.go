@@ -73,6 +73,23 @@ func TestSpellPrereqCircularNotCounted(t *testing.T) {
 
 	// The direct-prerequisite helper must recognize the circular relationship.
 	c.True(spellDirectlyRequires(boost, wisdom), "Boost Intelligence directly requires Wisdom")
+	boost.Prereq.Not = true
+	c.False(spellDirectlyRequires(boost, wisdom), "a spell in a negated list is ruled out, not required")
+	requirement, ok := boost.Prereq.Prereqs[0].(*SpellPrereq)
+	c.True(ok, "precondition: Boost Intelligence's prerequisite is a spell prerequisite")
+	if ok {
+		requirement.Has = false
+		c.True(spellDirectlyRequires(boost, wisdom), "none of not knowing Wisdom requires it")
+		requirement.Has = true
+		inner := NewPrereqList()
+		inner.Not = true
+		inner.Prereqs = Prereqs{requirement}
+		saved := boost.Prereq.Prereqs
+		boost.Prereq.Prereqs = Prereqs{inner}
+		c.True(spellDirectlyRequires(boost, wisdom), "none of none of knowing Wisdom requires it")
+		boost.Prereq.Prereqs = saved
+	}
+	boost.Prereq.Not = false
 	c.False(spellDirectlyRequires(e.Spells[2], wisdom), "Mind A does not require Wisdom")
 
 	// There are five Mind Control spells besides Wisdom (Boost Intelligence + four plain ones), but Boost Intelligence

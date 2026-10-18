@@ -42,7 +42,7 @@ func allocPrereq(prereqType prereq.Type) Prereq {
 		return &ContainedQuantityPrereq{}
 	case prereq.ContainedWeight:
 		return &ContainedWeightPrereq{}
-	case prereq.EquippedEquipment:
+	case prereq.EquippedEquipment, prereq.CarriedEquipment:
 		return &EquippedEquipmentPrereq{}
 	case prereq.Skill:
 		return &SkillPrereq{}

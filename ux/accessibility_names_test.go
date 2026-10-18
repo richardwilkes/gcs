@@ -270,18 +270,29 @@ func seedEveryPrereqControl(root *gurps.PrereqList) {
 		switch pr := one.(type) {
 		case *gurps.TraitPrereq:
 			pr.LevelCriteria.Qualifier = fxp.One
+			pr.PointsCriteria.Compare = criteria.AtLeastNumber
+			pr.TagsCriteria = on
 			pr.NotesCriteria = on
+			pr.ModifierNameCriteria = on
+			pr.ModifierNotesCriteria = on
+			pr.ModifierTagsCriteria = on
 		case *gurps.SkillPrereq:
 			pr.SpecializationCriteria = on
 			pr.OptionalSpecializationCriteria = on
+			pr.PointsCriteria.Compare = criteria.AtLeastNumber
+			pr.TagsCriteria = on
 		case *gurps.SpellPrereq:
 			if !pr.SamePowerSource {
 				pr.PowerSourceCriteria = on
 			}
+			pr.LevelCriteria.Compare = criteria.AtLeastNumber
 		case *gurps.AttributePrereq:
 			pr.CombinedWith = gurps.DexterityID
 		case *gurps.EquippedEquipmentPrereq:
 			pr.TagsCriteria = on
+			pr.ModifierNameCriteria = on
+			pr.ModifierNotesCriteria = on
+			pr.ModifierTagsCriteria = on
 		default:
 		}
 	}

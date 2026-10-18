@@ -35,6 +35,7 @@ type SpellPrereq struct {
 	QuantityCriteria    criteria.Number `json:"quantity,omitzero"`
 	SamePowerSource     bool            `json:"same_power_source,omitzero"`
 	PowerSourceCriteria criteria.Text   `json:"power_source,omitzero"`
+	LevelCriteria       criteria.Number `json:"level,omitzero"`
 }
 
 // NewSpellPrereq creates a new SpellPrereq.
@@ -124,7 +125,7 @@ func (p *SpellPrereq) Satisfied(entity *Entity, exclude any, tooltip *xbytes.Ins
 	count := 0
 	colleges := make(map[string]bool)
 	Traverse(func(sp *Spell) bool {
-		if exclude == sp || sp.AdjustedPoints(nil) == 0 {
+		if exclude == sp || sp.AdjustedPoints(nil) == 0 || !p.LevelCriteria.Matches(sp.LevelData.Level) {
 			return false
 		}
 		// Don't count a spell that, in turn, directly requires the spell being checked, since doing so would create a
@@ -218,6 +219,9 @@ func (p *SpellPrereq) Describe(_ *Entity, replacements map[string]string, em fun
 		}
 		text += describeText(p.QualifierCriteria, replacements, em)
 	}
+	if p.LevelCriteria.Compare != criteria.AnyNumber {
+		text += i18n.Text(" at level ") + p.LevelCriteria.AltString()
+	}
 	if p.hasPowerSourceFilter() {
 		if whose {
 			text += i18n.Text(" and whose power source ")
@@ -250,28 +254,31 @@ func spellDirectlyRequiresNamed(candidate *Spell, targetName, targetPowerSource 
 		return false
 	}
 	candidatePowerSource := candidate.PowerSourceWithReplacements()
-	return prereqListRequiresSpell(candidate.Prereq, candidate.NameableReplacements(), &candidatePowerSource, targetName,
-		targetPowerSource)
+	return prereqListRequiresSpell(candidate.Prereq, false, candidate.NameableReplacements(), &candidatePowerSource,
+		targetName, targetPowerSource)
 }
 
 // prereqListRequiresSpell returns true if the given prereq list holds a spell-by-name prerequisite (at any nesting
-// depth) that is required (Has), matches the target spell's name, and whose power source filter, if any, the target
-// spell's power source passes. The replacements and owner power source are those of the spell the prereq list belongs
-// to: its qualifiers resolve against the former, and a "same power source as this spell" filter compares to the latter.
-func prereqListRequiresSpell(list *PrereqList, replacements map[string]string, ownerPowerSource *string, targetName,
-	targetPowerSource string,
+// depth) that is required, matches the target spell's name, and whose power source filter, if any, the target spell's
+// power source passes. A prerequisite is required when it is to be had (Has) and the lists holding it, along with
+// negated, are negated an even number of times, or the other way around. The replacements and owner power source are
+// those of the spell the prereq list belongs to: its qualifiers resolve against the former, and a "same power source as
+// this spell" filter compares to the latter.
+func prereqListRequiresSpell(list *PrereqList, negated bool, replacements map[string]string, ownerPowerSource *string,
+	targetName, targetPowerSource string,
 ) bool {
 	if list == nil {
 		return false
 	}
+	negated = negated != list.Not
 	for _, one := range list.Prereqs {
 		switch p := one.(type) {
 		case *PrereqList:
-			if prereqListRequiresSpell(p, replacements, ownerPowerSource, targetName, targetPowerSource) {
+			if prereqListRequiresSpell(p, negated, replacements, ownerPowerSource, targetName, targetPowerSource) {
 				return true
 			}
 		case *SpellPrereq:
-			if p.Has && p.SubType == spellcmp.Name && p.QualifierCriteria.Matches(replacements, targetName) &&
+			if p.Has != negated && p.SubType == spellcmp.Name && p.QualifierCriteria.Matches(replacements, targetName) &&
 				p.powerSourceMatches(replacements, targetPowerSource, ownerPowerSource) {
 				return true
 			}
@@ -295,4 +302,5 @@ func (p *SpellPrereq) Hash(h hash.Hash) {
 	if !p.SamePowerSource {
 		p.PowerSourceCriteria.Hash(h)
 	}
+	p.LevelCriteria.Hash(h)
 }

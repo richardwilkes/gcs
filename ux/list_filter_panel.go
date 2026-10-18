@@ -241,9 +241,9 @@ func (p *listFilterPanel) addEntries(group *gurps.FilterGroup, path, condition, 
 		menuEntry{Label: structure})
 	return append(entries, p.groupEntries(group, path, func(all bool) {
 		if all {
-			filterAllOf.apply(group)
+			groupAllOf.apply(group)
 		} else {
-			filterAnyOf.apply(group)
+			groupAnyOf.apply(group)
 		}
 		p.headed = true
 	})...)

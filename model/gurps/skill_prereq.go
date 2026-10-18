@@ -31,6 +31,8 @@ type SkillPrereq struct {
 	LevelCriteria                  criteria.Number `json:"level,omitzero"`
 	SpecializationCriteria         criteria.Text   `json:"specialization,omitzero"`
 	OptionalSpecializationCriteria criteria.Text   `json:"optional_specialization,omitzero"`
+	PointsCriteria                 criteria.Number `json:"points,omitzero"`
+	TagsCriteria                   criteria.Text   `json:"tags,omitzero"`
 }
 
 // NewSkillPrereq creates a new SkillPrereq.
@@ -74,6 +76,7 @@ func (p *SkillPrereq) FillWithNameableKeys(m, existing map[string]string) {
 		p.NameCriteria.Qualifier,
 		p.SpecializationCriteria.Qualifier,
 		p.OptionalSpecializationCriteria.Qualifier,
+		p.TagsCriteria.Qualifier,
 	)
 }
 
@@ -92,11 +95,16 @@ func (p *SkillPrereq) Satisfied(entity *Entity, exclude any, tooltip *xbytes.Ins
 		techLevel = sk.TechLevel
 	}
 	Traverse(func(sk *Skill) bool {
+		if exclude == sk {
+			return false
+		}
 		// A skill with no points spent on it doesn't count, even if it has a level from a default.
-		if exclude == sk || sk.AdjustedPoints(nil) == 0 ||
+		if points := sk.AdjustedPoints(nil); points == 0 ||
 			!p.NameCriteria.Matches(replacements, sk.NameWithReplacements()) ||
 			!p.SpecializationCriteria.Matches(replacements, sk.SpecializationWithReplacements()) ||
-			!p.OptionalSpecializationCriteria.Matches(replacements, sk.OptionalSpecializationWithReplacements()) {
+			!p.OptionalSpecializationCriteria.Matches(replacements, sk.OptionalSpecializationWithReplacements()) ||
+			!p.PointsCriteria.Matches(points) ||
+			(p.TagsCriteria.Compare != criteria.AnyText && !p.TagsCriteria.MatchesList(replacements, sk.Tags...)) {
 			return false
 		}
 		satisfied = p.LevelCriteria.Matches(sk.LevelData.Level)
@@ -125,7 +133,10 @@ func (p *SkillPrereq) Describe(_ *Entity, replacements map[string]string, em fun
 	if p.LevelCriteria.Compare != criteria.AnyNumber {
 		text += i18n.Text(" at level ") + p.LevelCriteria.AltString()
 	}
-	return text
+	if p.PointsCriteria.Compare != criteria.AnyNumber {
+		text += i18n.Text(" whose point total is ") + p.PointsCriteria.AltString()
+	}
+	return text + describeTags(p.TagsCriteria, replacements, em)
 }
 
 // Hash writes this object's contents into the hasher.
@@ -140,4 +151,6 @@ func (p *SkillPrereq) Hash(h hash.Hash) {
 	p.LevelCriteria.Hash(h)
 	p.SpecializationCriteria.Hash(h)
 	p.OptionalSpecializationCriteria.Hash(h)
+	p.PointsCriteria.Hash(h)
+	p.TagsCriteria.Hash(h)
 }

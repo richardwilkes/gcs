@@ -1236,8 +1236,14 @@ var allEnums = []*enumInfo{
 			{
 				Name:   "EquippedEquipment",
 				Key:    "equipped_equipment",
-				String: "has equipped equipment",
+				String: "equipped equipment",
 				Alt:    "Equipped Equipment",
+			},
+			{
+				Name:   "CarriedEquipment",
+				Key:    "carried_equipment",
+				String: "unequipped carried equipment",
+				Alt:    "Carried Equipment",
 			},
 			{
 				Name:   "Skill",

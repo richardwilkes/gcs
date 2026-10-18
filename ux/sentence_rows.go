@@ -658,6 +658,25 @@ func rowCriteria(key string) rowCriterion {
 		}
 	case "level":
 		return rowCriterion{subject: i18n.Text("Level"), add: i18n.Text("+ level"), prefix: i18n.Text("and whose level")}
+	case "points":
+		return rowCriterion{
+			subject: i18n.Text("Points"), add: i18n.Text("+ points"), prefix: i18n.Text("and whose point total"),
+		}
+	case "modname":
+		return rowCriterion{
+			subject: i18n.Text("Modifier Name"), add: i18n.Text("+ modifier name"),
+			prefix: i18n.Text("and whose modifier's name"),
+		}
+	case "modnotes":
+		return rowCriterion{
+			subject: i18n.Text("Modifier Notes"), add: i18n.Text("+ modifier notes"),
+			prefix: i18n.Text("and whose modifier's notes"),
+		}
+	case "modtag":
+		return rowCriterion{
+			subject: i18n.Text("Modifier Tag"), add: i18n.Text("+ modifier tag"),
+			prefix: i18n.Text("and at least one tag of its modifier"), notPrefix: i18n.Text("and all tags of its modifier"),
+		}
 	case "power":
 		return rowCriterion{
 			subject: i18n.Text("Power Source"), add: i18n.Text("+ power source"),

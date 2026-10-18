@@ -211,11 +211,11 @@ func summarizeListFilter(f *gurps.ListFilter, fields []filterFieldInfo) string {
 		switch one := node.(type) {
 		case *gurps.FilterGroup:
 			switch groupModeOf(one) {
-			case filterAnyOf:
+			case groupAnyOf:
 				return i18n.Text("Any of (%s)", list(one))
-			case filterNoneOf:
+			case groupNoneOf:
 				return i18n.Text("None of (%s)", list(one))
-			case filterNotAllOf:
+			case groupNotAllOf:
 				return i18n.Text("Not all of (%s)", list(one))
 			default:
 				return i18n.Text("All of (%s)", list(one))
