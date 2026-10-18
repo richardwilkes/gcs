@@ -278,7 +278,6 @@ func (d *TableDockable[T]) toggleHierarchy() {
 		return
 	}
 	toggleHierarchy(d)
-	d.table.SyncToModel()
 }
 
 // toggleNotes shows or hides every note in the table. It is gated on the filter the same way toggleHierarchy is, since

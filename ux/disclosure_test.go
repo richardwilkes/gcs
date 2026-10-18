@@ -200,3 +200,25 @@ func TestTableDockableTogglesAreOffWhileFiltered(t *testing.T) {
 	c.False(first.IsOpen(), "with no filter, the open first container sets the direction, so it must be closed")
 	c.False(second.IsOpen(), "and the second one must be closed along with it")
 }
+
+// TestNodeSetOpenLeavesSyncToCaller verifies that setting a row's open state only records it: the table shows the same
+// rows until the caller syncs it. Every caller syncs once after setting every row it means to, so a sync from SetOpen
+// itself would rebuild the table once per container, which made toggling the hierarchy of a large list take seconds.
+func TestNodeSetOpenLeavesSyncToCaller(t *testing.T) {
+	c := check.New(t)
+	registerKeyBindingsOnce.Do(func() { registerActions() })
+	first := newTestContainer("First", true)
+	second := newTestContainer("Second", true)
+	dockable := NewTraitTableDockable("test"+gurps.TraitsExt, []*gurps.Trait{first, second})
+	c.Equal(3, dockable.table.LastRowIndex(), "both containers start out open, showing their children")
+
+	for _, row := range dockable.table.RootRows() {
+		row.SetOpen(false)
+	}
+	c.False(first.IsOpen(), "the first container must record that it was closed")
+	c.False(second.IsOpen(), "the second container must record that it was closed")
+	c.Equal(3, dockable.table.LastRowIndex(), "the table must not rebuild its rows until it is synced")
+
+	dockable.table.SyncToModel()
+	c.Equal(1, dockable.table.LastRowIndex(), "the sync must hide the children of both containers")
+}

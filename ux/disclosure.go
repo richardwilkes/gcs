@@ -78,13 +78,15 @@ func firstTableDisclosureState[T gurps.Node[T]](table *unison.Table[*Node[T]]) (
 	return false, false
 }
 
-// setTableDisclosureState opens or closes every row of the table that can have children, at every depth.
+// setTableDisclosureState opens or closes every row of the table that can have children, at every depth, then syncs
+// the table once: SetOpen only records the state, so a large list is not rebuilt once per container.
 func setTableDisclosureState[T gurps.Node[T]](table *unison.Table[*Node[T]], open bool) {
 	for _, row := range table.RootRows() {
 		if row.CanHaveChildren() {
 			setRowOpen(row, open)
 		}
 	}
+	table.SyncToModel()
 }
 
 // setRowOpen opens or closes the row and every row beneath it that can have children.

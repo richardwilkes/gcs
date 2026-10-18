@@ -282,6 +282,7 @@ func TestAltDropLeavesOutSelectedRowsInAClosedContainer(t *testing.T) {
 	table := newAltDropTestTable(provider, newAltDropTestTraits()...)
 	table.SelectByIndex(0, 2, 3) // The first trait, the container's child and the last trait.
 	table.RowFromIndex(1).SetOpen(false)
+	table.SyncToModel()
 	c.Equal(2, table.LastRowIndex(), "closing the container must hide its child, leaving three rows")
 	c.False(table.IsRowSelected(1), "the container itself must not be selected")
 
@@ -293,6 +294,7 @@ func TestAltDropLeavesOutSelectedRowsInAClosedContainer(t *testing.T) {
 
 	// The child was left out because it isn't disclosed, not because the selection had let go of it.
 	table.RowFromIndex(1).SetOpen(true)
+	table.SyncToModel()
 	c.True(table.IsRowSelected(2), "the selection must still hold the child once it is disclosed again")
 }
 

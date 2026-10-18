@@ -249,13 +249,10 @@ func (n *Node[T]) IsOpen() bool {
 	return n.data.IsOpen()
 }
 
-// SetOpen implements unison.TableRowData.
+// SetOpen implements unison.TableRowData. It only records the state: every caller, in unison and here, syncs the table
+// itself once it has set all the rows it means to, so syncing here as well would rebuild the table once per row.
 func (n *Node[T]) SetOpen(open bool) {
-	wasOpen := n.data.IsOpen()
 	n.data.SetOpen(open)
-	if wasOpen != n.data.IsOpen() {
-		n.table.SyncToModel()
-	}
 }
 
 // Data returns the underlying data object. A nil node returns the zero value.
