@@ -971,3 +971,77 @@ func TestSellDialogKeepsQuantitiesToWhatTheSaleTakes(t *testing.T) {
 		c.Equal(fxp.FromStringForced("0.6"), gem.Quantity, "each copy of the box keeps its share of the rest")
 	})
 }
+
+// TestSellInCarriedEquipmentContextMenu verifies that the context menu of a sheet's carried equipment list offers to
+// sell the selection, and that the command hands the sheet and the list to the sell dialog, while a template's carried
+// equipment list offers no such thing.
+func TestSellInCarriedEquipmentContextMenu(t *testing.T) {
+	c := check.New(t)
+	screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
+	screen.EnableAccessibility()
+	sell := contextMenuItemFor(sellEquipmentAction).Title
+	var soldFrom *Sheet
+	var soldTable *unison.Table[*Node[*gurps.Equipment]]
+	var soldNames []string
+	uxtest.SwapForTest(t, &sellSelectedEquipment, func(sheet *Sheet, table *unison.Table[*Node[*gurps.Equipment]]) {
+		soldFrom = sheet
+		soldTable = table
+		for _, row := range table.SelectedRows(true) {
+			soldNames = append(soldNames, row.Data().Name)
+		}
+	})
+
+	sheet, ok := uxtest.OpenedByAction(t, screen, newCharacterSheetAction).(*Sheet)
+	if !ok {
+		t.Fatal("New Character Sheet must open a character sheet")
+	}
+	var table *unison.Table[*Node[*gurps.Equipment]]
+	row := -1
+	screen.Do(func() {
+		entity := sheet.Entity()
+		eqp := gurps.NewEquipment(entity, nil, false)
+		eqp.Name = "Shortsword"
+		entity.CarriedEquipment = append(entity.CarriedEquipment, eqp)
+		entity.Recalculate()
+		sheet.Rebuild(true)
+		table = sheet.CarriedEquipment.Table
+		for i := 0; i <= table.LastRowIndex(); i++ {
+			if table.RowFromIndex(i).Data() == eqp {
+				row = i
+			}
+		}
+	})
+	if row == -1 {
+		t.Fatal("the carried equipment list must show the new item")
+	}
+	screen.Click(cellScreenPoint(t, screen, wnd, table, row, gurps.EquipmentDescriptionColumn))
+	screen.KeyPress(unison.KeyF10, mod.Shift)
+	titles := contextMenuTitles(t, screen, wnd)
+	c.True(slices.Contains(titles, sell), "the sheet's carried equipment menu must offer %q; it offers %v", sell,
+		titles)
+	closeContextMenu(c, screen, wnd)
+	screen.Do(func() { table.PerformCmd(table, SellEquipmentItemID) })
+	c.Equal(sheet, soldFrom, "selling must be handed the sheet")
+	c.True(soldTable == table, "selling must be handed the carried equipment table")
+	c.Equal([]string{"Shortsword"}, soldNames, "selling must be handed the selection")
+
+	template, ok := uxtest.OpenedByAction(t, screen, newCharacterTemplateAction).(*Template)
+	if !ok {
+		t.Fatal("New Character Template must open a template")
+	}
+	var templateTable *unison.Table[*Node[*gurps.Equipment]]
+	screen.Do(func() {
+		eqp := gurps.NewEquipment(nil, nil, false)
+		eqp.Name = "Shortsword"
+		template.template.Equipment = append(template.template.Equipment, eqp)
+		template.Rebuild(true)
+		templateTable = template.Equipment.Table
+	})
+	screen.Click(cellScreenPoint(t, screen, wnd, templateTable, 0, gurps.EquipmentDescriptionColumn))
+	screen.KeyPress(unison.KeyF10, mod.Shift)
+	titles = contextMenuTitles(t, screen, wnd)
+	c.NotNil(titles, "the template's carried equipment list must have a menu")
+	c.False(slices.Contains(titles, sell), "a template's carried equipment menu must not offer %q; it offers %v",
+		sell, titles)
+	closeContextMenu(c, screen, wnd)
+}

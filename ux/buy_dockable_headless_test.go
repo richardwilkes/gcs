@@ -1796,3 +1796,72 @@ func TestBuySellMoneyStateFollowsTheValue(t *testing.T) {
 	c.Equal(fxp.FromInteger(12), coin.AdjustedValue())
 	c.False(state.matches(coin), "a denomination whose value changed no longer matches")
 }
+
+// TestBuyingLeavesTheSheetEditable verifies that a sheet stays editable while its buy dockable is open: the commands that
+// add to the carried equipment list stay enabled, the list stays the carried equipment block's panel for the layout
+// editor, equipment dropped on the sheet goes to the dockable, and hiding the block neither ends buying nor takes the
+// dockable out of the sheet's drop rerouting.
+func TestBuyingLeavesTheSheetEditable(t *testing.T) {
+	c := check.New(t)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
+	sheet, ok := uxtest.OpenedByAction(t, screen, newCharacterSheetAction).(*Sheet)
+	if !ok {
+		t.Fatal("New Character Sheet must open a character sheet")
+	}
+	newCarriedIDs := []int{
+		NewCarriedEquipmentItemID,
+		NewCarriedEquipmentContainerItemID,
+		NewCarriedEquipmentGroupItemID,
+	}
+	type gates struct {
+		moveToCarried bool
+		newCarried    []bool
+	}
+	readGates := func() gates {
+		var g gates
+		g.moveToCarried = sheet.OtherEquipment.CanPerformCmd(nil, MoveToCarriedEquipmentItemID)
+		for _, id := range newCarriedIDs {
+			g.newCarried = append(g.newCarried, sheet.CanPerformCmd(nil, id))
+		}
+		return g
+	}
+	var before, during, after gates
+	var buyEnabled, blockPanelIsList, dropTargetIsDockable, editorFindsList, buyingAfterHide, dropTargetAfterHide bool
+	screen.Do(func() {
+		entity := sheet.Entity()
+		eqp := gurps.NewEquipment(entity, nil, false)
+		eqp.Name = "Rope"
+		entity.OtherEquipment = append(entity.OtherEquipment, eqp)
+		entity.Recalculate()
+		sheet.Rebuild(true)
+		sheet.OtherEquipment.Table.SelectByIndex(0)
+		before = readGates()
+		buyEnabled = buyEquipmentAction.EnabledCallback(buyEquipmentAction, nil)
+
+		d := showBuyDockable(sheet)
+		during = readGates()
+		blockPanelIsList = sheet.blockPanel(gurps.BlockEquipmentKey) == unison.Paneler(sheet.CarriedEquipment)
+		dropTargetIsDockable = sheet.keyToPanel(equipmentDragKey) == d.AsPanel()
+		sheet.toggleLayoutEditing()
+		if sheet.layoutEditing() {
+			editorFindsList = sheet.layoutEditor.ensureRegions().leafFor(gurps.BlockEquipmentKey) != nil
+			sheet.toggleLayoutEditing()
+		}
+		sheet.hideLayoutBlock(gurps.BlockEquipmentKey)
+		buyingAfterHide = buyDockableFor(sheet) == d
+		dropTargetAfterHide = sheet.keyToPanel(equipmentDragKey) == d.AsPanel()
+		sheet.UndoManager().Undo()
+		closeBuyDockable(sheet)
+		after = readGates()
+	})
+	c.True(buyEnabled, "Buy Equipment must be enabled for a new sheet")
+	c.True(before.moveToCarried, "moving the selected other equipment to the carried list must be enabled")
+	c.Equal([]bool{true, true, true}, before.newCarried, "the New Carried Equipment commands must be enabled")
+	c.Equal(before, during, "buying must leave the commands that add to the carried equipment list enabled")
+	c.True(blockPanelIsList, "the carried equipment list must stay the block's panel while buying")
+	c.True(dropTargetIsDockable, "equipment dropped on the sheet must go to the buy dockable")
+	c.True(editorFindsList, "the layout editor must find the carried equipment block while buying")
+	c.True(buyingAfterHide, "hiding the carried equipment block must not end buying")
+	c.True(dropTargetAfterHide, "equipment dropped on the sheet must still go to the buy dockable with the list hidden")
+	c.Equal(before, after, "closing the dockable must leave everything as it was")
+}

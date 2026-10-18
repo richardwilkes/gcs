@@ -217,11 +217,7 @@ func NewTraitsPageList(owner Rebuildable, provider gurps.ListProvider) *PageList
 
 // NewCarriedEquipmentPageList creates the carried equipment page list.
 func NewCarriedEquipmentPageList(owner Rebuildable, provider gurps.ListProvider) *PageList[*gurps.Equipment] {
-	eqpProvider := newEquipmentProvider(provider, true, true)
-	if sheet, ok := owner.AsPanel().Self.(*Sheet); ok {
-		eqpProvider.sheet = sheet
-	}
-	p := newPageList(owner, eqpProvider)
+	p := newPageList(owner, NewEquipmentProvider(provider, true, true))
 	p.installToggleEquippedHandler(owner)
 	p.installIncrementTechLevelHandler(owner)
 	p.installDecrementTechLevelHandler(owner)
