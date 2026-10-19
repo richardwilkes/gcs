@@ -25,10 +25,11 @@ import (
 	"github.com/richardwilkes/unison/enums/mod"
 )
 
-// TestShoppingRecordHeadless drives a sheet's shopping record: it lists the entries most recent first with the agreed
-// cell texts; Delete removes the selected entries as one edit on the sheet's undo manager, which Edit > Undo and Redo
-// reach while the record has the focus; Select All then Delete empties it; changes made to the record from elsewhere
-// show up with the selection kept; showing it again brings the open one forward; and it closes with its sheet.
+// TestShoppingRecordHeadless drives a sheet's shopping record: the sheet's toolbar button opens it; it lists the
+// entries most recent first with the agreed cell texts; Delete removes the selected entries as one edit on the sheet's
+// undo manager, which Edit > Undo and Redo reach while the record has the focus; Select All then Delete empties it;
+// changes made to the record from elsewhere show up with the selection kept; showing it again brings the open one
+// forward; and it closes with its sheet.
 func TestShoppingRecordHeadless(t *testing.T) {
 	c := check.New(t)
 	screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
@@ -88,7 +89,12 @@ func TestShoppingRecordHeadless(t *testing.T) {
 		_, isOne := d.AsPanel().Self.(*shoppingRecordDockable)
 		return isOne
 	}
-	screen.Do(func() { showShoppingRecord(sheet) })
+	var recordButton *unison.Button
+	screen.Do(func() { recordButton = buttonWithTooltip(sheet.toolbar, "Shopping Record") })
+	if recordButton == nil {
+		t.Fatal("the sheet's toolbar must have a Shopping Record button")
+	}
+	screen.Click(screen.PanelCenter(recordButton))
 	record := uxtest.SoleEditor[*shoppingRecordDockable](t, screen, isRecord)
 
 	// recordedNames returns the names of the sheet's record entries, in the order the sheet keeps them.

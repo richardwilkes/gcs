@@ -254,6 +254,11 @@ func (s *Sheet) createToolbar() {
 	calcButton.ClickCallback = func() { DisplayCalculator(s) }
 	s.toolbar.AddChild(calcButton)
 
+	shoppingRecordButton := unison.NewSVGButton(svg.ReleaseNotes)
+	shoppingRecordButton.Tooltip = newWrappedTooltip(shoppingRecordAction.Title)
+	shoppingRecordButton.ClickCallback = func() { showShoppingRecord(s) }
+	s.toolbar.AddChild(shoppingRecordButton)
+
 	s.searchTracker = installListSearchTracker(s.toolbar, s.lists)
 
 	// The notice sits at the end of the toolbar, past the search controls, where it reads as a status rather than a
