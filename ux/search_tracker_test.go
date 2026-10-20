@@ -12,6 +12,7 @@ package ux
 import (
 	"testing"
 
+	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/mod"
@@ -81,4 +82,52 @@ func TestMatchStepper(t *testing.T) {
 	c.False(m.backButton.Enabled())
 	c.False(m.forwardButton.Enabled())
 	c.Equal(0, len(shown), "with no matches, nothing is shown")
+}
+
+// An empty search matches nothing, so refreshing it must not walk the lists: the walk builds a row for every row of
+// every list, which is most of what an update of a sheet with large lists used to cost while nobody was searching.
+// The controls must nevertheless end up as a search that found nothing leaves them.
+func TestSearchRefreshSkipsTheListsWhileTheFieldIsEmpty(t *testing.T) {
+	c := check.New(t)
+	sheet := newTestSheetForTemplate(t)
+	trait := gurps.NewTrait(sheet.Entity(), nil, false)
+	trait.Name = "Findable"
+	sheet.Entity().Traits = []*gurps.Trait{trait}
+	sheet.Rebuild(true)
+	tracker := sheet.searchTracker
+	walks := 0
+	findMatches := tracker.findMatches
+	tracker.findMatches = func(refList *[]*searchRef, text string, namesOnly bool) {
+		walks++
+		findMatches(refList, text, namesOnly)
+	}
+	clears := 0
+	clearTableSelections := tracker.clearTableSelections
+	tracker.clearTableSelections = func() {
+		clears++
+		clearTableSelections()
+	}
+
+	tracker.Refresh()
+	c.Equal(0, walks, "an empty search must not walk the lists")
+	c.Equal("-", tracker.matchesLabel.String(), "an empty search has no matches to report")
+	c.False(tracker.backButton.Enabled(), "there is no previous match to step to")
+	c.False(tracker.forwardButton.Enabled(), "there is no next match to step to")
+
+	tracker.searchField.SetText("findable")
+	c.Equal(1, walks, "typing into the field searches the lists")
+	c.Equal(1, len(tracker.searchResult), "the trait must be found")
+	c.Equal("1 of 1", tracker.matchesLabel.String())
+	tracker.Refresh()
+	c.Equal(2, walks, "a refresh with text in the field searches the lists again")
+	c.Equal(1, len(tracker.searchResult), "the trait must still be found")
+
+	clears = 0
+	tracker.searchField.SetText("")
+	c.Equal(2, walks, "clearing the field must not walk the lists")
+	c.Equal(1, clears, "clearing the field still deselects the last match")
+	c.Equal(0, len(tracker.searchResult), "an empty search finds nothing")
+	c.Equal("-", tracker.matchesLabel.String())
+	c.False(tracker.backButton.Enabled())
+	c.False(tracker.forwardButton.Enabled())
 }

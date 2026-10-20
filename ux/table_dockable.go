@@ -314,10 +314,10 @@ func (d *TableDockable[T]) Rebuild(_ bool) {
 
 // Hash writes this object's contents into the hasher.
 func (d *TableDockable[T]) Hash(h hash.Hash) {
-	rows := d.provider.RootRows()
-	data := make([]any, 0, len(rows))
-	for _, row := range rows {
-		data = append(data, row.Data())
+	rootData := d.provider.RootData()
+	data := make([]any, 0, len(rootData))
+	for _, one := range rootData {
+		data = append(data, one)
 	}
 	gurps.HashJSON(h, data)
 }

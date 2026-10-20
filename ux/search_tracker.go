@@ -157,10 +157,14 @@ func InstallSearchTracker(toolbar *unison.Panel, clearTableSelections func(), fi
 	return s
 }
 
-// Refresh the search state.
+// Refresh the search state. Nothing matches an empty search, so the lists are only walked when there is text to look
+// for; the walk builds a row for every row of every list, which a sheet with large lists can ill afford on every
+// update.
 func (s *SearchTracker) Refresh() {
 	s.searchResult = nil
-	s.findMatches(&s.searchResult, strings.ToLower(s.searchField.Text()), s.namesOnlyCheckBox.State == check.On)
+	if text := strings.ToLower(s.searchField.Text()); text != "" {
+		s.findMatches(&s.searchResult, text, s.namesOnlyCheckBox.State == check.On)
+	}
 	s.searchIndex = max(min(s.searchIndex, len(s.searchResult)-1), 0)
 	s.updateMatchControls()
 }
@@ -170,11 +174,14 @@ func (s *SearchTracker) searchModified(_, after *unison.FieldState) {
 }
 
 // doSearch runs a fresh search and shows its first match. The selections are cleared even when nothing matches, so that
-// clearing the search field deselects the last match.
+// clearing the search field deselects the last match. An empty search matches nothing, so the lists aren't walked for
+// one (see Refresh).
 func (s *SearchTracker) doSearch(text string) {
 	s.searchIndex = 0
 	s.searchResult = nil
-	s.findMatches(&s.searchResult, strings.ToLower(text), s.namesOnlyCheckBox.State == check.On)
+	if text = strings.ToLower(text); text != "" {
+		s.findMatches(&s.searchResult, text, s.namesOnlyCheckBox.State == check.On)
+	}
 	s.clearTableSelections()
 	s.adjustForMatch()
 }
@@ -183,7 +190,7 @@ func (s *SearchTracker) doSearch(text string) {
 // list the layout doesn't show has no parent (see Sheet.buildLayout), and a match found in one could only be shown by
 // scrolling a table nobody is looking at into view. A list that doesn't exist has nothing to search.
 func (p *PageList[T]) search(refList *[]*searchRef, text string, namesOnly bool) {
-	if p == nil || p.Parent() == nil {
+	if p == nil || p.Parent() == nil || text == "" {
 		return
 	}
 	for _, row := range p.Table.RootRows() {

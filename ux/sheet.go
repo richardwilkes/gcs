@@ -511,7 +511,9 @@ func (s *Sheet) layoutLeaf(key string) unison.Paneler {
 func derivedListLeaf[T gurps.Node[T]](s *Sheet, list **PageList[T], build func() *PageList[T]) unison.Paneler {
 	l := syncOrRebuildList(list, build)
 	SetDataOwnerProvider(l.Table, s)
-	if l.Table.RootRowCount() == 0 {
+	// The table was just synced to its model, so its rows tell whether the list is empty without deriving the list
+	// from the character again, which for the weapons means resolving every weapon.
+	if l.Table.LastRowIndex() < 0 {
 		return nil
 	}
 	return l
