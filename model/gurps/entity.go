@@ -355,9 +355,10 @@ func (e *Entity) DiscardCaches() {
 	e.discardCaches(false)
 }
 
-// DerivedStateGeneration returns a number that changes whenever the entity's derived state may have changed: with
-// every recalculation and every discarding of the caches. Anything that caches what it derives from the entity can
-// key its cache on this.
+// DerivedStateGeneration returns a number that changes with every recalculation and every discarding of the caches,
+// and at no other time. Anything that caches what it derives from the entity can key its cache on this, but like the
+// entity's own caches (see DiscardCaches), it then sees a change to the data only once one of those follows it. That
+// holds for derived values updated outside a recalculation too, such as the level Skill.SetRawPoints sets.
 func (e *Entity) DerivedStateGeneration() uint64 {
 	return e.derivedGeneration
 }
@@ -469,8 +470,8 @@ func (e *Entity) recalculate(passBudget int) int {
 	// The derived state is captured before the traits' verdicts are reset, so that it is the state the last
 	// recalculation left; see DerivedStateChanged.
 	before := e.derivedState(0)
-	// Nothing derived is memoized while the passes run; see Weapon.memo. Anything cached against the generation in the
-	// meantime holds a value from partway through, so the generation moves on once they are done.
+	// No weapon resolution or weapon list is kept while the passes run; see Weapon.memo. Anything cached against the
+	// generation in the meantime holds a value from partway through, so the generation moves on once they are done.
 	e.recalculating++
 	defer func() {
 		e.recalculating--
@@ -1968,15 +1969,15 @@ func (e *Entity) WeaponOwner() WeaponOwner {
 // lists often, so each list is kept for the current derived state (see DiscardCaches). The caller always gets a slice
 // of its own.
 func (e *Entity) Weapons(melee, includeUnequipped, excludeHidden bool) []*Weapon {
+	// Nothing is kept while recalculating, for the reason given in Weapon.memo.
+	if !weaponMemosEnabled || e.recalculating > 0 {
+		return e.collectWeapons(melee, includeUnequipped, excludeHidden)
+	}
 	index := weaponListIndex(melee, includeUnequipped, excludeHidden)
 	if e.weaponListsCached&(1<<index) != 0 {
 		return slices.Clone(e.weaponLists[index])
 	}
 	list := e.collectWeapons(melee, includeUnequipped, excludeHidden)
-	// Nothing is kept while recalculating, for the reason given in Weapon.memo.
-	if !weaponMemosEnabled || e.recalculating > 0 {
-		return list
-	}
 	e.weaponLists[index] = list
 	e.weaponListsCached |= 1 << index
 	return slices.Clone(list)

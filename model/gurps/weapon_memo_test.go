@@ -146,4 +146,10 @@ func TestEntityWeaponsCached(t *testing.T) {
 	c.Equal([]*gurps.Weapon{claws}, e.Weapons(true, false, true), "the list is kept until the caches are discarded")
 	e.DiscardCaches()
 	c.Equal([]*gurps.Weapon{claws, teeth}, e.Weapons(true, false, true), "the new weapon is listed")
+
+	restore := gurps.SetWeaponMemosEnabled(false)
+	defer restore()
+	fangs := addWeaponTrait("Fangs")
+	c.Equal([]*gurps.Weapon{claws, fangs, teeth}, e.Weapons(true, false, true),
+		"with the keeping turned off, a list kept before is not served")
 }
