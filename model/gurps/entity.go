@@ -1979,7 +1979,14 @@ func (e *Entity) Weapons(melee, includeUnequipped, excludeHidden bool) []*Weapon
 	if e.weaponListsCached&(1<<index) != 0 {
 		return slices.Clone(e.weaponLists[index])
 	}
-	list := e.collectWeapons(melee, includeUnequipped, excludeHidden)
+	// A list built while a resolution comes back around (see resolveSlot), or from a script stopped short, isn't kept
+	// either, since which weapons it tells apart depends on how far each resolution got. A circle through a memoized
+	// field shows as the former, one through text that isn't memoized, such as usage notes, only as the latter.
+	var list []*Weapon
+	if anyScriptAbandonedDuring(e, func() { list = e.collectWeapons(melee, includeUnequipped, excludeHidden) }) ||
+		e.circularWeaponResolution {
+		return list
+	}
 	e.weaponLists[index] = list
 	e.weaponListsCached |= 1 << index
 	return slices.Clone(list)

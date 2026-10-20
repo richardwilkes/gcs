@@ -10,6 +10,9 @@
 package gurps
 
 import (
+	"fmt"
+	"slices"
+	"strings"
 	"testing"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
@@ -155,4 +158,67 @@ func TestWeaponMemoOfCircularDataIsOrderIndependent(t *testing.T) {
 	c.Equal(want, resolve(true, false), "without memos, the order of resolution doesn't matter")
 	c.Equal(want, resolve(false, true), "damage first")
 	c.Equal(want, resolve(true, true), "range first")
+}
+
+func TestEntityWeaponsOfCircularDataMatchUncached(t *testing.T) {
+	c := check.New(t)
+	for _, one := range []struct {
+		name       string
+		damage     string
+		usageNotes string
+	}{
+		// The base damage reads the damage it is part of and how many weapons are listed, so whether the two copies are
+		// told apart depends on how far around the circle each resolution got before the script depth limit cut it off.
+		{name: "damage", damage: `((parseInt(self.damage) || 0) + entity.weapons.length) % 4 + 1 + "d"`},
+		// The same, through text that isn't memoized.
+		{
+			name:       "usage notes",
+			damage:     "1d",
+			usageNotes: `<script>(parseInt(self.usageNotes) || 0) + entity.weapons.length</script>`,
+		},
+	} {
+		// describeLists returns, for each of two calls to Entity.Weapons, which copies it listed and what they resolve
+		// to. With askFirst at 0 or more, that copy is resolved first, so that its scripts ask for the list from inside
+		// the circle.
+		describeLists := func(memos bool, askFirst int) []string {
+			restore := SetWeaponMemosEnabled(memos)
+			defer restore()
+			e := NewEntity()
+			e.Traits = nil // Drop the natural attacks
+			copies := make([]*Weapon, 2)
+			for i := range copies {
+				owner := NewTrait(e, nil, false)
+				owner.Name = "Spit"
+				w := NewWeapon(owner, true)
+				w.SetOwner(owner)
+				w.Damage.StrengthType = stdmg.None
+				w.Damage.Base = one.damage
+				w.UsageNotes = one.usageNotes
+				owner.Weapons = []*Weapon{w}
+				e.Traits = append(e.Traits, owner)
+				copies[i] = w
+			}
+			e.Recalculate()
+			e.DiscardCaches()
+			if askFirst >= 0 {
+				copies[askFirst].HashDisplayedState()
+			}
+			lists := make([]string, 0, 2)
+			for range 2 {
+				listed := e.Weapons(true, false, true)
+				var buffer strings.Builder
+				for i, w := range copies {
+					if slices.Contains(listed, w) {
+						fmt.Fprintf(&buffer, "[%d: %s; %s]", i, w.Damage.ResolvedDamage(nil), w.ResolveUsageNotes())
+					}
+				}
+				lists = append(lists, buffer.String())
+			}
+			return lists
+		}
+		for askFirst := -1; askFirst < 2; askFirst++ {
+			c.Equal(describeLists(false, askFirst), describeLists(true, askFirst), "%s, asking first for copy %d",
+				one.name, askFirst)
+		}
+	}
 }
