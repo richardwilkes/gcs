@@ -152,9 +152,7 @@ func applyNoteState[T gurps.Node[T]](n *Node[T], closed bool) {
 // hasNote returns true if any of the row's cells carries a note, which is shown as secondary text.
 func (n *Node[T]) hasNote() bool {
 	for i := range n.table.Columns {
-		var data gurps.CellData
-		n.data.CellData(n.table.Columns[i].ID, &data)
-		if data.Type == cell.Text && data.Secondary != "" {
+		if data := n.cellData(i, false); data.Type == cell.Text && data.Secondary != "" {
 			return true
 		}
 	}

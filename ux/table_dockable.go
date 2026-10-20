@@ -228,6 +228,7 @@ func (d *TableDockable[T]) UndoManager() *unison.UndoManager {
 
 // MarkModified implements ModifiableRoot.
 func (d *TableDockable[T]) MarkModified(_ unison.Paneler) {
+	invalidateDisplayData()
 	UpdateTitleForDockable(d)
 }
 
@@ -298,6 +299,7 @@ func (d *TableDockable[T]) sizeToFit() {
 
 // Rebuild implements Rebuildable.
 func (d *TableDockable[T]) Rebuild(_ bool) {
+	invalidateDisplayData()
 	gurps.DiscardGlobalResolveCache()
 	h, v := d.scroll.Position()
 	sel := d.table.CopySelectionMap()

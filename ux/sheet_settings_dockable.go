@@ -853,6 +853,7 @@ func (d *sheetSettingsDockable) syncSheet(full bool) {
 		// The global sheet settings were just changed, so republish the snapshot background parses read.
 		gurps.SyncGlobalSheetSettings()
 	}
+	invalidateDisplayData()
 	for _, one := range AllDockables() {
 		if s, ok := one.(gurps.SheetSettingsResponder); ok {
 			s.SheetSettingsUpdated(entity, full)

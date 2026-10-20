@@ -322,6 +322,7 @@ func (t *Template) Entity() *gurps.Entity {
 
 // MarkModified implements ModifiableRoot.
 func (t *Template) MarkModified(_ unison.Paneler) {
+	invalidateDisplayData()
 	t.markModified(t, nil)
 }
 
@@ -448,6 +449,7 @@ func (t *Template) SheetSettingsUpdated(e *gurps.Entity, fullRebuild bool) {
 
 // Rebuild implements Rebuildable.
 func (t *Template) Rebuild(full bool) {
+	invalidateDisplayData()
 	gurps.DiscardGlobalResolveCache()
 	prepareForPage(t.template)
 	state := t.captureViewState()

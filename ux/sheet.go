@@ -386,6 +386,7 @@ func (s *Sheet) BackingFilePath() string {
 // be recalculated first, the calculators drawing numbers from it brought up to date last, and a source that asks for
 // it (see SkipDeepSync) is spared the sync in between.
 func (s *Sheet) MarkModified(src unison.Paneler) {
+	invalidateDisplayData()
 	if s.awaitingUpdate {
 		return
 	}
@@ -782,6 +783,7 @@ func setDefaultSheetLayout(layout *gurps.SheetLayout) {
 	gurps.SyncGlobalSheetSettings()
 	// Templates lay themselves out from the default layout, so they have to be told. A nil entity is what says the
 	// change was to the defaults rather than to some sheet's own settings, which is why the open sheets ignore it.
+	invalidateDisplayData()
 	for _, one := range AllDockables() {
 		if responder, ok := one.(gurps.SheetSettingsResponder); ok {
 			responder.SheetSettingsUpdated(nil, true)
@@ -857,6 +859,7 @@ func (s *Sheet) syncWithAllSources() {
 
 // Rebuild implements Rebuildable.
 func (s *Sheet) Rebuild(full bool) {
+	invalidateDisplayData()
 	gurps.DiscardGlobalResolveCache()
 	state := s.captureViewState()
 	s.entity.Recalculate()
@@ -917,6 +920,7 @@ func (s *Sheet) BodySettings(forReset bool) *gurps.Body {
 // SetBodySettings implements BodySettingsOwner.
 func (s *Sheet) SetBodySettings(body *gurps.Body) {
 	s.entity.SheetSettings.BodyType = body
+	invalidateDisplayData()
 	for _, one := range AllDockables() {
 		if responder, ok := one.(gurps.SheetSettingsResponder); ok {
 			responder.SheetSettingsUpdated(s.entity, true)

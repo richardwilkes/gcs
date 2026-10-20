@@ -249,6 +249,7 @@ func (d *attributeSettingsDockable) apply() {
 			delete(entity.Attributes.Set, attrID)
 		}
 	}
+	invalidateDisplayData()
 	for _, one := range AllDockables() {
 		if s, ok := one.(gurps.SheetSettingsResponder); ok {
 			s.SheetSettingsUpdated(entity, true)

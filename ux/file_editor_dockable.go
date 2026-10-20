@@ -154,6 +154,7 @@ func (d *fileEditorDockable[T]) SetBackingFilePath(p string) {
 // MarkModified implements ModifiableRoot. It does what the base does, but hands this dockable rather than the embedded
 // base to the title update, so that a window of its own shows this dockable's title rather than the base's TabTitle.
 func (d *fileEditorDockable[T]) MarkModified(_ unison.Paneler) {
+	invalidateDisplayData()
 	d.Modified()
 	UpdateTitleForDockable(d)
 	DeepSync(d)

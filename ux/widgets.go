@@ -103,9 +103,10 @@ type ModifiableRoot interface {
 	MarkModified(src unison.Paneler)
 }
 
-// MarkModified discards the global resolve cache, then calls MarkModified on the nearest ModifiableRoot at or above the
-// panel, if there is one.
+// MarkModified notes that the data on display may have changed (see displayEpoch) and discards the global resolve
+// cache, then calls MarkModified on the nearest ModifiableRoot at or above the panel, if there is one.
 func MarkModified(panel unison.Paneler) {
+	invalidateDisplayData()
 	gurps.DiscardGlobalResolveCache()
 	p := panel.AsPanel()
 	for p != nil {
@@ -139,6 +140,7 @@ var (
 // its rows use, can only change by building a new table. Doing both would repeat the whole update, which on a sheet
 // with hundreds of rows is the entire cost of the edit. A nil owner, typed or otherwise, is ignored.
 func rebuildAsModified(owner Rebuildable, full bool) {
+	invalidateDisplayData()
 	if xreflect.IsNil(owner) {
 		return
 	}

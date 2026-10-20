@@ -239,11 +239,13 @@ func (e *pointsEditor) isModified() bool {
 }
 
 func (e *pointsEditor) MarkModified(_ unison.Paneler) {
+	invalidateDisplayData()
 	UpdateTitleForDockable(e)
 	DeepSync(e)
 }
 
 func (e *pointsEditor) Rebuild(_ bool) {
+	invalidateDisplayData()
 	gurps.DiscardGlobalResolveCache()
 	e.MarkModified(nil)
 	e.MarkForLayoutRecursively()
