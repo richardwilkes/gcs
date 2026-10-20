@@ -478,14 +478,11 @@ func (s *Spell) CellData(columnID int, data *CellData) {
 	case SpellLevelColumn:
 		if !s.Container() {
 			data.Type = cell.Text
-			// A disabled one has no level, which LevelAsString shows as "-".
-			var level Level
-			if s.Enabled() {
-				level = s.CalculateLevel()
-			}
-			data.Primary = level.LevelAsString(s.Container())
-			if level.Tooltip != "" {
-				data.Tooltip = IncludesModifiersFrom() + ":" + level.Tooltip
+			// The level is the one the last recalculation recorded, which is what every other reader of a spell's
+			// level uses; a disabled one has no level, which LevelAsString shows as "-".
+			data.Primary = s.LevelData.LevelAsString(s.Container())
+			if s.LevelData.Tooltip != "" {
+				data.Tooltip = IncludesModifiersFrom() + ":" + s.LevelData.Tooltip
 			}
 			data.Alignment = align.End
 		}
@@ -496,10 +493,8 @@ func (s *Spell) CellData(columnID int, data *CellData) {
 			// attribute, so it is shown as a bare signed number, just as RelativeLevel() and the spell editor do.
 			data.Primary = FormatRelativeSkill(EntityFromNode(s), s.IsRitualMagic(), s.Difficulty,
 				s.AdjustedRelativeLevel())
-			if s.Enabled() {
-				if tooltip := s.CalculateLevel().Tooltip; tooltip != "" {
-					data.Tooltip = IncludesModifiersFrom() + ":" + tooltip
-				}
+			if s.LevelData.Tooltip != "" {
+				data.Tooltip = IncludesModifiersFrom() + ":" + s.LevelData.Tooltip
 			}
 		}
 	case SpellPointsColumn:
@@ -799,7 +794,7 @@ func (s *Spell) RitualMagicSatisfied(tooltip *xbytes.InsertBuffer, prefix string
 	e := EntityFromNode(s)
 	ritual := s.RitualSkillNameWithReplacements()
 	for _, college := range colleges {
-		if e.BestSkillNamed(ritual, college, false, nil) != nil {
+		if len(e.SkillNamed(ritual, college, false, nil)) != 0 {
 			return true
 		}
 	}
@@ -859,7 +854,12 @@ func (s *Spell) Rituals() string {
 		return ""
 	}
 	var buffer strings.Builder
-	level := s.CalculateLevel().Level
+	// The level is the one the last recalculation recorded, except for a disabled spell, whose recorded level is
+	// cleared; its rituals are still those of the level it would have.
+	level := s.LevelData.Level
+	if !s.Enabled() {
+		level = s.CalculateLevel().Level
+	}
 	ritualText := i18n.Text("Ritual")
 	switch {
 	case level < fxp.Ten:
