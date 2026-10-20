@@ -507,8 +507,12 @@ func (e *Entity) recalculate(passBudget int) int {
 	}, false, false, e.Traits...)
 	contradicted := false
 	made := 0
+	// Each round hands the state it leaves the sheet in to the next, and the last to the comparison below, which spares
+	// each of them hashing the state it is given.
+	state := e.derivedState(len(before))
 	for made < passBudget {
-		settled, newlyContradicted, passes := e.recalculateUntilSettled(min(passBudget-made, maxRecalculationPasses))
+		settled, newlyContradicted, passes, end := e.recalculateUntilSettled(state, min(passBudget-made, maxRecalculationPasses))
+		state = end
 		made += passes
 		if settled {
 			break
@@ -523,7 +527,7 @@ func (e *Entity) recalculate(passBudget int) int {
 			"defaults, features and scripts at once", "name", e.Profile.Name)
 	}
 	e.unsettled = contradicted
-	e.derivedStateChanged = !slices.Equal(before, e.derivedState(len(before)))
+	e.derivedStateChanged = !slices.Equal(before, state)
 	return made
 }
 
@@ -542,16 +546,18 @@ func (e *Entity) Unsettled() bool {
 // newlyContradicted reporting whether any trait not already marked was, since a further round may then settle; see
 // Recalculate. passes is how many passes were made. A cycle is left in its canonical state, whatever state the passes
 // were in when it was found; see settleOnCanonicalCycleState. The limit is maxRecalculationPasses, or what is left of
-// maxRecalculationPassesInAll when that is less; see recalculate.
+// maxRecalculationPassesInAll when that is less; see recalculate. start is the derived state as the passes find it,
+// which the caller has in hand, and end is the state they leave the sheet in, for the caller to hand to the next round
+// or compare with the state the recalculation began from without hashing it again.
 //
 // Whether a pass changed anything is judged by comparing the derived state before and after it rather than by what
 // the pass itself saw change, since a script evaluated during the pass may recompute a level as it reads it, leaving
 // the pass to find that level already in place. A prerequisite judged against the level before the script ran would
 // otherwise be left standing, with nothing to prompt the pass that would judge it again.
-func (e *Entity) recalculateUntilSettled(limit int) (settled, newlyContradicted bool, passes int) {
+func (e *Entity) recalculateUntilSettled(start []uint64, limit int) (settled, newlyContradicted bool, passes int, end []uint64) {
 	// The state the passes begin from is kept along with those they reach, so that a pass that comes back to it is
 	// seen to, whether the data has settled or has cycled back.
-	states := [][]uint64{e.derivedState(0)}
+	states := [][]uint64{start}
 	var verdicts [][]traitPrereqVerdict
 	traitCount := 0
 	for passes < limit {
@@ -560,16 +566,19 @@ func (e *Entity) recalculateUntilSettled(limit int) (settled, newlyContradicted 
 		passVerdicts := e.traitPrereqVerdicts(traitCount)
 		traitCount = len(passVerdicts)
 		verdicts = append(verdicts, passVerdicts)
-		state := e.derivedState(len(states[0]))
+		state := e.derivedState(len(start))
 		if slices.Equal(states[len(states)-1], state) {
-			return true, false, passes
+			return true, false, passes, state
 		}
 		if i := slices.IndexFunc(states, func(seen []uint64) bool { return slices.Equal(seen, state) }); i >= 0 {
 			// The cycle is the states from index i on, and the verdicts of the passes made from them sit at the same
 			// indices, since a pass's verdicts are recorded at the index of the state it began from. The sheet is moved
 			// to the cycle's canonical state before any trait is marked, since marking one changes what the passes do.
 			e.settleOnCanonicalCycleState(states[i:])
-			return false, e.markContradictedTraits(verdicts[i:], true), passes
+			newlyContradicted = e.markContradictedTraits(verdicts[i:], true)
+			// The state is hashed afresh, since moving the sheet to the canonical state hashed nothing and marking a
+			// trait leaves it enabled; a round that found a cycle is rare enough for that.
+			return false, newlyContradicted, passes, e.derivedState(len(start))
 		}
 		states = append(states, state)
 	}
@@ -579,7 +588,10 @@ func (e *Entity) recalculateUntilSettled(limit int) (settled, newlyContradicted 
 	// settling, and is left as its last verdict had it, so that the chain is stopped short rather than given the wrong
 	// answer; see maxRecalculationPasses. A limit cut short by maxRecalculationPassesInAll is judged the same way, for
 	// want of anything better, and only ever falls to data that has been found never to settle already.
-	return false, e.markContradictedTraits(verdicts[len(verdicts)/2:], false), passes
+	newlyContradicted = e.markContradictedTraits(verdicts[len(verdicts)/2:], false)
+	// Marking a trait leaves it enabled, so the state is hashed afresh; a round stopped at the limit is rare enough for
+	// that.
+	return false, newlyContradicted, passes, e.derivedState(len(start))
 }
 
 // traitPrereqVerdicts returns the verdict the last pass reached for each trait, in traversal order. The capacity is a

@@ -1369,6 +1369,7 @@ func TestEntityRecalculatePassBudgetSpansTheRounds(t *testing.T) {
 		state := recalculationState(e)
 		c.Equal(budget, e.recalculate(budget), "budget %d: recalculating again makes the same passes", budget)
 		c.Equal(state, recalculationState(e), "budget %d: and comes out the same", budget)
+		c.False(e.DerivedStateChanged(), "budget %d: and reports the derived state as it found it", budget)
 	}
 	c.True(slices.IsSorted(marked), "a ring once marked stays marked as the budget grows: %v", marked)
 	for count := range len(rings) + 1 {
