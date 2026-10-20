@@ -27,7 +27,8 @@ func (w *Weapon) ratedStrength() fxp.Int {
 	return w.Owner.RatedStrength()
 }
 
-// ResolvedStrength returns the weapon's strength with any bonuses that apply resolved.
+// ResolvedStrength returns the weapon's strength with any bonuses that apply resolved. The result is kept as Weapon
+// describes.
 func (w *Weapon) ResolvedStrength(modifiersTooltip *xbytes.InsertBuffer) attack.Strength {
 	return memoize(w, func(m *weaponMemo) *memoized[attack.Strength] { return &m.strength }, modifiersTooltip, w.resolveStrength)
 }
@@ -44,7 +45,8 @@ func (w *Weapon) resolveStrength(modifiersTooltip *xbytes.InsertBuffer) attack.S
 	return result
 }
 
-// ResolvedParry returns the weapon's parry with any bonuses that apply resolved.
+// ResolvedParry returns the weapon's parry with any bonuses that apply resolved. The result is kept as Weapon
+// describes.
 func (w *Weapon) ResolvedParry(modifiersTooltip *xbytes.InsertBuffer) attack.Parry {
 	return memoize(w, func(m *weaponMemo) *memoized[attack.Parry] { return &m.parry }, modifiersTooltip, w.resolveParry)
 }
@@ -64,7 +66,8 @@ func (w *Weapon) resolveParry(modifiersTooltip *xbytes.InsertBuffer) attack.Parr
 	return result
 }
 
-// ResolvedBlock returns the weapon's block with any bonuses that apply resolved.
+// ResolvedBlock returns the weapon's block with any bonuses that apply resolved. The result is kept as Weapon
+// describes.
 func (w *Weapon) ResolvedBlock(modifiersTooltip *xbytes.InsertBuffer) attack.Block {
 	return memoize(w, func(m *weaponMemo) *memoized[attack.Block] { return &m.block }, modifiersTooltip, w.resolveBlock)
 }
@@ -82,7 +85,8 @@ func (w *Weapon) resolveBlock(modifiersTooltip *xbytes.InsertBuffer) attack.Bloc
 	return result
 }
 
-// ResolvedReach returns the weapon's reach with any bonuses that apply resolved.
+// ResolvedReach returns the weapon's reach with any bonuses that apply resolved. The result is kept as Weapon
+// describes.
 func (w *Weapon) ResolvedReach(modifiersTooltip *xbytes.InsertBuffer) attack.Reach {
 	return memoize(w, func(m *weaponMemo) *memoized[attack.Reach] { return &m.reach }, modifiersTooltip, w.resolveReach)
 }
@@ -99,7 +103,8 @@ func (w *Weapon) resolveReach(modifiersTooltip *xbytes.InsertBuffer) attack.Reac
 	return result
 }
 
-// ResolvedAccuracy returns the weapon's accuracy with any bonuses that apply resolved.
+// ResolvedAccuracy returns the weapon's accuracy with any bonuses that apply resolved. The result is kept as Weapon
+// describes.
 func (w *Weapon) ResolvedAccuracy(modifiersTooltip *xbytes.InsertBuffer) attack.Accuracy {
 	return memoize(w, func(m *weaponMemo) *memoized[attack.Accuracy] { return &m.accuracy }, modifiersTooltip, w.resolveAccuracy)
 }
@@ -119,7 +124,8 @@ func (w *Weapon) resolveAccuracy(modifiersTooltip *xbytes.InsertBuffer) attack.A
 	return result
 }
 
-// ResolvedRange returns the weapon's range with any bonuses that apply resolved.
+// ResolvedRange returns the weapon's range with any bonuses that apply resolved. The result is kept as Weapon
+// describes.
 func (w *Weapon) ResolvedRange(modifiersTooltip *xbytes.InsertBuffer) attack.Range {
 	return memoize(w, func(m *weaponMemo) *memoized[attack.Range] { return &m.rng }, modifiersTooltip, w.resolveRange)
 }
@@ -154,7 +160,8 @@ func (w *Weapon) resolveRange(modifiersTooltip *xbytes.InsertBuffer) attack.Rang
 	return result
 }
 
-// ResolvedRateOfFire returns the weapon's rate of fire with any bonuses that apply resolved.
+// ResolvedRateOfFire returns the weapon's rate of fire with any bonuses that apply resolved. The result is kept as
+// Weapon describes.
 func (w *Weapon) ResolvedRateOfFire(modifiersTooltip *xbytes.InsertBuffer) attack.RoF {
 	return memoize(w, func(m *weaponMemo) *memoized[attack.RoF] { return &m.rateOfFire }, modifiersTooltip, w.resolveRateOfFire)
 }
@@ -208,7 +215,8 @@ func (w *Weapon) resolvedRoFMode(mode attack.RoFMode, modifiersTooltip *xbytes.I
 	return result
 }
 
-// ResolvedShots returns the weapon's shots with any bonuses that apply resolved.
+// ResolvedShots returns the weapon's shots with any bonuses that apply resolved. The result is kept as Weapon
+// describes.
 func (w *Weapon) ResolvedShots(modifiersTooltip *xbytes.InsertBuffer) attack.Shots {
 	return memoize(w, func(m *weaponMemo) *memoized[attack.Shots] { return &m.shots }, modifiersTooltip, w.resolveShots)
 }
@@ -227,7 +235,7 @@ func (w *Weapon) resolveShots(modifiersTooltip *xbytes.InsertBuffer) attack.Shot
 	return result
 }
 
-// ResolvedBulk returns the weapon's bulk with any bonuses that apply resolved.
+// ResolvedBulk returns the weapon's bulk with any bonuses that apply resolved. The result is kept as Weapon describes.
 func (w *Weapon) ResolvedBulk(modifiersTooltip *xbytes.InsertBuffer) attack.Bulk {
 	return memoize(w, func(m *weaponMemo) *memoized[attack.Bulk] { return &m.bulk }, modifiersTooltip, w.resolveBulk)
 }
@@ -244,7 +252,8 @@ func (w *Weapon) resolveBulk(modifiersTooltip *xbytes.InsertBuffer) attack.Bulk 
 	return result
 }
 
-// ResolvedRecoil returns the weapon's recoil with any bonuses that apply resolved.
+// ResolvedRecoil returns the weapon's recoil with any bonuses that apply resolved. The result is kept as Weapon
+// describes.
 func (w *Weapon) ResolvedRecoil(modifiersTooltip *xbytes.InsertBuffer) attack.Recoil {
 	return memoize(w, func(m *weaponMemo) *memoized[attack.Recoil] { return &m.recoil }, modifiersTooltip, w.resolveRecoil)
 }

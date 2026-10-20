@@ -30,9 +30,10 @@ var weaponMemosEnabled = true
 // memoized is a resolved value along with the text resolving it added to the modifiers tooltip, so that a later call
 // asking for the tooltip gets exactly the text the resolution produced.
 type memoized[T any] struct {
-	value   T
-	tooltip string
-	done    bool
+	value     T
+	tooltip   string
+	done      bool
+	resolving bool
 }
 
 // requiredSkill names a skill a weapon is used with; see Weapon.forEachRequiredSkill.
@@ -46,8 +47,9 @@ type requiredSkill struct {
 // resolved. Resolving a field collects the bonuses, which walks the skills several times over, and a weapon's fields
 // are resolved over and over -- once per column of its row per sync of its table, again for the hash that tells the
 // weapons apart, again on every draw -- so without the memo a sheet with many weapons spent most of its time here. A
-// memo lives in the entity's weaponMemos, which discardCaches drops, so it never outlives the derived state it was
-// resolved against; a change to the weapon's own data or its owner is caught by the fingerprint (see Weapon.memo).
+// memo lives in the entity's weaponMemos, which discardCaches drops, so it lasts until the next recalculation or
+// DiscardCaches. Weapon.memo replaces it sooner only when the weapon's own data changes or it is given another owner;
+// a change to the owner's data, such as its rated ST or features, or to the rest of the entity is not seen until then.
 type weaponMemo struct {
 	owner          WeaponOwner
 	fingerprint    uint64
@@ -104,10 +106,11 @@ func (w *Weapon) memoFingerprint() uint64 {
 }
 
 // memoize returns the value in the memo's slot, resolving it first if it isn't there yet, and adds the text that
-// resolution produced to the tooltip, if one was given. Resolving always runs with a buffer, so that the text is on
-// hand for whichever later call wants it. A resolution writes to the tooltip without reading it, so the value doesn't
-// depend on whether a buffer was passed, but some separate what they add from what was already there, so a call with
-// a buffer that isn't empty resolves afresh into it, as does one for a weapon that can't be memoized.
+// resolution produced to the tooltip, if one was given. A resolution that may be kept runs with a buffer, so that the
+// text is on hand for whichever later call wants it. No resolved value depends on the tooltip, but some resolutions
+// read its length to separate what they add from what was already there, so a call with a buffer that isn't empty
+// resolves afresh into it, as does one for a weapon that can't be memoized. What is resolved while a resolution comes
+// back around to a slot still being resolved isn't kept; see resolveSlot.
 func memoize[T any](w *Weapon, slot func(*weaponMemo) *memoized[T], tooltip *xbytes.InsertBuffer, resolve func(*xbytes.InsertBuffer) T) T {
 	m := w.memo()
 	if m == nil || (tooltip != nil && tooltip.Len() != 0) {
@@ -115,8 +118,20 @@ func memoize[T any](w *Weapon, slot func(*weaponMemo) *memoized[T], tooltip *xby
 	}
 	s := slot(m)
 	if !s.done {
+		entity := w.Entity()
+		if s.resolving {
+			entity.circularWeaponResolution = true
+			return resolve(tooltip)
+		}
 		var buffer xbytes.InsertBuffer
-		s.value = resolve(&buffer)
+		value, keep := resolveSlot(entity, s, &buffer, resolve)
+		if !keep {
+			if tooltip != nil && buffer.Len() != 0 {
+				tooltip.WriteString(buffer.String())
+			}
+			return value
+		}
+		s.value = value
 		s.tooltip = buffer.String()
 		s.done = true
 	}
@@ -124,4 +139,22 @@ func memoize[T any](w *Weapon, slot func(*weaponMemo) *memoized[T], tooltip *xby
 		tooltip.WriteString(s.tooltip)
 	}
 	return s.value
+}
+
+// resolveSlot resolves the slot's value into buffer and reports whether it may be kept. Only circular data, such as a
+// damage script that reads the weapon's own damage, comes back around to a slot still being resolved. What the
+// resolutions in progress then find depends on how far around the circle each got before the script depth limit cut
+// it off, so no resolution that finishes from then on is kept, up to and including the outermost one.
+func resolveSlot[T any](entity *Entity, s *memoized[T], buffer *xbytes.InsertBuffer, resolve func(*xbytes.InsertBuffer) T) (value T, keep bool) {
+	s.resolving = true
+	entity.weaponResolutions++
+	defer func() {
+		s.resolving = false
+		entity.weaponResolutions--
+		if entity.weaponResolutions == 0 {
+			entity.circularWeaponResolution = false
+		}
+	}()
+	value = resolve(buffer)
+	return value, !entity.circularWeaponResolution
 }

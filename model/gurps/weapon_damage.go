@@ -205,7 +205,8 @@ func (w *WeaponDamage) surfaceBaseDamageOverrides(tooltip *xbytes.InsertBuffer) 
 	w.resolvedDamageNumeric(selector.WeaponDamageStrengthMultiplier, w.StrengthMultiplier, tooltip)
 }
 
-// BaseDamageDice returns the base damage dice for this weapon (i.e. the dice before any bonuses are applied).
+// BaseDamageDice returns the base damage dice for this weapon (i.e. the dice before any bonuses are applied). The
+// result is kept as Weapon describes.
 func (w *WeaponDamage) BaseDamageDice() dice.Dice {
 	if w.Owner == nil {
 		return dice.Dice{Sides: 6, Multiplier: 1}
@@ -310,7 +311,7 @@ type ResolvedWeaponDamage struct {
 
 // ResolveDamage returns the damage, fully resolved for the user's sw or thr, or nil if there is no owning weapon or no
 // entity to resolve it against. If 'tooltip' isn't nil, it is updated with the details of every bonus and selector
-// override that was consulted.
+// override that was consulted. The result is kept as Weapon describes.
 func (w *WeaponDamage) ResolveDamage(tooltip *xbytes.InsertBuffer) *ResolvedWeaponDamage {
 	if w.Owner == nil {
 		return nil
@@ -470,7 +471,8 @@ func (r *ResolvedWeaponDamage) IsExplosive() bool {
 	return IsExplosiveDamageType(r.Type) || r.HasFragmentation
 }
 
-// ResolvedDamage returns the damage, fully resolved for the user's sw or thr, if possible.
+// ResolvedDamage returns the damage, fully resolved for the user's sw or thr, if possible. The result is kept as Weapon
+// describes.
 func (w *WeaponDamage) ResolvedDamage(tooltip *xbytes.InsertBuffer) string {
 	if r := w.ResolveDamage(tooltip); r != nil {
 		return r.String()

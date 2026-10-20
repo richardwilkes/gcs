@@ -130,6 +130,8 @@ type Entity struct {
 	encumbranceLevelCache          encumbrance.Level
 	encumbranceLevelForSkillsCache encumbrance.Level
 	weaponMemos                    map[*Weapon]*weaponMemo
+	weaponResolutions              int  // The memoized weapon resolutions in progress; see resolveSlot
+	circularWeaponResolution       bool // Whether one of them came back around to a slot still being resolved
 	weightCarriedCache             [2]fxp.Weight
 	weightCarriedCached            [2]bool
 	weaponLists                    [8][]*Weapon // Indexed by weaponListIndex
@@ -1966,7 +1968,7 @@ func (e *Entity) WeaponOwner() WeaponOwner {
 }
 
 // Weapons implements WeaponListProvider. Building a list resolves every weapon on it, and the tables ask for their
-// lists often, so each list is kept for the current derived state (see DiscardCaches). The caller always gets a slice
+// lists often, so each list is kept until the caches are discarded (see DiscardCaches). The caller always gets a slice
 // of its own.
 func (e *Entity) Weapons(melee, includeUnequipped, excludeHidden bool) []*Weapon {
 	// Nothing is kept while recalculating, for the reason given in Weapon.memo.

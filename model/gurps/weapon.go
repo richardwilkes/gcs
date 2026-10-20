@@ -101,7 +101,10 @@ type WeaponData struct {
 	Hide       bool            `json:"hide,omitzero"`
 }
 
-// Weapon holds the stats for a weapon.
+// Weapon holds the stats for a weapon. What its methods, and those of its damage, resolve is kept until its entity's
+// caches are discarded (see Entity.DiscardCaches), unless the weapon's own data changes or it is given another owner
+// first. A change to the owner's data, such as its rated ST or features, or to the rest of the entity is therefore
+// seen only after a recalculation or DiscardCaches.
 type Weapon struct {
 	WeaponData
 	Owner         WeaponOwner
@@ -203,7 +206,7 @@ func (w *Weapon) Compare(other *Weapon) int {
 }
 
 // HashDisplayedState returns a hash value for this weapon's displayed state. Useful for detecting unique weapon entries
-// to list on the sheet.
+// to list on the sheet. It reads values kept as Weapon describes.
 func (w *Weapon) HashDisplayedState() uint64 {
 	h := xxh3.New()
 	w.Hash(h)
@@ -490,7 +493,7 @@ func (w *Weapon) effectiveStrength(defaultST func(entity *Entity) fxp.Int, toolt
 	return st
 }
 
-// SkillLevel returns the resolved skill level.
+// SkillLevel returns the resolved skill level. The result is kept as Weapon describes.
 func (w *Weapon) SkillLevel(tooltip *xbytes.InsertBuffer) fxp.Int {
 	return memoize(w, func(m *weaponMemo) *memoized[fxp.Int] { return &m.skillLevel }, tooltip, w.skillLevel)
 }
@@ -675,7 +678,7 @@ func (w *Weapon) extractSkillBonusForThisWeapon(f Feature, tooltip *xbytes.Inser
 	return 0
 }
 
-// ResolveBoolFlag returns the resolved value of the given bool flag.
+// ResolveBoolFlag returns the resolved value of the given bool flag. It reads values kept as Weapon describes.
 func (w *Weapon) ResolveBoolFlag(switchType wswitch.Type, initial bool) bool {
 	entity := w.Entity()
 	if entity == nil {
@@ -705,7 +708,7 @@ func (w *Weapon) ResolveBoolFlag(switchType wswitch.Type, initial bool) bool {
 // given field and select this weapon: by the skill it is used with, by its name, or by being a weapon of the item
 // carrying the override. base is the field's intrinsic value. When more than one override matches, the winner is
 // chosen by the override-resolution ladder (priority, then specificity), and, if tooltip is non-nil, the full contest
-// is reported.
+// is reported. It reads values kept as Weapon describes.
 func (w *Weapon) ResolveSelector(field selector.Field, base string, tooltip *xbytes.InsertBuffer) string {
 	entity := w.Entity()
 	if entity == nil {

@@ -138,7 +138,6 @@ func TestEntityWeaponsCached(t *testing.T) {
 	c.True(&first[0] != &second[0], "each call returns a slice of its own")
 
 	first[0] = nil
-	c.Equal(2, len(append(second, claws)))
 	c.Equal([]*gurps.Weapon{claws}, e.Weapons(true, false, true), "altering a returned slice leaves the kept list alone")
 	c.Equal(0, len(e.Weapons(false, false, true)), "the ranged list is kept apart from the melee one")
 

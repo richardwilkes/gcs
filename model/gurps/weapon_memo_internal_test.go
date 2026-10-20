@@ -112,3 +112,47 @@ func TestWeaponDamageCopyBypassesMemo(t *testing.T) {
 	c.Equal(3, cp.BaseDamageDice().Count)
 	c.Equal("1d cr", w.Damage.ResolvedDamage(nil))
 }
+
+func TestWeaponMemoOfCircularDataIsOrderIndependent(t *testing.T) {
+	c := check.New(t)
+	type resolved struct{ damage, rng string }
+	resolve := func(rangeFirst, memos bool) resolved {
+		restore := SetWeaponMemosEnabled(memos)
+		defer restore()
+		e := NewEntity()
+		e.Traits = nil // Drop the natural attacks
+		owner := NewTrait(e, nil, false)
+		owner.Name = "Spit"
+		w := NewWeapon(owner, false)
+		w.SetOwner(owner)
+		w.Damage.StrengthType = stdmg.None
+		// The base damage reads the damage it is part of, adding a die each time around, until the script depth limit
+		// cuts the circle off. A bonus to the maximum range brings the base damage into resolving the range too.
+		w.Damage.Base = `(parseInt(self.damage) || 0) + 1 + "d"`
+		bonus := NewWeaponBonus(feature.WeaponMaxRangeBonus)
+		bonus.SelectionType = wsel.ThisWeapon
+		bonus.Amount = fxp.One
+		owner.Features = append(owner.Features, bonus)
+		owner.Weapons = []*Weapon{w}
+		e.Traits = append(e.Traits, owner)
+		e.Recalculate()
+		e.DiscardCaches()
+		var result resolved
+		if rangeFirst {
+			result.rng = w.ResolvedRange(nil).String(true)
+			result.damage = w.Damage.ResolvedDamage(nil)
+		} else {
+			result.damage = w.Damage.ResolvedDamage(nil)
+			result.rng = w.ResolvedRange(nil).String(true)
+		}
+		c.Equal(0, e.weaponResolutions)
+		c.False(e.circularWeaponResolution)
+		c.Equal(result, resolved{damage: w.Damage.ResolvedDamage(nil), rng: w.ResolvedRange(nil).String(true)},
+			"memos %v, range first %v: asking again", memos, rangeFirst)
+		return result
+	}
+	want := resolve(false, false)
+	c.Equal(want, resolve(true, false), "without memos, the order of resolution doesn't matter")
+	c.Equal(want, resolve(false, true), "damage first")
+	c.Equal(want, resolve(true, true), "range first")
+}
