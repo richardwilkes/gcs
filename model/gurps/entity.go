@@ -1415,21 +1415,44 @@ func (e *Entity) AddWeaponWithSkillBonusesFor(name, specialization, usage string
 	if m == nil {
 		m = make(map[*WeaponBonus]bool)
 	}
-	rsl := e.relativeSkillLevel(name, specialization)
+	// The relative skill level takes a walk of the skills to find, so it is only found once a bonus that cares about
+	// it has matched on everything else.
+	var rsl fxp.Int
+	rslResolved := false
 	for _, bonus := range e.features.weaponBonuses {
-		if allowedFeatureTypes[bonus.Type] &&
-			bonus.SelectionType == wsel.WithRequiredSkill &&
-			bonus.RelativeLevelCriteria.Matches(rsl) {
-			replacements := bonusReplacements(bonus)
-			if matchesRequiredSkillName(bonus.NameCriteria, replacements, name) &&
-				bonus.SpecializationCriteria.Matches(replacements, specialization) &&
-				bonus.UsageCriteria.Matches(replacements, usage) &&
-				bonus.TagsCriteria.MatchesList(replacements, tags...) {
-				addWeaponBonusToMap(bonus, dieCount, tooltip, m)
+		if !allowedFeatureTypes[bonus.Type] || bonus.SelectionType != wsel.WithRequiredSkill {
+			continue
+		}
+		replacements := bonusReplacements(bonus)
+		if !matchesRequiredSkillName(bonus.NameCriteria, replacements, name) ||
+			!bonus.SpecializationCriteria.Matches(replacements, specialization) ||
+			!bonus.UsageCriteria.Matches(replacements, usage) ||
+			!bonus.TagsCriteria.MatchesList(replacements, tags...) {
+			continue
+		}
+		if bonus.RelativeLevelCriteria.Compare != criteria.AnyNumber {
+			if !rslResolved {
+				rsl = e.relativeSkillLevel(name, specialization)
+				rslResolved = true
+			}
+			if !bonus.RelativeLevelCriteria.Matches(rsl) {
+				continue
 			}
 		}
+		addWeaponBonusToMap(bonus, dieCount, tooltip, m)
 	}
 	return m
+}
+
+// hasWeaponBonusesBySkill reports whether any of the entity's weapon bonuses of the allowed types selects weapons by
+// the skill they are used with, which is the only reason to find out what skill that is.
+func (e *Entity) hasWeaponBonusesBySkill(allowedFeatureTypes map[feature.Type]bool) bool {
+	for _, bonus := range e.features.weaponBonuses {
+		if allowedFeatureTypes[bonus.Type] && bonus.SelectionType == wsel.WithRequiredSkill {
+			return true
+		}
+	}
+	return false
 }
 
 // relativeSkillLevel returns the best relative level among the skills with the given name and specialization, or
@@ -1518,21 +1541,41 @@ func (e *Entity) BestSkillNamed(name, specialization string, requirePoints bool,
 	return best
 }
 
+// bestFastSkillNamed is BestSkillNamed using the levels the last recalculation recorded rather than calculating each
+// candidate's level afresh, for callers that only need to know which skill it is. As in BestSkillNamed, the first of
+// the skills that share the highest level wins.
+func (e *Entity) bestFastSkillNamed(name, specialization string, requirePoints bool, excludes map[string]bool) *Skill {
+	var best *Skill
+	level := fxp.Min
+	for _, sk := range e.SkillNamed(name, specialization, requirePoints, excludes) {
+		if best == nil || level < sk.LevelData.Level {
+			best = sk
+			level = sk.LevelData.Level
+		}
+	}
+	return best
+}
+
 // SkillNamed returns the skills whose name matches, ignoring case, and whose specialization or optional specialization
-// does too when one is given.
+// does too when one is given. The name is tested first, since it rules out nearly every skill and is the cheapest
+// test; the others, which cost a walk of the skill's features or build its full name, only run for the few that pass.
 func (e *Entity) SkillNamed(name, specialization string, requirePoints bool, excludes map[string]bool) []*Skill {
 	var list []*Skill
 	Traverse(func(sk *Skill) bool {
-		if !excludes[sk.String()] {
-			if !requirePoints || sk.IsTechnique() || sk.AdjustedPoints(nil) > 0 {
-				if strings.EqualFold(sk.NameWithReplacements(), name) {
-					if specialization == "" || strings.EqualFold(sk.SpecializationWithReplacements(), specialization) ||
-						strings.EqualFold(sk.OptionalSpecializationWithReplacements(), specialization) {
-						list = append(list, sk)
-					}
-				}
-			}
+		if !strings.EqualFold(sk.NameWithReplacements(), name) {
+			return false
 		}
+		if specialization != "" && !strings.EqualFold(sk.SpecializationWithReplacements(), specialization) &&
+			!strings.EqualFold(sk.OptionalSpecializationWithReplacements(), specialization) {
+			return false
+		}
+		if requirePoints && !sk.IsTechnique() && sk.AdjustedPoints(nil) <= 0 {
+			return false
+		}
+		if len(excludes) != 0 && excludes[sk.String()] {
+			return false
+		}
+		list = append(list, sk)
 		return false
 	}, true, true, e.Skills...)
 	return list
@@ -1560,26 +1603,41 @@ func BestSkillIn(list []*Skill, excludes map[string]bool) *Skill {
 // string for a fully unspecialized skill) - this keeps an unspecialized skill distinct from a sibling that carries an
 // optional specialization, so e.g. an "is empty" criteria matches only the truly unspecialized skill.
 func skillSpecializationMatches(specializationCriteria criteria.Text, replacements map[string]string, requiredSpecialization, optionalSpecialization string) bool {
-	if requiredSpecialization != "" {
-		return specializationCriteria.Matches(replacements, requiredSpecialization) ||
-			(optionalSpecialization != "" && specializationCriteria.Matches(replacements, optionalSpecialization))
-	}
-	return specializationCriteria.Matches(replacements, optionalSpecialization)
+	return skillSpecializationMatcherMatches(specializationCriteria.Matcher(replacements), requiredSpecialization,
+		optionalSpecialization)
 }
 
-// SkillMatching returns a list of skills whose name and specialization match the given criteria.
+// skillSpecializationMatcherMatches is skillSpecializationMatches for a criteria whose replacements have already been
+// applied, which spares applying them again for every skill in a walk.
+func skillSpecializationMatcherMatches(specialization criteria.TextMatcher, requiredSpecialization, optionalSpecialization string) bool {
+	if requiredSpecialization != "" {
+		return specialization.Matches(requiredSpecialization) ||
+			(optionalSpecialization != "" && specialization.Matches(optionalSpecialization))
+	}
+	return specialization.Matches(optionalSpecialization)
+}
+
+// SkillMatching returns a list of skills whose name and specialization match the given criteria. The tests run in
+// the order SkillNamed runs them, and for the same reason.
 func (e *Entity) SkillMatching(nameCriteria, specializationCriteria criteria.Text, replacements map[string]string, requirePoints bool, excludes map[string]bool) []*Skill {
 	var list []*Skill
+	name := nameCriteria.Matcher(replacements)
+	specialization := specializationCriteria.Matcher(replacements)
 	Traverse(func(sk *Skill) bool {
-		if !excludes[sk.String()] {
-			if !requirePoints || sk.IsTechnique() || sk.AdjustedPoints(nil) > 0 {
-				if nameCriteria.Matches(replacements, sk.NameWithReplacements()) &&
-					skillSpecializationMatches(specializationCriteria, replacements,
-						sk.SpecializationWithReplacements(), sk.OptionalSpecializationWithReplacements()) {
-					list = append(list, sk)
-				}
-			}
+		if !name.Matches(sk.NameWithReplacements()) {
+			return false
 		}
+		if !skillSpecializationMatcherMatches(specialization, sk.SpecializationWithReplacements(),
+			sk.OptionalSpecializationWithReplacements()) {
+			return false
+		}
+		if requirePoints && !sk.IsTechnique() && sk.AdjustedPoints(nil) <= 0 {
+			return false
+		}
+		if len(excludes) != 0 && excludes[sk.String()] {
+			return false
+		}
+		list = append(list, sk)
 		return false
 	}, true, true, e.Skills...)
 	return list

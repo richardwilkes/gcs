@@ -818,9 +818,13 @@ func (w *Weapon) collectWeaponBonuses(dieCount dieCountFunc, tooltip *xbytes.Ins
 	bonusSet := make(map[*WeaponBonus]bool)
 	tags := w.Owner.TagList()
 	usage := w.UsageWithReplacements()
-	w.forEachRequiredSkill(entity, func(name, specialization string) {
-		entity.AddWeaponWithSkillBonusesFor(name, specialization, usage, tags, dieCount, tooltip, bonusSet, allowed)
-	})
+	// Finding the skill the weapon is used with takes several walks of the skills, so it is only done when a bonus
+	// that selects weapons by that skill exists to collect.
+	if entity.hasWeaponBonusesBySkill(allowed) {
+		w.forEachRequiredSkill(entity, func(name, specialization string) {
+			entity.AddWeaponWithSkillBonusesFor(name, specialization, usage, tags, dieCount, tooltip, bonusSet, allowed)
+		})
+	}
 	nameQualifier := w.String()
 	entity.AddNamedWeaponBonusesFor(nameQualifier, usage, tags, dieCount, tooltip, bonusSet, allowed)
 	for _, f := range w.Owner.ActiveFeatures() {
@@ -851,16 +855,20 @@ func (w *Weapon) collectWeaponBonuses(dieCount dieCountFunc, tooltip *xbytes.Ins
 // itself is resolved, since this runs while its fields are.
 func (w *Weapon) forEachRequiredSkill(entity *Entity, visit func(name, specialization string)) {
 	var bestDef *SkillDefault
+	var bestSkill *Skill
 	best := fxp.Min
 	replacements := w.NameableReplacements()
 	for _, one := range w.Defaults {
 		if one.SkillBased() {
 			// Ranked exactly the way SkillLevel() ranks them, so that the skill whose bonuses are collected is the one
 			// the weapon actually attacks with. That includes leaving a parry- or block-type default scored by its
-			// defense level; see the note in SkillLevel().
-			if level := one.SkillLevelFast(entity, replacements, false, nil, true); best < level {
+			// defense level; see the note in SkillLevel(). The skill each default scores by is kept, since it is the
+			// one the winner is resolved to below.
+			sk := one.bestFastMatchingSkill(entity, replacements, false, nil)
+			if level := one.fastLevelFromSkill(entity, sk); best < level {
 				best = level
 				bestDef = one
+				bestSkill = sk
 			}
 		}
 	}
@@ -872,9 +880,9 @@ func (w *Weapon) forEachRequiredSkill(entity *Entity, visit func(name, specializ
 		// actually scored -- the same one bestFast picked when it won the ranking above -- lets a default that selects
 		// its skill by tag, or by any other criteria, still collect the weapon bonuses qualified by the skill the
 		// weapon really attacks with.
-		if sk := bestDef.bestFastMatchingSkill(entity, replacements, false, nil); sk != nil {
-			name = sk.NameWithReplacements()
-			specialization = sk.SpecializationWithReplacements()
+		if bestSkill != nil {
+			name = bestSkill.NameWithReplacements()
+			specialization = bestSkill.SpecializationWithReplacements()
 		}
 	}
 	visit(name, specialization)
@@ -882,8 +890,8 @@ func (w *Weapon) forEachRequiredSkill(entity *Entity, visit func(name, specializ
 	// skill the technique is based on, evaluated against that base skill's relative level rather than the technique's.
 	// Per the rules, certain bonuses are determined by the base skill, not the technique - e.g. a Kick that defaults to
 	// the Kicking technique still gets the Brawling/Karate damage bonus based on the Brawling/Karate relative skill
-	// level (issue #767).
-	sk := entity.BestSkillNamed(name, specialization, false, nil)
+	// level (issue #767). Only which skill it is matters here, so the recorded levels rank the candidates.
+	sk := entity.bestFastSkillNamed(name, specialization, false, nil)
 	seen := make(map[*Skill]bool)
 	for sk != nil && sk.IsTechnique() && !seen[sk] {
 		seen[sk] = true
