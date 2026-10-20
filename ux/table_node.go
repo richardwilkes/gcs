@@ -542,12 +542,12 @@ func (n *Node[T]) createLabelCell(c *gurps.CellData, width float32, foreground, 
 		button.Font = n.primaryFieldFont()
 		baseline := button.Font.Baseline()
 		size := max(baseline-2, 6)
-		key := n.noteKey()
-		isClosed := gurps.IsClosed(key)
+		isClosed := gurps.IsClosed(n.noteKey())
 		var s *unison.SVG
 		// The button is nothing but its icon, so its tooltip is also what a screen reader calls it. Clicking it
 		// changes the notes disclosure, which the cell's panel is kept under (see CellCache), so the cell is built
-		// anew, and this button with it, and the tooltip never needs to change once set.
+		// anew, and this button with it, and the tooltip never needs to change once set. The key is looked up on each
+		// click, as converting the row to or from a container changes its ID, and so its key, but can keep the panel.
 		if isClosed {
 			s = svg.NotesExpand
 			button.Tooltip = newWrappedTooltip(i18n.Text("Show notes"))
@@ -560,6 +560,7 @@ func (n *Node[T]) createLabelCell(c *gurps.CellData, width float32, foreground, 
 			Size: geom.NewSize(size, size).Ceil(),
 		}
 		button.ClickCallback = func() {
+			key := n.noteKey()
 			gurps.SetClosedState(key, !gurps.IsClosed(key))
 			n.table.SyncToModel()
 		}
@@ -795,13 +796,14 @@ func (n *Node[T]) newCheckCell(c *gurps.CellData, foreground unison.Ink, svgFor 
 			return
 		}
 		c.Checked = !c.Checked
-		// The new state is drawn and a layout asked for before the click is reported, since reporting it marks the
-		// owner as modified, which re-syncs the table and may build this cell anew -- a list that isn't on a page
-		// builds all of its rows anew, and a rebuild may replace the table -- leaving this label detached from the
-		// panel tree, where changing its drawable and marking it for layout and redraw would have no effect at all.
-		// c is the data the cell's panel is cached under (see CellCache.Data), so once the model has followed the
-		// click, a row that is kept finds the panel matching the data derived afresh and keeps it; when the model
-		// refused it, the flip below puts the data back.
+		// The new state is drawn and a layout asked for before the click is reported, since reporting it may build
+		// this cell anew -- a page marked as modified re-syncs its lists, a rebuild re-syncs or replaces the table,
+		// and a list that isn't on a page builds all of its rows anew when synced -- leaving this label detached from
+		// the panel tree, where changing its drawable and marking it for layout and redraw would have no effect at
+		// all. An editor or list dockable that is only marked as modified doesn't re-sync its table, so the row and
+		// this cell are kept. c is the data the cell's panel is cached under (see CellCache.Data), so once the model
+		// has followed the click, a row that is kept finds the panel matching the data derived afresh and keeps it;
+		// when the model refused it, the flip below puts the data back.
 		setDrawable(c.Checked)
 		label.MarkForLayoutAndRedraw()
 		if !onClick(label, mods) {

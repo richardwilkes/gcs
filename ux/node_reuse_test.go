@@ -17,6 +17,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/display"
 	"github.com/richardwilkes/gcs/v5/ux/uxtest"
 	"github.com/richardwilkes/toolbox/v2/check"
+	"github.com/richardwilkes/toolbox/v2/tid"
 	"github.com/richardwilkes/unison"
 )
 
@@ -174,6 +175,56 @@ func TestNotesToggleRebuildsAReusedCell(t *testing.T) {
 	after := row.ColumnCell(0, col, unison.Black, unison.White, false, false, false).AsPanel()
 	c.True(after != before, "the cell must be rebuilt once its notes are closed")
 	c.True(findMarkdown(after) == nil, "and must no longer show them")
+}
+
+// TestNotesToggleFollowsAConvertedRow verifies that the notes disclosure button of a kept cell acts on the row's notes
+// as they are keyed now. Converting an item to or from a container changes its ID, and with it the key its notes'
+// disclosure is kept under, while its row and, when the disclosure is the same under both keys, its cell are kept.
+func TestNotesToggleFollowsAConvertedRow(t *testing.T) {
+	c := check.New(t)
+	sheet := newTestSheetForTemplate(t)
+	entity := sheet.Entity()
+	entity.SheetSettings.NotesDisplay = display.Inline
+	eqp := gurps.NewEquipment(entity, nil, false)
+	eqp.Name = "Backpack"
+	eqp.LocalNotes = "A note"
+	// Already a container, so that the list leaves room for the disclosure triangle and the conversion doesn't change
+	// the width of the cell.
+	bag := gurps.NewEquipment(entity, nil, true)
+	bag.Name = "Bag"
+	entity.CarriedEquipment = []*gurps.Equipment{eqp, bag}
+	sheet.Rebuild(true)
+	sheet.page.ValidateLayout()
+	table := sheet.CarriedEquipment.Table
+	row := table.RowFromIndex(0)
+	c.NotNil(row, "the table must show the equipment")
+	oldKey := row.noteKey()
+	col := table.ColumnIndexForID(gurps.EquipmentDescriptionColumn)
+	c.True(col >= 0, "the equipment table must have a description column")
+	before := row.ColumnCell(0, col, unison.Black, unison.White, false, false, false).AsPanel()
+
+	table.SetSelectionMap(map[tid.TID]bool{eqp.ID(): true})
+	ConvertToContainer(sheet, table)
+	sheet.page.ValidateLayout()
+	c.True(eqp.Container(), "the equipment must have become a container")
+	c.True(table.RowFromIndex(0) == row, "the list must have kept its row across the conversion")
+	newKey := row.noteKey()
+	c.NotEqual(oldKey, newKey, "the conversion must have changed the key the notes' disclosure is kept under")
+	for _, key := range []string{oldKey, newKey} {
+		wasClosed := gurps.IsClosed(key)
+		t.Cleanup(func() { gurps.SetClosedState(key, wasClosed) })
+		gurps.SetClosedState(key, false)
+	}
+	kept := row.ColumnCell(0, col, unison.Black, unison.White, false, false, false).AsPanel()
+	c.True(kept == before, "the cell must have been kept, or this test covers nothing")
+	button, ok := uxtest.FirstPanelOfType[*unison.Button](kept)
+	c.True(ok, "the cell must hold the notes disclosure button")
+
+	button.ClickCallback()
+	c.True(gurps.IsClosed(newKey), "clicking the button must close the notes of the converted row")
+	c.False(gurps.IsClosed(oldKey), "and must leave the key the row no longer has alone")
+	after := row.ColumnCell(0, col, unison.Black, unison.White, false, false, false).AsPanel()
+	c.True(findMarkdown(after) == nil, "the cell must no longer show the notes")
 }
 
 // TestFontChangeRebuildsCells verifies that a change of fonts rebuilds the panels a row keeps, although the data of
