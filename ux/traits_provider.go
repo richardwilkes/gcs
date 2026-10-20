@@ -37,6 +37,7 @@ func NewTraitsProvider(provider gurps.TraitListProvider, forPage bool) TableProv
 		newChoice:    gurps.NewTraitChoiceContainer,
 		edit:         func(owner Rebuildable, item *gurps.Trait) { EditTrait(owner, item) },
 		forPage:      forPage,
+		reuse:        pageRowReuse(forPage),
 		filterKey:    gurps.ListFilterKeyForExtension(gurps.TraitsExt),
 		filterFields: gurps.TraitFilterFields,
 	}

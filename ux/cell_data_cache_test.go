@@ -86,6 +86,27 @@ func TestSizingPassesReuseCellPanels(t *testing.T) {
 		"the panel built for the width must have survived the sizing pass")
 }
 
+// TestCellKeepsPanelsForFourWidths verifies that a cell keeps the panels built for four widths, since a sync of a page
+// list asks for the cells of the column taking the excess width at four: before and after the page reference columns
+// take their share, both at the table's preferred width, rounded up to whole pixels, and at the width the layout then
+// gives it. Keeping fewer would build those cells anew several times on every sync.
+func TestCellKeepsPanelsForFourWidths(t *testing.T) {
+	c := check.New(t)
+	_, row, col := newCellCacheTestSheet(t, c, "Trait")
+	table := row.table
+	widths := []float32{300, 300.25, 250, 250.25}
+	panels := make([]unison.Paneler, len(widths))
+	for i, width := range widths {
+		table.Columns[col].Current = width
+		panels[i] = row.ColumnCell(0, col, unison.Black, unison.White, false, false, false)
+	}
+	for i, width := range widths {
+		table.Columns[col].Current = width
+		c.True(row.ColumnCell(0, col, unison.Black, unison.White, false, false, false) == panels[i],
+			"the panel built for width %v must have been kept", width)
+	}
+}
+
 // TestLibraryListShowsQuantityAdjustmentWithoutSync verifies that adjusting a quantity in an equipment library list
 // shows the new quantity on the next draw. Marking a library list as modified only updates its title, so the table
 // keeps its rows, and it is the report of the change that has them derive their cell data afresh.

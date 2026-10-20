@@ -39,6 +39,7 @@ func NewSpellsProvider(provider gurps.SpellListProvider, forPage bool) TableProv
 		newChoice:    gurps.NewSpellChoiceContainer,
 		edit:         func(owner Rebuildable, item *gurps.Spell) { EditSpell(owner, item) },
 		forPage:      forPage,
+		reuse:        pageRowReuse(forPage),
 		filterKey:    gurps.ListFilterKeyForExtension(gurps.SpellsExt),
 		filterFields: gurps.SpellFilterFields,
 	}

@@ -32,3 +32,20 @@ func invalidateDisplayData() {
 func currentDisplayStamp() uint64 {
 	return displayEpoch.Load() + 1
 }
+
+// cellPanelEpoch counts the changes that leave the data of a table cell as it was but the panel built for it out of
+// date, which a change of fonts does: a row keeps the panels it built for its cells for as long as the data, width and
+// notes disclosure they were built for still match (see CellCache.Matches), and their text was wrapped and measured
+// with the fonts of the time.
+var cellPanelEpoch atomic.Uint64
+
+// invalidateCellPanels notes that every panel built for a table cell is out of date, so that each is built anew the
+// next time it is wanted; see cellPanelEpoch.
+func invalidateCellPanels() {
+	cellPanelEpoch.Add(1)
+}
+
+// currentCellPanelStamp returns the stamp that marks a cell panel as current.
+func currentCellPanelStamp() uint64 {
+	return cellPanelEpoch.Load()
+}

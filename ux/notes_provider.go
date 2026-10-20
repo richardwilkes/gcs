@@ -35,6 +35,7 @@ func NewNotesProvider(provider gurps.NoteListProvider, forPage bool) TableProvid
 		newItem:      gurps.NewNote,
 		edit:         EditNote,
 		forPage:      forPage,
+		reuse:        pageRowReuse(forPage),
 		filterKey:    gurps.ListFilterKeyForExtension(gurps.NotesExt),
 		filterFields: gurps.NoteFilterFields,
 	}

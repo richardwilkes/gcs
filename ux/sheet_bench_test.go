@@ -49,6 +49,7 @@ type sheetBench struct {
 	screen *unison.HeadlessScreen
 	wnd    *unison.Window
 	sheet  *Sheet
+	heapMB float64 // The heap in use once the sheet was open, which each measurement reports as heap-MB.
 }
 
 // benchEntity returns the character to measure: the sheet named by benchFileEnvVar, or a generated one of the size
@@ -71,7 +72,7 @@ func benchEntity(b *testing.B) (entity *gurps.Entity, generated bool) {
 
 // newSheetBench starts a headless session, opens the character to measure in it as a sheet, checks that every list
 // is on the page when the character was generated for that purpose, and performs one untimed update so that the
-// first measurement doesn't pay for anything lazily built. It also reports the heap in use once the sheet is open.
+// first measurement doesn't pay for anything lazily built. It also records the heap in use once the sheet is open.
 func newSheetBench(b *testing.B) *sheetBench {
 	b.Helper()
 	c := check.New(b)
@@ -103,8 +104,13 @@ func newSheetBench(b *testing.B) *sheetBench {
 	runtime.GC()
 	var stats runtime.MemStats
 	runtime.ReadMemStats(&stats)
-	b.ReportMetric(float64(stats.HeapAlloc)/(1<<20), "heap-MB")
-	return &sheetBench{screen: screen, wnd: wnd, sheet: sheet}
+	return &sheetBench{screen: screen, wnd: wnd, sheet: sheet, heapMB: float64(stats.HeapAlloc) / (1 << 20)}
+}
+
+// reportHeap reports the heap in use once the sheet was open. It has to be reported after the timed loop, since
+// resetting the timer discards the metrics reported before it.
+func (sb *sheetBench) reportHeap(b *testing.B) {
+	b.ReportMetric(sb.heapMB, "heap-MB")
 }
 
 // run measures fn, which runs on the UI thread once per iteration, reporting the time it took there as ui-ns/op and
@@ -134,6 +140,7 @@ func (sb *sheetBench) run(b *testing.B, fn func()) {
 	draw -= before
 	b.ReportMetric(float64(ui.Nanoseconds())/float64(n), "ui-ns/op")
 	b.ReportMetric(float64(draw.Nanoseconds())/float64(n), "draw-ns/op")
+	sb.reportHeap(b)
 }
 
 // scrollTo brings the panel into view, so that drawing and scrolling measure the part of the page that holds it.
@@ -208,6 +215,7 @@ func BenchmarkSheetScroll(b *testing.B) {
 			b.StopTimer()
 			b.ReportMetric(float64(b.Elapsed().Nanoseconds())/float64(n*2*steps), "ns/step")
 			b.ReportMetric(float64(draw.Nanoseconds())/float64(n*2*steps), "draw-ns/step")
+			sb.reportHeap(b)
 		})
 	}
 }

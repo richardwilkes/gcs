@@ -116,7 +116,7 @@ func TestLabelCellTooltipKeepsTheCellsOwnTextBehindAContradiction(t *testing.T) 
 }
 
 // TestCheckCellDrawsTheNewStateBeforeReportingTheClick verifies the order of operations within a check cell's click
-// handling. Reporting the click marks the owner as modified, which re-syncs the table and recreates every cell,
+// handling. Reporting the click marks the owner as modified, which re-syncs the table and may build the cell anew,
 // leaving the clicked label detached from the panel tree, where updating its drawable and marking it for layout and
 // redraw would accomplish nothing at all. Both have to happen while the label is still the one on screen.
 func TestCheckCellDrawsTheNewStateBeforeReportingTheClick(t *testing.T) {

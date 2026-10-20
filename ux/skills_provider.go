@@ -39,6 +39,7 @@ func NewSkillsProvider(provider gurps.SkillListProvider, forPage bool) TableProv
 		newChoice:    gurps.NewSkillChoiceContainer,
 		edit:         func(owner Rebuildable, item *gurps.Skill) { EditSkill(owner, item) },
 		forPage:      forPage,
+		reuse:        pageRowReuse(forPage),
 		filterKey:    gurps.ListFilterKeyForExtension(gurps.SkillsExt),
 		filterFields: gurps.SkillFilterFields,
 	}

@@ -408,9 +408,9 @@ func (s *Sheet) MarkModified(src unison.Paneler) {
 		UpdateTitleForDockable(s)
 		s.awaitingUpdate = false
 	} else {
-		// TODO: This can be too slow when the lists have many rows of content, impinging upon interactive typing.
-		//       Looks like most of the time is spent in updating the tables. Unfortunately, there isn't a fast way
-		//       to determine that the content of a table doesn't need to be refreshed.
+		// The deep sync derives the data of each cell on the page afresh, once, and rebuilds only the cells whose data
+		// changed, since the page lists keep their rows, and the panels built for their cells, across syncs (see
+		// rowReuse).
 		s.resync(s, s.captureViewState(), false)
 	}
 	NotifySheetSourceUsers(s)
