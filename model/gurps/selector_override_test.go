@@ -234,6 +234,44 @@ func TestSelectorOverrideWithRequiredSkillThroughTechnique(t *testing.T) {
 		"an override qualified by the skill the Kicking technique is based on applies to the Kick")
 }
 
+// TestSelectorOverrideWithRequiredSkillThroughTaggedTechnique verifies that the technique whose base skill qualifies
+// the overrides is the one the weapon's default selects by tag, not a better one of the same name based on another
+// skill.
+func TestSelectorOverrideWithRequiredSkillThroughTaggedTechnique(t *testing.T) {
+	c := check.New(t)
+	e := NewEntity()
+	addAverageDXSkill(e, "Brawling", fxp.Twelve) // DX+4, so 14
+	addAverageDXSkill(e, "Karate", fxp.Four)     // DX+2, so 12
+	byBrawling := NewTechnique(e, nil, "Brawling")
+	byBrawling.Name = "Kicking"
+	byBrawling.TechniqueDefault.Modifier = -fxp.Two
+	byKarate := NewTechnique(e, nil, "Karate")
+	byKarate.Name = "Kicking"
+	byKarate.TechniqueDefault.Modifier = -fxp.Two
+	byKarate.Tags = []string{"Karate"}
+	e.Skills = append(e.Skills, byBrawling, byKarate)
+	style := addTraitWithFeatures(e, "Style")
+	kick := newCrushingWeapon(style, "Kick")
+	kick.Defaults = []*SkillDefault{{
+		DefaultType: SkillID,
+		Name:        criteria.Text{TextData: criteria.TextData{Compare: criteria.IsText, Qualifier: "Kicking"}},
+		Tags:        criteria.Text{TextData: criteria.TextData{Compare: criteria.IsText, Qualifier: "Karate"}},
+	}}
+	style.Weapons = []*Weapon{kick}
+	override := newDamageTypeOverride(wsel.WithRequiredSkill, "cut")
+	override.NameCriteria.Qualifier = "Karate"
+	addTraitWithFeatures(e, "Imbuement", override)
+	e.Recalculate()
+	c.True(byBrawling.LevelData.Level > byKarate.LevelData.Level,
+		"precondition: the technique based on Brawling is the better of the two")
+	c.Equal(byKarate.LevelData.Level, kick.SkillLevel(nil), "precondition: the Kick uses the technique tagged Karate")
+	c.Equal("cut", resolvedDamageType(kick, nil),
+		"an override qualified by the base skill of the technique the Kick uses applies to it")
+	override.NameCriteria.Qualifier = "Brawling"
+	c.Equal("cr", resolvedDamageType(kick, nil),
+		"but not one qualified by the base skill of the technique the Kick doesn't use")
+}
+
 // TestSelectorOverrideThisWeaponOutranksNamed verifies that, at equal priority, an override selecting the weapons of
 // its own item beats one that names the weapon, without the tie being reported as a conflict.
 func TestSelectorOverrideThisWeaponOutranksNamed(t *testing.T) {

@@ -385,7 +385,8 @@ func (s *Sheet) BackingFilePath() string {
 
 // MarkModified implements ModifiableRoot. A sheet does more than the shared pageView.markModified: its entity has to
 // be recalculated first, the calculators drawing numbers from it brought up to date last, and a source that asks for
-// it (see SkipDeepSync) is spared the deep sync in between when the recalculation allows.
+// it (see SkipDeepSync) is spared the deep sync in between when nothing the lists show can have changed. The page is
+// laid out again when a list derived from the character has to join it or leave it.
 func (s *Sheet) MarkModified(src unison.Paneler) {
 	invalidateDisplayData()
 	if s.awaitingUpdate {
@@ -401,14 +402,14 @@ func (s *Sheet) MarkModified(src unison.Paneler) {
 	if !xreflect.IsNil(src) {
 		_, skipDeepSync = src.AsPanel().ClientData()[SkipDeepSync]
 	}
-	if skipDeepSync && !s.entity.DerivedStateChanged() {
+	if skipDeepSync && !s.entity.DerivedStateChanged() && !s.entity.ProfileReadByScript() {
 		// Syncing the lists is the only thing here that can disturb the focus and scroll position or change which rows
 		// match the active search, and on a sheet with large lists is much of the cost of an update -- enough to make
 		// typing stutter on slower platforms. A source that asks for it, such as the name field, is spared it while
-		// the recalculation left the derived state the lists' rows are drawn from as it was: scripts can read what
-		// such a field holds, so that is not a given. The blocks are synced either way, since they show only what they
-		// were last synced to, while a list's rows derive their cells afresh on the next draw now that the change has
-		// been reported (see displayEpoch).
+		// the recalculation left the derived state the lists' rows are drawn from as it was and no script has read
+		// the profile, since only a script can carry what such a field holds to the lists. The blocks are synced
+		// either way, since they show only what they were last synced to, while a list's rows derive their cells
+		// afresh on the next draw now that the change has been reported (see displayEpoch).
 		deepSyncSkippingLists(s, func(syncedList) bool { return true })
 		UpdateTitleForDockable(s)
 		s.awaitingUpdate = false
@@ -417,8 +418,34 @@ func (s *Sheet) MarkModified(src unison.Paneler) {
 		// changed, since the page lists keep their rows, and the panels built for their cells, across syncs (see
 		// rowReuse).
 		s.resync(s, s.captureViewState(), false)
+		if s.derivedListsMisplaced() {
+			// Only laying the page out again puts a derived list on it or takes one off. The rebuild notifies the
+			// source users itself.
+			s.Rebuild(true)
+			return
+		}
 	}
 	NotifySheetSourceUsers(s)
+}
+
+// derivedListsMisplaced reports whether one of the lists derived from the character that the layout places is on the
+// page while empty or off it while not, which derivedListLeaf only sees to when the page is laid out. The lists on the
+// page must have just been synced, since their tables' rows are what tell whether they are empty.
+func (s *Sheet) derivedListsMisplaced() bool {
+	layout := s.entity.SheetSettings.Layout
+	return (layout.Contains(gurps.BlockReactionsKey) && derivedListMisplaced(s.Reactions)) ||
+		(layout.Contains(gurps.BlockConditionalModifiersKey) && derivedListMisplaced(s.ConditionalModifiers)) ||
+		(layout.Contains(gurps.BlockMeleeKey) && derivedListMisplaced(s.MeleeWeapons)) ||
+		(layout.Contains(gurps.BlockRangedKey) && derivedListMisplaced(s.RangedWeapons))
+}
+
+// derivedListMisplaced is derivedListsMisplaced for one list the layout places. One off the page wasn't synced, so it
+// asks the character whether it has rows.
+func derivedListMisplaced[T gurps.Node[T]](l *PageList[T]) bool {
+	if l.Parent() != nil {
+		return l.Table.LastRowIndex() < 0
+	}
+	return l.Table.RootRowCount() != 0
 }
 
 // bumpModificationTimestamp implements modificationTimestampBumper.

@@ -738,14 +738,12 @@ func CalculateRitualMagicSpellLevel(e *Entity, name, powerSource, ritualSkillNam
 }
 
 func determineRitualMagicSkillLevelForCollege(e *Entity, name, college, ritualSkillName string, prereqCount int, tags []string, diff AttributeDifficulty, points fxp.Int) Level {
+	// A blank name is matched as is, as RitualMagicSatisfied matches it, rather than as a wildcard.
 	def := &SkillDefault{
 		DefaultType:    SkillID,
+		Name:           criteria.Text{TextData: criteria.TextData{Compare: criteria.IsText, Qualifier: ritualSkillName}},
 		Specialization: criteria.Text{TextData: criteria.TextData{Compare: criteria.IsText, Qualifier: college}},
 		Modifier:       fxp.FromInteger(-prereqCount),
-	}
-	if ritualSkillName != "" {
-		def.Name.Compare = criteria.IsText
-		def.Name.Qualifier = ritualSkillName
 	}
 	var limit fxp.Int
 	skillLevel := CalculateTechniqueLevel(e, nil, name, college, tags, def, diff.Difficulty, points, false,
@@ -803,10 +801,11 @@ func (s *Spell) RitualMagicSatisfied(tooltip *xbytes.InsertBuffer, prefix string
 			return true
 		}
 	}
-	// Fall back to a generically-named skill that carries no specialization. SkillNamed treats an empty specialization
-	// as a wildcard, so each result has to be checked to ensure the skill truly has none.
+	// Fall back to a generically-named skill that carries no specialization, required or optional, as the level
+	// calculation does. SkillNamed treats an empty specialization as a wildcard, so each result has to be checked to
+	// ensure the skill truly has none.
 	for _, sk := range e.SkillNamed(ritual, "", false, nil) {
-		if sk.SpecializationWithReplacements() == "" {
+		if sk.SpecializationWithReplacements() == "" && sk.OptionalSpecializationWithReplacements() == "" {
 			return true
 		}
 	}

@@ -324,3 +324,64 @@ func TestSpellEquipmentPrereqPenaltyWithTechLevel(t *testing.T) {
 	c.Equal(-fxp.Ten, e.SpellBonusFor(needsFocus.NameWithReplacements(), "", nil, nil, nil),
 		"a spell with a tech level takes the -10 penalty")
 }
+
+// TestRitualMagicSpellWithBlankRitualSkillName verifies that a ritual magic spell whose ritual skill name is blank
+// draws no level from a skill of another name, just as RitualMagicSatisfied finds no such skill to satisfy it.
+func TestRitualMagicSpellWithBlankRitualSkillName(t *testing.T) {
+	c := check.New(t)
+
+	e := NewEntity()
+	thaumatology := NewSkill(e, nil, false)
+	thaumatology.Name = "Thaumatology"
+	thaumatology.Specialization = "Fire"
+	thaumatology.Difficulty.Attribute = IntelligenceID
+	thaumatology.Difficulty.Difficulty = difficulty.VeryHard
+	thaumatology.Points = fxp.Four
+	e.Skills = append(e.Skills, thaumatology)
+	generic := NewSkill(e, nil, false)
+	generic.Name = "Broadsword"
+	generic.Difficulty.Attribute = DexterityID
+	generic.Difficulty.Difficulty = difficulty.Average
+	generic.Points = fxp.Four
+	e.Skills = append(e.Skills, generic)
+
+	spell := addTestRitualMagicSpell(e, "Fireball", "Fire")
+	spell.RitualSkillName = ""
+	e.Recalculate()
+	c.False(spell.RitualMagicSatisfied(nil, ""), "no skill has a blank name")
+	c.Equal(fxp.Min, spell.LevelData.Level, "with no ritual skill, the level must remain unresolvable")
+
+	spell.RitualSkillName = "Thaumatology"
+	e.Recalculate()
+	c.True(spell.RitualMagicSatisfied(nil, ""), "Thaumatology (Fire) satisfies the spell")
+	c.True(spell.LevelData.Level > 0, "Thaumatology (Fire) gives the spell a level")
+}
+
+// TestRitualMagicSpellWithOptionallySpecializedRitualSkill verifies that a ritual skill with only an optional
+// specialization serves the college it names but not, as an unspecialized skill would, every other college, so that
+// RitualMagicSatisfied agrees with the level calculation.
+func TestRitualMagicSpellWithOptionallySpecializedRitualSkill(t *testing.T) {
+	c := check.New(t)
+
+	e := NewEntity()
+	ritual := NewSkill(e, nil, false)
+	ritual.Name = "Ritual Magic"
+	ritual.OptionalSpecialization = "Fire"
+	ritual.Difficulty.Attribute = IntelligenceID
+	ritual.Difficulty.Difficulty = difficulty.VeryHard
+	ritual.Points = fxp.Four
+	e.Skills = append(e.Skills, ritual)
+
+	fire := addTestRitualMagicSpell(e, "Fireball", "Fire")
+	water := addTestRitualMagicSpell(e, "Ice Dagger", "Water")
+	e.Recalculate()
+	c.True(fire.RitualMagicSatisfied(nil, ""), "Ritual Magic (Fire) satisfies a Fire spell")
+	c.True(fire.LevelData.Level > 0, "Ritual Magic (Fire) gives a Fire spell a level")
+	c.False(water.RitualMagicSatisfied(nil, ""), "Ritual Magic (Fire) is not an unspecialized skill")
+	c.Equal(fxp.Min, water.LevelData.Level, "Ritual Magic (Fire) gives a Water spell no level")
+
+	ritual.OptionalSpecialization = ""
+	e.Recalculate()
+	c.True(water.RitualMagicSatisfied(nil, ""), "an unspecialized Ritual Magic satisfies a Water spell")
+	c.True(water.LevelData.Level > 0, "an unspecialized Ritual Magic gives a Water spell a level")
+}

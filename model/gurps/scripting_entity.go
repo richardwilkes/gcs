@@ -22,21 +22,27 @@ func newScriptEntity(r *goja.Runtime, entity *Entity) *goja.Object {
 	m["exists"] = func() goja.Value { return r.ToValue(entity != nil) }
 	if entity != nil {
 		settings := SheetSettingsFor(entity)
-		m["playerName"] = func() goja.Value { return r.ToValue(entity.Profile.PlayerName) }
-		m["name"] = func() goja.Value { return r.ToValue(entity.Profile.Name) }
-		m["title"] = func() goja.Value { return r.ToValue(entity.Profile.Title) }
-		m["organization"] = func() goja.Value { return r.ToValue(entity.Profile.Organization) }
-		m["religion"] = func() goja.Value { return r.ToValue(entity.Profile.Religion) }
-		m["techLevel"] = func() goja.Value { return r.ToValue(entity.Profile.TechLevel) }
-		m["gender"] = func() goja.Value { return r.ToValue(entity.Profile.Gender) }
-		m["age"] = func() goja.Value { return r.ToValue(entity.Profile.Age) }
-		m["birthday"] = func() goja.Value { return r.ToValue(entity.Profile.Birthday) }
-		m["eyes"] = func() goja.Value { return r.ToValue(entity.Profile.Eyes) }
-		m["hair"] = func() goja.Value { return r.ToValue(entity.Profile.Hair) }
-		m["skin"] = func() goja.Value { return r.ToValue(entity.Profile.Skin) }
-		m["handedness"] = func() goja.Value { return r.ToValue(entity.Profile.Handedness) }
-		m["heightInInches"] = func() goja.Value { return r.ToValue(fxp.Int(entity.Profile.Height).AsFloat[float64]()) }
-		m["weightInPounds"] = func() goja.Value { return r.ToValue(fxp.Int(entity.Profile.Weight).AsFloat[float64]()) }
+		profileField := func(get func() any) func() goja.Value {
+			return func() goja.Value {
+				entity.profileReadByScript = true
+				return r.ToValue(get())
+			}
+		}
+		m["playerName"] = profileField(func() any { return entity.Profile.PlayerName })
+		m["name"] = profileField(func() any { return entity.Profile.Name })
+		m["title"] = profileField(func() any { return entity.Profile.Title })
+		m["organization"] = profileField(func() any { return entity.Profile.Organization })
+		m["religion"] = profileField(func() any { return entity.Profile.Religion })
+		m["techLevel"] = profileField(func() any { return entity.Profile.TechLevel })
+		m["gender"] = profileField(func() any { return entity.Profile.Gender })
+		m["age"] = profileField(func() any { return entity.Profile.Age })
+		m["birthday"] = profileField(func() any { return entity.Profile.Birthday })
+		m["eyes"] = profileField(func() any { return entity.Profile.Eyes })
+		m["hair"] = profileField(func() any { return entity.Profile.Hair })
+		m["skin"] = profileField(func() any { return entity.Profile.Skin })
+		m["handedness"] = profileField(func() any { return entity.Profile.Handedness })
+		m["heightInInches"] = profileField(func() any { return fxp.Int(entity.Profile.Height).AsFloat[float64]() })
+		m["weightInPounds"] = profileField(func() any { return fxp.Int(entity.Profile.Weight).AsFloat[float64]() })
 		m["displayHeightUnits"] = func() goja.Value { return r.ToValue(settings.DefaultLengthUnits.Key()) }
 		m["displayWeightUnits"] = func() goja.Value { return r.ToValue(settings.DefaultWeightUnits.Key()) }
 		m["sizeModifier"] = func() goja.Value { return r.ToValue(entity.Profile.AdjustedSizeModifier()) }

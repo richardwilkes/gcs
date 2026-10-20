@@ -144,6 +144,8 @@ type Entity struct {
 	// derivedStateChanged records whether the last recalculation left the derived state it stores other than it found
 	// it; see DerivedStateChanged.
 	derivedStateChanged bool
+	// profileReadByScript records whether a script has read one of the profile's fields; see ProfileReadByScript.
+	profileReadByScript bool
 }
 
 // NewEntityFromFile loads an Entity from a file.
@@ -371,6 +373,14 @@ func (e *Entity) DerivedStateGeneration() uint64 {
 // lists derived from that state, such as the weapons of the traits the verdicts enable.
 func (e *Entity) DerivedStateChanged() bool {
 	return e.derivedStateChanged
+}
+
+// ProfileReadByScript returns whether a script has read one of the profile's fields, such as the character's weight,
+// since the entity was created. The rows of the entity's lists depend on those fields only through scripts, and a
+// script whose result is on show has run, so while this returns false, a change to one of them leaves the rows as they
+// were.
+func (e *Entity) ProfileReadByScript() bool {
+	return e.profileReadByScript
 }
 
 // discardCaches discards the internal caches. With keepAbandonedScripts set, the results recorded for scripts that
@@ -1568,21 +1578,6 @@ func (e *Entity) BestSkillNamed(name, specialization string, requirePoints bool,
 		if best == nil || level < skillLevel {
 			best = sk
 			level = skillLevel
-		}
-	}
-	return best
-}
-
-// bestFastSkillNamed is BestSkillNamed using the levels the last recalculation recorded rather than calculating each
-// candidate's level afresh, for callers that only need to know which skill it is. As in BestSkillNamed, the first of
-// the skills that share the highest level wins.
-func (e *Entity) bestFastSkillNamed(name, specialization string, requirePoints bool, excludes map[string]bool) *Skill {
-	var best *Skill
-	level := fxp.Min
-	for _, sk := range e.SkillNamed(name, specialization, requirePoints, excludes) {
-		if best == nil || level < sk.LevelData.Level {
-			best = sk
-			level = sk.LevelData.Level
 		}
 	}
 	return best

@@ -29,14 +29,15 @@ import (
 const quickFilterWidthSample = "MMMMMMMMMM"
 
 var (
-	_ FileBackedDockable         = &TableDockable[*gurps.Trait]{}
-	_ unison.UndoManagerProvider = &TableDockable[*gurps.Trait]{}
-	_ ModifiableRoot             = &TableDockable[*gurps.Trait]{}
-	_ Rebuildable                = &TableDockable[*gurps.Trait]{}
-	_ unison.TabCloser           = &TableDockable[*gurps.Trait]{}
-	_ KeyedDockable              = &TableDockable[*gurps.Trait]{}
-	_ gurps.Hashable             = &TableDockable[*gurps.Trait]{}
-	_ listFilterObserver         = &TableDockable[*gurps.Trait]{}
+	_ FileBackedDockable           = &TableDockable[*gurps.Trait]{}
+	_ unison.UndoManagerProvider   = &TableDockable[*gurps.Trait]{}
+	_ ModifiableRoot               = &TableDockable[*gurps.Trait]{}
+	_ Rebuildable                  = &TableDockable[*gurps.Trait]{}
+	_ unison.TabCloser             = &TableDockable[*gurps.Trait]{}
+	_ KeyedDockable                = &TableDockable[*gurps.Trait]{}
+	_ gurps.Hashable               = &TableDockable[*gurps.Trait]{}
+	_ listFilterObserver           = &TableDockable[*gurps.Trait]{}
+	_ gurps.SheetSettingsResponder = &TableDockable[*gurps.Trait]{}
 )
 
 // TableDockable holds the view for a file that contains a (potentially hierarchical) list of data.
@@ -312,6 +313,15 @@ func (d *TableDockable[T]) Rebuild(_ bool) {
 	d.table.SetSelectionMap(sel)
 	UpdateTitleForDockable(d)
 	d.scroll.SetPosition(h, v)
+}
+
+// SheetSettingsUpdated implements gurps.SheetSettingsResponder. A library list has no entity of its own and shows what
+// the default sheet settings call for, such as the default attribute names, so only a change to those -- reported with
+// a nil entity -- concerns it.
+func (d *TableDockable[T]) SheetSettingsUpdated(entity *gurps.Entity, fullRebuild bool) {
+	if entity == nil {
+		d.Rebuild(fullRebuild)
+	}
 }
 
 // Hash writes this object's contents into the hasher.

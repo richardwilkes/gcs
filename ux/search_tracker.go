@@ -136,7 +136,8 @@ type SearchTracker struct {
 	namesOnlyCheckBox    *unison.CheckBox
 }
 
-// InstallSearchTracker creates a search tracker in the given toolbar.
+// InstallSearchTracker creates a search tracker in the given toolbar. findMatches is only called with non-empty,
+// lower-cased text.
 func InstallSearchTracker(toolbar *unison.Panel, clearTableSelections func(), findMatches func(refList *[]*searchRef, text string, namesOnly bool)) *SearchTracker {
 	s := &SearchTracker{
 		clearTableSelections: clearTableSelections,
@@ -190,7 +191,7 @@ func (s *SearchTracker) doSearch(text string) {
 // list the layout doesn't show has no parent (see Sheet.buildLayout), and a match found in one could only be shown by
 // scrolling a table nobody is looking at into view. A list that doesn't exist has nothing to search.
 func (p *PageList[T]) search(refList *[]*searchRef, text string, namesOnly bool) {
-	if p == nil || p.Parent() == nil || text == "" {
+	if p == nil || p.Parent() == nil {
 		return
 	}
 	for _, row := range p.Table.RootRows() {
@@ -214,21 +215,19 @@ func installListSearchTracker(toolbar *unison.Panel, lists func() []sheetList) *
 }
 
 func searchSheetTableRows[T gurps.Node[T]](refList *[]*searchRef, text string, namesOnly bool, table *unison.Table[*Node[T]], row *Node[T]) {
-	if text != "" {
-		if namesOnly {
-			if strings.Contains(strings.ToLower(row.data.String()), text) {
-				*refList = append(*refList, &searchRef{
-					table: table,
-					row:   row,
-				})
-			}
-		} else {
-			if row.Match(text) {
-				*refList = append(*refList, &searchRef{
-					table: table,
-					row:   row,
-				})
-			}
+	if namesOnly {
+		if strings.Contains(strings.ToLower(row.data.String()), text) {
+			*refList = append(*refList, &searchRef{
+				table: table,
+				row:   row,
+			})
+		}
+	} else {
+		if row.Match(text) {
+			*refList = append(*refList, &searchRef{
+				table: table,
+				row:   row,
+			})
 		}
 	}
 	if row.CanHaveChildren() {

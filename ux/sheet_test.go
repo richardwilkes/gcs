@@ -284,3 +284,89 @@ func TestProfileEditThatChangesTheDerivedStateSyncsTheLists(t *testing.T) {
 	c.True(heavy.Enabled(), "the heavy trait must now be enabled, or the check below means nothing")
 	c.Equal(before+1, sheet.MeleeWeapons.Table.LastRowIndex()+1, "the list shows the weapon of the trait the edit enabled")
 }
+
+// TestEditThatChangesWhetherADerivedListIsEmptyLaysOutThePage checks that an edit that gives one of the lists derived
+// from the character its first row puts that list on the page, and that one taking its last row away takes it off:
+// here a trait whose ST prerequisite the edit satisfies, and the melee weapon it grants.
+func TestEditThatChangesWhetherADerivedListIsEmptyLaysOutThePage(t *testing.T) {
+	c := check.New(t)
+	sheet := newTestSheetForTemplate(t)
+	entity := sheet.Entity()
+	entity.SheetSettings.EnforceTraitPrereqs = true
+	trait := gurps.NewTrait(entity, nil, false)
+	trait.Name = "Strong Kick"
+	weapon := gurps.NewWeapon(trait, true)
+	weapon.Usage = "Kick"
+	trait.Weapons = append(trait.Weapons, weapon)
+	trait.Prereq = gurps.NewPrereqList()
+	prereq := gurps.NewAttributePrereq(entity)
+	prereq.Parent = trait.Prereq
+	prereq.QualifierCriteria.Qualifier = fxp.Twelve
+	trait.Prereq.Prereqs = append(trait.Prereq.Prereqs, prereq)
+	entity.Traits = []*gurps.Trait{trait}
+	sheet.Rebuild(true)
+	c.False(trait.Enabled(), "the trait must start disabled, or the checks below mean nothing")
+	c.True(sheet.MeleeWeapons.Parent() == nil, "the empty melee list must start off the page, or the checks below mean nothing")
+
+	entity.Attributes.Set[gurps.StrengthID].Adjustment = fxp.Two
+	sheet.MarkModified(nil)
+	c.True(trait.Enabled(), "the trait must now be enabled, or the checks below mean nothing")
+	c.True(sheet.MeleeWeapons.Parent() != nil, "the melee list joins the page with the weapon the edit enabled")
+	c.Equal(1, sheet.MeleeWeapons.Table.LastRowIndex()+1, "and shows it")
+
+	entity.Attributes.Set[gurps.StrengthID].Adjustment = 0
+	sheet.MarkModified(nil)
+	c.False(trait.Enabled(), "the trait must be disabled again, or the check below means nothing")
+	c.True(sheet.MeleeWeapons.Parent() == nil, "the melee list leaves the page once the edit takes its only weapon away")
+}
+
+// TestProfileEditReadByAScriptSyncsTheLists checks that an edit made through a field flagged SkipDeepSync is not spared
+// the deep sync when a script reads what the field holds, even though the derived state is left as it was: here an
+// equipment weight derived from the character's weight, whose total the carried equipment list's header shows.
+func TestProfileEditReadByAScriptSyncsTheLists(t *testing.T) {
+	c := check.New(t)
+	sheet, weightField := newWeightScriptedSheet(t)
+	entity := sheet.Entity()
+	pack := gurps.NewEquipment(entity, nil, false)
+	pack.Name = "Pack"
+	pack.BaseWeight = "entity.weightInPounds / 10"
+	entity.CarriedEquipment = append(entity.CarriedEquipment, pack)
+	sheet.Rebuild(true)
+	headerText := func() string {
+		i := sheet.CarriedEquipment.Table.ColumnIndexForID(gurps.EquipmentDescriptionColumn)
+		header, ok := sheet.CarriedEquipment.tableHeader.ColumnHeaders[i].(*PageTableColumnHeader[*gurps.Equipment])
+		c.True(ok, "the description column must have a page header")
+		return header.Text.String()
+	}
+	c.Equal("Carried Equipment (45 lb; $0)", headerText(), "the pack must start at 15 lb, or the check below means nothing")
+
+	entity.Profile.Weight = fxp.WeightFromInteger(450, fxp.Pound)
+	sheet.MarkModified(weightField)
+
+	c.False(entity.DerivedStateChanged(), "the edit must leave the derived state as it was, or the check below means nothing")
+	c.Equal("Carried Equipment (75 lb; $0)", headerText(), "the header shows the total the edit changed")
+}
+
+// TestProfileEditNoScriptReadsSparesTheLists checks that an edit made through a field flagged SkipDeepSync is spared
+// the syncing of the lists while no script has read the profile and the derived state is left as it was.
+func TestProfileEditNoScriptReadsSparesTheLists(t *testing.T) {
+	c := check.New(t)
+	sheet := newTestSheetForTemplate(t)
+	entity := sheet.Entity()
+	load := gurps.NewEquipment(entity, nil, false)
+	load.Name = "Load"
+	load.BaseWeight = "30 lb"
+	entity.CarriedEquipment = append(entity.CarriedEquipment, load)
+	sheet.Rebuild(true)
+	panel := sheet.targetMgr.Find(identityPanelNameFieldRefKey)
+	c.NotNil(panel, "the sheet must have a name field")
+	nameField, ok := panel.Self.(*StringField)
+	c.True(ok, "the name field must be a StringField")
+	c.False(entity.ProfileReadByScript(), "no script may read the profile, or the check below means nothing")
+
+	entity.Profile.Name = "Someone"
+	sheet.MarkModified(nameField)
+
+	c.False(entity.DerivedStateChanged(), "the edit must leave the derived state as it was, or the check below means nothing")
+	c.NotEqual(currentDisplayStamp(), sheet.CarriedEquipment.syncedAtStamp(), "the list is not synced")
+}

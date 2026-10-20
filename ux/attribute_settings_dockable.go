@@ -230,25 +230,26 @@ func mergeAttributeDefs(existing, incoming *gurps.AttributeDefs) *gurps.Attribut
 
 func (d *attributeSettingsDockable) apply() {
 	d.Window().FocusNext() // Intentionally move the focus to ensure any pending edits are flushed
+	var entity *gurps.Entity
 	if d.owner == nil {
+		// The library lists and templates, which have no entity, show the default definitions' names. A nil entity is
+		// what tells them the change was to the defaults.
 		gurps.GlobalSettings().Sheet.Attributes = d.model.Clone()
 		gurps.SyncGlobalSheetSettings()
-		// The library lists and templates, which have no entity, show the default definitions' names.
-		invalidateDisplayData()
-		return
-	}
-	entity := d.owner.Entity()
-	entity.SheetSettings.Attributes = d.model.Clone()
-	for attrID, def := range entity.SheetSettings.Attributes.Set {
-		if attr, exists := entity.Attributes.Set[attrID]; exists {
-			attr.Order = def.Order
-		} else {
-			entity.Attributes.Set[attrID] = gurps.NewAttribute(entity, attrID, def.Order)
+	} else {
+		entity = d.owner.Entity()
+		entity.SheetSettings.Attributes = d.model.Clone()
+		for attrID, def := range entity.SheetSettings.Attributes.Set {
+			if attr, exists := entity.Attributes.Set[attrID]; exists {
+				attr.Order = def.Order
+			} else {
+				entity.Attributes.Set[attrID] = gurps.NewAttribute(entity, attrID, def.Order)
+			}
 		}
-	}
-	for attrID := range entity.Attributes.Set {
-		if _, exists := d.model.Set[attrID]; !exists {
-			delete(entity.Attributes.Set, attrID)
+		for attrID := range entity.Attributes.Set {
+			if _, exists := d.model.Set[attrID]; !exists {
+				delete(entity.Attributes.Set, attrID)
+			}
 		}
 	}
 	invalidateDisplayData()

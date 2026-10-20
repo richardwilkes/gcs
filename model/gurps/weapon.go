@@ -952,8 +952,9 @@ func (w *Weapon) findRequiredSkills(entity *Entity) []requiredSkill {
 	// skill the technique is based on, evaluated against that base skill's relative level rather than the technique's.
 	// Per the rules, certain bonuses are determined by the base skill, not the technique - e.g. a Kick that defaults to
 	// the Kicking technique still gets the Brawling/Karate damage bonus based on the Brawling/Karate relative skill
-	// level (issue #767). Only which skill it is matters here, so the recorded levels rank the candidates.
-	sk := entity.bestFastSkillNamed(name, specialization, false, nil)
+	// level (issue #767). The walk starts from the skill the winning default scored by, which honors its tag and TL
+	// criteria.
+	sk := bestSkill
 	seen := make(map[*Skill]bool)
 	for sk != nil && sk.IsTechnique() && !seen[sk] {
 		seen[sk] = true
