@@ -883,14 +883,17 @@ func (n *Node[T]) createToggleCell(c *gurps.CellData, foreground unison.Ink) uni
 			if eqp, ok := any(n.data).(*gurps.Equipment); ok && !eqp.Enabled() {
 				return false
 			}
+			// The panel may be kept under the flipped data (see newCheckCell), so it has to be dimmed as one built
+			// from that data would be, and before the click is reported, for the same reason the drawable is.
+			label.SetEnabled(!c.Checked || !c.Dim)
 			if !handleCheck(n.data, label, c.Checked) {
 				MarkModified(label)
 			}
 			return true
 		})
-	if c.Checked {
-		toggle.SetEnabled(!c.Dim)
-	}
+	// Only a checkmark is dimmed. An unchecked cell, which draws nothing, stays enabled even when its data is dimmed,
+	// as it always is for unequipped equipment, so that an assistive technology can still press it.
+	toggle.SetEnabled(!c.Checked || !c.Dim)
 	return toggle
 }
 

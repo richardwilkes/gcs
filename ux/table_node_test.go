@@ -364,6 +364,50 @@ func TestCheckCellRevertsADeclinedClick(t *testing.T) {
 	c.Equal(unison.DashSVG, drawable.SVG, "a declined click must put the drawable back")
 }
 
+// TestEquippedCellClickInAnUnequippedContainerDimsTheCheckmark verifies that a click on the equipped cell of an item
+// whose container isn't equipped leaves the cell looking as one built afresh would. The cell's data is dimmed either way
+// there, so the click alone decides whether the cell is disabled, and a row kept across the sync goes on showing the
+// panel the click flipped.
+func TestEquippedCellClickInAnUnequippedContainerDimsTheCheckmark(t *testing.T) {
+	c := check.New(t)
+	sheet := newTestSheetForTemplate(t)
+	entity := sheet.Entity()
+	container := gurps.NewEquipment(entity, nil, true)
+	container.Name = "Backpack"
+	container.Equipped = false
+	container.SetOpen(true)
+	item := gurps.NewEquipment(entity, container, false)
+	item.Name = "Rope"
+	item.Equipped = false
+	container.Children = []*gurps.Equipment{item}
+	entity.CarriedEquipment = []*gurps.Equipment{container}
+	sheet.Rebuild(true)
+
+	cell := func() *unison.Label {
+		table := sheet.CarriedEquipment.Table
+		c.Equal(item, table.RowFromIndex(1).Data(), "the item's row must follow its container's")
+		label, ok := table.RowFromIndex(1).ColumnCell(1, 0, unison.Black, unison.White, false, false,
+			false).(*unison.Label)
+		c.True(ok, "the equipped cell must be a label")
+		table.AddChild(label)
+		return label
+	}
+
+	label := cell()
+	c.True(label.Enabled(), "an unchecked cell must stay enabled, so that it can be pressed")
+	c.True(label.MouseDownCallback(geom.Point{}, unison.ButtonLeft, 1, mod.None), "the click must be consumed")
+	c.True(item.Equipped, "the click must equip the item")
+	label = cell()
+	c.NotNil(label.Drawable, "the cell must show the checkmark")
+	c.False(label.Enabled(), "the checkmark of an item in an unequipped container must be dimmed")
+
+	c.True(label.MouseDownCallback(geom.Point{}, unison.ButtonLeft, 1, mod.None), "the click must be consumed")
+	c.False(item.Equipped, "the click must unequip the item")
+	label = cell()
+	c.Nil(label.Drawable, "the cell must show no checkmark")
+	c.True(label.Enabled(), "an unchecked cell must stay enabled, so that it can be pressed")
+}
+
 // newSheetWithReactionGrantingEquipment returns a sheet whose entity carries a single, unequipped piece of equipment
 // with a reaction bonus, along with that equipment. Nothing else supplies a reaction, so the Reactions list is only on
 // the page while the item is equipped.
