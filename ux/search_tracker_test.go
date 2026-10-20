@@ -84,9 +84,9 @@ func TestMatchStepper(t *testing.T) {
 	c.Equal(0, len(shown), "with no matches, nothing is shown")
 }
 
-// An empty search matches nothing, so refreshing it must not walk the lists: the walk builds a row for every row of
-// every list, which is most of what an update of a sheet with large lists used to cost while nobody was searching.
-// The controls must nevertheless end up as a search that found nothing leaves them.
+// An empty search matches nothing, so refreshing it must not walk the lists: the walk has every row of every list
+// derive its children and the data of its cells afresh, which was most of what an update of a sheet with large lists
+// cost while nobody was searching. The controls must nevertheless end up as a search that found nothing leaves them.
 func TestSearchRefreshSkipsTheListsWhileTheFieldIsEmpty(t *testing.T) {
 	c := check.New(t)
 	sheet := newTestSheetForTemplate(t)

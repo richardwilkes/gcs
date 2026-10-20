@@ -13,11 +13,13 @@ import (
 	"testing"
 
 	"github.com/richardwilkes/gcs/v5/model/criteria"
+	"github.com/richardwilkes/gcs/v5/model/nameable"
 	"github.com/richardwilkes/toolbox/v2/check"
 )
 
-// A matcher must give the same answer as matching through the criteria directly, for every comparison, whether or
-// not the qualifier carries a nameable marker and whether or not a replacement exists for it.
+// A matcher, and matching through the criteria, must give the same answer as the comparison of the value against the
+// qualifier with its replacements applied, for every comparison, whether or not the qualifier carries a nameable marker
+// and whether or not a replacement exists for it.
 func TestTextMatcherMatchesText(t *testing.T) {
 	c := check.New(t)
 	comparisons := []criteria.StringComparison{
@@ -33,7 +35,9 @@ func TestTextMatcherMatchesText(t *testing.T) {
 			for _, r := range replacements {
 				m := text.Matcher(r)
 				for _, value := range values {
-					c.Equal(text.Matches(r, value), m.Matches(value), "%v %q with %v against %q", compare, qualifier, r,
+					want := compare.Matches(nameable.Apply(qualifier, r), value)
+					c.Equal(want, m.Matches(value), "matcher: %v %q with %v against %q", compare, qualifier, r, value)
+					c.Equal(want, text.Matches(r, value), "criteria: %v %q with %v against %q", compare, qualifier, r,
 						value)
 				}
 			}

@@ -32,7 +32,8 @@ import (
 //	    -timeout 90m | tee baseline.txt
 //
 // For a quick look, add GCS_BENCH_SIZE=0.25 and -benchtime 5x. GCS_BENCH_FILE names a real sheet to measure instead
-// of the generated one (see benchEntity). Compare two runs with:
+// of the generated one (see benchEntity); a benchmark of a list that sheet leaves off the page is skipped. Compare two
+// runs with:
 //
 //	go run golang.org/x/perf/cmd/benchstat@latest before.txt after.txt
 //
@@ -143,9 +144,20 @@ func (sb *sheetBench) run(b *testing.B, fn func()) {
 	sb.reportHeap(b)
 }
 
-// scrollTo brings the panel into view, so that drawing and scrolling measure the part of the page that holds it.
-func (sb *sheetBench) scrollTo(p unison.Paneler) {
-	sb.screen.Do(func() { p.AsPanel().ScrollIntoView() })
+// scrollTo brings the panel into view, so that drawing and scrolling measure the part of the page that holds it. It
+// skips the benchmark when the panel isn't on the page, as is the case on a sheet loaded through benchFileEnvVar for an
+// empty weapons list or a list its layout omits.
+func (sb *sheetBench) scrollTo(b *testing.B, p unison.Paneler) {
+	b.Helper()
+	var onPage bool
+	sb.screen.Do(func() {
+		if onPage = listAttachedToSheet(sb.sheet, p); onPage {
+			p.AsPanel().ScrollIntoView()
+		}
+	})
+	if !onPage {
+		b.Skip("not on the page")
+	}
 }
 
 func BenchmarkSheetMarkModified(b *testing.B) {
@@ -172,7 +184,7 @@ func BenchmarkSheetRedraw(b *testing.B) {
 		panel unison.Paneler
 	}{{"top", sb.sheet.page}, {"melee", sb.sheet.MeleeWeapons}, {"spells", sb.sheet.Spells}} {
 		b.Run(one.name, func(b *testing.B) {
-			sb.scrollTo(one.panel)
+			sb.scrollTo(b, one.panel)
 			sb.run(b, func() {
 				sb.wnd.MarkForRedraw()
 				sb.wnd.FlushDrawing()
@@ -196,7 +208,7 @@ func BenchmarkSheetScroll(b *testing.B) {
 		{"spells", sb.sheet.Spells},
 	} {
 		b.Run(one.name, func(b *testing.B) {
-			sb.scrollTo(one.panel)
+			sb.scrollTo(b, one.panel)
 			pt := sb.screen.PanelCenter(sb.sheet.scroll)
 			var draw time.Duration
 			n := 0
@@ -253,4 +265,25 @@ func BenchmarkSheetSearch(b *testing.B) {
 			sb.run(b, sb.sheet.searchTracker.Refresh)
 		})
 	}
+}
+
+// TestSheetBenchSkipsAListNotOnThePage verifies that a benchmark of a list that a loaded sheet leaves off the page, such
+// as the ranged weapons of a character without any, is skipped rather than measuring whatever part of the page is in
+// view.
+func TestSheetBenchSkipsAListNotOnThePage(t *testing.T) {
+	c := check.New(t)
+	path := filepath.Join(t.TempDir(), "empty"+gurps.SheetExt)
+	c.NoError(gurps.NewEntity().Save(path))
+	t.Setenv(benchFileEnvVar, path)
+	var opened, skipped bool
+	testing.Benchmark(func(b *testing.B) {
+		sb := newSheetBench(b)
+		opened = true
+		b.Run("ranged", func(b *testing.B) {
+			defer func() { skipped = b.Skipped() }()
+			sb.scrollTo(b, sb.sheet.RangedWeapons)
+		})
+	})
+	c.True(opened, "the sheet must open")
+	c.True(skipped, "a list that is not on the page must not be measured")
 }

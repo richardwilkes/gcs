@@ -158,8 +158,8 @@ func InstallSearchTracker(toolbar *unison.Panel, clearTableSelections func(), fi
 }
 
 // Refresh the search state. Nothing matches an empty search, so the lists are only walked when there is text to look
-// for; the walk builds a row for every row of every list, which a sheet with large lists can ill afford on every
-// update.
+// for; the walk asks each list for its rows, which has every row of a page list derive its children and the data of
+// its cells afresh as it is read (see rowReuse), a cost a sheet with large lists can ill afford on every update.
 func (s *SearchTracker) Refresh() {
 	s.searchResult = nil
 	if text := strings.ToLower(s.searchField.Text()); text != "" {

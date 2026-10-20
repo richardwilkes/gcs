@@ -26,7 +26,7 @@ func TestPointsPanelFollowsChanges(t *testing.T) {
 	panel, ok := sheet.blocks[gurps.BlockPointsKey].(*PointsPanel)
 	c.True(ok, "the sheet must have a points block")
 	first := panel.pointsBreakdown()
-	c.Equal(first, panel.pointsBreakdown(), "the breakdown is derived once per update")
+	c.True(first == panel.pointsBreakdown(), "the breakdown is derived once per update")
 	c.Equal(fxp.Int(0), first.Skills)
 
 	skill := gurps.NewSkill(entity, nil, false)
