@@ -295,6 +295,7 @@ func TestEveryWeaponSwitchIsResolved(t *testing.T) {
 			w := newSwitchProbeWeapon(melee, sw)
 			on := weaponSwitchProbe(w)
 			sw.SwitchTypeValue = false
+			w.Entity().DiscardCaches()
 			if on != weaponSwitchProbe(w) {
 				wired = true
 			}
@@ -622,7 +623,8 @@ func TestPreSubVersionWeaponDamageIsMigrated(t *testing.T) {
 // TestWeaponEditorPreservesID verifies that applying an editor's copy back onto the weapon it was taken from leaves the
 // weapon's identity alone. A Weapon acts as its own editor data, so the copy the editor holds carries a TID of its own,
 // but the weapon's TID is persisted as its "id" and table selections are keyed on it, so neither applying an edit nor
-// undoing or redoing one may change it.
+// undoing or redoing one may change it. The damage of the copy and of the weapon must also stay their own, rather than
+// belong to the clone each was made from.
 func TestWeaponEditorPreservesID(t *testing.T) {
 	c := check.New(t)
 
@@ -637,10 +639,12 @@ func TestWeaponEditorPreservesID(t *testing.T) {
 	beforeData.CopyFrom(w)
 	var editorData gurps.Weapon
 	editorData.CopyFrom(w)
+	c.True(editorData.Damage.Owner == &editorData, "the copy's damage belongs to the copy")
 	editorData.Usage = "Thrust"
 
 	editorData.ApplyTo(w)
 	c.Equal("Thrust", w.Usage, "the edit was applied")
+	c.True(w.Damage.Owner == w, "the applied damage belongs to the weapon")
 	c.Equal(originalTID, w.TID, "applying an edit doesn't change the weapon's ID")
 	c.Equal(originalClonedFromTID, w.ClonedFromTID, "applying an edit doesn't change the weapon's lineage")
 
@@ -839,6 +843,7 @@ func TestWeaponBonusWithRequiredSkillAndNoSkill(t *testing.T) {
 		"nor to one whose skill default names a skill the character lacks")
 
 	bonus.NameCriteria = criteria.Text{Compare: criteria.AnyText}
+	e.DiscardCaches()
 	c.Equal("1d+1 cr", byAttribute.Damage.ResolvedDamage(nil), "a skill name of anything applies to both")
 	c.Equal("1d+1 cr", byAbsentSkill.Damage.ResolvedDamage(nil), "a skill name of anything applies to both")
 }
@@ -904,6 +909,37 @@ func TestWeaponTagDefaultToCrossbowUsesLiftingST(t *testing.T) {
 	addDXSkill(bow.Entity(), "Bow", difficulty.Easy, fxp.Four, "Archery")
 	bow.Entity().Recalculate()
 	c.Equal(fxp.Ten, bow.SkillLevel(nil), "a bow is drawn with striking ST 10, and is penalized 2 for its minimum ST")
+}
+
+// TestWeaponSkillLevelUsesResolvedMusclePower verifies that the ST a ranged weapon's minimum ST is checked against
+// follows a weapon switch for muscle power, as the weapon's range does, rather than the weapon's own flag.
+func TestWeaponSkillLevelUsesResolvedMusclePower(t *testing.T) {
+	c := check.New(t)
+	for _, musclePowered := range []bool{true, false} {
+		bow := newCrossbowTestWeapon(c, &gurps.SkillDefault{
+			DefaultType: gurps.SkillID,
+			Tags:        criteria.Text{Compare: criteria.IsText, Qualifier: "Archery"},
+		})
+		e := bow.Entity()
+		addDXSkill(e, "Bow", difficulty.Easy, fxp.Four, "Archery")
+		bow.Range.MusclePowered = !musclePowered
+		sw := gurps.NewWeaponBonus(feature.WeaponSwitch)
+		sw.SelectionType = wsel.ThisWeapon
+		sw.SwitchType = wswitch.MusclePowered
+		sw.SwitchTypeValue = musclePowered
+		owner, ok := bow.Owner.(*gurps.Trait)
+		c.True(ok, "the test weapon should be owned by a trait")
+		owner.Features = append(owner.Features, sw)
+		e.Recalculate()
+		c.Equal(musclePowered, bow.ResolvedRange(nil).MusclePowered, "the switch decides the range's muscle power")
+		if musclePowered {
+			c.Equal(fxp.Ten, bow.SkillLevel(nil),
+				"a bow switched to muscle power is drawn with striking ST 10, and is penalized 2 for its minimum ST")
+		} else {
+			c.Equal(fxp.Twelve, bow.SkillLevel(nil),
+				"a bow switched off muscle power is checked against lifting ST 12, which meets its minimum ST")
+		}
+	}
 }
 
 // TestWeaponNotesFromOwnerModifiers verifies that a weapon's notes gather the notes of every enabled, non-container
@@ -993,12 +1029,14 @@ func TestWeaponEffectiveStrength(t *testing.T) {
 	expect("1d-2 cr", "10/20", "the entity's ST 10 is used when there is no rated ST")
 
 	eqp.RatedST = fxp.FromInteger(14)
+	e.DiscardCaches()
 	expect("1d cr", "14/28", "the owner's rated ST replaces the entity's")
 
 	bonus := gurps.NewWeaponBonus(feature.WeaponEffectiveSTBonus)
 	bonus.SelectionType = wsel.ThisWeapon
 	bonus.Amount = fxp.Two
 	eqp.Features = gurps.Features{bonus}
+	e.DiscardCaches()
 	expect("1d+1 cr", "16/32", "an effective ST bonus raises the rated ST")
 
 	w.Strength = attack.ParseStrength("5")

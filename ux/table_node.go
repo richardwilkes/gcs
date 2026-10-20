@@ -55,48 +55,129 @@ type markdownCellInks struct {
 
 var _ unison.TableRowData[*Node[*gurps.Trait]] = &Node[*gurps.Trait]{}
 
-// CellCache holds data for a table row's cell to reduce the need to constantly recreate them.
+// CellCache holds a panel built for a table row's cell, along with what it was built from, so that the panel can be
+// used again rather than built anew each time the cell is drawn or measured.
 type CellCache struct {
 	Panel unison.Paneler
-	Data  gurps.CellData
-	Width float32
+	// Data is the data the panel was built from. The panel may change it: a check cell flips Checked as it is
+	// clicked, and back should the click be refused, so that the panel goes on matching the model and is kept.
+	Data        *gurps.CellData
+	Width       float32
+	NotesClosed bool
+	PanelStamp  uint64 // The stamp (see cellPanelEpoch) the panel was built at.
 }
 
-// Matches returns true if the provided width and data match the current contents. A nil cache never matches.
-func (c *CellCache) Matches(width float32, data *gurps.CellData) bool {
-	return c != nil && c.Panel != nil && c.Width == width && c.Data == *data
+// Matches returns true if the panel was built for the given width, data and notes disclosure, and with the fonts in
+// use now (see cellPanelEpoch). A width of zero or less asks for the panel's natural size, which no width constrains,
+// so any such width matches a panel built for any other. A nil cache never matches.
+func (c *CellCache) Matches(width float32, data *gurps.CellData, notesClosed bool) bool {
+	return c != nil && c.Panel != nil && c.NotesClosed == notesClosed && c.PanelStamp == currentCellPanelStamp() &&
+		(c.Width == width || (c.Width <= 0 && width <= 0)) && *c.Data == *data
+}
+
+// cellStamp marks what a row derived from the model for one of its cells. The row derives it afresh once a change has
+// been reported to the display (see displayEpoch) and, if its provider keeps its rows across syncs (see rowReuse),
+// once the table has synced again, which is when a row built anew would have derived it.
+type cellStamp struct {
+	display uint64
+	sync    uint64
+}
+
+// nodeCell is what a row keeps for one of its columns: the cell's data, derived from the model once per change
+// reported to the display and per sync (see cellStamp), the panels built from it for the widths the table asks for,
+// and the widths the page reference columns are sized by. Each derived value is stamped with the cellStamp it was
+// derived at; the panels are kept for as long as they match the data (see CellCache.Matches).
+type nodeCell struct {
+	display       gurps.CellData // The data for display, with the page's display preferences applied.
+	plain         gurps.CellData // The data for sorting and searching, without them; the same as display off a page.
+	displayAt     cellStamp
+	plainAt       cellStamp
+	unconstrained *CellCache    // The panel built at its natural size, which the sizing passes ask for.
+	fitted        [4]*CellCache // The panels built for the most recent widths, newest first; see ColumnCell.
+	refWidth      float32
+	collapsed     float32
+	refWidthAt    cellStamp
+	collapsedAt   cellStamp
 }
 
 // Node represents a row in a table.
 type Node[T gurps.Node[T]] struct {
-	table     *unison.Table[*Node[T]]
-	parent    *Node[T]
-	data      T
-	children  []*Node[T]
-	cellCache []*CellCache
-	forPage   bool
+	table       *unison.Table[*Node[T]]
+	parent      *Node[T]
+	data        T
+	children    []*Node[T]
+	cells       []nodeCell // One per column, allocated the first time a cell is wanted.
+	reuse       *rowReuse  // Set when the provider keeps its rows across syncs.
+	childrenGen uint64     // The reuse generation the children were brought up to date in.
+	forPage     bool
 }
 
 // NewNode creates a new node for a table.
 func NewNode[T gurps.Node[T]](table *unison.Table[*Node[T]], parent *Node[T], data T, forPage bool) *Node[T] {
 	return &Node[T]{
-		table:     table,
-		parent:    parent,
-		data:      data,
-		cellCache: make([]*CellCache, len(table.Columns)),
-		forPage:   forPage,
+		table:   table,
+		parent:  parent,
+		data:    data,
+		forPage: forPage,
 	}
 }
 
 // NewNodeLike creates a new node for a table based on the characteristics of an existing node in that table.
 func NewNodeLike[T gurps.Node[T]](like *Node[T], data T) *Node[T] {
 	return &Node[T]{
-		table:     like.table,
-		parent:    like.parent,
-		data:      data,
-		cellCache: make([]*CellCache, len(like.table.Columns)),
-		forPage:   like.forPage,
+		table:   like.table,
+		parent:  like.parent,
+		data:    data,
+		reuse:   like.reuse,
+		forPage: like.forPage,
 	}
+}
+
+// nodesFor returns a node under the parent for each of the data items, in their order: the one among the previous
+// nodes that holds the same item, when there is one, or else a new one sharing the given reuse, which may be nil. Only
+// nodes that were under the same parent may be passed as the previous ones, so that a row moved elsewhere gets a new
+// node there, with the right parent.
+func nodesFor[T gurps.Node[T]](table *unison.Table[*Node[T]], parent *Node[T], data []T, previous []*Node[T], forPage bool, reuse *rowReuse) []*Node[T] {
+	nodes := make([]*Node[T], len(data))
+	var byData map[T]*Node[T]
+	for i, one := range data {
+		if byData == nil {
+			// The items are usually the ones there were before, in the same order, so they are matched up by position
+			// until that fails.
+			if i < len(previous) && previous[i].data == one {
+				nodes[i] = previous[i]
+				continue
+			}
+			byData = make(map[T]*Node[T], max(len(previous)-i, 0))
+			for _, node := range previous[min(i, len(previous)):] {
+				byData[node.data] = node
+			}
+		}
+		if node, ok := byData[one]; ok {
+			// Taken out, so that a list holding the same item twice doesn't show the same node twice.
+			delete(byData, one)
+			nodes[i] = node
+		} else {
+			nodes[i] = &Node[T]{
+				table:   table,
+				parent:  parent,
+				data:    one,
+				reuse:   reuse,
+				forPage: forPage,
+			}
+		}
+	}
+	return nodes
+}
+
+// cell returns what the row keeps for the given column.
+func (n *Node[T]) cell(col int) *nodeCell {
+	if col >= len(n.cells) {
+		cells := make([]nodeCell, max(len(n.table.Columns), col+1))
+		copy(cells, n.cells)
+		n.cells = cells
+	}
+	return &n.cells[col]
 }
 
 // CloneForTarget implements unison.TableRowData.
@@ -133,14 +214,21 @@ func (n *Node[T]) CanHaveChildren() bool {
 	return n.data.Container()
 }
 
-// Children implements unison.TableRowData.
+// Children implements unison.TableRowData. A row whose provider keeps its rows across syncs (see rowReuse) brings its
+// children up to date with the model once per sync, keeping the node of each child that is still one of its own.
 func (n *Node[T]) Children() []*Node[T] {
-	if n.data.Container() && n.children == nil {
-		children := n.data.NodeChildren()
-		n.children = make([]*Node[T], len(children))
-		for i, one := range children {
-			n.children[i] = NewNode(n.table, n, one, n.forPage)
+	switch {
+	case n.reuse == nil:
+		if n.data.Container() && n.children == nil {
+			n.children = nodesFor(n.table, n, n.data.NodeChildren(), nil, n.forPage, nil)
 		}
+	case n.childrenGen != n.reuse.gen || (n.children == nil && n.data.Container()):
+		if n.data.Container() {
+			n.children = nodesFor(n.table, n, n.data.NodeChildren(), n.children, n.forPage, n.reuse)
+		} else {
+			n.children = nil
+		}
+		n.childrenGen = n.reuse.gen
 	}
 	return n.children
 }
@@ -154,25 +242,47 @@ func (n *Node[T]) SetChildren(children []*Node[T]) {
 }
 
 // RefreshChildren discards the cached child nodes so that the next call to Children rebuilds them from the underlying
-// data. Call it after altering the data's children directly.
+// data, without keeping any of them. Call it after altering the data's children directly.
 func (n *Node[T]) RefreshChildren() {
 	n.children = nil
+}
+
+// currentCellStamp returns the stamp that marks what the row derives for its cells as current; see cellStamp.
+func (n *Node[T]) currentCellStamp() cellStamp {
+	stamp := cellStamp{display: currentDisplayStamp()}
+	if n.reuse != nil {
+		stamp.sync = n.reuse.gen
+	}
+	return stamp
 }
 
 // cellData returns the cell data for the given column of this row. forDisplay says whether the data is for something
 // the user will see, which decides whether the page-only display preferences (such as the decimal places shown for
 // equipment weights) are applied; they are, but only for a row on a page. Sorting passes false, since their rounding is
 // lossy and would tie rows whose real values differ. Searching asks both ways (see columnContains), so that a row is
-// found by the value the user sees as well as by the exact value.
+// found by the value the user sees as well as by the exact value. The data is derived from the model once per change
+// reported to the display and per sync (see cellStamp) rather than on every call, since deriving it can be costly and
+// the table asks for it several times per sync and once per draw.
 func (n *Node[T]) cellData(col int, forDisplay bool) gurps.CellData {
-	data := gurps.CellData{ForPage: n.forPage && forDisplay}
-	n.data.CellData(n.table.Columns[col].ID, &data)
-	// A row a filter shows only as context for a match beneath it is dimmed like a disabled row, so the matches stand
-	// out. Sorting and matching don't see the dimming.
-	if forDisplay && n.table.IsFilterContextRow(n) {
-		data.Dim = true
+	c := n.cell(col)
+	forPage := n.forPage && forDisplay
+	data, at := &c.plain, &c.plainAt
+	if forPage {
+		data, at = &c.display, &c.displayAt
 	}
-	return data
+	if stamp := n.currentCellStamp(); *at != stamp {
+		*data = gurps.CellData{ForPage: forPage}
+		n.data.CellData(n.table.Columns[col].ID, data)
+		*at = stamp
+	}
+	result := *data
+	// A row a filter shows only as context for a match beneath it is dimmed like a disabled row, so the matches stand
+	// out. Sorting and matching don't see the dimming, and it isn't kept, since the filter can change without a
+	// change being reported.
+	if forDisplay && n.table.IsFilterContextRow(n) {
+		result.Dim = true
+	}
+	return result
 }
 
 // CellDataForSort implements unison.TableRowData.
@@ -192,21 +302,52 @@ func (n *Node[T]) CellDataForAccessibility(col int) string {
 	return data.ForSort()
 }
 
-// ColumnCell implements unison.TableRowData.
+// ColumnCell implements unison.TableRowData. A panel built earlier for the same data and width is used again with
+// its inks brought up to date; the sizing passes, which ask for every cell at its natural size and then at the width
+// settled on, and the draws that follow therefore build each cell once per width rather than once per call, and a row
+// kept across syncs (see rowReuse) builds only the cells whose data changed. Four widths are kept, since a sync of a
+// page list asks for the cells of the column that takes the excess width at up to four: the table is sized to its
+// preferred width, rounded up to whole pixels, before the layout gives it back its own, and the columns are sized
+// for each, before and after the page reference columns take their share of the excess (see sizePageTableColumns).
 func (n *Node[T]) ColumnCell(row, col int, foreground, background unison.Ink, selected, indirectlySelected, _ bool) unison.Paneler {
-	cellData := n.cellData(col, true)
+	data := n.cellData(col, true)
 	width := n.table.CellWidth(row, col)
-	if n.cellCache[col].Matches(width, &cellData) {
-		applyInkRecursively(n.cellCache[col].Panel.AsPanel(), foreground, background, selected || indirectlySelected)
-		return n.cellCache[col].Panel
+	// The notes disclosure button is part of the panel, so a panel built while the notes were closed can't serve
+	// once they are open, whether or not the data changed.
+	notesClosed := data.Type == cell.Text && data.Secondary != "" && gurps.IsClosed(n.noteKey())
+	selected = selected || indirectlySelected
+	c := n.cell(col)
+	if width <= 0 {
+		if c.unconstrained.Matches(width, &data, notesClosed) {
+			applyInkRecursively(c.unconstrained.Panel.AsPanel(), foreground, background, selected)
+			return c.unconstrained.Panel
+		}
+		c.unconstrained = n.buildCell(&data, width, notesClosed, foreground, background, selected)
+		return c.unconstrained.Panel
 	}
-	c := n.CellFromCellData(&cellData, width, foreground, background, selected || indirectlySelected)
-	n.cellCache[col] = &CellCache{
-		Panel: c,
-		Data:  cellData,
-		Width: width,
+	for _, cached := range c.fitted {
+		if cached.Matches(width, &data, notesClosed) {
+			applyInkRecursively(cached.Panel.AsPanel(), foreground, background, selected)
+			return cached.Panel
+		}
 	}
-	return c
+	built := n.buildCell(&data, width, notesClosed, foreground, background, selected)
+	copy(c.fitted[1:], c.fitted[:len(c.fitted)-1])
+	c.fitted[0] = built
+	return built.Panel
+}
+
+// buildCell builds the panel for the cell from a copy of the data, which the panel keeps (see CellCache.Data).
+func (n *Node[T]) buildCell(data *gurps.CellData, width float32, notesClosed bool, foreground, background unison.Ink, selected bool) *CellCache {
+	kept := new(gurps.CellData)
+	*kept = *data
+	return &CellCache{
+		Panel:       n.CellFromCellData(kept, width, foreground, background, selected),
+		Data:        kept,
+		Width:       width,
+		NotesClosed: notesClosed,
+		PanelStamp:  currentCellPanelStamp(),
+	}
 }
 
 func applyInkRecursively(panel *unison.Panel, foreground, background unison.Ink, selected bool) {
@@ -401,11 +542,12 @@ func (n *Node[T]) createLabelCell(c *gurps.CellData, width float32, foreground, 
 		button.Font = n.primaryFieldFont()
 		baseline := button.Font.Baseline()
 		size := max(baseline-2, 6)
-		key := n.noteKey()
-		isClosed := gurps.IsClosed(key)
+		isClosed := gurps.IsClosed(n.noteKey())
 		var s *unison.SVG
 		// The button is nothing but its icon, so its tooltip is also what a screen reader calls it. Clicking it
-		// rebuilds the rows, and with them this button, so the tooltip never needs to change once set.
+		// changes the notes disclosure, which the cell's panel is kept under (see CellCache), so the cell is built
+		// anew, and this button with it, and the tooltip never needs to change once set. The key is looked up on each
+		// click, as converting the row to or from a container changes its ID, and so its key, but can keep the panel.
 		if isClosed {
 			s = svg.NotesExpand
 			button.Tooltip = newWrappedTooltip(i18n.Text("Show notes"))
@@ -418,6 +560,7 @@ func (n *Node[T]) createLabelCell(c *gurps.CellData, width float32, foreground, 
 			Size: geom.NewSize(size, size).Ceil(),
 		}
 		button.ClickCallback = func() {
+			key := n.noteKey()
 			gurps.SetClosedState(key, !gurps.IsClosed(key))
 			n.table.SyncToModel()
 		}
@@ -653,9 +796,14 @@ func (n *Node[T]) newCheckCell(c *gurps.CellData, foreground unison.Ink, svgFor 
 			return
 		}
 		c.Checked = !c.Checked
-		// The new state is drawn and a layout asked for before the click is reported, since reporting it marks the
-		// owner as modified, which re-syncs the table and recreates every cell, leaving this label detached from the
-		// panel tree, where changing its drawable and marking it for layout and redraw would have no effect at all.
+		// The new state is drawn and a layout asked for before the click is reported, since reporting it may build
+		// this cell anew -- a page marked as modified re-syncs its lists, a rebuild re-syncs or replaces the table,
+		// and a list that isn't on a page builds all of its rows anew when synced -- leaving this label detached from
+		// the panel tree, where changing its drawable and marking it for layout and redraw would have no effect at
+		// all. An editor or list dockable that is only marked as modified doesn't re-sync its table, so the row and
+		// this cell are kept. c is the data the cell's panel is cached under (see CellCache.Data), so once the model
+		// has followed the click, a row that is kept finds the panel matching the data derived afresh and keeps it;
+		// when the model refused it, the flip below puts the data back.
 		setDrawable(c.Checked)
 		label.MarkForLayoutAndRedraw()
 		if !onClick(label, mods) {
@@ -735,14 +883,17 @@ func (n *Node[T]) createToggleCell(c *gurps.CellData, foreground unison.Ink) uni
 			if eqp, ok := any(n.data).(*gurps.Equipment); ok && !eqp.Enabled() {
 				return false
 			}
+			// The panel may be kept under the flipped data (see newCheckCell), so it has to be dimmed as one built
+			// from that data would be, and before the click is reported, for the same reason the drawable is.
+			label.SetEnabled(!c.Checked || !c.Dim)
 			if !handleCheck(n.data, label, c.Checked) {
 				MarkModified(label)
 			}
 			return true
 		})
-	if c.Checked {
-		toggle.SetEnabled(!c.Dim)
-	}
+	// Only a checkmark is dimmed. An unchecked cell, which draws nothing, stays enabled even when its data is dimmed,
+	// as it always is for unequipped equipment, so that an assistive technology can still press it.
+	toggle.SetEnabled(!c.Checked || !c.Dim)
 	return toggle
 }
 
@@ -916,6 +1067,17 @@ func pageRefSeparatorWidth(font unison.Font) float32 {
 // row. It returns -1 if the column isn't a page reference column. This is used to let page reference columns claim
 // excess width (up to the point where all references are visible) before the remainder goes to the excess-width column.
 func (n *Node[T]) pageRefColumnFullWidth(col int) float32 {
+	memo := n.cell(col)
+	stamp := n.currentCellStamp()
+	if memo.refWidthAt == stamp {
+		return memo.refWidth
+	}
+	memo.refWidth = n.computePageRefColumnFullWidth(col)
+	memo.refWidthAt = stamp
+	return memo.refWidth
+}
+
+func (n *Node[T]) computePageRefColumnFullWidth(col int) float32 {
 	c := n.cellData(col, true)
 	if c.Type != cell.PageRef {
 		return -1
@@ -942,6 +1104,31 @@ func (n *Node[T]) pageRefColumnFullWidth(col int) float32 {
 // column isn't a text column. This is used to reserve enough room for the primary column before handing leftover space
 // to page reference columns.
 func (n *Node[T]) excessColumnCollapsedWidth(col int) float32 {
+	memo := n.cell(col)
+	stamp := n.currentCellStamp()
+	if memo.collapsedAt != stamp {
+		memo.collapsed = n.computeExcessColumnCollapsedWidth(col)
+		memo.collapsedAt = stamp
+	}
+	width := memo.collapsed
+	if width < 0 {
+		return width
+	}
+	// The hierarchy indent is added each time, since it isn't part of the data.
+	if n.table.Columns[col].ID == n.table.HierarchyColumnID {
+		if indent := n.table.CurrentHierarchyIndent(); indent > 0 {
+			depth := 0
+			for p := n.parent; p != nil; p = p.parent {
+				depth++
+			}
+			width += n.table.Padding.Left + indent*float32(depth+1)
+		}
+	}
+	return width
+}
+
+// computeExcessColumnCollapsedWidth is excessColumnCollapsedWidth without the memo and the hierarchy indent.
+func (n *Node[T]) computeExcessColumnCollapsedWidth(col int) float32 {
 	c := n.cellData(col, true)
 	if c.Type != cell.Text {
 		return -1
@@ -953,15 +1140,6 @@ func (n *Node[T]) excessColumnCollapsedWidth(col int) float32 {
 	if hadSecondary {
 		// Account for the notes disclosure button shown beside the primary text.
 		width += n.primaryFieldFont().Baseline() + unison.StdHSpacing/2
-	}
-	if n.table.Columns[col].ID == n.table.HierarchyColumnID {
-		if indent := n.table.CurrentHierarchyIndent(); indent > 0 {
-			depth := 0
-			for p := n.parent; p != nil; p = p.parent {
-				depth++
-			}
-			width += n.table.Padding.Left + indent*float32(depth+1)
-		}
 	}
 	return width
 }

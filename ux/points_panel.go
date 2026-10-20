@@ -32,7 +32,28 @@ type PointsPanel struct {
 	ptsList      *unison.Panel
 	unspentField *NonEditablePageField
 	unspentLabel *unison.Label
+	breakdown    *gurps.PointsBreakdown
+	breakdownAt  uint64
+	breakdownGen uint64
 	overSpent    int8
+}
+
+// pointsBreakdown returns the entity's point breakdown, derived once per change rather than once per field, since
+// deriving it walks everything on the sheet and nine fields show a part of it.
+func (p *PointsPanel) pointsBreakdown() *gurps.PointsBreakdown {
+	stamp := currentDisplayStamp()
+	gen := p.entity.DerivedStateGeneration()
+	if p.breakdown == nil || p.breakdownAt != stamp || p.breakdownGen != gen {
+		p.breakdown = p.entity.PointsBreakdown()
+		p.breakdownAt = stamp
+		p.breakdownGen = gen
+	}
+	return p.breakdown
+}
+
+// unspentPoints is Entity.UnspentPoints using the panel's point breakdown.
+func (p *PointsPanel) unspentPoints() fxp.Int {
+	return p.entity.TotalPoints - p.pointsBreakdown().Total()
 }
 
 // NewPointsPanel creates a new points panel.
@@ -72,7 +93,7 @@ func NewPointsPanel(entity *gurps.Entity, targetMgr *TargetMgr) *PointsPanel {
 
 	var overallTotal string
 	if p.entity.SheetSettings.ExcludeUnspentPointsFromTotal {
-		overallTotal = p.entity.PointsBreakdown().Total().String()
+		overallTotal = p.pointsBreakdown().Total().String()
 	} else {
 		overallTotal = p.entity.TotalPoints.String()
 	}
@@ -118,7 +139,7 @@ func NewPointsPanel(entity *gurps.Entity, targetMgr *TargetMgr) *PointsPanel {
 	}
 
 	p.unspentField = NewNonEditablePageFieldEnd(func(f *NonEditablePageField) {
-		if f.SetTitleIfChanged(p.entity.UnspentPoints().String()) {
+		if f.SetTitleIfChanged(p.unspentPoints().String()) {
 			p.adjustUnspent()
 		}
 	})
@@ -165,7 +186,7 @@ func NewPointsPanel(entity *gurps.Entity, targetMgr *TargetMgr) *PointsPanel {
 		},
 	} {
 		p.addPointsField(NewNonEditablePageFieldEndFor(func() string {
-			return one.get(p.entity.PointsBreakdown()).String()
+			return one.get(p.pointsBreakdown()).String()
 		}), one.title, one.tooltip)
 	}
 	p.adjustUnspent()
@@ -190,7 +211,7 @@ func (p *PointsPanel) addPointsField(field *NonEditablePageField, title, tooltip
 func (p *PointsPanel) adjustUnspent() {
 	if p.unspentLabel != nil {
 		last := p.overSpent
-		if p.entity.UnspentPoints() < 0 {
+		if p.unspentPoints() < 0 {
 			if p.overSpent != -1 {
 				p.overSpent = -1
 				p.unspentField.OnBackgroundInk = unison.ThemeOnError
@@ -225,7 +246,7 @@ func (p *PointsPanel) adjustUnspent() {
 func (p *PointsPanel) Sync() {
 	var overallTotal string
 	if p.entity.SheetSettings.ExcludeUnspentPointsFromTotal {
-		overallTotal = p.entity.PointsBreakdown().Total().String()
+		overallTotal = p.pointsBreakdown().Total().String()
 	} else {
 		overallTotal = p.entity.TotalPoints.String()
 	}

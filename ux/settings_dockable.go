@@ -160,6 +160,7 @@ func (d *SettingsDockable) Modified() bool {
 
 // MarkModified implements ModifiableRoot.
 func (d *SettingsDockable) MarkModified(_ unison.Paneler) {
+	invalidateDisplayData()
 	d.Modified()
 	UpdateTitleForDockable(d)
 	DeepSync(d)

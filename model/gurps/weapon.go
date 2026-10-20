@@ -101,7 +101,10 @@ type WeaponData struct {
 	Hide       bool            `json:"hide,omitzero"`
 }
 
-// Weapon holds the stats for a weapon.
+// Weapon holds the stats for a weapon. What its methods, and those of its damage, resolve is kept until its entity's
+// caches are discarded (see Entity.DiscardCaches), unless the weapon's own data changes or it is given another owner
+// first. A change to the owner's data, such as its rated ST or features, or to the rest of the entity is therefore
+// seen only after a recalculation or DiscardCaches.
 type Weapon struct {
 	WeaponData
 	Owner         WeaponOwner
@@ -203,7 +206,7 @@ func (w *Weapon) Compare(other *Weapon) int {
 }
 
 // HashDisplayedState returns a hash value for this weapon's displayed state. Useful for detecting unique weapon entries
-// to list on the sheet.
+// to list on the sheet. It reads values kept as Weapon describes.
 func (w *Weapon) HashDisplayedState() uint64 {
 	h := xxh3.New()
 	w.Hash(h)
@@ -490,8 +493,12 @@ func (w *Weapon) effectiveStrength(defaultST func(entity *Entity) fxp.Int, toolt
 	return st
 }
 
-// SkillLevel returns the resolved skill level.
+// SkillLevel returns the resolved skill level. The result is kept as Weapon describes.
 func (w *Weapon) SkillLevel(tooltip *xbytes.InsertBuffer) fxp.Int {
+	return memoize(w, func(m *weaponMemo) *memoized[fxp.Int] { return &m.skillLevel }, tooltip, w.skillLevel)
+}
+
+func (w *Weapon) skillLevel(tooltip *xbytes.InsertBuffer) fxp.Int {
 	entity := w.Entity()
 	if entity == nil {
 		return 0
@@ -553,7 +560,7 @@ func (w *Weapon) skillLevelBaseAdjustment(e *Entity, tooltip *xbytes.InsertBuffe
 	case stdmg.IQThrust, stdmg.IQSwing:
 		minST -= e.ResolveAttributeCurrent(IntelligenceID).Max(0).Floor()
 	default:
-		if !w.IsRanged() || (w.Range.MusclePowered && !w.usesCrossbowSkill(e)) {
+		if !w.IsRanged() || (w.ResolveBoolFlag(wswitch.MusclePowered, w.Range.MusclePowered) && !w.usesCrossbowSkill(e)) {
 			minST -= e.StrikingStrength()
 		} else {
 			minST -= e.LiftingStrength()
@@ -671,7 +678,7 @@ func (w *Weapon) extractSkillBonusForThisWeapon(f Feature, tooltip *xbytes.Inser
 	return 0
 }
 
-// ResolveBoolFlag returns the resolved value of the given bool flag.
+// ResolveBoolFlag returns the resolved value of the given bool flag. It reads values kept as Weapon describes.
 func (w *Weapon) ResolveBoolFlag(switchType wswitch.Type, initial bool) bool {
 	entity := w.Entity()
 	if entity == nil {
@@ -679,8 +686,8 @@ func (w *Weapon) ResolveBoolFlag(switchType wswitch.Type, initial bool) bool {
 	}
 	t := 0
 	f := 0
-	for _, bonus := range w.collectWeaponBonuses(oneDieCount, nil, feature.WeaponSwitch) {
-		if bonus.SwitchType == switchType {
+	for _, bonus := range w.applicableWeaponBonuses(entity) {
+		if bonus.Type == feature.WeaponSwitch && bonus.SwitchType == switchType {
 			if bonus.SwitchTypeValue {
 				t++
 			} else {
@@ -701,7 +708,7 @@ func (w *Weapon) ResolveBoolFlag(switchType wswitch.Type, initial bool) bool {
 // given field and select this weapon: by the skill it is used with, by its name, or by being a weapon of the item
 // carrying the override. base is the field's intrinsic value. When more than one override matches, the winner is
 // chosen by the override-resolution ladder (priority, then specificity), and, if tooltip is non-nil, the full contest
-// is reported.
+// is reported. It reads values kept as Weapon describes.
 func (w *Weapon) ResolveSelector(field selector.Field, base string, tooltip *xbytes.InsertBuffer) string {
 	entity := w.Entity()
 	if entity == nil {
@@ -805,42 +812,77 @@ func (w *Weapon) baseDamageDieCount() fxp.Int {
 	return fxp.FromInteger(w.Damage.BaseDamageDice().Count)
 }
 
+// collectWeaponBonuses returns the weapon bonuses of the given feature types that apply to this weapon, in the order
+// they are found, and, if tooltip isn't nil, adds each to it with the die count the bonus scales by. The bonuses of
+// every type are found once per weapon per state of the entity (see applicableWeaponBonuses); this picks out the
+// types asked for.
 func (w *Weapon) collectWeaponBonuses(dieCount dieCountFunc, tooltip *xbytes.InsertBuffer, allowedFeatureTypes ...feature.Type) []*WeaponBonus {
 	entity := w.Entity()
 	if entity == nil {
 		return nil
 	}
 	dieCount = sync.OnceValue(dieCount) // At most one resolution per collection, no matter how many bonuses match
-	allowed := make(map[feature.Type]bool, len(allowedFeatureTypes))
-	for _, one := range allowedFeatureTypes {
-		allowed[one] = true
+	var result []*WeaponBonus
+	for _, bonus := range w.applicableWeaponBonuses(entity) {
+		if !slices.Contains(allowedFeatureTypes, bonus.Type) {
+			continue
+		}
+		if tooltip != nil {
+			bonus.addToTooltip(bonus.resolveDieCount(dieCount), bonus.DerivedLeveledOwner(), tooltip)
+		}
+		result = append(result, bonus)
 	}
-	bonusSet := make(map[*WeaponBonus]bool)
+	return result
+}
+
+// applicableWeaponBonuses returns every weapon bonus, of every type, that applies to this weapon: those of the entity
+// that select it by the skill it is used with or by its name, and those of its owner and of its owner's enabled
+// modifiers that select the owner's weapons or name this one. They come in the order they are found, without
+// duplicates, from the weapon's memo when it has one.
+func (w *Weapon) applicableWeaponBonuses(entity *Entity) []*WeaponBonus {
+	m := w.memo()
+	if m != nil && m.hasBonuses {
+		return m.bonuses
+	}
+	bonuses := w.findWeaponBonuses(entity)
+	if m != nil {
+		m.bonuses = bonuses
+		m.hasBonuses = true
+	}
+	return bonuses
+}
+
+// findWeaponBonuses is applicableWeaponBonuses without the memo.
+func (w *Weapon) findWeaponBonuses(entity *Entity) []*WeaponBonus {
+	var result []*WeaponBonus
+	seen := make(map[*WeaponBonus]bool)
+	add := func(bonus *WeaponBonus) {
+		if !seen[bonus] {
+			seen[bonus] = true
+			result = append(result, bonus)
+		}
+	}
 	tags := w.Owner.TagList()
 	usage := w.UsageWithReplacements()
-	w.forEachRequiredSkill(entity, func(name, specialization string) {
-		entity.AddWeaponWithSkillBonusesFor(name, specialization, usage, tags, dieCount, tooltip, bonusSet, allowed)
-	})
-	nameQualifier := w.String()
-	entity.AddNamedWeaponBonusesFor(nameQualifier, usage, tags, dieCount, tooltip, bonusSet, allowed)
+	// Finding the skill the weapon is used with takes several walks of the skills, so it is only done when a bonus
+	// that selects weapons by that skill exists to collect.
+	if entity.hasWeaponBonusesBySkill() {
+		w.forEachRequiredSkill(entity, func(name, specialization string) {
+			entity.addWeaponWithSkillBonusesFor(name, specialization, usage, tags, add)
+		})
+	}
+	entity.addNamedWeaponBonusesFor(w.String(), usage, tags, add)
 	for _, f := range w.Owner.ActiveFeatures() {
-		w.extractWeaponBonus(f, bonusSet, allowed, dieCount, tooltip)
+		w.extractWeaponBonus(f, add)
 	}
 	w.forEachOwnerModifier(func(mod ownerModifier, active Features) {
 		for _, f := range active {
 			if bonus, ok := f.(Bonus); ok {
 				bonus.SetSubOwner(mod)
 			}
-			w.extractWeaponBonus(f, bonusSet, allowed, dieCount, tooltip)
+			w.extractWeaponBonus(f, add)
 		}
 	})
-	if len(bonusSet) == 0 {
-		return nil
-	}
-	result := make([]*WeaponBonus, 0, len(bonusSet))
-	for bonus := range bonusSet {
-		result = append(result, bonus)
-	}
 	return result
 }
 
@@ -848,19 +890,47 @@ func (w *Weapon) collectWeaponBonuses(dieCount dieCountFunc, tooltip *xbytes.Ins
 // features selecting weapons by their required skill are qualified, then with those of each skill in the chain that a
 // technique it resolves to is based on. The name is empty when no skill-based default resolves, and must then be
 // matched with matchesRequiredSkillName. Only the defaults are ranked and skills looked up here; nothing of the weapon
-// itself is resolved, since this runs while its fields are.
+// itself is resolved, since this runs while its fields are. The skills are found once per weapon per state of the
+// entity, from the weapon's memo when it has one.
 func (w *Weapon) forEachRequiredSkill(entity *Entity, visit func(name, specialization string)) {
+	m := w.memo()
+	if m == nil || !m.hasRequired {
+		skills := w.findRequiredSkills(entity)
+		if m != nil {
+			m.requiredSkills = skills
+			m.hasRequired = true
+		}
+		for _, one := range skills {
+			visit(one.name, one.specialization)
+		}
+		return
+	}
+	for _, one := range m.requiredSkills {
+		visit(one.name, one.specialization)
+	}
+}
+
+// findRequiredSkills is forEachRequiredSkill without the memo, returning the skills instead of visiting them.
+func (w *Weapon) findRequiredSkills(entity *Entity) []requiredSkill {
+	var skills []requiredSkill
+	visit := func(name, specialization string) {
+		skills = append(skills, requiredSkill{name: name, specialization: specialization})
+	}
 	var bestDef *SkillDefault
+	var bestSkill *Skill
 	best := fxp.Min
 	replacements := w.NameableReplacements()
 	for _, one := range w.Defaults {
 		if one.SkillBased() {
 			// Ranked exactly the way SkillLevel() ranks them, so that the skill whose bonuses are collected is the one
 			// the weapon actually attacks with. That includes leaving a parry- or block-type default scored by its
-			// defense level; see the note in SkillLevel().
-			if level := one.SkillLevelFast(entity, replacements, false, nil, true); best < level {
+			// defense level; see the note in SkillLevel(). The skill each default scores by is kept, since it is the
+			// one the winner is resolved to below.
+			sk := one.bestFastMatchingSkill(entity, replacements, false, nil)
+			if level := one.fastLevelFromSkill(entity, sk); best < level {
 				best = level
 				bestDef = one
+				bestSkill = sk
 			}
 		}
 	}
@@ -872,9 +942,9 @@ func (w *Weapon) forEachRequiredSkill(entity *Entity, visit func(name, specializ
 		// actually scored -- the same one bestFast picked when it won the ranking above -- lets a default that selects
 		// its skill by tag, or by any other criteria, still collect the weapon bonuses qualified by the skill the
 		// weapon really attacks with.
-		if sk := bestDef.bestFastMatchingSkill(entity, replacements, false, nil); sk != nil {
-			name = sk.NameWithReplacements()
-			specialization = sk.SpecializationWithReplacements()
+		if bestSkill != nil {
+			name = bestSkill.NameWithReplacements()
+			specialization = bestSkill.SpecializationWithReplacements()
 		}
 	}
 	visit(name, specialization)
@@ -882,8 +952,9 @@ func (w *Weapon) forEachRequiredSkill(entity *Entity, visit func(name, specializ
 	// skill the technique is based on, evaluated against that base skill's relative level rather than the technique's.
 	// Per the rules, certain bonuses are determined by the base skill, not the technique - e.g. a Kick that defaults to
 	// the Kicking technique still gets the Brawling/Karate damage bonus based on the Brawling/Karate relative skill
-	// level (issue #767).
-	sk := entity.BestSkillNamed(name, specialization, false, nil)
+	// level (issue #767). The walk starts from the skill the winning default scored by, which honors its tag and TL
+	// criteria.
+	sk := bestSkill
 	seen := make(map[*Skill]bool)
 	for sk != nil && sk.IsTechnique() && !seen[sk] {
 		seen[sk] = true
@@ -894,6 +965,7 @@ func (w *Weapon) forEachRequiredSkill(entity *Entity, visit func(name, specializ
 		visit(base.NameWithReplacements(), base.SpecializationWithReplacements())
 		sk = base
 	}
+	return skills
 }
 
 // matchesRequiredSkillName reports whether a feature's required-skill name criterion matches a skill name visited by
@@ -907,37 +979,28 @@ func matchesRequiredSkillName(name criteria.Text, replacements map[string]string
 	return name.Matches(replacements, skill)
 }
 
-func (w *Weapon) extractWeaponBonus(f Feature, set map[*WeaponBonus]bool, allowedFeatureTypes map[feature.Type]bool, dieCount dieCountFunc, tooltip *xbytes.InsertBuffer) {
-	if allowedFeatureTypes[f.FeatureType()] {
-		if bonus, ok := f.(*WeaponBonus); ok {
-			replacements := w.NameableReplacements()
-			addTooltip := func() {
-				if tooltip != nil {
-					bonus.addToTooltip(bonus.resolveDieCount(dieCount), bonus.DerivedLeveledOwner(), tooltip)
-				}
-			}
-			switch bonus.SelectionType {
-			case wsel.WithRequiredSkill:
-			case wsel.ThisWeapon:
-				if bonus.SpecializationCriteria.Matches(replacements, w.UsageWithReplacements()) {
-					if _, exists := set[bonus]; !exists {
-						set[bonus] = true
-						addTooltip()
-					}
-				}
-			case wsel.WithName:
-				if bonus.NameCriteria.Matches(replacements, w.String()) &&
-					bonus.SpecializationCriteria.Matches(replacements, w.UsageWithReplacements()) &&
-					bonus.TagsCriteria.MatchesList(replacements, w.Owner.TagList()...) {
-					if _, exists := set[bonus]; !exists {
-						set[bonus] = true
-						addTooltip()
-					}
-				}
-			default:
-				errs.Log(errs.New("unknown selection type"), "type", int(bonus.SelectionType))
-			}
+// extractWeaponBonus hands f to add if it is a weapon bonus, carried by the weapon's owner or by one of the owner's
+// modifiers, that selects the owner's weapons or names this one.
+func (w *Weapon) extractWeaponBonus(f Feature, add func(*WeaponBonus)) {
+	bonus, ok := f.(*WeaponBonus)
+	if !ok {
+		return
+	}
+	replacements := w.NameableReplacements()
+	switch bonus.SelectionType {
+	case wsel.WithRequiredSkill: // Selected by required skill, which only the entity's lists resolve
+	case wsel.ThisWeapon:
+		if bonus.SpecializationCriteria.Matches(replacements, w.UsageWithReplacements()) {
+			add(bonus)
 		}
+	case wsel.WithName:
+		if bonus.NameCriteria.Matches(replacements, w.String()) &&
+			bonus.SpecializationCriteria.Matches(replacements, w.UsageWithReplacements()) &&
+			bonus.TagsCriteria.MatchesList(replacements, w.Owner.TagList()...) {
+			add(bonus)
+		}
+	default:
+		errs.Log(errs.New("unknown selection type"), "type", int(bonus.SelectionType))
 	}
 }
 
@@ -1173,6 +1236,7 @@ func (w *Weapon) ColumnHasData(columnID int) bool {
 // CopyFrom implements EditorData.
 func (w *Weapon) CopyFrom(t *Weapon) {
 	*w = *t.Clone(LibraryFile{}, t.DataOwner(), nil, Duplicate)
+	w.Damage.Owner = w // The clone's damage belongs to the clone, which was only a means of making the copy
 }
 
 // ApplyTo implements EditorData.
@@ -1183,6 +1247,7 @@ func (w *Weapon) ApplyTo(t *Weapon) {
 	savedTID := t.TID
 	savedClonedFromTID := t.ClonedFromTID
 	*t = *w.Clone(LibraryFile{}, t.DataOwner(), nil, Copy)
+	t.Damage.Owner = t
 	t.TID = savedTID
 	t.ClonedFromTID = savedClonedFromTID
 }

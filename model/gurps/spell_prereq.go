@@ -11,6 +11,7 @@ package gurps
 
 import (
 	"hash"
+	"slices"
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/criteria"
@@ -122,6 +123,8 @@ func (p *SpellPrereq) Satisfied(entity *Entity, exclude any, tooltip *xbytes.Ins
 		ownerPowerSource = &resolved
 	}
 	filterPowerSource := p.hasPowerSourceFilter()
+	// Resolved once rather than once per spell, for the same reason as the owner's name.
+	qualifier := p.QualifierCriteria.Matcher(replacements)
 	count := 0
 	colleges := make(map[string]bool)
 	Traverse(func(sp *Spell) bool {
@@ -141,22 +144,16 @@ func (p *SpellPrereq) Satisfied(entity *Entity, exclude any, tooltip *xbytes.Ins
 		}
 		switch p.SubType {
 		case spellcmp.Name:
-			if p.QualifierCriteria.Matches(replacements, sp.NameWithReplacements()) {
+			if qualifier.Matches(sp.NameWithReplacements()) {
 				count++
 			}
 		case spellcmp.Tag:
-			for _, one := range sp.Tags {
-				if p.QualifierCriteria.Matches(replacements, one) {
-					count++
-					break
-				}
+			if slices.ContainsFunc(sp.Tags, qualifier.Matches) {
+				count++
 			}
 		case spellcmp.College:
-			for _, one := range sp.CollegeWithReplacements() {
-				if p.QualifierCriteria.Matches(replacements, one) {
-					count++
-					break
-				}
+			if slices.ContainsFunc(sp.CollegeWithReplacements(), qualifier.Matches) {
+				count++
 			}
 		case spellcmp.CollegeCount:
 			for _, one := range sp.CollegeWithReplacements() {

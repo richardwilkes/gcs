@@ -44,7 +44,29 @@ func (t *Text) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 
 // Matches performs a comparison and returns true if the data matches.
 func (t Text) Matches(replacements map[string]string, value string) bool {
-	return t.Compare.Matches(nameable.Apply(t.Qualifier, replacements), value)
+	return t.Matcher(replacements).Matches(value)
+}
+
+// TextMatcher is a Text whose qualifier has had its nameable replacements applied, so that many values can be matched
+// against the same criteria without applying them again for each.
+type TextMatcher struct {
+	compare   StringComparison
+	qualifier string
+}
+
+// Matcher returns a matcher for the criteria with the replacements applied to its qualifier. A criteria that matches
+// anything has no use for its qualifier, so that one isn't applied.
+func (t Text) Matcher(replacements map[string]string) TextMatcher {
+	m := TextMatcher{compare: t.Compare}
+	if t.Compare != AnyText {
+		m.qualifier = nameable.Apply(t.Qualifier, replacements)
+	}
+	return m
+}
+
+// Matches performs the comparison and returns true if the value matches.
+func (m TextMatcher) Matches(value string) bool {
+	return m.compare.Matches(m.qualifier, value)
 }
 
 // MatchesList performs a comparison and returns true if the data matches. The qualifier may hold a comma-separated

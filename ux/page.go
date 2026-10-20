@@ -118,8 +118,9 @@ func (p *Page) pageNumbering() (number, count int) {
 
 func (p *Page) drawSelf(gc *unison.Canvas, _ geom.Rect) {
 	insets := p.insets()
-	_, prefSize, _ := p.LayoutSizes(nil, geom.Size{})
-	r := geom.Rect{Size: prefSize}
+	// The page is always laid out at its preferred size (see ApplyPreferredSize and the exporter's Force), so its
+	// frame is that size, and asking the layout for it again would size every block on the page on every draw.
+	r := p.ContentRect(true)
 	gc.DrawRect(r, unison.ThemeBelowSurface.Paint(gc, r, paintstyle.Fill))
 	r.X += insets.Left
 	r.Width -= insets.Left + insets.Right

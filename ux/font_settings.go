@@ -116,6 +116,9 @@ func (d *fontSettingsDockable) sync() {
 		fp.FontModifiedCallback = saved
 	}
 	if changed {
+		// The cell panels and the widths memoized for the page reference columns were measured with the old fonts.
+		invalidateDisplayData()
+		invalidateCellPanels()
 		unison.ThemeChanged()
 	}
 }
@@ -124,6 +127,9 @@ func (d *fontSettingsDockable) applyFont(index int, fd unison.FontDescriptor) {
 	f := fonts.CurrentFonts()[index].Font
 	if f.Descriptor() != fd {
 		f.Font = fd.Font()
+		// The cell panels and the widths memoized for the page reference columns were measured with the old fonts.
+		invalidateDisplayData()
+		invalidateCellPanels()
 		unison.ThemeChanged()
 	}
 }

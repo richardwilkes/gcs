@@ -23,6 +23,7 @@ import "testing"
 // here as well so the race pass covers it.
 func TestRace(t *testing.T) {
 	t.Run("ScriptResolutionConcurrency", TestScriptResolutionConcurrency)
+	t.Run("ScriptResolveFailureLogConcurrency", TestScriptResolveFailureLogConcurrency)
 	t.Run("ScriptObjectResultConcurrency", TestScriptObjectResultConcurrency)
 	t.Run("EntitylessScriptDepthIsPerGoroutine", TestEntitylessScriptDepthIsPerGoroutine)
 	t.Run("CurrentGoroutineID", TestCurrentGoroutineID)

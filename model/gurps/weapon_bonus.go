@@ -150,6 +150,12 @@ func (w *WeaponBonus) AdjustedForWeapon(wpn *Weapon) (d BonusDice, amount fxp.In
 	return w.adjusted(w.DieCount, w.LeveledOwner)
 }
 
+// adjustedForDieCount is AdjustedForWeapon for base damage of the given number of dice.
+func (w *WeaponBonus) adjustedForDieCount(dieCount fxp.Int) (d BonusDice, amount fxp.Int) {
+	w.DieCount = dieCount
+	return w.adjusted(dieCount, w.LeveledOwner)
+}
+
 // AdjustedAmount returns the amount, adjusted for the die count and level when the bonus is per-die or per-level.
 func (w *WeaponBonus) AdjustedAmount() fxp.Int {
 	_, amt := w.adjusted(w.DieCount, w.LeveledOwner)

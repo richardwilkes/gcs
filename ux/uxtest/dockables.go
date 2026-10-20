@@ -25,7 +25,7 @@ type Closable interface {
 
 // ActionForKey returns the action registered under the key binding ID, failing the test if there is none. The actions
 // are registered when the menu bar is set up, so this is for use once StartHeadlessWorkspace has returned.
-func ActionForKey(t *testing.T, key string) *unison.Action {
+func ActionForKey(t testing.TB, key string) *unison.Action {
 	t.Helper()
 	for _, binding := range gurps.CurrentBindings() {
 		if binding.ID == key {
@@ -38,7 +38,7 @@ func ActionForKey(t *testing.T, key string) *unison.Action {
 
 // OpenedByAction executes action on the UI thread and returns the one dockable it opened, failing the test if it
 // opened any other number of them.
-func OpenedByAction(t *testing.T, screen *unison.HeadlessScreen, action *unison.Action) Closable {
+func OpenedByAction(t testing.TB, screen *unison.HeadlessScreen, action *unison.Action) Closable {
 	t.Helper()
 	var opened []unison.Dockable
 	screen.Do(func() {
@@ -66,21 +66,21 @@ func OpenedByAction(t *testing.T, screen *unison.HeadlessScreen, action *unison.
 // SoleEditor returns the one open dockable that match accepts, as a T, failing the test if there is not exactly one or
 // it is not a T. Only the lookup runs on the UI thread, so a caller reading anything from the editor does so in a
 // screen.Do of its own afterwards.
-func SoleEditor[T unison.Dockable](t *testing.T, screen *unison.HeadlessScreen, match func(unison.Dockable) bool) T {
+func SoleEditor[T unison.Dockable](t testing.TB, screen *unison.HeadlessScreen, match func(unison.Dockable) bool) T {
 	t.Helper()
 	return onlyEditor[T](t, screen, match, nil)
 }
 
 // OtherEditor returns the one open dockable that match accepts besides d, as a T, failing the test if there is not
 // exactly one or it is not a T; see SoleEditor.
-func OtherEditor[T unison.Dockable](t *testing.T, screen *unison.HeadlessScreen, d T, match func(unison.Dockable) bool) T {
+func OtherEditor[T unison.Dockable](t testing.TB, screen *unison.HeadlessScreen, d T, match func(unison.Dockable) bool) T {
 	t.Helper()
 	return onlyEditor[T](t, screen, match, d)
 }
 
 // onlyEditor is what SoleEditor and OtherEditor share: it returns the one open dockable that match accepts, other than
 // except when that is not nil, failing the test if there is not exactly one or it is not a T.
-func onlyEditor[T unison.Dockable](t *testing.T, screen *unison.HeadlessScreen, match func(unison.Dockable) bool, except unison.Dockable) T {
+func onlyEditor[T unison.Dockable](t testing.TB, screen *unison.HeadlessScreen, match func(unison.Dockable) bool, except unison.Dockable) T {
 	t.Helper()
 	var editors []T
 	screen.Do(func() {
@@ -106,7 +106,7 @@ func onlyEditor[T unison.Dockable](t *testing.T, screen *unison.HeadlessScreen, 
 // CloseEditorWithoutPrompt closes a dockable that is expected to close without a prompt, failing the test if it is
 // still open or a dialog came up. The close is posted rather than run through Do, since a prompt would be modal and Do
 // would wait for it.
-func CloseEditorWithoutPrompt(t *testing.T, screen *unison.HeadlessScreen, d Closable) {
+func CloseEditorWithoutPrompt(t testing.TB, screen *unison.HeadlessScreen, d Closable) {
 	t.Helper()
 	screen.Post(func() { d.AttemptClose() })
 	screen.Sync()

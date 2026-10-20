@@ -205,11 +205,27 @@ func (w *WeaponDamage) surfaceBaseDamageOverrides(tooltip *xbytes.InsertBuffer) 
 	w.resolvedDamageNumeric(selector.WeaponDamageStrengthMultiplier, w.StrengthMultiplier, tooltip)
 }
 
-// BaseDamageDice returns the base damage dice for this weapon (i.e. the dice before any bonuses are applied).
+// BaseDamageDice returns the base damage dice for this weapon (i.e. the dice before any bonuses are applied). The
+// result is kept as Weapon describes.
 func (w *WeaponDamage) BaseDamageDice() dice.Dice {
 	if w.Owner == nil {
 		return dice.Dice{Sides: 6, Multiplier: 1}
 	}
+	if !w.isOwnersDamage() {
+		return w.baseDamageDice()
+	}
+	return memoize(w.Owner, func(m *weaponMemo) *memoized[dice.Dice] { return &m.baseDice }, nil,
+		func(_ *xbytes.InsertBuffer) dice.Dice { return w.baseDamageDice() })
+}
+
+// isOwnersDamage reports whether this is the damage of the weapon it names as its owner rather than a copy of it. Only
+// that weapon's memo may hold what is resolved from it, since the memo's fingerprint covers that weapon's damage, not
+// a copy's.
+func (w *WeaponDamage) isOwnersDamage() bool {
+	return &w.Owner.Damage == w
+}
+
+func (w *WeaponDamage) baseDamageDice() dice.Dice {
 	entity := w.Owner.Entity()
 	if entity == nil {
 		return dice.Dice{Sides: 6, Multiplier: 1}
@@ -295,11 +311,25 @@ type ResolvedWeaponDamage struct {
 
 // ResolveDamage returns the damage, fully resolved for the user's sw or thr, or nil if there is no owning weapon or no
 // entity to resolve it against. If 'tooltip' isn't nil, it is updated with the details of every bonus and selector
-// override that was consulted.
+// override that was consulted. The result is kept as Weapon describes.
 func (w *WeaponDamage) ResolveDamage(tooltip *xbytes.InsertBuffer) *ResolvedWeaponDamage {
 	if w.Owner == nil {
 		return nil
 	}
+	if !w.isOwnersDamage() {
+		return w.resolveDamage(tooltip)
+	}
+	resolved := memoize(w.Owner, func(m *weaponMemo) *memoized[*ResolvedWeaponDamage] { return &m.damage }, tooltip,
+		w.resolveDamage)
+	if resolved == nil {
+		return nil
+	}
+	// A copy, so that a caller altering what it gets can't alter what the next caller gets.
+	result := *resolved
+	return &result
+}
+
+func (w *WeaponDamage) resolveDamage(tooltip *xbytes.InsertBuffer) *ResolvedWeaponDamage {
 	entity := w.Owner.Entity()
 	if entity == nil {
 		return nil
@@ -310,12 +340,14 @@ func (w *WeaponDamage) ResolveDamage(tooltip *xbytes.InsertBuffer) *ResolvedWeap
 	var percentDamageBonus, percentDRDivisorBonus fxp.Int
 	var bonusDice []BonusDice
 	armorDivisor := w.resolvedDamageNumeric(selector.WeaponArmorDivisor, w.ArmorDivisor, tooltip)
-	dieCount := fxp.FromInteger(base.Count) // Already resolved here, so hand it over rather than resolving it again
+	// Already resolved here, so handed over rather than resolved again. It is this damage's own count, which for a copy
+	// may differ from that of the weapon AdjustedForWeapon would consult.
+	dieCount := fxp.FromInteger(base.Count)
 	for _, bonus := range w.Owner.collectWeaponBonuses(func() fxp.Int { return dieCount }, tooltip, feature.WeaponBonus,
 		feature.WeaponDRDivisorBonus) {
 		switch bonus.Type {
 		case feature.WeaponBonus:
-			d, amt := bonus.AdjustedForWeapon(w.Owner)
+			d, amt := bonus.adjustedForDieCount(dieCount)
 			if bonus.Percent {
 				percentDamageBonus += amt
 			} else {
@@ -329,7 +361,7 @@ func (w *WeaponDamage) ResolveDamage(tooltip *xbytes.InsertBuffer) *ResolvedWeap
 				}
 			}
 		case feature.WeaponDRDivisorBonus:
-			amt := bonus.AdjustedAmountForWeapon(w.Owner)
+			_, amt := bonus.adjustedForDieCount(dieCount)
 			if bonus.Percent {
 				percentDRDivisorBonus += amt
 			} else {
@@ -441,7 +473,8 @@ func (r *ResolvedWeaponDamage) IsExplosive() bool {
 	return IsExplosiveDamageType(r.Type) || r.HasFragmentation
 }
 
-// ResolvedDamage returns the damage, fully resolved for the user's sw or thr, if possible.
+// ResolvedDamage returns the damage, fully resolved for the user's sw or thr, if possible. The result is kept as Weapon
+// describes.
 func (w *WeaponDamage) ResolvedDamage(tooltip *xbytes.InsertBuffer) string {
 	if r := w.ResolveDamage(tooltip); r != nil {
 		return r.String()

@@ -38,10 +38,33 @@ type listProvider[T gurps.Node[T]] struct {
 	newGroup func(owner gurps.DataOwner, parent T) T
 	edit     func(owner Rebuildable, item T)
 	forPage  bool
+	// reuse is set when the rows are kept across syncs, as the lists on a page keep them (see pageRowReuse), and nil
+	// when they are built anew by every call to RootRows.
+	reuse *rowReuse
+	roots []*Node[T] // The rows the last call to RootRows returned, when reuse is set.
 	// filterKey and filterFields are left unset by the providers whose lists never appear in a list dockable, which
 	// is what tells the dockable not to offer saved filters.
 	filterKey    string
 	filterFields func() []*gurps.FilterField[T]
+}
+
+// rowReuse is shared by a provider that keeps its rows across syncs and every row it hands out. The table asks for
+// the root rows on every sync, and a page list is synced after every change to the sheet; building every row anew
+// each time would build every cell anew as well, while a row that is kept keeps the panels built for its cells and
+// builds anew only those whose data changed (see Node.ColumnCell). gen counts the calls to RootRows: each one tells
+// every row that its children and the data of its cells have to be brought up to date with the model before they are
+// next used, just as a row built anew would have done.
+type rowReuse struct {
+	gen uint64
+}
+
+// pageRowReuse returns a new rowReuse for the provider of a list on a page, and nil for any other, whose rows are
+// built anew on every sync.
+func pageRowReuse(forPage bool) *rowReuse {
+	if forPage {
+		return &rowReuse{}
+	}
+	return nil
 }
 
 // fileListProvider is the list behind a table dockable that shows a list file: a bare list of nodes with no data owner.
@@ -80,6 +103,9 @@ func (p *listProvider[T]) FilterFields() []*gurps.FilterField[T] {
 }
 
 func (p *listProvider[T]) SetTable(table *unison.Table[*Node[T]]) {
+	if p.table != table {
+		p.roots = nil // Rows belong to the table they were made for.
+	}
 	p.table = table
 }
 
@@ -87,13 +113,15 @@ func (p *listProvider[T]) RootRowCount() int {
 	return len(p.list())
 }
 
+// RootRows implements unison.TableModel. A provider that keeps its rows (see rowReuse) returns the same row as last
+// time for each item still at the top of the list, and a new one for the rest.
 func (p *listProvider[T]) RootRows() []*Node[T] {
-	data := p.list()
-	rows := make([]*Node[T], 0, len(data))
-	for _, one := range data {
-		rows = append(rows, NewNode(p.table, nil, one, p.forPage))
+	if p.reuse == nil {
+		return nodesFor(p.table, nil, p.list(), nil, p.forPage, nil)
 	}
-	return rows
+	p.reuse.gen++
+	p.roots = nodesFor(p.table, nil, p.list(), p.roots, p.forPage, p.reuse)
+	return p.roots
 }
 
 func (p *listProvider[T]) SetRootRows(rows []*Node[T]) {

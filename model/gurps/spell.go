@@ -478,14 +478,11 @@ func (s *Spell) CellData(columnID int, data *CellData) {
 	case SpellLevelColumn:
 		if !s.Container() {
 			data.Type = cell.Text
-			// A disabled one has no level, which LevelAsString shows as "-".
-			var level Level
-			if s.Enabled() {
-				level = s.CalculateLevel()
-			}
-			data.Primary = level.LevelAsString(s.Container())
-			if level.Tooltip != "" {
-				data.Tooltip = IncludesModifiersFrom() + ":" + level.Tooltip
+			// The level is the one the last recalculation recorded, which is what every other reader of a spell's
+			// level uses; a disabled one has no level, which LevelAsString shows as "-".
+			data.Primary = s.LevelData.LevelAsString(s.Container())
+			if s.LevelData.Tooltip != "" {
+				data.Tooltip = IncludesModifiersFrom() + ":" + s.LevelData.Tooltip
 			}
 			data.Alignment = align.End
 		}
@@ -496,10 +493,8 @@ func (s *Spell) CellData(columnID int, data *CellData) {
 			// attribute, so it is shown as a bare signed number, just as RelativeLevel() and the spell editor do.
 			data.Primary = FormatRelativeSkill(EntityFromNode(s), s.IsRitualMagic(), s.Difficulty,
 				s.AdjustedRelativeLevel())
-			if s.Enabled() {
-				if tooltip := s.CalculateLevel().Tooltip; tooltip != "" {
-					data.Tooltip = IncludesModifiersFrom() + ":" + tooltip
-				}
+			if s.LevelData.Tooltip != "" {
+				data.Tooltip = IncludesModifiersFrom() + ":" + s.LevelData.Tooltip
 			}
 		}
 	case SpellPointsColumn:
@@ -637,13 +632,18 @@ func (s *Spell) UpdateLevel() bool {
 
 // CalculateLevel returns the computed level without updating it.
 func (s *Spell) CalculateLevel() Level {
+	return s.calculateLevel(s.AdjustedPoints(nil))
+}
+
+// calculateLevel returns the level the spell has with the given adjusted points.
+func (s *Spell) calculateLevel(points fxp.Int) Level {
 	if s.IsRitualMagic() {
 		return CalculateRitualMagicSpellLevel(EntityFromNode(s), s.NameWithReplacements(),
 			s.PowerSourceWithReplacements(), s.RitualSkillNameWithReplacements(), s.PrereqCount,
-			s.CollegeWithReplacements(), s.Tags, s.Difficulty, s.AdjustedPoints(nil))
+			s.CollegeWithReplacements(), s.Tags, s.Difficulty, points)
 	}
 	return CalculateSpellLevel(EntityFromNode(s), s.NameWithReplacements(), s.PowerSourceWithReplacements(),
-		s.CollegeWithReplacements(), s.Tags, s.Difficulty, s.AdjustedPoints(nil))
+		s.CollegeWithReplacements(), s.Tags, s.Difficulty, points)
 }
 
 // IncrementSkillLevel adds enough points to increment the skill level to the next level. Containers and disabled
@@ -738,14 +738,12 @@ func CalculateRitualMagicSpellLevel(e *Entity, name, powerSource, ritualSkillNam
 }
 
 func determineRitualMagicSkillLevelForCollege(e *Entity, name, college, ritualSkillName string, prereqCount int, tags []string, diff AttributeDifficulty, points fxp.Int) Level {
+	// A blank name is matched as is, as RitualMagicSatisfied matches it, rather than as a wildcard.
 	def := &SkillDefault{
 		DefaultType:    SkillID,
+		Name:           criteria.Text{TextData: criteria.TextData{Compare: criteria.IsText, Qualifier: ritualSkillName}},
 		Specialization: criteria.Text{TextData: criteria.TextData{Compare: criteria.IsText, Qualifier: college}},
 		Modifier:       fxp.FromInteger(-prereqCount),
-	}
-	if ritualSkillName != "" {
-		def.Name.Compare = criteria.IsText
-		def.Name.Qualifier = ritualSkillName
 	}
 	var limit fxp.Int
 	skillLevel := CalculateTechniqueLevel(e, nil, name, college, tags, def, diff.Difficulty, points, false,
@@ -799,14 +797,15 @@ func (s *Spell) RitualMagicSatisfied(tooltip *xbytes.InsertBuffer, prefix string
 	e := EntityFromNode(s)
 	ritual := s.RitualSkillNameWithReplacements()
 	for _, college := range colleges {
-		if e.BestSkillNamed(ritual, college, false, nil) != nil {
+		if len(e.SkillNamed(ritual, college, false, nil)) != 0 {
 			return true
 		}
 	}
-	// Fall back to a generically-named skill that carries no specialization. SkillNamed treats an empty specialization
-	// as a wildcard, so each result has to be checked to ensure the skill truly has none.
+	// Fall back to a generically-named skill that carries no specialization, required or optional, as the level
+	// calculation does. SkillNamed treats an empty specialization as a wildcard, so each result has to be checked to
+	// ensure the skill truly has none.
 	for _, sk := range e.SkillNamed(ritual, "", false, nil) {
-		if sk.SpecializationWithReplacements() == "" {
+		if sk.SpecializationWithReplacements() == "" && sk.OptionalSpecializationWithReplacements() == "" {
 			return true
 		}
 	}
@@ -859,12 +858,18 @@ func (s *Spell) Rituals() string {
 		return ""
 	}
 	var buffer strings.Builder
-	level := s.CalculateLevel().Level
+	// The level is the one the last recalculation recorded, except for a disabled spell, whose recorded level is
+	// cleared and whose adjusted points are zero; its rituals are still those of the level it would have if enabled.
+	level := s.LevelData.Level
+	if !s.Enabled() {
+		level = s.calculateLevel(AdjustedPointsForNonContainerSpell(e, s.Points, s.NameWithReplacements(),
+			s.PowerSourceWithReplacements(), s.CollegeWithReplacements(), s.Tags, nil)).Level
+	}
 	ritualText := i18n.Text("Ritual")
 	switch {
 	case level < fxp.Ten:
 		addPartToBuffer(&buffer, ritualText, i18n.Text("need both hands and feet free and must speak"))
-		addPartToBuffer(&buffer, i18n.Text("Time"), "Doubled")
+		addPartToBuffer(&buffer, i18n.Text("Time"), i18n.Text("Doubled"))
 		return buffer.String()
 	case level < fxp.Fifteen:
 		addPartToBuffer(&buffer, ritualText, i18n.Text("speak quietly and make a gesture"))

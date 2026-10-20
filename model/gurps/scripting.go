@@ -360,11 +360,53 @@ var (
 	globalResolveCache = make(map[scriptResolveKey]scriptResolveResult)
 )
 
-// DiscardGlobalResolveCache clears the global resolve cache.
+// DiscardGlobalResolveCache clears the global resolve cache, and with it the record of the failed resolutions that
+// have been reported (see logScriptResolveFailure), so that a failure that persists is reported again after the next
+// edit.
 func DiscardGlobalResolveCache() {
 	globalResolveMutex.Lock()
 	defer globalResolveMutex.Unlock()
 	clear(globalResolveCache)
+	scriptResolveFailuresMutex.Lock()
+	defer scriptResolveFailuresMutex.Unlock()
+	clear(scriptResolveFailuresLogged)
+}
+
+// scriptResolveFailure identifies a failed resolution for the purpose of reporting it once; see logScriptResolveFailure.
+type scriptResolveFailure struct {
+	kind   string
+	text   string
+	result string
+}
+
+// maximumLoggedScriptResolveFailures bounds the record of reported failures; a library of broken data could otherwise
+// grow it without limit. Reaching the bound starts the record over, which at worst repeats a report.
+const maximumLoggedScriptResolveFailures = 256
+
+// scriptResolveFailuresLogged records the failed resolutions reported since the global resolve cache was last
+// discarded. Scripts resolve on more than one goroutine, so it is guarded by scriptResolveFailuresMutex.
+var (
+	scriptResolveFailuresMutex  sync.Mutex
+	scriptResolveFailuresLogged = make(map[scriptResolveFailure]struct{})
+)
+
+// logScriptResolveFailure reports that a script's result could not be parsed as the given kind of value, unless the
+// same failure has been reported since the global resolve cache was last discarded. A value that fails to resolve
+// fails every time it is asked for, which for an equipment weight the sheet can't parse is once per draw of the
+// sheet, and reporting it that often would fill the log with one line.
+func logScriptResolveFailure(kind, result, text string) {
+	key := scriptResolveFailure{kind: kind, text: text, result: result}
+	scriptResolveFailuresMutex.Lock()
+	if _, logged := scriptResolveFailuresLogged[key]; logged {
+		scriptResolveFailuresMutex.Unlock()
+		return
+	}
+	if len(scriptResolveFailuresLogged) >= maximumLoggedScriptResolveFailures {
+		clear(scriptResolveFailuresLogged)
+	}
+	scriptResolveFailuresLogged[key] = struct{}{}
+	scriptResolveFailuresMutex.Unlock()
+	slog.Error("unable to resolve script result to a "+kind, "result", result, "script", text)
 }
 
 // scriptResolveErrorSuppression counts the active, possibly nested, SuppressScriptResolveErrorLogging calls. It is
@@ -431,6 +473,10 @@ func ResolveText(entity *Entity, selfProvider ScriptSelfProvider, text string) s
 
 // resolveText is ResolveText, also returning true when any section could not produce a result.
 func resolveText(entity *Entity, selfProvider ScriptSelfProvider, text string) (result string, failed bool) {
+	// Most text holds no script, and the expression can't match any that doesn't hold the opening tag.
+	if !strings.Contains(text, scriptStart) {
+		return text, false
+	}
 	result = embeddedScriptRegex.ReplaceAllStringFunc(text, func(s string) string {
 		one, sectionFailed := resolveScript(entity, selfProvider, s[len(scriptStart):len(s)-len(scriptEnd)])
 		failed = failed || sectionFailed
@@ -472,7 +518,7 @@ func resolveScriptAs[T any](entity *Entity, selfProvider ScriptSelfProvider, tex
 	v, err := parse(result)
 	if err != nil {
 		if !scriptResolveErrorLoggingSuppressed() {
-			slog.Error("unable to resolve script result to a "+kind, "result", result, "script", text)
+			logScriptResolveFailure(kind, result, text)
 		}
 		return zero
 	}

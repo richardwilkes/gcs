@@ -86,6 +86,7 @@ func TestWeaponBulkRetractingStockSwitch(t *testing.T) {
 	c.Equal("-3*", w.ResolvedBulk(nil).String(), "a weapon that already has one is unchanged")
 
 	sw.SwitchTypeValue = false
+	w.Entity().DiscardCaches()
 	w.Bulk = attack.ParseBulk("-3*")
 	resolved = w.ResolvedBulk(nil)
 	c.Equal("-3", resolved.String(), "the switch removes a retracting stock")

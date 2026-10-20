@@ -46,6 +46,7 @@ func NewWeaponsProvider(provider gurps.WeaponListProvider, melee, forPage bool) 
 			return gurps.WeaponHeaderData(columnID, melee, forPage)
 		},
 		forPage: forPage,
+		reuse:   pageRowReuse(forPage),
 	}
 	return p
 }

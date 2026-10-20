@@ -18,7 +18,9 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/attack"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/feature"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/progression"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/stdmg"
 	"github.com/richardwilkes/toolbox/v2/check"
+	"github.com/richardwilkes/toolbox/v2/xbytes"
 )
 
 // TestWeaponDRDivisorBonus verifies that a DR divisor bonus adjusts the armor divisor. A percentage bonus must add a
@@ -457,4 +459,26 @@ func TestWeaponDamageStringFragmentation(t *testing.T) {
 	w.Damage.FragmentationArmorDivisor = fxp.One
 	w.Damage.FragmentationType = " "
 	c.Equal("thr cr [2d]", w.Damage.String(), "a blank type is no type")
+}
+
+// TestWeaponDamageCopyScalesPerDieBonusesByItsOwnDice verifies that a copy of a weapon's damage scales its per-die
+// bonuses by its own dice, as its tooltip reports, rather than by the dice of the damage it was copied from.
+func TestWeaponDamageCopyScalesPerDieBonusesByItsOwnDice(t *testing.T) {
+	c := check.New(t)
+	damageBonus := gurps.NewWeaponBonus(feature.WeaponBonus)
+	damageBonus.PerDie = true
+	divisorBonus := gurps.NewWeaponBonus(feature.WeaponDRDivisorBonus)
+	divisorBonus.PerDie = true
+	w := newWeaponWithBonuses(true, damageBonus, divisorBonus)
+	w.Damage.StrengthType = stdmg.None
+	w.Damage.Base = "1d"
+	w.Damage.ArmorDivisor = fxp.One
+	c.Equal("1d+1(2) cr", w.Damage.ResolvedDamage(nil), "each bonus counts once for the weapon's single die")
+
+	cp := w.Damage
+	cp.Base = "3d"
+	var tooltip xbytes.InsertBuffer
+	c.Equal("3d+3(4) cr", cp.ResolvedDamage(&tooltip), "each bonus counts three times for the copy's three dice")
+	c.Contains(tooltip.String(), "+3 (+1 per die)", "the tooltip reports the amount applied")
+	c.Equal("1d+1(2) cr", w.Damage.ResolvedDamage(nil), "the weapon's own damage is unchanged")
 }

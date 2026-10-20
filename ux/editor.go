@@ -345,6 +345,7 @@ func (e *editor[N, D]) hasNameableKeys() bool {
 }
 
 func (e *editor[N, D]) MarkModified(_ unison.Paneler) {
+	invalidateDisplayData()
 	// Syncing refreshes the editor's live previews (extended value/weight, markdown, etc.), which resolve the often
 	// incomplete script expressions the user is still typing, so don't log their resolution failures.
 	gurps.SuppressScriptResolveErrorLogging(func() {
@@ -359,12 +360,13 @@ func (e *editor[N, D]) MarkModified(_ unison.Paneler) {
 	}
 	// The editor's tables show row state -- a modifier's enabled checkmark, a weapon's Hide checkmark -- that DeepSync
 	// misses, since neither unison.Table nor the panels wrapping the editor's tables is a Syncer. A cell click flips
-	// its own drawable, but toggling by command, undo or redo would otherwise leave a stale checkmark. Node.ColumnCell
-	// re-derives the cell data on draw, so a redraw is enough.
+	// its own drawable, but toggling by command, undo or redo would otherwise leave a stale checkmark. The display
+	// epoch moved on above, so Node.ColumnCell re-derives the cell data on the next draw, and a redraw is enough.
 	e.MarkForRedraw()
 }
 
 func (e *editor[N, D]) Rebuild(_ bool) {
+	invalidateDisplayData()
 	if entity := gurps.EntityFromNode(e.target); entity != nil {
 		entity.DiscardCaches()
 	} else {

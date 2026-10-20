@@ -27,9 +27,10 @@ const (
 	roundedWeightText = "7.51 lb"
 )
 
-// pageUndoRoot is an undo root whose MarkModified behaves as Sheet.MarkModified does for the Description block's
-// fields: those are flagged SkipDeepSync, so no deep sync follows an edit made through them. The tests use it so that
-// they assert what happens on a real sheet rather than what a deep sync after every edit would paper over.
+// pageUndoRoot is an undo root whose MarkModified records its source and deep syncs unless the source is flagged
+// SkipDeepSync, as the Description block's fields are. Sheet.MarkModified syncs the blocks even then, but the field
+// edited keeps its text only because it has the focus, which without a window no field has, so this root syncs
+// nothing and the tests assert what the fields do on their own.
 type pageUndoRoot struct {
 	unison.Panel
 	mgr *unison.UndoManager

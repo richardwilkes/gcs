@@ -63,7 +63,9 @@ func newCondModProvider(owner gurps.DataOwnerProvider, rows func() []*gurps.Cond
 		setList:    func(_ []*gurps.ConditionalModifier) {}, // The rows are computed, so there is nothing to set.
 		columnIDs:  p.ColumnIDs,
 		headerData: headerData,
-		forPage:    true,
+		// The rows are gathered anew from the sheet on every call, so none could be kept across a sync and reuse is
+		// left unset (see rowReuse).
+		forPage: true,
 	}
 	return p
 }

@@ -46,6 +46,7 @@ func NewEquipmentProvider(provider gurps.EquipmentListProvider, carried, forPage
 		newChoice:    gurps.NewEquipmentChoiceContainer,
 		edit:         func(owner Rebuildable, item *gurps.Equipment) { EditEquipment(owner, item, carried) },
 		forPage:      forPage,
+		reuse:        pageRowReuse(forPage),
 		filterKey:    gurps.ListFilterKeyForExtension(gurps.EquipmentExt),
 		filterFields: gurps.EquipmentFilterFields,
 	}

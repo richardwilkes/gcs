@@ -94,16 +94,22 @@ func (p *SkillPrereq) Satisfied(entity *Entity, exclude any, tooltip *xbytes.Ins
 	if sk, ok := exclude.(*Skill); ok {
 		techLevel = sk.TechLevel
 	}
+	// The criteria are resolved once rather than once per skill, and the name is tested first, since it rules out
+	// nearly every skill before the points, which take a walk of the skill's features to find, are looked at.
+	name := p.NameCriteria.Matcher(replacements)
+	specialization := p.SpecializationCriteria.Matcher(replacements)
+	optionalSpecialization := p.OptionalSpecializationCriteria.Matcher(replacements)
 	Traverse(func(sk *Skill) bool {
 		if exclude == sk {
 			return false
 		}
+		if !name.Matches(sk.NameWithReplacements()) ||
+			!specialization.Matches(sk.SpecializationWithReplacements()) ||
+			!optionalSpecialization.Matches(sk.OptionalSpecializationWithReplacements()) {
+			return false
+		}
 		// A skill with no points spent on it doesn't count, even if it has a level from a default.
-		if points := sk.AdjustedPoints(nil); points == 0 ||
-			!p.NameCriteria.Matches(replacements, sk.NameWithReplacements()) ||
-			!p.SpecializationCriteria.Matches(replacements, sk.SpecializationWithReplacements()) ||
-			!p.OptionalSpecializationCriteria.Matches(replacements, sk.OptionalSpecializationWithReplacements()) ||
-			!p.PointsCriteria.Matches(points) ||
+		if points := sk.AdjustedPoints(nil); points == 0 || !p.PointsCriteria.Matches(points) ||
 			(p.TagsCriteria.Compare != criteria.AnyText && !p.TagsCriteria.MatchesList(replacements, sk.Tags...)) {
 			return false
 		}

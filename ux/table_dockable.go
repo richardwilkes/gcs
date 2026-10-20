@@ -29,14 +29,15 @@ import (
 const quickFilterWidthSample = "MMMMMMMMMM"
 
 var (
-	_ FileBackedDockable         = &TableDockable[*gurps.Trait]{}
-	_ unison.UndoManagerProvider = &TableDockable[*gurps.Trait]{}
-	_ ModifiableRoot             = &TableDockable[*gurps.Trait]{}
-	_ Rebuildable                = &TableDockable[*gurps.Trait]{}
-	_ unison.TabCloser           = &TableDockable[*gurps.Trait]{}
-	_ KeyedDockable              = &TableDockable[*gurps.Trait]{}
-	_ gurps.Hashable             = &TableDockable[*gurps.Trait]{}
-	_ listFilterObserver         = &TableDockable[*gurps.Trait]{}
+	_ FileBackedDockable           = &TableDockable[*gurps.Trait]{}
+	_ unison.UndoManagerProvider   = &TableDockable[*gurps.Trait]{}
+	_ ModifiableRoot               = &TableDockable[*gurps.Trait]{}
+	_ Rebuildable                  = &TableDockable[*gurps.Trait]{}
+	_ unison.TabCloser             = &TableDockable[*gurps.Trait]{}
+	_ KeyedDockable                = &TableDockable[*gurps.Trait]{}
+	_ gurps.Hashable               = &TableDockable[*gurps.Trait]{}
+	_ listFilterObserver           = &TableDockable[*gurps.Trait]{}
+	_ gurps.SheetSettingsResponder = &TableDockable[*gurps.Trait]{}
 )
 
 // TableDockable holds the view for a file that contains a (potentially hierarchical) list of data.
@@ -228,6 +229,7 @@ func (d *TableDockable[T]) UndoManager() *unison.UndoManager {
 
 // MarkModified implements ModifiableRoot.
 func (d *TableDockable[T]) MarkModified(_ unison.Paneler) {
+	invalidateDisplayData()
 	UpdateTitleForDockable(d)
 }
 
@@ -298,6 +300,7 @@ func (d *TableDockable[T]) sizeToFit() {
 
 // Rebuild implements Rebuildable.
 func (d *TableDockable[T]) Rebuild(_ bool) {
+	invalidateDisplayData()
 	gurps.DiscardGlobalResolveCache()
 	h, v := d.scroll.Position()
 	sel := d.table.CopySelectionMap()
@@ -312,12 +315,21 @@ func (d *TableDockable[T]) Rebuild(_ bool) {
 	d.scroll.SetPosition(h, v)
 }
 
+// SheetSettingsUpdated implements gurps.SheetSettingsResponder. A library list has no entity of its own and shows what
+// the default sheet settings call for, such as the default attribute names, so only a change to those -- reported with
+// a nil entity -- concerns it.
+func (d *TableDockable[T]) SheetSettingsUpdated(entity *gurps.Entity, fullRebuild bool) {
+	if entity == nil {
+		d.Rebuild(fullRebuild)
+	}
+}
+
 // Hash writes this object's contents into the hasher.
 func (d *TableDockable[T]) Hash(h hash.Hash) {
-	rows := d.provider.RootRows()
-	data := make([]any, 0, len(rows))
-	for _, row := range rows {
-		data = append(data, row.Data())
+	rootData := d.provider.RootData()
+	data := make([]any, 0, len(rootData))
+	for _, one := range rootData {
+		data = append(data, one)
 	}
 	gurps.HashJSON(h, data)
 }

@@ -7,6 +7,6 @@
 // This Source Code Form is "Incompatible With Secondary Licenses", as
 // defined by the Mozilla Public License, version 2.0.
 
-// Package gurpstest provides helpers for tests outside the gurps package that build gurps data. The gurps package's own
-// tests cannot import it, since it imports gurps, so they keep private copies of these helpers.
+// Package gurpstest provides helpers for tests that build gurps data. Since it imports gurps, the gurps package's
+// internal tests cannot import it, so they keep private copies of these helpers; its external (gurps_test) tests can.
 package gurpstest

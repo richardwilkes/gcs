@@ -53,7 +53,6 @@ func NewEncumbrancePanel(entity *gurps.Entity) *EncumbrancePanel {
 		r.X = rect.X
 		r.Width = rect.Width
 		gc.DrawRect(r, colors.Header.Paint(gc, r, paintstyle.Fill))
-		p.syncCurrent()
 		for i, row := range p.row {
 			var ink unison.Ink
 			switch {
@@ -89,7 +88,7 @@ func NewEncumbrancePanel(entity *gurps.Entity) *EncumbrancePanel {
 			owner: p,
 			index: i,
 		}
-		p.AddChild(p.createMarker(entity, enc, rowColor))
+		p.AddChild(p.createMarker(enc, rowColor))
 		level := p.createLevelField(enc, rowColor)
 		p.levels = append(p.levels, level)
 		p.AddChild(level)
@@ -114,11 +113,12 @@ func NewEncumbrancePanel(entity *gurps.Entity) *EncumbrancePanel {
 		}
 		p.AddChild(p.createDodgeField(enc, rowColor))
 	}
+	p.syncCurrent()
 	return p
 }
 
-// Sync implements Syncer. Drawing also updates the current level, but a block that is not drawn, such as one scrolled
-// out of view, is still described to a screen reader.
+// Sync implements Syncer. The current level is only found here, not as the block is drawn: finding it resolves the
+// weight of everything carried, and every change to that reaches here, while drawing happens on every scroll.
 func (p *EncumbrancePanel) Sync() {
 	p.syncCurrent()
 }
@@ -147,7 +147,7 @@ func (p *EncumbrancePanel) spokenCurrentLevel(level string) string {
 	return i18n.Text("Current Encumbrance Level %s", level)
 }
 
-func (p *EncumbrancePanel) createMarker(entity *gurps.Entity, enc encumbrance.Level, rowColor *encRowColor) *unison.Label {
+func (p *EncumbrancePanel) createMarker(enc encumbrance.Level, rowColor *encRowColor) *unison.Label {
 	marker := unison.NewLabel()
 	marker.Font = fonts.PageLabelPrimary
 	marker.OnBackgroundInk = rowColor
@@ -162,7 +162,7 @@ func (p *EncumbrancePanel) createMarker(entity *gurps.Entity, enc encumbrance.Le
 		Size: geom.Size{Width: baseline, Height: baseline},
 	}
 	marker.DrawCallback = func(gc *unison.Canvas, rect geom.Rect) {
-		if enc == entity.EncumbranceLevel(false) {
+		if int(enc) == p.current {
 			marker.DefaultDraw(gc, rect)
 		}
 	}

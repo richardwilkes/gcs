@@ -20,7 +20,7 @@ import (
 func TestMain(m *testing.M) {
 	ux.Beep = func() {} // Fields refusing input would otherwise beep aloud on the machine running the tests.
 	uxtest.Main(m, uxtest.Workspace{
-		Setup: func(t *testing.T, wnd *unison.Window) {
+		Setup: func(t testing.TB, wnd *unison.Window) {
 			uxtest.SwapForTest(t, &ux.Workspace, ux.Workspace) // The session replaces most of it; put all of it back.
 			ux.RegisterKnownFileTypes()
 			ux.RegisterWindowDragTypes(wnd)

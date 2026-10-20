@@ -527,14 +527,8 @@ func (s *SkillDefault) SkillLevelFast(entity *Entity, replacements map[string]st
 			level = 20
 		}
 		return s.finalLevel(fxp.FromInteger(level))
-	case ParryID, BlockID:
-		best := s.bestFast(entity, replacements, requirePoints, excludes)
-		if best != fxp.Min {
-			best = defenseLevelFromSkill(best, entity.defenseBonus(s.Type()))
-		}
-		return s.finalLevel(best)
-	case SkillID:
-		return s.finalLevel(s.bestFast(entity, replacements, requirePoints, excludes))
+	case ParryID, BlockID, SkillID:
+		return s.fastLevelFromSkill(entity, s.bestFastMatchingSkill(entity, replacements, requirePoints, excludes))
 	default:
 		if !s.isTLPermitted(entity, "") {
 			return fxp.Min
@@ -587,6 +581,20 @@ func (s *SkillDefault) defenseLevelFast(entity *Entity, replacements map[string]
 // skill level, rounded down, plus three, plus defenseBonus.
 func defenseLevelFromSkill(skillLevel, defenseBonus fxp.Int) fxp.Int {
 	return skillLevel.Div(fxp.Two).Floor() + fxp.Three + defenseBonus
+}
+
+// fastLevelFromSkill returns the level SkillLevelFast gives a skill-based default when sk is the skill
+// bestFastMatchingSkill picked for it: the skill's recorded level, turned into a defense level for a parry- or
+// block-type default, plus the default's modifier. A nil skill, meaning none matched, yields fxp.Min.
+func (s *SkillDefault) fastLevelFromSkill(entity *Entity, sk *Skill) fxp.Int {
+	if sk == nil {
+		return fxp.Min
+	}
+	level := sk.LevelData.Level
+	if t := s.Type(); t == ParryID || t == BlockID {
+		level = defenseLevelFromSkill(level, entity.defenseBonus(t))
+	}
+	return s.finalLevel(level)
 }
 
 func (s *SkillDefault) bestFast(entity *Entity, replacements map[string]string, requirePoints bool, excludes map[string]bool) fxp.Int {

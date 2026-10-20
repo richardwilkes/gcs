@@ -136,7 +136,8 @@ type SearchTracker struct {
 	namesOnlyCheckBox    *unison.CheckBox
 }
 
-// InstallSearchTracker creates a search tracker in the given toolbar.
+// InstallSearchTracker creates a search tracker in the given toolbar. findMatches is only called with non-empty,
+// lower-cased text.
 func InstallSearchTracker(toolbar *unison.Panel, clearTableSelections func(), findMatches func(refList *[]*searchRef, text string, namesOnly bool)) *SearchTracker {
 	s := &SearchTracker{
 		clearTableSelections: clearTableSelections,
@@ -157,10 +158,14 @@ func InstallSearchTracker(toolbar *unison.Panel, clearTableSelections func(), fi
 	return s
 }
 
-// Refresh the search state.
+// Refresh the search state. Nothing matches an empty search, so the lists are only walked when there is text to look
+// for; the walk asks each list for its rows, which has every row of a page list derive its children and the data of
+// its cells afresh as it is read (see rowReuse), a cost a sheet with large lists can ill afford on every update.
 func (s *SearchTracker) Refresh() {
 	s.searchResult = nil
-	s.findMatches(&s.searchResult, strings.ToLower(s.searchField.Text()), s.namesOnlyCheckBox.State == check.On)
+	if text := strings.ToLower(s.searchField.Text()); text != "" {
+		s.findMatches(&s.searchResult, text, s.namesOnlyCheckBox.State == check.On)
+	}
 	s.searchIndex = max(min(s.searchIndex, len(s.searchResult)-1), 0)
 	s.updateMatchControls()
 }
@@ -170,11 +175,14 @@ func (s *SearchTracker) searchModified(_, after *unison.FieldState) {
 }
 
 // doSearch runs a fresh search and shows its first match. The selections are cleared even when nothing matches, so that
-// clearing the search field deselects the last match.
+// clearing the search field deselects the last match. An empty search matches nothing, so the lists aren't walked for
+// one (see Refresh).
 func (s *SearchTracker) doSearch(text string) {
 	s.searchIndex = 0
 	s.searchResult = nil
-	s.findMatches(&s.searchResult, strings.ToLower(text), s.namesOnlyCheckBox.State == check.On)
+	if text = strings.ToLower(text); text != "" {
+		s.findMatches(&s.searchResult, text, s.namesOnlyCheckBox.State == check.On)
+	}
 	s.clearTableSelections()
 	s.adjustForMatch()
 }
@@ -207,21 +215,19 @@ func installListSearchTracker(toolbar *unison.Panel, lists func() []sheetList) *
 }
 
 func searchSheetTableRows[T gurps.Node[T]](refList *[]*searchRef, text string, namesOnly bool, table *unison.Table[*Node[T]], row *Node[T]) {
-	if text != "" {
-		if namesOnly {
-			if strings.Contains(strings.ToLower(row.data.String()), text) {
-				*refList = append(*refList, &searchRef{
-					table: table,
-					row:   row,
-				})
-			}
-		} else {
-			if row.Match(text) {
-				*refList = append(*refList, &searchRef{
-					table: table,
-					row:   row,
-				})
-			}
+	if namesOnly {
+		if strings.Contains(strings.ToLower(row.data.String()), text) {
+			*refList = append(*refList, &searchRef{
+				table: table,
+				row:   row,
+			})
+		}
+	} else {
+		if row.Match(text) {
+			*refList = append(*refList, &searchRef{
+				table: table,
+				row:   row,
+			})
 		}
 	}
 	if row.CanHaveChildren() {

@@ -114,7 +114,7 @@ func usableModifierTargetLists[T gurps.Node[T]](lists ...modifierTargetList[T]) 
 // rows, it isn't filtered (the same refusal a drop makes), it carries its provider, which the undo data is collected
 // from, and it sits under an undo manager, which a list the sheet's layout leaves off the page does not.
 func canReceiveModifiers[T gurps.Node[T]](table *unison.Table[*Node[T]]) bool {
-	if table == nil || table.IsFiltered() || len(table.RootRows()) == 0 || unison.UndoManagerFor(table) == nil {
+	if table == nil || table.IsFiltered() || table.RootRowCount() == 0 || unison.UndoManagerFor(table) == nil {
 		return false
 	}
 	_, ok := table.ClientData()[TableProviderClientKey].(TableProvider[T])

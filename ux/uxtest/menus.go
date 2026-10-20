@@ -66,7 +66,7 @@ func MenuItemPanels(menuPanel *unison.Panel) []*unison.Panel {
 // title in the bar, then each title of path in turn in the popup that the previous click opened, so every title but the
 // last names a sub-menu. Since every injection waits for the application to go quiet, the item's handler has finished
 // by the time this returns -- or, for a handler that puts up a modal dialog, the dialog is up and idle.
-func ChooseMenuBarItem(t *testing.T, screen *unison.HeadlessScreen, wnd *unison.Window, menuTitle string, path ...string) {
+func ChooseMenuBarItem(t testing.TB, screen *unison.HeadlessScreen, wnd *unison.Window, menuTitle string, path ...string) {
 	t.Helper()
 	if len(path) == 0 {
 		t.Fatal("no item title to choose")
@@ -133,7 +133,7 @@ func innermostMenuPopup(wnd *unison.Window) *unison.Panel {
 // ChoosePopupItem chooses the item at index from a unison.PopupMenu (or anything wrapping one, such as ux.Popup) the
 // way a user would: it clicks the popup, which opens an in-window menu holding one item per entry in the popup's own
 // order, then clicks that menu's item. The popup's selection callback has run by the time this returns.
-func ChoosePopupItem(t *testing.T, screen *unison.HeadlessScreen, wnd *unison.Window, popup unison.Paneler, index int) {
+func ChoosePopupItem(t testing.TB, screen *unison.HeadlessScreen, wnd *unison.Window, popup unison.Paneler, index int) {
 	t.Helper()
 	screen.Click(screen.PanelCenter(popup))
 	var itemPanel *unison.Panel

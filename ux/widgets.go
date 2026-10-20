@@ -98,14 +98,44 @@ func DeepSync(panel unison.Paneler) {
 	}
 }
 
+// syncedList is a list that records the display stamp (see displayEpoch) it was last synced at, so that a deep sync
+// following a rebuild that already synced it can leave it be.
+type syncedList interface {
+	syncedAtStamp() uint64
+}
+
+// deepSyncSkippingSyncedLists is DeepSync, except that a list already synced since the last change was reported is
+// skipped, along with everything inside it. A full rebuild syncs every list it keeps as it lays the page out, so the
+// deep sync that follows would sync each of them a second time for nothing, which on a sheet with large lists is
+// half the cost of the rebuild. A list built anew by the rebuild has yet to be synced at all and is not skipped.
+func deepSyncSkippingSyncedLists(panel unison.Paneler) {
+	deepSyncSkippingLists(panel, func(list syncedList) bool { return list.syncedAtStamp() == currentDisplayStamp() })
+}
+
+// deepSyncSkippingLists is DeepSync, except that a list for which skip returns true is skipped, along with everything
+// inside it.
+func deepSyncSkippingLists(panel unison.Paneler, skip func(syncedList) bool) {
+	p := panel.AsPanel()
+	if list, ok := p.Self.(syncedList); ok && skip(list) {
+		return
+	}
+	for _, child := range p.Children() {
+		deepSyncSkippingLists(child, skip)
+	}
+	if syncer, ok := p.Self.(Syncer); ok {
+		syncer.Sync()
+	}
+}
+
 // ModifiableRoot marks the root of a modifiable tree of components, typically a Dockable.
 type ModifiableRoot interface {
 	MarkModified(src unison.Paneler)
 }
 
-// MarkModified discards the global resolve cache, then calls MarkModified on the nearest ModifiableRoot at or above the
-// panel, if there is one.
+// MarkModified notes that the data on display may have changed (see displayEpoch) and discards the global resolve
+// cache, then calls MarkModified on the nearest ModifiableRoot at or above the panel, if there is one.
 func MarkModified(panel unison.Paneler) {
+	invalidateDisplayData()
 	gurps.DiscardGlobalResolveCache()
 	p := panel.AsPanel()
 	for p != nil {
@@ -139,6 +169,7 @@ var (
 // its rows use, can only change by building a new table. Doing both would repeat the whole update, which on a sheet
 // with hundreds of rows is the entire cost of the edit. A nil owner, typed or otherwise, is ignored.
 func rebuildAsModified(owner Rebuildable, full bool) {
+	invalidateDisplayData()
 	if xreflect.IsNil(owner) {
 		return
 	}

@@ -441,14 +441,11 @@ func (s *Skill) CellData(columnID int, data *CellData) {
 	case SkillLevelColumn:
 		if !s.Container() {
 			data.Type = cell.Text
-			// A disabled one has no level, which LevelAsString shows as "-".
-			var level Level
-			if s.Enabled() {
-				level = s.CalculateLevel(nil)
-			}
-			data.Primary = level.LevelAsString(s.Container())
-			if level.Tooltip != "" {
-				data.Tooltip = IncludesModifiersFrom() + ":" + level.Tooltip
+			// The level is the one the last recalculation recorded, which is what every other reader of a skill's
+			// level uses; a disabled one has no level, which LevelAsString shows as "-".
+			data.Primary = s.LevelData.LevelAsString(s.Container())
+			if s.LevelData.Tooltip != "" {
+				data.Tooltip = IncludesModifiersFrom() + ":" + s.LevelData.Tooltip
 			}
 			data.Alignment = align.End
 		}
@@ -457,10 +454,8 @@ func (s *Skill) CellData(columnID int, data *CellData) {
 			data.Type = cell.Text
 			data.Primary = FormatRelativeSkill(EntityFromNode(s), s.IsTechnique(), s.AdjustedDifficulty(),
 				s.AdjustedRelativeLevel())
-			if s.Enabled() {
-				if tooltip := s.CalculateLevel(nil).Tooltip; tooltip != "" {
-					data.Tooltip = IncludesModifiersFrom() + ":" + tooltip
-				}
+			if s.LevelData.Tooltip != "" {
+				data.Tooltip = IncludesModifiersFrom() + ":" + s.LevelData.Tooltip
 			}
 		}
 	case SkillPointsColumn:

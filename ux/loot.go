@@ -170,6 +170,7 @@ func (l *LootSheet) BackingFilePath() string {
 
 // MarkModified implements ModifiableRoot.
 func (l *LootSheet) MarkModified(_ unison.Paneler) {
+	invalidateDisplayData()
 	l.markModified(l, l.bumpModificationTimestamp)
 }
 
@@ -184,6 +185,7 @@ func (l *LootSheet) syncWithAllSources() {
 
 // Rebuild implements Rebuildable.
 func (l *LootSheet) Rebuild(full bool) {
+	invalidateDisplayData()
 	gurps.DiscardGlobalResolveCache()
 	prepareForPage(l.loot)
 	state := l.captureViewState()
@@ -191,7 +193,7 @@ func (l *LootSheet) Rebuild(full bool) {
 		defer preserveSelections(l.lists)()
 		l.createLists()
 	}
-	l.resync(l, state)
+	l.resync(l, state, full)
 }
 
 func (l *LootSheet) createLists() {

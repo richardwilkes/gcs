@@ -236,6 +236,7 @@ func (d *MarkdownDockable) Tooltip() string {
 
 // MarkModified implements ModifiableRoot.
 func (d *MarkdownDockable) MarkModified(_ unison.Paneler) {
+	invalidateDisplayData()
 	UpdateTitleForDockable(d)
 }
 

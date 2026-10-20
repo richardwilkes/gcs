@@ -129,9 +129,23 @@ type Entity struct {
 	basicLiftCache                 fxp.Weight
 	encumbranceLevelCache          encumbrance.Level
 	encumbranceLevelForSkillsCache encumbrance.Level
+	weaponMemos                    map[*Weapon]*weaponMemo
+	weaponResolutions              int  // The memoized weapon resolutions in progress; see resolveSlot
+	circularWeaponResolution       bool // Whether one of them came back around to a slot still being resolved
+	weightCarriedCache             [2]fxp.Weight
+	weightCarriedCached            [2]bool
+	weaponLists                    [8][]*Weapon // Indexed by weaponListIndex
+	weaponListsCached              uint8        // Bit i set when weaponLists[i] is current
+	derivedGeneration              uint64
+	recalculating                  int
 	// unsettled records that the last recalculation found data that never settles (see Recalculate), so that it is
 	// logged once rather than on every edit.
 	unsettled bool
+	// derivedStateChanged records whether the last recalculation left the derived state it stores other than it found
+	// it; see DerivedStateChanged.
+	derivedStateChanged bool
+	// profileReadByScript records whether a script has read one of the profile's fields; see ProfileReadByScript.
+	profileReadByScript bool
 }
 
 // NewEntityFromFile loads an Entity from a file.
@@ -335,9 +349,47 @@ func (e *Entity) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 	return nil
 }
 
-// DiscardCaches discards the internal caches.
+// DiscardCaches discards the internal caches. The caches hold values derived from the entity's data: script results,
+// resolved variables, the carried weight, the encumbrance level, everything resolved about each weapon and the lists
+// of weapons. They are discarded here, at the start of every recalculation and of each of its passes, and by the item
+// editors when they rebuild, so a derived value is current once the data has been recalculated. Code that changes the
+// data and then reads derived values without recalculating must call this first, or it reads what was derived before
+// the change.
 func (e *Entity) DiscardCaches() {
 	e.discardCaches(false)
+}
+
+// DerivedStateGeneration returns a number that changes with every recalculation and every discarding of the caches,
+// and at no other time. Anything that caches what it derives from the entity can key its cache on this, but like the
+// entity's own caches (see DiscardCaches), it then sees a change to the data only once one of those follows it. That
+// holds for derived values updated outside a recalculation too, such as the level Skill.SetRawPoints sets.
+func (e *Entity) DerivedStateGeneration() uint64 {
+	return e.derivedGeneration
+}
+
+// DerivedStateChanged returns whether the last recalculation left the derived state the entity stores -- the levels of
+// the skills and spells and the verdicts on the traits' prerequisites -- other than it found it. Whatever shows the
+// entity can tell by it whether a change to data only a script reads, such as the character's weight, reached the
+// lists derived from that state, such as the weapons of the traits the verdicts enable.
+func (e *Entity) DerivedStateChanged() bool {
+	return e.derivedStateChanged
+}
+
+// ProfileReadByScript returns whether a script has read one of the profile's fields, such as the character's weight,
+// since the entity was created or ClearProfileReadByScript was last called. The rows of the entity's lists depend on
+// those fields only through scripts, and a script whose result is on show has run, so while this returns false, a
+// change to one of them leaves the rows as they were.
+func (e *Entity) ProfileReadByScript() bool {
+	return e.profileReadByScript
+}
+
+// ClearProfileReadByScript forgets the reads ProfileReadByScript reports. It is for whatever shows the entity to call
+// once it has recalculated the entity and before it derives everything it shows afresh. The recalculation discarded
+// every script's result (see DiscardCaches), so each script the derivation needs runs then, unless the recalculation
+// ran it, in which case the next recalculation runs it again; either way ProfileReadByScript, read after that next
+// recalculation, tells whether what is on show depends on the profile rather than whether anything ever did.
+func (e *Entity) ClearProfileReadByScript() {
+	e.profileReadByScript = false
 }
 
 // discardCaches discards the internal caches. With keepAbandonedScripts set, the results recorded for scripts that
@@ -364,6 +416,11 @@ func (e *Entity) discardCaches(keepAbandonedScripts bool) {
 	e.basicLiftCache = -1
 	e.encumbranceLevelCache = encumbrance.LastLevel + 1
 	e.encumbranceLevelForSkillsCache = encumbrance.LastLevel + 1
+	e.weaponMemos = nil
+	e.weaponLists = [8][]*Weapon{}
+	e.weaponListsCached = 0
+	e.weightCarriedCached = [2]bool{}
+	e.derivedGeneration++
 }
 
 // maxRecalculationPasses caps the passes one round of recalculation makes before concluding that the sheet's data will
@@ -431,6 +488,16 @@ func (e *Entity) recalculate(passBudget int) int {
 	if e == nil {
 		return 0
 	}
+	// The derived state is captured before the traits' verdicts are reset, so that it is the state the last
+	// recalculation left; see DerivedStateChanged.
+	before := e.derivedState(0)
+	// No weapon resolution or weapon list is kept while the passes run; see Weapon.memo. Anything cached against the
+	// generation in the meantime holds a value from partway through, so the generation moves on once they are done.
+	e.recalculating++
+	defer func() {
+		e.recalculating--
+		e.derivedGeneration++
+	}()
 	e.EnsureAttachments()
 	e.DiscardCaches()
 	e.SourceMatcher().PrepareHashes(e)
@@ -440,8 +507,12 @@ func (e *Entity) recalculate(passBudget int) int {
 	}, false, false, e.Traits...)
 	contradicted := false
 	made := 0
+	// Each round hands the state it leaves the sheet in to the next, and the last to the comparison below, which spares
+	// each of them hashing the state it is given.
+	state := e.derivedState(len(before))
 	for made < passBudget {
-		settled, newlyContradicted, passes := e.recalculateUntilSettled(min(passBudget-made, maxRecalculationPasses))
+		settled, newlyContradicted, passes, end := e.recalculateUntilSettled(state, min(passBudget-made, maxRecalculationPasses))
+		state = end
 		made += passes
 		if settled {
 			break
@@ -456,6 +527,7 @@ func (e *Entity) recalculate(passBudget int) int {
 			"defaults, features and scripts at once", "name", e.Profile.Name)
 	}
 	e.unsettled = contradicted
+	e.derivedStateChanged = !slices.Equal(before, state)
 	return made
 }
 
@@ -474,16 +546,18 @@ func (e *Entity) Unsettled() bool {
 // newlyContradicted reporting whether any trait not already marked was, since a further round may then settle; see
 // Recalculate. passes is how many passes were made. A cycle is left in its canonical state, whatever state the passes
 // were in when it was found; see settleOnCanonicalCycleState. The limit is maxRecalculationPasses, or what is left of
-// maxRecalculationPassesInAll when that is less; see recalculate.
+// maxRecalculationPassesInAll when that is less; see recalculate. start is the derived state as the passes find it,
+// which the caller has in hand, and end is the state they leave the sheet in, for the caller to hand to the next round
+// or compare with the state the recalculation began from without hashing it again.
 //
 // Whether a pass changed anything is judged by comparing the derived state before and after it rather than by what
 // the pass itself saw change, since a script evaluated during the pass may recompute a level as it reads it, leaving
 // the pass to find that level already in place. A prerequisite judged against the level before the script ran would
 // otherwise be left standing, with nothing to prompt the pass that would judge it again.
-func (e *Entity) recalculateUntilSettled(limit int) (settled, newlyContradicted bool, passes int) {
+func (e *Entity) recalculateUntilSettled(start []uint64, limit int) (settled, newlyContradicted bool, passes int, end []uint64) {
 	// The state the passes begin from is kept along with those they reach, so that a pass that comes back to it is
 	// seen to, whether the data has settled or has cycled back.
-	states := [][]uint64{e.derivedState(0)}
+	states := [][]uint64{start}
 	var verdicts [][]traitPrereqVerdict
 	traitCount := 0
 	for passes < limit {
@@ -492,16 +566,19 @@ func (e *Entity) recalculateUntilSettled(limit int) (settled, newlyContradicted 
 		passVerdicts := e.traitPrereqVerdicts(traitCount)
 		traitCount = len(passVerdicts)
 		verdicts = append(verdicts, passVerdicts)
-		state := e.derivedState(len(states[0]))
+		state := e.derivedState(len(start))
 		if slices.Equal(states[len(states)-1], state) {
-			return true, false, passes
+			return true, false, passes, state
 		}
 		if i := slices.IndexFunc(states, func(seen []uint64) bool { return slices.Equal(seen, state) }); i >= 0 {
 			// The cycle is the states from index i on, and the verdicts of the passes made from them sit at the same
 			// indices, since a pass's verdicts are recorded at the index of the state it began from. The sheet is moved
 			// to the cycle's canonical state before any trait is marked, since marking one changes what the passes do.
 			e.settleOnCanonicalCycleState(states[i:])
-			return false, e.markContradictedTraits(verdicts[i:], true), passes
+			newlyContradicted = e.markContradictedTraits(verdicts[i:], true)
+			// The state is hashed afresh, since moving the sheet to the canonical state hashed nothing and marking a
+			// trait leaves it enabled; a round that found a cycle is rare enough for that.
+			return false, newlyContradicted, passes, e.derivedState(len(start))
 		}
 		states = append(states, state)
 	}
@@ -511,7 +588,10 @@ func (e *Entity) recalculateUntilSettled(limit int) (settled, newlyContradicted 
 	// settling, and is left as its last verdict had it, so that the chain is stopped short rather than given the wrong
 	// answer; see maxRecalculationPasses. A limit cut short by maxRecalculationPassesInAll is judged the same way, for
 	// want of anything better, and only ever falls to data that has been found never to settle already.
-	return false, e.markContradictedTraits(verdicts[len(verdicts)/2:], false), passes
+	newlyContradicted = e.markContradictedTraits(verdicts[len(verdicts)/2:], false)
+	// Marking a trait leaves it enabled, so the state is hashed afresh; a round stopped at the limit is rare enough for
+	// that.
+	return false, newlyContradicted, passes, e.derivedState(len(start))
 }
 
 // traitPrereqVerdicts returns the verdict the last pass reached for each trait, in traversal order. The capacity is a
@@ -1409,27 +1489,47 @@ func (e *Entity) TraitBonusFor(name string, tags []string, tooltip *xbytes.Inser
 	})
 }
 
-// AddWeaponWithSkillBonusesFor adds the bonuses for matching weapons to m, creating it if nil, and returns it. An empty
-// name means the weapon uses no skill, which only a name criterion that would select any skill matches.
-func (e *Entity) AddWeaponWithSkillBonusesFor(name, specialization, usage string, tags []string, dieCount dieCountFunc, tooltip *xbytes.InsertBuffer, m map[*WeaponBonus]bool, allowedFeatureTypes map[feature.Type]bool) map[*WeaponBonus]bool {
-	if m == nil {
-		m = make(map[*WeaponBonus]bool)
-	}
-	rsl := e.relativeSkillLevel(name, specialization)
+// addWeaponWithSkillBonusesFor hands the weapon bonuses that select weapons by the skill they are used with and match
+// the given skill, usage and tags to add. An empty name means the weapon uses no skill, which only a name criterion
+// that would select any skill matches.
+func (e *Entity) addWeaponWithSkillBonusesFor(name, specialization, usage string, tags []string, add func(*WeaponBonus)) {
+	// The relative skill level takes a walk of the skills to find, so it is only found once a bonus that cares about
+	// it has matched on everything else.
+	var rsl fxp.Int
+	rslResolved := false
 	for _, bonus := range e.features.weaponBonuses {
-		if allowedFeatureTypes[bonus.Type] &&
-			bonus.SelectionType == wsel.WithRequiredSkill &&
-			bonus.RelativeLevelCriteria.Matches(rsl) {
-			replacements := bonusReplacements(bonus)
-			if matchesRequiredSkillName(bonus.NameCriteria, replacements, name) &&
-				bonus.SpecializationCriteria.Matches(replacements, specialization) &&
-				bonus.UsageCriteria.Matches(replacements, usage) &&
-				bonus.TagsCriteria.MatchesList(replacements, tags...) {
-				addWeaponBonusToMap(bonus, dieCount, tooltip, m)
+		if bonus.SelectionType != wsel.WithRequiredSkill {
+			continue
+		}
+		replacements := bonusReplacements(bonus)
+		if !matchesRequiredSkillName(bonus.NameCriteria, replacements, name) ||
+			!bonus.SpecializationCriteria.Matches(replacements, specialization) ||
+			!bonus.UsageCriteria.Matches(replacements, usage) ||
+			!bonus.TagsCriteria.MatchesList(replacements, tags...) {
+			continue
+		}
+		if bonus.RelativeLevelCriteria.Compare != criteria.AnyNumber {
+			if !rslResolved {
+				rsl = e.relativeSkillLevel(name, specialization)
+				rslResolved = true
+			}
+			if !bonus.RelativeLevelCriteria.Matches(rsl) {
+				continue
 			}
 		}
+		add(bonus)
 	}
-	return m
+}
+
+// hasWeaponBonusesBySkill reports whether any of the entity's weapon bonuses selects weapons by the skill they are
+// used with, which is the only reason to find out what skill that is.
+func (e *Entity) hasWeaponBonusesBySkill() bool {
+	for _, bonus := range e.features.weaponBonuses {
+		if bonus.SelectionType == wsel.WithRequiredSkill {
+			return true
+		}
+	}
+	return false
 }
 
 // relativeSkillLevel returns the best relative level among the skills with the given name and specialization, or
@@ -1444,33 +1544,19 @@ func (e *Entity) relativeSkillLevel(name, specialization string) fxp.Int {
 	return rsl
 }
 
-// AddNamedWeaponBonusesFor adds the bonuses for matching weapons to m, creating it if nil, and returns it.
-func (e *Entity) AddNamedWeaponBonusesFor(nameQualifier, usageQualifier string, tagsQualifier []string, dieCount dieCountFunc, tooltip *xbytes.InsertBuffer, m map[*WeaponBonus]bool, allowedFeatureTypes map[feature.Type]bool) map[*WeaponBonus]bool {
-	if m == nil {
-		m = make(map[*WeaponBonus]bool)
-	}
+// addNamedWeaponBonusesFor hands the weapon bonuses that select weapons by name and match the given name, usage and
+// tags to add.
+func (e *Entity) addNamedWeaponBonusesFor(nameQualifier, usageQualifier string, tagsQualifier []string, add func(*WeaponBonus)) {
 	for _, bonus := range e.features.weaponBonuses {
-		if allowedFeatureTypes[bonus.Type] &&
-			bonus.SelectionType == wsel.WithName {
+		if bonus.SelectionType == wsel.WithName {
 			replacements := bonusReplacements(bonus)
 			if bonus.NameCriteria.Matches(replacements, nameQualifier) &&
 				bonus.SpecializationCriteria.Matches(replacements, usageQualifier) &&
 				bonus.TagsCriteria.MatchesList(replacements, tagsQualifier...) {
-				addWeaponBonusToMap(bonus, dieCount, tooltip, m)
+				add(bonus)
 			}
 		}
 	}
-	return m
-}
-
-func addWeaponBonusToMap(bonus *WeaponBonus, dieCount dieCountFunc, tooltip *xbytes.InsertBuffer, m map[*WeaponBonus]bool) {
-	if m[bonus] {
-		return
-	}
-	if tooltip != nil {
-		bonus.addToTooltip(bonus.resolveDieCount(dieCount), bonus.DerivedLeveledOwner(), tooltip)
-	}
-	m[bonus] = true
 }
 
 // NamedWeaponSkillBonusesFor returns the bonuses for matching weapons.
@@ -1519,20 +1605,25 @@ func (e *Entity) BestSkillNamed(name, specialization string, requirePoints bool,
 }
 
 // SkillNamed returns the skills whose name matches, ignoring case, and whose specialization or optional specialization
-// does too when one is given.
+// does too when one is given. The name is tested first, since it rules out nearly every skill and is the cheapest
+// test; the others, which cost a walk of the skill's features or build its full name, only run for the few that pass.
 func (e *Entity) SkillNamed(name, specialization string, requirePoints bool, excludes map[string]bool) []*Skill {
 	var list []*Skill
 	Traverse(func(sk *Skill) bool {
-		if !excludes[sk.String()] {
-			if !requirePoints || sk.IsTechnique() || sk.AdjustedPoints(nil) > 0 {
-				if strings.EqualFold(sk.NameWithReplacements(), name) {
-					if specialization == "" || strings.EqualFold(sk.SpecializationWithReplacements(), specialization) ||
-						strings.EqualFold(sk.OptionalSpecializationWithReplacements(), specialization) {
-						list = append(list, sk)
-					}
-				}
-			}
+		if !strings.EqualFold(sk.NameWithReplacements(), name) {
+			return false
 		}
+		if specialization != "" && !strings.EqualFold(sk.SpecializationWithReplacements(), specialization) &&
+			!strings.EqualFold(sk.OptionalSpecializationWithReplacements(), specialization) {
+			return false
+		}
+		if requirePoints && !sk.IsTechnique() && sk.AdjustedPoints(nil) <= 0 {
+			return false
+		}
+		if len(excludes) != 0 && excludes[sk.String()] {
+			return false
+		}
+		list = append(list, sk)
 		return false
 	}, true, true, e.Skills...)
 	return list
@@ -1560,26 +1651,41 @@ func BestSkillIn(list []*Skill, excludes map[string]bool) *Skill {
 // string for a fully unspecialized skill) - this keeps an unspecialized skill distinct from a sibling that carries an
 // optional specialization, so e.g. an "is empty" criteria matches only the truly unspecialized skill.
 func skillSpecializationMatches(specializationCriteria criteria.Text, replacements map[string]string, requiredSpecialization, optionalSpecialization string) bool {
-	if requiredSpecialization != "" {
-		return specializationCriteria.Matches(replacements, requiredSpecialization) ||
-			(optionalSpecialization != "" && specializationCriteria.Matches(replacements, optionalSpecialization))
-	}
-	return specializationCriteria.Matches(replacements, optionalSpecialization)
+	return skillSpecializationMatcherMatches(specializationCriteria.Matcher(replacements), requiredSpecialization,
+		optionalSpecialization)
 }
 
-// SkillMatching returns a list of skills whose name and specialization match the given criteria.
+// skillSpecializationMatcherMatches is skillSpecializationMatches for a criteria whose replacements have already been
+// applied, which spares applying them again for every skill in a walk.
+func skillSpecializationMatcherMatches(specialization criteria.TextMatcher, requiredSpecialization, optionalSpecialization string) bool {
+	if requiredSpecialization != "" {
+		return specialization.Matches(requiredSpecialization) ||
+			(optionalSpecialization != "" && specialization.Matches(optionalSpecialization))
+	}
+	return specialization.Matches(optionalSpecialization)
+}
+
+// SkillMatching returns a list of skills whose name and specialization match the given criteria. The tests run in
+// the order SkillNamed runs them, and for the same reason.
 func (e *Entity) SkillMatching(nameCriteria, specializationCriteria criteria.Text, replacements map[string]string, requirePoints bool, excludes map[string]bool) []*Skill {
 	var list []*Skill
+	name := nameCriteria.Matcher(replacements)
+	specialization := specializationCriteria.Matcher(replacements)
 	Traverse(func(sk *Skill) bool {
-		if !excludes[sk.String()] {
-			if !requirePoints || sk.IsTechnique() || sk.AdjustedPoints(nil) > 0 {
-				if nameCriteria.Matches(replacements, sk.NameWithReplacements()) &&
-					skillSpecializationMatches(specializationCriteria, replacements,
-						sk.SpecializationWithReplacements(), sk.OptionalSpecializationWithReplacements()) {
-					list = append(list, sk)
-				}
-			}
+		if !name.Matches(sk.NameWithReplacements()) {
+			return false
 		}
+		if !skillSpecializationMatcherMatches(specialization, sk.SpecializationWithReplacements(),
+			sk.OptionalSpecializationWithReplacements()) {
+			return false
+		}
+		if requirePoints && !sk.IsTechnique() && sk.AdjustedPoints(nil) <= 0 {
+			return false
+		}
+		if len(excludes) != 0 && excludes[sk.String()] {
+			return false
+		}
+		list = append(list, sk)
 		return false
 	}, true, true, e.Skills...)
 	return list
@@ -1634,14 +1740,25 @@ func (e *Entity) WeightUnit() fxp.WeightUnit {
 	return e.SheetSettings.DefaultWeightUnits
 }
 
-// WeightCarried returns the carried weight.
+// WeightCarried returns the carried weight. It is cached until the caches are discarded, as the encumbrance level
+// derived from it is: finding it resolves the weight of every carried item, and the encumbrance block asks for it
+// whenever it is synced.
 func (e *Entity) WeightCarried(forSkills bool) fxp.Weight {
+	i := 0
+	if forSkills {
+		i = 1
+	}
+	if e.weightCarriedCached[i] {
+		return e.weightCarriedCache[i]
+	}
 	var total fxp.Weight
 	for _, one := range e.CarriedEquipment {
 		if one.Enabled() {
 			total += one.ExtendedWeight(forSkills, e.SheetSettings.DefaultWeightUnits)
 		}
 	}
+	e.weightCarriedCache[i] = total
+	e.weightCarriedCached[i] = true
 	return total
 }
 
@@ -1866,8 +1983,49 @@ func (e *Entity) WeaponOwner() WeaponOwner {
 	return nil
 }
 
-// Weapons implements WeaponListProvider.
+// Weapons implements WeaponListProvider. Building a list resolves every weapon on it, and the tables ask for their
+// lists often, so each list is kept until the caches are discarded (see DiscardCaches). The caller always gets a slice
+// of its own.
 func (e *Entity) Weapons(melee, includeUnequipped, excludeHidden bool) []*Weapon {
+	// Nothing is kept while recalculating, for the reason given in Weapon.memo.
+	if !weaponMemosEnabled || e.recalculating > 0 {
+		return e.collectWeapons(melee, includeUnequipped, excludeHidden)
+	}
+	index := weaponListIndex(melee, includeUnequipped, excludeHidden)
+	if e.weaponListsCached&(1<<index) != 0 {
+		return slices.Clone(e.weaponLists[index])
+	}
+	// A list built while a resolution comes back around (see resolveSlot), or from a script stopped short, isn't kept
+	// either, since which weapons it tells apart depends on how far each resolution got. A circle through a memoized
+	// field shows as the former, one through text that isn't memoized, such as usage notes, only as the latter.
+	var list []*Weapon
+	if anyScriptAbandonedDuring(e, func() { list = e.collectWeapons(melee, includeUnequipped, excludeHidden) }) ||
+		e.circularWeaponResolution {
+		return list
+	}
+	e.weaponLists[index] = list
+	e.weaponListsCached |= 1 << index
+	return slices.Clone(list)
+}
+
+// weaponListIndex returns the index into Entity.weaponLists of the list Weapons builds for the given arguments.
+func weaponListIndex(melee, includeUnequipped, excludeHidden bool) uint8 {
+	var index uint8
+	if melee {
+		index |= 1
+	}
+	if includeUnequipped {
+		index |= 2
+	}
+	if excludeHidden {
+		index |= 4
+	}
+	return index
+}
+
+// collectWeapons is Weapons without the cache. As it goes, it marks the weapons of equipment that isn't equipped or
+// carried as such, which their names report.
+func (e *Entity) collectWeapons(melee, includeUnequipped, excludeHidden bool) []*Weapon {
 	m := make(map[uint64]*Weapon)
 	Traverse(func(t *Trait) bool {
 		for _, w := range t.Weapons {

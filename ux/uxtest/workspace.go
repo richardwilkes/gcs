@@ -34,7 +34,7 @@ type Workspace struct {
 	// points the workspace's error handler at the test, since the modal dialog it would otherwise put up has nobody
 	// to dismiss it. It runs on the UI thread, before the session is handed to the test, and should put back any
 	// process-wide state it replaces when the test ends (see SwapForTest).
-	Setup func(t *testing.T, wnd *unison.Window)
+	Setup func(t testing.TB, wnd *unison.Window)
 	// AllDockables lists every open dockable, whether in the workspace or in a window of its own.
 	AllDockables func() []unison.Dockable
 }
@@ -82,7 +82,7 @@ func Main(m *testing.M, ws Workspace) {
 //
 // Anything the session recorded through Errors() fails the test when it ends. Sessions run one at a time and own most
 // of unison's mutable globals while they run, so a test using this must not call t.Parallel.
-func StartHeadlessWorkspace(t *testing.T, c check.Checker) (*unison.HeadlessScreen, *unison.Window) {
+func StartHeadlessWorkspace(t testing.TB, c check.Checker) (*unison.HeadlessScreen, *unison.Window) {
 	t.Helper()
 	if workspace.Setup == nil || workspace.AllDockables == nil {
 		t.Fatal("the package's TestMain must run uxtest.Main with its Workspace filled in")
@@ -123,7 +123,7 @@ func StartHeadlessWorkspace(t *testing.T, c check.Checker) (*unison.HeadlessScre
 // SwapForTest assigns value to the variable target points at for the duration of the test, putting back whatever it
 // held when the test finishes. Package-level state and fields of the global settings are process-wide, so a test that
 // alters one has to restore it or every test that runs afterwards sees the change.
-func SwapForTest[T any](t *testing.T, target *T, value T) {
+func SwapForTest[T any](t testing.TB, target *T, value T) {
 	t.Helper()
 	saved := *target
 	t.Cleanup(func() { *target = saved })
@@ -133,7 +133,7 @@ func SwapForTest[T any](t *testing.T, target *T, value T) {
 // UseTestLibraries points the global settings at a fresh library set rooted in a temporary directory, restoring the
 // original set when the test finishes. It returns the master and user libraries, both of which start out with no
 // "Output Templates" directory at all.
-func UseTestLibraries(t *testing.T, c check.Checker) (master, user *library.Library) {
+func UseTestLibraries(t testing.TB, c check.Checker) (master, user *library.Library) {
 	t.Helper()
 	global := gurps.GlobalSettings()
 	SwapForTest(t, &global.Libraries, library.NewLibraries())
@@ -148,7 +148,7 @@ func UseTestLibraries(t *testing.T, c check.Checker) (master, user *library.Libr
 // preserveRecentFilesAndLastDirs puts the global settings' recent files list and last-used directories back when the
 // test ends. Saving or opening a file records the file in the one and its directory in the other, and the global
 // settings are process-wide, so a temporary path left in either would be offered to every test that runs afterwards.
-func preserveRecentFilesAndLastDirs(t *testing.T) {
+func preserveRecentFilesAndLastDirs(t testing.TB) {
 	t.Helper()
 	global := gurps.GlobalSettings()
 	savedRecentFiles := slices.Clone(global.RecentFiles)
@@ -161,7 +161,7 @@ func preserveRecentFilesAndLastDirs(t *testing.T) {
 
 // CaptureScreen writes what the screen shows to name.png in the directory named by GCS_HEADLESS_CAPTURE_DIR, for the
 // person running the test to look at. When nothing is named there, nothing is captured.
-func CaptureScreen(t *testing.T, c check.Checker, screen *unison.HeadlessScreen, name string) {
+func CaptureScreen(t testing.TB, c check.Checker, screen *unison.HeadlessScreen, name string) {
 	t.Helper()
 	dir := os.Getenv("GCS_HEADLESS_CAPTURE_DIR")
 	if dir == "" {
@@ -182,7 +182,7 @@ func CaptureScreen(t *testing.T, c check.Checker, screen *unison.HeadlessScreen,
 
 // FocusForReadingSetter returns a function that sets the FocusForReading general setting, passes it to unison and
 // describes the window, which also activates accessibility. Both are restored when the test ends.
-func FocusForReadingSetter(t *testing.T, screen *unison.HeadlessScreen, wnd *unison.Window) func(enabled bool) {
+func FocusForReadingSetter(t testing.TB, screen *unison.HeadlessScreen, wnd *unison.Window) func(enabled bool) {
 	t.Helper()
 	gs := gurps.GlobalSettings().General
 	SwapForTest(t, &gs.FocusForReading, false)

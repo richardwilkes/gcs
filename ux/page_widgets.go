@@ -328,8 +328,9 @@ func addRandomizedStringPageField(parent unison.Paneler, targetMgr *TargetMgr, t
 
 // addRandomizedPageField adds a label with a randomization button and field to parent, in that order, and returns the
 // field. Clicking the button calls randomize, which must store the new value and return the text to show for it, then
-// shows that text in the field and marks the sheet modified. The field is flagged SkipDeepSync, since the values these
-// fields hold have no bearing on the rest of the sheet.
+// shows that text in the field and marks the sheet modified. The field is flagged SkipDeepSync, since nothing on the
+// rest of the sheet depends on the values these fields hold unless a script reads them, which Sheet.MarkModified
+// allows for.
 func addRandomizedPageField[F SelectableTextField](parent unison.Paneler, field F, title, tooltip string, randomize func() string) F {
 	p := parent.AsPanel()
 	wrapper, label := NewPageLabelWithRandomizer(title, tooltip, func() { SetTextAndMarkModified(field, randomize()) })
