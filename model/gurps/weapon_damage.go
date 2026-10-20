@@ -340,12 +340,14 @@ func (w *WeaponDamage) resolveDamage(tooltip *xbytes.InsertBuffer) *ResolvedWeap
 	var percentDamageBonus, percentDRDivisorBonus fxp.Int
 	var bonusDice []BonusDice
 	armorDivisor := w.resolvedDamageNumeric(selector.WeaponArmorDivisor, w.ArmorDivisor, tooltip)
-	dieCount := fxp.FromInteger(base.Count) // Already resolved here, so hand it over rather than resolving it again
+	// Already resolved here, so handed over rather than resolved again. It is this damage's own count, which for a copy
+	// may differ from that of the weapon AdjustedForWeapon would consult.
+	dieCount := fxp.FromInteger(base.Count)
 	for _, bonus := range w.Owner.collectWeaponBonuses(func() fxp.Int { return dieCount }, tooltip, feature.WeaponBonus,
 		feature.WeaponDRDivisorBonus) {
 		switch bonus.Type {
 		case feature.WeaponBonus:
-			d, amt := bonus.AdjustedForWeapon(w.Owner)
+			d, amt := bonus.adjustedForDieCount(dieCount)
 			if bonus.Percent {
 				percentDamageBonus += amt
 			} else {
@@ -359,7 +361,7 @@ func (w *WeaponDamage) resolveDamage(tooltip *xbytes.InsertBuffer) *ResolvedWeap
 				}
 			}
 		case feature.WeaponDRDivisorBonus:
-			amt := bonus.AdjustedAmountForWeapon(w.Owner)
+			_, amt := bonus.adjustedForDieCount(dieCount)
 			if bonus.Percent {
 				percentDRDivisorBonus += amt
 			} else {

@@ -632,13 +632,18 @@ func (s *Spell) UpdateLevel() bool {
 
 // CalculateLevel returns the computed level without updating it.
 func (s *Spell) CalculateLevel() Level {
+	return s.calculateLevel(s.AdjustedPoints(nil))
+}
+
+// calculateLevel returns the level the spell has with the given adjusted points.
+func (s *Spell) calculateLevel(points fxp.Int) Level {
 	if s.IsRitualMagic() {
 		return CalculateRitualMagicSpellLevel(EntityFromNode(s), s.NameWithReplacements(),
 			s.PowerSourceWithReplacements(), s.RitualSkillNameWithReplacements(), s.PrereqCount,
-			s.CollegeWithReplacements(), s.Tags, s.Difficulty, s.AdjustedPoints(nil))
+			s.CollegeWithReplacements(), s.Tags, s.Difficulty, points)
 	}
 	return CalculateSpellLevel(EntityFromNode(s), s.NameWithReplacements(), s.PowerSourceWithReplacements(),
-		s.CollegeWithReplacements(), s.Tags, s.Difficulty, s.AdjustedPoints(nil))
+		s.CollegeWithReplacements(), s.Tags, s.Difficulty, points)
 }
 
 // IncrementSkillLevel adds enough points to increment the skill level to the next level. Containers and disabled
@@ -855,16 +860,17 @@ func (s *Spell) Rituals() string {
 	}
 	var buffer strings.Builder
 	// The level is the one the last recalculation recorded, except for a disabled spell, whose recorded level is
-	// cleared; its rituals are still those of the level it would have.
+	// cleared and whose adjusted points are zero; its rituals are still those of the level it would have if enabled.
 	level := s.LevelData.Level
 	if !s.Enabled() {
-		level = s.CalculateLevel().Level
+		level = s.calculateLevel(AdjustedPointsForNonContainerSpell(e, s.Points, s.NameWithReplacements(),
+			s.PowerSourceWithReplacements(), s.CollegeWithReplacements(), s.Tags, nil)).Level
 	}
 	ritualText := i18n.Text("Ritual")
 	switch {
 	case level < fxp.Ten:
 		addPartToBuffer(&buffer, ritualText, i18n.Text("need both hands and feet free and must speak"))
-		addPartToBuffer(&buffer, i18n.Text("Time"), "Doubled")
+		addPartToBuffer(&buffer, i18n.Text("Time"), i18n.Text("Doubled"))
 		return buffer.String()
 	case level < fxp.Fifteen:
 		addPartToBuffer(&buffer, ritualText, i18n.Text("speak quietly and make a gesture"))

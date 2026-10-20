@@ -911,6 +911,37 @@ func TestWeaponTagDefaultToCrossbowUsesLiftingST(t *testing.T) {
 	c.Equal(fxp.Ten, bow.SkillLevel(nil), "a bow is drawn with striking ST 10, and is penalized 2 for its minimum ST")
 }
 
+// TestWeaponSkillLevelUsesResolvedMusclePower verifies that the ST a ranged weapon's minimum ST is checked against
+// follows a weapon switch for muscle power, as the weapon's range does, rather than the weapon's own flag.
+func TestWeaponSkillLevelUsesResolvedMusclePower(t *testing.T) {
+	c := check.New(t)
+	for _, musclePowered := range []bool{true, false} {
+		bow := newCrossbowTestWeapon(c, &gurps.SkillDefault{
+			DefaultType: gurps.SkillID,
+			Tags:        criteria.Text{Compare: criteria.IsText, Qualifier: "Archery"},
+		})
+		e := bow.Entity()
+		addDXSkill(e, "Bow", difficulty.Easy, fxp.Four, "Archery")
+		bow.Range.MusclePowered = !musclePowered
+		sw := gurps.NewWeaponBonus(feature.WeaponSwitch)
+		sw.SelectionType = wsel.ThisWeapon
+		sw.SwitchType = wswitch.MusclePowered
+		sw.SwitchTypeValue = musclePowered
+		owner, ok := bow.Owner.(*gurps.Trait)
+		c.True(ok, "the test weapon should be owned by a trait")
+		owner.Features = append(owner.Features, sw)
+		e.Recalculate()
+		c.Equal(musclePowered, bow.ResolvedRange(nil).MusclePowered, "the switch decides the range's muscle power")
+		if musclePowered {
+			c.Equal(fxp.Ten, bow.SkillLevel(nil),
+				"a bow switched to muscle power is drawn with striking ST 10, and is penalized 2 for its minimum ST")
+		} else {
+			c.Equal(fxp.Twelve, bow.SkillLevel(nil),
+				"a bow switched off muscle power is checked against lifting ST 12, which meets its minimum ST")
+		}
+	}
+}
+
 // TestWeaponNotesFromOwnerModifiers verifies that a weapon's notes gather the notes of every enabled, non-container
 // modifier of its owner that asks to be shown on the weapon, at any depth, ahead of the weapon's own usage notes,
 // whether the owner is a trait or a piece of equipment.

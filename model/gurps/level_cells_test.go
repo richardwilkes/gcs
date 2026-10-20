@@ -68,9 +68,10 @@ func TestLevelCellsShowRecordedLevel(t *testing.T) {
 	c.Equal(IncludesModifiersFrom()+":"+sp.LevelData.Tooltip, levelCell(sp, SpellRelativeLevelColumn).Tooltip)
 
 	// A disabled spell has no level to show, but its rituals are still those of the level it would have.
+	enabledRituals := sp.Rituals()
 	sp.Disabled = true
 	e.Recalculate()
 	c.Equal("-", levelCell(sp, SpellLevelColumn).Primary)
 	c.Equal(fxp.Int(0), sp.LevelData.Level)
-	c.NotEqual("", sp.Rituals(), "a disabled spell still reports its rituals")
+	c.Equal(enabledRituals, sp.Rituals(), "a disabled spell reports the rituals of the level it would have")
 }

@@ -560,7 +560,7 @@ func (w *Weapon) skillLevelBaseAdjustment(e *Entity, tooltip *xbytes.InsertBuffe
 	case stdmg.IQThrust, stdmg.IQSwing:
 		minST -= e.ResolveAttributeCurrent(IntelligenceID).Max(0).Floor()
 	default:
-		if !w.IsRanged() || (w.Range.MusclePowered && !w.usesCrossbowSkill(e)) {
+		if !w.IsRanged() || (w.ResolveBoolFlag(wswitch.MusclePowered, w.Range.MusclePowered) && !w.usesCrossbowSkill(e)) {
 			minST -= e.StrikingStrength()
 		} else {
 			minST -= e.LiftingStrength()
