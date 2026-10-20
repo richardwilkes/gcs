@@ -202,6 +202,7 @@ type PageList[T gurps.Node[T]] struct {
 	tableHeader *unison.TableHeader[*Node[T]]
 	Table       *unison.Table[*Node[T]]
 	provider    TableProvider[T]
+	syncedAt    uint64 // The display stamp the list was last synced at; see syncedAtStamp.
 }
 
 // NewTraitsPageList creates the traits page list.
@@ -621,6 +622,12 @@ func (p *PageList[T]) Sync() {
 	if parent := p.Parent(); parent != nil {
 		parent.NeedsLayout = true
 	}
+	p.syncedAt = currentDisplayStamp()
+}
+
+// syncedAtStamp implements syncedList.
+func (p *PageList[T]) syncedAtStamp() uint64 {
+	return p.syncedAt
 }
 
 // CreateItem calls CreateItem on the contained TableProvider.

@@ -411,7 +411,7 @@ func (s *Sheet) MarkModified(src unison.Paneler) {
 		// TODO: This can be too slow when the lists have many rows of content, impinging upon interactive typing.
 		//       Looks like most of the time is spent in updating the tables. Unfortunately, there isn't a fast way
 		//       to determine that the content of a table doesn't need to be refreshed.
-		s.resync(s, s.captureViewState())
+		s.resync(s, s.captureViewState(), false)
 	}
 	NotifySheetSourceUsers(s)
 }
@@ -868,7 +868,7 @@ func (s *Sheet) Rebuild(full bool) {
 		defer preserveSelections(s.lists)()
 		s.buildLayout()
 	}
-	s.resync(s, state)
+	s.resync(s, state, full)
 	if s.layoutEditing() {
 		// Reacquiring the focus just took it back to whichever field held it before the overlay went up, so the overlay
 		// has to ask for it again. Everything it drew is stale, too, since the page has been rebuilt underneath it.

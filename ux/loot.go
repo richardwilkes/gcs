@@ -193,7 +193,7 @@ func (l *LootSheet) Rebuild(full bool) {
 		defer preserveSelections(l.lists)()
 		l.createLists()
 	}
-	l.resync(l, state)
+	l.resync(l, state, full)
 }
 
 func (l *LootSheet) createLists() {

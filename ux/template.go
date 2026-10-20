@@ -457,7 +457,7 @@ func (t *Template) Rebuild(full bool) {
 		defer preserveSelections(t.lists)()
 		t.createLists()
 	}
-	t.resync(t, state)
+	t.resync(t, state, full)
 }
 
 func (t *Template) syncWithAllSources() {

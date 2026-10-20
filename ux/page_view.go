@@ -129,8 +129,14 @@ func (pv *pageView) restoreViewState(state viewState) {
 // resync completes bringing the dockable back into line with its model, once whatever the dockable had to do first --
 // rebuild its lists, recalculate its entity -- has been done: every panel is synced, the title is brought up to date,
 // the search results, which name rows that may no longer exist, are found again, and the user's place is put back.
-func (pv *pageView) resync(d unison.Dockable, state viewState) {
-	DeepSync(d)
+// listsSynced says that the lists on the page were synced as the page was laid out, so that they aren't synced again
+// (see deepSyncSkippingSyncedLists).
+func (pv *pageView) resync(d unison.Dockable, state viewState, listsSynced bool) {
+	if listsSynced {
+		deepSyncSkippingSyncedLists(d)
+	} else {
+		DeepSync(d)
+	}
 	UpdateTitleForDockable(d)
 	// The update is over once every panel has been synced. What remains only puts the presentation back, and a change
 	// reported from within it -- a field committing its edit as the focus leaves it -- is a fresh edit that calls for
@@ -152,5 +158,5 @@ func (pv *pageView) markModified(d unison.Dockable, prepare func()) {
 	if prepare != nil {
 		prepare()
 	}
-	pv.resync(d, state)
+	pv.resync(d, state, false)
 }

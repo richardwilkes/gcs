@@ -98,6 +98,29 @@ func DeepSync(panel unison.Paneler) {
 	}
 }
 
+// syncedList is a list that records the display stamp (see displayEpoch) it was last synced at, so that a deep sync
+// following a rebuild that already synced it can leave it be.
+type syncedList interface {
+	syncedAtStamp() uint64
+}
+
+// deepSyncSkippingSyncedLists is DeepSync, except that a list already synced since the last change was reported is
+// skipped, along with everything inside it. A full rebuild syncs every list it keeps as it lays the page out, so the
+// deep sync that follows would sync each of them a second time for nothing, which on a sheet with large lists is
+// half the cost of the rebuild. A list built anew by the rebuild has yet to be synced at all and is not skipped.
+func deepSyncSkippingSyncedLists(panel unison.Paneler) {
+	p := panel.AsPanel()
+	if list, ok := p.Self.(syncedList); ok && list.syncedAtStamp() == currentDisplayStamp() {
+		return
+	}
+	for _, child := range p.Children() {
+		deepSyncSkippingSyncedLists(child)
+	}
+	if syncer, ok := p.Self.(Syncer); ok {
+		syncer.Sync()
+	}
+}
+
 // ModifiableRoot marks the root of a modifiable tree of components, typically a Dockable.
 type ModifiableRoot interface {
 	MarkModified(src unison.Paneler)
