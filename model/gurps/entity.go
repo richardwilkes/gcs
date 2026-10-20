@@ -1544,13 +1544,13 @@ func (e *Entity) relativeSkillLevel(name, specialization string) fxp.Int {
 	return rsl
 }
 
-// addNamedWeaponBonusesFor hands the weapon bonuses that select weapons by name and match the given name, usage and
+// addNamedWeaponBonusesFor hands the weapon bonuses that select weapons by name and match the given weapon, usage and
 // tags to add.
-func (e *Entity) addNamedWeaponBonusesFor(nameQualifier, usageQualifier string, tagsQualifier []string, add func(*WeaponBonus)) {
+func (e *Entity) addNamedWeaponBonusesFor(w *Weapon, usageQualifier string, tagsQualifier []string, add func(*WeaponBonus)) {
 	for _, bonus := range e.features.weaponBonuses {
 		if bonus.SelectionType == wsel.WithName {
 			replacements := bonusReplacements(bonus)
-			if bonus.NameCriteria.Matches(replacements, nameQualifier) &&
+			if w.matchesName(bonus.NameCriteria, &bonus.WeaponOwnerCriteria, replacements) &&
 				bonus.SpecializationCriteria.Matches(replacements, usageQualifier) &&
 				bonus.TagsCriteria.MatchesList(replacements, tagsQualifier...) {
 				add(bonus)
@@ -1560,10 +1560,10 @@ func (e *Entity) addNamedWeaponBonusesFor(nameQualifier, usageQualifier string, 
 }
 
 // NamedWeaponSkillBonusesFor returns the bonuses for matching weapons.
-func (e *Entity) NamedWeaponSkillBonusesFor(name, usage string, tags []string, tooltip *xbytes.InsertBuffer) []*SkillBonus {
+func (e *Entity) NamedWeaponSkillBonusesFor(w *Weapon, usage string, tags []string, tooltip *xbytes.InsertBuffer) []*SkillBonus {
 	return collectBonuses(e.features.skillBonuses, tooltip, func(bonus *SkillBonus, replacements map[string]string) bool {
 		return bonus.SelectionType == skillsel.WeaponsWithName &&
-			bonus.NameCriteria.Matches(replacements, name) &&
+			w.matchesName(bonus.NameCriteria, &bonus.WeaponOwnerCriteria, replacements) &&
 			bonus.SpecializationCriteria.Matches(replacements, usage) &&
 			bonus.TagsCriteria.MatchesList(replacements, tags...)
 	})

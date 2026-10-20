@@ -889,7 +889,7 @@ func (p *prereqPanel) modifierChips(chips *unison.Panel, path string, c *gurps.M
 }
 
 // numberChip adds the optional number criterion with the key, such as a level, which runs from minimum to maximum.
-func (p *prereqPanel) numberChip(chips *unison.Panel, path, key string, n *criteria.Number, minimum, maximum fxp.Int, on bool) {
+func (p *sentenceRows[T]) numberChip(chips *unison.Panel, path, key string, n *criteria.Number, minimum, maximum fxp.Int, on bool) {
 	p.optionalCriterion(chips, path, key, on,
 		func() { *n = criteria.Number{Compare: criteria.AtLeastNumber, Qualifier: fxp.One} },
 		func() { *n = criteria.Number{} },

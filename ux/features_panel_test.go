@@ -1145,7 +1145,7 @@ func TestFeaturesPanelContainedWeightReductionOnlyForContainers(t *testing.T) {
 }
 
 // TestFeaturesPanelSelectorFieldChange checks that choosing another field for a selector override resets its value to
-// the field's first, and clears the usage criterion when the field belongs to traits, which have no usage.
+// the field's first, and clears the weapon criteria when the field belongs to traits, which have no weapons.
 func TestFeaturesPanelSelectorFieldChange(t *testing.T) {
 	c := check.New(t)
 	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
@@ -1155,6 +1155,8 @@ func TestFeaturesPanelSelectorFieldChange(t *testing.T) {
 	override.SpecializationCriteria = criteria.Text{Compare: criteria.IsText, Qualifier: "Rapier"}
 	override.UsageCriteria = criteria.Text{Compare: criteria.IsText, Qualifier: "Thrown"}
 	override.RelativeLevelCriteria = criteria.Number{Compare: criteria.AtLeastNumber, Qualifier: fxp.One}
+	override.OwnerLevelCriteria = criteria.Number{Compare: criteria.AtLeastNumber, Qualifier: fxp.One}
+	override.OwnerTechLevelCriteria = criteria.Text{Compare: criteria.IsText, Qualifier: "3"}
 	override.SetOwner(owner)
 	features := gurps.Features{override}
 	p, _ := showFeaturesPanel(t, screen, entity, owner, &features, false)
@@ -1179,6 +1181,7 @@ func TestFeaturesPanelSelectorFieldChange(t *testing.T) {
 	c.Equal(criteria.Text{Compare: criteria.AnyText}, override.UsageCriteria, "the usage criterion is cleared")
 	c.Equal(criteria.Text{Compare: criteria.AnyText}, override.SpecializationCriteria, "so is the specialization")
 	c.Equal(criteria.Number{Compare: criteria.AnyNumber}, override.RelativeLevelCriteria, "and the relative skill level")
+	c.Equal(gurps.WeaponOwnerCriteria{}, override.WeaponOwnerCriteria, "and the owner criteria")
 	c.Equal(traitField, lastSelectorFieldUsed)
 	screen.Do(func() {
 		c.Nil(p.FindRefKey("0:add usage"), "and isn't offered")
@@ -1189,7 +1192,7 @@ func TestFeaturesPanelSelectorFieldChange(t *testing.T) {
 
 // TestFeaturesPanelSelectorSelection checks that a weapon-scoped selector override offers the selection a weapon bonus
 // does, with the chips of each: specialization, usage, tags and relative skill level when selected by required skill,
-// usage alone for this weapon, which also drops the name, and usage and tags when selected by name.
+// usage alone for this weapon, which also drops the name, and usage, tags and the owner criteria when selected by name.
 func TestFeaturesPanelSelectorSelection(t *testing.T) {
 	c := check.New(t)
 	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
@@ -1201,7 +1204,10 @@ func TestFeaturesPanelSelectorSelection(t *testing.T) {
 	c.Equal(wsel.WithRequiredSkill, override.SelectionType, "precondition: a new override is selected by skill")
 	p, _ := showFeaturesPanel(t, screen, entity, owner, &features, false)
 	offered := func(keys ...string) {
-		for _, key := range []string{"add specialization", "add usage", "add tag", "add level", "name"} {
+		for _, key := range []string{
+			"add specialization", "add usage", "add tag", "add level", "add ownerlevel", "add ownertl",
+			"add ownerspecialization", "add owneroptspecialization", "name",
+		} {
 			c.Equal(slices.Contains(keys, key), p.FindRefKey("0:"+key) != nil, "%v offers %s", override.SelectionType, key)
 		}
 	}
@@ -1215,7 +1221,60 @@ func TestFeaturesPanelSelectorSelection(t *testing.T) {
 	screen.Do(func() { offered("add usage") })
 	screen.Do(func() { featuresPopup[wsel.Type](c, p, "0:selection").Select(wsel.WithName) })
 	c.Equal(wsel.WithName, override.SelectionType)
-	screen.Do(func() { offered("add usage", "add tag", "name") })
+	screen.Do(func() {
+		offered("add usage", "add tag", "add ownerlevel", "add ownertl", "add ownerspecialization",
+			"add owneroptspecialization", "name")
+	})
+}
+
+// TestFeaturesPanelWeaponOwnerChips checks that a weapon bonus and a skill bonus selecting weapons by name offer the
+// owner criteria, that each chip adds its own criterion, and that an empty text criterion hints at matching none.
+func TestFeaturesPanelWeaponOwnerChips(t *testing.T) {
+	c := check.New(t)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
+	entity := gurps.NewEntity()
+	owner := gurps.NewTrait(entity, nil, false)
+	damage := gurps.NewWeaponBonus(feature.WeaponBonus)
+	damage.SelectionType = wsel.WithName
+	damage.SetOwner(owner)
+	skill := gurps.NewSkillBonus()
+	skill.SelectionType = skillsel.WeaponsWithName
+	skill.SetOwner(owner)
+	features := gurps.Features{damage, skill}
+	p, _ := showFeaturesPanel(t, screen, entity, owner, &features, false)
+	for i, owners := range []*gurps.WeaponOwnerCriteria{&damage.WeaponOwnerCriteria, &skill.WeaponOwnerCriteria} {
+		path := strconv.Itoa(i)
+		c.Equal(gurps.WeaponOwnerCriteria{}, *owners, "precondition: row %s has no owner criteria", path)
+		var want gurps.WeaponOwnerCriteria
+		screen.Do(func() { p.toggle(path) })
+		for _, one := range []struct {
+			key   string
+			added func()
+		}{
+			{"ownerlevel", func() {
+				want.OwnerLevelCriteria = criteria.Number{Compare: criteria.AtLeastNumber, Qualifier: fxp.One}
+			}},
+			{"ownertl", func() { want.OwnerTechLevelCriteria.Compare = criteria.IsText }},
+			{"ownerspecialization", func() { want.OwnerSpecializationCriteria.Compare = criteria.IsText }},
+			{"owneroptspecialization", func() { want.OwnerOptionalSpecializationCriteria.Compare = criteria.IsText }},
+		} {
+			screen.Do(func() {
+				add, ok := p.FindRefKey(path + ":add " + one.key).Self.(*unison.Button)
+				c.True(ok, "row %s offers %s", path, one.key)
+				if ok {
+					add.ClickCallback()
+				}
+			})
+			one.added()
+			c.Equal(want, *owners, "row %s: adding %s adds its criterion alone", path, one.key)
+			screen.Do(func() {
+				c.NotNil(p.FindRefKey(path+":"+one.key+keyChip), "row %s shows the %s chip", path, one.key)
+				if field, isField := p.FindRefKey(path + ":" + one.key).Self.(*StringField); isField {
+					c.Equal("none", field.Watermark, "row %s: an empty %s hints at none", path, one.key)
+				}
+			})
+		}
+	}
 }
 
 // TestFeaturesPanelWeaponDamageBonus checks that the amount of a weapon damage bonus takes a dice specification as well

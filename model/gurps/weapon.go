@@ -78,6 +78,7 @@ type WeaponOwner interface {
 	ActiveFeatures() Features
 	TagList() []string
 	RatedStrength() fxp.Int
+	NameWithReplacements() string
 }
 
 // WeaponData holds the Weapon data that is written to disk.
@@ -577,8 +578,7 @@ func (w *Weapon) skillLevelBaseAdjustment(e *Entity, tooltip *xbytes.InsertBuffe
 			tooltip.WriteByte(']')
 		}
 	}
-	nameQualifier := w.String()
-	for _, bonus := range e.NamedWeaponSkillBonusesFor(nameQualifier, w.UsageWithReplacements(), w.Owner.TagList(), tooltip) {
+	for _, bonus := range e.NamedWeaponSkillBonusesFor(w, w.UsageWithReplacements(), w.Owner.TagList(), tooltip) {
 		adj += bonus.AdjustedAmount()
 	}
 	for _, f := range w.Owner.ActiveFeatures() {
@@ -871,7 +871,7 @@ func (w *Weapon) findWeaponBonuses(entity *Entity) []*WeaponBonus {
 			entity.addWeaponWithSkillBonusesFor(name, specialization, usage, tags, add)
 		})
 	}
-	entity.addNamedWeaponBonusesFor(w.String(), usage, tags, add)
+	entity.addNamedWeaponBonusesFor(w, usage, tags, add)
 	for _, f := range w.Owner.ActiveFeatures() {
 		w.extractWeaponBonus(f, add)
 	}
@@ -968,6 +968,12 @@ func (w *Weapon) findRequiredSkills(entity *Entity) []requiredSkill {
 	return skills
 }
 
+// matchesName reports whether a feature selecting weapons by name matches this weapon: the name criterion against its
+// owner's name alone, and the owner criteria against the owner's other qualifiers.
+func (w *Weapon) matchesName(name criteria.Text, owner *WeaponOwnerCriteria, replacements map[string]string) bool {
+	return name.Matches(replacements, w.Owner.NameWithReplacements()) && owner.matches(replacements, w.Owner)
+}
+
 // matchesRequiredSkillName reports whether a feature's required-skill name criterion matches a skill name visited by
 // forEachRequiredSkill. An empty skill means none resolved, which a criterion naming a skill outright cannot match: an
 // empty "is" qualifier is the unfilled state a new feature starts in, not a skill name. The other comparisons see the
@@ -994,7 +1000,7 @@ func (w *Weapon) extractWeaponBonus(f Feature, add func(*WeaponBonus)) {
 			add(bonus)
 		}
 	case wsel.WithName:
-		if bonus.NameCriteria.Matches(replacements, w.String()) &&
+		if w.matchesName(bonus.NameCriteria, &bonus.WeaponOwnerCriteria, replacements) &&
 			bonus.SpecializationCriteria.Matches(replacements, w.UsageWithReplacements()) &&
 			bonus.TagsCriteria.MatchesList(replacements, w.Owner.TagList()...) {
 			add(bonus)

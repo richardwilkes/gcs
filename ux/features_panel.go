@@ -408,6 +408,9 @@ func (p *featuresPanel) editor(f gurps.Feature, path string) *unison.Panel {
 		if one.SelectionType != skillsel.ThisWeapon {
 			p.tagsChip(chips, path, &one.TagsCriteria)
 		}
+		if one.SelectionType == skillsel.WeaponsWithName {
+			p.weaponOwnerChips(chips, path, &one.WeaponOwnerCriteria)
+		}
 	case *gurps.SkillPointBonus:
 		p.amount(fields, path, &one.Amount, &one.PerLevel)
 		whose := i18n.Text("to skills whose name")
@@ -842,9 +845,21 @@ func (p *featuresPanel) weaponBonus(fields, chips *unison.Panel, path string, on
 	if one.SelectionType != wsel.ThisWeapon {
 		p.tagsChip(chips, path, &one.TagsCriteria)
 	}
+	if one.SelectionType == wsel.WithName {
+		p.weaponOwnerChips(chips, path, &one.WeaponOwnerCriteria)
+	}
 	if one.SelectionType == wsel.WithRequiredSkill {
 		p.relativeSkillLevelChip(chips, path, &one.RelativeLevelCriteria)
 	}
+}
+
+// weaponOwnerChips adds the optional owner criteria of a feature that selects weapons by name.
+func (p *featuresPanel) weaponOwnerChips(chips *unison.Panel, path string, c *gurps.WeaponOwnerCriteria) {
+	p.numberChip(chips, path, "ownerlevel", &c.OwnerLevelCriteria, 0, fxp.Thousand,
+		c.OwnerLevelCriteria.Compare != criteria.AnyNumber)
+	p.textChip(chips, path, "ownertl", &c.OwnerTechLevelCriteria)
+	p.textChip(chips, path, "ownerspecialization", &c.OwnerSpecializationCriteria)
+	p.textChip(chips, path, "owneroptspecialization", &c.OwnerOptionalSpecializationCriteria)
 }
 
 // relativeSkillLevelChip adds the optional relative skill level criterion of a feature that selects weapons by their
@@ -920,6 +935,7 @@ func (p *featuresPanel) selectorOverride(fields, chips *unison.Panel, path strin
 				one.SpecializationCriteria = criteria.Text{Compare: criteria.AnyText}
 				one.UsageCriteria = criteria.Text{Compare: criteria.AnyText}
 				one.RelativeLevelCriteria = criteria.Number{Compare: criteria.AnyNumber}
+				one.WeaponOwnerCriteria = gurps.WeaponOwnerCriteria{}
 			}
 		}))
 	addJoiningWords(fields, i18n.Text("to"))
@@ -969,6 +985,7 @@ func (p *featuresPanel) selectorOverride(fields, chips *unison.Panel, path strin
 	case wsel.WithName:
 		p.textChip(chips, path, "usage", &one.UsageCriteria)
 		p.tagsChip(chips, path, &one.TagsCriteria)
+		p.weaponOwnerChips(chips, path, &one.WeaponOwnerCriteria)
 	default:
 		p.textChip(chips, path, "specialization", &one.SpecializationCriteria)
 		p.textChip(chips, path, "usage", &one.UsageCriteria)
