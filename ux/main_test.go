@@ -21,7 +21,7 @@ import (
 func TestMain(m *testing.M) {
 	Beep = func() {} // Fields refusing input would otherwise beep aloud on the machine running the tests.
 	uxtest.Main(m, uxtest.Workspace{
-		Setup: func(t *testing.T, wnd *unison.Window) {
+		Setup: func(t testing.TB, wnd *unison.Window) {
 			uxtest.SwapForTest(t, &Workspace, Workspace) // The session replaces most of it; put all of it back.
 			// main registers the file types before starting the UI; the navigator looks its folder icons up in that
 			// registry.

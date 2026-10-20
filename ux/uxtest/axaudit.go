@@ -24,14 +24,14 @@ import (
 // Accessibility.LabeledBy, or by an Accessibility.Name of its own; an icon-only button by its tooltip. A control with
 // none of those is announced as "edit text" or "pop up button" and nothing more.
 type AXNameAudit struct {
-	t        *testing.T
+	t        testing.TB
 	screen   *unison.HeadlessScreen
 	wnd      *unison.Window
 	failures []string
 }
 
 // NewAXNameAudit returns an audit of the workspace window wnd that the screen drives.
-func NewAXNameAudit(t *testing.T, screen *unison.HeadlessScreen, wnd *unison.Window) *AXNameAudit {
+func NewAXNameAudit(t testing.TB, screen *unison.HeadlessScreen, wnd *unison.Window) *AXNameAudit {
 	return &AXNameAudit{t: t, screen: screen, wnd: wnd}
 }
 

@@ -1,0 +1,248 @@
+// Copyright (c) 1998-2026 by Richard A. Wilkes. All rights reserved.
+//
+// This Source Code Form is subject to the terms of the Mozilla Public
+// License, version 2.0. If a copy of the MPL was not distributed with
+// this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+//
+// This Source Code Form is "Incompatible With Secondary Licenses", as
+// defined by the Mozilla Public License, version 2.0.
+
+package ux
+
+import (
+	"os"
+	"path/filepath"
+	"runtime"
+	"testing"
+	"time"
+
+	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/model/gurps/gurpstest"
+	"github.com/richardwilkes/gcs/v5/ux/uxtest"
+	"github.com/richardwilkes/toolbox/v2/check"
+	"github.com/richardwilkes/toolbox/v2/geom"
+	"github.com/richardwilkes/toolbox/v2/xreflect"
+	"github.com/richardwilkes/unison"
+)
+
+// The benchmarks in this file measure what a character sheet with large lists costs to update, rebuild, draw and
+// scroll, in a headless session. Run them with:
+//
+//	GOEXPERIMENT=simd go test ./ux -run '^$' -bench '^Benchmark(Sheet|PageList)' -benchmem -benchtime 2s -count 6 \
+//	    -timeout 90m | tee baseline.txt
+//
+// For a quick look, add GCS_BENCH_SIZE=0.25 and -benchtime 5x. GCS_BENCH_FILE names a real sheet to measure instead
+// of the generated one (see benchEntity). Compare two runs with:
+//
+//	go run golang.org/x/perf/cmd/benchstat@latest before.txt after.txt
+//
+// Besides ns/op, which is the end-to-end time including the headless session's round trips, each benchmark reports
+// ui-ns/op, the time the operation itself took on the UI thread, and draw-ns/op, the time the redraw it provoked
+// took. Each benchmark starts one headless session and must therefore never run in parallel.
+
+// benchFileEnvVar names the environment variable that, when set to the path of a character sheet, has the benchmarks
+// measure that sheet instead of a generated one.
+const benchFileEnvVar = "GCS_BENCH_FILE"
+
+// sheetBench is a sheet open in a headless session, ready to be measured.
+type sheetBench struct {
+	screen *unison.HeadlessScreen
+	wnd    *unison.Window
+	sheet  *Sheet
+}
+
+// benchEntity returns the character to measure: the sheet named by benchFileEnvVar, or a generated one of the size
+// gurpstest.LargeEntitySizeFromEnv reports.
+func benchEntity(b *testing.B) (entity *gurps.Entity, generated bool) {
+	b.Helper()
+	if path := os.Getenv(benchFileEnvVar); path != "" {
+		e, err := gurps.NewEntityFromFile(os.DirFS(filepath.Dir(path)), filepath.Base(path))
+		if err != nil {
+			b.Fatalf("unable to load %s: %v", path, err)
+		}
+		return e, false
+	}
+	size, err := gurpstest.LargeEntitySizeFromEnv()
+	if err != nil {
+		b.Fatal(err)
+	}
+	return gurpstest.NewLargeEntity(&size), true
+}
+
+// newSheetBench starts a headless session, opens the character to measure in it as a sheet, checks that every list
+// is on the page when the character was generated for that purpose, and performs one untimed update so that the
+// first measurement doesn't pay for anything lazily built. It also reports the heap in use once the sheet is open.
+func newSheetBench(b *testing.B) *sheetBench {
+	b.Helper()
+	c := check.New(b)
+	screen, wnd := uxtest.StartHeadlessWorkspace(b, c)
+	entity, generated := benchEntity(b)
+	var sheet *Sheet
+	screen.Do(func() {
+		sheet = NewSheet("bench"+gurps.SheetExt, entity)
+		DisplayNewDockable(sheet)
+	})
+	if generated {
+		for _, key := range gurps.AllBlockKeys {
+			if !gurps.IsListBlockKey(key) {
+				continue
+			}
+			list := sheet.list(key)
+			if xreflect.IsNil(list) || !listAttachedToSheet(sheet, list) {
+				b.Fatalf("the %s list is not on the page", key)
+			}
+		}
+	}
+	screen.Do(func() { sheet.MarkModified(sheet) })
+	// Registered after the session's own cleanup, so that it runs first: the sheet is closed without a save prompt,
+	// which a modified sheet would otherwise put up.
+	b.Cleanup(func() {
+		screen.Do(func() { sheet.markUnmodified() })
+		uxtest.CloseEditorWithoutPrompt(b, screen, sheet)
+	})
+	runtime.GC()
+	var stats runtime.MemStats
+	runtime.ReadMemStats(&stats)
+	b.ReportMetric(float64(stats.HeapAlloc)/(1<<20), "heap-MB")
+	return &sheetBench{screen: screen, wnd: wnd, sheet: sheet}
+}
+
+// run measures fn, which runs on the UI thread once per iteration, reporting the time it took there as ui-ns/op and
+// the time of the redraw it provoked as draw-ns/op alongside the usual end-to-end ns/op.
+func (sb *sheetBench) run(b *testing.B, fn func()) {
+	b.Helper()
+	var ui, draw, before time.Duration
+	n := 0
+	b.ResetTimer()
+	for b.Loop() {
+		sb.screen.Do(func() {
+			// Do waits for the session to go quiet, so this is the redraw the previous iteration provoked, or, the
+			// first time through, one that happened before the loop, which is taken back out below.
+			last := sb.wnd.LastDrawDuration()
+			if n == 0 {
+				before = last
+			}
+			draw += last
+			start := time.Now()
+			fn()
+			ui += time.Since(start)
+		})
+		n++
+	}
+	b.StopTimer()
+	sb.screen.Do(func() { draw += sb.wnd.LastDrawDuration() })
+	draw -= before
+	b.ReportMetric(float64(ui.Nanoseconds())/float64(n), "ui-ns/op")
+	b.ReportMetric(float64(draw.Nanoseconds())/float64(n), "draw-ns/op")
+}
+
+// scrollTo brings the panel into view, so that drawing and scrolling measure the part of the page that holds it.
+func (sb *sheetBench) scrollTo(p unison.Paneler) {
+	sb.screen.Do(func() { p.AsPanel().ScrollIntoView() })
+}
+
+func BenchmarkSheetMarkModified(b *testing.B) {
+	sb := newSheetBench(b)
+	sb.run(b, func() { sb.sheet.MarkModified(sb.sheet) })
+}
+
+func BenchmarkSheetRebuild(b *testing.B) {
+	sb := newSheetBench(b)
+	for _, one := range []struct {
+		name string
+		full bool
+	}{{"full", true}, {"partial", false}} {
+		b.Run(one.name, func(b *testing.B) {
+			sb.run(b, func() { sb.sheet.Rebuild(one.full) })
+		})
+	}
+}
+
+func BenchmarkSheetRedraw(b *testing.B) {
+	sb := newSheetBench(b)
+	for _, one := range []struct {
+		name  string
+		panel unison.Paneler
+	}{{"top", sb.sheet.page}, {"melee", sb.sheet.MeleeWeapons}, {"spells", sb.sheet.Spells}} {
+		b.Run(one.name, func(b *testing.B) {
+			sb.scrollTo(one.panel)
+			sb.run(b, func() {
+				sb.wnd.MarkForRedraw()
+				sb.wnd.FlushDrawing()
+			})
+		})
+	}
+}
+
+// BenchmarkSheetScroll measures wheel scrolling over each of the lists that are costly to draw: twenty steps down
+// and twenty back up per iteration, reporting the time per step.
+func BenchmarkSheetScroll(b *testing.B) {
+	sb := newSheetBench(b)
+	const steps = 20
+	for _, one := range []struct {
+		name  string
+		panel unison.Paneler
+	}{
+		{"melee", sb.sheet.MeleeWeapons},
+		{"ranged", sb.sheet.RangedWeapons},
+		{"skills", sb.sheet.Skills},
+		{"spells", sb.sheet.Spells},
+	} {
+		b.Run(one.name, func(b *testing.B) {
+			sb.scrollTo(one.panel)
+			pt := sb.screen.PanelCenter(sb.sheet.scroll)
+			var draw time.Duration
+			n := 0
+			b.ResetTimer()
+			for b.Loop() {
+				for range steps {
+					sb.screen.Wheel(pt, geom.Point{Y: -3}, 0)
+					draw += sb.wnd.LastDrawDuration()
+				}
+				for range steps {
+					sb.screen.Wheel(pt, geom.Point{Y: 3}, 0)
+					draw += sb.wnd.LastDrawDuration()
+				}
+				n++
+			}
+			b.StopTimer()
+			b.ReportMetric(float64(b.Elapsed().Nanoseconds())/float64(n*2*steps), "ns/step")
+			b.ReportMetric(float64(draw.Nanoseconds())/float64(n*2*steps), "draw-ns/step")
+		})
+	}
+}
+
+// BenchmarkPageListSync measures syncing each of the sheet's lists to its model, which is the bulk of an update.
+func BenchmarkPageListSync(b *testing.B) {
+	sb := newSheetBench(b)
+	for _, key := range gurps.AllBlockKeys {
+		if !gurps.IsListBlockKey(key) {
+			continue
+		}
+		list := sb.sheet.list(key)
+		if xreflect.IsNil(list) {
+			continue
+		}
+		syncer, ok := list.(Syncer)
+		if !ok {
+			b.Fatalf("the %s list is not a Syncer", key)
+		}
+		b.Run(key, func(b *testing.B) {
+			sb.run(b, syncer.Sync)
+		})
+	}
+}
+
+// BenchmarkSheetSearch measures the search refresh every update performs, with the field empty and with text in it.
+func BenchmarkSheetSearch(b *testing.B) {
+	sb := newSheetBench(b)
+	for _, one := range []struct {
+		name string
+		text string
+	}{{"empty", ""}, {"text", "spell"}} {
+		b.Run(one.name, func(b *testing.B) {
+			sb.screen.Do(func() { sb.sheet.searchTracker.searchField.SetText(one.text) })
+			sb.run(b, sb.sheet.searchTracker.Refresh)
+		})
+	}
+}
