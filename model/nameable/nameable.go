@@ -49,16 +49,15 @@ func Extract(nameables, replacements map[string]string, in ...string) map[string
 		nameables = make(map[string]string)
 	}
 	for _, src := range in {
-		for _, part := range ExtractParts(src, MarkerDelimiter, MarkerDelimiter) {
-			if part.Placeholder {
-				if m, ok := NewMarker(UnescapeRunes(part.Value, MarkerDelimiter)); ok {
-					// Duplicate markers are fine, since they collapse to a single entry.
-					if v, exists := replacements[m.Key()]; exists {
-						nameables[m.Key()] = v
-					} else {
-						nameables[m.Key()] = Unset
-					}
-				}
+		if !strings.ContainsRune(src, MarkerDelimiter) {
+			continue
+		}
+		// Duplicate markers are fine, since they collapse to a single entry.
+		for _, key := range compiled(src).keys {
+			if v, exists := replacements[key]; exists {
+				nameables[key] = v
+			} else {
+				nameables[key] = Unset
 			}
 		}
 	}
@@ -86,12 +85,13 @@ func Normalize(replacements map[string]string) map[string]string {
 // Apply replaces nameable markers with their replacement values in a single string. An unresolved marker is rendered
 // in its compact form, "`@Label@`", keeping the '@' wrapper so displayed text (sheet rows, table columns, tooltips)
 // still visibly flags it as unresolved. A legacy "Label: text" marker with no example list keeps its full text instead,
-// since that text often carries meaning the label alone does not, such as "Who: A deity".
+// since that text often carries meaning the label alone does not, such as "Who: A deity". The parse of the string is
+// cached (see compiled), so applying the same string again costs only the lookups of its markers.
 func Apply(str string, replacements map[string]string) string {
 	if !strings.ContainsRune(str, MarkerDelimiter) {
 		return str
 	}
-	return ApplyToList([]string{str}, replacements)[0]
+	return compiled(str).apply(replacements)
 }
 
 // ApplyToList is Apply for a slice of strings. Returns nil if the slice is empty.
@@ -101,38 +101,7 @@ func ApplyToList(in []string, replacements map[string]string) []string {
 	}
 	out := make([]string, len(in))
 	for i, str := range in {
-		if !strings.ContainsRune(str, MarkerDelimiter) {
-			out[i] = str
-			continue
-		}
-		var sb strings.Builder
-		for _, part := range ExtractParts(str, MarkerDelimiter, MarkerDelimiter) {
-			if part.Placeholder {
-				if m, ok := NewMarker(UnescapeRunes(part.Value, MarkerDelimiter)); ok {
-					if r, hasReplacement := replacements[m.Key()]; hasReplacement {
-						sb.WriteString(r)
-					} else {
-						sb.WriteRune(MarkerDelimiter)
-						if m.Legacy && len(m.Options) == 0 {
-							sb.WriteString(m.Raw)
-						} else {
-							sb.WriteString(m.Label) // We do not escape markers here by design
-						}
-						sb.WriteRune(MarkerDelimiter)
-					}
-				} else {
-					// Marker parsing failed, so write the original text back out with its delimiters.
-					sb.WriteRune(MarkerDelimiter)
-					sb.WriteString(part.Value)
-					sb.WriteRune(MarkerDelimiter)
-				}
-			} else {
-				// Unescape any escaped marker delimiters, so a literal "\@" the user typed to keep an '@' out of marker
-				// detection displays as a plain '@' rather than surfacing the escape itself.
-				sb.WriteString(UnescapeRunes(part.Value, MarkerDelimiter))
-			}
-		}
-		out[i] = sb.String()
+		out[i] = Apply(str, replacements)
 	}
 	return out
 }
