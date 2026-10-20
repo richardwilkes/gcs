@@ -233,6 +233,8 @@ func (d *attributeSettingsDockable) apply() {
 	if d.owner == nil {
 		gurps.GlobalSettings().Sheet.Attributes = d.model.Clone()
 		gurps.SyncGlobalSheetSettings()
+		// The library lists and templates, which have no entity, show the default definitions' names.
+		invalidateDisplayData()
 		return
 	}
 	entity := d.owner.Entity()

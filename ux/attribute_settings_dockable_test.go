@@ -13,6 +13,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/attribute"
 	"github.com/richardwilkes/gcs/v5/ux/uxtest"
@@ -375,4 +376,42 @@ func thresholdStates(def *gurps.AttributeDef) []string {
 		states[i] = threshold.State
 	}
 	return states
+}
+
+// TestApplyingDefaultAttributesReportsTheChange verifies that applying the default attribute definitions reports the
+// change to the display. A library list has no entity, so its difficulty column shows the default definitions' names,
+// and it keeps what it derived until a change is reported.
+func TestApplyingDefaultAttributesReportsTheChange(t *testing.T) {
+	c := check.New(t)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
+	global := gurps.GlobalSettings()
+	t.Cleanup(gurps.SyncGlobalSheetSettings) // Runs after the swap below is undone.
+	uxtest.SwapForTest(t, &global.Sheet, global.Sheet.Clone(nil))
+
+	list := NewSkillTableDockable("test"+gurps.SkillsExt, []*gurps.Skill{newTestSkill("Brawling", fxp.One, nil)})
+	col := list.table.ColumnIndexForID(gurps.SkillDifficultyColumn)
+	c.True(col >= 0, "the skills table must have a difficulty column")
+	row := list.table.RowFromIndex(0)
+	c.NotNil(row, "the skills table must show the skill")
+	difficulty := func() []string {
+		var texts []string
+		screen.Do(func() {
+			texts = uxtest.LabelTexts(row.ColumnCell(0, col, unison.Black, unison.White, false, false, false).AsPanel())
+		})
+		return texts
+	}
+	c.Equal([]string{"DX/A"}, difficulty(), "the difficulty cell must show the attribute's default name")
+
+	screen.Do(func() { ShowAttributeSettings(nil) })
+	d := uxtest.SoleEditor[*attributeSettingsDockable](t, screen, func(d unison.Dockable) bool {
+		s, ok := d.AsPanel().Self.(*attributeSettingsDockable)
+		return ok && s.owner == nil
+	})
+	screen.Do(func() {
+		d.model.Set[gurps.DexterityID].Name = "Dex"
+		d.apply()
+	})
+	c.Equal("Dex", gurps.ResolveAttributeName(nil, gurps.DexterityID), "the defaults must hold the new name")
+	c.True(list.table.RowFromIndex(0) == row, "nothing may have synced the table, or this test covers nothing")
+	c.Equal([]string{"Dex/A"}, difficulty(), "the same row must show the new name once the defaults are applied")
 }
