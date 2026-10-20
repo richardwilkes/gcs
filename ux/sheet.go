@@ -407,16 +407,19 @@ func (s *Sheet) MarkModified(src unison.Paneler) {
 		// match the active search, and on a sheet with large lists is much of the cost of an update -- enough to make
 		// typing stutter on slower platforms. A source that asks for it, such as the name field, is spared it while
 		// the recalculation left the derived state the lists' rows are drawn from as it was and no script has read
-		// the profile, since only a script can carry what such a field holds to the lists. The blocks are synced
-		// either way, since they show only what they were last synced to, while a list's rows derive their cells
-		// afresh on the next draw now that the change has been reported (see displayEpoch).
+		// the profile since the sheet last derived everything it shows (see Entity.ClearProfileReadByScript), since
+		// only a script can carry what such a field holds to the lists. The blocks are synced either way, since they
+		// show only what they were last synced to, while a list's rows derive their cells afresh on the next draw now
+		// that the change has been reported (see displayEpoch).
 		deepSyncSkippingLists(s, func(syncedList) bool { return true })
 		UpdateTitleForDockable(s)
 		s.awaitingUpdate = false
 	} else {
 		// The deep sync derives the data of each cell on the page afresh, once, and rebuilds only the cells whose data
 		// changed, since the page lists keep their rows, and the panels built for their cells, across syncs (see
-		// rowReuse).
+		// rowReuse). Everything that depends on the profile through a script is derived afresh too, so the reads the
+		// scripts made before now are forgotten first; see Entity.ClearProfileReadByScript.
+		s.entity.ClearProfileReadByScript()
 		s.resync(s, s.captureViewState(), false)
 		if s.derivedListsMisplaced() {
 			// Only laying the page out again puts a derived list on it or takes one off. The rebuild notifies the
@@ -896,6 +899,9 @@ func (s *Sheet) Rebuild(full bool) {
 	state := s.captureViewState()
 	s.entity.Recalculate()
 	s.syncUnsettledNotice()
+	// The rebuild derives everything on the page afresh, so the reads the scripts made before now are forgotten first;
+	// see Entity.ClearProfileReadByScript.
+	s.entity.ClearProfileReadByScript()
 	if full {
 		defer preserveSelections(s.lists)()
 		s.buildLayout()

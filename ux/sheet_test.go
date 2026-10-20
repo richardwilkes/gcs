@@ -10,6 +10,7 @@
 package ux
 
 import (
+	"fmt"
 	"strconv"
 	"testing"
 
@@ -369,4 +370,63 @@ func TestProfileEditNoScriptReadsSparesTheLists(t *testing.T) {
 
 	c.False(entity.DerivedStateChanged(), "the edit must leave the derived state as it was, or the check below means nothing")
 	c.NotEqual(currentDisplayStamp(), sheet.CarriedEquipment.syncedAtStamp(), "the list is not synced")
+}
+
+// TestProfileEditOnceNoScriptReadsSparesTheLists checks that an edit made through a field flagged SkipDeepSync is
+// spared the syncing of the lists once no script reads the profile any longer, although one did: the reads are
+// forgotten each time the sheet derives everything it shows afresh, not kept for as long as the sheet is open.
+func TestProfileEditOnceNoScriptReadsSparesTheLists(t *testing.T) {
+	c := check.New(t)
+	sheet := newTestSheetForTemplate(t)
+	entity := sheet.Entity()
+	pack := gurps.NewEquipment(entity, nil, false)
+	pack.Name = "Pack"
+	pack.BaseWeight = "entity.weightInPounds / 10"
+	entity.CarriedEquipment = append(entity.CarriedEquipment, pack)
+	sheet.Rebuild(true)
+	c.True(entity.ProfileReadByScript(), "the pack's weight script must have read the profile, or the checks below mean nothing")
+	panel := sheet.targetMgr.Find(identityPanelNameFieldRefKey)
+	c.NotNil(panel, "the sheet must have a name field")
+	nameField, ok := panel.Self.(*StringField)
+	c.True(ok, "the name field must be a StringField")
+
+	pack.BaseWeight = "15 lb"
+	sheet.MarkModified(nil)
+	c.False(entity.ProfileReadByScript(), "no script reads the profile once the weight is fixed")
+
+	entity.Profile.Name = "Someone"
+	sheet.MarkModified(nameField)
+
+	c.False(entity.DerivedStateChanged(), "the edit must leave the derived state as it was, or the check below means nothing")
+	c.NotEqual(currentDisplayStamp(), sheet.CarriedEquipment.syncedAtStamp(), "the list is not synced")
+}
+
+// TestProfileEditReadByAScriptOnlyWhenShownSyncsTheLists checks that edits made through a field flagged SkipDeepSync
+// keep syncing the lists while a script that only the lists run, never the recalculation, reads what the field holds:
+// here an equipment value derived from the character's weight, whose total the carried equipment list's header shows.
+// The reads are forgotten before each deep sync, not before each recalculation, so that the sync's own reads count.
+func TestProfileEditReadByAScriptOnlyWhenShownSyncsTheLists(t *testing.T) {
+	c := check.New(t)
+	sheet, weightField := newWeightScriptedSheet(t)
+	entity := sheet.Entity()
+	entity.SheetSettings.Attributes.Set[gurps.StrengthID].Base = "10"
+	gem := gurps.NewEquipment(entity, nil, false)
+	gem.Name = "Gem"
+	gem.BaseValue = "entity.weightInPounds / 10"
+	entity.CarriedEquipment = append(entity.CarriedEquipment, gem)
+	sheet.Rebuild(true)
+	headerText := func() string {
+		i := sheet.CarriedEquipment.Table.ColumnIndexForID(gurps.EquipmentDescriptionColumn)
+		header, ok := sheet.CarriedEquipment.tableHeader.ColumnHeaders[i].(*PageTableColumnHeader[*gurps.Equipment])
+		c.True(ok, "the description column must have a page header")
+		return header.Text.String()
+	}
+	c.Equal("Carried Equipment (30 lb; $15)", headerText(), "the gem must start at $15, or the checks below mean nothing")
+
+	for i, weight := range []int{300, 450} {
+		entity.Profile.Weight = fxp.WeightFromInteger(weight, fxp.Pound)
+		sheet.MarkModified(weightField)
+		c.False(entity.DerivedStateChanged(), "edit %d must leave the derived state as it was, or the check below means nothing", i+1)
+		c.Equal(fmt.Sprintf("Carried Equipment (30 lb; $%d)", weight/10), headerText(), "the header shows the total edit %d changed", i+1)
+	}
 }

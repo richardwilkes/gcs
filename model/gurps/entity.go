@@ -376,11 +376,20 @@ func (e *Entity) DerivedStateChanged() bool {
 }
 
 // ProfileReadByScript returns whether a script has read one of the profile's fields, such as the character's weight,
-// since the entity was created. The rows of the entity's lists depend on those fields only through scripts, and a
-// script whose result is on show has run, so while this returns false, a change to one of them leaves the rows as they
-// were.
+// since the entity was created or ClearProfileReadByScript was last called. The rows of the entity's lists depend on
+// those fields only through scripts, and a script whose result is on show has run, so while this returns false, a
+// change to one of them leaves the rows as they were.
 func (e *Entity) ProfileReadByScript() bool {
 	return e.profileReadByScript
+}
+
+// ClearProfileReadByScript forgets the reads ProfileReadByScript reports. It is for whatever shows the entity to call
+// once it has recalculated the entity and before it derives everything it shows afresh. The recalculation discarded
+// every script's result (see DiscardCaches), so each script the derivation needs runs then, unless the recalculation
+// ran it, in which case the next recalculation runs it again; either way ProfileReadByScript, read after that next
+// recalculation, tells whether what is on show depends on the profile rather than whether anything ever did.
+func (e *Entity) ClearProfileReadByScript() {
+	e.profileReadByScript = false
 }
 
 // discardCaches discards the internal caches. With keepAbandonedScripts set, the results recorded for scripts that
