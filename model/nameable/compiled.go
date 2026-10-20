@@ -42,11 +42,11 @@ func compileText(str string) *compiledText {
 			literal.Reset()
 		}
 	}
-	for _, part := range ExtractParts(str, MarkerDelimiter, MarkerDelimiter) {
+	parts := ExtractParts(str, MarkerDelimiter, MarkerDelimiter)
+	for i, part := range parts {
 		if !part.Placeholder {
-			// Unescape any escaped marker delimiters, so a literal "\@" the user typed to keep an '@' out of marker
-			// detection displays as a plain '@' rather than surfacing the escape itself.
-			literal.WriteString(UnescapeRunes(part.Value, MarkerDelimiter))
+			// Every literal part but the last is followed by an '@' that ExtractParts did not take to be escaped.
+			literal.WriteString(unescapeLiteral(part.Value, i < len(parts)-1))
 			continue
 		}
 		m, ok := NewMarker(UnescapeRunes(part.Value, MarkerDelimiter))
@@ -75,6 +75,39 @@ func compileText(str string) *compiledText {
 	}
 	flush()
 	return &ct
+}
+
+// unescapeLiteral removes the escapes ExtractParts honored in literal text, so a "\@" the user typed to keep an '@'
+// out of marker detection displays as a plain '@' rather than surfacing the escape itself. Only a run of escape runes
+// directly before an '@' (or at the end of the text when delimiterFollows is set) holds escapes: each pair in it is
+// one escaped escape rune and an odd one out escapes the '@'. Escape runes anywhere else are kept as they are, just as
+// in a string without any '@'.
+func unescapeLiteral(text string, delimiterFollows bool) string {
+	if !strings.ContainsRune(text, EscapeRune) {
+		return text
+	}
+	var sb strings.Builder
+	sb.Grow(len(text))
+	run := 0
+	writeRun := func(beforeDelimiter bool) {
+		if beforeDelimiter {
+			run /= 2
+		}
+		for range run {
+			sb.WriteRune(EscapeRune)
+		}
+		run = 0
+	}
+	for _, r := range text {
+		if r == EscapeRune {
+			run++
+			continue
+		}
+		writeRun(r == MarkerDelimiter)
+		sb.WriteRune(r)
+	}
+	writeRun(delimiterFollows)
+	return sb.String()
 }
 
 // apply returns the text with each marker replaced by its replacement, or by its fallback text when there is none.
@@ -147,9 +180,10 @@ func compiled(str string) *compiledText {
 		return ct
 	}
 	compiledMutex.Unlock()
-	// Parsing happens outside the lock, so that one slow parse doesn't hold up every other goroutine. Another
-	// goroutine may have parsed the same string in the meantime, in which case its result is the one kept, so that
-	// all callers share a single instance.
+	// Parsing happens outside the lock, so that one slow parse doesn't hold up every other goroutine. If another
+	// goroutine cached the same string in the meantime, its result is kept and returned instead. A compiled text is
+	// never modified, so the duplicate made when that result has already been retired to the old generation is
+	// harmless.
 	ct := compileText(str)
 	compiledMutex.Lock()
 	defer compiledMutex.Unlock()

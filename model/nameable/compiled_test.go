@@ -19,8 +19,8 @@ import (
 	"github.com/richardwilkes/toolbox/v2/check"
 )
 
-// referenceApplyToList is ApplyToList as it was before the parse was cached: it parses each string on every call. The
-// cached version must produce exactly what it does.
+// referenceApplyToList is ApplyToList as it was before the parse was cached, with literal text unescaped by
+// unescapeLiteral: it parses each string on every call. The cached version must produce exactly what it does.
 func referenceApplyToList(in []string, replacements map[string]string) []string {
 	if len(in) == 0 {
 		return nil
@@ -32,7 +32,8 @@ func referenceApplyToList(in []string, replacements map[string]string) []string 
 			continue
 		}
 		var sb strings.Builder
-		for _, part := range ExtractParts(str, MarkerDelimiter, MarkerDelimiter) {
+		parts := ExtractParts(str, MarkerDelimiter, MarkerDelimiter)
+		for j, part := range parts {
 			if part.Placeholder {
 				if m, ok := NewMarker(UnescapeRunes(part.Value, MarkerDelimiter)); ok {
 					if r, hasReplacement := replacements[m.Key()]; hasReplacement {
@@ -52,7 +53,7 @@ func referenceApplyToList(in []string, replacements map[string]string) []string 
 					sb.WriteRune(MarkerDelimiter)
 				}
 			} else {
-				sb.WriteString(UnescapeRunes(part.Value, MarkerDelimiter))
+				sb.WriteString(unescapeLiteral(part.Value, j < len(parts)-1))
 			}
 		}
 		out[i] = sb.String()
@@ -127,10 +128,10 @@ func compiledTestReplacements() []map[string]string {
 		{},
 		{
 			"Skill": "Broadsword", "Attack": "Swung", "Specialty": "Fire", "a": "A", "b": "B", "c": "C",
-			"Spécialty": "Feu", "Who": "Nobody", "Label|with pipe": "Piped", "Sk@ill": "Escaped",
+			"Spéciälty": "Feu", "Who": "Nobody", "Label\\|with pipe": "Piped", "Sk@ill": "Escaped",
 			"Skill: Broadsword, Shortsword, etc.": "Legacy", "Skill: Broadsword, Shortsword, etc": "Legacy too",
 			"Who: A deity": "Thor", "Skill|Broadsword|Shortsword|*": "Options", "Skill|Broadsword|Shortsword|?": "Maybe",
-			"Skill|Broadsword|Shortsword|*|?|tt(Pick one\\nor type your own)": "Tooltipped", "Spécialty|ópt|*": "Ópt",
+			"Skill|Broadsword|*|?|tt(Pick one\\nor type your own)": "Tooltipped", "Spécialty|ópt|*": "Ópt",
 		},
 		{"Skill": "Broadsword"},
 		{"Skill": "", "Specialty": ""},
@@ -159,6 +160,11 @@ func TestApplyMatchesReference(t *testing.T) {
 		ApplyToList(compiledTestInputs, compiledTestReplacements()[2]), "ApplyToList over every input")
 	c.Equal(referenceExtract(nil, compiledTestReplacements()[2], compiledTestInputs...),
 		Extract(nil, compiledTestReplacements()[2], compiledTestInputs...), "Extract over every input")
+	full := compiledTestReplacements()[2]
+	for key := range Extract(nil, nil, compiledTestInputs...) {
+		_, ok := full[key]
+		c.True(ok, "the full set of replacements has an entry for %q", key)
+	}
 	c.Nil(ApplyToList(nil, nil), "an empty list yields nil")
 	c.Nil(ApplyToList([]string{}, nil), "an empty list yields nil")
 	existing := map[string]string{"kept": "as is"}
@@ -179,6 +185,14 @@ func FuzzApplyMatchesReference(f *testing.F) {
 		c.Equal(referenceApplyToList([]string{input}, replacements)[0], Apply(input, replacements))
 		c.Equal(referenceApplyToList([]string{input}, nil)[0], Apply(input, nil))
 		c.Equal(referenceExtract(nil, replacements, input), Extract(nil, replacements, input))
+		// compileText relies on every literal part but the last being followed by an '@'.
+		parts := ExtractParts(input, MarkerDelimiter, MarkerDelimiter)
+		for i := 1; i < len(parts); i++ {
+			if !parts[i-1].Placeholder {
+				c.True(parts[i].Placeholder || strings.HasPrefix(parts[i].Value, string(MarkerDelimiter)),
+					"literal part %d of %q is followed by an '@'", i-1, input)
+			}
+		}
 	})
 }
 
@@ -204,16 +218,18 @@ func TestCompiledTextCacheRotation(t *testing.T) {
 	for i := range 3 * maximumCompiledTexts {
 		compiled(fmt.Sprintf("@Cold %d@", i))
 		if i%(maximumCompiledTexts/2) == 0 {
-			c.Equal(hotCompiled, compiled(hot), "the hot string must keep its compiled form across turnovers")
+			c.True(hotCompiled == compiled(hot), "the hot string must keep its compiled form across turnovers")
 		}
 	}
 	compiledMutex.Lock()
 	defer compiledMutex.Unlock()
 	c.True(len(compiledTexts) <= maximumCompiledTexts, "the current generation is bounded")
 	c.True(len(oldCompiledTexts) <= maximumCompiledTexts, "the retired generation is bounded")
-	_, inCurrent := compiledTexts[hot]
-	_, inOld := oldCompiledTexts[hot]
-	c.True(inCurrent || inOld, "the hot string must still be cached")
+	cached, ok := compiledTexts[hot]
+	if !ok {
+		cached = oldCompiledTexts[hot]
+	}
+	c.True(hotCompiled == cached, "the hot string must still be cached")
 	_, coldKept := compiledTexts["@Cold 0@"]
 	_, coldOld := oldCompiledTexts["@Cold 0@"]
 	c.False(coldKept || coldOld, "a string seen once two generations ago must have been dropped")

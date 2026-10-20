@@ -177,3 +177,17 @@ func TestNormalizeRewritesUnnormalizedReplacementKey(t *testing.T) {
 	replacements := map[string]string{raw: "Fire"}
 	c.Equal(map[string]string{normalizedKey: "Fire"}, nameable.Normalize(replacements))
 }
+
+func TestApplyCollapsesEscapedBackslashesBeforeADelimiter(t *testing.T) {
+	c := check.New(t)
+	// Before an '@', each pair of backslashes is one escaped backslash and an odd one out escapes the '@'. Backslashes
+	// anywhere else are not escapes, just as in a string without any '@'.
+	m := map[string]string{"Skill": "Broadsword"}
+	c.Equal(`\Broadsword`, nameable.Apply(`\\@Skill@`, m))
+	c.Equal(`\@Skill@`, nameable.Apply(`\\@Skill@`, nil))
+	c.Equal(`\@Skill@`, nameable.Apply(`\\\@Skill@`, m))
+	c.Equal(`@Skill@`, nameable.Apply(`\@Skill@`, m))
+	c.Equal(`\\Broadsword`, nameable.Apply(`\\\\@Skill@`, m))
+	c.Equal(`a\\b Broadsword \\`, nameable.Apply(`a\\b @Skill@ \\`, m))
+	c.Equal(`Broadsword \`, nameable.Apply(`@Skill@ \`, m))
+}
