@@ -92,6 +92,9 @@ func TestFeatureDescribe(t *testing.T) {
 	skillThisWeaponUsage.SpecializationCriteria = criteria.Text{Compare: criteria.IsText, Qualifier: "Thrown"}
 	skillNamedWeapons := skill("Axe", fxp.One)
 	skillNamedWeapons.SelectionType = skillsel.WeaponsWithName
+	skillNamedWeaponsOwner := skill("Innate Attack", fxp.One)
+	skillNamedWeaponsOwner.SelectionType = skillsel.WeaponsWithName
+	skillNamedWeaponsOwner.OwnerLevelCriteria = criteria.Number{Compare: criteria.AtLeastNumber, Qualifier: fxp.Two}
 	skillSwitchable := skill("Pickpocket", -fxp.Three)
 	skillSwitchable.Switchable = true
 
@@ -147,6 +150,10 @@ func TestFeatureDescribe(t *testing.T) {
 	weaponSwitch.SwitchTypeValue = true
 	weaponSwitchNamed := weapon(feature.WeaponSwitch, wsel.WithName, "Spear")
 	weaponSwitchNamed.SwitchType = wswitch.TwoHanded
+	weaponNamedOwner := weapon(feature.WeaponBonus, wsel.WithName, "Guns")
+	weaponNamedOwner.OwnerTechLevelCriteria = criteria.Text{Compare: criteria.IsText, Qualifier: "8"}
+	weaponNamedOwner.OwnerSpecializationCriteria = criteria.Text{Compare: criteria.IsText, Qualifier: "Pistol"}
+	weaponNamedOwner.OwnerOptionalSpecializationCriteria = criteria.Text{Compare: criteria.IsText}
 
 	spellAll := gurps.NewSpellBonus()
 	spellPowerSource := spell(spellmatch.PowerSource, "Elemental")
@@ -191,6 +198,12 @@ func TestFeatureDescribe(t *testing.T) {
 	overrideNoValue := gurps.NewSelectorOverride(selector.WeaponBaseDamageDice)
 	overrideNoValue.SelectionType = wsel.WithName
 	overrideNoValue.NameCriteria.Qualifier = "Axe"
+	overrideOwner := gurps.NewSelectorOverride(selector.WeaponDamageType)
+	overrideOwner.SelectionType = wsel.WithName
+	overrideOwner.Value = "cut"
+	overrideOwner.NameCriteria.Qualifier = "Guns"
+	overrideOwner.OwnerTechLevelCriteria = criteria.Text{Compare: criteria.IsText}
+	overrideOwner.OwnerOptionalSpecializationCriteria = criteria.Text{Compare: criteria.ContainsText, Qualifier: "Laser"}
 	overrideTrait := gurps.NewSelectorOverride(selector.TraitFrequency)
 	overrideTrait.NameCriteria.Compare = criteria.AnyText
 	overrideTrait.Priority = 2
@@ -239,6 +252,10 @@ func TestFeatureDescribe(t *testing.T) {
 			"[+2] to this weapon's skill when its usage is [Thrown]",
 		},
 		{"skill weapons with name", skillNamedWeapons, "[+1] to the skill of weapons named [Axe]"},
+		{
+			"skill weapons with name and owner level", skillNamedWeaponsOwner,
+			"[+1] to the skill of weapons named [Innate Attack] whose owner's level is at least 2",
+		},
 		{"skill switchable", skillSwitchable, "[-3] to skill [Pickpocket], only while switched on"},
 		{"attribute limited", attribute, "[+18] to [ST] for striking only"},
 		{"attribute limitation only for ST", attributeLimitationIgnored, "[+1] to [DX]"},
@@ -269,6 +286,11 @@ func TestFeatureDescribe(t *testing.T) {
 		{"weapon minimum ST ignores per die", weaponMinST, "[-1] to this weapon's minimum ST"},
 		{"weapon switch", weaponSwitch, "Sets this weapon's [Unbalanced] flag to [true]"},
 		{"weapon switch named", weaponSwitchNamed, "Sets the [Two-handed] flag of weapons named [Spear] to [false]"},
+		{
+			"weapon named with owner criteria", weaponNamedOwner,
+			"[+1] to the damage of weapons named [Guns] whose owner's tech level is [8] whose owner's specialization " +
+				"is [Pistol] whose owner has no optional specialization",
+		},
 		{"spell power source", spellPowerSource, "[+1] per level to spells of the [Elemental] power source"},
 		{"spell all colleges", spellAll, "[+1] to all spells"},
 		{
@@ -296,6 +318,11 @@ func TestFeatureDescribe(t *testing.T) {
 		{
 			"selector override without a value", overrideNoValue,
 			`Sets [weapon base damage dice] to "" on weapons named [Axe] (priority 0)`,
+		},
+		{
+			"selector override with owner criteria", overrideOwner,
+			`Sets [weapon damage type] to [cut] on weapons named [Guns] whose owner has no tech level whose owner's ` +
+				`optional specialization contains "[Laser]" (priority 0)`,
 		},
 		{
 			"selector override with a value title", overrideTrait,

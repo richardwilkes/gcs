@@ -103,6 +103,7 @@ type WeaponBonusData struct { //nolint:govet // The field alignment here is poor
 	PerLevel   bool      `json:"leveled,omitzero"`
 	PerDie     bool      `json:"per_die,omitzero"`
 	BonusOwner `json:"-"`
+	WeaponOwnerCriteria
 }
 
 // NewWeaponBonus creates a new weapon bonus of the given type, which must satisfy feature.Type.IsWeaponBonus.
@@ -221,6 +222,9 @@ func (w *WeaponBonus) FillWithNameableKeys(m, existing map[string]string) {
 			w.UsageCriteria.Qualifier,
 			w.TagsCriteria.Qualifier,
 		)
+	}
+	if w.SelectionType == wsel.WithName {
+		w.fillWithNameableKeys(m, existing)
 	}
 }
 
@@ -363,7 +367,8 @@ func (w *WeaponBonus) describeWeapons(noun string, replacements map[string]strin
 		return describeThisWeapon(noun, w.SpecializationCriteria, replacements, em)
 	case wsel.WithName:
 		return i18n.Text("the %s of %s", noun,
-			describeNamedWeapons(w.NameCriteria, w.SpecializationCriteria, w.TagsCriteria, replacements, em))
+			describeNamedWeapons(w.NameCriteria, w.SpecializationCriteria, w.TagsCriteria, &w.WeaponOwnerCriteria,
+				replacements, em))
 	default:
 		return i18n.Text("the %s of %s", noun, describeSkillSelectedWeapons(w.NameCriteria, w.SpecializationCriteria,
 			w.UsageCriteria, w.TagsCriteria, w.RelativeLevelCriteria, replacements, em))
@@ -391,11 +396,11 @@ func describeThisWeapon(noun string, usage criteria.Text, replacements map[strin
 		describeWhose(i18n.Text("when its usage"), usage, replacements, em)
 }
 
-// describeNamedWeapons returns how a feature names the weapons it selects by name, usage and tags.
-func describeNamedWeapons(name, usage, tags criteria.Text, replacements map[string]string, em func(string) string) string {
+// describeNamedWeapons returns how a feature names the weapons it selects by name, usage, tags and owner criteria.
+func describeNamedWeapons(name, usage, tags criteria.Text, owner *WeaponOwnerCriteria, replacements map[string]string, em func(string) string) string {
 	return describeTarget(i18n.Text("weapons named %s"), i18n.Text("weapons"), i18n.Text("whose name"), name,
 		replacements, em) + describeWhose(i18n.Text("whose usage"), usage, replacements, em) +
-		describeTags(tags, replacements, em)
+		describeTags(tags, replacements, em) + owner.describe(replacements, em)
 }
 
 // Hash writes this object's contents into the hasher.
@@ -416,6 +421,7 @@ func (w *WeaponBonus) Hash(h hash.Hash) {
 	w.RelativeLevelCriteria.Hash(h)
 	w.UsageCriteria.Hash(h)
 	w.TagsCriteria.Hash(h)
+	w.WeaponOwnerCriteria.Hash(h)
 	xhash.Num64(h, w.Amount)
 	w.Dice.Hash(h)
 	xhash.Bool(h, w.PerLevel)
