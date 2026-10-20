@@ -210,6 +210,21 @@ func (w *WeaponDamage) BaseDamageDice() dice.Dice {
 	if w.Owner == nil {
 		return dice.Dice{Sides: 6, Multiplier: 1}
 	}
+	if !w.isOwnersDamage() {
+		return w.baseDamageDice()
+	}
+	return memoize(w.Owner, func(m *weaponMemo) *memoized[dice.Dice] { return &m.baseDice }, nil,
+		func(_ *xbytes.InsertBuffer) dice.Dice { return w.baseDamageDice() })
+}
+
+// isOwnersDamage reports whether this is the damage of the weapon it names as its owner rather than a copy of it. Only
+// that weapon's memo may hold what is resolved from it, since the memo's fingerprint covers that weapon's damage, not
+// a copy's.
+func (w *WeaponDamage) isOwnersDamage() bool {
+	return &w.Owner.Damage == w
+}
+
+func (w *WeaponDamage) baseDamageDice() dice.Dice {
 	entity := w.Owner.Entity()
 	if entity == nil {
 		return dice.Dice{Sides: 6, Multiplier: 1}
@@ -300,6 +315,20 @@ func (w *WeaponDamage) ResolveDamage(tooltip *xbytes.InsertBuffer) *ResolvedWeap
 	if w.Owner == nil {
 		return nil
 	}
+	if !w.isOwnersDamage() {
+		return w.resolveDamage(tooltip)
+	}
+	resolved := memoize(w.Owner, func(m *weaponMemo) *memoized[*ResolvedWeaponDamage] { return &m.damage }, tooltip,
+		w.resolveDamage)
+	if resolved == nil {
+		return nil
+	}
+	// A copy, so that a caller altering what it gets can't alter what the next caller gets.
+	result := *resolved
+	return &result
+}
+
+func (w *WeaponDamage) resolveDamage(tooltip *xbytes.InsertBuffer) *ResolvedWeaponDamage {
 	entity := w.Owner.Entity()
 	if entity == nil {
 		return nil

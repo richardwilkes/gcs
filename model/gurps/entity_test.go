@@ -1759,12 +1759,14 @@ func TestEntityWeaponsLeaveOutItemsInEmptyContainers(t *testing.T) {
 		}
 		swords = append(swords, sword)
 	}
+	e.DiscardCaches()
 	c.Equal(natural+2, len(e.Weapons(true, true, false)), "both swords' weapons are in play while the boxes are carried")
 	c.Equal(natural+1, len(e.Weapons(true, false, false)), "only the carried sword's weapon is equipped")
 
 	for _, sword := range swords {
 		sword.parent.Quantity = 0
 	}
+	e.DiscardCaches()
 	c.Equal(natural, len(e.Weapons(true, true, false)), "a sword in a box none of which is carried is as if absent")
 	c.Equal(natural, len(e.Weapons(true, false, false)))
 }

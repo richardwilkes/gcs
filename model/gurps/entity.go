@@ -129,6 +129,11 @@ type Entity struct {
 	basicLiftCache                 fxp.Weight
 	encumbranceLevelCache          encumbrance.Level
 	encumbranceLevelForSkillsCache encumbrance.Level
+	weaponMemos                    map[*Weapon]*weaponMemo
+	weaponLists                    [8][]*Weapon // Indexed by weaponListIndex
+	weaponListsCached              uint8        // Bit i set when weaponLists[i] is current
+	derivedGeneration              uint64
+	recalculating                  int
 	// unsettled records that the last recalculation found data that never settles (see Recalculate), so that it is
 	// logged once rather than on every edit.
 	unsettled bool
@@ -335,9 +340,21 @@ func (e *Entity) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 	return nil
 }
 
-// DiscardCaches discards the internal caches.
+// DiscardCaches discards the internal caches. The caches hold values derived from the entity's data: script results,
+// resolved variables, the carried weight, the encumbrance level, everything resolved about each weapon and the lists
+// of weapons. They are discarded here, at the start of every recalculation and of each of its passes, and by the item
+// editors when they rebuild, so a derived value is current once the data has been recalculated. Code that changes the
+// data and then reads derived values without recalculating must call this first, or it reads what was derived before
+// the change.
 func (e *Entity) DiscardCaches() {
 	e.discardCaches(false)
+}
+
+// DerivedStateGeneration returns a number that changes whenever the entity's derived state may have changed: with
+// every recalculation and every discarding of the caches. Anything that caches what it derives from the entity can
+// key its cache on this.
+func (e *Entity) DerivedStateGeneration() uint64 {
+	return e.derivedGeneration
 }
 
 // discardCaches discards the internal caches. With keepAbandonedScripts set, the results recorded for scripts that
@@ -364,6 +381,10 @@ func (e *Entity) discardCaches(keepAbandonedScripts bool) {
 	e.basicLiftCache = -1
 	e.encumbranceLevelCache = encumbrance.LastLevel + 1
 	e.encumbranceLevelForSkillsCache = encumbrance.LastLevel + 1
+	e.weaponMemos = nil
+	e.weaponLists = [8][]*Weapon{}
+	e.weaponListsCached = 0
+	e.derivedGeneration++
 }
 
 // maxRecalculationPasses caps the passes one round of recalculation makes before concluding that the sheet's data will
@@ -431,6 +452,13 @@ func (e *Entity) recalculate(passBudget int) int {
 	if e == nil {
 		return 0
 	}
+	// Nothing derived is memoized while the passes run; see Weapon.memo. Anything cached against the generation in the
+	// meantime holds a value from partway through, so the generation moves on once they are done.
+	e.recalculating++
+	defer func() {
+		e.recalculating--
+		e.derivedGeneration++
+	}()
 	e.EnsureAttachments()
 	e.DiscardCaches()
 	e.SourceMatcher().PrepareHashes(e)
@@ -1409,18 +1437,16 @@ func (e *Entity) TraitBonusFor(name string, tags []string, tooltip *xbytes.Inser
 	})
 }
 
-// AddWeaponWithSkillBonusesFor adds the bonuses for matching weapons to m, creating it if nil, and returns it. An empty
-// name means the weapon uses no skill, which only a name criterion that would select any skill matches.
-func (e *Entity) AddWeaponWithSkillBonusesFor(name, specialization, usage string, tags []string, dieCount dieCountFunc, tooltip *xbytes.InsertBuffer, m map[*WeaponBonus]bool, allowedFeatureTypes map[feature.Type]bool) map[*WeaponBonus]bool {
-	if m == nil {
-		m = make(map[*WeaponBonus]bool)
-	}
+// addWeaponWithSkillBonusesFor hands the weapon bonuses that select weapons by the skill they are used with and match
+// the given skill, usage and tags to add. An empty name means the weapon uses no skill, which only a name criterion
+// that would select any skill matches.
+func (e *Entity) addWeaponWithSkillBonusesFor(name, specialization, usage string, tags []string, add func(*WeaponBonus)) {
 	// The relative skill level takes a walk of the skills to find, so it is only found once a bonus that cares about
 	// it has matched on everything else.
 	var rsl fxp.Int
 	rslResolved := false
 	for _, bonus := range e.features.weaponBonuses {
-		if !allowedFeatureTypes[bonus.Type] || bonus.SelectionType != wsel.WithRequiredSkill {
+		if bonus.SelectionType != wsel.WithRequiredSkill {
 			continue
 		}
 		replacements := bonusReplacements(bonus)
@@ -1439,16 +1465,15 @@ func (e *Entity) AddWeaponWithSkillBonusesFor(name, specialization, usage string
 				continue
 			}
 		}
-		addWeaponBonusToMap(bonus, dieCount, tooltip, m)
+		add(bonus)
 	}
-	return m
 }
 
-// hasWeaponBonusesBySkill reports whether any of the entity's weapon bonuses of the allowed types selects weapons by
-// the skill they are used with, which is the only reason to find out what skill that is.
-func (e *Entity) hasWeaponBonusesBySkill(allowedFeatureTypes map[feature.Type]bool) bool {
+// hasWeaponBonusesBySkill reports whether any of the entity's weapon bonuses selects weapons by the skill they are
+// used with, which is the only reason to find out what skill that is.
+func (e *Entity) hasWeaponBonusesBySkill() bool {
 	for _, bonus := range e.features.weaponBonuses {
-		if allowedFeatureTypes[bonus.Type] && bonus.SelectionType == wsel.WithRequiredSkill {
+		if bonus.SelectionType == wsel.WithRequiredSkill {
 			return true
 		}
 	}
@@ -1467,33 +1492,19 @@ func (e *Entity) relativeSkillLevel(name, specialization string) fxp.Int {
 	return rsl
 }
 
-// AddNamedWeaponBonusesFor adds the bonuses for matching weapons to m, creating it if nil, and returns it.
-func (e *Entity) AddNamedWeaponBonusesFor(nameQualifier, usageQualifier string, tagsQualifier []string, dieCount dieCountFunc, tooltip *xbytes.InsertBuffer, m map[*WeaponBonus]bool, allowedFeatureTypes map[feature.Type]bool) map[*WeaponBonus]bool {
-	if m == nil {
-		m = make(map[*WeaponBonus]bool)
-	}
+// addNamedWeaponBonusesFor hands the weapon bonuses that select weapons by name and match the given name, usage and
+// tags to add.
+func (e *Entity) addNamedWeaponBonusesFor(nameQualifier, usageQualifier string, tagsQualifier []string, add func(*WeaponBonus)) {
 	for _, bonus := range e.features.weaponBonuses {
-		if allowedFeatureTypes[bonus.Type] &&
-			bonus.SelectionType == wsel.WithName {
+		if bonus.SelectionType == wsel.WithName {
 			replacements := bonusReplacements(bonus)
 			if bonus.NameCriteria.Matches(replacements, nameQualifier) &&
 				bonus.SpecializationCriteria.Matches(replacements, usageQualifier) &&
 				bonus.TagsCriteria.MatchesList(replacements, tagsQualifier...) {
-				addWeaponBonusToMap(bonus, dieCount, tooltip, m)
+				add(bonus)
 			}
 		}
 	}
-	return m
-}
-
-func addWeaponBonusToMap(bonus *WeaponBonus, dieCount dieCountFunc, tooltip *xbytes.InsertBuffer, m map[*WeaponBonus]bool) {
-	if m[bonus] {
-		return
-	}
-	if tooltip != nil {
-		bonus.addToTooltip(bonus.resolveDieCount(dieCount), bonus.DerivedLeveledOwner(), tooltip)
-	}
-	m[bonus] = true
 }
 
 // NamedWeaponSkillBonusesFor returns the bonuses for matching weapons.
@@ -1924,8 +1935,42 @@ func (e *Entity) WeaponOwner() WeaponOwner {
 	return nil
 }
 
-// Weapons implements WeaponListProvider.
+// Weapons implements WeaponListProvider. Building a list resolves every weapon on it, and the tables ask for their
+// lists often, so each list is kept for the current derived state (see DiscardCaches). The caller always gets a slice
+// of its own.
 func (e *Entity) Weapons(melee, includeUnequipped, excludeHidden bool) []*Weapon {
+	index := weaponListIndex(melee, includeUnequipped, excludeHidden)
+	if e.weaponListsCached&(1<<index) != 0 {
+		return slices.Clone(e.weaponLists[index])
+	}
+	list := e.collectWeapons(melee, includeUnequipped, excludeHidden)
+	// Nothing is kept while recalculating, for the reason given in Weapon.memo.
+	if !weaponMemosEnabled || e.recalculating > 0 {
+		return list
+	}
+	e.weaponLists[index] = list
+	e.weaponListsCached |= 1 << index
+	return slices.Clone(list)
+}
+
+// weaponListIndex returns the index into Entity.weaponLists of the list Weapons builds for the given arguments.
+func weaponListIndex(melee, includeUnequipped, excludeHidden bool) uint8 {
+	var index uint8
+	if melee {
+		index |= 1
+	}
+	if includeUnequipped {
+		index |= 2
+	}
+	if excludeHidden {
+		index |= 4
+	}
+	return index
+}
+
+// collectWeapons is Weapons without the cache. As it goes, it marks the weapons of equipment that isn't equipped or
+// carried as such, which their names report.
+func (e *Entity) collectWeapons(melee, includeUnequipped, excludeHidden bool) []*Weapon {
 	m := make(map[uint64]*Weapon)
 	Traverse(func(t *Trait) bool {
 		for _, w := range t.Weapons {
