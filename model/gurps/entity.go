@@ -130,6 +130,8 @@ type Entity struct {
 	encumbranceLevelCache          encumbrance.Level
 	encumbranceLevelForSkillsCache encumbrance.Level
 	weaponMemos                    map[*Weapon]*weaponMemo
+	weightCarriedCache             [2]fxp.Weight
+	weightCarriedCached            [2]bool
 	weaponLists                    [8][]*Weapon // Indexed by weaponListIndex
 	weaponListsCached              uint8        // Bit i set when weaponLists[i] is current
 	derivedGeneration              uint64
@@ -384,6 +386,7 @@ func (e *Entity) discardCaches(keepAbandonedScripts bool) {
 	e.weaponMemos = nil
 	e.weaponLists = [8][]*Weapon{}
 	e.weaponListsCached = 0
+	e.weightCarriedCached = [2]bool{}
 	e.derivedGeneration++
 }
 
@@ -1703,14 +1706,25 @@ func (e *Entity) WeightUnit() fxp.WeightUnit {
 	return e.SheetSettings.DefaultWeightUnits
 }
 
-// WeightCarried returns the carried weight.
+// WeightCarried returns the carried weight. It is cached until the caches are discarded, as the encumbrance level
+// derived from it is: finding it resolves the weight of every carried item, and the encumbrance block asks for it
+// whenever it is synced.
 func (e *Entity) WeightCarried(forSkills bool) fxp.Weight {
+	i := 0
+	if forSkills {
+		i = 1
+	}
+	if e.weightCarriedCached[i] {
+		return e.weightCarriedCache[i]
+	}
 	var total fxp.Weight
 	for _, one := range e.CarriedEquipment {
 		if one.Enabled() {
 			total += one.ExtendedWeight(forSkills, e.SheetSettings.DefaultWeightUnits)
 		}
 	}
+	e.weightCarriedCache[i] = total
+	e.weightCarriedCached[i] = true
 	return total
 }
 

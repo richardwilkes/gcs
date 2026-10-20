@@ -78,12 +78,14 @@ func TestDisabledContainerDisablesItsContents(t *testing.T) {
 	c.Equal(fxp.FromInteger(35), e.WealthCarried())
 
 	item.SetDisabled(true)
+	e.DiscardCaches() // The carried weight is cached until the caches are discarded, as a recalculation does.
 	c.Equal(fxp.WeightFromInteger(3, fxp.Pound), e.WeightCarried(false), "a disabled item adds nothing to its container")
 	c.Equal(fxp.WeightFromInteger(3, fxp.Pound), e.WeightCarried(true))
 	c.Equal(fxp.FromInteger(25), e.WealthCarried())
 
 	item.SetDisabled(false)
 	box.SetDisabled(true)
+	e.DiscardCaches()
 	c.False(item.Enabled())
 	c.False(item.ReallyEquipped())
 	c.Equal(fxp.Weight(0), e.WeightCarried(false))
