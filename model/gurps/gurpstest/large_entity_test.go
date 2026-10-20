@@ -10,11 +10,16 @@
 package gurpstest_test
 
 import (
+	"encoding/json/jsontext"
+	"encoding/json/v2"
 	"os"
+	"regexp"
+	"strings"
 	"testing"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/gurpstest"
+	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/toolbox/v2/check"
 )
 
@@ -29,7 +34,8 @@ func countLeaves[T gurps.Node[T]](list []T) int {
 	return n
 }
 
-// countConditionalModifierRows returns the number of rows, containers included, in a derived list.
+// countConditionalModifierRows returns the number of rows in a derived list, leaving out the groups they are filed
+// under.
 func countConditionalModifierRows(list []*gurps.ConditionalModifier) int {
 	n := 0
 	for _, one := range list {
@@ -40,6 +46,36 @@ func countConditionalModifierRows(list []*gurps.ConditionalModifier) int {
 		}
 	}
 	return n
+}
+
+// checkOpen fails for every container in the list that is closed.
+func checkOpen[T gurps.Node[T]](c check.Checker, name string, list []T) {
+	gurps.Traverse(func(one T) bool {
+		if one.Container() {
+			c.True(one.IsOpen(), "%s container %s is closed", name, one)
+		}
+		return false
+	}, false, false, list...)
+}
+
+// checkParents fails for every row whose parent is not the container it sits in.
+func checkParents[T gurps.Node[T]](c check.Checker, name string, list []T, parent T) {
+	for _, one := range list {
+		c.True(one.Parent() == parent, "%s %s has parent %v, not %v", name, one, one.Parent(), parent)
+		checkParents(c, name, one.NodeChildren(), one)
+	}
+}
+
+// volatileFields matches the parts of a character's JSON that differ between two builds of the same character: its
+// IDs and its timestamps.
+var volatileFields = regexp.MustCompile(`"(id|created_date|modified_date|when)":\s*"[^"]*"`)
+
+// describe returns the lines of the character's JSON, in the form Entity.Save writes, with the IDs and timestamps
+// blanked. The deterministic option keeps the keys of the replacement maps in a fixed order.
+func describe(c check.Checker, e *gurps.Entity) []string {
+	data, err := jio.Marshal(e, jsontext.WithIndent("\t"), json.Deterministic(true))
+	c.NoError(err)
+	return strings.Split(volatileFields.ReplaceAllString(string(data), `"${1}":""`), "\n")
 }
 
 // Every list a sheet shows must be filled to the size asked for, with the containers open and the derived values
@@ -87,36 +123,52 @@ func TestNewLargeEntityFillsEveryList(t *testing.T) {
 	c.Equal(size.RitualMagicSpells, rituals, "ritual magic spells")
 
 	// Every container starts open, so a sheet built from the entity shows every row.
-	gurps.Traverse(func(t *gurps.Trait) bool {
-		if t.Container() {
-			c.True(t.IsOpen(), "trait container %s is closed", t)
-		}
-		return false
-	}, false, false, e.Traits...)
-	gurps.Traverse(func(s *gurps.Spell) bool {
-		if s.Container() {
-			c.True(s.IsOpen(), "spell container %s is closed", s)
-		}
-		return false
-	}, false, false, e.Spells...)
-	gurps.Traverse(func(eqp *gurps.Equipment) bool {
-		if eqp.Container() {
-			c.True(eqp.IsOpen(), "equipment container %s is closed", eqp)
-		}
-		return false
-	}, false, false, e.CarriedEquipment...)
+	checkOpen(c, "trait", e.Traits)
+	checkOpen(c, "skill", e.Skills)
+	checkOpen(c, "spell", e.Spells)
+	checkOpen(c, "carried equipment", e.CarriedEquipment)
+	checkOpen(c, "other equipment", e.OtherEquipment)
+	checkOpen(c, "note", e.Notes)
 }
 
-// The same size must yield the same character, apart from the IDs, so that benchmark runs compare like with like.
+// Every row's parent must be the container it sits in, or anything that climbs the tree from a generated row, such as
+// a delete or a move, acts on the wrong container.
+func TestNewLargeEntityParentsMatchContainers(t *testing.T) {
+	c := check.New(t)
+	size := gurpstest.DefaultLargeEntitySize.Scaled(0.1)
+	e := gurpstest.NewLargeEntity(&size)
+	checkParents(c, "trait", e.Traits, nil)
+	checkParents(c, "skill", e.Skills, nil)
+	checkParents(c, "spell", e.Spells, nil)
+	checkParents(c, "carried equipment", e.CarriedEquipment, nil)
+	checkParents(c, "other equipment", e.OtherEquipment, nil)
+	checkParents(c, "note", e.Notes, nil)
+}
+
+// A size with fewer traits than reactions and conditional modifiers must still yield the number of each asked for, so
+// that a small benchmark still has both derived lists on its page.
+func TestNewLargeEntityDerivedListsOutnumberTraits(t *testing.T) {
+	c := check.New(t)
+	size := gurpstest.LargeEntitySize{Traits: 1, Reactions: 3, ConditionalModifiers: 2}
+	e := gurpstest.NewLargeEntity(&size)
+	c.Equal(size.Reactions, countConditionalModifierRows(e.Reactions()), "reactions")
+	c.Equal(size.ConditionalModifiers, countConditionalModifierRows(e.ConditionalModifiers()), "conditional modifiers")
+}
+
+// The same size must yield the same character, apart from the IDs and timestamps, so that benchmark runs compare like
+// with like. Comparing the saved form covers every name, value, weapon and nesting at once.
 func TestNewLargeEntityIsDeterministic(t *testing.T) {
 	c := check.New(t)
 	size := gurpstest.DefaultLargeEntitySize.Scaled(0.05)
-	first := gurpstest.NewLargeEntity(&size)
-	second := gurpstest.NewLargeEntity(&size)
-	c.Equal(first.UnspentPoints(), second.UnspentPoints())
-	c.Equal(first.TotalPoints, second.TotalPoints)
-	c.Equal(len(first.Weapons(true, true, true)), len(second.Weapons(true, true, true)))
-	c.Equal(first.WeightCarried(false), second.WeightCarried(false))
+	first := describe(c, gurpstest.NewLargeEntity(&size))
+	second := describe(c, gurpstest.NewLargeEntity(&size))
+	for i := range min(len(first), len(second)) {
+		if first[i] != second[i] {
+			c.Equal(first[i], second[i], "line %d", i+1)
+			return
+		}
+	}
+	c.Equal(len(first), len(second), "lines")
 }
 
 // TestWriteLargeEntity saves the character built for the size in the environment to the file named by

@@ -33,9 +33,13 @@ import (
 const LargeEntitySizeEnvVar = "GCS_BENCH_SIZE"
 
 // LargeEntitySize is how many rows NewLargeEntity puts into each of a character sheet's lists. The counts are of the
-// rows themselves; the containers they are grouped into come on top. Reactions and ConditionalModifiers are the
-// number of traits that carry one such bonus each, which is also the number of rows the two derived lists show. The
-// weapons are spread over the equipment, traits, skills and spells, so they are not extra rows of their own.
+// rows themselves; the containers they are grouped into come on top. Two lists hold rows beyond their count: the
+// skills always include the fixed skills the weapons and ritual magic spells default to and the three with nameable
+// markers, so a Skills count below their number still yields them all, and the traits also get the natural attacks
+// trait, three traits with unmet prerequisites and, when a list that would own weapons or carry bonuses is empty, a
+// trait to hold them. Reactions and ConditionalModifiers are how many of each bonus the traits carry, which is also
+// the number of rows the two derived lists show; they go one to a trait until the traits run out, then around again.
+// The weapons are spread over the equipment, traits, skills and spells, so they are not extra rows of their own.
 // PerContainer is how many rows a container holds before the next one is started.
 type LargeEntitySize struct {
 	Traits               int
@@ -209,9 +213,10 @@ type largeEntityBuilder struct {
 	spells     []*gurps.Spell
 }
 
-// NewLargeEntity returns a recalculated character whose sheet has the given number of rows in every list, with every
-// container open. The character is deterministic apart from its IDs: the same size always yields the same names,
-// points, features and weapons. It is meant for benchmarks and for tests that need every kind of row at once, so each
+// NewLargeEntity returns a recalculated character whose sheet has the number of rows the size gives in every list
+// (see LargeEntitySize for the rows that come on top), with every container open. The character is deterministic
+// apart from its IDs and timestamps: the same size always yields the same names, points, features and weapons. It is
+// meant for benchmarks and for tests that need every kind of row at once, so each
 // list exercises the costly paths a real sheet does: the skills include techniques, skills with defaults and skills
 // whose names carry nameable markers (every college has a "Ritual Magic (@Specialty@)" skill the ritual magic spells
 // resolve through); the traits carry modifiers and the features behind the reactions, conditional modifiers and
@@ -222,6 +227,16 @@ func NewLargeEntity(size *LargeEntitySize) *gurps.Entity {
 	b := &largeEntityBuilder{entity: gurps.NewEntity(), size: *size}
 	b.size.PerContainer = max(1, b.size.PerContainer)
 	b.entity.Profile.Name = "Large Benchmark Character"
+	// A new entity's profile is filled in at random, so it is set by hand.
+	b.entity.Profile.Gender = "Male"
+	b.entity.Profile.Age = "30"
+	b.entity.Profile.Birthday = "January 1"
+	b.entity.Profile.Eyes = "Brown"
+	b.entity.Profile.Hair = "Black"
+	b.entity.Profile.Skin = "Tan"
+	b.entity.Profile.Handedness = "Right"
+	b.entity.Profile.Height = fxp.LengthFromInteger(70, fxp.Inch)
+	b.entity.Profile.Weight = fxp.WeightFromInteger(160, fxp.Pound)
 	b.entity.SheetSettings.ShowSpellAdj = true
 	b.setAttribute(gurps.StrengthID, 12)
 	b.setAttribute(gurps.DexterityID, 13)
@@ -260,8 +275,6 @@ func (b *largeEntityBuilder) nextRow() (pageRef, notes string) {
 
 func (b *largeEntityBuilder) addTraits() {
 	var container *gurps.Trait
-	reactions := b.size.Reactions
-	condMods := b.size.ConditionalModifiers
 	for i := range b.size.Traits {
 		if i%b.size.PerContainer == 0 {
 			container = gurps.NewTrait(b.entity, nil, true)
@@ -284,30 +297,52 @@ func (b *largeEntityBuilder) addTraits() {
 			t.PointsPerLevel = fxp.Five
 		}
 		t.Modifiers = b.traitModifiers(i)
-		switch {
-		case reactions > 0:
-			reactions--
-			bonus := gurps.NewReactionBonus()
-			bonus.Situation = fmt.Sprintf("from those who know of trait %d", i+1)
-			bonus.Group = largeEntityGroup(i)
-			bonus.Amount = fxp.FromInteger(i%3 + 1)
-			t.Features = append(t.Features, bonus)
-		case condMods > 0:
-			condMods--
-			bonus := gurps.NewConditionalModifierBonus()
-			bonus.Situation = fmt.Sprintf("when trait %d applies", i+1)
-			bonus.Group = largeEntityGroup(i)
-			bonus.Amount = -fxp.FromInteger(i%3 + 1)
+		if bonus := b.derivedBonus(i); bonus != nil {
 			t.Features = append(t.Features, bonus)
 		}
 		t.Features = append(t.Features, largeEntityTraitFeature(i)...)
 		container.Children = append(container.Children, t)
 		b.traits = append(b.traits, t)
 	}
+	// A size with fewer traits than reactions and conditional modifiers puts the rest on the traits it has, going
+	// around again, or on one made for the purpose when it has none, so that the derived lists still show the rows
+	// asked for.
+	for i := b.size.Traits; i < b.size.Reactions+b.size.ConditionalModifiers; i++ {
+		if len(b.traits) == 0 {
+			t := gurps.NewTrait(b.entity, nil, false)
+			t.Name = "Bonus Holder"
+			b.entity.Traits = append(b.entity.Traits, t)
+			b.traits = append(b.traits, t)
+		}
+		t := b.traits[i%len(b.traits)]
+		t.Features = append(t.Features, b.derivedBonus(i))
+	}
 	b.entity.Traits = append(b.entity.Traits, gurps.NewNaturalAttacks(b.entity, nil))
 	for i := range 3 {
 		b.entity.Traits = append(b.entity.Traits,
 			NewTraitNeedingMissingTrait(b.entity, fmt.Sprintf("Needs Combat Reflexes %d", i+1)))
+	}
+}
+
+// derivedBonus returns the i-th bonus behind the derived lists: a reaction bonus for the first Reactions values of i,
+// a conditional modifier bonus for the next ConditionalModifiers, and nil beyond. Each has a situation of its own, so
+// that every bonus is a row of its list.
+func (b *largeEntityBuilder) derivedBonus(i int) gurps.Feature {
+	switch {
+	case i < b.size.Reactions:
+		bonus := gurps.NewReactionBonus()
+		bonus.Situation = fmt.Sprintf("from those who know of trait %d", i+1)
+		bonus.Group = largeEntityGroup(i)
+		bonus.Amount = fxp.FromInteger(i%3 + 1)
+		return bonus
+	case i < b.size.Reactions+b.size.ConditionalModifiers:
+		bonus := gurps.NewConditionalModifierBonus()
+		bonus.Situation = fmt.Sprintf("when trait %d applies", i+1)
+		bonus.Group = largeEntityGroup(i)
+		bonus.Amount = -fxp.FromInteger(i%3 + 1)
+		return bonus
+	default:
+		return nil
 	}
 }
 
@@ -390,11 +425,12 @@ func (b *largeEntityBuilder) addSkills() {
 			b.entity.Skills = append(b.entity.Skills, container)
 		}
 		sk.PageRef, sk.LocalNotes = b.nextRow()
+		sk.SetParent(container)
 		container.Children = append(container.Children, sk)
 		b.skills = append(b.skills, sk)
 	}
 	for _, spec := range largeEntityWeaponSkills {
-		sk := gurps.NewSkill(b.entity, container, false)
+		sk := gurps.NewSkill(b.entity, nil, false)
 		sk.Name = spec.name
 		sk.Specialization = spec.specialization
 		sk.Difficulty.Attribute = spec.attribute
@@ -403,7 +439,7 @@ func (b *largeEntityBuilder) addSkills() {
 		place(sk)
 	}
 	for i, college := range largeEntityColleges {
-		sk := gurps.NewSkill(b.entity, container, false)
+		sk := gurps.NewSkill(b.entity, nil, false)
 		sk.Name = ritualMagicSkillName
 		sk.Specialization = "@Specialty@"
 		sk.Replacements = map[string]string{"Specialty": college}
@@ -418,7 +454,7 @@ func (b *largeEntityBuilder) addSkills() {
 		place(sk)
 	}
 	for i, name := range []string{"Fast-Draw (@Item@)", "Hobby Skill (@Hobby@)", "Expert Skill (@Field@)"} {
-		sk := gurps.NewSkill(b.entity, container, false)
+		sk := gurps.NewSkill(b.entity, nil, false)
 		sk.Name = name
 		if i < 2 {
 			// The last one is left without a replacement, so that the fallback text for an unfilled marker is shown.
@@ -434,13 +470,13 @@ func (b *largeEntityBuilder) addSkills() {
 	for i := len(b.skills); i < b.size.Skills; i++ {
 		var sk *gurps.Skill
 		if i%15 == 0 {
-			sk = gurps.NewTechnique(b.entity, container, largeEntityWeaponSkills[i/15%5].name)
+			sk = gurps.NewTechnique(b.entity, nil, largeEntityWeaponSkills[i/15%5].name)
 			sk.Name = fmt.Sprintf("Technique %d", i+1)
 			if i%30 == 0 {
 				sk.Difficulty.Difficulty = difficulty.Hard
 			}
 		} else {
-			sk = gurps.NewSkill(b.entity, container, false)
+			sk = gurps.NewSkill(b.entity, nil, false)
 			sk.Name = fmt.Sprintf("Skill %d", i+1)
 			sk.Difficulty.Attribute = attributes[i%len(attributes)]
 			sk.Difficulty.Difficulty = levels[i%len(levels)]
@@ -483,6 +519,7 @@ func (b *largeEntityBuilder) addSpells() {
 			parent.Children = append(parent.Children, subs[college])
 		}
 		s.PageRef, s.LocalNotes = b.nextRow()
+		s.SetParent(subs[college])
 		subs[college].Children = append(subs[college].Children, s)
 		b.spells = append(b.spells, s)
 	}
