@@ -29,7 +29,8 @@ import (
 	"github.com/richardwilkes/unison/printing"
 )
 
-// SkipDeepSync is set on components that should not trigger a deep sync.
+// SkipDeepSync is set on components whose edits should not trigger a deep sync; see Sheet.MarkModified for what is
+// synced instead, and when the deep sync is made anyway.
 const SkipDeepSync = "!deepsync"
 
 var (
@@ -384,7 +385,7 @@ func (s *Sheet) BackingFilePath() string {
 
 // MarkModified implements ModifiableRoot. A sheet does more than the shared pageView.markModified: its entity has to
 // be recalculated first, the calculators drawing numbers from it brought up to date last, and a source that asks for
-// it (see SkipDeepSync) is spared the sync in between.
+// it (see SkipDeepSync) is spared the deep sync in between when the recalculation allows.
 func (s *Sheet) MarkModified(src unison.Paneler) {
 	invalidateDisplayData()
 	if s.awaitingUpdate {
@@ -400,11 +401,15 @@ func (s *Sheet) MarkModified(src unison.Paneler) {
 	if !xreflect.IsNil(src) {
 		_, skipDeepSync = src.AsPanel().ClientData()[SkipDeepSync]
 	}
-	if skipDeepSync {
-		// The deep sync rebuilds the tables and is the only thing here that can disturb the focus and scroll position
-		// or change which rows match the active search. When it is skipped (e.g. while typing into a simple field such
-		// as the name), saving and restoring that state is wasted work -- enough to make typing stutter on slower
-		// platforms.
+	if skipDeepSync && !s.entity.DerivedStateChanged() {
+		// Syncing the lists is the only thing here that can disturb the focus and scroll position or change which rows
+		// match the active search, and on a sheet with large lists is much of the cost of an update -- enough to make
+		// typing stutter on slower platforms. A source that asks for it, such as the name field, is spared it while
+		// the recalculation left the derived state the lists' rows are drawn from as it was: scripts can read what
+		// such a field holds, so that is not a given. The blocks are synced either way, since they show only what they
+		// were last synced to, while a list's rows derive their cells afresh on the next draw now that the change has
+		// been reported (see displayEpoch).
+		deepSyncSkippingLists(s, func(syncedList) bool { return true })
 		UpdateTitleForDockable(s)
 		s.awaitingUpdate = false
 	} else {

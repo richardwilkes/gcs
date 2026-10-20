@@ -15,6 +15,7 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/encumbrance"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/toolbox/v2/tid"
 	"github.com/richardwilkes/unison"
@@ -194,4 +195,92 @@ func TestSheetToolbarNotesUnsettledData(t *testing.T) {
 		"a sheet opened with data that never settles shows the notice from the start")
 	c.Equal(len(openedSheet.toolbar.Children()), toolbarColumns(c, openedSheet.toolbar),
 		"and its toolbar lays out the notice too")
+}
+
+// newWeightScriptedSheet returns a sheet whose ST a script derives from the character's weight, a point per 15 lb, so
+// that an edit to the weight -- a Description block field, flagged SkipDeepSync -- changes what the rest of the sheet
+// shows, along with the weight field, to be named as the source of such an edit. The character starts at 150 lb, so
+// ST 10, and carries 30 lb, so is lightly encumbered. The sheet enforces trait prerequisites.
+func newWeightScriptedSheet(t *testing.T) (sheet *Sheet, weightField *WeightField) {
+	t.Helper()
+	c := check.New(t)
+	sheet = newTestSheetForTemplate(t)
+	entity := sheet.Entity()
+	entity.SheetSettings.EnforceTraitPrereqs = true
+	entity.SheetSettings.Attributes.Set[gurps.StrengthID].Base = "entity.weightInPounds / 15"
+	entity.Profile.Weight = fxp.WeightFromInteger(150, fxp.Pound)
+	load := gurps.NewEquipment(entity, nil, false)
+	load.Name = "Load"
+	load.BaseWeight = "30 lb"
+	entity.CarriedEquipment = append(entity.CarriedEquipment, load)
+	sheet.Rebuild(true)
+	panel := sheet.targetMgr.Find(descriptionPanelWeightFieldRefKey)
+	c.NotNil(panel, "the sheet must have a weight field")
+	weightField, ok := panel.Self.(*WeightField)
+	c.True(ok, "the weight field must be a WeightField")
+	_, skip := weightField.ClientData()[SkipDeepSync]
+	c.True(skip, "the weight field must be flagged SkipDeepSync, or the tests using it check nothing")
+	return sheet, weightField
+}
+
+// TestProfileEditSyncsTheBlocks checks that an edit made through a field flagged SkipDeepSync still brings the blocks
+// up to date, since a script can read what such a field holds: here the ST field, in the secondary attributes block
+// since a scripted base makes ST a secondary attribute, and the encumbrance block, whose current level is found only
+// when it is synced.
+func TestProfileEditSyncsTheBlocks(t *testing.T) {
+	c := check.New(t)
+	sheet, weightField := newWeightScriptedSheet(t)
+	entity := sheet.Entity()
+	attrPanel, ok := sheet.blocks[gurps.BlockSecondaryAttributesKey].(*AttrPanel)
+	c.True(ok, "the secondary attributes block must be an AttrPanel")
+	stField, ok := attrPanel.valueFields[gurps.StrengthID].(*IntegerField)
+	c.True(ok, "the ST field must be an IntegerField")
+	encPanel, ok := sheet.blocks[gurps.BlockEncumbranceKey].(*EncumbrancePanel)
+	c.True(ok, "the encumbrance block must be an EncumbrancePanel")
+	c.Equal("10", stField.Text(), "ST must start at 10, or the checks below mean nothing")
+	c.Equal(int(encumbrance.Light), encPanel.current, "the character must start lightly encumbered, or the checks below mean nothing")
+
+	entity.Profile.Weight = fxp.WeightFromInteger(450, fxp.Pound)
+	sheet.MarkModified(weightField)
+
+	c.Equal("30", stField.Text(), "the ST field shows the recalculated ST")
+	c.Equal(int(encumbrance.No), encPanel.current, "the encumbrance block shows the recalculated level")
+}
+
+// TestProfileEditThatChangesTheDerivedStateSyncsTheLists checks that an edit made through a field flagged
+// SkipDeepSync is not spared the deep sync when the recalculation it prompts changes which rows a list has: here a
+// script prerequisite reading the weight enables a trait, whose weapon the melee weapons list then has to show.
+func TestProfileEditThatChangesTheDerivedStateSyncsTheLists(t *testing.T) {
+	c := check.New(t)
+	sheet, weightField := newWeightScriptedSheet(t)
+	entity := sheet.Entity()
+	for _, one := range []struct{ name, script string }{
+		{name: "Club"},
+		{name: "Heavy", script: `entity.weightInPounds > 300 ? "" : "Weighs too little"`},
+	} {
+		trait := gurps.NewTrait(entity, nil, false)
+		trait.Name = one.name
+		weapon := gurps.NewWeapon(trait, true)
+		weapon.Usage = one.name
+		trait.Weapons = append(trait.Weapons, weapon)
+		if one.script != "" {
+			trait.Prereq = gurps.NewPrereqList()
+			script := gurps.NewScriptPrereq()
+			script.Parent = trait.Prereq
+			script.Script = one.script
+			trait.Prereq.Prereqs = append(trait.Prereq.Prereqs, script)
+		}
+		entity.Traits = append(entity.Traits, trait)
+	}
+	sheet.Rebuild(true)
+	heavy := entity.Traits[len(entity.Traits)-1]
+	c.False(heavy.Enabled(), "the heavy trait must start disabled, or the check below means nothing")
+	// The table only has the rows it was last synced to; RootRowCount would ask the model.
+	before := sheet.MeleeWeapons.Table.LastRowIndex() + 1
+
+	entity.Profile.Weight = fxp.WeightFromInteger(450, fxp.Pound)
+	sheet.MarkModified(weightField)
+
+	c.True(heavy.Enabled(), "the heavy trait must now be enabled, or the check below means nothing")
+	c.Equal(before+1, sheet.MeleeWeapons.Table.LastRowIndex()+1, "the list shows the weapon of the trait the edit enabled")
 }

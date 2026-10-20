@@ -139,6 +139,9 @@ type Entity struct {
 	// unsettled records that the last recalculation found data that never settles (see Recalculate), so that it is
 	// logged once rather than on every edit.
 	unsettled bool
+	// derivedStateChanged records whether the last recalculation left the derived state it stores other than it found
+	// it; see DerivedStateChanged.
+	derivedStateChanged bool
 }
 
 // NewEntityFromFile loads an Entity from a file.
@@ -359,6 +362,14 @@ func (e *Entity) DerivedStateGeneration() uint64 {
 	return e.derivedGeneration
 }
 
+// DerivedStateChanged returns whether the last recalculation left the derived state the entity stores -- the levels of
+// the skills and spells and the verdicts on the traits' prerequisites -- other than it found it. Whatever shows the
+// entity can tell by it whether a change to data only a script reads, such as the character's weight, reached the
+// lists derived from that state, such as the weapons of the traits the verdicts enable.
+func (e *Entity) DerivedStateChanged() bool {
+	return e.derivedStateChanged
+}
+
 // discardCaches discards the internal caches. With keepAbandonedScripts set, the results recorded for scripts that
 // were stopped before they could produce an answer are kept, as a recalculation wants between its passes: such a
 // script would almost certainly be stopped again, and running it on every pass would make a recalculation that is
@@ -455,6 +466,9 @@ func (e *Entity) recalculate(passBudget int) int {
 	if e == nil {
 		return 0
 	}
+	// The derived state is captured before the traits' verdicts are reset, so that it is the state the last
+	// recalculation left; see DerivedStateChanged.
+	before := e.derivedState(0)
 	// Nothing derived is memoized while the passes run; see Weapon.memo. Anything cached against the generation in the
 	// meantime holds a value from partway through, so the generation moves on once they are done.
 	e.recalculating++
@@ -487,6 +501,7 @@ func (e *Entity) recalculate(passBudget int) int {
 			"defaults, features and scripts at once", "name", e.Profile.Name)
 	}
 	e.unsettled = contradicted
+	e.derivedStateChanged = !slices.Equal(before, e.derivedState(len(before)))
 	return made
 }
 

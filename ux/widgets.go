@@ -109,12 +109,18 @@ type syncedList interface {
 // deep sync that follows would sync each of them a second time for nothing, which on a sheet with large lists is
 // half the cost of the rebuild. A list built anew by the rebuild has yet to be synced at all and is not skipped.
 func deepSyncSkippingSyncedLists(panel unison.Paneler) {
+	deepSyncSkippingLists(panel, func(list syncedList) bool { return list.syncedAtStamp() == currentDisplayStamp() })
+}
+
+// deepSyncSkippingLists is DeepSync, except that a list for which skip returns true is skipped, along with everything
+// inside it.
+func deepSyncSkippingLists(panel unison.Paneler, skip func(syncedList) bool) {
 	p := panel.AsPanel()
-	if list, ok := p.Self.(syncedList); ok && list.syncedAtStamp() == currentDisplayStamp() {
+	if list, ok := p.Self.(syncedList); ok && skip(list) {
 		return
 	}
 	for _, child := range p.Children() {
-		deepSyncSkippingSyncedLists(child)
+		deepSyncSkippingLists(child, skip)
 	}
 	if syncer, ok := p.Self.(Syncer); ok {
 		syncer.Sync()

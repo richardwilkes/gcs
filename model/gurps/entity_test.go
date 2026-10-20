@@ -1770,3 +1770,40 @@ func TestEntityWeaponsLeaveOutItemsInEmptyContainers(t *testing.T) {
 	c.Equal(natural, len(e.Weapons(true, true, false)), "a sword in a box none of which is carried is as if absent")
 	c.Equal(natural, len(e.Weapons(true, false, false)))
 }
+
+// TestEntityRecalculateReportsWhetherTheDerivedStateChanged checks that a recalculation reports whether it left the
+// derived state it stores other than the last one did, which is what tells a sheet that an edit to a field only a
+// script reads, such as the character's weight, has changed the rows of its lists as well as what its blocks show.
+func TestEntityRecalculateReportsWhetherTheDerivedStateChanged(t *testing.T) {
+	c := check.New(t)
+	e := NewEntity()
+	e.SheetSettings.EnforceTraitPrereqs = true
+	addTestSkill(e, "Brawling", "", "", fxp.Four)
+	heavy := NewTrait(e, nil, false)
+	heavy.Name = "Heavy"
+	heavy.Prereq = NewPrereqList()
+	script := NewScriptPrereq()
+	script.Parent = heavy.Prereq
+	script.Script = `entity.weightInPounds > 300 ? "" : "Weighs too little"`
+	heavy.Prereq.Prereqs = append(heavy.Prereq.Prereqs, script)
+	e.Traits = append(e.Traits, heavy)
+	e.Recalculate()
+	c.True(e.DerivedStateChanged(), "the first recalculation derives everything")
+	e.Recalculate()
+	c.False(e.DerivedStateChanged(), "recalculating unchanged data leaves the derived state as it was")
+
+	e.Profile.Name = "Renamed"
+	e.Recalculate()
+	c.False(e.DerivedStateChanged(), "a change nothing derived reads leaves the derived state as it was")
+
+	e.Profile.Weight = fxp.WeightFromInteger(450, fxp.Pound)
+	e.Recalculate()
+	c.True(heavy.Enabled(), "the weight must now meet the prerequisite, or the check below means nothing")
+	c.True(e.DerivedStateChanged(), "a change that enables a trait changes the derived state")
+	e.Recalculate()
+	c.False(e.DerivedStateChanged(), "the trait stays enabled, so the derived state stays as it was")
+
+	e.Attributes.Set[IntelligenceID].Adjustment = fxp.Four
+	e.Recalculate()
+	c.True(e.DerivedStateChanged(), "a change to a skill's level changes the derived state")
+}
