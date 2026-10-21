@@ -10,6 +10,7 @@
 package ux
 
 import (
+	"math"
 	"os"
 	"path/filepath"
 	"slices"
@@ -19,6 +20,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/ux/uxtest"
 	"github.com/richardwilkes/toolbox/v2/check"
+	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/mod"
 )
@@ -300,4 +302,189 @@ func TestNewFolderCreatesWhatIsMissingAboveIt(t *testing.T) {
 		c.Equal(1, windows, "the prompt for the %s row has been dismissed", one.name)
 		c.Equal([]string{created}, selected, "the folder made in the %s row must end up selected", one.name)
 	}
+}
+
+// TestNavigatorToolbarWrapsToFitTheSearchField verifies that the Library Explorer's toolbar keeps its buttons and its
+// search field on one row while the navigator is wide enough, giving the field what is left of the row, and otherwise
+// wraps, never making the field narrower than its minimum.
+func TestNavigatorToolbarWrapsToFitTheSearchField(t *testing.T) {
+	c := check.New(t)
+	screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
+	var n *Navigator
+	screen.Do(func() { n = Workspace.Navigator })
+	// frames returns the frames of the toolbar's first button, its search field and the toolbar's content with the
+	// navigator made the given width.
+	frames := func(width float32) (first, field, content geom.Rect) {
+		screen.Do(func() {
+			Workspace.TopDock.RootDockLayout().SetDividerPosition(width)
+			wnd.ValidateLayout()
+			first = n.toolbar.Children()[0].FrameRect()
+			field = n.search.field.FrameRect()
+			content = n.toolbar.ContentRect(false)
+		})
+		return first, field, content
+	}
+	var fieldMin geom.Size
+	screen.Do(func() { fieldMin, _, _ = n.search.field.Sizes(geom.Size{}) })
+
+	first, field, content := frames(800)
+	c.True(math.Abs(float64(first.CenterY()-field.CenterY())) < 1, "with room, the field shares the buttons' row")
+	c.True(math.Abs(float64(field.Right()-content.Right())) < 1, "and takes what is left of it")
+	c.True(field.Width > fieldMin.Width, "which is more than its minimum")
+
+	first, field, content = frames(250)
+	c.True(field.Y > first.Bottom(), "without room, the field is on a row below the buttons")
+	c.True(math.Abs(float64(field.Right()-content.Right())) < 1, "taking the whole row")
+	c.True(field.Width >= fieldMin.Width, "and never less than its minimum")
+	c.Equal(content.X, field.X)
+
+	// A character sheet's toolbar wraps the same way as the space beside the navigator shrinks.
+	sheet, ok := uxtest.OpenedByAction(t, screen, newCharacterSheetAction).(*Sheet)
+	if !ok {
+		t.Fatal("New Character Sheet must open a character sheet")
+	}
+	sheetFrames := func(dividerAt float32) (first, field, content geom.Rect) {
+		screen.Do(func() {
+			Workspace.TopDock.RootDockLayout().SetDividerPosition(dividerAt)
+			wnd.ValidateLayout()
+			first = sheet.toolbar.Children()[0].FrameRect()
+			field = sheet.search.field.FrameRect()
+			content = sheet.toolbar.ContentRect(false)
+		})
+		return first, field, content
+	}
+	first, field, content = sheetFrames(250)
+	c.True(math.Abs(float64(first.CenterY()-field.CenterY())) < 1, "with room, the sheet's field shares the buttons' row")
+	c.True(math.Abs(float64(field.Right()-content.Right())) < 1, "and takes what is left of it")
+	first, field, content = sheetFrames(1000)
+	c.True(field.Y > first.Bottom(), "without room, the sheet's field is on a row below the buttons")
+	c.True(math.Abs(float64(field.Right()-content.Right())) < 1, "taking the whole row")
+	uxtest.CaptureScreen(t, c, screen, "sheet_toolbar_wrapped")
+	screen.Do(func() { sheet.markUnmodified() })
+}
+
+// TestNavigatorSearchOffersMatches drives the Library Explorer's search in a headless workspace: typing offers the
+// matching rows in a dropdown, each titled with where it is, choosing one with RETURN discloses its folder and selects
+// it alone while the focus stays in the field, a reload of the tree while the matches show finds them again with the
+// highlight kept, and a file that matched on its contents opens with the search text handed to its own search field,
+// which shows where it matched.
+func TestNavigatorSearchOffersMatches(t *testing.T) {
+	c := check.New(t)
+	screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
+	var n *Navigator
+	screen.Do(func() { n = Workspace.Navigator })
+	// Waits out the reload a new navigator asks for of itself, so that the files written below are picked up by the
+	// reload made here and by nothing else.
+	stopNavigatorWatches(t, screen, n)
+	folder := filepath.Join(gurps.GlobalSettings().Libraries.Master().Path(false), "Folder")
+	c.NoError(os.MkdirAll(folder, 0o750))
+	notesPath := filepath.Join(folder, "Findable"+gurps.NotesExt)
+	c.NoError(os.WriteFile(notesPath, []byte("{}"), 0o600))
+	entity := newTestCharacter("Hero")
+	entity.Traits = []*gurps.Trait{newFindableTrait(entity, "Barbarian Rage")}
+	sheetPath := filepath.Join(folder, "Hero"+gurps.SheetExt)
+	c.NoError(entity.Save(sheetPath))
+	var libraryTitle string
+	screen.Do(func() {
+		n.deepSearch[gurps.SheetExt] = true
+		n.Reload()
+		for _, row := range n.table.RootRows() {
+			if row.IsLibrary() && row.library.IsMaster() {
+				libraryTitle = row.primaryColumnText()
+			}
+		}
+	})
+	offered := func() *unison.Window { return screen.SuggestionsWindow(wnd) }
+	rows := func() []*searchMatch {
+		var found []*searchMatch
+		screen.Do(func() {
+			list := n.search.suggestions.List()
+			for i := range list.Count() {
+				found = append(found, list.DataAtIndex(i))
+			}
+		})
+		return found
+	}
+	highlighted := func() int {
+		index := -2
+		screen.Do(func() { index = n.search.suggestions.Selected() })
+		return index
+	}
+	selectedPaths := func() []string {
+		var paths []string
+		screen.Do(func() { paths = n.SelectedPaths() })
+		return paths
+	}
+	fieldFocused := func() bool {
+		var focused bool
+		screen.Do(func() { focused = wnd.Focus() == n.search.field.AsPanel() })
+		return focused
+	}
+
+	c.Nil(offered(), "nothing is on offer before anything is typed")
+	screen.Click(screen.PanelCenter(n.search.field))
+	screen.Type("find")
+	c.NotNil(offered(), "typing offers the matches")
+	found := rows()
+	if len(found) != 1 {
+		t.Fatalf("expected the notes file alone to match, found %d rows", len(found))
+	}
+	c.Equal("Findable", found[0].name)
+	c.Equal(libraryTitle+" / Folder", found[0].title, "the title says where the file is")
+	c.Equal(-1, highlighted(), "none is highlighted to start with")
+	c.Equal(0, len(selectedPaths()), "typing selects nothing")
+
+	screen.KeyPress(unison.KeyDown, mod.None)
+	c.Equal(0, highlighted(), "Down highlights the first row")
+	uxtest.CaptureScreen(t, c, screen, "navigator_search")
+	screen.KeyPress(unison.KeyReturn, mod.None)
+	c.Nil(offered(), "choosing hides the matches")
+	c.Equal([]string{notesPath}, selectedPaths(), "the chosen row alone is selected")
+	var disclosed []string
+	screen.Do(func() { disclosed = n.DisclosedPaths() })
+	c.True(slices.Contains(disclosed, folder), "the folder holding the file was opened")
+	c.True(fieldFocused(), "the focus stays in the field")
+
+	// A reload of the tree while the matches show, as a change in a library brings about, rebuilds the tree from fresh
+	// nodes; the matches are found again, with the highlight kept on the same row.
+	screen.KeyPress(unison.KeyDown, mod.None)
+	c.NotNil(offered(), "Down with the matches hidden offers them again")
+	c.Equal(0, highlighted(), "with the first highlighted")
+	screen.Do(func() { n.Reload() })
+	c.NotNil(offered(), "the matches stay on offer across a reload")
+	c.Equal(1, len(rows()))
+	c.Equal(0, highlighted(), "with the highlight kept")
+	screen.KeyPress(unison.KeyReturn, mod.None)
+	c.Equal([]string{notesPath}, selectedPaths(), "and choosing selects the row in the rebuilt tree")
+
+	// The sheet matches "barbarian" on its contents, not its name. Opening it hands the text to its own search field,
+	// which shows the trait that matched.
+	screen.KeyPress(unison.KeyA, mod.OSMenuCommand())
+	screen.Type("barbarian")
+	found = rows()
+	if len(found) != 1 {
+		t.Fatalf("expected the sheet alone to match on its contents, found %d rows", len(found))
+	}
+	c.Equal("Hero", found[0].name)
+	screen.KeyPress(unison.KeyDown, mod.None)
+	screen.KeyPress(unison.KeyReturn, mod.None)
+	c.Equal([]string{sheetPath}, selectedPaths())
+	screen.Do(func() { n.handleSelectionDoubleClick() })
+	sheet := uxtest.SoleEditor[*Sheet](t, screen, func(d unison.Dockable) bool { _, ok := d.(*Sheet); return ok })
+	var text string
+	var sheetSearchFocused bool
+	var sheetRows []string
+	screen.Do(func() {
+		text = sheet.search.field.Text()
+		sheetSearchFocused = wnd.Focus() == sheet.search.field.AsPanel()
+		list := sheet.search.suggestions.List()
+		for i := range list.Count() {
+			sheetRows = append(sheetRows, list.DataAtIndex(i).name)
+		}
+	})
+	c.Equal("barbarian", text, "the text the file matched on is handed to the sheet")
+	c.True(sheetSearchFocused, "and its search field is focused")
+	c.NotNil(offered(), "which shows the sheet's own matches")
+	c.Equal([]string{"Barbarian Rage"}, sheetRows)
+	uxtest.CloseEditorWithoutPrompt(t, screen, sheet)
 }

@@ -114,7 +114,7 @@ func (l *LootSheet) createToolbar() {
 
 	l.search = installPageSearch(l.toolbar, l.searchableLists)
 
-	FinishToolbarLayout(l.toolbar)
+	finishFlowToolbarLayout(l.toolbar, l.search.field)
 }
 
 const (

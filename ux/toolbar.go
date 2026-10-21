@@ -43,6 +43,21 @@ func FinishToolbarLayout(toolbar *unison.Panel) *unison.FlexLayout {
 	return layout
 }
 
+// finishFlowToolbarLayout lays the toolbar's children out left to right, wrapping onto further rows when the width calls
+// for it, with fill, usually the toolbar's search field, given what is left of its row; see flowFillLayout. Call it
+// after the last child has been added: every child present is centered in its row, and one added later must carry
+// align.Middle as its layout data to sit level with them.
+func finishFlowToolbarLayout(toolbar *unison.Panel, fill unison.Paneler) {
+	for _, child := range toolbar.Children() {
+		child.SetLayoutData(align.Middle)
+	}
+	toolbar.SetLayout(&flowFillLayout{
+		Fill:     fill,
+		HSpacing: unison.StdHSpacing,
+		VSpacing: unison.StdVSpacing,
+	})
+}
+
 // addHelpButton adds the standard Help button, which opens the given link (see HandleLink), to the toolbar.
 func addHelpButton(toolbar *unison.Panel, link string) *unison.Button {
 	helpButton := unison.NewSVGButton(svg.Help)

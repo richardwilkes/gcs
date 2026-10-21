@@ -69,17 +69,18 @@ func (n *Navigator) syncAppUpdateButton() {
 	if showAppUpdateButton(releases, gurps.GlobalSettings().General.AppUpdateCheck) {
 		n.appUpdateButton.Tooltip = newWrappedTooltip(title)
 		if n.appUpdateButton.Parent() == nil {
-			n.buttonRow.AddChild(n.appUpdateButton)
+			// Ahead of the search field, which ends the toolbar.
+			n.toolbar.AddChildAtIndex(n.appUpdateButton, n.toolbar.IndexOfChild(n.search.field))
 		}
 		n.appUpdatePulse.start(releases[0].Version)
 	} else {
 		n.appUpdatePulse.stop()
 		n.appUpdateButton.RemoveFromParent()
 	}
-	// Adding or removing the button changes the row's size, so its ancestors must lay out again too: unison lays out
-	// only the panels whose own NeedsLayout flag is set.
-	n.buttonRow.MarkForLayoutRecursivelyUpward()
-	n.buttonRow.MarkForRedraw()
+	// Adding or removing the button changes the toolbar's size, so its ancestors must lay out again too: unison lays
+	// out only the panels whose own NeedsLayout flag is set.
+	n.toolbar.MarkForLayoutRecursivelyUpward()
+	n.toolbar.MarkForRedraw()
 }
 
 // applyAppUpdatePulse tints the update button for the given point in the pulse cycle. At rest the button is given the

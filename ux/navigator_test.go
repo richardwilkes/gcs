@@ -26,13 +26,12 @@ import (
 	"github.com/rjeczalik/notify"
 )
 
-// newDeepSearchNavigator returns a navigator with deep search enabled for the given extensions and, as a freshly
-// created navigator has, no match current. It registers the known file types, which the deep search resolves each
-// file's extension through. Only the search state is populated; a test that needs the table or the search toolbar
-// adds them with installTestTable and installTestSearchControls.
+// newDeepSearchNavigator returns a navigator with deep search enabled for the given extensions. It registers the known
+// file types, which the deep search resolves each file's extension through. Only the search state is populated; a test
+// that needs the table or the search field adds them with installTestTable and installTestSearch.
 func newDeepSearchNavigator(exts ...string) *Navigator {
 	RegisterKnownFileTypes()
-	n := &Navigator{searchIndex: -1, deepSearch: make(map[string]bool, len(exts))}
+	n := &Navigator{deepSearch: make(map[string]bool, len(exts))}
 	for _, ext := range exts {
 		n.deepSearch[ext] = true
 	}
@@ -46,11 +45,19 @@ func installTestTable(n *Navigator, rows ...*NavigatorNode) {
 	n.table.SetRootRows(rows)
 }
 
-// installTestSearchControls gives the navigator its search toolbar controls, placed in a panel of their own so that
-// refreshing the matches label has a parent to mark for layout.
-func installTestSearchControls(n *Navigator) {
-	n.setupControls(n.searchModified, n.showMatch)
-	n.addControlsTo(unison.NewPanel())
+// installTestSearch gives the navigator its search field and dropdown, as setupToolBar does. Without a window the
+// field can't hold the focus, so the rows are never shown and typing in the field finds nothing; a test that wants rows
+// on offer sets them on the dropdown directly.
+func installTestSearch(n *Navigator) {
+	n.search = newSearchDropdown(n.findMatches, func(match *searchMatch) { match.show() })
+	unison.NewPanel().AddChild(n.search.field)
+}
+
+// matchCount returns how many of the rows, and those beneath them, match the lower-cased text.
+func matchCount(n *Navigator, text string, rows ...*NavigatorNode) int {
+	var found []*searchMatch
+	n.collectMatches(&found, text, rows)
+	return len(found)
 }
 
 // newTestLibrary returns a library rooted in a fresh temporary directory.
@@ -146,15 +153,11 @@ func TestDeepSearchOfSheetProfileIsCaseInsensitive(t *testing.T) {
 		{name: "player name", text: "robert"},
 		{name: "organization", text: "the black dragons"},
 	} {
-		n.searchResult = nil
-		n.search(one.text, []*NavigatorNode{node})
-		c.Equal(1, len(n.searchResult), one.name)
+		c.Equal(1, matchCount(n, one.text, node), one.name)
 	}
 
 	// Something that isn't present must still not match.
-	n.searchResult = nil
-	n.search("belit", []*NavigatorNode{node})
-	c.Equal(0, len(n.searchResult))
+	c.Equal(0, matchCount(n, "belit", node))
 }
 
 // TestDeepSearchCachesMarkdownContent verifies what a search stores in the content cache for a markdown file: the raw
@@ -168,8 +171,7 @@ func TestDeepSearchCachesMarkdownContent(t *testing.T) {
 	p := filepath.Join(lib.Path(false), fileName)
 	node := writeTestLibraryFile(c, lib, fileName, []byte("# Conan The Barbarian\n"))
 	n := newDeepSearchNavigator(ext)
-	n.search("barbarian", []*NavigatorNode{node})
-	c.Equal(1, len(n.searchResult))
+	c.Equal(1, matchCount(n, "barbarian", node))
 
 	// The lowercased content must now be cached under the file's full path.
 	cached, ok := n.contentCache[p]
@@ -178,9 +180,7 @@ func TestDeepSearchCachesMarkdownContent(t *testing.T) {
 
 	// Removing the file must not change the outcome of a subsequent search, proving the cache is what gets consulted.
 	c.NoError(os.Remove(p))
-	n.searchResult = nil
-	n.search("barbarian", []*NavigatorNode{node})
-	c.Equal(1, len(n.searchResult))
+	c.Equal(1, matchCount(n, "barbarian", node))
 }
 
 // TestDeepSearchServesCacheHitsUntilInvalidated verifies that a search serves a cache hit without checking the file on
@@ -195,31 +195,22 @@ func TestDeepSearchServesCacheHitsUntilInvalidated(t *testing.T) {
 	p := filepath.Join(lib.Path(false), fileName)
 	node := writeTestLibraryFile(c, lib, fileName, []byte("alpha\n"))
 	n := newDeepSearchNavigator(ext)
-	n.search("alpha", []*NavigatorNode{node})
-	c.Equal(1, len(n.searchResult), "the original content must match and populate the cache")
+	c.Equal(1, matchCount(n, "alpha", node), "the original content must match and populate the cache")
 
 	// Rewrite the file with different content and a clearly different modification time, so that a search which did
 	// check the file against the entry would notice the change.
 	c.NoError(os.WriteFile(p, []byte("bravo bravo\n"), 0o600))
 	c.NoError(os.Chtimes(p, time.Time{}, time.Now().Add(time.Hour)))
 
-	n.searchResult = nil
-	n.search("alpha", []*NavigatorNode{node})
-	c.Equal(1, len(n.searchResult), "a cache hit must be served without checking the file on disk")
-	n.searchResult = nil
-	n.search("bravo", []*NavigatorNode{node})
-	c.Equal(0, len(n.searchResult), "a cache hit must be served without checking the file on disk")
+	c.Equal(1, matchCount(n, "alpha", node), "a cache hit must be served without checking the file on disk")
+	c.Equal(0, matchCount(n, "bravo", node), "a cache hit must be served without checking the file on disk")
 
 	// Once the watch reports the change, the next search must re-read the file.
 	n.watchCallback(lib, p, notify.Write)
 	_, ok := n.contentCache[p]
 	c.False(ok, "the reported change must drop the entry")
-	n.searchResult = nil
-	n.search("bravo", []*NavigatorNode{node})
-	c.Equal(1, len(n.searchResult), "the new content must be found after the change is reported")
-	n.searchResult = nil
-	n.search("alpha", []*NavigatorNode{node})
-	c.Equal(0, len(n.searchResult), "the previous content must no longer match")
+	c.Equal(1, matchCount(n, "bravo", node), "the new content must be found after the change is reported")
+	c.Equal(0, matchCount(n, "alpha", node), "the previous content must no longer match")
 	c.True(n.contentCache[p].isCurrent(p), "the re-read must capture the file's current metadata")
 }
 
@@ -261,64 +252,49 @@ func TestInvalidationReachesInFlightCacheBuild(t *testing.T) {
 	c.Equal(0, len(n.invalidatedPaths), "a build's start must consume the invalidations made before it")
 }
 
-// TestRerunSearchPreservesPosition verifies that re-running an active search keeps the user's place in the match list.
-// A completed background cache prewarm re-runs the search to correct incomplete results, and must not yank a user who
-// has walked to match 5 of 12 back to the start; the position only resets when the row they were on no longer matches.
-func TestRerunSearchPreservesPosition(t *testing.T) {
+// TestNavigatorSearchMatches verifies what a match carries: the name the tree shows for the row, the names of its
+// ancestors from the root down as its title, the icon of its kind, and a key that follows the row's path, so that the
+// dropdown can keep its highlight across a Reload, which rebuilds the tree from fresh node objects. A favorited file
+// appears both under Favorites and under its library, and the two copies must have different keys.
+func TestNavigatorSearchMatches(t *testing.T) {
 	c := check.New(t)
 	lib := newTestLibrary(t)
-	sheetName := func(i int) string { return "sheet" + string(rune('1'+i)) + gurps.SheetExt }
-	nodes := make([]*NavigatorNode, 3)
-	for i := range nodes {
-		nodes[i] = saveTestSheet(c, lib, sheetName(i), newTestCharacter("Conan"))
+	n := newDeepSearchNavigator()
+	// The container nodes are built by hand rather than through the constructors, which read the filesystem and the
+	// global settings; only the shape of the tree matters here.
+	favorites := &NavigatorNode{id: tid.MustNewTID(kinds.NavigatorFavorites)}
+	libraryNode := &NavigatorNode{id: tid.MustNewTID(kinds.NavigatorLibrary), library: lib}
+	sub := &NavigatorNode{
+		id:      tid.MustNewTID(kinds.NavigatorDirectory),
+		path:    "sub",
+		library: lib,
+		parent:  libraryNode,
 	}
-	n := newDeepSearchNavigator(gurps.SheetExt)
-	n.search("conan", nodes)
-	c.Equal(3, len(n.searchResult))
+	name := filepath.Join("sub", "Conan"+gurps.SheetExt)
+	underFavorites := NewFileNode(lib, name, favorites)
+	underLibrary := NewFileNode(lib, name, sub)
+	fresh := NewFileNode(lib, name, sub)
+	c.True(underLibrary.ID() != fresh.ID(), "sanity: a rebuilt tree's nodes have fresh IDs")
 
-	// With the user on the last match, a re-run over the same rows must keep them there.
-	n.searchIndex = 2
-	current := n.searchResult[2]
-	n.rerunSearch("conan", nodes)
-	c.Equal(3, len(n.searchResult))
-	c.Equal(2, n.searchIndex)
-	c.True(n.searchResult[2] == current, "the position must still refer to the same row")
-
-	// When earlier matches disappear, the position must follow the row to its new index.
-	n.rerunSearch("conan", nodes[1:])
-	c.Equal(2, len(n.searchResult))
-	c.Equal(1, n.searchIndex)
-	c.True(n.searchResult[1] == current, "the position must follow the row the user was on")
-
-	// When the row the user was on no longer matches, the position must reset to "no position".
-	n.rerunSearch("conan", nodes[:2])
-	c.Equal(2, len(n.searchResult))
-	c.Equal(-1, n.searchIndex)
-
-	// A re-run without an established position must leave it unestablished.
-	n.rerunSearch("conan", nodes)
-	c.Equal(-1, n.searchIndex)
-
-	// A Reload rebuilds the tree with fresh node objects, so pointer identity always fails; the position must follow
-	// the file to its node in the new tree by path.
-	n.searchIndex = 1
-	current = n.searchResult[1]
-	fresh := make([]*NavigatorNode, len(nodes))
-	for i := range fresh {
-		fresh[i] = NewFileNode(lib, sheetName(i), nil)
-	}
-	n.rerunSearch("conan", fresh)
-	c.Equal(3, len(n.searchResult))
-	c.Equal(1, n.searchIndex, "the position must survive a tree rebuild by following the file's path")
-	c.True(n.searchResult[1] != current, "sanity: the rebuilt tree must consist of fresh node objects")
-	c.Equal(current.Path(), n.searchResult[1].Path())
+	match := n.newSearchMatch(underLibrary)
+	c.Equal("Conan", match.name, "a file is named without its extension, as in the tree")
+	c.Equal("Test / sub", match.title, "the title names the ancestors from the root down")
+	c.Equal(match.key, n.newSearchMatch(fresh).key, "the key follows the path to a fresh node")
+	c.NotEqual(match.key, n.newSearchMatch(underFavorites).key, "the favorites copy is told apart")
+	c.Equal("Favorites", n.newSearchMatch(underFavorites).title)
+	c.Equal("", n.newSearchMatch(libraryNode).title, "a root row has no ancestors")
+	icon, ok := match.icon.(*unison.DrawableSVG)
+	c.True(ok && icon.SVG == gurps.FileInfoFor(gurps.SheetExt).SVG, "a file shows the icon of its type")
+	icon, ok = n.newSearchMatch(sub).icon.(*unison.DrawableSVG)
+	c.True(ok && icon.SVG == gurps.FileInfoFor(gurps.ClosedFolder).SVG, "a container shows a folder")
 }
 
-// TestUpdateMatchControlsLeavesSelectionAlone verifies the split between the two search toolbar refreshes: the
-// toolbar-only refresh used when a completed background cache prewarm re-runs the active search must not touch the
-// table selection, since the prewarm finishes asynchronously and re-selecting the match would yank the tree away from
-// whatever the user has clicked on since; the user-driven adjustForMatch must still select the current match.
-func TestUpdateMatchControlsLeavesSelectionAlone(t *testing.T) {
+// TestNavigatorRefreshSearchWhileHiddenLeavesTableAlone verifies what refreshing the search does while the matches are
+// hidden, as they are when the asynchronous cache prewarm completes after the user has clicked away: the rows on offer
+// are dropped without walking the tree, so that they are found afresh when next asked for, and the table's selection is
+// left where the user put it. Choosing a match is what selects it, alone. A navigator without a search, as some tests
+// build, has nothing to refresh.
+func TestNavigatorRefreshSearchWhileHiddenLeavesTableAlone(t *testing.T) {
 	c := check.New(t)
 	lib := newTestLibrary(t)
 	rows := []*NavigatorNode{
@@ -328,38 +304,31 @@ func TestUpdateMatchControlsLeavesSelectionAlone(t *testing.T) {
 	}
 	n := newDeepSearchNavigator()
 	installTestTable(n, rows...)
-	installTestSearchControls(n)
-	n.searchIndex = 1
-	n.searchResult = rows
+	n.refreshSearch() // Nothing to refresh yet
+	installTestSearch(n)
+	walks := 0
+	findMatches := n.search.findMatches
+	n.search.findMatches = func(text string) []*searchMatch {
+		walks++
+		return findMatches(text)
+	}
+	n.search.field.SetText("t")
+	c.Equal(0, walks, "text set while the field lacks the focus must not walk the tree")
+	n.search.suggestions.SetRows(findMatches("t")) // As typing with the focus would
+	c.Equal(2, n.search.suggestions.List().Count())
+	c.False(n.search.suggestions.Showing(), "without a window, the rows can't show")
 
-	// The user has clicked away from the match to the first row.
+	// The user has clicked on the first row.
 	n.table.SelectByIndex(0)
+	n.refreshSearch()
+	c.Equal(0, walks, "a refresh while the matches are hidden must not walk the tree")
+	c.Equal(0, n.search.suggestions.List().Count(), "and drops the rows on offer")
+	c.Equal(0, n.table.FirstSelectedRowIndex(), "the selection is left alone")
+	c.Equal(1, n.table.SelectionCount())
 
-	// The asynchronous refresh must update the toolbar without moving the selection.
-	n.updateMatchControls()
-	c.Equal(0, n.table.FirstSelectedRowIndex(), "the toolbar-only refresh must not move the selection")
-	c.Equal("2 of 3", n.matchesLabel.String())
-	c.True(n.backButton.Enabled())
-	c.True(n.forwardButton.Enabled())
-
-	// The user-driven refresh must select the current match.
-	n.adjustForMatch()
-	c.Equal(1, n.table.FirstSelectedRowIndex(), "adjustForMatch must select the current match")
-	c.Equal(1, len(n.table.SelectedRows(false)), "adjustForMatch must replace the selection, not add to it")
-
-	// With no position established, neither refresh may enable stepping back.
-	n.searchIndex = -1
-	n.updateMatchControls()
-	c.Equal("- of 3", n.matchesLabel.String())
-	c.False(n.backButton.Enabled())
-	c.True(n.forwardButton.Enabled())
-
-	// With no matches at all, the label must reset and both buttons must disable.
-	n.searchResult = nil
-	n.updateMatchControls()
-	c.Equal("-", n.matchesLabel.String())
-	c.False(n.backButton.Enabled())
-	c.False(n.forwardButton.Enabled())
+	n.search.choose(findMatches("t")[1])
+	c.Equal(2, n.table.FirstSelectedRowIndex(), "choosing a match selects it")
+	c.Equal(1, n.table.SelectionCount(), "alone")
 }
 
 // TestDeepSearchDisabledTypeIgnoresCache verifies that disabling a file type for deep search takes effect immediately,
@@ -372,22 +341,17 @@ func TestDeepSearchDisabledTypeIgnoresCache(t *testing.T) {
 	p := filepath.Join(lib.Path(false), fileName)
 	node := saveTestSheet(c, lib, fileName, newTestCharacter("Conan"))
 	n := newDeepSearchNavigator(gurps.SheetExt)
-	n.search("conan", []*NavigatorNode{node})
-	c.Equal(1, len(n.searchResult))
+	c.Equal(1, matchCount(n, "conan", node))
 	_, ok := n.contentCache[p]
 	c.True(ok, "expected the sheet's content to be cached for %q", p)
 
 	// Disabling the type must stop matches at once, despite the stale cache entry that remains until the rebuild.
 	n.deepSearch = make(map[string]bool)
-	n.searchResult = nil
-	n.search("conan", []*NavigatorNode{node})
-	c.Equal(0, len(n.searchResult), "a disabled type must not match, even with its entry still cached")
+	c.Equal(0, matchCount(n, "conan", node), "a disabled type must not match, even with its entry still cached")
 
 	// Re-enabling must match again, served from the still-present cache entry.
 	n.deepSearch = map[string]bool{gurps.SheetExt: true}
-	n.searchResult = nil
-	n.search("conan", []*NavigatorNode{node})
-	c.Equal(1, len(n.searchResult))
+	c.Equal(1, matchCount(n, "conan", node))
 }
 
 // TestBuildContentCacheReuseAndFailureCaching verifies the behavior the background cache prewarm relies on: entries
@@ -445,8 +409,7 @@ func TestDeepSearchCachesFileWhoseParsePanics(t *testing.T) {
 	// A null row is valid JSON, so this gets past parsing and panics when the nil skill is traversed.
 	node := writeTestLibraryFile(c, lib, fileName, []byte(`{"version":5,"rows":[null]}`))
 	n := newDeepSearchNavigator(gurps.SkillsExt)
-	n.search("anything", []*NavigatorNode{node})
-	c.Equal(0, len(n.searchResult))
+	c.Equal(0, matchCount(n, "anything", node))
 	entry, ok := n.contentCache[p]
 	c.True(ok, "expected the panicking file to be cached for %q", p)
 	c.Equal("", entry.content)
@@ -620,31 +583,26 @@ func TestContentCachePrewarmSuspension(t *testing.T) {
 	c.False(n.prewarmPending, "an unmatched lift must not report the rebuild as due twice")
 }
 
-// TestPrewarmWithNoDeepSearchPathsRerunsSearch verifies the completion path taken when the collected path set is
+// TestPrewarmWithNoDeepSearchPathsRefreshesSearch verifies the completion path taken when the collected path set is
 // empty, as happens when the user unchecks the last deep-search type: no background build runs, so the prewarm itself
-// must drop the cache and re-run the active search, clearing the now-invalid deep-search matches immediately rather
-// than leaving them — and the match position and label — pointing at stale hits until the next keystroke.
-func TestPrewarmWithNoDeepSearchPathsRerunsSearch(t *testing.T) {
+// must drop the cache and refresh the matches on offer, so that the now-invalid deep-search matches don't linger until
+// the next keystroke.
+func TestPrewarmWithNoDeepSearchPathsRefreshesSearch(t *testing.T) {
 	c := check.New(t)
 	n := newDeepSearchNavigator(gurps.SheetExt)
 	installTestTable(n, saveTestSheet(c, newTestLibrary(t), "sheet1"+gurps.SheetExt, newTestCharacter("Conan")))
-	installTestSearchControls(n)
+	installTestSearch(n)
 
-	n.searchField.SetText("conan") // Runs the search, as typing does.
-	c.Equal(1, len(n.searchResult), "the sheet must match by content while its type is deep-searched")
-	n.nextMatch() // The user steps to the first match.
-	c.Equal(0, n.searchIndex)
-	c.Equal("1 of 1", n.matchesLabel.String())
+	n.search.field.SetText("conan")
+	n.search.suggestions.SetRows(n.search.findMatches("conan")) // As typing with the focus would
+	c.Equal(1, n.search.suggestions.List().Count(), "the sheet must match by content while its type is deep-searched")
 
-	// Unchecking the last deep-search type leaves nothing to build; the prewarm itself must clear the stale results.
+	// Unchecking the last deep-search type leaves nothing to build; the prewarm itself must clear the stale matches.
 	n.deepSearch = make(map[string]bool)
 	n.prewarmContentCache()
 	c.True(n.contentCache == nil, "the cache must be dropped")
-	c.Equal(0, len(n.searchResult), "the deep-search matches must be gone immediately")
-	c.Equal(-1, n.searchIndex, "the match position must no longer point at a stale hit")
-	c.Equal("-", n.matchesLabel.String())
-	c.False(n.backButton.Enabled())
-	c.False(n.forwardButton.Enabled())
+	c.Equal(0, n.search.suggestions.List().Count(), "the deep-search matches must be gone immediately")
+	c.Equal(0, len(n.search.findMatches("conan")), "and not be found again")
 }
 
 // TestToggleFavoritesKeysOnFullPath verifies that the de-duplication done while toggling favorites is keyed on the full

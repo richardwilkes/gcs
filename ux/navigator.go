@@ -57,9 +57,8 @@ var (
 // Navigator holds the workspace navigation panel.
 type Navigator struct {
 	unison.Panel
-	matchStepper[*NavigatorNode]
 	toolbar                   *unison.Panel
-	buttonRow                 *unison.Panel // The toolbar row the update button is added to when there is an update
+	search                    *searchDropdown
 	deleteButton              *unison.Button
 	renameButton              *unison.Button
 	newFolderButton           *unison.Button
@@ -85,11 +84,10 @@ type Navigator struct {
 
 func newNavigator() *Navigator {
 	n := &Navigator{
-		toolbar:     NewToolbar(),
-		scroll:      unison.NewScrollPanel(),
-		table:       unison.NewTable(&unison.SimpleTableModel[*NavigatorNode]{}),
-		deepSearch:  make(map[string]bool),
-		searchIndex: -1,
+		toolbar:    NewToolbar(),
+		scroll:     unison.NewScrollPanel(),
+		table:      unison.NewTable(&unison.SimpleTableModel[*NavigatorNode]{}),
+		deepSearch: make(map[string]bool),
 	}
 	n.Self = n
 
@@ -133,7 +131,7 @@ func newNavigator() *Navigator {
 	n.table.ContextMenuCallback = n.contextMenu
 	n.table.KeyDownCallback = n.tableKeyDown
 
-	n.installJumpToSearchHandlers(n.AsPanel())
+	installJumpToField(n.AsPanel(), n.search.field)
 
 	n.selectionChanged()
 	// The launch-time update check can finish before the Library Explorer exists, in which case the notification that
@@ -202,54 +200,28 @@ func (n *Navigator) setupToolBar() {
 	n.appUpdateButton = newAppUpdateButton(NotifyOfAppUpdate)
 	n.appUpdatePulse.apply = n.applyAppUpdatePulse
 
-	first := unison.NewPanel()
-	first.AddChild(NewDefaultInfoPop())
-	first.AddChild(helpButton)
-	AddUIScaleField(first, func() int { return gurps.InitialNavigatorUIScaleDef },
+	n.search = newSearchDropdown(n.findMatches, func(match *searchMatch) { match.show() })
+
+	n.toolbar.AddChild(NewDefaultInfoPop())
+	n.toolbar.AddChild(helpButton)
+	AddUIScaleField(n.toolbar, func() int { return gurps.InitialNavigatorUIScaleDef },
 		func() int { return gurps.GlobalSettings().General.NavigatorUIScale },
 		func(scale int) { gurps.GlobalSettings().General.NavigatorUIScale = scale }, false, n.scroll)
-	first.AddChild(hierarchyButton)
-	first.AddChild(NewToolbarSeparator())
-	first.AddChild(addLibraryButton)
-	first.AddChild(n.downloadLibraryButton)
-	first.AddChild(n.libraryReleaseNotesButton)
-	first.AddChild(n.configLibraryButton)
-	first.AddChild(NewToolbarSeparator())
-	first.AddChild(n.newFolderButton)
-	first.AddChild(n.renameButton)
-	first.AddChild(n.deleteButton)
-	first.AddChild(n.favoriteButton)
-	n.buttonRow = first // n.appUpdateButton joins this row only while there is an update to announce
-	for _, child := range first.Children() {
-		child.SetLayoutData(align.Middle)
-	}
-	first.SetLayout(&unison.FlowLayout{
-		HSpacing: unison.StdHSpacing,
-		VSpacing: unison.StdVSpacing,
-	})
-	first.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: align.Fill,
-		HGrab:  true,
-	})
-
-	n.setupControls(n.searchModified, n.showMatch)
-	second := unison.NewPanel()
-	second.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: align.Fill,
-		HGrab:  true,
-	})
-	n.addControlsTo(second)
-	second.SetLayout(&unison.FlexLayout{
-		Columns:  len(second.Children()),
-		HSpacing: unison.StdHSpacing,
-	})
-
-	n.toolbar.SetLayout(&unison.FlexLayout{
-		Columns:  1,
-		VSpacing: unison.StdVSpacing,
-	})
-	n.toolbar.AddChild(first)
-	n.toolbar.AddChild(second)
+	n.toolbar.AddChild(hierarchyButton)
+	n.toolbar.AddChild(NewToolbarSeparator())
+	n.toolbar.AddChild(addLibraryButton)
+	n.toolbar.AddChild(n.downloadLibraryButton)
+	n.toolbar.AddChild(n.libraryReleaseNotesButton)
+	n.toolbar.AddChild(n.configLibraryButton)
+	n.toolbar.AddChild(NewToolbarSeparator())
+	n.toolbar.AddChild(n.newFolderButton)
+	n.toolbar.AddChild(n.renameButton)
+	n.toolbar.AddChild(n.deleteButton)
+	n.toolbar.AddChild(n.favoriteButton)
+	// n.appUpdateButton joins ahead of the search field only while there is an update to announce; see
+	// syncAppUpdateButton. The field ends the toolbar, where the layout gives it the width left on its row.
+	n.toolbar.AddChild(n.search.field)
+	finishFlowToolbarLayout(n.toolbar, n.search.field)
 }
 
 // InitialFocus causes the navigator to focus its initial component.
@@ -790,6 +762,7 @@ func (n *Navigator) Reload() {
 	n.ApplySelectedPaths(selection)
 	n.table.SizeColumnsToFit(true)
 	n.prewarmContentCache()
+	n.refreshSearch()
 }
 
 func (n *Navigator) populateRows() []*NavigatorNode {
@@ -899,22 +872,21 @@ func (n *Navigator) handleSelectionDoubleClick() {
 		}
 	}
 	altered := false
+	text := n.search.field.Text()
+	lower := strings.ToLower(text)
 	for _, row := range selection {
 		if row.CanHaveChildren() {
 			altered = true
 			row.SetOpen(!row.IsOpen())
 		} else {
 			if d, _ := row.OpenNodeContent(); !xreflect.IsNil(d) {
-				if slices.Contains(n.searchResult, row) {
-					// The row matched on its contents rather than its name, so hand the search text to the dockable
-					// that was just opened for it.
-					if !row.Match(strings.ToLower(n.searchField.Text())) {
-						text := n.searchField.Text()
-						if r, ok := d.(searchTextReceiver); ok {
-							r.receiveSearchText(text)
-						} else if f := findSearchFieldInSelfOrDescendants(d.AsPanel()); f != nil {
-							f.SetText(text)
-						}
+				// A row the search text matches on its contents rather than its name is handed the text, so that the
+				// dockable just opened for it can show where it matched.
+				if lower != "" && !row.Match(lower) && n.contentMatches(row, lower) {
+					if r, ok := d.(searchTextReceiver); ok {
+						r.receiveSearchText(text)
+					} else if f := findSearchFieldInSelfOrDescendants(d.AsPanel()); f != nil {
+						f.SetText(text)
 					}
 				}
 			}
@@ -964,76 +936,90 @@ func setNavigatorRowOpen(row *NavigatorNode, open bool) {
 	}
 }
 
-func (n *Navigator) searchModified(_, _ *unison.FieldState) {
-	n.searchIndex = -1
-	n.searchResult = nil
-	n.search(strings.ToLower(n.searchField.Text()), n.table.RootRows())
-	n.adjustForMatch()
+// findMatches returns the rows matching the lower-cased text, up to maxSearchMatches of them, in the order the tree
+// shows them.
+func (n *Navigator) findMatches(text string) []*searchMatch {
+	var found []*searchMatch
+	n.collectMatches(&found, text, n.table.RootRows())
+	return found
 }
 
-// rerunSearch rebuilds the search results for the given text, preserving the user's place in the match list when the
-// row they were on is still among the new results. A completed background cache prewarm re-runs any active search, and
-// without this the completion would silently reset the position while the user is walking the matches.
-func (n *Navigator) rerunSearch(text string, rows []*NavigatorNode) {
-	var current *NavigatorNode
-	if n.searchIndex >= 0 && n.searchIndex < len(n.searchResult) {
-		current = n.searchResult[n.searchIndex]
-	}
-	n.searchResult = nil
-	n.search(text, rows)
-	n.searchIndex = -1
-	if current != nil {
-		n.searchIndex = slices.Index(n.searchResult, current)
-		if n.searchIndex == -1 {
-			// A Reload rebuilds the tree with fresh node objects, so pointer identity fails even though the row the
-			// user was on is still among the results. Fall back to the path, the same identity the navigator uses to
-			// carry selection and disclosure across a reload. A favorited file appears twice with the same path; the
-			// first copy is close enough.
-			p := current.Path()
-			n.searchIndex = slices.IndexFunc(n.searchResult, func(row *NavigatorNode) bool { return row.Path() == p })
-		}
-	}
-}
-
-// rerunActiveSearch re-runs the search currently in the search field, if there is one, keeping the user's place in the
-// match list, and refreshes the search toolbar. Only the toolbar is refreshed: this runs from asynchronous completions,
-// and re-selecting the current match would yank the selection and scroll position away from whatever the user has
-// clicked on since.
-func (n *Navigator) rerunActiveSearch() {
-	if n.searchField != nil && n.searchField.Text() != "" {
-		n.rerunSearch(strings.ToLower(n.searchField.Text()), n.table.RootRows())
-		n.updateMatchControls()
-	}
-}
-
-func (n *Navigator) search(text string, rows []*NavigatorNode) {
+// collectMatches adds the rows among those given, and beneath them, that match the text to the matches, stopping once
+// there are maxSearchMatches of them. A row matches on the text it shows or, for a file of a type the deep search
+// covers, on its contents.
+func (n *Navigator) collectMatches(matches *[]*searchMatch, text string, rows []*NavigatorNode) {
 	if text == "" {
 		return
 	}
 	for _, row := range rows {
-		if row.Match(text) {
-			n.searchResult = append(n.searchResult, row)
-		} else if row.IsFile() {
-			p := row.Path()
-			// The deep search check must come before the cache lookup, so that disabling a type in the settings takes
-			// effect immediately rather than only after the asynchronous cache rebuild completes.
-			if n.deepSearch[gurps.FileInfoFor(p).UTI.Extensions[0]] {
-				// A cache hit is served as is, without checking the file on disk: the filesystem watches drop the
-				// entry for a file as soon as its change is reported (see watchCallback), which is what keeps this
-				// from being a stat per deep-searchable file on every keystroke.
-				entry, ok := n.contentCache[p]
-				if !ok || entry == nil {
-					entry = loadContentCacheEntry(p)
-					n.addToContentCache(p, entry)
-				}
-				if entry != nil && entry.content != "" && strings.Contains(entry.content, text) {
-					n.searchResult = append(n.searchResult, row)
-				}
-			}
+		if len(*matches) >= maxSearchMatches {
+			return
+		}
+		if row.Match(text) || n.contentMatches(row, text) {
+			*matches = append(*matches, n.newSearchMatch(row))
 		}
 		if row.CanHaveChildren() {
-			n.search(text, row.Children())
+			n.collectMatches(matches, text, row.Children())
 		}
+	}
+}
+
+// contentMatches returns true if the row is a file of a type the deep search covers whose contents hold the
+// lower-cased text. The deep search check comes before the cache lookup, so that disabling a type in the settings
+// takes effect immediately rather than only after the asynchronous cache rebuild completes.
+func (n *Navigator) contentMatches(row *NavigatorNode, text string) bool {
+	if !row.IsFile() {
+		return false
+	}
+	p := row.Path()
+	if !n.deepSearch[gurps.FileInfoFor(p).UTI.Extensions[0]] {
+		return false
+	}
+	// A cache hit is served as is, without checking the file on disk: the filesystem watches drop the entry for a
+	// file as soon as its change is reported (see watchCallback), which is what keeps this from being a stat per
+	// deep-searchable file on every keystroke.
+	entry, ok := n.contentCache[p]
+	if !ok || entry == nil {
+		entry = loadContentCacheEntry(p)
+		n.addToContentCache(p, entry)
+	}
+	return entry != nil && entry.content != "" && strings.Contains(entry.content, text)
+}
+
+// newSearchMatch returns the match for the row: named as the tree names it, with the icon the tree gives its kind,
+// titled with the names of its ancestors from the root down, and keyed by its path, so that the match survives a
+// Reload, which rebuilds the tree from fresh nodes. A favorited file appears both under Favorites and under its
+// library, so the key tells the two apart.
+func (n *Navigator) newSearchMatch(row *NavigatorNode) *searchMatch {
+	var ancestors []string
+	key := "L"
+	for p := row.Parent(); p != nil; p = p.Parent() {
+		ancestors = append(ancestors, p.primaryColumnText())
+		if p.IsFavorites() {
+			key = "F"
+		}
+	}
+	slices.Reverse(ancestors)
+	ext := gurps.ClosedFolder
+	if row.IsFile() {
+		ext = strings.ToLower(filepath.Ext(row.path))
+	}
+	size := unison.LabelFont.Size() + 5
+	return &searchMatch{
+		show:  func() { n.showMatch(row) },
+		icon:  &unison.DrawableSVG{SVG: gurps.FileInfoFor(ext).SVG, Size: geom.NewSize(size, size)},
+		name:  row.primaryColumnText(),
+		title: strings.Join(ancestors, " / "),
+		key:   key + row.Path(),
+	}
+}
+
+// refreshSearch brings the matches on offer back into line with the tree. Only matches that are showing are found
+// again (see searchDropdown.Refresh), so this is cheap otherwise. A navigator built without its toolbar, as some tests
+// build one, has no search to refresh.
+func (n *Navigator) refreshSearch() {
+	if n.search != nil {
+		n.search.Refresh()
 	}
 }
 
@@ -1279,7 +1265,7 @@ func (n *Navigator) prewarmContentCache() {
 		// results until the next keystroke.
 		n.contentCache = nil
 		n.lastBuild = nil
-		n.rerunActiveSearch()
+		n.refreshSearch()
 		return
 	}
 	// Republish the settings the background parses read, so they are as fresh as this build and the workers never
@@ -1313,11 +1299,11 @@ func (n *Navigator) prewarmContentCache() {
 		build.entries = previous
 		close(build.done)
 		unison.InvokeTask(func() {
-			// A search made while the cache was still being built may have produced incomplete results, so re-run any
-			// active search now that the full content is available, keeping the user's place in the match list.
+			// A search made while the cache was still being built may have produced incomplete results, so the
+			// matches on offer are found again now that the full content is available.
 			if n.applyPrewarmedContentCache(gen, fresh) {
 				n.lastBuild = nil // The live cache now holds everything this build knew, so there is nothing to inherit
-				n.rerunActiveSearch()
+				n.refreshSearch()
 			}
 		})
 	}()
@@ -1416,15 +1402,17 @@ func buildContentCache(paths map[string]bool, previous map[string]*contentCacheE
 	return fresh
 }
 
-// showMatch selects the row and scrolls it into view, disclosing its ancestors as needed. The layout is validated
-// first, since disclosing may have changed the row positions the scroll relies on.
+// showMatch discloses the row's ancestors, selects the row alone and scrolls it into view. The layout is validated
+// first, since disclosing may have changed the row positions the scroll relies on. For a row the table no longer holds,
+// the selection is only cleared.
 func (n *Navigator) showMatch(row *NavigatorNode) {
 	n.table.DiscloseRow(row, false)
 	n.table.ClearSelection()
-	i := n.table.RowToIndex(row)
-	n.table.SelectByIndex(i)
-	n.ValidateLayout()
-	n.table.ScrollRowIntoView(i)
+	if i := n.table.RowToIndex(row); i >= 0 {
+		n.table.SelectByIndex(i)
+		n.ValidateLayout()
+		n.table.ScrollRowIntoView(i)
+	}
 }
 
 // DisclosedPaths returns a list of paths that are currently disclosed.

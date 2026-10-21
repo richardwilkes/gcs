@@ -25,7 +25,7 @@ type pageSearchFixture struct {
 	screen *unison.HeadlessScreen
 	wnd    *unison.Window
 	sheet  *Sheet
-	search *pageSearch
+	search *searchDropdown
 }
 
 // startPageSearch opens a new character sheet in a headless workspace and gives it the traits seed builds for its
@@ -90,7 +90,7 @@ func (f *pageSearchFixture) countWalks() *int {
 	walks := 0
 	f.screen.Do(func() {
 		findMatches := f.search.findMatches
-		f.search.findMatches = func(text string) []*pageSearchMatch {
+		f.search.findMatches = func(text string) []*searchMatch {
 			walks++
 			return findMatches(text)
 		}

@@ -20,7 +20,7 @@ import (
 )
 
 // matchLabels returns the matches as "name | title" strings.
-func matchLabels(matches []*pageSearchMatch) []string {
+func matchLabels(matches []*searchMatch) []string {
 	labels := make([]string, len(matches))
 	for i, m := range matches {
 		labels[i] = m.name + " | " + m.title
@@ -117,17 +117,29 @@ func TestPageSearchLabels(t *testing.T) {
 }
 
 // A row of the dropdown shows the match's name followed by the title of its list, and is named for both to an
-// assistive technology.
-func TestPageSearchCellShowsTheListTitle(t *testing.T) {
+// assistive technology. A match with an icon, as the Library Explorer's have, shows it, and one without a title, as a
+// root row of the Library Explorer is, is named by its name alone.
+func TestSearchMatchCellShowsTheTitleAndIcon(t *testing.T) {
 	c := check.New(t)
-	list := unison.NewList[*pageSearchMatch]()
-	match := &pageSearchMatch{name: "Findable", title: "Traits"}
-	label, ok := (&pageSearchCellFactory{}).CreateCell(list, match, 0, unison.Black, unison.White, false, false).(*unison.Label)
+	list := unison.NewList[*searchMatch]()
+	match := &searchMatch{name: "Findable", title: "Traits"}
+	label, ok := (&searchMatchCellFactory{}).CreateCell(list, match, 0, unison.Black, unison.White, false, false).(*unison.Label)
 	if !ok {
 		t.Fatal("the cell must be a label")
 	}
 	c.Equal("Findable  Traits", label.String())
 	c.Equal("Findable, Traits", label.Accessibility.Name)
+	c.Nil(label.Drawable, "a match without an icon shows none")
+
+	icon := &unison.DrawableSVG{SVG: unison.DocumentSVG}
+	match = &searchMatch{name: "Library", icon: icon}
+	label, ok = (&searchMatchCellFactory{}).CreateCell(list, match, 0, unison.Black, unison.White, false, false).(*unison.Label)
+	if !ok {
+		t.Fatal("the cell must be a label")
+	}
+	c.Equal("Library", label.String())
+	c.Equal("Library", label.Accessibility.Name)
+	c.True(label.Drawable == icon, "a match with an icon shows it")
 }
 
 // The lists are only walked while the matches can be seen: not for an empty search, not for text put in the field while
@@ -143,7 +155,7 @@ func TestPageSearchDoesNotWalkWhileHidden(t *testing.T) {
 	search := sheet.search
 	walks := 0
 	findMatches := search.findMatches
-	search.findMatches = func(text string) []*pageSearchMatch {
+	search.findMatches = func(text string) []*searchMatch {
 		walks++
 		return findMatches(text)
 	}
@@ -169,9 +181,9 @@ func TestPageSearchCapsTheMatches(t *testing.T) {
 	c := check.New(t)
 	sheet := newTestSheetForTemplate(t)
 	entity := sheet.Entity()
-	for i := range maxPageSearchMatches + 50 {
+	for i := range maxSearchMatches + 50 {
 		entity.Traits = append(entity.Traits, newFindableTrait(entity, fmt.Sprintf("Findable %d", i)))
 	}
 	sheet.Rebuild(true)
-	c.Equal(maxPageSearchMatches, len(sheet.search.findMatches("findable")))
+	c.Equal(maxSearchMatches, len(sheet.search.findMatches("findable")))
 }

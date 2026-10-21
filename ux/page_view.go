@@ -28,7 +28,7 @@ type pageView struct {
 	targetMgr *TargetMgr
 	toolbar   *unison.Panel
 	scroll    *unison.ScrollPanel
-	search    *pageSearch
+	search    *searchDropdown
 	scale     int
 	// awaitingUpdate is set while the dockable is being marked as modified; MarkModified does nothing while it is set
 	// (see ownerRecalculates for one consequence of that).

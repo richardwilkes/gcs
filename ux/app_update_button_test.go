@@ -204,37 +204,41 @@ func seedAppUpdate(t *testing.T, releases []library.Release) {
 	appUpdate.lock.Unlock()
 }
 
-// TestSyncAppUpdateButtonAddsAndRemovesIt verifies that the update button is a child of the toolbar row only while
-// there is an update to announce, and is added just once however many syncs say so. A hidden child would leave a gap.
+// TestSyncAppUpdateButtonAddsAndRemovesIt verifies that the update button is a child of the toolbar only while there
+// is an update to announce, placed ahead of the search field that ends it, and is added just once however many syncs
+// say so. A hidden child would leave a gap.
 func TestSyncAppUpdateButtonAddsAndRemovesIt(t *testing.T) {
 	c := check.New(t)
 	gs, _ := prepareUpdateCheckSettings(t)
 	var recorder pulseRecorder
 	n := &Navigator{
-		buttonRow:       unison.NewPanel(),
+		toolbar:         unison.NewPanel(),
 		appUpdateButton: newAppUpdateButton(nil),
 	}
+	n.search = newSearchDropdown(n.findMatches, func(match *searchMatch) { match.show() })
+	n.toolbar.AddChild(n.search.field)
 	n.appUpdatePulse.apply = n.applyAppUpdatePulse
 	n.appUpdatePulse.schedule = recorder.schedule
 
 	seedAppUpdate(t, nil)
 	n.syncAppUpdateButton()
-	c.Equal(0, len(n.buttonRow.Children()), "with no update known, the button must not be in the row")
+	c.Equal(1, len(n.toolbar.Children()), "with no update known, the button must not be in the toolbar")
 	c.Equal(0, len(recorder.pending), "with no update known, nothing must pulse")
 
 	seedAppUpdate(t, pendingAppRelease)
 	n.syncAppUpdateButton()
-	c.Equal(1, len(n.buttonRow.Children()), "an update must add the button to the row")
-	c.True(n.buttonRow.Children()[0].Is(n.appUpdateButton))
+	c.Equal(2, len(n.toolbar.Children()), "an update must add the button to the toolbar")
+	c.True(n.toolbar.Children()[0].Is(n.appUpdateButton), "ahead of the search field")
+	c.True(n.toolbar.Children()[1].Is(n.search.field))
 	c.Equal(1, len(recorder.pending), "an update must start the pulse")
 
 	n.syncAppUpdateButton()
-	c.Equal(1, len(n.buttonRow.Children()), "a second sync must not add the button again")
+	c.Equal(2, len(n.toolbar.Children()), "a second sync must not add the button again")
 	c.Equal(1, len(recorder.pending), "a second sync must not restart the pulse")
 
 	gs.AppUpdateCheck = updatecheck.Never
 	n.syncAppUpdateButton()
-	c.Equal(0, len(n.buttonRow.Children()), "turning the checks off must take the button out of the row")
+	c.Equal(1, len(n.toolbar.Children()), "turning the checks off must take the button out of the toolbar")
 	c.Equal((*unison.Panel)(nil), n.appUpdateButton.Parent())
 	recorder.fireAll()
 	c.Equal(0, len(recorder.pending), "turning the checks off must stop the pulse")

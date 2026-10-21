@@ -119,6 +119,6 @@ func TestTemplateSearchSkipsAListTheLayoutDoesNotShow(t *testing.T) {
 	c.Nil(template.Skills.AsPanel().Parent(), "the hidden skills list is not on the page")
 	matches = template.search.findMatches("findable")
 	c.Equal(1, len(matches), "only the row in the list that is on the page is found")
-	c.Equal(trait.ID(), matches[0].id, "and it is the trait")
+	c.Equal(string(trait.ID()), matches[0].key, "and it is the trait")
 	c.Equal("Traits", matches[0].title, "under the title of its list")
 }

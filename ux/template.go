@@ -149,7 +149,7 @@ func (t *Template) createToolbar() {
 
 	t.search = installPageSearch(t.toolbar, t.searchableLists)
 
-	FinishToolbarLayout(t.toolbar)
+	finishFlowToolbarLayout(t.toolbar, t.search.field)
 }
 
 func (t *Template) keyToPanel(key *uti.DataType) *unison.Panel {

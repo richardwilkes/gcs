@@ -39,7 +39,7 @@ type sheetList interface {
 	hierarchyDiscloser
 	noteDiscloser
 	clearSelection()
-	search(matches *[]*pageSearchMatch, text, title string)
+	search(matches *[]*searchMatch, text, title string)
 	RecordSelection() map[tid.TID]bool
 	ApplySelection(selection map[tid.TID]bool)
 }
