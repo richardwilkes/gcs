@@ -260,9 +260,9 @@ func (s *Sheet) createToolbar() {
 	shoppingRecordButton.ClickCallback = func() { showShoppingRecord(s) }
 	s.toolbar.AddChild(shoppingRecordButton)
 
-	s.searchTracker = installListSearchTracker(s.toolbar, s.lists)
+	s.search = installPageSearch(s.toolbar, s.searchableLists)
 
-	// The notice sits at the end of the toolbar, past the search controls, where it reads as a status rather than a
+	// The notice sits at the end of the toolbar, past the search field, where it reads as a status rather than a
 	// command. It is only a child of the toolbar while there is something to say; see syncUnsettledNotice.
 	s.unsettledNotice = makeTagForNode(i18n.Text("Data never settles"), unison.ThemeWarning, unison.ThemeOnWarning,
 		unison.DefaultTagTheme.Font, unison.TriangleExclamationSVG)
@@ -599,6 +599,11 @@ func (s *Sheet) list(key string) sheetList {
 // back for a list the sheet hasn't built yet.
 func (s *Sheet) lists() []sheetList {
 	return listsForKeys(s.list, gurps.IsListBlockKey)
+}
+
+// searchableLists returns the lists the search looks through, each under the title its block has on the sheet.
+func (s *Sheet) searchableLists() []searchableList {
+	return searchableListsForKeys(s.list, gurps.IsListBlockKey, gurps.BlockTitle)
 }
 
 // syncDisclosure brings the blocks that show state which can be disclosed back into line with the model. The tables

@@ -24,12 +24,12 @@ import (
 // reference key, and the search over its lists.
 type pageView struct {
 	fileBackedPanel
-	undoMgr       *unison.UndoManager
-	targetMgr     *TargetMgr
-	toolbar       *unison.Panel
-	scroll        *unison.ScrollPanel
-	searchTracker *SearchTracker
-	scale         int
+	undoMgr   *unison.UndoManager
+	targetMgr *TargetMgr
+	toolbar   *unison.Panel
+	scroll    *unison.ScrollPanel
+	search    *pageSearch
+	scale     int
 	// awaitingUpdate is set while the dockable is being marked as modified; MarkModified does nothing while it is set
 	// (see ownerRecalculates for one consequence of that).
 	awaitingUpdate bool
@@ -128,9 +128,9 @@ func (pv *pageView) restoreViewState(state viewState) {
 
 // resync completes bringing the dockable back into line with its model, once whatever the dockable had to do first --
 // rebuild its lists, recalculate its entity -- has been done: every panel is synced, the title is brought up to date,
-// the search results, which name rows that may no longer exist, are found again, and the user's place is put back.
-// listsSynced says that the lists on the page were synced as the page was laid out, so that they aren't synced again
-// (see deepSyncSkippingSyncedLists).
+// the matches the search is showing, which name rows that may no longer exist, are found again, and the user's place
+// is put back. listsSynced says that the lists on the page were synced as the page was laid out, so that they aren't
+// synced again (see deepSyncSkippingSyncedLists).
 func (pv *pageView) resync(d unison.Dockable, state viewState, listsSynced bool) {
 	if listsSynced {
 		deepSyncSkippingSyncedLists(d)
@@ -142,7 +142,7 @@ func (pv *pageView) resync(d unison.Dockable, state viewState, listsSynced bool)
 	// reported from within it -- a field committing its edit as the focus leaves it -- is a fresh edit that calls for
 	// an update of its own rather than one to be dropped.
 	pv.awaitingUpdate = false
-	pv.searchTracker.Refresh()
+	pv.search.Refresh()
 	pv.restoreViewState(state)
 }
 

@@ -112,7 +112,7 @@ func (l *LootSheet) createToolbar() {
 	treasureButton.ClickCallback = func() { l.generateTreasure() }
 	l.toolbar.AddChild(treasureButton)
 
-	l.searchTracker = installListSearchTracker(l.toolbar, l.lists)
+	l.search = installPageSearch(l.toolbar, l.searchableLists)
 
 	FinishToolbarLayout(l.toolbar)
 }
@@ -228,6 +228,15 @@ func (l *LootSheet) createLists() {
 // together, the lists it hasn't built yet are present but nil.
 func (l *LootSheet) lists() []sheetList {
 	return []sheetList{l.Equipment, l.Notes}
+}
+
+// searchableLists returns the lists the search looks through, each under the title its block has on the loot sheet,
+// whose equipment list is headed plainly "Equipment" (see gurps.Equipment.CellData).
+func (l *LootSheet) searchableLists() []searchableList {
+	return []searchableList{
+		{list: l.Equipment, title: i18n.Text("Equipment")},
+		{list: l.Notes, title: gurps.BlockTitle(gurps.BlockNotesKey)},
+	}
 }
 
 // PageInfoProvider returns the page info provider for this sheet.

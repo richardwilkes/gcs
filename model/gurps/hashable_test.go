@@ -351,6 +351,15 @@ func TestHashStartsWithSyncKind(t *testing.T) {
 			other.TID = tid.TID(kinds.ConditionalModifierContainer) + modifier.TID[1:]
 			return modifier, other
 		}},
+		{name: "reaction vs reaction container", pair: func() (Hashable, Hashable) {
+			reaction := NewReaction("Source", "From", fxp.One)
+			other := reaction.Clone(LibraryFile{}, nil, nil, Copy)
+			other.TID = tid.TID(kinds.ReactionContainer) + reaction.TID[1:]
+			return reaction, other
+		}},
+		{name: "reaction vs conditional modifier", pair: func() (Hashable, Hashable) {
+			return NewReaction("Source", "From", fxp.One), NewConditionalModifier("Source", "From", fxp.One)
+		}},
 		{name: "melee vs ranged weapon", pair: func() (Hashable, Hashable) {
 			melee := NewWeapon(nil, true)
 			other := NewWeapon(nil, false)

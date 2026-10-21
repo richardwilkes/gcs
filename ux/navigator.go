@@ -909,8 +909,11 @@ func (n *Navigator) handleSelectionDoubleClick() {
 					// The row matched on its contents rather than its name, so hand the search text to the dockable
 					// that was just opened for it.
 					if !row.Match(strings.ToLower(n.searchField.Text())) {
-						if f := findSearchFieldInSelfOrDescendants(d.AsPanel()); f != nil {
-							f.SetText(n.searchField.Text())
+						text := n.searchField.Text()
+						if r, ok := d.(searchTextReceiver); ok {
+							r.receiveSearchText(text)
+						} else if f := findSearchFieldInSelfOrDescendants(d.AsPanel()); f != nil {
+							f.SetText(text)
 						}
 					}
 				}

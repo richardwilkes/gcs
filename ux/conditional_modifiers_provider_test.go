@@ -39,7 +39,7 @@ func TestConditionalAndReactionProvidersUseTheirOwnSpec(t *testing.T) {
 			gurps.NewConditionalModifier("cond one", "", 0),
 			gurps.NewConditionalModifier("cond two", "", 0),
 		},
-		reactions: []*gurps.ConditionalModifier{gurps.NewConditionalModifier("reaction", "", 0)},
+		reactions: []*gurps.ConditionalModifier{gurps.NewReaction("reaction", "", 0)},
 	}
 	for _, one := range []struct {
 		name        string
@@ -101,13 +101,13 @@ func TestConditionalAndReactionProvidersUseTheirOwnSpec(t *testing.T) {
 func TestCondModProviderWrapsGroupChildren(t *testing.T) {
 	c := check.New(t)
 	group := gurps.NewConditionalModifierGroup(gurps.NewEntity().ID, gurps.BlockReactionsKey, "Combat")
-	first := gurps.NewConditionalModifier("from trait A", "from allies", fxp.One)
-	second := gurps.NewConditionalModifier("from trait B", "from foes", fxp.Two)
+	first := gurps.NewReaction("from trait A", "from allies", fxp.One)
+	second := gurps.NewReaction("from trait B", "from foes", fxp.Two)
 	for _, child := range []*gurps.ConditionalModifier{first, second} {
 		child.SetParent(group)
 		group.Children = append(group.Children, child)
 	}
-	leaf := gurps.NewConditionalModifier("from trait C", "from everyone", fxp.Three)
+	leaf := gurps.NewReaction("from trait C", "from everyone", fxp.Three)
 	lists := &condModListsForTest{reactions: []*gurps.ConditionalModifier{group, leaf}}
 	p := NewReactionModifiersProvider(lists)
 	p.SetTable(unison.NewTable(&unison.SimpleTableModel[*Node[*gurps.ConditionalModifier]]{}))

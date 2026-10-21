@@ -104,7 +104,7 @@ func (c *condModCollector) add(source, group, situation string, amt fxp.Int) {
 		existing.Add(source, amt)
 		return
 	}
-	c.entries[key] = newConditionalModifierInGroup(source, key.group, situation, amt)
+	c.entries[key] = newConditionalModifierInGroup(c.namespace == BlockReactionsKey, source, key.group, situation, amt)
 }
 
 // rows turns what was collected into the root rows of the table. keep, when not nil, selects the modifiers to retain;
