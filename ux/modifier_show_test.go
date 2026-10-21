@@ -39,19 +39,19 @@ func checkModifierShowCheckBoxes(c check.Checker, content *unison.Panel, hideNot
 	c.Equal(modifierShowTitles, titles, "the show checkboxes appear once each, in order")
 
 	c.False(*hideNotes, "precondition: the notes start out shown")
-	c.False(*showOnWeapon, "precondition: the notes start out off weapon usage")
+	c.False(*showOnWeapon, "precondition: the notes start out off attack usage")
 	owner := findCheckBoxTitled(content, modifierShowTitles[0])
-	weapon := findCheckBoxTitled(content, modifierShowTitles[1])
-	if owner == nil || weapon == nil {
+	attack := findCheckBoxTitled(content, modifierShowTitles[1])
+	if owner == nil || attack == nil {
 		return
 	}
 	c.Equal(uncheck.On, owner.State, "the owner's notes box starts checked")
-	c.Equal(uncheck.Off, weapon.State, "the weapon usage box starts clear")
+	c.Equal(uncheck.Off, attack.State, "the attack usage box starts clear")
 	clickCheckBox(owner, false)
 	c.True(*hideNotes, "clearing the owner's notes box hides the notes")
 	clickCheckBox(owner, true)
 	c.False(*hideNotes, "checking the owner's notes box again shows the notes")
-	clickCheckBox(weapon, true)
+	clickCheckBox(attack, true)
 	c.True(*showOnWeapon, "checking the attack usage box shows the notes in attack usage")
 }
 
