@@ -97,6 +97,9 @@ type TraitModifierNonContainerSyncData struct {
 	Features          Features       `json:"features,omitempty"`
 	// HideNotes keeps the modifier's notes out of its owner's notes, where it is still listed.
 	HideNotes bool `json:"hide_notes,omitzero"`
+	// ShowInTitle moves the modifier from its owner's notes to the title notes after its owner's name. A modifier with
+	// notes of its own still shows them in its owner's notes, unless HideNotes is set.
+	ShowInTitle bool `json:"show_in_title,omitzero"`
 }
 
 // NewTraitModifiersFromFile loads a TraitModifier list from a file.
@@ -448,6 +451,11 @@ func (t *TraitModifier) String() string {
 	return buffer.String()
 }
 
+// ShowsInTitle returns true if the modifier is shown in its owner's title notes.
+func (t *TraitModifier) ShowsInTitle() bool {
+	return t.ShowInTitle
+}
+
 // ResolveLocalNotes resolves the local notes, running any embedded scripts to get the final result.
 func (t *TraitModifier) ResolveLocalNotes() string {
 	return ResolveText(EntityFromNode(t), deferredNewScriptTraitModifier(t), t.LocalNotesWithReplacements())
@@ -469,11 +477,14 @@ func (t *TraitModifier) FullDescription() string {
 }
 
 // NotesDescription returns the description shown in its owner's notes, which leaves out its notes when HideNotes is
-// set.
+// set, or "" when it is shown in the title and has no notes to show.
 func (t *TraitModifier) NotesDescription() string {
 	var notes string
 	if !t.HideNotes {
 		notes = t.ResolveLocalNotes()
+	}
+	if notes == "" && t.ShowsInTitle() {
+		return ""
 	}
 	return t.describe(t.String(), notes)
 }
@@ -668,6 +679,7 @@ func (t *TraitModifierNonContainerSyncData) hash(h hash.Hash) {
 	xhash.Num8(h, t.Affects)
 	hashList(h, t.Features)
 	xhash.Bool(h, t.HideNotes)
+	xhash.Bool(h, t.ShowInTitle)
 }
 
 // CopyFrom implements EditorData.

@@ -477,6 +477,19 @@ func (p *featuresPanel) editor(f gurps.Feature, path string) *unison.Panel {
 		p.addCompact(fields, field.withoutUndo())
 	case *gurps.SelectorOverride:
 		p.selectorOverride(fields, chips, path, one)
+	case *gurps.TitleNote:
+		p.textField(fields, key("text"), i18n.Text("Title Note"), i18n.Text("Title Note"), &one.Text, nil)
+		p.optional(chips, path, "before", i18n.Text("+ before built-in notes"), i18n.Text("Place Before Built-in Notes"),
+			i18n.Text("Place After Built-in Notes"), one.BeforeBuiltIn,
+			func() { one.BeforeBuiltIn = true },
+			func() { one.BeforeBuiltIn = false },
+			func(chip *unison.Panel) { addJoiningWords(chip, i18n.Text("before the built-in notes")) })
+		tip := newWrappedTooltip(i18n.Text("Show this title note before the item's built-in notes, such as a skill's specialization."))
+		if b := chips.FindRefKey(key("add before")); b != nil {
+			b.Tooltip = tip
+		} else if b = chips.FindRefKey(key("before") + keyChip); b != nil {
+			b.Tooltip = tip
+		}
 	default:
 		errs.Log(errs.New("unknown feature type"), "type", f.FeatureType().Key())
 	}
@@ -511,7 +524,7 @@ type featureTypeEntry struct {
 func featureTypeGroups() []string {
 	return []string{
 		i18n.Text("Attributes and Traits"), i18n.Text("Skills and Spells"), i18n.Text("Defense"),
-		i18n.Text("Weapons"), i18n.Text("Equipment"),
+		i18n.Text("Weapons"), i18n.Text("Equipment"), i18n.Text("Other"),
 	}
 }
 
@@ -529,6 +542,8 @@ func featureTypeGroup(t feature.Type) int {
 		return 3
 	case feature.EquipmentMaxUsesBonus, feature.ContainedWeightReduction:
 		return 4
+	case feature.TitleNote:
+		return 5
 	default:
 		return 0
 	}
@@ -589,6 +604,9 @@ func (p *featuresPanel) typePopup(parent *unison.Panel, path string, f gurps.Fea
 // switchable adds the pill that makes the feature switchable, which comes last: after the chips, or at the end of the
 // sentence when there are none.
 func (p *featuresPanel) switchable(parent *unison.Panel, path string, f gurps.Feature) {
+	if _, ok := f.(*gurps.TitleNote); ok {
+		return
+	}
 	words := i18n.Text("only while switched on")
 	p.optional(parent, path, "switchable", i18n.Text("+ switchable"), i18n.Text("Add Switchable"),
 		i18n.Text("Remove Switchable"), f.IsSwitchable(),
@@ -860,6 +878,7 @@ func (p *featuresPanel) weaponOwnerChips(chips *unison.Panel, path string, c *gu
 	p.textChip(chips, path, "ownertl", &c.OwnerTechLevelCriteria)
 	p.textChip(chips, path, "ownerspecialization", &c.OwnerSpecializationCriteria)
 	p.textChip(chips, path, "owneroptspecialization", &c.OwnerOptionalSpecializationCriteria)
+	p.textChip(chips, path, "ownertitlenote", &c.OwnerTitleNoteCriteria)
 }
 
 // relativeSkillLevelChip adds the optional relative skill level criterion of a feature that selects weapons by their
@@ -1020,6 +1039,8 @@ func (p *featuresPanel) createFeatureForType(featureType feature.Type) gurps.Fea
 		return gurps.NewContainedWeightReduction()
 	case feature.CostReduction:
 		return gurps.NewCostReduction(lastAttributeIDUsed)
+	case feature.TitleNote:
+		return gurps.NewTitleNote()
 	case feature.EquipmentMaxUsesBonus:
 		bonus = gurps.NewEquipmentMaxUsesBonus()
 	case feature.DRBonus:

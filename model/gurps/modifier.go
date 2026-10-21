@@ -57,6 +57,7 @@ type GeneralModifier interface {
 	NameWithReplacements() string
 	FullDescription() string
 	NotesDescription() string
+	ShowsInTitle() bool
 	FullCostDescription() string
 	Enabled() bool
 	Disableable
@@ -105,14 +106,19 @@ func activeModifierFor[M ModifierNode[M, T], T ModifiableNode[T, M], S ~[]M](mod
 	return found
 }
 
-// modifierDescriptions returns the notes descriptions of the enabled, non-container modifiers, separated by "; ".
+// modifierDescriptions returns the notes descriptions of the enabled, non-container modifiers that appear in their
+// owner's notes, separated by "; ".
 func modifierDescriptions[M ModifierNode[M, T], T ModifiableNode[T, M], S ~[]M](modifiers S) string {
 	var buffer strings.Builder
 	Traverse(func(mod M) bool {
+		desc := mod.NotesDescription()
+		if desc == "" {
+			return false
+		}
 		if buffer.Len() != 0 {
 			buffer.WriteString("; ")
 		}
-		buffer.WriteString(mod.NotesDescription())
+		buffer.WriteString(desc)
 		return false
 	}, true, true, modifiers...)
 	return buffer.String()

@@ -32,6 +32,7 @@ func initTraitModifierEditor(e *editor[*gurps.TraitModifier, *gurps.TraitModifie
 		return nil
 	}
 	addNameLabelAndField(content, &e.editorData.Name)
+	addModifierShowInTitleCheckBox(content, &e.editorData.ShowInTitle)
 	addLabelAndMultiLineStringField(content, i18n.Text("Notes"), "", &e.editorData.LocalNotes)
 	addModifierNotesCheckBoxes(content, &e.editorData.HideNotes, &e.editorData.ShowNotesOnWeapon)
 	addVTTNotesLabelAndField(content, &e.editorData.VTTNotes)

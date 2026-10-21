@@ -654,6 +654,11 @@ func rowCriteria(key string) rowCriterion {
 			subject: i18n.Text("Tag"), add: i18n.Text("+ tag"),
 			prefix: i18n.Text("and at least one tag"), notPrefix: i18n.Text("and all tags"),
 		}
+	case "titlenote":
+		return rowCriterion{
+			subject: i18n.Text("Title Note"), add: i18n.Text("+ title note"),
+			prefix: i18n.Text("and at least one title note"), notPrefix: i18n.Text("and all title notes"),
+		}
 	case "usage":
 		return rowCriterion{subject: i18n.Text("Usage"), add: i18n.Text("+ usage"), prefix: i18n.Text("and whose usage")}
 	case "specialization":
@@ -687,6 +692,11 @@ func rowCriteria(key string) rowCriterion {
 		return rowCriterion{
 			subject: i18n.Text("Owner Optional Specialization"), add: i18n.Text("+ owner optional specialization"),
 			prefix: i18n.Text("and whose owner's optional specialization"),
+		}
+	case "ownertitlenote":
+		return rowCriterion{
+			subject: i18n.Text("Owner Title Note"), add: i18n.Text("+ owner title note"),
+			prefix: i18n.Text("and at least one owner title note"), notPrefix: i18n.Text("and all owner title notes"),
 		}
 	case "points":
 		return rowCriterion{
@@ -737,10 +747,11 @@ func (p *sentenceRows[T]) textChip(chips *unison.Panel, path, key string, c *cri
 		func(chip *unison.Panel) {
 			one := rowCriteria(key)
 			var hint string
-			// An empty "is" specialization or owner tech level picks only something without one, as the row's
-			// sentence says.
+			// An empty "is" specialization, owner tech level or title note picks only something without one, as the
+			// row's sentence says.
 			if c.Compare == criteria.IsText && (key == "specialization" || key == "optspecialization" ||
-				key == "ownertl" || key == "ownerspecialization" || key == "owneroptspecialization") {
+				key == "ownertl" || key == "ownerspecialization" || key == "owneroptspecialization" ||
+				key == "titlenote" || key == "ownertitlenote") {
 				hint = i18n.Text("none")
 			}
 			p.textCriteria(chip, path+":"+key, one.subject, hint, one.prefix, cmp.Or(one.notPrefix, one.prefix), c,

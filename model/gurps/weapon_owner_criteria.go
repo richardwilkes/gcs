@@ -21,12 +21,14 @@ import (
 
 // WeaponOwnerCriteria holds the criteria a feature selecting weapons by name applies to the qualifiers of each
 // weapon's owner other than its name. The level is that of a leveled trait or piece of equipment, and 0 for any other
-// owner, including a skill or spell. A missing TL or specialization compares as empty.
+// owner, including a skill or spell. A missing TL or specialization compares as empty. The title note criterion is
+// matched against each of the owner's title notes.
 type WeaponOwnerCriteria struct {
 	OwnerLevelCriteria                  criteria.Number `json:"owner_level,omitzero"`
 	OwnerTechLevelCriteria              criteria.Text   `json:"owner_tech_level,omitzero"`
 	OwnerSpecializationCriteria         criteria.Text   `json:"owner_specialization,omitzero"`
 	OwnerOptionalSpecializationCriteria criteria.Text   `json:"owner_optional_specialization,omitzero"`
+	OwnerTitleNoteCriteria              criteria.Text   `json:"owner_title_note,omitzero"`
 }
 
 // matches returns true if the criteria match the owner.
@@ -52,13 +54,15 @@ func (c *WeaponOwnerCriteria) matches(replacements map[string]string, owner Weap
 	return c.OwnerLevelCriteria.Matches(level) &&
 		c.OwnerTechLevelCriteria.Matches(replacements, tl) &&
 		c.OwnerSpecializationCriteria.Matches(replacements, specialization) &&
-		c.OwnerOptionalSpecializationCriteria.Matches(replacements, optionalSpecialization)
+		c.OwnerOptionalSpecializationCriteria.Matches(replacements, optionalSpecialization) &&
+		(c.OwnerTitleNoteCriteria.Compare == criteria.AnyText ||
+			c.OwnerTitleNoteCriteria.MatchesEach(replacements, owner.TitleNotes()...))
 }
 
 // fillWithNameableKeys adds any nameable keys found in the criteria to the provided map.
 func (c *WeaponOwnerCriteria) fillWithNameableKeys(m, existing map[string]string) {
 	nameable.Extract(m, existing, c.OwnerTechLevelCriteria.Qualifier, c.OwnerSpecializationCriteria.Qualifier,
-		c.OwnerOptionalSpecializationCriteria.Qualifier)
+		c.OwnerOptionalSpecializationCriteria.Qualifier, c.OwnerTitleNoteCriteria.Qualifier)
 }
 
 // specificity returns the number of criteria in use.
@@ -66,7 +70,7 @@ func (c *WeaponOwnerCriteria) specificity() int {
 	count := 0
 	for _, one := range []criteria.Text{
 		c.OwnerTechLevelCriteria, c.OwnerSpecializationCriteria,
-		c.OwnerOptionalSpecializationCriteria,
+		c.OwnerOptionalSpecializationCriteria, c.OwnerTitleNoteCriteria,
 	} {
 		if !one.IsZero() {
 			count++
@@ -96,7 +100,8 @@ func (c *WeaponOwnerCriteria) describe(replacements map[string]string, em func(s
 		whose(c.OwnerSpecializationCriteria, i18n.Text("whose owner's specialization"),
 			i18n.Text("whose owner has no specialization")) +
 		whose(c.OwnerOptionalSpecializationCriteria, i18n.Text("whose owner's optional specialization"),
-			i18n.Text("whose owner has no optional specialization"))
+			i18n.Text("whose owner has no optional specialization")) +
+		describeTitleNote(c.OwnerTitleNoteCriteria, true, replacements, em)
 }
 
 // Hash writes this object's contents into the hasher.
@@ -105,4 +110,5 @@ func (c *WeaponOwnerCriteria) Hash(h hash.Hash) {
 	c.OwnerTechLevelCriteria.Hash(h)
 	c.OwnerSpecializationCriteria.Hash(h)
 	c.OwnerOptionalSpecializationCriteria.Hash(h)
+	c.OwnerTitleNoteCriteria.Hash(h)
 }

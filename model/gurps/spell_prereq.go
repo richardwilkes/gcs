@@ -150,6 +150,10 @@ func (p *SpellPrereq) Satisfied(entity *Entity, exclude any, tooltip *xbytes.Ins
 			if qualifier.MatchesList(sp.Tags...) {
 				count++
 			}
+		case spellcmp.TitleNote:
+			if qualifier.MatchesEach(sp.TitleNotes()...) {
+				count++
+			}
 		case spellcmp.College:
 			if qualifier.MatchesList(sp.CollegeWithReplacements()...) {
 				count++
@@ -210,6 +214,8 @@ func (p *SpellPrereq) Describe(_ *Entity, replacements map[string]string, em fun
 			text += i18n.Text(" whose tag ")
 		case spellcmp.College:
 			text += i18n.Text(" whose college ")
+		case spellcmp.TitleNote:
+			text += i18n.Text(" whose title note ")
 		default:
 			text += i18n.Text(" whose name ")
 		}

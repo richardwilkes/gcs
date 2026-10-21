@@ -598,7 +598,7 @@ func TestFeaturesPanelTypeHeadings(t *testing.T) {
 }
 
 // TestFeaturesPanelSwitchablePill checks that the switchable pill of an open row adds and removes its feature's flag,
-// each as one step to undo, for every type of feature.
+// each as one step to undo, for every type of feature but a title note, which is never switchable.
 func TestFeaturesPanelSwitchablePill(t *testing.T) {
 	c := check.New(t)
 	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
@@ -624,6 +624,13 @@ func TestFeaturesPanelSwitchablePill(t *testing.T) {
 		name := one.FeatureType().Key()
 		c.False(one.IsSwitchable(), "precondition: %s starts out not switchable", name)
 		screen.Do(func() { p.toggle(path) })
+		if one.FeatureType() == feature.TitleNote {
+			screen.Do(func() {
+				c.Equal(path, p.open)
+				c.Nil(p.FindRefKey(path+":add switchable"), "a title note offers no pill")
+			})
+			continue
+		}
 		click(path + ":add switchable")
 		c.True(features[i].IsSwitchable(), "adding the pill makes %s switchable", name)
 		c.Equal("Undo Add Switchable", host.mgr.UndoTitle())
@@ -1206,7 +1213,7 @@ func TestFeaturesPanelSelectorSelection(t *testing.T) {
 	offered := func(keys ...string) {
 		for _, key := range []string{
 			"add specialization", "add usage", "add tag", "add level", "add ownerlevel", "add ownertl",
-			"add ownerspecialization", "add owneroptspecialization", "name",
+			"add ownerspecialization", "add owneroptspecialization", "add ownertitlenote", "name",
 		} {
 			c.Equal(slices.Contains(keys, key), p.FindRefKey("0:"+key) != nil, "%v offers %s", override.SelectionType, key)
 		}
@@ -1223,7 +1230,7 @@ func TestFeaturesPanelSelectorSelection(t *testing.T) {
 	c.Equal(wsel.WithName, override.SelectionType)
 	screen.Do(func() {
 		offered("add usage", "add tag", "add ownerlevel", "add ownertl", "add ownerspecialization",
-			"add owneroptspecialization", "name")
+			"add owneroptspecialization", "add ownertitlenote", "name")
 	})
 }
 
@@ -1257,6 +1264,7 @@ func TestFeaturesPanelWeaponOwnerChips(t *testing.T) {
 			{"ownertl", func() { want.OwnerTechLevelCriteria.Compare = criteria.IsText }},
 			{"ownerspecialization", func() { want.OwnerSpecializationCriteria.Compare = criteria.IsText }},
 			{"owneroptspecialization", func() { want.OwnerOptionalSpecializationCriteria.Compare = criteria.IsText }},
+			{"ownertitlenote", func() { want.OwnerTitleNoteCriteria.Compare = criteria.IsText }},
 		} {
 			screen.Do(func() {
 				add, ok := p.FindRefKey(path + ":add " + one.key).Self.(*unison.Button)
@@ -1275,6 +1283,17 @@ func TestFeaturesPanelWeaponOwnerChips(t *testing.T) {
 			})
 		}
 	}
+	screen.Do(func() {
+		// The last row opened in the loop is still open.
+		popup, ok := p.FindRefKey("1:ownertitlenotecmp").Self.(*unison.PopupMenu[criteria.StringComparison])
+		c.True(ok, "the owner title note chip has a comparison popup")
+		if ok {
+			first, _ := popup.ItemAt(0)
+			c.Equal("and at least one owner title note is", popup.ItemRendererCallback(first))
+			last, _ := popup.ItemAt(popup.ItemCount() - 1)
+			c.Equal("and all owner title notes do not end with", popup.ItemRendererCallback(last))
+		}
+	})
 }
 
 // TestFeaturesPanelWeaponDamageBonus checks that the amount of a weapon damage bonus takes a dice specification as well
@@ -1542,4 +1561,42 @@ func TestFeaturesPanelReadOnly(t *testing.T) {
 		p.toggle("0")
 	})
 	screen.Do(func() { c.Equal("", p.open) })
+}
+
+// TestFeaturesPanelTitleNoteBeforePill checks that a title note's text can be edited and that its pill, which explains
+// itself, places it before the built-in notes and back.
+func TestFeaturesPanelTitleNoteBeforePill(t *testing.T) {
+	c := check.New(t)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
+	entity := gurps.NewEntity()
+	owner := gurps.NewSkill(entity, nil, false)
+	features := gurps.Features{gurps.NewTitleNote()}
+	// Undo installs copies of the features, so the note is looked up afresh each time.
+	before := func() bool {
+		note, ok := features[0].(*gurps.TitleNote)
+		return ok && note.BeforeBuiltIn
+	}
+	c.False(before(), "precondition: the note starts out after the built-in notes")
+	p, host := showFeaturesPanel(t, screen, entity, owner, &features, false)
+	click := func(key string) {
+		screen.Do(func() { uxtest.PanelsOfType[*unison.Button](p.FindRefKey(key))[0].ClickCallback() })
+	}
+	screen.Do(func() { p.toggle("0") })
+	screen.Do(func() {
+		c.NotNil(p.FindRefKey("0:add before").Tooltip, "the pill explains itself")
+		field, ok := p.FindRefKey("0:text").Self.(*StringField)
+		c.True(ok, "the note's text is a text field")
+		if ok {
+			field.SetText("Fine")
+		}
+	})
+	note, ok := features[0].(*gurps.TitleNote)
+	c.True(ok && note.Text == "Fine", "the text field sets the note's text")
+	click("0:add before")
+	c.True(before(), "adding the pill places the note first")
+	c.Equal("Undo Place Before Built-in Notes", host.mgr.UndoTitle())
+	screen.Do(func() { c.NotNil(p.FindRefKey("0:before"+keyChip).Tooltip, "the chip explains itself as the pill did") })
+	click("0:before" + keyChip)
+	c.False(before(), "removing the chip places the note after again")
+	c.Equal("Undo Place After Built-in Notes", host.mgr.UndoTitle())
 }

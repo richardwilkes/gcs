@@ -427,6 +427,8 @@ func (e *Equipment) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 	e.EquipmentData = localData.EquipmentData
 	e.Modifiers = dropNilNodes(e.Modifiers)
 	e.Weapons = dropNilNodes(e.Weapons)
+	// A load that keeps the saved calc never attaches the equipment, yet its title shows its modifiers.
+	AttachModifiers(e, e.Modifiers)
 	e.Replacements = nameable.Normalize(e.Replacements)
 	if e.BaseValue == "" && localData.Value != 0 {
 		e.BaseValue = localData.Value.String()
@@ -776,7 +778,19 @@ func (e *Equipment) String() string {
 		buffer.WriteByte(' ')
 		buffer.WriteString(e.Level.String())
 	}
+	buffer.WriteString(parenthetical(e.TitleNotes()))
 	return buffer.String()
+}
+
+// TitleNotes returns the title notes of the equipment and its enabled modifiers, including the names of those shown in
+// the title, with those placed before the built-in parts first.
+func (e *Equipment) TitleNotes() []string {
+	return append(e.titleNotes(true), e.titleNotes(false)...)
+}
+
+func (e *Equipment) titleNotes(before bool) []string {
+	return modifierTitleNotes(appendTitleNotes(nil, e.Replacements, before, e.Features), before, e.Modifiers,
+		e.Replacements, func(mod *EquipmentModifier) Features { return mod.Features })
 }
 
 // ResolveLocalNotes resolves the local notes, running any embedded scripts to get the final result.

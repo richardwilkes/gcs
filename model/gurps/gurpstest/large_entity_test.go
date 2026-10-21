@@ -34,6 +34,21 @@ func countLeaves[T gurps.Node[T]](list []T) int {
 	return n
 }
 
+// countTitled returns the number of rows in the list with title notes.
+func countTitled[T interface {
+	gurps.Node[T]
+	TitleNotes() []string
+}](list []T) int {
+	n := 0
+	gurps.Traverse(func(one T) bool {
+		if len(one.TitleNotes()) != 0 {
+			n++
+		}
+		return false
+	}, false, true, list...)
+	return n
+}
+
 // countConditionalModifierRows returns the number of rows in a derived list, leaving out the groups they are filed
 // under.
 func countConditionalModifierRows(list []*gurps.ConditionalModifier) int {
@@ -125,6 +140,22 @@ func TestNewLargeEntityFillsEveryList(t *testing.T) {
 		return false
 	}, false, true, e.Spells...)
 	c.Equal(size.RitualMagicSpells, rituals, "ritual magic spells")
+
+	// Every list's names have title notes to assemble, some of them from modifiers shown in the title.
+	c.True(countTitled(e.Traits) > 0, "traits with title notes")
+	c.True(countTitled(e.Skills) > 0, "skills with title notes")
+	c.True(countTitled(e.Spells) > 0, "spells with title notes")
+	c.True(countTitled(e.CarriedEquipment) > 0, "carried equipment with title notes")
+	c.True(countTitled(e.OtherEquipment) > 0, "other equipment with title notes")
+	var first *gurps.Trait
+	gurps.Traverse(func(t *gurps.Trait) bool {
+		if t.Name == "Trait 1" || strings.HasPrefix(t.Name, "Trait 1 ") {
+			first = t
+		}
+		return first != nil
+	}, false, true, e.Traits...)
+	c.True(first != nil && strings.Contains(first.String(), "Modifier 1"), "a trait modifier shown in the title: %v",
+		first)
 
 	// Every container starts open, so a sheet built from the entity shows every row.
 	checkOpen(c, "trait", e.Traits)
