@@ -255,8 +255,8 @@ func TestMergeMatchesCoversEveryField(t *testing.T) {
 			expected: []string{
 				"TID", "Source", "Name", "PageRef", "PageRefHighlight", "LocalNotes", "Tags", "VTTNotes", "Replacements",
 				"CostType", "CostIsPerLevel", "CostIsPerPound", "WeightType", "WeightIsPerLevel", "ShowNotesOnWeapon",
-				"TechLevel", "CostAmount", "WeightAmount", "Features", "Disabled", "Choice", "ThirdParty", "Children",
-				"parent",
+				"TechLevel", "CostAmount", "WeightAmount", "Features", "HideNotes", "Disabled", "Choice", "ThirdParty",
+				"Children", "parent",
 			},
 		},
 	}
