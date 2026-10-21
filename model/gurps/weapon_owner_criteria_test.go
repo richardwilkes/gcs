@@ -177,6 +177,41 @@ func TestWeaponsSelectedByNameFromTheirOwner(t *testing.T) {
 	c.False(slices.Contains(collect(), bonus), "the level does not match")
 }
 
+// TestSkillBonusesSelectingWeaponsByNameFromTheirOwner verifies that the skill bonuses selecting weapons by name that
+// an item and its modifiers carry reach the item's weapons whether or not the item is equipped, and are counted once.
+func TestSkillBonusesSelectingWeaponsByNameFromTheirOwner(t *testing.T) {
+	c := check.New(t)
+	e := NewEntity()
+	newBonus := func(amount fxp.Int) *SkillBonus {
+		bonus := NewSkillBonus()
+		bonus.SelectionType = skillsel.WeaponsWithName
+		bonus.NameCriteria.Qualifier = "Broadsword"
+		bonus.Amount = amount
+		return bonus
+	}
+	bonus := newBonus(fxp.Two)
+	modBonus := newBonus(fxp.One)
+	sword := addCarriedEquipmentWithFeatures(e, "Broadsword", bonus)
+	mod := NewEquipmentModifier(e, nil, false)
+	mod.Name = "Fine"
+	mod.Features = Features{modBonus}
+	sword.AddModifiers(mod)
+	w := newCrushingWeapon(sword, "Swung")
+	sword.Weapons = []*Weapon{w}
+	adjustment := func() fxp.Int {
+		e.Recalculate()
+		with := w.skillLevelBaseAdjustment(e, nil)
+		bonus.Amount, modBonus.Amount = 0, 0
+		without := w.skillLevelBaseAdjustment(e, nil)
+		bonus.Amount, modBonus.Amount = fxp.Two, fxp.One
+		return with - without
+	}
+	c.True(sword.Equipped, "precondition: new equipment starts out equipped")
+	c.Equal(fxp.Three, adjustment(), "an equipped item's bonuses are counted once")
+	sword.Equipped = false
+	c.Equal(fxp.Three, adjustment(), "an unequipped item's bonuses still reach its own weapons")
+}
+
 // TestWeaponOwnerCriteriaHashAndNameables verifies that each owner criterion takes part in the hash of each feature
 // selecting weapons by name, and that the nameable keys in the text criteria are offered for substitution.
 func TestWeaponOwnerCriteriaHashAndNameables(t *testing.T) {
@@ -298,4 +333,37 @@ func TestScriptWeaponsMatchOwnerName(t *testing.T) {
 	c.Equal("Innate Attack 2", resolve(`entity.weapons[0].title`))
 	c.Equal("1", resolve(`entity.findWeapons(true, entity.weapons[0].name).length.toString()`))
 	c.Equal("1d-2 cr", resolve(`entity.weaponDamage("Innate Attack", "Burn")`))
+}
+
+// TestOwnerlessWeaponName verifies that a weapon without an owner has an empty name and title, in scripts too, and that
+// matching it by name doesn't panic.
+func TestOwnerlessWeaponName(t *testing.T) {
+	c := check.New(t)
+	w := NewWeapon(nil, true)
+	c.Equal("", w.Name())
+	c.Equal("", w.Title())
+	c.False(w.matchesName(criteria.Text{Compare: criteria.IsText, Qualifier: "Sword"}, &WeaponOwnerCriteria{}, nil))
+	c.True(w.matchesName(criteria.Text{}, &WeaponOwnerCriteria{}, nil), "an empty criterion still matches")
+	e := NewEntity()
+	c.Equal("", ResolveScript(e, deferredNewScriptWeapon(w), "self.name"))
+	c.Equal("", ResolveScript(e, deferredNewScriptWeapon(w), "self.title"))
+}
+
+// TestScriptWeaponAttachedTo verifies that a script weapon's attachedTo is its owner, whatever kind of owner it has.
+func TestScriptWeaponAttachedTo(t *testing.T) {
+	c := check.New(t)
+	e := NewEntity()
+	trait := addTraitWithFeatures(e, "Claws")
+	eqp := NewEquipment(e, nil, false)
+	eqp.Name = "Sword"
+	sk := NewSkill(e, nil, false)
+	sk.Name = "Karate"
+	sp := NewSpell(e, nil, false)
+	sp.Name = "Fireball"
+	for _, owner := range []WeaponOwner{trait, eqp, sk, sp} {
+		w := NewWeapon(owner, true)
+		c.Equal(owner.NameWithReplacements(), ResolveScript(e, deferredNewScriptWeapon(w), "self.attachedTo.name"))
+	}
+	c.Equal("true", ResolveScript(e, deferredNewScriptWeapon(NewWeapon(nil, true)), "self.attachedTo === undefined"),
+		"a weapon without an owner isn't attached to anything")
 }
