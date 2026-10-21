@@ -33,8 +33,7 @@ func initTraitModifierEditor(e *editor[*gurps.TraitModifier, *gurps.TraitModifie
 	}
 	addNameLabelAndField(content, &e.editorData.Name)
 	addLabelAndMultiLineStringField(content, i18n.Text("Notes"), "", &e.editorData.LocalNotes)
-	content.AddChild(unison.NewPanel())
-	addCheckBox(content, i18n.Text("Also show notes in weapon usage"), &e.editorData.ShowNotesOnWeapon)
+	addModifierNotesCheckBoxes(content, &e.editorData.HideNotes, &e.editorData.ShowNotesOnWeapon)
 	addVTTNotesLabelAndField(content, &e.editorData.VTTNotes)
 	content.AddChild(unison.NewPanel())
 	addModifierEnabledCheckBox(content, e.target, e.editorData)

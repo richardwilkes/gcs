@@ -183,6 +183,19 @@ func addNameLabelAndField[F fieldAccess[string]](parent *unison.Panel, fieldData
 	addLabelAndStringField(parent, i18n.Text("Name"), "", fieldData)
 }
 
+// addModifierNotesCheckBoxes adds the checkboxes that say where a modifier's notes are shown: in its owner's notes and
+// in the usage notes of its owner's weapons.
+func addModifierNotesCheckBoxes[F fieldAccess[bool]](parent *unison.Panel, hideNotesData, showOnWeaponData F) {
+	parent.AddChild(unison.NewPanel()) // Skip the label column
+	box := addInvertedCheckBox(parent, i18n.Text("Show notes in owner's notes"), hideNotesData)
+	box.Tooltip = newWrappedTooltip(
+		i18n.Text("Show the modifier's notes in its owner's notes. The modifier is listed there either way."),
+	)
+	parent.AddChild(unison.NewPanel()) // Skip the label column
+	box = addCheckBox(parent, i18n.Text("Show notes in attack usage"), showOnWeaponData)
+	box.Tooltip = newWrappedTooltip(i18n.Text("Show the modifier's notes in the usage notes of its owner's attacks."))
+}
+
 func addSpecializationLabelAndField[F fieldAccess[string]](parent *unison.Panel, fieldData F) {
 	addLabelAndStringField(parent, i18n.Text("Required Specialization"), "", fieldData)
 }

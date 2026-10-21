@@ -55,6 +55,7 @@ type GeneralModifier interface {
 	Depth() int
 	NameWithReplacements() string
 	FullDescription() string
+	NotesDescription() string
 	FullCostDescription() string
 	Enabled() bool
 	Disableable
@@ -103,14 +104,14 @@ func activeModifierFor[M ModifierNode[M, T], T ModifiableNode[T, M], S ~[]M](mod
 	return found
 }
 
-// modifierDescriptions returns the full descriptions of the enabled, non-container modifiers, separated by "; ".
+// modifierDescriptions returns the notes descriptions of the enabled, non-container modifiers, separated by "; ".
 func modifierDescriptions[M ModifierNode[M, T], T ModifiableNode[T, M], S ~[]M](modifiers S) string {
 	var buffer strings.Builder
 	Traverse(func(mod M) bool {
 		if buffer.Len() != 0 {
 			buffer.WriteString("; ")
 		}
-		buffer.WriteString(mod.FullDescription())
+		buffer.WriteString(mod.NotesDescription())
 		return false
 	}, true, true, modifiers...)
 	return buffer.String()
