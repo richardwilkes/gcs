@@ -177,3 +177,30 @@ func TestNormalizeRewritesUnnormalizedReplacementKey(t *testing.T) {
 	replacements := map[string]string{raw: "Fire"}
 	c.Equal(map[string]string{normalizedKey: "Fire"}, nameable.Normalize(replacements))
 }
+
+func TestUsesCountsEachReference(t *testing.T) {
+	c := check.New(t)
+	c.Equal(map[string]int{"style": 2, "weapon": 1}, nameable.Uses("A @style@ with a @weapon@", "More @style@", "none"))
+}
+
+func TestDetailDescribe(t *testing.T) {
+	c := check.New(t)
+	plain := func(s string) string { return s }
+	bold := func(s string) string { return "*" + s + "*" }
+	style := nameable.Detail{
+		Label: "Martial arts style", Options: []string{"Judo", "Karate", "Wrestling", "Boxing"},
+		FreeForm: true,
+	}
+	c.Equal("*@style@* asks for *Martial arts style*, suggesting *Judo*, *Karate*, *Wrestling* or *Boxing*",
+		style.Describe("style", bold))
+	style.Options = append(style.Options, "Sumo")
+	style.FreeForm = false
+	c.Equal("@style@ asks for Martial arts style, one of Judo, Karate, Wrestling or 2 more", style.Describe("style", plain))
+	weapon := nameable.Detail{FreeForm: true, NotBlank: true}
+	c.Equal("@weapon@ asks for weapon as any text, which can't be blank", weapon.Describe("weapon", plain),
+		"a nameable with no name is named by its code")
+	only := nameable.Detail{Label: "Hand", Options: []string{"Left"}}
+	c.Equal("@hand@ asks for Hand, one of Left", only.Describe("hand", plain))
+	empty := nameable.Detail{Label: "Nothing"}
+	c.Equal("@x@ asks for Nothing, with nothing to choose from", empty.Describe("x", plain))
+}

@@ -69,6 +69,7 @@ type NoteSyncData struct {
 	PageRef          string   `json:"reference,omitzero"`
 	PageRefHighlight string   `json:"reference_highlight,omitzero"`
 	Tags             []string `json:"tags,omitempty"`
+	nameablesSyncData
 }
 
 // NewNotesFromFile loads a Note list from a file.
@@ -359,6 +360,7 @@ func (n *Note) SyncWithSource() {
 	syncFromSource(n, func(other *Note) {
 		n.NoteSyncData = other.NoteSyncData
 		n.Tags = slices.Clone(other.Tags)
+		n.Nameables = nameable.CloneDetails(other.Nameables)
 	})
 }
 
@@ -374,6 +376,7 @@ func (n *NoteSyncData) hash(h hash.Hash) {
 	xhash.StringWithLen(h, n.PageRef)
 	xhash.StringWithLen(h, n.PageRefHighlight)
 	hashStrings(h, n.Tags)
+	n.nameablesSyncData.hash(h)
 }
 
 // CopyFrom implements EditorData.
@@ -395,4 +398,5 @@ func (n *NoteEditData) copyFrom(other *NoteEditData) {
 	*n = *other
 	n.Tags = slices.Clone(other.Tags)
 	n.Replacements = maps.Clone(other.Replacements)
+	n.Nameables = nameable.CloneDetails(other.Nameables)
 }

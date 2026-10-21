@@ -104,6 +104,9 @@ func initNoteEditor(e *editor[*gurps.Note, *gurps.NoteEditData], content *unison
 	addPageRefLabelAndField(content, &e.editorData.PageRef)
 	addPageRefHighlightLabelAndField(content, &e.editorData.PageRefHighlight)
 
+	content.AddChild(newNameablesPanel(&e.editorData.Nameables,
+		func() map[string]int { return nameableUses([]string{e.editorData.MarkDown}, nil, nil, nil) }, nil, nil))
+
 	label = unison.NewLabel()
 	label.SetTitle(i18n.Text("Markdown Preview"))
 	label.HAlign = align.Middle

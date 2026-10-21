@@ -17,6 +17,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/criteria"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/gurpstest"
+	"github.com/richardwilkes/gcs/v5/model/nameable"
 )
 
 // BenchmarkFileEnvVar names the environment variable that, when set to the path of a character sheet, has the
@@ -216,5 +217,46 @@ func BenchmarkModelSync(b *testing.B) {
 		cellDataFor(spells, spellPageColumns)
 		cellDataFor(carried, equipmentPageColumns)
 		cellDataFor(other, equipmentPageColumns)
+	}
+}
+
+// nameableRow is a row of a list that can hold nameables.
+type nameableRow interface {
+	nameable.Filler
+	gurps.Hashable
+}
+
+// nameableRows returns the rows of every list that can hold nameables, containers included.
+func nameableRows(e *gurps.Entity) []nameableRow {
+	var rows []nameableRow
+	gurps.Traverse(func(one *gurps.Trait) bool { rows = append(rows, one); return false }, false, false, e.Traits...)
+	gurps.Traverse(func(one *gurps.Skill) bool { rows = append(rows, one); return false }, false, false, e.Skills...)
+	gurps.Traverse(func(one *gurps.Spell) bool { rows = append(rows, one); return false }, false, false, e.Spells...)
+	for _, list := range [][]*gurps.Equipment{e.CarriedEquipment, e.OtherEquipment} {
+		gurps.Traverse(func(one *gurps.Equipment) bool { rows = append(rows, one); return false }, false, false, list...)
+	}
+	gurps.Traverse(func(one *gurps.Note) bool { rows = append(rows, one); return false }, false, false, e.Notes...)
+	return rows
+}
+
+// BenchmarkNameableKeys collects every row's nameable keys and their answers, as the substitutions prompt does,
+// including those of the modifiers linked to their owners' codes.
+func BenchmarkNameableKeys(b *testing.B) {
+	rows := nameableRows(benchEntity(b))
+	for b.Loop() {
+		for _, row := range rows {
+			row.FillWithNameableKeys(make(map[string]string), nil)
+		}
+	}
+}
+
+// BenchmarkSourceHash hashes every row's source data, nameable definitions included, as checking a sheet against its
+// library sources does.
+func BenchmarkSourceHash(b *testing.B) {
+	rows := nameableRows(benchEntity(b))
+	for b.Loop() {
+		for _, row := range rows {
+			gurps.Hash64(row)
+		}
 	}
 }

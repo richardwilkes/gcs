@@ -116,6 +116,7 @@ func processNameableGroups[T gurps.Node[T]](op promptOperation, groups []Nameabl
 					Title:       title,
 					Location:    rowLocation(row),
 					Nameables:   m,
+					Definitions: nameableDefinitions(row),
 					VisibleKeys: keys, // nil means "show all keys"
 				})
 				return false
@@ -158,8 +159,40 @@ type nameablesSection struct {
 	Location string
 	// Nameables maps each of the row's keys to its replacement, and receives the answers.
 	Nameables map[string]string
+	// Definitions holds the row's nameable definitions, used to label and constrain each key's field. A key without
+	// one falls back to being parsed as a legacy inline marker.
+	Definitions map[string]nameable.Detail
 	// VisibleKeys restricts which keys of Nameables are shown and editable; nil shows all of them.
 	VisibleKeys []string
+}
+
+// nameableDefinitions returns the nameable definitions a row's keys are described by: the row's own, plus those of its
+// modifiers, since a row's keys include theirs. The row's own definition wins when both define a code.
+func nameableDefinitions(row any) map[string]nameable.Detail {
+	defs := make(map[string]nameable.Detail)
+	add := func(item any) {
+		if definer, ok := item.(nameable.Definer); ok {
+			for code, detail := range definer.NameableDefinitions() {
+				if _, exists := defs[code]; !exists {
+					defs[code] = detail
+				}
+			}
+		}
+	}
+	add(row)
+	switch r := row.(type) {
+	case *gurps.Trait:
+		gurps.Traverse(func(mod *gurps.TraitModifier) bool {
+			add(mod)
+			return false
+		}, false, false, r.Modifiers...)
+	case *gurps.Equipment:
+		gurps.Traverse(func(mod *gurps.EquipmentModifier) bool {
+			add(mod)
+			return false
+		}, false, false, r.Modifiers...)
+	}
+	return defs
 }
 
 // showNameablesDialog shows a dialog for editing the nameables of each section. The operation describes what the
@@ -210,15 +243,31 @@ func showNameablesDialog(op promptOperation, sections []nameablesSection) bool {
 			list.AddChild(location)
 		}
 		for _, k := range keys {
-			marker, ok := nameable.NewMarker(k)
+			detail, ok := section.Definitions[k]
 			if !ok {
-				continue
+				// No stored definition for this key (an undefined code, or a marker that holds its own definition), so
+				// parse it as a marker.
+				marker, parsed := nameable.NewMarker(k)
+				if !parsed {
+					continue
+				}
+				detail = nameable.Detail{
+					Label:    marker.Label,
+					Tooltip:  marker.Tooltip,
+					Options:  marker.Options,
+					FreeForm: marker.FreeForm,
+					NotBlank: !marker.AllowEmpty,
+				}
+			}
+			displayLabel := detail.Label
+			if displayLabel == "" {
+				displayLabel = k
 			}
 			label := unison.NewLabel()
-			title := xstrings.Truncate(marker.Label, maxFieldLabelLength, true)
-			tooltip := marker.Tooltip
-			if title != marker.Label {
-				tooltip = strings.TrimSpace(marker.Label + "\n\n" + tooltip)
+			title := xstrings.Truncate(displayLabel, maxFieldLabelLength, true)
+			tooltip := detail.Tooltip
+			if title != displayLabel {
+				tooltip = strings.TrimSpace(displayLabel + "\n\n" + tooltip)
 			}
 			label.SetTitle(title)
 			if tooltip != "" {
@@ -230,41 +279,40 @@ func showNameablesDialog(op promptOperation, sections []nameablesSection) bool {
 			})
 			label.SetBorder(unison.NewEmptyBorder(geom.Insets{Left: 20}))
 			list.AddChild(label)
-			list.AddChild(createNameableField(&marker, section.Nameables))
+			list.AddChild(createNameableField(k, &detail, section.Nameables))
 		}
 	}
 	return showListQuestionDialog(op.at(promptstep.Substitutions), i18n.Text("Provide substitutions:"), list)
 }
 
-// createNameableField builds the widget used to edit the replacement value for the marker, which comes from
-// nameable.NewMarker with its ok result already checked. A FreeForm marker -- which every synthesized old-format
-// marker is, matching such markers' traditional unrestricted typing -- gets an editable combo field, while any other
-// gets a popup menu limited to the marker's options. A "not set" entry is always offered as well, since it is the only
-// way to clear a substitution, and a nameable whose value in m is nameable.Unset starts out on it, regardless of the
-// marker's Options and AllowEmpty settings.
-func createNameableField(marker *nameable.Marker, m map[string]string) unison.Paneler {
+// createNameableField builds the widget used to edit the replacement value for code, given its definition. A FreeForm
+// nameable (as every old-format marker is, matching such markers' traditional unrestricted typing) gets an editable
+// combo field, while any other gets a popup menu limited to its options. A "not set" entry is always offered as well,
+// since it is the only way to clear a substitution, and a nameable whose value in m is nameable.Unset starts out on it,
+// regardless of the definition's Options and NotBlank settings.
+func createNameableField(code string, detail *nameable.Detail, m map[string]string) unison.Paneler {
 	var initial *string
-	if v, ok := m[marker.Key()]; ok && v != nameable.Unset {
+	if v, ok := m[code]; ok && v != nameable.Unset {
 		initial = &v
 	}
-	options := make([]*string, 0, len(marker.Options)+2)
+	options := make([]*string, 0, len(detail.Options)+2)
 	options = append(options, nil)
-	if marker.AllowEmpty {
+	if !detail.NotBlank {
 		options = append(options, new(string))
 	}
-	for _, one := range marker.Options {
+	for _, one := range detail.Options {
 		options = append(options, &one)
 	}
 
 	apply := func(value *string) {
 		if value == nil {
-			delete(m, marker.Key())
+			delete(m, code)
 			return
 		}
-		m[marker.Key()] = *value
+		m[code] = *value
 	}
 
-	if marker.FreeForm {
+	if detail.FreeForm {
 		field := unison.NewComboField(options, initial, apply)
 
 		// Use a fixed string to set the lower bounds on the ComboField width

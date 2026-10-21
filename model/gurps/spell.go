@@ -1209,6 +1209,7 @@ func (s *Spell) SyncWithSource() {
 	syncFromSource(s, func(other *Spell) {
 		s.SpellSyncData = other.SpellSyncData
 		s.Tags = slices.Clone(other.Tags)
+		s.Nameables = nameable.CloneDetails(other.Nameables)
 		if s.Container() {
 			s.SpellContainerOnlySyncData = other.SpellContainerOnlySyncData
 		} else {
@@ -1282,6 +1283,7 @@ func (s *SpellEditData) copyFrom(spell *Spell, other *SpellEditData, isContainer
 	*s = *other
 	s.Tags = slices.Clone(other.Tags)
 	s.Replacements = maps.Clone(other.Replacements)
+	s.Nameables = nameable.CloneDetails(other.Nameables)
 	s.TechLevel = clonePtr(other.TechLevel)
 	s.College = slices.Clone(other.College)
 	s.Prereq = s.Prereq.CloneResolvingEmpty(isContainer, isApply)

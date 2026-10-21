@@ -111,6 +111,10 @@ type EquipmentEditData struct {
 	Equipped     bool                 `json:"equipped,omitzero"`
 	Disabled     bool                 `json:"disabled,omitzero"`
 
+	// NameableLinks maps the ID of each modifier with links to a map of its codes to the codes of this equipment's that
+	// answer them.
+	NameableLinks map[tid.TID]map[string]string `json:"nameable_links,omitempty"`
+
 	ItemSwitch
 	preconfigurable
 	choiceGrouping
@@ -132,6 +136,7 @@ type EquipmentSyncData struct {
 	Weapons                []*Weapon   `json:"weapons,omitempty"`
 	Features               Features    `json:"features,omitempty"`
 	WeightIgnoredForSkills bool        `json:"ignore_weight_for_skills,omitzero"`
+	nameablesSyncData
 }
 
 // EquipmentContainerSyncData holds the equipment sync data that is only applicable to equipment that are containers and
@@ -1284,6 +1289,7 @@ func (e *Equipment) SyncWithSource() {
 			e.EquipmentContainerSyncData = other.EquipmentContainerSyncData
 		}
 		e.Tags = slices.Clone(other.Tags)
+		e.Nameables = nameable.CloneDetails(other.Nameables)
 		e.Prereq = other.Prereq.CloneResolvingEmpty(false, true)
 		e.Weapons = CloneWeapons(other.Weapons, e, Reference)
 		e.Features = other.Features.Clone()
@@ -1325,6 +1331,7 @@ func (e *EquipmentSyncData) hash(h hash.Hash) {
 	hashList(h, e.Weapons)
 	hashList(h, e.Features)
 	xhash.Bool(h, e.WeightIgnoredForSkills)
+	e.nameablesSyncData.hash(h)
 }
 
 // CopyFrom implements EditorData.
@@ -1355,10 +1362,12 @@ func (e *EquipmentEditData) copyFrom(equipment *Equipment, other *EquipmentEditD
 	*e = *other
 	e.Tags = slices.Clone(other.Tags)
 	e.Replacements = maps.Clone(other.Replacements)
+	e.Nameables = nameable.CloneDetails(other.Nameables)
 	// Each copy is pointed at the equipment it belongs to, so its nameable placeholders resolve with that equipment's
 	// replacements. Without this, the copies held in an editor show their raw placeholders (e.g. "@Material@"), since
 	// the accessors fall back to the unsubstituted text when there is no equipment.
 	e.Modifiers = cloneModifiers(other.Modifiers, equipment, mode)
+	e.NameableLinks = cloneNameableLinks(other.NameableLinks, other.Modifiers, e.Modifiers)
 	// SetTarget() migrates a modifier's legacy replacements into the equipment it was pointed at, which isn't the
 	// holder of this data when an editor is being populated, so pick up anything it added. This is a no-op when this
 	// data is the equipment's own, since both maps are then the same one.

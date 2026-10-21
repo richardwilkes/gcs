@@ -111,6 +111,13 @@ func initSpellEditor(e *editor[*gurps.Spell, *gurps.SpellEditData], content *uni
 	addPageRefLabelAndField(content, &e.editorData.PageRef)
 	addPageRefHighlightLabelAndField(content, &e.editorData.PageRefHighlight)
 	if !e.target.Container() {
+		d := e.editorData
+		content.AddChild(newNameablesPanel(&d.Nameables, func() map[string]int {
+			return nameableUses(append([]string{
+				d.Name, d.LocalNotes, d.PowerSource, d.Class, d.Resist, d.CastingCost, d.MaintenanceCost, d.CastingTime,
+				d.Duration, d.Item, d.RitualSkillName,
+			}, d.College...), d.Prereq, d.Features, d.Weapons)
+		}, nil, nil))
 		content.AddChild(newPrereqPanel(entity, &e.editorData.Prereq, prereq.TypesForNonEquipment, true).
 			withReplacementsFrom(e.editorData))
 		content.AddChild(newFeaturesPanel(entity, e.target, &e.editorData.Features, false).

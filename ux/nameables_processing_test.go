@@ -14,6 +14,7 @@ import (
 	"testing"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/model/nameable"
 	"github.com/richardwilkes/gcs/v5/ux/uxtest"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/unison"
@@ -363,4 +364,20 @@ func TestAltDropOfAContainerAsksAboutTheKeyItsChildSharesOnce(t *testing.T) {
 	c.Equal(1, len(sword.Modifiers), "the container must be attached")
 	c.Equal("Steel Fittings", sword.Modifiers[0].NameWithReplacements())
 	c.Equal([]string{"Steel Pommel", "Red Steel Guard"}, appliedModifierNames(sword.Modifiers[0].Children))
+}
+
+// A nameable's definition decides how the prompt asks for it: a closed list of options is a popup, and one that can't
+// be blank offers no blank answer.
+func TestNameableFieldFollowsItsDefinition(t *testing.T) {
+	c := check.New(t)
+	answers := map[string]string{}
+	popup, ok := createNameableField("hand", &nameable.Detail{Options: []string{"Left", "Right"}, NotBlank: true},
+		answers).(*unison.PopupMenu[*string])
+	c.True(ok, "a closed list of options is a popup")
+	if ok {
+		c.Equal(3, popup.ItemCount(), "not set, then the two options, with no blank answer")
+	}
+	_, ok = createNameableField("hand", &nameable.Detail{Options: []string{"Left"}, FreeForm: true},
+		answers).(*unison.Field)
+	c.True(ok, "options that allow any text are a combo field")
 }

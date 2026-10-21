@@ -132,6 +132,7 @@ func disableAllBut(panel *unison.Panel, keep func(*unison.Panel) bool) {
 }
 
 // initRows sets up the rows of a panel whose rows are dragged as dragKey, with the callbacks described on sentenceRows.
+// With a nil dragKey, the rows have no order to change, so they have no grips and can't be dragged.
 func (p *sentenceRows[T]) initRows(dragKey *uti.DataType, fill func(), snapshot func() T, restore func(T), dataHash func() uint64) {
 	p.targetMgr = NewTargetMgr(p)
 	p.dragKey = dragKey
@@ -478,14 +479,17 @@ func addMoreButton(parent *unison.Panel, path string, name func() string, entrie
 }
 
 // sentenceRow returns the panel of the row at the path: the sentence describe returns, or while the row is open the
-// controls editor returns, beside a button for the entries of its more menu. A row that isn't editable, such as one
-// this version of GCS doesn't understand, has a sentence that doesn't open it, whose tooltip says why (see staticTip).
-// lead, when set, adds what goes between the row's grip and its sentence, returning it and its height, to put it on the
-// first line. trail, when set, adds what follows the sentence of a closed row.
+// controls editor returns, beside a button for the entries of its more menu, unless more is nil. A row that isn't
+// editable, such as one this version of GCS doesn't understand, has a sentence that doesn't open it, whose tooltip says
+// why (see staticTip). lead, when set, adds what goes between the row's grip and its sentence, returning it and its
+// height, to put it on the first line. trail, when set, adds what follows the sentence of a closed row.
 func (p *sentenceRows[T]) sentenceRow(path string, describe func() string, editable bool, editor func() *unison.Panel, more func() []menuEntry, lead func(row *unison.Panel) (*unison.Panel, float32), trail func(row *unison.Panel, sentence *sentenceButton)) *unison.Panel {
 	open := path == p.open
 	row := unison.NewPanel()
-	grip := p.grip(row, path)
+	var grip *DragHandle
+	if p.dragKey != nil {
+		grip = p.grip(row, path)
+	}
 	var leader *unison.Panel
 	var leaderSize float32
 	if lead != nil {
@@ -507,7 +511,9 @@ func (p *sentenceRows[T]) sentenceRow(path string, describe func() string, edita
 		}
 		sentence := newSentenceButton(describe(), click)
 		sentence.RefKey = path + keySentence
-		p.dragBy(sentence.AsPanel(), row, path)
+		if grip != nil {
+			p.dragBy(sentence.AsPanel(), row, path)
+		}
 		if click == nil {
 			// One this version of GCS doesn't understand can't be edited, so its sentence is static text.
 			tip := i18n.Text("This was most likely created by a newer version of GCS. Its original data will be written back out unchanged when this file is saved.")
@@ -523,9 +529,13 @@ func (p *sentenceRows[T]) sentenceRow(path string, describe func() string, edita
 		}
 		line = sentence.lineHeight()
 	}
-	addMoreButton(row, path, func() string { return i18n.Text("More actions for %s", stripEm.Replace(describe())) }, more)
+	if more != nil {
+		addMoreButton(row, path, func() string { return i18n.Text("More actions for %s", stripEm.Replace(describe())) }, more)
+	}
 	hbox(row, unison.StdHSpacing)
-	putOnLine(grip.AsPanel(), line, grip.svg.Size.Height)
+	if grip != nil {
+		putOnLine(grip.AsPanel(), line, grip.svg.Size.Height)
+	}
 	if leader != nil {
 		putOnLine(leader, line, leaderSize)
 	}
@@ -538,7 +548,7 @@ func (p *sentenceRows[T]) sentenceRow(path string, describe func() string, edita
 				fitLine(child)
 			}
 			child.SetLayoutData(&unison.FlexLayoutData{VAlign: align.Start})
-		case child != grip.AsPanel() && child != leader:
+		case (grip == nil || child != grip.AsPanel()) && child != leader:
 			_, pref, _ := child.Sizes(geom.Size{})
 			putOnLine(child, line, pref.Height)
 		}

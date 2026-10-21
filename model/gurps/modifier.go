@@ -16,6 +16,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/display"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/srcstate"
 	"github.com/richardwilkes/gcs/v5/model/nameable"
+	"github.com/richardwilkes/toolbox/v2/tid"
 	"github.com/richardwilkes/toolbox/v2/xreflect"
 )
 
@@ -203,15 +204,76 @@ func modifierNameableReplacements(existing map[string]string, modifier nameable.
 // applyOwnerReplacements applies the nameable replacements of the trait or equipment that owns a modifier to s. A
 // modifier without an owner returns s untouched, markers and all. That is deliberately not the same as calling
 // nameable.Apply with a nil map, which would render any unresolved markers in their compact form and so change what
-// an unattached modifier (in a library file editor, for example) displays.
+// an unattached modifier (in a library file editor, for example) displays. links are the owner's links for the
+// modifier's codes.
 func applyOwnerReplacements[T any, PT interface {
 	*T
 	nameable.Accesser
-}](s string, owner PT) string {
+}](s string, owner PT, links map[string]string) string {
 	if owner == nil {
 		return s
 	}
-	return nameable.Apply(s, owner.NameableReplacements())
+	return nameable.ApplyLinked(s, owner.NameableReplacements(), links)
+}
+
+// linkedReplacements returns the replacements as a modifier with the links sees them: each of its linked codes takes
+// the value of the owner's code it is linked to. Returns replacements itself when there are no links.
+func linkedReplacements(replacements, links map[string]string) map[string]string {
+	if len(links) == 0 {
+		return replacements
+	}
+	view := maps.Clone(replacements)
+	if view == nil {
+		view = make(map[string]string, len(links))
+	}
+	for code, target := range links {
+		if v, ok := replacements[target]; ok {
+			view[code] = v
+		} else {
+			delete(view, code)
+		}
+	}
+	return view
+}
+
+// addLinkedNameableKeys adds the keys found in a modifier to m, each linked one under the owner's code it is linked to,
+// so that it is asked about, and answered, as that code. found is m itself when there are no links.
+func addLinkedNameableKeys(m, found, links map[string]string) {
+	if len(links) == 0 {
+		return
+	}
+	for code, v := range found {
+		if target, ok := links[code]; ok {
+			code = target
+		}
+		if _, exists := m[code]; !exists {
+			m[code] = v
+		}
+	}
+}
+
+// cloneNameableLinks returns a copy of an owner's nameable links for the copies of its modifiers, keyed by the IDs of
+// the copies, which differ from the originals' when they were cloned as a new reference or a duplicate. Links for a
+// modifier that is no longer there are dropped.
+func cloneNameableLinks[M Node[M], S ~[]M](links map[tid.TID]map[string]string, from, to S) map[tid.TID]map[string]string {
+	if len(links) == 0 {
+		return nil
+	}
+	var result map[tid.TID]map[string]string
+	var walk func(from, to []M)
+	walk = func(from, to []M) {
+		for i := range min(len(from), len(to)) {
+			if one, ok := links[from[i].ID()]; ok {
+				if result == nil {
+					result = make(map[tid.TID]map[string]string)
+				}
+				result[to[i].ID()] = maps.Clone(one)
+			}
+			walk(from[i].NodeChildren(), to[i].NodeChildren())
+		}
+	}
+	walk(from, to)
+	return result
 }
 
 // modifierSecondaryText returns the "secondary" text for a modifier: its resolved local notes, provided the sheet

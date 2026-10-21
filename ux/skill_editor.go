@@ -254,6 +254,15 @@ func initSkillEditor(e *editor[*gurps.Skill, *gurps.SkillEditData], content *uni
 	addPageRefLabelAndField(content, &e.editorData.PageRef)
 	addPageRefHighlightLabelAndField(content, &e.editorData.PageRefHighlight)
 	if !e.target.Container() {
+		d := e.editorData
+		content.AddChild(newNameablesPanel(&d.Nameables, func() map[string]int {
+			defaults := append(make([]nameable.Filler, 0, len(d.Defaults)+1), d.TechniqueDefault)
+			for _, one := range d.Defaults {
+				defaults = append(defaults, one)
+			}
+			return nameableUses([]string{d.Name, d.LocalNotes, d.Specialization, d.OptionalSpecialization}, d.Prereq,
+				d.Features, d.Weapons, defaults...)
+		}, nil, nil))
 		content.AddChild(newPrereqPanel(entity, &e.editorData.Prereq, prereq.TypesForNonEquipment, false).
 			withReplacementsFrom(e.editorData))
 		if !e.target.IsTechnique() {

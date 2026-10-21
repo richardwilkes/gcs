@@ -153,7 +153,11 @@ func (e *editor[N, D]) createToolbar(helpMD string, initToolbar func(*editor[N, 
 				e.nameablesButton.Tooltip = newWrappedTooltip(i18n.Text("Set Substitutions"))
 				e.nameablesButton.ClickCallback = func() {
 					if tmp, m := e.prepareForSubstitutions(); len(m) > 0 {
-						if !promptForNameables(promptOperation{}, []nameablesSection{{Title: tmp.String(), Nameables: m}}) {
+						if !promptForNameables(promptOperation{}, []nameablesSection{{
+							Title:       tmp.String(),
+							Nameables:   m,
+							Definitions: nameableDefinitions(tmp),
+						}}) {
 							return
 						}
 						tmp.ApplyNameableKeys(m)

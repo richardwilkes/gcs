@@ -84,7 +84,7 @@ func (e *Equipment) MergeMatches(other *Equipment) bool {
 		e.PickSeparately == other.PickSeparately &&
 		maps.Equal(e.Replacements, other.Replacements) &&
 		weaponsMatch(e.Weapons, other.Weapons) &&
-		equipmentModifiersMatch(e.Modifiers, other.Modifiers)
+		equipmentModifiersMatch(e.Modifiers, other.Modifiers, e.NameableLinks, other.NameableLinks)
 }
 
 // weaponsMatch returns true if the weapons match in what WeaponData.Hash leaves out: whether each is hidden. The rest of
@@ -101,7 +101,9 @@ func weaponsMatch(a, b []*Weapon) bool {
 	return true
 }
 
-func equipmentModifiersMatch(a, b []*EquipmentModifier) bool {
+// equipmentModifiersMatch returns true if the modifiers match, including the nameable links their owners hold for them,
+// aLinks for a and bLinks for b. The links are keyed by modifier ID, so they are compared modifier by modifier.
+func equipmentModifiersMatch(a, b []*EquipmentModifier, aLinks, bLinks map[tid.TID]map[string]string) bool {
 	if len(a) != len(b) {
 		return false
 	}
@@ -111,7 +113,8 @@ func equipmentModifiersMatch(a, b []*EquipmentModifier) bool {
 			one.Disabled != other.Disabled ||
 			one.VTTNotes != other.VTTNotes ||
 			!maps.Equal(one.Replacements, other.Replacements) ||
-			!equipmentModifiersMatch(one.Children, other.Children) {
+			!maps.Equal(aLinks[one.TID], bLinks[other.TID]) ||
+			!equipmentModifiersMatch(one.Children, other.Children, aLinks, bLinks) {
 			return false
 		}
 	}

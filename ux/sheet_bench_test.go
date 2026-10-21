@@ -28,8 +28,8 @@ import (
 // The benchmarks in this file measure what a character sheet with large lists costs to update, rebuild, draw and
 // scroll, in a headless session. Run them with:
 //
-//	GOEXPERIMENT=simd go test ./ux -run '^$' -bench '^Benchmark(Sheet|PageList)' -benchmem -benchtime 2s -count 6 \
-//	    -timeout 90m | tee baseline.txt
+//	GOEXPERIMENT=simd go test ./ux -run '^$' -bench '^Benchmark(Sheet|PageList|NameablesPanel)' -benchmem -benchtime 2s \
+//	    -count 6 -timeout 90m | tee baseline.txt
 //
 // For a quick look, add GCS_BENCH_SIZE=0.25 and -benchtime 5x. GCS_BENCH_FILE names a real sheet to measure instead
 // of the generated one (see benchEntity); a benchmark of a list that sheet leaves off the page is skipped. Compare two
@@ -265,6 +265,48 @@ func BenchmarkSheetSearch(b *testing.B) {
 			sb.run(b, sb.sheet.searchTracker.Refresh)
 		})
 	}
+}
+
+// BenchmarkNameablesPanel measures the Nameables section of the editor of a trait on the sheet whose modifiers share
+// and are linked to its nameables: "sync" is the check it makes after every change in the editor, and "rebuild" builds
+// its rows again, as each change to them does. The section isn't in a window, so both are timed on the UI thread
+// alone, with nothing drawn.
+func BenchmarkNameablesPanel(b *testing.B) {
+	sb := newSheetBench(b)
+	var p *nameablesPanel
+	sb.screen.Do(func() {
+		gurps.Traverse(func(t *gurps.Trait) bool {
+			if len(t.NameableLinks) == 0 {
+				return false
+			}
+			_, content := buildEditorContent(sb.sheet, t, initTraitEditor)
+			p, _ = uxtest.FirstPanelOfType[*nameablesPanel](content)
+			return true
+		}, false, true, sb.sheet.entity.Traits...)
+	})
+	if p == nil {
+		b.Skip("no trait on the sheet links its modifiers' nameables")
+	}
+	sb.screen.Do(func() {
+		if p.collapse.collapsed {
+			p.collapse.toggle()
+		}
+	})
+	b.Run("sync", func(b *testing.B) {
+		sb.screen.Do(func() {
+			for b.Loop() {
+				p.Sync()
+			}
+		})
+	})
+	b.Run("rebuild", func(b *testing.B) {
+		sb.screen.Do(func() {
+			for b.Loop() {
+				p.RemoveAllChildren()
+				p.build()
+			}
+		})
+	})
 }
 
 // TestSheetBenchSkipsAListNotOnThePage verifies that a benchmark of a list that a loaded sheet leaves off the page, such

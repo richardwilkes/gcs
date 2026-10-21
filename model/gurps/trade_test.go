@@ -19,6 +19,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/eqcontainer"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/gcs/v5/model/kinds"
+	"github.com/richardwilkes/gcs/v5/model/nameable"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/toolbox/v2/tid"
 )
@@ -123,6 +124,9 @@ func mergeBase() *Equipment {
 	oil.Disabled = true
 	group.Children = []*EquipmentModifier{oil}
 	eqp.SetModifiers([]*EquipmentModifier{hooded, group})
+	eqp.Nameables = map[string]nameable.Detail{"Price": {Label: "Price", FreeForm: true}}
+	hooded.Nameables = map[string]nameable.Detail{"Cost": {Label: "Cost", FreeForm: true}}
+	eqp.NameableLinks = map[tid.TID]map[string]string{hooded.TID: {"Cost": "Price"}}
 	return eqp
 }
 
@@ -184,6 +188,12 @@ func TestMergeMatches(t *testing.T) {
 		{name: "modifier replacements", change: func(eqp *Equipment) {
 			eqp.Modifiers[0].Replacements = map[string]string{"x": "y"}
 		}},
+		{name: "nameables", change: func(eqp *Equipment) { eqp.Nameables["Price"] = nameable.Detail{Label: "Cost"} }},
+		{name: "modifier nameables", change: func(eqp *Equipment) { eqp.Modifiers[0].Nameables = nil }},
+		{name: "nameable link", change: func(eqp *Equipment) {
+			eqp.NameableLinks[eqp.Modifiers[0].TID]["Cost"] = "Size"
+		}},
+		{name: "nameable link removed", change: func(eqp *Equipment) { eqp.NameableLinks = nil }},
 		{name: "nested modifier sync data", change: func(eqp *Equipment) { eqp.Modifiers[1].Children[0].Name = "Gas" }},
 		{name: "nested modifier disabled", change: func(eqp *Equipment) { eqp.Modifiers[1].Children[0].Disabled = false }},
 		{name: "nested modifier removed", change: func(eqp *Equipment) { eqp.Modifiers[1].Children = nil }},
@@ -245,18 +255,18 @@ func TestMergeMatchesCoversEveryField(t *testing.T) {
 			expected: []string{
 				"TID", "Source", "ContainerType", "Name", "PageRef", "PageRefHighlight", "LocalNotes", "TechLevel",
 				"LegalityClass", "Tags", "BaseValue", "BaseWeight", "MaxUses", "Prereq", "Weapons", "Features",
-				"WeightIgnoredForSkills", "TemplatePicker", "VTTNotes", "Replacements", "Modifiers", "RatedST", "Quantity",
-				"Level", "Uses", "Equipped", "Disabled", "SwitchedOn", "Preconfigured", "PickSeparately", "ThirdParty",
-				"Children", "parent",
+				"WeightIgnoredForSkills", "Nameables", "TemplatePicker", "VTTNotes", "Replacements", "Modifiers",
+				"RatedST", "Quantity", "Level", "Uses", "Equipped", "Disabled", "NameableLinks", "SwitchedOn",
+				"Preconfigured", "PickSeparately", "ThirdParty", "Children", "parent",
 			},
 		},
 		{
 			typ: reflect.TypeFor[EquipmentModifierData](),
 			expected: []string{
-				"TID", "Source", "Name", "PageRef", "PageRefHighlight", "LocalNotes", "Tags", "VTTNotes", "Replacements",
-				"CostType", "CostIsPerLevel", "CostIsPerPound", "WeightType", "WeightIsPerLevel", "ShowNotesOnWeapon",
-				"TechLevel", "CostAmount", "WeightAmount", "Features", "HideNotes", "Disabled", "Choice", "ThirdParty",
-				"Children", "parent",
+				"TID", "Source", "Name", "PageRef", "PageRefHighlight", "LocalNotes", "Tags", "Nameables", "VTTNotes",
+				"Replacements", "CostType", "CostIsPerLevel", "CostIsPerPound", "WeightType", "WeightIsPerLevel",
+				"ShowNotesOnWeapon", "TechLevel", "CostAmount", "WeightAmount", "Features", "HideNotes", "Disabled",
+				"Choice", "ThirdParty", "Children", "parent",
 			},
 		},
 	}
