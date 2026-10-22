@@ -252,10 +252,5 @@ func (d *attributeSettingsDockable) apply() {
 			}
 		}
 	}
-	invalidateDisplayData()
-	for _, one := range AllDockables() {
-		if s, ok := one.(gurps.SheetSettingsResponder); ok {
-			s.SheetSettingsUpdated(entity, true)
-		}
-	}
+	notifySheetSettingsUpdated(entity, gurps.SheetSettingsAttributesPart, true)
 }

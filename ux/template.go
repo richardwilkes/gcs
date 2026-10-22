@@ -451,8 +451,10 @@ func (t *Template) searchableLists() []searchableList {
 	})
 }
 
-// SheetSettingsUpdated implements gurps.SheetSettingsResponder.
-func (t *Template) SheetSettingsUpdated(e *gurps.Entity, fullRebuild bool) {
+// SheetSettingsUpdated implements gurps.SheetSettingsResponder. A template has no entity of its own and shows what the
+// default sheet settings call for, laying itself out from the default layout among the rest, so a change to any part
+// of those -- reported with a nil entity -- concerns it.
+func (t *Template) SheetSettingsUpdated(e *gurps.Entity, _ gurps.SheetSettingsParts, fullRebuild bool) {
 	if e == nil {
 		t.Rebuild(fullRebuild)
 	}

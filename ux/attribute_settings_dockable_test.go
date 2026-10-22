@@ -419,7 +419,8 @@ func TestApplyingDefaultAttributesReportsTheChange(t *testing.T) {
 
 // TestApplyingDefaultAttributesSyncsTheListsWithoutAnEntity verifies that applying the default attribute definitions
 // syncs the open templates and library lists, which show the default definitions' names, so that their columns and
-// rows are sized for the new names and redrawn with them.
+// rows are sized for the new names and redrawn with them, and leaves the open loot sheets, which show no attributes,
+// alone.
 func TestApplyingDefaultAttributesSyncsTheListsWithoutAnEntity(t *testing.T) {
 	c := check.New(t)
 	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
@@ -431,6 +432,7 @@ func TestApplyingDefaultAttributesSyncsTheListsWithoutAnEntity(t *testing.T) {
 	data.Skills = []*gurps.Skill{newTestSkill("Brawling", fxp.One, nil)}
 	var template *Template
 	var list *TableDockable[*gurps.Skill]
+	var loot *LootSheet
 	screen.Do(func() {
 		template = newTestTemplateDockable("Template", data)
 		DisplayNewDockable(template)
@@ -438,14 +440,19 @@ func TestApplyingDefaultAttributesSyncsTheListsWithoutAnEntity(t *testing.T) {
 		list = NewSkillTableDockable(filepath.Join(t.TempDir(), "test"+gurps.SkillsExt),
 			[]*gurps.Skill{newTestSkill("Brawling", fxp.One, nil)})
 		DisplayNewDockable(list)
+		loot = NewLootSheet("test"+gurps.LootExt, gurps.NewLoot())
+		DisplayNewDockable(loot)
+		loot.markUnmodified()
 	})
 	c.NotNil(template, "the template must open")
 	c.NotNil(list, "the library list must open")
-	if template == nil || list == nil {
+	c.NotNil(loot, "the loot sheet must open")
+	if template == nil || list == nil || loot == nil {
 		return
 	}
 	row := list.table.RowFromIndex(0)
 	c.NotNil(row, "the library list must show the skill")
+	lootStamp := loot.Equipment.syncedAtStamp()
 
 	screen.Do(func() { ShowAttributeSettings(nil) })
 	d := uxtest.SoleEditor[*attributeSettingsDockable](t, screen, func(d unison.Dockable) bool {
@@ -459,4 +466,5 @@ func TestApplyingDefaultAttributesSyncsTheListsWithoutAnEntity(t *testing.T) {
 	})
 	c.True(template.Skills.syncedAtStamp() > before, "the template's skills list must be synced")
 	c.True(list.table.RowFromIndex(0) != row, "the library list must be synced")
+	c.Equal(lootStamp, loot.Equipment.syncedAtStamp(), "the loot sheet shows no attributes, so it must be left alone")
 }

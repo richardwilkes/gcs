@@ -11,6 +11,7 @@ package ux
 
 import (
 	"fmt"
+	"path/filepath"
 	"slices"
 	"testing"
 	"time"
@@ -21,6 +22,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/layoutnode"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/gcs/v5/model/paper"
+	"github.com/richardwilkes/gcs/v5/ux/uxtest"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/xmath"
@@ -1242,6 +1244,7 @@ func TestUseLayoutAsDefaultStoresACopy(t *testing.T) {
 	c.Equal(1, len(recorder.updates), "everything that lays itself out from the defaults must be told once")
 	c.True(recorder.updates[0], "the notification must ask for a full rebuild")
 	c.Nil(recorder.entities[0], "a nil entity is what says the change was to the defaults")
+	c.Equal(gurps.SheetSettingsLayoutPart, recorder.parts[0], "the notification must say only the layout changed")
 
 	// Neither of the two can be changed by way of the other.
 	global.Sheet.Layout.Hide(gurps.BlockSpellsKey)
@@ -1279,6 +1282,7 @@ func TestResetDefaultLayoutRestoresTheFactoryLayout(t *testing.T) {
 	c.Equal(1, len(recorder.updates), "everything that lays itself out from the defaults must be told once")
 	c.True(recorder.updates[0], "the notification must ask for a full rebuild")
 	c.Nil(recorder.entities[0], "a nil entity is what says the change was to the defaults")
+	c.Equal(gurps.SheetSettingsLayoutPart, recorder.parts[0], "the notification must say only the layout changed")
 }
 
 // TestCancelDragPutsTheLayoutBack checks that abandoning a gesture partway through restores the layout it started from,
@@ -1854,4 +1858,48 @@ func TestHiddenListsOfferNoCommands(t *testing.T) {
 
 	sheet.hideLayoutBlock(gurps.BlockTraitsKey)
 	c.False(readGates().newTrait, "hiding the traits disables adding to them")
+}
+
+// TestSetDefaultSheetLayoutRebuildsOnlyWhatShowsIt checks that setting the default block layout rebuilds the open
+// templates, which lay themselves out from it, and nothing else: a library list and a loot sheet have no layout, and
+// used to be fully rebuilt all the same.
+func TestSetDefaultSheetLayoutRebuildsOnlyWhatShowsIt(t *testing.T) {
+	c := check.New(t)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
+	global := gurps.GlobalSettings()
+	restoreDefaultSheetLayout(t, global.Sheet.Layout)
+
+	var sheet *Sheet
+	var template *Template
+	var loot *LootSheet
+	var list *TableDockable[*gurps.Trait]
+	screen.Do(func() {
+		sheet = NewSheet("test"+gurps.SheetExt, gurps.NewEntity())
+		DisplayNewDockable(sheet)
+		sheet.markUnmodified() // So that closing it asks nothing.
+		template = newTestTemplateDockable("Template", gurps.NewTemplate())
+		DisplayNewDockable(template)
+		template.markUnmodified()
+		loot = NewLootSheet("test"+gurps.LootExt, gurps.NewLoot())
+		DisplayNewDockable(loot)
+		loot.markUnmodified()
+		list = NewTraitTableDockable(filepath.Join(t.TempDir(), "test"+gurps.TraitsExt),
+			[]*gurps.Trait{newFilterTestTrait("Acute Vision", "Physical")})
+		DisplayNewDockable(list)
+	})
+	row := list.table.RowFromIndex(0)
+	c.NotNil(row, "the library list must show its trait")
+	lootStamp := loot.Equipment.syncedAtStamp()
+	before := currentDisplayStamp()
+
+	screen.Do(func() {
+		sheet.Entity().SheetSettings.Layout.Hide(gurps.BlockNotesKey)
+		sheet.useLayoutAsDefault()
+	})
+
+	c.False(global.Sheet.Layout.Contains(gurps.BlockNotesKey), "the default must be the sheet's layout")
+	c.True(template.Traits.syncedAtStamp() > before,
+		"a template lays itself out from the default layout, so it must be rebuilt")
+	c.Equal(lootStamp, loot.Equipment.syncedAtStamp(), "a loot sheet has no layout, so it must be left alone")
+	c.True(list.table.RowFromIndex(0) == row, "a library list has no layout, so it must be left alone")
 }

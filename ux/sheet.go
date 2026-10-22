@@ -675,8 +675,9 @@ func (s *Sheet) swapDefaults(_ any) {
 	commitTableUndo(s.Skills.Table, undo)
 }
 
-// SheetSettingsUpdated implements gurps.SheetSettingsResponder.
-func (s *Sheet) SheetSettingsUpdated(entity *gurps.Entity, fullRebuild bool) {
+// SheetSettingsUpdated implements gurps.SheetSettingsResponder. A sheet shows its own settings and nothing of the
+// defaults, so a change to any part of its entity's settings concerns it and no other change does.
+func (s *Sheet) SheetSettingsUpdated(entity *gurps.Entity, _ gurps.SheetSettingsParts, fullRebuild bool) {
 	if s.entity == entity {
 		// A single rebuild both reports the change and refreshes everything the settings affect; marking the sheet as
 		// modified first would only perform the same update a second time (see rebuildAsModified).
@@ -826,13 +827,9 @@ func setDefaultSheetLayout(layout *gurps.SheetLayout) {
 	// live ones, so the snapshot has to be republished for such a sheet opened from now on to get this layout.
 	gurps.SyncGlobalSheetSettings()
 	// Templates lay themselves out from the default layout, so they have to be told. A nil entity is what says the
-	// change was to the defaults rather than to some sheet's own settings, which is why the open sheets ignore it.
-	invalidateDisplayData()
-	for _, one := range AllDockables() {
-		if responder, ok := one.(gurps.SheetSettingsResponder); ok {
-			responder.SheetSettingsUpdated(nil, true)
-		}
-	}
+	// change was to the defaults rather than to some sheet's own settings, which is why the open sheets ignore it, and
+	// the part is what lets the library lists and loot sheets, which have no layout, ignore it too.
+	notifySheetSettingsUpdated(nil, gurps.SheetSettingsLayoutPart, true)
 }
 
 func (s *Sheet) showLayoutMenu(b *unison.Button) {
@@ -967,12 +964,7 @@ func (s *Sheet) BodySettings(forReset bool) *gurps.Body {
 // SetBodySettings implements BodySettingsOwner.
 func (s *Sheet) SetBodySettings(body *gurps.Body) {
 	s.entity.SheetSettings.BodyType = body
-	invalidateDisplayData()
-	for _, one := range AllDockables() {
-		if responder, ok := one.(gurps.SheetSettingsResponder); ok {
-			responder.SheetSettingsUpdated(s.entity, true)
-		}
-	}
+	notifySheetSettingsUpdated(s.entity, gurps.SheetSettingsBodyTypePart, true)
 }
 
 // attributesDiscloser adapts an entity's attributes to hierarchyDiscloser, whose methods take no entity.

@@ -317,14 +317,17 @@ func (d *TableDockable[T]) Rebuild(_ bool) {
 
 // SheetSettingsUpdated implements gurps.SheetSettingsResponder. A library list has no entity of its own and shows what
 // the default sheet settings call for, such as the default attribute names, so only a change to those -- reported with
-// a nil entity -- concerns it. A change that can't alter the columns or the rows, reported without a full rebuild,
-// leaves the rows in place: each cell derives its data afresh once the change has been reported and keeps its panel
-// when that data is unchanged (see Node.ColumnCell), so only the row heights have to be settled again. A library list
-// builds its rows anew on every sync (see rowReuse), so syncing it for such a change would build every cell anew,
-// which a keystroke in the global sheet settings would then cost for every open list. A filter in force is applied
-// over again, since what it keeps can turn on the settings, as a weight does on the default units.
-func (d *TableDockable[T]) SheetSettingsUpdated(entity *gurps.Entity, fullRebuild bool) {
-	if entity != nil {
+// a nil entity -- concerns it, and a change to the default block layout or body type, neither of which it has any part
+// in, does not. A change that can't alter the columns or the rows, reported without a full rebuild, leaves the rows in
+// place: each cell derives its data afresh once the change has been reported and keeps its panel when that data is
+// unchanged (see Node.ColumnCell), so only the row heights have to be settled again. A library list builds its rows
+// anew on every sync (see rowReuse), so syncing it for such a change would build every cell anew, which a keystroke in
+// the global sheet settings would then cost for every open list. A filter in force is applied over again, since what
+// it keeps can turn on the settings, as a weight does on the default units.
+func (d *TableDockable[T]) SheetSettingsUpdated(entity *gurps.Entity, parts gurps.SheetSettingsParts,
+	fullRebuild bool,
+) {
+	if entity != nil || parts&(gurps.SheetSettingsGeneralPart|gurps.SheetSettingsAttributesPart) == 0 {
 		return
 	}
 	if fullRebuild || d.table.IsFiltered() {

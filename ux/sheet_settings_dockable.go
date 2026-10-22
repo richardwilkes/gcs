@@ -292,7 +292,7 @@ func (d *sheetSettingsDockable) createOptions(content *unison.Panel) {
 	for _, option := range options {
 		box := d.addCheckBox(panel, option.title, option.pageRef, option.checked(s), func(checked bool) {
 			option.apply(d.settings(), checked)
-			d.syncSheet(option.fullSync)
+			d.syncSheet(gurps.SheetSettingsGeneralPart, option.fullSync)
 		})
 		if option.tooltip != "" {
 			box.Tooltip = newWrappedTooltip(option.tooltip)
@@ -389,7 +389,7 @@ func (d *sheetSettingsDockable) addNumberFormatRow(panel *unison.Panel, title, t
 	row.popup.Tooltip = newWrappedTooltip(tooltip)
 	row.pad = d.addCheckBox(panel, i18n.Text("Pad with zeros"), "", current.PadWithZeros, func(checked bool) {
 		apply(func(f *fxp.NumberFormat) { f.PadWithZeros = checked })
-		d.syncSheet(false)
+		d.syncSheet(gurps.SheetSettingsGeneralPart, false)
 	})
 	// Every row's checkbox shows the same title, so each is named for the value it pads.
 	row.pad.Accessibility.Name = i18n.Text("Pad %s with zeros", title)
@@ -449,7 +449,7 @@ func (d *sheetSettingsDockable) createPercentField(panel *unison.Panel, title, t
 		func(v int) {
 			if current := value(d.settings()); *current != v {
 				*current = v
-				d.syncSheet(false)
+				d.syncSheet(gurps.SheetSettingsGeneralPart, false)
 			}
 		}, gurps.MinTradePercent, gurps.MaxTradePercent, false, false)
 	field.Tooltip = newWrappedTooltip(tooltip)
@@ -536,7 +536,7 @@ func (d *sheetSettingsDockable) addSellMoney(tableData *unison.TableDragData[*No
 	}
 	if added {
 		d.rebuildSellMoney()
-		d.syncSheet(false)
+		d.syncSheet(gurps.SheetSettingsGeneralPart, false)
 	}
 	return added
 }
@@ -636,7 +636,7 @@ func (d *sheetSettingsDockable) rebuildSellMoney() {
 				hadFocus = wnd.CurrentFocus() == remove.AsPanel()
 			}
 			d.rebuildSellMoney()
-			d.syncSheet(false)
+			d.syncSheet(gurps.SheetSettingsGeneralPart, false)
 			if hadFocus {
 				d.focusSellMoneyRemoveButton(i)
 			}
@@ -733,7 +733,7 @@ func (d *sheetSettingsDockable) createPaperSizeField(panel *unison.Panel, curren
 	field.ModifiedCallback = func(_, after *unison.FieldState) {
 		if width, height, valid := gurps.ParsePageSize(after.Text); valid {
 			set(gurps.ToPageSize(width, height))
-			d.syncSheet(false)
+			d.syncSheet(gurps.SheetSettingsGeneralPart, false)
 		}
 	}
 	field.SetLayoutData(&unison.FlexLayoutData{
@@ -767,7 +767,7 @@ func (d *sheetSettingsDockable) createPaperMarginField(panel *unison.Panel, titl
 	field.ModifiedCallback = func(_, after *unison.FieldState) {
 		if value, err := paper.ParseLengthFromString(after.Text); err == nil {
 			set(value)
-			d.syncSheet(false)
+			d.syncSheet(gurps.SheetSettingsGeneralPart, false)
 		}
 	}
 	field.SetLayoutData(&unison.FlexLayoutData{
@@ -782,7 +782,7 @@ func (d *sheetSettingsDockable) createSettingPopup[T comparable](panel *unison.P
 	panel.AddChild(NewFieldLeadingLabel(title, false))
 	popup := newPopupMenu(choices, current, func(item T) {
 		set(item)
-		d.syncSheet(false)
+		d.syncSheet(gurps.SheetSettingsGeneralPart, false)
 	})
 	panel.AddChild(popup)
 	return popup
@@ -813,7 +813,7 @@ func (d *sheetSettingsDockable) reset() {
 		gurps.GlobalSettings().Sheet = gurps.FactorySheetSettings()
 	}
 	d.sync()
-	d.syncSheet(true)
+	d.syncSheet(gurps.SheetSettingsAllParts, true)
 }
 
 func (d *sheetSettingsDockable) sync() {
@@ -845,7 +845,9 @@ func (d *sheetSettingsDockable) sync() {
 	d.MarkForRedraw()
 }
 
-func (d *sheetSettingsDockable) syncSheet(full bool) {
+// syncSheet reports a change to the given parts of the settings this dockable edits to the open dockables that show
+// them.
+func (d *sheetSettingsDockable) syncSheet(parts gurps.SheetSettingsParts, full bool) {
 	var entity *gurps.Entity
 	if d.owner != nil {
 		entity = d.owner.Entity()
@@ -853,10 +855,17 @@ func (d *sheetSettingsDockable) syncSheet(full bool) {
 		// The global sheet settings were just changed, so republish the snapshot background parses read.
 		gurps.SyncGlobalSheetSettings()
 	}
+	notifySheetSettingsUpdated(entity, parts, full)
+}
+
+// notifySheetSettingsUpdated reports a change to the given parts of the entity's sheet settings, or of the defaults
+// when entity is nil, to every open dockable that responds to such changes, first invalidating the display data
+// derived from the settings as they were.
+func notifySheetSettingsUpdated(entity *gurps.Entity, parts gurps.SheetSettingsParts, fullRebuild bool) {
 	invalidateDisplayData()
 	for _, one := range AllDockables() {
-		if s, ok := one.(gurps.SheetSettingsResponder); ok {
-			s.SheetSettingsUpdated(entity, full)
+		if responder, ok := one.(gurps.SheetSettingsResponder); ok {
+			responder.SheetSettingsUpdated(entity, parts, fullRebuild)
 		}
 	}
 }
@@ -874,7 +883,7 @@ func (d *sheetSettingsDockable) load(fileSystem fs.FS, filePath string) error {
 		gurps.GlobalSettings().Sheet = s
 	}
 	d.sync()
-	d.syncSheet(true)
+	d.syncSheet(gurps.SheetSettingsAllParts, true)
 	return nil
 }
 

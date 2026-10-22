@@ -246,11 +246,12 @@ func (l *LootSheet) PageInfoProvider() gurps.PageInfoProvider {
 
 // SheetSettingsUpdated implements gurps.SheetSettingsResponder. A loot sheet has no entity of its own and reads the
 // global sheet settings (see Loot.WeightUnit and Loot.PageSettings), so only a change to those -- reported with a nil
-// entity -- concerns it, just as with a template. Those settings are no part of the loot file, so the sheet is rebuilt
-// to show them without being marked as modified, which would bump its modification timestamp for an edit that was
-// never made to it.
-func (l *LootSheet) SheetSettingsUpdated(entity *gurps.Entity, fullRebuild bool) {
-	if entity == nil {
+// entity -- concerns it, just as with a template, and a change to the default block layout, attribute definitions or
+// body type, none of which it shows, does not. Those settings are no part of the loot file, so the sheet is rebuilt to
+// show them without being marked as modified, which would bump its modification timestamp for an edit that was never
+// made to it.
+func (l *LootSheet) SheetSettingsUpdated(entity *gurps.Entity, parts gurps.SheetSettingsParts, fullRebuild bool) {
+	if entity == nil && parts&gurps.SheetSettingsGeneralPart != 0 {
 		l.Rebuild(fullRebuild)
 	}
 }

@@ -759,7 +759,8 @@ func TestTableDockableSaveTagFilter(t *testing.T) {
 // heights for what the cells now show, rather than building every row and cell anew. Typing in a field of the global
 // sheet settings reports such a change on every keystroke, and used to rebuild every open library list each time. A
 // change to the defaults that calls for a full rebuild, such as applying the default attribute definitions, still
-// rebuilds the list, and a change to one character's own settings is none of its business.
+// rebuilds the list, while a change to one character's own settings, or to the default block layout or body type,
+// which the list has no part in, is none of its business.
 func TestTableDockableKeepsItsRowsAcrossAGlobalSettingsSync(t *testing.T) {
 	c := check.New(t)
 	global := gurps.GlobalSettings()
@@ -772,15 +773,19 @@ func TestTableDockableKeepsItsRowsAcrossAGlobalSettingsSync(t *testing.T) {
 	row.Data().LocalNotes = "Sees well in dim light"
 	height := d.table.RowHeights()[0]
 
-	d.SheetSettingsUpdated(gurps.NewEntity(), true)
+	d.SheetSettingsUpdated(gurps.NewEntity(), gurps.SheetSettingsAllParts, true)
 	c.True(d.table.RowFromIndex(0) == row, "another entity's settings change must not touch the list")
 	c.Equal(height, d.table.RowHeights()[0], "another entity's settings change must not touch the list")
 
+	d.SheetSettingsUpdated(nil, gurps.SheetSettingsLayoutPart|gurps.SheetSettingsBodyTypePart, true)
+	c.True(d.table.RowFromIndex(0) == row, "a change to the default layout or body type must not touch the list")
+	c.Equal(height, d.table.RowHeights()[0], "a change to the default layout or body type must not touch the list")
+
 	global.Sheet.NotesDisplay = display.Inline
-	d.SheetSettingsUpdated(nil, false)
+	d.SheetSettingsUpdated(nil, gurps.SheetSettingsGeneralPart, false)
 	c.True(d.table.RowFromIndex(0) == row, "a change needing no full rebuild must keep the rows")
 	c.True(d.table.RowHeights()[0] > height, "the row must be made tall enough for the notes it now shows")
 
-	d.SheetSettingsUpdated(nil, true)
+	d.SheetSettingsUpdated(nil, gurps.SheetSettingsAttributesPart, true)
 	c.True(d.table.RowFromIndex(0) != row, "a change needing a full rebuild must rebuild the list")
 }

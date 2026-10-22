@@ -119,9 +119,22 @@ func TestLootSheetIgnoresAnotherEntitySheetSettings(t *testing.T) {
 	sheet.loot.ModifiedOn = jio.Time{}
 	before := currentDisplayStamp()
 
-	sheet.SheetSettingsUpdated(gurps.NewEntity(), true)
+	sheet.SheetSettingsUpdated(gurps.NewEntity(), gurps.SheetSettingsAllParts, true)
 	c.Equal(jio.Time{}, sheet.loot.ModifiedOn, "another entity's settings change must not touch the loot sheet")
 	c.Equal(before, currentDisplayStamp(), "another entity's settings change must not rebuild the loot sheet")
+}
+
+// TestLootSheetIgnoresTheDefaultsItDoesNotShow verifies that a change to the default block layout, attribute
+// definitions or body type, none of which a loot sheet shows, leaves the loot sheet alone. Setting the default layout
+// or applying the default attribute definitions used to fully rebuild every open loot sheet.
+func TestLootSheetIgnoresTheDefaultsItDoesNotShow(t *testing.T) {
+	c := check.New(t)
+	sheet := newTestLootSheet(t)
+	before := currentDisplayStamp()
+
+	sheet.SheetSettingsUpdated(nil, gurps.SheetSettingsLayoutPart|gurps.SheetSettingsAttributesPart|
+		gurps.SheetSettingsBodyTypePart, true)
+	c.Equal(before, currentDisplayStamp(), "a change to defaults the loot sheet doesn't show must not rebuild it")
 }
 
 // TestLootSheetShowsGlobalSheetSettingsWithoutBeingModified verifies that a change to the global sheet settings, which
@@ -135,7 +148,7 @@ func TestLootSheetShowsGlobalSheetSettingsWithoutBeingModified(t *testing.T) {
 
 	for _, fullRebuild := range []bool{false, true} {
 		before := currentDisplayStamp()
-		sheet.SheetSettingsUpdated(nil, fullRebuild)
+		sheet.SheetSettingsUpdated(nil, gurps.SheetSettingsGeneralPart, fullRebuild)
 		c.Equal(jio.Time{}, sheet.loot.ModifiedOn,
 			"a global settings change is no edit of the loot (fullRebuild=%v)", fullRebuild)
 		c.True(sheet.Equipment.syncedAtStamp() > before,

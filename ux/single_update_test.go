@@ -55,7 +55,7 @@ func TestSheetSettingsUpdatedSyncsTheSheetOnlyOnce(t *testing.T) {
 	for _, fullRebuild := range []bool{false, true} {
 		entity.ModifiedOn = jio.Time{}
 		counter := installSyncCounter(sheet)
-		sheet.SheetSettingsUpdated(entity, fullRebuild)
+		sheet.SheetSettingsUpdated(entity, gurps.SheetSettingsAllParts, fullRebuild)
 		c.Equal(1, counter.count, "a sheet settings change must sync the sheet exactly once (fullRebuild=%v)",
 			fullRebuild)
 		c.NotEqual(jio.Time{}, entity.ModifiedOn,
@@ -65,7 +65,7 @@ func TestSheetSettingsUpdatedSyncsTheSheetOnlyOnce(t *testing.T) {
 
 	// Settings for some other entity are none of this sheet's business.
 	counter := installSyncCounter(sheet)
-	sheet.SheetSettingsUpdated(gurps.NewEntity(), true)
+	sheet.SheetSettingsUpdated(gurps.NewEntity(), gurps.SheetSettingsAllParts, true)
 	c.Equal(0, counter.count, "another entity's settings change must not touch the sheet")
 }
 

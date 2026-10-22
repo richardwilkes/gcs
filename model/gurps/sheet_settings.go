@@ -24,12 +24,33 @@ import (
 	"github.com/richardwilkes/toolbox/v2/tid"
 )
 
+// SheetSettingsParts is a set of the parts of the SheetSettings, which a change reports to say what it altered, so
+// that a responder showing only some of the settings can ignore a change to the rest.
+type SheetSettingsParts uint8
+
+// The parts of the SheetSettings a change can alter.
+const (
+	// SheetSettingsGeneralPart is everything but the parts below, which is what the sheet settings editor changes
+	// field by field: the page, display, unit, number format and rule settings.
+	SheetSettingsGeneralPart SheetSettingsParts = 1 << iota
+	// SheetSettingsLayoutPart is the block layout.
+	SheetSettingsLayoutPart
+	// SheetSettingsAttributesPart is the attribute definitions.
+	SheetSettingsAttributesPart
+	// SheetSettingsBodyTypePart is the body type.
+	SheetSettingsBodyTypePart
+	// SheetSettingsAllParts is every part, which is what replacing the settings wholesale alters.
+	SheetSettingsAllParts = SheetSettingsGeneralPart | SheetSettingsLayoutPart | SheetSettingsAttributesPart |
+		SheetSettingsBodyTypePart
+)
+
 // SheetSettingsResponder defines the method required to be notified of updates to the SheetSettings.
 type SheetSettingsResponder interface {
 	// SheetSettingsUpdated will be called when the SheetSettings have been updated. The provided Entity will be nil if
-	// it was the default SheetSettings that was updated rather than one attached to a specific entity. fullRebuild will
-	// be true if the change requires the content to be rebuilt from scratch rather than merely synchronized.
-	SheetSettingsUpdated(entity *Entity, fullRebuild bool)
+	// it was the default SheetSettings that was updated rather than one attached to a specific entity. parts says
+	// which of the settings were changed. fullRebuild will be true if the change requires the content to be rebuilt
+	// from scratch rather than merely synchronized.
+	SheetSettingsUpdated(entity *Entity, parts SheetSettingsParts, fullRebuild bool)
 }
 
 // SheetSettingsData holds the SheetSettings data that is written to disk.

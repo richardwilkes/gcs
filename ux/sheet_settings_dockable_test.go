@@ -36,8 +36,9 @@ var (
 // sheetSettingsRecorder is a Dockable that records the sheet settings updates it is sent.
 type sheetSettingsRecorder struct {
 	unison.Panel
-	entities []*gurps.Entity // one entry per notification, holding the entity whose settings changed
-	updates  []bool          // one entry per notification, holding the fullRebuild flag
+	entities []*gurps.Entity            // one entry per notification, holding the entity whose settings changed
+	parts    []gurps.SheetSettingsParts // one entry per notification, holding the parts that changed
+	updates  []bool                     // one entry per notification, holding the fullRebuild flag
 }
 
 func (r *sheetSettingsRecorder) TitleIcon(_ geom.Size) unison.Drawable { return nil }
@@ -45,8 +46,11 @@ func (r *sheetSettingsRecorder) Title() string                         { return 
 func (r *sheetSettingsRecorder) Tooltip() string                       { return "" }
 func (r *sheetSettingsRecorder) Modified() bool                        { return false }
 
-func (r *sheetSettingsRecorder) SheetSettingsUpdated(entity *gurps.Entity, fullRebuild bool) {
+func (r *sheetSettingsRecorder) SheetSettingsUpdated(entity *gurps.Entity, parts gurps.SheetSettingsParts,
+	fullRebuild bool,
+) {
 	r.entities = append(r.entities, entity)
+	r.parts = append(r.parts, parts)
 	r.updates = append(r.updates, fullRebuild)
 }
 
@@ -137,6 +141,7 @@ func TestSheetSettingsResetNotifiesSheets(t *testing.T) {
 		"reset must restore the default options")
 	c.True(len(recorder.updates) != 0, "reset must notify the open sheets")
 	c.True(recorder.sawFullRebuild(), "reset must ask for a full rebuild, since column visibility may have changed")
+	c.Equal(gurps.SheetSettingsAllParts, recorder.parts[0], "reset replaces the settings wholesale, so every part changed")
 }
 
 // TestSheetSettingsLoadNotifiesSheets checks the same for importing a sheet settings file: a file differing only in the
@@ -156,6 +161,7 @@ func TestSheetSettingsLoadNotifiesSheets(t *testing.T) {
 		"load must apply the file's options")
 	c.True(len(recorder.updates) != 0, "load must notify the open sheets")
 	c.True(recorder.sawFullRebuild(), "load must ask for a full rebuild, since column visibility may have changed")
+	c.Equal(gurps.SheetSettingsAllParts, recorder.parts[0], "load replaces the settings wholesale, so every part changed")
 }
 
 // TestSheetSettingsSyncDoesNotFireCheckBoxCallbacks documents why the notification above has to be explicit: sync()
@@ -297,6 +303,7 @@ func TestSheetSettingsCheckBoxesEachWriteTheirOwnOption(t *testing.T) {
 		one.box.State = uncheck.FromBool(one.box.State != uncheck.On)
 		one.box.ClickCallback()
 		c.Equal(i+1, len(recorder.updates), "clicking %q must notify the open sheets", one.name)
+		c.Equal(gurps.SheetSettingsGeneralPart, recorder.parts[i], "clicking %q changes a general setting", one.name)
 	}
 	c.Equal(checkBoxOptionsOf(expected), checkBoxOptionsOf(owner.entity.SheetSettings),
 		"clicking every checkbox once must flip every checkbox-backed option and nothing else")
