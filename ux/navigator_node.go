@@ -36,7 +36,7 @@ var _ unison.TableRowData[*NavigatorNode] = &NavigatorNode{}
 // NavigatorNode holds the favorites, a library, a directory or a file.
 type NavigatorNode struct {
 	id                       tid.TID
-	path                     string
+	path                     string // Relative to the library and slash-separated, as refreshChildren builds it
 	nav                      *Navigator
 	library                  *library.Library
 	parent                   *NavigatorNode

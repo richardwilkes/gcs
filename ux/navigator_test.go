@@ -11,6 +11,7 @@ package ux
 
 import (
 	"os"
+	"path"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -270,7 +271,7 @@ func TestNavigatorSearchMatches(t *testing.T) {
 		library: lib,
 		parent:  libraryNode,
 	}
-	name := filepath.Join("sub", "Conan"+gurps.SheetExt)
+	name := path.Join("sub", "Conan"+gurps.SheetExt)
 	underFavorites := NewFileNode(lib, name, favorites)
 	underLibrary := NewFileNode(lib, name, sub)
 	fresh := NewFileNode(lib, name, sub)
@@ -511,7 +512,7 @@ func TestCollectDeepSearchPaths(t *testing.T) {
 	lib := newTestLibrary(t)
 	n := newDeepSearchNavigator(ext)
 	shared := "notes" + ext
-	nested := filepath.Join("sub", "extra"+ext)
+	nested := path.Join("sub", "extra"+ext)
 	// The container nodes are built by hand rather than through the constructors, which read the filesystem and the
 	// global settings, and their IDs are minted directly rather than through gurps.IDForNavNode, which records every
 	// path it is asked about in the global settings; only the shape of the tree matters here.
@@ -526,7 +527,7 @@ func TestCollectDeepSearchPaths(t *testing.T) {
 	}
 	sub.children = []*NavigatorNode{
 		NewFileNode(lib, nested, sub),
-		NewFileNode(lib, filepath.Join("sub", "excluded.txt"), sub),
+		NewFileNode(lib, path.Join("sub", "excluded.txt"), sub),
 	}
 	libraryNode.children = []*NavigatorNode{
 		sub,
@@ -610,7 +611,7 @@ func TestPrewarmWithNoDeepSearchPathsRefreshesSearch(t *testing.T) {
 // are tracked per library, so both must be toggled.
 func TestToggleFavoritesKeysOnFullPath(t *testing.T) {
 	c := check.New(t)
-	relPath := filepath.Join("Notes", "foo.not")
+	relPath := path.Join("Notes", "foo.not")
 	lib1 := library.NewLibrary("One", "one", "", "one", t.TempDir())
 	lib2 := library.NewLibrary("Two", "two", "", "two", t.TempDir())
 	rows := []*NavigatorNode{
