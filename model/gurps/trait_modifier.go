@@ -95,6 +95,8 @@ type TraitModifierNonContainerSyncData struct {
 	ShowNotesOnWeapon bool           `json:"show_notes_on_weapon,omitzero"`
 	Affects           affects.Option `json:"affects,omitzero"`
 	Features          Features       `json:"features,omitempty"`
+	// HideNotes keeps the modifier's notes out of its owner's notes, where it is still listed.
+	HideNotes bool `json:"hide_notes,omitzero"`
 }
 
 // NewTraitModifiersFromFile loads a TraitModifier list from a file.
@@ -462,11 +464,25 @@ func (t *TraitModifier) SecondaryText(optionChecker func(display.Option) bool) s
 
 // FullDescription returns a full description.
 func (t *TraitModifier) FullDescription() string {
+	return t.describe(t.String(), t.ResolveLocalNotes())
+}
+
+// NotesDescription returns the description shown in its owner's notes, which leaves out its notes when HideNotes is
+// set.
+func (t *TraitModifier) NotesDescription() string {
+	var notes string
+	if !t.HideNotes {
+		notes = t.ResolveLocalNotes()
+	}
+	return t.describe(t.String(), notes)
+}
+
+func (t *TraitModifier) describe(name, notes string) string {
 	var buffer strings.Builder
-	buffer.WriteString(t.String())
-	if localNotes := t.ResolveLocalNotes(); localNotes != "" {
+	buffer.WriteString(name)
+	if notes != "" {
 		buffer.WriteString(" (")
-		buffer.WriteString(localNotes)
+		buffer.WriteString(notes)
 		buffer.WriteByte(')')
 	}
 	if SheetSettingsFor(EntityFromNode(t)).ShowTraitModifierAdj {
@@ -633,6 +649,7 @@ func (t *TraitModifierNonContainerSyncData) hash(h hash.Hash) {
 	xhash.Bool(h, t.ShowNotesOnWeapon)
 	xhash.Num8(h, t.Affects)
 	hashList(h, t.Features)
+	xhash.Bool(h, t.HideNotes)
 }
 
 // CopyFrom implements EditorData.

@@ -99,6 +99,8 @@ type EquipmentModifierNonContainerSyncData struct {
 	CostAmount        string        `json:"cost,omitzero"`
 	WeightAmount      string        `json:"weight,omitzero"`
 	Features          Features      `json:"features,omitempty"`
+	// HideNotes keeps the modifier's notes out of its owner's notes, where it is still listed.
+	HideNotes bool `json:"hide_notes,omitzero"`
 }
 
 // NewEquipmentModifiersFromFile loads an EquipmentModifier list from a file.
@@ -373,11 +375,25 @@ func (e *EquipmentModifier) SecondaryText(optionChecker func(display.Option) boo
 
 // FullDescription returns a full description.
 func (e *EquipmentModifier) FullDescription() string {
+	return e.describe(e.String(), e.ResolveLocalNotes())
+}
+
+// NotesDescription returns the description shown in its owner's notes, which leaves out its notes when HideNotes is
+// set.
+func (e *EquipmentModifier) NotesDescription() string {
+	var notes string
+	if !e.HideNotes {
+		notes = e.ResolveLocalNotes()
+	}
+	return e.describe(e.String(), notes)
+}
+
+func (e *EquipmentModifier) describe(name, notes string) string {
 	var buffer strings.Builder
-	buffer.WriteString(e.String())
-	if localNotes := e.ResolveLocalNotes(); localNotes != "" {
+	buffer.WriteString(name)
+	if notes != "" {
 		buffer.WriteString(" (")
-		buffer.WriteString(localNotes)
+		buffer.WriteString(notes)
 		buffer.WriteByte(')')
 	}
 	if SheetSettingsFor(EntityFromNode(e)).ShowEquipmentModifierAdj {
@@ -730,6 +746,7 @@ func (e *EquipmentModifierNonContainerSyncData) hash(h hash.Hash) {
 	xhash.StringWithLen(h, e.CostAmount)
 	xhash.StringWithLen(h, e.WeightAmount)
 	hashList(h, e.Features)
+	xhash.Bool(h, e.HideNotes)
 }
 
 // CopyFrom implements EditorData.
