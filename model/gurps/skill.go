@@ -1514,6 +1514,7 @@ func (s *Skill) SyncWithSource() {
 	syncFromSource(s, func(other *Skill) {
 		s.SkillSyncData = other.SkillSyncData
 		s.Tags = slices.Clone(other.Tags)
+		s.Nameables = nameable.CloneDetails(other.Nameables)
 		if s.Container() {
 			s.SkillContainerOnlySyncData = other.SkillContainerOnlySyncData
 			return
@@ -1620,6 +1621,7 @@ func (s *SkillEditData) copyFrom(skill *Skill, other *SkillEditData, isContainer
 	*s = *other
 	s.Tags = slices.Clone(other.Tags)
 	s.Replacements = maps.Clone(other.Replacements)
+	s.Nameables = nameable.CloneDetails(other.Nameables)
 	s.TechLevel = clonePtr(other.TechLevel)
 	s.DefaultedFrom = cloneSkillDefault(other.DefaultedFrom)
 	s.Defaults = nil

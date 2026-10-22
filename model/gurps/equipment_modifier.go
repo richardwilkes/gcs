@@ -469,17 +469,25 @@ func (e *EquipmentModifier) NameableReplacements() map[string]string {
 	if e == nil || e.equipment == nil {
 		return nil
 	}
-	return e.equipment.Replacements
+	return linkedReplacements(e.equipment.Replacements, e.nameableLinks())
+}
+
+// nameableLinks returns the links its equipment holds for this modifier's codes, or nil if it has none.
+func (e *EquipmentModifier) nameableLinks() map[string]string {
+	if e.equipment == nil {
+		return nil
+	}
+	return e.equipment.NameableLinks[e.TID]
 }
 
 // NameWithReplacements returns the name with any replacements applied.
 func (e *EquipmentModifier) NameWithReplacements() string {
-	return applyOwnerReplacements(e.Name, e.equipment)
+	return applyOwnerReplacements(e.Name, e.equipment, e.nameableLinks())
 }
 
 // LocalNotesWithReplacements returns the local notes with any replacements applied.
 func (e *EquipmentModifier) LocalNotesWithReplacements() string {
-	return applyOwnerReplacements(e.LocalNotes, e.equipment)
+	return applyOwnerReplacements(e.LocalNotes, e.equipment, e.nameableLinks())
 }
 
 // FillWithNameableKeys adds any nameable keys found in this EquipmentModifier to the provided map, provided it is
@@ -493,17 +501,25 @@ func (e *EquipmentModifier) FillWithNameableKeys(m, existing map[string]string) 
 
 // fillWithNameableKeysEvenIfDisabled implements Modifier.
 func (e *EquipmentModifier) fillWithNameableKeysEvenIfDisabled(m, existing map[string]string) {
+	links := e.nameableLinks()
+	found := m
+	if len(links) != 0 {
+		found = make(map[string]string)
+	}
 	if existing == nil {
 		existing = e.NameableReplacements()
+	} else {
+		existing = linkedReplacements(existing, links)
 	}
 	nameable.Extract(
-		m, existing,
+		found, existing,
 		e.Name,
 		e.LocalNotes,
 	)
 	for _, one := range e.Features {
-		one.FillWithNameableKeys(m, existing)
+		one.FillWithNameableKeys(found, existing)
 	}
+	addLinkedNameableKeys(m, found, links)
 }
 
 // ApplyNameableKeys merges the values for this modifier's keys into the owning equipment's replacements, which is
@@ -713,6 +729,7 @@ func (e *EquipmentModifier) SyncWithSource() {
 	syncFromSource(e, func(other *EquipmentModifier) {
 		e.EquipmentModifierSyncData = other.EquipmentModifierSyncData
 		e.Tags = slices.Clone(other.Tags)
+		e.Nameables = nameable.CloneDetails(other.Nameables)
 		if e.Container() {
 			e.ModifierContainerSyncData = other.ModifierContainerSyncData
 			SettleModifierChoicesAround(e)
@@ -763,5 +780,6 @@ func (e *EquipmentModifierEditData) copyFrom(other *EquipmentModifierEditData) {
 	*e = *other
 	e.Tags = slices.Clone(other.Tags)
 	e.Replacements = maps.Clone(other.Replacements)
+	e.Nameables = nameable.CloneDetails(other.Nameables)
 	e.Features = other.Features.Clone()
 }

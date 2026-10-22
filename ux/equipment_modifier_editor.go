@@ -45,6 +45,9 @@ func initEquipmentModifierEditor(e *editor[*gurps.EquipmentModifier, *gurps.Equi
 	addTagsLabelAndField(content, &e.editorData.Tags)
 	addPageRefLabelAndField(content, &e.editorData.PageRef)
 	addPageRefHighlightLabelAndField(content, &e.editorData.PageRefHighlight)
+	content.AddChild(newNameablesPanel(&e.editorData.Nameables, func() map[string]int {
+		return nameableUses([]string{e.editorData.Name, e.editorData.LocalNotes}, nil, e.editorData.Features, nil)
+	}, nil, nil))
 	content.AddChild(newFeaturesPanel(gurps.EntityFromNode(e.target), e.target, &e.editorData.Features, true))
 	return nil
 }

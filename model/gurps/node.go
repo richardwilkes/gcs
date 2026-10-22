@@ -15,6 +15,7 @@ import (
 	"fmt"
 	"hash"
 	"io/fs"
+	"maps"
 	"slices"
 	"strings"
 
@@ -103,6 +104,7 @@ type NodeSyncData struct {
 	PageRefHighlight string   `json:"reference_highlight,omitzero"`
 	LocalNotes       string   `json:"local_notes,omitzero"`
 	Tags             []string `json:"tags,omitempty"`
+	nameablesSyncData
 }
 
 func (n *NodeSyncData) hash(h hash.Hash) {
@@ -111,6 +113,31 @@ func (n *NodeSyncData) hash(h hash.Hash) {
 	xhash.StringWithLen(h, n.PageRefHighlight)
 	xhash.StringWithLen(h, n.LocalNotes)
 	hashStrings(h, n.Tags)
+	n.nameablesSyncData.hash(h)
+}
+
+// nameablesSyncData holds the nameables an item defines for the markers in its text, which a library copy keeps in step
+// with its source along with the text.
+type nameablesSyncData struct {
+	Nameables map[string]nameable.Detail `json:"nameables,omitempty"`
+}
+
+// NameableDefinitions implements nameable.Definer.
+func (n *nameablesSyncData) NameableDefinitions() map[string]nameable.Detail {
+	return n.Nameables
+}
+
+// hash leaves out an item with no nameables, so that its hash is the same as before nameables existed.
+func (n *nameablesSyncData) hash(h hash.Hash) {
+	for _, code := range slices.Sorted(maps.Keys(n.Nameables)) {
+		d := n.Nameables[code]
+		xhash.StringWithLen(h, code)
+		xhash.StringWithLen(h, d.Label)
+		xhash.StringWithLen(h, d.Tooltip)
+		hashStrings(h, d.Options)
+		xhash.Bool(h, d.FreeForm)
+		xhash.Bool(h, d.NotBlank)
+	}
 }
 
 // marshalNodeData writes a node's data and, unless the encoder was asked to omit the derived values, the "calc" object

@@ -110,6 +110,10 @@ type TraitEditData struct {
 	Frequency    frequency.Roll    `json:"frequency,omitzero"`
 	Disabled     bool              `json:"disabled,omitzero"`
 
+	// NameableLinks maps the ID of each modifier with links to a map of its codes to the codes of this trait's that
+	// answer them.
+	NameableLinks map[tid.TID]map[string]string `json:"nameable_links,omitempty"`
+
 	ItemSwitch
 	preconfigurable
 	choiceGrouping
@@ -1396,6 +1400,7 @@ func (t *Trait) SyncWithSource() {
 	syncFromSource(t, func(other *Trait) {
 		t.TraitSyncData = other.TraitSyncData
 		t.Tags = slices.Clone(other.Tags)
+		t.Nameables = nameable.CloneDetails(other.Nameables)
 		t.Prereq = other.Prereq.CloneResolvingEmpty(false, true)
 		if t.Container() {
 			t.TraitContainerSyncData = other.TraitContainerSyncData
@@ -1480,8 +1485,10 @@ func (t *TraitEditData) copyFrom(trait *Trait, other *TraitEditData, isApply boo
 	*t = *other
 	t.Tags = slices.Clone(other.Tags)
 	t.Replacements = maps.Clone(other.Replacements)
+	t.Nameables = nameable.CloneDetails(other.Nameables)
 	// Each copy is pointed at the trait it belongs to, so that a "use level from owner" modifier can resolve its level.
 	t.Modifiers = cloneModifiers(other.Modifiers, trait, mode)
+	t.NameableLinks = cloneNameableLinks(other.NameableLinks, other.Modifiers, t.Modifiers)
 	// SetTarget() migrates a modifier's legacy replacements into the trait it was pointed at, which isn't the holder of
 	// this data when an editor is being populated, so pick up anything it added. This is a no-op when this data is the
 	// trait's own, since both maps are then the same one.

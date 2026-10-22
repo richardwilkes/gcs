@@ -512,12 +512,12 @@ func (t *TraitModifier) CostDescription() string {
 
 // NameWithReplacements returns the name with any replacements applied.
 func (t *TraitModifier) NameWithReplacements() string {
-	return applyOwnerReplacements(t.Name, t.trait)
+	return applyOwnerReplacements(t.Name, t.trait, t.nameableLinks())
 }
 
 // LocalNotesWithReplacements returns the local notes with any replacements applied.
 func (t *TraitModifier) LocalNotesWithReplacements() string {
-	return applyOwnerReplacements(t.LocalNotes, t.trait)
+	return applyOwnerReplacements(t.LocalNotes, t.trait, t.nameableLinks())
 }
 
 // NameableReplacements returns the replacements to be used with Nameables.
@@ -525,7 +525,15 @@ func (t *TraitModifier) NameableReplacements() map[string]string {
 	if t == nil || t.trait == nil {
 		return nil
 	}
-	return t.trait.Replacements
+	return linkedReplacements(t.trait.Replacements, t.nameableLinks())
+}
+
+// nameableLinks returns the links its trait holds for this modifier's codes, or nil if it has none.
+func (t *TraitModifier) nameableLinks() map[string]string {
+	if t.trait == nil {
+		return nil
+	}
+	return t.trait.NameableLinks[t.TID]
 }
 
 // FillWithNameableKeys adds any nameable keys found in this TraitModifier to the provided map, provided it is enabled.
@@ -539,17 +547,25 @@ func (t *TraitModifier) FillWithNameableKeys(m, existing map[string]string) {
 
 // fillWithNameableKeysEvenIfDisabled implements Modifier.
 func (t *TraitModifier) fillWithNameableKeysEvenIfDisabled(m, existing map[string]string) {
+	links := t.nameableLinks()
+	found := m
+	if len(links) != 0 {
+		found = make(map[string]string)
+	}
 	if existing == nil {
 		existing = t.NameableReplacements()
+	} else {
+		existing = linkedReplacements(existing, links)
 	}
 	nameable.Extract(
-		m, existing,
+		found, existing,
 		t.Name,
 		t.LocalNotes,
 	)
 	for _, one := range t.Features {
-		one.FillWithNameableKeys(m, existing)
+		one.FillWithNameableKeys(found, existing)
 	}
+	addLinkedNameableKeys(m, found, links)
 }
 
 // ApplyNameableKeys merges the values for this modifier's keys into the owning trait's replacements, which is where
@@ -620,6 +636,7 @@ func (t *TraitModifier) SyncWithSource() {
 	syncFromSource(t, func(other *TraitModifier) {
 		t.TraitModifierSyncData = other.TraitModifierSyncData
 		t.Tags = slices.Clone(other.Tags)
+		t.Nameables = nameable.CloneDetails(other.Nameables)
 		if t.Container() {
 			t.ModifierContainerSyncData = other.ModifierContainerSyncData
 			SettleModifierChoicesAround(t)
@@ -666,5 +683,6 @@ func (t *TraitModifierEditData) copyFrom(other *TraitModifierEditData) {
 	*t = *other
 	t.Tags = slices.Clone(other.Tags)
 	t.Replacements = maps.Clone(other.Replacements)
+	t.Nameables = nameable.CloneDetails(other.Nameables)
 	t.Features = other.Features.Clone()
 }

@@ -158,6 +158,14 @@ func initTraitEditor(e *editor[*gurps.Trait, *gurps.TraitEditData], content *uni
 	addPageRefLabelAndField(content, &e.editorData.PageRef)
 	addPageRefHighlightLabelAndField(content, &e.editorData.PageRefHighlight)
 	if !choice {
+		d := e.editorData
+		content.AddChild(newNameablesPanel(&d.Nameables, func() map[string]int {
+			return nameableUses([]string{d.Name, d.LocalNotes, d.UserDesc}, d.Prereq, d.Features, d.Weapons)
+		}, &d.NameableLinks, func() []nameableModifier {
+			return nameableModifiers(d.Modifiers, func(m *gurps.TraitModifier) map[string]int {
+				return nameableUses([]string{m.Name, m.LocalNotes}, nil, m.Features, nil)
+			})
+		}))
 		content.AddChild(newPrereqPanel(entity, &e.editorData.Prereq, prereq.TypesForNonEquipment, false).
 			withReplacementsFrom(e.editorData))
 	}

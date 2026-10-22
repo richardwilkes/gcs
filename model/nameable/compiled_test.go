@@ -204,7 +204,8 @@ func TestCompiledTextCacheRotation(t *testing.T) {
 	for i := range 3 * maximumCompiledTexts {
 		compiled(fmt.Sprintf("@Cold %d@", i))
 		if i%(maximumCompiledTexts/2) == 0 {
-			c.Equal(hotCompiled, compiled(hot), "the hot string must keep its compiled form across turnovers")
+			// Compared as pointers: a recompiled copy of the same text would satisfy a deep comparison.
+			c.True(hotCompiled == compiled(hot), "the hot string must keep its compiled form across turnovers")
 		}
 	}
 	compiledMutex.Lock()

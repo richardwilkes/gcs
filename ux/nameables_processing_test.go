@@ -367,19 +367,34 @@ func TestAltDropOfAContainerAsksAboutTheKeyItsChildSharesOnce(t *testing.T) {
 	c.Equal([]string{"Steel Pommel", "Red Steel Guard"}, appliedModifierNames(sword.Modifiers[0].Children))
 }
 
+// A nameable's definition decides how the prompt asks for it: a closed list of options is a popup, and one that can't
+// be blank offers no blank answer.
+func TestNameableFieldFollowsItsDefinition(t *testing.T) {
+	c := check.New(t)
+	answers := map[string]string{}
+	popup, ok := createNameableField("hand", &nameable.Detail{Options: []string{"Left", "Right"}, NotBlank: true},
+		answers).(*unison.PopupMenu[*string])
+	c.True(ok, "a closed list of options is a popup")
+	if ok {
+		c.Equal(3, popup.ItemCount(), "not set, then the two options, with no blank answer")
+	}
+	_, ok = createNameableField("hand", &nameable.Detail{Options: []string{"Left"}, FreeForm: true},
+		answers).(*unison.Field)
+	c.True(ok, "options that allow any text are a combo field")
+}
+
 // TestNameableFieldSuggestsOptions checks that the combo field of a free-form marker offers the options containing
 // what has been typed, without the «not set» and «empty» entries of its dropdown, and that choosing one with Return
 // puts it in the substitutions, as the typing before it did.
 func TestNameableFieldSuggestsOptions(t *testing.T) {
 	c := check.New(t)
 	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
-	marker, ok := nameable.NewMarker("Material|Steel|Bronze|Iron|*|?")
-	c.True(ok)
-	c.True(marker.FreeForm)
+	materialKey := "Material"
 	m := map[string]string{}
 	var field *unison.Field
 	screen.Do(func() {
-		if one, isField := createNameableField(&marker, m).(*unison.Field); isField {
+		if one, isField := createNameableField(materialKey,
+			&nameable.Detail{Options: []string{"Bronze", "Iron"}, FreeForm: true}, m).(*unison.Field); isField {
 			field = one
 		}
 	})
@@ -407,7 +422,7 @@ func TestNameableFieldSuggestsOptions(t *testing.T) {
 	material := func() (string, bool) {
 		var value string
 		var set bool
-		screen.Do(func() { value, set = m[marker.Key()] })
+		screen.Do(func() { value, set = m[materialKey] })
 		return value, set
 	}
 

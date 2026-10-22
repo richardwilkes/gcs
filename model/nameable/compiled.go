@@ -79,6 +79,11 @@ func compileText(str string) *compiledText {
 
 // apply returns the text with each marker replaced by its replacement, or by its fallback text when there is none.
 func (t *compiledText) apply(replacements map[string]string) string {
+	return t.applyLinked(replacements, nil)
+}
+
+// applyLinked is apply, except that a marker whose key links names another key takes that key's replacement.
+func (t *compiledText) applyLinked(replacements, links map[string]string) string {
 	switch len(t.parts) {
 	case 0:
 		return ""
@@ -89,7 +94,7 @@ func (t *compiledText) apply(replacements map[string]string) string {
 		if p.key == "" {
 			return p.text
 		}
-		if r, ok := replacements[p.key]; ok {
+		if r, ok := replacements[linkedKey(p.key, links)]; ok {
 			return r
 		}
 		return p.text
@@ -99,13 +104,21 @@ func (t *compiledText) apply(replacements map[string]string) string {
 		p := &t.parts[i]
 		if p.key == "" {
 			sb.WriteString(p.text)
-		} else if r, ok := replacements[p.key]; ok {
+		} else if r, ok := replacements[linkedKey(p.key, links)]; ok {
 			sb.WriteString(r)
 		} else {
 			sb.WriteString(p.text)
 		}
 	}
 	return sb.String()
+}
+
+// linkedKey returns the key that the links name for key, or key itself when they name none.
+func linkedKey(key string, links map[string]string) string {
+	if target, ok := links[key]; ok {
+		return target
+	}
+	return key
 }
 
 // maximumCompiledTexts is how many compiled strings one generation of the cache holds before it is retired, so the

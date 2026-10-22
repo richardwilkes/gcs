@@ -26,6 +26,8 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/stlimit"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/wsel"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/wswitch"
+	"github.com/richardwilkes/gcs/v5/model/nameable"
+	"github.com/richardwilkes/toolbox/v2/tid"
 )
 
 // LargeEntitySizeEnvVar names the environment variable LargeEntitySizeFromEnv reads: a multiplier applied to
@@ -221,8 +223,9 @@ type largeEntityBuilder struct {
 // whose names carry nameable markers (every college has a "Ritual Magic (@Specialty@)" skill the ritual magic spells
 // resolve through); the traits carry modifiers and the features behind the reactions, conditional modifiers and
 // weapon bonuses; the equipment is nested three deep with modifiers, some of it unequipped; the weapons default to
-// the weapon skills and sit on equipment, traits, skills and spells; and every few rows carry page references and
-// local notes.
+// the weapon skills and sit on equipment, traits, skills and spells; every few rows carry page references and local
+// notes; and every fourth trait, piece of equipment and note defines a nameable its text uses, some answered and some
+// not, which the traits' and equipment's modifiers share or are linked to, beside a marker that defines itself.
 func NewLargeEntity(size *LargeEntitySize) *gurps.Entity {
 	b := &largeEntityBuilder{entity: gurps.NewEntity(), size: *size}
 	b.size.PerContainer = max(1, b.size.PerContainer)
@@ -297,6 +300,9 @@ func (b *largeEntityBuilder) addTraits() {
 			t.PointsPerLevel = fxp.Five
 		}
 		t.Modifiers = b.traitModifiers(i)
+		if i%4 == 0 {
+			b.addTraitNameables(t, i)
+		}
 		if bonus := b.derivedBonus(i); bonus != nil {
 			t.Features = append(t.Features, bonus)
 		}
@@ -322,6 +328,26 @@ func (b *largeEntityBuilder) addTraits() {
 		b.entity.Traits = append(b.entity.Traits,
 			NewTraitNeedingMissingTrait(b.entity, fmt.Sprintf("Needs Combat Reflexes %d", i+1)))
 	}
+}
+
+// addTraitNameables gives the i-th trait a nameable its name and its first modifier use, answered on every other such
+// trait, a modifier whose code is linked to it, and a marker in its notes that defines itself.
+func (b *largeEntityBuilder) addTraitNameables(t *gurps.Trait, i int) {
+	const style = "style"
+	t.Name += " (@style@)"
+	t.LocalNotes += " Trained against @Rival school: Kodokan, Shotokan, etc.@."
+	t.Nameables = map[string]nameable.Detail{style: {
+		Label: "Style", Options: []string{"Judo", "Karate", "Boxing"}, FreeForm: true,
+	}}
+	if i%8 == 0 {
+		t.Replacements = map[string]string{style: "Judo"}
+	}
+	t.Modifiers[0].Name += " (@style@)"
+	linked := gurps.NewTraitModifier(b.entity, nil, false)
+	linked.Name = "Focus on @art@"
+	linked.Nameables = map[string]nameable.Detail{"art": {Label: "Art", FreeForm: true}}
+	t.SetModifiers(append(t.Modifiers, linked))
+	t.NameableLinks = map[tid.TID]map[string]string{linked.TID: {"art": style}}
 }
 
 // derivedBonus returns the i-th bonus behind the derived lists: a reaction bonus for the first Reactions values of i,
@@ -443,6 +469,7 @@ func (b *largeEntityBuilder) addSkills() {
 		sk.Name = ritualMagicSkillName
 		sk.Specialization = "@Specialty@"
 		sk.Replacements = map[string]string{"Specialty": college}
+		sk.Nameables = map[string]nameable.Detail{"Specialty": {Label: "College", Options: largeEntityColleges}}
 		sk.Difficulty.Attribute = gurps.IntelligenceID
 		sk.Difficulty.Difficulty = difficulty.VeryHard
 		sk.Points = fxp.FromInteger(4 * (i%3 + 1))
@@ -598,6 +625,9 @@ func (b *largeEntityBuilder) addEquipment(count int, carried bool) {
 		if i%2 == 0 {
 			item.Modifiers = b.equipmentModifiers(i)
 		}
+		if i%4 == 0 {
+			b.addEquipmentNameables(item, i)
+		}
 		mid.Children = append(mid.Children, item)
 		switch {
 		case !carried:
@@ -609,6 +639,23 @@ func (b *largeEntityBuilder) addEquipment(count int, carried bool) {
 			b.equipped = append(b.equipped, item)
 		}
 	}
+}
+
+// addEquipmentNameables gives the i-th piece of equipment, which has modifiers, a nameable its name and its first
+// modifier use, answered on every other such piece, and a modifier whose code is linked to it.
+func (b *largeEntityBuilder) addEquipmentNameables(item *gurps.Equipment, i int) {
+	const metal = "metal"
+	item.Name += " of @metal@"
+	item.Nameables = map[string]nameable.Detail{metal: {Label: "Metal", Options: []string{"Bronze", "Iron", "Steel"}}}
+	if i%8 == 0 {
+		item.Replacements = map[string]string{metal: "Steel"}
+	}
+	item.Modifiers[0].Name += " @metal@"
+	linked := gurps.NewEquipmentModifier(b.entity, nil, false)
+	linked.Name = "@finish@ inlay"
+	linked.Nameables = map[string]nameable.Detail{"finish": {Label: "Finish", FreeForm: true}}
+	item.SetModifiers(append(item.Modifiers, linked))
+	item.NameableLinks = map[tid.TID]map[string]string{linked.TID: {"finish": metal}}
 }
 
 // equipmentModifiers returns the two modifiers every other piece of equipment carries: one that alters its cost and
@@ -663,6 +710,13 @@ func (b *largeEntityBuilder) addNotes() {
 		n.MarkDown = fmt.Sprintf("## Note %d\n\nSome **markdown** with a [link](https://example.com) and a list:\n\n"+
 			"- the first point\n- the second point, which is a little longer than the first\n", i+1)
 		n.PageRef, _ = b.nextRow()
+		if i%4 == 0 {
+			n.MarkDown += "\nAbout @topic@.\n"
+			n.Nameables = map[string]nameable.Detail{"topic": {Label: "Topic", FreeForm: true}}
+			if i%8 == 0 {
+				n.Replacements = map[string]string{"topic": "dragons"}
+			}
+		}
 		container.Children = append(container.Children, n)
 	}
 }

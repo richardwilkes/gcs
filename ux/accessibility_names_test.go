@@ -12,6 +12,7 @@ package ux
 import (
 	"fmt"
 	"strconv"
+	"strings"
 	"testing"
 
 	"github.com/richardwilkes/gcs/v5/model/criteria"
@@ -26,8 +27,10 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/traitsel"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/wsel"
 	"github.com/richardwilkes/gcs/v5/model/jio"
+	"github.com/richardwilkes/gcs/v5/model/nameable"
 	"github.com/richardwilkes/gcs/v5/ux/uxtest"
 	"github.com/richardwilkes/toolbox/v2/check"
+	"github.com/richardwilkes/toolbox/v2/tid"
 	"github.com/richardwilkes/unison"
 )
 
@@ -142,8 +145,18 @@ func TestEveryControlHasAnAccessibleName(t *testing.T) {
 
 	audit.checkRows("trait editor", func() {
 		tr := gurps.NewTrait(entity, nil, false)
-		tr.Name = "Audit Trait"
+		tr.Name = "Audit Trait (@style@, @lang@, @Weapon: Sword, Axe, etc.@)"
 		tr.Features = allFeatures(tr, false)
+		// One nameable with every chip in use, one code with no nameable, one marker that defines itself, and a
+		// modifier code linked to the trait's.
+		tr.Nameables = map[string]nameable.Detail{"style": {
+			Label: "Style", Tooltip: "Which style", Options: []string{"Judo", "Karate"}, FreeForm: true, NotBlank: true,
+		}}
+		mod := gurps.NewTraitModifier(entity, nil, false)
+		mod.Name = "Practiced @art@"
+		mod.Nameables = map[string]nameable.Detail{"art": {Label: "Art", FreeForm: true}}
+		tr.Modifiers = []*gurps.TraitModifier{mod}
+		tr.NameableLinks = map[tid.TID]map[string]string{mod.TID: {"art": "style"}}
 		tr.Prereq = allPrereqs(prereq.TypesForNonEquipment, false)
 		tr.Study = studies()
 		tr.Weapons = []*gurps.Weapon{gurps.NewWeapon(tr, true), gurps.NewWeapon(tr, false)}
@@ -414,6 +427,16 @@ func (a *axNameAudit) checkRows(view string, fn func()) {
 					toggles = append(toggles, func() { p.toggle(path) })
 				}
 			}
+		}
+		for _, p := range uxtest.PanelsOfType[*nameablesPanel](d.AsPanel()) {
+			p.HasInSelfOrDescendants(func(one *unison.Panel) bool {
+				if b, ok := one.Self.(*sentenceButton); ok && b.onClick != nil {
+					path := strings.TrimSuffix(b.RefKey, keySentence)
+					names = append(names, "nameable "+path)
+					toggles = append(toggles, func() { p.toggle(path) })
+				}
+				return false
+			})
 		}
 		for _, p := range uxtest.PanelsOfType[*featuresPanel](d.AsPanel()) {
 			for i, one := range *p.features {

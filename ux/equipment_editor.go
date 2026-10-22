@@ -111,6 +111,14 @@ func initEquipmentItemEditor(e *editor[*gurps.Equipment, *gurps.EquipmentEditDat
 	addPageRefLabelAndField(content, &e.editorData.PageRef)
 	addPageRefHighlightLabelAndField(content, &e.editorData.PageRefHighlight)
 	AdjustFieldBlank(usesField, resolvedMaxUses() <= 0)
+	d := e.editorData
+	content.AddChild(newNameablesPanel(&d.Nameables, func() map[string]int {
+		return nameableUses([]string{d.Name, d.LocalNotes, d.BaseValue, d.BaseWeight}, d.Prereq, d.Features, d.Weapons)
+	}, &d.NameableLinks, func() []nameableModifier {
+		return nameableModifiers(d.Modifiers, func(m *gurps.EquipmentModifier) map[string]int {
+			return nameableUses([]string{m.Name, m.LocalNotes}, nil, m.Features, nil)
+		})
+	}))
 	content.AddChild(newPrereqPanel(entity, &e.editorData.Prereq, prereq.TypesForEquipment, false).
 		withReplacementsFrom(e.editorData))
 	content.AddChild(newFeaturesPanel(entity, e.target, &e.editorData.Features, false).

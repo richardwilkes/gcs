@@ -71,6 +71,7 @@ var allDragDataTypes = []*uti.DataType{
 	featureDragKey,
 	listFilterDragKey,
 	defaultDragKey,
+	nameableOptionDragKey,
 }
 
 // RegisterWindowDragTypes registers the supplied window as a target for every kind of drag payload GCS supports: the

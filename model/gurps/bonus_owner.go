@@ -19,9 +19,19 @@ import (
 	"github.com/richardwilkes/toolbox/v2/xreflect"
 )
 
-// bonusReplacements returns the nameable replacements provided by the owner of the given Bonus or Override, or nil if
-// the owner does not provide any.
-func bonusReplacements(b interface{ Owner() fmt.Stringer }) map[string]string {
+// owned is what a Bonus or Override reports about where it came from.
+type owned interface {
+	Owner() fmt.Stringer
+	SubOwner() fmt.Stringer
+}
+
+// bonusReplacements returns the nameable replacements the given Bonus or Override resolves its text with: those of its
+// sub-owner when it is a nameable.Accesser, since a modifier sees its owner's replacements through its nameable links,
+// otherwise those of its owner. Returns nil if neither provides any.
+func bonusReplacements(b owned) map[string]string {
+	if na, ok := b.SubOwner().(nameable.Accesser); ok {
+		return na.NameableReplacements()
+	}
 	if na, ok := b.Owner().(nameable.Accesser); ok {
 		return na.NameableReplacements()
 	}

@@ -70,12 +70,16 @@ func checkParents[T gurps.Node[T]](c check.Checker, name string, list []T, paren
 // IDs and its timestamps.
 var volatileFields = regexp.MustCompile(`"(id|created_date|modified_date|when)":\s*"[^"]*"`)
 
-// describe returns the lines of the character's JSON, in the form Entity.Save writes, with the IDs and timestamps
-// blanked. The deterministic option keeps the keys of the replacement maps in a fixed order.
+// linkKeys matches the keys of the nameable links, which are the IDs of the modifiers they are for.
+var linkKeys = regexp.MustCompile(`"[a-zA-Z][\w-]{16}":\s*\{`)
+
+// describe returns the lines of the character's JSON, in the form Entity.Save writes, with the IDs, including those
+// that key the nameable links, and timestamps blanked. The deterministic option keeps the keys of the replacement maps in a fixed order.
 func describe(c check.Checker, e *gurps.Entity) []string {
 	data, err := jio.Marshal(e, jsontext.WithIndent("\t"), json.Deterministic(true))
 	c.NoError(err)
-	return strings.Split(volatileFields.ReplaceAllString(string(data), `"${1}":""`), "\n")
+	text := volatileFields.ReplaceAllString(string(data), `"${1}":""`)
+	return strings.Split(linkKeys.ReplaceAllString(text, `"": {`), "\n")
 }
 
 // Every list a sheet shows must be filled to the size asked for, with the containers open and the derived values
@@ -129,6 +133,19 @@ func TestNewLargeEntityFillsEveryList(t *testing.T) {
 	checkOpen(c, "carried equipment", e.CarriedEquipment)
 	checkOpen(c, "other equipment", e.OtherEquipment)
 	checkOpen(c, "note", e.Notes)
+
+	// Every fourth trait's linked modifier code takes the trait's answer, where it has one.
+	var linked []*gurps.Trait
+	gurps.Traverse(func(t *gurps.Trait) bool {
+		if len(t.NameableLinks) != 0 {
+			linked = append(linked, t)
+		}
+		return false
+	}, false, true, e.Traits...)
+	c.Equal((size.Traits+3)/4, len(linked), "traits with linked modifier codes")
+	if len(linked) != 0 {
+		c.Equal("Focus on Judo", linked[0].Modifiers[len(linked[0].Modifiers)-1].NameWithReplacements())
+	}
 }
 
 // Every row's parent must be the container it sits in, or anything that climbs the tree from a generated row, such as
