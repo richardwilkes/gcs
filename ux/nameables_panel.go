@@ -419,7 +419,9 @@ func (p *nameablesPanel) editor(path, code string, detail *nameable.Detail) *uni
 	box.RefKey = path + keyFirst
 	key := func(name string) string { return path + ":" + name }
 
-	fields := newFlow()
+	// The first row is a sentence of three fixed parts, so it is a flex row rather than a flow, which lets the name take
+	// the width left after the code and the words between them.
+	fields := unison.NewPanel()
 	box.AddChild(fields)
 	codeField := NewStringField(p.targetMgr, nameablesCodeKey, i18n.Text("Code"), func() string { return code },
 		func(s string) {
@@ -471,6 +473,8 @@ func (p *nameablesPanel) editor(path, code string, detail *nameable.Detail) *uni
 	name.Watermark = i18n.Text("what the player is asked for")
 	name.SetMinimumTextWidthUsing(i18n.Text("Martial arts style"))
 	p.addCompact(fields, name.withoutUndo())
+	hbox(fields, 6)
+	name.SetLayoutData(&unison.FlexLayoutData{HAlign: align.Fill, VAlign: align.Middle, HGrab: true})
 
 	chips := newFlow()
 	for i, option := range detail.Options {
@@ -530,7 +534,7 @@ func (p *nameablesPanel) newOptionField(chip *unison.Panel, path, code string) {
 	key := path + ":newoption"
 	field := NewStringField(p.targetMgr, key, i18n.Text("Option"), func() string { return "" }, func(string) {})
 	field.Watermark = i18n.Text("an option, then Return")
-	field.SetMinimumTextWidthUsing(i18n.Text("Martial arts style"))
+	field.SetMinimumTextWidthUsing(field.Watermark, i18n.Text("Martial arts style"))
 	field.KeyDownCallback = func(keyCode unison.KeyCode, mods mod.Modifiers, repeat bool) bool {
 		if keyCode != unison.KeyReturn && keyCode != unison.KeyNumPadEnter {
 			return field.DefaultKeyDown(keyCode, mods, repeat)

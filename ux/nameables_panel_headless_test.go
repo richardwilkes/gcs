@@ -111,6 +111,8 @@ func TestNameablesPanelPills(t *testing.T) {
 		field, ok := p.FindRefKey("n:style:newoption").Self.(*StringField)
 		c.True(ok, "the new option's field shows")
 		if ok {
+			c.True(field.FrameRect().Width >= unison.NewText(field.Watermark, &unison.TextDecoration{Font: field.Font}).Width(),
+				"and is wide enough to show its watermark")
 			field.SetText("Judo")
 			field.KeyDownCallback(unison.KeyReturn, 0, false)
 		}
@@ -266,4 +268,22 @@ func TestTraitEditorAppliesNameablesAndLinks(t *testing.T) {
 	c.Equal(map[tid.TID]map[string]string{mod.TID: {"art": "style"}}, trait.NameableLinks)
 	trait.Replacements = map[string]string{"style": "Judo"}
 	c.Equal("Judo focus", trait.Modifiers[0].NameWithReplacements(), "the applied link resolves")
+}
+
+func TestNameablesPanelNameFieldFillsItsRow(t *testing.T) {
+	c := check.New(t)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
+	defs := map[string]nameable.Detail{"style": {Label: "Style"}}
+	texts := []string{"@style@"}
+	p, _ := showNameablesPanel(t, screen, &defs, &texts, nil, nil, pathOf("style"))
+	screen.Do(func() {
+		field := p.FindRefKey("n:style:name")
+		c.NotNil(field)
+		if field == nil {
+			return
+		}
+		row := field.Parent().ContentRect(false)
+		c.Equal(row.Right(), field.FrameRect().Right(), "the name takes the rest of its row")
+		c.True(field.FrameRect().Width > 300, "which is wider than its minimum")
+	})
 }
