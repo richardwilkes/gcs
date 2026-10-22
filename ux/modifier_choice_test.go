@@ -83,7 +83,9 @@ func labelTitles(p *unison.Panel) []string {
 // field that only a modifier in its own right uses, and that a choice's editor adds only what the choice asks for.
 func TestModifierContainerEditorsShowOnlyWhatAContainerUses(t *testing.T) {
 	c := check.New(t)
-	leafOnly := []string{"Cost", "Level", "Total", "Tech Level", "Cost Modifier", "Weight Modifier", "VTT Notes"}
+	leafOnly := []string{
+		"Short Name", "Cost", "Level", "Total", "Tech Level", "Cost Modifier", "Weight Modifier", "VTT Notes",
+	}
 	checkNone := func(titles []string) {
 		c.Helper()
 		for _, title := range leafOnly {

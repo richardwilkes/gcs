@@ -191,6 +191,38 @@ func TestFilterModifierFieldsOnEquipment(t *testing.T) {
 		"and those of disabled ones too for a condition that includes them")
 }
 
+// TestFilterModifierNamesIncludeShortNames checks that a modifier's short name matches and is offered as well as its
+// name.
+func TestFilterModifierNamesIncludeShortNames(t *testing.T) {
+	c := check.New(t)
+	trait := gurps.NewTrait(nil, nil, false)
+	frequency := gurps.NewTraitModifier(nil, nil, false)
+	frequency.Name = "Appears quite often (12-)"
+	frequency.ShortName = "12 or less"
+	trait.Modifiers = []*gurps.TraitModifier{frequency}
+	equipment := gurps.NewEquipment(nil, nil, false)
+	fine := gurps.NewEquipmentModifier(nil, nil, false)
+	fine.Name = "Fine Quality"
+	fine.ShortName = "Fine"
+	equipment.Modifiers = []*gurps.EquipmentModifier{fine}
+	c.True(frequency.Enabled(), "precondition: the frequency modifier is enabled")
+	c.True(fine.Enabled(), "precondition: the fine modifier is enabled")
+
+	traitFields := gurps.TraitFilterFields()
+	equipmentFields := gurps.EquipmentFilterFields()
+	for _, name := range []string{"Appears quite often (12-)", "12 or less"} {
+		c.True(matchesListFilter(newTestListFilter(newTextFilterCondition("modifier_names", criteria.IsText, name)),
+			traitFields, trait), "trait modifier %q", name)
+	}
+	for _, name := range []string{"Fine Quality", "Fine"} {
+		c.True(matchesListFilter(newTestListFilter(newTextFilterCondition("modifier_names", criteria.IsText, name)),
+			equipmentFields, equipment), "equipment modifier %q", name)
+	}
+	c.Equal([]string{"12 or less", "Appears quite often (12-)"},
+		findFilterField(traitFields, "modifier_names").Suggestions([]*gurps.Trait{trait}, false),
+		"the short name is offered too")
+}
+
 // TestFilterIncludeDisabledIgnoredElsewhere checks that a field not drawn from modifiers ignores IncludeDisabled.
 func TestFilterIncludeDisabledIgnoredElsewhere(t *testing.T) {
 	c := check.New(t)

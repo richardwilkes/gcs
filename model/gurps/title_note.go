@@ -98,7 +98,7 @@ func appendTitleNotes(parts []string, replacements map[string]string, before boo
 }
 
 // modifierTitleNotes appends the title notes of the enabled, non-container modifiers to parts, in modifier order: for
-// each, its name as shown (with a leveled trait modifier's level, which title note criteria therefore see too) when it
+// each, its CompactName (with a leveled trait modifier's level, which title note criteria therefore see too) when it
 // is shown in the title and before is false, followed by the text of its title note features whose BeforeBuiltIn is
 // before. It walks the modifiers itself rather than through Traverse, which allocates, since
 // every item's name passes through here.
@@ -116,7 +116,7 @@ func modifierTitleNotes[M ModifierNode[M, T], T ModifiableNode[T, M], S ~[]M](
 			parts = modifierTitleNotes(parts, before, mod.NodeChildren(), replacements, features)
 		default:
 			if !before && mod.ShowsInTitle() {
-				if name := strings.TrimSpace(mod.String()); name != "" {
+				if name := strings.TrimSpace(mod.CompactName()); name != "" {
 					parts = append(parts, name)
 				}
 			}

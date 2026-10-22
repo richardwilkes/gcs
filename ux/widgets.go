@@ -192,6 +192,12 @@ func addModifierShowInTitleCheckBox[F fieldAccess[bool]](parent *unison.Panel, f
 	))
 }
 
+// addModifierShortNameField adds a modifier's short name field.
+func addModifierShortNameField(parent *unison.Panel, shortName *string) {
+	addLabelAndStringField(parent, i18n.Text("Short Name"),
+		i18n.Text("Used in place of the name when the modifier is listed in its owner's notes or title notes."), shortName)
+}
+
 // addModifierNotesCheckBoxes adds the checkboxes that say where a modifier's notes are shown: in its owner's notes and
 // in the usage notes of its owner's weapons.
 func addModifierNotesCheckBoxes[F fieldAccess[bool]](parent *unison.Panel, hideNotesData, showOnWeaponData F) {

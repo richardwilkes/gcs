@@ -32,6 +32,7 @@ func initTraitModifierEditor(e *editor[*gurps.TraitModifier, *gurps.TraitModifie
 		return nil
 	}
 	addNameLabelAndField(content, &e.editorData.Name)
+	addModifierShortNameField(content, &e.editorData.ShortName)
 	addModifierShowInTitleCheckBox(content, &e.editorData.ShowInTitle)
 	addLabelAndMultiLineStringField(content, i18n.Text("Notes"), "", &e.editorData.LocalNotes)
 	addModifierNotesCheckBoxes(content, &e.editorData.HideNotes, &e.editorData.ShowNotesOnWeapon)
@@ -88,7 +89,7 @@ func initTraitModifierEditor(e *editor[*gurps.TraitModifier, *gurps.TraitModifie
 	addPageRefLabelAndField(content, &e.editorData.PageRef)
 	addPageRefHighlightLabelAndField(content, &e.editorData.PageRefHighlight)
 	content.AddChild(newNameablesPanel(&e.editorData.Nameables, func() map[string]int {
-		return nameableUses([]string{e.editorData.Name, e.editorData.LocalNotes}, nil, e.editorData.Features, nil)
+		return nameableUses([]string{e.editorData.Name, e.editorData.ShortName, e.editorData.LocalNotes}, nil, e.editorData.Features, nil)
 	}, nil, nil))
 	content.AddChild(newFeaturesPanel(gurps.EntityFromNode(e.target), e.target, &e.editorData.Features, false))
 	return nil
