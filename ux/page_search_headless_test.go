@@ -10,11 +10,13 @@
 package ux
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/ux/uxtest"
 	"github.com/richardwilkes/toolbox/v2/check"
+	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/mod"
 )
@@ -267,4 +269,50 @@ func TestPageSearchShowsMatchesOnFocus(t *testing.T) {
 	var text string
 	f.screen.Do(func() { text = f.search.field.Text() })
 	c.Equal("able", text)
+}
+
+// Choosing a match inside a closed container scrolls the row into view even when disclosing the container grows the
+// page: the scroll panel's range is only as large as the page was at its last layout, so the page has to be laid out
+// again before the scroll is asked for, or it stops short of a row beneath the old bottom of the page.
+func TestPageSearchScrollsDisclosedRowIntoView(t *testing.T) {
+	c := check.New(t)
+	f := startPageSearch(t, c, func(_ *gurps.Entity) []*gurps.Trait { return nil })
+	var last *gurps.Note
+	f.screen.Do(func() {
+		entity := f.sheet.Entity()
+		container := gurps.NewNote(entity, nil, true)
+		container.MarkDown = "Container"
+		container.SetOpen(false)
+		for i := range 40 {
+			child := gurps.NewNote(entity, container, false)
+			child.MarkDown = fmt.Sprintf("Child %d", i)
+			container.Children = append(container.Children, child)
+		}
+		last = container.Children[len(container.Children)-1]
+		last.MarkDown = "Findable"
+		entity.Notes = []*gurps.Note{container}
+		f.sheet.Rebuild(true)
+		f.sheet.markUnmodified()
+	})
+
+	f.screen.Click(f.screen.PanelCenter(f.search.field))
+	f.screen.Type("findable")
+	c.Equal(1, f.rows(), "the note is offered")
+	f.screen.KeyPress(unison.KeyReturn, mod.None)
+	index := -1
+	var rowRect, viewRect geom.Rect
+	f.screen.Do(func() {
+		table := f.sheet.Notes.Table
+		index = rowIndexForData(table, last)
+		if index >= 0 {
+			rowRect = table.RectToRoot(table.RowFrame(index))
+		}
+		view := f.sheet.scroll.ContentView()
+		viewRect = view.RectToRoot(view.ContentRect(false))
+	})
+	c.True(index >= 0, "the chosen note is shown")
+	// The scroll and the conversion to root coordinates each scale the row through the page view's scale, so the two can
+	// differ by a rounding error; half a pixel covers that without letting a row that is really cut off through.
+	viewRect = viewRect.Inset(geom.NewUniformInsets(-0.5))
+	c.True(viewRect.Contains(rowRect), "the chosen row %v is scrolled into the view %v", rowRect, viewRect)
 }

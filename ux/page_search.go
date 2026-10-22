@@ -98,13 +98,18 @@ func searchPageListRows[T gurps.Node[T]](matches *[]*searchMatch, text, title st
 	}
 }
 
-// revealRow discloses the row's ancestors, selects the row alone and scrolls it into view. For a row the table no longer
+// revealRow discloses the row's ancestors, selects the row alone and scrolls it into view. Disclosing may have grown the
+// table, and with it the page, but the scroll panel can only scroll as far as the page reached at its last layout, so
+// the layout is validated from the scroll panel down before the scroll is asked for. For a row the table no longer
 // holds, the selection is only cleared.
 func revealRow[T gurps.Node[T]](table *unison.Table[*Node[T]], row *Node[T]) {
 	table.DiscloseRow(row, false)
 	table.ClearSelection()
 	if index := table.RowToIndex(row); index >= 0 {
 		table.SelectByIndex(index)
+		if scroller := unison.Ancestor[*unison.ScrollPanel](table); scroller != nil {
+			scroller.ValidateLayout()
+		}
 		table.ScrollRowIntoView(index)
 	}
 }
