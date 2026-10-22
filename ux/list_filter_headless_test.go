@@ -561,6 +561,55 @@ func TestListFilterEditorKeysHeadless(t *testing.T) {
 	}
 }
 
+// TestListFilterEditorSuggestionsEscapeHeadless checks that, in the filter editor's dialog, whose window takes Escape
+// to close the open row, Escape with a value's suggestions showing hides them and nothing more.
+func TestListFilterEditorSuggestionsEscapeHeadless(t *testing.T) {
+	c := check.New(t)
+	screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
+	uxtest.SwapForTest(t, &gurps.GlobalSettings().ListFilters, make(map[string][]*gurps.ListFilter))
+	uxtest.SwapForTest(t, &lastFilterFieldKeyUsed, make(map[string]string))
+	d := openListFilterTraitDockable(t, screen)
+	newIndex := popupItemIndexOf(t, screen, d.savedFilters.popup, newFilterItemTitle)
+	uxtest.ChoosePopupItem(t, screen, wnd, d.savedFilters.popup, newIndex)
+	dialogWnd, _ := modalDialog(t, screen, wnd)
+	p := dialogFilterPanel(t, screen, dialogWnd)
+	screen.Do(func() { menuAction(p.treeAddEntries(p.filter.Root, treeRootPath), "New Filter")() })
+	screen.Do(func() {
+		if popup, ok := refAs[*unison.PopupMenu[string]](t, p.AsPanel(), "r.0:field"); ok {
+			popup.Select("tags")
+		}
+	})
+	screen.Do(func() {
+		if popup, ok := refAs[*unison.PopupMenu[criteria.StringComparison]](t, p.AsPanel(), "r.0:textcmp"); ok {
+			popup.Select(criteria.IsText)
+		}
+	})
+	var field *StringField
+	screen.Do(func() { field, _ = refAs[*StringField](t, p.AsPanel(), "r.0:text") })
+	if field == nil {
+		t.Fatal("the tags condition's value must be a string field")
+	}
+	screen.Click(screen.PanelCenter(field))
+	screen.Type("ment")
+	c.NotNil(screen.SuggestionsWindow(dialogWnd), "typing offers the tags of the list")
+	screen.KeyPress(unison.KeyEscape, mod.None)
+	c.Nil(screen.SuggestionsWindow(dialogWnd), "Escape hides them")
+	var open string
+	var windows int
+	screen.Do(func() {
+		open = p.open
+		windows = len(unison.Windows())
+	})
+	c.Equal("r.0", open, "leaving the row open")
+	c.Equal(2, windows, "and the dialog up")
+	screen.KeyPress(unison.KeyEscape, mod.None)
+	screen.Do(func() { open = p.open })
+	c.Equal("", open, "the next Escape closes the row")
+	screen.KeyPress(unison.KeyEscape, mod.None)
+	screen.Do(func() { windows = len(unison.Windows()) })
+	c.Equal(1, windows, "and the one after cancels the dialog")
+}
+
 // TestListFilterEditorHeldKeysHeadless checks that a held Escape or Return acts once in the filter editor, so that it
 // can't close or open a row and then cancel or accept the dialog too; that Return on Done closes its row rather than
 // accepting the dialog; and that Escape in the name field closes the open row and leaves the focus there.

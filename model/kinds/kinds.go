@@ -27,6 +27,8 @@ const (
 	NavigatorFile                = '3'
 	Note                         = 'n'
 	NoteContainer                = 'N'
+	Reaction                     = 'x'
+	ReactionContainer            = 'X'
 	RitualMagicSpell             = 'r'
 	Session                      = '9'
 	ShoppingRecord               = 'h'

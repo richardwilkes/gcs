@@ -39,7 +39,7 @@ type sheetList interface {
 	hierarchyDiscloser
 	noteDiscloser
 	clearSelection()
-	search(refList *[]*searchRef, text string, namesOnly bool)
+	search(matches *[]*searchMatch, text, title string)
 	RecordSelection() map[tid.TID]bool
 	ApplySelection(selection map[tid.TID]bool)
 }
@@ -159,6 +159,18 @@ func listsForKeys(list func(key string) sheetList, accept func(key string) bool)
 	for _, key := range gurps.AllBlockKeys {
 		if accept(key) {
 			lists = append(lists, list(key))
+		}
+	}
+	return lists
+}
+
+// searchableListsForKeys returns the lists for the block keys accept admits, as listsForKeys does, each with the title
+// the search shows beside its matches.
+func searchableListsForKeys(list func(key string) sheetList, accept func(key string) bool, title func(key string) string) []searchableList {
+	lists := make([]searchableList, 0, len(gurps.AllBlockKeys))
+	for _, key := range gurps.AllBlockKeys {
+		if accept(key) {
+			lists = append(lists, searchableList{list: list(key), title: title(key)})
 		}
 	}
 	return lists

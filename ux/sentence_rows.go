@@ -748,6 +748,17 @@ func (p *sentenceRows[T]) textChip(chips *unison.Panel, path, key string, c *cri
 		})
 }
 
+// numberChip adds the optional number criterion with the key, such as a level, which runs from minimum to maximum.
+func (p *sentenceRows[T]) numberChip(chips *unison.Panel, path, key string, n *criteria.Number, minimum, maximum fxp.Int, on bool) {
+	p.optionalCriterion(chips, path, key, on,
+		func() { *n = criteria.Number{Compare: criteria.AtLeastNumber, Qualifier: fxp.One} },
+		func() { *n = criteria.Number{} },
+		func(chip *unison.Panel) {
+			c := rowCriteria(key)
+			p.numberCriteria(chip, path+":"+key, c.subject, numericWordsAfter(c.prefix), n, minimum, maximum, false, false)
+		})
+}
+
 // tagsChip adds the optional tags criterion, whose field says how to match any of several tags.
 func (p *sentenceRows[T]) tagsChip(chips *unison.Panel, path string, c *criteria.Text) {
 	p.textChip(chips, path, "tag", c)
@@ -888,7 +899,8 @@ func (p *sentenceRows[T]) numberCompare(parent *unison.Panel, key, name string, 
 }
 
 // textField adds a compact field for the text, which shows the hint while empty. A non-nil suggest makes it a combo box
-// whose dropdown offers what suggest returns each time it opens; choosing one is a step of its own for undo.
+// whose dropdown offers what suggest returns each time it opens, and which offers those containing the text as it is
+// typed; choosing one either way is a step of its own for undo.
 func (p *sentenceRows[T]) textField(parent *unison.Panel, key, title, hint string, value *string, suggest func() []string) *StringField {
 	var field *StringField
 	var lastID int64
@@ -908,6 +920,7 @@ func (p *sentenceRows[T]) textField(parent *unison.Panel, key, title, hint strin
 	if suggest != nil {
 		// The dropdown replaces the borders, so it has to come before addCompact installs its own.
 		field.InstallDropdown(suggest)
+		field.installSuggestions(suggest)
 		// The dropdown's menu is titled with the field's name, which the fallback naming the field doesn't supply.
 		field.Accessibility.Name = title
 	}

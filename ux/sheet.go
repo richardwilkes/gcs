@@ -23,6 +23,7 @@ import (
 	"github.com/richardwilkes/toolbox/v2/xfilepath"
 	"github.com/richardwilkes/toolbox/v2/xreflect"
 	"github.com/richardwilkes/unison"
+	"github.com/richardwilkes/unison/enums/align"
 	"github.com/richardwilkes/unison/enums/check"
 	"github.com/richardwilkes/unison/enums/paintstyle"
 	"github.com/richardwilkes/unison/enums/role"
@@ -260,23 +261,24 @@ func (s *Sheet) createToolbar() {
 	shoppingRecordButton.ClickCallback = func() { showShoppingRecord(s) }
 	s.toolbar.AddChild(shoppingRecordButton)
 
-	s.searchTracker = installListSearchTracker(s.toolbar, s.lists)
+	s.search = installPageSearch(s.toolbar, s.searchableLists)
 
-	// The notice sits at the end of the toolbar, past the search controls, where it reads as a status rather than a
-	// command. It is only a child of the toolbar while there is something to say; see syncUnsettledNotice.
+	// The notice sits at the end of the toolbar, past the search field, where it reads as a status rather than a
+	// command. It is only a child of the toolbar while there is something to say (see syncUnsettledNotice), so it is
+	// aligned here, where finishFlowToolbarLayout would miss it.
 	s.unsettledNotice = makeTagForNode(i18n.Text("Data never settles"), unison.ThemeWarning, unison.ThemeOnWarning,
 		unison.DefaultTagTheme.Font, unison.TriangleExclamationSVG)
 	s.unsettledNotice.Tooltip = newWrappedTooltip(i18n.Text("No state of this sheet satisfies all of its prerequisites, defaults, features and scripts at once, so it has been left in one of the states it cycles through. A trait caught in a contradiction among the prerequisites is flagged in the Traits table, but the cycle need not involve any trait, in which case this is the only sign of it. Look for prerequisites, defaults or scripts that depend on one another in a circle."))
+	s.unsettledNotice.SetLayoutData(align.Middle)
 	if s.entity.Unsettled() {
 		s.toolbar.AddChild(s.unsettledNotice)
 	}
 
-	FinishToolbarLayout(s.toolbar)
+	finishFlowToolbarLayout(s.toolbar, s.search.field)
 }
 
 // syncUnsettledNotice shows the notice in the toolbar while the entity's data never settles (see
-// gurps.Entity.Unsettled) and removes it once it does. The toolbar's layout counts the children present when it is
-// finished, so it is finished again whenever the notice comes or goes; see FinishToolbarLayout.
+// gurps.Entity.Unsettled) and removes it once it does.
 func (s *Sheet) syncUnsettledNotice() {
 	if s.unsettledNotice == nil {
 		return
@@ -290,8 +292,10 @@ func (s *Sheet) syncUnsettledNotice() {
 	} else {
 		s.toolbar.AddChild(s.unsettledNotice)
 	}
-	FinishToolbarLayout(s.toolbar)
-	s.toolbar.MarkForLayoutAndRedraw()
+	// The notice coming or going can change how the toolbar's rows wrap, and so its height, so its ancestors must lay
+	// out again too: unison lays out only the panels whose own NeedsLayout flag is set.
+	s.toolbar.MarkForLayoutRecursivelyUpward()
+	s.toolbar.MarkForRedraw()
 }
 
 // DataOwner implements gurps.DataOwnerProvider.
@@ -599,6 +603,11 @@ func (s *Sheet) list(key string) sheetList {
 // back for a list the sheet hasn't built yet.
 func (s *Sheet) lists() []sheetList {
 	return listsForKeys(s.list, gurps.IsListBlockKey)
+}
+
+// searchableLists returns the lists the search looks through, each under the title its block has on the sheet.
+func (s *Sheet) searchableLists() []searchableList {
+	return searchableListsForKeys(s.list, gurps.IsListBlockKey, gurps.BlockTitle)
 }
 
 // syncDisclosure brings the blocks that show state which can be disclosed back into line with the model. The tables

@@ -314,6 +314,7 @@ func createNameableField(code string, detail *nameable.Detail, m map[string]stri
 
 	if detail.FreeForm {
 		field := unison.NewComboField(options, initial, apply)
+		installFieldSuggestions(field, func() []string { return detail.Options })
 
 		// Use a fixed string to set the lower bounds on the ComboField width
 		minWidth := field.MinimumTextWidth

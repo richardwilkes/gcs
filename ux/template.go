@@ -147,9 +147,9 @@ func (t *Template) createToolbar() {
 	syncSourceButton.ClickCallback = func() { t.syncWithAllSources() }
 	t.toolbar.AddChild(syncSourceButton)
 
-	t.searchTracker = installListSearchTracker(t.toolbar, t.lists)
+	t.search = installPageSearch(t.toolbar, t.searchableLists)
 
-	FinishToolbarLayout(t.toolbar)
+	finishFlowToolbarLayout(t.toolbar, t.search.field)
 }
 
 func (t *Template) keyToPanel(key *uti.DataType) *unison.Panel {
@@ -438,6 +438,17 @@ func (t *Template) list(key string) sheetList {
 // comes back for a list the template hasn't built yet.
 func (t *Template) lists() []sheetList {
 	return listsForKeys(t.list, gurps.IsTemplateBlockKey)
+}
+
+// searchableLists returns the lists the search looks through, each under the title its block has on the template,
+// whose equipment list is headed plainly "Equipment" (see gurps.Equipment.CellData) rather than as carried.
+func (t *Template) searchableLists() []searchableList {
+	return searchableListsForKeys(t.list, gurps.IsTemplateBlockKey, func(key string) string {
+		if key == gurps.BlockEquipmentKey {
+			return i18n.Text("Equipment")
+		}
+		return gurps.BlockTitle(key)
+	})
 }
 
 // SheetSettingsUpdated implements gurps.SheetSettingsResponder.

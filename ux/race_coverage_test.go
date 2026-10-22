@@ -20,6 +20,7 @@ func TestRace(t *testing.T) {
 	t.Run("BuildContentCacheReuseAndFailureCaching", TestBuildContentCacheReuseAndFailureCaching)
 	t.Run("HandoffRefusesOversizedPayload", TestHandoffRefusesOversizedPayload)
 	t.Run("HandoffRoundTrip", TestHandoffRoundTrip)
+	t.Run("NavigatorSearchOffersMatches", TestNavigatorSearchOffersMatches)
 	t.Run("RunInBackgroundDeliversResultBeforeFinishing", TestRunInBackgroundDeliversResultBeforeFinishing)
 	t.Run("RunInBackgroundDoesNotBlockWithoutAReceiver", TestRunInBackgroundDoesNotBlockWithoutAReceiver)
 	t.Run("RunInBackgroundReportsFailure", TestRunInBackgroundReportsFailure)

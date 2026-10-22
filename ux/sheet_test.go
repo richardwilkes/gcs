@@ -20,6 +20,7 @@ import (
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/toolbox/v2/tid"
 	"github.com/richardwilkes/unison"
+	"github.com/richardwilkes/unison/enums/align"
 )
 
 // TestMarkModifiedRecalculates checks that telling the sheet something changed brings the entity's derived state up to
@@ -150,24 +151,18 @@ func newContradictoryTraitRing(entity *gurps.Entity) []*gurps.Trait {
 	return ring
 }
 
-// toolbarColumns returns how many children the toolbar's layout was finished for; see FinishToolbarLayout.
-func toolbarColumns(c check.Checker, toolbar *unison.Panel) int {
-	c.Helper()
-	layout, ok := toolbar.Layout().(*unison.FlexLayout)
-	c.True(ok, "the toolbar has a flex layout")
-	return layout.Columns
-}
-
 // TestSheetToolbarNotesUnsettledData verifies that the sheet's toolbar shows the notice that its data never settles
 // while the entity says so (see gurps.Entity.Unsettled), whether the sheet was opened that way or edited into it, and
-// takes the notice down again once the data settles, with the toolbar's layout kept in step with the children it has
-// either way.
+// takes the notice down again once the data settles. The notice sits at the end of the toolbar, after the search field
+// that is given what is left of the row, level with the rest of the row.
 func TestSheetToolbarNotesUnsettledData(t *testing.T) {
 	c := check.New(t)
 	sheet := newTestSheetForTemplate(t)
 	entity := sheet.Entity()
 	c.Nil(sheet.unsettledNotice.Parent(), "a new sheet's data settles, so the notice is not shown")
-	c.Equal(len(sheet.toolbar.Children()), toolbarColumns(c, sheet.toolbar), "and the toolbar lays out its children")
+	layout, ok := sheet.toolbar.Layout().(*flowFillLayout)
+	c.True(ok, "the toolbar wraps its children")
+	c.True(ok && layout.Fill == sheet.search.field, "with the search field given what is left of its row")
 
 	entity.SheetSettings.EnforceTraitPrereqs = true
 	ring := newContradictoryTraitRing(entity)
@@ -175,15 +170,14 @@ func TestSheetToolbarNotesUnsettledData(t *testing.T) {
 	sheet.Rebuild(true)
 	c.True(entity.Unsettled(), "precondition: the ring leaves the data unable to settle")
 	c.Equal(sheet.toolbar.AsPanel(), sheet.unsettledNotice.Parent(), "the notice is shown once the data never settles")
-	c.Equal(len(sheet.toolbar.Children()), toolbarColumns(c, sheet.toolbar), "and the toolbar lays out the notice too")
 	c.Equal(sheet.unsettledNotice.AsPanel(), sheet.toolbar.Children()[len(sheet.toolbar.Children())-1],
 		"at the end of the toolbar")
+	c.Equal(align.Middle, sheet.unsettledNotice.LayoutData(), "level with the rest of its row")
 
 	ring[1].SetDisabled(true)
 	sheet.MarkModified(nil)
 	c.False(entity.Unsettled(), "precondition: disabling one of the ring settles the data")
 	c.Nil(sheet.unsettledNotice.Parent(), "the notice is taken down once the data settles")
-	c.Equal(len(sheet.toolbar.Children()), toolbarColumns(c, sheet.toolbar), "and the toolbar lays out what is left")
 
 	// A sheet whose data never settles when it is opened shows the notice from the start.
 	opened := gurps.NewEntity()
@@ -194,8 +188,8 @@ func TestSheetToolbarNotesUnsettledData(t *testing.T) {
 	openedSheet := NewSheet("opened"+gurps.SheetExt, opened)
 	c.Equal(openedSheet.toolbar.AsPanel(), openedSheet.unsettledNotice.Parent(),
 		"a sheet opened with data that never settles shows the notice from the start")
-	c.Equal(len(openedSheet.toolbar.Children()), toolbarColumns(c, openedSheet.toolbar),
-		"and its toolbar lays out the notice too")
+	c.Equal(openedSheet.unsettledNotice.AsPanel(), openedSheet.toolbar.Children()[len(openedSheet.toolbar.Children())-1],
+		"at the end of the toolbar")
 }
 
 // newWeightScriptedSheet returns a sheet whose ST a script derives from the character's weight, a point per 15 lb, so

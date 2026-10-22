@@ -21,8 +21,8 @@ github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSs
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/dlclark/regexp2/v2 v2.9.1 h1:q6bZW/NN9VodqMjYXpuic2lZxdHPfFTzGS+MJxIJmKQ=
 github.com/dlclark/regexp2/v2 v2.9.1/go.mod h1:avUrQvPaLz2DrFNHJF0taWAFFX2C1GMSSoeiqFjcBmU=
-github.com/dop251/goja v0.0.0-20261018113103-d42f16bb6161 h1:D9Bbwh0iJ8T/hHCDebeQzADTqaRRlEjLM/vt0Fjsgvw=
-github.com/dop251/goja v0.0.0-20261018113103-d42f16bb6161/go.mod h1:Cp9NYOLrEKg/ypIRkUWYXWLuKAyyFGkDmGeJ95Sw0zI=
+github.com/dop251/goja v0.0.0-20261021140635-64adc8bb4d51 h1:rBqRWGmNQj7j3+rPYY4fx7ETsWqyw78Epe3vwhrLofE=
+github.com/dop251/goja v0.0.0-20261021140635-64adc8bb4d51/go.mod h1:Cp9NYOLrEKg/ypIRkUWYXWLuKAyyFGkDmGeJ95Sw0zI=
 github.com/ebitengine/purego v0.11.2 h1:WWiTx8rD8zYdOwSj8O/NiNbsOvSAgJMTlyV1XlbUSeU=
 github.com/ebitengine/purego v0.11.2/go.mod h1:DCHPP08djqhNSoTfImcnHYQRZmd0qhakvrozqaEYhGQ=
 github.com/emirpasic/gods v1.18.1 h1:FXtiHYKDGKCW2KzwZKx0iC0PQmdlorYgdFG9jPXJ1Bc=
@@ -77,8 +77,8 @@ github.com/richardwilkes/rpgtools v1.14.0 h1:wTUTokRzF6eScPIiko6X5c7QA3clTNLHiOX
 github.com/richardwilkes/rpgtools v1.14.0/go.mod h1:XUrkoraM3YiXeS9FRhOIBlWP7/SVY3YvEgytWIQm4CQ=
 github.com/richardwilkes/toolbox/v2 v2.22.0 h1:WuD1qeID26rFA0BlK3ZQS3nMeIFTjCDlKLWd1/Sf9Mk=
 github.com/richardwilkes/toolbox/v2 v2.22.0/go.mod h1:oXmo/imAJIm5UerR2qUubtcdX4OnjuZQPg4dqT/9Z/Y=
-github.com/richardwilkes/unison v0.118.0 h1:1vmZUMYOMPJJbAT6+8j6oRL6oCBPWI8tORow94GiBBc=
-github.com/richardwilkes/unison v0.118.0/go.mod h1:/QQ7LmrZLl0gSt/OTYXAukameT2gkyIFkPrNU53aEwQ=
+github.com/richardwilkes/unison v0.119.0 h1:feol1qMSmtKhQY0/2EhCs1WJ+XmQduUk2UqqfP155sA=
+github.com/richardwilkes/unison v0.119.0/go.mod h1:4TenTZAKHH0MR00wGBMNoACSL7hVYh4g98a8WshsNt8=
 github.com/rjeczalik/notify v0.9.3 h1:6rJAzHTGKXGj76sbRgDiDcYj/HniypXmSJo1SWakZeY=
 github.com/rjeczalik/notify v0.9.3/go.mod h1:gF3zSOrafR9DQEWSE8TjfI9NkooDxbyT4UgRGKZA0lc=
 github.com/sergi/go-diff v1.4.0 h1:n/SP9D5ad1fORl+llWyN+D6qoUETXNZARKjyY2/KVCw=

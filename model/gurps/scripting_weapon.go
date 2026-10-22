@@ -32,11 +32,15 @@ func newScriptWeapon(r *goja.Runtime, w *Weapon) *goja.Object {
 			return newScriptEquipment(r, owner)
 		case *Trait:
 			return newScriptTrait(r, owner)
+		case *Skill:
+			return newScriptSkill(r, owner)
+		case *Spell:
+			return newScriptSpell(r, owner)
 		}
 		return goja.Undefined()
 	}
-	m["name"] = func() goja.Value { return r.ToValue(w.Owner.NameWithReplacements()) }
-	m["title"] = func() goja.Value { return r.ToValue(w.Owner.String()) }
+	m["name"] = func() goja.Value { return r.ToValue(w.Name()) }
+	m["title"] = func() goja.Value { return r.ToValue(w.Title()) }
 	m["notes"] = func() goja.Value { return r.ToValue(w.Notes()) }
 	m["usage"] = func() goja.Value { return r.ToValue(w.UsageWithReplacements()) }
 	m["usageNotes"] = func() goja.Value { return r.ToValue(w.ResolveUsageNotes()) }
@@ -77,7 +81,7 @@ func addScriptWeapons(r *goja.Runtime, m map[string]func() goja.Value, weapons f
 func matchWeapons(r *goja.Runtime, weapons []*Weapon, name, usage string, melee bool) goja.Value {
 	return scriptObjects(r, weapons, func(w *Weapon) bool {
 		return melee == w.IsMelee() &&
-			(name == "" || strings.EqualFold(w.Owner.NameWithReplacements(), name)) &&
+			(name == "" || strings.EqualFold(w.Name(), name)) &&
 			(usage == "" || strings.EqualFold(w.UsageWithReplacements(), usage))
 	}, newScriptWeapon)
 }

@@ -887,14 +887,3 @@ func (p *prereqPanel) modifierChips(chips *unison.Panel, path string, c *gurps.M
 		field.Tooltip = newWrappedTooltip(i18n.Text(`Separate multiple tags with commas to match any one of them, e.g. "Sword, Axe"`))
 	}
 }
-
-// numberChip adds the optional number criterion with the key, such as a level, which runs from minimum to maximum.
-func (p *sentenceRows[T]) numberChip(chips *unison.Panel, path, key string, n *criteria.Number, minimum, maximum fxp.Int, on bool) {
-	p.optionalCriterion(chips, path, key, on,
-		func() { *n = criteria.Number{Compare: criteria.AtLeastNumber, Qualifier: fxp.One} },
-		func() { *n = criteria.Number{} },
-		func(chip *unison.Panel) {
-			c := rowCriteria(key)
-			p.numberCriteria(chip, path+":"+key, c.subject, numericWordsAfter(c.prefix), n, minimum, maximum, false, false)
-		})
-}

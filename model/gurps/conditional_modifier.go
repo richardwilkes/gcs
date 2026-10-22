@@ -45,24 +45,26 @@ type ConditionalModifier struct {
 	parent   *ConditionalModifier
 }
 
-// NewConditionalModifier creates a new ConditionalModifier that is not filed under a group.
+// NewConditionalModifier creates a new conditional modifier that is not filed under a group.
 func NewConditionalModifier(source, from string, amt fxp.Int) *ConditionalModifier {
-	return newConditionalModifier(TIDFromHashedString(kinds.ConditionalModifier, from), source, from, amt)
+	return newConditionalModifierInGroup(false, source, "", from, amt)
 }
 
-// newConditionalModifierInGroup creates a ConditionalModifier filed under the named group. The group is mixed into the
-// TID, so the same situation under two groups yields two distinct rows. An empty group uses NewConditionalModifier, so
-// the IDs the exporters write for ungrouped rows are what they were before groups existed.
-func newConditionalModifierInGroup(source, group, from string, amt fxp.Int) *ConditionalModifier {
-	if group == "" {
-		return NewConditionalModifier(source, from, amt)
+// NewReaction creates a new reaction that is not filed under a group.
+func NewReaction(source, from string, amt fxp.Int) *ConditionalModifier {
+	return newConditionalModifierInGroup(true, source, "", from, amt)
+}
+
+// newConditionalModifierInGroup creates a reaction or conditional modifier filed under the named group. The group is
+// mixed into the TID, so the same situation under two groups yields two distinct rows. An empty group is left out of
+// the TID, so an ungrouped row's ID depends only on its kind and situation.
+func newConditionalModifierInGroup(reaction bool, source, group, from string, amt fxp.Int) *ConditionalModifier {
+	parts := []string{from}
+	if group != "" {
+		parts = []string{group, from}
 	}
-	return newConditionalModifier(TIDFromHashedString(kinds.ConditionalModifier, group, from), source, from, amt)
-}
-
-func newConditionalModifier(id tid.TID, source, from string, amt fxp.Int) *ConditionalModifier {
 	return &ConditionalModifier{
-		TID:     id,
+		TID:     TIDFromHashedString(conditionalModifierKind(reaction, false), parts...),
 		From:    from,
 		Amounts: []fxp.Int{amt},
 		Sources: []string{source},
@@ -70,22 +72,30 @@ func newConditionalModifier(id tid.TID, source, from string, amt fxp.Int) *Condi
 }
 
 // NewConditionalModifierGroup creates the container row that holds the modifiers filed under a group. namespace is the
-// sheet block key the row belongs to. The TID is derived from the entity ID, namespace and group rather than generated,
-// because these rows are rebuilt on every recalculation while their disclosure state is stored globally by ID. Mixing
-// in the entity keeps that state per sheet, as for the other derived rows (attribute separators and hit location
-// sub-tables), so collapsing a group on one character does not collapse the same-named group on every other one.
+// sheet block key the row belongs to, which also determines whether it holds reactions or conditional modifiers. The
+// TID is derived from the entity ID, namespace and group rather than generated, because these rows are rebuilt on every
+// recalculation while their disclosure state is stored globally by ID. Mixing in the entity keeps that state per sheet,
+// as for the other derived rows (attribute separators and hit location sub-tables), so collapsing a group on one
+// character does not collapse the same-named group on every other one.
 func NewConditionalModifierGroup(entityID tid.TID, namespace, group string) *ConditionalModifier {
 	return &ConditionalModifier{
-		TID:  TIDFromHashedString(kinds.ConditionalModifierContainer, string(entityID), namespace, group),
+		TID: TIDFromHashedString(conditionalModifierKind(namespace == BlockReactionsKey, true), string(entityID),
+			namespace, group),
 		From: group,
 	}
 }
 
-func conditionalModifierKind(isContainer bool) byte {
-	if isContainer {
+func conditionalModifierKind(reaction, isContainer bool) byte {
+	switch {
+	case reaction && isContainer:
+		return kinds.ReactionContainer
+	case reaction:
+		return kinds.Reaction
+	case isContainer:
 		return kinds.ConditionalModifierContainer
+	default:
+		return kinds.ConditionalModifier
 	}
-	return kinds.ConditionalModifier
 }
 
 // Add another source.
@@ -200,7 +210,7 @@ func (c *ConditionalModifier) Clone(from LibraryFile, owner DataOwner, parent *C
 	if mode == Copy {
 		clone.TID = c.TID
 	} else {
-		clone.TID = tid.MustNewTID(conditionalModifierKind(c.Container()))
+		clone.TID = tid.MustNewTID(conditionalModifierKind(c.Reaction(), c.Container()))
 	}
 	if c.Container() {
 		clone.Children = make([]*ConditionalModifier, 0, len(c.Children))
@@ -213,15 +223,27 @@ func (c *ConditionalModifier) Clone(from LibraryFile, owner DataOwner, parent *C
 
 // Kind returns the kind of data.
 func (c *ConditionalModifier) Kind() string {
-	if c.Container() {
+	switch {
+	case c.Reaction() && c.Container():
+		return i18n.Text("Reaction Container")
+	case c.Reaction():
+		return i18n.Text("Reaction")
+	case c.Container():
 		return i18n.Text("Conditional Modifier Container")
+	default:
+		return i18n.Text("Conditional Modifier")
 	}
-	return i18n.Text("Conditional Modifier")
+}
+
+// Reaction returns true if this is a reaction or a group container of reactions, rather than a conditional modifier or
+// a group container of them.
+func (c *ConditionalModifier) Reaction() bool {
+	return tid.IsKind(c.TID, kinds.Reaction) || tid.IsKind(c.TID, kinds.ReactionContainer)
 }
 
 // Container returns true if this is a container.
 func (c *ConditionalModifier) Container() bool {
-	return tid.IsKind(c.TID, kinds.ConditionalModifierContainer)
+	return tid.IsKind(c.TID, kinds.ConditionalModifierContainer) || tid.IsKind(c.TID, kinds.ReactionContainer)
 }
 
 // IsOpen returns true if this node is currently open.

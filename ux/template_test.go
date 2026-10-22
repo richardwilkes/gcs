@@ -111,15 +111,14 @@ func TestTemplateSearchSkipsAListTheLayoutDoesNotShow(t *testing.T) {
 	data.Traits = []*gurps.Trait{trait}
 	data.Skills = []*gurps.Skill{newTestSkill("Findable", fxp.One, nil)}
 	template := newTestTemplateDockable("Search", data)
-	var refs []*searchRef
-	template.searchTracker.findMatches(&refs, "findable", true)
-	c.Equal(2, len(refs), "with every list on the page, both rows are found")
+	matches := template.search.findMatches("findable")
+	c.Equal(2, len(matches), "with every list on the page, both rows are found")
 
 	c.True(sheetSettings.Layout.Hide(gurps.BlockSkillsKey))
 	template.Rebuild(true)
 	c.Nil(template.Skills.AsPanel().Parent(), "the hidden skills list is not on the page")
-	refs = nil
-	template.searchTracker.findMatches(&refs, "findable", true)
-	c.Equal(1, len(refs), "only the row in the list that is on the page is found")
-	c.Equal(any(template.Traits.Table), refs[0].table, "and it is the trait")
+	matches = template.search.findMatches("findable")
+	c.Equal(1, len(matches), "only the row in the list that is on the page is found")
+	c.Equal(string(trait.ID()), matches[0].key, "and it is the trait")
+	c.Equal("Traits", matches[0].title, "under the title of its list")
 }

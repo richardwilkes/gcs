@@ -253,16 +253,25 @@ func BenchmarkPageListSync(b *testing.B) {
 	}
 }
 
-// BenchmarkSheetSearch measures the search refresh every update performs, with the field empty and with text in it.
+// BenchmarkSheetSearch measures the search refresh every update performs: with the field empty, with text in it and its
+// matches showing, and with the same text but the matches hidden, which must cost next to nothing.
 func BenchmarkSheetSearch(b *testing.B) {
 	sb := newSheetBench(b)
+	search := sb.sheet.search
 	for _, one := range []struct {
-		name string
-		text string
-	}{{"empty", ""}, {"text", "spell"}} {
+		name   string
+		text   string
+		hidden bool
+	}{{name: "empty"}, {name: "text", text: "spell"}, {name: "hidden", text: "spell", hidden: true}} {
 		b.Run(one.name, func(b *testing.B) {
-			sb.screen.Do(func() { sb.sheet.searchTracker.searchField.SetText(one.text) })
-			sb.run(b, sb.sheet.searchTracker.Refresh)
+			sb.screen.Do(func() {
+				search.field.RequestFocus()
+				search.field.SetText(one.text)
+				if one.hidden {
+					search.suggestions.Hide()
+				}
+			})
+			sb.run(b, search.Refresh)
 		})
 	}
 }

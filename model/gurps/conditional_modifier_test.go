@@ -119,7 +119,7 @@ func TestConditionalModifierGroupsProduceContainerRows(t *testing.T) {
 func TestConditionalModifierGroupCellDataLeavesTheValueColumnBlank(t *testing.T) {
 	c := check.New(t)
 	e := NewEntity()
-	group := NewConditionalModifierGroup(e.ID, BlockReactionsKey, "Combat")
+	group := NewConditionalModifierGroup(e.ID, BlockConditionalModifiersKey, "Combat")
 	var data CellData
 	group.CellData(ConditionalModifierValueColumn, &data)
 	c.Equal("", data.Primary, "the modifier column is blank for a group")
@@ -209,7 +209,7 @@ func TestConditionalModifierGroupsMergeOnlyWithinTheirGroup(t *testing.T) {
 }
 
 // TestConditionalModifierTIDsAreStableAndPerTable verifies the ID guarantees the disclosure state and the exporters
-// rely on: an ungrouped row's ID is exactly what NewConditionalModifier produces, a group's ID is the same each time the
+// rely on: an ungrouped row's ID is exactly what NewReaction produces, a group's ID is the same each time the
 // rows are rebuilt, and a group of the same name in the other table, or on another entity, has a different ID.
 func TestConditionalModifierTIDsAreStableAndPerTable(t *testing.T) {
 	withGroupContainersOnSort(t, true)
@@ -225,11 +225,11 @@ func TestConditionalModifierTIDsAreStableAndPerTable(t *testing.T) {
 	if len(reactions) != 2 {
 		return
 	}
-	c.Equal(NewConditionalModifier("ignored", "from everyone", fxp.One).TID, reactions[1].TID,
-		"an ungrouped row keeps the ID it had before groups existed")
+	c.Equal(NewReaction("ignored", "from everyone", fxp.One).TID, reactions[1].TID,
+		"an ungrouped row's ID depends only on its kind and situation")
 	c.Equal(reactions[0].TID, e.Reactions()[0].TID, "a group's ID is the same across rebuilds")
-	c.True(tid.IsKind(reactions[0].TID, kinds.ConditionalModifierContainer), "a group's ID carries the container kind")
-	c.True(tid.IsKind(reactions[0].Children[0].TID, kinds.ConditionalModifier), "a member's ID carries the leaf kind")
+	c.True(tid.IsKind(reactions[0].TID, kinds.ReactionContainer), "a group's ID carries the container kind")
+	c.True(tid.IsKind(reactions[0].Children[0].TID, kinds.Reaction), "a member's ID carries the leaf kind")
 
 	condMods := e.ConditionalModifiers()
 	c.Equal([]string{"Combat[to hit]"}, rowNames(condMods))
@@ -237,6 +237,8 @@ func TestConditionalModifierTIDsAreStableAndPerTable(t *testing.T) {
 		return
 	}
 	c.NotEqual(reactions[0].TID, condMods[0].TID, "the same group name in the other table is a different container")
+	c.True(tid.IsKind(condMods[0].TID, kinds.ConditionalModifierContainer), "a group's ID carries the container kind")
+	c.True(tid.IsKind(condMods[0].Children[0].TID, kinds.ConditionalModifier), "a member's ID carries the leaf kind")
 
 	other := NewEntity()
 	addReaction(other, "B", "from foes", "Combat", fxp.One)
@@ -271,7 +273,7 @@ func TestConditionalModifierCloneKeepsContainerKindAndChildren(t *testing.T) {
 	c := check.New(t)
 	e := NewEntity()
 	group := NewConditionalModifierGroup(e.ID, BlockReactionsKey, "Combat")
-	child := NewConditionalModifier("from trait X", "from foes", fxp.Two)
+	child := NewReaction("from trait X", "from foes", fxp.Two)
 	child.SetParent(group)
 	group.Children = []*ConditionalModifier{child}
 
@@ -287,9 +289,41 @@ func TestConditionalModifierCloneKeepsContainerKindAndChildren(t *testing.T) {
 		c.True(clone.Children[0] != child, "mode %d: the child is a clone, not the original", mode)
 		c.True(clone.Children[0].Parent() == clone, "mode %d: the cloned child belongs to the clone", mode)
 		c.False(clone.Children[0].Container(), "mode %d: the cloned child is still a modifier", mode)
+		c.True(clone.Reaction() && clone.Children[0].Reaction(), "mode %d: the clones are still reactions", mode)
 		c.Equal(fxp.Two, clone.Children[0].Total(), "mode %d", mode)
 		c.Equal(Hash64(group), Hash64(clone), "mode %d: a clone hashes identically", mode)
 	}
 	c.NotEqual(Hash64(group), Hash64(NewConditionalModifierGroup(e.ID, BlockReactionsKey, "Combat")),
 		"the children participate in a group's hash")
+}
+
+// TestReactionsAndConditionalModifiersHaveDistinctKinds verifies that the rows of the two tables can be told apart.
+func TestReactionsAndConditionalModifiersHaveDistinctKinds(t *testing.T) {
+	c := check.New(t)
+	e := NewEntity()
+	for _, one := range []struct {
+		row       *ConditionalModifier
+		kind      string
+		reaction  bool
+		container bool
+	}{
+		{row: NewReaction("A", "from foes", fxp.One), kind: "Reaction", reaction: true},
+		{row: NewConditionalModifier("A", "from foes", fxp.One), kind: "Conditional Modifier"},
+		{
+			row:       NewConditionalModifierGroup(e.ID, BlockReactionsKey, "Combat"),
+			kind:      "Reaction Container",
+			reaction:  true,
+			container: true,
+		},
+		{
+			row:       NewConditionalModifierGroup(e.ID, BlockConditionalModifiersKey, "Combat"),
+			kind:      "Conditional Modifier Container",
+			container: true,
+		},
+	} {
+		c.Equal(one.kind, one.row.Kind())
+		c.Equal(one.reaction, one.row.Reaction(), one.kind)
+		c.Equal(one.container, one.row.Container(), one.kind)
+	}
+	c.NotEqual(NewReaction("A", "from foes", fxp.One).TID, NewConditionalModifier("A", "from foes", fxp.One).TID)
 }

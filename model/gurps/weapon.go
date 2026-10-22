@@ -400,6 +400,22 @@ func (w *Weapon) String() string {
 	return s
 }
 
+// Name returns the name of the weapon's owner, without its level, TL or specializations.
+func (w *Weapon) Name() string {
+	if xreflect.IsNil(w.Owner) {
+		return ""
+	}
+	return w.Owner.NameWithReplacements()
+}
+
+// Title returns the title of the weapon's owner, which is String without its carried or equipped state.
+func (w *Weapon) Title() string {
+	if xreflect.IsNil(w.Owner) {
+		return ""
+	}
+	return w.Owner.String()
+}
+
 // Notes returns the notes for this weapon.
 func (w *Weapon) Notes() string {
 	var buffer strings.Builder
@@ -578,15 +594,16 @@ func (w *Weapon) skillLevelBaseAdjustment(e *Entity, tooltip *xbytes.InsertBuffe
 			tooltip.WriteByte(']')
 		}
 	}
-	for _, bonus := range e.NamedWeaponSkillBonusesFor(w, w.UsageWithReplacements(), w.Owner.TagList(), tooltip) {
+	named := e.NamedWeaponSkillBonusesFor(w, w.UsageWithReplacements(), w.Owner.TagList(), tooltip)
+	for _, bonus := range named {
 		adj += bonus.AdjustedAmount()
 	}
 	for _, f := range w.Owner.ActiveFeatures() {
-		adj += w.extractSkillBonusForThisWeapon(f, tooltip)
+		adj += w.extractSkillBonusForThisWeapon(f, named, tooltip)
 	}
 	w.forEachOwnerModifier(func(_ ownerModifier, active Features) {
 		for _, f := range active {
-			adj += w.extractSkillBonusForThisWeapon(f, tooltip)
+			adj += w.extractSkillBonusForThisWeapon(f, named, tooltip)
 		}
 	})
 	return adj
@@ -666,13 +683,24 @@ func (w *Weapon) EncumbrancePenalty(e *Entity, tooltip *xbytes.InsertBuffer) fxp
 	return penalty
 }
 
-func (w *Weapon) extractSkillBonusForThisWeapon(f Feature, tooltip *xbytes.InsertBuffer) fxp.Int {
+func (w *Weapon) extractSkillBonusForThisWeapon(f Feature, named []*SkillBonus, tooltip *xbytes.InsertBuffer) fxp.Int {
 	if sb, ok := f.(*SkillBonus); ok {
-		if sb.SelectionType.EnsureValid() == skillsel.ThisWeapon {
-			if sb.SpecializationCriteria.Matches(w.NameableReplacements(), w.UsageWithReplacements()) {
-				sb.AddToTooltip(tooltip)
-				return sb.AdjustedAmount()
-			}
+		replacements := w.NameableReplacements()
+		var matches bool
+		switch sb.SelectionType.EnsureValid() {
+		case skillsel.ThisWeapon:
+			matches = sb.SpecializationCriteria.Matches(replacements, w.UsageWithReplacements())
+		case skillsel.WeaponsWithName:
+			// named holds those the entity carries, so this adds those it doesn't, as for equipment that isn't
+			// equipped.
+			matches = !slices.Contains(named, sb) &&
+				w.matchesName(sb.NameCriteria, &sb.WeaponOwnerCriteria, replacements) &&
+				sb.SpecializationCriteria.Matches(replacements, w.UsageWithReplacements()) &&
+				sb.TagsCriteria.MatchesList(replacements, w.Owner.TagList()...)
+		}
+		if matches {
+			sb.AddToTooltip(tooltip)
+			return sb.AdjustedAmount()
 		}
 	}
 	return 0
@@ -971,7 +999,7 @@ func (w *Weapon) findRequiredSkills(entity *Entity) []requiredSkill {
 // matchesName reports whether a feature selecting weapons by name matches this weapon: the name criterion against its
 // owner's name alone, and the owner criteria against the owner's other qualifiers.
 func (w *Weapon) matchesName(name criteria.Text, owner *WeaponOwnerCriteria, replacements map[string]string) bool {
-	return name.Matches(replacements, w.Owner.NameWithReplacements()) && owner.matches(replacements, w.Owner)
+	return name.Matches(replacements, w.Name()) && owner.matches(replacements, w.Owner)
 }
 
 // matchesRequiredSkillName reports whether a feature's required-skill name criterion matches a skill name visited by

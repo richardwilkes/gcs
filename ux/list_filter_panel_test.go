@@ -1125,6 +1125,100 @@ func TestListFilterPanelSuggestionKeys(t *testing.T) {
 	})
 }
 
+// TestListFilterPanelTypedSuggestions checks that typing in the value of a condition on a field that offers
+// suggestions offers the values containing the text, ignoring case, other than the one that is the text; that Down
+// then moves the highlight rather than opening the dropdown, and Return chooses the highlighted value, as an undo step
+// of its own that leaves the row open; and that Escape hides the suggestions, leaving the row open, before a second
+// Escape closes it.
+func TestListFilterPanelTypedSuggestions(t *testing.T) {
+	c := check.New(t)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
+	p, host := showSuggestionTestPanel(t, screen, newSuggestionTestCondition("tags", criteria.IsText, ""))
+	var wnd *unison.Window
+	screen.Do(func() { wnd = p.Window() })
+	// valueField returns the field for the value, which a rebuild replaces. Call it on the UI thread.
+	valueField := func() *StringField {
+		field, _ := refAs[*StringField](t, p.AsPanel(), "r.0:text")
+		return field
+	}
+	// offered returns the suggestions showing, or nil while none are.
+	offered := func() []string {
+		var values []string
+		screen.Do(func() {
+			field := valueField()
+			if field == nil || screen.SuggestionsWindow(wnd) == nil {
+				return
+			}
+			list := field.suggestions.List()
+			for i := range list.Count() {
+				values = append(values, list.DataAtIndex(i))
+			}
+		})
+		return values
+	}
+	highlighted := func() int {
+		index := -2
+		screen.Do(func() {
+			if field := valueField(); field != nil {
+				index = field.suggestions.Selected()
+			}
+		})
+		return index
+	}
+	qualifier := func() string {
+		var text string
+		screen.Do(func() { text = filterConditionAt(t, p, "r.0").Text.Qualifier })
+		return text
+	}
+	var field *StringField
+	screen.Do(func() { field = valueField() })
+	if field == nil {
+		t.Fatal("the tags condition's value must be a string field")
+	}
+
+	screen.Click(screen.PanelCenter(field))
+	screen.Type("ARM")
+	c.Equal([]string{"Armor"}, offered(), "the values containing the text are offered, whatever its case")
+	screen.Type("or")
+	c.Nil(offered(), "a text that is a value has nothing to complete")
+	screen.Type("\b\b\b\b\b")
+	c.Nil(offered(), "nor has an empty one")
+	screen.Type("eap")
+	c.Equal([]string{"Melee Weapon", "Weapon"}, offered(), "in the order the dropdown offers them")
+	c.Equal(-1, highlighted(), "with none highlighted")
+
+	screen.KeyPress(unison.KeyDown, mod.None)
+	screen.Do(func() { c.Nil(uxtest.OpenMenuPopup(wnd), "Down doesn't open the dropdown while they show") })
+	c.Equal(0, highlighted(), "but highlights the first")
+	screen.KeyPress(unison.KeyDown, mod.None)
+	c.Equal(1, highlighted())
+	screen.KeyPress(unison.KeyReturn, mod.None)
+	c.Nil(offered(), "Return chooses the highlighted value, hiding the rest")
+	c.Equal("Weapon", qualifier())
+	screen.Do(func() {
+		c.Equal("Weapon", field.Text())
+		c.True(p.FindRefKey("r.0:text") == field.AsPanel(), "the panel isn't rebuilt")
+		c.Equal("r.0", p.open, "the row stays open")
+		c.Equal("r.0:text", focusedRefKey(wnd), "with the focus on the value")
+		host.undoMgr.Undo()
+	})
+	c.Equal("eap", qualifier(), "undo takes back the choice alone")
+	c.Nil(offered(), "without offering anything")
+	screen.Do(func() { c.Equal("r.0:text", focusedRefKey(wnd), "the focus is back on the value") })
+
+	screen.Type("o")
+	c.Equal([]string{"Melee Weapon", "Weapon"}, offered(), "typing again offers the values again")
+	screen.KeyPress(unison.KeyEscape, mod.None)
+	c.Nil(offered(), "Escape hides them")
+	screen.Do(func() {
+		c.Equal("r.0", p.open, "and nothing else")
+		c.Equal("r.0:text", focusedRefKey(wnd))
+	})
+	c.Equal("eapo", qualifier())
+	screen.KeyPress(unison.KeyEscape, mod.None)
+	screen.Do(func() { c.Equal("", p.open, "a second Escape closes the row") })
+}
+
 // TestListFilterPanelSuggestionLayout checks that the compact borders of a value with a dropdown leave room for its
 // button, focused or not, and that the button sits within the field, clear of its text, and never takes the focus.
 func TestListFilterPanelSuggestionLayout(t *testing.T) {

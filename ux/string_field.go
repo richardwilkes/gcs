@@ -17,6 +17,9 @@ import (
 // StringField is a field that holds a string.
 type StringField struct {
 	undoableField[string]
+	// suggestions offers completions of the text as it is typed, or is nil for a field that offers none; see
+	// installSuggestions.
+	suggestions *unison.FieldSuggestions[string]
 }
 
 // NewMultiLineStringField creates a new multi-line field for editing a string.
@@ -43,4 +46,16 @@ func newStringField(field *unison.Field, targetMgr *TargetMgr, targetKey, undoTi
 // textAsIs is both the parse and the format function of a string field, whose text is its value.
 func textAsIs(text string) string {
 	return text
+}
+
+// installSuggestions has the field offer the values suggest returns that contain its text as it is edited, as
+// installFieldSuggestions does, which says when to call this.
+func (f *StringField) installSuggestions(suggest func() []string) {
+	f.suggestions = installFieldSuggestions(f.Field, suggest)
+}
+
+// suggestionsShowing returns true while the field's suggestions are showing, which is when they take the keys that
+// drive them, Escape among them, ahead of the field.
+func (f *StringField) suggestionsShowing() bool {
+	return f.suggestions != nil && f.suggestions.Showing()
 }
