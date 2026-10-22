@@ -112,18 +112,37 @@ func TestLootSheetNewItemCommandUsesTheLiveList(t *testing.T) {
 
 // TestLootSheetIgnoresAnotherEntitySheetSettings verifies that a loot sheet only responds to a change in the global
 // sheet settings, which is what it reads from, and not to a change made in some character's per-sheet settings.
-// Responding to the latter would rebuild the loot sheet and bump its modification timestamp for an edit that was never
-// made to it.
+// Responding to the latter would rebuild the loot sheet for an edit that was never made to it.
 func TestLootSheetIgnoresAnotherEntitySheetSettings(t *testing.T) {
 	c := check.New(t)
 	sheet := newTestLootSheet(t)
 	sheet.loot.ModifiedOn = jio.Time{}
+	before := currentDisplayStamp()
 
 	sheet.SheetSettingsUpdated(gurps.NewEntity(), true)
 	c.Equal(jio.Time{}, sheet.loot.ModifiedOn, "another entity's settings change must not touch the loot sheet")
+	c.Equal(before, currentDisplayStamp(), "another entity's settings change must not rebuild the loot sheet")
+}
 
-	sheet.SheetSettingsUpdated(nil, true)
-	c.NotEqual(jio.Time{}, sheet.loot.ModifiedOn, "a global settings change must be reported to the loot sheet")
+// TestLootSheetShowsGlobalSheetSettingsWithoutBeingModified verifies that a change to the global sheet settings, which
+// a loot sheet shows but doesn't save, rebuilds the loot sheet without bumping its modification timestamp. Applying the
+// default attribute definitions or setting the default block layout used to leave every open loot sheet showing
+// "Modified" as of that moment, and saving that date, for an edit never made to it.
+func TestLootSheetShowsGlobalSheetSettingsWithoutBeingModified(t *testing.T) {
+	c := check.New(t)
+	sheet := newTestLootSheet(t)
+	sheet.loot.ModifiedOn = jio.Time{}
+
+	for _, fullRebuild := range []bool{false, true} {
+		before := currentDisplayStamp()
+		sheet.SheetSettingsUpdated(nil, fullRebuild)
+		c.Equal(jio.Time{}, sheet.loot.ModifiedOn,
+			"a global settings change is no edit of the loot (fullRebuild=%v)", fullRebuild)
+		c.True(sheet.Equipment.syncedAtStamp() > before,
+			"the loot sheet's lists must be synced with the new settings (fullRebuild=%v)", fullRebuild)
+		c.True(sheet.Notes.syncedAtStamp() > before,
+			"the loot sheet's lists must be synced with the new settings (fullRebuild=%v)", fullRebuild)
+	}
 }
 
 // TestLootCandidatesUseWhatGroupsHold verifies that treasure is generated from what a group holds, in nested groups

@@ -18,6 +18,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/criteria"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	traitcontainer "github.com/richardwilkes/gcs/v5/model/gurps/enums/container"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/display"
 	"github.com/richardwilkes/gcs/v5/ux/uxtest"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/toolbox/v2/geom"
@@ -751,4 +752,35 @@ func TestTableDockableSaveTagFilter(t *testing.T) {
 	c.Equal("Exotic Physical", d.selectedFilter.Name, "the filter in force is the new one")
 	c.Equal([]string{"Any Tag"}, checkedTags(d), "the chosen tags are dropped, since the new filter holds them")
 	c.Equal([]string{"Fur"}, visibleTraitNames(d), "the new filter shows what the two did together")
+}
+
+// TestTableDockableKeepsItsRowsAcrossAGlobalSettingsSync verifies that a change to the global sheet settings that can't
+// alter a library list's columns or rows, reported without a full rebuild, leaves its rows in place and settles their
+// heights for what the cells now show, rather than building every row and cell anew. Typing in a field of the global
+// sheet settings reports such a change on every keystroke, and used to rebuild every open library list each time. A
+// change to the defaults that calls for a full rebuild, such as applying the default attribute definitions, still
+// rebuilds the list, and a change to one character's own settings is none of its business.
+func TestTableDockableKeepsItsRowsAcrossAGlobalSettingsSync(t *testing.T) {
+	c := check.New(t)
+	global := gurps.GlobalSettings()
+	t.Cleanup(gurps.SyncGlobalSheetSettings) // Runs after the swap below is undone.
+	uxtest.SwapForTest(t, &global.Sheet, global.Sheet.Clone(nil))
+	global.Sheet.NotesDisplay = display.NotShown
+	d := newFilterTestTraitDockable(t)
+	row := d.table.RowFromIndex(0)
+	c.NotNil(row, "the list must show its traits")
+	row.Data().LocalNotes = "Sees well in dim light"
+	height := d.table.RowHeights()[0]
+
+	d.SheetSettingsUpdated(gurps.NewEntity(), true)
+	c.True(d.table.RowFromIndex(0) == row, "another entity's settings change must not touch the list")
+	c.Equal(height, d.table.RowHeights()[0], "another entity's settings change must not touch the list")
+
+	global.Sheet.NotesDisplay = display.Inline
+	d.SheetSettingsUpdated(nil, false)
+	c.True(d.table.RowFromIndex(0) == row, "a change needing no full rebuild must keep the rows")
+	c.True(d.table.RowHeights()[0] > height, "the row must be made tall enough for the notes it now shows")
+
+	d.SheetSettingsUpdated(nil, true)
+	c.True(d.table.RowFromIndex(0) != row, "a change needing a full rebuild must rebuild the list")
 }
