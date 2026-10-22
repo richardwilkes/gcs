@@ -14,9 +14,11 @@ import (
 	"testing"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/model/nameable"
 	"github.com/richardwilkes/gcs/v5/ux/uxtest"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/unison"
+	"github.com/richardwilkes/unison/enums/mod"
 )
 
 // slicedNameablesPrompt adapts a stand-in for the nameables prompt that takes the sections as parallel slices of their
@@ -363,4 +365,74 @@ func TestAltDropOfAContainerAsksAboutTheKeyItsChildSharesOnce(t *testing.T) {
 	c.Equal(1, len(sword.Modifiers), "the container must be attached")
 	c.Equal("Steel Fittings", sword.Modifiers[0].NameWithReplacements())
 	c.Equal([]string{"Steel Pommel", "Red Steel Guard"}, appliedModifierNames(sword.Modifiers[0].Children))
+}
+
+// TestNameableFieldSuggestsOptions checks that the combo field of a free-form marker offers the options containing
+// what has been typed, without the «not set» and «empty» entries of its dropdown, and that choosing one with Return
+// puts it in the substitutions, as the typing before it did.
+func TestNameableFieldSuggestsOptions(t *testing.T) {
+	c := check.New(t)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
+	marker, ok := nameable.NewMarker("Material|Steel|Bronze|Iron|*|?")
+	c.True(ok)
+	c.True(marker.FreeForm)
+	m := map[string]string{}
+	var field *unison.Field
+	screen.Do(func() {
+		if one, isField := createNameableField(&marker, m).(*unison.Field); isField {
+			field = one
+		}
+	})
+	if field == nil {
+		t.Fatal("a free-form marker must get a combo field")
+	}
+	wnd := showInTestWindow(t, screen, 400, field)
+	offered := func() []string {
+		var values []string
+		screen.Do(func() {
+			popup := screen.SuggestionsWindow(wnd)
+			if popup == nil {
+				return
+			}
+			list, _ := uxtest.FirstPanelOfType[*unison.List[string]](popup.Content())
+			if list == nil {
+				return
+			}
+			for i := range list.Count() {
+				values = append(values, list.DataAtIndex(i))
+			}
+		})
+		return values
+	}
+	material := func() (string, bool) {
+		var value string
+		var set bool
+		screen.Do(func() { value, set = m[marker.Key()] })
+		return value, set
+	}
+
+	screen.Click(screen.PanelCenter(field))
+	screen.Type("ro")
+	c.Equal([]string{"Bronze", "Iron"}, offered(), "the options containing the text are offered")
+	value, set := material()
+	c.True(set)
+	c.Equal("ro", value, "the typing is a substitution as it stands")
+	screen.KeyPress(unison.KeyDown, mod.None)
+	screen.Do(func() { c.Nil(uxtest.OpenMenuPopup(wnd), "Down doesn't open the dropdown while they show") })
+	screen.KeyPress(unison.KeyReturn, mod.None)
+	c.Nil(offered(), "Return chooses the highlighted option")
+	value, _ = material()
+	c.Equal("Bronze", value)
+	screen.Do(func() { c.Equal("Bronze", field.Text()) })
+
+	screen.KeyPress(unison.KeyA, mod.OSMenuCommand())
+	screen.Type("set")
+	c.Nil(offered(), "the «not set» entry is not an option to offer")
+	value, _ = material()
+	c.Equal("set", value)
+	screen.Type("\b\b\b")
+	c.Nil(offered())
+	value, set = material()
+	c.True(set)
+	c.Equal("", value, "clearing the field leaves the empty substitution the marker allows")
 }

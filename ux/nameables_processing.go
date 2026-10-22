@@ -238,10 +238,10 @@ func showNameablesDialog(op promptOperation, sections []nameablesSection) bool {
 
 // createNameableField builds the widget used to edit the replacement value for the marker, which comes from
 // nameable.NewMarker with its ok result already checked. A FreeForm marker -- which every synthesized old-format
-// marker is, matching such markers' traditional unrestricted typing -- gets an editable combo field, while any other
-// gets a popup menu limited to the marker's options. A "not set" entry is always offered as well, since it is the only
-// way to clear a substitution, and a nameable whose value in m is nameable.Unset starts out on it, regardless of the
-// marker's Options and AllowEmpty settings.
+// marker is, matching such markers' traditional unrestricted typing -- gets an editable combo field, which also offers
+// the options containing what has been typed, while any other gets a popup menu limited to the marker's options. A
+// "not set" entry is always offered as well, since it is the only way to clear a substitution, and a nameable whose
+// value in m is nameable.Unset starts out on it, regardless of the marker's Options and AllowEmpty settings.
 func createNameableField(marker *nameable.Marker, m map[string]string) unison.Paneler {
 	var initial *string
 	if v, ok := m[marker.Key()]; ok && v != nameable.Unset {
@@ -266,6 +266,7 @@ func createNameableField(marker *nameable.Marker, m map[string]string) unison.Pa
 
 	if marker.FreeForm {
 		field := unison.NewComboField(options, initial, apply)
+		installFieldSuggestions(field, func() []string { return marker.Options })
 
 		// Use a fixed string to set the lower bounds on the ComboField width
 		minWidth := field.MinimumTextWidth
