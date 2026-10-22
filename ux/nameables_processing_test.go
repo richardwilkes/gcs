@@ -389,11 +389,12 @@ func TestNameableFieldFollowsItsDefinition(t *testing.T) {
 func TestNameableFieldSuggestsOptions(t *testing.T) {
 	c := check.New(t)
 	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
-  materialKey := "Material"
+	materialKey := "Material"
 	m := map[string]string{}
 	var field *unison.Field
 	screen.Do(func() {
-		if one, isField := createNameableField(materialKey, &nameable.Detail{Options: []string{"Steel", "Bronze"}, FreeForm: true}, m).(*unison.Field); isField {
+		if one, isField := createNameableField(materialKey,
+			&nameable.Detail{Options: []string{"Bronze", "Iron"}, FreeForm: true}, m).(*unison.Field); isField {
 			field = one
 		}
 	})
