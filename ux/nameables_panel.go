@@ -413,11 +413,17 @@ func (p *nameablesPanel) change(code string, change func(d *nameable.Detail)) {
 }
 
 // editor returns the controls of an open row: its code and name, flowing as a sentence, then its options and the
-// rest as chips.
+// rest as chips. detail is the row's copy of the nameable, which the fields read. Typing changes the nameable without
+// rebuilding the row, so the fields' setters change the copy too: a sync of a field whose copy had gone stale would
+// hand its old text back to the setter, undoing what was typed into it.
 func (p *nameablesPanel) editor(path, code string, detail *nameable.Detail) *unison.Panel {
 	box := newColumn()
 	box.RefKey = path + keyFirst
 	key := func(name string) string { return path + ":" + name }
+	set := func(title, fieldKey string, change func(d *nameable.Detail)) {
+		change(detail)
+		p.update(code, title, fieldKey, change)
+	}
 
 	// The first row is a sentence of three fixed parts, so it is a flex row rather than a flow, which lets the name take
 	// the width left after the code and the words between them.
@@ -467,9 +473,7 @@ func (p *nameablesPanel) editor(path, code string, detail *nameable.Detail) *uni
 	p.addCompact(fields, codeField.withoutUndo())
 	addJoiningWords(fields, i18n.Text("asks for"))
 	name := NewStringField(p.targetMgr, key("name"), i18n.Text("Name"), func() string { return detail.Label },
-		func(s string) {
-			p.update(code, i18n.Text("Name"), key("name"), func(d *nameable.Detail) { d.Label = s })
-		})
+		func(s string) { set(i18n.Text("Name"), key("name"), func(d *nameable.Detail) { d.Label = s }) })
 	name.Watermark = i18n.Text("what the player is asked for")
 	name.SetMinimumTextWidthUsing(i18n.Text("Martial arts style"))
 	p.addCompact(fields, name.withoutUndo())
@@ -513,7 +517,7 @@ func (p *nameablesPanel) editor(path, code string, detail *nameable.Detail) *uni
 			field := NewStringField(p.targetMgr, key("descfield"), i18n.Text("Description"),
 				func() string { return detail.Tooltip },
 				func(s string) {
-					p.update(code, i18n.Text("Description"), key("descfield"), func(d *nameable.Detail) { d.Tooltip = s })
+					set(i18n.Text("Description"), key("descfield"), func(d *nameable.Detail) { d.Tooltip = s })
 				})
 			field.Watermark = i18n.Text("help shown with the question")
 			field.SetMinimumTextWidthUsing(i18n.Text("Which style does this trait represent?"))

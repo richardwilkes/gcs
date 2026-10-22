@@ -287,3 +287,41 @@ func TestNameablesPanelNameFieldFillsItsRow(t *testing.T) {
 		c.True(field.FrameRect().Width > 300, "which is wider than its minimum")
 	})
 }
+
+// What is typed into a field of an open row survives the sync that typing into another field of it brings about, which
+// must not hand the stale text of the row's copy back to the first field's setter.
+func TestNameablesPanelFieldsKeepWhatWasTyped(t *testing.T) {
+	c := check.New(t)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
+	defs := map[string]nameable.Detail{"style": {Label: "Style", Tooltip: "Which?"}}
+	texts := []string{"@style@"}
+	p, host := showNameablesPanel(t, screen, &defs, &texts, nil, nil, pathOf("style"))
+	screen.Do(func() {
+		field, ok := p.FindRefKey("n:style:name").Self.(*StringField)
+		c.True(ok, "the open row has a name field")
+		if ok {
+			field.RequestFocus()
+			field.SetSelectionToEnd()
+		}
+	})
+	screen.Type("s")
+	c.Equal("Styles", defs["style"].Label)
+	screen.KeyPress(unison.KeyTab, 0)
+	screen.Do(func() {
+		focus := p.Window().Focus()
+		c.NotNil(focus, "Tab moves the focus")
+		if focus != nil {
+			c.Equal("n:style:descfield", focus.RefKey, "to the description field")
+			if field, ok := focus.Self.(*StringField); ok {
+				field.SetSelectionToEnd()
+			}
+		}
+	})
+	screen.Type("!")
+	c.Equal("Which?!", defs["style"].Tooltip)
+	c.Equal("Styles", defs["style"].Label, "the name keeps what was typed into it")
+	c.Equal("Undo Description", host.mgr.UndoTitle(), "and nothing else is recorded")
+	screen.Do(host.mgr.Undo)
+	c.Equal("Which?", defs["style"].Tooltip)
+	c.Equal("Styles", defs["style"].Label, "undoing the description leaves the name alone")
+}
