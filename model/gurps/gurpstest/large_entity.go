@@ -229,6 +229,8 @@ type largeEntityBuilder struct {
 func NewLargeEntity(size *LargeEntitySize) *gurps.Entity {
 	b := &largeEntityBuilder{entity: gurps.NewEntity(), size: *size}
 	b.size.PerContainer = max(1, b.size.PerContainer)
+	// Whether a new entity has natural attacks depends on the settings, so addTraits adds them instead.
+	b.entity.Traits = nil
 	b.entity.Profile.Name = "Large Benchmark Character"
 	// A new entity's profile is filled in at random, so it is set by hand.
 	b.entity.Profile.Gender = "Male"
