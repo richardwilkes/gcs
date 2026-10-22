@@ -346,7 +346,12 @@ if [ "$TEST"x == "1x" ]; then
 			echo "No TestRace wrappers found" >&2
 			exit 1
 		fi
-		go test -race -run '^TestRace$' $RACE_PKGS
+		# The checkptr instrumentation that -race turns on aborts the process the first time rjeczalik/notify's
+		# Windows watcher delivers an event, because it converts a pointer into its 4 KiB buffer to a 64 KiB array
+		# type (watcher_readdcw.go loopevent; upstream issue #220, fix pending in PR #228). Only the bytes the kernel
+		# wrote are ever read, so the conversion is harmless and checkptr is disabled for that package alone until
+		# the fix ships.
+		go test -race -gcflags='github.com/rjeczalik/notify=-d=checkptr=0' -run '^TestRace$' $RACE_PKGS
 	fi
 fi
 
