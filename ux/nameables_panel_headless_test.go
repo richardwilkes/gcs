@@ -274,6 +274,31 @@ func TestNameablesPanelShowsLinkOverSameNamedCode(t *testing.T) {
 	c.Equal("@art@ asks for Art as any text; used once, and once in a modifier", text)
 }
 
+// TestNameablesPanelRenameThroughModifierCode covers renaming the item's code by typing through the name of a
+// modifier's code linked to it: the link follows each keystroke, so it must survive the moment the two names match,
+// when it points at itself. Applying the editor's data is what drops such a link (see TestApplyDropsSelfLinks).
+func TestNameablesPanelRenameThroughModifierCode(t *testing.T) {
+	c := check.New(t)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
+	defs := map[string]nameable.Detail{"style": {Label: "Style", FreeForm: true}}
+	texts := []string{"@style@"}
+	id := tid.MustNewTID('m')
+	links := map[tid.TID]map[string]string{id: {"art": "style"}}
+	modifiers := []nameableModifier{{id: id, name: "Practiced", uses: map[string]int{"art": 1}}}
+	p, _ := showNameablesPanel(t, screen, &defs, &texts, &links, modifiers, pathOf("style"))
+	screen.Do(func() {
+		field, ok := p.FindRefKey(nameablesCodeKey).Self.(*StringField)
+		c.True(ok)
+		if ok {
+			field.SetText("art")
+			c.Equal(map[tid.TID]map[string]string{id: {"art": "art"}}, links,
+				"the link is kept while the names match, in case the rename goes on")
+			field.SetText("arts")
+		}
+	})
+	c.Equal(map[tid.TID]map[string]string{id: {"art": "arts"}}, links, "the link follows the rest of the rename")
+}
+
 func TestNameablesPanelCollapses(t *testing.T) {
 	c := check.New(t)
 	screen, _ := uxtest.StartHeadlessWorkspace(t, c)

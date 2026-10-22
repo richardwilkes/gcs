@@ -254,7 +254,8 @@ func addLinkedNameableKeys(m, found, links map[string]string) {
 
 // cloneNameableLinks returns a copy of an owner's nameable links for the copies of its modifiers, keyed by the IDs of
 // the copies, which differ from the originals' when they were cloned as a new reference or a duplicate. Links for a
-// modifier that is no longer there are dropped.
+// modifier that is no longer there are dropped, as is a link of a code to itself, which means the same as none and is
+// what renaming the owner's code to the modifier's in the editor leaves behind.
 func cloneNameableLinks[M Node[M], S ~[]M](links map[tid.TID]map[string]string, from, to S) map[tid.TID]map[string]string {
 	if len(links) == 0 {
 		return nil
@@ -264,10 +265,18 @@ func cloneNameableLinks[M Node[M], S ~[]M](links map[tid.TID]map[string]string, 
 	walk = func(from, to []M) {
 		for i := range min(len(from), len(to)) {
 			if one, ok := links[from[i].ID()]; ok {
-				if result == nil {
-					result = make(map[tid.TID]map[string]string)
+				one = maps.Clone(one)
+				for code, target := range one {
+					if code == target {
+						delete(one, code)
+					}
 				}
-				result[to[i].ID()] = maps.Clone(one)
+				if len(one) != 0 {
+					if result == nil {
+						result = make(map[tid.TID]map[string]string)
+					}
+					result[to[i].ID()] = one
+				}
 			}
 			walk(from[i].NodeChildren(), to[i].NodeChildren())
 		}

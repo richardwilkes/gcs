@@ -124,6 +124,24 @@ func TestLinkedModifierCodeReachesItsFeatures(t *testing.T) {
 		"a modifier's bonus resolves its linked code through its owner, as its name does")
 }
 
+func TestApplyDropsSelfLinks(t *testing.T) {
+	c := check.New(t)
+	trait, mod := linkedTrait()
+	trait.NameableLinks[mod.TID]["extra"] = "style"
+	var edit TraitEditData
+	edit.CopyFrom(trait)
+	// Renaming the trait's code to the modifier's in the editor leaves the link pointing at itself.
+	edit.NameableLinks[mod.TID]["focus"] = "focus"
+	edit.ApplyTo(trait)
+	c.Equal(map[tid.TID]map[string]string{mod.TID: {"extra": "style"}}, trait.NameableLinks,
+		"a link of a code to itself means the same as none, so it is not kept")
+
+	edit.CopyFrom(trait)
+	edit.NameableLinks[mod.TID]["extra"] = "extra"
+	edit.ApplyTo(trait)
+	c.Nil(trait.NameableLinks, "a modifier left with no links has no entry")
+}
+
 func TestNameablesTakePartInSync(t *testing.T) {
 	c := check.New(t)
 	trait := NewTrait(nil, nil, false)
