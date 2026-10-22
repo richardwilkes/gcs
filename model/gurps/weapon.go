@@ -599,11 +599,11 @@ func (w *Weapon) skillLevelBaseAdjustment(e *Entity, tooltip *xbytes.InsertBuffe
 		adj += bonus.AdjustedAmount()
 	}
 	for _, f := range w.Owner.ActiveFeatures() {
-		adj += w.extractSkillBonusForThisWeapon(f, named, tooltip)
+		adj += w.extractSkillBonusForThisWeapon(f, named, nil, tooltip)
 	}
-	w.forEachOwnerModifier(func(_ ownerModifier, active Features) {
+	w.forEachOwnerModifier(func(mod ownerModifier, active Features) {
 		for _, f := range active {
-			adj += w.extractSkillBonusForThisWeapon(f, named, tooltip)
+			adj += w.extractSkillBonusForThisWeapon(f, named, mod, tooltip)
 		}
 	})
 	return adj
@@ -683,8 +683,11 @@ func (w *Weapon) EncumbrancePenalty(e *Entity, tooltip *xbytes.InsertBuffer) fxp
 	return penalty
 }
 
-func (w *Weapon) extractSkillBonusForThisWeapon(f Feature, named []*SkillBonus, tooltip *xbytes.InsertBuffer) fxp.Int {
+// extractSkillBonusForThisWeapon returns the amount of f if it is a skill bonus, carried by the weapon's owner or by
+// the owner's modifier sub, that selects the owner's weapons or names this one, and adds it to the tooltip.
+func (w *Weapon) extractSkillBonusForThisWeapon(f Feature, named []*SkillBonus, sub fmt.Stringer, tooltip *xbytes.InsertBuffer) fxp.Int {
 	if sb, ok := f.(*SkillBonus); ok {
+		w.claimOwnerBonus(sb, sub)
 		replacements := w.NameableReplacements()
 		var matches bool
 		switch sb.SelectionType.EnsureValid() {
@@ -796,6 +799,22 @@ func (w *Weapon) collectSelectorOverrides(entity *Entity, field selector.Field) 
 	return candidates
 }
 
+// ownerBonus is what claimOwnerBonus needs of a bonus. SkillBonus and WeaponBonus satisfy it through BonusOwner.
+type ownerBonus interface {
+	Bonus
+	DerivedLeveledOwner() LeveledOwner
+}
+
+// claimOwnerBonus sets the source of a bonus carried by the weapon's owner, or by the owner's modifier sub, to them,
+// and its leveled owner to the one the entity assigns. A bonus of equipment that isn't equipped never reaches the
+// entity's lists, so nothing else sets these, and a per-level amount scales by the level and the tooltip reports the
+// name they supply.
+func (w *Weapon) claimOwnerBonus(bonus ownerBonus, sub fmt.Stringer) {
+	bonus.SetOwner(w.Owner)
+	bonus.SetSubOwner(sub)
+	bonus.SetLeveledOwner(bonus.DerivedLeveledOwner())
+}
+
 // extractSelectorOverride hands f to add if it is an override of the given field, carried by the weapon's owner or by
 // the owner's modifier sub, that selects the owner's weapons or names this one. The owner is set first: an override of
 // equipment that isn't equipped never reaches the entity's lists, so nothing else sets it, and it supplies the
@@ -901,14 +920,11 @@ func (w *Weapon) findWeaponBonuses(entity *Entity) []*WeaponBonus {
 	}
 	entity.addNamedWeaponBonusesFor(w, usage, tags, add)
 	for _, f := range w.Owner.ActiveFeatures() {
-		w.extractWeaponBonus(f, add)
+		w.extractWeaponBonus(f, nil, add)
 	}
 	w.forEachOwnerModifier(func(mod ownerModifier, active Features) {
 		for _, f := range active {
-			if bonus, ok := f.(Bonus); ok {
-				bonus.SetSubOwner(mod)
-			}
-			w.extractWeaponBonus(f, add)
+			w.extractWeaponBonus(f, mod, add)
 		}
 	})
 	return result
@@ -1013,13 +1029,14 @@ func matchesRequiredSkillName(name criteria.Text, replacements map[string]string
 	return name.Matches(replacements, skill)
 }
 
-// extractWeaponBonus hands f to add if it is a weapon bonus, carried by the weapon's owner or by one of the owner's
-// modifiers, that selects the owner's weapons or names this one.
-func (w *Weapon) extractWeaponBonus(f Feature, add func(*WeaponBonus)) {
+// extractWeaponBonus hands f to add if it is a weapon bonus, carried by the weapon's owner or by the owner's modifier
+// sub, that selects the owner's weapons or names this one.
+func (w *Weapon) extractWeaponBonus(f Feature, sub fmt.Stringer, add func(*WeaponBonus)) {
 	bonus, ok := f.(*WeaponBonus)
 	if !ok {
 		return
 	}
+	w.claimOwnerBonus(bonus, sub)
 	replacements := w.NameableReplacements()
 	switch bonus.SelectionType {
 	case wsel.WithRequiredSkill: // Selected by required skill, which only the entity's lists resolve

@@ -11,6 +11,7 @@ package gurps
 
 import (
 	"slices"
+	"strings"
 	"testing"
 
 	"github.com/richardwilkes/gcs/v5/model/criteria"
@@ -20,6 +21,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/wsel"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/toolbox/v2/check"
+	"github.com/richardwilkes/toolbox/v2/xbytes"
 )
 
 // weaponNameSelectors holds a damage bonus, a skill bonus and a damage type override, each selecting weapons by name.
@@ -210,6 +212,63 @@ func TestSkillBonusesSelectingWeaponsByNameFromTheirOwner(t *testing.T) {
 	c.Equal(fxp.Three, adjustment(), "an equipped item's bonuses are counted once")
 	sword.Equipped = false
 	c.Equal(fxp.Three, adjustment(), "an unequipped item's bonuses still reach its own weapons")
+}
+
+// TestUnequippedItemBonusesNameTheirOwner verifies that the skill and weapon bonuses an item and its modifiers carry
+// reach the item's weapons with their owner set, where the entity never processed them, as for equipment that isn't
+// equipped when loaded: a per-level amount scales by the item's level and the tooltip names the item, not "Unknown".
+func TestUnequippedItemBonusesNameTheirOwner(t *testing.T) {
+	c := check.New(t)
+	e := NewEntity()
+	newSkillBonus := func(sel skillsel.Type) *SkillBonus {
+		bonus := NewSkillBonus()
+		bonus.SelectionType = sel
+		bonus.NameCriteria.Qualifier = "Broadsword"
+		bonus.Amount = fxp.Two
+		bonus.PerLevel = true
+		return bonus
+	}
+	newWeaponBonus := func(sel wsel.Type) *WeaponBonus {
+		bonus := NewWeaponBonus(feature.WeaponBonus)
+		bonus.SelectionType = sel
+		bonus.NameCriteria.Qualifier = "Broadsword"
+		bonus.Amount = fxp.Two
+		bonus.PerLevel = true
+		return bonus
+	}
+	sword := NewEquipment(e, nil, false)
+	sword.Name = "Broadsword"
+	sword.Level = fxp.Two
+	sword.Equipped = false
+	sword.Features = Features{
+		newSkillBonus(skillsel.ThisWeapon), newSkillBonus(skillsel.WeaponsWithName),
+		newWeaponBonus(wsel.ThisWeapon), newWeaponBonus(wsel.WithName),
+	}
+	mod := NewEquipmentModifier(e, nil, false)
+	mod.Name = "Fine"
+	mod.Features = Features{newSkillBonus(skillsel.ThisWeapon), newWeaponBonus(wsel.ThisWeapon)}
+	sword.AddModifiers(mod)
+	w := newCrushingWeapon(sword, "Swung")
+	sword.Weapons = []*Weapon{w}
+	e.CarriedEquipment = append(e.CarriedEquipment, sword)
+	e.Recalculate()
+	c.False(sword.ReallyEquipped(), "precondition: the sword isn't equipped")
+	var tooltip xbytes.InsertBuffer
+	c.Equal(fxp.Twelve, w.skillLevelBaseAdjustment(e, &tooltip), "three skill bonuses of +2 per level at level 2")
+	c.Equal(2, strings.Count(tooltip.String(), "\nBroadsword 2 [+4 (+2 per level)]"), "the item's own skill bonuses name it")
+	c.Equal(1, strings.Count(tooltip.String(), "\nBroadsword 2 (Fine) [+4 (+2 per level)]"), "the modifier's skill bonus names both")
+	c.NotContains(tooltip.String(), "Unknown")
+	tooltip.Reset()
+	var total fxp.Int
+	bonuses := w.collectWeaponBonuses(oneDieCount, &tooltip, feature.WeaponBonus)
+	for _, bonus := range bonuses {
+		total += bonus.AdjustedAmountForWeapon(w)
+	}
+	c.Equal(3, len(bonuses), "the item's two weapon bonuses and the modifier's")
+	c.Equal(fxp.Twelve, total, "three weapon bonuses of +2 per level at level 2")
+	c.Equal(2, strings.Count(tooltip.String(), "\nBroadsword 2 [+4 (+2 per level) to damage]"), "the item's own weapon bonuses name it")
+	c.Equal(1, strings.Count(tooltip.String(), "\nBroadsword 2 (Fine) [+4 (+2 per level) to damage]"), "the modifier's weapon bonus names both")
+	c.NotContains(tooltip.String(), "Unknown")
 }
 
 // TestWeaponOwnerCriteriaHashAndNameables verifies that each owner criterion takes part in the hash of each feature
