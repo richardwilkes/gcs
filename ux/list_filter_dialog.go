@@ -183,8 +183,9 @@ func (c *listFilterDialogContent) UndoManager() *unison.UndoManager {
 var dialogMenuTakesUndoKeys = runtime.GOOS == "darwin"
 
 // installListFilterDialogKeys has Escape close the open condition before it cancels the dialog, wherever the focus is,
-// since the name field and the buttons sit outside the panel of conditions. Where the menu bar doesn't take them, it
-// also has the dialog's window handle the key bindings of Undo and Redo.
+// since the name field and the buttons sit outside the panel of conditions, unless the focused field's suggestions are
+// showing, when the field hides them with it instead. Where the menu bar doesn't take them, it also has the dialog's
+// window handle the key bindings of Undo and Redo.
 func installListFilterDialogKeys(wnd *unison.Window, content *listFilterDialogContent, panel *listFilterPanel) {
 	wnd.KeyDownCallback = func(keyCode unison.KeyCode, mods mod.Modifiers, repeat bool) bool {
 		// A held Escape or Return acts once, rather than closing a row and then canceling or accepting the dialog.
@@ -205,11 +206,21 @@ func installListFilterDialogKeys(wnd *unison.Window, content *listFilterDialogCo
 			if content.undoMgr.CanRedo() {
 				content.undoMgr.Redo()
 			}
-		case keyCode == unison.KeyEscape && noModifiersDown(mods) && panel.open != "":
+		case keyCode == unison.KeyEscape && noModifiersDown(mods) && panel.open != "" && !focusedSuggestionsShowing(wnd):
 			panel.closeRow()
 		default:
 			return false
 		}
 		return true
 	}
+}
+
+// focusedSuggestionsShowing returns true while the field with the focus in wnd is showing suggestions.
+func focusedSuggestionsShowing(wnd *unison.Window) bool {
+	if focus := wnd.CurrentFocus(); focus != nil {
+		if field, ok := focus.Self.(*StringField); ok {
+			return field.suggestionsShowing()
+		}
+	}
+	return false
 }

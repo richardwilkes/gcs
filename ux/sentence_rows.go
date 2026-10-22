@@ -856,7 +856,8 @@ func (p *sentenceRows[T]) numberCompare(parent *unison.Panel, key, name string, 
 }
 
 // textField adds a compact field for the text, which shows the hint while empty. A non-nil suggest makes it a combo box
-// whose dropdown offers what suggest returns each time it opens; choosing one is a step of its own for undo.
+// whose dropdown offers what suggest returns each time it opens, and which offers those containing the text as it is
+// typed; choosing one either way is a step of its own for undo.
 func (p *sentenceRows[T]) textField(parent *unison.Panel, key, title, hint string, value *string, suggest func() []string) *StringField {
 	var field *StringField
 	var lastID int64
@@ -876,6 +877,7 @@ func (p *sentenceRows[T]) textField(parent *unison.Panel, key, title, hint strin
 	if suggest != nil {
 		// The dropdown replaces the borders, so it has to come before addCompact installs its own.
 		field.InstallDropdown(suggest)
+		field.installSuggestions(suggest)
 		// The dropdown's menu is titled with the field's name, which the fallback naming the field doesn't supply.
 		field.Accessibility.Name = title
 	}
