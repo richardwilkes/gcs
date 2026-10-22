@@ -73,22 +73,28 @@ func (m TextMatcher) Matches(value string) bool {
 // list of qualifiers; a positive comparison (e.g. "is", "contains") needs a match against any one of them, while a
 // negative comparison (e.g. "is not", "does not contain") matches only if no value matches any of them.
 func (t Text) MatchesList(replacements map[string]string, value ...string) bool {
-	return t.matchesAny(SplitQualifiers(nameable.Apply(t.Qualifier, replacements)), value)
+	return t.Matcher(replacements).MatchesList(value...)
 }
 
 // MatchesEach is MatchesList with the qualifier taken whole rather than split on commas, for values of free text.
 func (t Text) MatchesEach(replacements map[string]string, value ...string) bool {
-	return t.matchesAny([]string{nameable.Apply(t.Qualifier, replacements)}, value)
+	m := t.Matcher(replacements)
+	return m.matchesAny([]string{m.qualifier}, value)
 }
 
-func (t Text) matchesAny(qualifiers, value []string) bool {
+// MatchesList is Text.MatchesList with the replacements already applied.
+func (m TextMatcher) MatchesList(value ...string) bool {
+	return m.matchesAny(SplitQualifiers(m.qualifier), value)
+}
+
+func (m TextMatcher) matchesAny(qualifiers, value []string) bool {
 	if len(value) == 0 {
 		value = []string{""}
 	}
-	if t.Compare.IsNotType() {
+	if m.compare.IsNotType() {
 		for _, one := range value {
 			for _, qualifier := range qualifiers {
-				if !t.Compare.Matches(qualifier, one) {
+				if !m.compare.Matches(qualifier, one) {
 					return false
 				}
 			}
@@ -97,7 +103,7 @@ func (t Text) matchesAny(qualifiers, value []string) bool {
 	}
 	for _, one := range value {
 		for _, qualifier := range qualifiers {
-			if t.Compare.Matches(qualifier, one) {
+			if m.compare.Matches(qualifier, one) {
 				return true
 			}
 		}

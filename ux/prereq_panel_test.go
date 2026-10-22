@@ -1403,6 +1403,42 @@ func TestPrereqPanelEquippedEquipmentTags(t *testing.T) {
 	})
 }
 
+// TestPrereqPanelSpellTagsAndColleges checks that the qualifier field of a spell prerequisite matching by tag or by
+// college says how to match any of several, since it matches each of the comma-separated entries in turn, while one
+// matching by name, which takes the qualifier whole, says nothing of the kind.
+func TestPrereqPanelSpellTagsAndColleges(t *testing.T) {
+	c := check.New(t)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
+	root := gurps.NewPrereqList()
+	for i, subType := range []spellcmp.Type{spellcmp.Tag, spellcmp.College, spellcmp.Name} {
+		sp := gurps.NewSpellPrereq()
+		sp.SubType = subType
+		sp.QualifierCriteria = criteria.Text{Compare: criteria.IsText, Qualifier: "Fire, Air"}
+		root.Prereqs = append(root.Prereqs, sp.Clone(root))
+		path := childPath(treeRootPath, i)
+		p, _ := showPrereqPanel(t, screen, &root, false)
+		screen.Do(func() { p.toggle(path) })
+		screen.Do(func() {
+			field := p.FindRefKey(path + ":qualifier")
+			c.NotNil(field, "%v: the prerequisite has a qualifier field", subType)
+			if field == nil {
+				return
+			}
+			tip := tooltipText(field.Tooltip)
+			switch subType {
+			case spellcmp.Tag:
+				c.True(strings.Contains(tip, "Separate multiple tags with commas"),
+					"%v: whose tooltip says to separate tags with commas", subType)
+			case spellcmp.College:
+				c.True(strings.Contains(tip, "Separate multiple colleges with commas"),
+					"%v: whose tooltip says to separate colleges with commas", subType)
+			default:
+				c.Nil(field.Tooltip, "%v: whose field has no tooltip", subType)
+			}
+		})
+	}
+}
+
 // TestPrereqPanelEquipmentHasAndCarried checks that an equipment prerequisite can be negated and switched to carried
 // equipment, keeping its negation, name, tags and modifier criteria.
 func TestPrereqPanelEquipmentHasAndCarried(t *testing.T) {

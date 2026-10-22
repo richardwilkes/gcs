@@ -280,7 +280,7 @@ func addTestFireSpell(e *Entity, name, powerSource string) *Spell {
 }
 
 // TestSpellPrereqPowerSourceWithTagAndCollege verifies that the power source filter applies to the "tag" and "college"
-// sub-types as well, which count a spell when any one of its tags or colleges matches the qualifier.
+// sub-types as well, which count a spell whose tags or colleges match the qualifier as a list.
 func TestSpellPrereqPowerSourceWithTagAndCollege(t *testing.T) {
 	c := check.New(t)
 
@@ -623,4 +623,51 @@ func TestSpellPrereqPowerSourceHash(t *testing.T) {
 	other.PowerSourceCriteria.Compare = criteria.IsText
 	other.PowerSourceCriteria.Qualifier = "Arcane"
 	c.Equal(Hash64(explicit), Hash64(other), "two identical prereqs must hash the same")
+}
+
+// TestSpellPrereqTagAndCollegeMatchAsLists verifies that the "tag" and "college" sub-types judge a spell's tags or
+// colleges as a list, as the tag criteria of the other prerequisites do: a negative comparison counts a spell only when
+// none of them match, so one with none counts, and a comma-separated qualifier matches any one of its entries.
+func TestSpellPrereqTagAndCollegeMatchAsLists(t *testing.T) {
+	c := check.New(t)
+
+	// spells returns an entity that knows one spell per set, each set serving as the spell's tags and its colleges.
+	spells := func(sets ...[]string) *Entity {
+		e := NewEntity()
+		for i, set := range sets {
+			s := addTestSpell(e, "Spell "+string(rune('A'+i)), fxp.One)
+			s.Tags = set
+			s.College = CollegeList(set)
+		}
+		return e
+	}
+	necroAndEvil := spells([]string{"Necromantic", "Evil"})
+	none := spells(nil)
+	mixed := spells([]string{"Necromantic", "Evil"}, []string{"Holy"}, []string{"Fire"})
+	for _, subType := range []spellcmp.Type{spellcmp.Tag, spellcmp.College} {
+		// counts returns whether exactly count of the entity's spells match the comparison and qualifier.
+		counts := func(e *Entity, compare criteria.StringComparison, qualifier string, count int) bool {
+			p := NewSpellPrereq()
+			p.SubType = subType
+			p.SamePowerSource = false
+			p.QualifierCriteria.Compare = compare
+			p.QualifierCriteria.Qualifier = qualifier
+			p.QuantityCriteria.Compare = criteria.EqualsNumber
+			p.QuantityCriteria.Qualifier = fxp.FromInteger(count)
+			return p.Satisfied(e, nil, nil, "", nil)
+		}
+
+		// A spell with another tag beside the one ruled out is still ruled out...
+		c.True(counts(necroAndEvil, criteria.IsNotText, "Necromantic", 0), "%v: is not, with another tag", subType)
+		c.True(counts(necroAndEvil, criteria.DoesNotContainText, "Necro", 0), "%v: does not contain, with another tag",
+			subType)
+		// ... while one with no tags is not the one ruled out.
+		c.True(counts(none, criteria.IsNotText, "Necromantic", 1), "%v: is not, with no tags", subType)
+		c.True(counts(none, criteria.IsText, "Necromantic", 0), "%v: is, with no tags", subType)
+
+		// A comma-separated qualifier matches any one of its entries...
+		c.True(counts(mixed, criteria.IsText, "Necromantic, Holy", 2), "%v: is, comma-separated", subType)
+		// ... and rules out a spell matching any of them.
+		c.True(counts(mixed, criteria.IsNotText, "Necromantic, Holy", 1), "%v: is not, comma-separated", subType)
+	}
 }

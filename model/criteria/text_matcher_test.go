@@ -44,3 +44,48 @@ func TestTextMatcherMatchesText(t *testing.T) {
 		}
 	}
 }
+
+// A matcher's list match, and matching a list through the criteria, must give the answer MatchesList documents: a
+// positive comparison matched by any value against any entry of the comma-separated qualifier, with its replacements
+// applied, and a negative one by every value against every entry, with no values judged as one empty value. This holds
+// for every comparison, whether or not the qualifier holds several entries or a nameable marker.
+func TestTextMatcherMatchesList(t *testing.T) {
+	c := check.New(t)
+	comparisons := []criteria.StringComparison{
+		criteria.AnyText, criteria.IsText, criteria.IsNotText, criteria.ContainsText, criteria.DoesNotContainText,
+		criteria.StartsWithText, criteria.DoesNotStartWithText, criteria.EndsWithText, criteria.DoesNotEndWithText,
+	}
+	qualifiers := []string{"Sword", "Sword, Axe", "@Skill@, Axe", "", " , "}
+	replacements := []map[string]string{nil, {"Skill": "Sword"}, {"Skill": ""}}
+	values := [][]string{nil, {""}, {"Sword"}, {"Axe"}, {"Bow"}, {"Melee", "Broadsword"}, {"Bow", "Axe"}}
+	for _, compare := range comparisons {
+		for _, qualifier := range qualifiers {
+			text := criteria.Text{Compare: compare, Qualifier: qualifier}
+			for _, r := range replacements {
+				entries := criteria.SplitQualifiers(nameable.Apply(qualifier, r))
+				m := text.Matcher(r)
+				for _, value := range values {
+					judged := value
+					if len(judged) == 0 {
+						judged = []string{""}
+					}
+					// A negative comparison holds until a pair fails it, a positive one fails until a pair holds.
+					want := compare.IsNotType()
+				judge:
+					for _, v := range judged {
+						for _, entry := range entries {
+							if compare.Matches(entry, v) != want {
+								want = !want
+								break judge
+							}
+						}
+					}
+					c.Equal(want, m.MatchesList(value...), "matcher: %v %q with %v against %q", compare, qualifier, r,
+						value)
+					c.Equal(want, text.MatchesList(r, value...), "criteria: %v %q with %v against %q", compare,
+						qualifier, r, value)
+				}
+			}
+		}
+	}
+}

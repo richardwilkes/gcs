@@ -541,7 +541,17 @@ func (p *prereqPanel) editor(pr gurps.Prereq, path string) *unison.Panel {
 			addJoiningWords(fields, i18n.Text("college(s)"))
 		}
 		if one.SubType.UsesStringCriteria() {
-			p.textCriteria(fields, key("qualifier"), i18n.Text("Spell"), "", "", "", &one.QualifierCriteria, true)
+			// Tags and colleges are matched as lists, so their field says how to match any of several.
+			field := p.textCriteriaWith(fields, key("qualifier"), i18n.Text("Spell"), "", nil, &one.QualifierCriteria,
+				true, nil)
+			if field != nil {
+				switch one.SubType {
+				case spellcmp.Tag:
+					field.Tooltip = newWrappedTooltip(i18n.Text(`Separate multiple tags with commas to match any one of them, e.g. "Sword, Axe"`))
+				case spellcmp.College:
+					field.Tooltip = newWrappedTooltip(i18n.Text(`Separate multiple colleges with commas to match any one of them, e.g. "Fire, Air"`))
+				}
+			}
 		}
 		p.powerSourceChip(chips, path, one)
 		p.numberChip(chips, path, "level", &one.LevelCriteria, 0, fxp.Thousand,

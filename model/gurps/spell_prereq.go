@@ -11,7 +11,6 @@ package gurps
 
 import (
 	"hash"
-	"slices"
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/criteria"
@@ -148,11 +147,11 @@ func (p *SpellPrereq) Satisfied(entity *Entity, exclude any, tooltip *xbytes.Ins
 				count++
 			}
 		case spellcmp.Tag:
-			if slices.ContainsFunc(sp.Tags, qualifier.Matches) {
+			if qualifier.MatchesList(sp.Tags...) {
 				count++
 			}
 		case spellcmp.College:
-			if slices.ContainsFunc(sp.CollegeWithReplacements(), qualifier.Matches) {
+			if qualifier.MatchesList(sp.CollegeWithReplacements()...) {
 				count++
 			}
 		case spellcmp.CollegeCount:
