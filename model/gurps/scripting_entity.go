@@ -191,7 +191,7 @@ func newScriptEntity(r *goja.Runtime, entity *Entity) *goja.Object {
 				name := callArgAsString(call, 0)
 				usage := callArgAsString(call, 1)
 				for _, w := range weapons(false) {
-					if strings.EqualFold(w.String(), name) && strings.EqualFold(w.UsageWithReplacements(), usage) {
+					if strings.EqualFold(w.Name(), name) && strings.EqualFold(w.UsageWithReplacements(), usage) {
 						return r.ToValue(w.Damage.ResolvedDamage(nil))
 					}
 				}

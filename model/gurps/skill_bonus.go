@@ -40,6 +40,7 @@ type SkillBonusData struct {
 	SpecializationCriteria         criteria.Text `json:"specialization,omitzero"`
 	OptionalSpecializationCriteria criteria.Text `json:"optional_specialization,omitzero"`
 	TagsCriteria                   criteria.Text `json:"tags,omitzero"`
+	WeaponOwnerCriteria
 	LeveledAmount
 	BonusOwner `json:"-"`
 }
@@ -81,6 +82,9 @@ func (s *SkillBonus) FillWithNameableKeys(m, existing map[string]string) {
 			s.TagsCriteria.Qualifier,
 		)
 	}
+	if s.SelectionType == skillsel.WeaponsWithName {
+		s.fillWithNameableKeys(m, existing)
+	}
 }
 
 // SetLeveledOwner implements Bonus.
@@ -101,7 +105,8 @@ func (s *SkillBonus) Describe(_ *Entity, replacements map[string]string, em func
 		text += describeThisWeapon(i18n.Text("skill"), s.SpecializationCriteria, replacements, em)
 	case skillsel.WeaponsWithName:
 		text += i18n.Text("the %s of %s", i18n.Text("skill"),
-			describeNamedWeapons(s.NameCriteria, s.SpecializationCriteria, s.TagsCriteria, replacements, em))
+			describeNamedWeapons(s.NameCriteria, s.SpecializationCriteria, s.TagsCriteria, &s.WeaponOwnerCriteria,
+				replacements, em))
 	default:
 		text += describeTarget(i18n.Text("skill %s"), i18n.Text("skills"), i18n.Text("whose name"), s.NameCriteria,
 			replacements, em) +
@@ -124,6 +129,7 @@ func (s *SkillBonus) Hash(h hash.Hash) {
 	s.SpecializationCriteria.Hash(h)
 	s.OptionalSpecializationCriteria.Hash(h)
 	s.TagsCriteria.Hash(h)
+	s.WeaponOwnerCriteria.Hash(h)
 	s.LeveledAmount.Hash(h)
 }
 

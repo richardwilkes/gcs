@@ -658,6 +658,26 @@ func rowCriteria(key string) rowCriterion {
 		}
 	case "level":
 		return rowCriterion{subject: i18n.Text("Level"), add: i18n.Text("+ level"), prefix: i18n.Text("and whose level")}
+	case "ownerlevel":
+		return rowCriterion{
+			subject: i18n.Text("Owner Level"), add: i18n.Text("+ owner level"),
+			prefix: i18n.Text("and whose owner's level"),
+		}
+	case "ownertl":
+		return rowCriterion{
+			subject: i18n.Text("Owner Tech Level"), add: i18n.Text("+ owner tech level"),
+			prefix: i18n.Text("and whose owner's tech level"),
+		}
+	case "ownerspecialization":
+		return rowCriterion{
+			subject: i18n.Text("Owner Specialization"), add: i18n.Text("+ owner specialization"),
+			prefix: i18n.Text("and whose owner's specialization"),
+		}
+	case "owneroptspecialization":
+		return rowCriterion{
+			subject: i18n.Text("Owner Optional Specialization"), add: i18n.Text("+ owner optional specialization"),
+			prefix: i18n.Text("and whose owner's optional specialization"),
+		}
 	case "points":
 		return rowCriterion{
 			subject: i18n.Text("Points"), add: i18n.Text("+ points"), prefix: i18n.Text("and whose point total"),
@@ -707,12 +727,25 @@ func (p *sentenceRows[T]) textChip(chips *unison.Panel, path, key string, c *cri
 		func(chip *unison.Panel) {
 			one := rowCriteria(key)
 			var hint string
-			// An empty "is" specialization picks only a skill without one, as the row's sentence says.
-			if c.Compare == criteria.IsText && (key == "specialization" || key == "optspecialization") {
+			// An empty "is" specialization or owner tech level picks only something without one, as the row's
+			// sentence says.
+			if c.Compare == criteria.IsText && (key == "specialization" || key == "optspecialization" ||
+				key == "ownertl" || key == "ownerspecialization" || key == "owneroptspecialization") {
 				hint = i18n.Text("none")
 			}
 			p.textCriteria(chip, path+":"+key, one.subject, hint, one.prefix, cmp.Or(one.notPrefix, one.prefix), c,
 				false)
+		})
+}
+
+// numberChip adds the optional number criterion with the key, such as a level, which runs from minimum to maximum.
+func (p *sentenceRows[T]) numberChip(chips *unison.Panel, path, key string, n *criteria.Number, minimum, maximum fxp.Int, on bool) {
+	p.optionalCriterion(chips, path, key, on,
+		func() { *n = criteria.Number{Compare: criteria.AtLeastNumber, Qualifier: fxp.One} },
+		func() { *n = criteria.Number{} },
+		func(chip *unison.Panel) {
+			c := rowCriteria(key)
+			p.numberCriteria(chip, path+":"+key, c.subject, numericWordsAfter(c.prefix), n, minimum, maximum, false, false)
 		})
 }
 
