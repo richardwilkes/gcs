@@ -260,8 +260,8 @@ func (p *nameablesPanel) modifierUses(mods []nameableModifier) map[string]int {
 	uses := make(map[string]int)
 	for _, one := range mods {
 		for code, n := range one.uses {
-			if _, shared := defs[code]; !shared {
-				code = (*p.links)[one.id][code]
+			if target := p.linkOf(one.id, code); target != "" {
+				code = target
 			}
 			if _, ok := defs[code]; ok {
 				uses[code] += n
@@ -269,6 +269,21 @@ func (p *nameablesPanel) modifierUses(mods []nameableModifier) map[string]int {
 		}
 	}
 	return uses
+}
+
+// linkOf returns the item's code the modifier's code is linked to, or "" when it has no link.
+func (p *nameablesPanel) linkOf(id tid.TID, code string) string {
+	return (*p.links)[id][code]
+}
+
+// shares reports whether the modifier's code shares the item's answer: the item has the code too and the modifier's
+// is not linked to another of the item's codes, which the model would apply first (see gurps.linkedReplacements).
+func (p *nameablesPanel) shares(id tid.TID, code string) bool {
+	if _, defined := (*p.defs)[code]; !defined {
+		return false
+	}
+	target := p.linkOf(id, code)
+	return target == "" || target == code
 }
 
 // usesText returns the sentence with how often its code is referred to added: by its owner, and by the modifiers that
@@ -669,7 +684,7 @@ func (p *nameablesPanel) addModifierRows(mods []nameableModifier) {
 		slices.Sort(codes)
 		for _, code := range slices.Compact(codes) {
 			path := "m:" + string(one.id) + ":" + code
-			_, shared := defs[code]
+			shared := p.shares(one.id, code)
 			p.AddChild(p.sentenceRow(path, func() string { return p.describeModifierCode(&one, code, shared) },
 				!shared && len(defs) != 0, func() *unison.Panel { return p.linkEditor(path, &one, code) }, nil, nil,
 				nil))
@@ -717,25 +732,37 @@ func (p *nameablesPanel) describeModifierCode(one *nameableModifier, code string
 }
 
 // linkEditor returns the controls of an open row for a modifier's code: the popup that links it to one of the item's
-// codes or asks for it separately.
+// codes, or leaves it unlinked, which shares the item's answer when the item has the code too and otherwise asks for
+// it separately. The code itself is not offered, since a link to it would be the same as none.
 func (p *nameablesPanel) linkEditor(path string, one *nameableModifier, code string) *unison.Panel {
 	box := newColumn()
 	box.RefKey = path + keyFirst
 	fields := newFlow()
 	box.AddChild(fields)
 	addJoiningWords(fields, i18n.Text("%s on %s", markerText(code), one.ownerText()))
+	_, defined := (*p.defs)[code]
+	choices := []string{""}
+	for _, target := range p.codes() {
+		if target != code {
+			choices = append(choices, target)
+		}
+	}
 	addCentered(fields, compactPopup(&p.sentenceRows, path+":link", i18n.Text("Link for %s", markerText(code)),
-		append([]string{""}, p.codes()...), (*p.links)[one.id][code], linkChoice,
+		choices, p.linkOf(one.id, code), func(target string) string { return linkChoice(target, defined) },
 		func(target string) { p.setLink(one.id, code, target) }))
 	return box
 }
 
-// linkChoice names a choice of the link popup.
-func linkChoice(target string) string {
-	if target == "" {
+// linkChoice names a choice of the link popup. defined is whether the item has the code too.
+func linkChoice(target string, defined bool) string {
+	switch {
+	case target != "":
+		return i18n.Text("takes the answer to %s", markerText(target))
+	case defined:
+		return i18n.Text("shares the item's answer")
+	default:
 		return i18n.Text("is asked for under its own code")
 	}
-	return i18n.Text("takes the answer to %s", markerText(target))
 }
 
 // setLink links the modifier's code to the item's target code, or unlinks it when target is empty.

@@ -213,6 +213,67 @@ func TestNameablesPanelLinksModifierCodes(t *testing.T) {
 	c.Equal(map[tid.TID]map[string]string{id: {"art": "style"}}, links, "a rename is one step to undo")
 }
 
+// TestNameablesPanelShowsLinkOverSameNamedCode covers a modifier's code that is linked to one of the item's codes while
+// the item has a code of the same name: the model applies the link first, so the row must say so and stay editable,
+// and the use must count for the linked code.
+func TestNameablesPanelShowsLinkOverSameNamedCode(t *testing.T) {
+	c := check.New(t)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
+	defs := map[string]nameable.Detail{
+		"style": {Label: "Style", FreeForm: true},
+		"art":   {Label: "Art", FreeForm: true},
+	}
+	texts := []string{"@style@ @art@"}
+	id := tid.MustNewTID('m')
+	links := map[tid.TID]map[string]string{id: {"art": "style"}}
+	modifiers := []nameableModifier{{
+		id:   id,
+		name: "Practiced",
+		defs: map[string]nameable.Detail{"art": {Label: "Art"}},
+		uses: map[string]int{"art": 1},
+	}}
+	p, _ := showNameablesPanel(t, screen, &defs, &texts, &links, modifiers, "")
+	sentenceAt := func(path string) (text string, editable bool) {
+		screen.Do(func() {
+			if panel := p.FindRefKey(path + keySentence); panel != nil {
+				if sentence, ok := panel.Self.(*sentenceButton); ok {
+					text = sentence.plainText()
+					editable = sentence.onClick != nil
+				}
+			}
+		})
+		return text, editable
+	}
+	art := "m:" + string(id) + ":art"
+	text, editable := sentenceAt(art)
+	c.Equal("@art@ on Practiced takes the answer to @style@; used once", text,
+		"the link is what the modifier's code resolves through, not the item's same-named code")
+	c.True(editable, "the row stays editable so the link can be changed or removed")
+	text, _ = sentenceAt(pathOf("style"))
+	c.Equal("@style@ asks for Style as any text; used once, and once in a modifier", text,
+		"the use counts for the linked code")
+	text, _ = sentenceAt(pathOf("art"))
+	c.Equal("@art@ asks for Art as any text; used once", text, "and not for the item's same-named code")
+
+	// Removing the link lets the modifier's code share the item's answer.
+	screen.Do(func() { p.toggle(art) })
+	screen.Do(func() {
+		popup, ok := p.FindRefKey(art + ":link").Self.(*unison.PopupMenu[string])
+		c.True(ok, "the linked code can be edited")
+		if ok {
+			c.Equal(-1, popup.IndexOfItem("art"), "a code is not offered a link to itself")
+			popup.Select("")
+		}
+	})
+	c.Equal(0, len(links))
+	screen.Do(func() { clickNameablesButton(c, p, art+keyDone) })
+	text, editable = sentenceAt(art)
+	c.Equal("@art@ on Practiced shares the item's answer; used once", text)
+	c.False(editable, "once it shares the item's answer, there is nothing to link")
+	text, _ = sentenceAt(pathOf("art"))
+	c.Equal("@art@ asks for Art as any text; used once, and once in a modifier", text)
+}
+
 func TestNameablesPanelCollapses(t *testing.T) {
 	c := check.New(t)
 	screen, _ := uxtest.StartHeadlessWorkspace(t, c)

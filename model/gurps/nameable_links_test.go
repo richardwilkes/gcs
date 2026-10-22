@@ -12,6 +12,7 @@ package gurps
 import (
 	"testing"
 
+	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/nameable"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/toolbox/v2/tid"
@@ -87,6 +88,40 @@ func TestLinkedEquipmentModifierCode(t *testing.T) {
 	m := make(map[string]string)
 	eqp.FillWithNameableKeys(m, nil)
 	c.Equal(map[string]string{"metal": "Silver"}, m, "the linked code is asked as the equipment's")
+}
+
+func TestLinkedModifierCodeReachesItsFeatures(t *testing.T) {
+	c := check.New(t)
+	e := NewEntity()
+	skill := NewSkill(e, nil, false)
+	skill.Name = "Broadsword"
+	skill.Points = fxp.Four
+	e.Skills = append(e.Skills, skill)
+
+	// A trait modifier whose skill bonus names its skill through a code linked to the trait's.
+	traitMod := NewTraitModifier(e, nil, false)
+	traitMod.Name = "Focused on @skill@"
+	traitMod.Features = Features{newSkillBonusTo("@skill@", fxp.Two)}
+	trait := addTraitWithFeatures(e, "Weapon Master (@weapon@)")
+	trait.SetModifiers([]*TraitModifier{traitMod})
+	trait.NameableLinks = map[tid.TID]map[string]string{traitMod.TID: {"skill": "weapon"}}
+	trait.Replacements = map[string]string{"weapon": "Broadsword"}
+
+	// Likewise for an equipment modifier.
+	eqpMod := NewEquipmentModifier(e, nil, false)
+	eqpMod.Name = "Balanced for @use@"
+	eqpMod.Features = Features{newSkillBonusTo("@use@", fxp.One)}
+	eqp := addCarriedEquipmentWithFeatures(e, "Sword of @skill@")
+	eqp.SetModifiers([]*EquipmentModifier{eqpMod})
+	eqp.NameableLinks = map[tid.TID]map[string]string{eqpMod.TID: {"use": "skill"}}
+	eqp.Replacements = map[string]string{"skill": "Broadsword"}
+	eqp.Equipped = true
+
+	e.Recalculate()
+	c.Equal("Focused on Broadsword", traitMod.NameWithReplacements())
+	c.Equal("Balanced for Broadsword", eqpMod.NameWithReplacements())
+	c.Equal(fxp.Three, e.SkillBonusFor("Broadsword", "", "", nil, nil),
+		"a modifier's bonus resolves its linked code through its owner, as its name does")
 }
 
 func TestNameablesTakePartInSync(t *testing.T) {
