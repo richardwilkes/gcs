@@ -101,6 +101,10 @@ type EquipmentModifierNonContainerSyncData struct {
 	Features          Features      `json:"features,omitempty"`
 	// HideNotes keeps the modifier's notes out of its owner's notes, where it is still listed.
 	HideNotes bool `json:"hide_notes,omitzero"`
+	// ShowInTitle moves the modifier from its owner's notes to the title notes after its owner's name. A modifier with
+	// notes of its own still shows them in its owner's notes, unless HideNotes is set, as does one with an adjustment
+	// while the sheet settings say to show those.
+	ShowInTitle bool `json:"show_in_title,omitzero"`
 }
 
 // NewEquipmentModifiersFromFile loads an EquipmentModifier list from a file.
@@ -358,6 +362,11 @@ func (e *EquipmentModifier) String() string {
 	return e.NameWithReplacements()
 }
 
+// ShowsInTitle returns true if the modifier is shown in its owner's title notes.
+func (e *EquipmentModifier) ShowsInTitle() bool {
+	return e.ShowInTitle
+}
+
 // ResolveLocalNotes resolves the local notes, running any embedded scripts to get the final result.
 func (e *EquipmentModifier) ResolveLocalNotes() string {
 	return ResolveText(EntityFromNode(e), deferredNewScriptEquipmentModifier(e), e.LocalNotesWithReplacements())
@@ -380,13 +389,19 @@ func (e *EquipmentModifier) FullDescription() string {
 }
 
 // NotesDescription returns the description shown in its owner's notes, which leaves out its notes when HideNotes is
-// set.
+// set, or "" when it is shown in the title and the description would hold nothing but its name: no notes to show and
+// no adjustment, which the title leaves out, that the sheet settings say to show.
 func (e *EquipmentModifier) NotesDescription() string {
 	var notes string
 	if !e.HideNotes {
 		notes = e.ResolveLocalNotes()
 	}
-	return e.describe(e.String(), notes)
+	name := e.String()
+	desc := e.describe(name, notes)
+	if desc == name && e.ShowsInTitle() {
+		return ""
+	}
+	return desc
 }
 
 func (e *EquipmentModifier) describe(name, notes string) string {
@@ -765,6 +780,7 @@ func (e *EquipmentModifierNonContainerSyncData) hash(h hash.Hash) {
 	xhash.StringWithLen(h, e.WeightAmount)
 	hashList(h, e.Features)
 	xhash.Bool(h, e.HideNotes)
+	xhash.Bool(h, e.ShowInTitle)
 }
 
 // CopyFrom implements EditorData.

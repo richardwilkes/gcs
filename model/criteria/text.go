@@ -69,6 +69,11 @@ func (m TextMatcher) Matches(value string) bool {
 	return m.compare.Matches(m.qualifier, value)
 }
 
+// MatchesEach is Text.MatchesEach with the replacements already applied.
+func (m TextMatcher) MatchesEach(value ...string) bool {
+	return m.matchesAny([]string{m.qualifier}, value)
+}
+
 // MatchesList performs a comparison and returns true if the data matches. The qualifier may hold a comma-separated
 // list of qualifiers; a positive comparison (e.g. "is", "contains") needs a match against any one of them, while a
 // negative comparison (e.g. "is not", "does not contain") matches only if no value matches any of them.

@@ -373,6 +373,8 @@ func (t *Trait) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 	t.TraitData = localData.TraitData
 	t.Modifiers = dropNilNodes(t.Modifiers)
 	t.Weapons = dropNilNodes(t.Weapons)
+	// A load that keeps the saved calc never attaches the trait, yet its title shows its modifiers.
+	AttachModifiers(t, t.Modifiers)
 	if keepSavedCalc(dec) {
 		t.savedCurrentLevel = savedCalc[savedTraitCalc](localData.Calc).CurrentLevel
 	}
@@ -509,19 +511,14 @@ func (t *Trait) CellData(columnID int, data *CellData) {
 		data.Type = cell.Text
 		var tooltip, overrideTooltip xbytes.InsertBuffer
 		data.Primary = t.NameAndLevel(&tooltip)
-		var buffer strings.Builder
+		var parts []string
 		if resolvedSelfControl := t.ResolvedSelfControl(&overrideTooltip); resolvedSelfControl > selfctrl.None {
-			buffer.WriteString(resolvedSelfControl.ShortString())
+			parts = append(parts, resolvedSelfControl.ShortString())
 		}
 		if resolvedFrequency := t.ResolvedFrequency(&overrideTooltip); resolvedFrequency > frequency.None {
-			if buffer.Len() > 0 {
-				buffer.WriteString(", ")
-			}
-			buffer.WriteString(resolvedFrequency.ShortString())
+			parts = append(parts, resolvedFrequency.ShortString())
 		}
-		if buffer.Len() > 0 {
-			data.Primary += " (" + buffer.String() + ")"
-		}
+		data.Primary += parenthetical(slices.Concat(t.titleNotes(true), parts, t.titleNotes(false)))
 		data.Secondary = t.SecondaryText(func(option display.Option) bool { return option.Inline() })
 		data.Disabled = t.EffectivelyDisabled()
 		data.UnsatisfiedReason, data.PrereqContradiction = t.PrereqStatus()
@@ -1041,7 +1038,18 @@ func (t *Trait) UserDescWithReplacements() string {
 
 // String implements fmt.Stringer.
 func (t *Trait) String() string {
-	return t.NameAndLevel(nil)
+	return t.NameAndLevel(nil) + parenthetical(t.TitleNotes())
+}
+
+// TitleNotes returns the title notes of the trait and its enabled modifiers, including the names of those shown in the
+// title, with those placed before the built-in parts first.
+func (t *Trait) TitleNotes() []string {
+	return append(t.titleNotes(true), t.titleNotes(false)...)
+}
+
+func (t *Trait) titleNotes(before bool) []string {
+	return modifierTitleNotes(appendTitleNotes(nil, t.Replacements, before, t.Features), before, t.Modifiers,
+		func(mod *TraitModifier) Features { return mod.Features })
 }
 
 // StringWithSavedCalc returns what String returned when the trait was last saved: its name and, when it is leveled, the
@@ -1050,16 +1058,17 @@ func (t *Trait) String() string {
 // templates), whose entity, if it has one, has not been recalculated and so cannot resolve those bonuses itself. A
 // trait loaded any other way, or from a file written before the level was recorded, falls back to its unadjusted
 // level. So does a disabled trait, whose recorded level is zero where String shows the level it would have if
-// enabled.
+// enabled. The title notes follow, as they do in String, though a modifier shown there that takes its level from the
+// trait shows the trait's level without bonuses.
 func (t *Trait) StringWithSavedCalc() string {
 	if !t.IsLeveled() {
-		return t.NameWithReplacements()
+		return t.NameWithReplacements() + parenthetical(t.TitleNotes())
 	}
 	level := t.Levels.Max(0)
 	if t.savedCurrentLevel != nil && t.Enabled() {
 		level = *t.savedCurrentLevel
 	}
-	return t.NameWithReplacements() + " " + level.String()
+	return t.NameWithReplacements() + " " + level.String() + parenthetical(t.TitleNotes())
 }
 
 // NameAndLevel returns the name and level of the trait.
