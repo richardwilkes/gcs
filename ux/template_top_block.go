@@ -133,6 +133,8 @@ func (t *Template) addTargetPointsRow(parent *unison.Panel) {
 		&target.Max)
 	minField.Problem = func(value *fxp.Int) string { return targetPointsProblem(value, target.Max) }
 	maxField.Problem = func(value *fxp.Int) string { return targetPointsProblem(target.Min, value) }
+	minField.Validate()
+	maxField.Validate()
 
 	currentLabel := NewPageLabel(i18n.Text("Current"))
 	currentLabel.SetBorder(unison.NewEmptyBorder(geom.Insets{Left: unison.StdHSpacing * 2, Bottom: 1}))

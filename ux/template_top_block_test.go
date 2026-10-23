@@ -74,6 +74,24 @@ func TestTemplateTopBlockEditsTheTemplate(t *testing.T) {
 	c.Equal("≤50", data.TargetPoints.String())
 }
 
+// TestTemplateTopBlockFlagsALoadedInvertedRange verifies that a target range that is already inverted when the
+// template is opened is flagged straight away, rather than only once a later edit syncs the fields.
+func TestTemplateTopBlockFlagsALoadedInvertedRange(t *testing.T) {
+	c := check.New(t)
+	data := gurps.NewTemplate()
+	data.TargetPoints = gurps.NumericRange{Min: new(fxp.FromInteger(150)), Max: new(fxp.FromInteger(100))}
+	template := newTestTemplateDockable("Inverted", data)
+
+	minField, ok := template.targetMgr.Find(templatePanelTargetMinFieldRefKey).Self.(*OptionalDecimalField)
+	c.True(ok, "the template must have a target minimum field")
+	maxField, ok := template.targetMgr.Find(templatePanelTargetMaxFieldRefKey).Self.(*OptionalDecimalField)
+	c.True(ok, "the template must have a target maximum field")
+	c.True(minField.Invalid(), "a minimum loaded above the maximum must be flagged on opening")
+	c.True(maxField.Invalid(), "a maximum loaded below the minimum must be flagged on opening")
+	c.NotNil(minField.Tooltip, "the flagged minimum must say why")
+	c.NotNil(maxField.Tooltip, "the flagged maximum must say why")
+}
+
 // TestTargetPointsMet verifies that a template only meets its target when every cost it may end up with falls within
 // that target, and that an open end of either range is treated as reaching as far as it can.
 func TestTargetPointsMet(t *testing.T) {
