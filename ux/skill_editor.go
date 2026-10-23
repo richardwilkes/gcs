@@ -251,8 +251,7 @@ func initSkillEditor(e *editor[*gurps.Skill, *gurps.SkillEditData], content *uni
 			wrapper.AddChild(levelField)
 		}
 	}
-	addPageRefLabelAndField(content, &e.editorData.PageRef)
-	addPageRefHighlightLabelAndField(content, &e.editorData.PageRefHighlight)
+	addPageRefLabelsAndFields(content, &e.editorData.PageRef, &e.editorData.PageRefHighlight)
 	if !e.target.Container() {
 		d := e.editorData
 		content.AddChild(newNameablesPanel(&d.Nameables, func() map[string]int {

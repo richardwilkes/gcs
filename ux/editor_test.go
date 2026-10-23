@@ -447,3 +447,56 @@ func TestEditorApplySortsTagsAndColleges(t *testing.T) {
 	c.Equal([]string{"AAA", "BBB"}, spell.Tags, "applying the edit sorts the spell's tags")
 	c.Equal(gurps.CollegeList{"Air", "Water"}, spell.College, "applying the edit sorts the spell's colleges")
 }
+
+// pageRefButtonAndField returns the button that opens the page reference the content edits and the field that holds the
+// reference, or nil when no field is labeled by it, both located through the Page Reference label, which the button
+// follows and the field is labeled by.
+func pageRefButtonAndField(c check.Checker, content *unison.Panel) (*unison.Button, *StringField) {
+	var label *unison.Label
+	for _, one := range uxtest.PanelsOfType[*unison.Label](content) {
+		if one.String() == "Page Reference" {
+			label = one
+			break
+		}
+	}
+	c.NotNil(label, "the content must have a page reference label")
+	siblings := label.Parent().Children()
+	index := slices.Index(siblings, label.AsPanel())
+	c.True(index >= 0 && index+1 < len(siblings), "the page reference label must have a sibling after it")
+	button, ok := siblings[index+1].Self.(*unison.Button)
+	c.True(ok, "the page reference label must be followed by its button")
+	for _, field := range uxtest.PanelsOfType[*StringField](content) {
+		if field.Accessibility.LabeledBy == label {
+			return button, field
+		}
+	}
+	return button, nil
+}
+
+// TestEditorPageRefButtonFollowsTheField verifies that every editor puts a button beside its page reference that is
+// enabled only while the field holds a reference to open, including after an undo.
+func TestEditorPageRefButtonFollowsTheField(t *testing.T) {
+	c := check.New(t)
+	for name, content := range everyEditorContent(t) {
+		button, field := pageRefButtonAndField(c, content)
+		c.NotNil(field, name+" editor must label its page reference field")
+		c.False(button.Enabled(), name+" editor has no reference, so there is nothing to open")
+	}
+
+	sheet := newTestSheetForTemplate(t)
+	trait := gurps.NewTrait(sheet.Entity(), nil, false)
+	trait.PageRef = "B42"
+	e, content := buildEditorContent(sheet, trait, initTraitEditor)
+	button, field := pageRefButtonAndField(c, content)
+	c.NotNil(field, "the trait editor must label its page reference field")
+	c.True(button.Enabled(), "a reference loaded with the editor enables the button")
+
+	field.SetText("")
+	c.Equal("", e.editorData.PageRef)
+	c.False(button.Enabled(), "clearing the reference disables the button")
+	e.UndoManager().Undo()
+	c.Equal("B42", e.editorData.PageRef)
+	c.True(button.Enabled(), "undoing the clear enables the button again")
+	field.SetText(" ; ")
+	c.False(button.Enabled(), "separators alone are no reference")
+}

@@ -27,10 +27,12 @@ import (
 )
 
 // newTestTemplateDockable returns a template dockable for the given file name, first registering the bindable actions
-// its toolbar needs.
+// its toolbar needs. It is marked as loaded from that file, so it goes by the path rather than the template's name.
 func newTestTemplateDockable(fileName string, data *gurps.Template) *Template {
 	registerKeyBindingsOnce.Do(func() { registerActions() })
-	return NewTemplate(filepath.Join("some", "dir", fileName+gurps.TemplatesExt), data)
+	template := NewTemplate(filepath.Join("some", "dir", fileName+gurps.TemplatesExt), data)
+	template.markLoadedFromFile()
+	return template
 }
 
 // TestPageInfoProviderForTemplate verifies that obtaining a template dockable's page info provider fills in the page

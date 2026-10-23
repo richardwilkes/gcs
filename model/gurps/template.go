@@ -14,6 +14,7 @@ import (
 	"encoding/json/v2"
 	"hash"
 	"io/fs"
+	"slices"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/jio"
@@ -37,14 +38,23 @@ type Template struct {
 
 // TemplateData holds the GURPS Template data that is written to disk.
 type TemplateData struct {
-	Version   int          `json:"version"`
-	ID        tid.TID      `json:"id"`
-	Traits    []*Trait     `json:"traits,omitempty"`
-	Skills    []*Skill     `json:"skills,omitempty"`
-	Spells    []*Spell     `json:"spells,omitempty"`
-	Equipment []*Equipment `json:"equipment,omitempty"`
-	Notes     []*Note      `json:"notes,omitempty"`
-	BodyType  *Body        `json:"body_type,omitzero"`
+	Version int     `json:"version"`
+	ID      tid.TID `json:"id"`
+	Name    string  `json:"name,omitzero"`
+	PageRef string  `json:"reference,omitzero"`
+	// PageRefHighlight is the text to highlight on the page PageRef opens, for when the default misses.
+	PageRefHighlight string `json:"reference_highlight,omitzero"`
+	// LocalNotes are the template's own notes. The "notes" key already holds the template's list of notes.
+	LocalNotes string `json:"local_notes,omitzero"`
+	// TargetPoints is the cost the template aims for, exact or a range. It records intent and does not limit the
+	// contents.
+	TargetPoints NumericRange `json:"target_points,omitzero"`
+	Traits       []*Trait     `json:"traits,omitempty"`
+	Skills       []*Skill     `json:"skills,omitempty"`
+	Spells       []*Spell     `json:"spells,omitempty"`
+	Equipment    []*Equipment `json:"equipment,omitempty"`
+	Notes        []*Note      `json:"notes,omitempty"`
+	BodyType     *Body        `json:"body_type,omitzero"`
 }
 
 // NewTemplateFromFile loads a Template from a file.
@@ -224,6 +234,12 @@ func (t *Template) NoteList() []*Note {
 // SetNoteList implements ListProvider.
 func (t *Template) SetNoteList(list []*Note) {
 	t.Notes = list
+}
+
+// PointsRange returns the range its traits, skills and spells may total once every choice in them is made.
+func (t *Template) PointsRange() NumericRange {
+	return sumNumericRanges(slices.Concat(childPointsRanges(t.Traits), childPointsRanges(t.Skills),
+		childPointsRanges(t.Spells)))
 }
 
 // Hash writes this object's contents into the hasher.

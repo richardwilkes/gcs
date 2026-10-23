@@ -28,9 +28,9 @@ import (
 // now; see singleValueOf.
 type NumericRange struct {
 	// Min is the least the item can cost, or nil if there is no lower limit.
-	Min *fxp.Int
+	Min *fxp.Int `json:"min,omitzero"`
 	// Max is the most the item can cost, or nil if there is no upper limit.
-	Max *fxp.Int
+	Max *fxp.Int `json:"max,omitzero"`
 }
 
 // NumericRangeSign is an enum for the sign of a NumericRange.
