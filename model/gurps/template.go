@@ -46,7 +46,6 @@ type TemplateData struct {
 	PageRefHighlight string `json:"reference_highlight,omitzero"`
 	// LocalNotes are the template's own notes. The "notes" key already holds the template's list of notes.
 	LocalNotes string `json:"local_notes,omitzero"`
-	VTTNotes   string `json:"vtt_notes,omitzero"`
 	// TargetPoints is the cost the template aims for, exact or a range. It records intent and does not limit the
 	// contents.
 	TargetPoints NumericRange `json:"target_points,omitzero"`

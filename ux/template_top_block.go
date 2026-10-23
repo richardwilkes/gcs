@@ -29,7 +29,6 @@ const (
 	templatePanelPageRefFieldRefKey          = templatePanelFieldPrefix + "page_ref"
 	templatePanelPageRefHighlightFieldRefKey = templatePanelFieldPrefix + "page_ref_highlight"
 	templatePanelLocalNotesFieldRefKey       = templatePanelFieldPrefix + "local_notes"
-	templatePanelVTTNotesFieldRefKey         = templatePanelFieldPrefix + "vtt_notes"
 	templatePanelCurrentPointsFieldRefKey    = templatePanelFieldPrefix + "current_points"
 )
 
@@ -51,9 +50,6 @@ func (t *Template) createTopBlock() *unison.Panel {
 	t.addBodyTypeRow(top)
 	addMultiLineStringPageField(top, t.targetMgr, templatePanelLocalNotesFieldRefKey, i18n.Text("Notes"),
 		func() string { return data.LocalNotes }, func(s string) { data.LocalNotes = s })
-	field = addMultiLineStringPageField(top, t.targetMgr, templatePanelVTTNotesFieldRefKey, i18n.Text("VTT Notes"),
-		func() string { return data.VTTNotes }, func(s string) { data.VTTNotes = s })
-	field.Tooltip = newWrappedTooltip(i18n.Text("Any notes for VTT use; see the instructions for your VTT to determine if/how these can be used"))
 	return top
 }
 

@@ -27,7 +27,6 @@ func TestTemplateDetailsRoundTrip(t *testing.T) {
 	template.PageRef = "DF1:5"
 	template.PageRefHighlight = "Knight"
 	template.LocalNotes = "Heavily armored fighter."
-	template.VTTNotes = "vtt"
 	template.TargetPoints = numericRangeAtLeast(fxp.FromInteger(250))
 
 	data, err := json.Marshal(template)
@@ -42,7 +41,6 @@ func TestTemplateDetailsRoundTrip(t *testing.T) {
 	c.Equal("DF1:5", loaded.PageRef)
 	c.Equal("Knight", loaded.PageRefHighlight)
 	c.Equal("Heavily armored fighter.", loaded.LocalNotes)
-	c.Equal("vtt", loaded.VTTNotes)
 	c.Equal("250+", loaded.TargetPoints.String())
 	c.Nil(loaded.TargetPoints.Max, "the open end must load as open")
 }
