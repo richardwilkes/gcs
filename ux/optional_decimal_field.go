@@ -86,7 +86,7 @@ func (f *OptionalDecimalField) runeTyped(ch rune) bool {
 	if !unicode.IsControl(ch) {
 		if text := strings.TrimSpace(string(f.RunesIfPasted([]rune{ch}))); text != "" && text != "-" && text != "+" {
 			if _, err := fxp.FromString(text); err != nil {
-				unison.Beep()
+				Beep()
 				return false
 			}
 		}
