@@ -344,6 +344,7 @@ func (s *Skill) Clone(from LibraryFile, owner DataOwner, parent *Skill, mode Clo
 // MarshalJSONTo implements json.MarshalerTo.
 func (s *Skill) MarshalJSONTo(enc *jsontext.Encoder) error {
 	s.ClearUnusedFieldsForType()
+	slices.Sort(s.Tags)
 	return marshalNodeData(enc, &s.SkillData, func() *leveledCalc {
 		return newLeveledCalc(s.Container(), s.LevelData.Level, s.RelativeLevel(), s.UnsatisfiedReason,
 			s.ResolveLocalNotes(), s.LocalNotes)
@@ -1594,6 +1595,7 @@ func (s *SkillEditData) ApplyTo(other *Skill) {
 	// snapshot's own defaults.
 	rechoose := defaultsHash(s.Defaults) != s.copiedDefaultsHash
 	other.copyFrom(other, s, other.Container(), true, Copy, other.IsTechnique())
+	slices.Sort(other.Tags)
 	if rechoose {
 		other.DefaultedFrom = nil
 	}

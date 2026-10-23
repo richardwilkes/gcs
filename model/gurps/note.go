@@ -174,6 +174,7 @@ func (n *Note) MarshalJSONTo(enc *jsontext.Encoder) error {
 		ResolvedText string `json:"resolved_text,omitzero"`
 	}
 	n.ClearUnusedFieldsForType()
+	slices.Sort(n.Tags)
 	return marshalNodeData(enc, &n.NoteData, func() *calc {
 		if text := resolvedNotesFor(n.resolveText(), n.MarkDown); text != "" {
 			return &calc{ResolvedText: text}
@@ -392,6 +393,7 @@ func (n *NoteEditData) SetNameableReplacements(replacements map[string]string) {
 // ApplyTo implements EditorData.
 func (n *NoteEditData) ApplyTo(other *Note) {
 	other.copyFrom(n)
+	slices.Sort(other.Tags)
 }
 
 func (n *NoteEditData) copyFrom(other *NoteEditData) {

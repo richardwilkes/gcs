@@ -331,6 +331,7 @@ func (t *Trait) MarshalJSONTo(enc *jsontext.Encoder) error {
 		CurrentLevel        *fxp.Int `json:"current_level,omitzero"`
 	}
 	t.ClearUnusedFieldsForType()
+	slices.Sort(t.Tags)
 	return marshalNodeData(enc, &t.TraitData, func() *calc {
 		// The "calc" object is always written, even when empty.
 		unsatisfiedReason, contradiction := t.PrereqStatus()
@@ -1475,6 +1476,7 @@ func (t *TraitEditData) SetNameableReplacements(replacements map[string]string) 
 // ApplyTo implements EditorData.
 func (t *TraitEditData) ApplyTo(other *Trait) {
 	other.copyFrom(other, t, true, Copy)
+	slices.Sort(other.Tags)
 }
 
 // copyFrom copies other into t. isApply distinguishes staging the editor's working copy from committing it back, and

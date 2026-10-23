@@ -200,6 +200,7 @@ func (t *TraitModifier) Clone(from LibraryFile, owner DataOwner, parent *TraitMo
 // MarshalJSONTo implements json.MarshalerTo.
 func (t *TraitModifier) MarshalJSONTo(enc *jsontext.Encoder) error {
 	t.ClearUnusedFieldsForType()
+	slices.Sort(t.Tags)
 	return marshalNodeData(enc, &t.TraitModifierData, func() *notesCalc {
 		return newNotesCalc(t.ResolveLocalNotes(), t.LocalNotes)
 	})
@@ -677,6 +678,7 @@ func (t *TraitModifierEditData) CopyFrom(other *TraitModifier) {
 // ApplyTo implements EditorData.
 func (t *TraitModifierEditData) ApplyTo(other *TraitModifier) {
 	other.copyFrom(t)
+	slices.Sort(other.Tags)
 }
 
 func (t *TraitModifierEditData) copyFrom(other *TraitModifierEditData) {

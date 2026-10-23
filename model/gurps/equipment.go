@@ -388,6 +388,7 @@ func (e *Equipment) MarshalJSONTo(enc *jsontext.Encoder) error {
 		UnsatisfiedReason       string      `json:"unsatisfied_reason,omitzero"`
 	}
 	e.ClearUnusedFieldsForType()
+	slices.Sort(e.Tags)
 	return marshalNodeData(enc, &e.EquipmentData, func() *calc {
 		// The "calc" object is always written, even when empty.
 		defUnits := SheetSettingsFor(EntityFromNode(e)).DefaultWeightUnits
@@ -1352,6 +1353,7 @@ func (e *EquipmentEditData) SetNameableReplacements(replacements map[string]stri
 // ApplyTo implements EditorData.
 func (e *EquipmentEditData) ApplyTo(other *Equipment) {
 	other.copyFrom(other, e, true, Copy)
+	slices.Sort(other.Tags)
 }
 
 // copyFrom copies other into e. isApply distinguishes staging the editor's working copy from committing it back, and

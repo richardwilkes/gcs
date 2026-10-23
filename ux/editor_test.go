@@ -413,3 +413,37 @@ func TestReadOnlyEditor(t *testing.T) {
 		}
 	})
 }
+
+// Tags are kept sorted whatever order they are typed in, so that a file never records the order the user entered them
+// in (#1217). A spell's colleges are kept the same way.
+func TestEditorApplySortsTagsAndColleges(t *testing.T) {
+	c := check.New(t)
+	data := gurps.NewTemplate()
+	trait := gurps.NewTrait(nil, nil, false)
+	trait.Name = "Trait"
+	data.Traits = []*gurps.Trait{trait}
+	spell := gurps.NewSpell(nil, nil, false)
+	spell.Name = "Spell"
+	data.Spells = []*gurps.Spell{spell}
+	template := newTestTemplateDockable("Source", data)
+
+	traitEditor, content := buildEditorContent(template, trait, initTraitEditor)
+	tagsField := stringFieldLabeled(content, i18n.Text("Tags"))
+	c.NotNil(tagsField, "the trait editor must have a Tags field")
+	tagsField.SetText("BBB, AAA")
+	c.Equal([]string{"BBB", "AAA"}, traitEditor.editorData.Tags, "the editor holds the tags as typed")
+	traitEditor.applyEdits()
+	c.Equal([]string{"AAA", "BBB"}, trait.Tags, "applying the edit sorts the trait's tags")
+
+	spellEditor, content := buildEditorContent(template, spell, initSpellEditor)
+	tagsField = stringFieldLabeled(content, i18n.Text("Tags"))
+	c.NotNil(tagsField, "the spell editor must have a Tags field")
+	tagsField.SetText("BBB, AAA")
+	collegeField := stringFieldLabeled(content, i18n.Text("College"))
+	c.NotNil(collegeField, "the spell editor must have a College field")
+	collegeField.SetText("Water, Air")
+	c.Equal(gurps.CollegeList{"Water", "Air"}, spellEditor.editorData.College, "the editor holds the colleges as typed")
+	spellEditor.applyEdits()
+	c.Equal([]string{"AAA", "BBB"}, spell.Tags, "applying the edit sorts the spell's tags")
+	c.Equal(gurps.CollegeList{"Air", "Water"}, spell.College, "applying the edit sorts the spell's colleges")
+}

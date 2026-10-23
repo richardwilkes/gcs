@@ -13,13 +13,14 @@ import (
 	"encoding/json/jsontext"
 	"encoding/json/v2"
 	"regexp"
+	"slices"
 	"strings"
 )
 
 var collegeSepRegex = regexp.MustCompile(`(\s+or\s+)|/`)
 
-// CollegeList holds a list of college names. It also loads the legacy format, a single string with ' or ' or '/'
-// separating the colleges.
+// CollegeList holds a list of college names, kept sorted. It also loads the legacy format, a single string with ' or '
+// or '/' separating the colleges.
 type CollegeList []string
 
 // UnmarshalJSONFrom implements json.UnmarshalerFrom.
@@ -40,6 +41,7 @@ func (c *CollegeList) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 			pruned = append(pruned, one)
 		}
 	}
+	slices.Sort(pruned)
 	*c = pruned
 	return nil
 }

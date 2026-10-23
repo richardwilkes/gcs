@@ -323,6 +323,8 @@ func (s *Spell) Clone(from LibraryFile, owner DataOwner, parent *Spell, mode Clo
 // MarshalJSONTo implements json.MarshalerTo.
 func (s *Spell) MarshalJSONTo(enc *jsontext.Encoder) error {
 	s.ClearUnusedFieldsForType()
+	slices.Sort(s.Tags)
+	slices.Sort(s.College)
 	return marshalNodeData(enc, &s.SpellData, func() *leveledCalc {
 		return newLeveledCalc(s.Container(), s.LevelData.Level, s.RelativeLevel(), s.UnsatisfiedReason,
 			s.ResolveLocalNotes(), s.LocalNotes)
@@ -1274,6 +1276,8 @@ func (s *SpellEditData) SetNameableReplacements(replacements map[string]string) 
 // ApplyTo implements EditorData.
 func (s *SpellEditData) ApplyTo(other *Spell) {
 	other.copyFrom(other, s, other.Container(), true, Copy)
+	slices.Sort(other.Tags)
+	slices.Sort(other.College)
 }
 
 // copyFrom copies other into s. isApply distinguishes staging the editor's working copy from committing it back, and

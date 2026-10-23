@@ -204,6 +204,7 @@ func (e *EquipmentModifier) Clone(from LibraryFile, owner DataOwner, parent *Equ
 // MarshalJSONTo implements json.MarshalerTo.
 func (e *EquipmentModifier) MarshalJSONTo(enc *jsontext.Encoder) error {
 	e.ClearUnusedFieldsForType()
+	slices.Sort(e.Tags)
 	return marshalNodeData(enc, &e.EquipmentModifierData, func() *notesCalc {
 		return newNotesCalc(e.ResolveLocalNotes(), e.LocalNotes)
 	})
@@ -774,6 +775,7 @@ func (e *EquipmentModifierEditData) CopyFrom(other *EquipmentModifier) {
 // ApplyTo implements EditorData.
 func (e *EquipmentModifierEditData) ApplyTo(other *EquipmentModifier) {
 	other.copyFrom(e)
+	slices.Sort(other.Tags)
 }
 
 func (e *EquipmentModifierEditData) copyFrom(other *EquipmentModifierEditData) {
