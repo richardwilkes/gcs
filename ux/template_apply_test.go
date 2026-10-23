@@ -28,8 +28,10 @@ func newTestSheetForTemplate(t *testing.T) *Sheet {
 }
 
 // newTestTemplateWithBodyType returns a template that supplies both a body type of the given name and a trait, so that
-// applying it to a sheet alters the sheet settings as well as the traits table.
+// applying it to a sheet alters the sheet settings as well as the traits table. The bindable actions its toolbar needs
+// are registered first, so the template can be built before any sheet.
 func newTestTemplateWithBodyType(bodyTypeName string) *Template {
+	registerKeyBindingsOnce.Do(func() { registerActions() })
 	data := gurps.NewTemplate()
 	body := gurps.FactoryBody()
 	body.Name = bodyTypeName
