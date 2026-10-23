@@ -16,6 +16,7 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/toolbox/v2/check"
+	"github.com/richardwilkes/toolbox/v2/xfilepath"
 )
 
 // A dockable opened from a file is tied to that file: it is not modified, it goes by the file's name, and saving it
@@ -51,8 +52,8 @@ func TestOpenDockableFromFile(t *testing.T) {
 	c.HasError(err, "opening a file that does not exist must fail")
 }
 
-// A sheet or template that has never been saved takes its file name from the name of its content, and only from its path once it
-// has been saved.
+// A sheet or template that has never been saved takes its file name from the name of its content, and only from its
+// path once it has been saved.
 func TestUnsavedSheetsGoByTheirNames(t *testing.T) {
 	c := check.New(t)
 	registerKeyBindingsOnce.Do(func() { registerActions() })
@@ -89,6 +90,36 @@ func TestUnsavedSheetsGoByTheirNames(t *testing.T) {
 	c.Equal("Unnamed Template"+gurps.TemplatesExt, template.BackingFilePath())
 	template.markLoadedFromFile()
 	c.Equal("untitled"+gurps.TemplatesExt, template.BackingFilePath(), "a saved template must go by its path")
+}
+
+// A sheet, loot sheet or template that has never been saved is named for its content, so a name holding path separators
+// or other characters a file name cannot have is sanitized before it becomes a path, as the file editors do. Otherwise
+// the title and the Save As suggestion, which take the base name of that path, keep only the part after the last
+// separator.
+func TestUnsavedSheetNamesAreSanitized(t *testing.T) {
+	c := check.New(t)
+	registerKeyBindingsOnce.Do(func() { registerActions() })
+	want := xfilepath.SanitizeName("Warrior/Mage")
+	c.NotEqual("Warrior/Mage", want, "the sanitizer must change a name holding a path separator")
+
+	entity := gurps.NewEntity()
+	entity.Profile.Name = "Warrior/Mage"
+	sheet := NewSheet("untitled"+gurps.SheetExt, entity)
+	c.Equal(want+gurps.SheetExt, sheet.BackingFilePath())
+	c.Equal(want, sheet.Title())
+	c.Equal(want+gurps.SheetExt, sheet.Tooltip())
+
+	loot := gurps.NewLoot()
+	loot.Name = "Warrior/Mage"
+	lootSheet := NewLootSheet("untitled"+gurps.LootExt, loot)
+	c.Equal(want+gurps.LootExt, lootSheet.BackingFilePath())
+	c.Equal(want, lootSheet.Title())
+
+	data := gurps.NewTemplate()
+	data.Name = "Warrior/Mage"
+	template := NewTemplate("untitled"+gurps.TemplatesExt, data)
+	c.Equal(want+gurps.TemplatesExt, template.BackingFilePath())
+	c.Equal(want, template.Title())
 }
 
 // A dockable that only views a file is tied to it by name and key, but never has anything to save.
