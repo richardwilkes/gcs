@@ -213,14 +213,28 @@ func addOptionalSpecializationLabelAndField[F fieldAccess[string]](parent *uniso
 	addLabelAndStringField(parent, i18n.Text("Optional Specialization"), "", fieldData)
 }
 
-func addPageRefLabelAndField[F fieldAccess[string]](parent *unison.Panel, fieldData F) {
-	addLabelAndStringField(parent, i18n.Text("Page Reference"), gurps.PageRefTooltip(), fieldData)
-}
-
-func addPageRefHighlightLabelAndField[F fieldAccess[string]](parent *unison.Panel, fieldData F) {
+// addPageRefLabelsAndFields adds the page reference field, with a button beside its label that opens the reference,
+// followed by the page highlight field.
+func addPageRefLabelsAndFields[F fieldAccess[string]](parent *unison.Panel, refData, highlightData F) {
+	title := i18n.Text("Page Reference")
+	tooltip := gurps.PageRefTooltip()
+	get, set := modifyingAccessors[string](parent, refData)
+	label := NewFieldLeadingLabel(title, false)
+	label.Tooltip = newWrappedTooltip(tooltip)
+	wrapper, refresh := newPageRefLabel(label, label.Font, get, toFieldAccessor[string](highlightData).Get)
+	wrapper.SetLayoutData(&unison.FlexLayoutData{
+		HAlign: align.End,
+		VAlign: align.Middle,
+	})
+	parent.AddChild(wrapper)
+	field := NewStringField(nil, "", title, get, func(value string) {
+		set(value)
+		refresh()
+	})
+	labelControl(installField(parent, field, tooltip), label)
 	addLabelAndStringField(parent, i18n.Text("Page Highlight"),
 		i18n.Text(`A snippet of text to highlight on the page when opening the page reference; only needed if the default behavior isn't highlighting the expected area`),
-		fieldData)
+		highlightData)
 }
 
 func addNotesLabelAndField[F fieldAccess[string]](parent *unison.Panel, fieldData F) {

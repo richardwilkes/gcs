@@ -315,6 +315,23 @@ func addLabeledStringPageField(parent unison.Paneler, targetMgr *TargetMgr, targ
 	return field
 }
 
+// addMultiLineStringPageField adds a label and a multi-line text entry field for a sheet page to parent, in that
+// order, and returns the field. The label sits at the top of the row, level with the field's first line.
+func addMultiLineStringPageField(parent unison.Paneler, targetMgr *TargetMgr, targetKey, title string, get func() string, set func(string)) *StringField {
+	p := parent.AsPanel()
+	label := NewPageLabel(title)
+	label.SetLayoutData(&unison.FlexLayoutData{
+		HAlign: align.Fill,
+		VAlign: align.Start,
+	})
+	p.AddChild(label)
+	field := NewMultiLineStringField(targetMgr, targetKey, title, get, set)
+	installPageFieldFontAndFocusBorders(field.Field)
+	field.Accessibility.LabeledBy = label
+	p.AddChild(field)
+	return field
+}
+
 // addRandomizedStringPageField adds a label with a randomization button and a text entry field for a sheet page to
 // parent, in that order, and returns the field. Clicking the button stores what random returns via set, then shows it
 // in the field and marks the sheet modified.

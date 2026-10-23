@@ -85,10 +85,10 @@ func newLibrarySourcedTrait(t *testing.T, c check.Checker, lib *gurps.Trait) (*S
 	return sheet, local
 }
 
-// TestEditorsShowNoSourceFields verifies that no editor shows the ID or the source in its content, which the toolbar's
-// source menu shows instead.
-func TestEditorsShowNoSourceFields(t *testing.T) {
-	c := check.New(t)
+// everyEditorContent builds the content of every kind of editor, keyed by what it edits, as displayEditor would. Each
+// node that can carry a source has one.
+func everyEditorContent(t *testing.T) map[string]*unison.Panel {
+	t.Helper()
 	sheet := newTestSheetForTemplate(t)
 	entity := sheet.Entity()
 	contents := make(map[string]*unison.Panel)
@@ -148,8 +148,14 @@ func TestEditorsShowNoSourceFields(t *testing.T) {
 	eqpModGroup := gurps.NewEquipmentModifier(entity, nil, true)
 	sourced(eqpModGroup)
 	_, contents["equipment modifier group"] = buildEditorContent(sheet, eqpModGroup, initEquipmentModifierEditor)
+	return contents
+}
 
-	for name, content := range contents {
+// TestEditorsShowNoSourceFields verifies that no editor shows the ID or the source in its content, which the toolbar's
+// source menu shows instead.
+func TestEditorsShowNoSourceFields(t *testing.T) {
+	c := check.New(t)
+	for name, content := range everyEditorContent(t) {
 		texts := uxtest.LabelTexts(content)
 		c.NotEqual(0, len(texts), name+" editor must have built its content")
 		for _, label := range []string{"ID", "Source ID", "Source Library", "Source Path"} {
