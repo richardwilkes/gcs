@@ -24,8 +24,7 @@ func initModifierContainerEditor(content *unison.Panel, data *gurps.NodeSyncData
 		addModifierChoiceField(content, container)
 	}
 	addTagsLabelAndField(content, &data.Tags)
-	addPageRefLabelAndField(content, &data.PageRef)
-	addPageRefHighlightLabelAndField(content, &data.PageRefHighlight)
+	addPageRefLabelsAndFields(content, &data.PageRef, &data.PageRefHighlight)
 }
 
 // addModifierChoiceField adds the popup that says whether a modifier choice is mandatory or optional. Making it a group

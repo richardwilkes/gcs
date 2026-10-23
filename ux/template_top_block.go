@@ -13,7 +13,6 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/fonts"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
-	"github.com/richardwilkes/gcs/v5/ux/svg"
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/unison"
@@ -57,38 +56,21 @@ func (t *Template) createTopBlock() *unison.Panel {
 // enabled only while the field holds a reference to open.
 func (t *Template) addPageRefRow(parent *unison.Panel) {
 	title := i18n.Text("Page Reference")
-	wrapper := unison.NewPanel()
-	wrapper.SetLayout(&unison.FlexLayout{
-		Columns:  2,
-		HSpacing: 4,
-	})
+	data := &t.template.TemplateData
+	label := NewPageLabel(title)
+	wrapper, refresh := newPageRefLabel(label, fonts.PageLabelPrimary,
+		func() string { return data.PageRef }, func() string { return data.PageRefHighlight })
 	wrapper.SetLayoutData(&unison.FlexLayoutData{
 		HAlign: align.Fill,
 		VAlign: align.Middle,
 	})
-	label := NewPageLabel(title)
-	wrapper.AddChild(label)
-	data := &t.template.TemplateData
-	hasRef := func() bool { return len(ExtractPageReferences(data.PageRef)) != 0 }
-	button := NewSVGButtonForFont(svg.Bookmark, fonts.PageLabelPrimary, -2)
-	tabStopForReading(button)
-	open := i18n.Text("Open the page reference")
-	button.Tooltip = newWrappedTooltip(open)
-	button.Accessibility.Name = open
-	button.ClickCallback = func() {
-		if hasRef() {
-			OpenPageReference(ExtractPageReferences(data.PageRef)[0], data.PageRefHighlight, nil)
-		}
-	}
-	button.SetEnabled(hasRef())
-	wrapper.AddChild(button)
 	parent.AddChild(wrapper)
 
 	field := NewStringPageField(t.targetMgr, templatePanelPageRefFieldRefKey, title,
 		func() string { return data.PageRef },
 		func(s string) {
 			data.PageRef = s
-			button.SetEnabled(hasRef())
+			refresh()
 		})
 	field.Tooltip = newWrappedTooltip(gurps.PageRefTooltip())
 	field.Accessibility.LabeledBy = label
