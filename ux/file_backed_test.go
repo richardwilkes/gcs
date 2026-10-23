@@ -51,7 +51,7 @@ func TestOpenDockableFromFile(t *testing.T) {
 	c.HasError(err, "opening a file that does not exist must fail")
 }
 
-// A sheet that has never been saved takes its file name from the name of its content, and only from its path once it
+// A sheet or template that has never been saved takes its file name from the name of its content, and only from its path once it
 // has been saved.
 func TestUnsavedSheetsGoByTheirNames(t *testing.T) {
 	c := check.New(t)
@@ -79,6 +79,16 @@ func TestUnsavedSheetsGoByTheirNames(t *testing.T) {
 	c.Equal("Unnamed Loot"+gurps.LootExt, lootSheet.BackingFilePath())
 	lootSheet.markLoadedFromFile()
 	c.Equal("untitled"+gurps.LootExt, lootSheet.BackingFilePath(), "a saved loot sheet must go by its path")
+
+	data := gurps.NewTemplate()
+	data.Name = "Knight"
+	template := NewTemplate("untitled"+gurps.TemplatesExt, data)
+	c.Equal("Knight"+gurps.TemplatesExt, template.BackingFilePath())
+	c.Equal("Knight", template.Title())
+	data.Name = ""
+	c.Equal("Unnamed Template"+gurps.TemplatesExt, template.BackingFilePath())
+	template.markLoadedFromFile()
+	c.Equal("untitled"+gurps.TemplatesExt, template.BackingFilePath(), "a saved template must go by its path")
 }
 
 // A dockable that only views a file is tied to it by name and key, but never has anything to save.
