@@ -188,7 +188,7 @@ func addModifierShowInTitleCheckBox[F fieldAccess[bool]](parent *unison.Panel, f
 	parent.AddChild(unison.NewPanel()) // Skip the label column
 	box := addCheckBox(parent, i18n.Text("Show in title notes"), fieldData)
 	box.Tooltip = newWrappedTooltip(i18n.Text(
-		"Show the modifier in its owner's title notes instead of its owner's notes. A modifier with notes still shows them in its owner's notes, unless \"Show notes in owner's notes\" is cleared.",
+		"Show the modifier in its owner's title notes instead of its owner's notes. A modifier with notes still shows them in its owner's notes, unless \"Show notes in owner's notes\" is cleared, as does one with a cost or weight adjustment while the sheet settings show those.",
 	))
 }
 

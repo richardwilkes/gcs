@@ -102,7 +102,8 @@ type EquipmentModifierNonContainerSyncData struct {
 	// HideNotes keeps the modifier's notes out of its owner's notes, where it is still listed.
 	HideNotes bool `json:"hide_notes,omitzero"`
 	// ShowInTitle moves the modifier from its owner's notes to the title notes after its owner's name. A modifier with
-	// notes of its own still shows them in its owner's notes, unless HideNotes is set.
+	// notes of its own still shows them in its owner's notes, unless HideNotes is set, as does one with an adjustment
+	// while the sheet settings say to show those.
 	ShowInTitle bool `json:"show_in_title,omitzero"`
 }
 
@@ -388,16 +389,19 @@ func (e *EquipmentModifier) FullDescription() string {
 }
 
 // NotesDescription returns the description shown in its owner's notes, which leaves out its notes when HideNotes is
-// set, or "" when it is shown in the title and has no notes to show.
+// set, or "" when it is shown in the title and the description would hold nothing but its name: no notes to show and
+// no adjustment, which the title leaves out, that the sheet settings say to show.
 func (e *EquipmentModifier) NotesDescription() string {
 	var notes string
 	if !e.HideNotes {
 		notes = e.ResolveLocalNotes()
 	}
-	if notes == "" && e.ShowsInTitle() {
+	name := e.String()
+	desc := e.describe(name, notes)
+	if desc == name && e.ShowsInTitle() {
 		return ""
 	}
-	return e.describe(e.String(), notes)
+	return desc
 }
 
 func (e *EquipmentModifier) describe(name, notes string) string {

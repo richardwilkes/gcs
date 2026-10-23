@@ -455,3 +455,44 @@ func TestModifierTitleNotesFollowNameableLinks(t *testing.T) {
 	c.Equal("Made of Fine", steel.NameWithReplacements(), "precondition: the modifier's name follows the link")
 	c.Equal("Sword (Fine steel)", sword.String())
 }
+
+// TestTitleModifiersKeepTheirAdjustmentInTheNotes checks that a modifier shown in the title stays in its owner's notes
+// while the sheet shows modifier adjustments and it has one to show, since the title names it without its adjustment,
+// and leaves the notes once there is nothing but its name to show there.
+func TestTitleModifiersKeepTheirAdjustmentInTheNotes(t *testing.T) {
+	c := check.New(t)
+	e := NewEntity()
+	allies := addTraitWithFeatures(e, "Allies")
+	frequent := newTitleTraitModifier(e, "Frequent")
+	frequent.CostAdj = "+50%"
+	hidden := newTitleTraitModifier(e, "Hidden")
+	hidden.CostAdj = "-10%"
+	hidden.LocalNotes = "Not shown"
+	hidden.HideNotes = true
+	allies.SetModifiers([]*TraitModifier{frequent, hidden})
+	c.False(e.SheetSettings.ShowTraitModifierAdj, "precondition: trait modifier adjustments start out hidden")
+	c.Equal("Allies (Frequent; Hidden)", allies.String())
+	c.Equal("", allies.ModifierNotes(), "with the adjustments hidden, nothing but the names would show")
+	e.SheetSettings.ShowTraitModifierAdj = true
+	c.Equal("Allies (Frequent; Hidden)", allies.String(), "the title never shows the adjustment")
+	c.Equal("Frequent [+50%]; Hidden [-10%]", allies.ModifierNotes(), "the notes show the adjustments")
+
+	sword := addCarriedEquipmentWithFeatures(e, "Sword")
+	fine := NewEquipmentModifier(e, nil, false)
+	fine.Name = "Fine"
+	fine.CostAmount = "+300%"
+	fine.ShowInTitle = true
+	engraved := NewEquipmentModifier(e, nil, false)
+	engraved.Name = "Engraved"
+	engraved.ShowInTitle = true
+	sword.SetModifiers([]*EquipmentModifier{fine, engraved})
+	c.False(e.SheetSettings.ShowEquipmentModifierAdj, "precondition: equipment modifier adjustments start out hidden")
+	c.True(fine.CostDescription() != "" && engraved.FullCostDescription() == "",
+		"precondition: only the fine modifier has an adjustment to show")
+	c.Equal("Sword (Fine; Engraved)", sword.String())
+	c.Equal("", sword.ModifierNotes(), "with the adjustments hidden, nothing but the names would show")
+	e.SheetSettings.ShowEquipmentModifierAdj = true
+	c.Equal("Sword (Fine; Engraved)", sword.String(), "the title never shows the adjustment")
+	c.Equal("Fine ["+fine.CostDescription()+"]", sword.ModifierNotes(),
+		"only the modifier with an adjustment to show is listed")
+}
