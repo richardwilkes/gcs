@@ -79,6 +79,7 @@ type WeaponOwner interface {
 	TagList() []string
 	RatedStrength() fxp.Int
 	NameWithReplacements() string
+	TitleNotes() []string
 }
 
 // WeaponData holds the Weapon data that is written to disk.

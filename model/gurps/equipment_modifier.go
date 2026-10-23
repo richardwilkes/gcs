@@ -10,6 +10,7 @@
 package gurps
 
 import (
+	"cmp"
 	"encoding/json/jsontext"
 	"encoding/json/v2"
 	"hash"
@@ -99,8 +100,13 @@ type EquipmentModifierNonContainerSyncData struct {
 	CostAmount        string        `json:"cost,omitzero"`
 	WeightAmount      string        `json:"weight,omitzero"`
 	Features          Features      `json:"features,omitempty"`
+	// ShortName, when set, names the modifier in its owner's notes and title notes in place of its name.
+	ShortName string `json:"short_name,omitzero"`
 	// HideNotes keeps the modifier's notes out of its owner's notes, where it is still listed.
 	HideNotes bool `json:"hide_notes,omitzero"`
+	// ShowInTitle moves the modifier from its owner's notes to the title notes after its owner's name. A modifier with
+	// notes of its own still shows them in its owner's notes, unless HideNotes is set.
+	ShowInTitle bool `json:"show_in_title,omitzero"`
 }
 
 // NewEquipmentModifiersFromFile loads an EquipmentModifier list from a file.
@@ -358,6 +364,21 @@ func (e *EquipmentModifier) String() string {
 	return e.NameWithReplacements()
 }
 
+// ShowsInTitle returns true if the modifier is shown in its owner's title notes.
+func (e *EquipmentModifier) ShowsInTitle() bool {
+	return e.ShowInTitle
+}
+
+// CompactName returns how the modifier is named in its owner's notes and title notes: its short name, or else its name.
+func (e *EquipmentModifier) CompactName() string {
+	return cmp.Or(e.ShortNameWithReplacements(), e.NameWithReplacements())
+}
+
+// ShortNameWithReplacements returns the trimmed short name with any replacements applied.
+func (e *EquipmentModifier) ShortNameWithReplacements() string {
+	return strings.TrimSpace(applyOwnerReplacements(e.ShortName, e.equipment, e.nameableLinks()))
+}
+
 // ResolveLocalNotes resolves the local notes, running any embedded scripts to get the final result.
 func (e *EquipmentModifier) ResolveLocalNotes() string {
 	return ResolveText(EntityFromNode(e), deferredNewScriptEquipmentModifier(e), e.LocalNotesWithReplacements())
@@ -379,14 +400,17 @@ func (e *EquipmentModifier) FullDescription() string {
 	return e.describe(e.String(), e.ResolveLocalNotes())
 }
 
-// NotesDescription returns the description shown in its owner's notes, which leaves out its notes when HideNotes is
-// set.
+// NotesDescription returns the description shown in its owner's notes, which names it by its CompactName and leaves out
+// its notes when HideNotes is set, or "" when it is shown in the title and has no notes to show.
 func (e *EquipmentModifier) NotesDescription() string {
 	var notes string
 	if !e.HideNotes {
 		notes = e.ResolveLocalNotes()
 	}
-	return e.describe(e.String(), notes)
+	if notes == "" && e.ShowsInTitle() {
+		return ""
+	}
+	return e.describe(e.CompactName(), notes)
 }
 
 func (e *EquipmentModifier) describe(name, notes string) string {
@@ -515,6 +539,7 @@ func (e *EquipmentModifier) fillWithNameableKeysEvenIfDisabled(m, existing map[s
 	nameable.Extract(
 		found, existing,
 		e.Name,
+		e.ShortName,
 		e.LocalNotes,
 	)
 	for _, one := range e.Features {
@@ -764,7 +789,9 @@ func (e *EquipmentModifierNonContainerSyncData) hash(h hash.Hash) {
 	xhash.StringWithLen(h, e.CostAmount)
 	xhash.StringWithLen(h, e.WeightAmount)
 	hashList(h, e.Features)
+	xhash.StringWithLen(h, e.ShortName)
 	xhash.Bool(h, e.HideNotes)
+	xhash.Bool(h, e.ShowInTitle)
 }
 
 // CopyFrom implements EditorData.

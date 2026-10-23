@@ -83,7 +83,9 @@ func labelTitles(p *unison.Panel) []string {
 // field that only a modifier in its own right uses, and that a choice's editor adds only what the choice asks for.
 func TestModifierContainerEditorsShowOnlyWhatAContainerUses(t *testing.T) {
 	c := check.New(t)
-	leafOnly := []string{"Cost", "Level", "Total", "Tech Level", "Cost Modifier", "Weight Modifier", "VTT Notes"}
+	leafOnly := []string{
+		"Short Name", "Cost", "Level", "Total", "Tech Level", "Cost Modifier", "Weight Modifier", "VTT Notes",
+	}
 	checkNone := func(titles []string) {
 		c.Helper()
 		for _, title := range leafOnly {
@@ -99,6 +101,7 @@ func TestModifierContainerEditorsShowOnlyWhatAContainerUses(t *testing.T) {
 	c.Equal(0, len(checkBoxesTitled(content, "Enabled")), "a container is always enabled")
 	c.Equal(0, len(checkBoxesTitled(content, "Show notes in owner's notes")))
 	c.Equal(0, len(checkBoxesTitled(content, "Show notes in attack usage")))
+	c.Equal(0, len(checkBoxesTitled(content, "Show in title notes")))
 
 	choice := gurps.NewEquipmentModifierChoice(nil, nil)
 	e, content := buildEditorContent(nil, choice, initEquipmentModifierEditor)

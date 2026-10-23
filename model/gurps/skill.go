@@ -621,6 +621,7 @@ func addTooltipForSkillLevelAdj(optionChecker func(display.Option) bool, prefs *
 func (s *Skill) String() string {
 	var buffer strings.Builder
 	buffer.WriteString(s.NameWithReplacements())
+	parts := appendTitleNotes(nil, s.Replacements, true, s.Features)
 	if !s.Container() {
 		if s.TechLevel != nil {
 			buffer.WriteString("/TL")
@@ -628,21 +629,20 @@ func (s *Skill) String() string {
 		}
 		specialization := s.SpecializationWithReplacements()
 		optionalSpecialization := s.OptionalSpecializationWithReplacements()
-		if specialization != "" || optionalSpecialization != "" {
-			buffer.WriteString(" (")
-			if specialization != "" {
-				buffer.WriteString(specialization)
-				if optionalSpecialization != "" {
-					buffer.WriteString(", ")
-				}
-			}
-			if optionalSpecialization != "" {
-				buffer.WriteString(optionalSpecialization)
-			}
-			buffer.WriteByte(')')
+		if specialization != "" {
+			parts = append(parts, specialization)
+		}
+		if optionalSpecialization != "" {
+			parts = append(parts, optionalSpecialization)
 		}
 	}
+	buffer.WriteString(parenthetical(appendTitleNotes(parts, s.Replacements, false, s.Features)))
 	return buffer.String()
+}
+
+// TitleNotes returns the text of the skill's title note features, those placed before the built-in parts first.
+func (s *Skill) TitleNotes() []string {
+	return appendTitleNotes(appendTitleNotes(nil, s.Replacements, true, s.Features), s.Replacements, false, s.Features)
 }
 
 // IsLeveled implements LeveledOwner.

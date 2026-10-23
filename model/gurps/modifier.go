@@ -55,8 +55,11 @@ type GeneralModifier interface {
 	Container() bool
 	Depth() int
 	NameWithReplacements() string
+	ShortNameWithReplacements() string
+	CompactName() string
 	FullDescription() string
 	NotesDescription() string
+	ShowsInTitle() bool
 	FullCostDescription() string
 	Enabled() bool
 	Disableable
@@ -91,28 +94,43 @@ func AttachModifiers[T ModifiableNode[T, M], M ModifierNode[M, T], S ~[]M](targe
 	}
 }
 
-// activeModifierFor returns the first enabled, non-container modifier whose name matches (case-insensitive), or the
-// zero value if there is none.
+// activeModifierFor returns the first enabled, non-container modifier whose name or short name matches
+// (case-insensitive), or the zero value if there is none.
 func activeModifierFor[M ModifierNode[M, T], T ModifiableNode[T, M], S ~[]M](modifiers S, name string) M {
 	var found M
 	Traverse(func(mod M) bool {
-		if strings.EqualFold(mod.NameWithReplacements(), name) {
-			found = mod
-			return true
+		for _, one := range modifierNames(mod) {
+			if strings.EqualFold(one, name) {
+				found = mod
+				return true
+			}
 		}
 		return false
 	}, true, true, modifiers...)
 	return found
 }
 
-// modifierDescriptions returns the notes descriptions of the enabled, non-container modifiers, separated by "; ".
+// modifierNames returns the modifier's name followed by its short name when it has one, with replacements applied.
+func modifierNames(mod GeneralModifier) []string {
+	if short := mod.ShortNameWithReplacements(); short != "" {
+		return []string{mod.NameWithReplacements(), short}
+	}
+	return []string{mod.NameWithReplacements()}
+}
+
+// modifierDescriptions returns the notes descriptions of the enabled, non-container modifiers that appear in their
+// owner's notes, separated by "; ".
 func modifierDescriptions[M ModifierNode[M, T], T ModifiableNode[T, M], S ~[]M](modifiers S) string {
 	var buffer strings.Builder
 	Traverse(func(mod M) bool {
+		desc := mod.NotesDescription()
+		if desc == "" {
+			return false
+		}
 		if buffer.Len() != 0 {
 			buffer.WriteString("; ")
 		}
-		buffer.WriteString(mod.NotesDescription())
+		buffer.WriteString(desc)
 		return false
 	}, true, true, modifiers...)
 	return buffer.String()

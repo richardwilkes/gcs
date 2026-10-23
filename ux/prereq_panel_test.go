@@ -929,14 +929,45 @@ func TestPrereqPanelChipOrder(t *testing.T) {
 	}
 	screen.Do(func() { p.toggle("r.1.0") })
 	screen.Do(func() {
-		c.Equal([]string{"level" + keyChip, "add specialization", "add optspecialization", "add points", "add tag"},
-			order())
+		c.Equal([]string{
+			"level" + keyChip, "add specialization", "add optspecialization", "add titlenote", "add points",
+			"add tag",
+		}, order())
 		uxtest.PanelsOfType[*unison.Button](p.FindRefKey("r.1.0:add specialization"))[0].ClickCallback()
 	})
 	screen.Do(func() {
 		c.Equal([]string{
-			"specialization" + keyChip, "level" + keyChip, "add optspecialization", "add points", "add tag",
+			"specialization" + keyChip, "level" + keyChip, "add optspecialization", "add titlenote", "add points",
+			"add tag",
 		}, order())
+	})
+}
+
+// TestPrereqPanelTitleNoteChip checks the wording of the title note criterion's comparisons, and that its empty text
+// hints at matching none.
+func TestPrereqPanelTitleNoteChip(t *testing.T) {
+	c := check.New(t)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
+	root := newTestPrereqTree()
+	p, _ := showPrereqPanel(t, screen, &root, false)
+	screen.Do(func() { p.toggle("r.1.0") })
+	screen.Do(func() {
+		uxtest.PanelsOfType[*unison.Button](p.FindRefKey("r.1.0:add titlenote"))[0].ClickCallback()
+	})
+	screen.Do(func() {
+		popup, ok := p.FindRefKey("r.1.0:titlenotecmp").Self.(*unison.PopupMenu[criteria.StringComparison])
+		c.True(ok, "the chip has a comparison popup")
+		if ok {
+			first, _ := popup.ItemAt(0)
+			c.Equal("and at least one title note is", popup.ItemRendererCallback(first))
+			last, _ := popup.ItemAt(popup.ItemCount() - 1)
+			c.Equal("and all title notes do not end with", popup.ItemRendererCallback(last))
+		}
+		field, isField := p.FindRefKey("r.1.0:titlenote").Self.(*StringField)
+		c.True(isField, "the chip has a text field")
+		if isField {
+			c.Equal("none", field.Watermark)
+		}
 	})
 }
 
@@ -1503,12 +1534,15 @@ func TestPrereqPanelNewCriteriaChips(t *testing.T) {
 		{"r.0", "modname", textOn(&trait.ModifierNameCriteria)},
 		{"r.0", "modnotes", textOn(&trait.ModifierNotesCriteria)},
 		{"r.0", "modtag", textOn(&trait.ModifierTagsCriteria)},
+		{"r.0", "titlenote", textOn(&trait.TitleNoteCriteria)},
 		{"r.1", "points", numberOn(&skill.PointsCriteria)},
 		{"r.1", "tag", textOn(&skill.TagsCriteria)},
+		{"r.1", "titlenote", textOn(&skill.TitleNoteCriteria)},
 		{"r.2", "level", numberOn(&spell.LevelCriteria)},
 		{"r.3", "modname", textOn(&equipped.ModifierNameCriteria)},
 		{"r.3", "modnotes", textOn(&equipped.ModifierNotesCriteria)},
 		{"r.3", "modtag", textOn(&equipped.ModifierTagsCriteria)},
+		{"r.3", "titlenote", textOn(&equipped.TitleNoteCriteria)},
 	} {
 		c.False(one.on(), "precondition: %s %s starts out off", one.path, one.key)
 		screen.Do(func() {
@@ -1614,8 +1648,8 @@ func TestPrereqPanelEmptyNestedGroupMode(t *testing.T) {
 	})
 }
 
-// TestPrereqPanelTypeChangeKeepsWhatItCan checks that a change of type keeps the name, tags, modifier criteria and
-// negation that both types have, even when one stores its negation the other way around.
+// TestPrereqPanelTypeChangeKeepsWhatItCan checks that a change of type keeps the name, tags, title note, modifier
+// criteria and negation that both types have, even when one stores its negation the other way around.
 func TestPrereqPanelTypeChangeKeepsWhatItCan(t *testing.T) {
 	c := check.New(t)
 	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
@@ -1623,6 +1657,7 @@ func TestPrereqPanelTypeChangeKeepsWhatItCan(t *testing.T) {
 	equipped.Not = true
 	equipped.NameCriteria.Qualifier = "Shield"
 	equipped.TagsCriteria = criteria.Text{Compare: criteria.IsText, Qualifier: "Armor"}
+	equipped.TitleNoteCriteria = criteria.Text{Compare: criteria.IsText, Qualifier: "Large"}
 	equipped.ModifierNameCriteria = criteria.Text{Compare: criteria.IsText, Qualifier: "Fine"}
 	root := gurps.NewPrereqList()
 	root.Prereqs = gurps.Prereqs{equipped}
@@ -1647,6 +1682,7 @@ func TestPrereqPanelTypeChangeKeepsWhatItCan(t *testing.T) {
 			c.False(trait.Has, "the negation is kept, though a trait stores it the other way around")
 			c.Equal("Shield", trait.NameCriteria.Qualifier, "the name is kept")
 			c.Equal("Armor", trait.TagsCriteria.Qualifier, "the tags are kept")
+			c.Equal("Large", trait.TitleNoteCriteria.Qualifier, "the title note is kept")
 			c.Equal("Fine", trait.ModifierNameCriteria.Qualifier, "the modifier criteria are kept")
 		}
 	})
@@ -1657,6 +1693,7 @@ func TestPrereqPanelTypeChangeKeepsWhatItCan(t *testing.T) {
 		if ok {
 			c.False(skill.Has, "the negation is kept")
 			c.Equal("Armor", skill.TagsCriteria.Qualifier, "the tags are kept")
+			c.Equal("Large", skill.TitleNoteCriteria.Qualifier, "the title note is kept")
 		}
 	})
 	selectType(prereq.Spell)

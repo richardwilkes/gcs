@@ -183,6 +183,21 @@ func addNameLabelAndField[F fieldAccess[string]](parent *unison.Panel, fieldData
 	addLabelAndStringField(parent, i18n.Text("Name"), "", fieldData)
 }
 
+// addModifierShowInTitleCheckBox adds the checkbox that shows a modifier in its owner's title notes.
+func addModifierShowInTitleCheckBox[F fieldAccess[bool]](parent *unison.Panel, fieldData F) {
+	parent.AddChild(unison.NewPanel()) // Skip the label column
+	box := addCheckBox(parent, i18n.Text("Show in title notes"), fieldData)
+	box.Tooltip = newWrappedTooltip(i18n.Text(
+		"Show the modifier in its owner's title notes instead of its owner's notes. A modifier with notes still shows them in its owner's notes, unless \"Show notes in owner's notes\" is cleared.",
+	))
+}
+
+// addModifierShortNameField adds a modifier's short name field.
+func addModifierShortNameField(parent *unison.Panel, shortName *string) {
+	addLabelAndStringField(parent, i18n.Text("Short Name"),
+		i18n.Text("Used in place of the name when the modifier is listed in its owner's notes or title notes."), shortName)
+}
+
 // addModifierNotesCheckBoxes adds the checkboxes that say where a modifier's notes are shown: in its owner's notes and
 // in the usage notes of its owner's weapons.
 func addModifierNotesCheckBoxes[F fieldAccess[bool]](parent *unison.Panel, hideNotesData, showOnWeaponData F) {

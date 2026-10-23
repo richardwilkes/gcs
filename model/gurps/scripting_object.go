@@ -222,9 +222,9 @@ func scriptNameTagFinder(r *goja.Runtime, find func(name, tag string) goja.Value
 }
 
 // addScriptActiveModifiers installs the findActiveModifier and activeModifiers properties on the wrapper of a node
-// that carries modifiers: findActiveModifier looks an active modifier up by name and activeModifiers lists the active,
-// non-container ones. The name a script passes is trimmed, as it is for the entity's hasTrait, traitLevel and
-// skillLevel.
+// that carries modifiers: findActiveModifier looks an active modifier up by name or short name and activeModifiers
+// lists the active, non-container ones. The name a script passes is trimmed, as it is for the entity's hasTrait,
+// traitLevel and skillLevel.
 func addScriptActiveModifiers[T ModifiableNode[T, M], M ModifierNode[M, T]](
 	r *goja.Runtime,
 	m map[string]func() goja.Value,
