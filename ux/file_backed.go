@@ -173,10 +173,10 @@ func openDockableFromFile[M any, D fileLoadable](filePath string, load func(file
 }
 
 // unsavedFileName returns the file name a sheet that has never been saved goes by: its name, or the fallback when it
-// has none, with the extension.
+// has none, sanitized so that it holds no path separators, with the extension.
 func unsavedFileName(name, fallback, ext string) string {
 	if name = strings.TrimSpace(name); name == "" {
 		name = fallback
 	}
-	return name + ext
+	return xfilepath.SanitizeName(name) + ext
 }

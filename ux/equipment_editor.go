@@ -108,8 +108,7 @@ func initEquipmentItemEditor(e *editor[*gurps.Equipment, *gurps.EquipmentEditDat
 	addLabelAndDecimalField(content, nil, "", i18n.Text("Rated ST"), i18n.Text("Equipment with a rated ST use this value instead of the user's ST"), &e.editorData.RatedST, 0, fxp.Max)
 	addLabelAndDecimalField(content, nil, "", i18n.Text("Level"), i18n.Text("Level can be used with features and modifiers that have per-level effects"), &e.editorData.Level, 0, fxp.Max)
 	addTagsLabelAndField(content, &e.editorData.Tags)
-	addPageRefLabelAndField(content, &e.editorData.PageRef)
-	addPageRefHighlightLabelAndField(content, &e.editorData.PageRefHighlight)
+	addPageRefLabelsAndFields(content, &e.editorData.PageRef, &e.editorData.PageRefHighlight)
 	AdjustFieldBlank(usesField, resolvedMaxUses() <= 0)
 	d := e.editorData
 	content.AddChild(newNameablesPanel(&d.Nameables, func() map[string]int {
@@ -149,8 +148,7 @@ func initEquipmentGroupEditor(e *editor[*gurps.Equipment, *gurps.EquipmentEditDa
 	}
 	addTagsLabelAndField(content, &e.editorData.Tags)
 	addPickSeparately(content, e.target, &e.editorData.PickSeparately)
-	addPageRefLabelAndField(content, &e.editorData.PageRef)
-	addPageRefHighlightLabelAndField(content, &e.editorData.PageRefHighlight)
+	addPageRefLabelsAndFields(content, &e.editorData.PageRef, &e.editorData.PageRefHighlight)
 }
 
 // initEquipmentChoiceEditor fills in the content of the editor for a template choice container. It dissolves into the
@@ -159,8 +157,7 @@ func initEquipmentChoiceEditor(e *editor[*gurps.Equipment, *gurps.EquipmentEditD
 	addNameLabelAndField(content, &e.editorData.Name)
 	addNotesLabelAndField(content, &e.editorData.LocalNotes)
 	addChoices(e, content)
-	addPageRefLabelAndField(content, &e.editorData.PageRef)
-	addPageRefHighlightLabelAndField(content, &e.editorData.PageRefHighlight)
+	addPageRefLabelsAndFields(content, &e.editorData.PageRef, &e.editorData.PageRefHighlight)
 }
 
 // extendedValueForEditor computes the Extended Value preview for the equipment editor. The overlaid clone is used as

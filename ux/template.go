@@ -10,16 +10,13 @@
 package ux
 
 import (
-	"github.com/richardwilkes/gcs/v5/model/fonts"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/ux/svg"
-	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/toolbox/v2/uti"
 	"github.com/richardwilkes/toolbox/v2/xreflect"
 	"github.com/richardwilkes/unison"
-	"github.com/richardwilkes/unison/enums/check"
 )
 
 var (
@@ -197,7 +194,7 @@ func NewSheetFromTemplate(filePath string) {
 }
 
 func (t *Template) newSheetFromTemplate(_ any) {
-	e := gurps.NewEntity()
+	e := t.newCharacter()
 	sheet := NewSheet(e.Profile.Name+gurps.SheetExt, e)
 	DisplayNewDockable(sheet)
 	op := promptOperation{
@@ -213,6 +210,17 @@ func (t *Template) newSheetFromTemplate(_ any) {
 	sheet.undoMgr.Clear()
 	sheet.hash = 0
 	sheet.SetBackingFilePath(e.Profile.Name + gurps.SheetExt)
+}
+
+// newCharacter returns the character a new sheet made from the template starts out as. A template aimed at an exact
+// number of points starts its character with that many, in place of the default the settings hold.
+func (t *Template) newCharacter() *gurps.Entity {
+	e := gurps.NewEntity()
+	if points, exact := t.template.TargetPoints.Settled(); exact {
+		e.PointsRecord[0].Points = points
+		e.TotalPoints = points
+	}
+	return e
 }
 
 // ApplyTemplate loads the specified template file and applies it to a sheet.
@@ -320,6 +328,14 @@ func (t *Template) Entity() *gurps.Entity {
 	return nil
 }
 
+// BackingFilePath implements FileBackedDockable. A template that has never been saved goes by its name.
+func (t *Template) BackingFilePath() string {
+	if t.needsSaveAsPrompt {
+		return unsavedFileName(t.template.Name, i18n.Text("Unnamed Template"), gurps.TemplatesExt)
+	}
+	return t.path
+}
+
 // MarkModified implements ModifiableRoot.
 func (t *Template) MarkModified(_ unison.Paneler) {
 	invalidateDisplayData()
@@ -347,6 +363,7 @@ func (t *Template) createLists() {
 		}
 	}
 	t.content.RemoveAllChildren()
+	t.content.AddChild(t.createTopBlock())
 	layout := gurps.GlobalSettings().Sheet.Layout.Filtered(gurps.IsTemplateBlockKey)
 	for _, band := range buildLayoutBands(layout.Root, t.layoutLeaf) {
 		t.content.AddChild(band)
@@ -358,38 +375,6 @@ func (t *Template) createLists() {
 			t.layoutLeaf(key)
 		}
 	}
-
-	panel := unison.NewPanel()
-	panel.SetLayout(&unison.FlexLayout{
-		Columns:  2,
-		HSpacing: unison.StdHSpacing,
-	})
-	panel.SetBorder(unison.NewEmptyBorder(geom.Insets{Top: unison.StdVSpacing}))
-	button := unison.NewButton()
-	button.Font = fonts.PageFieldPrimary
-	button.SetTitle(t.lastBody.Name)
-	button.ClickCallback = func() { ShowBodySettings(t) }
-	if t.template.BodyType == nil {
-		button.SetEnabled(false)
-	}
-	box := NewCheckBox(nil, "", "", func() check.Enum {
-		return check.FromBool(t.template.BodyType != nil)
-	}, func(state check.Enum) {
-		if state == check.On {
-			if t.lastBody == nil {
-				t.lastBody = gurps.FactoryBody()
-			}
-			t.template.BodyType = t.lastBody
-		} else {
-			t.template.BodyType = nil
-		}
-		button.SetEnabled(state == check.On)
-	})
-	box.Font = fonts.PageFieldPrimary
-	box.SetTitle(i18n.Text("Set Body Type to"))
-	panel.AddChild(box)
-	panel.AddChild(button)
-	t.content.AddChild(panel)
 
 	t.content.ApplyPreferredSize()
 }

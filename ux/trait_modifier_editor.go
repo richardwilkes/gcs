@@ -86,8 +86,7 @@ func initTraitModifierEditor(e *editor[*gurps.TraitModifier, *gurps.TraitModifie
 	content.AddChild(NewFieldLeadingLabel(i18n.Text("Total"), false))
 	content.AddChild(total)
 	addTagsLabelAndField(content, &e.editorData.Tags)
-	addPageRefLabelAndField(content, &e.editorData.PageRef)
-	addPageRefHighlightLabelAndField(content, &e.editorData.PageRefHighlight)
+	addPageRefLabelsAndFields(content, &e.editorData.PageRef, &e.editorData.PageRefHighlight)
 	content.AddChild(newNameablesPanel(&e.editorData.Nameables, func() map[string]int {
 		return nameableUses([]string{e.editorData.Name, e.editorData.ShortName, e.editorData.LocalNotes}, nil, e.editorData.Features, nil)
 	}, nil, nil))
