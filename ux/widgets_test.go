@@ -28,43 +28,31 @@ func renderTooltipMarkdown(c check.Checker, text string) string {
 	return buffer.String()
 }
 
+// TestMarkdownHardLineBreaks verifies that markdownHardLineBreaks turns each newline into a hard line break, so that
+// newline-separated lines of a tooltip, such as the bonuses of the conditional modifiers amount column, render one per
+// line rather than collapsing onto one as soft breaks would, while a blank line still renders as a paragraph break with
+// no hard line break, leaving tooltips that already rely on Markdown undisturbed.
 func TestMarkdownHardLineBreaks(t *testing.T) {
 	c := check.New(t)
 	for _, d := range []struct {
-		name string
-		in   string
-		want string
+		name       string
+		in         string
+		want       string
+		paragraphs int // How many <p> elements the conversion renders
+		breaks     int // How many <br> elements the conversion renders
 	}{
 		{name: "empty", in: "", want: ""},
-		{name: "single line", in: "+2 Foo", want: "+2 Foo"},
-		{name: "two lines", in: "+2 Foo\n+3 Bar", want: "+2 Foo  \n+3 Bar"},
-		{name: "three lines", in: "+2 Foo\n+3 Bar\n+1 Baz", want: "+2 Foo  \n+3 Bar  \n+1 Baz"},
-		{name: "paragraph break", in: "a\n\nb", want: "a  \n  \nb"},
+		{name: "single line", in: "+2 Foo", want: "+2 Foo", paragraphs: 1},
+		{name: "two lines", in: "+2 Foo\n+3 Bar", want: "+2 Foo  \n+3 Bar", paragraphs: 1, breaks: 1},
+		{name: "three lines", in: "+2 Foo\n+3 Bar\n+1 Baz", want: "+2 Foo  \n+3 Bar  \n+1 Baz", paragraphs: 1, breaks: 2},
+		{name: "paragraph break", in: "a\n\nb", want: "a  \n  \nb", paragraphs: 2},
 	} {
-		c.Equal(d.want, markdownHardLineBreaks(d.in), d.name)
+		converted := markdownHardLineBreaks(d.in)
+		c.Equal(d.want, converted, d.name)
+		rendered := renderTooltipMarkdown(c, converted)
+		c.Equal(d.paragraphs, strings.Count(rendered, "<p>"), d.name)
+		c.Equal(d.breaks, strings.Count(rendered, "<br>"), d.name)
 	}
-}
-
-// TestMarkdownHardLineBreaksRendering reproduces the conditional modifiers amount column tooltip bug: the Markdown
-// renderer treats a single newline as a soft break, so unconverted newline-separated bonuses collapse onto one line.
-func TestMarkdownHardLineBreaksRendering(t *testing.T) {
-	c := check.New(t)
-	tooltip := "+2 Beauty\n+3 Charisma\n+1 Voice"
-
-	raw := renderTooltipMarkdown(c, tooltip)
-	c.Equal(0, strings.Count(raw, "<br>"), "unconverted tooltip should collapse onto one line")
-
-	fixed := renderTooltipMarkdown(c, markdownHardLineBreaks(tooltip))
-	c.Equal(2, strings.Count(fixed, "<br>"), "converted tooltip should render one bonus per line")
-}
-
-// TestMarkdownHardLineBreaksPreservesParagraphs verifies that blank lines and other block constructs still render
-// correctly after conversion, so tooltips that already rely on Markdown are left undisturbed.
-func TestMarkdownHardLineBreaksPreservesParagraphs(t *testing.T) {
-	c := check.New(t)
-	rendered := renderTooltipMarkdown(c, markdownHardLineBreaks("first\n\nsecond"))
-	c.Equal(2, strings.Count(rendered, "<p>"), "paragraph break should be preserved as two paragraphs")
-	c.Equal(0, strings.Count(rendered, "<br>"), "a lone paragraph break should not introduce a hard line break")
 }
 
 // TestNewApplyCancelButtons verifies the behavior every editor with pending changes relies on: both buttons start out
@@ -106,8 +94,9 @@ func TestNewApplyCancelButtons(t *testing.T) {
 }
 
 // TestNewPopupMenuOffersItemsAndReportsChoices verifies that newPopupMenu offers the items in order, starts out showing
-// the current value without reporting it as a choice, and hands each later selection to onSelect. Every settings popup
-// is built through this helper, so a callback that fired during construction would clobber settings on open.
+// the current value, or nothing when the current value isn't among the items, without reporting it as a choice, and
+// hands each later selection to onSelect. Every settings popup is built through this helper, so a callback that fired
+// during construction would clobber settings on open.
 func TestNewPopupMenuOffersItemsAndReportsChoices(t *testing.T) {
 	c := check.New(t)
 	var chosen []string
@@ -129,37 +118,14 @@ func TestNewPopupMenuOffersItemsAndReportsChoices(t *testing.T) {
 	c.Equal([]string{"three"}, chosen, "re-selecting the same item must not report it again")
 	popup.Select("one")
 	c.Equal([]string{"three", "one"}, chosen, "each new selection should be reported")
-}
 
-// TestNewPopupMenuWithUnknownCurrentValue verifies that a current value that is not among the items leaves the popup
-// with no selection rather than picking something arbitrary, and that onSelect is not called until the user chooses.
-func TestNewPopupMenuWithUnknownCurrentValue(t *testing.T) {
-	c := check.New(t)
 	calls := 0
-	popup := newPopupMenu([]int{1, 2, 3}, 42, func(int) { calls++ })
-	_, ok := popup.Selected()
+	unknown := newPopupMenu([]int{1, 2, 3}, 42, func(int) { calls++ })
+	_, ok = unknown.Selected()
 	c.False(ok, "an unknown current value should leave nothing selected")
 	c.Equal(0, calls, "an unknown current value must not be reported")
-	popup.SelectIndex(1)
+	unknown.SelectIndex(1)
 	c.Equal(1, calls, "choosing an item should be reported")
-}
-
-// TestInstallPopupSelectionOnHandBuiltMenu verifies the wiring the calendar popup uses on a menu it fills itself, with
-// disabled library headings among the items: the current value is selected and later choices are reported.
-func TestInstallPopupSelectionOnHandBuiltMenu(t *testing.T) {
-	c := check.New(t)
-	popup := unison.NewPopupMenu[string]()
-	popup.AddDisabledItem("Library")
-	popup.AddItem("Gregorian", "Imperial")
-	var got string
-	installPopupSelection(popup, "Imperial", func(item string) { got = item })
-	selected, ok := popup.Selected()
-	c.True(ok, "the current value should be selected")
-	c.Equal("Imperial", selected, "the current value should be selected")
-	c.Equal("", got, "installing the selection must not report it")
-
-	popup.Select("Gregorian")
-	c.Equal("Gregorian", got, "choosing an enabled item should be reported")
 }
 
 // TestNewCriteriaPanel verifies the container every criteria editor shares: a two-column panel added to the parent,

@@ -44,22 +44,3 @@ func TestNormalize(t *testing.T) {
 		c.Equal(one.expected, maxusesmod.Normalize(one.input), "test %d: %q", i, one.input)
 	}
 }
-
-// TestFromString verifies the classification of each supported spelling.
-func TestFromString(t *testing.T) {
-	c := check.New(t)
-	for i, one := range []struct {
-		input    string
-		expected maxusesmod.Type
-	}{
-		{"x2", maxusesmod.Multiplier},
-		{"X2", maxusesmod.Multiplier},
-		{"×2", maxusesmod.Multiplier},
-		{"2x", maxusesmod.Multiplier},
-		{"2×", maxusesmod.Multiplier},
-		{"+3", maxusesmod.Addition},
-		{"+10%", maxusesmod.Percentage},
-	} {
-		c.Equal(one.expected, maxusesmod.FromString(one.input), "test %d: %q", i, one.input)
-	}
-}

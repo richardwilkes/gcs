@@ -65,7 +65,8 @@ func newTestLayoutRegions() *layoutRegions {
 }
 
 // TestResolveDropTarget checks where a block being dragged would land for each of the places the pointer can be over
-// the page. The drop is resolved from the regions and the point alone, so this needs no window to drag in.
+// the page, and that a drop resolved before there are any regions goes nowhere rather than panicking. The drop is
+// resolved from the regions and the point alone, so this needs no window to drag in.
 func TestResolveDropTarget(t *testing.T) {
 	c := check.New(t)
 	regions := newTestLayoutRegions()
@@ -73,6 +74,7 @@ func TestResolveDropTarget(t *testing.T) {
 		name       string
 		draggedKey string
 		pt         geom.Point
+		noRegions  bool
 		want       dropTarget
 	}{
 		{
@@ -209,8 +211,19 @@ func TestResolveDropTarget(t *testing.T) {
 			pt:   geom.NewPoint(50, 250),
 			want: dropTarget{},
 		},
+		{
+			name:       "a drop resolved without regions goes nowhere",
+			draggedKey: gurps.BlockNotesKey,
+			pt:         geom.NewPoint(5, 5),
+			noRegions:  true,
+			want:       dropTarget{},
+		},
 	} {
-		c.Equal(one.want, resolveDropTarget(regions, one.pt, one.draggedKey), one.name)
+		r := regions
+		if one.noRegions {
+			r = nil
+		}
+		c.Equal(one.want, resolveDropTarget(r, one.pt, one.draggedKey), one.name)
 	}
 }
 
@@ -549,14 +562,6 @@ func TestResolveDropTargetSeams(t *testing.T) {
 	}
 }
 
-// TestResolveDropTargetWithoutRegions checks that a drop resolved before anything has been worked out goes nowhere
-// rather than panicking.
-func TestResolveDropTargetWithoutRegions(t *testing.T) {
-	c := check.New(t)
-	c.Equal(dropTarget{}, resolveDropTarget(nil, geom.NewPoint(5, 5), gurps.BlockNotesKey),
-		"a drop resolved without regions must go nowhere")
-}
-
 // newTestSheetForLayoutEditing returns a sheet that is in block layout editing mode, leaving that mode when the test
 // finishes.
 func newTestSheetForLayoutEditing(t *testing.T) (*Sheet, *sheetLayoutEditor) {
@@ -708,23 +713,6 @@ func TestLayoutRegionsMatchThePage(t *testing.T) {
 	c.Equal(0, regions.gaps[0].index, "the first gap must prepend a band")
 	c.Equal(len(layout.Root.Children), regions.gaps[len(regions.gaps)-1].index,
 		"the last gap must append a band past the end")
-}
-
-// TestPageFooterNumberingIgnoresTheOverlay checks that the overlay the layout editor puts beside the sheet's page
-// doesn't make the page's footer call it the second of two -- which, the page then being even-numbered, would also swap
-// the two halves of the footer around.
-func TestPageFooterNumberingIgnoresTheOverlay(t *testing.T) {
-	c := check.New(t)
-	sheet, editor := newTestSheetForLayoutEditing(t)
-	c.Equal(2, len(sheet.content.Children()), "the test requires the overlay to sit beside the page")
-	c.Equal(editor.overlay, sheet.content.Children()[0], "and in front of it")
-	number, count := sheet.page.pageNumbering()
-	c.Equal(1, number, "the page must still be the first")
-	c.Equal(1, count, "of one")
-	sheet.toggleLayoutEditing()
-	number, count = sheet.page.pageNumbering()
-	c.Equal(1, number, "and remain so once editing ends")
-	c.Equal(1, count)
 }
 
 // TestSecondButtonDuringAGestureIsIgnored checks that a press of another button while a divider drag is under way

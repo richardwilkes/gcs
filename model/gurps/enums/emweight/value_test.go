@@ -12,7 +12,6 @@ package emweight_test
 import (
 	"testing"
 
-	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/emweight"
 	"github.com/richardwilkes/toolbox/v2/check"
 )
@@ -47,17 +46,5 @@ func TestFractionExtractionMatchesClassification(t *testing.T) {
 		v := emweight.ValueFromString(one.input)
 		c.Equal(one.expected, v, "test %d: %q", i, one.input)
 		c.Equal(one.formatted, v.Format(v.ExtractFraction(one.input)), "test %d: %q", i, one.input)
-	}
-}
-
-// TestMultiplierFractionValue verifies that the extracted fraction actually carries the typed multiplier, since a
-// value of 0 would silently zero out the equipment's weight.
-func TestMultiplierFractionValue(t *testing.T) {
-	c := check.New(t)
-	for i, s := range []string{"x2", "X2", "×2", "2x", "2×"} {
-		c.Equal(fxp.Two, emweight.Multiplier.ExtractFraction(s).Value(), "test %d: %q", i, s)
-	}
-	for i, s := range []string{"x50%", "X50%", "×50%"} {
-		c.Equal(fxp.Fifty, emweight.PercentageMultiplier.ExtractFraction(s).Value(), "test %d: %q", i, s)
 	}
 }

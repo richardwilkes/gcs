@@ -178,63 +178,38 @@ func TestTraitDescriptionSelfControlSuffix(t *testing.T) {
 	c.Equal("Berserk (No CR)", data.Primary, `"Never resist" is shown as "No CR"`)
 }
 
-// TestAlternativeAbilitiesCost verifies that the most expensive child of an alternative abilities container is billed
-// at full cost and the rest at 20%, even when every child costs negative points.
+// TestAlternativeAbilitiesCost verifies that the AlternativeSlots most expensive children of an alternative abilities
+// container (one when unset) are billed at full cost and the rest at 20%, even when every child costs negative points.
 func TestAlternativeAbilitiesCost(t *testing.T) {
 	c := check.New(t)
-
-	newAltContainer := func(childPoints ...int) *Trait {
+	for _, tc := range []struct {
+		msg         string
+		slots       int
+		childPoints []int
+		expected    int
+	}{
+		// -5 is the most expensive, so it is billed in full and the others at 20%: -5 + -4 + -2.
+		{"all-negative children still bill the most expensive one at full cost", 0, []int{-20, -10, -5}, -11},
+		// A slot count of 0 means "unset" and behaves like a single slot. 20 is the most expensive, so it is billed in
+		// full and the other at 20%: 20 + 2.
+		{"positive children bill the most expensive one at full cost", 0, []int{20, 10}, 22},
+		// A mix behaves the same way: 10 + -4 + 0.
+		{"mixed children bill the most expensive one at full cost", 0, []int{10, -20, 0}, 6},
+		// With 2 slots, the two most expensive children (20 and 10) are billed in full, the rest at 20%: 20 + 10 + 1.
+		{"two slots bill the two most expensive children at full cost", 2, []int{20, 10, 5}, 31},
+		// A slot count larger than the number of children bills every child in full: 20 + 10 + 5.
+		{"a slot count exceeding the child count bills every child at full cost", 5, []int{20, 10, 5}, 35},
+	} {
 		parent := NewTrait(nil, nil, true)
 		parent.ContainerType = container.AlternativeAbilities
-		for _, points := range childPoints {
+		parent.AlternativeSlots = tc.slots
+		for _, points := range tc.childPoints {
 			child := NewTrait(nil, parent, false)
 			child.BasePoints = fxp.FromInteger(points)
 			parent.Children = append(parent.Children, child)
 		}
-		return parent
+		c.Equal(fxp.FromInteger(tc.expected), parent.AdjustedPoints(nil), tc.msg)
 	}
-
-	// -5 is the most expensive, so it is billed in full and the others at 20%: -5 + -4 + -2.
-	c.Equal(fxp.FromInteger(-11), newAltContainer(-20, -10, -5).AdjustedPoints(nil),
-		"all-negative children still bill the most expensive one at full cost")
-
-	// 20 is the most expensive, so it is billed in full and the other at 20%: 20 + 2.
-	c.Equal(fxp.FromInteger(22), newAltContainer(20, 10).AdjustedPoints(nil),
-		"positive children bill the most expensive one at full cost")
-
-	// A mix behaves the same way: 10 + -4 + 0.
-	c.Equal(fxp.FromInteger(6), newAltContainer(10, -20, 0).AdjustedPoints(nil),
-		"mixed children bill the most expensive one at full cost")
-}
-
-// TestAlternativeAbilitiesMultipleSlots verifies that setting AlternativeSlots > 1 bills that many of the most
-// expensive children at full cost and the rest at 20%.
-func TestAlternativeAbilitiesMultipleSlots(t *testing.T) {
-	c := check.New(t)
-
-	newAltContainer := func(slots int, childPoints ...int) *Trait {
-		parent := NewTrait(nil, nil, true)
-		parent.ContainerType = container.AlternativeAbilities
-		parent.AlternativeSlots = slots
-		for _, points := range childPoints {
-			child := NewTrait(nil, parent, false)
-			child.BasePoints = fxp.FromInteger(points)
-			parent.Children = append(parent.Children, child)
-		}
-		return parent
-	}
-
-	// A stored value of 0 means "unset" and behaves like a single slot: 20 + 2.
-	c.Equal(fxp.FromInteger(22), newAltContainer(0, 20, 10).AdjustedPoints(nil),
-		"an unset slot count resolves to a single slot")
-
-	// With 2 slots, the two most expensive children (20 and 10) are billed in full and the rest at 20%: 20 + 10 + 1.
-	c.Equal(fxp.FromInteger(31), newAltContainer(2, 20, 10, 5).AdjustedPoints(nil),
-		"two slots bill the two most expensive children at full cost")
-
-	// A slot count larger than the number of children bills every child in full: 20 + 10 + 5.
-	c.Equal(fxp.FromInteger(35), newAltContainer(5, 20, 10, 5).AdjustedPoints(nil),
-		"a slot count exceeding the child count bills every child at full cost")
 }
 
 // TestInheritedModifiersAreNotRepointed verifies that computing a child's points costs an inherited modifier against

@@ -52,100 +52,68 @@ func addRitualMagic(e *Entity, specialization string, points fxp.Int, defaultMod
 }
 
 // TestSkillMatchingEmptySpecialization verifies that an exact ("is") match against an empty specialization matches only
-// the unspecialized skill, not specialized skills that merely have an empty *optional* specialization. This is the bug
-// that caused a specialized Ritual Magic to default to a sibling specialization instead of the unspecialized one.
+// the truly unspecialized skill, not one that has only a required or only an optional specialization, or both, and
+// that an exact match against a required or an optional specialization matches the skill carrying it. The first is
+// the bug that caused a specialized Ritual Magic to default to a sibling specialization instead of the unspecialized
+// one.
 func TestSkillMatchingEmptySpecialization(t *testing.T) {
 	c := check.New(t)
 	e := NewEntity()
 	addRitualMagic(e, "", fxp.Eight, "")
 	addRitualMagic(e, "Fire", fxp.Four, "")
 	addRitualMagic(e, "Water", fxp.Four, "")
-	e.Recalculate()
-
-	nameIs := textCriteria(criteria.IsText, "Ritual Magic")
-
-	matches := e.SkillMatching(nameIs, textCriteria(criteria.IsText, ""), nil, false, nil)
-	c.Equal(1, len(matches), "an empty 'is' specialization must match only the unspecialized skill")
-	if len(matches) == 1 {
-		c.Equal("", matches[0].SpecializationWithReplacements(), "the single match must be the unspecialized skill")
-	}
-
-	matches = e.SkillMatching(nameIs, textCriteria(criteria.IsText, "Fire"), nil, false, nil)
-	c.Equal(1, len(matches), "an 'is Fire' specialization must match only the Fire skill")
-	if len(matches) == 1 {
-		c.Equal("Fire", matches[0].SpecializationWithReplacements(), "the single match must be the Fire skill")
-	}
-
-	matches = e.SkillMatching(nameIs, criteria.Text{}, nil, false, nil)
-	c.Equal(3, len(matches), "an empty (any) specialization criteria must match all three skills")
-}
-
-// TestSkillMatchingOptionalSpecialization verifies that a skill with no required specialization but a non-empty
-// optional specialization is matched by that optional specialization, and is kept distinct from a fully unspecialized
-// sibling. An "is empty" criteria must match only the truly unspecialized skill.
-func TestSkillMatchingOptionalSpecialization(t *testing.T) {
-	c := check.New(t)
-	e := NewEntity()
-	addRitualMagic(e, "", fxp.Eight, "") // truly unspecialized
 	earth := addRitualMagic(e, "Earth", fxp.Four, "")
 	earth.Specialization = ""
 	earth.OptionalSpecialization = "Earth"
-	e.Recalculate()
-
-	nameIs := textCriteria(criteria.IsText, "Ritual Magic")
-
-	matches := e.SkillMatching(nameIs, textCriteria(criteria.IsText, ""), nil, false, nil)
-	c.Equal(1, len(matches), "an empty specialization must not match a skill carrying an optional specialization")
-	if len(matches) == 1 {
-		c.Equal("", matches[0].OptionalSpecializationWithReplacements(),
-			"the match must be the truly unspecialized skill")
-	}
-
-	matches = e.SkillMatching(nameIs, textCriteria(criteria.IsText, "Earth"), nil, false, nil)
-	c.Equal(1, len(matches), "an 'is Earth' specialization must match the optionally-specialized skill")
-	if len(matches) == 1 {
-		c.Equal("Earth", matches[0].OptionalSpecializationWithReplacements(), "the match must be the optional-Earth skill")
-	}
-}
-
-// TestSkillMatchingBothSpecializations verifies a skill that carries both a required and an optional specialization is
-// matched by either one, and is not matched by an empty specialization.
-func TestSkillMatchingBothSpecializations(t *testing.T) {
-	c := check.New(t)
-	e := NewEntity()
-	addRitualMagic(e, "", fxp.Eight, "") // truly unspecialized
 	light := addTestSkill(e, "Ritual Magic", "Light", "", fxp.Four)
 	light.OptionalSpecialization = "Dark"
 	e.Recalculate()
 
-	name := textCriteria(criteria.IsText, "Ritual Magic")
-	c.Equal(1, len(e.SkillMatching(name, textCriteria(criteria.IsText, "Light"), nil, false, nil)),
-		"the required specialization should match")
-	c.Equal(1, len(e.SkillMatching(name, textCriteria(criteria.IsText, "Dark"), nil, false, nil)),
-		"the optional specialization should match")
-	matches := e.SkillMatching(name, textCriteria(criteria.IsText, ""), nil, false, nil)
-	c.Equal(1, len(matches), "an empty specialization should match only the truly unspecialized skill")
-	if len(matches) == 1 {
-		c.Equal("", matches[0].SpecializationWithReplacements(), "the empty match must be the unspecialized skill")
-		c.Equal("", matches[0].OptionalSpecializationWithReplacements(),
-			"the empty match must be the unspecialized skill")
+	nameIs := textCriteria(criteria.IsText, "Ritual Magic")
+	for _, one := range []struct {
+		specialization string
+		wantRequired   string
+		wantOptional   string
+		msg            string
+	}{
+		{"", "", "", "an empty 'is' specialization must match only the truly unspecialized skill"},
+		{"Fire", "Fire", "", "an 'is Fire' specialization must match only the Fire skill"},
+		{"Earth", "", "Earth", "an 'is Earth' specialization must match the optionally-specialized skill"},
+		{"Light", "Light", "Dark", "the required specialization should match"},
+		{"Dark", "Light", "Dark", "the optional specialization should match"},
+	} {
+		matches := e.SkillMatching(nameIs, textCriteria(criteria.IsText, one.specialization), nil, false, nil)
+		c.Equal(1, len(matches), one.msg)
+		if len(matches) == 1 {
+			c.Equal(one.wantRequired, matches[0].SpecializationWithReplacements(), one.msg)
+			c.Equal(one.wantOptional, matches[0].OptionalSpecializationWithReplacements(), one.msg)
+		}
 	}
+
+	c.Equal(5, len(e.SkillMatching(nameIs, criteria.Text{}, nil, false, nil)),
+		"an empty (any) specialization criteria must match every skill")
 }
 
-// TestHasDefaultToOptionalSpecialization verifies the swap-relationship test is consistent with skill matching for a
-// skill that has an optional specialization: a default to the unspecialized skill ("is empty") must not be reported as
-// a default to the optionally-specialized sibling.
+// TestHasDefaultToOptionalSpecialization verifies the default-relationship test used by the swap feature: a skill never
+// has a default to itself, and a specialized skill that defaults to the unspecialized skill ("is empty") does not
+// register a default to a sibling specialization, whether a required one or, consistent with skill matching, an
+// optional one.
 func TestHasDefaultToOptionalSpecialization(t *testing.T) {
 	c := check.New(t)
 	e := NewEntity()
 	base := addRitualMagic(e, "", fxp.Eight, "")
 	fire := addRitualMagic(e, "Fire", fxp.Four, "base") // defaults to the unspecialized skill
+	water := addRitualMagic(e, "Water", fxp.Four, "base")
 	earth := addRitualMagic(e, "Earth", fxp.Four, "")
 	earth.Specialization = ""
 	earth.OptionalSpecialization = "Earth"
 	e.Recalculate()
 
 	c.True(fire.HasDefaultTo(base), "Fire's empty-specialization default targets the unspecialized skill")
+	c.True(water.HasDefaultTo(base), "Water defaults to the unspecialized Ritual Magic")
+	c.False(water.HasDefaultTo(water), "a skill must never default to itself")
+	c.False(fire.HasDefaultTo(water), "a specialized skill must not register a default to a sibling specialization")
+	c.False(water.HasDefaultTo(fire), "a specialized skill must not register a default to a sibling specialization")
 	c.False(fire.HasDefaultTo(earth),
 		"an empty-specialization default must not be treated as a default to an optionally-specialized sibling")
 }
@@ -182,60 +150,35 @@ func TestSwapNotStuckWithOptionalSpecializationSibling(t *testing.T) {
 	c.True(visitedBase, "Earth must be able to default to the unspecialized base skill")
 }
 
-// TestSpecializedDefaultsToUnspecialized verifies that specialized skills which default to the unspecialized skill
-// resolve to it, regardless of the relative levels of the sibling specializations.
-func TestSpecializedDefaultsToUnspecialized(t *testing.T) {
-	c := check.New(t)
-	e := NewEntity()
-	addRitualMagic(e, "", fxp.Eight, "")                  // unspecialized base
-	fire := addRitualMagic(e, "Fire", fxp.Twelve, "base") // higher level than the base
-	water := addRitualMagic(e, "Water", fxp.One, "base")
-	e.Recalculate()
-
-	c.NotNil(fire.DefaultedFrom, "Fire should have a resolved default")
-	c.Equal("", fire.DefaultedFrom.SpecializationWithReplacements(nil), "Fire must default to the unspecialized skill")
-	c.NotNil(water.DefaultedFrom, "Water should have a resolved default")
-	c.Equal("", water.DefaultedFrom.SpecializationWithReplacements(nil),
-		"Water must default to the unspecialized skill, not the higher-level Fire specialization")
-}
-
-// TestHasDefaultToExactMatch verifies the default-relationship test used by the swap feature: a skill never has a
-// default to itself, and a specialized skill that defaults to the unspecialized skill does not register a default to a
-// sibling specialization.
-func TestHasDefaultToExactMatch(t *testing.T) {
-	c := check.New(t)
-	e := NewEntity()
-	base := addRitualMagic(e, "", fxp.Eight, "")
-	fire := addRitualMagic(e, "Fire", fxp.Four, "base")
-	water := addRitualMagic(e, "Water", fxp.Four, "base")
-	e.Recalculate()
-
-	c.True(fire.HasDefaultTo(base), "Fire defaults to the unspecialized Ritual Magic")
-	c.True(water.HasDefaultTo(base), "Water defaults to the unspecialized Ritual Magic")
-	c.False(water.HasDefaultTo(water), "a skill must never default to itself")
-	c.False(fire.HasDefaultTo(water), "a specialized skill must not register a default to a sibling specialization")
-	c.False(water.HasDefaultTo(fire), "a specialized skill must not register a default to a sibling specialization")
-}
-
-// TestDefaultSkillDoesNotFlipToHigherSpecialized verifies that the skill resolved from a recorded default (used for
-// display and swapping) stays the unspecialized skill even once a sibling specialization's level climbs above it.
+// TestDefaultSkillDoesNotFlipToHigherSpecialized verifies that specialized skills defaulting to the unspecialized skill
+// record that default, and resolve it (for display and swapping) to the unspecialized skill, whichever sibling
+// specialization's level climbs above it.
 func TestDefaultSkillDoesNotFlipToHigherSpecialized(t *testing.T) {
 	c := check.New(t)
-	e := NewEntity()
-	base := addRitualMagic(e, "", fxp.Eight, "")
-	fire := addRitualMagic(e, "Fire", fxp.One, "base")
-	water := addRitualMagic(e, "Water", fxp.FromInteger(20), "base") // level climbs above the base
-	e.Recalculate()
+	for _, one := range []struct {
+		name        string
+		firePoints  fxp.Int
+		waterPoints fxp.Int
+	}{
+		{"Water above the base", fxp.One, fxp.FromInteger(20)},
+		{"Fire above the base", fxp.Twelve, fxp.One},
+	} {
+		e := NewEntity()
+		base := addRitualMagic(e, "", fxp.Eight, "")
+		fire := addRitualMagic(e, "Fire", one.firePoints, "base")
+		water := addRitualMagic(e, "Water", one.waterPoints, "base")
+		e.Recalculate()
 
-	c.True(water.LevelData.Level > base.LevelData.Level, "the test requires Water's level to exceed the base skill's")
-
-	fireDefault := fire.DefaultSkill()
-	c.NotNil(fireDefault, "Fire should resolve a default skill")
-	c.True(fireDefault == base, "Fire must resolve to the unspecialized base skill")
-
-	waterDefault := water.DefaultSkill()
-	c.NotNil(waterDefault, "Water should resolve a default skill")
-	c.True(waterDefault == base, "Water must resolve to the unspecialized base skill, not the higher-level Water itself")
+		c.True(max(fire.LevelData.Level, water.LevelData.Level) > base.LevelData.Level,
+			"%s: the test requires a sibling's level to exceed the base skill's", one.name)
+		for _, sk := range []*Skill{fire, water} {
+			spec := sk.SpecializationWithReplacements()
+			c.NotNil(sk.DefaultedFrom, "%s: %s should have a resolved default", one.name, spec)
+			c.Equal("", sk.DefaultedFrom.SpecializationWithReplacements(nil),
+				"%s: %s must default to the unspecialized skill, not a higher-level sibling", one.name, spec)
+			c.True(sk.DefaultSkill() == base, "%s: %s must resolve to the unspecialized base skill", one.name, spec)
+		}
+	}
 }
 
 // TestDefaultPersistsAfterCreation verifies that a skill which defaults to any sibling picks the highest-level default
@@ -327,29 +270,10 @@ func TestSyntheticOptionalSpecDefaultTracksBest(t *testing.T) {
 		"base's synthetic optional-spec default must track the best sibling (Fire), not stay locked on Earth")
 }
 
-// TestTechniqueDefaultUsesHighestLevelSkill verifies that when a skill-based default matches more than one skill (e.g.
-// several core Ritual Magic skills via an empty/wildcard specialization), the highest-level match is used rather than
-// whichever happens to be encountered first.
-func TestTechniqueDefaultUsesHighestLevelSkill(t *testing.T) {
-	c := check.New(t)
-	e := NewEntity()
-	low := addTestSkill(e, "Ritual Magic", "", "", fxp.Four)             // inserted first, lower level
-	high := addTestSkill(e, "Ritual Magic", "", "", fxp.FromInteger(20)) // higher level
-	e.Recalculate()
-	c.True(high.LevelData.Level > low.LevelData.Level, "precondition: the second skill must be higher level")
-
-	def := &SkillDefault{
-		DefaultType: SkillID,
-		Name:        criteria.Text{TextData: criteria.TextData{Compare: criteria.IsText, Qualifier: "Ritual Magic"}},
-	}
-	var limit fxp.Int
-	result := CalculateTechniqueLevel(e, nil, "Imbue", "", nil, def, difficulty.Hard, 0, false, &limit, nil)
-	c.Equal(high.LevelData.Level, result.Level, "the default must resolve to the highest-level matching skill")
-}
-
 // TestTechniqueDefaultAnySpecializationIgnoresQualifier reproduces issue #1061: a technique whose skill default was set
 // to a specific specialization ("is Demolition") and then switched to "whose specialization is anything" must resolve
-// against any matching specialization rather than staying locked on the leftover qualifier text.
+// against any matching specialization rather than staying locked on the leftover qualifier text, and of the skills it
+// matches must use the highest-level one rather than whichever is encountered first.
 func TestTechniqueDefaultAnySpecializationIgnoresQualifier(t *testing.T) {
 	c := check.New(t)
 	e := NewEntity()
@@ -379,6 +303,8 @@ func TestTechniqueDefaultAnySpecializationIgnoresQualifier(t *testing.T) {
 
 	c.True(anyResult.Level > isResult.Level, "an 'anything' specialization must resolve to the higher-level "+
 		"Underwater Demolition, not stay locked on the Demolition qualifier")
+	c.Equal(underwater.LevelData.Level+fxp.One, anyResult.Level,
+		"the default must resolve to the highest-level matching skill, plus the technique's 1 point")
 }
 
 // TestTechniqueDefaultAnySpecializationResolvesSkill exercises the full technique node path for issue #1061: the

@@ -486,47 +486,6 @@ func TestModifierTargetChoicesLabelRowsWithWhereTheySit(t *testing.T) {
 	c.Equal([]string{"Rope", "Backpack", "Pouch (in Backpack)", "Knife (in Pouch, Backpack)"}, labels)
 }
 
-// TestApplyModifiersToBothEquipmentListsIsOneEdit verifies that applying to targets in both of a sheet's equipment
-// lists attaches the modifier to each of them as a single undoable edit, so that one Undo takes the modifier off both
-// and one Redo puts it back on both.
-func TestApplyModifiersToBothEquipmentListsIsOneEdit(t *testing.T) {
-	c := check.New(t)
-	sheet := newApplyModifierTestSheet(t)
-	entity := sheet.Entity()
-	entity.ModifiedOn = jio.Time{}
-	mgr := unison.UndoManagerFor(sheet.CarriedEquipment.Table)
-	c.NotNil(mgr, "the table must be able to find the sheet's undo manager")
-	c.False(mgr.CanUndo())
-	mod := gurps.NewEquipmentModifier(nil, nil, false)
-	mod.Name = "Fine"
-	mod.SetDisabled(true)
-	forbidModifierPrompts(t)
-	rope := equipmentNamed("Rope", entity.CarriedEquipment)
-	coin := equipmentNamed("Coin", entity.OtherEquipment)
-
-	c.True(applyModifiersTo([]*unison.Table[*Node[*gurps.Equipment]]{sheet.CarriedEquipment.Table, sheet.OtherEquipment.Table},
-		[]*gurps.Equipment{rope, coin}, []*gurps.EquipmentModifier{mod}, gurps.LibraryFile{}))
-	c.Equal([]string{"Fine"}, appliedModifierNames(equipmentNamed("Rope", entity.CarriedEquipment).Modifiers))
-	c.Equal([]string{"Fine"}, appliedModifierNames(equipmentNamed("Coin", entity.OtherEquipment).Modifiers))
-	c.False(equipmentNamed("Rope", entity.CarriedEquipment).Modifiers[0].IsDisabled(), "the applied copy is switched on")
-	c.False(equipmentNamed("Coin", entity.OtherEquipment).Modifiers[0].IsDisabled(), "the applied copy is switched on")
-	c.Equal(0, len(equipmentNamed("Knife", entity.CarriedEquipment).Modifiers), "only the chosen targets are touched")
-	c.True(sheet.Modified(), "the sheet has been changed")
-	c.NotEqual(jio.Time{}, entity.ModifiedOn, "the change must be reported")
-	c.True(mgr.CanUndo(), "the change must be undoable")
-	c.Equal("Undo "+applyModifierAction.Title, mgr.UndoTitle(), "the edit is named for the command")
-
-	mgr.Undo()
-	c.False(mgr.CanUndo(), "one command must make exactly one edit")
-	c.Equal(0, len(equipmentNamed("Rope", entity.CarriedEquipment).Modifiers), "undo must take the modifier back off")
-	c.Equal(0, len(equipmentNamed("Coin", entity.OtherEquipment).Modifiers), "undo must take the modifier back off")
-	c.False(sheet.Modified(), "undo must leave the sheet as it was")
-
-	mgr.Redo()
-	c.Equal([]string{"Fine"}, appliedModifierNames(equipmentNamed("Rope", entity.CarriedEquipment).Modifiers))
-	c.Equal([]string{"Fine"}, appliedModifierNames(equipmentNamed("Coin", entity.OtherEquipment).Modifiers))
-}
-
 // TestApplyModifiersToCanceledPromptChangesNothing verifies that canceling the nameables prompt leaves the sheet
 // untouched: the targets keep the modifiers they had, the sheet is neither rebuilt nor re-synced, its timestamp is not
 // bumped, and nothing is left to undo.
@@ -881,8 +840,9 @@ func TestApplyModifierCommandNeedsASelectionAndADestination(t *testing.T) {
 
 // TestApplySelectedModifiersAcrossBothEquipmentLists runs the whole command for equipment modifiers with the prompts
 // answered non-interactively: the docked sheet is offered and picked, the target prompt is headed for the sheet's
-// equipment, and choosing Rope and Coin attaches the modifier to both as one undoable edit, leaving each selected in
-// its own list.
+// equipment, and choosing Rope and Coin attaches the modifier to both as one edit that bumps the entity's modification
+// time, leaving each selected in its own list. One Undo takes the modifier off both and leaves the sheet unmodified,
+// and one Redo puts it back on both.
 func TestApplySelectedModifiersAcrossBothEquipmentLists(t *testing.T) {
 	c := check.New(t)
 	registerKeyBindingsOnce.Do(registerActions)
@@ -890,6 +850,7 @@ func TestApplySelectedModifiersAcrossBothEquipmentLists(t *testing.T) {
 	forbidModifierPrompts(t)
 	sheet := newApplyModifierTestSheet(t)
 	entity := sheet.Entity()
+	entity.ModifiedOn = jio.Time{}
 	uxtest.SwapForTest(t, &Workspace.DocumentDock, NewDocumentDock())
 	Workspace.DocumentDock.DockTo(sheet, nil, side.Left)
 	mod := gurps.NewEquipmentModifier(nil, nil, false)
@@ -937,6 +898,7 @@ func TestApplySelectedModifiersAcrossBothEquipmentLists(t *testing.T) {
 	c.Equal([]string{"Fine"}, appliedModifierNames(equipmentNamed("Rope", entity.CarriedEquipment).Modifiers))
 	c.Equal([]string{"Fine"}, appliedModifierNames(equipmentNamed("Coin", entity.OtherEquipment).Modifiers))
 	c.False(equipmentNamed("Rope", entity.CarriedEquipment).Modifiers[0].IsDisabled(), "the applied copy is switched on")
+	c.False(equipmentNamed("Coin", entity.OtherEquipment).Modifiers[0].IsDisabled(), "the applied copy is switched on")
 	c.Equal(0, len(equipmentNamed("Backpack", entity.CarriedEquipment).Modifiers), "only the chosen targets are touched")
 	c.Equal(0, len(equipmentNamed("Knife", entity.CarriedEquipment).Modifiers), "only the chosen targets are touched")
 	selectedNames := func(table *unison.Table[*Node[*gurps.Equipment]]) []string {
@@ -952,9 +914,14 @@ func TestApplySelectedModifiersAcrossBothEquipmentLists(t *testing.T) {
 	mgr := unison.UndoManagerFor(sheet.CarriedEquipment.Table)
 	c.NotNil(mgr, "the table must be able to find the sheet's undo manager")
 	c.True(sheet.Modified(), "the sheet has been changed")
+	c.NotEqual(jio.Time{}, entity.ModifiedOn, "the change must be reported")
 	c.Equal("Undo "+applyModifierAction.Title, mgr.UndoTitle(), "the edit is named for the command")
 	mgr.Undo()
 	c.False(mgr.CanUndo(), "the command must make exactly one edit, though it touched two lists")
 	c.Equal(0, len(equipmentNamed("Rope", entity.CarriedEquipment).Modifiers), "undo must take the modifier back off")
 	c.Equal(0, len(equipmentNamed("Coin", entity.OtherEquipment).Modifiers), "undo must take the modifier back off")
+	c.False(sheet.Modified(), "undo must leave the sheet as it was")
+	mgr.Redo()
+	c.Equal([]string{"Fine"}, appliedModifierNames(equipmentNamed("Rope", entity.CarriedEquipment).Modifiers))
+	c.Equal([]string{"Fine"}, appliedModifierNames(equipmentNamed("Coin", entity.OtherEquipment).Modifiers))
 }

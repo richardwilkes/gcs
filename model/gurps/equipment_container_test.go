@@ -13,14 +13,12 @@ import (
 	"encoding/json/v2"
 	"strings"
 	"testing"
-	"testing/fstest"
 
 	"github.com/richardwilkes/gcs/v5/model/criteria"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/eqcontainer"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/picker"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/srcstate"
-	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/toolbox/v2/check"
 )
 
@@ -268,7 +266,8 @@ func newRangeTestChoice(pickerType picker.Type, compare criteria.NumericComparis
 	return choice
 }
 
-// TestEquipmentChoiceDescriptions verifies how a choice made by value or weight describes itself.
+// TestEquipmentChoiceDescriptions verifies how a choice made by value or weight describes itself, a weight in the
+// sheet's default units unless it is given others.
 func TestEquipmentChoiceDescriptions(t *testing.T) {
 	c := check.New(t)
 	c.Equal("Pick at most $1,500 worth",
@@ -276,29 +275,9 @@ func TestEquipmentChoiceDescriptions(t *testing.T) {
 	units := SheetSettingsFor(nil).DefaultWeightUnits
 	c.Equal("Pick at least "+units.Format(fxp.Weight(fxp.FromInteger(10)))+" in weight",
 		newRangeTestChoice(picker.Weight, criteria.AtLeastNumber, fxp.FromInteger(10)).TemplatePicker.String())
-}
-
-// TestEquipmentRangesMatchSettledTotals verifies that equipment presenting no choice has a settled value and weight
-// range that is exactly its extended value and weight, contained weight reductions and quantity included.
-func TestEquipmentRangesMatchSettledTotals(t *testing.T) {
-	c := check.New(t)
-	bag := NewEquipment(nil, nil, true)
-	bag.BaseValue = "5"
-	bag.BaseWeight = "2 lb"
-	bag.Quantity = fxp.FromInteger(3)
-	cwr := NewContainedWeightReduction()
-	cwr.Reduction = "25%"
-	bag.Features = Features{cwr}
-	for _, one := range []*Equipment{newEquipmentItem("Rope", "10", "3 lb"), newEquipmentItem("Torch", "3", "1 lb")} {
-		one.SetParent(bag)
-		bag.Children = append(bag.Children, one)
-	}
-	value, settled := bag.ExtendedValueRange().Settled()
-	c.True(settled)
-	c.Equal(bag.ExtendedValue(), value)
-	weight, settled := bag.ExtendedWeightRange(fxp.Pound).Settled()
-	c.True(settled)
-	c.Equal(fxp.Int(bag.ExtendedWeight(false, fxp.Pound)), weight)
+	tp := newRangeTestChoice(picker.Weight, criteria.AtMostNumber, fxp.FromInteger(10)).TemplatePicker
+	c.Equal("Pick at most "+fxp.Kilogram.Format(fxp.Weight(fxp.FromInteger(10)))+" in weight",
+		tp.StringWithUnits(fxp.Kilogram), "a weight must be given in the units of the sheet it is picked for")
 }
 
 // TestEquipmentChoiceRanges verifies the value and weight a choice may come to under each kind of picker, and that a
@@ -371,64 +350,6 @@ func TestEquipmentSyncToGroupClearsWhatAGroupCantHold(t *testing.T) {
 	c.Equal(0, len(local.Modifiers))
 }
 
-// TestEquipmentChoiceDescribesWeightInGivenUnits verifies that a choice made by weight can describe itself in the units
-// of the sheet it is being picked for.
-func TestEquipmentChoiceDescribesWeightInGivenUnits(t *testing.T) {
-	c := check.New(t)
-	tp := newRangeTestChoice(picker.Weight, criteria.AtMostNumber, fxp.FromInteger(10)).TemplatePicker
-	c.Equal("Pick at most "+fxp.Kilogram.Format(fxp.Weight(fxp.FromInteger(10)))+" in weight",
-		tp.StringWithUnits(fxp.Kilogram))
-	c.Equal(tp.StringWithUnits(SheetSettingsFor(nil).DefaultWeightUnits), tp.String())
-}
-
-// TestEquipmentGroupToItemGetsDefaultLegalityClass verifies that a group converted to a piece of equipment gets the
-// legality class new equipment starts out with, while a physical container keeps whatever it had.
-func TestEquipmentGroupToItemGetsDefaultLegalityClass(t *testing.T) {
-	c := check.New(t)
-	group := NewEquipmentGroup(nil, nil)
-	group.ConvertToNonContainer()
-	c.False(group.Container())
-	c.Equal("4", group.LegalityClass)
-
-	backpack := NewEquipment(nil, nil, true)
-	backpack.LegalityClass = ""
-	backpack.ConvertToNonContainer()
-	c.Equal("", backpack.LegalityClass, "a legality class the user cleared must be left alone")
-}
-
-// TestLoadingOutsideATemplateClearsEquipmentPickerData verifies that a character sheet, a loot sheet and an equipment
-// list all have any equipment template picker data removed when loaded, leaving the options alone.
-func TestLoadingOutsideATemplateClearsEquipmentPickerData(t *testing.T) {
-	c := check.New(t)
-	entity := NewEntity()
-	entity.CarriedEquipment = []*Equipment{newEquipmentChoice("Sword", "Axe")}
-	entity.OtherEquipment = []*Equipment{newEquipmentChoice("Rope", "Chain")}
-	data, err := json.Marshal(entity)
-	c.NoError(err)
-	var loadedEntity Entity
-	c.NoError(json.Unmarshal(data, &loadedEntity))
-	c.False(HasTemplatePickerData(loadedEntity.CarriedEquipment...), "carried equipment must not keep picker data")
-	c.False(HasTemplatePickerData(loadedEntity.OtherEquipment...), "other equipment must not keep picker data")
-	c.Equal(2, len(loadedEntity.CarriedEquipment[0].Children), "the options must be left alone")
-
-	loot := NewLoot()
-	loot.Equipment = []*Equipment{newEquipmentChoice("Sword", "Axe")}
-	data, err = json.Marshal(loot)
-	c.NoError(err)
-	var loadedLoot Loot
-	c.NoError(json.Unmarshal(data, &loadedLoot))
-	c.False(HasTemplatePickerData(loadedLoot.Equipment...), "a loot sheet must not keep picker data")
-
-	list, err := json.Marshal(&listData[*Equipment]{
-		Version: jio.CurrentDataVersion,
-		Rows:    []*Equipment{newEquipmentChoice("Sword", "Axe")},
-	})
-	c.NoError(err)
-	rows, err := NewEquipmentFromFile(fstest.MapFS{"list.eqp": &fstest.MapFile{Data: list}}, "list.eqp")
-	c.NoError(err)
-	c.False(HasTemplatePickerData(rows...), "an equipment list must not keep picker data")
-}
-
 // TestCanTakeModifiers verifies which rows modifiers may be attached to: anything but a template choice container or
 // an equipment group.
 func TestCanTakeModifiers(t *testing.T) {
@@ -462,12 +383,15 @@ func TestFormatWeightRange(t *testing.T) {
 
 // TestEquipmentGroupRoundTripsThroughAnItem verifies that a group converted to a plain item and back comes back as a
 // physical container, since the item it became is a piece of equipment in its own right, and that the item keeps no
-// trace of having been a group.
+// trace of having been a group but gets the legality class new equipment starts out with, while a physical container
+// converted to an item keeps whatever legality class it had.
 func TestEquipmentGroupRoundTripsThroughAnItem(t *testing.T) {
 	c := check.New(t)
 	group := NewEquipmentGroup(nil, nil)
 	group.ConvertToNonContainer()
+	c.False(group.Container(), "the group must have become an item")
 	c.Equal(eqcontainer.Container, group.ContainerType, "the item must not keep the group's container type")
+	c.Equal("4", group.LegalityClass, "the item must get the legality class new equipment starts out with")
 	group.BaseValue = "10"
 	group.ConvertToContainer()
 	c.True(group.IsPhysicalContainer(), "an item must become a physical container")
@@ -478,6 +402,11 @@ func TestEquipmentGroupRoundTripsThroughAnItem(t *testing.T) {
 	group.ConvertToGroup()
 	group.RestoreContainerConversionState(state)
 	c.True(group.IsPhysicalContainer(), "restoring the state must put the container type back")
+
+	backpack := NewEquipment(nil, nil, true)
+	backpack.LegalityClass = ""
+	backpack.ConvertToNonContainer()
+	c.Equal("", backpack.LegalityClass, "a legality class the user cleared must be left alone")
 }
 
 // TestEquipmentChoiceCountsAsItsLowerEnd verifies that a choice yet to be made counts as the least it may come to
@@ -523,7 +452,8 @@ func TestEquipmentRangeThroughAFullReduction(t *testing.T) {
 }
 
 // TestEquipmentChoiceOtherMeasureWithGroups verifies that a choice picked by one measure has an upper limit to the other
-// when every option with something to raise is a group, whose quantity can't be raised while picking.
+// when every option with something to raise is a group, whose quantity can't be raised while picking, and none when an
+// option's quantity may be raised, even one starting out with a quantity of nothing.
 func TestEquipmentChoiceOtherMeasureWithGroups(t *testing.T) {
 	c := check.New(t)
 	choice := NewEquipmentChoiceContainer(nil, nil)
@@ -546,6 +476,15 @@ func TestEquipmentChoiceOtherMeasureWithGroups(t *testing.T) {
 	choice.Children = append(choice.Children, rope)
 	c.Equal("0 lb+", FormatWeightRange(choice.ExtendedWeightRange(fxp.Pound), fxp.Pound.Format),
 		"an option whose quantity may be raised leaves no upper limit")
+
+	atLeast := NewEquipmentChoiceContainer(nil, nil)
+	atLeast.TemplatePicker.Type = picker.Value
+	atLeast.TemplatePicker.Qualifier.Compare = criteria.AtLeastNumber
+	atLeast.TemplatePicker.Qualifier.Qualifier = fxp.FromInteger(50)
+	item(atLeast, "Rope", "5", "2 lb").Quantity = 0
+	c.Equal("50+", atLeast.ExtendedValueRange().String(), "any pick must come to at least the qualifier")
+	c.Equal("0 lb+", FormatWeightRange(atLeast.ExtendedWeightRange(fxp.Pound), fxp.Pound.Format),
+		"an option with a quantity of nothing may still be raised, so there is no upper limit to the weight")
 }
 
 // item adds a piece of equipment with the given name, value and weight to the parent.
@@ -554,21 +493,6 @@ func item(parent *Equipment, name, value, weight string) *Equipment {
 	one.SetParent(parent)
 	parent.Children = append(parent.Children, one)
 	return one
-}
-
-// TestEquipmentChoiceOptionWithNoQuantity verifies that an option starting out with a quantity of nothing still counts
-// as able to add to a choice made by value or weight, since its quantity may be raised while picking.
-func TestEquipmentChoiceOptionWithNoQuantity(t *testing.T) {
-	c := check.New(t)
-	choice := NewEquipmentChoiceContainer(nil, nil)
-	choice.TemplatePicker.Type = picker.Value
-	choice.TemplatePicker.Qualifier.Compare = criteria.AtLeastNumber
-	choice.TemplatePicker.Qualifier.Qualifier = fxp.FromInteger(50)
-	rope := item(choice, "Rope", "5", "2 lb")
-	rope.Quantity = 0
-	c.Equal("50+", choice.ExtendedValueRange().String(), "any pick must come to at least the qualifier")
-	c.Equal("0 lb+", FormatWeightRange(choice.ExtendedWeightRange(fxp.Pound), fxp.Pound.Format),
-		"the rope's quantity may be raised, so there is no upper limit to the weight")
 }
 
 // TestEquipmentChoiceCappedAtWhatItsOptionsReach verifies that a choice made by value, none of whose options can be

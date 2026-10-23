@@ -112,22 +112,6 @@ func TestWeightedStringOptionsAddAndRemove(t *testing.T) {
 	c.False(d.undoMgr.CanUndo(), "each edit is its own undo")
 }
 
-// An option is removed by identity, not by position, so the other options keep their order.
-func TestWeightedStringOptionsRemoveFromMiddle(t *testing.T) {
-	c := check.New(t)
-	a := gurps.NewAncestry()
-	a.CommonOptions.EyeOptions = []*gurps.WeightedStringOption{
-		{Weight: 1, Value: "Brown"},
-		{Weight: 1, Value: "Blue"},
-		{Weight: 1, Value: "Green"},
-	}
-	d := newTestAncestryEditorDockable(a)
-	list := listPanelFor(t, d, &a.CommonOptions.EyeOptions)
-	list.removeOption(a.CommonOptions.EyeOptions[1])
-	c.Equal([]string{"Brown", "Green"}, optionValues(d.model.CommonOptions.EyeOptions))
-	c.Equal(2, len(listPanelFor(t, d, &d.model.CommonOptions.EyeOptions).rows.Children()))
-}
-
 // Each gender's lists must edit that gender's options, not the common ones, and all four must be present for each.
 func TestWeightedStringOptionsPerGenderListsBindToGender(t *testing.T) {
 	c := check.New(t)

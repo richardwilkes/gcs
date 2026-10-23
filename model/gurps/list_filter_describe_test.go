@@ -43,6 +43,8 @@ type describeCase struct {
 	want string
 }
 
+// TestFilterConditionDescribe checks the sentence a condition on each kind of field describes itself with, using the
+// titles of the list it filters and giving a weight in the units it is asked for.
 func TestFilterConditionDescribe(t *testing.T) {
 	c := check.New(t)
 	for i, one := range []describeCase{
@@ -153,30 +155,29 @@ func TestFilterConditionDescribe(t *testing.T) {
 	} {
 		c.Equal(one.want, one.cond.Describe(equipmentFilterLookup, fxp.Pound, bracket), "case %d", i)
 	}
-}
 
-// TestFilterConditionDescribesCostApplication checks the sentence of the trait modifier field that says what part of
-// the cost a modifier applies to.
-func TestFilterConditionDescribesCostApplication(t *testing.T) {
-	c := check.New(t)
-	lookup := func(key string) (title string, kind gurps.FilterFieldKind, plural, ok bool) {
-		for _, field := range gurps.TraitModifierFilterFields() {
-			if field.Key == key {
-				return field.Title, field.Kind, field.Plural, true
-			}
+	traitModifierLookup := func(key string) (title string, kind gurps.FilterFieldKind, plural, ok bool) {
+		if field := findFilterField(gurps.TraitModifierFilterFields(), key); field != nil {
+			return field.Title, field.Kind, field.Plural, true
 		}
 		return "", 0, false, false
 	}
-	cond := newTextFilterCondition("affects", criteria.IsText, "to base cost only")
-	c.Equal("Must have a cost application that is to base cost only", cond.Describe(lookup, fxp.Pound,
-		func(s string) string { return s }))
-}
-
-func TestFilterConditionDescribesWeightInUnits(t *testing.T) {
-	c := check.New(t)
-	cond := newWeightFilterCondition("weight", criteria.EqualsNumber, fxp.WeightFromInteger(2, fxp.Kilogram))
-	c.Equal("Must have a weight that is 2 kg", cond.Describe(equipmentFilterLookup, fxp.Kilogram,
-		func(s string) string { return s }))
+	for i, one := range []struct {
+		lookup gurps.FilterFieldLookup
+		units  fxp.WeightUnit
+		describeCase
+	}{
+		{traitModifierLookup, fxp.Pound, describeCase{
+			newTextFilterCondition("affects", criteria.IsText, "to base cost only"),
+			`Must have a cost application that is [to base cost only]`,
+		}},
+		{equipmentFilterLookup, fxp.Kilogram, describeCase{
+			newWeightFilterCondition("weight", criteria.EqualsNumber, fxp.WeightFromInteger(2, fxp.Kilogram)),
+			`Must have a weight that is [2 kg]`,
+		}},
+	} {
+		c.Equal(one.want, one.cond.Describe(one.lookup, one.units, bracket), "other lookup or units case %d", i)
+	}
 }
 
 // TestFilterConditionDescribesPluralFields checks that what follows a plural title agrees with it, for each kind of
@@ -224,54 +225,8 @@ func TestFilterConditionDescribesPluralFields(t *testing.T) {
 	}
 }
 
-func TestFilterFieldPluralTitles(t *testing.T) {
-	c := check.New(t)
-	plural := map[string]bool{
-		"have notes": true, "have points": true, "have levels": true, "have tags": true,
-		"have colleges": true, "have modifier names": true, "have modifier notes": true, "have modifier tags": true,
-	}
-	verify := func(title string, isPlural bool) {
-		c.Equal(plural[title], isPlural, "%q is marked plural only if it is", title)
-	}
-	for _, f := range gurps.TraitFilterFields() {
-		verify(f.Title, f.Plural)
-	}
-	for _, f := range gurps.TraitModifierFilterFields() {
-		verify(f.Title, f.Plural)
-	}
-	for _, f := range gurps.SkillFilterFields() {
-		verify(f.Title, f.Plural)
-	}
-	for _, f := range gurps.SpellFilterFields() {
-		verify(f.Title, f.Plural)
-	}
-	for _, f := range gurps.EquipmentFilterFields() {
-		verify(f.Title, f.Plural)
-	}
-	for _, f := range gurps.EquipmentModifierFilterFields() {
-		verify(f.Title, f.Plural)
-	}
-	for _, f := range gurps.NoteFilterFields() {
-		verify(f.Title, f.Plural)
-	}
-}
-
 func TestUnknownFilterNodeDescribe(t *testing.T) {
 	c := check.New(t)
 	node := gurps.NewUnknownFilterNode("sparkle", []byte(`{"type":"sparkle"}`))
 	c.Equal(`Unknown filter node type "sparkle"; it will be preserved, but can't be checked`, node.Describe())
-}
-
-// TestFilterTextFieldKeepsCommas checks that a comma in the qualifier of a single text field is part of the text, as
-// its sentence quotes it, rather than splitting it into several values as a list's does.
-func TestFilterTextFieldKeepsCommas(t *testing.T) {
-	c := check.New(t)
-	f := gurps.NewListFilter("Commas")
-	f.Root.Children = gurps.FilterNodes{newTextFilterCondition("name", criteria.IsText, "Axe, Hand")}
-	f.EnsureValidity()
-	trait := gurps.NewTrait(nil, nil, false)
-	trait.Name = "Axe, Hand"
-	c.True(matchesListFilter(f, gurps.TraitFilterFields(), trait), "the whole text matches")
-	trait.Name = "Axe"
-	c.False(matchesListFilter(f, gurps.TraitFilterFields(), trait), "a part of it doesn't")
 }

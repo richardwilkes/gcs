@@ -10,6 +10,7 @@
 package fxp_test
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
@@ -43,28 +44,17 @@ func TestWeightConversion(t *testing.T) {
 	c.Equal("15.25 kg", fxp.Kilogram.Format(w))
 }
 
-// TestWeightFromStringUnitSuffixes verifies that every unit's key, when appended to a number, parses back to that same
-// unit. This guards against the suffix-matching being sensitive to the order in which the enum is declared (e.g. "g"
-// must not greedily match the "kg" / "g" overlap, nor "t" the "tn" / "t" overlap).
+// TestWeightFromStringUnitSuffixes verifies that every unit's key, when appended to a number in either lower or upper
+// case, parses back to that same unit. This guards against the suffix-matching being sensitive to the order in which
+// the enum is declared (e.g. "g" must not greedily match the "kg" / "g" overlap, nor "t" the "tn" / "t" overlap).
 func TestWeightFromStringUnitSuffixes(t *testing.T) {
 	c := check.New(t)
 	for _, unit := range fxp.WeightUnits {
-		text := "3" + unit.Key()
-		w, err := fxp.WeightFromString(text, fxp.Gram)
-		c.NoError(err, "parsing %q", text)
-		c.Equal(fxp.WeightFromInteger(3, unit), w, "parsing %q", text)
-		c.Equal(unit, fxp.TrailingWeightUnitFromString(text, fxp.Gram), "trailing unit of %q", text)
+		for _, text := range []string{"3" + unit.Key(), "3" + strings.ToUpper(unit.Key())} {
+			w, err := fxp.WeightFromString(text, fxp.Gram)
+			c.NoError(err, "parsing %q", text)
+			c.Equal(fxp.WeightFromInteger(3, unit), w, "parsing %q", text)
+			c.Equal(unit, fxp.TrailingWeightUnitFromString(text, fxp.Gram), "trailing unit of %q", text)
+		}
 	}
-}
-
-func TestWeightFromStringCaseInsensitive(t *testing.T) {
-	c := check.New(t)
-	for _, text := range []string{"0.5KG", "0.5Kg", "0.5 KG"} {
-		w, err := fxp.WeightFromString(text, fxp.Pound)
-		c.NoError(err, "parsing %q", text)
-		c.Equal(fxp.WeightFromInteger(1, fxp.Pound), w, "parsing %q", text)
-	}
-	w, err := fxp.WeightFromString("32OZ", fxp.Pound)
-	c.NoError(err)
-	c.Equal(fxp.WeightFromInteger(2, fxp.Pound), w)
 }

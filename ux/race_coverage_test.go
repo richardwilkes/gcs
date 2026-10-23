@@ -22,8 +22,5 @@ func TestRace(t *testing.T) {
 	t.Run("HandoffRoundTrip", TestHandoffRoundTrip)
 	t.Run("NavigatorSearchOffersMatches", TestNavigatorSearchOffersMatches)
 	t.Run("RunInBackgroundDeliversResultBeforeFinishing", TestRunInBackgroundDeliversResultBeforeFinishing)
-	t.Run("RunInBackgroundDoesNotBlockWithoutAReceiver", TestRunInBackgroundDoesNotBlockWithoutAReceiver)
-	t.Run("RunInBackgroundReportsFailure", TestRunInBackgroundReportsFailure)
-	t.Run("RunInBackgroundReportsSuccess", TestRunInBackgroundReportsSuccess)
 	t.Run("SupersededCacheBuildHandsEntriesToItsSuccessor", TestSupersededCacheBuildHandsEntriesToItsSuccessor)
 }

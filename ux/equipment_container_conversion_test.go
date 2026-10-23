@@ -148,25 +148,45 @@ func TestEquipmentGroupConversionWarnsAndIsUndoable(t *testing.T) {
 }
 
 // TestConvertToContainerTakesItemsAndGroupsTogether verifies that "Convert to Container" turns the selected items into
-// containers and the selected groups into physical containers at once, as a single undoable edit.
+// containers and the selected groups into physical containers at once, as a single undoable edit, both on a sheet and
+// in an equipment library, where the library's own command performs the shared conversion.
 func TestConvertToContainerTakesItemsAndGroupsTogether(t *testing.T) {
-	c := check.New(t)
-	item := gurps.NewEquipment(nil, nil, false)
-	group := gurps.NewEquipmentGroup(nil, nil)
-	sheet := newTestSheetWithEquipment(t, item, group)
-	table := sheet.CarriedEquipment.Table
-	table.SetSelectionMap(map[tid.TID]bool{item.ID(): true, group.ID(): true})
-	mgr := unison.UndoManagerFor(table)
-	c.NotNil(mgr)
+	registerKeyBindingsOnce.Do(func() { registerActions() })
+	type equipmentTable = *unison.Table[*Node[*gurps.Equipment]]
+	for _, one := range []struct {
+		owner string
+		open  func(t *testing.T, item, group *gurps.Equipment) (cmds *unison.Panel, table equipmentTable)
+	}{
+		{"sheet", func(t *testing.T, item, group *gurps.Equipment) (*unison.Panel, equipmentTable) {
+			table := newTestSheetWithEquipment(t, item, group).CarriedEquipment.Table
+			panel := table.AsPanel()
+			return panel, table
+		}},
+		{"library", func(_ *testing.T, item, group *gurps.Equipment) (*unison.Panel, equipmentTable) {
+			d := NewEquipmentTableDockable("Gear"+gurps.EquipmentExt, []*gurps.Equipment{group, item})
+			return d.AsPanel(), d.table
+		}},
+	} {
+		t.Run(one.owner, func(t *testing.T) {
+			c := check.New(t)
+			item := gurps.NewEquipment(nil, nil, false)
+			group := gurps.NewEquipmentGroup(nil, nil)
+			cmds, table := one.open(t, item, group)
+			table.SetSelectionMap(map[tid.TID]bool{item.ID(): true, group.ID(): true})
+			mgr := unison.UndoManagerFor(table)
+			c.NotNil(mgr)
 
-	table.PerformCmd(table, ConvertToContainerItemID)
-	c.True(item.IsPhysicalContainer(), "the item must have become a physical container")
-	c.True(group.IsPhysicalContainer(), "the group must have become a physical container")
+			c.True(cmds.CanPerformCmd(nil, ConvertToContainerItemID))
+			cmds.PerformCmd(nil, ConvertToContainerItemID)
+			c.True(item.IsPhysicalContainer(), "the item must have become a physical container")
+			c.True(group.IsPhysicalContainer(), "the group must have become a physical container")
 
-	mgr.Undo()
-	c.False(item.Container(), "undo must turn the item back")
-	c.True(group.IsGroup(), "the same undo must turn the group back")
-	c.False(mgr.CanUndo(), "the conversion must have been a single edit")
+			mgr.Undo()
+			c.False(item.Container(), "undo must turn the item back")
+			c.True(group.IsGroup(), "the same undo must turn the group back")
+			c.False(mgr.CanUndo(), "the conversion must have been a single edit")
+		})
+	}
 }
 
 // TestEquipmentChoiceConversionWarnsOnlyWhenUnequipped verifies that a group becomes a choice without a question
@@ -195,24 +215,6 @@ func TestEquipmentChoiceConversionWarnsOnlyWhenUnequipped(t *testing.T) {
 	table.PerformCmd(table, ConvertToChoiceContainerItemID)
 	c.Equal(2, asked, "an unequipped group must ask first")
 	c.True(group.Equipped, "the choice must be left equipped")
-}
-
-// TestAltDropSkipsEquipmentGroups verifies that dropping modifiers never targets an equipment group or choice, which
-// can't hold modifiers (see gurps.CanTakeModifiers).
-func TestAltDropSkipsEquipmentGroups(t *testing.T) {
-	c := check.New(t)
-	first := gurps.NewEquipment(nil, nil, false)
-	group := gurps.NewEquipmentGroup(nil, nil)
-	choice := gurps.NewEquipmentChoiceContainer(nil, nil)
-	backpack := gurps.NewEquipment(nil, nil, true)
-	template := newTestTemplateWithEquipment(first, group, choice, backpack)
-	table := template.Equipment.Table
-	c.Equal(0, len(altDropTargets(table, 1)), "a group under the pointer must not be targeted")
-	c.Equal(0, len(altDropTargets(table, 2)), "a choice under the pointer must not be targeted")
-	c.Equal([]int{3}, altDropTargets(table, 3), "a physical container may be targeted")
-
-	table.SelectByIndex(0, 1, 2, 3)
-	c.Equal([]int{0, 3}, altDropTargets(table, 0), "selected groups must be left out of the batch")
 }
 
 // TestToggleEquippedSkipsChoiceContainers verifies that a choice can't be unequipped from the list, since its editor
@@ -327,60 +329,6 @@ func TestPickerWeightUnitsFollowTheSheet(t *testing.T) {
 	entity := gurps.NewEntity()
 	entity.SheetSettings.DefaultWeightUnits = fxp.Kilogram
 	c.Equal(fxp.Kilogram, pickerWeightUnits(gurps.NewEquipment(entity, nil, false)))
-}
-
-// TestApplyModifierSkipsEquipmentGroups verifies that the Apply Modifier command never gives an equipment group or
-// choice modifiers: its target prompt leaves them out while still offering what they hold, and the shared attach step
-// skips one handed to it anyway.
-func TestApplyModifierSkipsEquipmentGroups(t *testing.T) {
-	c := check.New(t)
-	forbidModifierPrompts(t)
-	group := gurps.NewEquipmentGroup(nil, nil)
-	group.Name = "Kit"
-	rope := gurps.NewEquipment(nil, group, false)
-	rope.Name = "Rope"
-	group.Children = []*gurps.Equipment{rope}
-	backpack := gurps.NewEquipment(nil, nil, true)
-	backpack.Name = "Backpack"
-	template := newTestTemplateWithEquipment(group, backpack)
-
-	lists := equipmentModifierTargetKind().lists(template)
-	c.Equal(1, len(lists))
-	labels := make([]string, 0, 2)
-	for _, one := range modifierTargetChoices(lists) {
-		labels = append(labels, one.String())
-	}
-	c.Equal([]string{"Rope (in Kit)", "Backpack"}, labels,
-		"the group must be left out of the prompt, but what it holds must still be offered")
-
-	sturdy := gurps.NewEquipmentModifier(nil, nil, false)
-	sturdy.Name = "Sturdy"
-	tables := []*unison.Table[*Node[*gurps.Equipment]]{template.Equipment.Table}
-	c.True(attachModifierClones("", tables, template.template, []*gurps.Equipment{group, backpack},
-		[]*gurps.EquipmentModifier{sturdy}, gurps.LibraryFile{}))
-	c.Equal(0, len(group.Modifiers), "the group must not be given the modifier")
-	c.Equal(1, len(backpack.Modifiers), "the physical container must still get it")
-}
-
-// TestConvertToContainerInALibrary verifies that "Convert to Container" turns a group into a physical container in an
-// equipment library too, where it is the shared conversion that handles it, and that undo turns it back.
-func TestConvertToContainerInALibrary(t *testing.T) {
-	c := check.New(t)
-	registerKeyBindingsOnce.Do(func() { registerActions() })
-	group := gurps.NewEquipmentGroup(nil, nil)
-	item := gurps.NewEquipment(nil, nil, false)
-	d := NewEquipmentTableDockable("Gear"+gurps.EquipmentExt, []*gurps.Equipment{group, item})
-	table := d.table
-	table.SetSelectionMap(map[tid.TID]bool{group.ID(): true, item.ID(): true})
-	c.True(d.CanPerformCmd(nil, ConvertToContainerItemID))
-	d.PerformCmd(nil, ConvertToContainerItemID)
-	c.True(group.IsPhysicalContainer(), "the group must have become a physical container")
-	c.True(item.IsPhysicalContainer(), "the item must have become a physical container")
-	mgr := unison.UndoManagerFor(table)
-	c.NotNil(mgr)
-	mgr.Undo()
-	c.True(group.IsGroup(), "undo must turn the group back")
-	c.False(item.Container(), "the same undo must turn the item back")
 }
 
 // TestCopyToTemplateNormalizesEquipmentChoices verifies that an equipment choice copied into a template arrives

@@ -19,10 +19,12 @@ import (
 
 // Everything the helper needs must survive being written and read back. The file is the only channel between the
 // application that stages an update and the process that applies it, so a field lost here is one the helper silently
-// does without.
+// does without. Saving over an existing state must replace it atomically, leaving no temporary file behind: readers are
+// separate processes, and a truncated file is indistinguishable from a stale one.
 func TestStateRoundTrip(t *testing.T) {
 	c := check.New(t)
-	path := filepath.Join(t.TempDir(), stateName)
+	dir := t.TempDir()
+	path := filepath.Join(dir, stateName)
 	want := &State{
 		Status:      StatusStaged,
 		Reason:      ReasonNone,
@@ -47,6 +49,15 @@ func TestStateRoundTrip(t *testing.T) {
 	c.Equal(StateSchema, got.Schema, "Save must stamp the schema")
 	want.Schema = StateSchema
 	c.Equal(want, got)
+
+	c.NoError((&State{Status: StatusApplied, Target: "/two"}).Save(path))
+	got, err = LoadState(path)
+	c.NoError(err)
+	c.Equal(StatusApplied, got.Status)
+	c.Equal("/two", got.Target)
+	entries, err := os.ReadDir(dir)
+	c.NoError(err)
+	c.Equal(1, len(entries), "the atomic write must not leave a temporary file behind")
 }
 
 // Having no update in progress is the ordinary case rather than an error; every launch takes this path.
@@ -98,29 +109,11 @@ func TestLoadStateIgnoresUnknownFields(t *testing.T) {
 }
 
 // The helper must be able to reconstruct what it is replacing without re-deriving it from its own executable path,
-// which would be wrong, since the helper runs from the staging directory rather than from the installation.
-func TestStateTargetInfo(t *testing.T) {
-	c := check.New(t)
-
-	bundle := (&State{
-		Target: hostPath("/Applications/GCS.app"),
-		Exec:   hostPath("/Applications/GCS.app/Contents/MacOS/gcs"),
-		Bundle: true,
-	}).TargetInfo()
-	c.Equal(KindBundle, bundle.Kind)
-	c.Equal(hostPath("/Applications"), bundle.Parent)
-	c.Equal(hostPath("/Applications/GCS.app/Contents/MacOS/gcs"), bundle.Exec)
-
-	exe := (&State{Target: hostPath("/home/someone/bin/gcs"), Exec: hostPath("/home/someone/bin/gcs")}).TargetInfo()
-	c.Equal(KindExecutable, exe.Kind)
-	c.Equal(hostPath("/home/someone/bin"), exe.Parent)
-	c.Equal(hostPath("/home/someone/bin/gcs"), exe.Exec)
-}
-
-// The executable the helper relaunches must never be the bundle directory itself. A state written before the
-// executable path was recorded has to yield the conventional location inside the bundle, and ExecWithin has to locate
-// the executable inside the installed bundle rather than returning the bundle, since that is what the Launch Services
-// fallback in relaunch execs directly.
+// which would be wrong, since the helper runs from the staging directory rather than from the installation. The
+// executable it relaunches must never be the bundle directory itself. A state written before the executable path was
+// recorded has to yield the conventional location inside the bundle, and ExecWithin has to locate the executable
+// inside the installed or a staged bundle rather than returning the bundle, since that is what the Launch Services
+// fallback in relaunch execs directly. For a bare executable, ExecWithin returns the path it is given.
 func TestStateTargetInfoExecIsNeverTheBundle(t *testing.T) {
 	c := check.New(t)
 
@@ -133,30 +126,17 @@ func TestStateTargetInfoExecIsNeverTheBundle(t *testing.T) {
 	c.NotEqual(target, filepath.Clean(legacy.ExecWithin(target)))
 
 	recorded := (&State{Target: target, Exec: wantExec, Bundle: true}).TargetInfo()
+	c.Equal(KindBundle, recorded.Kind)
+	c.Equal(hostPath("/Applications"), recorded.Parent)
+	c.Equal(wantExec, recorded.Exec)
 	c.Equal(wantExec, recorded.ExecWithin(target))
 	c.Equal(hostPath("/tmp/staged/GCS.app/Contents/MacOS/"+CmdName),
 		recorded.ExecWithin(hostPath("/tmp/staged/GCS.app")))
 
 	exe := (&State{Target: hostPath("/home/someone/bin/gcs")}).TargetInfo()
+	c.Equal(KindExecutable, exe.Kind)
+	c.Equal(hostPath("/home/someone/bin"), exe.Parent)
 	c.Equal(hostPath("/home/someone/bin/gcs"), exe.Exec)
 	c.Equal(hostPath("/home/someone/bin/gcs"), exe.ExecWithin(exe.Path))
-}
-
-// A state file must never be observed half-written. Readers are separate processes, and a truncated file is
-// indistinguishable from a stale one.
-func TestStateSaveIsAtomic(t *testing.T) {
-	c := check.New(t)
-	dir := t.TempDir()
-	path := filepath.Join(dir, stateName)
-	c.NoError((&State{Status: StatusStaged, Target: "/one"}).Save(path))
-	c.NoError((&State{Status: StatusApplied, Target: "/two"}).Save(path))
-
-	state, err := LoadState(path)
-	c.NoError(err)
-	c.Equal(StatusApplied, state.Status)
-	c.Equal("/two", state.Target)
-
-	entries, err := os.ReadDir(dir)
-	c.NoError(err)
-	c.Equal(1, len(entries), "the atomic write must not leave a temporary file behind")
+	c.Equal(hostPath("/tmp/staged/gcs"), exe.ExecWithin(hostPath("/tmp/staged/gcs")))
 }

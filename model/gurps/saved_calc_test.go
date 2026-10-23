@@ -24,6 +24,8 @@ import (
 // is recorded as "ST 42". A load that keeps the saved calc can therefore be told apart from one that derives the
 // values. The Dormant trait is disabled, so its recorded level is zero.
 
+// TestNewEntityFromFileWithSavedCalc verifies that the saved calc loader shows the values a sheet records without
+// deriving anything, while the ordinary loader ignores them and derives its own.
 func TestNewEntityFromFileWithSavedCalc(t *testing.T) {
 	c := check.New(t)
 	e, err := NewEntityFromFileWithSavedCalc(os.DirFS("testdata"), "saved_calc.gcs")
@@ -39,11 +41,9 @@ func TestNewEntityFromFileWithSavedCalc(t *testing.T) {
 	// Nothing was derived: the items were never even attached to the entity.
 	c.Nil(e.Traits[0].DataOwner())
 	c.Nil(e.Notes[0].DataOwner())
-}
 
-func TestNewEntityFromFileIgnoresSavedCalc(t *testing.T) {
-	c := check.New(t)
-	e, err := NewEntityFromFile(os.DirFS("testdata"), "saved_calc.gcs")
+	// The ordinary loader ignores the recorded values.
+	e, err = NewEntityFromFile(os.DirFS("testdata"), "saved_calc.gcs")
 	c.NoError(err)
 	c.Equal("Magery 3", e.Traits[0].String())
 	c.Equal("Magery 3", e.Traits[0].StringWithSavedCalc())

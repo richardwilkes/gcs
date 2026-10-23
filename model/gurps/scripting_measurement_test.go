@@ -14,21 +14,28 @@ import (
 	"strconv"
 	"strings"
 	"testing"
-	"time"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/toolbox/v2/check"
 )
 
 // TestSSRTToYardsTableValues pins the Size/Speed/Range Table entries ssrtToYards produces, including the repeating
-// 10/15/20/30/50/70 pattern that steps up by a factor of ten every six entries.
+// 10/15/20/30/50/70 pattern that steps up by a factor of ten every six entries, and that values beyond either end of
+// the table are clamped to it. The high end must be, since the value arrives straight from a script and the yardage
+// grows without bound while fxp.Int does not.
 func TestSSRTToYardsTableValues(t *testing.T) {
 	c := check.New(t)
+	low := fxp.One.Div(fxp.Five).Div(fxp.ThirtySix)
+	high := fxp.FromInteger(700000000000000)
 	for _, tc := range []struct {
 		value int
 		want  fxp.Int
 	}{
-		{value: -15, want: fxp.One.Div(fxp.Five).Div(fxp.ThirtySix)},
+		{value: math.MinInt, want: low},
+		{value: -1000000, want: low},
+		{value: -100, want: low},
+		{value: minSSRTValue - 1, want: low},
+		{value: -15, want: low},
 		{value: -11, want: fxp.One.Div(fxp.ThirtySix)},
 		{value: -5, want: fxp.One.Div(fxp.Three)},
 		{value: -2, want: fxp.One},
@@ -42,23 +49,14 @@ func TestSSRTToYardsTableValues(t *testing.T) {
 		{value: 9, want: fxp.Seventy},
 		{value: 10, want: fxp.Hundred},
 		{value: 16, want: fxp.Thousand},
-		{value: maxSSRTValue, want: fxp.FromInteger(700000000000000)},
+		{value: maxSSRTValue, want: high},
+		{value: maxSSRTValue + 1, want: high},
+		{value: 100, want: high},
+		{value: 1000000, want: high},
+		{value: 1_000_000_000_000_000, want: high},
+		{value: math.MaxInt, want: high},
 	} {
 		c.Equal(tc.want, ssrtToYards(tc.value), "value %d", tc.value)
-	}
-}
-
-// Values beyond either end of the table are clamped to it. The high end must be, since the value arrives straight from
-// a script and the yardage grows without bound while fxp.Int does not.
-func TestSSRTToYardsClamps(t *testing.T) {
-	c := check.New(t)
-	low := ssrtToYards(minSSRTValue)
-	for _, value := range []int{minSSRTValue - 1, -100, -1000000, math.MinInt} {
-		c.Equal(low, ssrtToYards(value), "value %d", value)
-	}
-	high := ssrtToYards(maxSSRTValue)
-	for _, value := range []int{maxSSRTValue + 1, 100, 1000000, 1_000_000_000_000_000, math.MaxInt} {
-		c.Equal(high, ssrtToYards(value), "value %d", value)
 	}
 }
 
@@ -79,38 +77,6 @@ func TestSSRTToYardsNeverSaturates(t *testing.T) {
 
 	// One past the end would need 1e15 yards, which fxp.Int cannot hold; that is why maxSSRTValue is where it is.
 	c.Equal(fxp.Max, fxp.FromInteger(100000000000000).Mul(fxp.Ten))
-}
-
-// measure.modifierToYards must return promptly no matter what a script hands it. The conversion loop runs (value-4)/6
-// times inside a Go function, and goja only honors an Interrupt between VM instructions, so the per-script timeout
-// cannot preempt it: before the value was clamped, measure.modifierToYards(1e15) would have spun here for weeks.
-func TestScriptModifierToYardsIsBounded(t *testing.T) {
-	c := check.New(t)
-
-	// Warm the VM pool and the compiled-program cache so the timings below measure the conversion itself.
-	_, err := runScript(0, "measure.modifierToYards(0)")
-	c.NoError(err)
-
-	for _, tc := range []struct {
-		expr string
-		want string
-	}{
-		{expr: "measure.modifierToYards(4)", want: "10"},
-		{expr: "measure.modifierToYards(87)", want: "700000000000000"},
-		{expr: "measure.modifierToYards(88)", want: "700000000000000"},
-		{expr: "measure.modifierToYards(1e8)", want: "700000000000000"},
-		{expr: "measure.modifierToYards(1e15)", want: "700000000000000"},
-	} {
-		start := time.Now()
-		var v string
-		v, err = runScript(0, tc.expr)
-		elapsed := time.Since(start)
-		c.NoError(err, "expr %q", tc.expr)
-		c.Equal(tc.want, v, "expr %q", tc.expr)
-		// Generously loose: the clamped conversion is microseconds, while an unclamped 1e15 would take weeks. The
-		// bound only has to separate "returns" from "never returns" without being flaky on a loaded machine.
-		c.True(elapsed < 5*time.Second, "expr %q took %v", tc.expr, elapsed)
-	}
 }
 
 // The yardage ssrtToYards produces must map back to the value it came from through ssrtInchesToValue, so a change to
@@ -194,7 +160,9 @@ func TestScriptModifierUnitResolution(t *testing.T) {
 	}
 }
 
-// A script-supplied number must reach the table as the same value on every architecture.
+// A script-supplied number must reach the table as the same value on every architecture, and measure.modifierToYards
+// must map one beyond the table to its end. Without that clamp, its conversion loop, which runs (value-4)/6 times
+// inside a Go function the per-script timeout cannot preempt, would hang on a large value.
 //
 // Go leaves the conversion of an out-of-range float64 to an integer implementation-defined. arm64 saturates to
 // MaxInt64, which clamps to the top of the table; amd64 produces MinInt64, which clamps to the bottom. Narrowing before
@@ -224,13 +192,19 @@ func TestSSRTValueFromScriptIsArchitectureIndependent(t *testing.T) {
 		c.Equal(tc.want, intFromScriptClampedToSSRT(tc.value), "value %v", tc.value)
 	}
 
-	// End to end through the script binding: the extremes must map to the ends of the table on every architecture.
+	// End to end through the script binding: a value in the table maps to its entry, and anything past an end, however
+	// extreme, maps to that end on every architecture.
 	top := ssrtToYards(maxSSRTValue).AsFloat[float64]()
 	bottom := ssrtToYards(minSSRTValue).AsFloat[float64]()
 	for _, tc := range []struct {
 		expr string
 		want float64
 	}{
+		{expr: "measure.modifierToYards(4)", want: 10},
+		{expr: "measure.modifierToYards(87)", want: top},
+		{expr: "measure.modifierToYards(88)", want: top},
+		{expr: "measure.modifierToYards(1e8)", want: top},
+		{expr: "measure.modifierToYards(1e15)", want: top},
 		{expr: "measure.modifierToYards(1e300)", want: top},
 		{expr: "measure.modifierToYards(-1e300)", want: bottom},
 		{expr: "measure.modifierToYards(Infinity)", want: top},

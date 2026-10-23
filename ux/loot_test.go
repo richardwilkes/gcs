@@ -20,44 +20,6 @@ import (
 	"github.com/richardwilkes/unison"
 )
 
-// TestTreasureGenPanelWithInRangeValues verifies that values already in range reach the fields unaltered.
-func TestTreasureGenPanelWithInRangeValues(t *testing.T) {
-	c := check.New(t)
-	p := newTreasureGenPanel(fxp.Thousand, fxp.TenThousand)
-	c.Equal(fxp.Thousand, p.minValue, "minimum value")
-	c.Equal(fxp.TenThousand, p.maxValue, "maximum value")
-	c.Equal(fxp.Thousand.String(), p.minField.Text(), "minimum field text")
-	c.Equal(fxp.TenThousand.String(), p.maxField.Text(), "maximum field text")
-	c.False(p.minField.Invalid(), "minimum field validity")
-	c.False(p.maxField.Invalid(), "maximum field validity")
-}
-
-// TestTreasureGenPanelWithOutOfRangeValues reproduces a crash when the stored loot generation values exceeded the
-// fields' maximum. Creating a field clamps its value and reports it through the set callback while the dialog and the
-// fields are still nil, so validating the OK button there panicked and the treasure generation dialog could never be
-// opened.
-func TestTreasureGenPanelWithOutOfRangeValues(t *testing.T) {
-	c := check.New(t)
-
-	// A value above the field maximum survives loading the settings, so it can reach the dialog.
-	settings := gurps.Settings{
-		LootGenMinValue: fxp.TenMillionMinusOne + fxp.One,
-		LootGenMaxValue: fxp.TenMillionMinusOne + fxp.Two,
-	}
-	settings.EnsureValidity()
-	c.True(settings.LootGenMinValue > fxp.TenMillionMinusOne, "minimum value is left above the field maximum")
-	c.True(settings.LootGenMaxValue > fxp.TenMillionMinusOne, "maximum value is left above the field maximum")
-
-	p := newTreasureGenPanel(settings.LootGenMinValue, settings.LootGenMaxValue)
-	c.Equal(fxp.TenMillionMinusOne, p.minValue, "minimum value clamped into range")
-	c.Equal(fxp.TenMillionMinusOne, p.maxValue, "maximum value clamped into range")
-
-	// The same clamping happens for values below the field minimum.
-	p = newTreasureGenPanel(fxp.OneHundredth, fxp.OneHundredth)
-	c.Equal(fxp.One, p.minValue, "minimum value clamped up into range")
-	c.Equal(fxp.One, p.maxValue, "maximum value clamped up into range")
-}
-
 // TestTreasureGenPanelValidateOKWithoutDialog verifies that bringing the OK button up to date before the dialog has
 // been created, whether directly or through a field's validation, is a no-op rather than a panic.
 func TestTreasureGenPanelValidateOKWithoutDialog(t *testing.T) {
@@ -110,31 +72,37 @@ func TestLootSheetNewItemCommandUsesTheLiveList(t *testing.T) {
 	c.Equal(0, sheet.Equipment.Table.RootRowCount(), "undo must take the row back out of the list that is on screen")
 }
 
-// TestLootSheetIgnoresAnotherEntitySheetSettings verifies that a loot sheet only responds to a change in the global
-// sheet settings, which is what it reads from, and not to a change made in some character's per-sheet settings.
-// Responding to the latter would rebuild the loot sheet for an edit that was never made to it.
-func TestLootSheetIgnoresAnotherEntitySheetSettings(t *testing.T) {
-	c := check.New(t)
-	sheet := newTestLootSheet(t)
-	sheet.loot.ModifiedOn = jio.Time{}
-	before := currentDisplayStamp()
-
-	sheet.SheetSettingsUpdated(gurps.NewEntity(), gurps.SheetSettingsAllParts, true)
-	c.Equal(jio.Time{}, sheet.loot.ModifiedOn, "another entity's settings change must not touch the loot sheet")
-	c.Equal(before, currentDisplayStamp(), "another entity's settings change must not rebuild the loot sheet")
-}
-
 // TestLootSheetIgnoresTheDefaultsItDoesNotShow verifies that a change to the default block layout, attribute
-// definitions or body type, none of which a loot sheet shows, leaves the loot sheet alone. Setting the default layout
-// or applying the default attribute definitions used to fully rebuild every open loot sheet.
+// definitions or body type, none of which a loot sheet shows, leaves the loot sheet alone, as does any change made in
+// some character's per-sheet settings, since a loot sheet reads only the global ones. Setting the default layout or
+// applying the default attribute definitions used to fully rebuild every open loot sheet.
 func TestLootSheetIgnoresTheDefaultsItDoesNotShow(t *testing.T) {
-	c := check.New(t)
-	sheet := newTestLootSheet(t)
-	before := currentDisplayStamp()
+	for _, one := range []struct {
+		name   string
+		entity *gurps.Entity
+		parts  gurps.SheetSettingsParts
+	}{
+		{
+			name:  "defaults the loot sheet doesn't show",
+			parts: gurps.SheetSettingsLayoutPart | gurps.SheetSettingsAttributesPart | gurps.SheetSettingsBodyTypePart,
+		},
+		{
+			name:   "another entity's settings",
+			entity: gurps.NewEntity(),
+			parts:  gurps.SheetSettingsAllParts,
+		},
+	} {
+		t.Run(one.name, func(t *testing.T) {
+			c := check.New(t)
+			sheet := newTestLootSheet(t)
+			sheet.loot.ModifiedOn = jio.Time{}
+			before := currentDisplayStamp()
 
-	sheet.SheetSettingsUpdated(nil, gurps.SheetSettingsLayoutPart|gurps.SheetSettingsAttributesPart|
-		gurps.SheetSettingsBodyTypePart, true)
-	c.Equal(before, currentDisplayStamp(), "a change to defaults the loot sheet doesn't show must not rebuild it")
+			sheet.SheetSettingsUpdated(one.entity, one.parts, true)
+			c.Equal(jio.Time{}, sheet.loot.ModifiedOn, "the change must not touch the loot sheet")
+			c.Equal(before, currentDisplayStamp(), "the change must not rebuild the loot sheet")
+		})
+	}
 }
 
 // TestLootSheetShowsGlobalSheetSettingsWithoutBeingModified verifies that a change to the global sheet settings, which
@@ -181,17 +149,83 @@ func TestLootCandidatesUseWhatGroupsHold(t *testing.T) {
 	c.Equal([]string{"Ruby", "Diamond", "Chest"}, names)
 }
 
-// TestTreasureGenPanelRecordsTheValidityOfAFieldBuiltOutOfRange checks that a field built from a stored value outside
-// its range, which it shows flagged as invalid, is recorded as invalid as soon as its validity is gated, so that the OK
-// button can't be enabled while the field shows a value other than the one generation would use.
+// TestTreasureGenPanelRecordsTheValidityOfAFieldBuiltOutOfRange checks that a field built from a stored value in its
+// range takes it unaltered, while one built from a value outside its range clamps the value into it, shows the stored
+// value flagged as invalid, and is recorded as invalid as soon as its validity is gated, so that the OK button can't be
+// enabled while the field shows a value other than the one generation would use. The clamped value is reported while
+// the dialog and the fields are still nil, which once panicked, so that the treasure generation dialog could never be
+// opened once the stored values exceeded the fields' maximum.
 func TestTreasureGenPanelRecordsTheValidityOfAFieldBuiltOutOfRange(t *testing.T) {
 	c := check.New(t)
-	p := newTreasureGenPanel(fxp.TenMillionMinusOne+fxp.One, fxp.TenThousand)
-	c.True(p.minField.Invalid(), "the field shows the stored value flagged as invalid")
-	c.True(p.invalid[p.minField], "and is recorded as invalid")
-	c.False(p.maxField.Invalid())
-	c.False(p.invalid[p.maxField])
-	p = newTreasureGenPanel(fxp.Thousand, fxp.Half)
-	c.True(p.maxField.Invalid())
-	c.True(p.invalid[p.maxField], "a field built below its range is recorded as invalid too")
+
+	// A value above the field maximum survives loading the settings, so it can reach the dialog.
+	settings := gurps.Settings{
+		LootGenMinValue: fxp.TenMillionMinusOne + fxp.One,
+		LootGenMaxValue: fxp.TenMillionMinusOne + fxp.Two,
+	}
+	settings.EnsureValidity()
+	c.True(settings.LootGenMinValue > fxp.TenMillionMinusOne, "minimum value is left above the field maximum")
+	c.True(settings.LootGenMaxValue > fxp.TenMillionMinusOne, "maximum value is left above the field maximum")
+
+	for _, one := range []struct {
+		name       string
+		minValue   fxp.Int
+		maxValue   fxp.Int
+		wantMin    fxp.Int
+		wantMax    fxp.Int
+		minInvalid bool
+		maxInvalid bool
+	}{
+		{
+			name:     "in range",
+			minValue: fxp.Thousand,
+			maxValue: fxp.TenThousand,
+			wantMin:  fxp.Thousand,
+			wantMax:  fxp.TenThousand,
+		},
+		{
+			name:       "minimum above range",
+			minValue:   fxp.TenMillionMinusOne + fxp.One,
+			maxValue:   fxp.TenThousand,
+			wantMin:    fxp.TenMillionMinusOne,
+			wantMax:    fxp.TenThousand,
+			minInvalid: true,
+		},
+		{
+			name:       "both above range, from the settings",
+			minValue:   settings.LootGenMinValue,
+			maxValue:   settings.LootGenMaxValue,
+			wantMin:    fxp.TenMillionMinusOne,
+			wantMax:    fxp.TenMillionMinusOne,
+			minInvalid: true,
+			maxInvalid: true,
+		},
+		{
+			name:       "maximum below range",
+			minValue:   fxp.Thousand,
+			maxValue:   fxp.Half,
+			wantMin:    fxp.Thousand,
+			wantMax:    fxp.One,
+			maxInvalid: true,
+		},
+		{
+			name:       "both below range",
+			minValue:   fxp.OneHundredth,
+			maxValue:   fxp.OneHundredth,
+			wantMin:    fxp.One,
+			wantMax:    fxp.One,
+			minInvalid: true,
+			maxInvalid: true,
+		},
+	} {
+		p := newTreasureGenPanel(one.minValue, one.maxValue)
+		c.Equal(one.wantMin, p.minValue, "%s: minimum value clamped into range", one.name)
+		c.Equal(one.wantMax, p.maxValue, "%s: maximum value clamped into range", one.name)
+		c.Equal(one.minValue.String(), p.minField.Text(), "%s: the minimum field shows the stored value", one.name)
+		c.Equal(one.maxValue.String(), p.maxField.Text(), "%s: the maximum field shows the stored value", one.name)
+		c.Equal(one.minInvalid, p.minField.Invalid(), "%s: minimum field validity", one.name)
+		c.Equal(one.minInvalid, p.invalid[p.minField], "%s: minimum field validity is recorded", one.name)
+		c.Equal(one.maxInvalid, p.maxField.Invalid(), "%s: maximum field validity", one.name)
+		c.Equal(one.maxInvalid, p.invalid[p.maxField], "%s: maximum field validity is recorded", one.name)
+	}
 }

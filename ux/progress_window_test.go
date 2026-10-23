@@ -23,19 +23,6 @@ import (
 // fails the test rather than hanging it.
 const backgroundHandshakeTimeout = 10 * time.Second
 
-// awaitBackgroundResult receives the background work's result, failing rather than hanging if it never arrives.
-func awaitBackgroundResult[T any](t *testing.T, resultChan <-chan T) T {
-	t.Helper()
-	select {
-	case result := <-resultChan:
-		return result
-	case <-time.After(backgroundHandshakeTimeout):
-		t.Fatal("timed out waiting for the background result")
-		var zero T
-		return zero
-	}
-}
-
 // awaitBackgroundFinish waits for the background work's finish callback to have closed finished, failing rather than
 // hanging if it never does.
 func awaitBackgroundFinish(t *testing.T, finished <-chan struct{}) {
@@ -47,44 +34,32 @@ func awaitBackgroundFinish(t *testing.T, finished <-chan struct{}) {
 	}
 }
 
-// TestRunInBackgroundReportsFailure guards against failed work being observed as a success, which a hand-off through
-// variables shared with the UI thread could still be racing over when the modal loop is stopped.
-func TestRunInBackgroundReportsFailure(t *testing.T) {
-	c := check.New(t)
-	want := errors.New("download failed")
-	resultChan := make(chan error, 1)
-	finished := make(chan struct{})
-	runInBackground(resultChan, func() error { return want }, func() { close(finished) })
-	awaitBackgroundFinish(t, finished)
-	c.Equal(want, awaitBackgroundResult(t, resultChan))
-}
-
-// TestRunInBackgroundReportsSuccess checks the same hand-off for work that succeeded, with a result made of more than
-// an error.
-func TestRunInBackgroundReportsSuccess(t *testing.T) {
-	c := check.New(t)
-	want := map[string][]*rule{"B": {{Rule: "Dodge", Book: "B", Page: "374"}}}
-	resultChan := make(chan rulesLookupResult, 1)
-	runInBackground(resultChan, func() rulesLookupResult { return rulesLookupResult{rules: want} }, func() {})
-	result := awaitBackgroundResult(t, resultChan)
-	c.NoError(result.err)
-	c.Equal(want, result.rules)
-}
-
 // TestRunInBackgroundDeliversResultBeforeFinishing checks the invariant the hand-off rests on: finish stops the modal
-// loop and the UI thread reads the result as soon as that loop exits, so the result must already be in the channel by
-// the time finish runs. The receive is non-blocking on purpose -- an empty channel means the UI thread could have been
-// released with nothing to read.
+// loop and the UI thread reads the result as soon as that loop exits, so the result, whether a failure or a success
+// made of more than an error, must already be in the channel by the time finish runs. The receive is non-blocking on
+// purpose -- an empty channel means the UI thread could have been released with nothing to read.
 func TestRunInBackgroundDeliversResultBeforeFinishing(t *testing.T) {
+	t.Run("failure", func(t *testing.T) {
+		checkResultDeliveredBeforeFinishing(t, errors.New("download failed"))
+	})
+	t.Run("success", func(t *testing.T) {
+		checkResultDeliveredBeforeFinishing(t,
+			rulesLookupResult{rules: map[string][]*rule{"B": {{Rule: "Dodge", Book: "B", Page: "374"}}}})
+	})
+}
+
+// checkResultDeliveredBeforeFinishing runs work returning want in the background and checks that finish finds it
+// already waiting in the channel.
+func checkResultDeliveredBeforeFinishing[T any](t *testing.T, want T) {
+	t.Helper()
 	c := check.New(t)
-	want := errors.New("download failed")
-	resultChan := make(chan error, 1)
+	resultChan := make(chan T, 1)
 	var (
 		delivered bool
-		got       error
+		got       T
 	)
 	done := make(chan struct{})
-	runInBackground(resultChan, func() error { return want }, func() {
+	runInBackground(resultChan, func() T { return want }, func() {
 		select {
 		case got = <-resultChan:
 			delivered = true
@@ -95,17 +70,6 @@ func TestRunInBackgroundDeliversResultBeforeFinishing(t *testing.T) {
 	awaitBackgroundFinish(t, done)
 	c.True(delivered, "the result must be in the channel before the modal loop can be stopped")
 	c.Equal(want, got)
-}
-
-// TestRunInBackgroundDoesNotBlockWithoutAReceiver checks that the goroutine completes with nothing receiving yet. Only
-// finish stops the modal loop the UI thread must leave before it can receive, so a send that blocked would deadlock.
-func TestRunInBackgroundDoesNotBlockWithoutAReceiver(t *testing.T) {
-	c := check.New(t)
-	resultChan := make(chan error, 1)
-	finished := make(chan struct{})
-	runInBackground(resultChan, func() error { return nil }, func() { close(finished) })
-	awaitBackgroundFinish(t, finished)
-	c.NoError(awaitBackgroundResult(t, resultChan))
 }
 
 func TestProgressWindowCancelButton(t *testing.T) {

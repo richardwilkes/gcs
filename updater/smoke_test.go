@@ -48,28 +48,34 @@ func buildStandIn(t *testing.T, src string) string {
 	return exePath
 }
 
+// A build that runs and reports the expected version is accepted. The version comparison must tolerate the "~" a build
+// made from a modified checkout appends, which would otherwise be read as the wrong version entirely, and an executable
+// exiting cleanly without printing anything, as the Windows GUI build does, is accepted too.
 func TestVerifyRunsAcceptsAWorkingBuild(t *testing.T) {
 	c := check.New(t)
-	exePath := buildStandIn(t, `package main
+	for _, one := range []struct {
+		name string
+		src  string
+	}{
+		{"the version", `package main
 
 import "fmt"
 
 func main() { fmt.Println("5.46.0") }
-`)
-	c.NoError(verifyRuns(t.Context(), exePath, "5.46.0"))
-}
-
-// The version comparison must tolerate the "~" a build made from a modified checkout appends, which would otherwise be
-// read as the wrong version entirely.
-func TestVerifyRunsAcceptsAModifiedBuildMarker(t *testing.T) {
-	c := check.New(t)
-	exePath := buildStandIn(t, `package main
+`},
+		{"the version with the modified-build marker", `package main
 
 import "fmt"
 
 func main() { fmt.Println("5.46.0~") }
-`)
-	c.NoError(verifyRuns(t.Context(), exePath, "5.46.0"))
+`},
+		{"nothing", `package main
+
+func main() {}
+`},
+	} {
+		c.NoError(verifyRuns(t.Context(), buildStandIn(t, one.src), "5.46.0"), "a build printing %s", one.name)
+	}
 }
 
 // The case this check exists for: a downloaded release that cannot start on this machine -- wrong processor, a system
@@ -108,16 +114,6 @@ func main() { fmt.Println("5.30.0") }
 	err := verifyRuns(t.Context(), exePath, "5.46.0")
 	c.HasError(err)
 	c.Contains(err.Error(), "5.30.0")
-}
-
-// An executable exiting cleanly without printing anything, as the Windows GUI build does, is accepted.
-func TestVerifyRunsAcceptsSilence(t *testing.T) {
-	c := check.New(t)
-	exePath := buildStandIn(t, `package main
-
-func main() {}
-`)
-	c.NoError(verifyRuns(t.Context(), exePath, "5.46.0"))
 }
 
 // The case a corrupted download produces: a file that exists and is marked executable but is not a program at all.

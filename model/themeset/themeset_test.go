@@ -82,6 +82,9 @@ func TestMarshalWritesFactoryOrderAndFillsInFromFactory(t *testing.T) {
 	c.Equal(`{"a":1,"b":2,"c":3}`, string(data), "a zero value writes the factory values, not the live ones")
 }
 
+// TestUnmarshalFillsInMissingKeysFromFactory verifies that loading replaces stale data, keeps the loaded and unknown
+// keys and fills in the rest from the factory, and that a failed load, whether of a bad value or of a document that
+// isn't an object, leaves a complete factory set behind.
 func TestUnmarshalFillsInMissingKeysFromFactory(t *testing.T) {
 	c := check.New(t)
 	setup(t)
@@ -96,15 +99,10 @@ func TestUnmarshalFillsInMissingKeysFromFactory(t *testing.T) {
 	err := jio.Unmarshal([]byte(`{"b":"not a number"}`), &s)
 	c.HasError(err)
 	c.Equal(map[string]int{"a": 1, "b": 2, "c": 3}, s.data, "a failed load leaves a complete factory set behind")
-}
 
-func TestUnmarshalRejectsNonObject(t *testing.T) {
-	c := check.New(t)
-	setup(t)
-
-	var s testSet
-	c.HasError(jio.Unmarshal([]byte(`[1,2,3]`), &s))
-	c.Equal(map[string]int{"a": 1, "b": 2, "c": 3}, s.data)
+	var fresh testSet
+	c.HasError(jio.Unmarshal([]byte(`[1,2,3]`), &fresh))
+	c.Equal(map[string]int{"a": 1, "b": 2, "c": 3}, fresh.data, "a document that isn't an object fails the same way")
 }
 
 func TestCaptureCurrentCopiesLiveValues(t *testing.T) {
@@ -169,17 +167,4 @@ func TestResetOneRestoresOnlyTheNamedValue(t *testing.T) {
 	var other testSet
 	other.ResetOne("unknown")
 	c.Equal(0, len(other.data), "resetting an unknown key adds nothing and doesn't panic on the nil map")
-}
-
-func TestRoundTripThroughJSON(t *testing.T) {
-	c := check.New(t)
-	setup(t)
-
-	var s testSet
-	s.CaptureCurrent()
-	data, err := jio.Marshal(&s)
-	c.NoError(err)
-	var loaded testSet
-	c.NoError(jio.Unmarshal(data, &loaded))
-	c.Equal(s.data, loaded.data)
 }

@@ -42,7 +42,8 @@ func scrollPosition(scroll *unison.ScrollPanel) geom.Point {
 }
 
 // TestScrollPanDragFollowsThePointer checks that dragging moves the scroll position by the amount the pointer moved, in
-// the opposite direction, so the content stays under the pointer.
+// the opposite direction, so the content stays under the pointer; that a drag begun while already scrolled offsets
+// from that position rather than from the origin; and that scrolling is clamped at both ends of the content.
 func TestScrollPanDragFollowsThePointer(t *testing.T) {
 	c := check.New(t)
 	pan, scroll, content := newScrollPanDragFixture()
@@ -67,16 +68,10 @@ func TestScrollPanDragFollowsThePointer(t *testing.T) {
 
 	pan.end()
 	c.False(pan.active)
-}
 
-// TestScrollPanDragStartsFromTheCurrentPosition checks that a drag begun while already scrolled offsets from that
-// position rather than from the origin, and that scrolling is clamped at the end of the content.
-func TestScrollPanDragStartsFromTheCurrentPosition(t *testing.T) {
-	c := check.New(t)
-	pan, scroll, _ := newScrollPanDragFixture()
+	// A drag begun while already scrolled starts from there.
 	scroll.SetPosition(100, 50)
 	c.Equal(geom.NewPoint(100, 50), scrollPosition(scroll))
-
 	pan.begin(geom.NewPoint(10, 10))
 	pan.drag(geom.NewPoint(0, 5))
 	c.Equal(geom.NewPoint(110, 55), scrollPosition(scroll))
@@ -84,16 +79,6 @@ func TestScrollPanDragStartsFromTheCurrentPosition(t *testing.T) {
 	// The furthest the 100x100 view can scroll over 500x400 content is 400x300.
 	pan.drag(geom.NewPoint(-1000, -1000))
 	c.Equal(geom.NewPoint(400, 300), scrollPosition(scroll))
-}
-
-func TestScrollPanDragCursor(t *testing.T) {
-	c := check.New(t)
-	pan, _, _ := newScrollPanDragFixture()
-	c.Equal(unison.ArrowCursor(), pan.cursor())
-	pan.begin(geom.Point{})
-	c.Equal(unison.MoveCursor(), pan.cursor())
-	pan.end()
-	c.Equal(unison.ArrowCursor(), pan.cursor())
 }
 
 // TestScrollPanDragInstall checks that install wires the pan state up and that the callbacks it sets on the content

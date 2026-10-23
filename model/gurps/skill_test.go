@@ -196,10 +196,11 @@ func TestSkillWithNullDefaultEntry(t *testing.T) {
 
 // TestSkillMarshalCalc verifies the "calc" object Skill writes through the marshaling shared with Spell: a container
 // with nothing to report omits it, a skill without a resolvable level records only the reason and resolved notes, a
-// leveled skill adds the level and relative skill level, and the data fields keep preceding "calc".
+// leveled skill adds the level and relative skill level, and the data fields keep preceding "calc". A spell records its
+// reason in both branches as well.
 func TestSkillMarshalCalc(t *testing.T) {
 	c := check.New(t)
-	marshaled := func(s *Skill) string {
+	marshaled := func(s any) string {
 		data, err := jio.Marshal(s)
 		c.NoError(err)
 		return string(data)
@@ -236,6 +237,21 @@ func TestSkillMarshalCalc(t *testing.T) {
 	out = marshaled(leveled)
 	c.True(strings.Contains(out, `"calc":{"level":`+leveled.LevelData.Level.String()+`,"rsl":"`+leveled.RelativeLevel()+
 		`","unsatisfied_reason":"Requires Broadsword"}`), "a leveled skill records its level, rsl and reason: %s", out)
+
+	const reason = "Requires Magery 1"
+	noLevelSpell := NewSpell(nil, nil, false)
+	noLevelSpell.Name = "Fireball"
+	c.True(noLevelSpell.LevelData.Level <= 0, "precondition: the spell must have no resolvable level")
+	c.False(strings.Contains(marshaled(noLevelSpell), "unsatisfied_reason"), "no reason means no field for a spell")
+	noLevelSpell.UnsatisfiedReason = reason
+	c.True(strings.Contains(marshaled(noLevelSpell), `"unsatisfied_reason":"`+reason+`"`),
+		"an unsatisfied spell with no resolvable level must still record the reason")
+	leveledSpell := addTestSpell(e, "Fireball", fxp.Four)
+	e.Recalculate()
+	c.True(leveledSpell.LevelData.Level > 0, "precondition: the spell must have a positive level")
+	leveledSpell.UnsatisfiedReason = reason
+	c.True(strings.Contains(marshaled(leveledSpell), `"unsatisfied_reason":"`+reason+`"`),
+		"an unsatisfied spell with a level must record the reason")
 }
 
 // TestSkillPrereqIgnoresSkillWithNoPoints verifies that a skill with no points spent on it doesn't satisfy a skill

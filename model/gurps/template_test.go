@@ -19,19 +19,28 @@ import (
 )
 
 // TestTemplateDetailsRoundTrip verifies that the values describing the template as a whole survive a save and a load,
-// and that an open end of the target range stays open rather than coming back as zero.
+// that an open end of the target range stays open rather than coming back as zero, and that a template with none of
+// them set is written just as it was before they existed, so that existing files don't change merely by being saved
+// again.
 func TestTemplateDetailsRoundTrip(t *testing.T) {
 	c := check.New(t)
 	template := NewTemplate()
+	data, err := json.Marshal(template)
+	c.NoError(err)
+	text := string(data)
+	for _, key := range []string{"name", "reference", "reference_highlight", "local_notes", "vtt_notes", "target_points"} {
+		c.False(strings.Contains(text, `"`+key+`"`), "an unset %s must not be written", key)
+	}
+
 	template.Name = "Knight"
 	template.PageRef = "DF1:5"
 	template.PageRefHighlight = "Knight"
 	template.LocalNotes = "Heavily armored fighter."
 	template.TargetPoints = numericRangeAtLeast(fxp.FromInteger(250))
 
-	data, err := json.Marshal(template)
+	data, err = json.Marshal(template)
 	c.NoError(err)
-	text := string(data)
+	text = string(data)
 	c.True(strings.Contains(text, `"target_points":{"min":250}`), "an open end must be left out, not written as zero")
 	c.True(strings.Contains(text, `"local_notes":"Heavily armored fighter."`))
 
@@ -43,18 +52,6 @@ func TestTemplateDetailsRoundTrip(t *testing.T) {
 	c.Equal("Heavily armored fighter.", loaded.LocalNotes)
 	c.Equal("250+", loaded.TargetPoints.String())
 	c.Nil(loaded.TargetPoints.Max, "the open end must load as open")
-}
-
-// TestTemplateWithoutDetailsWritesNone verifies that a template with none of the new values set is written just as it
-// was before they existed, so that existing files don't change merely by being saved again.
-func TestTemplateWithoutDetailsWritesNone(t *testing.T) {
-	c := check.New(t)
-	data, err := json.Marshal(NewTemplate())
-	c.NoError(err)
-	text := string(data)
-	for _, key := range []string{"name", "reference", "reference_highlight", "local_notes", "vtt_notes", "target_points"} {
-		c.False(strings.Contains(text, `"`+key+`"`), "an unset %s must not be written", key)
-	}
 }
 
 // TestTemplatePointsRange verifies that what a template costs is the total of its traits, skills and spells, with a

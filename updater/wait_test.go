@@ -94,23 +94,14 @@ func TestWaitForPredecessorGivesUpOnAPortHeldByAnotherProcess(t *testing.T) {
 	c.True(elapsed < waitTimeout, "a port held by something else must not consume the whole timeout")
 }
 
-// A state file carrying no process to watch falls back to the port alone rather than treating "no process" as "already
-// gone".
-func TestWaitForPredecessorIgnoresAnAbsentProcessID(t *testing.T) {
-	c := check.New(t)
-	c.True(processExists(0))
-	c.True(processExists(-1))
-
-	listener, port := holdPort(t)
-	xio.CloseIgnoringErrors(listener)
-	c.NoError(waitForPredecessor(0, port))
-}
-
 // The liveness check both ways round, since a wrong answer either stalls every update or starts the swap while the
-// application is still running.
+// application is still running. A zero or negative identifier, which a state file carrying no process to watch holds,
+// counts as running, so the wait falls back to the port alone rather than treating "no process" as "already gone".
 func TestProcessExists(t *testing.T) {
 	c := check.New(t)
 	c.True(processExists(os.Getpid()), "this process is certainly running")
+	c.True(processExists(0), "no process to watch must not count as already gone")
+	c.True(processExists(-1), "no process to watch must not count as already gone")
 
 	//nolint:gosec // Re-executing this test binary, purely to obtain a process that has certainly exited
 	cmd := exec.Command(os.Args[0], "-test.run", "TestProcessExists", "-h")

@@ -93,28 +93,34 @@ func checkEditSurvivesTheRearrangement(c check.Checker, sheet *Sheet, mgr *uniso
 	c.Equal("20", live().BaseValue, "redoing the edit must change the item that is in the list")
 }
 
+// TestRedoOfAnEditReachesTheItemADragPutBack verifies that an edit made after a drag or a move put the item second
+// reaches the item in the list through every undo and redo of the edit and the rearrangement.
 func TestRedoOfAnEditReachesTheItemADragPutBack(t *testing.T) {
-	c := check.New(t)
-	sheet, first, second := newTestSheetWithOtherEquipment(t)
-	mgr := unison.UndoManagerFor(sheet.OtherEquipment.Table)
-	c.NotNil(mgr, "the table must be able to find the sheet's undo manager")
-	dragSecond(c, sheet, first, second)
-	c.Equal(first.ID(), sheet.Entity().OtherEquipment[1].ID(), "the drag must have put the item second")
-	applyValueEdit(sheet, sheet.Entity().OtherEquipment[1], "20")
-	checkEditSurvivesTheRearrangement(c, sheet, mgr, first.ID())
-}
-
-func TestRedoOfAnEditReachesTheItemAMovePutBack(t *testing.T) {
-	c := check.New(t)
-	sheet, first, _ := newTestSheetWithOtherEquipment(t)
-	table := sheet.OtherEquipment.Table
-	mgr := unison.UndoManagerFor(table)
-	c.NotNil(mgr, "the table must be able to find the sheet's undo manager")
-	table.SetSelectionMap(map[tid.TID]bool{first.ID(): true})
-	MoveSelection(table, MoveDown)
-	c.Equal(first.ID(), sheet.Entity().OtherEquipment[1].ID(), "the move must have put the item second")
-	applyValueEdit(sheet, sheet.Entity().OtherEquipment[1], "20")
-	checkEditSurvivesTheRearrangement(c, sheet, mgr, first.ID())
+	for _, tc := range []struct {
+		name      string
+		rearrange func(c check.Checker, sheet *Sheet, first, second *gurps.Equipment)
+	}{
+		{name: "drag", rearrange: dragSecond},
+		{
+			name: "move",
+			rearrange: func(_ check.Checker, sheet *Sheet, first, _ *gurps.Equipment) {
+				table := sheet.OtherEquipment.Table
+				table.SetSelectionMap(map[tid.TID]bool{first.ID(): true})
+				MoveSelection(table, MoveDown)
+			},
+		},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			c := check.New(t)
+			sheet, first, second := newTestSheetWithOtherEquipment(t)
+			mgr := unison.UndoManagerFor(sheet.OtherEquipment.Table)
+			c.NotNil(mgr, "the table must be able to find the sheet's undo manager")
+			tc.rearrange(c, sheet, first, second)
+			c.Equal(first.ID(), sheet.Entity().OtherEquipment[1].ID(), "the %s must have put the item second", tc.name)
+			applyValueEdit(sheet, sheet.Entity().OtherEquipment[1], "20")
+			checkEditSurvivesTheRearrangement(c, sheet, mgr, first.ID())
+		})
+	}
 }
 
 func TestUndoOfAnEditReachesTheItemADeletionPutBack(t *testing.T) {

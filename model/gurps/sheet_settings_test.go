@@ -35,46 +35,26 @@ func writeSheetSettingsFile(t *testing.T, content string) string {
 	return p
 }
 
-// TestNewSheetSettingsFromFileCurrentLocation verifies that a file with the settings at the top level loads.
-func TestNewSheetSettingsFromFileCurrentLocation(t *testing.T) {
-	c := check.New(t)
-	s, err := NewSheetSettingsFromFile(nil, writeSheetSettingsFile(t,
-		`{"damage_progression":"knowing_your_own_strength","default_length_units":"in",`+
-			`"use_multiplicative_modifiers":true,"notes_display":"tooltip"}`))
-	c.NoError(err)
-	c.Equal(progression.KnowingYourOwnStrength, s.DamageProgression)
-	c.Equal(fxp.Inch, s.DefaultLengthUnits)
-	c.True(s.UseMultiplicativeModifiers)
-	c.Equal(display.Tooltip, s.NotesDisplay)
-}
-
-// TestNewSheetSettingsFromFileOldLocation verifies that a legacy file, which nests the settings under a
-// "sheet_settings" key, still loads. Embedding SheetSettings in the wrapper struct used to decode the file promoted its
-// custom unmarshaler onto the wrapper, so the whole document was consumed by it and the legacy key was never seen,
-// silently yielding factory defaults (which the --convert path would then write back over the original file).
-func TestNewSheetSettingsFromFileOldLocation(t *testing.T) {
-	c := check.New(t)
-	s, err := NewSheetSettingsFromFile(nil, writeSheetSettingsFile(t,
-		`{"type":"settings","version":5,"sheet_settings":{"damage_progression":"knowing_your_own_strength",`+
-			`"default_length_units":"in","use_multiplicative_modifiers":true,"notes_display":"tooltip"}}`))
-	c.NoError(err)
-	c.Equal(progression.KnowingYourOwnStrength, s.DamageProgression)
-	c.Equal(fxp.Inch, s.DefaultLengthUnits)
-	c.True(s.UseMultiplicativeModifiers)
-	c.Equal(display.Tooltip, s.NotesDisplay)
-}
-
-// TestNewSheetSettingsFromFileAppliesEnsureValidity verifies that a mostly empty file is filled in with the factory
-// defaults for the pieces that must always be present.
+// TestNewSheetSettingsFromFileAppliesEnsureValidity verifies that a file with the settings at the top level, or nested
+// under the legacy "sheet_settings" key, loads them, and that the pieces that must always be present but that the file
+// lacks are filled in with the factory defaults. Embedding SheetSettings in the wrapper struct used to decode the file
+// once made the legacy key go unseen, silently yielding factory defaults (which the --convert path would then write
+// back over the original file).
 func TestNewSheetSettingsFromFileAppliesEnsureValidity(t *testing.T) {
 	for name, content := range map[string]string{
-		"current": `{}`,
-		"old":     `{"sheet_settings":{}}`,
+		"current": `{"damage_progression":"knowing_your_own_strength","default_length_units":"in",` +
+			`"use_multiplicative_modifiers":true,"notes_display":"tooltip"}`,
+		"old": `{"type":"settings","version":5,"sheet_settings":{"damage_progression":"knowing_your_own_strength",` +
+			`"default_length_units":"in","use_multiplicative_modifiers":true,"notes_display":"tooltip"}}`,
 	} {
 		t.Run(name, func(t *testing.T) {
 			c := check.New(t)
 			s, err := NewSheetSettingsFromFile(nil, writeSheetSettingsFile(t, content))
 			c.NoError(err)
+			c.Equal(progression.KnowingYourOwnStrength, s.DamageProgression)
+			c.Equal(fxp.Inch, s.DefaultLengthUnits)
+			c.True(s.UseMultiplicativeModifiers)
+			c.Equal(display.Tooltip, s.NotesDisplay)
 			c.NotNil(s.Page)
 			c.NotNil(s.Layout)
 			c.NotNil(s.Attributes)

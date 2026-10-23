@@ -36,7 +36,8 @@ func buttonTitle(b *unison.Button) string {
 }
 
 // TestMenuKeySettingsRowLayout verifies that fill() adds each binding's widgets in the order [key button, title label,
-// reset button], which the reset button relies on to locate its row's key button.
+// reset button], and that each reset button's sibling lookup finds the key button of its own row rather than the title
+// label before it.
 func TestMenuKeySettingsRowLayout(t *testing.T) {
 	c := check.New(t)
 	d := newTestMenuKeySettingsDockable()
@@ -56,21 +57,6 @@ func TestMenuKeySettingsRowLayout(t *testing.T) {
 		resetButton, ok := children[i*3+2].Self.(*unison.Button)
 		c.True(ok, "child %d must be the reset button for %q", i*3+2, binding.ID)
 		c.Equal("", buttonTitle(resetButton), "the reset button for %q must be drawable-only", binding.ID)
-	}
-}
-
-// TestMenuKeySettingsResetButtonTargetsItsOwnKeyButton verifies that the sibling lookup used by the reset button finds
-// the key binding button of its own row. It once landed one position early, on the title label, so the type assertion
-// always failed and the displayed key binding was never refreshed.
-func TestMenuKeySettingsResetButtonTargetsItsOwnKeyButton(t *testing.T) {
-	c := check.New(t)
-	d := newTestMenuKeySettingsDockable()
-	children := d.content.Children()
-	for i := range gurps.CurrentBindings() {
-		keyButton, ok := children[i*3].Self.(*unison.Button)
-		c.True(ok, "child %d must be a key binding button", i*3)
-		resetButton, ok := children[i*3+2].Self.(*unison.Button)
-		c.True(ok, "child %d must be a reset button", i*3+2)
 		c.Equal(keyButton, bindingButtonForResetButton(resetButton),
 			"the reset button in row %d must target the key binding button of that same row", i)
 	}

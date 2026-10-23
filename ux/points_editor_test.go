@@ -35,19 +35,22 @@ func newEntityWithAscendingPointsRecord() *gurps.Entity {
 }
 
 // TestPointsEditorOpensUnmodifiedForAnUnsortedRecordList verifies that an editor opened on a points record list that
-// isn't already in the editor's display order reports no changes. The editor sorts the copy it edits, so if the copy
-// it compares against isn't sorted the same way, an untouched editor enables Apply and Cancel, shows the modified
-// marker on its tab, and prompts to save on the way out.
+// isn't already in the editor's display order holds every record, most recent first and not shared with the entity,
+// and reports no changes. The editor sorts the copy it edits, so if the copy it compares against isn't sorted the same
+// way, an untouched editor enables Apply and Cancel, shows the modified marker on its tab, and prompts to save on the
+// way out.
 func TestPointsEditorOpensUnmodifiedForAnUnsortedRecordList(t *testing.T) {
 	c := check.New(t)
 	entity := newEntityWithAscendingPointsRecord()
 	e := newPointsEditor(nil, entity)
 	c.False(e.isModified(), "an editor that has not been touched must report no changes")
 
+	c.Equal(len(entity.PointsRecord), len(e.current), "the editor must hold every record")
 	for i, rec := range e.current {
 		if i != 0 {
 			c.True(e.current[i-1].When.Compare(rec.When) >= 0, "the editor must show the records most recent first")
 		}
+		c.True(!slices.Contains(entity.PointsRecord, rec), "the editor must not share records with the entity")
 	}
 
 	e.current[0].Points += fxp.One
@@ -55,21 +58,4 @@ func TestPointsEditorOpensUnmodifiedForAnUnsortedRecordList(t *testing.T) {
 
 	e.current[0].Points -= fxp.One
 	c.False(e.isModified(), "putting the original value back must clear the change")
-}
-
-// TestPointsEditorSortsBothCopiesTheSameWay verifies that the two copies the editor holds are independent of each
-// other, but hold equal values in the same order, whatever order the entity stored them in.
-func TestPointsEditorSortsBothCopiesTheSameWay(t *testing.T) {
-	c := check.New(t)
-	entity := newEntityWithAscendingPointsRecord()
-	e := newPointsEditor(nil, entity)
-	c.Equal(len(entity.PointsRecord), len(e.before), "the editor must hold every record")
-	c.Equal(len(e.before), len(e.current), "both copies must hold the same number of records")
-	for i := range e.before {
-		c.True(e.before[i] != e.current[i], "the copies must not share records")
-		c.Equal(*e.before[i], *e.current[i], "the copies must hold equal records in the same order")
-		c.True(!slices.Contains(entity.PointsRecord, e.current[i]),
-			"the editor must not share records with the entity")
-	}
-	c.Equal("Second session", e.current[0].Reason, "the most recent record must come first")
 }

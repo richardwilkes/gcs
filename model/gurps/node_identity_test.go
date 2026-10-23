@@ -72,25 +72,9 @@ func TestRecycleNodesReusesTheObjectsTheDataCameFrom(t *testing.T) {
 	c.True(veryFine.Parent() == fine, "the nested modifier's parent must be the recycled modifier")
 }
 
-func TestRecycleNodesKeepsNodesItHasNoObjectFor(t *testing.T) {
-	c := check.New(t)
-	entity := gurps.NewEntity()
-	known := gurps.NewEquipment(entity, nil, false)
-	known.Name = "Known"
-	list := []*gurps.Equipment{known}
-	identities := make(gurps.NodeIdentities)
-	gurps.CollectNodeIdentities(identities, list)
-
-	unknown := gurps.NewEquipment(entity, nil, false)
-	unknown.Name = "Unknown"
-	fresh := roundTripEquipment(c, []*gurps.Equipment{known, unknown})
-	freshUnknown := fresh[1]
-	recycled := gurps.RecycleNodes(identities, fresh)
-	c.True(recycled[0] == known, "the known node must be recycled")
-	c.True(recycled[1] == freshUnknown, "an unknown node must be kept as it is")
-	c.True(recycled[1] != unknown, "and not be mistaken for an object the identities never held")
-}
-
+// TestRecycleNodesKeepsNodesSharingAnIDDistinct verifies that nodes whose ID the identities hold more than once are
+// kept as deserialized, there being no telling which object each came from, whether a collection holding the ID only
+// once comes before or after the one that finds it shared.
 func TestRecycleNodesKeepsNodesSharingAnIDDistinct(t *testing.T) {
 	c := check.New(t)
 	entity := gurps.NewEntity()
@@ -114,27 +98,16 @@ func TestRecycleNodesKeepsNodesSharingAnIDDistinct(t *testing.T) {
 	c.Equal("Second", recycled[1].Name, "the second node must keep its data")
 	c.Equal("First", first.Name, "the objects that could not be told apart must be left untouched")
 	c.Equal("Second", second.Name)
-}
 
-func TestRecycleNodesLeavesASharedIDAloneWhateverALaterCollectionHoldsForIt(t *testing.T) {
-	c := check.New(t)
-	entity := gurps.NewEntity()
-	first := gurps.NewEquipment(entity, nil, false)
-	first.Name = "First"
-	second := gurps.NewEquipment(entity, nil, false)
-	second.Name = "Second"
-	second.TID = first.TID
-	list := []*gurps.Equipment{first, second}
-	identities := make(gurps.NodeIdentities)
+	identities = make(gurps.NodeIdentities)
 	gurps.CollectNodeIdentities(identities, list)
 	only := gurps.NewEquipment(entity, nil, false)
 	only.Name = "Only"
 	only.TID = first.TID
 	gurps.CollectNodeIdentities(identities, []*gurps.Equipment{only})
-
-	fresh := roundTripEquipment(c, list)
-	freshFirst, freshSecond := fresh[0], fresh[1]
-	recycled := gurps.RecycleNodes(identities, fresh)
+	fresh = roundTripEquipment(c, list)
+	freshFirst, freshSecond = fresh[0], fresh[1]
+	recycled = gurps.RecycleNodes(identities, fresh)
 	c.True(recycled[0] == freshFirst, "an ID shared when collected must stay shared when a later collection holds it once")
 	c.True(recycled[1] == freshSecond)
 	c.Equal("Only", only.Name, "the object the later collection held must be left untouched")

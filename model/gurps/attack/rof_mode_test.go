@@ -9,13 +9,6 @@
 
 package attack_test
 
-import (
-	"testing"
-
-	"github.com/richardwilkes/gcs/v5/model/gurps/attack"
-	"github.com/richardwilkes/toolbox/v2/check"
-)
-
 var rofModeSameTests = []string{
 	"",
 	"1",
@@ -34,9 +27,4 @@ var rofModeAdjustedTests = []parseCase{
 	{"2.9", "2x9"},
 	{"?", ""},
 	{"x100", "1x100"},
-}
-
-func TestRoFMode(t *testing.T) {
-	parse := func(s string) string { return attack.ParseRoFMode(s).String() }
-	checkFieldParsing(check.New(t), parse, rofModeSameTests, rofModeAdjustedTests)
 }

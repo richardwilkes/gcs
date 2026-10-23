@@ -52,8 +52,9 @@ func TestModifierHideNotes(t *testing.T) {
 	c.Equal("Silvered (Hurts werewolves)", silvered.FullDescription(), "the full description keeps hidden notes")
 }
 
-// TestModifierHideNotesRoundTripAndHash checks that HideNotes and ShowInTitle are each saved only when set, load back,
-// and are hashed, for both kinds of modifier.
+// TestModifierHideNotesRoundTripAndHash checks that HideNotes and ShowInTitle on both kinds of modifier, and
+// CostIgnoresLevel on a trait modifier, are each saved only when set, so that existing files re-save unchanged, load
+// back, and are hashed, so that a library row differing only in one is reported as mismatched.
 func TestModifierHideNotesRoundTripAndHash(t *testing.T) {
 	c := check.New(t)
 	traitMod := NewTraitModifier(nil, nil, false)
@@ -68,6 +69,7 @@ func TestModifierHideNotesRoundTripAndHash(t *testing.T) {
 	}{
 		{"trait modifier", "hide_notes", func(on bool) { traitMod.HideNotes = on }, traitMod},
 		{"trait modifier", "show_in_title", func(on bool) { traitMod.ShowInTitle = on }, traitMod},
+		{"trait modifier", "cost_ignores_level", func(on bool) { traitMod.CostIgnoresLevel = on }, traitMod},
 		{"equipment modifier", "hide_notes", func(on bool) { equipmentMod.HideNotes = on }, equipmentMod},
 		{"equipment modifier", "show_in_title", func(on bool) { equipmentMod.ShowInTitle = on }, equipmentMod},
 	} {
@@ -86,7 +88,8 @@ func TestModifierHideNotesRoundTripAndHash(t *testing.T) {
 	c.NoError(err)
 	var restoredTraitMod TraitModifier
 	c.NoError(jio.Unmarshal(data, &restoredTraitMod))
-	c.True(restoredTraitMod.HideNotes && restoredTraitMod.ShowInTitle, "the trait modifier's flags load back")
+	c.True(restoredTraitMod.HideNotes && restoredTraitMod.ShowInTitle && restoredTraitMod.CostIgnoresLevel,
+		"the trait modifier's flags load back")
 	data, err = jio.Marshal(equipmentMod)
 	c.NoError(err)
 	var restoredEquipmentMod EquipmentModifier

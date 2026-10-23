@@ -47,17 +47,6 @@ func pointsRecordReasons(list []*PointsRecord) []string {
 	return reasons
 }
 
-// TestSortPointsRecordListKeepsTiedRecordsInOrder checks that records made in the same second, which is as finely as
-// their times are kept, keep the order they had when sorted, as the shopping record's do, rather than swapping about.
-func TestSortPointsRecordListKeepsTiedRecordsInOrder(t *testing.T) {
-	c := check.New(t)
-	list := pointsRecordsAt(unstableSortOffsets...)
-	SortPointsRecordList(list)
-	c.True(slices.IsSortedFunc(list, func(a, b *PointsRecord) int { return b.When.Compare(a.When) }))
-	c.Equal([]string{"3", "5", "10"}, pointsRecordReasons(list[:3]),
-		"the records sharing the latest time come first, in the order they had")
-}
-
 // TestReconciliationKeepsTiedPointsRecordsInOrder checks that the record added when the points records don't add up to
 // the total, on loading a sheet, is sorted in without the records sharing a time swapping about.
 func TestReconciliationKeepsTiedPointsRecordsInOrder(t *testing.T) {

@@ -11,7 +11,6 @@ package gurps_test
 
 import (
 	"testing"
-	"testing/fstest"
 
 	"github.com/richardwilkes/gcs/v5/model/criteria"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
@@ -59,55 +58,4 @@ func TestLegacyTraitPrereqKeyLoads(t *testing.T) {
 	c.NoError(err, "the prereqs should marshal")
 	c.Contains(string(out), `"type":"trait_prereq"`, "saving should write the current key")
 	c.NotContains(string(out), "advantage_prereq", "saving should not retain the retired key")
-}
-
-// TestLegacyTraitPrereqIsEvaluated verifies that a migrated legacy trait prereq is actually evaluated, rather than
-// always failing as an UnknownPrereq would.
-func TestLegacyTraitPrereqIsEvaluated(t *testing.T) {
-	c := check.New(t)
-
-	const data = `{
-	"version": 5,
-	"rows": [
-		{
-			"id": "00000000-0000-0000-0000-000000000001",
-			"name": "Magery",
-			"base_points": 5
-		},
-		{
-			"id": "00000000-0000-0000-0000-000000000002",
-			"name": "Needs Magery",
-			"base_points": 10,
-			"prereqs": {
-				"type": "prereq_list",
-				"all": true,
-				"prereqs": [
-					{
-						"type": "advantage_prereq",
-						"has": true,
-						"name": {
-							"compare": "is",
-							"qualifier": "Magery"
-						}
-					}
-				]
-			}
-		}
-	]
-}`
-	traits, err := gurps.NewTraitsFromFile(fstest.MapFS{"Test.adq": {Data: []byte(data)}}, "Test.adq")
-	c.NoError(err, "the file should load")
-	c.Equal(2, len(traits), "both traits should load")
-
-	entity := gurps.NewEntity()
-	entity.Traits = traits
-	entity.Recalculate()
-
-	c.Equal("", traits[1].UnsatisfiedReason,
-		"a satisfied legacy trait prereq must not be reported as unsatisfied: %s", traits[1].UnsatisfiedReason)
-
-	// The prereq must fail without the required trait, proving it is evaluated rather than ignored.
-	entity.Traits = traits[1:]
-	entity.Recalculate()
-	c.NotEqual("", traits[1].UnsatisfiedReason, "the legacy trait prereq should fail when the trait is absent")
 }

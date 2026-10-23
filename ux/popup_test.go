@@ -51,10 +51,10 @@ func selectedValue(p *Popup[attribute.Placement]) attribute.Placement {
 	return value
 }
 
-// TestPopupUndoRedo verifies that undoing and then redoing a Popup change works. Applying the undo drives the popup's
-// selection back, which re-enters SelectionChangedCallback; if that re-entry adds another edit with the same undo ID
-// while the manager is still processing the current one, the edit's AfterData is overwritten and the redo tail
-// released, making Redo a no-op.
+// TestPopupUndoRedo verifies that a Popup change adds exactly one edit and that undoing and then redoing it works.
+// Applying the undo drives the popup's selection back, which re-enters SelectionChangedCallback; if that re-entry adds
+// another edit with the same undo ID while the manager is still processing the current one, the edit's AfterData is
+// overwritten and the redo tail released, making Redo a no-op.
 func TestPopupUndoRedo(t *testing.T) {
 	c := check.New(t)
 	root := newPopupUndoRoot()
@@ -68,6 +68,7 @@ func TestPopupUndoRedo(t *testing.T) {
 	root.mgr.Undo()
 	c.Equal(attribute.Automatic, value, "undo must restore the prior value")
 	c.Equal(attribute.Automatic, selectedValue(p), "undo must restore the popup's selection")
+	c.False(root.mgr.CanUndo(), "a single selection change must produce exactly one undoable edit")
 	c.True(root.mgr.CanRedo(), "undo must leave the edit redoable")
 
 	root.mgr.Redo()
@@ -100,18 +101,4 @@ func TestPopupUndoPreservesNewerEdits(t *testing.T) {
 	c.Equal(attribute.Primary, first, "the older edit must still be redoable")
 	root.mgr.Redo()
 	c.Equal(attribute.Secondary, second, "the newer edit must survive undoing the older one")
-}
-
-// TestPopupUndoAddsOneEdit verifies that a single selection change produces exactly one undoable edit and that undoing
-// it does not leave a second one behind.
-func TestPopupUndoAddsOneEdit(t *testing.T) {
-	c := check.New(t)
-	root := newPopupUndoRoot()
-	value := attribute.Automatic
-	p := newTestPopup(root, &value)
-
-	p.Select(attribute.Primary)
-	root.mgr.Undo()
-	c.False(root.mgr.CanUndo(), "a single selection change must produce exactly one undoable edit")
-	c.Equal(attribute.Automatic, value, "undo must restore the prior value")
 }

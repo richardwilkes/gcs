@@ -55,54 +55,11 @@ func TestCellDataForAccessibilityLeavesOutTheContainerMarker(t *testing.T) {
 		"a screen reader is given the text the cell shows, without the marker")
 }
 
-// TestEquippedCellClickRecalculatesTheSheet verifies that clicking the equipped checkbox brings the item's features
-// into play and that undoing takes them back out. The recalculation is left to the sheet, which performs it as part of
-// the rebuild the click asks for, so this covers the path where the cell itself no longer asks for one.
-func TestEquippedCellClickRecalculatesTheSheet(t *testing.T) {
-	c := check.New(t)
-	sheet := newTestSheetForTemplate(t)
-	entity := sheet.Entity()
-	eqp := gurps.NewEquipment(entity, nil, false)
-	eqp.Name = "Powered Armor"
-	eqp.Equipped = false
-	eqp.Features = gurps.Features{gurps.NewAttributeBonus(gurps.StrengthID)}
-	entity.CarriedEquipment = []*gurps.Equipment{eqp}
-	sheet.Rebuild(true)
-
-	table := sheet.CarriedEquipment.Table
-	c.Equal(gurps.EquipmentEquippedColumn, table.Columns[0].ID, "the equipped column must come first")
-	c.Equal(fxp.Int(0), stBonusFor(entity), "equipment that isn't equipped must not contribute its features")
-
-	rows := table.RootRows()
-	c.Equal(1, len(rows), "the carried equipment table must hold the one item")
-	label, ok := rows[0].ColumnCell(0, 0, unison.Black, unison.White, false, false, false).(*unison.Label)
-	c.True(ok, "the equipped cell must be a label")
-	c.True(label.Enabled(), "an unchecked equipped cell must be enabled")
-
-	// The cell has to be part of the sheet's panel tree for the undo manager and the sheet itself to be found, which
-	// is where the table puts it when it lays out the row.
-	table.AddChild(label)
-	c.True(label.MouseDownCallback(geom.Point{}, unison.ButtonLeft, 1, mod.None), "the click must be consumed")
-	c.True(eqp.Equipped, "clicking the cell must equip the item")
-	c.Equal(fxp.One, stBonusFor(entity), "the entity must have been recalculated with the feature in play")
-
-	mgr := unison.UndoManagerFor(label)
-	c.NotNil(mgr, "the cell must be able to find the sheet's undo manager")
-	c.True(mgr.CanUndo(), "equipping the item must be undoable")
-	mgr.Undo()
-	c.False(eqp.Equipped, "undo must unequip the item")
-	c.Equal(fxp.Int(0), stBonusFor(entity), "undo must recalculate the entity as well")
-
-	c.True(mgr.CanRedo(), "equipping the item must be redoable")
-	mgr.Redo()
-	c.True(eqp.Equipped, "redo must equip the item again")
-	c.Equal(fxp.One, stBonusFor(entity), "redo must put the feature back into play")
-}
-
 // TestLabelCellTooltipKeepsTheCellsOwnTextBehindAContradiction verifies which tooltip a label cell shows: a
 // contradiction among the prerequisites is explained ahead of the cell's own tooltip rather than in place of it, since
 // the row is enabled and in use, while the reason for an unsatisfied prerequisite replaces it, since the row is flagged
-// as broken and the reason is what puts it right.
+// as broken and the reason is what puts it right. The explanation of an unresolved modifier choice goes ahead of
+// whatever else the tooltip says.
 func TestLabelCellTooltipKeepsTheCellsOwnTextBehindAContradiction(t *testing.T) {
 	c := check.New(t)
 	c.Equal("", labelCellTooltip(&gurps.CellData{}), "a cell with nothing to say has no tooltip")
@@ -113,6 +70,15 @@ func TestLabelCellTooltipKeepsTheCellsOwnTextBehindAContradiction(t *testing.T) 
 		"a contradiction is explained on its own when the cell has no tooltip of its own")
 	c.Equal("clash\n---\nown", labelCellTooltip(&gurps.CellData{Tooltip: "own", PrereqContradiction: "clash"}),
 		"a contradiction is explained ahead of the cell's own tooltip, not in place of it")
+	c.Equal("pick", labelCellTooltip(&gurps.CellData{UnresolvedChoice: "pick"}),
+		"an unresolved choice is explained on its own when the cell has nothing else to say")
+	c.Equal("pick\n---\nnotes", labelCellTooltip(&gurps.CellData{UnresolvedChoice: "pick", Tooltip: "notes"}),
+		"an unresolved choice is explained ahead of the cell's own tooltip")
+	c.Equal("pick\n---\nunmet", labelCellTooltip(&gurps.CellData{
+		UnresolvedChoice:  "pick",
+		UnsatisfiedReason: "unmet",
+		Tooltip:           "notes",
+	}), "an unresolved choice is explained ahead of the reason for an unsatisfied prerequisite")
 }
 
 // TestCheckCellDrawsTheNewStateBeforeReportingTheClick verifies the order of operations within a check cell's click
@@ -262,7 +228,8 @@ func TestCheckCellLeavesNonPrimaryPressesToTheTable(t *testing.T) {
 // once. The window reports the two presses with click counts of 1 and then 2, so toggling on both would leave the item
 // right back where it started along with two undo edits, costing the user two undos to return to a state they never
 // left. The second press still has to be consumed, since the table opens the row's editor for a double-click that
-// reaches it.
+// reaches it. Undoing that one edit takes what the click brought into play back out, and for the equipped cell,
+// redoing it puts the item's features back.
 func TestCheckCellDoubleClickTogglesOnlyOnce(t *testing.T) {
 	t.Run("switch cell", func(t *testing.T) {
 		c := check.New(t)
@@ -332,6 +299,11 @@ func TestCheckCellDoubleClickTogglesOnlyOnce(t *testing.T) {
 		c.False(eqp.Equipped, "undo must unequip the item")
 		c.Equal(fxp.Int(0), stBonusFor(entity), "undo must take the feature back out of play")
 		c.False(mgr.CanUndo(), "a double-click must register exactly one edit")
+
+		c.True(mgr.CanRedo(), "equipping the item must be redoable")
+		mgr.Redo()
+		c.True(eqp.Equipped, "redo must equip the item again")
+		c.Equal(fxp.One, stBonusFor(entity), "redo must put the feature back into play")
 	})
 }
 
@@ -426,66 +398,58 @@ func newSheetWithReactionGrantingEquipment(t *testing.T) (*Sheet, *gurps.Equipme
 	return sheet, eqp
 }
 
-// TestEquippedCellClickRebuildsConditionallyPresentLists verifies that equipping an item through its cell rebuilds the
-// sheet, so that a list which only appears while the item contributes -- the Reactions list, for equipment granting a
-// reaction bonus -- comes and goes with the equipped state, and that the sheet is updated exactly once per click.
+// TestEquippedCellClickRebuildsConditionallyPresentLists verifies that equipping an item through its cell or the
+// Toggle Equipped command rebuilds the sheet, so that a list which only appears while the item contributes -- the
+// Reactions list, for equipment granting a reaction bonus -- comes and goes with the equipped state, and that the sheet
+// is updated exactly once per toggle and per undo.
 func TestEquippedCellClickRebuildsConditionallyPresentLists(t *testing.T) {
-	c := check.New(t)
-	sheet, eqp := newSheetWithReactionGrantingEquipment(t)
-	c.False(listAttachedToSheet(sheet, sheet.Reactions), "while unequipped, the Reactions list must not be on the page")
-	counter := installSyncCounter(sheet)
+	for _, one := range []struct {
+		trigger string
+		toggle  func(c check.Checker, sheet *Sheet)
+	}{
+		{"clicking the cell", func(c check.Checker, sheet *Sheet) {
+			table := sheet.CarriedEquipment.Table
+			label, ok := table.RootRows()[0].ColumnCell(0, 0, unison.Black, unison.White, false, false,
+				false).(*unison.Label)
+			c.True(ok, "the equipped cell must be a label")
+			table.AddChild(label)
+			c.True(label.MouseDownCallback(geom.Point{}, unison.ButtonLeft, 1, mod.None), "the click must be consumed")
+		}},
+		{"the Toggle Equipped command", func(_ check.Checker, sheet *Sheet) {
+			table := sheet.CarriedEquipment.Table
+			table.SelectByIndex(0)
+			toggleEquipped(sheet, table)
+		}},
+	} {
+		t.Run(one.trigger, func(t *testing.T) {
+			c := check.New(t)
+			sheet, eqp := newSheetWithReactionGrantingEquipment(t)
+			c.False(listAttachedToSheet(sheet, sheet.Reactions),
+				"while unequipped, the Reactions list must not be on the page")
+			counter := installSyncCounter(sheet)
 
-	click := func() {
-		table := sheet.CarriedEquipment.Table
-		label, ok := table.RootRows()[0].ColumnCell(0, 0, unison.Black, unison.White, false, false, false).(*unison.Label)
-		c.True(ok, "the equipped cell must be a label")
-		table.AddChild(label)
-		c.True(label.MouseDownCallback(geom.Point{}, unison.ButtonLeft, 1, mod.None), "the click must be consumed")
+			one.toggle(c, sheet)
+			c.True(eqp.Equipped, "%s must equip the item", one.trigger)
+			c.True(listAttachedToSheet(sheet, sheet.Reactions), "equipping must bring the Reactions list onto the page")
+			c.Equal(1, sheet.Reactions.Table.RootRowCount(), "the Reactions list must show the item's reaction")
+			c.Equal(1, counter.count, "equipping must update the sheet exactly once")
+
+			counter.count = 0
+			one.toggle(c, sheet)
+			c.False(eqp.Equipped, "%s must unequip the item again", one.trigger)
+			c.False(listAttachedToSheet(sheet, sheet.Reactions), "unequipping must take the Reactions list off the page")
+			c.Equal(1, counter.count, "unequipping must update the sheet exactly once")
+
+			mgr := sheet.UndoManager()
+			c.NotNil(mgr, "the sheet must have an undo manager")
+			counter.count = 0
+			c.True(mgr.CanUndo(), "%s must be undoable", one.trigger)
+			mgr.Undo()
+			c.True(eqp.Equipped, "undo must equip the item again")
+			c.True(listAttachedToSheet(sheet, sheet.Reactions), "undo must bring the Reactions list back onto the page")
+			c.Equal(1, counter.count, "undo must update the sheet exactly once")
+		})
 	}
-
-	click()
-	c.True(eqp.Equipped, "clicking the cell must equip the item")
-	c.True(listAttachedToSheet(sheet, sheet.Reactions), "equipping must bring the Reactions list onto the page")
-	c.Equal(1, sheet.Reactions.Table.RootRowCount(), "the Reactions list must show the item's reaction")
-	c.Equal(1, counter.count, "equipping must update the sheet exactly once")
-
-	counter.count = 0
-	click()
-	c.False(eqp.Equipped, "clicking the cell again must unequip the item")
-	c.False(listAttachedToSheet(sheet, sheet.Reactions), "unequipping must take the Reactions list off the page")
-	c.Equal(1, counter.count, "unequipping must update the sheet exactly once")
-
-	mgr := sheet.UndoManager()
-	c.NotNil(mgr, "the sheet must have an undo manager")
-	counter.count = 0
-	c.True(mgr.CanUndo(), "the click must be undoable")
-	mgr.Undo()
-	c.True(eqp.Equipped, "undo must equip the item again")
-	c.True(listAttachedToSheet(sheet, sheet.Reactions), "undo must bring the Reactions list back onto the page")
-	c.Equal(1, counter.count, "undo must update the sheet exactly once")
-}
-
-// TestToggleEquippedRebuildsConditionallyPresentLists verifies the same for the Toggle Equipped command.
-func TestToggleEquippedRebuildsConditionallyPresentLists(t *testing.T) {
-	c := check.New(t)
-	sheet, eqp := newSheetWithReactionGrantingEquipment(t)
-	c.False(listAttachedToSheet(sheet, sheet.Reactions), "while unequipped, the Reactions list must not be on the page")
-	counter := installSyncCounter(sheet)
-
-	table := sheet.CarriedEquipment.Table
-	table.SelectByIndex(0)
-	toggleEquipped(sheet, table)
-	c.True(eqp.Equipped, "the command must equip the item")
-	c.True(listAttachedToSheet(sheet, sheet.Reactions), "equipping must bring the Reactions list onto the page")
-	c.Equal(1, counter.count, "equipping must update the sheet exactly once")
-
-	counter.count = 0
-	table = sheet.CarriedEquipment.Table
-	table.SelectByIndex(0)
-	toggleEquipped(sheet, table)
-	c.False(eqp.Equipped, "the command must unequip the item again")
-	c.False(listAttachedToSheet(sheet, sheet.Reactions), "unequipping must take the Reactions list off the page")
-	c.Equal(1, counter.count, "unequipping must update the sheet exactly once")
 }
 
 // TestMarkdownCellKeepsItsPanelsWhenSelectionChanges verifies that selecting and deselecting a row re-colors the

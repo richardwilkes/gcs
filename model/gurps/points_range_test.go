@@ -409,9 +409,9 @@ func TestPointsRangeForCountPicker(t *testing.T) {
 // much the children could have accounted for when it faces away.
 //
 // Which side of nothing the children sit on is what decides whether the qualifier binds at all, so the groups below
-// are the three answers to that -- advantages, disadvantages, and both at once. Nothing here assumes the amount a
-// picker asks for is positive: a disadvantage package asking for "at most -20 points" is as legitimate as one asking
-// for "at least 20".
+// are the three answers to that -- advantages, disadvantages, and both at once -- followed by a picker with no
+// children at all. Nothing here assumes the amount a picker asks for is positive: a disadvantage package asking for
+// "at most -20 points" is as legitimate as one asking for "at least 20".
 func TestPointsRangeForPointsPicker(t *testing.T) {
 	c := check.New(t)
 
@@ -701,6 +701,31 @@ func TestPointsRangeForPointsPicker(t *testing.T) {
 			criteria.AtMostNumber, 20,
 			[]int{-10, -20, -40},
 			"—",
+		},
+	})
+
+	// A picker authored with nothing to pick from has no side to take either, so it costs nothing, as one whose
+	// children carry no points does -- the same answer a count picker gives when there is nothing to count (see
+	// TestPointsRangeForCountPicker). An exact qualifier is the exception: it says what the container is worth without
+	// consulting its children at all.
+	checkPickerCases(c, picker.Points, []pickerCase{
+		{
+			"an exact points picker with nothing to pick from is worth what it asks for",
+			criteria.EqualsNumber, 20,
+			nil,
+			20, 20, true,
+		},
+		{
+			"a maximum points picker with nothing to pick from costs nothing",
+			criteria.AtMostNumber, 20,
+			nil,
+			0, 0, true,
+		},
+		{
+			"a minimum points picker with nothing to pick from costs nothing as well",
+			criteria.AtLeastNumber, 20,
+			nil,
+			0, 0, true,
 		},
 	})
 }
@@ -1027,45 +1052,6 @@ func TestPointsRangeForExactPointsPickerDirectly(t *testing.T) {
 	value, settled := settledPickerCost(tp)
 	c.True(settled, "the short circuit settles an exact points picker without looking at its children")
 	c.Equal(fxp.Twenty, value, "and settles it at the same cost the branch returns")
-}
-
-// TestPointsRangeForPointsPickerWithNoChildren verifies what a points picker authored with nothing to pick from
-// reports. Nothing on offer is nothing to take a side, so the qualifier binds neither end and the container can only
-// cost nothing -- the same answer a count picker gives when there is nothing to count (see
-// TestPointsRangeForCountPicker), and the same one the picker keeps while every choice on offer carries no points of
-// its own. An exact qualifier is the exception: it says what the container is worth without consulting its children
-// at all.
-func TestPointsRangeForPointsPickerWithNoChildren(t *testing.T) {
-	c := check.New(t)
-
-	r := newPickerRange(picker.Points, criteria.EqualsNumber, 20, nil)
-	checkRange(c, 20, 20, r, "an exact points picker with nothing to pick from is worth what it asks for")
-	c.True(r.IsSettled(), "and it is settled, since every way of meeting it costs the same")
-
-	// The short circuit answers this one without looking at the children, so it cannot help but agree -- which is
-	// the point: the branch that does look at them has to come back with the same answer.
-	var tp TemplatePicker
-	tp.Type = picker.Points
-	tp.Qualifier.Compare = criteria.EqualsNumber
-	tp.Qualifier.Qualifier = fxp.Twenty
-	value, settled := settledPickerCost(tp)
-	c.True(settled, "the short circuit settles an exact points picker with no children too")
-	c.Equal(fxp.Twenty, value, "at the same cost the branch returns")
-
-	r = newPickerRange(picker.Points, criteria.AtMostNumber, 20, nil)
-	checkRange(c, 0, 0, r, "a maximum points picker with nothing to pick from costs nothing")
-	c.True(r.IsSettled(), "and is settled, since there is nothing to spend the cap on")
-
-	r = newPickerRange(picker.Points, criteria.AtLeastNumber, 20, nil)
-	c.Equal("0", r.String(), "a minimum points picker with nothing to pick from costs nothing as well")
-	c.True(r.IsSettled(), "and is settled too")
-
-	// The same container once a single choice carrying no points is in place: the answers do not move, since a
-	// choice that can only cost nothing leaves the picker as sideless as no choice at all.
-	r = newPickerRange(picker.Points, criteria.AtMostNumber, 20, []int{0})
-	checkRange(c, 0, 0, r, "a maximum points picker does not change once a choice carrying no points is added")
-	r = newPickerRange(picker.Points, criteria.AtLeastNumber, 20, []int{0})
-	c.Equal("0", r.String(), "nor does a minimum points picker")
 }
 
 // TestPointsRangeForPickerIsNeverInverted sweeps every picker type and comparison over a spread of qualifiers and

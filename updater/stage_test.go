@@ -44,15 +44,19 @@ func installed(t *testing.T, dir string) Target {
 
 // What every platform needs from the helper, whatever shape the copy takes: the path handed back is a copy of the
 // running program, it lives in the staging directory rather than in the installation about to be replaced, and it can
-// be executed.
+// be started by that path, which once failed on Windows for want of an ".exe" extension (see helperFileName). Staging
+// it must also touch nothing outside the staging directory, so an abort here can cost the user nothing.
 func TestStageHelperProducesAnExecutableCopy(t *testing.T) {
 	c := check.New(t)
-	target := installed(t, t.TempDir())
+	installDir := t.TempDir()
+	target := installed(t, installDir)
+	before := listing(t, installDir)
 	workDir := t.TempDir()
 
 	helper, err := stageHelper(t.Context(), &target, workDir)
 	c.NoError(err)
 
+	c.Equal(before, listing(t, installDir), "staging the helper must leave the installation alone")
 	c.True(strings.HasPrefix(helper, workDir+string(filepath.Separator)),
 		"the helper must be staged rather than run from the installation being replaced")
 	fi, err := os.Stat(helper)
@@ -62,34 +66,10 @@ func TestStageHelperProducesAnExecutableCopy(t *testing.T) {
 	if runtime.GOOS != xos.WindowsOS {
 		c.True(fi.Mode().Perm()&0o100 != 0, "the helper must be executable")
 	}
-}
-
-// A regression test for an update that could be prepared but never applied: the helper was staged with no ".exe"
-// extension, which Windows cannot start (see helperFileName). exec.LookPath applies the same rule os/exec does when
-// starting it, without needing a real executable image.
-func TestStageHelperCanBeStarted(t *testing.T) {
-	c := check.New(t)
-	target := installed(t, t.TempDir())
-
-	helper, err := stageHelper(t.Context(), &target, t.TempDir())
-	c.NoError(err)
-
+	// exec.LookPath applies the same rule os/exec does when starting the helper, without needing a real executable
+	// image.
 	_, err = exec.LookPath(helper)
 	c.NoError(err, "the staged helper must be startable by the path stageHelper hands back")
-}
-
-// The property the whole design rests on at this point: preparing an update touches nothing outside the staging
-// directory, so an abort here can cost the user nothing.
-func TestStageHelperLeavesTheInstallationAlone(t *testing.T) {
-	c := check.New(t)
-	installDir := t.TempDir()
-	target := installed(t, installDir)
-	before := listing(t, installDir)
-
-	_, err := stageHelper(t.Context(), &target, t.TempDir())
-	c.NoError(err)
-
-	c.Equal(before, listing(t, installDir))
 }
 
 // listing returns every path under dir, relative to it, so that two moments can be compared.

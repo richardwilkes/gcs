@@ -111,9 +111,10 @@ func TestExtractSingleTGZ(t *testing.T) {
 	}
 }
 
-// TestExtractSingleTGZRejectsBadArchives verifies that anything other than exactly the one expected file is refused.
-// Requiring an exact name with no directory component is what makes path traversal structurally impossible here, so
-// the traversal cases below are rejected by name matching rather than by a separate filter.
+// TestExtractSingleTGZRejectsBadArchives verifies that anything other than exactly the one expected file, or that file
+// expanding past maxPayloadSize, is refused without leaving a partial file behind. Requiring an exact name with no
+// directory component is what makes path traversal structurally impossible here, so the traversal cases below are
+// rejected by name matching rather than by a separate filter.
 func TestExtractSingleTGZRejectsBadArchives(t *testing.T) {
 	c := check.New(t)
 	for _, one := range []struct {
@@ -130,6 +131,7 @@ func TestExtractSingleTGZRejectsBadArchives(t *testing.T) {
 		{"two files", makeTGZ(t, tgzEntry{name: "gcs", body: []byte("x")}, tgzEntry{name: "extra", body: []byte("y")})},
 		{"empty file", makeTGZ(t, tgzEntry{name: "gcs"})},
 		{"not gzip", []byte("this is not a gzip stream at all")},
+		{"an over-large archive", makeTGZ(t, tgzEntry{name: "gcs", body: make([]byte, maxPayloadSize+1)})},
 	} {
 		dst := filepath.Join(t.TempDir(), "gcs")
 		err := ExtractSingleTGZ(bytes.NewReader(one.archive), "gcs", dst)
@@ -137,19 +139,6 @@ func TestExtractSingleTGZRejectsBadArchives(t *testing.T) {
 		_, statErr := os.Stat(dst)
 		c.True(os.IsNotExist(statErr), "%s left a partial file behind", one.name)
 	}
-}
-
-// TestExtractSingleTGZRejectsABomb verifies the maxPayloadSize expansion bound.
-func TestExtractSingleTGZRejectsABomb(t *testing.T) {
-	c := check.New(t)
-	dst := filepath.Join(t.TempDir(), "gcs")
-	err := ExtractSingleTGZ(bytes.NewReader(makeTGZ(t, tgzEntry{
-		name: "gcs",
-		body: make([]byte, maxPayloadSize+1),
-	})), "gcs", dst)
-	c.HasError(err)
-	_, statErr := os.Stat(dst)
-	c.True(os.IsNotExist(statErr), "an over-large archive left a partial file behind")
 }
 
 // TestExtractSingleZip verifies the Windows archive path. It is pure Go, so it is exercised on every platform rather

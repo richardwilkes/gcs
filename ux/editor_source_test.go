@@ -473,90 +473,60 @@ func TestEditorSyncFollowsEquipmentKinds(t *testing.T) {
 	c.False(e.isModified(), "nothing is left to apply")
 }
 
-// TestEditorSyncThatUnmakesAModifierChoice verifies that applying an editor's sync that makes a modifier choice a
-// group, as its library copy is, hands its options to the choice around it, which keeps its own pick, as the list's
-// sync does, and that undo puts the options back.
-func TestEditorSyncThatUnmakesAModifierChoice(t *testing.T) {
-	c := check.New(t)
-	sheet, outer, inner := newChoiceWithinChoice(t, c, true)
-	options := gurps.ModifierChoiceOptions(outer)
-	c.Equal(1, len(options), "precondition: the inner choice owns its own options")
-
-	e, _ := buildEditorContent(sheet, inner, initTraitModifierEditor)
-	requireSourceMenuAction(t, e.sourceMenuEntries(), "Sync with Source",
-		"the choice differs from its library copy, a group")()
-	e.applyEdits()
-	c.False(gurps.IsModifierChoice(inner), "the choice is a group now")
-	a, b, cMod := outer.Children[0], inner.Children[0], inner.Children[1]
-	c.True(a.Enabled(), "the outer choice keeps its own pick")
-	c.False(b.Enabled(), "over the option the group handed it")
-	c.False(cMod.Enabled())
-
-	unison.UndoManagerFor(sheet).Undo()
-	c.True(gurps.IsModifierChoice(inner))
-	c.True(a.Enabled())
-	c.True(b.Enabled(), "undo puts the inner choice's pick back")
-	c.False(cMod.Enabled())
-}
-
-// TestEditorSyncThatMakesAModifierChoice verifies that applying an editor's sync that makes a modifier group a choice,
-// as its library copy is, settles it and the choice around it as the list's sync does: the new choice keeps the pick it
-// was handed, and the mandatory choice around it, which lost its pick to it, is left for the user to make rather than
-// given one. Undo makes it a group again, with the options as they were.
-func TestEditorSyncThatMakesAModifierChoice(t *testing.T) {
-	c := check.New(t)
-	sheet, outer, inner := newChoiceWithinChoice(t, c, false)
-	a, b, cMod := outer.Children[0], inner.Children[0], inner.Children[1]
-	c.False(a.Enabled(), "precondition: the outer choice's pick is within the group")
-	c.True(b.Enabled())
-
-	e, _ := buildEditorContent(sheet, inner, initTraitModifierEditor)
-	requireSourceMenuAction(t, e.sourceMenuEntries(), "Sync with Source",
-		"the group differs from its library copy, a choice")()
-	e.applyEdits()
-	c.True(gurps.IsModifierChoice(inner), "the group is a choice now")
-	c.True(b.Enabled(), "it keeps the pick it was handed")
-	c.False(cMod.Enabled())
-	c.False(a.Enabled(), "and the mandatory choice around it, which lost its pick to it, isn't given one")
-	c.False(gurps.ModifierChoiceIsResolved(outer), "but is left for the user to make")
-
-	unison.UndoManagerFor(sheet).Undo()
-	c.False(gurps.IsModifierChoice(inner), "undo makes it a group again")
-	c.True(gurps.ModifierChoiceIsResolved(outer), "whose option is the outer choice's pick once more")
-	c.False(a.Enabled())
-	c.True(b.Enabled())
-	c.False(cMod.Enabled())
-}
-
 // TestEditorSyncSettlesAChoiceAsItsListDoes verifies that syncing a modifier container from its editor leaves its
 // options, and those of the choice around it, just as syncing it from its list does, whatever the sync makes of it: a
-// choice of a group, a group of a choice, or a mandatory choice of an optional one.
+// choice of a group, a group of a choice, or a mandatory choice of an optional one; and that undo puts them back as
+// they were.
 func TestEditorSyncSettlesAChoiceAsItsListDoes(t *testing.T) {
+	// choiceOutcome describes what the container is, which of option A, of the outer choice, and options B and C, of
+	// the container, are on, and whether the outer choice has its pick.
+	type choiceOutcome struct {
+		choice, mandatory, aOn, bOn, cOn, outerResolved bool
+	}
 	for _, one := range []struct {
-		name  string
-		build func(t *testing.T, c check.Checker) (sheet *Sheet, outer, inner *gurps.TraitModifier)
+		name   string
+		build  func(t *testing.T, c check.Checker) (sheet *Sheet, outer, inner *gurps.TraitModifier)
+		synced choiceOutcome
+		undone choiceOutcome
 	}{
 		{
 			name: "group to choice",
 			build: func(t *testing.T, c check.Checker) (*Sheet, *gurps.TraitModifier, *gurps.TraitModifier) {
 				return newChoiceWithinChoice(t, c, false)
 			},
+			// The new choice keeps the pick it was handed, and the mandatory choice around it, which lost its pick to
+			// it, is left for the user to make rather than given one. Undo makes it a group again, whose option is the
+			// outer choice's pick once more.
+			synced: choiceOutcome{choice: true, mandatory: true, bOn: true},
+			undone: choiceOutcome{bOn: true, outerResolved: true},
 		},
 		{
 			name: "choice to group",
 			build: func(t *testing.T, c check.Checker) (*Sheet, *gurps.TraitModifier, *gurps.TraitModifier) {
 				return newChoiceWithinChoice(t, c, true)
 			},
+			// The group hands its options to the choice around it, which keeps its own pick over them. Undo puts the
+			// inner choice's pick back.
+			synced: choiceOutcome{aOn: true, outerResolved: true},
+			undone: choiceOutcome{choice: true, mandatory: true, aOn: true, bOn: true, outerResolved: true},
 		},
-		{name: "optional to mandatory", build: newOptionalChoiceWithinChoice},
+		{
+			name:   "optional to mandatory",
+			build:  newOptionalChoiceWithinChoice,
+			synced: choiceOutcome{choice: true, mandatory: true, aOn: true, outerResolved: true},
+			undone: choiceOutcome{choice: true, aOn: true, outerResolved: true},
+		},
 	} {
 		t.Run(one.name, func(t *testing.T) {
 			c := check.New(t)
-			// outcome describes the container and the options once synced: A, of the outer choice, then B and C.
-			outcome := func(outer, inner *gurps.TraitModifier) []bool {
-				return []bool{
-					gurps.IsModifierChoice(inner), gurps.IsMandatoryModifierChoice(inner),
-					outer.Children[0].Enabled(), inner.Children[0].Enabled(), inner.Children[1].Enabled(),
+			outcome := func(outer, inner *gurps.TraitModifier) choiceOutcome {
+				return choiceOutcome{
+					choice:        gurps.IsModifierChoice(inner),
+					mandatory:     gurps.IsMandatoryModifierChoice(inner),
+					aOn:           outer.Children[0].Enabled(),
+					bOn:           inner.Children[0].Enabled(),
+					cOn:           inner.Children[1].Enabled(),
+					outerResolved: gurps.ModifierChoiceIsResolved(outer),
 				}
 			}
 			_, outer, inner := one.build(t, c)
@@ -570,9 +540,14 @@ func TestEditorSyncSettlesAChoiceAsItsListDoes(t *testing.T) {
 			requireSourceMenuAction(t, e.sourceMenuEntries(), "Sync with Source",
 				"the container differs from its library copy")()
 			e.applyEdits()
-			c.Equal(fromList, outcome(outer, inner), "the editor's sync leaves what the list's does")
+			synced := outcome(outer, inner)
+			c.Equal(fromList, synced, "the editor's sync leaves what the list's does")
+			c.Equal(one.synced, synced, "the editor's sync settles the container and its options")
 			state, _ := gurps.MatchSource(inner)
 			c.Equal(srcstate.Matched, state)
+
+			unison.UndoManagerFor(sheet).Undo()
+			c.Equal(one.undone, outcome(outer, inner), "undo puts the container and its options back")
 		})
 	}
 }

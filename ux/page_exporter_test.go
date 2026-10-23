@@ -158,26 +158,6 @@ func buildTestBand(node *gurps.SheetLayoutNode, panels map[string]unison.Paneler
 	return built.AsPanel()
 }
 
-// TestPlaceBandSplitsAList verifies that a list gives up as many of its rows as fit and leaves the rest for the next
-// page, and that applying that decision restricts what it draws and records where to pick it up from.
-func TestPlaceBandSplitsAList(t *testing.T) {
-	c := check.New(t)
-	list := newFakeBandList(gurps.BlockTraitsKey, 10, 20, 20, 20, 20)
-	band := buildTestBand(testBlockNode(gurps.BlockTraitsKey, fxp.One),
-		map[string]unison.Paneler{gurps.BlockTraitsKey: list})
-	c.Equal(list.AsPanel(), band, "a band that is a single block is that block's panel")
-
-	startAt := make(map[string]int)
-	placer := newBandPlacer(startAt)
-	used, done := placer.placeBand(band, 57, false)
-	c.Equal(float32(52), used, "the overhead plus the two rows that fit")
-	c.False(done, "there are rows left over")
-
-	c.True(placer.applyBand(band), "a list that placed rows stays on the page")
-	c.Equal([][2]int{{0, 2}}, list.ranges, "only the rows that fit are drawn")
-	c.Equal(map[string]int{gurps.BlockTraitsKey: 2}, startAt, "the next page picks up at the first row left over")
-}
-
 // TestPlaceBandListTakesAtLeastOneRow verifies that a list that can't fit even its first row is left for the next page,
 // unless it already has the page to itself, in which case it takes one row anyway and lets it run off the end.
 func TestPlaceBandListTakesAtLeastOneRow(t *testing.T) {
@@ -245,15 +225,21 @@ func TestPlaceBandAtomicBlock(t *testing.T) {
 }
 
 // TestPlaceBandColumn verifies that a column of blocks is placed from the top down, that nothing below the first block
-// that isn't finished is placed, and that applying the decision takes those blocks off the page.
+// that isn't finished is placed, and that applying the decision takes those blocks off the page, while a column whose
+// blocks all fit is finished in one pass.
 func TestPlaceBandColumn(t *testing.T) {
 	c := check.New(t)
-	first := newFakeBandList(gurps.BlockTraitsKey, 10, 20, 20, 20, 20)
-	second := newFakeBandList(gurps.BlockSkillsKey, 10, 20)
-	band := buildTestBand(testContainerNode(layoutnode.Column, fxp.One,
-		testBlockNode(gurps.BlockTraitsKey, fxp.One),
-		testBlockNode(gurps.BlockSkillsKey, fxp.One),
-	), map[string]unison.Paneler{gurps.BlockTraitsKey: first, gurps.BlockSkillsKey: second})
+	build := func(firstHeights ...float32) (band *unison.Panel, first, second *fakeBandList) {
+		first = newFakeBandList(gurps.BlockTraitsKey, 10, firstHeights...)
+		second = newFakeBandList(gurps.BlockSkillsKey, 10, 20)
+		band = buildTestBand(testContainerNode(layoutnode.Column, fxp.One,
+			testBlockNode(gurps.BlockTraitsKey, fxp.One),
+			testBlockNode(gurps.BlockSkillsKey, fxp.One),
+		), map[string]unison.Paneler{gurps.BlockTraitsKey: first, gurps.BlockSkillsKey: second})
+		return band, first, second
+	}
+
+	band, first, second := build(20, 20, 20, 20)
 	c.Equal(columnBandPanel, bandKindOf(band), "the builder's column is recognized as one")
 
 	startAt := make(map[string]int)
@@ -267,40 +253,36 @@ func TestPlaceBandColumn(t *testing.T) {
 	c.Equal([][2]int{{0, 2}}, first.ranges)
 	c.Equal(0, len(second.ranges), "the block that got nothing is not told to draw anything")
 	c.Equal(map[string]int{gurps.BlockTraitsKey: 2}, startAt)
-}
 
-// TestPlaceBandColumnPlacesEverythingThatFits verifies that a column whose blocks all fit is finished in one pass.
-func TestPlaceBandColumnPlacesEverythingThatFits(t *testing.T) {
-	c := check.New(t)
-	first := newFakeBandList(gurps.BlockTraitsKey, 10, 20)
-	second := newFakeBandList(gurps.BlockSkillsKey, 10, 20)
-	band := buildTestBand(testContainerNode(layoutnode.Column, fxp.One,
-		testBlockNode(gurps.BlockTraitsKey, fxp.One),
-		testBlockNode(gurps.BlockSkillsKey, fxp.One),
-	), map[string]unison.Paneler{gurps.BlockTraitsKey: first, gurps.BlockSkillsKey: second})
-
-	startAt := make(map[string]int)
-	placer := newBandPlacer(startAt)
-	used, done := placer.placeBand(band, 200, false)
-	c.Equal(float32(63), used, "both blocks and the space between them")
-	c.True(done)
+	band, _, _ = build(20)
+	startAt = make(map[string]int)
+	placer = newBandPlacer(startAt)
+	used, done = placer.placeBand(band, 200, false)
+	c.Equal(float32(63), used, "a column whose blocks all fit takes both blocks and the space between them")
+	c.True(done, "and is finished in one pass")
 	c.True(placer.applyBand(band))
 	c.Equal(2, len(band.Children()), "nothing comes off the page")
 	c.Equal(map[string]int{gurps.BlockTraitsKey: 1, gurps.BlockSkillsKey: 1}, startAt)
 }
 
 // TestPlaceBandRow verifies that the blocks of a row are each given the same space, since they all start at the same
-// height, and that the tallest of them is what the row costs.
+// height, and that the tallest of them is what the row costs, while a row with a block that can place nothing at all
+// is left for the next page in its entirety, taking back what its other blocks could have placed rather than leaving a
+// hole in the middle of it.
 func TestPlaceBandRow(t *testing.T) {
 	c := check.New(t)
-	left := newFakeBandList(gurps.BlockTraitsKey, 10, 20, 20, 20, 20)
-	right := newFakeBandList(gurps.BlockSkillsKey, 10, 20, 20)
-	band := buildTestBand(testContainerNode(layoutnode.Row, fxp.One,
-		testBlockNode(gurps.BlockTraitsKey, fxp.One),
-		testBlockNode(gurps.BlockSkillsKey, fxp.One),
-	), map[string]unison.Paneler{gurps.BlockTraitsKey: left, gurps.BlockSkillsKey: right})
-	c.Equal(rowBandPanel, bandKindOf(band), "the builder's row is recognized as one")
+	build := func(leftHeights, rightHeights []float32) (band *unison.Panel, left, right *fakeBandList) {
+		left = newFakeBandList(gurps.BlockTraitsKey, 10, leftHeights...)
+		right = newFakeBandList(gurps.BlockSkillsKey, 10, rightHeights...)
+		band = buildTestBand(testContainerNode(layoutnode.Row, fxp.One,
+			testBlockNode(gurps.BlockTraitsKey, fxp.One),
+			testBlockNode(gurps.BlockSkillsKey, fxp.One),
+		), map[string]unison.Paneler{gurps.BlockTraitsKey: left, gurps.BlockSkillsKey: right})
+		return band, left, right
+	}
 
+	band, left, right := build([]float32{20, 20, 20, 20}, []float32{20, 20})
+	c.Equal(rowBandPanel, bandKindOf(band), "the builder's row is recognized as one")
 	startAt := make(map[string]int)
 	placer := newBandPlacer(startAt)
 	used, done := placer.placeBand(band, 57, false)
@@ -310,22 +292,11 @@ func TestPlaceBandRow(t *testing.T) {
 	c.Equal([][2]int{{0, 2}}, left.ranges)
 	c.Equal([][2]int{{0, 2}}, right.ranges, "the block on the right was given the same space and fit in it")
 	c.Equal(map[string]int{gurps.BlockTraitsKey: 2, gurps.BlockSkillsKey: 2}, startAt)
-}
 
-// TestPlaceBandRowDefersAsAWhole verifies that a row none of whose blocks can place anything is left for the next page
-// in its entirety, taking back what its other blocks could have placed rather than leaving a hole in the middle of it.
-func TestPlaceBandRowDefersAsAWhole(t *testing.T) {
-	c := check.New(t)
-	left := newFakeBandList(gurps.BlockTraitsKey, 10, 20, 20)
-	right := newFakeBandList(gurps.BlockSkillsKey, 10, 100)
-	band := buildTestBand(testContainerNode(layoutnode.Row, fxp.One,
-		testBlockNode(gurps.BlockTraitsKey, fxp.One),
-		testBlockNode(gurps.BlockSkillsKey, fxp.One),
-	), map[string]unison.Paneler{gurps.BlockTraitsKey: left, gurps.BlockSkillsKey: right})
-
-	startAt := make(map[string]int)
-	placer := newBandPlacer(startAt)
-	used, done := placer.placeBand(band, 57, false)
+	band, left, right = build([]float32{20, 20}, []float32{100})
+	startAt = make(map[string]int)
+	placer = newBandPlacer(startAt)
+	used, done = placer.placeBand(band, 57, false)
 	c.Equal(float32(0), used, "the row that can't be split up places nothing at all")
 	c.False(done)
 	c.False(placer.applyBand(band), "so the whole row comes off the page")
@@ -477,32 +448,6 @@ func TestPageExporterFitsAnEmptyCharacterOnOnePage(t *testing.T) {
 	}
 }
 
-// TestPageExporterSplitsAListAcrossPages verifies that a list too long for a single page is split across as many as it
-// takes, with every row drawn exactly once.
-func TestPageExporterSplitsAListAcrossPages(t *testing.T) {
-	c := check.New(t)
-	entity := gurps.NewEntity()
-	const traitCount = 200
-	for i := range traitCount {
-		trait := gurps.NewTrait(nil, nil, false)
-		trait.Name = fmt.Sprintf("Trait %d", i+1)
-		entity.Traits = append(entity.Traits, trait)
-	}
-
-	rowCount := len(entity.Traits) // A new character may come with a trait of its own already
-	exporter := newPageExporter(entity)
-	c.True(len(exporter.pages) > 1, "%d traits don't fit on a single page", traitCount)
-	ranges := drawnRowRanges(exporter, gurps.BlockTraitsKey)
-	c.True(len(ranges) > 1, "the traits list must appear on more than one page")
-	next := 0
-	for i, one := range ranges {
-		c.Equal(next, one[0], "the rows drawn on page %d must pick up where the page before it left off", i+1)
-		c.True(one[1] > one[0], "page %d must draw at least one row", i+1)
-		next = one[1]
-	}
-	c.Equal(rowCount, next, "every row must be drawn")
-}
-
 // TestPageExporterMovesABlockThatDoesNotFit verifies the user's requirement that a block which isn't a list is never
 // split: one that can't fit in what is left of a page is moved to the next one whole, and only appears there.
 func TestPageExporterMovesABlockThatDoesNotFit(t *testing.T) {
@@ -584,37 +529,57 @@ func blockPanels(panel *unison.Panel, key string) []*unison.Panel {
 	return uxtest.PanelsMatching(panel, func(p *unison.Panel) bool { return pageKeyOf(p) == key })
 }
 
-// TestPageExporterSplitsBothListsOfARow verifies that the two lists standing side by side in a band are each split at
-// their own row, the way the character sheet has always paginated a row of two blocks.
+// TestPageExporterSplitsBothListsOfARow verifies that a list too long for a single page is split across as many as it
+// takes, with every row drawn exactly once, both when the list beside it in its band is empty and when that one is long
+// as well, in which case each is split at its own row, the way the character sheet has always paginated a row of two
+// blocks.
 func TestPageExporterSplitsBothListsOfARow(t *testing.T) {
 	c := check.New(t)
-	entity := gurps.NewEntity()
-	for i := range 150 {
-		trait := gurps.NewTrait(nil, nil, false)
-		trait.Name = fmt.Sprintf("Trait %d", i+1)
-		entity.Traits = append(entity.Traits, trait)
-		skill := gurps.NewSkill(entity, nil, false)
-		skill.Name = fmt.Sprintf("Skill %d", i+1)
-		entity.Skills = append(entity.Skills, skill)
-	}
-	entity.Recalculate()
-	// A new character may come with a trait of its own already, so the counts are taken from the character itself.
-	rowCounts := map[string]int{
-		gurps.BlockTraitsKey: len(entity.Traits),
-		gurps.BlockSkillsKey: len(entity.Skills),
-	}
-
-	exporter := newPageExporter(entity)
-	for _, key := range []string{gurps.BlockTraitsKey, gurps.BlockSkillsKey} {
-		ranges := drawnRowRanges(exporter, key)
-		c.True(len(ranges) > 1, "the %s list must be split across pages", key)
-		next := 0
-		for i, one := range ranges {
-			c.Equal(next, one[0], "the %s rows drawn on page %d must pick up where the page before left off", key, i+1)
-			c.True(one[1] > one[0], "page %d must draw at least one %s row", i+1, key)
-			next = one[1]
+	for _, one := range []struct {
+		name   string
+		traits int
+		skills int
+		split  []string // The keys of the lists that must be split
+	}{
+		{name: "beside an empty list", traits: 200, split: []string{gurps.BlockTraitsKey}},
+		{
+			name:   "beside another long list",
+			traits: 150,
+			skills: 150,
+			split:  []string{gurps.BlockTraitsKey, gurps.BlockSkillsKey},
+		},
+	} {
+		entity := gurps.NewEntity()
+		for i := range one.traits {
+			trait := gurps.NewTrait(nil, nil, false)
+			trait.Name = fmt.Sprintf("Trait %d", i+1)
+			entity.Traits = append(entity.Traits, trait)
 		}
-		c.Equal(rowCounts[key], next, "every %s row must be drawn", key)
+		for i := range one.skills {
+			skill := gurps.NewSkill(entity, nil, false)
+			skill.Name = fmt.Sprintf("Skill %d", i+1)
+			entity.Skills = append(entity.Skills, skill)
+		}
+		entity.Recalculate()
+		// A new character may come with a trait of its own already, so the counts are taken from the character itself.
+		rowCounts := map[string]int{
+			gurps.BlockTraitsKey: len(entity.Traits),
+			gurps.BlockSkillsKey: len(entity.Skills),
+		}
+
+		exporter := newPageExporter(entity)
+		for _, key := range one.split {
+			ranges := drawnRowRanges(exporter, key)
+			c.True(len(ranges) > 1, "%s: the %s list must be split across pages", one.name, key)
+			next := 0
+			for i, span := range ranges {
+				c.Equal(next, span[0], "%s: the %s rows drawn on page %d must pick up where the page before left off",
+					one.name, key, i+1)
+				c.True(span[1] > span[0], "%s: page %d must draw at least one %s row", one.name, i+1, key)
+				next = span[1]
+			}
+			c.Equal(rowCounts[key], next, "%s: every %s row must be drawn", one.name, key)
+		}
 	}
 }
 

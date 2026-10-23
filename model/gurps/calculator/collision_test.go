@@ -273,29 +273,12 @@ func TestCollisionVelocity(t *testing.T) {
 	}
 }
 
-// TestCollisionRearEnd verifies the worked example on BX430: a 60 HP car moving at 25 yards per second rear-ends a 10 HP
-// pedestrian fleeing at 5, so the two meet at 20 yards per second, the car inflicts 12d and the pedestrian 2d. Neither
-// side is capped, since the pedestrian's 2d is already well under the car's 12d.
-func TestCollisionRearEnd(t *testing.T) {
-	c := check.New(t)
-	result := Collision(RearEndCollision,
-		CollisionObject{HP: fxp.Sixty, Velocity: fxp.TwentyFive},
-		CollisionObject{HP: fxp.Ten, Velocity: fxp.Five})
-	c.Equal(fxp.Twenty, result.Velocity, "the two meet at 25 - 5 yards per second")
-	c.Equal(fxp.Twelve, result.StrikerDice, "the car inflicts (60 x 20)/100 dice")
-	c.Equal(fxp.Two, result.StruckDice, "the pedestrian inflicts (10 x 20)/100 dice")
-	c.False(result.StrikerCapped, "the striker is never capped in a rear-end collision")
-	c.False(result.StruckCapped, "the pedestrian was already under the car's dice")
-	c.Equal(dice.Dice{Count: 12, Sides: 6, Multiplier: 1}, CollisionDamageDice(result.StrikerDice), "the car's damage")
-	c.Equal(dice.Dice{Count: 2, Sides: 6, Multiplier: 1}, CollisionDamageDice(result.StruckDice),
-		"the pedestrian's damage")
-}
-
 // TestCollisionCaps verifies that the "cannot inflict more dice than" limits of BX430 hold the right side down: in a
 // head-on collision the slower object is capped at the faster one's dice (and neither is capped when the two match),
-// while in a rear-end or side-on collision the struck object is capped at the striker's. It also verifies that halving
-// the damage of a bullet-shaped, sharp or spiked object happens before the cap is applied, so that such a striker
-// cannot be out-damaged by an object capped at its unhalved count.
+// while in a rear-end or side-on collision the struck object is capped at the striker's (and is not capped when already
+// under them, as in BX430's worked rear-end example). It also verifies that halving the damage of a bullet-shaped,
+// sharp or spiked object happens before the cap is applied, so that such a striker cannot be out-damaged by an object
+// capped at its unhalved count.
 func TestCollisionCaps(t *testing.T) {
 	c := check.New(t)
 
@@ -347,6 +330,20 @@ func TestCollisionCaps(t *testing.T) {
 	c.Equal(fxp.Two, result.StruckDice, "the overtaken object's 20 dice are held to the striker's 2")
 	c.False(result.StrikerCapped, "the striker is never capped in a rear-end collision")
 	c.True(result.StruckCapped, "the struck object cannot out-damage the striker")
+
+	// The worked example on BX430: a 60 HP car moving at 25 yards per second rear-ends a 10 HP pedestrian fleeing at 5.
+	// Neither side is capped, since the pedestrian's 2d is already well under the car's 12d.
+	result = Collision(RearEndCollision,
+		CollisionObject{HP: fxp.Sixty, Velocity: fxp.TwentyFive},
+		CollisionObject{HP: fxp.Ten, Velocity: fxp.Five})
+	c.Equal(fxp.Twenty, result.Velocity, "the two meet at 25 - 5 yards per second")
+	c.Equal(fxp.Twelve, result.StrikerDice, "the car inflicts (60 x 20)/100 dice")
+	c.Equal(fxp.Two, result.StruckDice, "the pedestrian inflicts (10 x 20)/100 dice")
+	c.False(result.StrikerCapped, "the striker is never capped in a rear-end collision")
+	c.False(result.StruckCapped, "the pedestrian was already under the car's dice")
+	c.Equal(dice.Dice{Count: 12, Sides: 6, Multiplier: 1}, CollisionDamageDice(result.StrikerDice), "the car's damage")
+	c.Equal(dice.Dice{Count: 2, Sides: 6, Multiplier: 1}, CollisionDamageDice(result.StruckDice),
+		"the pedestrian's damage")
 
 	// A spiked striker is halved before the cap, so the struck object is held to the halved count, not the full one.
 	result = Collision(SideOnCollision,

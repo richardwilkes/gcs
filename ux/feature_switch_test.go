@@ -26,7 +26,8 @@ func stBonusFor(entity *gurps.Entity) fxp.Int {
 }
 
 // The switch column appears only on a character sheet -- never on a loot sheet, in a template, a library list or an
-// editor's table -- and only when something in the list actually has a switch to throw.
+// editor's table -- and only when something in the list, at any depth, actually has a switch to throw. A loot sheet's
+// switches still govern what it displays; they are simply thrown from the item's editor there.
 func TestShowSwitchColumnOnlyForSheetsWithSwitchableRows(t *testing.T) {
 	c := check.New(t)
 	entity := gurps.NewEntity()
@@ -40,9 +41,14 @@ func TestShowSwitchColumnOnlyForSheetsWithSwitchableRows(t *testing.T) {
 		"a template must not show the switch column, even with switchable rows")
 
 	loot := gurps.NewLoot()
-	loot.Equipment = []*gurps.Equipment{switchableWeightReducer(loot)}
+	container := switchableWeightReducer(loot)
+	loot.Equipment = []*gurps.Equipment{container}
 	c.False(showSwitchColumn(true, loot, loot.Equipment),
 		"a loot sheet must not show the switch column, even with switchable rows")
+	units := loot.WeightUnit()
+	off := container.ExtendedWeight(false, units)
+	container.SwitchedOn = true
+	c.NotEqual(off, container.ExtendedWeight(false, units), "the switch must change the weight a loot sheet displays")
 
 	plain := gurps.NewTrait(entity, nil, false)
 	plain.Name = "Plain"
@@ -51,6 +57,24 @@ func TestShowSwitchColumnOnlyForSheetsWithSwitchableRows(t *testing.T) {
 		"a sheet with nothing switchable must not show the switch column")
 
 	c.True(showSwitchColumn(true, entity, switchable), "a sheet with a switchable row must show the switch column")
+
+	parent := gurps.NewTrait(entity, nil, true)
+	parent.Name = "Container"
+	child := newSwitchableTrait(entity, "Claws")
+	child.SetParent(parent)
+	parent.Children = []*gurps.Trait{child}
+	c.True(showSwitchColumn(true, entity, []*gurps.Trait{parent}),
+		"a switchable child inside a container must show the switch column")
+
+	// A container's own features are ignored, but those of its modifiers are not.
+	modOwner := gurps.NewTrait(entity, nil, true)
+	modOwner.Name = "Container With Modifier"
+	modifier := gurps.NewTraitModifier(entity, nil, false)
+	modifier.Name = "Switchable Modifier"
+	modifier.Features = gurps.Features{switchableSTBonus(nil)}
+	modOwner.Modifiers = []*gurps.TraitModifier{modifier}
+	c.True(showSwitchColumn(true, entity, []*gurps.Trait{modOwner}),
+		"a container whose modifier is switchable must show the switch column")
 }
 
 // switchableWeightReducer returns a container holding one child, where the container's contained weight reduction only
@@ -71,32 +95,6 @@ func switchableWeightReducer(owner gurps.DataOwner) *gurps.Equipment {
 	return container
 }
 
-// A loot sheet never gets the switch column, not even when its equipment has switchable features that change what the
-// sheet displays; everywhere but a character sheet the switch is thrown from the item's editor.
-func TestLootSheetDoesNotShowSwitchColumn(t *testing.T) {
-	c := check.New(t)
-	loot := gurps.NewLoot()
-	plain := gurps.NewEquipment(loot, nil, false)
-	plain.Name = "Torch"
-	loot.Equipment = []*gurps.Equipment{plain}
-	c.False(showSwitchColumn(true, loot, loot.Equipment),
-		"a loot sheet with nothing switchable must not show the switch column")
-
-	container := switchableWeightReducer(loot)
-	loot.Equipment = []*gurps.Equipment{plain, container}
-	c.False(showSwitchColumn(true, loot, loot.Equipment),
-		"a loot sheet must not show the switch column, even with a switchable row")
-
-	// The switch still governs what the loot sheet displays; it is simply thrown from the item's editor there.
-	units := loot.WeightUnit()
-	container.SwitchedOn = false
-	off := container.ExtendedWeight(false, units)
-	container.SwitchedOn = true
-	c.NotEqual(off, container.ExtendedWeight(false, units),
-		"the switch must change the weight a loot sheet displays")
-	container.SwitchedOn = false
-}
-
 // The loot sheet's equipment list really is built without the switch column, through the same provider the sheet itself
 // uses, whether or not anything in it is switchable.
 func TestLootSheetHasNoSwitchColumnInPlace(t *testing.T) {
@@ -110,31 +108,6 @@ func TestLootSheetHasNoSwitchColumnInPlace(t *testing.T) {
 	sheet.Rebuild(true)
 	c.Equal(-1, switchColumnIndex(sheet.Equipment.Table.Columns, gurps.EquipmentSwitchColumn),
 		"a switchable contained weight reduction must not bring the switch column into a loot sheet")
-}
-
-// The scan looks at every depth, not just the top level, so a switchable item tucked inside a container still brings
-// the column into view.
-func TestShowSwitchColumnFindsNestedRows(t *testing.T) {
-	c := check.New(t)
-	entity := gurps.NewEntity()
-
-	parent := gurps.NewTrait(entity, nil, true)
-	parent.Name = "Container"
-	child := newSwitchableTrait(entity, "Claws")
-	child.SetParent(parent)
-	parent.Children = []*gurps.Trait{child}
-	c.True(showSwitchColumn(true, entity, []*gurps.Trait{parent}),
-		"a switchable child inside a container must show the switch column")
-
-	// A container's own features are ignored, but those of its modifiers are not.
-	modOwner := gurps.NewTrait(entity, nil, true)
-	modOwner.Name = "Container With Modifier"
-	modifier := gurps.NewTraitModifier(entity, nil, false)
-	modifier.Name = "Switchable Modifier"
-	modifier.Features = gurps.Features{switchableSTBonus(nil)}
-	modOwner.Modifiers = []*gurps.TraitModifier{modifier}
-	c.True(showSwitchColumn(true, entity, []*gurps.Trait{modOwner}),
-		"a container whose modifier is switchable must show the switch column")
 }
 
 // Each of the sheet's page lists gains its switch column, in the expected position, as soon as one of its rows has
@@ -272,91 +245,10 @@ func TestSwitchCellClickTogglesTheSwitch(t *testing.T) {
 	c.Equal(fxp.One, stBonusFor(entity), "redo must put the bonus back into play")
 }
 
-// The action behind the cell, in isolation: it changes the state, recalculates the entity, and registers a single
-// undoable edit.
-func TestToggleFeatureSwitchRecalculatesAndIsUndoable(t *testing.T) {
-	c := check.New(t)
-	sheet, trait := newSheetWithSwitchableTrait(t)
-	entity := sheet.Entity()
-	table := sheet.Traits.Table
-	mgr := unison.UndoManagerFor(table)
-	c.NotNil(mgr, "the table must be able to find the sheet's undo manager")
-	c.False(mgr.CanUndo(), "nothing has been done yet")
-
-	toggleFeatureSwitch(table.RootRows()[0], table, true, false)
-	c.True(trait.SwitchedOn, "the switch must be on")
-	c.Equal(fxp.One, stBonusFor(entity), "the entity must have been recalculated with the bonus in play")
-	c.True(mgr.CanUndo(), "the toggle must be undoable")
-
-	mgr.Undo()
-	c.False(trait.SwitchedOn, "undo must turn the switch back off")
-	c.Equal(fxp.Int(0), stBonusFor(entity), "undo must recalculate the entity as well")
-	c.False(mgr.CanUndo(), "the toggle must have registered exactly one edit")
-}
-
-// newSheetWithSwitchableContainer returns a sheet whose entity holds a trait container with a switchable modifier and
-// two switchable children, along with the container and its children.
-func newSheetWithSwitchableContainer(t *testing.T) (sheet *Sheet, container *gurps.Trait, children []*gurps.Trait) {
-	t.Helper()
-	sheet = newTestSheetForTemplate(t)
-	entity := sheet.Entity()
-	container = gurps.NewTrait(entity, nil, true)
-	container.Name = "Cybernetics"
-	modifier := gurps.NewTraitModifier(entity, nil, false)
-	modifier.Name = "Powered"
-	modifier.Features = gurps.Features{switchableSTBonus(nil)}
-	container.Modifiers = []*gurps.TraitModifier{modifier}
-	children = []*gurps.Trait{newSwitchableTrait(entity, "Claws"), newSwitchableTrait(entity, "Armor")}
-	for _, child := range children {
-		child.SetParent(container)
-	}
-	container.Children = children
-	entity.Traits = []*gurps.Trait{container}
-	sheet.Rebuild(true)
-	return sheet, container, children
-}
-
-// An option-click cascades the new state to everything inside the container, and undo restores every one of them.
-func TestToggleFeatureSwitchWithDescendants(t *testing.T) {
-	c := check.New(t)
-	sheet, parent, children := newSheetWithSwitchableContainer(t)
-	table := sheet.Traits.Table
-	mgr := unison.UndoManagerFor(table)
-	c.NotNil(mgr, "the table must be able to find the sheet's undo manager")
-
-	toggleFeatureSwitch(table.RootRows()[0], table, true, true)
-	c.True(parent.SwitchedOn, "the container's switch must be on")
-	for i, child := range children {
-		c.True(child.SwitchedOn, "child %d's switch must be on", i)
-	}
-	c.Equal(fxp.FromInteger(3), stBonusFor(sheet.Entity()),
-		"the container's modifier and both children must all be contributing")
-
-	mgr.Undo()
-	c.False(parent.SwitchedOn, "undo must turn the container's switch back off")
-	for i, child := range children {
-		c.False(child.SwitchedOn, "undo must turn child %d's switch back off", i)
-	}
-	c.Equal(fxp.Int(0), stBonusFor(sheet.Entity()), "undo must take all of the bonuses back out of play")
-}
-
-// An ordinary click on a container's switch leaves the items inside it alone.
-func TestToggleFeatureSwitchWithoutDescendants(t *testing.T) {
-	c := check.New(t)
-	sheet, parent, children := newSheetWithSwitchableContainer(t)
-	table := sheet.Traits.Table
-
-	toggleFeatureSwitch(table.RootRows()[0], table, true, false)
-	c.True(parent.SwitchedOn, "the container's switch must be on")
-	for i, child := range children {
-		c.False(child.SwitchedOn, "child %d's switch must have been left alone", i)
-	}
-	c.Equal(fxp.One, stBonusFor(sheet.Entity()), "only the container's modifier may be contributing")
-}
-
-// An option-click only reaches the descendants that actually have something to switch. Throwing the switch of an item
-// with no switchable features would change nothing the user could see, yet the new state would still be written to the
-// file, altering the sheet's contents and bloating the undo edit.
+// An option-click cascades a container's new state to the descendants that actually have something to switch, and an
+// ordinary click to none of them. Throwing the switch of an item with no switchable features would change nothing the
+// user could see, yet the new state would still be written to the file, altering the sheet's contents and bloating the
+// undo edit.
 func TestToggleFeatureSwitchLeavesDescendantsWithNothingToSwitchAlone(t *testing.T) {
 	c := check.New(t)
 	sheet := newTestSheetForTemplate(t)
@@ -409,6 +301,13 @@ func TestToggleFeatureSwitchLeavesDescendantsWithNothingToSwitchAlone(t *testing
 	c.False(featureless.SwitchedOn, "undo must leave the untouched child alone as well")
 	c.False(nested.SwitchedOn, "undo must leave the untouched container alone as well")
 	c.Equal(fxp.One, stBonusFor(entity), "undo must take the switchable bonuses back out of play")
+
+	toggleFeatureSwitch(sheet.Traits.Table.RootRows()[0], sheet.Traits.Table, true, false)
+	c.True(container.SwitchedOn, "an ordinary click must turn the container's switch on")
+	c.False(switchable.SwitchedOn, "an ordinary click must leave the switchable child alone")
+	c.False(deep.SwitchedOn, "an ordinary click must leave the deeper switchable child alone")
+	c.Equal(fxp.FromInteger(2), stBonusFor(entity),
+		"only the container's modifier and the always-on bonus may be contributing")
 }
 
 // Adjusting a value from a panel that isn't part of a window's panel tree -- so there is no undo manager and no owner
@@ -444,59 +343,6 @@ func switchColumnIndex(columns []unison.ColumnInfo, switchColumnID int) int {
 	return -1
 }
 
-// The switch of an item that isn't currently contributing its features -- equipment that isn't equipped, say -- must
-// still be usable. Its cell is disabled, which is what draws it dimmed, and that costs it nothing: a table hands mouse
-// events to its cells without consulting their enabled state. Dimming says the switch has no effect at the moment, not
-// that it can't be thrown.
-func TestDimmedSwitchCellRemainsClickable(t *testing.T) {
-	c := check.New(t)
-	sheet := newTestSheetForTemplate(t)
-	entity := sheet.Entity()
-	dimmed := gurps.NewEquipment(entity, nil, false)
-	dimmed.Name = "Powered Armor"
-	dimmed.Equipped = false
-	dimmed.Features = gurps.Features{switchableSTBonus(nil)}
-	lit := gurps.NewEquipment(entity, nil, false)
-	lit.Name = "Powered Boots"
-	lit.Features = gurps.Features{switchableSTBonus(nil)}
-	entity.CarriedEquipment = []*gurps.Equipment{dimmed, lit}
-	sheet.Rebuild(true)
-
-	table := sheet.CarriedEquipment.Table
-	col := switchColumnIndex(table.Columns, gurps.EquipmentSwitchColumn)
-	c.NotEqual(-1, col, "the switch column must be present")
-
-	var cellData gurps.CellData
-	dimmed.CellData(gurps.EquipmentSwitchColumn, &cellData)
-	c.True(cellData.Dim, "the switch cell of equipment that isn't equipped must be dimmed")
-	lit.CellData(gurps.EquipmentSwitchColumn, &cellData)
-	c.False(cellData.Dim, "the switch cell of equipment that is equipped must not be dimmed")
-
-	rows := table.RootRows()
-	c.Equal(2, len(rows), "the carried equipment table must hold both items")
-	dimmedLabel, ok := rows[0].ColumnCell(0, col, unison.Black, unison.White, false, false, false).(*unison.Label)
-	c.True(ok, "the switch cell must be a label")
-	litLabel, ok := rows[1].ColumnCell(1, col, unison.Black, unison.White, false, false, false).(*unison.Label)
-	c.True(ok, "the switch cell must be a label")
-
-	c.False(dimmedLabel.Enabled(), "a dimmed switch cell is disabled, which is what draws it with the dimming filter")
-	c.True(litLabel.Enabled(), "an undimmed switch cell is drawn normally")
-
-	// The cell has to be part of the sheet's panel tree for the undo manager to be found, which is where the table
-	// itself puts it when it lays out the row.
-	table.AddChild(dimmedLabel)
-	mgr := unison.UndoManagerFor(dimmedLabel)
-	c.NotNil(mgr, "the cell must be able to find the sheet's undo manager")
-	c.True(dimmedLabel.MouseDownCallback(geom.Point{}, unison.ButtonLeft, 1, mod.None), "the click must be consumed")
-	c.True(dimmed.SwitchedOn, "clicking a dimmed switch cell must still throw the switch")
-	c.True(mgr.CanUndo(), "throwing a dimmed switch must be undoable, just like any other")
-	c.True(dimmedLabel.MouseUpCallback(geom.Point{}, unison.ButtonLeft, mod.None),
-		"the release must be consumed by the dimmed cell as well")
-	drawable, ok := dimmedLabel.Drawable.(*unison.DrawableSVG)
-	c.True(ok, "the dimmed switch cell must draw an SVG")
-	c.Equal(unison.CheckmarkSVG, drawable.SVG, "the dimmed cell must show the switch it just threw as on")
-}
-
 // clickSwitchCellThroughTable clicks the center of the given cell's frame through the table's own mouse callbacks,
 // which locate the cell under the pointer and hand it the event, as a real click arrives. The table must already be
 // sized, since the frames come from its column widths and row heights.
@@ -509,69 +355,96 @@ func clickSwitchCellThroughTable[T gurps.Node[T]](table *unison.Table[*Node[T]],
 
 // A dimmed switch cell can be a disabled panel because the table, not the window, hands it the press
 // (Table.DefaultMouseDown and friends) without consulting its enabled state; a cell is attached to the table only for
-// the duration of an event. This drives that path as a user would, against an undimmed baseline, and ends each case
-// with a press on an ordinary column that reaches the table's own row selection, showing the dispatch really happens.
+// the duration of an event. This drives that path as a user would, for a trait that is turned off and for equipment
+// that isn't equipped, against undimmed baselines, and ends each case with a press on an ordinary column that reaches
+// the table's own row selection, showing the dispatch really happens.
 func TestSwitchCellIsClickableThroughTheTable(t *testing.T) {
 	for _, tc := range []struct {
-		name string
-		dim  bool
+		name      string
+		dim       bool
+		equipment bool
 	}{
-		{name: "dimmed", dim: true},
-		{name: "undimmed", dim: false},
+		{name: "dimmed trait", dim: true},
+		{name: "undimmed trait", dim: false},
+		{name: "dimmed equipment", dim: true, equipment: true},
+		{name: "undimmed equipment", dim: false, equipment: true},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			c := check.New(t)
 			sheet := newTestSheetForTemplate(t)
 			entity := sheet.Entity()
+			if tc.equipment {
+				equipment := gurps.NewEquipment(entity, nil, false)
+				equipment.Name = "Powered Armor"
+				// Equipment that isn't equipped contributes nothing, which dims its switch cell the same way.
+				equipment.Equipped = !tc.dim
+				equipment.Features = gurps.Features{switchableSTBonus(nil)}
+				entity.CarriedEquipment = []*gurps.Equipment{equipment}
+				sheet.Rebuild(true)
+				checkSwitchCellClickableThroughTable(c, sheet.CarriedEquipment.Table, gurps.EquipmentSwitchColumn,
+					gurps.EquipmentDescriptionColumn, equipment, tc.dim)
+				return
+			}
 			trait := newSwitchableTrait(entity, "Claws")
 			// A trait that is turned off contributes nothing, which is what dims its switch cell; whether it has a
 			// switch to throw at all doesn't depend on that.
 			trait.SetDisabled(tc.dim)
 			entity.Traits = []*gurps.Trait{trait}
 			sheet.Rebuild(true)
-			table := sheet.Traits.Table
-			col := switchColumnIndex(table.Columns, gurps.TraitSwitchColumn)
-			c.NotEqual(-1, col, "the switch column must be present")
-			mgr := unison.UndoManagerFor(table)
-			c.NotNil(mgr, "the table must be able to find the sheet's undo manager")
-			c.False(mgr.CanUndo(), "nothing has been done yet")
-
-			// Hit testing needs column widths and row heights, which the rebuild above set without a window: page list
-			// syncing sizes the columns (see sizePageTableColumns) and model syncing measures every row. Checking the
-			// frame makes a change there fail here, not as presses that quietly land nowhere.
-			c.False(table.CellFrame(0, col).Empty(), "the switch cell must have a frame to aim at")
-			label, ok := table.RootRows()[0].ColumnCell(0, col, unison.Black, unison.White, false, false,
-				false).(*unison.Label)
-			c.True(ok, "the switch cell must be a label")
-			if tc.dim {
-				c.False(label.Enabled(), "a dimmed switch cell is disabled, which is what draws it dimmed")
-			} else {
-				c.True(label.Enabled(), "an undimmed switch cell is drawn normally")
-			}
-
-			down, up := clickSwitchCellThroughTable(table, 0, col)
-			c.True(down, "the table must let the cell consume the press")
-			c.True(up, "the table must let the cell consume the release")
-			c.True(trait.SwitchedOn, "a click delivered by the table must throw the switch")
-			c.False(table.HasSelection(),
-				"the cell must have taken the press before the table's own row selection could run")
-			c.True(mgr.CanUndo(), "the click must have registered an undo edit")
-			mgr.Undo()
-			c.False(trait.SwitchedOn, "undo must turn the switch back off")
-			c.False(mgr.CanUndo(), "the click must have registered exactly one edit")
-
-			descCol := table.ColumnIndexForID(gurps.TraitDescriptionColumn)
-			c.NotEqual(-1, descCol, "the description column must be present")
-			down, _ = clickSwitchCellThroughTable(table, 0, descCol)
-			c.True(down, "the press must be consumed")
-			c.True(table.HasSelection(),
-				"a press that no cell takes must reach the table's own row selection, or nothing was dispatched")
+			checkSwitchCellClickableThroughTable(c, sheet.Traits.Table, gurps.TraitSwitchColumn,
+				gurps.TraitDescriptionColumn, trait, tc.dim)
 		})
 	}
 }
 
-// The check that keeps a single edit from recalculating the entity twice: a sheet always recalculates its own entity
-// when it is marked as modified, so the caller must not do so as well, while anything else leaves that to the caller.
+// checkSwitchCellClickableThroughTable clicks the switch cell of the table's only row, which holds the switcher,
+// through the table and checks that it throws the switch as a single undoable edit, then presses the cell of the other
+// column and checks that the press reaches the table's own row selection.
+func checkSwitchCellClickableThroughTable[T gurps.Node[T]](c check.Checker, table *unison.Table[*Node[T]],
+	switchColumnID, otherColumnID int, switcher gurps.FeatureSwitcher, dim bool,
+) {
+	col := switchColumnIndex(table.Columns, switchColumnID)
+	c.NotEqual(-1, col, "the switch column must be present")
+	mgr := unison.UndoManagerFor(table)
+	c.NotNil(mgr, "the table must be able to find the sheet's undo manager")
+	c.False(mgr.CanUndo(), "nothing has been done yet")
+
+	// Hit testing needs column widths and row heights, which the sheet's rebuild set without a window: page list
+	// syncing sizes the columns (see sizePageTableColumns) and model syncing measures every row. Checking the frame
+	// makes a change there fail here, not as presses that quietly land nowhere.
+	c.False(table.CellFrame(0, col).Empty(), "the switch cell must have a frame to aim at")
+	label, ok := table.RootRows()[0].ColumnCell(0, col, unison.Black, unison.White, false, false, false).(*unison.Label)
+	c.True(ok, "the switch cell must be a label")
+	if dim {
+		c.False(label.Enabled(), "a dimmed switch cell is disabled, which is what draws it dimmed")
+	} else {
+		c.True(label.Enabled(), "an undimmed switch cell is drawn normally")
+	}
+
+	down, up := clickSwitchCellThroughTable(table, 0, col)
+	c.True(down, "the table must let the cell consume the press")
+	c.True(up, "the table must let the cell consume the release")
+	c.True(switcher.IsSwitchedOn(), "a click delivered by the table must throw the switch")
+	drawable, ok := label.Drawable.(*unison.DrawableSVG)
+	c.True(ok, "the switch cell must draw an SVG")
+	c.Equal(unison.CheckmarkSVG, drawable.SVG, "the cell must show the switch it just threw as on")
+	c.False(table.HasSelection(), "the cell must have taken the press before the table's own row selection could run")
+	c.True(mgr.CanUndo(), "the click must have registered an undo edit")
+	mgr.Undo()
+	c.False(switcher.IsSwitchedOn(), "undo must turn the switch back off")
+	c.False(mgr.CanUndo(), "the click must have registered exactly one edit")
+
+	otherCol := table.ColumnIndexForID(otherColumnID)
+	c.NotEqual(-1, otherCol, "the other column must be present")
+	down, _ = clickSwitchCellThroughTable(table, 0, otherCol)
+	c.True(down, "the press must be consumed")
+	c.True(table.HasSelection(),
+		"a press that no cell takes must reach the table's own row selection, or nothing was dispatched")
+}
+
+// The check that keeps a single edit from recalculating the entity twice: a sheet recalculates its own entity when it
+// is marked as modified, so the caller must not do so as well, except while the sheet is already inside an update
+// pass, since Sheet.MarkModified does nothing at all then. Anything else leaves the recalculation to the caller.
 func TestOwnerRecalculatesOnlyForItsOwnSheet(t *testing.T) {
 	c := check.New(t)
 	sheet := newTestSheetForTemplate(t)
@@ -579,6 +452,11 @@ func TestOwnerRecalculatesOnlyForItsOwnSheet(t *testing.T) {
 
 	c.True(ownerRecalculates(sheet, entity), "a sheet recalculates its own entity when it is marked as modified")
 	c.True(ownerRecalculates(sheet.Traits, entity), "a panel within the sheet resolves to the sheet")
+	sheet.awaitingUpdate = true
+	c.False(ownerRecalculates(sheet, entity), "a sheet already inside an update pass won't recalculate again")
+	c.False(ownerRecalculates(sheet.Traits, entity), "a panel within that sheet resolves to the same answer")
+	sheet.awaitingUpdate = false
+	c.True(ownerRecalculates(sheet, entity), "the sheet recalculates again once the update pass is done")
 	c.False(ownerRecalculates(sheet, gurps.NewEntity()), "another entity isn't the sheet's to recalculate")
 	c.False(ownerRecalculates(sheet, nil), "there is no entity to recalculate")
 	c.False(ownerRecalculates(nil, entity), "there is no owner to do the recalculation")

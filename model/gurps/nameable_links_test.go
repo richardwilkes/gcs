@@ -32,14 +32,8 @@ func linkedTrait() (*Trait, *TraitModifier) {
 	return trait, mod
 }
 
-func TestLinkedModifierCodeResolvesThroughOwner(t *testing.T) {
-	c := check.New(t)
-	trait, mod := linkedTrait()
-	trait.Replacements = map[string]string{"style": "Judo", "extra": "zeal"}
-	c.Equal("Judo focus", mod.NameWithReplacements())
-	c.Equal("with zeal", mod.LocalNotesWithReplacements())
-}
-
+// TestLinkedModifierCodeIsAskedAsOwnerCode verifies that a modifier's linked code is asked for, answered and kept as
+// its owner's code, and that its linked and unlinked codes both resolve through the owner's replacements.
 func TestLinkedModifierCodeIsAskedAsOwnerCode(t *testing.T) {
 	c := check.New(t)
 	trait, mod := linkedTrait()
@@ -53,6 +47,7 @@ func TestLinkedModifierCodeIsAskedAsOwnerCode(t *testing.T) {
 	m["extra"] = "zeal"
 	trait.ApplyNameableKeys(m)
 	c.Equal("Karate focus", mod.NameWithReplacements())
+	c.Equal("with zeal", mod.LocalNotesWithReplacements(), "an unlinked code resolves through the owner too")
 	c.Equal(map[string]string{"style": "Karate", "extra": "zeal"}, trait.Replacements,
 		"nothing is kept under the modifier's own code")
 }

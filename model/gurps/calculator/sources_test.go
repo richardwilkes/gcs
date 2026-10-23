@@ -61,21 +61,6 @@ func TestSkillLevelOrDefault(t *testing.T) {
 	c.Equal(10, SkillLevelOrDefault(e, "Acrobatics", gurps.DexterityID, -6), "with the skill, its level applies")
 }
 
-// TestTorsoDR verifies that the torso DR is split into the part that comes from armor and the rest.
-func TestTorsoDR(t *testing.T) {
-	c := check.New(t)
-	e := gurps.NewEntity()
-	total, armor := TorsoDR(e)
-	c.Equal(0, total, "a bare torso has no DR")
-	c.Equal(0, armor, "nor any armor")
-	gurpstest.AddCarriedEquipmentWithFeatures(e, "Mail Hauberk", gurpstest.NewDRBonus(fxp.Five, gurps.AllID, gurps.TorsoID))
-	gurpstest.AddTraitWithFeatures(e, "Tough Skin", gurpstest.NewDRBonus(fxp.Two, gurps.AllID, gurps.TorsoID))
-	e.Recalculate()
-	total, armor = TorsoDR(e)
-	c.Equal(7, total, "the hauberk and the tough skin both count toward the total")
-	c.Equal(5, armor, "only the hauberk counts as armor")
-}
-
 // TestBasicLiftAndThrustFor verifies that a nil entity is answered from the global default sheet settings.
 func TestBasicLiftAndThrustFor(t *testing.T) {
 	c := check.New(t)

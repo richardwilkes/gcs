@@ -70,6 +70,10 @@ func newMemoTestEntity() (e *gurps.Entity, columns map[bool][]int) {
 	return gurpstest.NewLargeEntity(&size), map[bool][]int{true: meleePageColumns, false: rangedPageColumns}
 }
 
+// TestWeaponMemoMatchesUncached verifies that with weapon memos on, what a page takes from each weapon, tooltips
+// included byte for byte, matches what it takes with them off, both cold and warm, whether the hashes are found before
+// the cells or after them, or the caches are discarded before each cell so that every column is the first to fill the
+// memo.
 func TestWeaponMemoMatchesUncached(t *testing.T) {
 	c := check.New(t)
 	e, columns := newMemoTestEntity()
@@ -95,21 +99,11 @@ func TestWeaponMemoMatchesUncached(t *testing.T) {
 			c.Equal(want, displayWeapons(weapons, columns[melee], hashFirst), "melee %v, hash first %v: warm", melee,
 				hashFirst)
 		}
-	}
-}
-
-func TestWeaponTooltipReplayIsByteIdentical(t *testing.T) {
-	c := check.New(t)
-	e, columns := newMemoTestEntity()
-	for _, melee := range []bool{true, false} {
-		for _, w := range e.Weapons(melee, true, false) {
-			for _, col := range columns[melee] {
-				restore := gurps.SetWeaponMemosEnabled(false)
-				want := weaponCellFor(w, col).Tooltip
-				restore()
+		for i, w := range weapons {
+			for j, col := range columns[melee] {
 				e.DiscardCaches()
-				c.Equal(want, weaponCellFor(w, col).Tooltip, "%s, column %d: first call", w, col)
-				c.Equal(want, weaponCellFor(w, col).Tooltip, "%s, column %d: second call", w, col)
+				c.Equal(want[i].Cells[j], weaponCellFor(w, col), "%s, column %d: first call", w, col)
+				c.Equal(want[i].Cells[j], weaponCellFor(w, col), "%s, column %d: second call", w, col)
 			}
 		}
 	}

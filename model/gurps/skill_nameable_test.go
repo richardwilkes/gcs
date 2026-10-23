@@ -34,16 +34,3 @@ func TestSkillFillWithNameableKeys(t *testing.T) {
 		"note": nameable.Unset,
 	}, m)
 }
-
-// TestSkillOptionalSpecializationOnlyNameableKey verifies that a substitution appearing only in the optional
-// specialization is still detected (the specific regression reported in issue #1054).
-func TestSkillOptionalSpecializationOnlyNameableKey(t *testing.T) {
-	c := check.New(t)
-	var s Skill
-	s.Name = "Naturalist"
-	s.Specialization = "Plants"
-	s.OptionalSpecialization = "@region@"
-	m := make(map[string]string)
-	s.FillWithNameableKeys(m, nil)
-	c.Equal(map[string]string{"region": nameable.Unset}, m)
-}

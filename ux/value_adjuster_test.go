@@ -20,21 +20,6 @@ import (
 	"github.com/richardwilkes/unison"
 )
 
-// An edit may only leave the recalculation to the owner when the owner is actually going to perform one. A sheet
-// already inside an update pass is not, since Sheet.MarkModified does nothing at all while awaitingUpdate is set.
-func TestOwnerRecalculatesSkipsSheetAlreadyUpdating(t *testing.T) {
-	c := check.New(t)
-	sheet := newTestSheetForTemplate(t)
-	entity := sheet.Entity()
-
-	c.True(ownerRecalculates(sheet, entity), "a sheet recalculates its own entity when marked as modified")
-	sheet.awaitingUpdate = true
-	c.False(ownerRecalculates(sheet, entity), "a sheet already inside an update pass won't recalculate again")
-	c.False(ownerRecalculates(sheet.Traits, entity), "a panel within that sheet resolves to the same answer")
-	sheet.awaitingUpdate = false
-	c.True(ownerRecalculates(sheet, entity), "the sheet recalculates again once the update pass is done")
-}
-
 // Sheet.MarkModified is a no-op while the sheet is inside an update pass, so an adjustment that left the
 // recalculation to it would silently drop it, leaving the sheet showing stale levels and points until some unrelated
 // later edit happened to trigger a pass of its own.

@@ -58,18 +58,40 @@ func TestNewPageRefsFromFSWithNullEntry(t *testing.T) {
 	c.Nil(refs.Lookup("B"))
 }
 
-// A settings file holding a null in place of a page reference must be survivable. Decoding one used to panic, which
-// bypassed loadSettingsOrDefaults' recovery entirely and crashed GCS at startup.
+// A settings file holding a null in place of a page reference or a library must be survivable. Decoding one used to
+// panic, which bypassed loadSettingsOrDefaults' recovery entirely and crashed GCS at startup rather than leaving it
+// with usable settings.
 func TestLoadSettingsOrDefaultsWithNullPageRefEntry(t *testing.T) {
 	c := check.New(t)
 	countLogs(t, slog.LevelError)
-	p := filepath.Join(t.TempDir(), "settings.json")
-	c.NoError(os.WriteFile(p, []byte(`{"last_seen_gcs_version":"1.2.3","page_refs":{"B":null,`+
-		`"BX":{"path":"/refs/basic.pdf","offset":2}}}`), 0o600))
-	var settings Settings
-	c.NotPanics(func() { settings = loadSettingsOrDefaults(p) })
-	c.Equal("1.2.3", settings.LastSeenGCSVersion, "the rest of the settings file still loaded")
-	list := settings.PageRefs.List()
-	c.Equal(1, len(list), "the null entry was skipped")
-	c.Equal("BX", list[0].ID, "the usable page reference entry survived")
+	for _, tc := range []struct {
+		name  string
+		data  string
+		check func(settings *Settings)
+	}{
+		{
+			name: "page reference",
+			data: `"page_refs":{"B":null,"BX":{"path":"/refs/basic.pdf","offset":2}}`,
+			check: func(settings *Settings) {
+				list := settings.PageRefs.List()
+				c.Equal(1, len(list), "the null entry was skipped")
+				c.Equal("BX", list[0].ID, "the usable page reference entry survived")
+			},
+		},
+		{
+			name: "library",
+			data: `"libraries":{"a/b":null,"someone/repo":{"title":"Good","path":"/libs/good"}}`,
+			check: func(settings *Settings) {
+				c.NotNil(settings.Libraries.Lookup("someone/repo"), "the usable library entry survived")
+				c.Nil(settings.Libraries.Lookup("a/b"), "the null entry was skipped")
+			},
+		},
+	} {
+		p := filepath.Join(t.TempDir(), "settings.json")
+		c.NoError(os.WriteFile(p, []byte(`{"last_seen_gcs_version":"1.2.3",`+tc.data+`}`), 0o600))
+		var settings Settings
+		c.NotPanics(func() { settings = loadSettingsOrDefaults(p) }, tc.name)
+		c.Equal("1.2.3", settings.LastSeenGCSVersion, "%s: the rest of the settings file still loaded", tc.name)
+		tc.check(&settings)
+	}
 }

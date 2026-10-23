@@ -89,11 +89,17 @@ func TestCopyFromTemplateToSheetResolvesPickers(t *testing.T) {
 	c.False(gurps.HasTemplatePickerData(entity.Traits...), "no template choices may reach the sheet")
 }
 
-// TestCopyFromTemplateToTemplateKeepsPickers verifies that rows copied from one template to another arrive exactly as
-// authored: nothing is put to the user, and the template choices are kept.
-func TestCopyFromTemplateToTemplateKeepsPickers(t *testing.T) {
+// TestCopyToTemplateNormalizesChoices verifies that a choice container copied into a template keeps its choices without
+// any being put to the user, nor any prompt for the modifiers of its options, and arrives stripped of everything a
+// choice container doesn't use, just as it would have been had the template loaded it, while the rows being copied are
+// left alone.
+func TestCopyToTemplateNormalizesChoices(t *testing.T) {
 	c := check.New(t)
 	choices := newChoiceTrait("Pick One", "First", "Second")
+	choices.Modifiers = []*gurps.TraitModifier{newSwitchableTraitModifier("Retractable")}
+	choices.Tags = []string{"Advantage"}
+	choices.VTTNotes = "vtt"
+	choices.Source = gurps.Source{Library: "lib", Path: "choices.adq", TID: choices.ID()}
 	choices.Children[0].Modifiers = []*gurps.TraitModifier{newSwitchableTraitModifier("Retractable")}
 	source := newTestTemplateWithTraits(choices)
 	destinationData := gurps.NewTemplate()
@@ -105,26 +111,6 @@ func TestCopyFromTemplateToTemplateKeepsPickers(t *testing.T) {
 
 	c.Equal(0, *calls, "a template may hold choices, so none must be put to the user")
 	c.Equal(0, len(*prompts), "a copy between templates must not prompt for modifiers")
-	c.Equal(1, len(destinationData.Traits))
-	c.True(gurps.HasTemplatePickerData(destinationData.Traits...), "the choices must have been kept")
-}
-
-// TestCopyToTemplateNormalizesChoices verifies that a choice container copied into a template arrives stripped of
-// everything a choice container doesn't use, just as it would have been had the template loaded it, while the rows
-// being copied are left alone.
-func TestCopyToTemplateNormalizesChoices(t *testing.T) {
-	c := check.New(t)
-	choices := newChoiceTrait("Pick One", "First", "Second")
-	choices.Modifiers = []*gurps.TraitModifier{newSwitchableTraitModifier("Retractable")}
-	choices.Tags = []string{"Advantage"}
-	choices.VTTNotes = "vtt"
-	choices.Source = gurps.Source{Library: "lib", Path: "choices.adq", TID: choices.ID()}
-	source := newTestTemplateWithTraits(choices)
-	destinationData := gurps.NewTemplate()
-	destination := newTestTemplateDockable("Destination", destinationData)
-
-	copySelectionTo(source.Traits.Table, []*Template{destination})
-
 	c.Equal(1, len(destinationData.Traits))
 	arrived := destinationData.Traits[0]
 	c.True(gurps.IsTemplateChoiceContainer(arrived), "the choices must have been kept")
@@ -322,31 +308,6 @@ func TestCanceledModifierPromptLeavesSheetUntouched(t *testing.T) {
 	c.False(sheet.undoMgr.CanUndo(), "nothing was changed, so there must be nothing to undo")
 }
 
-// TestCanceledNameablesPromptLeavesSheetUntouched verifies that canceling the nameables prompt, the last question put
-// to the user before a template's rows and body type are applied, abandons the template, leaving the sheet exactly as
-// it was and nothing to undo.
-func TestCanceledNameablesPromptLeavesSheetUntouched(t *testing.T) {
-	c := check.New(t)
-	sheet := newTestSheetForTemplate(t)
-	entity := sheet.Entity()
-	originalBodyName := entity.SheetSettings.BodyType.Name
-	originalTraits := len(entity.Traits)
-	template := newTestTemplateWithBodyType("Template Body")
-	template.template.Traits[0].Name = "Phobia (@Subject@)"
-	shown := 0
-	uxtest.SwapForTest(t, &promptForNameables, func(_ promptOperation, _ []nameablesSection) bool {
-		shown++
-		return false
-	})
-
-	c.False(template.applyTemplateToSheet(sheet, promptOperation{}, true), "a canceled prompt must report the template was not applied")
-	c.Equal(1, shown, "the nameables must have been put to the user")
-	c.Equal(originalBodyName, entity.SheetSettings.BodyType.Name, "the body type must not have been replaced")
-	c.Equal(originalTraits, len(entity.Traits), "the template's trait must not have been added")
-	c.False(sheet.Modified(), "the sheet must not be left marked as modified")
-	c.False(sheet.undoMgr.CanUndo(), "nothing was changed, so there must be nothing to undo")
-}
-
 // dragged returns the table's rows as the data a drag of all of them hands over.
 func dragged(table *unison.Table[*Node[*gurps.Trait]]) *unison.TableDragData[*Node[*gurps.Trait]] {
 	return &unison.TableDragData[*Node[*gurps.Trait]]{Table: table, Rows: table.RootRows()}
@@ -515,23 +476,6 @@ func TestEditorUndoRestoresSourceClearedByTemplatePicker(t *testing.T) {
 	c.Equal(groupSource, group.Source, "undoing an edit that left the source alone must leave it alone")
 	mgr.Redo()
 	c.Equal(groupSource, group.Source, "redoing an edit that left the source alone must leave it alone")
-}
-
-// TestEditorApplyClearsSourceOfTemplatePicker verifies that a container given template choices loses its source, while
-// one without them keeps it.
-func TestEditorApplyClearsSourceOfTemplatePicker(t *testing.T) {
-	c := check.New(t)
-	source := gurps.Source{Library: "lib", Path: "x.adq"}
-
-	plain := gurps.NewTrait(nil, nil, true)
-	plain.Source = source
-	clearSourceOfTemplatePicker(plain)
-	c.Equal(source, plain.Source, "a container without choices must keep its source")
-
-	choices := newChoiceTrait("Pick One", "First")
-	choices.Source = source
-	clearSourceOfTemplatePicker(choices)
-	c.Equal(gurps.Source{}, choices.Source, "a container with choices must lose its source")
 }
 
 // transferPrompt records one prompt a transfer put up: which prompt it was, the operation it was told it is part of

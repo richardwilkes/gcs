@@ -42,24 +42,60 @@ func newTestTemplateWithBodyType(bodyTypeName string) *Template {
 	return NewTemplate("test"+gurps.TemplatesExt, data)
 }
 
-// The body type used to be replaced (and any existing ancestry traits disabled) before the pickers ran, so canceling
-// one left the character with the template's hit locations, none of the template's content, and no undo edit with
-// which to get the original back.
+// TestApplyTemplateCanceledPickerLeavesSheetUntouched verifies that canceling either the template choices or the
+// nameables prompt, the last question put to the user before a template's rows and body type are applied, abandons the
+// template, leaving the sheet exactly as it was and nothing to undo. The body type used to be replaced (and any
+// existing ancestry traits disabled) before the pickers ran, so canceling one left the character with the template's
+// hit locations, none of the template's content, and no undo edit with which to get the original back.
 func TestApplyTemplateCanceledPickerLeavesSheetUntouched(t *testing.T) {
-	c := check.New(t)
-	sheet := newTestSheetForTemplate(t)
-	entity := sheet.Entity()
-	originalBody := entity.SheetSettings.BodyType
-	originalTraitCount := len(entity.Traits)
-	template := newTestTemplateWithBodyType("Template Body")
+	for _, one := range []struct {
+		name string
+		// cancel substitutes a prompt that cancels, returning the count of times it is put to the user.
+		cancel func(t *testing.T, template *Template) *int
+	}{
+		{
+			name: "template choices",
+			cancel: func(t *testing.T, _ *Template) *int {
+				shown := 0
+				uxtest.SwapForTest(t, &promptForPickers, func(_ promptOperation, _ *applyParts, _ bool) bool {
+					shown++
+					return false
+				})
+				return &shown
+			},
+		},
+		{
+			name: "nameables",
+			cancel: func(t *testing.T, template *Template) *int {
+				template.template.Traits[0].Name = "Phobia (@Subject@)"
+				shown := 0
+				uxtest.SwapForTest(t, &promptForNameables, func(_ promptOperation, _ []nameablesSection) bool {
+					shown++
+					return false
+				})
+				return &shown
+			},
+		},
+	} {
+		t.Run(one.name, func(t *testing.T) {
+			c := check.New(t)
+			sheet := newTestSheetForTemplate(t)
+			entity := sheet.Entity()
+			originalBody := entity.SheetSettings.BodyType
+			originalTraitCount := len(entity.Traits)
+			template := newTestTemplateWithBodyType("Template Body")
+			shown := one.cancel(t, template)
 
-	uxtest.SwapForTest(t, &promptForPickers, func(_ promptOperation, _ *applyParts, _ bool) bool { return false })
-	c.False(template.applyTemplateToSheet(sheet, promptOperation{}, true), "a canceled picker must report that the template was not applied")
-	c.Equal(originalBody, entity.SheetSettings.BodyType, "the body type must not have been replaced")
-	c.Equal(originalTraitCount, len(entity.Traits), "no traits must have been added")
-	c.Equal(originalTraitCount, len(sheet.Traits.Table.RootRows()), "no rows must have been added to the traits table")
-	c.False(sheet.Modified(), "the sheet must not have been marked as modified")
-	c.False(sheet.undoMgr.CanUndo(), "nothing was changed, so there must be nothing to undo")
+			c.False(template.applyTemplateToSheet(sheet, promptOperation{}, true),
+				"a canceled prompt must report that the template was not applied")
+			c.Equal(1, *shown, "the prompt must have been put to the user")
+			c.Equal(originalBody, entity.SheetSettings.BodyType, "the body type must not have been replaced")
+			c.Equal(originalTraitCount, len(entity.Traits), "no traits must have been added")
+			c.Equal(originalTraitCount, len(sheet.Traits.Table.RootRows()), "no rows must have been added to the traits table")
+			c.False(sheet.Modified(), "the sheet must not have been marked as modified")
+			c.False(sheet.undoMgr.CanUndo(), "nothing was changed, so there must be nothing to undo")
+		})
+	}
 }
 
 // Creating a character from a template used to leave the new, empty sheet open when a picker was canceled, even though
@@ -77,8 +113,10 @@ func TestNewSheetFromTemplateCanceledPickerClosesTheSheet(t *testing.T) {
 	c.Equal(0, open, "canceling a picker must close the new sheet")
 }
 
-// The undo data used to preserve only the profile randomizer fields and the five table data sets, leaving the
-// character permanently stuck with the template's body type.
+// TestApplyTemplateUndoRestoresBodyType verifies that applying a template gives the sheet a copy of the template's body
+// type, which undo and redo take away and put back, and that a template without a body type leaves the sheet's alone,
+// both when applied and when undone. The undo data used to preserve only the profile randomizer fields and the five
+// table data sets, leaving the character permanently stuck with the template's body type.
 func TestApplyTemplateUndoRestoresBodyType(t *testing.T) {
 	c := check.New(t)
 	sheet := newTestSheetForTemplate(t)
@@ -105,18 +143,15 @@ func TestApplyTemplateUndoRestoresBodyType(t *testing.T) {
 	c.Equal(originalBodyName, entity.SheetSettings.BodyType.Name, "a second undo must still restore the original")
 	sheet.undoMgr.Redo()
 	c.Equal("Template Body", entity.SheetSettings.BodyType.Name, "a second redo must still reapply the template's")
-}
 
-func TestApplyTemplateWithoutBodyTypeLeavesBodyTypeAlone(t *testing.T) {
-	c := check.New(t)
-	sheet := newTestSheetForTemplate(t)
-	entity := sheet.Entity()
+	sheet = newTestSheetForTemplate(t)
+	entity = sheet.Entity()
 	originalBody := entity.SheetSettings.BodyType
-	template := newTestTemplateWithBodyType("Template Body")
+	template = newTestTemplateWithBodyType("Template Body")
 	template.template.BodyType = nil
 
-	c.True(template.applyTemplateToSheet(sheet, promptOperation{}, true), "the template must be applied")
-	c.Equal(originalBody, entity.SheetSettings.BodyType, "the body type must have been left alone")
+	c.True(template.applyTemplateToSheet(sheet, promptOperation{}, true), "a template without a body type must be applied")
+	c.Equal(originalBody, entity.SheetSettings.BodyType, "a template without a body type must leave the body type alone")
 
 	sheet.undoMgr.Undo()
 	c.Equal(originalBody.Name, entity.SheetSettings.BodyType.Name, "undo must leave the body type alone as well")

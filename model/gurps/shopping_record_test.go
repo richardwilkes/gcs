@@ -46,27 +46,6 @@ func TestShoppingRecordRoundTrip(t *testing.T) {
 	c.Equal([]*ShoppingRecordEntry{entry}, loaded.ShoppingRecord)
 }
 
-func TestShoppingRecordCloneIsIndependent(t *testing.T) {
-	c := check.New(t)
-	entry := &ShoppingRecordEntry{
-		ID:    tid.MustNewTID(kinds.ShoppingRecord),
-		When:  mustTime(t, "2026-10-13T10:05:00Z"),
-		Kind:  ShoppingBought,
-		Items: []ShoppingRecordItem{{Name: "Rope", Quantity: fxp.FromInteger(1)}},
-		Money: []ShoppingRecordItem{{Name: "Copper Penny", Quantity: fxp.FromInteger(-3)}},
-	}
-	clone := CloneShoppingRecordList([]*ShoppingRecordEntry{entry})
-	c.Equal([]*ShoppingRecordEntry{entry}, clone)
-	clone[0].Items[0].Quantity = fxp.FromInteger(9)
-	clone[0].Money[0].Quantity = fxp.FromInteger(9)
-	clone[0].Name = "changed"
-	clone[0].ID = tid.MustNewTID(kinds.ShoppingRecord)
-	c.Equal(fxp.FromInteger(1), entry.Items[0].Quantity)
-	c.Equal(fxp.FromInteger(-3), entry.Money[0].Quantity)
-	c.Equal("", entry.Name)
-	c.NotEqual(entry.ID, clone[0].ID)
-}
-
 func TestAddShoppingRecordKeepsMostRecentFirst(t *testing.T) {
 	c := check.New(t)
 	var e Entity
@@ -109,6 +88,9 @@ func TestShoppingRecordEntriesOfTheSameSecondStayNewestFirst(t *testing.T) {
 	c.Equal([]string{"third", "second", "first", "earlier"}, names)
 }
 
+// TestSetShoppingRecordMakesIndependentCopies checks that SetShoppingRecord stores copies of the entries it is given,
+// so changing a stored entry's ID, name, items or money leaves the original alone, and that setting nil empties the
+// record without touching the list given before.
 func TestSetShoppingRecordMakesIndependentCopies(t *testing.T) {
 	c := check.New(t)
 	var e Entity
@@ -117,20 +99,29 @@ func TestSetShoppingRecordMakesIndependentCopies(t *testing.T) {
 		When:  mustTime(t, "2026-10-13T10:05:00Z"),
 		Kind:  ShoppingSold,
 		Items: []ShoppingRecordItem{{Name: "Rope", Quantity: fxp.One}},
+		Money: []ShoppingRecordItem{{Name: "Copper Penny", Quantity: fxp.FromInteger(-3)}},
 	}
 	list := []*ShoppingRecordEntry{entry}
 	e.SetShoppingRecord(list)
 	c.Equal(list, e.ShoppingRecord)
 	c.True(e.ShoppingRecord[0] != entry, "the entry is copied")
 	e.ShoppingRecord[0].Items[0].Quantity = fxp.Two
+	e.ShoppingRecord[0].Money[0].Quantity = fxp.FromInteger(9)
 	e.ShoppingRecord[0].Name = "changed"
+	e.ShoppingRecord[0].ID = tid.MustNewTID(kinds.ShoppingRecord)
 	c.Equal(fxp.One, entry.Items[0].Quantity)
+	c.Equal(fxp.FromInteger(-3), entry.Money[0].Quantity)
 	c.Equal("", entry.Name)
+	c.NotEqual(entry.ID, e.ShoppingRecord[0].ID)
 	e.SetShoppingRecord(nil)
 	c.Equal(0, len(e.ShoppingRecord))
 	c.Equal(1, len(list))
 }
 
+// TestShoppingRecordGetsIDsWhenLoaded checks that each entry of a loaded record ends up with an ID of its own, since
+// the record's viewers identify and remove entries by ID: an entry without one gets one, and of entries sharing an ID,
+// as a hand-edited or merged file may hold, the first keeps it and each later one gets its own. Loading also sorts the
+// record most recent first, keeping ties in order.
 func TestShoppingRecordGetsIDsWhenLoaded(t *testing.T) {
 	c := check.New(t)
 	kept := tid.MustNewTID(kinds.ShoppingRecord)
@@ -139,45 +130,23 @@ func TestShoppingRecordGetsIDsWhenLoaded(t *testing.T) {
 		{When: mustTime(t, "2026-10-12T16:30:00Z"), Name: "older", Kind: ShoppingSold},
 		{ID: kept, When: mustTime(t, "2026-10-13T10:05:00Z"), Name: "newer", Kind: ShoppingBought},
 		{When: mustTime(t, "2026-10-13T10:05:00Z"), Name: "same time", Kind: ShoppingSold},
+		{ID: kept, When: mustTime(t, "2026-10-12T16:30:00Z"), Name: "second", Kind: ShoppingSold},
+		{ID: kept, When: mustTime(t, "2026-10-11T16:30:00Z"), Name: "third", Kind: ShoppingSold},
 	}
 	data, err := jio.Marshal(e)
 	c.NoError(err)
 	var loaded Entity
 	c.NoError(jio.Unmarshal(data, &loaded))
-	c.Equal(3, len(loaded.ShoppingRecord))
+	c.Equal(5, len(loaded.ShoppingRecord))
 	names := make([]string, 0, len(loaded.ShoppingRecord))
+	seen := make(map[tid.TID]bool)
 	for _, entry := range loaded.ShoppingRecord {
 		names = append(names, entry.Name)
 		c.True(tid.IsKindAndValid(entry.ID, kinds.ShoppingRecord), "every entry has an ID once loaded")
-	}
-	c.Equal([]string{"newer", "same time", "older"}, names, "loading sorts most recent first, keeping ties in order")
-	c.Equal(kept, loaded.ShoppingRecord[0].ID, "an entry that had an ID keeps it")
-	c.NotEqual(loaded.ShoppingRecord[1].ID, loaded.ShoppingRecord[2].ID)
-}
-
-// TestShoppingRecordDuplicateIDsAreReplacedWhenLoaded checks that entries of a loaded record that share an ID, as a
-// hand-edited or merged file may hold, are told apart: the first keeps the ID and each later one gets its own, since the
-// record's viewers identify and remove entries by ID.
-func TestShoppingRecordDuplicateIDsAreReplacedWhenLoaded(t *testing.T) {
-	c := check.New(t)
-	shared := tid.MustNewTID(kinds.ShoppingRecord)
-	e := NewEntity()
-	e.ShoppingRecord = []*ShoppingRecordEntry{
-		{ID: shared, When: mustTime(t, "2026-10-13T10:05:00Z"), Name: "first", Kind: ShoppingBought},
-		{ID: shared, When: mustTime(t, "2026-10-12T16:30:00Z"), Name: "second", Kind: ShoppingSold},
-		{ID: shared, When: mustTime(t, "2026-10-11T16:30:00Z"), Name: "third", Kind: ShoppingSold},
-	}
-	data, err := jio.Marshal(e)
-	c.NoError(err)
-	var loaded Entity
-	c.NoError(jio.Unmarshal(data, &loaded))
-	c.Equal(3, len(loaded.ShoppingRecord))
-	seen := make(map[tid.TID]bool)
-	for _, entry := range loaded.ShoppingRecord {
-		c.True(tid.IsKindAndValid(entry.ID, kinds.ShoppingRecord), "every entry has a valid ID")
 		c.False(seen[entry.ID], "no two entries share an ID")
 		seen[entry.ID] = true
 	}
-	c.Equal("first", loaded.ShoppingRecord[0].Name)
-	c.Equal(shared, loaded.ShoppingRecord[0].ID, "the first entry with the ID keeps it")
+	c.Equal([]string{"newer", "same time", "older", "second", "third"}, names,
+		"loading sorts most recent first, keeping ties in order")
+	c.Equal(kept, loaded.ShoppingRecord[0].ID, "the first entry with the ID keeps it")
 }

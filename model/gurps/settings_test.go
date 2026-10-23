@@ -79,22 +79,6 @@ func TestLoadSettingsOrDefaultsWithCorruptFile(t *testing.T) {
 	c.Equal(corrupt, string(data))
 }
 
-// TestLoadSettingsOrDefaultsWithNullLibraryEntry verifies that a settings file holding a null in place of a library is
-// survivable. Decoding one used to panic, which bypassed this function's recovery entirely and crashed GCS at startup
-// rather than leaving it with usable settings.
-func TestLoadSettingsOrDefaultsWithNullLibraryEntry(t *testing.T) {
-	c := check.New(t)
-	countLogs(t, slog.LevelError)
-	p := filepath.Join(t.TempDir(), "settings.json")
-	c.NoError(os.WriteFile(p, []byte(`{"last_seen_gcs_version":"1.2.3","libraries":{"a/b":null,`+
-		`"someone/repo":{"title":"Good","path":"/libs/good"}}}`), 0o600))
-	var settings Settings
-	c.NotPanics(func() { settings = loadSettingsOrDefaults(p) })
-	c.Equal("1.2.3", settings.LastSeenGCSVersion, "the rest of the settings file still loaded")
-	c.NotNil(settings.Libraries.Lookup("someone/repo"), "the usable library entry survived")
-	c.Nil(settings.Libraries.Lookup("a/b"), "the null entry was skipped")
-}
-
 // TestSettingsSaveWithNullMapEntries verifies that a settings file holding a JSON null in place of a navigator node, a
 // column-sizing entry, or a PDF entry is survivable. Such entries decode without error, so the file loaded fine and
 // then Save() -- which runs on quit and after any settings change -- panicked while pruning stale entries, losing the

@@ -175,7 +175,10 @@ func TestAltDropDragFeedbackFlushed(t *testing.T) {
 }
 
 // TestAltDropDeliversRowIndex verifies that releasing an alternate drop over a row hands the row index to the
-// provider's drop handler and erases the highlight, while a release that isn't over a row does nothing.
+// provider's drop handler, erases the highlight and reports the change through the table's DropOccurredCallback, as
+// unison does for a normal drop, while a release that isn't over a row does nothing. The providers' drop handlers only
+// rebuild when the data owner has an owning entity, so without that notification a template or a traits/equipment list
+// dockable would go on showing itself as unmodified after the drop.
 func TestAltDropDeliversRowIndex(t *testing.T) {
 	c := check.New(t)
 	var flushes int
@@ -185,6 +188,9 @@ func TestAltDropDeliversRowIndex(t *testing.T) {
 
 	provider := &fakeAltDropProvider{}
 	table := newAltDropTestTable(provider)
+	c.NotNil(table.DropOccurredCallback, "drop support must install a drop notification")
+	notified := 0
+	table.DropOccurredCallback = func() { notified++ }
 	overRow := altDropPoint(table, 0)
 	di := &fakeDragInfo{types: []string{traitModifierDragKey.UTI}}
 
@@ -193,15 +199,21 @@ func TestAltDropDeliversRowIndex(t *testing.T) {
 	c.True(table.DropCallback(di, overRow, mod.None), "drop over row must be handled")
 	c.Equal([][]int{{0}}, provider.altDrops, "drop must deliver the row index")
 	c.Equal(1, flushes, "drop must flush to erase the highlight")
+	c.Equal(1, notified, "a completed drop must notify the table")
 
 	// With no row targeted, the drop must be declined and the handler left uncalled.
 	c.False(table.DropCallback(di, overRow, mod.None), "drop without a targeted row must be declined")
 	c.Equal([][]int{{0}}, provider.altDrops, "declined drop must not invoke the handler")
+	c.Equal(1, notified, "a declined drop must not notify the table")
 }
 
 // TestAltDropAppliesToTheWholeSelection verifies that a modifier released over one of several selected rows is handed
 // to the provider for every one of them, so that a modifier can be attached to a batch of traits or equipment in a
-// single drag, while a release anywhere else still affects only the row it landed on.
+// single drag, while a release over any other row still affects only that row and a release over no row targets
+// nothing, whatever is selected. The batch holds only the disclosed rows that are themselves selected: not the children
+// of a selected container, which unison shows as indirectly selected but a drop onto the container leaves alone, and
+// not a selected row hidden by closing its container, which can't be highlighted while dragging, nor that unselected
+// container in its stead.
 func TestAltDropAppliesToTheWholeSelection(t *testing.T) {
 	c := check.New(t)
 	original := flushDragFeedback
@@ -220,6 +232,7 @@ func TestAltDropAppliesToTheWholeSelection(t *testing.T) {
 
 	// With several rows selected, a drop onto one of them reaches all of them, in the order they appear in the table.
 	table.SelectByIndex(0, 3)
+	c.Equal(0, len(altDropTargets(table, -1)), "nothing may be targeted when the pointer isn't over a row")
 	dropOnRow(3)
 	c.Equal([][]int{{0, 3}}, provider.altDrops, "a drop onto a selected row must reach the whole selection")
 
@@ -234,106 +247,34 @@ func TestAltDropAppliesToTheWholeSelection(t *testing.T) {
 	table.SelectByIndex(0)
 	dropOnRow(0)
 	c.Equal([][]int{{0}}, provider.altDrops, "a drop with only one row selected must reach only that row")
-}
-
-// TestAltDropIgnoresIndirectlySelectedRows verifies that the children of a selected container are not targets of a
-// drop. unison paints them as indirectly selected rather than putting them into the selection, and dropping onto a
-// container attaches the modifiers to the container alone, so a container's children stay out of the batch -- and a
-// drop onto one of those children is a drop onto an unselected row, reaching just that child.
-func TestAltDropIgnoresIndirectlySelectedRows(t *testing.T) {
-	c := check.New(t)
-	original := flushDragFeedback
-	flushDragFeedback = func(_ *unison.Panel) {}
-	defer func() { flushDragFeedback = original }()
-
-	provider := &fakeAltDropProvider{}
-	table := newAltDropTestTable(provider, newAltDropTestTraits()...)
-	di := &fakeDragInfo{types: []string{traitModifierDragKey.UTI}}
-	dropOnRow := func(rowIndex int) {
-		where := altDropPoint(table, rowIndex)
-		c.Equal(drag.Copy, table.DragEnteredCallback(di, where, mod.None), "enter over row")
-		c.True(table.DropCallback(di, where, mod.None), "drop over row must be handled")
-	}
 
 	// Rows 0 and 1 are selected; row 2 is the selected container's child, which unison shows as indirectly selected.
+	provider.altDrops = nil
+	table.ClearSelection()
 	table.SelectByIndex(0, 1)
 	c.False(table.IsRowSelected(2), "a container's child must not be part of the selection itself")
 	c.True(table.IsRowOrAnyParentSelected(2), "a selected container's child must be shown as indirectly selected")
-
 	dropOnRow(1)
 	c.Equal([][]int{{0, 1}}, provider.altDrops, "the batch must not pick up the selected container's child")
 
 	provider.altDrops = nil
 	dropOnRow(2)
 	c.Equal([][]int{{2}}, provider.altDrops, "a drop onto an indirectly selected child must reach only that child")
-}
 
-// TestAltDropLeavesOutSelectedRowsInAClosedContainer verifies that a selected row hidden by closing its container is
-// not a target. The selection holds on to the hidden row until it is pruned, but the targets are taken from the
-// disclosed rows, so a row that can't be highlighted while dragging isn't quietly modified by the drop either -- and its
-// container, which isn't selected, isn't taken in its stead.
-func TestAltDropLeavesOutSelectedRowsInAClosedContainer(t *testing.T) {
-	c := check.New(t)
-	original := flushDragFeedback
-	flushDragFeedback = func(_ *unison.Panel) {}
-	defer func() { flushDragFeedback = original }()
-
-	provider := &fakeAltDropProvider{}
-	table := newAltDropTestTable(provider, newAltDropTestTraits()...)
+	provider.altDrops = nil
+	table.ClearSelection()
 	table.SelectByIndex(0, 2, 3) // The first trait, the container's child and the last trait.
 	table.RowFromIndex(1).SetOpen(false)
 	table.SyncToModel()
 	c.Equal(2, table.LastRowIndex(), "closing the container must hide its child, leaving three rows")
 	c.False(table.IsRowSelected(1), "the container itself must not be selected")
-
-	di := &fakeDragInfo{types: []string{traitModifierDragKey.UTI}}
-	where := altDropPoint(table, 2)
-	c.Equal(drag.Copy, table.DragEnteredCallback(di, where, mod.None), "enter over row")
-	c.True(table.DropCallback(di, where, mod.None), "drop over row must be handled")
+	dropOnRow(2)
 	c.Equal([][]int{{0, 2}}, provider.altDrops, "the hidden child must be left out of the batch")
 
 	// The child was left out because it isn't disclosed, not because the selection had let go of it.
 	table.RowFromIndex(1).SetOpen(true)
 	table.SyncToModel()
 	c.True(table.IsRowSelected(2), "the selection must still hold the child once it is disclosed again")
-}
-
-// TestAltDropTargetsWithNothingHovered verifies that a release that isn't over any row targets nothing at all, no
-// matter what is selected. Without a row under the pointer there is nothing to aim the drop at, and letting the
-// selection stand in for it would attach modifiers to rows the user never pointed at.
-func TestAltDropTargetsWithNothingHovered(t *testing.T) {
-	c := check.New(t)
-	provider := &fakeAltDropProvider{}
-	table := newAltDropTestTable(provider, newAltDropTestTraits()...)
-	table.SelectByIndex(0, 3)
-	c.Equal(0, len(altDropTargets(table, -1)), "nothing may be targeted when the pointer isn't over a row")
-}
-
-// TestAltDropNotifiesTheTable verifies that an alternate drop reports the change through the table's
-// DropOccurredCallback, just as unison does for a normal drop. The providers' drop handlers only rebuild when the data
-// owner has an owning entity, so without this notification a template or a traits/equipment list dockable keeps showing
-// itself as unmodified after the drop, with no modified marker on its tab and no prompt to save on the way out.
-func TestAltDropNotifiesTheTable(t *testing.T) {
-	c := check.New(t)
-	original := flushDragFeedback
-	flushDragFeedback = func(_ *unison.Panel) {}
-	defer func() { flushDragFeedback = original }()
-
-	provider := &fakeAltDropProvider{}
-	table := newAltDropTestTable(provider)
-	c.NotNil(table.DropOccurredCallback, "drop support must install a drop notification")
-	notified := 0
-	table.DropOccurredCallback = func() { notified++ }
-	overRow := altDropPoint(table, 0)
-	di := &fakeDragInfo{types: []string{traitModifierDragKey.UTI}}
-
-	c.Equal(drag.Copy, table.DragEnteredCallback(di, overRow, mod.None), "enter over row")
-	c.True(table.DropCallback(di, overRow, mod.None), "drop over row must be handled")
-	c.Equal(1, notified, "a completed drop must notify the table")
-
-	// With no row targeted, nothing was dropped, so there is nothing to report.
-	c.False(table.DropCallback(di, overRow, mod.None), "drop without a targeted row must be declined")
-	c.Equal(1, notified, "a declined drop must not notify the table")
 }
 
 // TestApplyOptionsFor verifies what rows arriving in each kind of document go through, depending on where they came
@@ -510,137 +451,164 @@ func enableAllModifiers(modifiers []*gurps.TraitModifier) bool {
 	return true
 }
 
-// TestDropFromLibraryEndsUpInTheListOnScreen verifies that a drop arriving from a library list completes against the
-// list that is on screen even though the change it makes replaces the list it was dropped into. Only the modifiers that
-// are enabled count toward a row having switchable features, so turning one on brings the switch column into view, and
-// a list can only gain a column by being built anew -- leaving the table the drop was aimed at an orphan, with no sheet
-// above it from which to reach the undo manager.
+// TestDropFromLibraryEndsUpInTheListOnScreen verifies that a drop or a copy arriving from a library list completes
+// against the list that is on screen even though the change it makes replaces the list it was aimed at. Only the
+// modifiers that are enabled count toward a row having switchable features, so turning one on in the modifier prompt
+// brings the switch column into view, and a list can only gain a column by being built anew -- leaving the table the
+// rows were aimed at an orphan, with no sheet above it to rebuild or to reach the undo manager through. Everything done
+// after the prompt -- the nameable substitutions, recording the undo edit and rebuilding the owner -- must therefore be
+// aimed at the list that took its place.
 func TestDropFromLibraryEndsUpInTheListOnScreen(t *testing.T) {
-	c := check.New(t)
-	sheet := newTestSheetForTemplate(t)
-	entity := sheet.Entity()
-	to := sheet.Traits.Table
-	mgr := unison.UndoManagerFor(to)
-	c.NotNil(mgr, "the table must be able to find the sheet's undo manager")
-	c.Equal(-1, switchColumnIndex(to.Columns, gurps.TraitSwitchColumn),
-		"the traits list must start out without the switch column")
-	originalTraits := len(entity.Traits) // A new entity may come with traits of its own, such as the natural attacks.
+	type traitsTable = *unison.Table[*Node[*gurps.Trait]]
+	for _, one := range []struct {
+		op, done string
+		transfer func(c check.Checker, sheet *Sheet, from, to traitsTable)
+	}{
+		{"drop", "dropped", func(c check.Checker, _ *Sheet, from, to traitsTable) {
+			c.True(applyDrop(&unison.TableDragData[*Node[*gurps.Trait]]{Table: from, Rows: from.RootRows()}, to, nil, -1),
+				"the drop must go through")
+		}},
+		{"copy", "copied", func(_ check.Checker, sheet *Sheet, from, _ traitsTable) {
+			from.SelectAll()
+			copySelectionTo(from, []*Sheet{sheet})
+		}},
+	} {
+		t.Run(one.op, func(t *testing.T) {
+			c := check.New(t)
+			sheet := newTestSheetForTemplate(t)
+			entity := sheet.Entity()
+			to := sheet.Traits.Table
+			mgr := unison.UndoManagerFor(to)
+			c.NotNil(mgr, "the table must be able to find the sheet's undo manager")
+			c.Equal(-1, switchColumnIndex(to.Columns, gurps.TraitSwitchColumn),
+				"the traits list must start out without the switch column")
+			// A new entity may come with traits of its own, such as the natural attacks.
+			originalTraits := len(entity.Traits)
 
-	trait := gurps.NewTrait(nil, nil, false)
-	trait.Name = "Claws"
-	trait.Modifiers = []*gurps.TraitModifier{newSwitchableTraitModifier("Retractable")}
-	from := newLibraryStyleTraitsTable(trait)
-	shown := stubTraitModifierPrompt(t, enableAllModifiers)
+			trait := gurps.NewTrait(nil, nil, false)
+			trait.Name = "Claws"
+			trait.Modifiers = []*gurps.TraitModifier{newSwitchableTraitModifier("Retractable")}
+			from := newLibraryStyleTraitsTable(trait)
+			shown := stubTraitModifierPrompt(t, enableAllModifiers)
 
-	c.True(applyDrop(&unison.TableDragData[*Node[*gurps.Trait]]{Table: from, Rows: from.RootRows()}, to, nil, -1),
-		"the drop must go through")
+			one.transfer(c, sheet, from, to)
 
-	c.Equal(1, *shown, "a drop from a library must prompt for the dropped row's modifiers")
-	c.Equal(originalTraits+1, len(entity.Traits), "the trait must have been dropped onto the sheet")
-	live := sheet.Traits.Table
-	c.NotEqual(to, live, "gaining the switch column must replace the traits table")
-	c.False(columnsOutOfSync(sheet.Traits.provider.ColumnIDs(), live.Columns),
-		"the live traits list must show the columns its content calls for")
-	c.NotEqual(-1, switchColumnIndex(live.Columns, gurps.TraitSwitchColumn),
-		"enabling the switchable modifier must bring the switch column into view")
-	c.True(live.CopySelectionMap()[entity.Traits[len(entity.Traits)-1].ID()],
-		"the dropped row must be selected in the list the user is looking at")
-	c.True(mgr.CanUndo(), "the drop must have registered an undo edit")
+			c.Equal(1, *shown, "a %s from a library must prompt for the %s row's modifiers", one.op, one.done)
+			c.Equal(originalTraits+1, len(entity.Traits), "the trait must have been %s onto the sheet", one.done)
+			live := sheet.Traits.Table
+			c.NotEqual(to, live, "gaining the switch column must replace the traits table")
+			c.False(columnsOutOfSync(sheet.Traits.provider.ColumnIDs(), live.Columns),
+				"the live traits list must show the columns its content calls for")
+			c.NotEqual(-1, switchColumnIndex(live.Columns, gurps.TraitSwitchColumn),
+				"enabling the switchable modifier must bring the switch column into view")
+			c.True(live.CopySelectionMap()[entity.Traits[len(entity.Traits)-1].ID()],
+				"the %s row must be selected in the list the user is looking at", one.done)
+			c.True(mgr.CanUndo(), "the %s must have registered an undo edit", one.op)
 
-	mgr.Undo()
-	c.Equal(originalTraits, len(entity.Traits), "undo must take the dropped trait back off the sheet")
-	c.Equal(-1, switchColumnIndex(sheet.Traits.Table.Columns, gurps.TraitSwitchColumn),
-		"undo must take the switch column away again")
+			mgr.Undo()
+			c.Equal(originalTraits, len(entity.Traits), "undo must take the %s trait back off the sheet", one.done)
+			c.Equal(-1, switchColumnIndex(sheet.Traits.Table.Columns, gurps.TraitSwitchColumn),
+				"undo must take the switch column away again")
+		})
+	}
 }
 
-// TestCopyToSheetSurvivesTheTargetTableBeingReplaced verifies that everything a copy onto a sheet does after prompting
-// for the incoming rows' modifiers -- the nameable substitutions, recording the undo edit and rebuilding the owner --
-// is aimed at the list that is on screen. Answering the prompt rebuilds the sheet, and since only enabled modifiers
-// count toward a row having switchable features, that replaces the table when the toggled modifier carries a
-// switchable feature; an orphaned table has no sheet above it to rebuild or to find the undo manager through.
-func TestCopyToSheetSurvivesTheTargetTableBeingReplaced(t *testing.T) {
-	c := check.New(t)
-	sheet := newTestSheetForTemplate(t)
-	entity := sheet.Entity()
-	target := sheet.Traits.Table
-	mgr := unison.UndoManagerFor(target)
-	c.NotNil(mgr, "the table must be able to find the sheet's undo manager")
-	c.Equal(-1, switchColumnIndex(target.Columns, gurps.TraitSwitchColumn),
-		"the traits list must start out without the switch column")
-	originalTraits := len(entity.Traits) // A new entity may come with traits of its own, such as the natural attacks.
-
-	trait := gurps.NewTrait(nil, nil, false)
-	trait.Name = "Claws"
-	trait.Modifiers = []*gurps.TraitModifier{newSwitchableTraitModifier("Retractable")}
-	source := newLibraryStyleTraitsTable(trait)
-	source.SelectAll()
-	shown := stubTraitModifierPrompt(t, enableAllModifiers)
-
-	copySelectionTo(source, []*Sheet{sheet})
-
-	c.Equal(1, *shown, "a copy from a library must prompt for the copied row's modifiers")
-	c.Equal(originalTraits+1, len(entity.Traits), "the trait must have been copied onto the sheet")
-	live := sheet.Traits.Table
-	c.NotEqual(target, live, "gaining the switch column must replace the traits table")
-	c.False(columnsOutOfSync(sheet.Traits.provider.ColumnIDs(), live.Columns),
-		"the live traits list must show the columns its content calls for")
-	c.NotEqual(-1, switchColumnIndex(live.Columns, gurps.TraitSwitchColumn),
-		"enabling the switchable modifier must bring the switch column into view")
-	c.True(live.CopySelectionMap()[entity.Traits[len(entity.Traits)-1].ID()],
-		"the copied row must be selected in the list the user is looking at")
-	c.True(mgr.CanUndo(), "the copy must have registered an undo edit")
-
-	mgr.Undo()
-	c.Equal(originalTraits, len(entity.Traits), "undo must take the copied trait back off the sheet")
-	c.Equal(-1, switchColumnIndex(sheet.Traits.Table.Columns, gurps.TraitSwitchColumn),
-		"undo must take the switch column away again")
-}
-
-// TestAltDropSkipsChoiceContainers verifies that a template choice container is never a target for an alternate drop,
-// whether it is the row under the pointer or one of several selected rows.
+// TestAltDropSkipsChoiceContainers verifies that a template choice container, an equipment group and an equipment
+// choice, none of which can hold modifiers (see gurps.CanTakeModifiers), are never a target for an alternate drop,
+// whether as the row under the pointer or as one of several selected rows, while a physical container may be.
 func TestAltDropSkipsChoiceContainers(t *testing.T) {
-	c := check.New(t)
-	provider := &fakeAltDropProvider{}
-	first := gurps.NewTrait(nil, nil, false)
-	choice := gurps.NewTraitChoiceContainer(nil, nil)
-	last := gurps.NewTrait(nil, nil, false)
-	table := newAltDropTestTable(provider, first, choice, last)
-	c.Equal(0, len(altDropTargets(table, 1)), "a choice under the pointer must not be targeted")
+	t.Run("traits", func(t *testing.T) {
+		c := check.New(t)
+		provider := &fakeAltDropProvider{}
+		first := gurps.NewTrait(nil, nil, false)
+		choice := gurps.NewTraitChoiceContainer(nil, nil)
+		last := gurps.NewTrait(nil, nil, false)
+		table := newAltDropTestTable(provider, first, choice, last)
+		c.Equal(0, len(altDropTargets(table, 1)), "a choice under the pointer must not be targeted")
 
-	table.SelectByIndex(0, 1, 2)
-	c.Equal([]int{0, 2}, altDropTargets(table, 0), "a selected choice must be left out of the batch")
+		table.SelectByIndex(0, 1, 2)
+		c.Equal([]int{0, 2}, altDropTargets(table, 0), "a selected choice must be left out of the batch")
+	})
+
+	t.Run("equipment", func(t *testing.T) {
+		c := check.New(t)
+		first := gurps.NewEquipment(nil, nil, false)
+		group := gurps.NewEquipmentGroup(nil, nil)
+		choice := gurps.NewEquipmentChoiceContainer(nil, nil)
+		backpack := gurps.NewEquipment(nil, nil, true)
+		template := newTestTemplateWithEquipment(first, group, choice, backpack)
+		table := template.Equipment.Table
+		c.Equal(0, len(altDropTargets(table, 1)), "a group under the pointer must not be targeted")
+		c.Equal(0, len(altDropTargets(table, 2)), "a choice under the pointer must not be targeted")
+		c.Equal([]int{3}, altDropTargets(table, 3), "a physical container may be targeted")
+
+		table.SelectByIndex(0, 1, 2, 3)
+		c.Equal([]int{0, 3}, altDropTargets(table, 0), "selected groups must be left out of the batch")
+	})
 }
 
 // TestApplyModifierSkipsChoiceContainers verifies that the Apply Modifier command never gives a template choice
-// container modifiers either: its target prompt leaves the choice out while still offering the options within it, and
-// the shared attach step skips a choice handed to it anyway.
+// container or an equipment group modifiers either: its target prompt leaves them out while still offering what they
+// hold, and the shared attach step skips one handed to it anyway.
 func TestApplyModifierSkipsChoiceContainers(t *testing.T) {
-	c := check.New(t)
-	forbidModifierPrompts(t)
-	choice := gurps.NewTraitChoiceContainer(nil, nil)
-	option := gurps.NewTrait(nil, choice, false)
-	option.Name = "Option"
-	choice.Children = []*gurps.Trait{option}
-	plain := gurps.NewTrait(nil, nil, false)
-	plain.Name = "Plain"
-	template := newTestTemplateWithTraits(choice, plain)
+	t.Run("traits", func(t *testing.T) {
+		c := check.New(t)
+		forbidModifierPrompts(t)
+		choice := gurps.NewTraitChoiceContainer(nil, nil)
+		option := gurps.NewTrait(nil, choice, false)
+		option.Name = "Option"
+		choice.Children = []*gurps.Trait{option}
+		plain := gurps.NewTrait(nil, nil, false)
+		plain.Name = "Plain"
+		template := newTestTemplateWithTraits(choice, plain)
 
-	lists := traitModifierTargetKind().lists(template)
-	c.Equal(1, len(lists))
-	labels := make([]string, 0, 2)
-	for _, one := range modifierTargetChoices(lists) {
-		labels = append(labels, one.String())
-	}
-	c.Equal([]string{"Option (in Trait Choice)", "Plain"}, labels,
-		"the choice must be left out of the prompt, but its option must still be offered")
+		lists := traitModifierTargetKind().lists(template)
+		c.Equal(1, len(lists))
+		labels := make([]string, 0, 2)
+		for _, one := range modifierTargetChoices(lists) {
+			labels = append(labels, one.String())
+		}
+		c.Equal([]string{"Option (in Trait Choice)", "Plain"}, labels,
+			"the choice must be left out of the prompt, but its option must still be offered")
 
-	ranged := gurps.NewTraitModifier(nil, nil, false)
-	ranged.Name = "Ranged"
-	tables := []*unison.Table[*Node[*gurps.Trait]]{template.Traits.Table}
-	c.True(attachModifierClones("", tables, template.template, []*gurps.Trait{choice, plain}, []*gurps.TraitModifier{ranged},
-		gurps.LibraryFile{}))
-	c.Equal(0, len(choice.Modifiers), "the choice must not be given the modifier")
-	c.Equal([]string{"Ranged"}, appliedModifierNames(plain.Modifiers), "the other target must still get it")
-	c.False(attachModifierClones("", tables, template.template, []*gurps.Trait{choice}, []*gurps.TraitModifier{ranged},
-		gurps.LibraryFile{}), "a choice alone leaves nothing to do")
+		ranged := gurps.NewTraitModifier(nil, nil, false)
+		ranged.Name = "Ranged"
+		tables := []*unison.Table[*Node[*gurps.Trait]]{template.Traits.Table}
+		c.True(attachModifierClones("", tables, template.template, []*gurps.Trait{choice, plain},
+			[]*gurps.TraitModifier{ranged}, gurps.LibraryFile{}))
+		c.Equal(0, len(choice.Modifiers), "the choice must not be given the modifier")
+		c.Equal([]string{"Ranged"}, appliedModifierNames(plain.Modifiers), "the other target must still get it")
+		c.False(attachModifierClones("", tables, template.template, []*gurps.Trait{choice},
+			[]*gurps.TraitModifier{ranged}, gurps.LibraryFile{}), "a choice alone leaves nothing to do")
+	})
+
+	t.Run("equipment", func(t *testing.T) {
+		c := check.New(t)
+		forbidModifierPrompts(t)
+		group := gurps.NewEquipmentGroup(nil, nil)
+		group.Name = "Kit"
+		rope := gurps.NewEquipment(nil, group, false)
+		rope.Name = "Rope"
+		group.Children = []*gurps.Equipment{rope}
+		backpack := gurps.NewEquipment(nil, nil, true)
+		backpack.Name = "Backpack"
+		template := newTestTemplateWithEquipment(group, backpack)
+
+		lists := equipmentModifierTargetKind().lists(template)
+		c.Equal(1, len(lists))
+		labels := make([]string, 0, 2)
+		for _, one := range modifierTargetChoices(lists) {
+			labels = append(labels, one.String())
+		}
+		c.Equal([]string{"Rope (in Kit)", "Backpack"}, labels,
+			"the group must be left out of the prompt, but what it holds must still be offered")
+
+		sturdy := gurps.NewEquipmentModifier(nil, nil, false)
+		sturdy.Name = "Sturdy"
+		tables := []*unison.Table[*Node[*gurps.Equipment]]{template.Equipment.Table}
+		c.True(attachModifierClones("", tables, template.template, []*gurps.Equipment{group, backpack},
+			[]*gurps.EquipmentModifier{sturdy}, gurps.LibraryFile{}))
+		c.Equal(0, len(group.Modifiers), "the group must not be given the modifier")
+		c.Equal(1, len(backpack.Modifiers), "the physical container must still get it")
+	})
 }

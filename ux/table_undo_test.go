@@ -64,7 +64,13 @@ func TestTableUndoBracket(t *testing.T) {
 
 // TestUndoOfDeleteSurvivesSwitchColumnDisappearing verifies that deleting the only switchable row -- which drops the
 // switch column and so forces the sheet to rebuild the traits page list from scratch -- doesn't sever undo from the
-// table the user is actually looking at.
+// table the user is actually looking at. An undo or redo that brings a column into or out of view must also not pay
+// for the update twice: putting the data back and marking the table as modified would recalculate the entity and
+// re-sync every table, and the rebuild that the changed column set then requires does all of that over again. Only one
+// of the two is warranted, and on a sheet with many rows the difference is the whole cost of the edit. The rebuild does
+// everything marking as modified would do except bump the modification timestamp, so the undo and the redo have to
+// bump it themselves, or undoing the deletion of the last switchable row would leave the sheet claiming it hadn't been
+// touched since it was last saved, while the same undo on any other row would not.
 func TestUndoOfDeleteSurvivesSwitchColumnDisappearing(t *testing.T) {
 	c := check.New(t)
 	sheet, trait := newSheetWithSwitchableTrait(t)
@@ -72,6 +78,7 @@ func TestUndoOfDeleteSurvivesSwitchColumnDisappearing(t *testing.T) {
 	mgr := unison.UndoManagerFor(sheet.Traits.Table)
 	c.NotNil(mgr, "the table must be able to find the sheet's undo manager")
 	c.Equal(gurps.TraitSwitchColumn, sheet.Traits.Table.Columns[0].ID, "the switch column must start out present")
+	counter := installSyncCounter(sheet)
 
 	sheet.Traits.Table.SetSelectionMap(map[tid.TID]bool{trait.ID(): true})
 	DeleteSelection(sheet.Traits.Table, true)
@@ -81,6 +88,8 @@ func TestUndoOfDeleteSurvivesSwitchColumnDisappearing(t *testing.T) {
 		"the switch column must go away with the last switchable row")
 
 	c.True(mgr.CanUndo(), "the deletion must be undoable")
+	counter.count = 0
+	entity.ModifiedOn = jio.Time{}
 	mgr.Undo()
 	c.Equal(1, len(entity.Traits), "undo must put the trait back into the entity")
 	c.Equal(0, sheet.Traits.Table.LastRowIndex(), "undo must put the row back into the visible table")
@@ -90,11 +99,19 @@ func TestUndoOfDeleteSurvivesSwitchColumnDisappearing(t *testing.T) {
 	// would be lost.
 	c.True(sheet.Traits.Table.CopySelectionMap()[trait.ID()],
 		"undo must restore the selection into the visible table, not the orphaned one it was collected from")
+	c.Equal(1, counter.count, "an undo that brings a column into view must sync the sheet exactly once")
+	c.NotEqual(jio.Time{}, entity.ModifiedOn, "an undo that rebuilds the sheet must bump the modification timestamp")
 
 	c.True(mgr.CanRedo(), "the deletion must be redoable")
+	counter.count = 0
+	entity.ModifiedOn = jio.Time{}
 	mgr.Redo()
 	c.Equal(0, len(entity.Traits), "redo must remove the trait from the entity again")
 	c.Equal(-1, sheet.Traits.Table.LastRowIndex(), "redo must remove the row from the visible table again")
+	c.NotEqual(gurps.TraitSwitchColumn, sheet.Traits.Table.Columns[0].ID,
+		"redo must take the switch column away again")
+	c.Equal(1, counter.count, "a redo that takes a column out of view must sync the sheet exactly once")
+	c.NotEqual(jio.Time{}, entity.ModifiedOn, "a redo that rebuilds the sheet must bump the modification timestamp")
 }
 
 // TestUndoOfDropSurvivesSwitchColumnAppearing verifies the other direction: dropping the first switchable row onto a
@@ -195,42 +212,10 @@ func installSyncCounter(sheet *Sheet) *syncCounter {
 	return counter
 }
 
-// TestUndoOfColumnChangingEditSyncsTheSheetOnlyOnce verifies that an undo that has to bring a column into or out of
-// view doesn't pay for the update twice. Putting the data back and marking the table as modified would recalculate the
-// entity and re-sync every table, and the rebuild that the changed column set then requires does all of that over
-// again. Only one of the two is warranted, and on a sheet with many rows the difference is the whole cost of the edit.
-func TestUndoOfColumnChangingEditSyncsTheSheetOnlyOnce(t *testing.T) {
-	c := check.New(t)
-	sheet, trait := newSheetWithSwitchableTrait(t)
-	entity := sheet.Entity()
-	mgr := unison.UndoManagerFor(sheet.Traits.Table)
-	c.NotNil(mgr, "the table must be able to find the sheet's undo manager")
-	counter := installSyncCounter(sheet)
-
-	sheet.Traits.Table.SetSelectionMap(map[tid.TID]bool{trait.ID(): true})
-	DeleteSelection(sheet.Traits.Table, true)
-	c.NotEqual(gurps.TraitSwitchColumn, sheet.Traits.Table.Columns[0].ID,
-		"the switch column must go away with the last switchable row")
-
-	counter.count = 0
-	mgr.Undo()
-	c.Equal(1, len(entity.Traits), "undo must put the trait back into the entity")
-	c.Equal(0, sheet.Traits.Table.LastRowIndex(), "undo must put the row back into the visible table")
-	c.Equal(gurps.TraitSwitchColumn, sheet.Traits.Table.Columns[0].ID, "undo must bring the switch column back")
-	c.Equal(1, counter.count, "an undo that brings a column into view must sync the sheet exactly once")
-
-	counter.count = 0
-	mgr.Redo()
-	c.Equal(0, len(entity.Traits), "redo must remove the trait from the entity again")
-	c.Equal(-1, sheet.Traits.Table.LastRowIndex(), "redo must remove the row from the visible table again")
-	c.NotEqual(gurps.TraitSwitchColumn, sheet.Traits.Table.Columns[0].ID,
-		"redo must take the switch column away again")
-	c.Equal(1, counter.count, "a redo that takes a column out of view must sync the sheet exactly once")
-}
-
-// TestUndoOfOrdinaryEditSyncsTheSheetOnlyOnce verifies the other half of the same choice: an undo that leaves the
-// column set alone doesn't rebuild, so marking the table as modified is what has to do the syncing -- and it still has
-// to happen, exactly once.
+// TestUndoOfOrdinaryEditSyncsTheSheetOnlyOnce verifies the other half of the choice that
+// TestUndoOfDeleteSurvivesSwitchColumnDisappearing covers: an undo that leaves the column set alone doesn't rebuild,
+// so marking the table as modified is what has to do the syncing -- and it still has to happen, exactly once -- and to
+// bump the modification timestamp, so that both paths look the same to the user.
 func TestUndoOfOrdinaryEditSyncsTheSheetOnlyOnce(t *testing.T) {
 	c := check.New(t)
 	sheet := newTestSheetForTemplate(t)
@@ -249,65 +234,12 @@ func TestUndoOfOrdinaryEditSyncsTheSheetOnlyOnce(t *testing.T) {
 	c.Equal(0, len(entity.Traits), "the trait must be gone from the entity")
 
 	counter.count = 0
+	entity.ModifiedOn = jio.Time{}
 	mgr.Undo()
 	c.Equal(table, sheet.Traits.Table, "an unchanged column set must leave the traits table in place")
 	c.Equal(1, len(entity.Traits), "undo must put the trait back into the entity")
 	c.Equal(0, table.LastRowIndex(), "undo must put the row back into the visible table")
 	c.Equal(1, counter.count, "an undo that leaves the columns alone must still sync the sheet exactly once")
-}
-
-// TestUndoOfColumnChangingEditBumpsTheModificationTimestamp verifies that an undo which has to bring a column into or
-// out of view still reports the sheet as having been changed. Such an undo rebuilds the sheet instead of marking the
-// table as modified, and the rebuild does everything marking as modified would do except bump the modification
-// timestamp, so the undo has to bump it itself. Otherwise undoing the deletion of the last switchable row would leave
-// the sheet claiming it hadn't been touched since it was last saved, while the same undo on any other row would not.
-func TestUndoOfColumnChangingEditBumpsTheModificationTimestamp(t *testing.T) {
-	c := check.New(t)
-	sheet, trait := newSheetWithSwitchableTrait(t)
-	entity := sheet.Entity()
-	mgr := unison.UndoManagerFor(sheet.Traits.Table)
-	c.NotNil(mgr, "the table must be able to find the sheet's undo manager")
-
-	sheet.Traits.Table.SetSelectionMap(map[tid.TID]bool{trait.ID(): true})
-	DeleteSelection(sheet.Traits.Table, true)
-	c.NotEqual(gurps.TraitSwitchColumn, sheet.Traits.Table.Columns[0].ID,
-		"the switch column must go away with the last switchable row")
-
-	entity.ModifiedOn = jio.Time{}
-	mgr.Undo()
-	c.Equal(gurps.TraitSwitchColumn, sheet.Traits.Table.Columns[0].ID, "undo must bring the switch column back")
-	c.NotEqual(jio.Time{}, entity.ModifiedOn, "an undo that rebuilds the sheet must bump the modification timestamp")
-
-	entity.ModifiedOn = jio.Time{}
-	mgr.Redo()
-	c.NotEqual(gurps.TraitSwitchColumn, sheet.Traits.Table.Columns[0].ID,
-		"redo must take the switch column away again")
-	c.NotEqual(jio.Time{}, entity.ModifiedOn, "a redo that rebuilds the sheet must bump the modification timestamp")
-}
-
-// TestUndoOfOrdinaryEditBumpsTheModificationTimestamp verifies the other half of that: an undo that leaves the column
-// set alone marks the table as modified rather than rebuilding, which has to bump the modification timestamp as well,
-// so that both paths look the same to the user.
-func TestUndoOfOrdinaryEditBumpsTheModificationTimestamp(t *testing.T) {
-	c := check.New(t)
-	sheet := newTestSheetForTemplate(t)
-	entity := sheet.Entity()
-	trait := gurps.NewTrait(entity, nil, false)
-	trait.Name = "Plain"
-	entity.Traits = []*gurps.Trait{trait}
-	sheet.Rebuild(true)
-	table := sheet.Traits.Table
-	mgr := unison.UndoManagerFor(table)
-	c.NotNil(mgr, "the table must be able to find the sheet's undo manager")
-
-	table.SetSelectionMap(map[tid.TID]bool{trait.ID(): true})
-	DeleteSelection(table, true)
-	c.Equal(0, len(entity.Traits), "the trait must be gone from the entity")
-
-	entity.ModifiedOn = jio.Time{}
-	mgr.Undo()
-	c.Equal(table, sheet.Traits.Table, "an unchanged column set must leave the traits table in place")
-	c.Equal(1, len(entity.Traits), "undo must put the trait back into the entity")
 	c.NotEqual(jio.Time{}, entity.ModifiedOn,
 		"an undo that leaves the columns alone must bump the modification timestamp, too")
 }

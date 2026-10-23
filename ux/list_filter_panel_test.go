@@ -808,14 +808,17 @@ func TestListFilterPanelFieldKinds(t *testing.T) {
 }
 
 // TestListFilterPanelListEditor checks what an open condition on a list offers: comparisons worded for a list, and a
-// field whose tooltip says how to give several values.
+// field whose tooltip says how to give several values, unless it is a list of free text, such as modifier notes, which
+// compares the whole of its value and so doesn't say to separate several values with commas.
 func TestListFilterPanelListEditor(t *testing.T) {
 	c := check.New(t)
 	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
 	f := gurps.NewListFilter("")
 	tags := gurps.NewFilterCondition(f.Root, "tags")
 	tags.Text = criteria.Text{Compare: criteria.IsText, Qualifier: "Shield"}
-	f.Root.Children = gurps.FilterNodes{tags}
+	notes := gurps.NewFilterCondition(f.Root, "modifier_notes")
+	notes.Text = criteria.Text{Compare: criteria.ContainsText, Qualifier: "Melee, Ranged"}
+	f.Root.Children = gurps.FilterNodes{tags, notes}
 	p, _ := showListFilterPanel(t, screen, f)
 	screen.Do(func() { p.toggle("r.0") })
 	screen.Do(func() {
@@ -834,6 +837,13 @@ func TestListFilterPanelListEditor(t *testing.T) {
 		if field, ok := refAs[*unison.Panel](t, p.AsPanel(), "r.0:text"); ok {
 			c.Contains(tooltipText(field.Tooltip), "commas", "the field says how to give several values")
 		}
+	})
+	screen.Do(func() { p.toggle("r.1") })
+	screen.Do(func() {
+		if field, ok := refAs[*unison.Panel](t, p.AsPanel(), "r.1:text"); ok {
+			c.NotContains(tooltipText(field.Tooltip), "commas", "the field doesn't offer to split on commas")
+		}
+		c.Equal(`Must have modifier notes where at least one contains "Melee, Ranged"`, stripEm.Replace(p.describe(notes)))
 	})
 }
 
@@ -889,25 +899,6 @@ func TestListFilterPanelSuggestionsFollowDisabledPill(t *testing.T) {
 	})
 	c.True(names.IncludeDisabled, "precondition: the condition now includes disabled modifiers")
 	c.Equal([]string{"Cheap", "Fine"}, offered(), "with the pill, the disabled modifier is offered too")
-}
-
-// TestListFilterPanelWholeTextListEditor checks that a list of free text, such as modifier notes, doesn't say to
-// separate several values with commas, since it compares the whole of its value.
-func TestListFilterPanelWholeTextListEditor(t *testing.T) {
-	c := check.New(t)
-	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
-	f := gurps.NewListFilter("")
-	notes := gurps.NewFilterCondition(f.Root, "modifier_notes")
-	notes.Text = criteria.Text{Compare: criteria.ContainsText, Qualifier: "Melee, Ranged"}
-	f.Root.Children = gurps.FilterNodes{notes}
-	p, _ := showListFilterPanel(t, screen, f)
-	screen.Do(func() { p.toggle("r.0") })
-	screen.Do(func() {
-		if field, ok := refAs[*unison.Panel](t, p.AsPanel(), "r.0:text"); ok {
-			c.NotContains(tooltipText(field.Tooltip), "commas", "the field doesn't offer to split on commas")
-		}
-		c.Equal(`Must have modifier notes where at least one contains "Melee, Ranged"`, stripEm.Replace(p.describe(notes)))
-	})
 }
 
 // newSuggestionTestEquipment returns equipment tagged "Weapon", "weapon" and "Melee Weapon", the first of tech level 3,

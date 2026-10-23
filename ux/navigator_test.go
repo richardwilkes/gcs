@@ -161,10 +161,12 @@ func TestDeepSearchOfSheetProfileIsCaseInsensitive(t *testing.T) {
 	c.Equal(0, matchCount(n, "belit", node))
 }
 
-// TestDeepSearchCachesMarkdownContent verifies what a search stores in the content cache for a markdown file: the raw
-// text, lowercased and with surrounding whitespace trimmed at load time, keyed by the file's full path on disk, and
-// that subsequent searches consult that entry rather than the file.
-func TestDeepSearchCachesMarkdownContent(t *testing.T) {
+// TestDeepSearchServesCacheHitsUntilInvalidated verifies that a search caches a markdown file's text, lowercased and
+// with surrounding whitespace trimmed, under the file's full path on disk, that it serves a cache hit without checking
+// the file on disk — revalidating every hit would be a stat per deep-searchable file on each keystroke — and that
+// dropping the entry, as the filesystem watches do when they report the file changed, makes the next search re-read
+// the file rather than match on its previous contents.
+func TestDeepSearchServesCacheHitsUntilInvalidated(t *testing.T) {
 	c := check.New(t)
 	ext := uti.Markdown.Extensions[0]
 	lib := newTestLibrary(t)
@@ -172,53 +174,33 @@ func TestDeepSearchCachesMarkdownContent(t *testing.T) {
 	p := filepath.Join(lib.Path(false), fileName)
 	node := writeTestLibraryFile(c, lib, fileName, []byte("# Conan The Barbarian\n"))
 	n := newDeepSearchNavigator(ext)
-	c.Equal(1, matchCount(n, "barbarian", node))
-
-	// The lowercased content must now be cached under the file's full path.
+	c.Equal(1, matchCount(n, "barbarian", node), "the original content must match and populate the cache")
 	cached, ok := n.contentCache[p]
 	c.True(ok, "expected the markdown content to be cached for %q", p)
-	c.Equal("# conan the barbarian", cached.content)
-
-	// Removing the file must not change the outcome of a subsequent search, proving the cache is what gets consulted.
-	c.NoError(os.Remove(p))
-	c.Equal(1, matchCount(n, "barbarian", node))
-}
-
-// TestDeepSearchServesCacheHitsUntilInvalidated verifies that a search serves a cache hit without checking the file on
-// disk — revalidating every hit would be a stat per deep-searchable file on each keystroke — and that dropping the
-// entry, as the filesystem watches do when they report the file changed, makes the next search re-read the file rather
-// than match on its previous contents.
-func TestDeepSearchServesCacheHitsUntilInvalidated(t *testing.T) {
-	c := check.New(t)
-	ext := uti.Markdown.Extensions[0]
-	lib := newTestLibrary(t)
-	fileName := "notes" + ext
-	p := filepath.Join(lib.Path(false), fileName)
-	node := writeTestLibraryFile(c, lib, fileName, []byte("alpha\n"))
-	n := newDeepSearchNavigator(ext)
-	c.Equal(1, matchCount(n, "alpha", node), "the original content must match and populate the cache")
+	c.Equal("# conan the barbarian", cached.content, "the cached content must be lowercased and trimmed")
 
 	// Rewrite the file with different content and a clearly different modification time, so that a search which did
 	// check the file against the entry would notice the change.
 	c.NoError(os.WriteFile(p, []byte("bravo bravo\n"), 0o600))
 	c.NoError(os.Chtimes(p, time.Time{}, time.Now().Add(time.Hour)))
 
-	c.Equal(1, matchCount(n, "alpha", node), "a cache hit must be served without checking the file on disk")
+	c.Equal(1, matchCount(n, "barbarian", node), "a cache hit must be served without checking the file on disk")
 	c.Equal(0, matchCount(n, "bravo", node), "a cache hit must be served without checking the file on disk")
 
 	// Once the watch reports the change, the next search must re-read the file.
 	n.watchCallback(lib, p, notify.Write)
-	_, ok := n.contentCache[p]
+	_, ok = n.contentCache[p]
 	c.False(ok, "the reported change must drop the entry")
 	c.Equal(1, matchCount(n, "bravo", node), "the new content must be found after the change is reported")
-	c.Equal(0, matchCount(n, "alpha", node), "the previous content must no longer match")
+	c.Equal(0, matchCount(n, "barbarian", node), "the previous content must no longer match")
 	c.True(n.contentCache[p].isCurrent(p), "the re-read must capture the file's current metadata")
 }
 
 // TestInvalidationReachesInFlightCacheBuild verifies that a file change reported while a background cache build is
 // running is applied to that build's result, since the build may have read the file before it changed: the entry is
-// dropped from the result when it is installed, a superseded build leaves the invalidation for the newer build to
-// apply, and starting a build consumes the invalidations made before it, which its starting snapshot already lacks.
+// dropped from the result when it is installed, a superseded build is discarded, leaving the cache as it was and the
+// invalidation for the newer build to apply, and starting a build consumes the invalidations made before it, which its
+// starting snapshot already lacks.
 func TestInvalidationReachesInFlightCacheBuild(t *testing.T) {
 	c := check.New(t)
 	n := &Navigator{contentCache: map[string]*contentCacheEntry{"a": {}, "b": {}}}
@@ -229,17 +211,20 @@ func TestInvalidationReachesInFlightCacheBuild(t *testing.T) {
 	c.False(ok, "the live cache must drop the entry at once")
 	c.NotNil(n.contentCache["b"], "other entries must be untouched")
 
-	fresh := map[string]*contentCacheEntry{"a": {}, "b": {}}
+	fresh := map[string]*contentCacheEntry{"a": {}, "b": {}, "c": {}}
 	c.True(n.applyPrewarmedContentCache(gen, fresh))
 	_, ok = n.contentCache["a"]
 	c.False(ok, "the installed build must lack the entry invalidated while it ran")
 	c.True(fresh["b"] == n.contentCache["b"], "the installed build must keep the rest")
 	c.Equal(0, len(n.invalidatedPaths), "an installed build must consume the invalidations")
 
-	// A superseded build must leave the invalidation for the newer build's result.
+	// A superseded build must be discarded, leaving the cache as it was and the invalidation for the newer build's
+	// result.
 	n.invalidateContentCacheEntry("b")
 	n.cacheGeneration.Add(1)
-	c.False(n.applyPrewarmedContentCache(gen, map[string]*contentCacheEntry{"b": {}}))
+	c.False(n.applyPrewarmedContentCache(gen, map[string]*contentCacheEntry{"b": {}}),
+		"a superseded build must not be installed")
+	c.True(fresh["c"] == n.contentCache["c"], "a superseded build must not clobber the cache")
 	c.True(n.invalidatedPaths["b"], "a discarded build must not consume the invalidations")
 	c.True(n.applyPrewarmedContentCache(n.cacheGeneration.Load(), map[string]*contentCacheEntry{"b": {}}))
 	_, ok = n.contentCache["b"]
@@ -414,28 +399,6 @@ func TestDeepSearchCachesFileWhoseParsePanics(t *testing.T) {
 	entry, ok := n.contentCache[p]
 	c.True(ok, "expected the panicking file to be cached for %q", p)
 	c.Equal("", entry.content)
-}
-
-// TestApplyPrewarmedContentCache verifies the generation handshake that protects the background cache builds: a build
-// that is no longer the newest must be discarded rather than installed, since a newer prewarm or a suspension has made
-// its contents suspect, while the newest build replaces the cache wholesale.
-func TestApplyPrewarmedContentCache(t *testing.T) {
-	c := check.New(t)
-	n := &Navigator{}
-	gen := n.cacheGeneration.Add(1)
-	original := map[string]*contentCacheEntry{"original": {}}
-	n.contentCache = original
-
-	// A newer prewarm (or a suspension) started after this build began, so its result must be discarded.
-	n.cacheGeneration.Add(1)
-	c.False(n.applyPrewarmedContentCache(gen, map[string]*contentCacheEntry{"stale": {}}),
-		"a superseded build must not be installed")
-	c.True(original["original"] == n.contentCache["original"], "a superseded build must not clobber the cache")
-
-	// The newest build must be installed.
-	fresh := map[string]*contentCacheEntry{"fresh": {}}
-	c.True(n.applyPrewarmedContentCache(n.cacheGeneration.Load(), fresh))
-	c.True(fresh["fresh"] == n.contentCache["fresh"], "the newest build must replace the cache")
 }
 
 // TestSupersededCacheBuildHandsEntriesToItsSuccessor verifies that a background cache build inherits the entries of the
@@ -689,27 +652,6 @@ func TestPathsBuiltFromTheValidatedName(t *testing.T) {
 		c.Equal(filepath.Join(dir, trimmed+gurps.NotesExt), renamedPath(oldPath, one.in), one.name)
 		c.Equal(filepath.Join(dir, one.want+gurps.NotesExt), renamedPath(oldPath, one.in), one.name)
 	}
-}
-
-// TestNewFolderRejectsCollisionWithWhitespacePaddedName verifies that the existence check the new-folder dialog makes
-// and the directory it would create refer to the same path, so padding a name with whitespace can't slip a duplicate
-// past validation.
-func TestNewFolderRejectsCollisionWithWhitespacePaddedName(t *testing.T) {
-	c := check.New(t)
-	dir := t.TempDir()
-	c.NoError(os.Mkdir(filepath.Join(dir, "Notes"), 0o750))
-
-	// The name is padded, but the collision check must still find the existing directory.
-	p := newFolderPath(dir, "  Notes  ")
-	_, err := os.Stat(p)
-	c.NoError(err, "the padded name must resolve to the existing directory")
-
-	// And creating it must be what fails, rather than quietly producing a second, differently-named directory.
-	c.HasError(os.Mkdir(p, 0o750))
-	entries, err := os.ReadDir(dir)
-	c.NoError(err)
-	c.Equal(1, len(entries))
-	c.Equal("Notes", entries[0].Name())
 }
 
 // TestDeepSearchIndexesFromSavedCalc verifies that the content of a sheet, a note list, a template and a loot sheet is

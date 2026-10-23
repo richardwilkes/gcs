@@ -186,7 +186,9 @@ func sellMoneyNames(s *gurps.SheetSettings) []string {
 // TestSheetSettingsSellMoneyDrop checks that dropping equipment onto the sell money list adds a copy of each item that
 // can be money, once, wherever it comes from, and tells the open sheets, while containers and equipment that isn't
 // tagged as money are refused, with a drag of nothing but those declined outright; that each entry's button removes it;
-// and that sync() shows the list of replaced settings.
+// that sync() shows the list of replaced settings; and that an item copied into a library from another, and so
+// carrying that other library's source, is added as the item dragged, with its own name and value, keeping the source
+// it carries (see gurps.Reference).
 func TestSheetSettingsSellMoneyDrop(t *testing.T) {
 	c := check.New(t)
 	money, library := newTradingSettingsTest(t, c)
@@ -251,6 +253,25 @@ func TestSheetSettingsSellMoneyDrop(t *testing.T) {
 	d.reset()
 	c.Equal(0, len(owner.entity.SheetSettings.SellMoney), "reset restores the defaults, which have no sell money")
 	c.Equal(hint, uxtest.LabelTexts(d.sellMoneyPanel), "sync shows the list of the reset settings")
+
+	user := gurps.GlobalSettings().Libraries.User()
+	localPath := filepath.Join(user.Path(false), "Local Coins"+gurps.EquipmentExt)
+	local := money.eagle.Clone(money.libFile, nil, nil, gurps.Reference)
+	local.Name = "Local Eagle"
+	local.BaseValue = "25"
+	c.Equal(money.source(money.eagle), local.Source, "the copy keeps the source it was copied from")
+	c.NoError(gurps.SaveEquipment([]*gurps.Equipment{local}, localPath))
+	locals := NewEquipmentTableDockable(localPath, []*gurps.Equipment{local})
+	c.True(dropOnSellMoney(t, c, d, locals.table, local), "the copied item is added")
+	s = owner.entity.SheetSettings
+	c.Equal([]string{"Local Eagle"}, sellMoneyNames(s),
+		"the item dragged is what is copied, not the item it was copied from")
+	if len(s.SellMoney) == 1 {
+		c.Equal("25", s.SellMoney[0].BaseValue)
+		c.NotEqual(local.TID, s.SellMoney[0].TID)
+		c.Equal(money.source(money.eagle), s.SellMoney[0].Source, "the copy keeps the source the item carries")
+	}
+	c.Equal([]string{"Local Eagle", "$25"}, uxtest.LabelTexts(d.sellMoneyPanel), "the list shows the item dragged")
 }
 
 // TestSheetSettingsSellMoneyFollowsTheValueFormat checks that the sell money list shows the values in the equipment
@@ -301,35 +322,6 @@ func TestSheetSettingsSellMoneyWithoutOwner(t *testing.T) {
 	sellMoneyRemoveButton(t, d, "Copper Penny").ClickCallback()
 	c.Equal(0, len(global.Sheet.SellMoney), "the button removes the entry from the defaults")
 	c.Equal(2, len(recorder.updates), "the removal is reported")
-}
-
-// TestSheetSettingsSellMoneyDropCopiesTheItemDragged checks that an item dragged from a library that was itself copied
-// into that library from another, and so carries that other library's source, is added as the item dragged, with its
-// own name and value, keeping the source it carries as any copy of it does (see gurps.Reference).
-func TestSheetSettingsSellMoneyDropCopiesTheItemDragged(t *testing.T) {
-	c := check.New(t)
-	money, _ := newTradingSettingsTest(t, c)
-	owner := newEntityPanelWithFlaggedSettings()
-	d, _ := newTestSheetSettingsDockable(t, owner)
-	user := gurps.GlobalSettings().Libraries.User()
-	name := "Local Coins" + gurps.EquipmentExt
-	path := filepath.Join(user.Path(false), name)
-	local := money.eagle.Clone(money.libFile, nil, nil, gurps.Reference)
-	local.Name = "Local Eagle"
-	local.BaseValue = "25"
-	c.Equal(money.source(money.eagle), local.Source, "the copy keeps the source it was copied from")
-	c.NoError(gurps.SaveEquipment([]*gurps.Equipment{local}, path))
-	library := NewEquipmentTableDockable(path, []*gurps.Equipment{local})
-
-	c.True(dropOnSellMoney(t, c, d, library.table, local), "the copied item is added")
-	s := owner.entity.SheetSettings
-	c.Equal([]string{"Local Eagle"}, sellMoneyNames(s), "the item dragged is what is copied, not the item it was copied from")
-	if len(s.SellMoney) == 1 {
-		c.Equal("25", s.SellMoney[0].BaseValue)
-		c.NotEqual(local.TID, s.SellMoney[0].TID)
-		c.Equal(money.source(money.eagle), s.SellMoney[0].Source, "the copy keeps the source the item carries")
-	}
-	c.Equal([]string{"Local Eagle", "$25"}, uxtest.LabelTexts(d.sellMoneyPanel), "the list shows the item dragged")
 }
 
 // TestSheetSettingsSellMoneyDropFromASheet checks that equipment dragged from a sheet's carried equipment list, which

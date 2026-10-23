@@ -52,16 +52,19 @@ func TestDRBonusSpecializationWithReplacements(t *testing.T) {
 	c.Equal(AllID, bonus.SpecializationWithReplacements(), "a replacement of 'All' normalizes to 'all'")
 }
 
-// TestEntityDRBonusSpecializationUsesReplacements verifies that the DR map an entity builds is keyed by the resolved
-// damage type, and that an unanswered marker shows up as its own key rather than being folded into "all".
+// TestEntityDRBonusSpecializationUsesReplacements verifies that the DR map an entity builds, and the tooltip generated
+// while building it, use the resolved damage type, and that an unanswered marker shows up as its own key rather than
+// being folded into "all".
 func TestEntityDRBonusSpecializationUsesReplacements(t *testing.T) {
 	c := check.New(t)
 	e, _ := newTestEntityWithDRTrait(newTestDRBonus(fxp.Three, "@Damage Type@", TorsoID),
 		map[string]string{"Damage Type": "Cold"})
 
-	drMap := e.AddDRBonusesFor(TorsoID, nil, nil)
+	var tooltip xbytes.InsertBuffer
+	drMap := e.AddDRBonusesFor(TorsoID, &tooltip, nil)
 	c.Equal(3, drMap["cold"], "the DR lands under the resolved damage type")
 	c.Equal(0, drMap[AllID], "nothing lands under 'all'")
+	c.Contains(tooltip.String(), "against Cold attacks", "the tooltip names the resolved damage type")
 
 	// A second trait carrying the same marker, but with no replacement to answer it, must remain distinguishable.
 	addTraitWithFeatures(e, "Damage Resistance", newTestDRBonus(fxp.Two, "@Damage Type@", TorsoID))
@@ -71,18 +74,6 @@ func TestEntityDRBonusSpecializationUsesReplacements(t *testing.T) {
 	c.Equal(3, drMap["cold"], "the resolved bonus is unaffected by the unresolved one")
 	c.Equal(2, drMap["@damage type@"], "an unanswered marker keys the map visibly rather than becoming 'all'")
 	c.Equal(0, drMap[AllID], "an unanswered marker doesn't become DR against everything")
-}
-
-// TestDRBonusTooltipUsesResolvedSpecialization verifies that the tooltip generated while collecting DR names the
-// resolved damage type rather than the raw marker.
-func TestDRBonusTooltipUsesResolvedSpecialization(t *testing.T) {
-	c := check.New(t)
-	e, _ := newTestEntityWithDRTrait(newTestDRBonus(fxp.Three, "@Damage Type@", TorsoID),
-		map[string]string{"Damage Type": "Cold"})
-
-	var tooltip xbytes.InsertBuffer
-	e.AddDRBonusesFor(TorsoID, &tooltip, nil)
-	c.Contains(tooltip.String(), "against Cold attacks", "the tooltip names the resolved damage type")
 }
 
 // TestThisArmorDRBonusResolvesSpecialization verifies that the synthetic copy made for a "this armor" DR bonus (one

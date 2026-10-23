@@ -23,51 +23,70 @@ import (
 // match the version the tests are built as.
 var pendingAppRelease = []library.Release{{Version: "99.0.0"}}
 
+// TestQuietCheckFailureKeepsAKnownUpdate verifies what a quiet check records: a failure keeps a known update and
+// reports the unreachable site only when nothing was known, finding nothing clears a release no longer on offer (such
+// as one the user has since installed), and a release found is recorded as a visible check would, since the toolbar
+// button and the Help menu can't tell which check produced it. A later success replaces any of these.
 func TestQuietCheckFailureKeepsAKnownUpdate(t *testing.T) {
-	c := check.New(t)
-	var u appUpdater
-	u.SetReleases(pendingAppRelease)
-	wantTitle, _, _ := u.Result()
-	c.Contains(wantTitle, "99", "the seeded title must name the release it is about")
-	seq, ok := u.beginQuiet()
-	c.True(ok)
-	u.finishQuiet(seq, nil, errors.New("update site unreachable"))
-	title, releases, updating := u.Result()
-	c.Equal(wantTitle, title, "a failed quiet check must not change the title")
-	c.Equal(1, len(releases), "a failed quiet check must not discard the known release")
-	c.Equal("99.0.0", releases[0].Version)
-	c.False(updating)
-	c.False(u.quiet, "the quiet check must no longer be marked as in flight")
-}
+	var seeded appUpdater
+	seeded.SetReleases(pendingAppRelease)
+	availableTitle, _, _ := seeded.Result()
+	check.New(t).Contains(availableTitle, "99", "the title must name the release it is about")
+	failure := errors.New("update site unreachable")
+	for _, tc := range []struct {
+		name      string
+		known     []library.Release
+		found     []library.Release
+		err       error
+		wantTitle string
+		want      []library.Release
+	}{
+		{
+			name:      "failure keeps a known update",
+			known:     pendingAppRelease,
+			err:       failure,
+			wantTitle: availableTitle,
+			want:      pendingAppRelease,
+		},
+		{
+			name:      "failure with nothing known is reported",
+			err:       failure,
+			wantTitle: unableToAccessAppUpdateSiteText(),
+		},
+		{
+			name:      "finding nothing clears a stale release",
+			known:     pendingAppRelease,
+			wantTitle: noAppUpdatesText(),
+		},
+		{
+			name:      "finding an update records it",
+			found:     pendingAppRelease,
+			wantTitle: availableTitle,
+			want:      pendingAppRelease,
+		},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			c := check.New(t)
+			u := appUpdater{frequency: func() updatecheck.Option { return updatecheck.Hourly }}
+			if tc.known != nil {
+				u.SetReleases(tc.known)
+			}
+			seq, ok := u.beginQuiet()
+			c.True(ok)
+			u.finishQuiet(seq, tc.found, tc.err)
+			title, releases, updating := u.Result()
+			c.Equal(tc.wantTitle, title)
+			c.Equal(tc.want, releases)
+			c.False(updating)
+			c.False(u.quiet, "the quiet check must no longer be marked as in flight")
 
-// TestQuietCheckWithNoUpdateClearsAStaleRelease covers a release no longer on offer, such as one the user has since
-// installed.
-func TestQuietCheckWithNoUpdateClearsAStaleRelease(t *testing.T) {
-	c := check.New(t)
-	var u appUpdater
-	u.SetReleases(pendingAppRelease)
-	seq, ok := u.beginQuiet()
-	c.True(ok)
-	u.finishQuiet(seq, nil, nil)
-	title, releases, updating := u.Result()
-	c.Equal(noAppUpdatesText(), title)
-	c.Nil(releases, "a quiet check that found nothing must clear the release")
-	c.False(updating)
-}
-
-// TestQuietCheckFindingAnUpdateRecordsIt verifies that the quiet path records a release as the visible one does, since
-// the toolbar button and the Help menu can't tell which check produced it.
-func TestQuietCheckFindingAnUpdateRecordsIt(t *testing.T) {
-	c := check.New(t)
-	var u appUpdater
-	seq, ok := u.beginQuiet()
-	c.True(ok)
-	u.finishQuiet(seq, pendingAppRelease, nil)
-	title, releases, updating := u.Result()
-	c.Contains(title, "99", "the title must name the release that was found")
-	c.Equal(1, len(releases))
-	c.Equal("99.0.0", releases[0].Version)
-	c.False(updating)
+			seq, ok = u.beginQuiet()
+			c.True(ok)
+			u.finishQuiet(seq, nil, nil)
+			title, _, _ = u.Result()
+			c.Equal(noAppUpdatesText(), title, "a later success must replace the result")
+		})
+	}
 }
 
 // TestQuietResultIsDiscardedAfterAVisibleCheckStarts verifies that a late quiet result can't overwrite the "Checking…"
@@ -122,25 +141,6 @@ func TestUncheckedUpdaterReportsAStatus(t *testing.T) {
 	c.True(ok)
 	title, _, _ = u.Result()
 	c.Equal(checkingForAppUpdatesText(), title, "while a quiet check runs with nothing known, the title must say so")
-	u.finishQuiet(seq, nil, nil)
-	title, _, _ = u.Result()
-	c.Equal(noAppUpdatesText(), title)
-}
-
-func TestQuietCheckFailureWithNothingKnownIsReported(t *testing.T) {
-	c := check.New(t)
-	u := appUpdater{frequency: func() updatecheck.Option { return updatecheck.Hourly }}
-	seq, ok := u.beginQuiet()
-	c.True(ok)
-	u.finishQuiet(seq, nil, errors.New("update site unreachable"))
-	title, releases, updating := u.Result()
-	c.Equal(unableToAccessAppUpdateSiteText(), title)
-	c.Nil(releases)
-	c.False(updating)
-
-	// A later success replaces the failure like any other result.
-	seq, ok = u.beginQuiet()
-	c.True(ok)
 	u.finishQuiet(seq, nil, nil)
 	title, _, _ = u.Result()
 	c.Equal(noAppUpdatesText(), title)

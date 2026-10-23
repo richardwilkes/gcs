@@ -162,157 +162,159 @@ func TestModifierPromptsCountOnlyRowsWithModifiers(t *testing.T) {
 	c.Equal([][2]int{{1, 2}, {2, 2}}, steps)
 }
 
-// TestAltDropOnTraitSwitchesTheDroppedModifierOn verifies that dropping a trait modifier onto a trait row adds an
-// enabled copy of it without prompting, leaving the trait's existing modifiers and the dragged modifier as they were.
+// TestAltDropOnTraitSwitchesTheDroppedModifierOn verifies that dropping a trait modifier onto a trait row, or an
+// equipment modifier onto an equipment row, adds an enabled copy of it without prompting, leaving the row's existing
+// modifiers and the dragged modifier as they were.
 func TestAltDropOnTraitSwitchesTheDroppedModifierOn(t *testing.T) {
-	c := check.New(t)
-	forbidModifierPrompts(t)
-	entity, traits := entityWithNamedTraits("Target Trait")
-	target := traits[0]
-	existing := gurps.NewTraitModifier(entity, nil, false)
-	existing.Name = "Existing"
-	existing.SetDisabled(true)
-	target.Modifiers = []*gurps.TraitModifier{existing}
-	dropped := gurps.NewTraitModifier(entity, nil, false)
-	dropped.Name = "Dropped"
-	dropped.SetDisabled(true)
+	t.Run("traits", func(t *testing.T) {
+		c := check.New(t)
+		forbidModifierPrompts(t)
+		entity, traits := entityWithNamedTraits("Target Trait")
+		target := traits[0]
+		existing := gurps.NewTraitModifier(entity, nil, false)
+		existing.Name = "Existing"
+		existing.SetDisabled(true)
+		target.Modifiers = []*gurps.TraitModifier{existing}
+		dropped := gurps.NewTraitModifier(entity, nil, false)
+		dropped.Name = "Dropped"
+		dropped.SetDisabled(true)
 
-	altDrop(tabledProvider(NewTraitsProvider(entity, false)).AltDropSupport(), []int{0}, dropped)
+		altDrop(tabledProvider(NewTraitsProvider(entity, false)).AltDropSupport(), []int{0}, dropped)
 
-	c.Equal(2, len(target.Modifiers), "the dropped modifier must be added to the target trait")
-	c.Equal("Dropped", target.Modifiers[1].Name, "the dropped modifier must be added to the target trait")
-	c.False(target.Modifiers[1].IsDisabled(), "the copy must be switched on")
-	c.True(target.Modifiers[0].IsDisabled(), "the trait's existing modifiers must be left alone")
-	c.True(dropped.IsDisabled(), "the dragged modifier itself must be left alone")
+		c.Equal(2, len(target.Modifiers), "the dropped modifier must be added to the target trait")
+		c.Equal("Dropped", target.Modifiers[1].Name, "the dropped modifier must be added to the target trait")
+		c.False(target.Modifiers[1].IsDisabled(), "the copy must be switched on")
+		c.True(target.Modifiers[0].IsDisabled(), "the trait's existing modifiers must be left alone")
+		c.True(dropped.IsDisabled(), "the dragged modifier itself must be left alone")
+	})
+
+	t.Run("equipment", func(t *testing.T) {
+		c := check.New(t)
+		forbidModifierPrompts(t)
+		entity, equipment := entityWithNamedEquipment("Target Equipment")
+		target := equipment[0]
+		existing := gurps.NewEquipmentModifier(entity, nil, false)
+		existing.Name = "Existing"
+		existing.SetDisabled(true)
+		target.Modifiers = []*gurps.EquipmentModifier{existing}
+		dropped := gurps.NewEquipmentModifier(entity, nil, false)
+		dropped.Name = "Dropped"
+		dropped.SetDisabled(true)
+
+		altDrop(tabledProvider(NewEquipmentProvider(entity, true, false)).AltDropSupport(), []int{0}, dropped)
+
+		c.Equal(2, len(target.Modifiers), "the dropped modifier must be added to the target equipment")
+		c.Equal("Dropped", target.Modifiers[1].Name, "the dropped modifier must be added to the target equipment")
+		c.False(target.Modifiers[1].IsDisabled(), "the copy must be switched on")
+		c.True(target.Modifiers[0].IsDisabled(), "the item's existing modifiers must be left alone")
+		c.True(dropped.IsDisabled(), "the dragged modifier itself must be left alone")
+	})
 }
 
-// TestAltDropOnEquipmentSwitchesTheDroppedModifierOn verifies the same for dropping an equipment modifier onto an
-// equipment row.
-func TestAltDropOnEquipmentSwitchesTheDroppedModifierOn(t *testing.T) {
-	c := check.New(t)
-	forbidModifierPrompts(t)
-	entity, equipment := entityWithNamedEquipment("Target Equipment")
-	target := equipment[0]
-	existing := gurps.NewEquipmentModifier(entity, nil, false)
-	existing.Name = "Existing"
-	existing.SetDisabled(true)
-	target.Modifiers = []*gurps.EquipmentModifier{existing}
-	dropped := gurps.NewEquipmentModifier(entity, nil, false)
-	dropped.Name = "Dropped"
-	dropped.SetDisabled(true)
-
-	altDrop(tabledProvider(NewEquipmentProvider(entity, true, false)).AltDropSupport(), []int{0}, dropped)
-
-	c.Equal(2, len(target.Modifiers), "the dropped modifier must be added to the target equipment")
-	c.Equal("Dropped", target.Modifiers[1].Name, "the dropped modifier must be added to the target equipment")
-	c.False(target.Modifiers[1].IsDisabled(), "the copy must be switched on")
-	c.True(target.Modifiers[0].IsDisabled(), "the item's existing modifiers must be left alone")
-	c.True(dropped.IsDisabled(), "the dragged modifier itself must be left alone")
-}
-
-// TestAltDropOnSeveralTraitsGivesEachItsOwnCopy verifies that dropping a trait modifier onto several selected traits
-// attaches a separate copy to each of them. A single shared modifier would tie the traits together, so that enabling
-// it on one would enable it on all and renaming it would rename it everywhere.
+// TestAltDropOnSeveralTraitsGivesEachItsOwnCopy verifies that dropping a modifier onto several selected traits or
+// equipment items attaches a separate copy to each of them, a container and one of its own descendants included, since
+// both were pointed at. A single shared modifier would tie the rows together, so that enabling it on one would enable
+// it on all and renaming it would rename it everywhere.
 func TestAltDropOnSeveralTraitsGivesEachItsOwnCopy(t *testing.T) {
-	c := check.New(t)
-	forbidModifierPrompts(t)
-	entity, traits := entityWithNamedTraits("First Trait", "Second Trait")
-	first, second := traits[0], traits[1]
-	dropped := gurps.NewTraitModifier(entity, nil, false)
-	dropped.Name = "Dropped"
+	t.Run("traits", func(t *testing.T) {
+		c := check.New(t)
+		forbidModifierPrompts(t)
+		entity, traits := entityWithNamedTraits("First Trait", "Second Trait")
+		first, second := traits[0], traits[1]
+		dropped := gurps.NewTraitModifier(entity, nil, false)
+		dropped.Name = "Dropped"
 
-	altDrop(tabledProvider(NewTraitsProvider(entity, false)).AltDropSupport(), []int{0, 1}, dropped)
+		altDrop(tabledProvider(NewTraitsProvider(entity, false)).AltDropSupport(), []int{0, 1}, dropped)
 
-	c.Equal(1, len(first.Modifiers), "the dropped modifier must be added to the first trait")
-	c.Equal(1, len(second.Modifiers), "the dropped modifier must be added to the second trait")
-	c.Equal("Dropped", first.Modifiers[0].Name, "the first trait must get the dropped modifier")
-	c.Equal("Dropped", second.Modifiers[0].Name, "the second trait must get the dropped modifier")
-	c.NotEqual(first.Modifiers[0].ID(), second.Modifiers[0].ID(), "each trait must get a copy of its own")
-	c.NotEqual(dropped.ID(), first.Modifiers[0].ID(), "the dragged modifier itself must not be attached")
+		c.Equal(1, len(first.Modifiers), "the dropped modifier must be added to the first trait")
+		c.Equal(1, len(second.Modifiers), "the dropped modifier must be added to the second trait")
+		c.Equal("Dropped", first.Modifiers[0].Name, "the first trait must get the dropped modifier")
+		c.Equal("Dropped", second.Modifiers[0].Name, "the second trait must get the dropped modifier")
+		c.NotEqual(first.Modifiers[0].ID(), second.Modifiers[0].ID(), "each trait must get a copy of its own")
+		c.NotEqual(dropped.ID(), first.Modifiers[0].ID(), "the dragged modifier itself must not be attached")
+	})
+
+	t.Run("equipment", func(t *testing.T) {
+		c := check.New(t)
+		forbidModifierPrompts(t)
+		entity, equipment := entityWithNamedEquipment("First Item", "Second Item")
+		first, second := equipment[0], equipment[1]
+		dropped := gurps.NewEquipmentModifier(entity, nil, false)
+		dropped.Name = "Dropped"
+
+		altDrop(tabledProvider(NewEquipmentProvider(entity, true, false)).AltDropSupport(), []int{0, 1}, dropped)
+
+		c.Equal(1, len(first.Modifiers), "the dropped modifier must be added to the first item")
+		c.Equal(1, len(second.Modifiers), "the dropped modifier must be added to the second item")
+		c.Equal("Dropped", first.Modifiers[0].Name, "the first item must get the dropped modifier")
+		c.Equal("Dropped", second.Modifiers[0].Name, "the second item must get the dropped modifier")
+		c.NotEqual(first.Modifiers[0].ID(), second.Modifiers[0].ID(), "each item must get a copy of its own")
+		c.NotEqual(dropped.ID(), first.Modifiers[0].ID(), "the dragged modifier itself must not be attached")
+	})
+
+	t.Run("container and child", func(t *testing.T) {
+		c := check.New(t)
+		forbidModifierPrompts(t)
+		entity := gurps.NewEntity()
+
+		container := gurps.NewTrait(entity, nil, true)
+		container.Name = "Container Trait"
+		child := gurps.NewTrait(entity, container, false)
+		child.Name = "Child Trait"
+		container.Children = []*gurps.Trait{child}
+		entity.Traits = []*gurps.Trait{container}
+
+		provider := NewTraitsProvider(entity, false)
+		table := newProviderTable(provider)
+		c.Equal(1, table.LastRowIndex(), "the container's child must be disclosed")
+
+		dropped := gurps.NewTraitModifier(entity, nil, false)
+		dropped.Name = "Dropped"
+		altDrop(provider.AltDropSupport(), []int{0, 1}, dropped)
+
+		c.Equal(1, len(container.Modifiers), "the container must receive the dropped modifier")
+		c.Equal(1, len(child.Modifiers), "the child must receive its own copy of the dropped modifier")
+		c.NotEqual(container.Modifiers[0].ID(), child.Modifiers[0].ID(), "each must get a copy of its own")
+	})
 }
 
-// TestAltDropOnSeveralEquipmentItemsGivesEachItsOwnCopy verifies the same for dropping equipment modifiers onto several
-// selected equipment items.
-func TestAltDropOnSeveralEquipmentItemsGivesEachItsOwnCopy(t *testing.T) {
-	c := check.New(t)
-	forbidModifierPrompts(t)
-	entity, equipment := entityWithNamedEquipment("First Item", "Second Item")
-	first, second := equipment[0], equipment[1]
-	dropped := gurps.NewEquipmentModifier(entity, nil, false)
-	dropped.Name = "Dropped"
-
-	altDrop(tabledProvider(NewEquipmentProvider(entity, true, false)).AltDropSupport(), []int{0, 1}, dropped)
-
-	c.Equal(1, len(first.Modifiers), "the dropped modifier must be added to the first item")
-	c.Equal(1, len(second.Modifiers), "the dropped modifier must be added to the second item")
-	c.Equal("Dropped", first.Modifiers[0].Name, "the first item must get the dropped modifier")
-	c.Equal("Dropped", second.Modifiers[0].Name, "the second item must get the dropped modifier")
-	c.NotEqual(first.Modifiers[0].ID(), second.Modifiers[0].ID(), "each item must get a copy of its own")
-	c.NotEqual(dropped.ID(), first.Modifiers[0].ID(), "the dragged modifier itself must not be attached")
-}
-
-// TestAltDropOnAContainerAndItsChildGivesEachItsOwnCopy verifies that a selection holding both a container and one of
-// its own descendants gives each of them a copy of the dropped modifier, since both were pointed at.
-func TestAltDropOnAContainerAndItsChildGivesEachItsOwnCopy(t *testing.T) {
-	c := check.New(t)
-	forbidModifierPrompts(t)
-	entity := gurps.NewEntity()
-
-	container := gurps.NewTrait(entity, nil, true)
-	container.Name = "Container Trait"
-	child := gurps.NewTrait(entity, container, false)
-	child.Name = "Child Trait"
-	container.Children = []*gurps.Trait{child}
-	entity.Traits = []*gurps.Trait{container}
-
-	provider := NewTraitsProvider(entity, false)
-	table := newProviderTable(provider)
-	c.Equal(1, table.LastRowIndex(), "the container's child must be disclosed")
-
-	dropped := gurps.NewTraitModifier(entity, nil, false)
-	dropped.Name = "Dropped"
-	altDrop(provider.AltDropSupport(), []int{0, 1}, dropped)
-
-	c.Equal(1, len(container.Modifiers), "the container must receive the dropped modifier")
-	c.Equal(1, len(child.Modifiers), "the child must receive its own copy of the dropped modifier")
-	c.NotEqual(container.Modifiers[0].ID(), child.Modifiers[0].ID(), "each must get a copy of its own")
-}
-
-// TestAltDropOnAMissingTraitRowIsANoOp verifies that a row index which resolves to nothing is skipped, and that a drop
-// none of whose indexes resolve reports that it changed nothing, so that no edit is recorded.
+// TestAltDropOnAMissingTraitRowIsANoOp verifies that the trait and equipment drop handlers skip a row index which
+// resolves to nothing, and that a drop none of whose indexes resolve reports that it changed nothing, so that no edit
+// is recorded.
 func TestAltDropOnAMissingTraitRowIsANoOp(t *testing.T) {
-	c := check.New(t)
-	forbidModifierPrompts(t)
-	entity, traits := entityWithNamedTraits("Trait")
-	trait := traits[0]
-	provider := tabledProvider(NewTraitsProvider(entity, false))
-	dropped := gurps.NewTraitModifier(entity, nil, false)
-	dropped.Name = "Dropped"
+	t.Run("traits", func(t *testing.T) {
+		c := check.New(t)
+		forbidModifierPrompts(t)
+		entity, traits := entityWithNamedTraits("Trait")
+		trait := traits[0]
+		provider := tabledProvider(NewTraitsProvider(entity, false))
+		dropped := gurps.NewTraitModifier(entity, nil, false)
+		dropped.Name = "Dropped"
 
-	c.False(provider.AltDropSupport().Drop([]int{99}, newDragData(dropped)),
-		"a drop with no resolvable target changes nothing, so it must say so")
-	c.Equal(0, len(trait.Modifiers), "a drop with no resolvable target must attach nothing")
+		c.False(provider.AltDropSupport().Drop([]int{99}, newDragData(dropped)),
+			"a drop with no resolvable target changes nothing, so it must say so")
+		c.Equal(0, len(trait.Modifiers), "a drop with no resolvable target must attach nothing")
 
-	c.True(provider.AltDropSupport().Drop([]int{99, 0}, newDragData(dropped)))
-	c.Equal(1, len(trait.Modifiers), "an index that resolves to nothing must be skipped rather than stop the drop")
-}
+		c.True(provider.AltDropSupport().Drop([]int{99, 0}, newDragData(dropped)))
+		c.Equal(1, len(trait.Modifiers), "an index that resolves to nothing must be skipped rather than stop the drop")
+	})
 
-// TestAltDropOnAMissingEquipmentRowIsANoOp verifies the same for the equipment drop handler.
-func TestAltDropOnAMissingEquipmentRowIsANoOp(t *testing.T) {
-	c := check.New(t)
-	forbidModifierPrompts(t)
-	entity, equipment := entityWithNamedEquipment("Item")
-	item := equipment[0]
-	provider := tabledProvider(NewEquipmentProvider(entity, true, false))
-	dropped := gurps.NewEquipmentModifier(entity, nil, false)
-	dropped.Name = "Dropped"
+	t.Run("equipment", func(t *testing.T) {
+		c := check.New(t)
+		forbidModifierPrompts(t)
+		entity, equipment := entityWithNamedEquipment("Item")
+		item := equipment[0]
+		provider := tabledProvider(NewEquipmentProvider(entity, true, false))
+		dropped := gurps.NewEquipmentModifier(entity, nil, false)
+		dropped.Name = "Dropped"
 
-	c.False(provider.AltDropSupport().Drop([]int{99}, newDragData(dropped)),
-		"a drop with no resolvable target changes nothing, so it must say so")
-	c.Equal(0, len(item.Modifiers), "a drop with no resolvable target must attach nothing")
+		c.False(provider.AltDropSupport().Drop([]int{99}, newDragData(dropped)),
+			"a drop with no resolvable target changes nothing, so it must say so")
+		c.Equal(0, len(item.Modifiers), "a drop with no resolvable target must attach nothing")
 
-	c.True(provider.AltDropSupport().Drop([]int{99, 0}, newDragData(dropped)))
-	c.Equal(1, len(item.Modifiers), "an index that resolves to nothing must be skipped rather than stop the drop")
+		c.True(provider.AltDropSupport().Drop([]int{99, 0}, newDragData(dropped)))
+		c.Equal(1, len(item.Modifiers), "an index that resolves to nothing must be skipped rather than stop the drop")
+	})
 }
 
 // TestAltDropOfTheWrongKindOfModifierIsIgnored verifies that each provider's alternate drop handler only acts on drag
@@ -345,19 +347,4 @@ func TestAltDropOfTheWrongKindOfModifierIsIgnored(t *testing.T) {
 	c.True(equipmentProv.AltDropSupport().Drop([]int{0}, equipmentModData))
 	c.Equal(1, len(trait.Modifiers), "trait modifiers must still be attached to a trait")
 	c.Equal(1, len(item.Modifiers), "equipment modifiers must still be attached to equipment")
-}
-
-// TestModifierSelectionCheckBoxReportsChange verifies that clicking a plain modifier's check box updates the prompt, as
-// picking a choice's option does, so the cost shown follows it.
-func TestModifierSelectionCheckBoxReportsChange(t *testing.T) {
-	c := check.New(t)
-	plain := gurps.NewTraitModifier(nil, nil, false)
-	plain.Name = "Plain"
-	selection := newModifierSelection([]*gurps.TraitModifier{plain}, true, true)
-	changes := 0
-	selection.onChange = func() { changes++ }
-	for box := range selection.boxes {
-		box.Click()
-	}
-	c.Equal(1, changes)
 }

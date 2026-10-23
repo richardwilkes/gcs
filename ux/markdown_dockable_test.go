@@ -15,11 +15,13 @@ import (
 	"testing"
 
 	"github.com/richardwilkes/toolbox/v2/check"
+	"github.com/richardwilkes/unison"
 )
 
-// TestMarkdownDockableNotModifiedWhenOpened verifies that opening a markdown file never reports the dockable as
-// modified, whatever its line endings. The content is normalized to LF when loaded, so the copy retained for comparison
-// must be too, or a file with CRLF (or CR) line endings would prompt to save on close though nothing was edited.
+// TestMarkdownDockableNotModifiedWhenOpened verifies that opening markdown, whether read from a file or given as
+// content, never reports the dockable as modified, whatever its line endings, while an edit is still reported. The
+// content is normalized to LF when loaded, so the copy retained for comparison must be too, or a file with CRLF (or CR)
+// line endings would prompt to save on close though nothing was edited.
 func TestMarkdownDockableNotModifiedWhenOpened(t *testing.T) {
 	c := check.New(t)
 	for _, tc := range []struct {
@@ -34,40 +36,24 @@ func TestMarkdownDockableNotModifiedWhenOpened(t *testing.T) {
 	} {
 		p := filepath.Join(t.TempDir(), "notes.md")
 		c.NoError(os.WriteFile(p, []byte(tc.data), 0o600), tc.name)
-		d, err := NewMarkdownDockable(p, true, false)
+		fromFile, err := NewMarkdownDockable(p, true, false)
 		c.NoError(err, tc.name)
-		c.False(d.Modified(), "%s: a freshly opened markdown file must not be reported as modified", tc.name)
+		for _, opened := range []struct {
+			how      string
+			dockable unison.Dockable
+		}{
+			{how: "file", dockable: fromFile},
+			{how: "content", dockable: NewMarkdownDockableWithContent(tc.name, tc.data, true, false)},
+		} {
+			d, ok := opened.dockable.(*MarkdownDockable)
+			c.True(ok, "%s %s: expected a markdown dockable", tc.name, opened.how)
+			if !ok {
+				continue
+			}
+			c.False(d.Modified(), "%s %s: a freshly opened markdown dockable must not be reported as modified", tc.name,
+				opened.how)
+			d.content += "More text.\n"
+			c.True(d.Modified(), "%s %s: an edited markdown dockable must be reported as modified", tc.name, opened.how)
+		}
 	}
-}
-
-// TestMarkdownDockableWithContentNotModifiedWhenOpened verifies the same for content-only markdown dockables, which
-// take their text directly rather than reading it from a file.
-func TestMarkdownDockableWithContentNotModifiedWhenOpened(t *testing.T) {
-	c := check.New(t)
-	for _, tc := range []struct {
-		name    string
-		content string
-	}{
-		{name: "LF", content: "# Title\n\nSome text.\n"},
-		{name: "CRLF", content: "# Title\r\n\r\nSome text.\r\n"},
-		{name: "CR", content: "# Title\r\rSome text.\r"},
-	} {
-		d := NewMarkdownDockableWithContent(tc.name, tc.content, true, false)
-		c.False(d.Modified(), "%s: a freshly opened markdown dockable must not be reported as modified", tc.name)
-	}
-}
-
-// TestMarkdownDockableModifiedAfterEdit verifies that the normalization of the retained original does not defeat the
-// modified check itself: an actual edit must still be reported.
-func TestMarkdownDockableModifiedAfterEdit(t *testing.T) {
-	c := check.New(t)
-	p := filepath.Join(t.TempDir(), "notes.md")
-	c.NoError(os.WriteFile(p, []byte("# Title\r\n\r\nSome text.\r\n"), 0o600))
-	dockable, err := NewMarkdownDockable(p, true, false)
-	c.NoError(err)
-	d, ok := dockable.(*MarkdownDockable)
-	c.True(ok)
-	c.False(d.Modified())
-	d.content += "More text.\n"
-	c.True(d.Modified(), "an edited markdown file must be reported as modified")
 }

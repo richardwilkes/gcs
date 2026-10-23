@@ -67,43 +67,47 @@ func traitDescriptionCells(c check.Checker, table *unison.Table[*Node[*gurps.Tra
 
 // TestSyncKeepsThePanelsOfUnchangedRows verifies that a page list keeps its rows, children included, across the sync
 // an update makes, and with them the panels built for cells whose data didn't change, which is what spares an update
-// the cost of building every cell on the page anew.
+// the cost of building every cell on the page anew, while a cell whose data did change is built anew to show it.
 func TestSyncKeepsThePanelsOfUnchangedRows(t *testing.T) {
-	c := check.New(t)
-	sheet, traits := newReuseTestSheet(t, 1, "Alpha", "Box", "Gamma")
-	c.True(traits[1].IsOpen(), "the container must be open, so that its child is shown")
-	rows, panels := traitDescriptionCells(c, sheet.Traits.Table)
-	c.Equal(4, len(rows), "the table must show the three traits and the container's child")
+	for _, one := range []struct {
+		name     string
+		names    []string
+		boxIndex int // the trait that is a container, or -1
+		rows     int
+		renamed  int // the trait renamed to "Changed" before the update, or -1
+	}{
+		{name: "nothing changed", names: []string{"Alpha", "Box", "Gamma"}, boxIndex: 1, rows: 4, renamed: -1},
+		{name: "one trait renamed", names: []string{"Alpha", "Beta", "Gamma"}, boxIndex: -1, rows: 3, renamed: 1},
+	} {
+		t.Run(one.name, func(t *testing.T) {
+			c := check.New(t)
+			sheet, traits := newReuseTestSheet(t, one.boxIndex, one.names...)
+			if one.boxIndex >= 0 {
+				c.True(traits[one.boxIndex].IsOpen(), "the container must be open, so that its child is shown")
+			}
+			rows, panels := traitDescriptionCells(c, sheet.Traits.Table)
+			c.Equal(one.rows, len(rows), "the table must show the traits and any container's child")
 
-	updateSheet(sheet)
-	after, afterPanels := traitDescriptionCells(c, sheet.Traits.Table)
-	c.Equal(len(rows), len(after), "the update must leave the same rows on show")
-	for i := range rows {
-		c.True(after[i] == rows[i], "row %d must be the same object after the sync", i)
-		c.True(afterPanels[i] == panels[i], "row %d must keep the panel of its unchanged cell", i)
-	}
-	c.True(after[2].Parent() == after[1], "the kept child must still have its container as its parent")
-}
-
-// TestSyncRebuildsOnlyTheChangedCell verifies that a change reported to a sheet rebuilds the cell whose data changed,
-// which must show the change, while the cells of the rows left alone keep their panels.
-func TestSyncRebuildsOnlyTheChangedCell(t *testing.T) {
-	c := check.New(t)
-	sheet, traits := newReuseTestSheet(t, -1, "Alpha", "Beta", "Gamma")
-	rows, panels := traitDescriptionCells(c, sheet.Traits.Table)
-
-	traits[1].Name = "Changed"
-	updateSheet(sheet)
-	after, afterPanels := traitDescriptionCells(c, sheet.Traits.Table)
-	c.Equal(len(rows), len(after), "the update must leave the same rows on show")
-	for i := range rows {
-		c.True(after[i] == rows[i], "row %d must be the same object after the sync", i)
-		if i == 1 {
-			c.True(afterPanels[i] != panels[i], "the changed cell must be built anew")
-			c.True(slices.Contains(uxtest.LabelTexts(afterPanels[i]), "Changed"), "and must show the new name")
-		} else {
-			c.True(afterPanels[i] == panels[i], "row %d must keep the panel of its unchanged cell", i)
-		}
+			if one.renamed >= 0 {
+				traits[one.renamed].Name = "Changed"
+			}
+			updateSheet(sheet)
+			after, afterPanels := traitDescriptionCells(c, sheet.Traits.Table)
+			c.Equal(len(rows), len(after), "the update must leave the same rows on show")
+			for i := range rows {
+				c.True(after[i] == rows[i], "row %d must be the same object after the sync", i)
+				if i == one.renamed {
+					c.True(afterPanels[i] != panels[i], "the changed cell must be built anew")
+					c.True(slices.Contains(uxtest.LabelTexts(afterPanels[i]), "Changed"), "and must show the new name")
+				} else {
+					c.True(afterPanels[i] == panels[i], "row %d must keep the panel of its unchanged cell", i)
+				}
+			}
+			if one.boxIndex >= 0 {
+				c.True(after[one.boxIndex+1].Parent() == after[one.boxIndex],
+					"the kept child must still have its container as its parent")
+			}
+		})
 	}
 }
 
@@ -141,40 +145,68 @@ func TestMovedRowGetsANewNodeWithTheRightParent(t *testing.T) {
 	c.Equal(0, len(rowA.Children()), "A's row must no longer hold the child")
 }
 
-// TestNotesToggleRebuildsAReusedCell verifies that showing or hiding a row's notes rebuilds its description cell on a
-// sheet, whose list keeps the row across the sync that follows the toggle while the cell's data stays the same, so
-// only the notes disclosure kept with the panel tells the panel built before the toggle from the one wanted after it.
+// TestNotesToggleRebuildsAReusedCell verifies that showing or hiding a row's notes rebuilds its description cell in a
+// list that keeps the row across the sync that follows the toggle, as a sheet's list and a filtered library list do.
+// The cell's data stays the same, so only the notes disclosure kept with the panel tells the panel built before the
+// toggle from the one wanted after it.
 func TestNotesToggleRebuildsAReusedCell(t *testing.T) {
-	c := check.New(t)
-	sheet := newTestSheetForTemplate(t)
-	entity := sheet.Entity()
-	entity.SheetSettings.NotesDisplay = display.Inline
-	trait := gurps.NewTrait(entity, nil, false)
-	trait.Name = "Charisma"
-	trait.LocalNotes = "A note"
-	entity.Traits = []*gurps.Trait{trait}
-	sheet.Rebuild(true)
-	table := sheet.Traits.Table
-	row := table.RowFromIndex(0)
-	c.NotNil(row, "the table must show the trait")
-	key := row.noteKey()
-	wasClosed := gurps.IsClosed(key)
-	t.Cleanup(func() { gurps.SetClosedState(key, wasClosed) })
-	gurps.SetClosedState(key, false)
-	col := table.ColumnIndexForID(gurps.TraitDescriptionColumn)
-	c.True(col >= 0, "the traits table must have a description column")
+	for _, one := range []struct {
+		name  string
+		table func(*testing.T, check.Checker) *unison.Table[*Node[*gurps.Trait]]
+	}{
+		{
+			name: "sheet",
+			table: func(t *testing.T, _ check.Checker) *unison.Table[*Node[*gurps.Trait]] {
+				sheet := newTestSheetForTemplate(t)
+				entity := sheet.Entity()
+				entity.SheetSettings.NotesDisplay = display.Inline
+				trait := gurps.NewTrait(entity, nil, false)
+				trait.Name = "Charisma"
+				trait.LocalNotes = "A note"
+				entity.Traits = []*gurps.Trait{trait}
+				sheet.Rebuild(true)
+				return sheet.Traits.Table
+			},
+		},
+		{
+			name: "filtered library list",
+			table: func(t *testing.T, c check.Checker) *unison.Table[*Node[*gurps.Trait]] {
+				uxtest.SwapForTest(t, &gurps.GlobalSettings().SheetSettings().NotesDisplay, display.Inline)
+				registerKeyBindingsOnce.Do(func() { registerActions() })
+				trait := newTraitForTest("Charisma", nil)
+				trait.LocalNotes = "A note"
+				d := NewTraitTableDockable("test"+gurps.TraitsExt, []*gurps.Trait{trait})
+				d.table.ApplyFilter(func(*Node[*gurps.Trait]) bool { return false })
+				c.True(d.table.IsFiltered(), "the table must be filtered")
+				return d.table
+			},
+		},
+	} {
+		t.Run(one.name, func(t *testing.T) {
+			c := check.New(t)
+			table := one.table(t, c)
+			row := table.RowFromIndex(0)
+			c.NotNil(row, "the table must show the trait")
+			key := row.noteKey()
+			wasClosed := gurps.IsClosed(key)
+			t.Cleanup(func() { gurps.SetClosedState(key, wasClosed) })
+			gurps.SetClosedState(key, false)
+			col := table.ColumnIndexForID(gurps.TraitDescriptionColumn)
+			c.True(col >= 0, "the traits table must have a description column")
 
-	before := row.ColumnCell(0, col, unison.Black, unison.White, false, false, false).AsPanel()
-	c.True(findMarkdown(before) != nil, "the cell must show the open notes")
-	button, ok := uxtest.FirstPanelOfType[*unison.Button](before)
-	c.True(ok, "the cell must hold the notes disclosure button")
+			before := row.ColumnCell(0, col, unison.Black, unison.White, false, false, false).AsPanel()
+			c.True(findMarkdown(before) != nil, "the cell must show the open notes")
+			button, ok := uxtest.FirstPanelOfType[*unison.Button](before)
+			c.True(ok, "the cell must hold the notes disclosure button")
 
-	button.ClickCallback()
-	c.True(gurps.IsClosed(key), "clicking the button must close the notes")
-	c.True(table.RowFromIndex(0) == row, "the list must have kept its row across the sync")
-	after := row.ColumnCell(0, col, unison.Black, unison.White, false, false, false).AsPanel()
-	c.True(after != before, "the cell must be rebuilt once its notes are closed")
-	c.True(findMarkdown(after) == nil, "and must no longer show them")
+			button.ClickCallback()
+			c.True(gurps.IsClosed(key), "clicking the button must close the notes")
+			c.True(table.RowFromIndex(0) == row, "the list must have kept its row across the sync")
+			after := row.ColumnCell(0, col, unison.Black, unison.White, false, false, false).AsPanel()
+			c.True(after != before, "the cell must be rebuilt once its notes are closed")
+			c.True(findMarkdown(after) == nil, "and must no longer show them")
+		})
+	}
 }
 
 // TestNotesToggleFollowsAConvertedRow verifies that the notes disclosure button of a kept cell acts on the row's notes

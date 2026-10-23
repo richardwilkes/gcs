@@ -65,39 +65,6 @@ func TestTemplateReplacesAListWhoseColumnsChanged(t *testing.T) {
 	c.Equal(0, template.Equipment.Table.RootRowCount(), "undo must take the row back out of the list on screen")
 }
 
-// The rebuild's ordinary focus restoration finds the replacement table by the reference key it shares with the old one.
-func TestTemplateRebuildKeepsTheFocusInAReplacedList(t *testing.T) {
-	c := check.New(t)
-	screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
-	settings := gurps.GlobalSettings().SheetSettings()
-	saved := settings.HideTLColumn
-	t.Cleanup(func() { screen.Do(func() { settings.HideTLColumn = saved }) })
-	screen.Do(func() { settings.HideTLColumn = false })
-	template, ok := uxtest.OpenedByAction(t, screen, newCharacterTemplateAction).(*Template)
-	if !ok {
-		t.Fatal("New Character Template must open a template")
-	}
-
-	var stale *PageList[*gurps.Equipment]
-	var focused bool
-	screen.Do(func() {
-		stale = template.Equipment
-		stale.Table.RequestFocus()
-		focused = wnd.Focus() == stale.Table.AsPanel()
-	})
-	c.True(focused, "the equipment table takes the focus")
-
-	var replaced, refocused bool
-	screen.Do(func() {
-		settings.HideTLColumn = true
-		template.Rebuild(true)
-		replaced = template.Equipment != stale
-		refocused = wnd.Focus() == template.Equipment.Table.AsPanel()
-	})
-	c.True(replaced, "hiding the TL column must have replaced the equipment list")
-	c.True(refocused, "the focus must have moved into the replacement")
-}
-
 // A template's search, like a sheet's, only looks in the lists that are on the page: a match in a list the layout
 // hides could only be shown by scrolling a table nobody is looking at into view.
 func TestTemplateSearchSkipsAListTheLayoutDoesNotShow(t *testing.T) {

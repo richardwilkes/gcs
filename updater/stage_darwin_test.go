@@ -129,54 +129,45 @@ func makeDMG(t *testing.T, volumeName string) string {
 
 // The macOS unpacking path against a real disk image: mounting it, copying the bundle out, and unmounting again. None
 // of that can be exercised any other way, and getting the hdiutil invocation wrong would only show up when a user
-// tried to update.
+// tried to update. It is repeated with the volume name already in use, the case the explicit mount point exists for:
+// the packager names every volume "GCS v<version>", so a user who already has that disk image open would push a second
+// mount to a different, unpredictable path, and anything that guessed the path from the volume name would copy from
+// the wrong place or fail outright.
 func TestStagePayloadFromADiskImage(t *testing.T) {
 	if testing.Short() {
 		t.Skip("mounting a disk image is slow")
 	}
 	c := check.New(t)
-	dmg := makeDMG(t, "GCS v5.46.0")
-	dst := filepath.Join(t.TempDir(), BundleName)
-
-	c.NoError(stagePayload(t.Context(), dmg, dst))
-
-	c.Equal("the application", read(t, filepath.Join(dst, "Contents", "MacOS", CmdName)),
-		"the whole bundle must be copied out, not just its top level")
-	c.Equal("icon data", read(t, filepath.Join(dst, "Contents", "Resources", "app.icns")))
-
-	fi, err := os.Stat(filepath.Join(dst, "Contents", "MacOS", CmdName))
-	c.NoError(err)
-	c.True(fi.Mode().IsRegular())
-
-	// A stray mount would accumulate a volume per update attempt, and would keep the downloaded file alive after the
-	// directory holding it was removed.
-	out, err := exec.Command("/usr/bin/hdiutil", "info").CombinedOutput()
-	c.NoError(err)
-	c.NotContains(string(out), dmg, "the disk image was left mounted")
-}
-
-// The case the explicit mount point exists for. The packager names every volume "GCS v<version>", so a user who
-// already has that disk image open would push a second mount to a different, unpredictable path, and anything that
-// guessed the path from the volume name would copy from the wrong place or fail outright.
-func TestStagePayloadWithTheVolumeNameAlreadyInUse(t *testing.T) {
-	if testing.Short() {
-		t.Skip("mounting a disk image is slow")
-	}
-	c := check.New(t)
 	const volumeName = "GCS v5.46.0"
+	for _, occupied := range []bool{false, true} {
+		if occupied {
+			// Mount one image under the contested name and keep it there for the rest of the test.
+			occupying := makeDMG(t, volumeName)
+			occupyingMount := filepath.Join(t.TempDir(), "occupying")
+			c.NoError(os.MkdirAll(occupyingMount, 0o755))
+			c.NoError(attachDMG(t.Context(), occupying, occupyingMount))
+			t.Cleanup(func() { detachDMG(occupyingMount) })
+		}
 
-	// Mount one image under the contested name and keep it there for the duration.
-	occupying := makeDMG(t, volumeName)
-	occupyingMount := filepath.Join(t.TempDir(), "occupying")
-	c.NoError(os.MkdirAll(occupyingMount, 0o755))
-	c.NoError(attachDMG(t.Context(), occupying, occupyingMount))
-	defer detachDMG(occupyingMount)
+		dmg := makeDMG(t, volumeName)
+		dst := filepath.Join(t.TempDir(), BundleName)
 
-	// Unpacking a second image with the same volume name must still work, and must produce that image's contents.
-	dmg := makeDMG(t, volumeName)
-	dst := filepath.Join(t.TempDir(), BundleName)
-	c.NoError(stagePayload(t.Context(), dmg, dst))
-	c.Equal("the application", read(t, filepath.Join(dst, "Contents", "MacOS", CmdName)))
+		c.NoError(stagePayload(t.Context(), dmg, dst), "volume name in use: %v", occupied)
+
+		c.Equal("the application", read(t, filepath.Join(dst, "Contents", "MacOS", CmdName)),
+			"the whole bundle must be copied out, not just its top level")
+		c.Equal("icon data", read(t, filepath.Join(dst, "Contents", "Resources", "app.icns")))
+
+		fi, err := os.Stat(filepath.Join(dst, "Contents", "MacOS", CmdName))
+		c.NoError(err)
+		c.True(fi.Mode().IsRegular())
+
+		// A stray mount would accumulate a volume per update attempt, and would keep the downloaded file alive after
+		// the directory holding it was removed.
+		out, err := exec.Command("/usr/bin/hdiutil", "info").CombinedOutput()
+		c.NoError(err)
+		c.NotContains(string(out), dmg, "the disk image was left mounted")
+	}
 }
 
 // A disk image that is readable but does not hold what was expected must be refused, rather than producing an empty or

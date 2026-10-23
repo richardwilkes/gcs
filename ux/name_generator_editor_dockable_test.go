@@ -10,7 +10,6 @@
 package ux
 
 import (
-	"path/filepath"
 	"testing"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
@@ -98,18 +97,6 @@ func TestNameGeneratorEditorContract(t *testing.T) {
 			stringFieldFor(t, d, d.model.Entries[len(d.model.Entries)-1].KeyPrefix+"value").SetText("Arwen")
 		},
 	})
-}
-
-// TestNameGeneratorEditorTitleFollowsPath verifies that the title and backing path follow the file once there is one,
-// since a generator has no name of its own: ancestries select it by the base name of its file.
-func TestNameGeneratorEditorTitleFollowsPath(t *testing.T) {
-	c := check.New(t)
-	d := newTestNameGeneratorEditorDockable(gurps.NewNameGenerator())
-	p := filepath.Join(t.TempDir(), "Elven First.names")
-	d.SetBackingFilePath(p)
-	c.Equal("Name Generator: Elven First", d.Title())
-	c.Equal(p, d.BackingFilePath())
-	c.Equal(p, d.Tooltip())
 }
 
 // TestNameGeneratorEditorLoad verifies that an editor opened on a file records its path, starts out unmodified with

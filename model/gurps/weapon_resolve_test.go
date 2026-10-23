@@ -43,28 +43,43 @@ func TestWeaponAccuracyMixedBonusResolution(t *testing.T) {
 	c.Equal("9", w.ResolvedAccuracy(nil).String(), "a percentage of an absent scope stays absent")
 }
 
-// TestWeaponBlockResolve runs the resolution regression tests shared by both defenses against the block.
-func TestWeaponBlockResolve(t *testing.T) {
-	runDefenseResolveTests(t, blockUnderTest)
-}
-
-// TestWeaponBulkBonusResolution verifies that a bulk bonus doesn't materialize a giant bulk on a weapon that doesn't
-// have one (a stored giant bulk of 0 means "no separate giant bulk"), while still adjusting one that is present.
+// TestWeaponBulkBonusResolution verifies that a flat or percentage bulk bonus adjusts the existing values rather than
+// replacing them, and doesn't materialize a giant bulk on a weapon that doesn't have one (a stored giant bulk of 0
+// means "no separate giant bulk"), while still adjusting one that is present.
 func TestWeaponBulkBonusResolution(t *testing.T) {
 	c := check.New(t)
-
-	bonus := gurps.NewWeaponBonus(feature.WeaponBulkBonus)
-	bonus.Amount = fxp.NegOne
-	w := newWeaponWithBonuses(false, bonus)
-
-	w.Bulk = attack.ParseBulk("-3")
-	c.Equal("-4", w.ResolvedBulk(nil).String(), "a weapon with no giant bulk should not gain one")
-
-	w.Bulk = attack.ParseBulk("-3*")
-	c.Equal("-4*", w.ResolvedBulk(nil).String(), "the retracting stock marker should be preserved")
-
-	w.Bulk = attack.ParseBulk("-3/-5")
-	c.Equal("-4/-6", w.ResolvedBulk(nil).String(), "an existing giant bulk should be adjusted")
+	for _, tc := range []struct {
+		percent bool
+		amount  fxp.Int
+		bulk    string
+		want    string
+		msg     string
+	}{
+		{amount: fxp.NegOne, bulk: "-3", want: "-4", msg: "a weapon with no giant bulk should not gain one"},
+		{amount: fxp.NegOne, bulk: "-3*", want: "-4*", msg: "the retracting stock marker should be preserved"},
+		{amount: fxp.NegOne, bulk: "-3/-5", want: "-4/-6", msg: "an existing giant bulk should be adjusted"},
+		{
+			percent: true,
+			amount:  fxp.FromInteger(50),
+			bulk:    "-4",
+			want:    "-6",
+			msg:     "a percentage should adjust the bulk without adding a giant bulk",
+		},
+		{
+			percent: true,
+			amount:  fxp.FromInteger(50),
+			bulk:    "-4/-6",
+			want:    "-6/-9",
+			msg:     "a percentage should adjust an existing giant bulk too",
+		},
+	} {
+		bonus := gurps.NewWeaponBonus(feature.WeaponBulkBonus)
+		bonus.Percent = tc.percent
+		bonus.Amount = tc.amount
+		w := newWeaponWithBonuses(false, bonus)
+		w.Bulk = attack.ParseBulk(tc.bulk)
+		c.Equal(tc.want, w.ResolvedBulk(nil).String(), tc.msg)
+	}
 }
 
 // TestWeaponBulkRetractingStockSwitch verifies that the "retracting stock" weapon switch is actually resolved. It is
@@ -103,26 +118,11 @@ func TestWeaponBulkRetractingStockSwitch(t *testing.T) {
 	c.Equal("-4*", w.ResolvedBulk(nil).String(), "the bonus and the switch both apply")
 }
 
-// TestWeaponBulkPercentBonusResolution verifies that a percentage bulk bonus adjusts the existing values rather than
-// replacing them, and likewise leaves an absent giant bulk absent.
-func TestWeaponBulkPercentBonusResolution(t *testing.T) {
-	c := check.New(t)
-
-	bonus := gurps.NewWeaponBonus(feature.WeaponBulkBonus)
-	bonus.Percent = true
-	bonus.Amount = fxp.FromInteger(50)
-	w := newWeaponWithBonuses(false, bonus)
-
-	w.Bulk = attack.ParseBulk("-4")
-	c.Equal("-6", w.ResolvedBulk(nil).String())
-
-	w.Bulk = attack.ParseBulk("-4/-6")
-	c.Equal("-6/-9", w.ResolvedBulk(nil).String())
-}
-
-// TestWeaponParryResolve runs the resolution regression tests shared by both defenses against the parry.
+// TestWeaponParryResolve runs the resolution regression tests shared by both defenses against the parry and the block.
 func TestWeaponParryResolve(t *testing.T) {
-	runDefenseResolveTests(t, parryUnderTest)
+	for _, d := range []defenseUnderTest{parryUnderTest, blockUnderTest} {
+		t.Run(d.name, func(t *testing.T) { runDefenseResolveTests(t, d) })
+	}
 }
 
 // TestWeaponPercentBonusFloorsIncrement pins the documented rounding of weapon percentage bonuses: the increment is

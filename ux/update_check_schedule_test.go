@@ -48,26 +48,24 @@ func newPeriodicCheckHarness(option updatecheck.Option) *periodicCheckHarness {
 	return h
 }
 
-// The options that don't repeat -- Never, and the default of checking only at launch -- must leave no tick pending.
-// Anything else would keep waking the application up to do work the user asked it not to do.
-func TestPeriodicCheckSchedulesNothingWithoutAnInterval(t *testing.T) {
-	c := check.New(t)
-	for _, option := range []updatecheck.Option{updatecheck.Never, updatecheck.AtLaunch} {
-		h := newPeriodicCheckHarness(option)
-		h.check.reschedule()
-		c.Equal(0, len(h.ticks), "%s must not schedule a repeating check", option.Key())
-		c.False(h.check.pending, "%s must leave nothing pending", option.Key())
-	}
-}
-
+// A fresh reschedule must leave exactly one tick pending, at the option's own interval, for the options that repeat.
+// The ones that don't -- Never, and the default of checking only at launch -- must leave no tick pending: anything
+// else would keep waking the application up to do work the user asked it not to do.
 func TestPeriodicCheckSchedulesAtTheRequestedInterval(t *testing.T) {
 	c := check.New(t)
 	for option, want := range map[updatecheck.Option]time.Duration{
-		updatecheck.Hourly: time.Hour,
-		updatecheck.Daily:  24 * time.Hour,
+		updatecheck.Never:    0,
+		updatecheck.AtLaunch: 0,
+		updatecheck.Hourly:   time.Hour,
+		updatecheck.Daily:    24 * time.Hour,
 	} {
 		h := newPeriodicCheckHarness(option)
 		h.check.reschedule()
+		if want == 0 {
+			c.Equal(0, len(h.ticks), "%s must not schedule a repeating check", option.Key())
+			c.False(h.check.pending, "%s must leave nothing pending", option.Key())
+			continue
+		}
 		c.Equal(1, len(h.ticks), "%s must schedule exactly one tick", option.Key())
 		c.Equal(want, h.ticks[0].after, "%s must schedule its tick at its own interval", option.Key())
 		c.True(h.check.pending, "%s must leave a tick pending", option.Key())
@@ -75,14 +73,19 @@ func TestPeriodicCheckSchedulesAtTheRequestedInterval(t *testing.T) {
 }
 
 // A tick that ran the work twice would double the checks with every repetition, and one that failed to reschedule
-// would silently turn the setting into a single check.
+// would silently turn the setting into a single check. The settings dialog applies the settings every time it syncs or
+// resets, so re-applying an unchanged setting must also leave the pending tick live rather than schedule another: a
+// reschedule that always began the wait again would push the next check out indefinitely for anyone who left that
+// dialog open.
 func TestPeriodicCheckTickRunsTheWorkAndSchedulesTheNext(t *testing.T) {
 	c := check.New(t)
 	h := newPeriodicCheckHarness(updatecheck.Hourly)
 	h.check.reschedule()
-	c.Equal(1, len(h.ticks))
+	h.check.reschedule()
+	h.check.reschedule()
+	c.Equal(1, len(h.ticks), "re-applying an unchanged setting must not schedule another tick")
 	h.ticks[0].fire()
-	c.Equal(1, h.runs, "the work must run exactly once per tick")
+	c.Equal(1, h.runs, "the tick that was already pending must still be the live one, running the work exactly once")
 	c.Equal(2, len(h.ticks), "the tick must schedule exactly one successor")
 	c.Equal(time.Hour, h.ticks[1].after)
 	h.ticks[1].fire()
@@ -91,48 +94,30 @@ func TestPeriodicCheckTickRunsTheWorkAndSchedulesTheNext(t *testing.T) {
 }
 
 // Scheduled ticks can't be canceled, so without the generation check a switch from hourly to daily would leave the
-// hourly tick to fire anyway, and the two chains would then run side by side.
+// hourly tick to fire anyway, and the two chains would then run side by side. Likewise, a tick already on its way when
+// the user turns the checks off must not keep the chain going.
 func TestPeriodicCheckRetiresTicksFromAnOldSetting(t *testing.T) {
 	c := check.New(t)
-	h := newPeriodicCheckHarness(updatecheck.Hourly)
-	h.check.reschedule()
-	stale := h.ticks[0]
-	h.option = updatecheck.Daily
-	h.check.reschedule()
-	c.Equal(2, len(h.ticks))
-	c.Equal(24*time.Hour, h.ticks[1].after)
-	stale.fire()
-	c.Equal(0, h.runs, "a tick from the previous setting must not run the work")
-	c.Equal(2, len(h.ticks), "a tick from the previous setting must not schedule anything")
-}
-
-// A tick was already on its way when the user turned the checks off, and must not keep the chain going.
-func TestPeriodicCheckStopsWhenSwitchedToNever(t *testing.T) {
-	c := check.New(t)
-	h := newPeriodicCheckHarness(updatecheck.Hourly)
-	h.check.reschedule()
-	stale := h.ticks[0]
-	h.option = updatecheck.Never
-	h.check.reschedule()
-	c.False(h.check.pending)
-	stale.fire()
-	c.Equal(0, h.runs, "a tick that arrives after the checks were turned off must not run the work")
-	c.Equal(1, len(h.ticks), "a tick that arrives after the checks were turned off must not schedule anything")
-}
-
-// The settings dialog applies the settings every time it syncs or resets, so a reschedule that always began the wait
-// again would push the next check out indefinitely for anyone who left that dialog open.
-func TestPeriodicCheckKeepsTheClockRunningWhenNothingChanged(t *testing.T) {
-	c := check.New(t)
-	h := newPeriodicCheckHarness(updatecheck.Hourly)
-	h.check.reschedule()
-	pending := h.ticks[0]
-	h.check.reschedule()
-	h.check.reschedule()
-	c.Equal(1, len(h.ticks), "re-applying an unchanged setting must not schedule another tick")
-	pending.fire()
-	c.Equal(1, h.runs, "the tick that was already pending must still be the live one")
-	c.Equal(2, len(h.ticks))
+	for option, next := range map[updatecheck.Option]time.Duration{
+		updatecheck.Daily: 24 * time.Hour,
+		updatecheck.Never: 0,
+	} {
+		h := newPeriodicCheckHarness(updatecheck.Hourly)
+		h.check.reschedule()
+		stale := h.ticks[0]
+		h.option = option
+		h.check.reschedule()
+		ticks := 1
+		if next > 0 {
+			ticks = 2
+			c.Equal(ticks, len(h.ticks), "%s must schedule its own tick", option.Key())
+			c.Equal(next, h.ticks[1].after)
+		}
+		c.Equal(next > 0, h.check.pending, "%s must leave a tick pending only if it repeats", option.Key())
+		stale.fire()
+		c.Equal(0, h.runs, "a tick from before the switch to %s must not run the work", option.Key())
+		c.Equal(ticks, len(h.ticks), "a tick from before the switch to %s must not schedule anything", option.Key())
+	}
 }
 
 // Every path that changes the setting reschedules, which retires the tick, so this is a backstop; but a backstop that

@@ -21,18 +21,8 @@ import (
 	"github.com/richardwilkes/unison/enums/role"
 )
 
-// TestFactoryBodyHasDuplicateLocationIDs documents the reason the hit location notes fields can't be keyed by location
-// ID: the factory Humanoid body uses "leg" and "arm" twice each, so every default character sheet has two locations
-// with each of those IDs.
-func TestFactoryBodyHasDuplicateLocationIDs(t *testing.T) {
-	c := check.New(t)
-	counts := make(map[string]int)
-	countLocationIDs(gurps.FactoryBody(), counts)
-	c.Equal(2, counts["leg"], "the factory body has two locations with the ID \"leg\"")
-	c.Equal(2, counts["arm"], "the factory body has two locations with the ID \"arm\"")
-}
-
-// TestBodyPanelNotesRefKeysAreUnique verifies that each hit location's notes field gets a reference key of its own.
+// TestBodyPanelNotesRefKeysAreUnique verifies that each hit location's notes field gets a reference key of its own,
+// even though the factory Humanoid body uses "leg" and "arm" twice each, so the fields can't be keyed by location ID.
 // TargetMgr.Find resolves a key to the first panel that matches, so when the Right and Left Leg shared the key
 // "body:leg", typing in one of them rebuilt the panel and restored focus to the other -- writing the rest of the typed
 // text into the wrong location's notes -- and undoing an edit applied the restored text to the wrong location too.
@@ -40,6 +30,10 @@ func TestBodyPanelNotesRefKeysAreUnique(t *testing.T) {
 	c := check.New(t)
 	entity := gurps.NewEntity()
 	body := gurps.FactoryBody()
+	counts := make(map[string]int)
+	countLocationIDs(body, counts)
+	c.Equal(2, counts["leg"], "the factory body has two locations with the ID \"leg\"")
+	c.Equal(2, counts["arm"], "the factory body has two locations with the ID \"arm\"")
 	entity.SheetSettings.BodyType = body
 	panel := NewBodyPanel(entity, NewTargetMgr(unison.NewPanel()))
 

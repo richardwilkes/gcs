@@ -54,6 +54,9 @@ func TestResolveEmptyTechLevel(t *testing.T) {
 	c.Equal("8", *spell.TechLevel, "a TL that is already set must be left alone")
 }
 
+// TestMergeSkillPoints verifies how mergePoints folds incoming skills and spells into existing rows and into each
+// other: rows merge only when they match in everything, TL and replacements included, an empty incoming TL is first
+// resolved to the entity's TL, and of several rows sharing a hash the one with the matching TL takes the points.
 func TestMergeSkillPoints(t *testing.T) {
 	c := check.New(t)
 
@@ -181,11 +184,8 @@ func TestMergeSkillPoints(t *testing.T) {
 		remaining := mergePoints(nil, []*gurps.Skill{first, second}, "3", selMap)
 		c.Equal(2, len(remaining))
 	})
-}
 
-func TestMergeSpellPoints(t *testing.T) {
-	c := check.New(t)
-
+	// Spells go through their own hash and TL methods.
 	t.Run("identical spell with a matching TL merges points", func(_ *testing.T) {
 		existing := []*gurps.Spell{newTestSpell("Fireball", fxp.FromInteger(4), new("3"))}
 		incoming := []*gurps.Spell{newTestSpell("Fireball", fxp.FromInteger(2), new("3"))}
@@ -195,7 +195,7 @@ func TestMergeSpellPoints(t *testing.T) {
 		c.Equal(fxp.FromInteger(6), existing[0].Points)
 	})
 
-	t.Run("matches the correct TL variant when several share a hash", func(_ *testing.T) {
+	t.Run("matches the correct spell TL variant when several share a hash", func(_ *testing.T) {
 		// The matching TL4 variant is listed first so a lookup keyed only by hash would retain the TL3 variant and
 		// fail to merge; the merge must consider every candidate for the hash.
 		existingTL4 := newTestSpell("Fireball", fxp.FromInteger(1), new("4"))
@@ -209,7 +209,7 @@ func TestMergeSpellPoints(t *testing.T) {
 		c.Equal(fxp.FromInteger(3), existingTL4.Points)
 	})
 
-	t.Run("incoming empty TL resolves to the entity TL and merges", func(_ *testing.T) {
+	t.Run("incoming empty spell TL resolves to the entity TL and merges", func(_ *testing.T) {
 		existing := []*gurps.Spell{newTestSpell("Fireball", fxp.FromInteger(1), new("3"))}
 		incoming := []*gurps.Spell{newTestSpell("Fireball", fxp.FromInteger(1), new(""))}
 		selMap := make(map[tid.TID]bool)

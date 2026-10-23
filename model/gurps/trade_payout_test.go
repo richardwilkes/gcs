@@ -24,10 +24,14 @@ func librarySourced(eqp *Equipment) *Equipment {
 	return eqp
 }
 
+// TestPayoutForIsExact verifies that PayoutFor pays as close to the target as it can without exceeding it, with the
+// fewest items where several combinations reach that total, whatever the denominations, and that it ignores nil items
+// and items without a positive value.
 func TestPayoutForIsExact(t *testing.T) {
 	silver := newEquipmentItem("Silver Eagle", "20", "0")
 	copper := newEquipmentItem("Copper Penny", "1", "0")
 	fifteen := newEquipmentItem("Fifteen", "15", "0")
+	worthless := newEquipmentItem("Trinket", "0", "0")
 	tests := []struct {
 		name     string
 		money    []*Equipment
@@ -84,6 +88,13 @@ func TestPayoutForIsExact(t *testing.T) {
 			expected: nil,
 			paid:     "0",
 		},
+		{
+			name:     "nil and worthless items are ignored",
+			money:    []*Equipment{nil, worthless, silver},
+			target:   "40",
+			expected: []Payout{{Money: silver, Quantity: 2}},
+			paid:     "40",
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -93,15 +104,6 @@ func TestPayoutForIsExact(t *testing.T) {
 			tc.Equal(fxp.FromStringForced(tt.paid), paid)
 		})
 	}
-}
-
-func TestPayoutForIgnoresNilAndWorthlessItems(t *testing.T) {
-	c := check.New(t)
-	silver := newEquipmentItem("Silver Eagle", "20", "0")
-	worthless := newEquipmentItem("Trinket", "0", "0")
-	payouts, paid := PayoutFor(fxp.FromInteger(40), []*Equipment{nil, worthless, silver})
-	c.Equal([]Payout{{Money: silver, Quantity: 2}}, payouts)
-	c.Equal(fxp.FromInteger(40), paid)
 }
 
 // TestAddSellMoneyRejectsWhatCanNotBeMoney checks that only equipment tagged as money (see MoneyTag) that isn't a
@@ -148,12 +150,17 @@ func moneyItem(name, value, quantity string) *Equipment {
 	return eqp
 }
 
+// TestPaymentFor verifies that PaymentFor pays the smallest total that is at least the target, then with the fewest
+// items, then with the larger items, drawing on equal items in the order listed; that it uses only the whole units of
+// each item's quantity and ignores items without a positive value; and that it pays nothing for a target it can't reach
+// or that isn't positive.
 func TestPaymentFor(t *testing.T) {
 	silver := moneyItem("Silver Eagle", "20", "5")
 	copper := moneyItem("Copper Penny", "1", "20")
 	fifteen := moneyItem("Fifteen", "15", "2")
 	lone := moneyItem("Lone Eagle", "20", "1")
 	threePennies := moneyItem("Copper Penny", "1", "3")
+	tenPennies := moneyItem("Copper Penny", "1", "10")
 	halfPennies := moneyItem("Copper Penny", "1", "2.5")
 	fiver := moneyItem("Fiver", "5", "1")
 	sliver := moneyItem("Sliver", "0.5", "0.75")
@@ -206,6 +213,13 @@ func TestPaymentFor(t *testing.T) {
 			target:   "10",
 			expected: nil, // filled in below
 			paid:     "10",
+		},
+		{
+			name:     "equal items are drawn on in the order listed",
+			money:    []*Equipment{threePennies, tenPennies},
+			target:   "5",
+			expected: []Payout{{Money: threePennies, Quantity: 3}, {Money: tenPennies, Quantity: 2}},
+			paid:     "5",
 		},
 		{
 			name:     "quantities limit the items used",
@@ -283,16 +297,6 @@ func TestPaymentFor(t *testing.T) {
 			tc.Equal(fxp.FromStringForced(tt.paid), paid)
 		})
 	}
-}
-
-// TestPaymentForEqualItemsUseTheFirstListed verifies that two stacks of the same value are drawn on in the order given.
-func TestPaymentForEqualItemsUseTheFirstListed(t *testing.T) {
-	c := check.New(t)
-	purse := moneyItem("Copper Penny", "1", "3")
-	pouch := moneyItem("Copper Penny", "1", "10")
-	payments, paid := PaymentFor(fxp.FromInteger(5), []*Equipment{purse, pouch})
-	c.Equal([]Payout{{Money: purse, Quantity: 3}, {Money: pouch, Quantity: 2}}, payments)
-	c.Equal(fxp.FromInteger(5), paid)
 }
 
 // TestPaymentForFallsBackForLargeTargets verifies the largest-first search used when the exact one's table would be too
@@ -443,7 +447,8 @@ func TestPayoutsHandleHugeAmounts(t *testing.T) {
 
 // TestPaymentForSetsApartCoinsThatPayTheTargetAlone checks that a money item worth the target or more, which can only
 // ever be the whole payment, doesn't force the approximate search on the rest, and that it is still paid when it is the
-// smallest payment or ties the smallest with fewer items.
+// smallest payment or ties the smallest with fewer items. Where several equal-valued coins could pay the target alone,
+// the first listed is spent, as the exact search spends the first listed on a tie.
 func TestPaymentForSetsApartCoinsThatPayTheTargetAlone(t *testing.T) {
 	c := check.New(t)
 	gem := moneyItem("Gem", "1000000", "1")
@@ -467,6 +472,16 @@ func TestPaymentForSetsApartCoinsThatPayTheTargetAlone(t *testing.T) {
 	payments, paid = PaymentFor(fxp.FromInteger(30), []*Equipment{gem, cent})
 	c.Equal([]Payout{{Money: gem, Quantity: 1}}, payments, "the gem pays when the rest can't reach the target")
 	c.Equal(fxp.FromInteger(1_000_000), paid)
+
+	purse := moneyItem("Purse Gold", "100", "1")
+	pouch := moneyItem("Pouch Gold", "100", "1")
+	payments, paid = PaymentFor(fxp.Fifty, []*Equipment{purse, pouch})
+	c.Equal([]Payout{{Money: purse, Quantity: 1}}, payments, "the first listed of equal coins is spent")
+	c.Equal(fxp.Hundred, paid)
+	crown := moneyItem("Crown", "500", "1")
+	payments, paid = PaymentFor(fxp.Fifty, []*Equipment{crown, purse, pouch})
+	c.Equal([]Payout{{Money: purse, Quantity: 1}}, payments, "the least of the coins that pay the target alone is spent")
+	c.Equal(fxp.Hundred, paid)
 }
 
 // TestPayoutSearchesTakeTheMaximumTarget checks that a target at fxp's maximum, which a saturated total comes to, is
@@ -490,19 +505,4 @@ func TestPayoutSearchesTakeTheMaximumTarget(t *testing.T) {
 	change, paid := e.ChangeFor(fxp.Max, []*Equipment{sliver}, []Payout{{Money: copper, Quantity: 3}})
 	c.True(len(change) >= 1, "the slivers are paid out as far as they reach")
 	c.True(paid > 0 && paid <= fxp.Max)
-}
-
-// TestPaymentForSingleCoinUsesTheFirstListedOfEqualValue checks that where one coin pays the target by itself and
-// several equal-valued coins could, the first listed is spent, as the exact search spends the first listed on a tie.
-func TestPaymentForSingleCoinUsesTheFirstListedOfEqualValue(t *testing.T) {
-	c := check.New(t)
-	purse := moneyItem("Purse Gold", "100", "1")
-	pouch := moneyItem("Pouch Gold", "100", "1")
-	payments, paid := PaymentFor(fxp.Fifty, []*Equipment{purse, pouch})
-	c.Equal([]Payout{{Money: purse, Quantity: 1}}, payments)
-	c.Equal(fxp.Hundred, paid)
-	crown := moneyItem("Crown", "500", "1")
-	payments, paid = PaymentFor(fxp.Fifty, []*Equipment{crown, purse, pouch})
-	c.Equal([]Payout{{Money: purse, Quantity: 1}}, payments, "the least of the coins that pay the target alone is spent")
-	c.Equal(fxp.Hundred, paid)
 }

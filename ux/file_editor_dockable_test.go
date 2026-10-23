@@ -141,6 +141,32 @@ func checkFileEditorContract[T fileEditorModel[T]](t *testing.T, contract fileEd
 		c.NoError(err, "the written file must load")
 		c.Equal(gurps.Hash64(d.model), gurps.Hash64(loaded), "the file holds exactly what the editor holds")
 	})
+
+	// Undoing an edit that has been saved must leave the editor showing as modified, since what it then holds is not
+	// what its file holds, so Save is offered and closing prompts; redoing the edit brings it back into step with the
+	// file.
+	t.Run("UndoPastSaveLeavesModified", func(t *testing.T) {
+		c := check.New(t)
+		failOnWorkspaceError(t)
+		d := newEditor()
+		d.addToStartToolbar(unison.NewPanel())
+		d.path = filepath.Join(t.TempDir(), fileName)
+		contract.edit(t, d)
+		saved := gurps.Hash64(d.model)
+		c.True(d.save(false), "save must succeed")
+		c.False(d.Modified(), "the saved model is unmodified")
+		c.False(d.saveButton.Enabled())
+
+		d.undoMgr.Undo()
+		c.NotEqual(saved, gurps.Hash64(d.model), "undo reverses the edit")
+		c.True(d.Modified(), "the file holds the edit, so the editor is modified again")
+		c.True(d.saveButton.Enabled(), "and Save is offered")
+
+		d.undoMgr.Redo()
+		c.Equal(saved, gurps.Hash64(d.model))
+		c.False(d.Modified(), "redo puts the editor back in step with the file")
+		c.False(d.saveButton.Enabled())
+	})
 }
 
 // Each kind of editor must be recognized as itself and as nothing else, and an unrelated dockable as neither.
@@ -171,30 +197,6 @@ func builtInAncestryRef(t *testing.T, c check.Checker, name, content string) *li
 	ref := ancestryFileRef(t, c, name, content)
 	ref.DiskPath = ""
 	return ref
-}
-
-// Undoing an edit that has been saved must leave the editor showing as modified, since what it then holds is not what
-// its file holds, so Save is offered and closing prompts; redoing the edit brings it back into step with the file.
-func TestFileEditorUndoPastSaveLeavesModified(t *testing.T) {
-	c := check.New(t)
-	failOnWorkspaceError(t)
-	d := newTestAncestryEditorDockable(gurps.NewAncestry())
-	d.addToStartToolbar(unison.NewPanel())
-	d.path = filepath.Join(t.TempDir(), "Dwarf.ancestry")
-	d.editStructure("Rename", func() { d.model.Name = "Dwarf" }, "")
-	c.True(d.save(false), "save must succeed")
-	c.False(d.Modified(), "the saved ancestry is unmodified")
-	c.False(d.saveButton.Enabled())
-
-	d.undoMgr.Undo()
-	c.Equal("", d.model.Name, "undo reverses the edit")
-	c.True(d.Modified(), "the file holds the edit, so the editor is modified again")
-	c.True(d.saveButton.Enabled(), "and Save is offered")
-
-	d.undoMgr.Redo()
-	c.Equal("Dwarf", d.model.Name)
-	c.False(d.Modified(), "redo puts the editor back in step with the file")
-	c.False(d.saveButton.Enabled())
 }
 
 // A file with no path on disk, as a built-in one has, is known by its name for as long as it is loaded: in the title

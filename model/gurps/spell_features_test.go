@@ -14,11 +14,7 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/criteria"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
-	"github.com/richardwilkes/gcs/v5/model/gurps/attack"
-	"github.com/richardwilkes/gcs/v5/model/gurps/enums/feature"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/spellmatch"
-	"github.com/richardwilkes/gcs/v5/model/gurps/enums/stlimit"
-	"github.com/richardwilkes/gcs/v5/model/gurps/enums/wsel"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/gcs/v5/model/nameable"
 	"github.com/richardwilkes/toolbox/v2/check"
@@ -165,112 +161,6 @@ func TestSpellSyncWithSourceClonesFeatures(t *testing.T) {
 		skillBonusAt(c, local.Features, 0).Amount = fxp.Ten
 		c.Equal(fxp.Two, skillBonusAt(c, source.Features, 0).Amount, "editing the synced copy leaves the source alone")
 	}
-}
-
-// TestSpellFeaturesProcessedByEntity verifies that a spell's features reach the entity at all, and that the switchable
-// ones among them honor the spell's switch.
-func TestSpellFeaturesProcessedByEntity(t *testing.T) {
-	c := check.New(t)
-	e := NewEntity()
-
-	always := NewAttributeBonus(StrengthID)
-	always.Amount = fxp.One
-	switched := NewAttributeBonus(StrengthID)
-	switched.Amount = fxp.Two
-	switched.Switchable = true
-
-	spell := NewSpell(e, nil, false)
-	spell.Name = "Might"
-	spell.Points = fxp.Four
-	spell.Features = Features{always, switched}
-	e.Spells = append(e.Spells, spell)
-	e.Recalculate()
-
-	c.Equal(fxp.One, e.AttributeBonusFor(StrengthID, stlimit.None, nil),
-		"a spell's always-on feature applies, its switchable one doesn't while the switch is off")
-
-	spell.SetSwitchedOn(true)
-	e.Recalculate()
-	c.Equal(fxp.Three, e.AttributeBonusFor(StrengthID, stlimit.None, nil),
-		"both of a spell's features apply while its switch is on")
-
-	// A container spell's features never apply, since containers are skipped by the traversal.
-	e = NewEntity()
-	container := NewSpell(e, nil, true)
-	container.Name = "Fire College"
-	container.Features = Features{NewAttributeBonus(StrengthID)}
-	e.Spells = append(e.Spells, container)
-	e.Recalculate()
-	c.Equal(fxp.Int(0), e.AttributeBonusFor(StrengthID, stlimit.None, nil),
-		"a container spell's features are not applied")
-}
-
-// TestSpellConditionalModifierFromFeatures verifies that a spell participates in the reaction and conditional modifier
-// traversal, which is a separate walk from the one that feeds processFeatures.
-func TestSpellConditionalModifierFromFeatures(t *testing.T) {
-	c := check.New(t)
-	e := NewEntity()
-
-	reaction := NewReactionBonus()
-	reaction.Situation = "from the faithful"
-	reaction.Amount = fxp.Two
-	condition := NewConditionalModifierBonus()
-	condition.Situation = "when casting at night"
-	condition.Amount = fxp.One
-	condition.Switchable = true
-
-	spell := NewSpell(e, nil, false)
-	spell.Name = "Bless"
-	spell.Points = fxp.Four
-	spell.Features = Features{reaction, condition}
-	e.Spells = append(e.Spells, spell)
-	e.Recalculate()
-
-	reactions := e.Reactions()
-	c.Equal(1, len(reactions), "a spell's reaction bonus is collected")
-	if len(reactions) == 1 {
-		c.Equal("from the faithful", reactions[0].From, "the reaction names the spell's situation")
-		c.Equal(fxp.Two, reactions[0].Total(), "the reaction carries the spell's amount")
-	}
-	c.Equal(0, len(e.ConditionalModifiers()), "the switchable conditional modifier is held back while the switch is off")
-
-	spell.SetSwitchedOn(true)
-	e.Recalculate()
-	mods := e.ConditionalModifiers()
-	c.Equal(1, len(mods), "the switchable conditional modifier appears once the switch is on")
-	if len(mods) == 1 {
-		c.Equal("when casting at night", mods[0].From, "the modifier names the spell's situation")
-	}
-}
-
-// TestSpellWeaponBonusFromSpellFeatures verifies that a weapon owned by a spell picks up the "to this weapon" bonuses
-// carried by the spell's own features.
-func TestSpellWeaponBonusFromSpellFeatures(t *testing.T) {
-	c := check.New(t)
-	e := NewEntity()
-
-	accBonus := NewWeaponBonus(feature.WeaponAccBonus)
-	accBonus.SelectionType = wsel.ThisWeapon
-	accBonus.Amount = fxp.Two
-
-	spell := NewSpell(e, nil, false)
-	spell.Name = "Fireball"
-	spell.Points = fxp.Four
-	spell.Features = Features{accBonus}
-	w := NewWeapon(spell, false)
-	w.Accuracy = attack.ParseAccuracy("3")
-	spell.Weapons = []*Weapon{w}
-	e.Spells = append(e.Spells, spell)
-	e.Recalculate()
-	c.Equal("5", w.ResolvedAccuracy(nil).String(), "the spell's own weapon bonus reaches its weapon")
-
-	// And the switch gates it, just as it does for a trait or a piece of equipment.
-	accBonus.Switchable = true
-	e.Recalculate()
-	c.Equal("3", w.ResolvedAccuracy(nil).String(), "a switchable bonus is held back while the spell's switch is off")
-	spell.SetSwitchedOn(true)
-	e.Recalculate()
-	c.Equal("5", w.ResolvedAccuracy(nil).String(), "a switchable bonus applies while the spell's switch is on")
 }
 
 // TestSpellBonusFromItsOwnSpell verifies that a spell carrying a bonus that names itself resolves to a sane level

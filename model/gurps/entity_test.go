@@ -393,29 +393,6 @@ func TestEntityThisArmorDRBonusIncludesModifierLocations(t *testing.T) {
 		"arm: the modifier's 'this armor' bonus expands onto the modifier's own location")
 }
 
-func TestEntityHideZeroValueConditionalModifiers(t *testing.T) {
-	c := check.New(t)
-	e := NewEntity()
-
-	// A situation whose contributing bonuses cancel out to a total of zero.
-	addConditionalModifier(e, "cancels out", fxp.One)
-	addConditionalModifier(e, "cancels out", fxp.NegOne)
-	// A situation with a non-zero total.
-	addConditionalModifier(e, "still applies", fxp.Two)
-
-	e.SheetSettings.HideZeroValueConditionalMods = false
-	mods := e.ConditionalModifiers()
-	c.Equal(2, len(mods), "both situations listed when zero-value modifiers are shown")
-
-	e.SheetSettings.HideZeroValueConditionalMods = true
-	mods = e.ConditionalModifiers()
-	c.Equal(1, len(mods), "zero-total situation omitted when hidden")
-	if len(mods) == 1 {
-		c.Equal("still applies", mods[0].From, "the remaining modifier is the non-zero one")
-		c.Equal(fxp.Two, mods[0].Total(), "the remaining modifier retains its total")
-	}
-}
-
 func addConditionalModifier(e *Entity, situation string, amt fxp.Int) {
 	bonus := NewConditionalModifierBonus()
 	bonus.Situation = situation
@@ -423,8 +400,9 @@ func addConditionalModifier(e *Entity, situation string, amt fxp.Int) {
 	addTraitWithFeatures(e, "", bonus)
 }
 
-// TestEntityHideZeroValueConditionalModifiersPrunesGroups verifies that hiding zero-value conditional modifiers is
-// applied to the members of a group, and that a group left with no members disappears along with them.
+// TestEntityHideZeroValueConditionalModifiersPrunesGroups verifies that hiding zero-value conditional modifiers omits
+// those whose bonuses total zero, ungrouped or the members of a group, that a group left with no members disappears
+// along with them, and that a modifier kept retains its total.
 func TestEntityHideZeroValueConditionalModifiersPrunesGroups(t *testing.T) {
 	withGroupContainersOnSort(t, true)
 	c := check.New(t)
@@ -434,69 +412,25 @@ func TestEntityHideZeroValueConditionalModifiersPrunesGroups(t *testing.T) {
 	addGroupedConditionalModifier(e, "", "still applies", "Mixed", fxp.Two)
 	addGroupedConditionalModifier(e, "", "also cancels out", "Empty", fxp.One)
 	addGroupedConditionalModifier(e, "", "also cancels out", "Empty", fxp.NegOne)
+	addConditionalModifier(e, "cancels out", fxp.One)
+	addConditionalModifier(e, "cancels out", fxp.NegOne)
+	addConditionalModifier(e, "still applies", fxp.Two)
 	addConditionalModifier(e, "ungrouped", fxp.Three)
 	e.Recalculate()
 
 	e.SheetSettings.HideZeroValueConditionalMods = false
-	c.Equal([]string{"Empty[also cancels out]", "Mixed[cancels out,still applies]", "ungrouped"},
-		rowNames(e.ConditionalModifiers()), "everything listed when zero-value modifiers are shown")
+	c.Equal([]string{
+		"Empty[also cancels out]", "Mixed[cancels out,still applies]", "cancels out", "still applies",
+		"ungrouped",
+	}, rowNames(e.ConditionalModifiers()), "everything listed when zero-value modifiers are shown")
 
 	e.SheetSettings.HideZeroValueConditionalMods = true
-	c.Equal([]string{"Mixed[still applies]", "ungrouped"}, rowNames(e.ConditionalModifiers()),
-		"zero-total members are omitted, and a group with none left is omitted with them")
-}
-
-// TestEntityProcessTraitPrereqsClearsUnsatisfiedReasonWhenDisabled verifies that disabling a trait (directly or by
-// disabling one of its containers) clears any unsatisfied prerequisite reason it had accumulated, rather than leaving
-// the stale reason behind until the sheet is reloaded.
-func TestEntityProcessTraitPrereqsClearsUnsatisfiedReasonWhenDisabled(t *testing.T) {
-	c := check.New(t)
-	e := NewEntity()
-	trait := newTraitNeedingMissingTrait(e, "Trained by a Master")
-	e.Traits = append(e.Traits, trait)
-
-	e.Recalculate()
-	c.NotEqual("", trait.UnsatisfiedReason, "an enabled trait with an unmet prereq is flagged")
-
-	trait.SetDisabled(true)
-	e.Recalculate()
-	c.Equal("", trait.UnsatisfiedReason, "disabling the trait clears the stale reason")
-
-	trait.SetDisabled(false)
-	e.Recalculate()
-	c.NotEqual("", trait.UnsatisfiedReason, "re-enabling the trait flags it again")
-
-	// The same must hold when the trait is only disabled by way of a container above it.
-	e = NewEntity()
-	container := NewTrait(e, nil, true)
-	container.Name = "Martial Arts"
-	nested := newTraitNeedingMissingTrait(e, "Weapon Master")
-	nested.SetParent(container)
-	container.Children = append(container.Children, nested)
-	e.Traits = append(e.Traits, container)
-
-	e.Recalculate()
-	c.NotEqual("", nested.UnsatisfiedReason, "a trait inside an enabled container is flagged")
-
-	container.SetDisabled(true)
-	e.Recalculate()
-	c.Equal("", nested.UnsatisfiedReason, "disabling the container clears the nested trait's stale reason")
-
-	// A trait exceeding a maximum level is flagged the same way, and must also be cleared when disabled.
-	e = NewEntity()
-	trait = NewTrait(e, nil, false)
-	trait.Name = "Extra Arm"
-	trait.CanLevel = true
-	trait.Levels = fxp.Three
-	trait.MaxLevels = "2"
-	e.Traits = append(e.Traits, trait)
-
-	e.Recalculate()
-	c.NotEqual("", trait.UnsatisfiedReason, "a trait above its maximum level is flagged")
-
-	trait.SetDisabled(true)
-	e.Recalculate()
-	c.Equal("", trait.UnsatisfiedReason, "disabling the trait clears the maximum-level reason")
+	mods := e.ConditionalModifiers()
+	c.Equal([]string{"Mixed[still applies]", "still applies", "ungrouped"}, rowNames(mods),
+		"zero-total modifiers are omitted, and a group with none left is omitted with them")
+	if len(mods) == 3 {
+		c.Equal(fxp.Two, mods[1].Total(), "the remaining modifier retains its total")
+	}
 }
 
 // newTraitNeedingMissingTrait creates a trait whose prerequisite requires another trait the entity doesn't have, so
@@ -696,86 +630,6 @@ func TestEntityEnforceTraitPrereqsDisablesUnsatisfiedTraits(t *testing.T) {
 	c.NotEqual("", trait.UnsatisfiedReason, "the unmet prereq is still flagged")
 }
 
-// TestEntityEnforceTraitPrereqsCascades verifies that a trait disabled for unsatisfied prerequisites no longer
-// satisfies the prerequisites of other traits, which are disabled in turn within the same recalculation, and that
-// all of them come back together once the root prerequisite is met.
-func TestEntityEnforceTraitPrereqsCascades(t *testing.T) {
-	c := check.New(t)
-	e := NewEntity()
-	e.SheetSettings.EnforceTraitPrereqs = true
-	// The dependent trait is listed first, so a single pass over the traits would still see the trait it needs as
-	// enabled; only a further pass notices that it has been disabled.
-	dependent := newTraitRequiring(e, "Weapon Master", "Trained by a Master")
-	needed := newTraitNeedingMissingTrait(e, "Trained by a Master")
-	e.Traits = append(e.Traits, dependent, needed)
-
-	e.Recalculate()
-	c.False(needed.Enabled(), "the trait with the unmet prereq is disabled")
-	c.False(dependent.Enabled(), "a trait whose prerequisite was disabled is disabled in turn")
-	c.NotEqual("", dependent.UnsatisfiedReason, "the dependent trait records why")
-
-	combatReflexes := NewTrait(e, nil, false)
-	combatReflexes.Name = "Combat Reflexes"
-	e.Traits = append(e.Traits, combatReflexes)
-	e.Recalculate()
-	c.True(needed.Enabled(), "meeting the root prerequisite re-enables the trait")
-	c.True(dependent.Enabled(), "and the trait that depends on it")
-	c.Equal("", dependent.UnsatisfiedReason, "the dependent trait's prereq is met")
-}
-
-// TestEntityEnforceTraitPrereqsLongCascadeSettles verifies that a long chain of dependent traits settles completely in
-// a single recalculation, whatever order the traits are listed in. Each pass judges every trait against the traits as
-// they stood when it began, so a pass cuts the chain by one link, whichever end of it is listed first, and the 7-link
-// chain takes 9 passes to settle. Were the passes stopped short of that, the links at the head of the chain would be
-// left enabled, and their features counted, on every recalculation.
-func TestEntityEnforceTraitPrereqsLongCascadeSettles(t *testing.T) {
-	c := check.New(t)
-	const links = 7
-	for _, reversed := range []bool{false, true} {
-		e := NewEntity()
-		e.SheetSettings.EnforceTraitPrereqs = true
-		broadsword := addTestSkill(e, "Broadsword", "", "", fxp.Four) // IQ+1, so 11 on its own
-		chain := make([]*Trait, links)
-		for i := range chain {
-			name := "Link " + strconv.Itoa(i+1)
-			if i == links-1 {
-				chain[i] = newTraitNeedingMissingTrait(e, name)
-			} else {
-				chain[i] = newTraitRequiring(e, name, "Link "+strconv.Itoa(i+2))
-			}
-			chain[i].Features = Features{newSkillBonusTo("Broadsword", fxp.One)}
-		}
-		e.Traits = append(e.Traits, chain...)
-		if reversed {
-			slices.Reverse(e.Traits)
-		}
-
-		e.Recalculate()
-		for i, trait := range chain {
-			c.False(trait.Enabled(), "reversed %t: link %d is disabled after one recalculation", reversed, i+1)
-			c.NotEqual("", trait.UnsatisfiedReason, "reversed %t: link %d records why", reversed, i+1)
-		}
-		c.Equal(fxp.Int(0), e.SkillBonusFor("Broadsword", "", "", nil, nil),
-			"reversed %t: no disabled link's bonus counts", reversed)
-		c.Equal(fxp.FromInteger(11), broadsword.LevelData.Level, "reversed %t: the skill is unaffected", reversed)
-		checkRecalculationConsistency(c, e, fmt.Sprintf("reversed %t, chain cut", reversed))
-
-		// Meeting the root prerequisite brings the whole chain back in a single recalculation as well.
-		combatReflexes := NewTrait(e, nil, false)
-		combatReflexes.Name = "Combat Reflexes"
-		e.Traits = append(e.Traits, combatReflexes)
-		e.Recalculate()
-		for i, trait := range chain {
-			c.True(trait.Enabled(), "reversed %t: link %d is re-enabled after one recalculation", reversed, i+1)
-			c.Equal("", trait.UnsatisfiedReason, "reversed %t: link %d's prerequisite is met", reversed, i+1)
-		}
-		c.Equal(fxp.FromInteger(links), e.SkillBonusFor("Broadsword", "", "", nil, nil),
-			"reversed %t: every link's bonus counts", reversed)
-		c.Equal(fxp.FromInteger(11+links), broadsword.LevelData.Level, "reversed %t: the skill is raised", reversed)
-		checkRecalculationConsistency(c, e, fmt.Sprintf("reversed %t, chain restored", reversed))
-	}
-}
-
 // TestEntityEnforceTraitPrereqsChainBeyondCapIsStoppedShort verifies what a recalculation does with a chain of
 // dependent traits longer than the cap on its passes allows for: the passes are stopped at the cap, the sheet notes
 // that its data never settles, and the links the passes reached are disabled while those they did not reach are left
@@ -855,64 +709,107 @@ func TestEntityEnforceTraitPrereqsJudgedAgainstOwnFeatures(t *testing.T) {
 	c.Equal(fxp.FromInteger(13), broadsword.LevelData.Level, "the bonus is applied again")
 }
 
-// TestEntityEnforceTraitPrereqsFeatureCascadeSettles verifies that a cascade carried by features settles completely
-// in a single recalculation, whatever order the traits are listed in. Each link requires a skill level that only the
-// next link's bonus provides, so a link's disabling is discovered only once the features have been collected without
-// the link after it, a full pass later, and the 7-link chain takes 8 passes to settle.
+// TestEntityEnforceTraitPrereqsFeatureCascadeSettles verifies that a long chain of dependent traits settles completely
+// in a single recalculation, whatever order the traits are listed in, both when each link requires the next by name and
+// when it requires a skill level that only the next link's bonus provides. In the first, each pass judges every trait
+// against the traits as they stood when it began, so a pass cuts the chain by one link, whichever end of it is listed
+// first, and the 7-link chain takes 9 passes to settle; were the passes stopped short of that, the links at the head of
+// the chain would be left enabled, and their features counted, on every recalculation. In the second, a link's
+// disabling is discovered only once the features have been collected without the link after it, a full pass later, and
+// the 7-link chain takes 8 passes to settle.
 func TestEntityEnforceTraitPrereqsFeatureCascadeSettles(t *testing.T) {
 	c := check.New(t)
 	const links = 7
-	for _, reversed := range []bool{false, true} {
-		e := NewEntity()
-		e.SheetSettings.EnforceTraitPrereqs = true
-		skills := make([]*Skill, links-1)
-		for i := range skills {
-			skills[i] = addTestSkill(e, "Skill "+strconv.Itoa(i+1), "", "", fxp.Four) // IQ+1, so 11 on its own
-		}
-		chain := make([]*Trait, links)
-		for i := range chain {
-			name := "Link " + strconv.Itoa(i+1)
-			if i == links-1 {
-				chain[i] = newTraitNeedingMissingTrait(e, name)
-			} else {
-				chain[i] = NewTrait(e, nil, false)
-				chain[i].Name = name
-				chain[i].Prereq = newPrereqListRequiringSkill(skills[i].Name, fxp.Twelve)
+	for _, kind := range []struct {
+		name string
+		// build adds to the entity the skills the links' bonuses raise, each 11 on its own, and returns them with the
+		// links of the chain, which it does not add. The last link requires the missing Combat Reflexes.
+		build func(e *Entity) ([]*Trait, []*Skill)
+		// bonus is what each skill gains once the whole chain is enabled.
+		bonus fxp.Int
+	}{
+		{
+			name: "next link required by name",
+			build: func(e *Entity) ([]*Trait, []*Skill) {
+				broadsword := addTestSkill(e, "Broadsword", "", "", fxp.Four) // IQ+1, so 11 on its own
+				chain := make([]*Trait, links)
+				for i := range chain {
+					name := "Link " + strconv.Itoa(i+1)
+					if i == links-1 {
+						chain[i] = newTraitNeedingMissingTrait(e, name)
+					} else {
+						chain[i] = newTraitRequiring(e, name, "Link "+strconv.Itoa(i+2))
+					}
+					chain[i].Features = Features{newSkillBonusTo("Broadsword", fxp.One)}
+				}
+				return chain, []*Skill{broadsword}
+			},
+			bonus: fxp.FromInteger(links),
+		},
+		{
+			name: "skill level fed by the next link",
+			build: func(e *Entity) ([]*Trait, []*Skill) {
+				skills := make([]*Skill, links-1)
+				for i := range skills {
+					skills[i] = addTestSkill(e, "Skill "+strconv.Itoa(i+1), "", "", fxp.Four) // IQ+1, so 11 on its own
+				}
+				chain := make([]*Trait, links)
+				for i := range chain {
+					name := "Link " + strconv.Itoa(i+1)
+					if i == links-1 {
+						chain[i] = newTraitNeedingMissingTrait(e, name)
+					} else {
+						chain[i] = NewTrait(e, nil, false)
+						chain[i].Name = name
+						chain[i].Prereq = newPrereqListRequiringSkill(skills[i].Name, fxp.Twelve)
+					}
+					if i > 0 {
+						chain[i].Features = Features{newSkillBonusTo(skills[i-1].Name, fxp.Two)}
+					}
+				}
+				return chain, skills
+			},
+			bonus: fxp.Two,
+		},
+	} {
+		for _, reversed := range []bool{false, true} {
+			label := fmt.Sprintf("%s, reversed %t", kind.name, reversed)
+			e := NewEntity()
+			e.SheetSettings.EnforceTraitPrereqs = true
+			chain, skills := kind.build(e)
+			e.Traits = append(e.Traits, chain...)
+			if reversed {
+				slices.Reverse(e.Traits)
 			}
-			if i > 0 {
-				chain[i].Features = Features{newSkillBonusTo(skills[i-1].Name, fxp.Two)}
+
+			e.Recalculate()
+			for i, trait := range chain {
+				c.False(trait.Enabled(), "%s: link %d is disabled after one recalculation", label, i+1)
+				c.NotEqual("", trait.UnsatisfiedReason, "%s: link %d records why", label, i+1)
 			}
-		}
-		e.Traits = append(e.Traits, chain...)
-		if reversed {
-			slices.Reverse(e.Traits)
-		}
+			for _, skill := range skills {
+				c.Equal(fxp.Int(0), e.SkillBonusFor(skill.Name, "", "", nil, nil),
+					"%s: %s counts no disabled link's bonus", label, skill.Name)
+				c.Equal(fxp.FromInteger(11), skill.LevelData.Level, "%s: %s is unaffected", label, skill.Name)
+			}
+			checkRecalculationConsistency(c, e, label+", chain cut")
 
-		e.Recalculate()
-		for i, trait := range chain {
-			c.False(trait.Enabled(), "reversed %t: link %d is disabled after one recalculation", reversed, i+1)
-			c.NotEqual("", trait.UnsatisfiedReason, "reversed %t: link %d records why", reversed, i+1)
+			// Meeting the root prerequisite brings the whole chain back in a single recalculation as well.
+			combatReflexes := NewTrait(e, nil, false)
+			combatReflexes.Name = "Combat Reflexes"
+			e.Traits = append(e.Traits, combatReflexes)
+			e.Recalculate()
+			for i, trait := range chain {
+				c.True(trait.Enabled(), "%s: link %d is re-enabled after one recalculation", label, i+1)
+				c.Equal("", trait.UnsatisfiedReason, "%s: link %d's prerequisite is met", label, i+1)
+			}
+			for _, skill := range skills {
+				c.Equal(kind.bonus, e.SkillBonusFor(skill.Name, "", "", nil, nil),
+					"%s: %s counts the bonus of every link raising it", label, skill.Name)
+				c.Equal(fxp.FromInteger(11)+kind.bonus, skill.LevelData.Level, "%s: %s is raised", label, skill.Name)
+			}
+			checkRecalculationConsistency(c, e, label+", chain restored")
 		}
-		for i, skill := range skills {
-			c.Equal(fxp.FromInteger(11), skill.LevelData.Level,
-				"reversed %t: skill %d counts no disabled link's bonus", reversed, i+1)
-		}
-		checkRecalculationConsistency(c, e, fmt.Sprintf("reversed %t, chain cut", reversed))
-
-		// Meeting the root prerequisite brings the whole chain back in a single recalculation as well.
-		combatReflexes := NewTrait(e, nil, false)
-		combatReflexes.Name = "Combat Reflexes"
-		e.Traits = append(e.Traits, combatReflexes)
-		e.Recalculate()
-		for i, trait := range chain {
-			c.True(trait.Enabled(), "reversed %t: link %d is re-enabled after one recalculation", reversed, i+1)
-			c.Equal("", trait.UnsatisfiedReason, "reversed %t: link %d's prerequisite is met", reversed, i+1)
-		}
-		for i, skill := range skills {
-			c.Equal(fxp.FromInteger(13), skill.LevelData.Level,
-				"reversed %t: skill %d is raised by the link after it", reversed, i+1)
-		}
-		checkRecalculationConsistency(c, e, fmt.Sprintf("reversed %t, chain restored", reversed))
 	}
 }
 

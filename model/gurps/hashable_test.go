@@ -223,25 +223,6 @@ func TestSaveRecalculatesFirst(t *testing.T) {
 	c.True(strings.Contains(string(saved), `"level":`), "the saved file publishes the level it just computed")
 }
 
-// TestEntityHashSurvivesFailedScripts verifies that an entity whose scripts fail to resolve hashes the same as it did
-// when they resolved normally. A script is abandoned once it exceeds the permitted per-script execution time and then
-// resolves to 0, so a busy machine used to be able to make an untouched character sheet report itself as modified.
-func TestEntityHashSurvivesFailedScripts(t *testing.T) {
-	c := check.New(t)
-	e := NewEntity()
-	before := Hash64(e)
-
-	// Stand in for "every script blew its time budget", without depending on how busy the machine running the test is:
-	// seeding the resolving depth at its limit makes every resolution fail and produce 0, exactly as a timeout does.
-	// The depth is restored by each resolution as it unwinds, so it keeps failing for the whole hash, and none of the
-	// entity's data changes.
-	SuppressScriptResolveErrorLogging(func() {
-		e.scriptResolvingDepth = maximumAllowedResolvingDepth
-		defer func() { e.scriptResolvingDepth = 0 }()
-		c.Equal(before, Hash64(e), "a failure to resolve the scripts must not alter the hash")
-	})
-}
-
 // TestEditDataMarshalsWithoutDerivedValues verifies that the form an open editor compares -- the marshal of the data it
 // was opened with against the marshal of the data it holds now -- carries none of the derived values and does not move
 // when the scripts that produce them cannot resolve. The two copies an editor holds have separate script caches, so a

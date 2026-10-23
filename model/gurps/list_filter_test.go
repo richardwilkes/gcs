@@ -95,8 +95,8 @@ func checkFilterParents(c check.Checker, group *gurps.FilterGroup, path string) 
 }
 
 // TestListFilterJSONRoundTrip verifies that a filter holding every kind of node survives a save and load unchanged,
-// both in what it writes and in the parent links that the JSON doesn't carry and the load has to restore, and that a
-// padded name is trimmed on the way in.
+// both in what it writes, which leaves out whatever a node doesn't have, and in the parent links that the JSON doesn't
+// carry and the load has to restore, and that a padded name is trimmed on the way in.
 func TestListFilterJSONRoundTrip(t *testing.T) {
 	c := check.New(t)
 
@@ -112,7 +112,8 @@ func TestListFilterJSONRoundTrip(t *testing.T) {
 	sub.Not = true
 	sub.Children = gurps.FilterNodes{newWeightFilterCondition("weight", criteria.AtMostNumber,
 		fxp.WeightFromInteger(5, fxp.Pound))}
-	f.Root.Children = gurps.FilterNodes{textCond, listCond, numberCond, boolCond, anythingCond, sub}
+	includingCond := includingDisabled(gurps.NewFilterCondition(nil, "modifier_names"))
+	f.Root.Children = gurps.FilterNodes{textCond, listCond, numberCond, boolCond, anythingCond, sub, includingCond}
 	f.EnsureValidity()
 
 	data, err := jio.Marshal(f)
@@ -122,7 +123,7 @@ func TestListFilterJSONRoundTrip(t *testing.T) {
 	c.NoError(jio.Unmarshal(data, &restored), "a filter should unmarshal")
 	c.Equal("Round Trip", restored.Name, "the name should survive the round trip")
 	c.True(restored.Root.All, "the root group's combining mode should survive the round trip")
-	c.Equal(6, len(restored.Root.Children), "every child should survive the round trip")
+	c.Equal(7, len(restored.Root.Children), "every child should survive the round trip")
 
 	again, err := jio.Marshal(&restored)
 	c.NoError(err, "a restored filter should marshal")
@@ -143,6 +144,11 @@ func TestListFilterJSONRoundTrip(t *testing.T) {
 	if ok {
 		c.True(restoredBool.Not, "a condition's negation should survive the round trip")
 	}
+	restoredIncluding, ok := restored.Root.Children[6].(*gurps.FilterCondition)
+	c.True(ok, "the condition including disabled modifiers should load as a condition")
+	if ok {
+		c.True(restoredIncluding.IncludeDisabled, "including disabled modifiers should survive the round trip")
+	}
 
 	// The on-disk shape: a group names its type, always writes how it combines, and leaves out a negation it doesn't
 	// have.
@@ -155,7 +161,13 @@ func TestListFilterJSONRoundTrip(t *testing.T) {
 	anythingData, err := jio.Marshal(anythingCond)
 	c.NoError(err, "a condition should marshal")
 	c.Equal(`{"type":"condition","field":"reference"}`, string(anythingData),
-		`the "text", "number" and "weight" criteria are omitted when they accept anything`)
+		`the "text", "number" and "weight" criteria are omitted when they accept anything, and an absent `+
+			`IncludeDisabled is omitted too`)
+
+	includingData, err := jio.Marshal(includingCond)
+	c.NoError(err, "a condition including disabled modifiers should marshal")
+	c.Equal(`{"type":"condition","field":"modifier_names","include_disabled":true}`, string(includingData),
+		"a set IncludeDisabled is written")
 
 	whole := string(data)
 	c.Contains(whole, `"type":"group"`, "the groups name their type")
@@ -266,7 +278,9 @@ func TestEveryFilterNodeTypeDecodesToItsConcreteType(t *testing.T) {
 }
 
 // TestListFilterMatchesByKind verifies that a condition on each kind of field is evaluated with the criteria that kind
-// calls for, against the value the field's accessor produces.
+// calls for, against the value the field's accessor produces. A comma is part of a text field's value rather than a
+// separator, negation composes with the criteria's own "not" forms rather than being confused by them, and a field not
+// drawn from modifiers ignores IncludeDisabled.
 func TestListFilterMatchesByKind(t *testing.T) {
 	c := check.New(t)
 
@@ -302,6 +316,13 @@ func TestListFilterMatchesByKind(t *testing.T) {
 	container.Name = "Group"
 	c.True(container.Container(), "the container trait should be a container")
 
+	vision := gurps.NewTrait(nil, nil, false)
+	vision.Name = "Acute Vision"
+	handAxe := gurps.NewTrait(nil, nil, false)
+	handAxe.Name = "Axe, Hand"
+	axe := gurps.NewTrait(nil, nil, false)
+	axe.Name = "Axe"
+
 	for _, one := range []struct {
 		name  string
 		trait *gurps.Trait
@@ -325,6 +346,18 @@ func TestListFilterMatchesByKind(t *testing.T) {
 		{"text ends with", trait, newTextFilterCondition("name", criteria.EndsWithText, "NESS"), true},
 		{"text ends with, no match", trait, newTextFilterCondition("name", criteria.EndsWithText, "aler"), false},
 		{"text anything", trait, gurps.NewFilterCondition(nil, "name"), true},
+		// A negated "is not" is just an "is".
+		{"not text is not", trait, negated(newTextFilterCondition("name", criteria.IsNotText, "Alertness")), true},
+		{
+			"not text is not, no match", vision,
+			negated(newTextFilterCondition("name", criteria.IsNotText, "Alertness")), false,
+		},
+		// A comma is part of the text, not a separator as in a list's qualifier.
+		{"text is, with a comma", handAxe, newTextFilterCondition("name", criteria.IsText, "Axe, Hand"), true},
+		{
+			"text is, with a comma, a part of it", axe,
+			newTextFilterCondition("name", criteria.IsText, "Axe, Hand"), false,
+		},
 
 		// List, where any one of several values may satisfy a positive comparison.
 		{"list is, first value", trait, newTextFilterCondition("tags", criteria.IsText, "mental"), true},
@@ -343,6 +376,20 @@ func TestListFilterMatchesByKind(t *testing.T) {
 		{
 			"list does not contain, no match", trait,
 			newTextFilterCondition("tags", criteria.DoesNotContainText, "ment"), false,
+		},
+		// Negating a list's own "does not contain" inverts its result, whichever way it went.
+		{
+			"not list does not contain", trait,
+			negated(newTextFilterCondition("tags", criteria.DoesNotContainText, "Social")), false,
+		},
+		{
+			"not list does not contain, no match", trait,
+			negated(newTextFilterCondition("tags", criteria.DoesNotContainText, "ment")), true,
+		},
+		// Only the fields drawn from modifiers heed IncludeDisabled.
+		{
+			"list is, including disabled modifiers", trait,
+			includingDisabled(newTextFilterCondition("tags", criteria.IsText, "Mental")), true,
 		},
 		// An item with no tags doesn't have tags, so no comparison holds for it, though a negated one does.
 		{"list is, empty tag list", untagged, newTextFilterCondition("tags", criteria.IsText, "Mental"), false},
@@ -402,28 +449,40 @@ func TestListFilterMatchesByKind(t *testing.T) {
 			"%s", one.name)
 	}
 
-	equipment := gurps.NewEquipment(nil, nil, false)
-	equipment.Name = "Sack"
-	equipment.BaseWeight = "5 lb"
+	sack := gurps.NewEquipment(nil, nil, false)
+	sack.Name = "Sack"
+	sack.BaseWeight = "5 lb"
+	group := gurps.NewEquipmentGroup(nil, nil)
+	backpack := gurps.NewEquipment(nil, nil, true)
 	fivePounds := fxp.WeightFromInteger(5, fxp.Pound)
+	containerType := func(qualifier string) *gurps.FilterCondition {
+		return newTextFilterCondition("container_type", criteria.IsText, qualifier)
+	}
 	for _, one := range []struct {
-		name string
-		cond *gurps.FilterCondition
-		want bool
+		name      string
+		equipment *gurps.Equipment
+		cond      *gurps.FilterCondition
+		want      bool
 	}{
-		{"weight is", newWeightFilterCondition("weight", criteria.EqualsNumber, fivePounds), true},
-		{"weight is, no match", newWeightFilterCondition("weight", criteria.EqualsNumber,
+		{"weight is", sack, newWeightFilterCondition("weight", criteria.EqualsNumber, fivePounds), true},
+		{"weight is, no match", sack, newWeightFilterCondition("weight", criteria.EqualsNumber,
 			fxp.WeightFromInteger(6, fxp.Pound)), false},
-		{"weight at least", newWeightFilterCondition("weight", criteria.AtLeastNumber, fivePounds), true},
-		{"weight at least, no match", newWeightFilterCondition("weight", criteria.AtLeastNumber,
+		{"weight at least", sack, newWeightFilterCondition("weight", criteria.AtLeastNumber, fivePounds), true},
+		{"weight at least, no match", sack, newWeightFilterCondition("weight", criteria.AtLeastNumber,
 			fxp.WeightFromInteger(6, fxp.Pound)), false},
-		{"weight at most", newWeightFilterCondition("weight", criteria.AtMostNumber, fivePounds), true},
-		{"weight at most, no match", newWeightFilterCondition("weight", criteria.AtMostNumber,
+		{"weight at most", sack, newWeightFilterCondition("weight", criteria.AtMostNumber, fivePounds), true},
+		{"weight at most, no match", sack, newWeightFilterCondition("weight", criteria.AtMostNumber,
 			fxp.WeightFromInteger(4, fxp.Pound)), false},
-		{"weight anything", gurps.NewFilterCondition(nil, "weight"), true},
+		{"weight anything", sack, gurps.NewFilterCondition(nil, "weight"), true},
+
+		// A container type, which tells a group from a physical container, and which an item doesn't have.
+		{"container type is group", group, containerType("group"), true},
+		{"container type is group, physical container", backpack, containerType("group"), false},
+		{"container type is container", backpack, containerType("container"), true},
+		{"container type is container, item", sack, containerType("container"), false},
 	} {
 		c.Equal(one.want,
-			matchesListFilter(newTestListFilter(one.cond), gurps.EquipmentFilterFields(), equipment),
+			matchesListFilter(newTestListFilter(one.cond), gurps.EquipmentFilterFields(), one.equipment),
 			"%s", one.name)
 	}
 }
@@ -493,62 +552,6 @@ func TestListFilterTraitLevels(t *testing.T) {
 			c.Equal(want, matchesListFilter(f, fields, trait), "%s: %s", one.name, trait.Name)
 		}
 	}
-}
-
-// TestListFilterNegation verifies that negation inverts a node's result wherever it appears, and that it composes with
-// the criteria's own "not" forms rather than being confused by them.
-func TestListFilterNegation(t *testing.T) {
-	c := check.New(t)
-	trait := gurps.NewTrait(nil, nil, false)
-	trait.Name = "Alertness"
-	trait.Tags = []string{"Mental", "Physical"}
-	fields := gurps.TraitFilterFields()
-
-	// On a condition.
-	matching := newTextFilterCondition("name", criteria.IsText, "Alertness")
-	matching.Not = true
-	c.False(matchesListFilter(newTestListFilter(matching), fields, trait),
-		"negating a condition that matches rejects the node")
-	notMatching := newTextFilterCondition("name", criteria.IsText, "Acute Vision")
-	notMatching.Not = true
-	c.True(matchesListFilter(newTestListFilter(notMatching), fields, trait),
-		"negating a condition that doesn't match accepts the node")
-
-	// On a group.
-	sub := gurps.NewFilterGroup(nil)
-	sub.Not = true
-	sub.Children = gurps.FilterNodes{newTextFilterCondition("name", criteria.IsText, "Alertness")}
-	c.False(matchesListFilter(newTestListFilter(sub), fields, trait),
-		"negating a group whose children match rejects the node")
-	sub.Children = gurps.FilterNodes{newTextFilterCondition("name", criteria.IsText, "Acute Vision")}
-	c.True(matchesListFilter(newTestListFilter(sub), fields, trait),
-		"negating a group whose children don't match accepts the node")
-
-	// A negated "is not" is just an "is".
-	negatedIsNot := newTextFilterCondition("name", criteria.IsNotText, "Alertness")
-	negatedIsNot.Not = true
-	plainIs := newTestListFilter(newTextFilterCondition("name", criteria.IsText, "Alertness"))
-	for _, name := range []string{"Alertness", "Acute Vision"} {
-		trait.Name = name
-		c.Equal(matchesListFilter(plainIs, fields, trait),
-			matchesListFilter(newTestListFilter(negatedIsNot), fields, trait),
-			`a negated "is not" behaves as a plain "is" for %q`, name)
-	}
-	trait.Name = "Alertness"
-
-	// And on a list condition, where the criteria's own negation has list semantics of its own.
-	absent := newTextFilterCondition("tags", criteria.DoesNotContainText, "Social")
-	c.True(matchesListFilter(newTestListFilter(absent), fields, trait),
-		`"does not contain" passes when no tag contains the qualifier`)
-	absent.Not = true
-	c.False(matchesListFilter(newTestListFilter(absent), fields, trait),
-		`negating a passing "does not contain" rejects the node`)
-	present := newTextFilterCondition("tags", criteria.DoesNotContainText, "ment")
-	c.False(matchesListFilter(newTestListFilter(present), fields, trait),
-		`"does not contain" fails when a tag contains the qualifier`)
-	present.Not = true
-	c.True(matchesListFilter(newTestListFilter(present), fields, trait),
-		`negating a failing "does not contain" accepts the node`)
 }
 
 // TestListFilterCheckResults verifies that a filter is checked as a list of prerequisites is: a condition is met or
@@ -756,8 +759,16 @@ func suggestingKeys[T gurps.Node[T]](fields []*gurps.FilterField[T]) []string {
 	return keys
 }
 
+// checkPluralFlags verifies that each field is marked plural exactly when its title is among the plural ones.
+func checkPluralFlags[T gurps.Node[T]](c check.Checker, plural map[string]bool, fields []*gurps.FilterField[T]) {
+	c.Helper()
+	for _, field := range fields {
+		c.Equal(plural[field.Title], field.Plural, "%q is marked plural only if it is", field.Title)
+	}
+}
+
 // TestFilterFieldSuggestionSources pins the fields that offer suggestions for a condition's value, so that one gaining
-// or losing them is noticed.
+// or losing them is noticed, and checks that every field is marked plural exactly when its title is.
 func TestFilterFieldSuggestionSources(t *testing.T) {
 	c := check.New(t)
 	c.Equal([]string{"tags", "modifier_names", "modifier_tags", "container_type"},
@@ -771,6 +782,18 @@ func TestFilterFieldSuggestionSources(t *testing.T) {
 	c.Equal([]string{"tags", "tech_level"}, suggestingKeys(gurps.EquipmentModifierFilterFields()),
 		"equipment modifiers")
 	c.Equal([]string{"tags"}, suggestingKeys(gurps.NoteFilterFields()), "notes")
+
+	plural := map[string]bool{
+		"have notes": true, "have points": true, "have levels": true, "have tags": true,
+		"have colleges": true, "have modifier names": true, "have modifier notes": true, "have modifier tags": true,
+	}
+	checkPluralFlags(c, plural, gurps.TraitFilterFields())
+	checkPluralFlags(c, plural, gurps.TraitModifierFilterFields())
+	checkPluralFlags(c, plural, gurps.SkillFilterFields())
+	checkPluralFlags(c, plural, gurps.SpellFilterFields())
+	checkPluralFlags(c, plural, gurps.EquipmentFilterFields())
+	checkPluralFlags(c, plural, gurps.EquipmentModifierFilterFields())
+	checkPluralFlags(c, plural, gurps.NoteFilterFields())
 }
 
 // TestFilterFieldListedValues verifies that a field offering the values found in the list being filtered looks at
@@ -1276,23 +1299,6 @@ func TestListFilterKeyForExtension(t *testing.T) {
 	for _, want := range []string{"adq", "adm", "skl", "spl", "eqp", "eqm", "not"} {
 		c.True(slices.Contains(keys, want), "the keys include %q", want)
 	}
-}
-
-// TestListFilterMatchesEquipmentContainerType verifies that a filter on equipment can tell a group from a physical
-// container, as one on traits can tell their kinds of container apart, and that a piece of equipment that isn't a
-// container has no container type.
-func TestListFilterMatchesEquipmentContainerType(t *testing.T) {
-	c := check.New(t)
-	group := gurps.NewEquipmentGroup(nil, nil)
-	backpack := gurps.NewEquipment(nil, nil, true)
-	item := gurps.NewEquipment(nil, nil, false)
-	isGroup := newTextFilterCondition("container_type", criteria.IsText, "group")
-	isContainer := newTextFilterCondition("container_type", criteria.IsText, "container")
-	fields := gurps.EquipmentFilterFields()
-	c.True(matchesListFilter(newTestListFilter(isGroup), fields, group))
-	c.False(matchesListFilter(newTestListFilter(isGroup), fields, backpack))
-	c.True(matchesListFilter(newTestListFilter(isContainer), fields, backpack))
-	c.False(matchesListFilter(newTestListFilter(isContainer), fields, item), "an item is no kind of container")
 }
 
 // TestListFilterManagementHelpers verifies numbering names that are in use and spotting a filter that is already
