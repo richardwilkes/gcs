@@ -790,7 +790,7 @@ func (e *Equipment) TitleNotes() []string {
 
 func (e *Equipment) titleNotes(before bool) []string {
 	return modifierTitleNotes(appendTitleNotes(nil, e.Replacements, before, e.Features), before, e.Modifiers,
-		e.Replacements, func(mod *EquipmentModifier) Features { return mod.Features })
+		func(mod *EquipmentModifier) Features { return mod.Features })
 }
 
 // ResolveLocalNotes resolves the local notes, running any embedded scripts to get the final result.

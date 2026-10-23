@@ -22,6 +22,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/spellcmp"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/toolbox/v2/check"
+	"github.com/richardwilkes/toolbox/v2/tid"
 	"github.com/richardwilkes/toolbox/v2/xbytes"
 )
 
@@ -416,4 +417,41 @@ func TestSavedCalcTitleModifiers(t *testing.T) {
 	c.Equal("Allies", loadedAllies.Name, "precondition: the last trait is Allies")
 	c.Equal("Allies (With Bob)", loadedAllies.StringWithSavedCalc())
 	c.Equal("Sword (Fine)", loaded.CarriedEquipment[0].String())
+}
+
+// TestModifierTitleNotesFollowNameableLinks checks that a modifier's title notes see its owner's replacements through
+// the modifier's nameable links, as its name does, for both traits and equipment, and that title note criteria match
+// them as shown.
+func TestModifierTitleNotesFollowNameableLinks(t *testing.T) {
+	c := check.New(t)
+	e := NewEntity()
+	allies := addTraitWithFeatures(e, "Allies")
+	allies.Replacements = map[string]string{"Who": "Bob"}
+	friend := newTitleTraitModifier(e, "Friend of @Pal@")
+	friend.Features = Features{newTitleNoteFor("@Pal@ again")}
+	allies.SetModifiers([]*TraitModifier{friend})
+	allies.NameableLinks = map[tid.TID]map[string]string{friend.TID: {"Pal": "Who"}}
+	c.Equal("Friend of Bob", friend.NameWithReplacements(), "precondition: the modifier's name follows the link")
+	keys := make(map[string]string)
+	allies.FillWithNameableKeys(keys, nil)
+	_, found := keys["Pal"]
+	c.False(found, "precondition: the link folds the modifier's code into the trait's, so only the trait's is asked")
+	c.Equal("Allies (Friend of Bob; Bob again)", allies.String())
+
+	p := NewTraitPrereq()
+	p.NameCriteria.Qualifier = "Allies"
+	p.LevelCriteria.Compare = criteria.AnyNumber
+	p.TitleNoteCriteria.Compare = criteria.IsText
+	p.TitleNoteCriteria.Qualifier = "Bob again"
+	c.True(p.Satisfied(e, nil, nil, "", nil), "the linked note is matched as shown")
+
+	sword := addCarriedEquipmentWithFeatures(e, "Sword")
+	sword.Replacements = map[string]string{"Quality": "Fine"}
+	steel := NewEquipmentModifier(e, nil, false)
+	steel.Name = "Made of @Grade@"
+	steel.Features = Features{newTitleNoteFor("@Grade@ steel")}
+	sword.SetModifiers([]*EquipmentModifier{steel})
+	sword.NameableLinks = map[tid.TID]map[string]string{steel.TID: {"Grade": "Quality"}}
+	c.Equal("Made of Fine", steel.NameWithReplacements(), "precondition: the modifier's name follows the link")
+	c.Equal("Sword (Fine steel)", sword.String())
 }

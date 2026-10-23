@@ -1049,7 +1049,7 @@ func (t *Trait) TitleNotes() []string {
 
 func (t *Trait) titleNotes(before bool) []string {
 	return modifierTitleNotes(appendTitleNotes(nil, t.Replacements, before, t.Features), before, t.Modifiers,
-		t.Replacements, func(mod *TraitModifier) Features { return mod.Features })
+		func(mod *TraitModifier) Features { return mod.Features })
 }
 
 // StringWithSavedCalc returns what String returned when the trait was last saved: its name and, when it is leveled, the
