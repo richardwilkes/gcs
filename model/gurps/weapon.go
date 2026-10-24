@@ -687,11 +687,12 @@ func (w *Weapon) EncumbrancePenalty(e *Entity, tooltip *xbytes.InsertBuffer) fxp
 
 // extractSkillBonusForThisWeapon returns the amount of f if it is a skill bonus, carried by the weapon's owner or by
 // the owner's modifier sub, that selects the owner's weapons or names this one, and adds it to the tooltip. damageType
-// is the weapon's resolved damage type.
+// is the weapon's resolved damage type. The owner is claimed first, since it supplies the substitutions the criteria
+// are filled from, as a modifier's do through its links.
 func (w *Weapon) extractSkillBonusForThisWeapon(f Feature, named []*SkillBonus, damageType string, sub fmt.Stringer, tooltip *xbytes.InsertBuffer) fxp.Int {
 	if sb, ok := f.(*SkillBonus); ok {
 		w.claimOwnerBonus(sb, sub)
-		replacements := w.NameableReplacements()
+		replacements := bonusReplacements(sb)
 		var matches bool
 		switch sb.SelectionType.EnsureValid() {
 		case skillsel.ThisWeapon:
@@ -746,20 +747,29 @@ func (w *Weapon) ResolveBoolFlag(switchType wswitch.Type, initial bool) bool {
 // chosen by the override-resolution ladder (priority, then specificity), and, if tooltip is non-nil, the full contest
 // is reported. It reads values kept as Weapon describes.
 func (w *Weapon) ResolveSelector(field selector.Field, base string, tooltip *xbytes.InsertBuffer) string {
+	return w.resolveSelectorFor(&w.Damage, field, base, tooltip)
+}
+
+// resolveSelectorFor is ResolveSelector for the given damage of the weapon, whose type the overrides' damage type
+// criteria match: the weapon's own damage, or a copy of it being resolved on its own data.
+func (w *Weapon) resolveSelectorFor(damage *WeaponDamage, field selector.Field, base string, tooltip *xbytes.InsertBuffer) string {
 	entity := w.Entity()
 	if entity == nil {
 		return base
 	}
-	return ResolveOverride(base, w.collectSelectorOverrides(entity, field), func(s string) string { return s }, tooltip)
+	return ResolveOverride(base, w.collectSelectorOverrides(entity, field, damage), func(s string) string { return s },
+		tooltip)
 }
 
 // collectSelectorOverrides returns the candidates for the given field: the entity's overrides selecting weapons by
 // required skill or by name that match this weapon, and those of the weapon's owner, and of its enabled modifiers, that
-// select the owner's weapons or name this one. The skills the weapon is used with are only resolved when an override
-// selects by them, since this runs for every field of every weapon displayed.
-func (w *Weapon) collectSelectorOverrides(entity *Entity, field selector.Field) []OverrideCandidate[string] {
+// select the owner's weapons or name this one. Their damage type criteria match the type of the given damage. The
+// skills the weapon is used with are only resolved when an override selects by them, since this runs for every field
+// of every weapon displayed.
+func (w *Weapon) collectSelectorOverrides(entity *Entity, field selector.Field, damage *WeaponDamage) []OverrideCandidate[string] {
 	var candidates []OverrideCandidate[string]
 	seen := make(map[*SelectorOverride]bool)
+	damageType := sync.OnceValue(func() string { return damage.typeForOverride(field) })
 	add := func(o *SelectorOverride) {
 		if !seen[o] {
 			seen[o] = true
@@ -774,7 +784,7 @@ func (w *Weapon) collectSelectorOverrides(entity *Entity, field selector.Field) 
 		switch o.SelectionType {
 		case wsel.ThisWeapon: // Collected from the owner below
 		case wsel.WithName:
-			if o.MatchesWeapon(w) {
+			if o.MatchesWeapon(w, damageType) {
 				add(o)
 			}
 		default:
@@ -783,7 +793,6 @@ func (w *Weapon) collectSelectorOverrides(entity *Entity, field selector.Field) 
 	}
 	if len(bySkill) != 0 {
 		usage := w.UsageWithReplacements()
-		damageType := w.ownDamageType()
 		tags := w.Owner.TagList()
 		w.forEachRequiredSkill(entity, func(name, specialization string) {
 			rsl := sync.OnceValue(func() fxp.Int { return entity.relativeSkillLevel(name, specialization) })
@@ -795,11 +804,11 @@ func (w *Weapon) collectSelectorOverrides(entity *Entity, field selector.Field) 
 		})
 	}
 	for _, f := range w.Owner.ActiveFeatures() {
-		w.extractSelectorOverride(f, field, nil, add)
+		w.extractSelectorOverride(f, field, damageType, nil, add)
 	}
 	w.forEachOwnerModifier(func(mod ownerModifier, active Features) {
 		for _, f := range active {
-			w.extractSelectorOverride(f, field, mod, add)
+			w.extractSelectorOverride(f, field, damageType, mod, add)
 		}
 	})
 	return candidates
@@ -822,10 +831,11 @@ func (w *Weapon) claimOwnerBonus(bonus ownerBonus, sub fmt.Stringer) {
 }
 
 // extractSelectorOverride hands f to add if it is an override of the given field, carried by the weapon's owner or by
-// the owner's modifier sub, that selects the owner's weapons or names this one. The owner is set first: an override of
-// equipment that isn't equipped never reaches the entity's lists, so nothing else sets it, and it supplies the
-// substitutions the criteria are filled from and the name the tooltip reports.
-func (w *Weapon) extractSelectorOverride(f Feature, field selector.Field, sub fmt.Stringer, add func(*SelectorOverride)) {
+// the owner's modifier sub, that selects the owner's weapons or names this one. damageType supplies the damage type its
+// criterion matches, as collectSelectorOverrides describes. The owner is set first: an override of equipment that isn't
+// equipped never reaches the entity's lists, so nothing else sets it, and it supplies the substitutions the criteria
+// are filled from and the name the tooltip reports.
+func (w *Weapon) extractSelectorOverride(f Feature, field selector.Field, damageType func() string, sub fmt.Stringer, add func(*SelectorOverride)) {
 	o, ok := f.(*SelectorOverride)
 	if !ok || o.Field != field {
 		return
@@ -834,11 +844,11 @@ func (w *Weapon) extractSelectorOverride(f Feature, field selector.Field, sub fm
 	o.SetSubOwner(sub)
 	switch o.SelectionType {
 	case wsel.ThisWeapon:
-		if o.matchesThisWeapon(w) {
+		if o.matchesThisWeapon(w, damageType) {
 			add(o)
 		}
 	case wsel.WithName:
-		if o.MatchesWeapon(w) {
+		if o.MatchesWeapon(w, damageType) {
 			add(o)
 		}
 	default: // Selected by required skill, which only the entity's lists resolve
@@ -874,9 +884,14 @@ func (w *Weapon) collectWeaponBonuses(dieCount dieCountFunc, tooltip *xbytes.Ins
 	if entity == nil {
 		return nil
 	}
+	return collectWeaponBonusesFrom(w.applicableWeaponBonuses(entity), dieCount, tooltip, allowedFeatureTypes...)
+}
+
+// collectWeaponBonusesFrom is collectWeaponBonuses over the given bonuses rather than those that apply to the weapon.
+func collectWeaponBonusesFrom(bonuses []*WeaponBonus, dieCount dieCountFunc, tooltip *xbytes.InsertBuffer, allowedFeatureTypes ...feature.Type) []*WeaponBonus {
 	dieCount = sync.OnceValue(dieCount) // At most one resolution per collection, no matter how many bonuses match
 	var result []*WeaponBonus
-	for _, bonus := range w.applicableWeaponBonuses(entity) {
+	for _, bonus := range bonuses {
 		if !slices.Contains(allowedFeatureTypes, bonus.Type) {
 			continue
 		}
@@ -897,7 +912,7 @@ func (w *Weapon) applicableWeaponBonuses(entity *Entity) []*WeaponBonus {
 	if m != nil && m.hasBonuses {
 		return m.bonuses
 	}
-	bonuses := w.findWeaponBonuses(entity)
+	bonuses := w.findWeaponBonuses(entity, w.Damage.resolvedType(nil))
 	if m != nil {
 		m.bonuses = bonuses
 		m.hasBonuses = true
@@ -905,8 +920,9 @@ func (w *Weapon) applicableWeaponBonuses(entity *Entity) []*WeaponBonus {
 	return bonuses
 }
 
-// findWeaponBonuses is applicableWeaponBonuses without the memo.
-func (w *Weapon) findWeaponBonuses(entity *Entity) []*WeaponBonus {
+// findWeaponBonuses is applicableWeaponBonuses without the memo, for a weapon whose damage is of the given type, as the
+// overrides resolve it. That is the weapon's own, except when resolving a copy of its damage whose type differs.
+func (w *Weapon) findWeaponBonuses(entity *Entity, damageType string) []*WeaponBonus {
 	var result []*WeaponBonus
 	seen := make(map[*WeaponBonus]bool)
 	add := func(bonus *WeaponBonus) {
@@ -917,7 +933,6 @@ func (w *Weapon) findWeaponBonuses(entity *Entity) []*WeaponBonus {
 	}
 	tags := w.Owner.TagList()
 	usage := w.UsageWithReplacements()
-	damageType := w.Damage.resolvedType(nil)
 	// Finding the skill the weapon is used with takes several walks of the skills, so it is only done when a bonus
 	// that selects weapons by that skill exists to collect.
 	if entity.hasWeaponBonusesBySkill() {
@@ -1037,14 +1052,16 @@ func matchesRequiredSkillName(name criteria.Text, replacements map[string]string
 }
 
 // extractWeaponBonus hands f to add if it is a weapon bonus, carried by the weapon's owner or by the owner's modifier
-// sub, that selects the owner's weapons or names this one. damageType is the weapon's resolved damage type.
+// sub, that selects the owner's weapons or names this one. damageType is the weapon's resolved damage type. The owner
+// is claimed first, since it supplies the substitutions the criteria are filled from, as a modifier's do through its
+// links.
 func (w *Weapon) extractWeaponBonus(f Feature, damageType string, sub fmt.Stringer, add func(*WeaponBonus)) {
 	bonus, ok := f.(*WeaponBonus)
 	if !ok {
 		return
 	}
 	w.claimOwnerBonus(bonus, sub)
-	replacements := w.NameableReplacements()
+	replacements := bonusReplacements(bonus)
 	switch bonus.SelectionType {
 	case wsel.WithRequiredSkill: // Selected by required skill, which only the entity's lists resolve
 	case wsel.ThisWeapon:
@@ -1062,11 +1079,6 @@ func (w *Weapon) extractWeaponBonus(f Feature, damageType string, sub fmt.String
 	default:
 		errs.Log(errs.New("unknown selection type"), "type", int(bonus.SelectionType))
 	}
-}
-
-// ownDamageType returns the damage type of the weapon itself, before any selector override, as the overrides match it.
-func (w *Weapon) ownDamageType() string {
-	return strings.TrimSpace(w.Damage.Type)
 }
 
 // UsageWithReplacements returns the usage of the weapon with any nameable keys replaced.

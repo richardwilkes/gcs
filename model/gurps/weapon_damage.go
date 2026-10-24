@@ -172,7 +172,7 @@ func (w *WeaponDamage) resolvedStrengthType(tooltip *xbytes.InsertBuffer) stdmg.
 	if w.Owner == nil {
 		return w.StrengthType
 	}
-	return stdmg.ExtractOption(w.Owner.ResolveSelector(selector.WeaponDamageStrengthBasis, w.StrengthType.Key(),
+	return stdmg.ExtractOption(w.Owner.resolveSelectorFor(w, selector.WeaponDamageStrengthBasis, w.StrengthType.Key(),
 		tooltip))
 }
 
@@ -181,12 +181,22 @@ func (w *WeaponDamage) resolvedType(tooltip *xbytes.InsertBuffer) string {
 	return strings.TrimSpace(w.resolvedDamageString(selector.WeaponDamageType, w.Type, tooltip))
 }
 
+// typeForOverride returns the damage type that an override of the given field matches its damage type criterion
+// against: the type as the overrides resolve it, except for an override of the damage type itself, which matches the
+// damage's own type, since resolving the type would consult that very override.
+func (w *WeaponDamage) typeForOverride(field selector.Field) string {
+	if field == selector.WeaponDamageType {
+		return strings.TrimSpace(w.Type)
+	}
+	return w.resolvedType(nil)
+}
+
 // resolvedDamageString returns a string-valued damage field after applying any matching selector override.
 func (w *WeaponDamage) resolvedDamageString(field selector.Field, base string, tooltip *xbytes.InsertBuffer) string {
 	if w.Owner == nil {
 		return base
 	}
-	return w.Owner.ResolveSelector(field, base, tooltip)
+	return w.Owner.resolveSelectorFor(w, field, base, tooltip)
 }
 
 // resolvedDamageNumeric returns a numeric damage field after applying any matching selector override. The override
@@ -195,7 +205,7 @@ func (w *WeaponDamage) resolvedDamageNumeric(field selector.Field, base fxp.Int,
 	if w.Owner == nil {
 		return base
 	}
-	if v, err := fxp.FromString(w.Owner.ResolveSelector(field, base.String(), tooltip)); err == nil {
+	if v, err := fxp.FromString(w.Owner.resolveSelectorFor(w, field, base.String(), tooltip)); err == nil {
 		return v
 	}
 	return base
@@ -348,8 +358,16 @@ func (w *WeaponDamage) resolveDamage(tooltip *xbytes.InsertBuffer) *ResolvedWeap
 	// Already resolved here, so handed over rather than resolved again. It is this damage's own count, which for a copy
 	// may differ from that of the weapon AdjustedForWeapon would consult.
 	dieCount := fxp.FromInteger(base.Count)
-	for _, bonus := range w.Owner.collectWeaponBonuses(func() fxp.Int { return dieCount }, tooltip, feature.WeaponBonus,
-		feature.WeaponDRDivisorBonus) {
+	// Which bonuses apply depends on the damage type, so a copy, whose type may differ from the weapon's, finds its own
+	// rather than taking those the weapon's memo holds.
+	var bonuses []*WeaponBonus
+	if w.isOwnersDamage() {
+		bonuses = w.Owner.applicableWeaponBonuses(entity)
+	} else {
+		bonuses = w.Owner.findWeaponBonuses(entity, w.resolvedType(nil))
+	}
+	for _, bonus := range collectWeaponBonusesFrom(bonuses, func() fxp.Int { return dieCount }, tooltip,
+		feature.WeaponBonus, feature.WeaponDRDivisorBonus) {
 		switch bonus.Type {
 		case feature.WeaponBonus:
 			d, amt := bonus.adjustedForDieCount(dieCount)
@@ -407,7 +425,7 @@ func (w *WeaponDamage) resolveDamage(tooltip *xbytes.InsertBuffer) *ResolvedWeap
 			resolved.Fragmentation = d
 			resolved.FragmentationArmorDivisor = w.resolvedDamageNumeric(selector.WeaponFragmentationArmorDivisor,
 				w.FragmentationArmorDivisor, tooltip)
-			resolved.FragmentationType = strings.TrimSpace(w.Owner.ResolveSelector(selector.WeaponFragmentationType,
+			resolved.FragmentationType = strings.TrimSpace(w.Owner.resolveSelectorFor(w, selector.WeaponFragmentationType,
 				w.FragmentationType, tooltip))
 		}
 	}

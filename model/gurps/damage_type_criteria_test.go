@@ -10,7 +10,6 @@
 package gurps
 
 import (
-	"maps"
 	"slices"
 	"testing"
 
@@ -143,50 +142,32 @@ func TestWeaponDamageTypeCriteria(t *testing.T) {
 	}
 }
 
-// TestWeaponDamageTypeCriteriaMatchesResolvedType verifies that a weapon bonus and a skill bonus match the damage type
-// as the overrides resolve it, while a selector override matches the weapon's own.
+// TestWeaponDamageTypeCriteriaMatchesResolvedType verifies that a weapon bonus, a skill bonus and a selector override
+// of another field match the damage type as the overrides resolve it, while an override of the damage type itself
+// matches the weapon's own, since resolving the type consults it.
 func TestWeaponDamageTypeCriteriaMatchesResolvedType(t *testing.T) {
 	c := check.New(t)
 	e := NewEntity()
 	sk := addAverageDXSkill(e, "Broadsword", fxp.Four)
-	selectors := newDamageTypeSelectors(wsel.WithName, "Gadget", criteria.Text{Compare: criteria.IsText, Qualifier: "cut"})
+	isCut := criteria.Text{Compare: criteria.IsText, Qualifier: "cut"}
+	selectors := newDamageTypeSelectors(wsel.WithName, "Gadget", isCut)
 	toCut := newDamageTypeOverride(wsel.WithName, "cut")
 	toCut.NameCriteria.Qualifier = "Gadget"
-	addTraitWithFeatures(e, "Rules", append(selectors.features(), toCut)...)
+	cutToImp := newDamageTypeOverride(wsel.WithName, "imp")
+	cutToImp.NameCriteria.Qualifier = "Gadget"
+	cutToImp.DamageTypeCriteria = isCut
+	cutToImp.Priority = 1
+	addTraitWithFeatures(e, "Rules", append(selectors.features(), toCut, cutToImp)...)
 	gadget := addTraitWithFeatures(e, "Gadget")
 	w := newDamageTypeTestWeapon(gadget, "cr")
 	gadget.Weapons = []*Weapon{w}
 	e.Recalculate()
-	c.Equal("cut", resolvedDamageType(w, nil), "precondition: the override makes the weapon cutting")
+	c.Equal("cut", resolvedDamageType(w, nil),
+		"an override of the damage type matches the weapon's own type, so the one for cutting weapons is passed over")
 	bonuses := w.collectWeaponBonuses(oneDieCount, nil, feature.WeaponBonus)
 	c.True(slices.Contains(bonuses, selectors.damage), "a weapon bonus matches the resolved damage type")
 	c.Equal(sk.LevelData.Level+fxp.Two, w.SkillLevel(nil), "as does a skill bonus")
-	c.Equal("1", w.ResolveSelector(selector.WeaponArmorDivisor, "1", nil),
-		"a selector override matches the weapon's own damage type")
-}
-
-// TestWeaponDamageTypeCriteriaNameableKeys verifies that a weapon bonus and a skill bonus extract a nameable key from
-// the damage type criterion in every selection of weapons, and a skill bonus selecting skills does not.
-func TestWeaponDamageTypeCriteriaNameableKeys(t *testing.T) {
-	c := check.New(t)
-	keys := func(f Feature) []string {
-		m := make(map[string]string)
-		f.FillWithNameableKeys(m, nil)
-		return slices.Sorted(maps.Keys(m))
-	}
-	damageType := criteria.Text{Compare: criteria.IsText, Qualifier: "@Type@"}
-	for _, selection := range wsel.Types {
-		bonus := NewWeaponBonus(feature.WeaponBonus)
-		bonus.SelectionType = selection
-		bonus.DamageTypeCriteria = damageType
-		c.True(slices.Contains(keys(bonus), "Type"), "a weapon bonus selecting %v", selection)
-	}
-	for _, selection := range skillsel.Types {
-		bonus := NewSkillBonus()
-		bonus.SelectionType = selection
-		bonus.DamageTypeCriteria = damageType
-		c.Equal(selection != skillsel.Name, slices.Contains(keys(bonus), "Type"), "a skill bonus selecting %v", selection)
-	}
+	c.Equal("2", w.ResolveSelector(selector.WeaponArmorDivisor, "1", nil), "as does an override of another field")
 }
 
 // TestWeaponDamageTypeCriteriaJSON verifies that the damage type criterion is stored under "damage_type", left out

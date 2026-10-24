@@ -210,21 +210,16 @@ func (w *WeaponBonus) scaleFactor(dieCount fxp.Int, leveledOwner LeveledOwner) (
 	return factor, true
 }
 
-// FillWithNameableKeys implements Feature.
+// FillWithNameableKeys implements Feature. Only the criteria the selection consults contribute keys: the specialization
+// criterion holds the usage except when selecting by required skill, where the usage criterion does, and the optional
+// specialization is never consulted.
 func (w *WeaponBonus) FillWithNameableKeys(m, existing map[string]string) {
-	nameable.Extract(
-		m, existing,
-		w.SpecializationCriteria.Qualifier,
-		w.OptionalSpecializationCriteria.Qualifier,
-		w.DamageTypeCriteria.Qualifier,
-	)
+	nameable.Extract(m, existing, w.SpecializationCriteria.Qualifier, w.DamageTypeCriteria.Qualifier)
 	if w.SelectionType != wsel.ThisWeapon {
-		nameable.Extract(
-			m, existing,
-			w.NameCriteria.Qualifier,
-			w.UsageCriteria.Qualifier,
-			w.TagsCriteria.Qualifier,
-		)
+		nameable.Extract(m, existing, w.NameCriteria.Qualifier, w.TagsCriteria.Qualifier)
+	}
+	if w.SelectionType == wsel.WithRequiredSkill {
+		nameable.Extract(m, existing, w.UsageCriteria.Qualifier)
 	}
 	if w.SelectionType == wsel.WithName {
 		w.fillWithNameableKeys(m, existing)

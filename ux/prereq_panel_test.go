@@ -1414,7 +1414,8 @@ func TestPrereqPanelEquippedEquipmentTags(t *testing.T) {
 
 // TestPrereqPanelSpellTagsAndColleges checks that the qualifier field of a spell prerequisite matching by tag or by
 // college says how to match any of several, since it matches each of the comma-separated entries in turn, while one
-// matching by name, which takes the qualifier whole, says nothing of the kind.
+// matching by name, which takes the qualifier whole, says nothing of the kind, and that a match that doesn't use the
+// qualifier clears it along with its field.
 func TestPrereqPanelSpellTagsAndColleges(t *testing.T) {
 	c := check.New(t)
 	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
@@ -1445,6 +1446,23 @@ func TestPrereqPanelSpellTagsAndColleges(t *testing.T) {
 				c.Nil(field.Tooltip, "%v: whose field has no tooltip", subType)
 			}
 		})
+		if subType != spellcmp.Name {
+			continue
+		}
+		screen.Do(func() {
+			popup, ok := refKeySelf(p.AsPanel(), path+":match").(*unison.PopupMenu[spellcmp.Type])
+			c.True(ok, "the prerequisite has a match popup")
+			if ok {
+				popup.Select(spellcmp.Any)
+			}
+		})
+		changed, ok := root.Prereqs[i].(*gurps.SpellPrereq)
+		c.True(ok, "the prerequisite is still a spell prerequisite")
+		if ok {
+			c.Equal(criteria.Text{Compare: criteria.IsText}, changed.QualifierCriteria,
+				"matching any spell clears the qualifier")
+		}
+		screen.Do(func() { c.Nil(p.FindRefKey(path+":qualifier"), "along with its field") })
 	}
 }
 

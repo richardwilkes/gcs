@@ -60,8 +60,9 @@ type SelectorOverride struct {
 // SelectorOverrideData is the persisted portion. SelectionType says how a weapon-scoped override selects its weapons
 // and is ignored by a trait-scoped one. The specialization and relative level criteria only take part when selecting
 // by required skill and the owner criteria only when selecting by name; the usage and damage type criteria do in every
-// selection, unlike a weapon bonus's usage. The damage type criterion matches the weapon's own damage type, not one
-// another override gives it, since finding that would match the overrides of the damage type, this one among them.
+// selection, unlike a weapon bonus's usage. The damage type criterion matches the damage type as the overrides resolve
+// it, except on an override of the damage type itself, which matches the weapon's own type, since resolving the type
+// would consult that very override.
 type SelectorOverrideData struct { //nolint:govet // Field order is kept readable for the on-disk JSON rather than packed
 	Type feature.Type `json:"type"`
 	FeatureSwitch
@@ -173,37 +174,45 @@ func (o *SelectorOverride) OverrideSpecificity() int {
 }
 
 // MatchesWeapon returns true if this override's name, usage, damage type, tag and owner criteria match the given
-// weapon, which is how an override selecting weapons by name picks them. The criteria are filled from the override
-// owner's substitutions, as with any bonus. The caller is responsible for checking that the override targets the field
-// it is interested in.
-func (o *SelectorOverride) MatchesWeapon(w *Weapon) bool {
+// weapon, which is how an override selecting weapons by name picks them. damageType supplies the weapon's damage type,
+// as WeaponDamage.typeForOverride does for this override's field, and is only called when the criterion constrains it,
+// since finding the type may mean resolving the weapon's overrides. The criteria are filled from the override owner's
+// substitutions, as with any bonus. The caller is responsible for checking that the override targets the field it is
+// interested in.
+func (o *SelectorOverride) MatchesWeapon(w *Weapon, damageType func() string) bool {
 	replacements := bonusReplacements(o)
 	return w.matchesName(o.NameCriteria, &o.WeaponOwnerCriteria, replacements) &&
 		o.UsageCriteria.Matches(replacements, w.UsageWithReplacements()) &&
-		o.DamageTypeCriteria.MatchesList(replacements, w.ownDamageType()) &&
+		o.matchesDamageType(replacements, damageType) &&
 		o.TagsCriteria.MatchesList(replacements, w.Owner.TagList()...)
 }
 
 // matchesThisWeapon returns true if this override, carried by the weapon's owner and selecting that owner's weapons,
-// applies to the given weapon: only the usage and damage type criteria take part.
-func (o *SelectorOverride) matchesThisWeapon(w *Weapon) bool {
+// applies to the given weapon: only the usage and damage type criteria take part. damageType is as for MatchesWeapon.
+func (o *SelectorOverride) matchesThisWeapon(w *Weapon, damageType func() string) bool {
 	replacements := bonusReplacements(o)
 	return o.UsageCriteria.Matches(replacements, w.UsageWithReplacements()) &&
-		o.DamageTypeCriteria.MatchesList(replacements, w.ownDamageType())
+		o.matchesDamageType(replacements, damageType)
 }
 
 // matchesRequiredSkill returns true if this override, selecting weapons by their required skill, matches a weapon
-// with the given usage, damage type and tags that is used with the named skill, which is empty when the weapon uses
-// none. rsl supplies that skill's relative level, and is only called when the relative level criterion constrains it,
-// since finding it means walking the skills.
-func (o *SelectorOverride) matchesRequiredSkill(name, specialization, usage, damageType string, tags []string, rsl func() fxp.Int) bool {
+// with the given usage and tags that is used with the named skill, which is empty when the weapon uses none.
+// damageType is as for MatchesWeapon, and rsl supplies that skill's relative level, called only when the relative level
+// criterion constrains it, since finding it means walking the skills.
+func (o *SelectorOverride) matchesRequiredSkill(name, specialization, usage string, damageType func() string, tags []string, rsl func() fxp.Int) bool {
 	replacements := bonusReplacements(o)
 	return matchesRequiredSkillName(o.NameCriteria, replacements, name) &&
 		o.SpecializationCriteria.Matches(replacements, specialization) &&
 		o.UsageCriteria.Matches(replacements, usage) &&
-		o.DamageTypeCriteria.MatchesList(replacements, damageType) &&
+		o.matchesDamageType(replacements, damageType) &&
 		o.TagsCriteria.MatchesList(replacements, tags...) &&
 		(o.RelativeLevelCriteria.IsZero() || o.RelativeLevelCriteria.Matches(rsl()))
+}
+
+// matchesDamageType reports whether the damage type criterion matches the damage type that damageType supplies, which
+// is only called when the criterion constrains it, since finding the type may mean resolving the weapon's overrides.
+func (o *SelectorOverride) matchesDamageType(replacements map[string]string, damageType func() string) bool {
+	return o.DamageTypeCriteria.IsZero() || o.DamageTypeCriteria.MatchesList(replacements, damageType())
 }
 
 // MatchesTrait returns true if this override's criteria match the given trait. Traits have no usage, so only the name

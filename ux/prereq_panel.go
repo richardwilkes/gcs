@@ -537,7 +537,14 @@ func (p *prereqPanel) editor(pr gurps.Prereq, path string) *unison.Panel {
 					return i18n.Text("from")
 				}
 				return t.String()
-			}, func(t spellcmp.Type) { one.SubType = t }))
+			}, func(t spellcmp.Type) {
+				one.SubType = t
+				// A match that doesn't use the qualifier clears it along with its field, so a file doesn't keep what no
+				// field shows.
+				if !t.UsesStringCriteria() {
+					one.QualifierCriteria = criteria.Text{Compare: criteria.IsText}
+				}
+			}))
 		if colleges {
 			quantity()
 			addJoiningWords(fields, i18n.Text("college(s)"))

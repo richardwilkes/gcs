@@ -70,13 +70,14 @@ func (s *SkillBonus) Clone() Feature {
 	return clonePtr(s)
 }
 
-// FillWithNameableKeys implements Feature.
+// FillWithNameableKeys implements Feature. Only the criteria the selection consults contribute keys: the specialization
+// criterion holds the usage when the bonus selects weapons, and only a selection of skills by name has an optional
+// specialization.
 func (s *SkillBonus) FillWithNameableKeys(m, existing map[string]string) {
-	nameable.Extract(
-		m, existing,
-		s.SpecializationCriteria.Qualifier,
-		s.OptionalSpecializationCriteria.Qualifier,
-	)
+	nameable.Extract(m, existing, s.SpecializationCriteria.Qualifier)
+	if s.SelectionType == skillsel.Name {
+		nameable.Extract(m, existing, s.OptionalSpecializationCriteria.Qualifier)
+	}
 	if s.SelectionType != skillsel.ThisWeapon {
 		nameable.Extract(
 			m, existing,
