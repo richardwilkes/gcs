@@ -271,7 +271,8 @@ func (s *editorShell) UndoManager() *unison.UndoManager {
 }
 
 func (s *editorShell) CloseWithGroup(other unison.Paneler) bool {
-	return s.owner != nil && s.owner == other
+	// An owner standing in for a panel, as for a grant's item, closes with that panel.
+	return s.owner != nil && s.owner.AsPanel() == other.AsPanel()
 }
 
 func (s *editorShell) MayAttemptClose() bool {

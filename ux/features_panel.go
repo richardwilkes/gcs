@@ -76,6 +76,8 @@ type featuresPanel struct {
 	// damageField). It is kept here, rather than with the controls, so that it lasts while the panel is rebuilt.
 	percentSuspended     map[*gurps.WeaponBonus]bool
 	forEquipmentModifier bool
+	// grantPicking is the path of the grant whose picker was opened to choose a different item.
+	grantPicking string
 }
 
 // featuresState is the data a snapshot of the panel holds: the features, and the indexes of those whose "as a %" is
@@ -97,6 +99,7 @@ func newFeaturesPanel(entity *gurps.Entity, owner fmt.Stringer, features *gurps.
 	p.initRows(featureDragKey, p.build, p.state, p.setState, p.dataHash)
 	p.initCollapse(border, len(*features) != 0)
 	p.initDrop(p.dropAt, p.drop)
+	p.initGrantDrop()
 	p.build()
 	return p
 }
@@ -239,10 +242,20 @@ func (p *featuresPanel) moreEntries(path string) []menuEntry {
 	from := path + keyMore
 	entries := []menuEntry{{Label: i18n.Text("Duplicate"), Act: func() {
 		p.restructure(i18n.Text("Duplicate Feature"), from, "", func() int {
-			*p.features = slices.Insert(*p.features, i+1, (*p.features)[i].Clone())
+			dup := (*p.features)[i].Clone()
+			if g, ok := dup.(*gurps.Grant); ok {
+				g.RenewKey()
+			}
+			*p.features = slices.Insert(*p.features, i+1, dup)
 			return i + 1
 		})
 	}}}
+	if g, ok := (*p.features)[i].(*gurps.Grant); ok {
+		title := i18n.Text("Sync Granted Item with Source")
+		entries = append(entries, menuEntry{Label: title, Disabled: !g.ItemHasSource(), Act: func() {
+			p.edit(title, from, from, g.SyncItemWithSource)
+		}})
+	}
 	titles := []string{i18n.Text("Move Up"), i18n.Text("Move Down")}
 	for k, j := range []int{i - 1, i + 1} {
 		if j < 0 || j >= len(*p.features) {
@@ -275,20 +288,25 @@ func (p *featuresPanel) dropAt(where geom.Point, data any) (target *unison.Panel
 	if p.index(from) < 0 {
 		return nil, 0
 	}
-	for target = p.PanelAt(where); target != nil && target != p.AsPanel(); target = target.Parent() {
-		path, isRow := target.ClientData()[featureDropKey].(string)
-		if !isRow {
-			continue
-		}
-		if path == from {
-			return nil, 0
-		}
-		if target.PointFromRoot(p.PointToRoot(where)).Y < target.FrameRect().Height/2 {
-			return target, dropBefore
-		}
-		return target, dropAfter
+	target, path, at := p.rowAt(where)
+	if path == from {
+		return nil, 0
 	}
-	return nil, 0
+	return target, at
+}
+
+// rowAt returns the feature row at where, with its path and which half of it where is in, or nil when where isn't over
+// a row.
+func (p *featuresPanel) rowAt(where geom.Point) (target *unison.Panel, path string, at int) {
+	for target = p.PanelAt(where); target != nil && target != p.AsPanel(); target = target.Parent() {
+		if rowPath, isRow := target.ClientData()[featureDropKey].(string); isRow {
+			if target.PointFromRoot(p.PointToRoot(where)).Y < target.FrameRect().Height/2 {
+				return target, rowPath, dropBefore
+			}
+			return target, rowPath, dropAfter
+		}
+	}
+	return nil, "", 0
 }
 
 // drop moves the dragged feature to where it would go.
@@ -511,6 +529,8 @@ func (p *featuresPanel) editor(f gurps.Feature, path string) *unison.Panel {
 		p.addCompact(fields, field.withoutUndo())
 	case *gurps.SelectorOverride:
 		p.selectorOverride(fields, chips, path, one)
+	case *gurps.Grant:
+		p.grant(fields, box, chips, path, one)
 	case *gurps.TitleNote:
 		p.textField(fields, key("text"), i18n.Text("Title Note"), i18n.Text("Title Note"), &one.Text, nil)
 		p.optional(chips, path, "before", i18n.Text("+ before built-in notes"), i18n.Text("Place Before Built-in Notes"),
@@ -558,7 +578,7 @@ type featureTypeEntry struct {
 func featureTypeGroups() []string {
 	return []string{
 		i18n.Text("Attributes and Traits"), i18n.Text("Skills and Spells"), i18n.Text("Defense"),
-		i18n.Text("Weapons"), i18n.Text("Equipment"), i18n.Text("Other"),
+		i18n.Text("Weapons"), i18n.Text("Equipment"), i18n.Text("Grants"), i18n.Text("Other"),
 	}
 }
 
@@ -566,6 +586,9 @@ func featureTypeGroups() []string {
 func featureTypeGroup(t feature.Type) int {
 	if t.IsWeaponBonus() {
 		return 3
+	}
+	if gurps.IsGrant(t) {
+		return 5
 	}
 	switch t {
 	case feature.SkillBonus, feature.SkillPointBonus, feature.SpellBonus, feature.SpellPointBonus:
@@ -577,7 +600,7 @@ func featureTypeGroup(t feature.Type) int {
 	case feature.EquipmentMaxUsesBonus, feature.ContainedWeightReduction:
 		return 4
 	case feature.TitleNote:
-		return 5
+		return 6
 	default:
 		return 0
 	}
@@ -1132,6 +1155,8 @@ func (p *featuresPanel) createFeatureForType(featureType feature.Type) gurps.Fea
 		bonus = gurps.NewConditionalModifierBonus()
 	case feature.ContainedWeightReduction:
 		return gurps.NewContainedWeightReduction()
+	case feature.GrantTrait, feature.GrantSkill, feature.GrantSpell:
+		return gurps.NewGrant(featureType)
 	case feature.CostReduction:
 		return gurps.NewCostReduction(lastAttributeIDUsed)
 	case feature.TitleNote:

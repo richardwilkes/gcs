@@ -48,6 +48,10 @@ var (
 	calculatorData string
 	Calculator     = unison.MustSVGFromContentString(calculatorData)
 
+	//go:embed chain_link.svg
+	chainLinkData string
+	ChainLink     = unison.MustSVGFromContentString(chainLinkData)
+
 	//go:embed circled_minus.svg
 	circledMinusData string
 	CircledMinus     = unison.MustSVGFromContentString(circledMinusData)

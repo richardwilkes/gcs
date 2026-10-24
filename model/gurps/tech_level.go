@@ -23,6 +23,23 @@ type TechLevelProvider interface {
 	SetTL(tl string)
 }
 
+// ResolveEmptyTechLevel replaces an empty (but present) tech level with defaultTechLevel. This is the substitution
+// performed when a row is dropped onto a sheet, when a template's rows are merged into one and when a grant puts a row
+// on a sheet, so all of them must agree.
+func ResolveEmptyTechLevel(item TechLevelProvider, defaultTechLevel string) {
+	if item.RequiresTL() && item.TL() == "" {
+		item.SetTL(defaultTechLevel)
+	}
+}
+
+// sameTechLevel reports whether two rows' tech levels match for merge purposes: both absent, or both present and equal.
+func sameTechLevel(a, b TechLevelProvider) bool {
+	if a.RequiresTL() != b.RequiresTL() {
+		return false
+	}
+	return !a.RequiresTL() || a.TL() == b.TL()
+}
+
 // TechLevelInfo returns a string describing the various tech levels.
 func TechLevelInfo() string {
 	return i18n.Text(`TL0: Stone Age (Prehistory)

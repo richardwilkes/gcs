@@ -103,7 +103,7 @@ func (p *SkillPrereq) Satisfied(entity *Entity, exclude any, tooltip *xbytes.Ins
 	specialization := p.SpecializationCriteria.Matcher(replacements)
 	optionalSpecialization := p.OptionalSpecializationCriteria.Matcher(replacements)
 	Traverse(func(sk *Skill) bool {
-		if exclude == sk {
+		if excludedFromPrereqs(exclude, sk) {
 			return false
 		}
 		if !name.Matches(sk.NameWithReplacements()) ||

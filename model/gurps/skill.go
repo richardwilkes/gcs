@@ -96,11 +96,13 @@ type Skill struct {
 	// of equipment they require to be equipped, so that the next pass applies the missing-equipment penalty to its
 	// level (see Entity.applyEquipmentPenalties). It is never saved.
 	takesEquipmentPenalty bool
+	grant                 grantState
 }
 
 // SkillData holds the Skill data that is written to disk.
 type SkillData struct {
 	SourcedID
+	Granted *GrantedBy `json:"granted_by,omitempty"`
 	SkillEditData
 	ThirdParty map[string]any `json:"third_party,omitempty"`
 	Children   []*Skill       `json:"children,omitempty"` // Only for containers
@@ -327,6 +329,7 @@ func (s *Skill) Clone(from LibraryFile, owner DataOwner, parent *Skill, mode Clo
 	other.AdjustSource(from, s.SourcedID, mode)
 	other.ThirdParty = s.ThirdParty
 	other.copyFrom(other, &s.SkillEditData, s.Container(), false, mode, s.IsTechnique())
+	other.Granted = cloneGrantedBy(s.Granted, other)
 	if EntityFromNode(other) == nil {
 		// Disabling only means something on a sheet.
 		other.SetDisabled(false)
@@ -424,7 +427,10 @@ func (s *Skill) CellData(columnID int, data *CellData) {
 	case SkillDescriptionColumn:
 		data.Type = cell.Text
 		data.Primary = s.String()
-		data.Disabled = data.Dim
+		// A granted one whose grant is not in effect is dimmed but not struck through.
+		data.Disabled = data.Dim && !s.grantNotInEffect()
+		data.GrantedBy = grantedByText(s.Granted, &s.grant)
+		data.Grants = EntityFromNode(s).grantSummary(s)
 		data.Secondary = s.SecondaryText(func(option display.Option) bool { return option.Inline() })
 		data.UnsatisfiedReason = s.UnsatisfiedReason
 		data.Tooltip = s.SecondaryText(func(option display.Option) bool { return option.Tooltip() })
@@ -710,12 +716,16 @@ func (s *Skill) AdjustedPoints(tooltip *xbytes.InsertBuffer) fxp.Int {
 		}
 		var total fxp.Int
 		for _, one := range s.Children {
-			total += one.AdjustedPoints(nil)
+			// A granted skill costs nothing, whatever points its tier stands for.
+			if one.Granted == nil {
+				total += one.AdjustedPoints(nil)
+			}
 		}
 		return total
 	}
-	return AdjustedPointsForNonContainerSkillOrTechnique(EntityFromNode(s), s.Points, s.NameWithReplacements(),
-		s.SpecializationWithReplacements(), s.OptionalSpecializationWithReplacements(), s.Tags, tooltip)
+	return s.grant.applyPoints(AdjustedPointsForNonContainerSkillOrTechnique(EntityFromNode(s), s.Points,
+		s.NameWithReplacements(), s.SpecializationWithReplacements(), s.OptionalSpecializationWithReplacements(), s.Tags,
+		tooltip), tooltip)
 }
 
 // AdjustedDifficulty returns the difficulty, adjusted in case of an optional specialization.
@@ -736,7 +746,8 @@ func (s *Skill) AdjustedDifficulty() AttributeDifficulty {
 // fills it: the notes name each bonus source without saying which row it landed on, so rolling up a container's
 // children would give an unattributed, repetitive pile.
 func (s *Skill) PointsRange(tooltip *xbytes.InsertBuffer) NumericRange {
-	if !s.Enabled() {
+	if !s.Enabled() || s.Granted != nil {
+		// A granted skill costs nothing, whatever points its tier stands for.
 		return NumericRangeOf(0)
 	}
 	if !s.Container() {
@@ -858,8 +869,8 @@ func (s *Skill) CalculateLevel(excludes map[string]bool) Level {
 			s.SpecializationWithReplacements(), s.Tags, s.TechniqueDefault, s.AdjustedDifficulty().Difficulty, points, true,
 			s.TechniqueLimitModifier, excludes)
 	}
-	return CalculateSkillLevel(EntityFromNode(s), s.NameWithReplacements(), s.SpecializationWithReplacements(), s.OptionalSpecializationWithReplacements(), s.Tags,
-		s.DefaultedFrom, s.AdjustedDifficulty(), points, s.EncumbrancePenaltyMultiplier)
+	return s.grant.applyLevels(CalculateSkillLevel(EntityFromNode(s), s.NameWithReplacements(), s.SpecializationWithReplacements(), s.OptionalSpecializationWithReplacements(), s.Tags,
+		s.DefaultedFrom, s.AdjustedDifficulty(), points, s.EncumbrancePenaltyMultiplier))
 }
 
 // CalculateSkillLevel returns the calculated level for a skill.
@@ -1305,10 +1316,11 @@ func (s *Skill) SetTL(tl string) {
 	}
 }
 
-// Enabled returns true if this Skill and all of its parents are enabled.
+// Enabled returns true if this Skill and all of its parents are enabled, and, for a granted skill, its grant is in
+// effect.
 func (s *Skill) Enabled() bool {
 	for p := s; p != nil; p = p.parent {
-		if p.IsDisabled() {
+		if p.IsDisabled() || p.grantNotInEffect() {
 			return false
 		}
 	}

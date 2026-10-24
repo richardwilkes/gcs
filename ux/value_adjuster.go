@@ -96,7 +96,7 @@ func ownerRebuildRecalculates(owner unison.Paneler, entity *gurps.Entity) bool {
 // canAdjustSelection returns true if any selected row yields an adjustable target via extract.
 func canAdjustSelection[T gurps.Node[T], A any](table *unison.Table[*Node[T]], extract func(T) (A, bool)) bool {
 	for _, row := range table.SelectedRows(false) {
-		if _, ok := extract(row.Data()); ok {
+		if _, ok := extract(row.Data()); ok && !gurps.IsGranted(row.Data()) {
 			return true
 		}
 	}
@@ -114,7 +114,7 @@ func adjustSelection[T gurps.Node[T], A, V any](undoTitle string, owner Rebuilda
 	rows := table.SelectedRows(false)
 	targets := make([]A, 0, len(rows))
 	for _, row := range rows {
-		if target, ok := extract(row.Data()); ok {
+		if target, ok := extract(row.Data()); ok && !gurps.IsGranted(row.Data()) {
 			targets = append(targets, target)
 		}
 	}

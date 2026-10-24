@@ -85,6 +85,7 @@ type Trait struct {
 	// any unmet prerequisite still shown, rather than disabling it. It is recomputed on every Recalculate and is never
 	// saved.
 	prereqContradicted bool
+	grant              grantState
 	// savedCurrentLevel is the level recorded in the "calc" object of the file the trait was loaded from. It is only
 	// kept by a load that asks for it (see NewEntityFromFileWithSavedCalc) and only read by StringWithSavedCalc.
 	savedCurrentLevel *fxp.Int
@@ -93,6 +94,7 @@ type Trait struct {
 // TraitData holds the Trait data that is written to disk.
 type TraitData struct {
 	SourcedID
+	Granted *GrantedBy `json:"granted_by,omitempty"`
 	TraitEditData
 	ThirdParty map[string]any `json:"third_party,omitempty"`
 	Children   []*Trait       `json:"children,omitempty"` // Only for containers
@@ -311,6 +313,7 @@ func (t *Trait) Clone(from LibraryFile, owner DataOwner, parent *Trait, mode Clo
 	other.SetOpen(t.IsOpen())
 	other.ThirdParty = t.ThirdParty
 	other.copyFrom(other, &t.TraitEditData, false, mode)
+	other.Granted = cloneGrantedBy(t.Granted, other)
 	PropagateNodeNoteClosedState(t, other)
 	if t.HasChildren() {
 		other.Children = make([]*Trait, 0, len(t.Children))
@@ -448,10 +451,11 @@ func (t *Trait) resetPrereqVerdict() {
 	t.prereqContradicted = false
 }
 
-// selfDisabled returns true if this trait itself is disabled, either by the user or because the sheet enforces
-// prerequisites and this trait's are unsatisfied. Parents are not consulted; see Enabled for that.
+// selfDisabled returns true if this trait itself is disabled, either by the user, because the sheet enforces
+// prerequisites and this trait's are unsatisfied, or because the grant that put it on the sheet is not in effect.
+// Parents are not consulted; see Enabled for that.
 func (t *Trait) selfDisabled() bool {
-	return t.IsDisabled() || t.prereqVerdict == prereqsDisable
+	return t.IsDisabled() || t.prereqVerdict == prereqsDisable || t.grantNotInEffect()
 }
 
 // PrereqStatus returns what to show for the trait's prerequisites, in the trait table, the "calc" object and the
@@ -520,7 +524,10 @@ func (t *Trait) CellData(columnID int, data *CellData) {
 		}
 		data.Primary += parenthetical(slices.Concat(t.titleNotes(true), parts, t.titleNotes(false)))
 		data.Secondary = t.SecondaryText(func(option display.Option) bool { return option.Inline() })
-		data.Disabled = t.EffectivelyDisabled()
+		// A granted trait whose grant is not in effect is dimmed but not struck through.
+		data.Disabled = t.EffectivelyDisabled() && !t.grantNotInEffect()
+		data.GrantedBy = grantedByText(t.Granted, &t.grant)
+		data.Grants = EntityFromNode(t).grantSummary(t)
 		data.UnsatisfiedReason, data.PrereqContradiction = t.PrereqStatus()
 		data.UnresolvedChoice = unresolvedModifierChoiceText(t, t.Modifiers)
 		data.Tooltip = t.SecondaryText(func(option display.Option) bool { return option.Tooltip() })
@@ -642,7 +649,8 @@ func (t *Trait) internalCurrentLevel(tooltip *xbytes.InsertBuffer) fxp.Int {
 	if entity := EntityFromNode(t); entity != nil {
 		levelAdjustment = entity.TraitBonusFor(t.NameWithReplacements(), t.Tags, tooltip)
 	}
-	return (t.Levels + levelAdjustment).Max(0)
+	addGrantNotesToTooltip(t.grant.levelNotes, tooltip)
+	return (t.Levels + levelAdjustment + t.grant.levels).Max(0)
 }
 
 // ResolvedMaxLevels returns the maximum level for this trait, resolving the MaxLevels expression (a plain number or an
@@ -685,7 +693,7 @@ func (t *Trait) AdjustedPoints(_ *xbytes.InsertBuffer) fxp.Int {
 // adjustedPoints is AdjustedPoints with each modifier choice fixed holds a pick for counted as made with it (see
 // pointsRange).
 func (t *Trait) adjustedPoints(fixed modifierChoicePicks[*TraitModifier]) fxp.Int {
-	if t.EffectivelyDisabled() {
+	if t.EffectivelyDisabled() || t.Granted != nil {
 		return 0
 	}
 	if !t.Container() {
@@ -732,7 +740,7 @@ func (t *Trait) PointsRange(_ *xbytes.InsertBuffer) NumericRange {
 // it, as a container makes the choices among its modifiers for everything inside it.
 func (t *Trait) pointsRange(fixed modifierChoicePicks[*TraitModifier], view choiceView) NumericRange {
 	if !t.Container() {
-		if t.EffectivelyDisabled() {
+		if t.EffectivelyDisabled() || t.Granted != nil {
 			return NumericRangeOf(0)
 		}
 		if r, open := t.modifierChoicePointsRange(fixed, view); open {
@@ -797,7 +805,7 @@ func (t *Trait) pointsRangeFor(keys modifierChoicePicks[*TraitModifier], view ch
 	var ways *modifierChoiceWays[*TraitModifier, *Trait]
 	var cost NumericRange
 	switch {
-	case t.EffectivelyDisabled():
+	case t.EffectivelyDisabled() || t.Granted != nil:
 		cost = NumericRangeOf(0)
 	case choicesMade(t, view):
 		cost = NumericRangeOf(t.pointsWith(t.AllModifiers()))

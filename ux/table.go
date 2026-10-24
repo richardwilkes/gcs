@@ -209,12 +209,14 @@ func NewNodeTable[T gurps.Node[T]](provider TableProvider[T], font unison.Font) 
 // on the panel that owns the table rather than on the table itself, so that they are reachable from anywhere within
 // that panel: in a list dockable that means the filter field too, keeping the commands active on the selection while
 // the user types in the filter. The owner is resolved through a function rather than taken up front because the
-// editor's list panels are built before they are attached to the editor that owns them.
+// editor's list panels are built before they are attached to the editor that owns them. Add as Grant is installed too,
+// for the tables of traits, skills and spells.
 func installStandardTableCmdHandlers[T gurps.Node[T]](target unison.Paneler, table *unison.Table[*Node[T]], provider TableProvider[T], owner func() Rebuildable, editable bool) {
 	panel := target.AsPanel()
 	panel.InstallCmdHandlers(OpenEditorItemID,
 		func(_ any) bool { return table.HasSelection() },
 		func(_ any) { provider.OpenEditor(owner(), table) })
+	installAddAsGrantHandler(panel, table)
 	panel.InstallCmdHandlers(OpenOnePageReferenceItemID,
 		func(_ any) bool { return CanOpenPageRef(table) },
 		func(_ any) { OpenPageRef(table) })
@@ -225,16 +227,16 @@ func installStandardTableCmdHandlers[T gurps.Node[T]](target unison.Paneler, tab
 		return
 	}
 	panel.InstallCmdHandlers(unison.DeleteItemID,
-		func(_ any) bool { return HasSelectionAndNotFiltered(table) },
+		func(_ any) bool { return hasUngrantedSelection(table) },
 		func(_ any) { DeleteSelection(table, true) })
 	panel.InstallCmdHandlers(DuplicateItemID,
-		func(_ any) bool { return HasSelectionAndNotFiltered(table) },
+		func(_ any) bool { return hasUngrantedSelection(table) },
 		func(_ any) { DuplicateSelection(table) })
 	panel.InstallCmdHandlers(SyncWithSourceItemID,
-		func(_ any) bool { return HasSelectionAndNotFiltered(table) },
+		func(_ any) bool { return hasUngrantedSelection(table) },
 		func(_ any) { SyncWithSourceForSelection(table) })
 	panel.InstallCmdHandlers(ClearSourceItemID,
-		func(_ any) bool { return HasSelectionAndNotFiltered(table) },
+		func(_ any) bool { return hasUngrantedSelection(table) },
 		func(_ any) { ClearSourceFromSelection(table) })
 }
 
@@ -388,10 +390,14 @@ func deleteSelection[T gurps.Node[T]](table *unison.Table[*Node[T]], recordUndo,
 		list := make([]T, 0, len(sel))
 		var zero T
 		for _, row := range sel {
-			unison.CollectIDsFromRow(row, ids)
-			if target := row.Data(); target != zero {
+			// An item a grant put on the sheet goes only with its grant.
+			if target := row.Data(); target != zero && !gurps.IsGranted(target) {
+				unison.CollectIDsFromRow(row, ids)
 				list = append(list, target)
 			}
+		}
+		if len(list) == 0 {
+			return
 		}
 		if !CloseID(ids) {
 			return
@@ -439,7 +445,8 @@ func DuplicateSelection[T gurps.Node[T]](table *unison.Table[*Node[T]]) {
 		selMap := make(map[tid.TID]bool, len(sel))
 		for _, row := range sel {
 			target := row.Data()
-			if target == zero {
+			// The sheet would remove a copy of an item a grant put on it, since no grant claims the copy.
+			if target == zero || gurps.IsGranted(target) {
 				continue
 			}
 			parent := target.Parent()
@@ -489,6 +496,15 @@ func HasSelectionAndNotFiltered[T gurps.Node[T]](table *unison.Table[*Node[T]]) 
 	return !table.IsFiltered() && table.HasSelection()
 }
 
+// hasUngrantedSelection returns true if the table is not filtered and has a selected row a grant didn't put there,
+// since the commands that change rows pass over granted ones.
+func hasUngrantedSelection[T gurps.Node[T]](table *unison.Table[*Node[T]]) bool {
+	if !HasSelectionAndNotFiltered(table) {
+		return false
+	}
+	return slices.ContainsFunc(table.SelectedRows(false), func(row *Node[T]) bool { return !gurps.IsGranted(row.Data()) })
+}
+
 // ClearSourceFromSelection clears the source from the selected nodes.
 func ClearSourceFromSelection[T gurps.Node[T]](table *unison.Table[*Node[T]]) {
 	applyToSelectedRows(table, clearSourceAction.Title, T.ClearSource)
@@ -501,9 +517,9 @@ func SyncWithSourceForSelection[T gurps.Node[T]](table *unison.Table[*Node[T]]) 
 	applyToSelectedRows(table, syncWithSourceAction.Title, T.SyncWithSource)
 }
 
-// applyToSelectedRows applies the given change to the data behind each of the selected rows as a single undoable edit
-// with the given title, then reports the change by rebuilding the table's owner. Nothing is done when the table has no
-// selection or is filtered (see HasSelectionAndNotFiltered).
+// applyToSelectedRows applies the given change to the data behind each of the selected rows, other than those a grant
+// put there, as a single undoable edit with the given title, then reports the change by rebuilding the table's owner.
+// Nothing is done when the table has no selection or is filtered (see HasSelectionAndNotFiltered).
 func applyToSelectedRows[T gurps.Node[T]](table *unison.Table[*Node[T]], undoTitle string, apply func(T)) {
 	if !HasSelectionAndNotFiltered(table) {
 		return
@@ -511,7 +527,7 @@ func applyToSelectedRows[T gurps.Node[T]](table *unison.Table[*Node[T]], undoTit
 	undo := beginTableUndo(table, undoTitle, nil, nil)
 	var zero T
 	for _, row := range table.SelectedRows(false) {
-		if target := row.Data(); target != zero {
+		if target := row.Data(); target != zero && !gurps.IsGranted(target) {
 			apply(target)
 		}
 	}

@@ -64,7 +64,7 @@ func (p *skillsProvider) ProcessDropData(_, to *unison.Table[*Node[*gurps.Skill]
 			if entity := dataOwner.OwningEntity(); entity != nil {
 				for _, row := range to.SelectedRows(true) {
 					gurps.Traverse(func(skill *gurps.Skill) bool {
-						resolveEmptyTechLevel(skill, entity.Profile.TechLevel)
+						gurps.ResolveEmptyTechLevel(skill, entity.Profile.TechLevel)
 						skill.UpdateLevel()
 						return false
 					}, false, true, row.Data())

@@ -27,6 +27,7 @@ var licenseMarkdownContent string
 
 // These actions are registered for key bindings.
 var (
+	addAsGrantAction               *unison.Action
 	addNaturalAttacksAction        *unison.Action
 	applyModifierAction            *unison.Action
 	applyTemplateAction            *unison.Action
@@ -189,6 +190,8 @@ func registerActions() {
 		i18n.Text("Apply Template to Character Sheet"),
 		unison.KeyBinding{KeyCode: unison.KeyA, Modifiers: mod.Shift | mod.OSMenuCommand()})
 	applyModifierAction = registerFocusAction("apply.modifier", ApplyModifierItemID, i18n.Text("Apply Modifier"),
+		unison.KeyBinding{})
+	addAsGrantAction = registerFocusAction("add.as.grant", AddAsGrantItemID, i18n.Text("Add as Grant"),
 		unison.KeyBinding{})
 	cloneSheetAction = registerFocusAction("clone.sheet", CloneSheetItemID,
 		i18n.Text("Clone Character Sheet & Re-Randomize Fields"), unison.KeyBinding{})

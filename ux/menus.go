@@ -107,6 +107,7 @@ const (
 	CopyToTemplateItemID
 	ApplyTemplateItemID
 	ApplyModifierItemID
+	AddAsGrantItemID
 	NewSheetFromTemplateItemID
 	OpenOnePageReferenceItemID
 	OpenEachPageReferenceItemID
@@ -385,6 +386,7 @@ func (s menuBarScope) createItemMenu(f unison.MenuFactory) unison.Menu {
 		toggleStateAction,
 		swapDefaultsAction,
 		applyModifierAction,
+		addAsGrantAction,
 		nil,
 		copyToSheetAction,
 		copyToTemplateAction,
@@ -641,6 +643,7 @@ func AppendDefaultContextMenuItems(list []ContextMenuItem) []ContextMenuItem {
 		contextMenuItemFor(copyToTemplateAction),
 		contextMenuItemFor(applyTemplateAction),
 		contextMenuItemFor(applyModifierAction),
+		contextMenuItemFor(addAsGrantAction),
 		contextMenuItemFor(newSheetFromTemplateAction),
 		contextMenuItemFor(cloneSheetAction),
 		ContextMenuItem{"", -1},
