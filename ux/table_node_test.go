@@ -70,7 +70,7 @@ func TestLabelCellTooltipKeepsTheCellsOwnTextBehindAContradiction(t *testing.T) 
 		"a contradiction is explained on its own when the cell has no tooltip of its own")
 	checkTooltipBlocks(c, labelCellTooltip(&gurps.CellData{Tooltip: "own", PrereqContradiction: "clash"}), "clash", "own",
 		"a contradiction is explained ahead of the cell's own tooltip, not in place of it")
-	c.Equal("granted\n---\nwhy", labelCellTooltip(&gurps.CellData{GrantedBy: "granted", UnsatisfiedReason: "why"}),
+	c.Equal("granted\n\n---\nwhy", labelCellTooltip(&gurps.CellData{GrantedBy: "granted", UnsatisfiedReason: "why"}),
 		"where a granted item came from leads the tooltip")
 	c.Equal("pick", labelCellTooltip(&gurps.CellData{UnresolvedChoice: "pick"}),
 		"an unresolved choice is explained on its own when the cell has nothing else to say")
