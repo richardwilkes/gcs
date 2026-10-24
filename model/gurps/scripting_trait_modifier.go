@@ -9,11 +9,7 @@
 
 package gurps
 
-import (
-	"slices"
-
-	"github.com/dop251/goja"
-)
+import "github.com/dop251/goja"
 
 func deferredNewScriptTraitModifier(mod *TraitModifier) ScriptSelfProvider {
 	return deferredScriptSelf(mod, newScriptTraitModifier)
@@ -35,7 +31,7 @@ func newScriptTraitModifier(r *goja.Runtime, mod *TraitModifier) *goja.Object {
 		}
 		return goja.Undefined()
 	}
-	m["tags"] = func() goja.Value { return r.ToValue(slices.Clone(mod.Tags)) }
+	m["tags"] = scriptTags(r, mod.Tags)
 	m["notes"] = scriptNotes(r, mod)
 	return r.NewDynamicObject(NewScriptObject(r, m))
 }

@@ -132,7 +132,13 @@ func addScriptNodeIdentity[T scriptNode[T]](r *goja.Runtime, m map[string]func()
 		return goja.Undefined()
 	}
 	m["container"] = func() goja.Value { return r.ToValue(node.Container()) }
-	m["tags"] = func() goja.Value { return r.ToValue(slices.Clone(tags)) }
+	m["tags"] = scriptTags(r, tags)
+}
+
+// scriptTags returns the property a script sees as a node's tags: a copy, so a script cannot alter the node, and never a
+// nil slice, which goja turns into null rather than an empty array.
+func scriptTags(r *goja.Runtime, tags []string) func() goja.Value {
+	return func() goja.Value { return r.ToValue(append(make([]string, 0, len(tags)), tags...)) }
 }
 
 // secondaryTextProvider is implemented by the nodes whose script wrappers expose their secondary text as notes.
@@ -168,7 +174,7 @@ func scriptObjects[T any](r *goja.Runtime, items []T, keep func(T) bool,
 func traversedScriptObjects[T Node[T]](r *goja.Runtime, keep func(T) bool, excludeContainers bool,
 	ctor func(*goja.Runtime, T) *goja.Object, top ...T,
 ) goja.Value {
-	var objects []*goja.Object
+	objects := make([]*goja.Object, 0)
 	Traverse(func(node T) bool {
 		if keep == nil || keep(node) {
 			objects = append(objects, ctor(r, node))
