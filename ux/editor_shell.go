@@ -113,20 +113,57 @@ func (s *editorShell) newContentPanel(columns int) *unison.Panel {
 }
 
 // addApplyAndCancelButtons adds the Apply and Discard buttons to the toolbar. Both close the editor without prompting,
-// since the user has just said what to do with the changes; Apply applies them first.
+// since the user has just said what to do with the changes; Apply applies them first. The editors open on the editor's
+// modifiers and weapons edit objects within its pending data, so Apply closes them, asking about their changes, before
+// it applies that data, and applies nothing if one of them stays open. Discard closes them too, asking whether to
+// discard their changes instead (see discardAndClose).
 func (s *editorShell) addApplyAndCancelButtons(toolbar *unison.Panel, apply func()) {
 	s.applyButton, s.cancelButton = newApplyCancelButtons(toolbar, true,
 		func() bool {
+			if !CloseGroup(s.editor()) {
+				return false
+			}
 			apply()
 			return true
 		},
 		s.discardAndClose)
 }
 
-// discardAndClose closes the editor, dropping any pending changes without asking about them.
+// discardAndClose closes the editor, dropping any pending changes without asking about them. The editors open on
+// objects within those changes are closed first, asking whether to discard their changes rather than whether to save
+// them, since what they would save is dropped with the rest. The editor stays open if one of them does.
 func (s *editorShell) discardAndClose() {
+	if !s.closeSubEditorsForDiscard() {
+		return
+	}
 	s.promptForSave = false
 	s.editor().AttemptClose()
+}
+
+// closeSubEditorsForDiscard closes the editors open on objects within the editor's pending data, as CloseGroup does,
+// returning false if one of them stays open. Each asks whether to discard its pending changes, since the data they
+// would be saved into is about to be dropped.
+func (s *editorShell) closeSubEditorsForDiscard() bool {
+	var subs []*editorShell
+	reason := i18n.Text("Discarding the changes made to\n%s\ndiscards these as well.", s.editor().Title())
+	traverseGroup(s.editor(), func(target GroupedCloser) bool {
+		if sub, ok := target.(interface{ shell() *editorShell }); ok {
+			shell := sub.shell()
+			shell.discardReason = reason
+			subs = append(subs, shell)
+		}
+		return false
+	})
+	closed := CloseGroup(s.editor())
+	for _, shell := range subs {
+		shell.discardReason = ""
+	}
+	return closed
+}
+
+// shell returns the shell itself, so that an editor held through an interface can be reached as the shell it embeds.
+func (s *editorShell) shell() *editorShell {
+	return s
 }
 
 // discardEditorsFor closes the editors open on any of the given IDs without asking about their pending changes. It is

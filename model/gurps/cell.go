@@ -128,10 +128,20 @@ func fillPointsCell(data *CellData, r NumericRange) {
 	if r.IsSettled() {
 		return
 	}
-	if data.Tooltip == "" {
-		data.Tooltip = PointsRangeTooltip()
-	} else {
-		data.Tooltip = PointsRangeTooltip() + "\n---\n" + data.Tooltip
+	data.Tooltip = JoinTooltipBlocks(PointsRangeTooltip(), data.Tooltip)
+}
+
+// JoinTooltipBlocks joins two blocks of a tooltip with a rule between them, or returns the one that isn't empty. A
+// tooltip is rendered as Markdown, where "---" directly under a line of text makes a heading of that line rather than a
+// rule, so a blank line sets the rule off from the first block.
+func JoinTooltipBlocks(first, second string) string {
+	switch {
+	case first == "":
+		return second
+	case second == "":
+		return first
+	default:
+		return first + "\n\n---\n" + second
 	}
 }
 

@@ -320,3 +320,113 @@ func TestEditorOpensScrolledToTheStart(t *testing.T) {
 		}
 	}
 }
+
+// isTraitModifierEditor reports whether d is an editor open on a trait modifier.
+func isTraitModifierEditor(d unison.Dockable) bool {
+	_, ok := d.AsPanel().Self.(*editor[*gurps.TraitModifier, *gurps.TraitModifierEditData])
+	return ok
+}
+
+// openTraitEditorWithModifierEditor adds the trait "Claws" with the modifier "Long" to the sheet, opens an editor on the
+// trait and, within it, an editor on the modifier, and leaves a renaming pending in each: "Sharp Claws" and "Longer".
+func openTraitEditorWithModifierEditor(t *testing.T, screen *unison.HeadlessScreen, sheet *Sheet) (trait *gurps.Trait,
+	e *editor[*gurps.Trait, *gurps.TraitEditData], modifierEditor *editor[*gurps.TraitModifier, *gurps.TraitModifierEditData],
+) {
+	t.Helper()
+	screen.Do(func() {
+		entity := sheet.Entity()
+		trait = gurps.NewTrait(entity, nil, false)
+		trait.Name = "Claws"
+		modifier := gurps.NewTraitModifier(entity, nil, false)
+		modifier.Name = "Long"
+		trait.Modifiers = []*gurps.TraitModifier{modifier}
+		gurps.AttachModifiers(trait, trait.Modifiers)
+		entity.Traits = append(entity.Traits, trait)
+		sheet.Rebuild(true)
+		e = EditTrait(sheet, trait)
+	})
+	screen.Do(func() { EditTraitModifier(e, e.editorData.Modifiers[0]) })
+	modifierEditor = uxtest.SoleEditor[*editor[*gurps.TraitModifier, *gurps.TraitModifierEditData]](t, screen,
+		isTraitModifierEditor)
+	screen.Do(func() {
+		modifierEditor.editorData.Name = "Longer"
+		modifierEditor.MarkModified(nil)
+		e.editorData.Name = "Sharp Claws"
+		e.MarkModified(nil)
+	})
+	return trait, e, modifierEditor
+}
+
+// traitEditorsState reports the trait's name and its sole modifier's, how many trait modifier editors are open and
+// whether e is.
+func traitEditorsState(screen *unison.HeadlessScreen, trait *gurps.Trait,
+	e *editor[*gurps.Trait, *gurps.TraitEditData],
+) (name, modifierName string, modifierEditors int, traitEditorOpen bool) {
+	screen.Do(func() {
+		name = trait.Name
+		if len(trait.Modifiers) == 1 {
+			modifierName = trait.Modifiers[0].Name
+		}
+		modifierEditors = len(AllMatchingDockables(isTraitModifierEditor))
+		traitEditorOpen = slices.ContainsFunc(AllDockables(), func(d unison.Dockable) bool { return d.AsPanel().Self == e })
+	})
+	return name, modifierName, modifierEditors, traitEditorOpen
+}
+
+// TestEditorApplyClosesItsSubEditorsFirst verifies that Apply closes the editors open on the editor's modifiers and
+// weapons before it applies its data, since they edit objects within that data: a modifier's change saved at the prompt
+// reaches the trait along with the trait's own changes.
+func TestEditorApplyClosesItsSubEditorsFirst(t *testing.T) {
+	c := check.New(t)
+	screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
+	sheet, ok := uxtest.OpenedByAction(t, screen, newCharacterSheetAction).(*Sheet)
+	if !ok {
+		t.Fatal("New Character Sheet must open a character sheet")
+	}
+	trait, e, _ := openTraitEditorWithModifierEditor(t, screen, sheet)
+	screen.Click(screen.PanelCenter(e.applyButton))
+	_, dialog := modalDialog(t, screen, wnd)
+	screen.Click(screen.PanelCenter(dialogButton(t, screen, dialog, unison.ModalResponseOK)))
+	name, modifierName, modifierEditors, traitEditorOpen := traitEditorsState(screen, trait, e)
+	c.Equal(0, modifierEditors, "saving at the prompt closes the modifier's editor")
+	c.False(traitEditorOpen, "and applying closes the trait's")
+	c.Equal("Sharp Claws", name, "the trait's changes are applied")
+	c.Equal("Longer", modifierName, "along with the modifier's, saved at the prompt")
+}
+
+// TestEditorDiscardAsksItsSubEditorsToDiscard verifies that Discard closes the editors open on the editor's modifiers
+// and weapons by asking whether to discard their changes, not whether to save them, since what they would save is the
+// pending data Discard drops, and that canceling there keeps both editors open, with the trait's still prompting on
+// close.
+func TestEditorDiscardAsksItsSubEditorsToDiscard(t *testing.T) {
+	c := check.New(t)
+	screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
+	sheet, ok := uxtest.OpenedByAction(t, screen, newCharacterSheetAction).(*Sheet)
+	if !ok {
+		t.Fatal("New Character Sheet must open a character sheet")
+	}
+	trait, e, _ := openTraitEditorWithModifierEditor(t, screen, sheet)
+	screen.Click(screen.PanelCenter(e.cancelButton))
+	_, dialog := modalDialog(t, screen, wnd)
+	var offersSave bool
+	screen.Do(func() { offersSave = dialog.Button(unison.ModalResponseDiscard) != nil })
+	c.False(offersSave, "the prompt asks whether to discard the modifier's changes, not whether to save them")
+	screen.Click(screen.PanelCenter(dialogButton(t, screen, dialog, unison.ModalResponseCancel)))
+	var promptForSave bool
+	screen.Do(func() { promptForSave = e.promptForSave })
+	name, modifierName, modifierEditors, traitEditorOpen := traitEditorsState(screen, trait, e)
+	c.Equal(1, modifierEditors, "canceling at the prompt keeps the modifier's editor open")
+	c.True(traitEditorOpen, "and the trait's")
+	c.True(promptForSave, "which still prompts when closed")
+	c.Equal("Claws", name, "nothing has been applied to the trait")
+	c.Equal("Long", modifierName, "or to its modifier")
+
+	screen.Click(screen.PanelCenter(e.cancelButton))
+	_, dialog = modalDialog(t, screen, wnd)
+	screen.Click(screen.PanelCenter(dialogButton(t, screen, dialog, unison.ModalResponseOK)))
+	name, modifierName, modifierEditors, traitEditorOpen = traitEditorsState(screen, trait, e)
+	c.Equal(0, modifierEditors, "agreeing to discard closes the modifier's editor")
+	c.False(traitEditorOpen, "and Discard then closes the trait's")
+	c.Equal("Claws", name, "leaving the trait as it was")
+	c.Equal("Long", modifierName, "along with its modifier")
+}

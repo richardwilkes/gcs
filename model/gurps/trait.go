@@ -532,20 +532,12 @@ func (t *Trait) CellData(columnID int, data *CellData) {
 		data.UnresolvedChoice = unresolvedModifierChoiceText(t, t.Modifiers)
 		data.Tooltip = t.SecondaryText(func(option display.Option) bool { return option.Tooltip() })
 		if tooltip.Len() != 0 {
-			t := i18n.Text("Trait level adjustments:\n") + strings.ReplaceAll(tooltip.String(), "\n", "\n- ")
-			if data.Tooltip == "" {
-				data.Tooltip = t
-			} else {
-				data.Tooltip = t + "\n---\n" + data.Tooltip
-			}
+			data.Tooltip = JoinTooltipBlocks(i18n.Text("Trait level adjustments:\n")+
+				strings.ReplaceAll(tooltip.String(), "\n", "\n- "), data.Tooltip)
 		}
 		if overrideTooltip.Len() != 0 {
-			t := i18n.Text("Overrides:\n") + strings.ReplaceAll(overrideTooltip.String(), "\n", "\n- ")
-			if data.Tooltip == "" {
-				data.Tooltip = t
-			} else {
-				data.Tooltip = t + "\n---\n" + data.Tooltip
-			}
+			data.Tooltip = JoinTooltipBlocks(i18n.Text("Overrides:\n")+
+				strings.ReplaceAll(overrideTooltip.String(), "\n", "\n- "), data.Tooltip)
 		}
 		data.TemplateInfo = t.TemplatePicker.String()
 		if t.Container() {
