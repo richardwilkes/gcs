@@ -142,7 +142,7 @@ func (d *fileEditorDockable[T]) BackingFilePath() string {
 	if d.path != "" {
 		return d.path
 	}
-	return xfilepath.SanitizeName(d.displayName()) + d.spec.ext
+	return sanitizeFileName(d.displayName()) + d.spec.ext
 }
 
 // SetBackingFilePath implements FileBackedDockable.

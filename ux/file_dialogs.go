@@ -13,7 +13,6 @@ import (
 	"path/filepath"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
-	"github.com/richardwilkes/toolbox/v2/xfilepath"
 	"github.com/richardwilkes/unison"
 )
 
@@ -60,7 +59,7 @@ func chooseFileToSave(initialDir, initialName, ext, lastDirKey string) (string, 
 	dialog := unison.NewSaveDialog()
 	dialog.SetInitialDirectory(initialDir)
 	dialog.SetAllowedExtensions(ext)
-	dialog.SetInitialFileName(xfilepath.SanitizeName(initialName))
+	dialog.SetInitialFileName(sanitizeFileName(initialName))
 	if !dialog.RunModal() {
 		return "", false
 	}

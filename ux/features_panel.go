@@ -380,7 +380,13 @@ func (p *featuresPanel) editor(f gurps.Feature, path string) *unison.Panel {
 	switch one := f.(type) {
 	case *gurps.AttributeBonus:
 		p.amount(fields, path, &one.Amount, &one.PerLevel)
-		p.attributePopup(fields, key("attribute"), i18n.Text("to"), &one.Attribute, func(id string) { lastAttributeIDUsed = id })
+		p.attributePopup(fields, key("attribute"), i18n.Text("to"), &one.Attribute, func(id string) {
+			lastAttributeIDUsed = id
+			// Only ST has a limitation, so one is cleared along with its chip, so a file doesn't keep what no chip shows.
+			if id != gurps.StrengthID {
+				one.Limitation = stlimit.None
+			}
+		})
 		if one.Attribute == gurps.StrengthID {
 			p.optional(chips, path, "limitation", i18n.Text("+ limitation"), i18n.Text("Add Limitation"),
 				i18n.Text("Remove Limitation"), one.Limitation != stlimit.None,
@@ -416,12 +422,28 @@ func (p *featuresPanel) editor(f gurps.Feature, path string) *unison.Panel {
 			})
 	case *gurps.SkillBonus:
 		p.amount(fields, path, &one.Amount, &one.PerLevel)
-		selectionPopup(p, fields, path, skillsel.Types, &one.SelectionType, skillsel.ThisWeapon, &one.NameCriteria)
+		selectionPopup(p, fields, path, skillsel.Types, &one.SelectionType, skillsel.ThisWeapon, &one.NameCriteria,
+			func(v skillsel.Type) {
+				// The criteria the new selection doesn't consult are cleared, so a file doesn't keep what no chip shows.
+				anyText := criteria.Text{Compare: criteria.AnyText}
+				switch v {
+				case skillsel.Name:
+					one.DamageTypeCriteria = anyText
+					one.WeaponOwnerCriteria = gurps.WeaponOwnerCriteria{}
+				case skillsel.ThisWeapon:
+					one.OptionalSpecializationCriteria = anyText
+					one.TagsCriteria = anyText
+					one.WeaponOwnerCriteria = gurps.WeaponOwnerCriteria{}
+				case skillsel.WeaponsWithName:
+					one.OptionalSpecializationCriteria = anyText
+				}
+			})
 		if one.SelectionType == skillsel.Name {
 			p.textChip(chips, path, "specialization", &one.SpecializationCriteria)
 			p.textChip(chips, path, "optspecialization", &one.OptionalSpecializationCriteria)
 		} else {
 			p.textChip(chips, path, "usage", &one.SpecializationCriteria)
+			p.damageTypeChip(chips, path, &one.DamageTypeCriteria)
 		}
 		if one.SelectionType != skillsel.ThisWeapon {
 			p.tagsChip(chips, path, &one.TagsCriteria)
@@ -438,11 +460,11 @@ func (p *featuresPanel) editor(f gurps.Feature, path string) *unison.Panel {
 		p.tagsChip(chips, path, &one.TagsCriteria)
 	case *gurps.SpellBonus:
 		p.amount(fields, path, &one.Amount, &one.PerLevel)
-		selectionPopup(p, fields, path, spellmatch.Types, &one.SpellMatchType, spellmatch.AllColleges, &one.NameCriteria)
+		selectionPopup(p, fields, path, spellmatch.Types, &one.SpellMatchType, spellmatch.AllColleges, &one.NameCriteria, nil)
 		p.tagsChip(chips, path, &one.TagsCriteria)
 	case *gurps.SpellPointBonus:
 		p.amount(fields, path, &one.Amount, &one.PerLevel)
-		selectionPopup(p, fields, path, spellmatch.Types, &one.SpellMatchType, spellmatch.AllColleges, &one.NameCriteria)
+		selectionPopup(p, fields, path, spellmatch.Types, &one.SpellMatchType, spellmatch.AllColleges, &one.NameCriteria, nil)
 		p.tagsChip(chips, path, &one.TagsCriteria)
 	case *gurps.TraitBonus:
 		p.amount(fields, path, &one.Amount, &one.PerLevel)
@@ -452,13 +474,25 @@ func (p *featuresPanel) editor(f gurps.Feature, path string) *unison.Panel {
 	case *gurps.EquipmentMaxUsesBonus:
 		p.maxAdjustment(fields, path, &one.MaxUsesModAmount, i18n.Text("Maximum Uses Adjustment"))
 		selectionPopup(p, fields, path, equipmentsel.Types, &one.SelectionType, equipmentsel.ThisEquipment,
-			&one.NameCriteria)
+			&one.NameCriteria, func(v equipmentsel.Type) {
+				// Only a selection by name consults the tags, so they are cleared with their chip, so a file doesn't
+				// keep what no chip shows.
+				if v != equipmentsel.EquipmentWithName {
+					one.TagsCriteria = criteria.Text{Compare: criteria.AnyText}
+				}
+			})
 		if one.SelectionType == equipmentsel.EquipmentWithName {
 			p.tagsChip(chips, path, &one.TagsCriteria)
 		}
 	case *gurps.TraitMaxLevelBonus:
 		p.maxAdjustment(fields, path, &one.MaxUsesModAmount, i18n.Text("Maximum Level Adjustment"))
-		selectionPopup(p, fields, path, traitsel.Types, &one.SelectionType, traitsel.ThisTrait, &one.NameCriteria)
+		selectionPopup(p, fields, path, traitsel.Types, &one.SelectionType, traitsel.ThisTrait, &one.NameCriteria,
+			func(v traitsel.Type) {
+				// As for the equipment bonus above.
+				if v != traitsel.TraitWithName {
+					one.TagsCriteria = criteria.Text{Compare: criteria.AnyText}
+				}
+			})
 		if one.SelectionType == traitsel.TraitWithName {
 			p.tagsChip(chips, path, &one.TagsCriteria)
 		}
@@ -687,10 +721,20 @@ func (p *featuresPanel) attributePopup(parent *unison.Panel, key, prefix string,
 }
 
 // selectionPopup adds the popup that picks what a bonus applies to, followed by the criteria for their name unless
-// this, which needs none, is picked. It is a plain function because methods cannot have type parameters.
-func selectionPopup[E comparable](p *featuresPanel, parent *unison.Panel, path string, items []E, selection *E, this E, name *criteria.Text) {
+// this, which needs none, is picked. Picking this clears the name, so a file doesn't keep what no field shows, and
+// changed, if not nil, is then called with each new selection, within the same edit, so that a bonus can clear the
+// other criteria the new selection doesn't consult. It is a plain function because methods cannot have type parameters.
+func selectionPopup[E comparable](p *featuresPanel, parent *unison.Panel, path string, items []E, selection *E, this E, name *criteria.Text, changed func(E)) {
 	addCentered(parent, compactPopup(&p.sentenceRows, path+":selection", i18n.Text("Selection Type"), items,
-		*selection, nil, func(v E) { *selection = v }))
+		*selection, nil, func(v E) {
+			*selection = v
+			if v == this {
+				*name = criteria.Text{Compare: criteria.IsText}
+			}
+			if changed != nil {
+				changed(v)
+			}
+		}))
 	if *selection != this {
 		p.textCriteria(parent, path+":name", i18n.Text("Name"), "", "", "", name, true)
 	}
@@ -875,7 +919,26 @@ func (p *featuresPanel) weaponBonus(fields, chips *unison.Panel, path string, on
 		percent.SetEnabled(one.Dice.IsZero())
 		addCentered(fields, percent)
 	}
-	selectionPopup(p, fields, path, wsel.Types, &one.SelectionType, wsel.ThisWeapon, &one.NameCriteria)
+	selectionPopup(p, fields, path, wsel.Types, &one.SelectionType, wsel.ThisWeapon, &one.NameCriteria,
+		func(v wsel.Type) {
+			// The criteria the new selection doesn't consult are cleared, so a file doesn't keep what no chip shows. The
+			// specialization stays, since every selection consults it: as the skill's specialization by required skill,
+			// as the usage otherwise.
+			anyText := criteria.Text{Compare: criteria.AnyText}
+			anyNumber := criteria.Number{Compare: criteria.AnyNumber}
+			switch v {
+			case wsel.WithRequiredSkill:
+				one.WeaponOwnerCriteria = gurps.WeaponOwnerCriteria{}
+			case wsel.WithName:
+				one.UsageCriteria = anyText
+				one.RelativeLevelCriteria = anyNumber
+			case wsel.ThisWeapon:
+				one.UsageCriteria = anyText
+				one.TagsCriteria = anyText
+				one.WeaponOwnerCriteria = gurps.WeaponOwnerCriteria{}
+				one.RelativeLevelCriteria = anyNumber
+			}
+		})
 	switch one.SelectionType {
 	case wsel.WithRequiredSkill:
 		p.textChip(chips, path, "specialization", &one.SpecializationCriteria)
@@ -883,6 +946,7 @@ func (p *featuresPanel) weaponBonus(fields, chips *unison.Panel, path string, on
 	default:
 		p.textChip(chips, path, "usage", &one.SpecializationCriteria)
 	}
+	p.damageTypeChip(chips, path, &one.DamageTypeCriteria)
 	if one.SelectionType != wsel.ThisWeapon {
 		p.tagsChip(chips, path, &one.TagsCriteria)
 	}
@@ -916,6 +980,15 @@ func (p *featuresPanel) relativeSkillLevelChip(chips *unison.Panel, path string,
 				numericWordsAfter(i18n.Text("and whose relative skill level")), level, -fxp.Thousand, fxp.Thousand,
 				true, false)
 		})
+}
+
+// damageTypeChip adds the optional damage type criterion of a feature that selects weapons, whose field suggests the
+// common damage types and says how to match any of several.
+func (p *featuresPanel) damageTypeChip(chips *unison.Panel, path string, c *criteria.Text) {
+	p.textChipWith(chips, path, "damagetype", c, gurps.DamageTypeSuggestions)
+	if field := chips.FindRefKey(path + ":damagetype"); field != nil {
+		field.Tooltip = newWrappedTooltip(i18n.Text(`Separate multiple types with commas to match any one of them, e.g. "cut, imp"`))
+	}
 }
 
 // damageField adds the amount field of a weapon damage bonus, which accepts a dice specification as well as a flat
@@ -962,8 +1035,24 @@ func (p *featuresPanel) damageField(parent *unison.Panel, path string, one *gurp
 // items it applies to: the traits whose name matches, or the weapons selected as a weapon bonus selects them, with the
 // criteria of that selection as chips. Changing the field resets the value, since another field may take other values,
 // and clears the criteria a field that applies to traits can't use: traits have no usage and aren't selected by skill.
+// Changing the field to one that applies to weapons, or the selection of their weapons, clears the criteria the
+// selection doesn't consult, so a file doesn't keep what no chip shows.
 func (p *featuresPanel) selectorOverride(fields, chips *unison.Panel, path string, one *gurps.SelectorOverride) {
 	key := func(name string) string { return path + ":" + name }
+	clearUnconsulted := func(selection wsel.Type) {
+		anyText := criteria.Text{Compare: criteria.AnyText}
+		if selection != wsel.WithRequiredSkill {
+			one.SpecializationCriteria = anyText
+			one.RelativeLevelCriteria = criteria.Number{Compare: criteria.AnyNumber}
+		}
+		if selection != wsel.WithName {
+			one.WeaponOwnerCriteria = gurps.WeaponOwnerCriteria{}
+		}
+		if selection == wsel.ThisWeapon {
+			one.NameCriteria = criteria.Text{Compare: criteria.IsText}
+			one.TagsCriteria = anyText
+		}
+	}
 	addCentered(fields, compactPopup(&p.sentenceRows, key("field"), i18n.Text("Field"), selector.Fields, one.Field, nil,
 		func(v selector.Field) {
 			one.Field = v
@@ -976,8 +1065,11 @@ func (p *featuresPanel) selectorOverride(fields, chips *unison.Panel, path strin
 			if d.Scope == gurps.SelectorScopeTrait {
 				one.SpecializationCriteria = criteria.Text{Compare: criteria.AnyText}
 				one.UsageCriteria = criteria.Text{Compare: criteria.AnyText}
+				one.DamageTypeCriteria = criteria.Text{Compare: criteria.AnyText}
 				one.RelativeLevelCriteria = criteria.Number{Compare: criteria.AnyNumber}
 				one.WeaponOwnerCriteria = gurps.WeaponOwnerCriteria{}
+			} else {
+				clearUnconsulted(one.SelectionType)
 			}
 		}))
 	addJoiningWords(fields, i18n.Text("to"))
@@ -1020,17 +1112,20 @@ func (p *featuresPanel) selectorOverride(fields, chips *unison.Panel, path strin
 		p.tagsChip(chips, path, &one.TagsCriteria)
 		return
 	}
-	selectionPopup(p, fields, path, wsel.Types, &one.SelectionType, wsel.ThisWeapon, &one.NameCriteria)
+	selectionPopup(p, fields, path, wsel.Types, &one.SelectionType, wsel.ThisWeapon, &one.NameCriteria, clearUnconsulted)
 	switch one.SelectionType {
 	case wsel.ThisWeapon:
 		p.textChip(chips, path, "usage", &one.UsageCriteria)
+		p.damageTypeChip(chips, path, &one.DamageTypeCriteria)
 	case wsel.WithName:
 		p.textChip(chips, path, "usage", &one.UsageCriteria)
+		p.damageTypeChip(chips, path, &one.DamageTypeCriteria)
 		p.tagsChip(chips, path, &one.TagsCriteria)
 		p.weaponOwnerChips(chips, path, &one.WeaponOwnerCriteria)
 	default:
 		p.textChip(chips, path, "specialization", &one.SpecializationCriteria)
 		p.textChip(chips, path, "usage", &one.UsageCriteria)
+		p.damageTypeChip(chips, path, &one.DamageTypeCriteria)
 		p.tagsChip(chips, path, &one.TagsCriteria)
 		p.relativeSkillLevelChip(chips, path, &one.RelativeLevelCriteria)
 	}

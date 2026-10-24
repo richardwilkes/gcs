@@ -9,11 +9,7 @@
 
 package gurps
 
-import (
-	"slices"
-
-	"github.com/dop251/goja"
-)
+import "github.com/dop251/goja"
 
 func deferredNewScriptEquipmentModifier(mod *EquipmentModifier) ScriptSelfProvider {
 	return deferredScriptSelf(mod, newScriptEquipmentModifier)
@@ -30,7 +26,7 @@ func newScriptEquipmentModifier(r *goja.Runtime, mod *EquipmentModifier) *goja.O
 	}
 	m["name"] = func() goja.Value { return r.ToValue(mod.NameWithReplacements()) }
 	m["techLevel"] = func() goja.Value { return r.ToValue(mod.TechLevel) }
-	m["tags"] = func() goja.Value { return r.ToValue(slices.Clone(mod.Tags)) }
+	m["tags"] = scriptTags(r, mod.Tags)
 	m["notes"] = scriptNotes(r, mod)
 	return r.NewDynamicObject(NewScriptObject(r, m))
 }

@@ -10,9 +10,14 @@
 package gurps
 
 import (
+	"slices"
 	"testing"
 
+	"github.com/richardwilkes/gcs/v5/model/criteria"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/feature"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/skillsel"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/wsel"
 	"github.com/richardwilkes/gcs/v5/model/nameable"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/toolbox/v2/tid"
@@ -93,14 +98,26 @@ func TestLinkedModifierCodeReachesItsFeatures(t *testing.T) {
 	skill.Points = fxp.Four
 	e.Skills = append(e.Skills, skill)
 
-	// A trait modifier whose skill bonus names its skill through a code linked to the trait's.
+	// A trait modifier whose skill bonus names its skill through a code linked to the trait's, and whose bonuses to the
+	// trait's weapons name their usage through it.
 	traitMod := NewTraitModifier(e, nil, false)
 	traitMod.Name = "Focused on @skill@"
-	traitMod.Features = Features{newSkillBonusTo("@skill@", fxp.Two)}
+	usage := criteria.Text{Compare: criteria.IsText, Qualifier: "@skill@"}
+	weaponBonus := NewWeaponBonus(feature.WeaponBonus)
+	weaponBonus.SelectionType = wsel.ThisWeapon
+	weaponBonus.SpecializationCriteria = usage
+	weaponSkillBonus := NewSkillBonus()
+	weaponSkillBonus.SelectionType = skillsel.ThisWeapon
+	weaponSkillBonus.SpecializationCriteria = usage
+	weaponSkillBonus.Amount = fxp.Two
+	traitMod.Features = Features{newSkillBonusTo("@skill@", fxp.Two), weaponBonus, weaponSkillBonus}
 	trait := addTraitWithFeatures(e, "Weapon Master (@weapon@)")
 	trait.SetModifiers([]*TraitModifier{traitMod})
 	trait.NameableLinks = map[tid.TID]map[string]string{traitMod.TID: {"skill": "weapon"}}
 	trait.Replacements = map[string]string{"weapon": "Broadsword"}
+	w := newCrushingWeapon(trait, "@weapon@")
+	w.Defaults = []*SkillDefault{newSkillDefaultTo("Broadsword", "", true, 0)}
+	trait.Weapons = []*Weapon{w}
 
 	// Likewise for an equipment modifier.
 	eqpMod := NewEquipmentModifier(e, nil, false)
@@ -117,6 +134,9 @@ func TestLinkedModifierCodeReachesItsFeatures(t *testing.T) {
 	c.Equal("Balanced for Broadsword", eqpMod.NameWithReplacements())
 	c.Equal(fxp.Three, e.SkillBonusFor("Broadsword", "", "", nil, nil),
 		"a modifier's bonus resolves its linked code through its owner, as its name does")
+	c.True(slices.Contains(w.collectWeaponBonuses(oneDieCount, nil, feature.WeaponBonus), weaponBonus),
+		"so does a modifier's weapon bonus to the weapons of its owner")
+	c.Equal(skill.LevelData.Level+fxp.Two, w.SkillLevel(nil), "and its skill bonus to those weapons")
 }
 
 func TestApplyDropsSelfLinks(t *testing.T) {

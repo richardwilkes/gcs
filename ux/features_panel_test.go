@@ -956,7 +956,8 @@ func TestFeaturesPanelSituation(t *testing.T) {
 }
 
 // TestFeaturesPanelOptionalSpecialization checks that a skill bonus selected by name and a skill point bonus offer an
-// optional specialization criterion, which a skill bonus selected another way does not.
+// optional specialization criterion, which a skill bonus selected another way does not, and that selecting a skill
+// bonus another way clears the criterion along with its chip.
 func TestFeaturesPanelOptionalSpecialization(t *testing.T) {
 	c := check.New(t)
 	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
@@ -992,6 +993,12 @@ func TestFeaturesPanelOptionalSpecialization(t *testing.T) {
 	screen.Do(func() {
 		c.Nil(p.FindRefKey("2:add optspecialization"), "a skill bonus selected another way doesn't offer it")
 	})
+	byName.OptionalSpecializationCriteria.Qualifier = "Rapier"
+	screen.Do(func() { p.toggle("0") })
+	screen.Do(func() { featuresPopup[skillsel.Type](c, p, "0:selection").Select(skillsel.ThisWeapon) })
+	c.Equal(criteria.Text{Compare: criteria.AnyText}, byName.OptionalSpecializationCriteria,
+		"selecting a skill bonus another way clears the criterion")
+	screen.Do(func() { c.Nil(p.FindRefKey("0:optspecialization"+keyChip), "along with its chip") })
 }
 
 // TestFeaturesPanelRelativeSkillLevel checks that a weapon bonus selected by its required skill leaves its relative
@@ -1033,6 +1040,57 @@ func TestFeaturesPanelRelativeSkillLevel(t *testing.T) {
 		}
 	})
 	c.Equal(criteria.AnyNumber, zero.RelativeLevelCriteria.Compare, "removing the chip removes the criterion")
+}
+
+// TestFeaturesPanelDamageTypeChip checks that a weapon bonus and a skill bonus selecting weapons leave the damage type
+// as an optional chip, which a skill bonus selecting skills doesn't offer, that adding it starts the criterion as "is"
+// with a field that suggests the common damage types and says how to match several, and that removing the chip
+// removes the criterion.
+func TestFeaturesPanelDamageTypeChip(t *testing.T) {
+	c := check.New(t)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
+	entity := gurps.NewEntity()
+	owner := gurps.NewTrait(entity, nil, false)
+	weapon := gurps.NewWeaponBonus(feature.WeaponBonus)
+	weapon.SetOwner(owner)
+	byName := gurps.NewSkillBonus()
+	byName.SetOwner(owner)
+	thisWeapon := gurps.NewSkillBonus()
+	thisWeapon.SelectionType = skillsel.ThisWeapon
+	thisWeapon.DamageTypeCriteria = criteria.Text{Compare: criteria.IsText, Qualifier: "cut"}
+	thisWeapon.SetOwner(owner)
+	features := gurps.Features{weapon, byName, thisWeapon}
+	c.Equal(criteria.AnyText, weapon.DamageTypeCriteria.Compare, "a new weapon bonus has no damage type criterion")
+	p, _ := showFeaturesPanel(t, screen, entity, owner, &features, false)
+	screen.Do(func() { p.toggle("0") })
+	screen.Do(func() {
+		c.Nil(p.FindRefKey("0:damagetype"+keyChip), "a new weapon bonus shows no damage type chip")
+		add, ok := p.FindRefKey("0:add damagetype").Self.(*unison.Button)
+		c.True(ok, "but offers one")
+		if ok {
+			add.ClickCallback()
+		}
+	})
+	c.Equal(criteria.Text{Compare: criteria.IsText}, weapon.DamageTypeCriteria, "adding the chip starts the criterion as is")
+	screen.Do(func() {
+		field, ok := p.FindRefKey("0:damagetype").Self.(*StringField)
+		c.True(ok, "the chip has a field for the damage type")
+		if ok {
+			c.Equal(1, len(field.Children()), "which has a dropdown of suggestions")
+			c.NotNil(field.Tooltip, "and says how to match several")
+		}
+	})
+	screen.Do(func() { p.toggle("1") })
+	screen.Do(func() { c.Nil(p.FindRefKey("1:add damagetype"), "a skill bonus selecting skills doesn't offer it") })
+	screen.Do(func() { p.toggle("2") })
+	screen.Do(func() {
+		buttons := uxtest.PanelsOfType[*unison.Button](p.FindRefKey("2:damagetype" + keyChip))
+		c.NotEqual(0, len(buttons), "a skill bonus selecting this weapon with one shows its chip")
+		if len(buttons) != 0 {
+			buttons[len(buttons)-1].ClickCallback()
+		}
+	})
+	c.Equal(criteria.AnyText, thisWeapon.DamageTypeCriteria.Compare, "removing the chip removes the criterion")
 }
 
 // TestFeaturesPanelFocusAfterRebuild checks that a choice from a popup leaves the focus on the popup, and that when the
@@ -1161,6 +1219,7 @@ func TestFeaturesPanelSelectorFieldChange(t *testing.T) {
 	override := gurps.NewSelectorOverride(selector.WeaponDamageType)
 	override.SpecializationCriteria = criteria.Text{Compare: criteria.IsText, Qualifier: "Rapier"}
 	override.UsageCriteria = criteria.Text{Compare: criteria.IsText, Qualifier: "Thrown"}
+	override.DamageTypeCriteria = criteria.Text{Compare: criteria.IsText, Qualifier: "cut"}
 	override.RelativeLevelCriteria = criteria.Number{Compare: criteria.AtLeastNumber, Qualifier: fxp.One}
 	override.OwnerLevelCriteria = criteria.Number{Compare: criteria.AtLeastNumber, Qualifier: fxp.One}
 	override.OwnerTechLevelCriteria = criteria.Text{Compare: criteria.IsText, Qualifier: "3"}
@@ -1187,49 +1246,89 @@ func TestFeaturesPanelSelectorFieldChange(t *testing.T) {
 	c.Equal(want, override.Value, "the value starts over")
 	c.Equal(criteria.Text{Compare: criteria.AnyText}, override.UsageCriteria, "the usage criterion is cleared")
 	c.Equal(criteria.Text{Compare: criteria.AnyText}, override.SpecializationCriteria, "so is the specialization")
+	c.Equal(criteria.Text{Compare: criteria.AnyText}, override.DamageTypeCriteria, "and the damage type")
 	c.Equal(criteria.Number{Compare: criteria.AnyNumber}, override.RelativeLevelCriteria, "and the relative skill level")
 	c.Equal(gurps.WeaponOwnerCriteria{}, override.WeaponOwnerCriteria, "and the owner criteria")
 	c.Equal(traitField, lastSelectorFieldUsed)
 	screen.Do(func() {
 		c.Nil(p.FindRefKey("0:add usage"), "and isn't offered")
+		c.Nil(p.FindRefKey("0:add damagetype"), "nor is the damage type")
 		c.Nil(p.FindRefKey("0:selection"), "a trait-scoped override has no selection")
 		c.NotNil(p.FindRefKey("0:name"), "but names its traits")
 	})
+	// Back to a weapon field with a selection, hidden until now, that consults neither the name nor the tags.
+	override.SelectionType = wsel.ThisWeapon
+	override.NameCriteria.Qualifier = "Sword"
+	override.TagsCriteria = criteria.Text{Compare: criteria.ContainsText, Qualifier: "Melee"}
+	screen.Do(func() { featuresPopup[selector.Field](c, p, "0:field").Select(selector.WeaponDamageType) })
+	c.Equal(criteria.Text{Compare: criteria.IsText}, override.NameCriteria,
+		"a weapon field clears the criteria its selection doesn't consult: the name")
+	c.Equal(criteria.Text{Compare: criteria.AnyText}, override.TagsCriteria, "and the tags")
 }
 
 // TestFeaturesPanelSelectorSelection checks that a weapon-scoped selector override offers the selection a weapon bonus
-// does, with the chips of each: specialization, usage, tags and relative skill level when selected by required skill,
-// usage alone for this weapon, which also drops the name, and usage, tags and the owner criteria when selected by name.
+// does, with the chips of each: specialization, usage, damage type, tags and relative skill level when selected by
+// required skill, usage and damage type alone for this weapon, which also drops the name, and usage, damage type, tags
+// and the owner criteria when selected by name. Choosing a selection clears the criteria it doesn't consult, so that a
+// file doesn't keep what no chip shows.
 func TestFeaturesPanelSelectorSelection(t *testing.T) {
 	c := check.New(t)
 	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
 	entity := gurps.NewEntity()
 	owner := gurps.NewTrait(entity, nil, false)
 	override := gurps.NewSelectorOverride(selector.WeaponDamageType)
+	override.NameCriteria.Qualifier = "Sword"
+	override.SpecializationCriteria = criteria.Text{Compare: criteria.IsText, Qualifier: "Rapier"}
+	override.UsageCriteria = criteria.Text{Compare: criteria.IsText, Qualifier: "Swung"}
+	override.DamageTypeCriteria = criteria.Text{Compare: criteria.IsText, Qualifier: "cut"}
+	override.TagsCriteria = criteria.Text{Compare: criteria.ContainsText, Qualifier: "Melee"}
+	override.RelativeLevelCriteria = criteria.Number{Compare: criteria.AtLeastNumber, Qualifier: fxp.One}
+	override.OwnerTechLevelCriteria = criteria.Text{Compare: criteria.IsText, Qualifier: "3"}
 	override.SetOwner(owner)
 	features := gurps.Features{override}
 	c.Equal(wsel.WithRequiredSkill, override.SelectionType, "precondition: a new override is selected by skill")
 	p, _ := showFeaturesPanel(t, screen, entity, owner, &features, false)
+	// A criterion is offered as a button to add it while it is unset, as a chip once it is set.
 	offered := func(keys ...string) {
 		for _, key := range []string{
-			"add specialization", "add usage", "add tag", "add level", "add ownerlevel", "add ownertl",
+			"add specialization", "add usage", "add damagetype", "add tag", "add level", "add ownerlevel", "add ownertl",
 			"add ownerspecialization", "add owneroptspecialization", "add ownertitlenote", "name",
 		} {
-			c.Equal(slices.Contains(keys, key), p.FindRefKey("0:"+key) != nil, "%v offers %s", override.SelectionType, key)
+			present := p.FindRefKey("0:"+key) != nil
+			if name, ok := strings.CutPrefix(key, "add "); ok {
+				present = present || p.FindRefKey("0:"+name+keyChip) != nil
+			}
+			c.Equal(slices.Contains(keys, key), present, "%v offers %s", override.SelectionType, key)
 		}
 	}
 	screen.Do(func() { p.toggle("0") })
 	screen.Do(func() {
 		c.NotNil(p.FindRefKey("0:selection"), "a weapon-scoped override offers the selection")
-		offered("add specialization", "add usage", "add tag", "add level", "name")
+		offered("add specialization", "add usage", "add damagetype", "add tag", "add level", "name")
 	})
 	screen.Do(func() { featuresPopup[wsel.Type](c, p, "0:selection").Select(wsel.ThisWeapon) })
 	c.Equal(wsel.ThisWeapon, override.SelectionType)
-	screen.Do(func() { offered("add usage") })
+	anyText := criteria.Text{Compare: criteria.AnyText}
+	anyNumber := criteria.Number{Compare: criteria.AnyNumber}
+	c.Equal(criteria.Text{Compare: criteria.IsText}, override.NameCriteria, "this weapon clears the name")
+	c.Equal(anyText, override.SpecializationCriteria, "and the specialization")
+	c.Equal(anyText, override.TagsCriteria, "and the tags")
+	c.Equal(anyNumber, override.RelativeLevelCriteria, "and the relative skill level")
+	c.Equal(gurps.WeaponOwnerCriteria{}, override.WeaponOwnerCriteria, "and the owner criteria")
+	c.Equal("Swung", override.UsageCriteria.Qualifier, "but keeps the usage")
+	c.Equal("cut", override.DamageTypeCriteria.Qualifier, "and the damage type")
+	screen.Do(func() { offered("add usage", "add damagetype") })
+	// Set again, to see which of them selecting by name clears.
+	override.SpecializationCriteria = criteria.Text{Compare: criteria.IsText, Qualifier: "Rapier"}
+	override.TagsCriteria = criteria.Text{Compare: criteria.ContainsText, Qualifier: "Melee"}
+	override.RelativeLevelCriteria = criteria.Number{Compare: criteria.AtLeastNumber, Qualifier: fxp.One}
 	screen.Do(func() { featuresPopup[wsel.Type](c, p, "0:selection").Select(wsel.WithName) })
 	c.Equal(wsel.WithName, override.SelectionType)
+	c.Equal(anyText, override.SpecializationCriteria, "selecting by name clears the specialization")
+	c.Equal(anyNumber, override.RelativeLevelCriteria, "and the relative skill level")
+	c.Equal("Melee", override.TagsCriteria.Qualifier, "but keeps the tags")
 	screen.Do(func() {
-		offered("add usage", "add tag", "add ownerlevel", "add ownertl", "add ownerspecialization",
+		offered("add usage", "add damagetype", "add tag", "add ownerlevel", "add ownertl", "add ownerspecialization",
 			"add owneroptspecialization", "add ownertitlenote", "name")
 	})
 }

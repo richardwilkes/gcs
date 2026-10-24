@@ -13,6 +13,7 @@ import (
 	"encoding/json/jsontext"
 	"encoding/json/v2"
 	"hash"
+	"slices"
 	"strconv"
 
 	"github.com/richardwilkes/gcs/v5/model/criteria"
@@ -58,8 +59,10 @@ type SelectorOverride struct {
 
 // SelectorOverrideData is the persisted portion. SelectionType says how a weapon-scoped override selects its weapons
 // and is ignored by a trait-scoped one. The specialization and relative level criteria only take part when selecting
-// by required skill and the owner criteria only when selecting by name; the usage criterion does in every selection,
-// unlike a weapon bonus's.
+// by required skill and the owner criteria only when selecting by name; the usage and damage type criteria do in every
+// selection, unlike a weapon bonus's usage. The damage type criterion matches the damage type as the overrides resolve
+// it, except on an override of the damage type itself, which matches the weapon's own type, since resolving the type
+// would consult that very override.
 type SelectorOverrideData struct { //nolint:govet // Field order is kept readable for the on-disk JSON rather than packed
 	Type feature.Type `json:"type"`
 	FeatureSwitch
@@ -70,6 +73,7 @@ type SelectorOverrideData struct { //nolint:govet // Field order is kept readabl
 	NameCriteria           criteria.Text   `json:"name,omitzero"`
 	SpecializationCriteria criteria.Text   `json:"specialization,omitzero"`
 	UsageCriteria          criteria.Text   `json:"usage,omitzero"`
+	DamageTypeCriteria     criteria.Text   `json:"damage_type,omitzero"`
 	TagsCriteria           criteria.Text   `json:"tags,omitzero"`
 	RelativeLevelCriteria  criteria.Number `json:"level,omitzero"`
 	WeaponOwnerCriteria
@@ -88,6 +92,7 @@ func NewSelectorOverride(field selector.Field) *SelectorOverride {
 	o.NameCriteria.Compare = criteria.IsText
 	o.SpecializationCriteria.Compare = criteria.AnyText
 	o.UsageCriteria.Compare = criteria.AnyText
+	o.DamageTypeCriteria.Compare = criteria.AnyText
 	o.TagsCriteria.Compare = criteria.AnyText
 	o.RelativeLevelCriteria.Compare = criteria.AnyNumber
 	if d := SelectorFieldDescriptorFor(field); len(d.SuggestedStates) != 0 {
@@ -117,13 +122,14 @@ func (o *SelectorOverride) FillWithNameableKeys(m, existing map[string]string) {
 	case !o.weaponScoped():
 		nameable.Extract(m, existing, o.NameCriteria.Qualifier, o.TagsCriteria.Qualifier)
 	case o.SelectionType == wsel.ThisWeapon:
-		nameable.Extract(m, existing, o.UsageCriteria.Qualifier)
+		nameable.Extract(m, existing, o.UsageCriteria.Qualifier, o.DamageTypeCriteria.Qualifier)
 	case o.SelectionType == wsel.WithName:
-		nameable.Extract(m, existing, o.NameCriteria.Qualifier, o.UsageCriteria.Qualifier, o.TagsCriteria.Qualifier)
+		nameable.Extract(m, existing, o.NameCriteria.Qualifier, o.UsageCriteria.Qualifier, o.DamageTypeCriteria.Qualifier,
+			o.TagsCriteria.Qualifier)
 		o.fillWithNameableKeys(m, existing)
 	default:
 		nameable.Extract(m, existing, o.NameCriteria.Qualifier, o.SpecializationCriteria.Qualifier,
-			o.UsageCriteria.Qualifier, o.TagsCriteria.Qualifier)
+			o.UsageCriteria.Qualifier, o.DamageTypeCriteria.Qualifier, o.TagsCriteria.Qualifier)
 	}
 }
 
@@ -147,12 +153,14 @@ func (o *SelectorOverride) OverrideSpecificity() int {
 		list = []criteria.Text{o.NameCriteria, o.TagsCriteria}
 	case o.SelectionType == wsel.ThisWeapon:
 		specificity = 2
-		list = []criteria.Text{o.UsageCriteria}
+		list = []criteria.Text{o.UsageCriteria, o.DamageTypeCriteria}
 	case o.SelectionType == wsel.WithName:
 		specificity = o.specificity()
-		list = []criteria.Text{o.NameCriteria, o.UsageCriteria, o.TagsCriteria}
+		list = []criteria.Text{o.NameCriteria, o.UsageCriteria, o.DamageTypeCriteria, o.TagsCriteria}
 	default:
-		list = []criteria.Text{o.NameCriteria, o.SpecializationCriteria, o.UsageCriteria, o.TagsCriteria}
+		list = []criteria.Text{
+			o.NameCriteria, o.SpecializationCriteria, o.UsageCriteria, o.DamageTypeCriteria, o.TagsCriteria,
+		}
 		if !o.RelativeLevelCriteria.IsZero() {
 			specificity++
 		}
@@ -165,34 +173,46 @@ func (o *SelectorOverride) OverrideSpecificity() int {
 	return specificity
 }
 
-// MatchesWeapon returns true if this override's name, usage, tag and owner criteria match the given weapon, which is
-// how an override selecting weapons by name picks them. The criteria are filled from the override owner's
+// MatchesWeapon returns true if this override's name, usage, damage type, tag and owner criteria match the given
+// weapon, which is how an override selecting weapons by name picks them. damageType supplies the weapon's damage type,
+// as WeaponDamage.typeForOverride does for this override's field, and is only called when the criterion constrains it,
+// since finding the type may mean resolving the weapon's overrides. The criteria are filled from the override owner's
 // substitutions, as with any bonus. The caller is responsible for checking that the override targets the field it is
 // interested in.
-func (o *SelectorOverride) MatchesWeapon(w *Weapon) bool {
+func (o *SelectorOverride) MatchesWeapon(w *Weapon, damageType func() string) bool {
 	replacements := bonusReplacements(o)
 	return w.matchesName(o.NameCriteria, &o.WeaponOwnerCriteria, replacements) &&
 		o.UsageCriteria.Matches(replacements, w.UsageWithReplacements()) &&
+		o.matchesDamageType(replacements, damageType) &&
 		o.TagsCriteria.MatchesList(replacements, w.Owner.TagList()...)
 }
 
 // matchesThisWeapon returns true if this override, carried by the weapon's owner and selecting that owner's weapons,
-// applies to the given weapon: only the usage criterion takes part.
-func (o *SelectorOverride) matchesThisWeapon(w *Weapon) bool {
-	return o.UsageCriteria.Matches(bonusReplacements(o), w.UsageWithReplacements())
+// applies to the given weapon: only the usage and damage type criteria take part. damageType is as for MatchesWeapon.
+func (o *SelectorOverride) matchesThisWeapon(w *Weapon, damageType func() string) bool {
+	replacements := bonusReplacements(o)
+	return o.UsageCriteria.Matches(replacements, w.UsageWithReplacements()) &&
+		o.matchesDamageType(replacements, damageType)
 }
 
 // matchesRequiredSkill returns true if this override, selecting weapons by their required skill, matches a weapon
-// with the given usage and tags that is used with the named skill, which is empty when the weapon uses none. rsl
-// supplies that skill's relative level, and is only called when the relative level criterion constrains it, since
-// finding it means walking the skills.
-func (o *SelectorOverride) matchesRequiredSkill(name, specialization, usage string, tags []string, rsl func() fxp.Int) bool {
+// with the given usage and tags that is used with the named skill, which is empty when the weapon uses none.
+// damageType is as for MatchesWeapon, and rsl supplies that skill's relative level, called only when the relative level
+// criterion constrains it, since finding it means walking the skills.
+func (o *SelectorOverride) matchesRequiredSkill(name, specialization, usage string, damageType func() string, tags []string, rsl func() fxp.Int) bool {
 	replacements := bonusReplacements(o)
 	return matchesRequiredSkillName(o.NameCriteria, replacements, name) &&
 		o.SpecializationCriteria.Matches(replacements, specialization) &&
 		o.UsageCriteria.Matches(replacements, usage) &&
+		o.matchesDamageType(replacements, damageType) &&
 		o.TagsCriteria.MatchesList(replacements, tags...) &&
 		(o.RelativeLevelCriteria.IsZero() || o.RelativeLevelCriteria.Matches(rsl()))
+}
+
+// matchesDamageType reports whether the damage type criterion matches the damage type that damageType supplies, which
+// is only called when the criterion constrains it, since finding the type may mean resolving the weapon's overrides.
+func (o *SelectorOverride) matchesDamageType(replacements map[string]string, damageType func() string) bool {
+	return o.DamageTypeCriteria.IsZero() || o.DamageTypeCriteria.MatchesList(replacements, damageType())
 }
 
 // MatchesTrait returns true if this override's criteria match the given trait. Traits have no usage, so only the name
@@ -223,13 +243,13 @@ func (o *SelectorOverride) Describe(_ *Entity, replacements map[string]string, e
 		target = describeTarget(i18n.Text("traits named %s"), i18n.Text("traits"), i18n.Text("whose name"),
 			o.NameCriteria, replacements, em) + describeTags(o.TagsCriteria, replacements, em)
 	case o.SelectionType == wsel.ThisWeapon:
-		target = i18n.Text("this weapon") + describeWhose(i18n.Text("when its usage"), o.UsageCriteria, replacements, em)
+		target = i18n.Text("this weapon") + describeThisWeaponClauses(o.UsageCriteria, o.DamageTypeCriteria, replacements, em)
 	case o.SelectionType == wsel.WithName:
-		target = describeNamedWeapons(o.NameCriteria, o.UsageCriteria, o.TagsCriteria, &o.WeaponOwnerCriteria,
-			replacements, em)
+		target = describeNamedWeapons(o.NameCriteria, o.UsageCriteria, o.DamageTypeCriteria, o.TagsCriteria,
+			&o.WeaponOwnerCriteria, replacements, em)
 	default:
 		target = describeSkillSelectedWeapons(o.NameCriteria, o.SpecializationCriteria, o.UsageCriteria,
-			o.TagsCriteria, o.RelativeLevelCriteria, replacements, em)
+			o.DamageTypeCriteria, o.TagsCriteria, o.RelativeLevelCriteria, replacements, em)
 	}
 	return describeSwitchable(o.Switchable, i18n.Text("Sets %s to %s on %s (priority %d)",
 		em(o.Field.String()), value, target, o.Priority))
@@ -250,6 +270,7 @@ func (o *SelectorOverride) Hash(h hash.Hash) {
 	o.NameCriteria.Hash(h)
 	o.SpecializationCriteria.Hash(h)
 	o.UsageCriteria.Hash(h)
+	o.DamageTypeCriteria.Hash(h)
 	o.TagsCriteria.Hash(h)
 	o.RelativeLevelCriteria.Hash(h)
 	o.WeaponOwnerCriteria.Hash(h)
@@ -282,6 +303,11 @@ type SelectorFieldDescriptor struct {
 // damageTypeStates are the common GURPS damage type abbreviations, shared by the damage type and fragmentation type
 // fields. Both are free-form strings in this model, so these are offered as suggestions but anything is accepted.
 var damageTypeStates = []string{"cr", "cut", "imp", "pi-", "pi", "pi+", "pi++", "burn", "cor", "fat", "tox"}
+
+// DamageTypeSuggestions returns the common damage type abbreviations, for offering where a damage type is entered.
+func DamageTypeSuggestions() []string {
+	return slices.Clone(damageTypeStates)
+}
 
 func validFixedPoint(value string) bool {
 	_, err := fxp.FromString(value)
