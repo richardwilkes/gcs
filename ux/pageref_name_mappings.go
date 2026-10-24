@@ -143,6 +143,7 @@ var PageRefKeyNameMappings = map[string]string{
 	"FED":     "Federation",
 	"FF":      "Fantasy Folk (3E)",
 	"FFE":     "Fantasy Folk: Elves",
+	"FFF":     "Fantasy Folk: Fishfolk",
 	"FFGH":    "Fantasy Folk: Goblins and Hobgoblins",
 	"FFK":     "Fantasy Folk: Kobolds",
 	"FFRR":    "Fantasy Folk: The Reptilian Races",
