@@ -152,7 +152,7 @@ func TestChooseFileToSave(t *testing.T) {
 	screen.Sync()
 	dialogWnd, _ := modalDialog(t, screen, wnd)
 	fileNameField, fileName, dirName := saveDialogFields(t, screen, dialogWnd)
-	c.Equal("Alpha@6 Beta", fileName, "the initial name is offered sanitized for the file system")
+	c.Equal("Alpha_ Beta", fileName, "the initial name is offered sanitized for the file system")
 	c.Equal(filepath.Base(dir), dirName, "the dialog opens in the directory it was given")
 	screen.Click(screen.PanelCenter(fileNameField))
 	screen.KeyPress(unison.KeyReturn, mod.None)
@@ -165,7 +165,7 @@ func TestChooseFileToSave(t *testing.T) {
 	c.Equal(1, windows, "the dialog has been dismissed")
 	c.True(returned, "the choice has been made")
 	c.True(chosenOK, "a chosen file is reported as chosen")
-	c.Equal(filepath.Join(dir, "Alpha@6 Beta.txt"), chosen, "the chosen path carries the required extension")
+	c.Equal(filepath.Join(dir, "Alpha_ Beta.txt"), chosen, "the chosen path carries the required extension")
 	c.Equal(dir, lastDir, "the chosen file's directory is recorded under the key")
 
 	// Choose again with no key: the choice is made, but nothing is recorded.

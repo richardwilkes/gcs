@@ -178,5 +178,30 @@ func unsavedFileName(name, fallback, ext string) string {
 	if name = strings.TrimSpace(name); name == "" {
 		name = fallback
 	}
-	return xfilepath.SanitizeName(name) + ext
+	return sanitizeFileName(name) + ext
+}
+
+func sanitizeFileName(name string) string {
+	// macOS treats ":" as a path separator, so it can't be in a file name. Windows treats it as part of a drive letter,
+	// so it can't be in a file name either.
+	name = strings.ReplaceAll(name, ":", "_")
+	// All platforms treat "/" as path separators, so they can't be in a file name either.
+	name = strings.ReplaceAll(name, "/", "_")
+	// Windows treats "\" as a path separator, so it can't be in a file name either.
+	name = strings.ReplaceAll(name, "\\", "_")
+	switch name {
+	case "":
+		return "unnamed"
+	case ".":
+		return "dot"
+	case "..":
+		return "dotdot"
+	default:
+		// A leading dot marks a hidden file (e.g. ".bashrc") rather than an extension, so if filepath.Ext matched the
+		// leading dot, we need to prefix the name with an underscore so that it is not hidden.
+		if strings.HasPrefix(name, ".") {
+			return "_" + name
+		}
+		return name
+	}
 }

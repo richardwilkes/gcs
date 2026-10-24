@@ -16,7 +16,6 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/toolbox/v2/check"
-	"github.com/richardwilkes/toolbox/v2/xfilepath"
 )
 
 // A dockable opened from a file is tied to that file: it is not modified, it goes by the file's name, and saving it
@@ -59,7 +58,7 @@ func TestOpenDockableFromFile(t *testing.T) {
 func TestUnsavedSheetsGoByTheirNames(t *testing.T) {
 	c := check.New(t)
 	registerKeyBindingsOnce.Do(func() { registerActions() })
-	sanitized := xfilepath.SanitizeName("Warrior/Mage")
+	sanitized := sanitizeFileName("Warrior/Mage")
 	c.NotEqual("Warrior/Mage", sanitized, "the sanitizer must change a name holding a path separator")
 
 	entity := gurps.NewEntity()
