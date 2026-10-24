@@ -636,22 +636,9 @@ func (n *Node[T]) createLabelCell(c *gurps.CellData, width float32, foreground, 
 func labelCellTooltip(c *gurps.CellData) string {
 	tooltip := c.UnsatisfiedReason
 	if tooltip == "" {
-		tooltip = joinTooltipBlocks(c.PrereqContradiction, c.Tooltip)
+		tooltip = gurps.JoinTooltipBlocks(c.PrereqContradiction, c.Tooltip)
 	}
-	return joinTooltipBlocks(c.UnresolvedChoice, tooltip)
-}
-
-// joinTooltipBlocks joins two blocks of a tooltip under the separator Trait.CellData uses between them, or returns the
-// one that isn't empty.
-func joinTooltipBlocks(first, second string) string {
-	switch {
-	case first == "":
-		return second
-	case second == "":
-		return first
-	default:
-		return first + "\n---\n" + second
-	}
+	return gurps.JoinTooltipBlocks(c.UnresolvedChoice, tooltip)
 }
 
 // errorTag returns a tag that flags a problem with the row.

@@ -68,17 +68,26 @@ func TestLabelCellTooltipKeepsTheCellsOwnTextBehindAContradiction(t *testing.T) 
 		"the reason for an unsatisfied prerequisite replaces the cell's own tooltip")
 	c.Equal("clash", labelCellTooltip(&gurps.CellData{PrereqContradiction: "clash"}),
 		"a contradiction is explained on its own when the cell has no tooltip of its own")
-	c.Equal("clash\n---\nown", labelCellTooltip(&gurps.CellData{Tooltip: "own", PrereqContradiction: "clash"}),
+	checkTooltipBlocks(c, labelCellTooltip(&gurps.CellData{Tooltip: "own", PrereqContradiction: "clash"}), "clash", "own",
 		"a contradiction is explained ahead of the cell's own tooltip, not in place of it")
 	c.Equal("pick", labelCellTooltip(&gurps.CellData{UnresolvedChoice: "pick"}),
 		"an unresolved choice is explained on its own when the cell has nothing else to say")
-	c.Equal("pick\n---\nnotes", labelCellTooltip(&gurps.CellData{UnresolvedChoice: "pick", Tooltip: "notes"}),
+	checkTooltipBlocks(c, labelCellTooltip(&gurps.CellData{UnresolvedChoice: "pick", Tooltip: "notes"}), "pick", "notes",
 		"an unresolved choice is explained ahead of the cell's own tooltip")
-	c.Equal("pick\n---\nunmet", labelCellTooltip(&gurps.CellData{
+	checkTooltipBlocks(c, labelCellTooltip(&gurps.CellData{
 		UnresolvedChoice:  "pick",
 		UnsatisfiedReason: "unmet",
 		Tooltip:           "notes",
-	}), "an unresolved choice is explained ahead of the reason for an unsatisfied prerequisite")
+	}), "pick", "unmet", "an unresolved choice is explained ahead of the reason for an unsatisfied prerequisite")
+}
+
+// checkTooltipBlocks verifies that the tooltip renders as the two blocks, in that order, with a rule between them. It
+// is rendered the way a label cell's tooltip is, so a separator that the Markdown renderer would read as the underline
+// of a heading, which is what "---" is directly under a line of text, fails here.
+func checkTooltipBlocks(c check.Checker, tooltip, first, second, msg string) {
+	c.Helper()
+	c.Equal("<p>"+first+"</p>\n<hr>\n<p>"+second+"</p>\n", renderTooltipMarkdown(c, markdownHardLineBreaks(tooltip)),
+		msg)
 }
 
 // TestCheckCellDrawsTheNewStateBeforeReportingTheClick verifies the order of operations within a check cell's click

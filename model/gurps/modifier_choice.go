@@ -290,12 +290,7 @@ func modifierChoiceRequired[T Node[T]](node T) bool {
 func fillModifierChoiceCell[T Node[T]](node T, data *CellData) {
 	data.ChoiceInfo = ModifierChoiceDescription(node)
 	if data.ChoiceRequired = modifierChoiceRequired(node); data.ChoiceRequired {
-		explanation := i18n.Text("One of these modifiers must be picked.")
-		if data.Tooltip == "" {
-			data.Tooltip = explanation
-		} else {
-			data.Tooltip = explanation + "\n---\n" + data.Tooltip
-		}
+		data.Tooltip = JoinTooltipBlocks(i18n.Text("One of these modifiers must be picked."), data.Tooltip)
 	}
 }
 
