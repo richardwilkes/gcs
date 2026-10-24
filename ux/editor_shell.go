@@ -113,10 +113,15 @@ func (s *editorShell) newContentPanel(columns int) *unison.Panel {
 }
 
 // addApplyAndCancelButtons adds the Apply and Discard buttons to the toolbar. Both close the editor without prompting,
-// since the user has just said what to do with the changes; Apply applies them first.
+// since the user has just said what to do with the changes; Apply applies them first. The editors open on the editor's
+// modifiers and weapons edit objects within its pending data, so Apply closes them, asking about their changes, before
+// it applies that data, and applies nothing if one of them stays open.
 func (s *editorShell) addApplyAndCancelButtons(toolbar *unison.Panel, apply func()) {
 	s.applyButton, s.cancelButton = newApplyCancelButtons(toolbar, true,
 		func() bool {
+			if !CloseGroup(s.editor()) {
+				return false
+			}
 			apply()
 			return true
 		},

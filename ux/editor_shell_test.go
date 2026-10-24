@@ -320,3 +320,60 @@ func TestEditorOpensScrolledToTheStart(t *testing.T) {
 		}
 	}
 }
+
+// TestEditorApplyClosesItsSubEditorsFirst verifies that Apply closes the editors open on the editor's modifiers and
+// weapons before it applies its data, since they edit objects within that data: a modifier's change saved at the prompt
+// reaches the trait along with the trait's own changes.
+func TestEditorApplyClosesItsSubEditorsFirst(t *testing.T) {
+	c := check.New(t)
+	screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
+	sheet, ok := uxtest.OpenedByAction(t, screen, newCharacterSheetAction).(*Sheet)
+	if !ok {
+		t.Fatal("New Character Sheet must open a character sheet")
+	}
+	var e *editor[*gurps.Trait, *gurps.TraitEditData]
+	var trait *gurps.Trait
+	screen.Do(func() {
+		entity := sheet.Entity()
+		trait = gurps.NewTrait(entity, nil, false)
+		trait.Name = "Claws"
+		modifier := gurps.NewTraitModifier(entity, nil, false)
+		modifier.Name = "Long"
+		trait.Modifiers = []*gurps.TraitModifier{modifier}
+		gurps.AttachModifiers(trait, trait.Modifiers)
+		entity.Traits = append(entity.Traits, trait)
+		sheet.Rebuild(true)
+		e = EditTrait(sheet, trait)
+	})
+	isModifierEditor := func(d unison.Dockable) bool {
+		_, isEditor := d.AsPanel().Self.(*editor[*gurps.TraitModifier, *gurps.TraitModifierEditData])
+		return isEditor
+	}
+	screen.Do(func() { EditTraitModifier(e, e.editorData.Modifiers[0]) })
+	modifierEditor := uxtest.SoleEditor[*editor[*gurps.TraitModifier, *gurps.TraitModifierEditData]](t, screen,
+		isModifierEditor)
+	screen.Do(func() {
+		modifierEditor.editorData.Name = "Longer"
+		modifierEditor.MarkModified(nil)
+		e.editorData.Name = "Sharp Claws"
+		e.MarkModified(nil)
+	})
+	screen.Click(screen.PanelCenter(e.applyButton))
+	_, dialog := modalDialog(t, screen, wnd)
+	screen.Click(screen.PanelCenter(dialogButton(t, screen, dialog, unison.ModalResponseOK)))
+	var name, modifierName string
+	var modifierEditors int
+	var traitEditorOpen bool
+	screen.Do(func() {
+		name = trait.Name
+		if len(trait.Modifiers) == 1 {
+			modifierName = trait.Modifiers[0].Name
+		}
+		modifierEditors = len(AllMatchingDockables(isModifierEditor))
+		traitEditorOpen = slices.ContainsFunc(AllDockables(), func(d unison.Dockable) bool { return d.AsPanel().Self == e })
+	})
+	c.Equal(0, modifierEditors, "saving at the prompt closes the modifier's editor")
+	c.False(traitEditorOpen, "and applying closes the trait's")
+	c.Equal("Sharp Claws", name, "the trait's changes are applied")
+	c.Equal("Longer", modifierName, "along with the modifier's, saved at the prompt")
+}
