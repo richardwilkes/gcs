@@ -355,12 +355,14 @@ func seedEveryFeatureControl(list gurps.Features) {
 		case *gurps.WeaponBonus:
 			f.SpecializationCriteria = on
 			f.UsageCriteria = on
+			f.DamageTypeCriteria = on
 			f.TagsCriteria = on
 			f.RelativeLevelCriteria = criteria.Number{Compare: criteria.AtLeastNumber, Qualifier: fxp.One}
 		case *gurps.SelectorOverride:
 			f.SelectionType = wsel.WithRequiredSkill
 			f.SpecializationCriteria = on
 			f.UsageCriteria = on
+			f.DamageTypeCriteria = on
 			f.TagsCriteria = on
 			f.RelativeLevelCriteria = criteria.Number{Compare: criteria.AtLeastNumber, Qualifier: fxp.One}
 		default:

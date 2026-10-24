@@ -339,17 +339,18 @@ func TestSelectorOverrideNameableKeysBySelection(t *testing.T) {
 	o.NameCriteria.Qualifier = "@Name@"
 	o.SpecializationCriteria = criteria.Text{Compare: criteria.IsText, Qualifier: "@Spec@"}
 	o.UsageCriteria = criteria.Text{Compare: criteria.IsText, Qualifier: "@Usage@"}
+	o.DamageTypeCriteria = criteria.Text{Compare: criteria.IsText, Qualifier: "@Type@"}
 	o.TagsCriteria = criteria.Text{Compare: criteria.ContainsText, Qualifier: "@Tag@"}
 	keys := func() []string {
 		m := make(map[string]string)
 		o.FillWithNameableKeys(m, nil)
 		return slices.Sorted(maps.Keys(m))
 	}
-	c.Equal([]string{"Name", "Spec", "Tag", "Usage"}, keys(), "selecting by required skill consults every criterion")
+	c.Equal([]string{"Name", "Spec", "Tag", "Type", "Usage"}, keys(), "selecting by required skill consults every criterion")
 	o.SelectionType = wsel.WithName
-	c.Equal([]string{"Name", "Tag", "Usage"}, keys(), "selecting by name has no specialization")
+	c.Equal([]string{"Name", "Tag", "Type", "Usage"}, keys(), "selecting by name has no specialization")
 	o.SelectionType = wsel.ThisWeapon
-	c.Equal([]string{"Usage"}, keys(), "selecting this weapon has only a usage")
+	c.Equal([]string{"Type", "Usage"}, keys(), "selecting this weapon has only a usage and damage type")
 	o.Field = selector.TraitFrequency
 	c.Equal([]string{"Name", "Tag"}, keys(), "a trait-scoped override has a name and tags, whatever its selection")
 }

@@ -13,12 +13,15 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/richardwilkes/gcs/v5/model/criteria"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/attack"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/feature"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/progression"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/selector"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/stdmg"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/wsel"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/toolbox/v2/xbytes"
 )
@@ -482,4 +485,34 @@ func TestWeaponDamageCopyScalesPerDieBonusesByItsOwnDice(t *testing.T) {
 	c.Equal("3d+3(4) cr", cp.ResolvedDamage(&tooltip), "each bonus counts three times for the copy's three dice")
 	c.Contains(tooltip.String(), "+3 (+1 per die)", "the tooltip reports the amount applied")
 	c.Equal("1d+1(2) cr", w.Damage.ResolvedDamage(nil), "the weapon's own damage is unchanged")
+}
+
+// TestWeaponDamageCopySelectsByItsOwnType verifies that a copy of a weapon's damage is given the bonuses and selector
+// overrides whose damage type criterion matches its own type, rather than those selected by the type of the damage it
+// was copied from.
+func TestWeaponDamageCopySelectsByItsOwnType(t *testing.T) {
+	c := check.New(t)
+	isImp := criteria.Text{Compare: criteria.IsText, Qualifier: "imp"}
+	bonus := gurps.NewWeaponBonus(feature.WeaponBonus)
+	bonus.DamageTypeCriteria = isImp
+	w := newWeaponWithBonuses(true, bonus)
+	divisor := gurps.NewSelectorOverride(selector.WeaponArmorDivisor)
+	divisor.SelectionType = wsel.ThisWeapon
+	divisor.Value = "2"
+	divisor.DamageTypeCriteria = isImp
+	owner, ok := w.Owner.(*gurps.Trait)
+	c.True(ok, "the weapon belongs to the trait carrying its bonuses")
+	if !ok {
+		return
+	}
+	owner.Features = append(owner.Features, divisor)
+	w.Damage.StrengthType = stdmg.None
+	w.Damage.Base = "1d"
+	c.Equal("1d cr", w.Damage.ResolvedDamage(nil),
+		"the bonus and override for impaling damage pass over the weapon's crushing damage")
+
+	cp := w.Damage
+	cp.Type = "imp"
+	c.Equal("1d+1(2) imp", cp.ResolvedDamage(nil), "and apply to a copy whose type they match")
+	c.Equal("1d cr", w.Damage.ResolvedDamage(nil), "the weapon's own damage is unchanged")
 }

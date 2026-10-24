@@ -93,6 +93,7 @@ type WeaponBonusData struct { //nolint:govet // The field alignment here is poor
 	OptionalSpecializationCriteria criteria.Text   `json:"optional_specialization,omitzero"`
 	RelativeLevelCriteria          criteria.Number `json:"level,omitzero"`
 	UsageCriteria                  criteria.Text   `json:"usage,omitzero"`
+	DamageTypeCriteria             criteria.Text   `json:"damage_type,omitzero"`
 	TagsCriteria                   criteria.Text   `json:"tags,omitzero"`
 	LeveledOwner                   LeveledOwner    `json:"-"`
 	DieCount                       fxp.Int         `json:"-"`
@@ -115,6 +116,7 @@ func NewWeaponBonus(t feature.Type) *WeaponBonus {
 	w.SpecializationCriteria.Compare = criteria.AnyText
 	w.OptionalSpecializationCriteria.Compare = criteria.AnyText
 	w.UsageCriteria.Compare = criteria.AnyText
+	w.DamageTypeCriteria.Compare = criteria.AnyText
 	w.TagsCriteria.Compare = criteria.AnyText
 	w.Amount = fxp.One
 	return &w
@@ -208,20 +210,16 @@ func (w *WeaponBonus) scaleFactor(dieCount fxp.Int, leveledOwner LeveledOwner) (
 	return factor, true
 }
 
-// FillWithNameableKeys implements Feature.
+// FillWithNameableKeys implements Feature. Only the criteria the selection consults contribute keys: the specialization
+// criterion holds the usage except when selecting by required skill, where the usage criterion does, and the optional
+// specialization is never consulted.
 func (w *WeaponBonus) FillWithNameableKeys(m, existing map[string]string) {
-	nameable.Extract(
-		m, existing,
-		w.SpecializationCriteria.Qualifier,
-		w.OptionalSpecializationCriteria.Qualifier,
-	)
+	nameable.Extract(m, existing, w.SpecializationCriteria.Qualifier, w.DamageTypeCriteria.Qualifier)
 	if w.SelectionType != wsel.ThisWeapon {
-		nameable.Extract(
-			m, existing,
-			w.NameCriteria.Qualifier,
-			w.UsageCriteria.Qualifier,
-			w.TagsCriteria.Qualifier,
-		)
+		nameable.Extract(m, existing, w.NameCriteria.Qualifier, w.TagsCriteria.Qualifier)
+	}
+	if w.SelectionType == wsel.WithRequiredSkill {
+		nameable.Extract(m, existing, w.UsageCriteria.Qualifier)
 	}
 	if w.SelectionType == wsel.WithName {
 		w.fillWithNameableKeys(m, existing)
@@ -364,25 +362,26 @@ func (w *WeaponBonus) Describe(_ *Entity, replacements map[string]string, em fun
 func (w *WeaponBonus) describeWeapons(noun string, replacements map[string]string, em func(string) string) string {
 	switch w.SelectionType {
 	case wsel.ThisWeapon:
-		return describeThisWeapon(noun, w.SpecializationCriteria, replacements, em)
+		return describeThisWeapon(noun, w.SpecializationCriteria, w.DamageTypeCriteria, replacements, em)
 	case wsel.WithName:
 		return i18n.Text("the %s of %s", noun,
-			describeNamedWeapons(w.NameCriteria, w.SpecializationCriteria, w.TagsCriteria, &w.WeaponOwnerCriteria,
-				replacements, em))
+			describeNamedWeapons(w.NameCriteria, w.SpecializationCriteria, w.DamageTypeCriteria, w.TagsCriteria,
+				&w.WeaponOwnerCriteria, replacements, em))
 	default:
 		return i18n.Text("the %s of %s", noun, describeSkillSelectedWeapons(w.NameCriteria, w.SpecializationCriteria,
-			w.UsageCriteria, w.TagsCriteria, w.RelativeLevelCriteria, replacements, em))
+			w.UsageCriteria, w.DamageTypeCriteria, w.TagsCriteria, w.RelativeLevelCriteria, replacements, em))
 	}
 }
 
 // describeSkillSelectedWeapons returns how a feature names the weapons it selects by their required skill: the skill,
-// with its specialization, followed by the usage, tags and relative skill level that narrow them, each left out when
-// anything will do.
-func describeSkillSelectedWeapons(name, specialization, usage, tags criteria.Text, level criteria.Number, replacements map[string]string, em func(string) string) string {
+// with its specialization, followed by the usage, damage type, tags and relative skill level that narrow them, each
+// left out when anything will do.
+func describeSkillSelectedWeapons(name, specialization, usage, damageType, tags criteria.Text, level criteria.Number, replacements map[string]string, em func(string) string) string {
 	text := describeTarget(i18n.Text("weapons using %s"), i18n.Text("weapons"), i18n.Text("whose skill name"), name,
 		replacements, em) +
 		describeSpecialization(specialization, criteria.Text{Compare: criteria.AnyText}, replacements, em) +
 		describeWhose(i18n.Text("whose usage"), usage, replacements, em) +
+		describeWhoseList(i18n.Text("whose damage type"), damageType, replacements, em) +
 		describeTags(tags, replacements, em)
 	if level.Compare != criteria.AnyNumber {
 		text += i18n.Text(" whose relative skill level ") + level.String()
@@ -390,16 +389,29 @@ func describeSkillSelectedWeapons(name, specialization, usage, tags criteria.Tex
 	return text
 }
 
-// describeThisWeapon returns the noun as it applies to the weapon a feature belongs to, with the usage it requires.
-func describeThisWeapon(noun string, usage criteria.Text, replacements map[string]string, em func(string) string) string {
-	return i18n.Text("this weapon's %s", noun) +
-		describeWhose(i18n.Text("when its usage"), usage, replacements, em)
+// describeThisWeapon returns the noun as it applies to the weapon a feature belongs to, with the usage and damage type
+// it requires.
+func describeThisWeapon(noun string, usage, damageType criteria.Text, replacements map[string]string, em func(string) string) string {
+	return i18n.Text("this weapon's %s", noun) + describeThisWeaponClauses(usage, damageType, replacements, em)
 }
 
-// describeNamedWeapons returns how a feature names the weapons it selects by name, usage, tags and owner criteria.
-func describeNamedWeapons(name, usage, tags criteria.Text, owner *WeaponOwnerCriteria, replacements map[string]string, em func(string) string) string {
+// describeThisWeaponClauses returns the clauses narrowing the weapon a feature belongs to by its usage and damage type,
+// such as " when its usage is Thrown and its damage type is cut", or nothing when anything will do for both.
+func describeThisWeaponClauses(usage, damageType criteria.Text, replacements map[string]string, em func(string) string) string {
+	text := describeWhose(i18n.Text("when its usage"), usage, replacements, em)
+	whose := i18n.Text("when its damage type")
+	if text != "" {
+		whose = i18n.Text("and its damage type")
+	}
+	return text + describeWhoseList(whose, damageType, replacements, em)
+}
+
+// describeNamedWeapons returns how a feature names the weapons it selects by name, usage, damage type, tags and owner
+// criteria.
+func describeNamedWeapons(name, usage, damageType, tags criteria.Text, owner *WeaponOwnerCriteria, replacements map[string]string, em func(string) string) string {
 	return describeTarget(i18n.Text("weapons named %s"), i18n.Text("weapons"), i18n.Text("whose name"), name,
 		replacements, em) + describeWhose(i18n.Text("whose usage"), usage, replacements, em) +
+		describeWhoseList(i18n.Text("whose damage type"), damageType, replacements, em) +
 		describeTags(tags, replacements, em) + owner.describe(replacements, em)
 }
 
@@ -420,6 +432,7 @@ func (w *WeaponBonus) Hash(h hash.Hash) {
 	w.OptionalSpecializationCriteria.Hash(h)
 	w.RelativeLevelCriteria.Hash(h)
 	w.UsageCriteria.Hash(h)
+	w.DamageTypeCriteria.Hash(h)
 	w.TagsCriteria.Hash(h)
 	w.WeaponOwnerCriteria.Hash(h)
 	xhash.Num64(h, w.Amount)
