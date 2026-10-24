@@ -1047,6 +1047,8 @@ var allEnums = []*enumInfo{
 			{
 				Key:    "grant_spell",
 				String: "Grants the spell",
+			},
+			{
 				Key:    "title_note",
 				String: "Adds the title note",
 			},
