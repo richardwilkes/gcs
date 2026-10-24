@@ -271,6 +271,16 @@ func TestSelectorOverrideSpecificityScope(t *testing.T) {
 	c.Equal(2, weapon.OverrideSpecificity(), "neither constrains a selection by name")
 	weapon.SelectionType = wsel.ThisWeapon
 	c.Equal(3, weapon.OverrideSpecificity(), "this weapon counts as name and tags, plus the usage")
+	weapon.DamageTypeCriteria = criteria.Text{Compare: criteria.IsText, Qualifier: "cut"}
+	c.Equal(4, weapon.OverrideSpecificity(), "the damage type constrains a selection of this weapon")
+	weapon.SelectionType = wsel.WithName
+	c.Equal(3, weapon.OverrideSpecificity(), "and a selection by name")
+	weapon.SelectionType = wsel.WithRequiredSkill
+	c.Equal(5, weapon.OverrideSpecificity(), "and a selection by required skill")
+	trait.DamageTypeCriteria = weapon.DamageTypeCriteria
+	c.Equal(2, trait.OverrideSpecificity(), "but not a trait-scoped override, which traits can't match")
+	weapon.DamageTypeCriteria = criteria.Text{Compare: criteria.AnyText}
+	weapon.SelectionType = wsel.ThisWeapon
 	weapon.UsageCriteria = criteria.Text{Compare: criteria.AnyText}
 	c.Equal(2, weapon.OverrideSpecificity(), "and as name and tags alone without one")
 	weapon.SelectionType = wsel.WithName

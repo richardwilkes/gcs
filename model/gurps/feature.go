@@ -116,3 +116,13 @@ func describeWhose(whose string, t criteria.Text, replacements map[string]string
 	}
 	return " " + whose + " " + describeText(t, replacements, em)
 }
+
+// describeWhoseList is describeWhose for a criterion whose qualifier is a comma-separated list, any one of which may
+// match, as Text.MatchesList matches it, such as ` whose damage type is "cut" or "imp"`.
+func describeWhoseList(whose string, t criteria.Text, replacements map[string]string, em func(string) string) string {
+	if t.Compare == criteria.AnyText {
+		return ""
+	}
+	qualifiers := criteria.SplitQualifiers(nameable.Apply(t.Qualifier, replacements))
+	return " " + whose + " " + describeComparison(t.Compare.String(), t.Compare, qualifiers, em)
+}

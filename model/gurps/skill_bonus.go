@@ -39,6 +39,7 @@ type SkillBonusData struct {
 	NameCriteria                   criteria.Text `json:"name,omitzero"`
 	SpecializationCriteria         criteria.Text `json:"specialization,omitzero"`
 	OptionalSpecializationCriteria criteria.Text `json:"optional_specialization,omitzero"`
+	DamageTypeCriteria             criteria.Text `json:"damage_type,omitzero"`
 	TagsCriteria                   criteria.Text `json:"tags,omitzero"`
 	WeaponOwnerCriteria
 	LeveledAmount
@@ -53,6 +54,7 @@ func NewSkillBonus() *SkillBonus {
 	s.NameCriteria.Compare = criteria.IsText
 	s.SpecializationCriteria.Compare = criteria.AnyText
 	s.OptionalSpecializationCriteria.Compare = criteria.AnyText
+	s.DamageTypeCriteria.Compare = criteria.AnyText
 	s.TagsCriteria.Compare = criteria.AnyText
 	s.Amount = fxp.One
 	return &s
@@ -82,6 +84,9 @@ func (s *SkillBonus) FillWithNameableKeys(m, existing map[string]string) {
 			s.TagsCriteria.Qualifier,
 		)
 	}
+	if s.SelectionType != skillsel.Name {
+		nameable.Extract(m, existing, s.DamageTypeCriteria.Qualifier)
+	}
 	if s.SelectionType == skillsel.WeaponsWithName {
 		s.fillWithNameableKeys(m, existing)
 	}
@@ -102,11 +107,11 @@ func (s *SkillBonus) Describe(_ *Entity, replacements map[string]string, em func
 	text := describeAmount(s.Amount.StringWithSign(), s.PerLevel, em) + i18n.Text(" to ")
 	switch s.SelectionType {
 	case skillsel.ThisWeapon:
-		text += describeThisWeapon(i18n.Text("skill"), s.SpecializationCriteria, replacements, em)
+		text += describeThisWeapon(i18n.Text("skill"), s.SpecializationCriteria, s.DamageTypeCriteria, replacements, em)
 	case skillsel.WeaponsWithName:
 		text += i18n.Text("the %s of %s", i18n.Text("skill"),
-			describeNamedWeapons(s.NameCriteria, s.SpecializationCriteria, s.TagsCriteria, &s.WeaponOwnerCriteria,
-				replacements, em))
+			describeNamedWeapons(s.NameCriteria, s.SpecializationCriteria, s.DamageTypeCriteria, s.TagsCriteria,
+				&s.WeaponOwnerCriteria, replacements, em))
 	default:
 		text += describeTarget(i18n.Text("skill %s"), i18n.Text("skills"), i18n.Text("whose name"), s.NameCriteria,
 			replacements, em) +
@@ -128,6 +133,7 @@ func (s *SkillBonus) Hash(h hash.Hash) {
 	s.NameCriteria.Hash(h)
 	s.SpecializationCriteria.Hash(h)
 	s.OptionalSpecializationCriteria.Hash(h)
+	s.DamageTypeCriteria.Hash(h)
 	s.TagsCriteria.Hash(h)
 	s.WeaponOwnerCriteria.Hash(h)
 	s.LeveledAmount.Hash(h)

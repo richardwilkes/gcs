@@ -62,9 +62,10 @@ func (s *weaponNameSelectors) check(c check.Checker, e *Entity, w *Weapon, want 
 	usage := w.UsageWithReplacements()
 	tags := w.Owner.TagList()
 	var damages []*WeaponBonus
-	e.addNamedWeaponBonusesFor(w, usage, tags, func(bonus *WeaponBonus) { damages = append(damages, bonus) })
+	e.addNamedWeaponBonusesFor(w, usage, w.Damage.resolvedType(nil), tags, func(bonus *WeaponBonus) { damages = append(damages, bonus) })
 	c.Equal(want, slices.Contains(damages, s.damage), "damage bonus: "+msg)
-	c.Equal(want, slices.Contains(e.NamedWeaponSkillBonusesFor(w, usage, tags, nil), s.skill), "skill bonus: "+msg)
+	c.Equal(want, slices.Contains(e.NamedWeaponSkillBonusesFor(w, usage, w.Damage.resolvedType(nil), tags, nil), s.skill),
+		"skill bonus: "+msg)
 	c.Equal(want, resolvedDamageType(w, nil) == "imp", "selector override: "+msg)
 }
 
@@ -167,7 +168,7 @@ func TestWeaponsSelectedByNameFromTheirOwner(t *testing.T) {
 	sword.Weapons = []*Weapon{w}
 	e.Recalculate()
 	var carried []*WeaponBonus
-	e.addNamedWeaponBonusesFor(w, w.UsageWithReplacements(), sword.TagList(),
+	e.addNamedWeaponBonusesFor(w, w.UsageWithReplacements(), w.Damage.resolvedType(nil), sword.TagList(),
 		func(one *WeaponBonus) { carried = append(carried, one) })
 	c.False(slices.Contains(carried, bonus), "precondition: the entity doesn't carry the bonus")
 	collect := func() []*WeaponBonus {

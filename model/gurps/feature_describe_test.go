@@ -90,6 +90,9 @@ func TestFeatureDescribe(t *testing.T) {
 	skillThisWeaponUsage := skill("", fxp.Two)
 	skillThisWeaponUsage.SelectionType = skillsel.ThisWeapon
 	skillThisWeaponUsage.SpecializationCriteria = criteria.Text{Compare: criteria.IsText, Qualifier: "Thrown"}
+	skillThisWeaponDamageType := skill("", fxp.Two)
+	skillThisWeaponDamageType.SelectionType = skillsel.ThisWeapon
+	skillThisWeaponDamageType.DamageTypeCriteria = criteria.Text{Compare: criteria.IsText, Qualifier: "imp"}
 	skillNamedWeapons := skill("Axe", fxp.One)
 	skillNamedWeapons.SelectionType = skillsel.WeaponsWithName
 	skillNamedWeaponsOwner := skill("Innate Attack", fxp.One)
@@ -130,9 +133,17 @@ func TestFeatureDescribe(t *testing.T) {
 	weaponCriteria := weapon(feature.WeaponBonus, wsel.WithRequiredSkill, "Broadsword")
 	weaponCriteria.SpecializationCriteria = criteria.Text{Compare: criteria.IsText, Qualifier: "Rapier"}
 	weaponCriteria.UsageCriteria = criteria.Text{Compare: criteria.IsText, Qualifier: "Thrust"}
+	weaponCriteria.DamageTypeCriteria = criteria.Text{Compare: criteria.IsText, Qualifier: "cut, imp"}
 	weaponCriteria.RelativeLevelCriteria = criteria.Number{Compare: criteria.AtLeastNumber, Qualifier: fxp.Two}
 	weaponLevelZero := weapon(feature.WeaponBonus, wsel.WithRequiredSkill, "Broadsword")
 	weaponLevelZero.RelativeLevelCriteria = criteria.Number{Compare: criteria.AtLeastNumber}
+	weaponThisDamageType := weapon(feature.WeaponBonus, wsel.ThisWeapon, "")
+	weaponThisDamageType.DamageTypeCriteria = criteria.Text{Compare: criteria.IsText, Qualifier: "cut"}
+	weaponThisUsageDamageType := weapon(feature.WeaponBonus, wsel.ThisWeapon, "")
+	weaponThisUsageDamageType.SpecializationCriteria = criteria.Text{Compare: criteria.IsText, Qualifier: "Thrown"}
+	weaponThisUsageDamageType.DamageTypeCriteria = criteria.Text{Compare: criteria.IsText, Qualifier: "cut"}
+	weaponNamedDamageType := weapon(feature.WeaponBonus, wsel.WithName, "Axe")
+	weaponNamedDamageType.DamageTypeCriteria = criteria.Text{Compare: criteria.ContainsText, Qualifier: "cut"}
 	weaponDice := weapon(feature.WeaponBonus, wsel.ThisWeapon, "")
 	weaponDice.Dice, _ = gurps.ParseBonusDice("1d")
 	weaponDice.Amount = fxp.Two
@@ -214,6 +225,10 @@ func TestFeatureDescribe(t *testing.T) {
 	overrideThisWeaponUsage.SelectionType = wsel.ThisWeapon
 	overrideThisWeaponUsage.Value = "cut"
 	overrideThisWeaponUsage.UsageCriteria = criteria.Text{Compare: criteria.IsText, Qualifier: "Thrown"}
+	overrideThisWeaponDamageType := gurps.NewSelectorOverride(selector.WeaponArmorDivisor)
+	overrideThisWeaponDamageType.SelectionType = wsel.ThisWeapon
+	overrideThisWeaponDamageType.Value = "2"
+	overrideThisWeaponDamageType.DamageTypeCriteria = criteria.Text{Compare: criteria.IsText, Qualifier: "cut"}
 	overrideBySkill := gurps.NewSelectorOverride(selector.WeaponArmorDivisor)
 	overrideBySkill.Value = "2"
 	overrideBySkill.NameCriteria.Qualifier = "Broadsword"
@@ -251,6 +266,10 @@ func TestFeatureDescribe(t *testing.T) {
 			"skill this weapon with usage", skillThisWeaponUsage,
 			"[+2] to this weapon's skill when its usage is [Thrown]",
 		},
+		{
+			"skill this weapon with damage type", skillThisWeaponDamageType,
+			"[+2] to this weapon's skill when its damage type is [imp]",
+		},
 		{"skill weapons with name", skillNamedWeapons, "[+1] to the skill of weapons named [Axe]"},
 		{
 			"skill weapons with name and owner level", skillNamedWeaponsOwner,
@@ -273,12 +292,21 @@ func TestFeatureDescribe(t *testing.T) {
 		{"weapon by skill", weaponBySkill, "[+1] per die to the damage of weapons using [Broadsword]"},
 		{
 			"weapon by skill with criteria", weaponCriteria,
-			"[+1] to the damage of weapons using [Broadsword] ([Rapier]) whose usage is [Thrust] whose relative " +
-				"skill level is at least 2",
+			"[+1] to the damage of weapons using [Broadsword] ([Rapier]) whose usage is [Thrust] whose damage type is " +
+				`"[cut]" or "[imp]" whose relative skill level is at least 2`,
 		},
 		{
 			"weapon relative skill level of at least 0", weaponLevelZero,
 			"[+1] to the damage of weapons using [Broadsword] whose relative skill level is at least 0",
+		},
+		{"weapon this weapon with damage type", weaponThisDamageType, "[+1] to this weapon's damage when its damage type is [cut]"},
+		{
+			"weapon this weapon with usage and damage type", weaponThisUsageDamageType,
+			"[+1] to this weapon's damage when its usage is [Thrown] and its damage type is [cut]",
+		},
+		{
+			"weapon named with damage type", weaponNamedDamageType,
+			`[+1] to the damage of weapons named [Axe] whose damage type contains "[cut]"`,
 		},
 		{"weapon dice suspend percent", weaponDice, "[+1d +2] to this weapon's damage"},
 		{"weapon percent", weaponPercent, "[+10%] to the accuracy of weapons named [Bow]"},
@@ -335,6 +363,10 @@ func TestFeatureDescribe(t *testing.T) {
 		{
 			"selector override this weapon with usage", overrideThisWeaponUsage,
 			"Sets [weapon damage type] to [cut] on this weapon when its usage is [Thrown] (priority 0)",
+		},
+		{
+			"selector override this weapon with damage type", overrideThisWeaponDamageType,
+			"Sets [weapon armor divisor] to [2] on this weapon when its damage type is [cut] (priority 0)",
 		},
 		{
 			"selector override by skill", overrideBySkill,

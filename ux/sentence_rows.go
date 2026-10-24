@@ -661,6 +661,11 @@ func rowCriteria(key string) rowCriterion {
 		}
 	case "usage":
 		return rowCriterion{subject: i18n.Text("Usage"), add: i18n.Text("+ usage"), prefix: i18n.Text("and whose usage")}
+	case "damagetype":
+		return rowCriterion{
+			subject: i18n.Text("Damage Type"), add: i18n.Text("+ damage type"),
+			prefix: i18n.Text("and whose damage type"),
+		}
 	case "specialization":
 		return rowCriterion{
 			subject: i18n.Text("Specialization"), add: i18n.Text("+ specialization"),
@@ -741,6 +746,12 @@ func (c *rowCriterion) titles() (add, remove string) {
 
 // textChip adds the optional text criterion with the key, which is in use while its comparison isn't "is anything".
 func (p *sentenceRows[T]) textChip(chips *unison.Panel, path, key string, c *criteria.Text) {
+	p.textChipWith(chips, path, key, c, nil)
+}
+
+// textChipWith is textChip with the qualifier's field offering what a non-nil suggest returns while the comparison is
+// "is" or "is not", as textCriteriaWith does.
+func (p *sentenceRows[T]) textChipWith(chips *unison.Panel, path, key string, c *criteria.Text, suggest func() []string) {
 	p.optionalCriterion(chips, path, key, c.Compare != criteria.AnyText,
 		func() { *c = criteria.Text{Compare: criteria.IsText} },
 		func() { *c = criteria.Text{} },
@@ -754,8 +765,8 @@ func (p *sentenceRows[T]) textChip(chips *unison.Panel, path, key string, c *cri
 				key == "titlenote" || key == "ownertitlenote") {
 				hint = i18n.Text("none")
 			}
-			p.textCriteria(chip, path+":"+key, one.subject, hint, one.prefix, cmp.Or(one.notPrefix, one.prefix), c,
-				false)
+			render := textWordsAfter(one.prefix, cmp.Or(one.notPrefix, one.prefix))
+			p.textCriteriaWith(chip, path+":"+key, one.subject, hint, render, c, false, suggest)
 		})
 }
 

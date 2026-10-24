@@ -595,16 +595,17 @@ func (w *Weapon) skillLevelBaseAdjustment(e *Entity, tooltip *xbytes.InsertBuffe
 			tooltip.WriteByte(']')
 		}
 	}
-	named := e.NamedWeaponSkillBonusesFor(w, w.UsageWithReplacements(), w.Owner.TagList(), tooltip)
+	damageType := w.Damage.resolvedType(nil)
+	named := e.NamedWeaponSkillBonusesFor(w, w.UsageWithReplacements(), damageType, w.Owner.TagList(), tooltip)
 	for _, bonus := range named {
 		adj += bonus.AdjustedAmount()
 	}
 	for _, f := range w.Owner.ActiveFeatures() {
-		adj += w.extractSkillBonusForThisWeapon(f, named, nil, tooltip)
+		adj += w.extractSkillBonusForThisWeapon(f, named, damageType, nil, tooltip)
 	}
 	w.forEachOwnerModifier(func(mod ownerModifier, active Features) {
 		for _, f := range active {
-			adj += w.extractSkillBonusForThisWeapon(f, named, mod, tooltip)
+			adj += w.extractSkillBonusForThisWeapon(f, named, damageType, mod, tooltip)
 		}
 	})
 	return adj
@@ -685,21 +686,24 @@ func (w *Weapon) EncumbrancePenalty(e *Entity, tooltip *xbytes.InsertBuffer) fxp
 }
 
 // extractSkillBonusForThisWeapon returns the amount of f if it is a skill bonus, carried by the weapon's owner or by
-// the owner's modifier sub, that selects the owner's weapons or names this one, and adds it to the tooltip.
-func (w *Weapon) extractSkillBonusForThisWeapon(f Feature, named []*SkillBonus, sub fmt.Stringer, tooltip *xbytes.InsertBuffer) fxp.Int {
+// the owner's modifier sub, that selects the owner's weapons or names this one, and adds it to the tooltip. damageType
+// is the weapon's resolved damage type.
+func (w *Weapon) extractSkillBonusForThisWeapon(f Feature, named []*SkillBonus, damageType string, sub fmt.Stringer, tooltip *xbytes.InsertBuffer) fxp.Int {
 	if sb, ok := f.(*SkillBonus); ok {
 		w.claimOwnerBonus(sb, sub)
 		replacements := w.NameableReplacements()
 		var matches bool
 		switch sb.SelectionType.EnsureValid() {
 		case skillsel.ThisWeapon:
-			matches = sb.SpecializationCriteria.Matches(replacements, w.UsageWithReplacements())
+			matches = sb.SpecializationCriteria.Matches(replacements, w.UsageWithReplacements()) &&
+				sb.DamageTypeCriteria.MatchesList(replacements, damageType)
 		case skillsel.WeaponsWithName:
 			// named holds those the entity carries, so this adds those it doesn't, as for equipment that isn't
 			// equipped.
 			matches = !slices.Contains(named, sb) &&
 				w.matchesName(sb.NameCriteria, &sb.WeaponOwnerCriteria, replacements) &&
 				sb.SpecializationCriteria.Matches(replacements, w.UsageWithReplacements()) &&
+				sb.DamageTypeCriteria.MatchesList(replacements, damageType) &&
 				sb.TagsCriteria.MatchesList(replacements, w.Owner.TagList()...)
 		}
 		if matches {
@@ -779,11 +783,12 @@ func (w *Weapon) collectSelectorOverrides(entity *Entity, field selector.Field) 
 	}
 	if len(bySkill) != 0 {
 		usage := w.UsageWithReplacements()
+		damageType := w.ownDamageType()
 		tags := w.Owner.TagList()
 		w.forEachRequiredSkill(entity, func(name, specialization string) {
 			rsl := sync.OnceValue(func() fxp.Int { return entity.relativeSkillLevel(name, specialization) })
 			for _, o := range bySkill {
-				if o.matchesRequiredSkill(name, specialization, usage, tags, rsl) {
+				if o.matchesRequiredSkill(name, specialization, usage, damageType, tags, rsl) {
 					add(o)
 				}
 			}
@@ -912,20 +917,21 @@ func (w *Weapon) findWeaponBonuses(entity *Entity) []*WeaponBonus {
 	}
 	tags := w.Owner.TagList()
 	usage := w.UsageWithReplacements()
+	damageType := w.Damage.resolvedType(nil)
 	// Finding the skill the weapon is used with takes several walks of the skills, so it is only done when a bonus
 	// that selects weapons by that skill exists to collect.
 	if entity.hasWeaponBonusesBySkill() {
 		w.forEachRequiredSkill(entity, func(name, specialization string) {
-			entity.addWeaponWithSkillBonusesFor(name, specialization, usage, tags, add)
+			entity.addWeaponWithSkillBonusesFor(name, specialization, usage, damageType, tags, add)
 		})
 	}
-	entity.addNamedWeaponBonusesFor(w, usage, tags, add)
+	entity.addNamedWeaponBonusesFor(w, usage, damageType, tags, add)
 	for _, f := range w.Owner.ActiveFeatures() {
-		w.extractWeaponBonus(f, nil, add)
+		w.extractWeaponBonus(f, damageType, nil, add)
 	}
 	w.forEachOwnerModifier(func(mod ownerModifier, active Features) {
 		for _, f := range active {
-			w.extractWeaponBonus(f, mod, add)
+			w.extractWeaponBonus(f, damageType, mod, add)
 		}
 	})
 	return result
@@ -1031,8 +1037,8 @@ func matchesRequiredSkillName(name criteria.Text, replacements map[string]string
 }
 
 // extractWeaponBonus hands f to add if it is a weapon bonus, carried by the weapon's owner or by the owner's modifier
-// sub, that selects the owner's weapons or names this one.
-func (w *Weapon) extractWeaponBonus(f Feature, sub fmt.Stringer, add func(*WeaponBonus)) {
+// sub, that selects the owner's weapons or names this one. damageType is the weapon's resolved damage type.
+func (w *Weapon) extractWeaponBonus(f Feature, damageType string, sub fmt.Stringer, add func(*WeaponBonus)) {
 	bonus, ok := f.(*WeaponBonus)
 	if !ok {
 		return
@@ -1042,18 +1048,25 @@ func (w *Weapon) extractWeaponBonus(f Feature, sub fmt.Stringer, add func(*Weapo
 	switch bonus.SelectionType {
 	case wsel.WithRequiredSkill: // Selected by required skill, which only the entity's lists resolve
 	case wsel.ThisWeapon:
-		if bonus.SpecializationCriteria.Matches(replacements, w.UsageWithReplacements()) {
+		if bonus.SpecializationCriteria.Matches(replacements, w.UsageWithReplacements()) &&
+			bonus.DamageTypeCriteria.MatchesList(replacements, damageType) {
 			add(bonus)
 		}
 	case wsel.WithName:
 		if w.matchesName(bonus.NameCriteria, &bonus.WeaponOwnerCriteria, replacements) &&
 			bonus.SpecializationCriteria.Matches(replacements, w.UsageWithReplacements()) &&
+			bonus.DamageTypeCriteria.MatchesList(replacements, damageType) &&
 			bonus.TagsCriteria.MatchesList(replacements, w.Owner.TagList()...) {
 			add(bonus)
 		}
 	default:
 		errs.Log(errs.New("unknown selection type"), "type", int(bonus.SelectionType))
 	}
+}
+
+// ownDamageType returns the damage type of the weapon itself, before any selector override, as the overrides match it.
+func (w *Weapon) ownDamageType() string {
+	return strings.TrimSpace(w.Damage.Type)
 }
 
 // UsageWithReplacements returns the usage of the weapon with any nameable keys replaced.

@@ -404,6 +404,7 @@ func (p *featuresPanel) editor(f gurps.Feature, path string) *unison.Panel {
 			p.textChip(chips, path, "optspecialization", &one.OptionalSpecializationCriteria)
 		} else {
 			p.textChip(chips, path, "usage", &one.SpecializationCriteria)
+			p.damageTypeChip(chips, path, &one.DamageTypeCriteria)
 		}
 		if one.SelectionType != skillsel.ThisWeapon {
 			p.tagsChip(chips, path, &one.TagsCriteria)
@@ -860,6 +861,7 @@ func (p *featuresPanel) weaponBonus(fields, chips *unison.Panel, path string, on
 	default:
 		p.textChip(chips, path, "usage", &one.SpecializationCriteria)
 	}
+	p.damageTypeChip(chips, path, &one.DamageTypeCriteria)
 	if one.SelectionType != wsel.ThisWeapon {
 		p.tagsChip(chips, path, &one.TagsCriteria)
 	}
@@ -893,6 +895,15 @@ func (p *featuresPanel) relativeSkillLevelChip(chips *unison.Panel, path string,
 				numericWordsAfter(i18n.Text("and whose relative skill level")), level, -fxp.Thousand, fxp.Thousand,
 				true, false)
 		})
+}
+
+// damageTypeChip adds the optional damage type criterion of a feature that selects weapons, whose field suggests the
+// common damage types and says how to match any of several.
+func (p *featuresPanel) damageTypeChip(chips *unison.Panel, path string, c *criteria.Text) {
+	p.textChipWith(chips, path, "damagetype", c, gurps.DamageTypeSuggestions)
+	if field := chips.FindRefKey(path + ":damagetype"); field != nil {
+		field.Tooltip = newWrappedTooltip(i18n.Text(`Separate multiple types with commas to match any one of them, e.g. "cut, imp"`))
+	}
 }
 
 // damageField adds the amount field of a weapon damage bonus, which accepts a dice specification as well as a flat
@@ -953,6 +964,7 @@ func (p *featuresPanel) selectorOverride(fields, chips *unison.Panel, path strin
 			if d.Scope == gurps.SelectorScopeTrait {
 				one.SpecializationCriteria = criteria.Text{Compare: criteria.AnyText}
 				one.UsageCriteria = criteria.Text{Compare: criteria.AnyText}
+				one.DamageTypeCriteria = criteria.Text{Compare: criteria.AnyText}
 				one.RelativeLevelCriteria = criteria.Number{Compare: criteria.AnyNumber}
 				one.WeaponOwnerCriteria = gurps.WeaponOwnerCriteria{}
 			}
@@ -1001,13 +1013,16 @@ func (p *featuresPanel) selectorOverride(fields, chips *unison.Panel, path strin
 	switch one.SelectionType {
 	case wsel.ThisWeapon:
 		p.textChip(chips, path, "usage", &one.UsageCriteria)
+		p.damageTypeChip(chips, path, &one.DamageTypeCriteria)
 	case wsel.WithName:
 		p.textChip(chips, path, "usage", &one.UsageCriteria)
+		p.damageTypeChip(chips, path, &one.DamageTypeCriteria)
 		p.tagsChip(chips, path, &one.TagsCriteria)
 		p.weaponOwnerChips(chips, path, &one.WeaponOwnerCriteria)
 	default:
 		p.textChip(chips, path, "specialization", &one.SpecializationCriteria)
 		p.textChip(chips, path, "usage", &one.UsageCriteria)
+		p.damageTypeChip(chips, path, &one.DamageTypeCriteria)
 		p.tagsChip(chips, path, &one.TagsCriteria)
 		p.relativeSkillLevelChip(chips, path, &one.RelativeLevelCriteria)
 	}

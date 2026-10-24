@@ -176,6 +176,11 @@ func (w *WeaponDamage) resolvedStrengthType(tooltip *xbytes.InsertBuffer) stdmg.
 		tooltip))
 }
 
+// resolvedType returns the damage type after applying any matching selector override.
+func (w *WeaponDamage) resolvedType(tooltip *xbytes.InsertBuffer) string {
+	return strings.TrimSpace(w.resolvedDamageString(selector.WeaponDamageType, w.Type, tooltip))
+}
+
 // resolvedDamageString returns a string-valued damage field after applying any matching selector override.
 func (w *WeaponDamage) resolvedDamageString(field selector.Field, base string, tooltip *xbytes.InsertBuffer) string {
 	if w.Owner == nil {
@@ -389,7 +394,7 @@ func (w *WeaponDamage) resolveDamage(tooltip *xbytes.InsertBuffer) *ResolvedWeap
 		ArmorDivisor:             armorDivisor,
 		useModifyingDicePlusAdds: entity.SheetSettings.UseModifyingDicePlusAdds,
 	}
-	resolved.Type = strings.TrimSpace(w.Owner.ResolveSelector(selector.WeaponDamageType, w.Type, tooltip))
+	resolved.Type = w.resolvedType(tooltip)
 	if fragSpec := w.resolvedDamageString(selector.WeaponFragmentationDice, w.Fragmentation, tooltip); fragSpec != "" {
 		d, sub := w.resolveDiceSpec(fragSpec)
 		if sub {
