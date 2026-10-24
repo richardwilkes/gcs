@@ -64,31 +64,10 @@ func TestNameGeneratorRoundTripUnweighted(t *testing.T) {
 	}
 }
 
-// TestNameGeneratorRoundTripWeighted verifies that entries with mixed weights are written as the
-// "weighted_training_data" map and read back sorted by name with their weights intact, and that a name appearing more
-// than once has its weights added together.
-func TestNameGeneratorRoundTripWeighted(t *testing.T) {
-	c := check.New(t)
-	n := &NameGenerator{
-		Type:    namegen.MarkovRun,
-		Entries: []*WeightedStringOption{entry(2, "Zed"), entry(1, "alpha"), entry(3, "Beta"), entry(7, "Zed")},
-	}
-	reloaded, text := saveAndReload(t, c, n)
-	c.Contains(text, `"weighted_training_data"`, "mixed weights need the weighted map")
-	c.NotContains(text, `"training_data"`, "mixed weights cannot be expressed as the plain list")
-	c.Contains(text, `"Zed": 9`, "the duplicate name is written once, with the sum of its weights")
-	c.Equal(namegen.MarkovRun, reloaded.Type)
-	c.Equal(3, len(reloaded.Entries), "the duplicate name collapses into one entry")
-	expected := []*WeightedStringOption{entry(1, "alpha"), entry(3, "Beta"), entry(9, "Zed")}
-	for i, one := range expected {
-		c.Equal(one.Value, reloaded.Entries[i].Value, "entries are sorted by name (%d)", i)
-		c.Equal(one.Weight, reloaded.Entries[i].Weight, "weight is preserved for %s", one.Value)
-	}
-}
-
 // TestNameGeneratorDuplicateNamesAddWeights verifies that a name listed more than once has its weights added together
-// everywhere: in the training data a namer is built from, in the weighted map written to disk, and so across a save and
-// reload in either on-disk form, which therefore preserves the distribution the entries describe.
+// everywhere: in the training data a namer is built from, in the weighted map written to disk (in place of the plain
+// list, which cannot express mixed weights), and so across a save and reload in either on-disk form, which therefore
+// preserves the distribution the entries describe.
 func TestNameGeneratorDuplicateNamesAddWeights(t *testing.T) {
 	c := check.New(t)
 
@@ -101,6 +80,7 @@ func TestNameGeneratorDuplicateNamesAddWeights(t *testing.T) {
 		"a repeated name's weights add together, a weightless one adds nothing")
 	reloaded, text := saveAndReload(t, c, weighted)
 	c.Contains(text, `"Zed": 5`, "the weighted map carries the sum")
+	c.NotContains(text, `"training_data"`, "mixed weights cannot be expressed as the plain list")
 	c.Equal(2, len(reloaded.Entries), "the repeated name reads back as a single entry")
 	c.Equal(data, reloaded.data(), "the distribution survives the weighted form")
 

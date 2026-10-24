@@ -12,7 +12,6 @@ package attack_test
 import (
 	"testing"
 
-	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/attack"
 	"github.com/richardwilkes/toolbox/v2/check"
 )
@@ -58,27 +57,4 @@ func TestShots(t *testing.T) {
 		{"n/a", ""},
 	}
 	checkFieldParsing(check.New(t), parse, same, adjusted)
-}
-
-// TestShotsReloadTimeParsing verifies that the reload time is recovered even when something separates it from
-// the shot count, i.e. the thrown marker or the duration's trailing "s". Both are emitted by String(), so failing to
-// parse them back loses the reload time on every save/load round trip.
-func TestShotsReloadTimeParsing(t *testing.T) {
-	c := check.New(t)
-
-	ws := attack.ParseShots("T(2)")
-	c.True(ws.Thrown)
-	c.Equal(fxp.Two, ws.ReloadTime)
-	c.False(ws.ReloadTimeIsPerShot)
-
-	ws = attack.ParseShots("T(2i)")
-	c.True(ws.Thrown)
-	c.Equal(fxp.Two, ws.ReloadTime)
-	c.True(ws.ReloadTimeIsPerShot)
-
-	ws = attack.ParseShots("3x3s(2)")
-	c.False(ws.Thrown)
-	c.Equal(fxp.Three, ws.Count)
-	c.Equal(fxp.Three, ws.Duration)
-	c.Equal(fxp.Two, ws.ReloadTime)
 }

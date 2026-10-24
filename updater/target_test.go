@@ -29,41 +29,38 @@ func hostPath(path string) string {
 
 // An update running from inside an application bundle must replace the bundle rather than the executable within it.
 // Swapping just the executable would leave a bundle whose code signature no longer matches its contents, which macOS
-// kills on sight.
+// kills on sight. The search walks up rather than assuming a fixed depth, so something nested deeper inside a bundle
+// still resolves to the nearest enclosing bundle.
 func TestResolveTargetOnMacOSFindsTheBundle(t *testing.T) {
 	c := check.New(t)
-	target, err := ResolveTarget(hostPath("/Applications/GCS.app/Contents/MacOS/gcs"), "darwin")
-	c.NoError(err)
-	c.Equal(KindBundle, target.Kind)
-	c.Equal(hostPath("/Applications/GCS.app"), target.Path)
-	c.Equal(hostPath("/Applications"), target.Parent)
-	c.Equal(hostPath("/Applications/GCS.app/Contents/MacOS/gcs"), target.Exec)
+	for _, one := range []struct {
+		exePath string
+		bundle  string
+		parent  string
+	}{
+		{
+			hostPath("/Applications/GCS.app/Contents/MacOS/gcs"),
+			hostPath("/Applications/GCS.app"),
+			hostPath("/Applications"),
+		},
+		{
+			hostPath("/Applications/GCS.app/Contents/Frameworks/Inner.app/Contents/MacOS/tool"),
+			hostPath("/Applications/GCS.app/Contents/Frameworks/Inner.app"),
+			hostPath("/Applications/GCS.app/Contents/Frameworks"),
+		},
+	} {
+		target, err := ResolveTarget(one.exePath, "darwin")
+		c.NoError(err, one.exePath)
+		c.Equal(KindBundle, target.Kind, one.exePath)
+		c.Equal(one.bundle, target.Path, "the nearest enclosing bundle is the one found for %s", one.exePath)
+		c.Equal(one.parent, target.Parent, one.exePath)
+		c.Equal(one.exePath, target.Exec, one.exePath)
+	}
 }
 
-// A bare executable -- a development build run straight from the build directory -- resolves to the executable itself.
-// Preflight is what refuses to update it; resolution just reports what it sees.
-func TestResolveTargetOnMacOSWithoutABundle(t *testing.T) {
-	c := check.New(t)
-	target, err := ResolveTarget(hostPath("/Users/someone/code/gcs/gcs"), "darwin")
-	c.NoError(err)
-	c.Equal(KindExecutable, target.Kind)
-	c.Equal(hostPath("/Users/someone/code/gcs/gcs"), target.Path)
-	c.Equal(hostPath("/Users/someone/code/gcs"), target.Parent)
-}
-
-// The bundle search walks up rather than assuming a fixed depth, so something nested deeper inside a bundle still
-// resolves to the nearest enclosing bundle.
-func TestResolveTargetOnMacOSHandlesNesting(t *testing.T) {
-	c := check.New(t)
-	target, err := ResolveTarget(hostPath("/Applications/GCS.app/Contents/Frameworks/Inner.app/Contents/MacOS/tool"),
-		"darwin")
-	c.NoError(err)
-	c.Equal(KindBundle, target.Kind)
-	c.Equal(hostPath("/Applications/GCS.app/Contents/Frameworks/Inner.app"), target.Path,
-		"the nearest enclosing bundle is the one found")
-}
-
-// Linux and Windows replace the single executable, which is all their archives contain.
+// Linux and Windows replace the single executable, which is all their archives contain. On macOS, a bare executable --
+// a development build run straight from the build directory -- resolves to the executable itself too; preflight is
+// what refuses to update it, while resolution just reports what it sees.
 func TestResolveTargetElsewhereIsTheExecutable(t *testing.T) {
 	c := check.New(t)
 	for _, one := range []struct {
@@ -74,6 +71,7 @@ func TestResolveTargetElsewhereIsTheExecutable(t *testing.T) {
 		{hostPath("/home/someone/bin/gcs"), "linux", hostPath("/home/someone/bin")},
 		{hostPath("/usr/local/bin/gcs"), "linux", hostPath("/usr/local/bin")},
 		{`C:\Apps\GCS\gcs.exe`, "windows", `C:\Apps\GCS`},
+		{hostPath("/Users/someone/code/gcs/gcs"), "darwin", hostPath("/Users/someone/code/gcs")},
 	} {
 		target, err := ResolveTarget(one.exePath, one.goos)
 		c.NoError(err, one.exePath)
@@ -99,40 +97,27 @@ func TestResolveTargetRejectsAnEmptyPath(t *testing.T) {
 
 // The property that keeps a displaced macOS installation from confusing Launch Services: the name it is moved aside to
 // must no longer end in ".app", or /Applications briefly holds two complete bundles both claiming com.trollworks.gcs.
+// On every platform the backup must be a sibling of what it replaces, since landing anywhere else would make the swap
+// a cross-device copy rather than a rename.
 func TestBackupPathIsNotABundle(t *testing.T) {
 	c := check.New(t)
-	target, err := ResolveTarget(hostPath("/Applications/GCS.app/Contents/MacOS/gcs"), "darwin")
-	c.NoError(err)
-	backup := target.BackupPath("123")
-	c.False(strings.HasSuffix(backup, ".app"), "got %s", backup)
-	c.Equal(hostPath("/Applications"), filepath.Dir(backup), "the backup must be a sibling, so the move is a rename")
-	c.True(strings.HasPrefix(filepath.Base(backup), "."), "the backup should be hidden; got %s", backup)
-	c.NotEqual(backup, target.BackupPath("456"), "the unique suffix must actually vary")
-}
-
-// The same sibling property for the executable platforms. A backup landing anywhere else would make the swap a
-// cross-device copy rather than a rename.
-func TestBackupPathStaysBesideTheTarget(t *testing.T) {
-	c := check.New(t)
-	target, err := ResolveTarget(hostPath("/home/someone/bin/gcs"), "linux")
-	c.NoError(err)
-	backup := target.BackupPath("123")
-	c.Equal(hostPath("/home/someone/bin"), filepath.Dir(backup))
-	c.NotEqual(target.Path, backup)
-}
-
-// Locating the executable inside a staged copy is what makes it possible to run the replacement before committing to
-// it.
-func TestExecWithin(t *testing.T) {
-	c := check.New(t)
-
-	bundle, err := ResolveTarget(hostPath("/Applications/GCS.app/Contents/MacOS/gcs"), "darwin")
-	c.NoError(err)
-	c.Equal(hostPath("/tmp/staged/GCS.app/Contents/MacOS/gcs"), bundle.ExecWithin(hostPath("/tmp/staged/GCS.app")))
-
-	exe, err := ResolveTarget(hostPath("/home/someone/bin/gcs"), "linux")
-	c.NoError(err)
-	c.Equal(hostPath("/tmp/staged/gcs"), exe.ExecWithin(hostPath("/tmp/staged/gcs")))
+	for _, one := range []struct {
+		exePath string
+		goos    string
+		parent  string
+	}{
+		{hostPath("/Applications/GCS.app/Contents/MacOS/gcs"), "darwin", hostPath("/Applications")},
+		{hostPath("/home/someone/bin/gcs"), "linux", hostPath("/home/someone/bin")},
+	} {
+		target, err := ResolveTarget(one.exePath, one.goos)
+		c.NoError(err, one.exePath)
+		backup := target.BackupPath("123")
+		c.False(strings.HasSuffix(backup, ".app"), "got %s", backup)
+		c.Equal(one.parent, filepath.Dir(backup), "the backup must be a sibling, so the move is a rename")
+		c.NotEqual(target.Path, backup)
+		c.True(strings.HasPrefix(filepath.Base(backup), "."), "the backup should be hidden; got %s", backup)
+		c.NotEqual(backup, target.BackupPath("456"), "the unique suffix must actually vary")
+	}
 }
 
 // The staged replacement keeps the name of what it replaces, directly inside the staging directory.

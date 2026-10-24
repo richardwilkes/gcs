@@ -447,6 +447,7 @@ func TestWeaponCopyNormalizesDamage(t *testing.T) {
 // armor divisor is shown only when it isn't 1, and its type, trimmed, only when it has one, as in the resolved form.
 func TestWeaponDamageStringFragmentation(t *testing.T) {
 	c := check.New(t)
+	gurps.GlobalSettings() // Initializes the dice rollers; with no owner, nothing on the String() path does so
 	w := gurps.NewWeapon(nil, true)
 	w.Damage.Fragmentation = "2d"
 	c.Equal("thr cr [2d]", w.Damage.String(), "no armor divisor and no type")

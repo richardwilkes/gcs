@@ -41,9 +41,9 @@ func addSpellNamePrereq(s *Spell, target string) *SpellPrereq {
 	return p
 }
 
-// TestSpellPrereqCircularNotCounted verifies that a spell which itself requires the spell being checked is not counted
-// toward that spell's own college prerequisite, which would otherwise create a circular prerequisite relationship.
-// See GitHub issue #737.
+// TestSpellPrereqCircularNotCounted verifies that a spell which itself requires the spell being checked, at any depth
+// of nested prerequisite lists, is not counted toward that spell's own college prerequisite, which would otherwise
+// create a circular prerequisite relationship. See GitHub issue #737.
 func TestSpellPrereqCircularNotCounted(t *testing.T) {
 	c := check.New(t)
 
@@ -90,6 +90,13 @@ func TestSpellPrereqCircularNotCounted(t *testing.T) {
 		boost.Prereq.Prereqs = saved
 	}
 	boost.Prereq.Not = false
+	// Nest the spell-name prerequisite one level down inside an "any of" sub-list.
+	anyOf := NewPrereqList()
+	anyOf.All = false
+	anyOf.Prereqs = boost.Prereq.Prereqs
+	boost.Prereq.Prereqs = Prereqs{anyOf}
+	c.True(spellDirectlyRequires(boost, wisdom), "nested spell-name prerequisite must be detected")
+	boost.Prereq.Prereqs = anyOf.Prereqs
 	c.False(spellDirectlyRequires(e.Spells[2], wisdom), "Mind A does not require Wisdom")
 
 	// There are five Mind Control spells besides Wisdom (Boost Intelligence + four plain ones), but Boost Intelligence
@@ -101,30 +108,6 @@ func TestSpellPrereqCircularNotCounted(t *testing.T) {
 	addTestCollegeSpell(e, "Mind E", "Mind Control")
 	c.True(collegeReq.Satisfied(e, wisdom, nil, "", nil),
 		"Wisdom's college prerequisite must be satisfied once a fifth non-circular spell is present")
-}
-
-// TestSpellPrereqNestedCircularNotCounted verifies that a circular relationship in a nested prereq list is detected.
-func TestSpellPrereqNestedCircularNotCounted(t *testing.T) {
-	c := check.New(t)
-
-	e := NewEntity()
-	wisdom := addTestCollegeSpell(e, "Wisdom", "Mind Control")
-	boost := addTestCollegeSpell(e, "Boost Intelligence", "Mind Control")
-
-	// Nest the spell-name prerequisite one level down inside an "any of" sub-list.
-	inner := NewPrereqList()
-	inner.All = false
-	namePrereq := NewSpellPrereq()
-	namePrereq.SubType = spellcmp.Name
-	namePrereq.QualifierCriteria.Compare = criteria.IsText
-	namePrereq.QualifierCriteria.Qualifier = "Wisdom"
-	inner.Prereqs = append(inner.Prereqs, namePrereq)
-	namePrereq.Parent = inner
-	boost.Prereq = NewPrereqList()
-	boost.Prereq.Prereqs = append(boost.Prereq.Prereqs, inner)
-	inner.Parent = boost.Prereq
-
-	c.True(spellDirectlyRequires(boost, wisdom), "nested spell-name prerequisite must be detected")
 }
 
 // TestSpellPrereqNilEntity verifies that a nil entity is treated as satisfied rather than panicking, matching every

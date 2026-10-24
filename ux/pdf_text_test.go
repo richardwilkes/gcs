@@ -122,20 +122,12 @@ func TestPDFRendererPagePointFromPointRoundTrip(t *testing.T) {
 	}
 }
 
-// TestPDFRendererTextUnextracted pins that a page nobody has asked about yet reports its length as unknown rather than
-// as zero. The distinction lets the dockable tell "there is no text here" from "the text isn't ready yet", and so
-// whether to try again once the text extracted callback fires.
-func TestPDFRendererTextUnextracted(t *testing.T) {
-	pdf := newPDFTextSampleRenderer(t)
-	if length, known := pdf.TextLength(0); known {
-		t.Errorf("the length of page 0 is reported as known (%d) before anything has been extracted", length)
-	}
-}
-
 // TestPDFRendererTextExtraction runs a real document all the way through the text path: the request, the extraction on
 // what would be the queue's worker, and then every accessor the selection UI uses. The extraction is driven directly
 // so that the test doesn't depend on the shared queue's timing; requestText is the same bookkeeping RequestText does
-// under the lock, minus the submission that would hand the work to the worker.
+// under the lock, minus the submission that would hand the work to the worker. Until the extraction, the page's length
+// is unknown rather than zero, which lets the dockable tell "there is no text here" from "the text isn't ready yet",
+// and so whether to try again once the text extracted callback fires.
 func TestPDFRendererTextExtraction(t *testing.T) {
 	pdf := newPDFTextSampleRenderer(t)
 	if pdf.extractNextText() {
@@ -146,6 +138,10 @@ func TestPDFRendererTextExtraction(t *testing.T) {
 	pdf.lock.Unlock()
 	if !queued {
 		t.Fatal("requestText didn't take the request for page 0")
+	}
+	// Asked only now, since TextLength requests an unknown page itself and would hand it to the shared queue's worker.
+	if length, known := pdf.TextLength(0); known {
+		t.Errorf("the length of page 0 is reported as known (%d) before anything has been extracted", length)
 	}
 	if !pdf.extractNextText() {
 		t.Fatal("extractNextText did nothing with page 0 asked for")

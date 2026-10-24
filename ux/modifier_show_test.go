@@ -19,14 +19,14 @@ import (
 	uncheck "github.com/richardwilkes/unison/enums/check"
 )
 
-// modifierShowTitles are the titles of the checkboxes that say where a modifier's notes are shown, in the order they
-// appear.
-var modifierShowTitles = []string{"Show notes in owner's notes", "Show notes in attack usage"}
+// modifierShowTitles are the titles of the checkboxes that say where a modifier is shown, in the order they appear: the
+// first goes with the name, the other two with the notes.
+var modifierShowTitles = []string{"Show in title notes", "Show notes in owner's notes", "Show notes in attack usage"}
 
 // checkModifierShowCheckBoxes checks that the content has the modifier's show checkboxes in order, that "Show notes in
-// owner's notes" starts checked and clearing it hides the notes until it is checked again, and that the other one sets
-// its flag.
-func checkModifierShowCheckBoxes(c check.Checker, content *unison.Panel, hideNotes, showOnWeapon *bool) {
+// owner's notes" starts checked and clearing it hides the notes until it is checked again, and that the other two set
+// their flags.
+func checkModifierShowCheckBoxes(c check.Checker, content *unison.Panel, showInTitle, hideNotes, showOnWeapon *bool) {
 	c.Helper()
 	var titles []string
 	for _, box := range uxtest.PanelsOfType[*CheckBox](content) {
@@ -38,15 +38,20 @@ func checkModifierShowCheckBoxes(c check.Checker, content *unison.Panel, hideNot
 	}
 	c.Equal(modifierShowTitles, titles, "the show checkboxes appear once each, in order")
 
+	c.False(*showInTitle, "precondition: the modifier starts out in the notes")
 	c.False(*hideNotes, "precondition: the notes start out shown")
 	c.False(*showOnWeapon, "precondition: the notes start out off attack usage")
-	owner := findCheckBoxTitled(content, modifierShowTitles[0])
-	attack := findCheckBoxTitled(content, modifierShowTitles[1])
-	if owner == nil || attack == nil {
+	title := findCheckBoxTitled(content, modifierShowTitles[0])
+	owner := findCheckBoxTitled(content, modifierShowTitles[1])
+	attack := findCheckBoxTitled(content, modifierShowTitles[2])
+	if title == nil || owner == nil || attack == nil {
 		return
 	}
+	c.Equal(uncheck.Off, title.State, "the title notes box starts clear")
 	c.Equal(uncheck.On, owner.State, "the owner's notes box starts checked")
 	c.Equal(uncheck.Off, attack.State, "the attack usage box starts clear")
+	clickCheckBox(title, true)
+	c.True(*showInTitle, "checking the title notes box shows the modifier in the title")
 	clickCheckBox(owner, false)
 	c.True(*hideNotes, "clearing the owner's notes box hides the notes")
 	clickCheckBox(owner, true)
@@ -59,7 +64,9 @@ func checkModifierShowCheckBoxes(c check.Checker, content *unison.Panel, hideNot
 func TestModifierEditorsShowCheckBoxes(t *testing.T) {
 	c := check.New(t)
 	trait, content := buildEditorContent(nil, gurps.NewTraitModifier(nil, nil, false), initTraitModifierEditor)
-	checkModifierShowCheckBoxes(c, content, &trait.editorData.HideNotes, &trait.editorData.ShowNotesOnWeapon)
+	checkModifierShowCheckBoxes(c, content, &trait.editorData.ShowInTitle, &trait.editorData.HideNotes,
+		&trait.editorData.ShowNotesOnWeapon)
 	eqp, content := buildEditorContent(nil, gurps.NewEquipmentModifier(nil, nil, false), initEquipmentModifierEditor)
-	checkModifierShowCheckBoxes(c, content, &eqp.editorData.HideNotes, &eqp.editorData.ShowNotesOnWeapon)
+	checkModifierShowCheckBoxes(c, content, &eqp.editorData.ShowInTitle, &eqp.editorData.HideNotes,
+		&eqp.editorData.ShowNotesOnWeapon)
 }

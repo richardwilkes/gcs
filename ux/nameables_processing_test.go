@@ -113,9 +113,9 @@ func altDropNameableModifier[T gurps.Node[T], M gurps.Node[M]](t *testing.T, c c
 	return headings, counter
 }
 
-// TestAltDropOnTraitAppliesNameablesToTheLiveList verifies that dropping a trait modifier onto a trait prompts for its
-// nameable keys before anything is shown, and that the rebuild which follows replaces the traits list when the
-// modifier brings switchable features.
+// TestAltDropOnTraitAppliesNameablesToTheLiveList verifies that dropping a trait modifier onto a trait, or an equipment
+// modifier onto an equipment row, prompts for its nameable keys before anything is shown, and that the rebuild which
+// follows replaces the list when the modifier brings switchable features.
 func TestAltDropOnTraitAppliesNameablesToTheLiveList(t *testing.T) {
 	c := check.New(t)
 	forbidModifierPrompts(t)
@@ -135,35 +135,28 @@ func TestAltDropOnTraitAppliesNameablesToTheLiveList(t *testing.T) {
 		"the dropped modifier's switchable feature must bring the switch column into view")
 	c.True(counter.count > 0,
 		"the substitutions must be reflected by a rebuild of the list that replaced the one the drop was given")
-}
 
-// TestAltDropOnEquipmentAppliesNameablesToTheLiveList verifies the same for dropping equipment modifiers onto an
-// equipment row.
-func TestAltDropOnEquipmentAppliesNameablesToTheLiveList(t *testing.T) {
-	c := check.New(t)
-	forbidModifierPrompts(t)
-	sheet, targets := sheetWithNamedEquipment(t, c, "Sword")
-	stale := sheet.CarriedEquipment.Table
+	sheet, items := sheetWithNamedEquipment(t, c, "Sword")
+	staleEquipment := sheet.CarriedEquipment.Table
+	droppedEquipment := newSwitchableEquipmentModifier("@Material@ Coating")
+	_, counter = altDropNameableModifier(t, c, sheet, sheet.CarriedEquipment.provider, []int{0}, droppedEquipment,
+		"Steel")
 
-	// Its switchable feature is what brings the switch column in, and its name needs a substitution.
-	dropped := newSwitchableEquipmentModifier("@Material@ Coating")
-	_, counter := altDropNameableModifier(t, c, sheet, sheet.CarriedEquipment.provider, []int{0}, dropped, "Steel")
-
-	c.Equal(1, len(targets[0].Modifiers), "the dropped modifier must be added to the target equipment")
-	c.Equal("Steel Coating", targets[0].Modifiers[0].NameWithReplacements(),
+	c.Equal(1, len(items[0].Modifiers), "the dropped modifier must be added to the target equipment")
+	c.Equal("Steel Coating", items[0].Modifiers[0].NameWithReplacements(),
 		"the substitution must be applied to the dropped modifier")
-	live := sheet.CarriedEquipment.Table
-	c.NotEqual(stale, live, "gaining the switch column must replace the carried equipment table")
-	c.NotEqual(-1, switchColumnIndex(live.Columns, gurps.EquipmentSwitchColumn),
+	liveEquipment := sheet.CarriedEquipment.Table
+	c.NotEqual(staleEquipment, liveEquipment, "gaining the switch column must replace the carried equipment table")
+	c.NotEqual(-1, switchColumnIndex(liveEquipment.Columns, gurps.EquipmentSwitchColumn),
 		"the dropped modifier's switchable feature must bring the switch column into view")
 	c.True(counter.count > 0,
 		"the substitutions must be reflected by a rebuild of the list that replaced the one the drop was given")
 }
 
 // TestAltDropOnSeveralTraitsPromptsForEachCopy verifies that dropping a modifier whose name needs filling in onto
-// several selected traits asks about each trait's copy separately, in one prompt, so that each can be named
-// differently. The copies are otherwise identical, so each entry has to be headed by the trait it belongs to, or the
-// user has no way of telling which answer goes where.
+// several selected traits, or equipment items, asks about each target's copy separately, in one prompt, so that each
+// can be named differently. The copies are otherwise identical, so each entry has to be headed by the target it belongs
+// to, or the user has no way of telling which answer goes where.
 func TestAltDropOnSeveralTraitsPromptsForEachCopy(t *testing.T) {
 	c := check.New(t)
 	forbidModifierPrompts(t)
@@ -182,27 +175,20 @@ func TestAltDropOnSeveralTraitsPromptsForEachCopy(t *testing.T) {
 		"the first copy must get the first answer")
 	c.Equal("Silver Coating", targets[1].Modifiers[0].NameWithReplacements(),
 		"the second copy must get its own answer rather than the first one's")
-}
 
-// TestAltDropOnSeveralEquipmentItemsPromptsForEachCopy verifies the same for dropping an equipment modifier onto
-// several selected equipment items.
-func TestAltDropOnSeveralEquipmentItemsPromptsForEachCopy(t *testing.T) {
-	c := check.New(t)
-	forbidModifierPrompts(t)
-	sheet, targets := sheetWithNamedEquipment(t, c, "Sword", "Shield")
-
-	dropped := gurps.NewEquipmentModifier(nil, nil, false)
-	dropped.Name = "@Material@ Coating"
-	headings, _ := altDropNameableModifier(t, c, sheet, sheet.CarriedEquipment.provider, []int{0, 1}, dropped,
+	sheet, items := sheetWithNamedEquipment(t, c, "Sword", "Shield")
+	droppedEquipment := gurps.NewEquipmentModifier(nil, nil, false)
+	droppedEquipment.Name = "@Material@ Coating"
+	headings, _ = altDropNameableModifier(t, c, sheet, sheet.CarriedEquipment.provider, []int{0, 1}, droppedEquipment,
 		"Steel", "Silver")
 
 	c.Equal([]string{"Sword: @Material@ Coating", "Shield: @Material@ Coating"}, headings,
 		"the prompt must hold an entry for each copy of the dropped modifier, headed by the item it belongs to")
-	c.Equal(1, len(targets[0].Modifiers), "the first item must receive a copy of the dropped modifier")
-	c.Equal(1, len(targets[1].Modifiers), "the second item must receive a copy of the dropped modifier")
-	c.Equal("Steel Coating", targets[0].Modifiers[0].NameWithReplacements(),
+	c.Equal(1, len(items[0].Modifiers), "the first item must receive a copy of the dropped modifier")
+	c.Equal(1, len(items[1].Modifiers), "the second item must receive a copy of the dropped modifier")
+	c.Equal("Steel Coating", items[0].Modifiers[0].NameWithReplacements(),
 		"the first copy must get the first answer")
-	c.Equal("Silver Coating", targets[1].Modifiers[0].NameWithReplacements(),
+	c.Equal("Silver Coating", items[1].Modifiers[0].NameWithReplacements(),
 		"the second copy must get its own answer rather than the first one's")
 }
 

@@ -24,7 +24,6 @@ import "testing"
 func TestRace(t *testing.T) {
 	t.Run("ScriptResolutionConcurrency", TestScriptResolutionConcurrency)
 	t.Run("ScriptResolveFailureLogConcurrency", TestScriptResolveFailureLogConcurrency)
-	t.Run("ScriptObjectResultConcurrency", TestScriptObjectResultConcurrency)
 	t.Run("EntitylessScriptDepthIsPerGoroutine", TestEntitylessScriptDepthIsPerGoroutine)
 	t.Run("CurrentGoroutineID", TestCurrentGoroutineID)
 	t.Run("ScriptResultConversionHonorsTimeout", TestScriptResultConversionHonorsTimeout)

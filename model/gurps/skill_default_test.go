@@ -378,57 +378,73 @@ func skillNames(list []*Skill) []string {
 
 // TestSkillDefaultTagCriteria verifies that a skill default carrying a tag criteria resolves to the best skill bearing
 // that tag -- not to the best skill overall -- and resolves to nothing at all when no skill bears it. This is the
-// mechanism issue #1112 asks for: Stage Combat defaults to "any actual combat skill" at -3.
+// mechanism issue #1112 asks for: Stage Combat defaults to "any actual combat skill" at -3. The criteria inherits the
+// comma-list semantics of the tag matching used by skill bonuses: a positive comparison matches a skill having any one
+// of the listed tags, while a negative one requires every tag of the skill to fail against every entry in the list. A
+// skill with no tags at all counts as having a single, empty tag, so it passes a negative comparison.
 func TestSkillDefaultTagCriteria(t *testing.T) {
 	c := check.New(t)
 
 	e := NewEntity()
-	broadsword := addTaggedTestSkill(e, "Broadsword", "", fxp.Eight, "Combat")       // level 12
-	brawling := addTaggedTestSkill(e, "Brawling", "", fxp.Two, "Combat")             // level 10
-	cooking := addTaggedTestSkill(e, "Cooking", "", fxp.FromInteger(16), "Domestic") // level 14
+	broadsword := addTaggedTestSkill(e, "Broadsword", "", fxp.Eight, "Combat", "Weapon") // level 12
+	brawling := addTaggedTestSkill(e, "Brawling", "", fxp.Two, "Combat")                 // level 10
+	cooking := addTaggedTestSkill(e, "Cooking", "", fxp.FromInteger(16), "Domestic")     // level 14
+	addTaggedTestSkill(e, "Stealth", "", fxp.Two, "Thief")                               // level 10
+	addTaggedTestSkill(e, "Carousing", "", fxp.One)                                      // level 9, no tags at all
 	e.Recalculate()
 	c.Equal(fxp.Twelve, broadsword.LevelData.Level, "precondition: Broadsword should be at level 12")
 	c.Equal(fxp.Ten, brawling.LevelData.Level, "precondition: Brawling should be at level 10")
 	c.Equal(fxp.FromInteger(14), cooking.LevelData.Level, "precondition: Cooking should be at level 14")
 
-	combat := newTaggedSkillDefault(criteria.IsText, "Combat", -fxp.Three)
-	c.Equal([]string{"Brawling", "Broadsword"}, skillNames(combat.matchingSkills(e, nil, true, nil)),
-		"only the Combat-tagged skills may be selected")
-	c.Equal(fxp.Nine, combat.SkillLevel(e, nil, true, nil, false),
-		"the default must resolve to Broadsword-3, not to the higher-level but untagged Cooking")
-	c.Equal(fxp.Nine, combat.SkillLevelFast(e, nil, true, nil, false),
-		"SkillLevelFast must agree with SkillLevel")
-
-	missing := newTaggedSkillDefault(criteria.IsText, "Sorcery", -fxp.Three)
-	c.Equal(0, len(missing.matchingSkills(e, nil, true, nil)), "a tag no skill carries must select nothing")
-	c.Equal(fxp.Min, missing.SkillLevel(e, nil, true, nil, false), "a tag no skill carries must not resolve")
-	c.Equal(fxp.Min, missing.SkillLevelFast(e, nil, true, nil, false), "SkillLevelFast must agree with SkillLevel")
-}
-
-// TestSkillDefaultTagCriteriaList verifies the comma-list semantics a tag criteria inherits from the tag matching used
-// by skill bonuses: a positive comparison matches a skill having any one of the listed tags, while a negative one
-// requires every tag of the skill to fail against every entry in the list. A skill with no tags at all counts as
-// having a single, empty tag, so it passes a negative comparison.
-func TestSkillDefaultTagCriteriaList(t *testing.T) {
-	c := check.New(t)
-
-	e := NewEntity()
-	addTaggedTestSkill(e, "Broadsword", "", fxp.Eight, "Combat", "Weapon") // level 12
-	addTaggedTestSkill(e, "Stealth", "", fxp.Two, "Thief")                 // level 10
-	addTaggedTestSkill(e, "Cooking", "", fxp.Four, "Domestic")             // level 11
-	addTaggedTestSkill(e, "Carousing", "", fxp.One)                        // level 9, no tags at all
-	e.Recalculate()
-
-	either := newTaggedSkillDefault(criteria.IsText, "Combat, Thief", -fxp.Three)
-	c.Equal([]string{"Broadsword", "Stealth"}, skillNames(either.matchingSkills(e, nil, true, nil)),
-		"a comma-separated list must match a skill carrying any one of the listed tags")
-	c.Equal(fxp.Nine, either.SkillLevel(e, nil, true, nil, false), "the best of the two is Broadsword-3")
-
-	not := newTaggedSkillDefault(criteria.IsNotText, "Combat", -fxp.Three)
-	c.Equal([]string{"Carousing", "Cooking", "Stealth"}, skillNames(not.matchingSkills(e, nil, true, nil)),
-		"'is not Combat' must reject a skill tagged Combat even though it carries other tags, and must accept both a "+
-			"differently-tagged and an untagged skill")
-	c.Equal(fxp.Eight, not.SkillLevel(e, nil, true, nil, false), "the best of those is Cooking-3")
+	for _, tc := range []struct {
+		compare   criteria.StringComparison
+		qualifier string
+		names     []string
+		level     fxp.Int
+		namesMsg  string
+		levelMsg  string
+	}{
+		{
+			compare:   criteria.IsText,
+			qualifier: "Combat",
+			names:     []string{"Brawling", "Broadsword"},
+			level:     fxp.Nine,
+			namesMsg:  "only the Combat-tagged skills may be selected",
+			levelMsg:  "the default must resolve to Broadsword-3, not to the higher-level but untagged Cooking",
+		},
+		{
+			compare:   criteria.IsText,
+			qualifier: "Sorcery",
+			names:     []string{},
+			level:     fxp.Min,
+			namesMsg:  "a tag no skill carries must select nothing",
+			levelMsg:  "a tag no skill carries must not resolve",
+		},
+		{
+			compare:   criteria.IsText,
+			qualifier: "Combat, Thief",
+			names:     []string{"Brawling", "Broadsword", "Stealth"},
+			level:     fxp.Nine,
+			namesMsg:  "a comma-separated list must match a skill carrying any one of the listed tags",
+			levelMsg:  "the best of them is Broadsword-3",
+		},
+		{
+			compare:   criteria.IsNotText,
+			qualifier: "Combat",
+			names:     []string{"Carousing", "Cooking", "Stealth"},
+			level:     fxp.Eleven,
+			namesMsg: "'is not Combat' must reject a skill tagged Combat even though it carries other tags, and must " +
+				"accept both a differently-tagged and an untagged skill",
+			levelMsg: "the best of those is Cooking-3",
+		},
+	} {
+		def := newTaggedSkillDefault(tc.compare, tc.qualifier, -fxp.Three)
+		c.Equal(tc.names, skillNames(def.matchingSkills(e, nil, true, nil)), "%v %q: %s", tc.compare, tc.qualifier,
+			tc.namesMsg)
+		c.Equal(tc.level, def.SkillLevel(e, nil, true, nil, false), "%v %q: %s", tc.compare, tc.qualifier, tc.levelMsg)
+		c.Equal(tc.level, def.SkillLevelFast(e, nil, true, nil, false),
+			"%v %q: SkillLevelFast must agree with SkillLevel", tc.compare, tc.qualifier)
+	}
 }
 
 // TestSkillDefaultTagCombinesWithNameAndTL verifies that the tag criteria narrows the name and WhenTL criteria rather
@@ -505,22 +521,6 @@ func TestSkillDefaultTagsJSON(t *testing.T) {
 	c.Equal("Broadsword", loaded.Name.Qualifier, "a legacy string name migrates its qualifier")
 	c.Equal(-fxp.Three, loaded.Modifier, "a legacy modifier still loads")
 	c.True(loaded.Tags.IsZero(), "a legacy default must have no tag criteria")
-}
-
-// TestSkillDefaultHashNormalizesType verifies that a type written in another case or with spaces around it hashes as
-// the form loading leaves it in.
-func TestSkillDefaultHashNormalizesType(t *testing.T) {
-	c := check.New(t)
-	lower := newSkillDefaultTo("Broadsword", "", true, -fxp.Three)
-	c.Equal(SkillID, lower.DefaultType)
-	capitalized := newSkillDefaultTo("Broadsword", "", true, -fxp.Three)
-	capitalized.DefaultType = "Skill"
-	c.Equal("Skill", capitalized.DefaultType)
-	padded := newSkillDefaultTo("Broadsword", "", true, -fxp.Three)
-	padded.DefaultType = " skill "
-	c.Equal(" skill ", padded.DefaultType)
-	c.Equal(Hash64(lower), Hash64(capitalized))
-	c.Equal(Hash64(lower), Hash64(padded))
 }
 
 // TestSkillDefaultTagsHashStability verifies that the tag criteria joins the source-data hash only once it is really
@@ -657,7 +657,7 @@ func TestSkillDefaultTagOffersEachTaggedSkillOnce(t *testing.T) {
 
 // TestSkillDefaultTagEquivalent verifies that the tag criteria takes part in the equivalence check used to pair a
 // recorded default with the one it came from and to dedupe the swap list, that it survives a clone, and that the
-// comparison of the default type itself is made on the normalized form.
+// default type itself is compared and hashed in the normalized form loading leaves it in.
 func TestSkillDefaultTagEquivalent(t *testing.T) {
 	c := check.New(t)
 
@@ -680,10 +680,14 @@ func TestSkillDefaultTagEquivalent(t *testing.T) {
 	c.False(tagged.Equivalent(map[string]string{"tag": "Thief"}, placeholder),
 		"a placeholder filled in with different text must not be equivalent")
 
-	// The default type is compared in its normalized form, as everything else that classifies it does.
-	messy := newSkillDefaultTo("Broadsword", "", true, -fxp.Three)
-	messy.DefaultType = " Skill "
-	c.True(plain.Equivalent(nil, messy), "types differing only in case and whitespace name the same default type")
+	// The default type is compared and hashed in its normalized form, as everything else that classifies it does.
+	for _, defaultType := range []string{" Skill ", "Skill", " skill "} {
+		messy := newSkillDefaultTo("Broadsword", "", true, -fxp.Three)
+		messy.DefaultType = defaultType
+		c.True(plain.Equivalent(nil, messy),
+			"types differing only in case and whitespace name the same default type, as %q does", defaultType)
+		c.Equal(Hash64(plain), Hash64(messy), "a type of %q must hash as the form loading leaves it in", defaultType)
+	}
 
 	// A tag criteria of "is anything" selects nothing in particular however it came to be that way: a qualifier left
 	// behind when the popup was switched back, or a comparison no one recognizes, changes nothing about what it

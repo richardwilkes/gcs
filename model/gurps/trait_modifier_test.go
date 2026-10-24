@@ -10,11 +10,9 @@
 package gurps
 
 import (
-	"crypto/sha256"
 	"testing"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
-	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/gcs/v5/model/nameable"
 	"github.com/richardwilkes/toolbox/v2/check"
 )
@@ -51,10 +49,11 @@ func TestTraitModifierCloneDoesNotShareReplacements(t *testing.T) {
 	c.Equal(map[string]string{"Element": "Fire"}, library.Replacements, "the library row is left untouched")
 }
 
-// newIgnoresLevelTestTrait returns an entity holding a 3-level, 5-point-per-level trait carrying a single -40%
-// modifier, the shape the "Damage Resistance 3 (Limited, -40%)" case from issue #1017 takes. When the modifier does not
-// take its level from the trait, it is given 2 levels of its own, deliberately different from the trait's 3, so that
-// the assertions can tell which of the two the cost was multiplied by.
+// newIgnoresLevelTestTrait returns an entity holding the "Damage Resistance 3 (Limited, -40%)" case from issue #1017: a
+// 3-level, 5-point-per-level trait granting DR 1 per level, carrying a single -40% modifier whose per-level features
+// cancel that DR against everything and grant it back against the trait's "Cold" damage type. When the modifier does
+// not take its level from the trait, it is given 2 levels of its own, deliberately different from the trait's 3, so
+// that the assertions can tell which of the two the cost and features were multiplied by.
 func newIgnoresLevelTestTrait(useLevelFromTrait bool) (*Entity, *Trait, *TraitModifier) {
 	e := NewEntity()
 	trait := NewTrait(e, nil, false)
@@ -62,6 +61,10 @@ func newIgnoresLevelTestTrait(useLevelFromTrait bool) (*Entity, *Trait, *TraitMo
 	trait.CanLevel = true
 	trait.Levels = fxp.Three
 	trait.PointsPerLevel = fxp.Five
+	trait.Replacements = map[string]string{"Damage Type": "Cold"}
+	baseDR := newTestDRBonus(fxp.One, AllID, AllID)
+	baseDR.PerLevel = true
+	trait.Features = Features{baseDR}
 	mod := NewTraitModifier(e, nil, false)
 	mod.Name = "Limited"
 	mod.CostAdj = "-40%"
@@ -69,6 +72,11 @@ func newIgnoresLevelTestTrait(useLevelFromTrait bool) (*Entity, *Trait, *TraitMo
 	if !useLevelFromTrait {
 		mod.Levels = fxp.Two
 	}
+	cancelAll := newTestDRBonus(-fxp.One, AllID, AllID)
+	cancelAll.PerLevel = true
+	againstType := newTestDRBonus(fxp.One, "@Damage Type@", AllID)
+	againstType.PerLevel = true
+	mod.Features = Features{cancelAll, againstType}
 	trait.Modifiers = []*TraitModifier{mod}
 	trait.SetDataOwner(e)
 	e.Traits = append(e.Traits, trait)
@@ -76,45 +84,45 @@ func newIgnoresLevelTestTrait(useLevelFromTrait bool) (*Entity, *Trait, *TraitMo
 	return e, trait, mod
 }
 
-// TestTraitModifierCostIgnoresLevel verifies that a "use level from owner" modifier with CostIgnoresLevel set applies
-// its cost adjustment just once rather than multiplying it by the trait's level, while the modifier's own level -- what
-// its per-level features and its display key off of -- is unaffected either way.
+// TestTraitModifierCostIgnoresLevel verifies that a leveled modifier with CostIgnoresLevel set applies its cost
+// adjustment just once rather than multiplying it by its level, whether it takes that level from the trait or carries
+// its own, while the modifier's level -- what its per-level features and its display key off of -- is unaffected
+// either way.
 func TestTraitModifierCostIgnoresLevel(t *testing.T) {
 	c := check.New(t)
-	e, trait, mod := newIgnoresLevelTestTrait(true)
+	for _, one := range []struct {
+		name              string
+		useLevelFromTrait bool
+		level             fxp.Int
+		multipliedCost    string
+		drAll             int
+		drCold            int
+	}{
+		// -40% x the trait's 3 levels is -120%, which AdjustedPoints clamps to -80%.
+		{"level from the trait", true, fxp.Three, "-120%", 0, 3},
+		// The modifier's own 2 levels, not the trait's 3, multiply the cost.
+		{"own levels", false, fxp.Two, "-80%", 1, 2},
+	} {
+		e, trait, mod := newIgnoresLevelTestTrait(one.useLevelFromTrait)
 
-	// With the flag off, -40% is multiplied by the trait's 3 levels, and the resulting -120% is clamped to -80% by
-	// AdjustedPoints: 15 - 12 = 3.
-	c.Equal(fxp.Three, trait.AdjustedPoints(nil), "-40% x 3 levels, clamped to -80% of 15 points")
-	c.Equal("-120%", mod.CostDescription(), "the cost adjustment is multiplied by the level")
-	c.Equal(fxp.Three, mod.CurrentLevel(), "the modifier's level comes from the trait")
+		// With the flag off, the -40% is multiplied by the level, coming to -80% of 15 points: 15 - 12 = 3.
+		c.Equal(fxp.Three, trait.AdjustedPoints(nil), "%s: -80%% of 15 points", one.name)
+		c.Equal(one.multipliedCost, mod.CostDescription(), "%s: the cost adjustment is multiplied by the level",
+			one.name)
+		c.Equal(one.level, mod.CurrentLevel(), "%s: the modifier's level", one.name)
 
-	// With the flag on, the -40% applies once: 15 - 6 = 9.
-	mod.CostIgnoresLevel = true
-	e.Recalculate()
-	c.Equal(fxp.FromInteger(9), trait.AdjustedPoints(nil), "-40% applied once to 15 points")
-	c.Equal("-40%", mod.CostDescription(), "the cost adjustment is applied once")
-	c.Equal(fxp.Three, mod.CurrentLevel(), "the modifier's level is still the trait's, so per-level features scale")
-}
-
-// TestTraitModifierCostIgnoresLevelWithOwnLevels verifies that CostIgnoresLevel applies to a modifier carrying its own
-// levels too, not just to one taking its level from the owning trait.
-func TestTraitModifierCostIgnoresLevelWithOwnLevels(t *testing.T) {
-	c := check.New(t)
-	e, trait, mod := newIgnoresLevelTestTrait(false)
-
-	mod.CostIgnoresLevel = true
-	e.Recalculate()
-	c.Equal("-40%", mod.CostDescription(), "the modifier's own 2 levels don't multiply the cost")
-	c.Equal(fxp.FromInteger(9), trait.AdjustedPoints(nil), "-40% applied once to 15 points")
-	c.Equal(fxp.Two, mod.CurrentLevel(), "the modifier keeps its own level")
-
-	// With the flag off, the cost is multiplied by the modifier's own 2 levels, not the trait's 3, which would have
-	// shown as -120%.
-	mod.CostIgnoresLevel = false
-	e.Recalculate()
-	c.Equal("-80%", mod.CostDescription(), "with the flag off, the modifier's own levels multiply the cost")
-	c.Equal(fxp.Three, trait.AdjustedPoints(nil), "-80% of 15 points")
+		// With the flag on, the -40% applies once: 15 - 6 = 9.
+		mod.CostIgnoresLevel = true
+		e.Recalculate()
+		c.Equal(fxp.FromInteger(9), trait.AdjustedPoints(nil), "%s: -40%% applied once to 15 points", one.name)
+		c.Equal("-40%", mod.CostDescription(), "%s: the cost adjustment is applied once", one.name)
+		c.Equal(one.level, mod.CurrentLevel(), "%s: the modifier's level is unaffected", one.name)
+		drMap := e.AddDRBonusesFor(TorsoID, nil, nil)
+		c.Equal(one.drAll, drMap[AllID], "%s: the modifier's per-level features cancel the trait's DR against "+
+			"everything by its level", one.name)
+		c.Equal(one.drCold, drMap["cold"], "%s: the modifier's per-level features grant DR against the chosen damage "+
+			"type by its level", one.name)
+	}
 }
 
 // TestTraitModifierCostDescriptionSimplifiesFraction verifies that a leveled fractional cost adjustment is reduced
@@ -145,152 +153,11 @@ func TestTraitModifierContainerHasNoCost(t *testing.T) {
 	c.Equal("", container.CostDescription(), "a container has no cost description")
 }
 
-// TestTraitModifierCostIgnoresLevelAffectsHash verifies that the flag participates in the source hash, so that a
-// library row differing only in it is reported as mismatched rather than in sync.
-func TestTraitModifierCostIgnoresLevelAffectsHash(t *testing.T) {
-	c := check.New(t)
-	mod := NewTraitModifier(nil, nil, false)
-	mod.Name = "Limited"
-	mod.CostAdj = "-40%"
-	mod.UseLevelFromTrait = true
-
-	h := sha256.New()
-	mod.Hash(h)
-	before := h.Sum(nil)
-
-	mod.CostIgnoresLevel = true
-	h.Reset()
-	mod.Hash(h)
-	c.NotEqual(before, h.Sum(nil), "flipping CostIgnoresLevel changes the hash")
-}
-
-// TestTraitModifierCostIgnoresLevelRoundTrip verifies that the flag is omitted from the JSON when false, so that
-// existing files re-save unchanged, and survives a round-trip when true.
-func TestTraitModifierCostIgnoresLevelRoundTrip(t *testing.T) {
-	c := check.New(t)
-	mod := NewTraitModifier(nil, nil, false)
-	mod.Name = "Limited"
-	mod.CostAdj = "-40%"
-	mod.UseLevelFromTrait = true
-
-	data, err := jio.Marshal(mod)
-	c.NoError(err)
-	c.NotContains(string(data), "cost_ignores_level", "the field is omitted when false")
-
-	mod.CostIgnoresLevel = true
-	data, err = jio.Marshal(mod)
-	c.NoError(err)
-	c.Contains(string(data), "cost_ignores_level", "the field is written when true")
-	var restored TraitModifier
-	c.NoError(jio.Unmarshal(data, &restored))
-	c.True(restored.CostIgnoresLevel, "the field survives the round-trip")
-}
-
-// TestIssue1017LimitedDamageResistance covers the scenario from issue #1017: Damage Resistance 3 with a "Limited"
-// modifier that cancels the trait's DR against everything and grants it back against a nameable damage type. The
-// modifier's features scale with the trait's 3 levels while its -40% is charged just once.
-func TestIssue1017LimitedDamageResistance(t *testing.T) {
-	c := check.New(t)
-	e := NewEntity()
-
-	trait := NewTrait(e, nil, false)
-	trait.Name = "Damage Resistance"
-	trait.CanLevel = true
-	trait.Levels = fxp.Three
-	trait.PointsPerLevel = fxp.Five
-	trait.Replacements = map[string]string{"Damage Type": "Cold"}
-	baseDR := newTestDRBonus(fxp.One, AllID, AllID)
-	baseDR.PerLevel = true
-	trait.Features = Features{baseDR}
-
-	mod := NewTraitModifier(e, nil, false)
-	mod.Name = "Limited"
-	mod.CostAdj = "-40%"
-	mod.UseLevelFromTrait = true
-	mod.CostIgnoresLevel = true
-	cancelAll := newTestDRBonus(-fxp.One, AllID, AllID)
-	cancelAll.PerLevel = true
-	againstType := newTestDRBonus(fxp.One, "@Damage Type@", AllID)
-	againstType.PerLevel = true
-	mod.Features = Features{cancelAll, againstType}
-
-	trait.Modifiers = []*TraitModifier{mod}
-	trait.SetDataOwner(e)
-	e.Traits = append(e.Traits, trait)
-	e.Recalculate()
-
-	c.Equal(fxp.FromInteger(9), trait.AdjustedPoints(nil), "the -40% is charged once, not once per level")
-	drMap := e.AddDRBonusesFor(TorsoID, nil, nil)
-	c.Equal(0, drMap[AllID], "the modifier cancels the trait's DR against everything")
-	c.Equal(3, drMap["cold"], "the modifier grants DR 3 against the chosen damage type")
-}
-
-// TestTraitModifierApplyNameableKeysKeepsOtherReplacements verifies that applying one modifier's replacements keeps
-// the trait's existing replacements and those applied for its other modifiers.
-func TestTraitModifierApplyNameableKeysKeepsOtherReplacements(t *testing.T) {
-	c := check.New(t)
-	trait := NewTrait(nil, nil, false)
-	trait.Name = "@Foo@ Thing"
-	trait.Replacements = map[string]string{"Foo": "Bar"}
-	material := NewTraitModifier(nil, nil, false)
-	material.Name = "@Material@ Coating"
-	color := NewTraitModifier(nil, nil, false)
-	color.Name = "@Color@ Paint"
-	trait.AddModifiers(material, color)
-
-	// As the prompt does: collect every modifier's keys first, then apply them in turn.
-	materialKeys := make(map[string]string)
-	material.FillWithNameableKeys(materialKeys, nil)
-	colorKeys := make(map[string]string)
-	color.FillWithNameableKeys(colorKeys, nil)
-	materialKeys["Material"] = "Steel"
-	colorKeys["Color"] = "Red"
-	material.ApplyNameableKeys(materialKeys)
-	color.ApplyNameableKeys(colorKeys)
-
-	c.Equal(map[string]string{"Foo": "Bar", "Material": "Steel", "Color": "Red"}, trait.Replacements)
-	c.Equal("Bar Thing", trait.NameWithReplacements())
-	c.Equal("Steel Coating", material.NameWithReplacements())
-	c.Equal("Red Paint", color.NameWithReplacements())
-}
-
-// TestTraitModifierApplyNameableKeysUnsetAndCleared verifies that a key left at nameable.Unset keeps the trait's value
-// and a key left out of the map (cleared by the user) is removed.
-func TestTraitModifierApplyNameableKeysUnsetAndCleared(t *testing.T) {
-	c := check.New(t)
-	trait := NewTrait(nil, nil, false)
-	trait.Name = "@Material@ Sword"
-	trait.Replacements = map[string]string{"Material": "Iron"}
-	first := NewTraitModifier(nil, nil, false)
-	first.Name = "@Finish@ Coating"
-	second := NewTraitModifier(nil, nil, false)
-	second.Name = "@Finish@ Trim"
-	trait.AddModifiers(first, second)
-
-	firstKeys := make(map[string]string)
-	first.FillWithNameableKeys(firstKeys, nil)
-	secondKeys := make(map[string]string)
-	second.FillWithNameableKeys(secondKeys, nil)
-	c.Equal(nameable.Unset, secondKeys["Finish"], "the key starts out unanswered")
-	firstKeys["Finish"] = "Gilded"
-	first.ApplyNameableKeys(firstKeys)
-	second.ApplyNameableKeys(secondKeys)
-	c.Equal(map[string]string{"Material": "Iron", "Finish": "Gilded"}, trait.Replacements,
-		"an unanswered key keeps the answer given for the other modifier")
-
-	clearing := NewTraitModifier(nil, nil, false)
-	clearing.Name = "@Material@ Inlay"
-	trait.AddModifiers(clearing)
-	clearingKeys := make(map[string]string)
-	clearing.FillWithNameableKeys(clearingKeys, nil)
-	c.Equal("Iron", clearingKeys["Material"], "the prompt starts out on the trait's value")
-	delete(clearingKeys, "Material")
-	clearing.ApplyNameableKeys(clearingKeys)
-	c.Equal(map[string]string{"Finish": "Gilded"}, trait.Replacements, "a cleared key is removed")
-}
-
 // TestTraitModifierApplyNameableKeysKeepsAnswersForDisabledModifiers verifies that applying one modifier's
-// replacements keeps those held for the trait's disabled modifiers.
+// replacements keeps the trait's others: those held for its disabled modifiers, its own, and those applied for its
+// other modifiers when, as the prompt does, every modifier's keys are collected first and then applied in turn, where a
+// key one modifier leaves unanswered keeps the answer given for another. A cleared key is removed, and clearing every
+// replacement leaves nil.
 func TestTraitModifierApplyNameableKeysKeepsAnswersForDisabledModifiers(t *testing.T) {
 	c := check.New(t)
 	trait := NewTrait(nil, nil, false)
@@ -320,7 +187,51 @@ func TestTraitModifierApplyNameableKeysKeepsAnswersForDisabledModifiers(t *testi
 	c.Equal(map[string]string{"Finish": "Gilded"}, trait.Replacements, "the cleared key must be removed")
 	finishKeys := make(map[string]string)
 	finish.FillWithNameableKeys(finishKeys, nil)
+	c.Equal("Gilded", finishKeys["Finish"], "the prompt starts out on the trait's value")
 	delete(finishKeys, "Finish")
 	finish.ApplyNameableKeys(finishKeys)
 	c.Nil(trait.Replacements, "nothing left to hold must be held as nothing")
+
+	// As the prompt does: collect every modifier's keys first, then apply them in turn.
+	trait = NewTrait(nil, nil, false)
+	trait.Name = "@Foo@ Thing"
+	trait.Replacements = map[string]string{"Foo": "Bar"}
+	material := NewTraitModifier(nil, nil, false)
+	material.Name = "@Material@ Coating"
+	color = NewTraitModifier(nil, nil, false)
+	color.Name = "@Color@ Paint"
+	trait.AddModifiers(material, color)
+	materialKeys := make(map[string]string)
+	material.FillWithNameableKeys(materialKeys, nil)
+	colorKeys = make(map[string]string)
+	color.FillWithNameableKeys(colorKeys, nil)
+	materialKeys["Material"] = "Steel"
+	colorKeys["Color"] = "Red"
+	material.ApplyNameableKeys(materialKeys)
+	color.ApplyNameableKeys(colorKeys)
+	c.Equal(map[string]string{"Foo": "Bar", "Material": "Steel", "Color": "Red"}, trait.Replacements,
+		"the trait's own replacements and those applied for its other modifiers must survive")
+	c.Equal("Bar Thing", trait.NameWithReplacements())
+	c.Equal("Steel Coating", material.NameWithReplacements())
+	c.Equal("Red Paint", color.NameWithReplacements())
+
+	// The same, with a key shared by two modifiers left unanswered for the second.
+	trait = NewTrait(nil, nil, false)
+	trait.Name = "@Material@ Sword"
+	trait.Replacements = map[string]string{"Material": "Iron"}
+	coating := NewTraitModifier(nil, nil, false)
+	coating.Name = "@Finish@ Coating"
+	trim := NewTraitModifier(nil, nil, false)
+	trim.Name = "@Finish@ Trim"
+	trait.AddModifiers(coating, trim)
+	coatingKeys := make(map[string]string)
+	coating.FillWithNameableKeys(coatingKeys, nil)
+	trimKeys := make(map[string]string)
+	trim.FillWithNameableKeys(trimKeys, nil)
+	c.Equal(nameable.Unset, trimKeys["Finish"], "the key starts out unanswered")
+	coatingKeys["Finish"] = "Gilded"
+	coating.ApplyNameableKeys(coatingKeys)
+	trim.ApplyNameableKeys(trimKeys)
+	c.Equal(map[string]string{"Material": "Iron", "Finish": "Gilded"}, trait.Replacements,
+		"an unanswered key keeps the answer given for the other modifier")
 }

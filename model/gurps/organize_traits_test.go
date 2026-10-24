@@ -85,20 +85,32 @@ func TestOrganizeTraitsTagOverridesPoints(t *testing.T) {
 	c.Equal([]string{"Costly Quirk"}, organizedNames(organized[2].Children), "the tag beats the point total")
 }
 
-// A trait claiming two categories at once is filed by its cost instead, since its tags cancel each other out.
+// A trait claiming two categories at once is filed by its cost instead, since its tags cancel each other out. For a
+// leveled trait, that cost depends on how many levels were bought.
 func TestOrganizeTraitsConflictingTagsFallBackToPoints(t *testing.T) {
 	c := check.New(t)
 	e := NewEntity()
+	newLeveled := func(levels fxp.Int) *Trait {
+		trait := newOrganizableTrait(e, "Extra Effort", 0, "Advantage", "Perk")
+		trait.CanLevel = true
+		trait.PointsPerLevel = fxp.One
+		trait.Levels = levels
+		return trait
+	}
 	list := []*Trait{
 		newOrganizableTrait(e, "One Point", 1, "Advantage", "Perk"),
 		newOrganizableTrait(e, "Minus One", -1, "Disadvantage", "Quirk"),
 		newOrganizableTrait(e, "Five Points", 5, "Advantage", "Disadvantage"),
+		newLeveled(fxp.One),
+		newLeveled(fxp.Three),
 	}
 	organized, changed := OrganizeTraits(e, list)
 	c.True(changed, "filing the traits changes the list")
 	c.Equal([]string{"Advantages", "Perks", "Quirks"}, organizedNames(organized), "three categories are used")
-	c.Equal([]string{"Five Points"}, organizedNames(organized[0].Children), "5 points is an advantage")
-	c.Equal([]string{"One Point"}, organizedNames(organized[1].Children), "1 point is a perk")
+	c.Equal([]string{"Extra Effort 3", "Five Points"}, organizedNames(organized[0].Children),
+		"5 points is an advantage, and so are three levels that cost three points")
+	c.Equal([]string{"Extra Effort 1", "One Point"}, organizedNames(organized[1].Children),
+		"1 point is a perk, and so is one level that costs one point")
 	c.Equal([]string{"Minus One"}, organizedNames(organized[2].Children), "-1 point is a quirk")
 }
 
@@ -264,22 +276,34 @@ func TestOrganizeTraitsSortsChildrenNaturally(t *testing.T) {
 		organizedNames(organized[0].Children), "children sort naturally, ignoring case")
 }
 
-// The tree comes out consistent: every filed trait points at its new container, every container sits at the top level,
-// and a created container is owned by the data owner the caller passed in.
+// The tree comes out consistent, for an entity or a template, which has no entity behind its traits for the point
+// calculations to consult: the traits are filed into the same categories, every filed trait points at its new
+// container, every container sits at the top level, and a created container is owned by the data owner the caller
+// passed in.
 func TestOrganizeTraitsSetsParentsAndOwner(t *testing.T) {
 	c := check.New(t)
-	e := NewEntity()
-	organized, changed := OrganizeTraits(e, []*Trait{
-		newOrganizableTrait(e, "Advantage", 10),
-		newOrganizableTrait(e, "Quirk", -1),
-	})
-	c.True(changed, "filing the traits changes the list")
-	for _, one := range organized {
-		c.True(one.Container(), "every top-level entry is a container")
-		c.Nil(one.Parent(), "a top-level container has no parent")
-		c.True(e == one.DataOwner(), "a created container belongs to the owner passed in")
-		for _, child := range one.Children {
-			c.True(one == child.Parent(), "a filed trait points at its container")
+	for _, tc := range []struct {
+		name  string
+		owner DataOwner
+	}{
+		{name: "entity", owner: NewEntity()},
+		{name: "template", owner: NewTemplate()},
+	} {
+		organized, changed := OrganizeTraits(tc.owner, []*Trait{
+			newOrganizableTrait(tc.owner, "Advantage", 10),
+			newOrganizableTrait(tc.owner, "Quirk", -1),
+		})
+		c.True(changed, "%s: filing the traits changes the list", tc.name)
+		c.Equal([]string{"Advantages", "Quirks"}, organizedNames(organized), "%s: the categories are the same", tc.name)
+		c.Equal([]string{"Advantage"}, organizedNames(organized[0].Children), "%s: 10 points is an advantage", tc.name)
+		c.Equal([]string{"Quirk"}, organizedNames(organized[1].Children), "%s: -1 point is a quirk", tc.name)
+		for _, one := range organized {
+			c.True(one.Container(), "%s: every top-level entry is a container", tc.name)
+			c.Nil(one.Parent(), "%s: a top-level container has no parent", tc.name)
+			c.True(tc.owner == one.DataOwner(), "%s: a created container belongs to the owner passed in", tc.name)
+			for _, child := range one.Children {
+				c.True(one == child.Parent(), "%s: a filed trait points at its container", tc.name)
+			}
 		}
 	}
 }
@@ -379,46 +403,4 @@ func TestOrganizeTraitsClassifiesBeforeMoving(t *testing.T) {
 	c.Equal([]string{"Four Points"}, organizedNames(organized[0].Children), "the 4-point trait went to the advantages")
 	c.Equal(fxp.One, loose.AdjustedPoints(nil),
 		"the container's limitation really does drop the trait to a perk's worth of points once it is inside")
-}
-
-// Covers the shapes that show up in the stock libraries: language traits tagged as advantages, and leveled traits
-// tagged both ways whose category depends on how many levels were bought.
-func TestOrganizeTraitsLibraryShapes(t *testing.T) {
-	c := check.New(t)
-	e := NewEntity()
-
-	language := newOrganizableTrait(e, "Spanish", 10, "Advantage", "Language", "Mental")
-	organized, changed := OrganizeTraits(e, []*Trait{language})
-	c.True(changed, "filing the language changes the list")
-	c.Equal([]string{"Languages"}, organizedNames(organized), "a language tag outranks the advantage tag")
-
-	leveled := newOrganizableTrait(e, "Extra Effort", 0, "Advantage", "Perk")
-	leveled.CanLevel = true
-	leveled.PointsPerLevel = fxp.One
-	leveled.Levels = fxp.One
-	organized, changed = OrganizeTraits(e, []*Trait{leveled})
-	c.True(changed, "filing the leveled trait changes the list")
-	c.Equal([]string{"Perks"}, organizedNames(organized), "one level costs one point, so it is a perk")
-
-	leveled.SetParent(nil)
-	leveled.Levels = fxp.Three
-	organized, changed = OrganizeTraits(e, []*Trait{leveled})
-	c.True(changed, "filing the leveled trait changes the list")
-	c.Equal([]string{"Advantages"}, organizedNames(organized), "three levels cost three points, so it is an advantage")
-}
-
-// Organizing works for a template, which has no entity behind its traits for the point calculations to consult.
-func TestOrganizeTraitsWithTemplateOwner(t *testing.T) {
-	c := check.New(t)
-	tmpl := NewTemplate()
-	list := []*Trait{
-		newOrganizableTrait(tmpl, "Quirky", -1),
-		newOrganizableTrait(tmpl, "Talented", 15),
-	}
-	organized, changed := OrganizeTraits(tmpl, list)
-	c.True(changed, "filing the traits changes the list")
-	c.Equal([]string{"Advantages", "Quirks"}, organizedNames(organized), "the categories are the same for a template")
-	c.True(tmpl == organized[0].DataOwner(), "a created container belongs to the template")
-	c.Equal([]string{"Talented"}, organizedNames(organized[0].Children), "15 points is an advantage")
-	c.Equal([]string{"Quirky"}, organizedNames(organized[1].Children), "-1 point is a quirk")
 }

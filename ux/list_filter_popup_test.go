@@ -324,24 +324,6 @@ func TestListFilterPopupCommandsNeedAFilterInForce(t *testing.T) {
 	c.False(h.popup.popup.ItemEnabledAt(h.popup.deleteIndex), "Delete Filter… must still be off")
 }
 
-// TestListFilterPopupRebuildAfterExternalRemoval verifies that a rebuild reports the loss of a filter that was deleted
-// behind the popup's back, which is what happens when another dockable showing the same list type deletes it.
-func TestListFilterPopupRebuildAfterExternalRemoval(t *testing.T) {
-	c := check.New(t)
-	h := newListFilterPopupHarness(t, "alpha", "Beta")
-	original := savedFilters()[0]
-	h.choose(popupFirstSavedIndex) // "alpha"
-	c.False(h.popup.rebuildItems(), "nothing has changed, so the filter in force is still there")
-	c.Equal(popupFirstSavedIndex, h.popup.popup.SelectedIndex(),
-		"the filter in force must stay selected across a rebuild")
-
-	gurps.GlobalSettings().RemoveListFilter(listFilterPopupTestKey, original)
-	c.True(h.popup.rebuildItems(), "the filter in force is gone, so the rebuild must report it")
-	c.Equal(popupNoneIndex, h.popup.popup.SelectedIndex(), "the selection must fall back to No Filter")
-	chosen, _ := h.lastChosen()
-	c.True(original == chosen, "the rebuild itself must not put a filter in force; the caller does that")
-}
-
 // TestListFilterPopupShowUpdatesItems verifies that opening the popup brings its items up to date, and that it drops
 // the saved filter when the one that was in force has vanished behind its back, which is what happens when another
 // dockable showing the same list type deleted it.

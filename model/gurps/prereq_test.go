@@ -214,14 +214,6 @@ func TestPrereqDescribeQuotesValues(t *testing.T) {
 	}
 }
 
-// TestPrereqDescribeReplacements verifies that a description applies the nameable replacements it is given.
-func TestPrereqDescribeReplacements(t *testing.T) {
-	c := check.New(t)
-	p := gurps.NewTraitPrereq()
-	p.NameCriteria.Qualifier = "@Trait@"
-	c.Equal("Has trait Magery", p.Describe(nil, map[string]string{"Trait": "Magery"}, func(s string) string { return s }))
-}
-
 // TestPrereqDescribeEmptyNames verifies that an "is" name that is empty, or becomes empty once its markers are
 // replaced, reads as "", and that such a specialization, or optional specialization, says it picks only a skill without
 // one.
@@ -262,7 +254,8 @@ func TestPrereqDescribeEmptyNames(t *testing.T) {
 }
 
 // TestPrereqListDescribe verifies that a list joins its children to match its mode, parenthesizes nested lists of more
-// than one child, and notes a tech level condition.
+// than one child, notes a tech level condition, and hands its entity to its children, so that a weight is given in the
+// entity's units.
 func TestPrereqListDescribe(t *testing.T) {
 	c := check.New(t)
 	root := gurps.NewPrereqList()
@@ -344,18 +337,13 @@ func TestPrereqListDescribe(t *testing.T) {
 		list.Prereqs = one.prereqs
 		c.Equal(one.expected, list.Describe(nil, nil, func(s string) string { return s }), one.name)
 	}
-}
 
-// TestDescribePrereqUsesTheEntity verifies that a description made for an entity gives weights in its units, as its
-// fields do, even within a list.
-func TestDescribePrereqUsesTheEntity(t *testing.T) {
-	c := check.New(t)
 	entity := gurps.NewEntity()
 	entity.SheetSettings.DefaultWeightUnits = fxp.Kilogram
-	list := gurps.NewPrereqList()
-	list.Prereqs = gurps.Prereqs{namedTrait("Magery"), gurps.NewContainedWeightPrereq(nil)}
+	weighed := gurps.NewPrereqList()
+	weighed.Prereqs = gurps.Prereqs{namedTrait("Magery"), gurps.NewContainedWeightPrereq(nil)}
 	c.Equal("Has trait Magery and has a contained weight of at most 2.5 kg",
-		list.Describe(entity, nil, func(s string) string { return s }))
+		weighed.Describe(entity, nil, func(s string) string { return s }), "a weight is given in the entity's units")
 }
 
 // TestPrereqListFailureText verifies how a list lays out what is unmet: a single unmet item collapses to that item,

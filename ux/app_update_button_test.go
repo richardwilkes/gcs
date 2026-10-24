@@ -25,45 +25,36 @@ import (
 const pulseTolerance = 0.0001
 
 // TestPulseFractionEndpoints verifies that a cycle rises from 0 to 1 at its midpoint and is back at 0 at its end, so
-// that repeating it throbs smoothly rather than snapping back like a sawtooth.
+// that repeating it throbs smoothly rather than snapping back like a sawtooth; that a non-positive period yields a
+// stable 0 rather than dividing by zero; and that every fraction stays within [0,1], since the color blend would clamp
+// a value outside it and stall the pulse at an end of its travel.
 func TestPulseFractionEndpoints(t *testing.T) {
 	c := check.New(t)
 	period := appUpdatePulsePeriod
 	for _, one := range []struct {
 		name     string
 		elapsed  time.Duration
+		period   time.Duration
 		expected float32
 	}{
-		{name: "start", elapsed: 0, expected: 0},
-		{name: "quarter", elapsed: period / 4, expected: 0.5},
-		{name: "half", elapsed: period / 2, expected: 1},
-		{name: "three quarters", elapsed: 3 * period / 4, expected: 0.5},
-		{name: "full", elapsed: period, expected: 0},
-		{name: "second cycle half", elapsed: 3 * period / 2, expected: 1},
+		{name: "start", elapsed: 0, period: period, expected: 0},
+		{name: "quarter", elapsed: period / 4, period: period, expected: 0.5},
+		{name: "half", elapsed: period / 2, period: period, expected: 1},
+		{name: "three quarters", elapsed: 3 * period / 4, period: period, expected: 0.5},
+		{name: "full", elapsed: period, period: period, expected: 0},
+		{name: "second cycle half", elapsed: 3 * period / 2, period: period, expected: 1},
+		{name: "a zero period", elapsed: time.Second, period: 0, expected: 0},
+		{name: "a negative period", elapsed: time.Second, period: -time.Second, expected: 0},
 	} {
-		actual := pulseFraction(one.elapsed, period)
+		actual := pulseFraction(one.elapsed, one.period)
 		c.True(xmath.Abs(actual-one.expected) <= pulseTolerance,
 			"at %s expected %v, got %v", one.name, one.expected, actual)
 	}
-}
-
-// TestPulseFractionStaysInRange guards the color blend, which would clamp a value outside [0,1] and stall the pulse at
-// an end of its travel.
-func TestPulseFractionStaysInRange(t *testing.T) {
-	c := check.New(t)
-	period := appUpdatePulsePeriod
 	for i := range 1000 {
 		elapsed := time.Duration(i) * period / 100
 		pct := pulseFraction(elapsed, period)
 		c.True(pct >= 0 && pct <= 1, "expected a fraction within [0,1] at %v, got %v", elapsed, pct)
 	}
-}
-
-// TestPulseFractionWithoutPeriod verifies that a non-positive period yields a stable 0 rather than dividing by zero.
-func TestPulseFractionWithoutPeriod(t *testing.T) {
-	c := check.New(t)
-	c.Equal(float32(0), pulseFraction(time.Second, 0), "a zero period must not pulse")
-	c.Equal(float32(0), pulseFraction(time.Second, -time.Second), "a negative period must not pulse")
 }
 
 func TestShowAppUpdateButton(t *testing.T) {

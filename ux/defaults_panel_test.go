@@ -260,7 +260,8 @@ func TestDefaultsPanelBuildingChangesNothing(t *testing.T) {
 
 // TestDefaultsPanelAdd checks that the add button adds a default of the type last chosen at the end of the list, in a
 // new list, opened with the focus in its first field, that a skill-based one names its skill, and that the new type
-// becomes the one added next, unless the entity has no such attribute.
+// becomes the one added next, unless the entity has no such attribute, when DX takes its place, or without DX, the
+// entity's first attribute.
 func TestDefaultsPanelAdd(t *testing.T) {
 	c := check.New(t)
 	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
@@ -299,27 +300,13 @@ func TestDefaultsPanelAdd(t *testing.T) {
 	lastDefaultTypeUsed = "custom"
 	add()
 	c.Equal(gurps.DexterityID, defaults[4].Type(), "a type the entity has no attribute for gives way to DX")
-}
 
-// TestDefaultsPanelAddWithoutDX checks that a new default of an entity without DX takes a type the entity has rather
-// than DX.
-func TestDefaultsPanelAddWithoutDX(t *testing.T) {
-	c := check.New(t)
-	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
-	entity := gurps.NewEntity()
 	delete(entity.SheetSettings.Attributes.Set, gurps.DexterityID)
 	c.Nil(gurps.AttributeDefsFor(entity).Set[gurps.DexterityID])
 	c.NotNil(gurps.AttributeDefsFor(entity).Set[gurps.StrengthID])
-	var defaults []*gurps.SkillDefault
-	p, _ := showDefaultsPanel(t, screen, entity, nil, &defaults)
-	defer func(last string) { lastDefaultTypeUsed = last }(lastDefaultTypeUsed)
 	lastDefaultTypeUsed = gurps.DexterityID
-	screen.Do(func() {
-		button, ok := p.FindRefKey(defaultAddKey).Self.(*unison.Button)
-		c.True(ok, "the section has an add button")
-		button.ClickCallback()
-	})
-	c.Equal([]string{gurps.StrengthID}, defaultTypes(defaults), "the entity's first attribute takes the place of DX")
+	add()
+	c.Equal(gurps.StrengthID, defaults[5].Type(), "the entity's first attribute takes the place of DX")
 }
 
 // TestDefaultsPanelTypeChange checks that a skill-based default keeps its criteria between the skill-based types, loses

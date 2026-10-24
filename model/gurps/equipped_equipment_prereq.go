@@ -32,6 +32,7 @@ type EquippedEquipmentPrereq struct {
 	NameCriteria criteria.Text `json:"name,omitzero"`
 	TagsCriteria criteria.Text `json:"tags,omitzero"`
 	ModifierCriteria
+	TitleNoteCriteria criteria.Text `json:"title_note,omitzero"`
 }
 
 // NewEquippedEquipmentPrereq creates a new EquippedEquipmentPrereq.
@@ -40,6 +41,7 @@ func NewEquippedEquipmentPrereq() *EquippedEquipmentPrereq {
 	p.Type = prereq.EquippedEquipment
 	p.NameCriteria.Compare = criteria.IsText
 	p.TagsCriteria.Compare = criteria.AnyText
+	p.TitleNoteCriteria.Compare = criteria.AnyText
 	return &p
 }
 
@@ -78,6 +80,7 @@ func (p *EquippedEquipmentPrereq) FillWithNameableKeys(m, existing map[string]st
 		m, existing,
 		p.NameCriteria.Qualifier,
 		p.TagsCriteria.Qualifier,
+		p.TitleNoteCriteria.Qualifier,
 	)
 	p.fillWithModifierNameableKeys(m, existing)
 }
@@ -103,7 +106,9 @@ func (p *EquippedEquipmentPrereq) Satisfied(entity *Entity, exclude any, tooltip
 		}
 		satisfied = exclude != eqp && held && p.NameCriteria.Matches(replacements, eqp.NameWithReplacements()) &&
 			p.TagsCriteria.MatchesList(replacements, eqp.Tags...) &&
-			modifiersMeet(&p.ModifierCriteria, replacements, eqp.Modifiers)
+			modifiersMeet(&p.ModifierCriteria, replacements, eqp.Modifiers) &&
+			(p.TitleNoteCriteria.Compare == criteria.AnyText ||
+				p.TitleNoteCriteria.MatchesEach(replacements, eqp.TitleNotes()...))
 		return satisfied
 	}, false, false, entity.CarriedEquipment...)
 	if p.Not {
@@ -141,7 +146,7 @@ func (p *EquippedEquipmentPrereq) Describe(_ *Entity, replacements map[string]st
 		} else {
 			text = i18n.Text("%s equipped equipment whose name %s", has, whose)
 		}
-	case p.TagsCriteria.Compare != criteria.AnyText:
+	case p.TagsCriteria.Compare != criteria.AnyText || p.TitleNoteCriteria.Compare != criteria.AnyText:
 		if carried {
 			text = i18n.Text("%s unequipped carried equipment", has)
 		} else {
@@ -152,7 +157,8 @@ func (p *EquippedEquipmentPrereq) Describe(_ *Entity, replacements map[string]st
 	default:
 		text = i18n.Text("%s any equipment equipped", has)
 	}
-	return text + describeTags(p.TagsCriteria, replacements, em) + p.describeModifier(replacements, em)
+	return text + describeTags(p.TagsCriteria, replacements, em) + p.describeModifier(replacements, em) +
+		describeTitleNote(p.TitleNoteCriteria, false, replacements, em)
 }
 
 // Hash writes this object's contents into the hasher.
@@ -166,4 +172,5 @@ func (p *EquippedEquipmentPrereq) Hash(h hash.Hash) {
 	p.NameCriteria.Hash(h)
 	p.TagsCriteria.Hash(h)
 	p.hashModifier(h)
+	p.TitleNoteCriteria.Hash(h)
 }

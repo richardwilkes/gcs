@@ -594,21 +594,9 @@ func TestTableDockableTagFilterFixesWidth(t *testing.T) {
 	c.Equal(short.Width, pref.Width, "the button keeps its width whatever the tags")
 }
 
-// TestTableDockableQuickFilterKeepsItsMinimumWidth verifies that the quick filter in a toolbar too narrow for its row
-// shrinks no further than the room for quickFilterWidthSample, rather than out of sight.
-func TestTableDockableQuickFilterKeepsItsMinimumWidth(t *testing.T) {
-	c := check.New(t)
-	d := newFilterTestTraitDockable(t)
-	toolbar := d.filterField.Parent()
-	toolbar.SetFrameRect(geom.NewRect(0, 0, 100, 30))
-	toolbar.ValidateLayout()
-	sample := unison.NewText(quickFilterWidthSample, &unison.TextDecoration{Font: d.filterField.Font}).Width()
-	width := d.filterField.FrameRect().Width
-	c.True(width >= sample, "the quick filter is %v wide, less than the sample's %v", width, sample)
-}
-
 // TestTableDockableFilterPopupsTurnCompact verifies that the filter popups turn into icons while the toolbar is too
-// narrow to show them in full, that the saved filter's name then leads its tooltip, and that they turn back once the
+// narrow to show them in full, that the saved filter's name then leads its tooltip, that the quick filter shrinks no
+// further than the room for quickFilterWidthSample rather than out of sight, and that the popups turn back once the
 // toolbar is wide enough again.
 func TestTableDockableFilterPopupsTurnCompact(t *testing.T) {
 	c := check.New(t)
@@ -627,6 +615,11 @@ func TestTableDockableFilterPopupsTurnCompact(t *testing.T) {
 		c.Equal(size.Height, size.Width, "%s must be a square icon", b.popup.Accessibility.Name)
 	}
 	c.Contains(tooltipText(d.savedFilters.popup.Tooltip), "No Filter", "the icon's tooltip names the saved filter")
+
+	layOut(100)
+	sample := unison.NewText(quickFilterWidthSample, &unison.TextDecoration{Font: d.filterField.Font}).Width()
+	width := d.filterField.FrameRect().Width
+	c.True(width >= sample, "the quick filter is %v wide, less than the sample's %v", width, sample)
 
 	layOut(minSize.Width)
 	c.False(d.tagFilter.button.compact, "the tag filter must turn back once the toolbar is wide enough")

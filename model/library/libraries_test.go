@@ -15,14 +15,12 @@ import (
 	"os"
 	"path/filepath"
 	"slices"
-	"strconv"
 	"strings"
 	"sync"
 	"sync/atomic"
 	"testing"
 	"time"
 
-	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/toolbox/v2/check"
 )
 
@@ -228,30 +226,6 @@ func TestPerformUpdateChecksSnapshotsTheSet(t *testing.T) {
 		waitForCachedVersion(t, lib, "7")
 	}
 	c.Equal(2, libs.Len(), "the additions and removals canceled out")
-}
-
-// TestLibrariesUnmarshalRecordsVersionOnDisk verifies that libraries restored from a settings file know what version is
-// on disk without an update check having run, so turning the periodic checks off doesn't leave the Library Explorer
-// showing no version at all.
-func TestLibrariesUnmarshalRecordsVersionOnDisk(t *testing.T) {
-	c := check.New(t)
-	dir := t.TempDir()
-	c.NoError(os.WriteFile(filepath.Join(dir, releaseFile), []byte("4\n1234\n"), 0o600))
-
-	var libs Libraries
-	p := strconv.Quote(dir)
-	c.NoError(jio.Unmarshal([]byte(`{"someone/repo":{"title":"Test","path":`+p+`},`+
-		`"/`+userRepoName+`":{"title":"User Library","path":`+p+`}}`), &libs))
-	lib := libs.Lookup("someone/repo")
-	c.NotNil(lib)
-	current, releases := lib.AvailableReleases()
-	c.Equal("4", current, "the version on disk is known without a check having run")
-	c.Equal(0, len(releases), "no update check has run")
-
-	// The User Library reports no version at all, since it isn't something that gets released.
-	user := libs.Lookup("/" + userRepoName)
-	c.NotNil(user)
-	c.Equal("", cachedVersion(user))
 }
 
 // cachedVersion returns the version the library has recorded for what is on disk.

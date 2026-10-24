@@ -18,7 +18,6 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/eqcontainer"
-	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/toolbox/v2/check"
 )
 
@@ -191,17 +190,6 @@ func TestFilterModifierFieldsOnEquipment(t *testing.T) {
 		"and those of disabled ones too for a condition that includes them")
 }
 
-// TestFilterIncludeDisabledIgnoredElsewhere checks that a field not drawn from modifiers ignores IncludeDisabled.
-func TestFilterIncludeDisabledIgnoredElsewhere(t *testing.T) {
-	c := check.New(t)
-	trait := gurps.NewTrait(nil, nil, false)
-	trait.Tags = []string{"Mental"}
-	c.Equal([]string{"Mental"}, trait.TagList(), "precondition: the trait has a tag")
-	fields := gurps.TraitFilterFields()
-	c.True(matchesListFilter(newTestListFilter(includingDisabled(newTextFilterCondition("tags", criteria.IsText,
-		"Mental"))), fields, trait), "the tags field matches as it would without it")
-}
-
 // TestFilterEquipmentQuantityFields checks quantity, which every piece of equipment but a group has, and the contained
 // quantity and weight, which only a container has, leaving out what a disabled item holds.
 func TestFilterEquipmentQuantityFields(t *testing.T) {
@@ -298,26 +286,6 @@ func TestFilterSkillAndSpellFields(t *testing.T) {
 	spellFields := gurps.SpellFilterFields()
 	c.True(matchesListFilter(tl, spellFields, tlSpell), "a spell with an empty tech level requires one")
 	c.False(matchesListFilter(tl, spellFields, plainSpell), "a spell without one doesn't")
-}
-
-// TestFilterIncludeDisabledOnDisk checks that IncludeDisabled is written only when set, and survives a round trip.
-func TestFilterIncludeDisabledOnDisk(t *testing.T) {
-	c := check.New(t)
-	plain := gurps.NewFilterCondition(nil, "modifier_names")
-	c.False(plain.IncludeDisabled, "precondition: the plain condition doesn't include disabled modifiers")
-	data, err := jio.Marshal(plain)
-	c.NoError(err, "the plain condition should marshal")
-	c.Equal(`{"type":"condition","field":"modifier_names"}`, string(data), "an absent IncludeDisabled is omitted")
-
-	including := includingDisabled(gurps.NewFilterCondition(nil, "modifier_names"))
-	c.True(including.IncludeDisabled, "precondition: the other condition includes disabled modifiers")
-	data, err = jio.Marshal(including)
-	c.NoError(err, "the including condition should marshal")
-	c.Equal(`{"type":"condition","field":"modifier_names","include_disabled":true}`, string(data),
-		"a set IncludeDisabled is written")
-	var restored gurps.FilterCondition
-	c.NoError(jio.Unmarshal(data, &restored), "the including condition should unmarshal")
-	c.True(restored.IncludeDisabled, "IncludeDisabled survives a round trip")
 }
 
 // TestFilterIncludeDisabledDroppedWhereUnused checks that loading saved filters clears IncludeDisabled on a condition

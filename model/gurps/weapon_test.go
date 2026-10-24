@@ -574,50 +574,57 @@ func TestTboneProgressionSTDamageContribution(t *testing.T) {
 	}
 }
 
-// TestNewWeaponIsCurrentSubVersion verifies that a freshly created weapon is stamped with the current data sub-version,
-// so that the data fix-ups applied to pre-sub-versioning data are not run against it. Without the stamp, the first
-// SetOwner call on a weapon owned by a leveled trait or piece of equipment moved the base damage into the per-level
-// slot, turning a new weapon's "1d" into "1d per level".
-func TestNewWeaponIsCurrentSubVersion(t *testing.T) {
-	c := check.New(t)
-
-	e := gurps.NewEntity()
-	trait := gurps.NewTrait(e, nil, false)
-	trait.Name = "Innate Attack"
-	trait.CanLevel = true
-	trait.Levels = fxp.Three
-	c.True(trait.IsLeveled())
-
-	w := gurps.NewWeapon(trait, false)
-	c.Equal("1d", w.Damage.Base)
-	trait.Weapons = []*gurps.Weapon{w}
-	e.Traits = append(e.Traits, trait)
-	e.Recalculate()
-
-	c.Equal("1d", w.Damage.Base, "a new weapon's base damage must not be migrated into the per-level slot")
-	c.Equal("", w.Damage.BaseLeveled, "a new weapon must not acquire per-level base damage")
-}
-
 // TestPreSubVersionWeaponDamageIsMigrated verifies that weapon data written before sub-versioning existed still has its
-// base damage moved into the per-level slot when its owner is leveled. This is the migration that
-// TestNewWeaponIsCurrentSubVersion must not trigger for new weapons.
+// base damage moved into the per-level slot when its owner is leveled, while a freshly created weapon is stamped with
+// the current data sub-version so that this migration is not run against it. Without the stamp, the first SetOwner
+// call on a weapon owned by a leveled trait or piece of equipment moved the base damage into the per-level slot,
+// turning a new weapon's "1d" into "1d per level".
 func TestPreSubVersionWeaponDamageIsMigrated(t *testing.T) {
-	c := check.New(t)
+	for _, tc := range []struct {
+		name          string
+		preSubVersion bool
+		base          string
+		baseLeveled   string
+		baseMsg       string
+		baseLevelMsg  string
+	}{
+		{
+			name:         "new weapon",
+			base:         "1d",
+			baseMsg:      "a new weapon's base damage must not be migrated into the per-level slot",
+			baseLevelMsg: "a new weapon must not acquire per-level base damage",
+		},
+		{
+			name:          "pre-sub-versioning data",
+			preSubVersion: true,
+			baseLeveled:   "1d",
+			baseMsg:       "migrated damage must leave the base slot",
+			baseLevelMsg:  "pre-sub-versioning damage on a leveled owner must migrate to per-level",
+		},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			c := check.New(t)
 
-	e := gurps.NewEntity()
-	trait := gurps.NewTrait(e, nil, false)
-	trait.Name = "Innate Attack"
-	trait.CanLevel = true
-	trait.Levels = fxp.Three
+			e := gurps.NewEntity()
+			trait := gurps.NewTrait(e, nil, false)
+			trait.Name = "Innate Attack"
+			trait.CanLevel = true
+			trait.Levels = fxp.Three
+			c.True(trait.IsLeveled())
 
-	w := gurps.NewWeapon(trait, false)
-	w.SubVersion = 0 // Simulate data saved prior to sub-versioning.
-	trait.Weapons = []*gurps.Weapon{w}
-	e.Traits = append(e.Traits, trait)
-	e.Recalculate()
+			w := gurps.NewWeapon(trait, false)
+			c.Equal("1d", w.Damage.Base)
+			if tc.preSubVersion {
+				w.SubVersion = 0 // Simulate data saved prior to sub-versioning.
+			}
+			trait.Weapons = []*gurps.Weapon{w}
+			e.Traits = append(e.Traits, trait)
+			e.Recalculate()
 
-	c.Equal("", w.Damage.Base)
-	c.Equal("1d", w.Damage.BaseLeveled, "pre-sub-versioning damage on a leveled owner must migrate to per-level")
+			c.Equal(tc.base, w.Damage.Base, tc.baseMsg)
+			c.Equal(tc.baseLeveled, w.Damage.BaseLeveled, tc.baseLevelMsg)
+		})
+	}
 }
 
 // TestWeaponEditorPreservesID verifies that applying an editor's copy back onto the weapon it was taken from leaves the
@@ -661,6 +668,8 @@ func TestWeaponEditorPreservesID(t *testing.T) {
 
 // TestWeaponPerDieBonusTooltip verifies that the tooltip written for a per-die weapon bonus reports the amount that is
 // actually applied, which scales by the weapon's base damage dice, rather than always reporting the single-die amount.
+// A per-die minimum ST bonus is the exception: resolving the base damage dice requires the minimum ST, so those dice
+// can't be consulted for it, and AdjustedAmountForWeapon deliberately pins it to one die; its tooltip must say so too.
 func TestWeaponPerDieBonusTooltip(t *testing.T) {
 	c := check.New(t)
 
@@ -669,10 +678,13 @@ func TestWeaponPerDieBonusTooltip(t *testing.T) {
 	bulk := gurps.NewWeaponBonus(feature.WeaponBulkBonus)
 	bulk.PerDie = true
 	bulk.Amount = fxp.NegOne
-	w := newWeaponWithBonuses(false, acc, bulk)
+	minST := gurps.NewWeaponBonus(feature.WeaponMinSTBonus)
+	minST.PerDie = true
+	w := newWeaponWithBonuses(false, acc, bulk, minST)
 	w.Damage.Base = "3d"
 	w.Accuracy = attack.ParseAccuracy("3")
 	w.Bulk = attack.ParseBulk("-4")
+	w.Strength = attack.ParseStrength("10")
 
 	var accTooltip xbytes.InsertBuffer
 	c.Equal("6", w.ResolvedAccuracy(&accTooltip).String(), "+1 per die on a 3d weapon raises Acc 3 to 6")
@@ -682,23 +694,10 @@ func TestWeaponPerDieBonusTooltip(t *testing.T) {
 	var bulkTooltip xbytes.InsertBuffer
 	c.Equal("-7", w.ResolvedBulk(&bulkTooltip).String(), "-1 per die on a 3d weapon takes Bulk -4 to -7")
 	c.Contains(bulkTooltip.String(), "-3 (-1 per die) to bulk", "the tooltip reports the amount applied")
-}
 
-// TestWeaponPerDieSTBonusTooltip verifies that a per-die minimum ST bonus is both applied and reported for a single
-// die. Resolving the weapon's base damage dice requires the minimum ST, so those dice can't be consulted here, and
-// AdjustedAmountForWeapon deliberately pins the bonus to one die; the tooltip must say the same thing.
-func TestWeaponPerDieSTBonusTooltip(t *testing.T) {
-	c := check.New(t)
-
-	minST := gurps.NewWeaponBonus(feature.WeaponMinSTBonus)
-	minST.PerDie = true
-	w := newWeaponWithBonuses(false, minST)
-	w.Damage.Base = "3d"
-	w.Strength = attack.ParseStrength("10")
-
-	var tooltip xbytes.InsertBuffer
-	c.Equal("11", w.ResolvedStrength(&tooltip).String(), "a per-die minimum ST bonus counts as a single die")
-	c.Contains(tooltip.String(), "+1 (+1 per die) to minimum ST", "the tooltip reports the amount applied")
+	var stTooltip xbytes.InsertBuffer
+	c.Equal("11", w.ResolvedStrength(&stTooltip).String(), "a per-die minimum ST bonus counts as a single die")
+	c.Contains(stTooltip.String(), "+1 (+1 per die) to minimum ST", "the tooltip reports the amount applied")
 }
 
 // TestWeaponPerLevelBonusFromTraitModifier verifies that a per-level weapon bonus carried by one of a trait's

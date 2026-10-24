@@ -88,20 +88,27 @@ func TestPageRefMappingsSyncReflectsChangedPath(t *testing.T) {
 // TestPageRefMappingsInitialFocus verifies that the Page Reference Mappings view starts out focused on the first row's
 // offset field, which is what SettingsDockable.Setup selects. The view once overrode that with a hardcoded child index
 // that landed on the row's unfocusable ID label, so the window lost its focus and keyboard input went nowhere until
-// something was clicked.
+// something was clicked. An empty view falls back to the toolbar rather than being left with nothing focused.
 func TestPageRefMappingsInitialFocus(t *testing.T) {
 	c := check.New(t)
 	global := gurps.GlobalSettings()
 	uxtest.SwapForTest(t, &global.PageRefs, gurps.PageRefs{})
+	build := func() (toolbar, content *unison.Panel) {
+		d := &pageRefMappingsDockable{}
+		d.Self = d
+		content = unison.NewPanel()
+		d.initContent(content)
+		toolbar = unison.NewPanel()
+		d.addToStartToolbar(toolbar)
+		return toolbar, content
+	}
+
+	toolbar, content := build()
+	c.Equal(0, len(content.Children()), "no mappings means no rows")
+	c.NotNil(firstContentFocusTarget(toolbar, content), "the toolbar's help button takes the focus instead")
+
 	global.PageRefs.Set(&gurps.PageRef{ID: "B", Path: filepath.Join("pdfs", "Basic Set.pdf"), Offset: 2})
-
-	d := &pageRefMappingsDockable{}
-	d.Self = d
-	content := unison.NewPanel()
-	d.initContent(content)
-	toolbar := unison.NewPanel()
-	d.addToStartToolbar(toolbar)
-
+	toolbar, content = build()
 	children := content.Children()
 	c.Equal(5, len(children), "one row of trash button, ID label, offset field, edit button and file name label")
 	c.Nil(firstFocusableInSubtree(children[1], nil), "the ID label the old code targeted cannot take the focus")
@@ -110,24 +117,6 @@ func TestPageRefMappingsInitialFocus(t *testing.T) {
 	c.True(children[2] == target, "the first row's offset field is the initial focus target")
 	_, ok := target.Self.(*IntegerField)
 	c.True(ok, "the initial focus target is an offset field")
-}
-
-// TestPageRefMappingsInitialFocusWithNoMappings verifies that an empty Page Reference Mappings view falls back to the
-// toolbar for its initial focus rather than being left with nothing focused.
-func TestPageRefMappingsInitialFocusWithNoMappings(t *testing.T) {
-	c := check.New(t)
-	global := gurps.GlobalSettings()
-	uxtest.SwapForTest(t, &global.PageRefs, gurps.PageRefs{})
-
-	d := &pageRefMappingsDockable{}
-	d.Self = d
-	content := unison.NewPanel()
-	d.initContent(content)
-	toolbar := unison.NewPanel()
-	d.addToStartToolbar(toolbar)
-
-	c.Equal(0, len(content.Children()), "no mappings means no rows")
-	c.NotNil(firstContentFocusTarget(toolbar, content), "the toolbar's help button takes the focus instead")
 }
 
 // pageRefMappingRowName returns the file name shown by the given row of the Page Reference Mappings view, or an empty

@@ -218,30 +218,6 @@ func newWeightScriptedSheet(t *testing.T) (sheet *Sheet, weightField *WeightFiel
 	return sheet, weightField
 }
 
-// TestProfileEditSyncsTheBlocks checks that an edit made through a field flagged SkipDeepSync still brings the blocks
-// up to date, since a script can read what such a field holds: here the ST field, in the secondary attributes block
-// since a scripted base makes ST a secondary attribute, and the encumbrance block, whose current level is found only
-// when it is synced.
-func TestProfileEditSyncsTheBlocks(t *testing.T) {
-	c := check.New(t)
-	sheet, weightField := newWeightScriptedSheet(t)
-	entity := sheet.Entity()
-	attrPanel, ok := sheet.blocks[gurps.BlockSecondaryAttributesKey].(*AttrPanel)
-	c.True(ok, "the secondary attributes block must be an AttrPanel")
-	stField, ok := attrPanel.valueFields[gurps.StrengthID].(*IntegerField)
-	c.True(ok, "the ST field must be an IntegerField")
-	encPanel, ok := sheet.blocks[gurps.BlockEncumbranceKey].(*EncumbrancePanel)
-	c.True(ok, "the encumbrance block must be an EncumbrancePanel")
-	c.Equal("10", stField.Text(), "ST must start at 10, or the checks below mean nothing")
-	c.Equal(int(encumbrance.Light), encPanel.current, "the character must start lightly encumbered, or the checks below mean nothing")
-
-	entity.Profile.Weight = fxp.WeightFromInteger(450, fxp.Pound)
-	sheet.MarkModified(weightField)
-
-	c.Equal("30", stField.Text(), "the ST field shows the recalculated ST")
-	c.Equal(int(encumbrance.No), encPanel.current, "the encumbrance block shows the recalculated level")
-}
-
 // TestProfileEditThatChangesTheDerivedStateSyncsTheLists checks that an edit made through a field flagged
 // SkipDeepSync is not spared the deep sync when the recalculation it prompts changes which rows a list has: here a
 // script prerequisite reading the weight enables a trait, whose weapon the melee weapons list then has to show.
@@ -317,7 +293,9 @@ func TestEditThatChangesWhetherADerivedListIsEmptyLaysOutThePage(t *testing.T) {
 
 // TestProfileEditReadByAScriptSyncsTheLists checks that an edit made through a field flagged SkipDeepSync is not spared
 // the deep sync when a script reads what the field holds, even though the derived state is left as it was: here an
-// equipment weight derived from the character's weight, whose total the carried equipment list's header shows.
+// equipment weight derived from the character's weight, whose total the carried equipment list's header shows. The
+// blocks are brought up to date too: the ST field, in the secondary attributes block since a scripted base makes ST a
+// secondary attribute, and the encumbrance block, whose current level is found only when it is synced.
 func TestProfileEditReadByAScriptSyncsTheLists(t *testing.T) {
 	c := check.New(t)
 	sheet, weightField := newWeightScriptedSheet(t)
@@ -333,37 +311,24 @@ func TestProfileEditReadByAScriptSyncsTheLists(t *testing.T) {
 		c.True(ok, "the description column must have a page header")
 		return header.Text.String()
 	}
-	c.Equal("Carried Equipment (45 lb; $0)", headerText(), "the pack must start at 15 lb, or the check below means nothing")
+	c.Equal("Carried Equipment (45 lb; $0)", headerText(), "the pack must start at 15 lb, or the checks below mean nothing")
+	attrPanel, ok := sheet.blocks[gurps.BlockSecondaryAttributesKey].(*AttrPanel)
+	c.True(ok, "the secondary attributes block must be an AttrPanel")
+	stField, ok := attrPanel.valueFields[gurps.StrengthID].(*IntegerField)
+	c.True(ok, "the ST field must be an IntegerField")
+	encPanel, ok := sheet.blocks[gurps.BlockEncumbranceKey].(*EncumbrancePanel)
+	c.True(ok, "the encumbrance block must be an EncumbrancePanel")
+	c.Equal("10", stField.Text(), "ST must start at 10, or the checks below mean nothing")
+	c.Equal(int(encumbrance.Medium), encPanel.current,
+		"the 45 lb carried must start the character at medium encumbrance, or the checks below mean nothing")
 
 	entity.Profile.Weight = fxp.WeightFromInteger(450, fxp.Pound)
 	sheet.MarkModified(weightField)
 
-	c.False(entity.DerivedStateChanged(), "the edit must leave the derived state as it was, or the check below means nothing")
+	c.False(entity.DerivedStateChanged(), "the edit must leave the derived state as it was, or the checks below mean nothing")
 	c.Equal("Carried Equipment (75 lb; $0)", headerText(), "the header shows the total the edit changed")
-}
-
-// TestProfileEditNoScriptReadsSparesTheLists checks that an edit made through a field flagged SkipDeepSync is spared
-// the syncing of the lists while no script has read the profile and the derived state is left as it was.
-func TestProfileEditNoScriptReadsSparesTheLists(t *testing.T) {
-	c := check.New(t)
-	sheet := newTestSheetForTemplate(t)
-	entity := sheet.Entity()
-	load := gurps.NewEquipment(entity, nil, false)
-	load.Name = "Load"
-	load.BaseWeight = "30 lb"
-	entity.CarriedEquipment = append(entity.CarriedEquipment, load)
-	sheet.Rebuild(true)
-	panel := sheet.targetMgr.Find(identityPanelNameFieldRefKey)
-	c.NotNil(panel, "the sheet must have a name field")
-	nameField, ok := panel.Self.(*StringField)
-	c.True(ok, "the name field must be a StringField")
-	c.False(entity.ProfileReadByScript(), "no script may read the profile, or the check below means nothing")
-
-	entity.Profile.Name = "Someone"
-	sheet.MarkModified(nameField)
-
-	c.False(entity.DerivedStateChanged(), "the edit must leave the derived state as it was, or the check below means nothing")
-	c.NotEqual(currentDisplayStamp(), sheet.CarriedEquipment.syncedAtStamp(), "the list is not synced")
+	c.Equal("30", stField.Text(), "the ST field shows the recalculated ST")
+	c.Equal(int(encumbrance.No), encPanel.current, "the encumbrance block shows the recalculated level")
 }
 
 // TestProfileEditOnceNoScriptReadsSparesTheLists checks that an edit made through a field flagged SkipDeepSync is

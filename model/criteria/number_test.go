@@ -39,6 +39,14 @@ func hashOf(in interface{ Hash(h hash.Hash) }) uint64 {
 // modified from its library source when its saved form is identical.
 func TestNumberHashIgnoresQualifierWhenAny(t *testing.T) {
 	c := check.New(t)
+	type holder struct {
+		Criteria criteria.Number `json:"criteria,omitzero"`
+	}
+	stale, err := jio.Marshal(&holder{Criteria: number(criteria.AnyNumber, fxp.FromInteger(10))})
+	c.NoError(err)
+	clean, err := jio.Marshal(&holder{Criteria: number(criteria.AnyNumber, 0)})
+	c.NoError(err)
+	c.Equal(string(clean), string(stale))
 	none := hashOf(number(criteria.AnyNumber, 0))
 	c.Equal(none, hashOf(number(criteria.AnyNumber, fxp.FromInteger(10))))
 	c.Equal(none, hashOf(criteria.Number{}))
@@ -51,19 +59,4 @@ func TestNumberHashIgnoresQualifierWhenAny(t *testing.T) {
 	c.NotEqual(none, ten)
 	c.NotEqual(ten, hashOf(number(criteria.AtLeastNumber, fxp.FromInteger(11))))
 	c.NotEqual(ten, hashOf(number(criteria.AtMostNumber, fxp.FromInteger(10))))
-}
-
-// TestNumberEqualJSONHashesEqually pins the invariant the hash guard exists for: whenever two criteria serialize
-// identically, they hash identically.
-func TestNumberEqualJSONHashesEqually(t *testing.T) {
-	c := check.New(t)
-	type holder struct {
-		Criteria criteria.Number `json:"criteria,omitzero"`
-	}
-	stale, err := jio.Marshal(&holder{Criteria: number(criteria.AnyNumber, fxp.FromInteger(10))})
-	c.NoError(err)
-	clean, err := jio.Marshal(&holder{Criteria: number(criteria.AnyNumber, 0)})
-	c.NoError(err)
-	c.Equal(string(clean), string(stale))
-	c.Equal(hashOf(number(criteria.AnyNumber, 0)), hashOf(number(criteria.AnyNumber, fxp.FromInteger(10))))
 }

@@ -26,8 +26,8 @@ func newMaxUsesBonus(sel equipmentsel.Type, amount string) *EquipmentMaxUsesBonu
 }
 
 // TestEquipmentMaxUsesBonusThisEquipment covers the locally-applied "to this equipment" bonuses, the operation implied
-// by the entered text, the Add -> % -> x stacking order, the [0, MaxEquipmentMaxUses] clamp, and the non-positive
-// multiplier guard.
+// by the entered text, the Add -> % -> x stacking order, per-level scaling by the equipment's own level, the
+// [0, MaxEquipmentMaxUses] clamp, and the non-positive multiplier guard.
 func TestEquipmentMaxUsesBonusThisEquipment(t *testing.T) {
 	c := check.New(t)
 
@@ -44,6 +44,14 @@ func TestEquipmentMaxUsesBonusThisEquipment(t *testing.T) {
 		newMaxUsesBonus(equipmentsel.ThisEquipment, "x2"),
 	}
 	c.Equal(36, eqp.ResolvedMaxUses(), "add -> percent -> multiply")
+
+	perLevel := newMaxUsesBonus(equipmentsel.ThisEquipment, "+2")
+	perLevel.PerLevel = true
+	eqp = NewEquipment(nil, nil, false)
+	eqp.MaxUses = 10
+	eqp.Level = fxp.Three
+	eqp.Features = Features{perLevel}
+	c.Equal(16, eqp.ResolvedMaxUses(), "per-level bonus scales by the item's level: 10 + 2*3")
 
 	// Minimum clamp: 1 + (-100) = -99, clamped to 0.
 	eqp = NewEquipment(nil, nil, false)
@@ -84,21 +92,6 @@ func TestEquipmentMaxUsesBonusFromModifier(t *testing.T) {
 
 	mod.SetDisabled(true)
 	c.Equal(10, eqp.ResolvedMaxUses(), "disabled modifier bonus ignored")
-}
-
-// TestEquipmentMaxUsesBonusPerLevel verifies per-level scaling off the item the "to this equipment" bonus is attached
-// to (the equipment's own level).
-func TestEquipmentMaxUsesBonusPerLevel(t *testing.T) {
-	c := check.New(t)
-
-	bonus := newMaxUsesBonus(equipmentsel.ThisEquipment, "+2")
-	bonus.PerLevel = true
-
-	eqp := NewEquipment(nil, nil, false)
-	eqp.MaxUses = 10
-	eqp.Level = fxp.Three
-	eqp.Features = Features{bonus}
-	c.Equal(16, eqp.ResolvedMaxUses(), "per-level bonus scales by the item's level: 10 + 2*3")
 }
 
 // TestEquipmentMaxUsesBonusEquipmentWithName covers the entity-collected "to equipment whose name" selector, including

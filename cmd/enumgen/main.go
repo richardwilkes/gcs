@@ -1047,6 +1047,8 @@ var allEnums = []*enumInfo{
 			{
 				Key:    "grant_spell",
 				String: "Grants the spell",
+				Key:    "title_note",
+				String: "Adds the title note",
 			},
 			{
 				Key:    "unknown",
@@ -1424,6 +1426,10 @@ var allEnums = []*enumInfo{
 				Key:     "tag",
 				OldKeys: []string{"category"},
 				String:  "with a tag which",
+			},
+			{
+				Key:    "title_note",
+				String: "with a title note which",
 			},
 			{
 				Key:    "college",

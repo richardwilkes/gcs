@@ -16,198 +16,52 @@ import (
 	"github.com/richardwilkes/toolbox/v2/check"
 )
 
-func TestExtractPartsNoPlaceholders(t *testing.T) {
-	c := check.New(t)
-	got := nameable.ExtractParts("abc def", '@', '@')
-	c.Equal([]nameable.Part{{Value: "abc def", Placeholder: false}}, got)
-}
-
-func TestExtractPartsEmptyInput(t *testing.T) {
-	c := check.New(t)
-	c.Equal(0, len(nameable.ExtractParts("", '@', '@')))
-}
-
+// TestExtractPartsSinglePlaceholderWithSurroundingText pins how ExtractParts splits text into literal and placeholder
+// parts. It yields no empty literal around a placeholder, an escaped delimiter delimits nothing and keeps its escape,
+// and an empty, unclosed or control-rune-broken placeholder becomes literal text that keeps its open delimiter. An open
+// inside a placeholder turns the earlier open and what follows it into literal text and restarts the placeholder.
 func TestExtractPartsSinglePlaceholderWithSurroundingText(t *testing.T) {
 	c := check.New(t)
-	got := nameable.ExtractParts("abc @Foo@ def", '@', '@')
-	c.Equal([]nameable.Part{
-		{Value: "abc ", Placeholder: false},
-		{Value: "Foo", Placeholder: true},
-		{Value: " def", Placeholder: false},
-	}, got)
-}
-
-func TestExtractPartsWholeStringIsPlaceholder(t *testing.T) {
-	c := check.New(t)
-	got := nameable.ExtractParts("@Foo@", '@', '@')
-	c.Equal([]nameable.Part{{Value: "Foo", Placeholder: true}}, got)
-}
-
-func TestExtractPartsLeadingPlaceholder(t *testing.T) {
-	c := check.New(t)
-	got := nameable.ExtractParts("@Foo@ trailing", '@', '@')
-	c.Equal([]nameable.Part{
-		{Value: "Foo", Placeholder: true},
-		{Value: " trailing", Placeholder: false},
-	}, got)
-}
-
-func TestExtractPartsMultiplePlaceholdersSeparatedByPlainText(t *testing.T) {
-	c := check.New(t)
-	// Regression test: closing a placeholder must clear isPlaceholder, or the plain-text run between two placeholders
-	// is misidentified as a placeholder, breaking every multi-marker string.
-	got := nameable.ExtractParts("@A@ and @B@", '@', '@')
-	c.Equal([]nameable.Part{
-		{Value: "A", Placeholder: true},
-		{Value: " and ", Placeholder: false},
-		{Value: "B", Placeholder: true},
-	}, got)
-}
-
-func TestExtractPartsEscapedDelimitersYieldNoPlaceholder(t *testing.T) {
-	c := check.New(t)
-	got := nameable.ExtractParts(`abc \@Foo\@ def`, '@', '@')
-	c.Equal([]nameable.Part{{Value: `abc \@Foo\@ def`, Placeholder: false}}, got)
-}
-
-func TestExtractPartsDoubledEscapeBeforeOpenStillOpensPlaceholder(t *testing.T) {
-	c := check.New(t)
-	// Two escape runes cancel out (one literal backslash), so the following '@' is not escaped and still opens a
-	// placeholder.
-	got := nameable.ExtractParts(`abc \\@Foo@`, '@', '@')
-	c.Equal([]nameable.Part{
-		{Value: `abc \\`, Placeholder: false},
-		{Value: "Foo", Placeholder: true},
-	}, got)
-}
-
-func TestExtractPartsTripleEscapeBeforeOpenEscapesIt(t *testing.T) {
-	c := check.New(t)
-	// An odd number of escape runes leaves the final one live, so the '@' it precedes is escaped and no placeholder is
-	// opened. Since open == close here, the trailing, unescaped '@' is then read as a fresh open attempt that never
-	// finds a match before end of input, so it round-trips as its own trailing literal part rather than merging into
-	// the first one. Nothing is lost.
-	got := nameable.ExtractParts(`abc \\\@Foo@`, '@', '@')
-	c.Equal([]nameable.Part{
-		{Value: `abc \\\@Foo`, Placeholder: false},
-		{Value: "@", Placeholder: false},
-	}, got)
-}
-
-func TestExtractPartsEmptyPlaceholderTreatedAsLiteralText(t *testing.T) {
-	c := check.New(t)
-	// An open immediately followed by a close (nothing between) is not a placeholder at all -- it's folded back
-	// into plain text.
-	got := nameable.ExtractParts("a@@b", '@', '@')
-	c.Equal([]nameable.Part{
-		{Value: "a", Placeholder: false},
-		{Value: "@@b", Placeholder: false},
-	}, got)
-}
-
-func TestExtractPartsUnterminatedPlaceholderPreservesOpenDelimiter(t *testing.T) {
-	c := check.New(t)
-	// Regression test: an opened-but-never-closed placeholder is flushed as plain text at end of input with its open
-	// delimiter kept, so "abc @Foo" round-trips as literal text rather than losing the '@'.
-	got := nameable.ExtractParts("abc @Foo", '@', '@')
-	c.Equal([]nameable.Part{
-		{Value: "abc ", Placeholder: false},
-		{Value: "@Foo", Placeholder: false},
-	}, got)
-}
-
-func TestExtractPartsControlCharBreaksInProgressPlaceholder(t *testing.T) {
-	c := check.New(t)
-	// A control rune (here, newline) aborts an in-progress placeholder scan. Regression test: the abandoned open
-	// delimiter must be kept, folded into a single plain-text run with the abandoned placeholder content, rather than
-	// dropped. The following '@' reopens a placeholder that never finds a close before end of input, so it survives as
-	// an unterminated literal too.
-	got := nameable.ExtractParts("@Foo\nBar@ baz", '@', '@')
-	c.Equal([]nameable.Part{
-		{Value: "@Foo\nBar", Placeholder: false},
-		{Value: "@ baz", Placeholder: false},
-	}, got)
-}
-
-func TestExtractPartsDistinctOpenAndCloseRunes(t *testing.T) {
-	c := check.New(t)
-	got := nameable.ExtractParts("a(b)c", '(', ')')
-	c.Equal([]nameable.Part{
-		{Value: "a", Placeholder: false},
-		{Value: "b", Placeholder: true},
-		{Value: "c", Placeholder: false},
-	}, got)
-}
-
-func TestExtractPartsOpenRuneInsideOpenPlaceholderIsTreatedAsRestart(t *testing.T) {
-	c := check.New(t)
-	// A second, distinct open rune encountered while already inside a placeholder is treated as a misidentified
-	// placeholder start: the first open and everything collected since are folded back into plain text, and
-	// scanning restarts from the second open.
-	got := nameable.ExtractParts("a(b(c)d", '(', ')')
-	c.Equal([]nameable.Part{
-		{Value: "a", Placeholder: false},
-		{Value: "(b", Placeholder: false},
-		{Value: "c", Placeholder: true},
-		{Value: "d", Placeholder: false},
-	}, got)
-}
-
-// ---- Mid-placeholder redirect (the "open rune inside an open placeholder" branch) ----
-
-func TestExtractPartsRestartWithNothingBetweenTheTwoOpens(t *testing.T) {
-	c := check.New(t)
-	// The redirect fires immediately: the first open contributed nothing (start == i for it), so the folded-back
-	// non-placeholder part is exactly the one-rune-wide open delimiter itself, never empty.
-	got := nameable.ExtractParts("((x)", '(', ')')
-	c.Equal([]nameable.Part{
-		{Value: "(", Placeholder: false},
-		{Value: "x", Placeholder: true},
-	}, got)
-}
-
-func TestExtractPartsRestartChainsThroughMultipleOpens(t *testing.T) {
-	c := check.New(t)
-	// Each additional open re-triggers the redirect, folding back one more single-rune non-placeholder part; only
-	// the last open in the run survives to actually open the placeholder.
-	got := nameable.ExtractParts("(((x)", '(', ')')
-	c.Equal([]nameable.Part{
-		{Value: "(", Placeholder: false},
-		{Value: "(", Placeholder: false},
-		{Value: "x", Placeholder: true},
-	}, got)
-}
-
-func TestExtractPartsRestartImmediatelyAfterARealClose(t *testing.T) {
-	c := check.New(t)
-	// This is not the redirect branch (isPlaceholder is false again right after a real close), but it's the
-	// adjacent case worth pinning next to it: an unterminated placeholder attempt starting right where the prior
-	// one closed collapses to plain text -- open delimiter included -- once nothing closes it before end of input.
-	got := nameable.ExtractParts("(a)(b", '(', ')')
-	c.Equal([]nameable.Part{
-		{Value: "a", Placeholder: true},
-		{Value: "(b", Placeholder: false},
-	}, got)
-}
-
-func TestExtractPartsEscapedOpenInsidePlaceholderDoesNotRestart(t *testing.T) {
-	c := check.New(t)
-	// An escaped second open is never seen as `begin`, so the redirect branch does not fire and the placeholder keeps
-	// accumulating through it, escape rune included (unescaping is UnescapeRunes' job, not this one's).
-	got := nameable.ExtractParts(`(a\(b)`, '(', ')')
-	c.Equal([]nameable.Part{{Value: `a\(b`, Placeholder: true}}, got)
-}
-
-func TestExtractPartsRestartWithNoClosePriorToEndOfInput(t *testing.T) {
-	c := check.New(t)
-	// The redirect folds the first open back to plain text as usual, and the second, restarted placeholder attempt is
-	// itself left unterminated at end of input, so it too round-trips as literal text, giving two single-rune
-	// non-placeholder parts.
-	got := nameable.ExtractParts("((", '(', ')')
-	c.Equal([]nameable.Part{
-		{Value: "(", Placeholder: false},
-		{Value: "(", Placeholder: false},
-	}, got)
+	lit := func(s string) nameable.Part { return nameable.Part{Value: s} }
+	ph := func(s string) nameable.Part { return nameable.Part{Value: s, Placeholder: true} }
+	for _, tc := range []struct {
+		src        string
+		begin, end rune
+		want       []nameable.Part
+	}{
+		{src: "abc @Foo@ def", begin: '@', end: '@', want: []nameable.Part{lit("abc "), ph("Foo"), lit(" def")}},
+		{src: "abc def", begin: '@', end: '@', want: []nameable.Part{lit("abc def")}},
+		{src: "", begin: '@', end: '@', want: nil},
+		{src: "@Foo@", begin: '@', end: '@', want: []nameable.Part{ph("Foo")}},
+		{src: "@Foo@ trailing", begin: '@', end: '@', want: []nameable.Part{ph("Foo"), lit(" trailing")}},
+		// A close must end the placeholder, or the text between two placeholders would be taken for a third.
+		{src: "@A@ and @B@", begin: '@', end: '@', want: []nameable.Part{ph("A"), lit(" and "), ph("B")}},
+		{src: `abc \@Foo\@ def`, begin: '@', end: '@', want: []nameable.Part{lit(`abc \@Foo\@ def`)}},
+		// Paired escapes cancel out, so the '@' after them still opens a placeholder.
+		{src: `abc \\@Foo@`, begin: '@', end: '@', want: []nameable.Part{lit(`abc \\`), ph("Foo")}},
+		// An odd run escapes the first '@', so the second is an unclosed open that becomes its own literal part.
+		{src: `abc \\\@Foo@`, begin: '@', end: '@', want: []nameable.Part{lit(`abc \\\@Foo`), lit("@")}},
+		// An open immediately followed by a close is folded back into literal text.
+		{src: "a@@b", begin: '@', end: '@', want: []nameable.Part{lit("a"), lit("@@b")}},
+		// An unclosed open is flushed as literal text with its delimiter, even when it is the whole input.
+		{src: "abc @Foo", begin: '@', end: '@', want: []nameable.Part{lit("abc "), lit("@Foo")}},
+		{src: "@", begin: '@', end: '@', want: []nameable.Part{lit("@")}},
+		// A control rune aborts the placeholder, keeping its open delimiter; the next '@' then opens one that never
+		// closes.
+		{src: "@Foo\nBar@ baz", begin: '@', end: '@', want: []nameable.Part{lit("@Foo\nBar"), lit("@ baz")}},
+		{src: "a(b)c", begin: '(', end: ')', want: []nameable.Part{lit("a"), ph("b"), lit("c")}},
+		// An open inside a placeholder restarts it; the earlier open and what follows it become literal text.
+		{src: "a(b(c)d", begin: '(', end: ')', want: []nameable.Part{lit("a"), lit("(b"), ph("c"), lit("d")}},
+		{src: "(((x)", begin: '(', end: ')', want: []nameable.Part{lit("("), lit("("), ph("x")}},
+		{src: "((", begin: '(', end: ')', want: []nameable.Part{lit("("), lit("(")}},
+		// An open right after a close is literal text when nothing closes it.
+		{src: "(a)(b", begin: '(', end: ')', want: []nameable.Part{ph("a"), lit("(b")}},
+		// An escaped open inside a placeholder does not restart it.
+		{src: `(a\(b)`, begin: '(', end: ')', want: []nameable.Part{ph(`a\(b`)}},
+	} {
+		got := nameable.ExtractParts(tc.src, tc.begin, tc.end)
+		c.Equal(tc.want, got, "ExtractParts(%q, %q, %q)", tc.src, tc.begin, tc.end)
+	}
 }
 
 // ---- Every path that appends a Part is either explicitly guarded against a zero-width span or is provably at least a
@@ -246,73 +100,35 @@ func TestExtractPartsNeverProducesAnEmptyValuePart(t *testing.T) {
 	}
 }
 
-func TestExtractPartsLoneUnterminatedOpenRoundTripsAsLiteralText(t *testing.T) {
-	c := check.New(t)
-	// Regression test: the extreme case of an unterminated placeholder -- a dangling open that is the entire input must
-	// round-trip as a single literal, non-placeholder part rather than vanishing.
-	c.Equal([]nameable.Part{{Value: "@", Placeholder: false}}, nameable.ExtractParts("@", '@', '@'))
-}
-
+// TestExtractPartsPanicsWhenOpenEqualsEscape pins that ExtractParts panics when either delimiter is the escape rune.
 func TestExtractPartsPanicsWhenOpenEqualsEscape(t *testing.T) {
 	c := check.New(t)
-	c.Panics(func() { nameable.ExtractParts("x", nameable.EscapeRune, '@') })
+	c.Panics(func() { nameable.ExtractParts("x", nameable.EscapeRune, '@') }, "begin is the escape rune")
+	c.Panics(func() { nameable.ExtractParts("x", '@', nameable.EscapeRune) }, "end is the escape rune")
 }
 
-func TestExtractPartsPanicsWhenCloseEqualsEscape(t *testing.T) {
-	c := check.New(t)
-	c.Panics(func() { nameable.ExtractParts("x", '@', nameable.EscapeRune) })
-}
-
-func TestExtractSegmentsNoDelimiters(t *testing.T) {
-	c := check.New(t)
-	c.Equal([]string{"ABC"}, nameable.ExtractSegments("ABC", '|'))
-}
-
-func TestExtractSegmentsEmptyInput(t *testing.T) {
-	c := check.New(t)
-	c.Equal(0, len(nameable.ExtractSegments("", '|')))
-}
-
+// TestExtractSegmentsBasicSplit pins where ExtractSegments splits: a leading or doubled delimiter yields an empty
+// segment but a trailing one does not, and an escaped delimiter is no split point and keeps its escape.
 func TestExtractSegmentsBasicSplit(t *testing.T) {
 	c := check.New(t)
-	c.Equal([]string{"A", "B", "C"}, nameable.ExtractSegments("A|B|C", '|'))
-}
-
-func TestExtractSegmentsLeadingDelimiterYieldsEmptyFirstSegment(t *testing.T) {
-	c := check.New(t)
-	c.Equal([]string{"", "A", "B"}, nameable.ExtractSegments("|A|B", '|'))
-}
-
-func TestExtractSegmentsTrailingDelimiterDropsEmptyFinalSegment(t *testing.T) {
-	c := check.New(t)
-	// Unlike a leading delimiter, a trailing one produces no corresponding empty segment: the loop only appends a
-	// final segment when start < len(src).
-	c.Equal([]string{"A", "B"}, nameable.ExtractSegments("A|B|", '|'))
-}
-
-func TestExtractSegmentsConsecutiveDelimitersYieldEmptySegment(t *testing.T) {
-	c := check.New(t)
-	c.Equal([]string{"A", "", "B"}, nameable.ExtractSegments("A||B", '|'))
-}
-
-func TestExtractSegmentsEscapedDelimiterIsNotASplitPoint(t *testing.T) {
-	c := check.New(t)
-	// The escape is left in place in the returned segment -- ExtractSegments only decides where to split, it
-	// doesn't unescape; that's UnescapeRunes' job.
-	got := nameable.ExtractSegments(`A\|B|C`, '|')
-	c.Equal([]string{`A\|B`, "C"}, got)
-}
-
-func TestExtractSegmentsDoubledEscapeBeforeDelimiterStillSplits(t *testing.T) {
-	c := check.New(t)
-	got := nameable.ExtractSegments(`A\\|B`, '|')
-	c.Equal([]string{`A\\`, "B"}, got)
-}
-
-func TestExtractSegmentsTrailingUnpairedEscapeIsKeptLiteral(t *testing.T) {
-	c := check.New(t)
-	got := nameable.ExtractSegments(`A|B\`, '|')
-	c.Equal([]string{"A", `B\`}, got)
+	for _, tc := range []struct {
+		src  string
+		want []string
+	}{
+		{src: "A|B|C", want: []string{"A", "B", "C"}},
+		{src: "ABC", want: []string{"ABC"}},
+		{src: "", want: nil},
+		{src: "|A|B", want: []string{"", "A", "B"}},
+		{src: "A|B|", want: []string{"A", "B"}},
+		{src: "A||B", want: []string{"A", "", "B"}},
+		// ExtractSegments only decides where to split; unescaping is UnescapeRunes' job.
+		{src: `A\|B|C`, want: []string{`A\|B`, "C"}},
+		// Paired escapes cancel out, so the delimiter after them still splits.
+		{src: `A\\|B`, want: []string{`A\\`, "B"}},
+		{src: `A|B\`, want: []string{"A", `B\`}},
+	} {
+		c.Equal(tc.want, nameable.ExtractSegments(tc.src, '|'), "ExtractSegments(%q)", tc.src)
+	}
 }
 
 func TestExtractSegmentsPanicsWhenDelimiterEqualsEscape(t *testing.T) {
@@ -330,13 +146,6 @@ func TestUnescapeRunesNoCharsIsANoOp(t *testing.T) {
 	c.Equal(`a\|b`, nameable.UnescapeRunes(`a\|b`))
 }
 
-func TestEscapeRunesUsesReservedLetterForReservedRune(t *testing.T) {
-	c := check.New(t)
-	// A rune with a reserved letter (here, an actual newline) is escaped using that letter instead of the literal
-	// control byte, so the escaped text stays a single visible line.
-	c.Equal(`line one\nline two`, nameable.EscapeRunes("line one\nline two", '|', '\n'))
-}
-
 func TestUnescapeRunesTrailingDanglingEscapeIsPreserved(t *testing.T) {
 	c := check.New(t)
 	// An escape rune with nothing after it (the loop ends while still escaping) is written back out as-is instead of
@@ -344,10 +153,14 @@ func TestUnescapeRunesTrailingDanglingEscapeIsPreserved(t *testing.T) {
 	c.Equal(`abc\`, nameable.UnescapeRunes(`abc\`, '|'))
 }
 
+// TestEscapeRunesAndUnescapeRunesRoundTripReservedNewline pins that EscapeRunes writes a newline as its reserved
+// letter, keeping the escaped text on one line, and that UnescapeRunes turns it back into the newline.
 func TestEscapeRunesAndUnescapeRunesRoundTripReservedNewline(t *testing.T) {
 	c := check.New(t)
 	s := "line one\nline two"
-	c.Equal(s, nameable.UnescapeRunes(nameable.EscapeRunes(s, '|', '\n'), '|', '\n'))
+	escaped := nameable.EscapeRunes(s, '|', '\n')
+	c.Equal(`line one\nline two`, escaped)
+	c.Equal(s, nameable.UnescapeRunes(escaped, '|', '\n'))
 }
 
 func TestEscapeRunesPanicsOnReservedCollision(t *testing.T) {

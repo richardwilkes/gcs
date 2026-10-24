@@ -12,69 +12,46 @@ package ux
 import (
 	"testing"
 
-	"github.com/richardwilkes/gcs/v5/ux/uxtest"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/unison"
 )
 
-func TestSheetSettingsCheckBoxPageRefIsOnePieceOfText(t *testing.T) {
-	c := check.New(t)
-	d := &sheetSettingsDockable{}
-	panel := unison.NewPanel()
-	var clicked []bool
-	box := d.addCheckBox(panel, "Use the rule", "B269", true, func(checked bool) { clicked = append(clicked, checked) })
-	c.Equal("Use the rule", box.Text.String())
-	if len(panel.Children()) != 1 {
-		t.Fatalf("the checkbox and its page reference must share a wrapper, but the panel holds %d children",
-			len(panel.Children()))
-	}
-	children := panel.Children()[0].Children()
-	if len(children) != 2 {
-		t.Fatalf("the wrapper must hold the checkbox and its page reference, but holds %d children", len(children))
-	}
-	c.Equal(box.AsPanel(), children[0])
-	label, ok := children[1].Self.(*TextLabel)
-	if !ok {
-		t.Fatalf("the page reference must be a label holding the link, not a %T", children[1].Self)
-	}
-	c.Equal("(B269)", label.String())
-	c.True(label.Focusable(), "the link is reached by the keyboard focus, screen reader or not")
-	_, pref, _ := label.Sizes(geom.Size{})
-	label.SetFrameRect(geom.NewRect(0, 0, pref.Width, pref.Height))
-	links := label.Links()
-	if len(links) != 1 {
-		t.Fatalf("the page reference must hold one link, but holds %d", len(links))
-	}
-	c.Equal("B269", links[0].Ref)
-	var followed []string
-	label.LinkHandler = func(ref string) { followed = append(followed, ref) }
-	c.True(label.keyDown(unison.KeySpace, 0, false), "Space follows the only link")
-	c.Equal([]string{"B269"}, followed)
-
-	plain := unison.NewPanel()
-	box = d.addCheckBox(plain, "No page", "", false, func(bool) {})
-	c.Equal([]*unison.Panel{box.AsPanel()}, plain.Children(), "a checkbox without a page reference stands alone")
-}
-
-// LinkPageRefs recognizes only Basic Set references, so this covers those to other books, such as "PY65:30".
+// TestSheetSettingsPageRefsAreAllLinks verifies that each sheet setting citing a page shares a wrapper with a
+// focusable "(ref)" label whose one link is the whole reference and is followed by Space, and that a setting without a
+// page reference adds its checkbox alone. LinkPageRefs recognizes only Basic Set references, so this covers those to
+// other books, such as "PY65:30".
 func TestSheetSettingsPageRefsAreAllLinks(t *testing.T) {
 	c := check.New(t)
 	d := &sheetSettingsDockable{}
 	var refs []string
 	for _, option := range sheetOptions() {
+		panel := unison.NewPanel()
+		box := d.addCheckBox(panel, option.title, option.pageRef, false, func(bool) {})
+		c.Equal(option.title, box.Text.String())
 		if option.pageRef == "" {
+			c.Equal([]*unison.Panel{box.AsPanel()}, panel.Children(),
+				"%q has no page reference, so its checkbox stands alone", option.title)
 			continue
 		}
 		refs = append(refs, option.pageRef)
-		panel := unison.NewPanel()
-		d.addCheckBox(panel, option.title, option.pageRef, false, func(bool) {})
-		labels := uxtest.PanelsOfType[*TextLabel](panel)
-		if len(labels) != 1 {
-			t.Fatalf("%q must be followed by its page reference, but %d labels follow it", option.title, len(labels))
+		if len(panel.Children()) != 1 {
+			t.Fatalf("the checkbox of %q and its page reference must share a wrapper, but the panel holds %d children",
+				option.title, len(panel.Children()))
 		}
-		label := labels[0]
+		children := panel.Children()[0].Children()
+		if len(children) != 2 {
+			t.Fatalf("the wrapper of %q must hold the checkbox and its page reference, but holds %d children",
+				option.title, len(children))
+		}
+		c.Equal(box.AsPanel(), children[0])
+		label, ok := children[1].Self.(*TextLabel)
+		if !ok {
+			t.Fatalf("the page reference of %q must be a label holding the link, not a %T", option.title,
+				children[1].Self)
+		}
 		c.Equal("("+option.pageRef+")", label.String())
+		c.True(label.Focusable(), "the link is reached by the keyboard focus, screen reader or not")
 		_, pref, _ := label.Sizes(geom.Size{})
 		label.SetFrameRect(geom.NewRect(0, 0, pref.Width, pref.Height))
 		links := label.Links()

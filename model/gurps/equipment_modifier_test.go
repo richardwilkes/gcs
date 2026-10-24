@@ -82,17 +82,21 @@ func TestEquipmentModifierCloneDoesNotShareReplacements(t *testing.T) {
 }
 
 // TestEquipmentModifierApplyNameableKeysKeepsOtherReplacements verifies that applying one modifier's replacements keeps
-// the equipment's existing replacements and those applied for its other modifiers.
+// the equipment's existing replacements, those held for its disabled modifiers, and those applied for its other
+// modifiers.
 func TestEquipmentModifierApplyNameableKeysKeepsOtherReplacements(t *testing.T) {
 	c := check.New(t)
 	equipment := NewEquipment(nil, nil, false)
 	equipment.Name = "@Foo@ Thing"
-	equipment.Replacements = map[string]string{"Foo": "Bar"}
+	equipment.Replacements = map[string]string{"Foo": "Bar", "Finish": "Gilded"}
+	finish := NewEquipmentModifier(nil, nil, false)
+	finish.Name = "@Finish@ Coating"
+	finish.SetDisabled(true)
 	material := NewEquipmentModifier(nil, nil, false)
 	material.Name = "@Material@ Coating"
 	color := NewEquipmentModifier(nil, nil, false)
 	color.Name = "@Color@ Paint"
-	equipment.AddModifiers(material, color)
+	equipment.AddModifiers(finish, material, color)
 
 	// As the prompt does: collect every modifier's keys first, then apply them in turn.
 	materialKeys := make(map[string]string)
@@ -104,34 +108,11 @@ func TestEquipmentModifierApplyNameableKeysKeepsOtherReplacements(t *testing.T) 
 	material.ApplyNameableKeys(materialKeys)
 	color.ApplyNameableKeys(colorKeys)
 
-	c.Equal(map[string]string{"Foo": "Bar", "Material": "Steel", "Color": "Red"}, equipment.Replacements)
+	c.Equal(map[string]string{"Foo": "Bar", "Finish": "Gilded", "Material": "Steel", "Color": "Red"},
+		equipment.Replacements, "the answer held for the switched-off modifier must survive")
 	c.Equal("Bar Thing", equipment.NameWithReplacements())
 	c.Equal("Steel Coating", material.NameWithReplacements())
 	c.Equal("Red Paint", color.NameWithReplacements())
-}
-
-// TestEquipmentModifierApplyNameableKeysKeepsAnswersForDisabledModifiers verifies that applying one modifier's
-// replacements keeps those held for the equipment's disabled modifiers.
-func TestEquipmentModifierApplyNameableKeysKeepsAnswersForDisabledModifiers(t *testing.T) {
-	c := check.New(t)
-	equipment := NewEquipment(nil, nil, false)
-	equipment.Name = "Sword"
-	finish := NewEquipmentModifier(nil, nil, false)
-	finish.Name = "@Finish@ Coating"
-	equipment.AddModifiers(finish)
-	equipment.Replacements = map[string]string{"Finish": "Gilded"}
-	finish.SetDisabled(true)
-	color := NewEquipmentModifier(nil, nil, false)
-	color.Name = "@Color@ Paint"
-	equipment.AddModifiers(color)
-
-	colorKeys := make(map[string]string)
-	color.FillWithNameableKeys(colorKeys, nil)
-	colorKeys["Color"] = "Red"
-	color.ApplyNameableKeys(colorKeys)
-
-	c.Equal(map[string]string{"Finish": "Gilded", "Color": "Red"}, equipment.Replacements,
-		"the answer held for the switched-off modifier must survive")
 	finish.SetDisabled(false)
 	c.Equal("Gilded Coating", finish.NameWithReplacements(), "switching the modifier back on must find its answer")
 }

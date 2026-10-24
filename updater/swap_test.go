@@ -63,42 +63,41 @@ func bundleMarker(t *testing.T, path string) string {
 	return read(t, filepath.Join(path, "Contents", "MacOS", CmdName))
 }
 
-// The ordinary Linux and Windows case: the installed executable becomes the downloaded one, and the previous version
-// is left where the record says it will be.
-func TestSwapReplacesAFile(t *testing.T) {
-	c := check.New(t)
-	f := newSwapFixture(t, false)
-
-	c.NoError(swap(f.target, f.payload, f.backup))
-
-	c.Equal("replacement", read(t, f.target))
-	c.Equal("installed", read(t, f.backup), "the previous version must be kept until the new one has started")
-}
-
-// The macOS case, where what is replaced is a directory tree. A plain rename cannot replace a non-empty directory, so
-// this is the case that would fail if the swap were written naively.
+// The installation becomes the downloaded copy, and the previous version is left where the record says it will be,
+// both for the executable Linux and Windows replace and for the macOS bundle. A plain rename cannot replace a non-empty
+// directory, so the bundle is the case that would fail if the swap were written naively. It is also swapped on a
+// filesystem that does not implement the atomic exchange, where the swap has to fall back to moving the installation
+// aside first, which is the only path on Linux and Windows and a real possibility on macOS.
 func TestSwapReplacesABundle(t *testing.T) {
-	c := check.New(t)
-	f := newSwapFixture(t, true)
+	for _, one := range []struct {
+		name     string
+		bundle   bool
+		fallback bool
+	}{
+		{"an executable", false, false},
+		{"a bundle", true, false},
+		{"a bundle without the atomic exchange", true, true},
+	} {
+		t.Run(one.name, func(t *testing.T) {
+			c := check.New(t)
+			if one.fallback {
+				useRenameFallback(t)
+			}
+			f := newSwapFixture(t, one.bundle)
 
-	c.NoError(swap(f.target, f.payload, f.backup))
+			c.NoError(swap(f.target, f.payload, f.backup))
 
-	c.Equal("replacement", bundleMarker(t, f.target))
-	c.Equal("installed", bundleMarker(t, f.backup))
-	c.True(exists(filepath.Join(f.target, "Contents", "Info.plist")), "the whole bundle must move, not just its parts")
-}
-
-// The same result on a filesystem that does not implement the atomic exchange, where the swap has to fall back to
-// moving the installation aside first. This is the only path on Linux and Windows, and a real possibility on macOS.
-func TestSwapReplacesABundleWithoutTheAtomicExchange(t *testing.T) {
-	c := check.New(t)
-	useRenameFallback(t)
-	f := newSwapFixture(t, true)
-
-	c.NoError(swap(f.target, f.payload, f.backup))
-
-	c.Equal("replacement", bundleMarker(t, f.target))
-	c.Equal("installed", bundleMarker(t, f.backup))
+			readMarker := read
+			if one.bundle {
+				readMarker = bundleMarker
+				c.True(exists(filepath.Join(f.target, "Contents", "Info.plist")),
+					"the whole bundle must move, not just its parts")
+			}
+			c.Equal("replacement", readMarker(t, f.target))
+			c.Equal("installed", readMarker(t, f.backup),
+				"the previous version must be kept until the new one has started")
+		})
+	}
 }
 
 // useRenameFallback forces the two-rename form. Without this a macOS run would take the atomic exchange and never
@@ -180,6 +179,14 @@ func TestSwapRefusesBadArguments(t *testing.T) {
 	f3 := newSwapFixture(t, false)
 	c.NoError(os.Remove(f3.target))
 	c.HasError(swap(f3.target, f3.payload, f3.backup), "a missing installation must be refused")
+
+	// A bundle must not replace a bare executable, or the reverse. Reaching that point would mean something upstream
+	// resolved the wrong thing, and completing the swap would install something the system cannot run.
+	f4 := newSwapFixture(t, false)
+	payload := filepath.Join(f4.workDir, BundleName)
+	mkBundle(t, payload, "replacement")
+	c.HasError(swap(f4.target, payload, f4.backup), "a bundle replacing an executable must be refused")
+	c.Equal("installed", read(t, f4.target), "a refused swap must change nothing")
 }
 
 // The installation must never be renamed over something already sitting at the backup path. On most systems that
@@ -209,18 +216,4 @@ func TestFreeBackupPathAvoidsWhatIsAlreadyThere(t *testing.T) {
 	c.NotEqual(first, second, "a path already in use must not be chosen again")
 	c.False(exists(second))
 	c.Equal(dir, filepath.Dir(second), "the backup must still be a sibling of what it replaces")
-}
-
-// A bundle must not replace a bare executable, or the reverse. Reaching that point would mean something upstream
-// resolved the wrong thing, and completing the swap would install something the system cannot run.
-func TestSwapRefusesAMismatchedPayload(t *testing.T) {
-	c := check.New(t)
-	dir := t.TempDir()
-	target := filepath.Join(dir, CmdName)
-	write(t, target, "installed")
-	payload := filepath.Join(dir, workDirPrefix+"abc", BundleName)
-	mkBundle(t, payload, "replacement")
-
-	c.HasError(swap(target, payload, filepath.Join(dir, "."+CmdName+backupSuffix+"1")))
-	c.Equal("installed", read(t, target))
 }

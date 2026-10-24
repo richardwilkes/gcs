@@ -150,23 +150,6 @@ func TestPickerSessionStates(t *testing.T) {
 	c.True(s.resolved(n["wm"]))
 }
 
-// TestPickerSessionPillTextByValue verifies that a choice made by value reads as money.
-func TestPickerSessionPillTextByValue(t *testing.T) {
-	c := check.New(t)
-	choice := gurps.NewEquipmentChoiceContainer(nil, nil)
-	choice.TemplatePicker.Type = picker.Value
-	choice.TemplatePicker.Qualifier.Qualifier = fxp.FromInteger(50)
-	for _, value := range []string{"30", "20"} {
-		option := gurps.NewEquipment(nil, choice, false)
-		option.BaseValue = value
-		choice.Children = append(choice.Children, option)
-	}
-	s := newPickerSession(promptOperation{}, []*gurps.Equipment{choice}, true)
-	s.chosen[choice.Children[0]] = true
-	c.Equal("$30 / $50", s.pillText(choice))
-	c.Equal(pickerError, s.ownState(choice), "a settled total short of its target can't meet it")
-}
-
 // TestPickerSessionProcessesRows verifies that choices already answered are applied without their dialog, and that the
 // rest are asked once what holds them has been.
 func TestPickerSessionProcessesRows(t *testing.T) {

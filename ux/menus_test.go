@@ -61,50 +61,46 @@ func exportToMenuTitles(c check.Checker, menu unison.Menu) []string {
 	return titles[7:]
 }
 
-// TestExportToMenuWithoutTemplateDirs verifies that the placeholder is shown when no library has an "Output Templates"
-// directory at all. A stale check for an item count of 2 once kept it from ever showing, since the fixed prologue alone
-// already holds more items than that.
-func TestExportToMenuWithoutTemplateDirs(t *testing.T) {
-	c := check.New(t)
-	uxtest.UseTestLibraries(t, c)
-	c.Equal([]string{"No export templates available"}, exportToMenuTitles(c, newExportToMenu()), "menu body")
-}
-
-// TestExportToMenuWithEmptyMasterTemplateDir verifies that the placeholder is still shown when the master library has
-// an "Output Templates" directory that holds no templates. The master library always contributes its title in that
-// case, so a check against a fixed item count would miss this and leave a dangling library title with nothing under it.
-func TestExportToMenuWithEmptyMasterTemplateDir(t *testing.T) {
-	c := check.New(t)
-	master, _ := uxtest.UseTestLibraries(t, c)
-	addOutputTemplates(c, master)
-	c.Equal([]string{master.Data().Title, "No export templates available"},
-		exportToMenuTitles(c, newExportToMenu()), "menu body")
-}
-
-// TestExportToMenuWithHiddenFilesOnly verifies that a directory holding nothing but dot files, which are skipped, is
-// treated the same as an empty one.
-func TestExportToMenuWithHiddenFilesOnly(t *testing.T) {
-	c := check.New(t)
-	master, _ := uxtest.UseTestLibraries(t, c)
-	addOutputTemplates(c, master, ".DS_Store")
-	c.Equal([]string{master.Data().Title, "No export templates available"},
-		exportToMenuTitles(c, newExportToMenu()), "menu body")
-}
-
 // TestExportToMenuWithTemplates verifies that the placeholder is not shown once any library supplies a template, that
-// the templates are listed under their library's title, and that they are sorted naturally.
+// the templates are listed under their library's title, and that they are sorted naturally. The placeholder must still
+// be shown when the master library's "Output Templates" directory is empty or holds nothing but dot files, which are
+// skipped: the master library always contributes its title in that case, so a check against a fixed item count would
+// leave a dangling library title with nothing under it.
 func TestExportToMenuWithTemplates(t *testing.T) {
 	c := check.New(t)
-	master, user := uxtest.UseTestLibraries(t, c)
-	addOutputTemplates(c, master, "Sheet 10.gcs", "Sheet 2.gcs")
-	addOutputTemplates(c, user, "Mine.gcs")
-	c.Equal([]string{
-		user.Data().Title,
-		"    Mine",
-		master.Data().Title,
-		"    Sheet 2",
-		"    Sheet 10",
-	}, exportToMenuTitles(c, newExportToMenu()), "menu body")
+	const placeholder = "No export templates available"
+	for _, one := range []struct {
+		name   string
+		master []string // The files in the master library's "Output Templates" directory, which is always created
+		user   []string // The files in the user library's, which is only created when this isn't nil
+		want   func(masterTitle, userTitle string) []string
+	}{
+		{
+			name: "empty master directory",
+			want: func(masterTitle, _ string) []string { return []string{masterTitle, placeholder} },
+		},
+		{
+			name:   "hidden files only",
+			master: []string{".DS_Store"},
+			want:   func(masterTitle, _ string) []string { return []string{masterTitle, placeholder} },
+		},
+		{
+			name:   "templates",
+			master: []string{"Sheet 10.gcs", "Sheet 2.gcs"},
+			user:   []string{"Mine.gcs"},
+			want: func(masterTitle, userTitle string) []string {
+				return []string{userTitle, "    Mine", masterTitle, "    Sheet 2", "    Sheet 10"}
+			},
+		},
+	} {
+		master, user := uxtest.UseTestLibraries(t, c)
+		addOutputTemplates(c, master, one.master...)
+		if one.user != nil {
+			addOutputTemplates(c, user, one.user...)
+		}
+		c.Equal(one.want(master.Data().Title, user.Data().Title), exportToMenuTitles(c, newExportToMenu()),
+			"menu body: "+one.name)
+	}
 }
 
 // TestExportToMenuRepopulates verifies that rebuilding the menu, which happens each time it is opened, reflects the

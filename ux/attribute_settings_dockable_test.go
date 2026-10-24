@@ -29,7 +29,9 @@ import (
 // given its own target key prefix. The panel builds each widget's reference key as the definition's KeyPrefix plus a
 // suffix ("id", "name", "type", ...), so a definition added without a prefix produces bare keys that collide with those
 // of the next one added. TargetMgr.Find returns the first match, which sent an undo of an edit made in the second new
-// attribute to the first one's field, and restored focus to the wrong attribute's widget after a rebuild.
+// attribute to the first one's field, and restored focus to the wrong attribute's widget after a rebuild. The prefix
+// must also be carried through the clones the undo edits hold, since applying one replaces the dockable's definitions
+// and rebuilds the panels from them.
 func TestAddAttributeDefAssignsUniqueKeyPrefix(t *testing.T) {
 	c := check.New(t)
 	d := newTestAttributeSettingsDockable()
@@ -40,6 +42,9 @@ func TestAddAttributeDefAssignsUniqueKeyPrefix(t *testing.T) {
 	c.NotEqual("", second.KeyPrefix, "an added attribute must be given a target key prefix")
 	c.NotEqual(first.KeyPrefix, second.KeyPrefix, "two added attributes must not share a target key prefix")
 	c.NotEqual(first.DefID, second.DefID, "two added attributes must not share an ID")
+	restored, found := d.model.Clone().Set[second.DefID]
+	c.True(found, "the added attribute must be present in the clone")
+	c.Equal(second.KeyPrefix, restored.KeyPrefix, "cloning must preserve the target key prefix")
 
 	// The prefixes must also be distinct from those of every pre-existing definition and pool threshold, since all of
 	// their widgets live in the same dockable.
@@ -59,17 +64,6 @@ func TestAddAttributeDefAssignsUniqueKeyPrefix(t *testing.T) {
 			seen[threshold.KeyPrefix] = def.DefID
 		}
 	}
-}
-
-// TestAddAttributeDefKeyPrefixSurvivesUndoData verifies that the target key prefixes are carried through the clones the
-// undo edits hold, since applying one replaces the dockable's definitions and rebuilds the panels from them.
-func TestAddAttributeDefKeyPrefixSurvivesUndoData(t *testing.T) {
-	c := check.New(t)
-	d := newTestAttributeSettingsDockable()
-	added := d.addAttributeDef()
-	restored, exists := d.model.Clone().Set[added.DefID]
-	c.True(exists, "the added attribute must be present in the clone")
-	c.Equal(added.KeyPrefix, restored.KeyPrefix, "cloning must preserve the target key prefix")
 }
 
 // TestAttributeDeleteButtonEnablement verifies that the "can't delete the last attribute" guard is recomputed whenever

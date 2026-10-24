@@ -269,15 +269,18 @@ func TestSellDialogSellsAndUndoes(t *testing.T) {
 }
 
 // TestSellDialogGatesSale checks that Sell is unavailable, with the reason given, while the sheet has no sell money,
-// and while nothing is to be sold, and that canceling the dialog changes nothing.
+// while nothing is to be sold, and while the percent field or a quantity field holds text that isn't a valid value,
+// since the sale would otherwise go through at a value other than the one typed, and that canceling the dialog changes
+// nothing.
 func TestSellDialogGatesSale(t *testing.T) {
 	c := check.New(t)
 	screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
 	money := newTradeTestMoney(t, c)
-	var knife *gurps.Equipment
+	var sword, knife *gurps.Equipment
 	sheet := openSellTestSheet(t, screen, nil, func(entity *gurps.Entity) []*gurps.Equipment {
+		sword = newTradeTestItem(entity, "Shortsword", "400", fxp.One)
 		knife = newTradeTestItem(entity, "Small Knife", "30", fxp.Two)
-		return []*gurps.Equipment{knife}
+		return []*gurps.Equipment{sword, knife}
 	})
 	before := carriedSummary(sheet)
 	unchanged := func(why string) {
@@ -297,12 +300,23 @@ func TestSellDialogGatesSale(t *testing.T) {
 	unchanged("with no sell money")
 
 	screen.Do(func() { sheet.Entity().SheetSettings.SellMoney = []*gurps.Equipment{money.penny} })
-	s = openSellTestDialog(t, screen, wnd, sheet, knife)
-	c.True(s.sellEnabled(), "with sell money, the knives can be sold")
+	s = openSellTestDialog(t, screen, wnd, sheet, sword, knife)
+	c.True(s.sellEnabled(), "with sell money, the sword and knives can be sold")
 	c.Equal("", s.warning())
+	s.replaceText(s.percent, "")
+	c.False(s.sellEnabled(), "an empty percent field holds no valid value")
+	s.replaceText(s.percent, "5000")
+	c.False(s.sellEnabled(), "a percent above the field's maximum isn't valid")
+	s.replaceText(s.percent, "50")
+	c.True(s.sellEnabled(), "a valid percent allows the sale again")
+	s.replaceText(s.quantities[1], "")
+	c.False(s.sellEnabled(), "an empty quantity field holds no valid value, even while another item is to be sold")
+	s.replaceText(s.quantities[1], "2")
+	c.True(s.sellEnabled())
 	s.replaceText(s.quantities[0], "0")
+	s.replaceText(s.quantities[1], "0")
 	c.False(s.sellEnabled(), "with nothing to sell, nothing can be sold")
-	s.replaceText(s.quantities[0], "1")
+	s.replaceText(s.quantities[1], "1")
 	c.True(s.sellEnabled(), "with something to sell again, it can be sold")
 	c.True(slices.Contains(s.texts(), "You receive: Copper Penny ×15 ($15.00)"), "one knife brings in $15")
 	s.dismiss(c, s.cancel)
@@ -382,11 +396,14 @@ func TestSellDialogNamesWhatIsSold(t *testing.T) {
 // TestSellDialogClosesEditorsOfWhatTheSaleChanges checks that a sale first closes the editors open on everything it
 // changes, as deleting them does: the items sold in full, along with what a container sold holds, the items sold in
 // part and the carried money the payouts merge into, since an editor left open would put its stale quantity back when
-// applied. The editor of carried money the payouts don't touch stays open.
+// applied. The editor of carried money the payouts don't touch stays open. The dialog must predict the merge as the
+// sale makes it: sell money held unequipped, as copies of the Dungeon Fantasy RPG coins are, still merges into the
+// equipped pile carried, since the equipped state plays no part in matching.
 func TestSellDialogClosesEditorsOfWhatTheSaleChanges(t *testing.T) {
 	c := check.New(t)
 	screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
 	money := newTradeTestMoney(t, c)
+	money.eagle.Equipped = false
 	var sword, knives, backpack, rope, eagles, gems *gurps.Equipment
 	sheet := openSellTestSheet(t, screen, []*gurps.Equipment{money.eagle, money.penny},
 		func(entity *gurps.Entity) []*gurps.Equipment {
@@ -399,6 +416,7 @@ func TestSellDialogClosesEditorsOfWhatTheSaleChanges(t *testing.T) {
 			backpack.Children = []*gurps.Equipment{rope}
 			eagles = money.eagle.Clone(money.libFile, entity, nil, gurps.Reference)
 			eagles.Quantity = fxp.FromInteger(7)
+			eagles.Equipped = true
 			gems = newTradeTestItem(entity, "Gem", "100", fxp.Three, gurps.MoneyTag)
 			return []*gurps.Equipment{sword, knives, backpack, eagles, gems}
 		})
@@ -566,35 +584,6 @@ func TestSellDialogLeavesOutWhatIsSetToZero(t *testing.T) {
 			"the sword is sold and the boxes and tools kept")
 		c.Equal([]*gurps.Equipment{tools}, crate.Children, "the tools stay in the crates")
 	})
-}
-
-// TestSellDialogGatesSaleOnValidFields checks that Sell is unavailable while the percent field or a quantity field holds
-// text that isn't a valid value, since the sale would otherwise go through at a value other than the one typed, and is
-// available again once the text is valid.
-func TestSellDialogGatesSaleOnValidFields(t *testing.T) {
-	c := check.New(t)
-	screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
-	money := newTradeTestMoney(t, c)
-	var sword, knives *gurps.Equipment
-	sheet := openSellTestSheet(t, screen, []*gurps.Equipment{money.penny},
-		func(entity *gurps.Entity) []*gurps.Equipment {
-			sword = newTradeTestItem(entity, "Shortsword", "400", fxp.One)
-			knives = newTradeTestItem(entity, "Small Knife", "30", fxp.Two)
-			return []*gurps.Equipment{sword, knives}
-		})
-	s := openSellTestDialog(t, screen, wnd, sheet, sword, knives)
-	c.True(s.sellEnabled())
-	s.replaceText(s.percent, "")
-	c.False(s.sellEnabled(), "an empty percent field holds no valid value")
-	s.replaceText(s.percent, "5000")
-	c.False(s.sellEnabled(), "a percent above the field's maximum isn't valid")
-	s.replaceText(s.percent, "50")
-	c.True(s.sellEnabled(), "a valid percent allows the sale again")
-	s.replaceText(s.quantities[1], "")
-	c.False(s.sellEnabled(), "an empty quantity field holds no valid value, even while another item is to be sold")
-	s.replaceText(s.quantities[1], "2")
-	c.True(s.sellEnabled())
-	s.dismiss(c, s.cancel)
 }
 
 // TestSellDialogRefusesPastedQuantitiesAboveTheMaximum checks that a quantity field refuses text pasted with the
@@ -862,44 +851,6 @@ func TestSellDialogShowsTheSaleAgainWhenASavedEditorChangesIt(t *testing.T) {
 			c.Equal(fxp.FromInteger(24), entity.ShoppingRecord[0].Exchanged)
 		}
 	})
-}
-
-// TestSellDialogClosesTheEditorOfMoneyAnUnequippedCoinMergesInto checks that the dialog predicts the merge of a payout
-// as the sale makes it: a sell money coin held unequipped, as copies of the Dungeon Fantasy RPG coins are, still merges
-// into the equipped pile carried, since the equipped state plays no part in matching, so the editor open on the pile is
-// closed.
-func TestSellDialogClosesTheEditorOfMoneyAnUnequippedCoinMergesInto(t *testing.T) {
-	c := check.New(t)
-	screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
-	coin := newTradeTestItem(nil, "Silver Coin", "1", fxp.One, gurps.MoneyTag)
-	coin.Equipped = false
-	var dagger, pile *gurps.Equipment
-	sheet := openSellTestSheet(t, screen, []*gurps.Equipment{coin},
-		func(entity *gurps.Entity) []*gurps.Equipment {
-			dagger = newTradeTestItem(entity, "Dagger", "20", fxp.One)
-			pile = coin.Clone(gurps.LibraryFile{}, entity, nil, gurps.Reference)
-			pile.Quantity = fxp.FromInteger(50)
-			pile.Equipped = true
-			return []*gurps.Equipment{dagger, pile}
-		})
-	var open func() int
-	screen.Do(func() {
-		EditEquipment(sheet, pile, true)
-		open = func() int {
-			return len(AllMatchingDockables(func(d unison.Dockable) bool {
-				e, ok := d.(*editor[*gurps.Equipment, *gurps.EquipmentEditData])
-				return ok && e.target == pile
-			}))
-		}
-	})
-	s := openSellTestDialog(t, screen, wnd, sheet, dagger)
-	s.dismiss(c, s.sell)
-	var editors int
-	screen.Do(func() {
-		editors = open()
-		c.Equal([]string{"Silver Coin ×60"}, carriedSummary(sheet), "the payout merges into the equipped pile")
-	})
-	c.Equal(0, editors, "the editor of the pile the payout merges into is closed")
 }
 
 // TestSellDialogTotalSaturatesRatherThanWrapping checks that a total made of prices too large for fxp to hold saturates

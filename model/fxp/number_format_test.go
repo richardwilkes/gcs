@@ -71,7 +71,9 @@ func TestNumberFormatRoundExtremes(t *testing.T) {
 }
 
 // TestNumberFormatFormat verifies the rendered text, including thousands separators and the optional padding of the
-// fractional part with trailing zeros.
+// fractional part with trailing zeros. A Places out of range that has not been through EnsureValid, as happens if a
+// format reaches formatting before SheetSettings.EnsureValidity() has been applied, must behave exactly as AsNeeded
+// does, never padding.
 func TestNumberFormatFormat(t *testing.T) {
 	c := check.New(t)
 	for _, d := range []struct {
@@ -92,6 +94,12 @@ func TestNumberFormatFormat(t *testing.T) {
 		{format: fxp.NumberFormat{Places: fxp.FourPlaces, PadWithZeros: true}, in: "7.5", expected: "7.5000"},
 		{format: fxp.NumberFormat{Places: fxp.OnePlace, PadWithZeros: true}, in: "7", expected: "7.0"},
 		{format: fxp.NumberFormat{Places: fxp.ThreePlaces, PadWithZeros: true}, in: "7.12", expected: "7.120"},
+		{format: fxp.NumberFormat{Places: fxp.DecimalPlace(200)}, in: "1234.5678", expected: "1,234.5678"},
+		{format: fxp.NumberFormat{Places: fxp.DecimalPlace(200)}, in: "7.5", expected: "7.5"},
+		{format: fxp.NumberFormat{Places: fxp.DecimalPlace(200), PadWithZeros: true}, in: "1234.5678", expected: "1,234.5678"},
+		{format: fxp.NumberFormat{Places: fxp.DecimalPlace(200), PadWithZeros: true}, in: "7.5", expected: "7.5"},
+		{format: fxp.NumberFormat{Places: fxp.LastDecimalPlace + 1, PadWithZeros: true}, in: "1234.5678", expected: "1,234.5678"},
+		{format: fxp.NumberFormat{Places: fxp.LastDecimalPlace + 1, PadWithZeros: true}, in: "7.5", expected: "7.5"},
 	} {
 		c.Equal(d.expected, d.format.Format(fxp.FromStringForced(d.in)), "formatting %s with %+v", d.in, d.format)
 	}
@@ -168,41 +176,5 @@ func TestLengthUnitFormatWith(t *testing.T) {
 	} {
 		c.Equal(d.expected, d.unit.FormatWith(fxp.Length(fxp.FromStringForced(d.inches)), d.format),
 			"formatting %s inches as %s with %+v", d.inches, d.unit.Key(), d.format)
-	}
-}
-
-// TestNumberFormatUnvalidatedPlacesActsAsAsNeeded pins the behavior of a NumberFormat whose Places is out of range and
-// has not been through EnsureValid: Round and Format do not validate, so this is the path that runs if a format reaches
-// formatting before SheetSettings.EnsureValidity() has been applied, and it must behave exactly as AsNeeded does,
-// padding included.
-func TestNumberFormatUnvalidatedPlacesActsAsAsNeeded(t *testing.T) {
-	c := check.New(t)
-	value := fxp.FromStringForced("1234.5678")
-	for _, f := range []fxp.NumberFormat{
-		{Places: fxp.DecimalPlace(200)},
-		{Places: fxp.DecimalPlace(200), PadWithZeros: true},
-		{Places: fxp.LastDecimalPlace + 1, PadWithZeros: true},
-	} {
-		c.Equal(value, f.Round(value), "rounding with %+v", f)
-		c.Equal("1,234.5678", f.Format(value), "formatting with %+v", f)
-		c.Equal("7.5", f.Format(fxp.FromStringForced("7.5")), "formatting with %+v must not pad", f)
-	}
-}
-
-// TestFeetAndInchesFormatExtremes verifies that the extreme lengths render as feet and inches that parse back to the
-// same length, rather than as a bare "-". Min has no positive counterpart, so taking its magnitude before splitting off
-// the feet used to leave it negative, and every part was then skipped as "not positive". LengthFromString saturates
-// absurd input to Min, so a hand-edited file could reach it and then be re-saved with a height of "-".
-func TestFeetAndInchesFormatExtremes(t *testing.T) {
-	c := check.New(t)
-	c.Equal(`-76,861,433,640,456'5.5808"`, fxp.FeetAndInches.Format(fxp.Length(fxp.Min)))
-	c.Equal(`76,861,433,640,456'5.5807"`, fxp.FeetAndInches.Format(fxp.Length(fxp.Max)))
-	for _, in := range []fxp.Length{
-		fxp.Length(fxp.Min), fxp.Length(fxp.Min + 1), fxp.Length(fxp.Max), fxp.Length(-fxp.Twelve),
-	} {
-		text := fxp.FeetAndInches.Format(in)
-		parsed, err := fxp.LengthFromString(text, fxp.Inch)
-		c.NoError(err, "parsing %q", text)
-		c.Equal(in, parsed, "round trip of %q", text)
 	}
 }

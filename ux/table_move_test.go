@@ -151,7 +151,9 @@ func TestMoveSelectionOutOfContainer(t *testing.T) {
 
 // TestMoveSelectionIntoContainer verifies that Move Into Container drops a row into the container directly below it as
 // its first child, that a run of rows above the container enters it in order, and that nothing happens when what sits
-// below the row isn't a container, is a selected one, or is nothing at all.
+// below the row isn't a container, is a selected one, or is nothing at all. Since Move Out puts a row directly above
+// the container wherever inside it the row was, moving a row out and back in only returns it to its old place if it
+// was the first child.
 func TestMoveSelectionIntoContainer(t *testing.T) {
 	c := check.New(t)
 	sheet, traits := newMoveTestSheet(t)
@@ -206,25 +208,20 @@ func TestMoveSelectionIntoContainer(t *testing.T) {
 	c.Equal([]string{"One", "Two", "Three"}, traitNames(entity.Traits[2].Children),
 		"undo must take the rows back out of the container")
 	c.True(traits.box.IsOpen(), "undo must leave a container that was already open as it was")
-}
 
-// TestMoveIntoContainerPutsRowAtFront verifies that Move Into Container always makes the row the container's first
-// child, so that moving a row out and then back in only returns it to its old place if it was the first child to begin
-// with: Move Out puts the row directly above the container no matter where inside it the row was.
-func TestMoveIntoContainerPutsRowAtFront(t *testing.T) {
-	c := check.New(t)
-	sheet, traits := newMoveTestSheet(t)
-	entity := sheet.Entity()
-	table := sheet.Traits.Table
+	table = sheet.Traits.Table
 	selectTraits(table, traits.two)
 	table.PerformCmd(table, MoveOutOfContainerItemID)
-	c.Equal([]string{"First", "Two", "Box", "Last"}, traitNames(entity.Traits), "the row must land directly above the container")
-	c.Equal([]string{"One", "Three"}, traitNames(traits.box.Children), "the row must be gone from the middle of the container")
+	c.Equal([]string{"Zero", "First", "Two", "Box", "Last"}, traitNames(entity.Traits),
+		"the row must land directly above the container")
+	c.Equal([]string{"One", "Three"}, traitNames(entity.Traits[3].Children),
+		"the row must be gone from the middle of the container")
 
 	table = sheet.Traits.Table
 	table.PerformCmd(table, MoveIntoContainerItemID)
-	c.Equal([]string{"First", "Box", "Last"}, traitNames(entity.Traits), "the row must be back in the container")
-	c.Equal([]string{"Two", "One", "Three"}, traitNames(traits.box.Children),
+	c.Equal([]string{"Zero", "First", "Box", "Last"}, traitNames(entity.Traits),
+		"the row must be back in the container")
+	c.Equal([]string{"Two", "One", "Three"}, traitNames(entity.Traits[2].Children),
 		"the row must go to the front of the container rather than back to where it came from")
 }
 

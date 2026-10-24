@@ -143,9 +143,9 @@ func TestScriptEquipmentEquippedOnEditorClone(t *testing.T) {
 	c.Equal(fxp.FromInteger(100), baseValue(inFlight), "an item in neither list resolves as equipped")
 }
 
-// Equipment with no quantity is left out of every list a script can reach: the entity's equipment, a container's
-// children, and the name-and-tag searches, which also skip anything inside a container that itself has no quantity, and
-// match tags regardless of case.
+// Equipment with no quantity is left out of every list a script can reach: the entity's carried and other equipment, a
+// container's children, and the name-and-tag searches, which also skip anything inside a container that itself has no
+// quantity, and match tags regardless of case.
 func TestScriptEquipmentWithoutQuantityIsHidden(t *testing.T) {
 	c := check.New(t)
 	e := NewEntity()
@@ -166,38 +166,20 @@ func TestScriptEquipmentWithoutQuantityIsHidden(t *testing.T) {
 	trapped := named("Trapped", voidBag, false, fxp.One)
 	voidBag.Children = []*Equipment{trapped}
 	e.CarriedEquipment = []*Equipment{sword, ghost, bag, voidBag}
+	e.OtherEquipment = []*Equipment{named("Spare Armor", nil, false, fxp.One), named("Sold Off", nil, false, 0)}
 	e.Recalculate()
 
 	names := func(expr string) string {
 		return ResolveScript(e, ScriptSelfProvider{}, expr+".map(x => x.name).join()")
 	}
 	c.Equal("Sword,Bag", names("entity.equipment"))
+	c.Equal("Spare Armor", names("entity.otherEquipment"))
 	c.Equal("Sword,Bag,Coin", names(`entity.findEquipment("", "")`))
 	c.Equal("Coin", names(`entity.findEquipment("", "money")`))
 	c.Equal("Coin", names(`entity.findEquipment("coin", "MONEY")`))
 	c.Equal("", names(`entity.findEquipment("Trapped", "")`))
 	c.Equal("Coin", names(`entity.findEquipment("Bag", "")[0].children`))
 	c.Equal("Coin", names(`entity.findEquipment("Bag", "")[0].find("", "")`))
-}
-
-// entity.otherEquipment exposes the non-carried equipment list, the same way entity.equipment (covered by
-// TestScriptEquipmentWithoutQuantityIsHidden) exposes the carried one, and it filters out items with a
-// non-positive quantity too.
-func TestScriptEntityOtherEquipment(t *testing.T) {
-	c := check.New(t)
-	e := NewEntity()
-
-	other := NewEquipment(e, nil, false)
-	other.Name = "Spare Armor"
-	zeroQty := NewEquipment(e, nil, false)
-	zeroQty.Name = "Sold Off"
-	zeroQty.Quantity = 0
-	e.OtherEquipment = []*Equipment{other, zeroQty}
-	e.Recalculate()
-
-	resolve := func(expr string) string { return ResolveScript(e, ScriptSelfProvider{}, expr) }
-	c.Equal("1", resolve("entity.otherEquipment.length"))
-	c.Equal("Spare Armor", resolve("entity.otherEquipment[0].name"))
 }
 
 // TestScriptEquipmentKind verifies that a script can tell a group from a physical container, as it can tell trait

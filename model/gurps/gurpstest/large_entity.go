@@ -229,9 +229,9 @@ type largeEntityBuilder struct {
 // resolve through); the traits carry modifiers and the features behind the reactions, conditional modifiers and
 // weapon bonuses; the equipment is nested three deep with modifiers, some of it unequipped; the weapons default to
 // the weapon skills and sit on equipment, traits, skills and spells; traits and equipment carry grants of traits,
-// skills and spells; every few rows carry page references and local notes; and every fourth trait, piece of equipment
-// and note defines a nameable its text uses, some answered and some not, which the traits' and equipment's modifiers
-// share or are linked to, beside a marker that defines itself.
+// skills and spells; every few rows carry page references, local notes and title notes, with some modifiers shown in
+// the title; and every fourth trait, piece of equipment and note defines a nameable its text uses, some answered and
+// some not, which the traits' and equipment's modifiers share or are linked to, beside a marker that defines itself.
 func NewLargeEntity(size *LargeEntitySize) *gurps.Entity {
 	b := &largeEntityBuilder{entity: gurps.NewEntity(), size: *size}
 	b.size.PerContainer = max(1, b.size.PerContainer)
@@ -316,6 +316,7 @@ func (b *largeEntityBuilder) addTraits() {
 			t.Features = append(t.Features, bonus)
 		}
 		t.Features = append(t.Features, largeEntityTraitFeature(i)...)
+		t.Features = append(t.Features, largeEntityTitleNotes(i)...)
 		container.Children = append(container.Children, t)
 		b.traits = append(b.traits, t)
 	}
@@ -431,13 +432,26 @@ func largeEntityTraitFeature(i int) []gurps.Feature {
 	}
 }
 
+// largeEntityTitleNotes returns the title note every fourth row carries, placed before the row's built-in notes in
+// every eighth.
+func largeEntityTitleNotes(i int) []gurps.Feature {
+	if i%4 != 0 {
+		return nil
+	}
+	note := gurps.NewTitleNote()
+	note.Text = fmt.Sprintf("Note %d", i%3+1)
+	note.BeforeBuiltIn = i%8 == 0
+	return []gurps.Feature{note}
+}
+
 // traitModifiers returns the two modifiers every trait carries, the second of which is disabled. The modifier of
 // every tenth trait is what carries that trait's weapon bonus, so that the bonuses reached through modifiers are
-// collected too.
+// collected too, and that of every fifth is shown in the trait's title.
 func (b *largeEntityBuilder) traitModifiers(i int) []*gurps.TraitModifier {
 	first := gurps.NewTraitModifier(b.entity, nil, false)
 	first.Name = fmt.Sprintf("Modifier %d", i%5+1)
 	first.CostAdj = []string{"+10%", "-20%", "+50%", "-10%", "+100%"}[i%5]
+	first.ShowInTitle = i%5 == 0
 	if i%10 == 1 {
 		bonus := gurps.NewWeaponBonus(feature.WeaponBonus)
 		bonus.NameCriteria.Qualifier = largeEntityWeaponSkills[i/10%4].name
@@ -460,6 +474,7 @@ func (b *largeEntityBuilder) addSkills() {
 			b.entity.Skills = append(b.entity.Skills, container)
 		}
 		sk.PageRef, sk.LocalNotes = b.nextRow()
+		sk.Features = append(sk.Features, largeEntityTitleNotes(len(b.skills))...)
 		sk.SetParent(container)
 		container.Children = append(container.Children, sk)
 		b.skills = append(b.skills, sk)
@@ -555,6 +570,7 @@ func (b *largeEntityBuilder) addSpells() {
 			parent.Children = append(parent.Children, subs[college])
 		}
 		s.PageRef, s.LocalNotes = b.nextRow()
+		s.Features = append(s.Features, largeEntityTitleNotes(len(b.spells))...)
 		s.SetParent(subs[college])
 		subs[college].Children = append(subs[college].Children, s)
 		b.spells = append(b.spells, s)
@@ -621,6 +637,7 @@ func (b *largeEntityBuilder) addEquipment(count int, carried bool) {
 		item := gurps.NewEquipment(b.entity, mid, false)
 		item.Name = fmt.Sprintf("Item %d", i+1)
 		item.PageRef, item.LocalNotes = b.nextRow()
+		item.Features = largeEntityTitleNotes(i)
 		item.Quantity = fxp.FromInteger(i%3 + 1)
 		item.BaseValue = strconv.Itoa(10 * (i%20 + 1))
 		item.BaseWeight = fmt.Sprintf("%g lb", 0.25*float64(i%8+1))
@@ -668,11 +685,12 @@ func (b *largeEntityBuilder) addEquipmentNameables(item *gurps.Equipment, i int)
 }
 
 // equipmentModifiers returns the two modifiers every other piece of equipment carries: one that alters its cost and
-// weight, and one that alters its weapons through a feature.
+// weight, shown in the title of every fourth piece, and one that alters its weapons through a feature.
 func (b *largeEntityBuilder) equipmentModifiers(i int) []*gurps.EquipmentModifier {
 	first := gurps.NewEquipmentModifier(b.entity, nil, false)
 	first.Name = []string{"Fine", "Cheap", "Good", "Ornate"}[i%4]
 	first.CostAmount = []string{"+300%", "-60%", "+100%", "+1000%"}[i%4]
+	first.ShowInTitle = i%4 == 0
 	if i%4 == 0 {
 		first.WeightAmount = "-10%"
 	}

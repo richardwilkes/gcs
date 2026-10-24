@@ -41,7 +41,9 @@ func TestPDFTextPosBefore(t *testing.T) {
 
 // TestPDFSelectionRangeFor pins what each page contributes to a selection. A page in the middle of a multi-page
 // selection contributes all of its text, so until its length is known there is no answer, which makes drawing and
-// copying wait for the extraction rather than treat the page as empty.
+// copying wait for the extraction rather than treat the page as empty. The caller puts the endpoints in document order,
+// as orderedSelection does; a backwards pair puts every page outside the selection rather than inventing a plausible
+// but wrong range.
 func TestPDFSelectionRangeFor(t *testing.T) {
 	// A length that is known for every page but the one nobody has extracted yet. The pages are given different
 	// lengths, so a range that came from the wrong page would show up as the wrong number.
@@ -114,6 +116,26 @@ func TestPDFSelectionRangeFor(t *testing.T) {
 			lo:   pdfTextPos{page: 1, index: 20}, hi: pdfTextPos{page: 3, index: 60},
 			page: 3, wantStart: 0, wantEnd: 60, wantOK: true,
 		},
+		{
+			name: "a reversed pair contributes nothing before its endpoints",
+			lo:   pdfTextPos{page: 2, index: 60}, hi: pdfTextPos{page: 1, index: 20},
+			page: 0, wantStart: 0, wantEnd: 0, wantOK: true,
+		},
+		{
+			name: "a reversed pair contributes nothing on its hi endpoint's page",
+			lo:   pdfTextPos{page: 2, index: 60}, hi: pdfTextPos{page: 1, index: 20},
+			page: 1, wantStart: 0, wantEnd: 0, wantOK: true,
+		},
+		{
+			name: "a reversed pair contributes nothing on its lo endpoint's page",
+			lo:   pdfTextPos{page: 2, index: 60}, hi: pdfTextPos{page: 1, index: 20},
+			page: 2, wantStart: 0, wantEnd: 0, wantOK: true,
+		},
+		{
+			name: "a reversed pair contributes nothing on an unextracted page after its endpoints",
+			lo:   pdfTextPos{page: 2, index: 60}, hi: pdfTextPos{page: 1, index: 20},
+			page: 3, wantStart: 0, wantEnd: 0, wantOK: true,
+		},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			start, end, ok := pdfSelectionRangeFor(tc.lo, tc.hi, tc.page, lengthOf)
@@ -122,27 +144,6 @@ func TestPDFSelectionRangeFor(t *testing.T) {
 					tc.hi, start, end, ok, tc.wantStart, tc.wantEnd, tc.wantOK)
 			}
 		})
-	}
-}
-
-// TestPDFSelectionRangeForOrderedByCaller pins that the caller is responsible for putting the endpoints in document
-// order, which is what orderedSelection does before this is reached. Handed a backwards pair, the function reports the
-// whole document as outside the selection rather than inventing a range, so a mistake there can't quietly produce a
-// plausible-looking but wrong selection.
-func TestPDFSelectionRangeForOrderedByCaller(t *testing.T) {
-	lengthOf := func(_ int) (int, bool) {
-		t.Helper()
-		t.Error("the length of a page outside the selection was asked for")
-		return 0, true
-	}
-	lo := pdfTextPos{page: 2, index: 60}
-	hi := pdfTextPos{page: 1, index: 20}
-	for _, pageNumber := range []int{0, 1, 2, 3} {
-		start, end, ok := pdfSelectionRangeFor(lo, hi, pageNumber, lengthOf)
-		if start != 0 || end != 0 || !ok {
-			t.Errorf("page %d of the reversed selection is [%d,%d) ok=%v, want an empty, known range", pageNumber,
-				start, end, ok)
-		}
 	}
 }
 

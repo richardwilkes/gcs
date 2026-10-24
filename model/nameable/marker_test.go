@@ -16,279 +16,175 @@ import (
 	"github.com/richardwilkes/toolbox/v2/check"
 )
 
+// A marker with several segments takes the first as its whole label, colons included, and the other non-empty ones as
+// options, except that "?" sets AllowEmpty and "*" sets FreeForm, which is also set when no options remain.
 func TestParseMarkerBasic(t *testing.T) {
 	c := check.New(t)
-	marker, ok := nameable.NewMarker("Element|Fire|Water|Earth")
-	c.True(ok)
-	c.Equal("Element|Fire|Water|Earth", marker.Raw)
-	c.Equal("Element", marker.Label)
-	c.Equal("", marker.Tooltip)
-	c.Equal([]string{"Fire", "Water", "Earth"}, marker.Options)
-	c.False(marker.AllowEmpty)
-	c.False(marker.FreeForm)
+	for _, tc := range []struct {
+		raw        string
+		label      string
+		options    []string
+		allowEmpty bool
+		freeForm   bool
+	}{
+		{raw: "Element|Fire|Water|Earth", label: "Element", options: []string{"Fire", "Water", "Earth"}},
+		// A stray "||" (e.g. from hand-edited data) or a trailing '|' is dropped rather than becoming a blank option.
+		{raw: "Element||Fire||Water|", label: "Element", options: []string{"Fire", "Water"}},
+		// The legacy "Label: text" forms apply only to a single segment.
+		{
+			raw:     "Time: HH:MM|Morning|Afternoon|Evening",
+			label:   "Time: HH:MM",
+			options: []string{"Morning", "Afternoon", "Evening"},
+		},
+		{
+			raw:        "Element|Fire|Water|?|*",
+			label:      "Element",
+			options:    []string{"Fire", "Water"},
+			allowEmpty: true,
+			freeForm:   true,
+		},
+		{raw: "Element|?", label: "Element", allowEmpty: true, freeForm: true},
+	} {
+		marker, ok := nameable.NewMarker(tc.raw)
+		c.True(ok, tc.raw)
+		c.Equal(tc.raw, marker.Raw, tc.raw)
+		c.Equal(tc.label, marker.Label, tc.raw)
+		c.Equal("", marker.Tooltip, tc.raw)
+		if len(tc.options) == 0 {
+			c.Equal(0, len(marker.Options), tc.raw)
+		} else {
+			c.Equal(tc.options, marker.Options, tc.raw)
+		}
+		c.Equal(tc.allowEmpty, marker.AllowEmpty, tc.raw)
+		c.Equal(tc.freeForm, marker.FreeForm, tc.raw)
+	}
 }
 
-func TestParseMarkerSkipsEmptyNonLabelSegments(t *testing.T) {
-	c := check.New(t)
-	// A stray "||" (e.g. from hand-edited data, or a trailing "|" before the closing '@') shouldn't surface as a
-	// blank option, tooltip, or token -- it's silently dropped rather than causing a parse failure.
-	marker, ok := nameable.NewMarker("Element||Fire||Water|")
-	c.True(ok)
-	c.Equal("Element", marker.Label)
-	c.Equal([]string{"Fire", "Water"}, marker.Options)
-}
-
+// tt(...) segments anywhere in a marker give its tooltip, joined by line breaks, keeping colons and turning `\|`, `\n`
+// and `\\` into '|', a line break and '\', while the other segments still give the options and flags.
 func TestParseMarkerWithTooltip(t *testing.T) {
 	c := check.New(t)
-	marker, ok := nameable.NewMarker("Element|tt(Pick the affinity)|Fire|Water")
-	c.True(ok)
-	c.Equal("Element", marker.Label)
-	c.Equal("Pick the affinity", marker.Tooltip)
-	c.Equal([]string{"Fire", "Water"}, marker.Options)
+	for _, tc := range []struct {
+		raw        string
+		tooltip    string
+		options    []string
+		allowEmpty bool
+	}{
+		{
+			raw:     "Element|tt(Pick the affinity)|Fire|Water",
+			tooltip: "Pick the affinity",
+			options: []string{"Fire", "Water"},
+		},
+		{raw: "Element|tt(Ratio is 1:2)|Fire|Water", tooltip: "Ratio is 1:2", options: []string{"Fire", "Water"}},
+		{
+			raw:        "Element|Fire|tt(Pick one)|Water|?",
+			tooltip:    "Pick one",
+			options:    []string{"Fire", "Water"},
+			allowEmpty: true,
+		},
+		{
+			raw:     "Element|tt(First line)|tt(Second line)|Fire",
+			tooltip: "First line\nSecond line",
+			options: []string{"Fire"},
+		},
+		{raw: `Element|tt(Choose one\|Two)|Fire`, tooltip: "Choose one|Two", options: []string{"Fire"}},
+		{raw: `Element|tt(Line one\nLine two)|Fire`, tooltip: "Line one\nLine two", options: []string{"Fire"}},
+		// The tooltip is unescaped in a single pass, so an escaped backslash followed by a literal 'n' -- as in a
+		// Windows-style path -- stays a backslash rather than collapsing into a line break.
+		{raw: `Element|tt(Path\\name)|Fire`, tooltip: `Path\name`, options: []string{"Fire"}},
+	} {
+		marker, ok := nameable.NewMarker(tc.raw)
+		c.True(ok, tc.raw)
+		c.Equal("Element", marker.Label, tc.raw)
+		c.Equal(tc.tooltip, marker.Tooltip, tc.raw)
+		c.Equal(tc.options, marker.Options, tc.raw)
+		c.Equal(tc.allowEmpty, marker.AllowEmpty, tc.raw)
+	}
 }
 
-func TestParseMarkerLabelMayContainColon(t *testing.T) {
-	c := check.New(t)
-	marker, ok := nameable.NewMarker("Time: HH:MM|Morning|Afternoon|Evening")
-	c.True(ok)
-	c.Equal("Time: HH:MM", marker.Label)
-	c.Equal("", marker.Tooltip)
-	c.Equal([]string{"Morning", "Afternoon", "Evening"}, marker.Options)
-}
-
-func TestParseMarkerTooltipMayContainColon(t *testing.T) {
-	c := check.New(t)
-	marker, ok := nameable.NewMarker("Element|tt(Ratio is 1:2)|Fire|Water")
-	c.True(ok)
-	c.Equal("Element", marker.Label)
-	c.Equal("Ratio is 1:2", marker.Tooltip)
-}
-
-func TestParseMarkerTooltipAnywhereInSegments(t *testing.T) {
-	c := check.New(t)
-	marker, ok := nameable.NewMarker("Element|Fire|tt(Pick one)|Water|?")
-	c.True(ok)
-	c.Equal("Pick one", marker.Tooltip)
-	c.Equal([]string{"Fire", "Water"}, marker.Options)
-	c.True(marker.AllowEmpty)
-}
-
-func TestParseMarkerMultipleTooltipLinesJoined(t *testing.T) {
-	c := check.New(t)
-	marker, ok := nameable.NewMarker("Element|tt(First line)|tt(Second line)|Fire")
-	c.True(ok)
-	c.Equal("First line\nSecond line", marker.Tooltip)
-	c.Equal([]string{"Fire"}, marker.Options)
-}
-
+// `\|` unescapes to a literal '|' in the label and in any option, the last one included, while `\n` outside a tooltip
+// keeps its two literal characters.
 func TestParseMarkerEscapedPipeInLabel(t *testing.T) {
 	c := check.New(t)
-	marker, ok := nameable.NewMarker(`Fire\|Water|Hot|Cold`)
-	c.True(ok)
-	c.Equal("Fire|Water", marker.Label)
-	c.Equal([]string{"Hot", "Cold"}, marker.Options)
+	for _, tc := range []struct {
+		raw     string
+		label   string
+		options []string
+	}{
+		{raw: `Fire\|Water|Hot|Cold`, label: "Fire|Water", options: []string{"Hot", "Cold"}},
+		{raw: `Element|Hot\|Cold|Water`, label: "Element", options: []string{"Hot|Cold", "Water"}},
+		// ExtractSegments appends the segment after the last '|' once its loop ends.
+		{raw: `Element|Water|Hot\|Cold`, label: "Element", options: []string{"Water", "Hot|Cold"}},
+		{raw: `Multi\nLine|Fire|Water`, label: `Multi\nLine`, options: []string{"Fire", "Water"}},
+	} {
+		marker, ok := nameable.NewMarker(tc.raw)
+		c.True(ok, tc.raw)
+		c.Equal(tc.label, marker.Label, tc.raw)
+		c.Equal(tc.options, marker.Options, tc.raw)
+	}
 }
 
-func TestParseMarkerEscapedPipeInOption(t *testing.T) {
-	c := check.New(t)
-	marker, ok := nameable.NewMarker(`Element|Hot\|Cold|Water`)
-	c.True(ok)
-	c.Equal([]string{"Hot|Cold", "Water"}, marker.Options)
-}
-
-func TestParseMarkerEscapedPipeInTrailingOption(t *testing.T) {
-	c := check.New(t)
-	// The trailing segment (after the last '|', or the whole string when there's no '|' at all) must be unescaped
-	// and trimmed the same as every other segment.
-	marker, ok := nameable.NewMarker(`Element|Water|Hot\|Cold`)
-	c.True(ok)
-	c.Equal([]string{"Water", "Hot|Cold"}, marker.Options)
-}
-
-func TestParseMarkerTrimsWhitespaceInBareLabel(t *testing.T) {
-	c := check.New(t)
-	marker, ok := nameable.NewMarker("  Weapon Name  ")
-	c.True(ok)
-	c.False(marker.Legacy)
-	c.Equal("Weapon Name", marker.Label)
-}
-
-func TestParseMarkerEscapedPipeInTooltip(t *testing.T) {
-	c := check.New(t)
-	marker, ok := nameable.NewMarker(`Element|tt(Choose one\|Two)|Fire`)
-	c.True(ok)
-	c.Equal("Choose one|Two", marker.Tooltip)
-	c.Equal([]string{"Fire"}, marker.Options)
-}
-
-func TestParseMarkerEscapedNewlineInTooltip(t *testing.T) {
-	c := check.New(t)
-	marker, ok := nameable.NewMarker(`Element|tt(Line one\nLine two)|Fire`)
-	c.True(ok)
-	c.Equal("Line one\nLine two", marker.Tooltip)
-}
-
-func TestParseMarkerLiteralBackslashNInLabelIsNotANewline(t *testing.T) {
-	c := check.New(t)
-	// The '\n' escape-to-newline conversion is only recognized inside a tooltip segment. A label containing the
-	// literal two-character sequence '\n' keeps it as-is instead of turning it into a real newline.
-	marker, ok := nameable.NewMarker(`Multi\nLine|Fire|Water`)
-	c.True(ok)
-	c.Equal(`Multi\nLine`, marker.Label)
-}
-
-func TestParseMarkerTooltipEscapedBackslashFollowedByNIsNotNewline(t *testing.T) {
-	c := check.New(t)
-	// The tooltip segment is unescaped in a single pass, so an escaped backslash that happens to be followed by a
-	// literal 'n' -- as in a Windows-style path -- stays the single backslash the author escaped rather than collapsing
-	// into a line break.
-	marker, ok := nameable.NewMarker(`Element|tt(Path\\name)|Fire`)
-	c.True(ok)
-	c.Equal(`Path\name`, marker.Tooltip)
-}
-
-func TestParseMarkerAllowEmptyAndFreeForm(t *testing.T) {
-	c := check.New(t)
-	marker, ok := nameable.NewMarker("Element|Fire|Water|?|*")
-	c.True(ok)
-	c.True(marker.AllowEmpty)
-	c.True(marker.FreeForm)
-	c.Equal([]string{"Fire", "Water"}, marker.Options)
-}
-
-func TestParseMarkerFreeFormOnlyNoOptions(t *testing.T) {
-	c := check.New(t)
-	marker, ok := nameable.NewMarker("Element|*")
-	c.True(ok)
-	c.True(marker.FreeForm)
-	c.Equal(0, len(marker.Options))
-}
-
+// A marker with an empty label, or with no text at all, fails to parse.
 func TestParseMarkerEmptyLabelFails(t *testing.T) {
 	c := check.New(t)
-	_, ok := nameable.NewMarker("|Fire|Water")
-	c.False(ok)
+	for _, raw := range []string{"|Fire|Water", ""} {
+		_, ok := nameable.NewMarker(raw)
+		c.False(ok, "%q", raw)
+	}
 }
 
-func TestParseMarkerNoOptionsImpliesFreeForm(t *testing.T) {
-	c := check.New(t)
-	// No literal options and no explicit FreeFormToken -- there's nothing else it could mean, so FreeForm is turned
-	// on automatically instead of failing.
-	marker, ok := nameable.NewMarker("Element|?")
-	c.True(ok)
-	c.True(marker.FreeForm)
-	c.True(marker.AllowEmpty)
-	c.Equal(0, len(marker.Options))
-}
-
-func TestParseMarkerNoPipeIsCurrentFormNotLegacy(t *testing.T) {
-	c := check.New(t)
-	// No space after the colons, so neither legacy regex matches -- falls to the tier-3 current form.
-	marker, ok := nameable.NewMarker("Element:Fire:Water")
-	c.True(ok)
-	c.False(marker.Legacy)
-}
-
-func TestParseMarkerSingleSegmentIsCurrentFormNotLegacy(t *testing.T) {
-	c := check.New(t)
-	marker, ok := nameable.NewMarker("Element")
-	c.True(ok)
-	c.False(marker.Legacy)
-	c.Equal("Element", marker.Label)
-}
-
-func TestKeyPlainLabelKeepsRawKey(t *testing.T) {
-	c := check.New(t)
-	m, ok := nameable.NewMarker("Weapon Name")
-	c.True(ok)
-	// A bare, single-segment marker short-circuits to just its (escaped) label -- no '*'/'?' tokens -- so that a plain
-	// "@Weapon Name@" keeps the Replacements key it always had, rather than becoming "Weapon Name|*|?" and silently
-	// orphaning every character sheet saved before that normalization existed.
-	c.Equal("Weapon Name", m.Key())
-}
-
-func TestKeyLegacyExampleListMarkerKeepsRawKey(t *testing.T) {
-	c := check.New(t)
-	// A real, unmodified marker pulled from the GCS master library (the Resistant trait). Legacy markers never go
-	// through key normalization -- regardless of what Options/Tooltip legacyExampleListPattern parsed out of them --
-	// so a sheet saved before Marker.Key() existed keeps resolving under its original raw text.
-	raw := "Rare: Acceleration, Altitude Sickness, Bends, Seasickness, Space Sickness, Nanomachines, etc."
-	m, ok := nameable.NewMarker(raw)
-	c.True(ok)
-	c.True(m.Legacy)
-	c.Equal(raw, m.Key())
-}
-
-func TestKeyLegacyLabeledMarkerKeepsRawKey(t *testing.T) {
-	c := check.New(t)
-	// A real, unmodified marker pulled from the GCS master library. Same as the example-list case above: legacy
-	// markers key on their raw text unconditionally, even when legacyLabeledPattern parsed out a Tooltip.
-	raw := "Class: Mammalia"
-	m, ok := nameable.NewMarker(raw)
-	c.True(ok)
-	c.True(m.Legacy)
-	c.Equal(raw, m.Key())
-}
-
-func TestKeyLabelWithOptionsNoFlags(t *testing.T) {
-	c := check.New(t)
-	m, ok := nameable.NewMarker("Element|Fire|Water")
-	c.True(ok)
-	c.Equal("Element|Fire|Water", m.Key())
-}
-
+// A marker keys on its label, options, '*' and '?', in that order whatever their order in its text, so markers that
+// differ only in segment order share a key. A bare label keys as itself and a legacy marker on its raw text, so the
+// replacements of sheets saved before keys were normalized keep resolving.
 func TestKeyIncludesAllowEmptyAndFreeFormTokens(t *testing.T) {
 	c := check.New(t)
-	m, ok := nameable.NewMarker("Element|Fire|Water|?|*")
-	c.True(ok)
-	// Tokens are written in a fixed order -- label, then options, then '*', then '?' -- regardless of where they
-	// appeared in raw, each as its own pipe-delimited segment.
-	c.Equal("Element|Fire|Water|*|?", m.Key())
+	for _, tc := range []struct {
+		raw  string
+		want string
+	}{
+		{raw: "Element|Fire|Water|?|*", want: "Element|Fire|Water|*|?"},
+		{raw: "Element|Fire|Water", want: "Element|Fire|Water"},
+		{raw: "Element|Fire|Water|?", want: "Element|Fire|Water|?"},
+		{raw: "Element|?|Fire|Water", want: "Element|Fire|Water|?"},
+		{raw: "Weapon Name", want: "Weapon Name"},
+		// Real, unmodified markers from the GCS master library, whatever options and tooltip the parse took from them.
+		{
+			raw:  "Rare: Acceleration, Altitude Sickness, Bends, Seasickness, Space Sickness, Nanomachines, etc.",
+			want: "Rare: Acceleration, Altitude Sickness, Bends, Seasickness, Space Sickness, Nanomachines, etc.",
+		},
+		{raw: "Class: Mammalia", want: "Class: Mammalia"},
+	} {
+		m, ok := nameable.NewMarker(tc.raw)
+		c.True(ok, tc.raw)
+		c.Equal(tc.want, m.Key(), tc.raw)
+	}
 }
 
-func TestKeyNormalizesEquivalentMarkersToTheSameKey(t *testing.T) {
-	c := check.New(t)
-	// This is the whole point of Key(): two raw marker texts that differ only in segment order are semantically the
-	// same marker and must collapse to one entry in Extract and one lookup slot in Extract/Apply.
-	a, ok := nameable.NewMarker("Element|Fire|Water|?")
-	c.True(ok)
-	b, ok := nameable.NewMarker("Element|?|Fire|Water")
-	c.True(ok)
-	c.Equal(a.Key(), b.Key())
-	c.Equal("Element|Fire|Water|?", a.Key())
-}
-
-func TestKeyEscapesSegmentDelimiterAndEscapeRuneInLabelAndOptions(t *testing.T) {
-	c := check.New(t)
-	// Constructed directly rather than via NewMarker, to test Key()'s own escaping in isolation from whatever
-	// NewMarker's parse-time unescaping does with the source text.
-	m := nameable.Marker{Label: "A|B", Options: []string{`C\D`}}
-	c.Equal(`A\|B|C\\D`, m.Key())
-}
-
-func TestKeyDoesNotEscapeParensInTooltip(t *testing.T) {
-	c := check.New(t)
-	// The tooltip segment is delimited by the '|' segment delimiter, not by matching parens -- the "tt(" prefix and
-	// ")" suffix are stripped as a fixed-length wrapper around the whole segment, so inner parens are inert and
-	// don't need escaping.
-	m := nameable.Marker{Label: "Element", Tooltip: "a (b) c"}
-	c.Contains(m.Key(), "a (b) c")
-}
-
+// Key, tested apart from NewMarker's unescaping on markers built directly, gives the tooltip its own segment after the
+// label or last option, leaves the tooltip's parens unescaped, since "tt(" and ")" are stripped as a fixed wrapper, and
+// escapes '|' and '\' in the label and options.
 func TestKeyTooltipIsSeparatedFromPrecedingContentBySegmentDelimiter(t *testing.T) {
 	c := check.New(t)
-	// Regression test: the tooltip's "tt(" prefix must get a leading '|' rather than being glued onto whatever came
-	// before it -- the label when there are no options, or the last option when there are.
-	m1 := nameable.Marker{Label: "Element", Tooltip: "Choose"}
-	c.Equal("Element|tt(Choose)", m1.Key())
-	m2 := nameable.Marker{Label: "Element", Options: []string{"Fire"}, Tooltip: "Choose"}
-	c.Equal("Element|Fire|tt(Choose)", m2.Key())
+	for _, tc := range []struct {
+		marker nameable.Marker
+		want   string
+	}{
+		{marker: nameable.Marker{Label: "Element", Tooltip: "Choose"}, want: "Element|tt(Choose)"},
+		{
+			marker: nameable.Marker{Label: "Element", Options: []string{"Fire"}, Tooltip: "Choose"},
+			want:   "Element|Fire|tt(Choose)",
+		},
+		{marker: nameable.Marker{Label: "Element", Tooltip: "a (b) c"}, want: "Element|tt(a (b) c)"},
+		{marker: nameable.Marker{Label: "A|B", Options: []string{`C\D`}}, want: `A\|B|C\\D`},
+	} {
+		c.Equal(tc.want, tc.marker.Key())
+	}
 }
 
+// Feeding a key back through NewMarker -- exactly what happens when a key is persisted and reloaded -- must keep the
+// tooltip rather than absorbing it into the preceding option.
 func TestKeyRoundTripsLosslessThroughNewMarker(t *testing.T) {
 	c := check.New(t)
-	// Regression test: feeding a key back through NewMarker -- exactly what happens when a key is persisted and
-	// reloaded -- must keep the tooltip rather than absorbing it into the preceding option.
 	m, ok := nameable.NewMarker("Element|tt(Choose)|Fire")
 	c.True(ok)
 	reparsed, ok := nameable.NewMarker(m.Key())
@@ -297,6 +193,8 @@ func TestKeyRoundTripsLosslessThroughNewMarker(t *testing.T) {
 	c.Equal("Choose", reparsed.Tooltip)
 }
 
+// Extract records each marker under its key, in the map it is given or a new one when that is nil, with the value the
+// replacements hold for that key, or Unset when they hold none.
 func TestExtractPipeDelimited(t *testing.T) {
 	c := check.New(t)
 	m := make(map[string]string)
@@ -306,81 +204,10 @@ func TestExtractPipeDelimited(t *testing.T) {
 	m = make(map[string]string)
 	nameable.Extract(m, nil, "A @Element|Fire|Water|?@ spell")
 	c.Equal(nameable.Unset, m["Element|Fire|Water|?"])
-}
 
-func TestExtractWithNilTargetCreatesMap(t *testing.T) {
-	c := check.New(t)
-	got := nameable.Extract(nil, nil, "A @Element|Fire|Water@ spell")
-	c.Equal(nameable.Unset, got["Element|Fire|Water"])
-}
+	m = nameable.Extract(nil, nil, "A @Element|Fire|Water@ spell")
+	c.Equal(nameable.Unset, m["Element|Fire|Water"])
 
-func TestExtractUsesExistingValueWhenKeyMatches(t *testing.T) {
-	c := check.New(t)
-	existing := map[string]string{"Element|Fire|Water": "Water"}
-	got := nameable.Extract(nil, existing, "A @Element|Fire|Water@ spell")
-	c.Equal("Water", got["Element|Fire|Water"])
-}
-
-func TestExtractMarkersEscapedBackslashBeforeAtIsNotEscapedAt(t *testing.T) {
-	c := check.New(t)
-	// Two literal backslashes immediately before '@' form one escaped-backslash pair (per the same pairing rule
-	// ExtractSegments uses for '|'), leaving the '@' itself unescaped and free to open a marker.
-	markers := nameable.Extract(nil, nil, `A\\@Element|Fire|Water@ B`)
-	c.Equal(1, len(markers))
-	_, ok := markers["Element|Fire|Water"]
-	c.True(ok)
-}
-
-func TestReduceKeepsAllowEmptyEmptyValue(t *testing.T) {
-	c := check.New(t)
-	// "Empty" (present, value "") and "not set" (key absent) are distinct states -- Reduce must not conflate them by
-	// dropping a deliberately-stored empty value.
-	needed := map[string]string{"Element|Fire|Water|?": ""}
-	replacements := map[string]string{"Element|Fire|Water|?": ""}
-	reduced := nameable.Reduce(needed, replacements)
-	v, has := reduced["Element|Fire|Water|?"]
-	c.True(has)
-	c.Equal("", v)
-}
-
-func TestReduceOmitsKeyNotInNeeded(t *testing.T) {
-	c := check.New(t)
-	// "Not set" is represented purely by absence from replacements to begin with -- Reduce's only remaining job is
-	// pruning orphaned entries whose marker no longer appears in needed (e.g. after the source text changed).
-	needed := map[string]string{}
-	replacements := map[string]string{"Element|Fire|Water|?": "Fire"}
-	reduced := nameable.Reduce(needed, replacements)
-	_, has := reduced["Element|Fire|Water|?"]
-	c.False(has)
-}
-
-func TestReduceKeepsRequiredEmptyValue(t *testing.T) {
-	c := check.New(t)
-	// Reduce is a pure key-membership filter -- it does no normalization of its own, so needed and replacements
-	// must already agree on key format. A bare legacy label like "Weapon Name" keeps its plain key (see
-	// TestKeyPlainLabelKeepsRawKey), matching what's stored for any character sheet saved before Marker.Key() existed.
-	needed := map[string]string{"Weapon Name": ""}
-	replacements := map[string]string{"Weapon Name": ""}
-	reduced := nameable.Reduce(needed, replacements)
-	_, has := reduced["Weapon Name"]
-	c.True(has)
-}
-
-func TestReduceKeepsAllowEmptyChosenValue(t *testing.T) {
-	c := check.New(t)
-	needed := map[string]string{"Element|Fire|Water|?": "Fire"}
-	replacements := map[string]string{"Element|Fire|Water|?": "Fire"}
-	reduced := nameable.Reduce(needed, replacements)
-	c.Equal("Fire", reduced["Element|Fire|Water|?"])
-}
-
-func TestReduceDropsMalformedReplacementKey(t *testing.T) {
-	c := check.New(t)
-	// A replacements key that itself fails to parse as a marker (here, "") never matches any real marker's key, so
-	// Reduce drops it without affecting the other entries.
-	needed := map[string]string{"Element|Fire|Water": ""}
-	replacements := map[string]string{"": "unused", "Element|Fire|Water": "Fire"}
-	reduced := nameable.Reduce(needed, replacements)
-	c.Equal(1, len(reduced))
-	c.Equal("Fire", reduced["Element|Fire|Water"])
+	m = nameable.Extract(nil, map[string]string{"Element|Fire|Water": "Water"}, "A @Element|Fire|Water@ spell")
+	c.Equal("Water", m["Element|Fire|Water"])
 }

@@ -504,6 +504,7 @@ func (p *prereqPanel) editor(pr gurps.Prereq, path string) *unison.Panel {
 		p.tagsChip(chips, path, &one.TagsCriteria)
 		p.textChip(chips, path, "notes", &one.NotesCriteria)
 		p.modifierChips(chips, path, &one.ModifierCriteria)
+		p.textChip(chips, path, "titlenote", &one.TitleNoteCriteria)
 	case *gurps.SkillPrereq:
 		p.hasPopup(fields, key("has"), &one.Has, false)
 		p.typePopup(fields, path, pr)
@@ -511,6 +512,7 @@ func (p *prereqPanel) editor(pr gurps.Prereq, path string) *unison.Panel {
 			true)
 		p.textChip(chips, path, "specialization", &one.SpecializationCriteria)
 		p.textChip(chips, path, "optspecialization", &one.OptionalSpecializationCriteria)
+		p.textChip(chips, path, "titlenote", &one.TitleNoteCriteria)
 		// Unlike a trait's, "at least 0" is a real criterion here, leaving out skills with no usable level.
 		p.numberChip(chips, path, "level", &one.LevelCriteria, 0, fxp.Thousand,
 			one.LevelCriteria.Compare != criteria.AnyNumber)
@@ -578,6 +580,7 @@ func (p *prereqPanel) editor(pr gurps.Prereq, path string) *unison.Panel {
 			true)
 		p.tagsChip(chips, path, &one.TagsCriteria)
 		p.modifierChips(chips, path, &one.ModifierCriteria)
+		p.textChip(chips, path, "titlenote", &one.TitleNoteCriteria)
 	case *gurps.ContainedQuantityPrereq:
 		p.hasPopup(fields, key("has"), &one.Has, false)
 		p.typePopup(fields, path, pr)
@@ -768,26 +771,29 @@ func (p *prereqPanel) createPrereqForType(t prereq.Type, parent *gurps.PrereqLis
 	return one.Clone(parent)
 }
 
-// prereqHandOn holds what of a prerequisite survives a change of its type, each part nil when it has none: its name
-// and tags criteria, its modifier criteria, and whether it is to be had, which a prerequisite that stores whether it is
+// prereqHandOn holds what of a prerequisite survives a change of its type, each part nil when it has none: its name,
+// tags, title note and modifier criteria, and whether it is to be had, which a prerequisite that stores whether it is
 // not to be had marks as negated.
 type prereqHandOn struct {
-	name, tags *criteria.Text
-	modifiers  *gurps.ModifierCriteria
-	has        *bool
-	negated    bool
+	name, tags, titleNote *criteria.Text
+	modifiers             *gurps.ModifierCriteria
+	has                   *bool
+	negated               bool
 }
 
 func handOnOf(pr gurps.Prereq) prereqHandOn {
 	switch one := pr.(type) {
 	case *gurps.TraitPrereq:
-		return prereqHandOn{name: &one.NameCriteria, tags: &one.TagsCriteria, modifiers: &one.ModifierCriteria, has: &one.Has}
+		return prereqHandOn{
+			name: &one.NameCriteria, tags: &one.TagsCriteria, titleNote: &one.TitleNoteCriteria,
+			modifiers: &one.ModifierCriteria, has: &one.Has,
+		}
 	case *gurps.SkillPrereq:
-		return prereqHandOn{name: &one.NameCriteria, tags: &one.TagsCriteria, has: &one.Has}
+		return prereqHandOn{name: &one.NameCriteria, tags: &one.TagsCriteria, titleNote: &one.TitleNoteCriteria, has: &one.Has}
 	case *gurps.EquippedEquipmentPrereq:
 		return prereqHandOn{
-			name: &one.NameCriteria, tags: &one.TagsCriteria, modifiers: &one.ModifierCriteria, has: &one.Not,
-			negated: true,
+			name: &one.NameCriteria, tags: &one.TagsCriteria, titleNote: &one.TitleNoteCriteria,
+			modifiers: &one.ModifierCriteria, has: &one.Not, negated: true,
 		}
 	case *gurps.SpellPrereq:
 		if one.SubType == spellcmp.Name {
@@ -812,6 +818,9 @@ func (h prereqHandOn) take(from prereqHandOn) {
 	}
 	if h.tags != nil && from.tags != nil {
 		*h.tags = *from.tags
+	}
+	if h.titleNote != nil && from.titleNote != nil {
+		*h.titleNote = *from.titleNote
 	}
 	if h.modifiers != nil && from.modifiers != nil {
 		*h.modifiers = *from.modifiers

@@ -88,31 +88,50 @@ func TestWeightedRowLayoutDividesByWeight(t *testing.T) {
 	c.Equal(geom.NewRect(75.5, 0, 24.5, 40), children[2].FrameRect())
 }
 
+// Dividing a row by weight never makes a child narrower than the floor, taking what pinning one there costs from the
+// others, and pays no attention to the width a child's content asks for: a block that could not be made narrower than
+// its content could not be resized at all. The page lists are exactly that case: their tables re-fit their columns to
+// whatever width they are given, so what they ask for is always the width they already have.
 func TestWeightedRowLayoutPinsToTheFloor(t *testing.T) {
 	c := check.New(t)
-	row, layout := newTestRow([]fxp.Int{fxp.FromInteger(10), fxp.One}, 0,
-		newSizedPanel(0, 10, 30),
-		newSizedPanel(0, 10, 30))
-	widths := layout.widths(len(row.Children()), 100)
-	c.Equal([]float32{99 - layoutMinBlockWidth, layoutMinBlockWidth}, widths,
-		"the second child is pinned at the floor and the first gets the rest")
-	c.Equal(float32(99), widths[0]+widths[1], "the widths must add up to the space less the spacing")
-}
-
-// A block that could not be made narrower than its content could not be resized at all. The page lists are exactly
-// that case: their tables re-fit their columns to whatever width they are given, so what they ask for is always the
-// width they already have.
-func TestWeightedRowLayoutIgnoresTheWidthItsContentWants(t *testing.T) {
-	c := check.New(t)
-	row, layout := newTestRow([]fxp.Int{fxp.One, fxp.One}, 0,
-		newSizedPanel(50, 50, 30),
-		newSizedPanel(50, 50, 30))
-	widths := layout.widths(len(row.Children()), 101)
-	c.Equal([]float32{50, 50}, widths, "an even split gives each child exactly the width its content asked for")
-
-	layout.weights = []fxp.Int{fxp.Three, fxp.One}
-	widths = layout.widths(len(row.Children()), 101)
-	c.Equal([]float32{75, 25}, widths, "changing the weights must re-proportion the row regardless of the content")
+	for _, tc := range []struct {
+		weights             []fxp.Int
+		minWidth, prefWidth float32
+		width               float32
+		want                []float32
+		msg                 string
+	}{
+		{
+			weights:   []fxp.Int{fxp.FromInteger(10), fxp.One},
+			prefWidth: 10,
+			width:     100,
+			want:      []float32{99 - layoutMinBlockWidth, layoutMinBlockWidth},
+			msg:       "the second child is pinned at the floor and the first gets the rest",
+		},
+		{
+			weights:   []fxp.Int{fxp.One, fxp.One},
+			minWidth:  50,
+			prefWidth: 50,
+			width:     101,
+			want:      []float32{50, 50},
+			msg:       "an even split gives each child exactly the width its content asked for",
+		},
+		{
+			weights:   []fxp.Int{fxp.Three, fxp.One},
+			minWidth:  50,
+			prefWidth: 50,
+			width:     101,
+			want:      []float32{75, 25},
+			msg:       "changing the weights must re-proportion the row regardless of the content",
+		},
+	} {
+		row, layout := newTestRow(tc.weights, 0,
+			newSizedPanel(tc.minWidth, tc.prefWidth, 30),
+			newSizedPanel(tc.minWidth, tc.prefWidth, 30))
+		widths := layout.widths(len(row.Children()), tc.width)
+		c.Equal(tc.want, widths, tc.msg)
+		c.Equal(tc.width-1, widths[0]+widths[1], "the widths must add up to the space less the spacing")
+	}
 }
 
 // A row that cannot fit even the narrowest each of its children may be hands out that width anyway, running off the
@@ -130,6 +149,9 @@ func TestWeightedRowLayoutOverflowsWhenTheFloorsDoNotFit(t *testing.T) {
 		"the row's minimum width is the floor of each of its children, plus the spacing")
 }
 
+// The row is as tall as its tallest child, or as a child's own minimum height or the row's when either is taller. A
+// child that wraps its content is asked how tall it is at the width the row gives it, not at whatever width it would
+// have chosen for itself.
 func TestWeightedRowLayoutHeightIsTheTallestChild(t *testing.T) {
 	c := check.New(t)
 	tall := newSizedPanel(0, 10, 50)
@@ -150,15 +172,10 @@ func TestWeightedRowLayoutHeightIsTheTallestChild(t *testing.T) {
 	tall.SetLayoutData(&unison.FlexLayoutData{})
 	_, prefSize, _ = layout.LayoutSizes(row, geom.NewSize(100, 0))
 	c.Equal(float32(50), prefSize.Height, "the row is back to the height of its tallest child")
-}
 
-// A child that wraps its content must be asked how tall it is at the width the row gives it, not at whatever width it
-// would have chosen for itself.
-func TestWeightedRowLayoutMeasuresHeightAtTheGivenWidth(t *testing.T) {
-	c := check.New(t)
 	wrapping := newMeasuredPanel(0, 200, func(width float32) float32 { return 4000 / width })
-	row, layout := newTestRow([]fxp.Int{fxp.One, fxp.One}, 0, wrapping, newSizedPanel(0, 10, 10))
-	_, prefSize, _ := layout.LayoutSizes(row, geom.NewSize(101, 0))
+	row, layout = newTestRow([]fxp.Int{fxp.One, fxp.One}, 0, wrapping, newSizedPanel(0, 10, 10))
+	_, prefSize, _ = layout.LayoutSizes(row, geom.NewSize(101, 0))
 	c.Equal(float32(80), prefSize.Height, "the wrapping child is measured at the 50 pixels it is given")
 }
 
@@ -177,81 +194,84 @@ func TestWeightedRowLayoutWithoutAWidthUsesPreferredWidths(t *testing.T) {
 }
 
 // A square child is given the width that makes its content -- its frame less its border insets -- as wide as the row
-// is tall less those insets; the row is as tall as the child beside it, and what is left over goes to that child.
-func TestWeightedRowLayoutSquareChildTakesItsWidthFromTheHeight(t *testing.T) {
-	c := check.New(t)
-	square := newSquareTestPanel(30)
-	tall := newSizedPanel(0, 10, 80)
-	row, layout := newTestSquareRow([]fxp.Int{fxp.One, fxp.One}, []bool{true, false}, square, tall)
-	widths, height := layout.arrange(row.Children(), 200)
-	c.Equal(float32(80), height, "the row is as tall as the child that isn't square")
-	c.Equal(80-squareTestInsets.Height()+squareTestInsets.Width(), widths[0],
-		"the square child's width is the row's height, less the insets above and below its content and plus the ones "+
-			"either side of it")
-	c.Equal(199-widths[0], widths[1], "everything the square child didn't take goes to the other child")
-
-	_, prefSize, _ := layout.LayoutSizes(row, geom.NewSize(200, 0))
-	c.Equal(float32(80), prefSize.Height, "the row reports the height its square child was measured against")
-	c.Equal(float32(200), prefSize.Width, "the widths still add up to the space the row was given")
-
-	row.SetFrameRect(geom.NewRect(0, 0, 200, prefSize.Height))
-	layout.PerformLayout(row)
-	c.Equal(geom.NewRect(0, 0, widths[0], 80), square.FrameRect(), "placing the children must agree with measuring them")
-	content := square.ContentRect(false).Size
-	c.Equal(content.Height, content.Width, "the square child's content must come out square")
-}
-
-func TestWeightedRowLayoutSquareChildDrivesTheHeight(t *testing.T) {
-	c := check.New(t)
-	square := newSquareTestPanel(30)
-	square.SetLayoutData(&unison.FlexLayoutData{MinSize: geom.Size{Height: 120}})
-	short := newSizedPanel(0, 10, 80)
-	row, layout := newTestSquareRow([]fxp.Int{fxp.One, fxp.One}, []bool{true, false}, square, short)
-	widths, height := layout.arrange(row.Children(), 200)
-	c.Equal(float32(120), height, "a square child's minimum height raises the row like any other child's")
-	c.Equal(120-squareTestInsets.Height()+squareTestInsets.Width(), widths[0],
-		"and the width it is then given comes from that height")
-	c.Equal(199-widths[0], widths[1])
-}
-
+// is tall less those insets, the row being as tall as the tallest of its children, the square one included, and the
+// other children share what is left by weight. A row whose children are all square divides itself up by weight after
+// all: there is nothing beside them for the height to come from, so there is nothing to take a width from either.
 func TestWeightedRowLayoutOtherChildrenShareWhatIsLeft(t *testing.T) {
-	c := check.New(t)
-	square := newSquareTestPanel(30)
-	row, layout := newTestSquareRow([]fxp.Int{fxp.One, fxp.One, fxp.Three}, []bool{true, false, false},
-		square, newSizedPanel(0, 10, 80), newSizedPanel(0, 10, 40))
-	widths, height := layout.arrange(row.Children(), 200)
-	c.Equal(float32(80), height)
-	squareWidth := 80 - squareTestInsets.Height() + squareTestInsets.Width()
-	c.Equal(squareWidth, widths[0])
-	remainder := 198 - squareWidth
-	c.Equal(remainder/4, widths[1], "the rest of the row is split 1:3")
-	c.Equal(3*remainder/4, widths[2])
-}
-
-// Changing how much width the row has to divide up leaves a square child exactly as it was, since its width comes
-// from the height instead. This is what makes the portrait's picture area square on a page of any size rather than
-// only on the one its weight was tuned for.
-func TestWeightedRowLayoutSquareChildIgnoresThePageWidth(t *testing.T) {
-	c := check.New(t)
-	square := newSquareTestPanel(30)
-	row, layout := newTestSquareRow([]fxp.Int{fxp.One, fxp.One}, []bool{true, false},
-		square, newSizedPanel(0, 10, 80))
-	letter, letterHeight := layout.arrange(row.Children(), 576)
-	a4, a4Height := layout.arrange(row.Children(), 559)
-	c.Equal(letterHeight, a4Height, "the height doesn't depend on the width here")
-	c.Equal(letter[0], a4[0], "the square child must be the same width on either page")
-	c.Equal(letter[1]-17, a4[1], "the whole of the difference comes out of the child that isn't square")
-}
-
-// A row whose children are all square divides itself up by weight after all: there is nothing beside them for the
-// height to come from, so there is nothing to take a width from either.
-func TestWeightedRowLayoutAllSquareFallsBackToWeights(t *testing.T) {
-	c := check.New(t)
-	row, layout := newTestSquareRow([]fxp.Int{fxp.One, fxp.Three}, []bool{true, true},
-		newSquareTestPanel(30), newSquareTestPanel(30))
-	widths, height := layout.arrange(row.Children(), 200)
-	c.Equal([]float32{49.75, 149.25}, widths, "the width less the spacing must be split 1:3")
-	c.Equal(float32(30), height, "the row is as tall as the tallest of them")
+	squareWidth := func(height float32) float32 { return height - squareTestInsets.Height() + squareTestInsets.Width() }
+	for _, tc := range []struct {
+		name     string
+		weights  []fxp.Int
+		square   []bool
+		children []*unison.Panel
+		width    float32
+		widths   []float32
+		height   float32
+	}{
+		{
+			name:     "the rest of the row is split by weight",
+			weights:  []fxp.Int{fxp.One, fxp.One, fxp.Three},
+			square:   []bool{true, false, false},
+			children: []*unison.Panel{newSquareTestPanel(30), newSizedPanel(0, 10, 80), newSizedPanel(0, 10, 40)},
+			width:    200,
+			widths:   []float32{squareWidth(80), (198 - squareWidth(80)) / 4, 3 * (198 - squareWidth(80)) / 4},
+			height:   80,
+		},
+		{
+			name:    "a square child's minimum height raises the row like any other child's",
+			weights: []fxp.Int{fxp.One, fxp.One},
+			square:  []bool{true, false},
+			children: []*unison.Panel{
+				func() *unison.Panel {
+					square := newSquareTestPanel(30)
+					square.SetLayoutData(&unison.FlexLayoutData{MinSize: geom.Size{Height: 120}})
+					return square
+				}(),
+				newSizedPanel(0, 10, 80),
+			},
+			width:  200,
+			widths: []float32{squareWidth(120), 199 - squareWidth(120)},
+			height: 120,
+		},
+		// Changing how much width the row has to divide up leaves a square child exactly as it was, the whole of the
+		// difference coming out of the child that isn't square. This is what makes the portrait's picture area square
+		// on a page of any size rather than only on the one its weight was tuned for.
+		{
+			name:     "a letter page",
+			weights:  []fxp.Int{fxp.One, fxp.One},
+			square:   []bool{true, false},
+			children: []*unison.Panel{newSquareTestPanel(30), newSizedPanel(0, 10, 80)},
+			width:    576,
+			widths:   []float32{squareWidth(80), 575 - squareWidth(80)},
+			height:   80,
+		},
+		{
+			name:     "an A4 page",
+			weights:  []fxp.Int{fxp.One, fxp.One},
+			square:   []bool{true, false},
+			children: []*unison.Panel{newSquareTestPanel(30), newSizedPanel(0, 10, 80)},
+			width:    559,
+			widths:   []float32{squareWidth(80), 558 - squareWidth(80)},
+			height:   80,
+		},
+		{
+			name:     "all square falls back to weights",
+			weights:  []fxp.Int{fxp.One, fxp.Three},
+			square:   []bool{true, true},
+			children: []*unison.Panel{newSquareTestPanel(30), newSquareTestPanel(30)},
+			width:    200,
+			widths:   []float32{49.75, 149.25},
+			height:   30,
+		},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			c := check.New(t)
+			row, layout := newTestSquareRow(tc.weights, tc.square, tc.children...)
+			widths, height := layout.arrange(row.Children(), tc.width)
+			c.Equal(tc.height, height)
+			c.Equal(tc.widths, widths)
+		})
+	}
 }
 
 // A square child beside a child that wraps its content must end up with a width that matches the height the row
@@ -281,7 +301,9 @@ func TestWeightedRowLayoutWithoutChildren(t *testing.T) {
 	c.Equal(0, len(row.Children()))
 }
 
-// A row placed taller than it asked for -- as one nested in a column beside something taller is, since a column
+// A row measured with a square child is as tall as the child beside it, gives the square child the width that makes
+// its content -- its frame less its border insets -- square at that height, and gives the other child what is left. A
+// row placed taller than it asked for -- as one nested in a column beside something taller is, since a column
 // stretches its children to its bottom -- squares its square child at the height it actually has rather than at the
 // height it was measured at, and hands what that leaves to the other child.
 func TestWeightedRowLayoutSquareChildFollowsTheHeightItIsGiven(t *testing.T) {
@@ -289,7 +311,16 @@ func TestWeightedRowLayoutSquareChildFollowsTheHeightItIsGiven(t *testing.T) {
 	square := newSquareTestPanel(30)
 	other := newSizedPanel(0, 10, 80)
 	row, layout := newTestSquareRow([]fxp.Int{fxp.One, fxp.One}, []bool{true, false}, square, other)
-	_, prefSize, _ := layout.LayoutSizes(row, geom.NewSize(400, 0))
+	widths, height := layout.arrange(row.Children(), 200)
+	c.Equal(float32(80), height, "the row is as tall as the child that isn't square")
+	c.Equal(80-squareTestInsets.Height()+squareTestInsets.Width(), widths[0],
+		"the square child's width is the row's height, less the insets above and below its content and plus the ones "+
+			"either side of it")
+	c.Equal(199-widths[0], widths[1], "everything the square child didn't take goes to the other child")
+	_, prefSize, _ := layout.LayoutSizes(row, geom.NewSize(200, 0))
+	c.Equal(float32(200), prefSize.Width, "the widths still add up to the space the row was given")
+
+	_, prefSize, _ = layout.LayoutSizes(row, geom.NewSize(400, 0))
 	c.Equal(float32(80), prefSize.Height, "the row asks for the height of the child that isn't square")
 
 	row.SetFrameRect(geom.NewRect(0, 0, 400, 233))

@@ -291,10 +291,12 @@ func TestWeaponOwnerCriteriaHashAndNameables(t *testing.T) {
 		hashes[Hash64(f)] = true
 		one.OwnerOptionalSpecializationCriteria = criteria.Text{Compare: criteria.IsText, Qualifier: "@Kind@"}
 		hashes[Hash64(f)] = true
-		c.Equal(5, len(hashes), "%T: each owner criterion changes the hash", f)
+		one.OwnerTitleNoteCriteria = criteria.Text{Compare: criteria.IsText, Qualifier: "@Note@"}
+		hashes[Hash64(f)] = true
+		c.Equal(6, len(hashes), "%T: each owner criterion changes the hash", f)
 		m := make(map[string]string)
 		f.FillWithNameableKeys(m, nil)
-		for _, key := range []string{"TL", "Gun", "Kind"} {
+		for _, key := range []string{"TL", "Gun", "Kind", "Note"} {
 			_, exists := m[key]
 			c.True(exists, "%T offers %s", f, key)
 		}
@@ -319,7 +321,7 @@ func TestWeaponsSelectedBySkillName(t *testing.T) {
 	sk.Weapons = []*Weapon{w}
 	e.Skills = append(e.Skills, sk)
 	e.Recalculate()
-	c.Equal("Beam Weapons/TL9 (Pistol, Laser)", w.String(),
+	c.Equal("Beam Weapons/TL9 (Pistol; Laser)", w.String(),
 		"precondition: the weapon's name has the TL and specializations")
 	selectors.check(c, e, w, true, "the name matches without the TL or specializations")
 	for _, one := range selectors.owners() {
@@ -346,7 +348,9 @@ func TestWeaponOwnerCriteriaJSON(t *testing.T) {
 	e := NewEntity()
 	selectors := addWeaponNameSelectors(e, "Broadsword")
 	features := Features{selectors.damage, selectors.skill, selectors.override}
-	keys := []string{"owner_level", "owner_tech_level", "owner_specialization", "owner_optional_specialization"}
+	keys := []string{
+		"owner_level", "owner_tech_level", "owner_specialization", "owner_optional_specialization", "owner_title_note",
+	}
 	stored := func() []map[string]any {
 		data, err := jio.Marshal(features)
 		c.NoError(err)
@@ -365,6 +369,7 @@ func TestWeaponOwnerCriteriaJSON(t *testing.T) {
 		one.OwnerTechLevelCriteria = criteria.Text{Compare: criteria.IsText, Qualifier: "3"}
 		one.OwnerSpecializationCriteria = criteria.Text{Compare: criteria.IsText, Qualifier: "Pistol"}
 		one.OwnerOptionalSpecializationCriteria = criteria.Text{Compare: criteria.IsText, Qualifier: "Laser"}
+		one.OwnerTitleNoteCriteria = criteria.Text{Compare: criteria.IsText, Qualifier: "Fine"}
 	}
 	checkFeaturesJSONRoundTrip(c, features)
 	for _, one := range stored() {
@@ -375,21 +380,21 @@ func TestWeaponOwnerCriteriaJSON(t *testing.T) {
 	}
 }
 
-// TestScriptWeaponsMatchOwnerName verifies that a script weapon's name is its owner's name without its level, that its
-// title keeps the level, and that the scripts finding weapons by name match the name.
+// TestScriptWeaponsMatchOwnerName verifies that a script weapon's name is its owner's name without its level or title
+// notes, that its title keeps them, and that the scripts finding weapons by name match the name.
 func TestScriptWeaponsMatchOwnerName(t *testing.T) {
 	c := check.New(t)
 	e := NewEntity()
-	attack := addTraitWithFeatures(e, "Innate Attack")
+	attack := addTraitWithFeatures(e, "Innate Attack", newTitleNoteFor("Fire"))
 	attack.CanLevel = true
 	attack.Levels = fxp.Two
 	w := newCrushingWeapon(attack, "Burn")
 	attack.Weapons = []*Weapon{w}
 	e.Recalculate()
-	c.Equal("Innate Attack 2", w.String(), "precondition: the weapon's name has the level")
+	c.Equal("Innate Attack 2 (Fire)", w.String(), "precondition: the weapon's name has the level and title note")
 	resolve := func(expr string) string { return ResolveScript(e, ScriptSelfProvider{}, expr) }
 	c.Equal("Innate Attack", resolve(`entity.weapons[0].name`))
-	c.Equal("Innate Attack 2", resolve(`entity.weapons[0].title`))
+	c.Equal("Innate Attack 2 (Fire)", resolve(`entity.weapons[0].title`))
 	c.Equal("1", resolve(`entity.findWeapons(true, entity.weapons[0].name).length.toString()`))
 	c.Equal("1d-2 cr", resolve(`entity.weaponDamage("Innate Attack", "Burn")`))
 }

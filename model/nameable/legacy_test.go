@@ -17,6 +17,7 @@ import (
 	"github.com/richardwilkes/toolbox/v2/check"
 )
 
+// Every fallback tier keeps the marker text as Raw, and only the two legacy tiers mark it Legacy.
 func TestParseMarkerRawPreservedAcrossAllFallbackTiers(t *testing.T) {
 	c := check.New(t)
 	for _, tc := range []struct {
@@ -36,88 +37,82 @@ func TestParseMarkerRawPreservedAcrossAllFallbackTiers(t *testing.T) {
 
 // Tier 1: "Label: item, item[, item...], etc." -- real examples pulled from the GCS master library scan.
 
+// A single "Label: item, item[, item...], etc." segment, with or without the final period, is a legacy marker that
+// allows empty and free-form input, with its items as options and the text after the colon as its tooltip.
 func TestParseMarkerTier1ExampleList(t *testing.T) {
 	c := check.New(t)
-	marker, ok := nameable.NewMarker("Rare: Acceleration, Altitude Sickness, Bends, Seasickness, Space Sickness, Nanomachines, etc.")
-	c.True(ok)
-	c.True(marker.Legacy)
-	c.Equal("Rare", marker.Label)
-	c.Equal([]string{"Acceleration", "Altitude Sickness", "Bends", "Seasickness", "Space Sickness", "Nanomachines"},
-		marker.Options)
-	c.Equal("Acceleration, Altitude Sickness, Bends, Seasickness, Space Sickness, Nanomachines, etc.", marker.Tooltip)
-	c.True(marker.AllowEmpty)
-	c.True(marker.FreeForm)
-}
-
-func TestParseMarkerTier1NoTrailingPeriod(t *testing.T) {
-	c := check.New(t)
-	marker, ok := nameable.NewMarker("Skill: Fast-Draw, Smith, etc")
-	c.True(ok)
-	c.True(marker.Legacy)
-	c.Equal("Skill", marker.Label)
-	c.Equal([]string{"Fast-Draw", "Smith"}, marker.Options)
-	c.Equal("Fast-Draw, Smith, etc", marker.Tooltip)
-	c.True(marker.AllowEmpty)
-	c.True(marker.FreeForm)
-}
-
-func TestParseMarkerTier1RequiresTwoOrMoreItems(t *testing.T) {
-	c := check.New(t)
-	// Only one item before "etc." isn't a strong enough signal -- falls through to tier 2 instead.
-	marker, ok := nameable.NewMarker("Absurd: chocolate, etc.")
-	c.True(ok)
-	c.True(marker.Legacy)
-	c.Equal("Absurd", marker.Label)
-	c.Equal("chocolate, etc.", marker.Tooltip)
-	c.Equal(0, len(marker.Options))
-}
-
-func TestParseMarkerTier1RequiresTrailingEtc(t *testing.T) {
-	c := check.New(t)
-	// Two items but no "etc." reads as a closed, exhaustive set (e.g. a fixed enum), not an example list -- falls
-	// through to tier 2 instead of being marked free-form with those as options.
-	marker, ok := nameable.NewMarker("Type: Mental, Physical, Magical or Chi")
-	c.True(ok)
-	c.True(marker.Legacy)
-	c.Equal("Type", marker.Label)
-	c.Equal("Mental, Physical, Magical or Chi", marker.Tooltip)
-	c.Equal(0, len(marker.Options))
-	c.True(marker.AllowEmpty)
-	c.True(marker.FreeForm)
+	for _, tc := range []struct {
+		raw     string
+		label   string
+		options []string
+		tooltip string
+	}{
+		{
+			raw:   "Rare: Acceleration, Altitude Sickness, Bends, Seasickness, Space Sickness, Nanomachines, etc.",
+			label: "Rare",
+			options: []string{
+				"Acceleration", "Altitude Sickness", "Bends", "Seasickness", "Space Sickness", "Nanomachines",
+			},
+			tooltip: "Acceleration, Altitude Sickness, Bends, Seasickness, Space Sickness, Nanomachines, etc.",
+		},
+		{
+			raw:     "Skill: Fast-Draw, Smith, etc",
+			label:   "Skill",
+			options: []string{"Fast-Draw", "Smith"},
+			tooltip: "Fast-Draw, Smith, etc",
+		},
+	} {
+		marker, ok := nameable.NewMarker(tc.raw)
+		c.True(ok, tc.raw)
+		c.True(marker.Legacy, tc.raw)
+		c.Equal(tc.label, marker.Label, tc.raw)
+		c.Equal(tc.options, marker.Options, tc.raw)
+		c.Equal(tc.tooltip, marker.Tooltip, tc.raw)
+		c.True(marker.AllowEmpty, tc.raw)
+		c.True(marker.FreeForm, tc.raw)
+	}
 }
 
 // Tier 2: "Label: anything" -- real examples pulled from the GCS master library scan.
 
+// A single "Label: text" segment that is not a tier-1 example list is a legacy marker that allows empty and free-form
+// input, with the text after the colon as its tooltip and no options.
 func TestParseMarkerTier2SingleValue(t *testing.T) {
 	c := check.New(t)
-	marker, ok := nameable.NewMarker("Class: Mammalia")
-	c.True(ok)
-	c.True(marker.Legacy)
-	c.Equal("Class", marker.Label)
-	c.Equal("Mammalia", marker.Tooltip)
-	c.Equal(0, len(marker.Options))
-	c.True(marker.AllowEmpty)
-	c.True(marker.FreeForm)
+	for _, tc := range []struct {
+		raw     string
+		label   string
+		tooltip string
+	}{
+		{raw: "Class: Mammalia", label: "Class", tooltip: "Mammalia"},
+		// A single item before "etc." isn't a strong enough signal for an example list.
+		{raw: "Absurd: chocolate, etc.", label: "Absurd", tooltip: "chocolate, etc."},
+		// Items with no "etc." read as a closed, exhaustive set (e.g. a fixed enum), not as examples.
+		{raw: "Type: Mental, Physical, Magical or Chi", label: "Type", tooltip: "Mental, Physical, Magical or Chi"},
+		// A comma inside a quoted phrase throws off tier 1's item splitting, so this lands safely in tier 2 rather
+		// than being mis-split into garbage options.
+		{
+			raw:     `Habit: Witless witticisms, calling people "nuncle," abuse of custard, etc.`,
+			label:   "Habit",
+			tooltip: `Witless witticisms, calling people "nuncle," abuse of custard, etc.`,
+		},
+	} {
+		marker, ok := nameable.NewMarker(tc.raw)
+		c.True(ok, tc.raw)
+		c.True(marker.Legacy, tc.raw)
+		c.Equal(tc.label, marker.Label, tc.raw)
+		c.Equal(tc.tooltip, marker.Tooltip, tc.raw)
+		c.Equal(0, len(marker.Options), tc.raw)
+		c.True(marker.AllowEmpty, tc.raw)
+		c.True(marker.FreeForm, tc.raw)
+	}
 }
 
-func TestParseMarkerTier2EmbeddedCommaFallsThroughFromTier1(t *testing.T) {
-	c := check.New(t)
-	// This one does end in "etc." and has 2+ comma-separated segments, but a comma embedded inside a quoted phrase
-	// throws off tier 1's item splitting -- it's expected to land safely in tier 2 (a tooltip) rather than being
-	// mis-split into garbage options.
-	marker, ok := nameable.NewMarker(`Habit: Witless witticisms, calling people "nuncle," abuse of custard, etc.`)
-	c.True(ok)
-	c.True(marker.Legacy)
-	c.Equal("Habit", marker.Label)
-	c.Equal(`Witless witticisms, calling people "nuncle," abuse of custard, etc.`, marker.Tooltip)
-	c.Equal(0, len(marker.Options))
-}
-
+// The leading segment before the colon must be 1-40 characters to read as a short label. Exactly 40 stays in tier 2;
+// 41 falls through to tier 3 (no longer tagged Legacy -- it's a blessed current form), taking the whole string as the
+// label instead of splitting it into a label and tooltip.
 func TestParseMarkerTier2LabelLengthBoundary(t *testing.T) {
 	c := check.New(t)
-	// The leading segment before the colon must be 1-40 characters to read as a short label. Exactly 40 stays in
-	// tier 2; 41 falls through to tier 3 (no longer tagged Legacy -- it's a blessed current form), taking the whole
-	// string as the label instead of splitting it into a label and tooltip.
 	at40 := strings.Repeat("A", 40) + ": tail"
 	marker, ok := nameable.NewMarker(at40)
 	c.True(ok)
@@ -135,30 +130,30 @@ func TestParseMarkerTier2LabelLengthBoundary(t *testing.T) {
 
 // Tier 3: no colon-shape at all -- a blessed current form (not Legacy), with AllowEmpty/FreeForm set.
 
+// A single segment matching neither legacy pattern never fails to parse: it is a current-form marker that allows empty
+// and free-form input, labeled with its trimmed text, with no tooltip or options.
 func TestParseMarkerTier3PlainLabel(t *testing.T) {
 	c := check.New(t)
-	marker, ok := nameable.NewMarker("Weapon Name")
-	c.True(ok)
-	c.False(marker.Legacy)
-	c.Equal("Weapon Name", marker.Label)
-	c.Equal("", marker.Tooltip)
-	c.Equal(0, len(marker.Options))
-	c.True(marker.AllowEmpty)
-	c.True(marker.FreeForm)
-}
-
-func TestParseMarkerNeverFails(t *testing.T) {
-	c := check.New(t)
-	for _, raw := range []string{"@@@", ":", "::::", "no colon here at all"} {
-		marker, ok := nameable.NewMarker(raw)
-		c.True(ok)
-		c.False(marker.Legacy)
-		c.Equal(raw, marker.Label)
+	for _, tc := range []struct {
+		raw   string
+		label string
+	}{
+		{raw: "Weapon Name", label: "Weapon Name"},
+		{raw: "  Weapon Name  ", label: "Weapon Name"},
+		// No space follows the colons, so neither legacy pattern matches.
+		{raw: "Element:Fire:Water", label: "Element:Fire:Water"},
+		{raw: "@@@", label: "@@@"},
+		{raw: ":", label: ":"},
+		{raw: "::::", label: "::::"},
+		{raw: "no colon here at all", label: "no colon here at all"},
+	} {
+		marker, ok := nameable.NewMarker(tc.raw)
+		c.True(ok, tc.raw)
+		c.False(marker.Legacy, tc.raw)
+		c.Equal(tc.label, marker.Label, tc.raw)
+		c.Equal("", marker.Tooltip, tc.raw)
+		c.Equal(0, len(marker.Options), tc.raw)
+		c.True(marker.AllowEmpty, tc.raw)
+		c.True(marker.FreeForm, tc.raw)
 	}
-}
-
-func TestParseMarkerEmptyRawFails(t *testing.T) {
-	c := check.New(t)
-	_, ok := nameable.NewMarker("")
-	c.False(ok)
 }

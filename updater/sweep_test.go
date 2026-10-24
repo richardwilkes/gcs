@@ -165,7 +165,8 @@ func TestSettleDiscardsAnAbandonedStaging(t *testing.T) {
 
 // Both halves of the sweep: it clears what an interrupted update leaves behind, and it leaves alone anything recent
 // enough to belong to an update being applied right now by a helper this process knows nothing about. It must also not
-// touch the user's own files.
+// touch the user's own files. The shorter bound used just before a new update is prepared (see abandonedStagingAge)
+// clears a staging directory the startup sweep leaves alone, while still sparing one a helper could be using.
 func TestSweepStraysRemovesOnlyOldLeftovers(t *testing.T) {
 	c := check.New(t)
 	dir := t.TempDir()
@@ -204,6 +205,18 @@ func TestSweepStraysRemovesOnlyOldLeftovers(t *testing.T) {
 	for _, path := range untouched {
 		c.True(exists(path), "the sweep removed something it did not create: %s", path)
 	}
+
+	abandoned := filepath.Join(dir, workDirPrefix+"old")
+	write(t, abandoned, "an attempt that never finished")
+	stamp := time.Now().Add(-abandonedStagingAge - time.Minute)
+	c.NoError(os.Chtimes(abandoned, stamp, stamp))
+
+	sweepStrays([]string{dir}, staleAge)
+	c.True(exists(abandoned), "the startup sweep must not remove something this recent")
+
+	sweepStrays([]string{dir}, abandonedStagingAge)
+	c.False(exists(abandoned), "an abandoned staging directory must be cleared before a new attempt")
+	c.True(exists(recent), "a staging directory a helper could still be using must be left alone")
 }
 
 // The sweep must be harmless when the installation directory cannot be determined or no longer exists. It runs on
@@ -212,29 +225,4 @@ func TestSweepStraysToleratesMissingDirectories(t *testing.T) {
 	sweepStrays(nil, staleAge)
 	sweepStrays([]string{""}, staleAge)
 	sweepStrays([]string{filepath.Join(t.TempDir(), "gone")}, staleAge)
-}
-
-// The shorter bound used just before a new update is prepared; see abandonedStagingAge.
-func TestSweepStraysClearsAbandonedStagingSooner(t *testing.T) {
-	c := check.New(t)
-	dir := t.TempDir()
-
-	abandoned := filepath.Join(dir, workDirPrefix+"old")
-	write(t, abandoned, "an attempt that never finished")
-	stamp := time.Now().Add(-abandonedStagingAge - time.Minute)
-	c.NoError(os.Chtimes(abandoned, stamp, stamp))
-
-	inFlight := filepath.Join(dir, workDirPrefix+"new")
-	write(t, inFlight, "an attempt still running")
-
-	sweepStrays([]string{dir}, abandonedStagingAge)
-
-	c.False(exists(abandoned), "an abandoned staging directory must be cleared before a new attempt")
-	c.True(exists(inFlight), "a staging directory a helper could still be using must be left alone")
-
-	// The same directory is left alone by the startup sweep, which uses the longer bound.
-	write(t, abandoned, "again")
-	c.NoError(os.Chtimes(abandoned, stamp, stamp))
-	sweepStrays([]string{dir}, staleAge)
-	c.True(exists(abandoned), "the startup sweep must not remove something this recent")
 }

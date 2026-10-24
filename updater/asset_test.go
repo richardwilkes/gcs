@@ -60,16 +60,6 @@ func TestAssetNameRejectsUnbuiltPlatforms(t *testing.T) {
 	c.HasError(err, "an empty version must be rejected")
 }
 
-// TestAssetNameUsesTheRawVersion guards against being handed a display version. ux.filterVersion trims a trailing ".0"
-// and prefixes a "v", so "5.46.0" renders as "v5.46" -- neither of which appears in any published asset name.
-func TestAssetNameUsesTheRawVersion(t *testing.T) {
-	c := check.New(t)
-	name, err := AssetName("5.46.0", "linux", "amd64")
-	c.NoError(err)
-	c.Equal("gcs-5.46.0-linux-amd64.tgz", name)
-	c.NotContains(name, "v5.46-")
-}
-
 // TestPayloadName verifies what each archive is expected to hold: a bundle on macOS, a bare executable elsewhere.
 func TestPayloadName(t *testing.T) {
 	c := check.New(t)

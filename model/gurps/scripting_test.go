@@ -255,10 +255,13 @@ func TestScriptSkillOptionalSpecializationMatch(t *testing.T) {
 }
 
 // Hammers the package-global script state (the compiled-program cache, the entity-less resolve cache and its discard
-// path, and the entity-less recursion-depth map) from several goroutines at once. Run under the race detector, it
-// guards against reintroducing unsynchronized access to that shared state.
+// path, and the entity-less recursion-depth map) from several goroutines at once, including with object-valued
+// results, which can only be turned into strings by running JavaScript. Run under the race detector, it guards against
+// reintroducing unsynchronized access to that shared state, and against converting a result after its runtime has been
+// handed back to the pool, where another goroutine may already be using it.
 func TestScriptResolutionConcurrency(t *testing.T) {
 	DiscardGlobalResolveCache()
+	defer DiscardGlobalResolveCache()
 	const goroutines = 8
 	const iterations = 200
 	var wg sync.WaitGroup
@@ -273,6 +276,13 @@ func TestScriptResolutionConcurrency(t *testing.T) {
 				}
 				// A unique script per (goroutine, iteration) exercises concurrent compile + store.
 				_ = ResolveScript(nil, ScriptSelfProvider{}, fmt.Sprintf("%d + %d", g, i))
+				// A unique object-valued script per (goroutine, iteration) actually runs rather than being served from
+				// the resolve cache, so its result is converted on each resolution.
+				want := fmt.Sprintf("g%d-%d", g, i)
+				script := fmt.Sprintf("({toString: function() { return %q }})", want)
+				if got := ResolveScript(nil, ScriptSelfProvider{}, script); got != want {
+					t.Errorf("object result = %q, want %q", got, want)
+				}
 				if i%25 == 0 {
 					DiscardGlobalResolveCache()
 				}
@@ -507,36 +517,6 @@ func TestScriptExecTimeLimitOverride(t *testing.T) {
 	c.Equal("script execution timed out (limited to 0.01 seconds)",
 		ResolveScript(nil, ScriptSelfProvider{}, "(function() { for (;;); })()"),
 		"the override is the limit a runaway script is cut short at")
-}
-
-// Resolves object-valued scripts, whose results can only be turned into strings by running JavaScript, from several
-// goroutines at once. Run under the race detector, it guards against converting a result after its runtime has been
-// handed back to the pool, where another goroutine may already be using it.
-func TestScriptObjectResultConcurrency(t *testing.T) {
-	DiscardGlobalResolveCache()
-	defer DiscardGlobalResolveCache()
-	const goroutines = 8
-	const iterations = 50
-	var wg sync.WaitGroup
-	wg.Add(goroutines)
-	for g := range goroutines {
-		go func() {
-			defer wg.Done()
-			for i := range iterations {
-				// The script text is unique per (goroutine, iteration) so each resolution actually runs rather than
-				// being served from the resolve cache.
-				want := fmt.Sprintf("g%d-%d", g, i)
-				script := fmt.Sprintf("({toString: function() { return %q }})", want)
-				if got := ResolveScript(nil, ScriptSelfProvider{}, script); got != want {
-					t.Errorf("object result = %q, want %q", got, want)
-				}
-				if i%25 == 0 {
-					DiscardGlobalResolveCache()
-				}
-			}
-		}()
-	}
-	wg.Wait()
 }
 
 // A script cannot alter the shared state of a pooled runtime for the scripts that follow it. Strict mode alone does not

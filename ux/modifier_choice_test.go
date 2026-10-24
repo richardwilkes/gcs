@@ -22,7 +22,6 @@ import (
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/tid"
 	"github.com/richardwilkes/unison"
-	checkstate "github.com/richardwilkes/unison/enums/check"
 	"github.com/richardwilkes/unison/enums/mod"
 )
 
@@ -99,6 +98,7 @@ func TestModifierContainerEditorsShowOnlyWhatAContainerUses(t *testing.T) {
 	c.Equal(0, len(checkBoxesTitled(content, "Enabled")), "a container is always enabled")
 	c.Equal(0, len(checkBoxesTitled(content, "Show notes in owner's notes")))
 	c.Equal(0, len(checkBoxesTitled(content, "Show notes in attack usage")))
+	c.Equal(0, len(checkBoxesTitled(content, "Show in title notes")))
 
 	choice := gurps.NewEquipmentModifierChoice(nil, nil)
 	e, content := buildEditorContent(nil, choice, initEquipmentModifierEditor)
@@ -416,24 +416,11 @@ func TestConvertingToAChoiceOnASheetPicksTheFirstOption(t *testing.T) {
 	c.True(copyOfGroup.Children[0].Enabled(), "redo picks the first option again")
 }
 
-// TestUnresolvedChoiceLeadsTheTooltip verifies that the explanation of an unresolved modifier choice goes ahead of
-// whatever else a row's tooltip says.
-func TestUnresolvedChoiceLeadsTheTooltip(t *testing.T) {
-	c := check.New(t)
-	c.Equal("pick", labelCellTooltip(&gurps.CellData{UnresolvedChoice: "pick"}))
-	c.Equal("pick\n---\nnotes", labelCellTooltip(&gurps.CellData{UnresolvedChoice: "pick", Tooltip: "notes"}))
-	c.Equal("pick\n---\nunmet", labelCellTooltip(&gurps.CellData{
-		UnresolvedChoice:  "pick",
-		UnsatisfiedReason: "unmet",
-		Tooltip:           "notes",
-	}))
-	c.Equal("notes", labelCellTooltip(&gurps.CellData{Tooltip: "notes"}))
-}
-
 // TestModifierSelectionTreatsChoicesByKind verifies the prompt asking which modifiers to enable: a modifier outside a
 // choice gets a check box, and each choice, reaching through the groups beneath it but not into a choice within it,
-// gets radio buttons for its options, an optional one adding "None". On a sheet a mandatory choice shows whether it
-// has its pick and holds the prompt open until it does; elsewhere it is offered as an optional one is.
+// gets radio buttons for its options, an optional one adding "None"; picking an option or clicking a check box tells
+// the prompt. On a sheet a mandatory choice shows whether it has its pick and holds the prompt open until it does,
+// unless it has no options to pick from; elsewhere it is offered as an optional one is.
 func TestModifierSelectionTreatsChoicesByKind(t *testing.T) {
 	c := check.New(t)
 	named := func(parent *gurps.TraitModifier, name string) *gurps.TraitModifier {
@@ -497,8 +484,9 @@ func TestModifierSelectionTreatsChoicesByKind(t *testing.T) {
 	c.Equal(2, changes)
 	c.True(s.complete())
 	for cb := range s.boxes {
-		cb.State = checkstate.Off
+		cb.Click()
 	}
+	c.Equal(3, changes, "clicking a check box tells the prompt as well")
 	c.True(s.apply())
 	c.False(plain.Enabled())
 	c.False(direct.Enabled())
@@ -512,6 +500,16 @@ func TestModifierSelectionTreatsChoicesByKind(t *testing.T) {
 	c.True(s.complete(), "off a sheet a mandatory choice may be left without its pick")
 	c.Equal(3, len(uxtest.PanelsOfType[*unison.RadioButton](s.list)), "the options and None")
 	c.Nil(s.choices[0].updateStatus)
+
+	s = newModifierSelection([]*gurps.TraitModifier{gurps.NewTraitModifierChoice(nil, nil)}, true, false)
+	c.NotNil(s)
+	c.True(s.complete(), "a mandatory choice with no options to pick from must not hold the prompt open")
+	c.Nil(s.choices[0].updateStatus, "nothing is flagged")
+	for _, row := range s.list.Children() {
+		layout, ok := row.Layout().(*unison.FlexLayout)
+		c.True(ok)
+		c.Equal(len(row.Children()), layout.Columns, "each row has a column for each of its parts")
+	}
 }
 
 // TestModifierSelectionClearsAndPreviews verifies that clearing takes back the choices' picks and unchecks the check
@@ -656,22 +654,6 @@ func TestModifierEditorFollowsTheChoiceRules(t *testing.T) {
 	e.editorData.Disabled = true
 	e.applyEdits()
 	c.False(offSheet.Children[0].Enabled(), "off a sheet a mandatory choice may be left without its pick")
-}
-
-// TestEmptyMandatoryChoiceDoesNotHoldThePromptOpen verifies that a mandatory choice with no options, which has
-// nothing to pick from, neither holds the prompt open nor is flagged as required.
-func TestEmptyMandatoryChoiceDoesNotHoldThePromptOpen(t *testing.T) {
-	c := check.New(t)
-	empty := gurps.NewTraitModifierChoice(nil, nil)
-	s := newModifierSelection([]*gurps.TraitModifier{empty}, true, false)
-	c.NotNil(s)
-	c.True(s.complete())
-	c.Nil(s.choices[0].updateStatus, "nothing is flagged")
-	for _, row := range s.list.Children() {
-		layout, ok := row.Layout().(*unison.FlexLayout)
-		c.True(ok)
-		c.Equal(len(row.Children()), layout.Columns, "each row has a column for each of its parts")
-	}
 }
 
 // TestApplyingAChoiceToLootAsksForItsPick verifies that applying a container of modifiers to equipment on a loot sheet

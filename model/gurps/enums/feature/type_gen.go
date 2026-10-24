@@ -60,6 +60,7 @@ const (
 	GrantTrait
 	GrantSkill
 	GrantSpell
+	TitleNote
 	Unknown
 )
 
@@ -115,6 +116,7 @@ var Types = []Type{
 	GrantTrait,
 	GrantSkill,
 	GrantSpell,
+	TitleNote,
 }
 
 // Type holds the type of a Feature.
@@ -213,6 +215,8 @@ func (enum Type) Key() string {
 		return "grant_skill"
 	case GrantSpell:
 		return "grant_spell"
+	case TitleNote:
+		return "title_note"
 	default:
 		return "unknown"
 	}
@@ -303,6 +307,8 @@ func (enum Type) String() string {
 		return i18n.Text(`Grants the skill`)
 	case GrantSpell:
 		return i18n.Text(`Grants the spell`)
+	case TitleNote:
+		return i18n.Text(`Adds the title note`)
 	case Unknown:
 		return i18n.Text(`Is an unknown feature type`)
 	default:

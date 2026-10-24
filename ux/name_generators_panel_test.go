@@ -104,8 +104,8 @@ func TestNameGeneratorRowEditButtonFollowsAvailability(t *testing.T) {
 }
 
 // TestNameGeneratorsAddAndRemove verifies that an empty list shows no rows container, that adding a generator defaults
-// to the first available one and builds a row with a popup for it, that removing the last generator removes the rows
-// container again, and that both are undoable.
+// to the first available one, or to an empty entry when none is available, and builds a row for it, that removing the
+// last generator removes the rows container again, and that both are undoable.
 func TestNameGeneratorsAddAndRemove(t *testing.T) {
 	c := check.New(t)
 	a := gurps.NewAncestry()
@@ -139,6 +139,11 @@ func TestNameGeneratorsAddAndRemove(t *testing.T) {
 
 	d.undoMgr.Undo()
 	c.Equal([]string{"Human First - Male"}, d.model.CommonOptions.NameGenerators, "undo restores the removed one")
+
+	d = newTestAncestryEditorDockable(gurps.NewAncestry())
+	nameGeneratorsPanelFor(t, d, d.model.CommonOptions).addGenerator()
+	c.Equal([]string{""}, d.model.CommonOptions.NameGenerators, "with no choices available, the default is empty")
+	c.Equal(1, len(uxtest.PanelsOfType[*nameGeneratorRefPanel](d.AsPanel())), "the empty entry still gets a row")
 }
 
 // undoDepth returns the number of edits that can be undone.
@@ -152,16 +157,6 @@ func undoDepth(d *ancestryEditorDockable) int {
 		d.undoMgr.Redo()
 	}
 	return depth
-}
-
-// TestNameGeneratorsAddWithoutChoices verifies that with no generators available at all, adding one still works and
-// leaves an empty entry to be filled in later.
-func TestNameGeneratorsAddWithoutChoices(t *testing.T) {
-	c := check.New(t)
-	d := newTestAncestryEditorDockable(gurps.NewAncestry())
-	nameGeneratorsPanelFor(t, d, d.model.CommonOptions).addGenerator()
-	c.Equal([]string{""}, d.model.CommonOptions.NameGenerators)
-	c.Equal(1, len(uxtest.PanelsOfType[*nameGeneratorRefPanel](d.AsPanel())), "the empty entry still gets a row")
 }
 
 // TestNameGeneratorsPerGenderListBindsToGender verifies that a gender's name generator list edits that gender's options

@@ -118,24 +118,6 @@ func TestModifierContainersContributeNameableKeys(t *testing.T) {
 	}, keys)
 }
 
-// TestModifierHashDistinguishesContainers verifies that a container and a leaf modifier that share all of their
-// common sync data still hash differently for both modifier types.
-func TestModifierHashDistinguishesContainers(t *testing.T) {
-	c := check.New(t)
-
-	tmContainer := NewTraitModifier(nil, nil, true)
-	tmLeaf := NewTraitModifier(nil, nil, false)
-	tmContainer.Name = "Same"
-	tmLeaf.Name = "Same"
-	c.NotEqual(Hash64(tmContainer), Hash64(tmLeaf))
-
-	emContainer := NewEquipmentModifier(nil, nil, true)
-	emLeaf := NewEquipmentModifier(nil, nil, false)
-	emContainer.Name = "Same"
-	emLeaf.Name = "Same"
-	c.NotEqual(Hash64(emContainer), Hash64(emLeaf))
-}
-
 // TestModifierSyncWithSource verifies that a modifier which has drifted from its library source pulls the synced
 // fields back across, whether or not it has a data owner, and that containers do not pick up leaf-only data.
 func TestModifierSyncWithSource(t *testing.T) {

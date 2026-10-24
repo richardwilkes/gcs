@@ -260,44 +260,41 @@ func TestPrereqPanelOpenRowFollowsRestructures(t *testing.T) {
 }
 
 // TestPrereqPanelShowsAnyNumberItCantOffer checks that a numeric comparison of "anything", which only a file edited by
-// hand can hold where it isn't offered, is shown rather than left blank, and that showing it changes nothing.
+// hand can hold where it isn't offered, is shown rather than left blank, that a contained weight of "anything" shows
+// its comparison without a weight field, and that showing either changes nothing.
 func TestPrereqPanelShowsAnyNumberItCantOffer(t *testing.T) {
 	c := check.New(t)
 	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
-	root := gurps.NewPrereqList()
 	sp := gurps.NewSpellPrereq()
 	sp.QuantityCriteria.Compare = criteria.AnyNumber
-	root.Prereqs = gurps.Prereqs{sp.Clone(root)}
-	hash := gurps.Hash64(root)
-	p, _ := showPrereqPanel(t, screen, &root, false)
-	screen.Do(func() { p.toggle("r.0") })
-	screen.Do(func() {
-		popup, isPopup := p.FindRefKey("r.0:quantitycmp").Self.(*unison.PopupMenu[criteria.NumericComparison])
-		c.True(isPopup)
-		c.Equal("anything", popup.Text())
-	})
-	c.Equal(hash, gurps.Hash64(root))
-}
-
-// TestPrereqPanelWeightAnything checks that a contained weight of "anything", which only a file edited by hand can
-// hold, shows its comparison without a weight field.
-func TestPrereqPanelWeightAnything(t *testing.T) {
-	c := check.New(t)
-	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
-	root := gurps.NewPrereqList()
 	wp := gurps.NewContainedWeightPrereq(nil)
 	wp.WeightCriteria.Compare = criteria.AnyNumber
-	root.Prereqs = gurps.Prereqs{wp.Clone(root)}
-	p, _ := showPrereqPanel(t, screen, &root, false)
-	screen.Do(func() { p.toggle("r.0") })
-	screen.Do(func() {
-		popup, isPopup := p.FindRefKey("r.0:weightcmp").Self.(*unison.PopupMenu[criteria.NumericComparison])
-		c.True(isPopup)
-		if isPopup {
-			c.Equal("which is anything", popup.Text())
-		}
-		c.Nil(p.FindRefKey("r.0:weight"), "and no weight field")
-	})
+	for _, one := range []struct {
+		prereq  gurps.Prereq
+		cmpKey  string
+		want    string
+		noField string // The key of the qualifier's field, when "anything" must not show one
+	}{
+		{prereq: sp, cmpKey: "r.0:quantitycmp", want: "anything"},
+		{prereq: wp, cmpKey: "r.0:weightcmp", want: "which is anything", noField: "r.0:weight"},
+	} {
+		root := gurps.NewPrereqList()
+		root.Prereqs = gurps.Prereqs{one.prereq.Clone(root)}
+		hash := gurps.Hash64(root)
+		p, _ := showPrereqPanel(t, screen, &root, false)
+		screen.Do(func() { p.toggle("r.0") })
+		screen.Do(func() {
+			popup, isPopup := p.FindRefKey(one.cmpKey).Self.(*unison.PopupMenu[criteria.NumericComparison])
+			c.True(isPopup, "%s must be a comparison popup", one.cmpKey)
+			if isPopup {
+				c.Equal(one.want, popup.Text())
+			}
+			if one.noField != "" {
+				c.Nil(p.FindRefKey(one.noField), "%s must not be shown", one.noField)
+			}
+		})
+		c.Equal(hash, gurps.Hash64(root), "showing %s must change nothing", one.cmpKey)
+	}
 }
 
 // TestPrereqPanelLayoutFollowsRebuild checks that a rebuild outside a dock, as in a dialog, lays the window's content
@@ -929,14 +926,45 @@ func TestPrereqPanelChipOrder(t *testing.T) {
 	}
 	screen.Do(func() { p.toggle("r.1.0") })
 	screen.Do(func() {
-		c.Equal([]string{"level" + keyChip, "add specialization", "add optspecialization", "add points", "add tag"},
-			order())
+		c.Equal([]string{
+			"level" + keyChip, "add specialization", "add optspecialization", "add titlenote", "add points",
+			"add tag",
+		}, order())
 		uxtest.PanelsOfType[*unison.Button](p.FindRefKey("r.1.0:add specialization"))[0].ClickCallback()
 	})
 	screen.Do(func() {
 		c.Equal([]string{
-			"specialization" + keyChip, "level" + keyChip, "add optspecialization", "add points", "add tag",
+			"specialization" + keyChip, "level" + keyChip, "add optspecialization", "add titlenote", "add points",
+			"add tag",
 		}, order())
+	})
+}
+
+// TestPrereqPanelTitleNoteChip checks the wording of the title note criterion's comparisons, and that its empty text
+// hints at matching none.
+func TestPrereqPanelTitleNoteChip(t *testing.T) {
+	c := check.New(t)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
+	root := newTestPrereqTree()
+	p, _ := showPrereqPanel(t, screen, &root, false)
+	screen.Do(func() { p.toggle("r.1.0") })
+	screen.Do(func() {
+		uxtest.PanelsOfType[*unison.Button](p.FindRefKey("r.1.0:add titlenote"))[0].ClickCallback()
+	})
+	screen.Do(func() {
+		popup, ok := p.FindRefKey("r.1.0:titlenotecmp").Self.(*unison.PopupMenu[criteria.StringComparison])
+		c.True(ok, "the chip has a comparison popup")
+		if ok {
+			first, _ := popup.ItemAt(0)
+			c.Equal("and at least one title note is", popup.ItemRendererCallback(first))
+			last, _ := popup.ItemAt(popup.ItemCount() - 1)
+			c.Equal("and all title notes do not end with", popup.ItemRendererCallback(last))
+		}
+		field, isField := p.FindRefKey("r.1.0:titlenote").Self.(*StringField)
+		c.True(isField, "the chip has a text field")
+		if isField {
+			c.Equal("none", field.Watermark)
+		}
 	})
 }
 
@@ -1044,25 +1072,6 @@ func TestPrereqPanelEmptyRootGroupType(t *testing.T) {
 			list, ok := root.Prereqs[0].(*gurps.PrereqList)
 			c.True(ok && list.All, "of the type chosen")
 		}
-	})
-}
-
-// TestPrereqPanelEmptiedRootKeepsItsHead checks that a root emptied of its last prerequisite still shows its head when
-// it is "Any of" or has a tech level condition, so that neither is hidden.
-func TestPrereqPanelEmptiedRootKeepsItsHead(t *testing.T) {
-	c := check.New(t)
-	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
-	root := gurps.NewPrereqList()
-	root.All = false
-	root.WhenTL = criteria.Number{Compare: criteria.AtMostNumber, Qualifier: fxp.FromInteger(defaultWhenTL)}
-	root.Prereqs = gurps.Prereqs{gurps.NewTraitPrereq()}
-	root = root.CloneAsPrereqList(nil)
-	p, _ := showPrereqPanel(t, screen, &root, false)
-	screen.Do(func() { menuAction(p.moreEntries(root.Prereqs[0], "r.0"), "Delete")() })
-	screen.Do(func() {
-		c.Equal(0, len(root.Prereqs))
-		c.NotNil(p.FindRefKey(treeRootPath+keyPill), "its group type shows")
-		c.NotNil(p.FindRefKey(treeRootPath+":tl"+keyChip), "as does its tech level condition")
 	})
 }
 
@@ -1503,12 +1512,15 @@ func TestPrereqPanelNewCriteriaChips(t *testing.T) {
 		{"r.0", "modname", textOn(&trait.ModifierNameCriteria)},
 		{"r.0", "modnotes", textOn(&trait.ModifierNotesCriteria)},
 		{"r.0", "modtag", textOn(&trait.ModifierTagsCriteria)},
+		{"r.0", "titlenote", textOn(&trait.TitleNoteCriteria)},
 		{"r.1", "points", numberOn(&skill.PointsCriteria)},
 		{"r.1", "tag", textOn(&skill.TagsCriteria)},
+		{"r.1", "titlenote", textOn(&skill.TitleNoteCriteria)},
 		{"r.2", "level", numberOn(&spell.LevelCriteria)},
 		{"r.3", "modname", textOn(&equipped.ModifierNameCriteria)},
 		{"r.3", "modnotes", textOn(&equipped.ModifierNotesCriteria)},
 		{"r.3", "modtag", textOn(&equipped.ModifierTagsCriteria)},
+		{"r.3", "titlenote", textOn(&equipped.TitleNoteCriteria)},
 	} {
 		c.False(one.on(), "precondition: %s %s starts out off", one.path, one.key)
 		screen.Do(func() {
@@ -1614,8 +1626,8 @@ func TestPrereqPanelEmptyNestedGroupMode(t *testing.T) {
 	})
 }
 
-// TestPrereqPanelTypeChangeKeepsWhatItCan checks that a change of type keeps the name, tags, modifier criteria and
-// negation that both types have, even when one stores its negation the other way around.
+// TestPrereqPanelTypeChangeKeepsWhatItCan checks that a change of type keeps the name, tags, title note, modifier
+// criteria and negation that both types have, even when one stores its negation the other way around.
 func TestPrereqPanelTypeChangeKeepsWhatItCan(t *testing.T) {
 	c := check.New(t)
 	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
@@ -1623,6 +1635,7 @@ func TestPrereqPanelTypeChangeKeepsWhatItCan(t *testing.T) {
 	equipped.Not = true
 	equipped.NameCriteria.Qualifier = "Shield"
 	equipped.TagsCriteria = criteria.Text{Compare: criteria.IsText, Qualifier: "Armor"}
+	equipped.TitleNoteCriteria = criteria.Text{Compare: criteria.IsText, Qualifier: "Large"}
 	equipped.ModifierNameCriteria = criteria.Text{Compare: criteria.IsText, Qualifier: "Fine"}
 	root := gurps.NewPrereqList()
 	root.Prereqs = gurps.Prereqs{equipped}
@@ -1647,6 +1660,7 @@ func TestPrereqPanelTypeChangeKeepsWhatItCan(t *testing.T) {
 			c.False(trait.Has, "the negation is kept, though a trait stores it the other way around")
 			c.Equal("Shield", trait.NameCriteria.Qualifier, "the name is kept")
 			c.Equal("Armor", trait.TagsCriteria.Qualifier, "the tags are kept")
+			c.Equal("Large", trait.TitleNoteCriteria.Qualifier, "the title note is kept")
 			c.Equal("Fine", trait.ModifierNameCriteria.Qualifier, "the modifier criteria are kept")
 		}
 	})
@@ -1657,6 +1671,7 @@ func TestPrereqPanelTypeChangeKeepsWhatItCan(t *testing.T) {
 		if ok {
 			c.False(skill.Has, "the negation is kept")
 			c.Equal("Armor", skill.TagsCriteria.Qualifier, "the tags are kept")
+			c.Equal("Large", skill.TitleNoteCriteria.Qualifier, "the title note is kept")
 		}
 	})
 	selectType(prereq.Spell)

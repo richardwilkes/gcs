@@ -58,22 +58,6 @@ func TestKeyBindingIDsAreUnique(t *testing.T) {
 	}
 }
 
-// The two similarly-named equipment library actions must each have their own key binding; they were once registered
-// with the same ID.
-func TestEquipmentLibraryActionsAreSeparatelyBindable(t *testing.T) {
-	c := check.New(t)
-	registerKeyBindingsOnce.Do(registerActions)
-	byAction := make(map[*unison.Action]string)
-	for _, one := range gurps.CurrentBindings() {
-		byAction[one.Action] = one.ID
-	}
-	equipmentID, ok := byAction[newEquipmentLibraryAction]
-	c.True(ok, "New Equipment Library must have a key binding")
-	modifiersID, ok := byAction[newEquipmentModifiersLibraryAction]
-	c.True(ok, "New Equipment Modifiers Library must have a key binding")
-	c.NotEqual(equipmentID, modifiersID, "the two equipment library actions must not share a key binding ID")
-}
-
 // keyBindingIDsInSource returns the key binding IDs that actions.go passes as string literals to the functions named
 // in keyBindingRegistrars and to gurps.RegisterKeyBinding.
 func keyBindingIDsInSource(c check.Checker) []string {

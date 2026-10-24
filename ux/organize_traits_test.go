@@ -101,9 +101,10 @@ func rootRowNames(table *unison.Table[*Node[*gurps.Trait]]) []string {
 	return names
 }
 
-// TestOrganizeTraitsOnSheet verifies that the command files a sheet's loose top-level traits into the standard set of
-// category containers and reports the change.
-func TestOrganizeTraitsOnSheet(t *testing.T) {
+// TestOrganizeTraitsUndoIsASingleStep verifies that organizing a sheet's traits files its loose top-level traits into
+// the standard set of category containers, marks the sheet as modified and records exactly one undoable edit, so that
+// a single undo puts every trait back at the top level and a redo files them all away again.
+func TestOrganizeTraitsUndoIsASingleStep(t *testing.T) {
 	c := check.New(t)
 	sheet := newTestSheetForTemplate(t)
 	entity := sheet.Entity()
@@ -116,27 +117,14 @@ func TestOrganizeTraitsOnSheet(t *testing.T) {
 	c.False(sheet.Modified(), "the sheet must start out unmodified")
 	c.Equal(len(organizeTraitsTestCategories), sheet.Traits.Table.RootRowCount(),
 		"the sheet must start out with each trait at the top level")
-
-	sheet.AsPanel().PerformCmd(nil, OrganizeTraitsItemID)
-
-	checkOrganizedTraits(c, entity.Traits)
-	c.Equal(len(organizeTraitsTestCategories), sheet.Traits.Table.RootRowCount(),
-		"the list on screen must show one row per category container, but shows %v", rootRowNames(sheet.Traits.Table))
-	c.True(sheet.Modified(), "organizing the traits must mark the sheet as modified")
-}
-
-// TestOrganizeTraitsUndoIsASingleStep verifies that organizing a sheet's traits records exactly one undoable edit, so
-// that a single undo puts every trait back at the top level and a redo files them all away again.
-func TestOrganizeTraitsUndoIsASingleStep(t *testing.T) {
-	c := check.New(t)
-	sheet := newTestSheetForTemplate(t)
-	entity := sheet.Entity()
-	entity.Traits = newOrganizeTraitsTestList(entity)
-	sheet.Rebuild(true)
 	original := traitNames(entity.Traits)
 	c.False(sheet.undoMgr.CanUndo(), "nothing has been done yet")
 
 	sheet.AsPanel().PerformCmd(nil, OrganizeTraitsItemID)
+	checkOrganizedTraits(c, entity.Traits)
+	c.Equal(len(organizeTraitsTestCategories), sheet.Traits.Table.RootRowCount(),
+		"the list on screen must show one row per category container, but shows %v", rootRowNames(sheet.Traits.Table))
+	c.True(sheet.Modified(), "organizing the traits must mark the sheet as modified")
 	c.True(sheet.undoMgr.CanUndo(), "organizing the traits must be undoable")
 
 	sheet.undoMgr.Undo()

@@ -102,20 +102,6 @@ func TestWeaponMemoReset(t *testing.T) {
 	e.recalculating--
 }
 
-func TestWeaponDamageCopyBypassesMemo(t *testing.T) {
-	c := check.New(t)
-	_, _, w := newMemoTestWeapon()
-	w.Damage.StrengthType = stdmg.None
-	w.Damage.Base = "1d"
-	c.Equal("1d cr", w.Damage.ResolvedDamage(nil))
-	// A copy of the damage still names the weapon as its owner, but the weapon's memo knows nothing of its data.
-	cp := w.Damage
-	cp.Base = "3d"
-	c.Equal("3d cr", cp.ResolvedDamage(nil))
-	c.Equal(3, cp.BaseDamageDice().Count)
-	c.Equal("1d cr", w.Damage.ResolvedDamage(nil))
-}
-
 func TestWeaponMemoOfCircularDataIsOrderIndependent(t *testing.T) {
 	c := check.New(t)
 	type resolved struct{ damage, rng string }

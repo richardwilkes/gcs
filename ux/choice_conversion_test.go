@@ -64,14 +64,16 @@ func TestChoiceConversionCommandsFollowTheSelection(t *testing.T) {
 }
 
 // TestChoiceConversionWarnsAndIsUndoable verifies that converting a group holding data a choice container can't keep
-// asks first, removes that data, and that undo puts it all back.
+// asks first, removes that data, and that undo puts it all back, while a group holding nothing it can't keep is
+// converted without a question.
 func TestChoiceConversionWarnsAndIsUndoable(t *testing.T) {
 	c := check.New(t)
 	group := gurps.NewTrait(nil, nil, true)
 	group.SelfControl = selfctrl.CR12
 	group.Modifiers = []*gurps.TraitModifier{gurps.NewTraitModifier(nil, nil, false)}
 	group.Source = gurps.Source{Library: "lib", Path: "group.adq", TID: group.ID()}
-	template := newTestTemplateWithTraits(group)
+	clean := gurps.NewTrait(nil, nil, true)
+	template := newTestTemplateWithTraits(group, clean)
 	table := template.Traits.Table
 	table.SetSelectionMap(map[tid.TID]bool{group.ID(): true})
 	mgr := unison.UndoManagerFor(table)
@@ -112,22 +114,13 @@ func TestChoiceConversionWarnsAndIsUndoable(t *testing.T) {
 	c.False(gurps.IsTemplateChoiceContainer(group), "the choice container must have become a group")
 	mgr.Undo()
 	c.True(gurps.IsTemplateChoiceContainer(group), "undo must restore the choices")
-}
 
-// TestChoiceConversionOfCleanGroupDoesNotAsk verifies that a group holding nothing a choice container can't keep is
-// converted without a question.
-func TestChoiceConversionOfCleanGroupDoesNotAsk(t *testing.T) {
-	c := check.New(t)
-	group := gurps.NewTrait(nil, nil, true)
-	template := newTestTemplateWithTraits(group)
-	table := template.Traits.Table
-	table.SetSelectionMap(map[tid.TID]bool{group.ID(): true})
-	uxtest.SwapForTest(t, &askToConvertChoiceContainers, func(_, _ string) bool {
-		t.Error("nothing is lost, so nothing may be asked")
-		return false
-	})
+	asked = 0
+	answer = false
+	table.SetSelectionMap(map[tid.TID]bool{clean.ID(): true})
 	table.PerformCmd(table, ConvertToChoiceContainerItemID)
-	c.True(gurps.IsTemplateChoiceContainer(group))
+	c.Equal(0, asked, "nothing is lost, so nothing may be asked")
+	c.True(gurps.IsTemplateChoiceContainer(clean), "the clean group must have become a choice container")
 }
 
 // TestToggleDisabledSkipsChoiceContainers verifies that a choice container can't be disabled from the list, since its

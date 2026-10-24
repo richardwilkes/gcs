@@ -127,10 +127,27 @@ func TestDisabledIsClearedOffASheet(t *testing.T) {
 	c.False(eqp.Clone(LibraryFile{}, nil, nil, Copy).IsDisabled())
 }
 
+// TestDisabledItemsHaveNoUnsatisfiedReason verifies that disabling a trait, skill, spell or piece of equipment,
+// directly or by disabling a container above it, clears the unsatisfied prerequisite reason it had (for a trait, also
+// one for exceeding its maximum level) and a skill's or spell's equipment penalty, and that re-enabling it flags it
+// again.
 func TestDisabledItemsHaveNoUnsatisfiedReason(t *testing.T) {
 	c := check.New(t)
 	e := NewEntity()
-	_, skill, spell, eqp := newSwitchableItemSet(e)
+	trait, skill, spell, eqp := newSwitchableItemSet(e)
+	trait.Prereq = newPrereqListRequiringTrait("Combat Reflexes")
+	traitBox := NewTrait(e, nil, true)
+	traitBox.Name = "Martial Arts"
+	boxedTrait := newTraitNeedingMissingTrait(e, "Weapon Master")
+	boxedTrait.SetParent(traitBox)
+	traitBox.Children = append(traitBox.Children, boxedTrait)
+	e.Traits = append(e.Traits, traitBox)
+	overMax := NewTrait(e, nil, false)
+	overMax.Name = "Extra Arm"
+	overMax.CanLevel = true
+	overMax.Levels = fxp.Three
+	overMax.MaxLevels = "2"
+	e.Traits = append(e.Traits, overMax)
 	box := NewEquipment(e, nil, true)
 	boxed := NewEquipment(e, box, false)
 	box.Children = []*Equipment{boxed}
@@ -148,6 +165,9 @@ func TestDisabledItemsHaveNoUnsatisfiedReason(t *testing.T) {
 	eqp.Prereq = requireMissingEquipment()
 	boxed.Prereq = requireMissingEquipment()
 	e.Recalculate()
+	c.NotEqual("", trait.UnsatisfiedReason, "an enabled trait with an unmet prereq is flagged")
+	c.NotEqual("", boxedTrait.UnsatisfiedReason, "a trait inside an enabled container is flagged")
+	c.NotEqual("", overMax.UnsatisfiedReason, "a trait above its maximum level is flagged")
 	c.NotEqual("", skill.UnsatisfiedReason)
 	c.NotEqual("", spell.UnsatisfiedReason)
 	c.NotEqual("", eqp.UnsatisfiedReason)
@@ -155,11 +175,17 @@ func TestDisabledItemsHaveNoUnsatisfiedReason(t *testing.T) {
 	c.True(skill.takesEquipmentPenalty)
 	c.True(spell.takesEquipmentPenalty)
 
+	trait.SetDisabled(true)
+	traitBox.SetDisabled(true)
+	overMax.SetDisabled(true)
 	skill.SetDisabled(true)
 	spell.SetDisabled(true)
 	eqp.SetDisabled(true)
 	box.SetDisabled(true)
 	e.Recalculate()
+	c.Equal("", trait.UnsatisfiedReason, "disabling the trait clears the stale reason")
+	c.Equal("", boxedTrait.UnsatisfiedReason, "disabling the container clears the nested trait's stale reason")
+	c.Equal("", overMax.UnsatisfiedReason, "disabling the trait clears the maximum-level reason")
 	c.Equal("", skill.UnsatisfiedReason)
 	c.Equal("", spell.UnsatisfiedReason)
 	c.Equal("", eqp.UnsatisfiedReason)
@@ -167,11 +193,17 @@ func TestDisabledItemsHaveNoUnsatisfiedReason(t *testing.T) {
 	c.False(skill.takesEquipmentPenalty)
 	c.False(spell.takesEquipmentPenalty)
 
+	trait.SetDisabled(false)
+	traitBox.SetDisabled(false)
+	overMax.SetDisabled(false)
 	skill.SetDisabled(false)
 	spell.SetDisabled(false)
 	eqp.SetDisabled(false)
 	box.SetDisabled(false)
 	e.Recalculate()
+	c.NotEqual("", trait.UnsatisfiedReason, "re-enabling the trait flags it again")
+	c.NotEqual("", boxedTrait.UnsatisfiedReason)
+	c.NotEqual("", overMax.UnsatisfiedReason)
 	c.NotEqual("", skill.UnsatisfiedReason)
 	c.NotEqual("", spell.UnsatisfiedReason)
 	c.NotEqual("", eqp.UnsatisfiedReason)

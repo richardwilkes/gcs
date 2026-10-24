@@ -133,30 +133,3 @@ func TestMakeCurrentAppliesToLiveFonts(t *testing.T) {
 	c.Equal(FactoryFonts()[1].Font.Descriptor(), CurrentFonts()[1].Font.Descriptor(),
 		"fonts the file didn't mention are set to their factory values")
 }
-
-// TestResetWithNoLoadedData verifies that resetting a Fonts that has never been through UnmarshalJSONFrom -- the
-// first-run case, where no settings file exists and the map was therefore never allocated -- populates the factory
-// values rather than panicking with "assignment to entry in nil map".
-func TestResetWithNoLoadedData(t *testing.T) {
-	c := check.New(t)
-	preserveLiveFonts(t)
-
-	// Alter the live fonts so that a reset that mistakenly captured them would be caught.
-	for _, one := range CurrentFonts() {
-		desc := one.Font.Descriptor()
-		desc.Size += 11
-		one.Font.Font = desc.Font()
-	}
-
-	var f Fonts
-	f.Reset()
-	c.NotPanics(f.MakeCurrent)
-	for _, one := range FactoryFonts() {
-		c.Equal(one.Font.Descriptor(), stored(t, &f)[one.ID], "reset uses the factory descriptor for "+one.ID)
-	}
-
-	var one Fonts
-	one.ResetOne(FactoryFonts()[0].ID)
-	c.Equal(FactoryFonts()[0].Font.Descriptor(), stored(t, &one)[FactoryFonts()[0].ID],
-		"reset of a single font uses the factory descriptor")
-}

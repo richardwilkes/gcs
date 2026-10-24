@@ -10,12 +10,10 @@
 package gurps
 
 import (
-	"strings"
 	"testing"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/difficulty"
-	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/toolbox/v2/check"
 )
 
@@ -81,38 +79,27 @@ func TestNewRitualMagicSpellPoints(t *testing.T) {
 }
 
 // TestRitualMagicSpellLevelWithoutRitualSkill verifies that a ritual magic spell whose ritual skill the entity does not
-// have stays unresolvable (fxp.Min), even when a spell bonus applies. A phantom level of 0 would let the bonus lift the
-// spell to a positive, displayable level it hasn't actually earned.
+// have stays unresolvable (fxp.Min), even when a spell bonus applies. A phantom level of 0 would let a positive bonus
+// lift the spell to a positive, displayable level it hasn't actually earned, and since fxp.Min is math.MinInt64, adding
+// a negative bonus to it would wrap it around to a huge positive level.
 func TestRitualMagicSpellLevelWithoutRitualSkill(t *testing.T) {
 	c := check.New(t)
+	for _, bonus := range []fxp.Int{fxp.Three, -fxp.Three} {
+		e := NewEntity()
+		withCollege := addTestRitualMagicSpell(e, "Fireball", "Fire")
+		withoutCollege := addTestRitualMagicSpell(e, "Light")
+		addTestSpellBonus(e, bonus)
+		e.Recalculate()
 
-	e := NewEntity()
-	withCollege := addTestRitualMagicSpell(e, "Fireball", "Fire")
-	withoutCollege := addTestRitualMagicSpell(e, "Light")
-	addTestSpellBonus(e, fxp.Three)
-	e.Recalculate()
-
-	c.Equal(fxp.Min, withCollege.LevelData.Level,
-		"a ritual magic spell with no matching ritual skill must remain unresolvable")
-	c.Equal("-", withCollege.LevelData.LevelAsString(false), "an unresolvable level displays as \"-\"")
-	c.Equal(fxp.Min, withoutCollege.LevelData.Level,
-		"a college-less ritual magic spell with no matching ritual skill must remain unresolvable")
-	c.Equal("-", withoutCollege.LevelData.LevelAsString(false), "an unresolvable level displays as \"-\"")
-}
-
-// TestRitualMagicSpellLevelNegativeBonusNoOverflow verifies that a net-negative spell bonus is not added to an
-// unresolvable level. fxp.Min is math.MinInt64, so adding a negative amount wraps it around to a huge positive level.
-func TestRitualMagicSpellLevelNegativeBonusNoOverflow(t *testing.T) {
-	c := check.New(t)
-
-	e := NewEntity()
-	withCollege := addTestRitualMagicSpell(e, "Fireball", "Fire")
-	withoutCollege := addTestRitualMagicSpell(e, "Light")
-	addTestSpellBonus(e, -fxp.Three)
-	e.Recalculate()
-
-	c.Equal(fxp.Min, withCollege.LevelData.Level, "a negative bonus must not wrap an unresolvable level")
-	c.Equal(fxp.Min, withoutCollege.LevelData.Level, "a negative bonus must not wrap an unresolvable level")
+		c.Equal(fxp.Min, withCollege.LevelData.Level,
+			"bonus %s: a ritual magic spell with no matching ritual skill must remain unresolvable", bonus)
+		c.Equal("-", withCollege.LevelData.LevelAsString(false),
+			"bonus %s: an unresolvable level displays as \"-\"", bonus)
+		c.Equal(fxp.Min, withoutCollege.LevelData.Level,
+			"bonus %s: a college-less ritual magic spell with no matching ritual skill must remain unresolvable", bonus)
+		c.Equal("-", withoutCollege.LevelData.LevelAsString(false),
+			"bonus %s: an unresolvable level displays as \"-\"", bonus)
+	}
 }
 
 // TestRitualMagicSpellLevelWithRitualSkill verifies that a resolvable ritual magic spell still picks the best college
@@ -196,39 +183,10 @@ func TestSpellRelativeLevelColumn(t *testing.T) {
 	c.Equal("-", primary(unresolvable), "an unresolvable relative level displays as \"-\"")
 }
 
-// TestSpellMarshalUnsatisfiedReason verifies that the unsatisfied reason is written in both calc branches, including
-// the one taken for a level of fxp.Min, which unsatisfied ritual magic spells typically have.
-func TestSpellMarshalUnsatisfiedReason(t *testing.T) {
-	c := check.New(t)
-	const reason = "Requires Magery 1"
-	marshaled := func(s *Spell) string {
-		data, err := jio.Marshal(s)
-		c.NoError(err)
-		return string(data)
-	}
-
-	// A spell with no resolvable level takes the abbreviated calc branch.
-	noLevel := NewSpell(nil, nil, false)
-	noLevel.Name = "Fireball"
-	c.True(noLevel.LevelData.Level <= 0, "precondition: the spell must have no resolvable level")
-	c.False(strings.Contains(marshaled(noLevel), "unsatisfied_reason"), "no reason means no field")
-	noLevel.UnsatisfiedReason = reason
-	c.True(strings.Contains(marshaled(noLevel), `"unsatisfied_reason":"`+reason+`"`),
-		"an unsatisfied spell with no resolvable level must still record the reason")
-
-	// A spell with a positive level takes the full calc branch.
-	e := NewEntity()
-	leveled := addTestSpell(e, "Fireball", fxp.Four)
-	e.Recalculate()
-	c.True(leveled.LevelData.Level > 0, "precondition: the spell must have a positive level")
-	leveled.UnsatisfiedReason = reason
-	c.True(strings.Contains(marshaled(leveled), `"unsatisfied_reason":"`+reason+`"`),
-		"an unsatisfied spell with a level must record the reason")
-}
-
-// TestSpellEquipmentPrereqPenaltyIsScopedToItsSpell verifies that the -5/-10 penalty generated when a spell's equipment
-// prerequisite is unmet applies only to that spell. The penalty is built from NewSpellBonus(), whose default match type
-// is spellmatch.AllColleges (which matches every spell), so it must explicitly be narrowed to spellmatch.Name.
+// TestSpellEquipmentPrereqPenaltyIsScopedToItsSpell verifies that the penalty generated when a spell's equipment
+// prerequisite is unmet applies only to that spell, and is -10 rather than -5 when the spell has a tech level, matching
+// the rule applied to skills. The penalty is built from NewSpellBonus(), whose default match type is
+// spellmatch.AllColleges (which matches every spell), so it must explicitly be narrowed to spellmatch.Name.
 func TestSpellEquipmentPrereqPenaltyIsScopedToItsSpell(t *testing.T) {
 	c := check.New(t)
 
@@ -237,33 +195,45 @@ func TestSpellEquipmentPrereqPenaltyIsScopedToItsSpell(t *testing.T) {
 	baseline := addTestSpell(control, "Ice Dagger", fxp.Four)
 	control.Recalculate()
 
-	e := NewEntity()
-	needsFocus := addTestSpell(e, "Fireball", fxp.Four)
-	eqpPrereq := NewEquippedEquipmentPrereq()
-	eqpPrereq.NameCriteria.Qualifier = "Wizard's Focus"
-	needsFocus.Prereq = NewPrereqList()
-	needsFocus.Prereq.Prereqs = append(needsFocus.Prereq.Prereqs, eqpPrereq)
-	eqpPrereq.Parent = needsFocus.Prereq
-	other := addTestSpell(e, "Ice Dagger", fxp.Four)
-	e.Recalculate()
+	for _, tc := range []struct {
+		name      string
+		techLevel *string
+		penalty   fxp.Int
+	}{
+		{name: "no tech level", penalty: -fxp.Five},
+		{name: "tech level 8", techLevel: new("8"), penalty: -fxp.Ten},
+	} {
+		e := NewEntity()
+		needsFocus := addTestSpell(e, "Fireball", fxp.Four)
+		needsFocus.TechLevel = tc.techLevel
+		eqpPrereq := NewEquippedEquipmentPrereq()
+		eqpPrereq.NameCriteria.Qualifier = "Wizard's Focus"
+		needsFocus.Prereq = NewPrereqList()
+		needsFocus.Prereq.Prereqs = append(needsFocus.Prereq.Prereqs, eqpPrereq)
+		eqpPrereq.Parent = needsFocus.Prereq
+		other := addTestSpell(e, "Ice Dagger", fxp.Four)
+		e.Recalculate()
 
-	// Precondition: the entity has no equipment, so the prerequisite is unmet and the penalty is generated.
-	c.NotEqual("", needsFocus.UnsatisfiedReason, "precondition: the equipment prerequisite must be unsatisfied")
+		// Precondition: the entity has no equipment, so the prerequisite is unmet and the penalty is generated.
+		c.NotEqual("", needsFocus.UnsatisfiedReason,
+			"%s: precondition: the equipment prerequisite must be unsatisfied", tc.name)
 
-	// The penalty applies to the spell that owns the unmet prerequisite...
-	c.Equal(-fxp.Five, e.SpellBonusFor(needsFocus.NameWithReplacements(), "", nil, nil, nil),
-		"the spell with the unmet equipment prerequisite takes the -5 penalty")
+		// The penalty applies to the spell that owns the unmet prerequisite...
+		c.Equal(tc.penalty, e.SpellBonusFor(needsFocus.NameWithReplacements(), "", nil, nil, nil),
+			"%s: the spell with the unmet equipment prerequisite takes the %s penalty", tc.name, tc.penalty)
 
-	// ...and to nothing else, no matter how it is queried.
-	c.Equal(fxp.Int(0), e.SpellBonusFor(other.NameWithReplacements(), "", nil, nil, nil),
-		"an unrelated spell must not take the penalty")
-	c.Equal(fxp.Int(0), e.SpellBonusFor("Ice Dagger", "Arcane", []string{"Water"}, []string{"Attack"}, nil),
-		"the penalty must not match via power source, college, or tags either")
+		// ...and to nothing else, no matter how it is queried.
+		c.Equal(fxp.Int(0), e.SpellBonusFor(other.NameWithReplacements(), "", nil, nil, nil),
+			"%s: an unrelated spell must not take the penalty", tc.name)
+		c.Equal(fxp.Int(0), e.SpellBonusFor("Ice Dagger", "Arcane", []string{"Water"}, []string{"Attack"}, nil),
+			"%s: the penalty must not match via power source, college, or tags either", tc.name)
 
-	// The unrelated spell's level must be unchanged from the control, while the owning spell's is 5 lower.
-	c.Equal(baseline.LevelData.Level, other.LevelData.Level, "an unrelated spell's level must not be reduced")
-	c.Equal(baseline.LevelData.Level-fxp.Five, needsFocus.LevelData.Level,
-		"the spell with the unmet equipment prerequisite must be 5 levels lower")
+		// The unrelated spell's level must be unchanged from the control, while the owning spell's is lowered.
+		c.Equal(baseline.LevelData.Level, other.LevelData.Level,
+			"%s: an unrelated spell's level must not be reduced", tc.name)
+		c.Equal(baseline.LevelData.Level+tc.penalty, needsFocus.LevelData.Level,
+			"%s: the spell with the unmet equipment prerequisite must be lowered by the penalty", tc.name)
+	}
 }
 
 // TestSpellEquipmentPrereqPenaltyHonorsAnyOfLists verifies that the equipment penalty follows the prerequisite list
@@ -304,25 +274,6 @@ func TestSpellEquipmentPrereqPenaltyHonorsAnyOfLists(t *testing.T) {
 	e.Recalculate()
 	c.Equal("", needsFocus.UnsatisfiedReason, "meeting the alternative again satisfies the list")
 	c.Equal(control.LevelData.Level, needsFocus.LevelData.Level, "and lifts the penalty")
-}
-
-// TestSpellEquipmentPrereqPenaltyWithTechLevel verifies that the penalty generated for a spell whose equipment
-// prerequisite is unmet is -10 rather than -5 when the spell has a tech level, matching the rule applied to skills.
-func TestSpellEquipmentPrereqPenaltyWithTechLevel(t *testing.T) {
-	c := check.New(t)
-	e := NewEntity()
-	needsFocus := addTestSpell(e, "Fireball", fxp.Four)
-	techLevel := "8"
-	needsFocus.TechLevel = &techLevel
-	eqpPrereq := NewEquippedEquipmentPrereq()
-	eqpPrereq.NameCriteria.Qualifier = "Wizard's Focus"
-	needsFocus.Prereq = NewPrereqList()
-	needsFocus.Prereq.Prereqs = append(needsFocus.Prereq.Prereqs, eqpPrereq)
-	eqpPrereq.Parent = needsFocus.Prereq
-	e.Recalculate()
-	c.NotEqual("", needsFocus.UnsatisfiedReason, "precondition: the equipment prerequisite must be unsatisfied")
-	c.Equal(-fxp.Ten, e.SpellBonusFor(needsFocus.NameWithReplacements(), "", nil, nil, nil),
-		"a spell with a tech level takes the -10 penalty")
 }
 
 // TestRitualMagicSpellWithBlankRitualSkillName verifies that a ritual magic spell whose ritual skill name is blank

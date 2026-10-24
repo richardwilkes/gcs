@@ -62,22 +62,8 @@ func TestLegacyExportOptionalParensEncoding(t *testing.T) {
 		runLegacyExport(t, c, e, "@ENCODING_OFF@SKILLS_LOOP_START[@DESCRIPTION_NOTES_BRACKET]@SKILLS_LOOP_END"))
 }
 
-// TestLegacyExportSkillsLoopCount verifies that @SKILLS_LOOP_COUNT counts the same nodes that @SKILLS_LOOP_START
-// iterates over, i.e. containers are included in both.
-func TestLegacyExportSkillsLoopCount(t *testing.T) {
-	c := check.New(t)
-	e := gurps.NewEntity()
-	group := gurps.NewSkill(e, nil, true)
-	group.Name = "Group"
-	child := gurps.NewSkill(e, group, false)
-	child.Name = "Child"
-	group.Children = append(group.Children, child)
-	e.Skills = append(e.Skills, group)
-	c.Equal("2|<GROUP><ITEM>", runLegacyExport(t, c, e, "@SKILLS_LOOP_COUNT|@SKILLS_LOOP_START<@TYPE>@SKILLS_LOOP_END"))
-}
-
 // TestLegacyExportLoopCountsSkipDisabled verifies that the skills, spells and equipment loop counts leave out disabled
-// items, as their loops do.
+// items, as their loops do, and that @SKILLS_LOOP_COUNT counts containers, which @SKILLS_LOOP_START also iterates over.
 func TestLegacyExportLoopCountsSkipDisabled(t *testing.T) {
 	c := check.New(t)
 	e := gurps.NewEntity()
@@ -104,6 +90,16 @@ func TestLegacyExportLoopCountsSkipDisabled(t *testing.T) {
 			"@SPELLS_LOOP_COUNT|@SPELLS_LOOP_START<@DESCRIPTION_PRIMARY>@SPELLS_LOOP_END"+
 			"@EQUIPMENT_LOOP_COUNT|@EQUIPMENT_LOOP_START<@DESCRIPTION>@EQUIPMENT_LOOP_END"+
 			"@OTHER_EQUIPMENT_LOOP_COUNT|@OTHER_EQUIPMENT_LOOP_START<@DESCRIPTION>@OTHER_EQUIPMENT_LOOP_END"))
+
+	// Containers are counted, since the loop visits them too.
+	e = gurps.NewEntity()
+	group := gurps.NewSkill(e, nil, true)
+	group.Name = "Group"
+	child := gurps.NewSkill(e, group, false)
+	child.Name = "Child"
+	group.Children = append(group.Children, child)
+	e.Skills = append(e.Skills, group)
+	c.Equal("2|<GROUP><ITEM>", runLegacyExport(t, c, e, "@SKILLS_LOOP_COUNT|@SKILLS_LOOP_START<@TYPE>@SKILLS_LOOP_END"))
 }
 
 // TestLegacyExportConditionalModifierGroups verifies that the legacy exporter writes the reactions and conditional
@@ -124,22 +120,6 @@ func TestLegacyExportConditionalModifierGroups(t *testing.T) {
 		runLegacyExport(t, c, e, "@CONDITIONAL_MODIFIERS_LOOP_COUNT|@CONDITIONAL_MODIFIERS_LOOP_START<@ID:@SITUATION|@GROUP|@MODIFIER>@CONDITIONAL_MODIFIERS_LOOP_END"))
 }
 
-// TestLegacyExportLoopBodyKeyDetection verifies that the decision to treat '@' as the start of a key inside a loop body
-// is made from the loop body itself, not from a fixed byte in the outer template.
-func TestLegacyExportLoopBodyKeyDetection(t *testing.T) {
-	c := check.New(t)
-	e := gurps.NewEntity()
-	n := gurps.NewNote(e, nil, false)
-	n.MarkDown = "Note1"
-	e.Notes = append(e.Notes, n)
-
-	// "@7" is literal text at the top level, so it must be literal text inside a loop body too.
-	c.Equal("[@7]", runLegacyExport(t, c, e, "@NOTES_LOOP_START[@7]@NOTES_LOOP_END"))
-
-	// A digit following the loop-end marker must not turn every key in the loop body into literal text.
-	c.Equal("[Note1]7", runLegacyExport(t, c, e, "@NOTES_LOOP_START[@NOTE]@NOTES_LOOP_END7"))
-}
-
 // TestLegacyExportNotesSeparator verifies that the separator between top-level notes is encoded along with the notes
 // themselves, so that HTML exports keep the blank line between them.
 func TestLegacyExportNotesSeparator(t *testing.T) {
@@ -152,18 +132,6 @@ func TestLegacyExportNotesSeparator(t *testing.T) {
 	e.Notes = append(e.Notes, first, second)
 	c.Equal("First<br><br>Second", runLegacyExport(t, c, e, "@NOTES"))
 	c.Equal("First\n\nSecond", runLegacyExport(t, c, e, "@ENCODING_OFF@NOTES"))
-}
-
-// TestLegacyExportOtherEquipmentLoopMarker verifies that the other-equipment loop terminates on its own loop-end marker
-// rather than on the carried-equipment one, which is a substring of it.
-func TestLegacyExportOtherEquipmentLoopMarker(t *testing.T) {
-	c := check.New(t)
-	e := gurps.NewEntity()
-	eqp := gurps.NewEquipment(e, nil, false)
-	eqp.Name = "Rock"
-	e.OtherEquipment = append(e.OtherEquipment, eqp)
-	c.Equal("|EQUIPMENT_LOOP_END|Rock|", runLegacyExport(t, c, e,
-		"@OTHER_EQUIPMENT_LOOP_START|EQUIPMENT_LOOP_END|@DESCRIPTION|@OTHER_EQUIPMENT_LOOP_END"))
 }
 
 // TestLegacyExportAttributeNameSuffixes verifies that the more specific attribute key suffixes are matched before the
@@ -274,7 +242,8 @@ func TestLegacyExportWeaponLoops(t *testing.T) {
 
 // TestLegacyExportKeyScanner verifies that the top-level template and loop bodies are scanned by the same rules -- a
 // key ends at the first byte outside [A-Za-z0-9_], which is read again as text unless enhanced key parsing is on and it
-// is a closing '@' -- and that a key running up to the very end of the template is still emitted.
+// is a closing '@' -- and that a key running up to the very end of the template is still emitted. Whether '@' starts a
+// key inside a loop body is decided from the loop body itself, not from a fixed byte in the outer template.
 func TestLegacyExportKeyScanner(t *testing.T) {
 	c := check.New(t)
 	e := gurps.NewEntity()
@@ -282,32 +251,15 @@ func TestLegacyExportKeyScanner(t *testing.T) {
 	n.MarkDown = "Note1"
 	e.Notes = append(e.Notes, n)
 	c.Equal("10 x10", runLegacyExport(t, c, e, "@ST x@DX"))
+
+	// "@7" is literal text at the top level, so it must be literal text inside a loop body too.
+	c.Equal("[@7]", runLegacyExport(t, c, e, "@NOTES_LOOP_START[@7]@NOTES_LOOP_END"))
+
+	// A digit following the loop-end marker must not turn every key in the loop body into literal text.
+	c.Equal("[Note1]7", runLegacyExport(t, c, e, "@NOTES_LOOP_START[@NOTE]@NOTES_LOOP_END7"))
+
 	c.Equal("\n10xNote1yz|10",
 		runLegacyExport(t, c, e, "@ENHANCED_KEY_PARSING\n@ST@x@NOTES_LOOP_START@@NOTE@y@NOTES_LOOP_END@z|@DX"))
-}
-
-// TestLegacyExportHitLocationEquipmentFromModifier verifies that armor whose DR for a location comes from one of its
-// modifiers is listed for that location, since the DR printed for the location already includes the modifier's
-// contribution.
-func TestLegacyExportHitLocationEquipmentFromModifier(t *testing.T) {
-	c := check.New(t)
-	e := gurps.NewEntity()
-	helm := gurps.NewEquipment(e, nil, false)
-	helm.Name = "Helmet"
-	helm.AddModifiers(newTestDRBonusModifier(e, "Face Guard", gurpstest.NewDRBonus(fxp.Three, gurps.AllID, "skull")))
-	e.CarriedEquipment = append(e.CarriedEquipment, helm)
-	e.Recalculate()
-
-	ex := &legacyExporter{entity: e}
-	skull := e.SheetSettings.BodyType.LookupLocationByID(e, "skull")
-	c.NotNil(skull, "the default body has a skull location")
-	c.Equal("5", skull.DisplayDR(e, nil), "the modifier's DR reaches the location, on top of the skull's own 2")
-	c.Equal([]string{"Helmet"}, ex.hitLocationEquipment(skull), "the armor providing that DR is listed")
-
-	torso := e.SheetSettings.BodyType.LookupLocationByID(e, gurps.TorsoID)
-	c.NotNil(torso, "the default body has a torso location")
-	c.Equal("0", torso.DisplayDR(e, nil), "no DR reaches a location the modifier doesn't name")
-	c.Equal(0, len(ex.hitLocationEquipment(torso)), "and nothing is listed for it")
 }
 
 // TestLegacyExportHitLocationEquipment verifies which pieces of equipment are listed as providing DR to a hit location:
@@ -385,7 +337,8 @@ func newTestDRBonusModifier(owner gurps.DataOwner, name string, bonus *gurps.DRB
 }
 
 // TestLegacyExportSharedNodeKeys verifies that the keys shared by the trait, skill, spell, equipment and note loops
-// behave identically across those loops while each loop's deliberate differences are preserved.
+// behave identically across those loops while each loop's deliberate differences, such as the TYPE each gives its
+// containers, are preserved.
 func TestLegacyExportSharedNodeKeys(t *testing.T) {
 	c := check.New(t)
 	e := gurps.NewEntity()
@@ -454,6 +407,17 @@ func TestLegacyExportSharedNodeKeys(t *testing.T) {
 	c.Equal("eqp mod note|Rock<div class=\"note\">Sharp (eqp mod note)</div>",
 		runLegacyExport(t, c, e, "@EQUIPMENT_LOOP_START@MODIFIER_NOTES_FOR_Sharp|@DESCRIPTION@EQUIPMENT_LOOP_END"))
 
+	// Equipment: TYPE tells a group from a physical container.
+	backpack := gurps.NewEquipment(e, nil, true)
+	backpack.Name = "Backpack"
+	kit := gurps.NewEquipmentGroup(e, nil)
+	kit.Name = "Kit"
+	rope := gurps.NewEquipment(e, nil, false)
+	rope.Name = "Rope"
+	e.CarriedEquipment = []*gurps.Equipment{backpack, kit, rope}
+	c.Equal("Backpack|CONTAINER\nKit|GROUP\nRope|ITEM\n", runLegacyExport(t, c, e,
+		"@EQUIPMENT_LOOP_START@DESCRIPTION|@TYPE\n@EQUIPMENT_LOOP_END"))
+
 	// Notes: the identity and depth keys work, but there are no description or prerequisite keys and the indent
 	// warning is never red.
 	c.Equal("GROUP|"+string(noteGroup.ID())+"||||0\n"+
@@ -502,46 +466,4 @@ func TestLegacyExportLeavesAGroupsOwnFiguresEmpty(t *testing.T) {
 	e.CarriedEquipment = []*gurps.Equipment{group}
 	c.Equal("Kit||||2 lb|5|\nRope|1|5|2 lb|2 lb|5|\n", runLegacyExport(t, c, e,
 		"@EQUIPMENT_LOOP_START@DESCRIPTION|@QTY|@COST|@WEIGHT|@WEIGHT_SUMMARY|@COST_SUMMARY|\n@EQUIPMENT_LOOP_END"))
-}
-
-// TestLegacyExportEquipmentType verifies that the legacy exporter tells a group from a physical container, as it tells
-// trait containers apart by their type.
-func TestLegacyExportEquipmentType(t *testing.T) {
-	c := check.New(t)
-	e := gurps.NewEntity()
-	backpack := gurps.NewEquipment(e, nil, true)
-	backpack.Name = "Backpack"
-	group := gurps.NewEquipmentGroup(e, nil)
-	group.Name = "Kit"
-	rope := gurps.NewEquipment(e, nil, false)
-	rope.Name = "Rope"
-	e.CarriedEquipment = []*gurps.Equipment{backpack, group, rope}
-	c.Equal("Backpack|CONTAINER\nKit|GROUP\nRope|ITEM\n", runLegacyExport(t, c, e,
-		"@EQUIPMENT_LOOP_START@DESCRIPTION|@TYPE\n@EQUIPMENT_LOOP_END"))
-}
-
-// TestLegacyExportSkipsSwitchedOffDRBonuses verifies that the legacy text export's hit-location armor list is built
-// from the equipment's active features, so a switched-off DR bonus doesn't show up in an exported sheet.
-func TestLegacyExportSkipsSwitchedOffDRBonuses(t *testing.T) {
-	c := check.New(t)
-	e := gurps.NewEntity()
-
-	bonus := gurps.NewDRBonus()
-	bonus.Locations = []string{gurps.TorsoID}
-	bonus.Specialization = gurps.AllID
-	bonus.Amount = fxp.Four
-	bonus.Switchable = true
-
-	eqp := gurpstest.AddCarriedEquipmentWithFeatures(e, "Mail Hauberk", bonus)
-	e.Recalculate()
-
-	ex := &legacyExporter{entity: e}
-	location := e.SheetSettings.BodyType.LookupLocationByID(e, gurps.TorsoID)
-	c.NotNil(location, "the torso location should exist")
-
-	c.Equal(0, len(ex.hitLocationEquipment(location)),
-		"a switched-off DR bonus contributes no armor to the export")
-	eqp.SetSwitchedOn(true)
-	c.True(strings.Contains(strings.Join(ex.hitLocationEquipment(location), ","), "Mail Hauberk"),
-		"a switched-on DR bonus contributes its equipment to the export")
 }

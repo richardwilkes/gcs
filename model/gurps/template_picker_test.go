@@ -27,17 +27,6 @@ import (
 	"github.com/richardwilkes/toolbox/v2/tid"
 )
 
-// TestTemplatePickerLoadsUnknownTypeAsNotApplicable verifies that a picker type this version doesn't know, as a newer
-// or hand-edited file might hold, loads as NotApplicable, leaving no picker at all rather than one with a type nothing
-// can handle. This is what lets the rest of the code read a picker's type without checking it first.
-func TestTemplatePickerLoadsUnknownTypeAsNotApplicable(t *testing.T) {
-	c := check.New(t)
-	var tp TemplatePicker
-	c.NoError(json.Unmarshal([]byte(`{"type":"not_a_real_picker_type"}`), &tp))
-	c.Equal(picker.NotApplicable, tp.Type)
-	c.True(tp.IsZero())
-}
-
 func TestHasTemplatePickerData(t *testing.T) {
 	c := check.New(t)
 	plain := NewTrait(nil, nil, false)
@@ -64,28 +53,11 @@ func TestHasTemplatePickerData(t *testing.T) {
 }
 
 // TestClearTemplatePickerData verifies that the choices are removed from every container beneath the rows as well,
-// since a copied container brings its whole subtree with it.
+// since a copied container brings its whole subtree with it, and that a container losing its choices also loses its
+// source, while the rest of the subtree keeps theirs. Only a template may hold choices and a template is never a
+// source, so the source a container with choices points at can't have them, and syncing with it would quietly take
+// them away.
 func TestClearTemplatePickerData(t *testing.T) {
-	c := check.New(t)
-	outer := NewTrait(nil, nil, true)
-	outer.Name = "Advantages"
-	inner := newTemplateChoiceTrait("Pick One", "First", "Second")
-	inner.SetParent(outer)
-	outer.Children = []*Trait{inner}
-
-	c.True(HasTemplatePickerData(outer))
-
-	ClearTemplatePickerData(outer)
-
-	c.False(HasTemplatePickerData(outer), "no picker data may be left")
-
-	c.Equal(2, len(inner.Children), "clearing must not disturb anything else")
-}
-
-// TestClearTemplatePickerDataClearsSource verifies that a container losing its choices also loses its source, while
-// the rest of the subtree keeps theirs. Only a template may hold choices and a template is never a source, so the
-// source a container with choices points at can't have them, and syncing with it would quietly take them away.
-func TestClearTemplatePickerDataClearsSource(t *testing.T) {
 	c := check.New(t)
 	outer := NewTrait(nil, nil, true)
 	outer.Name = "Advantages"
@@ -97,8 +69,13 @@ func TestClearTemplatePickerDataClearsSource(t *testing.T) {
 	child := inner.Children[0]
 	child.Source = Source{Library: "lib", Path: "child.adq", TID: child.ID()}
 
+	c.True(HasTemplatePickerData(outer))
+
 	ClearTemplatePickerData(outer)
 
+	c.False(HasTemplatePickerData(outer), "no picker data may be left")
+
+	c.Equal(2, len(inner.Children), "clearing must not disturb anything else")
 	c.Equal(Source{}, inner.Source, "the container that lost its choices must lose its source as well")
 	c.NotEqual(Source{}, outer.Source, "a container that had no choices must keep its source")
 	c.NotEqual(Source{}, child.Source, "an option must keep its source")
@@ -296,7 +273,8 @@ func TestSkillChoiceConversionLosses(t *testing.T) {
 }
 
 // TestLoadingOutsideATemplateClearsPickerData verifies that only a template keeps template picker data when loaded: a
-// character sheet and a standalone list both have it removed, along with the source of each container that had it.
+// character sheet, a loot sheet and a standalone list all have it removed, along with the source of each container
+// that had it, leaving the options alone.
 func TestLoadingOutsideATemplateClearsPickerData(t *testing.T) {
 	c := check.New(t)
 	choices := newTemplateChoiceTrait("Pick One", "First", "Second")
@@ -306,6 +284,8 @@ func TestLoadingOutsideATemplateClearsPickerData(t *testing.T) {
 	entity.Traits = []*Trait{choices}
 	entity.Skills = []*Skill{NewSkillChoiceContainer(entity, nil)}
 	entity.Spells = []*Spell{NewSpellChoiceContainer(entity, nil)}
+	entity.CarriedEquipment = []*Equipment{newEquipmentChoice("Sword", "Axe")}
+	entity.OtherEquipment = []*Equipment{newEquipmentChoice("Rope", "Chain")}
 	data, err := json.Marshal(entity)
 	c.NoError(err)
 	var loadedEntity Entity
@@ -314,8 +294,19 @@ func TestLoadingOutsideATemplateClearsPickerData(t *testing.T) {
 	c.False(HasTemplatePickerData(loadedEntity.Traits...), "a character sheet must not keep picker data")
 	c.False(HasTemplatePickerData(loadedEntity.Skills...), "a character sheet must not keep skill picker data")
 	c.False(HasTemplatePickerData(loadedEntity.Spells...), "a character sheet must not keep spell picker data")
+	c.False(HasTemplatePickerData(loadedEntity.CarriedEquipment...), "carried equipment must not keep picker data")
+	c.False(HasTemplatePickerData(loadedEntity.OtherEquipment...), "other equipment must not keep picker data")
 	c.True(loadedEntity.Traits[0].Source.IsZero(), "the container that lost its picker data must lose its source")
 	c.Equal(2, len(loadedEntity.Traits[0].Children), "the options must be left alone")
+	c.Equal(2, len(loadedEntity.CarriedEquipment[0].Children), "the equipment options must be left alone")
+
+	loot := NewLoot()
+	loot.Equipment = []*Equipment{newEquipmentChoice("Sword", "Axe")}
+	data, err = json.Marshal(loot)
+	c.NoError(err)
+	var loadedLoot Loot
+	c.NoError(json.Unmarshal(data, &loadedLoot))
+	c.False(HasTemplatePickerData(loadedLoot.Equipment...), "a loot sheet must not keep picker data")
 
 	list, err := json.Marshal(&listData[*Trait]{Version: jio.CurrentDataVersion, Rows: []*Trait{choices}})
 	c.NoError(err)
@@ -323,49 +314,53 @@ func TestLoadingOutsideATemplateClearsPickerData(t *testing.T) {
 	c.NoError(err)
 	c.Equal(1, len(rows))
 	c.False(HasTemplatePickerData(rows...), "a standalone list must not keep picker data")
+
+	list, err = json.Marshal(&listData[*Equipment]{
+		Version: jio.CurrentDataVersion,
+		Rows:    []*Equipment{newEquipmentChoice("Sword", "Axe")},
+	})
+	c.NoError(err)
+	eqpRows, err := NewEquipmentFromFile(fstest.MapFS{"list.eqp": &fstest.MapFile{Data: list}}, "list.eqp")
+	c.NoError(err)
+	c.False(HasTemplatePickerData(eqpRows...), "an equipment list must not keep picker data")
 }
 
 // TestLoadingDropsPickerTypesANodeDoesNotAllow verifies that a picker of a type that means nothing for its node, as
 // only a hand-edited or foreign file can hold, is dropped when the node is loaded, while one of a type the node allows
-// is kept.
+// is kept. A type this version doesn't know loads as no picker at all rather than one with a type nothing can handle,
+// which is what lets the rest of the code read a picker's type without checking it first. A count, value or weight
+// qualifier below nothing is raised to nothing, while a points qualifier, which may be less than nothing, is kept.
 func TestLoadingDropsPickerTypesANodeDoesNotAllow(t *testing.T) {
 	c := check.New(t)
-	load := func(pickerType string, node any) {
+	var tp TemplatePicker
+	c.NoError(json.Unmarshal([]byte(`{"type":"not_a_real_picker_type"}`), &tp))
+	c.Equal(picker.NotApplicable, tp.Type, "a type this version doesn't know must load as no picker at all")
+	c.True(tp.IsZero())
+
+	load := func(templatePicker string, node any) {
 		c.NoError(json.Unmarshal([]byte(`{"id":"`+string(tid.MustNewTID(kinds.TraitContainer))+
-			`","template_picker":{"type":"`+pickerType+`"}}`), node))
+			`","template_picker":`+templatePicker+`}`), node))
 	}
 	var trait Trait
-	load("weight", &trait)
+	load(`{"type":"weight"}`, &trait)
 	c.Equal(picker.NotApplicable, trait.TemplatePicker.Type, "a trait has no weight to pick by")
-	load("points", &trait)
+	load(`{"type":"points"}`, &trait)
 	c.Equal(picker.Points, trait.TemplatePicker.Type, "a trait may be picked by points")
+	load(`{"type":"points","qualifier":{"compare":"at_most","qualifier":-5}}`, &trait)
+	c.Equal(fxp.FromInteger(-5), trait.TemplatePicker.Qualifier.Qualifier, "points may be less than nothing")
 
-	loadEquipment := func(pickerType string) *Equipment {
+	loadEquipment := func(templatePicker string) *Equipment {
 		var eqp Equipment
 		c.NoError(json.Unmarshal([]byte(`{"id":"`+string(tid.MustNewTID(kinds.EquipmentContainer))+
-			`","container_type":"group","template_picker":{"type":"`+pickerType+`"}}`), &eqp))
+			`","container_type":"group","template_picker":`+templatePicker+`}`), &eqp))
 		return &eqp
 	}
-	eqp := loadEquipment("points")
+	eqp := loadEquipment(`{"type":"points"}`)
 	c.Equal(picker.NotApplicable, eqp.TemplatePicker.Type, "equipment has no points to pick by")
 	c.True(eqp.IsGroup(), "it must be left a plain group")
-	c.Equal(picker.Weight, loadEquipment("weight").TemplatePicker.Type, "equipment may be picked by weight")
-}
-
-// TestLoadingHoldsQualifiersToTheirTypesMinimum verifies that a count, value or weight qualifier below nothing, as only
-// a hand-edited or foreign file can hold, is raised to nothing when loaded, while a points qualifier, which may be less
-// than nothing, is kept.
-func TestLoadingHoldsQualifiersToTheirTypesMinimum(t *testing.T) {
-	c := check.New(t)
-	var eqp Equipment
-	c.NoError(json.Unmarshal([]byte(`{"id":"`+string(tid.MustNewTID(kinds.EquipmentContainer))+
-		`","container_type":"group","template_picker":{"type":"value","qualifier":{"compare":"is","qualifier":-5}}}`),
-		&eqp))
+	c.Equal(picker.Weight, loadEquipment(`{"type":"weight"}`).TemplatePicker.Type, "equipment may be picked by weight")
+	eqp = loadEquipment(`{"type":"value","qualifier":{"compare":"is","qualifier":-5}}`)
 	c.Equal(fxp.Int(0), eqp.TemplatePicker.Qualifier.Qualifier, "a value may not be less than nothing")
-	var trait Trait
-	c.NoError(json.Unmarshal([]byte(`{"id":"`+string(tid.MustNewTID(kinds.TraitContainer))+
-		`","template_picker":{"type":"points","qualifier":{"compare":"at_most","qualifier":-5}}}`), &trait))
-	c.Equal(fxp.FromInteger(-5), trait.TemplatePicker.Qualifier.Qualifier, "points may be less than nothing")
 }
 
 // TestPickerMeasureRange verifies what each kind of node counts toward a choice of each type, and that a node counts

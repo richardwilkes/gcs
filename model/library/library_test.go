@@ -277,56 +277,40 @@ func TestLibrarySetPathAfterWatchFailsRestartsWatch(t *testing.T) {
 
 // TestLibraryWatchDeliversNothingUntilSomethingHappens verifies that establishing a watch delivers no event of its own,
 // root sync or otherwise. The caller has just scanned the library, so such an event is redundant, and a callback that
-// rescans and re-establishes its watches on every event (as the library navigator does) would never settle.
+// rescans and re-establishes its watches on every event (as the library navigator does) would never settle. Restarting
+// the watches after a path change then delivers exactly one root sync to each watcher, rather than one per watcher to
+// every watcher.
 func TestLibraryWatchDeliversNothingUntilSomethingHappens(t *testing.T) {
 	c := check.New(t)
 	dir := t.TempDir()
 	lib := NewLibrary("Test", "someone", "", "repo", filepath.Join(dir, "root"))
-	var events atomic.Int64
-	token := lib.Watch(func(_ *Library, _ string, _ notify.Event) { events.Add(1) }, false)
-	defer token.Stop()
-
-	waitForMonitorQueue(lib)
-	c.Equal(int64(0), events.Load(), "a newly established watch reports nothing")
-
-	// A second watch on the same library must not stir up the first one either.
-	other := lib.Watch(func(_ *Library, _ string, _ notify.Event) { events.Add(1) }, false)
-	defer other.Stop()
-	waitForMonitorQueue(lib)
-	c.Equal(int64(0), events.Load(), "adding another watch reports nothing")
-
-	// Moving the root is what a root sync is for, and now both watches get exactly one.
-	c.NoError(lib.SetPath(filepath.Join(dir, "moved")))
-	waitForMonitorQueue(lib)
-	c.Equal(int64(2), events.Load(), "each watch is told the root moved, once")
-}
-
-// TestLibrarySetPathSyncsEachWatcherOnce verifies that restarting the watches after a path change delivers exactly one
-// root sync to each watcher, rather than one per watcher to every watcher.
-func TestLibrarySetPathSyncsEachWatcherOnce(t *testing.T) {
-	c := check.New(t)
-	dir := t.TempDir()
-	lib := NewLibrary("Test", "someone", "", "repo", filepath.Join(dir, "one"))
-	const watchers = 3
-	syncs := make([]atomic.Int64, watchers)
-	tokens := make([]*MonitorToken, 0, watchers)
-	for i := range watchers {
-		tokens = append(tokens, lib.Watch(func(_ *Library, _ string, what notify.Event) {
+	var events, syncs [2]atomic.Int64
+	watch := func(i int) *MonitorToken {
+		return lib.Watch(func(_ *Library, _ string, what notify.Event) {
+			events[i].Add(1)
 			if what == EventRootSync {
 				syncs[i].Add(1)
 			}
-		}, false))
+		}, false)
 	}
-	defer func() {
-		for _, token := range tokens {
-			token.Stop()
-		}
-	}()
+	token := watch(0)
+	defer token.Stop()
 
-	c.NoError(lib.SetPath(filepath.Join(dir, "two")))
 	waitForMonitorQueue(lib)
-	for i := range watchers {
-		c.Equal(int64(1), syncs[i].Load(), "watcher %d", i)
+	c.Equal(int64(0), events[0].Load(), "a newly established watch reports nothing")
+
+	// A second watch on the same library must not stir up the first one either.
+	other := watch(1)
+	defer other.Stop()
+	waitForMonitorQueue(lib)
+	c.Equal(int64(0), events[0].Load()+events[1].Load(), "adding another watch reports nothing")
+
+	// Moving the root is what a root sync is for, and now each watch gets exactly one.
+	c.NoError(lib.SetPath(filepath.Join(dir, "moved")))
+	waitForMonitorQueue(lib)
+	for i := range events {
+		c.Equal(int64(1), syncs[i].Load(), "watch %d is told the root moved, once", i)
+		c.Equal(int64(1), events[i].Load(), "watch %d is told nothing else", i)
 	}
 }
 
@@ -853,34 +837,6 @@ func TestCheckForAvailableUpgradeWaiterHonorsItsContext(t *testing.T) {
 	c.Equal(int64(1), srv.requests.Load())
 }
 
-// TestConfigureDiscardsACheckInFlight verifies that a check which was under way when the library was pointed at a
-// different repository is discarded when it finishes, since its answer describes the old repository. The settings
-// dialog can be applied while the launch-time check is still running, and the old answer landing after the new
-// configuration would put the old repository's releases back on display and mark the library as checked.
-func TestConfigureDiscardsACheckInFlight(t *testing.T) {
-	c := check.New(t)
-	calls := countLibraryChangeNotifications(t)
-
-	client, srv := newBlockingReleasesServer(t, "5")
-	lib := NewLibrary("Test", "someone", "", "repo", t.TempDir())
-	done := startUpgradeCheck(t.Context(), lib, client)
-	<-srv.started
-	config := lib.Config()
-	config.RepoName = "other"
-	lib.Configure(config)
-	srv.release()
-	<-done
-	c.True(lib.NeedsUpgradeCheck(), "the stale check must not count as a check of the new repository")
-	_, releases := lib.AvailableReleases()
-	c.Equal(0, len(releases), "the stale check's releases must be discarded")
-	c.Equal(int64(0), calls.Load(), "a discarded check has nothing to announce")
-
-	// The next check is of the new repository, and lands as usual.
-	runUpgradeCheck(t, lib, client, srv)
-	c.False(lib.NeedsUpgradeCheck(), "the check of the new repository must complete")
-	c.Equal(int64(1), calls.Load())
-}
-
 // TestConfigureForKeyDiscardsChecksOfTheOldRepository verifies that ConfigureForKey() treats a change of repository as
 // Configure() does: the old repository's releases are dropped, the library is left needing a check, a check in flight
 // is discarded when it finishes, and the version on disk is re-read. Loading a saved set is its only use today, on
@@ -1045,7 +1001,9 @@ func TestDownloadDiscardsACheckInFlight(t *testing.T) {
 // then discarded -- the library having been pointed at a different repository while it ran -- goes on to make a check
 // of its own, of the new repository. The settings dialog starts a check as soon as a new repository is applied, and the
 // Library Explorer's buttons make one on demand; with the launch-time check still in flight, both would otherwise wait
-// on it, see it discarded, and return with nothing.
+// on it, see it discarded, and return with nothing. The discarded check itself must record none of the old repository's
+// releases and announce nothing, or its answer landing after the new configuration would put the old repository's
+// releases back on display.
 func TestCheckForAvailableUpgradeAsksAgainWhenTheJoinedCheckIsDiscarded(t *testing.T) {
 	c := check.New(t)
 	calls := countLibraryChangeNotifications(t)
@@ -1063,6 +1021,9 @@ func TestCheckForAvailableUpgradeAsksAgainWhenTheJoinedCheckIsDiscarded(t *testi
 	srv.release()
 	<-first
 	c.True(lib.NeedsUpgradeCheck(), "the first check was of the old repository and must be discarded")
+	_, releases := lib.AvailableReleases()
+	c.Equal(0, len(releases), "the stale check's releases must be discarded")
+	c.Equal(int64(0), calls.Load(), "a discarded check has nothing to announce")
 	<-srv.started
 	select {
 	case <-second:
@@ -1075,7 +1036,7 @@ func TestCheckForAvailableUpgradeAsksAgainWhenTheJoinedCheckIsDiscarded(t *testi
 	c.Equal([]string{"/repos/someone/repo/releases", "/repos/someone/other/releases"}, srv.requestPaths(),
 		"the second check must ask the new repository")
 	c.False(lib.NeedsUpgradeCheck())
-	_, releases := lib.AvailableReleases()
+	_, releases = lib.AvailableReleases()
 	c.Equal(1, len(releases))
 	c.Equal(int64(1), calls.Load(), "the new repository's update must be announced")
 }

@@ -10,6 +10,7 @@
 package fxp_test
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
@@ -69,59 +70,51 @@ func TestFeetAndInchesFormat(t *testing.T) {
 // TestLengthFeetAndInchesRoundTrip verifies that formatting a length and parsing the result back yields the original
 // value. It guards against the regression where the parser applied the sign to the feet contribution alone while the
 // formatter emitted both magnitudes unsigned, corrupting any value <= -12 inches (e.g. -30 inches -> `-2'6"` ->
-// -2*12+6 = -18 inches).
+// -2*12+6 = -18 inches). It also covers the extreme lengths, which must render as feet and inches rather than as a
+// bare "-": Min has no positive counterpart, so taking its magnitude before splitting off the feet used to leave it
+// negative and every part was then skipped as "not positive". LengthFromString saturates absurd input to Min, so a
+// hand-edited file could reach it and then be re-saved with a height of "-".
 func TestLengthFeetAndInchesRoundTrip(t *testing.T) {
 	c := check.New(t)
-	for _, inches := range []int{0, 1, 6, 12, 15, 24, 30, -1, -6, -12, -15, -24, -30, -144} {
-		original := fxp.LengthFromInteger(inches, fxp.Inch)
+	c.Equal(`-76,861,433,640,456'5.5808"`, fxp.FeetAndInches.Format(fxp.Length(fxp.Min)))
+	c.Equal(`76,861,433,640,456'5.5807"`, fxp.FeetAndInches.Format(fxp.Length(fxp.Max)))
+	inches := []int{0, 1, 6, 12, 15, 24, 30, -1, -6, -12, -15, -24, -30, -144}
+	lengths := make([]fxp.Length, 0, len(inches)+3)
+	lengths = append(lengths, fxp.Length(fxp.Min), fxp.Length(fxp.Min+1), fxp.Length(fxp.Max))
+	for _, in := range inches {
+		lengths = append(lengths, fxp.LengthFromInteger(in, fxp.Inch))
+	}
+	for _, original := range lengths {
 		text := original.String()
 		parsed, err := fxp.LengthFromString(text, fxp.Inch)
 		c.NoError(err, "parsing %q", text)
-		c.Equal(original, parsed, "round-trip of %d inches (formatted as %q)", inches, text)
-	}
-}
-
-// TestLengthFromStringNegativeFeetAndInches verifies the exact feet-and-inches strings the formatter produces for
-// negative lengths parse back to the correct negative inch counts.
-func TestLengthFromStringNegativeFeetAndInches(t *testing.T) {
-	c := check.New(t)
-	for _, d := range []struct {
-		text     string
-		expected int
-	}{
-		{text: `-6"`, expected: -6},
-		{text: `-1'`, expected: -12},
-		{text: `-1'3"`, expected: -15},
-		{text: `-2'`, expected: -24},
-		{text: `-2'6"`, expected: -30},
-	} {
-		w, err := fxp.LengthFromString(d.text, fxp.Inch)
-		c.NoError(err, "parsing %q", d.text)
-		c.Equal(fxp.LengthFromInteger(d.expected, fxp.Inch), w, "parsing %q", d.text)
+		c.Equal(original, parsed, "round-trip of %s inches (formatted as %q)", fxp.Int(original), text)
 	}
 }
 
 // TestLengthFromStringUnitSuffixes verifies that every unit's key (other than FeetAndInches, which is parsed via the
-// '/" notation), when appended to a number, parses back to that same unit. This guards against the suffix-matching
-// being sensitive to the order in which the enum is declared (e.g. "m" must not greedily match the "cm" / "km" / "m"
-// overlap).
+// '/" notation), when appended to a number in either lower or upper case, parses back to that same unit. This guards
+// against the suffix-matching being sensitive to the order in which the enum is declared (e.g. "m" must not greedily
+// match the "cm" / "km" / "m" overlap).
 func TestLengthFromStringUnitSuffixes(t *testing.T) {
 	c := check.New(t)
 	for _, unit := range fxp.LengthUnits {
 		if unit == fxp.FeetAndInches {
 			continue
 		}
-		text := "3" + unit.Key()
-		w, err := fxp.LengthFromString(text, fxp.Meter)
-		c.NoError(err, "parsing %q", text)
-		c.Equal(fxp.LengthFromInteger(3, unit), w, "parsing %q", text)
+		for _, text := range []string{"3" + unit.Key(), "3" + strings.ToUpper(unit.Key())} {
+			w, err := fxp.LengthFromString(text, fxp.Meter)
+			c.NoError(err, "parsing %q", text)
+			c.Equal(fxp.LengthFromInteger(3, unit), w, "parsing %q", text)
+		}
 	}
 }
 
 // TestLengthFromStringOptionalInchMarker verifies that the inches portion of a feet-and-inches value is honored even
 // when the closing inch marker hasn't been typed yet. The length fields validate on every keystroke and reject the rune
 // when parsing fails, so `6'2` must be a valid intermediate state -- and it must mean 6'2", not 6' with the inches
-// silently discarded.
+// silently discarded. The table also holds the strings the formatter produces for negative lengths, which must parse
+// back to the correct negative inch counts.
 func TestLengthFromStringOptionalInchMarker(t *testing.T) {
 	c := check.New(t)
 	for _, d := range []struct {
@@ -136,6 +129,11 @@ func TestLengthFromStringOptionalInchMarker(t *testing.T) {
 		{text: `12"`, expected: 12},
 		{text: `-2'6`, expected: -30},
 		{text: `6'11`, expected: 83},
+		{text: `-6"`, expected: -6},
+		{text: `-1'`, expected: -12},
+		{text: `-1'3"`, expected: -15},
+		{text: `-2'`, expected: -24},
+		{text: `-2'6"`, expected: -30},
 	} {
 		w, err := fxp.LengthFromString(d.text, fxp.Inch)
 		c.NoError(err, "parsing %q", d.text)
@@ -165,16 +163,4 @@ func TestLengthFromStringRejectsTrailingText(t *testing.T) {
 		_, err := fxp.LengthFromString(text, fxp.Inch)
 		c.HasError(err, "parsing %q should fail", text)
 	}
-}
-
-func TestLengthFromStringCaseInsensitive(t *testing.T) {
-	c := check.New(t)
-	for _, text := range []string{"0.5M", "0.5 M"} {
-		w, err := fxp.LengthFromString(text, fxp.Inch)
-		c.NoError(err, "parsing %q", text)
-		c.Equal("50 cm", fxp.Centimeter.Format(w), "parsing %q", text)
-	}
-	w, err := fxp.LengthFromString("32 YD", fxp.Inch)
-	c.NoError(err)
-	c.Equal("96'", fxp.FeetAndInches.Format(w))
 }

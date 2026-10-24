@@ -63,29 +63,22 @@ func TestDownload(t *testing.T) {
 	c.Equal(int64(len(payload)), last, "progress must finish at the full size")
 }
 
-// The check that matters: a body that is not what GitHub published must never reach the disk as if it were.
-func TestDownloadRejectsATamperedPayload(t *testing.T) {
-	c := check.New(t)
-	_, asset := serveBytes(t, []byte("the real archive"))
-	asset.SHA256 = hex.EncodeToString(make([]byte, sha256.Size))
-	dst := filepath.Join(t.TempDir(), "asset.tgz")
-
-	c.HasError(Download(t.Context(), nil, asset, dst, nil))
-	c.False(exists(dst), "a failed integrity check must not leave the file behind")
-}
-
-// Both directions of the length check: a short body is a truncated transfer, a long one means the response is not the
-// asset that was described.
+// A body that is not what GitHub published must never reach the disk as if it were: one that fails the integrity check
+// is refused, as is one of the wrong length in either direction, since a short body is a truncated transfer and a long
+// one means the response is not the asset that was described. An asset with no checksum cannot be verified, so it is
+// refused too; preflight already refuses these, so reaching here would mean a caller bypassed it.
 func TestDownloadRejectsAWrongLength(t *testing.T) {
 	c := check.New(t)
 	payload := []byte("0123456789")
 
-	for name, size := range map[string]int64{
-		"claims more than it sends": int64(len(payload)) + 5,
-		"claims less than it sends": int64(len(payload)) - 5,
+	for name, mutate := range map[string]func(*Asset){
+		"claims more than it sends":   func(a *Asset) { a.Size = int64(len(payload)) + 5 },
+		"claims less than it sends":   func(a *Asset) { a.Size = int64(len(payload)) - 5 },
+		"claims a different checksum": func(a *Asset) { a.SHA256 = hex.EncodeToString(make([]byte, sha256.Size)) },
+		"claims no checksum":          func(a *Asset) { a.SHA256 = "" },
 	} {
 		_, asset := serveBytes(t, payload)
-		asset.Size = size
+		mutate(&asset)
 		dst := filepath.Join(t.TempDir(), "asset.tgz")
 		c.HasError(Download(t.Context(), nil, asset, dst, nil), name)
 		c.False(exists(dst), "%s left a file behind", name)
@@ -111,17 +104,6 @@ func TestDownloadRejectsAnErrorResponse(t *testing.T) {
 		c.Contains(err.Error(), strconv.Itoa(code), "status %d", code)
 		c.False(exists(dst), "status %d left a file behind", code)
 	}
-}
-
-// An unverifiable asset is never fetched at all. Preflight already refuses these, so reaching here would mean a caller
-// bypassed it.
-func TestDownloadRefusesWithoutAChecksum(t *testing.T) {
-	c := check.New(t)
-	_, asset := serveBytes(t, []byte("content"))
-	asset.SHA256 = ""
-	dst := filepath.Join(t.TempDir(), "asset.tgz")
-	c.HasError(Download(t.Context(), nil, asset, dst, nil))
-	c.False(exists(dst))
 }
 
 // The Cancel button must actually stop the transfer and clean up, rather than leaving a partial file that a later run
