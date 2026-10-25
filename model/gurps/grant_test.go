@@ -900,6 +900,13 @@ func TestGrantDoesNotMeetItsCarriersPrereqs(t *testing.T) {
 		return newTraitGrant(newGrantLeveledTrait("Night Vision", fxp.One), fxp.One, grantmerge.Ignore)
 	}
 	lightGrant := func() *Grant { return newSpellGrant(newHardSpell("Light", fxp.One), fxp.One, grantmerge.Ignore) }
+	clawsGrant := func() *Grant {
+		claws := newGrantLeveledTrait("Claws", fxp.One)
+		slash := NewWeapon(claws, true)
+		slash.Usage = "Slash"
+		claws.Weapons = []*Weapon{slash}
+		return newTraitGrant(claws, fxp.One, grantmerge.Ignore)
+	}
 	// grantedNotInEffect returns true if a grant put exactly one item on the sheet and it is not in effect.
 	grantedNotInEffect := func(e *Entity) bool {
 		return len(grantedOf(e.Traits))+len(grantedOf(e.Skills))+len(grantedOf(e.Spells)) == 1 &&
@@ -921,6 +928,9 @@ func TestGrantDoesNotMeetItsCarriersPrereqs(t *testing.T) {
 		{name: "listed trait", grant: nightVisionGrant, script: `entity.traits.some(t => t.name == "Night Vision")`},
 		{name: "found spell", grant: lightGrant, script: `entity.findSpells("Light").length > 0`},
 		{name: "listed spell", grant: lightGrant, script: `entity.spells.some(s => s.name == "Light")`},
+		{name: "weapon damage", grant: clawsGrant, script: `entity.weaponDamage("Claws", "Slash") !== undefined`},
+		{name: "found weapon", grant: clawsGrant, script: `entity.findWeapons(true, "Claws", "Slash").length > 0`},
+		{name: "listed weapon", grant: clawsGrant, script: `entity.weapons.some(w => w.name == "Claws")`},
 	} {
 		t.Run("item it puts on the sheet seen by a script through its "+tc.name, func(t *testing.T) {
 			c := check.New(t)
