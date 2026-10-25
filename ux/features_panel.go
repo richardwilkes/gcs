@@ -302,15 +302,23 @@ func (p *featuresPanel) dropAt(where geom.Point, data any) (target *unison.Panel
 // rowAt returns the feature row at where, with its path and which half of it where is in, or nil when where isn't over
 // a row.
 func (p *featuresPanel) rowAt(where geom.Point) (target *unison.Panel, path string, at int) {
-	for target = p.PanelAt(where); target != nil && target != p.AsPanel(); target = target.Parent() {
-		if rowPath, isRow := target.ClientData()[featureDropKey].(string); isRow {
-			if target.PointFromRoot(p.PointToRoot(where)).Y < target.FrameRect().Height/2 {
-				return target, rowPath, dropBefore
-			}
-			return target, rowPath, dropAfter
+	if target, path = p.rowOf(p.PanelAt(where)); target == nil {
+		return nil, "", 0
+	}
+	if target.PointFromRoot(p.PointToRoot(where)).Y < target.FrameRect().Height/2 {
+		return target, path, dropBefore
+	}
+	return target, path, dropAfter
+}
+
+// rowOf returns the feature row that is the panel or holds it, with its path, or nil when it is in none.
+func (p *featuresPanel) rowOf(panel *unison.Panel) (row *unison.Panel, path string) {
+	for ; panel != nil && panel != p.AsPanel(); panel = panel.Parent() {
+		if rowPath, isRow := panel.ClientData()[featureDropKey].(string); isRow {
+			return panel, rowPath
 		}
 	}
-	return nil, "", 0
+	return nil, ""
 }
 
 // drop moves the dragged feature to where it would go.

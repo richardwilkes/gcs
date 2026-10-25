@@ -92,8 +92,9 @@ func collectGrantItems[T gurps.Node[T]](from gurps.LibraryFile, nodes []T) []*gr
 }
 
 // grant adds the controls of an open grant row: the item granted, its level, what happens when the sheet already has
-// it and, as a chip, whether the item's prerequisites are checked. While no item is chosen, or once the button naming
-// the item is clicked, a picker of the libraries' items of the kind granted follows.
+// it and, as a chip, whether the item's prerequisites are checked. A zone to drop the item on follows, which with an
+// item chosen replaces it, then, while no item is chosen or once the button naming the item or the zone is clicked, a
+// picker of the libraries' items of the kind granted.
 func (p *featuresPanel) grant(fields, box, chips *unison.Panel, path string, g *gurps.Grant) {
 	key := func(name string) string { return path + ":" + name }
 	chosen := g.Key() != ""
@@ -139,24 +140,35 @@ func (p *featuresPanel) grant(fields, box, chips *unison.Panel, path string, g *
 		func() { g.CheckPrereqs = true },
 		func() { g.CheckPrereqs = false },
 		func(chip *unison.Panel) { addJoiningWords(chip, i18n.Text("checking its prerequisites")) })
-	if !chosen {
-		box.AddChild(newEmptyPlaceholder(key("drop"), grantDropText(g.Type), func() { p.focusOn(key("filter")) }))
-	}
-	if !chosen || p.grantPicking == g.Key() {
+	picking := !chosen || p.grantPicking == g.Key()
+	box.AddChild(newEmptyPlaceholder(key("drop"), grantDropText(g.Type, chosen), func() {
+		if picking {
+			p.focusOn(key("filter"))
+			return
+		}
+		p.grantPicking = g.Key()
+		p.rebuild(key("filter"))
+	}))
+	if picking {
 		box.AddChild(p.grantPicker(path, g))
 	}
 }
 
-// grantDropText invites dropping an item on an empty grant of the given type.
-func grantDropText(t feature.Type) string {
+// grantDropText invites dropping an item on a grant of the given type, to replace the item chosen or to fill the grant.
+func grantDropText(t feature.Type, chosen bool) string {
+	var what string
 	switch t {
 	case feature.GrantSkill:
-		return i18n.Text("Drop a skill here from a library or sheet, or choose one below.")
+		what = i18n.Text("skill")
 	case feature.GrantSpell:
-		return i18n.Text("Drop a spell here from a library or sheet, or choose one below.")
+		what = i18n.Text("spell")
 	default:
-		return i18n.Text("Drop a trait here from a library or sheet, or choose one below.")
+		what = i18n.Text("trait")
 	}
+	if chosen {
+		return i18n.Text("Drop a %s here from a library or sheet to replace the one chosen.", what)
+	}
+	return i18n.Text("Drop a %s here from a library or sheet, or choose one below.", what)
 }
 
 // grantFocusKey returns the reference key of the control of the grant row at the path that takes the focus once the

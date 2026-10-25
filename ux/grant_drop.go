@@ -190,12 +190,18 @@ func inGrantItemEditor(panel unison.Paneler) bool {
 }
 
 // grantDropAt returns where grants of the given kind dropped at where would go: into the row of an empty grant of that
-// kind, before or after another row, by which half of it where is in, or anywhere else, after the last row.
+// kind, into the drop zone of an open grant of that kind, replacing its item, before or after another row, by which
+// half of it where is in, or anywhere else, after the last row.
 func (p *featuresPanel) grantDropAt(where geom.Point, t feature.Type) (target *unison.Panel, at int) {
 	target, path, at := p.rowAt(where)
 	if target != nil {
-		if g, ok := (*p.features)[p.index(path)].(*gurps.Grant); ok && g.Type == t && g.Key() == "" {
-			return target, dropInto
+		if g, ok := (*p.features)[p.index(path)].(*gurps.Grant); ok && g.Type == t {
+			if g.Key() == "" {
+				return target, dropInto
+			}
+			if zone := p.FindRefKey(path + ":drop"); zone != nil && unison.AncestorIsOrSelf(p.PanelAt(where), zone) {
+				return zone, dropInto
+			}
 		}
 		return target, at
 	}
@@ -211,30 +217,33 @@ func (p *featuresPanel) grantDropAt(where geom.Point, t feature.Type) (target *u
 	return cmp.Or(p.FindRefKey(featureEmptyKey), p.FindRefKey(sectionSummaryKey)), dropInto
 }
 
-// dropGrants makes grants of the items where grantDropAt said they go.
+// dropGrants makes grants of the items where grantDropAt said they go: the first dropped into a grant becomes its item,
+// and the rest follow it as grants of their own.
 func (p *featuresPanel) dropGrants(target *unison.Panel, at int, t feature.Type, items []*grantLibraryItem) {
 	index := len(*p.features)
-	if target != nil {
-		if path, isRow := target.ClientData()[featureDropKey].(string); isRow {
-			index = p.index(path)
-			if at == dropAfter {
-				index++
-			}
-			if at == dropInto {
-				g, ok := (*p.features)[index].(*gurps.Grant)
-				if !ok {
-					return
-				}
-				rest := newGrants(t, items[1:])
-				p.sentenceRows.restructure(i18n.Text("Choose Granted Item"), path+keyMore, "", func() string {
-					g.SetItem(items[0].node, items[0].from)
-					p.grantPicking = ""
-					*p.features = slices.Insert(*p.features, index+1, rest...)
-					p.open = path
-					return grantFocusKey(path, g)
-				})
+	if _, path := p.rowOf(target); path != "" {
+		index = p.index(path)
+		if at == dropAfter {
+			index++
+		}
+		if at == dropInto {
+			g, ok := (*p.features)[index].(*gurps.Grant)
+			if !ok {
 				return
 			}
+			title := i18n.Text("Choose Granted Item")
+			if g.Key() != "" {
+				title = i18n.Text("Replace Granted Item")
+			}
+			rest := newGrants(t, items[1:])
+			p.sentenceRows.restructure(title, path+keyMore, "", func() string {
+				g.SetItem(items[0].node, items[0].from)
+				p.grantPicking = ""
+				*p.features = slices.Insert(*p.features, index+1, rest...)
+				p.open = path
+				return grantFocusKey(path, g)
+			})
+			return
 		}
 	}
 	p.addGrants(t, items, index)

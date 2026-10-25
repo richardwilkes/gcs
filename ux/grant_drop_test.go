@@ -24,6 +24,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/library"
 	"github.com/richardwilkes/gcs/v5/ux/uxtest"
 	"github.com/richardwilkes/toolbox/v2/check"
+	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/tid"
 	"github.com/richardwilkes/toolbox/v2/xmath"
 	"github.com/richardwilkes/unison"
@@ -141,6 +142,42 @@ func TestFeaturesPanelDropsGrants(t *testing.T) {
 		g, ok := features[0].(*gurps.Grant)
 		c.True(ok)
 		c.Equal("", string(g.Key()), "and empties the grant again")
+	})
+}
+
+// TestGrantDropZoneReplacesTheChosenItem checks that the open row of a grant keeps its drop zone once an item is chosen,
+// that a drop on the zone replaces the item rather than adding a grant, and that a drop elsewhere on the row still goes
+// beside it.
+func TestGrantDropZoneReplacesTheChosenItem(t *testing.T) {
+	c := check.New(t)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
+	entity := gurps.NewEntity()
+	owner := gurps.NewTrait(entity, nil, false)
+	g := gurps.NewGrant(feature.GrantTrait)
+	g.SetItem(newGrantTestTrait("Night Vision", 0), gurps.LibraryFile{})
+	features := gurps.Features{g}
+	p, _ := showFeaturesPanel(t, screen, entity, owner, &features, false)
+	screen.Do(func() { p.toggle("0") })
+	var zone *unison.Panel
+	screen.Do(func() { zone = p.FindRefKey("0:drop") })
+	if zone == nil {
+		t.Fatal("the open row of a chosen grant has no drop zone")
+	}
+	screen.Do(func() {
+		where := p.PointFromRoot(zone.PointToRoot(zone.ContentRect(true).Center()))
+		target, at := p.grantDropAt(where, feature.GrantTrait)
+		c.True(target == zone, "a drop on the zone goes into the grant")
+		c.Equal(dropInto, at)
+		row, _, _ := p.rowAt(where)
+		target, at = p.grantDropAt(p.PointFromRoot(row.PointToRoot(geom.NewPoint(1, 1))), feature.GrantTrait)
+		c.True(target == row, "a drop elsewhere on the row goes beside it")
+		c.Equal(dropBefore, at)
+		p.dropGrants(zone, dropInto, feature.GrantTrait, []*grantLibraryItem{{node: newGrantTestTrait("Dark Vision", 0)}})
+	})
+	screen.Do(func() {
+		c.Equal(1, len(features), "the drop replaces the item rather than adding a grant")
+		c.True(features[0] == g, "in the same grant")
+		c.Equal("Dark Vision", g.ItemName())
 	})
 }
 
@@ -323,7 +360,8 @@ func TestGrantPickerListFollowsTheFilter(t *testing.T) {
 	libraries := gurps.GlobalSettings().Libraries
 	libraries.Store(lib.Key(), lib)
 	t.Cleanup(func() { libraries.Remove(lib.Key()) })
-	traits := []*gurps.Trait{newGrantTestTrait("Night Vision", 0)}
+	traits := make([]*gurps.Trait, 0, grantPickerRows+3)
+	traits = append(traits, newGrantTestTrait("Night Vision", 0))
 	for i := range grantPickerRows + 2 {
 		traits = append(traits, newGrantTestTrait(fmt.Sprintf("Acute Sense %d", i), 0))
 	}
