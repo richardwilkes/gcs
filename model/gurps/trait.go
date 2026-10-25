@@ -313,7 +313,7 @@ func (t *Trait) Clone(from LibraryFile, owner DataOwner, parent *Trait, mode Clo
 	other.SetOpen(t.IsOpen())
 	other.ThirdParty = t.ThirdParty
 	other.copyFrom(other, &t.TraitEditData, false, mode)
-	other.Granted = cloneGrantedBy(t.Granted, other)
+	other.Granted = cloneGrantedBy(t.Granted, t, other)
 	PropagateNodeNoteClosedState(t, other)
 	if t.HasChildren() {
 		other.Children = make([]*Trait, 0, len(t.Children))
@@ -625,7 +625,23 @@ func (t *Trait) CurrentLevel() fxp.Int {
 	return 0
 }
 
+// levelForPrereqsOf returns the trait's level as the prerequisites of exclude see it: as CurrentLevel does, but without
+// the levels grants carried by exclude merged into it, since an item never meets its own prerequisites with what it
+// grants.
+func (t *Trait) levelForPrereqsOf(exclude any) fxp.Int {
+	if t.Enabled() {
+		return t.currentLevelExcept(exclude, nil)
+	}
+	return 0
+}
+
 func (t *Trait) internalCurrentLevel(tooltip *xbytes.InsertBuffer) fxp.Int {
+	return t.currentLevelExcept(nil, tooltip)
+}
+
+// currentLevelExcept is internalCurrentLevel without the levels grants carried by exclude merged in; see
+// grantState.levelsExcept.
+func (t *Trait) currentLevelExcept(exclude any, tooltip *xbytes.InsertBuffer) fxp.Int {
 	if !t.IsLeveled() {
 		return 0
 	}
@@ -642,7 +658,7 @@ func (t *Trait) internalCurrentLevel(tooltip *xbytes.InsertBuffer) fxp.Int {
 		levelAdjustment = entity.TraitBonusFor(t.NameWithReplacements(), t.Tags, tooltip)
 	}
 	addGrantNotesToTooltip(t.grant.levelNotes, tooltip)
-	return (t.Levels + levelAdjustment + t.grant.levels).Max(0)
+	return (t.Levels + levelAdjustment + t.grant.levelsExcept(exclude)).Max(0)
 }
 
 // ResolvedMaxLevels returns the maximum level for this trait, resolving the MaxLevels expression (a plain number or an
@@ -1057,15 +1073,16 @@ func (t *Trait) titleNotes(before bool) []string {
 // a trait loaded by one of the loaders that keep the saved calc (NewEntityFromFileWithSavedCalc and its counterpart for
 // templates), whose entity, if it has one, has not been recalculated and so cannot resolve those bonuses itself. A
 // trait loaded any other way, or from a file written before the level was recorded, falls back to its unadjusted
-// level. So does a disabled trait, whose recorded level is zero where String shows the level it would have if
-// enabled. The title notes follow, as they do in String, though a modifier shown there that takes its level from the
-// trait shows the trait's level without bonuses.
+// level. So does a disabled trait, or a granted one whose grant was not in effect, whose recorded level is zero where
+// String shows the level it would have if enabled; the record is all that tells such a trait apart, since the grants
+// are judged only by a recalculation. The title notes follow, as they do in String, though a modifier shown there that
+// takes its level from the trait shows the trait's level without bonuses.
 func (t *Trait) StringWithSavedCalc() string {
 	if !t.IsLeveled() {
 		return t.NameWithReplacements() + parenthetical(t.TitleNotes())
 	}
 	level := t.Levels.Max(0)
-	if t.savedCurrentLevel != nil && t.Enabled() {
+	if t.savedCurrentLevel != nil && *t.savedCurrentLevel != 0 {
 		level = *t.savedCurrentLevel
 	}
 	return t.NameWithReplacements() + " " + level.String() + parenthetical(t.TitleNotes())

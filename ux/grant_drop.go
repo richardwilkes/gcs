@@ -19,6 +19,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/promptstep"
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/i18n"
+	"github.com/richardwilkes/toolbox/v2/xreflect"
 	"github.com/richardwilkes/toolbox/v2/xstrings"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/drag"
@@ -108,18 +109,59 @@ func (p *featuresPanel) grantDrag(di drag.Info) (feature.Type, []*grantLibraryIt
 		di.HasDataType) {
 		return feature.Unknown, nil
 	}
-	return grantItemsFrom(draggedTableData)
+	t, items := grantItemsFrom(draggedTableData)
+	return t, p.grantable(items)
+}
+
+// grantable returns the items the panel's owner can be given as grants: all but the owner itself, or a copy of it,
+// which it would otherwise grant a copy of itself.
+func (p *featuresPanel) grantable(items []*grantLibraryItem) []*grantLibraryItem {
+	return slices.DeleteFunc(slices.Clone(items), func(item *grantLibraryItem) bool {
+		return item.node == any(p.owner) || sameGrantItem(item.node, p.owner)
+	})
+}
+
+// sameGrantItem returns true if a and b are copies of the same trait, skill or spell.
+func sameGrantItem(a, b any) bool {
+	switch one := a.(type) {
+	case *gurps.Trait:
+		other, ok := b.(*gurps.Trait)
+		return ok && gurps.Hash64(one) == gurps.Hash64(other) && gurps.SameItem(one, other)
+	case *gurps.Skill:
+		other, ok := b.(*gurps.Skill)
+		return ok && gurps.Hash64(one) == gurps.Hash64(other) && gurps.SameItem(one, other)
+	case *gurps.Spell:
+		other, ok := b.(*gurps.Spell)
+		return ok && gurps.Hash64(one) == gurps.Hash64(other) && gurps.SameItem(one, other)
+	default:
+		return false
+	}
 }
 
 // takesGrants returns true if grants can be added to the panel: it isn't read-only, nor in the editor of a grant's
 // item, which can't grant anything.
 func (p *featuresPanel) takesGrants() bool {
-	if owned := unison.Ancestor[Owned](p); owned != nil {
-		if _, nested := owned.Owner().(*grantItemOwner); nested {
+	return !p.readOnly && !inGrantItemEditor(p)
+}
+
+// inGrantItemEditor returns true if the panel is within the editor of a grant's item, or within an editor opened from
+// that one, such as for one of the item's modifiers, whose grants would go unheeded along with the item's.
+func inGrantItemEditor(panel unison.Paneler) bool {
+	for owned := unison.AncestorOrSelf[Owned](panel); owned != nil; {
+		owner := owned.Owner()
+		if _, nested := owner.(*grantItemOwner); nested {
+			return true
+		}
+		if xreflect.IsNil(owner) {
 			return false
 		}
+		next, ok := owner.AsPanel().Self.(Owned)
+		if !ok {
+			return false
+		}
+		owned = next
 	}
-	return !p.readOnly
+	return false
 }
 
 // grantDropAt returns where grants of the given kind dropped at where would go: into the row of an empty grant of that
@@ -213,13 +255,39 @@ type grantDestination struct {
 	panel    *featuresPanel
 }
 
-// String names the item being edited, along with the editor's title, which only names where the item is.
+// String names the item being edited, along with where it is: the editor's title, which for an editor opened from
+// another names only the item, so the items of the editors it was opened from follow, then the title of the outermost,
+// which names the document.
 func (d grantDestination) String() string {
-	return i18n.Text("%s (%s)", d.panel.owner.String(), d.dockable.Title())
+	where := d.dockable.Title()
+	for current := d.dockable; ; {
+		owned, ok := current.(Owned)
+		if !ok {
+			break
+		}
+		outer, isEditor := owned.Owner().(nestedEditor)
+		if !isEditor {
+			break
+		}
+		where = i18n.Text("%s, within %s", where, outer.targetName())
+		if _, deeper := outer.Owner().(nestedEditor); !deeper {
+			where = i18n.Text("%s, %s", where, outer.Title())
+		}
+		current = outer
+	}
+	return i18n.Text("%s (%s)", d.panel.owner.String(), where)
 }
 
-// grantDestinations returns the open editors whose features can take grants, by name.
-func grantDestinations() []grantDestination {
+// nestedEditor is what an editor opened from another editor offers for naming where it is.
+type nestedEditor interface {
+	unison.Dockable
+	Owned
+	targetName() string
+}
+
+// grantDestinations returns the open editors whose features can take grants of the items, by name, leaving out those
+// that can take none of them (see grantable).
+func grantDestinations(items []*grantLibraryItem) []grantDestination {
 	var result []grantDestination
 	for _, d := range AllDockables() {
 		if _, isEditor := d.(interface{ editor() editorDockable }); !isEditor {
@@ -228,7 +296,7 @@ func grantDestinations() []grantDestination {
 		var walk func(panel *unison.Panel)
 		walk = func(panel *unison.Panel) {
 			if p, ok := panel.Self.(*featuresPanel); ok {
-				if p.takesGrants() {
+				if p.takesGrants() && len(p.grantable(items)) != 0 {
 					result = append(result, grantDestination{dockable: d, panel: p})
 				}
 				return
@@ -252,7 +320,7 @@ func installAddAsGrantHandler[T gurps.Node[T]](target unison.Paneler, table *uni
 	target.AsPanel().InstallCmdHandlers(AddAsGrantItemID,
 		func(_ any) bool {
 			_, items := selection()
-			return len(items) != 0 && len(grantDestinations()) != 0
+			return len(items) != 0 && len(grantDestinations(items)) != 0
 		},
 		func(_ any) {
 			t, items := selection()
@@ -260,11 +328,11 @@ func installAddAsGrantHandler[T gurps.Node[T]](target unison.Paneler, table *uni
 		})
 }
 
-// addAsGrant adds a grant of each of the items to the features of the open editor the user picks, when there is more
-// than one, and brings that editor to the front.
+// addAsGrant adds a grant of each of the items the editor can take (see grantable) to the features of the open editor
+// the user picks, when there is more than one, and brings that editor to the front.
 func addAsGrant(t feature.Type, items []*grantLibraryItem) {
-	choices := grantDestinations()
-	if len(items) == 0 || len(choices) == 0 {
+	choices := grantDestinations(items)
+	if len(choices) == 0 {
 		return
 	}
 	dest := choices[0]
@@ -286,5 +354,5 @@ func addAsGrant(t feature.Type, items []*grantLibraryItem) {
 		ActivateDockable(dest.dockable)
 		wnd.ToFront()
 	}
-	dest.panel.addGrants(t, items, len(*dest.panel.features))
+	dest.panel.addGrants(t, dest.panel.grantable(items), len(*dest.panel.features))
 }

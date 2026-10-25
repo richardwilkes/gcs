@@ -259,8 +259,9 @@ func NewLargeEntity(size *LargeEntitySize) *gurps.Entity {
 	b.addEquipment(b.size.CarriedEquipment, true)
 	b.addEquipment(b.size.OtherEquipment, false)
 	b.addNotes()
-	b.addGrants()
 	b.addWeapons()
+	// Last, so that the copies the grants hold match the items as they end up, weapons and all.
+	b.addGrants()
 	b.entity.Recalculate()
 	return b.entity
 }
@@ -748,10 +749,12 @@ func (b *largeEntityBuilder) addNotes() {
 	}
 }
 
-// addGrants hands out the grants, cycling through traits, skills and spells: half go to traits, a quarter to equipped
-// equipment and a quarter to unequipped equipment, whose grants are not in effect. Every other trait or skill grant
-// puts a new item on the sheet, the new skills taking their specialization from what carries the grant; the rest, and
-// every spell grant, copy an item already there so that they merge with it.
+// addGrants hands out the grants, cycling through traits, skills and spells and, independently, through the merge
+// modes: half go to traits, a quarter to equipped equipment and a quarter to unequipped equipment, whose grants are not
+// in effect. Every other trait or skill grant puts a new item on the sheet, the new skills taking their specialization
+// from what carries the grant; the rest, and every spell grant, copy an item already there so that they merge with it,
+// though a copy of an item that carries a grant of its own, or gets one later, no longer matches it once the grant is
+// added, since the features are part of the hash, and such a grant puts its copy on the sheet instead.
 func (b *largeEntityBuilder) addGrants() {
 	if len(b.traits) == 0 || len(b.spells) == 0 {
 		return
@@ -786,7 +789,7 @@ func (b *largeEntityBuilder) addGrants() {
 			g.Spell = b.spells[i%len(b.spells)].Clone(gurps.LibraryFile{}, nil, nil, gurps.Duplicate)
 		}
 		g.Level = fxp.FromInteger(i%3 + 1)
-		g.Merge = modes[i%len(modes)]
+		g.Merge = modes[(i/3)%len(modes)]
 		// The carrier may already answer nameables of its own, so the topic is added to its replacements.
 		addTopic := func(replacements *map[string]string) {
 			if *replacements == nil {

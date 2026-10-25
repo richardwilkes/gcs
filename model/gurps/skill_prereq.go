@@ -112,13 +112,13 @@ func (p *SkillPrereq) Satisfied(entity *Entity, exclude any, tooltip *xbytes.Ins
 			return false
 		}
 		// A skill with no points spent on it doesn't count, even if it has a level from a default.
-		if points := sk.AdjustedPoints(nil); points == 0 || !p.PointsCriteria.Matches(points) ||
+		if points := sk.pointsForPrereqsOf(exclude); points == 0 || !p.PointsCriteria.Matches(points) ||
 			(p.TagsCriteria.Compare != criteria.AnyText && !p.TagsCriteria.MatchesList(replacements, sk.Tags...)) ||
 			(p.TitleNoteCriteria.Compare != criteria.AnyText &&
 				!p.TitleNoteCriteria.MatchesEach(replacements, sk.TitleNotes()...)) {
 			return false
 		}
-		satisfied = p.LevelCriteria.Matches(sk.LevelData.Level)
+		satisfied = p.LevelCriteria.Matches(sk.levelForPrereqsOf(exclude))
 		if satisfied && techLevel != nil {
 			satisfied = sk.TechLevel == nil || *techLevel == *sk.TechLevel
 		}

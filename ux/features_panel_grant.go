@@ -33,6 +33,7 @@ import (
 	"github.com/richardwilkes/unison/enums/align"
 	"github.com/richardwilkes/unison/enums/behavior"
 	"github.com/richardwilkes/unison/enums/mod"
+	"github.com/zeebo/xxh3"
 )
 
 // The picker of an open grant row shows grantPickerRows library items at once, with columns of these widths for the
@@ -102,11 +103,11 @@ func (p *featuresPanel) grant(fields, box, chips *unison.Panel, path string, g *
 		button.RefKey = key("item")
 		button.Tooltip = newWrappedTooltip(i18n.Text("Choose a different item from the libraries"))
 		button.ClickCallback = func() {
-			if p.grantPicking == path {
+			if p.grantPicking == g.Key() {
 				p.grantPicking = ""
 				p.rebuild(key("item"))
 			} else {
-				p.grantPicking = path
+				p.grantPicking = g.Key()
 				p.rebuild(key("filter"))
 			}
 		}
@@ -118,8 +119,13 @@ func (p *featuresPanel) grant(fields, box, chips *unison.Panel, path string, g *
 		title := i18n.Text("Level")
 		addJoiningWords(fields, i18n.Text("at level"))
 		field := NewDecimalField(p.targetMgr, key("level"), title, func() fxp.Int { return g.Level },
-			func(v fxp.Int) { p.edit(title, key("level"), "", func() { g.Level = v }) }, fxp.Min, fxp.Max, false,
-			false).withoutUndo()
+			func(v fxp.Int) {
+				// A skill or spell is granted at a tier, which is whole; a trait's levels may be fractional.
+				if g.Type != feature.GrantTrait {
+					v = v.Floor()
+				}
+				p.edit(title, key("level"), "", func() { g.Level = v })
+			}, fxp.Min, fxp.Max, false, false).withoutUndo()
 		field.Tooltip = newWrappedTooltip(grantLevelTooltip(g.Type))
 		p.addCompact(fields, field)
 	}
@@ -136,7 +142,7 @@ func (p *featuresPanel) grant(fields, box, chips *unison.Panel, path string, g *
 	if !chosen {
 		box.AddChild(newEmptyPlaceholder(key("drop"), grantDropText(g.Type), func() { p.focusOn(key("filter")) }))
 	}
-	if !chosen || p.grantPicking == path {
+	if !chosen || p.grantPicking == g.Key() {
 		box.AddChild(p.grantPicker(path, g))
 	}
 }
@@ -167,7 +173,7 @@ func grantLevelTooltip(t feature.Type) string {
 	if t == feature.GrantTrait {
 		return i18n.Text("The level of the trait. A negative level only takes levels away from a trait already present.")
 	}
-	return i18n.Text(`The level is counted in steps of points: level 1 is what 1 point buys, level 2 what 2 points buy, and each level after that 4 points more. A negative level only takes levels or points away from one already present.`)
+	return i18n.Text(`The level is counted in steps of points: level 1 is what 1 point buys, level 2 what 2 points buy, level 3 what 4 points buy, and each level after that 4 points more. A negative level only takes levels or points away from one already present.`)
 }
 
 // grantPicker returns the filter field and list of library items to choose the granted item from, along with the
@@ -225,8 +231,12 @@ func (p *featuresPanel) grantPicker(path string, g *gurps.Grant) *unison.Panel {
 		case unison.KeyUp, unison.KeyDown:
 			return list.KeyDownCallback(keyCode, mods, repeat)
 		case unison.KeyReturn, unison.KeyNumPadEnter:
-			list.DoubleClickCallback()
-			return true
+			// With a modifier down, the key is the editor's, as Cmd-Return applies the changes.
+			if noModifiersDown(mods) {
+				list.DoubleClickCallback()
+				return true
+			}
+			return keyDown(keyCode, mods, repeat)
 		default:
 			return keyDown(keyCode, mods, repeat)
 		}
@@ -260,11 +270,15 @@ func (p *featuresPanel) grantPicker(path string, g *gurps.Grant) *unison.Panel {
 }
 
 // grantItemOwner owns the editor of a grant's item. The editor works on a copy, which each apply, undo and redo hands
-// to the grant with the item's key, since undoing the panel's own edits replaces its grants with copies.
+// to the grant with the item's key, since undoing the panel's own edits replaces its grants with copies. hash is the
+// hash of the grant's item as the editor last saw it, by which the panel tells that the item changed under the editor;
+// see closeStaleGrantItemEditors. The panel is known by the features it edits (see editsFeaturesOf), since the editor
+// holding it may build a new panel for the same features.
 type grantItemOwner struct {
 	Rebuildable // the editor holding the panel
 	panel       *featuresPanel
 	key         tid.TID
+	hash        uint64
 	item        fmt.Stringer
 	commit      func(g *gurps.Grant)
 }
@@ -276,12 +290,67 @@ func (o *grantItemOwner) String() string {
 
 // Rebuild hands the copy to the grant.
 func (o *grantItemOwner) Rebuild(_ bool) {
+	if g := o.grant(); g != nil {
+		o.commit(g)
+		o.hash = grantItemHash(g)
+		MarkModified(o.panel)
+		o.panel.rebuild("")
+	}
+}
+
+// editsFeaturesOf returns true if the owner's panel edits the same features as p, taking p for its panel from here on
+// when it does, since the editor holding the panel builds a new one when its content is rebuilt.
+func (o *grantItemOwner) editsFeaturesOf(p *featuresPanel) bool {
+	if o.panel.features != p.features {
+		return false
+	}
+	o.panel = p
+	return true
+}
+
+// grant returns the panel's grant with the item's key, or nil once there is none.
+func (o *grantItemOwner) grant() *gurps.Grant {
 	for _, f := range *o.panel.features {
 		if g, ok := f.(*gurps.Grant); ok && g.Key() == o.key {
-			o.commit(g)
-			MarkModified(o.panel)
-			o.panel.rebuild("")
-			return
+			return g
+		}
+	}
+	return nil
+}
+
+// current returns true if the panel's grant still holds the item the editor was opened on.
+func (o *grantItemOwner) current() bool {
+	g := o.grant()
+	return g != nil && grantItemHash(g) == o.hash
+}
+
+// grantItemHash returns a hash of the grant's copy of its item, modifiers and all.
+func grantItemHash(g *gurps.Grant) uint64 {
+	h := xxh3.New()
+	switch {
+	case g.Trait != nil:
+		gurps.HashJSON(h, g.Trait)
+	case g.Skill != nil:
+		gurps.HashJSON(h, g.Skill)
+	case g.Spell != nil:
+		gurps.HashJSON(h, g.Spell)
+	}
+	return h.Sum64()
+}
+
+// closeStaleGrantItemEditors closes, without asking, the editors open on the items of the panel's grants whose grant
+// is gone, gives another item or had its item changed, as by a sync, since what such an editor would save has nowhere
+// to go or would overwrite the new item; see discardEditorsFor.
+func (p *featuresPanel) closeStaleGrantItemEditors() {
+	for _, d := range AllDockables() {
+		owned, ok := d.AsPanel().Self.(Owned)
+		if !ok {
+			continue
+		}
+		if o, isGrant := owned.Owner().(*grantItemOwner); isGrant && o.editsFeaturesOf(p) && !o.current() {
+			if closer, canDiscard := d.(interface{ discardAndClose() }); canDiscard {
+				closer.discardAndClose()
+			}
 		}
 	}
 }
@@ -295,11 +364,11 @@ func (p *featuresPanel) editGrantedItem(g *gurps.Grant) {
 			return false
 		}
 		o, isGrant := owned.Owner().(*grantItemOwner)
-		return isGrant && o.panel == p && o.key == g.Key()
+		return isGrant && o.editsFeaturesOf(p) && o.key == g.Key()
 	}) {
 		return
 	}
-	o := &grantItemOwner{Rebuildable: outer, panel: p, key: g.Key()}
+	o := &grantItemOwner{Rebuildable: outer, panel: p, key: g.Key(), hash: grantItemHash(g)}
 	switch {
 	case g.Trait != nil:
 		item := g.Trait.Clone(gurps.LibraryFile{}, nil, nil, gurps.Copy)
@@ -322,14 +391,39 @@ type grantFileCache struct {
 	items   []*grantLibraryItem
 }
 
-// grantFileItems holds the items the grant pickers found in each library file, by its path, until the file changes.
-var grantFileItems = make(map[string]grantFileCache)
+// grantFileItems holds the items the grant pickers found in each library file, by library key and path, until the file
+// changes or is no longer found under that key.
+var grantFileItems = make(map[gurps.LibraryFile]grantFileCache)
+
+// grantItemList is the sorted list of items the pickers last showed for one kind of grant, along with the files and
+// modification times it came from, so that a picker rebuilt while the libraries are unchanged shows the same list again
+// rather than gathering and sorting it afresh.
+type grantItemList struct {
+	stamps []grantFileStamp
+	items  []*grantLibraryItem
+}
+
+// grantFileStamp identifies a library file as it was when read.
+type grantFileStamp struct {
+	file    gurps.LibraryFile
+	modTime time.Time
+}
+
+func (s grantFileStamp) equal(other grantFileStamp) bool {
+	return s.file == other.file && s.modTime.Equal(other.modTime)
+}
+
+// grantItemLists holds the list the pickers last showed for each kind of grant; see grantItemList.
+var grantItemLists = make(map[feature.Type]grantItemList)
 
 // grantLibraryItems returns the items of the libraries a grant of the given type can give, reading only the files
-// changed since they were last read. Hidden files and folders are skipped, as the library navigator skips them.
+// changed since they were last read, and the list last returned when none has. Hidden files and folders are skipped, as
+// the library navigator skips them.
 func grantLibraryItems(t feature.Type) []*grantLibraryItem {
 	ext, load := grantItemLoader(t)
-	var items []*grantLibraryItem
+	var stamps []grantFileStamp
+	var caches []grantFileCache
+	seen := make(map[gurps.LibraryFile]bool)
 	for _, lib := range gurps.GlobalSettings().Libraries.List() {
 		root := lib.Path(false)
 		if root == "" {
@@ -352,22 +446,39 @@ func grantLibraryItems(t feature.Type) []*grantLibraryItem {
 			if err != nil {
 				return nil
 			}
-			full := filepath.Join(root, path)
-			cached, ok := grantFileItems[full]
+			file := gurps.LibraryFile{Library: lib.Key(), Path: path}
+			seen[file] = true
+			cached, ok := grantFileItems[file]
 			if !ok || !cached.modTime.Equal(info.ModTime()) {
 				cached = grantFileCache{
 					modTime: info.ModTime(),
-					items:   load(fileSystem, gurps.LibraryFile{Library: lib.Key(), Path: path}),
+					items:   load(fileSystem, file),
 				}
-				grantFileItems[full] = cached
+				grantFileItems[file] = cached
 			}
-			items = append(items, cached.items...)
+			stamps = append(stamps, grantFileStamp{file: file, modTime: cached.modTime})
+			caches = append(caches, cached)
 			return nil
 		})
+	}
+	// The files of this kind no longer found, deleted, renamed or under a library that was rekeyed or removed, are
+	// forgotten.
+	for file := range grantFileItems {
+		if !seen[file] && strings.EqualFold(filepath.Ext(file.Path), ext) {
+			delete(grantFileItems, file)
+		}
+	}
+	if last, ok := grantItemLists[t]; ok && slices.EqualFunc(last.stamps, stamps, grantFileStamp.equal) {
+		return last.items
+	}
+	var items []*grantLibraryItem
+	for _, cached := range caches {
+		items = append(items, cached.items...)
 	}
 	slices.SortStableFunc(items, func(a, b *grantLibraryItem) int {
 		return xstrings.NaturalCmp(a.name, b.name, true)
 	})
+	grantItemLists[t] = grantItemList{stamps: stamps, items: items}
 	return items
 }
 

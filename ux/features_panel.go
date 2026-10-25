@@ -33,6 +33,7 @@ import (
 	"github.com/richardwilkes/toolbox/v2/errs"
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/i18n"
+	"github.com/richardwilkes/toolbox/v2/tid"
 	"github.com/richardwilkes/toolbox/v2/xhash"
 	"github.com/richardwilkes/toolbox/v2/xslices"
 	"github.com/richardwilkes/toolbox/v2/xstrings"
@@ -76,8 +77,9 @@ type featuresPanel struct {
 	// damageField). It is kept here, rather than with the controls, so that it lasts while the panel is rebuilt.
 	percentSuspended     map[*gurps.WeaponBonus]bool
 	forEquipmentModifier bool
-	// grantPicking is the path of the grant whose picker was opened to choose a different item.
-	grantPicking string
+	// grantPicking is the key of the grant whose picker was opened to choose a different item. It is the key rather
+	// than the row's path, so that the picker follows the grant as rows move and goes when the grant does.
+	grantPicking tid.TID
 }
 
 // featuresState is the data a snapshot of the panel holds: the features, and the indexes of those whose "as a %" is
@@ -166,6 +168,7 @@ func (p *featuresPanel) replacements() map[string]string {
 }
 
 func (p *featuresPanel) build() {
+	p.closeStaleGrantItemEditors()
 	if i := p.index(p.open); i < 0 || (*p.features)[i].FeatureType() == feature.Unknown {
 		p.open = ""
 	}
@@ -1131,11 +1134,18 @@ func (p *featuresPanel) selectorOverride(fields, chips *unison.Panel, path strin
 	}
 }
 
+// featureTypesList returns the feature types the panel offers: all of them for an equipment container, all but the
+// contained weight reduction otherwise, and never the grants within the editor of a grant's item, since a granted item
+// grants nothing.
 func (p *featuresPanel) featureTypesList() []feature.Type {
+	types := feature.SelectableTypesWithoutContainedWeightReduction
 	if e, ok := p.owner.(*gurps.Equipment); ok && e.Container() {
-		return feature.SelectableTypes
+		types = feature.SelectableTypes
 	}
-	return feature.SelectableTypesWithoutContainedWeightReduction
+	if inGrantItemEditor(p) {
+		types = slices.DeleteFunc(slices.Clone(types), gurps.IsGrant)
+	}
+	return types
 }
 
 func (p *featuresPanel) createFeatureForType(featureType feature.Type) gurps.Feature {

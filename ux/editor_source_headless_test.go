@@ -16,6 +16,7 @@ import (
 	"testing"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/feature"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/srcstate"
 	"github.com/richardwilkes/gcs/v5/ux/svg"
 	"github.com/richardwilkes/gcs/v5/ux/uxtest"
@@ -219,6 +220,52 @@ func chooseSyncWithSource(t *testing.T, screen *unison.HeadlessScreen, wnd *unis
 	t.Helper()
 	items := openSourceMenu(t, screen, wnd, d)
 	screen.Click(screen.PanelCenter(items[len(items)-2]))
+}
+
+// TestEditorSyncAsksGrantItemEditorToDiscard verifies that syncing from the source menu asks the editor open on the
+// item of one of the editor's grants whether to discard its changes, rather than whether to save them, since the sync
+// replaces the features, grants and all.
+func TestEditorSyncAsksGrantItemEditorToDiscard(t *testing.T) {
+	c := check.New(t)
+	screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
+	sheet, ok := uxtest.OpenedByAction(t, screen, newCharacterSheetAction).(*Sheet)
+	if !ok {
+		t.Fatal("New Character Sheet must open a character sheet")
+	}
+	e, _ := newEditedLibraryTrait(t, c, screen, sheet, func(lib *gurps.Trait) {
+		g := gurps.NewGrant(feature.GrantTrait)
+		g.SetItem(newGrantTestTrait("Night Vision", 0), gurps.LibraryFile{})
+		lib.Features = gurps.Features{g}
+	}, nil)
+	isTraitEditor := func(d unison.Dockable) bool {
+		_, isEditor := d.AsPanel().Self.(*editor[*gurps.Trait, *gurps.TraitEditData])
+		return isEditor
+	}
+	screen.Do(func() {
+		p := uxtest.PanelsOfType[*featuresPanel](e.content)[0]
+		p.editGrantedItem(grantAt(t, p, 0))
+	})
+	nested := uxtest.OtherEditor(t, screen, e, isTraitEditor)
+	screen.Do(func() {
+		nested.editorData.Name = "Dark Vision"
+		nested.MarkModified(nil)
+	})
+	chooseSyncWithSource(t, screen, wnd, e)
+	dialogWnd, dialog := modalDialog(t, screen, wnd)
+	var prompt []string
+	var offersSave bool
+	screen.Do(func() {
+		prompt = uxtest.LabelTexts(dialogWnd.Content())
+		offersSave = dialog.Button(unison.ModalResponseDiscard) != nil
+	})
+	c.True(slices.Contains(prompt, "Discard changes made to"), "the prompt asks whether to discard the item's changes: %v",
+		prompt)
+	c.True(slices.Contains(prompt, "Syncing with the source replaces this item."), "and says why: %v", prompt)
+	c.False(offersSave, "rather than whether to save them, which the sync would undo")
+	screen.Click(screen.PanelCenter(dialogButton(t, screen, dialog, unison.ModalResponseCancel)))
+	var discardReason string
+	screen.Do(func() { discardReason = nested.discardReason })
+	c.Equal("", discardReason, "canceling leaves the editor asking whether to save when closed for any other reason")
 }
 
 // TestEditorSyncKeepsTheEditInProgress verifies that syncing from the source menu while a field holds the focus keeps

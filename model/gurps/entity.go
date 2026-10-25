@@ -527,7 +527,6 @@ func (e *Entity) recalculate(passBudget int) int {
 			break
 		}
 	}
-	e.removeSuppressedItems()
 	if contradicted && !e.unsettled {
 		slog.Warn("the sheet's data never settles: no state of the sheet satisfies all of its prerequisites, "+
 			"defaults, features and scripts at once", "name", e.Profile.Name)
@@ -706,11 +705,13 @@ func (e *Entity) settleOnCanonicalCycleState(cycle [][]uint64) {
 
 // derivedState fingerprints the derived state that one recalculation pass hands to the next, one fingerprint per
 // trait, skill and spell in traversal order: whether the sheet has disabled the trait, the level of the skill or spell
-// and whether it takes the missing-equipment penalty, and the default of the skill, each along with the ID of what it
-// describes. Everything else a pass reads is either the sheet's data or recomputed from these before it is read, so
-// two passes that begin from the same state end in the same one, and a state seen before means the passes have
-// entered a cycle they will never leave. Whether a trait was judged at all is left out, since the next pass reads only
-// whether it is enabled. The capacity is a hint for the length and may be zero.
+// and whether it takes the missing-equipment penalty, the default of the skill, and what the grants gave each, each
+// along with the ID of what it describes, followed by one fingerprint of whether each grant's carrier has its
+// prerequisites met, which the next pass's applyGrants reads (see grantCarrierUnmet). Everything else a pass reads is
+// either the sheet's data or recomputed from these before it is read, so two passes that begin from the same state end
+// in the same one, and a state seen before means the passes have entered a cycle they will never leave. Whether a
+// trait was judged at all is left out, since the next pass reads only whether it is enabled. The capacity is a hint
+// for the length and may be zero.
 func (e *Entity) derivedState(capacity int) []uint64 {
 	state := make([]uint64, 0, capacity)
 	h := xxh3.New()
@@ -750,6 +751,13 @@ func (e *Entity) derivedState(capacity int) []uint64 {
 		})
 		return false
 	}, false, true, e.Spells...)
+	// Until a pass has judged the carriers, they all count as met, which this records too, so that the first pass is
+	// not called settled for reproducing the state the carriers' verdicts were about to change.
+	h.Reset()
+	for _, plan := range e.grantPlans {
+		xhash.Bool(h, e.grantCarrierUnmet(plan.source.owner))
+	}
+	state = append(state, h.Sum64())
 	return state
 }
 

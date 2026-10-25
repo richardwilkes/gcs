@@ -466,11 +466,15 @@ func (n *Node[T]) createMarkdownCell(content string, width float32, font unison.
 	m.LinkInk = &inks.link
 	m.LinkOnPressedInk = &inks.linkOnPressed
 	if dim {
-		// The notes of a dimmed row still work, but are drawn as the rest of the row is.
+		// The notes of a dimmed row still work, but are drawn as the rest of the row is, code and quote bars included.
 		filter := unison.Grayscale30Filter()
-		m.OnBackgroundInk = &unison.ColorFilteredInk{OriginalInk: m.OnBackgroundInk, ColorFilter: filter}
-		m.LinkInk = &unison.ColorFilteredInk{OriginalInk: m.LinkInk, ColorFilter: filter}
-		m.LinkOnPressedInk = &unison.ColorFilteredInk{OriginalInk: m.LinkOnPressedInk, ColorFilter: filter}
+		for _, ink := range []*unison.Ink{
+			&m.OnBackgroundInk, &m.LinkInk, &m.LinkOnPressedInk, &m.CodeBackground, &m.OnCodeBackground,
+			&m.QuoteBarColor, &m.QuoteBarNoteColor, &m.QuoteBarTipColor, &m.QuoteBarImportantColor,
+			&m.QuoteBarWarningColor, &m.QuoteBarCautionColor,
+		} {
+			*ink = &unison.ColorFilteredInk{OriginalInk: *ink, ColorFilter: filter}
+		}
 	}
 	adjustMarkdownInk(m, foreground, background, selected)
 	// Wrapped to a whole-pixel width for the same reason addLabelCell wraps to one: each line becomes a label, which

@@ -289,8 +289,9 @@ func (e *editor[N, D]) prepareForSubstitutions() (tmpNode N, m map[string]string
 }
 
 func (e *editor[N, D]) Title() string {
-	// An editor opened from another editor, such as for a grant's copy of its item, is named for its item, since the
-	// other editor's title would only repeat where it is.
+	// An editor opened from another editor, such as for one of its modifiers, is named for its item, since the other
+	// editor's title would only repeat where it is. The editor of a grant's item has its owner name the item instead;
+	// see grantItemOwner.String.
 	if _, nested := e.owner.(interface{ editor() editorDockable }); nested {
 		return i18n.Text("%s Editor for %s", e.target.Kind(), e.target.String())
 	}
@@ -299,6 +300,11 @@ func (e *editor[N, D]) Title() string {
 
 func (e *editor[N, D]) Owner() Rebuildable {
 	return e.owner
+}
+
+// targetName names the item the editor edits.
+func (e *editor[N, D]) targetName() string {
+	return e.target.String()
 }
 
 func (e *editor[N, D]) Target() N {

@@ -409,10 +409,13 @@ func deleteSelection[T gurps.Node[T]](table *unison.Table[*Node[T]], recordUndo,
 		topLevelData := provider.RootData()
 		for _, target := range list {
 			parent := target.Parent()
+			// The granted rows within a container go only with their grants, so they take the container's place.
+			granted := grantedWithin(target)
+			SetParents(granted, parent)
 			if parent == zero {
 				for i, one := range topLevelData {
 					if one == target {
-						topLevelData = slices.Delete(topLevelData, i, i+1)
+						topLevelData = slices.Insert(slices.Delete(topLevelData, i, i+1), i, granted...)
 						break
 					}
 				}
@@ -420,7 +423,7 @@ func deleteSelection[T gurps.Node[T]](table *unison.Table[*Node[T]], recordUndo,
 				children := parent.NodeChildren()
 				for i, one := range children {
 					if one == target {
-						parent.SetChildren(slices.Delete(children, i, i+1))
+						parent.SetChildren(slices.Insert(slices.Delete(children, i, i+1), i, granted...))
 						break
 					}
 				}
@@ -432,6 +435,18 @@ func deleteSelection[T gurps.Node[T]](table *unison.Table[*Node[T]], recordUndo,
 			rebuildAsModified(table.AncestorOrSelf[Rebuildable](), true)
 		}
 	}
+}
+
+// grantedWithin returns the rows a grant put on the sheet among the node's descendants, in traversal order.
+func grantedWithin[T gurps.Node[T]](node T) []T {
+	var granted []T
+	gurps.Traverse(func(one T) bool {
+		if gurps.IsGranted(one) {
+			granted = append(granted, one)
+		}
+		return false
+	}, false, false, node.NodeChildren()...)
+	return granted
 }
 
 // DuplicateSelection duplicates the selected nodes in the table.

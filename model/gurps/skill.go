@@ -329,7 +329,11 @@ func (s *Skill) Clone(from LibraryFile, owner DataOwner, parent *Skill, mode Clo
 	other.AdjustSource(from, s.SourcedID, mode)
 	other.ThirdParty = s.ThirdParty
 	other.copyFrom(other, &s.SkillEditData, s.Container(), false, mode, s.IsTechnique())
-	other.Granted = cloneGrantedBy(s.Granted, other)
+	other.Granted = cloneGrantedBy(s.Granted, s, other)
+	if s.Granted != nil && other.Granted == nil {
+		// Where no grant claims the copy, it is bought with the points the grant stood for.
+		other.Points = s.grant.points
+	}
 	if EntityFromNode(other) == nil {
 		// Disabling only means something on a sheet.
 		other.SetDisabled(false)
@@ -706,6 +710,51 @@ func (s *Skill) SetRawPoints(points fxp.Int) bool {
 // AdjustedPoints returns the points, adjusted for any bonuses, or nothing when disabled. A container whose choice
 // outcomes all cost the same reports that cost; see PointsRange for one whose outcomes differ.
 func (s *Skill) AdjustedPoints(tooltip *xbytes.InsertBuffer) fxp.Int {
+	return s.adjustedPointsExcept(nil, tooltip)
+}
+
+// PointsCost returns what the skill costs the character: its adjusted points, or nothing for a granted skill, whose
+// adjusted points stand for its tier rather than for points spent. It is what the sheet's points column shows, so the
+// exports and scripts report it.
+func (s *Skill) PointsCost() fxp.Int {
+	if s.Granted != nil {
+		return 0
+	}
+	return s.AdjustedPoints(nil)
+}
+
+// PointsWithGrants returns the points with those grants gave the skill at the last recalculation added, as
+// AdjustedPoints adds them, for a level computed from points other than the skill's own.
+func (s *Skill) PointsWithGrants(points fxp.Int) fxp.Int {
+	return s.grant.applyPoints(nil, points, nil)
+}
+
+// LevelWithGrants returns the level with the levels grants merged into the skill at the last recalculation added, as
+// CalculateLevel adds them, for a level computed from data other than the skill's own.
+func (s *Skill) LevelWithGrants(level Level) Level {
+	return s.grant.applyLevels(nil, level)
+}
+
+// pointsForPrereqsOf returns the skill's points as the prerequisites of exclude see them: as AdjustedPoints does, but
+// without the points grants carried by exclude gave it, since an item never meets its own prerequisites with what it
+// grants.
+func (s *Skill) pointsForPrereqsOf(exclude any) fxp.Int {
+	return s.adjustedPointsExcept(exclude, nil)
+}
+
+// levelForPrereqsOf returns the skill's level as the prerequisites of exclude see it: the level the last pass recorded,
+// unless grants carried by exclude gave the skill levels or points, in which case it is computed without them, since
+// an item never meets its own prerequisites with what it grants.
+func (s *Skill) levelForPrereqsOf(exclude any) fxp.Int {
+	if !s.grant.contributedBy(exclude) {
+		return s.LevelData.Level
+	}
+	return s.calculateLevelExcept(exclude, nil).Level
+}
+
+// adjustedPointsExcept is AdjustedPoints without the points grants carried by exclude gave the skill; see
+// grantState.pointsExcept.
+func (s *Skill) adjustedPointsExcept(exclude any, tooltip *xbytes.InsertBuffer) fxp.Int {
 	if !s.Enabled() {
 		return 0
 	}
@@ -723,7 +772,7 @@ func (s *Skill) AdjustedPoints(tooltip *xbytes.InsertBuffer) fxp.Int {
 		}
 		return total
 	}
-	return s.grant.applyPoints(AdjustedPointsForNonContainerSkillOrTechnique(EntityFromNode(s), s.Points,
+	return s.grant.applyPoints(exclude, AdjustedPointsForNonContainerSkillOrTechnique(EntityFromNode(s), s.Points,
 		s.NameWithReplacements(), s.SpecializationWithReplacements(), s.OptionalSpecializationWithReplacements(), s.Tags,
 		tooltip), tooltip)
 }
@@ -742,7 +791,7 @@ func (s *Skill) AdjustedDifficulty() AttributeDifficulty {
 }
 
 // PointsRange returns the span of point costs this skill may end up being worth once every choice in or under it has
-// been made; with no choice left, it holds the AdjustedPoints value. The tooltip may be nil, and only a non-container
+// been made; with no choice left, it holds the PointsCost value. The tooltip may be nil, and only a non-container
 // fills it: the notes name each bonus source without saying which row it landed on, so rolling up a container's
 // children would give an unattributed, repetitive pile.
 func (s *Skill) PointsRange(tooltip *xbytes.InsertBuffer) NumericRange {
@@ -863,13 +912,19 @@ func decrementSkillLevel(p SkillLevelStepper) {
 
 // CalculateLevel returns the computed level without updating it.
 func (s *Skill) CalculateLevel(excludes map[string]bool) Level {
-	points := s.AdjustedPoints(nil)
+	return s.calculateLevelExcept(nil, excludes)
+}
+
+// calculateLevelExcept is CalculateLevel without the levels and points grants carried by exclude gave the skill; see
+// grantState.levelsExcept.
+func (s *Skill) calculateLevelExcept(exclude any, excludes map[string]bool) Level {
+	points := s.adjustedPointsExcept(exclude, nil)
 	if s.IsTechnique() {
 		return CalculateTechniqueLevel(EntityFromNode(s), s.Replacements, s.NameWithReplacements(),
 			s.SpecializationWithReplacements(), s.Tags, s.TechniqueDefault, s.AdjustedDifficulty().Difficulty, points, true,
 			s.TechniqueLimitModifier, excludes)
 	}
-	return s.grant.applyLevels(CalculateSkillLevel(EntityFromNode(s), s.NameWithReplacements(), s.SpecializationWithReplacements(), s.OptionalSpecializationWithReplacements(), s.Tags,
+	return s.grant.applyLevels(exclude, CalculateSkillLevel(EntityFromNode(s), s.NameWithReplacements(), s.SpecializationWithReplacements(), s.OptionalSpecializationWithReplacements(), s.Tags,
 		s.DefaultedFrom, s.AdjustedDifficulty(), points, s.EncumbrancePenaltyMultiplier))
 }
 
@@ -1445,12 +1500,14 @@ func (s *Skill) ApplyNameableKeys(m map[string]string) {
 
 // CanSwapDefaults returns true if this skill's default can be swapped.
 func (s *Skill) CanSwapDefaults() bool {
-	return !s.IsTechnique() && !s.Container() && s.AdjustedPoints(nil) > 0
+	// A granted skill changes only with its grant, which would remake it with its default as it was.
+	return !s.IsTechnique() && !s.Container() && s.Granted == nil && s.AdjustedPoints(nil) > 0
 }
 
-// CanSwapDefaultsWith returns true if this skill's default can be swapped with the other skill.
+// CanSwapDefaultsWith returns true if this skill's default can be swapped with the other skill, which a granted skill
+// never is, for the reason CanSwapDefaults gives.
 func (s *Skill) CanSwapDefaultsWith(other *Skill) bool {
-	return other != nil && s.CanSwapDefaults() && other.HasDefaultTo(s)
+	return other != nil && other.Granted == nil && s.CanSwapDefaults() && other.HasDefaultTo(s)
 }
 
 // BestSwappableSkill returns the best skill to swap with.

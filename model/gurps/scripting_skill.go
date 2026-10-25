@@ -54,7 +54,7 @@ func newScriptSkill(r *goja.Runtime, skill *Skill) *goja.Object {
 		}
 		m["attribute"] = func() goja.Value { return r.ToValue(skill.Difficulty.Attribute) }
 		m["difficulty"] = func() goja.Value { return r.ToValue(skill.Difficulty.Difficulty.Key()) }
-		m["points"] = func() goja.Value { return r.ToValue(skill.AdjustedPoints(nil).AsInteger[int]()) }
+		m["points"] = func() goja.Value { return r.ToValue(skill.PointsCost().AsInteger[int]()) }
 		m["level"] = func() goja.Value {
 			entity := EntityFromNode(skill)
 			if entity == nil {

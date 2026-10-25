@@ -95,7 +95,9 @@ func (p *TraitPrereq) Satisfied(entity *Entity, exclude any, tooltip *xbytes.Ins
 	satisfied := false
 	Traverse(func(t *Trait) bool {
 		if excludedFromPrereqs(exclude, t) || !p.NameCriteria.Matches(replacements, t.NameWithReplacements()) ||
-			(p.PointsCriteria.Compare != criteria.AnyNumber && !p.PointsCriteria.Matches(t.AdjustedPoints(nil))) ||
+			// The points are those the trait would cost if bought, so that a granted trait, which costs nothing, is
+			// judged as the same trait bought would be, as a granted skill is by its tier.
+			(p.PointsCriteria.Compare != criteria.AnyNumber && !p.PointsCriteria.Matches(t.ClassifyingPoints())) ||
 			(p.TagsCriteria.Compare != criteria.AnyText && !p.TagsCriteria.MatchesList(replacements, t.Tags...)) ||
 			(p.TitleNoteCriteria.Compare != criteria.AnyText &&
 				!p.TitleNoteCriteria.MatchesEach(replacements, t.TitleNotes()...)) ||
@@ -112,7 +114,7 @@ func (p *TraitPrereq) Satisfied(entity *Entity, exclude any, tooltip *xbytes.Ins
 		}
 		var levels fxp.Int
 		if t.IsLeveled() {
-			levels = t.CurrentLevel()
+			levels = t.levelForPrereqsOf(exclude)
 		}
 		satisfied = p.LevelCriteria.Matches(levels)
 		return satisfied

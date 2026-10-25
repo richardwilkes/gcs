@@ -868,7 +868,7 @@ func (ex *legacyExporter) processSkillsLoop(buffer []byte) {
 		ex.processBuffer(buffer, func(key string, _ []byte, index int) int {
 			switch key {
 			case pointsExportKey:
-				ex.writeEncodedText(s.AdjustedPoints(nil).String())
+				ex.writeEncodedText(s.PointsCost().String())
 			case "SL":
 				ex.writeEncodedText(s.CalculateLevel(nil).LevelAsString(s.Container()))
 			case "RSL":
@@ -907,7 +907,7 @@ func (ex *legacyExporter) processSpellsLoop(buffer []byte) {
 		ex.processBuffer(buffer, func(key string, _ []byte, index int) int {
 			switch key {
 			case pointsExportKey:
-				ex.writeEncodedText(s.AdjustedPoints(nil).String())
+				ex.writeEncodedText(s.PointsCost().String())
 			case descriptionExportKey:
 				ex.writeEncodedText(s.String())
 				ex.writeNote(s.Notes())

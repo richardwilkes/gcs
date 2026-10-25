@@ -22,6 +22,7 @@ import (
 	"github.com/richardwilkes/toolbox/v2/tid"
 	"github.com/richardwilkes/toolbox/v2/xbytes"
 	"github.com/richardwilkes/toolbox/v2/xhash"
+	"github.com/richardwilkes/toolbox/v2/xreflect"
 	"github.com/zeebo/xxh3"
 )
 
@@ -60,8 +61,11 @@ type grantState struct {
 	// source is what carries the grant that put the item on the sheet. It is set when the grants are reconciled, while
 	// the rest is set by each pass.
 	source grantSource
-	// inEffect and bypass are whether the grant that put the item on the sheet is in effect, and treats the item's
-	// prerequisites as met.
+	// standIn is what carries the grant standing in for the one that put the item on the sheet, while that one is not
+	// in effect; see Entity.applyGrants.
+	standIn grantSource
+	// inEffect and bypass are whether the grant that put the item on the sheet, or one standing in for it, is in
+	// effect, and treats the item's prerequisites as met.
 	inEffect bool
 	bypass   bool
 	// levels and points are what grants gave the item: merged levels, and a granted skill's or spell's own points
@@ -81,7 +85,9 @@ type grantItem interface {
 	SyncWithSource()
 }
 
+// grantNote is what one grant gave an item: the amount, what carries the grant and that carrier's name.
 type grantNote struct {
+	owner  any
 	source string
 	amount fxp.Int
 }
@@ -125,6 +131,9 @@ func (g *Grant) mergeSummary(label string) string {
 			return i18n.Text("Adds %s levels to %s, already present", levels.String(), name)
 		}
 	case grantmerge.MergePoints:
+		if levels := g.level(); levels < 0 {
+			return i18n.Text("Removes the points of %s from %s, already present", levelsText(levels.Abs(), nil), name)
+		}
 		return i18n.Text("Adds the points of level %s to %s, already present", g.level().String(), name)
 	case grantmerge.KeepHighest:
 		return i18n.Text("Keeps the better of %s as it is and at level %s", name, g.level().String())
@@ -185,6 +194,16 @@ func (g *Grant) ItemHasSource() bool {
 // grants the library's item has gained are dropped, since a granted item can't grant anything.
 func (g *Grant) SyncItemWithSource() {
 	item := g.item()
+	if item == nil {
+		return
+	}
+	item.SyncWithSource()
+	DropGrants(item)
+}
+
+// DropGrants removes the grants among the features of a trait, skill, spell or modifier, for an item a grant gives or a
+// modifier of one, since a granted item grants nothing. Anything else is left alone.
+func DropGrants(item any) {
 	var list *Features
 	switch one := item.(type) {
 	case *Trait:
@@ -193,10 +212,13 @@ func (g *Grant) SyncItemWithSource() {
 		list = &one.Features
 	case *Spell:
 		list = &one.Features
+	case *TraitModifier:
+		list = &one.Features
+	case *EquipmentModifier:
+		list = &one.Features
 	default:
 		return
 	}
-	item.SyncWithSource()
 	*list = slices.DeleteFunc(*list, func(f Feature) bool {
 		_, isGrant := f.(*Grant)
 		return isGrant
@@ -273,14 +295,20 @@ func (g *Grant) FillWithNameableKeys(m, existing map[string]string) {
 	}
 }
 
-// answers returns the answers of what carries the grant for the placeholders of the granted item it leaves to them.
+// answers returns the answers of what carries the grant for the placeholders of the granted item it leaves to them:
+// those of the modifier carrying it, which sees its owner's through its nameable links, or else those of the owner, as
+// bonusReplacements resolves a bonus.
 func (g *Grant) answers(source grantSource) map[string]string {
-	owner, ok := source.owner.(nameable.Accesser)
-	if !ok {
+	var replacements map[string]string
+	if na, ok := source.subOwner.(nameable.Accesser); ok {
+		replacements = na.NameableReplacements()
+	} else if na, ok = source.owner.(nameable.Accesser); ok {
+		replacements = na.NameableReplacements()
+	} else {
 		return nil
 	}
 	m := make(map[string]string)
-	g.FillWithNameableKeys(m, owner.NameableReplacements())
+	g.FillWithNameableKeys(m, replacements)
 	return nameable.Reduce(m, m) // Leaves out the ones not yet answered.
 }
 
@@ -311,6 +339,13 @@ func (g *Grant) Leveled() bool {
 		return g.Trait != nil && g.Trait.IsLeveled()
 	}
 	return true
+}
+
+// putsItemOnSheet returns true if the grant puts its item on the sheet when the item is absent: a trait without levels
+// always does, and anything else only at level 1 or more, since a negative level only takes away from an item already
+// present.
+func (g *Grant) putsItemOnSheet() bool {
+	return !g.Leveled() || g.Level.Floor() >= fxp.One
 }
 
 // AllowedMerges returns the merge modes that mean something for the granted item: Ignore alone for a trait without
@@ -344,10 +379,14 @@ func (g *Grant) contentHash(answers map[string]string) string {
 	return fmt.Sprintf("%016x", h.Sum64())
 }
 
-// cloneGrantedBy returns the link a clone of a granted item carries: a copy of the original's on a sheet, whose grants
-// decide whether the clone stays, and none elsewhere.
-func cloneGrantedBy[T Node[T]](link *GrantedBy, clone T) *GrantedBy {
-	if link == nil || EntityFromNode(clone) == nil {
+// cloneGrantedBy returns the link a clone of a granted item carries: a copy of the original's when the clone is for the
+// same sheet, whose grants decide whether the clone stays, and none for another sheet, a template or a library, where
+// no grant claims it and the clone stands on its own.
+func cloneGrantedBy[T Node[T]](link *GrantedBy, original, clone T) *GrantedBy {
+	if link == nil {
+		return nil
+	}
+	if e := EntityFromNode(clone); e == nil || e != EntityFromNode(original) {
 		return nil
 	}
 	return clonePtr(link)
@@ -358,6 +397,10 @@ func cloneGrantedBy[T Node[T]](link *GrantedBy, clone T) *GrantedBy {
 func grantedByText(link *GrantedBy, state *grantState) string {
 	if link == nil {
 		return ""
+	}
+	if !xreflect.IsNil(state.standIn.owner) {
+		return i18n.Text("Granted by %s, standing in for %s, whose grant is not in effect", grantSourceName(state.standIn),
+			grantSourceName(state.source))
 	}
 	text := i18n.Text("Granted by %s", grantSourceName(state.source))
 	if !state.inEffect {
@@ -378,18 +421,32 @@ func (g *Grant) Describe(_ *Entity, _ map[string]string, em func(string) string)
 			return describeSwitchable(g.Switchable, i18n.Text("Grants a trait, not yet chosen"))
 		}
 	}
-	name := em(g.ItemName())
-	var text string
+	var item string
 	switch g.Type {
 	case feature.GrantSkill:
-		text = i18n.Text("Grants the skill %s", name)
+		item = i18n.Text("the skill %s", em(g.ItemName()))
 	case feature.GrantSpell:
-		text = i18n.Text("Grants the spell %s", name)
+		item = i18n.Text("the spell %s", em(g.ItemName()))
 	default:
-		text = i18n.Text("Grants the trait %s", name)
+		item = i18n.Text("the trait %s", em(g.ItemName()))
 	}
+	level := g.level()
+	if g.Leveled() && !g.putsItemOnSheet() {
+		// Below level 1, the grant puts nothing on the sheet, and a negative level only takes away from an item present.
+		var text string
+		switch merge := g.effectiveMerge(); {
+		case level < 0 && merge == grantmerge.MergeLevels:
+			text = i18n.Text("Removes %s from %s when already present", levelsText(level.Abs(), em), item)
+		case level < 0 && merge == grantmerge.MergePoints:
+			text = i18n.Text("Removes the points of %s from %s when already present", levelsText(level.Abs(), em), item)
+		default:
+			text = i18n.Text("Would grant %s at level %s, but a level below 1 grants nothing", item, em(level.String()))
+		}
+		return describeSwitchable(g.Switchable, text)
+	}
+	text := i18n.Text("Grants %s", item)
 	if g.Leveled() {
-		text += i18n.Text(" at level %s", em(g.level().String()))
+		text += i18n.Text(" at level %s", em(level.String()))
 	}
 	switch g.effectiveMerge() {
 	case grantmerge.MergeLevels:
@@ -407,7 +464,21 @@ func (g *Grant) Describe(_ *Entity, _ map[string]string, em func(string) string)
 	return describeSwitchable(g.Switchable, text)
 }
 
-// Hash writes this object's contents into the hasher.
+// levelsText returns the count of levels as words, "1 level" or "N levels", with the number emphasized by em when that
+// is not nil.
+func levelsText(levels fxp.Int, em func(string) string) string {
+	text := levels.String()
+	if em != nil {
+		text = em(text)
+	}
+	if levels == fxp.One {
+		return i18n.Text("%s level", text)
+	}
+	return i18n.Text("%s levels", text)
+}
+
+// Hash writes this object's contents into the hasher. The grant's copy of its item is hashed whole, modifiers and edit
+// data included, since a sync of what carries the grant replaces the whole copy.
 func (g *Grant) Hash(h hash.Hash) {
 	if g == nil {
 		xhash.Num8(h, uint8(255))
@@ -420,7 +491,7 @@ func (g *Grant) Hash(h hash.Hash) {
 	xhash.Bool(h, g.CheckPrereqs)
 	xhash.StringWithLen(h, string(g.Key()))
 	if item := g.item(); item != nil {
-		item.Hash(h)
+		HashJSON(h, item)
 	}
 }
 
@@ -475,18 +546,51 @@ func (s *grantState) reset() {
 	*s = grantState{source: s.source}
 }
 
-func (s *grantState) addLevels(source string, amount fxp.Int) {
+func (s *grantState) addLevels(source grantSource, amount fxp.Int) {
 	if amount != 0 {
 		s.levels += amount
-		s.levelNotes = append(s.levelNotes, grantNote{source: source, amount: amount})
+		s.levelNotes = append(s.levelNotes, newGrantNote(source, amount))
 	}
 }
 
-func (s *grantState) addPoints(source string, amount fxp.Int) {
+func (s *grantState) addPoints(source grantSource, amount fxp.Int) {
 	if amount != 0 {
 		s.points += amount
-		s.pointNotes = append(s.pointNotes, grantNote{source: source, amount: amount})
+		s.pointNotes = append(s.pointNotes, newGrantNote(source, amount))
 	}
+}
+
+func newGrantNote(source grantSource, amount fxp.Int) grantNote {
+	return grantNote{owner: source.owner, source: grantSourceName(source), amount: amount}
+}
+
+// contributedBy returns true if a grant carried by owner gave the item levels or points.
+func (s *grantState) contributedBy(owner any) bool {
+	carried := func(note grantNote) bool { return note.owner == owner }
+	return slices.ContainsFunc(s.levelNotes, carried) || slices.ContainsFunc(s.pointNotes, carried)
+}
+
+// levelsExcept returns the levels grants gave the item, leaving out those of the grants carried by exclude, which may
+// be nil to leave out none. The prerequisites of a carrier are judged this way, so that an item never meets its own
+// prerequisites with what it grants.
+func (s *grantState) levelsExcept(exclude any) fxp.Int {
+	return sumExcept(s.levels, s.levelNotes, exclude)
+}
+
+// pointsExcept is levelsExcept for the points grants gave the item.
+func (s *grantState) pointsExcept(exclude any) fxp.Int {
+	return sumExcept(s.points, s.pointNotes, exclude)
+}
+
+func sumExcept(total fxp.Int, notes []grantNote, exclude any) fxp.Int {
+	if exclude != nil {
+		for _, note := range notes {
+			if note.owner == exclude {
+				total -= note.amount
+			}
+		}
+	}
+	return total
 }
 
 func (s *grantState) hash(h hash.Hash) {
@@ -508,22 +612,26 @@ func addGrantNotesToTooltip(notes []grantNote, buffer *xbytes.InsertBuffer) {
 	}
 }
 
-// applyPoints returns the points with those grants gave a skill or spell added.
-func (s *grantState) applyPoints(points fxp.Int, tooltip *xbytes.InsertBuffer) fxp.Int {
-	if s.points == 0 {
+// applyPoints returns the points with those grants gave a skill or spell added, leaving out what the grants carried by
+// exclude gave (see levelsExcept).
+func (s *grantState) applyPoints(exclude any, points fxp.Int, tooltip *xbytes.InsertBuffer) fxp.Int {
+	granted := s.pointsExcept(exclude)
+	if granted == 0 {
 		return points
 	}
 	addGrantNotesToTooltip(s.pointNotes, tooltip)
-	return (points + s.points).Max(0)
+	return (points + granted).Max(0)
 }
 
-// applyLevels returns the level with the levels grants merged into a skill or spell added, unless it has none.
-func (s *grantState) applyLevels(level Level) Level {
-	if s.levels == 0 || level.Level == fxp.Min {
+// applyLevels returns the level with the levels grants merged into a skill or spell added, unless it has none, leaving
+// out what the grants carried by exclude gave (see levelsExcept).
+func (s *grantState) applyLevels(exclude any, level Level) Level {
+	granted := s.levelsExcept(exclude)
+	if granted == 0 || level.Level == fxp.Min {
 		return level
 	}
-	level.Level += s.levels
-	level.RelativeLevel += s.levels
+	level.Level += granted
+	level.RelativeLevel += granted
 	var tooltip xbytes.InsertBuffer
 	tooltip.WriteString(level.Tooltip)
 	addGrantNotesToTooltip(s.levelNotes, &tooltip)

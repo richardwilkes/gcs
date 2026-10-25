@@ -20,6 +20,8 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/attribute"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/difficulty"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/feature"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/frequency"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/selfctrl"
 	"github.com/richardwilkes/gcs/v5/model/gurps/gurpstest"
@@ -59,6 +61,49 @@ func TestTemplateFuncs(t *testing.T) {
 		c.NoError(tmpl.Execute(&buffer, values), "Test %d", i)
 		c.Equal(data.out, buffer.String(), "Test %d", i)
 	}
+}
+
+// newGrantedRowsEntity returns a sheet whose trait Training grants the skill Brawling and the spell Light, both at
+// tier 3, which stands for 4 points.
+func newGrantedRowsEntity() *gurps.Entity {
+	entity := gurps.NewEntity()
+	brawling := gurps.NewSkill(nil, nil, false)
+	brawling.Name = "Brawling"
+	brawling.Difficulty.Difficulty = difficulty.Easy
+	skillGrant := gurps.NewGrant(feature.GrantSkill)
+	skillGrant.Skill = brawling
+	skillGrant.Level = fxp.Three
+	light := gurps.NewSpell(nil, nil, false)
+	light.Name = "Light"
+	spellGrant := gurps.NewGrant(feature.GrantSpell)
+	spellGrant.Spell = light
+	spellGrant.Level = fxp.Three
+	training := gurps.NewTrait(entity, nil, false)
+	training.Name = "Training"
+	training.Features = gurps.Features{skillGrant, spellGrant}
+	entity.Traits = append(entity.Traits, training)
+	return entity
+}
+
+// TestExportGrantedRowsCostNothing verifies that both exporters write a granted skill's or spell's points as nothing,
+// as the sheet shows them, rather than as the points its tier stands for.
+func TestExportGrantedRowsCostNothing(t *testing.T) {
+	c := check.New(t)
+	entity := newGrantedRowsEntity()
+	dir := t.TempDir()
+	tmplPath := filepath.Join(dir, "tmpl.txt")
+	const tmpl = "GCS Text Template v1\n" +
+		"{{range .Skills}}<<{{.Description}}|{{.Points}}|{{.Level}}>>{{end}}" +
+		"{{range .Spells}}<<{{.Description}}|{{.Points}}|{{.Level}}>>{{end}}"
+	c.NoError(os.WriteFile(tmplPath, []byte(tmpl), 0o600))
+	outPath := filepath.Join(dir, "out.txt")
+	c.NoError(Export(entity, tmplPath, outPath))
+	data, err := os.ReadFile(outPath)
+	c.NoError(err)
+	c.Equal("<<Brawling|0|12>><<Light|0|10>>", string(data))
+	c.Equal("<Brawling|0|12><Light|0|10>", runLegacyExport(t, c, entity,
+		"@SKILLS_LOOP_START<@DESCRIPTION|@POINTS|@SL>@SKILLS_LOOP_END"+
+			"@SPELLS_LOOP_START<@DESCRIPTION_PRIMARY|@POINTS|@SL>@SPELLS_LOOP_END"))
 }
 
 func TestExportTraitSelfControlAndFrequency(t *testing.T) {

@@ -656,3 +656,33 @@ func TestLabelCellKeepsTheNotesButtonWithinTheCell(t *testing.T) {
 		}
 	}
 }
+
+// TestDimmedMarkdownCellFiltersEveryInk verifies that the notes of a dimmed row draw their code, quote bars and links
+// as the rest of the row is drawn, through the same color filter as the text.
+func TestDimmedMarkdownCellFiltersEveryInk(t *testing.T) {
+	c := check.New(t)
+	_, table := NewNodeTable(NewTraitsProvider(gurps.NewEntity(), false), nil)
+	trait := gurps.NewTrait(nil, nil, false)
+	trait.Name = "Dim"
+	n := NewNode(table, nil, trait, false)
+	md, ok := n.createMarkdownCell("`code`\n\n> quote", 200, unison.FieldFont, unison.ThemeOnSurface, unison.ThemeSurface,
+		false, true).AsPanel().Self.(*unison.Markdown)
+	if !ok {
+		t.Fatal("the cell is not a markdown panel")
+	}
+	filtered := func(ink unison.Ink) bool {
+		_, isFiltered := ink.(*unison.ColorFilteredInk)
+		return isFiltered
+	}
+	c.True(filtered(md.OnBackgroundInk))
+	c.True(filtered(md.LinkInk))
+	c.True(filtered(md.LinkOnPressedInk))
+	c.True(filtered(md.CodeBackground), "code blocks are dimmed too")
+	c.True(filtered(md.OnCodeBackground))
+	for _, ink := range []unison.Ink{
+		md.QuoteBarColor, md.QuoteBarNoteColor, md.QuoteBarTipColor,
+		md.QuoteBarImportantColor, md.QuoteBarWarningColor, md.QuoteBarCautionColor,
+	} {
+		c.True(filtered(ink), "as are quote bars")
+	}
+}

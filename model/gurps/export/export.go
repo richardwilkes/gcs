@@ -584,7 +584,7 @@ func export(entity *gurps.Entity, tmpl exporter, exportPath string) (err error) 
 		skill := &exportedSkill{
 			ID:                s.TID,
 			Type:              groupOrItem(s.Container()),
-			Points:            s.AdjustedPoints(nil),
+			Points:            s.PointsCost(),
 			Level:             s.CalculateLevel(nil).LevelAsString(s.Container()),
 			RelativeLevel:     s.RelativeLevel(),
 			Description:       s.String(),
@@ -608,7 +608,7 @@ func export(entity *gurps.Entity, tmpl exporter, exportPath string) (err error) 
 		spell := &exportedSpell{
 			ID:            s.TID,
 			Type:          groupOrItem(s.Container()),
-			Points:        s.AdjustedPoints(nil),
+			Points:        s.PointsCost(),
 			Level:         s.CalculateLevel().LevelAsString(s.Container()),
 			RelativeLevel: s.RelativeLevel(),
 			Class:         s.ClassWithReplacements(),

@@ -15,6 +15,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/criteria"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/feature"
 	"github.com/richardwilkes/gcs/v5/ux/uxtest"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/unison"
@@ -126,4 +127,60 @@ func TestTechniqueEditorOpensUnmodifiedWithoutADefault(t *testing.T) {
 	c.True(e.isModified(), "naming the skill is a change")
 	field.SetText("")
 	c.False(e.isModified(), "that taking the name back out undoes")
+}
+
+// levelPreview returns the text of the editor's level field, which sits beside the Level label.
+func levelPreview(content *unison.Panel) string {
+	for _, f := range uxtest.PanelsOfType[*NonEditableField](content) {
+		if parent := f.Parent(); parent != nil {
+			for _, sibling := range parent.Children() {
+				if l, ok := sibling.Self.(*unison.Label); ok && l.Text.String() == "Level" {
+					return f.Text.String()
+				}
+			}
+		}
+	}
+	return ""
+}
+
+// TestEditorLevelPreviewIncludesGrants verifies that the skill and spell editors' level previews include what grants
+// gave the item, as the sheet's level does, so that a granted row's editor shows its level rather than none.
+func TestEditorLevelPreviewIncludesGrants(t *testing.T) {
+	c := check.New(t)
+	sheet := newTestSheetForTemplate(t)
+	entity := sheet.Entity()
+	training := gurps.NewTrait(entity, nil, false)
+	training.Name = "Training"
+	skillGrant := gurps.NewGrant(feature.GrantSkill)
+	skillGrant.SetItem(newTestSkill("Brawling", fxp.One, nil), gurps.LibraryFile{})
+	skillGrant.Level = fxp.Three
+	spellGrant := gurps.NewGrant(feature.GrantSpell)
+	spellGrant.SetItem(newTestSpell("Light", fxp.One, nil), gurps.LibraryFile{})
+	spellGrant.Level = fxp.Three
+	training.Features = gurps.Features{skillGrant, spellGrant}
+	entity.Traits = append(entity.Traits, training)
+	entity.Recalculate()
+	var skill *gurps.Skill
+	for _, one := range entity.Skills {
+		if gurps.IsGranted(one) {
+			skill = one
+		}
+	}
+	var spell *gurps.Spell
+	for _, one := range entity.Spells {
+		if gurps.IsGranted(one) {
+			spell = one
+		}
+	}
+	if skill == nil || spell == nil {
+		t.Fatal("precondition: the grants put a skill and a spell on the sheet")
+	}
+	level := skill.CalculateLevel(nil)
+	_, content := buildEditorContent(sheet, skill, initSkillEditor)
+	c.Equal(level.Level.Floor().String()+"/"+gurps.FormatRelativeSkill(entity, false, skill.Difficulty, level.RelativeLevel),
+		levelPreview(content), "a granted skill's editor shows the level its tier gives")
+	level = spell.CalculateLevel()
+	_, content = buildEditorContent(sheet, spell, initSpellEditor)
+	c.Equal(level.Level.Floor().String()+"/"+gurps.FormatRelativeSkill(entity, false, spell.Difficulty, level.RelativeLevel),
+		levelPreview(content), "as does a granted spell's")
 }

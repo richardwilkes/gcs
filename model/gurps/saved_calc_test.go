@@ -10,11 +10,14 @@
 package gurps
 
 import (
+	"encoding/json/v2"
 	"fmt"
 	"os"
 	"path/filepath"
 	"testing"
 
+	"github.com/richardwilkes/gcs/v5/model/fxp"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/grantmerge"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/toolbox/v2/check"
 )
@@ -49,6 +52,27 @@ func TestNewEntityFromFileWithSavedCalc(t *testing.T) {
 	c.Equal("Magery 3", e.Traits[0].StringWithSavedCalc())
 	c.Equal("ST <script>2+2</script>", e.Notes[0].StringWithSavedCalc())
 	c.NotNil(e.Traits[0].DataOwner())
+}
+
+// TestStringWithSavedCalcOfGrantedTrait verifies that a granted trait loaded with its saved calc shows the level the
+// sheet recorded, as a bought trait does, since whether its grant was in effect is known only from that record.
+func TestStringWithSavedCalcOfGrantedTrait(t *testing.T) {
+	c := check.New(t)
+	e := NewEntity()
+	bonus := NewTraitBonus()
+	bonus.NameCriteria.Qualifier = "Night Vision"
+	addTraitWithFeatures(e, "Boost", bonus)
+	addTraitWithFeatures(e, "Racial", newTraitGrant(newGrantLeveledTrait("Night Vision", fxp.One), fxp.Two,
+		grantmerge.Ignore))
+	e.Recalculate()
+	c.Equal("Night Vision 3", grantedOf(e.Traits)[0].String(), "precondition: the bonus adds a level")
+	data, err := json.Marshal(e)
+	c.NoError(err)
+	dir := t.TempDir()
+	c.NoError(os.WriteFile(filepath.Join(dir, "granted.gcs"), data, 0o600))
+	loaded, err := NewEntityFromFileWithSavedCalc(os.DirFS(dir), "granted.gcs")
+	c.NoError(err)
+	c.Equal("Night Vision 3", grantedOf(loaded.Traits)[0].StringWithSavedCalc())
 }
 
 func TestStringWithSavedCalcFallsBackWhenNothingUsableWasRecorded(t *testing.T) {
