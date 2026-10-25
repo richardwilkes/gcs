@@ -603,8 +603,10 @@ func (r *grantReconciler[T]) makeItem(g *Grant, item T, link *GrantedBy, answers
 	return node
 }
 
-// replace puts fresh where old is, keeping the old item's ID and switch, which the user may have flipped.
+// replace puts fresh where old is, keeping the old item's ID and switch, which the user may have flipped. Old is out of
+// the running from then on, or another grant with the same key would claim it (see consider) once it is in no list.
 func (r *grantReconciler[T]) replace(old, fresh T) {
+	r.kept[old] = true
 	switch n := any(fresh).(type) {
 	case *Trait:
 		if o, ok := any(old).(*Trait); ok {

@@ -83,9 +83,8 @@ func pickerContainerPoints[T pointsRangeNode[T]](tp TemplatePicker, options []T)
 }
 
 // totalOfAdjustedPoints returns the total the children cost, given the ranges already worked out for them. A settled
-// range is exactly what AdjustedPoints reports for that child, a granted skill or spell aside, which costs nothing and
-// is left out before this is reached, so only a child still presenting a choice of its own has to be walked a second
-// time.
+// range is exactly what AdjustedPoints reports for that child, or 0 for a granted skill or spell, which costs nothing,
+// so only a child still presenting a choice of its own has to be walked a second time.
 func totalOfAdjustedPoints[T pointsRangeNode[T]](children []T, ranges []NumericRange) fxp.Int {
 	var total fxp.Int
 	for i, one := range children {

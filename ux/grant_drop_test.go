@@ -21,6 +21,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/feature"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/grantmerge"
+	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/gcs/v5/model/library"
 	"github.com/richardwilkes/gcs/v5/ux/uxtest"
 	"github.com/richardwilkes/toolbox/v2/check"
@@ -816,6 +817,36 @@ func TestGrantItemEditorLeavesLevelAndEnabledToTheGrant(t *testing.T) {
 	})
 }
 
+// TestGrantItemEditorShowsTheCostAtTheGrantsLevel checks that the editor of a grant's trait, which leaves the level to
+// the grant, shows the point cost at the grant's level rather than at the level the grant's copy of the trait holds,
+// which the grant's row never changes.
+func TestGrantItemEditorShowsTheCostAtTheGrantsLevel(t *testing.T) {
+	c := check.New(t)
+	entity := gurps.NewEntity()
+	carrier := gurps.NewTrait(entity, nil, false)
+	carrier.Name = "Training"
+	g := gurps.NewGrant(feature.GrantTrait)
+	g.SetItem(newGrantTestTrait("Acute Vision", fxp.One), gurps.LibraryFile{})
+	carrier.Features = gurps.Features{g}
+	g.Level = fxp.Three
+	root := &stubRebuildable{}
+	root.Self = root
+	item := g.Trait.Clone(gurps.LibraryFile{}, nil, nil, gurps.Copy)
+	owner := &grantItemOwner{
+		Rebuildable: root,
+		panel:       newFeaturesPanel(entity, carrier, &carrier.Features, false),
+		key:         g.Key(),
+		hash:        grantItemHash(g),
+		item:        item,
+	}
+	_, content := buildEditorContent(owner, item, initTraitEditor)
+	fields := uxtest.PanelsOfType[*NonEditableField](content)
+	if len(fields) == 0 {
+		t.Fatal("the editor must show the point cost")
+	}
+	c.Equal("3", fields[0].String(), "the cost is shown at the grant's level")
+}
+
 // TestGrantItemEditorClosesWhenItsGrantChanges checks that the editor open on a grant's item closes, without asking,
 // once the outer editor's panel drops the grant or gives it another item, since what the editor would save has nowhere
 // to go, or would overwrite the new item.
@@ -1064,8 +1095,8 @@ func newTestSheetWithEquipmentGrant(t *testing.T) (sheet *Sheet, carrier *gurps.
 }
 
 // TestUndoOfTakingGrantsAwayRestoresGrantedRowInOtherList checks that undoing an edit that takes a carrier's grants
-// away -- deleting the carrier, applying an editor that removes the grant, disabling the carrier or moving it to the
-// other equipment list -- brings back the row the grant put in the skills list as the row it was, where the user had
+// away -- deleting the carrier, applying an editor that removes the grant, disabling the carrier, moving it to the
+// other equipment list or selling it -- brings back the row the grant put in the skills list as the row it was, where the user had
 // moved it, rather than having the restored grant make a fresh one at the end of the list.
 func TestUndoOfTakingGrantsAwayRestoresGrantedRowInOtherList(t *testing.T) {
 	for _, tc := range []struct {
@@ -1090,6 +1121,12 @@ func TestUndoOfTakingGrantsAwayRestoresGrantedRowInOtherList(t *testing.T) {
 		{name: "move to other equipment", equipment: true, edit: func(sheet *Sheet, _ *gurps.Trait, eqp *gurps.Equipment) {
 			selectGrantingItem(sheet.Skills.Table, eqp)
 			moveSelectedEquipment(sheet, sheet.CarriedEquipment.Table, sheet.OtherEquipment.Table)
+		}},
+		{name: "sell all of it", equipment: true, edit: func(sheet *Sheet, _ *gurps.Trait, eqp *gurps.Equipment) {
+			entity := sheet.Entity()
+			recordTrade(sheet, "Sell Equipment", func() {
+				entity.CommitSale([]gurps.SaleItem{{Equipment: eqp, Quantity: fxp.One}}, nil, false, "Sold", jio.Now())
+			})
 		}},
 		{name: "drag to other equipment", equipment: true, edit: func(sheet *Sheet, _ *gurps.Trait, eqp *gurps.Equipment) {
 			// Driven the way unison drives a drop from one table into another: the undo data is collected, the rows

@@ -35,8 +35,17 @@ func initTraitEditor(e *editor[*gurps.Trait, *gurps.TraitEditData], content *uni
 	// only matter to a trait that reaches a sheet are left out of its editor.
 	choice := gurps.IsTemplateChoiceContainer(e.target)
 	// The trait a grant gives is put on the sheet at the grant's level and enabled whenever the grant is in effect, so
-	// its editor leaves out the level and the enabled check box, which nothing would read.
-	_, granted := e.owner.(*grantItemOwner)
+	// its editor leaves out the level and the enabled check box, which nothing would read, and shows the cost at the
+	// grant's level rather than at the level its copy of the trait holds, which the grant's row never changes.
+	grantOwner, granted := e.owner.(*grantItemOwner)
+	levels := func() fxp.Int {
+		if granted {
+			if g := grantOwner.grant(); g != nil {
+				return g.Level
+			}
+		}
+		return e.editorData.Levels
+	}
 	addNameLabelAndField(content, &e.editorData.Name)
 	addNotesLabelAndField(content, &e.editorData.LocalNotes)
 	if !choice {
@@ -60,11 +69,12 @@ func initTraitEditor(e *editor[*gurps.Trait, *gurps.TraitEditData], content *uni
 			// modifiers.
 			own := cloneTraitWithOverlay(e.target, e.editorData)
 			own.SetParent(nil)
+			own.Levels = levels()
 			if r, open := own.ModifierChoicePointsRange(); open {
 				field.SetTitle(r.String())
 			} else {
 				field.SetTitle(gurps.AdjustedPoints(entity, e.target, e.editorData.CanLevel, e.editorData.BasePoints,
-					e.editorData.Levels, e.editorData.PointsPerLevel, e.editorData.SelfControl, e.editorData.Frequency,
+					own.Levels, e.editorData.PointsPerLevel, e.editorData.SelfControl, e.editorData.Frequency,
 					e.editorData.Modifiers, e.editorData.RoundCostDown).String())
 			}
 			field.MarkForLayoutAndRedraw()

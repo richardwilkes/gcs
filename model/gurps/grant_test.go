@@ -553,6 +553,36 @@ func TestGrantChangeRefreshesItem(t *testing.T) {
 	c.Equal(fxp.Three, after.CurrentLevel())
 }
 
+// TestGrantsSharingAKeyEachKeepTheirRow checks that when a carrier holds two grants of one item ID, as a hand-edited
+// sheet can, and each has put a row on the sheet, a change to one grant refreshes its own row and leaves the other
+// grant its row, rather than the other grant claiming the row the refresh took out of the list.
+func TestGrantsSharingAKeyEachKeepTheirRow(t *testing.T) {
+	c := check.New(t)
+	e := NewEntity()
+	cheap := newGrantLeveledTrait("Night Vision", fxp.One)
+	dear := newGrantLeveledTrait("Night Vision", fxp.Two)
+	dear.TID = cheap.TID
+	first := newTraitGrant(cheap, fxp.One, grantmerge.Ignore)
+	second := newTraitGrant(dear, fxp.One, grantmerge.Ignore)
+	addTraitWithFeatures(e, "Racial", first, second)
+	e.Recalculate()
+	granted := grantedOf(e.Traits)
+	if len(granted) != 2 {
+		c.Fatalf("expected a row for each grant, got %d", len(granted))
+	}
+	firstRow, secondRow := granted[0], granted[1]
+	first.Level = fxp.Two
+	e.Recalculate()
+	granted = grantedOf(e.Traits)
+	c.Equal(2, len(granted), "each grant keeps a row of its own")
+	if len(granted) != 2 {
+		return
+	}
+	c.Equal(firstRow.TID, granted[0].TID, "the changed grant's row is refreshed in place")
+	c.Equal(fxp.Two, granted[0].CurrentLevel())
+	c.True(granted[1] == secondRow, "the other grant keeps its own row")
+}
+
 func TestGrantSurvivesSaveAndLoad(t *testing.T) {
 	c := check.New(t)
 	e := NewEntity()

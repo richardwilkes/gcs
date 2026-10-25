@@ -13,6 +13,7 @@ import (
 	"fmt"
 	"math"
 	"os"
+	"slices"
 	"strconv"
 
 	"github.com/richardwilkes/gcs/v5/model/criteria"
@@ -43,7 +44,8 @@ const LargeEntitySizeEnvVar = "GCS_BENCH_SIZE"
 // trait to hold them. Reactions and ConditionalModifiers are how many of each bonus the traits carry, which is also
 // the number of rows the two derived lists show; they go one to a trait until the traits run out, then around again.
 // The weapons are spread over the equipment, traits, skills and spells, so they are not extra rows of their own.
-// Grants is how many grant features the traits and equipment carry; see addGrants for the rows they add.
+// Grants is how many grant features the traits and carried equipment carry, while there is either to carry them; see
+// addGrants for the rows they add.
 // PerContainer is how many rows a container holds before the next one is started.
 type LargeEntitySize struct {
 	Traits               int
@@ -505,12 +507,18 @@ func (b *largeEntityBuilder) addSkills() {
 		}}
 		place(sk)
 	}
-	for i, name := range []string{"Fast-Draw (@Item@)", "Hobby Skill (@Hobby@)", "Expert Skill (@Field@)"} {
+	// Each skill answers only its own marker, as applying nameables leaves it, so that a grant's copy of it still
+	// matches it (see addGrants). The last one is left without a replacement, so that the fallback text for an unfilled
+	// marker is shown.
+	for _, spec := range []struct{ name, code, answer string }{
+		{name: "Fast-Draw (@Item@)", code: "Item", answer: "Sword"},
+		{name: "Hobby Skill (@Hobby@)", code: "Hobby", answer: "Chess"},
+		{name: "Expert Skill (@Field@)"},
+	} {
 		sk := gurps.NewSkill(b.entity, nil, false)
-		sk.Name = name
-		if i < 2 {
-			// The last one is left without a replacement, so that the fallback text for an unfilled marker is shown.
-			sk.Replacements = map[string]string{"Item": "Sword", "Hobby": "Chess"}
+		sk.Name = spec.name
+		if spec.code != "" {
+			sk.Replacements = map[string]string{spec.code: spec.answer}
 		}
 		sk.Difficulty.Attribute = gurps.DexterityID
 		sk.Difficulty.Difficulty = difficulty.Easy
@@ -594,7 +602,10 @@ func (b *largeEntityBuilder) addSpells() {
 			s.Difficulty.Difficulty = difficulty.VeryHard
 		}
 		s.Points = fxp.FromInteger([]int{1, 1, 2, 4, 8}[i%5])
+		// Sorted, as every path that saves or copies a row sorts its tags and the hash depends on their order, so that a
+		// grant's copy of the spell still matches it (see addGrants).
 		s.Tags = []string{"Spell", largeEntityColleges[college]}
+		slices.Sort(s.Tags)
 		place(s, college)
 	}
 	for i := range b.size.RitualMagicSpells {
@@ -609,6 +620,7 @@ func (b *largeEntityBuilder) addSpells() {
 		s.Points = fxp.FromInteger(i % 3)
 		s.Class = classes[i%len(classes)]
 		s.Tags = []string{"Ritual", largeEntityColleges[college]}
+		slices.Sort(s.Tags)
 		place(s, college)
 	}
 }
@@ -751,23 +763,29 @@ func (b *largeEntityBuilder) addNotes() {
 
 // addGrants hands out the grants, cycling through traits, skills and spells and, independently, through the merge
 // modes: half go to traits, a quarter to equipped equipment and a quarter to unequipped equipment, whose grants are not
-// in effect. Every other trait or skill grant puts a new item on the sheet, the new skills taking their specialization
-// from what carries the grant; the rest, and every spell grant, copy an item already there so that they merge with it,
-// though a copy of an item that carries a grant of its own, or gets one later, no longer matches it once the grant is
-// added, since the features are part of the hash, and such a grant puts its copy on the sheet instead.
+// in effect, or all to whichever of those there are. Every other trait or skill grant puts a new item on the sheet, the
+// new skills taking their specialization from what carries the grant; the rest, and every spell grant, copy an item
+// already there so that they merge with it, though a copy of an item that carries a grant of its own, or gets one
+// later, no longer matches it once the grant is added, since the features are part of the hash, and such a grant puts
+// its copy on the sheet instead. A spell grant with no spell to copy is a skill grant instead. Nothing is handed out
+// when there is nothing to carry it.
 func (b *largeEntityBuilder) addGrants() {
-	if len(b.traits) == 0 || len(b.spells) == 0 {
+	if len(b.traits) == 0 && len(b.equipped) == 0 && len(b.unequipped) == 0 {
 		return
 	}
 	modes := []grantmerge.Mode{grantmerge.MergeLevels, grantmerge.MergePoints, grantmerge.KeepHighest}
 	for i := range b.size.Grants {
 		var g *gurps.Grant
 		merge := i%2 == 1
-		switch i % 3 {
+		kind := i % 3
+		if kind == 2 && len(b.spells) == 0 {
+			kind = 1
+		}
+		switch kind {
 		case 0:
 			g = gurps.NewGrant(feature.GrantTrait)
-			if t := b.traits[i*3%len(b.traits)]; merge && t.CanLevel {
-				g.Trait = t.Clone(gurps.LibraryFile{}, nil, nil, gurps.Duplicate)
+			if merge && len(b.traits) != 0 && b.traits[i*3%len(b.traits)].CanLevel {
+				g.Trait = b.traits[i*3%len(b.traits)].Clone(gurps.LibraryFile{}, nil, nil, gurps.Duplicate)
 			} else {
 				g.Trait = gurps.NewTrait(nil, nil, false)
 				g.Trait.Name = fmt.Sprintf("Granted Trait %d", i+1)
@@ -798,11 +816,11 @@ func (b *largeEntityBuilder) addGrants() {
 			(*replacements)["Topic"] = fmt.Sprintf("Topic %d", i+1)
 		}
 		switch {
-		case i%4 < 2 || len(b.equipped) == 0 || len(b.unequipped) == 0:
+		case len(b.traits) != 0 && (i%4 < 2 || len(b.equipped) == 0 || len(b.unequipped) == 0):
 			t := b.traits[i%len(b.traits)]
 			addTopic(&t.Replacements)
 			t.Features = append(t.Features, g)
-		case i%4 == 2:
+		case len(b.equipped) != 0 && (i%4 == 2 || len(b.unequipped) == 0):
 			eqp := b.equipped[i%len(b.equipped)]
 			addTopic(&eqp.Replacements)
 			eqp.Features = append(eqp.Features, g)

@@ -217,6 +217,57 @@ func TestNewLargeEntityDerivedListsOutnumberTraits(t *testing.T) {
 	c.Equal(size.ConditionalModifiers, countConditionalModifierRows(e.ConditionalModifiers()), "conditional modifiers")
 }
 
+// countGrants returns the number of grant features the rows in the list carry, features giving each row's own.
+func countGrants[T gurps.Node[T]](list []T, features func(T) gurps.Features) int {
+	n := 0
+	gurps.Traverse(func(one T) bool {
+		for _, f := range features(one) {
+			if _, ok := f.(*gurps.Grant); ok {
+				n++
+			}
+		}
+		return false
+	}, false, false, list...)
+	return n
+}
+
+// The grants addGrants documents as merging must merge with the rows they copy rather than put copies on the sheet, or
+// the benchmarks exercise planting where the fixture says they exercise merging: every spell grant copies a spell, and
+// a skill grant that copies a skill, including one with a nameable, merges with it, so the only granted skills are the
+// new ones.
+func TestNewLargeEntityGrantsMergeAsDocumented(t *testing.T) {
+	c := check.New(t)
+	e := gurpstest.NewLargeEntity(&gurpstest.DefaultLargeEntitySize)
+	c.Equal(0, countGranted(e.Spells), "every spell grant merges with the spell it copies")
+	gurps.Traverse(func(s *gurps.Skill) bool {
+		if gurps.IsGranted(s) {
+			c.True(strings.HasPrefix(s.Name, "Granted Skill "), "a skill grant that copies a skill merges with it: %s", s)
+		}
+		return false
+	}, false, true, e.Skills...)
+}
+
+// A size with no spells must still carry the grants asked for, since only a spell grant needs a spell to copy, and a
+// size with no traits must still put them on its equipment, so that a small benchmark still has grants to reconcile.
+func TestNewLargeEntityCarriesGrantsWithoutSpellsOrTraits(t *testing.T) {
+	for _, tc := range []struct {
+		name string
+		size gurpstest.LargeEntitySize
+	}{
+		{name: "no spells", size: gurpstest.LargeEntitySize{Traits: 2, CarriedEquipment: 4, Grants: 6}},
+		{name: "no traits", size: gurpstest.LargeEntitySize{CarriedEquipment: 4, Grants: 6}},
+		{name: "no equipment", size: gurpstest.LargeEntitySize{Traits: 2, Grants: 6}},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			c := check.New(t)
+			e := gurpstest.NewLargeEntity(&tc.size)
+			carried := countGrants(e.Traits, func(t *gurps.Trait) gurps.Features { return t.Features }) +
+				countGrants(e.CarriedEquipment, func(eqp *gurps.Equipment) gurps.Features { return eqp.Features })
+			c.Equal(tc.size.Grants, carried, "grants carried")
+		})
+	}
+}
+
 // The same size must yield the same character, apart from the IDs and timestamps, so that benchmark runs compare like
 // with like. Comparing the saved form covers every name, value, weapon and nesting at once.
 func TestNewLargeEntityIsDeterministic(t *testing.T) {

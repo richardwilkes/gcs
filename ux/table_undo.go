@@ -177,10 +177,10 @@ func rowsCarryGrants[T gurps.Node[T]](rows []*Node[T]) bool {
 }
 
 // grantRowListsOf returns the undo data of the owner's lists that a grant can put rows in, other than the one with the
-// given reference key, or all of them for an empty key, when the owner is a sheet, and nothing otherwise. An edit that can take a carrier's grants away,
-// by removing, disabling or moving the carrier or taking the grants out of it, takes the rows they put in those lists
-// along with them, so an undo of the edit has to put those lists back as well, or the restored grants make fresh rows
-// at the end of the lists in place of the ones the user had placed and switched.
+// given reference key, or all of them for an empty key, when the owner is a sheet, and nothing otherwise. An edit that
+// can take a carrier's grants away, by removing, disabling or moving the carrier or taking the grants out of it, takes
+// the rows they put in those lists along with them, so an undo of the edit has to put those lists back as well, or the
+// restored grants make fresh rows at the end of the lists in place of the ones the user had placed and switched.
 func grantRowListsOf(owner any, except string) []tableRestorer {
 	provider, ok := owner.(grantRowListsProvider)
 	if !ok || xreflect.IsNil(provider) {

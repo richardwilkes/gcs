@@ -15,32 +15,40 @@ import (
 	"github.com/richardwilkes/unison"
 )
 
-// tradeUndoEditData holds what a sale or purchase changes: the sheet's carried equipment and its shopping record. The
-// carried equipment is restored into whichever table the sheet holds for it when the edit is applied rather than one
-// captured when the edit was made, since the layout may leave the list off the page, where liveTable can't find it,
-// and a rebuild can replace it.
+// tradeUndoEditData holds what a sale or purchase changes: the sheet's carried equipment, its shopping record and,
+// when any of the carried equipment carries a grant, the lists the grants put rows in, since a trade can take a carrier
+// away (see grantRowListsOf). The carried equipment is restored into whichever table the sheet holds for it when the
+// edit is applied rather than one captured when the edit was made, since the layout may leave the list off the page,
+// where liveTable can't find it, and a rebuild can replace it.
 type tradeUndoEditData struct {
 	sheet  *Sheet
 	record []*gurps.ShoppingRecordEntry
 	table  PreservedTableData[*gurps.Equipment]
+	lists  []tableRestorer
 }
 
-// newTradeUndoEditData collects the undo edit data for the sheet's carried equipment and shopping record, or nil if the
-// carried equipment couldn't be collected.
+// newTradeUndoEditData collects the undo edit data for the sheet's carried equipment, shopping record and, when any of
+// the carried equipment carries a grant, the lists the grants put rows in, or nil if the carried equipment couldn't be
+// collected.
 func newTradeUndoEditData(sheet *Sheet) *tradeUndoEditData {
+	entity := sheet.Entity()
 	data := &tradeUndoEditData{
 		sheet:  sheet,
-		record: gurps.CloneShoppingRecordList(sheet.Entity().ShoppingRecord),
+		record: gurps.CloneShoppingRecordList(entity.ShoppingRecord),
 	}
 	if err := data.table.Collect(sheet.CarriedEquipment.Table); err != nil {
 		errs.Log(err)
 		return nil
 	}
+	if carriesGrants(entity.CarriedEquipment) {
+		data.lists = grantRowListsOf(sheet, "")
+	}
 	return data
 }
 
 // Apply the data. The record is put back before the carried equipment, since reporting the latter rebuilds the sheet,
-// which tells the record's viewers about the change.
+// which tells the record's viewers about the change. Every list is put back before the change is reported, so that the
+// sheet is rebuilt just once.
 func (t *tradeUndoEditData) Apply() {
 	t.sheet.Entity().SetShoppingRecord(t.record)
 	table := t.sheet.CarriedEquipment.Table
@@ -49,6 +57,9 @@ func (t *tradeUndoEditData) Apply() {
 	}
 	var restored restoredTables
 	restored.add(table, t.sheet)
+	for _, one := range t.lists {
+		restored.add(one.restore())
+	}
 	restored.report()
 }
 

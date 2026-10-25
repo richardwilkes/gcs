@@ -110,15 +110,32 @@ func usableModifierTargetLists[T gurps.Node[T]](lists ...modifierTargetList[T]) 
 	return result
 }
 
-// canReceiveModifiers reports whether the Apply Modifier command can attach modifiers to the table's rows: it has
-// rows, it isn't filtered (the same refusal a drop makes), it carries its provider, which the undo data is collected
-// from, and it sits under an undo manager, which a list the sheet's layout leaves off the page does not.
+// canReceiveModifiers reports whether the Apply Modifier command can attach modifiers to the table's rows: it has a
+// row that can take them, at any depth, which is what the target prompt offers (see modifierTargetChoices), it isn't
+// filtered (the same refusal a drop makes), it carries its provider, which the undo data is collected from, and it sits
+// under an undo manager, which a list the sheet's layout leaves off the page does not.
 func canReceiveModifiers[T gurps.Node[T]](table *unison.Table[*Node[T]]) bool {
-	if table == nil || table.IsFiltered() || table.RootRowCount() == 0 || unison.UndoManagerFor(table) == nil {
+	if table == nil || table.IsFiltered() || !hasModifierTarget(table) || unison.UndoManagerFor(table) == nil {
 		return false
 	}
 	_, ok := table.ClientData()[TableProviderClientKey].(TableProvider[T])
 	return ok
+}
+
+// hasModifierTarget returns true if any of the table's rows, at any depth, can take modifiers (see
+// gurps.CanTakeModifiers).
+func hasModifierTarget[T gurps.Node[T]](table *unison.Table[*Node[T]]) bool {
+	rows := table.RootRows()
+	roots := make([]T, 0, len(rows))
+	for _, row := range rows {
+		roots = append(roots, row.Data())
+	}
+	found := false
+	gurps.Traverse(func(node T) bool {
+		found = gurps.CanTakeModifiers(node)
+		return found
+	}, false, false, roots...)
+	return found
 }
 
 // modifierDestinations returns the dockables among those given that hold at least one list the kind's modifiers can

@@ -43,7 +43,7 @@ type Grant struct {
 	Spell *Spell          `json:"spell,omitempty"`
 	// CheckPrereqs is whether the prerequisites of the item the grant puts on the sheet are checked as for any other
 	// item. Otherwise, the item is treated as having them met.
-	CheckPrereqs bool `json:"check_prereqs,omitempty"`
+	CheckPrereqs bool `json:"check_prereqs,omitzero"`
 }
 
 // GrantedBy ties a trait, skill or spell on a sheet to the grant that put it there.

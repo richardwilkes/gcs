@@ -58,8 +58,8 @@ func TestCellDataForAccessibilityLeavesOutTheContainerMarker(t *testing.T) {
 // TestLabelCellTooltipKeepsTheCellsOwnTextBehindAContradiction verifies which tooltip a label cell shows: a
 // contradiction among the prerequisites is explained ahead of the cell's own tooltip rather than in place of it, since
 // the row is enabled and in use, while the reason for an unsatisfied prerequisite replaces it, since the row is flagged
-// as broken and the reason is what puts it right. The explanation of an unresolved modifier choice goes ahead of
-// whatever else the tooltip says.
+// as broken and the reason is what puts it right. The explanation of an unresolved modifier choice goes ahead of the
+// rest, behind only where a granted item came from.
 func TestLabelCellTooltipKeepsTheCellsOwnTextBehindAContradiction(t *testing.T) {
 	c := check.New(t)
 	c.Equal("", labelCellTooltip(&gurps.CellData{}), "a cell with nothing to say has no tooltip")
