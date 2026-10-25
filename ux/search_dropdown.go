@@ -18,13 +18,15 @@ import (
 	"github.com/richardwilkes/unison/enums/mod"
 )
 
-// maxSearchMatches is the most rows a search dropdown offers; the walk that finds them stops once it has that many,
-// since the list that shows them builds a cell for every row whenever it is sized.
+// maxSearchMatches is the most rows a search dropdown offers, since the list that shows them builds a cell for every
+// row whenever it is sized. The walk that finds them stops once it has one more than that, which is how the dropdown
+// tells that the matches were cut short; see searchMatchRows.
 const maxSearchMatches = 100
 
 // searchMatch is a row a search found: its label, a title shown dimmed after it (the list or folder it is in), a key
 // that names the same row across a rebuild of the table holding it, an optional icon drawn ahead of the label, and a
-// function that discloses, selects and scrolls to it.
+// function that discloses, selects and scrolls to it, which is nil for the row that says the matches were cut short
+// (see searchMatchRows), which chooses nothing.
 type searchMatch struct {
 	show  func()
 	icon  unison.Drawable
@@ -63,7 +65,11 @@ func newSearchDropdown(findMatches func(text string) []*searchMatch, choose func
 		i18n.Text("Lists the matching rows as you type\nPress RETURN to select the highlighted row"))
 	s.suggestions = unison.NewFieldSuggestions[*searchMatch](s.field)
 	s.suggestions.List().Factory = &searchMatchCellFactory{}
-	s.suggestions.ChosenCallback = func(_ int, match *searchMatch) { s.choose(match) }
+	s.suggestions.ChosenCallback = func(_ int, match *searchMatch) {
+		if match.show != nil {
+			s.choose(match)
+		}
+	}
 	s.field.KeyDownCallback = s.keyDown
 	// Text put in the field while it lacked the focus, by the Library Explorer or the user, is searched for once it
 	// has it, which is also when the rows can first be shown.
@@ -90,8 +96,20 @@ func (s *searchDropdown) showMatches() bool {
 		return false
 	}
 	found := s.findMatches(text)
-	s.suggestions.SetRows(found)
+	s.suggestions.SetRows(searchMatchRows(found))
 	return len(found) != 0
+}
+
+// searchMatchRows returns the rows the dropdown offers for the matches found: all of them, or, when there are more than
+// maxSearchMatches, which means the walk that found them was stopped short, the first maxSearchMatches followed by a
+// row saying so.
+func searchMatchRows(found []*searchMatch) []*searchMatch {
+	if len(found) <= maxSearchMatches {
+		return found
+	}
+	return append(found[:maxSearchMatches:maxSearchMatches], &searchMatch{
+		name: i18n.Text("Only the first %d matches are shown. Narrow the search to find the others.", maxSearchMatches),
+	})
 }
 
 // textModified offers the rows matching the new text. They are only looked for while the field has the focus, since
@@ -102,7 +120,7 @@ func (s *searchDropdown) textModified(_, after *unison.FieldState) {
 		s.suggestions.SetRows(nil)
 		return
 	}
-	s.suggestions.SetRows(s.findMatches(strings.ToLower(after.Text)))
+	s.suggestions.SetRows(searchMatchRows(s.findMatches(strings.ToLower(after.Text))))
 }
 
 // keyDown gives the field's keys their meaning for the search. While the rows are hidden, RETURN or a bare Down offers
@@ -141,12 +159,12 @@ func (s *searchDropdown) Refresh() {
 	if i := s.suggestions.Selected(); i >= 0 {
 		highlighted = s.suggestions.List().DataAtIndex(i).key
 	}
-	found := s.findMatches(strings.ToLower(s.field.Text()))
-	s.suggestions.SetRows(found)
+	rows := searchMatchRows(s.findMatches(strings.ToLower(s.field.Text())))
+	s.suggestions.SetRows(rows)
 	if highlighted == "" {
 		return
 	}
-	for i, match := range found {
+	for i, match := range rows {
 		if match.key == highlighted {
 			s.suggestions.Select(i)
 			return

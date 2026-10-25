@@ -176,14 +176,31 @@ func TestPageSearchDoesNotWalkWhileHidden(t *testing.T) {
 	c.Equal(0, len(findMatches("")), "but nothing for an empty search")
 }
 
-// The walk stops once there are as many matches as the dropdown offers.
+// The walk stops once it has one more match than the dropdown offers, so that the dropdown can tell the matches were
+// cut short and say so in a row of its own, which chooses nothing; with no more than it offers, it says nothing.
 func TestPageSearchCapsTheMatches(t *testing.T) {
 	c := check.New(t)
 	sheet := newTestSheetForTemplate(t)
 	entity := sheet.Entity()
-	for i := range maxSearchMatches + 50 {
+	for i := range maxSearchMatches {
 		entity.Traits = append(entity.Traits, newFindableTrait(entity, fmt.Sprintf("Findable %d", i)))
 	}
 	sheet.Rebuild(true)
-	c.Equal(maxSearchMatches, len(sheet.search.findMatches("findable")))
+	found := sheet.search.findMatches("findable")
+	c.Equal(maxSearchMatches, len(found))
+	rows := searchMatchRows(found)
+	c.Equal(maxSearchMatches, len(rows), "as many matches as the dropdown offers are all shown")
+	c.NotNil(rows[len(rows)-1].show, "with no notice")
+
+	for i := range 50 {
+		entity.Traits = append(entity.Traits, newFindableTrait(entity, fmt.Sprintf("Findable %d", maxSearchMatches+i)))
+	}
+	sheet.Rebuild(true)
+	found = sheet.search.findMatches("findable")
+	c.Equal(maxSearchMatches+1, len(found), "the walk stops one past what the dropdown offers")
+	rows = searchMatchRows(found)
+	c.Equal(maxSearchMatches+1, len(rows))
+	c.Equal(found[:maxSearchMatches], rows[:maxSearchMatches], "the first are offered")
+	c.Nil(rows[maxSearchMatches].show, "followed by a notice that chooses nothing")
+	c.Contains(rows[maxSearchMatches].name, "Narrow the search")
 }

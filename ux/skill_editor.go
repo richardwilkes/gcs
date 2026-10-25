@@ -227,9 +227,15 @@ func initSkillEditor(e *editor[*gurps.Skill, *gurps.SkillEditData], content *uni
 					if localOptionalSpec != "" && adjDiff.Difficulty != difficulty.Wildcard && adjDiff.Difficulty > difficulty.Easy {
 						adjDiff.Difficulty--
 					}
-					level = e.target.LevelWithGrants(gurps.CalculateSkillLevel(entity, localName, localSpec,
-						localOptionalSpec, e.editorData.Tags, e.editorData.DefaultedFrom, adjDiff, points,
-						e.editorData.EncumbrancePenaltyMultiplier))
+					levelAt := func(points fxp.Int) gurps.Level {
+						return gurps.CalculateSkillLevel(entity, localName, localSpec, localOptionalSpec,
+							e.editorData.Tags, e.editorData.DefaultedFrom, adjDiff, points,
+							e.editorData.EncumbrancePenaltyMultiplier)
+					}
+					level = e.target.LevelWithGrants(levelAt(points), func(tierPoints fxp.Int) fxp.Int {
+						return levelAt(gurps.AdjustedPointsForNonContainerSkillOrTechnique(entity, tierPoints, localName,
+							localSpec, localOptionalSpec, e.editorData.Tags, nil)).Level
+					})
 				}
 				lvl := level.Level.Floor()
 				if lvl <= 0 {

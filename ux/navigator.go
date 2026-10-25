@@ -936,8 +936,8 @@ func setNavigatorRowOpen(row *NavigatorNode, open bool) {
 	}
 }
 
-// findMatches returns the rows matching the lower-cased text, up to maxSearchMatches of them, in the order the tree
-// shows them.
+// findMatches returns the rows matching the lower-cased text, up to one more than maxSearchMatches of them (see
+// searchMatchRows), in the order the tree shows them.
 func (n *Navigator) findMatches(text string) []*searchMatch {
 	var found []*searchMatch
 	n.collectMatches(&found, text, n.table.RootRows())
@@ -945,14 +945,14 @@ func (n *Navigator) findMatches(text string) []*searchMatch {
 }
 
 // collectMatches adds the rows among those given, and beneath them, that match the text to the matches, stopping once
-// there are maxSearchMatches of them. A row matches on the text it shows or, for a file of a type the deep search
-// covers, on its contents.
+// there is one more than maxSearchMatches of them (see searchMatchRows). A row matches on the text it shows or, for a
+// file of a type the deep search covers, on its contents.
 func (n *Navigator) collectMatches(matches *[]*searchMatch, text string, rows []*NavigatorNode) {
 	if text == "" {
 		return
 	}
 	for _, row := range rows {
-		if len(*matches) >= maxSearchMatches {
+		if len(*matches) > maxSearchMatches {
 			return
 		}
 		if row.Match(text) || n.contentMatches(row, text) {

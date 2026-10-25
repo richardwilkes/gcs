@@ -135,10 +135,16 @@ func addScriptNodeIdentity[T scriptNode[T]](r *goja.Runtime, m map[string]func()
 	m["tags"] = scriptTags(r, tags)
 }
 
-// scriptTags returns the property a script sees as a node's tags: a copy, so a script cannot alter the node, and never a
-// nil slice, which goja turns into null rather than an empty array.
+// scriptTags returns the property a script sees as a node's tags; see scriptStringList.
 func scriptTags(r *goja.Runtime, tags []string) func() goja.Value {
-	return func() goja.Value { return r.ToValue(append(make([]string, 0, len(tags)), tags...)) }
+	return func() goja.Value { return scriptStringList(r, tags) }
+}
+
+// scriptStringList returns the value a script sees for a node's list of strings, such as its tags or a spell's colleges:
+// a copy, so a script cannot alter the node, and never a nil slice, which goja turns into null rather than an empty
+// array.
+func scriptStringList(r *goja.Runtime, list []string) goja.Value {
+	return r.ToValue(append(make([]string, 0, len(list)), list...))
 }
 
 // secondaryTextProvider is implemented by the nodes whose script wrappers expose their secondary text as notes.

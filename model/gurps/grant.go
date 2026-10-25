@@ -68,12 +68,18 @@ type grantState struct {
 	// effect, and treats the item's prerequisites as met.
 	inEffect bool
 	bypass   bool
+	// providers are the carriers of the grants in effect that put the item on the sheet, or would have, had another
+	// not put it there first; see grantedFor.
+	providers []any
 	// levelNotes and pointNotes are what each grant gave the item: the levels merged into it or kept for it, and a
-	// granted skill's or spell's own points plus any merged into it, of which points is the total. keepLower is set
-	// when the item is a disadvantage, for which the level a Keep Highest grant keeps is the lower one.
+	// granted skill's or spell's own points plus any merged into it, of which points is the total. tierPoints is the
+	// first of those, the points of the tier the grant in effect gives a granted skill or spell, which stand for its
+	// own points when the other grants merge into it. keepLower is set when the item is a disadvantage, for which the
+	// level a Keep Highest grant keeps is the lower one.
 	levelNotes []grantNote
 	pointNotes []grantNote
 	points     fxp.Int
+	tierPoints fxp.Int
 	keepLower  bool
 }
 
@@ -87,12 +93,15 @@ type grantItem interface {
 }
 
 // grantNote is what one grant gave an item: the amount, what carries the grant and that carrier's name. The amount of
-// a keep note, which a Keep Highest grant leaves, is the level the grant keeps the item at rather than an addition.
+// a keep note, which a Keep Highest grant leaves, is the level the grant keeps the item at rather than an addition, or,
+// with tier set, the points of the tier it keeps a skill or spell at, whose level is read along with the item's own so
+// that both see the same bonuses; see grantState.applyLevelNotes.
 type grantNote struct {
 	owner  any
 	source string
 	amount fxp.Int
 	keep   bool
+	tier   bool
 }
 
 // itemLabel returns the name of the item the grant gives, with the level or tier it gives. replacements are those of
@@ -121,7 +130,11 @@ func (g *Grant) level() fxp.Int {
 // is the grant's itemLabel, and replacements are those of what carries the grant; see itemNameWith.
 func (g *Grant) mergeSummary(label string, replacements map[string]string) string {
 	name := g.itemNameWith(replacements)
-	switch g.EffectiveMerge() {
+	merge := g.EffectiveMerge()
+	if merge != grantmerge.Ignore && g.mergesNothing() {
+		return i18n.Text("Does not change %s, already present, since a level below 1 grants nothing", name)
+	}
+	switch merge {
 	case grantmerge.MergeLevels:
 		levels := g.level()
 		switch {
@@ -366,6 +379,17 @@ func (g *Grant) putsItemOnSheet() bool {
 	return !g.Leveled() || g.Level.Floor() >= fxp.One
 }
 
+// mergesNothing returns true if the grant, finding its item already present, changes nothing about it: below level 1
+// a leveled grant gives nothing, as Describe says of it, except that a negative level takes away the levels or points
+// it names, which Keep Highest never does.
+func (g *Grant) mergesNothing() bool {
+	if !g.Leveled() || g.putsItemOnSheet() {
+		return false
+	}
+	merge := g.EffectiveMerge()
+	return g.level() >= 0 || (merge != grantmerge.MergeLevels && merge != grantmerge.MergePoints)
+}
+
 // AllowedMerges returns the merge modes that mean something for the granted item: Ignore alone for a trait without
 // levels, everything but Merge Points for a trait with them, and everything for a skill or spell.
 func (g *Grant) AllowedMerges() []grantmerge.Mode {
@@ -551,14 +575,15 @@ func grantTierOf(points fxp.Int, wildcard bool) fxp.Int {
 }
 
 // grantPointsDelta returns the change to an item's points a grant of the given tier makes when merged as points: the
-// points of that tier, or, for a negative tier, the points of that many of the item's top tiers taken away, leaving
-// any points beyond its tier in place and never going below zero.
+// points of that tier, or, for a negative tier, what takes the item down to the tier that many below its own, points
+// beyond its tier included, since leaving them would leave the item at its tier when they are as many as the step
+// down, and never below zero.
 func grantPointsDelta(tier, current fxp.Int, wildcard bool) fxp.Int {
 	if tier = tier.Floor(); tier >= 0 {
 		return grantTierPoints(tier, wildcard)
 	}
 	have := grantTierOf(current, wildcard)
-	return grantTierPoints((have+tier).Max(0), wildcard) - grantTierPoints(have, wildcard)
+	return grantTierPoints((have+tier).Max(0), wildcard) - current
 }
 
 func (s *grantState) reset() {
@@ -578,6 +603,15 @@ func (s *grantState) keepLevel(source grantSource, level fxp.Int, lower bool) {
 	note.keep = true
 	s.levelNotes = append(s.levelNotes, note)
 	s.keepLower = lower
+}
+
+// keepTier records that a Keep Highest grant keeps a skill or spell at the level the points of its tier give it, which
+// is read along with the item's own level; see applyLevelNotes.
+func (s *grantState) keepTier(source grantSource, points fxp.Int) {
+	note := newGrantNote(source, points)
+	note.keep = true
+	note.tier = true
+	s.levelNotes = append(s.levelNotes, note)
 }
 
 func (s *grantState) addPoints(source grantSource, amount fxp.Int) {
@@ -608,9 +642,11 @@ func (s *grantState) pointsExcept(exclude any) fxp.Int {
 
 // applyLevelNotes returns the level with what the grants made of it, leaving out what the grants carried by exclude
 // gave (see pointsExcept): the levels merged into it are added, and then each level a Keep Highest grant keeps it at
-// replaces it when better, which for a disadvantage is lower. The notes of the grants that changed the level go into
-// the tooltip, which may be nil.
-func (s *grantState) applyLevelNotes(exclude any, level fxp.Int, tooltip *xbytes.InsertBuffer) fxp.Int {
+// replaces it when better, which for a disadvantage is lower. The level a skill or spell is kept at is read here from
+// the points of its tier by levelAt, which a trait, whose grants keep levels outright, leaves nil, so that it sees the
+// bonuses and penalties the item's own level does, which may not have been in place when the grants were applied. The
+// notes of the grants that changed the level go into the tooltip, which may be nil.
+func (s *grantState) applyLevelNotes(exclude any, level fxp.Int, tooltip *xbytes.InsertBuffer, levelAt func(points fxp.Int) fxp.Int) fxp.Int {
 	for _, note := range s.levelNotes {
 		if !note.keep && note.owner != exclude {
 			level += note.amount
@@ -621,7 +657,16 @@ func (s *grantState) applyLevelNotes(exclude any, level fxp.Int, tooltip *xbytes
 		if !note.keep || note.owner == exclude {
 			continue
 		}
-		diff := note.amount - level
+		kept := note.amount
+		if note.tier {
+			if levelAt == nil {
+				continue
+			}
+			if kept = levelAt(note.amount); kept == fxp.Min {
+				continue
+			}
+		}
+		diff := kept - level
 		if s.keepLower {
 			diff = diff.Min(0)
 		} else {
@@ -647,6 +692,7 @@ func hashGrantNotes(h hash.Hash, notes []grantNote) {
 	for _, note := range notes {
 		xhash.Num64(h, note.amount)
 		xhash.Bool(h, note.keep)
+		xhash.Bool(h, note.tier)
 	}
 }
 
@@ -663,27 +709,30 @@ func addGrantNoteToTooltip(note grantNote, amount fxp.Int, buffer *xbytes.Insert
 }
 
 // applyPoints returns the points with those grants gave a skill or spell added, leaving out what the grants carried by
-// exclude gave (see pointsExcept).
+// exclude gave (see pointsExcept), from the tooltip, which may be nil, as from the total.
 func (s *grantState) applyPoints(exclude any, points fxp.Int, tooltip *xbytes.InsertBuffer) fxp.Int {
 	granted := s.pointsExcept(exclude)
 	if granted == 0 {
 		return points
 	}
 	for _, note := range s.pointNotes {
-		addGrantNoteToTooltip(note, note.amount, tooltip)
+		if exclude == nil || note.owner != exclude {
+			addGrantNoteToTooltip(note, note.amount, tooltip)
+		}
 	}
 	return (points + granted).Max(0)
 }
 
 // applyLevels returns the level with what the grants made of a skill's or spell's level (see applyLevelNotes), unless
-// it has none, leaving out what the grants carried by exclude gave.
-func (s *grantState) applyLevels(exclude any, level Level) Level {
+// it has none, leaving out what the grants carried by exclude gave. levelAt returns the level the item would have with
+// the given points in place of its own, which a Keep Highest grant's level is read with.
+func (s *grantState) applyLevels(exclude any, level Level, levelAt func(points fxp.Int) fxp.Int) Level {
 	if len(s.levelNotes) == 0 || level.Level == fxp.Min {
 		return level
 	}
 	var tooltip xbytes.InsertBuffer
 	tooltip.WriteString(level.Tooltip)
-	result := s.applyLevelNotes(exclude, level.Level, &tooltip)
+	result := s.applyLevelNotes(exclude, level.Level, &tooltip, levelAt)
 	level.RelativeLevel += result - level.Level
 	level.Level = result
 	level.Tooltip = tooltip.String()

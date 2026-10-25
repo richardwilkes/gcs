@@ -197,8 +197,8 @@ func sanitizeFileName(name string) string {
 	case "..":
 		return "dotdot"
 	default:
-		// A leading dot marks a hidden file (e.g. ".bashrc") rather than an extension, so if filepath.Ext matched the
-		// leading dot, we need to prefix the name with an underscore so that it is not hidden.
+		// A leading dot marks a hidden file (e.g. ".bashrc") rather than an extension, so a name starting with one is
+		// prefixed with an underscore so that it is not hidden.
 		if strings.HasPrefix(name, ".") {
 			return "_" + name
 		}

@@ -398,6 +398,59 @@ func TestGrantPickerListFollowsTheFilter(t *testing.T) {
 	})
 }
 
+// TestGrantPickerKeepsItsFilterAcrossRebuilds checks that the filter typed into a picker, and the row chosen in its list,
+// survive a rebuild of the panel, which an edit of the open row's other controls causes while the picker is open.
+func TestGrantPickerKeepsItsFilterAcrossRebuilds(t *testing.T) {
+	c := check.New(t)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
+	dir := t.TempDir()
+	lib := library.NewLibrary("Test", "acct", "", "repo", dir)
+	libraries := gurps.GlobalSettings().Libraries
+	libraries.Store(lib.Key(), lib)
+	t.Cleanup(func() { libraries.Remove(lib.Key()) })
+	traits := make([]*gurps.Trait, 0, 4)
+	traits = append(traits, newGrantTestTrait("Night Vision", 0))
+	for i := range 3 {
+		traits = append(traits, newGrantTestTrait(fmt.Sprintf("Acute Sense %d", i), 0))
+	}
+	c.NoError(gurps.SaveTraits(traits, filepath.Join(dir, "Traits", "Test"+gurps.TraitsExt)))
+	entity := gurps.NewEntity()
+	owner := gurps.NewTrait(entity, nil, false)
+	features := gurps.Features{gurps.NewGrant(feature.GrantTrait)}
+	p, _ := showFeaturesPanel(t, screen, entity, owner, &features, false)
+	screen.Do(func() { p.toggle("0") })
+	picker := func() (*unison.Field, *unison.List[*grantLibraryItem]) {
+		filter, ok := p.FindRefKey("0:filter").Self.(*unison.Field)
+		if !ok {
+			t.Fatal("the picker has no filter field")
+		}
+		lists := uxtest.PanelsOfType[*unison.List[*grantLibraryItem]](p.AsPanel())
+		if len(lists) != 1 {
+			t.Fatalf("expected one picker list, found %d", len(lists))
+		}
+		return filter, lists[0]
+	}
+	screen.Do(func() {
+		filter, list := picker()
+		filter.SetText("Acute")
+		c.Equal(3, list.Count(), "precondition: the filter leaves the acute senses")
+		list.Select(false, 2)
+		p.rebuild("")
+	})
+	screen.Do(func() {
+		filter, list := picker()
+		c.Equal("Acute", filter.Text(), "the filter typed survives the rebuild")
+		c.Equal(3, list.Count(), "and so does the list it leaves")
+		c.Equal(2, list.Selection.FirstSet(), "with the same row chosen")
+		p.toggle("0")
+	})
+	screen.Do(func() { p.toggle("0") })
+	screen.Do(func() {
+		filter, _ := picker()
+		c.Equal("", filter.Text(), "a picker opened afresh starts with no filter")
+	})
+}
+
 // TestGrantItemMatches checks that each word of the filter matches the start of a word of the name, or one a typo
 // away once the word is long enough.
 func TestGrantItemMatches(t *testing.T) {
@@ -416,6 +469,28 @@ func TestGrantItemMatches(t *testing.T) {
 	} {
 		c.Equal(tc.match, grantItemMatches(grantFilterWords(tc.query), grantFilterWords(tc.name)), tc.query)
 	}
+}
+
+// TestGrantLibraryItemRefusesWhatGrants checks that the picker leaves out an item that grants something itself, whether
+// the grant is among its own features or those of one of its modifiers, as SetItem strips grants from both.
+func TestGrantLibraryItemRefusesWhatGrants(t *testing.T) {
+	c := check.New(t)
+	grant := func() *gurps.Grant {
+		g := gurps.NewGrant(feature.GrantTrait)
+		g.SetItem(newGrantTestTrait("Night Vision", 0), gurps.LibraryFile{})
+		return g
+	}
+	plain := newGrantTestTrait("Plain", 0)
+	plain.Modifiers = []*gurps.TraitModifier{gurps.NewTraitModifier(nil, nil, false)}
+	c.NotNil(newGrantLibraryItem(plain, gurps.LibraryFile{}), "a trait whose modifier grants nothing is offered")
+	direct := newGrantTestTrait("Direct", 0)
+	direct.Features = gurps.Features{grant()}
+	c.Nil(newGrantLibraryItem(direct, gurps.LibraryFile{}), "a trait that grants something is not")
+	viaModifier := newGrantTestTrait("Via Modifier", 0)
+	modifier := gurps.NewTraitModifier(nil, nil, false)
+	modifier.Features = gurps.Features{grant()}
+	viaModifier.Modifiers = []*gurps.TraitModifier{modifier}
+	c.Nil(newGrantLibraryItem(viaModifier, gurps.LibraryFile{}), "nor is one whose modifier grants something")
 }
 
 // TestGrantedItemEditLandsOnTheGrant checks that an edit of a grant's item, made in its editor on a copy, goes to the
@@ -590,6 +665,54 @@ func TestGrantItemEditorOffersNoGrants(t *testing.T) {
 			c.False(slices.ContainsFunc(panels[0].featureTypesList(), gurps.IsGrant), "no grant types are offered")
 			c.False(panels[0].takesGrants(), "and no grants are taken")
 		}
+	})
+}
+
+// TestGrantItemEditorLeavesLevelAndEnabledToTheGrant checks that the editor of a grant's trait offers neither a Level
+// field nor an Enabled check box, since the grant's row sets the level of the trait it puts on the sheet and that trait
+// is enabled whenever the grant is in effect, so nothing would read either.
+func TestGrantItemEditorLeavesLevelAndEnabledToTheGrant(t *testing.T) {
+	c := check.New(t)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
+	sheet := newTestSheetForTemplate(t)
+	entity := sheet.Entity()
+	training := gurps.NewTrait(entity, nil, false)
+	training.Name = "Training"
+	g := gurps.NewGrant(feature.GrantTrait)
+	g.SetItem(newGrantTestTrait("Acute Vision", fxp.Two), gurps.LibraryFile{})
+	training.Features = gurps.Features{g}
+	entity.Traits = []*gurps.Trait{training}
+	sheet.Rebuild(true)
+	isTraitEditor := func(d unison.Dockable) bool {
+		_, ok := d.AsPanel().Self.(*editor[*gurps.Trait, *gurps.TraitEditData])
+		return ok
+	}
+	var outer *editor[*gurps.Trait, *gurps.TraitEditData]
+	screen.Do(func() {
+		DisplayNewDockable(sheet)
+		outer = EditTrait(sheet, training)
+		panels := uxtest.PanelsOfType[*featuresPanel](outer.content)
+		c.Equal(1, len(panels))
+		panels[0].editGrantedItem(grantAt(t, panels[0], 0))
+	})
+	nested := uxtest.OtherEditor(t, screen, outer, isTraitEditor)
+	hasLevelField := func(content *unison.Panel) bool {
+		return slices.ContainsFunc(uxtest.PanelsOfType[*DecimalField](content), func(f *DecimalField) bool {
+			return f.undoTitle == "Level"
+		})
+	}
+	hasEnabledCheckBox := func(content *unison.Panel) bool {
+		return slices.ContainsFunc(uxtest.PanelsOfType[*CheckBox](content), func(cb *CheckBox) bool {
+			return cb.Text.String() == "Enabled"
+		})
+	}
+	screen.Do(func() {
+		_, isNested := nested.owner.(*grantItemOwner)
+		c.True(isNested, "precondition: the other trait editor is the grant item's")
+		c.True(hasLevelField(outer.content), "precondition: a trait's own editor has a Level field")
+		c.True(hasEnabledCheckBox(outer.content), "and an Enabled check box")
+		c.False(hasLevelField(nested.content), "the grant's row sets the level")
+		c.False(hasEnabledCheckBox(nested.content), "and the granted trait is enabled while the grant is in effect")
 	})
 }
 

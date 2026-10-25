@@ -900,6 +900,20 @@ func TestWeaponTagDefaultToCrossbowUsesLiftingST(t *testing.T) {
 	c.Equal(named.SkillLevel(nil), tagged.SkillLevel(nil),
 		"a default that reaches Crossbow by tag must be drawn with lifting ST as well")
 
+	// A default names the skill however its "is" matches it, ignoring case and surrounding space, whether or not the
+	// character has the skill, in which case the weapon falls to its DX default.
+	for _, name := range []string{"Crossbow", "crossbow", " Crossbow "} {
+		spelled := newCrossbowTestWeapon(c, &gurps.SkillDefault{
+			DefaultType: gurps.SkillID,
+			Name:        criteria.Text{Compare: criteria.IsText, Qualifier: name},
+		})
+		spelled.Defaults = append(spelled.Defaults, &gurps.SkillDefault{DefaultType: gurps.DexterityID, Modifier: -fxp.Four})
+		e := spelled.Entity()
+		e.Skills = nil
+		e.Recalculate()
+		c.Equal(fxp.Six, spelled.SkillLevel(nil), "%q names the Crossbow skill, so lifting ST meets the minimum", name)
+	}
+
 	// A default that reaches some other skill is still drawn with striking ST, and takes the penalty.
 	bow := newCrossbowTestWeapon(c, &gurps.SkillDefault{
 		DefaultType: gurps.SkillID,

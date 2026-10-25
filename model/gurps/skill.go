@@ -730,9 +730,11 @@ func (s *Skill) PointsWithGrants(points fxp.Int) fxp.Int {
 }
 
 // LevelWithGrants returns the level with the levels grants merged into the skill at the last recalculation added, as
-// CalculateLevel adds them, for a level computed from data other than the skill's own.
-func (s *Skill) LevelWithGrants(level Level) Level {
-	return s.grant.applyLevels(nil, level)
+// CalculateLevel adds them, for a level computed from data other than the skill's own. levelAt returns the level that
+// data gives with the given points in place of the skill's own, which the level a Keep Highest grant keeps is read
+// with.
+func (s *Skill) LevelWithGrants(level Level, levelAt func(points fxp.Int) fxp.Int) Level {
+	return s.grant.applyLevels(nil, level, levelAt)
 }
 
 // pointsForPrereqsOf returns the skill's points as the prerequisites of exclude see them: as AdjustedPoints does, but
@@ -742,10 +744,10 @@ func (s *Skill) pointsForPrereqsOf(exclude any) fxp.Int {
 	return s.adjustedPointsExcept(exclude, nil)
 }
 
-// pointsWithoutGrants returns the skill's points adjusted for the bonuses, as AdjustedPoints adjusts them, but without
-// what grants gave it.
-func (s *Skill) pointsWithoutGrants() fxp.Int {
-	return AdjustedPointsForNonContainerSkillOrTechnique(EntityFromNode(s), s.Points, s.NameWithReplacements(),
+// pointsWithoutGrants returns the given points, the skill's own or those standing for them, adjusted for the bonuses,
+// as AdjustedPoints adjusts them, but without what grants gave it.
+func (s *Skill) pointsWithoutGrants(points fxp.Int) fxp.Int {
+	return AdjustedPointsForNonContainerSkillOrTechnique(EntityFromNode(s), points, s.NameWithReplacements(),
 		s.SpecializationWithReplacements(), s.OptionalSpecializationWithReplacements(), s.Tags, nil)
 }
 
@@ -761,12 +763,13 @@ func (s *Skill) levelForPrereqsOf(exclude any) fxp.Int {
 	return s.calculateLevelWith(exclude, s.bestDefaultWithPoints(nil), nil).Level
 }
 
-// adjustedPointsExcept is AdjustedPoints without the points grants carried by exclude gave the skill; see
-// grantState.pointsExcept.
+// adjustedPointsExcept is AdjustedPoints without the points grants carried by exclude gave the skill, or by the item
+// whose prerequisites are being judged when exclude is nil; see grantState.pointsExcept and Entity.judgingOr.
 func (s *Skill) adjustedPointsExcept(exclude any, tooltip *xbytes.InsertBuffer) fxp.Int {
 	if !s.Enabled() {
 		return 0
 	}
+	exclude = EntityFromNode(s).judgingOr(exclude)
 	if s.Container() {
 		// The tooltip goes no further: a container never puts anything into it; see PointsRange for why.
 		if !s.TemplatePicker.IsZero() {
@@ -933,23 +936,30 @@ func (s *Skill) calculateLevelExcept(exclude any, excludes map[string]bool) Leve
 	return s.calculateLevelWith(exclude, s.DefaultedFrom, excludes)
 }
 
-// calculateLevelWith is calculateLevelExcept with the given default in place of the one the skill recorded.
+// calculateLevelWith is calculateLevelExcept with the given default in place of the one the skill recorded. With
+// exclude nil, what the grants of the item whose prerequisites are being judged gave is left out; see Entity.judgingOr.
 func (s *Skill) calculateLevelWith(exclude any, def *SkillDefault, excludes map[string]bool) Level {
+	exclude = EntityFromNode(s).judgingOr(exclude)
 	points := s.adjustedPointsExcept(exclude, nil)
 	if s.IsTechnique() {
 		return CalculateTechniqueLevel(EntityFromNode(s), s.Replacements, s.NameWithReplacements(),
 			s.SpecializationWithReplacements(), s.Tags, s.TechniqueDefault, s.AdjustedDifficulty().Difficulty, points, true,
 			s.TechniqueLimitModifier, excludes)
 	}
-	return s.grant.applyLevels(exclude, CalculateSkillLevel(EntityFromNode(s), s.NameWithReplacements(), s.SpecializationWithReplacements(), s.OptionalSpecializationWithReplacements(), s.Tags,
-		def, s.AdjustedDifficulty(), points, s.EncumbrancePenaltyMultiplier))
+	e := EntityFromNode(s)
+	level := CalculateSkillLevel(e, s.NameWithReplacements(), s.SpecializationWithReplacements(),
+		s.OptionalSpecializationWithReplacements(), s.Tags, def, s.AdjustedDifficulty(), points,
+		s.EncumbrancePenaltyMultiplier)
+	return s.grant.applyLevels(exclude, level, func(tierPoints fxp.Int) fxp.Int {
+		return s.levelAt(e, def, tierPoints).Level
+	})
 }
 
 // CalculateSkillLevel returns the calculated level for a skill.
 func CalculateSkillLevel(e *Entity, name, specialization, optionalSpecialization string, tags []string, def *SkillDefault, attrDiff AttributeDifficulty, points, encumbrancePenaltyMultiplier fxp.Int) Level {
 	var tooltip xbytes.InsertBuffer
 	relativeLevel := attrDiff.Difficulty.BaseRelativeLevel()
-	level := e.ResolveAttributeCurrent(attrDiff.Attribute)
+	level := e.resolveAttributeCurrentForPrereqs(attrDiff.Attribute)
 	if level != fxp.Min {
 		if e.SheetSettings.UseHalfStatDefaults {
 			level = level.Div(fxp.Two).Floor() + fxp.Five
@@ -1113,7 +1123,7 @@ func (s *Skill) bestDefaultWithPoints(excluded *SkillDefault) *SkillDefault {
 	}
 	best := s.bestDefault(excluded)
 	if best != nil {
-		baseLine := (EntityFromNode(s).ResolveAttributeCurrent(s.AdjustedDifficulty().Attribute) +
+		baseLine := (EntityFromNode(s).resolveAttributeCurrentForPrereqs(s.AdjustedDifficulty().Attribute) +
 			s.AdjustedDifficulty().Difficulty.BaseRelativeLevel()).Floor()
 		level := best.Level.Floor()
 		best.AdjLevel = level
@@ -1346,15 +1356,18 @@ func (s *Skill) TechniqueSatisfied(tooltip *xbytes.InsertBuffer, prefix string) 
 		return true
 	}
 	e := EntityFromNode(s)
-	sk := s.TechniqueDefault.bestMatchingSkill(e, s.Replacements, false, nil)
-	// The points are judged as the technique's level judges them (see Entity.SkillMatching), so that a granted skill,
-	// whose points are those of its tier, counts.
-	satisfied := sk != nil && (sk.IsTechnique() || sk.AdjustedPoints(nil) > 0)
-	if !satisfied && tooltip != nil {
+	// The skill is one the default selects that has points, as the technique's level is computed from those (see
+	// Entity.SkillMatching), so that a granted skill, whose points are those of its tier, counts, and a skill without
+	// points, which may be the highest of them by defaulting from another, does not stand in the way of one that has.
+	if s.TechniqueDefault.bestMatchingSkill(e, s.Replacements, true, nil) != nil {
+		return true
+	}
+	if tooltip != nil {
 		tooltip.WriteString(prefix)
 		// A default that names its skill outright reads as "a skill named X"; one that selects it by other criteria is
 		// described by FullName, and the sentence is shaped around that description instead.
 		named := s.TechniqueDefault.namesSkill(s.Replacements)
+		sk := s.TechniqueDefault.bestMatchingSkill(e, s.Replacements, false, nil)
 		switch {
 		case sk == nil && named:
 			tooltip.WriteString(i18n.Text("Requires a skill named "))
@@ -1367,7 +1380,7 @@ func (s *Skill) TechniqueSatisfied(tooltip *xbytes.InsertBuffer, prefix string) 
 		}
 		tooltip.WriteString(s.TechniqueDefault.FullName(e, s.Replacements))
 	}
-	return satisfied
+	return false
 }
 
 // TL implements TechLevelProvider.

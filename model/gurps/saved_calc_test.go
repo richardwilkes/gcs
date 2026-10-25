@@ -81,8 +81,10 @@ func TestStringWithSavedCalcOfGrantedTrait(t *testing.T) {
 func TestStringWithSavedCalcMatchesStringAtSave(t *testing.T) {
 	for _, tc := range []struct {
 		name string
-		// add puts the trait on the sheet and returns it.
-		add func(e *Entity) *Trait
+		// add puts the trait on the sheet and returns it, and find returns the same trait in the sheet loaded from the
+		// file, or, when nil, it is the last trait at the top of the list.
+		add  func(e *Entity) *Trait
+		find func(loaded *Entity) *Trait
 	}{
 		{name: "enabled at level zero", add: func(e *Entity) *Trait {
 			bonus := NewTraitBonus()
@@ -107,6 +109,36 @@ func TestStringWithSavedCalcMatchesStringAtSave(t *testing.T) {
 			magery.Prereq = newPrereqListForTrait("Magic Aptitude", true)
 			return magery
 		}},
+		{name: "unmet prerequisites not enforced, with a bonus", add: func(e *Entity) *Trait {
+			bonus := NewTraitBonus()
+			bonus.NameCriteria.Qualifier = "Magery"
+			addTraitWithFeatures(e, "Boost", bonus)
+			magery := addTrait(e, newGrantLeveledTrait("Magery", fxp.Ten))
+			magery.Levels = fxp.Three
+			magery.Prereq = newPrereqListForTrait("Magic Aptitude", true)
+			return magery
+		}},
+		{name: "disabled by a bonus", add: func(e *Entity) *Trait {
+			bonus := NewTraitBonus()
+			bonus.NameCriteria.Qualifier = "Magery"
+			addTraitWithFeatures(e, "Boost", bonus)
+			magery := addTrait(e, newGrantLeveledTrait("Magery", fxp.Ten))
+			magery.Levels = fxp.Three
+			magery.SetDisabled(true)
+			return magery
+		}},
+		{name: "in a container disabled by unmet prerequisites", add: func(e *Entity) *Trait {
+			e.SheetSettings.EnforceTraitPrereqs = true
+			group := NewTrait(e, nil, true)
+			group.Name = "Group"
+			group.Prereq = newPrereqListForTrait("Magic Aptitude", true)
+			magery := newGrantLeveledTrait("Magery", fxp.Ten)
+			magery.Levels = fxp.Three
+			magery.SetParent(group)
+			group.Children = []*Trait{magery}
+			addTrait(e, group)
+			return magery
+		}, find: func(loaded *Entity) *Trait { return loaded.Traits[len(loaded.Traits)-1].Children[0] }},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			c := check.New(t)
@@ -119,7 +151,11 @@ func TestStringWithSavedCalcMatchesStringAtSave(t *testing.T) {
 			c.NoError(os.WriteFile(filepath.Join(dir, "sheet.gcs"), data, 0o600))
 			loaded, err := NewEntityFromFileWithSavedCalc(os.DirFS(dir), "sheet.gcs")
 			c.NoError(err)
-			c.Equal(trait.String(), loaded.Traits[len(loaded.Traits)-1].StringWithSavedCalc())
+			found := loaded.Traits[len(loaded.Traits)-1]
+			if tc.find != nil {
+				found = tc.find(loaded)
+			}
+			c.Equal(trait.String(), found.StringWithSavedCalc())
 		})
 	}
 }

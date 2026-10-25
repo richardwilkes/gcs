@@ -17,6 +17,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/nameable"
 	"github.com/richardwilkes/gcs/v5/ux/uxtest"
 	"github.com/richardwilkes/toolbox/v2/check"
+	"github.com/richardwilkes/toolbox/v2/tid"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/mod"
 )
@@ -351,6 +352,45 @@ func TestAltDropOfAContainerAsksAboutTheKeyItsChildSharesOnce(t *testing.T) {
 	c.Equal(1, len(sword.Modifiers), "the container must be attached")
 	c.Equal("Steel Fittings", sword.Modifiers[0].NameWithReplacements())
 	c.Equal([]string{"Steel Pommel", "Red Steel Guard"}, appliedModifierNames(sword.Modifiers[0].Children))
+}
+
+// TestNameableDefinitionsFollowTheLinks checks that the definitions a prompt describes a row's keys by are keyed as the
+// keys are asked about: a modifier's definition under the code of the trait its own is linked to, where it never
+// stands in for an unrelated code of the trait's with the modifier's name, and, for a modifier prompted for on its own,
+// the trait's definition of a code the modifier shares with it.
+func TestNameableDefinitionsFollowTheLinks(t *testing.T) {
+	c := check.New(t)
+	art := nameable.Detail{Label: "Art", Options: []string{"Judo", "Karate"}}
+	style := nameable.Detail{Label: "Martial art", Options: []string{"Judo", "Karate"}}
+	newTrait := func() (*gurps.Trait, *gurps.TraitModifier) {
+		trait := gurps.NewTrait(nil, nil, false)
+		trait.Name = "Trained"
+		trait.LocalNotes = "Also @art@"
+		modifier := gurps.NewTraitModifier(nil, nil, false)
+		modifier.Name = "Practiced @art@"
+		modifier.Nameables = map[string]nameable.Detail{"art": art}
+		trait.Modifiers = []*gurps.TraitModifier{modifier}
+		trait.NameableLinks = map[tid.TID]map[string]string{modifier.TID: {"art": "style"}}
+		gurps.AttachModifiers(trait, trait.Modifiers)
+		return trait, modifier
+	}
+	trait, _ := newTrait()
+	defs := nameableDefinitions(trait)
+	_, found := defs["art"]
+	c.False(found, "the trait's own art is not described by the modifier's, which is linked to style")
+	c.Equal(art, defs["style"], "the modifier's art is asked about as style")
+
+	trait, modifier := newTrait()
+	trait.Nameables = map[string]nameable.Detail{"style": style}
+	c.Equal(style, nameableDefinitions(trait)["style"], "the trait's definition wins")
+	c.Equal(style, nameableDefinitions(modifier)["style"], "for the modifier prompted for on its own as well")
+
+	trait, modifier = newTrait()
+	modifier.Name = "Practiced @style@"
+	modifier.Nameables = nil
+	trait.NameableLinks = nil
+	trait.Nameables = map[string]nameable.Detail{"style": style}
+	c.Equal(style, nameableDefinitions(modifier)["style"], "a code a modifier shares with its trait takes the trait's definition")
 }
 
 // A nameable's definition decides how the prompt asks for it: a closed list of options is a popup, and one that can't

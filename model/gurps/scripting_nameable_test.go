@@ -25,6 +25,9 @@ func TestScriptSpellCollegeUsesReplacements(t *testing.T) {
 	spell.College = CollegeList{"@element@ College", "Meta"}
 	spell.Replacements = map[string]string{"element": "Fire"}
 	c.Equal("Fire College|Meta", ResolveScript(nil, deferredNewScriptSpell(spell), "self.college.join('|')"))
+	// A spell with no colleges has an empty list, as a spell with no tags does, not null.
+	spell.College = nil
+	c.Equal("0", ResolveScript(nil, deferredNewScriptSpell(spell), "self.college.length"))
 }
 
 // Reading a skill script object's level keys the self-reference recursion guard by the resolved (replacement-applied)

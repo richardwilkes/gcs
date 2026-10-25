@@ -87,6 +87,14 @@ func TestPrereqDescribe(t *testing.T) {
 	explicitSource.PowerSourceCriteria.Qualifier = "Clerical"
 	unknownSpell := spell(spellcmp.Tag, "Fire", fxp.One)
 	unknownSpell.Has = false
+	noTitleNote := spell(spellcmp.TitleNote, "", fxp.One)
+	noTitleNote.QualifierCriteria.Compare = criteria.IsText
+	noTags := spell(spellcmp.Tag, "", fxp.One)
+	noTags.QualifierCriteria.Compare = criteria.IsText
+	anyCollege := spell(spellcmp.College, "", fxp.One)
+	anyCollege.QualifierCriteria.Compare = criteria.IsNotText
+	eitherTag := spell(spellcmp.Tag, "Necromantic, Holy", fxp.One)
+	eitherTag.QualifierCriteria.Compare = criteria.IsText
 	quantity := gurps.NewContainedQuantityPrereq()
 	quantity.Has = false
 	pointsAndTags := trait("Magery", criteria.AtLeastNumber, 0)
@@ -152,6 +160,12 @@ func TestPrereqDescribe(t *testing.T) {
 		},
 		{"spell explicit power source", explicitSource, "Knows at least 3 spells whose power source is [Clerical]"},
 		{"spell not known", unknownSpell, "Does not know at least 1 spell whose tag is [Fire]"},
+		// An empty "is" on a title note, tag or college means the spell has none, and an empty "is not" at least
+		// one, as the matches count them; a tag or college qualifier lists the alternatives it matches.
+		{"spell without title notes", noTitleNote, "Knows at least 1 spell without title notes"},
+		{"spell without tags", noTags, "Knows at least 1 spell without tags"},
+		{"spell with a college", anyCollege, "Knows at least 1 spell with at least one college"},
+		{"spell with either tag", eitherTag, `Knows at least 1 spell whose tag is "[Necromantic]" or "[Holy]"`},
 		{"attribute", attribute(gurps.StrengthID, ""), "Has [ST] at least 20"},
 		{"attribute combined", attribute(gurps.StrengthID, gurps.DexterityID), "Has [ST+DX] at least 20"},
 		{

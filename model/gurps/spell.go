@@ -654,16 +654,25 @@ func (s *Spell) calculateLevel(points fxp.Int) Level {
 	return s.calculateLevelExcept(nil, points)
 }
 
-// calculateLevelExcept is calculateLevel without the levels grants carried by exclude merged into the spell; see
-// grantState.applyLevelNotes.
+// calculateLevelExcept is calculateLevel without the levels grants carried by exclude merged into the spell, or by the
+// item whose prerequisites are being judged when exclude is nil; see grantState.applyLevelNotes and Entity.judgingOr.
 func (s *Spell) calculateLevelExcept(exclude any, points fxp.Int) Level {
+	exclude = EntityFromNode(s).judgingOr(exclude)
+	return s.grant.applyLevels(exclude, s.levelFromAdjustedPoints(points), func(tierPoints fxp.Int) fxp.Int {
+		return s.levelAt(EntityFromNode(s), tierPoints).Level
+	})
+}
+
+// levelFromAdjustedPoints returns the level the spell has with the given adjusted points, without what grants made of
+// it.
+func (s *Spell) levelFromAdjustedPoints(points fxp.Int) Level {
 	if s.IsRitualMagic() {
-		return s.grant.applyLevels(exclude, CalculateRitualMagicSpellLevel(EntityFromNode(s), s.NameWithReplacements(),
+		return CalculateRitualMagicSpellLevel(EntityFromNode(s), s.NameWithReplacements(),
 			s.PowerSourceWithReplacements(), s.RitualSkillNameWithReplacements(), s.PrereqCount,
-			s.CollegeWithReplacements(), s.Tags, s.Difficulty, points))
+			s.CollegeWithReplacements(), s.Tags, s.Difficulty, points)
 	}
-	return s.grant.applyLevels(exclude, CalculateSpellLevel(EntityFromNode(s), s.NameWithReplacements(),
-		s.PowerSourceWithReplacements(), s.CollegeWithReplacements(), s.Tags, s.Difficulty, points))
+	return CalculateSpellLevel(EntityFromNode(s), s.NameWithReplacements(), s.PowerSourceWithReplacements(),
+		s.CollegeWithReplacements(), s.Tags, s.Difficulty, points)
 }
 
 // IncrementSkillLevel adds enough points to increment the skill level to the next level. Containers and disabled
@@ -699,7 +708,7 @@ func CalculateSpellLevel(e *Entity, name, powerSource string, colleges, tags []s
 	level := fxp.Min
 	if e != nil {
 		pts = pts.Floor()
-		level = e.ResolveAttributeCurrent(attrDiff.Attribute)
+		level = e.resolveAttributeCurrentForPrereqs(attrDiff.Attribute)
 		if attrDiff.Difficulty == difficulty.Wildcard {
 			pts = pts.Div(fxp.Three).Floor()
 		}
@@ -1017,9 +1026,11 @@ func (s *Spell) PointsWithGrants(points fxp.Int) fxp.Int {
 }
 
 // LevelWithGrants returns the level with the levels grants merged into the spell at the last recalculation added, as
-// CalculateLevel adds them, for a level computed from data other than the spell's own.
-func (s *Spell) LevelWithGrants(level Level) Level {
-	return s.grant.applyLevels(nil, level)
+// CalculateLevel adds them, for a level computed from data other than the spell's own. levelAt returns the level that
+// data gives with the given points in place of the spell's own, which the level a Keep Highest grant keeps is read
+// with.
+func (s *Spell) LevelWithGrants(level Level, levelAt func(points fxp.Int) fxp.Int) Level {
+	return s.grant.applyLevels(nil, level, levelAt)
 }
 
 // pointsForPrereqsOf returns the spell's points as the prerequisites of exclude see them: as AdjustedPoints does, but
@@ -1029,19 +1040,20 @@ func (s *Spell) pointsForPrereqsOf(exclude any) fxp.Int {
 	return s.adjustedPointsExcept(exclude, nil)
 }
 
-// pointsWithoutGrants returns the spell's points adjusted for the bonuses, as AdjustedPoints adjusts them, but without
-// what grants gave it.
-func (s *Spell) pointsWithoutGrants() fxp.Int {
-	return AdjustedPointsForNonContainerSpell(EntityFromNode(s), s.Points, s.NameWithReplacements(),
+// pointsWithoutGrants returns the given points, the spell's own or those standing for them, adjusted for the bonuses,
+// as AdjustedPoints adjusts them, but without what grants gave it.
+func (s *Spell) pointsWithoutGrants(points fxp.Int) fxp.Int {
+	return AdjustedPointsForNonContainerSpell(EntityFromNode(s), points, s.NameWithReplacements(),
 		s.PowerSourceWithReplacements(), s.CollegeWithReplacements(), s.Tags, nil)
 }
 
-// adjustedPointsExcept is AdjustedPoints without the points grants carried by exclude gave the spell; see
-// grantState.pointsExcept.
+// adjustedPointsExcept is AdjustedPoints without the points grants carried by exclude gave the spell, or by the item
+// whose prerequisites are being judged when exclude is nil; see grantState.pointsExcept and Entity.judgingOr.
 func (s *Spell) adjustedPointsExcept(exclude any, tooltip *xbytes.InsertBuffer) fxp.Int {
 	if !s.Enabled() {
 		return 0
 	}
+	exclude = EntityFromNode(s).judgingOr(exclude)
 	if s.Container() {
 		// The tooltip goes no further: a container never puts anything into it; see PointsRange for why.
 		if !s.TemplatePicker.IsZero() {

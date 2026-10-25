@@ -166,31 +166,54 @@ type nameablesSection struct {
 	VisibleKeys []string
 }
 
-// nameableDefinitions returns the nameable definitions a row's keys are described by: the row's own, plus those of its
-// modifiers, since a row's keys include theirs. The row's own definition wins when both define a code.
+// nameableDefinitions returns the nameable definitions a row's keys are described by, keyed as the keys are asked
+// about: the row's own, plus those of its modifiers, since a row's keys include theirs, each under the code of the
+// row's that the modifier's is linked to (see gurps.Trait.NameableLinks), and, for a modifier prompted for on its own,
+// those of the trait or equipment it belongs to, whose answer a code the modifier shares with it takes. The owner's
+// definition wins when both it and a modifier define a code.
 func nameableDefinitions(row any) map[string]nameable.Detail {
 	defs := make(map[string]nameable.Detail)
-	add := func(item any) {
+	add := func(item any, links map[string]string) {
 		if definer, ok := item.(nameable.Definer); ok {
 			for code, detail := range definer.NameableDefinitions() {
+				if target, linked := links[code]; linked {
+					code = target
+				}
 				if _, exists := defs[code]; !exists {
 					defs[code] = detail
 				}
 			}
 		}
 	}
-	add(row)
 	switch r := row.(type) {
 	case *gurps.Trait:
+		add(r, nil)
 		gurps.Traverse(func(mod *gurps.TraitModifier) bool {
-			add(mod)
+			add(mod, r.NameableLinks[mod.TID])
 			return false
 		}, false, false, r.Modifiers...)
 	case *gurps.Equipment:
+		add(r, nil)
 		gurps.Traverse(func(mod *gurps.EquipmentModifier) bool {
-			add(mod)
+			add(mod, r.NameableLinks[mod.TID])
 			return false
 		}, false, false, r.Modifiers...)
+	case *gurps.TraitModifier:
+		var links map[string]string
+		if owner := r.Target(); owner != nil {
+			add(owner, nil)
+			links = owner.NameableLinks[r.TID]
+		}
+		add(r, links)
+	case *gurps.EquipmentModifier:
+		var links map[string]string
+		if owner := r.Target(); owner != nil {
+			add(owner, nil)
+			links = owner.NameableLinks[r.TID]
+		}
+		add(r, links)
+	default:
+		add(row, nil)
 	}
 	return defs
 }

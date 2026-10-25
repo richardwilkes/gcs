@@ -962,6 +962,26 @@ func TestTechniqueSatisfiedTooltipForTagDefault(t *testing.T) {
 	c.Equal("- Requires a skill named Broadsword", tooltip.String(), "a missing named skill is asked for by name")
 }
 
+// TestTechniqueSatisfiedByTheSkillItsLevelComesFrom verifies that a technique is satisfied by any skill its default
+// selects that has points, as its level is computed from those skills, rather than only by the highest-level skill
+// selected, which may have no points of its own, as one that defaults from another does.
+func TestTechniqueSatisfiedByTheSkillItsLevelComesFrom(t *testing.T) {
+	c := check.New(t)
+	e := NewEntity()
+	addTestSkill(e, "Guns", "Pistol", "", fxp.One)
+	addTestSkill(e, "Guns", "LMG", "", fxp.Twenty)
+	rifle := addTestSkill(e, "Guns", "Rifle", "", 0)
+	rifle.Defaults = []*SkillDefault{newSkillDefaultTo("Guns", "LMG", false, -fxp.Two)}
+	tech := NewTechnique(e, nil, "Guns")
+	tech.Name = "Quick Shot"
+	tech.TechniqueDefault.Specialization = criteria.Text{Compare: criteria.IsNotText, Qualifier: "LMG"}
+	e.Skills = append(e.Skills, tech)
+	e.Recalculate()
+	c.Equal(fxp.FromInteger(13), rifle.LevelData.Level, "precondition: the rifle skill defaults from the LMG skill")
+	c.Equal(fxp.Ten, tech.LevelData.Level, "precondition: the technique's level comes from the pistol skill")
+	c.Equal("", tech.UnsatisfiedReason, "the pistol skill, which has points, satisfies the technique")
+}
+
 // TestSkillDefaultRechosenWhenSyncedWithSource verifies that a sync which brings changed defaults across from the
 // library re-chooses the default the same way an edit does, while a sync that leaves the defaults alone keeps the
 // recorded choice.

@@ -56,24 +56,32 @@ type grantLibraryItem struct {
 }
 
 // newGrantLibraryItem returns the node, from the library file, as an item a grant can give, or nil for a technique or
-// an item that grants something itself, which no grant can give.
+// an item that grants something itself, among its own features or those of a trait's modifiers, which no grant can
+// give.
 func newGrantLibraryItem(node any, from gurps.LibraryFile) *grantLibraryItem {
 	item := &grantLibraryItem{node: node, from: from, file: xfilepath.TrimExtension(filepath.Base(from.Path))}
-	var features gurps.Features
+	var features []gurps.Features
 	switch one := node.(type) {
 	case *gurps.Trait:
-		item.name, item.points, features = one.NameWithReplacements(), one.AdjustedPoints(nil).String(), one.Features
+		item.name, item.points, features = one.NameWithReplacements(), one.AdjustedPoints(nil).String(),
+			[]gurps.Features{one.Features}
+		gurps.Traverse(func(mod *gurps.TraitModifier) bool {
+			features = append(features, mod.Features)
+			return false
+		}, false, false, one.Modifiers...)
 	case *gurps.Skill:
 		if one.IsTechnique() {
 			return nil
 		}
 		diff := one.AdjustedDifficulty()
-		item.name, item.points, features = one.String(), diff.Description(nil), one.Features
+		item.name, item.points, features = one.String(), diff.Description(nil), []gurps.Features{one.Features}
 	case *gurps.Spell:
-		item.name, item.points, features = one.String(), one.Difficulty.Description(nil), one.Features
+		item.name, item.points, features = one.String(), one.Difficulty.Description(nil), []gurps.Features{one.Features}
 	}
-	if slices.ContainsFunc(features, func(f gurps.Feature) bool { return gurps.IsGrant(f.FeatureType()) }) {
-		return nil
+	for _, list := range features {
+		if slices.ContainsFunc(list, func(f gurps.Feature) bool { return gurps.IsGrant(f.FeatureType()) }) {
+			return nil
+		}
 	}
 	item.words = grantFilterWords(item.name)
 	return item
@@ -89,6 +97,17 @@ func collectGrantItems[T gurps.Node[T]](from gurps.LibraryFile, nodes []T) []*gr
 		return false
 	}, false, true, nodes...)
 	return items
+}
+
+// grantPickerState is what the picker of an open grant row holds that its widgets would lose when the panel is rebuilt,
+// as any edit of the row's other controls rebuilds it: the grant it is for, the filter typed and the list, whose
+// selection the picker built next takes up. built records that the build in progress made the picker, so that the
+// state goes once no build does.
+type grantPickerState struct {
+	grant  *gurps.Grant
+	filter string
+	list   *unison.List[*grantLibraryItem]
+	built  bool
 }
 
 // grant adds the controls of an open grant row: the item granted, its level, what happens when the sheet already has
@@ -190,13 +209,23 @@ func grantLevelTooltip(t feature.Type) string {
 
 // grantPicker returns the filter field and list of library items to choose the granted item from, along with the
 // buttons that make a blank one and open the editor on the one chosen. The items are those the panel's owner can be
-// given (see grantable).
+// given (see grantable). The filter and the item chosen are those of the picker last built for the grant, if any
+// (see grantPickerState).
 func (p *featuresPanel) grantPicker(path string, g *gurps.Grant) *unison.Panel {
 	key := func(name string) string { return path + ":" + name }
 	panel := newColumn()
 	items := p.grantable(grantLibraryItems(g.Type))
+	if p.picker.grant != g {
+		p.picker = grantPickerState{grant: g}
+	}
+	var chosen *grantLibraryItem
+	if last := p.picker.list; last != nil && last.Selection.Count() != 0 {
+		chosen = last.DataAtIndex(last.Selection.FirstSet())
+	}
+	p.picker.built = true
 	filter := unison.NewField()
 	filter.RefKey = key("filter")
+	filter.SetText(p.picker.filter)
 	filter.Watermark = i18n.Text("Filter the library")
 	filter.Accessibility.Name = i18n.Text("Library Filter")
 	filter.SetLayoutData(&unison.FlexLayoutData{HAlign: align.Fill, HGrab: true})
@@ -226,23 +255,31 @@ func (p *featuresPanel) grantPicker(path string, g *gurps.Grant) *unison.Panel {
 	scroll := unison.NewScrollPanel()
 	scroll.SetContent(list, behavior.Follow, behavior.Fill)
 	scroll.SetBorder(unison.NewLineBorder(unison.ThemeSurfaceEdge, geom.Size{}, geom.NewUniformInsets(1), false))
-	refill := func() {
+	p.picker.list = list
+	// refill fills the list with the items the filter leaves, selecting keep among them, or else the first.
+	refill := func(keep *grantLibraryItem) {
+		p.picker.filter = filter.Text()
 		query := grantFilterWords(filter.Text())
 		list.Clear()
+		index := -1
 		for _, one := range items {
 			if grantItemMatches(query, one.words) {
+				if one == keep {
+					index = list.Count()
+				}
 				list.Append(one)
 			}
 		}
 		if list.Count() != 0 {
-			list.Select(false, 0)
-			list.ScrollRectIntoView(list.RowRect(0))
+			index = max(index, 0)
+			list.Select(false, index)
+			list.ScrollRectIntoView(list.RowRect(index))
 		}
 		// The list marks only itself for layout, which doesn't resize it: the scroll panel sizes its content, so it
 		// is the one laid out again, or the list would keep the frame of the rows it showed before.
 		scroll.MarkForLayoutAndRedraw()
 	}
-	filter.ModifiedCallback = func(_, _ *unison.FieldState) { refill() }
+	filter.ModifiedCallback = func(_, _ *unison.FieldState) { refill(nil) }
 	keyDown := filter.KeyDownCallback
 	filter.KeyDownCallback = func(keyCode unison.KeyCode, mods mod.Modifiers, repeat bool) bool {
 		switch keyCode {
@@ -259,7 +296,7 @@ func (p *featuresPanel) grantPicker(path string, g *gurps.Grant) *unison.Panel {
 			return keyDown(keyCode, mods, repeat)
 		}
 	}
-	refill()
+	refill(chosen)
 	panel.AddChild(filter)
 	height := xmath.Ceil(list.Factory.CellHeight()) * grantPickerRows
 	scroll.SetLayoutData(&unison.FlexLayoutData{

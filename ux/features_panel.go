@@ -80,6 +80,9 @@ type featuresPanel struct {
 	// grantPicking is the key of the grant whose picker was opened to choose a different item. It is the key rather
 	// than the row's path, so that the picker follows the grant as rows move and goes when the grant does.
 	grantPicking tid.TID
+	// picker is the state of the grant picker showing, kept here so that it lasts while the panel is rebuilt; see
+	// grantPickerState.
+	picker grantPickerState
 }
 
 // featuresState is the data a snapshot of the panel holds: the features, and the indexes of those whose "as a %" is
@@ -196,8 +199,13 @@ func (p *featuresPanel) build() {
 		return true
 	})
 	add.RefKey = featureAddKey
+	p.picker.built = false
 	for i, one := range *p.features {
 		p.AddChild(p.row(one, strconv.Itoa(i)))
+	}
+	if !p.picker.built {
+		// A picker opened later starts afresh.
+		p.picker = grantPickerState{}
 	}
 	// New features go at the end, so the add button sits under the last row, in line with the more buttons.
 	foot := unison.NewPanel()

@@ -10,6 +10,8 @@
 package ux
 
 import (
+	"cmp"
+
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/check"
 )
@@ -23,6 +25,8 @@ type CheckBox struct {
 	get       func() check.Enum
 	set       func(state check.Enum)
 	OnSet     func()
+	// UndoTitle names the edits made with the check box, when its own title would not describe them.
+	UndoTitle string
 	last      check.Enum
 }
 
@@ -42,7 +46,7 @@ func NewCheckBox(targetMgr *TargetMgr, targetKey, title string, get func() check
 	c.ClickCallback = func() {
 		if c.last != c.State {
 			c.last = c.State
-			recordTargetUndo(c, c.targetMgr, c.targetKey, c.Text.String(), c.undoID, c.get(), c.State,
+			recordTargetUndo(c, c.targetMgr, c.targetKey, cmp.Or(c.UndoTitle, c.Text.String()), c.undoID, c.get(), c.State,
 				func(self *CheckBox, data check.Enum) {
 					self.State = data
 					self.set(data)

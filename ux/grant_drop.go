@@ -50,7 +50,8 @@ func grantItemsFromRows[T gurps.Node[T]](table *unison.Table[*Node[T]], rows []*
 }
 
 // initGrantDrop lets trait, skill and spell rows dragged from a table be dropped on the panel, each becoming a grant of
-// it: onto an empty grant of the same kind, filling it, or between the rows, adding new ones.
+// it: onto the drop zone of an open grant of the same kind, filling it or replacing the item it has, or between the
+// rows, adding new ones.
 func (p *featuresPanel) initGrantDrop() {
 	canAccept := p.CanAcceptDropCallback
 	p.CanAcceptDropCallback = func(di drag.Info) bool {

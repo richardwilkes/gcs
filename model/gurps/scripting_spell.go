@@ -44,7 +44,7 @@ func newScriptSpell(r *goja.Runtime, spell *Spell) *goja.Object {
 		m["attribute"] = func() goja.Value { return r.ToValue(spell.Difficulty.Attribute) }
 		m["difficulty"] = func() goja.Value { return r.ToValue(spell.Difficulty.Difficulty.Key()) }
 		m["points"] = func() goja.Value { return r.ToValue(spell.PointsCost().AsInteger[int]()) }
-		m["college"] = func() goja.Value { return r.ToValue(spell.CollegeWithReplacements()) }
+		m["college"] = func() goja.Value { return scriptStringList(r, spell.CollegeWithReplacements()) }
 		m["powerSource"] = func() goja.Value { return r.ToValue(spell.PowerSourceWithReplacements()) }
 		m["spellClass"] = func() goja.Value { return r.ToValue(spell.ClassWithReplacements()) }
 		m["resist"] = func() goja.Value { return r.ToValue(spell.ResistWithReplacements()) }

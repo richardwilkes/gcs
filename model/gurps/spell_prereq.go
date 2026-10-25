@@ -212,15 +212,17 @@ func (p *SpellPrereq) Describe(_ *Entity, replacements map[string]string, em fun
 	if whose {
 		switch p.SubType {
 		case spellcmp.Tag:
-			text += i18n.Text(" whose tag ")
+			text += describeSpellList(p.QualifierCriteria, true, i18n.Text(" whose tag "), i18n.Text(" without tags"),
+				i18n.Text(" with at least one tag"), replacements, em)
 		case spellcmp.College:
-			text += i18n.Text(" whose college ")
+			text += describeSpellList(p.QualifierCriteria, true, i18n.Text(" whose college "),
+				i18n.Text(" without colleges"), i18n.Text(" with at least one college"), replacements, em)
 		case spellcmp.TitleNote:
-			text += i18n.Text(" whose title note ")
+			text += describeSpellList(p.QualifierCriteria, false, i18n.Text(" whose title note "),
+				i18n.Text(" without title notes"), i18n.Text(" with at least one title note"), replacements, em)
 		default:
-			text += i18n.Text(" whose name ")
+			text += i18n.Text(" whose name ") + describeText(p.QualifierCriteria, replacements, em)
 		}
-		text += describeText(p.QualifierCriteria, replacements, em)
 	}
 	if p.LevelCriteria.Compare != criteria.AnyNumber {
 		text += i18n.Text(" at level ") + p.LevelCriteria.AltString()
@@ -238,6 +240,24 @@ func (p *SpellPrereq) Describe(_ *Entity, replacements map[string]string, em fun
 		}
 	}
 	return text
+}
+
+// describeSpellList describes a tag, college or title note criterion as its match counts the spell's (see
+// criteria.Text.MatchesList and MatchesEach): an empty "is" as none, an empty "is not" as some, and otherwise as whose
+// followed by the comparison with the qualifier, split into its comma-separated alternatives when split is set.
+func describeSpellList(t criteria.Text, split bool, whose, none, some string, replacements map[string]string, em func(string) string) string {
+	q := t.Compare.EffectiveQualifier(nameable.Apply(t.Qualifier, replacements))
+	switch {
+	case t.Compare == criteria.IsText && q == "":
+		return none
+	case t.Compare == criteria.IsNotText && q == "":
+		return some
+	}
+	qualifiers := []string{q}
+	if split {
+		qualifiers = criteria.SplitQualifiers(q)
+	}
+	return whose + describeComparison(t.Compare.String(), t.Compare, qualifiers, em)
 }
 
 // spellDirectlyRequires returns true if the candidate spell directly lists a spell-by-name prerequisite that matches

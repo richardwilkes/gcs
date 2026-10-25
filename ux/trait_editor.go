@@ -34,6 +34,9 @@ func initTraitEditor(e *editor[*gurps.Trait, *gurps.TraitEditData], content *uni
 	// A choice container dissolves into the options chosen from it when the template is applied, so the fields that
 	// only matter to a trait that reaches a sheet are left out of its editor.
 	choice := gurps.IsTemplateChoiceContainer(e.target)
+	// The trait a grant gives is put on the sheet at the grant's level and enabled whenever the grant is in effect, so
+	// its editor leaves out the level and the enabled check box, which nothing would read.
+	_, granted := e.owner.(*grantItemOwner)
 	addNameLabelAndField(content, &e.editorData.Name)
 	addNotesLabelAndField(content, &e.editorData.LocalNotes)
 	if !choice {
@@ -42,7 +45,9 @@ func initTraitEditor(e *editor[*gurps.Trait, *gurps.TraitEditData], content *uni
 		addTagsLabelAndField(content, &e.editorData.Tags)
 		addPreconfigurable(e, content)
 		addPickSeparately(content, e.target, &e.editorData.PickSeparately)
-		addEnabledCheckBox(content, e.editorData)
+		if !granted {
+			addEnabledCheckBox(content, e.editorData)
+		}
 		addSwitchedOnCheckBox(content, &e.editorData.SwitchedOn)
 	}
 	var perLevelField, levelField *DecimalField
@@ -88,8 +93,10 @@ func initTraitEditor(e *editor[*gurps.Trait, *gurps.TraitEditData], content *uni
 			VAlign:   align.Middle,
 		})
 		content.AddChild(wrapper)
-		levelField = addDecimalField(wrapper, nil, "", i18n.Text("Level"), "", &e.editorData.Levels, 0,
-			fxp.MaxBasePoints, false)
+		if !granted {
+			levelField = addDecimalField(wrapper, nil, "", i18n.Text("Level"), "", &e.editorData.Levels, 0,
+				fxp.MaxBasePoints, false)
+		}
 		perLevelField = addLabelAndDecimalField(wrapper, nil, "", i18n.Text("Cost Per Level"), "",
 			&e.editorData.PointsPerLevel, -fxp.MaxBasePoints, fxp.MaxBasePoints)
 		maxLevelField = addLabelAndScriptField(content, nil, "", i18n.Text("Maximum Level"),
@@ -114,7 +121,9 @@ func initTraitEditor(e *editor[*gurps.Trait, *gurps.TraitEditData], content *uni
 		})
 		content.AddChild(adjustedMaxLevelField)
 		AdjustFieldBlank(perLevelField, !e.editorData.CanLevel)
-		AdjustFieldBlank(levelField, !e.editorData.CanLevel)
+		if levelField != nil {
+			AdjustFieldBlank(levelField, !e.editorData.CanLevel)
+		}
 		AdjustFieldBlank(maxLevelField, !e.editorData.CanLevel)
 	}
 	var crAdjPopup *unison.PopupMenu[selfctrl.Adjustment]

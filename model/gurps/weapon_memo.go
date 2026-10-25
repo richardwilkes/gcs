@@ -96,7 +96,7 @@ func (w *Weapon) memo() *weaponMemo {
 }
 
 // memoFingerprint hashes everything of the weapon itself that resolving its fields reads: its data, and the carried
-// and equipped flags the entity sets on it, which name-selected bonuses see through its name.
+// and equipped flags the entity sets on it, which String reports in the minimum-ST tooltip and HashDisplayedState.
 func (w *Weapon) memoFingerprint() uint64 {
 	h := xxh3.New()
 	w.Hash(h)

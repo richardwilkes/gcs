@@ -15,8 +15,10 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/ux/uxtest"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/unison"
+	uncheck "github.com/richardwilkes/unison/enums/check"
 )
 
 // TestOptionalDecimalFieldBlankMeansNone verifies that zero is a value of its own, and that text which isn't a number is
@@ -72,6 +74,49 @@ func TestTemplateTopBlockEditsTheTemplate(t *testing.T) {
 	minField.SetText("")
 	c.True(maxField.validate(), "a maximum with no minimum can't be inverted")
 	c.Equal("≤50", data.TargetPoints.String())
+}
+
+// TestTemplateBodyTypeCheckBoxUndo verifies that toggling the body type check box records an undo named for the body
+// type, not for the check box's short title, and that undoing it after a full rebuild of the template, which builds a
+// new check box, is shown by the check box and body type button then on the page.
+func TestTemplateBodyTypeCheckBoxUndo(t *testing.T) {
+	c := check.New(t)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
+	template := newTestTemplateWithBodyType("Humanoid")
+	screen.Do(func() { DisplayNewDockable(template) })
+	find := func() (*CheckBox, *unison.Button) {
+		for _, box := range uxtest.PanelsOfType[*CheckBox](template.AsPanel()) {
+			if box.Text.String() == "Set to" {
+				button, ok := box.Parent().Children()[1].Self.(*unison.Button)
+				c.True(ok, "the body type button follows the check box")
+				return box, button
+			}
+		}
+		t.Fatal("the template has no body type check box")
+		return nil, nil
+	}
+	screen.Do(func() {
+		box, button := find()
+		c.Equal(uncheck.On, box.State, "precondition: the template has a body type")
+		c.True(button.Enabled())
+		box.State = uncheck.Off
+		box.ClickCallback()
+		c.Nil(template.template.BodyType)
+		c.Equal("Undo Set Body Type", template.UndoManager().UndoTitle())
+		template.Rebuild(true)
+	})
+	screen.Do(func() {
+		box, button := find()
+		c.Equal(uncheck.Off, box.State, "precondition: the rebuilt check box shows the change")
+		c.False(button.Enabled())
+		template.UndoManager().Undo()
+	})
+	screen.Do(func() {
+		box, button := find()
+		c.NotNil(template.template.BodyType, "undo puts the body type back")
+		c.Equal(uncheck.On, box.State, "which the check box on the page shows")
+		c.True(button.Enabled(), "as does the button")
+	})
 }
 
 // TestTemplateTopBlockFlagsALoadedInvertedRange verifies that a target range that is already inverted when the

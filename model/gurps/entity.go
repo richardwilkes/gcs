@@ -1023,7 +1023,8 @@ func (e *Entity) applyEquipmentPenalties() {
 // processSkillAndSpellPrereqs evaluates the prerequisites of every skill and spell, recording the reason each is
 // unsatisfied. A skill or spell left unsatisfied by equipment it requires to be equipped is noted as taking the
 // missing-equipment penalty to its level, which applyEquipmentPenalties adds to the collected features in the next
-// pass. A technique or ritual magic spell whose prerequisites are met must also have the skill it is based on. A
+// pass. A technique or ritual magic spell whose prerequisites are met must also have the skill it is based on, which,
+// like its prerequisites, is looked for without what its own grants put on the sheet (see JudgingPrereqsOf). A
 // disabled one is not judged, and has any reason recorded before it was disabled cleared, as does one put on the sheet
 // by a grant that bypasses its prerequisites.
 func (e *Entity) processSkillAndSpellPrereqs() {
@@ -1035,8 +1036,10 @@ func (e *Entity) processSkillAndSpellPrereqs() {
 		}
 		s.UnsatisfiedReason = e.evaluatePrereqs(s.Prereq, s, &s.takesEquipmentPenalty)
 		if s.UnsatisfiedReason == "" && s.IsTechnique() {
-			s.UnsatisfiedReason = unsatisfiedReason(func(tooltip *xbytes.InsertBuffer) bool {
-				return s.TechniqueSatisfied(tooltip, unsatisfiedReasonPrefix)
+			e.JudgingPrereqsOf(s, func() {
+				s.UnsatisfiedReason = unsatisfiedReason(func(tooltip *xbytes.InsertBuffer) bool {
+					return s.TechniqueSatisfied(tooltip, unsatisfiedReasonPrefix)
+				})
 			})
 		}
 		return false
@@ -1049,8 +1052,10 @@ func (e *Entity) processSkillAndSpellPrereqs() {
 		}
 		s.UnsatisfiedReason = e.evaluatePrereqs(s.Prereq, s, &s.takesEquipmentPenalty)
 		if s.UnsatisfiedReason == "" && s.IsRitualMagic() {
-			s.UnsatisfiedReason = unsatisfiedReason(func(tooltip *xbytes.InsertBuffer) bool {
-				return s.RitualMagicSatisfied(tooltip, unsatisfiedReasonPrefix)
+			e.JudgingPrereqsOf(s, func() {
+				s.UnsatisfiedReason = unsatisfiedReason(func(tooltip *xbytes.InsertBuffer) bool {
+					return s.RitualMagicSatisfied(tooltip, unsatisfiedReasonPrefix)
+				})
 			})
 		}
 		return false
@@ -1090,10 +1095,12 @@ func (e *Entity) processTraitPrereqs() {
 	var verdicts []traitPrereqVerdict
 	Traverse(func(t *Trait) bool {
 		t.UnsatisfiedReason = ""
+		t.prereqsUnmet = false
 		verdict := prereqsNotJudged
 		if !t.IsDisabled() && !t.grantNotInEffect() && (t.parent == nil || t.parent.Enabled()) {
 			if !t.grant.bypass {
 				t.UnsatisfiedReason = e.evaluatePrereqs(t.Prereq, t, nil)
+				t.prereqsUnmet = t.UnsatisfiedReason != ""
 			}
 			if maximum := t.ResolvedMaxLevels(); maximum > 0 && t.Levels > maximum {
 				reason := levelExceedsMaximumReason(maximum)
@@ -1380,8 +1387,9 @@ func (e *Entity) CostReductionFor(attributeID string) fxp.Int {
 
 // JudgingPrereqsOf runs fn while the prerequisites of exclude are judged: what the grants exclude carries put on the
 // sheet is left out of the bonuses, attributes and skill defaults they read, as the rows themselves are left out (see
-// excludedFromPrereqs), so that an item never meets its own prerequisites with what it grants. Scripts see the sheet
-// whole, since what they compute is kept for the rest of the pass; see resolveScript.
+// excludedFromPrereqs), and what those grants merged into the items on the sheet is left out of every level and point
+// total read, whatever reads them (see judgingOr), so that an item never meets its own prerequisites with what it
+// grants. Scripts see the sheet whole, since what they compute is kept for the rest of the pass; see resolveScript.
 func (e *Entity) JudgingPrereqsOf(exclude any, fn func()) {
 	if e == nil {
 		fn()
@@ -1391,6 +1399,17 @@ func (e *Entity) JudgingPrereqsOf(exclude any, fn func()) {
 	e.judging = exclude
 	defer func() { e.judging = saved }()
 	fn()
+}
+
+// judgingOr returns exclude, or, when that is nil, the item whose prerequisites are being judged, if any, so that a
+// level or point total read while they are judged leaves out what that item's grants merged in, wherever the reading
+// starts: a per-level bonus reading its owner's level, a technique reading the skill it is based on, or a default
+// reading another skill; see JudgingPrereqsOf.
+func (e *Entity) judgingOr(exclude any) any {
+	if exclude == nil && e != nil {
+		return e.judging
+	}
+	return exclude
 }
 
 // bonusExcluded returns true if the bonus is left out while prerequisites are judged, being carried by an item a grant
@@ -2011,7 +2030,8 @@ func (e *Entity) ResolveAttributeCurrent(attrID string) fxp.Int {
 
 // resolveAttributeCurrentForPrereqs is ResolveAttributeCurrent as the prerequisites being judged see the attribute:
 // with the bonuses from what the grants of the item judged put on the sheet left out (see JudgingPrereqsOf), where its
-// own bonus holds them until the next pass.
+// own bonus holds them until the next pass. The skill and spell levels read it as well, so that a level computed while
+// prerequisites are judged leaves those bonuses out too, and it is ResolveAttributeCurrent at any other time.
 func (e *Entity) resolveAttributeCurrentForPrereqs(attrID string) fxp.Int {
 	if e == nil || !e.carriesGrant(e.judging) {
 		return e.ResolveAttributeCurrent(attrID)

@@ -20,6 +20,7 @@ import (
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/toolbox/v2/tid"
+	"github.com/richardwilkes/toolbox/v2/xhash"
 	"github.com/richardwilkes/toolbox/v2/xmath"
 	"github.com/richardwilkes/toolbox/v2/xreflect"
 	"github.com/richardwilkes/unison"
@@ -143,9 +144,38 @@ func (p *nameablesPanel) restore(s *nameablesState) {
 }
 
 func (p *nameablesPanel) dataHash() uint64 {
-	s := p.current()
-	// fmt writes maps in key order, so the text is the same for the same data.
-	return xxh3.HashString(fmt.Sprintf("%v|%v", s.defs, s.links))
+	return p.current().hash()
+}
+
+// hash returns a hash of the state, by which an edit is told from no change. Each string goes in with its length, and
+// each map and list with its count, so that no two states run together the same way, as the text of options whose
+// words repeat would.
+func (s *nameablesState) hash() uint64 {
+	h := xxh3.New()
+	xhash.Num64(h, uint64(len(s.defs)))
+	for _, code := range slices.Sorted(maps.Keys(s.defs)) {
+		d := s.defs[code]
+		xhash.StringWithLen(h, code)
+		xhash.StringWithLen(h, d.Label)
+		xhash.StringWithLen(h, d.Tooltip)
+		xhash.Num64(h, uint64(len(d.Options)))
+		for _, option := range d.Options {
+			xhash.StringWithLen(h, option)
+		}
+		xhash.Bool(h, d.FreeForm)
+		xhash.Bool(h, d.NotBlank)
+	}
+	xhash.Num64(h, uint64(len(s.links)))
+	for _, id := range slices.Sorted(maps.Keys(s.links)) {
+		xhash.StringWithLen(h, string(id))
+		links := s.links[id]
+		xhash.Num64(h, uint64(len(links)))
+		for _, code := range slices.Sorted(maps.Keys(links)) {
+			xhash.StringWithLen(h, code)
+			xhash.StringWithLen(h, links[code])
+		}
+	}
+	return h.Sum64()
 }
 
 // Sync implements Syncer. The rows show how often the item refers to each code and what its modifiers are, so they are
