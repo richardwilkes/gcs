@@ -152,9 +152,10 @@ type Entity struct {
 	profileReadByScript bool
 	// judging is the item whose prerequisites are being judged, while they are; see JudgingPrereqsOf.
 	judging any
-	// attributesForPrereqs is the number of attribute values being computed as the prerequisites being judged see
-	// them; see attributeForPrereqs.
-	attributesForPrereqs int
+	// scriptsForPrereqs is the depth of the computations in progress whose scripts run as the prerequisites being
+	// judged see the sheet: the attribute values read for them (see attributeForPrereqs) and the script prerequisites
+	// themselves (see ScriptPrereq.Evaluate); see resolveScript.
+	scriptsForPrereqs int
 }
 
 // NewEntityFromFile loads an Entity from a file.
@@ -1300,10 +1301,11 @@ func (e *Entity) TelekineticStrength() fxp.Int {
 }
 
 // TraitLevels returns the sum of the current levels of every enabled, leveled trait whose name matches the given one,
-// ignoring case, along with whether any such trait exists.
+// ignoring case, along with whether any such trait exists. A trait a grant of the item whose prerequisites are being
+// judged put on the sheet is left out; see JudgingPrereqsOf.
 func (e *Entity) TraitLevels(name string) (levels fxp.Int, found bool) {
 	Traverse(func(t *Trait) bool {
-		if t.IsLeveled() && strings.EqualFold(t.NameWithReplacements(), name) {
+		if t.IsLeveled() && strings.EqualFold(t.NameWithReplacements(), name) && !grantedFor(e.judging, t) {
 			levels += t.CurrentLevel()
 			found = true
 		}
@@ -1393,8 +1395,9 @@ func (e *Entity) CostReductionFor(attributeID string) fxp.Int {
 // excludedFromPrereqs), and what those grants merged into the items on the sheet is left out of every level and point
 // total read, whatever reads them (see judgingOr), so that an item never meets its own prerequisites with what it
 // grants. Scripts see the sheet whole, since what they compute is kept for the rest of the pass (see resolveScript),
-// except those giving the attributes their bases, which are run afresh as the prerequisites see the attributes they
-// read; see attributeForPrereqs.
+// except the script prerequisites themselves and the scripts giving the attributes their bases while the prerequisites
+// read them, which run afresh with the rows left out hidden from them too (see excludedWhileJudging); see
+// ScriptPrereq.Evaluate and attributeForPrereqs.
 func (e *Entity) JudgingPrereqsOf(exclude any, fn func()) {
 	if e == nil {
 		fn()
@@ -1421,6 +1424,13 @@ func (e *Entity) judgingOr(exclude any) any {
 // of the item judged put on the sheet; see JudgingPrereqsOf.
 func (e *Entity) bonusExcluded(bonus Bonus) bool {
 	return e.judging != nil && grantedFor(e.judging, bonus.Owner())
+}
+
+// excludedWhileJudging returns true if the node is left out while prerequisites are judged, being an item a grant of
+// the item judged put on the sheet, which a script run for those prerequisites must not see either; see
+// JudgingPrereqsOf. e may be nil, which leaves nothing out.
+func (e *Entity) excludedWhileJudging(node any) bool {
+	return e != nil && grantedFor(e.judging, node)
 }
 
 // sumBonuses returns the total adjusted amount of the bonuses in the list that match, adding each of them to the
@@ -1967,8 +1977,8 @@ func (e *Entity) ResolveVariable(variableName string) string {
 		return ""
 	}
 	// An attribute read as the prerequisites being judged see it is neither taken from the cache nor kept in it, since
-	// it leaves out what the attribute has at any other time; see attributeForPrereqs.
-	forPrereqs := e.attributesForPrereqs > 0
+	// it leaves out what the attribute has at any other time; see attributeForPrereqs and ScriptPrereq.Evaluate.
+	forPrereqs := e.scriptsForPrereqs > 0
 	if v, ok := e.variableCache[variableName]; ok && !forPrereqs {
 		return v
 	}
@@ -2061,8 +2071,8 @@ func (e *Entity) resolveAttributeCurrentForPrereqs(attrID string) fxp.Int {
 // script sees the item judged and its result is not kept, since it is computed with those bonuses left out; see
 // resolveScript.
 func (e *Entity) attributeForPrereqs(attr *Attribute, current bool) fxp.Int {
-	e.attributesForPrereqs++
-	defer func() { e.attributesForPrereqs-- }()
+	e.scriptsForPrereqs++
+	defer func() { e.scriptsForPrereqs-- }()
 	bonus := e.AttributeBonusFor(attr.AttrID, stlimit.None, nil)
 	if def := attr.AttributeDef(); def != nil && !def.AllowsDecimal() {
 		bonus = bonus.Floor()

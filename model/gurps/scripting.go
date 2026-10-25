@@ -665,12 +665,14 @@ func resolveScript(entity *Entity, selfProvider ScriptSelfProvider, text string)
 		noteAbandonedScript(entity)
 		return "script resolution exceeded maximum depth (possible circular reference)", true
 	}
-	// A script giving an attribute's base, run as the prerequisites being judged see the attribute, sees the item judged
-	// and its result is not kept, since the attributes it reads leave out what they have at any other time; see
+	// A script run as the prerequisites being judged see the sheet, which is a script prerequisite or one giving an
+	// attribute's base as those prerequisites see the attribute, sees the item judged and its result is not kept, since
+	// what it reads leaves out what the sheet has at any other time; see ScriptPrereq.Evaluate and
 	// Entity.attributeForPrereqs.
-	forPrereqs := entity != nil && entity.attributesForPrereqs > 0
+	forPrereqs := entity != nil && entity.scriptsForPrereqs > 0
 	if entity != nil && entity.judging != nil && !forPrereqs {
-		// A script sees the sheet whole, since its result is kept for the rest of the pass; see JudgingPrereqsOf.
+		// Any other script sees the sheet whole, since its result is kept for the rest of the pass; see
+		// JudgingPrereqsOf.
 		judging := entity.judging
 		entity.judging = nil
 		defer func() { entity.judging = judging }()

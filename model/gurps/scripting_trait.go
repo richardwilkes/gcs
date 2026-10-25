@@ -33,7 +33,9 @@ func newScriptTrait(r *goja.Runtime, trait *Trait) *goja.Object {
 	m["frequency"] = func() goja.Value { return r.ToValue(trait.ResolvedFrequency(nil).Number()) }
 	if trait.Container() {
 		m["kind"] = func() goja.Value { return r.ToValue(strings.ReplaceAll(trait.ContainerType.Key(), "_", " ")) }
-		m["children"] = func() goja.Value { return scriptObjects(r, trait.Children, (*Trait).Enabled, newScriptTrait) }
+		m["children"] = func() goja.Value {
+			return scriptObjects(r, trait.Children, scriptSees((*Trait).Enabled), newScriptTrait)
+		}
 		m["find"] = scriptNameTagFinder(r, func(name, tag string) goja.Value {
 			return findScriptTraits(r, name, tag, trait.Children...)
 		})

@@ -134,8 +134,14 @@ func (s *ScriptPrereq) evaluate(entity *Entity, exclude any, tooltip *xbytes.Ins
 
 // Evaluate runs the script against the entity for the item given as exclude. A result of "" or "true" is met, "false"
 // is unmet with no reason, and any other result is unmet, with that text as the reason. It has failed when the script
-// could not produce a result, because it threw, timed out or nested too deeply; the reason is then the error.
+// could not produce a result, because it threw, timed out or nested too deeply; the reason is then the error. The
+// script sees the sheet as the prerequisites being judged see it, without what the item judged grants (see
+// Entity.JudgingPrereqsOf), and its result is not kept; see resolveScript.
 func (s *ScriptPrereq) Evaluate(entity *Entity, exclude any) (result CheckResult, reason string) {
+	if entity != nil {
+		entity.scriptsForPrereqs++
+		defer func() { entity.scriptsForPrereqs-- }()
+	}
 	script := s.Script
 	if na, ok := exclude.(nameable.Accesser); ok {
 		script = nameable.Apply(script, na.NameableReplacements())

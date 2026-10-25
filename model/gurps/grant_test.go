@@ -892,6 +892,81 @@ func TestGrantDoesNotMeetItsCarriersPrereqs(t *testing.T) {
 		c.True(grantedOf(e.Skills)[0].grantNotInEffect(), "so the skill it grants is not in effect")
 	})
 
+	// Nor is the item seen by a script run for the prerequisites, whatever the script reads it through.
+	brawlingGrant := func() *Grant {
+		return newSkillGrant(newEasySkill("Brawling", fxp.One), fxp.One, grantmerge.MergeLevels)
+	}
+	nightVisionGrant := func() *Grant {
+		return newTraitGrant(newGrantLeveledTrait("Night Vision", fxp.One), fxp.One, grantmerge.Ignore)
+	}
+	lightGrant := func() *Grant { return newSpellGrant(newHardSpell("Light", fxp.One), fxp.One, grantmerge.Ignore) }
+	// grantedNotInEffect returns true if a grant put exactly one item on the sheet and it is not in effect.
+	grantedNotInEffect := func(e *Entity) bool {
+		return len(grantedOf(e.Traits))+len(grantedOf(e.Skills))+len(grantedOf(e.Spells)) == 1 &&
+			(slices.ContainsFunc(grantedOf(e.Traits), (*Trait).grantNotInEffect) ||
+				slices.ContainsFunc(grantedOf(e.Skills), (*Skill).grantNotInEffect) ||
+				slices.ContainsFunc(grantedOf(e.Spells), (*Spell).grantNotInEffect))
+	}
+	for _, tc := range []struct {
+		name   string
+		grant  func() *Grant
+		script string
+	}{
+		{name: "skill level", grant: brawlingGrant, script: `entity.skillLevel("Brawling", "", false) > 0`},
+		{name: "found skill", grant: brawlingGrant, script: `entity.findSkills("Brawling").length > 0`},
+		{name: "listed skill", grant: brawlingGrant, script: `entity.skills.some(s => s.name == "Brawling")`},
+		{name: "has trait", grant: nightVisionGrant, script: `entity.hasTrait("Night Vision")`},
+		{name: "trait level", grant: nightVisionGrant, script: `entity.traitLevel("Night Vision") > 0`},
+		{name: "found trait", grant: nightVisionGrant, script: `entity.findTraits("Night Vision").length > 0`},
+		{name: "listed trait", grant: nightVisionGrant, script: `entity.traits.some(t => t.name == "Night Vision")`},
+		{name: "found spell", grant: lightGrant, script: `entity.findSpells("Light").length > 0`},
+		{name: "listed spell", grant: lightGrant, script: `entity.spells.some(s => s.name == "Light")`},
+	} {
+		t.Run("item it puts on the sheet seen by a script through its "+tc.name, func(t *testing.T) {
+			c := check.New(t)
+			e := NewEntity()
+			training := addTraitWithFeatures(e, "Training", tc.grant())
+			training.Prereq = NewPrereqList()
+			addScriptPrereq(training.Prereq, tc.script)
+			e.Recalculate()
+			c.False(e.Unsettled())
+			c.NotEqual("", training.UnsatisfiedReason, "the item it grants can't meet its own prerequisite")
+			c.True(grantedNotInEffect(e), "so the item it grants is not in effect")
+		})
+	}
+
+	// The item as bought can, in which case the grant merges into it, and the level a script read for the
+	// prerequisites, without the merge, is not what the sheet keeps.
+	t.Run("merge once the prerequisite is met without it", func(t *testing.T) {
+		for _, tc := range []struct {
+			name   string
+			prereq func(list *PrereqList)
+		}{
+			{name: "skill prerequisite", prereq: func(list *PrereqList) {
+				addSkillPrereq(list, "Brawling", fxp.FromInteger(12))
+			}},
+			{name: "script reading the skill level", prereq: func(list *PrereqList) {
+				addScriptPrereq(list, `entity.skillLevel("Brawling", "", false) >= 12`)
+			}},
+			{name: "script reading the skill found", prereq: func(list *PrereqList) {
+				addScriptPrereq(list, `entity.findSkills("Brawling").some(s => s.level >= 12)`)
+			}},
+		} {
+			c := check.New(t)
+			e := NewEntity()
+			brawling := addSkill(e, "Brawling", fxp.Four) // DX+2, so 12 on its own
+			training := addTraitWithFeatures(e, "Training",
+				newSkillGrant(newEasySkill("Brawling", fxp.One), fxp.Three, grantmerge.MergeLevels))
+			training.Prereq = NewPrereqList()
+			tc.prereq(training.Prereq)
+			e.Recalculate()
+			c.False(e.Unsettled(), tc.name)
+			c.Equal("", training.UnsatisfiedReason, "%s: the skill as bought meets the prerequisite", tc.name)
+			c.Equal(fxp.FromInteger(15), brawling.LevelData.Level,
+				"%s: so the grant merges into it, and the sheet keeps the merged level", tc.name)
+		}
+	})
+
 	t.Run("item another grant puts on the sheet too", func(t *testing.T) {
 		newGrant := func() *Grant {
 			return newTraitGrant(newGrantLeveledTrait("X", fxp.One), fxp.One, grantmerge.Ignore)
@@ -991,6 +1066,40 @@ func TestGrantDoesNotMeetItsCarriersPrereqs(t *testing.T) {
 			training.Prereq = newPrereqListRequiringSkill("Brawling", fxp.FromInteger(12))
 			return training, func() fxp.Int { return brawling.LevelData.Level }
 		}, level: fxp.Ten},
+		{name: "levels into a skill read by a script", carry: func(_ check.Checker, e *Entity) (*Trait, func() fxp.Int) {
+			brawling := addSkill(e, "Brawling", fxp.One)
+			training := addTraitWithFeatures(e, "Training",
+				newSkillGrant(newEasySkill("Brawling", fxp.One), fxp.Three, grantmerge.MergeLevels))
+			training.Prereq = NewPrereqList()
+			addScriptPrereq(training.Prereq, `entity.skillLevel("Brawling", "", false) >= 12`)
+			return training, func() fxp.Int { return brawling.LevelData.Level }
+		}, level: fxp.Ten},
+		{name: "levels into a skill found by a script", carry: func(_ check.Checker, e *Entity) (*Trait, func() fxp.Int) {
+			brawling := addSkill(e, "Brawling", fxp.One)
+			training := addTraitWithFeatures(e, "Training",
+				newSkillGrant(newEasySkill("Brawling", fxp.One), fxp.Three, grantmerge.MergeLevels))
+			training.Prereq = NewPrereqList()
+			addScriptPrereq(training.Prereq, `entity.findSkills("Brawling").some(s => s.level >= 12)`)
+			return training, func() fxp.Int { return brawling.LevelData.Level }
+		}, level: fxp.Ten},
+		{name: "levels into a trait read by a script", carry: func(_ check.Checker, e *Entity) (*Trait, func() fxp.Int) {
+			magery := addTrait(e, newGrantLeveledTrait("Magery", fxp.Ten))
+			gifted := addTraitWithFeatures(e, "Gifted",
+				newTraitGrant(newGrantLeveledTrait("Magery", fxp.Ten), fxp.One, grantmerge.MergeLevels))
+			gifted.Prereq = NewPrereqList()
+			addScriptPrereq(gifted.Prereq, `entity.traitLevel("Magery") >= 2`)
+			return gifted, magery.CurrentLevel
+		}, level: fxp.One},
+		{name: "levels into a spell found by a script", carry: func(_ check.Checker, e *Entity) (*Trait, func() fxp.Int) {
+			light := newHardSpell("Light", fxp.One)
+			light.SetDataOwner(e)
+			e.Spells = append(e.Spells, light)
+			magery := addTraitWithFeatures(e, "Magery",
+				newSpellGrant(newHardSpell("Light", fxp.One), fxp.Two, grantmerge.MergeLevels))
+			magery.Prereq = NewPrereqList()
+			addScriptPrereq(magery.Prereq, `entity.findSpells("Light").some(s => s.level >= 10)`)
+			return magery, func() fxp.Int { return light.LevelData.Level }
+		}, level: fxp.Eight},
 		{name: "points into a skill", carry: func(_ check.Checker, e *Entity) (*Trait, func() fxp.Int) {
 			brawling := addSkill(e, "Brawling", fxp.One)
 			training := addTraitWithFeatures(e, "Training",

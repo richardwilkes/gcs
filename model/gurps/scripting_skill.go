@@ -25,7 +25,9 @@ func newScriptSkill(r *goja.Runtime, skill *Skill) *goja.Object {
 	m["name"] = func() goja.Value { return r.ToValue(skill.NameWithReplacements()) }
 	m["notes"] = scriptNotes(r, skill)
 	if skill.Container() {
-		m["children"] = func() goja.Value { return scriptObjects(r, skill.Children, (*Skill).Enabled, newScriptSkill) }
+		m["children"] = func() goja.Value {
+			return scriptObjects(r, skill.Children, scriptSees((*Skill).Enabled), newScriptSkill)
+		}
 		m["find"] = func() goja.Value {
 			return r.ToValue(func(call goja.FunctionCall) goja.Value {
 				name := callArgAsString(call, 0)
@@ -60,35 +62,45 @@ func newScriptSkill(r *goja.Runtime, skill *Skill) *goja.Object {
 			if entity == nil {
 				return r.ToValue(0)
 			}
-			updateSkillLevelForScript(entity, skill)
-			return r.ToValue(scriptLevel(skill.LevelData))
+			return r.ToValue(scriptLevel(updateSkillLevelForScript(entity, skill)))
 		}
 		m["relativeLevel"] = func() goja.Value {
 			entity := EntityFromNode(skill)
 			if entity == nil {
 				return r.ToValue(0)
 			}
-			updateSkillLevelForScript(entity, skill)
-			return r.ToValue(scriptRelativeLevel(skill.LevelData))
+			return r.ToValue(scriptRelativeLevel(updateSkillLevelForScript(entity, skill)))
 		}
 		addScriptWeapons(r, m, func() []*Weapon { return skill.Weapons })
 	}
 	return r.NewDynamicObject(NewScriptObject(r, m))
 }
 
-// updateSkillLevelForScript recalculates the skill's level, guarding against a script that resolves a skill's level via
-// itself. The guard is removed with a defer so that a panic inside UpdateLevel (recovered further up by xos.SafeCall)
-// can't leave the exclusion registered on the entity, which would permanently freeze that skill's script-visible level.
-func updateSkillLevelForScript(entity *Entity, skill *Skill) {
+// updateSkillLevelForScript returns the skill's level for a script, as scriptSkillLevel gives it, guarding against a
+// script that resolves a skill's level via itself, which gets the level recorded. The guard is removed with a defer so
+// that a panic inside UpdateLevel (recovered further up by xos.SafeCall) can't leave the exclusion registered on the
+// entity, which would permanently freeze that skill's script-visible level.
+func updateSkillLevelForScript(entity *Entity, skill *Skill) Level {
 	name := skill.NameWithReplacements()
 	specialization := skill.SpecializationWithReplacements()
 	optionalSpecialization := skill.OptionalSpecializationWithReplacements()
 	if entity.isSkillLevelResolutionExcluded(name, specialization, optionalSpecialization) {
-		return
+		return skill.LevelData
 	}
 	entity.registerSkillLevelResolutionExclusion(name, specialization, optionalSpecialization)
 	defer entity.unregisterSkillLevelResolutionExclusion(name, specialization, optionalSpecialization)
+	return scriptSkillLevel(entity, skill)
+}
+
+// scriptSkillLevel returns the skill's level for a script, recalculated so that it is current. While the script runs
+// for the prerequisites of an item carrying grants, the level is computed as those prerequisites see it, without what
+// the grants gave the skill, and is not recorded, since the sheet has the level with them; see Skill.levelForPrereqsOf.
+func scriptSkillLevel(entity *Entity, skill *Skill) Level {
+	if entity.carriesGrant(entity.judging) {
+		return skill.calculateLevelWith(entity.judging, skill.bestDefaultWithPoints(nil), nil)
+	}
 	skill.UpdateLevel()
+	return skill.LevelData
 }
 
 // findScriptSkills is findScriptNodes for skills, which additionally match on a specialization: a skill's required or

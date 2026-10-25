@@ -200,14 +200,24 @@ type scriptNodeKind[T Node[T]] struct {
 }
 
 // findScriptNodes collects the wrappers of every enabled node under top, containers included, whose name matches name
-// and whose tags include tag -- an empty name or tag matches anything -- and which keep accepts, when keep is given.
+// and whose tags include tag -- an empty name or tag matches anything -- and which keep accepts, when keep is given,
+// less those scriptSees leaves out.
 func findScriptNodes[T Node[T]](r *goja.Runtime, name, tag string, kind scriptNodeKind[T], keep func(T) bool,
 	top ...T,
 ) goja.Value {
-	return traversedScriptObjects(r, func(node T) bool {
+	return traversedScriptObjects(r, scriptSees(func(node T) bool {
 		return (keep == nil || keep(node)) && (name == "" || strings.EqualFold(kind.nameOf(node), name)) &&
 			matchTag(tag, kind.tagsOf(node))
-	}, false, kind.ctor, top...)
+	}), false, kind.ctor, top...)
+}
+
+// scriptSees returns the predicate keep narrowed to the nodes a script may see: a row a grant of the item whose
+// prerequisites are being judged put on the sheet is hidden from a script run for those prerequisites, as it is from
+// the prerequisites themselves; see Entity.excludedWhileJudging. At any other time nothing is hidden.
+func scriptSees[T Node[T]](keep func(T) bool) func(T) bool {
+	return func(node T) bool {
+		return keep(node) && !EntityFromNode(node).excludedWhileJudging(node)
+	}
 }
 
 // matchTag reports whether tags includes tag, ignoring case. An empty tag matches anything.

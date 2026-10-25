@@ -82,6 +82,15 @@ func addSkillPrereq(list *PrereqList, name string, level fxp.Int) *SkillPrereq {
 	return p
 }
 
+// addScriptPrereq appends to the list a prerequisite met when the script's result is, and returns it.
+func addScriptPrereq(list *PrereqList, script string) *ScriptPrereq {
+	p := NewScriptPrereq()
+	p.Parent = list
+	p.Script = script
+	list.Prereqs = append(list.Prereqs, p)
+	return p
+}
+
 // newSkillBonusTo returns a flat bonus to the skill with the given name.
 func newSkillBonusTo(name string, amount fxp.Int) *SkillBonus {
 	bonus := NewSkillBonus()
