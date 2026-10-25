@@ -246,6 +246,7 @@ func (p *featuresPanel) grantPicker(path string, g *gurps.Grant) *unison.Panel {
 	panel.AddChild(filter)
 	scroll := unison.NewScrollPanel()
 	scroll.SetContent(list, behavior.Follow, behavior.Fill)
+	scroll.SetBorder(unison.NewLineBorder(unison.ThemeSurfaceEdge, geom.Size{}, geom.NewUniformInsets(1), false))
 	height := xmath.Ceil(list.Factory.CellHeight()) * grantPickerRows
 	scroll.SetLayoutData(&unison.FlexLayoutData{
 		HAlign:   align.Fill,
