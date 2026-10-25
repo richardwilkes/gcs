@@ -150,6 +150,8 @@ type Entity struct {
 	derivedStateChanged bool
 	// profileReadByScript records whether a script has read one of the profile's fields; see ProfileReadByScript.
 	profileReadByScript bool
+	// judging is the item whose prerequisites are being judged, while they are; see JudgingPrereqsOf.
+	judging any
 }
 
 // NewEntityFromFile loads an Entity from a file.
@@ -1354,7 +1356,7 @@ func (e *Entity) SwingFor(st int) dice.Dice {
 func (e *Entity) AttributeBonusFor(attributeID string, limitation stlimit.Option, tooltip *xbytes.InsertBuffer) fxp.Int {
 	var total fxp.Int
 	for _, one := range e.features.attributeBonuses {
-		if one.ActualLimitation() == limitation && one.Attribute == attributeID {
+		if one.ActualLimitation() == limitation && one.Attribute == attributeID && !e.bonusExcluded(one) {
 			total += one.AdjustedAmount()
 			one.AddToTooltip(tooltip)
 		}
@@ -1376,12 +1378,34 @@ func (e *Entity) CostReductionFor(attributeID string) fxp.Int {
 	return total.Max(0)
 }
 
+// JudgingPrereqsOf runs fn while the prerequisites of exclude are judged: what the grants exclude carries put on the
+// sheet is left out of the bonuses, attributes and skill defaults they read, as the rows themselves are left out (see
+// excludedFromPrereqs), so that an item never meets its own prerequisites with what it grants. Scripts see the sheet
+// whole, since what they compute is kept for the rest of the pass; see resolveScript.
+func (e *Entity) JudgingPrereqsOf(exclude any, fn func()) {
+	if e == nil {
+		fn()
+		return
+	}
+	saved := e.judging
+	e.judging = exclude
+	defer func() { e.judging = saved }()
+	fn()
+}
+
+// bonusExcluded returns true if the bonus is left out while prerequisites are judged, being carried by an item a grant
+// of the item judged put on the sheet; see JudgingPrereqsOf.
+func (e *Entity) bonusExcluded(bonus Bonus) bool {
+	return e.judging != nil && grantedFor(e.judging, bonus.Owner())
+}
+
 // sumBonuses returns the total adjusted amount of the bonuses in the list that match, adding each of them to the
-// tooltip, which may be nil. match receives the bonus along with the nameable replacements of its owner.
-func sumBonuses[T Bonus](list []T, tooltip *xbytes.InsertBuffer, match func(bonus T, replacements map[string]string) bool) fxp.Int {
+// tooltip, which may be nil. match receives the bonus along with the nameable replacements of its owner. The bonuses
+// bonusExcluded leaves out are passed over.
+func sumBonuses[T Bonus](e *Entity, list []T, tooltip *xbytes.InsertBuffer, match func(bonus T, replacements map[string]string) bool) fxp.Int {
 	var total fxp.Int
 	for _, bonus := range list {
-		if match(bonus, bonusReplacements(bonus)) {
+		if !e.bonusExcluded(bonus) && match(bonus, bonusReplacements(bonus)) {
 			total += bonus.AdjustedAmount()
 			bonus.AddToTooltip(tooltip)
 		}
@@ -1390,11 +1414,12 @@ func sumBonuses[T Bonus](list []T, tooltip *xbytes.InsertBuffer, match func(bonu
 }
 
 // collectBonuses returns the bonuses in the list that match, adding each of them to the tooltip, which may be nil.
-// match receives the bonus along with the nameable replacements of its owner.
-func collectBonuses[T Bonus](list []T, tooltip *xbytes.InsertBuffer, match func(bonus T, replacements map[string]string) bool) []T {
+// match receives the bonus along with the nameable replacements of its owner. The bonuses bonusExcluded leaves out are
+// passed over.
+func collectBonuses[T Bonus](e *Entity, list []T, tooltip *xbytes.InsertBuffer, match func(bonus T, replacements map[string]string) bool) []T {
 	var result []T
 	for _, bonus := range list {
-		if match(bonus, bonusReplacements(bonus)) {
+		if !e.bonusExcluded(bonus) && match(bonus, bonusReplacements(bonus)) {
 			result = append(result, bonus)
 			bonus.AddToTooltip(tooltip)
 		}
@@ -1404,7 +1429,7 @@ func collectBonuses[T Bonus](list []T, tooltip *xbytes.InsertBuffer, match func(
 
 // TraitMaxLevelBonusesFor returns the "traits whose name" max-level bonuses that match the given name and tags.
 func (e *Entity) TraitMaxLevelBonusesFor(name string, tags []string, tooltip *xbytes.InsertBuffer) []*TraitMaxLevelBonus {
-	return collectBonuses(e.features.traitMaxLevelBonuses, tooltip,
+	return collectBonuses(e, e.features.traitMaxLevelBonuses, tooltip,
 		func(bonus *TraitMaxLevelBonus, replacements map[string]string) bool {
 			return bonus.SelectionType == traitsel.TraitWithName &&
 				bonus.NameCriteria.Matches(replacements, name) &&
@@ -1414,7 +1439,7 @@ func (e *Entity) TraitMaxLevelBonusesFor(name string, tags []string, tooltip *xb
 
 // EquipmentMaxUsesBonusesFor returns the "equipment whose name" max-uses bonuses that match the given name and tags.
 func (e *Entity) EquipmentMaxUsesBonusesFor(name string, tags []string, tooltip *xbytes.InsertBuffer) []*EquipmentMaxUsesBonus {
-	return collectBonuses(e.features.maxUsesBonuses, tooltip,
+	return collectBonuses(e, e.features.maxUsesBonuses, tooltip,
 		func(bonus *EquipmentMaxUsesBonus, replacements map[string]string) bool {
 			return bonus.SelectionType == equipmentsel.EquipmentWithName &&
 				bonus.NameCriteria.Matches(replacements, name) &&
@@ -1467,7 +1492,7 @@ func (e *Entity) addDRBonusesFor(locationID string, tooltip *xbytes.InsertBuffer
 
 // SkillBonusFor returns the total bonus for the matching skill bonuses.
 func (e *Entity) SkillBonusFor(name, specialization, optionalSpecialization string, tags []string, tooltip *xbytes.InsertBuffer) fxp.Int {
-	return sumBonuses(e.features.skillBonuses, tooltip, func(bonus *SkillBonus, replacements map[string]string) bool {
+	return sumBonuses(e, e.features.skillBonuses, tooltip, func(bonus *SkillBonus, replacements map[string]string) bool {
 		return bonus.SelectionType == skillsel.Name &&
 			bonus.NameCriteria.Matches(replacements, name) &&
 			bonus.SpecializationCriteria.Matches(replacements, specialization) &&
@@ -1478,7 +1503,7 @@ func (e *Entity) SkillBonusFor(name, specialization, optionalSpecialization stri
 
 // SkillPointBonusFor returns the total point bonus for the matching skill point bonuses.
 func (e *Entity) SkillPointBonusFor(name, specialization, optionalSpecialization string, tags []string, tooltip *xbytes.InsertBuffer) fxp.Int {
-	return sumBonuses(e.features.skillPointBonuses, tooltip,
+	return sumBonuses(e, e.features.skillPointBonuses, tooltip,
 		func(bonus *SkillPointBonus, replacements map[string]string) bool {
 			return bonus.NameCriteria.Matches(replacements, name) &&
 				bonus.SpecializationCriteria.Matches(replacements, specialization) &&
@@ -1495,25 +1520,25 @@ type spellMatcher interface {
 
 // sumSpellBonuses returns the total adjusted amount of the bonuses in the list that match the given spell, adding each
 // of them to the tooltip, which may be nil.
-func sumSpellBonuses[T spellMatcher](list []T, name, powerSource string, colleges, tags []string, tooltip *xbytes.InsertBuffer) fxp.Int {
-	return sumBonuses(list, tooltip, func(bonus T, replacements map[string]string) bool {
+func sumSpellBonuses[T spellMatcher](e *Entity, list []T, name, powerSource string, colleges, tags []string, tooltip *xbytes.InsertBuffer) fxp.Int {
+	return sumBonuses(e, list, tooltip, func(bonus T, replacements map[string]string) bool {
 		return bonus.MatchesSpell(replacements, name, powerSource, colleges, tags)
 	})
 }
 
 // SpellBonusFor returns the total bonus for the matching spell bonuses.
 func (e *Entity) SpellBonusFor(name, powerSource string, colleges, tags []string, tooltip *xbytes.InsertBuffer) fxp.Int {
-	return sumSpellBonuses(e.features.spellBonuses, name, powerSource, colleges, tags, tooltip)
+	return sumSpellBonuses(e, e.features.spellBonuses, name, powerSource, colleges, tags, tooltip)
 }
 
 // SpellPointBonusFor returns the total point bonus for the matching spell point bonuses.
 func (e *Entity) SpellPointBonusFor(name, powerSource string, colleges, tags []string, tooltip *xbytes.InsertBuffer) fxp.Int {
-	return sumSpellBonuses(e.features.spellPointBonuses, name, powerSource, colleges, tags, tooltip)
+	return sumSpellBonuses(e, e.features.spellPointBonuses, name, powerSource, colleges, tags, tooltip)
 }
 
 // TraitBonusFor returns the total bonus for the matching trait bonuses.
 func (e *Entity) TraitBonusFor(name string, tags []string, tooltip *xbytes.InsertBuffer) fxp.Int {
-	return sumBonuses(e.features.traitBonuses, tooltip, func(bonus *TraitBonus, replacements map[string]string) bool {
+	return sumBonuses(e, e.features.traitBonuses, tooltip, func(bonus *TraitBonus, replacements map[string]string) bool {
 		return bonus.NameCriteria.Matches(replacements, name) &&
 			bonus.TagsCriteria.MatchesList(replacements, tags...)
 	})
@@ -1594,7 +1619,7 @@ func (e *Entity) addNamedWeaponBonusesFor(w *Weapon, usageQualifier, damageType 
 // NamedWeaponSkillBonusesFor returns the skill bonuses that select weapons by name and match the given weapon, usage,
 // damage type and tags.
 func (e *Entity) NamedWeaponSkillBonusesFor(w *Weapon, usage, damageType string, tags []string, tooltip *xbytes.InsertBuffer) []*SkillBonus {
-	return collectBonuses(e.features.skillBonuses, tooltip, func(bonus *SkillBonus, replacements map[string]string) bool {
+	return collectBonuses(e, e.features.skillBonuses, tooltip, func(bonus *SkillBonus, replacements map[string]string) bool {
 		return bonus.SelectionType == skillsel.WeaponsWithName &&
 			w.matchesName(bonus.NameCriteria, &bonus.WeaponOwnerCriteria, replacements) &&
 			bonus.SpecializationCriteria.Matches(replacements, usage) &&
@@ -1644,7 +1669,7 @@ func (e *Entity) BestSkillNamed(name, specialization string, requirePoints bool,
 func (e *Entity) SkillNamed(name, specialization string, requirePoints bool, excludes map[string]bool) []*Skill {
 	var list []*Skill
 	Traverse(func(sk *Skill) bool {
-		if !strings.EqualFold(sk.NameWithReplacements(), name) {
+		if !strings.EqualFold(sk.NameWithReplacements(), name) || grantedFor(e.judging, sk) {
 			return false
 		}
 		if specialization != "" && !strings.EqualFold(sk.SpecializationWithReplacements(), specialization) &&
@@ -1700,13 +1725,14 @@ func skillSpecializationMatcherMatches(specialization criteria.TextMatcher, requ
 }
 
 // SkillMatching returns a list of skills whose name and specialization match the given criteria. The tests run in
-// the order SkillNamed runs them, and for the same reason.
+// the order SkillNamed runs them, and for the same reason. Both leave out the skills the grants of the item whose
+// prerequisites are being judged put on the sheet; see JudgingPrereqsOf.
 func (e *Entity) SkillMatching(nameCriteria, specializationCriteria criteria.Text, replacements map[string]string, requirePoints bool, excludes map[string]bool) []*Skill {
 	var list []*Skill
 	name := nameCriteria.Matcher(replacements)
 	specialization := specializationCriteria.Matcher(replacements)
 	Traverse(func(sk *Skill) bool {
-		if !name.Matches(sk.NameWithReplacements()) {
+		if !name.Matches(sk.NameWithReplacements()) || grantedFor(e.judging, sk) {
 			return false
 		}
 		if !skillSpecializationMatcherMatches(specialization, sk.SpecializationWithReplacements(),
@@ -1981,6 +2007,24 @@ func (e *Entity) ResolveAttributeCurrent(attrID string) fxp.Int {
 		return e.Attributes.Current(attrID)
 	}
 	return fxp.Min
+}
+
+// resolveAttributeCurrentForPrereqs is ResolveAttributeCurrent as the prerequisites being judged see the attribute:
+// with the bonuses from what the grants of the item judged put on the sheet left out (see JudgingPrereqsOf), where its
+// own bonus holds them until the next pass.
+func (e *Entity) resolveAttributeCurrentForPrereqs(attrID string) fxp.Int {
+	if e == nil || !e.carriesGrant(e.judging) {
+		return e.ResolveAttributeCurrent(attrID)
+	}
+	attr, ok := e.Attributes.Set[attrID]
+	if !ok {
+		return e.ResolveAttributeCurrent(attrID)
+	}
+	bonus := e.AttributeBonusFor(attrID, stlimit.None, nil)
+	if def := attr.AttributeDef(); def != nil && !def.AllowsDecimal() {
+		bonus = bonus.Floor()
+	}
+	return attr.currentWithBonus(bonus)
 }
 
 // PreservesUserDesc returns true if the user description widget should be preserved when written to disk. Normally,

@@ -153,7 +153,10 @@ func (p *PrereqList) AppliesWithParentsAt(entity *Entity) bool {
 // the reason a script gives, which is the error when it couldn't run. Each script runs at most once, and none in a
 // skipped list does. Without an entity, the list is met and nothing is visited.
 func (p *PrereqList) Evaluate(entity *Entity, exclude any, visit func(one Prereq, result CheckResult, reason string)) CheckResult {
-	result, _ := p.evaluate(&prereqEvaluation{entity: entity, exclude: exclude, visit: visit}, nil, nil, p.All, false)
+	var result CheckResult
+	entity.JudgingPrereqsOf(exclude, func() {
+		result, _ = p.evaluate(&prereqEvaluation{entity: entity, exclude: exclude, visit: visit}, nil, nil, p.All, false)
+	})
 	return result
 }
 
@@ -169,8 +172,11 @@ func (p *PrereqList) Evaluate(entity *Entity, exclude any, visit func(one Prereq
 // that failed when the list did. This list is treated as though its caller were an "all of" list, so the items of an
 // "all of" list are written without a heading.
 func (p *PrereqList) Satisfied(entity *Entity, exclude any, buffer *xbytes.InsertBuffer, prefix string, hasEquipmentPenalty *bool) bool {
-	result, _ := p.evaluate(&prereqEvaluation{entity: entity, exclude: exclude, prefix: prefix}, buffer,
-		hasEquipmentPenalty, p.All, false)
+	var result CheckResult
+	entity.JudgingPrereqsOf(exclude, func() {
+		result, _ = p.evaluate(&prereqEvaluation{entity: entity, exclude: exclude, prefix: prefix}, buffer,
+			hasEquipmentPenalty, p.All, false)
+	})
 	return result == CheckMet || result == CheckSkipped
 }
 

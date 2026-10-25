@@ -64,8 +64,11 @@ func (p *skillsProvider) ProcessDropData(_, to *unison.Table[*Node[*gurps.Skill]
 			if entity := dataOwner.OwningEntity(); entity != nil {
 				for _, row := range to.SelectedRows(true) {
 					gurps.Traverse(func(skill *gurps.Skill) bool {
-						gurps.ResolveEmptyTechLevel(skill, entity.Profile.TechLevel)
-						skill.UpdateLevel()
+						// A granted skill changes only with its grant.
+						if !gurps.IsGranted(skill) {
+							gurps.ResolveEmptyTechLevel(skill, entity.Profile.TechLevel)
+							skill.UpdateLevel()
+						}
 						return false
 					}, false, true, row.Data())
 				}

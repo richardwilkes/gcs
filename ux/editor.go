@@ -307,6 +307,11 @@ func (e *editor[N, D]) targetName() string {
 	return e.target.String()
 }
 
+// editTarget returns the item the editor edits, for a caller that doesn't know its kind.
+func (e *editor[N, D]) editTarget() any {
+	return e.target
+}
+
 func (e *editor[N, D]) Target() N {
 	return e.target
 }

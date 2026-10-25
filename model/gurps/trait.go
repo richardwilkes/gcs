@@ -86,9 +86,11 @@ type Trait struct {
 	// saved.
 	prereqContradicted bool
 	grant              grantState
-	// savedCurrentLevel is the level recorded in the "calc" object of the file the trait was loaded from. It is only
-	// kept by a load that asks for it (see NewEntityFromFileWithSavedCalc) and only read by StringWithSavedCalc.
+	// savedCurrentLevel is the level recorded in the "calc" object of the file the trait was loaded from, and
+	// savedUnsatisfied whether that object recorded unmet prerequisites. They are only kept by a load that asks for
+	// them (see NewEntityFromFileWithSavedCalc) and only read by StringWithSavedCalc.
 	savedCurrentLevel *fxp.Int
+	savedUnsatisfied  bool
 }
 
 // TraitData holds the Trait data that is written to disk.
@@ -379,7 +381,9 @@ func (t *Trait) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 	// A load that keeps the saved calc never attaches the trait, yet its title shows its modifiers.
 	AttachModifiers(t, t.Modifiers)
 	if keepSavedCalc(dec) {
-		t.savedCurrentLevel = savedCalc[savedTraitCalc](localData.Calc).CurrentLevel
+		saved := savedCalc[savedTraitCalc](localData.Calc)
+		t.savedCurrentLevel = saved.CurrentLevel
+		t.savedUnsatisfied = saved.UnsatisfiedReason != ""
 	}
 	t.Replacements = nameable.Normalize(t.Replacements)
 	migrateLegacyText(&t.LocalNotes, localData.ExprNotes)
@@ -640,7 +644,7 @@ func (t *Trait) internalCurrentLevel(tooltip *xbytes.InsertBuffer) fxp.Int {
 }
 
 // currentLevelExcept is internalCurrentLevel without the levels grants carried by exclude merged in; see
-// grantState.levelsExcept.
+// grantState.applyLevelNotes.
 func (t *Trait) currentLevelExcept(exclude any, tooltip *xbytes.InsertBuffer) fxp.Int {
 	if !t.IsLeveled() {
 		return 0
@@ -657,8 +661,8 @@ func (t *Trait) currentLevelExcept(exclude any, tooltip *xbytes.InsertBuffer) fx
 	if entity := EntityFromNode(t); entity != nil {
 		levelAdjustment = entity.TraitBonusFor(t.NameWithReplacements(), t.Tags, tooltip)
 	}
-	addGrantNotesToTooltip(t.grant.levelNotes, tooltip)
-	return (t.Levels + levelAdjustment + t.grant.levelsExcept(exclude)).Max(0)
+	// A level a grant keeps is compared with the trait's own, before the bonuses, which the kept one gets too.
+	return (t.grant.applyLevelNotes(exclude, t.Levels, tooltip) + levelAdjustment).Max(0)
 }
 
 // ResolvedMaxLevels returns the maximum level for this trait, resolving the MaxLevels expression (a plain number or an
@@ -1073,16 +1077,18 @@ func (t *Trait) titleNotes(before bool) []string {
 // a trait loaded by one of the loaders that keep the saved calc (NewEntityFromFileWithSavedCalc and its counterpart for
 // templates), whose entity, if it has one, has not been recalculated and so cannot resolve those bonuses itself. A
 // trait loaded any other way, or from a file written before the level was recorded, falls back to its unadjusted
-// level. So does a disabled trait, or a granted one whose grant was not in effect, whose recorded level is zero where
-// String shows the level it would have if enabled; the record is all that tells such a trait apart, since the grants
-// are judged only by a recalculation. The title notes follow, as they do in String, though a modifier shown there that
-// takes its level from the trait shows the trait's level without bonuses.
+// level. So does a trait that was disabled, by the user or for unmet prerequisites the file recorded, or a granted one
+// whose grant was not in effect, whose recorded level is zero where String shows the level it would have if enabled.
+// Whether the grant was in effect is known only from that zero, since the grants are judged only by a recalculation, so
+// a granted trait at level zero falls back too. The title notes follow, as they do in String, though a modifier shown
+// there that takes its level from the trait shows the trait's level without bonuses.
 func (t *Trait) StringWithSavedCalc() string {
 	if !t.IsLeveled() {
 		return t.NameWithReplacements() + parenthetical(t.TitleNotes())
 	}
 	level := t.Levels.Max(0)
-	if t.savedCurrentLevel != nil && *t.savedCurrentLevel != 0 {
+	if t.savedCurrentLevel != nil && !userDisabled(t) && !t.savedUnsatisfied &&
+		(*t.savedCurrentLevel != 0 || t.Granted == nil) {
 		level = *t.savedCurrentLevel
 	}
 	return t.NameWithReplacements() + " " + level.String() + parenthetical(t.TitleNotes())

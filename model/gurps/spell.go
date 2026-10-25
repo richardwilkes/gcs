@@ -310,8 +310,8 @@ func (s *Spell) Clone(from LibraryFile, owner DataOwner, parent *Spell, mode Clo
 	other.copyFrom(other, &s.SpellEditData, s.Container(), false, mode)
 	other.Granted = cloneGrantedBy(s.Granted, s, other)
 	if s.Granted != nil && other.Granted == nil {
-		// Where no grant claims the copy, it is bought with the points the grant stood for.
-		other.Points = s.grant.points
+		// Where no grant claims the copy, it is bought with the points of the tier the grant stood for.
+		other.Points = EntityFromNode(s).grantTierPointsFor(s)
 	}
 	if EntityFromNode(other) == nil {
 		// Disabling only means something on a sheet.
@@ -638,10 +638,12 @@ func (s *Spell) CalculateLevel() Level {
 }
 
 // levelForPrereqsOf returns the spell's level as the prerequisites of exclude see it: the level the last pass recorded,
-// unless grants carried by exclude gave the spell levels or points, in which case it is computed without them, since
-// an item never meets its own prerequisites with what it grants.
+// unless exclude carries a grant, in which case it is computed afresh without what the grants exclude carries gave the
+// spell, nor what the items they put on the sheet give it through their bonuses (see Entity.JudgingPrereqsOf), since an
+// item never meets its own prerequisites with what it grants. The grants need not be in effect this pass, since the
+// recorded level may hold what they gave in the last.
 func (s *Spell) levelForPrereqsOf(exclude any) fxp.Int {
-	if !s.grant.contributedBy(exclude) {
+	if !EntityFromNode(s).carriesGrant(exclude) {
 		return s.LevelData.Level
 	}
 	return s.calculateLevelExcept(exclude, s.adjustedPointsExcept(exclude, nil)).Level
@@ -653,7 +655,7 @@ func (s *Spell) calculateLevel(points fxp.Int) Level {
 }
 
 // calculateLevelExcept is calculateLevel without the levels grants carried by exclude merged into the spell; see
-// grantState.levelsExcept.
+// grantState.applyLevelNotes.
 func (s *Spell) calculateLevelExcept(exclude any, points fxp.Int) Level {
 	if s.IsRitualMagic() {
 		return s.grant.applyLevels(exclude, CalculateRitualMagicSpellLevel(EntityFromNode(s), s.NameWithReplacements(),
@@ -1025,6 +1027,13 @@ func (s *Spell) LevelWithGrants(level Level) Level {
 // grants.
 func (s *Spell) pointsForPrereqsOf(exclude any) fxp.Int {
 	return s.adjustedPointsExcept(exclude, nil)
+}
+
+// pointsWithoutGrants returns the spell's points adjusted for the bonuses, as AdjustedPoints adjusts them, but without
+// what grants gave it.
+func (s *Spell) pointsWithoutGrants() fxp.Int {
+	return AdjustedPointsForNonContainerSpell(EntityFromNode(s), s.Points, s.NameWithReplacements(),
+		s.PowerSourceWithReplacements(), s.CollegeWithReplacements(), s.Tags, nil)
 }
 
 // adjustedPointsExcept is AdjustedPoints without the points grants carried by exclude gave the spell; see

@@ -68,12 +68,13 @@ type grantState struct {
 	// effect, and treats the item's prerequisites as met.
 	inEffect bool
 	bypass   bool
-	// levels and points are what grants gave the item: merged levels, and a granted skill's or spell's own points
-	// plus any merged into it.
-	levels     fxp.Int
-	points     fxp.Int
+	// levelNotes and pointNotes are what each grant gave the item: the levels merged into it or kept for it, and a
+	// granted skill's or spell's own points plus any merged into it, of which points is the total. keepLower is set
+	// when the item is a disadvantage, for which the level a Keep Highest grant keeps is the lower one.
 	levelNotes []grantNote
 	pointNotes []grantNote
+	points     fxp.Int
+	keepLower  bool
 }
 
 // grantItem is what a grant needs of its item, whatever its kind.
@@ -85,16 +86,19 @@ type grantItem interface {
 	SyncWithSource()
 }
 
-// grantNote is what one grant gave an item: the amount, what carries the grant and that carrier's name.
+// grantNote is what one grant gave an item: the amount, what carries the grant and that carrier's name. The amount of
+// a keep note, which a Keep Highest grant leaves, is the level the grant keeps the item at rather than an addition.
 type grantNote struct {
 	owner  any
 	source string
 	amount fxp.Int
+	keep   bool
 }
 
-// itemLabel returns the name of the item the grant gives, with the level or tier it gives.
-func (g *Grant) itemLabel() string {
-	name := g.ItemName()
+// itemLabel returns the name of the item the grant gives, with the level or tier it gives. replacements are those of
+// what carries the grant; see itemNameWith.
+func (g *Grant) itemLabel(replacements map[string]string) string {
+	name := g.itemNameWith(replacements)
 	switch {
 	case !g.Leveled():
 		return name
@@ -114,10 +118,10 @@ func (g *Grant) level() fxp.Int {
 }
 
 // mergeSummary returns what the grant does to the item already on the sheet, for the tooltip of what carries it. label
-// is the grant's itemLabel.
-func (g *Grant) mergeSummary(label string) string {
-	name := g.ItemName()
-	switch g.effectiveMerge() {
+// is the grant's itemLabel, and replacements are those of what carries the grant; see itemNameWith.
+func (g *Grant) mergeSummary(label string, replacements map[string]string) string {
+	name := g.itemNameWith(replacements)
+	switch g.EffectiveMerge() {
 	case grantmerge.MergeLevels:
 		levels := g.level()
 		switch {
@@ -157,7 +161,9 @@ func (g *Grant) item() grantItem {
 }
 
 // SetItem makes the grant give a copy of the item, a trait, skill or spell found in the library file, or a new blank
-// item of the grant's kind when item is nil. A leveled trait is granted at its level.
+// item of the grant's kind when item is nil. A leveled trait is granted at its level. Any grants the item or its
+// modifiers carry are left out of the copy, as SyncItemWithSource leaves them out, since a granted item can't grant
+// anything.
 func (g *Grant) SetItem(item any, from LibraryFile) {
 	g.Trait, g.Skill, g.Spell = nil, nil, nil
 	switch one := item.(type) {
@@ -180,7 +186,8 @@ func (g *Grant) SetItem(item any, from LibraryFile) {
 			g.Trait = NewTrait(nil, nil, false)
 		}
 	}
-	g.Merge = g.effectiveMerge()
+	DropGrants(g.item())
+	g.Merge = g.EffectiveMerge()
 }
 
 // ItemHasSource returns true if the grant's copy of its item came from a library, and so can be synced with it.
@@ -191,7 +198,7 @@ func (g *Grant) ItemHasSource() bool {
 
 // SyncItemWithSource brings the grant's copy of its item in line with the library data it came from. The copy keeps
 // its ID, which ties the grant to the item it put on the sheet, so that item is refreshed rather than replaced. Any
-// grants the library's item has gained are dropped, since a granted item can't grant anything.
+// grants the library's item has gained are dropped, as SetItem drops them, since a granted item can't grant anything.
 func (g *Grant) SyncItemWithSource() {
 	item := g.item()
 	if item == nil {
@@ -201,13 +208,17 @@ func (g *Grant) SyncItemWithSource() {
 	DropGrants(item)
 }
 
-// DropGrants removes the grants among the features of a trait, skill, spell or modifier, for an item a grant gives or a
-// modifier of one, since a granted item grants nothing. Anything else is left alone.
+// DropGrants removes the grants among the features of a trait, skill, spell or modifier, and of a trait's modifiers,
+// for an item a grant gives or a modifier of one, since a granted item grants nothing. Anything else is left alone.
 func DropGrants(item any) {
 	var list *Features
 	switch one := item.(type) {
 	case *Trait:
 		list = &one.Features
+		Traverse(func(mod *TraitModifier) bool {
+			DropGrants(mod)
+			return false
+		}, false, false, one.Modifiers...)
 	case *Skill:
 		list = &one.Features
 	case *Spell:
@@ -320,7 +331,8 @@ func (g *Grant) Key() tid.TID {
 	return ""
 }
 
-// ItemName returns the name of the granted item, or an empty string if nothing has been chosen yet.
+// ItemName returns the name of the granted item, or an empty string if nothing has been chosen yet. The placeholders
+// the item leaves to what carries the grant are left as they are; see itemNameWith.
 func (g *Grant) ItemName() string {
 	switch item := g.item().(type) {
 	case *Trait:
@@ -330,6 +342,12 @@ func (g *Grant) ItemName() string {
 	default:
 		return ""
 	}
+}
+
+// itemNameWith is ItemName with the placeholders the item leaves to what carries the grant answered by the given
+// replacements, those of the carrier, as the item on the sheet answers them (see answers).
+func (g *Grant) itemNameWith(replacements map[string]string) string {
+	return nameable.Apply(g.ItemName(), replacements)
 }
 
 // Leveled returns true if the level means anything for the granted item: always for a skill or spell, and for a trait
@@ -360,8 +378,8 @@ func (g *Grant) AllowedMerges() []grantmerge.Mode {
 	return grantmerge.Modes
 }
 
-// effectiveMerge returns the merge mode, treating one that means nothing for the granted item as Ignore.
-func (g *Grant) effectiveMerge() grantmerge.Mode {
+// EffectiveMerge returns the merge mode, treating one that means nothing for the granted item as Ignore.
+func (g *Grant) EffectiveMerge() grantmerge.Mode {
 	if merge := g.Merge.EnsureValid(); slices.Contains(g.AllowedMerges(), merge) {
 		return merge
 	}
@@ -409,8 +427,9 @@ func grantedByText(link *GrantedBy, state *grantState) string {
 	return text
 }
 
-// Describe implements Feature.
-func (g *Grant) Describe(_ *Entity, _ map[string]string, em func(string) string) string {
+// Describe implements Feature. The replacements, those of what carries the grant, answer the placeholders the granted
+// item leaves to it.
+func (g *Grant) Describe(_ *Entity, replacements map[string]string, em func(string) string) string {
 	if g.Key() == "" {
 		switch g.Type {
 		case feature.GrantSkill:
@@ -422,19 +441,19 @@ func (g *Grant) Describe(_ *Entity, _ map[string]string, em func(string) string)
 		}
 	}
 	var item string
-	switch g.Type {
+	switch name := g.itemNameWith(replacements); g.Type {
 	case feature.GrantSkill:
-		item = i18n.Text("the skill %s", em(g.ItemName()))
+		item = i18n.Text("the skill %s", em(name))
 	case feature.GrantSpell:
-		item = i18n.Text("the spell %s", em(g.ItemName()))
+		item = i18n.Text("the spell %s", em(name))
 	default:
-		item = i18n.Text("the trait %s", em(g.ItemName()))
+		item = i18n.Text("the trait %s", em(name))
 	}
 	level := g.level()
 	if g.Leveled() && !g.putsItemOnSheet() {
 		// Below level 1, the grant puts nothing on the sheet, and a negative level only takes away from an item present.
 		var text string
-		switch merge := g.effectiveMerge(); {
+		switch merge := g.EffectiveMerge(); {
 		case level < 0 && merge == grantmerge.MergeLevels:
 			text = i18n.Text("Removes %s from %s when already present", levelsText(level.Abs(), em), item)
 		case level < 0 && merge == grantmerge.MergePoints:
@@ -448,7 +467,7 @@ func (g *Grant) Describe(_ *Entity, _ map[string]string, em func(string) string)
 	if g.Leveled() {
 		text += i18n.Text(" at level %s", em(level.String()))
 	}
-	switch g.effectiveMerge() {
+	switch g.EffectiveMerge() {
 	case grantmerge.MergeLevels:
 		text += i18n.Text(", or adds %s levels to it when already present", em(g.level().StringWithSign()))
 	case grantmerge.MergePoints:
@@ -548,9 +567,17 @@ func (s *grantState) reset() {
 
 func (s *grantState) addLevels(source grantSource, amount fxp.Int) {
 	if amount != 0 {
-		s.levels += amount
 		s.levelNotes = append(s.levelNotes, newGrantNote(source, amount))
 	}
+}
+
+// keepLevel records that a Keep Highest grant keeps the item at the level, the lower of it and the item's own being the
+// better when lower is set, as it is for a disadvantage.
+func (s *grantState) keepLevel(source grantSource, level fxp.Int, lower bool) {
+	note := newGrantNote(source, level)
+	note.keep = true
+	s.levelNotes = append(s.levelNotes, note)
+	s.keepLower = lower
 }
 
 func (s *grantState) addPoints(source grantSource, amount fxp.Int) {
@@ -564,27 +591,13 @@ func newGrantNote(source grantSource, amount fxp.Int) grantNote {
 	return grantNote{owner: source.owner, source: grantSourceName(source), amount: amount}
 }
 
-// contributedBy returns true if a grant carried by owner gave the item levels or points.
-func (s *grantState) contributedBy(owner any) bool {
-	carried := func(note grantNote) bool { return note.owner == owner }
-	return slices.ContainsFunc(s.levelNotes, carried) || slices.ContainsFunc(s.pointNotes, carried)
-}
-
-// levelsExcept returns the levels grants gave the item, leaving out those of the grants carried by exclude, which may
+// pointsExcept returns the points grants gave the item, leaving out those of the grants carried by exclude, which may
 // be nil to leave out none. The prerequisites of a carrier are judged this way, so that an item never meets its own
 // prerequisites with what it grants.
-func (s *grantState) levelsExcept(exclude any) fxp.Int {
-	return sumExcept(s.levels, s.levelNotes, exclude)
-}
-
-// pointsExcept is levelsExcept for the points grants gave the item.
 func (s *grantState) pointsExcept(exclude any) fxp.Int {
-	return sumExcept(s.points, s.pointNotes, exclude)
-}
-
-func sumExcept(total fxp.Int, notes []grantNote, exclude any) fxp.Int {
+	total := s.points
 	if exclude != nil {
-		for _, note := range notes {
+		for _, note := range s.pointNotes {
 			if note.owner == exclude {
 				total -= note.amount
 			}
@@ -593,48 +606,86 @@ func sumExcept(total fxp.Int, notes []grantNote, exclude any) fxp.Int {
 	return total
 }
 
-func (s *grantState) hash(h hash.Hash) {
-	xhash.Bool(h, s.inEffect)
-	xhash.Num64(h, s.levels)
-	xhash.Num64(h, s.points)
+// applyLevelNotes returns the level with what the grants made of it, leaving out what the grants carried by exclude
+// gave (see pointsExcept): the levels merged into it are added, and then each level a Keep Highest grant keeps it at
+// replaces it when better, which for a disadvantage is lower. The notes of the grants that changed the level go into
+// the tooltip, which may be nil.
+func (s *grantState) applyLevelNotes(exclude any, level fxp.Int, tooltip *xbytes.InsertBuffer) fxp.Int {
+	for _, note := range s.levelNotes {
+		if !note.keep && note.owner != exclude {
+			level += note.amount
+			addGrantNoteToTooltip(note, note.amount, tooltip)
+		}
+	}
+	for _, note := range s.levelNotes {
+		if !note.keep || note.owner == exclude {
+			continue
+		}
+		diff := note.amount - level
+		if s.keepLower {
+			diff = diff.Min(0)
+		} else {
+			diff = diff.Max(0)
+		}
+		if diff != 0 {
+			level += diff
+			addGrantNoteToTooltip(note, diff, tooltip)
+		}
+	}
+	return level
 }
 
-func addGrantNotesToTooltip(notes []grantNote, buffer *xbytes.InsertBuffer) {
+func (s *grantState) hash(h hash.Hash) {
+	xhash.Bool(h, s.inEffect)
+	xhash.Bool(h, s.keepLower)
+	hashGrantNotes(h, s.levelNotes)
+	hashGrantNotes(h, s.pointNotes)
+}
+
+func hashGrantNotes(h hash.Hash, notes []grantNote) {
+	xhash.Num64(h, uint64(len(notes)))
+	for _, note := range notes {
+		xhash.Num64(h, note.amount)
+		xhash.Bool(h, note.keep)
+	}
+}
+
+// addGrantNoteToTooltip adds the note to the tooltip, which may be nil, with the amount it changed the item by.
+func addGrantNoteToTooltip(note grantNote, amount fxp.Int, buffer *xbytes.InsertBuffer) {
 	if buffer == nil {
 		return
 	}
-	for _, note := range notes {
-		buffer.WriteByte('\n')
-		buffer.WriteString(note.source)
-		buffer.WriteString(" [")
-		buffer.WriteString(note.amount.StringWithSign())
-		buffer.WriteByte(']')
-	}
+	buffer.WriteByte('\n')
+	buffer.WriteString(note.source)
+	buffer.WriteString(" [")
+	buffer.WriteString(amount.StringWithSign())
+	buffer.WriteByte(']')
 }
 
 // applyPoints returns the points with those grants gave a skill or spell added, leaving out what the grants carried by
-// exclude gave (see levelsExcept).
+// exclude gave (see pointsExcept).
 func (s *grantState) applyPoints(exclude any, points fxp.Int, tooltip *xbytes.InsertBuffer) fxp.Int {
 	granted := s.pointsExcept(exclude)
 	if granted == 0 {
 		return points
 	}
-	addGrantNotesToTooltip(s.pointNotes, tooltip)
+	for _, note := range s.pointNotes {
+		addGrantNoteToTooltip(note, note.amount, tooltip)
+	}
 	return (points + granted).Max(0)
 }
 
-// applyLevels returns the level with the levels grants merged into a skill or spell added, unless it has none, leaving
-// out what the grants carried by exclude gave (see levelsExcept).
+// applyLevels returns the level with what the grants made of a skill's or spell's level (see applyLevelNotes), unless
+// it has none, leaving out what the grants carried by exclude gave.
 func (s *grantState) applyLevels(exclude any, level Level) Level {
-	granted := s.levelsExcept(exclude)
-	if granted == 0 || level.Level == fxp.Min {
+	if len(s.levelNotes) == 0 || level.Level == fxp.Min {
 		return level
 	}
-	level.Level += granted
-	level.RelativeLevel += granted
 	var tooltip xbytes.InsertBuffer
 	tooltip.WriteString(level.Tooltip)
-	addGrantNotesToTooltip(s.levelNotes, &tooltip)
+	result := s.applyLevelNotes(exclude, level.Level, &tooltip)
+	level.RelativeLevel += result - level.Level
+	level.Level = result
 	level.Tooltip = tooltip.String()
 	return level
 }

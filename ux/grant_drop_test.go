@@ -10,6 +10,7 @@
 package ux
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 	"slices"
@@ -19,6 +20,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/feature"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/grantmerge"
 	"github.com/richardwilkes/gcs/v5/model/library"
 	"github.com/richardwilkes/gcs/v5/ux/uxtest"
 	"github.com/richardwilkes/toolbox/v2/check"
@@ -151,9 +153,23 @@ func TestGrantRowControls(t *testing.T) {
 	owner := gurps.NewTrait(entity, nil, false)
 	g := gurps.NewGrant(feature.GrantSkill)
 	g.SetItem(newTestSkill("Brawling", fxp.One, nil), gurps.LibraryFile{})
-	features := gurps.Features{g, gurps.NewGrant(feature.GrantSkill)}
+	// A loaded grant may hold a merge that means nothing for its item, which the grant treats as Ignore.
+	traitGrant := gurps.NewGrant(feature.GrantTrait)
+	traitGrant.SetItem(newGrantTestTrait("Night Vision", fxp.One), gurps.LibraryFile{})
+	traitGrant.Merge = grantmerge.MergePoints
+	features := gurps.Features{g, gurps.NewGrant(feature.GrantSkill), traitGrant}
 	p, _ := showFeaturesPanel(t, screen, entity, owner, &features, false)
-	screen.Do(func() { p.toggle("0") })
+	screen.Do(func() { p.toggle("2") })
+	screen.Do(func() {
+		popup, ok := p.FindRefKey("2:merge").Self.(*unison.PopupMenu[grantmerge.Mode])
+		if !ok {
+			t.Fatal("the open trait grant row has no merge popup")
+		}
+		selected, has := popup.Selected()
+		c.True(has, "the popup shows the merge the grant uses")
+		c.Equal(grantmerge.Ignore, selected)
+		p.toggle("0")
+	})
 	screen.Do(func() {
 		field, ok := p.FindRefKey("0:level").Self.(*DecimalField)
 		if !ok {
@@ -261,6 +277,40 @@ func TestGrantLibraryItemsFollowTheLibrary(t *testing.T) {
 	c.Nil(find(grantLibraryItems(feature.GrantTrait)), "a file removed from the library drops out")
 }
 
+// TestGrantPickerLeavesOutTheItemEdited checks that the picker doesn't offer the item being edited, or a copy of it,
+// as the drop and Add as Grant leave it out, since the item would otherwise grant a copy of itself.
+func TestGrantPickerLeavesOutTheItemEdited(t *testing.T) {
+	c := check.New(t)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
+	dir := t.TempDir()
+	lib := library.NewLibrary("Test", "acct", "", "repo", dir)
+	libraries := gurps.GlobalSettings().Libraries
+	libraries.Store(lib.Key(), lib)
+	t.Cleanup(func() { libraries.Remove(lib.Key()) })
+	libFile := gurps.LibraryFile{Library: lib.Key(), Path: "Traits/Test" + gurps.TraitsExt}
+	nightVision := newGrantTestTrait("Night Vision", 0)
+	darkVision := newGrantTestTrait("Dark Vision", 0)
+	c.NoError(gurps.SaveTraits([]*gurps.Trait{nightVision, darkVision}, filepath.Join(dir, filepath.FromSlash(libFile.Path))))
+	entity := gurps.NewEntity()
+	owner := nightVision.Clone(libFile, entity, nil, gurps.Reference)
+	features := gurps.Features{gurps.NewGrant(feature.GrantTrait)}
+	p, _ := showFeaturesPanel(t, screen, entity, owner, &features, false)
+	screen.Do(func() { p.toggle("0") })
+	var names []string
+	screen.Do(func() {
+		lists := uxtest.PanelsOfType[*unison.List[*grantLibraryItem]](p.AsPanel())
+		if len(lists) != 1 {
+			t.Fatalf("expected one picker list, found %d", len(lists))
+		}
+		for i := range lists[0].Count() {
+			if item := lists[0].DataAtIndex(i); item.from == libFile {
+				names = append(names, item.name)
+			}
+		}
+	})
+	c.Equal([]string{"Dark Vision"}, names, "the item being edited is left out")
+}
+
 // TestGrantItemMatches checks that each word of the filter matches the start of a word of the name, or one a typo
 // away once the word is long enough.
 func TestGrantItemMatches(t *testing.T) {
@@ -307,6 +357,43 @@ func TestGrantedItemEditLandsOnTheGrant(t *testing.T) {
 		c.Equal("Dark Vision", current.ItemName())
 		c.Equal("Night Vision", g.ItemName(), "the grant undo replaced is left alone")
 	})
+}
+
+// TestGrantItemEditorFollowsTheGrantsType checks that the editor opened on a grant's item, and the hash by which the
+// panel tells that the item changed, go by the grant's type, as the grant itself does, when a loaded grant also holds
+// an item of another kind.
+func TestGrantItemEditorFollowsTheGrantsType(t *testing.T) {
+	c := check.New(t)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
+	sheet := newTestSheetForTemplate(t)
+	entity := sheet.Entity()
+	owner := gurps.NewTrait(entity, nil, false)
+	owner.Name = "Training"
+	g := gurps.NewGrant(feature.GrantSkill)
+	g.SetItem(newTestSkill("Brawling", fxp.One, nil), gurps.LibraryFile{})
+	skillOnly := grantItemHash(g)
+	g.Trait = newGrantTestTrait("Night Vision", 0)
+	c.Equal(skillOnly, grantItemHash(g), "a stray trait doesn't change which item the grant gives")
+	owner.Features = gurps.Features{g}
+	entity.Traits = []*gurps.Trait{owner}
+	sheet.Rebuild(true)
+	var skillEditors, traitEditors int
+	screen.Do(func() {
+		DisplayNewDockable(sheet)
+		outer := EditTrait(sheet, owner)
+		p := uxtest.PanelsOfType[*featuresPanel](outer.content)[0]
+		p.editGrantedItem(grantAt(t, p, 0))
+		skillEditors = len(AllMatchingDockables(func(d unison.Dockable) bool {
+			_, ok := d.AsPanel().Self.(*editor[*gurps.Skill, *gurps.SkillEditData])
+			return ok
+		}))
+		traitEditors = len(AllMatchingDockables(func(d unison.Dockable) bool {
+			_, ok := d.AsPanel().Self.(*editor[*gurps.Trait, *gurps.TraitEditData])
+			return ok
+		}))
+	})
+	c.Equal(1, skillEditors, "the skill the grant gives is edited")
+	c.Equal(1, traitEditors, "beside the editor of what carries the grant")
 }
 
 // newTestSheetWithGrant returns a sheet holding the skill Stealth and, inside a closed container, the trait Training,
@@ -446,40 +533,67 @@ func TestGrantItemEditorClosesWhenItsGrantChanges(t *testing.T) {
 			p.edit("Sync Granted Item with Source", "0:more", "0:more", func() { g.Trait.Name = "Dark Vision" })
 		}},
 	} {
-		t.Run(tc.name, func(t *testing.T) {
-			c := check.New(t)
-			screen, _ := uxtest.StartHeadlessWorkspace(t, c)
-			sheet := newTestSheetForTemplate(t)
-			entity := sheet.Entity()
-			training := gurps.NewTrait(entity, nil, false)
-			training.Name = "Training"
-			g := gurps.NewGrant(feature.GrantTrait)
-			g.SetItem(newGrantTestTrait("Night Vision", 0), gurps.LibraryFile{})
-			training.Features = gurps.Features{g}
-			entity.Traits = []*gurps.Trait{training}
-			sheet.Rebuild(true)
-			isTraitEditor := func(d unison.Dockable) bool {
-				_, ok := d.AsPanel().Self.(*editor[*gurps.Trait, *gurps.TraitEditData])
-				return ok
-			}
-			var outer *editor[*gurps.Trait, *gurps.TraitEditData]
-			var p *featuresPanel
-			screen.Do(func() {
-				DisplayNewDockable(sheet)
-				outer = EditTrait(sheet, training)
-				p = uxtest.PanelsOfType[*featuresPanel](outer.content)[0]
-				p.editGrantedItem(grantAt(t, p, 0))
+		// With deep set, a modified editor is open on one of the item's modifiers too, which closes along with the
+		// item's editor, since what it would save has nowhere to go either.
+		for _, deep := range []bool{false, true} {
+			t.Run(fmt.Sprintf("%s deep=%t", tc.name, deep), func(t *testing.T) {
+				c := check.New(t)
+				screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
+				sheet := newTestSheetForTemplate(t)
+				entity := sheet.Entity()
+				training := gurps.NewTrait(entity, nil, false)
+				training.Name = "Training"
+				g := gurps.NewGrant(feature.GrantTrait)
+				nightVision := newGrantTestTrait("Night Vision", 0)
+				modifier := gurps.NewTraitModifier(nil, nil, false)
+				modifier.Name = "Long"
+				nightVision.Modifiers = []*gurps.TraitModifier{modifier}
+				g.SetItem(nightVision, gurps.LibraryFile{})
+				training.Features = gurps.Features{g}
+				entity.Traits = []*gurps.Trait{training}
+				sheet.Rebuild(true)
+				isTraitEditor := func(d unison.Dockable) bool {
+					_, ok := d.AsPanel().Self.(*editor[*gurps.Trait, *gurps.TraitEditData])
+					return ok
+				}
+				isModifierEditor := func(d unison.Dockable) bool {
+					_, ok := d.AsPanel().Self.(*editor[*gurps.TraitModifier, *gurps.TraitModifierEditData])
+					return ok
+				}
+				var outer *editor[*gurps.Trait, *gurps.TraitEditData]
+				var p *featuresPanel
+				screen.Do(func() {
+					DisplayNewDockable(sheet)
+					outer = EditTrait(sheet, training)
+					p = uxtest.PanelsOfType[*featuresPanel](outer.content)[0]
+					p.editGrantedItem(grantAt(t, p, 0))
+				})
+				nested := uxtest.OtherEditor(t, screen, outer, isTraitEditor)
+				screen.Do(func() {
+					nested.editorData.Name = "Changed"
+					nested.MarkModified(nil)
+				})
+				if deep {
+					screen.Do(func() { EditTraitModifier(nested, nested.editorData.Modifiers[0]) })
+					modifierEditor := uxtest.SoleEditor[*editor[*gurps.TraitModifier, *gurps.TraitModifierEditData]](t,
+						screen, isModifierEditor)
+					screen.Do(func() {
+						modifierEditor.editorData.Name = "Longer"
+						modifierEditor.MarkModified(nil)
+					})
+				}
+				screen.Do(func() { tc.change(p, grantAt(t, p, 0)) })
+				var open, modifierEditors, windows int
+				screen.Do(func() {
+					open = len(AllMatchingDockables(isTraitEditor))
+					modifierEditors = len(AllMatchingDockables(isModifierEditor))
+					windows = len(unison.Windows())
+				})
+				c.Equal(1, open, "the grant item's editor closes without asking, leaving the outer editor")
+				c.Equal(0, modifierEditors, "as does the editor open on one of the item's modifiers")
+				c.Equal(1, windows, "nothing asks about the changes: %v", wnd.Title())
 			})
-			nested := uxtest.OtherEditor(t, screen, outer, isTraitEditor)
-			screen.Do(func() {
-				nested.editorData.Name = "Changed"
-				nested.MarkModified(nil)
-				tc.change(p, grantAt(t, p, 0))
-			})
-			var open int
-			screen.Do(func() { open = len(AllMatchingDockables(isTraitEditor)) })
-			c.Equal(1, open, "the grant item's editor closes without asking, leaving the outer editor")
-		})
+		}
 	}
 }
 
@@ -549,6 +663,28 @@ func TestGrantNotAddedToItsOwnEditor(t *testing.T) {
 		}
 	})
 	c.Equal([]string{"Night Vision"}, names, "the item being edited is left out")
+
+	// So is the trait whose modifier is being edited, since its modifiers' grants are its own.
+	screen.Do(func() {
+		modifier := gurps.NewTraitModifier(entity, nil, false)
+		modifier.Name = "Long"
+		e.editorData.Modifiers = []*gurps.TraitModifier{modifier}
+		EditTraitModifier(e, modifier)
+	})
+	modifierEditor := uxtest.SoleEditor[*editor[*gurps.TraitModifier, *gurps.TraitModifierEditData]](t, screen,
+		func(d unison.Dockable) bool {
+			_, ok := d.AsPanel().Self.(*editor[*gurps.TraitModifier, *gurps.TraitModifierEditData])
+			return ok
+		})
+	names = nil
+	screen.Do(func() {
+		p := uxtest.PanelsOfType[*featuresPanel](modifierEditor.content)[0]
+		items := collectGrantItems(gurps.LibraryFile{}, []*gurps.Trait{fit, newGrantTestTrait("Night Vision", 0)})
+		for _, item := range p.grantable(items) {
+			names = append(names, item.name)
+		}
+	})
+	c.Equal([]string{"Night Vision"}, names, "the trait whose modifier is being edited is left out")
 }
 
 // TestDeletingContainerKeepsGrantedRows checks that deleting a container the user moved a granted row into leaves that
@@ -559,6 +695,10 @@ func TestDeletingContainerKeepsGrantedRows(t *testing.T) {
 	var sheet *Sheet
 	var granted *gurps.Skill
 	var group *gurps.Skill
+	isSkillEditor := func(d unison.Dockable) bool {
+		_, ok := d.AsPanel().Self.(*editor[*gurps.Skill, *gurps.SkillEditData])
+		return ok
+	}
 	screen.Do(func() {
 		sheet, _, granted, _ = newTestSheetWithGrant(t)
 		entity := sheet.Entity()
@@ -570,11 +710,12 @@ func TestDeletingContainerKeepsGrantedRows(t *testing.T) {
 		entity.Skills = append(entity.Skills, group)
 		sheet.Rebuild(true)
 		DisplayNewDockable(sheet)
+		EditSkill(sheet, granted)
 		sheet.Skills.Table.SetSelectionMap(map[tid.TID]bool{group.ID(): true})
 		DeleteSelection(sheet.Skills.Table, true)
 	})
 	var kept bool
-	var groups int
+	var groups, editors int
 	screen.Do(func() {
 		for _, s := range sheet.Entity().Skills {
 			if s == granted {
@@ -584,9 +725,29 @@ func TestDeletingContainerKeepsGrantedRows(t *testing.T) {
 				groups++
 			}
 		}
+		editors = len(AllMatchingDockables(isSkillEditor))
 	})
 	c.Equal(0, groups, "the container goes")
 	c.True(kept, "the granted row within it stays, as the row it was")
+	c.Equal(1, editors, "and so does its editor")
+}
+
+// TestMovingGrantedRowLeavesItAlone checks that what a move does to the rows moved, filling in an empty tech level and
+// recalculating the level, leaves a granted row alone, since it changes only with its grant.
+func TestMovingGrantedRowLeavesItAlone(t *testing.T) {
+	c := check.New(t)
+	sheet, _, granted, _ := newTestSheetWithGrant(t)
+	sheet.Entity().Profile.TechLevel = "3"
+	techLevel := ""
+	granted.TechLevel = &techLevel
+	table := sheet.Skills.Table
+	table.SetSelectionMap(map[tid.TID]bool{granted.ID(): true})
+	provider, ok := any(table.Model).(TableProvider[*gurps.Skill])
+	if !ok {
+		t.Fatal("the skills table has no provider")
+	}
+	provider.ProcessDropData(nil, table)
+	c.Equal("", *granted.TechLevel, "the granted row's tech level is left as its grant made it")
 }
 
 // TestNestedEditorTitle checks that an editor opened from a document is named for the document, while one opened from

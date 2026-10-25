@@ -665,6 +665,12 @@ func resolveScript(entity *Entity, selfProvider ScriptSelfProvider, text string)
 		noteAbandonedScript(entity)
 		return "script resolution exceeded maximum depth (possible circular reference)", true
 	}
+	if entity != nil && entity.judging != nil {
+		// A script sees the sheet whole, since its result is kept for the rest of the pass; see JudgingPrereqsOf.
+		judging := entity.judging
+		entity.judging = nil
+		defer func() { entity.judging = judging }()
+	}
 	key := scriptResolveKey{id: selfProvider.ResolveID(), text: text}
 	if cached, exists := lookupResolvedScript(entity, key); exists {
 		if cached.abandoned {

@@ -236,7 +236,8 @@ func (p *featuresPanel) row(f gurps.Feature, path string) *unison.Panel {
 	return row
 }
 
-// moreEntries returns the entries of the more menu of the feature at the path: Duplicate, Move up and down, and Delete.
+// moreEntries returns the entries of the more menu of the feature at the path: Duplicate, for a grant Sync Granted Item
+// with Source, Move up and down, and Delete.
 func (p *featuresPanel) moreEntries(path string) []menuEntry {
 	i := p.index(path)
 	if i < 0 {

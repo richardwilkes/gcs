@@ -268,6 +268,85 @@ func TestEditorSyncAsksGrantItemEditorToDiscard(t *testing.T) {
 	c.Equal("", discardReason, "canceling leaves the editor asking whether to save when closed for any other reason")
 }
 
+// TestEditorDiscardAndSyncReachSubEditorsOfSubEditors verifies that Discard, and Sync with Source, ask an editor opened
+// from the editor of a grant's item, on one of the item's modifiers, whether to discard its changes rather than whether
+// to save them, as they ask the item's editor, since what it would save goes into the same data.
+func TestEditorDiscardAndSyncReachSubEditorsOfSubEditors(t *testing.T) {
+	for _, tc := range []struct {
+		name string
+		// act discards or syncs the outer editor.
+		act func(t *testing.T, screen *unison.HeadlessScreen, wnd *unison.Window, e *editor[*gurps.Trait, *gurps.TraitEditData])
+		// reason is how the prompt's reason starts.
+		reason string
+	}{
+		{name: "discard", act: func(_ *testing.T, screen *unison.HeadlessScreen, _ *unison.Window, e *editor[*gurps.Trait, *gurps.TraitEditData]) {
+			screen.Do(func() {
+				e.editorData.Name = "Talons"
+				e.MarkModified(nil)
+			})
+			screen.Click(screen.PanelCenter(e.cancelButton))
+		}, reason: "Discarding the changes made to"},
+		{name: "sync", act: func(t *testing.T, screen *unison.HeadlessScreen, wnd *unison.Window, e *editor[*gurps.Trait, *gurps.TraitEditData]) {
+			chooseSyncWithSource(t, screen, wnd, e)
+		}, reason: "Syncing with the source replaces this item."},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			c := check.New(t)
+			screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
+			sheet, ok := uxtest.OpenedByAction(t, screen, newCharacterSheetAction).(*Sheet)
+			if !ok {
+				t.Fatal("New Character Sheet must open a character sheet")
+			}
+			e, _ := newEditedLibraryTrait(t, c, screen, sheet, func(lib *gurps.Trait) {
+				g := gurps.NewGrant(feature.GrantTrait)
+				nightVision := newGrantTestTrait("Night Vision", 0)
+				modifier := gurps.NewTraitModifier(nil, nil, false)
+				modifier.Name = "Long"
+				nightVision.Modifiers = []*gurps.TraitModifier{modifier}
+				g.SetItem(nightVision, gurps.LibraryFile{})
+				lib.Features = gurps.Features{g}
+			}, nil)
+			isTraitEditor := func(d unison.Dockable) bool {
+				_, isEditor := d.AsPanel().Self.(*editor[*gurps.Trait, *gurps.TraitEditData])
+				return isEditor
+			}
+			isModifierEditor := func(d unison.Dockable) bool {
+				_, isEditor := d.AsPanel().Self.(*editor[*gurps.TraitModifier, *gurps.TraitModifierEditData])
+				return isEditor
+			}
+			screen.Do(func() {
+				p := uxtest.PanelsOfType[*featuresPanel](e.content)[0]
+				p.editGrantedItem(grantAt(t, p, 0))
+			})
+			nested := uxtest.OtherEditor(t, screen, e, isTraitEditor)
+			screen.Do(func() { EditTraitModifier(nested, nested.editorData.Modifiers[0]) })
+			modifierEditor := uxtest.SoleEditor[*editor[*gurps.TraitModifier, *gurps.TraitModifierEditData]](t, screen,
+				isModifierEditor)
+			screen.Do(func() {
+				modifierEditor.editorData.Name = "Longer"
+				modifierEditor.MarkModified(nil)
+			})
+			tc.act(t, screen, wnd, e)
+			dialogWnd, dialog := modalDialog(t, screen, wnd)
+			var prompt []string
+			var offersSave bool
+			screen.Do(func() {
+				prompt = uxtest.LabelTexts(dialogWnd.Content())
+				offersSave = dialog.Button(unison.ModalResponseDiscard) != nil
+			})
+			c.True(slices.Contains(prompt, "Discard changes made to"),
+				"the prompt asks whether to discard the modifier's changes: %v", prompt)
+			c.True(slices.ContainsFunc(prompt, func(s string) bool { return strings.HasPrefix(s, tc.reason) }),
+				"and says why: %v", prompt)
+			c.False(offersSave, "rather than whether to save them")
+			screen.Click(screen.PanelCenter(dialogButton(t, screen, dialog, unison.ModalResponseCancel)))
+			var discardReason string
+			screen.Do(func() { discardReason = modifierEditor.discardReason })
+			c.Equal("", discardReason, "canceling leaves the editor asking whether to save when closed for any other reason")
+		})
+	}
+}
+
 // TestEditorSyncKeepsTheEditInProgress verifies that syncing from the source menu while a field holds the focus keeps
 // what was typed into it when the sync leaves that field alone, and leaves the focus, the caret and the editor's
 // scrolling as they were, so that typing carries on there. The field gives the focus up before it is replaced, while it

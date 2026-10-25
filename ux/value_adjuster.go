@@ -93,7 +93,8 @@ func ownerRebuildRecalculates(owner unison.Paneler, entity *gurps.Entity) bool {
 	return sheetOwning(owner, entity) != nil
 }
 
-// canAdjustSelection returns true if any selected row yields an adjustable target via extract.
+// canAdjustSelection returns true if any selected row other than a granted one, which changes only with its grant,
+// yields an adjustable target via extract.
 func canAdjustSelection[T gurps.Node[T], A any](table *unison.Table[*Node[T]], extract func(T) (A, bool)) bool {
 	for _, row := range table.SelectedRows(false) {
 		if _, ok := extract(row.Data()); ok && !gurps.IsGranted(row.Data()) {
@@ -103,11 +104,12 @@ func canAdjustSelection[T gurps.Node[T], A any](table *unison.Table[*Node[T]], e
 	return false
 }
 
-// adjustSelection snapshots and mutates each selected row that yields an adjustable target via extract, registering the
-// whole change as one undoable edit. When recalculate is true, the owning entity is recalculated after the change (and
-// on undo/redo). Pass rebuild for a change that alters more of what the owner shows than the rows being adjusted --
-// which lists are on the page, which columns they hold. The corresponding canAdjustSelection call should use the same
-// extract, so that the enable check and the action never diverge.
+// adjustSelection snapshots and mutates each selected row that yields an adjustable target via extract, granted rows
+// left alone as in canAdjustSelection, registering the whole change as one undoable edit. When recalculate is true, the
+// owning entity is recalculated after the change (and on undo/redo). Pass rebuild for a change that alters more of what
+// the owner shows than the rows being adjusted -- which lists are on the page, which columns they hold. The
+// corresponding canAdjustSelection call should use the same extract, so that the enable check and the action never
+// diverge.
 func adjustSelection[T gurps.Node[T], A, V any](undoTitle string, owner Rebuildable, table *unison.Table[*Node[T]],
 	extract func(T) (A, bool), get func(A) V, set func(A, V), mutate func(A), recalculate, rebuild bool,
 ) {

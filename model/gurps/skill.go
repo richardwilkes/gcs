@@ -331,8 +331,8 @@ func (s *Skill) Clone(from LibraryFile, owner DataOwner, parent *Skill, mode Clo
 	other.copyFrom(other, &s.SkillEditData, s.Container(), false, mode, s.IsTechnique())
 	other.Granted = cloneGrantedBy(s.Granted, s, other)
 	if s.Granted != nil && other.Granted == nil {
-		// Where no grant claims the copy, it is bought with the points the grant stood for.
-		other.Points = s.grant.points
+		// Where no grant claims the copy, it is bought with the points of the tier the grant stood for.
+		other.Points = EntityFromNode(s).grantTierPointsFor(s)
 	}
 	if EntityFromNode(other) == nil {
 		// Disabling only means something on a sheet.
@@ -742,14 +742,23 @@ func (s *Skill) pointsForPrereqsOf(exclude any) fxp.Int {
 	return s.adjustedPointsExcept(exclude, nil)
 }
 
+// pointsWithoutGrants returns the skill's points adjusted for the bonuses, as AdjustedPoints adjusts them, but without
+// what grants gave it.
+func (s *Skill) pointsWithoutGrants() fxp.Int {
+	return AdjustedPointsForNonContainerSkillOrTechnique(EntityFromNode(s), s.Points, s.NameWithReplacements(),
+		s.SpecializationWithReplacements(), s.OptionalSpecializationWithReplacements(), s.Tags, nil)
+}
+
 // levelForPrereqsOf returns the skill's level as the prerequisites of exclude see it: the level the last pass recorded,
-// unless grants carried by exclude gave the skill levels or points, in which case it is computed without them, since
-// an item never meets its own prerequisites with what it grants.
+// unless exclude carries a grant, in which case it is computed afresh without what the grants exclude carries gave the
+// skill, nor what the items they put on the sheet give it through their bonuses or a default resting on them (see
+// Entity.JudgingPrereqsOf), since an item never meets its own prerequisites with what it grants. The grants need not be
+// in effect this pass, since the recorded level may hold what they gave in the last.
 func (s *Skill) levelForPrereqsOf(exclude any) fxp.Int {
-	if !s.grant.contributedBy(exclude) {
+	if !EntityFromNode(s).carriesGrant(exclude) {
 		return s.LevelData.Level
 	}
-	return s.calculateLevelExcept(exclude, nil).Level
+	return s.calculateLevelWith(exclude, s.bestDefaultWithPoints(nil), nil).Level
 }
 
 // adjustedPointsExcept is AdjustedPoints without the points grants carried by exclude gave the skill; see
@@ -868,20 +877,23 @@ func skillLevelStride(p SkillLevelStepper) fxp.Int {
 }
 
 // incrementSkillLevel is the shared body of Skill.IncrementSkillLevel and Spell.IncrementSkillLevel. A disabled item
-// has no level to step, since AdjustedPoints reports nothing for it, so it is left alone.
+// has no level to step, since AdjustedPoints reports nothing for it, so it is left alone, as is one with no higher
+// level to reach, such as a technique at its limit or a skill whose attribute is missing.
 func incrementSkillLevel(p SkillLevelStepper) {
 	if !p.Enabled() {
 		return
 	}
-	basePoints := p.RawPoints().Floor() + fxp.One
+	original := p.RawPoints()
+	basePoints := original.Floor() + fxp.One
 	maxPoints := basePoints + skillLevelStride(p)
 	oldLevel := p.CurrentCalculatedLevel()
 	for points := basePoints; points < maxPoints; points += fxp.One {
 		p.SetRawPoints(points)
 		if p.CurrentCalculatedLevel() > oldLevel {
-			break
+			return
 		}
 	}
+	p.SetRawPoints(original)
 }
 
 // decrementSkillLevel is the shared body of Skill.DecrementSkillLevel and Spell.DecrementSkillLevel. A disabled item
@@ -916,8 +928,13 @@ func (s *Skill) CalculateLevel(excludes map[string]bool) Level {
 }
 
 // calculateLevelExcept is CalculateLevel without the levels and points grants carried by exclude gave the skill; see
-// grantState.levelsExcept.
+// grantState.applyLevelNotes.
 func (s *Skill) calculateLevelExcept(exclude any, excludes map[string]bool) Level {
+	return s.calculateLevelWith(exclude, s.DefaultedFrom, excludes)
+}
+
+// calculateLevelWith is calculateLevelExcept with the given default in place of the one the skill recorded.
+func (s *Skill) calculateLevelWith(exclude any, def *SkillDefault, excludes map[string]bool) Level {
 	points := s.adjustedPointsExcept(exclude, nil)
 	if s.IsTechnique() {
 		return CalculateTechniqueLevel(EntityFromNode(s), s.Replacements, s.NameWithReplacements(),
@@ -925,7 +942,7 @@ func (s *Skill) calculateLevelExcept(exclude any, excludes map[string]bool) Leve
 			s.TechniqueLimitModifier, excludes)
 	}
 	return s.grant.applyLevels(exclude, CalculateSkillLevel(EntityFromNode(s), s.NameWithReplacements(), s.SpecializationWithReplacements(), s.OptionalSpecializationWithReplacements(), s.Tags,
-		s.DefaultedFrom, s.AdjustedDifficulty(), points, s.EncumbrancePenaltyMultiplier))
+		def, s.AdjustedDifficulty(), points, s.EncumbrancePenaltyMultiplier))
 }
 
 // CalculateSkillLevel returns the calculated level for a skill.
@@ -1330,7 +1347,9 @@ func (s *Skill) TechniqueSatisfied(tooltip *xbytes.InsertBuffer, prefix string) 
 	}
 	e := EntityFromNode(s)
 	sk := s.TechniqueDefault.bestMatchingSkill(e, s.Replacements, false, nil)
-	satisfied := sk != nil && (sk.IsTechnique() || sk.Points > 0)
+	// The points are judged as the technique's level judges them (see Entity.SkillMatching), so that a granted skill,
+	// whose points are those of its tier, counts.
+	satisfied := sk != nil && (sk.IsTechnique() || sk.AdjustedPoints(nil) > 0)
 	if !satisfied && tooltip != nil {
 		tooltip.WriteString(prefix)
 		// A default that names its skill outright reads as "a skill named X"; one that selects it by other criteria is

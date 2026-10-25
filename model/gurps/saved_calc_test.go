@@ -75,6 +75,55 @@ func TestStringWithSavedCalcOfGrantedTrait(t *testing.T) {
 	c.Equal("Night Vision 3", grantedOf(loaded.Traits)[0].StringWithSavedCalc())
 }
 
+// TestStringWithSavedCalcMatchesStringAtSave verifies that a trait loaded with its saved calc reads as String read it
+// when the sheet was saved, whether its recorded level is zero because the trait is at level zero, or because it was
+// disabled or not in effect, in which case String shows the level it would have.
+func TestStringWithSavedCalcMatchesStringAtSave(t *testing.T) {
+	for _, tc := range []struct {
+		name string
+		// add puts the trait on the sheet and returns it.
+		add func(e *Entity) *Trait
+	}{
+		{name: "enabled at level zero", add: func(e *Entity) *Trait {
+			bonus := NewTraitBonus()
+			bonus.NameCriteria.Qualifier = "Acute Vision"
+			bonus.Amount = -fxp.Two
+			addTraitWithFeatures(e, "Dulled", bonus)
+			vision := addTrait(e, newGrantLeveledTrait("Acute Vision", fxp.Two))
+			vision.Levels = fxp.Two
+			return vision
+		}},
+		{name: "granted but not in effect", add: func(e *Entity) *Trait {
+			goggles := addCarriedEquipmentWithFeatures(e, "Goggles",
+				newTraitGrant(newGrantLeveledTrait("Night Vision", fxp.One), fxp.Two, grantmerge.Ignore))
+			goggles.Equipped = false
+			e.Recalculate()
+			return grantedOf(e.Traits)[0]
+		}},
+		{name: "disabled by unmet prerequisites", add: func(e *Entity) *Trait {
+			e.SheetSettings.EnforceTraitPrereqs = true
+			magery := addTrait(e, newGrantLeveledTrait("Magery", fxp.Ten))
+			magery.Levels = fxp.Three
+			magery.Prereq = newPrereqListForTrait("Magic Aptitude", true)
+			return magery
+		}},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			c := check.New(t)
+			e := NewEntity()
+			trait := tc.add(e)
+			e.Recalculate()
+			data, err := json.Marshal(e)
+			c.NoError(err)
+			dir := t.TempDir()
+			c.NoError(os.WriteFile(filepath.Join(dir, "sheet.gcs"), data, 0o600))
+			loaded, err := NewEntityFromFileWithSavedCalc(os.DirFS(dir), "sheet.gcs")
+			c.NoError(err)
+			c.Equal(trait.String(), loaded.Traits[len(loaded.Traits)-1].StringWithSavedCalc())
+		})
+	}
+}
+
 func TestStringWithSavedCalcFallsBackWhenNothingUsableWasRecorded(t *testing.T) {
 	c := check.New(t)
 	dir := t.TempDir()

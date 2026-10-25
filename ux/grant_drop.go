@@ -114,11 +114,36 @@ func (p *featuresPanel) grantDrag(di drag.Info) (feature.Type, []*grantLibraryIt
 }
 
 // grantable returns the items the panel's owner can be given as grants: all but the owner itself, or a copy of it,
-// which it would otherwise grant a copy of itself.
+// which it would otherwise grant a copy of itself, and likewise the items whose editors the panel's editor was opened
+// from, such as the trait a modifier belongs to, whose grants its modifiers' are.
 func (p *featuresPanel) grantable(items []*grantLibraryItem) []*grantLibraryItem {
+	owners := p.grantOwners()
 	return slices.DeleteFunc(slices.Clone(items), func(item *grantLibraryItem) bool {
-		return item.node == any(p.owner) || sameGrantItem(item.node, p.owner)
+		return slices.ContainsFunc(owners, func(owner any) bool {
+			return item.node == owner || sameGrantItem(item.node, owner)
+		})
 	})
+}
+
+// grantOwners returns the panel's owner along with the items edited by the editors the panel's editor was opened from,
+// one from another.
+func (p *featuresPanel) grantOwners() []any {
+	owners := []any{p.owner}
+	for owned := unison.AncestorOrSelf[Owned](p); owned != nil; {
+		owner := owned.Owner()
+		if xreflect.IsNil(owner) {
+			break
+		}
+		if e, ok := owner.(interface{ editTarget() any }); ok {
+			owners = append(owners, e.editTarget())
+		}
+		next, ok := owner.AsPanel().Self.(Owned)
+		if !ok {
+			break
+		}
+		owned = next
+	}
+	return owners
 }
 
 // sameGrantItem returns true if a and b are copies of the same trait, skill or spell.

@@ -555,20 +555,12 @@ func (n *Node[T]) createLabelCell(c *gurps.CellData, width float32, foreground, 
 	})
 	if c.Secondary != "" {
 		outer := unison.NewPanel()
-		outer.SetLayout(&unison.FlexLayout{
-			Columns:  2,
-			HSpacing: unison.StdHSpacing / 2,
-		})
+		outer.SetLayout(&notesCellLayout{spacing: unison.StdHSpacing / 2})
 		inner := unison.NewPanel()
 		inner.SetLayout(&unison.FlexLayout{
 			Columns: 1,
 			HAlign:  c.Alignment,
 		})
-		inner.SetLayoutData(&unison.FlexLayoutData{
-			HAlign: align.Fill,
-			HGrab:  true,
-		})
-		outer.AddChild(inner)
 		button := unison.NewButton()
 		button.HideBase = true
 		button.DrawableOnlyHMargin = 0
@@ -601,8 +593,9 @@ func (n *Node[T]) createLabelCell(c *gurps.CellData, width float32, foreground, 
 		if baseline-size > 0 {
 			button.SetBorder(unison.NewEmptyBorder(geom.Insets{Top: baseline - size}))
 		}
-		button.SetLayoutData(&unison.FlexLayoutData{VAlign: align.Start})
+		// The button goes ahead of the text; see notesCellLayout.
 		outer.AddChild(button)
+		outer.AddChild(inner)
 		p.AddChild(outer)
 		_, prefSize, _ := button.Sizes(geom.Size{})
 		n.addLabelCell(c, inner, width-((unison.StdHSpacing/2)+prefSize.Width), c.Primary, c.InlineTag,
@@ -774,6 +767,43 @@ func (n *Node[T]) addLabelCell(c *gurps.CellData, parent *unison.Panel, width fl
 			parent.AddChild(label)
 		}
 	}
+}
+
+// notesCellLayout lays out the name cell of a row whose notes are shown inline: the notes button, the first of its two
+// children, at the top right, and the text, the second, filling the rest. The button comes first among the children so
+// that a press aimed at the cell, by Space or by an assistive technology, which goes to the first panel within the cell
+// that can take one, works the notes rather than the mark of a granted row, which trails the text; see
+// unison.Table.axActOnCellContent.
+type notesCellLayout struct {
+	spacing float32
+}
+
+// LayoutSizes implements unison.Layout.
+func (l *notesCellLayout) LayoutSizes(target *unison.Panel, hint geom.Size) (minSize, prefSize, maxSize geom.Size) {
+	children := target.Children()
+	if len(children) != 2 {
+		return minSize, prefSize, unison.MaxSize(prefSize)
+	}
+	_, buttonPref, _ := children[0].Sizes(geom.Size{})
+	if hint.Width > 0 {
+		hint.Width = max(hint.Width-buttonPref.Width-l.spacing, 0)
+	}
+	textMin, textPref, _ := children[1].Sizes(hint)
+	minSize = geom.NewSize(textMin.Width+l.spacing+buttonPref.Width, max(textMin.Height, buttonPref.Height))
+	prefSize = geom.NewSize(textPref.Width+l.spacing+buttonPref.Width, max(textPref.Height, buttonPref.Height))
+	return minSize, prefSize, unison.MaxSize(prefSize)
+}
+
+// PerformLayout implements unison.Layout.
+func (l *notesCellLayout) PerformLayout(target *unison.Panel) {
+	children := target.Children()
+	if len(children) != 2 {
+		return
+	}
+	rect := target.ContentRect(false)
+	_, buttonPref, _ := children[0].Sizes(geom.Size{})
+	children[0].SetFrameRect(geom.NewRect(rect.Right()-buttonPref.Width, rect.Y, buttonPref.Width, buttonPref.Height))
+	children[1].SetFrameRect(geom.NewRect(rect.X, rect.Y, max(rect.Width-buttonPref.Width-l.spacing, 0), rect.Height))
 }
 
 // newGrantedMark returns the mark that follows the name of an item a grant put on the sheet. Its tooltip names the

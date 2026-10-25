@@ -92,8 +92,8 @@ func syncChangesContainerType(target, source any) bool {
 
 // syncWithSource syncs the editor's data with the library's copy as a pending change, keeping the pending changes to
 // fields a sync doesn't cover, and rebuilds the content, which clears the editor's undo history. Editors open on the
-// data's modifiers and weapons are closed first (see closeSubEditorsForSync), since the sync replaces what they edit:
-// the modifiers with copies of themselves and the weapons with the library's.
+// data's modifiers, weapons and granted items are closed first (see closeSubEditorsForSync), since the sync replaces
+// what they edit: the modifiers with copies of themselves, and the weapons and the grants' items with the library's.
 func (e *editor[N, D]) syncWithSource() {
 	// Noted before the sub-editors are closed, since closing one gives the focus to the list it was opened from and
 	// scrolls the editor to that list.
@@ -133,9 +133,10 @@ func (e *editor[N, D]) syncWithSource() {
 // closeSubEditorsForSync closes the editors open on the data's modifiers, weapons and granted items, as CloseGroup
 // does, returning false if one of them stays open. A sync replaces every weapon and feature with the library's, so
 // saving the changes pending in the editor of a weapon or of a grant's item would only have them thrown away, and such
-// an editor asks whether to discard them instead. A sync leaves the modifiers alone, so what is saved from a modifier's
-// editor is kept. Closing any of them leaves the sync still to be done: of what they edit, only the weapons and the
-// features count toward whether the data matches its source, and their pending changes are not saved.
+// an editor asks whether to discard them instead, as does each editor opened from one of them, on a modifier or weapon
+// of the granted item, whose changes would go the same way. A sync leaves the modifiers alone, so what is saved from a
+// modifier's editor is kept. Closing any of them leaves the sync still to be done: of what they edit, only the weapons
+// and the features count toward whether the data matches its source, and their pending changes are not saved.
 func (e *editor[N, D]) closeSubEditorsForSync() bool {
 	var shells []*editorShell
 	traverseGroup(e, func(target GroupedCloser) bool {
@@ -148,10 +149,20 @@ func (e *editor[N, D]) closeSubEditorsForSync() bool {
 				reason = i18n.Text("Syncing with the source replaces this item.")
 			}
 		}
-		if sub, ok := target.(interface{ shell() *editorShell }); ok && reason != "" {
-			shell := sub.shell()
-			shell.discardReason = reason
-			shells = append(shells, shell)
+		if reason == "" {
+			return false
+		}
+		mark := func(target GroupedCloser) bool {
+			if sub, ok := target.(interface{ shell() *editorShell }); ok {
+				shell := sub.shell()
+				shell.discardReason = reason
+				shells = append(shells, shell)
+			}
+			return false
+		}
+		mark(target)
+		if d, ok := target.(unison.Dockable); ok {
+			traverseGroupDeep(d, mark)
 		}
 		return false
 	})

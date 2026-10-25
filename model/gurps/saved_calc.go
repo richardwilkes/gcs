@@ -39,7 +39,8 @@ func keepSavedCalc(dec *jsontext.Decoder) bool {
 
 // savedTraitCalc is the part of a trait's "calc" object that Trait.StringWithSavedCalc needs.
 type savedTraitCalc struct {
-	CurrentLevel *fxp.Int `json:"current_level"`
+	CurrentLevel      *fxp.Int `json:"current_level"`
+	UnsatisfiedReason string   `json:"unsatisfied_reason"`
 }
 
 // savedNoteCalc is the part of a note's "calc" object that Note.StringWithSavedCalc needs.

@@ -142,11 +142,12 @@ func (s *editorShell) discardAndClose() {
 
 // closeSubEditorsForDiscard closes the editors open on objects within the editor's pending data, as CloseGroup does,
 // returning false if one of them stays open. Each asks whether to discard its pending changes, since the data they
-// would be saved into is about to be dropped.
+// would be saved into is about to be dropped, as does each editor opened from one of them, whose changes would go the
+// same way.
 func (s *editorShell) closeSubEditorsForDiscard() bool {
 	var subs []*editorShell
 	reason := i18n.Text("Discarding the changes made to\n%s\ndiscards these as well.", s.editor().Title())
-	traverseGroup(s.editor(), func(target GroupedCloser) bool {
+	traverseGroupDeep(s.editor(), func(target GroupedCloser) bool {
 		if sub, ok := target.(interface{ shell() *editorShell }); ok {
 			shell := sub.shell()
 			shell.discardReason = reason
@@ -161,19 +162,35 @@ func (s *editorShell) closeSubEditorsForDiscard() bool {
 	return closed
 }
 
+// discardAndCloseAll closes the editor and, first, the editors open on objects within its pending data, however deeply
+// opened one from another, dropping every pending change without asking about any of it. It is for an editor whose data
+// has nowhere to go any more, where even asking whether to discard would be asking about changes that can't be kept;
+// see featuresPanel.closeStaleGrantItemEditors and discardEditorsFor.
+func (s *editorShell) discardAndCloseAll() {
+	traverseGroup(s.editor(), func(target GroupedCloser) bool {
+		if sub, ok := target.(interface{ shell() *editorShell }); ok {
+			sub.shell().discardAndCloseAll()
+		}
+		return false
+	})
+	s.promptForSave = false
+	s.editor().AttemptClose()
+}
+
 // shell returns the shell itself, so that an editor held through an interface can be reached as the shell it embeds.
 func (s *editorShell) shell() *editorShell {
 	return s
 }
 
-// discardEditorsFor closes the editors open on any of the given IDs without asking about their pending changes. It is
-// for when an editor's item has changed in a way that makes the editor's data wrong, where CloseID's offer to save the
-// changes would do harm.
+// discardEditorsFor closes the editors open on any of the given IDs, and the editors opened from them, without asking
+// about their pending changes. It is for when an editor's item has changed in a way that makes the editor's data wrong,
+// where CloseID's offer to save the changes would do harm, and even asking the editors opened from it whether to discard
+// theirs would be asking about changes that can't be kept; see discardAndCloseAll.
 func discardEditorsFor(ids map[tid.TID]bool) {
 	for _, d := range AllDockables() {
-		if closer, ok := d.(interface{ discardAndClose() }); ok {
+		if closer, ok := d.(interface{ discardAndCloseAll() }); ok {
 			if id, ok2 := d.AsPanel().ClientData()[AssociatedIDKey].(tid.TID); ok2 && ids[id] {
-				closer.discardAndClose()
+				closer.discardAndCloseAll()
 			}
 		}
 	}

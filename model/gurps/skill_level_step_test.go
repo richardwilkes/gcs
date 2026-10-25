@@ -76,6 +76,14 @@ func TestSkillLevelStepping(t *testing.T) {
 	container := NewSkill(e, nil, true)
 	container.IncrementSkillLevel()
 	c.Equal(fxp.Int(0), container.Points)
+
+	// With no higher level to reach, as for a skill whose attribute is missing, the points are left alone.
+	sk.Difficulty.Difficulty = difficulty.Average
+	sk.Difficulty.Attribute = "missing"
+	sk.SetRawPoints(fxp.Five)
+	c.Equal(fxp.Min, sk.CalculateLevel(nil).Level, "precondition: the skill has no level")
+	sk.IncrementSkillLevel()
+	c.Equal(fxp.Five, sk.Points, "incrementing a skill with no higher level must leave its points alone")
 }
 
 func TestSpellLevelStepping(t *testing.T) {

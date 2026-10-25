@@ -111,7 +111,8 @@ func (p *SkillPrereq) Satisfied(entity *Entity, exclude any, tooltip *xbytes.Ins
 			!optionalSpecialization.Matches(sk.OptionalSpecializationWithReplacements()) {
 			return false
 		}
-		// A skill with no points spent on it doesn't count, even if it has a level from a default.
+		// A skill with no points, its own or those of the tier a grant gives it, doesn't count, even if it has a level
+		// from a default.
 		if points := sk.pointsForPrereqsOf(exclude); points == 0 || !p.PointsCriteria.Matches(points) ||
 			(p.TagsCriteria.Compare != criteria.AnyText && !p.TagsCriteria.MatchesList(replacements, sk.Tags...)) ||
 			(p.TitleNoteCriteria.Compare != criteria.AnyText &&

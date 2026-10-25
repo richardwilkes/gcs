@@ -375,7 +375,9 @@ func OpenEditor[T gurps.Node[T]](table *unison.Table[*Node[T]], edit func(item T
 	}
 }
 
-// DeleteSelection removes the selected nodes from the table and reports the change by rebuilding the table's owner.
+// DeleteSelection removes the selected nodes from the table and reports the change by rebuilding the table's owner. A
+// granted row is left alone, since it goes only with its grant, and one within a container removed takes the
+// container's place.
 func DeleteSelection[T gurps.Node[T]](table *unison.Table[*Node[T]], recordUndo bool) {
 	deleteSelection(table, recordUndo, true)
 }
@@ -390,9 +392,13 @@ func deleteSelection[T gurps.Node[T]](table *unison.Table[*Node[T]], recordUndo,
 		list := make([]T, 0, len(sel))
 		var zero T
 		for _, row := range sel {
-			// An item a grant put on the sheet goes only with its grant.
+			// An item a grant put on the sheet goes only with its grant, so neither it nor one within a container being
+			// deleted, which stays in the container's place, has its editor closed.
 			if target := row.Data(); target != zero && !gurps.IsGranted(target) {
 				unison.CollectIDsFromRow(row, ids)
+				for _, granted := range grantedWithin(target) {
+					delete(ids, granted.ID())
+				}
 				list = append(list, target)
 			}
 		}
@@ -449,7 +455,8 @@ func grantedWithin[T gurps.Node[T]](node T) []T {
 	return granted
 }
 
-// DuplicateSelection duplicates the selected nodes in the table.
+// DuplicateSelection duplicates the selected nodes in the table, other than the granted rows, whose copies no grant
+// would claim.
 func DuplicateSelection[T gurps.Node[T]](table *unison.Table[*Node[T]]) {
 	if provider, ok := any(table.Model).(TableProvider[T]); ok && HasSelectionAndNotFiltered(table) {
 		undo := beginTableUndo(table, i18n.Text("Duplicate Selection"), nil, nil)

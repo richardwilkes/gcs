@@ -132,7 +132,7 @@ func (p *featuresPanel) grant(fields, box, chips *unison.Panel, path string, g *
 	if merges := g.AllowedMerges(); chosen && len(merges) > 1 {
 		addJoiningWords(fields, i18n.Text("and if already present"))
 		addCentered(fields, compactPopup(&p.sentenceRows, key("merge"), i18n.Text("When Already Present"), merges,
-			g.Merge.EnsureValid(), nil, func(v grantmerge.Mode) { g.Merge = v }))
+			g.EffectiveMerge(), nil, func(v grantmerge.Mode) { g.Merge = v }))
 	}
 	p.optional(chips, path, "checkprereqs", i18n.Text("+ check prerequisites"), i18n.Text("Check Prerequisites"),
 		i18n.Text("Stop Checking Prerequisites"), g.CheckPrereqs,
@@ -177,11 +177,12 @@ func grantLevelTooltip(t feature.Type) string {
 }
 
 // grantPicker returns the filter field and list of library items to choose the granted item from, along with the
-// buttons that make a blank one and open the editor on the one chosen.
+// buttons that make a blank one and open the editor on the one chosen. The items are those the panel's owner can be
+// given (see grantable).
 func (p *featuresPanel) grantPicker(path string, g *gurps.Grant) *unison.Panel {
 	key := func(name string) string { return path + ":" + name }
 	panel := newColumn()
-	items := grantLibraryItems(g.Type)
+	items := p.grantable(grantLibraryItems(g.Type))
 	filter := unison.NewField()
 	filter.RefKey = key("filter")
 	filter.Watermark = i18n.Text("Filter the library")
@@ -324,23 +325,31 @@ func (o *grantItemOwner) current() bool {
 	return g != nil && grantItemHash(g) == o.hash
 }
 
-// grantItemHash returns a hash of the grant's copy of its item, modifiers and all.
+// grantItemHash returns a hash of the grant's copy of its item, modifiers and all. The item is the one of the grant's
+// type, as for the grant itself, whatever else a loaded grant holds.
 func grantItemHash(g *gurps.Grant) uint64 {
 	h := xxh3.New()
-	switch {
-	case g.Trait != nil:
-		gurps.HashJSON(h, g.Trait)
-	case g.Skill != nil:
-		gurps.HashJSON(h, g.Skill)
-	case g.Spell != nil:
-		gurps.HashJSON(h, g.Spell)
+	switch g.Type {
+	case feature.GrantSkill:
+		if g.Skill != nil {
+			gurps.HashJSON(h, g.Skill)
+		}
+	case feature.GrantSpell:
+		if g.Spell != nil {
+			gurps.HashJSON(h, g.Spell)
+		}
+	default:
+		if g.Trait != nil {
+			gurps.HashJSON(h, g.Trait)
+		}
 	}
 	return h.Sum64()
 }
 
 // closeStaleGrantItemEditors closes, without asking, the editors open on the items of the panel's grants whose grant
 // is gone, gives another item or had its item changed, as by a sync, since what such an editor would save has nowhere
-// to go or would overwrite the new item; see discardEditorsFor.
+// to go or would overwrite the new item. The editors opened from one, on the item's modifiers and weapons, close with
+// it the same way, since what they would save goes into the same data; see editorShell.discardAndCloseAll.
 func (p *featuresPanel) closeStaleGrantItemEditors() {
 	for _, d := range AllDockables() {
 		owned, ok := d.AsPanel().Self.(Owned)
@@ -348,17 +357,18 @@ func (p *featuresPanel) closeStaleGrantItemEditors() {
 			continue
 		}
 		if o, isGrant := owned.Owner().(*grantItemOwner); isGrant && o.editsFeaturesOf(p) && !o.current() {
-			if closer, canDiscard := d.(interface{ discardAndClose() }); canDiscard {
-				closer.discardAndClose()
+			if closer, canDiscard := d.(interface{ discardAndCloseAll() }); canDiscard {
+				closer.discardAndCloseAll()
 			}
 		}
 	}
 }
 
-// editGrantedItem opens the normal editor on a copy of the grant's item, or brings forward the one already open.
+// editGrantedItem opens the normal editor on a copy of the grant's item, or brings forward the one already open. A
+// grant with no item chosen yet has nothing to edit.
 func (p *featuresPanel) editGrantedItem(g *gurps.Grant) {
 	outer := p.AncestorOrSelf[Rebuildable]()
-	if outer == nil || Activate(func(d unison.Dockable) bool {
+	if g.Key() == "" || outer == nil || Activate(func(d unison.Dockable) bool {
 		owned, ok := d.AsPanel().Self.(Owned)
 		if !ok {
 			return false
@@ -369,19 +379,20 @@ func (p *featuresPanel) editGrantedItem(g *gurps.Grant) {
 		return
 	}
 	o := &grantItemOwner{Rebuildable: outer, panel: p, key: g.Key(), hash: grantItemHash(g)}
-	switch {
-	case g.Trait != nil:
-		item := g.Trait.Clone(gurps.LibraryFile{}, nil, nil, gurps.Copy)
-		o.item, o.commit = item, func(g *gurps.Grant) { g.Trait = item.Clone(gurps.LibraryFile{}, nil, nil, gurps.Copy) }
-		EditTrait(o, item)
-	case g.Skill != nil:
+	// The item is the one of the grant's type, as for the grant itself; see grantItemHash.
+	switch g.Type {
+	case feature.GrantSkill:
 		item := g.Skill.Clone(gurps.LibraryFile{}, nil, nil, gurps.Copy)
 		o.item, o.commit = item, func(g *gurps.Grant) { g.Skill = item.Clone(gurps.LibraryFile{}, nil, nil, gurps.Copy) }
 		EditSkill(o, item)
-	case g.Spell != nil:
+	case feature.GrantSpell:
 		item := g.Spell.Clone(gurps.LibraryFile{}, nil, nil, gurps.Copy)
 		o.item, o.commit = item, func(g *gurps.Grant) { g.Spell = item.Clone(gurps.LibraryFile{}, nil, nil, gurps.Copy) }
 		EditSpell(o, item)
+	default:
+		item := g.Trait.Clone(gurps.LibraryFile{}, nil, nil, gurps.Copy)
+		o.item, o.commit = item, func(g *gurps.Grant) { g.Trait = item.Clone(gurps.LibraryFile{}, nil, nil, gurps.Copy) }
+		EditTrait(o, item)
 	}
 }
 
