@@ -152,6 +152,9 @@ type Entity struct {
 	profileReadByScript bool
 	// judging is the item whose prerequisites are being judged, while they are; see JudgingPrereqsOf.
 	judging any
+	// attributesForPrereqs is the number of attribute values being computed as the prerequisites being judged see
+	// them; see attributeForPrereqs.
+	attributesForPrereqs int
 }
 
 // NewEntityFromFile loads an Entity from a file.
@@ -1389,7 +1392,9 @@ func (e *Entity) CostReductionFor(attributeID string) fxp.Int {
 // sheet is left out of the bonuses, attributes and skill defaults they read, as the rows themselves are left out (see
 // excludedFromPrereqs), and what those grants merged into the items on the sheet is left out of every level and point
 // total read, whatever reads them (see judgingOr), so that an item never meets its own prerequisites with what it
-// grants. Scripts see the sheet whole, since what they compute is kept for the rest of the pass; see resolveScript.
+// grants. Scripts see the sheet whole, since what they compute is kept for the rest of the pass (see resolveScript),
+// except those giving the attributes their bases, which are run afresh as the prerequisites see the attributes they
+// read; see attributeForPrereqs.
 func (e *Entity) JudgingPrereqsOf(exclude any, fn func()) {
 	if e == nil {
 		fn()
@@ -1961,7 +1966,10 @@ func (e *Entity) ResolveVariable(variableName string) string {
 		slog.Error("attempt to resolve variable via itself", "name", variableName)
 		return ""
 	}
-	if v, ok := e.variableCache[variableName]; ok {
+	// An attribute read as the prerequisites being judged see it is neither taken from the cache nor kept in it, since
+	// it leaves out what the attribute has at any other time; see attributeForPrereqs.
+	forPrereqs := e.attributesForPrereqs > 0
+	if v, ok := e.variableCache[variableName]; ok && !forPrereqs {
 		return v
 	}
 	e.variableResolverExclusions[variableName] = true
@@ -1982,12 +1990,16 @@ func (e *Entity) ResolveVariable(variableName string) string {
 		slog.Error("no such variable definition", "name", variableName)
 		return ""
 	}
-	if (def.Type == attribute.Pool || def.Type == attribute.PoolRef) && len(parts) > 1 && parts[1] == "current" {
-		result := attr.Current().String()
-		e.variableCache[variableName] = result
-		return result
+	current := (def.Type == attribute.Pool || def.Type == attribute.PoolRef) && len(parts) > 1 && parts[1] == "current"
+	if forPrereqs {
+		return e.attributeForPrereqs(attr, current).String()
 	}
-	result := attr.Maximum().String()
+	var result string
+	if current {
+		result = attr.Current().String()
+	} else {
+		result = attr.Maximum().String()
+	}
 	e.variableCache[variableName] = result
 	return result
 }
@@ -2040,11 +2052,25 @@ func (e *Entity) resolveAttributeCurrentForPrereqs(attrID string) fxp.Int {
 	if !ok {
 		return e.ResolveAttributeCurrent(attrID)
 	}
-	bonus := e.AttributeBonusFor(attrID, stlimit.None, nil)
+	return e.attributeForPrereqs(attr, true)
+}
+
+// attributeForPrereqs returns the attribute's current value, or its maximum, as the prerequisites being judged see it:
+// with the bonuses from what the grants of the item judged put on the sheet left out, of it and of every attribute its
+// base is derived from, which the script giving its base reads this way through ResolveVariable while this runs. The
+// script sees the item judged and its result is not kept, since it is computed with those bonuses left out; see
+// resolveScript.
+func (e *Entity) attributeForPrereqs(attr *Attribute, current bool) fxp.Int {
+	e.attributesForPrereqs++
+	defer func() { e.attributesForPrereqs-- }()
+	bonus := e.AttributeBonusFor(attr.AttrID, stlimit.None, nil)
 	if def := attr.AttributeDef(); def != nil && !def.AllowsDecimal() {
 		bonus = bonus.Floor()
 	}
-	return attr.currentWithBonus(bonus)
+	if current {
+		return attr.currentWithBonus(bonus)
+	}
+	return attr.maximumWithBonus(bonus)
 }
 
 // PreservesUserDesc returns true if the user description widget should be preserved when written to disk. Normally,

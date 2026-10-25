@@ -40,13 +40,14 @@ type grantPlan struct {
 	standsIn bool
 }
 
-// sheetGrant is a grant found on the sheet, along with the ID of the item or modifier carrying it, what carries it and
-// its place in sheet order; see Entity.forEachGrant.
+// sheetGrant is a grant found on the sheet, along with the ID of the item or modifier carrying it, what carries it, its
+// place in sheet order and whether a row it put on the sheet is there; see Entity.forEachGrant.
 type sheetGrant struct {
 	grantor tid.TID
 	source  grantSource
 	grant   *Grant
 	seq     int
+	holds   bool
 }
 
 // grantSource is what carries a grant: the item, and the modifier of it when the grant is the modifier's.
@@ -197,7 +198,9 @@ func (e *Entity) forEachGrant(fn func(grantor tid.TID, source grantSource, g *Gr
 // is decided by the sheet's data alone: an item the user has disabled counts as absent, but one the sheet disabled
 // does not. When several grants would put the same item on the sheet, the grants are taken in the order
 // comparePlanting gives rather than sheet order, so that which of them puts it there, and which stands in for that
-// one (see applyGrants), is decided by the grants rather than by where their carriers are listed.
+// one (see applyGrants), is decided by the grants rather than by where their carriers are listed; among grants that
+// compare equal, one whose row is already on the sheet comes first, so that the row stays as it is when their
+// carriers are reordered.
 func (e *Entity) reconcileGrants() {
 	e.grantPlans = e.grantPlans[:0]
 	e.grantCarriersJudged = false
@@ -206,9 +209,31 @@ func (e *Entity) reconcileGrants() {
 	spells := newGrantReconciler(e, &e.Spells)
 	var grants []sheetGrant
 	e.forEachGrant(func(grantor tid.TID, source grantSource, g *Grant) {
-		grants = append(grants, sheetGrant{grantor: grantor, source: source, grant: g, seq: len(grants)})
+		k := grantKey{grantor: grantor, key: g.Key()}
+		var holds bool
+		switch g.Type {
+		case feature.GrantTrait:
+			holds = traits.holds(k)
+		case feature.GrantSkill:
+			holds = skills.holds(k)
+		case feature.GrantSpell:
+			holds = spells.holds(k)
+		}
+		grants = append(grants, sheetGrant{grantor: grantor, source: source, grant: g, seq: len(grants), holds: holds})
 	})
-	slices.SortStableFunc(grants, func(a, b sheetGrant) int { return comparePlanting(a.grant, b.grant) })
+	slices.SortStableFunc(grants, func(a, b sheetGrant) int {
+		if c := comparePlanting(a.grant, b.grant); c != 0 {
+			return c
+		}
+		switch {
+		case a.holds == b.holds:
+			return 0
+		case a.holds:
+			return -1
+		default:
+			return 1
+		}
+	})
 	// A container or technique can't be granted, as the pickers leave them out, so a grant of one from a hand-edited
 	// file does nothing.
 	for _, one := range grants {
@@ -240,9 +265,10 @@ func (e *Entity) reconcileGrants() {
 // comparePlanting orders two grants for reconcileGrants, which takes them in this order when they would put the same
 // item on the sheet: a grant that stands for the item on its own, Ignore and then Keep Highest, comes before one that
 // adds to it, Merge Levels and then Merge Points, so that an Ignore grant gives the item its highest level and a merge
-// adds to that rather than being what is added to; within a mode the higher level comes first, and then one that
-// treats the item's prerequisites as met before one that checks them. Grants that compare equal give the same result
-// whichever of them puts the item on the sheet.
+// adds to that rather than being what is added to; within a mode the higher level comes first, then one that treats
+// the item's prerequisites as met before one that checks them, and then the items are compared by what tells apart
+// those the reconciler counts as the same item (see comparePlantingItems). Grants that compare equal give the same
+// result whichever of them puts the item on the sheet.
 func comparePlanting(a, b *Grant) int {
 	if c := cmp.Compare(plantingRank(a.EffectiveMerge()), plantingRank(b.EffectiveMerge())); c != 0 {
 		return c
@@ -250,13 +276,67 @@ func comparePlanting(a, b *Grant) int {
 	if c := cmp.Compare(b.level(), a.level()); c != 0 {
 		return c
 	}
-	if a.CheckPrereqs == b.CheckPrereqs {
-		return 0
+	if a.CheckPrereqs != b.CheckPrereqs {
+		if a.CheckPrereqs {
+			return 1
+		}
+		return -1
 	}
-	if a.CheckPrereqs {
+	return comparePlantingItems(a, b)
+}
+
+// comparePlantingItems orders two grants by what tells their items apart among those the reconciler counts as the same
+// item (see grantReconciler.consider), which the items' hashes leave out: a trait whose self-control roll and frequency
+// make it worth more comes first, as a higher level does, and then the stricter roll and frequency, a skill's optional
+// specialization, and the user description, VTT notes and switch of any item, so that only grants whose items the
+// sheet can't tell apart compare equal.
+func comparePlantingItems(a, b *Grant) int {
+	if c := cmp.Compare(a.Type, b.Type); c != 0 {
+		return c
+	}
+	var aNotes, bNotes string
+	var aSwitch, bSwitch bool
+	switch a.Type {
+	case feature.GrantTrait:
+		ta, tb := a.Trait, b.Trait
+		if c := cmp.Compare(tb.SelfControl.Multiplier().Mul(tb.Frequency.Multiplier()),
+			ta.SelfControl.Multiplier().Mul(ta.Frequency.Multiplier())); c != 0 {
+			return c
+		}
+		if c := cmp.Compare(ta.SelfControl, tb.SelfControl); c != 0 {
+			return c
+		}
+		if c := cmp.Compare(ta.Frequency, tb.Frequency); c != 0 {
+			return c
+		}
+		if c := cmp.Compare(ta.UserDesc, tb.UserDesc); c != 0 {
+			return c
+		}
+		aNotes, bNotes = ta.VTTNotes, tb.VTTNotes
+		aSwitch, bSwitch = ta.SwitchedOn, tb.SwitchedOn
+	case feature.GrantSkill:
+		sa, sb := a.Skill, b.Skill
+		if c := cmp.Compare(sa.OptionalSpecialization, sb.OptionalSpecialization); c != 0 {
+			return c
+		}
+		aNotes, bNotes = sa.VTTNotes, sb.VTTNotes
+		aSwitch, bSwitch = sa.SwitchedOn, sb.SwitchedOn
+	case feature.GrantSpell:
+		sa, sb := a.Spell, b.Spell
+		aNotes, bNotes = sa.VTTNotes, sb.VTTNotes
+		aSwitch, bSwitch = sa.SwitchedOn, sb.SwitchedOn
+	}
+	if c := cmp.Compare(aNotes, bNotes); c != 0 {
+		return c
+	}
+	switch {
+	case aSwitch == bSwitch:
+		return 0
+	case aSwitch:
+		return -1
+	default:
 		return 1
 	}
-	return -1
 }
 
 // plantingRank returns the place of a merge mode in comparePlanting's order.
@@ -312,6 +392,11 @@ func (r *grantReconciler[T]) file(nodes []T) {
 	}
 }
 
+// holds returns true if a row the grant with the key put on the sheet is there.
+func (r *grantReconciler[T]) holds(k grantKey) bool {
+	return len(r.existing[k]) > 0
+}
+
 // presentNamed returns the items present with the same name as the probe.
 func (r *grantReconciler[T]) presentNamed(probe T) []T {
 	for _, node := range r.unfiled {
@@ -319,6 +404,46 @@ func (r *grantReconciler[T]) presentNamed(probe T) []T {
 	}
 	r.unfiled = r.unfiled[:0]
 	return r.present[probe.rawName()]
+}
+
+// identityHash returns the item's hash (see Hash64) with any grants among its features left out, as they are left out
+// of the item a grant gives (see Grant.SetItem), so that an item carrying grants and a grant's copy of it count as the
+// same item.
+func identityHash[T grantNode[T]](node T) uint64 {
+	switch n := any(node).(type) {
+	case *Trait:
+		if features, dropped := withoutGrants(n.Features); dropped {
+			shallow := *n
+			shallow.Features = features
+			return Hash64(&shallow)
+		}
+	case *Skill:
+		if features, dropped := withoutGrants(n.Features); dropped {
+			shallow := *n
+			shallow.Features = features
+			return Hash64(&shallow)
+		}
+	case *Spell:
+		if features, dropped := withoutGrants(n.Features); dropped {
+			shallow := *n
+			shallow.Features = features
+			return Hash64(&shallow)
+		}
+	}
+	return Hash64(node)
+}
+
+// withoutGrants returns the features with any grants left out, and whether there were any; the list itself comes back
+// when there were none.
+func withoutGrants(list Features) (features Features, dropped bool) {
+	isGrant := func(f Feature) bool {
+		_, ok := f.(*Grant)
+		return ok
+	}
+	if !slices.ContainsFunc(list, isGrant) {
+		return list, false
+	}
+	return slices.DeleteFunc(slices.Clone(list), isGrant), true
 }
 
 // sameModifiers returns true if the items' own modifiers in effect match, which SameItem leaves out, since a trait's
@@ -333,13 +458,20 @@ func sameModifiers[T grantNode[T]](a, b T) bool {
 	return ok && ta.modifierSignature() == tb.modifierSignature()
 }
 
-// modifierSignature returns a hash of the trait's own modifiers in effect, by their sync data and levels, in any order.
+// modifierSignature returns a hash of the trait's own modifiers in effect, by their sync data and levels, in any order,
+// with any grants among their features left out as identityHash leaves out the trait's own.
 func (t *Trait) modifierSignature() uint64 {
 	var hashes []uint64
 	h := xxh3.New()
 	Traverse(func(m *TraitModifier) bool {
 		h.Reset()
-		m.Hash(h)
+		if features, dropped := withoutGrants(m.Features); dropped {
+			shallow := *m
+			shallow.Features = features
+			shallow.Hash(h)
+		} else {
+			m.Hash(h)
+		}
 		xhash.Num64(h, m.Levels)
 		hashes = append(hashes, h.Sum64())
 		return false
@@ -383,9 +515,9 @@ func (r *grantReconciler[T]) consider(grantor tid.TID, source grantSource, g *Gr
 		fresh = r.makeItem(g, item, link, answers)
 		probe = fresh
 	}
-	h := Hash64(probe)
+	h := identityHash(probe)
 	for _, candidate := range r.presentNamed(probe) {
-		if Hash64(candidate) == h && SameItem(candidate, probe) && sameModifiers(candidate, probe) {
+		if identityHash(candidate) == h && SameItem(candidate, probe) && sameModifiers(candidate, probe) {
 			r.entity.grantPlans = append(r.entity.grantPlans, grantPlan{grant: g, source: source, target: candidate})
 			return
 		}
@@ -673,13 +805,17 @@ func (e *Entity) mergeGrant(plan *grantPlan) {
 		state.addLevels(source, level)
 	case grantmerge.MergePoints:
 		if stepper, ok := plan.target.(SkillLevelStepper); ok {
-			state.addPoints(source, grantPointsDelta(level, ownPoints, stepper.WildcardDifficulty()))
+			state.addPoints(source, grantPointsDelta(level, ownPoints, state.tiersTaken, stepper.WildcardDifficulty()))
+			if level < 0 {
+				state.tiersTaken += level
+			}
 		}
 	case grantmerge.KeepHighest:
 		switch t := plan.target.(type) {
 		case *Trait:
-			// A disadvantage is better with fewer levels.
-			state.keepLevel(source, level, t.pointsWith(t.AllModifiers()) < 0)
+			// A disadvantage, whose levels cost less than nothing, is better with fewer of them, whatever it costs at
+			// the level it has.
+			state.keepLevel(source, level, t.PointsPerLevel < 0)
 		case SkillLevelStepper:
 			// The level the grant gives is that of the item on the sheet with the points of the grant's tier, so that
 			// the placeholder answers and bonuses the item has count for both.

@@ -130,6 +130,91 @@ type syncableList interface {
 	syncToModel()
 }
 
+// grantRowList is what an edit removing items that carry grants needs of each list a grant can put rows in: undo data
+// for its table and the table's reference key, which tells the list the edit is of from the others. Every *PageList[T]
+// provides both.
+type grantRowList interface {
+	undoData() tableRestorer
+	refKey() string
+}
+
+// grantRowListsProvider is the document whose lists a grant can put rows in, which is a sheet, since only an entity
+// reconciles its grants.
+type grantRowListsProvider interface {
+	grantRowLists() []grantRowList
+}
+
+// otherGrantRowLists returns the undo data of the lists of the table's owner, other than the table's own, that a grant
+// can put rows in, when any of the removed nodes, or anything within one, carries a grant, and nothing otherwise. An
+// edit removing such a node takes the rows its grants put in those lists along with it, so an undo of the edit has to
+// put those lists back as well, or the restored grants make fresh rows at the end of the lists in place of the ones
+// the user had placed and switched.
+func otherGrantRowLists[T gurps.Node[T]](table *unison.Table[*Node[T]], removed []T) []tableRestorer {
+	carries := false
+	gurps.Traverse(func(node T) bool {
+		carries = gurps.CarriesGrants(node)
+		return carries
+	}, false, false, removed...)
+	if !carries {
+		return nil
+	}
+	owner, ok := table.ClientData()[TableOwnerClientKey].(grantRowListsProvider)
+	if !ok || xreflect.IsNil(owner) {
+		return nil
+	}
+	var restorers []tableRestorer
+	for _, list := range owner.grantRowLists() {
+		if xreflect.IsNil(list) || list.refKey() == table.RefKey {
+			continue
+		}
+		if restorer := list.undoData(); restorer != nil {
+			restorers = append(restorers, restorer)
+		}
+	}
+	return restorers
+}
+
+// beginTableUndoWith is beginTableUndo for an edit that alters other tables of the table's owner as well, whose undo
+// data others holds (see otherGrantRowLists), so that undoing the edit puts every table back and updates the document
+// once (see tablesUndoData.Apply). Returns nil when there is no undo manager or the table's "before" state could not be
+// captured; commitTableUndoWith accepts nil.
+func beginTableUndoWith[T gurps.Node[T]](table *unison.Table[*Node[T]], title string, others []tableRestorer) *unison.UndoEdit[*tablesUndoData] {
+	notePriorModifierPicks(table)
+	if unison.UndoManagerFor(table) == nil {
+		return nil
+	}
+	before := NewTableUndoEditData(table)
+	if before == nil {
+		return nil
+	}
+	return &unison.UndoEdit[*tablesUndoData]{
+		ID:         unison.NextUndoID(),
+		EditName:   title,
+		UndoFunc:   func(e *unison.UndoEdit[*tablesUndoData]) { e.BeforeData.Apply() },
+		RedoFunc:   func(e *unison.UndoEdit[*tablesUndoData]) { e.AfterData.Apply() },
+		AbsorbFunc: func(_ *unison.UndoEdit[*tablesUndoData], _ unison.Undoable) bool { return false },
+		BeforeData: &tablesUndoData{restorers: append([]tableRestorer{before}, others...)},
+	}
+}
+
+// commitTableUndoWith finishes an edit begun with beginTableUndoWith, as commitTableUndo does, with the "after" state
+// of the other tables given by others, collected now that the edit is done. A nil edit is ignored.
+func commitTableUndoWith[T gurps.Node[T]](table *unison.Table[*Node[T]], undo *unison.UndoEdit[*tablesUndoData], others func() []tableRestorer) {
+	settleModifierChoices(table)
+	if undo == nil {
+		return
+	}
+	table = liveTable(table)
+	if mgr := unison.UndoManagerFor(table); mgr != nil {
+		restorers := others()
+		if after := NewTableUndoEditData(table); after != nil {
+			restorers = append([]tableRestorer{after}, restorers...)
+		}
+		undo.AfterData = &tablesUndoData{restorers: restorers}
+		mgr.Add(undo)
+	}
+}
+
 // librarySyncer is the model behind a sheet, template or loot sheet, which knows how to sync everything it holds with
 // the library sources the items came from.
 type librarySyncer interface {

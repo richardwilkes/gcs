@@ -665,20 +665,26 @@ func resolveScript(entity *Entity, selfProvider ScriptSelfProvider, text string)
 		noteAbandonedScript(entity)
 		return "script resolution exceeded maximum depth (possible circular reference)", true
 	}
-	if entity != nil && entity.judging != nil {
+	// A script giving an attribute's base, run as the prerequisites being judged see the attribute, sees the item judged
+	// and its result is not kept, since the attributes it reads leave out what they have at any other time; see
+	// Entity.attributeForPrereqs.
+	forPrereqs := entity != nil && entity.attributesForPrereqs > 0
+	if entity != nil && entity.judging != nil && !forPrereqs {
 		// A script sees the sheet whole, since its result is kept for the rest of the pass; see JudgingPrereqsOf.
 		judging := entity.judging
 		entity.judging = nil
 		defer func() { entity.judging = judging }()
 	}
 	key := scriptResolveKey{id: selfProvider.ResolveID(), text: text}
-	if cached, exists := lookupResolvedScript(entity, key); exists {
-		if cached.abandoned {
-			// A cached abandonment has to be reported again, or only the first caller to ask for this script would know
-			// not to trust what it got back.
-			noteAbandonedScript(entity)
+	if !forPrereqs {
+		if cached, exists := lookupResolvedScript(entity, key); exists {
+			if cached.abandoned {
+				// A cached abandonment has to be reported again, or only the first caller to ask for this script would
+				// know not to trust what it got back.
+				noteAbandonedScript(entity)
+			}
+			return cached.text, cached.err
 		}
-		return cached.text, cached.err
 	}
 	maxTime := scriptExecTimeLimit()
 	args := []ScriptArg{{
@@ -719,7 +725,9 @@ func resolveScript(entity *Entity, selfProvider ScriptSelfProvider, text string)
 			result = scriptErrorText(err)
 		}
 	}
-	storeResolvedScript(entity, key, scriptResolveResult{text: result, abandoned: abandoned, err: err != nil})
+	if !forPrereqs {
+		storeResolvedScript(entity, key, scriptResolveResult{text: result, abandoned: abandoned, err: err != nil})
+	}
 	return result, err != nil
 }
 

@@ -408,9 +408,11 @@ func deleteSelection[T gurps.Node[T]](table *unison.Table[*Node[T]], recordUndo,
 		if !CloseID(ids) {
 			return
 		}
-		var undo *unison.UndoEdit[*TableUndoEditData[T]]
+		// The rows the grants carried by what is deleted put in the other lists go with it, so those lists are part of
+		// the edit; see otherGrantRowLists.
+		var undo *unison.UndoEdit[*tablesUndoData]
 		if recordUndo {
-			undo = beginTableUndo(table, i18n.Text("Delete Selection"), nil, nil)
+			undo = beginTableUndoWith(table, i18n.Text("Delete Selection"), otherGrantRowLists(table, list))
 		}
 		topLevelData := provider.RootData()
 		for _, target := range list {
@@ -436,7 +438,7 @@ func deleteSelection[T gurps.Node[T]](table *unison.Table[*Node[T]], recordUndo,
 			}
 		}
 		provider.SetRootData(topLevelData)
-		commitTableUndo(table, undo)
+		commitTableUndoWith(table, undo, func() []tableRestorer { return otherGrantRowLists(table, list) })
 		if report {
 			rebuildAsModified(table.AncestorOrSelf[Rebuildable](), true)
 		}

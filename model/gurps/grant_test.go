@@ -434,6 +434,8 @@ func TestGrantTraitMergeModes(t *testing.T) {
 		// Below level 1 a grant gives nothing, as it says of itself; only a negative level takes away.
 		{name: "merge half a level", merge: grantmerge.MergeLevels, perLevel: fxp.One, have: fxp.Two, grant: fxp.Half, level: fxp.Two},
 		{name: "keep highest at level 0 of a disadvantage", merge: grantmerge.KeepHighest, perLevel: -fxp.One, have: fxp.Three, grant: 0, level: fxp.Three},
+		// A disadvantage at level 0 costs nothing, but is still a disadvantage, so the lower level is kept.
+		{name: "keep lowest for a disadvantage at level 0", merge: grantmerge.KeepHighest, perLevel: -fxp.One, have: 0, grant: fxp.Two, level: 0},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			c := check.New(t)
@@ -485,6 +487,43 @@ func TestGrantTraitWithModifierIsAnotherItem(t *testing.T) {
 	e.Recalculate()
 	c.Equal(0, len(grantedOf(e.Traits)), "with the same modifier in effect, the grant merges")
 	c.Equal(fxp.Five, dr.CurrentLevel())
+}
+
+func TestGrantMatchesItemCarryingGrants(t *testing.T) {
+	for _, tc := range []struct {
+		name string
+		// carrying gives the library's Magery the grant it carries, on the trait itself or on a modifier of it.
+		carrying func(magery *Trait, g *Grant)
+	}{
+		{name: "on the trait", carrying: func(magery *Trait, g *Grant) {
+			magery.Features = append(magery.Features, g)
+		}},
+		{name: "on a modifier", carrying: func(magery *Trait, g *Grant) {
+			mod := NewTraitModifier(nil, nil, false)
+			mod.Name = "Dark Aspected"
+			mod.Features = Features{g}
+			magery.Modifiers = []*TraitModifier{mod}
+		}},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			c := check.New(t)
+			e := NewEntity()
+			newMagery := func() *Trait {
+				magery := newGrantLeveledTrait("Magery", fxp.Ten)
+				magery.Features = Features{newSkillBonusTo("Thaumatology", fxp.One)}
+				tc.carrying(magery, newSpellGrant(newHardSpell("Light", fxp.One), fxp.One, grantmerge.Ignore))
+				return magery
+			}
+			magery := addTrait(e, newMagery())
+			// The grant's copy carries no grants, as SetItem leaves them out.
+			g := newTraitGrant(newMagery(), fxp.One, grantmerge.MergeLevels)
+			DropGrants(g.Trait)
+			addTraitWithFeatures(e, "Elf", g)
+			e.Recalculate()
+			c.Equal(0, len(grantedOf(e.Traits)), "the grant merges into the Magery bought, grants and all")
+			c.Equal(fxp.Two, magery.CurrentLevel())
+		})
+	}
 }
 
 func TestGrantDisabledTraitCountsAsAbsent(t *testing.T) {
@@ -980,6 +1019,20 @@ func TestGrantDoesNotMeetItsCarriersPrereqs(t *testing.T) {
 			training.Prereq.Prereqs = append(training.Prereq.Prereqs, p)
 			return training, func() fxp.Int { return e.ResolveAttributeCurrent(StrengthID) }
 		}, level: fxp.Ten},
+		{name: "bonus from a granted trait to the attribute another is derived from", carry: func(_ check.Checker, e *Entity) (*Trait, func() fxp.Int) {
+			smart := newGrantLeveledTrait("Smart", fxp.One)
+			bonus := NewAttributeBonus(IntelligenceID)
+			bonus.Amount = fxp.Two
+			smart.Features = Features{bonus}
+			mentor := addTraitWithFeatures(e, "Mentor", newTraitGrant(smart, fxp.One, grantmerge.Ignore))
+			mentor.Prereq = NewPrereqList()
+			p := NewAttributePrereq(e)
+			p.Parent = mentor.Prereq
+			p.Which = "will"
+			p.QualifierCriteria.Qualifier = fxp.FromInteger(12)
+			mentor.Prereq.Prereqs = append(mentor.Prereq.Prereqs, p)
+			return mentor, func() fxp.Int { return e.ResolveAttributeCurrent("will") }
+		}, level: fxp.Ten},
 		{name: "per-level bonus from the levels merged into a trait", carry: func(_ check.Checker, e *Entity) (*Trait, func() fxp.Int) {
 			newMagery := func() *Trait {
 				magery := newGrantLeveledTrait("Magery", fxp.Ten)
@@ -1343,6 +1396,19 @@ func TestGrantMergesDoNotDependOnCarrierOrder(t *testing.T) {
 				newSkillGrant(newEasySkill("Brawling", fxp.One), fxp.One, grantmerge.MergePoints),
 			}
 		}, points: fxp.Five, level: fxp.FromInteger(12)},
+		// Two curses take their tiers off together, rather than each taking its own off the points bought.
+		{name: "two curses", bought: fxp.Eight, grants: func() [2]*Grant {
+			return [2]*Grant{
+				newSkillGrant(newEasySkill("Brawling", fxp.One), -fxp.One, grantmerge.MergePoints),
+				newSkillGrant(newEasySkill("Brawling", fxp.One), -fxp.One, grantmerge.MergePoints),
+			}
+		}, points: fxp.Two, level: fxp.FromInteger(11)},
+		{name: "curses of different sizes", bought: fxp.Eight, grants: func() [2]*Grant {
+			return [2]*Grant{
+				newSkillGrant(newEasySkill("Brawling", fxp.One), -fxp.One, grantmerge.MergePoints),
+				newSkillGrant(newEasySkill("Brawling", fxp.One), -fxp.Two, grantmerge.MergePoints),
+			}
+		}, points: fxp.One, level: fxp.Ten},
 	} {
 		for _, reversed := range []bool{false, true} {
 			t.Run(fmt.Sprintf("%s reversed=%t", tc.name, reversed), func(t *testing.T) {
@@ -1369,11 +1435,13 @@ func TestGrantPlanterDoesNotDependOnCarrierOrder(t *testing.T) {
 	}
 	for _, tc := range []struct {
 		name string
-		// grants are the grants of Night Vision, none of which finds it bought. unmet, when not empty, is the name of
-		// the carrier whose prerequisites are unmet, so that its grant is not in effect.
-		grants []*Grant
-		unmet  string
-		level  fxp.Int
+		// grants are the grants of the item, none of which finds it bought. unmet, when not empty, is the name of the
+		// carrier whose prerequisites are unmet, so that its grant is not in effect. selfControl, when set, is the
+		// self-control roll of the row.
+		grants      []*Grant
+		unmet       string
+		level       fxp.Int
+		selfControl selfctrl.Roll
 	}{
 		{name: "ignore and merge levels", grants: []*Grant{
 			nightVision(fxp.Two, grantmerge.Ignore), nightVision(fxp.One, grantmerge.MergeLevels),
@@ -1397,6 +1465,15 @@ func TestGrantPlanterDoesNotDependOnCarrierOrder(t *testing.T) {
 			}
 			return []*Grant{needy(true), needy(false)}
 		}(), level: fxp.One},
+		{name: "self-control rolls the item's hash leaves out", grants: func() []*Grant {
+			badTemper := func(cr selfctrl.Roll) *Grant {
+				g := nightVision(fxp.One, grantmerge.Ignore)
+				g.Trait.Name = "Bad Temper"
+				g.Trait.SelfControl = cr
+				return g
+			}
+			return []*Grant{badTemper(selfctrl.CR12), badTemper(selfctrl.CR6)}
+		}(), level: fxp.One, selfControl: selfctrl.CR6},
 	} {
 		for _, reversed := range []bool{false, true} {
 			t.Run(fmt.Sprintf("%s reversed=%t", tc.name, reversed), func(t *testing.T) {
@@ -1416,14 +1493,55 @@ func TestGrantPlanterDoesNotDependOnCarrierOrder(t *testing.T) {
 				c.False(e.Unsettled())
 				granted := grantedOf(e.Traits)
 				if len(granted) != 1 {
-					c.Fatalf("expected one Night Vision row, got %d", len(granted))
+					c.Fatalf("expected one granted row, got %d", len(granted))
 				}
 				c.True(granted[0].Enabled())
 				c.Equal(tc.level, granted[0].CurrentLevel())
 				c.Equal("", granted[0].UnsatisfiedReason, "a grant that treats the item's prerequisites as met wins")
+				if tc.selfControl != selfctrl.None {
+					c.Equal(tc.selfControl, granted[0].SelfControl, "the grant of the item worth more puts it on the sheet")
+				}
 			})
 		}
 	}
+}
+
+func TestGrantedRowStaysWithTheGrantHoldingIt(t *testing.T) {
+	c := check.New(t)
+	e := NewEntity()
+	nightVision := func() *Grant {
+		return newTraitGrant(newGrantLeveledTrait("Night Vision", fxp.One), fxp.Two, grantmerge.Ignore)
+	}
+	a := addTraitWithFeatures(e, "A", nightVision())
+	b := addTraitWithFeatures(e, "B", nightVision())
+	e.Recalculate()
+	granted := grantedOf(e.Traits)
+	if len(granted) != 1 {
+		c.Fatalf("expected one Night Vision row, got %d", len(granted))
+	}
+	row := granted[0]
+	e.Traits = []*Trait{b, a, row}
+	e.Recalculate()
+	granted = grantedOf(e.Traits)
+	if len(granted) != 1 {
+		c.Fatalf("expected one Night Vision row, got %d", len(granted))
+	}
+	c.True(granted[0] == row, "reordering the carriers of equal grants leaves the row with the grant that put it there")
+
+	a.Disabled = true
+	e.Recalculate()
+	granted = grantedOf(e.Traits)
+	if len(granted) != 1 {
+		c.Fatalf("expected one Night Vision row, got %d", len(granted))
+	}
+	row = granted[0]
+	a.Disabled = false
+	e.Recalculate()
+	granted = grantedOf(e.Traits)
+	if len(granted) != 1 {
+		c.Fatalf("expected one Night Vision row, got %d", len(granted))
+	}
+	c.True(granted[0] == row, "enabling the other carrier again leaves the row with the grant that put it there")
 }
 
 func TestGrantedSkillSatisfiesTechnique(t *testing.T) {

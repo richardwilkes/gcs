@@ -605,6 +605,11 @@ func (s *Sheet) lists() []sheetList {
 	return listsForKeys(s.list, gurps.IsListBlockKey)
 }
 
+// grantRowLists returns the lists a grant can put rows in; see otherGrantRowLists.
+func (s *Sheet) grantRowLists() []grantRowList {
+	return []grantRowList{s.Traits, s.Skills, s.Spells}
+}
+
 // searchableLists returns the lists the search looks through, each under the title its block has on the sheet.
 func (s *Sheet) searchableLists() []searchableList {
 	return searchableListsForKeys(s.list, gurps.IsListBlockKey, gurps.BlockTitle)

@@ -74,12 +74,15 @@ type grantState struct {
 	// levelNotes and pointNotes are what each grant gave the item: the levels merged into it or kept for it, and a
 	// granted skill's or spell's own points plus any merged into it, of which points is the total. tierPoints is the
 	// first of those, the points of the tier the grant in effect gives a granted skill or spell, which stand for its
-	// own points when the other grants merge into it. keepLower is set when the item is a disadvantage, for which the
-	// level a Keep Highest grant keeps is the lower one.
+	// own points when the other grants merge into it. tiersTaken is the tiers the Merge Points grants with a negative
+	// level have taken from a skill or spell so far, so that they take their tiers off together (see
+	// grantPointsDelta). keepLower is set when the item is a disadvantage, for which the level a Keep Highest grant
+	// keeps is the lower one.
 	levelNotes []grantNote
 	pointNotes []grantNote
 	points     fxp.Int
 	tierPoints fxp.Int
+	tiersTaken fxp.Int
 	keepLower  bool
 }
 
@@ -247,6 +250,45 @@ func DropGrants(item any) {
 		_, isGrant := f.(*Grant)
 		return isGrant
 	})
+}
+
+// CarriesGrants returns true if the trait, skill, spell or equipment, or a modifier of the trait or equipment, carries a
+// grant with an item chosen, and so may have put rows on the sheet, in its own list or another.
+func CarriesGrants(item any) bool {
+	hasGrant := func(list Features) bool {
+		return slices.ContainsFunc(list, func(f Feature) bool {
+			g, ok := f.(*Grant)
+			return ok && g.Key() != ""
+		})
+	}
+	switch one := item.(type) {
+	case *Trait:
+		if !one.Container() && hasGrant(one.Features) {
+			return true
+		}
+		found := false
+		Traverse(func(mod *TraitModifier) bool {
+			found = hasGrant(mod.Features)
+			return found
+		}, false, true, one.Modifiers...)
+		return found
+	case *Skill:
+		return hasGrant(one.Features)
+	case *Spell:
+		return hasGrant(one.Features)
+	case *Equipment:
+		if hasGrant(one.Features) {
+			return true
+		}
+		found := false
+		Traverse(func(mod *EquipmentModifier) bool {
+			found = hasGrant(mod.Features)
+			return found
+		}, false, true, one.Modifiers...)
+		return found
+	default:
+		return false
+	}
 }
 
 // NewGrant creates a new Grant of the given type, which must be one of the grant feature types.
@@ -577,13 +619,18 @@ func grantTierOf(points fxp.Int, wildcard bool) fxp.Int {
 // grantPointsDelta returns the change to an item's points a grant of the given tier makes when merged as points: the
 // points of that tier, or, for a negative tier, what takes the item down to the tier that many below its own, points
 // beyond its tier included, since leaving them would leave the item at its tier when they are as many as the step
-// down, and never below zero.
-func grantPointsDelta(tier, current fxp.Int, wildcard bool) fxp.Int {
+// down, and never below zero. taken is the tiers other negative grants have already taken from the item (see
+// grantState.tiersTaken), which this one's come off after, so that they stack whatever their order.
+func grantPointsDelta(tier, current, taken fxp.Int, wildcard bool) fxp.Int {
 	if tier = tier.Floor(); tier >= 0 {
 		return grantTierPoints(tier, wildcard)
 	}
 	have := grantTierOf(current, wildcard)
-	return grantTierPoints((have+tier).Max(0), wildcard) - current
+	from := current
+	if taken != 0 {
+		from = grantTierPoints((have + taken).Max(0), wildcard)
+	}
+	return grantTierPoints((have+taken+tier).Max(0), wildcard) - from
 }
 
 func (s *grantState) reset() {

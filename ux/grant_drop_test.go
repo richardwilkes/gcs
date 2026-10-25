@@ -942,6 +942,45 @@ func TestDeletingContainerKeepsGrantedRows(t *testing.T) {
 	c.Equal(1, editors, "and so does its editor")
 }
 
+// TestUndoOfDeletingCarrierRestoresGrantedRowInOtherList checks that undoing the deletion of a trait carrying a grant
+// brings back the row the grant put in the skills list as the row it was, where the user had moved it, rather than
+// having the restored grant make a fresh one at the end of the list.
+func TestUndoOfDeletingCarrierRestoresGrantedRowInOtherList(t *testing.T) {
+	c := check.New(t)
+	sheet, training, granted, _ := newTestSheetWithGrant(t)
+	entity := sheet.Entity()
+	group := gurps.NewSkill(entity, nil, true)
+	group.Name = "Group"
+	entity.Skills = slices.DeleteFunc(entity.Skills, func(s *gurps.Skill) bool { return s == granted })
+	granted.SetParent(group)
+	group.Children = []*gurps.Skill{granted}
+	entity.Skills = append(entity.Skills, group)
+	sheet.Rebuild(true)
+	selectGrantingItem(sheet.Skills.Table, training)
+	DeleteSelection(sheet.Traits.Table, true)
+	grantedSkill := func() *gurps.Skill {
+		var found *gurps.Skill
+		gurps.Traverse(func(s *gurps.Skill) bool {
+			if gurps.IsGranted(s) {
+				found = s
+			}
+			return false
+		}, false, false, entity.Skills...)
+		return found
+	}
+	c.Nil(grantedSkill(), "the granted row goes with its grant")
+	if !sheet.undoMgr.CanUndo() {
+		t.Fatal("the deletion must be undoable")
+	}
+	sheet.undoMgr.Undo()
+	restored := grantedSkill()
+	if restored == nil {
+		t.Fatal("the granted row must be back")
+	}
+	c.Equal(granted.ID(), restored.ID(), "the granted row comes back as the row it was")
+	c.True(restored.Parent() == group, "and where the user had put it")
+}
+
 // TestMovingGrantedRowLeavesItAlone checks that what a move does to the rows moved, filling in an empty tech level and
 // recalculating the level, leaves a granted row alone, since it changes only with its grant.
 func TestMovingGrantedRowLeavesItAlone(t *testing.T) {

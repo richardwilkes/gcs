@@ -403,6 +403,14 @@ func (p *PageList[T]) undoData() tableRestorer {
 	return data
 }
 
+// refKey returns the reference key of the list's table, which names the list whatever table shows it; see liveTable.
+func (p *PageList[T]) refKey() string {
+	if p == nil {
+		return ""
+	}
+	return p.Table.RefKey
+}
+
 // syncToModel brings the list's table up to date with its model. A list that doesn't exist has nothing to bring up to
 // date.
 func (p *PageList[T]) syncToModel() {
