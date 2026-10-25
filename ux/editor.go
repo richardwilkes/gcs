@@ -108,6 +108,65 @@ func displayEditor[N gurps.Node[N], D gurps.EditorData[N]](owner Rebuildable, ta
 	return e
 }
 
+// followRow keeps an editor open on one of a sheet's granted rows on that row after the sheet's grants were reconciled,
+// which remakes a granted row whose grant changed as a new object under the row's ID (see grantReconciler.replace) and
+// takes the rows whose grants are gone off the sheet: the editor shows the new object, or closes with the row. Only a
+// granted row changes this way, and only a read-only editor is open on one, so no pending change is lost. The editors
+// opened from it, on the old object's modifiers and weapons, close with it either way, since those objects are gone.
+// Editors on the sheet's other rows are left alone, since what takes those rows off the sheet closes them itself (see
+// CloseID and discardEditorsFor).
+func (e *editor[N, D]) followRow(entity *gurps.Entity) {
+	if !gurps.IsGranted(e.target) {
+		return
+	}
+	var rows []N
+	switch list := any(&rows).(type) {
+	case *[]*gurps.Trait:
+		*list = entity.Traits
+	case *[]*gurps.Skill:
+		*list = entity.Skills
+	case *[]*gurps.Spell:
+		*list = entity.Spells
+	default:
+		return
+	}
+	id := e.target.ID()
+	var current N
+	gurps.Traverse(func(node N) bool {
+		if node.ID() == id {
+			current = node
+			return true
+		}
+		return false
+	}, false, false, rows...)
+	if current == e.target {
+		return
+	}
+	if xreflect.IsNil(current) {
+		e.discardAndCloseAll()
+		return
+	}
+	traverseGroup(e, func(target GroupedCloser) bool {
+		if sub, ok := target.(interface{ shell() *editorShell }); ok {
+			sub.shell().discardAndCloseAll()
+		}
+		return false
+	})
+	// Closing a sub-editor gives the focus to the list it was opened from, which the rebuild replaces.
+	var focus *contentFocus
+	if unison.AncestorIsOrSelf(e.Window().CurrentFocus(), e.content) {
+		focus = e.noteFocus()
+		e.releaseContentFocus()
+	}
+	e.target = current
+	e.beforeData = newEditorData[N, D](current)
+	e.editorData = newEditorData[N, D](current)
+	var none N
+	e.nameablesScratch = none
+	e.rebuildContent()
+	focus.restore(e.content, e.scroll)
+}
+
 // makeReadOnly makes the editor only show its target. Every widget of its content is disabled, but for the panels
 // that make themselves read-only instead, so that their rows can still be read in full or opened. MarkModified calls
 // it again, since the editor turns some of its widgets back on then.

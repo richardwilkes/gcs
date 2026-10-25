@@ -399,7 +399,7 @@ func (s *Sheet) MarkModified(src unison.Paneler) {
 	s.awaitingUpdate = true
 	// Everything below reads the derived state -- the panels, the tables, and the calculators all display skill levels,
 	// points and the like -- so the entity is brought up to date first.
-	s.entity.Recalculate()
+	s.recalculate()
 	s.syncUnsettledNotice()
 	s.bumpModificationTimestamp()
 	skipDeepSync := false
@@ -903,12 +903,25 @@ func (s *Sheet) syncWithAllSources() {
 	syncWithAllSources(s, s.entity, s.Traits, s.Skills, s.Spells, s.CarriedEquipment, s.OtherEquipment, s.Notes)
 }
 
+// recalculate brings the entity up to date and keeps the editors open on its granted rows on those rows, which the
+// recalculation may have remade or taken off the sheet; see editor.followRow.
+func (s *Sheet) recalculate() {
+	s.entity.Recalculate()
+	for _, d := range AllDockables() {
+		if owned, ok := d.AsPanel().Self.(Owned); ok && owned.Owner() == s {
+			if follower, ok2 := owned.(interface{ followRow(*gurps.Entity) }); ok2 {
+				follower.followRow(s.entity)
+			}
+		}
+	}
+}
+
 // Rebuild implements Rebuildable.
 func (s *Sheet) Rebuild(full bool) {
 	invalidateDisplayData()
 	gurps.DiscardGlobalResolveCache()
 	state := s.captureViewState()
-	s.entity.Recalculate()
+	s.recalculate()
 	s.syncUnsettledNotice()
 	// The rebuild derives everything on the page afresh, so the reads the scripts made before now are forgotten first;
 	// see Entity.ClearProfileReadByScript.
