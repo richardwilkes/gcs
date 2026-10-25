@@ -162,8 +162,8 @@ func (g *Grant) mergeSummary(label string, replacements map[string]string) strin
 	}
 }
 
-// item returns the grant's copy of its item, or nil if nothing has been chosen yet.
-func (g *Grant) item() grantItem {
+// Item returns the grant's copy of its Item, a trait, skill or spell, or nil if nothing has been chosen yet.
+func (g *Grant) Item() grantItem {
 	switch {
 	case g.Type == feature.GrantTrait && g.Trait != nil:
 		return g.Trait
@@ -202,13 +202,13 @@ func (g *Grant) SetItem(item any, from LibraryFile) {
 			g.Trait = NewTrait(nil, nil, false)
 		}
 	}
-	DropGrants(g.item())
+	DropGrants(g.Item())
 	g.Merge = g.EffectiveMerge()
 }
 
 // ItemHasSource returns true if the grant's copy of its item came from a library, and so can be synced with it.
 func (g *Grant) ItemHasSource() bool {
-	item := g.item()
+	item := g.Item()
 	return item != nil && !item.GetSource().IsZero()
 }
 
@@ -216,7 +216,7 @@ func (g *Grant) ItemHasSource() bool {
 // its ID, which ties the grant to the item it put on the sheet, so that item is refreshed rather than replaced. Any
 // grants the library's item has gained are dropped, as SetItem drops them, since a granted item can't grant anything.
 func (g *Grant) SyncItemWithSource() {
-	item := g.item()
+	item := g.Item()
 	if item == nil {
 		return
 	}
@@ -345,7 +345,7 @@ func (g *Grant) RenewKey() {
 // FillWithNameableKeys implements Feature. The placeholders of the granted item that it doesn't answer itself are
 // answered by what carries the grant.
 func (g *Grant) FillWithNameableKeys(m, existing map[string]string) {
-	item := g.item()
+	item := g.Item()
 	if item == nil {
 		return
 	}
@@ -380,7 +380,7 @@ func (g *Grant) answers(source grantSource) map[string]string {
 
 // Key returns the key that ties an item on a sheet to this grant, or an empty one if nothing has been chosen yet.
 func (g *Grant) Key() tid.TID {
-	if item := g.item(); item != nil {
+	if item := g.Item(); item != nil {
 		return item.ID()
 	}
 	return ""
@@ -389,7 +389,7 @@ func (g *Grant) Key() tid.TID {
 // ItemName returns the name of the granted item, or an empty string if nothing has been chosen yet. The placeholders
 // the item leaves to what carries the grant are left as they are; see itemNameWith.
 func (g *Grant) ItemName() string {
-	switch item := g.item().(type) {
+	switch item := g.Item().(type) {
 	case *Trait:
 		return item.NameWithReplacements()
 	case fmt.Stringer:
@@ -575,7 +575,7 @@ func (g *Grant) Hash(h hash.Hash) {
 	xhash.Num8(h, g.Merge)
 	xhash.Bool(h, g.CheckPrereqs)
 	xhash.StringWithLen(h, string(g.Key()))
-	if item := g.item(); item != nil {
+	if item := g.Item(); item != nil {
 		HashJSON(h, item)
 	}
 }

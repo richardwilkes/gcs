@@ -169,33 +169,57 @@ type nameablesSection struct {
 // nameableDefinitions returns the nameable definitions a row's keys are described by, keyed as the keys are asked
 // about: the row's own, plus those of its modifiers, since a row's keys include theirs, each under the code of the
 // row's that the modifier's is linked to (see gurps.Trait.NameableLinks), and, for a modifier prompted for on its own,
-// those of the trait or equipment it belongs to, whose answer a code the modifier shares with it takes. The owner's
-// definition wins when both it and a modifier define a code.
+// those of the trait or equipment it belongs to, whose answer a code the modifier shares with it takes. The definitions
+// of the items the row's grants give come along as well, since the row's keys include the placeholders a granted item
+// leaves to what carries the grant (see gurps.Grant.FillWithNameableKeys), keyed as the granted item asks about them
+// and then, for a grant a modifier carries, as the modifier's codes are linked. The owner's definition wins when both
+// it and a modifier define a code, and the row's or its modifiers' wins over a granted item's.
 func nameableDefinitions(row any) map[string]nameable.Detail {
 	defs := make(map[string]nameable.Detail)
+	merge := func(from map[string]nameable.Detail, links map[string]string) {
+		for code, detail := range from {
+			if target, linked := links[code]; linked {
+				code = target
+			}
+			if _, exists := defs[code]; !exists {
+				defs[code] = detail
+			}
+		}
+	}
 	add := func(item any, links map[string]string) {
 		if definer, ok := item.(nameable.Definer); ok {
-			for code, detail := range definer.NameableDefinitions() {
-				if target, linked := links[code]; linked {
-					code = target
-				}
-				if _, exists := defs[code]; !exists {
-					defs[code] = detail
-				}
+			merge(definer.NameableDefinitions(), links)
+		}
+	}
+	// The grants among the features, with the links their definitions are keyed through, kept until the row and its
+	// modifiers have added their own definitions.
+	type grantedLinks struct {
+		grant *gurps.Grant
+		links map[string]string
+	}
+	var granted []grantedLinks
+	addGrants := func(features gurps.Features, links map[string]string) {
+		for _, f := range features {
+			if g, ok := f.(*gurps.Grant); ok {
+				granted = append(granted, grantedLinks{grant: g, links: links})
 			}
 		}
 	}
 	switch r := row.(type) {
 	case *gurps.Trait:
 		add(r, nil)
+		addGrants(r.Features, nil)
 		gurps.Traverse(func(mod *gurps.TraitModifier) bool {
 			add(mod, r.NameableLinks[mod.TID])
+			addGrants(mod.Features, r.NameableLinks[mod.TID])
 			return false
 		}, false, false, r.Modifiers...)
 	case *gurps.Equipment:
 		add(r, nil)
+		addGrants(r.Features, nil)
 		gurps.Traverse(func(mod *gurps.EquipmentModifier) bool {
 			add(mod, r.NameableLinks[mod.TID])
+			addGrants(mod.Features, r.NameableLinks[mod.TID])
 			return false
 		}, false, false, r.Modifiers...)
 	case *gurps.TraitModifier:
@@ -205,6 +229,7 @@ func nameableDefinitions(row any) map[string]nameable.Detail {
 			links = owner.NameableLinks[r.TID]
 		}
 		add(r, links)
+		addGrants(r.Features, links)
 	case *gurps.EquipmentModifier:
 		var links map[string]string
 		if owner := r.Target(); owner != nil {
@@ -212,8 +237,20 @@ func nameableDefinitions(row any) map[string]nameable.Detail {
 			links = owner.NameableLinks[r.TID]
 		}
 		add(r, links)
+		addGrants(r.Features, links)
+	case *gurps.Skill:
+		add(r, nil)
+		addGrants(r.Features, nil)
+	case *gurps.Spell:
+		add(r, nil)
+		addGrants(r.Features, nil)
 	default:
 		add(row, nil)
+	}
+	for _, one := range granted {
+		if item := one.grant.Item(); item != nil {
+			merge(nameableDefinitions(item), one.links)
+		}
 	}
 	return defs
 }
