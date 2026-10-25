@@ -182,8 +182,9 @@ func TestGrantDropZoneReplacesTheChosenItem(t *testing.T) {
 }
 
 // TestGrantRowControls checks the controls of an open grant row: the level of a skill or spell grant is a whole number,
-// since the grant acts at the tier, and its tooltip prices the tiers as grantTierPoints does; and Cmd-Return in the
-// picker's filter is left to the editor, which applies the changes with it.
+// since the grant acts at the tier, so its field refuses fractions, where a trait grant's takes them, and its tooltip
+// prices the tiers as grantTierPoints does; and Cmd-Return in the picker's filter is left to the editor, which applies
+// the changes with it.
 func TestGrantRowControls(t *testing.T) {
 	c := check.New(t)
 	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
@@ -206,6 +207,12 @@ func TestGrantRowControls(t *testing.T) {
 		selected, has := popup.Selected()
 		c.True(has, "the popup shows the merge the grant uses")
 		c.Equal(grantmerge.Ignore, selected)
+		field, ok := p.FindRefKey("2:level").Self.(*DecimalField)
+		if !ok {
+			t.Fatal("the open trait grant row has no level field")
+		}
+		field.SetText("1.5")
+		c.Equal(fxp.OneAndAHalf, traitGrant.Level, "a trait grant's level may be fractional")
 		p.toggle("0")
 	})
 	screen.Do(func() {
@@ -214,7 +221,12 @@ func TestGrantRowControls(t *testing.T) {
 			t.Fatal("the open grant row has no level field")
 		}
 		field.SetText("2.5")
-		c.Equal(fxp.Two, g.Level, "a skill grant's level is whole")
+		c.NotEqual("", field.tooltipTextForValidation(), "a skill grant's level is whole, so a pasted fraction is invalid")
+		field.SetText("2")
+		c.Equal(fxp.Two, g.Level)
+		field.SetSelectionToEnd()
+		c.False(field.RuneTypedCallback('.'), "and a typed decimal point is refused")
+		c.Equal("2", field.Text())
 		p.toggle("1")
 	})
 	screen.Do(func() {
@@ -313,6 +325,42 @@ func TestGrantLibraryItemsFollowTheLibrary(t *testing.T) {
 
 	c.NoError(os.Remove(path))
 	c.Nil(find(grantLibraryItems(feature.GrantTrait)), "a file removed from the library drops out")
+}
+
+// TestGrantLibraryItemsFollowSymlinkedFolders checks that the picker's items include those in a folder a symlink in
+// the library points at, as the Library Explorer lists them, and that a folder a symlink leads to again, one of the
+// library's own or one back up the tree, is not walked again, which would offer its items twice or walk forever.
+func TestGrantLibraryItemsFollowSymlinkedFolders(t *testing.T) {
+	c := check.New(t)
+	_, _ = uxtest.StartHeadlessWorkspace(t, c)
+	dir := t.TempDir()
+	traits := filepath.Join(dir, "Traits")
+	c.NoError(os.MkdirAll(traits, 0o750))
+	if err := os.Symlink(traits, filepath.Join(dir, "Alias")); err != nil {
+		t.Skipf("unable to create a symlink here: %v", err) // Windows requires a privilege for this by default
+	}
+	linked := filepath.Join(t.TempDir(), "Linked Traits")
+	c.NoError(os.MkdirAll(linked, 0o750))
+	c.NoError(os.Symlink(linked, filepath.Join(dir, "Linked")))
+	c.NoError(os.Symlink(dir, filepath.Join(linked, "Loop")))
+	c.NoError(gurps.SaveTraits([]*gurps.Trait{newGrantTestTrait("Night Vision", 0)},
+		filepath.Join(traits, "Test"+gurps.TraitsExt)))
+	c.NoError(gurps.SaveTraits([]*gurps.Trait{newGrantTestTrait("Dark Vision", 0)},
+		filepath.Join(linked, "Test"+gurps.TraitsExt)))
+	lib := library.NewLibrary("Test", "acct", "", "repo", dir)
+	libraries := gurps.GlobalSettings().Libraries
+	libraries.Store(lib.Key(), lib)
+	t.Cleanup(func() { libraries.Remove(lib.Key()) })
+	paths := make(map[string][]string)
+	for _, item := range grantLibraryItems(feature.GrantTrait) {
+		if item.from.Library == lib.Key() {
+			paths[item.name] = append(paths[item.name], item.from.Path)
+		}
+	}
+	c.Equal([]string{"Linked/Test" + gurps.TraitsExt}, paths["Dark Vision"],
+		"the trait in the folder a symlink points at is offered once, by its path within the library")
+	c.Equal([]string{"Traits/Test" + gurps.TraitsExt}, paths["Night Vision"],
+		"the trait in a folder of the library is offered once, by its path there, though a symlink leads to it too")
 }
 
 // TestGrantPickerLeavesOutTheItemEdited checks that the picker doesn't offer the item being edited, or a copy of it,
@@ -449,6 +497,58 @@ func TestGrantPickerKeepsItsFilterAcrossRebuilds(t *testing.T) {
 		filter, _ := picker()
 		c.Equal("", filter.Text(), "a picker opened afresh starts with no filter")
 	})
+}
+
+// TestGrantPickerSelectsOneRow checks that the picker's list holds one selected row, the one Return chooses, so that a
+// Shift-click or Cmd-click on another row can't put a second one above it, and that Up and Down with a modifier down
+// are the filter's rather than the list's, as Shift-Down selects to the end of the filter's text.
+func TestGrantPickerSelectsOneRow(t *testing.T) {
+	c := check.New(t)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
+	dir := t.TempDir()
+	lib := library.NewLibrary("Test", "acct", "", "repo", dir)
+	libraries := gurps.GlobalSettings().Libraries
+	libraries.Store(lib.Key(), lib)
+	t.Cleanup(func() { libraries.Remove(lib.Key()) })
+	traits := make([]*gurps.Trait, 0, 3)
+	for i := range 3 {
+		traits = append(traits, newGrantTestTrait(fmt.Sprintf("Acute Sense %d", i), 0))
+	}
+	c.NoError(gurps.SaveTraits(traits, filepath.Join(dir, "Traits", "Test"+gurps.TraitsExt)))
+	entity := gurps.NewEntity()
+	owner := gurps.NewTrait(entity, nil, false)
+	g := gurps.NewGrant(feature.GrantTrait)
+	features := gurps.Features{g}
+	p, _ := showFeaturesPanel(t, screen, entity, owner, &features, false)
+	screen.Do(func() { p.toggle("0") })
+	screen.Do(func() {
+		filter, ok := p.FindRefKey("0:filter").Self.(*unison.Field)
+		if !ok {
+			t.Fatal("the picker has no filter field")
+		}
+		lists := uxtest.PanelsOfType[*unison.List[*grantLibraryItem]](p.AsPanel())
+		if len(lists) != 1 {
+			t.Fatalf("expected one picker list, found %d", len(lists))
+		}
+		list := lists[0]
+		filter.SetText("Acute")
+		c.Equal(3, list.Count(), "precondition: the filter leaves the acute senses")
+		c.Equal(0, list.Selection.FirstSet(), "precondition: the first is selected")
+		filter.SetSelectionToStart()
+		c.True(filter.KeyDownCallback(unison.KeyDown, mod.Shift, false), "Shift-Down is taken")
+		start, end := filter.Selection()
+		c.Equal(0, start, "by the filter, which selects from the caret")
+		c.Equal(len("Acute"), end, "to the end of its text")
+		c.Equal(1, list.Selection.Count(), "the list's selection is left alone")
+		c.Equal(0, list.Selection.FirstSet())
+		c.True(filter.KeyDownCallback(unison.KeyDown, 0, false), "Down alone moves the list's row")
+		c.Equal(1, list.Selection.FirstSet())
+		list.Select(true, 2) // A Shift-click or Cmd-click on another row.
+		c.Equal(1, list.Selection.Count(), "the list holds one selected row")
+		c.Equal(2, list.Selection.FirstSet(), "the one last chosen")
+		c.True(filter.KeyDownCallback(unison.KeyReturn, 0, false), "Return chooses it")
+	})
+	screen.Do(func() { c.Equal("Acute Sense 2", g.ItemName(), "the grant gets the row the selection moved to") })
 }
 
 // TestGrantItemMatches checks that each word of the filter matches the start of a word of the name, or one a typo

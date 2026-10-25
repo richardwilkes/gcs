@@ -139,15 +139,13 @@ func (p *featuresPanel) grant(fields, box, chips *unison.Panel, path string, g *
 		title := i18n.Text("Level")
 		addJoiningWords(fields, i18n.Text("at level"))
 		field := NewDecimalField(p.targetMgr, key("level"), title, func() fxp.Int { return g.Level },
-			func(v fxp.Int) {
-				// A skill or spell is granted at a tier, which is whole; a trait's levels may be fractional.
-				if g.Type != feature.GrantTrait {
-					v = v.Floor()
-				}
-				p.edit(title, key("level"), "", func() { g.Level = v })
-			}, fxp.Min, fxp.Max, false, false).withoutUndo()
+			func(v fxp.Int) { p.edit(title, key("level"), "", func() { g.Level = v }) }, fxp.Min, fxp.Max, false, false)
+		// A skill or spell is granted at a tier, which is whole; a trait's levels may be fractional.
+		if g.Type != feature.GrantTrait {
+			refuseFractions(field)
+		}
 		field.Tooltip = newWrappedTooltip(grantLevelTooltip(g.Type))
-		p.addCompact(fields, field)
+		p.addCompact(fields, field.withoutUndo())
 	}
 	if merges := g.AllowedMerges(); chosen && len(merges) > 1 {
 		addJoiningWords(fields, i18n.Text("and if already present"))
@@ -232,8 +230,9 @@ func (p *featuresPanel) grantPicker(path string, g *gurps.Grant) *unison.Panel {
 	list := unison.NewList[*grantLibraryItem]()
 	list.Factory = &grantItemCellFactory{}
 	list.Accessibility.Name = i18n.Text("Library Items")
-	// The focus stays in the filter, where Return chooses the selected item.
+	// The focus stays in the filter, where Return chooses the selected item, of which there is only ever one.
 	list.SetFocusable(false)
+	list.SetAllowMultipleSelection(false)
 	// A list sizes itself by building the cell of every row, which for a whole library is slow enough to stall each
 	// layout of the editor; its rows all have the same height, so the size follows from their count alone.
 	list.SetSizer(func(hint geom.Size) (minSize, prefSize, maxSize geom.Size) {
@@ -284,7 +283,11 @@ func (p *featuresPanel) grantPicker(path string, g *gurps.Grant) *unison.Panel {
 	filter.KeyDownCallback = func(keyCode unison.KeyCode, mods mod.Modifiers, repeat bool) bool {
 		switch keyCode {
 		case unison.KeyUp, unison.KeyDown:
-			return list.KeyDownCallback(keyCode, mods, repeat)
+			// With a modifier down, the key is the filter's, as Shift-Down selects to the end of its text.
+			if noModifiersDown(mods) {
+				return list.KeyDownCallback(keyCode, mods, repeat)
+			}
+			return keyDown(keyCode, mods, repeat)
 		case unison.KeyReturn, unison.KeyNumPadEnter:
 			// With a modifier down, the key is the editor's, as Cmd-Return applies the changes.
 			if noModifiersDown(mods) {
@@ -480,8 +483,8 @@ func (s grantFileStamp) equal(other grantFileStamp) bool {
 var grantItemLists = make(map[feature.Type]grantItemList)
 
 // grantLibraryItems returns the items of the libraries a grant of the given type can give, reading only the files
-// changed since they were last read, and the list last returned when none has. Hidden files and folders are skipped, as
-// the library navigator skips them.
+// changed since they were last read, and the list last returned when none has. Hidden files and folders are skipped and
+// symlinked folders followed, as the library navigator skips and follows them.
 func grantLibraryItems(t feature.Type) []*grantLibraryItem {
 	ext, load := grantItemLoader(t)
 	var stamps []grantFileStamp
@@ -493,7 +496,18 @@ func grantLibraryItems(t feature.Type) []*grantLibraryItem {
 			continue
 		}
 		fileSystem := os.DirFS(root)
-		_ = fs.WalkDir(fileSystem, ".", func(path string, d fs.DirEntry, err error) error { //nolint:errcheck // A file that can't be read is skipped
+		// WalkDir doesn't follow the symlinks it finds, but does walk the target of the one it starts from, so each
+		// symlink to a folder is walked on its own once the library's own folders have been, so that an item in one of
+		// those is offered by its path there, whatever symlinks also lead to it. visited holds the real path of each
+		// folder walked, so that a folder a symlink leads to again is not walked again: it would offer its items twice,
+		// and a symlink back up the tree would never end.
+		var links []string
+		visited := make(map[string]bool)
+		pointsAtFolder := func(path string) bool {
+			info, statErr := fs.Stat(fileSystem, path)
+			return statErr == nil && info.IsDir()
+		}
+		walk := func(path string, d fs.DirEntry, err error) error {
 			switch {
 			case err != nil:
 				return nil
@@ -502,7 +516,20 @@ func grantLibraryItems(t feature.Type) []*grantLibraryItem {
 					return fs.SkipDir
 				}
 				return nil
-			case d.IsDir() || !strings.EqualFold(filepath.Ext(path), ext):
+			case d.Type()&fs.ModeSymlink != 0 && pointsAtFolder(path):
+				links = append(links, path)
+				return nil
+			case d.IsDir():
+				realDir, realErr := filepath.EvalSymlinks(filepath.Join(root, filepath.FromSlash(path)))
+				if realErr != nil {
+					return nil
+				}
+				if visited[realDir] {
+					return fs.SkipDir
+				}
+				visited[realDir] = true
+				return nil
+			case !strings.EqualFold(filepath.Ext(path), ext):
 				return nil
 			}
 			info, err := d.Info()
@@ -522,7 +549,12 @@ func grantLibraryItems(t feature.Type) []*grantLibraryItem {
 			stamps = append(stamps, grantFileStamp{file: file, modTime: cached.modTime})
 			caches = append(caches, cached)
 			return nil
-		})
+		}
+		_ = fs.WalkDir(fileSystem, ".", walk) //nolint:errcheck // A file that can't be read is skipped
+		// The walks of the symlinked folders may find more.
+		for i := 0; i < len(links); i++ {
+			_ = fs.WalkDir(fileSystem, links[i], walk) //nolint:errcheck // A file that can't be read is skipped
+		}
 	}
 	// The files of this kind no longer found, deleted, renamed or under a library that was rekeyed or removed, are
 	// forgotten.
