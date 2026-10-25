@@ -517,6 +517,12 @@ func (e *editor[N, D]) applyEdits() {
 	}
 	pickerBefore := modifierChoicePicker(target)
 	wasChoice := gurps.IsModifierChoice(target)
+	// Nor are the rows the target's grants put on the sheet, which go with the grants should the edit take them away,
+	// so the lists they can be in are part of the edit; see grantRowListsOf.
+	var listsBefore, listsAfter []tableRestorer
+	if carriesGrants([]N{target}) {
+		listsBefore = grantRowListsOf(owner, "")
+	}
 	e.editorData.ApplyTo(target)
 	if e.sourceCleared {
 		target.ClearSource()
@@ -527,17 +533,22 @@ func (e *editor[N, D]) applyEdits() {
 	clearSourceOfTemplatePicker(target)
 	sourceAfter := target.GetSource()
 	optionsAfter := modifierEnabledStates([]N{target})
+	if len(listsBefore) != 0 {
+		listsAfter = grantRowListsOf(owner, "")
+	}
 	if mgr := unison.UndoManagerFor(owner); mgr != nil {
 		mgr.Add(&unison.UndoEdit[D]{
 			ID:       unison.NextUndoID(),
 			EditName: i18n.Text("%s Changes", target.Kind()),
 			UndoFunc: func(edit *unison.UndoEdit[D]) {
+				restoreGrantRowLists(listsBefore)
 				edit.BeforeData.ApplyTo(target)
 				restoreSource(target, sourceBefore, sourceAfter)
 				restoreModifierEnabledStates(optionsBefore)
 				rebuildAsModified(owner, true)
 			},
 			RedoFunc: func(edit *unison.UndoEdit[D]) {
+				restoreGrantRowLists(listsAfter)
 				edit.AfterData.ApplyTo(target)
 				restoreSource(target, sourceAfter, sourceBefore)
 				restoreModifierEnabledStates(optionsAfter)

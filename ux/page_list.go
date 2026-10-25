@@ -479,6 +479,12 @@ func moveSelectedEquipment(sheet *Sheet, from, to *unison.Table[*Node[*gurps.Equ
 	if mgr == nil || mgr != unison.UndoManagerFor(to) {
 		return
 	}
+	before := NewTableDragUndoEditData(from, to)
+	// Only carried equipment grants anything, so the move can take the grants of the equipment moved away, and the
+	// lists they put rows in are then part of the edit; see grantRowListsOf.
+	if rowsCarryGrants(from.SelectedRows(true)) {
+		before.Others = grantRowListsOf(sheet, "")
+	}
 	undo := &unison.UndoEdit[*TableDragUndoEditData[*gurps.Equipment]]{
 		ID:       unison.NextUndoID(),
 		EditName: i18n.Text("Move Equipment"),
@@ -487,11 +493,15 @@ func moveSelectedEquipment(sheet *Sheet, from, to *unison.Table[*Node[*gurps.Equ
 		AbsorbFunc: func(_ *unison.UndoEdit[*TableDragUndoEditData[*gurps.Equipment]], _ unison.Undoable) bool {
 			return false
 		},
-		BeforeData: NewTableDragUndoEditData(from, to),
+		BeforeData: before,
 	}
 	copyRowsTo(to, from.SelectedRows(true), nil, false, false)
 	deleteSelection(from, false, false)
-	undo.AfterData = NewTableDragUndoEditData(from, to)
+	after := NewTableDragUndoEditData(from, to)
+	if len(before.Others) != 0 {
+		after.Others = grantRowListsOf(sheet, "")
+	}
+	undo.AfterData = after
 	mgr.Add(undo)
 	rebuildAsModified(sheet, true)
 }

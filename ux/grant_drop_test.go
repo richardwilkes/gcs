@@ -1042,43 +1042,118 @@ func TestDeletingContainerKeepsGrantedRows(t *testing.T) {
 	c.Equal(1, editors, "and so does its editor")
 }
 
-// TestUndoOfDeletingCarrierRestoresGrantedRowInOtherList checks that undoing the deletion of a trait carrying a grant
-// brings back the row the grant put in the skills list as the row it was, where the user had moved it, rather than
-// having the restored grant make a fresh one at the end of the list.
-func TestUndoOfDeletingCarrierRestoresGrantedRowInOtherList(t *testing.T) {
-	c := check.New(t)
-	sheet, training, granted, _ := newTestSheetWithGrant(t)
+// newTestSheetWithEquipmentGrant returns a sheet holding a piece of carried equipment that grants the skill Brawling,
+// along with the carrier and the granted row.
+func newTestSheetWithEquipmentGrant(t *testing.T) (sheet *Sheet, carrier *gurps.Equipment, granted *gurps.Skill) {
+	t.Helper()
+	sheet = newTestSheetForTemplate(t)
 	entity := sheet.Entity()
-	group := gurps.NewSkill(entity, nil, true)
-	group.Name = "Group"
-	entity.Skills = slices.DeleteFunc(entity.Skills, func(s *gurps.Skill) bool { return s == granted })
-	granted.SetParent(group)
-	group.Children = []*gurps.Skill{granted}
-	entity.Skills = append(entity.Skills, group)
+	carrier = gurps.NewEquipment(entity, nil, false)
+	carrier.Name = "Goggles"
+	g := gurps.NewGrant(feature.GrantSkill)
+	g.SetItem(newTestSkill("Brawling", fxp.One, nil), gurps.LibraryFile{})
+	carrier.Features = gurps.Features{g}
+	entity.CarriedEquipment = []*gurps.Equipment{carrier}
 	sheet.Rebuild(true)
-	selectGrantingItem(sheet.Skills.Table, training)
-	DeleteSelection(sheet.Traits.Table, true)
-	grantedSkill := func() *gurps.Skill {
-		var found *gurps.Skill
-		gurps.Traverse(func(s *gurps.Skill) bool {
-			if gurps.IsGranted(s) {
-				found = s
+	for _, one := range entity.Skills {
+		if gurps.IsGranted(one) {
+			granted = one
+		}
+	}
+	return sheet, carrier, granted
+}
+
+// TestUndoOfTakingGrantsAwayRestoresGrantedRowInOtherList checks that undoing an edit that takes a carrier's grants
+// away -- deleting the carrier, applying an editor that removes the grant, disabling the carrier or moving it to the
+// other equipment list -- brings back the row the grant put in the skills list as the row it was, where the user had
+// moved it, rather than having the restored grant make a fresh one at the end of the list.
+func TestUndoOfTakingGrantsAwayRestoresGrantedRowInOtherList(t *testing.T) {
+	for _, tc := range []struct {
+		name string
+		// equipment is set when the carrier is a piece of carried equipment rather than a trait.
+		equipment bool
+		edit      func(sheet *Sheet, trait *gurps.Trait, eqp *gurps.Equipment)
+	}{
+		{name: "delete selection", edit: func(sheet *Sheet, trait *gurps.Trait, _ *gurps.Equipment) {
+			selectGrantingItem(sheet.Skills.Table, trait)
+			DeleteSelection(sheet.Traits.Table, true)
+		}},
+		{name: "editor removes the grant", edit: func(sheet *Sheet, trait *gurps.Trait, _ *gurps.Equipment) {
+			e, _ := buildEditorContent(sheet, trait, initTraitEditor)
+			e.editorData.Features = nil
+			e.applyEdits()
+		}},
+		{name: "toggle enablement", edit: func(sheet *Sheet, trait *gurps.Trait, _ *gurps.Equipment) {
+			selectGrantingItem(sheet.Skills.Table, trait)
+			toggleDisabled(sheet, sheet.Traits.Table)
+		}},
+		{name: "move to other equipment", equipment: true, edit: func(sheet *Sheet, _ *gurps.Trait, eqp *gurps.Equipment) {
+			selectGrantingItem(sheet.Skills.Table, eqp)
+			moveSelectedEquipment(sheet, sheet.CarriedEquipment.Table, sheet.OtherEquipment.Table)
+		}},
+		{name: "drag to other equipment", equipment: true, edit: func(sheet *Sheet, _ *gurps.Trait, eqp *gurps.Equipment) {
+			// Driven the way unison drives a drop from one table into another: the undo data is collected, the rows
+			// are moved and the drop completion is called.
+			from, to := sheet.CarriedEquipment.Table, sheet.OtherEquipment.Table
+			selectGrantingItem(sheet.Skills.Table, eqp)
+			draggedTableData = &unison.TableDragData[*Node[*gurps.Equipment]]{Table: from, Rows: from.SelectedRows(true)}
+			defer func() { draggedTableData = nil }()
+			undo := willDropCallback(from, to, true)
+			entity := sheet.Entity()
+			entity.CarriedEquipment = nil
+			entity.OtherEquipment = []*gurps.Equipment{eqp}
+			from.SyncToModel()
+			to.SyncToModel()
+			to.SetSelectionMap(map[tid.TID]bool{eqp.ID(): true})
+			didDropCallback(undo, from, to, true)
+		}},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			c := check.New(t)
+			var sheet *Sheet
+			var trait *gurps.Trait
+			var eqp *gurps.Equipment
+			var granted *gurps.Skill
+			if tc.equipment {
+				sheet, eqp, granted = newTestSheetWithEquipmentGrant(t)
+			} else {
+				sheet, trait, granted, _ = newTestSheetWithGrant(t)
 			}
-			return false
-		}, false, false, entity.Skills...)
-		return found
+			if granted == nil {
+				t.Fatal("the grant must put its row on the sheet")
+			}
+			entity := sheet.Entity()
+			group := gurps.NewSkill(entity, nil, true)
+			group.Name = "Group"
+			entity.Skills = slices.DeleteFunc(entity.Skills, func(s *gurps.Skill) bool { return s == granted })
+			granted.SetParent(group)
+			group.Children = []*gurps.Skill{granted}
+			entity.Skills = append(entity.Skills, group)
+			sheet.Rebuild(true)
+			tc.edit(sheet, trait, eqp)
+			grantedSkill := func() *gurps.Skill {
+				var found *gurps.Skill
+				gurps.Traverse(func(s *gurps.Skill) bool {
+					if gurps.IsGranted(s) {
+						found = s
+					}
+					return false
+				}, false, false, entity.Skills...)
+				return found
+			}
+			c.Nil(grantedSkill(), "the granted row goes with its grant")
+			if !sheet.undoMgr.CanUndo() {
+				t.Fatal("the edit must be undoable")
+			}
+			sheet.undoMgr.Undo()
+			restored := grantedSkill()
+			if restored == nil {
+				t.Fatal("the granted row must be back")
+			}
+			c.Equal(granted.ID(), restored.ID(), "the granted row comes back as the row it was")
+			c.True(restored.Parent() == group, "and where the user had put it")
+		})
 	}
-	c.Nil(grantedSkill(), "the granted row goes with its grant")
-	if !sheet.undoMgr.CanUndo() {
-		t.Fatal("the deletion must be undoable")
-	}
-	sheet.undoMgr.Undo()
-	restored := grantedSkill()
-	if restored == nil {
-		t.Fatal("the granted row must be back")
-	}
-	c.Equal(granted.ID(), restored.ID(), "the granted row comes back as the row it was")
-	c.True(restored.Parent() == group, "and where the user had put it")
 }
 
 // TestMovingGrantedRowLeavesItAlone checks that what a move does to the rows moved, filling in an empty tech level and

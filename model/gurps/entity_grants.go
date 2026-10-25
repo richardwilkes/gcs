@@ -200,7 +200,9 @@ func (e *Entity) forEachGrant(fn func(grantor tid.TID, source grantSource, g *Gr
 // comparePlanting gives rather than sheet order, so that which of them puts it there, and which stands in for that
 // one (see applyGrants), is decided by the grants rather than by where their carriers are listed; among grants that
 // compare equal, one whose row is already on the sheet comes first, so that the row stays as it is when their
-// carriers are reordered.
+// carriers are reordered. A grant whose own row is absent takes over a row of the same item that no grant on the sheet
+// claims, so that the row stays where the user put it when the carrier whose grant put it there is disabled or removed
+// while an equal grant of another carrier remains.
 func (e *Entity) reconcileGrants() {
 	e.grantPlans = e.grantPlans[:0]
 	e.grantCarriersJudged = false
@@ -213,11 +215,11 @@ func (e *Entity) reconcileGrants() {
 		var holds bool
 		switch g.Type {
 		case feature.GrantTrait:
-			holds = traits.holds(k)
+			holds = traits.claim(k)
 		case feature.GrantSkill:
-			holds = skills.holds(k)
+			holds = skills.claim(k)
 		case feature.GrantSpell:
-			holds = spells.holds(k)
+			holds = spells.claim(k)
 		}
 		grants = append(grants, sheetGrant{grantor: grantor, source: source, grant: g, seq: len(grants), holds: holds})
 	})
@@ -357,6 +359,10 @@ type grantReconciler[T grantNode[T]] struct {
 	entity   *Entity
 	list     *[]T
 	existing map[grantKey][]T
+	// granted holds the rows grants put on the sheet, in sheet order, and claimed the keys of the grants on the sheet;
+	// a row under any other key is an orphan a grant may take over, see orphan.
+	granted []T
+	claimed map[grantKey]bool
 	// present holds the items a grant can merge into by name, and unfiled those not yet filed under it, which only a
 	// grant needs. An item can only be the same as one with the same name, so only those need hashing.
 	present map[string][]T
@@ -369,6 +375,7 @@ func newGrantReconciler[T grantNode[T]](e *Entity, list *[]T) *grantReconciler[T
 		entity:   e,
 		list:     list,
 		existing: make(map[grantKey][]T),
+		claimed:  make(map[grantKey]bool),
 		present:  make(map[string][]T),
 		kept:     make(map[T]bool),
 	}
@@ -384,6 +391,7 @@ func (r *grantReconciler[T]) file(nodes []T) {
 		case link != nil:
 			k := grantKey{grantor: link.Grantor, key: link.Key}
 			r.existing[k] = append(r.existing[k], node)
+			r.granted = append(r.granted, node)
 		case node.Container():
 			r.file(node.NodeChildren())
 		case !userDisabled(node):
@@ -392,9 +400,28 @@ func (r *grantReconciler[T]) file(nodes []T) {
 	}
 }
 
-// holds returns true if a row the grant with the key put on the sheet is there.
-func (r *grantReconciler[T]) holds(k grantKey) bool {
+// claim records that a grant on the sheet has the key and returns true if a row the grant put on the sheet is there.
+func (r *grantReconciler[T]) claim(k grantKey) bool {
+	r.claimed[k] = true
 	return len(r.existing[k]) > 0
+}
+
+// orphan returns the first row in sheet order that is the same item as the probe and that no grant on the sheet claims,
+// taking it out of the running, or false when there is none.
+func (r *grantReconciler[T]) orphan(probe T) (T, bool) {
+	h := identityHash(probe)
+	for i, candidate := range r.granted {
+		link := *grantLink(candidate)
+		if r.claimed[grantKey{grantor: link.Grantor, key: link.Key}] {
+			continue
+		}
+		if identityHash(candidate) == h && SameItem(candidate, probe) && sameModifiers(candidate, probe) {
+			r.granted = slices.Delete(r.granted, i, i+1)
+			return candidate, true
+		}
+	}
+	var none T
+	return none, false
 }
 
 // presentNamed returns the items present with the same name as the probe.
@@ -524,6 +551,9 @@ func (r *grantReconciler[T]) consider(grantor tid.TID, source grantSource, g *Gr
 	}
 	if !g.putsItemOnSheet() {
 		return
+	}
+	if !has {
+		node, has = r.orphan(fresh)
 	}
 	switch {
 	case !has:

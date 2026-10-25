@@ -145,26 +145,50 @@ type grantRowListsProvider interface {
 }
 
 // otherGrantRowLists returns the undo data of the lists of the table's owner, other than the table's own, that a grant
-// can put rows in, when any of the removed nodes, or anything within one, carries a grant, and nothing otherwise. An
-// edit removing such a node takes the rows its grants put in those lists along with it, so an undo of the edit has to
-// put those lists back as well, or the restored grants make fresh rows at the end of the lists in place of the ones
-// the user had placed and switched.
+// can put rows in, when any of the removed nodes, or anything within one, carries a grant, and nothing otherwise; see
+// grantRowListsOf.
 func otherGrantRowLists[T gurps.Node[T]](table *unison.Table[*Node[T]], removed []T) []tableRestorer {
+	if !carriesGrants(removed) {
+		return nil
+	}
+	return grantRowListsOf(table.ClientData()[TableOwnerClientKey], table.RefKey)
+}
+
+// carriesGrants returns true if any of the nodes, or anything within one, carries a grant.
+func carriesGrants[T gurps.Node[T]](nodes []T) bool {
 	carries := false
 	gurps.Traverse(func(node T) bool {
 		carries = gurps.CarriesGrants(node)
 		return carries
-	}, false, false, removed...)
-	if !carries {
-		return nil
+	}, false, false, nodes...)
+	return carries
+}
+
+// rowsCarryGrants returns true if any of the rows' nodes, or anything within one, carries a grant.
+func rowsCarryGrants[T gurps.Node[T]](rows []*Node[T]) bool {
+	var zero T
+	nodes := make([]T, 0, len(rows))
+	for _, row := range rows {
+		if node := row.Data(); node != zero {
+			nodes = append(nodes, node)
+		}
 	}
-	owner, ok := table.ClientData()[TableOwnerClientKey].(grantRowListsProvider)
-	if !ok || xreflect.IsNil(owner) {
+	return carriesGrants(nodes)
+}
+
+// grantRowListsOf returns the undo data of the owner's lists that a grant can put rows in, other than the one with the
+// given reference key, or all of them for an empty key, when the owner is a sheet, and nothing otherwise. An edit that can take a carrier's grants away,
+// by removing, disabling or moving the carrier or taking the grants out of it, takes the rows they put in those lists
+// along with them, so an undo of the edit has to put those lists back as well, or the restored grants make fresh rows
+// at the end of the lists in place of the ones the user had placed and switched.
+func grantRowListsOf(owner any, except string) []tableRestorer {
+	provider, ok := owner.(grantRowListsProvider)
+	if !ok || xreflect.IsNil(provider) {
 		return nil
 	}
 	var restorers []tableRestorer
-	for _, list := range owner.grantRowLists() {
-		if xreflect.IsNil(list) || list.refKey() == table.RefKey {
+	for _, list := range provider.grantRowLists() {
+		if xreflect.IsNil(list) || (except != "" && list.refKey() == except) {
 			continue
 		}
 		if restorer := list.undoData(); restorer != nil {
@@ -172,6 +196,14 @@ func otherGrantRowLists[T gurps.Node[T]](table *unison.Table[*Node[T]], removed 
 		}
 	}
 	return restorers
+}
+
+// restoreGrantRowLists puts the lists back without reporting the change, for an edit that reports it on its own once
+// everything it changed is back.
+func restoreGrantRowLists(restorers []tableRestorer) {
+	for _, one := range restorers {
+		one.restore()
+	}
 }
 
 // beginTableUndoWith is beginTableUndo for an edit that alters other tables of the table's owner as well, whose undo
@@ -350,10 +382,13 @@ func liveTable[T gurps.Node[T]](table *unison.Table[*Node[T]]) *unison.Table[*No
 	return table
 }
 
-// TableDragUndoEditData holds the undo edit data for a table drag.
+// TableDragUndoEditData holds the undo edit data for a table drag: the table the rows landed in, the one they came from
+// for a move between two tables, and the lists the grants of the rows moved put rows in, when the move can take those
+// grants away (see grantRowListsOf).
 type TableDragUndoEditData[T gurps.Node[T]] struct {
-	From *TableUndoEditData[T]
-	To   *TableUndoEditData[T]
+	From   *TableUndoEditData[T]
+	To     *TableUndoEditData[T]
+	Others []tableRestorer
 }
 
 // NewTableDragUndoEditData collects the undo edit data for a table drag.
@@ -372,10 +407,14 @@ func (t *TableDragUndoEditData[T]) Apply() {
 	// tables always belong to the same owner: a drag only counts as a move -- the only case that leaves anything to put
 	// back in the list the rows came from, which is why From is nil for the rest -- when both tables are in the same
 	// dockable, and only equipment can move between two different tables at all (see the providers'
-	// DropShouldMoveData). A nil From restores nothing.
+	// DropShouldMoveData). A nil From restores nothing. The lists the moved rows' grants put rows in come back along
+	// with them, for the same reason.
 	var restored restoredTables
 	restored.add(t.To.restore())
 	restored.add(t.From.restore())
+	for _, other := range t.Others {
+		restored.add(other.restore())
+	}
 	restored.report()
 }
 

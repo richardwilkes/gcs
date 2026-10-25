@@ -10,6 +10,8 @@
 package ux
 
 import (
+	"slices"
+
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/toolbox/v2/xreflect"
 	"github.com/richardwilkes/unison"
@@ -21,16 +23,20 @@ type valueSnapshot[A, V any] struct {
 	value  V
 }
 
-// snapshotList is the undo payload for a value adjustment applied across one or more targets.
+// snapshotList is the undo payload for a value adjustment applied across one or more targets. lists holds the undo
+// data of the lists a grant can put rows in, for an adjustment that can take a target's grants away; see
+// grantRowListsOf.
 type snapshotList[A, V any] struct {
 	owner   Rebuildable
 	entity  *gurps.Entity
 	set     func(A, V)
 	list    []valueSnapshot[A, V]
+	lists   []tableRestorer
 	rebuild bool
 }
 
 func (s *snapshotList[A, V]) apply() {
+	restoreGrantRowLists(s.lists)
 	for i := range s.list {
 		s.set(s.list[i].target, s.list[i].value)
 	}
@@ -141,10 +147,18 @@ func adjustTargets[A, V any](undoTitle string, owner Rebuildable, undoSource uni
 	}
 	before := &snapshotList[A, V]{owner: owner, entity: entity, set: set, rebuild: rebuild}
 	after := &snapshotList[A, V]{owner: owner, entity: entity, set: set, rebuild: rebuild}
+	// The rows the targets' grants put on the sheet go with them should the adjustment take the grants away, as
+	// disabling or unequipping a carrier does, so the lists they can be in are part of the edit; see grantRowListsOf.
+	if slices.ContainsFunc(targets, func(target A) bool { return targetCarriesGrants(target) }) {
+		before.lists = grantRowListsOf(owner, "")
+	}
 	for _, target := range targets {
 		before.list = append(before.list, valueSnapshot[A, V]{target: target, value: get(target)})
 		mutate(target)
 		after.list = append(after.list, valueSnapshot[A, V]{target: target, value: get(target)})
+	}
+	if len(before.lists) != 0 {
+		after.lists = grantRowListsOf(owner, "")
 	}
 	if mgr := unison.UndoManagerFor(undoSource); mgr != nil {
 		mgr.Add(&unison.UndoEdit[*snapshotList[A, V]]{
@@ -157,4 +171,24 @@ func adjustTargets[A, V any](undoTitle string, owner Rebuildable, undoSource uni
 		})
 	}
 	before.finish()
+}
+
+// targetCarriesGrants returns true if the target is a trait, skill, spell or piece of equipment that carries a grant,
+// or holds one within it that does.
+func targetCarriesGrants(target any) bool {
+	if xreflect.IsNil(target) {
+		return false
+	}
+	switch one := target.(type) {
+	case *gurps.Trait:
+		return carriesGrants([]*gurps.Trait{one})
+	case *gurps.Skill:
+		return carriesGrants([]*gurps.Skill{one})
+	case *gurps.Spell:
+		return carriesGrants([]*gurps.Spell{one})
+	case *gurps.Equipment:
+		return carriesGrants([]*gurps.Equipment{one})
+	default:
+		return false
+	}
 }

@@ -1647,18 +1647,25 @@ func TestGrantedRowStaysWithTheGrantHoldingIt(t *testing.T) {
 	}
 	c.True(granted[0] == row, "reordering the carriers of equal grants leaves the row with the grant that put it there")
 
+	group := NewTrait(e, nil, true)
+	group.Name = "Senses"
+	group.Children = []*Trait{row}
+	row.SetParent(group)
+	e.Traits = []*Trait{b, a, group}
 	a.Disabled = true
 	e.Recalculate()
-	granted = grantedOf(e.Traits)
+	c.Equal(0, len(grantedOf(e.Traits)), "disabling the carrier whose grant put the row there adds no row at the top")
+	granted = grantedOf(group.Children)
 	if len(granted) != 1 {
-		c.Fatalf("expected one Night Vision row, got %d", len(granted))
+		c.Fatalf("expected one Night Vision row in the container, got %d", len(granted))
 	}
+	c.Equal(row.TID, granted[0].TID, "the other carrier's grant takes over the row where the user put it")
 	row = granted[0]
 	a.Disabled = false
 	e.Recalculate()
-	granted = grantedOf(e.Traits)
+	granted = grantedOf(group.Children)
 	if len(granted) != 1 {
-		c.Fatalf("expected one Night Vision row, got %d", len(granted))
+		c.Fatalf("expected one Night Vision row in the container, got %d", len(granted))
 	}
 	c.True(granted[0] == row, "enabling the other carrier again leaves the row with the grant that put it there")
 }
