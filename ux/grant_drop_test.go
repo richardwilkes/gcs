@@ -25,6 +25,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/ux/uxtest"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/toolbox/v2/tid"
+	"github.com/richardwilkes/toolbox/v2/xmath"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/mod"
 )
@@ -309,6 +310,54 @@ func TestGrantPickerLeavesOutTheItemEdited(t *testing.T) {
 		}
 	})
 	c.Equal([]string{"Dark Vision"}, names, "the item being edited is left out")
+}
+
+// TestGrantPickerListFollowsTheFilter checks that the picker's list is resized to the rows the filter leaves, no taller
+// than its view when they fit, since the scroll panel otherwise keeps the frame of the full list, leaving blank space to
+// scroll through below a filtered list and clipping the rows of one that grew.
+func TestGrantPickerListFollowsTheFilter(t *testing.T) {
+	c := check.New(t)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
+	dir := t.TempDir()
+	lib := library.NewLibrary("Test", "acct", "", "repo", dir)
+	libraries := gurps.GlobalSettings().Libraries
+	libraries.Store(lib.Key(), lib)
+	t.Cleanup(func() { libraries.Remove(lib.Key()) })
+	traits := []*gurps.Trait{newGrantTestTrait("Night Vision", 0)}
+	for i := range grantPickerRows + 2 {
+		traits = append(traits, newGrantTestTrait(fmt.Sprintf("Acute Sense %d", i), 0))
+	}
+	c.NoError(gurps.SaveTraits(traits, filepath.Join(dir, "Traits", "Test"+gurps.TraitsExt)))
+	entity := gurps.NewEntity()
+	owner := gurps.NewTrait(entity, nil, false)
+	features := gurps.Features{gurps.NewGrant(feature.GrantTrait)}
+	p, _ := showFeaturesPanel(t, screen, entity, owner, &features, false)
+	screen.Do(func() { p.toggle("0") })
+	var list *unison.List[*grantLibraryItem]
+	var filter *unison.Field
+	screen.Do(func() {
+		lists := uxtest.PanelsOfType[*unison.List[*grantLibraryItem]](p.AsPanel())
+		if len(lists) != 1 {
+			t.Fatalf("expected one picker list, found %d", len(lists))
+		}
+		list = lists[0]
+		var ok bool
+		if filter, ok = p.FindRefKey("0:filter").Self.(*unison.Field); !ok {
+			t.Fatal("the picker has no filter field")
+		}
+	})
+	rowHeight := xmath.Ceil(list.Factory.CellHeight())
+	screen.Do(func() { filter.SetText("Night Vision") })
+	screen.Do(func() {
+		c.Equal(1, list.Count(), "precondition: the filter leaves one row")
+		c.Equal(list.Parent().ContentRect(true).Height, list.FrameRect().Height,
+			"the list shrinks to its view once the filter leaves fewer rows than fit")
+	})
+	screen.Do(func() { filter.SetText("") })
+	screen.Do(func() {
+		c.True(list.Count() > grantPickerRows, "precondition: the cleared filter shows every row again")
+		c.Equal(rowHeight*float32(list.Count()), list.FrameRect().Height, "the list grows back with the filter cleared")
+	})
 }
 
 // TestGrantItemMatches checks that each word of the filter matches the start of a word of the name, or one a typo

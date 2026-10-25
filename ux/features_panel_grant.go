@@ -211,6 +211,9 @@ func (p *featuresPanel) grantPicker(path string, g *gurps.Grant) *unison.Panel {
 			choose(i18n.Text("Choose Granted Item"), list.DataAtIndex(list.Selection.FirstSet()))
 		}
 	}
+	scroll := unison.NewScrollPanel()
+	scroll.SetContent(list, behavior.Follow, behavior.Fill)
+	scroll.SetBorder(unison.NewLineBorder(unison.ThemeSurfaceEdge, geom.Size{}, geom.NewUniformInsets(1), false))
 	refill := func() {
 		query := grantFilterWords(filter.Text())
 		list.Clear()
@@ -223,7 +226,9 @@ func (p *featuresPanel) grantPicker(path string, g *gurps.Grant) *unison.Panel {
 			list.Select(false, 0)
 			list.ScrollRectIntoView(list.RowRect(0))
 		}
-		list.MarkForLayoutAndRedraw()
+		// The list marks only itself for layout, which doesn't resize it: the scroll panel sizes its content, so it
+		// is the one laid out again, or the list would keep the frame of the rows it showed before.
+		scroll.MarkForLayoutAndRedraw()
 	}
 	filter.ModifiedCallback = func(_, _ *unison.FieldState) { refill() }
 	keyDown := filter.KeyDownCallback
@@ -244,9 +249,6 @@ func (p *featuresPanel) grantPicker(path string, g *gurps.Grant) *unison.Panel {
 	}
 	refill()
 	panel.AddChild(filter)
-	scroll := unison.NewScrollPanel()
-	scroll.SetContent(list, behavior.Follow, behavior.Fill)
-	scroll.SetBorder(unison.NewLineBorder(unison.ThemeSurfaceEdge, geom.Size{}, geom.NewUniformInsets(1), false))
 	height := xmath.Ceil(list.Factory.CellHeight()) * grantPickerRows
 	scroll.SetLayoutData(&unison.FlexLayoutData{
 		HAlign:   align.Fill,
