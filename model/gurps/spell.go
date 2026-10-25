@@ -701,6 +701,11 @@ func (s *Spell) CurrentCalculatedLevel() fxp.Int {
 	return s.CalculateLevel().Level
 }
 
+// CalculatedLevelBeforeGrants implements SkillLevelStepper.
+func (s *Spell) CalculatedLevelBeforeGrants() fxp.Int {
+	return s.levelFromAdjustedPoints(s.AdjustedPoints(nil)).Level
+}
+
 // CalculateSpellLevel returns the calculated spell level.
 func CalculateSpellLevel(e *Entity, name, powerSource string, colleges, tags []string, attrDiff AttributeDifficulty, pts fxp.Int) Level {
 	var tooltip xbytes.InsertBuffer

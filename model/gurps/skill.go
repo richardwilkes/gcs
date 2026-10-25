@@ -84,6 +84,9 @@ type SkillLevelStepper interface {
 	SetRawPoints(points fxp.Int) bool
 	WildcardDifficulty() bool
 	CurrentCalculatedLevel() fxp.Int
+	// CalculatedLevelBeforeGrants is CurrentCalculatedLevel without what the grants made of the level (see
+	// grantState.applyLevels), which goes on rising with the points while a Keep Highest grant holds the level shown.
+	CalculatedLevelBeforeGrants() fxp.Int
 }
 
 // Skill holds the data for a skill.
@@ -870,6 +873,11 @@ func (s *Skill) CurrentCalculatedLevel() fxp.Int {
 	return s.CalculateLevel(nil).Level
 }
 
+// CalculatedLevelBeforeGrants implements SkillLevelStepper.
+func (s *Skill) CalculatedLevelBeforeGrants() fxp.Int {
+	return s.levelBeforeGrants(nil, s.DefaultedFrom, nil).Level
+}
+
 // skillLevelStride returns the widest span of points that needs to be searched to find the next or previous level.
 // Wildcard skills cost three times as much per level as other skills, so their span is three times as wide.
 func skillLevelStride(p SkillLevelStepper) fxp.Int {
@@ -881,20 +889,30 @@ func skillLevelStride(p SkillLevelStepper) fxp.Int {
 
 // incrementSkillLevel is the shared body of Skill.IncrementSkillLevel and Spell.IncrementSkillLevel. A disabled item
 // has no level to step, since AdjustedPoints reports nothing for it, so it is left alone, as is one with no higher
-// level to reach, such as a technique at its limit or a skill whose attribute is missing.
+// level to reach, such as a technique at its limit or a skill whose attribute is missing. The search goes on a stride
+// at a time while the level the points buy is still rising, since a Keep Highest grant holds the level shown until the
+// level bought passes the one kept, which may be several strides off, and stops once a stride passes without the level
+// bought rising, as no further points would raise it.
 func incrementSkillLevel(p SkillLevelStepper) {
 	if !p.Enabled() {
 		return
 	}
 	original := p.RawPoints()
-	basePoints := original.Floor() + fxp.One
-	maxPoints := basePoints + skillLevelStride(p)
+	stride := skillLevelStride(p)
 	oldLevel := p.CurrentCalculatedLevel()
-	for points := basePoints; points < maxPoints; points += fxp.One {
-		p.SetRawPoints(points)
-		if p.CurrentCalculatedLevel() > oldLevel {
-			return
+	bought := p.CalculatedLevelBeforeGrants()
+	for basePoints := original.Floor() + fxp.One; ; basePoints += stride {
+		for points := basePoints; points < basePoints+stride; points += fxp.One {
+			p.SetRawPoints(points)
+			if p.CurrentCalculatedLevel() > oldLevel {
+				return
+			}
 		}
+		next := p.CalculatedLevelBeforeGrants()
+		if next <= bought {
+			break
+		}
+		bought = next
 	}
 	p.SetRawPoints(original)
 }
@@ -939,20 +957,29 @@ func (s *Skill) calculateLevelExcept(exclude any, excludes map[string]bool) Leve
 // calculateLevelWith is calculateLevelExcept with the given default in place of the one the skill recorded. With
 // exclude nil, what the grants of the item whose prerequisites are being judged gave is left out; see Entity.judgingOr.
 func (s *Skill) calculateLevelWith(exclude any, def *SkillDefault, excludes map[string]bool) Level {
-	exclude = EntityFromNode(s).judgingOr(exclude)
+	e := EntityFromNode(s)
+	exclude = e.judgingOr(exclude)
+	level := s.levelBeforeGrants(exclude, def, excludes)
+	if s.IsTechnique() {
+		return level
+	}
+	return s.grant.applyLevels(exclude, level, func(tierPoints fxp.Int) fxp.Int {
+		return s.levelAt(e, def, tierPoints).Level
+	})
+}
+
+// levelBeforeGrants is calculateLevelWith without what the grants made of the level, though with the points they gave;
+// see grantState.applyLevels.
+func (s *Skill) levelBeforeGrants(exclude any, def *SkillDefault, excludes map[string]bool) Level {
 	points := s.adjustedPointsExcept(exclude, nil)
 	if s.IsTechnique() {
 		return CalculateTechniqueLevel(EntityFromNode(s), s.Replacements, s.NameWithReplacements(),
 			s.SpecializationWithReplacements(), s.Tags, s.TechniqueDefault, s.AdjustedDifficulty().Difficulty, points, true,
 			s.TechniqueLimitModifier, excludes)
 	}
-	e := EntityFromNode(s)
-	level := CalculateSkillLevel(e, s.NameWithReplacements(), s.SpecializationWithReplacements(),
+	return CalculateSkillLevel(EntityFromNode(s), s.NameWithReplacements(), s.SpecializationWithReplacements(),
 		s.OptionalSpecializationWithReplacements(), s.Tags, def, s.AdjustedDifficulty(), points,
 		s.EncumbrancePenaltyMultiplier)
-	return s.grant.applyLevels(exclude, level, func(tierPoints fxp.Int) fxp.Int {
-		return s.levelAt(e, def, tierPoints).Level
-	})
 }
 
 // CalculateSkillLevel returns the calculated level for a skill.

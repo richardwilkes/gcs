@@ -98,7 +98,7 @@ func (p *SkillPrereq) Satisfied(entity *Entity, exclude any, tooltip *xbytes.Ins
 		techLevel = sk.TechLevel
 	}
 	// The criteria are resolved once rather than once per skill, and the name is tested first, since it rules out
-	// nearly every skill before the points, which take a walk of the skill's features to find, are looked at.
+	// nearly every skill before the points, which take a walk of the sheet's point bonuses to find, are looked at.
 	name := p.NameCriteria.Matcher(replacements)
 	specialization := p.SpecializationCriteria.Matcher(replacements)
 	optionalSpecialization := p.OptionalSpecializationCriteria.Matcher(replacements)
