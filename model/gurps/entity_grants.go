@@ -728,12 +728,22 @@ func removeGrantedNode[T Node[T]](list *[]T, node T) {
 }
 
 // excludedFromPrereqs returns true if the node takes no part in judging the prerequisites of exclude: it is exclude
-// itself, or an item one of exclude's grants put on the sheet (see grantedFor), so that an item never meets its own
-// prerequisites with what it grants. What exclude's grants merged into an item taking part is left out of its level and
-// points as well (see grantState.applyLevelNotes), as are the bonuses of the items left out and the skill defaults
-// resting on them (see Entity.JudgingPrereqsOf).
+// itself, or is hidden from them (see hiddenFromPrereqs). What exclude's grants merged into an item taking part is left
+// out of its level and points as well (see grantState.applyLevelNotes), as are the bonuses of the items left out and
+// the skill defaults resting on them (see Entity.JudgingPrereqsOf).
 func excludedFromPrereqs(exclude, node any) bool {
-	return node == exclude || grantedFor(exclude, node)
+	return node == exclude || hiddenFromPrereqs(exclude, node)
+}
+
+// hiddenFromPrereqs returns true if the node is left out while the prerequisites of owner, which may be nil, are
+// judged: it is an item one of owner's grants put on the sheet (see grantedFor), so that an item never meets its own
+// prerequisites with what it grants, or a trait those prerequisites see as disabled (see Trait.disabledForPrereqsOf).
+func hiddenFromPrereqs(owner, node any) bool {
+	if grantedFor(owner, node) {
+		return true
+	}
+	t, ok := node.(*Trait)
+	return ok && t.disabledForPrereqsOf(owner)
 }
 
 // grantedFor returns true if the node is an item on the sheet only because of the grants carried by owner: every grant

@@ -1716,6 +1716,19 @@ func TestGrantDoesNotMeetItsCarriersPrereqs(t *testing.T) {
 				item.SelfControlAdj = selfctrl.MajorCostOfLivingIncrease
 			})
 		}
+		// agile is a grant of a trait giving +2 DX whose prerequisite nothing meets, which the grant checks when
+		// checked is set.
+		agile := func(checked bool) *Grant {
+			item := NewTrait(nil, nil, false)
+			item.Name = "Agile"
+			bonus := NewAttributeBonus(DexterityID)
+			bonus.Amount = fxp.Two
+			item.Features = Features{bonus}
+			item.Prereq = newPrereqListForTrait("Elf", true)
+			g := newTraitGrant(item, fxp.One, grantmerge.Ignore)
+			g.CheckPrereqs = checked
+			return g
+		}
 		// scripted puts on the sheet a trait with the name, carrying the grant, whose prerequisite is the script.
 		scripted := func(e *Entity, name string, g *Grant, script string) *Trait {
 			carrier := addTraitWithFeatures(e, name, g)
@@ -1814,6 +1827,17 @@ func TestGrantDoesNotMeetItsCarriersPrereqs(t *testing.T) {
 					haggler.Prereq = newPrereqListRequiringSkill("Merchant", fxp.Eight)
 					return haggler
 				}, met: true, row: func(e *Entity) any { return grantedOf(e.Traits)[0].SelfControl.Number() }, want: 6,
+			},
+			{
+				name: "putting a trait there whose prerequisites only the other grant checks",
+				carry: func(_ check.Checker, e *Entity) *Trait {
+					e.SheetSettings.EnforceTraitPrereqs = true
+					goggles(e, nil, agile(true))
+					addSkill(e, "Brawling", fxp.One)
+					training := addTraitWithFeatures(e, "Training", agile(false))
+					training.Prereq = newPrereqListRequiringSkill("Brawling", fxp.FromInteger(12))
+					return training
+				}, row: func(e *Entity) any { return grantedOf(e.Traits)[0].Enabled() }, want: false,
 			},
 			{
 				name: "standing in for a skill the other grant's tier meets",

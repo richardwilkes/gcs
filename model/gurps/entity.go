@@ -724,14 +724,15 @@ func (e *Entity) settleOnCanonicalCycleState(cycle [][]uint64) {
 }
 
 // derivedState fingerprints the derived state that one recalculation pass hands to the next, one fingerprint per trait,
-// skill and spell in traversal order: whether the sheet has disabled the trait, the level of the skill or spell and
+// skill and spell in traversal order: whether the sheet has disabled the trait, and whether it would have, had the
+// grant giving its details checked its prerequisites (see Trait.disabledIfChecked), the level of the skill or spell and
 // whether it takes the missing-equipment penalty, the default of the skill, and what the grants gave each, the details
 // takeGrantDetails gives a granted item included, each along with the ID of what it describes, followed by one
 // fingerprint of whether each grant's carrier has its prerequisites met, which the next pass's applyGrants reads (see
 // grantCarrierUnmet). Everything else a pass reads is either the sheet's data or recomputed from these before it is
 // read, so two passes that begin from the same state end in the same one, and a state seen before means the passes have
-// entered a cycle they will never leave. Whether a trait was judged at all is left out, since the next pass reads only
-// whether it is enabled. The capacity is a hint for the length and may be zero.
+// entered a cycle they will never leave. Whether a trait was judged at all is left out, since of its verdict the next
+// pass reads only whether it disables the trait. The capacity is a hint for the length and may be zero.
 func (e *Entity) derivedState(capacity int) []uint64 {
 	state := make([]uint64, 0, capacity)
 	h := xxh3.New()
@@ -744,6 +745,7 @@ func (e *Entity) derivedState(capacity int) []uint64 {
 	Traverse(func(t *Trait) bool {
 		fingerprint(t.TID, func() {
 			xhash.Bool(h, t.prereqVerdict == prereqsDisable)
+			xhash.Bool(h, t.disabledIfChecked)
 			t.grant.hash(h)
 			hashGrantDetails(h, t)
 		})
@@ -1135,16 +1137,24 @@ func (e *Entity) processTraitPrereqs() {
 	// computes, and honoring the previous one would keep the trait disabled after its prerequisites are met. The
 	// reason is kept for a trait disabled this way, so the sheet can show why it is disabled. A trait put on the sheet
 	// by a grant not in effect is not judged either, and one put there by a grant that bypasses its prerequisites is
-	// treated as having them met.
+	// treated as having them met. Such a one is still judged when a carrier's prerequisites see it given by a grant
+	// that checks them (see grantState.prereqsChecked), for whether the sheet would disable it were they checked, which
+	// is how the prerequisites that see it given by such a grant see it; see Trait.disabledForPrereqsOf.
 	enforce := e.SheetSettings.EnforceTraitPrereqs
 	var verdicts []traitPrereqVerdict
+	var disabledIfChecked []bool
 	Traverse(func(t *Trait) bool {
 		t.UnsatisfiedReason = ""
 		t.prereqsUnmet = false
 		verdict := prereqsNotJudged
+		ifChecked := false
 		if !t.IsDisabled() && !t.grantNotInEffect() && (t.parent == nil || t.parent.Enabled()) {
-			if !t.grant.bypass {
+			if t.grant.prereqsChecked() {
 				t.UnsatisfiedReason = e.evaluatePrereqs(t.Prereq, t, nil)
+				if t.grant.bypass {
+					ifChecked = enforce && t.UnsatisfiedReason != ""
+					t.UnsatisfiedReason = ""
+				}
 				t.prereqsUnmet = t.UnsatisfiedReason != ""
 			}
 			if maximum := t.ResolvedMaxLevels(); maximum > 0 && t.Levels > maximum {
@@ -1161,11 +1171,13 @@ func (e *Entity) processTraitPrereqs() {
 			}
 		}
 		verdicts = append(verdicts, verdict)
+		disabledIfChecked = append(disabledIfChecked, ifChecked)
 		return false
 	}, false, false, e.Traits...)
 	index := 0
 	Traverse(func(t *Trait) bool {
 		t.setPrereqVerdict(verdicts[index])
+		t.disabledIfChecked = disabledIfChecked[index]
 		index++
 		return false
 	}, false, false, e.Traits...)
@@ -1363,11 +1375,11 @@ func (e *Entity) TelekineticStrength() fxp.Int {
 }
 
 // TraitLevels returns the sum of the current levels of every enabled, leveled trait whose name matches the given one,
-// ignoring case, along with whether any such trait exists. A trait a grant of the item whose prerequisites are being
-// judged put on the sheet is left out; see JudgingPrereqsOf.
+// ignoring case, along with whether any such trait exists. A trait hidden from the prerequisites being judged, such as
+// one a grant of the item whose prerequisites they are put on the sheet, is left out; see excludedWhileJudging.
 func (e *Entity) TraitLevels(name string) (levels fxp.Int, found bool) {
 	Traverse(func(t *Trait) bool {
-		if t.IsLeveled() && strings.EqualFold(t.NameWithReplacements(), name) && !grantedFor(e.judging, t) {
+		if t.IsLeveled() && strings.EqualFold(t.NameWithReplacements(), name) && !e.excludedWhileJudging(t) {
 			levels += t.CurrentLevel()
 			found = true
 		}
@@ -1486,17 +1498,17 @@ func (e *Entity) judgingOr(exclude any) any {
 	return exclude
 }
 
-// bonusExcluded returns true if the bonus is left out while prerequisites are judged, being carried by an item a grant
-// of the item judged put on the sheet; see JudgingPrereqsOf.
+// bonusExcluded returns true if the bonus is left out while prerequisites are judged, being carried by an item hidden
+// from them, such as one a grant of the item judged put on the sheet; see hiddenFromPrereqs and JudgingPrereqsOf.
 func (e *Entity) bonusExcluded(bonus Bonus) bool {
-	return e.judging != nil && grantedFor(e.judging, bonus.Owner())
+	return e.judging != nil && hiddenFromPrereqs(e.judging, bonus.Owner())
 }
 
-// excludedWhileJudging returns true if the node is left out while prerequisites are judged, being an item a grant of
-// the item judged put on the sheet, which a script run for those prerequisites must not see either; see
-// JudgingPrereqsOf. e may be nil, which leaves nothing out.
+// excludedWhileJudging returns true if the node is left out while prerequisites are judged, being an item hidden from
+// them, such as one a grant of the item judged put on the sheet, which a script run for those prerequisites must not
+// see either; see hiddenFromPrereqs and JudgingPrereqsOf. e may be nil, which leaves nothing out.
 func (e *Entity) excludedWhileJudging(node any) bool {
-	return e != nil && grantedFor(e.judging, node)
+	return e != nil && hiddenFromPrereqs(e.judging, node)
 }
 
 // sumBonuses returns the total adjusted amount of the bonuses in the list that match, adding each of them to the

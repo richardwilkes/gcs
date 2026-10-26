@@ -88,7 +88,11 @@ type Trait struct {
 	// prereqsUnmet is whether Entity.processTraitPrereqs last found this trait's prerequisites unmet, as distinct from
 	// its level exceeding the maximum, which UnsatisfiedReason reports as well. It is never saved.
 	prereqsUnmet bool
-	grant        grantState
+	// disabledIfChecked is whether Entity.processTraitPrereqs last found that the sheet would disable this trait for
+	// its unmet prerequisites, which the grant giving its details treats as met, had that grant checked them, as the
+	// one giving its details as a carrier's prerequisites see it does; see disabledForPrereqsOf. It is never saved.
+	disabledIfChecked bool
+	grant             grantState
 	// savedLevel is the level the trait showed, savedCurrentLevel the current level and savedDisabledByPrereqs whether
 	// the sheet disabled the trait for unmet prerequisites, as the "calc" object of the file the trait was loaded from
 	// recorded them. They are only kept by a load that asks for them (see NewEntityFromFileWithSavedCalc) and only read
@@ -468,6 +472,7 @@ func (t *Trait) setPrereqVerdict(verdict traitPrereqVerdict) {
 func (t *Trait) resetPrereqVerdict() {
 	t.prereqVerdict = prereqsNotJudged
 	t.prereqContradicted = false
+	t.disabledIfChecked = false
 }
 
 // selfDisabled returns true if this trait itself is disabled, either by the user, because the sheet enforces
@@ -475,6 +480,18 @@ func (t *Trait) resetPrereqVerdict() {
 // Parents are not consulted; see Enabled for that.
 func (t *Trait) selfDisabled() bool {
 	return t.IsDisabled() || t.prereqVerdict == prereqsDisable || t.grantNotInEffect()
+}
+
+// disabledForPrereqsOf returns true if the prerequisites of exclude, which may be nil, see the trait disabled for its
+// unmet prerequisites, which the grant giving its details treated as met when it was last judged: the grant giving its
+// details as exclude's prerequisites see it (see grantState.viewFor) checks them, and the sheet would then disable it
+// (see disabledIfChecked), unless it is caught in a contradiction among the prerequisites.
+func (t *Trait) disabledForPrereqsOf(exclude any) bool {
+	if exclude == nil || !t.disabledIfChecked || t.prereqContradicted {
+		return false
+	}
+	view := t.grant.viewFor(exclude)
+	return view.inEffect && !view.bypass
 }
 
 // PrereqStatus returns what to show for the trait's prerequisites, in the trait table, the "calc" object and the
