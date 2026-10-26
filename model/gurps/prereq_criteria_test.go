@@ -150,9 +150,9 @@ func TestSkillPrereqCriteria(t *testing.T) {
 
 // TestAttributePrereqNeedsTheAttributes checks that an attribute prerequisite's comparison is met only when the sheet
 // defines each attribute it names, whatever the comparison, so a "Does not have" one is met when either is missing,
-// and that the size modifier, the Dodge and the bonuses to Parry and Block, which the editor offers alongside the
-// attributes, are compared at their values, the Dodge being the current one whether or not the sheet has a dodge
-// attribute.
+// and that the size modifier and the Dodge, which the editor offers alongside the attributes, are compared at their
+// values, the Dodge being the current one whether or not the sheet has a dodge attribute, while a parry or block, which
+// it no longer offers, counts as missing.
 func TestAttributePrereqNeedsTheAttributes(t *testing.T) {
 	c := check.New(t)
 	e := gurps.NewEntity()
@@ -161,8 +161,6 @@ func TestAttributePrereqNeedsTheAttributes(t *testing.T) {
 	c.Equal(fxp.Min, e.ResolveAttributeCurrent("sanity"), "precondition: the sheet has no Sanity")
 	c.Nil(e.ResolveAttribute(gurps.DodgeID), "precondition: the sheet has no dodge attribute")
 	e.Profile.SizeModifier = 2
-	e.ParryBonus = fxp.One
-	e.BlockBonus = fxp.Two
 	pack := gurps.NewEquipment(e, nil, false)
 	pack.BaseWeight = "30 lb"
 	e.CarriedEquipment = []*gurps.Equipment{pack}
@@ -195,8 +193,8 @@ func TestAttributePrereqNeedsTheAttributes(t *testing.T) {
 		{"does not have size modifier", attr(false, gurps.SizeModifierID, "", criteria.AtLeastNumber, 1), false},
 		{"ST plus size modifier", attr(true, gurps.StrengthID, gurps.SizeModifierID, criteria.EqualsNumber, 12), true},
 		{"dodge", attr(true, gurps.DodgeID, "", criteria.EqualsNumber, 3), true}, // 8/2 at HP -3, -1 for Light
-		{"parry", attr(true, gurps.ParryID, "", criteria.EqualsNumber, 1), true},
-		{"block", attr(true, gurps.BlockID, "", criteria.EqualsNumber, 2), true},
+		{"parry", attr(true, gurps.ParryID, "", criteria.AnyNumber, 0), false},
+		{"block", attr(true, gurps.BlockID, "", criteria.AnyNumber, 0), false},
 	} {
 		c.Equal(one.want, one.prereq.Satisfied(e, nil, nil, "", nil), one.name)
 	}

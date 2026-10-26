@@ -571,7 +571,7 @@ func (p *prereqPanel) editor(pr gurps.Prereq, path string) *unison.Panel {
 	case *gurps.AttributePrereq:
 		p.hasPopup(fields, key("has"), &one.Has, false)
 		p.typePopup(fields, path, pr)
-		flags := gurps.SizeFlag | gurps.DodgeFlag | gurps.ParryFlag | gurps.BlockFlag
+		flags := gurps.SizeFlag | gurps.DodgeFlag
 		p.attributePopup(fields, key("which"), i18n.Text("Attribute"), "", &one.Which, flags)
 		// Named apart from the attribute popup before it.
 		p.numberCriteria(fields, key("value"), i18n.Text("Value"), numericWordsAfter(i18n.Text("which")),

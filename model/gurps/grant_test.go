@@ -1904,16 +1904,15 @@ func TestGrantDoesNotMeetItsCarriersPrereqs(t *testing.T) {
 			addScriptPrereq(giant.Prereq, `entity.sizeModifier >= 1 ? "" : "Too small"`)
 			return giant, func() fxp.Int { return fxp.FromInteger(e.Profile.AdjustedSizeModifier()) }
 		}, level: 0},
-		{name: "bonuses from a granted trait to the size modifier and the parry read by an attribute prerequisite", carry: func(_ check.Checker, e *Entity) (*Trait, func() fxp.Int) {
+		{name: "bonus from a granted trait to the size modifier read by an attribute prerequisite", carry: func(_ check.Checker, e *Entity) (*Trait, func() fxp.Int) {
 			big := newGrantLeveledTrait("Big", fxp.One)
-			big.Features = Features{NewAttributeBonus(SizeModifierID), NewAttributeBonus(ParryID)}
+			big.Features = Features{NewAttributeBonus(SizeModifierID)}
 			giant := addTraitWithFeatures(e, "Giant", newTraitGrant(big, fxp.One, grantmerge.Ignore))
 			giant.Prereq = NewPrereqList()
 			p := NewAttributePrereq(e)
 			p.Parent = giant.Prereq
-			p.Has = false // Met by a size modifier and parry bonus adding up to more than 0
+			p.Has = false // Met by a size modifier above 0
 			p.Which = SizeModifierID
-			p.CombinedWith = ParryID
 			p.QualifierCriteria = criteria.Number{Compare: criteria.AtMostNumber}
 			giant.Prereq.Prereqs = append(giant.Prereq.Prereqs, p)
 			return giant, func() fxp.Int { return fxp.FromInteger(e.Profile.AdjustedSizeModifier()) }

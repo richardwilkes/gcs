@@ -99,8 +99,8 @@ func (p *AttributePrereq) Satisfied(entity *Entity, _ any, tooltip *xbytes.Inser
 // judged see it (see Entity.JudgingPrereqsOf): the current value of the sheet's attribute with that ID or, for the keys
 // the editor offers beside the attributes, the adjusted size modifier or the Dodge at the current encumbrance, which
 // on a sheet with a dodge attribute is that attribute halved by any threshold that halves Dodge and less the
-// encumbrance penalty. Parry and Block compare the bonus to every parry or block, the only sheet-level value there is
-// for them. A number resolves to itself, and any other key to fxp.Min.
+// encumbrance penalty. A number resolves to itself, and any other key to fxp.Min, as a missing attribute does; a parry
+// or block has no value of the sheet's to compare, so the editor doesn't offer them.
 func attributePrereqValue(entity *Entity, key string) fxp.Int {
 	switch key {
 	case SizeModifierID:
@@ -110,8 +110,6 @@ func attributePrereqValue(entity *Entity, key string) fxp.Int {
 		return fxp.FromInteger(entity.Profile.AdjustedSizeModifier())
 	case DodgeID:
 		return fxp.FromInteger(entity.Dodge(entity.EncumbranceLevel(false)))
-	case ParryID, BlockID:
-		return entity.defenseBonus(key)
 	default:
 		return entity.resolveAttributeCurrentForPrereqs(key)
 	}

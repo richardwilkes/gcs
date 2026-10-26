@@ -297,6 +297,35 @@ func TestPrereqPanelShowsAnyNumberItCantOffer(t *testing.T) {
 	}
 }
 
+// TestPrereqPanelAttributeChoicesLeaveOutParryAndBlock checks that an attribute prerequisite's attribute popup offers
+// the size modifier and the Dodge beside the sheet's attributes, but not Parry or Block, which have no value of the
+// sheet's for the prerequisite to compare.
+func TestPrereqPanelAttributeChoicesLeaveOutParryAndBlock(t *testing.T) {
+	c := check.New(t)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
+	root := gurps.NewPrereqList()
+	root.Prereqs = gurps.Prereqs{gurps.NewAttributePrereq(nil).Clone(root)}
+	p, _ := showPrereqPanel(t, screen, &root, false)
+	screen.Do(func() { p.toggle("r.0") })
+	screen.Do(func() {
+		popup, ok := p.FindRefKey("r.0:which").Self.(*unison.PopupMenu[*gurps.AttributeChoice])
+		c.True(ok, "the attribute popup is shown")
+		if !ok {
+			return
+		}
+		var keys []string
+		for i := range popup.ItemCount() {
+			if choice, isItem := popup.ItemAt(i); isItem {
+				keys = append(keys, choice.Key)
+			}
+		}
+		c.True(slices.Contains(keys, gurps.SizeModifierID), "the size modifier is offered: %v", keys)
+		c.True(slices.Contains(keys, gurps.DodgeID), "as is the Dodge: %v", keys)
+		c.False(slices.Contains(keys, gurps.ParryID), "but not Parry: %v", keys)
+		c.False(slices.Contains(keys, gurps.BlockID), "nor Block: %v", keys)
+	})
+}
+
 // TestPrereqPanelLayoutFollowsRebuild checks that a rebuild outside a dock, as in a dialog, lays the window's content
 // out again before it hands out the focus, so that the panel already has the size of its new rows when the focus
 // lands in them, rather than only at the next draw.
