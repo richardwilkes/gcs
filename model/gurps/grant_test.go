@@ -1532,7 +1532,8 @@ func TestGrantDoesNotMeetItsCarriersPrereqs(t *testing.T) {
 		}
 	})
 
-	// Nor does a selector override of a trait's self-control roll that what the grant puts on the sheet carries.
+	// Nor does a selector override of a trait's self-control roll or adjustment that what the grant puts on the sheet
+	// carries.
 	t.Run("trait selector override once the prerequisite is met without it", func(t *testing.T) {
 		c := check.New(t)
 		e := NewEntity()
@@ -1556,6 +1557,23 @@ func TestGrantDoesNotMeetItsCarriersPrereqs(t *testing.T) {
 		e.DiscardCaches()
 		result, _ := script.Evaluate(e, training)
 		c.Equal(CheckMet, result, "the script run on its own agrees with the sheet")
+
+		e = NewEntity()
+		miserliness := addTraitWithFeatures(e, "Miserliness")
+		miserliness.BasePoints = -fxp.Ten
+		miserliness.SelfControl = selfctrl.CR6
+		merchant := addSkill(e, "Merchant", fxp.One)
+		frugal := NewTrait(nil, nil, false)
+		frugal.Name = "Frugal"
+		frugal.Features = Features{newTraitSelectorOverride(selector.TraitSelfControlAdjustment, "Miserliness",
+			selfctrl.MajorCostOfLivingIncrease.Key())}
+		haggler := addTraitWithFeatures(e, "Haggler", newTraitGrant(frugal, fxp.One, grantmerge.Ignore))
+		haggler.Prereq = newPrereqListRequiringSkill("Merchant", fxp.Eight)
+		e.Recalculate()
+		c.False(e.Unsettled(), "Haggler")
+		c.Equal("", haggler.UnsatisfiedReason, "Merchant is 10 without the grant")
+		c.Equal(fxp.Six, merchant.LevelData.Level,
+			"so the grant is in effect, and its override gives Merchant the penalty of Miserliness at CR6")
 	})
 
 	// Nor are the Basic Lift, the carried weight and the encumbrance a script run for the prerequisites reads what the
@@ -1635,6 +1653,17 @@ func TestGrantDoesNotMeetItsCarriersPrereqs(t *testing.T) {
 		brawlingIn := func(tier fxp.Int, optionalSpecialization string) *Grant {
 			g := brawling(tier)
 			g.Skill.OptionalSpecialization = optionalSpecialization
+			return g
+		}
+		// knuckled gives the grant's skill a prerequisite of brass knuckles equipped, which nothing meets, and has the
+		// grant check it when checked is set.
+		knuckled := func(g *Grant, checked bool) *Grant {
+			g.CheckPrereqs = checked
+			g.Skill.Prereq = NewPrereqList()
+			p := NewEquippedEquipmentPrereq()
+			p.Parent = g.Skill.Prereq
+			p.NameCriteria.Qualifier = "Brass Knuckles"
+			g.Skill.Prereq.Prereqs = append(g.Skill.Prereq.Prereqs, p)
 			return g
 		}
 		// trait returns an Ignore grant of a trait with the name, which set adjusts.
@@ -1787,6 +1816,25 @@ func TestGrantDoesNotMeetItsCarriersPrereqs(t *testing.T) {
 					return training
 				}, row: func(e *Entity) any { return grantedOf(e.Skills)[0].OptionalSpecialization }, want: "Wrestling",
 			},
+			{
+				name: "putting a skill there whose missing-equipment penalty a prerequisite reads",
+				carry: func(_ check.Checker, e *Entity) *Trait {
+					goggles(e, nil, knuckled(brawlingIn(fxp.One, "Wrestling"), true))
+					training := addTraitWithFeatures(e, "Training", knuckled(brawlingIn(fxp.Three, "Boxing"), true))
+					training.Prereq = newPrereqListRequiringSkill("Brawling", fxp.Eight)
+					return training
+				}, row: func(e *Entity) any { return grantedOf(e.Skills)[0].OptionalSpecialization }, want: "Wrestling",
+			},
+			{
+				name: "putting a skill there whose missing-equipment penalty the other grant bypasses",
+				carry: func(_ check.Checker, e *Entity) *Trait {
+					goggles(e, nil, knuckled(brawling(fxp.One), false))
+					training := addTraitWithFeatures(e, "Training", knuckled(brawling(fxp.Three), true))
+					training.Prereq = newPrereqListRequiringSkill("Brawling", fxp.Eight)
+					return training
+				}, met: true, want: 7,
+				row: func(e *Entity) any { return grantedOf(e.Skills)[0].LevelData.Level.AsInteger[int]() },
+			},
 		} {
 			c := check.New(t)
 			e := NewEntity()
@@ -1922,6 +1970,20 @@ func TestGrantDoesNotMeetItsCarriersPrereqs(t *testing.T) {
 			training.Prereq = newPrereqListRequiringSkill("Brawling", fxp.FromInteger(12))
 			return training, func() fxp.Int { return brawling.LevelData.Level }
 		}, level: fxp.Ten},
+		{name: "override from a granted trait taking a Merchant penalty off a skill", carry: func(_ check.Checker, e *Entity) (*Trait, func() fxp.Int) {
+			miserliness := addTraitWithFeatures(e, "Miserliness")
+			miserliness.BasePoints = -fxp.Ten
+			miserliness.SelfControl = selfctrl.CR6
+			miserliness.SelfControlAdj = selfctrl.MajorCostOfLivingIncrease
+			merchant := addSkill(e, "Merchant", fxp.One) // 6 with the penalty of Miserliness at CR6
+			frugal := NewTrait(nil, nil, false)
+			frugal.Name = "Frugal"
+			frugal.Features = Features{newTraitSelectorOverride(selector.TraitSelfControlAdjustment, "Miserliness",
+				selfctrl.NoAdjustment.Key())}
+			haggler := addTraitWithFeatures(e, "Haggler", newTraitGrant(frugal, fxp.One, grantmerge.Ignore))
+			haggler.Prereq = newPrereqListRequiringSkill("Merchant", fxp.Eight)
+			return haggler, func() fxp.Int { return merchant.LevelData.Level }
+		}, level: fxp.Six},
 		{name: "bonus from a granted trait to an attribute", carry: func(_ check.Checker, e *Entity) (*Trait, func() fxp.Int) {
 			strong := newGrantLeveledTrait("Strong", fxp.One)
 			bonus := NewAttributeBonus(StrengthID)

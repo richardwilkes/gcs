@@ -1094,6 +1094,25 @@ func (t *Trait) ResolvedSelfControlAdjustment(tooltip *xbytes.InsertBuffer) self
 		t.SelfControlAdj.Key(), tooltip))
 }
 
+// mayTakeMerchantPenalty returns true if the trait's self-control adjustment is a major cost of living increase, which
+// calls for a Merchant penalty, or would be with some of the selector overrides left out, as the prerequisites being
+// judged leave some out (see ResolveSelector): its own adjustment or the value of an override that targets it is one.
+func (t *Trait) mayTakeMerchantPenalty() bool {
+	if t.SelfControlAdj.EnsureValid() == selfctrl.MajorCostOfLivingIncrease {
+		return true
+	}
+	if entity := EntityFromNode(t); entity != nil {
+		for _, override := range entity.features.selectorOverrides {
+			if override.Field == selector.TraitSelfControlAdjustment &&
+				selfctrl.ExtractAdjustment(override.Value) == selfctrl.MajorCostOfLivingIncrease &&
+				override.MatchesTrait(t) {
+				return true
+			}
+		}
+	}
+	return false
+}
+
 // LocalNotesWithReplacements returns the local notes with any replacements applied.
 func (t *Trait) LocalNotesWithReplacements() string {
 	return nameable.Apply(t.LocalNotes, t.Replacements)

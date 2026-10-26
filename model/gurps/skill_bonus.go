@@ -17,6 +17,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/criteria"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/feature"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/selfctrl"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/skillsel"
 	"github.com/richardwilkes/gcs/v5/model/nameable"
 	"github.com/richardwilkes/toolbox/v2/i18n"
@@ -30,8 +31,13 @@ var _ Bonus = &SkillBonus{}
 type SkillBonus struct {
 	SkillBonusData
 	// selfControlOf is, for the Merchant penalty Entity.processFeatures derives from a trait's self-control roll, that
-	// trait, whose roll gives the amount when it is read; see AdjustedAmount.
+	// trait, whose roll gives the amount when it is read and whose adjustment whether it applies; see AdjustedAmount
+	// and applies.
 	selfControlOf *Trait
+	// equipmentPenaltyOf is, for the missing-equipment penalty Entity.applyEquipmentPenalties gives a skill, that
+	// skill, whose optional specialization the penalty matches and whose grant decides whether it applies; see
+	// matchesOptionalSpecialization and applies.
+	equipmentPenaltyOf *Skill
 }
 
 // SkillBonusData holds an adjustment to a skill which is persisted.
@@ -109,6 +115,35 @@ func (s *SkillBonus) AdjustedAmount() fxp.Int {
 		return fxp.FromInteger(s.selfControlOf.ResolvedSelfControl(nil).Penalty())
 	}
 	return s.LeveledAmount.AdjustedAmount()
+}
+
+// applies returns false for a penalty derived from a trait or skill that does not call for it as the prerequisites
+// being judged see that trait or skill: the Merchant penalty of a trait whose self-control adjustment is not a major
+// cost of living increase (see Trait.ResolvedSelfControlAdjustment), and the missing-equipment penalty of a skill whose
+// details come from a grant that treats its prerequisites as met (see judgedDetail). Every other bonus applies.
+func (s *SkillBonus) applies() bool {
+	switch {
+	case s.selfControlOf != nil:
+		return s.selfControlOf.ResolvedSelfControlAdjustment(nil) == selfctrl.MajorCostOfLivingIncrease
+	case s.equipmentPenaltyOf != nil:
+		detail := judgedDetail(s.equipmentPenaltyOf)
+		return detail == nil || detail.CheckPrereqs
+	default:
+		return true
+	}
+}
+
+// matchesOptionalSpecialization returns true if the optional specialization criterion matches the value. That of the
+// missing-equipment penalty of a skill is the skill's optional specialization as the prerequisites being judged see it
+// (see Skill.OptionalSpecializationWithReplacements).
+func (s *SkillBonus) matchesOptionalSpecialization(replacements map[string]string, optionalSpecialization string) bool {
+	if s.equipmentPenaltyOf != nil {
+		return criteria.Text{
+			Compare:   criteria.IsText,
+			Qualifier: s.equipmentPenaltyOf.OptionalSpecializationWithReplacements(),
+		}.Matches(replacements, optionalSpecialization)
+	}
+	return s.OptionalSpecializationCriteria.Matches(replacements, optionalSpecialization)
 }
 
 // AddToTooltip implements Bonus.

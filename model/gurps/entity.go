@@ -807,14 +807,17 @@ func (e *Entity) processFeatures() {
 	})
 	// Self-control-derived features are generated after the full walk, since resolving a trait's self-control roll
 	// and adjustment through a selector override requires every override to have been collected first. The Merchant
-	// penalty reads the roll again whenever its amount is read, so that it is the roll the prerequisites being judged
-	// see; see SkillBonus.AdjustedAmount.
+	// penalty reads the roll and adjustment again whenever it is read, so that they are the ones the prerequisites
+	// being judged see, and so is generated for every trait whose adjustment they might see call for it; see
+	// SkillBonus.AdjustedAmount and SkillBonus.applies.
 	Traverse(func(t *Trait) bool {
-		for _, f := range FeaturesForSelfControlRoll(t.ResolvedSelfControl(nil), t.ResolvedSelfControlAdjustment(nil)) {
-			if bonus, ok := f.(*SkillBonus); ok {
-				bonus.selfControlOf = t
+		if t.mayTakeMerchantPenalty() {
+			for _, f := range FeaturesForSelfControlRoll(t.ResolvedSelfControl(nil), selfctrl.MajorCostOfLivingIncrease) {
+				if bonus, ok := f.(*SkillBonus); ok {
+					bonus.selfControlOf = t
+				}
+				e.processFeature(t, nil, f, t)
 			}
-			e.processFeature(t, nil, f, t)
 		}
 		return false
 	}, true, false, e.Traits...)
@@ -1021,7 +1024,8 @@ const unsatisfiedReasonPrefix = "\n- "
 // applyEquipmentPenalties adds to the collected features the missing-equipment penalty of every skill and spell that
 // processSkillAndSpellPrereqs last found unsatisfied on account of equipment they require to be equipped. It runs
 // before the prerequisites are judged again, so that every level computed during the pass counts the same penalties;
-// see recalculationPass.
+// see recalculationPass. A skill's penalty matches the skill's optional specialization, and applies, as the
+// prerequisites being judged see the skill; see SkillBonus.applies.
 func (e *Entity) applyEquipmentPenalties() {
 	Traverse(func(s *Skill) bool {
 		if s.takesEquipmentPenalty {
@@ -1029,8 +1033,7 @@ func (e *Entity) applyEquipmentPenalties() {
 			penalty.NameCriteria.Qualifier = s.NameWithReplacements()
 			penalty.SpecializationCriteria.Compare = criteria.IsText
 			penalty.SpecializationCriteria.Qualifier = s.SpecializationWithReplacements()
-			penalty.OptionalSpecializationCriteria.Compare = criteria.IsText
-			penalty.OptionalSpecializationCriteria.Qualifier = s.OptionalSpecializationWithReplacements()
+			penalty.equipmentPenaltyOf = s
 			penalty.Amount = missingEquipmentPenalty(s.TechLevel)
 			penalty.SetOwner(s)
 			e.features.skillBonuses = append(e.features.skillBonuses, penalty)
@@ -1575,14 +1578,15 @@ func (e *Entity) addDRBonusesFor(locationID string, tooltip *xbytes.InsertBuffer
 	return drMap
 }
 
-// SkillBonusFor returns the total bonus for the matching skill bonuses.
+// SkillBonusFor returns the total bonus for the matching skill bonuses that apply; see SkillBonus.applies.
 func (e *Entity) SkillBonusFor(name, specialization, optionalSpecialization string, tags []string, tooltip *xbytes.InsertBuffer) fxp.Int {
 	return sumBonuses(e, e.features.skillBonuses, tooltip, func(bonus *SkillBonus, replacements map[string]string) bool {
 		return bonus.SelectionType == skillsel.Name &&
 			bonus.NameCriteria.Matches(replacements, name) &&
 			bonus.SpecializationCriteria.Matches(replacements, specialization) &&
-			bonus.OptionalSpecializationCriteria.Matches(replacements, optionalSpecialization) &&
-			bonus.TagsCriteria.MatchesList(replacements, tags...)
+			bonus.matchesOptionalSpecialization(replacements, optionalSpecialization) &&
+			bonus.TagsCriteria.MatchesList(replacements, tags...) &&
+			bonus.applies()
 	})
 }
 
