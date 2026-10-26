@@ -567,7 +567,7 @@ func pageRefButtonAndField(c check.Checker, content *unison.Panel) (*unison.Butt
 }
 
 // TestEditorPageRefButtonFollowsTheField verifies that every editor puts a button beside its page reference that is
-// enabled only while the field holds a reference to open, including after an undo.
+// enabled only while the field holds a reference to open, including after an undo and in a read-only editor.
 func TestEditorPageRefButtonFollowsTheField(t *testing.T) {
 	c := check.New(t)
 	for name, content := range everyEditorContent(t) {
@@ -592,6 +592,11 @@ func TestEditorPageRefButtonFollowsTheField(t *testing.T) {
 	c.True(button.Enabled(), "undoing the clear enables the button again")
 	field.SetText(" ; ")
 	c.False(button.Enabled(), "separators alone are no reference")
+
+	field.SetText("B42")
+	e.makeReadOnly()
+	c.False(field.Enabled(), "a read-only editor's reference can't be changed")
+	c.True(button.Enabled(), "a read-only editor's reference can still be opened, since that changes nothing")
 }
 
 // TestEditorPageRefHighlightFallsBackToTheName verifies that the page reference button looks for the name on the page

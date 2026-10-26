@@ -57,13 +57,27 @@ func OpenEachPageRef[T gurps.Node[T]](table *unison.Table[*Node[T]]) {
 	}
 }
 
+// pageRefLabel is the panel newPageRefLabel returns.
+type pageRefLabel struct {
+	unison.Panel
+	label *unison.Label
+}
+
+// makeReadOnly disables the label but leaves the button as the reference makes it, since opening the reference
+// changes nothing.
+func (p *pageRefLabel) makeReadOnly() {
+	p.label.SetEnabled(false)
+}
+
 // newPageRefLabel returns a panel holding the label for a page reference field and, beside it, a button in the given
 // font that opens the first reference ref returns, looking for what highlight returns on the page. A blank highlight
 // opens the page with nothing to look for, so highlight should fall back to the item's name, as the page reference
 // cell of a table does. The button is enabled only while there is a reference to open, which refresh brings up to
 // date, so call it whenever the reference changes.
 func newPageRefLabel(label *unison.Label, font unison.Font, ref, highlight func() string) (wrapper *unison.Panel, refresh func()) {
-	wrapper = unison.NewPanel()
+	p := &pageRefLabel{label: label}
+	p.Self = p
+	wrapper = p.AsPanel()
 	wrapper.SetLayout(&unison.FlexLayout{
 		Columns:  2,
 		HSpacing: 4,

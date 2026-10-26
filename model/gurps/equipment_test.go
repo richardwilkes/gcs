@@ -246,6 +246,30 @@ func TestEquipmentCellDataAppliesDisplayFormatsOnPagesOnly(t *testing.T) {
 	c.Equal("7.5 lb", data.Tooltip)
 }
 
+// TestEquipmentPageRefCellLooksForTheName verifies that, without a highlight, the page reference cell of a piece of
+// equipment looks for its name alone, as those of the other kinds do, since the level and title notes its description
+// adds are not in the book.
+func TestEquipmentPageRefCellLooksForTheName(t *testing.T) {
+	c := check.New(t)
+	e := NewEntity()
+	sword := addCarriedEquipmentWithFeatures(e, "Broadsword", newTitleNoteFor("Own"))
+	sword.PageRef = "B271"
+	sword.Level = fxp.Two
+	fine := NewEquipmentModifier(e, nil, false)
+	fine.Name = "Fine"
+	fine.ShowInTitle = true
+	sword.SetModifiers([]*EquipmentModifier{fine})
+	c.Equal("Broadsword 2 (Own; Fine)", sword.String(), "precondition: the description adds the level and title notes")
+	var data CellData
+	sword.CellData(EquipmentReferenceColumn, &data)
+	c.Equal("B271", data.Primary)
+	c.Equal("Broadsword", data.Secondary, "the name is looked for without the level or title notes")
+	sword.PageRefHighlight = "Broadswords"
+	data = CellData{}
+	sword.CellData(EquipmentReferenceColumn, &data)
+	c.Equal("Broadswords", data.Secondary, "a highlight is looked for as given")
+}
+
 // TestEquipmentHeaderDataAppliesDisplayFormats verifies that the totals in the carried and other equipment headers on
 // a page use the sheet's equipment weight and value display formats, and that whenever those formats change how a
 // total reads, the exact totals are offered as the header's tooltip. The totals are chosen so that the padding, not

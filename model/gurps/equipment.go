@@ -627,7 +627,7 @@ func (e *Equipment) CellData(columnID int, data *CellData) {
 	case EquipmentTagsColumn:
 		fillTagsCell(data, e.Tags)
 	case EquipmentReferenceColumn, PageRefCellAlias:
-		fillPageRefCell(data, e.PageRef, e.PageRefHighlight, e.String)
+		fillPageRefCell(data, e.PageRef, e.PageRefHighlight, e.NameWithReplacements)
 	case EquipmentLibSrcColumn:
 		fillLibSrcCell(data, e.owner, e)
 	case EquipmentSwitchColumn:

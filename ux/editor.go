@@ -168,8 +168,8 @@ func (e *editor[N, D]) followRow(entity *gurps.Entity) {
 }
 
 // makeReadOnly makes the editor only show its target. Every widget of its content is disabled, but for the panels
-// that make themselves read-only instead, so that their rows can still be read in full or opened. MarkModified calls
-// it again, since the editor turns some of its widgets back on then.
+// that make themselves read-only instead, so that their rows can still be read in full or opened, as can the page
+// reference. MarkModified calls it again, since the editor turns some of its widgets back on then.
 func (e *editor[N, D]) makeReadOnly() {
 	e.readOnly = true
 	disableAllBut(e.content, func(panel *unison.Panel) bool {
