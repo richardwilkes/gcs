@@ -383,7 +383,7 @@ func (s *Skill) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 			return kinds.Technique
 		}
 		return skillKind(container)
-	}) && localData.IsOpen
+	}, kinds.Skill, kinds.SkillContainer, kinds.Technique) && localData.IsOpen
 	s.SkillData = localData.SkillData
 	s.Weapons = dropNilNodes(s.Weapons)
 	s.Replacements = nameable.Normalize(s.Replacements)

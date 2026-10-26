@@ -278,12 +278,15 @@ func saveRows[T any](filePath string, rows []T) error {
 	return jio.SaveToFile(filePath, &listData[T]{Version: jio.CurrentDataVersion, Rows: rows})
 }
 
-// fixupLegacyTID gives a node written before TIDs existed -- its ID is a UUID, or missing altogether -- a fresh TID
-// whose kind is derived from the legacy "type" string, which was the kind's name with containerKeyPostfix appended for
-// a container. It returns true when a fixup was made, which is also the signal to carry over the legacy "open" flag:
-// the open state of a container is tracked by TID nowadays, so it could not have been stored for a node without one.
-func fixupLegacyTID(id *tid.TID, legacyType string, kindFor func(container bool) byte) bool {
-	if tid.IsValid(*id) {
+// fixupLegacyTID gives a node whose ID is not a TID of one of ownKinds, the kinds its type can have, a fresh TID whose
+// kind is derived from the legacy "type" string, which was the kind's name with containerKeyPostfix appended for a
+// container. Such a node was written before TIDs existed -- its ID is a UUID, or missing altogether -- or comes from a
+// hand-edited file that gave it a TID of a kind its type can't have, which would have it hash as another kind of item
+// (see syncKind). It returns true when a fixup was made, which is also the signal to carry over the legacy "open" flag:
+// the open state of a container is tracked by TID nowadays, so it could not have been stored for a node without one,
+// nor for one whose TID's kind kept it from being a container.
+func fixupLegacyTID(id *tid.TID, legacyType string, kindFor func(container bool) byte, ownKinds ...byte) bool {
+	if tid.IsValid(*id) && slices.Contains(ownKinds, tidKind(*id)) {
 		return false
 	}
 	*id = tid.MustNewTID(kindFor(strings.HasSuffix(legacyType, containerKeyPostfix)))

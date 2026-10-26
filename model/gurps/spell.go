@@ -360,7 +360,7 @@ func (s *Spell) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 			return kinds.RitualMagicSpell
 		}
 		return spellKind(container)
-	}) && localData.IsOpen
+	}, kinds.Spell, kinds.SpellContainer, kinds.RitualMagicSpell) && localData.IsOpen
 	s.SpellData = localData.SpellData
 	s.Weapons = dropNilNodes(s.Weapons)
 	s.Replacements = nameable.Normalize(s.Replacements)

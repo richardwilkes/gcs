@@ -197,7 +197,8 @@ func (n *Note) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 	if err := json.UnmarshalDecode(dec, &localData); err != nil {
 		return err
 	}
-	open := fixupLegacyTID(&localData.TID, localData.Type, noteKind) && localData.IsOpen
+	open := fixupLegacyTID(&localData.TID, localData.Type, noteKind, kinds.Note, kinds.NoteContainer) &&
+		localData.IsOpen
 	n.NoteData = localData.NoteData
 	if keepSavedCalc(dec) {
 		n.savedResolvedText = savedCalc[savedNoteCalc](localData.Calc).ResolvedText

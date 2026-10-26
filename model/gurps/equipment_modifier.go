@@ -227,7 +227,8 @@ func (e *EquipmentModifier) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 	if err := json.UnmarshalDecode(dec, &localData); err != nil {
 		return err
 	}
-	open := fixupLegacyTID(&localData.TID, localData.Type, equipmentModifierKind) && localData.IsOpen
+	open := fixupLegacyTID(&localData.TID, localData.Type, equipmentModifierKind, kinds.EquipmentModifier,
+		kinds.EquipmentModifierContainer) && localData.IsOpen
 	e.EquipmentModifierData = localData.EquipmentModifierData
 	e.Replacements = nameable.Normalize(e.Replacements)
 	migrateLegacyText(&e.LocalNotes, localData.ExprNotes)

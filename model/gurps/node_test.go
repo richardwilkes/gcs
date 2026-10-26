@@ -10,8 +10,10 @@
 package gurps
 
 import (
+	"encoding/json/v2"
 	"os"
 	"path/filepath"
+	"slices"
 	"strconv"
 	"testing"
 	"testing/fstest"
@@ -121,20 +123,59 @@ func TestLegacyNodeUnmarshal(t *testing.T) {
 	c.Equal([]string{"Gamma", "Mental"}, child.Tags, "the old type flags become tags")
 }
 
-// TestFixupLegacyTIDKeepsValidIDs verifies that a node that already has a TID is left alone, and that the open flag
-// is therefore not carried over for it, since its open state is tracked by TID.
+// TestFixupLegacyTIDKeepsValidIDs verifies that a node that already has a TID of a kind its type can have is left
+// alone, and that the open flag is therefore not carried over for it, since its open state is tracked by TID.
 func TestFixupLegacyTIDKeepsValidIDs(t *testing.T) {
 	c := check.New(t)
+	own := []byte{kinds.Skill, kinds.SkillContainer, kinds.Technique}
 	id := tid.MustNewTID(kinds.Skill)
 	original := id
-	c.False(fixupLegacyTID(&id, "skill_container", skillKind), "a valid TID is not replaced")
+	c.False(fixupLegacyTID(&id, "skill_container", skillKind, own...), "a valid TID is not replaced")
 	c.Equal(original, id)
 	id = ""
-	c.True(fixupLegacyTID(&id, "skill_container", skillKind), "a missing TID is replaced")
+	c.True(fixupLegacyTID(&id, "skill_container", skillKind, own...), "a missing TID is replaced")
 	c.True(tid.IsKind(id, kinds.SkillContainer), "the container suffix selects the container kind")
 	id = "legacy-uuid"
-	c.True(fixupLegacyTID(&id, "skill", skillKind), "a UUID is replaced")
+	c.True(fixupLegacyTID(&id, "skill", skillKind, own...), "a UUID is replaced")
 	c.True(tid.IsKind(id, kinds.Skill), "no suffix selects the plain kind")
+
+	// A hand-edited file can give a node an ID of a kind its type can't have, which is replaced as a missing one is,
+	// while an ID of any kind the type can have is kept.
+	types := []struct {
+		load func(c check.Checker, id tid.TID) byte
+		own  []byte // The kinds the type can have, starting with the one an ID of another kind is replaced with.
+	}{
+		{load: kindOnLoad[Trait], own: []byte{kinds.Trait, kinds.TraitContainer}},
+		{load: kindOnLoad[TraitModifier], own: []byte{kinds.TraitModifier, kinds.TraitModifierContainer}},
+		{load: kindOnLoad[Skill], own: []byte{kinds.Skill, kinds.SkillContainer, kinds.Technique}},
+		{load: kindOnLoad[Spell], own: []byte{kinds.Spell, kinds.SpellContainer, kinds.RitualMagicSpell}},
+		{load: kindOnLoad[Equipment], own: []byte{kinds.Equipment, kinds.EquipmentContainer}},
+		{load: kindOnLoad[EquipmentModifier], own: []byte{kinds.EquipmentModifier, kinds.EquipmentModifierContainer}},
+		{load: kindOnLoad[Note], own: []byte{kinds.Note, kinds.NoteContainer}},
+	}
+	for _, one := range types {
+		for _, other := range types {
+			for _, kind := range other.own {
+				want := one.own[0]
+				if slices.Contains(one.own, kind) {
+					want = kind
+				}
+				c.Equal(string(want), string(one.load(c, tid.MustNewTID(kind))),
+					"a node of a type with kinds %q loaded with an ID of kind %c", one.own, kind)
+			}
+		}
+	}
+}
+
+// kindOnLoad returns the kind of the ID a T has once loaded from data that gives it only the ID.
+func kindOnLoad[T any, P interface {
+	*T
+	ID() tid.TID
+}](c check.Checker, id tid.TID) byte {
+	c.Helper()
+	var node T
+	c.NoError(json.Unmarshal([]byte(`{"id":"`+string(id)+`"}`), P(&node)))
+	return tidKind(P(&node).ID())
 }
 
 func TestSharedCellAndHeaderData(t *testing.T) {

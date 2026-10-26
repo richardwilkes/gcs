@@ -31,6 +31,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/stdmg"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/stlimit"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/wsel"
+	"github.com/richardwilkes/gcs/v5/model/kinds"
 	"github.com/richardwilkes/gcs/v5/model/nameable"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/toolbox/v2/tid"
@@ -243,7 +244,7 @@ func TestGrantBelowFirstTierPutsNothingOnSheet(t *testing.T) {
 	c.Equal(0, len(grantedOf(e.Skills)))
 }
 
-func TestGrantOfContainerPutsNothingOnSheet(t *testing.T) {
+func TestGrantedRowIsTheKindOfItemItsGrantGives(t *testing.T) {
 	c := check.New(t)
 	e := NewEntity()
 	pack := NewTrait(nil, nil, true)
@@ -263,6 +264,124 @@ func TestGrantOfContainerPutsNothingOnSheet(t *testing.T) {
 	e.Traits = append(e.Traits, stale)
 	e.Recalculate()
 	c.Equal(0, len(grantedOf(e.Traits)), "a granted container row from a file goes as any row no grant keeps does")
+
+	// A file can give the row a grant put on the sheet an ID of another kind, keeping the grant's link whether or not
+	// its hash still matches, which turns a trait row into a container of other traits, a skill row into a technique,
+	// or a spell row into ritual magic or back. The grant makes its item again in that row's place, leaving any
+	// children behind, as it does when only the hash no longer matches.
+	for _, tc := range []struct {
+		name  string
+		grant func() *Grant
+		kind  byte
+	}{
+		{
+			name: "trait as a container",
+			grant: func() *Grant {
+				return newTraitGrant(newGrantLeveledTrait("Night Vision", fxp.One), fxp.Two, grantmerge.Ignore)
+			},
+			kind: kinds.TraitContainer,
+		},
+		{
+			name: "skill as a technique",
+			grant: func() *Grant {
+				return newSkillGrant(newEasySkill("Brawling", fxp.One), fxp.Three, grantmerge.Ignore)
+			},
+			kind: kinds.Technique,
+		},
+		{
+			name: "spell as ritual magic",
+			grant: func() *Grant {
+				return newSpellGrant(newHardSpell("Light", fxp.One), fxp.Three, grantmerge.Ignore)
+			},
+			kind: kinds.RitualMagicSpell,
+		},
+		{
+			name: "ritual magic spell as a regular one",
+			grant: func() *Grant {
+				ritual := NewRitualMagicSpell(nil, nil, false)
+				ritual.Name = "Bless"
+				return newSpellGrant(ritual, fxp.Three, grantmerge.Ignore)
+			},
+			kind: kinds.Spell,
+		},
+	} {
+		for _, hash := range []string{"matching", "stale"} {
+			what := tc.name + ", " + hash + " hash"
+			e = NewEntity()
+			g := tc.grant()
+			addTraitWithFeatures(e, "Carrier", g)
+			switch g.Type {
+			case feature.GrantTrait:
+				checkGrantRemakesRowOfOtherKind(c, e, &e.Traits, tc.kind, hash, what)
+			case feature.GrantSkill:
+				checkGrantRemakesRowOfOtherKind(c, e, &e.Skills, tc.kind, hash, what)
+			case feature.GrantSpell:
+				checkGrantRemakesRowOfOtherKind(c, e, &e.Spells, tc.kind, hash, what)
+			}
+		}
+	}
+
+	// The grant's copy of its item can also have an ID of a kind its type doesn't have, which the item the grant makes
+	// from it doesn't take, so the row is not made again on that account.
+	e = NewEntity()
+	foreign := newGrantLeveledTrait("Night Vision", fxp.One)
+	foreign.TID = tid.MustNewTID(kinds.Skill)
+	addTraitWithFeatures(e, "Carrier", newTraitGrant(foreign, fxp.Two, grantmerge.Ignore))
+	e.Recalculate()
+	row := grantedOf(e.Traits)[0]
+	e.Recalculate()
+	c.True(row == grantedOf(e.Traits)[0], "an unchanged grant leaves its item alone, whatever kind its copy's ID has")
+}
+
+// checkGrantRemakesRowOfOtherKind gives the row a grant put at the top of the list an ID of the kind, along with a
+// child when that makes it a container, and the hash unless it is "matching", as a file can, and checks that the grant
+// then makes its item again in the row's place, as it was before.
+func checkGrantRemakesRowOfOtherKind[T grantNode[T]](c check.Checker, e *Entity, list *[]T, kind byte, hash,
+	what string,
+) {
+	c.Helper()
+	level := func(row T) fxp.Int {
+		switch n := any(row).(type) {
+		case *Trait:
+			return n.Levels
+		case *Skill:
+			return n.LevelData.Level
+		case *Spell:
+			return n.LevelData.Level
+		}
+		return 0
+	}
+	e.Recalculate()
+	row := grantedOf(*list)[0]
+	at := slices.Index(*list, row)
+	want := Hash64(row)
+	wantLevel := level(row)
+	switch n := any(row).(type) {
+	case *Trait:
+		n.TID = tid.MustNewTID(kind)
+		if n.Container() {
+			kid := newGrantLeveledTrait("Child", fxp.Five)
+			kid.SetDataOwner(e)
+			kid.SetParent(n)
+			n.Children = []*Trait{kid}
+		}
+	case *Skill:
+		n.TID = tid.MustNewTID(kind)
+	case *Spell:
+		n.TID = tid.MustNewTID(kind)
+	}
+	if hash != "matching" {
+		(*grantLink(row)).Hash = hash
+	}
+	e.Recalculate()
+	granted := grantedOf(*list)
+	if len(granted) != 1 {
+		c.Fatalf("expected one granted row, %s, got %d", what, len(granted))
+	}
+	c.Equal(want, Hash64(granted[0]), "the row is the item the grant gives again, %s", what)
+	c.False(granted[0].HasChildren(), what)
+	c.Equal(wantLevel, level(granted[0]), what)
+	c.Equal(at, slices.Index(*list, granted[0]), "in its place, %s", what)
 }
 
 func TestGrantSkillMergeModes(t *testing.T) {
@@ -1888,6 +2007,19 @@ func TestGrantDoesNotMeetItsCarriersPrereqs(t *testing.T) {
 				}, row: func(e *Entity) any { return grantedOf(e.Traits)[0].Enabled() }, want: false,
 			},
 			{
+				name: "putting a trait there within its maximum level, which the level the other grant keeps is not",
+				carry: func(_ check.Checker, e *Entity) *Trait {
+					e.SheetSettings.EnforceTraitPrereqs = true
+					kept := cappedAgile(fxp.Two)
+					kept.Merge = grantmerge.KeepHighest
+					goggles(e, nil, kept)
+					addSkill(e, "Brawling", fxp.One)
+					training := addTraitWithFeatures(e, "Training", cappedAgile(fxp.One))
+					training.Prereq = newPrereqListRequiringSkill("Brawling", fxp.FromInteger(12))
+					return training
+				}, row: func(e *Entity) any { return grantedOf(e.Traits)[0].Enabled() }, want: false,
+			},
+			{
 				name: "standing in for a skill the other grant's tier meets",
 				carry: func(_ check.Checker, e *Entity) *Trait {
 					goggles(e, brawling(fxp.Four), brawling(fxp.One))
@@ -1958,10 +2090,13 @@ func TestGrantDoesNotMeetItsCarriersPrereqs(t *testing.T) {
 			c := check.New(t)
 			e := NewEntity()
 			carrier := tc.carry(c, e)
-			e.Recalculate()
-			c.False(e.Unsettled(), tc.name)
-			c.Equal(tc.met, carrier.UnsatisfiedReason == "", "%s: %s", tc.name, carrier.UnsatisfiedReason)
-			c.Equal(tc.want, tc.row(e), tc.name)
+			// A recalculation begins from the state the last one left, which must not change where it ends.
+			for _, when := range []string{"", ", recalculated again"} {
+				e.Recalculate()
+				c.False(e.Unsettled(), tc.name+when)
+				c.Equal(tc.met, carrier.UnsatisfiedReason == "", "%s%s: %s", tc.name, when, carrier.UnsatisfiedReason)
+				c.Equal(tc.want, tc.row(e), tc.name+when)
+			}
 		}
 	})
 

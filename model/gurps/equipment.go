@@ -423,7 +423,8 @@ func (e *Equipment) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 	if err := json.UnmarshalDecode(dec, &localData); err != nil {
 		return err
 	}
-	open := fixupLegacyTID(&localData.TID, localData.Type, equipmentKind) && localData.IsOpen
+	open := fixupLegacyTID(&localData.TID, localData.Type, equipmentKind, kinds.Equipment, kinds.EquipmentContainer) &&
+		localData.IsOpen
 	e.EquipmentData = localData.EquipmentData
 	e.Modifiers = dropNilNodes(e.Modifiers)
 	e.Weapons = dropNilNodes(e.Weapons)

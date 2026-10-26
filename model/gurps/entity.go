@@ -726,14 +726,15 @@ func (e *Entity) settleOnCanonicalCycleState(cycle [][]uint64) {
 // derivedState fingerprints the derived state that one recalculation pass hands to the next, one fingerprint per trait,
 // skill and spell in traversal order: whether the sheet has disabled the trait, and whether it would have, had the
 // grant giving its details checked its prerequisites (see Trait.disabledIfChecked), or would not have, had the one
-// giving them as a carrier's prerequisites see it given them (see Trait.enabledAsJudged), the level of the skill or
-// spell and whether it takes the missing-equipment penalty, the default of the skill, and what the grants gave each,
-// the details takeGrantDetails gives a granted item included, each along with the ID of what it describes, followed by
-// one fingerprint of whether each grant's carrier has its prerequisites met, which the next pass's applyGrants reads
-// (see grantCarrierUnmet). Everything else a pass reads is either the sheet's data or recomputed from these before it
-// is read, so two passes that begin from the same state end in the same one, and a state seen before means the passes
-// have entered a cycle they will never leave. Whether a trait was judged at all is left out, since of its verdict the
-// next pass reads only whether it disables the trait. The capacity is a hint for the length and may be zero.
+// giving them as a carrier's prerequisites see it given them (see Trait.enabledAsJudged), the maximum level the sheet
+// enforces for the trait (see Trait.enforcedMaxLevels), the level of the skill or spell and whether it takes the
+// missing-equipment penalty, the default of the skill, and what the grants gave each, the details takeGrantDetails
+// gives a granted item included, each along with the ID of what it describes, followed by one fingerprint of whether
+// each grant's carrier has its prerequisites met, which the next pass's applyGrants reads (see grantCarrierUnmet).
+// Everything else a pass reads is either the sheet's data or recomputed from these before it is read, so two passes
+// that begin from the same state end in the same one, and a state seen before means the passes have entered a cycle
+// they will never leave. Whether a trait was judged at all is left out, since of its verdict the next pass reads only
+// whether it disables the trait. The capacity is a hint for the length and may be zero.
 func (e *Entity) derivedState(capacity int) []uint64 {
 	state := make([]uint64, 0, capacity)
 	h := xxh3.New()
@@ -748,6 +749,7 @@ func (e *Entity) derivedState(capacity int) []uint64 {
 			xhash.Bool(h, t.prereqVerdict == prereqsDisable)
 			xhash.Bool(h, t.disabledIfChecked)
 			xhash.Bool(h, t.enabledAsJudged)
+			xhash.Num64(h, t.enforcedMaxLevels)
 			t.grant.hash(h)
 			hashGrantDetails(h, t)
 		})
@@ -1179,16 +1181,19 @@ func (e *Entity) processTraitPrereqs() {
 	// is how the prerequisites that see it given by such a grant see it; see Trait.disabledForPrereqsOf. A trait the
 	// sheet disables is likewise found whether the sheet would leave it enabled, were it given its details by the grant
 	// giving them as a carrier's prerequisites see it, which is how those prerequisites see it; see
-	// Trait.enabledForPrereqsOf.
+	// Trait.enabledForPrereqsOf. The maximum level the sheet enforces is kept for the prerequisites that see a grant
+	// give the trait another level than it has; see Trait.disabledForPrereqsOf.
 	enforce := e.SheetSettings.EnforceTraitPrereqs
 	var verdicts []traitPrereqVerdict
 	var disabledIfChecked, enabledAsJudged []bool
+	var enforcedMaxLevels []fxp.Int
 	Traverse(func(t *Trait) bool {
 		t.UnsatisfiedReason = ""
 		t.prereqsUnmet = false
 		verdict := prereqsNotJudged
 		ifChecked := false
 		asJudged := false
+		var enforcedMax fxp.Int
 		if !t.IsDisabled() && !t.grantNotInEffect() && (t.parent == nil || t.parent.Enabled()) {
 			unmet := false
 			if t.grant.prereqsChecked() {
@@ -1201,6 +1206,9 @@ func (e *Entity) processTraitPrereqs() {
 				t.prereqsUnmet = t.UnsatisfiedReason != ""
 			}
 			maximum := t.ResolvedMaxLevels()
+			if enforce {
+				enforcedMax = maximum
+			}
 			if maximum > 0 && t.Levels > maximum {
 				reason := levelExceedsMaximumReason(maximum)
 				if t.UnsatisfiedReason == "" {
@@ -1220,6 +1228,7 @@ func (e *Entity) processTraitPrereqs() {
 		verdicts = append(verdicts, verdict)
 		disabledIfChecked = append(disabledIfChecked, ifChecked)
 		enabledAsJudged = append(enabledAsJudged, asJudged)
+		enforcedMaxLevels = append(enforcedMaxLevels, enforcedMax)
 		return false
 	}, false, false, e.Traits...)
 	index := 0
@@ -1227,6 +1236,7 @@ func (e *Entity) processTraitPrereqs() {
 		t.setPrereqVerdict(verdicts[index])
 		t.disabledIfChecked = disabledIfChecked[index]
 		t.enabledAsJudged = enabledAsJudged[index]
+		t.enforcedMaxLevels = enforcedMaxLevels[index]
 		index++
 		return false
 	}, false, false, e.Traits...)

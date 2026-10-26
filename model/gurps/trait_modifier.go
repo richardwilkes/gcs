@@ -225,7 +225,8 @@ func (t *TraitModifier) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 	if err := json.UnmarshalDecode(dec, &localData); err != nil {
 		return err
 	}
-	open := fixupLegacyTID(&localData.TID, localData.Type, traitModifierKind) && localData.IsOpen
+	open := fixupLegacyTID(&localData.TID, localData.Type, traitModifierKind, kinds.TraitModifier,
+		kinds.TraitModifierContainer) && localData.IsOpen
 	if localData.CostAdj == "" && localData.Cost != 0 {
 		switch localData.CostType {
 		case "points":

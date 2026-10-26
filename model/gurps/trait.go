@@ -92,6 +92,10 @@ type Trait struct {
 	// its unmet prerequisites, which the grant giving its details treats as met, had that grant checked them, as the
 	// one giving its details as a carrier's prerequisites see it does; see disabledForPrereqsOf. It is never saved.
 	disabledIfChecked bool
+	// enforcedMaxLevels is the maximum level Entity.processTraitPrereqs last found for this trait, when the sheet
+	// disables a trait above its maximum, or zero. A carrier's prerequisites see the trait disabled when the level it
+	// has as they see it is above this one; see disabledForPrereqsOf. It is never saved.
+	enforcedMaxLevels fxp.Int
 	// enabledAsJudged is whether Entity.processTraitPrereqs last found that the sheet, which disables this trait for
 	// its unmet prerequisites or its level above the maximum, would leave it enabled were it given its details by the
 	// grant giving them as a carrier's prerequisites see it: that grant treats its prerequisites as met, or they are
@@ -400,7 +404,8 @@ func (t *Trait) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 	if err := json.UnmarshalDecode(dec, &localData); err != nil {
 		return err
 	}
-	open := fixupLegacyTID(&localData.TID, localData.Type, traitKind) && localData.IsOpen
+	open := fixupLegacyTID(&localData.TID, localData.Type, traitKind, kinds.Trait, kinds.TraitContainer) &&
+		localData.IsOpen
 	t.TraitData = localData.TraitData
 	t.Modifiers = dropNilNodes(t.Modifiers)
 	t.Weapons = dropNilNodes(t.Weapons)
@@ -481,6 +486,7 @@ func (t *Trait) resetPrereqVerdict() {
 	t.prereqVerdict = prereqsNotJudged
 	t.prereqContradicted = false
 	t.disabledIfChecked = false
+	t.enforcedMaxLevels = 0
 	t.enabledAsJudged = false
 }
 
@@ -503,16 +509,26 @@ func (t *Trait) enabledForPrereqsOf(exclude any) bool {
 		exclude == t.grant.judgedFor
 }
 
-// disabledForPrereqsOf returns true if the prerequisites of exclude, which may be nil, see the trait disabled for its
-// unmet prerequisites, which the grant giving its details treated as met when it was last judged: the grant giving its
-// details as exclude's prerequisites see it (see grantState.viewFor) checks them, and the sheet would then disable it
-// (see disabledIfChecked), unless it is caught in a contradiction among the prerequisites.
+// disabledForPrereqsOf returns true if the prerequisites of exclude, which may be nil, see the trait disabled, unless it
+// is caught in a contradiction among the prerequisites: given its details by the grant giving them as exclude's
+// prerequisites see it (see grantState.viewFor), the trait has a level above the maximum the sheet enforces (see
+// enforcedMaxLevels), or that grant checks its unmet prerequisites, which the grant giving its details treated as met
+// when it was last judged, and the sheet would then disable it (see disabledIfChecked).
 func (t *Trait) disabledForPrereqsOf(exclude any) bool {
-	if exclude == nil || !t.disabledIfChecked || t.prereqContradicted {
+	if exclude == nil || t.prereqContradicted {
 		return false
 	}
 	view := t.grant.viewFor(exclude)
-	return view.inEffect && !view.bypass
+	if t.enforcedMaxLevels > 0 {
+		level := t.Levels
+		if view.detail != nil {
+			level = view.detail.level()
+		}
+		if level > t.enforcedMaxLevels {
+			return true
+		}
+	}
+	return t.disabledIfChecked && view.inEffect && !view.bypass
 }
 
 // PrereqStatus returns what to show for the trait's prerequisites, in the trait table, the "calc" object and the

@@ -20,6 +20,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/feature"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/grantmerge"
+	"github.com/richardwilkes/gcs/v5/model/kinds"
 	"github.com/richardwilkes/gcs/v5/model/nameable"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/toolbox/v2/tid"
@@ -573,7 +574,9 @@ func (r *grantReconciler[T]) consider(one sheetGrant, item T) {
 	}
 	probe := node
 	var fresh T
-	if !has || (*grantLink(node)).Hash != link.Hash {
+	// A file can give the row an ID of another kind than the item the grant makes, turning it into a container, a
+	// technique or a spell of the other sort, so it is made again as when the grant changes.
+	if !has || (*grantLink(node)).Hash != link.Hash || tidKind(node.ID()) != madeKind(item) {
 		fresh = r.makeItem(g, item, link, answers)
 		probe = fresh
 	}
@@ -664,26 +667,55 @@ func (r *grantReconciler[T]) makeItem(g *Grant, item T, link *GrantedBy, answers
 	return node
 }
 
-// replace puts fresh where old is, keeping the old item's ID, its switch and whether it is disabled, which the user may
-// have changed. Old is out of the running from then on, or another grant with the same key would claim it (see
-// consider) once it is in no list.
+// madeKind returns the kind of the ID of the item makeItem makes from the grant's copy of it, which is the copy's own
+// kind unless the copy has an ID of a kind its type doesn't have.
+func madeKind(item any) byte {
+	switch n := item.(type) {
+	case *Trait:
+		return traitKind(n.Container())
+	case *Skill:
+		if n.IsTechnique() {
+			return kinds.Technique
+		}
+		return skillKind(n.Container())
+	case *Spell:
+		if n.IsRitualMagic() {
+			return kinds.RitualMagicSpell
+		}
+		return spellKind(n.Container())
+	default:
+		return 0
+	}
+}
+
+// replace puts fresh where old is, keeping old's switch and whether it is disabled, which the user may have changed,
+// and old's ID, unless it is of another kind than fresh's (see consider), which would make fresh another kind of item.
+// Any children old has go with it. Old is out of the running from then on, or another grant with the same key would
+// claim it (see consider) once it is in no list.
 func (r *grantReconciler[T]) replace(old, fresh T) {
 	r.kept[old] = true
 	fresh.SetDisabled(old.IsDisabled())
+	keepID := tidKind(old.ID()) == tidKind(fresh.ID())
 	switch n := any(fresh).(type) {
 	case *Trait:
 		if o, ok := any(old).(*Trait); ok {
-			n.TID = o.TID
+			if keepID {
+				n.TID = o.TID
+			}
 			n.SwitchedOn = o.SwitchedOn
 		}
 	case *Skill:
 		if o, ok := any(old).(*Skill); ok {
-			n.TID = o.TID
+			if keepID {
+				n.TID = o.TID
+			}
 			n.SwitchedOn = o.SwitchedOn
 		}
 	case *Spell:
 		if o, ok := any(old).(*Spell); ok {
-			n.TID = o.TID
+			if keepID {
+				n.TID = o.TID
+			}
 			n.SwitchedOn = o.SwitchedOn
 		}
 	}
