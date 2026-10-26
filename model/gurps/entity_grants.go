@@ -12,6 +12,7 @@ package gurps
 import (
 	"cmp"
 	"fmt"
+	"hash"
 	"maps"
 	"slices"
 	"strings"
@@ -76,19 +77,19 @@ type grantKey struct {
 	key     tid.TID
 }
 
-// IsGranted returns true if the node is a trait, skill or spell a grant put on the sheet, which only changes with its
-// grant.
+// IsGranted returns true if the node is a trait, skill or spell a grant put on the sheet, which changes only with the
+// grants that give it (see takeGrantDetails).
 func IsGranted(node any) bool {
 	return *grantLink(node) != nil
 }
 
-// ReadOnly returns true if a grant put the trait on the sheet, so that it changes only with its grant.
+// ReadOnly returns true if a grant put the trait on the sheet, so that it changes only with the grants that give it.
 func (t *Trait) ReadOnly() bool { return t.Granted != nil }
 
-// ReadOnly returns true if a grant put the skill on the sheet, so that it changes only with its grant.
+// ReadOnly returns true if a grant put the skill on the sheet, so that it changes only with the grants that give it.
 func (s *Skill) ReadOnly() bool { return s.Granted != nil }
 
-// ReadOnly returns true if a grant put the spell on the sheet, so that it changes only with its grant.
+// ReadOnly returns true if a grant put the spell on the sheet, so that it changes only with the grants that give it.
 func (s *Spell) ReadOnly() bool { return s.Granted != nil }
 
 func (t *Trait) grantNotInEffect() bool { return t.Granted != nil && !t.grant.inEffect }
@@ -715,9 +716,9 @@ func (e *Entity) grantCarrierUnmet(owner fmt.Stringer) bool {
 
 // applyGrants decides, for the current recalculation pass, which granted items are in effect and what the grants in
 // effect merge into the items already on the sheet. A grant that would have put its item on the sheet, had another
-// grant not put it there first, stands in for that grant while it is not in effect, giving the item its own level, so
-// that the item is in effect whichever of them is listed first. The merges follow, so that they find the items in
-// effect whatever the order.
+// grant not put it there first, stands in for that grant while it is not in effect, making the item the one it gives
+// (see takeGrantDetails), so that the item is in effect whichever of them is listed first. The merges follow, so that
+// they find the items in effect whatever the order.
 func (e *Entity) applyGrants() {
 	// What the last pass gave an item is taken back, whether or not the item is still planned for. It is kept until
 	// now so that a recalculation starts from the derived state the last one left.
@@ -729,6 +730,9 @@ func (e *Entity) applyGrants() {
 		holder := plan.node
 		if holder == nil {
 			holder = plan.target
+		} else {
+			// A row another grant stood in for is again the item its own grant gives.
+			takeGrantDetails(holder, plan.grant)
 		}
 		holder.grants().reset()
 		e.grantHolders = append(e.grantHolders, holder)
@@ -774,20 +778,59 @@ func (e *Entity) grantInEffect(plan *grantPlan) bool {
 }
 
 // grantItem puts the holder in effect as the item the plan's grant gives: the item the grant put on the sheet, or one
-// another grant put there that this one stands in for, which is brought to this grant's level.
+// another grant put there that this one stands in for, which takes this grant's details (see takeGrantDetails).
 func (e *Entity) grantItem(plan *grantPlan, holder grantHolder) {
 	state := holder.grants()
 	state.inEffect = true
 	state.bypass = !plan.grant.CheckPrereqs
+	takeGrantDetails(holder, plan.grant)
+	if stepper, ok := holder.(SkillLevelStepper); ok {
+		state.tierPoints = grantTierPoints(plan.grant.Level, stepper.WildcardDifficulty())
+		state.addPoints(plan.source, state.tierPoints)
+	}
+}
+
+// takeGrantDetails copies onto an item a grant put on the sheet the fields of the grant's copy that differ among grants
+// of the same item (see comparePlanting and comparePlantingItems): a trait's level, self-control roll, frequency, user
+// description and VTT notes, a skill's optional specialization and VTT notes, and a spell's VTT notes. A grant standing
+// in for the one that put the item there thus makes it the item it gives, costing what that would if bought. The switch
+// is left alone, since the user may have flipped it (see replace).
+func takeGrantDetails(holder grantHolder, g *Grant) {
 	switch n := holder.(type) {
 	case *Trait:
-		// The item a grant put on the sheet has that grant's level, so this changes only the level of one stood in for.
 		if n.IsLeveled() {
-			state.addLevels(plan.source, plan.grant.level()-n.Levels)
+			n.Levels = g.level()
 		}
-	case SkillLevelStepper:
-		state.tierPoints = grantTierPoints(plan.grant.Level, n.WildcardDifficulty())
-		state.addPoints(plan.source, state.tierPoints)
+		n.SelfControl = g.Trait.SelfControl
+		n.Frequency = g.Trait.Frequency
+		n.UserDesc = g.Trait.UserDesc
+		n.VTTNotes = g.Trait.VTTNotes
+	case *Skill:
+		n.OptionalSpecialization = g.Skill.OptionalSpecialization
+		n.VTTNotes = g.Skill.VTTNotes
+	case *Spell:
+		n.VTTNotes = g.Spell.VTTNotes
+	}
+}
+
+// hashGrantDetails writes what takeGrantDetails gives a granted item into the hasher, since a grant standing in for
+// another changes it from one recalculation pass to the next.
+func hashGrantDetails(h hash.Hash, holder grantHolder) {
+	if !IsGranted(holder) {
+		return
+	}
+	switch n := holder.(type) {
+	case *Trait:
+		xhash.Num64(h, n.Levels)
+		xhash.Num8(h, n.SelfControl)
+		xhash.Num8(h, n.Frequency)
+		xhash.StringWithLen(h, n.UserDesc)
+		xhash.StringWithLen(h, n.VTTNotes)
+	case *Skill:
+		xhash.StringWithLen(h, n.OptionalSpecialization)
+		xhash.StringWithLen(h, n.VTTNotes)
+	case *Spell:
+		xhash.StringWithLen(h, n.VTTNotes)
 	}
 }
 
@@ -870,12 +913,16 @@ func (e *Entity) carriesGrant(owner any) bool {
 	return false
 }
 
-// grantTierPointsFor returns the points of the tier the grant that put the skill or spell on the sheet gives it, whether
-// or not the grant is in effect, or zero for one no grant put there.
+// grantTierPointsFor returns the points of the tier a grant standing in for the one that put the skill or spell on the
+// sheet gives it (see applyGrants), or else of the tier that one gives it, whether or not it is in effect, or zero for
+// one no grant put there.
 func (e *Entity) grantTierPointsFor(holder grantHolder) fxp.Int {
 	stepper, ok := holder.(SkillLevelStepper)
 	if !ok || e == nil {
 		return 0
+	}
+	if state := holder.grants(); !xreflect.IsNil(state.standIn.owner) {
+		return state.tierPoints
 	}
 	for _, plan := range e.grantPlans {
 		if plan.node == holder {

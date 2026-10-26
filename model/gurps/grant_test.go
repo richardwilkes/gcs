@@ -22,6 +22,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/difficulty"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/feature"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/frequency"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/grantmerge"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/selfctrl"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/stlimit"
@@ -628,6 +629,11 @@ func TestGrantedLinkStaysOnlyOnItsSheet(t *testing.T) {
 	karate := grantedOf(e.Skills)[1]
 	c.True(karate.grantNotInEffect())
 	c.Equal(fxp.Four, karate.Clone(LibraryFile{}, nil, nil, Reference).Points, "whether or not the grant is in effect")
+	belt := addCarriedEquipmentWithFeatures(e, "Belt",
+		newSkillGrant(newEasySkill("Karate", fxp.One), fxp.Two, grantmerge.Ignore))
+	e.Recalculate()
+	c.True(GrantingItem(karate) == belt)
+	c.Equal(fxp.Two, karate.Clone(LibraryFile{}, nil, nil, Reference).Points, "or of the grant standing in for it")
 }
 
 // newGrantNeedingBrawling returns a grant of the trait Night Vision, which needs the skill Brawling, checking that
@@ -769,27 +775,100 @@ func TestGrantFromTraitAboveItsMaximumLevelStaysInEffect(t *testing.T) {
 }
 
 func TestGrantStandsInForOneNotInEffect(t *testing.T) {
-	newGrant := func() *Grant {
-		return newTraitGrant(newGrantLeveledTrait("Night Vision", fxp.One), fxp.One, grantmerge.Ignore)
+	nightVision := func(level fxp.Int) *Grant {
+		return newTraitGrant(newGrantLeveledTrait("Night Vision", fxp.One), level, grantmerge.Ignore)
+	}
+	badTemper := func(cr selfctrl.Roll) *Grant {
+		item := NewTrait(nil, nil, false)
+		item.Name = "Bad Temper"
+		item.BasePoints = -fxp.Ten
+		item.SelfControl = cr
+		return newTraitGrant(item, fxp.One, grantmerge.Ignore)
+	}
+	guns := func(optionalSpecialization string) *Grant {
+		item := newEasySkill("Guns", 0)
+		item.Difficulty.Difficulty = difficulty.Average
+		item.OptionalSpecialization = optionalSpecialization
+		return newSkillGrant(item, fxp.Three, grantmerge.Ignore)
+	}
+	unequipped := func(e *Entity, name string, g *Grant) *Equipment {
+		eqp := addCarriedEquipmentWithFeatures(e, name, g)
+		eqp.Equipped = false
+		return eqp
+	}
+	// nightVisionAt checks that the row is Night Vision at the level, costing what it would if bought at that level.
+	nightVisionAt := func(level fxp.Int) func(check.Checker, *Entity) {
+		return func(c check.Checker, e *Entity) {
+			row := grantedOf(e.Traits)[0]
+			c.Equal(level, row.CurrentLevel())
+			c.Equal(level, row.ClassifyingPoints(), "the row costs what the level in effect would if bought")
+		}
 	}
 	for _, tc := range []struct {
 		name string
-		// carry puts two carriers of a Night Vision grant on the sheet, the first of which doesn't give the trait.
+		// carry puts two carriers of a grant of the same item on the sheet, the first of which doesn't give the item.
 		carry func(e *Entity) (first, second any)
-		// first is what the first carrier's summary says of its grant.
-		first string
+		// first is what the first carrier's summary says of its grant, and granted is the item the second's grant gives,
+		// as the summaries name it.
+		first, granted string
+		// check checks that the row is the item the second carrier's grant gives.
+		check func(c check.Checker, e *Entity)
 	}{
-		{name: "unequipped before equipped", carry: func(e *Entity) (any, any) {
-			spare := addCarriedEquipmentWithFeatures(e, "Spare Goggles", newGrant())
-			spare.Equipped = false
-			return spare, addCarriedEquipmentWithFeatures(e, "Worn Goggles", newGrant())
-		}, first: "Would grant Night Vision 1, but the grant is not in effect"},
-		{name: "unmet carrier before met", carry: func(e *Entity) (any, any) {
-			a := addTraitWithFeatures(e, "A", newGrant())
-			a.Prereq = NewPrereqList()
-			addSkillPrereq(a.Prereq, "Brawling", fxp.One)
-			return a, addTraitWithFeatures(e, "B", newGrant())
-		}, first: "Does not grant Night Vision 1, since the prerequisites of what carries the grant are not met"},
+		{
+			name: "unequipped before equipped", carry: func(e *Entity) (any, any) {
+				return unequipped(e, "Spare Goggles", nightVision(fxp.One)),
+					addCarriedEquipmentWithFeatures(e, "Worn Goggles", nightVision(fxp.One))
+			}, first: "Would grant Night Vision 1, but the grant is not in effect", granted: "Night Vision 1",
+			check: nightVisionAt(fxp.One),
+		},
+		{
+			name: "unmet carrier before met", carry: func(e *Entity) (any, any) {
+				a := addTraitWithFeatures(e, "A", nightVision(fxp.One))
+				a.Prereq = NewPrereqList()
+				addSkillPrereq(a.Prereq, "Brawling", fxp.One)
+				return a, addTraitWithFeatures(e, "B", nightVision(fxp.One))
+			}, first: "Does not grant Night Vision 1, since the prerequisites of what carries the grant are not met",
+			granted: "Night Vision 1", check: nightVisionAt(fxp.One),
+		},
+		{
+			name: "higher level not in effect", carry: func(e *Entity) (any, any) {
+				return unequipped(e, "Spare Goggles", nightVision(fxp.Three)),
+					addCarriedEquipmentWithFeatures(e, "Worn Goggles", nightVision(fxp.One))
+			}, first: "Would grant Night Vision 3, but the grant is not in effect", granted: "Night Vision 1",
+			check: nightVisionAt(fxp.One),
+		},
+		{
+			name: "self-control roll worth more not in effect", carry: func(e *Entity) (any, any) {
+				grumpy := badTemper(selfctrl.CR12)
+				grumpy.Trait.Frequency = frequency.FR9
+				grumpy.Trait.UserDesc = "Snaps at everyone"
+				grumpy.Trait.VTTNotes = "Roll before speaking"
+				return unequipped(e, "Cursed Ring", badTemper(selfctrl.CR6)), addTraitWithFeatures(e, "Grumpy", grumpy)
+			}, first: "Would grant Bad Temper, but the grant is not in effect", granted: "Bad Temper",
+			check: func(c check.Checker, e *Entity) {
+				row := grantedOf(e.Traits)[0]
+				c.Equal(selfctrl.CR12, row.SelfControl)
+				c.Equal(frequency.FR9, row.Frequency)
+				c.Equal("Snaps at everyone", row.UserDesc)
+				c.Equal("Roll before speaking", row.VTTNotes)
+				c.Equal(-fxp.Ten, row.ClassifyingPoints(), "the row costs what the trait with its rolls would if bought")
+			},
+		},
+		{
+			name: "optional specialization not in effect", carry: func(e *Entity) (any, any) {
+				holstered := guns("Pistol")
+				holstered.Skill.VTTNotes = "Quick draw"
+				return unequipped(e, "Spare Holster", guns("")),
+					addCarriedEquipmentWithFeatures(e, "Worn Holster", holstered)
+			}, first: "Would grant Guns at level 3, but the grant is not in effect", granted: "Guns (Pistol) at level 3",
+			check: func(c check.Checker, e *Entity) {
+				row := grantedOf(e.Skills)[0]
+				c.Equal("Pistol", row.OptionalSpecialization)
+				c.Equal("Quick draw", row.VTTNotes)
+				c.Equal(fxp.FromInteger(12), row.LevelData.Level,
+					"an optional specialization makes the Average skill Easy, so 4 points give DX+2")
+			},
+		},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			c := check.New(t)
@@ -797,17 +876,49 @@ func TestGrantStandsInForOneNotInEffect(t *testing.T) {
 			first, second := tc.carry(e)
 			e.Recalculate()
 			c.False(e.Unsettled())
-			granted := grantedOf(e.Traits)
-			if len(granted) != 1 {
-				c.Fatalf("expected 1 granted trait, got %d", len(granted))
+			traits, skills := grantedOf(e.Traits), grantedOf(e.Skills)
+			rows := make([]interface{ Enabled() bool }, 0, len(traits)+len(skills))
+			for _, one := range traits {
+				rows = append(rows, one)
 			}
-			c.True(granted[0].Enabled(), "the grant in effect stands in for the one that isn't")
-			c.Equal(fxp.One, granted[0].CurrentLevel())
-			c.True(GrantingItem(granted[0]) == second)
-			c.Contains(e.grantSummary(second), "Grants Night Vision 1")
+			for _, one := range skills {
+				rows = append(rows, one)
+			}
+			if len(rows) != 1 {
+				c.Fatalf("expected 1 granted row, got %d", len(rows))
+			}
+			c.True(rows[0].Enabled(), "the grant in effect stands in for the one that isn't")
+			c.True(GrantingItem(rows[0]) == second)
+			c.Contains(e.grantSummary(second), "Grants "+tc.granted)
 			c.Equal(tc.first, e.grantSummary(first))
+			tc.check(c, e)
 		})
 	}
+}
+
+func TestGrantStandInFollowsTheGrantInEffect(t *testing.T) {
+	c := check.New(t)
+	e := NewEntity()
+	newGrant := func(level fxp.Int) *Grant {
+		dexterous := newGrantLeveledTrait("Dexterous", fxp.Ten)
+		bonus := NewAttributeBonus(DexterityID)
+		bonus.PerLevel = true
+		dexterous.Features = Features{bonus}
+		return newTraitGrant(dexterous, level, grantmerge.Ignore)
+	}
+	spare := addCarriedEquipmentWithFeatures(e, "Spare Gloves", newGrant(fxp.Three))
+	worn := addCarriedEquipmentWithFeatures(e, "Worn Gloves", newGrant(fxp.One))
+	e.Recalculate()
+	c.Equal(fxp.FromInteger(13), e.ResolveAttributeCurrent(DexterityID))
+
+	spare.Equipped = false
+	e.Recalculate()
+	c.Equal(fxp.FromInteger(11), e.ResolveAttributeCurrent(DexterityID), "the stand-in's level takes effect at once")
+
+	worn.Equipped = false
+	e.Recalculate()
+	c.Equal(fxp.Ten, e.ResolveAttributeCurrent(DexterityID))
+	c.Equal(fxp.Three, grantedOf(e.Traits)[0].Levels, "with no grant in effect, the row is what its own grant gives")
 }
 
 func TestGrantedRowInDisabledContainerCountsAsAbsent(t *testing.T) {

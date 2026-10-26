@@ -713,15 +713,15 @@ func (e *Entity) settleOnCanonicalCycleState(cycle [][]uint64) {
 	}
 }
 
-// derivedState fingerprints the derived state that one recalculation pass hands to the next, one fingerprint per
-// trait, skill and spell in traversal order: whether the sheet has disabled the trait, the level of the skill or spell
-// and whether it takes the missing-equipment penalty, the default of the skill, and what the grants gave each, each
-// along with the ID of what it describes, followed by one fingerprint of whether each grant's carrier has its
-// prerequisites met, which the next pass's applyGrants reads (see grantCarrierUnmet). Everything else a pass reads is
-// either the sheet's data or recomputed from these before it is read, so two passes that begin from the same state end
-// in the same one, and a state seen before means the passes have entered a cycle they will never leave. Whether a
-// trait was judged at all is left out, since the next pass reads only whether it is enabled. The capacity is a hint
-// for the length and may be zero.
+// derivedState fingerprints the derived state that one recalculation pass hands to the next, one fingerprint per trait,
+// skill and spell in traversal order: whether the sheet has disabled the trait, the level of the skill or spell and
+// whether it takes the missing-equipment penalty, the default of the skill, and what the grants gave each, the details
+// takeGrantDetails gives a granted item included, each along with the ID of what it describes, followed by one
+// fingerprint of whether each grant's carrier has its prerequisites met, which the next pass's applyGrants reads (see
+// grantCarrierUnmet). Everything else a pass reads is either the sheet's data or recomputed from these before it is
+// read, so two passes that begin from the same state end in the same one, and a state seen before means the passes have
+// entered a cycle they will never leave. Whether a trait was judged at all is left out, since the next pass reads only
+// whether it is enabled. The capacity is a hint for the length and may be zero.
 func (e *Entity) derivedState(capacity int) []uint64 {
 	state := make([]uint64, 0, capacity)
 	h := xxh3.New()
@@ -735,6 +735,7 @@ func (e *Entity) derivedState(capacity int) []uint64 {
 		fingerprint(t.TID, func() {
 			xhash.Bool(h, t.prereqVerdict == prereqsDisable)
 			t.grant.hash(h)
+			hashGrantDetails(h, t)
 		})
 		return false
 	}, false, false, e.Traits...)
@@ -743,6 +744,7 @@ func (e *Entity) derivedState(capacity int) []uint64 {
 			s.LevelData.Hash(h)
 			xhash.Bool(h, s.takesEquipmentPenalty)
 			s.grant.hash(h)
+			hashGrantDetails(h, s)
 			xhash.Bool(h, s.DefaultedFrom != nil)
 			if s.DefaultedFrom != nil {
 				s.DefaultedFrom.Hash(h)
@@ -758,6 +760,7 @@ func (e *Entity) derivedState(capacity int) []uint64 {
 			s.LevelData.Hash(h)
 			xhash.Bool(h, s.takesEquipmentPenalty)
 			s.grant.hash(h)
+			hashGrantDetails(h, s)
 		})
 		return false
 	}, false, true, e.Spells...)
