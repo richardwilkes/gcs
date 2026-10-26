@@ -385,12 +385,16 @@ func (t *TraitModifier) CostModifierForTrait(trait *Trait) fxp.Fraction {
 // costLevelsForTrait returns the number of levels the cost adjustment is multiplied by when applied to the given
 // trait. A "use level from owner" modifier is costed against the trait's purchased levels rather than its current
 // level: bonus-granted levels are free, so they must not attract enhancement or limitation percentages. This matches
-// Trait.AdjustedPoints, which derives the leveled base cost from those same purchased levels.
+// Trait.AdjustedPoints, which derives the leveled base cost from those same purchased levels, and Trait.pointsWith,
+// which takes those of a granted trait as the prerequisites being judged see them (see judgedDetail).
 func (t *TraitModifier) costLevelsForTrait(trait *Trait) fxp.Int {
 	var levels fxp.Int
 	if t.UseLevelFromTrait {
 		if trait != nil && trait.IsLeveled() {
 			levels = trait.Levels
+			if detail := judgedDetail(trait); detail != nil {
+				levels = detail.level()
+			}
 		}
 	} else {
 		levels = t.Levels

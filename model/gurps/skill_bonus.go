@@ -29,6 +29,9 @@ var _ Bonus = &SkillBonus{}
 // SkillBonus holds an adjustment to a skill.
 type SkillBonus struct {
 	SkillBonusData
+	// selfControlOf is, for the Merchant penalty Entity.processFeatures derives from a trait's self-control roll, that
+	// trait, whose roll gives the amount when it is read; see AdjustedAmount.
+	selfControlOf *Trait
 }
 
 // SkillBonusData holds an adjustment to a skill which is persisted.
@@ -98,8 +101,22 @@ func (s *SkillBonus) SetLeveledOwner(owner LeveledOwner) {
 	s.LeveledOwner = owner
 }
 
+// AdjustedAmount implements Bonus. The Merchant penalty derived from a trait's self-control roll reads the roll afresh,
+// so that a granted trait's is the one the prerequisites being judged see (see Trait.ResolvedSelfControl), as a
+// per-level amount reads the level they see.
+func (s *SkillBonus) AdjustedAmount() fxp.Int {
+	if s.selfControlOf != nil {
+		return fxp.FromInteger(s.selfControlOf.ResolvedSelfControl(nil).Penalty())
+	}
+	return s.LeveledAmount.AdjustedAmount()
+}
+
 // AddToTooltip implements Bonus.
 func (s *SkillBonus) AddToTooltip(buffer *xbytes.InsertBuffer) {
+	if s.selfControlOf != nil {
+		s.basicAddToTooltip(&LeveledAmount{Amount: s.AdjustedAmount()}, buffer)
+		return
+	}
 	s.basicAddToTooltip(&s.LeveledAmount, buffer)
 }
 

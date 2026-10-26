@@ -1619,6 +1619,16 @@ func TestGrantDoesNotMeetItsCarriersPrereqs(t *testing.T) {
 		nightVision := func(level fxp.Int) *Grant {
 			return newTraitGrant(newGrantLeveledTrait("Night Vision", fxp.One), level, grantmerge.Ignore)
 		}
+		// keenNightVision is nightVision at 10 points a level with a +10% modifier costed at the trait's levels.
+		keenNightVision := func(level fxp.Int) *Grant {
+			g := newTraitGrant(newGrantLeveledTrait("Night Vision", fxp.Ten), level, grantmerge.Ignore)
+			mod := NewTraitModifier(nil, nil, false)
+			mod.Name = "Keen"
+			mod.CostAdj = "+10%"
+			mod.UseLevelFromTrait = true
+			g.Trait.Modifiers = []*TraitModifier{mod}
+			return g
+		}
 		brawling := func(tier fxp.Int) *Grant {
 			return newSkillGrant(newEasySkill("Brawling", fxp.One), tier, grantmerge.Ignore)
 		}
@@ -1648,6 +1658,13 @@ func TestGrantDoesNotMeetItsCarriersPrereqs(t *testing.T) {
 		}
 		contact := func(desc string) *Grant {
 			return trait("Contact", func(item *Trait) { item.UserDesc = desc })
+		}
+		miserliness := func(cr selfctrl.Roll) *Grant {
+			return trait("Miserliness", func(item *Trait) {
+				item.BasePoints = -fxp.Ten
+				item.SelfControl = cr
+				item.SelfControlAdj = selfctrl.MajorCostOfLivingIncrease
+			})
 		}
 		// scripted puts on the sheet a trait with the name, carrying the grant, whose prerequisite is the script.
 		scripted := func(e *Entity, name string, g *Grant, script string) *Trait {
@@ -1695,6 +1712,18 @@ func TestGrantDoesNotMeetItsCarriersPrereqs(t *testing.T) {
 				}, met: true, row: nightVisionLevel, want: 2,
 			},
 			{
+				name: "putting a trait there whose modifier takes its level from it",
+				carry: func(c check.Checker, e *Entity) *Trait {
+					goggles(e, nil, keenNightVision(fxp.One))
+					carrier := addTraitWithFeatures(e, "Seer", keenNightVision(fxp.Three))
+					carrier.Prereq = newPrereqListForTrait("Night Vision", true)
+					p := traitPrereqOf(c, carrier.Prereq)
+					p.PointsCriteria.Compare = criteria.AtLeastNumber
+					p.PointsCriteria.Qualifier = fxp.FromInteger(13)
+					return carrier
+				}, row: nightVisionLevel, want: 1,
+			},
+			{
 				name: "standing in for a trait whose points a prerequisite reads",
 				carry: func(c check.Checker, e *Entity) *Trait {
 					goggles(e, nightVision(fxp.Three), nightVision(fxp.One))
@@ -1725,6 +1754,16 @@ func TestGrantDoesNotMeetItsCarriersPrereqs(t *testing.T) {
 					return scripted(e, "Sailor", contact("Navy"),
 						`entity.traits.some(t => t.name == "Contact" && t.notes.includes("Navy"))`)
 				}, row: func(e *Entity) any { return grantedOf(e.Traits)[0].UserDesc }, want: "Police",
+			},
+			{
+				name: "putting a trait there whose self-control roll penalizes a skill a prerequisite reads",
+				carry: func(_ check.Checker, e *Entity) *Trait {
+					goggles(e, nil, miserliness(selfctrl.CR12))
+					addSkill(e, "Merchant", fxp.One)
+					haggler := addTraitWithFeatures(e, "Haggler", miserliness(selfctrl.CR6))
+					haggler.Prereq = newPrereqListRequiringSkill("Merchant", fxp.Eight)
+					return haggler
+				}, met: true, row: func(e *Entity) any { return grantedOf(e.Traits)[0].SelfControl.Number() }, want: 6,
 			},
 			{
 				name: "standing in for a skill the other grant's tier meets",

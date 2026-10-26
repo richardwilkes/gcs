@@ -874,8 +874,8 @@ func (t *Trait) modifierChoicePointsRange(fixed modifierChoicePicks[*TraitModifi
 }
 
 // pointsWith returns the cost of this non-container trait with the given modifiers, at the levels, self-control roll
-// and frequency the prerequisites being judged see (see judgedDetail), though a "use level from owner" modifier is
-// costed at the trait's own levels.
+// and frequency the prerequisites being judged see (see judgedDetail), which are also the levels a "use level from
+// owner" modifier is costed at.
 func (t *Trait) pointsWith(modifiers []*TraitModifier) fxp.Int {
 	levels, selfControl, freq := t.Levels, t.SelfControl, t.Frequency
 	if detail := judgedDetail(t); detail != nil {
@@ -889,8 +889,9 @@ func (t *Trait) pointsWith(modifiers []*TraitModifier) fxp.Int {
 }
 
 // pointsWithEach returns pointsWith as a range, for costing many ways of making choices among the same modifiers: what
-// each modifier adjusts the cost by is worked out just once. It leaves out the judged view (see judgedDetail), which
-// only a granted row has while prerequisites are judged, and nothing costs choices then.
+// each modifier adjusts the cost by is worked out just once. It takes the trait's levels, self-control roll and
+// frequency as they stand rather than as the judged view has them (see judgedDetail), which only a granted row has
+// while prerequisites are judged, and nothing costs choices then.
 func (t *Trait) pointsWithEach() func([]*TraitModifier) NumericRange {
 	entity := EntityFromNode(t)
 	adjustments := make(map[*TraitModifier]traitCostAdjustment)

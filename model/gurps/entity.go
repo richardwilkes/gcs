@@ -806,9 +806,14 @@ func (e *Entity) processFeatures() {
 		}
 	})
 	// Self-control-derived features are generated after the full walk, since resolving a trait's self-control roll
-	// and adjustment through a selector override requires every override to have been collected first.
+	// and adjustment through a selector override requires every override to have been collected first. The Merchant
+	// penalty reads the roll again whenever its amount is read, so that it is the roll the prerequisites being judged
+	// see; see SkillBonus.AdjustedAmount.
 	Traverse(func(t *Trait) bool {
 		for _, f := range FeaturesForSelfControlRoll(t.ResolvedSelfControl(nil), t.ResolvedSelfControlAdjustment(nil)) {
+			if bonus, ok := f.(*SkillBonus); ok {
+				bonus.selfControlOf = t
+			}
 			e.processFeature(t, nil, f, t)
 		}
 		return false
