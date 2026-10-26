@@ -130,36 +130,117 @@ func (g *Grant) level() fxp.Int {
 	return g.Level.Floor()
 }
 
-// mergeSummary returns what the grant does to the item already on the sheet, for the tooltip of what carries it. label
-// is the grant's itemLabel, and replacements are those of what carries the grant; see itemNameWith.
-func (g *Grant) mergeSummary(label string, replacements map[string]string) string {
+// grantStatus is whether a grant is in effect, or why it is not, for the line Entity.grantSummary gives it.
+type grantStatus uint8
+
+const (
+	grantActive   grantStatus = iota // In effect.
+	grantInactive                    // Not in effect, since what carries it does not contribute its features.
+	grantUnmet                       // Not in effect, since the prerequisites of what carries it are not met.
+)
+
+// mergeSummary returns what the grant does to the item already on the sheet, for the tooltip of what carries it, or
+// what it would do when status says it is not in effect, and why; one that changes nothing about the item says so
+// whatever its status. label is the grant's itemLabel, and replacements are those of what carries the grant; see
+// itemNameWith.
+func (g *Grant) mergeSummary(label string, replacements map[string]string, status grantStatus) string {
 	name := g.itemNameWith(replacements)
 	merge := g.EffectiveMerge()
 	if merge != grantmerge.Ignore && g.mergesNothing() {
 		return i18n.Text("Does not change %s, already present, since a level below 1 grants nothing", name)
 	}
+	pick := func(does, inactive, unmet string) string {
+		switch status {
+		case grantInactive:
+			return inactive
+		case grantUnmet:
+			return unmet
+		default:
+			return does
+		}
+	}
+	levels := g.level()
 	switch merge {
 	case grantmerge.MergeLevels:
-		levels := g.level()
 		switch {
 		case levels == -fxp.One:
-			return i18n.Text("Removes 1 level from %s, already present", name)
+			return pick(i18n.Text("Removes 1 level from %s, already present", name),
+				i18n.Text("Would remove 1 level from %s, already present, but the grant is not in effect", name),
+				i18n.Text(
+					"Would remove 1 level from %s, already present, but the prerequisites of what carries the grant are not met",
+					name,
+				))
 		case levels < 0:
-			return i18n.Text("Removes %s levels from %s, already present", levels.Abs().String(), name)
+			count := levels.Abs().String()
+			return pick(i18n.Text("Removes %s levels from %s, already present", count, name),
+				i18n.Text("Would remove %s levels from %s, already present, but the grant is not in effect", count, name),
+				i18n.Text(
+					"Would remove %s levels from %s, already present, but the prerequisites of what carries the grant are not met",
+					count, name,
+				))
 		case levels == fxp.One:
-			return i18n.Text("Adds 1 level to %s, already present", name)
+			return pick(i18n.Text("Adds 1 level to %s, already present", name),
+				i18n.Text("Would add 1 level to %s, already present, but the grant is not in effect", name),
+				i18n.Text(
+					"Would add 1 level to %s, already present, but the prerequisites of what carries the grant are not met",
+					name,
+				))
 		default:
-			return i18n.Text("Adds %s levels to %s, already present", levels.String(), name)
+			count := levels.String()
+			return pick(i18n.Text("Adds %s levels to %s, already present", count, name),
+				i18n.Text("Would add %s levels to %s, already present, but the grant is not in effect", count, name),
+				i18n.Text(
+					"Would add %s levels to %s, already present, but the prerequisites of what carries the grant are not met",
+					count, name,
+				))
 		}
 	case grantmerge.MergePoints:
-		if levels := g.level(); levels < 0 {
-			return i18n.Text("Removes the points of %s from %s, already present", levelsText(levels.Abs(), nil), name)
+		if levels < 0 {
+			count := levelsText(levels.Abs(), nil)
+			return pick(i18n.Text("Removes the points of %s from %s, already present", count, name),
+				i18n.Text("Would remove the points of %s from %s, already present, but the grant is not in effect",
+					count, name),
+				i18n.Text(
+					"Would remove the points of %s from %s, already present, but the prerequisites of what carries the grant are not met",
+					count, name,
+				))
 		}
-		return i18n.Text("Adds the points of level %s to %s, already present", g.level().String(), name)
+		return pick(i18n.Text("Adds the points of level %s to %s, already present", levels.String(), name),
+			i18n.Text("Would add the points of level %s to %s, already present, but the grant is not in effect",
+				levels.String(), name),
+			i18n.Text(
+				"Would add the points of level %s to %s, already present, but the prerequisites of what carries the grant are not met",
+				levels.String(), name,
+			))
 	case grantmerge.KeepHighest:
-		return i18n.Text("Keeps the better of %s as it is and at level %s", name, g.level().String())
+		return pick(i18n.Text("Keeps the better of %s as it is and at level %s", name, levels.String()),
+			i18n.Text("Would keep the better of %s as it is and at level %s, but the grant is not in effect", name,
+				levels.String()),
+			i18n.Text(
+				"Would keep the better of %s as it is and at level %s, but the prerequisites of what carries the grant are not met",
+				name, levels.String(),
+			))
 	default:
 		return i18n.Text("Does not grant %s, since it is already present", label)
+	}
+}
+
+// idleSummary returns why the grant, whose plan has no item (see grantPlan), does nothing, for the tooltip of what
+// carries it: its item can't be granted, or is absent while the grant is below level 1. replacements are those of what
+// carries the grant; see itemNameWith.
+func (g *Grant) idleSummary(replacements map[string]string) string {
+	name := g.itemNameWith(replacements)
+	switch {
+	case !g.itemGrantable():
+		if skill, ok := g.Item().(*Skill); ok && skill.IsTechnique() {
+			return i18n.Text("Does not grant %s, since a technique can't be granted", name)
+		}
+		return i18n.Text("Does not grant %s, since a container can't be granted", name)
+	case g.mergesNothing():
+		return i18n.Text("Does not grant %s, since a level below 1 grants nothing", g.itemLabel(replacements))
+	default:
+		// A negative level would take the levels or points it names away from the item, were it present.
+		return i18n.Text("Removes nothing from %s, since it is not present", name)
 	}
 }
 
@@ -413,6 +494,21 @@ func (g *Grant) Leveled() bool {
 		return g.Trait != nil && g.Trait.IsLeveled()
 	}
 	return true
+}
+
+// itemGrantable returns true if the grant's item is one a grant can put on the sheet: anything but a container or a
+// technique, which the pickers leave out, so that a grant of one from a hand-edited file does nothing.
+func (g *Grant) itemGrantable() bool {
+	switch g.Type {
+	case feature.GrantTrait:
+		return g.Trait != nil && !g.Trait.Container()
+	case feature.GrantSkill:
+		return g.Skill != nil && !g.Skill.IsTechnique() && !g.Skill.Container()
+	case feature.GrantSpell:
+		return g.Spell != nil && !g.Spell.Container()
+	default:
+		return false
+	}
 }
 
 // putsItemOnSheet returns true if the grant puts its item on the sheet when the item is absent: a trait without levels

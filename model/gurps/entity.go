@@ -122,6 +122,7 @@ type Entity struct {
 	srcMatcher                     *SrcMatcher
 	features                       features
 	grantPlans                     []grantPlan
+	idleGrantPlans                 []grantPlan
 	grantHolders                   []grantHolder
 	grantCarriersJudged            bool
 	variableResolverExclusions     map[string]bool

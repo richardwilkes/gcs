@@ -740,12 +740,69 @@ func TestGrantSummaryTellsWhatEachGrantDid(t *testing.T) {
 	goggles := addCarriedEquipmentWithFeatures(e, "Goggles",
 		newTraitGrant(newGrantLeveledTrait("Dark Vision", fxp.One), fxp.One, grantmerge.Ignore))
 	goggles.Equipped = false
+	pack := NewTrait(nil, nil, true)
+	pack.Name = "Pack"
+	kicking := NewTechnique(nil, nil, "Karate")
+	kicking.Name = "Kicking"
+	curse := addTraitWithFeatures(e, "Curse",
+		newSkillGrant(newEasySkill("Karate", fxp.One), -fxp.One, grantmerge.MergeLevels),
+		newTraitGrant(newGrantLeveledTrait("Acute Vision", fxp.One), -fxp.One, grantmerge.MergeLevels),
+		newTraitGrant(newGrantLeveledTrait("Infravision", fxp.One), 0, grantmerge.Ignore),
+		newTraitGrant(pack, fxp.One, grantmerge.Ignore),
+		newSkillGrant(kicking, fxp.One, grantmerge.Ignore))
+	addSkill(e, "Brawling", fxp.One)
+	visor := addCarriedEquipmentWithFeatures(e, "Visor",
+		newTraitGrant(newGrantLeveledTrait("Acute Vision", fxp.One), fxp.One, grantmerge.Ignore),
+		newTraitGrant(newGrantLeveledTrait("Acute Vision", fxp.One), -fxp.Two, grantmerge.MergeLevels),
+		newTraitGrant(newGrantLeveledTrait("Acute Vision", fxp.One), fxp.Two, grantmerge.MergeLevels),
+		newTraitGrant(newGrantLeveledTrait("Acute Vision", fxp.One), fxp.Three, grantmerge.KeepHighest),
+		newSkillGrant(newEasySkill("Brawling", fxp.One), -fxp.Two, grantmerge.MergePoints),
+		newSkillGrant(newEasySkill("Brawling", fxp.One), fxp.Two, grantmerge.MergePoints),
+		newTraitGrant(newGrantLeveledTrait("Dark Vision", fxp.One), fxp.One, grantmerge.Ignore))
+	visor.Equipped = false
 	e.Recalculate()
 	summary := e.grantSummary(training)
 	c.Contains(summary, "Grants Night Vision 2")
 	c.Contains(summary, "Does not grant Acute Vision 1, since it is already present")
 	c.Contains(e.grantSummary(goggles), "Would grant Dark Vision 1, but the grant is not in effect")
 	c.Equal("", e.grantSummary(have), "an item carrying no grants has no summary")
+	c.Equal(`Removes nothing from Karate, since it is not present
+Removes 1 level from Acute Vision, already present
+Does not grant Infravision 0, since a level below 1 grants nothing
+Does not grant Pack, since a container can't be granted
+Does not grant Kicking, since a technique can't be granted`, e.grantSummary(curse),
+		"a grant that does nothing has a line saying why, in the order the item carries its grants")
+	c.Equal(`Does not grant Acute Vision 1, since it is already present
+Would remove 2 levels from Acute Vision, already present, but the grant is not in effect
+Would add 2 levels to Acute Vision, already present, but the grant is not in effect
+Would keep the better of Acute Vision as it is and at level 3, but the grant is not in effect
+Would remove the points of 2 levels from Brawling, already present, but the grant is not in effect
+Would add the points of level 2 to Brawling, already present, but the grant is not in effect
+Would grant Dark Vision 1, but the grant is not in effect`, e.grantSummary(visor),
+		"a grant not in effect says what it would do, which for one that would stand in is grant the item")
+
+	e = NewEntity()
+	addSkill(e, "Karate", fxp.One)
+	shades := addCarriedEquipmentWithFeatures(e, "Shades",
+		newTraitGrant(newGrantLeveledTrait("Dark Vision", fxp.One), fxp.Two, grantmerge.Ignore))
+	shades.Equipped = false
+	cursed := addTraitWithFeatures(e, "Cursed",
+		newSkillGrant(newEasySkill("Karate", fxp.One), -fxp.One, grantmerge.MergeLevels),
+		newSkillGrant(newEasySkill("Karate", fxp.One), fxp.Two, grantmerge.MergeLevels),
+		newSkillGrant(newEasySkill("Karate", fxp.One), fxp.Three, grantmerge.KeepHighest),
+		newSkillGrant(newEasySkill("Karate", fxp.One), -fxp.Two, grantmerge.MergePoints),
+		newSkillGrant(newEasySkill("Karate", fxp.One), fxp.Two, grantmerge.MergePoints),
+		newTraitGrant(newGrantLeveledTrait("Dark Vision", fxp.One), fxp.One, grantmerge.Ignore))
+	cursed.Prereq = NewPrereqList()
+	addSkillPrereq(cursed.Prereq, "Brawling", fxp.One)
+	e.Recalculate()
+	c.Equal(`Would remove 1 level from Karate, already present, but the prerequisites of what carries the grant are not met
+Would add 2 levels to Karate, already present, but the prerequisites of what carries the grant are not met
+Would keep the better of Karate as it is and at level 3, but the prerequisites of what carries the grant are not met
+Would remove the points of 2 levels from Karate, already present, but the prerequisites of what carries the grant are not met
+Would add the points of level 2 to Karate, already present, but the prerequisites of what carries the grant are not met
+Does not grant Dark Vision 1, since the prerequisites of what carries the grant are not met`, e.grantSummary(cursed),
+		"a grant whose carrier's prerequisites are unmet says what it would do, as one not in effect does")
 }
 
 func TestGrantNeedsItsCarriersPrereqsMet(t *testing.T) {
@@ -1715,24 +1772,24 @@ func TestGrantWording(t *testing.T) {
 	plain := func(s string) string { return s }
 	c.Equal("Grants a skill, not yet chosen", NewGrant(feature.GrantSkill).Describe(nil, nil, plain))
 	merge := newTraitGrant(newGrantLeveledTrait("Acute Vision", fxp.One), fxp.Two, grantmerge.MergeLevels)
-	c.Equal("Adds 2 levels to Acute Vision, already present", merge.mergeSummary(merge.itemLabel(nil), nil))
+	c.Equal("Adds 2 levels to Acute Vision, already present", merge.mergeSummary(merge.itemLabel(nil), nil, grantActive))
 	merge.Level = -fxp.One
-	c.Equal("Removes 1 level from Acute Vision, already present", merge.mergeSummary(merge.itemLabel(nil), nil))
+	c.Equal("Removes 1 level from Acute Vision, already present", merge.mergeSummary(merge.itemLabel(nil), nil, grantActive))
 	merge.Level = fxp.FromStringForced("1.5")
-	c.Equal("Adds 1.5 levels to Acute Vision, already present", merge.mergeSummary(merge.itemLabel(nil), nil))
+	c.Equal("Adds 1.5 levels to Acute Vision, already present", merge.mergeSummary(merge.itemLabel(nil), nil, grantActive))
 	c.Equal("Grants the trait Acute Vision at level 1.5, or adds +1.5 levels to it when already present",
 		merge.Describe(nil, nil, plain))
 	merge.Level = fxp.Two
 	merge.Merge = grantmerge.Ignore
-	c.Equal("Does not grant Acute Vision 2, since it is already present", merge.mergeSummary(merge.itemLabel(nil), nil))
+	c.Equal("Does not grant Acute Vision 2, since it is already present", merge.mergeSummary(merge.itemLabel(nil), nil, grantActive))
 
 	// A grant below level 1 grants nothing, and one with a negative level only takes away.
 	curse := newSkillGrant(newEasySkill("Brawling", fxp.One), -fxp.One, grantmerge.MergePoints)
 	c.Equal("Removes the points of 1 level from the skill Brawling when already present", curse.Describe(nil, nil, plain))
-	c.Equal("Removes the points of 1 level from Brawling, already present", curse.mergeSummary(curse.itemLabel(nil), nil))
+	c.Equal("Removes the points of 1 level from Brawling, already present", curse.mergeSummary(curse.itemLabel(nil), nil, grantActive))
 	curse.Level = -fxp.Two
 	c.Equal("Removes the points of 2 levels from the skill Brawling when already present", curse.Describe(nil, nil, plain))
-	c.Equal("Removes the points of 2 levels from Brawling, already present", curse.mergeSummary(curse.itemLabel(nil), nil))
+	c.Equal("Removes the points of 2 levels from Brawling, already present", curse.mergeSummary(curse.itemLabel(nil), nil, grantActive))
 	curse.Merge = grantmerge.MergeLevels
 	c.Equal("Removes 2 levels from the skill Brawling when already present", curse.Describe(nil, nil, plain))
 	curse.Merge = grantmerge.Ignore
@@ -1742,18 +1799,18 @@ func TestGrantWording(t *testing.T) {
 	c.Equal("Would grant the skill Brawling at level 0, but a level below 1 grants nothing", curse.Describe(nil, nil, plain))
 	// Nor does such a grant merge anything into an item already present, which its summary says too.
 	c.Equal("Does not change Brawling, already present, since a level below 1 grants nothing",
-		curse.mergeSummary(curse.itemLabel(nil), nil))
+		curse.mergeSummary(curse.itemLabel(nil), nil, grantActive))
 	curse.Merge = grantmerge.MergePoints
 	c.Equal("Does not change Brawling, already present, since a level below 1 grants nothing",
-		curse.mergeSummary(curse.itemLabel(nil), nil))
+		curse.mergeSummary(curse.itemLabel(nil), nil, grantActive))
 	curse.Level = -fxp.One
 	curse.Merge = grantmerge.KeepHighest
 	c.Equal("Does not change Brawling, already present, since a level below 1 grants nothing",
-		curse.mergeSummary(curse.itemLabel(nil), nil))
+		curse.mergeSummary(curse.itemLabel(nil), nil, grantActive))
 	merge.Level = fxp.Half
 	merge.Merge = grantmerge.MergeLevels
 	c.Equal("Does not change Acute Vision, already present, since a level below 1 grants nothing",
-		merge.mergeSummary(merge.itemLabel(nil), nil))
+		merge.mergeSummary(merge.itemLabel(nil), nil, grantActive))
 }
 
 func TestGrantTiers(t *testing.T) {

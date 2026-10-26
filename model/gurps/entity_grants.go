@@ -29,9 +29,10 @@ import (
 )
 
 // grantPlan is what reconcileGrants decided for one grant on the sheet: the item it put there, or the item already on
-// the sheet that it merges into, or neither. seq is the grant's place in sheet order, which the plans are not kept in
-// (see reconcileGrants), and standsIn is set by a pass in which the grant stands in for the one that put its target on
-// the sheet; see applyGrants.
+// the sheet that it merges into, or neither, for a grant whose item can't be granted or that can't put its item there
+// and has none to merge into, whose plan is kept apart from the others for grantSummary. seq is the grant's place in sheet order, which the plans
+// are not kept in (see reconcileGrants), and standsIn is set by a pass in which the grant stands in for the one that
+// put its target on the sheet; see applyGrants.
 type grantPlan struct {
 	grant    *Grant
 	source   grantSource
@@ -208,6 +209,7 @@ func (e *Entity) forEachGrant(fn func(grantor tid.TID, source grantSource, g *Gr
 // forEachGrant), and each carrier's grants in the order it lists them, its own before its modifiers'.
 func (e *Entity) reconcileGrants() {
 	e.grantPlans = e.grantPlans[:0]
+	e.idleGrantPlans = e.idleGrantPlans[:0]
 	e.grantCarriersJudged = false
 	traits := newGrantReconciler(e, &e.Traits)
 	skills := newGrantReconciler(e, &e.Skills)
@@ -239,23 +241,19 @@ func (e *Entity) reconcileGrants() {
 			return 1
 		}
 	})
-	// A container or technique can't be granted, as the pickers leave them out, so a grant of one from a hand-edited
-	// file does nothing.
 	for _, one := range grants {
 		g := one.grant
+		if !g.itemGrantable() {
+			e.idleGrantPlans = append(e.idleGrantPlans, grantPlan{grant: g, source: one.source, seq: one.seq})
+			continue
+		}
 		switch g.Type {
 		case feature.GrantTrait:
-			if !g.Trait.Container() {
-				traits.consider(one, g.Trait)
-			}
+			traits.consider(one, g.Trait)
 		case feature.GrantSkill:
-			if !g.Skill.IsTechnique() && !g.Skill.Container() {
-				skills.consider(one, g.Skill)
-			}
+			skills.consider(one, g.Skill)
 		case feature.GrantSpell:
-			if !g.Spell.Container() {
-				spells.consider(one, g.Spell)
-			}
+			spells.consider(one, g.Spell)
 		}
 	}
 	traits.finish()
@@ -571,6 +569,7 @@ func (r *grantReconciler[T]) consider(one sheetGrant, item T) {
 		}
 	}
 	if !g.putsItemOnSheet() {
+		r.entity.idleGrantPlans = append(r.entity.idleGrantPlans, grantPlan{grant: g, source: source, seq: one.seq})
 		return
 	}
 	if !has {
@@ -988,38 +987,52 @@ func (s *Spell) levelAt(e *Entity, points fxp.Int) Level {
 		s.PowerSourceWithReplacements(), s.CollegeWithReplacements(), s.Tags, nil))
 }
 
-// grantSummary returns what the grants carried by the item, or by its modifiers, did at the last recalculation, a line
-// for each in the order the item carries them, or an empty string when it carries none.
+// grantSummary returns what the grants carried by the item, or by its modifiers, did at the last recalculation: a line
+// for each grant the recalculation found (see forEachGrant), in the order the item carries them, or an empty string
+// when there are none.
 func (e *Entity) grantSummary(item any) string {
 	if e == nil {
 		return ""
 	}
 	var plans []*grantPlan
-	for i := range e.grantPlans {
-		if e.grantPlans[i].source.owner == item {
-			plans = append(plans, &e.grantPlans[i])
+	for _, list := range [][]grantPlan{e.grantPlans, e.idleGrantPlans} {
+		for i := range list {
+			if list[i].source.owner == item {
+				plans = append(plans, &list[i])
+			}
 		}
 	}
 	slices.SortFunc(plans, func(a, b *grantPlan) int { return cmp.Compare(a.seq, b.seq) })
 	var lines []string
 	for _, plan := range plans {
-		active := e.features.grants[plan.grant]
+		status := grantActive
+		switch {
+		case e.grantCarrierUnmet(plan.source.owner):
+			status = grantUnmet
+		case !e.features.grants[plan.grant]:
+			status = grantInactive
+		}
+		// Once in effect, the grant would stand in for the one not in effect that put the item on the sheet.
+		wouldStandIn := plan.node == nil && plan.grant.putsItemOnSheet() && IsGranted(plan.target) &&
+			!plan.target.grants().inEffect
 		answers := plan.grant.answers(plan.source)
 		name := plan.grant.itemLabel(answers)
 		var line string
 		switch {
-		case e.grantCarrierUnmet(plan.source.owner):
+		case plan.node == nil && plan.target == nil:
+			line = plan.grant.idleSummary(answers)
+		case status == grantUnmet && (plan.node != nil || wouldStandIn):
 			line = i18n.Text("Does not grant %s, since the prerequisites of what carries the grant are not met", name)
-		case plan.node != nil && active:
+		case plan.node != nil && status == grantActive:
 			line = i18n.Text("Grants %s", name)
 		case plan.node != nil:
 			line = i18n.Text("Would grant %s, but the grant is not in effect", name)
 		case plan.standsIn:
 			line = i18n.Text("Grants %s, standing in for a grant of it that is not in effect", name)
-		case !active:
-			line = i18n.Text("Would add to %s, but the grant is not in effect", plan.grant.itemNameWith(answers))
+		case status == grantInactive && wouldStandIn:
+			line = i18n.Text("Would grant %s, but the grant is not in effect", name)
 		default:
-			line = plan.grant.mergeSummary(name, answers)
+			line = plan.grant.mergeSummary(name, answers, status)
 		}
 		if !xreflect.IsNil(plan.source.subOwner) {
 			line = i18n.Text("%s (from %v)", line, plan.source.subOwner)
