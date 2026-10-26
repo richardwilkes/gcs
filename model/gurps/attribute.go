@@ -217,17 +217,25 @@ func (a *Attribute) CurrentThreshold() *PoolThreshold {
 	return nil
 }
 
-// PointCost returns the number of points spent on this Attribute.
+// PointCost returns the number of points spent on this Attribute. While the prerequisites of an item carrying a grant
+// are judged, it is the cost they see, without the size modifier bonuses and cost reductions from what the grant put on
+// the sheet; see Entity.JudgingPrereqsOf.
 func (a *Attribute) PointCost() fxp.Int {
 	def := a.AttributeDef()
 	if def == nil || def.IsSeparator() {
 		return 0
 	}
 	var sm int
-	if a.Entity != nil {
-		sm = a.Entity.Profile.AdjustedSizeModifier()
+	costReduction := a.CostReduction
+	if e := a.Entity; e != nil {
+		if e.carriesGrant(e.judging) {
+			sm = e.sizeModifierForPrereqs()
+			costReduction = e.CostReductionFor(a.AttrID)
+		} else {
+			sm = e.Profile.AdjustedSizeModifier()
+		}
 	}
-	return def.ComputeCost(a.Entity, a.Adjustment, a.CostReduction, sm)
+	return def.ComputeCost(a.Entity, a.Adjustment, costReduction, sm)
 }
 
 // IsThresholdOpMet returns true if any attribute's current threshold contains the given op.

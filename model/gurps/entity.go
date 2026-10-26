@@ -94,7 +94,7 @@ type EntityData struct {
 
 type features struct {
 	attributeBonuses     []*AttributeBonus
-	costReductions       []*CostReduction
+	costReductions       []ownedCostReduction
 	drBonuses            []*DRBonus
 	maxUsesBonuses       []*EquipmentMaxUsesBonus
 	skillBonuses         []*SkillBonus
@@ -106,6 +106,12 @@ type features struct {
 	weaponBonuses        []*WeaponBonus
 	selectorOverrides    []*SelectorOverride
 	grants               map[*Grant]bool
+}
+
+// ownedCostReduction is a cost reduction along with the item it came from.
+type ownedCostReduction struct {
+	*CostReduction
+	owner fmt.Stringer
 }
 
 // Entity holds the base information for various types of entities: PC, NPC, Creature, etc.
@@ -900,7 +906,7 @@ func (e *Entity) processFeature(owner, subOwner fmt.Stringer, f Feature, leveled
 	case *AttributeBonus:
 		e.features.attributeBonuses = append(e.features.attributeBonuses, actual)
 	case *CostReduction:
-		e.features.costReductions = append(e.features.costReductions, actual)
+		e.features.costReductions = append(e.features.costReductions, ownedCostReduction{CostReduction: actual, owner: owner})
 	case *EquipmentMaxUsesBonus:
 		e.features.maxUsesBonuses = append(e.features.maxUsesBonuses, actual)
 	case *DRBonus:
@@ -1403,11 +1409,12 @@ func (e *Entity) AttributeBonusFor(attributeID string, limitation stlimit.Option
 	return total
 }
 
-// CostReductionFor returns the total cost reduction for the given ID.
+// CostReductionFor returns the total cost reduction for the given ID. The reductions from what the grants of the item
+// whose prerequisites are being judged put on the sheet are left out; see JudgingPrereqsOf.
 func (e *Entity) CostReductionFor(attributeID string) fxp.Int {
 	var total fxp.Int
 	for _, one := range e.features.costReductions {
-		if one.Attribute == attributeID {
+		if one.Attribute == attributeID && !e.excludedWhileJudging(one.owner) {
 			total += one.Percentage
 		}
 	}
@@ -1815,15 +1822,20 @@ func (e *Entity) SkillMatching(nameCriteria, specializationCriteria criteria.Tex
 	return list
 }
 
-// Dodge returns the current Dodge value for the given Encumbrance.
+// Dodge returns the current Dodge value for the given Encumbrance. While the prerequisites of an item carrying a grant
+// are judged, it is the Dodge they see, without the bonuses from what the grant put on the sheet; see JudgingPrereqsOf.
 func (e *Entity) Dodge(enc encumbrance.Level) int {
+	current, bonus := e.ResolveAttributeCurrent, e.DodgeBonus
+	if e.carriesGrant(e.judging) {
+		current, bonus = e.resolveAttributeCurrentForPrereqs, e.AttributeBonusFor(DodgeID, stlimit.None, nil).Floor()
+	}
 	var dodge fxp.Int
 	if e.ResolveAttribute(DodgeID) != nil {
-		dodge = e.ResolveAttributeCurrent(DodgeID)
+		// The dodge attribute carries the bonuses to Dodge itself.
+		dodge = current(DodgeID)
 	} else {
-		dodge = e.ResolveAttributeCurrent(BasicSpeedID).Max(0) + fxp.Three
+		dodge = current(BasicSpeedID).Max(0) + fxp.Three + bonus
 	}
-	dodge += e.DodgeBonus
 	divisor := 2 * min(CountThresholdOpMet(threshold.HalveDodge, e.Attributes), 2)
 	if divisor > 0 {
 		dodge = dodge.Div(fxp.FromInteger(divisor)).Ceil()
@@ -1831,8 +1843,13 @@ func (e *Entity) Dodge(enc encumbrance.Level) int {
 	return (dodge + enc.Penalty()).Max(fxp.One).AsInteger[int]()
 }
 
-// EncumbranceLevel returns the current Encumbrance level.
+// EncumbranceLevel returns the current Encumbrance level. While the prerequisites of an item carrying a grant are
+// judged, it is the level they see, from the Basic Lift they see (see BasicLift), which is neither taken from the cache
+// nor kept in it.
 func (e *Entity) EncumbranceLevel(forSkills bool) encumbrance.Level {
+	if e.carriesGrant(e.judging) {
+		return e.encumbranceLevelCarrying(e.WeightCarried(forSkills))
+	}
 	if forSkills {
 		if e.encumbranceLevelForSkillsCache != encumbrance.LastLevel+1 {
 			return e.encumbranceLevelForSkillsCache
@@ -1840,21 +1857,22 @@ func (e *Entity) EncumbranceLevel(forSkills bool) encumbrance.Level {
 	} else if e.encumbranceLevelCache != encumbrance.LastLevel+1 {
 		return e.encumbranceLevelCache
 	}
-	carried := e.WeightCarried(forSkills)
+	level := e.encumbranceLevelCarrying(e.WeightCarried(forSkills))
+	if forSkills {
+		e.encumbranceLevelForSkillsCache = level
+	} else {
+		e.encumbranceLevelCache = level
+	}
+	return level
+}
+
+// encumbranceLevelCarrying returns the Encumbrance level of carrying the given weight.
+func (e *Entity) encumbranceLevelCarrying(carried fxp.Weight) encumbrance.Level {
+	basicLift := e.BasicLift()
 	for _, one := range encumbrance.Levels {
-		if carried <= e.MaximumCarry(one) {
-			if forSkills {
-				e.encumbranceLevelForSkillsCache = one
-			} else {
-				e.encumbranceLevelCache = one
-			}
+		if carried <= maximumCarry(basicLift, one) {
 			return one
 		}
-	}
-	if forSkills {
-		e.encumbranceLevelForSkillsCache = encumbrance.ExtraHeavy
-	} else {
-		e.encumbranceLevelCache = encumbrance.ExtraHeavy
 	}
 	return encumbrance.ExtraHeavy
 }
@@ -1864,15 +1882,18 @@ func (e *Entity) WeightUnit() fxp.WeightUnit {
 	return e.SheetSettings.DefaultWeightUnits
 }
 
-// WeightCarried returns the carried weight. It is cached until the caches are discarded, as the encumbrance level
-// derived from it is: finding it resolves the weight of every carried item, and the encumbrance block asks for it
-// whenever it is synced.
+// WeightCarried returns the carried weight. It is cached until the caches are discarded, since finding it resolves the
+// weight of every carried item and the encumbrance block asks for it whenever it is synced, but like the encumbrance
+// level derived from it, it is neither taken from the cache nor kept in it while the prerequisites of an item carrying
+// a grant are judged, as a weight script run for a script prerequisite then sees the sheet as those prerequisites do;
+// see resolveScript.
 func (e *Entity) WeightCarried(forSkills bool) fxp.Weight {
 	i := 0
 	if forSkills {
 		i = 1
 	}
-	if e.weightCarriedCached[i] {
+	judging := e.carriesGrant(e.judging)
+	if !judging && e.weightCarriedCached[i] {
 		return e.weightCarriedCache[i]
 	}
 	var total fxp.Weight
@@ -1881,14 +1902,22 @@ func (e *Entity) WeightCarried(forSkills bool) fxp.Weight {
 			total += one.ExtendedWeight(forSkills, e.SheetSettings.DefaultWeightUnits)
 		}
 	}
-	e.weightCarriedCache[i] = total
-	e.weightCarriedCached[i] = true
+	if !judging {
+		e.weightCarriedCache[i] = total
+		e.weightCarriedCached[i] = true
+	}
 	return total
 }
 
 // MaximumCarry returns the maximum amount the Entity can carry for the specified encumbrance level.
 func (e *Entity) MaximumCarry(enc encumbrance.Level) fxp.Weight {
-	return fxp.Weight(fxp.Int(e.BasicLift()).Mul(enc.WeightMultiplier()))
+	return maximumCarry(e.BasicLift(), enc)
+}
+
+// maximumCarry returns the maximum amount a character with the given Basic Lift can carry for the specified encumbrance
+// level.
+func maximumCarry(basicLift fxp.Weight, enc encumbrance.Level) fxp.Weight {
+	return fxp.Weight(fxp.Int(basicLift).Mul(enc.WeightMultiplier()))
 }
 
 // OneHandedLift returns the one-handed lift value.
@@ -1921,8 +1950,13 @@ func (e *Entity) ShiftSlightly() fxp.Weight {
 	return fxp.Weight(fxp.Int(e.BasicLift()).Mul(fxp.Fifty))
 }
 
-// BasicLift returns the entity's Basic Lift.
+// BasicLift returns the entity's Basic Lift. While the prerequisites of an item carrying a grant are judged, it is the
+// Basic Lift they see, from the lifting ST without the bonuses from what the grant put on the sheet, which is neither
+// taken from the cache nor kept in it; see JudgingPrereqsOf.
 func (e *Entity) BasicLift() fxp.Weight {
+	if e.carriesGrant(e.judging) {
+		return e.BasicLiftForST(e.strengthForPrereqs(LiftingStrengthID, stlimit.LiftingOnly))
+	}
 	if e.basicLiftCache != -1 {
 		return e.basicLiftCache
 	}

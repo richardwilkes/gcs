@@ -69,15 +69,16 @@ func (p *AttributePrereq) Clone(parent *PrereqList) Prereq {
 func (p *AttributePrereq) FillWithNameableKeys(_, _ map[string]string) {
 }
 
-// Satisfied implements Prereq. The comparison is met only when the sheet defines each attribute it names.
+// Satisfied implements Prereq. The comparison is met only when each key it names has a value on the sheet; see
+// attributePrereqValue.
 func (p *AttributePrereq) Satisfied(entity *Entity, _ any, tooltip *xbytes.InsertBuffer, prefix string, _ *bool) bool {
 	if entity == nil {
 		return true
 	}
 	// An attribute the sheet doesn't define resolves to fxp.Min, which must not take part in the sum.
-	value := entity.resolveAttributeCurrentForPrereqs(p.Which)
+	value := attributePrereqValue(entity, p.Which)
 	if value != fxp.Min && p.CombinedWith != "" {
-		if other := entity.resolveAttributeCurrentForPrereqs(p.CombinedWith); other == fxp.Min {
+		if other := attributePrereqValue(entity, p.CombinedWith); other == fxp.Min {
 			value = fxp.Min
 		} else {
 			value += other
@@ -92,6 +93,28 @@ func (p *AttributePrereq) Satisfied(entity *Entity, _ any, tooltip *xbytes.Inser
 		tooltip.WriteString(p.Describe(entity, nil, plainText))
 	}
 	return satisfied
+}
+
+// attributePrereqValue returns the value an attribute prerequisite compares for the key, as the prerequisites being
+// judged see it (see Entity.JudgingPrereqsOf): the current value of the sheet's attribute with that ID or, for the keys
+// the editor offers beside the attributes, the adjusted size modifier or the Dodge at the current encumbrance, which
+// on a sheet with a dodge attribute is that attribute halved by any threshold that halves Dodge and less the
+// encumbrance penalty. Parry and Block compare the bonus to every parry or block, the only sheet-level value there is
+// for them. A number resolves to itself, and any other key to fxp.Min.
+func attributePrereqValue(entity *Entity, key string) fxp.Int {
+	switch key {
+	case SizeModifierID:
+		if entity.carriesGrant(entity.judging) {
+			return fxp.FromInteger(entity.sizeModifierForPrereqs())
+		}
+		return fxp.FromInteger(entity.Profile.AdjustedSizeModifier())
+	case DodgeID:
+		return fxp.FromInteger(entity.Dodge(entity.EncumbranceLevel(false)))
+	case ParryID, BlockID:
+		return entity.defenseBonus(key)
+	default:
+		return entity.resolveAttributeCurrentForPrereqs(key)
+	}
 }
 
 // Describe implements Prereq. Attributes are named as the entity, which may be nil, defines them.

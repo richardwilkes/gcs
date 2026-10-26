@@ -15,6 +15,8 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/criteria"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/attribute"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/encumbrance"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/prereq"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/spellcmp"
 	"github.com/richardwilkes/gcs/v5/model/jio"
@@ -147,13 +149,24 @@ func TestSkillPrereqCriteria(t *testing.T) {
 }
 
 // TestAttributePrereqNeedsTheAttributes checks that an attribute prerequisite's comparison is met only when the sheet
-// defines each attribute it names, whatever the comparison, so a "Does not have" one is met when either is missing.
+// defines each attribute it names, whatever the comparison, so a "Does not have" one is met when either is missing,
+// and that the size modifier, the Dodge and the bonuses to Parry and Block, which the editor offers alongside the
+// attributes, are compared at their values, the Dodge being the current one whether or not the sheet has a dodge
+// attribute.
 func TestAttributePrereqNeedsTheAttributes(t *testing.T) {
 	c := check.New(t)
 	e := gurps.NewEntity()
 	e.Attributes.Set[gurps.HitPointsID].Damage = fxp.FromInteger(13)
 	c.Equal(fxp.FromInteger(-3), e.ResolveAttributeCurrent(gurps.HitPointsID), "precondition: HP is at -3")
 	c.Equal(fxp.Min, e.ResolveAttributeCurrent("sanity"), "precondition: the sheet has no Sanity")
+	c.Nil(e.ResolveAttribute(gurps.DodgeID), "precondition: the sheet has no dodge attribute")
+	e.Profile.SizeModifier = 2
+	e.ParryBonus = fxp.One
+	e.BlockBonus = fxp.Two
+	pack := gurps.NewEquipment(e, nil, false)
+	pack.BaseWeight = "30 lb"
+	e.CarriedEquipment = []*gurps.Equipment{pack}
+	c.Equal(encumbrance.Light, e.EncumbranceLevel(false), "precondition: the pack is a Light load")
 	attr := func(has bool, which, combined string, compare criteria.NumericComparison,
 		qualifier int,
 	) *gurps.AttributePrereq {
@@ -178,9 +191,26 @@ func TestAttributePrereqNeedsTheAttributes(t *testing.T) {
 		{"both missing", attr(true, "sanity", "luck", criteria.AtLeastNumber, 0), false},
 		{"does not have missing", attr(false, "sanity", "", criteria.AtLeastNumber, 10), true},
 		{"does not have missing pair", attr(false, "sanity", gurps.HitPointsID, criteria.AtLeastNumber, 10), true},
+		{"size modifier", attr(true, gurps.SizeModifierID, "", criteria.EqualsNumber, 2), true},
+		{"does not have size modifier", attr(false, gurps.SizeModifierID, "", criteria.AtLeastNumber, 1), false},
+		{"ST plus size modifier", attr(true, gurps.StrengthID, gurps.SizeModifierID, criteria.EqualsNumber, 12), true},
+		{"dodge", attr(true, gurps.DodgeID, "", criteria.EqualsNumber, 3), true}, // 8/2 at HP -3, -1 for Light
+		{"parry", attr(true, gurps.ParryID, "", criteria.EqualsNumber, 1), true},
+		{"block", attr(true, gurps.BlockID, "", criteria.EqualsNumber, 2), true},
 	} {
 		c.Equal(one.want, one.prereq.Satisfied(e, nil, nil, "", nil), one.name)
 	}
+	e.SheetSettings.Attributes.Set[gurps.DodgeID] = &gurps.AttributeDef{
+		DefID: gurps.DodgeID,
+		Type:  attribute.Integer,
+		Name:  "Dodge",
+		Base:  "$basic_speed + 3",
+	}
+	e.Attributes.Set[gurps.DodgeID] = gurps.NewAttribute(e, gurps.DodgeID, len(e.Attributes.Set))
+	e.DiscardCaches()
+	c.Equal(fxp.Eight, e.ResolveAttributeCurrent(gurps.DodgeID), "precondition: the dodge attribute is 8")
+	c.True(attr(true, gurps.DodgeID, "", criteria.EqualsNumber, 3).Satisfied(e, nil, nil, "", nil),
+		"a dodge attribute is halved and penalized as the Dodge without one is")
 }
 
 // TestSpellPrereqLevel checks that only spells at the level a spell prerequisite asks for count toward its quantity.

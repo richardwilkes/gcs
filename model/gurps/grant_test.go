@@ -21,6 +21,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/criteria"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/difficulty"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/encumbrance"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/feature"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/frequency"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/grantmerge"
@@ -1237,6 +1238,38 @@ func TestGrantDoesNotMeetItsCarriersPrereqs(t *testing.T) {
 		}
 	})
 
+	// Nor can a curse it carries leave its prerequisite unmet: a default reads the skill the curse takes from at the
+	// level the prerequisites see, without the curse, though the level the skill recorded is lower, whichever skill the
+	// default weighs first.
+	t.Run("curse once the prerequisite is met without it", func(t *testing.T) {
+		guns := func(tl string, points fxp.Int) *Skill {
+			s := newEasySkill("Guns", points)
+			s.Specialization = "Pistol"
+			s.TechLevel = new(tl)
+			return s
+		}
+		for _, tl8First := range []bool{false, true} {
+			c := check.New(t)
+			e := NewEntity()
+			tl7, tl8 := guns("7", fxp.Four), guns("8", fxp.Eight) // 12 and 13
+			tl7.SetDataOwner(e)
+			tl8.SetDataOwner(e)
+			e.Skills = []*Skill{tl7, tl8}
+			if tl8First {
+				e.Skills = []*Skill{tl8, tl7}
+			}
+			knife := addSkill(e, "Knife", fxp.One)
+			knife.Defaults = []*SkillDefault{newSkillDefaultTo("Guns", "Pistol", false, 0)}
+			cursed := addTraitWithFeatures(e, "Cursed", newSkillGrant(guns("8", fxp.One), -fxp.One, grantmerge.MergePoints))
+			cursed.Prereq = newPrereqListRequiringSkill("Knife", fxp.Thirteen)
+			e.Recalculate()
+			c.False(e.Unsettled(), "TL8 first %v", tl8First)
+			c.Equal("", cursed.UnsatisfiedReason, "TL8 first %v: Knife is 13 from Guns (Pistol)/TL8 without the curse",
+				tl8First)
+			c.Equal(fxp.Twelve, tl8.LevelData.Level, "TL8 first %v: so the curse takes a level from it", tl8First)
+		}
+	})
+
 	// A default resting on the skill it puts on the sheet gives way to the skill's next best, as it would on the sheet
 	// without the grant, when the skill is read through a technique based on it: Knife Trick is 13 through Knife's
 	// default from Shortsword, and no more.
@@ -1322,6 +1355,37 @@ func TestGrantDoesNotMeetItsCarriersPrereqs(t *testing.T) {
 			c.Equal(fxp.Twelve, strike.SkillLevel(nil), "resolved first %v: the sheet still shows the weapon with the "+
 				"skill granted", resolvedFirst)
 		}
+	})
+
+	// Nor are the Basic Lift, the carried weight and the encumbrance a script run for the prerequisites reads what the
+	// sheet keeps: ST is derived from IQ here and the pack weighs three times the ST, so the script reads them without
+	// the bonus to IQ from what the grant puts on the sheet, at ST 10: 20 lb, 30 lb and a Light load.
+	t.Run("Basic Lift, carried weight and encumbrance once the prerequisite is met without it", func(t *testing.T) {
+		c := check.New(t)
+		e := NewEntity()
+		e.SheetSettings.Attributes.Set[StrengthID].Base = "$iq"
+		addCarriedEquipmentWithFeatures(e, "Pack").BaseWeight = "$st * 3"
+		smart := newGrantLeveledTrait("Smart", fxp.One)
+		bonus := NewAttributeBonus(IntelligenceID)
+		bonus.Amount = fxp.Five
+		smart.Features = Features{bonus}
+		training := addTraitWithFeatures(e, "Training", newTraitGrant(smart, fxp.One, grantmerge.Ignore))
+		training.Prereq = NewPrereqList()
+		script := addScriptPrereq(training.Prereq, `entity.encumbrance.basicLift < 45 && `+
+			`entity.encumbrance.weightCarried < 45 && entity.encumbrance.level == 1`)
+		e.Recalculate()
+		c.Equal("", training.UnsatisfiedReason)
+		lift := fxp.WeightFromInteger(45, fxp.Pound)
+		checkSheet := func(when string) {
+			c.Equal(lift, e.BasicLift(), "%s: ST is 15, from the IQ with the bonus", when)
+			c.Equal(lift, e.WeightCarried(false), "%s: so the pack weighs 45 lb", when)
+			c.Equal(encumbrance.No, e.EncumbranceLevel(false), "%s: which is no load", when)
+		}
+		checkSheet("recalculated")
+		e.DiscardCaches()
+		result, _ := script.Evaluate(e, training)
+		c.Equal(CheckMet, result)
+		checkSheet("after the script is run on its own, as the editor's preview runs it")
 	})
 
 	t.Run("item another grant puts on the sheet too", func(t *testing.T) {
@@ -1493,6 +1557,40 @@ func TestGrantDoesNotMeetItsCarriersPrereqs(t *testing.T) {
 			addScriptPrereq(giant.Prereq, `entity.sizeModifier >= 1 ? "" : "Too small"`)
 			return giant, func() fxp.Int { return fxp.FromInteger(e.Profile.AdjustedSizeModifier()) }
 		}, level: 0},
+		{name: "bonuses from a granted trait to the size modifier and the parry read by an attribute prerequisite", carry: func(_ check.Checker, e *Entity) (*Trait, func() fxp.Int) {
+			big := newGrantLeveledTrait("Big", fxp.One)
+			big.Features = Features{NewAttributeBonus(SizeModifierID), NewAttributeBonus(ParryID)}
+			giant := addTraitWithFeatures(e, "Giant", newTraitGrant(big, fxp.One, grantmerge.Ignore))
+			giant.Prereq = NewPrereqList()
+			p := NewAttributePrereq(e)
+			p.Parent = giant.Prereq
+			p.Has = false // Met by a size modifier and parry bonus adding up to more than 0
+			p.Which = SizeModifierID
+			p.CombinedWith = ParryID
+			p.QualifierCriteria = criteria.Number{Compare: criteria.AtMostNumber}
+			giant.Prereq.Prereqs = append(giant.Prereq.Prereqs, p)
+			return giant, func() fxp.Int { return fxp.FromInteger(e.Profile.AdjustedSizeModifier()) }
+		}, level: 0},
+		{name: "bonus from a granted trait to the size modifier read by a script as the points spent on attributes", carry: func(_ check.Checker, e *Entity) (*Trait, func() fxp.Int) {
+			e.Attributes.Set[StrengthID].Adjustment = fxp.Ten // ST 20 costs 100 points, 90 at SM +1
+			big := newGrantLeveledTrait("Big", fxp.One)
+			big.Features = Features{NewAttributeBonus(SizeModifierID)}
+			giant := addTraitWithFeatures(e, "Giant", newTraitGrant(big, fxp.One, grantmerge.Ignore))
+			giant.Prereq = NewPrereqList()
+			addScriptPrereq(giant.Prereq, `entity.points.attributes < 100`)
+			return giant, func() fxp.Int { return e.Attributes.Cost(StrengthID) }
+		}, level: fxp.Hundred},
+		{name: "cost reduction from a granted trait read by a script as the points spent on attributes", carry: func(_ check.Checker, e *Entity) (*Trait, func() fxp.Int) {
+			e.Attributes.Set[StrengthID].Adjustment = fxp.Ten // ST 20 costs 100 points, 50 with the reduction
+			cheap := newGrantLeveledTrait("Cheap", fxp.One)
+			reduction := NewCostReduction(StrengthID)
+			reduction.Percentage = fxp.Fifty
+			cheap.Features = Features{reduction}
+			training := addTraitWithFeatures(e, "Training", newTraitGrant(cheap, fxp.One, grantmerge.Ignore))
+			training.Prereq = NewPrereqList()
+			addScriptPrereq(training.Prereq, `entity.points.attributes < 100`)
+			return training, func() fxp.Int { return e.Attributes.Cost(StrengthID) }
+		}, level: fxp.Hundred},
 		{name: "bonus from a granted trait to ST read by a script as striking ST", carry: func(_ check.Checker, e *Entity) (*Trait, func() fxp.Int) {
 			strong := newGrantLeveledTrait("Strong", fxp.One)
 			bonus := NewAttributeBonus(StrengthID)
@@ -1514,6 +1612,19 @@ func TestGrantDoesNotMeetItsCarriersPrereqs(t *testing.T) {
 			addScriptPrereq(training.Prereq, `entity.liftingStrength >= 15`)
 			return training, e.LiftingStrength
 		}, level: fxp.Ten},
+		{name: "ST bonus from a granted trait read by a script as the encumbrance", carry: func(_ check.Checker, e *Entity) (*Trait, func() fxp.Int) {
+			strong := newGrantLeveledTrait("Strong", fxp.One)
+			bonus := NewAttributeBonus(StrengthID)
+			bonus.Amount = fxp.Five
+			strong.Features = Features{bonus}
+			addCarriedEquipmentWithFeatures(e, "Pack").BaseWeight = "30 lb" // Light at ST 10, but not at ST 15
+			// A skill with an encumbrance penalty looks up the encumbrance before the traits are judged.
+			addSkill(e, "Climbing", fxp.One).EncumbrancePenaltyMultiplier = fxp.One
+			training := addTraitWithFeatures(e, "Training", newTraitGrant(strong, fxp.One, grantmerge.Ignore))
+			training.Prereq = NewPrereqList()
+			addScriptPrereq(training.Prereq, `entity.currentEncumbrance(true, false) == 0 ? "" : "Too burdened"`)
+			return training, func() fxp.Int { return fxp.FromInteger(int(e.EncumbranceLevel(true))) }
+		}, level: fxp.One},
 		{name: "bonus from a granted trait to the attribute another is derived from", carry: func(_ check.Checker, e *Entity) (*Trait, func() fxp.Int) {
 			smart := newGrantLeveledTrait("Smart", fxp.One)
 			bonus := NewAttributeBonus(IntelligenceID)
@@ -1580,6 +1691,18 @@ func TestGrantDoesNotMeetItsCarriersPrereqs(t *testing.T) {
 			training := addTraitWithFeatures(e, "Training", newTraitGrant(deft, fxp.One, grantmerge.Ignore))
 			training.Prereq = newPrereqListRequiringSkill("Cross Parry", fxp.Ten)
 			return training, func() fxp.Int { return crossParry.LevelData.Level }
+		}, level: fxp.Nine},
+		{name: "bonuses from a granted trait to the Dodge and Basic Speed read by a technique based on the Dodge", carry: func(_ check.Checker, e *Entity) (*Trait, func() fxp.Int) {
+			roll := NewTechnique(e, nil, "")
+			roll.Name = "Roll"
+			roll.TechniqueDefault = &SkillDefault{DefaultType: DodgeID} // Dodge 8, so 9 at 1 point
+			e.Skills = append(e.Skills, roll)
+			nimble := newGrantLeveledTrait("Nimble", fxp.One)
+			// +1 to each, so Dodge 10 and Roll 11
+			nimble.Features = Features{NewAttributeBonus(DodgeID), NewAttributeBonus(BasicSpeedID)}
+			training := addTraitWithFeatures(e, "Training", newTraitGrant(nimble, fxp.One, grantmerge.Ignore))
+			training.Prereq = newPrereqListRequiringSkill("Roll", fxp.Ten)
+			return training, func() fxp.Int { return roll.LevelData.Level }
 		}, level: fxp.Nine},
 		{name: "parry bonus from a granted trait to a skill defaulting from the parry", carry: func(_ check.Checker, e *Entity) (*Trait, func() fxp.Int) {
 			addSkill(e, "Broadsword", fxp.One)

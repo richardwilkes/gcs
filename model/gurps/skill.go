@@ -1086,10 +1086,15 @@ func CalculateSkillLevel(e *Entity, name, specialization, optionalSpecialization
 				bonus := e.SkillBonusFor(name, specialization, optionalSpecialization, tags, &tooltip)
 				level += bonus
 				relativeLevel += bonus
-				bonus = e.EncumbranceLevel(true).Penalty().Mul(encumbrancePenaltyMultiplier)
-				level += bonus
-				if bonus != 0 {
-					fmt.Fprintf(&tooltip, i18n.Text("\nEncumbrance [%s]"), bonus.StringWithSign())
+				// Only a skill with an encumbrance penalty looks up the encumbrance level, since while the
+				// prerequisites of an item carrying a grant are judged, it is computed afresh every time; see
+				// Entity.EncumbranceLevel.
+				if encumbrancePenaltyMultiplier != 0 {
+					bonus = e.EncumbranceLevel(true).Penalty().Mul(encumbrancePenaltyMultiplier)
+					level += bonus
+					if bonus != 0 {
+						fmt.Fprintf(&tooltip, i18n.Text("\nEncumbrance [%s]"), bonus.StringWithSign())
+					}
 				}
 			}
 		}
