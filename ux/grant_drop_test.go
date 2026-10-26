@@ -1095,40 +1095,97 @@ func newTestSheetWithEquipmentGrant(t *testing.T) (sheet *Sheet, carrier *gurps.
 }
 
 // TestUndoOfTakingGrantsAwayRestoresGrantedRowInOtherList checks that undoing an edit that takes a carrier's grants
-// away -- deleting the carrier, applying an editor that removes the grant, disabling the carrier, moving it to the
-// other equipment list or selling it -- brings back the row the grant put in the skills list as the row it was, where the user had
+// away -- deleting the carrier, applying an editor or a sync with its source that removes the grant, disabling the
+// carrier, dragging, moving or organizing it into a disabled container, moving or dragging it to the other equipment
+// list or selling it -- brings back the row the grant put in the skills list as the row it was, where the user had
 // moved it, rather than having the restored grant make a fresh one at the end of the list.
 func TestUndoOfTakingGrantsAwayRestoresGrantedRowInOtherList(t *testing.T) {
 	for _, tc := range []struct {
 		name string
 		// equipment is set when the carrier is a piece of carried equipment rather than a trait.
 		equipment bool
-		edit      func(sheet *Sheet, trait *gurps.Trait, eqp *gurps.Equipment)
+		edit      func(t *testing.T, sheet *Sheet, trait *gurps.Trait, eqp *gurps.Equipment)
 	}{
-		{name: "delete selection", edit: func(sheet *Sheet, trait *gurps.Trait, _ *gurps.Equipment) {
+		{name: "delete selection", edit: func(_ *testing.T, sheet *Sheet, trait *gurps.Trait, _ *gurps.Equipment) {
 			selectGrantingItem(sheet.Skills.Table, trait)
 			DeleteSelection(sheet.Traits.Table, true)
 		}},
-		{name: "editor removes the grant", edit: func(sheet *Sheet, trait *gurps.Trait, _ *gurps.Equipment) {
+		{name: "editor removes the grant", edit: func(_ *testing.T, sheet *Sheet, trait *gurps.Trait, _ *gurps.Equipment) {
 			e, _ := buildEditorContent(sheet, trait, initTraitEditor)
 			e.editorData.Features = nil
 			e.applyEdits()
 		}},
-		{name: "toggle enablement", edit: func(sheet *Sheet, trait *gurps.Trait, _ *gurps.Equipment) {
+		{name: "toggle enablement", edit: func(_ *testing.T, sheet *Sheet, trait *gurps.Trait, _ *gurps.Equipment) {
 			selectGrantingItem(sheet.Skills.Table, trait)
 			toggleDisabled(sheet, sheet.Traits.Table)
 		}},
-		{name: "move to other equipment", equipment: true, edit: func(sheet *Sheet, _ *gurps.Trait, eqp *gurps.Equipment) {
+		{name: "sync with a source that no longer grants it", edit: func(t *testing.T, sheet *Sheet, trait *gurps.Trait, _ *gurps.Equipment) {
+			_, user := uxtest.UseTestLibraries(t, check.New(t))
+			RegisterKnownFileTypes()
+			lib := trait.Clone(gurps.LibraryFile{}, nil, nil, gurps.Copy)
+			lib.Features = nil
+			libFile := gurps.LibraryFile{Library: user.Key(), Path: "Traits/Test" + gurps.TraitsExt}
+			if err := gurps.SaveTraits([]*gurps.Trait{lib},
+				filepath.Join(user.Path(false), filepath.FromSlash(libFile.Path))); err != nil {
+				t.Fatal(err)
+			}
+			trait.Source = gurps.Source{LibraryFile: libFile, TID: lib.ID()}
+			selectGrantingItem(sheet.Skills.Table, trait)
+			SyncWithSourceForSelection(sheet.Traits.Table)
+		}},
+		{name: "drag into a disabled container", edit: func(_ *testing.T, sheet *Sheet, trait *gurps.Trait, _ *gurps.Equipment) {
+			entity := sheet.Entity()
+			disabled := gurps.NewTrait(entity, nil, true)
+			disabled.Disabled = true
+			entity.Traits = append(entity.Traits, disabled)
+			sheet.Rebuild(true)
+			// Driven the way unison drives a drop within one table: the undo data is collected, the rows are moved
+			// and the drop completion is called.
+			selectGrantingItem(sheet.Skills.Table, trait)
+			table := sheet.Traits.Table
+			draggedTableData = &unison.TableDragData[*Node[*gurps.Trait]]{Table: table, Rows: table.SelectedRows(true)}
+			defer func() { draggedTableData = nil }()
+			undo := willDropCallback(table, table, true)
+			trait.Parent().Children = nil
+			trait.SetParent(disabled)
+			disabled.Children = []*gurps.Trait{trait}
+			table.SyncToModel()
+			table.SetSelectionMap(map[tid.TID]bool{trait.ID(): true})
+			didDropCallback(undo, table, table, true)
+		}},
+		{name: "move into a disabled container", edit: func(_ *testing.T, sheet *Sheet, trait *gurps.Trait, _ *gurps.Equipment) {
+			group := trait.Parent()
+			disabled := gurps.NewTrait(sheet.Entity(), group, true)
+			disabled.Disabled = true
+			group.Children = append(group.Children, disabled)
+			sheet.Rebuild(true)
+			selectGrantingItem(sheet.Skills.Table, trait)
+			MoveSelection(sheet.Traits.Table, MoveIntoContainer)
+		}},
+		{name: "organize into a disabled container", edit: func(_ *testing.T, sheet *Sheet, trait *gurps.Trait, _ *gurps.Equipment) {
+			// Organizing files a top-level trait into the top-level group named for its category, even a disabled one.
+			entity := sheet.Entity()
+			trait.Parent().Children = nil
+			trait.SetParent(nil)
+			trait.BasePoints = fxp.Five
+			disabled := gurps.NewTrait(entity, nil, true)
+			disabled.Name = "Advantages"
+			disabled.Disabled = true
+			entity.Traits = append(entity.Traits, disabled, trait)
+			sheet.Rebuild(true)
+			sheet.AsPanel().PerformCmd(nil, OrganizeTraitsItemID)
+		}},
+		{name: "move to other equipment", equipment: true, edit: func(_ *testing.T, sheet *Sheet, _ *gurps.Trait, eqp *gurps.Equipment) {
 			selectGrantingItem(sheet.Skills.Table, eqp)
 			moveSelectedEquipment(sheet, sheet.CarriedEquipment.Table, sheet.OtherEquipment.Table)
 		}},
-		{name: "sell all of it", equipment: true, edit: func(sheet *Sheet, _ *gurps.Trait, eqp *gurps.Equipment) {
+		{name: "sell all of it", equipment: true, edit: func(_ *testing.T, sheet *Sheet, _ *gurps.Trait, eqp *gurps.Equipment) {
 			entity := sheet.Entity()
 			recordTrade(sheet, "Sell Equipment", func() {
 				entity.CommitSale([]gurps.SaleItem{{Equipment: eqp, Quantity: fxp.One}}, nil, false, "Sold", jio.Now())
 			})
 		}},
-		{name: "drag to other equipment", equipment: true, edit: func(sheet *Sheet, _ *gurps.Trait, eqp *gurps.Equipment) {
+		{name: "drag to other equipment", equipment: true, edit: func(_ *testing.T, sheet *Sheet, _ *gurps.Trait, eqp *gurps.Equipment) {
 			// Driven the way unison drives a drop from one table into another: the undo data is collected, the rows
 			// are moved and the drop completion is called.
 			from, to := sheet.CarriedEquipment.Table, sheet.OtherEquipment.Table
@@ -1167,7 +1224,7 @@ func TestUndoOfTakingGrantsAwayRestoresGrantedRowInOtherList(t *testing.T) {
 			group.Children = []*gurps.Skill{granted}
 			entity.Skills = append(entity.Skills, group)
 			sheet.Rebuild(true)
-			tc.edit(sheet, trait, eqp)
+			tc.edit(t, sheet, trait, eqp)
 			grantedSkill := func() *gurps.Skill {
 				var found *gurps.Skill
 				gurps.Traverse(func(s *gurps.Skill) bool {

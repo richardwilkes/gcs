@@ -111,17 +111,28 @@ func MoveSelection[T gurps.Node[T]](table *unison.Table[*Node[T]], dir MoveDirec
 		return
 	}
 	// The data has to be captured before anything moves, but the edit is only recorded once something has, which the
-	// loop below finds out as it goes; a selection none of whose rows can move therefore costs one serialization rather
-	// than a full pass over it up front.
+	// loop below finds out as it goes; a selection none of whose rows can move therefore costs one serialization, and
+	// one for each of the other lists when it carries grants, rather than a full pass over it up front.
 	//
 	// The containers the move opened are closed again before undo puts the data back, so that undo leaves no trace, and
 	// reopened before redo does, so that the rows redo moves into them are showing and can be selected. Their open
 	// state is kept in the global settings under their IDs, so it reaches whichever objects putting the data back
 	// leaves in the list (see PreservedTableData.Restore).
+	//
+	// Moving a row into a disabled container takes away the grants it carries, along with the rows they put in the
+	// other lists, so undo and redo put those lists back as well; see otherGrantRowLists.
 	var opened []T
+	othersBefore := otherGrantRowLists(table, items)
+	var othersAfter []tableRestorer
 	undo := beginTableUndo(table, dir.Title(),
-		func() { setContainersOpen(opened, false) },
-		func() { setContainersOpen(opened, true) })
+		func() {
+			setContainersOpen(opened, false)
+			restoreGrantRowLists(othersBefore)
+		},
+		func() {
+			setContainersOpen(opened, true)
+			restoreGrantRowLists(othersAfter)
+		})
 	if dir == MoveDown || dir == MoveIntoContainer {
 		// These two act on what sits directly below a row, so the rows are taken from the bottom up: that way a
 		// selected sibling below has already moved on before the row above it looks at what is beneath it. Moving down,
@@ -163,6 +174,7 @@ func MoveSelection[T gurps.Node[T]](table *unison.Table[*Node[T]], dir MoveDirec
 	clearPreconfiguredFlag(table, nil)
 	table.ScrollRowCellIntoView(table.LastSelectedRowIndex(), 0)
 	table.ScrollRowCellIntoView(table.FirstSelectedRowIndex(), 0)
+	othersAfter = otherGrantRowLists(table, items)
 	commitTableUndo(table, undo)
 	rebuildAsModified(table.AncestorOrSelf[Rebuildable](), true)
 }

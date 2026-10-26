@@ -383,8 +383,8 @@ func liveTable[T gurps.Node[T]](table *unison.Table[*Node[T]]) *unison.Table[*No
 }
 
 // TableDragUndoEditData holds the undo edit data for a table drag: the table the rows landed in, the one they came from
-// for a move between two tables, and the lists the grants of the rows moved put rows in, when the move can take those
-// grants away (see grantRowListsOf).
+// for a move between two tables, and the other lists the grants of the rows moved put rows in, when the move can take
+// those grants away (see grantRowListsOf).
 type TableDragUndoEditData[T gurps.Node[T]] struct {
 	From   *TableUndoEditData[T]
 	To     *TableUndoEditData[T]

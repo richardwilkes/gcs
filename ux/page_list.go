@@ -470,19 +470,29 @@ func (p *PageList[T]) installSellEquipmentHandler(owner Rebuildable) {
 	}
 }
 
-// moveSelectedEquipment moves the rows selected in one of the sheet's two equipment lists to the other one. The copy
-// into the destination and the deletion from the source are each told not to report the change, so that the sheet is
-// rebuilt once for the move as a whole rather than once per half of it -- and so that both tables are still the ones
-// on screen when the undo data is collected, since a rebuild can replace either list (see liveTable).
+// moveSelectedEquipment moves the rows selected in one of the sheet's two equipment lists to the other one, unless an
+// editor open on one of them stays open. The copy into the destination and the deletion from the source are each told
+// not to report the change, so that the sheet is rebuilt once for the move as a whole rather than once per half of it
+// -- and so that both tables are still the ones on screen when the undo data is collected, since a rebuild can replace
+// either list (see liveTable).
 func moveSelectedEquipment(sheet *Sheet, from, to *unison.Table[*Node[*gurps.Equipment]]) {
 	mgr := unison.UndoManagerFor(from)
 	if mgr == nil || mgr != unison.UndoManagerFor(to) {
 		return
 	}
+	rows := from.SelectedRows(true)
+	// The editors are closed before the undo data is collected or anything is copied, since saving an editor's changes
+	// as it closes alters the item and rebuilds the sheet, which can replace either table.
+	list := selectionToDelete(from)
+	if len(list) == 0 {
+		return
+	}
+	from = liveTable(from)
+	to = liveTable(to)
 	before := NewTableDragUndoEditData(from, to)
 	// Only carried equipment grants anything, so the move can take the grants of the equipment moved away, and the
 	// lists they put rows in are then part of the edit; see grantRowListsOf.
-	if rowsCarryGrants(from.SelectedRows(true)) {
+	if rowsCarryGrants(rows) {
 		before.Others = grantRowListsOf(sheet, "")
 	}
 	undo := &unison.UndoEdit[*TableDragUndoEditData[*gurps.Equipment]]{
@@ -495,8 +505,8 @@ func moveSelectedEquipment(sheet *Sheet, from, to *unison.Table[*Node[*gurps.Equ
 		},
 		BeforeData: before,
 	}
-	copyRowsTo(to, from.SelectedRows(true), nil, false, false)
-	deleteSelection(from, false, false)
+	copyRowsTo(to, rows, nil, false, false)
+	deleteNodes(from, list, false, false)
 	after := NewTableDragUndoEditData(from, to)
 	if len(before.Others) != 0 {
 		after.Others = grantRowListsOf(sheet, "")

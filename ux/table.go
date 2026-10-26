@@ -377,71 +377,86 @@ func OpenEditor[T gurps.Node[T]](table *unison.Table[*Node[T]], edit func(item T
 
 // DeleteSelection removes the selected nodes from the table and reports the change by rebuilding the table's owner. A
 // granted row is left alone, since it goes only with its grant, and one within a container removed takes the
-// container's place.
+// container's place. Nothing is removed when an editor open on one of them stays open.
 func DeleteSelection[T gurps.Node[T]](table *unison.Table[*Node[T]], recordUndo bool) {
-	deleteSelection(table, recordUndo, true)
+	if list := selectionToDelete(table); len(list) != 0 {
+		// Saving an editor's changes as it closes rebuilds the owner, which can replace the table.
+		deleteNodes(liveTable(table), list, recordUndo, true)
+	}
 }
 
-// deleteSelection removes the selected nodes from the table. When report is true, the change is reported by rebuilding
-// the table's owner; when it is false, the caller takes that on, for when the deletion is only one part of a larger
-// edit whose parts should be reported once, together (see moveSelectedEquipment).
-func deleteSelection[T gurps.Node[T]](table *unison.Table[*Node[T]], recordUndo, report bool) {
-	if provider, ok := any(table.Model).(TableProvider[T]); ok && HasSelectionAndNotFiltered(table) {
-		sel := table.SelectedRows(true)
-		ids := make(map[tid.TID]bool, len(sel))
-		list := make([]T, 0, len(sel))
-		var zero T
-		for _, row := range sel {
-			// An item a grant put on the sheet goes only with its grant, so neither it nor one within a container being
-			// deleted, which stays in the container's place, has its editor closed.
-			if target := row.Data(); target != zero && !gurps.IsGranted(target) {
-				unison.CollectIDsFromRow(row, ids)
-				for _, granted := range grantedWithin(target) {
-					delete(ids, granted.ID())
+// selectionToDelete returns the nodes behind the table's selected rows that a deletion removes, which leaves out the
+// granted rows, once the editors open on them and on what they hold, other than on the granted rows within them, have
+// been closed. Nothing is returned when the table has no provider, no selection or a filter applied, or when one of the
+// editors stays open.
+func selectionToDelete[T gurps.Node[T]](table *unison.Table[*Node[T]]) []T {
+	if _, ok := any(table.Model).(TableProvider[T]); !ok || !HasSelectionAndNotFiltered(table) {
+		return nil
+	}
+	sel := table.SelectedRows(true)
+	ids := make(map[tid.TID]bool, len(sel))
+	list := make([]T, 0, len(sel))
+	var zero T
+	for _, row := range sel {
+		// An item a grant put on the sheet goes only with its grant, so neither it nor one within a container being
+		// deleted, which stays in the container's place, has its editor closed.
+		if target := row.Data(); target != zero && !gurps.IsGranted(target) {
+			unison.CollectIDsFromRow(row, ids)
+			for _, granted := range grantedWithin(target) {
+				delete(ids, granted.ID())
+			}
+			list = append(list, target)
+		}
+	}
+	if len(list) == 0 || !CloseID(ids) {
+		return nil
+	}
+	return list
+}
+
+// deleteNodes removes from the table, or from the one that replaced it (see liveTable), the nodes selectionToDelete
+// returned. When report is true, the change is reported by rebuilding the table's owner; when it is false, the caller
+// takes that on, for when the deletion is only one part of a larger edit whose parts should be reported once, together
+// (see moveSelectedEquipment).
+func deleteNodes[T gurps.Node[T]](table *unison.Table[*Node[T]], list []T, recordUndo, report bool) {
+	provider, ok := any(table.Model).(TableProvider[T])
+	if !ok {
+		return
+	}
+	// The rows the grants carried by what is deleted put in the other lists go with it, so those lists are part of the
+	// edit; see otherGrantRowLists.
+	var undo *unison.UndoEdit[*tablesUndoData]
+	if recordUndo {
+		undo = beginTableUndoWith(table, i18n.Text("Delete Selection"), otherGrantRowLists(table, list))
+	}
+	var zero T
+	topLevelData := provider.RootData()
+	for _, target := range list {
+		parent := target.Parent()
+		// The granted rows within a container go only with their grants, so they take the container's place.
+		granted := grantedWithin(target)
+		SetParents(granted, parent)
+		if parent == zero {
+			for i, one := range topLevelData {
+				if one == target {
+					topLevelData = slices.Insert(slices.Delete(topLevelData, i, i+1), i, granted...)
+					break
 				}
-				list = append(list, target)
+			}
+		} else {
+			children := parent.NodeChildren()
+			for i, one := range children {
+				if one == target {
+					parent.SetChildren(slices.Insert(slices.Delete(children, i, i+1), i, granted...))
+					break
+				}
 			}
 		}
-		if len(list) == 0 {
-			return
-		}
-		if !CloseID(ids) {
-			return
-		}
-		// The rows the grants carried by what is deleted put in the other lists go with it, so those lists are part of
-		// the edit; see otherGrantRowLists.
-		var undo *unison.UndoEdit[*tablesUndoData]
-		if recordUndo {
-			undo = beginTableUndoWith(table, i18n.Text("Delete Selection"), otherGrantRowLists(table, list))
-		}
-		topLevelData := provider.RootData()
-		for _, target := range list {
-			parent := target.Parent()
-			// The granted rows within a container go only with their grants, so they take the container's place.
-			granted := grantedWithin(target)
-			SetParents(granted, parent)
-			if parent == zero {
-				for i, one := range topLevelData {
-					if one == target {
-						topLevelData = slices.Insert(slices.Delete(topLevelData, i, i+1), i, granted...)
-						break
-					}
-				}
-			} else {
-				children := parent.NodeChildren()
-				for i, one := range children {
-					if one == target {
-						parent.SetChildren(slices.Insert(slices.Delete(children, i, i+1), i, granted...))
-						break
-					}
-				}
-			}
-		}
-		provider.SetRootData(topLevelData)
-		commitTableUndoWith(table, undo, func() []tableRestorer { return otherGrantRowLists(table, list) })
-		if report {
-			rebuildAsModified(table.AncestorOrSelf[Rebuildable](), true)
-		}
+	}
+	provider.SetRootData(topLevelData)
+	commitTableUndoWith(table, undo, func() []tableRestorer { return otherGrantRowLists(table, list) })
+	if report {
+		rebuildAsModified(table.AncestorOrSelf[Rebuildable](), true)
 	}
 }
 
@@ -548,15 +563,28 @@ func applyToSelectedRows[T gurps.Node[T]](table *unison.Table[*Node[T]], undoTit
 	if !HasSelectionAndNotFiltered(table) {
 		return
 	}
-	undo := beginTableUndo(table, undoTitle, nil, nil)
 	var zero T
+	var targets []T
 	for _, row := range table.SelectedRows(false) {
 		if target := row.Data(); target != zero && !gurps.IsGranted(target) {
-			apply(target)
+			targets = append(targets, target)
 		}
 	}
+	// A sync replaces the grants of what it syncs, which can take away the rows they put in the other lists, so those
+	// lists are part of the edit; see otherGrantRowLists. Their "after" state is captured whenever their "before" state
+	// was, since what was changed may carry no grant any more.
+	others := otherGrantRowLists(table, targets)
+	undo := beginTableUndoWith(table, undoTitle, others)
+	for _, target := range targets {
+		apply(target)
+	}
 	table.SyncToModel()
-	commitTableUndo(table, undo)
+	commitTableUndoWith(table, undo, func() []tableRestorer {
+		if len(others) == 0 {
+			return nil
+		}
+		return grantRowListsOf(table.ClientData()[TableOwnerClientKey], table.RefKey)
+	})
 	rebuildAsModified(table.AncestorOrSelf[Rebuildable](), true)
 }
 

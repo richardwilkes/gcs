@@ -13,6 +13,7 @@ import (
 	"testing"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/ux/uxtest"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/toolbox/v2/tid"
 	"github.com/richardwilkes/unison"
@@ -218,4 +219,80 @@ func TestTraitListCommandsFollowTheLayout(t *testing.T) {
 	c.True(global.Show(gurps.BlockTraitsKey))
 	template.Rebuild(true)
 	c.Equal([]bool{true, true, true, true}, can(template, ids...))
+}
+
+// TestMovingEquipmentClosesItsEditorsFirst checks that moving equipment to the other list first closes an editor open
+// on it with unsaved changes: answering Cancel at the prompt to save them leaves both lists as they were, with nothing
+// to undo, while answering Save moves the item with its saved name, as an edit undone apart from the save.
+func TestMovingEquipmentClosesItsEditorsFirst(t *testing.T) {
+	names := func(list []*gurps.Equipment) []string {
+		result := make([]string, 0, len(list))
+		for _, one := range list {
+			result = append(result, one.Name)
+		}
+		return result
+	}
+	for _, tc := range []struct {
+		name     string
+		response int
+		// want is the item's name once the prompt is answered.
+		want  string
+		moves bool
+	}{
+		{name: "cancel", response: unison.ModalResponseCancel, want: "Rope"},
+		{name: "save", response: unison.ModalResponseOK, want: "Chain", moves: true},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			c := check.New(t)
+			screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
+			sheet, ok := uxtest.OpenedByAction(t, screen, newCharacterSheetAction).(*Sheet)
+			if !ok {
+				t.Fatal("New Character Sheet must open a character sheet")
+			}
+			entity := sheet.Entity()
+			var e *editor[*gurps.Equipment, *gurps.EquipmentEditData]
+			screen.Do(func() {
+				eqp := gurps.NewEquipment(entity, nil, false)
+				eqp.Name = "Rope"
+				entity.CarriedEquipment = []*gurps.Equipment{eqp}
+				sheet.Rebuild(true)
+				e = EditEquipment(sheet, eqp, true)
+				e.editorData.Name = "Chain"
+				e.MarkModified(nil)
+				sheet.CarriedEquipment.Table.SetSelectionMap(map[tid.TID]bool{eqp.ID(): true})
+			})
+			// The move asks whether to save the editor's changes, which is modal, so it is posted rather than run
+			// through Do.
+			screen.Post(func() { moveSelectedEquipment(sheet, sheet.CarriedEquipment.Table, sheet.OtherEquipment.Table) })
+			screen.Sync()
+			_, dialog := modalDialog(t, screen, wnd)
+			screen.Click(screen.PanelCenter(dialogButton(t, screen, dialog, tc.response)))
+			var carried, other []string
+			var canUndo bool
+			screen.Do(func() {
+				carried = names(entity.CarriedEquipment)
+				other = names(entity.OtherEquipment)
+				canUndo = sheet.undoMgr.CanUndo()
+			})
+			if tc.moves {
+				c.Equal([]string{}, carried, "the item leaves the carried equipment")
+				c.Equal([]string{tc.want}, other, "for the other equipment, with its saved name")
+				screen.Do(func() {
+					sheet.undoMgr.Undo()
+					carried = names(entity.CarriedEquipment)
+					other = names(entity.OtherEquipment)
+				})
+				c.Equal([]string{tc.want}, carried, "undoing the move puts the item back, keeping its saved name")
+				c.Equal([]string{}, other, "and leaves no copy of it in the other equipment")
+			} else {
+				c.Equal([]string{tc.want}, carried, "the item stays in the carried equipment")
+				c.Equal([]string{}, other, "and no copy of it is put in the other equipment")
+				c.False(canUndo, "nor is a move recorded")
+			}
+			screen.Do(func() {
+				e.discardAndClose()
+				sheet.markUnmodified()
+			})
+		})
+	}
 }

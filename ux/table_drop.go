@@ -233,18 +233,19 @@ func willDropCallback[T gurps.Node[T]](from, to *unison.Table[*Node[T]], move bo
 	if mgr == nil {
 		return nil
 	}
+	// A move can take away the grants of the rows moved: into a disabled container or, for equipment, the only rows
+	// that move between two tables, out of the carried equipment, the only equipment that grants anything. The other
+	// lists the grants put rows in are then part of the edit; see grantRowListsOf.
+	var others []tableRestorer
+	data, ok := draggedTableData.(*unison.TableDragData[*Node[T]])
+	if ok && move && data.Table == from && rowsCarryGrants(data.Rows) {
+		others = grantRowListsOf(to.ClientData()[TableOwnerClientKey], to.RefKey)
+	}
 	if from != nil && (!move || from == to) {
 		from = nil
 	}
 	before := NewTableDragUndoEditData(from, to)
-	if from != nil {
-		// A move between two tables, which only equipment makes, can take the grants of the rows moved away, since only
-		// carried equipment grants anything, so the lists they put rows in are part of the edit; see grantRowListsOf.
-		if data, ok := draggedTableData.(*unison.TableDragData[*Node[T]]); ok && data.Table == from &&
-			rowsCarryGrants(data.Rows) {
-			before.Others = grantRowListsOf(to.ClientData()[TableOwnerClientKey], "")
-		}
-	}
+	before.Others = others
 	return &unison.UndoEdit[*TableDragUndoEditData[T]]{
 		ID:         unison.NextUndoID(),
 		EditName:   i18n.Text("Drag"),
@@ -366,7 +367,7 @@ func finishDidDrop[T gurps.Node[T]](undo *unison.UndoEdit[*TableDragUndoEditData
 	}
 	after := NewTableDragUndoEditData(from, to)
 	if len(undo.BeforeData.Others) != 0 {
-		after.Others = grantRowListsOf(to.ClientData()[TableOwnerClientKey], "")
+		after.Others = grantRowListsOf(to.ClientData()[TableOwnerClientKey], to.RefKey)
 	}
 	undo.AfterData = after
 	mgr.Add(undo)

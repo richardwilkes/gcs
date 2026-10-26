@@ -27,8 +27,13 @@ func organizeTraits(owner Rebuildable, table *unison.Table[*Node[*gurps.Trait]])
 	// still in the old top-level slice, so a snapshot taken afterwards would walk each moved trait twice, once where it
 	// still sits at the top level and once inside the container it was just filed into, and the undo would put two
 	// copies of every moved row back.
-	undo := beginTableUndo(table, organizeTraitsAction.Title, nil, nil)
-	organized, changed := gurps.OrganizeTraits(provider.DataOwner(), provider.RootData())
+	//
+	// Filing a trait into a disabled container takes away the grants it carries, along with the rows they put in the
+	// other lists, so those lists are part of the edit; see otherGrantRowLists. Both checks are made on the old
+	// top-level slice, which still holds every trait afterwards, so those lists are captured both times or neither.
+	list := provider.RootData()
+	undo := beginTableUndoWith(table, organizeTraitsAction.Title, otherGrantRowLists(table, list))
+	organized, changed := gurps.OrganizeTraits(provider.DataOwner(), list)
 	if !changed {
 		// The list was already organized, so there is nothing to record and nothing to report: an edit here would
 		// leave the user with an undo that does nothing and a document marked as modified for no change.
@@ -36,7 +41,7 @@ func organizeTraits(owner Rebuildable, table *unison.Table[*Node[*gurps.Trait]])
 	}
 	provider.SetRootData(organized)
 	table.SyncToModel()
-	commitTableUndo(table, undo)
+	commitTableUndoWith(table, undo, func() []tableRestorer { return otherGrantRowLists(table, list) })
 	// A rebuild is the report, rather than also marking the owner as modified, since it is a superset of that and
 	// doing both would repeat the whole update (see rebuildAsModified).
 	rebuildAsModified(owner, true)
