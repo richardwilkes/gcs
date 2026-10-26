@@ -104,7 +104,7 @@ func initNoteEditor(e *editor[*gurps.Note, *gurps.NoteEditData], content *unison
 	addPageRefLabelsAndFields(content, &e.editorData.PageRef, &e.editorData.PageRefHighlight, e.pageRefHighlight)
 
 	content.AddChild(newNameablesPanel(&e.editorData.Nameables,
-		func() map[string]int { return nameableUses([]string{e.editorData.MarkDown}, nil, nil, nil) }, nil, nil))
+		func() map[string]int { return nameableUses([]string{e.editorData.MarkDown}, nil, nil, nil) }, nil, nil, nil))
 
 	label = unison.NewLabel()
 	label.SetTitle(i18n.Text("Markdown Preview"))

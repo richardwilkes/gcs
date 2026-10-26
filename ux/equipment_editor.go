@@ -15,6 +15,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/prereq"
+	"github.com/richardwilkes/gcs/v5/model/nameable"
 	"github.com/richardwilkes/gcs/v5/ux/svg"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/unison"
@@ -113,11 +114,12 @@ func initEquipmentItemEditor(e *editor[*gurps.Equipment, *gurps.EquipmentEditDat
 	d := e.editorData
 	content.AddChild(newNameablesPanel(&d.Nameables, func() map[string]int {
 		return nameableUses([]string{d.Name, d.LocalNotes, d.BaseValue, d.BaseWeight}, d.Prereq, d.Features, d.Weapons)
-	}, &d.NameableLinks, func() []nameableModifier {
-		return nameableModifiers(d.Modifiers, func(m *gurps.EquipmentModifier) map[string]int {
-			return nameableUses([]string{m.Name, m.LocalNotes}, nil, m.Features, nil)
-		})
-	}))
+	}, func() map[string]nameable.Detail { return grantedNameableDefinitions(d.Features) }, &d.NameableLinks,
+		func() []nameableModifier {
+			return nameableModifiers(d.Modifiers, func(m *gurps.EquipmentModifier) ([]string, gurps.Features) {
+				return []string{m.Name, m.LocalNotes}, m.Features
+			})
+		}))
 	content.AddChild(newPrereqPanel(entity, &e.editorData.Prereq, prereq.TypesForEquipment, false).
 		withReplacementsFrom(e.editorData))
 	content.AddChild(newFeaturesPanel(entity, e.target, &e.editorData.Features, false).

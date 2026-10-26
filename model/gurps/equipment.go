@@ -1292,6 +1292,7 @@ func (e *Equipment) ClearUnusedFieldsForType() {
 		e.Prereq = nil
 		e.Features = nil
 		e.Modifiers = nil
+		e.NameableLinks = nil
 		e.Weapons = nil
 	}
 }

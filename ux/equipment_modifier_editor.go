@@ -13,6 +13,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/emcost"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/emweight"
+	"github.com/richardwilkes/gcs/v5/model/nameable"
 	"github.com/richardwilkes/gcs/v5/ux/svg"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/unison"
@@ -47,7 +48,7 @@ func initEquipmentModifierEditor(e *editor[*gurps.EquipmentModifier, *gurps.Equi
 	addPageRefLabelsAndFields(content, &e.editorData.PageRef, &e.editorData.PageRefHighlight, e.pageRefHighlight)
 	content.AddChild(newNameablesPanel(&e.editorData.Nameables, func() map[string]int {
 		return nameableUses([]string{e.editorData.Name, e.editorData.LocalNotes}, nil, e.editorData.Features, nil)
-	}, nil, nil))
+	}, func() map[string]nameable.Detail { return grantedNameableDefinitions(e.editorData.Features) }, nil, nil))
 	content.AddChild(newFeaturesPanel(gurps.EntityFromNode(e.target), e.target, &e.editorData.Features, true))
 	return nil
 }

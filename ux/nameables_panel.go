@@ -49,6 +49,8 @@ type nameableModifier struct {
 	disabled bool
 	defs     map[string]nameable.Detail
 	uses     map[string]int
+	// granted holds the definitions of the items the modifier's grants give (see grantedNameableDefinitions).
+	granted map[string]nameable.Detail
 }
 
 // nameablesState is what the panel edits: the item's nameables and, for an item with modifiers, its links for them.
@@ -70,14 +72,17 @@ func (s *nameablesState) clone() *nameablesState {
 
 // nameablesPanel edits the nameables an item's text and features refer to as "@code@". Each one is a row that reads as
 // a sentence until it is opened to edit it. A code that is referred to but has no nameable gets a row that offers to
-// define it. For an item with modifiers, each code its modifiers refer to gets a row of its own, which says whether it
-// shares the item's answer, takes the answer to one of the item's codes, or is asked for separately. Clicking the title
-// collapses the panel to a paragraph of the item's rows. It starts out collapsed when there are nameables.
+// define it, unless its marker, an enabled modifier or an item a grant gives defines it, as the prompt then asks for it
+// (see nameablesPanel.origins). For an item with modifiers, each code its modifiers refer to gets a row of its own,
+// which says whether it shares the item's answer, takes the answer to one of the item's codes, or is asked for
+// separately. Clicking the title collapses the panel to a paragraph of the item's rows. It starts out collapsed when
+// there are nameables.
 type nameablesPanel struct {
 	sentenceRows[*nameablesState]
 	defs      *map[string]nameable.Detail
 	links     *map[tid.TID]map[string]string
 	uses      func() map[string]int
+	granted   func() map[string]nameable.Detail
 	modifiers func() []nameableModifier
 	signature uint64
 	// pending is the key of a chip added to the open row that holds nothing yet, such as a new option still being
@@ -88,35 +93,25 @@ type nameablesPanel struct {
 }
 
 // newNameablesPanel returns the nameables section of an editor. uses returns how often the item refers to each code.
-// links and modifiers are nil for an item that has no modifiers. defs and links point at maps rather than being them,
-// since undo replaces the maps themselves.
+// granted returns the definitions of the items the item's grants give (see grantedNameableDefinitions), and is nil
+// for an item that has no features. links and modifiers are nil for an item that has no modifiers. defs and links
+// point at maps rather than being them, since undo replaces the maps themselves.
 //
 //nolint:gocritic // See above
 func newNameablesPanel(defs *map[string]nameable.Detail, uses func() map[string]int,
-	links *map[tid.TID]map[string]string, modifiers func() []nameableModifier,
+	granted func() map[string]nameable.Detail, links *map[tid.TID]map[string]string,
+	modifiers func() []nameableModifier,
 ) *nameablesPanel {
 	p := &nameablesPanel{
 		defs:      defs,
 		links:     links,
 		uses:      uses,
+		granted:   granted,
 		modifiers: modifiers,
 	}
 	border := initTitledEditorSection(p, i18n.Text("Nameables"))
 	p.initRows(nil, p.build, p.state, p.restore, p.dataHash)
 	p.initCollapse(border, len(*defs) != 0)
-	p.staticTip = func(path string) string {
-		code, undefined := strings.CutPrefix(path, "u:")
-		switch {
-		case undefined && inlineMarker(code):
-			return i18n.Text("This marker holds its own definition, written in the text.")
-		case undefined:
-			return i18n.Text("Until it is defined, the player is asked for it as any text.")
-		case len(*p.defs) == 0:
-			return i18n.Text("The item has no nameables of its own for this to take the answer to.")
-		default:
-			return i18n.Text("The item has this code too, so this always shares the item's answer.")
-		}
-	}
 	installPanelDragDrop(p.AsPanel(), nameableOptionDragKey, p.optionDragOver, p.optionDragExit, p.optionDrop)
 	p.DrawOverCallback = p.drawOptionDrop
 	p.build()
@@ -178,27 +173,35 @@ func (s *nameablesState) hash() uint64 {
 	return h.Sum64()
 }
 
-// Sync implements Syncer. The rows show how often the item refers to each code and what its modifiers are, so they are
-// rebuilt whenever either changes.
+// Sync implements Syncer. The rows show how often the item refers to each code, what the items its grants give define
+// and what its modifiers are, so they are rebuilt whenever any of these changes.
 func (p *nameablesPanel) Sync() {
-	uses, mods := p.inputs()
-	if signature(uses, mods) != p.signature {
+	uses, granted, mods := p.inputs()
+	if signature(uses, granted, mods) != p.signature {
 		p.rebuild("")
 	}
 }
 
-// inputs returns what the rows show besides the panel's own data: how often the item refers to each code, and its
-// modifiers.
-func (p *nameablesPanel) inputs() (uses map[string]int, mods []nameableModifier) {
+// inputs returns what the rows show besides the panel's own data: how often the item refers to each code, the
+// definitions of the items its grants give, and its modifiers.
+func (p *nameablesPanel) inputs() (uses map[string]int, granted map[string]nameable.Detail, mods []nameableModifier) {
 	if p.modifiers != nil {
 		mods = p.modifiers()
 	}
-	return p.uses(), mods
+	return p.uses(), p.grantedDefinitions(), mods
 }
 
-func signature(uses map[string]int, mods []nameableModifier) uint64 {
+// grantedDefinitions returns the definitions of the items the item's grants give, or nil when it has no features.
+func (p *nameablesPanel) grantedDefinitions() map[string]nameable.Detail {
+	if p.granted == nil {
+		return nil
+	}
+	return p.granted()
+}
+
+func signature(uses map[string]int, granted map[string]nameable.Detail, mods []nameableModifier) uint64 {
 	// fmt writes maps in key order and the modifiers' fields too, so the text is the same for the same rows.
-	return xxh3.HashString(fmt.Sprintf("%v|%v", uses, mods))
+	return xxh3.HashString(fmt.Sprintf("%v|%v|%v", uses, granted, mods))
 }
 
 // codes returns the item's codes, in the order their rows are shown.
@@ -217,8 +220,10 @@ func markerText(code string) string {
 }
 
 func (p *nameablesPanel) build() {
-	uses, mods := p.inputs()
-	p.signature = signature(uses, mods)
+	uses, granted, mods := p.inputs()
+	p.signature = signature(uses, granted, mods)
+	origins := p.origins(granted, mods)
+	p.staticTip = func(path string) string { return p.staticTipOf(path, uses, origins) }
 	if _, ok := (*p.defs)[strings.TrimPrefix(p.open, "n:")]; !ok && !strings.HasPrefix(p.open, "m:") {
 		p.open = ""
 	}
@@ -229,7 +234,7 @@ func (p *nameablesPanel) build() {
 	if p.addTitleBar(p.summary) != nil {
 		return
 	}
-	byModifiers := p.modifierUses(mods)
+	byModifiers := p.modifierUses(uses, mods)
 	defs := *p.defs
 	for _, code := range p.codes() {
 		detail := defs[code]
@@ -237,10 +242,10 @@ func (p *nameablesPanel) build() {
 	}
 	for _, code := range slices.Sorted(maps.Keys(uses)) {
 		if _, ok := defs[code]; !ok {
-			p.AddChild(p.undefinedRow(code, uses[code]))
+			p.AddChild(p.undefinedRow(code, uses[code], byModifiers[code], origins[code]))
 		}
 	}
-	p.addModifierRows(mods)
+	p.addModifierRows(uses, mods)
 	add := newSectionAddButton(p, i18n.Text("Add a nameable"), func() bool {
 		p.add()
 		return false
@@ -263,8 +268,9 @@ func (p *nameablesPanel) build() {
 // summary returns the paragraph a collapsed panel shows: the sentence of each nameable, then of each code that is used
 // but not defined, each ended with a period.
 func (p *nameablesPanel) summary() string {
-	uses, mods := p.inputs()
-	byModifiers := p.modifierUses(mods)
+	uses, granted, mods := p.inputs()
+	byModifiers := p.modifierUses(uses, mods)
+	origins := p.origins(granted, mods)
 	defs := *p.defs
 	var sentences []string
 	for _, code := range p.codes() {
@@ -274,7 +280,8 @@ func (p *nameablesPanel) summary() string {
 	}
 	for _, code := range slices.Sorted(maps.Keys(uses)) {
 		if _, ok := defs[code]; !ok {
-			sentences = append(sentences, i18n.Text("%s.", undefinedText(code, uses[code])))
+			sentences = append(sentences, i18n.Text("%s.", undefinedText(code, uses[code], byModifiers[code],
+				origins[code])))
 		}
 	}
 	if len(sentences) == 0 {
@@ -283,22 +290,79 @@ func (p *nameablesPanel) summary() string {
 	return strings.Join(sentences, " ")
 }
 
-// modifierUses returns how often the modifiers refer to each of the item's codes, counting both the codes they share
-// with the item and those linked to one of its codes.
-func (p *nameablesPanel) modifierUses(mods []nameableModifier) map[string]int {
-	defs := *p.defs
-	uses := make(map[string]int)
+// modifierUses returns how often the enabled modifiers, whose keys alone are asked about, refer to each code the item
+// has (see has), counting both the codes they share with the item and those linked to one of its codes. uses is how
+// often the item refers to each code.
+func (p *nameablesPanel) modifierUses(uses map[string]int, mods []nameableModifier) map[string]int {
+	counts := make(map[string]int)
 	for _, one := range mods {
+		if one.disabled {
+			continue
+		}
 		for code, n := range one.uses {
 			if target := p.linkOf(one.id, code); target != "" {
 				code = target
 			}
-			if _, ok := defs[code]; ok {
-				uses[code] += n
+			if p.has(uses, code) {
+				counts[code] += n
 			}
 		}
 	}
-	return uses
+	return counts
+}
+
+// has reports whether the item has the code, defining it or referring to it, uses being how often it refers to each.
+// The model treats both alike, keeping the answer in the item's replacements under the code.
+func (p *nameablesPanel) has(uses map[string]int, code string) bool {
+	if _, defined := (*p.defs)[code]; defined {
+		return true
+	}
+	return uses[code] != 0
+}
+
+// nameableOrigin is where the prompt takes the definition of a code the item doesn't define from. The zero value is for
+// a code nothing defines.
+type nameableOrigin struct {
+	// modifier is the enabled modifier that defines the code, itself or by one of its grants, or nil when one of the
+	// item's grants does.
+	modifier *nameableModifier
+	// granted is whether the definition is that of an item a grant gives.
+	granted bool
+}
+
+// defined reports whether something defines the code.
+func (o nameableOrigin) defined() bool {
+	return o.modifier != nil || o.granted
+}
+
+// origins returns where the prompt takes the definition of each code the item doesn't define from, taking them as
+// nameableDefinitions does for the item: from its enabled modifiers, then from the items its grants, and theirs, give.
+// granted holds the definitions of the items the item's grants give.
+func (p *nameablesPanel) origins(granted map[string]nameable.Detail,
+	mods []nameableModifier,
+) map[string]nameableOrigin {
+	sources := []nameableDefinitionSource{{defs: *p.defs, granted: granted}}
+	var enabled []*nameableModifier
+	for i := range mods {
+		if one := &mods[i]; !one.disabled {
+			enabled = append(enabled, one)
+			sources = append(sources, nameableDefinitionSource{
+				defs:    one.defs,
+				granted: one.granted,
+				links:   (*p.links)[one.id],
+			})
+		}
+	}
+	origins := make(map[string]nameableOrigin)
+	for code, one := range mergeNameableDefinitions(sources) {
+		switch {
+		case one.source != 0:
+			origins[code] = nameableOrigin{modifier: enabled[one.source-1], granted: one.granted}
+		case one.granted:
+			origins[code] = nameableOrigin{granted: true}
+		}
+	}
+	return origins
 }
 
 // linkOf returns the item's code the modifier's code is linked to, or "" when it has no link.
@@ -306,10 +370,12 @@ func (p *nameablesPanel) linkOf(id tid.TID, code string) string {
 	return (*p.links)[id][code]
 }
 
-// shares reports whether the modifier's code shares the item's answer: the item has the code too and the modifier's
-// is not linked to another of the item's codes, which the model would apply first (see gurps.linkedReplacements).
-func (p *nameablesPanel) shares(id tid.TID, code string) bool {
-	if _, defined := (*p.defs)[code]; !defined {
+// shares reports whether the modifier's code shares the item's answer: the item has the code too (see has), as the
+// modifier's unlinked code is answered from the item's replacements under the code, and the modifier's is not linked
+// to another of the item's codes, which the model would apply first (see gurps.linkedReplacements). uses is how often
+// the item refers to each code.
+func (p *nameablesPanel) shares(uses map[string]int, id tid.TID, code string) bool {
+	if !p.has(uses, code) {
 		return false
 	}
 	target := p.linkOf(id, code)
@@ -384,27 +450,33 @@ func inlineMarker(code string) bool {
 	return ok && m.Key() != m.Label
 }
 
-// undefinedText returns the sentence for a code the item uses that has no nameable.
-func undefinedText(code string, uses int) string {
+// undefinedText returns the sentence for a code the item uses that has no nameable, with how often the item and the
+// modifiers that share it refer to it, and where the prompt takes its definition from instead.
+func undefinedText(code string, uses, byModifiers int, origin nameableOrigin) string {
 	marker := emphasize(markerText(code))
-	inline := inlineMarker(code)
+	var text string
 	switch {
-	case inline && uses == 1:
-		return i18n.Text("%s defines itself and is used once", marker)
-	case inline:
-		return i18n.Text("%s defines itself and is used %d times", marker, uses)
-	case uses == 1:
-		return i18n.Text("%s is used once but isn't defined", marker)
+	case origin.modifier != nil && origin.granted:
+		text = i18n.Text("%s is defined by an item the modifier %s grants", marker,
+			emphasize(origin.modifier.ownerText()))
+	case origin.modifier != nil:
+		text = i18n.Text("%s is defined by the modifier %s", marker, emphasize(origin.modifier.ownerText()))
+	case origin.granted:
+		text = i18n.Text("%s is defined by a granted item", marker)
+	case inlineMarker(code):
+		text = i18n.Text("%s defines itself", marker)
 	default:
-		return i18n.Text("%s is used %d times but isn't defined", marker, uses)
+		text = i18n.Text("%s isn't defined", marker)
 	}
+	return usesText(text, uses, byModifiers)
 }
 
-// undefinedRow returns the panel for a code the item refers to that has no nameable. A bare code gets a button that
-// defines one.
-func (p *nameablesPanel) undefinedRow(code string, uses int) *unison.Panel {
+// undefinedRow returns the panel for a code the item refers to that has no nameable, with how often the item and the
+// modifiers that share it refer to it, and where the prompt takes its definition from instead. A bare code that nothing
+// else defines gets a button that defines one.
+func (p *nameablesPanel) undefinedRow(code string, uses, byModifiers int, origin nameableOrigin) *unison.Panel {
 	var trail func(row *unison.Panel, sentence *sentenceButton)
-	if !inlineMarker(code) {
+	if !origin.defined() && !inlineMarker(code) {
 		trail = func(row *unison.Panel, _ *sentenceButton) {
 			key := "u:" + code + ":define"
 			define := newDashedButton(i18n.Text("Define"), func() {
@@ -423,7 +495,32 @@ func (p *nameablesPanel) undefinedRow(code string, uses int) *unison.Panel {
 			addCentered(row, define)
 		}
 	}
-	return p.sentenceRow("u:"+code, func() string { return undefinedText(code, uses) }, false, nil, nil, nil, trail)
+	return p.sentenceRow("u:"+code, func() string { return undefinedText(code, uses, byModifiers, origin) }, false,
+		nil, nil, nil, trail)
+}
+
+// staticTipOf returns the tooltip of the row at the path, which is static: that of a code the item refers to that has
+// no nameable, or that of a modifier's code that shares the item's answer or has none of the item's codes to take the
+// answer to. uses is how often the item refers to each code, and origins where the prompt takes the definition of each
+// code the item doesn't define from (see nameablesPanel.origins).
+func (p *nameablesPanel) staticTipOf(path string, uses map[string]int, origins map[string]nameableOrigin) string {
+	if code, undefined := strings.CutPrefix(path, "u:"); undefined {
+		switch origin := origins[code]; {
+		case origin.granted:
+			return i18n.Text("An item a grant gives defines this, so the player is asked for it as that item asks.")
+		case origin.modifier != nil:
+			return i18n.Text("A modifier defines this, so the player is asked for it as that modifier asks.")
+		case inlineMarker(code):
+			return i18n.Text("This marker holds its own definition, written in the text.")
+		default:
+			return i18n.Text("Until it is defined, the player is asked for it as any text.")
+		}
+	}
+	id, code, _ := strings.Cut(strings.TrimPrefix(path, "m:"), ":")
+	if p.shares(uses, tid.TID(id), code) {
+		return i18n.Text("The item has this code too, so this always shares the item's answer.")
+	}
+	return i18n.Text("The item has no nameables of its own for this to take the answer to.")
 }
 
 // add adds a nameable with a fresh code and opens it.
@@ -706,18 +803,20 @@ func (p *nameablesPanel) drawOptionDrop(gc *unison.Canvas, _ geom.Rect) {
 	gc.DrawLine(geom.NewPoint(x, r.Y), geom.NewPoint(x, r.Bottom()), paint)
 }
 
-// addModifierRows adds a row for each code a modifier refers to or defines.
-func (p *nameablesPanel) addModifierRows(mods []nameableModifier) {
+// addModifierRows adds a row for each code a modifier refers to or defines. uses is how often the item refers to each
+// code.
+func (p *nameablesPanel) addModifierRows(uses map[string]int, mods []nameableModifier) {
 	defs := *p.defs
 	for _, one := range mods {
 		codes := slices.AppendSeq(slices.Collect(maps.Keys(one.defs)), maps.Keys(one.uses))
 		slices.Sort(codes)
 		for _, code := range slices.Compact(codes) {
 			path := "m:" + string(one.id) + ":" + code
-			shared := p.shares(one.id, code)
+			shared := p.shares(uses, one.id, code)
+			has := p.has(uses, code)
 			p.AddChild(p.sentenceRow(path, func() string { return p.describeModifierCode(&one, code, shared) },
-				!shared && len(defs) != 0, func() *unison.Panel { return p.linkEditor(path, &one, code) }, nil, nil,
-				nil))
+				!shared && len(defs) != 0, func() *unison.Panel { return p.linkEditor(path, &one, code, has) }, nil,
+				nil, nil))
 		}
 	}
 }
@@ -736,11 +835,15 @@ func (one *nameableModifier) ownerText() string {
 	}
 }
 
-// describeModifierCode returns the sentence of the row for a code the modifier refers to or defines.
+// describeModifierCode returns the sentence of the row for a code the modifier refers to or defines. The modifier
+// counts as defining a code an item its grants give defines, or whose marker holds its own definition.
 func (p *nameablesPanel) describeModifierCode(one *nameableModifier, code string, shared bool) string {
 	marker := emphasize(markerText(code))
 	owner := emphasize(one.ownerText())
 	_, defined := one.defs[code]
+	if _, byGrant := one.granted[code]; byGrant || inlineMarker(code) {
+		defined = true
+	}
 	var text string
 	switch target := (*p.links)[one.id][code]; {
 	case shared && defined:
@@ -762,15 +865,15 @@ func (p *nameablesPanel) describeModifierCode(one *nameableModifier, code string
 }
 
 // linkEditor returns the controls of an open row for a modifier's code: the popup that links it to one of the item's
-// codes, or leaves it unlinked, which shares the item's answer when the item has the code too and otherwise asks for
-// it separately. The code itself is not offered, since a link to it would be the same as none.
-func (p *nameablesPanel) linkEditor(path string, one *nameableModifier, code string) *unison.Panel {
+// codes, or leaves it unlinked, which shares the item's answer when the item has the code too (has; see
+// nameablesPanel.has) and otherwise asks for it separately. The code itself is not offered, since a link to it would
+// be the same as none.
+func (p *nameablesPanel) linkEditor(path string, one *nameableModifier, code string, has bool) *unison.Panel {
 	box := newColumn()
 	box.RefKey = path + keyFirst
 	fields := newFlow()
 	box.AddChild(fields)
 	addJoiningWords(fields, i18n.Text("%s on %s", markerText(code), one.ownerText()))
-	_, defined := (*p.defs)[code]
 	choices := []string{""}
 	for _, target := range p.codes() {
 		if target != code {
@@ -778,17 +881,17 @@ func (p *nameablesPanel) linkEditor(path string, one *nameableModifier, code str
 		}
 	}
 	addCentered(fields, compactPopup(&p.sentenceRows, path+":link", i18n.Text("Link for %s", markerText(code)),
-		choices, p.linkOf(one.id, code), func(target string) string { return linkChoice(target, defined) },
+		choices, p.linkOf(one.id, code), func(target string) string { return linkChoice(target, has) },
 		func(target string) { p.setLink(one.id, code, target) }))
 	return box
 }
 
-// linkChoice names a choice of the link popup. defined is whether the item has the code too.
-func linkChoice(target string, defined bool) string {
+// linkChoice names a choice of the link popup. has is whether the item has the code too (see nameablesPanel.has).
+func linkChoice(target string, has bool) string {
 	switch {
 	case target != "":
 		return i18n.Text("takes the answer to %s", markerText(target))
-	case defined:
+	case has:
 		return i18n.Text("shares the item's answer")
 	default:
 		return i18n.Text("is asked for under its own code")
@@ -843,22 +946,24 @@ func nameableUses(texts []string, prereq *gurps.PrereqList, features gurps.Featu
 	return uses
 }
 
-// nameableModifiers returns the modifiers, containers included, for the nameables panel, uses returning how often each
-// refers to each code.
+// nameableModifiers returns the modifiers, containers included, for the nameables panel, refs returning the texts and
+// features of each, by which it refers to codes.
 func nameableModifiers[T interface {
 	gurps.Node[T]
 	Enabled() bool
 	nameable.Definer
-}](modifiers []T, uses func(T) map[string]int) []nameableModifier {
+}](modifiers []T, refs func(T) (texts []string, features gurps.Features)) []nameableModifier {
 	var result []nameableModifier
 	gurps.Traverse(func(mod T) bool {
+		texts, features := refs(mod)
 		result = append(result, nameableModifier{
 			id:       mod.ID(),
 			location: rowLocation(mod),
 			name:     mod.String(),
 			disabled: !mod.Enabled(),
 			defs:     mod.NameableDefinitions(),
-			uses:     uses(mod),
+			uses:     nameableUses(texts, nil, features, nil),
+			granted:  grantedNameableDefinitions(features),
 		})
 		return false
 	}, false, false, modifiers...)

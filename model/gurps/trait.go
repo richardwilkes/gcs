@@ -246,6 +246,7 @@ func (t *Trait) clearTemplateChoiceContainerExclusions() {
 	t.UserDesc = ""
 	t.Tags = nil
 	t.Modifiers = nil
+	t.NameableLinks = nil
 	t.SelfControl = selfctrl.None
 	t.SelfControlAdj = selfctrl.NoAdjustment
 	t.Frequency = frequency.None

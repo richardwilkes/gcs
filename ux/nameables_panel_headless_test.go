@@ -11,9 +11,11 @@ package ux
 
 import (
 	"maps"
+	"strings"
 	"testing"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/feature"
 	"github.com/richardwilkes/gcs/v5/model/nameable"
 	"github.com/richardwilkes/gcs/v5/ux/uxtest"
 	"github.com/richardwilkes/toolbox/v2/check"
@@ -39,7 +41,8 @@ func showNameablesPanel(t *testing.T, screen *unison.HeadlessScreen, defs *map[s
 		if links != nil {
 			mods = func() []nameableModifier { return modifiers }
 		}
-		p = newNameablesPanel(defs, func() map[string]int { return nameableUses(*texts, nil, nil, nil) }, links, mods)
+		p = newNameablesPanel(defs, func() map[string]int { return nameableUses(*texts, nil, nil, nil) }, nil, links,
+			mods)
 		// Expanded ahead of showing, so that the window is sized for the rows.
 		if p.collapse.collapsed {
 			p.collapse.toggle()
@@ -195,6 +198,8 @@ func TestNameablesPanelLinksModifierCodes(t *testing.T) {
 	screen.Do(func() { DeepSync(host) })
 	c.Equal("@style@ on Practiced (disabled) shares the item's answer; used once", sharedSentence(),
 		"a change to the modifier in the editor's modifier list shows")
+	modifiers[0].disabled = false
+	screen.Do(func() { DeepSync(host) })
 	art := "m:" + string(id) + ":art"
 	screen.Do(func() { p.toggle(art) })
 	screen.Do(func() {
@@ -287,6 +292,253 @@ func TestNameablesPanelShowsLinkOverSameNamedCode(t *testing.T) {
 	c.Equal("@art@ asks for Art as any text; used once, and once in a modifier", text)
 }
 
+// builtNameablesPanel returns an expanded nameablesPanel for an item whose text is texts and features are features,
+// built without a window, with the row at the path open, if any. links and modifiers are nil for an item without
+// modifiers.
+func builtNameablesPanel(defs map[string]nameable.Detail, texts []string, features gurps.Features,
+	links map[tid.TID]map[string]string, modifiers []nameableModifier, open string,
+) *nameablesPanel {
+	var linksPtr *map[tid.TID]map[string]string
+	var mods func() []nameableModifier
+	if modifiers != nil {
+		linksPtr = &links
+		mods = func() []nameableModifier { return modifiers }
+	}
+	p := newNameablesPanel(&defs, func() map[string]int { return nameableUses(texts, nil, features, nil) },
+		func() map[string]nameable.Detail { return grantedNameableDefinitions(features) }, linksPtr, mods)
+	p.collapse.collapsed = false
+	p.open = open
+	p.RemoveAllChildren()
+	p.build()
+	return p
+}
+
+// nameableRowSentence returns the plain text of the sentence of the closed row at the path, and whether clicking it
+// opens the row. The text is empty when there is no such row.
+func nameableRowSentence(p *nameablesPanel, path string) (text string, editable bool) {
+	if panel := p.FindRefKey(path + keySentence); panel != nil {
+		if sentence, ok := panel.Self.(*sentenceButton); ok {
+			return sentence.plainText(), sentence.onClick != nil
+		}
+	}
+	return "", false
+}
+
+// TestNameablesPanelModifierCodeSharesWhatTheItemUses checks that the rows treat a modifier's unlinked code as sharing
+// the item's answer whenever the item has the code, used or defined, since the model keeps the answer to both in the
+// item's replacements under the code: the modifier's row says so and has nothing to link, the item's row counts the
+// modifier's use, and the link popup's choice of no link says it shares the item's answer.
+func TestNameablesPanelModifierCodeSharesWhatTheItemUses(t *testing.T) {
+	id := tid.MustNewTID('m')
+	modRow := "m:" + string(id) + ":style"
+	art := map[string]nameable.Detail{"art": {Label: "Art", FreeForm: true}}
+	focus := []nameableModifier{{id: id, name: "Focus", uses: map[string]int{"style": 1}}}
+	type row struct {
+		path string
+		text string
+		// For a modifier's code, whether its row opens.
+		editable bool
+	}
+	for _, tc := range []struct {
+		name   string
+		defs   map[string]nameable.Detail
+		texts  []string
+		links  map[tid.TID]map[string]string
+		rows   []row
+		noLink string // When set, how the open modifier row's link popup names the choice of no link.
+	}{
+		{
+			name:  "used but not defined, beside a code the item defines",
+			defs:  art,
+			texts: []string{"Trained in @style@ and @art@"},
+			rows: []row{
+				{modRow, "@style@ on Focus shares the item's answer, though the modifier doesn't define it; used once", false},
+				{path: "u:style", text: "@style@ isn't defined; used once, and once in a modifier"},
+				{path: pathOf("art"), text: "@art@ asks for Art as any text; used once"},
+			},
+		},
+		{
+			name:  "linked away from a code the item uses",
+			defs:  art,
+			texts: []string{"Trained in @style@ and @art@"},
+			links: map[tid.TID]map[string]string{id: {"style": "art"}},
+			rows: []row{
+				{modRow, "@style@ on Focus takes the answer to @art@, though the modifier doesn't define it; used once", true},
+				{path: "u:style", text: "@style@ isn't defined; used once"},
+				{path: pathOf("art"), text: "@art@ asks for Art as any text; used once, and once in a modifier"},
+			},
+			noLink: "shares the item's answer",
+		},
+		{
+			name:  "neither used nor defined by the item",
+			defs:  art,
+			texts: []string{"Trained in @art@"},
+			rows: []row{
+				{modRow, "@style@ on Focus is asked for under its own code, though the modifier doesn't define it; used once", true},
+				{path: pathOf("art"), text: "@art@ asks for Art as any text; used once"},
+			},
+			noLink: "is asked for under its own code",
+		},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			c := check.New(t)
+			p := builtNameablesPanel(tc.defs, tc.texts, nil, tc.links, focus, "")
+			for _, one := range tc.rows {
+				text, editable := nameableRowSentence(p, one.path)
+				c.Equal(one.text, text, "the sentence of %s", one.path)
+				if strings.HasPrefix(one.path, "m:") {
+					c.Equal(one.editable, editable, "whether %s opens", one.path)
+				}
+			}
+			if tc.noLink == "" {
+				return
+			}
+			p = builtNameablesPanel(tc.defs, tc.texts, nil, tc.links, focus, modRow)
+			link := p.FindRefKey(modRow + ":link")
+			c.NotNil(link, "the open row has a link popup")
+			if link != nil {
+				popup, ok := link.Self.(*unison.PopupMenu[string])
+				c.True(ok, "the link popup is a popup menu")
+				if ok {
+					c.Equal(tc.noLink, popup.ItemRendererCallback(""))
+				}
+			}
+		})
+	}
+}
+
+// TestNameablesPanelTellsWhatDefinesACode checks that the rows count a code as defined when the prompt finds a
+// definition for it that the item or modifier doesn't hold, and that the row of an item's code says where, taking them
+// as the prompt does: an enabled modifier's, under the code its own is linked to, before that of the item a grant
+// gives, so that no row says the code isn't defined or offers to define it over theirs. A legacy marker holds its own,
+// and a disabled modifier, which the prompt leaves out, neither defines a code nor counts as using it.
+func TestNameablesPanelTellsWhatDefinesACode(t *testing.T) {
+	style := map[string]nameable.Detail{"style": {Label: "Martial art", Options: []string{"Judo", "Karate"}}}
+	sportGrant := func() gurps.Features {
+		skill := gurps.NewSkill(nil, nil, false)
+		skill.Name = "@style@ Sport"
+		skill.Nameables = style
+		g := gurps.NewGrant(feature.GrantSkill)
+		g.SetItem(skill, gurps.LibraryFile{})
+		return gurps.Features{g}
+	}
+	newModifier := func(name, notes string, defs map[string]nameable.Detail) *gurps.TraitModifier {
+		m := gurps.NewTraitModifier(nil, nil, false)
+		m.Name = name
+		m.LocalNotes = notes
+		m.Nameables = defs
+		return m
+	}
+	sporting := newModifier("Sporting", "", nil)
+	sporting.Features = sportGrant()
+	practiced := newModifier("Practiced", "Devoted to @Who: A deity@", nil)
+	focus := newModifier("Focus", "On @style@", style)
+	schooled := newModifier("Schooled", "In @art@", map[string]nameable.Detail{"art": {Label: "Art", FreeForm: true}})
+	idle := newModifier("Idle", "In @style@", style)
+	idle.SetDisabled(true)
+	const (
+		byModifier = "A modifier defines this, so the player is asked for it as that modifier asks."
+		byGrant    = "An item a grant gives defines this, so the player is asked for it as that item asks."
+		undefined  = "Until it is defined, the player is asked for it as any text."
+	)
+	type row struct {
+		path string
+		text string
+		// For the row of an item's code, whether it offers to define the code, and its tooltip.
+		define bool
+		tip    string
+	}
+	for _, tc := range []struct {
+		name      string
+		texts     []string
+		features  gurps.Features
+		modifiers []*gurps.TraitModifier
+		links     map[tid.TID]map[string]string
+		rows      []row
+	}{
+		{
+			name:     "by the item a grant gives",
+			texts:    []string{"Trained in @style@"},
+			features: sportGrant(),
+			rows:     []row{{"u:style", "@style@ is defined by a granted item; used 2 times", false, byGrant}},
+		},
+		{
+			name:      "by an enabled modifier, under the code its own is linked to",
+			texts:     []string{"Trained in @style@"},
+			modifiers: []*gurps.TraitModifier{schooled},
+			links:     map[tid.TID]map[string]string{schooled.TID: {"art": "style"}},
+			rows: []row{{
+				"u:style", "@style@ is defined by the modifier Schooled; used once, and once in a modifier", false,
+				byModifier,
+			}},
+		},
+		{
+			name:      "by the item an enabled modifier's grant gives",
+			texts:     []string{"Trained in @style@"},
+			modifiers: []*gurps.TraitModifier{sporting},
+			rows: []row{{
+				"u:style",
+				"@style@ is defined by an item the modifier Sporting grants; used once, and once in a modifier", false,
+				byGrant,
+			}},
+		},
+		{
+			name:      "by an enabled modifier, before the item a grant gives",
+			texts:     []string{"Trained in @style@"},
+			features:  sportGrant(),
+			modifiers: []*gurps.TraitModifier{focus},
+			rows: []row{{
+				"u:style", "@style@ is defined by the modifier Focus; used 2 times, and once in a modifier", false,
+				byModifier,
+			}},
+		},
+		{
+			name:      "by the item a modifier's grant gives, on the modifier",
+			texts:     []string{"Trained"},
+			modifiers: []*gurps.TraitModifier{sporting},
+			rows: []row{{
+				path: "m:" + string(sporting.TID) + ":style",
+				text: "@style@ on Sporting is asked for under its own code; used once",
+			}},
+		},
+		{
+			name:      "by its marker, on a modifier",
+			texts:     []string{"Trained"},
+			modifiers: []*gurps.TraitModifier{practiced},
+			rows: []row{{
+				path: "m:" + string(practiced.TID) + ":Who: A deity",
+				text: "@Who: A deity@ on Practiced is asked for under its own code; used once",
+			}},
+		},
+		{
+			name:      "not by a disabled modifier",
+			texts:     []string{"Trained in @style@"},
+			modifiers: []*gurps.TraitModifier{idle},
+			rows:      []row{{"u:style", "@style@ isn't defined; used once", true, undefined}},
+		},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			c := check.New(t)
+			var mods []nameableModifier
+			if tc.modifiers != nil {
+				mods = nameableModifiers(tc.modifiers, func(m *gurps.TraitModifier) ([]string, gurps.Features) {
+					return []string{m.Name, m.LocalNotes}, m.Features
+				})
+			}
+			p := builtNameablesPanel(nil, tc.texts, tc.features, tc.links, mods, "")
+			for _, one := range tc.rows {
+				text, _ := nameableRowSentence(p, one.path)
+				c.Equal(one.text, text, "the sentence of %s", one.path)
+				if strings.HasPrefix(one.path, "u:") {
+					c.Equal(one.define, p.FindRefKey(one.path+":define") != nil, "whether %s offers to define it",
+						one.path)
+					c.Equal(one.tip, p.staticTip(one.path), "the tooltip of %s", one.path)
+				}
+			}
+		})
+	}
+}
+
 // TestNameablesPanelRenameThroughModifierCode covers renaming the item's code by typing through the name of a
 // modifier's code linked to it: the link follows each keystroke, so it must survive the moment the two names match,
 // when it points at itself. Applying the editor's data is what drops such a link (see TestApplyDropsSelfLinks).
@@ -319,12 +571,13 @@ func TestNameablesPanelCollapses(t *testing.T) {
 	texts := []string{"@style@ speaks @lang@ and @lang@"}
 	var p *nameablesPanel
 	screen.Do(func() {
-		p = newNameablesPanel(&defs, func() map[string]int { return nameableUses(texts, nil, nil, nil) }, nil, nil)
+		p = newNameablesPanel(&defs, func() map[string]int { return nameableUses(texts, nil, nil, nil) }, nil, nil,
+			nil)
 		c.True(p.collapse.collapsed, "a panel with nameables starts collapsed")
 		paragraph, ok := p.FindRefKey(sectionSummaryKey).Self.(*sentenceButton)
 		c.True(ok, "collapsed, it shows a paragraph")
 		if ok {
-			c.Equal("@style@ asks for Style as any text; used once. @lang@ is used 2 times but isn't defined.",
+			c.Equal("@style@ asks for Style as any text; used once. @lang@ isn't defined; used 2 times.",
 				paragraph.plainText(), "a code used but not defined shows while collapsed too")
 		}
 	})
@@ -334,7 +587,7 @@ func TestNameablesPanelCollapses(t *testing.T) {
 
 	var none map[string]nameable.Detail
 	screen.Do(func() {
-		empty := newNameablesPanel(&none, func() map[string]int { return nil }, nil, nil)
+		empty := newNameablesPanel(&none, func() map[string]int { return nil }, nil, nil, nil)
 		c.False(empty.collapse.collapsed, "a panel with none starts open to add one")
 		c.NotNil(empty.FindRefKey("nameables:empty"), "with its placeholder")
 	})

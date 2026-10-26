@@ -453,6 +453,40 @@ func TestNameableDefinitionsIncludeThoseOfTheGrantedItems(t *testing.T) {
 	c.Equal(style, nameableDefinitions(modifier)["art"], "for the modifier prompted for on its own as well")
 }
 
+// TestNameableDefinitionsLeaveOutDisabledModifiers checks that a key an enabled modifier asks about is described by its
+// definition rather than by that of a disabled modifier before it, whose keys are not asked about.
+func TestNameableDefinitionsLeaveOutDisabledModifiers(t *testing.T) {
+	c := check.New(t)
+	weapon := nameable.Detail{Label: "Weapon", Options: []string{"Sword", "Axe"}}
+	style := nameable.Detail{Label: "Style", Options: []string{"Judo", "Karate"}}
+
+	trait := gurps.NewTrait(nil, nil, false)
+	trait.Name = "Trained"
+	armed := gurps.NewTraitModifier(nil, nil, false)
+	armed.Name = "Armed @style@"
+	armed.Nameables = map[string]nameable.Detail{"style": weapon}
+	armed.SetDisabled(true)
+	unarmed := gurps.NewTraitModifier(nil, nil, false)
+	unarmed.Name = "Unarmed @style@"
+	unarmed.Nameables = map[string]nameable.Detail{"style": style}
+	trait.Modifiers = []*gurps.TraitModifier{armed, unarmed}
+	gurps.AttachModifiers(trait, trait.Modifiers)
+	c.Equal(style, nameableDefinitions(trait)["style"], "a trait's key is described by its enabled modifier")
+
+	equipment := gurps.NewEquipment(nil, nil, false)
+	equipment.Name = "Gloves"
+	padded := gurps.NewEquipmentModifier(nil, nil, false)
+	padded.Name = "Padded for @style@"
+	padded.Nameables = map[string]nameable.Detail{"style": weapon}
+	padded.SetDisabled(true)
+	weighted := gurps.NewEquipmentModifier(nil, nil, false)
+	weighted.Name = "Weighted for @style@"
+	weighted.Nameables = map[string]nameable.Detail{"style": style}
+	equipment.Modifiers = []*gurps.EquipmentModifier{padded, weighted}
+	gurps.AttachModifiers(equipment, equipment.Modifiers)
+	c.Equal(style, nameableDefinitions(equipment)["style"], "and so is a piece of equipment's")
+}
+
 // A nameable's definition decides how the prompt asks for it: a closed list of options is a popup, and one that can't
 // be blank offers no blank answer.
 func TestNameableFieldFollowsItsDefinition(t *testing.T) {

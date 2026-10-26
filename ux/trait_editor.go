@@ -18,6 +18,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/frequency"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/prereq"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/selfctrl"
+	"github.com/richardwilkes/gcs/v5/model/nameable"
 	"github.com/richardwilkes/gcs/v5/ux/svg"
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/i18n"
@@ -179,11 +180,12 @@ func initTraitEditor(e *editor[*gurps.Trait, *gurps.TraitEditData], content *uni
 		d := e.editorData
 		content.AddChild(newNameablesPanel(&d.Nameables, func() map[string]int {
 			return nameableUses([]string{d.Name, d.LocalNotes, d.UserDesc}, d.Prereq, d.Features, d.Weapons)
-		}, &d.NameableLinks, func() []nameableModifier {
-			return nameableModifiers(d.Modifiers, func(m *gurps.TraitModifier) map[string]int {
-				return nameableUses([]string{m.Name, m.LocalNotes}, nil, m.Features, nil)
-			})
-		}))
+		}, func() map[string]nameable.Detail { return grantedNameableDefinitions(d.Features) }, &d.NameableLinks,
+			func() []nameableModifier {
+				return nameableModifiers(d.Modifiers, func(m *gurps.TraitModifier) ([]string, gurps.Features) {
+					return []string{m.Name, m.LocalNotes}, m.Features
+				})
+			}))
 		content.AddChild(newPrereqPanel(entity, &e.editorData.Prereq, prereq.TypesForNonEquipment, false).
 			withReplacementsFrom(e.editorData))
 	}
