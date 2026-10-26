@@ -44,6 +44,7 @@ func TestParseMarkerBasic(t *testing.T) {
 			freeForm:   true,
 		},
 		{raw: "Element|?", label: "Element", allowEmpty: true, freeForm: true},
+		{raw: "Element|*", label: "Element", freeForm: true},
 	} {
 		marker, ok := nameable.NewMarker(tc.raw)
 		c.True(ok, tc.raw)

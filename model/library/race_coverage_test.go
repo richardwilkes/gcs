@@ -20,6 +20,7 @@ import "testing"
 // When adding a test that involves concurrency — spawning goroutines itself or starting a library watch — list it here
 // as well so the race pass covers it.
 func TestRace(t *testing.T) {
+	t.Run("LibraryWatchCreatesPath", TestLibraryWatchCreatesPath)
 	t.Run("LibraryConcurrentAccess", TestLibraryConcurrentAccess)
 	t.Run("LibrarySetPathWhenWatchFails", TestLibrarySetPathWhenWatchFails)
 	t.Run("LibrarySetPathAfterWatchFailsRestartsWatch", TestLibrarySetPathAfterWatchFailsRestartsWatch)

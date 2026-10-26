@@ -44,13 +44,17 @@ func TestWeightConversion(t *testing.T) {
 	c.Equal("15.25 kg", fxp.Kilogram.Format(w))
 }
 
-// TestWeightFromStringUnitSuffixes verifies that every unit's key, when appended to a number in either lower or upper
-// case, parses back to that same unit. This guards against the suffix-matching being sensitive to the order in which
-// the enum is declared (e.g. "g" must not greedily match the "kg" / "g" overlap, nor "t" the "tn" / "t" overlap).
+// TestWeightFromStringUnitSuffixes verifies that every unit's key, when appended to a number in lower, upper or mixed
+// case, or in upper case after a space, parses back to that same unit. This guards against the suffix-matching being
+// sensitive to the order in which the enum is declared (e.g. "g" must not greedily match the "kg" / "g" overlap, nor
+// "t" the "tn" / "t" overlap).
 func TestWeightFromStringUnitSuffixes(t *testing.T) {
 	c := check.New(t)
 	for _, unit := range fxp.WeightUnits {
-		for _, text := range []string{"3" + unit.Key(), "3" + strings.ToUpper(unit.Key())} {
+		key := unit.Key()
+		upper := strings.ToUpper(key)
+		mixed := strings.ToUpper(key[:1]) + key[1:]
+		for _, text := range []string{"3" + key, "3" + upper, "3" + mixed, "3 " + upper} {
 			w, err := fxp.WeightFromString(text, fxp.Gram)
 			c.NoError(err, "parsing %q", text)
 			c.Equal(fxp.WeightFromInteger(3, unit), w, "parsing %q", text)

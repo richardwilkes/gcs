@@ -51,6 +51,7 @@ type sheetBench struct {
 	wnd    *unison.Window
 	sheet  *Sheet
 	heapMB float64 // The heap in use once the sheet was open, which each measurement reports as heap-MB.
+	draws  int     // How many times the window has drawn, counted on the UI thread; read it once the session is quiet.
 }
 
 // benchEntity returns the character to measure: the sheet named by benchFileEnvVar, or a generated one of the size
@@ -73,14 +74,24 @@ func benchEntity(b *testing.B) (entity *gurps.Entity, generated bool) {
 
 // newSheetBench starts a headless session, opens the character to measure in it as a sheet, checks that every list
 // is on the page when the character was generated for that purpose, and performs one untimed update so that the
-// first measurement doesn't pay for anything lazily built. It also records the heap in use once the sheet is open.
+// first measurement doesn't pay for anything lazily built. It also records the heap in use once the sheet is open and
+// starts counting the window's draws.
 func newSheetBench(b *testing.B) *sheetBench {
 	b.Helper()
 	c := check.New(b)
 	screen, wnd := uxtest.StartHeadlessWorkspace(b, c)
+	sb := &sheetBench{screen: screen, wnd: wnd}
 	entity, generated := benchEntity(b)
 	var sheet *Sheet
 	screen.Do(func() {
+		content := wnd.Content()
+		prior := content.DrawOverCallback
+		content.DrawOverCallback = func(gc *unison.Canvas, rect geom.Rect) {
+			if prior != nil {
+				prior(gc, rect)
+			}
+			sb.draws++
+		}
 		sheet = NewSheet("bench"+gurps.SheetExt, entity)
 		DisplayNewDockable(sheet)
 	})
@@ -105,7 +116,9 @@ func newSheetBench(b *testing.B) *sheetBench {
 	runtime.GC()
 	var stats runtime.MemStats
 	runtime.ReadMemStats(&stats)
-	return &sheetBench{screen: screen, wnd: wnd, sheet: sheet, heapMB: float64(stats.HeapAlloc) / (1 << 20)}
+	sb.sheet = sheet
+	sb.heapMB = float64(stats.HeapAlloc) / (1 << 20)
+	return sb
 }
 
 // reportHeap reports the heap in use once the sheet was open. It has to be reported after the timed loop, since
@@ -114,22 +127,30 @@ func (sb *sheetBench) reportHeap(b *testing.B) {
 	b.ReportMetric(sb.heapMB, "heap-MB")
 }
 
+// drawSince returns the time of the window's last draw if it has drawn since it had drawn seen times, or 0 if it has
+// not, and updates seen to the current count. Call it once the session is quiet.
+func (sb *sheetBench) drawSince(seen *int) time.Duration {
+	if sb.draws == *seen {
+		return 0
+	}
+	*seen = sb.draws
+	return sb.wnd.LastDrawDuration()
+}
+
 // run measures fn, which runs on the UI thread once per iteration, reporting the time it took there as ui-ns/op and
-// the time of the redraw it provoked as draw-ns/op alongside the usual end-to-end ns/op.
+// the time of the redraw it provoked, if any, as draw-ns/op alongside the usual end-to-end ns/op.
 func (sb *sheetBench) run(b *testing.B, fn func()) {
 	b.Helper()
-	var ui, draw, before time.Duration
+	var ui, draw time.Duration
+	var seen int
+	sb.screen.Do(func() { seen = sb.draws })
 	n := 0
 	b.ResetTimer()
 	for b.Loop() {
 		sb.screen.Do(func() {
-			// Do waits for the session to go quiet, so this is the redraw the previous iteration provoked, or, the
-			// first time through, one that happened before the loop, which is taken back out below.
-			last := sb.wnd.LastDrawDuration()
-			if n == 0 {
-				before = last
-			}
-			draw += last
+			// Do waits for the session to go quiet, so a draw since the last look is the redraw the previous iteration
+			// provoked.
+			draw += sb.drawSince(&seen)
 			start := time.Now()
 			fn()
 			ui += time.Since(start)
@@ -137,8 +158,7 @@ func (sb *sheetBench) run(b *testing.B, fn func()) {
 		n++
 	}
 	b.StopTimer()
-	sb.screen.Do(func() { draw += sb.wnd.LastDrawDuration() })
-	draw -= before
+	sb.screen.Do(func() { draw += sb.drawSince(&seen) })
 	b.ReportMetric(float64(ui.Nanoseconds())/float64(n), "ui-ns/op")
 	b.ReportMetric(float64(draw.Nanoseconds())/float64(n), "draw-ns/op")
 	sb.reportHeap(b)
@@ -211,16 +231,18 @@ func BenchmarkSheetScroll(b *testing.B) {
 			sb.scrollTo(b, one.panel)
 			pt := sb.screen.PanelCenter(sb.sheet.scroll)
 			var draw time.Duration
+			seen := sb.draws
 			n := 0
 			b.ResetTimer()
 			for b.Loop() {
+				// Wheel waits for the session to go quiet, so a draw since the last look is the one its step provoked.
 				for range steps {
 					sb.screen.Wheel(pt, geom.Point{Y: -3}, 0)
-					draw += sb.wnd.LastDrawDuration()
+					draw += sb.drawSince(&seen)
 				}
 				for range steps {
 					sb.screen.Wheel(pt, geom.Point{Y: 3}, 0)
-					draw += sb.wnd.LastDrawDuration()
+					draw += sb.drawSince(&seen)
 				}
 				n++
 			}

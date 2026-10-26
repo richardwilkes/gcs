@@ -41,17 +41,14 @@ func TestPDFTextPosBefore(t *testing.T) {
 
 // TestPDFSelectionRangeFor pins what each page contributes to a selection. A page in the middle of a multi-page
 // selection contributes all of its text, so until its length is known there is no answer, which makes drawing and
-// copying wait for the extraction rather than treat the page as empty. The caller puts the endpoints in document order,
-// as orderedSelection does; a backwards pair puts every page outside the selection rather than inventing a plausible
-// but wrong range.
+// copying wait for the extraction rather than treat the page as empty. A page outside the selection is answered without
+// measuring it, since measuring a page queues its text extraction. The caller puts the endpoints in document order, as
+// orderedSelection does; a backwards pair puts every page outside the selection rather than inventing a plausible but
+// wrong range.
 func TestPDFSelectionRangeFor(t *testing.T) {
 	// A length that is known for every page but the one nobody has extracted yet. The pages are given different
 	// lengths, so a range that came from the wrong page would show up as the wrong number.
 	lengths := map[int]int{0: 100, 1: 200, 2: 300, 4: 500}
-	lengthOf := func(pageNumber int) (int, bool) {
-		length, known := lengths[pageNumber]
-		return length, known
-	}
 	for _, tc := range []struct {
 		name      string
 		lo        pdfTextPos
@@ -138,6 +135,14 @@ func TestPDFSelectionRangeFor(t *testing.T) {
 		},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
+			outside := tc.page < tc.lo.page || tc.page > tc.hi.page
+			lengthOf := func(pageNumber int) (int, bool) {
+				if outside {
+					t.Errorf("page %d, outside the selection %+v..%+v, was measured", pageNumber, tc.lo, tc.hi)
+				}
+				length, known := lengths[pageNumber]
+				return length, known
+			}
 			start, end, ok := pdfSelectionRangeFor(tc.lo, tc.hi, tc.page, lengthOf)
 			if start != tc.wantStart || end != tc.wantEnd || ok != tc.wantOK {
 				t.Errorf("page %d of the selection %+v..%+v is [%d,%d) ok=%v, want [%d,%d) ok=%v", tc.page, tc.lo,

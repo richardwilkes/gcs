@@ -28,7 +28,9 @@ func TestDecimalPlaceDefaultIsAsNeeded(t *testing.T) {
 }
 
 // TestNumberFormatRound verifies rounding to each number of decimal places, including that it rounds half away from
-// zero in both directions and that AsNeeded and FourPlaces leave the value alone.
+// zero in both directions and that AsNeeded, FourPlaces and a Places out of range that has not been through EnsureValid
+// leave the value alone. The last matters apart from Format, since LengthUnit.FormatWith calls Round directly for feet
+// and inches.
 func TestNumberFormatRound(t *testing.T) {
 	c := check.New(t)
 	for _, d := range []struct {
@@ -52,10 +54,12 @@ func TestNumberFormatRound(t *testing.T) {
 		{places: fxp.ZeroPlaces, in: "-0.4999", expected: "0"},
 		{places: fxp.TwoPlaces, in: "0", expected: "0"},
 		{places: fxp.TwoPlaces, in: "1234.9999", expected: "1235"},
+		{places: fxp.DecimalPlace(200), in: "1234.5678", expected: "1234.5678"},
+		{places: fxp.LastDecimalPlace + 1, in: "1234.5678", expected: "1234.5678"},
 	} {
 		f := fxp.NumberFormat{Places: d.places}
-		c.Equal(d.expected, f.Round(fxp.FromStringForced(d.in)).String(), "rounding %s to %s places", d.in,
-			d.places.Key())
+		c.Equal(d.expected, f.Round(fxp.FromStringForced(d.in)).String(), "rounding %s to %s places (Places %d)", d.in,
+			d.places.Key(), d.places)
 	}
 }
 

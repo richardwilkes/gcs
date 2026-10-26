@@ -93,16 +93,17 @@ func TestLengthFeetAndInchesRoundTrip(t *testing.T) {
 }
 
 // TestLengthFromStringUnitSuffixes verifies that every unit's key (other than FeetAndInches, which is parsed via the
-// '/" notation), when appended to a number in either lower or upper case, parses back to that same unit. This guards
-// against the suffix-matching being sensitive to the order in which the enum is declared (e.g. "m" must not greedily
-// match the "cm" / "km" / "m" overlap).
+// '/" notation), when appended to a number in lower case, in upper case, or in upper case after a space, parses back to
+// that same unit. This guards against the suffix-matching being sensitive to the order in which the enum is declared
+// (e.g. "m" must not greedily match the "cm" / "km" / "m" overlap).
 func TestLengthFromStringUnitSuffixes(t *testing.T) {
 	c := check.New(t)
 	for _, unit := range fxp.LengthUnits {
 		if unit == fxp.FeetAndInches {
 			continue
 		}
-		for _, text := range []string{"3" + unit.Key(), "3" + strings.ToUpper(unit.Key())} {
+		upper := strings.ToUpper(unit.Key())
+		for _, text := range []string{"3" + unit.Key(), "3" + upper, "3 " + upper} {
 			w, err := fxp.LengthFromString(text, fxp.Meter)
 			c.NoError(err, "parsing %q", text)
 			c.Equal(fxp.LengthFromInteger(3, unit), w, "parsing %q", text)
