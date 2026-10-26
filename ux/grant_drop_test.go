@@ -331,10 +331,11 @@ func TestGrantLibraryItemsFollowTheLibrary(t *testing.T) {
 }
 
 // TestGrantLibraryItemsFollowSymlinks checks that the picker's items include those in a folder a symlink in the library
-// points at, as the Library Explorer lists them, that a folder a symlink leads to again, one of the library's own or one
-// back up the tree, is not walked again, which would offer its items twice or walk forever, and that the items of a
-// file a symlink points at are read again once that file's modification time or size changes, which the symlink's own
-// don't.
+// points at, as the Library Explorer lists them, that a folder a symlink leads to again, one of the library's own or
+// one back up the tree, is not walked again, which would offer its items twice or walk forever, that a file a symlink
+// leads to again, one in the library's folders or in a folder a symlink points at, or one outside the library another
+// symlink already leads to, is not offered again, and that the items of a file a symlink points at are read again once
+// that file's modification time or size changes, which the symlink's own don't.
 func TestGrantLibraryItemsFollowSymlinks(t *testing.T) {
 	c := check.New(t)
 	_, _ = uxtest.StartHeadlessWorkspace(t, c)
@@ -356,6 +357,10 @@ func TestGrantLibraryItemsFollowSymlinks(t *testing.T) {
 	keenHearing := newGrantTestTrait("Keen Hearing", 0)
 	c.NoError(gurps.SaveTraits([]*gurps.Trait{keenHearing}, target))
 	c.NoError(os.Symlink(target, filepath.Join(dir, "Shortcut"+gurps.TraitsExt)))
+	c.NoError(os.Symlink(target, filepath.Join(dir, "Shortcut2"+gurps.TraitsExt)))
+	c.NoError(os.Symlink(filepath.Join(traits, "Test"+gurps.TraitsExt), filepath.Join(dir, "Same"+gurps.TraitsExt)))
+	c.NoError(os.Symlink(filepath.Join(linked, "Test"+gurps.TraitsExt),
+		filepath.Join(traits, "Via Linked"+gurps.TraitsExt)))
 	lib := library.NewLibrary("Test", "acct", "", "repo", dir)
 	libraries := gurps.GlobalSettings().Libraries
 	libraries.Store(lib.Key(), lib)
@@ -371,11 +376,13 @@ func TestGrantLibraryItemsFollowSymlinks(t *testing.T) {
 	}
 	paths := offered()
 	c.Equal([]string{"Linked/Test" + gurps.TraitsExt}, paths["Dark Vision"],
-		"the trait in the folder a symlink points at is offered once, by its path within the library")
+		"the trait in the folder a symlink points at is offered once, by its path within the library, though a "+
+			"symlink to its file leads to it too")
 	c.Equal([]string{"Traits/Test" + gurps.TraitsExt}, paths["Night Vision"],
-		"the trait in a folder of the library is offered once, by its path there, though a symlink leads to it too")
+		"the trait in a folder of the library is offered once, by its path there, though symlinks to the folder and "+
+			"to the file lead to it too")
 	c.Equal([]string{"Shortcut" + gurps.TraitsExt}, paths["Keen Hearing"],
-		"the trait in the file a symlink points at is offered by the symlink's path")
+		"the trait in the file a symlink points at is offered once, by the first symlink's path")
 
 	// A rename to a name of the same length leaves the file the same size, so that only the modification time tells the
 	// saves apart.

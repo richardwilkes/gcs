@@ -78,15 +78,24 @@ func NewLibraryNode(nav *Navigator, lib *library.Library) *NavigatorNode {
 	return n
 }
 
-// NewDirectoryNode creates a new directory node.
+// NewDirectoryNode creates a new directory node. Its ID, on which the table keys the row's selection and the settings
+// its open state, is kept in the settings under the folder's path on disk, marked as being under Favorites or a
+// library. A folder can show up under Favorites more than once, when a favorite lies within a favorited folder, so a
+// copy shown within a favorite other than the nearest one holding the folder is keyed by that favorite's path too,
+// leaving a folder shown once with the key, and so the open state, it has always had.
 func NewDirectoryNode(nav *Navigator, lib *library.Library, dirPath string, parent *NavigatorNode) *NavigatorNode {
 	pathForID := "@" + filepath.Join(lib.Path(false), dirPath)
 	root := parent
+	var shownWithin *NavigatorNode // The row beneath the root that this one is shown within, unless it is that row
 	for root.parent != nil {
+		shownWithin = root
 		root = root.parent
 	}
 	if root.IsFavorites() {
 		pathForID = "F" + pathForID
+		if shownWithin != nil && hasNearerFavorite(lib, shownWithin.path, dirPath) {
+			pathForID += "\x00" + filepath.Join(lib.Path(false), shownWithin.path)
+		}
 	} else {
 		pathForID = "_" + pathForID
 	}
@@ -99,6 +108,14 @@ func NewDirectoryNode(nav *Navigator, lib *library.Library, dirPath string, pare
 	}
 	n.Refresh()
 	return n
+}
+
+// hasNearerFavorite returns true if a favorite of the library lies within the favorite folder and is the folder at
+// dirPath or holds it, so that the folder shows up under Favorites within both.
+func hasNearerFavorite(lib *library.Library, favorite, dirPath string) bool {
+	return slices.ContainsFunc(lib.Favorites(), func(one string) bool {
+		return strings.HasPrefix(one, favorite+"/") && (one == dirPath || strings.HasPrefix(dirPath, one+"/"))
+	})
 }
 
 // NewFileNode creates a new file node.
@@ -270,6 +287,20 @@ func (n *NavigatorNode) SetOpen(open bool) {
 // Container returns true if this node can have children.
 func (n *NavigatorNode) Container() bool {
 	return n.CanHaveChildren()
+}
+
+// placeKey returns a key for the row's place in the tree: its path on disk followed by those of its ancestors, each
+// ending in a NUL, which no path holds, so that the Favorites row, whose path is empty, has a key too. The path alone
+// would not do, since a file or folder can show up in several places: under its library and under Favorites, both as a
+// favorite and within a favorited folder, and under a library rooted within another's folder. Unlike a file row's ID,
+// the key survives a Reload, which rebuilds the tree from fresh nodes.
+func (n *NavigatorNode) placeKey() string {
+	var key strings.Builder
+	for p := n; p != nil; p = p.parent {
+		key.WriteString(p.Path())
+		key.WriteByte(0)
+	}
+	return key.String()
 }
 
 // Path returns the full path on disk for this node.

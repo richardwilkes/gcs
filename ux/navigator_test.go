@@ -165,7 +165,9 @@ func TestDeepSearchOfSheetProfileIsCaseInsensitive(t *testing.T) {
 // with surrounding whitespace trimmed, under the file's full path on disk, that it serves a cache hit without checking
 // the file on disk — revalidating every hit would be a stat per deep-searchable file on each keystroke — and that
 // dropping the entry, as the filesystem watches do when they report the file changed, makes the next search re-read
-// the file rather than match on its previous contents.
+// the file rather than match on its previous contents. A symlinked file is the exception, since the watches report a
+// change to the file it points at under that file's path, and not at all when it lies outside the library: a hit on it
+// is checked against that file.
 func TestDeepSearchServesCacheHitsUntilInvalidated(t *testing.T) {
 	c := check.New(t)
 	ext := uti.Markdown.Extensions[0]
@@ -194,6 +196,26 @@ func TestDeepSearchServesCacheHitsUntilInvalidated(t *testing.T) {
 	c.Equal(1, matchCount(n, "bravo", node), "the new content must be found after the change is reported")
 	c.Equal(0, matchCount(n, "barbarian", node), "the previous content must no longer match")
 	c.True(n.contentCache[p].isCurrent(p), "the re-read must capture the file's current metadata")
+
+	target := filepath.Join(t.TempDir(), "elsewhere"+ext)
+	c.NoError(os.WriteFile(target, []byte("charlie\n"), 0o600))
+	if err := os.Symlink(target, filepath.Join(lib.Path(false), "shortcut"+ext)); err != nil {
+		t.Skipf("unable to create a symlink here: %v", err) // Windows requires a privilege for this by default
+	}
+	c.NoError(os.Symlink(p, filepath.Join(lib.Path(false), "same"+ext)))
+	outside := NewFileNode(lib, "shortcut"+ext, nil)
+	inside := NewFileNode(lib, "same"+ext, nil)
+	c.Equal(1, matchCount(n, "charlie", outside), "the content of the file a symlink points at must match")
+	c.Equal(1, matchCount(n, "bravo", inside), "the content of the file a symlink points at must match")
+	c.NoError(os.WriteFile(target, []byte("delta\n"), 0o600))
+	c.NoError(os.Chtimes(target, time.Time{}, time.Now().Add(2*time.Hour)))
+	c.Equal(1, matchCount(n, "delta", outside), "a change to a file outside the library a symlink points at, "+
+		"which no watch reports, must be found")
+	c.NoError(os.WriteFile(p, []byte("echo\n"), 0o600))
+	c.NoError(os.Chtimes(p, time.Time{}, time.Now().Add(2*time.Hour)))
+	n.watchCallback(lib, p, notify.Write)
+	c.Equal(1, matchCount(n, "echo", inside), "a change reported under the path of the file a symlink points at "+
+		"must be found under the symlink's")
 }
 
 // TestInvalidationReachesInFlightCacheBuild verifies that a file change reported while a background cache build is

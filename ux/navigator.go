@@ -453,9 +453,16 @@ func promptForFileSystemName(currentName, label, initial string, targetPath func
 	return targetPath(name), true
 }
 
-func (n *Navigator) reloadAndSelect(path string) {
+// reloadAndSelect reloads the tree and selects the row for the path within the parent's row alone, though the path may
+// show elsewhere too, as within a folder shown both under its library and under Favorites. Should the parent's row not
+// show it, as Favorites doesn't show a folder made beside a favorite file, it is selected wherever it shows.
+func (n *Navigator) reloadAndSelect(path string, parent *NavigatorNode) {
+	place := path + "\x00" + parent.placeKey() // As placeKey would key the row
 	n.Reload()
-	n.ApplySelectedPaths([]string{path})
+	n.applySelectedPlaces(map[string]bool{place: true})
+	if !n.table.HasSelection() {
+		n.ApplySelectedPaths([]string{path})
+	}
 	n.MarkForRedraw()
 }
 
@@ -478,7 +485,7 @@ func (n *Navigator) renameSelection() {
 		}
 		n.fixupFavoritePath(row, oldPath, newPath)
 		n.adjustBackingFilePath(row, oldPath, newPath)
-		n.reloadAndSelect(newPath)
+		n.reloadAndSelect(newPath, row.Parent())
 	}
 }
 
@@ -743,8 +750,8 @@ func (n *Navigator) EventuallyReload() {
 // Reload the content of the navigator view. A navigator that is no longer in a window has been discarded along with its
 // workspace (the headless tests start a workspace per test), yet the reload it scheduled and the library watches it
 // holds still fire into unison's process-wide task queue. Were it to reload, it would rebuild its rows from the live
-// libraries, find none of them among the paths its old rows had disclosed, and close them all; library rows share
-// their disclosure keys, so that would close the live navigator's rows too. It stops its watches and does nothing else.
+// libraries, find none of them in the places its old rows had disclosed, and close them all; library rows share their
+// disclosure keys, so that would close the live navigator's rows too. It stops its watches and does nothing else.
 func (n *Navigator) Reload() {
 	n.needReload = false
 	for _, token := range n.tokens {
@@ -754,12 +761,12 @@ func (n *Navigator) Reload() {
 	if n.Window() == nil {
 		return
 	}
-	disclosed := n.DisclosedPaths()
-	selection := n.SelectedPaths()
+	disclosed := n.disclosedPlaces()
+	selection := n.selectedPlaces()
 	n.table.SetRootRows(n.populateRows())
-	n.ApplyDisclosedPaths(disclosed)
+	applyDisclosedPlaces(n.table.RootRows(), disclosed)
 	n.table.SyncToModel()
-	n.ApplySelectedPaths(selection)
+	n.applySelectedPlaces(selection)
 	n.table.SizeColumnsToFit(true)
 	n.prewarmContentCache()
 	n.refreshSearch()
@@ -988,9 +995,10 @@ func (n *Navigator) contentMatches(row *NavigatorNode, text string) bool {
 	}
 	// A cache hit is served as is, without checking the file on disk: the filesystem watches drop the entry for a
 	// file as soon as its change is reported (see watchCallback), which is what keeps this from being a stat per
-	// deep-searchable file on every keystroke.
+	// deep-searchable file on every keystroke. A symlinked file is the exception, since a change to the file it points
+	// at is reported under that file's path, and not at all when it lies outside the library.
 	entry, ok := n.contentCache[p]
-	if !ok || entry == nil {
+	if !ok || entry == nil || (entry.symlink && !entry.isCurrent(p)) {
 		entry = loadContentCacheEntry(p)
 		n.addToContentCache(p, entry)
 	}
@@ -998,20 +1006,12 @@ func (n *Navigator) contentMatches(row *NavigatorNode, text string) bool {
 }
 
 // newSearchMatch returns the match for the row: named as the tree names it, with the icon the tree gives its kind,
-// titled with the names of its ancestors from the root down, and keyed by the paths of the row and its ancestors, so
-// that the match survives a Reload, which rebuilds the tree from fresh nodes. The row's own path would not do, since a
-// file can appear in several places: under its library and under Favorites, both as a favorite and within a favorited
-// folder, and under a library rooted within another's folder.
+// titled with the names of its ancestors from the root down, and keyed by the row's place in the tree (see placeKey),
+// so that the match survives a Reload.
 func (n *Navigator) newSearchMatch(row *NavigatorNode) *searchMatch {
 	var ancestors []string
-	var key strings.Builder
-	// Each path is followed by a NUL, which no path holds, so that the Favorites row, whose path is empty, has a key.
-	key.WriteString(row.Path())
-	key.WriteByte(0)
 	for p := row.Parent(); p != nil; p = p.Parent() {
 		ancestors = append(ancestors, p.primaryColumnText())
-		key.WriteString(p.Path())
-		key.WriteByte(0)
 	}
 	slices.Reverse(ancestors)
 	ext := gurps.ClosedFolder
@@ -1024,7 +1024,7 @@ func (n *Navigator) newSearchMatch(row *NavigatorNode) *searchMatch {
 		icon:  &unison.DrawableSVG{SVG: gurps.FileInfoFor(ext).SVG, Size: geom.NewSize(size, size)},
 		name:  row.primaryColumnText(),
 		title: strings.Join(ancestors, " / "),
-		key:   key.String(),
+		key:   row.placeKey(),
 	}
 }
 
@@ -1073,19 +1073,21 @@ func prepareForContentCacheWith[T gurps.Node[T]](data []T, text func(T) string) 
 }
 
 // contentCacheEntry holds the extracted, lowercased and trimmed text of one file for the deep search, along with the
-// file metadata used to decide whether the entry can be reused when the cache is revalidated after a reload. Size and
-// modification time are used instead of a content hash: hashing would require reading every file just to decide
-// whether it needs re-reading, and the case it would catch — a content change that alters neither size nor modification
-// time — is unlikely to occur in real use.
+// file metadata used to decide whether the entry can be reused when the cache is revalidated after a reload, and, for a
+// symlink, whenever a search hits it (see contentMatches). Size and modification time are used instead of a content
+// hash: hashing would require reading every file just to decide whether it needs re-reading, and the case it would
+// catch — a content change that alters neither size nor modification time — is unlikely to occur in real use.
 type contentCacheEntry struct {
 	modTime time.Time
 	content string
 	size    int64
+	symlink bool // The path is a symlink, so the size and modification time are those of the file it points at
 }
 
 // isCurrent returns true if the file at the given path still has the size and modification time captured in the entry.
-// Only the background cache builds check this; a search serves cache hits without touching the disk, relying on the
-// filesystem watches to drop the entries of changed files (see invalidateContentCacheEntry).
+// The background cache builds check this for every entry, a search only for that of a symlink; a search serves other
+// cache hits without touching the disk, relying on the filesystem watches to drop the entries of changed files (see
+// invalidateContentCacheEntry).
 func (e *contentCacheEntry) isCurrent(p string) bool {
 	fi, err := os.Stat(p)
 	return err == nil && fi.Size() == e.size && fi.ModTime().Equal(e.modTime)
@@ -1104,11 +1106,15 @@ type contentCacheBuild struct {
 
 // loadContentCacheEntry reads the file at the given path and extracts its searchable text. The search text is
 // lowercased before comparison, so the content is lowercased as well. A file that fails to load or parse — including
-// one whose parse panics — produces an entry with empty content, so it isn't pointlessly re-read (or re-panicked on)
-// on every keystroke. The file metadata is captured before the read so that a concurrent modification can only make
-// the entry look older than it is, never newer.
+// one whose parse panics — produces an entry with empty content, so it isn't pointlessly re-read (or re-panicked on) on
+// every keystroke, though a symlink whose target is gone still is, since a search checks a symlink's entry with
+// isCurrent, which then always fails. The file metadata is captured before the read so that a concurrent modification
+// can only make the entry look older than it is, never newer.
 func loadContentCacheEntry(p string) *contentCacheEntry {
 	entry := &contentCacheEntry{}
+	if fi, err := os.Lstat(p); err == nil {
+		entry.symlink = fi.Mode()&os.ModeSymlink != 0
+	}
 	if fi, err := os.Stat(p); err == nil {
 		entry.modTime = fi.ModTime()
 		entry.size = fi.Size()
@@ -1429,37 +1435,32 @@ func (n *Navigator) showMatch(row *NavigatorNode) {
 	}
 }
 
-// DisclosedPaths returns a list of paths that are currently disclosed.
-func (n *Navigator) DisclosedPaths() []string {
-	return n.accumulateDisclosedPaths(n.table.RootRows(), nil)
+// disclosedPlaces returns the places in the tree (see NavigatorNode.placeKey) of the rows that are disclosed.
+func (n *Navigator) disclosedPlaces() map[string]bool {
+	places := make(map[string]bool)
+	accumulateDisclosedPlaces(n.table.RootRows(), places)
+	return places
 }
 
-func (n *Navigator) accumulateDisclosedPaths(rows []*NavigatorNode, disclosedPaths []string) []string {
+func accumulateDisclosedPlaces(rows []*NavigatorNode, places map[string]bool) {
 	for _, row := range rows {
 		if row.IsOpen() {
-			disclosedPaths = append(disclosedPaths, row.Path())
+			places[row.placeKey()] = true
 		}
-		disclosedPaths = n.accumulateDisclosedPaths(row.Children(), disclosedPaths)
+		accumulateDisclosedPlaces(row.Children(), places)
 	}
-	return disclosedPaths
 }
 
-// ApplyDisclosedPaths closes all nodes except the ones provided, which are explicitly opened.
-func (n *Navigator) ApplyDisclosedPaths(paths []string) {
-	m := make(map[string]bool, len(paths))
-	for _, one := range paths {
-		m[one] = true
-	}
-	n.applyDisclosedPaths(n.table.RootRows(), m)
-}
-
-func (n *Navigator) applyDisclosedPaths(rows []*NavigatorNode, paths map[string]bool) {
+// applyDisclosedPlaces opens the rows, among those given and beneath them, in the places given (see
+// NavigatorNode.placeKey) and closes the rest.
+func applyDisclosedPlaces(rows []*NavigatorNode, places map[string]bool) {
 	for _, row := range rows {
-		open := paths[row.Path()]
-		if row.IsOpen() != open {
-			row.SetOpen(open)
+		if row.Container() {
+			if open := places[row.placeKey()]; row.IsOpen() != open {
+				row.SetOpen(open)
+			}
+			applyDisclosedPlaces(row.Children(), places)
 		}
-		n.applyDisclosedPaths(row.Children(), paths)
 	}
 }
 
@@ -1479,11 +1480,29 @@ func (n *Navigator) ApplySelectedPaths(paths []string) {
 	for _, p := range paths {
 		m[p] = true
 	}
+	n.selectRows(func(row *NavigatorNode) bool { return m[row.Path()] })
+}
+
+// selectedPlaces returns the places in the tree (see NavigatorNode.placeKey) of the rows that are selected.
+func (n *Navigator) selectedPlaces() map[string]bool {
+	places := make(map[string]bool)
+	for _, row := range n.table.SelectedRows(false) {
+		places[row.placeKey()] = true
+	}
+	return places
+}
+
+// applySelectedPlaces replaces the selection with the rows in the places given (see NavigatorNode.placeKey).
+func (n *Navigator) applySelectedPlaces(places map[string]bool) {
+	n.selectRows(func(row *NavigatorNode) bool { return places[row.placeKey()] })
+}
+
+// selectRows replaces the selection with the rows the table shows that pass the test.
+func (n *Navigator) selectRows(test func(row *NavigatorNode) bool) {
 	selMap := make(map[tid.TID]bool)
 	count := n.table.LastRowIndex()
 	for i := 0; i <= count; i++ {
-		row := n.table.RowFromIndex(i)
-		if m[row.Path()] {
+		if row := n.table.RowFromIndex(i); test(row) {
 			selMap[row.ID()] = true
 		}
 	}
@@ -1607,8 +1626,10 @@ func (n *Navigator) newFolder() {
 			// working directory.
 			return
 		}
+		parent := row
 		parentDir := row.Path()
 		if row.IsFile() {
+			parent = row.Parent()
 			parentDir = filepath.Dir(parentDir)
 		}
 		dirPath, ok := promptForFileSystemName("", i18n.Text("Folder Name"), "",
@@ -1625,6 +1646,6 @@ func (n *Navigator) newFolder() {
 		if !row.IsFile() && !row.IsOpen() {
 			row.SetOpen(true)
 		}
-		n.reloadAndSelect(dirPath)
+		n.reloadAndSelect(dirPath, parent)
 	}
 }

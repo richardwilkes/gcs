@@ -511,7 +511,8 @@ var grantItemLists = make(map[feature.Type]grantItemList)
 
 // grantLibraryItems returns the items of the libraries a grant of the given type can give, reading only the files
 // changed since they were last read, and the list last returned when none has. Hidden files and folders are skipped and
-// symlinked folders followed, as the library navigator skips and follows them.
+// symlinks followed, as the library navigator skips and follows them, but a file that symlinks lead to by more than one
+// path within a library is read once for that library.
 func grantLibraryItems(t feature.Type) []*grantLibraryItem {
 	ext, load := grantItemLoader(t)
 	var stamps []grantFileStamp
@@ -524,15 +525,41 @@ func grantLibraryItems(t feature.Type) []*grantLibraryItem {
 		}
 		fileSystem := os.DirFS(root)
 		// WalkDir doesn't follow the symlinks it finds, but does walk the target of the one it starts from, so each
-		// symlink to a folder is walked on its own once the library's own folders have been, so that an item in one of
-		// those is offered by its path there, whatever symlinks also lead to it. visited holds the real path of each
+		// symlink to a folder is walked on its own once the library's own folders have been, and each symlink to a file
+		// is read once every folder has been, so that an item is offered by its path in the library's own folders, or
+		// else in a folder a symlink points at, whatever symlinks also lead to it. visited holds the real path of each
 		// folder walked, so that a folder a symlink leads to again is not walked again: it would offer its items twice,
-		// and a symlink back up the tree would never end.
-		var links []string
+		// and a symlink back up the tree would never end. realDirs maps each folder walked to its real path, and
+		// realFiles holds the real path of each file read, so that a file a symlink leads to again is not read again
+		// either. A folder, or a symlink to a file, whose real path can't be found is walked or read all the same,
+		// though its items may then be offered twice.
+		var links, fileLinks []string
 		visited := make(map[string]bool)
+		realDirs := make(map[string]string)
+		realFiles := make(map[string]bool)
 		pointsAtFolder := func(path string) bool {
 			info, statErr := fs.Stat(fileSystem, path)
 			return statErr == nil && info.IsDir()
+		}
+		read := func(path string) {
+			// Stat follows a symlink, as d.Info doesn't, since only the file it points at changes when its items do.
+			info, err := fs.Stat(fileSystem, path)
+			if err != nil {
+				return
+			}
+			file := gurps.LibraryFile{Library: lib.Key(), Path: path}
+			seen[file] = true
+			cached, ok := grantFileItems[file]
+			if !ok || !cached.modTime.Equal(info.ModTime()) || cached.size != info.Size() {
+				cached = grantFileCache{
+					modTime: info.ModTime(),
+					size:    info.Size(),
+					items:   load(fileSystem, file),
+				}
+				grantFileItems[file] = cached
+			}
+			stamps = append(stamps, grantFileStamp{file: file, modTime: cached.modTime, size: cached.size})
+			caches = append(caches, cached)
 		}
 		walk := func(path string, d fs.DirEntry, err error) error {
 			switch {
@@ -555,34 +582,32 @@ func grantLibraryItems(t feature.Type) []*grantLibraryItem {
 					return fs.SkipDir
 				}
 				visited[realDir] = true
+				realDirs[filepath.FromSlash(path)] = realDir
 				return nil
 			case !strings.EqualFold(filepath.Ext(path), ext):
 				return nil
-			}
-			// Stat follows a symlink, as d.Info doesn't, since only the file it points at changes when its items do.
-			info, err := fs.Stat(fileSystem, path)
-			if err != nil {
+			case d.Type()&fs.ModeSymlink != 0:
+				fileLinks = append(fileLinks, path)
 				return nil
 			}
-			file := gurps.LibraryFile{Library: lib.Key(), Path: path}
-			seen[file] = true
-			cached, ok := grantFileItems[file]
-			if !ok || !cached.modTime.Equal(info.ModTime()) || cached.size != info.Size() {
-				cached = grantFileCache{
-					modTime: info.ModTime(),
-					size:    info.Size(),
-					items:   load(fileSystem, file),
-				}
-				grantFileItems[file] = cached
-			}
-			stamps = append(stamps, grantFileStamp{file: file, modTime: cached.modTime, size: cached.size})
-			caches = append(caches, cached)
+			realFiles[filepath.Join(realDirs[filepath.Dir(filepath.FromSlash(path))], d.Name())] = true
+			read(path)
 			return nil
 		}
 		_ = fs.WalkDir(fileSystem, ".", walk) //nolint:errcheck // A file that can't be read is skipped
 		// The walks of the symlinked folders may find more.
 		for i := 0; i < len(links); i++ {
 			_ = fs.WalkDir(fileSystem, links[i], walk) //nolint:errcheck // A file that can't be read is skipped
+		}
+		for _, path := range fileLinks {
+			realFile, realErr := filepath.EvalSymlinks(filepath.Join(root, filepath.FromSlash(path)))
+			if realErr == nil {
+				if realFiles[realFile] {
+					continue
+				}
+				realFiles[realFile] = true
+			}
+			read(path)
 		}
 	}
 	// The files of this kind no longer found, deleted, renamed or under a library that was rekeyed or removed, are

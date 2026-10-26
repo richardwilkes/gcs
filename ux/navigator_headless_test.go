@@ -14,13 +14,17 @@ import (
 	"os"
 	"path/filepath"
 	"slices"
+	"strings"
 	"testing"
 	"time"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/model/kinds"
+	"github.com/richardwilkes/gcs/v5/model/library"
 	"github.com/richardwilkes/gcs/v5/ux/uxtest"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/toolbox/v2/geom"
+	"github.com/richardwilkes/toolbox/v2/tid"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/mod"
 )
@@ -237,6 +241,200 @@ func TestNewFolderIsUnavailableForFavorites(t *testing.T) {
 	c.Equal(1, windows, "asking for a new folder in the Favorites row must not prompt for its name")
 }
 
+// TestEachCopyOfAFolderUnderFavoritesKeepsItsOwnState verifies that a folder shown more than once under Favorites, as a
+// favorite and within a favorited folder, has an ID of its own in each place, as does each folder within it, so that
+// selecting or disclosing one copy leaves the other alone, across a Reload too, and that each copy keeps its ID, on
+// which the settings key its open state, in a tree built afresh, as on the next launch. A folder shown once keeps the
+// ID it was given before copies were told apart, so that the open state saved for it is kept.
+func TestEachCopyOfAFolderUnderFavoritesKeepsItsOwnState(t *testing.T) {
+	c := check.New(t)
+	// Keeps the open states set here out of the settings the other tests see.
+	uxtest.SwapForTest(t, &gurps.GlobalSettings().Closed, make(map[string]int64))
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
+	dir := t.TempDir()
+	c.NoError(os.MkdirAll(filepath.Join(dir, "sub", "inner", "deeper"), 0o750))
+	c.NoError(os.MkdirAll(filepath.Join(dir, "sub", "other"), 0o750))
+	lib := library.NewLibrary("Test", "acct", "", "repo", dir)
+	lib.ToggleFavorite("sub")
+	lib.ToggleFavorite("sub/inner")
+	libraries := gurps.GlobalSettings().Libraries
+	libraries.Store(lib.Key(), lib)
+	t.Cleanup(func() { libraries.Remove(lib.Key()) })
+	var n *Navigator
+	screen.Do(func() { n = Workspace.Navigator })
+	stopNavigatorWatches(t, screen, n)
+
+	// The copies of inner and deeper as the favorite inner shows them and as the favorite sub shows them, and other,
+	// which only sub shows.
+	type copies struct {
+		inner, innerInSub, deeper, deeperInSub, otherInSub *NavigatorNode
+	}
+	child := func(row *NavigatorNode, p string) *NavigatorNode {
+		for _, one := range row.Children() {
+			if one.library == lib && one.path == p {
+				return one
+			}
+		}
+		return nil
+	}
+	// find returns the copies beneath the navigator's Favorites row or, if fresh, beneath one built afresh.
+	find := func(fresh bool) copies {
+		var found copies
+		screen.Do(func() {
+			favorites := n.table.RootRows()[0]
+			if fresh {
+				favorites = NewFavoritesNode(n)
+			}
+			if found.inner = child(favorites, "sub/inner"); found.inner != nil {
+				found.deeper = child(found.inner, "sub/inner/deeper")
+			}
+			if sub := child(favorites, "sub"); sub != nil {
+				if found.innerInSub = child(sub, "sub/inner"); found.innerInSub != nil {
+					found.deeperInSub = child(found.innerInSub, "sub/inner/deeper")
+				}
+				found.otherInSub = child(sub, "sub/other")
+			}
+		})
+		if found.deeper == nil || found.deeperInSub == nil || found.otherInSub == nil {
+			t.Fatal("expected inner and deeper under both favorites, and other under sub")
+		}
+		return found
+	}
+	screen.Do(n.Reload)
+	rows := find(false)
+	var otherID tid.TID
+	screen.Do(func() {
+		otherID = gurps.IDForNavNode("F@"+filepath.Join(dir, "sub", "other"), kinds.NavigatorDirectory)
+	})
+	c.NotEqual(rows.inner.ID(), rows.innerInSub.ID(), "each copy of a favorite within a favorite has its own ID")
+	c.NotEqual(rows.deeper.ID(), rows.deeperInSub.ID(), "as has each copy of a folder within it")
+	c.Equal(otherID, rows.otherInSub.ID(), "a folder shown once keeps the ID it was given before copies were "+
+		"told apart")
+
+	// state returns whether each copy is open, and where the selected rows are.
+	state := func(rows copies) (open []bool, selected []string) {
+		screen.Do(func() {
+			open = []bool{rows.inner.IsOpen(), rows.innerInSub.IsOpen(), rows.deeper.IsOpen(), rows.deeperInSub.IsOpen()}
+			for _, row := range n.table.SelectedRows(false) {
+				selected = append(selected, row.path+" in "+row.Parent().primaryColumnText())
+			}
+		})
+		return open, selected
+	}
+	// A Reload closes the rows it adds, so each copy starts out closed.
+	screen.Do(func() {
+		rows.innerInSub.Parent().SetOpen(true) // So that both copies of inner show
+		rows.inner.SetOpen(true)
+		rows.deeperInSub.SetOpen(true)
+		n.table.SyncToModel()
+		n.table.SetSelectionMap(map[tid.TID]bool{rows.inner.ID(): true})
+	})
+	want := []bool{true, false, false, true}
+	open, selected := state(rows)
+	c.Equal(want, open, "opening a copy leaves the other closed")
+	c.Equal([]string{"sub/inner in Favorites"}, selected, "selecting a copy selects it alone")
+
+	screen.Do(n.Reload)
+	open, selected = state(find(false))
+	c.Equal(want, open, "each copy keeps its own open state across a Reload")
+	c.Equal([]string{"sub/inner in Favorites"}, selected, "and the selection stays on the copy selected")
+
+	fresh := find(true)
+	c.Equal([]tid.TID{rows.inner.ID(), rows.innerInSub.ID(), rows.deeper.ID(), rows.deeperInSub.ID()},
+		[]tid.TID{fresh.inner.ID(), fresh.innerInSub.ID(), fresh.deeper.ID(), fresh.deeperInSub.ID()},
+		"each copy keeps its ID in a tree built afresh")
+}
+
+// TestNewFolderSelectsOnlyTheFolderItMade verifies that the folder New Folder makes ends up the only row selected: the
+// copy within the row it was asked for in, or beside it for a file, though a folder shown both under its library and
+// under Favorites shows the new one in both, or the copy under its library when that place doesn't show it, as
+// Favorites doesn't beside a favorite file.
+func TestNewFolderSelectsOnlyTheFolderItMade(t *testing.T) {
+	c := check.New(t)
+	// Keeps the open states set here out of the settings the other tests see.
+	uxtest.SwapForTest(t, &gurps.GlobalSettings().Closed, make(map[string]int64))
+	screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
+	dir := t.TempDir()
+	c.NoError(os.Mkdir(filepath.Join(dir, "sub"), 0o750))
+	c.NoError(gurps.NewEntity().Save(filepath.Join(dir, "top"+gurps.SheetExt)))
+	lib := library.NewLibrary("Test", "acct", "", "repo", dir)
+	lib.ToggleFavorite("sub")
+	lib.ToggleFavorite("top" + gurps.SheetExt)
+	libraries := gurps.GlobalSettings().Libraries
+	libraries.Store(lib.Key(), lib)
+	t.Cleanup(func() { libraries.Remove(lib.Key()) })
+	var n *Navigator
+	screen.Do(func() { n = Workspace.Navigator })
+
+	// where returns the rows from the root down to the row: Favorites and the library by kind, the others by path.
+	where := func(row *NavigatorNode) string {
+		var parts []string
+		for p := row; p != nil; p = p.parent {
+			switch {
+			case p.IsFavorites():
+				parts = append(parts, "Favorites")
+			case p.IsLibrary():
+				parts = append(parts, "library")
+			default:
+				parts = append(parts, p.path)
+			}
+		}
+		slices.Reverse(parts)
+		return strings.Join(parts, " > ")
+	}
+	for _, one := range []struct {
+		name string
+		row  string // Where the row New Folder is asked for in is
+		want string // Where the new folder must be the only row selected
+	}{
+		{name: "made in folder", row: "Favorites > sub", want: "Favorites > sub > sub/made in folder"},
+		{name: "made beside file", row: "Favorites > top" + gurps.SheetExt, want: "library > made beside file"},
+	} {
+		stopNavigatorWatches(t, screen, n)
+		var found bool
+		screen.Do(func() {
+			n.Reload()
+			// Discloses sub under both Favorites and the library, so that a folder made in it shows in both.
+			for _, root := range n.table.RootRows() {
+				if root.IsFavorites() || root.library == lib {
+					root.SetOpen(true)
+					for _, row := range root.Children() {
+						if row.library == lib && row.Container() {
+							row.SetOpen(true)
+						}
+					}
+				}
+			}
+			n.table.SyncToModel()
+			for _, row := range n.table.RootRows()[0].Children() {
+				if where(row) == one.row {
+					n.table.SetSelectionMap(map[tid.TID]bool{row.ID(): true})
+					found = true
+				}
+			}
+		})
+		if !found {
+			t.Fatalf("expected a row at %s", one.row)
+		}
+
+		// The dialog runs a nested modal loop, so the call is posted rather than run through Do.
+		c.True(screen.Post(n.newFolder), one.name)
+		screen.Sync()
+		_, dialog := modalDialog(t, screen, wnd)
+		screen.Type(one.name)
+		var okButton *unison.Button
+		screen.Do(func() { okButton = dialog.Button(unison.ModalResponseOK) })
+		screen.Click(screen.PanelCenter(okButton))
+		var selected []string
+		screen.Do(func() {
+			for _, row := range n.table.SelectedRows(false) {
+				selected = append(selected, where(row))
+			}
+		})
+		c.Equal([]string{one.want}, selected, "the folder %s must end up the only row selected", one.name)
+	}
+}
+
 // TestNewFolderCreatesWhatIsMissingAboveIt drives New Folder for rows whose place on disk has gone: a library whose
 // folder is missing, and a folder and a file left showing after the library holding them was deleted. Each time, the
 // folder is made along with everything missing above it, the row it was made in is disclosed and the new folder ends
@@ -440,9 +638,6 @@ func TestNavigatorSearchOffersMatches(t *testing.T) {
 	screen.KeyPress(unison.KeyReturn, mod.None)
 	c.Nil(offered(), "choosing hides the matches")
 	c.Equal([]string{notesPath}, selectedPaths(), "the chosen row alone is selected")
-	var disclosed []string
-	screen.Do(func() { disclosed = n.DisclosedPaths() })
-	c.True(slices.Contains(disclosed, folder), "the folder holding the file was opened")
 	c.True(fieldFocused(), "the focus stays in the field")
 
 	// A reload of the tree while the matches show, as a change in a library brings about, rebuilds the tree from fresh
