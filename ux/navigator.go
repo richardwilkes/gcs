@@ -987,17 +987,20 @@ func (n *Navigator) contentMatches(row *NavigatorNode, text string) bool {
 }
 
 // newSearchMatch returns the match for the row: named as the tree names it, with the icon the tree gives its kind,
-// titled with the names of its ancestors from the root down, and keyed by its path, so that the match survives a
-// Reload, which rebuilds the tree from fresh nodes. A favorited file appears both under Favorites and under its
-// library, so the key tells the two apart.
+// titled with the names of its ancestors from the root down, and keyed by the paths of the row and its ancestors, so
+// that the match survives a Reload, which rebuilds the tree from fresh nodes. The row's own path would not do, since a
+// file can appear in several places: under its library and under Favorites, both as a favorite and within a favorited
+// folder, and under a library rooted within another's folder.
 func (n *Navigator) newSearchMatch(row *NavigatorNode) *searchMatch {
 	var ancestors []string
-	key := "L"
+	var key strings.Builder
+	// Each path is followed by a NUL, which no path holds, so that the Favorites row, whose path is empty, has a key.
+	key.WriteString(row.Path())
+	key.WriteByte(0)
 	for p := row.Parent(); p != nil; p = p.Parent() {
 		ancestors = append(ancestors, p.primaryColumnText())
-		if p.IsFavorites() {
-			key = "F"
-		}
+		key.WriteString(p.Path())
+		key.WriteByte(0)
 	}
 	slices.Reverse(ancestors)
 	ext := gurps.ClosedFolder
@@ -1010,7 +1013,7 @@ func (n *Navigator) newSearchMatch(row *NavigatorNode) *searchMatch {
 		icon:  &unison.DrawableSVG{SVG: gurps.FileInfoFor(ext).SVG, Size: geom.NewSize(size, size)},
 		name:  row.primaryColumnText(),
 		title: strings.Join(ancestors, " / "),
-		key:   key + row.Path(),
+		key:   key.String(),
 	}
 }
 

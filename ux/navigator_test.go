@@ -239,9 +239,10 @@ func TestInvalidationReachesInFlightCacheBuild(t *testing.T) {
 }
 
 // TestNavigatorSearchMatches verifies what a match carries: the name the tree shows for the row, the names of its
-// ancestors from the root down as its title, the icon of its kind, and a key that follows the row's path, so that the
-// dropdown can keep its highlight across a Reload, which rebuilds the tree from fresh node objects. A favorited file
-// appears both under Favorites and under its library, and the two copies must have different keys.
+// ancestors from the root down as its title, the icon of its kind, and a key that follows the row's place in the tree,
+// so that the dropdown can keep its highlight across a Reload, which rebuilds the tree from fresh node objects. A file
+// can appear in several places: under its library and under Favorites, both as a favorite and within a favorited
+// folder, and under a library rooted within another's folder. Each copy must have a key of its own.
 func TestNavigatorSearchMatches(t *testing.T) {
 	c := check.New(t)
 	lib := newTestLibrary(t)
@@ -259,6 +260,17 @@ func TestNavigatorSearchMatches(t *testing.T) {
 	name := path.Join("sub", "Conan"+gurps.SheetExt)
 	underFavorites := NewFileNode(lib, name, favorites)
 	underLibrary := NewFileNode(lib, name, sub)
+	favoriteSub := &NavigatorNode{
+		id:      tid.MustNewTID(kinds.NavigatorDirectory),
+		path:    "sub",
+		library: lib,
+		parent:  favorites,
+	}
+	inFavoriteSub := NewFileNode(lib, name, favoriteSub)
+	nested := library.NewLibrary("Nested", "nested", "", "nested", filepath.Join(lib.Path(false), "sub"))
+	inNested := NewFileNode(nested, "Conan"+gurps.SheetExt,
+		&NavigatorNode{id: tid.MustNewTID(kinds.NavigatorLibrary), library: nested})
+	c.Equal(underLibrary.Path(), inNested.Path(), "sanity: the nested library's copy is the same file")
 	fresh := NewFileNode(lib, name, sub)
 	c.True(underLibrary.ID() != fresh.ID(), "sanity: a rebuilt tree's nodes have fresh IDs")
 
@@ -267,6 +279,10 @@ func TestNavigatorSearchMatches(t *testing.T) {
 	c.Equal("Test / sub", match.title, "the title names the ancestors from the root down")
 	c.Equal(match.key, n.newSearchMatch(fresh).key, "the key follows the path to a fresh node")
 	c.NotEqual(match.key, n.newSearchMatch(underFavorites).key, "the favorites copy is told apart")
+	c.NotEqual(n.newSearchMatch(underFavorites).key, n.newSearchMatch(inFavoriteSub).key,
+		"a favorite is told apart from its copy within a favorited folder")
+	c.NotEqual(match.key, n.newSearchMatch(inNested).key, "the nested library's copy is told apart")
+	c.NotEqual("", n.newSearchMatch(favorites).key, "the Favorites row has a key, so its highlight can be kept")
 	c.Equal("Favorites", n.newSearchMatch(underFavorites).title)
 	c.Equal("", n.newSearchMatch(libraryNode).title, "a root row has no ancestors")
 	icon, ok := match.icon.(*unison.DrawableSVG)

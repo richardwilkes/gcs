@@ -243,7 +243,8 @@ func TestPageSearchRefreshWhileShowing(t *testing.T) {
 }
 
 // Text put in the field while it lacks the focus -- by the jump-to-search command's target, or by the Library Explorer
-// handing over the text a file matched on -- is searched for once the field has the focus.
+// handing over the text a file matched on -- is searched for once the field has the focus. Text handed over to a field
+// that already holds it and the focus, with the matches hidden, offers them again.
 func TestPageSearchShowsMatchesOnFocus(t *testing.T) {
 	c := check.New(t)
 	f := startPageSearch(t, c, func(entity *gurps.Entity) []*gurps.Trait {
@@ -269,6 +270,11 @@ func TestPageSearchShowsMatchesOnFocus(t *testing.T) {
 	var text string
 	f.screen.Do(func() { text = f.search.field.Text() })
 	c.Equal("able", text)
+
+	f.screen.KeyPress(unison.KeyEscape, mod.None)
+	c.Nil(f.offered())
+	f.screen.Do(func() { f.sheet.receiveSearchText("able") })
+	c.NotNil(f.offered(), "handing over the text the focused field holds offers the matches again")
 }
 
 // Choosing a match inside a closed container scrolls the row into view even when disclosing the container grows the

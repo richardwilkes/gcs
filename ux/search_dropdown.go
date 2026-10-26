@@ -72,9 +72,11 @@ func newSearchDropdown(findMatches func(text string) []*searchMatch, choose func
 	}
 	s.field.KeyDownCallback = s.keyDown
 	// Text put in the field while it lacked the focus, by the Library Explorer or the user, is searched for once it
-	// has it, which is also when the rows can first be shown.
+	// has it, which is also when the rows can first be shown. The field's own callback, which switches it to its focus
+	// border, runs first.
+	gainedFocus := s.field.GainedFocusCallback
 	s.field.GainedFocusCallback = func() {
-		s.field.DefaultFocusGained()
+		gainedFocus()
 		s.showMatches()
 	}
 	return s

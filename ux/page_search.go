@@ -59,10 +59,22 @@ type searchTextReceiver interface {
 	receiveSearchText(text string)
 }
 
-// receiveSearchText puts the text in the search field and gives it the focus, which shows the matches.
+// receiveSearchText puts the text in the search field and gives it the focus, offering the matches. Each of those
+// offers them only when it changes something, so a field that already held both, with its matches hidden by Escape or
+// by its window losing the focus, has them offered here.
 func (pv *pageView) receiveSearchText(text string) {
-	pv.search.field.SetText(text)
-	pv.search.field.RequestFocus()
+	field := pv.search.field
+	if !field.Focused() {
+		// The text is searched for once the field gains the focus; see newSearchDropdown.
+		field.SetText(text)
+		field.RequestFocus()
+		return
+	}
+	before := field.Text()
+	field.SetText(text)
+	if field.Text() == before && !pv.search.suggestions.Showing() {
+		pv.search.showMatches()
+	}
 }
 
 // search adds the rows of the list that match the text to the matches, but only when the list is on the page. A list

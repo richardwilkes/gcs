@@ -142,6 +142,24 @@ func TestSearchMatchCellShowsTheTitleAndIcon(t *testing.T) {
 	c.True(label.Drawable == icon, "a match with an icon shows it")
 }
 
+// The search field switches to the focus border while it holds the focus, as other fields do, and still searches for
+// the text it holds when it gains the focus.
+func TestSearchFieldShowsTheFocusBorder(t *testing.T) {
+	c := check.New(t)
+	walks := 0
+	s := newSearchDropdown(func(string) []*searchMatch {
+		walks++
+		return nil
+	}, func(*searchMatch) {})
+	unfocused := s.field.Border()
+	s.field.SetText("findable")
+	s.field.GainedFocusCallback()
+	c.True(s.field.Border() != unfocused, "gaining the focus shows the focus border")
+	c.Equal(1, walks, "and searches for the text")
+	s.field.LostFocusCallback()
+	c.True(s.field.Border() == unfocused, "losing the focus puts the unfocused border back")
+}
+
 // The lists are only walked while the matches can be seen: not for an empty search, not for text put in the field while
 // it lacks the focus, which can't show them, and not by the refresh every update performs while they are hidden. The
 // walk has every row of every list derive its children and the data of its cells afresh, which was most of what an
