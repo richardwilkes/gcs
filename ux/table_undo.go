@@ -182,13 +182,18 @@ func rowsCarryGrants[T gurps.Node[T]](rows []*Node[T]) bool {
 // the rows they put in those lists along with them, so an undo of the edit has to put those lists back as well, or the
 // restored grants make fresh rows at the end of the lists in place of the ones the user had placed and switched.
 func grantRowListsOf(owner any, except string) []tableRestorer {
+	return grantRowListsSkipping(owner, func(refKey string) bool { return except != "" && refKey == except })
+}
+
+// grantRowListsSkipping is grantRowListsOf for the lists other than those whose reference keys skip returns true for.
+func grantRowListsSkipping(owner any, skip func(refKey string) bool) []tableRestorer {
 	provider, ok := owner.(grantRowListsProvider)
 	if !ok || xreflect.IsNil(provider) {
 		return nil
 	}
 	var restorers []tableRestorer
 	for _, list := range provider.grantRowLists() {
-		if xreflect.IsNil(list) || (except != "" && list.refKey() == except) {
+		if xreflect.IsNil(list) || skip(list.refKey()) {
 			continue
 		}
 		if restorer := list.undoData(); restorer != nil {

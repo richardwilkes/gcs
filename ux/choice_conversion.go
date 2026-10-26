@@ -42,6 +42,10 @@ type choiceConversionList[T gurps.Node[T], D gurps.EditorData[T]] struct {
 	// modifier container may change. They are taken once for the whole conversion, since targets may share a tree.
 	optionsBefore map[gurps.GeneralModifier]bool
 	optionsAfter  map[gurps.GeneralModifier]bool
+	// listsBefore and listsAfter hold the undo data of the lists a grant can put rows in, since converting a container
+	// that carries grants to a group drops them; see grantRowListsOf.
+	listsBefore []tableRestorer
+	listsAfter  []tableRestorer
 }
 
 // apply puts the targets back the way they were before the conversion when undo is true, and the way they were after it
@@ -55,6 +59,11 @@ func (c *choiceConversionList[T, D]) apply(undo bool) {
 		ids[one.target.ID()] = true
 	}
 	discardEditorsFor(ids)
+	if undo {
+		restoreGrantRowLists(c.listsBefore)
+	} else {
+		restoreGrantRowLists(c.listsAfter)
+	}
 	for _, one := range c.list {
 		keeper, keeps := any(one.target).(containerConversionStateKeeper)
 		if undo {
@@ -216,6 +225,9 @@ func convertContainerKinds[T gurps.Node[T], D gurps.EditorData[T]](owner Rebuild
 	}
 	newData := newEditorData[T, D]
 	edits := &choiceConversionList[T, D]{owner: owner, optionsBefore: modifierEnabledStates(targets)}
+	if carriesGrants(targets) {
+		edits.listsBefore = grantRowListsOf(owner, "")
+	}
 	for _, target := range targets {
 		conv := &choiceConversion[T, D]{
 			target:       target,
@@ -235,6 +247,9 @@ func convertContainerKinds[T gurps.Node[T], D gurps.EditorData[T]](owner Rebuild
 		edits.list = append(edits.list, conv)
 	}
 	edits.optionsAfter = modifierEnabledStates(targets)
+	if len(edits.listsBefore) != 0 {
+		edits.listsAfter = grantRowListsOf(owner, "")
+	}
 	return edits
 }
 

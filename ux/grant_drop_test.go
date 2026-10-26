@@ -20,6 +20,7 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/container"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/feature"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/grantmerge"
 	"github.com/richardwilkes/gcs/v5/model/jio"
@@ -1122,13 +1123,13 @@ func TestDeletingContainerKeepsGrantedRows(t *testing.T) {
 	c.Equal(1, editors, "and so does its editor")
 }
 
-// newTestSheetWithEquipmentGrant returns a sheet holding a piece of carried equipment that grants the skill Brawling,
-// along with the carrier and the granted row.
-func newTestSheetWithEquipmentGrant(t *testing.T) (sheet *Sheet, carrier *gurps.Equipment, granted *gurps.Skill) {
+// newTestSheetWithEquipmentGrant returns a sheet holding a piece of carried equipment, a physical container when
+// physical is set, that grants the skill Brawling, along with the carrier and the granted row.
+func newTestSheetWithEquipmentGrant(t *testing.T, physical bool) (sheet *Sheet, carrier *gurps.Equipment, granted *gurps.Skill) {
 	t.Helper()
 	sheet = newTestSheetForTemplate(t)
 	entity := sheet.Entity()
-	carrier = gurps.NewEquipment(entity, nil, false)
+	carrier = gurps.NewEquipment(entity, nil, physical)
 	carrier.Name = "Goggles"
 	g := gurps.NewGrant(feature.GrantSkill)
 	g.SetItem(newTestSkill("Brawling", fxp.One, nil), gurps.LibraryFile{})
@@ -1146,13 +1147,16 @@ func newTestSheetWithEquipmentGrant(t *testing.T) (sheet *Sheet, carrier *gurps.
 // TestUndoOfTakingGrantsAwayRestoresGrantedRowInOtherList checks that undoing an edit that takes a carrier's grants
 // away -- deleting the carrier, applying an editor or a sync with its source that removes the grant, disabling the
 // carrier, dragging, moving or organizing it into a disabled container, moving or dragging it to the other equipment
-// list or selling it -- brings back the row the grant put in the skills list as the row it was, where the user had
-// moved it, rather than having the restored grant make a fresh one at the end of the list.
+// list, selling it, converting it to a group or disabling the ancestry holding it for one copied onto the sheet --
+// brings back the row the grant put in the skills list as the row it was, where the user had moved it, rather than
+// having the restored grant make a fresh one at the end of the list.
 func TestUndoOfTakingGrantsAwayRestoresGrantedRowInOtherList(t *testing.T) {
 	for _, tc := range []struct {
 		name string
-		// equipment is set when the carrier is a piece of carried equipment rather than a trait.
+		// equipment is set when the carrier is a piece of carried equipment rather than a trait, and container when
+		// that is a physical container.
 		equipment bool
+		container bool
 		edit      func(t *testing.T, sheet *Sheet, trait *gurps.Trait, eqp *gurps.Equipment)
 	}{
 		{name: "delete selection", edit: func(_ *testing.T, sheet *Sheet, trait *gurps.Trait, _ *gurps.Equipment) {
@@ -1250,6 +1254,23 @@ func TestUndoOfTakingGrantsAwayRestoresGrantedRowInOtherList(t *testing.T) {
 			to.SetSelectionMap(map[tid.TID]bool{eqp.ID(): true})
 			didDropCallback(undo, from, to, true)
 		}},
+		{name: "convert to a group", equipment: true, container: true, edit: func(t *testing.T, sheet *Sheet, _ *gurps.Trait, eqp *gurps.Equipment) {
+			// A group can't hold features, so converting a container to one drops its grant.
+			uxtest.SwapForTest(t, &askToConvertChoiceContainers, func(_, _ string) bool { return true })
+			selectGrantingItem(sheet.Skills.Table, eqp)
+			table := sheet.CarriedEquipment.Table
+			table.PerformCmd(table, ConvertToGroupContainerItemID)
+		}},
+		{name: "copy an ancestry, disabling the one holding it", edit: func(t *testing.T, sheet *Sheet, trait *gurps.Trait, _ *gurps.Equipment) {
+			// The carrier's container becomes the sheet's ancestry, which answering the question disables.
+			ancestry := trait.Parent()
+			ancestry.ContainerType = container.Ancestry
+			ancestry.Ancestry = "Human"
+			sheet.Rebuild(true)
+			uxtest.SwapForTest(t, &askToDisableExistingAncestry, func(_ promptOperation, _, _ []string) bool { return true })
+			uxtest.SwapForTest(t, &askToRandomizeAgain, func(_ promptOperation) bool { return false })
+			copySelectionTo(newTestTemplateWithTraits(newAncestryTrait("Human")).Traits.Table, []*Sheet{sheet})
+		}},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			c := check.New(t)
@@ -1258,7 +1279,7 @@ func TestUndoOfTakingGrantsAwayRestoresGrantedRowInOtherList(t *testing.T) {
 			var eqp *gurps.Equipment
 			var granted *gurps.Skill
 			if tc.equipment {
-				sheet, eqp, granted = newTestSheetWithEquipmentGrant(t)
+				sheet, eqp, granted = newTestSheetWithEquipmentGrant(t, tc.container)
 			} else {
 				sheet, trait, granted, _ = newTestSheetWithGrant(t)
 			}

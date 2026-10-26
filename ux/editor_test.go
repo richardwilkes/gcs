@@ -417,8 +417,9 @@ func TestReadOnlyEditor(t *testing.T) {
 
 // An editor open on a granted row follows the row through the recalculations that reconcile the sheet's grants: one
 // that remakes the row from a changed grant, as a new object under the same ID, has the editor show the new object,
-// closing the editors opened from it on the old object's modifiers, and one that takes the row off the sheet closes the
-// editor, whether the sheet is rebuilt or only marked modified.
+// closing the editors opened from it on the old object's modifiers, one that takes the row off the sheet closes the
+// editor, whether the sheet is rebuilt or only marked modified, and one that gives the row the details of another grant
+// in place has the editor show them, leaving the editors opened from it open.
 func TestGrantedRowEditorFollowsItsRow(t *testing.T) {
 	c := check.New(t)
 	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
@@ -504,6 +505,54 @@ func TestGrantedRowEditorFollowsItsRow(t *testing.T) {
 		sheet.Rebuild(true)
 		c.Nil(granted(), "precondition: the trait leaves the sheet with its grant")
 		c.False(isOpen(e), "the editor closes with the row")
+	})
+
+	// Carry worn goggles granting Night Vision 1, which stand in for the unequipped spare goggles granting Night Vision
+	// 3, and open the editor on the row.
+	var spare *gurps.Equipment
+	var row *gurps.Trait
+	screen.Do(func() {
+		entity := sheet.Entity()
+		goggles := func(name string, level fxp.Int) *gurps.Equipment {
+			eqp := gurps.NewEquipment(entity, nil, false)
+			eqp.Name = name
+			item := newGrantTestTrait("Night Vision", level)
+			item.Modifiers = []*gurps.TraitModifier{gurps.NewTraitModifier(nil, nil, false)}
+			grant := gurps.NewGrant(feature.GrantTrait)
+			grant.SetItem(item, gurps.LibraryFile{})
+			eqp.Features = gurps.Features{grant}
+			return eqp
+		}
+		spare = goggles("Spare Goggles", fxp.Three)
+		spare.Equipped = false
+		entity.CarriedEquipment = []*gurps.Equipment{spare, goggles("Worn Goggles", fxp.One)}
+		sheet.Rebuild(true)
+		if row = granted(); row == nil {
+			t.Fatal("precondition: the worn goggles put Night Vision on the sheet")
+		}
+		e = EditTrait(sheet, row)
+		c.Equal(fxp.One, e.editorData.Levels, "precondition: at the worn goggles' level")
+		EditTraitModifier(e, row.Modifiers[0])
+		modifierEditor = nil
+		for _, d := range AllDockables() {
+			if _, ok := d.AsPanel().Self.(*editor[*gurps.TraitModifier, *gurps.TraitModifierEditData]); ok {
+				modifierEditor = d
+			}
+		}
+		if modifierEditor == nil {
+			t.Fatal("precondition: the modifier's editor opened")
+		}
+	})
+
+	// Equip the spare goggles, which gives the row their level in place.
+	screen.Do(func() {
+		spare.Equipped = true
+		sheet.Rebuild(true)
+		c.True(granted() == row, "precondition: the row stays the object it was")
+		c.Equal(fxp.Three, row.Levels, "precondition: at the spare goggles' level")
+		c.True(isOpen(e), "the editor stays open")
+		c.Equal(fxp.Three, e.editorData.Levels, "showing the level the row took")
+		c.True(isOpen(modifierEditor), "as does the editor opened from it, whose object is the same")
 	})
 }
 

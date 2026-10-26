@@ -109,12 +109,13 @@ func displayEditor[N gurps.Node[N], D gurps.EditorData[N]](owner Rebuildable, ta
 }
 
 // followRow keeps an editor open on one of a sheet's granted rows on that row after the sheet's grants were reconciled,
-// which remakes a granted row whose grant changed as a new object under the row's ID (see grantReconciler.replace) and
-// takes the rows whose grants are gone off the sheet: the editor shows the new object, or closes with the row. Only a
-// granted row changes this way, and only a read-only editor is open on one, so no pending change is lost. The editors
-// opened from it, on the old object's modifiers and weapons, close with it either way, since those objects are gone.
-// Editors on the sheet's other rows are left alone, since what takes those rows off the sheet closes them itself (see
-// CloseID and discardEditorsFor).
+// which remakes a granted row whose grant changed as a new object under the row's ID (see grantReconciler.replace),
+// rewrites a row's details in place when which grant gives them changes, as when one stands in for another (see
+// takeGrantDetails), and takes the rows whose grants are gone off the sheet: the editor shows the new object or the
+// row's new details, or closes with the row. Only a granted row changes this way, and only a read-only editor is open
+// on one, so no pending change is lost. The editors opened from it, on the old object's modifiers and weapons, close
+// with a new object, since those objects are gone, and stay open otherwise. Editors on the sheet's other rows are left
+// alone, since what takes those rows off the sheet closes them itself (see CloseID and discardEditorsFor).
 func (e *editor[N, D]) followRow(entity *gurps.Entity) {
 	if !gurps.IsGranted(e.target) {
 		return
@@ -139,27 +140,32 @@ func (e *editor[N, D]) followRow(entity *gurps.Entity) {
 		}
 		return false
 	}, false, false, rows...)
-	if current == e.target {
-		return
-	}
 	if xreflect.IsNil(current) {
 		e.discardAndCloseAll()
 		return
 	}
-	traverseGroup(e, func(target GroupedCloser) bool {
-		if sub, ok := target.(interface{ shell() *editorShell }); ok {
-			sub.shell().discardAndCloseAll()
+	data := newEditorData[N, D](current)
+	if current == e.target {
+		if sameEditorData(e.beforeData, data) {
+			return
 		}
-		return false
-	})
-	// Closing a sub-editor gives the focus to the list it was opened from, which the rebuild replaces.
+	} else {
+		traverseGroup(e, func(target GroupedCloser) bool {
+			if sub, ok := target.(interface{ shell() *editorShell }); ok {
+				sub.shell().discardAndCloseAll()
+			}
+			return false
+		})
+	}
+	// The rebuild replaces the content, which may hold the focus: closing a sub-editor gives it to the list the
+	// sub-editor was opened from.
 	var focus *contentFocus
 	if unison.AncestorIsOrSelf(e.Window().CurrentFocus(), e.content) {
 		focus = e.noteFocus()
 		e.releaseContentFocus()
 	}
 	e.target = current
-	e.beforeData = newEditorData[N, D](current)
+	e.beforeData = data
 	e.editorData = newEditorData[N, D](current)
 	var none N
 	e.nameablesScratch = none
@@ -393,21 +399,24 @@ func (e *editor[N, D]) isModified() bool {
 	if e.sourceCleared {
 		return true
 	}
-	d1, err := gurps.MarshalWithoutCalc(e.beforeData)
+	return !sameEditorData(e.beforeData, e.editorData)
+}
+
+// sameEditorData returns true if the two copies of an editor's data hold the same values, the IDs within them aside.
+// Copies that can't be encoded count as the same.
+func sameEditorData[D any](d1, d2 D) bool {
+	b1, err := gurps.MarshalWithoutCalc(d1)
 	if err != nil {
 		errs.Log(err)
-		return false
+		return true
 	}
-	var d2 []byte
-	d2, err = gurps.MarshalWithoutCalc(e.editorData)
-	if err != nil {
+	var b2 []byte
+	if b2, err = gurps.MarshalWithoutCalc(d2); err != nil {
 		errs.Log(err)
-		return false
+		return true
 	}
 	none := []byte{}
-	d1 = pruneIDFields.ReplaceAll(d1, none)
-	d2 = pruneIDFields.ReplaceAll(d2, none)
-	return !bytes.Equal(d1, d2)
+	return bytes.Equal(pruneIDFields.ReplaceAll(b1, none), pruneIDFields.ReplaceAll(b2, none))
 }
 
 func (e *editor[N, D]) Modified() bool {

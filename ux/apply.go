@@ -151,6 +151,7 @@ type applyPartOps interface {
 	place(merge bool)
 	clearPreconfigured()
 	undoData() tableRestorer
+	refKey() string
 	changed() (unison.Paneler, Rebuildable)
 }
 
@@ -212,6 +213,11 @@ func (a *applyParts) promptForModifiers(op promptOperation) bool {
 		done += asked
 		return ok
 	})
+}
+
+// goInto returns true if one of the parts goes into the table with the reference key.
+func (a *applyParts) goInto(refKey string) bool {
+	return !a.all(func(part applyPartOps) bool { return part.refKey() != refKey })
 }
 
 // pickerContainers returns the names of the containers among the parts' rows that carry template picker data.
@@ -347,6 +353,14 @@ func (p *applyPart[T]) undoData() tableRestorer {
 	return nil
 }
 
+// refKey returns the reference key of the table the rows go into, or "" when there is none.
+func (p *applyPart[T]) refKey() string {
+	if p.table == nil {
+		return ""
+	}
+	return p.table.RefKey
+}
+
 // changed returns the table the rows went into, along with its owner, if any, for reporting the change (see
 // restoredTables). A row that merged into one already present changed that row, so the table is returned even when no
 // row was placed; nothing is returned only when there were no rows at all.
@@ -403,7 +417,10 @@ func applyTransfer(destination unison.Paneler, parts *applyParts, opts applyOpti
 			mgr = provider.UndoManager()
 		}
 	}
-	before := newApplyUndoEditData(sheet, parts)
+	// Disabling the existing ancestries takes away the grants of the traits within them, and with them the rows those
+	// put in the sheet's lists, so the lists no part goes into are part of the edit as well; see grantRowListsOf.
+	grantRows := disableExistingAncestries && carriesGrants(gurps.ActiveAncestryTraits(entity.Traits))
+	before := newApplyUndoEditData(sheet, parts, grantRows)
 	if opts.clearTemplateOnly {
 		parts.each(applyPartOps.clearTemplateOnly)
 	}
@@ -448,7 +465,7 @@ func applyTransfer(destination unison.Paneler, parts *applyParts, opts applyOpti
 			RedoFunc:   func(e *unison.UndoEdit[*applyUndoEditData]) { e.AfterData.Apply() },
 			AbsorbFunc: func(_ *unison.UndoEdit[*applyUndoEditData], _ unison.Undoable) bool { return false },
 			BeforeData: before,
-			AfterData:  newApplyUndoEditData(sheet, parts),
+			AfterData:  newApplyUndoEditData(sheet, parts, grantRows),
 		})
 	}
 	return true
@@ -532,7 +549,8 @@ Continuing removes the choices, leaving the rows otherwise as they are.`, nameLi
 }
 
 // applyUndoEditData holds what applyTransfer can change: the tables the parts go into and, for a character sheet, the
-// randomized profile fields and the body type.
+// randomized profile fields, the body type and, when disabling its ancestries takes grants away, its other lists that a
+// grant can put rows in.
 type applyUndoEditData struct {
 	sheet    *Sheet
 	profile  gurps.ProfileRandom
@@ -541,8 +559,9 @@ type applyUndoEditData struct {
 }
 
 // newApplyUndoEditData collects the undo edit data for the tables the parts go into and, when sheet isn't nil, for the
-// character sheet.
-func newApplyUndoEditData(sheet *Sheet, parts *applyParts) *applyUndoEditData {
+// character sheet, along with, when grantRows is also set, the sheet's lists that a grant can put rows in and that no
+// part goes into.
+func newApplyUndoEditData(sheet *Sheet, parts *applyParts, grantRows bool) *applyUndoEditData {
 	data := &applyUndoEditData{sheet: sheet}
 	if sheet != nil {
 		entity := sheet.Entity()
@@ -556,6 +575,9 @@ func newApplyUndoEditData(sheet *Sheet, parts *applyParts) *applyUndoEditData {
 			data.tables = append(data.tables, restorer)
 		}
 	})
+	if grantRows {
+		data.tables = append(data.tables, grantRowListsSkipping(sheet, parts.goInto)...)
+	}
 	return data
 }
 
