@@ -481,22 +481,34 @@ func (s *SkillDefault) bestMatchingSkill(entity *Entity, replacements map[string
 	return BestSkillIn(s.matchingSkills(entity, replacements, requirePoints, excludes), excludes)
 }
 
-// bestFastMatchingSkill returns the skill bestFast() scores this SkillDefault by: the one with the highest
-// already-calculated level among those it selects whose tech level satisfies WhenTL, the first one encountered winning
-// a tie.
+// bestFastMatchingSkill returns the skill bestFast() scores this SkillDefault by; see bestFastMatch.
 func (s *SkillDefault) bestFastMatchingSkill(entity *Entity, replacements map[string]string, requirePoints bool, excludes map[string]bool) *Skill {
-	var best *Skill
-	level := fxp.Min
+	sk, _ := s.bestFastMatch(entity, replacements, requirePoints, excludes)
+	return sk
+}
+
+// bestFastMatch returns the skill bestFast() scores this SkillDefault by, along with its level, or nil and fxp.Min if
+// there is none: the one with the highest already-calculated level among those it selects whose tech level satisfies
+// WhenTL, the first one encountered winning a tie. While the prerequisites of an item carrying a grant are judged, each
+// level is instead computed as they see it, as best computes it, since the recorded one holds what the grant gave; see
+// Entity.JudgingPrereqsOf.
+func (s *SkillDefault) bestFastMatch(entity *Entity, replacements map[string]string, requirePoints bool, excludes map[string]bool) (best *Skill, level fxp.Int) {
+	level = fxp.Min
+	judging := entity != nil && entity.carriesGrant(entity.judging)
 	for _, sk := range s.matchingSkills(entity, replacements, requirePoints, excludes) {
 		if !s.isTLPermitted(entity, sk.TL()) {
 			continue
 		}
-		if level < sk.LevelData.Level {
+		candidate := sk.LevelData.Level
+		if judging {
+			candidate = sk.CalculateLevel(excludes).Level
+		}
+		if level < candidate {
 			best = sk
-			level = sk.LevelData.Level
+			level = candidate
 		}
 	}
-	return best
+	return best, level
 }
 
 // best returns the highest level among the skills this SkillDefault selects whose tech level satisfies WhenTL, or
@@ -533,7 +545,8 @@ func (s *SkillDefault) SkillLevelFast(entity *Entity, replacements map[string]st
 		}
 		return s.finalLevel(fxp.FromInteger(level))
 	case ParryID, BlockID, SkillID:
-		return s.fastLevelFromSkill(entity, s.bestFastMatchingSkill(entity, replacements, requirePoints, excludes))
+		_, level := s.bestFastMatch(entity, replacements, requirePoints, excludes)
+		return s.fastLevelFromSkill(entity, level)
 	default:
 		if !s.isTLPermitted(entity, "") {
 			return fxp.Min
@@ -588,14 +601,13 @@ func defenseLevelFromSkill(skillLevel, defenseBonus fxp.Int) fxp.Int {
 	return skillLevel.Div(fxp.Two).Floor() + fxp.Three + defenseBonus
 }
 
-// fastLevelFromSkill returns the level SkillLevelFast gives a skill-based default when sk is the skill
-// bestFastMatchingSkill picked for it: the skill's recorded level, turned into a defense level for a parry- or
-// block-type default, plus the default's modifier. A nil skill, meaning none matched, yields fxp.Min.
-func (s *SkillDefault) fastLevelFromSkill(entity *Entity, sk *Skill) fxp.Int {
-	if sk == nil {
+// fastLevelFromSkill returns the level SkillLevelFast gives a skill-based default when level is that of the skill
+// bestFastMatch picked for it: the level, turned into a defense level for a parry- or block-type default, plus the
+// default's modifier. fxp.Min, meaning no skill matched, yields fxp.Min.
+func (s *SkillDefault) fastLevelFromSkill(entity *Entity, level fxp.Int) fxp.Int {
+	if level == fxp.Min {
 		return fxp.Min
 	}
-	level := sk.LevelData.Level
 	if t := s.Type(); t == ParryID || t == BlockID {
 		level = defenseLevelFromSkill(level, entity.defenseBonus(t))
 	}
@@ -603,10 +615,8 @@ func (s *SkillDefault) fastLevelFromSkill(entity *Entity, sk *Skill) fxp.Int {
 }
 
 func (s *SkillDefault) bestFast(entity *Entity, replacements map[string]string, requirePoints bool, excludes map[string]bool) fxp.Int {
-	if sk := s.bestFastMatchingSkill(entity, replacements, requirePoints, excludes); sk != nil {
-		return sk.LevelData.Level
-	}
-	return fxp.Min
+	_, level := s.bestFastMatch(entity, replacements, requirePoints, excludes)
+	return level
 }
 
 func (s *SkillDefault) finalLevel(level fxp.Int) fxp.Int {

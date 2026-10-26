@@ -161,12 +161,15 @@ type Entity struct {
 	judging any
 	// scriptsForPrereqs is the depth of the computations in progress whose scripts run as the prerequisites being
 	// judged see the sheet while the item judged carries a grant, without which they see it whole: the attribute values
-	// read for them (see attributeForPrereqs) and the script prerequisites themselves (see ScriptPrereq.Evaluate); see
-	// resolveScript.
+	// read for them (see attributeForPrereqs), the pool thresholds found for them (see Attribute.CurrentThreshold) and
+	// the script prerequisites themselves (see ScriptPrereq.Evaluate); see resolveScript.
 	scriptsForPrereqs int
 	// judgedDefaults holds the defaults picked for the skills, by skill and excludes, as the prerequisites being judged
 	// see the sheet, while the item judged carries a grant; see Skill.defaultExcept.
 	judgedDefaults map[judgedDefaultKey]*SkillDefault
+	// judgedThresholds holds the current thresholds of the pools, by attribute, as the prerequisites being judged see
+	// them, while the item judged carries a grant; see Attribute.CurrentThreshold.
+	judgedThresholds map[*Attribute]*PoolThreshold
 }
 
 // NewEntityFromFile loads an Entity from a file.
@@ -1285,28 +1288,34 @@ func (e *Entity) WealthNotCarried() fxp.Int {
 	return value
 }
 
-// StrikingStrength returns the adjusted ST for striking purposes.
+// StrikingStrength returns the adjusted ST for striking purposes. While the prerequisites of an item carrying a grant
+// are judged, it is the ST they see; see strengthFor.
 func (e *Entity) StrikingStrength() fxp.Int {
-	return e.derivedStrength(StrikingStrengthID, e.StrikingStrengthBonus, e.ResolveAttributeCurrent)
+	return e.strengthFor(StrikingStrengthID, stlimit.StrikingOnly, e.StrikingStrengthBonus)
 }
 
-// LiftingStrength returns the adjusted ST for lifting purposes.
+// LiftingStrength returns the adjusted ST for lifting purposes. While the prerequisites of an item carrying a grant
+// are judged, it is the ST they see; see strengthFor.
 func (e *Entity) LiftingStrength() fxp.Int {
-	return e.derivedStrength(LiftingStrengthID, e.LiftingStrengthBonus, e.ResolveAttributeCurrent)
+	return e.strengthFor(LiftingStrengthID, stlimit.LiftingOnly, e.LiftingStrengthBonus)
 }
 
-// ThrowingStrength returns the adjusted ST for throwing purposes.
+// ThrowingStrength returns the adjusted ST for throwing purposes. While the prerequisites of an item carrying a grant
+// are judged, it is the ST they see; see strengthFor.
 func (e *Entity) ThrowingStrength() fxp.Int {
-	return e.derivedStrength(ThrowingStrengthID, e.ThrowingStrengthBonus, e.ResolveAttributeCurrent)
+	return e.strengthFor(ThrowingStrengthID, stlimit.ThrowingOnly, e.ThrowingStrengthBonus)
 }
 
-// strengthForPrereqs returns the adjusted ST that StrikingStrength, LiftingStrength or ThrowingStrength returns, given
-// the ID of its dedicated strength attribute and the limitation of the ST bonuses it adds, as the prerequisites being
-// judged see it: with the bonuses from what the grants of the item judged put on the sheet left out; see
-// JudgingPrereqsOf.
-func (e *Entity) strengthForPrereqs(attrID string, limitation stlimit.Option) fxp.Int {
-	return e.derivedStrength(attrID, e.AttributeBonusFor(StrengthID, limitation, nil).Floor(),
-		e.resolveAttributeCurrentForPrereqs)
+// strengthFor returns the adjusted ST that StrikingStrength, LiftingStrength or ThrowingStrength returns, given the ID
+// of its dedicated strength attribute, the limitation of the ST bonuses it adds and their total. While the
+// prerequisites of an item carrying a grant are judged, the ST and those bonuses are taken without the bonuses from
+// what the grant put on the sheet; see JudgingPrereqsOf.
+func (e *Entity) strengthFor(attrID string, limitation stlimit.Option, bonus fxp.Int) fxp.Int {
+	if e.carriesGrant(e.judging) {
+		return e.derivedStrength(attrID, e.AttributeBonusFor(StrengthID, limitation, nil).Floor(),
+			e.resolveAttributeCurrentForPrereqs)
+	}
+	return e.derivedStrength(attrID, bonus, e.ResolveAttributeCurrent)
 }
 
 // sizeModifierForPrereqs returns the adjusted size modifier as the prerequisites being judged see it: with the bonuses
@@ -1430,19 +1439,19 @@ func (e *Entity) CostReductionFor(attributeID string) fxp.Int {
 // total read, whatever reads them (see judgingOr), so that an item never meets its own prerequisites with what it
 // grants. Scripts see the sheet whole, since what they compute is kept for the rest of the pass (see resolveScript),
 // except, when exclude carries a grant, the script prerequisites themselves and the scripts giving the attributes their
-// bases while the prerequisites read them, which run afresh, with the rows left out hidden from them too (see
-// excludedWhileJudging), unless already stopped once for running too long as those prerequisites see the sheet; see
-// ScriptPrereq.Evaluate and attributeForPrereqs.
+// bases and the pools their thresholds while the prerequisites read them, which run afresh, with the rows left out
+// hidden from them too (see excludedWhileJudging), unless already stopped once for running too long as those
+// prerequisites see the sheet; see ScriptPrereq.Evaluate, attributeForPrereqs and Attribute.CurrentThreshold.
 func (e *Entity) JudgingPrereqsOf(exclude any, fn func()) {
 	if e == nil || exclude == e.judging {
-		// Judging the same item again, as its script prerequisites do inside its list, shares the defaults picked so
-		// far; see Skill.defaultExcept.
+		// Judging the same item again, as its script prerequisites do inside its list, shares the defaults picked and
+		// the thresholds found so far; see Skill.defaultExcept and Attribute.CurrentThreshold.
 		fn()
 		return
 	}
-	saved, savedDefaults := e.judging, e.judgedDefaults
-	e.judging, e.judgedDefaults = exclude, nil
-	defer func() { e.judging, e.judgedDefaults = saved, savedDefaults }()
+	saved, savedDefaults, savedThresholds := e.judging, e.judgedDefaults, e.judgedThresholds
+	e.judging, e.judgedDefaults, e.judgedThresholds = exclude, nil, nil
+	defer func() { e.judging, e.judgedDefaults, e.judgedThresholds = saved, savedDefaults, savedThresholds }()
 	fn()
 }
 
@@ -1617,14 +1626,14 @@ func (e *Entity) TraitBonusFor(name string, tags []string, tooltip *xbytes.Inser
 
 // addWeaponWithSkillBonusesFor hands the weapon bonuses that select weapons by the skill they are used with and match
 // the given skill, usage, damage type and tags to add. An empty name means the weapon uses no skill, which only a name
-// criterion that would select any skill matches.
+// criterion that would select any skill matches. The bonuses bonusExcluded leaves out are passed over.
 func (e *Entity) addWeaponWithSkillBonusesFor(name, specialization, usage, damageType string, tags []string, add func(*WeaponBonus)) {
 	// The relative skill level takes a walk of the skills to find, so it is only found once a bonus that cares about
 	// it has matched on everything else.
 	var rsl fxp.Int
 	rslResolved := false
 	for _, bonus := range e.features.weaponBonuses {
-		if bonus.SelectionType != wsel.WithRequiredSkill {
+		if bonus.SelectionType != wsel.WithRequiredSkill || e.bonusExcluded(bonus) {
 			continue
 		}
 		replacements := bonusReplacements(bonus)
@@ -1660,22 +1669,28 @@ func (e *Entity) hasWeaponBonusesBySkill() bool {
 }
 
 // relativeSkillLevel returns the best relative level among the skills with the given name and specialization, or
-// fxp.Min when there are none.
+// fxp.Min when there are none. While the prerequisites of an item carrying a grant are judged, each is computed as they
+// see it, since the recorded one holds what the grant gave; see JudgingPrereqsOf.
 func (e *Entity) relativeSkillLevel(name, specialization string) fxp.Int {
 	rsl := fxp.Min
+	judging := e.carriesGrant(e.judging)
 	for _, sk := range e.SkillNamed(name, specialization, true, nil) {
-		if rsl < sk.LevelData.RelativeLevel {
-			rsl = sk.LevelData.RelativeLevel
+		level := sk.LevelData.RelativeLevel
+		if judging {
+			level = sk.CalculateLevel(nil).RelativeLevel
+		}
+		if rsl < level {
+			rsl = level
 		}
 	}
 	return rsl
 }
 
 // addNamedWeaponBonusesFor hands the weapon bonuses that select weapons by name and match the given weapon, usage,
-// damage type and tags to add.
+// damage type and tags to add. The bonuses bonusExcluded leaves out are passed over.
 func (e *Entity) addNamedWeaponBonusesFor(w *Weapon, usageQualifier, damageType string, tagsQualifier []string, add func(*WeaponBonus)) {
 	for _, bonus := range e.features.weaponBonuses {
-		if bonus.SelectionType == wsel.WithName {
+		if bonus.SelectionType == wsel.WithName && !e.bonusExcluded(bonus) {
 			replacements := bonusReplacements(bonus)
 			if w.matchesName(bonus.NameCriteria, &bonus.WeaponOwnerCriteria, replacements) &&
 				bonus.SpecializationCriteria.Matches(replacements, usageQualifier) &&
@@ -1955,7 +1970,7 @@ func (e *Entity) ShiftSlightly() fxp.Weight {
 // taken from the cache nor kept in it; see JudgingPrereqsOf.
 func (e *Entity) BasicLift() fxp.Weight {
 	if e.carriesGrant(e.judging) {
-		return e.BasicLiftForST(e.strengthForPrereqs(LiftingStrengthID, stlimit.LiftingOnly))
+		return e.BasicLiftForST(e.LiftingStrength())
 	}
 	if e.basicLiftCache != -1 {
 		return e.basicLiftCache

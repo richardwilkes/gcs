@@ -20,13 +20,17 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/criteria"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
+	"github.com/richardwilkes/gcs/v5/model/gurps/attack"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/difficulty"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/encumbrance"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/feature"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/frequency"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/grantmerge"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/selector"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/selfctrl"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/stdmg"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/stlimit"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/wsel"
 	"github.com/richardwilkes/gcs/v5/model/nameable"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/toolbox/v2/tid"
@@ -1327,6 +1331,58 @@ func TestGrantDoesNotMeetItsCarriersPrereqs(t *testing.T) {
 			"so the grant is in effect, and Will is derived from IQ with the bonus")
 	})
 
+	// Nor are the thresholds of a pool, which its maximum gives, taken as the sheet has them while the pool is compared
+	// with them as the prerequisites see it: FP 5 of 10 is Tiring, which leaves Dodge alone, though below the Tired
+	// threshold of FP 20.
+	t.Run("pool threshold once the prerequisite is met without it", func(t *testing.T) {
+		c := check.New(t)
+		e := NewEntity()
+		e.Attributes.Set[FatiguePointsID].Damage = fxp.Five
+		vigor := newGrantLeveledTrait("Vigor", fxp.One)
+		bonus := NewAttributeBonus(FatiguePointsID)
+		bonus.Amount = fxp.Ten
+		vigor.Features = Features{bonus}
+		training := addTraitWithFeatures(e, "Training", newTraitGrant(vigor, fxp.One, grantmerge.Ignore))
+		training.Prereq = NewPrereqList()
+		p := NewAttributePrereq(e)
+		p.Parent = training.Prereq
+		p.Which = DodgeID
+		p.QualifierCriteria.Qualifier = fxp.Eight
+		training.Prereq.Prereqs = append(training.Prereq.Prereqs, p)
+		e.Recalculate()
+		c.False(e.Unsettled())
+		c.Equal("", training.UnsatisfiedReason, "Dodge is 8 without the grant")
+		c.Equal(fxp.FromInteger(15), e.ResolveAttributeCurrent(FatiguePointsID), "so the grant is in effect")
+	})
+
+	// Each carrier's prerequisites see the pool's threshold as they see the pool: FP 3 of 10 is Tired, which halves
+	// Dodge 8 to 4, but the FP a grant of the first carrier adds lifts the second out of it.
+	t.Run("pool threshold as each carrier's prerequisites see it", func(t *testing.T) {
+		c := check.New(t)
+		e := NewEntity()
+		e.Attributes.Set[FatiguePointsID].Damage = fxp.Seven
+		dodgeAt := func(carrier *Trait, compare criteria.NumericComparison, qualifier fxp.Int) {
+			carrier.Prereq = NewPrereqList()
+			p := NewAttributePrereq(e)
+			p.Parent = carrier.Prereq
+			p.Which = DodgeID
+			p.QualifierCriteria = criteria.Number{Compare: compare, Qualifier: qualifier}
+			carrier.Prereq.Prereqs = append(carrier.Prereq.Prereqs, p)
+		}
+		vigor := newGrantLeveledTrait("Vigor", fxp.One)
+		bonus := NewAttributeBonus(FatiguePointsID)
+		bonus.Amount = fxp.Ten
+		vigor.Features = Features{bonus}
+		tired := addTraitWithFeatures(e, "Tired Training", newTraitGrant(vigor, fxp.One, grantmerge.Ignore))
+		dodgeAt(tired, criteria.AtMostNumber, fxp.Four)
+		rested := addTraitWithFeatures(e, "Rested Training", nightVisionGrant())
+		dodgeAt(rested, criteria.AtLeastNumber, fxp.Eight)
+		e.Recalculate()
+		c.False(e.Unsettled())
+		c.Equal("", tired.UnsatisfiedReason, "Dodge is 4 without the first carrier's grant")
+		c.Equal("", rested.UnsatisfiedReason, "Dodge is 8 with it, without the second carrier's grant")
+	})
+
 	// Nor is a weapon as a script run for the prerequisites resolves it, without the skill the grant puts on the sheet,
 	// what the sheet then shows, though the script runs on its own after the recalculation, as the editor's preview runs
 	// it; and the script sees the weapon so even once the sheet has resolved it.
@@ -1354,6 +1410,57 @@ func TestGrantDoesNotMeetItsCarriersPrereqs(t *testing.T) {
 			c.Equal(CheckMet, result, "resolved first %v: the script run on its own agrees with the sheet", resolvedFirst)
 			c.Equal(fxp.Twelve, strike.SkillLevel(nil), "resolved first %v: the sheet still shows the weapon with the "+
 				"skill granted", resolvedFirst)
+		}
+	})
+
+	// Nor is a weapon's damage as a script run for the prerequisites resolves it, without the weapon bonus or selector
+	// override from what the grant puts on the sheet, what the sheet then shows, though the script runs on its own after
+	// the recalculation.
+	t.Run("weapon bonus or override once the prerequisite is met without it", func(t *testing.T) {
+		for _, tc := range []struct {
+			name    string
+			feature func() Feature
+			damage  string
+		}{
+			{name: "weapon bonus selecting by name", feature: func() Feature {
+				bonus := NewWeaponBonus(feature.WeaponBonus)
+				bonus.SelectionType = wsel.WithName
+				bonus.NameCriteria.Qualifier = "Natural Attacks"
+				bonus.Amount = fxp.Five
+				return bonus
+			}, damage: "1d+2 cr"},
+			{name: "weapon bonus selecting by required skill", feature: func() Feature {
+				bonus := NewWeaponBonus(feature.WeaponBonus)
+				bonus.NameCriteria.Compare = criteria.AnyText
+				bonus.Amount = fxp.Five
+				return bonus
+			}, damage: "1d+2 cr"},
+			{name: "selector override", feature: func() Feature {
+				override := NewSelectorOverride(selector.WeaponDamageStrengthBasis)
+				override.SelectionType = wsel.WithName
+				override.NameCriteria.Qualifier = "Natural Attacks"
+				override.Value = stdmg.Swing.Key()
+				return override
+			}, damage: "1d-1 cr"},
+		} {
+			c := check.New(t)
+			e := NewEntity()
+			attacks := NewNaturalAttacks(e, nil)
+			e.Traits = []*Trait{attacks}
+			punch := attacks.Weapons[slices.IndexFunc(attacks.Weapons, func(w *Weapon) bool { return w.Usage == "Punch" })]
+			mighty := newGrantLeveledTrait("Mighty", fxp.One)
+			mighty.Features = Features{tc.feature()}
+			training := addTraitWithFeatures(e, "Training", newTraitGrant(mighty, fxp.One, grantmerge.Ignore))
+			training.Prereq = NewPrereqList()
+			script := addScriptPrereq(training.Prereq, `entity.weaponDamage("Natural Attacks", "Punch") == "1d-3 cr"`)
+			e.Recalculate()
+			c.False(e.Unsettled(), tc.name)
+			c.Equal("", training.UnsatisfiedReason, "%s: the punch does 1d-3 cr without the grant", tc.name)
+			c.Equal(tc.damage, punch.Damage.ResolvedDamage(nil), "%s: so the grant is in effect, and it counts", tc.name)
+			e.DiscardCaches()
+			result, _ := script.Evaluate(e, training)
+			c.Equal(CheckMet, result, "%s: the script run on its own agrees with the sheet", tc.name)
+			c.Equal(tc.damage, punch.Damage.ResolvedDamage(nil), "%s: the sheet still shows the punch with it", tc.name)
 		}
 	})
 
@@ -1611,6 +1718,97 @@ func TestGrantDoesNotMeetItsCarriersPrereqs(t *testing.T) {
 			training.Prereq = NewPrereqList()
 			addScriptPrereq(training.Prereq, `entity.liftingStrength >= 15`)
 			return training, e.LiftingStrength
+		}, level: fxp.Ten},
+		{name: "ST bonus from a granted trait read by a script as a weapon's damage", carry: func(_ check.Checker, e *Entity) (*Trait, func() fxp.Int) {
+			fist := addTraitWithFeatures(e, "Fist")
+			punch := NewWeapon(fist, true) // Thrust crushing, so 1d-2 cr at ST 10
+			punch.Usage = "Punch"
+			fist.Weapons = []*Weapon{punch}
+			strong := newGrantLeveledTrait("Strong", fxp.One)
+			bonus := NewAttributeBonus(StrengthID)
+			bonus.Amount = fxp.Five
+			strong.Features = Features{bonus}
+			training := addTraitWithFeatures(e, "Training", newTraitGrant(strong, fxp.One, grantmerge.Ignore))
+			training.Prereq = NewPrereqList()
+			addScriptPrereq(training.Prereq, `entity.weaponDamage("Fist", "Punch") == "1d-2 cr" ? "Too weak" : ""`)
+			return training, e.StrikingStrength
+		}, level: fxp.Ten},
+		{name: "ST bonus from a granted trait read by a script as a thrown weapon's range", carry: func(_ check.Checker, e *Entity) (*Trait, func() fxp.Int) {
+			rock := addTraitWithFeatures(e, "Rock")
+			throw := NewWeapon(rock, false)
+			throw.Usage = "Throw"
+			throw.Range = attack.ParseRange("x1/x1.5") // 10/15 at ST 10
+			rock.Weapons = []*Weapon{throw}
+			strong := newGrantLeveledTrait("Strong", fxp.One)
+			bonus := NewAttributeBonus(StrengthID)
+			bonus.Amount = fxp.Five
+			strong.Features = Features{bonus}
+			training := addTraitWithFeatures(e, "Training", newTraitGrant(strong, fxp.One, grantmerge.Ignore))
+			training.Prereq = NewPrereqList()
+			addScriptPrereq(training.Prereq,
+				`entity.findWeapons(false, "Rock", "Throw").some(w => w.range == "10/15") ? "Too weak" : ""`)
+			return training, e.ThrowingStrength
+		}, level: fxp.Ten},
+		{name: "IQ bonus from a granted trait read by a script as an IQ-based weapon's damage", carry: func(_ check.Checker, e *Entity) (*Trait, func() fxp.Int) {
+			mind := addTraitWithFeatures(e, "Mind")
+			blast := NewWeapon(mind, true)
+			blast.Usage = "Blast"
+			blast.Damage.StrengthType = stdmg.IQThrust // 1d-2 cr at IQ 10
+			mind.Weapons = []*Weapon{blast}
+			smart := newGrantLeveledTrait("Smart", fxp.One)
+			bonus := NewAttributeBonus(IntelligenceID)
+			bonus.Amount = fxp.Five
+			smart.Features = Features{bonus}
+			training := addTraitWithFeatures(e, "Training", newTraitGrant(smart, fxp.One, grantmerge.Ignore))
+			training.Prereq = NewPrereqList()
+			addScriptPrereq(training.Prereq, `entity.weaponDamage("Mind", "Blast") == "1d-2 cr" ? "Too dull" : ""`)
+			return training, func() fxp.Int { return e.ResolveAttributeCurrent(IntelligenceID) }
+		}, level: fxp.Ten},
+		{name: "levels into a skill read by a script as a weapon's level", carry: func(_ check.Checker, e *Entity) (*Trait, func() fxp.Int) {
+			addSkill(e, "Broadsword", fxp.One)
+			sword := addTraitWithFeatures(e, "Sword")
+			swing := NewWeapon(sword, true)
+			swing.Usage = "Swing"
+			swing.Defaults = []*SkillDefault{newSkillDefaultTo("Broadsword", "", true, 0)}
+			sword.Weapons = []*Weapon{swing}
+			training := addTraitWithFeatures(e, "Training",
+				newSkillGrant(newEasySkill("Broadsword", fxp.One), fxp.Six, grantmerge.MergeLevels))
+			training.Prereq = NewPrereqList()
+			addScriptPrereq(training.Prereq, `entity.weapons.some(w => w.level >= 14)`)
+			return training, func() fxp.Int { return swing.SkillLevel(nil) }
+		}, level: fxp.Ten},
+		{name: "levels into a skill read by a script as a weapon's parry and block", carry: func(_ check.Checker, e *Entity) (*Trait, func() fxp.Int) {
+			addSkill(e, "Broadsword", fxp.One)
+			sword := addTraitWithFeatures(e, "Sword")
+			swing := NewWeapon(sword, true)
+			swing.Usage = "Swing"
+			swing.Parry.CanParry = true
+			swing.Block.CanBlock = true
+			swing.Defaults = []*SkillDefault{newSkillDefaultTo("Broadsword", "", true, 0)}
+			sword.Weapons = []*Weapon{swing}
+			training := addTraitWithFeatures(e, "Training",
+				newSkillGrant(newEasySkill("Broadsword", fxp.One), fxp.Six, grantmerge.MergeLevels))
+			training.Prereq = NewPrereqList()
+			addScriptPrereq(training.Prereq,
+				`entity.weapons.some(w => w.kind == "melee" && (parseInt(w.parry) >= 10 || parseInt(w.block) >= 10))`)
+			return training, func() fxp.Int { return swing.ResolvedParry(nil).Modifier + swing.ResolvedBlock(nil).Modifier }
+		}, level: fxp.FromInteger(16)},
+		{name: "levels into a skill read by a script through a weapon bonus selecting by relative skill level", carry: func(_ check.Checker, e *Entity) (*Trait, func() fxp.Int) {
+			brawling := addSkill(e, "Brawling", fxp.One) // DX+0
+			bonus := NewWeaponBonus(feature.WeaponBonus)
+			bonus.NameCriteria.Qualifier = "Brawling"
+			bonus.RelativeLevelCriteria = criteria.Number{Compare: criteria.AtLeastNumber, Qualifier: fxp.One}
+			bonus.Amount = fxp.Five
+			fist := addTraitWithFeatures(e, "Fist", bonus)
+			punch := NewWeapon(fist, true) // Thrust crushing, so 1d-2 cr at ST 10
+			punch.Usage = "Punch"
+			punch.Defaults = []*SkillDefault{newSkillDefaultTo("Brawling", "", true, 0)}
+			fist.Weapons = []*Weapon{punch}
+			training := addTraitWithFeatures(e, "Training",
+				newSkillGrant(newEasySkill("Brawling", fxp.One), fxp.Two, grantmerge.MergeLevels))
+			training.Prereq = NewPrereqList()
+			addScriptPrereq(training.Prereq, `entity.weaponDamage("Fist", "Punch") == "1d-2 cr" ? "Too weak" : ""`)
+			return training, func() fxp.Int { return brawling.LevelData.Level }
 		}, level: fxp.Ten},
 		{name: "ST bonus from a granted trait read by a script as the encumbrance", carry: func(_ check.Checker, e *Entity) (*Trait, func() fxp.Int) {
 			strong := newGrantLeveledTrait("Strong", fxp.One)

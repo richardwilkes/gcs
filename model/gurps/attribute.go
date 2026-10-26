@@ -13,6 +13,7 @@ import (
 	"encoding/json/jsontext"
 	"encoding/json/v2"
 	"hash"
+	"slices"
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
@@ -200,18 +201,42 @@ func (a *Attribute) currentWithBonus(bonus fxp.Int) fxp.Int {
 	return maximum - a.Damage
 }
 
-// CurrentThreshold returns the current PoolThreshold, if any.
+// CurrentThreshold returns the current PoolThreshold, if any. While the prerequisites of an item carrying a grant are
+// judged, it is the one they see: the pool's current value is taken without the bonuses from what the grant put on the
+// sheet, and the scripts giving the thresholds run as those prerequisites see the sheet. It is then found only once
+// while they are judged, since their view of the sheet holds still meanwhile and the Basic Lift every skill level with
+// an encumbrance penalty reads asks for it; see Entity.JudgingPrereqsOf.
 func (a *Attribute) CurrentThreshold() *PoolThreshold {
 	def := a.AttributeDef()
-	if def == nil || def.IsSeparator() {
+	if def == nil || def.IsSeparator() || len(def.Thresholds) == 0 {
 		return nil
 	}
-	if len(def.Thresholds) != 0 {
-		cur := a.Current()
-		for _, t := range def.Thresholds {
-			if cur <= t.Threshold(a) {
-				return t
-			}
+	e := a.Entity
+	if !e.carriesGrant(e.judging) {
+		return a.thresholdFor(def, a.Current())
+	}
+	if t, ok := e.judgedThresholds[a]; ok {
+		return t
+	}
+	cur := e.attributeForPrereqs(a, true)
+	t := func() *PoolThreshold {
+		e.scriptsForPrereqs++
+		defer func() { e.scriptsForPrereqs-- }()
+		return a.thresholdFor(def, cur)
+	}()
+	if e.judgedThresholds == nil {
+		e.judgedThresholds = make(map[*Attribute]*PoolThreshold)
+	}
+	e.judgedThresholds[a] = t
+	return t
+}
+
+// thresholdFor returns the first of the definition's thresholds that the given current value of the pool lies at or
+// below, or nil if there is none.
+func (a *Attribute) thresholdFor(def *AttributeDef, cur fxp.Int) *PoolThreshold {
+	for _, t := range def.Thresholds {
+		if cur <= t.Threshold(a) {
+			return t
 		}
 	}
 	return nil
@@ -241,7 +266,7 @@ func (a *Attribute) PointCost() fxp.Int {
 // IsThresholdOpMet returns true if any attribute's current threshold contains the given op.
 func IsThresholdOpMet(op threshold.Op, attributes *Attributes) bool {
 	for _, one := range attributes.Set {
-		if t := one.CurrentThreshold(); t != nil && t.ContainsOp(op) {
+		if one.thresholdOpMet(op) {
 			return true
 		}
 	}
@@ -252,11 +277,22 @@ func IsThresholdOpMet(op threshold.Op, attributes *Attributes) bool {
 func CountThresholdOpMet(op threshold.Op, attributes *Attributes) int {
 	total := 0
 	for _, one := range attributes.Set {
-		if t := one.CurrentThreshold(); t != nil && t.ContainsOp(op) {
+		if one.thresholdOpMet(op) {
 			total++
 		}
 	}
 	return total
+}
+
+// thresholdOpMet returns true if the attribute's current threshold contains the given op. The current threshold is
+// only found when one of the attribute's thresholds contains the op, since finding it runs their scripts.
+func (a *Attribute) thresholdOpMet(op threshold.Op) bool {
+	def := a.AttributeDef()
+	if def == nil || !slices.ContainsFunc(def.Thresholds, func(t *PoolThreshold) bool { return t.ContainsOp(op) }) {
+		return false
+	}
+	t := a.CurrentThreshold()
+	return t != nil && t.ContainsOp(op)
 }
 
 // Hash writes this object's contents into the hasher.

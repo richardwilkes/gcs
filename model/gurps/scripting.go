@@ -669,11 +669,11 @@ func resolveScript(entity *Entity, selfProvider ScriptSelfProvider, text string)
 		return "script resolution exceeded maximum depth (possible circular reference)", true
 	}
 	// A script run as the prerequisites being judged see the sheet, which is a script prerequisite of an item carrying
-	// a grant or one giving an attribute's base as those prerequisites see the attribute, sees the item judged. Its
-	// result is kept apart from those of the runs that see the sheet otherwise, and only when the script was stopped
-	// before it could answer, since what it reads leaves out what the sheet has at any other time, whereas a script
-	// stopped once would almost certainly be stopped again (see Entity.discardCaches); see ScriptPrereq.Evaluate and
-	// Entity.attributeForPrereqs.
+	// a grant or one giving an attribute's base or a pool's threshold as those prerequisites see them, sees the item
+	// judged. Its result is kept apart from those of the runs that see the sheet otherwise, and only when the script
+	// was stopped before it could answer, since what it reads leaves out what the sheet has at any other time, whereas
+	// a script stopped once would almost certainly be stopped again (see Entity.discardCaches); see
+	// ScriptPrereq.Evaluate and Entity.attributeForPrereqs.
 	forPrereqs := entity != nil && entity.scriptsForPrereqs > 0
 	if entity != nil && entity.judging != nil && !forPrereqs {
 		// Any other script sees the sheet whole, since its result is kept for the rest of the pass; see

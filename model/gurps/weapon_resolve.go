@@ -140,7 +140,7 @@ func (w *Weapon) resolveRange(modifiersTooltip *xbytes.InsertBuffer) attack.Rang
 			case stdmg.TelekineticThrust, stdmg.TelekineticSwing:
 				return entity.TelekineticStrength()
 			case stdmg.IQThrust, stdmg.IQSwing:
-				return entity.ResolveAttributeCurrent(IntelligenceID).Max(0).Floor()
+				return entity.resolveAttributeCurrentForPrereqs(IntelligenceID).Max(0).Floor()
 			default:
 				return entity.ThrowingStrength()
 			}

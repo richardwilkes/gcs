@@ -255,7 +255,7 @@ func (w *WeaponDamage) baseDamageDice() dice.Dice {
 		case stdmg.TelekineticThrust, stdmg.TelekineticSwing:
 			return entity.TelekineticStrength()
 		case stdmg.IQThrust, stdmg.IQSwing:
-			return entity.ResolveAttributeCurrent(IntelligenceID).Max(0).Floor()
+			return entity.resolveAttributeCurrentForPrereqs(IntelligenceID).Max(0).Floor()
 		default:
 			return entity.ResolveAttributeCurrent(StrengthID).Max(0).Floor()
 		}

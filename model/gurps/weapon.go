@@ -578,7 +578,7 @@ func (w *Weapon) skillLevelBaseAdjustment(e *Entity, tooltip *xbytes.InsertBuffe
 	case stdmg.TelekineticThrust, stdmg.TelekineticSwing:
 		minST -= e.TelekineticStrength()
 	case stdmg.IQThrust, stdmg.IQSwing:
-		minST -= e.ResolveAttributeCurrent(IntelligenceID).Max(0).Floor()
+		minST -= e.resolveAttributeCurrentForPrereqs(IntelligenceID).Max(0).Floor()
 	default:
 		if !w.IsRanged() || (w.ResolveBoolFlag(wswitch.MusclePowered, w.Range.MusclePowered) && !w.usesCrossbowSkill(e)) {
 			minST -= e.StrikingStrength()
@@ -764,10 +764,11 @@ func (w *Weapon) resolveSelectorFor(damage *WeaponDamage, field selector.Field, 
 }
 
 // collectSelectorOverrides returns the candidates for the given field: the entity's overrides selecting weapons by
-// required skill or by name that match this weapon, and those of the weapon's owner, and of its enabled modifiers, that
-// select the owner's weapons or name this one. Their damage type criteria match the type of the given damage. The
-// skills the weapon is used with are only resolved when an override selects by them, since this runs for every field
-// of every weapon displayed.
+// required skill or by name that match this weapon, less those of what the grants of the item whose prerequisites are
+// being judged put on the sheet (see Entity.JudgingPrereqsOf), and those of the weapon's owner, and of its enabled
+// modifiers, that select the owner's weapons or name this one. Their damage type criteria match the type of the given
+// damage. The skills the weapon is used with are only resolved when an override selects by them, since this runs for
+// every field of every weapon displayed.
 func (w *Weapon) collectSelectorOverrides(entity *Entity, field selector.Field, damage *WeaponDamage) []OverrideCandidate[string] {
 	var candidates []OverrideCandidate[string]
 	seen := make(map[*SelectorOverride]bool)
@@ -780,7 +781,7 @@ func (w *Weapon) collectSelectorOverrides(entity *Entity, field selector.Field, 
 	}
 	var bySkill []*SelectorOverride
 	for _, o := range entity.features.selectorOverrides {
-		if o.Field != field {
+		if o.Field != field || entity.excludedWhileJudging(o.Owner()) {
 			continue
 		}
 		switch o.SelectionType {
@@ -993,8 +994,8 @@ func (w *Weapon) findRequiredSkills(entity *Entity) []requiredSkill {
 			// the weapon actually attacks with. That includes leaving a parry- or block-type default scored by its
 			// defense level; see the note in SkillLevel(). The skill each default scores by is kept, since it is the
 			// one the winner is resolved to below.
-			sk := one.bestFastMatchingSkill(entity, replacements, false, nil)
-			if level := one.fastLevelFromSkill(entity, sk); best < level {
+			sk, skLevel := one.bestFastMatch(entity, replacements, false, nil)
+			if level := one.fastLevelFromSkill(entity, skLevel); best < level {
 				best = level
 				bestSkill = sk
 			}
