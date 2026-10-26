@@ -108,6 +108,65 @@ func displayEditor[N gurps.Node[N], D gurps.EditorData[N]](owner Rebuildable, ta
 	return e
 }
 
+// followRow keeps an editor open on one of a sheet's granted rows on that row after the sheet's grants were reconciled,
+// which remakes a granted row whose grant changed as a new object under the row's ID (see grantReconciler.replace) and
+// takes the rows whose grants are gone off the sheet: the editor shows the new object, or closes with the row. Only a
+// granted row changes this way, and only a read-only editor is open on one, so no pending change is lost. The editors
+// opened from it, on the old object's modifiers and weapons, close with it either way, since those objects are gone.
+// Editors on the sheet's other rows are left alone, since what takes those rows off the sheet closes them itself (see
+// CloseID and discardEditorsFor).
+func (e *editor[N, D]) followRow(entity *gurps.Entity) {
+	if !gurps.IsGranted(e.target) {
+		return
+	}
+	var rows []N
+	switch list := any(&rows).(type) {
+	case *[]*gurps.Trait:
+		*list = entity.Traits
+	case *[]*gurps.Skill:
+		*list = entity.Skills
+	case *[]*gurps.Spell:
+		*list = entity.Spells
+	default:
+		return
+	}
+	id := e.target.ID()
+	var current N
+	gurps.Traverse(func(node N) bool {
+		if node.ID() == id {
+			current = node
+			return true
+		}
+		return false
+	}, false, false, rows...)
+	if current == e.target {
+		return
+	}
+	if xreflect.IsNil(current) {
+		e.discardAndCloseAll()
+		return
+	}
+	traverseGroup(e, func(target GroupedCloser) bool {
+		if sub, ok := target.(interface{ shell() *editorShell }); ok {
+			sub.shell().discardAndCloseAll()
+		}
+		return false
+	})
+	// Closing a sub-editor gives the focus to the list it was opened from, which the rebuild replaces.
+	var focus *contentFocus
+	if unison.AncestorIsOrSelf(e.Window().CurrentFocus(), e.content) {
+		focus = e.noteFocus()
+		e.releaseContentFocus()
+	}
+	e.target = current
+	e.beforeData = newEditorData[N, D](current)
+	e.editorData = newEditorData[N, D](current)
+	var none N
+	e.nameablesScratch = none
+	e.rebuildContent()
+	focus.restore(e.content, e.scroll)
+}
+
 // makeReadOnly makes the editor only show its target. Every widget of its content is disabled, but for the panels
 // that make themselves read-only instead, so that their rows can still be read in full or opened. MarkModified calls
 // it again, since the editor turns some of its widgets back on then.
@@ -289,11 +348,27 @@ func (e *editor[N, D]) prepareForSubstitutions() (tmpNode N, m map[string]string
 }
 
 func (e *editor[N, D]) Title() string {
+	// An editor opened from another editor, such as for one of its modifiers, is named for its item, since the other
+	// editor's title would only repeat where it is. The editor of a grant's item has its owner name the item instead;
+	// see grantItemOwner.String.
+	if _, nested := e.owner.(interface{ editor() editorDockable }); nested {
+		return i18n.Text("%s Editor for %s", e.target.Kind(), e.target.String())
+	}
 	return i18n.Text("%s Editor for %s", e.target.Kind(), e.owner.String())
 }
 
 func (e *editor[N, D]) Owner() Rebuildable {
 	return e.owner
+}
+
+// targetName names the item the editor edits.
+func (e *editor[N, D]) targetName() string {
+	return e.target.String()
+}
+
+// editTarget returns the item the editor edits, for a caller that doesn't know its kind.
+func (e *editor[N, D]) editTarget() any {
+	return e.target
 }
 
 func (e *editor[N, D]) Target() N {
@@ -442,6 +517,12 @@ func (e *editor[N, D]) applyEdits() {
 	}
 	pickerBefore := modifierChoicePicker(target)
 	wasChoice := gurps.IsModifierChoice(target)
+	// Nor are the rows the target's grants put on the sheet, which go with the grants should the edit take them away,
+	// so the lists they can be in are part of the edit; see grantRowListsOf.
+	var listsBefore, listsAfter []tableRestorer
+	if carriesGrants([]N{target}) {
+		listsBefore = grantRowListsOf(owner, "")
+	}
 	e.editorData.ApplyTo(target)
 	if e.sourceCleared {
 		target.ClearSource()
@@ -452,17 +533,22 @@ func (e *editor[N, D]) applyEdits() {
 	clearSourceOfTemplatePicker(target)
 	sourceAfter := target.GetSource()
 	optionsAfter := modifierEnabledStates([]N{target})
+	if len(listsBefore) != 0 {
+		listsAfter = grantRowListsOf(owner, "")
+	}
 	if mgr := unison.UndoManagerFor(owner); mgr != nil {
 		mgr.Add(&unison.UndoEdit[D]{
 			ID:       unison.NextUndoID(),
 			EditName: i18n.Text("%s Changes", target.Kind()),
 			UndoFunc: func(edit *unison.UndoEdit[D]) {
+				restoreGrantRowLists(listsBefore)
 				edit.BeforeData.ApplyTo(target)
 				restoreSource(target, sourceBefore, sourceAfter)
 				restoreModifierEnabledStates(optionsBefore)
 				rebuildAsModified(owner, true)
 			},
 			RedoFunc: func(edit *unison.UndoEdit[D]) {
+				restoreGrantRowLists(listsAfter)
 				edit.AfterData.ApplyTo(target)
 				restoreSource(target, sourceAfter, sourceBefore)
 				restoreModifierEnabledStates(optionsAfter)

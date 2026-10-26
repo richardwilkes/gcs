@@ -14,6 +14,7 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/feature"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/toolbox/v2/tid"
 	"github.com/richardwilkes/unison"
@@ -42,15 +43,15 @@ func TestResolveEmptyTechLevel(t *testing.T) {
 	c := check.New(t)
 
 	skill := newTestSkill("Guns", fxp.FromInteger(1), nil)
-	resolveEmptyTechLevel(skill, "3")
+	gurps.ResolveEmptyTechLevel(skill, "3")
 	c.Nil(skill.TechLevel, "a skill without a TL must not gain one")
 
 	skill = newTestSkill("Guns", fxp.FromInteger(1), new(""))
-	resolveEmptyTechLevel(skill, "3")
+	gurps.ResolveEmptyTechLevel(skill, "3")
 	c.Equal("3", *skill.TechLevel, "an empty TL must be replaced with the default")
 
 	spell := newTestSpell("Fireball", fxp.FromInteger(1), new("8"))
-	resolveEmptyTechLevel(spell, "3")
+	gurps.ResolveEmptyTechLevel(spell, "3")
 	c.Equal("8", *spell.TechLevel, "a TL that is already set must be left alone")
 }
 
@@ -409,4 +410,24 @@ func TestMergePointsLeavesChoiceOptionsAlone(t *testing.T) {
 		mergePoints(nil, []*gurps.Skill{choice}, "3", make(map[tid.TID]bool))
 		c.Equal("3", option.TL())
 	})
+}
+
+func TestMergePointsSkipsGrantedRows(t *testing.T) {
+	c := check.New(t)
+	entity := gurps.NewEntity()
+	training := gurps.NewTrait(entity, nil, false)
+	g := gurps.NewGrant(feature.GrantSkill)
+	g.SetItem(newTestSkill("Brawling", fxp.One, nil), gurps.LibraryFile{})
+	training.Features = gurps.Features{g}
+	entity.Traits = []*gurps.Trait{training}
+	entity.Recalculate()
+	c.Equal(1, len(entity.Skills))
+	granted := entity.Skills[0]
+	c.True(granted.Enabled(), "the granted row is in effect")
+	incoming := []*gurps.Skill{newTestSkill("Brawling", fxp.FromInteger(2), nil)}
+	selMap := make(map[tid.TID]bool)
+	remaining := mergePoints(entity.Skills, incoming, "3", selMap)
+	c.Equal(1, len(remaining), "the skill must be added, for the grant to merge into")
+	c.Equal(fxp.Int(0), granted.Points, "the granted row must not take the points")
+	c.Equal(0, len(selMap))
 }

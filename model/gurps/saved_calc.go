@@ -37,9 +37,12 @@ func keepSavedCalc(dec *jsontext.Decoder) bool {
 	return ok && unmarshalers == savedCalcMarker
 }
 
-// savedTraitCalc is the part of a trait's "calc" object that Trait.StringWithSavedCalc needs.
+// savedTraitCalc is the part of a trait's "calc" object that Trait.StringWithSavedCalc needs. CurrentLevel and
+// UnsatisfiedReason are read only for a file written before Level was recorded.
 type savedTraitCalc struct {
-	CurrentLevel *fxp.Int `json:"current_level"`
+	Level             *fxp.Int `json:"level"`
+	CurrentLevel      *fxp.Int `json:"current_level"`
+	UnsatisfiedReason string   `json:"unsatisfied_reason"`
 }
 
 // savedNoteCalc is the part of a note's "calc" object that Note.StringWithSavedCalc needs.

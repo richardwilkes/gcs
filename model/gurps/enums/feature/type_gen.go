@@ -57,6 +57,9 @@ const (
 	SelectorOverride
 	CostReduction
 	ContainedWeightReduction
+	GrantTrait
+	GrantSkill
+	GrantSpell
 	TitleNote
 	Unknown
 )
@@ -110,6 +113,9 @@ var Types = []Type{
 	SelectorOverride,
 	CostReduction,
 	ContainedWeightReduction,
+	GrantTrait,
+	GrantSkill,
+	GrantSpell,
 	TitleNote,
 }
 
@@ -203,6 +209,12 @@ func (enum Type) Key() string {
 		return "cost_reduction"
 	case ContainedWeightReduction:
 		return "contained_weight_reduction"
+	case GrantTrait:
+		return "grant_trait"
+	case GrantSkill:
+		return "grant_skill"
+	case GrantSpell:
+		return "grant_spell"
 	case TitleNote:
 		return "title_note"
 	default:
@@ -289,6 +301,12 @@ func (enum Type) String() string {
 		return i18n.Text(`Reduces the cost of`)
 	case ContainedWeightReduction:
 		return i18n.Text(`Reduces the contained weight by`)
+	case GrantTrait:
+		return i18n.Text(`Grants the trait`)
+	case GrantSkill:
+		return i18n.Text(`Grants the skill`)
+	case GrantSpell:
+		return i18n.Text(`Grants the spell`)
 	case TitleNote:
 		return i18n.Text(`Adds the title note`)
 	case Unknown:

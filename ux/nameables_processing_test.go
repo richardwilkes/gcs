@@ -14,9 +14,11 @@ import (
 	"testing"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/feature"
 	"github.com/richardwilkes/gcs/v5/model/nameable"
 	"github.com/richardwilkes/gcs/v5/ux/uxtest"
 	"github.com/richardwilkes/toolbox/v2/check"
+	"github.com/richardwilkes/toolbox/v2/tid"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/mod"
 )
@@ -351,6 +353,104 @@ func TestAltDropOfAContainerAsksAboutTheKeyItsChildSharesOnce(t *testing.T) {
 	c.Equal(1, len(sword.Modifiers), "the container must be attached")
 	c.Equal("Steel Fittings", sword.Modifiers[0].NameWithReplacements())
 	c.Equal([]string{"Steel Pommel", "Red Steel Guard"}, appliedModifierNames(sword.Modifiers[0].Children))
+}
+
+// TestNameableDefinitionsFollowTheLinks checks that the definitions a prompt describes a row's keys by are keyed as the
+// keys are asked about: a modifier's definition under the code of the trait its own is linked to, where it never
+// stands in for an unrelated code of the trait's with the modifier's name, and, for a modifier prompted for on its own,
+// the trait's definition of a code the modifier shares with it.
+func TestNameableDefinitionsFollowTheLinks(t *testing.T) {
+	c := check.New(t)
+	art := nameable.Detail{Label: "Art", Options: []string{"Judo", "Karate"}}
+	style := nameable.Detail{Label: "Martial art", Options: []string{"Judo", "Karate"}}
+	newTrait := func() (*gurps.Trait, *gurps.TraitModifier) {
+		trait := gurps.NewTrait(nil, nil, false)
+		trait.Name = "Trained"
+		trait.LocalNotes = "Also @art@"
+		modifier := gurps.NewTraitModifier(nil, nil, false)
+		modifier.Name = "Practiced @art@"
+		modifier.Nameables = map[string]nameable.Detail{"art": art}
+		trait.Modifiers = []*gurps.TraitModifier{modifier}
+		trait.NameableLinks = map[tid.TID]map[string]string{modifier.TID: {"art": "style"}}
+		gurps.AttachModifiers(trait, trait.Modifiers)
+		return trait, modifier
+	}
+	trait, _ := newTrait()
+	defs := nameableDefinitions(trait)
+	_, found := defs["art"]
+	c.False(found, "the trait's own art is not described by the modifier's, which is linked to style")
+	c.Equal(art, defs["style"], "the modifier's art is asked about as style")
+
+	trait, modifier := newTrait()
+	trait.Nameables = map[string]nameable.Detail{"style": style}
+	c.Equal(style, nameableDefinitions(trait)["style"], "the trait's definition wins")
+	c.Equal(style, nameableDefinitions(modifier)["style"], "for the modifier prompted for on its own as well")
+
+	trait, modifier = newTrait()
+	modifier.Name = "Practiced @style@"
+	modifier.Nameables = nil
+	trait.NameableLinks = nil
+	trait.Nameables = map[string]nameable.Detail{"style": style}
+	c.Equal(style, nameableDefinitions(modifier)["style"], "a code a modifier shares with its trait takes the trait's definition")
+}
+
+// TestNameableDefinitionsIncludeThoseOfTheGrantedItems checks that the definitions a prompt describes a carrier's keys
+// by include those of the items its grants give, since the carrier answers the placeholders a granted item leaves to
+// it: a granted skill's under its own codes, a granted trait's modifier's under the code the trait links it to, and
+// those of an item one of the carrier's modifiers grants under the code the carrier links the modifier's to, both for
+// the carrier and for the modifier prompted for on its own. The carrier's own definition wins over a granted item's.
+func TestNameableDefinitionsIncludeThoseOfTheGrantedItems(t *testing.T) {
+	c := check.New(t)
+	style := nameable.Detail{Label: "Martial art", Options: []string{"Judo", "Karate"}, NotBlank: true}
+	art := nameable.Detail{Label: "Art", Options: []string{"Judo", "Karate"}}
+	newSkillGrant := func() *gurps.Grant {
+		skill := gurps.NewSkill(nil, nil, false)
+		skill.Name = "@style@ Sport"
+		skill.Nameables = map[string]nameable.Detail{"style": style}
+		g := gurps.NewGrant(feature.GrantSkill)
+		g.SetItem(skill, gurps.LibraryFile{})
+		return g
+	}
+	carrier := gurps.NewTrait(nil, nil, false)
+	carrier.Name = "Trained"
+	carrier.Features = gurps.Features{newSkillGrant()}
+	c.Equal(style, nameableDefinitions(carrier)["style"], "a granted skill's definition describes the carrier's key")
+
+	own := nameable.Detail{Label: "Style", FreeForm: true}
+	carrier.Nameables = map[string]nameable.Detail{"style": own}
+	c.Equal(own, nameableDefinitions(carrier)["style"], "the carrier's definition wins")
+
+	granted := gurps.NewTrait(nil, nil, false)
+	granted.Name = "Fighter"
+	modifier := gurps.NewTraitModifier(nil, nil, false)
+	modifier.Name = "Practiced @art@"
+	modifier.Nameables = map[string]nameable.Detail{"art": art}
+	granted.Modifiers = []*gurps.TraitModifier{modifier}
+	granted.NameableLinks = map[tid.TID]map[string]string{modifier.TID: {"art": "style"}}
+	gurps.AttachModifiers(granted, granted.Modifiers)
+	traitGrant := gurps.NewGrant(feature.GrantTrait)
+	traitGrant.SetItem(granted, gurps.LibraryFile{})
+	carrier = gurps.NewTrait(nil, nil, false)
+	carrier.Name = "Trained"
+	carrier.Features = gurps.Features{traitGrant}
+	defs := nameableDefinitions(carrier)
+	_, found := defs["art"]
+	c.False(found, "the granted trait's modifier's art is asked about as the granted trait's style")
+	c.Equal(art, defs["style"], "the granted trait's modifier's definition is keyed as the granted trait asks about it")
+
+	carrier = gurps.NewTrait(nil, nil, false)
+	carrier.Name = "Trained"
+	modifier = gurps.NewTraitModifier(nil, nil, false)
+	modifier.Name = "Sporting"
+	modifier.Features = gurps.Features{newSkillGrant()}
+	carrier.Modifiers = []*gurps.TraitModifier{modifier}
+	carrier.NameableLinks = map[tid.TID]map[string]string{modifier.TID: {"style": "art"}}
+	gurps.AttachModifiers(carrier, carrier.Modifiers)
+	defs = nameableDefinitions(carrier)
+	_, found = defs["style"]
+	c.False(found, "the skill a modifier grants is asked about under the code the carrier links the modifier's to")
+	c.Equal(style, defs["art"], "the definition of the skill a modifier grants follows the modifier's link")
+	c.Equal(style, nameableDefinitions(modifier)["art"], "for the modifier prompted for on its own as well")
 }
 
 // A nameable's definition decides how the prompt asks for it: a closed list of options is a popup, and one that can't

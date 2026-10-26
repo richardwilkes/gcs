@@ -85,14 +85,22 @@ type Trait struct {
 	// any unmet prerequisite still shown, rather than disabling it. It is recomputed on every Recalculate and is never
 	// saved.
 	prereqContradicted bool
-	// savedCurrentLevel is the level recorded in the "calc" object of the file the trait was loaded from. It is only
-	// kept by a load that asks for it (see NewEntityFromFileWithSavedCalc) and only read by StringWithSavedCalc.
+	// prereqsUnmet is whether Entity.processTraitPrereqs last found this trait's prerequisites unmet, as distinct from
+	// its level exceeding the maximum, which UnsatisfiedReason reports as well. It is never saved.
+	prereqsUnmet bool
+	grant        grantState
+	// savedLevel is the level the trait showed, savedCurrentLevel the current level and savedUnsatisfied whether the
+	// prerequisites were unmet, as the "calc" object of the file the trait was loaded from recorded them. They are only
+	// kept by a load that asks for them (see NewEntityFromFileWithSavedCalc) and only read by StringWithSavedCalc.
+	savedLevel        *fxp.Int
 	savedCurrentLevel *fxp.Int
+	savedUnsatisfied  bool
 }
 
 // TraitData holds the Trait data that is written to disk.
 type TraitData struct {
 	SourcedID
+	Granted *GrantedBy `json:"granted_by,omitempty"`
 	TraitEditData
 	ThirdParty map[string]any `json:"third_party,omitempty"`
 	Children   []*Trait       `json:"children,omitempty"` // Only for containers
@@ -311,6 +319,7 @@ func (t *Trait) Clone(from LibraryFile, owner DataOwner, parent *Trait, mode Clo
 	other.SetOpen(t.IsOpen())
 	other.ThirdParty = t.ThirdParty
 	other.copyFrom(other, &t.TraitEditData, false, mode)
+	other.Granted = cloneGrantedBy(t.Granted, t, other)
 	PropagateNodeNoteClosedState(t, other)
 	if t.HasChildren() {
 		other.Children = make([]*Trait, 0, len(t.Children))
@@ -321,13 +330,15 @@ func (t *Trait) Clone(from LibraryFile, owner DataOwner, parent *Trait, mode Clo
 	return other
 }
 
-// MarshalJSONTo implements json.MarshalerTo.
+// MarshalJSONTo implements json.MarshalerTo. For a leveled trait, the "calc" object records both the level the trait
+// shows, bonuses included, whether or not it is in effect, and its current level, which is zero while it is not.
 func (t *Trait) MarshalJSONTo(enc *jsontext.Encoder) error {
 	type calc struct {
 		Points              fxp.Int  `json:"points"`
 		UnsatisfiedReason   string   `json:"unsatisfied_reason,omitzero"`
 		PrereqContradiction string   `json:"prereq_contradiction,omitzero"`
 		ResolvedNotes       string   `json:"resolved_notes,omitzero"`
+		Level               *fxp.Int `json:"level,omitzero"`
 		CurrentLevel        *fxp.Int `json:"current_level,omitzero"`
 	}
 	t.ClearUnusedFieldsForType()
@@ -342,6 +353,8 @@ func (t *Trait) MarshalJSONTo(enc *jsontext.Encoder) error {
 			ResolvedNotes:       resolvedNotesFor(t.ResolveLocalNotes(), t.LocalNotes),
 		}
 		if t.IsLeveled() {
+			shown := t.internalCurrentLevel(nil)
+			c.Level = &shown
 			level := t.CurrentLevel()
 			c.CurrentLevel = &level
 		}
@@ -376,7 +389,10 @@ func (t *Trait) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 	// A load that keeps the saved calc never attaches the trait, yet its title shows its modifiers.
 	AttachModifiers(t, t.Modifiers)
 	if keepSavedCalc(dec) {
-		t.savedCurrentLevel = savedCalc[savedTraitCalc](localData.Calc).CurrentLevel
+		saved := savedCalc[savedTraitCalc](localData.Calc)
+		t.savedLevel = saved.Level
+		t.savedCurrentLevel = saved.CurrentLevel
+		t.savedUnsatisfied = saved.UnsatisfiedReason != ""
 	}
 	t.Replacements = nameable.Normalize(t.Replacements)
 	migrateLegacyText(&t.LocalNotes, localData.ExprNotes)
@@ -448,10 +464,11 @@ func (t *Trait) resetPrereqVerdict() {
 	t.prereqContradicted = false
 }
 
-// selfDisabled returns true if this trait itself is disabled, either by the user or because the sheet enforces
-// prerequisites and this trait's are unsatisfied. Parents are not consulted; see Enabled for that.
+// selfDisabled returns true if this trait itself is disabled, either by the user, because the sheet enforces
+// prerequisites and this trait's are unsatisfied, or because the grant that put it on the sheet is not in effect.
+// Parents are not consulted; see Enabled for that.
 func (t *Trait) selfDisabled() bool {
-	return t.IsDisabled() || t.prereqVerdict == prereqsDisable
+	return t.IsDisabled() || t.prereqVerdict == prereqsDisable || t.grantNotInEffect()
 }
 
 // PrereqStatus returns what to show for the trait's prerequisites, in the trait table, the "calc" object and the
@@ -520,7 +537,10 @@ func (t *Trait) CellData(columnID int, data *CellData) {
 		}
 		data.Primary += parenthetical(slices.Concat(t.titleNotes(true), parts, t.titleNotes(false)))
 		data.Secondary = t.SecondaryText(func(option display.Option) bool { return option.Inline() })
-		data.Disabled = t.EffectivelyDisabled()
+		// A granted trait whose grant is not in effect is dimmed but not struck through.
+		data.Disabled = t.EffectivelyDisabled() && !t.grantNotInEffect()
+		data.GrantedBy = grantedByText(t.Granted, &t.grant)
+		data.Grants = EntityFromNode(t).grantSummary(t)
 		data.UnsatisfiedReason, data.PrereqContradiction = t.PrereqStatus()
 		data.UnresolvedChoice = unresolvedModifierChoiceText(t, t.Modifiers)
 		data.Tooltip = t.SecondaryText(func(option display.Option) bool { return option.Tooltip() })
@@ -618,7 +638,23 @@ func (t *Trait) CurrentLevel() fxp.Int {
 	return 0
 }
 
+// levelForPrereqsOf returns the trait's level as the prerequisites of exclude see it: as CurrentLevel does, but without
+// the levels grants carried by exclude merged into it, since an item never meets its own prerequisites with what it
+// grants.
+func (t *Trait) levelForPrereqsOf(exclude any) fxp.Int {
+	if t.Enabled() {
+		return t.currentLevelExcept(exclude, nil)
+	}
+	return 0
+}
+
 func (t *Trait) internalCurrentLevel(tooltip *xbytes.InsertBuffer) fxp.Int {
+	return t.currentLevelExcept(EntityFromNode(t).judgingOr(nil), tooltip)
+}
+
+// currentLevelExcept is internalCurrentLevel without the levels grants carried by exclude merged in; see
+// grantState.applyLevelNotes.
+func (t *Trait) currentLevelExcept(exclude any, tooltip *xbytes.InsertBuffer) fxp.Int {
 	if !t.IsLeveled() {
 		return 0
 	}
@@ -634,7 +670,8 @@ func (t *Trait) internalCurrentLevel(tooltip *xbytes.InsertBuffer) fxp.Int {
 	if entity := EntityFromNode(t); entity != nil {
 		levelAdjustment = entity.TraitBonusFor(t.NameWithReplacements(), t.Tags, tooltip)
 	}
-	return (t.Levels + levelAdjustment).Max(0)
+	// A level a grant keeps is compared with the trait's own, before the bonuses, which the kept one gets too.
+	return (t.grant.applyLevelNotes(exclude, t.Levels, tooltip, nil) + levelAdjustment).Max(0)
 }
 
 // ResolvedMaxLevels returns the maximum level for this trait, resolving the MaxLevels expression (a plain number or an
@@ -677,7 +714,7 @@ func (t *Trait) AdjustedPoints(_ *xbytes.InsertBuffer) fxp.Int {
 // adjustedPoints is AdjustedPoints with each modifier choice fixed holds a pick for counted as made with it (see
 // pointsRange).
 func (t *Trait) adjustedPoints(fixed modifierChoicePicks[*TraitModifier]) fxp.Int {
-	if t.EffectivelyDisabled() {
+	if t.EffectivelyDisabled() || t.Granted != nil {
 		return 0
 	}
 	if !t.Container() {
@@ -724,7 +761,7 @@ func (t *Trait) PointsRange(_ *xbytes.InsertBuffer) NumericRange {
 // it, as a container makes the choices among its modifiers for everything inside it.
 func (t *Trait) pointsRange(fixed modifierChoicePicks[*TraitModifier], view choiceView) NumericRange {
 	if !t.Container() {
-		if t.EffectivelyDisabled() {
+		if t.EffectivelyDisabled() || t.Granted != nil {
 			return NumericRangeOf(0)
 		}
 		if r, open := t.modifierChoicePointsRange(fixed, view); open {
@@ -789,7 +826,7 @@ func (t *Trait) pointsRangeFor(keys modifierChoicePicks[*TraitModifier], view ch
 	var ways *modifierChoiceWays[*TraitModifier, *Trait]
 	var cost NumericRange
 	switch {
-	case t.EffectivelyDisabled():
+	case t.EffectivelyDisabled() || t.Granted != nil:
 		cost = NumericRangeOf(0)
 	case choicesMade(t, view):
 		cost = NumericRangeOf(t.pointsWith(t.AllModifiers()))
@@ -1045,19 +1082,25 @@ func (t *Trait) titleNotes(before bool) []string {
 }
 
 // StringWithSavedCalc returns what String returned when the trait was last saved: its name and, when it is leveled, the
-// level its file's "calc" object recorded, which includes the level bonuses that were in effect at the time. It is for
-// a trait loaded by one of the loaders that keep the saved calc (NewEntityFromFileWithSavedCalc and its counterpart for
-// templates), whose entity, if it has one, has not been recalculated and so cannot resolve those bonuses itself. A
-// trait loaded any other way, or from a file written before the level was recorded, falls back to its unadjusted
-// level. So does a disabled trait, whose recorded level is zero where String shows the level it would have if
-// enabled. The title notes follow, as they do in String, though a modifier shown there that takes its level from the
-// trait shows the trait's level without bonuses.
+// level its file's "calc" object recorded it as showing, which includes the level bonuses that were in effect at the
+// time, whether or not the trait was. It is for a trait loaded by one of the loaders that keep the saved calc
+// (NewEntityFromFileWithSavedCalc and its counterpart for templates), whose entity, if it has one, has not been
+// recalculated and so cannot resolve those bonuses itself. A trait loaded any other way, or from a file written before
+// any level was recorded, falls back to its unadjusted level. A file written when only the current level was recorded,
+// which is zero for a trait not in effect, is read as that level unless the trait was disabled by the user or for
+// unmet prerequisites the file recorded, or is a granted one at level zero, whose grant may not have been in effect,
+// since String shows the level such a trait would have; those fall back too. The title notes follow, as they do in
+// String, though a modifier shown there that takes its level from the trait shows the trait's level without bonuses.
 func (t *Trait) StringWithSavedCalc() string {
 	if !t.IsLeveled() {
 		return t.NameWithReplacements() + parenthetical(t.TitleNotes())
 	}
 	level := t.Levels.Max(0)
-	if t.savedCurrentLevel != nil && t.Enabled() {
+	switch {
+	case t.savedLevel != nil:
+		level = *t.savedLevel
+	case t.savedCurrentLevel != nil && !userDisabled(t) && !t.savedUnsatisfied &&
+		(*t.savedCurrentLevel != 0 || t.Granted == nil):
 		level = *t.savedCurrentLevel
 	}
 	return t.NameWithReplacements() + " " + level.String() + parenthetical(t.TitleNotes())

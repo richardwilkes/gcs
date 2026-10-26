@@ -16,6 +16,7 @@ import (
 	"errors"
 	"fmt"
 	"hash"
+	"maps"
 
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/gcs/v5/model/kinds"
@@ -119,6 +120,23 @@ func Hash64(in Hashable) uint64 {
 	h := xxh3.New()
 	in.Hash(h)
 	return h.Sum64()
+}
+
+// SameItem reports whether two rows with the same Hash64 describe the same item: they also need the same nameable
+// replacements and, for rows that carry a tech level, the same tech level, neither of which is part of the hash.
+func SameItem[T interface {
+	Hashable
+	NameableReplacements() map[string]string
+}](a, b T) bool {
+	if !maps.Equal(a.NameableReplacements(), b.NameableReplacements()) {
+		return false
+	}
+	if tla, ok := any(a).(TechLevelProvider); ok {
+		if tlb, ok2 := any(b).(TechLevelProvider); ok2 {
+			return sameTechLevel(tla, tlb)
+		}
+	}
+	return true
 }
 
 // HashJSON writes the JSON encoding of the given object into the hasher, without any of the "calc" members. This is how

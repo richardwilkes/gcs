@@ -288,7 +288,10 @@ func (p *prereqPanel) status(node gurps.Prereq, checks map[gurps.Prereq]prereqCh
 	default:
 	}
 	var buffer xbytes.InsertBuffer
-	gurps.SuppressScriptResolveErrorLogging(func() { node.Satisfied(p.entity, p.exclude(), &buffer, "\n- ", nil) })
+	gurps.SuppressScriptResolveErrorLogging(func() {
+		exclude := p.exclude()
+		p.entity.JudgingPrereqsOf(exclude, func() { node.Satisfied(p.entity, exclude, &buffer, "\n- ", nil) })
+	})
 	// One unmet item reads as a sentence; more are a list.
 	reason := buffer.String()
 	if strings.Count(reason, "\n") == 1 {

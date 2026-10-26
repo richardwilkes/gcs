@@ -10,7 +10,6 @@
 package ux
 
 import (
-	"maps"
 	"slices"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
@@ -31,22 +30,6 @@ func entityTechLevel[T gurps.Node[T]](table *unison.Table[*Node[T]]) string {
 		}
 	}
 	return ""
-}
-
-// resolveEmptyTechLevel replaces an empty (but present) tech level with defaultTechLevel. This is the substitution
-// performed when a row is dropped onto a sheet and when a template's rows are merged into one, so both must agree.
-func resolveEmptyTechLevel(item gurps.TechLevelProvider, defaultTechLevel string) {
-	if item.RequiresTL() && item.TL() == "" {
-		item.SetTL(defaultTechLevel)
-	}
-}
-
-// sameTechLevel reports whether two rows' tech levels match for merge purposes: both absent, or both present and equal.
-func sameTechLevel(a, b gurps.TechLevelProvider) bool {
-	if a.RequiresTL() != b.RequiresTL() {
-		return false
-	}
-	return !a.RequiresTL() || a.TL() == b.TL()
 }
 
 // mergeableNode is the set of row types whose identical rows are merged by folding their points together: skills and
@@ -70,6 +53,9 @@ type mergeableNode[T gurps.Node[T]] interface {
 // turn a required row into an optional one, and an incoming option is never folded away into a row already present,
 // which would take it out of its choice.
 //
+// A row a grant put on the sheet takes no part either: it holds no points of its own, and it gives way to a row the
+// user adds, which the grant then merges into instead.
+//
 // An incoming row with an empty (but non-nil) tech level has it resolved to defaultTechLevel first, mirroring the
 // substitution performed on drop by the skills and spells providers. Without this, a template applied a second time
 // would compare the incoming empty tech level against the already-resolved tech level of the existing row, fail to
@@ -77,7 +63,7 @@ type mergeableNode[T gurps.Node[T]] interface {
 func mergePoints[T mergeableNode[T]](existing, incoming []T, defaultTechLevel string, selMap map[tid.TID]bool) []T {
 	byHash := make(map[uint64][]T)
 	gurps.Traverse(func(item T) bool {
-		if isChoiceOption(item) {
+		if isChoiceOption(item) || gurps.IsGranted(item) {
 			return false
 		}
 		hash := gurps.Hash64(item)
@@ -86,15 +72,14 @@ func mergePoints[T mergeableNode[T]](existing, incoming []T, defaultTechLevel st
 	}, true, true, existing...)
 	pruneMap := make(map[T]bool)
 	gurps.Traverse(func(item T) bool {
-		resolveEmptyTechLevel(item, defaultTechLevel)
+		gurps.ResolveEmptyTechLevel(item, defaultTechLevel)
 		if isChoiceOption(item) {
 			return false
 		}
 		hash := gurps.Hash64(item)
 		matched := false
 		for _, candidate := range byHash[hash] {
-			if !maps.Equal(candidate.NameableReplacements(), item.NameableReplacements()) ||
-				!sameTechLevel(candidate, item) {
+			if !gurps.SameItem(candidate, item) {
 				continue
 			}
 			pruneMap[item] = true

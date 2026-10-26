@@ -58,8 +58,8 @@ func TestCellDataForAccessibilityLeavesOutTheContainerMarker(t *testing.T) {
 // TestLabelCellTooltipKeepsTheCellsOwnTextBehindAContradiction verifies which tooltip a label cell shows: a
 // contradiction among the prerequisites is explained ahead of the cell's own tooltip rather than in place of it, since
 // the row is enabled and in use, while the reason for an unsatisfied prerequisite replaces it, since the row is flagged
-// as broken and the reason is what puts it right. The explanation of an unresolved modifier choice goes ahead of
-// whatever else the tooltip says.
+// as broken and the reason is what puts it right. The explanation of an unresolved modifier choice goes ahead of the
+// rest, behind only where a granted item came from.
 func TestLabelCellTooltipKeepsTheCellsOwnTextBehindAContradiction(t *testing.T) {
 	c := check.New(t)
 	c.Equal("", labelCellTooltip(&gurps.CellData{}), "a cell with nothing to say has no tooltip")
@@ -70,6 +70,8 @@ func TestLabelCellTooltipKeepsTheCellsOwnTextBehindAContradiction(t *testing.T) 
 		"a contradiction is explained on its own when the cell has no tooltip of its own")
 	checkTooltipBlocks(c, labelCellTooltip(&gurps.CellData{Tooltip: "own", PrereqContradiction: "clash"}), "clash", "own",
 		"a contradiction is explained ahead of the cell's own tooltip, not in place of it")
+	c.Equal("granted\n\n---\nwhy", labelCellTooltip(&gurps.CellData{GrantedBy: "granted", UnsatisfiedReason: "why"}),
+		"where a granted item came from leads the tooltip")
 	c.Equal("pick", labelCellTooltip(&gurps.CellData{UnresolvedChoice: "pick"}),
 		"an unresolved choice is explained on its own when the cell has nothing else to say")
 	checkTooltipBlocks(c, labelCellTooltip(&gurps.CellData{UnresolvedChoice: "pick", Tooltip: "notes"}), "pick", "notes",
@@ -652,5 +654,35 @@ func TestLabelCellKeepsTheNotesButtonWithinTheCell(t *testing.T) {
 		if right > width {
 			t.Fatalf("at a width of %.2f the notes button reaches %.2f, past the edge of the cell", width, right)
 		}
+	}
+}
+
+// TestDimmedMarkdownCellFiltersEveryInk verifies that the notes of a dimmed row draw their code, quote bars and links
+// as the rest of the row is drawn, through the same color filter as the text.
+func TestDimmedMarkdownCellFiltersEveryInk(t *testing.T) {
+	c := check.New(t)
+	_, table := NewNodeTable(NewTraitsProvider(gurps.NewEntity(), false), nil)
+	trait := gurps.NewTrait(nil, nil, false)
+	trait.Name = "Dim"
+	n := NewNode(table, nil, trait, false)
+	md, ok := n.createMarkdownCell("`code`\n\n> quote", 200, unison.FieldFont, unison.ThemeOnSurface, unison.ThemeSurface,
+		false, true).AsPanel().Self.(*unison.Markdown)
+	if !ok {
+		t.Fatal("the cell is not a markdown panel")
+	}
+	filtered := func(ink unison.Ink) bool {
+		_, isFiltered := ink.(*unison.ColorFilteredInk)
+		return isFiltered
+	}
+	c.True(filtered(md.OnBackgroundInk))
+	c.True(filtered(md.LinkInk))
+	c.True(filtered(md.LinkOnPressedInk))
+	c.True(filtered(md.CodeBackground), "code blocks are dimmed too")
+	c.True(filtered(md.OnCodeBackground))
+	for _, ink := range []unison.Ink{
+		md.QuoteBarColor, md.QuoteBarNoteColor, md.QuoteBarTipColor,
+		md.QuoteBarImportantColor, md.QuoteBarWarningColor, md.QuoteBarCautionColor,
+	} {
+		c.True(filtered(ink), "as are quote bars")
 	}
 }

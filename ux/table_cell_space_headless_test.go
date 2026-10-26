@@ -13,6 +13,7 @@ import (
 	"testing"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/feature"
 	"github.com/richardwilkes/gcs/v5/ux/uxtest"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/unison"
@@ -46,8 +47,16 @@ func TestSpaceOnACellWorksWhatTheCellHolds(t *testing.T) {
 		tr := gurps.NewTrait(entity, nil, false)
 		tr.Name = "Alpha"
 		tr.PageRef = ref
+		// Training grants Night Vision, whose notes the sheet shows inline, beside the mark of a granted row.
+		training := gurps.NewTrait(entity, nil, false)
+		training.Name = "Training"
+		g := gurps.NewGrant(feature.GrantTrait)
+		nightVision := newGrantTestTrait("Night Vision", 0)
+		nightVision.LocalNotes = "Seen in the dark"
+		g.SetItem(nightVision, gurps.LibraryFile{})
+		training.Features = gurps.Features{g}
 		// Replaces the new sheet's own traits, whose book references would prompt for a PDF if opened.
-		entity.Traits = []*gurps.Trait{tr}
+		entity.Traits = []*gurps.Trait{tr, training}
 		eq = gurps.NewEquipment(entity, nil, false)
 		eq.Name = "Rope"
 		eq.Equipped = true
@@ -109,4 +118,30 @@ func TestSpaceOnACellWorksWhatTheCellHolds(t *testing.T) {
 	nameCol := columnIndexForID(traits, gurps.TraitDescriptionColumn)
 	spaceOn(traits, func() bool { return traits.SetLeadCell(0, nameCol) })
 	c.Equal(before+1, dockables(), "space on a cell with nothing to press opens the editor")
+
+	// The granted row's name cell holds the mark of a granted row ahead of its notes button.
+	var granted *gurps.Trait
+	screen.Do(func() {
+		for _, one := range sheet.Entity().Traits {
+			if gurps.IsGranted(one) {
+				granted = one
+			}
+		}
+	})
+	if granted == nil {
+		t.Fatal("the sheet must show the granted trait")
+	}
+	noteKey := "N:" + string(granted.ID())
+	closed := gurps.IsClosed(noteKey)
+	before = dockables()
+	spaceOn(traits, func() bool { return traits.SetLeadCell(2, nameCol) })
+	var selected []*gurps.Trait
+	screen.Do(func() {
+		for _, row := range traits.SelectedRows(false) {
+			selected = append(selected, row.Data())
+		}
+	})
+	c.Equal(!closed, gurps.IsClosed(noteKey), "space on the name cell of a granted row with notes toggles the notes")
+	c.Equal([]*gurps.Trait{granted}, selected, "rather than selecting the item granting it")
+	c.Equal(before, dockables(), "and opens no editor")
 }

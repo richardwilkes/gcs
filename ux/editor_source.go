@@ -92,8 +92,8 @@ func syncChangesContainerType(target, source any) bool {
 
 // syncWithSource syncs the editor's data with the library's copy as a pending change, keeping the pending changes to
 // fields a sync doesn't cover, and rebuilds the content, which clears the editor's undo history. Editors open on the
-// data's modifiers and weapons are closed first (see closeSubEditorsForSync), since the sync replaces what they edit:
-// the modifiers with copies of themselves and the weapons with the library's.
+// data's modifiers, weapons and granted items are closed first (see closeSubEditorsForSync), since the sync replaces
+// what they edit: the modifiers with copies of themselves, and the weapons and the grants' items with the library's.
 func (e *editor[N, D]) syncWithSource() {
 	// Noted before the sub-editors are closed, since closing one gives the focus to the list it was opened from and
 	// scrolls the editor to that list.
@@ -115,6 +115,11 @@ func (e *editor[N, D]) syncWithSource() {
 		if state, data := gurps.MatchSource(edited); state == srcstate.Mismatched && !syncChangesContainerType(edited, data) {
 			before := modifierChoicePicker(edited)
 			edited.SyncWithSource()
+			if inGrantItemEditor(e) {
+				// A granted item grants nothing, so grants the library's copy gained are left out, as
+				// Grant.SyncItemWithSource leaves them out.
+				gurps.DropGrants(edited)
+			}
 			e.editorData.CopyFrom(edited)
 			if choice := modifierChoicePicker(edited); choice != before {
 				e.syncedChoice = &choice
@@ -125,24 +130,45 @@ func (e *editor[N, D]) syncWithSource() {
 	focus.restore(e.content, e.scroll)
 }
 
-// closeSubEditorsForSync closes the editors open on the data's modifiers and weapons, as CloseGroup does, returning
-// false if one of them stays open. A sync replaces every weapon with the library's, so saving the changes pending in a
-// weapon's editor would only have them thrown away, and such an editor asks whether to discard them instead. A sync
-// leaves the modifiers alone, so what is saved from a modifier's editor is kept. Closing either leaves the sync still
-// to be done: of what they edit, only the weapons count toward whether the data matches its source, and their pending
-// changes are not saved.
+// closeSubEditorsForSync closes the editors open on the data's modifiers, weapons and granted items, as CloseGroup
+// does, returning false if one of them stays open. A sync replaces every weapon and feature with the library's, so
+// saving the changes pending in the editor of a weapon or of a grant's item would only have them thrown away, and such
+// an editor asks whether to discard them instead, as does each editor opened from one of them, on a modifier or weapon
+// of the granted item, whose changes would go the same way. A sync leaves the modifiers alone, so what is saved from a
+// modifier's editor is kept. Closing any of them leaves the sync still to be done: of what they edit, only the weapons
+// and the features count toward whether the data matches its source, and their pending changes are not saved.
 func (e *editor[N, D]) closeSubEditorsForSync() bool {
-	var weaponEditors []*editor[*gurps.Weapon, *gurps.Weapon]
+	var shells []*editorShell
 	traverseGroup(e, func(target GroupedCloser) bool {
-		if weaponEditor, ok := target.(*editor[*gurps.Weapon, *gurps.Weapon]); ok {
-			weaponEditor.discardReason = i18n.Text("Syncing with the source replaces this weapon.")
-			weaponEditors = append(weaponEditors, weaponEditor)
+		var reason string
+		switch sub := target.(type) {
+		case *editor[*gurps.Weapon, *gurps.Weapon]:
+			reason = i18n.Text("Syncing with the source replaces this weapon.")
+		case Owned:
+			if _, isGrant := sub.Owner().(*grantItemOwner); isGrant {
+				reason = i18n.Text("Syncing with the source replaces this item.")
+			}
+		}
+		if reason == "" {
+			return false
+		}
+		mark := func(target GroupedCloser) bool {
+			if sub, ok := target.(interface{ shell() *editorShell }); ok {
+				shell := sub.shell()
+				shell.discardReason = reason
+				shells = append(shells, shell)
+			}
+			return false
+		}
+		mark(target)
+		if d, ok := target.(unison.Dockable); ok {
+			traverseGroupDeep(d, mark)
 		}
 		return false
 	})
 	closed := CloseGroup(e)
-	for _, weaponEditor := range weaponEditors {
-		weaponEditor.discardReason = ""
+	for _, shell := range shells {
+		shell.discardReason = ""
 	}
 	return closed
 }

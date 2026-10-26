@@ -10,6 +10,8 @@
 package ux
 
 import (
+	"slices"
+
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/toolbox/v2/xreflect"
 	"github.com/richardwilkes/unison"
@@ -21,16 +23,20 @@ type valueSnapshot[A, V any] struct {
 	value  V
 }
 
-// snapshotList is the undo payload for a value adjustment applied across one or more targets.
+// snapshotList is the undo payload for a value adjustment applied across one or more targets. lists holds the undo
+// data of the lists a grant can put rows in, for an adjustment that can take a target's grants away; see
+// grantRowListsOf.
 type snapshotList[A, V any] struct {
 	owner   Rebuildable
 	entity  *gurps.Entity
 	set     func(A, V)
 	list    []valueSnapshot[A, V]
+	lists   []tableRestorer
 	rebuild bool
 }
 
 func (s *snapshotList[A, V]) apply() {
+	restoreGrantRowLists(s.lists)
 	for i := range s.list {
 		s.set(s.list[i].target, s.list[i].value)
 	}
@@ -93,28 +99,30 @@ func ownerRebuildRecalculates(owner unison.Paneler, entity *gurps.Entity) bool {
 	return sheetOwning(owner, entity) != nil
 }
 
-// canAdjustSelection returns true if any selected row yields an adjustable target via extract.
+// canAdjustSelection returns true if any selected row other than a granted one, which changes only with its grant,
+// yields an adjustable target via extract.
 func canAdjustSelection[T gurps.Node[T], A any](table *unison.Table[*Node[T]], extract func(T) (A, bool)) bool {
 	for _, row := range table.SelectedRows(false) {
-		if _, ok := extract(row.Data()); ok {
+		if _, ok := extract(row.Data()); ok && !gurps.IsGranted(row.Data()) {
 			return true
 		}
 	}
 	return false
 }
 
-// adjustSelection snapshots and mutates each selected row that yields an adjustable target via extract, registering the
-// whole change as one undoable edit. When recalculate is true, the owning entity is recalculated after the change (and
-// on undo/redo). Pass rebuild for a change that alters more of what the owner shows than the rows being adjusted --
-// which lists are on the page, which columns they hold. The corresponding canAdjustSelection call should use the same
-// extract, so that the enable check and the action never diverge.
+// adjustSelection snapshots and mutates each selected row that yields an adjustable target via extract, granted rows
+// left alone as in canAdjustSelection, registering the whole change as one undoable edit. When recalculate is true, the
+// owning entity is recalculated after the change (and on undo/redo). Pass rebuild for a change that alters more of what
+// the owner shows than the rows being adjusted -- which lists are on the page, which columns they hold. The
+// corresponding canAdjustSelection call should use the same extract, so that the enable check and the action never
+// diverge.
 func adjustSelection[T gurps.Node[T], A, V any](undoTitle string, owner Rebuildable, table *unison.Table[*Node[T]],
 	extract func(T) (A, bool), get func(A) V, set func(A, V), mutate func(A), recalculate, rebuild bool,
 ) {
 	rows := table.SelectedRows(false)
 	targets := make([]A, 0, len(rows))
 	for _, row := range rows {
-		if target, ok := extract(row.Data()); ok {
+		if target, ok := extract(row.Data()); ok && !gurps.IsGranted(row.Data()) {
 			targets = append(targets, target)
 		}
 	}
@@ -139,10 +147,18 @@ func adjustTargets[A, V any](undoTitle string, owner Rebuildable, undoSource uni
 	}
 	before := &snapshotList[A, V]{owner: owner, entity: entity, set: set, rebuild: rebuild}
 	after := &snapshotList[A, V]{owner: owner, entity: entity, set: set, rebuild: rebuild}
+	// The rows the targets' grants put on the sheet go with them should the adjustment take the grants away, as
+	// disabling or unequipping a carrier does, so the lists they can be in are part of the edit; see grantRowListsOf.
+	if slices.ContainsFunc(targets, func(target A) bool { return targetCarriesGrants(target) }) {
+		before.lists = grantRowListsOf(owner, "")
+	}
 	for _, target := range targets {
 		before.list = append(before.list, valueSnapshot[A, V]{target: target, value: get(target)})
 		mutate(target)
 		after.list = append(after.list, valueSnapshot[A, V]{target: target, value: get(target)})
+	}
+	if len(before.lists) != 0 {
+		after.lists = grantRowListsOf(owner, "")
 	}
 	if mgr := unison.UndoManagerFor(undoSource); mgr != nil {
 		mgr.Add(&unison.UndoEdit[*snapshotList[A, V]]{
@@ -155,4 +171,24 @@ func adjustTargets[A, V any](undoTitle string, owner Rebuildable, undoSource uni
 		})
 	}
 	before.finish()
+}
+
+// targetCarriesGrants returns true if the target is a trait, skill, spell or piece of equipment that carries a grant,
+// or holds one within it that does.
+func targetCarriesGrants(target any) bool {
+	if xreflect.IsNil(target) {
+		return false
+	}
+	switch one := target.(type) {
+	case *gurps.Trait:
+		return carriesGrants([]*gurps.Trait{one})
+	case *gurps.Skill:
+		return carriesGrants([]*gurps.Skill{one})
+	case *gurps.Spell:
+		return carriesGrants([]*gurps.Spell{one})
+	case *gurps.Equipment:
+		return carriesGrants([]*gurps.Equipment{one})
+	default:
+		return false
+	}
 }

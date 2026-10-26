@@ -16,6 +16,7 @@ import (
 	"time"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/feature"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/gcs/v5/ux/uxtest"
 	"github.com/richardwilkes/toolbox/v2/check"
@@ -425,11 +426,33 @@ func TestApplySelectedModifiersAppliesASelectedContainerOnceAndRecordsItsSource(
 		"the copy of the modifier within the container must record the library file too")
 }
 
-func TestCanReceiveModifiersNeedsAProviderAndAnUndoManager(t *testing.T) {
+func TestCanReceiveModifiersNeedsATargetAProviderAndAnUndoManager(t *testing.T) {
 	c := check.New(t)
 	sheet := newApplyModifierTestSheet(t)
 	table := sheet.Traits.Table
 	c.True(canReceiveModifiers(table), "a sheet's list with traits in it can receive modifiers")
+
+	// A granted row can't take modifiers (see gurps.CanTakeModifiers), so a list holding nothing else offers nothing.
+	entity := sheet.Entity()
+	goggles := gurps.NewEquipment(entity, nil, false)
+	goggles.Name = "Goggles"
+	g := gurps.NewGrant(feature.GrantTrait)
+	nightVision := gurps.NewTrait(nil, nil, false)
+	nightVision.Name = "Night Vision"
+	g.SetItem(nightVision, gurps.LibraryFile{})
+	goggles.Features = gurps.Features{g}
+	entity.CarriedEquipment = append(entity.CarriedEquipment, goggles)
+	entity.Traits = nil
+	sheet.Rebuild(true)
+	table = sheet.Traits.Table
+	c.Equal(1, table.RootRowCount(), "the grant must put its row in the list for the check to mean anything")
+	c.False(canReceiveModifiers(table), "a list holding only granted rows cannot receive modifiers")
+	alpha := gurps.NewTrait(entity, nil, false)
+	alpha.Name = "Alpha"
+	entity.Traits = append(entity.Traits, alpha)
+	sheet.Rebuild(true)
+	table = sheet.Traits.Table
+	c.True(canReceiveModifiers(table), "the list must receive modifiers again once it holds a row that can take them")
 
 	provider := table.ClientData()[TableProviderClientKey]
 	delete(table.ClientData(), TableProviderClientKey)

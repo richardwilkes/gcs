@@ -569,27 +569,27 @@ func (ex *legacyExporter) includeByEquipmentTags(eqp *gurps.Equipment) bool {
 }
 
 func (ex *legacyExporter) includeAdvantages(t *gurps.Trait) bool {
-	return t.AdjustedPoints(nil) > fxp.One && ex.includeByTraitTags(t)
+	return t.ClassifyingPoints() > fxp.One && ex.includeByTraitTags(t)
 }
 
 func (ex *legacyExporter) includePerks(t *gurps.Trait) bool {
-	return t.AdjustedPoints(nil) == fxp.One && ex.includeByTraitTags(t)
+	return t.ClassifyingPoints() == fxp.One && ex.includeByTraitTags(t)
 }
 
 func (ex *legacyExporter) includeAdvantagesAndPerks(t *gurps.Trait) bool {
-	return t.AdjustedPoints(nil) > 0 && ex.includeByTraitTags(t)
+	return t.ClassifyingPoints() > 0 && ex.includeByTraitTags(t)
 }
 
 func (ex *legacyExporter) includeDisadvantages(t *gurps.Trait) bool {
-	return t.AdjustedPoints(nil) < -fxp.One && ex.includeByTraitTags(t)
+	return t.ClassifyingPoints() < -fxp.One && ex.includeByTraitTags(t)
 }
 
 func (ex *legacyExporter) includeQuirks(t *gurps.Trait) bool {
-	return t.AdjustedPoints(nil) == -fxp.One && ex.includeByTraitTags(t)
+	return t.ClassifyingPoints() == -fxp.One && ex.includeByTraitTags(t)
 }
 
 func (ex *legacyExporter) includeDisadvantagesAndQuirks(t *gurps.Trait) bool {
-	return t.AdjustedPoints(nil) < 0 && ex.includeByTraitTags(t)
+	return t.ClassifyingPoints() < 0 && ex.includeByTraitTags(t)
 }
 
 func (ex *legacyExporter) includeLanguages(t *gurps.Trait) bool {
@@ -868,7 +868,7 @@ func (ex *legacyExporter) processSkillsLoop(buffer []byte) {
 		ex.processBuffer(buffer, func(key string, _ []byte, index int) int {
 			switch key {
 			case pointsExportKey:
-				ex.writeEncodedText(s.AdjustedPoints(nil).String())
+				ex.writeEncodedText(s.PointsCost().String())
 			case "SL":
 				ex.writeEncodedText(s.CalculateLevel(nil).LevelAsString(s.Container()))
 			case "RSL":
@@ -907,7 +907,7 @@ func (ex *legacyExporter) processSpellsLoop(buffer []byte) {
 		ex.processBuffer(buffer, func(key string, _ []byte, index int) int {
 			switch key {
 			case pointsExportKey:
-				ex.writeEncodedText(s.AdjustedPoints(nil).String())
+				ex.writeEncodedText(s.PointsCost().String())
 			case descriptionExportKey:
 				ex.writeEncodedText(s.String())
 				ex.writeNote(s.Notes())

@@ -594,6 +594,7 @@ func (e *Equipment) CellData(columnID int, data *CellData) {
 		data.UnresolvedChoice = unresolvedModifierChoiceText(e, e.Modifiers)
 		data.Tooltip = e.SecondaryText(func(option display.Option) bool { return option.Tooltip() })
 		data.TemplateInfo = e.TemplatePicker.String()
+		data.Grants = EntityFromNode(e).grantSummary(e)
 	case EquipmentTLColumn:
 		data.Type = cell.Text
 		data.Primary = e.TechLevel

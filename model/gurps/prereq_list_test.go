@@ -187,12 +187,7 @@ func TestPrereqListEvaluate(t *testing.T) {
 	c := check.New(t)
 	visited := make(map[Prereq]CheckResult)
 	var reason string
-	root := list(true, later, script("true"), broken.Clone(nil), stuck.Clone(nil))
-	// A script that runs out of time is counted each time it is resolved, even when its result comes from the cache.
-	prev := scriptExecTimeLimitOverride.Load()
-	SetScriptExecTimeLimitForTesting(fxp.FromStringForced("0.01"))
-	defer scriptExecTimeLimitOverride.Store(prev)
-	stopped := abandonedScripts(e)
+	root := list(true, later, script("true"), broken.Clone(nil))
 	SuppressScriptResolveErrorLogging(func() {
 		root.Evaluate(e, nil, func(node Prereq, result CheckResult, why string) {
 			visited[node] = result
@@ -203,8 +198,25 @@ func TestPrereqListEvaluate(t *testing.T) {
 	})
 	c.Equal(map[Prereq]CheckResult{
 		later: CheckSkipped, broken: CheckSkipped, stuck: CheckSkipped, root.Prereqs[1]: CheckMet,
-		root.Prereqs[2]: CheckFailed, root.Prereqs[3]: CheckFailed, root: CheckFailed,
+		root.Prereqs[2]: CheckFailed, root: CheckFailed,
 	}, visited, "each prerequisite is visited with its own result")
-	c.Equal(int64(1), abandonedScripts(e)-stopped, "each script runs once, and none in a skipped list does")
 	c.Contains(reason, "SyntaxError", "a script that couldn't run gives its error")
+
+	// Whether a skipped list's scripts ran shows in the count of scripts stopped before they could answer, since a
+	// script that runs out of time is counted each time it is resolved, even when its result comes from the cache. The
+	// time limit is lowered for this evaluation alone, in which the only script that runs is the one meant to run out
+	// of it: a legitimate script has run out of so short a limit on a slow runner.
+	prev := scriptExecTimeLimitOverride.Load()
+	SetScriptExecTimeLimitForTesting(fxp.FromStringForced("0.01"))
+	defer scriptExecTimeLimitOverride.Store(prev)
+	stopped := abandonedScripts(e)
+	root = list(true, later, stuck.Clone(nil))
+	visited = make(map[Prereq]CheckResult)
+	SuppressScriptResolveErrorLogging(func() {
+		root.Evaluate(e, nil, func(node Prereq, result CheckResult, _ string) { visited[node] = result })
+	})
+	c.Equal(map[Prereq]CheckResult{
+		later: CheckSkipped, broken: CheckSkipped, stuck: CheckSkipped, root.Prereqs[1]: CheckFailed, root: CheckFailed,
+	}, visited, "a script that runs out of time has failed")
+	c.Equal(int64(1), abandonedScripts(e)-stopped, "each script runs once, and none in a skipped list does")
 }

@@ -98,12 +98,12 @@ func (p *SkillPrereq) Satisfied(entity *Entity, exclude any, tooltip *xbytes.Ins
 		techLevel = sk.TechLevel
 	}
 	// The criteria are resolved once rather than once per skill, and the name is tested first, since it rules out
-	// nearly every skill before the points, which take a walk of the skill's features to find, are looked at.
+	// nearly every skill before the points, which take a walk of the sheet's point bonuses to find, are looked at.
 	name := p.NameCriteria.Matcher(replacements)
 	specialization := p.SpecializationCriteria.Matcher(replacements)
 	optionalSpecialization := p.OptionalSpecializationCriteria.Matcher(replacements)
 	Traverse(func(sk *Skill) bool {
-		if exclude == sk {
+		if excludedFromPrereqs(exclude, sk) {
 			return false
 		}
 		if !name.Matches(sk.NameWithReplacements()) ||
@@ -111,14 +111,15 @@ func (p *SkillPrereq) Satisfied(entity *Entity, exclude any, tooltip *xbytes.Ins
 			!optionalSpecialization.Matches(sk.OptionalSpecializationWithReplacements()) {
 			return false
 		}
-		// A skill with no points spent on it doesn't count, even if it has a level from a default.
-		if points := sk.AdjustedPoints(nil); points == 0 || !p.PointsCriteria.Matches(points) ||
+		// A skill with no points, its own or those of the tier a grant gives it, doesn't count, even if it has a level
+		// from a default.
+		if points := sk.pointsForPrereqsOf(exclude); points == 0 || !p.PointsCriteria.Matches(points) ||
 			(p.TagsCriteria.Compare != criteria.AnyText && !p.TagsCriteria.MatchesList(replacements, sk.Tags...)) ||
 			(p.TitleNoteCriteria.Compare != criteria.AnyText &&
 				!p.TitleNoteCriteria.MatchesEach(replacements, sk.TitleNotes()...)) {
 			return false
 		}
-		satisfied = p.LevelCriteria.Matches(sk.LevelData.Level)
+		satisfied = p.LevelCriteria.Matches(sk.levelForPrereqsOf(exclude))
 		if satisfied && techLevel != nil {
 			satisfied = sk.TechLevel == nil || *techLevel == *sk.TechLevel
 		}

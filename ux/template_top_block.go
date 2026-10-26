@@ -29,6 +29,7 @@ const (
 	templatePanelPageRefHighlightFieldRefKey = templatePanelFieldPrefix + "page_ref_highlight"
 	templatePanelLocalNotesFieldRefKey       = templatePanelFieldPrefix + "local_notes"
 	templatePanelCurrentPointsFieldRefKey    = templatePanelFieldPrefix + "current_points"
+	templatePanelBodyTypeFieldRefKey         = templatePanelFieldPrefix + "body_type"
 )
 
 // createTopBlock returns the block at the top of the template that holds the values belonging to the template as a
@@ -194,7 +195,8 @@ func (t *Template) addBodyTypeRow(parent *unison.Panel) {
 	if t.template.BodyType == nil {
 		button.SetEnabled(false)
 	}
-	box := NewCheckBox(nil, "", "", func() check.Enum {
+	// The box is registered with the target manager, so that an undo reaches the one on the page after a rebuild.
+	box := NewCheckBox(t.targetMgr, templatePanelBodyTypeFieldRefKey, "", func() check.Enum {
 		return check.FromBool(t.template.BodyType != nil)
 	}, func(state check.Enum) {
 		if state == check.On {
@@ -209,6 +211,7 @@ func (t *Template) addBodyTypeRow(parent *unison.Panel) {
 	})
 	box.Font = fonts.PageFieldPrimary
 	box.SetTitle(i18n.Text("Set to"))
+	box.UndoTitle = i18n.Text("Set Body Type")
 	box.Accessibility.LabeledBy = label
 	row.AddChild(box)
 	row.AddChild(button)

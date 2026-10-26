@@ -796,6 +796,19 @@ func traverseGroup(d unison.Dockable, f func(target GroupedCloser) bool) {
 	}
 }
 
+// traverseGroupDeep is traverseGroup for the whole tree of dockables that close with d: those that close with it, those
+// that close with each of them, and so on. It returns true if f did.
+func traverseGroupDeep(d unison.Dockable, f func(target GroupedCloser) bool) bool {
+	for _, other := range AllDockables() {
+		if fe, ok := other.(GroupedCloser); ok && fe.CloseWithGroup(d) {
+			if f(fe) || traverseGroupDeep(other, f) {
+				return true
+			}
+		}
+	}
+	return false
+}
+
 // SaveDockable attempts to save the contents of the dockable using its existing path.
 func SaveDockable(d FileBackedDockable, saver func(filePath string) error, setUnmodified func()) bool {
 	filePath := d.BackingFilePath()

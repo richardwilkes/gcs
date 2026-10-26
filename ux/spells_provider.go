@@ -64,7 +64,10 @@ func (p *spellsProvider) ProcessDropData(_, to *unison.Table[*Node[*gurps.Spell]
 			if entity := dataOwner.OwningEntity(); entity != nil {
 				for _, row := range to.SelectedRows(true) {
 					gurps.Traverse(func(spell *gurps.Spell) bool {
-						resolveEmptyTechLevel(spell, entity.Profile.TechLevel)
+						// A granted spell changes only with its grant.
+						if !gurps.IsGranted(spell) {
+							gurps.ResolveEmptyTechLevel(spell, entity.Profile.TechLevel)
+						}
 						return false
 					}, false, true, row.Data())
 				}

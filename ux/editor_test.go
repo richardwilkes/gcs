@@ -17,6 +17,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/container"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/feature"
 	"github.com/richardwilkes/gcs/v5/ux/uxtest"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/toolbox/v2/geom"
@@ -411,6 +412,98 @@ func TestReadOnlyEditor(t *testing.T) {
 			c.Equal(!e.readOnly, e.Modified(), "a change to apply")
 			e.editorData.Name = trait.Name
 		}
+	})
+}
+
+// An editor open on a granted row follows the row through the recalculations that reconcile the sheet's grants: one
+// that remakes the row from a changed grant, as a new object under the same ID, has the editor show the new object,
+// closing the editors opened from it on the old object's modifiers, and one that takes the row off the sheet closes the
+// editor, whether the sheet is rebuilt or only marked modified.
+func TestGrantedRowEditorFollowsItsRow(t *testing.T) {
+	c := check.New(t)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
+	var sheet *Sheet
+	var training *gurps.Trait
+	var g *gurps.Grant
+	granted := func() *gurps.Trait {
+		for _, one := range sheet.Entity().Traits {
+			if gurps.IsGranted(one) {
+				return one
+			}
+		}
+		return nil
+	}
+	isOpen := func(d unison.Dockable) bool {
+		return slices.ContainsFunc(AllDockables(), func(open unison.Dockable) bool { return open.AsPanel().Self == d })
+	}
+	var e *editor[*gurps.Trait, *gurps.TraitEditData]
+	var modifierEditor unison.Dockable
+	screen.Do(func() {
+		sheet = newTestSheetForTemplate(t)
+		entity := sheet.Entity()
+		training = gurps.NewTrait(entity, nil, false)
+		training.Name = "Training"
+		item := newGrantTestTrait("Night Vision", fxp.Two)
+		item.Modifiers = []*gurps.TraitModifier{gurps.NewTraitModifier(nil, nil, false)}
+		g = gurps.NewGrant(feature.GrantTrait)
+		g.SetItem(item, gurps.LibraryFile{})
+		g.Level = fxp.Two
+		training.Features = gurps.Features{g}
+		entity.Traits = []*gurps.Trait{training}
+		sheet.Rebuild(true)
+		DisplayNewDockable(sheet)
+		row := granted()
+		if row == nil {
+			t.Fatal("precondition: the grant put its trait on the sheet")
+		}
+		e = EditTrait(sheet, row)
+		c.True(e.readOnly, "precondition: a granted row's editor only shows it")
+		c.Equal(fxp.Two, e.editorData.Levels)
+		EditTraitModifier(e, row.Modifiers[0])
+		for _, d := range AllDockables() {
+			if _, ok := d.AsPanel().Self.(*editor[*gurps.TraitModifier, *gurps.TraitModifierEditData]); ok {
+				modifierEditor = d
+			}
+		}
+		if modifierEditor == nil {
+			t.Fatal("precondition: the modifier's editor opened")
+		}
+	})
+
+	// Change the grant's level, as applying the carrier's editor does, and rebuild the sheet as that does too.
+	screen.Do(func() {
+		g.Level = fxp.Five
+		sheet.Rebuild(true)
+		row := granted()
+		c.NotNil(row, "the grant still puts its trait on the sheet")
+		c.True(isOpen(e), "the editor stays open")
+		c.True(e.target == row, "on the row's new object")
+		c.Equal(fxp.Five, e.editorData.Levels, "showing it as remade")
+		c.False(isOpen(modifierEditor), "the editor opened from it on the old object's modifier closes")
+		c.True(EditTrait(sheet, row) == e, "and opening the row again brings the editor forward instead of another")
+	})
+
+	// Disable the carrier by its checkmark, which only marks the sheet modified, taking the row off the sheet.
+	screen.Do(func() {
+		training.Disabled = true
+		sheet.MarkModified(nil)
+		c.Nil(granted(), "precondition: the disabled carrier's grant takes its trait off the sheet")
+		c.False(isOpen(e), "the editor closes with the row")
+	})
+
+	// Open the editor again, then take the grant away altogether.
+	screen.Do(func() {
+		training.Disabled = false
+		sheet.Rebuild(true)
+		row := granted()
+		if row == nil {
+			t.Fatal("precondition: the grant put its trait back on the sheet")
+		}
+		e = EditTrait(sheet, row)
+		training.Features = nil
+		sheet.Rebuild(true)
+		c.Nil(granted(), "precondition: the trait leaves the sheet with its grant")
+		c.False(isOpen(e), "the editor closes with the row")
 	})
 }
 

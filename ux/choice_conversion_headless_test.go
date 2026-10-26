@@ -21,7 +21,9 @@ import (
 
 // TestChoiceConversionClosesEditors verifies that no editor is left open on a container whose kind has changed under
 // it. Converting closes the editor first, and undo and redo discard an editor opened on the other kind of container,
-// since applying it would silently convert the container back and throw away what the undo or redo restored.
+// since applying it would silently convert the container back and throw away what the undo or redo restored. A modified
+// editor opened from that editor, on one of the group's modifiers, is discarded with it without being asked, since what
+// it would save goes into the data being dropped.
 func TestChoiceConversionClosesEditors(t *testing.T) {
 	c := check.New(t)
 	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
@@ -29,6 +31,9 @@ func TestChoiceConversionClosesEditors(t *testing.T) {
 	group := gurps.NewTrait(nil, nil, true)
 	group.Name = "Advantages"
 	group.Tags = []string{"Advantage"}
+	modifier := gurps.NewTraitModifier(nil, nil, false)
+	modifier.Name = "Long"
+	group.Modifiers = []*gurps.TraitModifier{modifier}
 	data := gurps.NewTemplate()
 	data.Traits = []*gurps.Trait{group}
 	var template *Template
@@ -36,16 +41,20 @@ func TestChoiceConversionClosesEditors(t *testing.T) {
 		template = NewTemplate("test"+gurps.TemplatesExt, data)
 		DisplayNewDockable(template)
 	})
-	editorsOpen := func() int {
+	isGroupEditor := func(d unison.Dockable) bool {
+		e, ok := d.(*editor[*gurps.Trait, *gurps.TraitEditData])
+		return ok && e.target == group
+	}
+	isModifierEditor := func(d unison.Dockable) bool {
+		_, ok := d.(*editor[*gurps.TraitModifier, *gurps.TraitModifierEditData])
+		return ok
+	}
+	open := func(match func(unison.Dockable) bool) int {
 		var count int
-		screen.Do(func() {
-			count = len(AllMatchingDockables(func(d unison.Dockable) bool {
-				e, ok := d.(*editor[*gurps.Trait, *gurps.TraitEditData])
-				return ok && e.target == group
-			}))
-		})
+		screen.Do(func() { count = len(AllMatchingDockables(match)) })
 		return count
 	}
+	editorsOpen := func() int { return open(isGroupEditor) }
 	var mgr *unison.UndoManager
 	screen.Do(func() {
 		mgr = unison.UndoManagerFor(template.Traits.Table)
@@ -71,7 +80,22 @@ func TestChoiceConversionClosesEditors(t *testing.T) {
 
 	screen.Do(func() { EditTrait(template, group) })
 	c.Equal(1, editorsOpen(), "the group's editor must be open")
-	screen.Do(mgr.Redo)
+	groupEditor := uxtest.SoleEditor[*editor[*gurps.Trait, *gurps.TraitEditData]](t, screen, isGroupEditor)
+	screen.Do(func() { EditTraitModifier(groupEditor, groupEditor.editorData.Modifiers[0]) })
+	modifierEditor := uxtest.SoleEditor[*editor[*gurps.TraitModifier, *gurps.TraitModifierEditData]](t, screen,
+		isModifierEditor)
+	screen.Do(func() {
+		modifierEditor.editorData.Name = "Longer"
+		modifierEditor.MarkModified(nil)
+	})
+	// The redo is posted rather than run through Do, since a prompt about the modifier editor's changes, which there
+	// must not be, would run a modal loop that Do would wait on.
+	screen.Post(mgr.Redo)
+	screen.Sync()
+	var windows int
+	screen.Do(func() { windows = len(unison.Windows()) })
+	c.Equal(1, windows, "redo must not ask about the changes made in the editor opened from the group's editor")
 	c.True(gurps.IsTemplateChoiceContainer(group), "redo must convert the group again")
 	c.Equal(0, editorsOpen(), "redo must discard the editor opened on the group")
+	c.Equal(0, open(isModifierEditor), "and the editor opened from it")
 }

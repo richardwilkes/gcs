@@ -212,6 +212,7 @@ func TestMenuBarStructure(t *testing.T) {
 		"Toggle State",
 		"Swap Defaults",
 		"Apply Modifier",
+		"Add as Grant",
 		"---",
 		"Copy to Character Sheet",
 		"Copy to Template",

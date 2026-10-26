@@ -214,8 +214,9 @@ func initSkillEditor(e *editor[*gurps.Skill, *gurps.SkillEditData], content *uni
 				localName := nameable.Apply(e.editorData.Name, e.target.Replacements)
 				localSpec := nameable.Apply(e.editorData.Specialization, e.target.Replacements)
 				localOptionalSpec := nameable.Apply(e.editorData.OptionalSpecialization, e.target.Replacements)
-				points := gurps.AdjustedPointsForNonContainerSkillOrTechnique(entity, e.editorData.Points, localName,
-					localSpec, localOptionalSpec, e.editorData.Tags, nil)
+				// What grants gave the skill counts, as it does on the sheet.
+				points := e.target.PointsWithGrants(gurps.AdjustedPointsForNonContainerSkillOrTechnique(entity,
+					e.editorData.Points, localName, localSpec, localOptionalSpec, e.editorData.Tags, nil))
 				var level gurps.Level
 				if e.target.IsTechnique() {
 					level = gurps.CalculateTechniqueLevel(entity, e.target.NameableReplacements(), localName, localSpec,
@@ -226,9 +227,15 @@ func initSkillEditor(e *editor[*gurps.Skill, *gurps.SkillEditData], content *uni
 					if localOptionalSpec != "" && adjDiff.Difficulty != difficulty.Wildcard && adjDiff.Difficulty > difficulty.Easy {
 						adjDiff.Difficulty--
 					}
-					level = gurps.CalculateSkillLevel(entity, localName, localSpec, localOptionalSpec, e.editorData.Tags,
-						e.editorData.DefaultedFrom, adjDiff, points,
-						e.editorData.EncumbrancePenaltyMultiplier)
+					levelAt := func(points fxp.Int) gurps.Level {
+						return gurps.CalculateSkillLevel(entity, localName, localSpec, localOptionalSpec,
+							e.editorData.Tags, e.editorData.DefaultedFrom, adjDiff, points,
+							e.editorData.EncumbrancePenaltyMultiplier)
+					}
+					level = e.target.LevelWithGrants(levelAt(points), func(tierPoints fxp.Int) fxp.Int {
+						return levelAt(gurps.AdjustedPointsForNonContainerSkillOrTechnique(entity, tierPoints, localName,
+							localSpec, localOptionalSpec, e.editorData.Tags, nil)).Level
+					})
 				}
 				lvl := level.Level.Floor()
 				if lvl <= 0 {

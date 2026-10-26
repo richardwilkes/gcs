@@ -74,9 +74,9 @@ func (p *AttributePrereq) Satisfied(entity *Entity, _ any, tooltip *xbytes.Inser
 	if entity == nil {
 		return true
 	}
-	value := entity.ResolveAttributeCurrent(p.Which)
+	value := entity.resolveAttributeCurrentForPrereqs(p.Which)
 	if p.CombinedWith != "" {
-		value += entity.ResolveAttributeCurrent(p.CombinedWith)
+		value += entity.resolveAttributeCurrentForPrereqs(p.CombinedWith)
 	}
 	satisfied := p.QualifierCriteria.Matches(value)
 	if !p.Has {

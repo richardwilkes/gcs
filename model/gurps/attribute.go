@@ -116,11 +116,16 @@ func (a *Attribute) AttributeDef() *AttributeDef {
 
 // Maximum returns the maximum value of a pool or the adjusted attribute value for other types.
 func (a *Attribute) Maximum() fxp.Int {
+	return a.maximumWithBonus(a.Bonus)
+}
+
+// maximumWithBonus is Maximum with the given bonus in place of the attribute's own.
+func (a *Attribute) maximumWithBonus(bonus fxp.Int) fxp.Int {
 	def := a.AttributeDef()
 	if def == nil || def.IsSeparator() {
 		return 0
 	}
-	maximum := def.BaseValue(a) + a.Adjustment + a.Bonus
+	maximum := def.BaseValue(a) + a.Adjustment + bonus
 	if !def.AllowsDecimal() {
 		maximum = maximum.Floor()
 	}
@@ -179,11 +184,16 @@ func (a *Attribute) NameMatches(name string) bool {
 
 // Current returns the current value. Same as .Maximum() if not a pool.
 func (a *Attribute) Current() fxp.Int {
+	return a.currentWithBonus(a.Bonus)
+}
+
+// currentWithBonus is Current with the given bonus in place of the attribute's own.
+func (a *Attribute) currentWithBonus(bonus fxp.Int) fxp.Int {
 	def := a.AttributeDef()
 	if def == nil || def.IsSeparator() {
 		return 0
 	}
-	maximum := a.Maximum()
+	maximum := a.maximumWithBonus(bonus)
 	if def.Type != attribute.Pool && def.Type != attribute.PoolRef {
 		return maximum
 	}

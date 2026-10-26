@@ -552,17 +552,19 @@ func (w *Weapon) skillLevel(tooltip *xbytes.InsertBuffer) fxp.Int {
 
 // usesCrossbowSkill reports whether the weapon is wielded with the Crossbow skill. A default may name it outright,
 // which counts whether or not the character has the skill, or select it by some other criteria (a tag, say), in which
-// case the skill the default resolves to decides.
+// case the skill the default resolves to decides. The name is matched as an "is" criterion matches it: ignoring case
+// and surrounding space.
 func (w *Weapon) usesCrossbowSkill(e *Entity) bool {
+	isCrossbow := func(name string) bool { return strings.EqualFold(strings.TrimSpace(name), "Crossbow") }
 	replacements := w.NameableReplacements()
 	for _, def := range w.Defaults {
 		if !def.SkillBased() {
 			continue
 		}
-		if def.Name.Compare.EnsureValid() == criteria.IsText && def.NameWithReplacements(replacements) == "Crossbow" {
+		if def.Name.Compare.EnsureValid() == criteria.IsText && isCrossbow(def.NameWithReplacements(replacements)) {
 			return true
 		}
-		if sk := def.bestFastMatchingSkill(e, replacements, false, nil); sk != nil && sk.NameWithReplacements() == "Crossbow" {
+		if sk := def.bestFastMatchingSkill(e, replacements, false, nil); sk != nil && isCrossbow(sk.NameWithReplacements()) {
 			return true
 		}
 	}

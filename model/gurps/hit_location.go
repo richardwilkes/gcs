@@ -145,7 +145,7 @@ func (h *HitLocation) DR(entity *Entity, tooltip *xbytes.InsertBuffer, drMap map
 			}
 			fmt.Fprintf(&buffer, i18n.Text("\n- **DR %d** against **%s** attacks"), value, k)
 		}
-		buffer.WriteString("\n---\n")
+		buffer.WriteString("\n\n---\n")
 		_ = tooltip.Insert(0, buffer.Bytes())
 	}
 	return drMap

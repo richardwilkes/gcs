@@ -93,6 +93,19 @@ func TestNameablesPanelReordersOptionsByDragging(t *testing.T) {
 	c.Equal([]string{"Judo", "Karate", "Boxing"}, defs["style"].Options, "a drop is one step to undo")
 }
 
+// TestNameablesStateHashTellsReorderedOptionsApart checks that the hash by which the panel tells an edit from no change
+// sees options reordered even when their texts run together the same way in either order, as "x" and "x x" do.
+func TestNameablesStateHashTellsReorderedOptionsApart(t *testing.T) {
+	c := check.New(t)
+	before := &nameablesState{defs: map[string]nameable.Detail{"style": {Options: []string{"x", "x x"}}}}
+	after := &nameablesState{defs: map[string]nameable.Detail{"style": {Options: []string{"x x", "x"}}}}
+	c.NotEqual(before.hash(), after.hash(), "reordered options are a change")
+	c.Equal(before.hash(), before.clone().hash(), "a copy hashes the same")
+	linked := before.clone()
+	linked.links = map[tid.TID]map[string]string{"m": {"art": "style"}}
+	c.NotEqual(before.hash(), linked.hash(), "a link is a change")
+}
+
 func TestNameablesPanelPills(t *testing.T) {
 	c := check.New(t)
 	screen, _ := uxtest.StartHeadlessWorkspace(t, c)

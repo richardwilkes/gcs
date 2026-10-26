@@ -533,7 +533,7 @@ func (s *SkillDefault) SkillLevelFast(entity *Entity, replacements map[string]st
 		if !s.isTLPermitted(entity, "") {
 			return fxp.Min
 		}
-		level := entity.ResolveAttributeCurrent(s.Type())
+		level := entity.resolveAttributeCurrentForPrereqs(s.Type())
 		if level != fxp.Min {
 			if ruleOf20 {
 				level = level.Min(fxp.Twenty)

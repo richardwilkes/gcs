@@ -15,6 +15,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/criteria"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/difficulty"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/grantmerge"
 	"github.com/richardwilkes/toolbox/v2/check"
 )
 
@@ -476,4 +477,27 @@ func swapViaUI(skill *Skill) {
 	} else {
 		skill.SwapToNextDefault()
 	}
+}
+
+// TestSwapDefaultsLeavesGrantedSkillsAlone verifies that a skill a grant put on the sheet, which changes only with its
+// grant, neither swaps its own default nor serves as the partner of a swap.
+func TestSwapDefaultsLeavesGrantedSkillsAlone(t *testing.T) {
+	c := check.New(t)
+	e := NewEntity()
+	shortsword := addTestSkill(e, "Shortsword", "", "", fxp.One)
+	shortsword.Defaults = []*SkillDefault{newSkillDefaultTo("Broadsword", "", true, -fxp.Two)}
+	broadsword := newEasySkill("Broadsword", fxp.One)
+	broadsword.Difficulty.Difficulty = difficulty.Average
+	broadsword.Defaults = []*SkillDefault{newSkillDefaultTo("Shortsword", "", true, -fxp.Two)}
+	addTraitWithFeatures(e, "Training", newSkillGrant(broadsword, fxp.Four, grantmerge.Ignore))
+	e.Recalculate()
+	granted := grantedOf(e.Skills)[0]
+	c.NotNil(shortsword.DefaultedFrom, "precondition: Shortsword defaults to the granted Broadsword")
+	c.False(granted.CanSwapDefaults(), "a granted skill's default is its grant's business")
+	c.False(shortsword.CanSwapDefaultsWith(granted), "nor can another skill swap with it")
+	c.Nil(shortsword.BestSwappableSkill())
+	swapViaUI(shortsword)
+	e.Recalculate()
+	c.NotNil(shortsword.DefaultedFrom, "so the swap changes nothing")
+	c.Nil(granted.DefaultedFrom)
 }

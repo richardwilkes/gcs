@@ -105,6 +105,7 @@ type features struct {
 	traitMaxLevelBonuses []*TraitMaxLevelBonus
 	weaponBonuses        []*WeaponBonus
 	selectorOverrides    []*SelectorOverride
+	grants               map[*Grant]bool
 }
 
 // Entity holds the base information for various types of entities: PC, NPC, Creature, etc.
@@ -120,6 +121,9 @@ type Entity struct {
 	BlockBonusTooltip              string
 	srcMatcher                     *SrcMatcher
 	features                       features
+	grantPlans                     []grantPlan
+	grantHolders                   []grantHolder
+	grantCarriersJudged            bool
 	variableResolverExclusions     map[string]bool
 	skillResolverExclusions        map[string]bool
 	scriptCache                    map[scriptResolveKey]scriptResolveResult // not safe for concurrent use
@@ -146,6 +150,12 @@ type Entity struct {
 	derivedStateChanged bool
 	// profileReadByScript records whether a script has read one of the profile's fields; see ProfileReadByScript.
 	profileReadByScript bool
+	// judging is the item whose prerequisites are being judged, while they are; see JudgingPrereqsOf.
+	judging any
+	// scriptsForPrereqs is the depth of the computations in progress whose scripts run as the prerequisites being
+	// judged see the sheet: the attribute values read for them (see attributeForPrereqs) and the script prerequisites
+	// themselves (see ScriptPrereq.Evaluate); see resolveScript.
+	scriptsForPrereqs int
 }
 
 // NewEntityFromFile loads an Entity from a file.
@@ -498,6 +508,7 @@ func (e *Entity) recalculate(passBudget int) int {
 		e.recalculating--
 		e.derivedGeneration++
 	}()
+	e.reconcileGrants()
 	e.EnsureAttachments()
 	e.DiscardCaches()
 	e.SourceMatcher().PrepareHashes(e)
@@ -659,6 +670,7 @@ func (e *Entity) markContradictedTraits(verdicts [][]traitPrereqVerdict, cyclic 
 func (e *Entity) recalculationPass() {
 	e.discardCaches(true)
 	e.processFeatures()
+	e.applyGrants()
 	e.applyEquipmentPenalties()
 	e.processSkillAndSpellPrereqs()
 	e.UpdateSkills()
@@ -699,11 +711,13 @@ func (e *Entity) settleOnCanonicalCycleState(cycle [][]uint64) {
 
 // derivedState fingerprints the derived state that one recalculation pass hands to the next, one fingerprint per
 // trait, skill and spell in traversal order: whether the sheet has disabled the trait, the level of the skill or spell
-// and whether it takes the missing-equipment penalty, and the default of the skill, each along with the ID of what it
-// describes. Everything else a pass reads is either the sheet's data or recomputed from these before it is read, so
-// two passes that begin from the same state end in the same one, and a state seen before means the passes have
-// entered a cycle they will never leave. Whether a trait was judged at all is left out, since the next pass reads only
-// whether it is enabled. The capacity is a hint for the length and may be zero.
+// and whether it takes the missing-equipment penalty, the default of the skill, and what the grants gave each, each
+// along with the ID of what it describes, followed by one fingerprint of whether each grant's carrier has its
+// prerequisites met, which the next pass's applyGrants reads (see grantCarrierUnmet). Everything else a pass reads is
+// either the sheet's data or recomputed from these before it is read, so two passes that begin from the same state end
+// in the same one, and a state seen before means the passes have entered a cycle they will never leave. Whether a
+// trait was judged at all is left out, since the next pass reads only whether it is enabled. The capacity is a hint
+// for the length and may be zero.
 func (e *Entity) derivedState(capacity int) []uint64 {
 	state := make([]uint64, 0, capacity)
 	h := xxh3.New()
@@ -714,13 +728,17 @@ func (e *Entity) derivedState(capacity int) []uint64 {
 		state = append(state, h.Sum64())
 	}
 	Traverse(func(t *Trait) bool {
-		fingerprint(t.TID, func() { xhash.Bool(h, t.prereqVerdict == prereqsDisable) })
+		fingerprint(t.TID, func() {
+			xhash.Bool(h, t.prereqVerdict == prereqsDisable)
+			t.grant.hash(h)
+		})
 		return false
 	}, false, false, e.Traits...)
 	Traverse(func(s *Skill) bool {
 		fingerprint(s.TID, func() {
 			s.LevelData.Hash(h)
 			xhash.Bool(h, s.takesEquipmentPenalty)
+			s.grant.hash(h)
 			xhash.Bool(h, s.DefaultedFrom != nil)
 			if s.DefaultedFrom != nil {
 				s.DefaultedFrom.Hash(h)
@@ -735,9 +753,17 @@ func (e *Entity) derivedState(capacity int) []uint64 {
 		fingerprint(s.TID, func() {
 			s.LevelData.Hash(h)
 			xhash.Bool(h, s.takesEquipmentPenalty)
+			s.grant.hash(h)
 		})
 		return false
 	}, false, true, e.Spells...)
+	// Until a pass has judged the carriers, they all count as met, which this records too, so that the first pass is
+	// not called settled for reproducing the state the carriers' verdicts were about to change.
+	h.Reset()
+	for _, plan := range e.grantPlans {
+		xhash.Bool(h, e.grantCarrierUnmet(plan.source.owner))
+	}
+	state = append(state, h.Sum64())
 	return state
 }
 
@@ -891,6 +917,11 @@ func (e *Entity) processFeature(owner, subOwner fmt.Stringer, f Feature, leveled
 		e.features.weaponBonuses = append(e.features.weaponBonuses, actual)
 	case *SelectorOverride:
 		e.features.selectorOverrides = append(e.features.selectorOverrides, actual)
+	case *Grant:
+		if e.features.grants == nil {
+			e.features.grants = make(map[*Grant]bool)
+		}
+		e.features.grants[actual] = true
 	case *ConditionalModifierBonus, *ContainedWeightReduction, *TitleNote, *ReactionBonus:
 		// Not collected at this stage
 	case *UnknownFeature:
@@ -996,33 +1027,39 @@ func (e *Entity) applyEquipmentPenalties() {
 // processSkillAndSpellPrereqs evaluates the prerequisites of every skill and spell, recording the reason each is
 // unsatisfied. A skill or spell left unsatisfied by equipment it requires to be equipped is noted as taking the
 // missing-equipment penalty to its level, which applyEquipmentPenalties adds to the collected features in the next
-// pass. A technique or ritual magic spell whose prerequisites are met must also have the skill it is based on. A
-// disabled one is not judged, and has any reason recorded before it was disabled cleared.
+// pass. A technique or ritual magic spell whose prerequisites are met must also have the skill it is based on, which,
+// like its prerequisites, is looked for without what its own grants put on the sheet (see JudgingPrereqsOf). A
+// disabled one is not judged, and has any reason recorded before it was disabled cleared, as does one put on the sheet
+// by a grant that bypasses its prerequisites.
 func (e *Entity) processSkillAndSpellPrereqs() {
 	Traverse(func(s *Skill) bool {
-		if s.Container() || !s.Enabled() {
+		if s.Container() || !s.Enabled() || s.grant.bypass {
 			s.UnsatisfiedReason = ""
 			s.takesEquipmentPenalty = false
 			return false
 		}
 		s.UnsatisfiedReason = e.evaluatePrereqs(s.Prereq, s, &s.takesEquipmentPenalty)
 		if s.UnsatisfiedReason == "" && s.IsTechnique() {
-			s.UnsatisfiedReason = unsatisfiedReason(func(tooltip *xbytes.InsertBuffer) bool {
-				return s.TechniqueSatisfied(tooltip, unsatisfiedReasonPrefix)
+			e.JudgingPrereqsOf(s, func() {
+				s.UnsatisfiedReason = unsatisfiedReason(func(tooltip *xbytes.InsertBuffer) bool {
+					return s.TechniqueSatisfied(tooltip, unsatisfiedReasonPrefix)
+				})
 			})
 		}
 		return false
 	}, false, false, e.Skills...)
 	Traverse(func(s *Spell) bool {
-		if s.Container() || !s.Enabled() {
+		if s.Container() || !s.Enabled() || s.grant.bypass {
 			s.UnsatisfiedReason = ""
 			s.takesEquipmentPenalty = false
 			return false
 		}
 		s.UnsatisfiedReason = e.evaluatePrereqs(s.Prereq, s, &s.takesEquipmentPenalty)
 		if s.UnsatisfiedReason == "" && s.IsRitualMagic() {
-			s.UnsatisfiedReason = unsatisfiedReason(func(tooltip *xbytes.InsertBuffer) bool {
-				return s.RitualMagicSatisfied(tooltip, unsatisfiedReasonPrefix)
+			e.JudgingPrereqsOf(s, func() {
+				s.UnsatisfiedReason = unsatisfiedReason(func(tooltip *xbytes.InsertBuffer) bool {
+					return s.RitualMagicSatisfied(tooltip, unsatisfiedReasonPrefix)
+				})
 			})
 		}
 		return false
@@ -1055,14 +1092,20 @@ func (e *Entity) processTraitPrereqs() {
 	// recorded unsatisfied reason cleared. Prerequisites are only judged for traits the user has enabled that are not
 	// inside a disabled container. That the sheet disabled a trait does not exempt it: the verdict is what this pass
 	// computes, and honoring the previous one would keep the trait disabled after its prerequisites are met. The
-	// reason is kept for a trait disabled this way, so the sheet can show why it is disabled.
+	// reason is kept for a trait disabled this way, so the sheet can show why it is disabled. A trait put on the sheet
+	// by a grant not in effect is not judged either, and one put there by a grant that bypasses its prerequisites is
+	// treated as having them met.
 	enforce := e.SheetSettings.EnforceTraitPrereqs
 	var verdicts []traitPrereqVerdict
 	Traverse(func(t *Trait) bool {
 		t.UnsatisfiedReason = ""
+		t.prereqsUnmet = false
 		verdict := prereqsNotJudged
-		if !t.IsDisabled() && (t.parent == nil || t.parent.Enabled()) {
-			t.UnsatisfiedReason = e.evaluatePrereqs(t.Prereq, t, nil)
+		if !t.IsDisabled() && !t.grantNotInEffect() && (t.parent == nil || t.parent.Enabled()) {
+			if !t.grant.bypass {
+				t.UnsatisfiedReason = e.evaluatePrereqs(t.Prereq, t, nil)
+				t.prereqsUnmet = t.UnsatisfiedReason != ""
+			}
 			if maximum := t.ResolvedMaxLevels(); maximum > 0 && t.Levels > maximum {
 				reason := levelExceedsMaximumReason(maximum)
 				if t.UnsatisfiedReason == "" {
@@ -1258,10 +1301,11 @@ func (e *Entity) TelekineticStrength() fxp.Int {
 }
 
 // TraitLevels returns the sum of the current levels of every enabled, leveled trait whose name matches the given one,
-// ignoring case, along with whether any such trait exists.
+// ignoring case, along with whether any such trait exists. A trait a grant of the item whose prerequisites are being
+// judged put on the sheet is left out; see JudgingPrereqsOf.
 func (e *Entity) TraitLevels(name string) (levels fxp.Int, found bool) {
 	Traverse(func(t *Trait) bool {
-		if t.IsLeveled() && strings.EqualFold(t.NameWithReplacements(), name) {
+		if t.IsLeveled() && strings.EqualFold(t.NameWithReplacements(), name) && !grantedFor(e.judging, t) {
 			levels += t.CurrentLevel()
 			found = true
 		}
@@ -1324,7 +1368,7 @@ func (e *Entity) SwingFor(st int) dice.Dice {
 func (e *Entity) AttributeBonusFor(attributeID string, limitation stlimit.Option, tooltip *xbytes.InsertBuffer) fxp.Int {
 	var total fxp.Int
 	for _, one := range e.features.attributeBonuses {
-		if one.ActualLimitation() == limitation && one.Attribute == attributeID {
+		if one.ActualLimitation() == limitation && one.Attribute == attributeID && !e.bonusExcluded(one) {
 			total += one.AdjustedAmount()
 			one.AddToTooltip(tooltip)
 		}
@@ -1346,12 +1390,56 @@ func (e *Entity) CostReductionFor(attributeID string) fxp.Int {
 	return total.Max(0)
 }
 
+// JudgingPrereqsOf runs fn while the prerequisites of exclude are judged: what the grants exclude carries put on the
+// sheet is left out of the bonuses, attributes and skill defaults they read, as the rows themselves are left out (see
+// excludedFromPrereqs), and what those grants merged into the items on the sheet is left out of every level and point
+// total read, whatever reads them (see judgingOr), so that an item never meets its own prerequisites with what it
+// grants. Scripts see the sheet whole, since what they compute is kept for the rest of the pass (see resolveScript),
+// except the script prerequisites themselves and the scripts giving the attributes their bases while the prerequisites
+// read them, which run afresh with the rows left out hidden from them too (see excludedWhileJudging); see
+// ScriptPrereq.Evaluate and attributeForPrereqs.
+func (e *Entity) JudgingPrereqsOf(exclude any, fn func()) {
+	if e == nil {
+		fn()
+		return
+	}
+	saved := e.judging
+	e.judging = exclude
+	defer func() { e.judging = saved }()
+	fn()
+}
+
+// judgingOr returns exclude, or, when that is nil, the item whose prerequisites are being judged, if any, so that a
+// level or point total read while they are judged leaves out what that item's grants merged in, wherever the reading
+// starts: a per-level bonus reading its owner's level, a technique reading the skill it is based on, or a default
+// reading another skill; see JudgingPrereqsOf.
+func (e *Entity) judgingOr(exclude any) any {
+	if exclude == nil && e != nil {
+		return e.judging
+	}
+	return exclude
+}
+
+// bonusExcluded returns true if the bonus is left out while prerequisites are judged, being carried by an item a grant
+// of the item judged put on the sheet; see JudgingPrereqsOf.
+func (e *Entity) bonusExcluded(bonus Bonus) bool {
+	return e.judging != nil && grantedFor(e.judging, bonus.Owner())
+}
+
+// excludedWhileJudging returns true if the node is left out while prerequisites are judged, being an item a grant of
+// the item judged put on the sheet, which a script run for those prerequisites must not see either; see
+// JudgingPrereqsOf. e may be nil, which leaves nothing out.
+func (e *Entity) excludedWhileJudging(node any) bool {
+	return e != nil && grantedFor(e.judging, node)
+}
+
 // sumBonuses returns the total adjusted amount of the bonuses in the list that match, adding each of them to the
-// tooltip, which may be nil. match receives the bonus along with the nameable replacements of its owner.
-func sumBonuses[T Bonus](list []T, tooltip *xbytes.InsertBuffer, match func(bonus T, replacements map[string]string) bool) fxp.Int {
+// tooltip, which may be nil. match receives the bonus along with the nameable replacements of its owner. The bonuses
+// bonusExcluded leaves out are passed over.
+func sumBonuses[T Bonus](e *Entity, list []T, tooltip *xbytes.InsertBuffer, match func(bonus T, replacements map[string]string) bool) fxp.Int {
 	var total fxp.Int
 	for _, bonus := range list {
-		if match(bonus, bonusReplacements(bonus)) {
+		if !e.bonusExcluded(bonus) && match(bonus, bonusReplacements(bonus)) {
 			total += bonus.AdjustedAmount()
 			bonus.AddToTooltip(tooltip)
 		}
@@ -1360,11 +1448,12 @@ func sumBonuses[T Bonus](list []T, tooltip *xbytes.InsertBuffer, match func(bonu
 }
 
 // collectBonuses returns the bonuses in the list that match, adding each of them to the tooltip, which may be nil.
-// match receives the bonus along with the nameable replacements of its owner.
-func collectBonuses[T Bonus](list []T, tooltip *xbytes.InsertBuffer, match func(bonus T, replacements map[string]string) bool) []T {
+// match receives the bonus along with the nameable replacements of its owner. The bonuses bonusExcluded leaves out are
+// passed over.
+func collectBonuses[T Bonus](e *Entity, list []T, tooltip *xbytes.InsertBuffer, match func(bonus T, replacements map[string]string) bool) []T {
 	var result []T
 	for _, bonus := range list {
-		if match(bonus, bonusReplacements(bonus)) {
+		if !e.bonusExcluded(bonus) && match(bonus, bonusReplacements(bonus)) {
 			result = append(result, bonus)
 			bonus.AddToTooltip(tooltip)
 		}
@@ -1374,7 +1463,7 @@ func collectBonuses[T Bonus](list []T, tooltip *xbytes.InsertBuffer, match func(
 
 // TraitMaxLevelBonusesFor returns the "traits whose name" max-level bonuses that match the given name and tags.
 func (e *Entity) TraitMaxLevelBonusesFor(name string, tags []string, tooltip *xbytes.InsertBuffer) []*TraitMaxLevelBonus {
-	return collectBonuses(e.features.traitMaxLevelBonuses, tooltip,
+	return collectBonuses(e, e.features.traitMaxLevelBonuses, tooltip,
 		func(bonus *TraitMaxLevelBonus, replacements map[string]string) bool {
 			return bonus.SelectionType == traitsel.TraitWithName &&
 				bonus.NameCriteria.Matches(replacements, name) &&
@@ -1384,7 +1473,7 @@ func (e *Entity) TraitMaxLevelBonusesFor(name string, tags []string, tooltip *xb
 
 // EquipmentMaxUsesBonusesFor returns the "equipment whose name" max-uses bonuses that match the given name and tags.
 func (e *Entity) EquipmentMaxUsesBonusesFor(name string, tags []string, tooltip *xbytes.InsertBuffer) []*EquipmentMaxUsesBonus {
-	return collectBonuses(e.features.maxUsesBonuses, tooltip,
+	return collectBonuses(e, e.features.maxUsesBonuses, tooltip,
 		func(bonus *EquipmentMaxUsesBonus, replacements map[string]string) bool {
 			return bonus.SelectionType == equipmentsel.EquipmentWithName &&
 				bonus.NameCriteria.Matches(replacements, name) &&
@@ -1437,7 +1526,7 @@ func (e *Entity) addDRBonusesFor(locationID string, tooltip *xbytes.InsertBuffer
 
 // SkillBonusFor returns the total bonus for the matching skill bonuses.
 func (e *Entity) SkillBonusFor(name, specialization, optionalSpecialization string, tags []string, tooltip *xbytes.InsertBuffer) fxp.Int {
-	return sumBonuses(e.features.skillBonuses, tooltip, func(bonus *SkillBonus, replacements map[string]string) bool {
+	return sumBonuses(e, e.features.skillBonuses, tooltip, func(bonus *SkillBonus, replacements map[string]string) bool {
 		return bonus.SelectionType == skillsel.Name &&
 			bonus.NameCriteria.Matches(replacements, name) &&
 			bonus.SpecializationCriteria.Matches(replacements, specialization) &&
@@ -1448,7 +1537,7 @@ func (e *Entity) SkillBonusFor(name, specialization, optionalSpecialization stri
 
 // SkillPointBonusFor returns the total point bonus for the matching skill point bonuses.
 func (e *Entity) SkillPointBonusFor(name, specialization, optionalSpecialization string, tags []string, tooltip *xbytes.InsertBuffer) fxp.Int {
-	return sumBonuses(e.features.skillPointBonuses, tooltip,
+	return sumBonuses(e, e.features.skillPointBonuses, tooltip,
 		func(bonus *SkillPointBonus, replacements map[string]string) bool {
 			return bonus.NameCriteria.Matches(replacements, name) &&
 				bonus.SpecializationCriteria.Matches(replacements, specialization) &&
@@ -1465,25 +1554,25 @@ type spellMatcher interface {
 
 // sumSpellBonuses returns the total adjusted amount of the bonuses in the list that match the given spell, adding each
 // of them to the tooltip, which may be nil.
-func sumSpellBonuses[T spellMatcher](list []T, name, powerSource string, colleges, tags []string, tooltip *xbytes.InsertBuffer) fxp.Int {
-	return sumBonuses(list, tooltip, func(bonus T, replacements map[string]string) bool {
+func sumSpellBonuses[T spellMatcher](e *Entity, list []T, name, powerSource string, colleges, tags []string, tooltip *xbytes.InsertBuffer) fxp.Int {
+	return sumBonuses(e, list, tooltip, func(bonus T, replacements map[string]string) bool {
 		return bonus.MatchesSpell(replacements, name, powerSource, colleges, tags)
 	})
 }
 
 // SpellBonusFor returns the total bonus for the matching spell bonuses.
 func (e *Entity) SpellBonusFor(name, powerSource string, colleges, tags []string, tooltip *xbytes.InsertBuffer) fxp.Int {
-	return sumSpellBonuses(e.features.spellBonuses, name, powerSource, colleges, tags, tooltip)
+	return sumSpellBonuses(e, e.features.spellBonuses, name, powerSource, colleges, tags, tooltip)
 }
 
 // SpellPointBonusFor returns the total point bonus for the matching spell point bonuses.
 func (e *Entity) SpellPointBonusFor(name, powerSource string, colleges, tags []string, tooltip *xbytes.InsertBuffer) fxp.Int {
-	return sumSpellBonuses(e.features.spellPointBonuses, name, powerSource, colleges, tags, tooltip)
+	return sumSpellBonuses(e, e.features.spellPointBonuses, name, powerSource, colleges, tags, tooltip)
 }
 
 // TraitBonusFor returns the total bonus for the matching trait bonuses.
 func (e *Entity) TraitBonusFor(name string, tags []string, tooltip *xbytes.InsertBuffer) fxp.Int {
-	return sumBonuses(e.features.traitBonuses, tooltip, func(bonus *TraitBonus, replacements map[string]string) bool {
+	return sumBonuses(e, e.features.traitBonuses, tooltip, func(bonus *TraitBonus, replacements map[string]string) bool {
 		return bonus.NameCriteria.Matches(replacements, name) &&
 			bonus.TagsCriteria.MatchesList(replacements, tags...)
 	})
@@ -1564,7 +1653,7 @@ func (e *Entity) addNamedWeaponBonusesFor(w *Weapon, usageQualifier, damageType 
 // NamedWeaponSkillBonusesFor returns the skill bonuses that select weapons by name and match the given weapon, usage,
 // damage type and tags.
 func (e *Entity) NamedWeaponSkillBonusesFor(w *Weapon, usage, damageType string, tags []string, tooltip *xbytes.InsertBuffer) []*SkillBonus {
-	return collectBonuses(e.features.skillBonuses, tooltip, func(bonus *SkillBonus, replacements map[string]string) bool {
+	return collectBonuses(e, e.features.skillBonuses, tooltip, func(bonus *SkillBonus, replacements map[string]string) bool {
 		return bonus.SelectionType == skillsel.WeaponsWithName &&
 			w.matchesName(bonus.NameCriteria, &bonus.WeaponOwnerCriteria, replacements) &&
 			bonus.SpecializationCriteria.Matches(replacements, usage) &&
@@ -1614,7 +1703,7 @@ func (e *Entity) BestSkillNamed(name, specialization string, requirePoints bool,
 func (e *Entity) SkillNamed(name, specialization string, requirePoints bool, excludes map[string]bool) []*Skill {
 	var list []*Skill
 	Traverse(func(sk *Skill) bool {
-		if !strings.EqualFold(sk.NameWithReplacements(), name) {
+		if !strings.EqualFold(sk.NameWithReplacements(), name) || grantedFor(e.judging, sk) {
 			return false
 		}
 		if specialization != "" && !strings.EqualFold(sk.SpecializationWithReplacements(), specialization) &&
@@ -1670,13 +1759,14 @@ func skillSpecializationMatcherMatches(specialization criteria.TextMatcher, requ
 }
 
 // SkillMatching returns a list of skills whose name and specialization match the given criteria. The tests run in
-// the order SkillNamed runs them, and for the same reason.
+// the order SkillNamed runs them, and for the same reason. Both leave out the skills the grants of the item whose
+// prerequisites are being judged put on the sheet; see JudgingPrereqsOf.
 func (e *Entity) SkillMatching(nameCriteria, specializationCriteria criteria.Text, replacements map[string]string, requirePoints bool, excludes map[string]bool) []*Skill {
 	var list []*Skill
 	name := nameCriteria.Matcher(replacements)
 	specialization := specializationCriteria.Matcher(replacements)
 	Traverse(func(sk *Skill) bool {
-		if !name.Matches(sk.NameWithReplacements()) {
+		if !name.Matches(sk.NameWithReplacements()) || grantedFor(e.judging, sk) {
 			return false
 		}
 		if !skillSpecializationMatcherMatches(specialization, sk.SpecializationWithReplacements(),
@@ -1886,7 +1976,10 @@ func (e *Entity) ResolveVariable(variableName string) string {
 		slog.Error("attempt to resolve variable via itself", "name", variableName)
 		return ""
 	}
-	if v, ok := e.variableCache[variableName]; ok {
+	// An attribute read as the prerequisites being judged see it is neither taken from the cache nor kept in it, since
+	// it leaves out what the attribute has at any other time; see attributeForPrereqs and ScriptPrereq.Evaluate.
+	forPrereqs := e.scriptsForPrereqs > 0
+	if v, ok := e.variableCache[variableName]; ok && !forPrereqs {
 		return v
 	}
 	e.variableResolverExclusions[variableName] = true
@@ -1907,12 +2000,16 @@ func (e *Entity) ResolveVariable(variableName string) string {
 		slog.Error("no such variable definition", "name", variableName)
 		return ""
 	}
-	if (def.Type == attribute.Pool || def.Type == attribute.PoolRef) && len(parts) > 1 && parts[1] == "current" {
-		result := attr.Current().String()
-		e.variableCache[variableName] = result
-		return result
+	current := (def.Type == attribute.Pool || def.Type == attribute.PoolRef) && len(parts) > 1 && parts[1] == "current"
+	if forPrereqs {
+		return e.attributeForPrereqs(attr, current).String()
 	}
-	result := attr.Maximum().String()
+	var result string
+	if current {
+		result = attr.Current().String()
+	} else {
+		result = attr.Maximum().String()
+	}
 	e.variableCache[variableName] = result
 	return result
 }
@@ -1951,6 +2048,39 @@ func (e *Entity) ResolveAttributeCurrent(attrID string) fxp.Int {
 		return e.Attributes.Current(attrID)
 	}
 	return fxp.Min
+}
+
+// resolveAttributeCurrentForPrereqs is ResolveAttributeCurrent as the prerequisites being judged see the attribute:
+// with the bonuses from what the grants of the item judged put on the sheet left out (see JudgingPrereqsOf), where its
+// own bonus holds them until the next pass. The skill and spell levels read it as well, so that a level computed while
+// prerequisites are judged leaves those bonuses out too, and it is ResolveAttributeCurrent at any other time.
+func (e *Entity) resolveAttributeCurrentForPrereqs(attrID string) fxp.Int {
+	if e == nil || !e.carriesGrant(e.judging) {
+		return e.ResolveAttributeCurrent(attrID)
+	}
+	attr, ok := e.Attributes.Set[attrID]
+	if !ok {
+		return e.ResolveAttributeCurrent(attrID)
+	}
+	return e.attributeForPrereqs(attr, true)
+}
+
+// attributeForPrereqs returns the attribute's current value, or its maximum, as the prerequisites being judged see it:
+// with the bonuses from what the grants of the item judged put on the sheet left out, of it and of every attribute its
+// base is derived from, which the script giving its base reads this way through ResolveVariable while this runs. The
+// script sees the item judged and its result is not kept, since it is computed with those bonuses left out; see
+// resolveScript.
+func (e *Entity) attributeForPrereqs(attr *Attribute, current bool) fxp.Int {
+	e.scriptsForPrereqs++
+	defer func() { e.scriptsForPrereqs-- }()
+	bonus := e.AttributeBonusFor(attr.AttrID, stlimit.None, nil)
+	if def := attr.AttributeDef(); def != nil && !def.AllowsDecimal() {
+		bonus = bonus.Floor()
+	}
+	if current {
+		return attr.currentWithBonus(bonus)
+	}
+	return attr.maximumWithBonus(bonus)
 }
 
 // PreservesUserDesc returns true if the user description widget should be preserved when written to disk. Normally,

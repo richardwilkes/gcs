@@ -399,7 +399,7 @@ func (s *Sheet) MarkModified(src unison.Paneler) {
 	s.awaitingUpdate = true
 	// Everything below reads the derived state -- the panels, the tables, and the calculators all display skill levels,
 	// points and the like -- so the entity is brought up to date first.
-	s.entity.Recalculate()
+	s.recalculate()
 	s.syncUnsettledNotice()
 	s.bumpModificationTimestamp()
 	skipDeepSync := false
@@ -603,6 +603,11 @@ func (s *Sheet) list(key string) sheetList {
 // back for a list the sheet hasn't built yet.
 func (s *Sheet) lists() []sheetList {
 	return listsForKeys(s.list, gurps.IsListBlockKey)
+}
+
+// grantRowLists returns the lists a grant can put rows in; see otherGrantRowLists.
+func (s *Sheet) grantRowLists() []grantRowList {
+	return []grantRowList{s.Traits, s.Skills, s.Spells}
 }
 
 // searchableLists returns the lists the search looks through, each under the title its block has on the sheet.
@@ -898,12 +903,25 @@ func (s *Sheet) syncWithAllSources() {
 	syncWithAllSources(s, s.entity, s.Traits, s.Skills, s.Spells, s.CarriedEquipment, s.OtherEquipment, s.Notes)
 }
 
+// recalculate brings the entity up to date and keeps the editors open on its granted rows on those rows, which the
+// recalculation may have remade or taken off the sheet; see editor.followRow.
+func (s *Sheet) recalculate() {
+	s.entity.Recalculate()
+	for _, d := range AllDockables() {
+		if owned, ok := d.AsPanel().Self.(Owned); ok && owned.Owner() == s {
+			if follower, ok2 := owned.(interface{ followRow(*gurps.Entity) }); ok2 {
+				follower.followRow(s.entity)
+			}
+		}
+	}
+}
+
 // Rebuild implements Rebuildable.
 func (s *Sheet) Rebuild(full bool) {
 	invalidateDisplayData()
 	gurps.DiscardGlobalResolveCache()
 	state := s.captureViewState()
-	s.entity.Recalculate()
+	s.recalculate()
 	s.syncUnsettledNotice()
 	// The rebuild derives everything on the page afresh, so the reads the scripts made before now are forgotten first;
 	// see Entity.ClearProfileReadByScript.

@@ -102,6 +102,10 @@ type CellData struct {
 	UnresolvedChoice string
 	// ChoiceRequired is true for a mandatory modifier choice on a sheet that has yet to be made.
 	ChoiceRequired bool
+	// GrantedBy says which grant put the node on the sheet, and is empty for a node no grant put there.
+	GrantedBy string
+	// Grants says what the grants the node carries did, and is empty for a node that carries none.
+	Grants string
 	// ForPage is the one input in this struct, set by the caller before invoking a node's CellData method and left
 	// untouched by it. It is true when the cell is shown on a sheet, template or loot page rather than in an editor, a
 	// library list, or a sort-only request. Sheet-only display preferences, such as the decimal places shown for
@@ -160,7 +164,8 @@ func fillPageRefCell(data *CellData, pageRef, highlight string, fallback func() 
 func fillLibSrcCell(data *CellData, owner DataOwner, node SrcProvider) {
 	data.Type = cell.Text
 	data.Alignment = align.Middle
-	if xreflect.IsNil(owner) {
+	// A granted item's grant is its source, so it has no library source to compare with.
+	if xreflect.IsNil(owner) || IsGranted(node) {
 		return
 	}
 	state, _ := owner.SourceMatcher().Match(node)

@@ -72,6 +72,9 @@ func allocFeature(featureType feature.Type) Feature {
 	if featureType.IsWeaponBonus() {
 		return &WeaponBonus{}
 	}
+	if IsGrant(featureType) {
+		return &Grant{}
+	}
 	switch featureType {
 	case feature.AttributeBonus:
 		return &AttributeBonus{}

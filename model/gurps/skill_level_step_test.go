@@ -14,6 +14,7 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/difficulty"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/grantmerge"
 	"github.com/richardwilkes/toolbox/v2/check"
 )
 
@@ -76,6 +77,14 @@ func TestSkillLevelStepping(t *testing.T) {
 	container := NewSkill(e, nil, true)
 	container.IncrementSkillLevel()
 	c.Equal(fxp.Int(0), container.Points)
+
+	// With no higher level to reach, as for a skill whose attribute is missing, the points are left alone.
+	sk.Difficulty.Difficulty = difficulty.Average
+	sk.Difficulty.Attribute = "missing"
+	sk.SetRawPoints(fxp.Five)
+	c.Equal(fxp.Min, sk.CalculateLevel(nil).Level, "precondition: the skill has no level")
+	sk.IncrementSkillLevel()
+	c.Equal(fxp.Five, sk.Points, "incrementing a skill with no higher level must leave its points alone")
 }
 
 func TestSpellLevelStepping(t *testing.T) {
@@ -100,6 +109,44 @@ func TestSpellLevelStepping(t *testing.T) {
 	container := NewSpell(e, nil, true)
 	container.IncrementSkillLevel()
 	c.Equal(fxp.Int(0), container.Points)
+}
+
+func TestSkillLevelSteppingPastKeptLevel(t *testing.T) {
+	for _, tc := range []struct {
+		name string
+		// add puts on the sheet an item bought with 1 point and a trait whose Keep Highest grant holds it at the level
+		// 4 points buy, and returns the item along with what reads its level.
+		add  func(e *Entity) (SkillAdjustmentProvider, func() Level)
+		kept fxp.Int
+	}{
+		{name: "skill", add: func(e *Entity) (SkillAdjustmentProvider, func() Level) {
+			brawling := addSkill(e, "Brawling", fxp.One)
+			addTraitWithFeatures(e, "Training",
+				newSkillGrant(newEasySkill("Brawling", fxp.One), fxp.Three, grantmerge.KeepHighest))
+			return brawling, func() Level { return brawling.CalculateLevel(nil) }
+		}, kept: fxp.FromInteger(12)},
+		{name: "spell", add: func(e *Entity) (SkillAdjustmentProvider, func() Level) {
+			light := newHardSpell("Light", fxp.One)
+			light.SetDataOwner(e)
+			e.Spells = append(e.Spells, light)
+			addTraitWithFeatures(e, "Magery",
+				newSpellGrant(newHardSpell("Light", fxp.One), fxp.Three, grantmerge.KeepHighest))
+			return light, light.CalculateLevel
+		}, kept: fxp.Ten},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			c := check.New(t)
+			e := NewEntity()
+			p, level := tc.add(e)
+			e.Recalculate()
+			c.Equal(tc.kept, level().Level, "precondition: the grant holds the level above the one the point buys")
+			// The next level above the kept one needs 8 points, in the second stride beyond the point bought, and
+			// decrementing comes back to the fewest points that still show the kept level.
+			stepLevelUpAndDown(t, p, level, []fxp.Int{fxp.Eight}, []fxp.Int{fxp.One})
+			p.IncrementSkillLevel()
+			c.Equal(fxp.Eight, p.RawPoints(), "the points decrementing took off come back")
+		})
+	}
 }
 
 func TestDisabledSkillLevelStepping(t *testing.T) {

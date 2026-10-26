@@ -10,6 +10,7 @@
 package gurps
 
 import (
+	"slices"
 	"strings"
 
 	"github.com/dop251/goja"
@@ -70,9 +71,15 @@ func newScriptEntity(r *goja.Runtime, entity *Entity) *goja.Object {
 			return r.ToValue(entity.WealthNotCarried().AsFloat[float64]())
 		}
 		m["notes"] = func() goja.Value { return scriptObjects(r, entity.Notes, nil, newScriptNote) }
-		m["skills"] = func() goja.Value { return scriptObjects(r, entity.Skills, (*Skill).Enabled, newScriptSkill) }
-		m["spells"] = func() goja.Value { return scriptObjects(r, entity.Spells, (*Spell).Enabled, newScriptSpell) }
-		m["traits"] = func() goja.Value { return scriptObjects(r, entity.Traits, (*Trait).Enabled, newScriptTrait) }
+		m["skills"] = func() goja.Value {
+			return scriptObjects(r, entity.Skills, scriptSees((*Skill).Enabled), newScriptSkill)
+		}
+		m["spells"] = func() goja.Value {
+			return scriptObjects(r, entity.Spells, scriptSees((*Spell).Enabled), newScriptSpell)
+		}
+		m["traits"] = func() goja.Value {
+			return scriptObjects(r, entity.Traits, scriptSees((*Trait).Enabled), newScriptTrait)
+		}
 		m["attribute"] = func() goja.Value {
 			return r.ToValue(func(call goja.FunctionCall) goja.Value {
 				if attr := entity.Attributes.Find(callArgAsString(call, 0)); attr != nil {
@@ -131,7 +138,7 @@ func newScriptEntity(r *goja.Runtime, entity *Entity) *goja.Object {
 				found := false
 				name := callArgAsTrimmedString(call, 0)
 				Traverse(func(t *Trait) bool {
-					if strings.EqualFold(t.NameWithReplacements(), name) {
+					if strings.EqualFold(t.NameWithReplacements(), name) && !entity.excludedWhileJudging(t) {
 						found = true
 						return true
 					}
@@ -158,12 +165,13 @@ func newScriptEntity(r *goja.Runtime, entity *Entity) *goja.Object {
 							(specialization != "" &&
 								strings.EqualFold(s.OptionalSpecializationWithReplacements(), specialization))) &&
 						(optionalSpecialization == "" ||
-							strings.EqualFold(s.OptionalSpecializationWithReplacements(), optionalSpecialization)) {
-						s.UpdateLevel()
+							strings.EqualFold(s.OptionalSpecializationWithReplacements(), optionalSpecialization)) &&
+						!entity.excludedWhileJudging(s) {
+						data := scriptSkillLevel(entity, s)
 						if relative {
-							level = scriptRelativeLevel(s.LevelData)
+							level = scriptRelativeLevel(data)
 						} else {
-							level = scriptLevel(s.LevelData)
+							level = scriptLevel(data)
 						}
 						return true
 					}
@@ -181,10 +189,12 @@ func newScriptEntity(r *goja.Runtime, entity *Entity) *goja.Object {
 				return r.ToValue(level.AsFloat[float64]())
 			})
 		}
-		// The entity's weapons, melee before ranged. Weapons returns a fresh slice each time, so the two may be joined
-		// in place.
+		// The entity's weapons, melee before ranged, less those of the rows hidden from a script run for the
+		// prerequisites being judged, as scriptSees hides the rows themselves. Weapons returns a fresh slice each time,
+		// so the two may be joined and pared in place.
 		weapons := func(excludeHidden bool) []*Weapon {
-			return append(entity.Weapons(true, false, excludeHidden), entity.Weapons(false, false, excludeHidden)...)
+			list := append(entity.Weapons(true, false, excludeHidden), entity.Weapons(false, false, excludeHidden)...)
+			return slices.DeleteFunc(list, func(w *Weapon) bool { return entity.excludedWhileJudging(w.Owner) })
 		}
 		m["weaponDamage"] = func() goja.Value {
 			return r.ToValue(func(call goja.FunctionCall) goja.Value {

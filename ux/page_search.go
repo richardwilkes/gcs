@@ -36,7 +36,7 @@ func installPageSearch(toolbar *unison.Panel, lists func() []searchableList) *se
 	s := newSearchDropdown(func(text string) []*searchMatch {
 		var found []*searchMatch
 		for _, one := range lists() {
-			if len(found) >= maxSearchMatches {
+			if len(found) > maxSearchMatches {
 				break
 			}
 			one.list.search(&found, text, one.title)
@@ -77,10 +77,10 @@ func (p *PageList[T]) search(matches *[]*searchMatch, text, title string) {
 	}
 }
 
-// searchPageListRows adds the row and those beneath it that match the text to the matches, stopping once there are
-// maxSearchMatches of them.
+// searchPageListRows adds the row and those beneath it that match the text to the matches, stopping once there is one
+// more than maxSearchMatches of them (see searchMatchRows).
 func searchPageListRows[T gurps.Node[T]](matches *[]*searchMatch, text, title string, table *unison.Table[*Node[T]], row *Node[T]) {
-	if len(*matches) >= maxSearchMatches {
+	if len(*matches) > maxSearchMatches {
 		return
 	}
 	if row.Match(text) {

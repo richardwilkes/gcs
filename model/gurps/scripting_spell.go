@@ -23,7 +23,9 @@ func newScriptSpell(r *goja.Runtime, spell *Spell) *goja.Object {
 	m["name"] = func() goja.Value { return r.ToValue(spell.NameWithReplacements()) }
 	m["notes"] = scriptNotes(r, spell)
 	if spell.Container() {
-		m["children"] = func() goja.Value { return scriptObjects(r, spell.Children, (*Spell).Enabled, newScriptSpell) }
+		m["children"] = func() goja.Value {
+			return scriptObjects(r, spell.Children, scriptSees((*Spell).Enabled), newScriptSpell)
+		}
 		m["find"] = scriptNameTagFinder(r, func(name, tag string) goja.Value {
 			return findScriptSpells(r, name, tag, spell.Children...)
 		})
@@ -43,8 +45,8 @@ func newScriptSpell(r *goja.Runtime, spell *Spell) *goja.Object {
 		}
 		m["attribute"] = func() goja.Value { return r.ToValue(spell.Difficulty.Attribute) }
 		m["difficulty"] = func() goja.Value { return r.ToValue(spell.Difficulty.Difficulty.Key()) }
-		m["points"] = func() goja.Value { return r.ToValue(spell.AdjustedPoints(nil).AsInteger[int]()) }
-		m["college"] = func() goja.Value { return r.ToValue(spell.CollegeWithReplacements()) }
+		m["points"] = func() goja.Value { return r.ToValue(spell.PointsCost().AsInteger[int]()) }
+		m["college"] = func() goja.Value { return scriptStringList(r, spell.CollegeWithReplacements()) }
 		m["powerSource"] = func() goja.Value { return r.ToValue(spell.PowerSourceWithReplacements()) }
 		m["spellClass"] = func() goja.Value { return r.ToValue(spell.ClassWithReplacements()) }
 		m["resist"] = func() goja.Value { return r.ToValue(spell.ResistWithReplacements()) }
@@ -55,17 +57,22 @@ func newScriptSpell(r *goja.Runtime, spell *Spell) *goja.Object {
 		m["item"] = func() goja.Value { return r.ToValue(spell.ItemWithReplacements()) }
 		m["ritualSkillName"] = func() goja.Value { return r.ToValue(spell.RitualSkillNameWithReplacements()) }
 		m["prereqCount"] = func() goja.Value { return r.ToValue(spell.PrereqCount) }
-		m["level"] = func() goja.Value {
-			spell.UpdateLevel()
-			return r.ToValue(scriptLevel(spell.LevelData))
-		}
-		m["relativeLevel"] = func() goja.Value {
-			spell.UpdateLevel()
-			return r.ToValue(scriptRelativeLevel(spell.LevelData))
-		}
+		m["level"] = func() goja.Value { return r.ToValue(scriptLevel(scriptSpellLevel(spell))) }
+		m["relativeLevel"] = func() goja.Value { return r.ToValue(scriptRelativeLevel(scriptSpellLevel(spell))) }
 		addScriptWeapons(r, m, func() []*Weapon { return spell.Weapons })
 	}
 	return r.NewDynamicObject(NewScriptObject(r, m))
+}
+
+// scriptSpellLevel returns the spell's level for a script, recalculated so that it is current. While the script runs
+// for the prerequisites of an item carrying grants, the level is computed as those prerequisites see it, without what
+// the grants gave the spell, and is not recorded, since the sheet has the level with them; see Spell.levelForPrereqsOf.
+func scriptSpellLevel(spell *Spell) Level {
+	if entity := EntityFromNode(spell); entity != nil && entity.carriesGrant(entity.judging) {
+		return spell.calculateLevelExcept(entity.judging, spell.adjustedPointsExcept(entity.judging, nil))
+	}
+	spell.UpdateLevel()
+	return spell.LevelData
 }
 
 func findScriptSpells(r *goja.Runtime, name, tag string, topLevelSpells ...*Spell) goja.Value {

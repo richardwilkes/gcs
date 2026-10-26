@@ -40,8 +40,9 @@ type Modifiable[T Modifiable[T, M], M Modifier[M, T]] interface {
 // since it dissolves into the options chosen from it, so modifiers attached to it would only change the cost of those
 // options on the template, and its editor offers no way to remove them. An equipment group can't either: it only
 // organizes what it holds, so it keeps nothing of its own, modifiers included (see Equipment.ClearUnusedFieldsForType).
+// Nor can an item a grant put on a sheet, since its grant decides what it has.
 func CanTakeModifiers[T Node[T]](node T) bool {
-	if xreflect.IsNil(node) || IsTemplateChoiceContainer(node) {
+	if xreflect.IsNil(node) || IsTemplateChoiceContainer(node) || IsGranted(node) {
 		return false
 	}
 	if eqp, ok := any(node).(*Equipment); ok {
