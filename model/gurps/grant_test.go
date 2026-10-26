@@ -1716,17 +1716,22 @@ func TestGrantDoesNotMeetItsCarriersPrereqs(t *testing.T) {
 				item.SelfControlAdj = selfctrl.MajorCostOfLivingIncrease
 			})
 		}
-		// agile is a grant of a trait giving +2 DX whose prerequisite nothing meets, which the grant checks when
-		// checked is set.
-		agile := func(checked bool) *Grant {
-			item := NewTrait(nil, nil, false)
-			item.Name = "Agile"
+		// agile is a grant at the level of a leveled trait giving +2 DX whose prerequisite nothing meets, which the
+		// grant checks when checked is set.
+		agile := func(level fxp.Int, checked bool) *Grant {
+			item := newGrantLeveledTrait("Agile", fxp.One)
 			bonus := NewAttributeBonus(DexterityID)
 			bonus.Amount = fxp.Two
 			item.Features = Features{bonus}
 			item.Prereq = newPrereqListForTrait("Elf", true)
-			g := newTraitGrant(item, fxp.One, grantmerge.Ignore)
+			g := newTraitGrant(item, level, grantmerge.Ignore)
 			g.CheckPrereqs = checked
+			return g
+		}
+		// cappedAgile is agile with a maximum level of 1, given by a grant that treats its prerequisite as met.
+		cappedAgile := func(level fxp.Int) *Grant {
+			g := agile(level, false)
+			g.Trait.MaxLevels = "1"
 			return g
 		}
 		// scripted puts on the sheet a trait with the name, carrying the grant, whose prerequisite is the script.
@@ -1832,10 +1837,53 @@ func TestGrantDoesNotMeetItsCarriersPrereqs(t *testing.T) {
 				name: "putting a trait there whose prerequisites only the other grant checks",
 				carry: func(_ check.Checker, e *Entity) *Trait {
 					e.SheetSettings.EnforceTraitPrereqs = true
-					goggles(e, nil, agile(true))
+					goggles(e, nil, agile(fxp.One, true))
 					addSkill(e, "Brawling", fxp.One)
-					training := addTraitWithFeatures(e, "Training", agile(false))
+					training := addTraitWithFeatures(e, "Training", agile(fxp.One, false))
 					training.Prereq = newPrereqListRequiringSkill("Brawling", fxp.FromInteger(12))
+					return training
+				}, row: func(e *Entity) any { return grantedOf(e.Traits)[0].Enabled() }, want: false,
+			},
+			{
+				name: "putting a trait there whose prerequisites the other grant bypasses",
+				carry: func(_ check.Checker, e *Entity) *Trait {
+					e.SheetSettings.EnforceTraitPrereqs = true
+					goggles(e, nil, agile(fxp.One, false))
+					addSkill(e, "Brawling", fxp.One)
+					training := addTraitWithFeatures(e, "Training", agile(fxp.Two, true))
+					training.Prereq = newPrereqListRequiringSkill("Brawling", fxp.FromInteger(12))
+					return training
+				}, met: true, want: 10,
+				row: func(e *Entity) any { return e.ResolveAttributeCurrent(DexterityID).AsInteger[int]() },
+			},
+			{
+				name: "putting a trait there whose prerequisites the other grant bypasses, which a prerequisite names",
+				carry: func(_ check.Checker, e *Entity) *Trait {
+					e.SheetSettings.EnforceTraitPrereqs = true
+					goggles(e, nil, agile(fxp.One, false))
+					training := addTraitWithFeatures(e, "Training", agile(fxp.Two, true))
+					training.Prereq = newPrereqListForTrait("Agile", true)
+					return training
+				}, met: true, row: func(e *Entity) any { return grantedOf(e.Traits)[0].Enabled() }, want: false,
+			},
+			{
+				name: "putting a trait there above its maximum level, which the other grant's level is not",
+				carry: func(_ check.Checker, e *Entity) *Trait {
+					e.SheetSettings.EnforceTraitPrereqs = true
+					goggles(e, nil, cappedAgile(fxp.One))
+					addSkill(e, "Brawling", fxp.One)
+					training := addTraitWithFeatures(e, "Training", cappedAgile(fxp.Two))
+					training.Prereq = newPrereqListRequiringSkill("Brawling", fxp.FromInteger(12))
+					return training
+				}, met: true, row: func(e *Entity) any { return grantedOf(e.Traits)[0].Enabled() }, want: false,
+			},
+			{
+				name: "putting a trait there above its maximum level, as the other grant's level is too",
+				carry: func(_ check.Checker, e *Entity) *Trait {
+					e.SheetSettings.EnforceTraitPrereqs = true
+					goggles(e, nil, cappedAgile(fxp.Two))
+					training := addTraitWithFeatures(e, "Training", cappedAgile(fxp.Three))
+					training.Prereq = newPrereqListForTrait("Agile", true)
 					return training
 				}, row: func(e *Entity) any { return grantedOf(e.Traits)[0].Enabled() }, want: false,
 			},

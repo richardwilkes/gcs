@@ -735,15 +735,17 @@ func excludedFromPrereqs(exclude, node any) bool {
 	return node == exclude || hiddenFromPrereqs(exclude, node)
 }
 
-// hiddenFromPrereqs returns true if the node is left out while the prerequisites of owner, which may be nil, are
-// judged: it is an item one of owner's grants put on the sheet (see grantedFor), so that an item never meets its own
-// prerequisites with what it grants, or a trait those prerequisites see as disabled (see Trait.disabledForPrereqsOf).
+// hiddenFromPrereqs returns true if the node is left out while the prerequisites of owner are judged, or, when owner is
+// nil, by the rest of the sheet: it is an item one of owner's grants put on the sheet (see grantedFor), so that an item
+// never meets its own prerequisites with what it grants, or a trait those prerequisites see as disabled (see
+// Trait.disabledForPrereqsOf), or one whose features were collected for the prerequisites that see it enabled alone,
+// which those of owner are not (see Trait.featuresJudgedOnly and Trait.enabledForPrereqsOf).
 func hiddenFromPrereqs(owner, node any) bool {
-	if grantedFor(owner, node) {
+	if owner != nil && grantedFor(owner, node) {
 		return true
 	}
 	t, ok := node.(*Trait)
-	return ok && t.disabledForPrereqsOf(owner)
+	return ok && (t.disabledForPrereqsOf(owner) || (t.featuresJudgedOnly && !t.enabledForPrereqsOf(owner)))
 }
 
 // grantedFor returns true if the node is an item on the sheet only because of the grants carried by owner: every grant

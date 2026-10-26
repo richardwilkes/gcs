@@ -92,7 +92,15 @@ type Trait struct {
 	// its unmet prerequisites, which the grant giving its details treats as met, had that grant checked them, as the
 	// one giving its details as a carrier's prerequisites see it does; see disabledForPrereqsOf. It is never saved.
 	disabledIfChecked bool
-	grant             grantState
+	// enabledAsJudged is whether Entity.processTraitPrereqs last found that the sheet, which disables this trait for
+	// its unmet prerequisites or its level above the maximum, would leave it enabled were it given its details by the
+	// grant giving them as a carrier's prerequisites see it: that grant treats its prerequisites as met, or they are
+	// met, and gives it a level within the maximum; see enabledForPrereqsOf. It is never saved.
+	enabledAsJudged bool
+	// featuresJudgedOnly is whether Entity.processFeatures last collected the features of this trait, which the sheet
+	// disabled, for the prerequisites that see it enabled alone; see hiddenFromPrereqs. It is never saved.
+	featuresJudgedOnly bool
+	grant              grantState
 	// savedLevel is the level the trait showed, savedCurrentLevel the current level and savedDisabledByPrereqs whether
 	// the sheet disabled the trait for unmet prerequisites, as the "calc" object of the file the trait was loaded from
 	// recorded them. They are only kept by a load that asks for them (see NewEntityFromFileWithSavedCalc) and only read
@@ -473,13 +481,26 @@ func (t *Trait) resetPrereqVerdict() {
 	t.prereqVerdict = prereqsNotJudged
 	t.prereqContradicted = false
 	t.disabledIfChecked = false
+	t.enabledAsJudged = false
 }
 
 // selfDisabled returns true if this trait itself is disabled, either by the user, because the sheet enforces
-// prerequisites and this trait's are unsatisfied, or because the grant that put it on the sheet is not in effect.
-// Parents are not consulted; see Enabled for that.
+// prerequisites and this trait's are unsatisfied, unless the prerequisites being judged see it enabled (see
+// enabledForPrereqsOf), or because the grant that put it on the sheet is not in effect. Parents are not consulted; see
+// Enabled for that.
 func (t *Trait) selfDisabled() bool {
-	return t.IsDisabled() || t.prereqVerdict == prereqsDisable || t.grantNotInEffect()
+	return t.IsDisabled() ||
+		(t.prereqVerdict == prereqsDisable && !t.enabledForPrereqsOf(EntityFromNode(t).judgingOr(nil))) ||
+		t.grantNotInEffect()
+}
+
+// enabledForPrereqsOf returns true if the prerequisites of exclude, which may be nil, see the trait enabled, although
+// the sheet disabled it for its unmet prerequisites or its level above the maximum: another grant than the one giving
+// its details on the sheet gives them as exclude's prerequisites see it (see grantState.viewFor), as which the sheet
+// would leave it enabled (see enabledAsJudged).
+func (t *Trait) enabledForPrereqsOf(exclude any) bool {
+	return exclude != nil && t.enabledAsJudged && t.prereqVerdict == prereqsDisable && t.grant.judged != nil &&
+		exclude == t.grant.judgedFor
 }
 
 // disabledForPrereqsOf returns true if the prerequisites of exclude, which may be nil, see the trait disabled for its
@@ -1039,7 +1060,7 @@ func (t *Trait) AllModifiers() []*TraitModifier {
 
 // Enabled returns true if this Trait and all of its parents are enabled. A trait the sheet has disabled for
 // unsatisfied prerequisites (see SheetSettings.EnforceTraitPrereqs) counts as disabled here, just as one the user
-// disabled does.
+// disabled does, unless the prerequisites being judged see it enabled (see enabledForPrereqsOf).
 func (t *Trait) Enabled() bool {
 	for p := t; p != nil; p = p.parent {
 		if p.selfDisabled() {
@@ -1065,10 +1086,9 @@ func (t *Trait) NameWithReplacements() string {
 }
 
 // ResolveSelector resolves a trait-scoped multi-state field, applying any SelectorOverride features that target the
-// given field and match this trait, less those the prerequisites being judged leave out (see
-// Entity.excludedWhileJudging). base is the field's intrinsic value. When more than one override matches, the winner is
-// chosen by the override-resolution ladder (priority, then specificity), and, if tooltip is non-nil, the full contest
-// is reported.
+// given field and match this trait, less those Entity.excludedWhileJudging leaves out. base is the field's intrinsic
+// value. When more than one override matches, the winner is chosen by the override-resolution ladder (priority, then
+// specificity), and, if tooltip is non-nil, the full contest is reported.
 func (t *Trait) ResolveSelector(field selector.Field, base string, tooltip *xbytes.InsertBuffer) string {
 	entity := EntityFromNode(t)
 	if entity == nil {

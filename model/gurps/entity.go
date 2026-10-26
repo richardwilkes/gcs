@@ -725,14 +725,15 @@ func (e *Entity) settleOnCanonicalCycleState(cycle [][]uint64) {
 
 // derivedState fingerprints the derived state that one recalculation pass hands to the next, one fingerprint per trait,
 // skill and spell in traversal order: whether the sheet has disabled the trait, and whether it would have, had the
-// grant giving its details checked its prerequisites (see Trait.disabledIfChecked), the level of the skill or spell and
-// whether it takes the missing-equipment penalty, the default of the skill, and what the grants gave each, the details
-// takeGrantDetails gives a granted item included, each along with the ID of what it describes, followed by one
-// fingerprint of whether each grant's carrier has its prerequisites met, which the next pass's applyGrants reads (see
-// grantCarrierUnmet). Everything else a pass reads is either the sheet's data or recomputed from these before it is
-// read, so two passes that begin from the same state end in the same one, and a state seen before means the passes have
-// entered a cycle they will never leave. Whether a trait was judged at all is left out, since of its verdict the next
-// pass reads only whether it disables the trait. The capacity is a hint for the length and may be zero.
+// grant giving its details checked its prerequisites (see Trait.disabledIfChecked), or would not have, had the one
+// giving them as a carrier's prerequisites see it given them (see Trait.enabledAsJudged), the level of the skill or
+// spell and whether it takes the missing-equipment penalty, the default of the skill, and what the grants gave each,
+// the details takeGrantDetails gives a granted item included, each along with the ID of what it describes, followed by
+// one fingerprint of whether each grant's carrier has its prerequisites met, which the next pass's applyGrants reads
+// (see grantCarrierUnmet). Everything else a pass reads is either the sheet's data or recomputed from these before it
+// is read, so two passes that begin from the same state end in the same one, and a state seen before means the passes
+// have entered a cycle they will never leave. Whether a trait was judged at all is left out, since of its verdict the
+// next pass reads only whether it disables the trait. The capacity is a hint for the length and may be zero.
 func (e *Entity) derivedState(capacity int) []uint64 {
 	state := make([]uint64, 0, capacity)
 	h := xxh3.New()
@@ -746,6 +747,7 @@ func (e *Entity) derivedState(capacity int) []uint64 {
 		fingerprint(t.TID, func() {
 			xhash.Bool(h, t.prereqVerdict == prereqsDisable)
 			xhash.Bool(h, t.disabledIfChecked)
+			xhash.Bool(h, t.enabledAsJudged)
 			t.grant.hash(h)
 			hashGrantDetails(h, t)
 		})
@@ -807,12 +809,30 @@ func (e *Entity) processFeatures() {
 			e.processFeature(owner, mod, f, leveled)
 		}
 	})
+	// A trait the sheet disabled that the prerequisites of a carrier see enabled (see Trait.enabledForPrereqsOf) has
+	// its features collected too, for those prerequisites alone to read (see hiddenFromPrereqs), all but its DR
+	// bonuses, which nothing hides from the sheet.
+	var judgedOnly []*Trait
+	Traverse(func(t *Trait) bool {
+		t.featuresJudgedOnly = t.enabledForPrereqsOf(t.grant.judgedFor) && (t.parent == nil || t.parent.Enabled())
+		if t.featuresJudgedOnly {
+			judgedOnly = append(judgedOnly, t)
+			forEachActiveTraitFeatureList(t, func(mod fmt.Stringer, leveled LeveledOwner, list Features) {
+				for _, f := range list {
+					if _, ok := f.(*DRBonus); !ok {
+						e.processFeature(t, mod, f, leveled)
+					}
+				}
+			})
+		}
+		return false
+	}, false, false, e.Traits...)
 	// Self-control-derived features are generated after the full walk, since resolving a trait's self-control roll
 	// and adjustment through a selector override requires every override to have been collected first. The Merchant
 	// penalty reads the roll and adjustment again whenever it is read, so that they are the ones the prerequisites
 	// being judged see, and so is generated for every trait whose adjustment they might see call for it; see
 	// SkillBonus.AdjustedAmount and SkillBonus.applies.
-	Traverse(func(t *Trait) bool {
+	merchantPenalty := func(t *Trait) {
 		if t.mayTakeMerchantPenalty() {
 			for _, f := range FeaturesForSelfControlRoll(t.ResolvedSelfControl(nil), selfctrl.MajorCostOfLivingIncrease) {
 				if bonus, ok := f.(*SkillBonus); ok {
@@ -821,8 +841,14 @@ func (e *Entity) processFeatures() {
 				e.processFeature(t, nil, f, t)
 			}
 		}
+	}
+	Traverse(func(t *Trait) bool {
+		merchantPenalty(t)
 		return false
 	}, true, false, e.Traits...)
+	for _, t := range judgedOnly {
+		merchantPenalty(t)
+	}
 	e.LiftingStrengthBonus = e.AttributeBonusFor(StrengthID, stlimit.LiftingOnly, nil).Floor()
 	e.StrikingStrengthBonus = e.AttributeBonusFor(StrengthID, stlimit.StrikingOnly, nil).Floor()
 	e.ThrowingStrengthBonus = e.AttributeBonusFor(StrengthID, stlimit.ThrowingOnly, nil).Floor()
@@ -859,16 +885,13 @@ func (e *Entity) processFeatures() {
 // the primary item is on. The owner is the primary item and mod is the modifier carrying the list, or nil when the list
 // is the item's own. The leveled owner is the node whose level drives a per-level amount: the modifier itself for trait
 // modifiers, which can have levels of their own, and the equipment for equipment modifiers, which cannot. Everything
-// that gathers features from the entity goes through this walk, so they all agree on which features are in effect.
+// that gathers features from the entity goes through this walk, so they all agree on which features are in effect;
+// processFeatures alone adds those of a trait that only the prerequisites of a carrier see enabled, for them to read.
 func (e *Entity) forEachActiveFeatureList(fn func(owner, mod fmt.Stringer, leveled LeveledOwner, list Features)) {
 	Traverse(func(t *Trait) bool {
-		if !t.Container() {
-			fn(t, nil, t, t.ActiveFeatures())
-		}
-		Traverse(func(mod *TraitModifier) bool {
-			fn(t, mod, mod, mod.Features.Active(t.SwitchedOn))
-			return false
-		}, true, true, t.Modifiers...)
+		forEachActiveTraitFeatureList(t, func(mod fmt.Stringer, leveled LeveledOwner, list Features) {
+			fn(t, mod, leveled, list)
+		})
 		return false
 	}, true, false, e.Traits...)
 	Traverse(func(s *Skill) bool {
@@ -887,6 +910,20 @@ func (e *Entity) forEachActiveFeatureList(fn func(owner, mod fmt.Stringer, level
 		}
 		return false
 	}, false, false, e.CarriedEquipment...)
+}
+
+// forEachActiveTraitFeatureList calls fn with the trait's own active features, unless it is a container, and then with
+// those of each of its enabled modifiers, subject to the trait's switch. mod is the modifier carrying the list, or nil
+// for the trait's own, and leveled is the node whose level drives a per-level amount. Whether the trait is enabled is
+// not consulted.
+func forEachActiveTraitFeatureList(t *Trait, fn func(mod fmt.Stringer, leveled LeveledOwner, list Features)) {
+	if !t.Container() {
+		fn(nil, t, t.ActiveFeatures())
+	}
+	Traverse(func(mod *TraitModifier) bool {
+		fn(mod, mod, mod.Features.Active(t.SwitchedOn))
+		return false
+	}, true, true, t.Modifiers...)
 }
 
 // forEachActiveEquipmentFeatureList calls fn with the equipment's own active features and then with those of each of
@@ -1139,25 +1176,32 @@ func (e *Entity) processTraitPrereqs() {
 	// by a grant not in effect is not judged either, and one put there by a grant that bypasses its prerequisites is
 	// treated as having them met. Such a one is still judged when a carrier's prerequisites see it given by a grant
 	// that checks them (see grantState.prereqsChecked), for whether the sheet would disable it were they checked, which
-	// is how the prerequisites that see it given by such a grant see it; see Trait.disabledForPrereqsOf.
+	// is how the prerequisites that see it given by such a grant see it; see Trait.disabledForPrereqsOf. A trait the
+	// sheet disables is likewise found whether the sheet would leave it enabled, were it given its details by the grant
+	// giving them as a carrier's prerequisites see it, which is how those prerequisites see it; see
+	// Trait.enabledForPrereqsOf.
 	enforce := e.SheetSettings.EnforceTraitPrereqs
 	var verdicts []traitPrereqVerdict
-	var disabledIfChecked []bool
+	var disabledIfChecked, enabledAsJudged []bool
 	Traverse(func(t *Trait) bool {
 		t.UnsatisfiedReason = ""
 		t.prereqsUnmet = false
 		verdict := prereqsNotJudged
 		ifChecked := false
+		asJudged := false
 		if !t.IsDisabled() && !t.grantNotInEffect() && (t.parent == nil || t.parent.Enabled()) {
+			unmet := false
 			if t.grant.prereqsChecked() {
 				t.UnsatisfiedReason = e.evaluatePrereqs(t.Prereq, t, nil)
+				unmet = t.UnsatisfiedReason != ""
 				if t.grant.bypass {
-					ifChecked = enforce && t.UnsatisfiedReason != ""
+					ifChecked = enforce && unmet
 					t.UnsatisfiedReason = ""
 				}
 				t.prereqsUnmet = t.UnsatisfiedReason != ""
 			}
-			if maximum := t.ResolvedMaxLevels(); maximum > 0 && t.Levels > maximum {
+			maximum := t.ResolvedMaxLevels()
+			if maximum > 0 && t.Levels > maximum {
 				reason := levelExceedsMaximumReason(maximum)
 				if t.UnsatisfiedReason == "" {
 					t.UnsatisfiedReason = reason
@@ -1168,16 +1212,21 @@ func (e *Entity) processTraitPrereqs() {
 			verdict = prereqsLeaveEnabled
 			if enforce && t.UnsatisfiedReason != "" && !t.prereqContradicted {
 				verdict = prereqsDisable
+				if judged := t.grant.judged; judged != nil {
+					asJudged = (judged.bypass || !unmet) && (maximum <= 0 || judged.detail.level() <= maximum)
+				}
 			}
 		}
 		verdicts = append(verdicts, verdict)
 		disabledIfChecked = append(disabledIfChecked, ifChecked)
+		enabledAsJudged = append(enabledAsJudged, asJudged)
 		return false
 	}, false, false, e.Traits...)
 	index := 0
 	Traverse(func(t *Trait) bool {
 		t.setPrereqVerdict(verdicts[index])
 		t.disabledIfChecked = disabledIfChecked[index]
+		t.enabledAsJudged = enabledAsJudged[index]
 		index++
 		return false
 	}, false, false, e.Traits...)
@@ -1450,8 +1499,9 @@ func (e *Entity) AttributeBonusFor(attributeID string, limitation stlimit.Option
 	return total
 }
 
-// CostReductionFor returns the total cost reduction for the given ID. The reductions from what the grants of the item
-// whose prerequisites are being judged put on the sheet are left out; see JudgingPrereqsOf.
+// CostReductionFor returns the total cost reduction for the given ID. The reductions excludedWhileJudging leaves out,
+// such as those from what the grants of the item whose prerequisites are being judged put on the sheet, are passed
+// over; see JudgingPrereqsOf.
 func (e *Entity) CostReductionFor(attributeID string) fxp.Int {
 	var total fxp.Int
 	for _, one := range e.features.costReductions {
@@ -1498,15 +1548,17 @@ func (e *Entity) judgingOr(exclude any) any {
 	return exclude
 }
 
-// bonusExcluded returns true if the bonus is left out while prerequisites are judged, being carried by an item hidden
-// from them, such as one a grant of the item judged put on the sheet; see hiddenFromPrereqs and JudgingPrereqsOf.
+// bonusExcluded returns true if the bonus is left out, being carried by an item hidden from the prerequisites being
+// judged, such as one a grant of the item judged put on the sheet, or, while none are, from the rest of the sheet; see
+// hiddenFromPrereqs and JudgingPrereqsOf.
 func (e *Entity) bonusExcluded(bonus Bonus) bool {
-	return e.judging != nil && hiddenFromPrereqs(e.judging, bonus.Owner())
+	return hiddenFromPrereqs(e.judging, bonus.Owner())
 }
 
-// excludedWhileJudging returns true if the node is left out while prerequisites are judged, being an item hidden from
-// them, such as one a grant of the item judged put on the sheet, which a script run for those prerequisites must not
-// see either; see hiddenFromPrereqs and JudgingPrereqsOf. e may be nil, which leaves nothing out.
+// excludedWhileJudging returns true if the node is left out, being an item hidden from the prerequisites being judged,
+// such as one a grant of the item judged put on the sheet, which a script run for those prerequisites must not see
+// either, or, while none are, from the rest of the sheet; see hiddenFromPrereqs and JudgingPrereqsOf. e may be nil,
+// which leaves nothing out.
 func (e *Entity) excludedWhileJudging(node any) bool {
 	return e != nil && hiddenFromPrereqs(e.judging, node)
 }
