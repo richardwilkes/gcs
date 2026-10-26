@@ -300,6 +300,15 @@ func (p *featuresPanel) grantPicker(path string, g *gurps.Grant) *unison.Panel {
 		}
 	}
 	refill(chosen)
+	// The scroll bar has no range until the scroll panel is laid out, so refill's scroll to a row kept from the last
+	// picker went no further than the top; the row is scrolled to again once the panel is laid out.
+	if list.Selection.FirstSet() > 0 {
+		scroll.SetLayout(&afterFirstLayout{Layout: scroll, then: func() {
+			if index := list.Selection.FirstSet(); index >= 0 {
+				list.ScrollRectIntoView(list.RowRect(index))
+			}
+		}})
+	}
 	panel.AddChild(filter)
 	height := xmath.Ceil(list.Factory.CellHeight()) * grantPickerRows
 	scroll.SetLayoutData(&unison.FlexLayoutData{
@@ -323,6 +332,21 @@ func (p *featuresPanel) grantPicker(path string, g *gurps.Grant) *unison.Panel {
 	buttons.AddChild(editButton)
 	panel.AddChild(buttons)
 	return panel
+}
+
+// afterFirstLayout lays out as the layout it holds does, calling then once the first layout is done.
+type afterFirstLayout struct {
+	unison.Layout
+	then func()
+}
+
+// PerformLayout implements unison.Layout.
+func (l *afterFirstLayout) PerformLayout(target *unison.Panel) {
+	l.Layout.PerformLayout(target)
+	if then := l.then; then != nil {
+		l.then = nil
+		then()
+	}
 }
 
 // grantItemOwner owns the editor of a grant's item. The editor works on a copy, which each apply, undo and redo hands
@@ -451,18 +475,20 @@ func (p *featuresPanel) editGrantedItem(g *gurps.Grant) {
 	}
 }
 
-// grantFileCache is what a library file held for the grant pickers when it was last read.
+// grantFileCache is what a library file held for the grant pickers when it was last read, along with its modification
+// time and size then.
 type grantFileCache struct {
 	modTime time.Time
 	items   []*grantLibraryItem
+	size    int64
 }
 
 // grantFileItems holds the items the grant pickers found in each library file, by library key and path, until the file
 // changes or is no longer found under that key.
 var grantFileItems = make(map[gurps.LibraryFile]grantFileCache)
 
-// grantItemList is the sorted list of items the pickers last showed for one kind of grant, along with the files and
-// modification times it came from, so that a picker rebuilt while the libraries are unchanged shows the same list again
+// grantItemList is the sorted list of items the pickers last showed for one kind of grant, along with the files it came
+// from as they were when read, so that a picker rebuilt while the libraries are unchanged shows the same list again
 // rather than gathering and sorting it afresh.
 type grantItemList struct {
 	stamps []grantFileStamp
@@ -473,10 +499,11 @@ type grantItemList struct {
 type grantFileStamp struct {
 	file    gurps.LibraryFile
 	modTime time.Time
+	size    int64
 }
 
 func (s grantFileStamp) equal(other grantFileStamp) bool {
-	return s.file == other.file && s.modTime.Equal(other.modTime)
+	return s.file == other.file && s.modTime.Equal(other.modTime) && s.size == other.size
 }
 
 // grantItemLists holds the list the pickers last showed for each kind of grant; see grantItemList.
@@ -532,21 +559,23 @@ func grantLibraryItems(t feature.Type) []*grantLibraryItem {
 			case !strings.EqualFold(filepath.Ext(path), ext):
 				return nil
 			}
-			info, err := d.Info()
+			// Stat follows a symlink, as d.Info doesn't, since only the file it points at changes when its items do.
+			info, err := fs.Stat(fileSystem, path)
 			if err != nil {
 				return nil
 			}
 			file := gurps.LibraryFile{Library: lib.Key(), Path: path}
 			seen[file] = true
 			cached, ok := grantFileItems[file]
-			if !ok || !cached.modTime.Equal(info.ModTime()) {
+			if !ok || !cached.modTime.Equal(info.ModTime()) || cached.size != info.Size() {
 				cached = grantFileCache{
 					modTime: info.ModTime(),
+					size:    info.Size(),
 					items:   load(fileSystem, file),
 				}
 				grantFileItems[file] = cached
 			}
-			stamps = append(stamps, grantFileStamp{file: file, modTime: cached.modTime})
+			stamps = append(stamps, grantFileStamp{file: file, modTime: cached.modTime, size: cached.size})
 			caches = append(caches, cached)
 			return nil
 		}

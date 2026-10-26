@@ -16,6 +16,7 @@ import (
 	"slices"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
@@ -328,10 +329,12 @@ func TestGrantLibraryItemsFollowTheLibrary(t *testing.T) {
 	c.Nil(find(grantLibraryItems(feature.GrantTrait)), "a file removed from the library drops out")
 }
 
-// TestGrantLibraryItemsFollowSymlinkedFolders checks that the picker's items include those in a folder a symlink in
-// the library points at, as the Library Explorer lists them, and that a folder a symlink leads to again, one of the
-// library's own or one back up the tree, is not walked again, which would offer its items twice or walk forever.
-func TestGrantLibraryItemsFollowSymlinkedFolders(t *testing.T) {
+// TestGrantLibraryItemsFollowSymlinks checks that the picker's items include those in a folder a symlink in the library
+// points at, as the Library Explorer lists them, that a folder a symlink leads to again, one of the library's own or one
+// back up the tree, is not walked again, which would offer its items twice or walk forever, and that the items of a
+// file a symlink points at are read again once that file's modification time or size changes, which the symlink's own
+// don't.
+func TestGrantLibraryItemsFollowSymlinks(t *testing.T) {
 	c := check.New(t)
 	_, _ = uxtest.StartHeadlessWorkspace(t, c)
 	dir := t.TempDir()
@@ -348,20 +351,50 @@ func TestGrantLibraryItemsFollowSymlinkedFolders(t *testing.T) {
 		filepath.Join(traits, "Test"+gurps.TraitsExt)))
 	c.NoError(gurps.SaveTraits([]*gurps.Trait{newGrantTestTrait("Dark Vision", 0)},
 		filepath.Join(linked, "Test"+gurps.TraitsExt)))
+	target := filepath.Join(t.TempDir(), "Elsewhere"+gurps.TraitsExt)
+	keenHearing := newGrantTestTrait("Keen Hearing", 0)
+	c.NoError(gurps.SaveTraits([]*gurps.Trait{keenHearing}, target))
+	c.NoError(os.Symlink(target, filepath.Join(dir, "Shortcut"+gurps.TraitsExt)))
 	lib := library.NewLibrary("Test", "acct", "", "repo", dir)
 	libraries := gurps.GlobalSettings().Libraries
 	libraries.Store(lib.Key(), lib)
 	t.Cleanup(func() { libraries.Remove(lib.Key()) })
-	paths := make(map[string][]string)
-	for _, item := range grantLibraryItems(feature.GrantTrait) {
-		if item.from.Library == lib.Key() {
-			paths[item.name] = append(paths[item.name], item.from.Path)
+	offered := func() map[string][]string {
+		paths := make(map[string][]string)
+		for _, item := range grantLibraryItems(feature.GrantTrait) {
+			if item.from.Library == lib.Key() {
+				paths[item.name] = append(paths[item.name], item.from.Path)
+			}
 		}
+		return paths
 	}
+	paths := offered()
 	c.Equal([]string{"Linked/Test" + gurps.TraitsExt}, paths["Dark Vision"],
 		"the trait in the folder a symlink points at is offered once, by its path within the library")
 	c.Equal([]string{"Traits/Test" + gurps.TraitsExt}, paths["Night Vision"],
 		"the trait in a folder of the library is offered once, by its path there, though a symlink leads to it too")
+	c.Equal([]string{"Shortcut" + gurps.TraitsExt}, paths["Keen Hearing"],
+		"the trait in the file a symlink points at is offered by the symlink's path")
+
+	// A rename to a name of the same length leaves the file the same size, so that only the modification time tells the
+	// saves apart.
+	before, err := os.Stat(target)
+	c.NoError(err)
+	later := time.Now().Add(time.Hour)
+	acuteVision := newGrantTestTrait("Acute Vision", 0)
+	c.NoError(gurps.SaveTraits([]*gurps.Trait{acuteVision}, target))
+	c.NoError(os.Chtimes(target, later, later))
+	after, err := os.Stat(target)
+	c.NoError(err)
+	c.Equal(before.Size(), after.Size(), "the rename keeps the file's size")
+	c.Equal([]string{"Shortcut" + gurps.TraitsExt}, offered()["Acute Vision"],
+		"a trait renamed in the file a symlink points at is offered once the file's modification time changes")
+
+	// As when the file system keeps modification times too coarse to tell two saves apart.
+	c.NoError(gurps.SaveTraits([]*gurps.Trait{acuteVision, newGrantTestTrait("Danger Sense", 0)}, target))
+	c.NoError(os.Chtimes(target, later, later))
+	c.Equal([]string{"Shortcut" + gurps.TraitsExt}, offered()["Danger Sense"],
+		"a trait in the file a symlink points at is offered once the file's size changes, though its time didn't")
 }
 
 // TestGrantPickerLeavesOutTheItemEdited checks that the picker doesn't offer the item being edited, or a copy of it,
@@ -448,7 +481,8 @@ func TestGrantPickerListFollowsTheFilter(t *testing.T) {
 }
 
 // TestGrantPickerKeepsItsFilterAcrossRebuilds checks that the filter typed into a picker, and the row chosen in its list,
-// survive a rebuild of the panel, which an edit of the open row's other controls causes while the picker is open.
+// survive a rebuild of the panel, which an edit of the open row's other controls causes while the picker is open, with
+// the row chosen still scrolled into view.
 func TestGrantPickerKeepsItsFilterAcrossRebuilds(t *testing.T) {
 	c := check.New(t)
 	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
@@ -457,9 +491,10 @@ func TestGrantPickerKeepsItsFilterAcrossRebuilds(t *testing.T) {
 	libraries := gurps.GlobalSettings().Libraries
 	libraries.Store(lib.Key(), lib)
 	t.Cleanup(func() { libraries.Remove(lib.Key()) })
-	traits := make([]*gurps.Trait, 0, 4)
+	const acute = grantPickerRows + 2
+	traits := make([]*gurps.Trait, 0, acute+1)
 	traits = append(traits, newGrantTestTrait("Night Vision", 0))
-	for i := range 3 {
+	for i := range acute {
 		traits = append(traits, newGrantTestTrait(fmt.Sprintf("Acute Sense %d", i), 0))
 	}
 	c.NoError(gurps.SaveTraits(traits, filepath.Join(dir, "Traits", "Test"+gurps.TraitsExt)))
@@ -479,18 +514,32 @@ func TestGrantPickerKeepsItsFilterAcrossRebuilds(t *testing.T) {
 		}
 		return filter, lists[0]
 	}
+	// shown returns true if the list's view shows the whole of its selected row.
+	shown := func(list *unison.List[*grantLibraryItem]) bool {
+		row := list.RowRect(list.Selection.FirstSet())
+		row.Point = row.Point.Add(list.FrameRect().Point)
+		return list.Parent().ContentRect(false).Contains(row)
+	}
 	screen.Do(func() {
 		filter, list := picker()
 		filter.SetText("Acute")
-		c.Equal(3, list.Count(), "precondition: the filter leaves the acute senses")
-		list.Select(false, 2)
+		c.Equal(acute, list.Count(), "precondition: the filter leaves the acute senses")
+	})
+	screen.Do(func() {
+		filter, list := picker()
+		for range acute - 1 {
+			filter.KeyDownCallback(unison.KeyDown, 0, false)
+		}
+		c.Equal(acute-1, list.Selection.FirstSet(), "precondition: Down moves to the last row")
+		c.True(shown(list), "precondition: which is scrolled into view")
 		p.rebuild("")
 	})
 	screen.Do(func() {
 		filter, list := picker()
 		c.Equal("Acute", filter.Text(), "the filter typed survives the rebuild")
-		c.Equal(3, list.Count(), "and so does the list it leaves")
-		c.Equal(2, list.Selection.FirstSet(), "with the same row chosen")
+		c.Equal(acute, list.Count(), "and so does the list it leaves")
+		c.Equal(acute-1, list.Selection.FirstSet(), "with the same row chosen")
+		c.True(shown(list), "still scrolled into view")
 		p.toggle("0")
 	})
 	screen.Do(func() { p.toggle("0") })
