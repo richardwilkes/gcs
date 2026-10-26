@@ -345,7 +345,11 @@ func (t *Trait) MarshalJSONTo(enc *jsontext.Encoder) error {
 	}
 	t.ClearUnusedFieldsForType()
 	slices.Sort(t.Tags)
-	return marshalNodeData(enc, &t.TraitData, func() *calc {
+	data := &t.TraitData
+	if t.Granted != nil && omitCalc(enc) {
+		data = withoutGrantDetails(data)
+	}
+	return marshalNodeData(enc, data, func() *calc {
 		// The "calc" object is always written, even when empty.
 		unsatisfiedReason, contradiction := t.PrereqStatus()
 		c := &calc{

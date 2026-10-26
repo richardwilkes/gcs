@@ -826,6 +826,43 @@ Would remove the points of 2 levels from Karate, already present, but the prereq
 Would add the points of level 2 to Karate, already present, but the prerequisites of what carries the grant are not met
 Does not grant Dark Vision 1, since the prerequisites of what carries the grant are not met`, e.grantSummary(cursed),
 		"a grant whose carrier's prerequisites are unmet says what it would do, as one not in effect does")
+
+	e = NewEntity()
+	darkVision := func(level fxp.Int) *Grant {
+		return newTraitGrant(newGrantLeveledTrait("Dark Vision", fxp.One), level, grantmerge.Ignore)
+	}
+	goggles = addCarriedEquipmentWithFeatures(e, "Goggles", darkVision(fxp.Three))
+	goggles.Equipped = false
+	sight := addTraitWithFeatures(e, "Sight", darkVision(fxp.One))
+	hawk := addTraitWithFeatures(e, "Hawk", darkVision(fxp.Two))
+	hawk.Prereq = NewPrereqList()
+	addSkillPrereq(hawk.Prereq, "Brawling", fxp.One)
+	visor = addCarriedEquipmentWithFeatures(e, "Visor", darkVision(fxp.Two))
+	visor.Equipped = false
+	monocle := addCarriedEquipmentWithFeatures(e, "Monocle", darkVision(fxp.One))
+	monocle.Equipped = false
+	e.Recalculate()
+	c.Equal("Grants Dark Vision 1, standing in for a grant of it that is not in effect", e.grantSummary(sight))
+	c.Equal("Would grant Dark Vision 2, but the grant is not in effect", e.grantSummary(visor),
+		"a grant not in effect that ranks above the one standing in would take its place")
+	c.Equal("Does not grant Dark Vision 2, since the prerequisites of what carries the grant are not met",
+		e.grantSummary(hawk), "as would one whose carrier's prerequisites are unmet")
+	c.Equal("Does not grant Dark Vision 1, since it is already present", e.grantSummary(monocle),
+		"while one ranking below it would not")
+
+	e = NewEntity()
+	karate := addSkill(e, "Karate", 0)
+	jinxed := addTraitWithFeatures(e, "Jinxed",
+		newSkillGrant(newEasySkill("Karate", fxp.One), -fxp.One, grantmerge.MergeLevels))
+	charm := addCarriedEquipmentWithFeatures(e, "Charm",
+		newSkillGrant(newEasySkill("Karate", fxp.One), -fxp.Two, grantmerge.MergeLevels))
+	charm.Equipped = false
+	e.Recalculate()
+	c.Equal(fxp.Min, karate.LevelData.Level, "the test requires Karate to have no level")
+	c.Equal("Removes nothing from Karate, since it has no level of its own", e.grantSummary(jinxed),
+		"a grant taking levels from a skill with none removes nothing")
+	c.Equal("Removes nothing from Karate, since it has no level of its own", e.grantSummary(charm),
+		"whether or not it is in effect")
 }
 
 func TestGrantNeedsItsCarriersPrereqsMet(t *testing.T) {

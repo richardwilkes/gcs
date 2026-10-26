@@ -20,6 +20,7 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/eqcontainer"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/grantmerge"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/gcs/v5/model/kinds"
 	"github.com/richardwilkes/toolbox/v2/check"
@@ -112,6 +113,51 @@ func TestHashedFormHasNoDerivedValues(t *testing.T) {
 	before := Hash64(e)
 	e.Profile.Name = "Changed"
 	c.NotEqual(before, Hash64(e), "editing the entity changes its hash")
+
+	// Which grant gives a granted row its details is derived as well: a carrier whose script prerequisite is stopped
+	// takes its grants out of effect, and with them those standing in for grants not in effect.
+	kit := addCarriedEquipmentWithFeatures(e, "Spare Kit",
+		newTraitGrant(newGrantLeveledTrait("Night Vision", fxp.One), fxp.Three, grantmerge.Ignore),
+		newSkillGrant(newEasySkill("Guns", 0), fxp.One, grantmerge.Ignore),
+		newSpellGrant(newHardSpell("Continual Light", 0), fxp.One, grantmerge.Ignore))
+	kit.Equipped = false
+	pistol := newEasySkill("Guns", 0)
+	pistol.OptionalSpecialization = "Pistol"
+	glowing := newHardSpell("Continual Light", 0)
+	glowing.VTTNotes = "Glows"
+	seer := addTraitWithFeatures(e, "Seer",
+		newTraitGrant(newGrantLeveledTrait("Night Vision", fxp.One), fxp.Two, grantmerge.Ignore),
+		newSkillGrant(pistol, fxp.One, grantmerge.Ignore),
+		newSpellGrant(glowing, fxp.One, grantmerge.Ignore))
+	seer.Prereq = NewPrereqList()
+	addScriptPrereq(seer.Prereq, "true")
+	e.Recalculate()
+	nightVision, guns, light := grantedOf(e.Traits)[0], grantedOf(e.Skills)[0], grantedOf(e.Spells)[0]
+	for _, row := range []struct {
+		node   any
+		detail string
+	}{
+		{nightVision, `"levels":2`},
+		{guns, `"optional_specialization":"Pistol"`},
+		{light, `"vtt_notes":"Glows"`},
+	} {
+		saved, err = jio.Marshal(row.node, json.Deterministic(true))
+		c.NoError(err, "the granted row marshals")
+		c.Contains(string(saved), row.detail, "the saved form of a row carries the details of the grant standing in")
+	}
+	before = Hash64(e)
+	SuppressScriptResolveErrorLogging(func() {
+		e.scriptResolvingDepth = maximumAllowedResolvingDepth
+		defer func() { e.scriptResolvingDepth = 0 }()
+		e.Recalculate()
+	})
+	nightVision, guns, light = grantedOf(e.Traits)[0], grantedOf(e.Skills)[0], grantedOf(e.Spells)[0]
+	c.Equal(fxp.Three, nightVision.Levels, "with Seer's prerequisite stopped, the rows are the items the kit gives")
+	c.Equal("", guns.OptionalSpecialization, "the skill included")
+	c.Equal("", light.VTTNotes, "and the spell")
+	c.Equal(before, Hash64(e), "which leaves the hash alone")
+	nightVision.SetDisabled(true)
+	c.NotEqual(before, Hash64(e), "while it still notices an edit of a granted row")
 }
 
 // TestTemplateAndLootHashesHaveNoDerivedValues covers the other documents whose whole contents are hashed to decide

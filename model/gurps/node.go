@@ -141,8 +141,8 @@ func (n *nameablesSyncData) hash(h hash.Hash) {
 }
 
 // marshalNodeData writes a node's data and, unless the encoder was asked to omit the derived values, the "calc" object
-// calc builds for it. A nil calc is left out. data points at the node's own, so the caller is responsible for clearing
-// whatever must not be written before calling this.
+// calc builds for it. A nil calc is left out. data is the node's own, or a copy of it, so the caller is responsible for
+// clearing whatever must not be written before calling this.
 func marshalNodeData[D, C any](enc *jsontext.Encoder, data *D, calc func() *C) error {
 	if omitCalc(enc) {
 		return json.MarshalEncode(enc, data)

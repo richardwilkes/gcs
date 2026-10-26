@@ -355,7 +355,11 @@ func (s *Skill) Clone(from LibraryFile, owner DataOwner, parent *Skill, mode Clo
 func (s *Skill) MarshalJSONTo(enc *jsontext.Encoder) error {
 	s.ClearUnusedFieldsForType()
 	slices.Sort(s.Tags)
-	return marshalNodeData(enc, &s.SkillData, func() *leveledCalc {
+	data := &s.SkillData
+	if s.Granted != nil && omitCalc(enc) {
+		data = withoutGrantDetails(data)
+	}
+	return marshalNodeData(enc, data, func() *leveledCalc {
 		return newLeveledCalc(s.Container(), s.LevelData.Level, s.RelativeLevel(), s.UnsatisfiedReason,
 			s.ResolveLocalNotes(), s.LocalNotes)
 	})

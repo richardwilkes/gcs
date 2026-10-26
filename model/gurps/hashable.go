@@ -34,6 +34,10 @@ type omitCalcMarkerType struct{}
 // producing them. Only its identity carries meaning: the one function in it is for a type that never appears in any
 // data, so it alters nothing about how anything is encoded.
 //
+// A trait, skill or spell a grant put on the sheet also leaves out, under the marker, the details it takes from that
+// grant (see withoutGrantDetails). A marshal that is saved, as SellMoneyList's is, must therefore never use the marker
+// for such rows, or the file would lose those details.
+//
 // json/v2 has no context to thread through a marshal and no way to define an option of one's own — the option lookup
 // switches over the standard library's own option types, and the interface an option must satisfy cannot be
 // implemented outside it. What it does have is an options bag that reaches every nested MarshalJSONTo through
@@ -49,8 +53,9 @@ var omitCalcMarker = json.JoinMarshalers(
 )
 
 // omitCalc reports whether the marshal in progress is one whose "calc" members will be discarded, meaning the work of
-// computing those derived values — which runs the scripts in the data — can be skipped entirely. A marshal carrying
-// anyone else's marshalers compares unequal and gets the full encoding.
+// computing those derived values — which runs the scripts in the data — can be skipped entirely, and whose granted rows
+// leave out the details their grants give them (see omitCalcMarker). A marshal carrying anyone else's marshalers
+// compares unequal and gets the full encoding.
 func omitCalc(enc *jsontext.Encoder) bool {
 	marshalers, ok := json.GetOption(enc.Options(), json.WithMarshalers)
 	return ok && marshalers == omitCalcMarker
@@ -150,6 +155,9 @@ func SameItem[T interface {
 // permitted per-script execution time, resolving to 0 instead of its real value. On a machine that is briefly too busy
 // for a script to finish in time, an untouched document would otherwise hash differently than it did a moment earlier
 // and start reporting itself as modified.
+//
+// For the same reason, a trait, skill or spell a grant put on the sheet leaves out the details it takes from the grant
+// giving it (see withoutGrantDetails), since which grant that is turns on prerequisites, which may be scripts.
 //
 // The marshal is marked, which is what the data objects consult to leave those values out, so the work of producing
 // them is never done here at all.

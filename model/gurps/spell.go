@@ -332,7 +332,11 @@ func (s *Spell) MarshalJSONTo(enc *jsontext.Encoder) error {
 	s.ClearUnusedFieldsForType()
 	slices.Sort(s.Tags)
 	slices.Sort(s.College)
-	return marshalNodeData(enc, &s.SpellData, func() *leveledCalc {
+	data := &s.SpellData
+	if s.Granted != nil && omitCalc(enc) {
+		data = withoutGrantDetails(data)
+	}
+	return marshalNodeData(enc, data, func() *leveledCalc {
 		return newLeveledCalc(s.Container(), s.LevelData.Level, s.RelativeLevel(), s.UnsatisfiedReason,
 			s.ResolveLocalNotes(), s.LocalNotes)
 	})
