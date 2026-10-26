@@ -59,8 +59,8 @@ func (t *Template) addPageRefRow(parent *unison.Panel) {
 	title := i18n.Text("Page Reference")
 	data := &t.template.TemplateData
 	label := NewPageLabel(title)
-	wrapper, refresh := newPageRefLabel(label, fonts.PageLabelPrimary,
-		func() string { return data.PageRef }, func() string { return data.PageRefHighlight })
+	wrapper, refresh := newPageRefLabel(label, fonts.PageLabelPrimary, func() string { return data.PageRef },
+		t.pageRefHighlight)
 	wrapper.SetLayoutData(&unison.FlexLayoutData{
 		HAlign: align.Fill,
 		VAlign: align.Middle,
@@ -76,6 +76,16 @@ func (t *Template) addPageRefRow(parent *unison.Panel) {
 	field.Tooltip = newWrappedTooltip(gurps.PageRefTooltip())
 	field.Accessibility.LabeledBy = label
 	parent.AddChild(field)
+}
+
+// pageRefHighlight returns the text to look for on the page the template's page reference opens: the highlight the
+// template holds or, while it holds none, its name, as the page reference cell of a table resolves it.
+func (t *Template) pageRefHighlight() string {
+	data := &t.template.TemplateData
+	if data.PageRefHighlight != "" {
+		return data.PageRefHighlight
+	}
+	return data.Name
 }
 
 // addTargetPointsRow adds the row that edits the range of points the template is meant to cost, alongside what the

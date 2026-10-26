@@ -1103,3 +1103,18 @@ func TestPickerSessionChooseWithinSkipsAnsweredModifiers(t *testing.T) {
 	s.chooseWithin(pack, 0)
 	c.Equal([]string{"pack", "done", "sub"}, asked, "with nothing left, everything is asked again")
 }
+
+// TestPickerRowPageRefLooksForTheNameWithoutAHighlight verifies that a picker row's page link looks for the row's name
+// on the page while the row has no highlight, as the page reference cell of a table does.
+func TestPickerRowPageRefLooksForTheNameWithoutAHighlight(t *testing.T) {
+	c := check.New(t)
+	trait := gurps.NewTrait(nil, nil, false)
+	trait.Name = "Alpha"
+	trait.PageRef = "B35"
+	ref, highlight := pickerRowPageRef(trait)
+	c.Equal("B35", ref)
+	c.Equal("Alpha", highlight, "a row without a highlight looks for its name")
+	trait.PageRefHighlight = "Beta"
+	_, highlight = pickerRowPageRef(trait)
+	c.Equal("Beta", highlight, "a highlight is looked for as given")
+}

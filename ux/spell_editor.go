@@ -113,7 +113,7 @@ func initSpellEditor(e *editor[*gurps.Spell, *gurps.SpellEditData], content *uni
 	if !e.target.Container() {
 		addSwitchedOnCheckBox(content, &e.editorData.SwitchedOn)
 	}
-	addPageRefLabelsAndFields(content, &e.editorData.PageRef, &e.editorData.PageRefHighlight)
+	addPageRefLabelsAndFields(content, &e.editorData.PageRef, &e.editorData.PageRefHighlight, e.pageRefHighlight)
 	if !e.target.Container() {
 		d := e.editorData
 		content.AddChild(newNameablesPanel(&d.Nameables, func() map[string]int {

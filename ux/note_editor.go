@@ -101,7 +101,7 @@ func initNoteEditor(e *editor[*gurps.Note, *gurps.NoteEditData], content *unison
 
 	addTagsLabelAndField(content, &e.editorData.Tags)
 	addPreconfigurable(e, content)
-	addPageRefLabelsAndFields(content, &e.editorData.PageRef, &e.editorData.PageRefHighlight)
+	addPageRefLabelsAndFields(content, &e.editorData.PageRef, &e.editorData.PageRefHighlight, e.pageRefHighlight)
 
 	content.AddChild(newNameablesPanel(&e.editorData.Nameables,
 		func() map[string]int { return nameableUses([]string{e.editorData.MarkDown}, nil, nil, nil) }, nil, nil))

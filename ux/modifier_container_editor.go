@@ -16,15 +16,16 @@ import (
 )
 
 // initModifierContainerEditor fills in the editor for a modifier group or choice, which has only what describes the
-// container and, for a choice, what it asks for; a modifier's other fields mean nothing to a container.
-func initModifierContainerEditor(content *unison.Panel, data *gurps.NodeSyncData, container *gurps.ModifierContainerSyncData) {
+// container and, for a choice, what it asks for; a modifier's other fields mean nothing to a container. highlight is
+// what the page reference button looks for on the page, as addPageRefLabelsAndFields describes.
+func initModifierContainerEditor(content *unison.Panel, data *gurps.NodeSyncData, container *gurps.ModifierContainerSyncData, highlight func() string) {
 	addNameLabelAndField(content, &data.Name)
 	addLabelAndMultiLineStringField(content, i18n.Text("Notes"), "", &data.LocalNotes)
 	if container.IsChoice() {
 		addModifierChoiceField(content, container)
 	}
 	addTagsLabelAndField(content, &data.Tags)
-	addPageRefLabelsAndFields(content, &data.PageRef, &data.PageRefHighlight)
+	addPageRefLabelsAndFields(content, &data.PageRef, &data.PageRefHighlight, highlight)
 }
 
 // addModifierChoiceField adds the popup that says whether a modifier choice is mandatory or optional. Making it a group

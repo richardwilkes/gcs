@@ -30,7 +30,7 @@ func EditEquipmentModifier(owner Rebuildable, modifier *gurps.EquipmentModifier)
 func initEquipmentModifierEditor(e *editor[*gurps.EquipmentModifier, *gurps.EquipmentModifierEditData], content *unison.Panel) func() {
 	if e.target.Container() {
 		initModifierContainerEditor(content, &e.editorData.EquipmentModifierSyncData,
-			&e.editorData.ModifierContainerSyncData)
+			&e.editorData.ModifierContainerSyncData, e.pageRefHighlight)
 		return nil
 	}
 	addNameLabelAndField(content, &e.editorData.Name)
@@ -44,7 +44,7 @@ func initEquipmentModifierEditor(e *editor[*gurps.EquipmentModifier, *gurps.Equi
 	addEquipmentCostFields(content, e)
 	addEquipmentWeightFields(content, e)
 	addTagsLabelAndField(content, &e.editorData.Tags)
-	addPageRefLabelsAndFields(content, &e.editorData.PageRef, &e.editorData.PageRefHighlight)
+	addPageRefLabelsAndFields(content, &e.editorData.PageRef, &e.editorData.PageRefHighlight, e.pageRefHighlight)
 	content.AddChild(newNameablesPanel(&e.editorData.Nameables, func() map[string]int {
 		return nameableUses([]string{e.editorData.Name, e.editorData.LocalNotes}, nil, e.editorData.Features, nil)
 	}, nil, nil))

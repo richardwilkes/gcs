@@ -178,6 +178,18 @@ func TestTemplatePageRefButtonFollowsTheField(t *testing.T) {
 	c.False(button.Enabled(), "separators alone are no reference")
 }
 
+// TestTemplatePageRefHighlightFallsBackToTheName verifies that the page reference button looks for the template's name
+// on the page while the highlight field is blank, as the page reference cell of a table does.
+func TestTemplatePageRefHighlightFallsBackToTheName(t *testing.T) {
+	c := check.New(t)
+	data := gurps.NewTemplate()
+	data.Name = "Knight"
+	template := newTestTemplateDockable("PageRefHighlight", data)
+	c.Equal("Knight", template.pageRefHighlight(), "a blank highlight looks for the name")
+	data.PageRefHighlight = "Knights"
+	c.Equal("Knights", template.pageRefHighlight(), "a highlight is looked for as given")
+}
+
 // TestTemplateNewCharacterStartsAtAnExactTarget verifies that a sheet made from a template aimed at an exact number of
 // points starts with that many, and that any other target leaves the default from the settings alone.
 func TestTemplateNewCharacterStartsAtAnExactTarget(t *testing.T) {

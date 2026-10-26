@@ -214,14 +214,15 @@ func addOptionalSpecializationLabelAndField[F fieldAccess[string]](parent *uniso
 }
 
 // addPageRefLabelsAndFields adds the page reference field, with a button beside its label that opens the reference,
-// followed by the page highlight field.
-func addPageRefLabelsAndFields[F fieldAccess[string]](parent *unison.Panel, refData, highlightData F) {
+// followed by the page highlight field. The button looks for what highlight returns on the page, which should be the
+// item's name while the highlight field is blank, as the page reference cell of a table does.
+func addPageRefLabelsAndFields[F fieldAccess[string]](parent *unison.Panel, refData, highlightData F, highlight func() string) {
 	title := i18n.Text("Page Reference")
 	tooltip := gurps.PageRefTooltip()
 	get, set := modifyingAccessors[string](parent, refData)
 	label := NewFieldLeadingLabel(title, false)
 	label.Tooltip = newWrappedTooltip(tooltip)
-	wrapper, refresh := newPageRefLabel(label, label.Font, get, toFieldAccessor[string](highlightData).Get)
+	wrapper, refresh := newPageRefLabel(label, label.Font, get, highlight)
 	wrapper.SetLayoutData(&unison.FlexLayoutData{
 		HAlign: align.End,
 		VAlign: align.Middle,

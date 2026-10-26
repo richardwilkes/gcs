@@ -566,17 +566,15 @@ func pickerIndent(indent int) float32 {
 	return float32(indent) * (pickerDisclosureSize().Width + unison.StdHSpacing)
 }
 
-// pickerRowPageRef returns the page reference of the row and the text to highlight on its page, if it has one.
+// pickerRowPageRef returns the page reference of the row and the text to look for on its page, resolved as the page
+// reference cell of a table resolves it, so a row without a highlight looks for its name. Only the kinds of row a
+// template choice can hold have one.
 func pickerRowPageRef[T gurps.Node[T]](row T) (pageRef, highlight string) {
-	switch actual := any(row).(type) {
-	case *gurps.Trait:
-		return actual.PageRef, actual.PageRefHighlight
-	case *gurps.Skill:
-		return actual.PageRef, actual.PageRefHighlight
-	case *gurps.Spell:
-		return actual.PageRef, actual.PageRefHighlight
-	case *gurps.Equipment:
-		return actual.PageRef, actual.PageRefHighlight
+	switch any(row).(type) {
+	case *gurps.Trait, *gurps.Skill, *gurps.Spell, *gurps.Equipment:
+		var data gurps.CellData
+		row.CellData(gurps.PageRefCellAlias, &data)
+		return data.Primary, data.Secondary
 	}
 	return "", ""
 }

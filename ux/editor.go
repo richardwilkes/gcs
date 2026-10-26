@@ -340,6 +340,15 @@ func (e *editor[N, D]) editedClone() N {
 	return clone
 }
 
+// pageRefHighlight returns the text to look for on the page the editor's page reference opens: the highlight the
+// editor holds or, while it holds none, the name as edited, resolved by the page reference cell of the target with
+// the pending changes applied so that it matches what the table the target sits in opens with.
+func (e *editor[N, D]) pageRefHighlight() string {
+	var data gurps.CellData
+	e.editedClone().CellData(gurps.PageRefCellAlias, &data)
+	return data.Secondary
+}
+
 func (e *editor[N, D]) prepareForSubstitutions() (tmpNode N, m map[string]string) {
 	tmpNode = e.editedClone()
 	m = make(map[string]string)

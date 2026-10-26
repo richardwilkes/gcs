@@ -593,3 +593,19 @@ func TestEditorPageRefButtonFollowsTheField(t *testing.T) {
 	field.SetText(" ; ")
 	c.False(button.Enabled(), "separators alone are no reference")
 }
+
+// TestEditorPageRefHighlightFallsBackToTheName verifies that the page reference button looks for the name on the page
+// while the highlight field is blank, as the page reference cell of a table does, and follows the name as edited.
+func TestEditorPageRefHighlightFallsBackToTheName(t *testing.T) {
+	c := check.New(t)
+	sheet := newTestSheetForTemplate(t)
+	trait := gurps.NewTrait(sheet.Entity(), nil, false)
+	trait.Name = "Acute Senses"
+	trait.PageRef = "B35"
+	e, _ := buildEditorContent(sheet, trait, initTraitEditor)
+	c.Equal("Acute Senses", e.pageRefHighlight(), "a blank highlight looks for the name")
+	e.editorData.Name = "Acute Vision"
+	c.Equal("Acute Vision", e.pageRefHighlight(), "the name as edited, not as saved")
+	e.editorData.PageRefHighlight = "Vision"
+	c.Equal("Vision", e.pageRefHighlight(), "a highlight is looked for as given")
+}
