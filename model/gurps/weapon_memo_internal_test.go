@@ -17,6 +17,7 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/feature"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/grantmerge"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/stdmg"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/wsel"
 	"github.com/richardwilkes/toolbox/v2/check"
@@ -100,6 +101,14 @@ func TestWeaponMemoReset(t *testing.T) {
 	c.Equal(0, len(e.weaponMemos), "nothing is memoized while recalculating")
 	c.Equal(uint8(0), e.weaponListsCached, "no weapon list is kept while recalculating")
 	e.recalculating--
+
+	// Nor is a list kept while the prerequisites of an item carrying a grant are judged, since they see the sheet
+	// without what the grant gives.
+	training := addTraitWithFeatures(e, "Training",
+		newSkillGrant(newEasySkill("Brawling", fxp.One), fxp.One, grantmerge.Ignore))
+	e.Recalculate()
+	e.JudgingPrereqsOf(training, func() { c.Equal([]*Weapon{w}, e.Weapons(true, false, true)) })
+	c.Equal(uint8(0), e.weaponListsCached, "no weapon list is kept while judging those prerequisites")
 }
 
 func TestWeaponMemoOfCircularDataIsOrderIndependent(t *testing.T) {

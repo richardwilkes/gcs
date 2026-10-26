@@ -505,8 +505,8 @@ func (e *Entity) recalculate(passBudget int) int {
 	// The derived state is captured before the traits' verdicts are reset, so that it is the state the last
 	// recalculation left; see DerivedStateChanged.
 	before := e.derivedState(0)
-	// No weapon resolution or weapon list is kept while the passes run; see Weapon.memo. Anything cached against the
-	// generation in the meantime holds a value from partway through, so the generation moves on once they are done.
+	// No weapon resolution or weapon list is kept while the passes run; see weaponCachesUsable. Anything cached against
+	// the generation in the meantime holds a value from partway through, so the generation moves on once they are done.
 	e.recalculating++
 	defer func() {
 		e.recalculating--
@@ -2148,8 +2148,8 @@ func (e *Entity) WeaponOwner() WeaponOwner {
 // lists often, so each list is kept until the caches are discarded (see DiscardCaches). The caller always gets a slice
 // of its own.
 func (e *Entity) Weapons(melee, includeUnequipped, excludeHidden bool) []*Weapon {
-	// Nothing is kept while recalculating, for the reason given in Weapon.memo.
-	if !weaponMemosEnabled || e.recalculating > 0 {
+	// Nothing is kept or served from what was kept while the caches can't be used; see weaponCachesUsable.
+	if !e.weaponCachesUsable() {
 		return e.collectWeapons(melee, includeUnequipped, excludeHidden)
 	}
 	index := weaponListIndex(melee, includeUnequipped, excludeHidden)
@@ -2158,7 +2158,10 @@ func (e *Entity) Weapons(melee, includeUnequipped, excludeHidden bool) []*Weapon
 	}
 	// A list built while a resolution comes back around (see resolveSlot), or from a script stopped short, isn't kept
 	// either, since which weapons it tells apart depends on how far each resolution got. A circle through a memoized
-	// field shows as the former, one through text that isn't memoized, such as usage notes, only as the latter.
+	// field shows as the former only to a list asked for from inside the resolution, since resolveSlot clears the flag
+	// when the outermost one finishes; a top-level build is then kept, and rightly so, since the script cache holds the
+	// values it used, so building it again would give the same list. A circle through text that isn't memoized, such
+	// as usage notes, shows only as the latter.
 	var list []*Weapon
 	if anyScriptAbandonedDuring(e, func() { list = e.collectWeapons(melee, includeUnequipped, excludeHidden) }) ||
 		e.circularWeaponResolution {

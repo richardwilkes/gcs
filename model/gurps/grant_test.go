@@ -1075,6 +1075,36 @@ func TestGrantDoesNotMeetItsCarriersPrereqs(t *testing.T) {
 			"so the grant is in effect, and Will is derived from IQ with the bonus")
 	})
 
+	// Nor is a weapon as a script run for the prerequisites resolves it, without the skill the grant puts on the sheet,
+	// what the sheet then shows, though the script runs on its own after the recalculation, as the editor's preview runs
+	// it; and the script sees the weapon so even once the sheet has resolved it.
+	t.Run("weapon once the prerequisite is met without it", func(t *testing.T) {
+		c := check.New(t)
+		e := NewEntity()
+		e.Traits = nil // Drop the natural attacks
+		arts := addTraitWithFeatures(e, "Martial Arts")
+		strike := NewWeapon(arts, true)
+		strike.Usage = "Strike"
+		strike.Defaults = []*SkillDefault{newSkillDefaultTo("Karate", "", true, 0)}
+		arts.Weapons = []*Weapon{strike}
+		training := addTraitWithFeatures(e, "Karate Training",
+			newSkillGrant(newEasySkill("Karate", fxp.One), fxp.Three, grantmerge.Ignore)) // DX+2, so 12
+		training.Prereq = NewPrereqList()
+		script := addScriptPrereq(training.Prereq, `entity.weapons.every(w => w.level < 12)`)
+		e.Recalculate()
+		c.Equal("", training.UnsatisfiedReason, "the weapon has no skill to use without the grant")
+		for _, resolvedFirst := range []bool{false, true} {
+			e.DiscardCaches()
+			if resolvedFirst {
+				c.Equal(fxp.Twelve, strike.SkillLevel(nil), "the sheet resolves the weapon with the skill granted")
+			}
+			result, _ := script.Evaluate(e, training)
+			c.Equal(CheckMet, result, "resolved first %v: the script run on its own agrees with the sheet", resolvedFirst)
+			c.Equal(fxp.Twelve, strike.SkillLevel(nil), "resolved first %v: the sheet still shows the weapon with the "+
+				"skill granted", resolvedFirst)
+		}
+	})
+
 	t.Run("item another grant puts on the sheet too", func(t *testing.T) {
 		newGrant := func() *Grant {
 			return newTraitGrant(newGrantLeveledTrait("X", fxp.One), fxp.One, grantmerge.Ignore)

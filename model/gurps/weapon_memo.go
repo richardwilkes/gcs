@@ -72,15 +72,21 @@ type weaponMemo struct {
 	baseDice       memoized[dice.Dice]
 }
 
+// weaponCachesUsable returns true if what is resolved about the entity's weapons, and the lists of them Weapons
+// builds, may be kept and served from what was kept. Neither may be while the entity is recalculating, since its
+// derived state changes from one step of a pass to the next, so a value kept early in a pass could be served stale
+// later in it, nor while the prerequisites of an item carrying a grant are judged, since the weapons then resolve as
+// those prerequisites see the sheet, without what the grant gives (see JudgingPrereqsOf).
+func (e *Entity) weaponCachesUsable() bool {
+	return weaponMemosEnabled && e.recalculating == 0 && !e.carriesGrant(e.judging)
+}
+
 // memo returns the memo for the weapon's current data and owner, or nil when nothing may be memoized: a weapon with
-// no entity has nothing to resolve against, and while the entity is recalculating its derived state changes from one
-// step of a pass to the next, so a value memoized early in a pass could be served stale later in it.
+// no entity has nothing to resolve against, and one whose entity's caches can't be used may not keep it (see
+// Entity.weaponCachesUsable).
 func (w *Weapon) memo() *weaponMemo {
-	if !weaponMemosEnabled {
-		return nil
-	}
 	entity := w.Entity()
-	if entity == nil || entity.recalculating > 0 {
+	if entity == nil || !entity.weaponCachesUsable() {
 		return nil
 	}
 	fingerprint := w.memoFingerprint()
