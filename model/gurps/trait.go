@@ -661,17 +661,21 @@ func (t *Trait) internalCurrentLevel(tooltip *xbytes.InsertBuffer) fxp.Int {
 	return t.currentLevelExcept(EntityFromNode(t).judgingOr(nil), tooltip)
 }
 
-// currentLevelExcept is internalCurrentLevel without the levels grants carried by exclude merged in; see
-// grantState.applyLevelNotes.
+// currentLevelExcept is internalCurrentLevel as the prerequisites of exclude see it, without the levels grants carried
+// by exclude merged in; see grantState.applyLevelNotes and grantState.viewFor.
 func (t *Trait) currentLevelExcept(exclude any, tooltip *xbytes.InsertBuffer) fxp.Int {
 	if !t.IsLeveled() {
 		return 0
+	}
+	levels := t.Levels
+	if detail := t.grant.viewFor(exclude).detail; detail != nil {
+		levels = detail.level()
 	}
 	if t.resolvingLevel {
 		// A per-level trait bonus whose leveled owner is this trait -- because the bonus matches the trait's own name,
 		// or because two traits adjust each other's level -- would re-enter here while resolving the adjustment. Fall
 		// back to the unadjusted level to break the cycle.
-		return t.Levels.Max(0)
+		return levels.Max(0)
 	}
 	t.resolvingLevel = true
 	defer func() { t.resolvingLevel = false }()
@@ -680,7 +684,7 @@ func (t *Trait) currentLevelExcept(exclude any, tooltip *xbytes.InsertBuffer) fx
 		levelAdjustment = entity.TraitBonusFor(t.NameWithReplacements(), t.Tags, tooltip)
 	}
 	// A level a grant keeps is compared with the trait's own, before the bonuses, which the kept one gets too.
-	return (t.grant.applyLevelNotes(exclude, t.Levels, tooltip, nil) + levelAdjustment).Max(0)
+	return (t.grant.applyLevelNotes(exclude, levels, tooltip, nil) + levelAdjustment).Max(0)
 }
 
 // ResolvedMaxLevels returns the maximum level for this trait, resolving the MaxLevels expression (a plain number or an
@@ -865,14 +869,24 @@ func (t *Trait) modifierChoicePointsRange(fixed modifierChoicePicks[*TraitModifi
 	return modifierChoiceRange(t, t.AllModifiers(), fixed, view, t.pointsWithEach())
 }
 
-// pointsWith returns the cost of this non-container trait with the given modifiers.
+// pointsWith returns the cost of this non-container trait with the given modifiers, at the levels, self-control roll
+// and frequency the prerequisites being judged see (see judgedDetail), though a "use level from owner" modifier is
+// costed at the trait's own levels.
 func (t *Trait) pointsWith(modifiers []*TraitModifier) fxp.Int {
-	return AdjustedPoints(EntityFromNode(t), t, t.CanLevel, t.BasePoints, t.Levels, t.PointsPerLevel, t.SelfControl,
-		t.Frequency, modifiers, t.RoundCostDown)
+	levels, selfControl, freq := t.Levels, t.SelfControl, t.Frequency
+	if detail := judgedDetail(t); detail != nil {
+		if t.IsLeveled() {
+			levels = detail.level()
+		}
+		selfControl, freq = detail.Trait.SelfControl, detail.Trait.Frequency
+	}
+	return AdjustedPoints(EntityFromNode(t), t, t.CanLevel, t.BasePoints, levels, t.PointsPerLevel, selfControl, freq,
+		modifiers, t.RoundCostDown)
 }
 
 // pointsWithEach returns pointsWith as a range, for costing many ways of making choices among the same modifiers: what
-// each modifier adjusts the cost by is worked out just once.
+// each modifier adjusts the cost by is worked out just once. It leaves out the judged view (see judgedDetail), which
+// only a granted row has while prerequisites are judged, and nothing costs choices then.
 func (t *Trait) pointsWithEach() func([]*TraitModifier) NumericRange {
 	entity := EntityFromNode(t)
 	adjustments := make(map[*TraitModifier]traitCostAdjustment)
@@ -1029,9 +1043,10 @@ func (t *Trait) NameWithReplacements() string {
 }
 
 // ResolveSelector resolves a trait-scoped multi-state field, applying any SelectorOverride features that target the
-// given field and match this trait. base is the field's intrinsic value. When more than one override matches, the
-// winner is chosen by the override-resolution ladder (priority, then specificity), and, if tooltip is non-nil, the full
-// contest is reported.
+// given field and match this trait, less those the prerequisites being judged leave out (see
+// Entity.excludedWhileJudging). base is the field's intrinsic value. When more than one override matches, the winner is
+// chosen by the override-resolution ladder (priority, then specificity), and, if tooltip is non-nil, the full contest
+// is reported.
 func (t *Trait) ResolveSelector(field selector.Field, base string, tooltip *xbytes.InsertBuffer) string {
 	entity := EntityFromNode(t)
 	if entity == nil {
@@ -1039,22 +1054,32 @@ func (t *Trait) ResolveSelector(field selector.Field, base string, tooltip *xbyt
 	}
 	var candidates []OverrideCandidate[string]
 	for _, override := range entity.features.selectorOverrides {
-		if override.Field == field && override.MatchesTrait(t) {
+		if override.Field == field && !entity.excludedWhileJudging(override.Owner()) && override.MatchesTrait(t) {
 			candidates = append(candidates, OverrideCandidate[string]{Value: override.Value, Override: override})
 		}
 	}
 	return ResolveOverride(base, candidates, func(s string) string { return s }, tooltip)
 }
 
-// ResolvedFrequency returns the trait's frequency of appearance after applying any matching selector override.
+// ResolvedFrequency returns the trait's frequency of appearance after applying any matching selector override, as the
+// prerequisites being judged see it (see judgedDetail).
 func (t *Trait) ResolvedFrequency(tooltip *xbytes.InsertBuffer) frequency.Roll {
-	return frequencyFromStateKey(t.ResolveSelector(selector.TraitFrequency, frequencyStateKey(t.Frequency), tooltip))
+	freq := t.Frequency
+	if detail := judgedDetail(t); detail != nil {
+		freq = detail.Trait.Frequency
+	}
+	return frequencyFromStateKey(t.ResolveSelector(selector.TraitFrequency, frequencyStateKey(freq), tooltip))
 }
 
-// ResolvedSelfControl returns the trait's self-control roll after applying any matching selector override.
+// ResolvedSelfControl returns the trait's self-control roll after applying any matching selector override, as the
+// prerequisites being judged see it (see judgedDetail).
 func (t *Trait) ResolvedSelfControl(tooltip *xbytes.InsertBuffer) selfctrl.Roll {
-	return selfControlRollFromStateKey(t.ResolveSelector(selector.TraitSelfControlRoll,
-		selfControlRollStateKey(t.SelfControl), tooltip))
+	roll := t.SelfControl
+	if detail := judgedDetail(t); detail != nil {
+		roll = detail.Trait.SelfControl
+	}
+	return selfControlRollFromStateKey(t.ResolveSelector(selector.TraitSelfControlRoll, selfControlRollStateKey(roll),
+		tooltip))
 }
 
 // ResolvedSelfControlAdjustment returns the trait's self-control adjustment after applying any matching selector
@@ -1069,9 +1094,14 @@ func (t *Trait) LocalNotesWithReplacements() string {
 	return nameable.Apply(t.LocalNotes, t.Replacements)
 }
 
-// UserDescWithReplacements returns the user description with any replacements applied.
+// UserDescWithReplacements returns the user description with any replacements applied, as the prerequisites being
+// judged see it (see judgedDetail).
 func (t *Trait) UserDescWithReplacements() string {
-	return nameable.Apply(t.UserDesc, t.Replacements)
+	desc := t.UserDesc
+	if detail := judgedDetail(t); detail != nil {
+		desc = detail.Trait.UserDesc
+	}
+	return nameable.Apply(desc, t.Replacements)
 }
 
 // String implements fmt.Stringer.

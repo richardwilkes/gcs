@@ -328,17 +328,27 @@ func TestGrantSkillMergeModes(t *testing.T) {
 
 func TestGrantMergesIntoGrantedSkillAsIntoBought(t *testing.T) {
 	for _, tc := range []struct {
-		name  string
-		merge grantmerge.Mode
-		tier  fxp.Int
-		level fxp.Int
+		name string
+		// planter is the merge mode of the grant that puts the skill on the sheet at tier 3 when it isn't bought.
+		planter grantmerge.Mode
+		merge   grantmerge.Mode
+		tier    fxp.Int
+		level   fxp.Int
 	}{
 		{name: "merge levels", merge: grantmerge.MergeLevels, tier: fxp.Two, level: fxp.FromInteger(14)},
 		{name: "keep highest", merge: grantmerge.KeepHighest, tier: fxp.Four, level: fxp.FromInteger(13)},
 		{name: "curse levels", merge: grantmerge.MergeLevels, tier: -fxp.One, level: fxp.FromInteger(11)},
 		{name: "curse points", merge: grantmerge.MergePoints, tier: -fxp.One, level: fxp.FromInteger(11)},
+		{
+			name: "curse levels into a skill merge points put there", planter: grantmerge.MergePoints,
+			merge: grantmerge.MergeLevels, tier: -fxp.One, level: fxp.FromInteger(11),
+		},
 	} {
 		for _, bought := range []bool{false, true} {
+			if bought && tc.planter != grantmerge.Ignore {
+				// A bought skill has no planter, so the run would repeat that of the case with the same merge.
+				continue
+			}
 			t.Run(fmt.Sprintf("%s bought=%t", tc.name, bought), func(t *testing.T) {
 				c := check.New(t)
 				e := NewEntity()
@@ -347,7 +357,7 @@ func TestGrantMergesIntoGrantedSkillAsIntoBought(t *testing.T) {
 					brawling = addSkill(e, "Brawling", fxp.Four)
 				} else {
 					addTraitWithFeatures(e, "Racial",
-						newSkillGrant(newEasySkill("Brawling", fxp.One), fxp.Three, grantmerge.Ignore))
+						newSkillGrant(newEasySkill("Brawling", fxp.One), fxp.Three, tc.planter))
 				}
 				addTraitWithFeatures(e, "Training", newSkillGrant(newEasySkill("Brawling", fxp.One), tc.tier, tc.merge))
 				e.Recalculate()
@@ -558,6 +568,14 @@ func TestGrantChangeRefreshesItem(t *testing.T) {
 	c.Equal(before.TID, after.TID, "the refreshed item keeps its ID")
 	c.True(after.SwitchedOn, "and its switch")
 	c.Equal(fxp.Three, after.CurrentLevel())
+
+	after.SetDisabled(true)
+	grant.Level = fxp.Four
+	e.Recalculate()
+	refreshed := grantedOf(e.Traits)[0]
+	c.False(after == refreshed)
+	c.True(refreshed.IsDisabled(), "the refreshed item stays disabled when the user disabled it")
+	c.Equal(fxp.Four, refreshed.Levels)
 }
 
 // TestGrantsSharingAKeyEachKeepTheirRow checks that when a carrier holds two grants of one item ID, as a hand-edited
@@ -1062,6 +1080,19 @@ func TestGrantedRowInDisabledContainerCountsAsAbsent(t *testing.T) {
 	c.True(GrantingItem(granted[0]) == higher, "a higher grant takes over the row in effect, not one the user disabled")
 	c.True(granted[0].Enabled())
 	c.Equal(fxp.Two, granted[0].CurrentLevel())
+	c.True(len(group.Children) == 1 && group.Children[0] == row,
+		"A's row stays where the user put it rather than A merging into the higher grant's row")
+	c.True(GrantingItem(row) == a)
+
+	e.Traits = slices.DeleteFunc(e.Traits, func(one *Trait) bool { return one == higher })
+	e.Recalculate()
+	c.True(len(group.Children) == 1 && group.Children[0] == row, "A's row stays where the user put it")
+	c.True(GrantingItem(row) == a)
+	granted = grantedOf(e.Traits)
+	if len(granted) != 1 {
+		c.Fatalf("expected one Night Vision row at the top, got %d", len(granted))
+	}
+	c.True(GrantingItem(granted[0]) == b, "the row at the top is B's, A's being where the user put it")
 }
 
 func TestGrantCarrierJudgedAfresh(t *testing.T) {
@@ -1464,6 +1495,32 @@ func TestGrantDoesNotMeetItsCarriersPrereqs(t *testing.T) {
 		}
 	})
 
+	// Nor does a selector override of a trait's self-control roll that what the grant puts on the sheet carries.
+	t.Run("trait selector override once the prerequisite is met without it", func(t *testing.T) {
+		c := check.New(t)
+		e := NewEntity()
+		badTemper := addTraitWithFeatures(e, "Bad Temper")
+		badTemper.BasePoints = -fxp.Ten
+		badTemper.SelfControl = selfctrl.CR12
+		calm := NewTrait(nil, nil, false)
+		calm.Name = "Calm"
+		override := NewSelectorOverride(selector.TraitSelfControlRoll)
+		override.NameCriteria.Qualifier = "Bad Temper"
+		override.Value = selfControlRollStateKey(selfctrl.CR15)
+		calm.Features = Features{override}
+		training := addTraitWithFeatures(e, "Training", newTraitGrant(calm, fxp.One, grantmerge.Ignore))
+		training.Prereq = NewPrereqList()
+		script := addScriptPrereq(training.Prereq,
+			`entity.traits.some(t => t.name == "Bad Temper" && t.selfControl == 12)`)
+		e.Recalculate()
+		c.False(e.Unsettled())
+		c.Equal("", training.UnsatisfiedReason, "Bad Temper is at CR12 without the grant")
+		c.Equal(selfctrl.CR15, badTemper.ResolvedSelfControl(nil), "so the grant is in effect, and its override counts")
+		e.DiscardCaches()
+		result, _ := script.Evaluate(e, training)
+		c.Equal(CheckMet, result, "the script run on its own agrees with the sheet")
+	})
+
 	// Nor are the Basic Lift, the carried weight and the encumbrance a script run for the prerequisites reads what the
 	// sheet keeps: ST is derived from IQ here and the pack weighs three times the ST, so the script reads them without
 	// the bonus to IQ from what the grant puts on the sheet, at ST 10: 20 lb, 30 lb and a Light load.
@@ -1516,6 +1573,152 @@ func TestGrantDoesNotMeetItsCarriersPrereqs(t *testing.T) {
 				c.Fatalf("expected one X row, got %d", len(granted))
 			}
 			c.True(granted[0].Enabled())
+		}
+	})
+
+	// Nor does an item another grant puts there too while the carrier's own grant gives the item its details, as the
+	// grant that put it there or one standing in for that grant: the item is judged as the other grant would make it.
+	t.Run("item another grant puts on the sheet too, as that grant makes it", func(t *testing.T) {
+		nightVision := func(level fxp.Int) *Grant {
+			return newTraitGrant(newGrantLeveledTrait("Night Vision", fxp.One), level, grantmerge.Ignore)
+		}
+		brawling := func(tier fxp.Int) *Grant {
+			return newSkillGrant(newEasySkill("Brawling", fxp.One), tier, grantmerge.Ignore)
+		}
+		brawlingIn := func(tier fxp.Int, optionalSpecialization string) *Grant {
+			g := brawling(tier)
+			g.Skill.OptionalSpecialization = optionalSpecialization
+			return g
+		}
+		// trait returns an Ignore grant of a trait with the name, which set adjusts.
+		trait := func(name string, set func(item *Trait)) *Grant {
+			item := NewTrait(nil, nil, false)
+			item.Name = name
+			set(item)
+			return newTraitGrant(item, fxp.One, grantmerge.Ignore)
+		}
+		badTemper := func(cr selfctrl.Roll) *Grant {
+			return trait("Bad Temper", func(item *Trait) {
+				item.BasePoints = -fxp.Ten
+				item.SelfControl = cr
+			})
+		}
+		ally := func(freq frequency.Roll) *Grant {
+			return trait("Ally", func(item *Trait) {
+				item.BasePoints = fxp.Five
+				item.Frequency = freq
+			})
+		}
+		contact := func(desc string) *Grant {
+			return trait("Contact", func(item *Trait) { item.UserDesc = desc })
+		}
+		// scripted puts on the sheet a trait with the name, carrying the grant, whose prerequisite is the script.
+		scripted := func(e *Entity, name string, g *Grant, script string) *Trait {
+			carrier := addTraitWithFeatures(e, name, g)
+			carrier.Prereq = NewPrereqList()
+			addScriptPrereq(carrier.Prereq, script)
+			return carrier
+		}
+		// goggles puts on the sheet worn goggles carrying the second grant and, when the first is not nil, unequipped
+		// ones carrying that.
+		goggles := func(e *Entity, spare, worn *Grant) {
+			if spare != nil {
+				addCarriedEquipmentWithFeatures(e, "Spare Goggles", spare).Equipped = false
+			}
+			addCarriedEquipmentWithFeatures(e, "Worn Goggles", worn)
+		}
+		seer := func(c check.Checker, e *Entity, level, atLeast fxp.Int) *Trait {
+			carrier := addTraitWithFeatures(e, "Seer", nightVision(level))
+			carrier.Prereq = newPrereqListForTrait("Night Vision", true)
+			traitPrereqOf(c, carrier.Prereq).LevelCriteria.Qualifier = atLeast
+			return carrier
+		}
+		nightVisionLevel := func(e *Entity) any { return grantedOf(e.Traits)[0].CurrentLevel().AsInteger[int]() }
+		for _, tc := range []struct {
+			name  string
+			carry func(c check.Checker, e *Entity) *Trait
+			met   bool
+			// row returns the detail of the granted row, once settled, that tells which grant gave it its details.
+			row  func(e *Entity) any
+			want any
+		}{
+			{name: "standing in for a trait", carry: func(c check.Checker, e *Entity) *Trait {
+				goggles(e, nightVision(fxp.Three), nightVision(fxp.One))
+				return seer(c, e, fxp.Two, fxp.Two)
+			}, row: nightVisionLevel, want: 1},
+			{name: "putting a trait there", carry: func(c check.Checker, e *Entity) *Trait {
+				goggles(e, nil, nightVision(fxp.One))
+				return seer(c, e, fxp.Three, fxp.Two)
+			}, row: nightVisionLevel, want: 1},
+			{
+				name: "standing in for a trait the other grant's level meets",
+				carry: func(c check.Checker, e *Entity) *Trait {
+					goggles(e, nightVision(fxp.Three), nightVision(fxp.One))
+					return seer(c, e, fxp.Two, fxp.One)
+				}, met: true, row: nightVisionLevel, want: 2,
+			},
+			{
+				name: "standing in for a trait whose points a prerequisite reads",
+				carry: func(c check.Checker, e *Entity) *Trait {
+					goggles(e, nightVision(fxp.Three), nightVision(fxp.One))
+					carrier := seer(c, e, fxp.Two, 0)
+					p := traitPrereqOf(c, carrier.Prereq)
+					p.PointsCriteria.Compare = criteria.AtLeastNumber
+					p.PointsCriteria.Qualifier = fxp.Two
+					return carrier
+				}, row: nightVisionLevel, want: 1,
+			},
+			{name: "standing in for a trait read by a script", carry: func(_ check.Checker, e *Entity) *Trait {
+				goggles(e, badTemper(selfctrl.CR6), badTemper(selfctrl.CR12))
+				return scripted(e, "Hothead", badTemper(selfctrl.CR9),
+					`entity.traits.some(t => t.name == "Bad Temper" && t.selfControl <= 9)`)
+			}, row: func(e *Entity) any { return grantedOf(e.Traits)[0].SelfControl.Number() }, want: 12},
+			{
+				name: "standing in for a trait whose frequency a script reads",
+				carry: func(_ check.Checker, e *Entity) *Trait {
+					goggles(e, ally(frequency.FR15), ally(frequency.FR9))
+					return scripted(e, "Leader", ally(frequency.FR12),
+						`entity.traits.some(t => t.name == "Ally" && t.frequency >= 12)`)
+				}, row: func(e *Entity) any { return grantedOf(e.Traits)[0].Frequency }, want: frequency.FR9,
+			},
+			{
+				name: "standing in for a trait whose notes a script reads",
+				carry: func(_ check.Checker, e *Entity) *Trait {
+					goggles(e, contact("Army"), contact("Police"))
+					return scripted(e, "Sailor", contact("Navy"),
+						`entity.traits.some(t => t.name == "Contact" && t.notes.includes("Navy"))`)
+				}, row: func(e *Entity) any { return grantedOf(e.Traits)[0].UserDesc }, want: "Police",
+			},
+			{
+				name: "standing in for a skill the other grant's tier meets",
+				carry: func(_ check.Checker, e *Entity) *Trait {
+					goggles(e, brawling(fxp.Four), brawling(fxp.One))
+					training := addTraitWithFeatures(e, "Training", brawling(fxp.Three))
+					training.Prereq = newPrereqListRequiringSkill("Brawling", fxp.Ten)
+					return training
+				}, met: true, want: 12,
+				row: func(e *Entity) any { return grantedOf(e.Skills)[0].LevelData.Level.AsInteger[int]() },
+			},
+			{
+				name: "standing in for a skill whose optional specialization a prerequisite reads",
+				carry: func(_ check.Checker, e *Entity) *Trait {
+					goggles(e, brawling(fxp.Four), brawlingIn(fxp.One, "Wrestling"))
+					training := addTraitWithFeatures(e, "Training", brawlingIn(fxp.Three, "Boxing"))
+					training.Prereq = NewPrereqList()
+					p := addSkillPrereq(training.Prereq, "Brawling", 0)
+					p.OptionalSpecializationCriteria.Compare = criteria.IsText
+					p.OptionalSpecializationCriteria.Qualifier = "Boxing"
+					return training
+				}, row: func(e *Entity) any { return grantedOf(e.Skills)[0].OptionalSpecialization }, want: "Wrestling",
+			},
+		} {
+			c := check.New(t)
+			e := NewEntity()
+			carrier := tc.carry(c, e)
+			e.Recalculate()
+			c.False(e.Unsettled(), tc.name)
+			c.Equal(tc.met, carrier.UnsatisfiedReason == "", "%s: %s", tc.name, carrier.UnsatisfiedReason)
+			c.Equal(tc.want, tc.row(e), tc.name)
 		}
 	})
 
@@ -2393,9 +2596,9 @@ func TestGrantedRowStaysWithTheGrantHoldingIt(t *testing.T) {
 	nightVision := func() *Grant {
 		return newTraitGrant(newGrantLeveledTrait("Night Vision", fxp.One), fxp.Two, grantmerge.Ignore)
 	}
-	aGrant := nightVision()
+	aGrant, bGrant := nightVision(), nightVision()
 	a := addTraitWithFeatures(e, "A", aGrant)
-	b := addTraitWithFeatures(e, "B", nightVision())
+	b := addTraitWithFeatures(e, "B", bGrant)
 	e.Recalculate()
 	granted := grantedOf(e.Traits)
 	if len(granted) != 1 {
@@ -2460,6 +2663,46 @@ func TestGrantedRowStaysWithTheGrantHoldingIt(t *testing.T) {
 	c.Equal("Night Vision", granted[0].Name)
 	c.True(GrantingItem(granted[0]) == b)
 	c.Equal(fxp.Two, granted[0].CurrentLevel())
+
+	aGrant.Trait.Name = "Night Vision"
+	e.Recalculate()
+	c.Equal(0, len(grantedOf(e.Traits)), "renamed back, the grant sorting first keeps the row where the user put it")
+	row = grantedOf(group.Children)[0]
+	aGrant.Level = fxp.One
+	aGrant.Trait.PageRef = "B71"
+	bGrant.Trait.PageRef = "B71"
+	e.Recalculate()
+	c.Equal(0, len(grantedOf(e.Traits)),
+		"a grant that comes to sort first as the item of both changes adds no row at the top")
+	granted = grantedOf(group.Children)
+	if len(granted) != 1 {
+		c.Fatalf("expected one Night Vision row in the container, got %d", len(granted))
+	}
+	c.Equal(row.TID, granted[0].TID, "its row takes the place of the one the user put there")
+	c.True(granted[0].SwitchedOn, "along with its switch")
+	c.True(GrantingItem(granted[0]) == b)
+
+	granted[0].SetDisabled(true)
+	cGrant := nightVision()
+	cGrant.Trait.PageRef = "B71"
+	third := addTraitWithFeatures(e, "C", cGrant)
+	e.Recalculate()
+	granted = grantedOf(e.Traits)
+	if len(granted) != 1 {
+		c.Fatalf("expected C to put a row at the top, B's being disabled, got %d rows", len(granted))
+	}
+	enabled := granted[0]
+	c.True(GrantingItem(enabled) == third)
+	e.Traits = slices.DeleteFunc(e.Traits, func(one *Trait) bool { return one == b || one == third })
+	e.Recalculate()
+	c.Equal(0, len(grantedOf(group.Children)), "A, merging into C's row, does not take over the row the user disabled")
+	granted = grantedOf(e.Traits)
+	if len(granted) != 1 {
+		c.Fatalf("expected A to take over C's row at the top, got %d rows there", len(granted))
+	}
+	c.Equal(enabled.TID, granted[0].TID)
+	c.True(GrantingItem(granted[0]) == a)
+	c.True(granted[0].Enabled(), "so A's grant still gives its item")
 }
 
 func TestGrantedRowsFollowTheirGrantsInSheetOrder(t *testing.T) {

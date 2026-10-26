@@ -1572,9 +1572,14 @@ func (s *Skill) SpecializationWithReplacements() string {
 	return nameable.Apply(s.Specialization, s.Replacements)
 }
 
-// OptionalSpecializationWithReplacements returns the optional specialization with any replacements applied.
+// OptionalSpecializationWithReplacements returns the optional specialization with any replacements applied, as the
+// prerequisites being judged see it (see judgedDetail).
 func (s *Skill) OptionalSpecializationWithReplacements() string {
-	return nameable.Apply(s.OptionalSpecialization, s.Replacements)
+	specialization := s.OptionalSpecialization
+	if detail := judgedDetail(s); detail != nil {
+		specialization = detail.Skill.OptionalSpecialization
+	}
+	return nameable.Apply(specialization, s.Replacements)
 }
 
 // LocalNotesWithReplacements returns the local notes with any replacements applied.

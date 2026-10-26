@@ -72,6 +72,12 @@ type grantState struct {
 	// providers are the carriers of the grants in effect that put the item on the sheet, or would have, had another
 	// not put it there first; see grantedFor.
 	providers []any
+	// judged is the state the item has as the prerequisites of judgedFor, what carries the grant that gives the item
+	// its details this pass, see it, when another grant in effect would give them in that one's stead; see viewFor.
+	// detail is, in a judged state, the grant giving the item its details.
+	judged    *grantState
+	judgedFor any
+	detail    *Grant
 	// levelNotes and pointNotes are what each grant gave the item: the levels merged into it or kept for it, and a
 	// granted skill's or spell's own points plus any merged into it, of which points is the total. tierPoints is the
 	// first of those, the points of the tier the grant in effect gives a granted skill or spell, which stand for its
@@ -737,6 +743,29 @@ func (s *grantState) reset() {
 	*s = grantState{source: s.source}
 }
 
+// giver returns what carries the grant giving the item its details this pass: the one standing in, or else the one
+// that put the item on the sheet, or nil while neither is in effect.
+func (s *grantState) giver() any {
+	switch {
+	case !xreflect.IsNil(s.standIn.owner):
+		return s.standIn.owner
+	case s.inEffect:
+		return s.source.owner
+	default:
+		return nil
+	}
+}
+
+// viewFor returns the state as the prerequisites of exclude see it: the judged one when exclude carries the grant
+// giving the item its details and another grant would give them in its stead, so that those prerequisites are never
+// met through the item its own grant makes, and this one otherwise.
+func (s *grantState) viewFor(exclude any) *grantState {
+	if s.judged != nil && exclude != nil && exclude == s.judgedFor {
+		return s.judged
+	}
+	return s
+}
+
 func (s *grantState) addLevels(source grantSource, amount fxp.Int) {
 	if amount != 0 {
 		s.levelNotes = append(s.levelNotes, newGrantNote(source, amount))
@@ -772,10 +801,11 @@ func newGrantNote(source grantSource, amount fxp.Int) grantNote {
 	return grantNote{owner: source.owner, source: grantSourceName(source), amount: amount}
 }
 
-// pointsExcept returns the points grants gave the item, leaving out those of the grants carried by exclude, which may
-// be nil to leave out none. The prerequisites of a carrier are judged this way, so that an item never meets its own
-// prerequisites with what it grants.
+// pointsExcept returns the points grants gave the item, as the prerequisites of exclude see it (see viewFor), leaving
+// out those of the grants carried by exclude, which may be nil to leave out none. The prerequisites of a carrier are
+// judged this way, so that an item never meets its own prerequisites with what it grants.
 func (s *grantState) pointsExcept(exclude any) fxp.Int {
+	s = s.viewFor(exclude)
 	total := s.points
 	if exclude != nil {
 		for _, note := range s.pointNotes {
@@ -794,6 +824,7 @@ func (s *grantState) pointsExcept(exclude any) fxp.Int {
 // bonuses and penalties the item's own level does, which may not have been in place when the grants were applied. The
 // notes of the grants that changed the level go into the tooltip, which may be nil.
 func (s *grantState) applyLevelNotes(exclude any, level fxp.Int, tooltip *xbytes.InsertBuffer, levelAt func(points fxp.Int) fxp.Int) fxp.Int {
+	s = s.viewFor(exclude)
 	for _, note := range s.levelNotes {
 		if !note.keep && note.owner != exclude {
 			level += note.amount
@@ -858,6 +889,7 @@ func addGrantNoteToTooltip(note grantNote, amount fxp.Int, buffer *xbytes.Insert
 // applyPoints returns the points with those grants gave a skill or spell added, leaving out what the grants carried by
 // exclude gave (see pointsExcept), from the tooltip, which may be nil, as from the total.
 func (s *grantState) applyPoints(exclude any, points fxp.Int, tooltip *xbytes.InsertBuffer) fxp.Int {
+	s = s.viewFor(exclude)
 	granted := s.pointsExcept(exclude)
 	if granted == 0 {
 		return points
@@ -874,7 +906,7 @@ func (s *grantState) applyPoints(exclude any, points fxp.Int, tooltip *xbytes.In
 // it has none, leaving out what the grants carried by exclude gave. levelAt returns the level the item would have with
 // the given points in place of its own, which a Keep Highest grant's level is read with.
 func (s *grantState) applyLevels(exclude any, level Level, levelAt func(points fxp.Int) fxp.Int) Level {
-	if len(s.levelNotes) == 0 || level.Level == fxp.Min {
+	if len(s.viewFor(exclude).levelNotes) == 0 || level.Level == fxp.Min {
 		return level
 	}
 	var tooltip xbytes.InsertBuffer

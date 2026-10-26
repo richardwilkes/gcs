@@ -194,19 +194,21 @@ func (e *Entity) forEachGrant(fn func(grantor tid.TID, source grantSource, g *Gr
 	}, false, false, e.CarriedEquipment...)
 }
 
-// reconcileGrants brings the items grants put on the sheet in line with its grants, before the recalculation passes,
-// so that the items on the sheet don't change while they run. A grant whose item is already present merges into it
-// instead, as its merge mode says. Whether a grant is in effect is left to each pass. Which item a grant merges into
-// is decided by the sheet's data alone: an item the user has disabled counts as absent, but one the sheet disabled
-// does not. When several grants would put the same item on the sheet, the grants are taken in the order
-// comparePlanting gives rather than sheet order, so that which of them puts it there, and which stands in for that
-// one (see applyGrants), is decided by the grants rather than by where their carriers are listed; among grants that
-// compare equal, one whose row is already on the sheet comes first, so that the row stays as it is when their
-// carriers are reordered. A grant that puts its item on the sheet without a row of its own takes over a row of the same
-// item that no other grant has kept (see takeOver), so that the row stays where the user put it, switch and all, when
-// the grant holding it is gone or comes to sort after this one. A row a grant puts on the sheet afresh goes at the end
-// of its list, in the order the grants are found rather than the order they are taken in: carriers in sheet order (see
-// forEachGrant), and each carrier's grants in the order it lists them, its own before its modifiers'.
+// reconcileGrants brings the items grants put on the sheet in line with its grants, before the recalculation passes, so
+// that the items on the sheet don't change while they run. A grant whose item is already present merges into it
+// instead, as its merge mode says. Whether a grant is in effect is left to each pass. Which item a grant merges into is
+// decided by the sheet's data alone: an item the user has disabled counts as absent, but one the sheet disabled does
+// not, and a grant that can put its item on the sheet, whose own row the user has disabled or put in a container the
+// user has disabled, keeps that row rather than merge into another. When several grants would put the same item on the
+// sheet, the grants are taken in the order comparePlanting gives rather than sheet order, so that which of them puts it
+// there, and which stands in for that one (see applyGrants), is decided by the grants rather than by where their
+// carriers are listed; among grants that compare equal, one whose row is already on the sheet comes first, so that the
+// row stays as it is when their carriers are reordered. A grant that puts its item on the sheet without a row of its own
+// takes over a row of the same item that no other grant has kept (see takeOver), so that the row stays where the user
+// put it, switch and all, when the grant holding it is gone or comes to sort after this one, in the latter case even as
+// the item of both changes (see plantInPlaceOf). A row a grant puts on the sheet afresh goes at the end of its list, in
+// the order the grants are found rather than the order they are taken in: carriers in sheet order (see forEachGrant),
+// and each carrier's grants in the order it lists them, its own before its modifiers'.
 func (e *Entity) reconcileGrants() {
 	e.grantPlans = e.grantPlans[:0]
 	e.idleGrantPlans = e.idleGrantPlans[:0]
@@ -262,13 +264,20 @@ func (e *Entity) reconcileGrants() {
 }
 
 // comparePlanting orders two grants for reconcileGrants, which takes them in this order when they would put the same
-// item on the sheet: a grant that stands for the item on its own, Ignore and then Keep Highest, comes before one that
-// adds to it, Merge Levels and then Merge Points, so that an Ignore grant gives the item its highest level and a merge
-// adds to that rather than being what is added to; within a mode the higher level comes first, then one that treats
-// the item's prerequisites as met before one that checks them, and then the items are compared by what tells apart
-// those the reconciler counts as the same item (see comparePlantingItems). Grants that compare equal give the same
-// result whichever of them puts the item on the sheet.
+// item on the sheet: a grant that can put the item there comes before one that can't, whatever their modes, so that a
+// negative merge finds the item any of the others puts there; then a grant that stands for the item on its own, Ignore
+// and then Keep Highest, comes before one that adds to it, Merge Levels and then Merge Points, so that an Ignore grant
+// gives the item its highest level and a merge adds to that rather than being what is added to; within a mode the
+// higher level comes first, then one that treats the item's prerequisites as met before one that checks them, and then
+// the items are compared by what tells apart those the reconciler counts as the same item (see comparePlantingItems).
+// Grants that compare equal give the same result whichever of them puts the item on the sheet.
 func comparePlanting(a, b *Grant) int {
+	if aPuts, bPuts := a.putsItemOnSheet(), b.putsItemOnSheet(); aPuts != bPuts {
+		if aPuts {
+			return -1
+		}
+		return 1
+	}
 	if c := cmp.Compare(plantingRank(a.EffectiveMerge()), plantingRank(b.EffectiveMerge())); c != 0 {
 		return c
 	}
@@ -413,27 +422,39 @@ func (r *grantReconciler[T]) claim(k grantKey) bool {
 }
 
 // takeOver returns the first row in sheet order that is the same item as the probe and that no grant has kept, taking
-// it out of the running, or false when there is none. A row another grant on the sheet claims is skipped while the user
-// has disabled it or a container holding it: taking one in a disabled container, where it counts as absent, would leave
-// that grant to put the item on the sheet again, and taking one disabled itself would enable it (see makeItem),
-// undoing the user's choice.
+// it out of the running, or false when there is none. A row the user has disabled, or put in a container the user has
+// disabled, is passed over for one in neither, since the grant would give nothing through it (see replace), and is
+// skipped altogether while another grant on the sheet claims it: as it counts as absent, taking it would leave that
+// grant to put the item on the sheet again.
 func (r *grantReconciler[T]) takeOver(probe T) (T, bool) {
 	h := identityHash(probe)
+	found := -1
 	for i, candidate := range r.granted {
 		if r.kept[candidate] || candidate.rawName() != probe.rawName() {
 			continue
 		}
+		disabled := userDisabled(candidate)
+		if disabled && found >= 0 {
+			continue
+		}
 		link := *grantLink(candidate)
-		if r.claimed[grantKey{grantor: link.Grantor, key: link.Key}] && userDisabled(candidate) {
+		if disabled && r.claimed[grantKey{grantor: link.Grantor, key: link.Key}] {
 			continue
 		}
 		if identityHash(candidate) == h && SameItem(candidate, probe) && sameModifiers(candidate, probe) {
-			r.granted = slices.Delete(r.granted, i, i+1)
-			return candidate, true
+			found = i
+			if !disabled {
+				break
+			}
 		}
 	}
-	var none T
-	return none, false
+	if found < 0 {
+		var none T
+		return none, false
+	}
+	row := r.granted[found]
+	r.granted = slices.Delete(r.granted, found, found+1)
+	return row, true
 }
 
 // presentNamed returns the items present with the same name as the probe.
@@ -556,16 +577,24 @@ func (r *grantReconciler[T]) consider(one sheetGrant, item T) {
 		fresh = r.makeItem(g, item, link, answers)
 		probe = fresh
 	}
-	h := identityHash(probe)
-	for _, candidate := range r.presentNamed(probe) {
-		if identityHash(candidate) == h && SameItem(candidate, probe) && sameModifiers(candidate, probe) {
-			r.entity.grantPlans = append(r.entity.grantPlans, grantPlan{
-				grant:  g,
-				source: source,
-				target: candidate,
-				seq:    one.seq,
-			})
-			return
+	// A grant keeps its row while the user has disabled it or a container holding it, rather than merge into another
+	// row of the item, so that the row stays as the user left it and the grant gives nothing, whatever other grants
+	// of the item there are and whichever of them is taken first.
+	if !has || !g.putsItemOnSheet() || !userDisabled(node) {
+		h := identityHash(probe)
+		for _, candidate := range r.presentNamed(probe) {
+			if identityHash(candidate) == h && SameItem(candidate, probe) && sameModifiers(candidate, probe) {
+				if has && !userDisabled(node) {
+					r.plantInPlaceOf(node, candidate)
+				}
+				r.entity.grantPlans = append(r.entity.grantPlans, grantPlan{
+					grant:  g,
+					source: source,
+					target: candidate,
+					seq:    one.seq,
+				})
+				return
+			}
 		}
 	}
 	if !g.putsItemOnSheet() {
@@ -590,6 +619,17 @@ func (r *grantReconciler[T]) consider(one sheetGrant, item T) {
 		r.unfiled = append(r.unfiled, node)
 	}
 	r.entity.grantPlans = append(r.entity.grantPlans, grantPlan{grant: g, source: source, node: node, seq: one.seq})
+}
+
+// plantInPlaceOf puts the row, when made afresh this pass for a grant taken earlier, in the place of old, the row of
+// the grant now merging into it, as that earlier grant would have taken old over (see takeOver) were old still the same
+// item, so that the row stays where the user put it, switch and all, when the grants' items change along with their
+// order.
+func (r *grantReconciler[T]) plantInPlaceOf(old, row T) {
+	if i := slices.IndexFunc(r.planted, func(one plantedRow[T]) bool { return one.node == row }); i >= 0 {
+		r.planted = slices.Delete(r.planted, i, i+1)
+		r.replace(old, row)
+	}
 }
 
 // makeItem returns a new item for the sheet made from the grant's copy of it, with the answers of what carries the
@@ -624,10 +664,12 @@ func (r *grantReconciler[T]) makeItem(g *Grant, item T, link *GrantedBy, answers
 	return node
 }
 
-// replace puts fresh where old is, keeping the old item's ID and switch, which the user may have flipped. Old is out of
-// the running from then on, or another grant with the same key would claim it (see consider) once it is in no list.
+// replace puts fresh where old is, keeping the old item's ID, its switch and whether it is disabled, which the user may
+// have changed. Old is out of the running from then on, or another grant with the same key would claim it (see
+// consider) once it is in no list.
 func (r *grantReconciler[T]) replace(old, fresh T) {
 	r.kept[old] = true
+	fresh.SetDisabled(old.IsDisabled())
 	switch n := any(fresh).(type) {
 	case *Trait:
 		if o, ok := any(old).(*Trait); ok {
@@ -698,8 +740,8 @@ func excludedFromPrereqs(exclude, node any) bool {
 // in effect that puts it on the sheet, or would have had another not put it there first (see applyGrants), is owner's,
 // or, while none is in effect, the grant that put it there is. An item another carrier's grant in effect would put on
 // the sheet is not granted for owner even while owner's grant is the one in effect, since counting it only while the
-// other's stands in would bring owner's grant into effect and so take the stand-in away again. owner may be nil, which
-// nothing is granted for.
+// other's stands in would bring owner's grant into effect and so take the stand-in away again; owner's prerequisites
+// see it as the other's would make it instead (see grantState.viewFor). owner may be nil, which nothing is granted for.
 func grantedFor(owner, node any) bool {
 	h, ok := node.(grantHolder)
 	if !ok || owner == nil || !IsGranted(node) {
@@ -790,10 +832,49 @@ func (e *Entity) applyGrants() {
 	for i := range e.grantPlans {
 		plan := &e.grantPlans[i]
 		if plan.node == nil && !plan.standsIn && e.grantInEffect(plan) {
-			e.mergeGrant(plan)
+			e.mergeGrant(plan, plan.target.grants())
 		}
 	}
+	e.judgeGrantedItems()
 	e.grantCarriersJudged = true
+}
+
+// judgeGrantedItems gives each granted item whose details come from the grant of a carrier with another grant in effect
+// that would give them in its stead, were the carrier's grants out of effect, the state it would then have, for the
+// carrier's prerequisites to see (see grantState.viewFor): the first such grant in plan order stands in, as in
+// applyGrants, and the other grants in effect but the carrier's merge into the item.
+func (e *Entity) judgeGrantedItems() {
+	for i := range e.grantPlans {
+		plan := &e.grantPlans[i]
+		if plan.node != nil || !IsGranted(plan.target) || !plan.grant.putsItemOnSheet() || !e.grantInEffect(plan) {
+			continue
+		}
+		state := plan.target.grants()
+		giver := state.giver()
+		if state.judged != nil || giver == nil || giver == plan.source.owner {
+			continue
+		}
+		judged := &grantState{detail: plan.grant}
+		e.grantInto(plan, plan.target, judged)
+		for j := range e.grantPlans {
+			other := &e.grantPlans[j]
+			if j != i && other.node == nil && other.target == plan.target && other.source.owner != giver &&
+				e.grantInEffect(other) {
+				e.mergeGrant(other, judged)
+			}
+		}
+		state.judged, state.judgedFor = judged, giver
+	}
+}
+
+// judgedDetail returns the grant whose details the granted node has as the prerequisites being judged see it, when
+// that is another grant than the one giving them this pass (see grantState.viewFor), or nil.
+func judgedDetail[T grantNode[T]](node T) *Grant {
+	state := node.grants()
+	if state.judged == nil {
+		return nil
+	}
+	return state.viewFor(EntityFromNode(node).judgingOr(nil)).detail
 }
 
 // grantInEffect returns true if the plan's grant is in effect in the current pass: what carries it contributes its
@@ -805,10 +886,15 @@ func (e *Entity) grantInEffect(plan *grantPlan) bool {
 // grantItem puts the holder in effect as the item the plan's grant gives: the item the grant put on the sheet, or one
 // another grant put there that this one stands in for, which takes this grant's details (see takeGrantDetails).
 func (e *Entity) grantItem(plan *grantPlan, holder grantHolder) {
-	state := holder.grants()
+	e.grantInto(plan, holder, holder.grants())
+	takeGrantDetails(holder, plan.grant)
+}
+
+// grantInto records in the state, the holder's own or one judgeGrantedItems makes, that the plan's grant gives the
+// holder: in effect, with the points of its tier for a skill or spell.
+func (e *Entity) grantInto(plan *grantPlan, holder grantHolder, state *grantState) {
 	state.inEffect = true
 	state.bypass = !plan.grant.CheckPrereqs
-	takeGrantDetails(holder, plan.grant)
 	if stepper, ok := holder.(SkillLevelStepper); ok {
 		state.tierPoints = grantTierPoints(plan.grant.Level, stepper.WildcardDifficulty())
 		state.addPoints(plan.source, state.tierPoints)
@@ -859,17 +945,17 @@ func hashGrantDetails(h hash.Hash, holder grantHolder) {
 	}
 }
 
-// mergeGrant merges a grant in effect into the item already on the sheet that it matches, as its merge mode says. A
-// skill or spell with no level of its own, such as one with no points and no default, has none to add to or compare
-// with, so a grant whose level would have put the item on the sheet gives it the points of its tier instead, as if it
-// had. A Keep Highest grant leaves the level it keeps, or for a skill or spell the points of the tier it keeps, for the
-// item's level to be compared with when it is read, with the other merges in (see grantState.applyLevelNotes).
-func (e *Entity) mergeGrant(plan *grantPlan) {
+// mergeGrant merges a grant in effect into the item already on the sheet that it matches, as its merge mode says,
+// recording what it gives in the state, the item's own or one judgeGrantedItems makes. A skill or spell with no level
+// of its own, such as one with no points and no default, has none to add to or compare with, so a grant whose level
+// would have put the item on the sheet gives it the points of its tier instead, as if it had. A Keep Highest grant
+// leaves the level it keeps, or for a skill or spell the points of the tier it keeps, for the item's level to be
+// compared with when it is read, with the other merges in (see grantState.applyLevelNotes).
+func (e *Entity) mergeGrant(plan *grantPlan, state *grantState) {
 	g := plan.grant
 	if g.mergesNothing() {
 		return
 	}
-	state := plan.target.grants()
 	source := plan.source
 	level := g.level()
 	merge := g.EffectiveMerge()
