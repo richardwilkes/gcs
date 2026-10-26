@@ -25,7 +25,9 @@ import (
 // The saved_calc.gcs fixture records, in its "calc" objects, values that recalculating the sheet would not produce:
 // Magery is level 3 with no bonus anywhere, yet is recorded as level 5, and the note's script yields 4, yet its text
 // is recorded as "ST 42". A load that keeps the saved calc can therefore be told apart from one that derives the
-// values. The Dormant trait is disabled, so its recorded level is zero.
+// values. The Dormant trait is disabled, so its recorded level is zero. Unproven's prerequisites were unmet but not
+// enforced, so it stayed in effect at its recorded level, while Barred and the Barred Group holding Sealed were
+// disabled by the sheet for theirs, so their recorded level is zero.
 
 // TestNewEntityFromFileWithSavedCalc verifies that the saved calc loader shows the values a sheet records without
 // deriving anything, while the ordinary loader ignores them and derives its own.
@@ -33,12 +35,15 @@ func TestNewEntityFromFileWithSavedCalc(t *testing.T) {
 	c := check.New(t)
 	e, err := NewEntityFromFileWithSavedCalc(os.DirFS("testdata"), "saved_calc.gcs")
 	c.NoError(err)
-	c.Equal(3, len(e.Traits))
+	c.Equal(6, len(e.Traits))
 	c.Equal(2, len(e.Notes))
 	c.Equal("Magery 5", e.Traits[0].StringWithSavedCalc())
 	c.Equal("Combat Reflexes", e.Traits[1].StringWithSavedCalc())
 	// A disabled trait shows the level it would have if enabled, as String does, not the recorded zero.
 	c.Equal("Dormant 2", e.Traits[2].StringWithSavedCalc())
+	c.Equal("Unproven 5", e.Traits[3].StringWithSavedCalc())
+	c.Equal("Barred 2", e.Traits[4].StringWithSavedCalc())
+	c.Equal("Sealed 4", e.Traits[5].Children[0].StringWithSavedCalc())
 	c.Equal("ST 42", e.Notes[0].StringWithSavedCalc())
 	c.Equal("Plain note", e.Notes[1].StringWithSavedCalc())
 	// Nothing was derived: the items were never even attached to the entity.

@@ -29,6 +29,45 @@
 				"points": 0,
 				"current_level": 0
 			}
+		},
+		{
+			"name": "Unproven",
+			"levels": 3,
+			"can_level": true,
+			"calc": {
+				"points": 30,
+				"unsatisfied_reason": "Prerequisites have not been met:\n- Has trait Magic Aptitude",
+				"current_level": 5
+			}
+		},
+		{
+			"name": "Barred",
+			"levels": 2,
+			"can_level": true,
+			"calc": {
+				"points": 0,
+				"unsatisfied_reason": "Prerequisites have not been met:\n- Has trait Magic Aptitude\n\nThe sheet settings disable traits whose prerequisites are unsatisfied, so this trait is treated as disabled until they are met.",
+				"current_level": 0
+			}
+		},
+		{
+			"type": "trait_container",
+			"name": "Barred Group",
+			"calc": {
+				"points": 0,
+				"unsatisfied_reason": "Prerequisites have not been met:\n- Has trait Magic Aptitude\n\nThe sheet settings disable traits whose prerequisites are unsatisfied, so this trait is treated as disabled until they are met."
+			},
+			"children": [
+				{
+					"name": "Sealed",
+					"levels": 4,
+					"can_level": true,
+					"calc": {
+						"points": 0,
+						"current_level": 0
+					}
+				}
+			]
 		}
 	],
 	"notes": [

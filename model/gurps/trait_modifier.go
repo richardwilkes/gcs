@@ -433,8 +433,8 @@ func (t *TraitModifier) RawCurrentLevel() fxp.Int {
 
 // CurrentLevel returns the current level of the modifier, at least 1, or zero if it is disabled or not leveled. Unlike
 // the levels the cost is computed from, a "use level from owner" modifier reports the trait's current level,
-// bonus-granted levels included, since this drives the per-level features the modifier carries and how it displays,
-// neither of which is a matter of what was paid for.
+// bonus-granted levels included, since this drives the per-level features the modifier carries, which are not a matter
+// of what was paid for.
 func (t *TraitModifier) CurrentLevel() fxp.Int {
 	if t.Enabled() && t.IsLeveled() {
 		return t.RawCurrentLevel().Max(fxp.One)
@@ -442,12 +442,19 @@ func (t *TraitModifier) CurrentLevel() fxp.Int {
 	return 0
 }
 
+// String implements fmt.Stringer. A leveled modifier shows its level as CurrentLevel does, or, when it or its trait is
+// disabled, the level it would have were both enabled, as a disabled trait does.
 func (t *TraitModifier) String() string {
 	var buffer strings.Builder
 	buffer.WriteString(t.NameWithReplacements())
 	if t.IsLeveled() {
+		level := t.Levels
+		if t.UseLevelFromTrait {
+			// A leveled modifier taking its level from its trait has one; see isLeveledForTrait.
+			level = t.trait.internalCurrentLevel(nil)
+		}
 		buffer.WriteByte(' ')
-		buffer.WriteString(t.CurrentLevel().String())
+		buffer.WriteString(level.Max(fxp.One).String())
 	}
 	return buffer.String()
 }

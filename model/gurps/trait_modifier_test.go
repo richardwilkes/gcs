@@ -125,6 +125,35 @@ func TestTraitModifierCostIgnoresLevel(t *testing.T) {
 	}
 }
 
+// TestTraitModifierShowsTheLevelItWouldHaveIfEnabled verifies that a leveled modifier that is disabled, or whose trait
+// is, shows the level it would have were both enabled, as a disabled trait shows its own, while a disabled modifier's
+// current level, which its per-level features key off of, stays zero.
+func TestTraitModifierShowsTheLevelItWouldHaveIfEnabled(t *testing.T) {
+	c := check.New(t)
+	for _, one := range []struct {
+		name              string
+		useLevelFromTrait bool
+		disableTrait      bool
+		shown             string
+	}{
+		{"disabled, with its own levels", false, false, "Limited 2"},
+		{"disabled, with the trait's level", true, false, "Limited 3"},
+		{"on a disabled trait, with the trait's level", true, true, "Limited 3"},
+	} {
+		e, trait, mod := newIgnoresLevelTestTrait(one.useLevelFromTrait)
+		if one.disableTrait {
+			trait.SetDisabled(true)
+		} else {
+			mod.SetDisabled(true)
+		}
+		e.Recalculate()
+		c.Equal(one.shown, mod.String(), one.name)
+		if !one.disableTrait {
+			c.Equal(fxp.Int(0), mod.CurrentLevel(), "%s: the modifier's current level", one.name)
+		}
+	}
+}
+
 // TestTraitModifierCostDescriptionSimplifiesFraction verifies that a leveled fractional cost adjustment is reduced
 // before display, so that the lists, prompts and notes show the same "x2" the editor's Total field does rather than
 // "x6/3".

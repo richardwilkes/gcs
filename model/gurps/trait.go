@@ -89,12 +89,13 @@ type Trait struct {
 	// its level exceeding the maximum, which UnsatisfiedReason reports as well. It is never saved.
 	prereqsUnmet bool
 	grant        grantState
-	// savedLevel is the level the trait showed, savedCurrentLevel the current level and savedUnsatisfied whether the
-	// prerequisites were unmet, as the "calc" object of the file the trait was loaded from recorded them. They are only
-	// kept by a load that asks for them (see NewEntityFromFileWithSavedCalc) and only read by StringWithSavedCalc.
-	savedLevel        *fxp.Int
-	savedCurrentLevel *fxp.Int
-	savedUnsatisfied  bool
+	// savedLevel is the level the trait showed, savedCurrentLevel the current level and savedDisabledByPrereqs whether
+	// the sheet disabled the trait for unmet prerequisites, as the "calc" object of the file the trait was loaded from
+	// recorded them. They are only kept by a load that asks for them (see NewEntityFromFileWithSavedCalc) and only read
+	// by StringWithSavedCalc.
+	savedLevel             *fxp.Int
+	savedCurrentLevel      *fxp.Int
+	savedDisabledByPrereqs bool
 }
 
 // TraitData holds the Trait data that is written to disk.
@@ -393,7 +394,7 @@ func (t *Trait) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 		saved := savedCalc[savedTraitCalc](localData.Calc)
 		t.savedLevel = saved.Level
 		t.savedCurrentLevel = saved.CurrentLevel
-		t.savedUnsatisfied = saved.UnsatisfiedReason != ""
+		t.savedDisabledByPrereqs = strings.HasSuffix(saved.UnsatisfiedReason, disabledByPrereqsNote())
 	}
 	t.Replacements = nameable.Normalize(t.Replacements)
 	migrateLegacyText(&t.LocalNotes, localData.ExprNotes)
@@ -484,13 +485,20 @@ func (t *Trait) PrereqStatus() (unsatisfiedReason, contradiction string) {
 	unsatisfiedReason = t.UnsatisfiedReason
 	switch {
 	case t.DisabledByPrereqs():
-		unsatisfiedReason += "\n\n" + i18n.Text("The sheet settings disable traits whose prerequisites are unsatisfied, so this trait is treated as disabled until they are met.")
+		unsatisfiedReason += "\n\n" + disabledByPrereqsNote()
 	case t.ContradictedPrereqs() && unsatisfiedReason != "":
 		unsatisfiedReason += "\n\n" + i18n.Text("This trait's prerequisites contradict those of other traits, so no choice among them satisfies every one. The traits caught in the contradiction are left enabled rather than disabling any of them.")
 	case t.ContradictedPrereqs():
 		contradiction = i18n.Text("This trait's prerequisites are met only while other traits whose prerequisites are unmet are left enabled: they contradict one another, so no choice among the traits caught in the contradiction satisfies every one, and all of them are left enabled rather than disabling any of them.")
 	}
 	return unsatisfiedReason, contradiction
+}
+
+// disabledByPrereqsNote returns the note PrereqStatus appends for a trait the sheet disabled for unmet prerequisites.
+// A file written before the "calc" object recorded the level a trait shows marks such a trait only with this note (see
+// StringWithSavedCalc), so its text must not change.
+func disabledByPrereqsNote() string {
+	return i18n.Text("The sheet settings disable traits whose prerequisites are unsatisfied, so this trait is treated as disabled until they are met.")
 }
 
 // TemplatePickerData implements TemplatePickerProvider.
@@ -1088,10 +1096,11 @@ func (t *Trait) titleNotes(before bool) []string {
 // (NewEntityFromFileWithSavedCalc and its counterpart for templates), whose entity, if it has one, has not been
 // recalculated and so cannot resolve those bonuses itself. A trait loaded any other way, or from a file written before
 // any level was recorded, falls back to its unadjusted level. A file written when only the current level was recorded,
-// which is zero for a trait not in effect, is read as that level unless the trait was disabled by the user or for
-// unmet prerequisites the file recorded, or is a granted one at level zero, whose grant may not have been in effect,
-// since String shows the level such a trait would have; those fall back too. The title notes follow, as they do in
-// String, though a modifier shown there that takes its level from the trait shows the trait's level without bonuses.
+// which is zero for a trait not in effect, is read as that level unless the user disabled the trait or a container
+// above it, or the file records that the sheet disabled one of them for unmet prerequisites, or the trait is a granted
+// one at level zero, whose grant may not have been in effect, since String shows the level such a trait would have;
+// those fall back too. The title notes follow, as they do in String, though a modifier shown there that takes its level
+// from the trait shows the trait's level without bonuses.
 func (t *Trait) StringWithSavedCalc() string {
 	if !t.IsLeveled() {
 		return t.NameWithReplacements() + parenthetical(t.TitleNotes())
@@ -1100,11 +1109,22 @@ func (t *Trait) StringWithSavedCalc() string {
 	switch {
 	case t.savedLevel != nil:
 		level = *t.savedLevel
-	case t.savedCurrentLevel != nil && !userDisabled(t) && !t.savedUnsatisfied &&
+	case t.savedCurrentLevel != nil && !userDisabled(t) && !t.disabledByPrereqsWhenSaved() &&
 		(*t.savedCurrentLevel != 0 || t.Granted == nil):
 		level = *t.savedCurrentLevel
 	}
 	return t.NameWithReplacements() + " " + level.String() + parenthetical(t.TitleNotes())
+}
+
+// disabledByPrereqsWhenSaved returns true if the file the trait was loaded from records that the sheet disabled it, or
+// a container above it, for unmet prerequisites.
+func (t *Trait) disabledByPrereqsWhenSaved() bool {
+	for p := t; p != nil; p = p.parent {
+		if p.savedDisabledByPrereqs {
+			return true
+		}
+	}
+	return false
 }
 
 // NameAndLevel returns the name and level of the trait.
