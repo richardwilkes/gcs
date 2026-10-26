@@ -115,11 +115,7 @@ func initEquipmentItemEditor(e *editor[*gurps.Equipment, *gurps.EquipmentEditDat
 	content.AddChild(newNameablesPanel(&d.Nameables, func() map[string]int {
 		return nameableUses([]string{d.Name, d.LocalNotes, d.BaseValue, d.BaseWeight}, d.Prereq, d.Features, d.Weapons)
 	}, func() map[string]nameable.Detail { return grantedNameableDefinitions(d.Features) }, &d.NameableLinks,
-		func() []nameableModifier {
-			return nameableModifiers(d.Modifiers, func(m *gurps.EquipmentModifier) ([]string, gurps.Features) {
-				return []string{m.Name, m.LocalNotes}, m.Features
-			})
-		}))
+		func() []nameableModifier { return equipmentNameableModifiers(d.Modifiers) }, nil))
 	content.AddChild(newPrereqPanel(entity, &e.editorData.Prereq, prereq.TypesForEquipment, false).
 		withReplacementsFrom(e.editorData))
 	content.AddChild(newFeaturesPanel(entity, e.target, &e.editorData.Features, false).

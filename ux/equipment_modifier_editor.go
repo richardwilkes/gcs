@@ -48,9 +48,31 @@ func initEquipmentModifierEditor(e *editor[*gurps.EquipmentModifier, *gurps.Equi
 	addPageRefLabelsAndFields(content, &e.editorData.PageRef, &e.editorData.PageRefHighlight, e.pageRefHighlight)
 	content.AddChild(newNameablesPanel(&e.editorData.Nameables, func() map[string]int {
 		return nameableUses([]string{e.editorData.Name, e.editorData.LocalNotes}, nil, e.editorData.Features, nil)
-	}, func() map[string]nameable.Detail { return grantedNameableDefinitions(e.editorData.Features) }, nil, nil))
+	}, func() map[string]nameable.Detail { return grantedNameableDefinitions(e.editorData.Features) }, nil, nil,
+		func() *nameableOwner { return equipmentModifierOwnerNameables(e.owner, e.target) }))
 	content.AddChild(newFeaturesPanel(gurps.EntityFromNode(e.target), e.target, &e.editorData.Features, true))
 	return nil
+}
+
+// equipmentModifierOwnerNameables returns the equipment the modifier belongs to, as the nameables panel of the
+// modifier's editor shows it, or nil when it belongs to none. When the modifier is being edited from within that
+// equipment's own editor, the equipment is taken as it currently stands there.
+func equipmentModifierOwnerNameables(owner Rebuildable, modifier *gurps.EquipmentModifier) *nameableOwner {
+	eqp := modifier.Target()
+	if eqp == nil {
+		return nil
+	}
+	d := &eqp.EquipmentEditData
+	if eqpEditor, ok := owner.(*editor[*gurps.Equipment, *gurps.EquipmentEditData]); ok && eqpEditor.target == eqp {
+		d = eqpEditor.editorData
+	}
+	return &nameableOwner{
+		defs:      d.Nameables,
+		granted:   grantedNameableDefinitions(d.Features),
+		links:     d.NameableLinks,
+		modifiers: equipmentNameableModifiers(d.Modifiers),
+		self:      modifier.TID,
+	}
 }
 
 func addEquipmentCostFields(parent *unison.Panel, e *editor[*gurps.EquipmentModifier, *gurps.EquipmentModifierEditData]) {

@@ -53,6 +53,20 @@ type nameableModifier struct {
 	granted map[string]nameable.Detail
 }
 
+// nameableOwner is the trait or piece of equipment a modifier belongs to, as the nameables panel of the modifier's
+// editor shows it: the prompt for the modifier takes definitions from its parts as it does for the owner, the modifier
+// taking its place among the owner's modifiers (see nameableDefinitions).
+type nameableOwner struct {
+	defs map[string]nameable.Detail
+	// granted holds the definitions of the items the owner's grants give (see grantedNameableDefinitions).
+	granted map[string]nameable.Detail
+	// links map the owner's modifiers' codes to the owner's codes that answer them (see gurps.Trait.NameableLinks).
+	links     map[tid.TID]map[string]string
+	modifiers []nameableModifier
+	// self is the ID of the modifier being edited.
+	self tid.TID
+}
+
 // nameablesState is what the panel edits: the item's nameables and, for an item with modifiers, its links for them.
 type nameablesState struct {
 	defs  map[string]nameable.Detail
@@ -72,11 +86,11 @@ func (s *nameablesState) clone() *nameablesState {
 
 // nameablesPanel edits the nameables an item's text and features refer to as "@code@". Each one is a row that reads as
 // a sentence until it is opened to edit it. A code that is referred to but has no nameable gets a row that offers to
-// define it, unless its marker, an enabled modifier or an item a grant gives defines it, as the prompt then asks for it
-// (see nameablesPanel.origins). For an item with modifiers, each code its modifiers refer to gets a row of its own,
-// which says whether it shares the item's answer, takes the answer to one of the item's codes, or is asked for
-// separately. Clicking the title collapses the panel to a paragraph of the item's rows. It starts out collapsed when
-// there are nameables.
+// define it, unless its marker, an enabled modifier or an item a grant gives defines it, or, for a modifier, the trait
+// or equipment it belongs to does, as the prompt then asks for it (see nameablesPanel.origins). For an item with
+// modifiers, each code its modifiers refer to gets a row of its own, which says whether it shares the item's answer,
+// takes the answer to one of the item's codes, or is asked for separately. Clicking the title collapses the panel to a
+// paragraph of the item's rows. It starts out collapsed when there are nameables.
 type nameablesPanel struct {
 	sentenceRows[*nameablesState]
 	defs      *map[string]nameable.Detail
@@ -84,6 +98,7 @@ type nameablesPanel struct {
 	uses      func() map[string]int
 	granted   func() map[string]nameable.Detail
 	modifiers func() []nameableModifier
+	owner     func() *nameableOwner
 	signature uint64
 	// pending is the key of a chip added to the open row that holds nothing yet, such as a new option still being
 	// typed. It shows until the row closes, since nothing in the data says it is there.
@@ -94,13 +109,14 @@ type nameablesPanel struct {
 
 // newNameablesPanel returns the nameables section of an editor. uses returns how often the item refers to each code.
 // granted returns the definitions of the items the item's grants give (see grantedNameableDefinitions), and is nil
-// for an item that has no features. links and modifiers are nil for an item that has no modifiers. defs and links
-// point at maps rather than being them, since undo replaces the maps themselves.
+// for an item that has no features. links and modifiers are nil for an item that has no modifiers. owner returns the
+// trait or equipment the modifier being edited belongs to, or nil when it belongs to none, and is nil for an item that
+// is not a modifier. defs and links point at maps rather than being them, since undo replaces the maps themselves.
 //
 //nolint:gocritic // See above
 func newNameablesPanel(defs *map[string]nameable.Detail, uses func() map[string]int,
 	granted func() map[string]nameable.Detail, links *map[tid.TID]map[string]string,
-	modifiers func() []nameableModifier,
+	modifiers func() []nameableModifier, owner func() *nameableOwner,
 ) *nameablesPanel {
 	p := &nameablesPanel{
 		defs:      defs,
@@ -108,6 +124,7 @@ func newNameablesPanel(defs *map[string]nameable.Detail, uses func() map[string]
 		uses:      uses,
 		granted:   granted,
 		modifiers: modifiers,
+		owner:     owner,
 	}
 	border := initTitledEditorSection(p, i18n.Text("Nameables"))
 	p.initRows(nil, p.build, p.state, p.restore, p.dataHash)
@@ -173,22 +190,27 @@ func (s *nameablesState) hash() uint64 {
 	return h.Sum64()
 }
 
-// Sync implements Syncer. The rows show how often the item refers to each code, what the items its grants give define
-// and what its modifiers are, so they are rebuilt whenever any of these changes.
+// Sync implements Syncer. The rows show how often the item refers to each code, what the items its grants give define,
+// what its modifiers are and what the item a modifier belongs to is, so they are rebuilt whenever any of these changes.
 func (p *nameablesPanel) Sync() {
-	uses, granted, mods := p.inputs()
-	if signature(uses, granted, mods) != p.signature {
+	uses, granted, mods, owner := p.inputs()
+	if signature(uses, granted, mods, owner) != p.signature {
 		p.rebuild("")
 	}
 }
 
 // inputs returns what the rows show besides the panel's own data: how often the item refers to each code, the
-// definitions of the items its grants give, and its modifiers.
-func (p *nameablesPanel) inputs() (uses map[string]int, granted map[string]nameable.Detail, mods []nameableModifier) {
+// definitions of the items its grants give, its modifiers, and the item a modifier belongs to.
+func (p *nameablesPanel) inputs() (uses map[string]int, granted map[string]nameable.Detail, mods []nameableModifier,
+	owner *nameableOwner,
+) {
 	if p.modifiers != nil {
 		mods = p.modifiers()
 	}
-	return p.uses(), p.grantedDefinitions(), mods
+	if p.owner != nil {
+		owner = p.owner()
+	}
+	return p.uses(), p.grantedDefinitions(), mods, owner
 }
 
 // grantedDefinitions returns the definitions of the items the item's grants give, or nil when it has no features.
@@ -199,9 +221,12 @@ func (p *nameablesPanel) grantedDefinitions() map[string]nameable.Detail {
 	return p.granted()
 }
 
-func signature(uses map[string]int, granted map[string]nameable.Detail, mods []nameableModifier) uint64 {
-	// fmt writes maps in key order and the modifiers' fields too, so the text is the same for the same rows.
-	return xxh3.HashString(fmt.Sprintf("%v|%v|%v", uses, granted, mods))
+func signature(uses map[string]int, granted map[string]nameable.Detail, mods []nameableModifier,
+	owner *nameableOwner,
+) uint64 {
+	// fmt writes maps in key order and the fields of the modifiers and of the owner too, so the text is the same for
+	// the same rows.
+	return xxh3.HashString(fmt.Sprintf("%v|%v|%v|%v", uses, granted, mods, owner))
 }
 
 // codes returns the item's codes, in the order their rows are shown.
@@ -220,9 +245,9 @@ func markerText(code string) string {
 }
 
 func (p *nameablesPanel) build() {
-	uses, granted, mods := p.inputs()
-	p.signature = signature(uses, granted, mods)
-	origins := p.origins(granted, mods)
+	uses, granted, mods, owner := p.inputs()
+	p.signature = signature(uses, granted, mods, owner)
+	origins := p.origins(granted, mods, owner)
 	p.staticTip = func(path string) string { return p.staticTipOf(path, uses, origins) }
 	if _, ok := (*p.defs)[strings.TrimPrefix(p.open, "n:")]; !ok && !strings.HasPrefix(p.open, "m:") {
 		p.open = ""
@@ -268,9 +293,9 @@ func (p *nameablesPanel) build() {
 // summary returns the paragraph a collapsed panel shows: the sentence of each nameable, then of each code that is used
 // but not defined, each ended with a period.
 func (p *nameablesPanel) summary() string {
-	uses, granted, mods := p.inputs()
+	uses, granted, mods, owner := p.inputs()
 	byModifiers := p.modifierUses(uses, mods)
-	origins := p.origins(granted, mods)
+	origins := p.origins(granted, mods, owner)
 	defs := *p.defs
 	var sentences []string
 	for _, code := range p.codes() {
@@ -323,46 +348,87 @@ func (p *nameablesPanel) has(uses map[string]int, code string) bool {
 // nameableOrigin is where the prompt takes the definition of a code the item doesn't define from. The zero value is for
 // a code nothing defines.
 type nameableOrigin struct {
-	// modifier is the enabled modifier that defines the code, itself or by one of its grants, or nil when one of the
-	// item's grants does.
+	// modifier is the enabled modifier that defines the code, itself or by one of its grants, or nil when something
+	// else does.
 	modifier *nameableModifier
+	// owner is whether the item the modifier belongs to defines the code, itself or by one of its grants.
+	owner bool
 	// granted is whether the definition is that of an item a grant gives.
 	granted bool
 }
 
 // defined reports whether something defines the code.
 func (o nameableOrigin) defined() bool {
-	return o.modifier != nil || o.granted
+	return o.modifier != nil || o.owner || o.granted
 }
 
 // origins returns where the prompt takes the definition of each code the item doesn't define from, taking them as
 // nameableDefinitions does for the item: from its enabled modifiers, then from the items its grants, and theirs, give.
-// granted holds the definitions of the items the item's grants give.
-func (p *nameablesPanel) origins(granted map[string]nameable.Detail,
-	mods []nameableModifier,
+// For a modifier, they are taken as for the item it belongs to, the modifier among that item's modifiers, and keyed by
+// the modifier's own codes. granted holds the definitions of the items the item's grants give.
+func (p *nameablesPanel) origins(granted map[string]nameable.Detail, mods []nameableModifier,
+	owner *nameableOwner,
 ) map[string]nameableOrigin {
-	sources := []nameableDefinitionSource{{defs: *p.defs, granted: granted}}
-	var enabled []*nameableModifier
+	item := nameableDefinitionSource{defs: *p.defs, granted: granted}
+	// parts holds what each source is, as the origin of a definition it holds itself; the item's is the zero value.
+	sources := []nameableDefinitionSource{item}
+	parts := []nameableOrigin{{}}
+	var links map[tid.TID]map[string]string
+	if p.links != nil {
+		links = *p.links
+	}
+	placed := true
+	if owner != nil {
+		item.links = owner.links[owner.self]
+		sources = []nameableDefinitionSource{{defs: owner.defs, granted: owner.granted}}
+		parts = []nameableOrigin{{owner: true}}
+		mods, links, placed = owner.modifiers, owner.links, false
+	}
 	for i := range mods {
-		if one := &mods[i]; !one.disabled {
-			enabled = append(enabled, one)
+		one := &mods[i]
+		switch {
+		case owner != nil && one.id == owner.self:
+			if !placed {
+				sources = append(sources, item)
+				parts = append(parts, nameableOrigin{})
+				placed = true
+			}
+		case !one.disabled:
 			sources = append(sources, nameableDefinitionSource{
 				defs:    one.defs,
 				granted: one.granted,
-				links:   (*p.links)[one.id],
+				links:   links[one.id],
 			})
+			parts = append(parts, nameableOrigin{modifier: one})
 		}
+	}
+	if !placed {
+		sources = append(sources, item)
+		parts = append(parts, nameableOrigin{})
 	}
 	origins := make(map[string]nameableOrigin)
 	for code, one := range mergeNameableDefinitions(sources) {
-		switch {
-		case one.source != 0:
-			origins[code] = nameableOrigin{modifier: enabled[one.source-1], granted: one.granted}
-		case one.granted:
-			origins[code] = nameableOrigin{granted: true}
+		if origin := parts[one.source]; origin.defined() || one.granted {
+			origin.granted = one.granted
+			origins[code] = origin
 		}
 	}
-	return origins
+	if len(item.links) == 0 {
+		return origins
+	}
+	// The merged definitions are keyed by the owner's codes, which the modifier's linked codes are asked about as.
+	keyed := make(map[string]nameableOrigin, len(origins))
+	for code, origin := range origins {
+		if _, linked := item.links[code]; !linked {
+			keyed[code] = origin
+		}
+	}
+	for code, target := range item.links {
+		if origin, ok := origins[target]; ok {
+			keyed[code] = origin
+		}
+	}
+	return keyed
 }
 
 // linkOf returns the item's code the modifier's code is linked to, or "" when it has no link.
@@ -461,6 +527,10 @@ func undefinedText(code string, uses, byModifiers int, origin nameableOrigin) st
 			emphasize(origin.modifier.ownerText()))
 	case origin.modifier != nil:
 		text = i18n.Text("%s is defined by the modifier %s", marker, emphasize(origin.modifier.ownerText()))
+	case origin.owner && origin.granted:
+		text = i18n.Text("%s is defined by an item granted by the item the modifier belongs to", marker)
+	case origin.owner:
+		text = i18n.Text("%s is defined by the item the modifier belongs to", marker)
 	case origin.granted:
 		text = i18n.Text("%s is defined by a granted item", marker)
 	case inlineMarker(code):
@@ -510,6 +580,8 @@ func (p *nameablesPanel) staticTipOf(path string, uses map[string]int, origins m
 			return i18n.Text("An item a grant gives defines this, so the player is asked for it as that item asks.")
 		case origin.modifier != nil:
 			return i18n.Text("A modifier defines this, so the player is asked for it as that modifier asks.")
+		case origin.owner:
+			return i18n.Text("The item the modifier belongs to defines this, so the player is asked for it as that item asks.")
 		case inlineMarker(code):
 			return i18n.Text("This marker holds its own definition, written in the text.")
 		default:
@@ -968,4 +1040,18 @@ func nameableModifiers[T interface {
 		return false
 	}, false, false, modifiers...)
 	return result
+}
+
+// traitNameableModifiers returns the trait's modifiers for the nameables panel (see nameableModifiers).
+func traitNameableModifiers(modifiers []*gurps.TraitModifier) []nameableModifier {
+	return nameableModifiers(modifiers, func(m *gurps.TraitModifier) ([]string, gurps.Features) {
+		return []string{m.Name, m.LocalNotes}, m.Features
+	})
+}
+
+// equipmentNameableModifiers returns the equipment's modifiers for the nameables panel (see nameableModifiers).
+func equipmentNameableModifiers(modifiers []*gurps.EquipmentModifier) []nameableModifier {
+	return nameableModifiers(modifiers, func(m *gurps.EquipmentModifier) ([]string, gurps.Features) {
+		return []string{m.Name, m.LocalNotes}, m.Features
+	})
 }

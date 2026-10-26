@@ -121,7 +121,7 @@ func initSpellEditor(e *editor[*gurps.Spell, *gurps.SpellEditData], content *uni
 				d.Name, d.LocalNotes, d.PowerSource, d.Class, d.Resist, d.CastingCost, d.MaintenanceCost, d.CastingTime,
 				d.Duration, d.Item, d.RitualSkillName,
 			}, d.College...), d.Prereq, d.Features, d.Weapons)
-		}, func() map[string]nameable.Detail { return grantedNameableDefinitions(d.Features) }, nil, nil))
+		}, func() map[string]nameable.Detail { return grantedNameableDefinitions(d.Features) }, nil, nil, nil))
 		content.AddChild(newPrereqPanel(entity, &e.editorData.Prereq, prereq.TypesForNonEquipment, true).
 			withReplacementsFrom(e.editorData))
 		content.AddChild(newFeaturesPanel(entity, e.target, &e.editorData.Features, false).

@@ -396,9 +396,10 @@ func TestNameableDefinitionsFollowTheLinks(t *testing.T) {
 
 // TestNameableDefinitionsIncludeThoseOfTheGrantedItems checks that the definitions a prompt describes a carrier's keys
 // by include those of the items its grants give, since the carrier answers the placeholders a granted item leaves to
-// it: a granted skill's under its own codes, a granted trait's modifier's under the code the trait links it to, and
-// those of an item one of the carrier's modifiers grants under the code the carrier links the modifier's to, both for
-// the carrier and for the modifier prompted for on its own. The carrier's own definition wins over a granted item's.
+// it: a granted skill's under its own codes, also for a modifier prompted for on its own that shares the code with the
+// carrier, a granted trait's modifier's under the code the trait links it to, and those of an item one of the
+// carrier's modifiers grants under the code the carrier links the modifier's to, both for the carrier and for the
+// modifier prompted for on its own. The carrier's own definition wins over a granted item's.
 func TestNameableDefinitionsIncludeThoseOfTheGrantedItems(t *testing.T) {
 	c := check.New(t)
 	style := nameable.Detail{Label: "Martial art", Options: []string{"Judo", "Karate"}, NotBlank: true}
@@ -415,6 +416,12 @@ func TestNameableDefinitionsIncludeThoseOfTheGrantedItems(t *testing.T) {
 	carrier.Name = "Trained"
 	carrier.Features = gurps.Features{newSkillGrant()}
 	c.Equal(style, nameableDefinitions(carrier)["style"], "a granted skill's definition describes the carrier's key")
+	focused := gurps.NewTraitModifier(nil, nil, false)
+	focused.Name = "Focused on @style@"
+	carrier.Modifiers = []*gurps.TraitModifier{focused}
+	gurps.AttachModifiers(carrier, carrier.Modifiers)
+	c.Equal(style, nameableDefinitions(focused)["style"],
+		"and that of a modifier prompted for on its own, which shares the code with the carrier")
 
 	own := nameable.Detail{Label: "Style", FreeForm: true}
 	carrier.Nameables = map[string]nameable.Detail{"style": own}
@@ -454,7 +461,8 @@ func TestNameableDefinitionsIncludeThoseOfTheGrantedItems(t *testing.T) {
 }
 
 // TestNameableDefinitionsLeaveOutDisabledModifiers checks that a key an enabled modifier asks about is described by its
-// definition rather than by that of a disabled modifier before it, whose keys are not asked about.
+// definition rather than by that of a disabled modifier before it, whose keys are not asked about, also for another
+// modifier of the trait's prompted for on its own that shares the code.
 func TestNameableDefinitionsLeaveOutDisabledModifiers(t *testing.T) {
 	c := check.New(t)
 	weapon := nameable.Detail{Label: "Weapon", Options: []string{"Sword", "Axe"}}
@@ -469,9 +477,12 @@ func TestNameableDefinitionsLeaveOutDisabledModifiers(t *testing.T) {
 	unarmed := gurps.NewTraitModifier(nil, nil, false)
 	unarmed.Name = "Unarmed @style@"
 	unarmed.Nameables = map[string]nameable.Detail{"style": style}
-	trait.Modifiers = []*gurps.TraitModifier{armed, unarmed}
+	focused := gurps.NewTraitModifier(nil, nil, false)
+	focused.Name = "Focused on @style@"
+	trait.Modifiers = []*gurps.TraitModifier{armed, unarmed, focused}
 	gurps.AttachModifiers(trait, trait.Modifiers)
 	c.Equal(style, nameableDefinitions(trait)["style"], "a trait's key is described by its enabled modifier")
+	c.Equal(style, nameableDefinitions(focused)["style"], "and so is that of a modifier prompted for on its own")
 
 	equipment := gurps.NewEquipment(nil, nil, false)
 	equipment.Name = "Gloves"

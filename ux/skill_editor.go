@@ -268,7 +268,7 @@ func initSkillEditor(e *editor[*gurps.Skill, *gurps.SkillEditData], content *uni
 			}
 			return nameableUses([]string{d.Name, d.LocalNotes, d.Specialization, d.OptionalSpecialization}, d.Prereq,
 				d.Features, d.Weapons, defaults...)
-		}, func() map[string]nameable.Detail { return grantedNameableDefinitions(d.Features) }, nil, nil))
+		}, func() map[string]nameable.Detail { return grantedNameableDefinitions(d.Features) }, nil, nil, nil))
 		content.AddChild(newPrereqPanel(entity, &e.editorData.Prereq, prereq.TypesForNonEquipment, false).
 			withReplacementsFrom(e.editorData))
 		if !e.target.IsTechnique() {

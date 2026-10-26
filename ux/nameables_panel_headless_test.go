@@ -42,7 +42,7 @@ func showNameablesPanel(t *testing.T, screen *unison.HeadlessScreen, defs *map[s
 			mods = func() []nameableModifier { return modifiers }
 		}
 		p = newNameablesPanel(defs, func() map[string]int { return nameableUses(*texts, nil, nil, nil) }, nil, links,
-			mods)
+			mods, nil)
 		// Expanded ahead of showing, so that the window is sized for the rows.
 		if p.collapse.collapsed {
 			p.collapse.toggle()
@@ -294,9 +294,9 @@ func TestNameablesPanelShowsLinkOverSameNamedCode(t *testing.T) {
 
 // builtNameablesPanel returns an expanded nameablesPanel for an item whose text is texts and features are features,
 // built without a window, with the row at the path open, if any. links and modifiers are nil for an item without
-// modifiers.
+// modifiers, and owner is nil for an item that is not a modifier belonging to a trait or equipment.
 func builtNameablesPanel(defs map[string]nameable.Detail, texts []string, features gurps.Features,
-	links map[tid.TID]map[string]string, modifiers []nameableModifier, open string,
+	links map[tid.TID]map[string]string, modifiers []nameableModifier, owner *nameableOwner, open string,
 ) *nameablesPanel {
 	var linksPtr *map[tid.TID]map[string]string
 	var mods func() []nameableModifier
@@ -304,8 +304,12 @@ func builtNameablesPanel(defs map[string]nameable.Detail, texts []string, featur
 		linksPtr = &links
 		mods = func() []nameableModifier { return modifiers }
 	}
+	var ownerOf func() *nameableOwner
+	if owner != nil {
+		ownerOf = func() *nameableOwner { return owner }
+	}
 	p := newNameablesPanel(&defs, func() map[string]int { return nameableUses(texts, nil, features, nil) },
-		func() map[string]nameable.Detail { return grantedNameableDefinitions(features) }, linksPtr, mods)
+		func() map[string]nameable.Detail { return grantedNameableDefinitions(features) }, linksPtr, mods, ownerOf)
 	p.collapse.collapsed = false
 	p.open = open
 	p.RemoveAllChildren()
@@ -382,7 +386,7 @@ func TestNameablesPanelModifierCodeSharesWhatTheItemUses(t *testing.T) {
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			c := check.New(t)
-			p := builtNameablesPanel(tc.defs, tc.texts, nil, tc.links, focus, "")
+			p := builtNameablesPanel(tc.defs, tc.texts, nil, tc.links, focus, nil, "")
 			for _, one := range tc.rows {
 				text, editable := nameableRowSentence(p, one.path)
 				c.Equal(one.text, text, "the sentence of %s", one.path)
@@ -393,7 +397,7 @@ func TestNameablesPanelModifierCodeSharesWhatTheItemUses(t *testing.T) {
 			if tc.noLink == "" {
 				return
 			}
-			p = builtNameablesPanel(tc.defs, tc.texts, nil, tc.links, focus, modRow)
+			p = builtNameablesPanel(tc.defs, tc.texts, nil, tc.links, focus, nil, modRow)
 			link := p.FindRefKey(modRow + ":link")
 			c.NotNil(link, "the open row has a link popup")
 			if link != nil {
@@ -410,8 +414,10 @@ func TestNameablesPanelModifierCodeSharesWhatTheItemUses(t *testing.T) {
 // TestNameablesPanelTellsWhatDefinesACode checks that the rows count a code as defined when the prompt finds a
 // definition for it that the item or modifier doesn't hold, and that the row of an item's code says where, taking them
 // as the prompt does: an enabled modifier's, under the code its own is linked to, before that of the item a grant
-// gives, so that no row says the code isn't defined or offers to define it over theirs. A legacy marker holds its own,
-// and a disabled modifier, which the prompt leaves out, neither defines a code nor counts as using it.
+// gives, so that no row says the code isn't defined or offers to define it over theirs. In a modifier's own editor,
+// those of the trait it belongs to, as the trait's open editor has them, and of the trait's grants and other enabled
+// modifiers come first, under the code the trait links the modifier's to. A legacy marker holds its own, and a disabled
+// modifier, which the prompt leaves out, neither defines a code nor counts as using it.
 func TestNameablesPanelTellsWhatDefinesACode(t *testing.T) {
 	style := map[string]nameable.Detail{"style": {Label: "Martial art", Options: []string{"Judo", "Karate"}}}
 	sportGrant := func() gurps.Features {
@@ -436,9 +442,36 @@ func TestNameablesPanelTellsWhatDefinesACode(t *testing.T) {
 	schooled := newModifier("Schooled", "In @art@", map[string]nameable.Detail{"art": {Label: "Art", FreeForm: true}})
 	idle := newModifier("Idle", "In @style@", style)
 	idle.SetDisabled(true)
+	// ownerOf returns the panel's owner for the trait's last modifier, whose editor the panel is in, with the trait's
+	// editor open on edits when there are some.
+	ownerOf := func(trait *gurps.Trait, edits *gurps.TraitEditData) *nameableOwner {
+		gurps.AttachModifiers(trait, trait.Modifiers)
+		var from Rebuildable
+		if edits != nil {
+			from = &editor[*gurps.Trait, *gurps.TraitEditData]{target: trait, editorData: edits}
+		}
+		return traitModifierOwnerNameables(from, trait.Modifiers[len(trait.Modifiers)-1])
+	}
+	newOwner := func(nameables map[string]nameable.Detail, features gurps.Features,
+		modifiers ...*gurps.TraitModifier,
+	) *gurps.Trait {
+		trait := gurps.NewTrait(nil, nil, false)
+		trait.Name = "Trained in @style@"
+		trait.Nameables = nameables
+		trait.Features = features
+		trait.Modifiers = modifiers
+		return trait
+	}
+	edited := newOwner(nil, nil, newModifier("Aimed", "At @style@", nil))
+	edits := edited.TraitEditData
+	edits.Nameables = style
+	schooledIn := newModifier("Schooled", "In @art@", nil)
+	armed := newModifier("Armed", "With @style@", map[string]nameable.Detail{"style": {Label: "Weapon", FreeForm: true}})
+	armed.SetDisabled(true)
 	const (
 		byModifier = "A modifier defines this, so the player is asked for it as that modifier asks."
 		byGrant    = "An item a grant gives defines this, so the player is asked for it as that item asks."
+		byOwner    = "The item the modifier belongs to defines this, so the player is asked for it as that item asks."
 		undefined  = "Until it is defined, the player is asked for it as any text."
 	)
 	type row struct {
@@ -454,7 +487,9 @@ func TestNameablesPanelTellsWhatDefinesACode(t *testing.T) {
 		features  gurps.Features
 		modifiers []*gurps.TraitModifier
 		links     map[tid.TID]map[string]string
-		rows      []row
+		// For a modifier's own editor, the trait it belongs to.
+		owner *nameableOwner
+		rows  []row
 	}{
 		{
 			name:     "by the item a grant gives",
@@ -516,16 +551,56 @@ func TestNameablesPanelTellsWhatDefinesACode(t *testing.T) {
 			modifiers: []*gurps.TraitModifier{idle},
 			rows:      []row{{"u:style", "@style@ isn't defined; used once", true, undefined}},
 		},
+		{
+			name:  "by the trait, in its modifier's editor",
+			texts: []string{"Aimed", "At @style@"},
+			owner: ownerOf(newOwner(style, nil, newModifier("Aimed", "At @style@", nil)), nil),
+			rows: []row{{
+				"u:style", "@style@ is defined by the item the modifier belongs to; used once", false, byOwner,
+			}},
+		},
+		{
+			name:  "by the trait as its open editor has it, in its modifier's editor",
+			texts: []string{"Aimed", "At @style@"},
+			owner: ownerOf(edited, &edits),
+			rows: []row{{
+				"u:style", "@style@ is defined by the item the modifier belongs to; used once", false, byOwner,
+			}},
+		},
+		{
+			name:  "by the item the trait's grant gives, in its modifier's editor",
+			texts: []string{"Aimed", "At @style@"},
+			owner: ownerOf(newOwner(nil, sportGrant(), newModifier("Aimed", "At @style@", nil)), nil),
+			rows: []row{{
+				"u:style", "@style@ is defined by an item granted by the item the modifier belongs to; used once",
+				false, byGrant,
+			}},
+		},
+		{
+			name:  "by another enabled modifier of the trait, in its modifier's editor",
+			texts: []string{"Aimed", "At @style@"},
+			owner: ownerOf(newOwner(nil, nil, armed, newModifier("Focus", "On @style@", style),
+				newModifier("Aimed", "At @style@", nil)), nil),
+			rows: []row{{"u:style", "@style@ is defined by the modifier Focus; used once", false, byModifier}},
+		},
+		{
+			name:  "by the trait, under the code it links the modifier's to, in the modifier's editor",
+			texts: []string{"Schooled", "In @art@"},
+			owner: func() *nameableOwner {
+				trait := newOwner(style, nil, schooledIn)
+				trait.NameableLinks = map[tid.TID]map[string]string{schooledIn.TID: {"art": "style"}}
+				return ownerOf(trait, nil)
+			}(),
+			rows: []row{{"u:art", "@art@ is defined by the item the modifier belongs to; used once", false, byOwner}},
+		},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			c := check.New(t)
 			var mods []nameableModifier
 			if tc.modifiers != nil {
-				mods = nameableModifiers(tc.modifiers, func(m *gurps.TraitModifier) ([]string, gurps.Features) {
-					return []string{m.Name, m.LocalNotes}, m.Features
-				})
+				mods = traitNameableModifiers(tc.modifiers)
 			}
-			p := builtNameablesPanel(nil, tc.texts, tc.features, tc.links, mods, "")
+			p := builtNameablesPanel(nil, tc.texts, tc.features, tc.links, mods, tc.owner, "")
 			for _, one := range tc.rows {
 				text, _ := nameableRowSentence(p, one.path)
 				c.Equal(one.text, text, "the sentence of %s", one.path)
@@ -572,7 +647,7 @@ func TestNameablesPanelCollapses(t *testing.T) {
 	var p *nameablesPanel
 	screen.Do(func() {
 		p = newNameablesPanel(&defs, func() map[string]int { return nameableUses(texts, nil, nil, nil) }, nil, nil,
-			nil)
+			nil, nil)
 		c.True(p.collapse.collapsed, "a panel with nameables starts collapsed")
 		paragraph, ok := p.FindRefKey(sectionSummaryKey).Self.(*sentenceButton)
 		c.True(ok, "collapsed, it shows a paragraph")
@@ -587,7 +662,7 @@ func TestNameablesPanelCollapses(t *testing.T) {
 
 	var none map[string]nameable.Detail
 	screen.Do(func() {
-		empty := newNameablesPanel(&none, func() map[string]int { return nil }, nil, nil, nil)
+		empty := newNameablesPanel(&none, func() map[string]int { return nil }, nil, nil, nil, nil)
 		c.False(empty.collapse.collapsed, "a panel with none starts open to add one")
 		c.NotNil(empty.FindRefKey("nameables:empty"), "with its placeholder")
 	})

@@ -168,13 +168,13 @@ type nameablesSection struct {
 
 // nameableDefinitions returns the nameable definitions a row's keys are described by, keyed as the keys are asked
 // about: the row's own, plus its enabled modifiers', since a row's keys include theirs, each under the code of the
-// row's that the modifier's is linked to (see gurps.Trait.NameableLinks), and, for a modifier prompted for on its own,
-// those of the trait or equipment it belongs to, whose answer a code the modifier shares with it takes. The definitions
-// of the items the row's grants give come along as well, since the row's keys include the placeholders a granted item
-// leaves to what carries the grant (see gurps.Grant.FillWithNameableKeys), keyed as the granted item asks about them
-// and then, for a grant a modifier carries, as the modifier's codes are linked. The owner's definition wins when both
-// it and a modifier define a code, and the row's or its modifiers' wins over a granted item's (see
-// mergeNameableDefinitions).
+// row's that the modifier's is linked to (see gurps.Trait.NameableLinks). A modifier prompted for on its own takes them
+// as the trait or equipment it belongs to does, since a code the modifier shares with it takes its answer; the
+// modifier is among that item's enabled modifiers, or follows them when it is not. The definitions of the items the
+// row's grants give come along as well, since the row's keys include the placeholders a granted item leaves to what
+// carries the grant (see gurps.Grant.FillWithNameableKeys), keyed as the granted item asks about them and then, for a
+// grant a modifier carries, as the modifier's codes are linked. The owner's definition wins when both it and a
+// modifier define a code, and the row's or its modifiers' wins over a granted item's (see mergeNameableDefinitions).
 func nameableDefinitions(row any) map[string]nameable.Detail {
 	var sources []nameableDefinitionSource
 	add := func(item any, features gurps.Features, links map[string]string) {
@@ -184,33 +184,48 @@ func nameableDefinitions(row any) map[string]nameable.Detail {
 		}
 		sources = append(sources, source)
 	}
+	// prompted is the modifier prompted for on its own, whose owner then stands in for it as the row, until it is
+	// found among the owner's enabled modifiers.
+	var prompted any
+	switch r := row.(type) {
+	case *gurps.TraitModifier:
+		if owner := r.Target(); owner != nil {
+			row, prompted = owner, r
+		}
+	case *gurps.EquipmentModifier:
+		if owner := r.Target(); owner != nil {
+			row, prompted = owner, r
+		}
+	}
 	switch r := row.(type) {
 	case *gurps.Trait:
 		add(r, r.Features, nil)
 		gurps.Traverse(func(mod *gurps.TraitModifier) bool {
+			if mod == prompted {
+				prompted = nil
+			}
 			add(mod, mod.Features, r.NameableLinks[mod.TID])
 			return false
 		}, true, false, r.Modifiers...)
+		if mod, ok := prompted.(*gurps.TraitModifier); ok {
+			add(mod, mod.Features, r.NameableLinks[mod.TID])
+		}
 	case *gurps.Equipment:
 		add(r, r.Features, nil)
 		gurps.Traverse(func(mod *gurps.EquipmentModifier) bool {
+			if mod == prompted {
+				prompted = nil
+			}
 			add(mod, mod.Features, r.NameableLinks[mod.TID])
 			return false
 		}, true, false, r.Modifiers...)
+		if mod, ok := prompted.(*gurps.EquipmentModifier); ok {
+			add(mod, mod.Features, r.NameableLinks[mod.TID])
+		}
 	case *gurps.TraitModifier:
-		var links map[string]string
-		if owner := r.Target(); owner != nil {
-			add(owner, nil, nil)
-			links = owner.NameableLinks[r.TID]
-		}
-		add(r, r.Features, links)
+		add(r, r.Features, nil)
 	case *gurps.EquipmentModifier:
-		var links map[string]string
-		if owner := r.Target(); owner != nil {
-			add(owner, nil, nil)
-			links = owner.NameableLinks[r.TID]
-		}
-		add(r, r.Features, links)
+		add(r, r.Features, nil)
 	case *gurps.Skill:
 		add(r, r.Features, nil)
 	case *gurps.Spell:
@@ -226,7 +241,8 @@ func nameableDefinitions(row any) map[string]nameable.Detail {
 }
 
 // nameableDefinitionSource is a part of a row that the prompt takes definitions for the row's keys from: the row
-// itself, one of its enabled modifiers, or the trait or equipment a modifier prompted for on its own belongs to.
+// itself or one of its enabled modifiers, or, for a modifier prompted for on its own, the trait or equipment it belongs
+// to or one of that item's enabled modifiers.
 type nameableDefinitionSource struct {
 	// defs are the part's own definitions.
 	defs map[string]nameable.Detail

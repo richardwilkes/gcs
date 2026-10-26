@@ -90,7 +90,8 @@ func initTraitModifierEditor(e *editor[*gurps.TraitModifier, *gurps.TraitModifie
 	addPageRefLabelsAndFields(content, &e.editorData.PageRef, &e.editorData.PageRefHighlight, e.pageRefHighlight)
 	content.AddChild(newNameablesPanel(&e.editorData.Nameables, func() map[string]int {
 		return nameableUses([]string{e.editorData.Name, e.editorData.LocalNotes}, nil, e.editorData.Features, nil)
-	}, func() map[string]nameable.Detail { return grantedNameableDefinitions(e.editorData.Features) }, nil, nil))
+	}, func() map[string]nameable.Detail { return grantedNameableDefinitions(e.editorData.Features) }, nil, nil,
+		func() *nameableOwner { return traitModifierOwnerNameables(e.owner, e.target) }))
 	content.AddChild(newFeaturesPanel(gurps.EntityFromNode(e.target), e.target, &e.editorData.Features, false))
 	return nil
 }
@@ -101,6 +102,27 @@ func traitModifierWithOverlay(t *gurps.TraitModifier, overlay *gurps.TraitModifi
 	clone := *t
 	clone.TraitModifierEditData = *overlay
 	return &clone
+}
+
+// traitModifierOwnerNameables returns the trait the modifier belongs to, as the nameables panel of the modifier's
+// editor shows it, or nil when it belongs to none. When the modifier is being edited from within that trait's own
+// editor, the trait is taken as it currently stands there.
+func traitModifierOwnerNameables(owner Rebuildable, modifier *gurps.TraitModifier) *nameableOwner {
+	trait := modifier.Target()
+	if trait == nil {
+		return nil
+	}
+	d := &trait.TraitEditData
+	if traitEditor, ok := owner.(*editor[*gurps.Trait, *gurps.TraitEditData]); ok && traitEditor.target == trait {
+		d = traitEditor.editorData
+	}
+	return &nameableOwner{
+		defs:      d.Nameables,
+		granted:   grantedNameableDefinitions(d.Features),
+		links:     d.NameableLinks,
+		modifiers: traitNameableModifiers(d.Modifiers),
+		self:      modifier.TID,
+	}
 }
 
 // owningTraitWithPendingEdits returns the trait the modifier belongs to. When the modifier is being edited from within
