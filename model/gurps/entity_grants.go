@@ -201,9 +201,11 @@ func (e *Entity) forEachGrant(fn func(grantor tid.TID, source grantSource, g *Gr
 // comparePlanting gives rather than sheet order, so that which of them puts it there, and which stands in for that
 // one (see applyGrants), is decided by the grants rather than by where their carriers are listed; among grants that
 // compare equal, one whose row is already on the sheet comes first, so that the row stays as it is when their
-// carriers are reordered. A grant whose own row is absent takes over a row of the same item that no grant on the sheet
-// claims, so that the row stays where the user put it when the carrier whose grant put it there is disabled or removed
-// while an equal grant of another carrier remains.
+// carriers are reordered. A grant that puts its item on the sheet without a row of its own takes over a row of the same
+// item that no other grant has kept (see takeOver), so that the row stays where the user put it, switch and all, when
+// the grant holding it is gone or comes to sort after this one. A row a grant puts on the sheet afresh goes at the end
+// of its list, in the order the grants are found rather than the order they are taken in: carriers in sheet order (see
+// forEachGrant), and each carrier's grants in the order it lists them, its own before its modifiers'.
 func (e *Entity) reconcileGrants() {
 	e.grantPlans = e.grantPlans[:0]
 	e.grantCarriersJudged = false
@@ -241,23 +243,19 @@ func (e *Entity) reconcileGrants() {
 	// file does nothing.
 	for _, one := range grants {
 		g := one.grant
-		planned := len(e.grantPlans)
 		switch g.Type {
 		case feature.GrantTrait:
 			if !g.Trait.Container() {
-				traits.consider(one.grantor, one.source, g, g.Trait)
+				traits.consider(one, g.Trait)
 			}
 		case feature.GrantSkill:
 			if !g.Skill.IsTechnique() && !g.Skill.Container() {
-				skills.consider(one.grantor, one.source, g, g.Skill)
+				skills.consider(one, g.Skill)
 			}
 		case feature.GrantSpell:
 			if !g.Spell.Container() {
-				spells.consider(one.grantor, one.source, g, g.Spell)
+				spells.consider(one, g.Spell)
 			}
-		}
-		if planned < len(e.grantPlans) {
-			e.grantPlans[planned].seq = one.seq
 		}
 	}
 	traits.finish()
@@ -360,15 +358,24 @@ type grantReconciler[T grantNode[T]] struct {
 	entity   *Entity
 	list     *[]T
 	existing map[grantKey][]T
-	// granted holds the rows grants put on the sheet, in sheet order, and claimed the keys of the grants on the sheet;
-	// a row under any other key is an orphan a grant may take over, see orphan.
+	// granted holds the rows grants put on the sheet, in sheet order, for a grant without a row of its own to take over
+	// (see takeOver), and claimed the keys of the grants on the sheet.
 	granted []T
 	claimed map[grantKey]bool
+	// planted holds the rows made afresh for grants that found none to keep or take over, which finish adds to the
+	// list.
+	planted []plantedRow[T]
 	// present holds the items a grant can merge into by name, and unfiled those not yet filed under it, which only a
 	// grant needs. An item can only be the same as one with the same name, so only those need hashing.
 	present map[string][]T
 	unfiled []T
 	kept    map[T]bool
+}
+
+// plantedRow is a row made afresh for a grant, along with the grant's place in sheet order.
+type plantedRow[T any] struct {
+	node T
+	seq  int
 }
 
 func newGrantReconciler[T grantNode[T]](e *Entity, list *[]T) *grantReconciler[T] {
@@ -407,13 +414,19 @@ func (r *grantReconciler[T]) claim(k grantKey) bool {
 	return len(r.existing[k]) > 0
 }
 
-// orphan returns the first row in sheet order that is the same item as the probe and that no grant on the sheet claims,
-// taking it out of the running, or false when there is none.
-func (r *grantReconciler[T]) orphan(probe T) (T, bool) {
+// takeOver returns the first row in sheet order that is the same item as the probe and that no grant has kept, taking
+// it out of the running, or false when there is none. A row another grant on the sheet claims is skipped while the user
+// has disabled it or a container holding it: taking one in a disabled container, where it counts as absent, would leave
+// that grant to put the item on the sheet again, and taking one disabled itself would enable it (see makeItem),
+// undoing the user's choice.
+func (r *grantReconciler[T]) takeOver(probe T) (T, bool) {
 	h := identityHash(probe)
 	for i, candidate := range r.granted {
+		if r.kept[candidate] || candidate.rawName() != probe.rawName() {
+			continue
+		}
 		link := *grantLink(candidate)
-		if r.claimed[grantKey{grantor: link.Grantor, key: link.Key}] {
+		if r.claimed[grantKey{grantor: link.Grantor, key: link.Key}] && userDisabled(candidate) {
 			continue
 		}
 		if identityHash(candidate) == h && SameItem(candidate, probe) && sameModifiers(candidate, probe) {
@@ -522,17 +535,19 @@ func userDisabled[T grantNode[T]](node T) bool {
 	return false
 }
 
-func (r *grantReconciler[T]) consider(grantor tid.TID, source grantSource, g *Grant, item T) {
+func (r *grantReconciler[T]) consider(one sheetGrant, item T) {
+	g := one.grant
+	source := one.source
 	answers := g.answers(source)
-	link := &GrantedBy{Grantor: grantor, Key: g.Key(), Hash: g.contentHash(answers)}
+	link := &GrantedBy{Grantor: one.grantor, Key: g.Key(), Hash: g.contentHash(answers, r.entity.Profile.TechLevel)}
 	k := grantKey{grantor: link.Grantor, key: link.Key}
 	// A copy of a granted item, or a grant duplicated without a new key, can leave several items with the same key.
 	// Each grant claims the first one no other grant has.
 	var node T
 	has := false
-	for _, one := range r.existing[k] {
-		if !r.kept[one] {
-			node = one
+	for _, row := range r.existing[k] {
+		if !r.kept[row] {
+			node = row
 			has = true
 			break
 		}
@@ -546,7 +561,12 @@ func (r *grantReconciler[T]) consider(grantor tid.TID, source grantSource, g *Gr
 	h := identityHash(probe)
 	for _, candidate := range r.presentNamed(probe) {
 		if identityHash(candidate) == h && SameItem(candidate, probe) && sameModifiers(candidate, probe) {
-			r.entity.grantPlans = append(r.entity.grantPlans, grantPlan{grant: g, source: source, target: candidate})
+			r.entity.grantPlans = append(r.entity.grantPlans, grantPlan{
+				grant:  g,
+				source: source,
+				target: candidate,
+				seq:    one.seq,
+			})
 			return
 		}
 	}
@@ -554,11 +574,11 @@ func (r *grantReconciler[T]) consider(grantor tid.TID, source grantSource, g *Gr
 		return
 	}
 	if !has {
-		node, has = r.orphan(fresh)
+		node, has = r.takeOver(fresh)
 	}
 	switch {
 	case !has:
-		*r.list = append(*r.list, fresh)
+		r.planted = append(r.planted, plantedRow[T]{node: fresh, seq: one.seq})
 		node = fresh
 	case !xreflect.IsNil(fresh):
 		r.replace(node, fresh)
@@ -570,11 +590,12 @@ func (r *grantReconciler[T]) consider(grantor tid.TID, source grantSource, g *Gr
 	if !userDisabled(node) {
 		r.unfiled = append(r.unfiled, node)
 	}
-	r.entity.grantPlans = append(r.entity.grantPlans, grantPlan{grant: g, source: source, node: node})
+	r.entity.grantPlans = append(r.entity.grantPlans, grantPlan{grant: g, source: source, node: node, seq: one.seq})
 }
 
 // makeItem returns a new item for the sheet made from the grant's copy of it, with the answers of what carries the
-// grant for the placeholders it doesn't answer itself.
+// grant for the placeholders it doesn't answer itself and the sheet's tech level for an empty one, both of which the
+// link's hash covers (see Grant.contentHash).
 func (r *grantReconciler[T]) makeItem(g *Grant, item T, link *GrantedBy, answers map[string]string) T {
 	var noParent T
 	node := item.Clone(LibraryFile{}, r.entity, noParent, Duplicate)
@@ -639,7 +660,8 @@ func (r *grantReconciler[T]) replace(old, fresh T) {
 	}
 }
 
-// finish removes the granted items no grant kept.
+// finish removes the granted items no grant kept and adds those made afresh at the end of the list, in sheet order of
+// their grants.
 func (r *grantReconciler[T]) finish() {
 	for _, nodes := range r.existing {
 		for _, node := range nodes {
@@ -647,6 +669,10 @@ func (r *grantReconciler[T]) finish() {
 				removeGrantedNode(r.list, node)
 			}
 		}
+	}
+	slices.SortFunc(r.planted, func(a, b plantedRow[T]) int { return cmp.Compare(a.seq, b.seq) })
+	for _, one := range r.planted {
+		*r.list = append(*r.list, one.node)
 	}
 }
 

@@ -52,7 +52,8 @@ type GrantedBy struct {
 	Grantor tid.TID `json:"grantor"`
 	// Key is the ID of the grant's copy of the item.
 	Key tid.TID `json:"key"`
-	// Hash is the hash of the grant when the item was last made from it, so that a change to the grant is noticed.
+	// Hash is the hash of the grant, the answers of what carries it and, for an item with an empty tech level, the
+	// sheet's tech level, as they were when the item was last made from them, so that a change to any is noticed.
 	Hash string `json:"hash"`
 }
 
@@ -453,12 +454,15 @@ func (g *Grant) EffectiveMerge() grantmerge.Mode {
 }
 
 // contentHash returns the hash recorded in GrantedBy, covering everything about the grant that shapes the item it
-// puts on a sheet, answers included.
-func (g *Grant) contentHash(answers map[string]string) string {
+// puts on a sheet, answers included, along with the sheet's tech level when it fills in the item's empty one.
+func (g *Grant) contentHash(answers map[string]string, techLevel string) string {
 	h := xxh3.New()
 	HashJSON(h, g)
 	if len(answers) != 0 {
 		HashJSON(h, answers)
+	}
+	if item, ok := g.Item().(TechLevelProvider); ok && item.RequiresTL() && item.TL() == "" {
+		xhash.StringWithLen(h, techLevel)
 	}
 	return fmt.Sprintf("%016x", h.Sum64())
 }

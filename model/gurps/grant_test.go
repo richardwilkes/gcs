@@ -588,21 +588,61 @@ func TestGrantsSharingAKeyEachKeepTheirRow(t *testing.T) {
 func TestGrantSurvivesSaveAndLoad(t *testing.T) {
 	c := check.New(t)
 	e := NewEntity()
+	e.Profile.TechLevel = "8"
+	guns := newEasySkill("Guns", fxp.One)
+	guns.TechLevel = new(string)
 	addTraitWithFeatures(e, "Racial", newTraitGrant(newGrantLeveledTrait("Night Vision", fxp.One), fxp.Two,
-		grantmerge.Ignore))
+		grantmerge.Ignore), newSkillGrant(guns, fxp.Two, grantmerge.Ignore))
 	e.Recalculate()
-	before := grantedOf(e.Traits)[0]
+	beforeTrait, beforeSkill := grantedOf(e.Traits)[0], grantedOf(e.Skills)[0]
 	data, err := json.Marshal(e)
 	c.NoError(err)
 	var loaded Entity
 	c.NoError(json.Unmarshal(data, &loaded))
-	granted := grantedOf(loaded.Traits)
-	c.Equal(1, len(granted))
-	c.Equal(before.TID, granted[0].TID)
+	traits, skills := grantedOf(loaded.Traits), grantedOf(loaded.Skills)
+	if len(traits) != 1 || len(skills) != 1 {
+		c.Fatalf("expected one granted trait and one granted skill, got %d and %d", len(traits), len(skills))
+	}
+	// Loading recalculates, and a row made again keeps its ID, so only the link's hash would tell.
+	c.Equal(beforeTrait.TID, traits[0].TID)
+	c.Equal(*beforeTrait.Granted, *traits[0].Granted, "the loaded trait is the one saved, not made again")
+	c.Equal(beforeSkill.TID, skills[0].TID)
+	c.Equal(*beforeSkill.Granted, *skills[0].Granted, "the loaded skill is the one saved, empty tech level and all")
+	c.Equal("8", skills[0].TL())
 	loaded.Recalculate()
-	c.True(granted[0] == grantedOf(loaded.Traits)[0], "the loaded item is kept, not made again, which keeps its ID anyway")
-	c.Equal(fxp.Two, granted[0].CurrentLevel())
+	c.True(traits[0] == grantedOf(loaded.Traits)[0], "the loaded item is kept, not made again, which keeps its ID anyway")
+	c.True(skills[0] == grantedOf(loaded.Skills)[0])
+	c.Equal(fxp.Two, traits[0].CurrentLevel())
 	c.Equal(len(e.Traits), len(loaded.Traits))
+}
+
+func TestGrantedSkillFollowsTheSheetsTechLevel(t *testing.T) {
+	c := check.New(t)
+	e := NewEntity()
+	e.Profile.TechLevel = "3"
+	guns := newEasySkill("Guns", fxp.One)
+	guns.TechLevel = new(string)
+	addTraitWithFeatures(e, "Training", newSkillGrant(guns, fxp.Two, grantmerge.Ignore))
+	e.Recalculate()
+	granted := grantedOf(e.Skills)
+	if len(granted) != 1 {
+		c.Fatalf("expected one granted skill, got %d", len(granted))
+	}
+	row := granted[0]
+	c.Equal("3", row.TL())
+	e.Profile.TechLevel = "8"
+	e.Recalculate()
+	granted = grantedOf(e.Skills)
+	if len(granted) != 1 {
+		c.Fatalf("expected one granted skill, got %d", len(granted))
+	}
+	c.Equal("8", granted[0].TL(), "a grant leaving the tech level empty gives the sheet's")
+	c.Equal(row.TID, granted[0].TID)
+
+	bought := addSkill(e, "Guns", fxp.One)
+	bought.TechLevel = new("8")
+	e.Recalculate()
+	c.Equal(0, len(grantedOf(e.Skills)), "a copy bought at the sheet's tech level absorbs the grant")
 }
 
 func TestGrantedLinkStaysOnlyOnItsSheet(t *testing.T) {
@@ -949,6 +989,17 @@ func TestGrantedRowInDisabledContainerCountsAsAbsent(t *testing.T) {
 	c.True(granted[0].Enabled())
 	c.Equal("Grants Night Vision 1", e.grantSummary(a))
 	c.Equal("Grants Night Vision 1", e.grantSummary(b))
+
+	higher := addTraitWithFeatures(e, "C", newTraitGrant(newGrantLeveledTrait("Night Vision", fxp.One), fxp.Two,
+		grantmerge.Ignore))
+	e.Recalculate()
+	granted = grantedOf(e.Traits)
+	if len(granted) != 1 {
+		c.Fatalf("expected one Night Vision row at the top, got %d", len(granted))
+	}
+	c.True(GrantingItem(granted[0]) == higher, "a higher grant takes over the row in effect, not one the user disabled")
+	c.True(granted[0].Enabled())
+	c.Equal(fxp.Two, granted[0].CurrentLevel())
 }
 
 func TestGrantCarrierJudgedAfresh(t *testing.T) {
@@ -1964,7 +2015,8 @@ func TestGrantedRowStaysWithTheGrantHoldingIt(t *testing.T) {
 	nightVision := func() *Grant {
 		return newTraitGrant(newGrantLeveledTrait("Night Vision", fxp.One), fxp.Two, grantmerge.Ignore)
 	}
-	a := addTraitWithFeatures(e, "A", nightVision())
+	aGrant := nightVision()
+	a := addTraitWithFeatures(e, "A", aGrant)
 	b := addTraitWithFeatures(e, "B", nightVision())
 	e.Recalculate()
 	granted := grantedOf(e.Traits)
@@ -2001,6 +2053,59 @@ func TestGrantedRowStaysWithTheGrantHoldingIt(t *testing.T) {
 		c.Fatalf("expected one Night Vision row in the container, got %d", len(granted))
 	}
 	c.True(granted[0] == row, "enabling the other carrier again leaves the row with the grant that put it there")
+
+	row.SwitchedOn = true
+	aGrant.Level = fxp.Three
+	e.Recalculate()
+	c.Equal(0, len(grantedOf(e.Traits)), "a grant that comes to sort first adds no row at the top")
+	granted = grantedOf(group.Children)
+	if len(granted) != 1 {
+		c.Fatalf("expected one Night Vision row in the container, got %d", len(granted))
+	}
+	c.Equal(row.TID, granted[0].TID, "it takes over the row where the user put it")
+	c.True(granted[0].SwitchedOn, "along with its switch")
+	c.True(GrantingItem(granted[0]) == a)
+	c.Equal(fxp.Three, granted[0].CurrentLevel())
+
+	aGrant.Trait.Name = "Dark Vision"
+	e.Recalculate()
+	granted = grantedOf(group.Children)
+	if len(granted) != 1 {
+		c.Fatalf("expected one Dark Vision row in the container, got %d", len(granted))
+	}
+	c.Equal("Dark Vision", granted[0].Name)
+	granted = grantedOf(e.Traits)
+	if len(granted) != 1 {
+		c.Fatalf("expected the other grant to put Night Vision back at the top, not to take over the row the "+
+			"renamed grant has already refreshed, got %d rows", len(granted))
+	}
+	c.Equal("Night Vision", granted[0].Name)
+	c.True(GrantingItem(granted[0]) == b)
+	c.Equal(fxp.Two, granted[0].CurrentLevel())
+}
+
+func TestGrantedRowsFollowTheirGrantsInSheetOrder(t *testing.T) {
+	c := check.New(t)
+	e := NewEntity()
+	addTraitWithFeatures(e, "Racial",
+		newTraitGrant(newGrantLeveledTrait("Acute Hearing", fxp.Two), fxp.One, grantmerge.Ignore),
+		newTraitGrant(newGrantLeveledTrait("Night Vision", fxp.One), fxp.Five, grantmerge.Ignore),
+		newSkillGrant(newEasySkill("Brawling", fxp.One), fxp.One, grantmerge.MergeLevels),
+		newSkillGrant(newEasySkill("Karate", fxp.One), fxp.One, grantmerge.Ignore))
+	addTraitWithFeatures(e, "Training",
+		newTraitGrant(newGrantLeveledTrait("Fit", fxp.Five), fxp.Ten, grantmerge.Ignore))
+	e.Recalculate()
+	grantedTraits, grantedSkills := grantedOf(e.Traits), grantedOf(e.Skills)
+	traits := make([]string, 0, len(grantedTraits))
+	for _, one := range grantedTraits {
+		traits = append(traits, one.Name)
+	}
+	skills := make([]string, 0, len(grantedSkills))
+	for _, one := range grantedSkills {
+		skills = append(skills, one.Name)
+	}
+	c.Equal([]string{"Acute Hearing", "Night Vision", "Fit"}, traits, "carriers in sheet order, each in its own order")
+	c.Equal([]string{"Brawling", "Karate"}, skills, "whatever the grants' merge modes")
 }
 
 func TestGrantedSkillSatisfiesTechnique(t *testing.T) {
