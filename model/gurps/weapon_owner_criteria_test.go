@@ -382,7 +382,8 @@ func TestWeaponOwnerCriteriaJSON(t *testing.T) {
 }
 
 // TestScriptWeaponsMatchOwnerName verifies that a script weapon's name is its owner's name without its level or title
-// notes, that its title keeps them, and that the scripts finding weapons by name match the name.
+// notes, that its title keeps them, and that the scripts finding weapons by name match the name or the title, with
+// weaponDamage taking a weapon whose title matches over one before it whose name does.
 func TestScriptWeaponsMatchOwnerName(t *testing.T) {
 	c := check.New(t)
 	e := NewEntity()
@@ -397,7 +398,37 @@ func TestScriptWeaponsMatchOwnerName(t *testing.T) {
 	c.Equal("Innate Attack", resolve(`entity.weapons[0].name`))
 	c.Equal("Innate Attack 2 (Fire)", resolve(`entity.weapons[0].title`))
 	c.Equal("1", resolve(`entity.findWeapons(true, entity.weapons[0].name).length.toString()`))
+	c.Equal("1", resolve(`entity.findWeapons(true, entity.weapons[0].title).length.toString()`))
 	c.Equal("1d-2 cr", resolve(`entity.weaponDamage("Innate Attack", "Burn")`))
+	c.Equal("1d-2 cr", resolve(`entity.weaponDamage("Innate Attack 2 (Fire)", "Burn")`))
+
+	gun := func(specialization, damage string) *Skill {
+		s := NewSkill(e, nil, false)
+		s.Name = "Guns"
+		s.Specialization = specialization
+		tl := "8"
+		s.TechLevel = &tl
+		shoot := NewWeapon(s, false)
+		shoot.Usage = "Shoot"
+		shoot.Damage.Base = damage
+		shoot.Damage.Type = "pi"
+		s.Weapons = []*Weapon{shoot}
+		e.Skills = append(e.Skills, s)
+		return s
+	}
+	pistol := gun("Pistol", "1d+2")
+	gun("Rifle", "7d")
+	whip := NewWeapon(pistol, true)
+	pistol.Weapons = append(pistol.Weapons, whip)
+	builtIn := addTraitWithFeatures(e, "Guns")
+	builtIn.Weapons = []*Weapon{NewWeapon(builtIn, false)}
+	builtIn.Weapons[0].Damage.Base = "2d"
+	e.Recalculate()
+	c.Equal("1d+2 pi", resolve(`entity.weaponDamage("Guns/TL8 (Pistol)", "Shoot")`))
+	c.Equal("7d pi", resolve(`entity.weaponDamage("Guns/TL8 (Rifle)", "Shoot")`))
+	c.Equal("1", resolve(`entity.findWeapons(false, "Guns/TL8 (Rifle)").length.toString()`))
+	c.Equal("2d cr", resolve(`entity.weaponDamage("Guns", "")`),
+		"the built-in gun's title is Guns, though the pistol's melee weapon, listed first, is a Guns weapon too")
 }
 
 // TestOwnerlessWeaponName verifies that a weapon without an owner has an empty name and title, in scripts too, and that

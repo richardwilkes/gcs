@@ -212,16 +212,28 @@ func newScriptEntity(r *goja.Runtime, entity *Entity) *goja.Object {
 			list := append(entity.Weapons(true, false, excludeHidden), entity.Weapons(false, false, excludeHidden)...)
 			return slices.DeleteFunc(list, func(w *Weapon) bool { return entity.excludedWhileJudging(w.Owner) })
 		}
+		// weaponDamage(name, usage) gives the damage of the first weapon with the usage whose owner's title, with its
+		// level, TL and specializations, is the name, or failing that, of the first whose owner's name is.
 		m["weaponDamage"] = func() goja.Value {
 			return r.ToValue(func(call goja.FunctionCall) goja.Value {
 				name := callArgAsString(call, 0)
 				usage := callArgAsString(call, 1)
+				var named *Weapon
 				for _, w := range weapons(false) {
-					if strings.EqualFold(w.Name(), name) && strings.EqualFold(w.UsageWithReplacements(), usage) {
+					if !strings.EqualFold(w.UsageWithReplacements(), usage) {
+						continue
+					}
+					if strings.EqualFold(w.Title(), name) {
 						return r.ToValue(w.Damage.ResolvedDamage(nil))
 					}
+					if named == nil && strings.EqualFold(w.Name(), name) {
+						named = w
+					}
 				}
-				return goja.Undefined()
+				if named == nil {
+					return goja.Undefined()
+				}
+				return r.ToValue(named.Damage.ResolvedDamage(nil))
 			})
 		}
 		addScriptWeapons(r, m, func() []*Weapon { return weapons(true) })

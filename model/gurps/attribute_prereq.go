@@ -69,16 +69,21 @@ func (p *AttributePrereq) Clone(parent *PrereqList) Prereq {
 func (p *AttributePrereq) FillWithNameableKeys(_, _ map[string]string) {
 }
 
-// Satisfied implements Prereq.
+// Satisfied implements Prereq. The comparison is met only when the sheet defines each attribute it names.
 func (p *AttributePrereq) Satisfied(entity *Entity, _ any, tooltip *xbytes.InsertBuffer, prefix string, _ *bool) bool {
 	if entity == nil {
 		return true
 	}
+	// An attribute the sheet doesn't define resolves to fxp.Min, which must not take part in the sum.
 	value := entity.resolveAttributeCurrentForPrereqs(p.Which)
-	if p.CombinedWith != "" {
-		value += entity.resolveAttributeCurrentForPrereqs(p.CombinedWith)
+	if value != fxp.Min && p.CombinedWith != "" {
+		if other := entity.resolveAttributeCurrentForPrereqs(p.CombinedWith); other == fxp.Min {
+			value = fxp.Min
+		} else {
+			value += other
+		}
 	}
-	satisfied := p.QualifierCriteria.Matches(value)
+	satisfied := value != fxp.Min && p.QualifierCriteria.Matches(value)
 	if !p.Has {
 		satisfied = !satisfied
 	}

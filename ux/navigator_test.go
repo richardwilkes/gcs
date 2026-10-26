@@ -615,6 +615,33 @@ func TestToggleFavoritesKeysOnFullPath(t *testing.T) {
 	c.Equal([]string{relPath}, lib1.Favorites())
 }
 
+// TestDoubleClickCountsTheFilesItOpens verifies that the count a double-click on the selection prompts with, when it
+// is high, is of the distinct files it opens, leaving out the libraries and folders it opens or closes instead.
+func TestDoubleClickCountsTheFilesItOpens(t *testing.T) {
+	c := check.New(t)
+	lib := newTestLibrary(t)
+	libNode := NewLibraryNode(nil, lib)
+	folder := func(name string) *NavigatorNode {
+		c.NoError(os.Mkdir(filepath.Join(lib.Path(false), name), 0o700))
+		return NewDirectoryNode(nil, lib, name, libNode)
+	}
+	folders := []*NavigatorNode{folder("A"), folder("B"), folder("C"), folder("D"), folder("E")}
+	file := func(name string) *NavigatorNode { return NewFileNode(lib, name, libNode) }
+	files := []*NavigatorNode{file("1.gcs"), file("2.gcs"), file("3.gcs"), file("4.gcs")}
+	for _, one := range []struct {
+		name string
+		rows []*NavigatorNode
+		want int
+	}{
+		{"folders alone", folders, 0},
+		{"a library", []*NavigatorNode{libNode}, 0},
+		{"a folder and files", append([]*NavigatorNode{folders[0]}, files...), 4},
+		{"one file reached twice", []*NavigatorNode{files[0], NewFileNode(lib, "1.gcs", folders[0])}, 1},
+	} {
+		c.Equal(one.want, filesToOpen(one.rows), one.name)
+	}
+}
+
 // TestTrimmedNameIsValid verifies that the name validation shared by the rename and new-folder dialogs both trims the
 // name before judging it and reports back the trimmed name, so that callers build the path that was actually validated.
 func TestTrimmedNameIsValid(t *testing.T) {

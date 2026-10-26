@@ -66,8 +66,8 @@ func newScriptWeapon(r *goja.Runtime, w *Weapon) *goja.Object {
 }
 
 // addScriptWeapons installs the weapons and findWeapons properties on a wrapper: weapons lists every weapon the
-// supplied function yields, and findWeapons(melee, name, usage) narrows them to those of the given kind whose usage and
-// owner's name, without its level, TL or specializations, match, either of which may be omitted.
+// supplied function yields, and findWeapons(melee, name, usage) narrows them to those of the given kind whose owner's
+// name or title (the name with its level, TL and specializations) and usage match, either of which may be omitted.
 func addScriptWeapons(r *goja.Runtime, m map[string]func() goja.Value, weapons func() []*Weapon) {
 	m["weapons"] = func() goja.Value { return scriptObjects(r, weapons(), nil, newScriptWeapon) }
 	m["findWeapons"] = func() goja.Value {
@@ -81,7 +81,7 @@ func addScriptWeapons(r *goja.Runtime, m map[string]func() goja.Value, weapons f
 func matchWeapons(r *goja.Runtime, weapons []*Weapon, name, usage string, melee bool) goja.Value {
 	return scriptObjects(r, weapons, func(w *Weapon) bool {
 		return melee == w.IsMelee() &&
-			(name == "" || strings.EqualFold(w.Name(), name)) &&
+			(name == "" || strings.EqualFold(w.Name(), name) || strings.EqualFold(w.Title(), name)) &&
 			(usage == "" || strings.EqualFold(w.UsageWithReplacements(), usage))
 	}, newScriptWeapon)
 }

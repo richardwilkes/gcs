@@ -865,9 +865,9 @@ func (n *Navigator) selectionChanged() {
 
 func (n *Navigator) handleSelectionDoubleClick() {
 	selection := n.table.SelectedRows(false)
-	if len(selection) > 4 {
+	if count := filesToOpen(selection); count > 4 {
 		if unison.QuestionDialog(i18n.Text("Are you sure you want to open all of these?"),
-			i18n.Text("%d files will be opened.", len(selection))) != unison.ModalResponseOK {
+			i18n.Text("%d files will be opened.", count)) != unison.ModalResponseOK {
 			return
 		}
 	}
@@ -895,6 +895,17 @@ func (n *Navigator) handleSelectionDoubleClick() {
 	if altered {
 		n.table.SyncToModel()
 	}
+}
+
+// filesToOpen returns how many distinct files the rows name; a double-click opens them and toggles the other rows.
+func filesToOpen(rows []*NavigatorNode) int {
+	paths := make(map[string]struct{}, len(rows))
+	for _, row := range rows {
+		if !row.CanHaveChildren() {
+			paths[row.Path()] = struct{}{}
+		}
+	}
+	return len(paths)
 }
 
 func findSearchFieldInSelfOrDescendants(p *unison.Panel) *unison.Field {

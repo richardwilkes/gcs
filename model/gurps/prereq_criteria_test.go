@@ -146,6 +146,43 @@ func TestSkillPrereqCriteria(t *testing.T) {
 	}
 }
 
+// TestAttributePrereqNeedsTheAttributes checks that an attribute prerequisite's comparison is met only when the sheet
+// defines each attribute it names, whatever the comparison, so a "Does not have" one is met when either is missing.
+func TestAttributePrereqNeedsTheAttributes(t *testing.T) {
+	c := check.New(t)
+	e := gurps.NewEntity()
+	e.Attributes.Set[gurps.HitPointsID].Damage = fxp.FromInteger(13)
+	c.Equal(fxp.FromInteger(-3), e.ResolveAttributeCurrent(gurps.HitPointsID), "precondition: HP is at -3")
+	c.Equal(fxp.Min, e.ResolveAttributeCurrent("sanity"), "precondition: the sheet has no Sanity")
+	attr := func(has bool, which, combined string, compare criteria.NumericComparison,
+		qualifier int,
+	) *gurps.AttributePrereq {
+		p := gurps.NewAttributePrereq(e)
+		p.Has = has
+		p.Which = which
+		p.CombinedWith = combined
+		p.QualifierCriteria = criteria.Number{Compare: compare, Qualifier: fxp.FromInteger(qualifier)}
+		return p
+	}
+	for _, one := range []struct {
+		name   string
+		prereq *gurps.AttributePrereq
+		want   bool
+	}{
+		{"defined", attr(true, gurps.HitPointsID, "", criteria.AtLeastNumber, -3), true},
+		{"defined pair", attr(true, gurps.HitPointsID, gurps.StrengthID, criteria.AtLeastNumber, 7), true},
+		{"missing at most", attr(true, "sanity", "", criteria.AtMostNumber, 10), false},
+		{"missing at any value", attr(true, "sanity", "", criteria.AnyNumber, 0), false},
+		{"missing plus negative", attr(true, "sanity", gurps.HitPointsID, criteria.AtLeastNumber, 10), false},
+		{"negative plus missing", attr(true, gurps.HitPointsID, "sanity", criteria.AtLeastNumber, 10), false},
+		{"both missing", attr(true, "sanity", "luck", criteria.AtLeastNumber, 0), false},
+		{"does not have missing", attr(false, "sanity", "", criteria.AtLeastNumber, 10), true},
+		{"does not have missing pair", attr(false, "sanity", gurps.HitPointsID, criteria.AtLeastNumber, 10), true},
+	} {
+		c.Equal(one.want, one.prereq.Satisfied(e, nil, nil, "", nil), one.name)
+	}
+}
+
 // TestSpellPrereqLevel checks that only spells at the level a spell prerequisite asks for count toward its quantity.
 func TestSpellPrereqLevel(t *testing.T) {
 	c := check.New(t)
