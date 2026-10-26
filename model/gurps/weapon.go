@@ -984,7 +984,6 @@ func (w *Weapon) findRequiredSkills(entity *Entity) []requiredSkill {
 	visit := func(name, specialization string) {
 		skills = append(skills, requiredSkill{name: name, specialization: specialization})
 	}
-	var bestDef *SkillDefault
 	var bestSkill *Skill
 	best := fxp.Min
 	replacements := w.NameableReplacements()
@@ -997,23 +996,17 @@ func (w *Weapon) findRequiredSkills(entity *Entity) []requiredSkill {
 			sk := one.bestFastMatchingSkill(entity, replacements, false, nil)
 			if level := one.fastLevelFromSkill(entity, sk); best < level {
 				best = level
-				bestDef = one
 				bestSkill = sk
 			}
 		}
 	}
 	var name, specialization string
-	if bestDef != nil {
-		name = bestDef.NameWithReplacements(replacements)
-		specialization = bestDef.SpecializationWithReplacements(replacements)
-		// The qualifiers only name a skill when the default names one outright. Resolving the default to the skill it
-		// actually scored -- the same one bestFast picked when it won the ranking above -- lets a default that selects
-		// its skill by tag, or by any other criteria, still collect the weapon bonuses qualified by the skill the
-		// weapon really attacks with.
-		if bestSkill != nil {
-			name = bestSkill.NameWithReplacements()
-			specialization = bestSkill.SpecializationWithReplacements()
-		}
+	if bestSkill != nil {
+		// The winning default is resolved to the skill it scored by -- the same one bestFast picks -- rather than to
+		// the name it gives, so that a default selecting its skill by tag, or by any other criteria, still collects the
+		// weapon bonuses qualified by the skill the weapon really attacks with.
+		name = bestSkill.NameWithReplacements()
+		specialization = bestSkill.SpecializationWithReplacements()
 	}
 	visit(name, specialization)
 	// When the weapon's best skill default resolves to a technique, also apply weapon bonuses that are qualified by the

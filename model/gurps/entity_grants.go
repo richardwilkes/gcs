@@ -30,9 +30,9 @@ import (
 
 // grantPlan is what reconcileGrants decided for one grant on the sheet: the item it put there, or the item already on
 // the sheet that it merges into, or neither, for a grant whose item can't be granted or that can't put its item there
-// and has none to merge into, whose plan is kept apart from the others for grantSummary. seq is the grant's place in sheet order, which the plans
-// are not kept in (see reconcileGrants), and standsIn is set by a pass in which the grant stands in for the one that
-// put its target on the sheet; see applyGrants.
+// and has none to merge into, whose plan is kept apart from the others for grantSummary. seq is the grant's place in
+// sheet order, which the plans are not kept in (see reconcileGrants), and standsIn is set by a pass in which the grant
+// stands in for the one that put its target on the sheet; see applyGrants.
 type grantPlan struct {
 	grant    *Grant
 	source   grantSource
@@ -860,10 +860,10 @@ func hashGrantDetails(h hash.Hash, holder grantHolder) {
 }
 
 // mergeGrant merges a grant in effect into the item already on the sheet that it matches, as its merge mode says. A
-// skill or spell with no points has no level to add to or compare with, so a grant whose level would have put the item
-// on the sheet gives it the points of its tier instead, as if it had. A Keep Highest grant leaves the level it keeps,
-// or for a skill or spell the points of the tier it keeps, for the item's level to be compared with when it is read,
-// with the other merges in (see grantState.applyLevelNotes).
+// skill or spell with no level of its own, such as one with no points and no default, has none to add to or compare
+// with, so a grant whose level would have put the item on the sheet gives it the points of its tier instead, as if it
+// had. A Keep Highest grant leaves the level it keeps, or for a skill or spell the points of the tier it keeps, for the
+// item's level to be compared with when it is read, with the other merges in (see grantState.applyLevelNotes).
 func (e *Entity) mergeGrant(plan *grantPlan) {
 	g := plan.grant
 	if g.mergesNothing() {

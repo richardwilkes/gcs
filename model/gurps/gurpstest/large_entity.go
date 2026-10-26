@@ -766,9 +766,9 @@ func (b *largeEntityBuilder) addNotes() {
 // in effect, or all to whichever of those there are. Every other trait or skill grant puts a new item on the sheet, the
 // new skills taking their specialization from what carries the grant; the rest, and every spell grant, copy an item
 // already there so that they merge with it, though a copy of an item that carries a grant of its own, or gets one
-// later, no longer matches it once the grant is added, since the features are part of the hash, and such a grant puts
-// its copy on the sheet instead. A spell grant with no spell to copy is a skill grant instead. Nothing is handed out
-// when there is nothing to carry it.
+// later, no longer matches it once the grant is added, since the "Topic" replacement addTopic gives the item is one the
+// copy lacks, and such a grant puts its copy on the sheet instead. A spell grant with no spell to copy is a skill grant
+// instead. Nothing is handed out when there is nothing to carry it.
 func (b *largeEntityBuilder) addGrants() {
 	if len(b.traits) == 0 && len(b.equipped) == 0 && len(b.unequipped) == 0 {
 		return
