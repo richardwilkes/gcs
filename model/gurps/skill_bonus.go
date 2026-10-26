@@ -120,14 +120,13 @@ func (s *SkillBonus) AdjustedAmount() fxp.Int {
 // applies returns false for a penalty derived from a trait or skill that does not call for it as the prerequisites
 // being judged see that trait or skill: the Merchant penalty of a trait whose self-control adjustment is not a major
 // cost of living increase (see Trait.ResolvedSelfControlAdjustment), and the missing-equipment penalty of a skill whose
-// details come from a grant that treats its prerequisites as met (see judgedDetail). Every other bonus applies.
+// details come from a grant that treats its prerequisites as met (see prereqsBypassed). Every other bonus applies.
 func (s *SkillBonus) applies() bool {
 	switch {
 	case s.selfControlOf != nil:
 		return s.selfControlOf.ResolvedSelfControlAdjustment(nil) == selfctrl.MajorCostOfLivingIncrease
 	case s.equipmentPenaltyOf != nil:
-		detail := judgedDetail(s.equipmentPenaltyOf)
-		return detail == nil || detail.CheckPrereqs
+		return !prereqsBypassed(s.equipmentPenaltyOf)
 	default:
 		return true
 	}

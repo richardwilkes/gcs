@@ -1024,8 +1024,9 @@ const unsatisfiedReasonPrefix = "\n- "
 // applyEquipmentPenalties adds to the collected features the missing-equipment penalty of every skill and spell that
 // processSkillAndSpellPrereqs last found unsatisfied on account of equipment they require to be equipped. It runs
 // before the prerequisites are judged again, so that every level computed during the pass counts the same penalties;
-// see recalculationPass. A skill's penalty matches the skill's optional specialization, and applies, as the
-// prerequisites being judged see the skill; see SkillBonus.applies.
+// see recalculationPass. A skill's penalty matches the skill's optional specialization, and a skill's or spell's
+// penalty applies, as the prerequisites being judged see the skill or spell; see SkillBonus.applies and
+// SpellBonus.applies.
 func (e *Entity) applyEquipmentPenalties() {
 	Traverse(func(s *Skill) bool {
 		if s.takesEquipmentPenalty {
@@ -1045,6 +1046,7 @@ func (e *Entity) applyEquipmentPenalties() {
 			penalty := NewSpellBonus()
 			penalty.SpellMatchType = spellmatch.Name
 			penalty.NameCriteria.Qualifier = s.NameWithReplacements()
+			penalty.equipmentPenaltyOf = s
 			penalty.Amount = missingEquipmentPenalty(s.TechLevel)
 			penalty.SetOwner(s)
 			e.features.spellBonuses = append(e.features.spellBonuses, penalty)
@@ -1059,15 +1061,21 @@ func (e *Entity) applyEquipmentPenalties() {
 // pass. A technique or ritual magic spell whose prerequisites are met must also have the skill it is based on, which,
 // like its prerequisites, is looked for without what its own grants put on the sheet (see JudgingPrereqsOf). A
 // disabled one is not judged, and has any reason recorded before it was disabled cleared, as does one put on the sheet
-// by a grant that bypasses its prerequisites.
+// by a grant that bypasses its prerequisites. Such a one is still judged for the penalty alone when the prerequisites
+// of a carrier see it given by a grant that checks them (see grantState.prereqsChecked), since the penalty then applies
+// as those prerequisites see it.
 func (e *Entity) processSkillAndSpellPrereqs() {
 	Traverse(func(s *Skill) bool {
-		if s.Container() || !s.Enabled() || s.grant.bypass {
+		if s.Container() || !s.Enabled() || !s.grant.prereqsChecked() {
 			s.UnsatisfiedReason = ""
 			s.takesEquipmentPenalty = false
 			return false
 		}
 		s.UnsatisfiedReason = e.evaluatePrereqs(s.Prereq, s, &s.takesEquipmentPenalty)
+		if s.grant.bypass {
+			s.UnsatisfiedReason = ""
+			return false
+		}
 		if s.UnsatisfiedReason == "" && s.IsTechnique() {
 			e.JudgingPrereqsOf(s, func() {
 				s.UnsatisfiedReason = unsatisfiedReason(func(tooltip *xbytes.InsertBuffer) bool {
@@ -1078,12 +1086,16 @@ func (e *Entity) processSkillAndSpellPrereqs() {
 		return false
 	}, false, false, e.Skills...)
 	Traverse(func(s *Spell) bool {
-		if s.Container() || !s.Enabled() || s.grant.bypass {
+		if s.Container() || !s.Enabled() || !s.grant.prereqsChecked() {
 			s.UnsatisfiedReason = ""
 			s.takesEquipmentPenalty = false
 			return false
 		}
 		s.UnsatisfiedReason = e.evaluatePrereqs(s.Prereq, s, &s.takesEquipmentPenalty)
+		if s.grant.bypass {
+			s.UnsatisfiedReason = ""
+			return false
+		}
 		if s.UnsatisfiedReason == "" && s.IsRitualMagic() {
 			e.JudgingPrereqsOf(s, func() {
 				s.UnsatisfiedReason = unsatisfiedReason(func(tooltip *xbytes.InsertBuffer) bool {
@@ -1615,9 +1627,11 @@ func sumSpellBonuses[T spellMatcher](e *Entity, list []T, name, powerSource stri
 	})
 }
 
-// SpellBonusFor returns the total bonus for the matching spell bonuses.
+// SpellBonusFor returns the total bonus for the matching spell bonuses that apply; see SpellBonus.applies.
 func (e *Entity) SpellBonusFor(name, powerSource string, colleges, tags []string, tooltip *xbytes.InsertBuffer) fxp.Int {
-	return sumSpellBonuses(e, e.features.spellBonuses, name, powerSource, colleges, tags, tooltip)
+	return sumBonuses(e, e.features.spellBonuses, tooltip, func(bonus *SpellBonus, replacements map[string]string) bool {
+		return bonus.MatchesSpell(replacements, name, powerSource, colleges, tags) && bonus.applies()
+	})
 }
 
 // SpellPointBonusFor returns the total point bonus for the matching spell point bonuses.

@@ -29,6 +29,9 @@ var _ Bonus = &SpellBonus{}
 // SpellBonus holds the data for a bonus to a spell.
 type SpellBonus struct {
 	SpellBonusData
+	// equipmentPenaltyOf is, for the missing-equipment penalty Entity.applyEquipmentPenalties gives a spell, that
+	// spell, whose grant decides whether the penalty applies; see applies.
+	equipmentPenaltyOf *Spell
 }
 
 // SpellBonusData holds the persisted data shared by SpellBonus and SpellPointBonus, which differ only in the feature
@@ -123,6 +126,13 @@ func (s *SpellBonusData) Hash(h hash.Hash) {
 	s.NameCriteria.Hash(h)
 	s.TagsCriteria.Hash(h)
 	s.LeveledAmount.Hash(h)
+}
+
+// applies returns false for the missing-equipment penalty of a spell whose details come from a grant that treats its
+// prerequisites as met, as the prerequisites being judged see the spell (see prereqsBypassed). Every other bonus
+// applies.
+func (s *SpellBonus) applies() bool {
+	return s.equipmentPenaltyOf == nil || !prereqsBypassed(s.equipmentPenaltyOf)
 }
 
 // Clone implements Feature.

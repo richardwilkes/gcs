@@ -766,6 +766,12 @@ func (s *grantState) viewFor(exclude any) *grantState {
 	return s
 }
 
+// prereqsChecked returns true if a grant giving the item its details checks its prerequisites, as the item stands or as
+// the prerequisites of the carrier it has a judged state for see it (see viewFor).
+func (s *grantState) prereqsChecked() bool {
+	return !s.bypass || (s.judged != nil && !s.judged.bypass)
+}
+
 func (s *grantState) addLevels(source grantSource, amount fxp.Int) {
 	if amount != 0 {
 		s.levelNotes = append(s.levelNotes, newGrantNote(source, amount))

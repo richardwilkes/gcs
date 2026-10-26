@@ -1655,16 +1655,37 @@ func TestGrantDoesNotMeetItsCarriersPrereqs(t *testing.T) {
 			g.Skill.OptionalSpecialization = optionalSpecialization
 			return g
 		}
-		// knuckled gives the grant's skill a prerequisite of brass knuckles equipped, which nothing meets, and has the
-		// grant check it when checked is set.
+		light := func(tier fxp.Int) *Grant {
+			return newSpellGrant(newHardSpell("Light", fxp.One), tier, grantmerge.Ignore)
+		}
+		// knuckled gives the grant's skill or spell a prerequisite of brass knuckles equipped, which nothing meets, and
+		// has the grant check it when checked is set.
 		knuckled := func(g *Grant, checked bool) *Grant {
 			g.CheckPrereqs = checked
-			g.Skill.Prereq = NewPrereqList()
+			list := NewPrereqList()
 			p := NewEquippedEquipmentPrereq()
-			p.Parent = g.Skill.Prereq
+			p.Parent = list
 			p.NameCriteria.Qualifier = "Brass Knuckles"
-			g.Skill.Prereq.Prereqs = append(g.Skill.Prereq.Prereqs, p)
+			list.Prereqs = append(list.Prereqs, p)
+			if g.Skill != nil {
+				g.Skill.Prereq = list
+			} else {
+				g.Spell.Prereq = list
+			}
 			return g
+		}
+		// mage puts on the sheet a trait carrying the grant whose prerequisite is Light at 8 or more.
+		mage := func(e *Entity, g *Grant) *Trait {
+			carrier := addTraitWithFeatures(e, "Mage", g)
+			carrier.Prereq = NewPrereqList()
+			p := NewSpellPrereq()
+			p.Parent = carrier.Prereq
+			p.SamePowerSource = false
+			p.QualifierCriteria.Qualifier = "Light"
+			p.LevelCriteria.Compare = criteria.AtLeastNumber
+			p.LevelCriteria.Qualifier = fxp.Eight
+			carrier.Prereq.Prereqs = append(carrier.Prereq.Prereqs, p)
+			return carrier
 		}
 		// trait returns an Ignore grant of a trait with the name, which set adjusts.
 		trait := func(name string, set func(item *Trait)) *Grant {
@@ -1834,6 +1855,32 @@ func TestGrantDoesNotMeetItsCarriersPrereqs(t *testing.T) {
 					return training
 				}, met: true, want: 7,
 				row: func(e *Entity) any { return grantedOf(e.Skills)[0].LevelData.Level.AsInteger[int]() },
+			},
+			{
+				name: "putting a skill there whose missing-equipment penalty only the other grant takes",
+				carry: func(_ check.Checker, e *Entity) *Trait {
+					goggles(e, nil, knuckled(brawling(fxp.One), true))
+					training := addTraitWithFeatures(e, "Training", knuckled(brawling(fxp.Three), false))
+					training.Prereq = newPrereqListRequiringSkill("Brawling", fxp.Eight)
+					return training
+				}, want: 5,
+				row: func(e *Entity) any { return grantedOf(e.Skills)[0].LevelData.Level.AsInteger[int]() },
+			},
+			{
+				name: "putting a spell there whose missing-equipment penalty the other grant bypasses",
+				carry: func(_ check.Checker, e *Entity) *Trait {
+					goggles(e, nil, knuckled(light(fxp.One), false))
+					return mage(e, knuckled(light(fxp.Three), true))
+				}, met: true, want: 5,
+				row: func(e *Entity) any { return grantedOf(e.Spells)[0].LevelData.Level.AsInteger[int]() },
+			},
+			{
+				name: "putting a spell there whose missing-equipment penalty only the other grant takes",
+				carry: func(_ check.Checker, e *Entity) *Trait {
+					goggles(e, nil, knuckled(light(fxp.One), true))
+					return mage(e, knuckled(light(fxp.Three), false))
+				}, want: 3,
+				row: func(e *Entity) any { return grantedOf(e.Spells)[0].LevelData.Level.AsInteger[int]() },
 			},
 		} {
 			c := check.New(t)

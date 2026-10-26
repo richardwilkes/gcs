@@ -877,6 +877,12 @@ func judgedDetail[T grantNode[T]](node T) *Grant {
 	return state.viewFor(EntityFromNode(node).judgingOr(nil)).detail
 }
 
+// prereqsBypassed returns true if the grant giving the granted node its details as the prerequisites being judged see
+// it (see grantState.viewFor) treats the node's prerequisites as met.
+func prereqsBypassed[T grantNode[T]](node T) bool {
+	return node.grants().viewFor(EntityFromNode(node).judgingOr(nil)).bypass
+}
+
 // grantInEffect returns true if the plan's grant is in effect in the current pass: what carries it contributes its
 // features and has its prerequisites met.
 func (e *Entity) grantInEffect(plan *grantPlan) bool {
