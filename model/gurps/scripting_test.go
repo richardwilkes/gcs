@@ -21,6 +21,7 @@ import (
 	"github.com/dop251/goja"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/container"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/grantmerge"
 	"github.com/richardwilkes/rpgtools/dice"
 	"github.com/richardwilkes/toolbox/v2/check"
 )
@@ -490,6 +491,43 @@ func TestScriptResultConversionHonorsTimeout(t *testing.T) {
 
 	// A well-behaved object result is still converted normally.
 	c.Equal("converted", ResolveScript(nil, ScriptSelfProvider{}, "({toString: function() { return 'converted' }})"))
+}
+
+// TestScriptStoppedForPrereqsLeavesSheetResult verifies that a script stopped before it could answer while run as the
+// prerequisites of an item carrying a grant see the sheet, without what the grant put there, does not stand in for the
+// result the rest of the sheet gets from it.
+func TestScriptStoppedForPrereqsLeavesSheetResult(t *testing.T) {
+	c := check.New(t)
+	e := NewEntity()
+	e.SheetSettings.Attributes.Set["will"].Base = `$st < 12 ? (() => { for (;;); })() : 10`
+	strong := newGrantLeveledTrait("Strong", fxp.One)
+	bonus := NewAttributeBonus(StrengthID)
+	bonus.Amount = fxp.Five
+	strong.Features = Features{bonus}
+	training := addTraitWithFeatures(e, "Training", newTraitGrant(strong, fxp.One, grantmerge.Ignore))
+	training.Prereq = newPrereqListForTrait("Ready", true)
+	training.Prereq.All = false
+	addTraitWithFeatures(e, "Ready")
+	e.Recalculate()
+	c.Equal(fxp.Ten, e.ResolveAttributeCurrent("will"), "ST is 15 with the grant, so Will's base is 10")
+
+	// The prerequisites see ST without the grant's bonus, so reading Will for them stops the script. The time limit is
+	// lowered for that alone, the only script it runs, since a legitimate script has run out of so short a limit on a
+	// slow runner.
+	will := NewAttributePrereq(e)
+	will.Parent = training.Prereq
+	will.Which = "will"
+	will.QualifierCriteria.Qualifier = fxp.Five
+	training.Prereq.Prereqs = append(training.Prereq.Prereqs, will)
+	func() {
+		prev := scriptExecTimeLimitOverride.Load()
+		SetScriptExecTimeLimitForTesting(fxp.FromStringForced("0.01"))
+		defer scriptExecTimeLimitOverride.Store(prev)
+		stopped := abandonedScripts(e)
+		SuppressScriptResolveErrorLogging(func() { training.Prereq.Evaluate(e, training, nil) })
+		c.True(abandonedScripts(e) > stopped, "the script is stopped as the prerequisites see the sheet")
+	}()
+	c.Equal(fxp.Ten, e.ResolveAttributeCurrent("will"), "but the sheet still gets Will's base from it")
 }
 
 // The per-script execution time limit the tests run with is the override SetScriptExecTimeLimitForTesting installs

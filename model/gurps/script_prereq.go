@@ -136,9 +136,17 @@ func (s *ScriptPrereq) evaluate(entity *Entity, exclude any, tooltip *xbytes.Ins
 // is unmet with no reason, and any other result is unmet, with that text as the reason. It has failed when the script
 // could not produce a result, because it threw, timed out or nested too deeply; the reason is then the error. The
 // script sees the sheet as the prerequisites being judged see it, without what the item judged grants (see
-// Entity.JudgingPrereqsOf), and its result is not kept; see resolveScript.
+// Entity.JudgingPrereqsOf). Its result is kept as any other script's when the item carries no grant, which leaves the
+// sheet as any other script sees it, and otherwise only when the script was stopped before it could answer, apart from
+// the results of the scripts that see the sheet whole; see resolveScript.
 func (s *ScriptPrereq) Evaluate(entity *Entity, exclude any) (result CheckResult, reason string) {
-	if entity != nil {
+	entity.JudgingPrereqsOf(exclude, func() { result, reason = s.evaluateScript(entity, exclude) })
+	return result, reason
+}
+
+// evaluateScript is Evaluate, run while the prerequisites of exclude are judged.
+func (s *ScriptPrereq) evaluateScript(entity *Entity, exclude any) (result CheckResult, reason string) {
+	if entity.carriesGrant(exclude) {
 		entity.scriptsForPrereqs++
 		defer func() { entity.scriptsForPrereqs-- }()
 	}

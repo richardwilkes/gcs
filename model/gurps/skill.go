@@ -948,13 +948,80 @@ func (s *Skill) CalculateLevel(excludes map[string]bool) Level {
 	return s.calculateLevelExcept(nil, excludes)
 }
 
-// calculateLevelExcept is CalculateLevel without the levels and points grants carried by exclude gave the skill; see
-// grantState.applyLevelNotes.
+// calculateLevelExcept is CalculateLevel without the levels and points grants carried by exclude gave the skill (see
+// grantState.applyLevelNotes), and with its default picked afresh while the prerequisites of an item carrying a grant
+// are judged; see defaultExcept.
 func (s *Skill) calculateLevelExcept(exclude any, excludes map[string]bool) Level {
-	return s.calculateLevelWith(exclude, s.DefaultedFrom, excludes)
+	return s.calculateLevelWith(exclude, s.defaultExcept(exclude, excludes), excludes)
 }
 
-// calculateLevelWith is calculateLevelExcept with the given default in place of the one the skill recorded. With
+// defaultExcept returns the default the skill recorded or, when exclude (nil, or the item whose prerequisites are being
+// judged; see Entity.judgingOr) carries a grant and the skill recorded one, a default picked afresh as those
+// prerequisites see the sheet, since the recorded one was picked, and its level taken, with what the grants gave the
+// skills it rests on. It is picked as bestDefault picks, but with the levels taken with the skill added to the excludes
+// given rather than with it alone excluded, so that a chain of defaults never comes back to a skill it passes through:
+// the recorded default, if the skill keeps it (see keepsDefault), it resolves and it does not lead back to the skill,
+// and otherwise the best of the skill's defaults. Each pick is kept while those prerequisites are judged and reused
+// only for the same skill with the same excludes, so that the answers are those of picking afresh every time, while a
+// pick beneath a skill weighing several defaults is not made again for each of them, and so on down every chain. The
+// picks are still as many as the distinct excludes a skill is reached with, which double with each member of a set of
+// skills with points that default to one another, so judging stays fast only while such a set stays small.
+func (s *Skill) defaultExcept(exclude any, excludes map[string]bool) *SkillDefault {
+	e := EntityFromNode(s)
+	if s.DefaultedFrom == nil || !e.carriesGrant(e.judgingOr(exclude)) {
+		return s.DefaultedFrom
+	}
+	excludes = maps.Clone(excludes)
+	if excludes == nil {
+		excludes = make(map[string]bool)
+	}
+	excludes[s.String()] = true
+	key := newJudgedDefaultKey(s, excludes)
+	if def, ok := e.judgedDefaults[key]; ok {
+		return def
+	}
+	var def, excluded *SkillDefault
+	if s.keepsDefault() && !s.inDefaultChain(s.DefaultedFrom, make(map[*Skill]bool)) {
+		if level := s.calcSkillDefaultLevel(s.DefaultedFrom, excludes); level != fxp.Min {
+			def = s.DefaultedFrom.CloneWithoutLevelOrPoints()
+			def.Level = level
+		} else {
+			excluded = s.DefaultedFrom
+		}
+	}
+	if def == nil {
+		def = s.bestDefaultWith(excluded, excludes)
+	}
+	if def != nil {
+		s.setDefaultPoints(def)
+	}
+	if e.judgedDefaults == nil {
+		e.judgedDefaults = make(map[judgedDefaultKey]*SkillDefault)
+	}
+	e.judgedDefaults[key] = def
+	return def
+}
+
+// judgedDefaultKey identifies the default Skill.defaultExcept picks for a skill with the levels taken with a set of
+// excludes, which it holds as their names sorted and joined.
+type judgedDefaultKey struct {
+	skill    *Skill
+	excludes string
+}
+
+// newJudgedDefaultKey returns the key of the default the skill picks with the levels taken with the given excludes.
+func newJudgedDefaultKey(s *Skill, excludes map[string]bool) judgedDefaultKey {
+	names := make([]string, 0, len(excludes))
+	for name, excluded := range excludes {
+		if excluded {
+			names = append(names, name)
+		}
+	}
+	slices.Sort(names)
+	return judgedDefaultKey{skill: s, excludes: strings.Join(names, "\x00")}
+}
+
+// calculateLevelWith is calculateLevelExcept with the given default in place of the one defaultExcept returns. With
 // exclude nil, what the grants of the item whose prerequisites are being judged gave is left out; see Entity.judgingOr.
 func (s *Skill) calculateLevelWith(exclude any, def *SkillDefault, excludes map[string]bool) Level {
 	e := EntityFromNode(s)
@@ -1076,6 +1143,31 @@ func CalculateTechniqueLevel(e *Entity, replacements map[string]string, name, sp
 					}
 				}
 			}
+		} else if t := def.Type(); (t == ParryID || t == BlockID) && e.carriesGrant(e.judging) {
+			// While the prerequisites of an item carrying a grant are judged, the skill a parry or block default rests
+			// on is taken at the level they see, as it is for a skill default, rather than the one it recorded, which
+			// holds what the grant gave; see Entity.JudgingPrereqsOf. Each skill is excluded while its own level is
+			// computed, as above, so that one leading back to this technique cannot recurse without end.
+			if excludes == nil {
+				excludes = make(map[string]bool)
+			}
+			for _, sk := range def.matchingSkills(e, replacements, true, excludes) {
+				if !def.isTLPermitted(e, sk.TL()) {
+					continue
+				}
+				skStr := sk.String()
+				had := excludes[skStr]
+				excludes[skStr] = true
+				if candidate := sk.CalculateLevel(excludes).Level; level < candidate {
+					level = candidate
+				}
+				if !had {
+					delete(excludes, skStr)
+				}
+			}
+			if level != fxp.Min {
+				level = defenseLevelFromSkill(level, e.defenseBonus(t))
+			}
 		} else {
 			// Take the modifier back out, as we wanted the base, not the final value.
 			level = def.SkillLevelFast(e, replacements, true, nil, false) - def.Modifier
@@ -1150,35 +1242,49 @@ func (s *Skill) bestDefaultWithPoints(excluded *SkillDefault) *SkillDefault {
 	}
 	best := s.bestDefault(excluded)
 	if best != nil {
-		baseLine := (EntityFromNode(s).resolveAttributeCurrentForPrereqs(s.AdjustedDifficulty().Attribute) +
-			s.AdjustedDifficulty().Difficulty.BaseRelativeLevel()).Floor()
-		level := best.Level.Floor()
-		best.AdjLevel = level
-		switch {
-		case level == baseLine:
-			best.Points = fxp.One
-		case level == baseLine+fxp.One:
-			best.Points = fxp.Two
-		case level > baseLine+fxp.One:
-			best.Points = fxp.Four.Mul(level - (baseLine + fxp.One))
-		default:
-			best.Points = -level.Max(0)
-		}
+		s.setDefaultPoints(best)
 	}
 	return best
 }
 
+// setDefaultPoints sets the default's adjusted level to its level rounded down, and its points to those that level
+// stands for in the skill.
+func (s *Skill) setDefaultPoints(def *SkillDefault) {
+	baseLine := (EntityFromNode(s).resolveAttributeCurrentForPrereqs(s.AdjustedDifficulty().Attribute) +
+		s.AdjustedDifficulty().Difficulty.BaseRelativeLevel()).Floor()
+	level := def.Level.Floor()
+	def.AdjLevel = level
+	switch {
+	case level == baseLine:
+		def.Points = fxp.One
+	case level == baseLine+fxp.One:
+		def.Points = fxp.Two
+	case level > baseLine+fxp.One:
+		def.Points = fxp.Four.Mul(level - (baseLine + fxp.One))
+	default:
+		def.Points = -level.Max(0)
+	}
+}
+
 func (s *Skill) bestDefault(excluded *SkillDefault) *SkillDefault {
+	return s.bestDefaultWith(excluded, map[string]bool{s.String(): true})
+}
+
+// keepsDefault returns true if the skill keeps the default it recorded for as long as that resolves. A skill with
+// points that already records which default it uses keeps it, rather than silently jumping to whichever default
+// currently yields the highest level; the user changes it explicitly via "Swap Defaults". Skills with no points, and
+// those whose defaults are purely synthetic (the automatic -2 default to a sibling's optional specialization), always
+// track the dynamically-best default.
+func (s *Skill) keepsDefault() bool {
+	return s.DefaultedFrom != nil && s.AdjustedPoints(nil) > 0 && len(s.Defaults) > 0
+}
+
+// bestDefaultWith is bestDefault with the levels of the defaults taken with the given excludes, which hold the skill.
+func (s *Skill) bestDefaultWith(excluded *SkillDefault, excludes map[string]bool) *SkillDefault {
 	if EntityFromNode(s) == nil {
 		return nil
 	}
-	excludes := make(map[string]bool)
-	excludes[s.String()] = true
-	// A skill with points that already records which default it uses keeps it as long as it remains resolvable, rather
-	// than silently jumping to whichever default currently yields the highest level; the user changes it explicitly via
-	// "Swap Defaults". Skills with no points, and those whose defaults are purely synthetic (the automatic -2 default
-	// to a sibling's optional specialization), always track the dynamically-best default.
-	keepCurrent := excluded == nil && s.DefaultedFrom != nil && s.AdjustedPoints(nil) > 0 && len(s.Defaults) > 0
+	keepCurrent := excluded == nil && s.keepsDefault()
 	var bestDef, preferredDef *SkillDefault
 	best := fxp.Min
 	for _, def := range s.resolveToSpecificDefaults() {

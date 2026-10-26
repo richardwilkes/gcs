@@ -153,9 +153,13 @@ type Entity struct {
 	// judging is the item whose prerequisites are being judged, while they are; see JudgingPrereqsOf.
 	judging any
 	// scriptsForPrereqs is the depth of the computations in progress whose scripts run as the prerequisites being
-	// judged see the sheet: the attribute values read for them (see attributeForPrereqs) and the script prerequisites
-	// themselves (see ScriptPrereq.Evaluate); see resolveScript.
+	// judged see the sheet while the item judged carries a grant, without which they see it whole: the attribute values
+	// read for them (see attributeForPrereqs) and the script prerequisites themselves (see ScriptPrereq.Evaluate); see
+	// resolveScript.
 	scriptsForPrereqs int
+	// judgedDefaults holds the defaults picked for the skills, by skill and excludes, as the prerequisites being judged
+	// see the sheet, while the item judged carries a grant; see Skill.defaultExcept.
+	judgedDefaults map[judgedDefaultKey]*SkillDefault
 }
 
 // NewEntityFromFile loads an Entity from a file.
@@ -931,16 +935,20 @@ func (e *Entity) processFeature(owner, subOwner fmt.Stringer, f Feature, leveled
 	}
 }
 
-// defenseBonus returns the entity's bonus for ParryID or BlockID, and zero for any other ID.
+// defenseBonus returns the entity's bonus for ParryID or BlockID, and zero for any other ID. While the prerequisites
+// of an item carrying a grant are judged, the bonus is the one they see, without the bonuses from what the grant put on
+// the sheet; see JudgingPrereqsOf.
 func (e *Entity) defenseBonus(defenseID string) fxp.Int {
-	switch defenseID {
-	case ParryID:
-		return e.ParryBonus
-	case BlockID:
-		return e.BlockBonus
-	default:
+	if defenseID != ParryID && defenseID != BlockID {
 		return 0
 	}
+	if e.carriesGrant(e.judging) {
+		return e.AttributeBonusFor(defenseID, stlimit.None, nil).Floor()
+	}
+	if defenseID == ParryID {
+		return e.ParryBonus
+	}
+	return e.BlockBonus
 }
 
 // expandThisArmorDRBonus handles a DR bonus that specifies no locations (a "this armor" bonus). Such a bonus applies to
@@ -1269,27 +1277,42 @@ func (e *Entity) WealthNotCarried() fxp.Int {
 
 // StrikingStrength returns the adjusted ST for striking purposes.
 func (e *Entity) StrikingStrength() fxp.Int {
-	return e.derivedStrength(StrikingStrengthID, e.StrikingStrengthBonus)
+	return e.derivedStrength(StrikingStrengthID, e.StrikingStrengthBonus, e.ResolveAttributeCurrent)
 }
 
 // LiftingStrength returns the adjusted ST for lifting purposes.
 func (e *Entity) LiftingStrength() fxp.Int {
-	return e.derivedStrength(LiftingStrengthID, e.LiftingStrengthBonus)
+	return e.derivedStrength(LiftingStrengthID, e.LiftingStrengthBonus, e.ResolveAttributeCurrent)
 }
 
 // ThrowingStrength returns the adjusted ST for throwing purposes.
 func (e *Entity) ThrowingStrength() fxp.Int {
-	return e.derivedStrength(ThrowingStrengthID, e.ThrowingStrengthBonus)
+	return e.derivedStrength(ThrowingStrengthID, e.ThrowingStrengthBonus, e.ResolveAttributeCurrent)
 }
 
-// derivedStrength returns the floored sum of the bonus and the current value of the dedicated strength attribute with
-// the given ID, or of ST (never less than 0) when the sheet doesn't define that attribute.
-func (e *Entity) derivedStrength(attrID string, bonus fxp.Int) fxp.Int {
+// strengthForPrereqs returns the adjusted ST that StrikingStrength, LiftingStrength or ThrowingStrength returns, given
+// the ID of its dedicated strength attribute and the limitation of the ST bonuses it adds, as the prerequisites being
+// judged see it: with the bonuses from what the grants of the item judged put on the sheet left out; see
+// JudgingPrereqsOf.
+func (e *Entity) strengthForPrereqs(attrID string, limitation stlimit.Option) fxp.Int {
+	return e.derivedStrength(attrID, e.AttributeBonusFor(StrengthID, limitation, nil).Floor(),
+		e.resolveAttributeCurrentForPrereqs)
+}
+
+// sizeModifierForPrereqs returns the adjusted size modifier as the prerequisites being judged see it: with the bonuses
+// from what the grants of the item judged put on the sheet left out; see JudgingPrereqsOf.
+func (e *Entity) sizeModifierForPrereqs() int {
+	return e.Profile.SizeModifier + e.AttributeBonusFor(SizeModifierID, stlimit.None, nil).AsInteger[int]()
+}
+
+// derivedStrength returns the floored sum of the bonus and the current value, as current resolves it, of the dedicated
+// strength attribute with the given ID, or of ST (never less than 0) when the sheet doesn't define that attribute.
+func (e *Entity) derivedStrength(attrID string, bonus fxp.Int, current func(attrID string) fxp.Int) fxp.Int {
 	var st fxp.Int
 	if e.ResolveAttribute(attrID) != nil {
-		st = e.ResolveAttributeCurrent(attrID)
+		st = current(attrID)
 	} else {
-		st = e.ResolveAttributeCurrent(StrengthID).Max(0)
+		st = current(StrengthID).Max(0)
 	}
 	return (st + bonus).Floor()
 }
@@ -1395,17 +1418,20 @@ func (e *Entity) CostReductionFor(attributeID string) fxp.Int {
 // excludedFromPrereqs), and what those grants merged into the items on the sheet is left out of every level and point
 // total read, whatever reads them (see judgingOr), so that an item never meets its own prerequisites with what it
 // grants. Scripts see the sheet whole, since what they compute is kept for the rest of the pass (see resolveScript),
-// except the script prerequisites themselves and the scripts giving the attributes their bases while the prerequisites
-// read them, which run afresh with the rows left out hidden from them too (see excludedWhileJudging); see
+// except, when exclude carries a grant, the script prerequisites themselves and the scripts giving the attributes their
+// bases while the prerequisites read them, which run afresh, with the rows left out hidden from them too (see
+// excludedWhileJudging), unless already stopped once for running too long as those prerequisites see the sheet; see
 // ScriptPrereq.Evaluate and attributeForPrereqs.
 func (e *Entity) JudgingPrereqsOf(exclude any, fn func()) {
-	if e == nil {
+	if e == nil || exclude == e.judging {
+		// Judging the same item again, as its script prerequisites do inside its list, shares the defaults picked so
+		// far; see Skill.defaultExcept.
 		fn()
 		return
 	}
-	saved := e.judging
-	e.judging = exclude
-	defer func() { e.judging = saved }()
+	saved, savedDefaults := e.judging, e.judgedDefaults
+	e.judging, e.judgedDefaults = exclude, nil
+	defer func() { e.judging, e.judgedDefaults = saved, savedDefaults }()
 	fn()
 }
 
@@ -2068,8 +2094,9 @@ func (e *Entity) resolveAttributeCurrentForPrereqs(attrID string) fxp.Int {
 // attributeForPrereqs returns the attribute's current value, or its maximum, as the prerequisites being judged see it:
 // with the bonuses from what the grants of the item judged put on the sheet left out, of it and of every attribute its
 // base is derived from, which the script giving its base reads this way through ResolveVariable while this runs. The
-// script sees the item judged and its result is not kept, since it is computed with those bonuses left out; see
-// resolveScript.
+// script sees the item judged and its result is not kept, since it is computed with those bonuses left out, unless the
+// script was stopped before it could answer, which is kept apart from the result the rest of the sheet gets from it;
+// see resolveScript.
 func (e *Entity) attributeForPrereqs(attr *Attribute, current bool) fxp.Int {
 	e.scriptsForPrereqs++
 	defer func() { e.scriptsForPrereqs-- }()

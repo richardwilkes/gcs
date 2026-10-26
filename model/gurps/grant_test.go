@@ -24,6 +24,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/feature"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/grantmerge"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/selfctrl"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/stlimit"
 	"github.com/richardwilkes/gcs/v5/model/nameable"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/toolbox/v2/tid"
@@ -976,7 +977,8 @@ func TestGrantDoesNotMeetItsCarriersPrereqs(t *testing.T) {
 	}
 
 	// The item as bought can, in which case the grant merges into it, and the level a script read for the
-	// prerequisites, without the merge, is not what the sheet keeps.
+	// prerequisites, without the merge, is not what the sheet keeps. A script prerequisite run on its own, as the
+	// editor's preview runs it, reads the level without the merge too.
 	t.Run("merge once the prerequisite is met without it", func(t *testing.T) {
 		for _, tc := range []struct {
 			name   string
@@ -987,6 +989,9 @@ func TestGrantDoesNotMeetItsCarriersPrereqs(t *testing.T) {
 			}},
 			{name: "script reading the skill level", prereq: func(list *PrereqList) {
 				addScriptPrereq(list, `entity.skillLevel("Brawling", "", false) >= 12`)
+			}},
+			{name: "script reading the skill level as at most 13, judged by the editor's preview as by the sheet", prereq: func(list *PrereqList) {
+				addScriptPrereq(list, `entity.skillLevel("Brawling", "", false) <= 13`)
 			}},
 			{name: "script reading the skill found", prereq: func(list *PrereqList) {
 				addScriptPrereq(list, `entity.findSkills("Brawling").some(s => s.level >= 12)`)
@@ -1004,7 +1009,70 @@ func TestGrantDoesNotMeetItsCarriersPrereqs(t *testing.T) {
 			c.Equal("", training.UnsatisfiedReason, "%s: the skill as bought meets the prerequisite", tc.name)
 			c.Equal(fxp.FromInteger(15), brawling.LevelData.Level,
 				"%s: so the grant merges into it, and the sheet keeps the merged level", tc.name)
+			for _, one := range training.Prereq.Prereqs {
+				if script, ok := one.(*ScriptPrereq); ok {
+					result, _ := script.Evaluate(e, training)
+					c.Equal(CheckMet, result, "%s: the script run on its own agrees with the sheet", tc.name)
+				}
+			}
 		}
+	})
+
+	// A default resting on the skill it puts on the sheet gives way to the skill's next best, as it would on the sheet
+	// without the grant, when the skill is read through a technique based on it: Knife Trick is 13 through Knife's
+	// default from Shortsword, and no more.
+	t.Run("other default once the one in use rests on the skill it puts on the sheet", func(t *testing.T) {
+		for _, tc := range []struct {
+			trick fxp.Int
+			met   bool
+			knife fxp.Int
+		}{
+			{trick: fxp.Thirteen, met: true, knife: fxp.FromInteger(19)},
+			{trick: fxp.FromInteger(14), met: false, knife: fxp.Twelve},
+		} {
+			c := check.New(t)
+			e := NewEntity()
+			addSkill(e, "Shortsword", fxp.Eight) // DX+3, so 13
+			knife := addSkill(e, "Knife", fxp.One)
+			knife.Defaults = []*SkillDefault{
+				newSkillDefaultTo("Broadsword", "", true, 0),
+				newSkillDefaultTo("Shortsword", "", true, -fxp.One),
+			}
+			trick := NewTechnique(e, nil, "Knife")
+			trick.Name = "Knife Trick"
+			e.Skills = append(e.Skills, trick)
+			training := addTraitWithFeatures(e, "Training",
+				newSkillGrant(newEasySkill("Broadsword", fxp.One), fxp.Ten, grantmerge.Ignore))
+			training.Prereq = newPrereqListRequiringSkill("Knife Trick", tc.trick)
+			e.Recalculate()
+			c.False(e.Unsettled(), "Knife Trick at least %v", tc.trick)
+			c.Equal(tc.met, training.UnsatisfiedReason == "", "Knife Trick at least %v: met", tc.trick)
+			c.Equal(tc.knife, knife.LevelData.Level,
+				"Knife Trick at least %v: Knife defaults from the Broadsword it puts on the sheet only with the grant in "+
+					"effect", tc.trick)
+		}
+	})
+
+	// Nor is an attribute as the prerequisites saw it, without the bonus from what the grant puts on the sheet, what
+	// the sheet then shows, though the script giving the attribute its base ran for them.
+	t.Run("attribute bonus once the prerequisite is met without it", func(t *testing.T) {
+		c := check.New(t)
+		e := NewEntity()
+		smart := newGrantLeveledTrait("Smart", fxp.One)
+		bonus := NewAttributeBonus(IntelligenceID)
+		bonus.Amount = fxp.Two
+		smart.Features = Features{bonus}
+		mentor := addTraitWithFeatures(e, "Mentor", newTraitGrant(smart, fxp.One, grantmerge.Ignore))
+		mentor.Prereq = NewPrereqList()
+		p := NewAttributePrereq(e)
+		p.Parent = mentor.Prereq
+		p.Which = "will"
+		p.QualifierCriteria.Qualifier = fxp.Ten
+		mentor.Prereq.Prereqs = append(mentor.Prereq.Prereqs, p)
+		e.Recalculate()
+		c.Equal("", mentor.UnsatisfiedReason, "Will is 10 without the grant")
+		c.Equal(fxp.Twelve, e.ResolveAttributeCurrent("will"),
+			"so the grant is in effect, and Will is derived from IQ with the bonus")
 	})
 
 	t.Run("item another grant puts on the sheet too", func(t *testing.T) {
@@ -1168,6 +1236,35 @@ func TestGrantDoesNotMeetItsCarriersPrereqs(t *testing.T) {
 			training.Prereq.Prereqs = append(training.Prereq.Prereqs, p)
 			return training, func() fxp.Int { return e.ResolveAttributeCurrent(StrengthID) }
 		}, level: fxp.Ten},
+		{name: "bonus from a granted trait to the size modifier read by a script", carry: func(_ check.Checker, e *Entity) (*Trait, func() fxp.Int) {
+			big := newGrantLeveledTrait("Big", fxp.One)
+			big.Features = Features{NewAttributeBonus(SizeModifierID)}
+			giant := addTraitWithFeatures(e, "Giant", newTraitGrant(big, fxp.One, grantmerge.Ignore))
+			giant.Prereq = NewPrereqList()
+			addScriptPrereq(giant.Prereq, `entity.sizeModifier >= 1 ? "" : "Too small"`)
+			return giant, func() fxp.Int { return fxp.FromInteger(e.Profile.AdjustedSizeModifier()) }
+		}, level: 0},
+		{name: "bonus from a granted trait to ST read by a script as striking ST", carry: func(_ check.Checker, e *Entity) (*Trait, func() fxp.Int) {
+			strong := newGrantLeveledTrait("Strong", fxp.One)
+			bonus := NewAttributeBonus(StrengthID)
+			bonus.Amount = fxp.Five
+			strong.Features = Features{bonus}
+			training := addTraitWithFeatures(e, "Training", newTraitGrant(strong, fxp.One, grantmerge.Ignore))
+			training.Prereq = NewPrereqList()
+			addScriptPrereq(training.Prereq, `entity.strikingStrength >= 15 ? "" : "Too weak"`)
+			return training, e.StrikingStrength
+		}, level: fxp.Ten},
+		{name: "lifting ST bonus from a granted trait read by a script", carry: func(_ check.Checker, e *Entity) (*Trait, func() fxp.Int) {
+			strong := newGrantLeveledTrait("Strong", fxp.One)
+			bonus := NewAttributeBonus(StrengthID)
+			bonus.Limitation = stlimit.LiftingOnly
+			bonus.Amount = fxp.Five
+			strong.Features = Features{bonus}
+			training := addTraitWithFeatures(e, "Training", newTraitGrant(strong, fxp.One, grantmerge.Ignore))
+			training.Prereq = NewPrereqList()
+			addScriptPrereq(training.Prereq, `entity.liftingStrength >= 15`)
+			return training, e.LiftingStrength
+		}, level: fxp.Ten},
 		{name: "bonus from a granted trait to the attribute another is derived from", carry: func(_ check.Checker, e *Entity) (*Trait, func() fxp.Int) {
 			smart := newGrantLeveledTrait("Smart", fxp.One)
 			bonus := NewAttributeBonus(IntelligenceID)
@@ -1210,6 +1307,57 @@ func TestGrantDoesNotMeetItsCarriersPrereqs(t *testing.T) {
 			training.Prereq = newPrereqListRequiringSkill("Disarming", fxp.FromInteger(14))
 			return training, func() fxp.Int { return disarming.LevelData.Level }
 		}, level: fxp.FromInteger(11)},
+		{name: "technique based on the parry of the skill levels are merged into", carry: func(_ check.Checker, e *Entity) (*Trait, func() fxp.Int) {
+			addSkill(e, "Broadsword", fxp.One)
+			crossParry := NewTechnique(e, nil, "Broadsword")
+			crossParry.Name = "Cross Parry"
+			crossParry.TechniqueDefault.DefaultType = ParryID
+			e.Skills = append(e.Skills, crossParry)
+			training := addTraitWithFeatures(e, "Training",
+				newSkillGrant(newEasySkill("Broadsword", fxp.One), fxp.Six, grantmerge.MergeLevels))
+			training.Prereq = newPrereqListRequiringSkill("Cross Parry", fxp.Ten)
+			return training, func() fxp.Int { return crossParry.LevelData.Level }
+		}, level: fxp.Nine},
+		{name: "parry bonus from a granted trait to a technique based on the parry", carry: func(_ check.Checker, e *Entity) (*Trait, func() fxp.Int) {
+			addSkill(e, "Broadsword", fxp.One)
+			crossParry := NewTechnique(e, nil, "Broadsword")
+			crossParry.Name = "Cross Parry"
+			crossParry.TechniqueDefault.DefaultType = ParryID
+			e.Skills = append(e.Skills, crossParry)
+			deft := newGrantLeveledTrait("Deft", fxp.One)
+			bonus := NewAttributeBonus(ParryID)
+			bonus.Amount = fxp.Two
+			deft.Features = Features{bonus}
+			training := addTraitWithFeatures(e, "Training", newTraitGrant(deft, fxp.One, grantmerge.Ignore))
+			training.Prereq = newPrereqListRequiringSkill("Cross Parry", fxp.Ten)
+			return training, func() fxp.Int { return crossParry.LevelData.Level }
+		}, level: fxp.Nine},
+		{name: "parry bonus from a granted trait to a skill defaulting from the parry", carry: func(_ check.Checker, e *Entity) (*Trait, func() fxp.Int) {
+			addSkill(e, "Broadsword", fxp.One)
+			feint := addSkill(e, "Feint", fxp.One)
+			parry := newSkillDefaultTo("Broadsword", "", true, 0)
+			parry.DefaultType = ParryID
+			feint.Defaults = []*SkillDefault{parry}
+			deft := newGrantLeveledTrait("Deft", fxp.One)
+			bonus := NewAttributeBonus(ParryID)
+			bonus.Amount = fxp.Five
+			deft.Features = Features{bonus}
+			training := addTraitWithFeatures(e, "Training", newTraitGrant(deft, fxp.One, grantmerge.Ignore))
+			training.Prereq = newPrereqListRequiringSkill("Feint", fxp.Eleven)
+			return training, func() fxp.Int { return feint.LevelData.Level }
+		}, level: fxp.Ten},
+		{name: "technique based on a skill defaulting from the skill levels are merged into", carry: func(_ check.Checker, e *Entity) (*Trait, func() fxp.Int) {
+			addSkill(e, "Broadsword", fxp.One)
+			shortsword := addSkill(e, "Shortsword", fxp.One)
+			shortsword.Defaults = []*SkillDefault{newSkillDefaultTo("Broadsword", "", true, -fxp.Two)}
+			disarming := NewTechnique(e, nil, "Shortsword")
+			disarming.Name = "Disarming"
+			e.Skills = append(e.Skills, disarming)
+			training := addTraitWithFeatures(e, "Training",
+				newSkillGrant(newEasySkill("Broadsword", fxp.One), fxp.Six, grantmerge.MergeLevels))
+			training.Prereq = newPrereqListRequiringSkill("Disarming", fxp.FromInteger(14))
+			return training, func() fxp.Int { return disarming.LevelData.Level }
+		}, level: fxp.FromInteger(11)},
 		{name: "bonus from a granted trait to a skill's attribute", carry: func(_ check.Checker, e *Entity) (*Trait, func() fxp.Int) {
 			brawling := addSkill(e, "Brawling", fxp.One)
 			agile := newGrantLeveledTrait("Agile", fxp.One)
@@ -1247,6 +1395,20 @@ func TestGrantDoesNotMeetItsCarriersPrereqs(t *testing.T) {
 			training.Prereq = newPrereqListRequiringSkill("Shortsword", fxp.FromInteger(12))
 			return training, func() fxp.Int { return shortsword.LevelData.Level }
 		}, level: fxp.Ten},
+		{name: "skills defaulting from each other, read after a third defaulting from them", carry: func(_ check.Checker, e *Entity) (*Trait, func() fxp.Int) {
+			xs := addSkill(e, "Xs", fxp.Four)
+			xs.Defaults = []*SkillDefault{newSkillDefaultTo("Gs", "", true, -fxp.Three), newSkillDefaultTo("Ys", "", true, 0)}
+			ys := addSkill(e, "Ys", fxp.Four)
+			ys.Defaults = []*SkillDefault{newSkillDefaultTo("Gs", "", true, 0), newSkillDefaultTo("Xs", "", true, 0)}
+			ws := addSkill(e, "Ws", fxp.One)
+			ws.Defaults = []*SkillDefault{newSkillDefaultTo("Xs", "", true, 0)}
+			training := addTraitWithFeatures(e, "Training",
+				newSkillGrant(newEasySkill("Gs", fxp.One), fxp.Twenty, grantmerge.Ignore))
+			training.Prereq = NewPrereqList()
+			addSkillPrereq(training.Prereq, "Ws", fxp.One)
+			addSkillPrereq(training.Prereq, "Ys", fxp.FromInteger(14)) // 13 at most without the grant
+			return training, func() fxp.Int { return ys.LevelData.Level }
+		}, level: fxp.Twelve},
 		{name: "levels into a spell", carry: func(_ check.Checker, e *Entity) (*Trait, func() fxp.Int) {
 			light := newHardSpell("Light", fxp.One)
 			light.SetDataOwner(e)

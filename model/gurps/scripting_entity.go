@@ -15,6 +15,7 @@ import (
 
 	"github.com/dop251/goja"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/stlimit"
 	"github.com/richardwilkes/toolbox/v2/xrand"
 )
 
@@ -46,10 +47,25 @@ func newScriptEntity(r *goja.Runtime, entity *Entity) *goja.Object {
 		m["weightInPounds"] = profileField(func() any { return fxp.Int(entity.Profile.Weight).AsFloat[float64]() })
 		m["displayHeightUnits"] = func() goja.Value { return r.ToValue(settings.DefaultLengthUnits.Key()) }
 		m["displayWeightUnits"] = func() goja.Value { return r.ToValue(settings.DefaultWeightUnits.Key()) }
-		m["sizeModifier"] = func() goja.Value { return r.ToValue(entity.Profile.AdjustedSizeModifier()) }
-		m["liftingStrength"] = func() goja.Value { return r.ToValue(entity.LiftingStrength().AsInteger[int]()) }
-		m["strikingStrength"] = func() goja.Value { return r.ToValue(entity.StrikingStrength().AsInteger[int]()) }
-		m["throwingStrength"] = func() goja.Value { return r.ToValue(entity.ThrowingStrength().AsInteger[int]()) }
+		// A script run for the prerequisites being judged reads the size modifier and the strengths without the bonuses
+		// from what the grants of the item judged put on the sheet, as it does the attributes; see JudgingPrereqsOf.
+		m["sizeModifier"] = func() goja.Value {
+			if entity.carriesGrant(entity.judging) {
+				return r.ToValue(entity.sizeModifierForPrereqs())
+			}
+			return r.ToValue(entity.Profile.AdjustedSizeModifier())
+		}
+		strength := func(attrID string, limitation stlimit.Option, whole func() fxp.Int) func() goja.Value {
+			return func() goja.Value {
+				if entity.carriesGrant(entity.judging) {
+					return r.ToValue(entity.strengthForPrereqs(attrID, limitation).AsInteger[int]())
+				}
+				return r.ToValue(whole().AsInteger[int]())
+			}
+		}
+		m["liftingStrength"] = strength(LiftingStrengthID, stlimit.LiftingOnly, entity.LiftingStrength)
+		m["strikingStrength"] = strength(StrikingStrengthID, stlimit.StrikingOnly, entity.StrikingStrength)
+		m["throwingStrength"] = strength(ThrowingStrengthID, stlimit.ThrowingOnly, entity.ThrowingStrength)
 		m["extraDiceFromModifiers"] = func() goja.Value { return r.ToValue(settings.UseModifyingDicePlusAdds) }
 		m["attributes"] = func() goja.Value {
 			return scriptObjects(r, entity.Attributes.List(), func(attr *Attribute) bool {

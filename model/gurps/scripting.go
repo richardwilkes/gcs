@@ -302,6 +302,9 @@ func deferredScriptSelf[T interface {
 type scriptResolveKey struct {
 	id   string
 	text string
+	// judged is the item whose prerequisites were being judged when the script ran as they see the sheet, and nil when
+	// it ran as the rest of the sheet sees it; see resolveScript.
+	judged any
 }
 
 // scriptResolveResult is what a resolution produced, along with whether it produced it. A script GCS stopped part way
@@ -665,9 +668,11 @@ func resolveScript(entity *Entity, selfProvider ScriptSelfProvider, text string)
 		noteAbandonedScript(entity)
 		return "script resolution exceeded maximum depth (possible circular reference)", true
 	}
-	// A script run as the prerequisites being judged see the sheet, which is a script prerequisite or one giving an
-	// attribute's base as those prerequisites see the attribute, sees the item judged and its result is not kept, since
-	// what it reads leaves out what the sheet has at any other time; see ScriptPrereq.Evaluate and
+	// A script run as the prerequisites being judged see the sheet, which is a script prerequisite of an item carrying
+	// a grant or one giving an attribute's base as those prerequisites see the attribute, sees the item judged. Its
+	// result is kept apart from those of the runs that see the sheet otherwise, and only when the script was stopped
+	// before it could answer, since what it reads leaves out what the sheet has at any other time, whereas a script
+	// stopped once would almost certainly be stopped again (see Entity.discardCaches); see ScriptPrereq.Evaluate and
 	// Entity.attributeForPrereqs.
 	forPrereqs := entity != nil && entity.scriptsForPrereqs > 0
 	if entity != nil && entity.judging != nil && !forPrereqs {
@@ -678,15 +683,16 @@ func resolveScript(entity *Entity, selfProvider ScriptSelfProvider, text string)
 		defer func() { entity.judging = judging }()
 	}
 	key := scriptResolveKey{id: selfProvider.ResolveID(), text: text}
-	if !forPrereqs {
-		if cached, exists := lookupResolvedScript(entity, key); exists {
-			if cached.abandoned {
-				// A cached abandonment has to be reported again, or only the first caller to ask for this script would
-				// know not to trust what it got back.
-				noteAbandonedScript(entity)
-			}
-			return cached.text, cached.err
+	if forPrereqs {
+		key.judged = entity.judging
+	}
+	if cached, exists := lookupResolvedScript(entity, key); exists {
+		if cached.abandoned {
+			// A cached abandonment has to be reported again, or only the first caller to ask for this script would know
+			// not to trust what it got back.
+			noteAbandonedScript(entity)
 		}
+		return cached.text, cached.err
 	}
 	maxTime := scriptExecTimeLimit()
 	args := []ScriptArg{{
@@ -727,7 +733,7 @@ func resolveScript(entity *Entity, selfProvider ScriptSelfProvider, text string)
 			result = scriptErrorText(err)
 		}
 	}
-	if !forPrereqs {
+	if !forPrereqs || abandoned {
 		storeResolvedScript(entity, key, scriptResolveResult{text: result, abandoned: abandoned, err: err != nil})
 	}
 	return result, err != nil

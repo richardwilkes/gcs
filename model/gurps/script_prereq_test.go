@@ -14,6 +14,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/richardwilkes/gcs/v5/model/fxp"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/grantmerge"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/toolbox/v2/xbytes"
 )
@@ -58,6 +60,43 @@ func TestScriptPrereqEvaluate(t *testing.T) {
 		if !met {
 			c.True(strings.HasPrefix(tooltip.String(), "\n- "+one.text), "%s: %q", one.script, tooltip.String())
 		}
+	}
+}
+
+// TestScriptPrereqStoppedRunsOncePerRecalculation verifies that a script prerequisite stopped for running too long is
+// not run again before the next recalculation, whether or not its item carries a grant: judged again in the meantime,
+// it is still reported as stopped, though it would now answer at once.
+func TestScriptPrereqStoppedRunsOncePerRecalculation(t *testing.T) {
+	// The time limit is lowered only for the recalculation in which the script is meant to run out of it, since a
+	// legitimate script has run out of so short a limit on a slow runner, and nothing checked depends on whether one
+	// does there.
+	recalculateWithShortLimit := func(e *Entity) {
+		prev := scriptExecTimeLimitOverride.Load()
+		SetScriptExecTimeLimitForTesting(fxp.FromStringForced("0.01"))
+		defer scriptExecTimeLimitOverride.Store(prev)
+		SuppressScriptResolveErrorLogging(e.Recalculate)
+	}
+	c := check.New(t)
+	for _, carriesGrant := range []bool{false, true} {
+		e := NewEntity()
+		training := addTraitWithFeatures(e, "Training")
+		if carriesGrant {
+			training.Features = Features{
+				newTraitGrant(newGrantLeveledTrait("Night Vision", fxp.One), fxp.One, grantmerge.Ignore),
+			}
+		}
+		training.Prereq = NewPrereqList()
+		addScriptPrereq(training.Prereq, `entity.hasTrait("Ready") || (() => { for (;;); })()`)
+		recalculateWithShortLimit(e)
+		c.NotEqual("", training.UnsatisfiedReason, "carries a grant %v: the script is stopped", carriesGrant)
+		addTraitWithFeatures(e, "Ready")
+		stopped := abandonedScripts(e)
+		var result CheckResult
+		SuppressScriptResolveErrorLogging(func() { result = training.Prereq.Evaluate(e, training, nil) })
+		c.Equal(CheckFailed, result, "carries a grant %v: judged again, it is not run again", carriesGrant)
+		c.Equal(int64(1), abandonedScripts(e)-stopped, "carries a grant %v: and is reported as stopped", carriesGrant)
+		SuppressScriptResolveErrorLogging(e.Recalculate)
+		c.Equal("", training.UnsatisfiedReason, "carries a grant %v: the next recalculation runs it again", carriesGrant)
 	}
 }
 
