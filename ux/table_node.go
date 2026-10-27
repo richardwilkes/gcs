@@ -725,7 +725,7 @@ func (n *Node[T]) addLabelCell(c *gurps.CellData, parent *unison.Panel, width fl
 			var trailingWidth float32
 			for _, one := range trailing {
 				_, size, _ := one.AsPanel().Sizes(geom.Size{})
-				trailingWidth += size.Width + unison.StdHSpacing
+				trailingWidth += size.Width + unison.StdHSpacing/2
 			}
 			lines = unison.NewTextWrappedLines(text, decoration, xmath.Floor(width-trailingWidth))
 			if len(lines) > 1 {
@@ -753,7 +753,7 @@ func (n *Node[T]) addLabelCell(c *gurps.CellData, parent *unison.Panel, width fl
 			wrapper := unison.NewPanel()
 			wrapper.SetLayout(&unison.FlexLayout{
 				Columns:  1 + len(trailing),
-				HSpacing: unison.StdHSpacing,
+				HSpacing: unison.StdHSpacing / 2,
 				HAlign:   align.Start,
 				VAlign:   align.Middle,
 			})
