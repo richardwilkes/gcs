@@ -22,16 +22,17 @@ const (
 	AddLevels Kind = iota
 	AddPoints
 	SetLevel
+	Unknown
 )
 
 // DefaultKind is the default value.
-const DefaultKind Kind = AddLevels
+const DefaultKind Kind = Unknown
 
 // FirstKind is the first valid value.
 const FirstKind Kind = AddLevels
 
 // LastKind is the last valid value.
-const LastKind Kind = SetLevel
+const LastKind Kind = Unknown
 
 // Kinds holds all possible values.
 var Kinds = []Kind{
@@ -61,7 +62,7 @@ func (enum Kind) Key() string {
 	case SetLevel:
 		return "set_level"
 	default:
-		return DefaultKind.Key()
+		return "unknown"
 	}
 }
 
@@ -74,8 +75,10 @@ func (enum Kind) String() string {
 		return i18n.Text(`Add Points`)
 	case SetLevel:
 		return i18n.Text(`Set Level`)
+	case Unknown:
+		return i18n.Text(`Unknown`)
 	default:
-		return DefaultKind.String()
+		return i18n.Text(`Unknown`)
 	}
 }
 
@@ -88,8 +91,10 @@ func (enum Kind) AltString() string {
 		return i18n.Text(`adjusting its points by`)
 	case SetLevel:
 		return i18n.Text(`setting its level to`)
+	case Unknown:
+		return i18n.Text(`adjusting it in an unknown way`)
 	default:
-		return DefaultKind.AltString()
+		return i18n.Text(`adjusting it in an unknown way`)
 	}
 }
 

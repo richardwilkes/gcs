@@ -601,6 +601,7 @@ func (r *grantReconciler[T]) consider(one sheetGrant, item T) {
 				if has && !userDisabled(node) {
 					r.plantInPlaceOf(node, candidate)
 				}
+				forgetMadeClosedStates(fresh)
 				r.entity.grantPlans = append(r.entity.grantPlans, grantPlan{
 					grant:  g,
 					source: source,
@@ -612,6 +613,7 @@ func (r *grantReconciler[T]) consider(one sheetGrant, item T) {
 		}
 	}
 	if !g.putsItemOnSheet() {
+		forgetMadeClosedStates(fresh)
 		r.entity.idleGrantPlans = append(r.entity.idleGrantPlans, grantPlan{grant: g, source: source, seq: one.seq})
 		return
 	}
@@ -648,7 +650,8 @@ func (r *grantReconciler[T]) plantInPlaceOf(old, row T) {
 
 // makeItem returns a new item for the sheet made from the grant's copy of it, with the answers of what carries the
 // grant for the placeholders it doesn't answer itself and the sheet's tech level for an empty one, both of which the
-// link's hash covers (see Grant.contentHash).
+// link's hash covers (see Grant.contentHash). The clone records the closed states of the grant's copy for the new item
+// (see PropagateNodeNoteClosedState), which forgetMadeClosedStates removes when the item is thrown away.
 func (r *grantReconciler[T]) makeItem(g *Grant, item T, link *GrantedBy, answers map[string]string) T {
 	var noParent T
 	node := item.Clone(LibraryFile{}, r.entity, noParent, Duplicate)
@@ -676,6 +679,22 @@ func (r *grantReconciler[T]) makeItem(g *Grant, item T, link *GrantedBy, answers
 		ResolveEmptyTechLevel(n, r.entity.Profile.TechLevel)
 	}
 	return node
+}
+
+// forgetMadeClosedStates removes the closed states recorded for the item makeItem made, its children and their
+// modifiers, once the item is thrown away, so that they don't pile up in the settings under IDs nothing has. A nil
+// item has none.
+func forgetMadeClosedStates[T grantNode[T]](node T) {
+	if xreflect.IsNil(node) {
+		return
+	}
+	Traverse(func(one T) bool {
+		forgetNodeClosedStates(one)
+		if t, ok := any(one).(*Trait); ok {
+			Traverse(forgetNodeClosedStates[*TraitModifier], false, false, t.Modifiers...)
+		}
+		return false
+	}, false, false, node)
 }
 
 // madeKind returns the kind of the ID of the item makeItem makes from the grant's copy of it, which is the copy's own
@@ -707,6 +726,10 @@ func (r *grantReconciler[T]) replace(old, fresh T) {
 	r.kept[old] = true
 	fresh.SetDisabled(old.IsDisabled())
 	keepID := tidKind(old.ID()) == tidKind(fresh.ID())
+	if keepID {
+		// fresh takes on the closed states recorded under old's ID, so those its clone recorded under its own go.
+		forgetNodeClosedStates(fresh)
+	}
 	switch n := any(fresh).(type) {
 	case *Trait:
 		if o, ok := any(old).(*Trait); ok {
@@ -838,10 +861,11 @@ func (e *Entity) grantCarrierUnmet(owner fmt.Stringer) bool {
 
 // applyGrants decides, for the current recalculation pass, which granted items are in effect and what the grants in
 // effect merge into the items already on the sheet. A grant in effect that gives its row nothing, since the level it
-// sets is below what 1 point buys there (see Grant.reaches), leaves the row out of effect, marked unreached. A grant
-// that would have put its item on the sheet, had another grant not put it there first, stands in for that grant while
-// it is not in effect, making the item the one it gives (see takeGrantDetails), so that the item is in effect
-// whichever of them is listed first. The merges follow, so that they find the items in effect whatever the order.
+// sets is below what 1 point buys there (3 for a wildcard; see Grant.reaches), leaves the row out of effect, marked
+// unreached. A grant that would have put its item on the sheet, had another grant not put it there first, stands in for
+// that grant while it is not in effect, making the item the one it gives (see takeGrantDetails), so that the item is in
+// effect whichever of them is listed first. The merges follow, so that they find the items in effect whatever the
+// order.
 func (e *Entity) applyGrants() {
 	// What the last pass gave an item is taken back, whether or not the item is still planned for. It is kept until
 	// now so that a recalculation starts from the derived state the last one left.
@@ -867,7 +891,9 @@ func (e *Entity) applyGrants() {
 			if plan.grant.reaches(e) {
 				e.grantItem(plan, plan.node)
 			} else {
-				plan.node.grants().unreached = true
+				state := plan.node.grants()
+				state.unreached = true
+				state.unresolved = plan.grant.attributeUnresolved(e, nil)
 			}
 		}
 		if e.grantPlants(plan) {
@@ -891,7 +917,7 @@ func (e *Entity) applyGrants() {
 	for i := range e.grantPlans {
 		plan := &e.grantPlans[i]
 		if plan.node == nil && !plan.standsIn && e.grantInEffect(plan) {
-			e.mergeGrant(plan, plan.target.grants())
+			e.mergeGrant(plan, plan.target, plan.target.grants())
 		}
 	}
 	e.judgeGrantedItems()
@@ -920,12 +946,12 @@ func (e *Entity) judgeGrantedItems() {
 			continue
 		}
 		judged := &grantState{detail: plan.grant}
-		e.grantInto(plan, judged)
+		e.grantInto(plan, plan.target, judged)
 		for j := range e.grantPlans {
 			other := &e.grantPlans[j]
 			if j != i && other.node == nil && other.target == plan.target && other.source.owner != giver &&
 				e.grantInEffect(other) {
-				e.mergeGrant(other, judged)
+				e.mergeGrant(other, other.target, judged)
 			}
 		}
 		state.judged, state.judgedFor = judged, giver
@@ -957,18 +983,30 @@ func (e *Entity) grantInEffect(plan *grantPlan) bool {
 // grantItem puts the holder in effect as the item the plan's grant gives: the item the grant put on the sheet, or one
 // another grant put there that this one stands in for, which takes this grant's details (see takeGrantDetails).
 func (e *Entity) grantItem(plan *grantPlan, holder grantHolder) {
-	e.grantInto(plan, holder.grants())
+	e.grantInto(plan, holder, holder.grants())
 	takeGrantDetails(holder, plan.grant)
 }
 
 // grantInto records in the state, the holder's own or one judgeGrantedItems makes, that the plan's grant gives the
 // holder: in effect, with the points the grant gives its own copy of a skill or spell standing alone (see
-// Grant.standalonePoints), whose details the holder takes.
-func (e *Entity) grantInto(plan *grantPlan, state *grantState) {
+// Grant.standalonePoints), whose details the holder takes, less, for a level set, those the default the holder uses
+// stands for (see Grant.pointsBeyondDefault). A Keep Highest or Keep Lowest grant also keeps the level it sets, as when
+// it merges into an item already present (see mergeGrant), so that it floors the levels the other grants take away, or
+// caps those they add, whether or not it is the grant that put the item on the sheet.
+func (e *Entity) grantInto(plan *grantPlan, holder grantHolder, state *grantState) {
+	g := plan.grant
 	state.inEffect = true
-	state.bypass = !plan.grant.CheckPrereqs
-	state.ownPoints = plan.grant.standalonePoints(e)
+	state.bypass = !g.CheckPrereqs
+	points := g.standalonePoints(e)
+	state.ownPoints = g.pointsBeyondDefault(points, holder)
 	state.addPoints(plan.source, state.ownPoints)
+	if merge := g.EffectiveMerge(); merge != grantmerge.Ignore {
+		if _, ok := holder.(grantLeveler); ok {
+			state.keepPoints(plan.source, points, merge == grantmerge.KeepLowest)
+		} else {
+			state.keepLevel(plan.source, g.amount(), merge == grantmerge.KeepLowest)
+		}
+	}
 }
 
 // takeGrantDetails copies onto an item a grant put on the sheet the fields of the grant's copy that differ among grants
@@ -1040,14 +1078,18 @@ func withoutGrantDetails[D TraitData | SkillData | SpellData](data *D) *D {
 // mergeGrant merges a grant in effect into the item already on the sheet that it matches, recording what it gives in
 // the state, the item's own or one judgeGrantedItems makes: levels or points are added to the item, while a level set
 // leaves it alone under Ignore and otherwise keeps the higher or the lower of the item's level and the one set. What a
-// grant gives a skill or spell is priced against the item on the sheet, whose optional specialization may make it
-// easier than the grant's copy, and a level set below what 1 point buys there gives nothing. A skill or spell with no
-// level of its own, such as one with no points and no default, has none to add to or compare with, so the grant gives
-// it the points it would give it standing alone instead (see Grant.pointsOn), as if it had put it on the sheet, though
-// points too few to buy a level still add to those it has, as to any other. A Keep Highest or Keep Lowest grant leaves
-// the level it keeps, or for a skill or spell the points that buy it, for the item's level to be compared with when
-// it is read, with the other merges in (see grantState.applyLevelNotes).
-func (e *Entity) mergeGrant(plan *grantPlan, state *grantState) {
+// grant gives a skill or spell is priced against the item on the sheet, target, whose optional specialization may make
+// it easier than the grant's copy, and a level set below what 1 point buys there (3 for a wildcard) gives nothing.
+// target is plan.target, or an editor's copy of what it would merge into (see grantsWithEdits). A skill or spell with
+// no level of its own, such as one with no points and no default, has none to add to, take from or compare with, so the
+// grant gives it the points it would give it standing alone instead (see Grant.pointsOn), as if it had put it on the
+// sheet, and a Keep Highest or Keep Lowest grant then keeps the level they buy, as in grantInto; points too few to buy
+// a level still add to those it has, as to any other. Those points are its own for the grants merged after it, which
+// are taken in the order comparePlanting gives, so that only the first to give it a level does so, and the rest merge
+// into that as into the row of the grant that put an item on the sheet. A Keep Highest or Keep Lowest grant leaves the
+// level it keeps, or for a skill or spell the points that buy it, for the item's level to be compared with when it is
+// read, with the other merges in (see grantState.applyLevelNotes).
+func (e *Entity) mergeGrant(plan *grantPlan, target grantHolder, state *grantState) {
 	g := plan.grant
 	adds := g.adds()
 	merge := g.EffectiveMerge()
@@ -1056,7 +1098,7 @@ func (e *Entity) mergeGrant(plan *grantPlan, state *grantState) {
 	}
 	source := plan.source
 	amount := g.amount()
-	item, ok := plan.target.(grantLeveler)
+	item, ok := target.(grantLeveler)
 	if !ok {
 		if adds {
 			state.addLevels(source, amount)
@@ -1065,24 +1107,29 @@ func (e *Entity) mergeGrant(plan *grantPlan, state *grantState) {
 		}
 		return
 	}
-	// The item's own level is read without what other grants gave it, so that what each grant gives doesn't depend on
-	// the order of the grants.
 	adjust := g.EffectiveAdjust()
-	if adjust == grantadjust.AddPoints {
-		// Points too few to buy a level still add to those the item has, as mergesNothing says, while a negative amount
-		// has none to take away from an item with no level of its own.
-		if amount > 0 || e.ownLevel(plan.target, state) != fxp.Min {
-			state.addPoints(source, amount)
+	points := amount
+	if adjust != grantadjust.AddPoints {
+		if points = g.pointsOn(e, item); adjust == grantadjust.SetLevel && points == 0 {
+			return
+		}
+	}
+	// The item's own level is read without what the grants merged into it before this one gave it, but for the points
+	// those that found it with no level of its own gave it.
+	if e.ownLevel(target, state, ownRawPoints(target)) == fxp.Min {
+		// A negative amount has nothing to take away from an item with no level.
+		if points > 0 {
+			state.ownPoints += points
+			state.addPoints(source, points)
+			if !adds {
+				state.keepPoints(source, points, merge == grantmerge.KeepLowest)
+			}
 		}
 		return
 	}
-	points := g.pointsOn(e, item)
-	if adjust == grantadjust.SetLevel && points == 0 {
-		return
-	}
 	switch {
-	case e.ownLevel(plan.target, state) == fxp.Min:
-		state.addPoints(source, points)
+	case adjust == grantadjust.AddPoints:
+		state.addPoints(source, amount)
 	case adds:
 		state.addLevels(source, amount)
 	default:
@@ -1092,40 +1139,163 @@ func (e *Entity) mergeGrant(plan *grantPlan, state *grantState) {
 	}
 }
 
+// remergeGrants redoes, for the points a skill or spell that no grant put on the sheet has now, what applyGrants merged
+// into it, since what the grants give it depends on whether those points give it a level of its own; see mergeGrant.
+func (e *Entity) remergeGrants(holder grantHolder) {
+	if e == nil || IsGranted(holder) {
+		return
+	}
+	state := holder.grants()
+	state.reset()
+	e.mergeGrantsInto(holder, holder, state)
+}
+
+// grantsWithEdits returns what the grants give the skill or spell holder once edited into edited, a copy of it holding
+// the data an editor holds: what they gave it at the last recalculation for one a grant put on the sheet, whose editor
+// is read-only, nothing while edited is disabled, and otherwise what the grants that would merge into it once the edits
+// are applied give it, merged afresh into edited as remergeGrants merges them into holder: those that merged into
+// holder at the last recalculation while the edits leave it the same item, and otherwise those mergingInto finds.
+func grantsWithEdits[T grantNode[T]](holder, edited T) *grantState {
+	e := EntityFromNode(holder)
+	if e == nil || IsGranted(holder) {
+		return holder.grants()
+	}
+	state := &grantState{}
+	switch {
+	case userDisabled(edited):
+	case identityHash(edited) == identityHash(holder) && SameItem(edited, holder):
+		e.mergeGrantsInto(holder, edited, state)
+	default:
+		for _, plan := range newGrantReconciler(e, entityList[T](e)).mergingInto(holder, edited) {
+			if e.grantInEffect(plan) {
+				e.mergeGrant(plan, edited, state)
+			}
+		}
+	}
+	return state
+}
+
+// mergingInto returns the plans of the grants on the sheet that reconcileGrants would merge into holder, an item that
+// no grant put on the sheet, were it edited into edited, a copy of it holding other data, matching them as consider
+// does: a grant whose item, as the grant would put it on the sheet, has edited as the first item present to match it,
+// with edited in holder's place, unless the grant keeps a row of its own that the user has disabled. They come in the
+// order comparePlanting gives, which is the order applyGrants would merge them in; those that compare equal give the
+// same whatever their order, and are left in sheet order. The reconciler must have considered no grant yet.
+func (r *grantReconciler[T]) mergingInto(holder, edited T) []*grantPlan {
+	i := slices.Index(r.unfiled, holder)
+	if i < 0 {
+		return nil
+	}
+	r.unfiled[i] = edited
+	candidates := r.presentNamed(edited)
+	hashes := make([]uint64, len(candidates))
+	for j, candidate := range candidates {
+		hashes[j] = identityHash(candidate)
+	}
+	var plans []*grantPlan
+	for _, list := range [][]grantPlan{r.entity.grantPlans, r.entity.idleGrantPlans} {
+		for j := range list {
+			plan := &list[j]
+			g := plan.grant
+			item, ok := any(g.Item()).(T)
+			if !ok || !g.itemGrantable() || item.rawName() != edited.rawName() {
+				continue
+			}
+			probe, has := plan.node.(T)
+			if !has {
+				// Matching leaves out the link to the grant, so the probe needs none, and the closed states, which
+				// would stay behind once the probe is thrown away.
+				probe = r.makeItem(g, item, nil, g.answers(plan.source))
+				forgetMadeClosedStates(probe)
+			} else if userDisabled(probe) {
+				continue
+			}
+			h := identityHash(probe)
+			for k, candidate := range candidates {
+				if hashes[k] == h && SameItem(candidate, probe) && sameModifiers(candidate, probe) {
+					if candidate == edited {
+						plans = append(plans, plan)
+					}
+					break
+				}
+			}
+		}
+	}
+	slices.SortFunc(plans, func(a, b *grantPlan) int {
+		if c := comparePlanting(a.grant, b.grant); c != 0 {
+			return c
+		}
+		return cmp.Compare(a.seq, b.seq)
+	})
+	return plans
+}
+
+// entityList returns where the entity keeps its items of the kind T.
+func entityList[T grantNode[T]](e *Entity) *[]T {
+	for _, list := range []any{&e.Traits, &e.Skills, &e.Spells} {
+		if one, ok := list.(*[]T); ok {
+			return one
+		}
+	}
+	return nil
+}
+
+// mergeGrantsInto merges into the state, as applyGrants does, the grants in effect that merge into the holder, priced
+// against target, which is the holder or a copy of it holding other data (see mergeGrant).
+func (e *Entity) mergeGrantsInto(holder, target grantHolder, state *grantState) {
+	for i := range e.grantPlans {
+		plan := &e.grantPlans[i]
+		if plan.target == holder && plan.node == nil && !plan.standsIn && e.grantInEffect(plan) {
+			e.mergeGrant(plan, target, state)
+		}
+	}
+}
+
+// ownRawPoints returns the points the skill or spell has of its own, none for one a grant put on the sheet, whose own
+// points the state records (see ownLevel), or zero for a trait.
+func ownRawPoints(holder grantHolder) fxp.Int {
+	switch t := holder.(type) {
+	case *Skill:
+		if t.Granted == nil {
+			return t.Points
+		}
+	case *Spell:
+		if t.Granted == nil {
+			return t.Points
+		}
+	}
+	return 0
+}
+
 // ownLevel returns the level that the skill or spell a grant merges into has of its own, without what grants gave it,
-// or zero for a trait. A granted one's own points are those the grant in effect gives it standing alone, recorded in
-// the state. One with no level of its own, such as one with no points and no default, is at fxp.Min.
-func (e *Entity) ownLevel(target grantHolder, state *grantState) fxp.Int {
+// or zero for a trait. Its own points are own, which a granted one has none of (see ownRawPoints), plus those recorded
+// in the state: for a granted one, those the grant in effect gives it standing alone, and for any, those a grant merged
+// into it while it had no level of its own gave it (see mergeGrant), which count as its own too. One with no level of
+// its own, such as one with no points and no default, is at fxp.Min.
+func (e *Entity) ownLevel(target grantHolder, state *grantState, own fxp.Int) fxp.Int {
 	switch t := target.(type) {
 	case *Skill:
-		raw := t.Points
-		if t.Granted != nil {
-			raw = state.ownPoints
-		}
-		return t.levelAt(e, t.DefaultedFrom, raw).Level
+		return t.levelAt(e, t.DefaultedFrom, state.ownPoints+own).Level
 	case *Spell:
-		raw := t.Points
-		if t.Granted != nil {
-			raw = state.ownPoints
-		}
-		return t.levelAt(e, raw).Level
+		return t.levelAt(e, state.ownPoints+own).Level
 	default:
 		return 0
 	}
 }
 
 // takesFromNoLevel returns true if the plan's grant takes levels or points from a skill or spell with no level of its
-// own, which mergeGrant leaves as it is.
+// own, nor one another grant merged into it gave it (see ownLevel), which mergeGrant leaves as it is.
 func (e *Entity) takesFromNoLevel(plan *grantPlan) bool {
 	if plan.target == nil || !plan.grant.removes() {
 		return false
 	}
-	own := e.ownLevel(plan.target, plan.target.grants())
+	own := e.ownLevel(plan.target, plan.target.grants(), ownRawPoints(plan.target))
 	return own == fxp.Min
 }
 
-// setsUnreachedLevel returns true if the plan's grant would keep the higher or lower level of the skill or spell already
-// on the sheet that it merges into and one below what 1 point buys there, which mergeGrant leaves as it is.
+// setsUnreachedLevel returns true if the plan's grant would keep the higher or lower level of the skill or spell
+// already on the sheet that it merges into and one below what 1 point buys there (3 for a wildcard), which mergeGrant
+// leaves as it is.
 func (e *Entity) setsUnreachedLevel(plan *grantPlan) bool {
 	g := plan.grant
 	if plan.target == nil || !g.setsSkillLevel() || g.EffectiveMerge() == grantmerge.Ignore || g.mergesNothing() {
@@ -1149,18 +1319,16 @@ func (e *Entity) carriesGrant(owner any) bool {
 	return false
 }
 
-// grantedPointsFor returns the points a grant standing in for the one that put the skill or spell on the sheet gives
-// it (see applyGrants), or else those that one gives it standing alone, whether or not it is in effect (see
+// grantedPointsFor returns the points the grant standing in for the one that put the skill or spell on the sheet (see
+// applyGrants), or else that one, whether or not it is in effect, gives it standing alone (see
 // Grant.standalonePoints), or zero for one no grant put there.
 func (e *Entity) grantedPointsFor(holder grantHolder) fxp.Int {
 	if _, ok := holder.(grantLeveler); !ok || e == nil {
 		return 0
 	}
-	if state := holder.grants(); !xreflect.IsNil(state.standIn.owner) {
-		return state.ownPoints
-	}
+	standIn := !xreflect.IsNil(holder.grants().standIn.owner)
 	for _, plan := range e.grantPlans {
-		if plan.node == holder {
+		if (standIn && plan.standsIn && plan.target == holder) || (!standIn && plan.node == holder) {
 			return plan.grant.standalonePoints(e)
 		}
 	}
@@ -1255,10 +1423,16 @@ func (e *Entity) grantSummary(item any) string {
 		switch {
 		case plan.node == nil && plan.target == nil:
 			line = plan.grant.idleSummary(answers)
+		case plan.node != nil && !plan.grant.reaches(e):
+			// A grant that gives its row nothing says so whatever its status, as mergeSummary does.
+			if plan.grant.attributeUnresolved(e, nil) {
+				line = i18n.Text("Does not grant %s, since the sheet lacks the attribute its level rests on", name)
+			} else {
+				line = i18n.Text("Does not grant %s, since that is below %s", name,
+					firstLevelText(plan.grant.leveler()))
+			}
 		case status == grantUnmet && (plan.node != nil || wouldStandIn):
 			line = i18n.Text("Does not grant %s, since the prerequisites of what carries the grant are not met", name)
-		case plan.node != nil && status == grantActive && plan.node.grants().unreached:
-			line = i18n.Text("Does not grant %s, since that is below what 1 point buys", name)
 		case plan.node != nil && status == grantActive:
 			line = i18n.Text("Grants %s", name)
 		case plan.node != nil:
@@ -1273,8 +1447,15 @@ func (e *Entity) grantSummary(item any) string {
 			line = i18n.Text("Removes nothing from %s, since it has no level of its own",
 				plan.grant.itemNameWith(answers))
 		case e.setsUnreachedLevel(plan):
-			line = i18n.Text("Does not change %s, already present, since skill level %s is below what 1 point buys",
-				plan.grant.itemNameWith(answers), plan.grant.amount().String())
+			if item, ok := plan.target.(grantLeveler); ok && plan.grant.attributeUnresolved(e, item) {
+				line = i18n.Text(
+					"Does not change %s, already present, since the sheet lacks the attribute its level rests on",
+					plan.grant.itemNameWith(answers),
+				)
+			} else {
+				line = i18n.Text("Does not change %s, already present, since skill level %s is below %s",
+					plan.grant.itemNameWith(answers), plan.grant.amount().String(), firstLevelText(item))
+			}
 		default:
 			line = plan.grant.mergeSummary(name, answers, status)
 		}

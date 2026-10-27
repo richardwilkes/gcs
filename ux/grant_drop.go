@@ -249,8 +249,8 @@ func (p *featuresPanel) dropGrants(target *unison.Panel, at int, t feature.Type,
 	p.addGrants(t, items, index)
 }
 
-// addGrants adds a grant of each of the items at the index, expanding the panel and opening the first with its amount
-// field focused.
+// addGrants adds a grant of each of the items at the index, expanding the panel and opening the first, focused as
+// grantFocusKey says.
 func (p *featuresPanel) addGrants(t feature.Type, items []*grantLibraryItem, index int) {
 	if p.collapse.collapsed {
 		p.collapse.toggle()

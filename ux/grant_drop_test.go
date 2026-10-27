@@ -317,9 +317,9 @@ func TestGrantRowControls(t *testing.T) {
 }
 
 // TestGrantKindChoiceKeepsTheAmount checks that choosing how a skill grant's amount adjusts the item keeps the amount
-// as typed, shows it with a sign only when it adds levels or points, and is a single undoable edit; and that choosing
-// a kind that adds drops the collision mode of a level set along with its popup, which a level set chosen again shows
-// with nothing kept.
+// as typed, less a fraction its levels can't hold, shows it with a sign only when it adds levels or points, and is a
+// single undoable edit; and that choosing a kind that adds drops the collision mode of a level set along with its
+// popup, which a level set chosen again shows with nothing kept.
 func TestGrantKindChoiceKeepsTheAmount(t *testing.T) {
 	c := check.New(t)
 	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
@@ -387,6 +387,18 @@ func TestGrantKindChoiceKeepsTheAmount(t *testing.T) {
 			selected, _ := popup.Selected()
 			c.Equal(grantmerge.Ignore, selected, "a level set chosen again shows the popup, with nothing kept")
 		}
+		choose(grantadjust.AddPoints)
+	})
+	screen.Do(func() {
+		if field, ok := refKeySelf(p.AsPanel(), "0:amount").(*DecimalField); ok {
+			field.SetText("1.5")
+		}
+		c.Equal(fxp.OneAndAHalf, grantAt(t, p, 0).Amount, "precondition: points may be fractional")
+		choose(grantadjust.AddLevels)
+	})
+	screen.Do(func() {
+		c.Equal(fxp.One, grantAt(t, p, 0).Amount, "a skill's levels drop the fraction, as the grant does")
+		c.Equal("+1", amountText(), "so the field shows a valid amount")
 	})
 }
 
@@ -401,29 +413,33 @@ func TestGrantAmountTooltip(t *testing.T) {
 		{
 			grantType: feature.GrantTrait, kind: grantadjust.SetLevel,
 			want: "The level the grant gives the trait. With Keep Highest or Keep Lowest, a trait already present is " +
-				"held to at least or at most that level.",
+				"held to at least or at most that level. A level below 1 does neither.",
 		},
 		{
 			grantType: feature.GrantTrait, kind: grantadjust.AddLevels,
 			want: "The levels added to a trait already present, or taken away when negative, never below level 0. On " +
-				"its own, the grant gives the trait that level.",
+				"its own, the grant gives the trait that level when it is 1 or more. A positive level below 1 does " +
+				"nothing at all.",
 		},
 		{
 			grantType: feature.GrantSkill, kind: grantadjust.AddLevels,
 			want: "The levels added to a skill already present, or taken away when negative, never below level 0. On " +
-				"its own, the grant gives the skill that level, counted in steps of points: level 1 is what 1 point " +
-				"buys, level 2 what 2 points buy, level 3 what 4 points buy, and each level after that 4 points more.",
+				"its own, the grant gives the skill that level when it is 1 or more, counted in steps of points: " +
+				"level 1 is what 1 point buys, level 2 what 2 points buy, level 3 what 4 points buy, and each level " +
+				"after that 4 points more, or three times those points for a wildcard.",
 		},
 		{
 			grantType: feature.GrantSpell, kind: grantadjust.AddPoints,
 			want: "The points added to a spell already present, or taken away when negative, never below 0. On its " +
-				"own, the grant gives the spell that many points.",
+				"own, the grant gives the spell that many points when they are enough to buy a level: at least 1, " +
+				"or 3 for a wildcard.",
 		},
 		{
 			grantType: feature.GrantSkill, kind: grantadjust.SetLevel,
 			want: "The skill level the grant gives the skill, in place of the level its points and difficulty would " +
 				"give it; bonuses still apply on top. With Keep Highest or Keep Lowest, one already present is held " +
-				"to at least or at most that level. A level below what 1 point buys grants nothing.",
+				"to at least or at most that level. A level below 1, or below what 1 point buys (3 for a wildcard), " +
+				"does neither.",
 		},
 	} {
 		c.Equal(one.want, grantAmountTooltip(one.grantType, one.kind), "%s %s", one.grantType, one.kind)
@@ -735,32 +751,50 @@ func TestGrantItemEditorLeavesLevelAndEnabledToTheGrant(t *testing.T) {
 
 // TestGrantItemEditorShowsTheCostAtTheGrantsLevel checks that the editor of a grant's trait, which leaves the level to
 // the grant, shows the point cost at the grant's level rather than at the level the grant's copy of the trait holds,
-// which the grant's row never changes.
+// which the grant's row never changes, and a cost of 0 for a level below 1, at which the grant puts no trait on the
+// sheet.
 func TestGrantItemEditorShowsTheCostAtTheGrantsLevel(t *testing.T) {
-	c := check.New(t)
-	entity := gurps.NewEntity()
-	carrier := gurps.NewTrait(entity, nil, false)
-	carrier.Name = "Training"
-	g := gurps.NewGrant(feature.GrantTrait)
-	g.SetItem(newGrantTestTrait("Acute Vision", fxp.One), gurps.LibraryFile{})
-	carrier.Features = gurps.Features{g}
-	g.Amount = fxp.Three
-	root := &stubRebuildable{}
-	root.Self = root
-	item := g.Trait.Clone(gurps.LibraryFile{}, nil, nil, gurps.Copy)
-	owner := &grantItemOwner{
-		Rebuildable: root,
-		panel:       newFeaturesPanel(entity, carrier, &carrier.Features, false),
-		key:         g.Key(),
-		hash:        grantItemHash(g),
-		item:        item,
+	for _, tc := range []struct {
+		name   string
+		kind   grantadjust.Kind
+		amount fxp.Int
+		want   string
+	}{
+		{name: "level set", kind: grantadjust.SetLevel, amount: fxp.Three, want: "8"},
+		{name: "levels taken away", kind: grantadjust.AddLevels, amount: -fxp.Two, want: "0"},
+		{name: "level set below 1", kind: grantadjust.SetLevel, amount: fxp.Half, want: "0"},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			c := check.New(t)
+			entity := gurps.NewEntity()
+			carrier := gurps.NewTrait(entity, nil, false)
+			carrier.Name = "Training"
+			trait := newGrantTestTrait("Acute Vision", fxp.One)
+			// A base cost, so that the cost at level 0 isn't 0.
+			trait.BasePoints = fxp.Five
+			g := gurps.NewGrant(feature.GrantTrait)
+			g.SetItem(trait, gurps.LibraryFile{})
+			carrier.Features = gurps.Features{g}
+			g.Adjust = tc.kind
+			g.Amount = tc.amount
+			root := &stubRebuildable{}
+			root.Self = root
+			item := g.Trait.Clone(gurps.LibraryFile{}, nil, nil, gurps.Copy)
+			owner := &grantItemOwner{
+				Rebuildable: root,
+				panel:       newFeaturesPanel(entity, carrier, &carrier.Features, false),
+				key:         g.Key(),
+				hash:        grantItemHash(g),
+				item:        item,
+			}
+			_, content := buildEditorContent(owner, item, initTraitEditor)
+			fields := uxtest.PanelsOfType[*NonEditableField](content)
+			if len(fields) == 0 {
+				t.Fatal("the editor must show the point cost")
+			}
+			c.Equal(tc.want, fields[0].String())
+		})
 	}
-	_, content := buildEditorContent(owner, item, initTraitEditor)
-	fields := uxtest.PanelsOfType[*NonEditableField](content)
-	if len(fields) == 0 {
-		t.Fatal("the editor must show the point cost")
-	}
-	c.Equal("3", fields[0].String(), "the cost is shown at the grant's level")
 }
 
 // TestGrantItemEditorClosesWhenItsGrantChanges checks that the editor open on a grant's item closes, without asking,

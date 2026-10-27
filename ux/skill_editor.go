@@ -214,9 +214,10 @@ func initSkillEditor(e *editor[*gurps.Skill, *gurps.SkillEditData], content *uni
 				localName := nameable.Apply(e.editorData.Name, e.target.Replacements)
 				localSpec := nameable.Apply(e.editorData.Specialization, e.target.Replacements)
 				localOptionalSpec := nameable.Apply(e.editorData.OptionalSpecialization, e.target.Replacements)
-				// What grants gave the skill counts, as it does on the sheet.
-				points := e.target.PointsWithGrants(gurps.AdjustedPointsForNonContainerSkillOrTechnique(entity,
-					e.editorData.Points, localName, localSpec, localOptionalSpec, e.editorData.Tags, nil))
+				// What grants give the skill as edited counts, as it does on the sheet once the edits are applied.
+				points := e.target.PointsWithGrants(e.editorData,
+					gurps.AdjustedPointsForNonContainerSkillOrTechnique(entity, e.editorData.Points, localName, localSpec,
+						localOptionalSpec, e.editorData.Tags, nil))
 				var level gurps.Level
 				if e.target.IsTechnique() {
 					level = gurps.CalculateTechniqueLevel(entity, e.target.NameableReplacements(), localName, localSpec,
@@ -227,15 +228,16 @@ func initSkillEditor(e *editor[*gurps.Skill, *gurps.SkillEditData], content *uni
 					if localOptionalSpec != "" && adjDiff.Difficulty != difficulty.Wildcard && adjDiff.Difficulty > difficulty.Easy {
 						adjDiff.Difficulty--
 					}
-					levelAt := func(points fxp.Int) gurps.Level {
+					levelAt := func(def *gurps.SkillDefault, points fxp.Int) gurps.Level {
 						return gurps.CalculateSkillLevel(entity, localName, localSpec, localOptionalSpec,
-							e.editorData.Tags, e.editorData.DefaultedFrom, adjDiff, points,
-							e.editorData.EncumbrancePenaltyMultiplier)
+							e.editorData.Tags, def, adjDiff, points, e.editorData.EncumbrancePenaltyMultiplier)
 					}
-					level = e.target.LevelWithGrants(levelAt(points), func(tierPoints fxp.Int) fxp.Int {
-						return levelAt(gurps.AdjustedPointsForNonContainerSkillOrTechnique(entity, tierPoints, localName,
-							localSpec, localOptionalSpec, e.editorData.Tags, nil)).Level
-					})
+					// The level a grant keeps is read without a default, as the sheet reads it.
+					level = e.target.LevelWithGrants(e.editorData, levelAt(e.editorData.DefaultedFrom, points),
+						func(tierPoints fxp.Int) gurps.Level {
+							return levelAt(nil, gurps.AdjustedPointsForNonContainerSkillOrTechnique(entity, tierPoints,
+								localName, localSpec, localOptionalSpec, e.editorData.Tags, nil))
+						})
 				}
 				lvl := level.Level.Floor()
 				if lvl <= 0 {

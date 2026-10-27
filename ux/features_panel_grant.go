@@ -115,7 +115,8 @@ func (p *featuresPanel) grant(fields, chips *unison.Panel, path string, g *gurps
 
 // grantAmount adds the controls of the amount of a grant whose item it means something for: a popup of how the amount
 // adjusts the item, then the amount, signed when it adds levels or points. A choice of adjustment rebuilds the row,
-// keeps the amount as typed and drops a collision mode the new kind has no use for.
+// keeps the amount as typed, less a fraction the new kind's whole levels drop as the grant does, and drops a collision
+// mode the new kind has no use for.
 func (p *featuresPanel) grantAmount(fields *unison.Panel, path string, g *gurps.Grant) {
 	key := func(name string) string { return path + ":" + name }
 	kind := g.EffectiveAdjust()
@@ -123,6 +124,9 @@ func (p *featuresPanel) grantAmount(fields *unison.Panel, path string, g *gurps.
 		kind, grantadjust.Kind.AltString, func(v grantadjust.Kind) {
 			g.Adjust = v
 			g.Merge = g.EffectiveMerge()
+			if grantAmountWhole(g.Type, v) {
+				g.Amount = g.Amount.Floor()
+			}
 		}))
 	title := grantAmountTitle(kind)
 	field := NewDecimalField(p.targetMgr, key("amount"), title, func() fxp.Int { return g.Amount },
@@ -130,11 +134,16 @@ func (p *featuresPanel) grantAmount(fields *unison.Panel, path string, g *gurps.
 		fxp.Min, fxp.Max, kind != grantadjust.SetLevel, false)
 	field.Accessibility.Name = title
 	field.Tooltip = newWrappedTooltip(grantAmountTooltip(g.Type, kind))
-	// A skill's or spell's levels are whole, where a trait's levels and any points may be fractional.
-	if g.Type != feature.GrantTrait && kind != grantadjust.AddPoints {
+	if grantAmountWhole(g.Type, kind) {
 		refuseFractions(field)
 	}
 	p.addCompact(fields, field.withoutUndo())
+}
+
+// grantAmountWhole returns true if the amount of a grant of the given type, which adjusts its item as kind says, is
+// whole: a skill's or spell's levels, where a trait's levels and any points may be fractional.
+func grantAmountWhole(t feature.Type, kind grantadjust.Kind) bool {
+	return t != feature.GrantTrait && kind != grantadjust.AddPoints
 }
 
 // grantItemNoun returns the word for the kind of item a grant of the given type gives.
@@ -184,18 +193,18 @@ func grantAmountTitle(kind grantadjust.Kind) string {
 func grantAmountTooltip(t feature.Type, kind grantadjust.Kind) string {
 	if t == feature.GrantTrait {
 		if kind == grantadjust.SetLevel {
-			return i18n.Text(`The level the grant gives the trait. With Keep Highest or Keep Lowest, a trait already present is held to at least or at most that level.`)
+			return i18n.Text(`The level the grant gives the trait. With Keep Highest or Keep Lowest, a trait already present is held to at least or at most that level. A level below 1 does neither.`)
 		}
-		return i18n.Text(`The levels added to a trait already present, or taken away when negative, never below level 0. On its own, the grant gives the trait that level.`)
+		return i18n.Text(`The levels added to a trait already present, or taken away when negative, never below level 0. On its own, the grant gives the trait that level when it is 1 or more. A positive level below 1 does nothing at all.`)
 	}
 	noun := grantItemNoun(t)
 	switch kind {
 	case grantadjust.AddPoints:
-		return i18n.Text(`The points added to a %s already present, or taken away when negative, never below 0. On its own, the grant gives the %s that many points.`, noun, noun)
+		return i18n.Text(`The points added to a %s already present, or taken away when negative, never below 0. On its own, the grant gives the %s that many points when they are enough to buy a level: at least 1, or 3 for a wildcard.`, noun, noun)
 	case grantadjust.SetLevel:
-		return i18n.Text(`The skill level the grant gives the %s, in place of the level its points and difficulty would give it; bonuses still apply on top. With Keep Highest or Keep Lowest, one already present is held to at least or at most that level. A level below what 1 point buys grants nothing.`, noun)
+		return i18n.Text(`The skill level the grant gives the %s, in place of the level its points and difficulty would give it; bonuses still apply on top. With Keep Highest or Keep Lowest, one already present is held to at least or at most that level. A level below 1, or below what 1 point buys (3 for a wildcard), does neither.`, noun)
 	default:
-		return i18n.Text(`The levels added to a %s already present, or taken away when negative, never below level 0. On its own, the grant gives the %s that level, counted in steps of points: level 1 is what 1 point buys, level 2 what 2 points buy, level 3 what 4 points buy, and each level after that 4 points more.`, noun, noun)
+		return i18n.Text(`The levels added to a %s already present, or taken away when negative, never below level 0. On its own, the grant gives the %s that level when it is 1 or more, counted in steps of points: level 1 is what 1 point buys, level 2 what 2 points buy, level 3 what 4 points buy, and each level after that 4 points more, or three times those points for a wildcard.`, noun, noun)
 	}
 }
 

@@ -151,6 +151,33 @@ func TestSkillDefaultUnresolvableAttributeNotChosen(t *testing.T) {
 	c.Equal(0, len(sk.resolvableDefaults()), "an unresolvable attribute default must not be offered for swapping")
 }
 
+// TestSkillPointsAddToDefault verifies that the points bought for a skill add to those its default stands for, the
+// points its level costs above the attribute the skill's level rests on, which half-stat defaults halve.
+func TestSkillPointsAddToDefault(t *testing.T) {
+	for _, tc := range []struct {
+		name     string
+		halfStat bool
+		iq       fxp.Int
+	}{
+		{name: "full stat", iq: fxp.Twelve},
+		{name: "half stat", halfStat: true, iq: fxp.FromInteger(14)},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			c := check.New(t)
+			e := NewEntity()
+			e.SheetSettings.UseHalfStatDefaults = tc.halfStat
+			e.Attributes.Set[IntelligenceID].Adjustment = tc.iq - fxp.Ten
+			addTestSkill(e, "Bow", "", "", fxp.Four)
+			crossbow := addTestSkill(e, "Crossbow", "", "", fxp.Four)
+			crossbow.Defaults = []*SkillDefault{newSkillDefaultTo("Bow", "", true, 0)}
+			e.Recalculate()
+			c.Equal(fxp.Thirteen, crossbow.DefaultedFrom.AdjLevel, "Bow is IQ+1 at 4 points, IQ being 12 for a skill")
+			c.Equal(fxp.FromInteger(14), crossbow.LevelData.Level,
+				"the 4 points bought add to the 4 the default stands for")
+		})
+	}
+}
+
 // TestSkillDefaultWhenTLChosenDefault reproduces issue #1040 end-to-end: an Armory (Body Armor) skill must not default
 // to a skill whose tech level fails the default's WhenTL constraint, even after the character's TL is raised.
 func TestSkillDefaultWhenTLChosenDefault(t *testing.T) {

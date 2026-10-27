@@ -37,15 +37,17 @@ func initTraitEditor(e *editor[*gurps.Trait, *gurps.TraitEditData], content *uni
 	choice := gurps.IsTemplateChoiceContainer(e.target)
 	// The trait a grant gives is put on the sheet at the grant's level and enabled whenever the grant is in effect, so
 	// its editor leaves out the level and the enabled check box, which nothing would read, and shows the cost at the
-	// grant's level rather than at the level its copy of the trait holds, which the grant's row never changes.
+	// grant's level rather than at the level its copy of the trait holds, which the grant's row never changes, or a
+	// cost of 0 when that level is below 1, at which the grant puts no leveled trait on the sheet.
 	grantOwner, granted := e.owner.(*grantItemOwner)
-	levels := func() fxp.Int {
+	// levels returns the level the cost is shown at, and false when that is a grant's level below 1.
+	levels := func() (fxp.Int, bool) {
 		if granted {
 			if g := grantOwner.grant(); g != nil {
-				return g.Amount
+				return g.Amount, g.Amount >= fxp.One
 			}
 		}
-		return e.editorData.Levels
+		return e.editorData.Levels, true
 	}
 	addNameLabelAndField(content, &e.editorData.Name)
 	addNotesLabelAndField(content, &e.editorData.LocalNotes)
@@ -70,10 +72,14 @@ func initTraitEditor(e *editor[*gurps.Trait, *gurps.TraitEditData], content *uni
 			// modifiers.
 			own := cloneTraitWithOverlay(e.target, e.editorData)
 			own.SetParent(nil)
-			own.Levels = levels()
-			if r, open := own.ModifierChoicePointsRange(); open {
+			var placed bool
+			own.Levels, placed = levels()
+			switch r, open := own.ModifierChoicePointsRange(); {
+			case e.editorData.CanLevel && !placed:
+				field.SetTitle(fxp.Int(0).String())
+			case open:
 				field.SetTitle(r.String())
-			} else {
+			default:
 				field.SetTitle(gurps.AdjustedPoints(entity, e.target, e.editorData.CanLevel, e.editorData.BasePoints,
 					own.Levels, e.editorData.PointsPerLevel, e.editorData.SelfControl, e.editorData.Frequency,
 					e.editorData.Modifiers, e.editorData.RoundCostDown).String())

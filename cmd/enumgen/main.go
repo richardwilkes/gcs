@@ -1068,7 +1068,12 @@ var allEnums = []*enumInfo{
 			{Key: "add_levels", Alt: "adjusting its level by"},
 			{Key: "add_points", Alt: "adjusting its points by"},
 			{Key: "set_level", Alt: "setting its level to"},
+			// An unknown kind means nothing to any item, so that a grant falls back to the kind its item allows first
+			// (see gurps.Grant.EffectiveAdjust), while the zero value, which a file leaves out, stays AddLevels.
+			{Key: "unknown", String: "Unknown", Alt: "adjusting it in an unknown way"},
 		},
+		DefaultLast:    true,
+		DefaultUnknown: true,
 	},
 	{
 		Pkg:  "model/gurps/enums/grantmerge",

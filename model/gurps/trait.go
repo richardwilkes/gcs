@@ -606,7 +606,7 @@ func (t *Trait) CellData(columnID int, data *CellData) {
 		data.Secondary = t.SecondaryText(func(option display.Option) bool { return option.Inline() })
 		// A granted trait whose grant is not in effect is dimmed but not struck through.
 		data.Disabled = t.EffectivelyDisabled() && !t.grantNotInEffect()
-		data.GrantedBy = grantedByText(t.Granted, &t.grant)
+		data.GrantedBy = grantedByText(t.Granted, &t.grant, nil)
 		data.Grants = EntityFromNode(t).grantSummary(t)
 		data.UnsatisfiedReason, data.PrereqContradiction = t.PrereqStatus()
 		data.UnresolvedChoice = unresolvedModifierChoiceText(t, t.Modifiers)

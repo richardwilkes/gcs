@@ -65,9 +65,9 @@ func initSpellEditor(e *editor[*gurps.Spell, *gurps.SpellEditData], content *uni
 				localName := nameable.Apply(e.editorData.Name, replacements)
 				localPowerSource := nameable.Apply(e.editorData.PowerSource, replacements)
 				localColleges := nameable.ApplyToList(e.editorData.College, replacements)
-				// What grants gave the spell counts, as it does on the sheet.
-				points := e.target.PointsWithGrants(gurps.AdjustedPointsForNonContainerSpell(entity, e.editorData.Points,
-					localName, localPowerSource, localColleges, e.editorData.Tags, nil))
+				// What grants give the spell as edited counts, as it does on the sheet once the edits are applied.
+				points := e.target.PointsWithGrants(e.editorData, gurps.AdjustedPointsForNonContainerSpell(entity,
+					e.editorData.Points, localName, localPowerSource, localColleges, e.editorData.Tags, nil))
 				levelAt := func(points fxp.Int) gurps.Level {
 					if e.target.IsRitualMagic() {
 						return gurps.CalculateRitualMagicSpellLevel(entity, localName, localPowerSource,
@@ -78,9 +78,9 @@ func initSpellEditor(e *editor[*gurps.Spell, *gurps.SpellEditData], content *uni
 					return gurps.CalculateSpellLevel(entity, localName, localPowerSource, localColleges,
 						e.editorData.Tags, e.editorData.Difficulty, points)
 				}
-				level := e.target.LevelWithGrants(levelAt(points), func(tierPoints fxp.Int) fxp.Int {
+				level := e.target.LevelWithGrants(e.editorData, levelAt(points), func(tierPoints fxp.Int) gurps.Level {
 					return levelAt(gurps.AdjustedPointsForNonContainerSpell(entity, tierPoints, localName,
-						localPowerSource, localColleges, e.editorData.Tags, nil)).Level
+						localPowerSource, localColleges, e.editorData.Tags, nil))
 				})
 				lvl := level.Level.Floor()
 				if lvl <= 0 {

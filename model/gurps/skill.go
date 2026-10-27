@@ -441,7 +441,7 @@ func (s *Skill) CellData(columnID int, data *CellData) {
 		data.Primary = s.String()
 		// A granted one whose grant is not in effect is dimmed but not struck through.
 		data.Disabled = data.Dim && !s.grantNotInEffect()
-		data.GrantedBy = grantedByText(s.Granted, &s.grant)
+		data.GrantedBy = grantedByText(s.Granted, &s.grant, s)
 		data.Grants = EntityFromNode(s).grantSummary(s)
 		data.Secondary = s.SecondaryText(func(option display.Option) bool { return option.Inline() })
 		data.UnsatisfiedReason = s.UnsatisfiedReason
@@ -708,10 +708,11 @@ func (s *Skill) RawPoints() fxp.Int {
 	return s.Points
 }
 
-// SetRawPoints sets the unadjusted points and updates the level. Returns true if the level, or the default the skill
-// settled on, changed.
+// SetRawPoints sets the unadjusted points and updates the level, with the grants merged into the skill afresh for them
+// (see Entity.remergeGrants). Returns true if the level, or the default the skill settled on, changed.
 func (s *Skill) SetRawPoints(points fxp.Int) bool {
 	s.Points = points
+	EntityFromNode(s).remergeGrants(s)
 	return s.UpdateLevel()
 }
 
@@ -731,18 +732,26 @@ func (s *Skill) PointsCost() fxp.Int {
 	return s.AdjustedPoints(nil)
 }
 
-// PointsWithGrants returns the points with those grants gave the skill at the last recalculation added, as
-// AdjustedPoints adds them, for a level computed from points other than the skill's own.
-func (s *Skill) PointsWithGrants(points fxp.Int) fxp.Int {
-	return s.grant.applyPoints(nil, points, nil)
+// PointsWithGrants returns the points with those grants give the skill added, as AdjustedPoints adds them, for a level
+// computed from the edit data in place of the skill's own, which decides what the grants give it, as when it is the
+// skill's own (see grantsWithEdits).
+func (s *Skill) PointsWithGrants(data *SkillEditData, points fxp.Int) fxp.Int {
+	return grantsWithEdits(s, s.withEditData(data)).applyPoints(nil, points, nil)
 }
 
-// LevelWithGrants returns the level with the levels grants merged into the skill at the last recalculation added, as
-// CalculateLevel adds them, for a level computed from data other than the skill's own. levelAt returns the level that
-// data gives with the given points in place of the skill's own, which the level a Keep Highest or Keep Lowest grant
-// keeps is read with.
-func (s *Skill) LevelWithGrants(level Level, levelAt func(points fxp.Int) fxp.Int) Level {
-	return s.grant.applyLevels(nil, level, levelAt)
+// LevelWithGrants returns the level with the levels grants merged into the skill added, as CalculateLevel adds them,
+// for a level computed from the edit data in place of the skill's own (see PointsWithGrants). levelAt returns the level
+// that data gives with the given points in place of the skill's own and without a default, which the level a Keep
+// Highest or Keep Lowest grant keeps is read with.
+func (s *Skill) LevelWithGrants(data *SkillEditData, level Level, levelAt func(points fxp.Int) Level) Level {
+	return grantsWithEdits(s, s.withEditData(data)).applyLevels(nil, level, levelAt)
+}
+
+// withEditData returns a copy of the skill holding the edit data in place of its own.
+func (s *Skill) withEditData(data *SkillEditData) *Skill {
+	edited := *s
+	edited.SkillEditData = *data
+	return &edited
 }
 
 // pointsForPrereqsOf returns the skill's points as the prerequisites of exclude see them: as AdjustedPoints does, but
@@ -888,10 +897,12 @@ func skillLevelStride(p SkillLevelStepper) fxp.Int {
 // incrementSkillLevel is the shared body of Skill.IncrementSkillLevel and Spell.IncrementSkillLevel. A disabled item
 // has no level to step, since AdjustedPoints reports nothing for it, so it is left alone, as is one with no higher
 // level to reach, such as a technique at its limit, a skill whose attribute is missing or one a Keep Lowest grant
-// caps. The search goes on a stride at a time while the level the points buy is still rising, since a Keep Highest
-// grant holds the level shown until the level bought passes the one kept, which may be several strides off, and stops
-// once a stride passes without the level bought rising, as no further points would raise it, or once the level bought
-// has passed the level shown without raising it, as only a cap holds it there.
+// caps, which even the most points it can have don't raise. The search goes on a stride at a time while the level the
+// points buy is still rising, since a Keep Highest grant holds the level shown until the level bought, less any levels
+// grants take away, passes the one kept, which may be several strides off, and stops once a stride after the first
+// passes without the level bought rising, as no further points would raise it. The level the original points buy is
+// not compared with, since it may rest on points a grant gives an item with no level of its own, which go once the
+// item has points of its own (see Entity.mergeGrant).
 func incrementSkillLevel(p SkillLevelStepper) {
 	if !p.Enabled() {
 		return
@@ -899,37 +910,51 @@ func incrementSkillLevel(p SkillLevelStepper) {
 	original := p.RawPoints()
 	stride := skillLevelStride(p)
 	oldLevel := p.CurrentCalculatedLevel()
-	bought := p.CalculatedLevelBeforeGrants()
-	for basePoints := original.Floor() + fxp.One; ; basePoints += stride {
-		for points := basePoints; points < basePoints+stride; points += fxp.One {
-			p.SetRawPoints(points)
-			if p.CurrentCalculatedLevel() > oldLevel {
-				return
+	bought := fxp.Min
+	p.SetRawPoints(fxp.MaxBasePoints)
+	if p.CurrentCalculatedLevel() > oldLevel {
+		for basePoints := original.Floor() + fxp.One; ; basePoints += stride {
+			for points := basePoints; points < basePoints+stride; points += fxp.One {
+				p.SetRawPoints(points)
+				if p.CurrentCalculatedLevel() > oldLevel {
+					return
+				}
 			}
+			next := p.CalculatedLevelBeforeGrants()
+			if next <= bought {
+				break
+			}
+			bought = next
 		}
-		next := p.CalculatedLevelBeforeGrants()
-		if next <= bought || next > oldLevel {
-			break
-		}
-		bought = next
 	}
 	p.SetRawPoints(original)
 }
 
 // decrementSkillLevel is the shared body of Skill.DecrementSkillLevel and Spell.DecrementSkillLevel. A disabled item
-// is left alone for the same reason as in incrementSkillLevel.
+// is left alone for the same reason as in incrementSkillLevel. The search goes on a stride at a time while the level
+// the points buy is still falling, since a Keep Lowest grant holds the level shown until the level bought falls below
+// the one kept, which may be several strides off.
 func decrementSkillLevel(p SkillLevelStepper) {
 	if !p.Enabled() || p.RawPoints() <= 0 {
 		return
 	}
-	basePoints := p.RawPoints().Floor()
-	minPoints := (basePoints - skillLevelStride(p)).Max(0)
+	stride := skillLevelStride(p)
 	oldLevel := p.CurrentCalculatedLevel()
-	for points := basePoints; points >= minPoints; points -= fxp.One {
-		p.SetRawPoints(points)
-		if p.CurrentCalculatedLevel() < oldLevel {
+	bought := p.CalculatedLevelBeforeGrants()
+search:
+	for basePoints := p.RawPoints().Floor(); ; basePoints -= stride {
+		minPoints := (basePoints - stride).Max(0)
+		for points := basePoints; points >= minPoints; points -= fxp.One {
+			p.SetRawPoints(points)
+			if p.CurrentCalculatedLevel() < oldLevel {
+				break search
+			}
+		}
+		next := p.CalculatedLevelBeforeGrants()
+		if minPoints == 0 || next >= bought {
 			break
 		}
+		bought = next
 	}
 	// Having found a lower level, back off to the fewest points that still produce it.
 	oldLevel = p.CurrentCalculatedLevel()
@@ -1022,6 +1047,8 @@ func newJudgedDefaultKey(s *Skill, excludes map[string]bool) judgedDefaultKey {
 
 // calculateLevelWith is calculateLevelExcept with the given default in place of the one defaultExcept returns. With
 // exclude nil, what the grants of the item whose prerequisites are being judged gave is left out; see Entity.judgingOr.
+// The level a grant keeps is read without a default, since the points kept buy it without one (see
+// pointsForBaseLevel).
 func (s *Skill) calculateLevelWith(exclude any, def *SkillDefault, excludes map[string]bool) Level {
 	e := EntityFromNode(s)
 	exclude = e.judgingOr(exclude)
@@ -1029,8 +1056,8 @@ func (s *Skill) calculateLevelWith(exclude any, def *SkillDefault, excludes map[
 	if s.IsTechnique() {
 		return level
 	}
-	return s.grant.applyLevels(exclude, level, func(points fxp.Int) fxp.Int {
-		return s.levelAt(e, def, points).Level
+	return s.grant.applyLevels(exclude, level, func(points fxp.Int) Level {
+		return s.levelAt(e, nil, points)
 	})
 }
 
@@ -1122,6 +1149,11 @@ func (s *Skill) pointsForBaseLevel(e *Entity, level fxp.Int) fxp.Int {
 		return 0
 	}
 	return grantTierPoints((level-(attr+ad.Difficulty.BaseRelativeLevel())).Ceil()+fxp.One, s.WildcardDifficulty())
+}
+
+// attributeUnresolved implements grantLeveler.
+func (s *Skill) attributeUnresolved(e *Entity) bool {
+	return skillAttributeLevel(e, s.AdjustedDifficulty().Attribute) == fxp.Min
 }
 
 // CalculateTechniqueLevel returns the calculated level for a technique.
@@ -1271,9 +1303,9 @@ func (s *Skill) bestDefaultWithPoints(excluded *SkillDefault) *SkillDefault {
 }
 
 // setDefaultPoints sets the default's adjusted level to its level rounded down, and its points to those that level
-// stands for in the skill.
+// stands for in the skill, measured from the attribute the skill's level rests on, as CalculateSkillLevel reads it.
 func (s *Skill) setDefaultPoints(def *SkillDefault) {
-	baseLine := (EntityFromNode(s).resolveAttributeCurrentForPrereqs(s.AdjustedDifficulty().Attribute) +
+	baseLine := (skillAttributeLevel(EntityFromNode(s), s.AdjustedDifficulty().Attribute) +
 		s.AdjustedDifficulty().Difficulty.BaseRelativeLevel()).Floor()
 	level := def.Level.Floor()
 	def.AdjLevel = level

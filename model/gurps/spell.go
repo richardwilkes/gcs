@@ -433,7 +433,7 @@ func (s *Spell) CellData(columnID int, data *CellData) {
 		data.Primary = s.String()
 		// A granted one whose grant is not in effect is dimmed but not struck through.
 		data.Disabled = data.Dim && !s.grantNotInEffect()
-		data.GrantedBy = grantedByText(s.Granted, &s.grant)
+		data.GrantedBy = grantedByText(s.Granted, &s.grant, s)
 		data.Grants = EntityFromNode(s).grantSummary(s)
 		data.Secondary = s.SecondaryText(func(option display.Option) bool { return option.Inline() })
 		data.UnsatisfiedReason = s.UnsatisfiedReason
@@ -662,8 +662,8 @@ func (s *Spell) calculateLevel(points fxp.Int) Level {
 // item whose prerequisites are being judged when exclude is nil; see grantState.applyLevelNotes and Entity.judgingOr.
 func (s *Spell) calculateLevelExcept(exclude any, points fxp.Int) Level {
 	exclude = EntityFromNode(s).judgingOr(exclude)
-	return s.grant.applyLevels(exclude, s.levelFromAdjustedPoints(points), func(points fxp.Int) fxp.Int {
-		return s.levelAt(EntityFromNode(s), points).Level
+	return s.grant.applyLevels(exclude, s.levelFromAdjustedPoints(points), func(points fxp.Int) Level {
+		return s.levelAt(EntityFromNode(s), points)
 	})
 }
 
@@ -723,6 +723,11 @@ func (s *Spell) pointsForBaseLevel(e *Entity, level fxp.Int) fxp.Int {
 	}
 	return grantTierPoints((level-(attr+s.Difficulty.Difficulty.BaseRelativeLevel())).Ceil()+fxp.One,
 		s.WildcardDifficulty())
+}
+
+// attributeUnresolved implements grantLeveler. A Ritual Magic spell's level rests on its ritual skill instead.
+func (s *Spell) attributeUnresolved(e *Entity) bool {
+	return !s.IsRitualMagic() && e.resolveAttributeCurrentForPrereqs(s.Difficulty.Attribute) == fxp.Min
 }
 
 // CalculateSpellLevel returns the calculated spell level.
@@ -1021,9 +1026,11 @@ func (s *Spell) RawPoints() fxp.Int {
 	return s.Points
 }
 
-// SetRawPoints sets the unadjusted points and updates the level. Returns true if the level changed.
+// SetRawPoints sets the unadjusted points and updates the level, with the grants merged into the spell afresh for them
+// (see Entity.remergeGrants). Returns true if the level changed.
 func (s *Spell) SetRawPoints(points fxp.Int) bool {
 	s.Points = points
+	EntityFromNode(s).remergeGrants(s)
 	return s.UpdateLevel()
 }
 
@@ -1043,18 +1050,26 @@ func (s *Spell) PointsCost() fxp.Int {
 	return s.AdjustedPoints(nil)
 }
 
-// PointsWithGrants returns the points with those grants gave the spell at the last recalculation added, as
-// AdjustedPoints adds them, for a level computed from points other than the spell's own.
-func (s *Spell) PointsWithGrants(points fxp.Int) fxp.Int {
-	return s.grant.applyPoints(nil, points, nil)
+// PointsWithGrants returns the points with those grants give the spell added, as AdjustedPoints adds them, for a level
+// computed from the edit data in place of the spell's own, which decides what the grants give it, as when it is the
+// spell's own (see grantsWithEdits).
+func (s *Spell) PointsWithGrants(data *SpellEditData, points fxp.Int) fxp.Int {
+	return grantsWithEdits(s, s.withEditData(data)).applyPoints(nil, points, nil)
 }
 
-// LevelWithGrants returns the level with the levels grants merged into the spell at the last recalculation added, as
-// CalculateLevel adds them, for a level computed from data other than the spell's own. levelAt returns the level that
-// data gives with the given points in place of the spell's own, which the level a Keep Highest or Keep Lowest grant
-// keeps is read with.
-func (s *Spell) LevelWithGrants(level Level, levelAt func(points fxp.Int) fxp.Int) Level {
-	return s.grant.applyLevels(nil, level, levelAt)
+// LevelWithGrants returns the level with the levels grants merged into the spell added, as CalculateLevel adds them,
+// for a level computed from the edit data in place of the spell's own (see PointsWithGrants). levelAt returns the level
+// that data gives with the given points in place of the spell's own, which the level a Keep Highest or Keep Lowest
+// grant keeps is read with.
+func (s *Spell) LevelWithGrants(data *SpellEditData, level Level, levelAt func(points fxp.Int) Level) Level {
+	return grantsWithEdits(s, s.withEditData(data)).applyLevels(nil, level, levelAt)
+}
+
+// withEditData returns a copy of the spell holding the edit data in place of its own.
+func (s *Spell) withEditData(data *SpellEditData) *Spell {
+	edited := *s
+	edited.SpellEditData = *data
+	return &edited
 }
 
 // pointsForPrereqsOf returns the spell's points as the prerequisites of exclude see them: as AdjustedPoints does, but
