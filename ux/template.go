@@ -68,6 +68,8 @@ func NewTemplate(filePath string, template *gurps.Template) *Template {
 		t.lastBody = gurps.FactoryBody()
 	}
 	t.initPageDockable(t, filePath, gurps.TemplatesExt, template.Save, template)
+	// The lists derive their cells as they are built and keep them until a change is reported, so this comes first.
+	prepareForPage(t.template)
 	t.finishPageDockable(t, t.createContent())
 
 	// A creator returns nil while the default layout leaves its list off the page (see createLists), which disables the
@@ -85,8 +87,6 @@ func NewTemplate(filePath string, template *gurps.Template) *Template {
 	t.InstallCmdHandlers(ApplyTemplateItemID, t.canApplyTemplate, t.applyTemplate)
 	t.InstallCmdHandlers(NewSheetFromTemplateItemID, unison.AlwaysEnabled, t.newSheetFromTemplate)
 	InstallExportCmdHandlers(t)
-
-	prepareForPage(t.template)
 	return t
 }
 

@@ -66,6 +66,8 @@ func NewLootSheet(filePath string, loot *gurps.Loot) *LootSheet {
 		loot:    loot,
 	}
 	l.initPageDockable(l, filePath, gurps.LootExt, loot.Save, loot)
+	// The lists derive their cells as they are built and keep them until a change is reported, so this comes first.
+	prepareForPage(l.loot)
 
 	l.content.SetLayout(&unison.FlexLayout{
 		Columns:  1,
@@ -80,8 +82,6 @@ func NewLootSheet(filePath string, loot *gurps.Loot) *LootSheet {
 		notes:          func() itemCreator { return l.Notes },
 	})
 	InstallExportCmdHandlers(l)
-
-	prepareForPage(l.loot)
 	return l
 }
 

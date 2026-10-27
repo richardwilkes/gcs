@@ -11,9 +11,12 @@ package ux
 
 import (
 	"fmt"
+	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/srcstate"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/gcs/v5/ux/uxtest"
 	"github.com/richardwilkes/toolbox/v2/check"
@@ -231,4 +234,61 @@ func TestAddNaturalAttacksGoesToTheTraitListOfTheDockable(t *testing.T) {
 	added = template.template.Traits[len(template.template.Traits)-1]
 	c.Equal("Natural Attacks", added.Name)
 	c.Equal(sheetTraits+1, len(sheet.entity.Traits), "the sheet must be left alone")
+}
+
+// sourceCellOfFirstRow returns the library source cell the list shows for its first row, ending the test if the list
+// has no such column or row.
+func sourceCellOfFirstRow[T gurps.Node[T]](t *testing.T, list *PageList[T], columnID int) gurps.CellData {
+	t.Helper()
+	col := list.Table.ColumnIndexForID(columnID)
+	if col < 0 {
+		t.Fatal("the list must show the library source column")
+	}
+	row := list.Table.RowFromIndex(0)
+	if row == nil {
+		t.Fatal("the list must show the sourced row")
+	}
+	return row.cellData(col, true)
+}
+
+// TestPageDockablesShowSourceStatesOnOpen verifies that a template or loot sheet shows how its sourced rows compare
+// with their library sources as soon as it opens. A row keeps the cell data it derives until a change is reported, so
+// lists built before the source matcher has loaded the library hashes it compares against show every sourced row as
+// missing its source until something else reports a change.
+func TestPageDockablesShowSourceStatesOnOpen(t *testing.T) {
+	c := check.New(t)
+	_, user := uxtest.UseTestLibraries(t, c)
+	RegisterKnownFileTypes()
+	registerKeyBindingsOnce.Do(func() { registerActions() })
+	uxtest.SwapForTest(t, &Workspace.DocumentDock, NewDocumentDock())
+	uxtest.SwapForTest(t, &gurps.GlobalSettings().SheetSettings().HideSourceMismatch, false)
+	traitFile := gurps.LibraryFile{Library: user.Key(), Path: "Traits/Test" + gurps.TraitsExt}
+	libTrait := gurps.NewTrait(nil, nil, false)
+	libTrait.Name = "Resistant"
+	c.NoError(gurps.SaveTraits([]*gurps.Trait{libTrait},
+		filepath.Join(user.Path(false), filepath.FromSlash(traitFile.Path))))
+	eqpFile := gurps.LibraryFile{Library: user.Key(), Path: "Equipment/Test" + gurps.EquipmentExt}
+	libEqp := gurps.NewEquipment(nil, nil, false)
+	libEqp.Name = "Rope"
+	c.NoError(gurps.SaveEquipment([]*gurps.Equipment{libEqp},
+		filepath.Join(user.Path(false), filepath.FromSlash(eqpFile.Path))))
+	for _, one := range []struct {
+		name string
+		open func() gurps.CellData
+	}{
+		{"template", func() gurps.CellData {
+			data := gurps.NewTemplate()
+			data.Traits = []*gurps.Trait{libTrait.Clone(traitFile, data, nil, gurps.Reference)}
+			return sourceCellOfFirstRow(t, NewTemplate("test"+gurps.TemplatesExt, data).Traits, gurps.TraitLibSrcColumn)
+		}},
+		{"loot sheet", func() gurps.CellData {
+			data := gurps.NewLoot()
+			data.Equipment = []*gurps.Equipment{libEqp.Clone(eqpFile, data, nil, gurps.Reference)}
+			return sourceCellOfFirstRow(t, NewLootSheet("test"+gurps.LootExt, data).Equipment,
+				gurps.EquipmentLibSrcColumn)
+		}},
+	} {
+		state, _, _ := strings.Cut(one.open().Tooltip, "\n")
+		c.Equal(srcstate.Matched.String(), state, "%s: the sourced row must show that it matches its source", one.name)
+	}
 }
