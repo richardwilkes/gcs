@@ -807,7 +807,7 @@ func TestGrantSetLevelBelowWhatAPointBuys(t *testing.T) {
 	var data CellData
 	row.CellData(SkillDescriptionColumn, &data)
 	c.True(data.Dim)
-	c.False(data.Disabled, "the row is dimmed, as for a grant not in effect, but not struck through")
+	c.True(data.Disabled, "the row is dimmed and struck through, as for a grant not in effect")
 	c.Equal("Granted by Training\nThe grant gives it nothing, since the level it sets is below what 1 point buys.",
 		data.GrantedBy)
 	c.Equal("Does not grant Alchemy at skill level 7, since that is below what 1 point buys", e.grantSummary(training))
