@@ -45,6 +45,7 @@ func newProgressWindow(windowTitle, labelTitle string, bar *unison.ProgressBar, 
 		cancelButton := unison.NewButton()
 		cancelButton.SetTitle(i18n.Text("Cancel"))
 		cancelButton.SetLayoutData(&unison.FlexLayoutData{HAlign: align.End})
+		cancelButton.SetBorder(unison.NewEmptyBorder(geom.Insets{Top: 2 * unison.StdHSpacing}))
 		cancelButton.ClickCallback = func() {
 			cancelButton.SetEnabled(false)
 			label.SetTitle(i18n.Text("Canceling…"))
