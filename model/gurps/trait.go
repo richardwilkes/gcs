@@ -604,8 +604,7 @@ func (t *Trait) CellData(columnID int, data *CellData) {
 		}
 		data.Primary += parenthetical(slices.Concat(t.titleNotes(true), parts, t.titleNotes(false)))
 		data.Secondary = t.SecondaryText(func(option display.Option) bool { return option.Inline() })
-		// A granted trait whose grant is not in effect is dimmed but not struck through.
-		data.Disabled = t.EffectivelyDisabled() && !t.grantNotInEffect()
+		data.Disabled = t.EffectivelyDisabled()
 		data.GrantedBy = grantedByText(t.Granted, &t.grant, nil)
 		data.Grants = EntityFromNode(t).grantSummary(t)
 		data.UnsatisfiedReason, data.PrereqContradiction = t.PrereqStatus()

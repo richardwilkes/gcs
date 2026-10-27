@@ -439,8 +439,7 @@ func (s *Skill) CellData(columnID int, data *CellData) {
 	case SkillDescriptionColumn:
 		data.Type = cell.Text
 		data.Primary = s.String()
-		// A granted one whose grant is not in effect is dimmed but not struck through.
-		data.Disabled = data.Dim && !s.grantNotInEffect()
+		data.Disabled = data.Dim
 		data.GrantedBy = grantedByText(s.Granted, &s.grant, s)
 		data.Grants = EntityFromNode(s).grantSummary(s)
 		data.Secondary = s.SecondaryText(func(option display.Option) bool { return option.Inline() })
