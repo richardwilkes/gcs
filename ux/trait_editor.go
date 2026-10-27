@@ -42,7 +42,7 @@ func initTraitEditor(e *editor[*gurps.Trait, *gurps.TraitEditData], content *uni
 	levels := func() fxp.Int {
 		if granted {
 			if g := grantOwner.grant(); g != nil {
-				return g.Level
+				return g.Amount
 			}
 		}
 		return e.editorData.Levels

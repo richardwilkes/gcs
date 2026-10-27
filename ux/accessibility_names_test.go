@@ -316,8 +316,8 @@ func seedEveryPrereqControl(root *gurps.PrereqList) {
 	root.Prereqs = append(root.Prereqs, group)
 }
 
-// seedEveryFeatureControl turns on every optional criterion of the features, so that an audit sees every control the
-// panel can show.
+// seedEveryFeatureControl turns on every optional criterion of the features and gives each grant an item, so that an
+// audit sees every control the panel can show.
 func seedEveryFeatureControl(list gurps.Features) {
 	on := criteria.Text{Compare: criteria.IsText}
 	for _, one := range list {
@@ -365,6 +365,16 @@ func seedEveryFeatureControl(list gurps.Features) {
 			f.DamageTypeCriteria = on
 			f.TagsCriteria = on
 			f.RelativeLevelCriteria = criteria.Number{Compare: criteria.AtLeastNumber, Qualifier: fxp.One}
+		case *gurps.Grant:
+			switch f.Type {
+			case feature.GrantSkill:
+				f.SetItem(newTestSkill("Audit Granted Skill", fxp.One, nil), gurps.LibraryFile{})
+			case feature.GrantSpell:
+				f.SetItem(newTestSpell("Audit Granted Spell", fxp.One, nil), gurps.LibraryFile{})
+			default:
+				f.SetItem(newGrantTestTrait("Audit Granted Trait", fxp.One), gurps.LibraryFile{})
+			}
+			f.CheckPrereqs = true
 		default:
 		}
 	}

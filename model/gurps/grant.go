@@ -16,6 +16,7 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/feature"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/grantadjust"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/grantmerge"
 	"github.com/richardwilkes/gcs/v5/model/nameable"
 	"github.com/richardwilkes/toolbox/v2/i18n"
@@ -34,9 +35,15 @@ var _ Feature = &Grant{}
 type Grant struct {
 	Type feature.Type `json:"type"`
 	FeatureSwitch
-	// Level is a trait's level, or the tier of a skill or spell: tier 1 is what 1 point buys, tier 2 what 2 points buy
-	// and tier n above that what 4×(n-2) points buy. A negative level only takes away from an item already present.
-	Level fxp.Int         `json:"level,omitzero"`
+	// Amount is, as Adjust says, the level the grant sets, the levels it adds or the points it adds. A trait's levels
+	// may be fractional. Levels added to a skill or spell not yet on the sheet are priced in points: level 1 is what 1
+	// point buys, level 2 what 2 points buy and level n above that what 4×(n-2) points buy. A negative amount added only
+	// takes levels or points away from an item already present, and a level set below 1 does nothing.
+	Amount fxp.Int `json:"amount,omitzero"`
+	// Adjust is how Amount adjusts the item; see EffectiveAdjust.
+	Adjust grantadjust.Kind `json:"adjust,omitzero"`
+	// Merge is what a level set does to an item already present; see EffectiveMerge. Levels or points are always added
+	// to one.
 	Merge grantmerge.Mode `json:"merge,omitzero"`
 	Trait *Trait          `json:"trait,omitempty"`
 	Skill *Skill          `json:"skill,omitempty"`
@@ -79,18 +86,24 @@ type grantState struct {
 	judgedFor any
 	detail    *Grant
 	// levelNotes and pointNotes are what each grant gave the item: the levels merged into it or kept for it, and a
-	// granted skill's or spell's own points plus any merged into it, of which points is the total. tierPoints is the
-	// first of those, the points of the tier the grant in effect gives a granted skill or spell, which stand for its
-	// own points when the other grants merge into it. tiersTaken is the tiers the Merge Points grants with a negative
-	// level have taken from a skill or spell so far, so that they take their tiers off together (see
-	// grantPointsDelta). keepLower is set when the item is a disadvantage, for which the level a Keep Highest grant
-	// keeps is the lower one.
+	// granted skill's or spell's own points plus any merged into it, of which points is the total. ownPoints is the
+	// first of those, the points the grant in effect gives a granted skill or spell standing alone (see
+	// Grant.standalonePoints), which stand for its own points when the other grants merge into it.
 	levelNotes []grantNote
 	pointNotes []grantNote
 	points     fxp.Int
-	tierPoints fxp.Int
-	tiersTaken fxp.Int
-	keepLower  bool
+	ownPoints  fxp.Int
+	// unreached is set when the grant that put a skill or spell on the sheet is in effect but gives it nothing, since
+	// the level it sets is below what 1 point buys, which leaves the item out of effect; see Grant.reaches.
+	unreached bool
+}
+
+// grantLeveler is what a grant needs of its skill or spell to price the amount it gives.
+type grantLeveler interface {
+	WildcardDifficulty() bool
+	// pointsForBaseLevel returns the fewest points that buy the item the level, before bonuses, as the sheet sees it,
+	// or zero when none do.
+	pointsForBaseLevel(e *Entity, level fxp.Int) fxp.Int
 }
 
 // grantItem is what a grant needs of its item, whatever its kind.
@@ -103,37 +116,80 @@ type grantItem interface {
 }
 
 // grantNote is what one grant gave an item: the amount, what carries the grant and that carrier's name. The amount of
-// a keep note, which a Keep Highest grant leaves, is the level the grant keeps the item at rather than an addition, or,
-// with tier set, the points of the tier it keeps a skill or spell at, whose level is read along with the item's own so
-// that both see the same bonuses; see grantState.applyLevelNotes.
+// a keep note, which a Keep Highest or Keep Lowest grant leaves, is the level the grant keeps the item at rather than
+// an addition, or, with points set, the points it keeps a skill or spell at, whose level is read along with the item's
+// own so that both see the same bonuses. lower is set for a Keep Lowest grant, which keeps the lower of the two levels
+// rather than the higher; see grantState.applyLevelNotes.
 type grantNote struct {
 	owner  any
 	source string
 	amount fxp.Int
 	keep   bool
-	tier   bool
+	points bool
+	lower  bool
 }
 
-// itemLabel returns the name of the item the grant gives, with the level or tier it gives. replacements are those of
-// what carries the grant; see itemNameWith.
+// itemLabel returns the name of the item the grant gives, with the amount it gives. replacements are those of what
+// carries the grant; see itemNameWith.
 func (g *Grant) itemLabel(replacements map[string]string) string {
 	name := g.itemNameWith(replacements)
+	amount := g.amount()
 	switch {
 	case !g.Leveled():
 		return name
 	case g.Type == feature.GrantTrait:
-		return name + " " + g.level().String()
+		return name + " " + amount.String()
+	}
+	switch g.EffectiveAdjust() {
+	case grantadjust.AddPoints:
+		return i18n.Text("%s with %s", name, pointsText(amount, nil))
+	case grantadjust.SetLevel:
+		return i18n.Text("%s at skill level %s", name, amount.String())
 	default:
-		return i18n.Text("%s at level %s", name, g.level().String())
+		return i18n.Text("%s at level %s", name, amount.String())
 	}
 }
 
-// level returns the level the grant gives: as set for a trait, whose levels may be fractional, and whole otherwise.
-func (g *Grant) level() fxp.Int {
-	if g.Type == feature.GrantTrait {
-		return g.Level
+// amount returns the amount the grant gives: as set for a trait, whose levels may be fractional, and for points, and
+// whole otherwise.
+func (g *Grant) amount() fxp.Int {
+	if g.Type == feature.GrantTrait || g.EffectiveAdjust() == grantadjust.AddPoints {
+		return g.Amount
 	}
-	return g.Level.Floor()
+	return g.Amount.Floor()
+}
+
+// amountPhrase returns how a sentence names the amount the grant gives its item, "at level N", "with N points" or "at
+// skill level N", with the number emphasized by em when that is not nil.
+func (g *Grant) amountPhrase(em func(string) string) string {
+	amount := g.amount()
+	switch {
+	case g.EffectiveAdjust() == grantadjust.AddPoints:
+		return i18n.Text("with %s", pointsText(amount, em))
+	case g.setsSkillLevel():
+		return i18n.Text("at skill level %s", emphasized(amount.String(), em))
+	default:
+		return i18n.Text("at level %s", emphasized(amount.String(), em))
+	}
+}
+
+// adds returns true if the grant adds its amount, levels or points, to its item when already present, rather than
+// setting the item's level; see EffectiveAdjust.
+func (g *Grant) adds() bool {
+	return g.Leveled() && g.EffectiveAdjust() != grantadjust.SetLevel
+}
+
+// setsSkillLevel returns true if the grant sets the level of a skill or spell, which the sheet prices in points.
+func (g *Grant) setsSkillLevel() bool {
+	return g.Type != feature.GrantTrait && g.EffectiveAdjust() == grantadjust.SetLevel
+}
+
+// emphasized returns the text emphasized by em, or as it is when em is nil.
+func emphasized(text string, em func(string) string) string {
+	if em == nil {
+		return text
+	}
+	return em(text)
 }
 
 // grantStatus is whether a grant is in effect, or why it is not, for the line Entity.grantSummary gives it.
@@ -152,8 +208,17 @@ const (
 func (g *Grant) mergeSummary(label string, replacements map[string]string, status grantStatus) string {
 	name := g.itemNameWith(replacements)
 	merge := g.EffectiveMerge()
-	if merge != grantmerge.Ignore && g.mergesNothing() {
-		return i18n.Text("Does not change %s, already present, since a level below 1 grants nothing", name)
+	adds := g.adds()
+	if (adds || merge != grantmerge.Ignore) && g.mergesNothing() {
+		switch {
+		case g.EffectiveAdjust() == grantadjust.AddPoints:
+			return i18n.Text("Does not change %s, already present, since points too few to buy a level grant nothing",
+				name)
+		case g.setsSkillLevel():
+			return i18n.Text("Does not change %s, already present, since a skill level below 1 grants nothing", name)
+		default:
+			return i18n.Text("Does not change %s, already present, since a level below 1 grants nothing", name)
+		}
 	}
 	pick := func(does, inactive, unmet string) string {
 		switch status {
@@ -165,66 +230,39 @@ func (g *Grant) mergeSummary(label string, replacements map[string]string, statu
 			return does
 		}
 	}
-	levels := g.level()
-	switch merge {
-	case grantmerge.MergeLevels:
-		switch {
-		case levels == -fxp.One:
-			return pick(i18n.Text("Removes 1 level from %s, already present", name),
-				i18n.Text("Would remove 1 level from %s, already present, but the grant is not in effect", name),
-				i18n.Text(
-					"Would remove 1 level from %s, already present, but the prerequisites of what carries the grant are not met",
-					name,
-				))
-		case levels < 0:
-			count := levels.Abs().String()
-			return pick(i18n.Text("Removes %s levels from %s, already present", count, name),
-				i18n.Text("Would remove %s levels from %s, already present, but the grant is not in effect", count, name),
-				i18n.Text(
-					"Would remove %s levels from %s, already present, but the prerequisites of what carries the grant are not met",
-					count, name,
-				))
-		case levels == fxp.One:
-			return pick(i18n.Text("Adds 1 level to %s, already present", name),
-				i18n.Text("Would add 1 level to %s, already present, but the grant is not in effect", name),
-				i18n.Text(
-					"Would add 1 level to %s, already present, but the prerequisites of what carries the grant are not met",
-					name,
-				))
-		default:
-			count := levels.String()
-			return pick(i18n.Text("Adds %s levels to %s, already present", count, name),
-				i18n.Text("Would add %s levels to %s, already present, but the grant is not in effect", count, name),
-				i18n.Text(
-					"Would add %s levels to %s, already present, but the prerequisites of what carries the grant are not met",
-					count, name,
-				))
-		}
-	case grantmerge.MergePoints:
-		if levels < 0 {
-			count := levelsText(levels.Abs(), nil)
-			return pick(i18n.Text("Removes the points of %s from %s, already present", count, name),
-				i18n.Text("Would remove the points of %s from %s, already present, but the grant is not in effect",
-					count, name),
-				i18n.Text(
-					"Would remove the points of %s from %s, already present, but the prerequisites of what carries the grant are not met",
-					count, name,
-				))
-		}
-		return pick(i18n.Text("Adds the points of level %s to %s, already present", levels.String(), name),
-			i18n.Text("Would add the points of level %s to %s, already present, but the grant is not in effect",
-				levels.String(), name),
+	amount := g.amount()
+	switch {
+	case adds && amount < 0:
+		count := g.countText(amount.Abs(), nil)
+		return pick(i18n.Text("Removes %s from %s, already present", count, name),
+			i18n.Text("Would remove %s from %s, already present, but the grant is not in effect", count, name),
 			i18n.Text(
-				"Would add the points of level %s to %s, already present, but the prerequisites of what carries the grant are not met",
-				levels.String(), name,
+				"Would remove %s from %s, already present, but the prerequisites of what carries the grant are not met",
+				count, name,
 			))
-	case grantmerge.KeepHighest:
-		return pick(i18n.Text("Keeps the better of %s as it is and at level %s", name, levels.String()),
-			i18n.Text("Would keep the better of %s as it is and at level %s, but the grant is not in effect", name,
-				levels.String()),
+	case adds:
+		count := g.countText(amount, nil)
+		return pick(i18n.Text("Adds %s to %s, already present", count, name),
+			i18n.Text("Would add %s to %s, already present, but the grant is not in effect", count, name),
 			i18n.Text(
-				"Would keep the better of %s as it is and at level %s, but the prerequisites of what carries the grant are not met",
-				name, levels.String(),
+				"Would add %s to %s, already present, but the prerequisites of what carries the grant are not met",
+				count, name,
+			))
+	case merge == grantmerge.KeepHighest:
+		phrase := g.amountPhrase(nil)
+		return pick(i18n.Text("Keeps the higher level of %s, as it is or %s", name, phrase),
+			i18n.Text("Would keep the higher level of %s, as it is or %s, but the grant is not in effect", name, phrase),
+			i18n.Text(
+				"Would keep the higher level of %s, as it is or %s, but the prerequisites of what carries the grant are not met",
+				name, phrase,
+			))
+	case merge == grantmerge.KeepLowest:
+		phrase := g.amountPhrase(nil)
+		return pick(i18n.Text("Keeps the lower level of %s, as it is or %s", name, phrase),
+			i18n.Text("Would keep the lower level of %s, as it is or %s, but the grant is not in effect", name, phrase),
+			i18n.Text(
+				"Would keep the lower level of %s, as it is or %s, but the prerequisites of what carries the grant are not met",
+				name, phrase,
 			))
 	default:
 		return i18n.Text("Does not grant %s, since it is already present", label)
@@ -232,8 +270,8 @@ func (g *Grant) mergeSummary(label string, replacements map[string]string, statu
 }
 
 // idleSummary returns why the grant, whose plan has no item (see grantPlan), does nothing, for the tooltip of what
-// carries it: its item can't be granted, or is absent while the grant is below level 1. replacements are those of what
-// carries the grant; see itemNameWith.
+// carries it: its item can't be granted, or is absent while the grant can't put it on the sheet. replacements are
+// those of what carries the grant; see itemNameWith.
 func (g *Grant) idleSummary(replacements map[string]string) string {
 	name := g.itemNameWith(replacements)
 	switch {
@@ -242,11 +280,18 @@ func (g *Grant) idleSummary(replacements map[string]string) string {
 			return i18n.Text("Does not grant %s, since a technique can't be granted", name)
 		}
 		return i18n.Text("Does not grant %s, since a container can't be granted", name)
-	case g.mergesNothing():
-		return i18n.Text("Does not grant %s, since a level below 1 grants nothing", g.itemLabel(replacements))
-	default:
-		// A negative level would take the levels or points it names away from the item, were it present.
+	case g.removes():
+		// A negative amount would take the levels or points it names away from the item, were it present.
 		return i18n.Text("Removes nothing from %s, since it is not present", name)
+	}
+	label := g.itemLabel(replacements)
+	switch {
+	case g.EffectiveAdjust() == grantadjust.AddPoints:
+		return i18n.Text("Does not grant %s, since points too few to buy a level grant nothing", label)
+	case g.setsSkillLevel():
+		return i18n.Text("Does not grant %s, since a skill level below 1 grants nothing", label)
+	default:
+		return i18n.Text("Does not grant %s, since a level below 1 grants nothing", label)
 	}
 }
 
@@ -265,7 +310,8 @@ func (g *Grant) Item() grantItem {
 }
 
 // SetItem makes the grant give a copy of the item, a trait, skill or spell found in the library file, or a new blank
-// item of the grant's kind when item is nil. A leveled trait is granted at its level. Any grants the item or its
+// item of the grant's kind when item is nil. A leveled trait is granted at its level. A kind of adjustment or a merge
+// mode that means nothing for the item falls back as EffectiveAdjust and EffectiveMerge say. Any grants the item or its
 // modifiers carry are left out of the copy, as SyncItemWithSource leaves them out, since a granted item can't grant
 // anything.
 func (g *Grant) SetItem(item any, from LibraryFile) {
@@ -274,7 +320,7 @@ func (g *Grant) SetItem(item any, from LibraryFile) {
 	case *Trait:
 		g.Trait = one.Clone(from, nil, nil, Reference)
 		if g.Trait.IsLeveled() && g.Trait.Levels > 0 {
-			g.Level = g.Trait.Levels
+			g.Amount = g.Trait.Levels
 		}
 	case *Skill:
 		g.Skill = one.Clone(from, nil, nil, Reference)
@@ -291,6 +337,7 @@ func (g *Grant) SetItem(item any, from LibraryFile) {
 		}
 	}
 	DropGrants(g.Item())
+	g.Adjust = g.EffectiveAdjust()
 	g.Merge = g.EffectiveMerge()
 }
 
@@ -340,8 +387,8 @@ func DropGrants(item any) {
 	})
 }
 
-// CarriesGrants returns true if the trait, skill, spell or equipment, or a modifier of the trait or equipment, carries a
-// grant with an item chosen, and so may have put rows on the sheet, in its own list or another.
+// CarriesGrants returns true if the trait, skill, spell or equipment, or a modifier of the trait or equipment, carries
+// a grant with an item chosen, and so may have put rows on the sheet, in its own list or another.
 func CarriesGrants(item any) bool {
 	hasGrant := func(list Features) bool {
 		return slices.ContainsFunc(list, func(f Feature) bool {
@@ -379,12 +426,17 @@ func CarriesGrants(item any) bool {
 	}
 }
 
-// NewGrant creates a new Grant of the given type, which must be one of the grant feature types.
+// NewGrant creates a new Grant of the given type, which must be one of the grant feature types: one that sets a trait's
+// level, or adds levels to a skill or spell.
 func NewGrant(featureType feature.Type) *Grant {
-	return &Grant{
-		Type:  featureType,
-		Level: fxp.One,
+	g := &Grant{
+		Type:   featureType,
+		Amount: fxp.One,
 	}
+	if featureType == feature.GrantTrait {
+		g.Adjust = grantadjust.SetLevel
+	}
+	return g
 }
 
 // IsGrant returns true if the feature type is one of the grant types.
@@ -493,7 +545,7 @@ func (g *Grant) itemNameWith(replacements map[string]string) string {
 	return nameable.Apply(g.ItemName(), replacements)
 }
 
-// Leveled returns true if the level means anything for the granted item: always for a skill or spell, and for a trait
+// Leveled returns true if the amount means anything for the granted item: always for a skill or spell, and for a trait
 // only when it has levels.
 func (g *Grant) Leveled() bool {
 	if g.Type == feature.GrantTrait {
@@ -518,31 +570,132 @@ func (g *Grant) itemGrantable() bool {
 }
 
 // putsItemOnSheet returns true if the grant puts its item on the sheet when the item is absent: a trait without levels
-// always does, and anything else only at level 1 or more, since a negative level only takes away from an item already
-// present.
+// always does, a grant of points only when they buy a level, and anything else only at level 1 or more, since a
+// negative amount only takes away from an item already present. Whether a level set is high enough to give the item
+// anything depends on the sheet, which this leaves to reaches, so that the rows on a sheet are decided by its data
+// alone.
 func (g *Grant) putsItemOnSheet() bool {
-	return !g.Leveled() || g.Level.Floor() >= fxp.One
+	switch {
+	case !g.Leveled():
+		return true
+	case g.EffectiveAdjust() == grantadjust.AddPoints:
+		return g.pointsOn(nil, g.leveler()) > 0
+	default:
+		return g.amount() >= fxp.One
+	}
 }
 
-// mergesNothing returns true if the grant, finding its item already present, changes nothing about it: below level 1
-// a leveled grant gives nothing, as Describe says of it, except that a negative level takes away the levels or points
-// it names, which Keep Highest never does.
+// reaches returns true if the grant, standing alone on the sheet, gives its item something there: a trait always, and a
+// skill or spell points, of which a level set below what 1 point buys there gives none.
+func (g *Grant) reaches(e *Entity) bool {
+	return g.Type == feature.GrantTrait || g.standalonePoints(e) > 0
+}
+
+// removes returns true if the grant only takes away from its item when already present: it adds a negative amount of
+// levels or points (see adds). A level set below 1 takes nothing away.
+func (g *Grant) removes() bool {
+	return g.adds() && g.amount() < 0
+}
+
+// mergesNothing returns true if the grant, finding its item already present, changes nothing about it: a leveled
+// grant that can't put the item on the sheet gives nothing, as Describe says of it, unless it takes away the levels or
+// points it names (see removes) or adds points too few to buy a level, which still add to those the item has.
 func (g *Grant) mergesNothing() bool {
-	if !g.Leveled() || g.putsItemOnSheet() {
+	if !g.Leveled() || g.putsItemOnSheet() || g.removes() {
 		return false
 	}
-	merge := g.EffectiveMerge()
-	return g.level() >= 0 || (merge != grantmerge.MergeLevels && merge != grantmerge.MergePoints)
+	return g.EffectiveAdjust() != grantadjust.AddPoints || g.amount() <= 0
 }
 
-// AllowedMerges returns the merge modes that mean something for the granted item: Ignore alone for a trait without
-// levels, everything but Merge Points for a trait with them, and everything for a skill or spell.
-func (g *Grant) AllowedMerges() []grantmerge.Mode {
-	if !g.Leveled() {
-		return []grantmerge.Mode{grantmerge.Ignore}
+// leveler returns the grant's copy of its skill or spell, or nil for a trait grant or one with no item chosen.
+func (g *Grant) leveler() grantLeveler {
+	switch {
+	case g.Type == feature.GrantSkill && g.Skill != nil:
+		return g.Skill
+	case g.Type == feature.GrantSpell && g.Spell != nil:
+		return g.Spell
+	default:
+		return nil
 	}
-	if g.Type == feature.GrantTrait {
-		return []grantmerge.Mode{grantmerge.Ignore, grantmerge.MergeLevels, grantmerge.KeepHighest}
+}
+
+// pointsOn returns the points the grant gives the skill or spell standing alone, or merged into one with no level of
+// its own: those of the tier its levels make, those it adds when they buy a level, or the fewest that buy the level it
+// sets as the sheet sees the item, of which a nil sheet or a level below 1 gets none. A nil item gets none.
+func (g *Grant) pointsOn(e *Entity, item grantLeveler) fxp.Int {
+	if item == nil {
+		return 0
+	}
+	amount := g.amount()
+	switch g.EffectiveAdjust() {
+	case grantadjust.AddPoints:
+		if buysALevel(amount, item.WildcardDifficulty()) {
+			return amount
+		}
+		return 0
+	case grantadjust.SetLevel:
+		if e == nil || amount < fxp.One {
+			return 0
+		}
+		return item.pointsForBaseLevel(e, amount)
+	default:
+		return grantTierPoints(amount, item.WildcardDifficulty())
+	}
+}
+
+// standalonePoints returns the points the grant gives its own copy of its skill or spell on the sheet, standing alone
+// (see pointsOn), or zero for a trait grant.
+func (g *Grant) standalonePoints(e *Entity) fxp.Int {
+	return g.pointsOn(e, g.leveler())
+}
+
+// buysALevel returns true if the points buy a skill or spell its first level: 1 point, or 3 for a wildcard.
+func buysALevel(points fxp.Int, wildcard bool) bool {
+	if wildcard {
+		return points >= fxp.Three
+	}
+	return points >= fxp.One
+}
+
+// AllowedAdjusts returns the kinds of adjustment that mean something for the granted item, the first of them being the
+// one EffectiveAdjust falls back to: for a trait, setting its level or adding levels, since its points follow from its
+// level; for a skill or spell, all of them, but for a Ritual Magic spell, whose level rests on its ritual skill, adding
+// levels or points only.
+func (g *Grant) AllowedAdjusts() []grantadjust.Kind {
+	switch g.Type {
+	case feature.GrantTrait:
+		return []grantadjust.Kind{grantadjust.SetLevel, grantadjust.AddLevels}
+	case feature.GrantSkill:
+		return grantadjust.Kinds
+	case feature.GrantSpell:
+		if g.Spell != nil && g.Spell.IsRitualMagic() {
+			return []grantadjust.Kind{grantadjust.AddLevels, grantadjust.AddPoints}
+		}
+		return grantadjust.Kinds
+	default:
+		return nil
+	}
+}
+
+// EffectiveAdjust returns the kind of adjustment, treating one that means nothing for the granted item as the first of
+// those that do (see AllowedAdjusts): setting a trait's level, or adding levels to a skill or spell.
+func (g *Grant) EffectiveAdjust() grantadjust.Kind {
+	allowed := g.AllowedAdjusts()
+	if adjust := g.Adjust.EnsureValid(); slices.Contains(allowed, adjust) {
+		return adjust
+	}
+	if len(allowed) != 0 {
+		return allowed[0]
+	}
+	return grantadjust.AddLevels
+}
+
+// AllowedMerges returns the merge modes that mean something for the granted item: all of them for a grant that sets
+// its item's level, and Ignore alone otherwise, since levels or points added are always added to an item already
+// present, and a trait without levels has none to set.
+func (g *Grant) AllowedMerges() []grantmerge.Mode {
+	if !g.Leveled() || g.EffectiveAdjust() != grantadjust.SetLevel {
+		return []grantmerge.Mode{grantmerge.Ignore}
 	}
 	return grantmerge.Modes
 }
@@ -589,11 +742,18 @@ func grantedByText(link *GrantedBy, state *grantState) string {
 		return ""
 	}
 	if !xreflect.IsNil(state.standIn.owner) {
+		if state.unreached {
+			return i18n.Text("Granted by %s, standing in for %s, whose grant gives it nothing",
+				grantSourceName(state.standIn), grantSourceName(state.source))
+		}
 		return i18n.Text("Granted by %s, standing in for %s, whose grant is not in effect", grantSourceName(state.standIn),
 			grantSourceName(state.source))
 	}
 	text := i18n.Text("Granted by %s", grantSourceName(state.source))
-	if !state.inEffect {
+	switch {
+	case state.unreached:
+		text += "\n" + i18n.Text("The grant gives it nothing, since the level it sets is below what 1 point buys.")
+	case !state.inEffect:
 		text += "\n" + i18n.Text("The grant is not in effect.")
 	}
 	return text
@@ -621,31 +781,38 @@ func (g *Grant) Describe(_ *Entity, replacements map[string]string, em func(stri
 	default:
 		item = i18n.Text("the trait %s", em(name))
 	}
-	level := g.level()
+	amount := g.amount()
 	if g.Leveled() && !g.putsItemOnSheet() {
-		// Below level 1, the grant puts nothing on the sheet, and a negative level only takes away from an item present.
+		// The grant puts nothing on the sheet, and a negative amount only takes away from an item present.
 		var text string
-		switch merge := g.EffectiveMerge(); {
-		case level < 0 && merge == grantmerge.MergeLevels:
-			text = i18n.Text("Removes %s from %s when already present", levelsText(level.Abs(), em), item)
-		case level < 0 && merge == grantmerge.MergePoints:
-			text = i18n.Text("Removes the points of %s from %s when already present", levelsText(level.Abs(), em), item)
+		switch adjust := g.EffectiveAdjust(); {
+		case g.removes():
+			text = i18n.Text("Removes %s from %s when already present", g.countText(amount.Abs(), em), item)
+		case !g.mergesNothing():
+			text = i18n.Text("Adds %s to %s when already present, though too few to grant it", pointsText(amount, em),
+				item)
+		case adjust == grantadjust.AddPoints:
+			text = i18n.Text("Would grant %s with %s, but points too few to buy a level grant nothing", item,
+				pointsText(amount, em))
+		case g.setsSkillLevel():
+			text = i18n.Text("Would grant %s at skill level %s, but a skill level below 1 grants nothing", item,
+				em(amount.String()))
 		default:
-			text = i18n.Text("Would grant %s at level %s, but a level below 1 grants nothing", item, em(level.String()))
+			text = i18n.Text("Would grant %s at level %s, but a level below 1 grants nothing", item, em(amount.String()))
 		}
 		return describeSwitchable(g.Switchable, text)
 	}
 	text := i18n.Text("Grants %s", item)
 	if g.Leveled() {
-		text += i18n.Text(" at level %s", em(level.String()))
+		text += " " + g.amountPhrase(em)
 	}
-	switch g.EffectiveMerge() {
-	case grantmerge.MergeLevels:
-		text += i18n.Text(", or adds %s levels to it when already present", em(g.level().StringWithSign()))
-	case grantmerge.MergePoints:
-		text += i18n.Text(", or adds the points of that level to it when already present")
-	case grantmerge.KeepHighest:
-		text += i18n.Text(", or keeps the better of the two levels when already present")
+	switch merge := g.EffectiveMerge(); {
+	case g.adds():
+		text += i18n.Text(", or adds %s to it when already present", g.countText(amount, em))
+	case merge == grantmerge.KeepHighest:
+		text += i18n.Text(", or keeps the higher of the two levels when already present")
+	case merge == grantmerge.KeepLowest:
+		text += i18n.Text(", or keeps the lower of the two levels when already present")
 	default:
 		text += i18n.Text(", unless already present")
 	}
@@ -658,14 +825,30 @@ func (g *Grant) Describe(_ *Entity, replacements map[string]string, em func(stri
 // levelsText returns the count of levels as words, "1 level" or "N levels", with the number emphasized by em when that
 // is not nil.
 func levelsText(levels fxp.Int, em func(string) string) string {
-	text := levels.String()
-	if em != nil {
-		text = em(text)
-	}
+	text := emphasized(levels.String(), em)
 	if levels == fxp.One {
 		return i18n.Text("%s level", text)
 	}
 	return i18n.Text("%s levels", text)
+}
+
+// pointsText returns the count of points as words, "1 point" or "N points", with the number emphasized by em when that
+// is not nil.
+func pointsText(points fxp.Int, em func(string) string) string {
+	text := emphasized(points.String(), em)
+	if points == fxp.One {
+		return i18n.Text("%s point", text)
+	}
+	return i18n.Text("%s points", text)
+}
+
+// countText returns the count of what the grant's amount adjusts its item by, points for a grant of points and levels
+// otherwise; see pointsText and levelsText.
+func (g *Grant) countText(count fxp.Int, em func(string) string) string {
+	if g.EffectiveAdjust() == grantadjust.AddPoints {
+		return pointsText(count, em)
+	}
+	return levelsText(count, em)
 }
 
 // Hash writes this object's contents into the hasher. The grant's copy of its item is hashed whole, modifiers and edit
@@ -677,7 +860,8 @@ func (g *Grant) Hash(h hash.Hash) {
 	}
 	xhash.Num8(h, g.Type)
 	xhash.Bool(h, g.Switchable)
-	xhash.Num64(h, g.Level)
+	xhash.Num64(h, g.Amount)
+	xhash.Num8(h, g.Adjust)
 	xhash.Num8(h, g.Merge)
 	xhash.Bool(h, g.CheckPrereqs)
 	xhash.StringWithLen(h, string(g.Key()))
@@ -703,40 +887,6 @@ func grantTierPoints(tier fxp.Int, wildcard bool) fxp.Int {
 		points = points.Mul(fxp.Three)
 	}
 	return points
-}
-
-// grantTierOf returns the tier the given points buy for a skill or spell, or zero when they buy none.
-func grantTierOf(points fxp.Int, wildcard bool) fxp.Int {
-	if wildcard {
-		points = points.Div(fxp.Three)
-	}
-	switch points = points.Floor(); {
-	case points < fxp.One:
-		return 0
-	case points < fxp.Two:
-		return fxp.One
-	case points < fxp.Four:
-		return fxp.Two
-	default:
-		return fxp.Two + points.Div(fxp.Four).Floor()
-	}
-}
-
-// grantPointsDelta returns the change to an item's points a grant of the given tier makes when merged as points: the
-// points of that tier, or, for a negative tier, what takes the item down to the tier that many below its own, points
-// beyond its tier included, since leaving them would leave the item at its tier when they are as many as the step
-// down, and never below zero. taken is the tiers other negative grants have already taken from the item (see
-// grantState.tiersTaken), which this one's come off after, so that they stack whatever their order.
-func grantPointsDelta(tier, current, taken fxp.Int, wildcard bool) fxp.Int {
-	if tier = tier.Floor(); tier >= 0 {
-		return grantTierPoints(tier, wildcard)
-	}
-	have := grantTierOf(current, wildcard)
-	from := current
-	if taken != 0 {
-		from = grantTierPoints((have + taken).Max(0), wildcard)
-	}
-	return grantTierPoints((have+taken+tier).Max(0), wildcard) - from
 }
 
 func (s *grantState) reset() {
@@ -778,21 +928,22 @@ func (s *grantState) addLevels(source grantSource, amount fxp.Int) {
 	}
 }
 
-// keepLevel records that a Keep Highest grant keeps the item at the level, the lower of it and the item's own being the
-// better when lower is set, as it is for a disadvantage.
+// keepLevel records that a Keep Highest grant keeps the item at the level when it is higher than the item's own, or,
+// with lower set, that a Keep Lowest grant keeps it there when it is lower.
 func (s *grantState) keepLevel(source grantSource, level fxp.Int, lower bool) {
 	note := newGrantNote(source, level)
 	note.keep = true
+	note.lower = lower
 	s.levelNotes = append(s.levelNotes, note)
-	s.keepLower = lower
 }
 
-// keepTier records that a Keep Highest grant keeps a skill or spell at the level the points of its tier give it, which
-// is read along with the item's own level; see applyLevelNotes.
-func (s *grantState) keepTier(source grantSource, points fxp.Int) {
+// keepPoints is keepLevel for a skill or spell kept at the level the points give it, which is read along with the
+// item's own level; see applyLevelNotes.
+func (s *grantState) keepPoints(source grantSource, points fxp.Int, lower bool) {
 	note := newGrantNote(source, points)
 	note.keep = true
-	note.tier = true
+	note.points = true
+	note.lower = lower
 	s.levelNotes = append(s.levelNotes, note)
 }
 
@@ -824,11 +975,13 @@ func (s *grantState) pointsExcept(exclude any) fxp.Int {
 }
 
 // applyLevelNotes returns the level with what the grants made of it, leaving out what the grants carried by exclude
-// gave (see pointsExcept): the levels merged into it are added, and then each level a Keep Highest grant keeps it at
-// replaces it when better, which for a disadvantage is lower. The level a skill or spell is kept at is read here from
-// the points of its tier by levelAt, which a trait, whose grants keep levels outright, leaves nil, so that it sees the
-// bonuses and penalties the item's own level does, which may not have been in place when the grants were applied. The
-// notes of the grants that changed the level go into the tooltip, which may be nil.
+// gave (see pointsExcept): the levels merged into it are added, and then, in the order the grants were merged, each
+// level a Keep Highest grant keeps it at replaces it when higher, and each a Keep Lowest grant keeps it at when lower,
+// so that a Keep Lowest grant, merged after any Keep Highest one (see comparePlanting), caps what that raised. The
+// level a skill or spell is kept at is read here from the points kept by levelAt, which a trait, whose grants keep
+// levels outright, leaves nil, so that it sees the bonuses and penalties the item's own level does, which may not have
+// been in place when the grants were applied. The notes of the grants that changed the level go into the tooltip,
+// which may be nil.
 func (s *grantState) applyLevelNotes(exclude any, level fxp.Int, tooltip *xbytes.InsertBuffer, levelAt func(points fxp.Int) fxp.Int) fxp.Int {
 	s = s.viewFor(exclude)
 	for _, note := range s.levelNotes {
@@ -842,7 +995,7 @@ func (s *grantState) applyLevelNotes(exclude any, level fxp.Int, tooltip *xbytes
 			continue
 		}
 		kept := note.amount
-		if note.tier {
+		if note.points {
 			if levelAt == nil {
 				continue
 			}
@@ -851,7 +1004,7 @@ func (s *grantState) applyLevelNotes(exclude any, level fxp.Int, tooltip *xbytes
 			}
 		}
 		diff := kept - level
-		if s.keepLower {
+		if note.lower {
 			diff = diff.Min(0)
 		} else {
 			diff = diff.Max(0)
@@ -866,7 +1019,7 @@ func (s *grantState) applyLevelNotes(exclude any, level fxp.Int, tooltip *xbytes
 
 func (s *grantState) hash(h hash.Hash) {
 	xhash.Bool(h, s.inEffect)
-	xhash.Bool(h, s.keepLower)
+	xhash.Bool(h, s.unreached)
 	hashGrantNotes(h, s.levelNotes)
 	hashGrantNotes(h, s.pointNotes)
 }
@@ -876,7 +1029,8 @@ func hashGrantNotes(h hash.Hash, notes []grantNote) {
 	for _, note := range notes {
 		xhash.Num64(h, note.amount)
 		xhash.Bool(h, note.keep)
-		xhash.Bool(h, note.tier)
+		xhash.Bool(h, note.points)
+		xhash.Bool(h, note.lower)
 	}
 }
 
@@ -909,15 +1063,16 @@ func (s *grantState) applyPoints(exclude any, points fxp.Int, tooltip *xbytes.In
 }
 
 // applyLevels returns the level with what the grants made of a skill's or spell's level (see applyLevelNotes), unless
-// it has none, leaving out what the grants carried by exclude gave. levelAt returns the level the item would have with
-// the given points in place of its own, which a Keep Highest grant's level is read with.
+// it has none, leaving out what the grants carried by exclude gave. Levels taken away leave it no lower than 0, or than
+// it was, when it was already below that. levelAt returns the level the item would have with the given points in place
+// of its own, which the level a Keep Highest or Keep Lowest grant keeps is read with.
 func (s *grantState) applyLevels(exclude any, level Level, levelAt func(points fxp.Int) fxp.Int) Level {
 	if len(s.viewFor(exclude).levelNotes) == 0 || level.Level == fxp.Min {
 		return level
 	}
 	var tooltip xbytes.InsertBuffer
 	tooltip.WriteString(level.Tooltip)
-	result := s.applyLevelNotes(exclude, level.Level, &tooltip, levelAt)
+	result := s.applyLevelNotes(exclude, level.Level, &tooltip, levelAt).Max(level.Level.Min(0))
 	level.RelativeLevel += result - level.Level
 	level.Level = result
 	level.Tooltip = tooltip.String()

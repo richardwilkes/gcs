@@ -22,6 +22,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/attack"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/difficulty"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/feature"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/grantadjust"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/grantmerge"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/spellmatch"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/stdmg"
@@ -761,19 +762,21 @@ func (b *largeEntityBuilder) addNotes() {
 	}
 }
 
-// addGrants hands out the grants, cycling through traits, skills and spells and, independently, through the merge
-// modes: half go to traits, a quarter to equipped equipment and a quarter to unequipped equipment, whose grants are not
-// in effect, or all to whichever of those there are. Every other trait or skill grant puts a new item on the sheet, the
-// new skills taking their specialization from what carries the grant; the rest, and every spell grant, copy an item
-// already there so that they merge with it, though a copy of an item that carries a grant of its own, or gets one
-// later, no longer matches it once the grant is added, since the "Topic" replacement addTopic gives the item is one the
-// copy lacks, and such a grant puts its copy on the sheet instead. A spell grant with no spell to copy is a skill grant
-// instead. Nothing is handed out when there is nothing to carry it.
+// addGrants hands out the grants, cycling through traits, skills and spells and, independently, through the kinds of
+// adjustment each allows and, for a level set, through the merge modes, a skill's or spell's level set being at least
+// what 1 point buys of any skill or spell here, so that its row still gives the item points: half go to traits, a
+// quarter to equipped equipment and a quarter to unequipped equipment, whose grants are not in effect, or all to
+// whichever of those there are. Every other trait or skill grant puts a new item on the sheet, the new skills taking
+// their specialization from what carries the grant; the rest, and every spell grant, copy an item already there so that
+// they merge with it, though a copy of an item that carries a grant of its own, or gets one later, no longer matches it
+// once the grant is added, since the "Topic" replacement addTopic gives the item is one the copy lacks, and such a
+// grant puts its copy on the sheet instead. A spell grant with no spell to copy is a skill grant instead. Nothing is
+// handed out when there is nothing to carry it.
 func (b *largeEntityBuilder) addGrants() {
 	if len(b.traits) == 0 && len(b.equipped) == 0 && len(b.unequipped) == 0 {
 		return
 	}
-	modes := []grantmerge.Mode{grantmerge.MergeLevels, grantmerge.MergePoints, grantmerge.KeepHighest}
+	modes := []grantmerge.Mode{grantmerge.Ignore, grantmerge.KeepHighest, grantmerge.KeepLowest}
 	for i := range b.size.Grants {
 		var g *gurps.Grant
 		merge := i%2 == 1
@@ -806,8 +809,17 @@ func (b *largeEntityBuilder) addGrants() {
 			g = gurps.NewGrant(feature.GrantSpell)
 			g.Spell = b.spells[i%len(b.spells)].Clone(gurps.LibraryFile{}, nil, nil, gurps.Duplicate)
 		}
-		g.Level = fxp.FromInteger(i%3 + 1)
-		g.Merge = modes[(i/3)%len(modes)]
+		g.Amount = fxp.FromInteger(i%3 + 1)
+		if adjust := grantadjust.Kinds[(i/3)%len(grantadjust.Kinds)]; slices.Contains(g.AllowedAdjusts(), adjust) {
+			g.Adjust = adjust
+		}
+		if g.EffectiveAdjust() == grantadjust.SetLevel {
+			g.Merge = modes[(i/9)%len(modes)]
+			if kind != 0 {
+				// What 1 point buys of any skill or spell here is at most 14, that of an IQ/Easy skill with IQ 14.
+				g.Amount = fxp.FromInteger(i%2 + 14)
+			}
+		}
 		// The carrier may already answer nameables of its own, so the topic is added to its replacements.
 		addTopic := func(replacements *map[string]string) {
 			if *replacements == nil {

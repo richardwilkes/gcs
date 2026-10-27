@@ -522,7 +522,7 @@ func (t *Trait) disabledForPrereqsOf(exclude any) bool {
 	if t.enforcedMaxLevels > 0 {
 		level := t.Levels
 		if view.detail != nil {
-			level = view.detail.level()
+			level = view.detail.amount()
 		}
 		if level > t.enforcedMaxLevels {
 			return true
@@ -727,7 +727,7 @@ func (t *Trait) currentLevelExcept(exclude any, tooltip *xbytes.InsertBuffer) fx
 	}
 	levels := t.Levels
 	if detail := t.grant.viewFor(exclude).detail; detail != nil {
-		levels = detail.level()
+		levels = detail.amount()
 	}
 	if t.resolvingLevel {
 		// A per-level trait bonus whose leveled owner is this trait -- because the bonus matches the trait's own name,
@@ -934,7 +934,7 @@ func (t *Trait) pointsWith(modifiers []*TraitModifier) fxp.Int {
 	levels, selfControl, freq := t.Levels, t.SelfControl, t.Frequency
 	if detail := judgedDetail(t); detail != nil {
 		if t.IsLeveled() {
-			levels = detail.level()
+			levels = detail.amount()
 		}
 		selfControl, freq = detail.Trait.SelfControl, detail.Trait.Frequency
 	}

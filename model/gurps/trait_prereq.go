@@ -96,7 +96,7 @@ func (p *TraitPrereq) Satisfied(entity *Entity, exclude any, tooltip *xbytes.Ins
 	Traverse(func(t *Trait) bool {
 		if excludedFromPrereqs(exclude, t) || !p.NameCriteria.Matches(replacements, t.NameWithReplacements()) ||
 			// The points are those the trait would cost if bought, so that a granted trait, which costs nothing, is
-			// judged as the same trait bought would be, as a granted skill is by its tier.
+			// judged as the same trait bought would be, as a granted skill is by the points its grant gives it.
 			(p.PointsCriteria.Compare != criteria.AnyNumber && !p.PointsCriteria.Matches(t.ClassifyingPoints())) ||
 			(p.TagsCriteria.Compare != criteria.AnyText && !p.TagsCriteria.MatchesList(replacements, t.Tags...)) ||
 			(p.TitleNoteCriteria.Compare != criteria.AnyText &&

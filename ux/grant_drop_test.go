@@ -11,27 +11,24 @@ package ux
 
 import (
 	"fmt"
-	"os"
 	"path/filepath"
 	"slices"
+	"strconv"
 	"strings"
 	"testing"
-	"time"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/container"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/feature"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/grantadjust"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/grantmerge"
 	"github.com/richardwilkes/gcs/v5/model/jio"
-	"github.com/richardwilkes/gcs/v5/model/library"
 	"github.com/richardwilkes/gcs/v5/ux/uxtest"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/tid"
-	"github.com/richardwilkes/toolbox/v2/xmath"
 	"github.com/richardwilkes/unison"
-	"github.com/richardwilkes/unison/enums/mod"
 )
 
 // grantAt returns the panel's feature at the index, which must be a grant.
@@ -56,6 +53,20 @@ func newGrantTestTrait(name string, levels fxp.Int) *gurps.Trait {
 	return t
 }
 
+// grantItemNames returns the names of the items, which must be traits.
+func grantItemNames(t *testing.T, items []*grantLibraryItem) []string {
+	t.Helper()
+	names := make([]string, 0, len(items))
+	for _, item := range items {
+		trait, ok := item.node.(*gurps.Trait)
+		if !ok {
+			t.Fatalf("expected a trait, found %T", item.node)
+		}
+		names = append(names, trait.Name)
+	}
+	return names
+}
+
 // TestGrantItemsFromDraggedRows checks that dragged rows become one grant item each, that a container stands for the
 // items within it, and that an item that grants something itself is left out.
 func TestGrantItemsFromDraggedRows(t *testing.T) {
@@ -77,11 +88,7 @@ func TestGrantItemsFromDraggedRows(t *testing.T) {
 	}
 	kind, items := grantItemsFrom(&unison.TableDragData[*Node[*gurps.Trait]]{Table: table, Rows: rows})
 	c.Equal(feature.GrantTrait, kind)
-	names := make([]string, 0, len(items))
-	for _, item := range items {
-		names = append(names, item.name)
-	}
-	c.Equal([]string{"Night Vision", "Dark Vision", "Fit"}, names)
+	c.Equal([]string{"Night Vision", "Dark Vision", "Fit"}, grantItemNames(t, items))
 
 	kind, _ = grantItemsFrom(nil)
 	c.Equal(feature.Unknown, kind, "anything else isn't a drag of items to grant")
@@ -119,7 +126,7 @@ func TestFeaturesPanelDropsGrants(t *testing.T) {
 		c.Equal(2, len(features))
 		c.True(features[0] == empty, "the empty grant is filled, not replaced")
 		c.Equal("Night Vision", empty.ItemName())
-		c.Equal(fxp.Three, empty.Level, "the filled grant takes the trait's level too")
+		c.Equal(fxp.Three, empty.Amount, "the filled grant takes the trait's level too")
 		second, ok := features[1].(*gurps.Grant)
 		c.True(ok)
 		c.Equal("Dark Vision", second.ItemName(), "a second item is added after it")
@@ -131,9 +138,9 @@ func TestFeaturesPanelDropsGrants(t *testing.T) {
 		last, ok := features[2].(*gurps.Grant)
 		c.True(ok)
 		c.Equal("Fit", last.ItemName())
-		c.Equal(fxp.Three, last.Level, "a leveled trait is granted at its level")
+		c.Equal(fxp.Three, last.Amount, "a leveled trait is granted at its level")
 		c.Equal("2", p.open)
-		c.Equal("2:level", p.Window().Focus().RefKey, "the new grant's level field takes the focus")
+		c.Equal("2:amount", p.Window().Focus().RefKey, "the new grant's level field takes the focus")
 		host.mgr.Undo()
 	})
 	screen.Do(func() {
@@ -148,9 +155,9 @@ func TestFeaturesPanelDropsGrants(t *testing.T) {
 	})
 }
 
-// TestGrantDropZoneReplacesTheChosenItem checks that the open row of a grant keeps its drop zone once an item is chosen,
-// that a drop on the zone replaces the item rather than adding a grant, and that a drop elsewhere on the row still goes
-// beside it.
+// TestGrantDropZoneReplacesTheChosenItem checks that the open row of a grant keeps its drop zone once an item is
+// chosen, that a drop on the zone replaces the item rather than adding a grant, and that a drop elsewhere on the row
+// still goes beside it.
 func TestGrantDropZoneReplacesTheChosenItem(t *testing.T) {
 	c := check.New(t)
 	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
@@ -184,453 +191,247 @@ func TestGrantDropZoneReplacesTheChosenItem(t *testing.T) {
 	})
 }
 
-// TestGrantRowControls checks the controls of an open grant row: the level of a skill or spell grant is a whole number,
-// since the grant acts at the tier, so its field refuses fractions, where a trait grant's takes them, and its tooltip
-// prices the tiers as grantTierPoints does; and Cmd-Return in the picker's filter is left to the editor, which applies
-// the changes with it.
+// popupItems returns the items of the popup, in order.
+func popupItems[T comparable](popup *unison.PopupMenu[T]) []T {
+	items := make([]T, 0, popup.ItemCount())
+	for i := range popup.ItemCount() {
+		if item, ok := popup.ItemAt(i); ok {
+			items = append(items, item)
+		}
+	}
+	return items
+}
+
+// TestGrantRowControls checks the controls of an open grant row for each kind of grant: a popup of the kinds of
+// adjustment its item allows, showing the phrase of the grant's kind; the amount, signed when it adds levels or points,
+// named and explained for its kind, and whole for a skill's or spell's levels, where a trait's levels and any points
+// may be fractional; and, only for a grant that sets its item's level, the collision popup, showing the grant's mode.
+// A trait without levels has none of them.
 func TestGrantRowControls(t *testing.T) {
+	c := check.New(t)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
+	entity := gurps.NewEntity()
+	owner := gurps.NewTrait(entity, nil, false)
+	cases := []struct {
+		name      string
+		grantType feature.Type
+		item      any
+		kind      grantadjust.Kind
+		merge     grantmerge.Mode
+		phrase    string // the kind popup's text, empty for no kind popup and no amount field
+		text      string // the amount field's text
+		title     string
+		fractions bool
+		collision bool // whether the collision popup shows
+	}{
+		{name: "unleveled trait", grantType: feature.GrantTrait, item: newGrantTestTrait("Night Vision", 0)},
+		{
+			name: "trait setting its level", grantType: feature.GrantTrait, item: newGrantTestTrait("Magery", fxp.One),
+			kind: grantadjust.SetLevel, merge: grantmerge.KeepHighest, phrase: "setting its level to", text: "2",
+			title: "Level", fractions: true, collision: true,
+		},
+		{
+			// A collision mode left from a level set means nothing for levels added, so no popup shows it.
+			name: "trait adding levels", grantType: feature.GrantTrait, item: newGrantTestTrait("Fit", fxp.One),
+			kind: grantadjust.AddLevels, merge: grantmerge.KeepHighest, phrase: "adjusting its level by", text: "+2",
+			title: "Level Adjustment", fractions: true,
+		},
+		{
+			name: "skill adding levels", grantType: feature.GrantSkill, item: newTestSkill("Brawling", fxp.One, nil),
+			kind: grantadjust.AddLevels, merge: grantmerge.Ignore, phrase: "adjusting its level by", text: "+2",
+			title: "Level Adjustment",
+		},
+		{
+			name: "skill adding points", grantType: feature.GrantSkill, item: newTestSkill("Stealth", fxp.One, nil),
+			kind: grantadjust.AddPoints, merge: grantmerge.KeepLowest, phrase: "adjusting its points by", text: "+2",
+			title: "Point Adjustment", fractions: true,
+		},
+		{
+			name: "spell setting its level", grantType: feature.GrantSpell, item: newTestSpell("Light", fxp.One, nil),
+			kind: grantadjust.SetLevel, merge: grantmerge.KeepLowest, phrase: "setting its level to", text: "2",
+			title: "Level", collision: true,
+		},
+	}
+	features := make(gurps.Features, 0, len(cases))
+	for _, one := range cases {
+		g := gurps.NewGrant(one.grantType)
+		g.SetItem(one.item, gurps.LibraryFile{})
+		g.Amount = fxp.Two
+		g.Adjust = one.kind
+		g.Merge = one.merge
+		features = append(features, g)
+	}
+	p, _ := showFeaturesPanel(t, screen, entity, owner, &features, false)
+	for i, one := range cases {
+		path := strconv.Itoa(i)
+		key := func(name string) string { return path + ":" + name }
+		screen.Do(func() { p.toggle(path) })
+		var wnd *unison.Window
+		var field *DecimalField
+		screen.Do(func() {
+			wnd = p.Window()
+			if !one.collision {
+				c.Nil(p.FindRefKey(key("merge")), "%s: no collision popup", one.name)
+			} else if popup := featuresPopup[grantmerge.Mode](c, p, key("merge")); popup != nil {
+				c.Equal([]grantmerge.Mode{grantmerge.Ignore, grantmerge.KeepHighest, grantmerge.KeepLowest},
+					popupItems(popup), one.name)
+				selected, _ := popup.Selected()
+				c.Equal(one.merge, selected, "%s: the popup shows the grant's collision mode", one.name)
+			}
+			if one.phrase == "" {
+				c.Nil(p.FindRefKey(key("adjust")), "%s: no kind popup", one.name)
+				c.Nil(p.FindRefKey(key("amount")), "%s: no amount field", one.name)
+				return
+			}
+			if popup := featuresPopup[grantadjust.Kind](c, p, key("adjust")); popup != nil {
+				c.Equal(grantAt(t, p, i).AllowedAdjusts(), popupItems(popup), one.name)
+				c.Equal(one.phrase, popup.Text(), one.name)
+			}
+			var ok bool
+			field, ok = refKeySelf(p.AsPanel(), key("amount")).(*DecimalField)
+			c.True(ok, "%s: an amount field", one.name)
+			if field != nil {
+				c.Equal(one.text, field.Text(), one.name)
+				c.Equal(wrapTextForTooltip(grantAmountTooltip(one.grantType, one.kind)), tooltipText(field.Tooltip),
+					one.name)
+			}
+		})
+		if field == nil {
+			continue
+		}
+		c.NotNil(screen.AccessibilityTree(wnd))
+		node := screen.AccessibilityNodeFor(field)
+		c.NotNil(node, "%s: the amount field is described", one.name)
+		if node != nil {
+			c.Equal(one.title, node.Name, one.name)
+		}
+		screen.Do(func() {
+			field.SetText("1.5")
+			if one.fractions {
+				c.Equal(fxp.OneAndAHalf, grantAt(t, p, i).Amount, "%s: a fractional amount is taken", one.name)
+			} else {
+				c.NotEqual("", field.tooltipTextForValidation(), "%s: a fractional amount is invalid", one.name)
+			}
+		})
+	}
+}
+
+// TestGrantKindChoiceKeepsTheAmount checks that choosing how a skill grant's amount adjusts the item keeps the amount
+// as typed, shows it with a sign only when it adds levels or points, and is a single undoable edit; and that choosing
+// a kind that adds drops the collision mode of a level set along with its popup, which a level set chosen again shows
+// with nothing kept.
+func TestGrantKindChoiceKeepsTheAmount(t *testing.T) {
 	c := check.New(t)
 	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
 	entity := gurps.NewEntity()
 	owner := gurps.NewTrait(entity, nil, false)
 	g := gurps.NewGrant(feature.GrantSkill)
 	g.SetItem(newTestSkill("Brawling", fxp.One, nil), gurps.LibraryFile{})
-	// A loaded grant may hold a merge that means nothing for its item, which the grant treats as Ignore.
-	traitGrant := gurps.NewGrant(feature.GrantTrait)
-	traitGrant.SetItem(newGrantTestTrait("Night Vision", fxp.One), gurps.LibraryFile{})
-	traitGrant.Merge = grantmerge.MergePoints
-	features := gurps.Features{g, gurps.NewGrant(feature.GrantSkill), traitGrant}
-	p, _ := showFeaturesPanel(t, screen, entity, owner, &features, false)
-	screen.Do(func() { p.toggle("2") })
-	screen.Do(func() {
-		popup, ok := p.FindRefKey("2:merge").Self.(*unison.PopupMenu[grantmerge.Mode])
-		if !ok {
-			t.Fatal("the open trait grant row has no merge popup")
-		}
-		selected, has := popup.Selected()
-		c.True(has, "the popup shows the merge the grant uses")
-		c.Equal(grantmerge.Ignore, selected)
-		field, ok := p.FindRefKey("2:level").Self.(*DecimalField)
-		if !ok {
-			t.Fatal("the open trait grant row has no level field")
-		}
-		field.SetText("1.5")
-		c.Equal(fxp.OneAndAHalf, traitGrant.Level, "a trait grant's level may be fractional")
-		p.toggle("0")
-	})
-	screen.Do(func() {
-		field, ok := p.FindRefKey("0:level").Self.(*DecimalField)
-		if !ok {
-			t.Fatal("the open grant row has no level field")
-		}
-		field.SetText("2.5")
-		c.NotEqual("", field.tooltipTextForValidation(), "a skill grant's level is whole, so a pasted fraction is invalid")
-		field.SetText("2")
-		c.Equal(fxp.Two, g.Level)
-		field.SetSelectionToEnd()
-		c.False(field.RuneTypedCallback('.'), "and a typed decimal point is refused")
-		c.Equal("2", field.Text())
-		p.toggle("1")
-	})
-	screen.Do(func() {
-		filter, ok := p.FindRefKey("1:filter").Self.(*unison.Field)
-		if !ok {
-			t.Fatal("the empty grant row has no filter")
-		}
-		c.True(filter.KeyDownCallback(unison.KeyReturn, 0, false), "Return chooses from the picker")
-		c.False(filter.KeyDownCallback(unison.KeyReturn, mod.OSMenuCommand(), false), "Cmd-Return is the editor's")
-	})
-	c.Equal("The level is counted in steps of points: level 1 is what 1 point buys, level 2 what 2 points buy, level 3 "+
-		"what 4 points buy, and each level after that 4 points more. A negative level only takes levels or points away "+
-		"from one already present.", grantLevelTooltip(feature.GrantSkill))
-}
-
-// TestGrantPickerFollowsItsGrant checks that the picker opened to choose a different item for a grant stays with that
-// grant as rows move, rather than with the row's position, so another grant moved into that position doesn't get it.
-func TestGrantPickerFollowsItsGrant(t *testing.T) {
-	c := check.New(t)
-	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
-	entity := gurps.NewEntity()
-	owner := gurps.NewTrait(entity, nil, false)
-	first := gurps.NewGrant(feature.GrantTrait)
-	first.SetItem(newGrantTestTrait("Night Vision", 0), gurps.LibraryFile{})
-	second := gurps.NewGrant(feature.GrantTrait)
-	second.SetItem(newGrantTestTrait("Dark Vision", 0), gurps.LibraryFile{})
-	features := gurps.Features{first, second}
-	p, _ := showFeaturesPanel(t, screen, entity, owner, &features, false)
-	screen.Do(func() { p.toggle("0") })
-	screen.Do(func() {
-		c.Nil(p.FindRefKey("0:filter"), "a chosen grant shows no picker until asked")
-		button, ok := p.FindRefKey("0:item").Self.(*unison.Button)
-		if !ok {
-			t.Fatal("the open grant row has no item button")
-		}
-		button.Click()
-	})
-	screen.Do(func() {
-		c.NotNil(p.FindRefKey("0:filter"), "the item button opens the picker")
-		for _, entry := range p.moreEntries("0") {
-			if entry.Label == "Move Down" {
-				entry.Act()
-			}
-		}
-	})
-	screen.Do(func() {
-		c.True(features[1] == first, "precondition: the grant moved down")
-		c.Equal("1", p.open, "and stays open")
-		c.NotNil(p.FindRefKey("1:filter"), "with its picker")
-		p.toggle("0")
-	})
-	screen.Do(func() {
-		c.Nil(p.FindRefKey("0:filter"), "the grant now in its old position has no picker")
-	})
-}
-
-// TestGrantLibraryItemsFollowTheLibrary checks that the picker's items name the library by its current key once the
-// library has been rekeyed, that a file removed from the library drops out, and that an unchanged library gives the
-// same list again rather than a fresh one.
-func TestGrantLibraryItemsFollowTheLibrary(t *testing.T) {
-	c := check.New(t)
-	_, _ = uxtest.StartHeadlessWorkspace(t, c)
-	dir := t.TempDir()
-	lib := library.NewLibrary("Test", "acct", "", "repo", dir)
-	libraries := gurps.GlobalSettings().Libraries
-	libraries.Store(lib.Key(), lib)
-	t.Cleanup(func() { libraries.Remove(lib.Key()) })
-	path := filepath.Join(dir, "Traits", "Test"+gurps.TraitsExt)
-	c.NoError(gurps.SaveTraits([]*gurps.Trait{newGrantTestTrait("Night Vision", 0)}, path))
-	find := func(items []*grantLibraryItem) *grantLibraryItem {
-		for _, item := range items {
-			if item.name == "Night Vision" {
-				return item
-			}
-		}
-		return nil
-	}
-	items := grantLibraryItems(feature.GrantTrait)
-	item := find(items)
-	if item == nil {
-		t.Fatal("the library's trait is not among the items")
-	}
-	c.Equal("acct/repo", item.from.Library)
-	again := grantLibraryItems(feature.GrantTrait)
-	c.True(len(again) != 0 && &again[0] == &items[0], "an unchanged library gives the same list again")
-
-	oldKey := lib.Key()
-	lib.Configure(library.Config{Title: "Test", GitHubAccountName: "other", RepoName: "repo"})
-	libraries.Rekey(oldKey, lib)
-	t.Cleanup(func() { libraries.Remove(lib.Key()) })
-	item = find(grantLibraryItems(feature.GrantTrait))
-	if item == nil {
-		t.Fatal("the rekeyed library's trait is not among the items")
-	}
-	c.Equal("other/repo", item.from.Library, "the items name the library by its current key")
-
-	c.NoError(os.Remove(path))
-	c.Nil(find(grantLibraryItems(feature.GrantTrait)), "a file removed from the library drops out")
-}
-
-// TestGrantLibraryItemsFollowSymlinks checks that the picker's items include those in a folder a symlink in the library
-// points at, as the Library Explorer lists them, that a folder a symlink leads to again, one of the library's own or
-// one back up the tree, is not walked again, which would offer its items twice or walk forever, that a file a symlink
-// leads to again, one in the library's folders or in a folder a symlink points at, or one outside the library another
-// symlink already leads to, is not offered again, and that the items of a file a symlink points at are read again once
-// that file's modification time or size changes, which the symlink's own don't.
-func TestGrantLibraryItemsFollowSymlinks(t *testing.T) {
-	c := check.New(t)
-	_, _ = uxtest.StartHeadlessWorkspace(t, c)
-	dir := t.TempDir()
-	traits := filepath.Join(dir, "Traits")
-	c.NoError(os.MkdirAll(traits, 0o750))
-	if err := os.Symlink(traits, filepath.Join(dir, "Alias")); err != nil {
-		t.Skipf("unable to create a symlink here: %v", err) // Windows requires a privilege for this by default
-	}
-	linked := filepath.Join(t.TempDir(), "Linked Traits")
-	c.NoError(os.MkdirAll(linked, 0o750))
-	c.NoError(os.Symlink(linked, filepath.Join(dir, "Linked")))
-	c.NoError(os.Symlink(dir, filepath.Join(linked, "Loop")))
-	c.NoError(gurps.SaveTraits([]*gurps.Trait{newGrantTestTrait("Night Vision", 0)},
-		filepath.Join(traits, "Test"+gurps.TraitsExt)))
-	c.NoError(gurps.SaveTraits([]*gurps.Trait{newGrantTestTrait("Dark Vision", 0)},
-		filepath.Join(linked, "Test"+gurps.TraitsExt)))
-	target := filepath.Join(t.TempDir(), "Elsewhere"+gurps.TraitsExt)
-	keenHearing := newGrantTestTrait("Keen Hearing", 0)
-	c.NoError(gurps.SaveTraits([]*gurps.Trait{keenHearing}, target))
-	c.NoError(os.Symlink(target, filepath.Join(dir, "Shortcut"+gurps.TraitsExt)))
-	c.NoError(os.Symlink(target, filepath.Join(dir, "Shortcut2"+gurps.TraitsExt)))
-	c.NoError(os.Symlink(filepath.Join(traits, "Test"+gurps.TraitsExt), filepath.Join(dir, "Same"+gurps.TraitsExt)))
-	c.NoError(os.Symlink(filepath.Join(linked, "Test"+gurps.TraitsExt),
-		filepath.Join(traits, "Via Linked"+gurps.TraitsExt)))
-	lib := library.NewLibrary("Test", "acct", "", "repo", dir)
-	libraries := gurps.GlobalSettings().Libraries
-	libraries.Store(lib.Key(), lib)
-	t.Cleanup(func() { libraries.Remove(lib.Key()) })
-	offered := func() map[string][]string {
-		paths := make(map[string][]string)
-		for _, item := range grantLibraryItems(feature.GrantTrait) {
-			if item.from.Library == lib.Key() {
-				paths[item.name] = append(paths[item.name], item.from.Path)
-			}
-		}
-		return paths
-	}
-	paths := offered()
-	c.Equal([]string{"Linked/Test" + gurps.TraitsExt}, paths["Dark Vision"],
-		"the trait in the folder a symlink points at is offered once, by its path within the library, though a "+
-			"symlink to its file leads to it too")
-	c.Equal([]string{"Traits/Test" + gurps.TraitsExt}, paths["Night Vision"],
-		"the trait in a folder of the library is offered once, by its path there, though symlinks to the folder and "+
-			"to the file lead to it too")
-	c.Equal([]string{"Shortcut" + gurps.TraitsExt}, paths["Keen Hearing"],
-		"the trait in the file a symlink points at is offered once, by the first symlink's path")
-
-	// A rename to a name of the same length leaves the file the same size, so that only the modification time tells the
-	// saves apart.
-	before, err := os.Stat(target)
-	c.NoError(err)
-	later := time.Now().Add(time.Hour)
-	acuteVision := newGrantTestTrait("Acute Vision", 0)
-	c.NoError(gurps.SaveTraits([]*gurps.Trait{acuteVision}, target))
-	c.NoError(os.Chtimes(target, later, later))
-	after, err := os.Stat(target)
-	c.NoError(err)
-	c.Equal(before.Size(), after.Size(), "the rename keeps the file's size")
-	c.Equal([]string{"Shortcut" + gurps.TraitsExt}, offered()["Acute Vision"],
-		"a trait renamed in the file a symlink points at is offered once the file's modification time changes")
-
-	// As when the file system keeps modification times too coarse to tell two saves apart.
-	c.NoError(gurps.SaveTraits([]*gurps.Trait{acuteVision, newGrantTestTrait("Danger Sense", 0)}, target))
-	c.NoError(os.Chtimes(target, later, later))
-	c.Equal([]string{"Shortcut" + gurps.TraitsExt}, offered()["Danger Sense"],
-		"a trait in the file a symlink points at is offered once the file's size changes, though its time didn't")
-}
-
-// TestGrantPickerLeavesOutTheItemEdited checks that the picker doesn't offer the item being edited, or a copy of it,
-// as the drop and Add as Grant leave it out, since the item would otherwise grant a copy of itself.
-func TestGrantPickerLeavesOutTheItemEdited(t *testing.T) {
-	c := check.New(t)
-	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
-	dir := t.TempDir()
-	lib := library.NewLibrary("Test", "acct", "", "repo", dir)
-	libraries := gurps.GlobalSettings().Libraries
-	libraries.Store(lib.Key(), lib)
-	t.Cleanup(func() { libraries.Remove(lib.Key()) })
-	libFile := gurps.LibraryFile{Library: lib.Key(), Path: "Traits/Test" + gurps.TraitsExt}
-	nightVision := newGrantTestTrait("Night Vision", 0)
-	darkVision := newGrantTestTrait("Dark Vision", 0)
-	c.NoError(gurps.SaveTraits([]*gurps.Trait{nightVision, darkVision}, filepath.Join(dir, filepath.FromSlash(libFile.Path))))
-	entity := gurps.NewEntity()
-	owner := nightVision.Clone(libFile, entity, nil, gurps.Reference)
-	features := gurps.Features{gurps.NewGrant(feature.GrantTrait)}
-	p, _ := showFeaturesPanel(t, screen, entity, owner, &features, false)
-	screen.Do(func() { p.toggle("0") })
-	var names []string
-	screen.Do(func() {
-		lists := uxtest.PanelsOfType[*unison.List[*grantLibraryItem]](p.AsPanel())
-		if len(lists) != 1 {
-			t.Fatalf("expected one picker list, found %d", len(lists))
-		}
-		for i := range lists[0].Count() {
-			if item := lists[0].DataAtIndex(i); item.from == libFile {
-				names = append(names, item.name)
-			}
-		}
-	})
-	c.Equal([]string{"Dark Vision"}, names, "the item being edited is left out")
-}
-
-// TestGrantPickerListFollowsTheFilter checks that the picker's list is resized to the rows the filter leaves, no taller
-// than its view when they fit, since the scroll panel otherwise keeps the frame of the full list, leaving blank space to
-// scroll through below a filtered list and clipping the rows of one that grew.
-func TestGrantPickerListFollowsTheFilter(t *testing.T) {
-	c := check.New(t)
-	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
-	dir := t.TempDir()
-	lib := library.NewLibrary("Test", "acct", "", "repo", dir)
-	libraries := gurps.GlobalSettings().Libraries
-	libraries.Store(lib.Key(), lib)
-	t.Cleanup(func() { libraries.Remove(lib.Key()) })
-	traits := make([]*gurps.Trait, 0, grantPickerRows+3)
-	traits = append(traits, newGrantTestTrait("Night Vision", 0))
-	for i := range grantPickerRows + 2 {
-		traits = append(traits, newGrantTestTrait(fmt.Sprintf("Acute Sense %d", i), 0))
-	}
-	c.NoError(gurps.SaveTraits(traits, filepath.Join(dir, "Traits", "Test"+gurps.TraitsExt)))
-	entity := gurps.NewEntity()
-	owner := gurps.NewTrait(entity, nil, false)
-	features := gurps.Features{gurps.NewGrant(feature.GrantTrait)}
-	p, _ := showFeaturesPanel(t, screen, entity, owner, &features, false)
-	screen.Do(func() { p.toggle("0") })
-	var list *unison.List[*grantLibraryItem]
-	var filter *unison.Field
-	screen.Do(func() {
-		lists := uxtest.PanelsOfType[*unison.List[*grantLibraryItem]](p.AsPanel())
-		if len(lists) != 1 {
-			t.Fatalf("expected one picker list, found %d", len(lists))
-		}
-		list = lists[0]
-		var ok bool
-		if filter, ok = p.FindRefKey("0:filter").Self.(*unison.Field); !ok {
-			t.Fatal("the picker has no filter field")
-		}
-	})
-	rowHeight := xmath.Ceil(list.Factory.CellHeight())
-	screen.Do(func() { filter.SetText("Night Vision") })
-	screen.Do(func() {
-		c.Equal(1, list.Count(), "precondition: the filter leaves one row")
-		c.Equal(list.Parent().ContentRect(true).Height, list.FrameRect().Height,
-			"the list shrinks to its view once the filter leaves fewer rows than fit")
-	})
-	screen.Do(func() { filter.SetText("") })
-	screen.Do(func() {
-		c.True(list.Count() > grantPickerRows, "precondition: the cleared filter shows every row again")
-		c.Equal(rowHeight*float32(list.Count()), list.FrameRect().Height, "the list grows back with the filter cleared")
-	})
-}
-
-// TestGrantPickerKeepsItsFilterAcrossRebuilds checks that the filter typed into a picker, and the row chosen in its list,
-// survive a rebuild of the panel, which an edit of the open row's other controls causes while the picker is open, with
-// the row chosen still scrolled into view.
-func TestGrantPickerKeepsItsFilterAcrossRebuilds(t *testing.T) {
-	c := check.New(t)
-	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
-	dir := t.TempDir()
-	lib := library.NewLibrary("Test", "acct", "", "repo", dir)
-	libraries := gurps.GlobalSettings().Libraries
-	libraries.Store(lib.Key(), lib)
-	t.Cleanup(func() { libraries.Remove(lib.Key()) })
-	const acute = grantPickerRows + 2
-	traits := make([]*gurps.Trait, 0, acute+1)
-	traits = append(traits, newGrantTestTrait("Night Vision", 0))
-	for i := range acute {
-		traits = append(traits, newGrantTestTrait(fmt.Sprintf("Acute Sense %d", i), 0))
-	}
-	c.NoError(gurps.SaveTraits(traits, filepath.Join(dir, "Traits", "Test"+gurps.TraitsExt)))
-	entity := gurps.NewEntity()
-	owner := gurps.NewTrait(entity, nil, false)
-	features := gurps.Features{gurps.NewGrant(feature.GrantTrait)}
-	p, _ := showFeaturesPanel(t, screen, entity, owner, &features, false)
-	screen.Do(func() { p.toggle("0") })
-	picker := func() (*unison.Field, *unison.List[*grantLibraryItem]) {
-		filter, ok := p.FindRefKey("0:filter").Self.(*unison.Field)
-		if !ok {
-			t.Fatal("the picker has no filter field")
-		}
-		lists := uxtest.PanelsOfType[*unison.List[*grantLibraryItem]](p.AsPanel())
-		if len(lists) != 1 {
-			t.Fatalf("expected one picker list, found %d", len(lists))
-		}
-		return filter, lists[0]
-	}
-	// shown returns true if the list's view shows the whole of its selected row.
-	shown := func(list *unison.List[*grantLibraryItem]) bool {
-		row := list.RowRect(list.Selection.FirstSet())
-		row.Point = row.Point.Add(list.FrameRect().Point)
-		return list.Parent().ContentRect(false).Contains(row)
-	}
-	screen.Do(func() {
-		filter, list := picker()
-		filter.SetText("Acute")
-		c.Equal(acute, list.Count(), "precondition: the filter leaves the acute senses")
-	})
-	screen.Do(func() {
-		filter, list := picker()
-		for range acute - 1 {
-			filter.KeyDownCallback(unison.KeyDown, 0, false)
-		}
-		c.Equal(acute-1, list.Selection.FirstSet(), "precondition: Down moves to the last row")
-		c.True(shown(list), "precondition: which is scrolled into view")
-		p.rebuild("")
-	})
-	screen.Do(func() {
-		filter, list := picker()
-		c.Equal("Acute", filter.Text(), "the filter typed survives the rebuild")
-		c.Equal(acute, list.Count(), "and so does the list it leaves")
-		c.Equal(acute-1, list.Selection.FirstSet(), "with the same row chosen")
-		c.True(shown(list), "still scrolled into view")
-		p.toggle("0")
-	})
-	screen.Do(func() { p.toggle("0") })
-	screen.Do(func() {
-		filter, _ := picker()
-		c.Equal("", filter.Text(), "a picker opened afresh starts with no filter")
-	})
-}
-
-// TestGrantPickerSelectsOneRow checks that the picker's list holds one selected row, the one Return chooses, so that a
-// Shift-click or Cmd-click on another row can't put a second one above it, and that Up and Down with a modifier down
-// are the filter's rather than the list's, as Shift-Down selects to the end of the filter's text.
-func TestGrantPickerSelectsOneRow(t *testing.T) {
-	c := check.New(t)
-	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
-	dir := t.TempDir()
-	lib := library.NewLibrary("Test", "acct", "", "repo", dir)
-	libraries := gurps.GlobalSettings().Libraries
-	libraries.Store(lib.Key(), lib)
-	t.Cleanup(func() { libraries.Remove(lib.Key()) })
-	traits := make([]*gurps.Trait, 0, 3)
-	for i := range 3 {
-		traits = append(traits, newGrantTestTrait(fmt.Sprintf("Acute Sense %d", i), 0))
-	}
-	c.NoError(gurps.SaveTraits(traits, filepath.Join(dir, "Traits", "Test"+gurps.TraitsExt)))
-	entity := gurps.NewEntity()
-	owner := gurps.NewTrait(entity, nil, false)
-	g := gurps.NewGrant(feature.GrantTrait)
+	// Not the amount typed below, so that undoing the typing in place of the choice of kind would show.
+	g.Amount = fxp.Five
 	features := gurps.Features{g}
-	p, _ := showFeaturesPanel(t, screen, entity, owner, &features, false)
+	p, host := showFeaturesPanel(t, screen, entity, owner, &features, false)
+	amountText := func() string {
+		if field, ok := refKeySelf(p.AsPanel(), "0:amount").(*DecimalField); ok {
+			return field.Text()
+		}
+		return "<none>"
+	}
+	choose := func(kind grantadjust.Kind) {
+		if popup := featuresPopup[grantadjust.Kind](c, p, "0:adjust"); popup != nil {
+			popup.Select(kind)
+		}
+	}
 	screen.Do(func() { p.toggle("0") })
 	screen.Do(func() {
-		filter, ok := p.FindRefKey("0:filter").Self.(*unison.Field)
+		field, ok := refKeySelf(p.AsPanel(), "0:amount").(*DecimalField)
 		if !ok {
-			t.Fatal("the picker has no filter field")
+			t.Fatal("the open skill grant row has no amount field")
 		}
-		lists := uxtest.PanelsOfType[*unison.List[*grantLibraryItem]](p.AsPanel())
-		if len(lists) != 1 {
-			t.Fatalf("expected one picker list, found %d", len(lists))
-		}
-		list := lists[0]
-		filter.SetText("Acute")
-		c.Equal(3, list.Count(), "precondition: the filter leaves the acute senses")
-		c.Equal(0, list.Selection.FirstSet(), "precondition: the first is selected")
-		filter.SetSelectionToStart()
-		c.True(filter.KeyDownCallback(unison.KeyDown, mod.Shift, false), "Shift-Down is taken")
-		start, end := filter.Selection()
-		c.Equal(0, start, "by the filter, which selects from the caret")
-		c.Equal(len("Acute"), end, "to the end of its text")
-		c.Equal(1, list.Selection.Count(), "the list's selection is left alone")
-		c.Equal(0, list.Selection.FirstSet())
-		c.True(filter.KeyDownCallback(unison.KeyDown, 0, false), "Down alone moves the list's row")
-		c.Equal(1, list.Selection.FirstSet())
-		list.Select(true, 2) // A Shift-click or Cmd-click on another row.
-		c.Equal(1, list.Selection.Count(), "the list holds one selected row")
-		c.Equal(2, list.Selection.FirstSet(), "the one last chosen")
-		c.True(filter.KeyDownCallback(unison.KeyReturn, 0, false), "Return chooses it")
+		field.SetText("1")
+		choose(grantadjust.SetLevel)
 	})
-	screen.Do(func() { c.Equal("Acute Sense 2", g.ItemName(), "the grant gets the row the selection moved to") })
+	screen.Do(func() {
+		g = grantAt(t, p, 0)
+		c.Equal(grantadjust.SetLevel, g.Adjust)
+		c.Equal(fxp.One, g.Amount, "the amount is kept as typed")
+		c.Equal("1", amountText(), "a level set has no sign")
+		host.mgr.Undo()
+	})
+	screen.Do(func() {
+		g = grantAt(t, p, 0)
+		c.Equal(grantadjust.AddLevels, g.Adjust, "undo restores the kind")
+		c.Equal(fxp.One, g.Amount, "and only the kind")
+		choose(grantadjust.AddPoints)
+	})
+	screen.Do(func() {
+		c.Equal("+1", amountText(), "points added are signed")
+		choose(grantadjust.SetLevel)
+	})
+	screen.Do(func() {
+		if popup := featuresPopup[grantmerge.Mode](c, p, "0:merge"); popup != nil {
+			popup.Select(grantmerge.KeepHighest)
+		}
+	})
+	screen.Do(func() {
+		c.Equal(grantmerge.KeepHighest, grantAt(t, p, 0).Merge, "precondition: the level set keeps the highest")
+		choose(grantadjust.AddLevels)
+	})
+	screen.Do(func() {
+		c.Equal(grantmerge.Ignore, grantAt(t, p, 0).Merge, "levels added have no use for a collision mode")
+		c.Nil(p.FindRefKey("0:merge"), "so its popup is hidden")
+		choose(grantadjust.SetLevel)
+	})
+	screen.Do(func() {
+		if popup := featuresPopup[grantmerge.Mode](c, p, "0:merge"); popup != nil {
+			selected, _ := popup.Selected()
+			c.Equal(grantmerge.Ignore, selected, "a level set chosen again shows the popup, with nothing kept")
+		}
+	})
 }
 
-// TestGrantItemMatches checks that each word of the filter matches the start of a word of the name, or one a typo
-// away once the word is long enough.
-func TestGrantItemMatches(t *testing.T) {
+// TestGrantAmountTooltip checks what the tooltip of a grant's amount says for each kind of grant.
+func TestGrantAmountTooltip(t *testing.T) {
 	c := check.New(t)
-	for _, tc := range []struct {
-		query string
-		name  string
-		match bool
+	for _, one := range []struct {
+		grantType feature.Type
+		kind      grantadjust.Kind
+		want      string
 	}{
-		{query: "night", name: "Night Vision", match: true},
-		{query: "vis nig", name: "Night Vision", match: true},
-		{query: "nihgt", name: "Night Vision", match: true},
-		{query: "nite", name: "Night Vision", match: false},
-		{query: "ab", name: "Acute Vision", match: false},
-		{query: "", name: "Acute Vision", match: true},
+		{
+			grantType: feature.GrantTrait, kind: grantadjust.SetLevel,
+			want: "The level the grant gives the trait. With Keep Highest or Keep Lowest, a trait already present is " +
+				"held to at least or at most that level.",
+		},
+		{
+			grantType: feature.GrantTrait, kind: grantadjust.AddLevels,
+			want: "The levels added to a trait already present, or taken away when negative, never below level 0. On " +
+				"its own, the grant gives the trait that level.",
+		},
+		{
+			grantType: feature.GrantSkill, kind: grantadjust.AddLevels,
+			want: "The levels added to a skill already present, or taken away when negative, never below level 0. On " +
+				"its own, the grant gives the skill that level, counted in steps of points: level 1 is what 1 point " +
+				"buys, level 2 what 2 points buy, level 3 what 4 points buy, and each level after that 4 points more.",
+		},
+		{
+			grantType: feature.GrantSpell, kind: grantadjust.AddPoints,
+			want: "The points added to a spell already present, or taken away when negative, never below 0. On its " +
+				"own, the grant gives the spell that many points.",
+		},
+		{
+			grantType: feature.GrantSkill, kind: grantadjust.SetLevel,
+			want: "The skill level the grant gives the skill, in place of the level its points and difficulty would " +
+				"give it; bonuses still apply on top. With Keep Highest or Keep Lowest, one already present is held " +
+				"to at least or at most that level. A level below what 1 point buys grants nothing.",
+		},
 	} {
-		c.Equal(tc.match, grantItemMatches(grantFilterWords(tc.query), grantFilterWords(tc.name)), tc.query)
+		c.Equal(one.want, grantAmountTooltip(one.grantType, one.kind), "%s %s", one.grantType, one.kind)
 	}
 }
 
-// TestGrantLibraryItemRefusesWhatGrants checks that the picker leaves out an item that grants something itself, whether
-// the grant is among its own features or those of one of its modifiers, as SetItem strips grants from both.
+// TestGrantLibraryItemRefusesWhatGrants checks that an item that grants something itself is not one a grant can give,
+// whether the grant is among its own features or those of one of its modifiers, as SetItem strips grants from both.
 func TestGrantLibraryItemRefusesWhatGrants(t *testing.T) {
 	c := check.New(t)
 	grant := func() *gurps.Grant {
@@ -651,6 +452,64 @@ func TestGrantLibraryItemRefusesWhatGrants(t *testing.T) {
 	c.Nil(newGrantLibraryItem(viaModifier, gurps.LibraryFile{}), "nor is one whose modifier grants something")
 }
 
+// TestGrantRowOpensItsItemEditor checks that a click on the drop zone of a grant with no item gives it a blank one and
+// opens the editor on that, and that a click on the zone once it names an item opens the editor on that item.
+func TestGrantRowOpensItsItemEditor(t *testing.T) {
+	for _, tc := range []struct {
+		name   string
+		chosen bool
+	}{
+		{name: "blank"},
+		{name: "chosen", chosen: true},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			c := check.New(t)
+			screen, _ := uxtest.StartHeadlessWorkspace(t, c)
+			sheet := newTestSheetForTemplate(t)
+			entity := sheet.Entity()
+			training := gurps.NewTrait(entity, nil, false)
+			training.Name = "Training"
+			g := gurps.NewGrant(feature.GrantTrait)
+			if tc.chosen {
+				g.SetItem(newGrantTestTrait("Night Vision", 0), gurps.LibraryFile{})
+			}
+			training.Features = gurps.Features{g}
+			entity.Traits = []*gurps.Trait{training}
+			sheet.Rebuild(true)
+			isTraitEditor := func(d unison.Dockable) bool {
+				_, ok := d.AsPanel().Self.(*editor[*gurps.Trait, *gurps.TraitEditData])
+				return ok
+			}
+			var outer *editor[*gurps.Trait, *gurps.TraitEditData]
+			var p *featuresPanel
+			screen.Do(func() {
+				DisplayNewDockable(sheet)
+				outer = EditTrait(sheet, training)
+				p = uxtest.PanelsOfType[*featuresPanel](outer.content)[0]
+				if p.collapse.collapsed {
+					p.collapse.toggle()
+				}
+				p.toggle("0")
+			})
+			screen.Do(func() {
+				zone, ok := p.FindRefKey("0:drop").Self.(*unison.Button)
+				if !ok {
+					t.Fatal("the open grant row has no drop zone")
+				}
+				zone.Click()
+			})
+			nested := uxtest.OtherEditor(t, screen, outer, isTraitEditor)
+			screen.Do(func() {
+				o, ok := nested.owner.(*grantItemOwner)
+				if !ok {
+					t.Fatalf("the editor opened is not on a grant's item: %T", nested.owner)
+				}
+				c.Equal(grantAt(t, p, 0).Key(), o.key, "the editor is on the item the grant holds")
+			})
+		})
+	}
+}
+
 // TestGrantedItemEditLandsOnTheGrant checks that an edit of a grant's item, made in its editor on a copy, goes to the
 // grant the panel holds once its own undo has replaced the grant with a copy.
 func TestGrantedItemEditLandsOnTheGrant(t *testing.T) {
@@ -667,7 +526,7 @@ func TestGrantedItemEditLandsOnTheGrant(t *testing.T) {
 		o := &grantItemOwner{panel: p, key: g.Key(), item: item, commit: func(g *gurps.Grant) {
 			g.Trait = item.Clone(gurps.LibraryFile{}, nil, nil, gurps.Copy)
 		}}
-		p.edit("Level", "0:level", "", func() { g.Level = fxp.Two })
+		p.edit("Level", "0:amount", "", func() { g.Amount = fxp.Two })
 		host.mgr.Undo()
 		item.Name = "Dark Vision"
 		o.Rebuild(true)
@@ -885,7 +744,7 @@ func TestGrantItemEditorShowsTheCostAtTheGrantsLevel(t *testing.T) {
 	g := gurps.NewGrant(feature.GrantTrait)
 	g.SetItem(newGrantTestTrait("Acute Vision", fxp.One), gurps.LibraryFile{})
 	carrier.Features = gurps.Features{g}
-	g.Level = fxp.Three
+	g.Amount = fxp.Three
 	root := &stubRebuildable{}
 	root.Self = root
 	item := g.Trait.Clone(gurps.LibraryFile{}, nil, nil, gurps.Copy)
@@ -920,8 +779,8 @@ func TestGrantItemEditorClosesWhenItsGrantChanges(t *testing.T) {
 			}
 		}},
 		{name: "another item", change: func(p *featuresPanel, g *gurps.Grant) {
-			// As choosing from the picker does.
-			p.sentenceRows.restructure("Choose Granted Item", "0:filter", "", func() string {
+			// As a drop on the grant's zone does.
+			p.sentenceRows.restructure("Replace Granted Item", "0:more", "", func() string {
 				g.SetItem(newGrantTestTrait("Dark Vision", 0), gurps.LibraryFile{})
 				return grantFocusKey("0", g)
 			})
@@ -1078,9 +937,7 @@ func TestGrantNotAddedToItsOwnEditor(t *testing.T) {
 	screen.Do(func() {
 		p := uxtest.PanelsOfType[*featuresPanel](modifierEditor.content)[0]
 		items := collectGrantItems(gurps.LibraryFile{}, []*gurps.Trait{fit, newGrantTestTrait("Night Vision", 0)})
-		for _, item := range p.grantable(items) {
-			names = append(names, item.name)
-		}
+		names = grantItemNames(t, p.grantable(items))
 	})
 	c.Equal([]string{"Night Vision"}, names, "the trait whose modifier is being edited is left out")
 }

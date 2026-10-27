@@ -20,9 +20,8 @@ import (
 // Possible values.
 const (
 	Ignore Mode = iota
-	MergeLevels
-	MergePoints
 	KeepHighest
+	KeepLowest
 )
 
 // DefaultMode is the default value.
@@ -32,17 +31,16 @@ const DefaultMode Mode = Ignore
 const FirstMode Mode = Ignore
 
 // LastMode is the last valid value.
-const LastMode Mode = KeepHighest
+const LastMode Mode = KeepLowest
 
 // Modes holds all possible values.
 var Modes = []Mode{
 	Ignore,
-	MergeLevels,
-	MergePoints,
 	KeepHighest,
+	KeepLowest,
 }
 
-// Mode holds what a grant does when the character already has the item it grants.
+// Mode holds what a grant that sets the level of the item it grants does when the character already has the item.
 type Mode byte
 
 // EnsureValid returns this value if it is valid and DefaultMode otherwise.
@@ -58,12 +56,10 @@ func (enum Mode) Key() string {
 	switch enum {
 	case Ignore:
 		return "ignore"
-	case MergeLevels:
-		return "merge_levels"
-	case MergePoints:
-		return "merge_points"
 	case KeepHighest:
 		return "keep_highest"
+	case KeepLowest:
+		return "keep_lowest"
 	default:
 		return DefaultMode.Key()
 	}
@@ -74,12 +70,10 @@ func (enum Mode) String() string {
 	switch enum {
 	case Ignore:
 		return i18n.Text(`Ignore`)
-	case MergeLevels:
-		return i18n.Text(`Merge Levels`)
-	case MergePoints:
-		return i18n.Text(`Merge Points`)
 	case KeepHighest:
 		return i18n.Text(`Keep Highest`)
+	case KeepLowest:
+		return i18n.Text(`Keep Lowest`)
 	default:
 		return DefaultMode.String()
 	}

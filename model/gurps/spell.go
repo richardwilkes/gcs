@@ -310,8 +310,8 @@ func (s *Spell) Clone(from LibraryFile, owner DataOwner, parent *Spell, mode Clo
 	other.copyFrom(other, &s.SpellEditData, s.Container(), false, mode)
 	other.Granted = cloneGrantedBy(s.Granted, s, other)
 	if s.Granted != nil && other.Granted == nil {
-		// Where no grant claims the copy, it is bought with the points of the tier the grant stood for.
-		other.Points = EntityFromNode(s).grantTierPointsFor(s)
+		// Where no grant claims the copy, it is bought with the points the grant gave it.
+		other.Points = EntityFromNode(s).grantedPointsFor(s)
 	}
 	if EntityFromNode(other) == nil {
 		// Disabling only means something on a sheet.
@@ -662,8 +662,8 @@ func (s *Spell) calculateLevel(points fxp.Int) Level {
 // item whose prerequisites are being judged when exclude is nil; see grantState.applyLevelNotes and Entity.judgingOr.
 func (s *Spell) calculateLevelExcept(exclude any, points fxp.Int) Level {
 	exclude = EntityFromNode(s).judgingOr(exclude)
-	return s.grant.applyLevels(exclude, s.levelFromAdjustedPoints(points), func(tierPoints fxp.Int) fxp.Int {
-		return s.levelAt(EntityFromNode(s), tierPoints).Level
+	return s.grant.applyLevels(exclude, s.levelFromAdjustedPoints(points), func(points fxp.Int) fxp.Int {
+		return s.levelAt(EntityFromNode(s), points).Level
 	})
 }
 
@@ -708,6 +708,21 @@ func (s *Spell) CurrentCalculatedLevel() fxp.Int {
 // CalculatedLevelBeforeGrants implements SkillLevelStepper.
 func (s *Spell) CalculatedLevelBeforeGrants() fxp.Int {
 	return s.levelFromAdjustedPoints(s.AdjustedPoints(nil)).Level
+}
+
+// pointsForBaseLevel implements grantLeveler: the fewest points that give the spell the level before bonuses on the
+// sheet, or zero when none do, as for a Ritual Magic spell, whose level rests on its ritual skill rather than its
+// points.
+func (s *Spell) pointsForBaseLevel(e *Entity, level fxp.Int) fxp.Int {
+	if s.IsRitualMagic() {
+		return 0
+	}
+	attr := e.resolveAttributeCurrentForPrereqs(s.Difficulty.Attribute)
+	if attr == fxp.Min {
+		return 0
+	}
+	return grantTierPoints((level-(attr+s.Difficulty.Difficulty.BaseRelativeLevel())).Ceil()+fxp.One,
+		s.WildcardDifficulty())
 }
 
 // CalculateSpellLevel returns the calculated spell level.
@@ -901,7 +916,7 @@ func (s *Spell) Rituals() string {
 	// which for a granted spell is the level its grant would give.
 	level := s.LevelData.Level
 	if !s.Enabled() {
-		level = s.calculateLevel(AdjustedPointsForNonContainerSpell(e, s.Points+e.grantTierPointsFor(s),
+		level = s.calculateLevel(AdjustedPointsForNonContainerSpell(e, s.Points+e.grantedPointsFor(s),
 			s.NameWithReplacements(), s.PowerSourceWithReplacements(), s.CollegeWithReplacements(), s.Tags, nil)).Level
 	}
 	ritualText := i18n.Text("Ritual")
@@ -1019,8 +1034,8 @@ func (s *Spell) AdjustedPoints(tooltip *xbytes.InsertBuffer) fxp.Int {
 }
 
 // PointsCost returns what the spell costs the character: its adjusted points, or nothing for a granted spell, whose
-// adjusted points stand for its tier rather than for points spent. It is what the sheet's points column shows, so the
-// exports and scripts report it.
+// adjusted points stand for what its grant gives it rather than for points spent. It is what the sheet's points
+// column shows, so the exports and scripts report it.
 func (s *Spell) PointsCost() fxp.Int {
 	if s.Granted != nil {
 		return 0
@@ -1036,8 +1051,8 @@ func (s *Spell) PointsWithGrants(points fxp.Int) fxp.Int {
 
 // LevelWithGrants returns the level with the levels grants merged into the spell at the last recalculation added, as
 // CalculateLevel adds them, for a level computed from data other than the spell's own. levelAt returns the level that
-// data gives with the given points in place of the spell's own, which the level a Keep Highest grant keeps is read
-// with.
+// data gives with the given points in place of the spell's own, which the level a Keep Highest or Keep Lowest grant
+// keeps is read with.
 func (s *Spell) LevelWithGrants(level Level, levelAt func(points fxp.Int) fxp.Int) Level {
 	return s.grant.applyLevels(nil, level, levelAt)
 }
@@ -1047,13 +1062,6 @@ func (s *Spell) LevelWithGrants(level Level, levelAt func(points fxp.Int) fxp.In
 // grants.
 func (s *Spell) pointsForPrereqsOf(exclude any) fxp.Int {
 	return s.adjustedPointsExcept(exclude, nil)
-}
-
-// pointsWithoutGrants returns the given points, the spell's own or those standing for them, adjusted for the bonuses,
-// as AdjustedPoints adjusts them, but without what grants gave it.
-func (s *Spell) pointsWithoutGrants(points fxp.Int) fxp.Int {
-	return AdjustedPointsForNonContainerSpell(EntityFromNode(s), points, s.NameWithReplacements(),
-		s.PowerSourceWithReplacements(), s.CollegeWithReplacements(), s.Tags, nil)
 }
 
 // adjustedPointsExcept is AdjustedPoints without the points grants carried by exclude gave the spell, or by the item
@@ -1070,7 +1078,7 @@ func (s *Spell) adjustedPointsExcept(exclude any, tooltip *xbytes.InsertBuffer) 
 		}
 		var total fxp.Int
 		for _, one := range s.Children {
-			// A granted spell costs nothing, whatever points its tier stands for.
+			// A granted spell costs nothing, whatever points its grant gives it.
 			if one.Granted == nil {
 				total += one.AdjustedPoints(nil)
 			}
@@ -1087,7 +1095,7 @@ func (s *Spell) adjustedPointsExcept(exclude any, tooltip *xbytes.InsertBuffer) 
 // children would give an unattributed, repetitive pile.
 func (s *Spell) PointsRange(tooltip *xbytes.InsertBuffer) NumericRange {
 	if !s.Enabled() || s.Granted != nil {
-		// A granted spell costs nothing, whatever points its tier stands for.
+		// A granted spell costs nothing, whatever points its grant gives it.
 		return NumericRangeOf(0)
 	}
 	if !s.Container() {

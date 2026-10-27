@@ -85,7 +85,8 @@ type SkillLevelStepper interface {
 	WildcardDifficulty() bool
 	CurrentCalculatedLevel() fxp.Int
 	// CalculatedLevelBeforeGrants is CurrentCalculatedLevel without what the grants made of the level (see
-	// grantState.applyLevels), which goes on rising with the points while a Keep Highest grant holds the level shown.
+	// grantState.applyLevels), which goes on rising with the points while a Keep Highest grant holds the level shown
+	// or a Keep Lowest grant caps it.
 	CalculatedLevelBeforeGrants() fxp.Int
 }
 
@@ -334,8 +335,8 @@ func (s *Skill) Clone(from LibraryFile, owner DataOwner, parent *Skill, mode Clo
 	other.copyFrom(other, &s.SkillEditData, s.Container(), false, mode, s.IsTechnique())
 	other.Granted = cloneGrantedBy(s.Granted, s, other)
 	if s.Granted != nil && other.Granted == nil {
-		// Where no grant claims the copy, it is bought with the points of the tier the grant stood for.
-		other.Points = EntityFromNode(s).grantTierPointsFor(s)
+		// Where no grant claims the copy, it is bought with the points the grant gave it.
+		other.Points = EntityFromNode(s).grantedPointsFor(s)
 	}
 	if EntityFromNode(other) == nil {
 		// Disabling only means something on a sheet.
@@ -721,8 +722,8 @@ func (s *Skill) AdjustedPoints(tooltip *xbytes.InsertBuffer) fxp.Int {
 }
 
 // PointsCost returns what the skill costs the character: its adjusted points, or nothing for a granted skill, whose
-// adjusted points stand for its tier rather than for points spent. It is what the sheet's points column shows, so the
-// exports and scripts report it.
+// adjusted points stand for what its grant gives it rather than for points spent. It is what the sheet's points
+// column shows, so the exports and scripts report it.
 func (s *Skill) PointsCost() fxp.Int {
 	if s.Granted != nil {
 		return 0
@@ -738,8 +739,8 @@ func (s *Skill) PointsWithGrants(points fxp.Int) fxp.Int {
 
 // LevelWithGrants returns the level with the levels grants merged into the skill at the last recalculation added, as
 // CalculateLevel adds them, for a level computed from data other than the skill's own. levelAt returns the level that
-// data gives with the given points in place of the skill's own, which the level a Keep Highest grant keeps is read
-// with.
+// data gives with the given points in place of the skill's own, which the level a Keep Highest or Keep Lowest grant
+// keeps is read with.
 func (s *Skill) LevelWithGrants(level Level, levelAt func(points fxp.Int) fxp.Int) Level {
 	return s.grant.applyLevels(nil, level, levelAt)
 }
@@ -749,13 +750,6 @@ func (s *Skill) LevelWithGrants(level Level, levelAt func(points fxp.Int) fxp.In
 // grants.
 func (s *Skill) pointsForPrereqsOf(exclude any) fxp.Int {
 	return s.adjustedPointsExcept(exclude, nil)
-}
-
-// pointsWithoutGrants returns the given points, the skill's own or those standing for them, adjusted for the bonuses,
-// as AdjustedPoints adjusts them, but without what grants gave it.
-func (s *Skill) pointsWithoutGrants(points fxp.Int) fxp.Int {
-	return AdjustedPointsForNonContainerSkillOrTechnique(EntityFromNode(s), points, s.NameWithReplacements(),
-		s.SpecializationWithReplacements(), s.OptionalSpecializationWithReplacements(), s.Tags, nil)
 }
 
 // levelForPrereqsOf returns the skill's level as the prerequisites of exclude see it: the level the last pass recorded,
@@ -784,7 +778,7 @@ func (s *Skill) adjustedPointsExcept(exclude any, tooltip *xbytes.InsertBuffer) 
 		}
 		var total fxp.Int
 		for _, one := range s.Children {
-			// A granted skill costs nothing, whatever points its tier stands for.
+			// A granted skill costs nothing, whatever points its grant gives it.
 			if one.Granted == nil {
 				total += one.AdjustedPoints(nil)
 			}
@@ -815,7 +809,7 @@ func (s *Skill) AdjustedDifficulty() AttributeDifficulty {
 // children would give an unattributed, repetitive pile.
 func (s *Skill) PointsRange(tooltip *xbytes.InsertBuffer) NumericRange {
 	if !s.Enabled() || s.Granted != nil {
-		// A granted skill costs nothing, whatever points its tier stands for.
+		// A granted skill costs nothing, whatever points its grant gives it.
 		return NumericRangeOf(0)
 	}
 	if !s.Container() {
@@ -893,10 +887,11 @@ func skillLevelStride(p SkillLevelStepper) fxp.Int {
 
 // incrementSkillLevel is the shared body of Skill.IncrementSkillLevel and Spell.IncrementSkillLevel. A disabled item
 // has no level to step, since AdjustedPoints reports nothing for it, so it is left alone, as is one with no higher
-// level to reach, such as a technique at its limit or a skill whose attribute is missing. The search goes on a stride
-// at a time while the level the points buy is still rising, since a Keep Highest grant holds the level shown until the
-// level bought passes the one kept, which may be several strides off, and stops once a stride passes without the level
-// bought rising, as no further points would raise it.
+// level to reach, such as a technique at its limit, a skill whose attribute is missing or one a Keep Lowest grant
+// caps. The search goes on a stride at a time while the level the points buy is still rising, since a Keep Highest
+// grant holds the level shown until the level bought passes the one kept, which may be several strides off, and stops
+// once a stride passes without the level bought rising, as no further points would raise it, or once the level bought
+// has passed the level shown without raising it, as only a cap holds it there.
 func incrementSkillLevel(p SkillLevelStepper) {
 	if !p.Enabled() {
 		return
@@ -913,7 +908,7 @@ func incrementSkillLevel(p SkillLevelStepper) {
 			}
 		}
 		next := p.CalculatedLevelBeforeGrants()
-		if next <= bought {
+		if next <= bought || next > oldLevel {
 			break
 		}
 		bought = next
@@ -1034,8 +1029,8 @@ func (s *Skill) calculateLevelWith(exclude any, def *SkillDefault, excludes map[
 	if s.IsTechnique() {
 		return level
 	}
-	return s.grant.applyLevels(exclude, level, func(tierPoints fxp.Int) fxp.Int {
-		return s.levelAt(e, def, tierPoints).Level
+	return s.grant.applyLevels(exclude, level, func(points fxp.Int) fxp.Int {
+		return s.levelAt(e, def, points).Level
 	})
 }
 
@@ -1057,11 +1052,8 @@ func (s *Skill) levelBeforeGrants(exclude any, def *SkillDefault, excludes map[s
 func CalculateSkillLevel(e *Entity, name, specialization, optionalSpecialization string, tags []string, def *SkillDefault, attrDiff AttributeDifficulty, points, encumbrancePenaltyMultiplier fxp.Int) Level {
 	var tooltip xbytes.InsertBuffer
 	relativeLevel := attrDiff.Difficulty.BaseRelativeLevel()
-	level := e.resolveAttributeCurrentForPrereqs(attrDiff.Attribute)
+	level := skillAttributeLevel(e, attrDiff.Attribute)
 	if level != fxp.Min {
-		if e.SheetSettings.UseHalfStatDefaults {
-			level = level.Div(fxp.Two).Floor() + fxp.Five
-		}
 		if attrDiff.Difficulty == difficulty.Wildcard {
 			points = points.Div(fxp.Three)
 		} else if def != nil && def.Points > 0 {
@@ -1108,6 +1100,28 @@ func CalculateSkillLevel(e *Entity, name, specialization, optionalSpecialization
 		RelativeLevel: relativeLevel,
 		Tooltip:       tooltip.String(),
 	}
+}
+
+// skillAttributeLevel returns the level of the attribute a skill rests on, as the prerequisites being judged see it
+// (see Entity.resolveAttributeCurrentForPrereqs), halved when the sheet uses half-stat defaults, or fxp.Min when it
+// can't be resolved.
+func skillAttributeLevel(e *Entity, attrID string) fxp.Int {
+	level := e.resolveAttributeCurrentForPrereqs(attrID)
+	if level != fxp.Min && e.SheetSettings.UseHalfStatDefaults {
+		level = level.Div(fxp.Two).Floor() + fxp.Five
+	}
+	return level
+}
+
+// pointsForBaseLevel implements grantLeveler: the fewest points that give the skill, at its adjusted difficulty, the
+// level before bonuses and defaults on the sheet, or zero when none do.
+func (s *Skill) pointsForBaseLevel(e *Entity, level fxp.Int) fxp.Int {
+	ad := s.AdjustedDifficulty()
+	attr := skillAttributeLevel(e, ad.Attribute)
+	if attr == fxp.Min {
+		return 0
+	}
+	return grantTierPoints((level-(attr+ad.Difficulty.BaseRelativeLevel())).Ceil()+fxp.One, s.WildcardDifficulty())
 }
 
 // CalculateTechniqueLevel returns the calculated level for a technique.
@@ -1499,8 +1513,9 @@ func (s *Skill) TechniqueSatisfied(tooltip *xbytes.InsertBuffer, prefix string) 
 	}
 	e := EntityFromNode(s)
 	// The skill is one the default selects that has points, as the technique's level is computed from those (see
-	// Entity.SkillMatching), so that a granted skill, whose points are those of its tier, counts, and a skill without
-	// points, which may be the highest of them by defaulting from another, does not stand in the way of one that has.
+	// Entity.SkillMatching), so that a granted skill, whose points are those its grant gives it, counts, and a skill
+	// without points, which may be the highest of them by defaulting from another, does not stand in the way of one
+	// that has.
 	if s.TechniqueDefault.bestMatchingSkill(e, s.Replacements, true, nil) != nil {
 		return true
 	}

@@ -153,10 +153,10 @@ func TestEditorLevelPreviewIncludesGrants(t *testing.T) {
 	training.Name = "Training"
 	skillGrant := gurps.NewGrant(feature.GrantSkill)
 	skillGrant.SetItem(newTestSkill("Brawling", fxp.One, nil), gurps.LibraryFile{})
-	skillGrant.Level = fxp.Three
+	skillGrant.Amount = fxp.Three
 	spellGrant := gurps.NewGrant(feature.GrantSpell)
 	spellGrant.SetItem(newTestSpell("Light", fxp.One, nil), gurps.LibraryFile{})
-	spellGrant.Level = fxp.Three
+	spellGrant.Amount = fxp.Three
 	training.Features = gurps.Features{skillGrant, spellGrant}
 	entity.Traits = append(entity.Traits, training)
 	entity.Recalculate()

@@ -98,7 +98,7 @@ func featuresHash(list gurps.Features) uint64 {
 
 // featuresPopup returns the popup with the reference key, failing the test if there is none.
 func featuresPopup[T comparable](c check.Checker, p *featuresPanel, key string) *unison.PopupMenu[T] {
-	popup, ok := p.FindRefKey(key).Self.(*unison.PopupMenu[T])
+	popup, ok := refKeySelf(p.AsPanel(), key).(*unison.PopupMenu[T])
 	c.True(ok, "expected a popup keyed %s", key)
 	return popup
 }

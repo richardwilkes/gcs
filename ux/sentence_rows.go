@@ -1160,3 +1160,14 @@ func newDashedButton(title string, click func()) *unison.Button {
 	}
 	return b
 }
+
+// keepMinWidth has the panel size itself as sizes says, its own default sizing, but never narrower than minWidth.
+func keepMinWidth(panel *unison.Panel, minWidth float32, sizes func(hint geom.Size) (minSize, prefSize, maxSize geom.Size)) {
+	panel.SetSizer(func(hint geom.Size) (minSize, prefSize, maxSize geom.Size) {
+		minSize, prefSize, maxSize = sizes(hint)
+		minSize.Width = max(minSize.Width, minWidth)
+		prefSize.Width = max(prefSize.Width, minWidth)
+		maxSize.Width = max(maxSize.Width, minWidth)
+		return minSize, prefSize, maxSize
+	})
+}

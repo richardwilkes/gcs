@@ -1221,7 +1221,7 @@ func (e *Entity) processTraitPrereqs() {
 			if enforce && t.UnsatisfiedReason != "" && !t.prereqContradicted {
 				verdict = prereqsDisable
 				if judged := t.grant.judged; judged != nil {
-					asJudged = (judged.bypass || !unmet) && (maximum <= 0 || judged.detail.level() <= maximum)
+					asJudged = (judged.bypass || !unmet) && (maximum <= 0 || judged.detail.amount() <= maximum)
 				}
 			}
 		}

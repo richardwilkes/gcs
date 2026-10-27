@@ -33,7 +33,6 @@ import (
 	"github.com/richardwilkes/toolbox/v2/errs"
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/i18n"
-	"github.com/richardwilkes/toolbox/v2/tid"
 	"github.com/richardwilkes/toolbox/v2/xhash"
 	"github.com/richardwilkes/toolbox/v2/xslices"
 	"github.com/richardwilkes/toolbox/v2/xstrings"
@@ -77,12 +76,6 @@ type featuresPanel struct {
 	// damageField). It is kept here, rather than with the controls, so that it lasts while the panel is rebuilt.
 	percentSuspended     map[*gurps.WeaponBonus]bool
 	forEquipmentModifier bool
-	// grantPicking is the key of the grant whose picker was opened to choose a different item. It is the key rather
-	// than the row's path, so that the picker follows the grant as rows move and goes when the grant does.
-	grantPicking tid.TID
-	// picker is the state of the grant picker showing, kept here so that it lasts while the panel is rebuilt; see
-	// grantPickerState.
-	picker grantPickerState
 }
 
 // featuresState is the data a snapshot of the panel holds: the features, and the indexes of those whose "as a %" is
@@ -199,13 +192,8 @@ func (p *featuresPanel) build() {
 		return true
 	})
 	add.RefKey = featureAddKey
-	p.picker.built = false
 	for i, one := range *p.features {
 		p.AddChild(p.row(one, strconv.Itoa(i)))
-	}
-	if !p.picker.built {
-		// A picker opened later starts afresh.
-		p.picker = grantPickerState{}
 	}
 	// New features go at the end, so the add button sits under the last row, in line with the more buttons.
 	foot := unison.NewPanel()
@@ -550,7 +538,7 @@ func (p *featuresPanel) editor(f gurps.Feature, path string) *unison.Panel {
 	case *gurps.SelectorOverride:
 		p.selectorOverride(fields, chips, path, one)
 	case *gurps.Grant:
-		p.grant(fields, box, chips, path, one)
+		p.grant(fields, chips, path, one)
 	case *gurps.TitleNote:
 		p.textField(fields, key("text"), i18n.Text("Title Note"), i18n.Text("Title Note"), &one.Text, nil)
 		p.optional(chips, path, "before", i18n.Text("+ before built-in notes"), i18n.Text("Place Before Built-in Notes"),

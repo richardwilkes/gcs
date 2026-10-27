@@ -27,7 +27,7 @@ import (
 )
 
 // grantItemsFrom returns the kind of grant that the rows of a table drag make, and the items to grant, one for each
-// row, or for each item within a container among them, left out as the picker leaves them out.
+// row, or for each item within a container among them, left out as newGrantLibraryItem leaves them out.
 func grantItemsFrom(data any) (feature.Type, []*grantLibraryItem) {
 	switch d := data.(type) {
 	case *unison.TableDragData[*Node[*gurps.Trait]]:
@@ -239,7 +239,6 @@ func (p *featuresPanel) dropGrants(target *unison.Panel, at int, t feature.Type,
 			rest := newGrants(t, items[1:])
 			p.sentenceRows.restructure(title, path+keyMore, "", func() string {
 				g.SetItem(items[0].node, items[0].from)
-				p.grantPicking = ""
 				*p.features = slices.Insert(*p.features, index+1, rest...)
 				p.open = path
 				return grantFocusKey(path, g)
@@ -250,8 +249,8 @@ func (p *featuresPanel) dropGrants(target *unison.Panel, at int, t feature.Type,
 	p.addGrants(t, items, index)
 }
 
-// addGrants adds a grant of each of the items at the index, expanding the panel and opening the first with its level
-// field focused, as choosing an item in the picker does.
+// addGrants adds a grant of each of the items at the index, expanding the panel and opening the first with its amount
+// field focused.
 func (p *featuresPanel) addGrants(t feature.Type, items []*grantLibraryItem, index int) {
 	if p.collapse.collapsed {
 		p.collapse.toggle()

@@ -394,7 +394,7 @@ func (t *TraitModifier) costLevelsForTrait(trait *Trait) fxp.Int {
 		if trait != nil && trait.IsLeveled() {
 			levels = trait.Levels
 			if detail := judgedDetail(trait); detail != nil {
-				levels = detail.level()
+				levels = detail.amount()
 			}
 		}
 	} else {

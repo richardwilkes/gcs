@@ -448,7 +448,7 @@ func TestGrantedRowEditorFollowsItsRow(t *testing.T) {
 		item.Modifiers = []*gurps.TraitModifier{gurps.NewTraitModifier(nil, nil, false)}
 		g = gurps.NewGrant(feature.GrantTrait)
 		g.SetItem(item, gurps.LibraryFile{})
-		g.Level = fxp.Two
+		g.Amount = fxp.Two
 		training.Features = gurps.Features{g}
 		entity.Traits = []*gurps.Trait{training}
 		sheet.Rebuild(true)
@@ -473,7 +473,7 @@ func TestGrantedRowEditorFollowsItsRow(t *testing.T) {
 
 	// Change the grant's level, as applying the carrier's editor does, and rebuild the sheet as that does too.
 	screen.Do(func() {
-		g.Level = fxp.Five
+		g.Amount = fxp.Five
 		sheet.Rebuild(true)
 		row := granted()
 		c.NotNil(row, "the grant still puts its trait on the sheet")

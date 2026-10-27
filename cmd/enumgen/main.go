@@ -1061,14 +1061,23 @@ var allEnums = []*enumInfo{
 		DefaultUnknown: true,
 	},
 	{
+		Pkg:  "model/gurps/enums/grantadjust",
+		Name: "kind",
+		Desc: "holds how the amount of a grant adjusts the item it grants",
+		Values: []*enumValue{
+			{Key: "add_levels", Alt: "adjusting its level by"},
+			{Key: "add_points", Alt: "adjusting its points by"},
+			{Key: "set_level", Alt: "setting its level to"},
+		},
+	},
+	{
 		Pkg:  "model/gurps/enums/grantmerge",
 		Name: "mode",
-		Desc: "holds what a grant does when the character already has the item it grants",
+		Desc: "holds what a grant that sets the level of the item it grants does when the character already has the item",
 		Values: []*enumValue{
 			{Key: "ignore"},
-			{Key: "merge_levels"},
-			{Key: "merge_points"},
 			{Key: "keep_highest"},
+			{Key: "keep_lowest"},
 		},
 	},
 	{
