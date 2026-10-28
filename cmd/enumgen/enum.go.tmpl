@@ -24,7 +24,7 @@ import (
 
 // Possible values.
 const (
-	{{- range $i, $one := .Values}}
+	{{- range $i, $one := .ConstValues}}
 	{{$info.IDFor $one}}{{if eq $i 0}} {{$name}} = iota{{end}}
 	{{- end}}
 )
