@@ -659,11 +659,16 @@ func (s *Spell) calculateLevel(points fxp.Int) Level {
 
 // calculateLevelExcept is calculateLevel without the levels grants carried by exclude merged into the spell, or by the
 // item whose prerequisites are being judged when exclude is nil; see grantState.applyLevelNotes and Entity.judgingOr.
+// A Ritual Magic spell is held to its limit; see grantState.applyLevelsWithinLimit.
 func (s *Spell) calculateLevelExcept(exclude any, points fxp.Int) Level {
-	exclude = EntityFromNode(s).judgingOr(exclude)
-	return s.grant.applyLevels(exclude, s.levelFromAdjustedPoints(points), func(points fxp.Int) Level {
-		return s.levelAt(EntityFromNode(s), points)
-	})
+	e := EntityFromNode(s)
+	exclude = e.judgingOr(exclude)
+	level := s.levelFromAdjustedPoints(points)
+	levelAt := func(points fxp.Int) Level { return s.levelAt(e, points) }
+	if s.IsRitualMagic() {
+		return s.grant.applyLevelsWithinLimit(exclude, level, levelAt)
+	}
+	return s.grant.applyLevels(exclude, level, levelAt)
 }
 
 // levelFromAdjustedPoints returns the level the spell has with the given adjusted points, without what grants made of
@@ -709,12 +714,25 @@ func (s *Spell) CalculatedLevelBeforeGrants() fxp.Int {
 	return s.levelFromAdjustedPoints(s.AdjustedPoints(nil)).Level
 }
 
+// pointsForLevels implements grantLeveler. A Ritual Magic spell is a technique of its ritual skill.
+func (s *Spell) pointsForLevels(levels fxp.Int) fxp.Int {
+	if s.IsRitualMagic() {
+		return techniquePoints(levels, s.Difficulty.Difficulty)
+	}
+	return grantTierPoints(levels, s.WildcardDifficulty())
+}
+
+// restsOnSkill implements grantLeveler.
+func (s *Spell) restsOnSkill() bool {
+	return s.IsRitualMagic()
+}
+
 // pointsForBaseLevel implements grantLeveler: the fewest points that give the spell the level before bonuses on the
-// sheet, or zero when none do, as for a Ritual Magic spell, whose level rests on its ritual skill rather than its
-// points.
+// sheet, or for a Ritual Magic spell the level before its own bonuses from the best ritual skill it may rest on, held
+// to that skill's level (see techniquePointsForLevel), or zero when none do.
 func (s *Spell) pointsForBaseLevel(e *Entity, level fxp.Int) fxp.Int {
 	if s.IsRitualMagic() {
-		return 0
+		return techniquePointsForLevel(level, s.Difficulty.Difficulty, s.ritualMagicBases(e)...)
 	}
 	attr := e.resolveAttributeCurrentForPrereqs(s.Difficulty.Attribute)
 	if attr == fxp.Min {
@@ -724,9 +742,41 @@ func (s *Spell) pointsForBaseLevel(e *Entity, level fxp.Int) fxp.Int {
 		s.WildcardDifficulty())
 }
 
-// attributeUnresolved implements grantLeveler. A Ritual Magic spell's level rests on its ritual skill instead.
-func (s *Spell) attributeUnresolved(e *Entity) bool {
-	return !s.IsRitualMagic() && e.resolveAttributeCurrentForPrereqs(s.Difficulty.Attribute) == fxp.Min
+// baseUnresolved implements grantLeveler.
+func (s *Spell) baseUnresolved(e *Entity) bool {
+	if s.IsRitualMagic() {
+		return !slices.ContainsFunc(s.ritualMagicBases(e), techniqueBase.resolved)
+	}
+	return e.resolveAttributeCurrentForPrereqs(s.Difficulty.Attribute) == fxp.Min
+}
+
+// ritualMagicBases returns the ritual skills the Ritual Magic spell's level may rest on as the sheet sees them, as
+// CalculateRitualMagicSpellLevel takes them: for each of its colleges, or none when it has none, the ritual skill of
+// that college and the generic one (see ritualMagicDefaults), neither of which the spell rises above.
+func (s *Spell) ritualMagicBases(e *Entity) []techniqueBase {
+	colleges := s.CollegeWithReplacements()
+	if len(colleges) == 0 {
+		colleges = []string{""}
+	}
+	name := s.NameWithReplacements()
+	ritual := s.RitualSkillNameWithReplacements()
+	var limit fxp.Int
+	bases := make([]techniqueBase, 0, 2*len(colleges))
+	for _, college := range colleges {
+		primary, fallback, fallbackExcludes := ritualMagicDefaults(e, college, ritual, s.PrereqCount)
+		bases = append(bases,
+			techniqueBase{
+				level:    techniqueBaseLevel(e, nil, name, college, primary, false, nil),
+				modifier: primary.Modifier,
+				limit:    &limit,
+			},
+			techniqueBase{
+				level:    techniqueBaseLevel(e, nil, name, college, fallback, false, fallbackExcludes),
+				modifier: fallback.Modifier,
+				limit:    &limit,
+			})
+	}
+	return bases
 }
 
 // CalculateSpellLevel returns the calculated spell level.
@@ -795,29 +845,38 @@ func CalculateRitualMagicSpellLevel(e *Entity, name, powerSource, ritualSkillNam
 }
 
 func determineRitualMagicSkillLevelForCollege(e *Entity, name, college, ritualSkillName string, prereqCount int, tags []string, diff AttributeDifficulty, points fxp.Int) Level {
+	primary, fallback, fallbackExcludes := ritualMagicDefaults(e, college, ritualSkillName, prereqCount)
+	var limit fxp.Int
+	skillLevel := CalculateTechniqueLevel(e, nil, name, college, tags, primary, diff.Difficulty, points, false,
+		&limit, nil)
+	// CalculateTechniqueLevel() does not add the default skill modifier to the relative level, only to the final level
+	skillLevel.RelativeLevel += primary.Modifier
+	fallbackLevel := CalculateTechniqueLevel(e, nil, name, college, tags, fallback, diff.Difficulty, points, false,
+		&limit, fallbackExcludes)
+	fallbackLevel.RelativeLevel += fallback.Modifier
+	if skillLevel.Level >= fallbackLevel.Level {
+		return skillLevel
+	}
+	return fallbackLevel
+}
+
+// ritualMagicDefaults returns the defaults a Ritual Magic spell of the college, with the given count of prerequisites,
+// takes its level from: primary, the ritual skill specialized in the college, and fallback, a generically-named
+// ritual skill that carries no specialization, at 6 less. An "is" criterion of "" matches only an empty
+// specialization, so fallback matches no specialized skill; fallbackExcludes, the specialized ritual skills, only keep
+// the level of the generic one from resting on them through its defaults.
+func ritualMagicDefaults(e *Entity, college, ritualSkillName string, prereqCount int) (primary, fallback *SkillDefault, fallbackExcludes map[string]bool) {
 	// A blank name is matched as is, as RitualMagicSatisfied matches it, rather than as a wildcard.
-	def := &SkillDefault{
+	primary = &SkillDefault{
 		DefaultType:    SkillID,
 		Name:           criteria.Text{TextData: criteria.TextData{Compare: criteria.IsText, Qualifier: ritualSkillName}},
 		Specialization: criteria.Text{TextData: criteria.TextData{Compare: criteria.IsText, Qualifier: college}},
 		Modifier:       fxp.FromInteger(-prereqCount),
 	}
-	var limit fxp.Int
-	skillLevel := CalculateTechniqueLevel(e, nil, name, college, tags, def, diff.Difficulty, points, false,
-		&limit, nil)
-	// CalculateTechniqueLevel() does not add the default skill modifier to the relative level, only to the final level
-	skillLevel.RelativeLevel += def.Modifier
-	def.Specialization.Qualifier = ""
-	def.Modifier -= fxp.Six
-	// The fallback defaults from a generically-named skill that carries no specialization. SkillNamed() treats an empty
-	// specialization as a wildcard, so the specialized skills are excluded to avoid matching one from another college.
-	fallback := CalculateTechniqueLevel(e, nil, name, college, tags, def, diff.Difficulty, points, false,
-		&limit, specializedRitualSkills(e, ritualSkillName))
-	fallback.RelativeLevel += def.Modifier
-	if skillLevel.Level >= fallback.Level {
-		return skillLevel
-	}
-	return fallback
+	generic := *primary
+	generic.Specialization.Qualifier = ""
+	generic.Modifier -= fxp.Six
+	return primary, &generic, specializedRitualSkills(e, ritualSkillName)
 }
 
 // specializedRitualSkills returns the set of skills (keyed by Skill.String()) named ritualSkillName that carry a
@@ -1059,9 +1118,13 @@ func (s *Spell) PointsWithGrants(data *SpellEditData, points fxp.Int) fxp.Int {
 // LevelWithGrants returns the level with the levels grants merged into the spell added, as CalculateLevel adds them,
 // for a level computed from the edit data in place of the spell's own (see PointsWithGrants). levelAt returns the level
 // that data gives with the given points in place of the spell's own, which the level a Keep Highest or Keep Lowest
-// grant keeps is read with.
+// grant keeps is read with, and which holds a Ritual Magic spell to its limit.
 func (s *Spell) LevelWithGrants(data *SpellEditData, level Level, levelAt func(points fxp.Int) Level) Level {
-	return grantsWithEdits(s, s.withEditData(data)).applyLevels(nil, level, levelAt)
+	state := grantsWithEdits(s, s.withEditData(data))
+	if s.IsRitualMagic() {
+		return state.applyLevelsWithinLimit(nil, level, levelAt)
+	}
+	return state.applyLevels(nil, level, levelAt)
 }
 
 // withEditData returns a copy of the spell holding the edit data in place of its own.

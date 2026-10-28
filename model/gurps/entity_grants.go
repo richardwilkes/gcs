@@ -17,6 +17,7 @@ import (
 	"slices"
 	"strings"
 
+	"github.com/richardwilkes/gcs/v5/model/criteria"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/feature"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/grantadjust"
@@ -34,14 +35,36 @@ import (
 // the sheet that it merges into, or neither, for a grant whose item can't be granted or that can't put its item there
 // and has none to merge into, whose plan is kept apart from the others for grantSummary. seq is the grant's place in
 // sheet order, which the plans are not kept in (see reconcileGrants), and standsIn is set by a pass in which the grant
-// stands in for the one that put its target on the sheet; see applyGrants.
+// stands in for the one that put its target on the sheet; see applyGrants. leveler prices what the grant gives its own
+// copy of a skill or spell, with the answers of what carries it (see Grant.levelerWith); it is nil for a trait grant
+// and for a plan with no item.
 type grantPlan struct {
 	grant    *Grant
 	source   grantSource
 	node     grantHolder
 	target   grantHolder
+	leveler  grantLeveler
 	seq      int
 	standsIn bool
+}
+
+// standalonePoints returns the points the plan's grant gives its own copy of its skill or spell on the sheet, standing
+// alone (see Grant.pointsOn), or zero for a trait grant.
+func (p *grantPlan) standalonePoints(e *Entity) fxp.Int {
+	return p.grant.pointsOn(e, p.leveler)
+}
+
+// reaches returns true if the plan's grant, standing alone on the sheet, gives its item something there: a trait
+// always, and a skill or spell points, of which a level set below what the points of its first level buy there (see
+// firstLevelText) gives none.
+func (p *grantPlan) reaches(e *Entity) bool {
+	return p.grant.Type == feature.GrantTrait || p.standalonePoints(e) > 0
+}
+
+// baseUnresolved returns true if the plan's grant sets the level of its own copy of its skill or spell and the sheet
+// can't resolve what that level rests on; see Grant.baseUnresolved.
+func (p *grantPlan) baseUnresolved(e *Entity) bool {
+	return p.grant.baseUnresolved(e, p.leveler)
 }
 
 // sheetGrant is a grant found on the sheet, along with the ID of the item or modifier carrying it, what carries it, its
@@ -96,8 +119,8 @@ func (s *Skill) ReadOnly() bool { return s.Granted != nil }
 func (s *Spell) ReadOnly() bool { return s.Granted != nil }
 
 func (t *Trait) grantNotInEffect() bool { return t.Granted != nil && !t.grant.inEffect }
-func (s *Skill) grantNotInEffect() bool { return s.Granted != nil && !s.grant.inEffect }
-func (s *Spell) grantNotInEffect() bool { return s.Granted != nil && !s.grant.inEffect }
+func (s *Skill) grantNotInEffect() bool { return s.Granted != nil && !s.grant.inEffectAsJudged() }
+func (s *Spell) grantNotInEffect() bool { return s.Granted != nil && !s.grant.inEffectAsJudged() }
 
 // GrantingItem returns the trait, skill, spell or equipment carrying the grant that put the node on the sheet, or the
 // one carrying the grant standing in for it (see applyGrants), or nil for a node no grant put there.
@@ -586,7 +609,7 @@ func (r *grantReconciler[T]) consider(one sheetGrant, item T) {
 	probe := node
 	var fresh T
 	// A file can give the row an ID of another kind than the item the grant makes, turning it into a container, a
-	// technique or a spell of the other sort, so it is made again as when the grant changes.
+	// technique or a skill, or a spell of the other sort, so it is made again as when the grant changes.
 	if !has || (*grantLink(node)).Hash != link.Hash || tidKind(node.ID()) != madeKind(item) {
 		fresh = r.makeItem(g, item, link, answers)
 		probe = fresh
@@ -603,10 +626,11 @@ func (r *grantReconciler[T]) consider(one sheetGrant, item T) {
 				}
 				forgetMadeClosedStates(fresh)
 				r.entity.grantPlans = append(r.entity.grantPlans, grantPlan{
-					grant:  g,
-					source: source,
-					target: candidate,
-					seq:    one.seq,
+					grant:   g,
+					source:  source,
+					target:  candidate,
+					leveler: g.levelerWith(answers),
+					seq:     one.seq,
 				})
 				return
 			}
@@ -634,7 +658,13 @@ func (r *grantReconciler[T]) consider(one sheetGrant, item T) {
 	if !userDisabled(node) {
 		r.unfiled = append(r.unfiled, node)
 	}
-	r.entity.grantPlans = append(r.entity.grantPlans, grantPlan{grant: g, source: source, node: node, seq: one.seq})
+	r.entity.grantPlans = append(r.entity.grantPlans, grantPlan{
+		grant:   g,
+		source:  source,
+		node:    node,
+		leveler: g.levelerWith(answers),
+		seq:     one.seq,
+	})
 }
 
 // plantInPlaceOf puts the row, when made afresh this pass for a grant taken earlier, in the place of old, the row of
@@ -698,7 +728,7 @@ func forgetMadeClosedStates[T grantNode[T]](node T) {
 }
 
 // madeKind returns the kind of the ID of the item makeItem makes from the grant's copy of it, which is the copy's own
-// kind unless the copy has an ID of a kind its type doesn't have.
+// kind unless the copy has an ID of a kind its type doesn't have. Grant.RenewKey gives the copy a new ID of this kind.
 func madeKind(item any) byte {
 	switch n := item.(type) {
 	case *Trait:
@@ -861,11 +891,11 @@ func (e *Entity) grantCarrierUnmet(owner fmt.Stringer) bool {
 
 // applyGrants decides, for the current recalculation pass, which granted items are in effect and what the grants in
 // effect merge into the items already on the sheet. A grant in effect that gives its row nothing, since the level it
-// sets is below what 1 point buys there (3 for a wildcard; see Grant.reaches), leaves the row out of effect, marked
-// unreached. A grant that would have put its item on the sheet, had another grant not put it there first, stands in for
-// that grant while it is not in effect, making the item the one it gives (see takeGrantDetails), so that the item is in
-// effect whichever of them is listed first. The merges follow, so that they find the items in effect whatever the
-// order.
+// sets is below what the points of its first level buy there (see grantPlan.reaches), leaves the row out of effect,
+// marked unreached, unless as the prerequisites being judged see the sheet (see grantState.inEffectAsJudged). A grant
+// that would have put its item on the sheet, had another grant not put it there first, stands in for that grant while
+// it is not in effect, making the item the one it gives (see takeGrantDetails), so that the item is in effect
+// whichever of them is listed first. The merges follow, so that they find the items in effect whatever the order.
 func (e *Entity) applyGrants() {
 	// What the last pass gave an item is taken back, whether or not the item is still planned for. It is kept until
 	// now so that a recalculation starts from the derived state the last one left.
@@ -884,16 +914,99 @@ func (e *Entity) applyGrants() {
 		holder.grants().reset()
 		e.grantHolders = append(e.grantHolders, holder)
 	}
+	// A level set on a technique or Ritual Magic spell is priced from the skill or technique it rests on, which must
+	// already hold what this pass's grants give it, so the grants are applied in rounds; see grantRounds.
+	rounds := e.grantRounds()
+	for _, round := range slices.Compact(slices.Sorted(slices.Values(rounds))) {
+		e.applyGrantsOf(rounds, round)
+	}
+	e.judgeGrantedItems()
+	e.grantCarriersJudged = true
+}
+
+// grantRounds returns, for each of the plans, the round of applyGrants in which its grant is applied, which is the same
+// for all the plans of an item: its rest depth (see restDepth), so that each item is granted after the skills and
+// techniques its level may rest on.
+func (e *Entity) grantRounds() []int {
+	rounds := make([]int, len(e.grantPlans))
+	depths := make(map[*Skill]int)
+	for i := range e.grantPlans {
+		holder := e.grantPlans[i].node
+		if holder == nil {
+			holder = e.grantPlans[i].target
+		}
+		rounds[i] = e.restDepth(holder, depths)
+	}
+	return rounds
+}
+
+// restDepth returns 0 for an item whose level rests on no skill, and for a technique or Ritual Magic spell whose level
+// does, one more than the greatest rest depth of the techniques on the sheet it may rest on: those its default matches
+// by name and specialization, or for a Ritual Magic spell those named as its ritual skill, whether or not they are in
+// effect, since a granted one is put in effect only in its own round. depths holds the rest depths of the techniques
+// found so far, with -1 for one being found, so that a technique resting on itself through others ends there.
+func (e *Entity) restDepth(item grantHolder, depths map[*Skill]int) int {
+	var def *SkillDefault
+	var replacements map[string]string
+	var technique *Skill
+	switch one := item.(type) {
+	case *Skill:
+		technique = one
+		if !one.restsOnSkill() {
+			return 0
+		}
+		if depth, ok := depths[one]; ok {
+			return max(depth, 0)
+		}
+		depths[one] = -1
+		def, replacements = one.TechniqueDefault, one.Replacements
+	case *Spell:
+		if !one.restsOnSkill() {
+			return 0
+		}
+		// The ritual skill, whatever its specialization.
+		def = &SkillDefault{
+			DefaultType: SkillID,
+			Name: criteria.Text{
+				TextData: criteria.TextData{Compare: criteria.IsText, Qualifier: one.RitualSkillNameWithReplacements()},
+			},
+		}
+	default:
+		return 0
+	}
+	depth := 1
+	name := def.Name.Matcher(replacements)
+	specialization := def.Specialization.Matcher(replacements)
+	Traverse(func(sk *Skill) bool {
+		if sk != technique && sk.IsTechnique() && name.Matches(sk.NameWithReplacements()) &&
+			skillSpecializationMatcherMatches(specialization, sk.SpecializationWithReplacements(),
+				sk.OptionalSpecializationWithReplacements()) {
+			depth = max(depth, e.restDepth(sk, depths)+1)
+		}
+		return false
+	}, false, true, e.Skills...)
+	if technique != nil {
+		depths[technique] = depth
+	}
+	return depth
+}
+
+// applyGrantsOf runs the steps of applyGrants for the plans whose grants are applied in the round; see grantRounds.
+func (e *Entity) applyGrantsOf(rounds []int, round int) {
 	for i := range e.grantPlans {
 		plan := &e.grantPlans[i]
+		if rounds[i] != round {
+			continue
+		}
 		plan.standsIn = false
 		if plan.node != nil && e.grantInEffect(plan) {
-			if plan.grant.reaches(e) {
+			if plan.reaches(e) {
 				e.grantItem(plan, plan.node)
 			} else {
 				state := plan.node.grants()
 				state.unreached = true
-				state.unresolved = plan.grant.attributeUnresolved(e, nil)
+				state.unresolved = plan.baseUnresolved(e)
+				state.unreachedPoints = e.levelSetReprice(plan, plan.leveler, plan.node, 0)
 			}
 		}
 		if e.grantPlants(plan) {
@@ -908,26 +1021,27 @@ func (e *Entity) applyGrants() {
 	}
 	for i := range e.grantPlans {
 		plan := &e.grantPlans[i]
-		if plan.node == nil && IsGranted(plan.target) && !plan.target.grants().inEffect && e.grantPlants(plan) {
+		if rounds[i] == round && plan.node == nil && IsGranted(plan.target) && !plan.target.grants().inEffect &&
+			e.grantPlants(plan) {
 			plan.standsIn = true
-			plan.target.grants().standIn = plan.source
+			state := plan.target.grants()
+			state.standIn = plan.source
+			state.unreachedPoints = nil
 			e.grantItem(plan, plan.target)
 		}
 	}
 	for i := range e.grantPlans {
 		plan := &e.grantPlans[i]
-		if plan.node == nil && !plan.standsIn && e.grantInEffect(plan) {
+		if rounds[i] == round && plan.node == nil && !plan.standsIn && e.grantInEffect(plan) {
 			e.mergeGrant(plan, plan.target, plan.target.grants())
 		}
 	}
-	e.judgeGrantedItems()
-	e.grantCarriersJudged = true
 }
 
 // grantPlants returns true if the plan's grant would give its item standing alone in the current pass: it can put the
-// item on the sheet, is in effect, and gives it something there (see Grant.reaches).
+// item on the sheet, is in effect, and gives it something there (see grantPlan.reaches).
 func (e *Entity) grantPlants(plan *grantPlan) bool {
-	return plan.grant.putsItemOnSheet() && e.grantInEffect(plan) && plan.grant.reaches(e)
+	return plan.grant.putsItemOnSheet() && e.grantInEffect(plan) && plan.reaches(e)
 }
 
 // judgeGrantedItems gives each granted item whose details come from the grant of a carrier with another grant in effect
@@ -989,20 +1103,22 @@ func (e *Entity) grantItem(plan *grantPlan, holder grantHolder) {
 
 // grantInto records in the state, the holder's own or one judgeGrantedItems makes, that the plan's grant gives the
 // holder: in effect, with the points the grant gives its own copy of a skill or spell standing alone (see
-// Grant.standalonePoints), whose details the holder takes, less, for a level set, those the default the holder uses
+// grantPlan.standalonePoints), whose details the holder takes, less, for a level set, those the default the holder uses
 // stands for (see Grant.pointsBeyondDefault). A Keep Highest or Keep Lowest grant also keeps the level it sets, as when
 // it merges into an item already present (see mergeGrant), so that it floors the levels the other grants take away, or
-// caps those they add, whether or not it is the grant that put the item on the sheet.
+// caps those they add, whether or not it is the grant that put the item on the sheet. The points of a level set are
+// priced afresh for the prerequisites being judged; see levelSetReprice.
 func (e *Entity) grantInto(plan *grantPlan, holder grantHolder, state *grantState) {
 	g := plan.grant
 	state.inEffect = true
 	state.bypass = !g.CheckPrereqs
-	points := g.standalonePoints(e)
+	points := plan.standalonePoints(e)
 	state.ownPoints = g.pointsBeyondDefault(points, holder)
-	state.addPoints(plan.source, state.ownPoints)
+	state.addPoints(plan.source, state.ownPoints, e.levelSetReprice(plan, plan.leveler, holder, state.ownPoints))
 	if merge := g.EffectiveMerge(); merge != grantmerge.Ignore {
 		if _, ok := holder.(grantLeveler); ok {
-			state.keepPoints(plan.source, points, merge == grantmerge.KeepLowest)
+			state.keepPoints(plan.source, points, merge == grantmerge.KeepLowest,
+				e.levelSetReprice(plan, plan.leveler, nil, points))
 		} else {
 			state.keepLevel(plan.source, g.amount(), merge == grantmerge.KeepLowest)
 		}
@@ -1079,7 +1195,8 @@ func withoutGrantDetails[D TraitData | SkillData | SpellData](data *D) *D {
 // the state, the item's own or one judgeGrantedItems makes: levels or points are added to the item, while a level set
 // leaves it alone under Ignore and otherwise keeps the higher or the lower of the item's level and the one set. What a
 // grant gives a skill or spell is priced against the item on the sheet, target, whose optional specialization may make
-// it easier than the grant's copy, and a level set below what 1 point buys there (3 for a wildcard) gives nothing.
+// it easier than the grant's copy, and a level set below what the points of its first level buy there (see
+// firstLevelText) gives nothing.
 // target is plan.target, or an editor's copy of what it would merge into (see grantsWithEdits). A skill or spell with
 // no level of its own, such as one with no points and no default, has none to add to, take from or compare with, so the
 // grant gives it the points it would give it standing alone instead (see Grant.pointsOn), as if it had put it on the
@@ -1109,8 +1226,13 @@ func (e *Entity) mergeGrant(plan *grantPlan, target grantHolder, state *grantSta
 	}
 	adjust := g.EffectiveAdjust()
 	points := amount
+	var reprice *grantReprice
 	if adjust != grantadjust.AddPoints {
-		if points = g.pointsOn(e, item); adjust == grantadjust.SetLevel && points == 0 {
+		points = g.pointsOn(e, item)
+		reprice = e.levelSetReprice(plan, item, nil, points)
+		if adjust == grantadjust.SetLevel && points == 0 {
+			// The level set gives nothing, unless as the prerequisites being judged see the sheet.
+			state.keepPoints(source, 0, merge == grantmerge.KeepLowest, reprice)
 			return
 		}
 	}
@@ -1120,23 +1242,40 @@ func (e *Entity) mergeGrant(plan *grantPlan, target grantHolder, state *grantSta
 		// A negative amount has nothing to take away from an item with no level.
 		if points > 0 {
 			state.ownPoints += points
-			state.addPoints(source, points)
+			state.addPoints(source, points, reprice)
 			if !adds {
-				state.keepPoints(source, points, merge == grantmerge.KeepLowest)
+				state.keepPoints(source, points, merge == grantmerge.KeepLowest, reprice)
 			}
 		}
 		return
 	}
 	switch {
 	case adjust == grantadjust.AddPoints:
-		state.addPoints(source, amount)
+		state.addPoints(source, amount, nil)
 	case adds:
 		state.addLevels(source, amount)
 	default:
 		// The level kept is that of the item on the sheet with the points, so that the placeholder answers and bonuses
 		// the item has count for both.
-		state.keepPoints(source, points, merge == grantmerge.KeepLowest)
+		state.keepPoints(source, points, merge == grantmerge.KeepLowest, reprice)
 	}
+}
+
+// levelSetReprice returns what prices afresh, for the prerequisites being judged, the points the level set of the
+// plan's grant gives item, a skill or spell, which are given here as priced against the sheet as a whole, less those
+// the default of holder stands for when holder is not nil (see Grant.pointsBeyondDefault), or nil for a grant that
+// sets no level; see grantReprice.
+func (e *Entity) levelSetReprice(plan *grantPlan, item grantLeveler, holder grantHolder, points fxp.Int) *grantReprice {
+	g := plan.grant
+	if !g.setsSkillLevel() || item == nil {
+		return nil
+	}
+	return &grantReprice{entity: e, owner: plan.source.owner, points: points, price: func() fxp.Int {
+		if holder == nil {
+			return g.pointsOn(e, item)
+		}
+		return g.pointsBeyondDefault(g.pointsOn(e, item), holder)
+	}}
 }
 
 // remergeGrants redoes, for the points a skill or spell that no grant put on the sheet has now, what applyGrants merged
@@ -1275,7 +1414,7 @@ func ownRawPoints(holder grantHolder) fxp.Int {
 func (e *Entity) ownLevel(target grantHolder, state *grantState, own fxp.Int) fxp.Int {
 	switch t := target.(type) {
 	case *Skill:
-		return t.levelAt(e, t.DefaultedFrom, state.ownPoints+own).Level
+		return t.levelAt(e, t.DefaultedFrom, state.ownPoints+own, nil).Level
 	case *Spell:
 		return t.levelAt(e, state.ownPoints+own).Level
 	default:
@@ -1294,8 +1433,8 @@ func (e *Entity) takesFromNoLevel(plan *grantPlan) bool {
 }
 
 // setsUnreachedLevel returns true if the plan's grant would keep the higher or lower level of the skill or spell
-// already on the sheet that it merges into and one below what 1 point buys there (3 for a wildcard), which mergeGrant
-// leaves as it is.
+// already on the sheet that it merges into and one below what the points of its first level buy there (see
+// firstLevelText), which mergeGrant leaves as it is.
 func (e *Entity) setsUnreachedLevel(plan *grantPlan) bool {
 	g := plan.grant
 	if plan.target == nil || !g.setsSkillLevel() || g.EffectiveMerge() == grantmerge.Ignore || g.mergesNothing() {
@@ -1321,7 +1460,7 @@ func (e *Entity) carriesGrant(owner any) bool {
 
 // grantedPointsFor returns the points the grant standing in for the one that put the skill or spell on the sheet (see
 // applyGrants), or else that one, whether or not it is in effect, gives it standing alone (see
-// Grant.standalonePoints), or zero for one no grant put there.
+// grantPlan.standalonePoints), or zero for one no grant put there.
 func (e *Entity) grantedPointsFor(holder grantHolder) fxp.Int {
 	if _, ok := holder.(grantLeveler); !ok || e == nil {
 		return 0
@@ -1329,7 +1468,7 @@ func (e *Entity) grantedPointsFor(holder grantHolder) fxp.Int {
 	standIn := !xreflect.IsNil(holder.grants().standIn.owner)
 	for _, plan := range e.grantPlans {
 		if (standIn && plan.standsIn && plan.target == holder) || (!standIn && plan.node == holder) {
-			return plan.grant.standalonePoints(e)
+			return plan.standalonePoints(e)
 		}
 	}
 	return 0
@@ -1347,13 +1486,19 @@ func grantSourceName(active grantSource) string {
 }
 
 // levelAt returns the level the skill would have with the given points in place of its own, adjusted for the point
-// bonuses as its own are, leaving out what grants gave it, and the given default in place of the one it recorded.
-func (s *Skill) levelAt(e *Entity, def *SkillDefault, points fxp.Int) Level {
+// bonuses as its own are, leaving out what grants gave it, and the given default in place of the one it recorded. A
+// technique, which has no such default, takes its level from its own default, with the levels of the skills it may
+// rest on taken with the excludes, as CalculateTechniqueLevel takes them.
+func (s *Skill) levelAt(e *Entity, def *SkillDefault, points fxp.Int, excludes map[string]bool) Level {
 	name := s.NameWithReplacements()
 	specialization := s.SpecializationWithReplacements()
 	optionalSpecialization := s.OptionalSpecializationWithReplacements()
 	points = AdjustedPointsForNonContainerSkillOrTechnique(e, points, name, specialization, optionalSpecialization,
 		s.Tags, nil)
+	if s.IsTechnique() {
+		return CalculateTechniqueLevel(e, s.Replacements, name, specialization, s.Tags, s.TechniqueDefault,
+			s.AdjustedDifficulty().Difficulty, points, true, s.TechniqueLimitModifier, excludes)
+	}
 	return CalculateSkillLevel(e, name, specialization, optionalSpecialization, s.Tags, def, s.AdjustedDifficulty(),
 		points, s.EncumbrancePenaltyMultiplier)
 }
@@ -1366,10 +1511,11 @@ func (s *Spell) levelAt(e *Entity, points fxp.Int) Level {
 }
 
 // wouldStandIn returns true if the plan's grant, were it in effect, would stand in for the grant that put its target on
-// the sheet, as applyGrants picks one: the plan's grant gives its item something standing alone (see Grant.reaches),
-// the grant that put the target there is not in effect, and no grant ahead of it in plan order stands in.
+// the sheet, as applyGrants picks one: the plan's grant gives its item something standing alone (see
+// grantPlan.reaches), the grant that put the target there is not in effect, and no grant ahead of it in plan order
+// stands in.
 func (e *Entity) wouldStandIn(plan *grantPlan) bool {
-	if plan.node != nil || !plan.grant.putsItemOnSheet() || !plan.grant.reaches(e) || !IsGranted(plan.target) {
+	if plan.node != nil || !plan.grant.putsItemOnSheet() || !plan.reaches(e) || !IsGranted(plan.target) {
 		return false
 	}
 	state := plan.target.grants()
@@ -1423,13 +1569,12 @@ func (e *Entity) grantSummary(item any) string {
 		switch {
 		case plan.node == nil && plan.target == nil:
 			line = plan.grant.idleSummary(answers)
-		case plan.node != nil && !plan.grant.reaches(e):
+		case plan.node != nil && !plan.reaches(e):
 			// A grant that gives its row nothing says so whatever its status, as mergeSummary does.
-			if plan.grant.attributeUnresolved(e, nil) {
-				line = i18n.Text("Does not grant %s, since the sheet lacks the attribute its level rests on", name)
+			if plan.baseUnresolved(e) {
+				line = i18n.Text("Does not grant %s, since %s", name, unresolvedText(plan.leveler))
 			} else {
-				line = i18n.Text("Does not grant %s, since that is below %s", name,
-					firstLevelText(plan.grant.leveler()))
+				line = i18n.Text("Does not grant %s, since that is below %s", name, firstLevelText(plan.leveler))
 			}
 		case status == grantUnmet && (plan.node != nil || wouldStandIn):
 			line = i18n.Text("Does not grant %s, since the prerequisites of what carries the grant are not met", name)
@@ -1447,11 +1592,9 @@ func (e *Entity) grantSummary(item any) string {
 			line = i18n.Text("Removes nothing from %s, since it has no level of its own",
 				plan.grant.itemNameWith(answers))
 		case e.setsUnreachedLevel(plan):
-			if item, ok := plan.target.(grantLeveler); ok && plan.grant.attributeUnresolved(e, item) {
-				line = i18n.Text(
-					"Does not change %s, already present, since the sheet lacks the attribute its level rests on",
-					plan.grant.itemNameWith(answers),
-				)
+			if item, ok := plan.target.(grantLeveler); ok && plan.grant.baseUnresolved(e, item) {
+				line = i18n.Text("Does not change %s, already present, since %s", plan.grant.itemNameWith(answers),
+					unresolvedText(item))
 			} else {
 				line = i18n.Text("Does not change %s, already present, since skill level %s is below %s",
 					plan.grant.itemNameWith(answers), plan.grant.amount().String(), firstLevelText(item))

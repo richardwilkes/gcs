@@ -147,9 +147,10 @@ func levelPreview(content *unison.Panel) string {
 }
 
 // TestEditorLevelPreviewIncludesGrants verifies that the skill and spell editors' level previews include what grants
-// gave the item, as the sheet's level does, so that a granted row's editor shows its level rather than none, that they
-// read the level a Keep Highest or Keep Lowest grant keeps as the sheet reads it: without the skill's default, and with
-// its relative level, and that they merge the grants for the item as edited, as applying the edits does.
+// gave the item, a technique included, as the sheet's level does, so that a granted row's editor shows its level rather
+// than none, that they read the level a Keep Highest or Keep Lowest grant keeps as the sheet reads it: without the
+// skill's default, held to a technique's limit, and with its relative level, and that they merge the grants for the
+// item as edited, as applying the edits does.
 func TestEditorLevelPreviewIncludesGrants(t *testing.T) {
 	// grantOn puts on the sheet a trait carrying a grant of the item, which adjusts it as given.
 	grantOn := func(e *gurps.Entity, name string, item any, adjust grantadjust.Kind, amount fxp.Int,
@@ -172,6 +173,14 @@ func TestEditorLevelPreviewIncludesGrants(t *testing.T) {
 		s.Name = name
 		s.Difficulty = diff
 		s.Points = points
+		e.Skills = append(e.Skills, s)
+		return s
+	}
+	addTechnique := func(e *gurps.Entity, name, skill string, modifier fxp.Int, limit *fxp.Int) *gurps.Skill {
+		s := gurps.NewTechnique(e, nil, skill)
+		s.Name = name
+		s.TechniqueDefault.Modifier = modifier
+		s.TechniqueLimitModifier = limit
 		e.Skills = append(e.Skills, s)
 		return s
 	}
@@ -356,6 +365,38 @@ func TestEditorLevelPreviewIncludesGrants(t *testing.T) {
 			},
 		},
 		{
+			// The levels added count from the 11 the technique's 1 point buys over its default of Karate-2 at 10.
+			name: "technique a grant adds levels to", want: "14/+2", build: func(e *gurps.Entity) any {
+				addSkill(e, "Karate", easyDX, fxp.Four)
+				kick := addTechnique(e, "Kick", "Karate", -fxp.Two, nil)
+				grantOn(e, "Training", kick, grantadjust.AddLevels, fxp.Three, grantmerge.Ignore)
+				return kick
+			},
+		},
+		{
+			// The level kept is held to the technique's limit of Karate+1 at 13.
+			name: "technique a grant keeps at a level above its limit", want: "13/+1", build: func(e *gurps.Entity) any {
+				addSkill(e, "Karate", easyDX, fxp.Four)
+				kick := addTechnique(e, "Kick", "Karate", -fxp.Two, new(fxp.One))
+				grantOn(e, "Training", kick, grantadjust.SetLevel, fxp.Fifteen, grantmerge.KeepHighest)
+				return kick
+			},
+		},
+		{
+			// The optional specialization, which a technique has only from a file, makes the Hard technique Average,
+			// so its 3 points buy +3 over its default of Karate-2 at 10 rather than +2.
+			name: "hard technique with an optional specialization a grant adds levels to", want: "14/+2",
+			build: func(e *gurps.Entity) any {
+				addSkill(e, "Karate", easyDX, fxp.Four)
+				kick := addTechnique(e, "Kick", "Karate", -fxp.Two, nil)
+				kick.Difficulty.Difficulty = difficulty.Hard
+				kick.Points = fxp.Three
+				kick.OptionalSpecialization = "Spinning"
+				grantOn(e, "Training", kick, grantadjust.AddLevels, fxp.One, grantmerge.Ignore)
+				return kick
+			},
+		},
+		{
 			name: "difficulty chosen for a spell a grant puts on the sheet", diff: new(difficulty.VeryHard),
 			want: "9/IQ-1", build: func(e *gurps.Entity) any {
 				light := gurps.NewSpell(e, nil, false)
@@ -396,7 +437,7 @@ func TestEditorLevelPreviewIncludesGrants(t *testing.T) {
 			case *gurps.Skill:
 				onSheet = func() string {
 					return item.LevelData.Level.Floor().String() + "/" +
-						gurps.FormatRelativeSkill(entity, false, item.Difficulty, item.LevelData.RelativeLevel)
+						gurps.FormatRelativeSkill(entity, item.IsTechnique(), item.Difficulty, item.AdjustedRelativeLevel())
 				}
 				e, content := buildEditorContent(sheet, item, initSkillEditor)
 				if tc.typed != nil {

@@ -741,9 +741,13 @@ func (s *Skill) PointsWithGrants(data *SkillEditData, points fxp.Int) fxp.Int {
 // LevelWithGrants returns the level with the levels grants merged into the skill added, as CalculateLevel adds them,
 // for a level computed from the edit data in place of the skill's own (see PointsWithGrants). levelAt returns the level
 // that data gives with the given points in place of the skill's own and without a default, which the level a Keep
-// Highest or Keep Lowest grant keeps is read with.
+// Highest or Keep Lowest grant keeps is read with, and which holds a technique with a limit to it.
 func (s *Skill) LevelWithGrants(data *SkillEditData, level Level, levelAt func(points fxp.Int) Level) Level {
-	return grantsWithEdits(s, s.withEditData(data)).applyLevels(nil, level, levelAt)
+	state := grantsWithEdits(s, s.withEditData(data))
+	if s.IsTechnique() && data.TechniqueLimitModifier != nil {
+		return state.applyLevelsWithinLimit(nil, level, levelAt)
+	}
+	return state.applyLevels(nil, level, levelAt)
 }
 
 // withEditData returns a copy of the skill holding the edit data in place of its own.
@@ -1047,17 +1051,17 @@ func newJudgedDefaultKey(s *Skill, excludes map[string]bool) judgedDefaultKey {
 // calculateLevelWith is calculateLevelExcept with the given default in place of the one defaultExcept returns. With
 // exclude nil, what the grants of the item whose prerequisites are being judged gave is left out; see Entity.judgingOr.
 // The level a grant keeps is read without a default, since the points kept buy it without one (see
-// pointsForBaseLevel).
+// pointsForBaseLevel), and with the excludes, so that a technique resting on another never comes back to itself. A
+// technique with a limit is held to it; see grantState.applyLevelsWithinLimit.
 func (s *Skill) calculateLevelWith(exclude any, def *SkillDefault, excludes map[string]bool) Level {
 	e := EntityFromNode(s)
 	exclude = e.judgingOr(exclude)
 	level := s.levelBeforeGrants(exclude, def, excludes)
-	if s.IsTechnique() {
-		return level
+	levelAt := func(points fxp.Int) Level { return s.levelAt(e, nil, points, excludes) }
+	if s.IsTechnique() && s.TechniqueLimitModifier != nil {
+		return s.grant.applyLevelsWithinLimit(exclude, level, levelAt)
 	}
-	return s.grant.applyLevels(exclude, level, func(points fxp.Int) Level {
-		return s.levelAt(e, nil, points)
-	})
+	return s.grant.applyLevels(exclude, level, levelAt)
 }
 
 // levelBeforeGrants is calculateLevelWith without what the grants made of the level, though with the points they gave;
@@ -1139,10 +1143,27 @@ func skillAttributeLevel(e *Entity, attrID string) fxp.Int {
 	return level
 }
 
+// pointsForLevels implements grantLeveler.
+func (s *Skill) pointsForLevels(levels fxp.Int) fxp.Int {
+	if s.IsTechnique() {
+		return techniquePoints(levels, s.AdjustedDifficulty().Difficulty)
+	}
+	return grantTierPoints(levels, s.WildcardDifficulty())
+}
+
+// restsOnSkill implements grantLeveler: a technique whose default is a skill, or the parry or block of one.
+func (s *Skill) restsOnSkill() bool {
+	return s.IsTechnique() && s.TechniqueDefault != nil && s.TechniqueDefault.SkillBased()
+}
+
 // pointsForBaseLevel implements grantLeveler: the fewest points that give the skill, at its adjusted difficulty, the
-// level before bonuses and defaults on the sheet, or zero when none do.
+// level before bonuses and defaults on the sheet, or for a technique the level before its own bonuses, held to its
+// limit (see techniquePointsForLevel), or zero when none do.
 func (s *Skill) pointsForBaseLevel(e *Entity, level fxp.Int) fxp.Int {
 	ad := s.AdjustedDifficulty()
+	if s.IsTechnique() {
+		return techniquePointsForLevel(level, ad.Difficulty, s.techniqueBase(e))
+	}
 	attr := skillAttributeLevel(e, ad.Attribute)
 	if attr == fxp.Min {
 		return 0
@@ -1150,100 +1171,113 @@ func (s *Skill) pointsForBaseLevel(e *Entity, level fxp.Int) fxp.Int {
 	return grantTierPoints((level-(attr+ad.Difficulty.BaseRelativeLevel())).Ceil()+fxp.One, s.WildcardDifficulty())
 }
 
-// attributeUnresolved implements grantLeveler.
-func (s *Skill) attributeUnresolved(e *Entity) bool {
+// baseUnresolved implements grantLeveler.
+func (s *Skill) baseUnresolved(e *Entity) bool {
+	if s.IsTechnique() {
+		return !s.techniqueBase(e).resolved()
+	}
 	return skillAttributeLevel(e, s.AdjustedDifficulty().Attribute) == fxp.Min
+}
+
+// techniqueBase returns what the technique's level rests on as the sheet sees it, as CalculateTechniqueLevel takes it
+// for the level the sheet shows.
+func (s *Skill) techniqueBase(e *Entity) techniqueBase {
+	base := techniqueBase{level: fxp.Min, limit: s.TechniqueLimitModifier}
+	if def := s.TechniqueDefault; def != nil {
+		base.level = techniqueBaseLevel(e, s.Replacements, s.NameWithReplacements(), s.SpecializationWithReplacements(),
+			def, true, nil)
+		base.modifier = def.Modifier
+	}
+	return base
+}
+
+// techniqueBase is what the level of a technique, or of a Ritual Magic spell, rests on: the level of its base, before
+// its default's modifier, fxp.Min when unresolved, along with that modifier and the limit, if any, of how far above the
+// base the technique goes.
+type techniqueBase struct {
+	level    fxp.Int
+	modifier fxp.Int
+	limit    *fxp.Int
+}
+
+func (b techniqueBase) resolved() bool {
+	return b.level != fxp.Min
+}
+
+// most returns the highest level the technique reaches from this base before its own bonuses, or fxp.Max with no
+// limit.
+func (b techniqueBase) most() fxp.Int {
+	if b.limit == nil {
+		return fxp.Max
+	}
+	return b.level + *b.limit
+}
+
+// techniquePoints returns the points that raise a technique of the given difficulty the given number of levels above
+// its default, as CalculateTechniqueLevel counts them: 1 a level, plus 1 for a Hard one, or zero for fewer than 1.
+func techniquePoints(levels fxp.Int, diff difficulty.Level) fxp.Int {
+	levels = levels.Floor()
+	switch {
+	case levels < fxp.One:
+		return 0
+	case diff == difficulty.Hard:
+		return levels + fxp.One
+	default:
+		return levels
+	}
+}
+
+// techniquePointsForLevel returns the fewest points that give a technique of the given difficulty the level, before
+// its own bonuses, from the best of the bases it may rest on, or zero when none is resolved or the level is a level or
+// more below what the points of its first level buy, as for a skill (see Skill.pointsForBaseLevel). A level above the
+// highest the bases reach (see techniqueBase.most) is priced at that one, since no points go further, and a level its
+// default already gives, as when its limit is at or below its default, at the points of its first level.
+func techniquePointsForLevel(level fxp.Int, diff difficulty.Level, bases ...techniqueBase) fxp.Int {
+	reach, first := fxp.Min, fxp.Min
+	for _, base := range bases {
+		if base.resolved() {
+			reach = reach.Max(base.most())
+			first = first.Max((base.level + base.modifier + fxp.One).Min(base.most()))
+		}
+	}
+	if reach == fxp.Min || level <= first-fxp.One {
+		return 0
+	}
+	reach = reach.Min(level)
+	points := fxp.Min
+	for _, base := range bases {
+		if base.resolved() && base.most() >= reach {
+			one := techniquePoints((reach - (base.level + base.modifier)).Ceil().Max(fxp.One), diff)
+			if points == fxp.Min || one < points {
+				points = one
+			}
+		}
+	}
+	return points
 }
 
 // CalculateTechniqueLevel returns the calculated level for a technique.
 func CalculateTechniqueLevel(e *Entity, replacements map[string]string, name, specialization string, tags []string, def *SkillDefault, diffLevel difficulty.Level, points fxp.Int, requirePoints bool, limitModifier *fxp.Int, excludes map[string]bool) Level {
 	var tooltip xbytes.InsertBuffer
 	var relativeLevel fxp.Int
-	level := fxp.Min
-	if e != nil && def != nil {
-		if def.Type() == SkillID {
-			// Match against the full name and specialization criteria (not just the qualifier strings) so that, e.g.,
-			// a "whose specialization is anything" default resolves to any matching specialization rather than staying
-			// locked on the qualifier text that may linger from a prior "is" selection. See issue #1061.
-			if list := def.matchingSkills(e, replacements, requirePoints, excludes); len(list) > 0 {
-				if excludes == nil {
-					excludes = make(map[string]bool)
-				}
-				// Use the highest-level matching skill that isn't (circularly) defaulting back to this technique,
-				// rather than whichever happens to be encountered first.
-				for _, sk := range list {
-					var usable bool
-					if sk.IsTechnique() {
-						usable = sk.TechniqueDefault != nil &&
-							(sk.TechniqueDefault.NameWithReplacements(replacements) != name ||
-								sk.TechniqueDefault.SpecializationWithReplacements(replacements) != specialization)
-					} else {
-						usable = sk.DefaultedFrom == nil ||
-							sk.DefaultedFrom.NameWithReplacements(replacements) != name ||
-							sk.DefaultedFrom.SpecializationWithReplacements(replacements) != specialization
-					}
-					if usable {
-						// Exclude this skill while computing its own level so it cannot circularly default back to
-						// itself, then restore the prior state so it remains available to the other candidates.
-						skStr := sk.String()
-						had := excludes[skStr]
-						excludes[skStr] = true
-						if candidate := sk.CalculateLevel(excludes).Level; level < candidate {
-							level = candidate
-						}
-						if !had {
-							delete(excludes, skStr)
-						}
-					}
-				}
-			}
-		} else if t := def.Type(); (t == ParryID || t == BlockID) && e.carriesGrant(e.judging) {
-			// While the prerequisites of an item carrying a grant are judged, the skill a parry or block default rests
-			// on is taken at the level they see, as it is for a skill default, rather than the one it recorded, which
-			// holds what the grant gave; see Entity.JudgingPrereqsOf. Each skill is excluded while its own level is
-			// computed, as above, so that one leading back to this technique cannot recurse without end.
-			if excludes == nil {
-				excludes = make(map[string]bool)
-			}
-			for _, sk := range def.matchingSkills(e, replacements, true, excludes) {
-				if !def.isTLPermitted(e, sk.TL()) {
-					continue
-				}
-				skStr := sk.String()
-				had := excludes[skStr]
-				excludes[skStr] = true
-				if candidate := sk.CalculateLevel(excludes).Level; level < candidate {
-					level = candidate
-				}
-				if !had {
-					delete(excludes, skStr)
-				}
-			}
-			if level != fxp.Min {
-				level = defenseLevelFromSkill(level, e.defenseBonus(t))
-			}
-		} else {
-			// Take the modifier back out, as we wanted the base, not the final value.
-			level = def.SkillLevelFast(e, replacements, true, nil, false) - def.Modifier
+	level := techniqueBaseLevel(e, replacements, name, specialization, def, requirePoints, excludes)
+	if level != fxp.Min {
+		baseLevel := level
+		level += def.Modifier
+		// As for a skill, a fraction of a point buys nothing.
+		points = points.Floor()
+		if diffLevel == difficulty.Hard {
+			points -= fxp.One
 		}
-		if level != fxp.Min {
-			baseLevel := level
-			level += def.Modifier
-			if diffLevel == difficulty.Hard {
-				points -= fxp.One
-			}
-			if points > 0 {
-				relativeLevel = points
-			}
-			if level != fxp.Min {
-				relativeLevel += e.SkillBonusFor(name, specialization, "", tags, &tooltip)
-				level += relativeLevel
-			}
-			if limitModifier != nil {
-				if maximum := baseLevel + *limitModifier; level > maximum {
-					relativeLevel -= level - maximum
-					level = maximum
-				}
+		if points > 0 {
+			relativeLevel = points
+		}
+		relativeLevel += e.SkillBonusFor(name, specialization, "", tags, &tooltip)
+		level += relativeLevel
+		if limitModifier != nil {
+			if maximum := baseLevel + *limitModifier; level > maximum {
+				relativeLevel -= level - maximum
+				level = maximum
 			}
 		}
 	}
@@ -1252,6 +1286,81 @@ func CalculateTechniqueLevel(e *Entity, replacements map[string]string, name, sp
 		RelativeLevel: relativeLevel,
 		Tooltip:       tooltip.String(),
 	}
+}
+
+// techniqueBaseLevel returns the level of what the default of the technique named by name and specialization rests on,
+// before the default's modifier, or fxp.Min when it can't be resolved; see CalculateTechniqueLevel.
+func techniqueBaseLevel(e *Entity, replacements map[string]string, name, specialization string, def *SkillDefault, requirePoints bool, excludes map[string]bool) fxp.Int {
+	level := fxp.Min
+	if e == nil || def == nil {
+		return level
+	}
+	if def.Type() == SkillID {
+		// Match against the full name and specialization criteria (not just the qualifier strings) so that, e.g., a
+		// "whose specialization is anything" default resolves to any matching specialization rather than staying
+		// locked on the qualifier text that may linger from a prior "is" selection. See issue #1061.
+		if list := def.matchingSkills(e, replacements, requirePoints, excludes); len(list) > 0 {
+			if excludes == nil {
+				excludes = make(map[string]bool)
+			}
+			// Use the highest-level matching skill that isn't (circularly) defaulting back to this technique, rather
+			// than whichever happens to be encountered first.
+			for _, sk := range list {
+				var usable bool
+				if sk.IsTechnique() {
+					usable = sk.TechniqueDefault != nil &&
+						(sk.TechniqueDefault.NameWithReplacements(replacements) != name ||
+							sk.TechniqueDefault.SpecializationWithReplacements(replacements) != specialization)
+				} else {
+					usable = sk.DefaultedFrom == nil ||
+						sk.DefaultedFrom.NameWithReplacements(replacements) != name ||
+						sk.DefaultedFrom.SpecializationWithReplacements(replacements) != specialization
+				}
+				if usable {
+					// Exclude this skill while computing its own level so it cannot circularly default back to itself,
+					// then restore the prior state so it remains available to the other candidates.
+					skStr := sk.String()
+					had := excludes[skStr]
+					excludes[skStr] = true
+					if candidate := sk.CalculateLevel(excludes).Level; level < candidate {
+						level = candidate
+					}
+					if !had {
+						delete(excludes, skStr)
+					}
+				}
+			}
+		}
+	} else if t := def.Type(); (t == ParryID || t == BlockID) && e.carriesGrant(e.judging) {
+		// While the prerequisites of an item carrying a grant are judged, the skill a parry or block default rests on
+		// is taken at the level they see, as it is for a skill default, rather than the one it recorded, which holds
+		// what the grant gave; see Entity.JudgingPrereqsOf. Each skill is excluded while its own level is computed, as
+		// above, so that one leading back to this technique cannot recurse without end.
+		if excludes == nil {
+			excludes = make(map[string]bool)
+		}
+		for _, sk := range def.matchingSkills(e, replacements, true, excludes) {
+			if !def.isTLPermitted(e, sk.TL()) {
+				continue
+			}
+			skStr := sk.String()
+			had := excludes[skStr]
+			excludes[skStr] = true
+			if candidate := sk.CalculateLevel(excludes).Level; level < candidate {
+				level = candidate
+			}
+			if !had {
+				delete(excludes, skStr)
+			}
+		}
+		if level != fxp.Min {
+			level = defenseLevelFromSkill(level, e.defenseBonus(t))
+		}
+	} else if level = def.SkillLevelFast(e, replacements, true, nil, false); level != fxp.Min {
+		// Take the modifier back out, as we wanted the base, not the final value. An unresolved level stays fxp.Min.
+		level -= def.Modifier
+	}
+	return level
 }
 
 // UpdateLevel updates the level of the skill, returning true if it, or the default the skill settled on, has changed.

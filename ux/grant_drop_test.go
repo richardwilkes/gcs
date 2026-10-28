@@ -53,22 +53,25 @@ func newGrantTestTrait(name string, levels fxp.Int) *gurps.Trait {
 	return t
 }
 
-// grantItemNames returns the names of the items, which must be traits.
+// grantItemNames returns the names of the items, which must be traits or skills.
 func grantItemNames(t *testing.T, items []*grantLibraryItem) []string {
 	t.Helper()
 	names := make([]string, 0, len(items))
 	for _, item := range items {
-		trait, ok := item.node.(*gurps.Trait)
-		if !ok {
-			t.Fatalf("expected a trait, found %T", item.node)
+		switch one := item.node.(type) {
+		case *gurps.Trait:
+			names = append(names, one.Name)
+		case *gurps.Skill:
+			names = append(names, one.Name)
+		default:
+			t.Fatalf("expected a trait or skill, found %T", item.node)
 		}
-		names = append(names, trait.Name)
 	}
 	return names
 }
 
-// TestGrantItemsFromDraggedRows checks that dragged rows become one grant item each, that a container stands for the
-// items within it, and that an item that grants something itself is left out.
+// TestGrantItemsFromDraggedRows checks that dragged rows become one grant item each, techniques included, that a
+// container stands for the items within it, and that an item that grants something itself is left out.
 func TestGrantItemsFromDraggedRows(t *testing.T) {
 	c := check.New(t)
 	_, table := NewNodeTable(NewTraitsProvider(gurps.NewEntity(), false), nil)
@@ -89,6 +92,17 @@ func TestGrantItemsFromDraggedRows(t *testing.T) {
 	kind, items := grantItemsFrom(&unison.TableDragData[*Node[*gurps.Trait]]{Table: table, Rows: rows})
 	c.Equal(feature.GrantTrait, kind)
 	c.Equal([]string{"Night Vision", "Dark Vision", "Fit"}, grantItemNames(t, items))
+
+	_, skillTable := NewNodeTable(NewSkillsProvider(gurps.NewEntity(), false), nil)
+	kick := gurps.NewTechnique(nil, nil, "Karate")
+	kick.Name = "Kick"
+	skillRows := []*Node[*gurps.Skill]{
+		NewNode(skillTable, nil, newTestSkill("Karate", fxp.One, nil), false),
+		NewNode(skillTable, nil, kick, false),
+	}
+	kind, items = grantItemsFrom(&unison.TableDragData[*Node[*gurps.Skill]]{Table: skillTable, Rows: skillRows})
+	c.Equal(feature.GrantSkill, kind)
+	c.Equal([]string{"Karate", "Kick"}, grantItemNames(t, items))
 
 	kind, _ = grantItemsFrom(nil)
 	c.Equal(feature.Unknown, kind, "anything else isn't a drag of items to grant")
@@ -292,8 +306,7 @@ func TestGrantRowControls(t *testing.T) {
 			c.True(ok, "%s: an amount field", one.name)
 			if field != nil {
 				c.Equal(one.text, field.Text(), one.name)
-				c.Equal(wrapTextForTooltip(grantAmountTooltip(one.grantType, one.kind)), tooltipText(field.Tooltip),
-					one.name)
+				c.Equal(wrapTextForTooltip(grantAmountTooltip(grantAt(t, p, i))), tooltipText(field.Tooltip), one.name)
 			}
 		})
 		if field == nil {
@@ -402,11 +415,13 @@ func TestGrantKindChoiceKeepsTheAmount(t *testing.T) {
 	})
 }
 
-// TestGrantAmountTooltip checks what the tooltip of a grant's amount says for each kind of grant.
+// TestGrantAmountTooltip checks what the tooltip of a grant's amount says for each kind of grant, and for a technique
+// or Ritual Magic spell, whose levels count from its default.
 func TestGrantAmountTooltip(t *testing.T) {
 	c := check.New(t)
 	for _, one := range []struct {
 		grantType feature.Type
+		item      any // the grant's item, nil for none
 		kind      grantadjust.Kind
 		want      string
 	}{
@@ -441,13 +456,44 @@ func TestGrantAmountTooltip(t *testing.T) {
 				"to at least or at most that level. A level below 1, or below what 1 point buys (3 for a wildcard), " +
 				"does neither.",
 		},
+		{
+			grantType: feature.GrantSkill, item: gurps.NewTechnique(nil, nil, "Karate"), kind: grantadjust.AddLevels,
+			want: "The levels added to a technique already present, or taken away when negative, never below level 0. " +
+				"On its own, the grant gives the technique that many levels above its default when it is 1 or more, " +
+				"at 1 point a level, plus 1 point for a Hard technique.",
+		},
+		{
+			grantType: feature.GrantSkill, item: gurps.NewTechnique(nil, nil, "Karate"), kind: grantadjust.AddPoints,
+			want: "The points added to a technique already present, or taken away when negative, never below 0. On " +
+				"its own, the grant gives the technique that many points when they are enough to buy a level: at " +
+				"least 1, or 2 for a Hard technique.",
+		},
+		{
+			grantType: feature.GrantSkill, item: gurps.NewTechnique(nil, nil, "Karate"), kind: grantadjust.SetLevel,
+			want: "The skill level the grant gives the technique, in place of the level its points and difficulty " +
+				"would give it; bonuses still apply on top, up to its limit, if any. With Keep Highest or Keep Lowest, " +
+				"one already present is held to at least or at most that level. A level below 1, or below what 1 " +
+				"point buys (2 for a Hard technique), does neither.",
+		},
+		{
+			grantType: feature.GrantSpell, item: gurps.NewRitualMagicSpell(nil, nil, false), kind: grantadjust.AddLevels,
+			want: "The levels added to a Ritual Magic spell already present, or taken away when negative, never below " +
+				"level 0. On its own, the grant gives the Ritual Magic spell that many levels above its default when " +
+				"it is 1 or more, at 1 point a level, plus 1 point for a Hard Ritual Magic spell.",
+		},
 	} {
-		c.Equal(one.want, grantAmountTooltip(one.grantType, one.kind), "%s %s", one.grantType, one.kind)
+		g := gurps.NewGrant(one.grantType)
+		if one.item != nil {
+			g.SetItem(one.item, gurps.LibraryFile{})
+		}
+		g.Adjust = one.kind
+		c.Equal(one.want, grantAmountTooltip(g), "%s %s of %v", one.grantType, one.kind, one.item)
 	}
 }
 
 // TestGrantLibraryItemRefusesWhatGrants checks that an item that grants something itself is not one a grant can give,
-// whether the grant is among its own features or those of one of its modifiers, as SetItem strips grants from both.
+// whether the grant is among its own features or those of one of its modifiers, as SetItem strips grants from both,
+// while a technique is.
 func TestGrantLibraryItemRefusesWhatGrants(t *testing.T) {
 	c := check.New(t)
 	grant := func() *gurps.Grant {
@@ -466,61 +512,115 @@ func TestGrantLibraryItemRefusesWhatGrants(t *testing.T) {
 	modifier.Features = gurps.Features{grant()}
 	viaModifier.Modifiers = []*gurps.TraitModifier{modifier}
 	c.Nil(newGrantLibraryItem(viaModifier, gurps.LibraryFile{}), "nor is one whose modifier grants something")
+	c.NotNil(newGrantLibraryItem(gurps.NewTechnique(nil, nil, "Karate"), gurps.LibraryFile{}), "a technique is offered")
 }
 
 // TestGrantRowOpensItsItemEditor checks that a click on the drop zone of a grant with no item gives it a blank one and
-// opens the editor on that, and that a click on the zone once it names an item opens the editor on that item.
+// opens the editor on that, a skill or spell grant first asking by menu whether a technique or Ritual Magic spell is
+// wanted, and that a click on the zone once it names an item opens the editor on that item.
 func TestGrantRowOpensItsItemEditor(t *testing.T) {
 	for _, tc := range []struct {
-		name   string
-		chosen bool
+		name      string
+		grantType feature.Type
+		item      any      // the item chosen, nil for none
+		text      string   // the zone's text
+		menu      []string // the titles of the menu a click on the zone opens, nil for none
+		choose    string   // the title of the menu's item chosen
+		kind      string   // the kind of item the editor opened is on, which starts its title
 	}{
-		{name: "blank"},
-		{name: "chosen", chosen: true},
+		{
+			name: "blank", grantType: feature.GrantTrait,
+			text: "Drop a trait here from a library or sheet, or click to start with a blank one.", kind: "Trait",
+		},
+		{
+			name: "chosen", grantType: feature.GrantTrait, item: newGrantTestTrait("Night Vision", 0),
+			text: "Night Vision", kind: "Trait",
+		},
+		{
+			name: "blank technique", grantType: feature.GrantSkill,
+			text: "Drop a skill or technique here from a library or sheet, or click to start with a blank one.",
+			menu: []string{"New Skill", "New Technique"}, choose: "New Technique", kind: "Technique",
+		},
+		{
+			name: "blank ritual magic spell", grantType: feature.GrantSpell,
+			text: "Drop a spell here from a library or sheet, or click to start with a blank one.",
+			menu: []string{"New Spell", "New Ritual Magic Spell"}, choose: "New Ritual Magic Spell",
+			kind: "Ritual Magic Spell",
+		},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			c := check.New(t)
-			screen, _ := uxtest.StartHeadlessWorkspace(t, c)
-			sheet := newTestSheetForTemplate(t)
-			entity := sheet.Entity()
-			training := gurps.NewTrait(entity, nil, false)
-			training.Name = "Training"
-			g := gurps.NewGrant(feature.GrantTrait)
-			if tc.chosen {
-				g.SetItem(newGrantTestTrait("Night Vision", 0), gurps.LibraryFile{})
+			screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
+			screen.EnableAccessibility()
+			sheet, isSheet := uxtest.OpenedByAction(t, screen, newCharacterSheetAction).(*Sheet)
+			if !isSheet {
+				t.Fatal("New Character Sheet must open a character sheet")
 			}
-			training.Features = gurps.Features{g}
-			entity.Traits = []*gurps.Trait{training}
-			sheet.Rebuild(true)
-			isTraitEditor := func(d unison.Dockable) bool {
-				_, ok := d.AsPanel().Self.(*editor[*gurps.Trait, *gurps.TraitEditData])
-				return ok
-			}
-			var outer *editor[*gurps.Trait, *gurps.TraitEditData]
 			var p *featuresPanel
 			screen.Do(func() {
-				DisplayNewDockable(sheet)
-				outer = EditTrait(sheet, training)
-				p = uxtest.PanelsOfType[*featuresPanel](outer.content)[0]
+				entity := sheet.Entity()
+				training := gurps.NewTrait(entity, nil, false)
+				training.Name = "Training"
+				g := gurps.NewGrant(tc.grantType)
+				if tc.item != nil {
+					g.SetItem(tc.item, gurps.LibraryFile{})
+				}
+				training.Features = gurps.Features{g}
+				entity.Traits = append(entity.Traits, training)
+				sheet.Rebuild(true)
+				p = uxtest.PanelsOfType[*featuresPanel](EditTrait(sheet, training).content)[0]
 				if p.collapse.collapsed {
 					p.collapse.toggle()
 				}
 				p.toggle("0")
 			})
+			var zone *unison.Button
 			screen.Do(func() {
-				zone, ok := p.FindRefKey("0:drop").Self.(*unison.Button)
-				if !ok {
-					t.Fatal("the open grant row has no drop zone")
+				if found := p.FindRefKey("0:drop"); found != nil {
+					if b, isButton := found.Self.(*unison.Button); isButton {
+						zone = b
+					}
 				}
-				zone.Click()
 			})
-			nested := uxtest.OtherEditor(t, screen, outer, isTraitEditor)
+			if zone == nil {
+				t.Fatal("the open grant row has no drop zone")
+			}
 			screen.Do(func() {
-				o, ok := nested.owner.(*grantItemOwner)
-				if !ok {
-					t.Fatalf("the editor opened is not on a grant's item: %T", nested.owner)
-				}
+				c.Equal(tc.text, zone.Text.String())
+				zone.ScrollIntoView()
+			})
+			screen.Click(screen.PanelCenter(zone))
+			c.Equal(tc.menu, contextMenuTitles(t, screen, wnd), "the menu the click opens")
+			if tc.choose != "" {
+				chooseOpenMenuItem(t, screen, wnd, tc.choose)
+			}
+			var editors []unison.Dockable
+			screen.Do(func() {
+				editors = AllMatchingDockables(func(d unison.Dockable) bool {
+					owned, ok := d.AsPanel().Self.(Owned)
+					if !ok {
+						return false
+					}
+					_, isGrant := owned.Owner().(*grantItemOwner)
+					return isGrant
+				})
+			})
+			if len(editors) != 1 {
+				t.Fatalf("expected one editor on a grant's item, found %d", len(editors))
+			}
+			screen.Do(func() {
+				o, ok := editors[0].AsPanel().Self.(Owned).Owner().(*grantItemOwner)
+				c.True(ok)
 				c.Equal(grantAt(t, p, 0).Key(), o.key, "the editor is on the item the grant holds")
+				title := editors[0].Title()
+				c.True(strings.HasPrefix(title, tc.kind+" Editor for "), "the editor is on a %s: %s", tc.kind, title)
+				if tc.item == nil {
+					undoTitle := "<no undo manager>"
+					if mgr := unison.UndoManagerFor(p); mgr != nil {
+						undoTitle = mgr.UndoTitle()
+					}
+					c.Equal("Undo New Blank Granted Item", undoTitle, "the blank item is one undoable edit")
+				}
 			})
 		})
 	}

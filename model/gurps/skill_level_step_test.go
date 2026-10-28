@@ -131,9 +131,15 @@ func TestSkillLevelSteppingPastKeptLevel(t *testing.T) {
 		// curse puts on the sheet a trait whose grant takes 2 levels from the item.
 		curse func(e *Entity)
 		// bless puts on the sheet an item with no points and a trait whose grant adds 2 levels to it, and returns the
-		// item along with what reads its level.
+		// item along with what reads its level. It is nil for a technique, which has a level of its own with no points,
+		// at its default, so that the subtests of an item with none leave it out.
 		bless func(e *Entity) (SkillAdjustmentProvider, func() Level)
 		kept  fxp.Int
+		// next is the fewest points that buy the level above the one kept, and far those that buy the level 3 above
+		// it, which the curse brings down to the one above it. ladder holds the points that buy each level from the one
+		// above the level the point bought gives up to the one kept.
+		next, far fxp.Int
+		ladder    []fxp.Int
 	}{
 		{name: "skill", add: func(e *Entity, merge grantmerge.Mode) (SkillAdjustmentProvider, func() Level) {
 			brawling := addSkill(e, "Brawling", fxp.One)
@@ -148,7 +154,7 @@ func TestSkillLevelSteppingPastKeptLevel(t *testing.T) {
 			addTraitWithFeatures(e, "Blessing",
 				newSkillGrant(newEasySkill("Brawling", fxp.One), fxp.Two, grantmerge.Ignore))
 			return brawling, func() Level { return brawling.CalculateLevel(nil) }
-		}, kept: fxp.FromInteger(12)},
+		}, kept: fxp.FromInteger(12), next: fxp.Eight, far: fxp.Sixteen, ladder: []fxp.Int{fxp.Two, fxp.Four}},
 		{name: "spell", add: func(e *Entity, merge grantmerge.Mode) (SkillAdjustmentProvider, func() Level) {
 			light := newHardSpell("Light", fxp.One)
 			light.SetDataOwner(e)
@@ -164,20 +170,39 @@ func TestSkillLevelSteppingPastKeptLevel(t *testing.T) {
 			e.Spells = append(e.Spells, light)
 			addTraitWithFeatures(e, "Blessing", newSpellGrant(newHardSpell("Light", fxp.One), fxp.Two, grantmerge.Ignore))
 			return light, light.CalculateLevel
-		}, kept: fxp.Ten},
+		}, kept: fxp.Ten, next: fxp.Eight, far: fxp.Sixteen, ladder: []fxp.Int{fxp.Two, fxp.Four}},
+		{name: "technique", add: func(e *Entity, merge grantmerge.Mode) (SkillAdjustmentProvider, func() Level) {
+			// An Average technique on Karate at 10 goes a level higher with each point.
+			addHardSkill(e, "Karate", fxp.Four)
+			disarming := newTechniqueOf("Karate", "Disarming", fxp.One)
+			disarming.SetDataOwner(e)
+			e.Skills = append(e.Skills, disarming)
+			addTraitWithFeatures(e, "Training", newSkillGrantOf(newTechniqueOf("Karate", "Disarming", fxp.One),
+				grantadjust.SetLevel, fxp.FromInteger(14), merge))
+			return disarming, func() Level { return disarming.CalculateLevel(nil) }
+		}, curse: func(e *Entity) {
+			addTraitWithFeatures(e, "Curse",
+				newSkillGrant(newTechniqueOf("Karate", "Disarming", fxp.One), -fxp.Two, grantmerge.Ignore))
+		}, kept: fxp.FromInteger(14), next: fxp.Five, far: fxp.Seven, ladder: []fxp.Int{fxp.Two, fxp.Three, fxp.Four}},
 	} {
+		top := tc.ladder[len(tc.ladder)-1]
+		// down holds the points that buy each level from the one below the one kept down to the one the point buys.
+		down := []fxp.Int{fxp.One}
+		for _, points := range tc.ladder[:len(tc.ladder)-1] {
+			down = append([]fxp.Int{points}, down...)
+		}
 		t.Run(tc.name+" kept highest", func(t *testing.T) {
 			c := check.New(t)
 			e := NewEntity()
 			p, level := tc.add(e, grantmerge.KeepHighest)
 			e.Recalculate()
 			c.Equal(tc.kept, level().Level, "precondition: the grant holds the level above the one the point buys")
-			// The next level above the kept one needs 8 points, in the second stride beyond the point bought, and
-			// decrementing comes back to the fewest points that still show the kept level, none, since the grant keeps
-			// the level of an item with none of its own.
-			stepLevelUpAndDown(t, p, level, []fxp.Int{fxp.Eight}, []fxp.Int{0})
+			// The next level above the kept one needs next points, for a skill or spell in the second stride beyond the
+			// point bought, and decrementing comes back to the fewest points that still show the kept level, none,
+			// since the grant keeps the level of an item with no points too.
+			stepLevelUpAndDown(t, p, level, []fxp.Int{tc.next}, []fxp.Int{0})
 			p.IncrementSkillLevel()
-			c.Equal(fxp.Eight, p.RawPoints(), "the points decrementing took off come back")
+			c.Equal(tc.next, p.RawPoints(), "the points decrementing took off come back")
 		})
 		t.Run(tc.name+" kept highest with levels taken away", func(t *testing.T) {
 			c := check.New(t)
@@ -186,10 +211,32 @@ func TestSkillLevelSteppingPastKeptLevel(t *testing.T) {
 			tc.curse(e)
 			e.Recalculate()
 			c.Equal(tc.kept, level().Level, "precondition: the grant holds the level above the one the point buys")
-			// The level shown rises once the level bought, less the 2 taken away, passes the one kept, which takes 16
-			// points, several strides beyond the point bought.
-			stepLevelUpAndDown(t, p, level, []fxp.Int{fxp.Sixteen}, []fxp.Int{0})
+			// The level shown rises once the level bought, less the 2 taken away, passes the one kept, which takes
+			// points beyond the first stride after the point bought.
+			stepLevelUpAndDown(t, p, level, []fxp.Int{tc.far}, []fxp.Int{0})
 		})
+		t.Run(tc.name+" kept lowest", func(t *testing.T) {
+			c := check.New(t)
+			e := NewEntity()
+			p, level := tc.add(e, grantmerge.KeepLowest)
+			e.Recalculate()
+			c.Equal(tc.kept-fxp.FromInteger(len(tc.ladder)), level().Level,
+				"precondition: the point bought gives a level below the one kept")
+			// The levels up to the one kept are bought as without the grant, and none above it.
+			stepLevelUpAndDown(t, p, level, tc.ladder, nil)
+			p.IncrementSkillLevel()
+			c.Equal(top, p.RawPoints(), "the grant caps the level, so incrementing leaves the points alone")
+			c.Equal(tc.kept, level().Level)
+			stepLevelUpAndDown(t, p, level, nil, down)
+			// With points that buy a level several strides above the one kept, decrementing comes down to the fewest
+			// points that show the level below it.
+			p.SetRawPoints(fxp.Sixteen)
+			c.Equal(tc.kept, level().Level)
+			stepLevelUpAndDown(t, p, level, nil, down[:1])
+		})
+		if tc.bless == nil {
+			continue
+		}
 		t.Run(tc.name+" kept highest with no level of its own", func(t *testing.T) {
 			c := check.New(t)
 			e := NewEntity()
@@ -198,8 +245,8 @@ func TestSkillLevelSteppingPastKeptLevel(t *testing.T) {
 			level = recalculatedLevel(e, level)
 			c.Equal(tc.kept, level().Level, "precondition: the grant gives the item the level kept")
 			// The points that buy the level kept stand in for the item's own only while it has none, so the next level
-			// still needs 8 points of its own.
-			stepLevelUpAndDown(t, p, level, []fxp.Int{fxp.Eight}, []fxp.Int{0})
+			// still needs as many points of its own.
+			stepLevelUpAndDown(t, p, level, []fxp.Int{tc.next}, []fxp.Int{0})
 		})
 		t.Run(tc.name+" levels added to one with no level of its own", func(t *testing.T) {
 			c := check.New(t)
@@ -210,24 +257,6 @@ func TestSkillLevelSteppingPastKeptLevel(t *testing.T) {
 			// The first point gives the item a level of its own, which the grant then adds its levels to in place of
 			// the points it gave.
 			stepLevelUpAndDown(t, p, level, []fxp.Int{fxp.One}, []fxp.Int{0})
-		})
-		t.Run(tc.name+" kept lowest", func(t *testing.T) {
-			c := check.New(t)
-			e := NewEntity()
-			p, level := tc.add(e, grantmerge.KeepLowest)
-			e.Recalculate()
-			c.Equal(tc.kept-fxp.Two, level().Level, "precondition: the point bought gives a level below the one kept")
-			// The levels up to the one kept are bought as without the grant, and none above it.
-			stepLevelUpAndDown(t, p, level, []fxp.Int{fxp.Two, fxp.Four}, nil)
-			p.IncrementSkillLevel()
-			c.Equal(fxp.Four, p.RawPoints(), "the grant caps the level, so incrementing leaves the points alone")
-			c.Equal(tc.kept, level().Level)
-			stepLevelUpAndDown(t, p, level, nil, []fxp.Int{fxp.Two, fxp.One})
-			// With points that buy a level several strides above the one kept, decrementing comes down to the fewest
-			// points that show the level below it.
-			p.SetRawPoints(fxp.Sixteen)
-			c.Equal(tc.kept, level().Level)
-			stepLevelUpAndDown(t, p, level, nil, []fxp.Int{fxp.Two})
 		})
 	}
 }

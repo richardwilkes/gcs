@@ -170,6 +170,9 @@ type Entity struct {
 	// judgedThresholds holds the current thresholds of the pools, by attribute, as the prerequisites being judged see
 	// them, while the item judged carries a grant; see Attribute.CurrentThreshold.
 	judgedThresholds map[*Attribute]*PoolThreshold
+	// judgedPoints holds the points the level sets of grants give the skills and spells, priced afresh as the
+	// prerequisites being judged see the sheet, while the item judged carries a grant; see grantReprice.pointsFor.
+	judgedPoints map[*grantReprice]fxp.Int
 }
 
 // NewEntityFromFile loads an Entity from a file.
@@ -1541,9 +1544,12 @@ func (e *Entity) JudgingPrereqsOf(exclude any, fn func()) {
 		fn()
 		return
 	}
-	saved, savedDefaults, savedThresholds := e.judging, e.judgedDefaults, e.judgedThresholds
-	e.judging, e.judgedDefaults, e.judgedThresholds = exclude, nil, nil
-	defer func() { e.judging, e.judgedDefaults, e.judgedThresholds = saved, savedDefaults, savedThresholds }()
+	saved, savedDefaults, savedThresholds, savedPoints := e.judging, e.judgedDefaults, e.judgedThresholds, e.judgedPoints
+	e.judging, e.judgedDefaults, e.judgedThresholds, e.judgedPoints = exclude, nil, nil, nil
+	defer func() {
+		e.judging, e.judgedDefaults, e.judgedThresholds, e.judgedPoints = saved, savedDefaults, savedThresholds,
+			savedPoints
+	}()
 	fn()
 }
 

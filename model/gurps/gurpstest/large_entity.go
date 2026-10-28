@@ -764,7 +764,8 @@ func (b *largeEntityBuilder) addNotes() {
 
 // addGrants hands out the grants, cycling through traits, skills and spells and, independently, through the kinds of
 // adjustment each allows and, for a level set, through the merge modes, a skill's or spell's level set being at least
-// what 1 point buys of any skill or spell here, so that its row still gives the item points: half go to traits, a
+// what 1 point buys of any skill or spell here, so that its row still gives the item points, though one merging into a
+// technique or Ritual Magic spell, whose levels count from its default, may give it nothing: half go to traits, a
 // quarter to equipped equipment and a quarter to unequipped equipment, whose grants are not in effect, or all to
 // whichever of those there are. Every other trait or skill grant puts a new item on the sheet, the new skills taking
 // their specialization from what carries the grant; the rest, and every spell grant, copy an item already there so that
@@ -816,7 +817,8 @@ func (b *largeEntityBuilder) addGrants() {
 		if g.EffectiveAdjust() == grantadjust.SetLevel {
 			g.Merge = modes[(i/9)%len(modes)]
 			if kind != 0 {
-				// What 1 point buys of any skill or spell here is at most 14, that of an IQ/Easy skill with IQ 14.
+				// What 1 point buys of any skill or spell here, but a technique or Ritual Magic spell, is at most 14,
+				// that of an IQ/Easy skill with IQ 14.
 				g.Amount = fxp.FromInteger(i%2 + 14)
 			}
 		}

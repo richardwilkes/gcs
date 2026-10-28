@@ -12,6 +12,7 @@ package gurps
 import (
 	"fmt"
 	"hash"
+	"maps"
 	"slices"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
@@ -37,8 +38,10 @@ type Grant struct {
 	FeatureSwitch
 	// Amount is, as Adjust says, the level the grant sets, the levels it adds or the points it adds. A trait's levels
 	// may be fractional. Levels added to a skill or spell not yet on the sheet are priced in points: level 1 is what 1
-	// point buys, level 2 what 2 points buy and level n above that what 4×(n-2) points buy. A negative amount added only
-	// takes levels or points away from an item already present, and a level set below 1 does nothing.
+	// point buys, level 2 what 2 points buy and level n above that what 4×(n-2) points buy, three times as many for a
+	// wildcard, while a technique or Ritual Magic spell, whose levels count from its default, takes 1 point a level, plus
+	// 1 for a Hard one. A negative amount added only takes levels or points away from an item already present, and a
+	// level set below 1 does nothing.
 	Amount fxp.Int `json:"amount,omitzero"`
 	// Adjust is how Amount adjusts the item; see EffectiveAdjust.
 	Adjust grantadjust.Kind `json:"adjust,omitzero"`
@@ -88,29 +91,40 @@ type grantState struct {
 	// levelNotes and pointNotes are what each grant gave the item: the levels merged into it or kept for it, and a
 	// granted skill's or spell's own points plus any merged into it, of which points is the total. ownPoints is what of
 	// those a skill or spell counts as its own when the other grants merge into it: for a granted one, the points the
-	// grant in effect gives it standing alone (see Grant.standalonePoints and Grant.pointsBeyondDefault), and for any,
-	// those the grants merged into it while it had no level of its own gave it (see Entity.mergeGrant).
+	// grant in effect gives it standing alone (see grantPlan.standalonePoints and Grant.pointsBeyondDefault), and for
+	// any, those the grants merged into it while it had no level of its own gave it (see Entity.mergeGrant).
 	levelNotes []grantNote
 	pointNotes []grantNote
 	points     fxp.Int
 	ownPoints  fxp.Int
 	// unreached is set when the grant that put a skill or spell on the sheet is in effect but gives it nothing, since
-	// the level it sets is below what 1 point buys (3 for a wildcard; see Grant.reaches), which leaves the item out of
-	// effect unless another grant stands in for that one, and stays set while one does. unresolved is set along with it
-	// when the reason is rather that the sheet can't resolve the attribute the item's level rests on.
+	// the level it sets is below what the points of its first level buy (see grantPlan.reaches and firstLevelText),
+	// which leaves the item out of effect unless another grant stands in for that one, and stays set while one does.
+	// unresolved is set along with it when the reason is rather that the sheet can't resolve the attribute or skill the
+	// item's level rests on.
 	unreached  bool
 	unresolved bool
+	// unreachedPoints, set along with unreached while no grant stands in, prices what the grant that put the item on
+	// the sheet gives it as the prerequisites being judged see the sheet, which may give it something; see
+	// inEffectAsJudged.
+	unreachedPoints *grantReprice
 }
 
 // grantLeveler is what a grant needs of its skill or spell to price the amount it gives.
 type grantLeveler interface {
-	WildcardDifficulty() bool
+	// pointsForLevels returns the points that buy the item the given number of levels standing alone, or zero for fewer
+	// than 1: the tier the levels make (see grantTierPoints), or for a technique or Ritual Magic spell, whose levels
+	// count from its default, those levels above it (see techniquePoints).
+	pointsForLevels(levels fxp.Int) fxp.Int
 	// pointsForBaseLevel returns the fewest points that buy the item the level, before bonuses, as the sheet sees it,
 	// or zero when none do.
 	pointsForBaseLevel(e *Entity, level fxp.Int) fxp.Int
-	// attributeUnresolved returns true if the sheet can't resolve the attribute the item's level rests on, which leaves
-	// pointsForBaseLevel no level to price from.
-	attributeUnresolved(e *Entity) bool
+	// baseUnresolved returns true if the sheet can't resolve what the item's level rests on, the attribute or, when
+	// restsOnSkill says so, the skill, which leaves pointsForBaseLevel no level to price from.
+	baseUnresolved(e *Entity) bool
+	// restsOnSkill returns true if the item's level rests on a skill: it is a technique whose default is a skill, or
+	// the parry or block of one, or a Ritual Magic spell.
+	restsOnSkill() bool
 }
 
 // grantItem is what a grant needs of its item, whatever its kind.
@@ -126,14 +140,64 @@ type grantItem interface {
 // a keep note, which a Keep Highest or Keep Lowest grant leaves, is the level the grant keeps the item at rather than
 // an addition, or, with points set, the points it keeps a skill or spell at, whose level is read along with the item's
 // own so that both see the same bonuses. lower is set for a Keep Lowest grant, which keeps the lower of the two levels
-// rather than the higher; see grantState.applyLevelNotes.
+// rather than the higher; see grantState.applyLevelNotes. reprice is set for the points a level set gave a skill or
+// spell; see amountFor.
 type grantNote struct {
+	owner   any
+	source  string
+	amount  fxp.Int
+	keep    bool
+	points  bool
+	lower   bool
+	reprice *grantReprice
+}
+
+// amountFor returns the note's amount as the prerequisites of exclude see the sheet, which for the points a level set
+// gave are priced afresh; see grantReprice.pointsFor.
+func (n *grantNote) amountFor(exclude any) fxp.Int {
+	if n.reprice == nil {
+		return n.amount
+	}
+	return n.reprice.pointsFor(exclude)
+}
+
+// grantReprice prices afresh the points a level set gives a skill or spell, which applyGrants prices against the sheet
+// as a whole, as the prerequisites of an item carrying a grant see the sheet, without what that item's grants give the
+// attribute or skill the level rests on (see Entity.JudgingPrereqsOf), so that they see the item at the level set,
+// which the grant setting it gives whether or not those grants are in effect. owner carries the grant, points are the
+// points as priced against the sheet as a whole, and busy is set while price runs.
+type grantReprice struct {
+	entity *Entity
 	owner  any
-	source string
-	amount fxp.Int
-	keep   bool
-	points bool
-	lower  bool
+	price  func() fxp.Int
+	points fxp.Int
+	busy   bool
+}
+
+// pointsFor returns the points as the prerequisites of exclude, or when it is nil those being judged, see the sheet:
+// priced afresh when exclude carries a grant, but not the one setting the level, and otherwise, or while they are
+// priced afresh, as for a level set on an item resting on itself, as priced against the sheet as a whole. They are
+// priced once for each time those prerequisites are judged; see Entity.judgedPoints.
+func (r *grantReprice) pointsFor(exclude any) fxp.Int {
+	e := r.entity
+	if exclude = e.judgingOr(exclude); r.busy || exclude == r.owner || !e.carriesGrant(exclude) {
+		return r.points
+	}
+	points := r.points
+	e.JudgingPrereqsOf(exclude, func() {
+		if cached, ok := e.judgedPoints[r]; ok {
+			points = cached
+			return
+		}
+		r.busy = true
+		defer func() { r.busy = false }()
+		points = r.price()
+		if e.judgedPoints == nil {
+			e.judgedPoints = make(map[*grantReprice]fxp.Int)
+		}
+		e.judgedPoints[r] = points
+	})
+	return points
 }
 
 // itemLabel returns the name of the item the grant gives, with the amount it gives. replacements are those of what
@@ -283,9 +347,6 @@ func (g *Grant) idleSummary(replacements map[string]string) string {
 	name := g.itemNameWith(replacements)
 	switch {
 	case !g.itemGrantable():
-		if skill, ok := g.Item().(*Skill); ok && skill.IsTechnique() {
-			return i18n.Text("Does not grant %s, since a technique can't be granted", name)
-		}
 		return i18n.Text("Does not grant %s, since a container can't be granted", name)
 	case g.removes():
 		// A negative amount would take the levels or points it names away from the item, were it present.
@@ -317,13 +378,12 @@ func (g *Grant) Item() grantItem {
 }
 
 // SetItem makes the grant give a copy of the item, a trait, skill or spell found in the library file, or a new blank
-// item of the grant's kind when item is nil. A kind of adjustment or a merge mode that means nothing for the item falls
-// back as EffectiveAdjust and EffectiveMerge say. A grant that sets a leveled trait's level sets it to the trait's
-// level, while one whose kind of adjustment falls back gives the amount 1, since the amount it had meant something
-// else; any other keeps its amount. Any grants the item or its modifiers carry are left out of the copy, as
-// SyncItemWithSource leaves them out, since a granted item can't grant anything.
+// item of the grant's kind when item is nil. A blank technique or Ritual Magic spell, as NewTechnique and
+// NewRitualMagicSpell make one, is passed in as item, with an empty library file. A kind of adjustment or a merge mode
+// that means nothing for the item falls back as EffectiveAdjust and EffectiveMerge say. A grant that sets a leveled
+// trait's level sets it to the trait's level, while any other keeps its amount. Any grants the item or its modifiers
+// carry are left out of the copy, as SyncItemWithSource leaves them out, since a granted item can't grant anything.
 func (g *Grant) SetItem(item any, from LibraryFile) {
-	adjust := g.EffectiveAdjust()
 	g.Trait, g.Skill, g.Spell = nil, nil, nil
 	switch one := item.(type) {
 	case *Trait:
@@ -345,11 +405,8 @@ func (g *Grant) SetItem(item any, from LibraryFile) {
 	DropGrants(g.Item())
 	g.Adjust = g.EffectiveAdjust()
 	g.Merge = g.EffectiveMerge()
-	switch {
-	case g.Adjust == grantadjust.SetLevel && g.Trait != nil && g.Trait.IsLeveled() && g.Trait.Levels > 0:
+	if g.Adjust == grantadjust.SetLevel && g.Trait != nil && g.Trait.IsLeveled() && g.Trait.Levels > 0 {
 		g.Amount = g.Trait.Levels
-	case g.Adjust != adjust:
-		g.Amount = fxp.One
 	}
 }
 
@@ -481,16 +538,17 @@ func (g *Grant) Clone() Feature {
 	return &other
 }
 
-// RenewKey gives the grant's copy of its item a new ID, and so the grant a new key, as a duplicate of a grant needs.
+// RenewKey gives the grant's copy of its item a new ID of the kind the item it makes has (see madeKind), and so the
+// grant a new key, as a duplicate of a grant needs.
 func (g *Grant) RenewKey() {
 	if g.Trait != nil {
-		g.Trait.TID = tid.MustNewTID(traitKind(false))
+		g.Trait.TID = tid.MustNewTID(madeKind(g.Trait))
 	}
 	if g.Skill != nil {
-		g.Skill.TID = tid.MustNewTID(skillKind(false))
+		g.Skill.TID = tid.MustNewTID(madeKind(g.Skill))
 	}
 	if g.Spell != nil {
-		g.Spell.TID = tid.MustNewTID(spellKind(false))
+		g.Spell.TID = tid.MustNewTID(madeKind(g.Spell))
 	}
 }
 
@@ -566,15 +624,14 @@ func (g *Grant) Leveled() bool {
 	return true
 }
 
-// itemGrantable returns true if the grant's item is one a grant can put on the sheet: anything but a container or a
-// technique, which can't be dropped on a grant or added as one, so that a grant of one from a hand-edited file does
-// nothing.
+// itemGrantable returns true if the grant's item is one a grant can put on the sheet: anything but a container, which
+// can't be dropped on a grant or added as one, so that a grant of one from a hand-edited file does nothing.
 func (g *Grant) itemGrantable() bool {
 	switch g.Type {
 	case feature.GrantTrait:
 		return g.Trait != nil && !g.Trait.Container()
 	case feature.GrantSkill:
-		return g.Skill != nil && !g.Skill.IsTechnique() && !g.Skill.Container()
+		return g.Skill != nil && !g.Skill.Container()
 	case feature.GrantSpell:
 		return g.Spell != nil && !g.Spell.Container()
 	default:
@@ -585,8 +642,8 @@ func (g *Grant) itemGrantable() bool {
 // putsItemOnSheet returns true if the grant puts its item on the sheet when the item is absent: a trait without levels
 // always does, a grant of points only when they buy a level, and anything else only at level 1 or more, since a
 // negative amount only takes away from an item already present. Whether a level set is high enough to give the item
-// anything depends on the sheet, which this leaves to reaches, so that the rows on a sheet are decided by its data
-// alone.
+// anything depends on the sheet, which this leaves to grantPlan.reaches, so that the rows on a sheet are decided by its
+// data alone.
 func (g *Grant) putsItemOnSheet() bool {
 	switch {
 	case !g.Leveled():
@@ -596,12 +653,6 @@ func (g *Grant) putsItemOnSheet() bool {
 	default:
 		return g.amount() >= fxp.One
 	}
-}
-
-// reaches returns true if the grant, standing alone on the sheet, gives its item something there: a trait always, and a
-// skill or spell points, of which a level set below what 1 point buys there (3 for a wildcard) gives none.
-func (g *Grant) reaches(e *Entity) bool {
-	return g.Type == feature.GrantTrait || g.standalonePoints(e) > 0
 }
 
 // removes returns true if the grant only takes away from its item when already present: it adds a negative amount of
@@ -620,7 +671,8 @@ func (g *Grant) mergesNothing() bool {
 	return g.EffectiveAdjust() != grantadjust.AddPoints || g.amount() <= 0
 }
 
-// leveler returns the grant's copy of its skill or spell, or nil for a trait grant or one with no item chosen.
+// leveler returns the grant's copy of its skill or spell, or nil for a trait grant or one with no item chosen. The
+// placeholders the copy leaves to what carries the grant are left unanswered; see levelerWith.
 func (g *Grant) leveler() grantLeveler {
 	switch {
 	case g.Type == feature.GrantSkill && g.Skill != nil:
@@ -632,9 +684,32 @@ func (g *Grant) leveler() grantLeveler {
 	}
 }
 
+// levelerWith is leveler with the placeholders the copy leaves to what carries the grant answered by answers, those of
+// the carrier (see answers), as the item the grant makes answers them. Only an item whose level rests on a skill (see
+// grantLeveler.restsOnSkill) needs them, since that skill may be named by one, so only it is copied to hold them.
+func (g *Grant) levelerWith(answers map[string]string) grantLeveler {
+	item := g.leveler()
+	if len(answers) == 0 || item == nil || !item.restsOnSkill() {
+		return item
+	}
+	switch one := item.(type) {
+	case *Skill:
+		shallow := *one
+		shallow.Replacements = mergeReplacements(maps.Clone(one.Replacements), answers)
+		return &shallow
+	case *Spell:
+		shallow := *one
+		shallow.Replacements = mergeReplacements(maps.Clone(one.Replacements), answers)
+		return &shallow
+	default:
+		return item
+	}
+}
+
 // pointsOn returns the points the grant gives the skill or spell standing alone, or merged into one with no level of
-// its own: those of the tier its levels make, those it adds when they buy a level, or the fewest that buy the level it
-// sets as the sheet sees the item, of which a nil sheet or a level below 1 gets none. A nil item gets none.
+// its own: those its levels cost (see grantLeveler.pointsForLevels), those it adds when they buy the first level, or
+// the fewest that buy the level it sets as the sheet sees the item, of which a nil sheet or a level below 1 gets none.
+// A nil item gets none.
 func (g *Grant) pointsOn(e *Entity, item grantLeveler) fxp.Int {
 	if item == nil {
 		return 0
@@ -642,7 +717,7 @@ func (g *Grant) pointsOn(e *Entity, item grantLeveler) fxp.Int {
 	amount := g.amount()
 	switch g.EffectiveAdjust() {
 	case grantadjust.AddPoints:
-		if buysALevel(amount, item.WildcardDifficulty()) {
+		if amount >= item.pointsForLevels(fxp.One) {
 			return amount
 		}
 		return 0
@@ -652,23 +727,15 @@ func (g *Grant) pointsOn(e *Entity, item grantLeveler) fxp.Int {
 		}
 		return item.pointsForBaseLevel(e, amount)
 	default:
-		return grantTierPoints(amount, item.WildcardDifficulty())
+		return item.pointsForLevels(amount)
 	}
 }
 
-// standalonePoints returns the points the grant gives its own copy of its skill or spell on the sheet, standing alone
-// (see pointsOn), or zero for a trait grant.
-func (g *Grant) standalonePoints(e *Entity) fxp.Int {
-	return g.pointsOn(e, g.leveler())
-}
-
-// attributeUnresolved returns true if the grant sets the level of the skill or spell, which may be nil to mean its own
-// copy, and the sheet can't resolve the attribute that level rests on, which leaves the level set no points.
-func (g *Grant) attributeUnresolved(e *Entity, item grantLeveler) bool {
-	if item == nil {
-		item = g.leveler()
-	}
-	return item != nil && g.setsSkillLevel() && item.attributeUnresolved(e)
+// baseUnresolved returns true if the grant sets the level of the skill or spell and the sheet can't resolve what that
+// level rests on (see grantLeveler.baseUnresolved), which leaves the level set no points. A nil item has nothing to
+// resolve.
+func (g *Grant) baseUnresolved(e *Entity, item grantLeveler) bool {
+	return item != nil && g.setsSkillLevel() && item.baseUnresolved(e)
 }
 
 // pointsBeyondDefault returns the points the grant gives the skill or spell on the sheet that holder is, which for a
@@ -684,37 +751,38 @@ func (g *Grant) pointsBeyondDefault(points fxp.Int, holder grantHolder) fxp.Int 
 	return (points - s.DefaultedFrom.Points).Max(0)
 }
 
-// buysALevel returns true if the points buy a skill or spell its first level: 1 point, or 3 for a wildcard.
-func buysALevel(points fxp.Int, wildcard bool) bool {
-	if wildcard {
-		return points >= fxp.Three
+// firstLevelText names the lowest level points buy the skill or spell, the one the points of its first level buy (see
+// grantLeveler.pointsForLevels), below which a level set gives it nothing. A nil item is taken as one whose first level
+// costs 1 point.
+func firstLevelText(item grantLeveler) string {
+	points := fxp.One
+	if item != nil {
+		points = item.pointsForLevels(fxp.One)
 	}
-	return points >= fxp.One
+	if points == fxp.One {
+		return i18n.Text("what 1 point buys")
+	}
+	return i18n.Text("what %s points buy", points.String())
 }
 
-// firstLevelText names the lowest level points buy the skill or spell (see buysALevel), below which a level set gives
-// it nothing: what 1 point buys, or 3 points for a wildcard. A nil item is taken as no wildcard.
-func firstLevelText(item grantLeveler) string {
-	if item != nil && item.WildcardDifficulty() {
-		return i18n.Text("what 3 points buy")
+// unresolvedText names what the sheet lacks when it can't resolve what the level of the skill or spell rests on (see
+// grantLeveler.baseUnresolved): the skill for one whose level rests on a skill (see grantLeveler.restsOnSkill), and the
+// attribute otherwise. A nil item is taken as one resting on an attribute.
+func unresolvedText(item grantLeveler) string {
+	if item != nil && item.restsOnSkill() {
+		return i18n.Text("the sheet lacks the skill its level rests on")
 	}
-	return i18n.Text("what 1 point buys")
+	return i18n.Text("the sheet lacks the attribute its level rests on")
 }
 
 // AllowedAdjusts returns the kinds of adjustment that mean something for the granted item, the first of them being the
 // one EffectiveAdjust falls back to: for a trait, setting its level or adding levels, since its points follow from its
-// level; for a skill or spell, all of them, but for a Ritual Magic spell, whose level rests on its ritual skill, adding
-// levels or points only.
+// level, and for a skill or spell, all of them.
 func (g *Grant) AllowedAdjusts() []grantadjust.Kind {
 	switch g.Type {
 	case feature.GrantTrait:
 		return []grantadjust.Kind{grantadjust.SetLevel, grantadjust.AddLevels}
-	case feature.GrantSkill:
-		return grantadjust.Kinds
-	case feature.GrantSpell:
-		if g.Spell != nil && g.Spell.IsRitualMagic() {
-			return []grantadjust.Kind{grantadjust.AddLevels, grantadjust.AddPoints}
-		}
+	case feature.GrantSkill, feature.GrantSpell:
 		return grantadjust.Kinds
 	default:
 		return nil
@@ -796,7 +864,7 @@ func grantedByText(link *GrantedBy, state *grantState, item grantLeveler) string
 	text := i18n.Text("Granted by %s", grantSourceName(state.source))
 	switch {
 	case state.unresolved:
-		text += "\n" + i18n.Text("The grant gives it nothing, since the sheet lacks the attribute its level rests on.")
+		text += "\n" + i18n.Text("The grant gives it nothing, since %s.", unresolvedText(item))
 	case state.unreached:
 		text += "\n" + i18n.Text("The grant gives it nothing, since the level it sets is below %s.",
 			firstLevelText(item))
@@ -822,7 +890,11 @@ func (g *Grant) Describe(_ *Entity, replacements map[string]string, em func(stri
 	var item string
 	switch name := g.itemNameWith(replacements); g.Type {
 	case feature.GrantSkill:
-		item = i18n.Text("the skill %s", em(name))
+		if g.Skill.IsTechnique() {
+			item = i18n.Text("the technique %s", em(name))
+		} else {
+			item = i18n.Text("the skill %s", em(name))
+		}
 	case feature.GrantSpell:
 		item = i18n.Text("the spell %s", em(name))
 	default:
@@ -985,20 +1057,33 @@ func (s *grantState) keepLevel(source grantSource, level fxp.Int, lower bool) {
 }
 
 // keepPoints is keepLevel for a skill or spell kept at the level the points give it, which is read along with the
-// item's own level; see applyLevelNotes.
-func (s *grantState) keepPoints(source grantSource, points fxp.Int, lower bool) {
+// item's own level; see applyLevelNotes. Zero points keep it at no level. reprice, set for a level set, prices the
+// points afresh for the prerequisites being judged.
+func (s *grantState) keepPoints(source grantSource, points fxp.Int, lower bool, reprice *grantReprice) {
 	note := newGrantNote(source, points)
 	note.keep = true
 	note.points = true
 	note.lower = lower
+	note.reprice = reprice
 	s.levelNotes = append(s.levelNotes, note)
 }
 
-func (s *grantState) addPoints(source grantSource, amount fxp.Int) {
-	if amount != 0 {
+// addPoints records that a grant gave the skill or spell the points. reprice, set for a level set, prices them afresh
+// for the prerequisites being judged, and with it the note is kept though the points are zero.
+func (s *grantState) addPoints(source grantSource, amount fxp.Int, reprice *grantReprice) {
+	if amount != 0 || reprice != nil {
 		s.points += amount
-		s.pointNotes = append(s.pointNotes, newGrantNote(source, amount))
+		note := newGrantNote(source, amount)
+		note.reprice = reprice
+		s.pointNotes = append(s.pointNotes, note)
 	}
+}
+
+// inEffectAsJudged returns true if the item is in effect, or, as the prerequisites being judged see the sheet, the
+// grant whose level set puts it there gives it something, though nothing priced against the sheet as a whole; see
+// unreachedPoints.
+func (s *grantState) inEffectAsJudged() bool {
+	return s.inEffect || (s.unreachedPoints != nil && s.unreachedPoints.pointsFor(nil) > 0)
 }
 
 func newGrantNote(source grantSource, amount fxp.Int) grantNote {
@@ -1007,16 +1092,22 @@ func newGrantNote(source grantSource, amount fxp.Int) grantNote {
 
 // pointsExcept returns the points grants gave the item, as the prerequisites of exclude see it (see viewFor), leaving
 // out those of the grants carried by exclude, which may be nil to leave out none. The prerequisites of a carrier are
-// judged this way, so that an item never meets its own prerequisites with what it grants.
+// judged this way, so that an item never meets its own prerequisites with what it grants, and see the points of a level
+// set priced afresh, including those of one that gives nothing priced against the sheet as a whole (see
+// unreachedPoints).
 func (s *grantState) pointsExcept(exclude any) fxp.Int {
 	s = s.viewFor(exclude)
-	total := s.points
-	if exclude != nil {
-		for _, note := range s.pointNotes {
-			if note.owner == exclude {
-				total -= note.amount
-			}
+	if exclude == nil {
+		return s.points
+	}
+	var total fxp.Int
+	for i := range s.pointNotes {
+		if note := &s.pointNotes[i]; note.owner != exclude {
+			total += note.amountFor(exclude)
 		}
+	}
+	if s.unreachedPoints != nil {
+		total += s.unreachedPoints.pointsFor(exclude)
 	}
 	return total
 }
@@ -1041,12 +1132,13 @@ func (s *grantState) applyLevelNotes(exclude any, level fxp.Int, tooltip *xbytes
 		if !note.keep || note.owner == exclude {
 			continue
 		}
-		kept := note.amount
+		kept := note.amountFor(exclude)
 		if note.points {
-			if levelAt == nil {
+			// No points keep the item at no level.
+			if levelAt == nil || kept == 0 {
 				continue
 			}
-			if kept = levelAt(note.amount); kept == fxp.Min {
+			if kept = levelAt(kept); kept == fxp.Min {
 				continue
 			}
 		}
@@ -1103,8 +1195,8 @@ func (s *grantState) applyPoints(exclude any, points fxp.Int, tooltip *xbytes.In
 		return points
 	}
 	for _, note := range s.pointNotes {
-		if exclude == nil || note.owner != exclude {
-			addGrantNoteToTooltip(note, note.amount, tooltip)
+		if amount := note.amountFor(exclude); amount != 0 && (exclude == nil || note.owner != exclude) {
+			addGrantNoteToTooltip(note, amount, tooltip)
 		}
 	}
 	return (points + granted).Max(0)
@@ -1135,6 +1227,21 @@ func (s *grantState) applyLevels(exclude any, level Level, levelAt func(points f
 	return level
 }
 
+// applyLevelsWithinLimit is applyLevels for a technique with a limit or a Ritual Magic spell, which no points raise
+// above its limit: a level the grants raise above the given one is held to the highest level points give it (see
+// levelAt), which the limit caps. A level a grant keeps is read with levelAt, so only levels added can overshoot.
+func (s *grantState) applyLevelsWithinLimit(exclude any, level Level, levelAt func(points fxp.Int) Level) Level {
+	result := s.applyLevels(exclude, level, levelAt)
+	if result.Level <= level.Level {
+		return result
+	}
+	if most := levelAt(fxp.MaxBasePoints).Level; most != fxp.Min && result.Level > most {
+		result.RelativeLevel -= result.Level - most
+		result.Level = most
+	}
+	return result
+}
+
 // keepLevelOfNone is applyLevels for an item with no level: the levels added or taken away are passed over, and the
 // keep notes are applied in order, as applyLevelNotes applies them, with the first Keep Highest one whose level exists
 // giving the item that level, which those after it compare with as usual.
@@ -1145,7 +1252,11 @@ func (s *grantState) keepLevelOfNone(exclude any, level Level, levelAt func(poin
 		if !note.keep || !note.points || note.owner == exclude || (note.lower && level.Level == fxp.Min) {
 			continue
 		}
-		kept := levelAt(note.amount)
+		points := note.amountFor(exclude)
+		if points == 0 {
+			continue
+		}
+		kept := levelAt(points)
 		if kept.Level == fxp.Min {
 			continue
 		}

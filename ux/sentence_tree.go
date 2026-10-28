@@ -19,7 +19,6 @@ import (
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
-	"github.com/richardwilkes/unison/enums/mod"
 	"github.com/richardwilkes/unison/enums/role"
 	"github.com/richardwilkes/unison/enums/weight"
 )
@@ -248,25 +247,13 @@ func (p *sentenceTree[T, N]) group(group N, path string) *unison.Panel {
 	if len(*children) == 0 {
 		text, bare := p.nodes.treeEmpty(group, path)
 		empty := newEmptyPlaceholder(path+":empty", text, nil)
-		empty.ContextMenuCallback = func(geom.Point) unison.Menu {
-			return newEntriesMenu(p.nodes.treeAddEntries(group, path))
-		}
 		if act := p.nodes.treeEmptyClick(group, path); act != nil {
 			empty.ClickCallback = act
-		} else {
-			// A click opens the menu where it lands, as a right-click does; a key opens it at the placeholder.
-			empty.ClickCallback = func() { showMenu(empty.AsPanel(), p.nodes.treeAddEntries(group, path)) }
-			empty.MouseUpCallback = func(where geom.Point, _ int, _ mod.Modifiers) bool {
-				empty.Pressed = false
-				empty.MarkForRedraw()
-				if where.In(empty.ContentRect(false)) {
-					if unison.IsAccessibilityActive() {
-						empty.RequestFocus()
-					}
-					empty.ShowContextMenu(where)
-				}
-				return true
+			empty.ContextMenuCallback = func(geom.Point) unison.Menu {
+				return newEntriesMenu(p.nodes.treeAddEntries(group, path))
 			}
+		} else {
+			popUpMenuOnClick(empty, func() []menuEntry { return p.nodes.treeAddEntries(group, path) })
 		}
 		empty.ClientData()[treeDropKey] = treeDropSpot{path: path, part: dropOnEmpty}
 		// The placeholder shares its line with an add button, in line with the more buttons.

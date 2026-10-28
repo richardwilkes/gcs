@@ -163,6 +163,46 @@ func addHardSkill(e *Entity, name string, points fxp.Int) *Skill {
 	return s
 }
 
+// newTechniqueOf returns an Average technique outside any sheet with the given name and points, resting on the skill
+// named base at +0, with no limit.
+func newTechniqueOf(base, name string, points fxp.Int) *Skill {
+	s := NewTechnique(nil, nil, base)
+	s.Name = name
+	s.Points = points
+	return s
+}
+
+// newKicking returns Kicking, a Hard technique outside any sheet with the given points, resting on Karate at -2 and
+// going no higher than Karate.
+func newKicking(points fxp.Int) *Skill {
+	s := newTechniqueOf("Karate", "Kicking", points)
+	s.Difficulty.Difficulty = difficulty.Hard
+	s.TechniqueDefault.Modifier = -fxp.Two
+	limit := fxp.Int(0)
+	s.TechniqueLimitModifier = &limit
+	return s
+}
+
+// newDisarming returns Disarming, a Hard technique outside any sheet with the given points, resting on Karate at +0 and
+// going up to 5 above it.
+func newDisarming(points fxp.Int) *Skill {
+	s := newTechniqueOf("Karate", "Disarming", points)
+	s.Difficulty.Difficulty = difficulty.Hard
+	limit := fxp.Five
+	s.TechniqueLimitModifier = &limit
+	return s
+}
+
+// newBless returns Bless, a Hard Ritual Magic spell outside any sheet with the given points and 3 prerequisites, which
+// rests on the skill Ritual Magic at -3, going no higher than it.
+func newBless(points fxp.Int) *Spell {
+	s := NewRitualMagicSpell(nil, nil, false)
+	s.Name = "Bless"
+	s.PrereqCount = 3
+	s.Points = points
+	return s
+}
+
 func TestGrantPutsTraitOnSheet(t *testing.T) {
 	c := check.New(t)
 	e := NewEntity()
@@ -360,8 +400,8 @@ func TestGrantedRowIsTheKindOfItemItsGrantGives(t *testing.T) {
 	c.Equal(0, len(grantedOf(e.Traits)), "a granted container row from a file goes as any row no grant keeps does")
 
 	// A file can give the row a grant put on the sheet an ID of another kind, keeping the grant's link whether or not
-	// its hash still matches, which turns a trait row into a container of other traits, a skill row into a technique,
-	// or a spell row into ritual magic or back. The grant makes its item again in that row's place, leaving any
+	// its hash still matches, which turns a trait row into a container of other traits, a skill row into a technique or
+	// back, or a spell row into ritual magic or back. The grant makes its item again in that row's place, leaving any
 	// children behind, as it does when only the hash no longer matches.
 	for _, tc := range []struct {
 		name  string
@@ -381,6 +421,13 @@ func TestGrantedRowIsTheKindOfItemItsGrantGives(t *testing.T) {
 				return newSkillGrant(newEasySkill("Brawling", fxp.One), fxp.Three, grantmerge.Ignore)
 			},
 			kind: kinds.Technique,
+		},
+		{
+			name: "technique as a skill",
+			grant: func() *Grant {
+				return newSkillGrant(newTechniqueOf("Brawling", "Disarming", fxp.One), fxp.Three, grantmerge.Ignore)
+			},
+			kind: kinds.Skill,
 		},
 		{
 			name: "spell as ritual magic",
@@ -446,7 +493,11 @@ func checkGrantRemakesRowOfOtherKind[T grantNode[T]](c check.Checker, e *Entity,
 		return 0
 	}
 	e.Recalculate()
-	row := grantedOf(*list)[0]
+	granted := grantedOf(*list)
+	if len(granted) != 1 {
+		c.Fatalf("expected the grant to put one row on the sheet, %s, got %d", what, len(granted))
+	}
+	row := granted[0]
 	at := slices.Index(*list, row)
 	want := Hash64(row)
 	wantLevel := level(row)
@@ -468,7 +519,7 @@ func checkGrantRemakesRowOfOtherKind[T grantNode[T]](c check.Checker, e *Entity,
 		(*grantLink(row)).Hash = hash
 	}
 	e.Recalculate()
-	granted := grantedOf(*list)
+	granted = grantedOf(*list)
 	if len(granted) != 1 {
 		c.Fatalf("expected one granted row, %s, got %d", what, len(granted))
 	}
@@ -700,14 +751,16 @@ func TestGrantMergesIntoGrantedSkillAsIntoBought(t *testing.T) {
 }
 
 // TestGrantSkillAdjustmentKinds checks what each kind of adjustment gives an IQ/Hard skill at IQ 10, standing alone and
-// merged into the skill bought with the points of its first level, at IQ-2, or for a wildcard skill IQ-3. The grants
-// are Keep Highest, which only a level set heeds.
+// merged into the skill bought with the points of its first level, at IQ-2, or for a wildcard skill IQ-3, or for the
+// Hard technique Disarming on Karate 10, up to 5 above it, Karate+1. The grants are Keep Highest, which only a level
+// set heeds.
 func TestGrantSkillAdjustmentKinds(t *testing.T) {
 	for _, tc := range []struct {
-		name     string
-		adjust   grantadjust.Kind
-		amount   fxp.Int
-		wildcard bool
+		name      string
+		adjust    grantadjust.Kind
+		amount    fxp.Int
+		wildcard  bool
+		technique bool
 		// alone is the points and level the skill has when the grant puts it on the sheet, and merged when the grant
 		// merges into the skill bought.
 		alonePoints, aloneLevel, mergedPoints, mergedLevel fxp.Int
@@ -748,6 +801,36 @@ func TestGrantSkillAdjustmentKinds(t *testing.T) {
 			name: "wildcard 6 points", adjust: grantadjust.AddPoints, amount: fxp.Six, wildcard: true,
 			alonePoints: fxp.Six, aloneLevel: fxp.Eight, mergedPoints: fxp.Nine, mergedLevel: fxp.Eight,
 		},
+		{
+			// A technique's levels count from its default, a point each, plus 1 for a Hard one.
+			name: "technique 1 level", adjust: grantadjust.AddLevels, amount: fxp.One, technique: true,
+			alonePoints: fxp.Two, aloneLevel: fxp.Eleven, mergedPoints: fxp.Two, mergedLevel: fxp.Twelve,
+		},
+		{
+			name: "technique 2 points", adjust: grantadjust.AddPoints, amount: fxp.Two, technique: true,
+			alonePoints: fxp.Two, aloneLevel: fxp.Eleven, mergedPoints: fxp.Four, mergedLevel: fxp.Thirteen,
+		},
+		{
+			// A fraction of a point buys a technique nothing, as it buys a skill nothing.
+			name: "technique 3.5 points", adjust: grantadjust.AddPoints, amount: fxp.ThreeAndAHalf, technique: true,
+			alonePoints: fxp.ThreeAndAHalf, aloneLevel: fxp.Twelve, mergedPoints: fxp.FromStringForced("5.5"),
+			mergedLevel: fxp.FromInteger(14),
+		},
+		{
+			// A level set is priced from the skill the technique rests on.
+			name: "technique level 12", adjust: grantadjust.SetLevel, amount: fxp.Twelve, technique: true,
+			alonePoints: fxp.Three, aloneLevel: fxp.Twelve, mergedPoints: fxp.Two, mergedLevel: fxp.Twelve,
+		},
+		{
+			// Neither the points nor the levels added take a technique above its limit.
+			name: "technique 6 levels", adjust: grantadjust.AddLevels, amount: fxp.Six, technique: true,
+			alonePoints: fxp.Seven, aloneLevel: fxp.Fifteen, mergedPoints: fxp.Two, mergedLevel: fxp.Fifteen,
+		},
+		{
+			// A level set above the limit is priced at the limit.
+			name: "technique level 16", adjust: grantadjust.SetLevel, amount: fxp.Sixteen, technique: true,
+			alonePoints: fxp.Six, aloneLevel: fxp.Fifteen, mergedPoints: fxp.Two, mergedLevel: fxp.Fifteen,
+		},
 	} {
 		for _, merged := range []bool{false, true} {
 			t.Run(fmt.Sprintf("%s merged=%t", tc.name, merged), func(t *testing.T) {
@@ -755,14 +838,24 @@ func TestGrantSkillAdjustmentKinds(t *testing.T) {
 				e := NewEntity()
 				item := newHardSkill("Alchemy", 0)
 				first := fxp.One
-				if tc.wildcard {
+				switch {
+				case tc.wildcard:
 					item.Difficulty.Difficulty = difficulty.Wildcard
 					first = fxp.Three
+				case tc.technique:
+					addHardSkill(e, "Karate", fxp.Four)
+					item = newDisarming(0)
+					first = fxp.Two
 				}
-				var alchemy *Skill
-				if merged {
-					alchemy = addHardSkill(e, "Alchemy", first)
-					alchemy.Difficulty.Difficulty = item.Difficulty.Difficulty
+				var skill *Skill
+				switch {
+				case merged && tc.technique:
+					skill = newDisarming(first)
+					skill.SetDataOwner(e)
+					e.Skills = append(e.Skills, skill)
+				case merged:
+					skill = addHardSkill(e, "Alchemy", first)
+					skill.Difficulty.Difficulty = item.Difficulty.Difficulty
 				}
 				addTraitWithFeatures(e, "Training", newSkillGrantOf(item, tc.adjust, tc.amount, grantmerge.KeepHighest))
 				e.Recalculate()
@@ -775,10 +868,10 @@ func TestGrantSkillAdjustmentKinds(t *testing.T) {
 					if len(granted) != 1 {
 						c.Fatalf("expected the grant to put the skill on the sheet, got %d granted", len(granted))
 					}
-					alchemy = granted[0]
+					skill = granted[0]
 				}
-				c.Equal(points, alchemy.AdjustedPoints(nil))
-				c.Equal(level, alchemy.LevelData.Level)
+				c.Equal(points, skill.AdjustedPoints(nil))
+				c.Equal(level, skill.LevelData.Level)
 			})
 		}
 	}
@@ -851,52 +944,88 @@ func TestGrantSetLevelBelowWhatAPointBuys(t *testing.T) {
 	e.Recalculate()
 	c.Equal("Does not grant Alchemy at skill level 7, since that is below what 1 point buys", e.grantSummary(kit))
 
-	// A level set gives nothing either when the sheet lacks the attribute the skill rests on, which the texts say.
-	e = NewEntity()
+	// A level set gives nothing either when the sheet lacks what the item's level rests on, or when it is below what
+	// the points of the item's first level buy, which the texts say: 3 points buy a wildcard skill IQ-3, 7 at IQ 10,
+	// and 2 points buy the Hard technique Kicking 1 level above its default, Karate-2, 8 with Karate at 10.
 	sane := func() *Skill {
 		s := newHardSkill("Alchemy", 0)
 		s.Difficulty.Attribute = "sanity"
 		return s
 	}
-	training = addTraitWithFeatures(e, "Training",
-		newSkillGrantOf(sane(), grantadjust.SetLevel, fxp.Twelve, grantmerge.Ignore))
-	dabbler = addTraitWithFeatures(e, "Dabbler",
-		newSkillGrantOf(sane(), grantadjust.SetLevel, fxp.Twelve, grantmerge.KeepHighest))
-	e.Recalculate()
-	granted = grantedOf(e.Skills)
-	if len(granted) != 1 {
-		c.Fatalf("expected the row on the sheet, got %d granted", len(granted))
-	}
-	granted[0].CellData(SkillDescriptionColumn, &data)
-	c.Equal("Granted by Training\nThe grant gives it nothing, since the sheet lacks the attribute its level rests on.",
-		data.GrantedBy)
-	c.Equal("Does not grant Alchemy at skill level 12, since the sheet lacks the attribute its level rests on",
-		e.grantSummary(training))
-	c.Equal("Does not change Alchemy, already present, since the sheet lacks the attribute its level rests on",
-		e.grantSummary(dabbler))
-
-	// 1 point buys a wildcard skill nothing, so the texts name what 3 points buy, IQ-3 at IQ 10.
-	e = NewEntity()
 	wildcard := func() *Skill {
 		s := newHardSkill("Alchemy", 0)
 		s.Difficulty.Difficulty = difficulty.Wildcard
 		return s
 	}
-	training = addTraitWithFeatures(e, "Training",
-		newSkillGrantOf(wildcard(), grantadjust.SetLevel, fxp.Six, grantmerge.Ignore))
-	dabbler = addTraitWithFeatures(e, "Dabbler",
-		newSkillGrantOf(wildcard(), grantadjust.SetLevel, fxp.Six, grantmerge.KeepHighest))
-	e.Recalculate()
-	granted = grantedOf(e.Skills)
-	if len(granted) != 1 {
-		c.Fatalf("expected the row on the sheet, got %d granted", len(granted))
+	kicking := func() *Skill { return newKicking(0) }
+	saneKicking := func() *Skill {
+		s := newKicking(0)
+		s.TechniqueDefault = &SkillDefault{DefaultType: "sanity", Modifier: -fxp.Two}
+		return s
 	}
-	granted[0].CellData(SkillDescriptionColumn, &data)
-	c.Equal("Granted by Training\nThe grant gives it nothing, since the level it sets is below what 3 points buy.",
-		data.GrantedBy)
-	c.Equal("Does not grant Alchemy at skill level 6, since that is below what 3 points buy", e.grantSummary(training))
-	c.Equal("Does not change Alchemy, already present, since skill level 6 is below what 3 points buy",
-		e.grantSummary(dabbler))
+	for _, tc := range []struct {
+		item   func() *Skill
+		karate bool
+		level  fxp.Int
+		// grantedBy is the row's text, and planted and unchanged are the summaries of the grant that put it on the
+		// sheet and of one merging into it.
+		grantedBy, planted, unchanged string
+	}{
+		{
+			item: sane, level: fxp.Twelve,
+			grantedBy: "Granted by Training\nThe grant gives it nothing, since the sheet lacks the attribute its level " +
+				"rests on.",
+			planted:   "Does not grant Alchemy at skill level 12, since the sheet lacks the attribute its level rests on",
+			unchanged: "Does not change Alchemy, already present, since the sheet lacks the attribute its level rests on",
+		},
+		{
+			item: wildcard, level: fxp.Six,
+			grantedBy: "Granted by Training\nThe grant gives it nothing, since the level it sets is below what 3 points " +
+				"buy.",
+			planted:   "Does not grant Alchemy at skill level 6, since that is below what 3 points buy",
+			unchanged: "Does not change Alchemy, already present, since skill level 6 is below what 3 points buy",
+		},
+		{
+			item: kicking, karate: true, level: fxp.Eight,
+			grantedBy: "Granted by Training\nThe grant gives it nothing, since the level it sets is below what 2 points " +
+				"buy.",
+			planted:   "Does not grant Kicking at skill level 8, since that is below what 2 points buy",
+			unchanged: "Does not change Kicking, already present, since skill level 8 is below what 2 points buy",
+		},
+		{
+			item: kicking, level: fxp.Twelve,
+			grantedBy: "Granted by Training\nThe grant gives it nothing, since the sheet lacks the skill its level rests " +
+				"on.",
+			planted:   "Does not grant Kicking at skill level 12, since the sheet lacks the skill its level rests on",
+			unchanged: "Does not change Kicking, already present, since the sheet lacks the skill its level rests on",
+		},
+		{
+			// A technique may rest on an attribute rather than a skill.
+			item: saneKicking, level: fxp.Twelve,
+			grantedBy: "Granted by Training\nThe grant gives it nothing, since the sheet lacks the attribute its level " +
+				"rests on.",
+			planted:   "Does not grant Kicking at skill level 12, since the sheet lacks the attribute its level rests on",
+			unchanged: "Does not change Kicking, already present, since the sheet lacks the attribute its level rests on",
+		},
+	} {
+		e = NewEntity()
+		if tc.karate {
+			addHardSkill(e, "Karate", fxp.Four)
+		}
+		training = addTraitWithFeatures(e, "Training",
+			newSkillGrantOf(tc.item(), grantadjust.SetLevel, tc.level, grantmerge.Ignore))
+		dabbler = addTraitWithFeatures(e, "Dabbler",
+			newSkillGrantOf(tc.item(), grantadjust.SetLevel, tc.level, grantmerge.KeepHighest))
+		e.Recalculate()
+		granted = grantedOf(e.Skills)
+		if len(granted) != 1 {
+			c.Fatalf("expected the row on the sheet, %s, got %d granted", tc.planted, len(granted))
+		}
+		granted[0].CellData(SkillDescriptionColumn, &data)
+		c.Equal(tc.grantedBy, data.GrantedBy)
+		c.Equal(tc.planted, e.grantSummary(training))
+		c.Equal(tc.unchanged, e.grantSummary(dabbler))
+	}
 }
 
 func TestGrantStateAppliesPointsExcept(t *testing.T) {
@@ -904,8 +1033,8 @@ func TestGrantStateAppliesPointsExcept(t *testing.T) {
 	a, b := NewTrait(nil, nil, false), NewTrait(nil, nil, false)
 	a.Name, b.Name = "A", "B"
 	var state grantState
-	state.addPoints(grantSource{owner: a}, fxp.Four)
-	state.addPoints(grantSource{owner: b}, fxp.One)
+	state.addPoints(grantSource{owner: a}, fxp.Four, nil)
+	state.addPoints(grantSource{owner: b}, fxp.One, nil)
 	var tooltip xbytes.InsertBuffer
 	c.Equal(fxp.Two, state.applyPoints(a, fxp.One, &tooltip))
 	c.Equal("\nB [+1]", tooltip.String(), "the tooltip lists only the points that were added")
@@ -1329,6 +1458,15 @@ func TestGrantIgnoresPrereqsByDefault(t *testing.T) {
 	c.False(nightVision.grantNotInEffect())
 	c.Equal("", nightVision.UnsatisfiedReason, "ignored prerequisites are not reported")
 	c.False(nightVision.EffectivelyDisabled(), "ignored prerequisites don't disable the trait")
+
+	e = NewEntity()
+	addTraitWithFeatures(e, "Training", newSkillGrant(newKicking(0), fxp.One, grantmerge.Ignore))
+	e.Recalculate()
+	granted := grantedOf(e.Skills)
+	if len(granted) != 1 {
+		c.Fatalf("expected the technique on the sheet, got %d granted", len(granted))
+	}
+	c.Equal("", granted[0].UnsatisfiedReason, "nor is a technique's need of the skill it rests on")
 }
 
 func TestGrantCheckingPrereqsLeavesThemToTheSheet(t *testing.T) {
@@ -1346,6 +1484,18 @@ func TestGrantCheckingPrereqsLeavesThemToTheSheet(t *testing.T) {
 	e.Recalculate()
 	c.Equal("", nightVision.UnsatisfiedReason, "the error goes once the prerequisites are met")
 	c.False(nightVision.EffectivelyDisabled())
+
+	e = NewEntity()
+	kicking := newSkillGrant(newKicking(0), fxp.One, grantmerge.Ignore)
+	kicking.CheckPrereqs = true
+	addTraitWithFeatures(e, "Training", kicking)
+	e.Recalculate()
+	granted := grantedOf(e.Skills)
+	if len(granted) != 1 {
+		c.Fatalf("expected the technique on the sheet, got %d granted", len(granted))
+	}
+	c.Contains(granted[0].UnsatisfiedReason, "Requires a skill named Karate",
+		"as is a technique's need of the skill it rests on")
 }
 
 func TestGrantGivesWayToTheSameItemAddedLater(t *testing.T) {
@@ -1375,16 +1525,13 @@ func TestGrantSummaryTellsWhatEachGrantDid(t *testing.T) {
 	goggles.Equipped = false
 	pack := NewTrait(nil, nil, true)
 	pack.Name = "Pack"
-	kicking := NewTechnique(nil, nil, "Karate")
-	kicking.Name = "Kicking"
 	curse := addTraitWithFeatures(e, "Curse",
 		newSkillGrant(newEasySkill("Karate", fxp.One), -fxp.One, grantmerge.Ignore),
 		newSkillGrantOf(newEasySkill("Karate", fxp.One), grantadjust.AddPoints, -fxp.One, grantmerge.Ignore),
 		newSkillGrantOf(newEasySkill("Karate", fxp.One), grantadjust.SetLevel, -fxp.One, grantmerge.KeepHighest),
 		addingLevels(newTraitGrant(newGrantLeveledTrait("Acute Vision", fxp.One), -fxp.One, grantmerge.Ignore)),
 		newTraitGrant(newGrantLeveledTrait("Infravision", fxp.One), 0, grantmerge.Ignore),
-		newTraitGrant(pack, fxp.One, grantmerge.Ignore),
-		newSkillGrant(kicking, fxp.One, grantmerge.Ignore))
+		newTraitGrant(pack, fxp.One, grantmerge.Ignore))
 	addSkill(e, "Brawling", fxp.One)
 	visor := addCarriedEquipmentWithFeatures(e, "Visor",
 		newTraitGrant(newGrantLeveledTrait("Acute Vision", fxp.One), fxp.One, grantmerge.Ignore),
@@ -1408,8 +1555,7 @@ Removes nothing from Karate, since it is not present
 Does not grant Karate at skill level -1, since a skill level below 1 grants nothing
 Removes 1 level from Acute Vision, already present
 Does not grant Infravision 0, since a level below 1 grants nothing
-Does not grant Pack, since a container can't be granted
-Does not grant Kicking, since a technique can't be granted`, e.grantSummary(curse),
+Does not grant Pack, since a container can't be granted`, e.grantSummary(curse),
 		"a grant that does nothing has a line saying why, in the order the item carries its grants")
 	c.Equal(`Does not grant Acute Vision 1, since it is already present
 Would remove 2 levels from Acute Vision, already present, but the grant is not in effect
@@ -2302,6 +2448,54 @@ func TestGrantDoesNotMeetItsCarriersPrereqs(t *testing.T) {
 		result, _ := script.Evaluate(e, training)
 		c.Equal(CheckMet, result)
 		checkSheet("after the script is run on its own, as the editor's preview runs it")
+	})
+
+	// Nor does a level another carrier's grant sets on an item rest, for the prerequisites, on what the carrier's own
+	// grants give the attribute or skill the item rests on, since the other grant gives the level set whether or not
+	// the carrier's grants are in effect: IQ 12 or Karate 12 with them, 10 without.
+	t.Run("level set by another carrier on what the carrier's grants raise", func(t *testing.T) {
+		smart := func(iq fxp.Int) func() *Grant {
+			return func() *Grant {
+				trait := newGrantLeveledTrait("Smart", fxp.One)
+				bonus := NewAttributeBonus(IntelligenceID)
+				bonus.Amount = iq
+				trait.Features = Features{bonus}
+				return newTraitGrant(trait, fxp.One, grantmerge.Ignore)
+			}
+		}
+		karate := func() *Grant { return newSkillGrant(newHardSkill("Karate", fxp.Four), fxp.Two, grantmerge.Ignore) }
+		for _, tc := range []struct {
+			name  string
+			raise func() *Grant
+			item  *Skill
+			// bought, when set, puts the item on the sheet at 1 point, which the level set, Keep Highest, merges into.
+			bought bool
+		}{
+			{name: "skill resting on an attribute", raise: smart(fxp.Two), item: newHardSkill("Alchemy", 0)},
+			{name: "technique resting on a skill", raise: karate, item: newDisarming(0)},
+			{name: "level set kept", raise: smart(fxp.Two), item: newHardSkill("Alchemy", 0), bought: true},
+			{
+				// At IQ 15, 1 point buys 13, so that the level set gives nothing with the carrier's grants.
+				name: "level set kept, giving nothing with the carrier's grants", raise: smart(fxp.Five),
+				item: newHardSkill("Alchemy", 0), bought: true,
+			},
+		} {
+			c := check.New(t)
+			e := NewEntity()
+			addHardSkill(e, "Karate", fxp.Four)
+			merge := grantmerge.Ignore
+			if tc.bought {
+				addHardSkill(e, tc.item.Name, fxp.One)
+				merge = grantmerge.KeepHighest
+			}
+			x := addTraitWithFeatures(e, "X", tc.raise())
+			x.Prereq = NewPrereqList()
+			addSkillPrereq(x.Prereq, tc.item.Name, fxp.Twelve)
+			addTraitWithFeatures(e, "Y", newSkillGrantOf(tc.item, grantadjust.SetLevel, fxp.Twelve, merge))
+			e.Recalculate()
+			c.False(e.Unsettled(), tc.name)
+			c.Equal("", x.UnsatisfiedReason, tc.name)
+		}
 	})
 
 	t.Run("item another grant puts on the sheet too", func(t *testing.T) {
@@ -3370,6 +3564,18 @@ func TestGrantWording(t *testing.T) {
 			merged:   "Adds 2 points to Brawling, already present",
 		},
 		{
+			grant: newSkillGrant(newDisarming(0), fxp.Two, grantmerge.Ignore), label: "Disarming at level 2",
+			describe: "Grants the technique Disarming at level 2, or adds 2 levels to it when already present",
+			merged:   "Adds 2 levels to Disarming, already present",
+		},
+		{
+			// 1 point buys a Hard technique nothing above its default.
+			grant:    newSkillGrantOf(newDisarming(0), grantadjust.AddPoints, fxp.One, grantmerge.Ignore),
+			describe: "Adds 1 point to the technique Disarming when already present, though too few to grant it",
+			merged:   "Adds 1 point to Disarming, already present",
+			idle:     "Does not grant Disarming with 1 point, since points too few to buy a level grant nothing",
+		},
+		{
 			grant:    brawling(grantadjust.AddPoints, 0, grantmerge.Ignore),
 			describe: "Would grant the skill Brawling with 0 points, but points too few to buy a level grant nothing",
 			merged:   "Does not change Brawling, already present, since points too few to buy a level grant nothing",
@@ -3415,19 +3621,32 @@ func TestGrantWording(t *testing.T) {
 
 func TestGrantTiers(t *testing.T) {
 	c := check.New(t)
+	skill := newHardSkill("Alchemy", 0)
+	wildcard := newHardSkill("Alchemy", 0)
+	wildcard.Difficulty.Difficulty = difficulty.Wildcard
+	// A technique's levels count from its default, at a point each, plus 1 for a Hard one, as do a Ritual Magic
+	// spell's.
+	average := newTechniqueOf("Karate", "Kicking", 0)
+	hard := newKicking(0)
+	ritual := newBless(0)
 	for _, tc := range []struct {
-		tier     fxp.Int
-		wildcard bool
-		points   fxp.Int
+		name   string
+		item   grantLeveler
+		tier   fxp.Int
+		points fxp.Int
 	}{
-		{tier: 0, points: 0},
-		{tier: fxp.One, points: fxp.One},
-		{tier: fxp.Two, points: fxp.Two},
-		{tier: fxp.Three, points: fxp.Four},
-		{tier: fxp.Four, points: fxp.Eight},
-		{tier: fxp.Three, wildcard: true, points: fxp.FromInteger(12)},
+		{name: "skill tier 0", item: skill, tier: 0, points: 0},
+		{name: "skill tier 1", item: skill, tier: fxp.One, points: fxp.One},
+		{name: "skill tier 2", item: skill, tier: fxp.Two, points: fxp.Two},
+		{name: "skill tier 3", item: skill, tier: fxp.Three, points: fxp.Four},
+		{name: "skill tier 4", item: skill, tier: fxp.Four, points: fxp.Eight},
+		{name: "wildcard tier 3", item: wildcard, tier: fxp.Three, points: fxp.FromInteger(12)},
+		{name: "Average technique tier 3", item: average, tier: fxp.Three, points: fxp.Three},
+		{name: "Hard technique tier 1", item: hard, tier: fxp.One, points: fxp.Two},
+		{name: "Hard technique tier 4", item: hard, tier: fxp.Four, points: fxp.Five},
+		{name: "Hard Ritual Magic spell tier 2", item: ritual, tier: fxp.Two, points: fxp.Three},
 	} {
-		c.Equal(tc.points, grantTierPoints(tc.tier, tc.wildcard))
+		c.Equal(tc.points, tc.item.pointsForLevels(tc.tier), tc.name)
 	}
 }
 
@@ -3440,13 +3659,25 @@ func TestGrantSetLevelPoints(t *testing.T) {
 	unresolved := newHardSkill("Alchemy", 0)
 	unresolved.Difficulty.Attribute = "missing"
 	spell := newHardSpell("Light", 0)
-	ritual := NewRitualMagicSpell(nil, nil, false)
-	ritual.Name = "Bless"
+	kicking := newKicking(0)
+	averageKicking := newKicking(0)
+	averageKicking.Difficulty.Difficulty = difficulty.Average
+	sanity := newKicking(0)
+	sanity.TechniqueDefault = &SkillDefault{DefaultType: "sanity", Modifier: -fxp.Two}
+	bless := newBless(0)
+	// Light has no prerequisites, so that it rests on Ritual Magic at +0, which it goes no higher than, and capped
+	// Kicking goes no higher than Karate-3, below its default.
+	light := newBless(0)
+	light.Name = "Light"
+	light.PrereqCount = 0
+	capped := newKicking(0)
+	limit := -fxp.Three
+	capped.TechniqueLimitModifier = &limit
 	for _, tc := range []struct {
 		name string
 		item grantLeveler
 		// halfStat, when set, has the sheet use half-stat defaults at IQ 14, which halves IQ to 12 for a skill; IQ is
-		// 10 otherwise.
+		// 10 otherwise, where Karate and Ritual Magic, both IQ/Hard at 4 points, are at 10.
 		halfStat bool
 		level    fxp.Int
 		points   fxp.Int
@@ -3469,7 +3700,23 @@ func TestGrantSetLevelPoints(t *testing.T) {
 			name: "spell at half-stat, which spells don't use", item: spell, halfStat: true, level: fxp.Twelve,
 			points: fxp.One,
 		},
-		{name: "ritual magic, whose level rests on its ritual skill", item: ritual, level: fxp.Ten, points: 0},
+		// A technique's level is priced from the skill it rests on, at a point a level above its default, plus 1 for a
+		// Hard one, and no higher than its limit.
+		{name: "Hard technique", item: kicking, level: fxp.Nine, points: fxp.Two},
+		{name: "Average technique", item: averageKicking, level: fxp.Nine, points: fxp.One},
+		{name: "technique above its limit", item: kicking, level: fxp.Twelve, points: fxp.Three},
+		{name: "technique resting on a missing attribute", item: sanity, level: fxp.Nine, points: 0},
+		// A Ritual Magic spell's is priced from its ritual skill in the same way.
+		{name: "ritual magic", item: bless, level: fxp.Nine, points: fxp.Three},
+		{name: "ritual magic above its ritual skill", item: bless, level: fxp.Twelve, points: fxp.Four},
+		// One whose limit is at or below its default is priced at the points of its first level, which buy the limit,
+		// for a level at or above the limit.
+		{name: "ritual magic at its default", item: light, level: fxp.Ten, points: fxp.Two},
+		{name: "ritual magic above its default", item: light, level: fxp.Twelve, points: fxp.Two},
+		{name: "ritual magic below its default", item: light, level: fxp.Nine, points: 0},
+		{name: "technique at a limit below its default", item: capped, level: fxp.Seven, points: fxp.Two},
+		{name: "technique above a limit below its default", item: capped, level: fxp.Twelve, points: fxp.Two},
+		{name: "technique below a limit below its default", item: capped, level: fxp.Six, points: 0},
 	} {
 		c := check.New(t)
 		e := NewEntity()
@@ -3477,6 +3724,8 @@ func TestGrantSetLevelPoints(t *testing.T) {
 			e.SheetSettings.UseHalfStatDefaults = true
 			e.Attributes.Set[IntelligenceID].Adjustment = fxp.Four
 		}
+		addHardSkill(e, "Karate", fxp.Four)
+		addHardSkill(e, "Ritual Magic", fxp.Four)
 		e.Recalculate()
 		c.Equal(tc.points, tc.item.pointsForBaseLevel(e, tc.level), tc.name)
 	}
@@ -3487,10 +3736,12 @@ func TestGrantSpellMergeModes(t *testing.T) {
 		name   string
 		merge  grantmerge.Mode
 		adjust grantadjust.Kind
-		// points is what the spell bought has; with none, it has no level.
+		// points is what the spell bought has; with none, it has no level. ritual, when set, makes the spell Bless,
+		// which rests on Ritual Magic at 10, 7 with no points, rather than Light.
 		points fxp.Int
 		amount fxp.Int
 		level  fxp.Int
+		ritual bool
 	}{
 		{
 			name: "ignore a level set", merge: grantmerge.Ignore, adjust: grantadjust.SetLevel, points: fxp.One,
@@ -3518,18 +3769,34 @@ func TestGrantSpellMergeModes(t *testing.T) {
 			name: "keep lowest of a level set without level", merge: grantmerge.KeepLowest, adjust: grantadjust.SetLevel,
 			amount: fxp.Ten, level: fxp.Ten,
 		},
+		{
+			name: "keep highest of a ritual spell's level set", merge: grantmerge.KeepHighest, adjust: grantadjust.SetLevel,
+			points: fxp.Two, amount: fxp.Nine, level: fxp.Nine, ritual: true,
+		},
+		{
+			name: "keep lowest of a ritual spell's level set", merge: grantmerge.KeepLowest, adjust: grantadjust.SetLevel,
+			points: fxp.Three, amount: fxp.Eight, level: fxp.Eight, ritual: true,
+		},
+		{
+			// The levels added go no higher than the ritual skill.
+			name: "add levels to a ritual spell", merge: grantmerge.Ignore, points: fxp.Two, amount: fxp.Four,
+			level: fxp.Ten, ritual: true,
+		},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			c := check.New(t)
 			e := NewEntity()
-			light := newHardSpell("Light", tc.points)
-			light.SetDataOwner(e)
-			e.Spells = append(e.Spells, light)
-			addTraitWithFeatures(e, "Magery",
-				newSpellGrantOf(newHardSpell("Light", fxp.One), tc.adjust, tc.amount, tc.merge))
+			spell, item := newHardSpell("Light", tc.points), newHardSpell("Light", fxp.One)
+			if tc.ritual {
+				addHardSkill(e, "Ritual Magic", fxp.Four)
+				spell, item = newBless(tc.points), newBless(0)
+			}
+			spell.SetDataOwner(e)
+			e.Spells = append(e.Spells, spell)
+			addTraitWithFeatures(e, "Magery", newSpellGrantOf(item, tc.adjust, tc.amount, tc.merge))
 			e.Recalculate()
 			c.Equal(0, len(grantedOf(e.Spells)))
-			c.Equal(tc.level, light.LevelData.Level)
+			c.Equal(tc.level, spell.LevelData.Level)
 		})
 	}
 }
@@ -3971,13 +4238,74 @@ func TestGrantedRowsFollowTheirGrantsInSheetOrder(t *testing.T) {
 func TestGrantedSkillSatisfiesTechnique(t *testing.T) {
 	c := check.New(t)
 	e := NewEntity()
-	addTraitWithFeatures(e, "Training", newSkillGrant(newEasySkill("Brawling", fxp.One), fxp.Three, grantmerge.Ignore))
+	kicking := newKicking(0)
+	kicking.TechniqueDefault.Name.Qualifier = "Brawling"
+	addTraitWithFeatures(e, "Training", newSkillGrant(newEasySkill("Brawling", fxp.One), fxp.Three, grantmerge.Ignore),
+		newSkillGrantOf(kicking, grantadjust.SetLevel, fxp.Eleven, grantmerge.Ignore))
 	disarming := NewTechnique(e, nil, "Brawling")
 	disarming.Name = "Disarming"
 	e.Skills = append(e.Skills, disarming)
 	e.Recalculate()
+	c.False(e.Unsettled())
 	c.Equal(fxp.FromInteger(13), disarming.LevelData.Level, "the technique takes its level from the granted skill")
 	c.Equal("", disarming.UnsatisfiedReason, "which the points its grant gives it satisfy, as they give it its level")
+	var granted *Skill
+	for _, one := range grantedOf(e.Skills) {
+		if one.IsTechnique() {
+			granted = one
+		}
+	}
+	if granted == nil {
+		c.Fatal("expected the grant to put Kicking on the sheet")
+	}
+	c.Equal(fxp.Eleven, granted.LevelData.Level,
+		"a level set on a granted technique is priced from what the grants give the skill it rests on, Brawling 12")
+}
+
+func TestGrantPricesTechniqueFromTheTechniqueItRestsOn(t *testing.T) {
+	// Finisher rests on the technique Arm Lock, which rests on Karate at 10 and gets 3 levels from a grant, so that a
+	// level set on Finisher is priced from Arm Lock with them, whether Arm Lock is the sheet's own, at 11 with its point,
+	// or the grant's, though a level set comes ahead of levels added in plan order.
+	for _, tc := range []struct {
+		name    string
+		bought  bool
+		armLock fxp.Int
+		points  fxp.Int
+	}{
+		{name: "bought", bought: true, armLock: fxp.FromInteger(14), points: fxp.One},
+		{name: "granted", armLock: fxp.Thirteen, points: fxp.Two},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			c := check.New(t)
+			e := NewEntity()
+			addHardSkill(e, "Karate", fxp.Four)
+			if tc.bought {
+				armLock := newTechniqueOf("Karate", "Arm Lock", fxp.One)
+				armLock.SetDataOwner(e)
+				e.Skills = append(e.Skills, armLock)
+			}
+			addTraitWithFeatures(e, "Training",
+				newSkillGrant(newTechniqueOf("Karate", "Arm Lock", 0), fxp.Three, grantmerge.Ignore),
+				newSkillGrantOf(newTechniqueOf("Arm Lock", "Finisher", 0), grantadjust.SetLevel, fxp.Fifteen,
+					grantmerge.Ignore))
+			e.Recalculate()
+			c.False(e.Unsettled())
+			levels := make(map[string]fxp.Int)
+			var finisher *Skill
+			for _, one := range e.Skills {
+				levels[one.Name] = one.LevelData.Level
+				if one.Name == "Finisher" {
+					finisher = one
+				}
+			}
+			if finisher == nil {
+				c.Fatal("expected the grant to put Finisher on the sheet")
+			}
+			c.Equal(tc.armLock, levels["Arm Lock"])
+			c.Equal(tc.points, finisher.AdjustedPoints(nil))
+			c.Equal(fxp.Fifteen, finisher.LevelData.Level)
+		})
+	}
 }
 
 func TestGrantedSkillInContainerCostsNothing(t *testing.T) {
@@ -4038,13 +4366,11 @@ func TestGrantSetItem(t *testing.T) {
 	g.SetItem(newHardSpell("Light", fxp.One), LibraryFile{})
 	c.Equal(grantadjust.SetLevel, g.Adjust, "a spell can have its level set")
 	c.Equal(fxp.Twelve, g.Amount)
-	ritual := NewRitualMagicSpell(nil, nil, false)
-	ritual.Name = "Bless"
 	g.Merge = grantmerge.KeepHighest
-	g.SetItem(ritual, LibraryFile{})
-	c.Equal(grantadjust.AddLevels, g.Adjust, "but not a Ritual Magic spell, whose level rests on its ritual skill")
-	c.Equal(fxp.One, g.Amount, "the level that was set is not taken for the levels added")
-	c.Equal(grantmerge.Ignore, g.Merge, "levels added are added to an item already present, whatever the merge mode")
+	g.SetItem(newBless(0), LibraryFile{})
+	c.Equal(grantadjust.SetLevel, g.Adjust, "as can a Ritual Magic spell")
+	c.Equal(fxp.Twelve, g.Amount)
+	c.Equal(grantmerge.KeepHighest, g.Merge)
 
 	g = NewGrant(feature.GrantSpell)
 	g.SetItem(nil, LibraryFile{})
@@ -4060,6 +4386,19 @@ func TestGrantSetItem(t *testing.T) {
 	g.SetItem(granting, LibraryFile{})
 	c.Equal(0, len(g.Trait.Features), "the copy carries no grants, as a sync leaves it")
 	c.Equal(1, len(g.Trait.Modifiers[0].Features), "nor do its modifiers")
+}
+
+func TestGrantRenewKeyKeepsItsItemsKind(t *testing.T) {
+	c := check.New(t)
+	for _, g := range []*Grant{
+		newSkillGrant(newKicking(0), fxp.One, grantmerge.Ignore),
+		newSpellGrant(newBless(0), fxp.One, grantmerge.Ignore),
+	} {
+		key := g.Key()
+		g.RenewKey()
+		c.NotEqual(key, g.Key(), g.ItemName())
+		c.Equal(tidKind(key), tidKind(g.Key()), "a duplicate of the grant gives the same kind of item, %s", g.ItemName())
+	}
 }
 
 // nameableKeyOf returns the key of the placeholder marker, such as "@Type@".
@@ -4125,4 +4464,21 @@ func TestGrantPlaceholdersAnsweredByItsCarrier(t *testing.T) {
 	granted = grantedOf(e.Skills)
 	c.Equal(1, len(granted))
 	c.Equal("Pistol", granted[0].SpecializationWithReplacements())
+
+	// A level set on a technique is priced from the skill the carrier's answers have it rest on, Guns (Pistol) at 10.
+	e = NewEntity()
+	addSkill(e, "Guns", fxp.One).Specialization = "Pistol"
+	quickShot := newTechniqueOf("Guns", "Quick-Shot", 0)
+	quickShot.TechniqueDefault.Specialization.Compare = criteria.IsText
+	quickShot.TechniqueDefault.Specialization.Qualifier = "@Type@"
+	training = addTraitWithFeatures(e, "Training",
+		newSkillGrantOf(quickShot, grantadjust.SetLevel, fxp.Twelve, grantmerge.Ignore))
+	training.Replacements = map[string]string{typeKey: "Pistol"}
+	e.Recalculate()
+	granted = grantedOf(e.Skills)
+	if len(granted) != 1 {
+		c.Fatalf("expected the technique on the sheet, got %d granted", len(granted))
+	}
+	c.Equal(fxp.Two, granted[0].AdjustedPoints(nil))
+	c.Equal(fxp.Twelve, granted[0].LevelData.Level)
 }

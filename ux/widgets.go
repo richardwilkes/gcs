@@ -902,6 +902,24 @@ func newEntriesMenu(entries []menuEntry) unison.Menu {
 	return m
 }
 
+// popUpMenuOnClick has a click on the button open a menu of the entries where the click lands, as a right-click does,
+// and a key that clicks it open the menu below it.
+func popUpMenuOnClick(b *unison.Button, entries func() []menuEntry) {
+	b.ContextMenuCallback = func(geom.Point) unison.Menu { return newEntriesMenu(entries()) }
+	b.ClickCallback = func() { showMenu(b.AsPanel(), entries()) }
+	b.MouseUpCallback = func(where geom.Point, _ int, _ mod.Modifiers) bool {
+		b.Pressed = false
+		b.MarkForRedraw()
+		if where.In(b.ContentRect(false)) {
+			if unison.IsAccessibilityActive() {
+				b.RequestFocus()
+			}
+			b.ShowContextMenu(where)
+		}
+		return true
+	}
+}
+
 // compactCornerRadius is the corner radius of compact controls and of the boxes drawn around them.
 const compactCornerRadius = 4
 

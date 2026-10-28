@@ -24,15 +24,14 @@ import (
 	"github.com/zeebo/xxh3"
 )
 
-// grantLibraryItem is an item a grant can give, from a library or a table: a trait, skill or spell.
+// grantLibraryItem is an item a grant can give, from a library or a table: a trait, skill, technique or spell.
 type grantLibraryItem struct {
 	node any
 	from gurps.LibraryFile
 }
 
-// newGrantLibraryItem returns the node, from the library file, as an item a grant can give, or nil for a technique or
-// an item that grants something itself, among its own features or those of a trait's modifiers, which no grant can
-// give.
+// newGrantLibraryItem returns the node, from the library file, as an item a grant can give, or nil for an item that
+// grants something itself, among its own features or those of a trait's modifiers, which no grant can give.
 func newGrantLibraryItem(node any, from gurps.LibraryFile) *grantLibraryItem {
 	var features []gurps.Features
 	switch one := node.(type) {
@@ -43,9 +42,6 @@ func newGrantLibraryItem(node any, from gurps.LibraryFile) *grantLibraryItem {
 			return false
 		}, false, false, one.Modifiers...)
 	case *gurps.Skill:
-		if one.IsTechnique() {
-			return nil
-		}
 		features = []gurps.Features{one.Features}
 	case *gurps.Spell:
 		features = []gurps.Features{one.Features}
@@ -74,27 +70,25 @@ func collectGrantItems[T gurps.Node[T]](from gurps.LibraryFile, nodes []T) []*gr
 const grantDropZoneMinWidth = 150
 
 // grant adds the controls of an open grant row: a zone to drop the item on, which names the item chosen, if any, and
-// when clicked opens the editor on it, giving the grant a blank item first when it has none; once an item is chosen,
-// how its amount adjusts it and the amount (see grantAmount), then, for a grant that sets its level, what happens when
-// the sheet already has it; and, as a chip, whether its prerequisites are checked.
+// when clicked opens the editor on it, or else gives the grant a blank item and opens the editor on that, a skill or
+// spell grant first offering a menu of the kinds of blank item (see grantBlankEntries); once an item is chosen, how its
+// amount adjusts it and the amount (see grantAmount), then, for a grant that sets its level, what happens when the
+// sheet already has it; and, as a chip, whether its prerequisites are checked.
 func (p *featuresPanel) grant(fields, chips *unison.Panel, path string, g *gurps.Grant) {
 	key := func(name string) string { return path + ":" + name }
 	chosen := g.Key() != ""
-	zone := newEmptyPlaceholder(key("drop"), grantDropText(g.Type, false), func() {
-		p.sentenceRows.restructure(i18n.Text("New Blank Granted Item"), key("drop"), "", func() string {
-			g.SetItem(nil, gurps.LibraryFile{})
-			return grantFocusKey(path, g)
-		})
-		// The editor opens on the blank item once the panel has been rebuilt around it, as a click on the zone then
-		// would, so that the rebuild's focus doesn't take the editor from the front.
-		unison.InvokeTask(func() { p.editGrantedItem(g) })
-	})
-	if chosen {
+	zone := newEmptyPlaceholder(key("drop"), grantDropText(g.Type, false), nil)
+	switch {
+	case chosen:
 		zone.SetTitle(g.ItemName())
 		zone.ClickCallback = func() { p.editGrantedItem(g) }
 		replace := grantDropText(g.Type, true)
 		zone.Tooltip = newWrappedTooltip(replace)
 		zone.Accessibility.Description = replace
+	case g.Type == feature.GrantTrait:
+		zone.ClickCallback = func() { p.startBlankGrantItem(path, g, nil) }
+	default:
+		popUpMenuOnClick(zone, func() []menuEntry { return p.grantBlankEntries(path, g) })
 	}
 	keepMinWidth(zone.AsPanel(), grantDropZoneMinWidth, zone.DefaultSizes)
 	addCentered(fields, zone)
@@ -133,7 +127,7 @@ func (p *featuresPanel) grantAmount(fields *unison.Panel, path string, g *gurps.
 		func(v fxp.Int) { p.edit(title, key("amount"), "", func() { g.Amount = v }) },
 		fxp.Min, fxp.Max, kind != grantadjust.SetLevel, false)
 	field.Accessibility.Name = title
-	field.Tooltip = newWrappedTooltip(grantAmountTooltip(g.Type, kind))
+	field.Tooltip = newWrappedTooltip(grantAmountTooltip(g))
 	if grantAmountWhole(g.Type, kind) {
 		refuseFractions(field)
 	}
@@ -146,15 +140,83 @@ func grantAmountWhole(t feature.Type, kind grantadjust.Kind) bool {
 	return t != feature.GrantTrait && kind != grantadjust.AddPoints
 }
 
-// grantItemNoun returns the word for the kind of item a grant of the given type gives.
-func grantItemNoun(t feature.Type) string {
+// startBlankGrantItem gives the grant of the row at the path a copy of the blank item, or a blank item of the grant's
+// type when blank is nil (see gurps.Grant.SetItem), and opens the editor on it.
+func (p *featuresPanel) startBlankGrantItem(path string, g *gurps.Grant, blank any) {
+	p.sentenceRows.restructure(i18n.Text("New Blank Granted Item"), path+":drop", "", func() string {
+		g.SetItem(blank, gurps.LibraryFile{})
+		return grantFocusKey(path, g)
+	})
+	// The editor opens on the blank item once the panel has been rebuilt around it, as a click on the zone then would,
+	// so that the rebuild's focus doesn't take the editor from the front.
+	unison.InvokeTask(func() { p.editGrantedItem(g) })
+}
+
+// grantBlankEntries returns the menu of the kinds of blank item a click on the empty drop zone of the grant of the row
+// at the path can give it: a skill or technique for a skill grant, and a spell or Ritual Magic spell for a spell
+// grant. A trait grant has one kind alone, and so no menu.
+func (p *featuresPanel) grantBlankEntries(path string, g *gurps.Grant) []menuEntry {
+	switch g.Type {
+	case feature.GrantSkill:
+		return []menuEntry{
+			{Label: i18n.Text("New Skill"), Act: func() { p.startBlankGrantItem(path, g, nil) }},
+			{Label: i18n.Text("New Technique"), Act: func() {
+				p.startBlankGrantItem(path, g, gurps.NewTechnique(nil, nil, ""))
+			}},
+		}
+	case feature.GrantSpell:
+		return []menuEntry{
+			{Label: i18n.Text("New Spell"), Act: func() { p.startBlankGrantItem(path, g, nil) }},
+			{Label: i18n.Text("New Ritual Magic Spell"), Act: func() {
+				p.startBlankGrantItem(path, g, gurps.NewRitualMagicSpell(nil, nil, false))
+			}},
+		}
+	default:
+		return nil
+	}
+}
+
+// grantDropNoun returns the words for the kinds of item that can be dropped on a grant of the given type.
+func grantDropNoun(t feature.Type) string {
 	switch t {
 	case feature.GrantSkill:
-		return i18n.Text("skill")
+		return i18n.Text("skill or technique")
 	case feature.GrantSpell:
 		return i18n.Text("spell")
 	default:
 		return i18n.Text("trait")
+	}
+}
+
+// grantItemNoun returns the word for the kind of item the grant gives: that of its type, unless its copy of the item
+// is a technique or Ritual Magic spell.
+func grantItemNoun(g *gurps.Grant) string {
+	switch g.Type {
+	case feature.GrantSkill:
+		if grantPricedAsTechnique(g) {
+			return i18n.Text("technique")
+		}
+		return i18n.Text("skill")
+	case feature.GrantSpell:
+		if grantPricedAsTechnique(g) {
+			return i18n.Text("Ritual Magic spell")
+		}
+		return i18n.Text("spell")
+	default:
+		return i18n.Text("trait")
+	}
+}
+
+// grantPricedAsTechnique returns true if the grant's copy of its item is a technique or Ritual Magic spell, whose
+// levels count from its default, at a point each and one more for a Hard one, rather than in a skill's steps of points.
+func grantPricedAsTechnique(g *gurps.Grant) bool {
+	switch g.Type {
+	case feature.GrantSkill:
+		return g.Skill != nil && g.Skill.IsTechnique()
+	case feature.GrantSpell:
+		return g.Spell != nil && g.Spell.IsRitualMagic()
+	default:
+		return false
 	}
 }
 
@@ -163,9 +225,9 @@ func grantItemNoun(t feature.Type) string {
 func grantDropText(t feature.Type, chosen bool) string {
 	if chosen {
 		return i18n.Text("Drop a %s here from a library or sheet to replace the one chosen, or click to edit it.",
-			grantItemNoun(t))
+			grantDropNoun(t))
 	}
-	return i18n.Text("Drop a %s here from a library or sheet, or click to start with a blank one.", grantItemNoun(t))
+	return i18n.Text("Drop a %s here from a library or sheet, or click to start with a blank one.", grantDropNoun(t))
 }
 
 // grantFocusKey returns the reference key of the control of the grant row at the path that takes the focus once the
@@ -189,15 +251,26 @@ func grantAmountTitle(kind grantadjust.Kind) string {
 	}
 }
 
-// grantAmountTooltip explains what the amount of a grant of the given type means, which adjusts its item as kind says.
-func grantAmountTooltip(t feature.Type, kind grantadjust.Kind) string {
-	if t == feature.GrantTrait {
+// grantAmountTooltip explains what the amount of the grant means, for its kind of item and of adjustment.
+func grantAmountTooltip(g *gurps.Grant) string {
+	kind := g.EffectiveAdjust()
+	if g.Type == feature.GrantTrait {
 		if kind == grantadjust.SetLevel {
 			return i18n.Text(`The level the grant gives the trait. With Keep Highest or Keep Lowest, a trait already present is held to at least or at most that level. A level below 1 does neither.`)
 		}
 		return i18n.Text(`The levels added to a trait already present, or taken away when negative, never below level 0. On its own, the grant gives the trait that level when it is 1 or more. A positive level below 1 does nothing at all.`)
 	}
-	noun := grantItemNoun(t)
+	noun := grantItemNoun(g)
+	if grantPricedAsTechnique(g) {
+		switch kind {
+		case grantadjust.AddPoints:
+			return i18n.Text(`The points added to a %s already present, or taken away when negative, never below 0. On its own, the grant gives the %s that many points when they are enough to buy a level: at least 1, or 2 for a Hard %s.`, noun, noun, noun)
+		case grantadjust.SetLevel:
+			return i18n.Text(`The skill level the grant gives the %s, in place of the level its points and difficulty would give it; bonuses still apply on top, up to its limit, if any. With Keep Highest or Keep Lowest, one already present is held to at least or at most that level. A level below 1, or below what 1 point buys (2 for a Hard %s), does neither.`, noun, noun)
+		default:
+			return i18n.Text(`The levels added to a %s already present, or taken away when negative, never below level 0. On its own, the grant gives the %s that many levels above its default when it is 1 or more, at 1 point a level, plus 1 point for a Hard %s.`, noun, noun, noun)
+		}
+	}
 	switch kind {
 	case grantadjust.AddPoints:
 		return i18n.Text(`The points added to a %s already present, or taken away when negative, never below 0. On its own, the grant gives the %s that many points when they are enough to buy a level: at least 1, or 3 for a wildcard.`, noun, noun)
