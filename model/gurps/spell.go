@@ -729,7 +729,7 @@ func (s *Spell) restsOnSkill() bool {
 
 // pointsForBaseLevel implements grantLeveler: the fewest points that give the spell the level before bonuses on the
 // sheet, or for a Ritual Magic spell the level before its own bonuses from the best ritual skill it may rest on, held
-// to that skill's level (see techniquePointsForLevel), or zero when none do.
+// to the highest that skill's level allows before them (see techniquePointsForLevel), or zero when none do.
 func (s *Spell) pointsForBaseLevel(e *Entity, level fxp.Int) fxp.Int {
 	if s.IsRitualMagic() {
 		return techniquePointsForLevel(level, s.Difficulty.Difficulty, s.ritualMagicBases(e)...)
@@ -752,7 +752,8 @@ func (s *Spell) baseUnresolved(e *Entity) bool {
 
 // ritualMagicBases returns the ritual skills the Ritual Magic spell's level may rest on as the sheet sees them, as
 // CalculateRitualMagicSpellLevel takes them: for each of its colleges, or none when it has none, the ritual skill of
-// that college and the generic one (see ritualMagicDefaults), neither of which the spell rises above.
+// that college and the generic one (see ritualMagicDefaults), neither of which the spell rises above once the skill
+// bonuses to it for that college are added.
 func (s *Spell) ritualMagicBases(e *Entity) []techniqueBase {
 	colleges := s.CollegeWithReplacements()
 	if len(colleges) == 0 {
@@ -764,15 +765,21 @@ func (s *Spell) ritualMagicBases(e *Entity) []techniqueBase {
 	bases := make([]techniqueBase, 0, 2*len(colleges))
 	for _, college := range colleges {
 		primary, fallback, fallbackExcludes := ritualMagicDefaults(e, college, ritual, s.PrereqCount)
+		var bonus fxp.Int
+		if e != nil {
+			bonus = e.SkillBonusFor(name, college, "", s.Tags, nil)
+		}
 		bases = append(bases,
 			techniqueBase{
 				level:    techniqueBaseLevel(e, nil, name, college, primary, false, nil),
 				modifier: primary.Modifier,
+				bonus:    bonus,
 				limit:    &limit,
 			},
 			techniqueBase{
 				level:    techniqueBaseLevel(e, nil, name, college, fallback, false, fallbackExcludes),
 				modifier: fallback.Modifier,
+				bonus:    bonus,
 				limit:    &limit,
 			})
 	}

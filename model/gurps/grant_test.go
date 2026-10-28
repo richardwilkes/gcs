@@ -762,8 +762,9 @@ func TestGrantSkillAdjustmentKinds(t *testing.T) {
 		wildcard  bool
 		technique bool
 		// alone is the points and level the skill has when the grant puts it on the sheet, and merged when the grant
-		// merges into the skill bought.
+		// merges into the skill bought, whose level's tooltip is mergedTooltip when that is set.
 		alonePoints, aloneLevel, mergedPoints, mergedLevel fxp.Int
+		mergedTooltip                                      string
 	}{
 		{
 			name: "1 level", adjust: grantadjust.AddLevels, amount: fxp.One,
@@ -822,9 +823,11 @@ func TestGrantSkillAdjustmentKinds(t *testing.T) {
 			alonePoints: fxp.Three, aloneLevel: fxp.Twelve, mergedPoints: fxp.Two, mergedLevel: fxp.Twelve,
 		},
 		{
-			// Neither the points nor the levels added take a technique above its limit.
+			// Neither the points nor the levels added take a technique above its limit, and the tooltip shows the levels
+			// that were added.
 			name: "technique 6 levels", adjust: grantadjust.AddLevels, amount: fxp.Six, technique: true,
 			alonePoints: fxp.Seven, aloneLevel: fxp.Fifteen, mergedPoints: fxp.Two, mergedLevel: fxp.Fifteen,
+			mergedTooltip: "\nTraining [+4]",
 		},
 		{
 			// A level set above the limit is priced at the limit.
@@ -872,6 +875,9 @@ func TestGrantSkillAdjustmentKinds(t *testing.T) {
 				}
 				c.Equal(points, skill.AdjustedPoints(nil))
 				c.Equal(level, skill.LevelData.Level)
+				if merged && tc.mergedTooltip != "" {
+					c.Equal(tc.mergedTooltip, skill.LevelData.Tooltip)
+				}
 			})
 		}
 	}
@@ -963,6 +969,12 @@ func TestGrantSetLevelBelowWhatAPointBuys(t *testing.T) {
 		s.TechniqueDefault = &SkillDefault{DefaultType: "sanity", Modifier: -fxp.Two}
 		return s
 	}
+	// A file can leave a technique with no default.
+	baseless := func() *Skill {
+		s := newKicking(0)
+		s.TechniqueDefault = nil
+		return s
+	}
 	for _, tc := range []struct {
 		item   func() *Skill
 		karate bool
@@ -1006,6 +1018,13 @@ func TestGrantSetLevelBelowWhatAPointBuys(t *testing.T) {
 				"rests on.",
 			planted:   "Does not grant Kicking at skill level 12, since the sheet lacks the attribute its level rests on",
 			unchanged: "Does not change Kicking, already present, since the sheet lacks the attribute its level rests on",
+		},
+		{
+			item: baseless, karate: true, level: fxp.Twelve,
+			grantedBy: "Granted by Training\nThe grant gives it nothing, since it has no default for its level to rest " +
+				"on.",
+			planted:   "Does not grant Kicking at skill level 12, since it has no default for its level to rest on",
+			unchanged: "Does not change Kicking, already present, since it has no default for its level to rest on",
 		},
 	} {
 		e = NewEntity()
@@ -1052,10 +1071,10 @@ func TestGrantStateAppliesLevelNotesInOrder(t *testing.T) {
 	state.addLevels(grantSource{owner: b}, fxp.One)
 	state.keepLevel(grantSource{owner: keeper}, fxp.Four, true)
 	var tooltip xbytes.InsertBuffer
-	c.Equal(fxp.Four, state.applyLevelNotes(nil, fxp.Three, &tooltip, nil))
+	c.Equal(fxp.Four, state.applyLevelNotes(nil, fxp.Three, &tooltip, nil, nil))
 	c.Equal("\nB [+1]\nA [+1]\nKeeper [-1]", tooltip.String(),
 		"the levels added come first, and then the levels kept, in the order the grants were merged")
-	c.Equal(fxp.Five, state.applyLevelNotes(keeper, fxp.Three, nil, nil),
+	c.Equal(fxp.Five, state.applyLevelNotes(keeper, fxp.Three, nil, nil, nil),
 		"what a Keep Lowest grant caps is left out for the prerequisites of what carries it")
 }
 
@@ -2169,6 +2188,43 @@ func TestGrantDoesNotMeetItsCarriersPrereqs(t *testing.T) {
 		}
 	})
 
+	// Nor when the curse takes every point from the skill a default rests on, leaving it no level, so that the skill
+	// defaulting to it records no default: the prerequisites read that skill at the level the default gives it without
+	// the curse, whether they read it or a technique based on it.
+	t.Run("curse leaving no level to the skill a default rests on", func(t *testing.T) {
+		for _, tc := range []struct {
+			name   string
+			prereq func(list *PrereqList)
+		}{
+			{name: "skill defaulting to it", prereq: func(list *PrereqList) {
+				addSkillPrereq(list, "Shortsword", fxp.Eleven)
+			}},
+			{name: "technique based on the skill defaulting to it", prereq: func(list *PrereqList) {
+				addSkillPrereq(list, "Disarming", fxp.Twelve)
+			}},
+			{name: "script reading the technique", prereq: func(list *PrereqList) {
+				addScriptPrereq(list, `entity.skillLevel("Disarming", "", false) >= 12`)
+			}},
+		} {
+			c := check.New(t)
+			e := NewEntity()
+			addSkill(e, "Broadsword", fxp.Eight)             // DX+3, so 13
+			shortsword := addSkill(e, "Shortsword", fxp.One) // 10, or 11 from Broadsword at -2
+			shortsword.Defaults = []*SkillDefault{newSkillDefaultTo("Broadsword", "", true, -fxp.Two)}
+			disarming := NewTechnique(e, nil, "Shortsword") // a point above Shortsword
+			disarming.Name = "Disarming"
+			e.Skills = append(e.Skills, disarming)
+			cursed := addTraitWithFeatures(e, "Cursed", newSkillGrantOf(newEasySkill("Broadsword", fxp.One),
+				grantadjust.AddPoints, -fxp.Eight, grantmerge.Ignore))
+			cursed.Prereq = NewPrereqList()
+			tc.prereq(cursed.Prereq)
+			e.Recalculate()
+			c.False(e.Unsettled(), tc.name)
+			c.Equal("", cursed.UnsatisfiedReason, "%s: Shortsword is 11 from Broadsword without the curse", tc.name)
+			c.Equal(fxp.Eleven, disarming.LevelData.Level, "%s: so the curse leaves Shortsword no default", tc.name)
+		}
+	})
+
 	// Nor can a Keep Lowest grant it carries, which caps the skill below the level the prerequisite needs.
 	t.Run("keep lowest once the prerequisite is met without it", func(t *testing.T) {
 		c := check.New(t)
@@ -2464,37 +2520,230 @@ func TestGrantDoesNotMeetItsCarriersPrereqs(t *testing.T) {
 			}
 		}
 		karate := func() *Grant { return newSkillGrant(newHardSkill("Karate", fxp.Four), fxp.Two, grantmerge.Ignore) }
+		defaulting := newHardSkill("Alchemy", 0)
+		defaulting.Defaults = []*SkillDefault{newSkillDefaultTo("Karate", "", false, -fxp.Two)}
+		defaultingTwice := newHardSkill("Alchemy", 0)
+		defaultingTwice.Defaults = []*SkillDefault{
+			newSkillDefaultTo("Karate", "", false, -fxp.Two),
+			{DefaultType: IntelligenceID},
+		}
+		adding := func(levels fxp.Int) func(item *Skill) *Grant {
+			return func(item *Skill) *Grant { return newSkillGrant(item, levels, grantmerge.Ignore) }
+		}
 		for _, tc := range []struct {
 			name  string
 			raise func() *Grant
 			item  *Skill
-			// bought, when set, puts the item on the sheet at 1 point, which the level set, Keep Highest, merges into.
-			bought bool
+			// bought, when set, puts the item on the sheet at 1 point, or none when unleveled is set, which leaves it
+			// no level of its own, and the level set merges into it.
+			bought, unleveled bool
+			// merge is the level set's merge mode.
+			merge grantmerge.Mode
+			// added has X add a level to the item as well, and other, when set, makes a third carrier's grant of it.
+			added bool
+			other func(item *Skill) *Grant
+			// required is the level X's prerequisite asks of the item, 12 when zero, and unmet is set when that is not
+			// met. level, when not zero, is the level the item settles at.
+			required, level fxp.Int
+			unmet           bool
 		}{
 			{name: "skill resting on an attribute", raise: smart(fxp.Two), item: newHardSkill("Alchemy", 0)},
 			{name: "technique resting on a skill", raise: karate, item: newDisarming(0)},
-			{name: "level set kept", raise: smart(fxp.Two), item: newHardSkill("Alchemy", 0), bought: true},
+			{
+				// The level set gives the points its default, Karate-2, falls short of: 8 with the carrier's grants and
+				// 11 without.
+				name: "skill defaulting to a skill", raise: karate, item: defaulting,
+			},
+			{
+				// At Karate 15, Karate-2 gives 13, above the level set, which then gives no points. At Karate 10, the
+				// level set gives the points beyond the 8 of Karate-2, the default the item keeps once it has points,
+				// rather than beyond the 10 of IQ, the best default it has, so that X's prerequisite sees the 12 set.
+				name: "skill with several defaults, the best of which the carrier's grants raise",
+				raise: func() *Grant {
+					return newSkillGrant(newHardSkill("Karate", fxp.Four), fxp.Five, grantmerge.Ignore)
+				},
+				item: defaultingTwice, level: fxp.Thirteen,
+			},
+			{
+				name: "level set kept", raise: smart(fxp.Two), item: newHardSkill("Alchemy", 0), bought: true,
+				merge: grantmerge.KeepHighest,
+			},
 			{
 				// At IQ 15, 1 point buys 13, so that the level set gives nothing with the carrier's grants.
 				name: "level set kept, giving nothing with the carrier's grants", raise: smart(fxp.Five),
-				item: newHardSkill("Alchemy", 0), bought: true,
+				item: newHardSkill("Alchemy", 0), bought: true, merge: grantmerge.KeepHighest,
+			},
+			{
+				// At Karate 12, Disarming's default gives 12, so that the level set gives nothing with the carrier's
+				// grants, while without them it keeps Disarming at 12 whatever the third carrier takes from it.
+				name:  "level set kept on the item it puts on the sheet, giving nothing with the carrier's grants",
+				raise: karate, item: newDisarming(0), merge: grantmerge.KeepHighest, other: adding(-fxp.One),
+			},
+			{
+				// With no level of its own, the item takes the points the level set buys, which are none with the
+				// carrier's grants.
+				name:  "level set kept on an item with no level, giving nothing with the carrier's grants",
+				raise: smart(fxp.Five), item: newHardSkill("Alchemy", 0), bought: true, unleveled: true,
+				merge: grantmerge.KeepHighest,
+			},
+			{
+				name:  "level set capping an item with no level, giving nothing with the carrier's grants",
+				raise: smart(fxp.Five), item: newHardSkill("Alchemy", 0), bought: true, unleveled: true,
+				merge: grantmerge.KeepLowest,
+			},
+			{
+				// The level added stands in for the level set, which gives nothing with the carrier's grants.
+				name:  "level set giving nothing with the carrier's grants, which give the item in its stead",
+				raise: smart(fxp.Five), item: newHardSkill("Alchemy", 0), added: true,
+			},
+			{
+				name: "level set giving nothing with the carrier's grants, which a third carrier gives the item in its " +
+					"stead",
+				raise: smart(fxp.Five), item: newHardSkill("Alchemy", 0), other: adding(fxp.One),
+			},
+			{
+				// The level the carrier adds stands in for the level set, ahead of the third carrier's.
+				name: "level set giving nothing with the carrier's grants, which give the item in its stead, as a third " +
+					"carrier would",
+				raise: smart(fxp.Five), item: newHardSkill("Alchemy", 0), added: true, other: adding(fxp.One),
+			},
+			{
+				// The third carrier's level set stands in at IQ 15, while at IQ 10 it would keep at 13 what the other
+				// level set gives, which falls short of 14.
+				name:  "level set giving nothing with the carrier's grants, for which a third carrier's stands in",
+				raise: smart(fxp.Five), item: newHardSkill("Alchemy", 0),
+				other: func(item *Skill) *Grant {
+					return newSkillGrantOf(item, grantadjust.SetLevel, fxp.Thirteen, grantmerge.KeepHighest)
+				},
+				required: fxp.FromInteger(14), unmet: true,
+			},
+			{
+				// Without the carrier's grants, the level added raises the 12 the level set gives to 13, rather than
+				// give Disarming the points of a level of its own on top of those the level set gives.
+				name:  "level set giving nothing with the carrier's grants, for which a third carrier's level stands in",
+				raise: karate, item: newDisarming(0), other: adding(fxp.One), required: fxp.FromInteger(14),
+				unmet: true,
+			},
+			{
+				// Without the carrier's grants, the level set gives the item 12 points, which the third carrier's grant
+				// adds 2 levels to rather than the points of 2 levels.
+				name:  "level set kept on an item with no level, giving nothing with the carrier's grants, a level added",
+				raise: smart(fxp.Five), item: newHardSkill("Alchemy", 0), bought: true, unleveled: true,
+				merge: grantmerge.KeepHighest, other: adding(fxp.Two), required: fxp.FromInteger(14),
+			},
+			{
+				// Without the carrier's grants, the third carrier's grant takes a level, or 2 points, from what the
+				// level set gives the item, though with them the item has no level to take anything from.
+				name:  "level set capping an item with no level, giving nothing with the carrier's grants, a level taken",
+				raise: smart(fxp.Five), item: newHardSkill("Alchemy", 0), bought: true, unleveled: true,
+				merge: grantmerge.KeepLowest, other: adding(-fxp.One), unmet: true,
+			},
+			{
+				name: "level set capping an item with no level, giving nothing with the carrier's grants, points " +
+					"taken",
+				raise: smart(fxp.Five), item: newHardSkill("Alchemy", 0), bought: true, unleveled: true,
+				merge: grantmerge.KeepLowest, unmet: true,
+				other: func(item *Skill) *Grant {
+					return newSkillGrantOf(item, grantadjust.AddPoints, -fxp.Two, grantmerge.Ignore)
+				},
 			},
 		} {
 			c := check.New(t)
 			e := NewEntity()
 			addHardSkill(e, "Karate", fxp.Four)
-			merge := grantmerge.Ignore
 			if tc.bought {
-				addHardSkill(e, tc.item.Name, fxp.One)
-				merge = grantmerge.KeepHighest
+				points := fxp.One
+				if tc.unleveled {
+					points = 0
+				}
+				addHardSkill(e, tc.item.Name, points)
 			}
 			x := addTraitWithFeatures(e, "X", tc.raise())
-			x.Prereq = NewPrereqList()
-			addSkillPrereq(x.Prereq, tc.item.Name, fxp.Twelve)
-			addTraitWithFeatures(e, "Y", newSkillGrantOf(tc.item, grantadjust.SetLevel, fxp.Twelve, merge))
+			if tc.added {
+				added := *tc.item
+				x.Features = append(x.Features, newSkillGrant(&added, fxp.One, grantmerge.Ignore))
+			}
+			required := tc.required
+			if required == 0 {
+				required = fxp.Twelve
+			}
+			x.Prereq = newPrereqListRequiringSkill(tc.item.Name, required)
+			addTraitWithFeatures(e, "Y", newSkillGrantOf(tc.item, grantadjust.SetLevel, fxp.Twelve, tc.merge))
+			if tc.other != nil {
+				other := *tc.item
+				addTraitWithFeatures(e, "Z", tc.other(&other))
+			}
+			e.Recalculate()
+			c.False(e.Unsettled(), tc.name)
+			if tc.unmet {
+				c.NotEqual("", x.UnsatisfiedReason, tc.name)
+			} else {
+				c.Equal("", x.UnsatisfiedReason, tc.name)
+			}
+			if tc.level != 0 {
+				for _, sk := range e.Skills {
+					if sk.Name == tc.item.Name {
+						c.Equal(tc.level, sk.LevelData.Level, tc.name)
+					}
+				}
+			}
+		}
+	})
+
+	// Nor do the merges after its own into an item with no level of its own, which its merge gives the level they
+	// merge into: without it, the first of them gives the item its level standing alone.
+	t.Run("merges after the carrier's into an item with no level of its own", func(t *testing.T) {
+		adding := func(levels fxp.Int) func(item *Skill) *Grant {
+			return func(item *Skill) *Grant { return newSkillGrant(item, levels, grantmerge.Ignore) }
+		}
+		setting := func(level fxp.Int, merge grantmerge.Mode) func(item *Skill) *Grant {
+			return func(item *Skill) *Grant { return newSkillGrantOf(item, grantadjust.SetLevel, level, merge) }
+		}
+		for _, tc := range []struct {
+			name string
+			// x is the grant of X, which requires Alchemy, bought with no points, at the level required, and z and w,
+			// when set, those of Z and W, listed after X in that order. latent, when set, raises IQ to 15 and puts ahead
+			// of them a level set that gives Alchemy nothing there.
+			x, z, w         func(item *Skill) *Grant
+			latent          bool
+			required, level fxp.Int
+		}{
+			{name: "levels added", x: adding(fxp.One), z: adding(fxp.One), required: fxp.Eight, level: fxp.Nine},
+			{
+				// Without X, Z gives Alchemy 9 standing alone, which W adds 2 levels to, rather than the points of 2
+				// levels.
+				name: "levels added by two carriers", x: adding(fxp.Four), z: adding(fxp.Two), w: adding(fxp.Two),
+				required: fxp.FromInteger(11), level: fxp.FromInteger(15),
+			},
+			{
+				// Without X, Z keeps Alchemy at 12 standing alone, rather than capping no level.
+				name: "level capped", x: setting(fxp.Nine, grantmerge.KeepHighest),
+				z: setting(fxp.Twelve, grantmerge.KeepLowest), required: fxp.Twelve, level: fxp.Nine,
+			},
+			{
+				name: "levels added after a level set giving nothing", x: adding(fxp.One), z: adding(fxp.One),
+				latent: true, required: fxp.Thirteen, level: fxp.FromInteger(14),
+			},
+		} {
+			c := check.New(t)
+			e := NewEntity()
+			alchemy := addHardSkill(e, "Alchemy", 0)
+			if tc.latent {
+				bonus := NewAttributeBonus(IntelligenceID)
+				bonus.Amount = fxp.Five
+				addTraitWithFeatures(e, "Smart", bonus)
+				addTraitWithFeatures(e, "Y", setting(fxp.Twelve, grantmerge.KeepHighest)(newHardSkill("Alchemy", 0)))
+			}
+			x := addTraitWithFeatures(e, "X", tc.x(newHardSkill("Alchemy", 0)))
+			x.Prereq = newPrereqListRequiringSkill("Alchemy", tc.required)
+			addTraitWithFeatures(e, "Z", tc.z(newHardSkill("Alchemy", 0)))
+			if tc.w != nil {
+				addTraitWithFeatures(e, "W", tc.w(newHardSkill("Alchemy", 0)))
+			}
 			e.Recalculate()
 			c.False(e.Unsettled(), tc.name)
 			c.Equal("", x.UnsatisfiedReason, tc.name)
+			c.Equal(tc.level, alchemy.LevelData.Level, tc.name)
 		}
 	})
 
@@ -3679,8 +3928,10 @@ func TestGrantSetLevelPoints(t *testing.T) {
 		// halfStat, when set, has the sheet use half-stat defaults at IQ 14, which halves IQ to 12 for a skill; IQ is
 		// 10 otherwise, where Karate and Ritual Magic, both IQ/Hard at 4 points, are at 10.
 		halfStat bool
-		level    fxp.Int
-		points   fxp.Int
+		// bonus is a skill bonus to the item, which comes before a technique's limit.
+		bonus  fxp.Int
+		level  fxp.Int
+		points fxp.Int
 	}{
 		{name: "below what 1 point buys", item: hard, level: fxp.Seven, points: 0},
 		{name: "1 point", item: hard, level: fxp.Eight, points: fxp.One},
@@ -3717,6 +3968,21 @@ func TestGrantSetLevelPoints(t *testing.T) {
 		{name: "technique at a limit below its default", item: capped, level: fxp.Seven, points: fxp.Two},
 		{name: "technique above a limit below its default", item: capped, level: fxp.Twelve, points: fxp.Two},
 		{name: "technique below a limit below its default", item: capped, level: fxp.Six, points: 0},
+		// Since the limit comes after the technique's own bonuses, a penalty lets more points raise it, and a bonus
+		// fewer: with a penalty of 2, Kicking reaches its limit, Karate, 4 levels above its default, Karate-2.
+		{
+			name: "technique with a penalty, at a level above its limit, which the penalty brings within it",
+			item: kicking, bonus: -fxp.Two, level: fxp.Eleven, points: fxp.Four,
+		},
+		{
+			name: "technique with a penalty, above its limit", item: kicking, bonus: -fxp.Two, level: fxp.Thirteen,
+			points: fxp.Five,
+		},
+		{name: "technique with a bonus, at its limit", item: kicking, bonus: fxp.One, level: fxp.Ten, points: fxp.Two},
+		{
+			name: "ritual magic with a penalty, at its ritual skill", item: bless, bonus: -fxp.Two, level: fxp.Twelve,
+			points: fxp.Six,
+		},
 	} {
 		c := check.New(t)
 		e := NewEntity()
@@ -3726,6 +3992,13 @@ func TestGrantSetLevelPoints(t *testing.T) {
 		}
 		addHardSkill(e, "Karate", fxp.Four)
 		addHardSkill(e, "Ritual Magic", fxp.Four)
+		if tc.bonus != 0 {
+			holder, ok := tc.item.(grantHolder)
+			if !ok {
+				c.Fatalf("%s: the item has no name", tc.name)
+			}
+			addTraitWithFeatures(e, "Bonus", newSkillBonusTo(holder.rawName(), tc.bonus))
+		}
 		e.Recalculate()
 		c.Equal(tc.points, tc.item.pointsForBaseLevel(e, tc.level), tc.name)
 	}

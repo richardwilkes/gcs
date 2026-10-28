@@ -767,13 +767,14 @@ func (s *Skill) pointsForPrereqsOf(exclude any) fxp.Int {
 // levelForPrereqsOf returns the skill's level as the prerequisites of exclude see it: the level the last pass recorded,
 // unless exclude carries a grant, in which case it is computed afresh without what the grants exclude carries gave the
 // skill, nor what the items they put on the sheet give it through their bonuses or a default resting on them (see
-// Entity.JudgingPrereqsOf), since an item never meets its own prerequisites with what it grants. The grants need not be
-// in effect this pass, since the recorded level may hold what they gave in the last.
+// Entity.JudgingPrereqsOf), since an item never meets its own prerequisites with what it grants, and with its default
+// picked as for a technique reading it (see defaultExcept). The grants need not be in effect this pass, since the
+// recorded level may hold what they gave in the last.
 func (s *Skill) levelForPrereqsOf(exclude any) fxp.Int {
 	if !EntityFromNode(s).carriesGrant(exclude) {
 		return s.LevelData.Level
 	}
-	return s.calculateLevelWith(exclude, s.bestDefaultWithPoints(nil), nil).Level
+	return s.calculateLevelExcept(exclude, nil).Level
 }
 
 // adjustedPointsExcept is AdjustedPoints without the points grants carried by exclude gave the skill, or by the item
@@ -983,19 +984,20 @@ func (s *Skill) calculateLevelExcept(exclude any, excludes map[string]bool) Leve
 }
 
 // defaultExcept returns the default the skill recorded or, when exclude (nil, or the item whose prerequisites are being
-// judged; see Entity.judgingOr) carries a grant and the skill recorded one, a default picked afresh as those
-// prerequisites see the sheet, since the recorded one was picked, and its level taken, with what the grants gave the
-// skills it rests on. It is picked as bestDefault picks, but with the levels taken with the skill added to the excludes
-// given rather than with it alone excluded, so that a chain of defaults never comes back to a skill it passes through:
-// the recorded default, if the skill keeps it (see keepsDefault), it resolves and it does not lead back to the skill,
-// and otherwise the best of the skill's defaults. Each pick is kept while those prerequisites are judged and reused
-// only for the same skill with the same excludes, so that the answers are those of picking afresh every time, while a
-// pick beneath a skill weighing several defaults is not made again for each of them, and so on down every chain. The
-// picks are still as many as the distinct excludes a skill is reached with, which double with each member of a set of
-// skills with points that default to one another, so judging stays fast only while such a set stays small.
+// judged; see Entity.judgingOr) carries a grant and the skill is not a technique, a default picked afresh as those
+// prerequisites see the sheet, since the recorded one, or the lack of one, was picked, and its level taken, with what
+// the grants did to the skills it rests on. It is picked as bestDefault picks, but with the levels taken with the skill
+// added to the excludes given rather than with it alone excluded, so that a chain of defaults never comes back to a
+// skill it passes through: the recorded default, if the skill keeps it (see keepsDefault), it resolves and it does not
+// lead back to the skill, and otherwise the best of the skill's defaults. Each pick is kept while those prerequisites
+// are judged and reused only for the same skill with the same excludes, so that the answers are those of picking afresh
+// every time, while a pick beneath a skill weighing several defaults is not made again for each of them, and so on down
+// every chain. The picks are still as many as the distinct excludes a skill is reached with, which double with each
+// member of a set of skills with points that default to one another, so judging stays fast only while such a set stays
+// small.
 func (s *Skill) defaultExcept(exclude any, excludes map[string]bool) *SkillDefault {
 	e := EntityFromNode(s)
-	if s.DefaultedFrom == nil || !e.carriesGrant(e.judgingOr(exclude)) {
+	if s.IsTechnique() || !e.carriesGrant(e.judgingOr(exclude)) {
 		return s.DefaultedFrom
 	}
 	excludes = maps.Clone(excludes)
@@ -1157,8 +1159,8 @@ func (s *Skill) restsOnSkill() bool {
 }
 
 // pointsForBaseLevel implements grantLeveler: the fewest points that give the skill, at its adjusted difficulty, the
-// level before bonuses and defaults on the sheet, or for a technique the level before its own bonuses, held to its
-// limit (see techniquePointsForLevel), or zero when none do.
+// level before bonuses and defaults on the sheet, or for a technique the level before its own bonuses, held to the
+// highest its limit allows before them (see techniquePointsForLevel), or zero when none do.
 func (s *Skill) pointsForBaseLevel(e *Entity, level fxp.Int) fxp.Int {
 	ad := s.AdjustedDifficulty()
 	if s.IsTechnique() {
@@ -1184,19 +1186,25 @@ func (s *Skill) baseUnresolved(e *Entity) bool {
 func (s *Skill) techniqueBase(e *Entity) techniqueBase {
 	base := techniqueBase{level: fxp.Min, limit: s.TechniqueLimitModifier}
 	if def := s.TechniqueDefault; def != nil {
-		base.level = techniqueBaseLevel(e, s.Replacements, s.NameWithReplacements(), s.SpecializationWithReplacements(),
-			def, true, nil)
+		name := s.NameWithReplacements()
+		specialization := s.SpecializationWithReplacements()
+		base.level = techniqueBaseLevel(e, s.Replacements, name, specialization, def, true, nil)
 		base.modifier = def.Modifier
+		if base.limit != nil && base.resolved() {
+			base.bonus = e.SkillBonusFor(name, specialization, "", s.Tags, nil)
+		}
 	}
 	return base
 }
 
 // techniqueBase is what the level of a technique, or of a Ritual Magic spell, rests on: the level of its base, before
-// its default's modifier, fxp.Min when unresolved, along with that modifier and the limit, if any, of how far above the
-// base the technique goes.
+// its default's modifier, fxp.Min when unresolved, along with that modifier, the limit, if any, of how far above the
+// base the technique goes, and the technique's own skill bonus, which CalculateTechniqueLevel adds before it holds the
+// technique to that limit.
 type techniqueBase struct {
 	level    fxp.Int
 	modifier fxp.Int
+	bonus    fxp.Int
 	limit    *fxp.Int
 }
 
@@ -1210,7 +1218,7 @@ func (b techniqueBase) most() fxp.Int {
 	if b.limit == nil {
 		return fxp.Max
 	}
-	return b.level + *b.limit
+	return b.level + *b.limit - b.bonus
 }
 
 // techniquePoints returns the points that raise a technique of the given difficulty the given number of levels above
@@ -1410,6 +1418,19 @@ func (s *Skill) bestDefaultWithPoints(excluded *SkillDefault) *SkillDefault {
 	return best
 }
 
+// keptDefaultWithPoints is bestDefaultWithPoints with the default the skill recorded kept, when it resolves, whether
+// or not the skill has the points it keeps it for; see keepsDefault.
+func (s *Skill) keptDefaultWithPoints() *SkillDefault {
+	if s.IsTechnique() || EntityFromNode(s) == nil {
+		return nil
+	}
+	kept := s.bestDefaultKeeping(nil, map[string]bool{s.String(): true}, s.DefaultedFrom != nil && len(s.Defaults) > 0)
+	if kept != nil {
+		s.setDefaultPoints(kept)
+	}
+	return kept
+}
+
 // setDefaultPoints sets the default's adjusted level to its level rounded down, and its points to those that level
 // stands for in the skill, measured from the attribute the skill's level rests on, as CalculateSkillLevel reads it.
 func (s *Skill) setDefaultPoints(def *SkillDefault) {
@@ -1447,7 +1468,12 @@ func (s *Skill) bestDefaultWith(excluded *SkillDefault, excludes map[string]bool
 	if EntityFromNode(s) == nil {
 		return nil
 	}
-	keepCurrent := excluded == nil && s.keepsDefault()
+	return s.bestDefaultKeeping(excluded, excludes, excluded == nil && s.keepsDefault())
+}
+
+// bestDefaultKeeping is bestDefaultWith with the default the skill recorded preferred, when it resolves, if
+// keepCurrent is set.
+func (s *Skill) bestDefaultKeeping(excluded *SkillDefault, excludes map[string]bool, keepCurrent bool) *SkillDefault {
 	var bestDef, preferredDef *SkillDefault
 	best := fxp.Min
 	for _, def := range s.resolveToSpecificDefaults() {

@@ -741,7 +741,7 @@ func (t *Trait) currentLevelExcept(exclude any, tooltip *xbytes.InsertBuffer) fx
 		levelAdjustment = entity.TraitBonusFor(t.NameWithReplacements(), t.Tags, tooltip)
 	}
 	// A level a grant keeps is compared with the trait's own, before the bonuses, which the kept one gets too.
-	return (t.grant.applyLevelNotes(exclude, levels, tooltip, nil) + levelAdjustment).Max(0)
+	return (t.grant.applyLevelNotes(exclude, levels, tooltip, nil, nil) + levelAdjustment).Max(0)
 }
 
 // ResolvedMaxLevels returns the maximum level for this trait, resolving the MaxLevels expression (a plain number or an

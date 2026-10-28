@@ -89,10 +89,11 @@ type grantState struct {
 	judgedFor any
 	detail    *Grant
 	// levelNotes and pointNotes are what each grant gave the item: the levels merged into it or kept for it, and a
-	// granted skill's or spell's own points plus any merged into it, of which points is the total. ownPoints is what of
-	// those a skill or spell counts as its own when the other grants merge into it: for a granted one, the points the
-	// grant in effect gives it standing alone (see grantPlan.standalonePoints and Grant.pointsBeyondDefault), and for
-	// any, those the grants merged into it while it had no level of its own gave it (see Entity.mergeGrant).
+	// granted skill's or spell's own points plus any merged into it, of which points is the total that counts against
+	// the sheet as a whole (see alternatives). ownPoints is what of those a skill or spell counts as its own when the
+	// other grants merge into it: for a granted one, the points the grant in effect gives it standing alone (see
+	// grantPlan.standalonePoints and Grant.pointsBeyondDefault), and for any, those the grants merged into it while it
+	// had no level of its own gave it (see Entity.mergeGrant).
 	levelNotes []grantNote
 	pointNotes []grantNote
 	points     fxp.Int
@@ -104,10 +105,40 @@ type grantState struct {
 	// item's level rests on.
 	unreached  bool
 	unresolved bool
-	// unreachedPoints, set along with unreached while no grant stands in, prices what the grant that put the item on
-	// the sheet gives it as the prerequisites being judged see the sheet, which may give it something; see
-	// inEffectAsJudged.
+	// unreachedPoints, set along with unreached, prices what the grant that put the item on the sheet gives it as the
+	// prerequisites being judged see the sheet, which may give it something; see inEffectAsJudged and grantedFor. The
+	// grant's notes are recorded at no points, priced afresh as these are, and stay while another grant stands in for
+	// it; see Entity.recordStandalone.
 	unreachedPoints *grantReprice
+	// latent prices the points of the first level set recorded that gives the item, with no level of its own, nothing
+	// against the sheet as a whole: the one unreachedPoints prices, or one merged into an item with no level (see
+	// Entity.mergeGrant). Since it may give the item something as the prerequisites being judged see the sheet, the
+	// grants recorded after it while the item has no level record what they would merge into the level it gives as
+	// well as what they give the item standing alone; see mergeAlternative.
+	latent *grantReprice
+	// ownMerged is set once a grant merged into the item while it had no level of its own, giving it the points it
+	// would give it standing alone (see Entity.mergeGrant). Since the prerequisites being judged may not see those, as
+	// when they are those of the item carrying that grant, the grants that then find the item with a level record what
+	// they would give it standing alone as well as what they merge into that level; see standaloneAlternative.
+	ownMerged bool
+	// alternatives are where grants were recorded whose merges depend on whether the item has a level of its own there,
+	// which they record both ways; see grantAlternative. That level is the one target, on entity's sheet, has of its
+	// own (see Entity.ownLevel); both are set along with the first alternative.
+	alternatives []grantAlternative
+	entity       *Entity
+	target       grantHolder
+}
+
+// grantAlternative is where, among the grants recorded for a skill or spell, a grant was recorded whose merge depends
+// on whether the item has a level of its own there: it gives an item with none what it would give it standing alone,
+// and one with a level what it merges into that level (see Entity.mergeGrant). The grant records both, each counting
+// only on its side (see grantState.counts), so that the prerequisites being judged, which may see the item with a level
+// where the sheet as a whole sees none, or with none where it sees one, see the grant give it what it would there. at
+// is the number of point notes recorded before the grant's, whose points decide it, and leveled is whether they gave
+// the item a level when the grants were applied.
+type grantAlternative struct {
+	at      int
+	leveled bool
 }
 
 // grantLeveler is what a grant needs of its skill or spell to price the amount it gives.
@@ -141,14 +172,18 @@ type grantItem interface {
 // an addition, or, with points set, the points it keeps a skill or spell at, whose level is read along with the item's
 // own so that both see the same bonuses. lower is set for a Keep Lowest grant, which keeps the lower of the two levels
 // rather than the higher; see grantState.applyLevelNotes. reprice is set for the points a level set gave a skill or
-// spell; see amountFor.
+// spell; see amountFor. alt, when not zero, is one more than the index of the alternative the note is recorded for
+// (see grantState.alternatives), and mergeIn is set when the note counts only where the item has a level of its own
+// there, rather than only where it has none; see grantState.counts.
 type grantNote struct {
 	owner   any
 	source  string
 	amount  fxp.Int
+	alt     int
 	keep    bool
 	points  bool
 	lower   bool
+	mergeIn bool
 	reprice *grantReprice
 }
 
@@ -741,14 +776,24 @@ func (g *Grant) baseUnresolved(e *Entity, item grantLeveler) bool {
 // pointsBeyondDefault returns the points the grant gives the skill or spell on the sheet that holder is, which for a
 // level set on a skill are less those the default it uses stands for, since its level adds them (see
 // CalculateSkillLevel), so that the skill has the level set, or the default's when that is higher, rather than one
-// raised by both.
+// raised by both. The default is the one the skill recorded, or, while the prerequisites of an item carrying a grant
+// are judged, the one they read its level with, picked afresh as they see the sheet (see Skill.levelForPrereqsOf). The
+// recorded one is kept when it resolves there, whatever points the skill has: these points decide whether the skill
+// keeps it (see Skill.keepsDefault), and where they are none, so are those beyond the best default it then reads its
+// level with.
 func (g *Grant) pointsBeyondDefault(points fxp.Int, holder grantHolder) fxp.Int {
 	s, ok := holder.(*Skill)
-	if !ok || g.EffectiveAdjust() != grantadjust.SetLevel || s.WildcardDifficulty() || s.DefaultedFrom == nil ||
-		s.DefaultedFrom.Points <= 0 {
+	if !ok || g.EffectiveAdjust() != grantadjust.SetLevel || s.WildcardDifficulty() {
 		return points
 	}
-	return (points - s.DefaultedFrom.Points).Max(0)
+	def := s.DefaultedFrom
+	if e := EntityFromNode(s); e != nil && e.carriesGrant(e.judging) {
+		def = s.keptDefaultWithPoints()
+	}
+	if def == nil || def.Points <= 0 {
+		return points
+	}
+	return (points - def.Points).Max(0)
 }
 
 // firstLevelText names the lowest level points buy the skill or spell, the one the points of its first level buy (see
@@ -765,12 +810,15 @@ func firstLevelText(item grantLeveler) string {
 	return i18n.Text("what %s points buy", points.String())
 }
 
-// unresolvedText names what the sheet lacks when it can't resolve what the level of the skill or spell rests on (see
-// grantLeveler.baseUnresolved): the skill for one whose level rests on a skill (see grantLeveler.restsOnSkill), and the
-// attribute otherwise. A nil item is taken as one resting on an attribute.
+// unresolvedText names what is missing when the sheet can't resolve what the level of the skill or spell rests on (see
+// grantLeveler.baseUnresolved): the skill for one whose level rests on a skill (see grantLeveler.restsOnSkill), the
+// default for a technique with none, and the attribute otherwise. A nil item is taken as one resting on an attribute.
 func unresolvedText(item grantLeveler) string {
 	if item != nil && item.restsOnSkill() {
 		return i18n.Text("the sheet lacks the skill its level rests on")
+	}
+	if s, ok := item.(*Skill); ok && s.IsTechnique() && s.TechniqueDefault == nil {
+		return i18n.Text("it has no default for its level to rest on")
 	}
 	return i18n.Text("the sheet lacks the attribute its level rests on")
 }
@@ -1100,32 +1148,156 @@ func (s *grantState) pointsExcept(exclude any) fxp.Int {
 	if exclude == nil {
 		return s.points
 	}
+	leveled := s.leveledFor(exclude)
 	var total fxp.Int
 	for i := range s.pointNotes {
-		if note := &s.pointNotes[i]; note.owner != exclude {
+		if note := &s.pointNotes[i]; note.owner != exclude && s.counts(note, leveled) {
 			total += note.amountFor(exclude)
 		}
-	}
-	if s.unreachedPoints != nil {
-		total += s.unreachedPoints.pointsFor(exclude)
 	}
 	return total
 }
 
+// counts returns true if the note counts, given whether the item has a level of its own at each of the alternatives,
+// as leveledFor returns them: any note but one recorded for an alternative, which counts only on its side of it.
+func (s *grantState) counts(note *grantNote, leveled []bool) bool {
+	return note.alt == 0 || note.mergeIn == leveled[note.alt-1]
+}
+
+// leveledFor returns, for each of the alternatives, whether the item has a level of its own there as the prerequisites
+// of exclude see it, or those of the item being judged when exclude is nil (see Entity.judgingOr): as when the grants
+// were applied, unless that item carries a grant, and otherwise with the points of the point notes recorded before it
+// that count, other than those of the grants it carries, priced afresh (see grantNote.amountFor), with the points taken
+// away passed over, as they are when the grants are applied (see Entity.mergeGrant).
+func (s *grantState) leveledFor(exclude any) []bool {
+	if len(s.alternatives) == 0 {
+		return nil
+	}
+	leveled := make([]bool, len(s.alternatives))
+	if exclude = s.entity.judgingOr(exclude); !s.entity.carriesGrant(exclude) {
+		for i, alt := range s.alternatives {
+			leveled[i] = alt.leveled
+		}
+		return leveled
+	}
+	var points fxp.Int
+	next := 0
+	for i, alt := range s.alternatives {
+		for ; next < alt.at; next++ {
+			if note := &s.pointNotes[next]; note.owner != exclude && s.counts(note, leveled) {
+				points += note.amountFor(exclude).Max(0)
+			}
+		}
+		leveled[i] = s.entity.ownLevel(s.target, points+ownRawPoints(s.target)) != fxp.Min
+	}
+	return leveled
+}
+
+// addAlternative adds an alternative for target, on e's sheet, at the point notes recorded before at, where the item
+// had a level of its own when leveled is set, and returns what marks the notes recorded for it; see grantAlternative.
+func (s *grantState) addAlternative(e *Entity, target grantHolder, at int, leveled bool) int {
+	s.entity, s.target = e, target
+	s.alternatives = append(s.alternatives, grantAlternative{at: at, leveled: leveled})
+	return len(s.alternatives)
+}
+
+// mergeAlternative records, for a grant recorded after the latent level set (see latent), for target on e's sheet,
+// what it would merge into the level that level set gives the item where it gives it something (see
+// Entity.mergeGrant): the levels it adds rather than the points they cost, the points or levels it takes away, which an
+// item with no level has none of, or for a level set no more than the level it keeps, which is recorded already. The
+// point notes from before on, what the grant gives the item standing alone, then count only where the item has no
+// level there; see grantAlternative. Points added are the same either way.
+func (s *grantState) mergeAlternative(e *Entity, target grantHolder, source grantSource, g *Grant, before int) {
+	adjust := g.EffectiveAdjust()
+	amount := g.amount()
+	if adjust == grantadjust.AddPoints && amount > 0 {
+		return
+	}
+	alt := s.addAlternative(e, target, before, false)
+	for i := before; i < len(s.pointNotes); i++ {
+		s.pointNotes[i].alt = alt
+	}
+	if g.adds() {
+		// Not added to the points, which hold what the grants give the item against the sheet as a whole.
+		note := newGrantNote(source, amount)
+		note.alt = alt
+		note.mergeIn = true
+		if adjust == grantadjust.AddPoints {
+			s.pointNotes = append(s.pointNotes, note)
+		} else {
+			s.levelNotes = append(s.levelNotes, note)
+		}
+	}
+}
+
+// standaloneAlternative records, for a grant merged into an item with a level of its own only from the points the
+// grants merged into it before gave it (see ownMerged), for target on e's sheet, what it would give the item standing
+// alone where it has no level (see Entity.mergeGrant): the points, which reprice prices afresh for a level set, it
+// would give it in place of the levels it adds or along with the level it keeps. The notes from pointsBefore and
+// levelsBefore on, what the grant merges into the item's level, then count only where the item has one there when they
+// add levels, or take points or levels away, which an item with no level has none of; see grantAlternative. The level
+// kept and the points added are the same either way.
+func (s *grantState) standaloneAlternative(e *Entity, target grantHolder, source grantSource, g *Grant, points fxp.Int, reprice *grantReprice, pointsBefore, levelsBefore int) {
+	if g.EffectiveAdjust() == grantadjust.AddPoints && g.amount() > 0 {
+		return
+	}
+	alt := s.addAlternative(e, target, pointsBefore, true)
+	if g.adds() {
+		for _, notes := range [][]grantNote{s.pointNotes[pointsBefore:], s.levelNotes[levelsBefore:]} {
+			for i := range notes {
+				notes[i].alt = alt
+				notes[i].mergeIn = true
+			}
+		}
+	}
+	if points > 0 || reprice != nil {
+		// Not added to the points, which hold what the grants give the item against the sheet as a whole.
+		note := newGrantNote(source, points)
+		note.alt = alt
+		note.reprice = reprice
+		s.pointNotes = append(s.pointNotes, note)
+	}
+}
+
 // applyLevelNotes returns the level with what the grants made of it, leaving out what the grants carried by exclude
-// gave (see pointsExcept): the levels merged into it are added, and then, in the order the grants were merged, each
-// level a Keep Highest grant keeps it at replaces it when higher, and each a Keep Lowest grant keeps it at when lower,
-// so that a Keep Lowest grant, merged after any Keep Highest one (see comparePlanting), caps what that raised. The
-// level a skill or spell is kept at is read here from the points kept by levelAt, which a trait, whose grants keep
-// levels outright, leaves nil, so that it sees the bonuses and penalties the item's own level does, which may not have
-// been in place when the grants were applied. The notes of the grants that changed the level go into the tooltip,
-// which may be nil.
-func (s *grantState) applyLevelNotes(exclude any, level fxp.Int, tooltip *xbytes.InsertBuffer, levelAt func(points fxp.Int) fxp.Int) fxp.Int {
+// gave (see pointsExcept): the levels merged into it are added, held to what most returns when it is not nil, and then,
+// in the order the grants were merged, each level a Keep Highest grant keeps it at replaces it when higher, and each a
+// Keep Lowest grant keeps it at when lower, so that a Keep Lowest grant, merged after any Keep Highest one (see
+// comparePlanting), caps what that raised. The level a skill or spell is kept at is read here from the points kept by
+// levelAt, which a trait, whose grants keep levels outright, leaves nil, so that it sees the bonuses and penalties the
+// item's own level does, which may not have been in place when the grants were applied. The notes of the grants that
+// changed the level go into the tooltip, which may be nil, with what most holds back taken off the last of the levels
+// added.
+func (s *grantState) applyLevelNotes(exclude any, level fxp.Int, tooltip *xbytes.InsertBuffer, levelAt func(points fxp.Int) fxp.Int, most func() fxp.Int) fxp.Int {
 	s = s.viewFor(exclude)
-	for _, note := range s.levelNotes {
-		if !note.keep && note.owner != exclude {
-			level += note.amount
-			addGrantNoteToTooltip(note, note.amount, tooltip)
+	leveled := s.leveledFor(exclude)
+	var added, raised fxp.Int
+	for i := range s.levelNotes {
+		if note := &s.levelNotes[i]; !note.keep && note.owner != exclude && s.counts(note, leveled) {
+			added += note.amount
+			raised += note.amount.Max(0)
+		}
+	}
+	var excess fxp.Int
+	if most != nil && added > 0 {
+		if limit := most(); level+added > limit {
+			excess = level + added - limit
+		}
+	}
+	level += added - excess
+	for i := range s.levelNotes {
+		note := &s.levelNotes[i]
+		if note.keep || note.owner == exclude || !s.counts(note, leveled) {
+			continue
+		}
+		amount := note.amount
+		if amount > 0 {
+			raised -= amount
+			// raised is now what the notes after this one raise the level by, which the excess comes off first.
+			amount -= (excess - raised).Max(0).Min(amount)
+		}
+		if amount != 0 {
+			addGrantNoteToTooltip(*note, amount, tooltip)
 		}
 	}
 	for _, note := range s.levelNotes {
@@ -1194,9 +1366,12 @@ func (s *grantState) applyPoints(exclude any, points fxp.Int, tooltip *xbytes.In
 	if granted == 0 {
 		return points
 	}
-	for _, note := range s.pointNotes {
-		if amount := note.amountFor(exclude); amount != 0 && (exclude == nil || note.owner != exclude) {
-			addGrantNoteToTooltip(note, amount, tooltip)
+	leveled := s.leveledFor(exclude)
+	for i := range s.pointNotes {
+		note := &s.pointNotes[i]
+		if amount := note.amountFor(exclude); amount != 0 && (exclude == nil || note.owner != exclude) &&
+			s.counts(note, leveled) {
+			addGrantNoteToTooltip(*note, amount, tooltip)
 		}
 	}
 	return (points + granted).Max(0)
@@ -1210,6 +1385,24 @@ func (s *grantState) applyPoints(exclude any, points fxp.Int, tooltip *xbytes.In
 // Highest grant still keeps it at its level, as it does any lower one, which then reads as the level kept, bonuses
 // and all; see keepLevelOfNone.
 func (s *grantState) applyLevels(exclude any, level Level, levelAt func(points fxp.Int) Level) Level {
+	return s.applyLevelsHeldTo(exclude, level, levelAt, nil)
+}
+
+// applyLevelsWithinLimit is applyLevels for a technique with a limit or a Ritual Magic spell, which no points raise
+// above its limit: the levels the grants add are held to the highest level points give it (see levelAt), which the
+// limit caps. A level a grant keeps is read with levelAt, so only levels added can overshoot.
+func (s *grantState) applyLevelsWithinLimit(exclude any, level Level, levelAt func(points fxp.Int) Level) Level {
+	return s.applyLevelsHeldTo(exclude, level, levelAt, func() fxp.Int {
+		if most := levelAt(fxp.MaxBasePoints).Level; most != fxp.Min {
+			return most
+		}
+		return fxp.Max
+	})
+}
+
+// applyLevelsHeldTo is applyLevels with the levels added held to what most returns when it is not nil; see
+// applyLevelNotes.
+func (s *grantState) applyLevelsHeldTo(exclude any, level Level, levelAt func(points fxp.Int) Level, most func() fxp.Int) Level {
 	if len(s.viewFor(exclude).levelNotes) == 0 {
 		return level
 	}
@@ -1220,26 +1413,11 @@ func (s *grantState) applyLevels(exclude any, level Level, levelAt func(points f
 	tooltip.WriteString(level.Tooltip)
 	result := s.applyLevelNotes(exclude, level.Level, &tooltip, func(points fxp.Int) fxp.Int {
 		return levelAt(points).Level
-	}).Max(level.Level.Min(0))
+	}, most).Max(level.Level.Min(0))
 	level.RelativeLevel += result - level.Level
 	level.Level = result
 	level.Tooltip = tooltip.String()
 	return level
-}
-
-// applyLevelsWithinLimit is applyLevels for a technique with a limit or a Ritual Magic spell, which no points raise
-// above its limit: a level the grants raise above the given one is held to the highest level points give it (see
-// levelAt), which the limit caps. A level a grant keeps is read with levelAt, so only levels added can overshoot.
-func (s *grantState) applyLevelsWithinLimit(exclude any, level Level, levelAt func(points fxp.Int) Level) Level {
-	result := s.applyLevels(exclude, level, levelAt)
-	if result.Level <= level.Level {
-		return result
-	}
-	if most := levelAt(fxp.MaxBasePoints).Level; most != fxp.Min && result.Level > most {
-		result.RelativeLevel -= result.Level - most
-		result.Level = most
-	}
-	return result
 }
 
 // keepLevelOfNone is applyLevels for an item with no level: the levels added or taken away are passed over, and the

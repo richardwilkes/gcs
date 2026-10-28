@@ -97,7 +97,7 @@ func updateSkillLevelForScript(entity *Entity, skill *Skill) Level {
 // the grants gave the skill, and is not recorded, since the sheet has the level with them; see Skill.levelForPrereqsOf.
 func scriptSkillLevel(entity *Entity, skill *Skill) Level {
 	if entity.carriesGrant(entity.judging) {
-		return skill.calculateLevelWith(entity.judging, skill.bestDefaultWithPoints(nil), nil)
+		return skill.calculateLevelExcept(entity.judging, nil)
 	}
 	skill.UpdateLevel()
 	return skill.LevelData
