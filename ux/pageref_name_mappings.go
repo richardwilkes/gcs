@@ -304,6 +304,7 @@ var PageRefKeyNameMappings = map[string]string{
 	"TCEP":    "Thaumatology: Chinese Elemental Powers",
 	"THS":     "Transhuman Space",
 	"THSBB":   "Transhuman Space: Bioroid Bazaar",
+	"THSBD":   "Transhuman Space: Broken Dreams",
 	"THSBT":   "Transhuman Space: Bio-Tech 2100",
 	"THSCE":   "Transhuman Space: Cities on the Edge",
 	"THSCT":   "Transhuman Space: Changing Times",
