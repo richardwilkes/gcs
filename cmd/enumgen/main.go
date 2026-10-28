@@ -60,6 +60,7 @@ type enumInfo struct {
 	Name           string
 	Desc           string
 	Values         []*enumValue
+	DefaultKey     string
 	DefaultLast    bool
 	DefaultUnknown bool
 }
@@ -162,6 +163,9 @@ func processEnumTemplate(rootDir string, info *enumInfo) {
 // generateEnumSource returns the content of the generated file for the given enum. If the generated source can't be
 // formatted, the unformatted source is returned along with the error.
 func generateEnumSource(info *enumInfo) ([]byte, error) {
+	if err := info.validate(); err != nil {
+		return nil, err
+	}
 	tmpl, err := template.New("enum.go.tmpl").Funcs(template.FuncMap{
 		"fileLeaf":     filepath.Base,
 		"join":         join,
@@ -215,7 +219,34 @@ func (e *enumInfo) HasOldKeys() bool {
 	return slices.ContainsFunc(e.Values, func(v *enumValue) bool { return len(v.OldKeys) != 0 })
 }
 
-// Default returns the value that acts as the enum's default: the last one when DefaultLast is set, otherwise the first.
+// validate reports a DefaultKey that names no value.
+func (e *enumInfo) validate() error {
+	if e.DefaultKey != "" && !slices.ContainsFunc(e.Values, func(v *enumValue) bool { return v.Key == e.DefaultKey }) {
+		return errs.Newf("%s: no value has the DefaultKey %q", e.Pkg, e.DefaultKey)
+	}
+	return nil
+}
+
+// ConstValues returns the values in the order their constants are declared. This is the order of Values, except that
+// the value whose key is DefaultKey is moved to the end when DefaultLast is set, or otherwise to the start so that it
+// is the zero value. This leaves the slices of values free to list the default between others.
+func (e *enumInfo) ConstValues() []*enumValue {
+	if e.DefaultKey == "" {
+		return e.Values
+	}
+	i := slices.IndexFunc(e.Values, func(v *enumValue) bool { return v.Key == e.DefaultKey })
+	if i < 0 {
+		return e.Values
+	}
+	others := slices.Delete(slices.Clone(e.Values), i, i+1)
+	if e.DefaultLast {
+		return append(others, e.Values[i])
+	}
+	return slices.Concat([]*enumValue{e.Values[i]}, others)
+}
+
+// Default returns the value that acts as the enum's default: the last constant when DefaultLast is set, otherwise the
+// first.
 func (e *enumInfo) Default() *enumValue {
 	if e.DefaultLast {
 		return e.Last()
@@ -224,17 +255,19 @@ func (e *enumInfo) Default() *enumValue {
 }
 
 func (e *enumInfo) First() *enumValue {
-	if len(e.Values) == 0 {
+	values := e.ConstValues()
+	if len(values) == 0 {
 		return nil
 	}
-	return e.Values[0]
+	return values[0]
 }
 
 func (e *enumInfo) Last() *enumValue {
-	if len(e.Values) == 0 {
+	values := e.ConstValues()
+	if len(values) == 0 {
 		return nil
 	}
-	return e.Values[len(e.Values)-1]
+	return values[len(values)-1]
 }
 
 // RealValues returns the values that represent something real, which is all of them unless DefaultUnknown is set, in
@@ -243,10 +276,8 @@ func (e *enumInfo) RealValues() []*enumValue {
 	if !e.DefaultUnknown || len(e.Values) == 0 {
 		return e.Values
 	}
-	if e.DefaultLast {
-		return e.Values[:len(e.Values)-1]
-	}
-	return e.Values[1:]
+	def := e.Default()
+	return slices.DeleteFunc(slices.Clone(e.Values), func(v *enumValue) bool { return v == def })
 }
 
 // Groups returns the group memberships declared on this enum's values, keyed by group name, each holding the member

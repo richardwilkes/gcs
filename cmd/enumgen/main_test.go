@@ -114,6 +114,61 @@ func TestEnumInfoAccessors(t *testing.T) {
 	c.False((&enumInfo{Values: []*enumValue{b, z}}).NeedI18N())
 }
 
+// TestDefaultKey verifies that DefaultKey makes the named value the default, its constant the first (or the last, with
+// DefaultLast), while the slices of values keep declaration order, less the default with DefaultUnknown, and that a
+// DefaultKey which names no value is refused.
+func TestDefaultKey(t *testing.T) {
+	c := check.New(t)
+	low := &enumValue{Key: "low", Groups: []string{"g"}}
+	normal := &enumValue{Key: "normal", Groups: []string{"g"}}
+	high := &enumValue{Key: "high"}
+	higher := &enumValue{Key: "higher", Groups: []string{"g"}}
+
+	info := &enumInfo{
+		Pkg:        "test/level",
+		Name:       "level",
+		Desc:       "is a level",
+		DefaultKey: "normal",
+		Values:     []*enumValue{low, normal, high, higher},
+	}
+	c.NoError(info.validate())
+	c.Equal([]*enumValue{normal, low, high, higher}, info.ConstValues())
+	c.Equal([]*enumValue{low, normal, high, higher}, info.Values)
+	c.Equal(normal, info.Default())
+	c.Equal(normal, info.First())
+	c.Equal(higher, info.Last())
+	c.Equal([]*enumValue{low, normal, high, higher}, info.RealValues())
+	c.Equal(map[string][]string{"g": {"Low", "Normal", "Higher"}}, info.Groups())
+
+	src, err := generateEnumSource(info)
+	c.NoError(err)
+	c.Contains(string(src), "Normal Level = iota\n\tLow\n")
+	c.Contains(string(src), "var Levels = []Level{\n\tLow,\n\tNormal,\n\tHigh,\n\tHigher,\n}")
+
+	info.DefaultKey = "low"
+	c.Equal(info.Values, info.ConstValues())
+	c.Equal(low, info.Default())
+
+	info.DefaultKey = "normal"
+	info.DefaultLast = true
+	c.Equal([]*enumValue{low, high, higher, normal}, info.ConstValues())
+	c.Equal(normal, info.Default())
+	c.Equal(low, info.First())
+	c.Equal(normal, info.Last())
+	c.Equal([]*enumValue{low, normal, high, higher}, info.RealValues())
+
+	info.DefaultUnknown = true
+	c.Equal([]*enumValue{low, high, higher}, info.RealValues())
+	info.DefaultLast = false
+	c.Equal(normal, info.First())
+	c.Equal([]*enumValue{low, high, higher}, info.RealValues())
+
+	info.DefaultKey = "missing"
+	c.HasError(info.validate())
+	_, err = generateEnumSource(info)
+	c.HasError(err)
+}
+
 // TestFindRepoRoot verifies that the root is recognized by the module its go.mod declares, whatever the directory is
 // called, and that a directory holding some other module, or none, is refused.
 func TestFindRepoRoot(t *testing.T) {
