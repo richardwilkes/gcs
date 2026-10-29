@@ -169,6 +169,39 @@ func TestFeaturesPanelDropsGrants(t *testing.T) {
 	})
 }
 
+// TestGrantsOnSpellsStartSwitchable checks that a grant added to a spell, whether made new, turned into one from another
+// kind of feature or dropped, starts out switchable, that one added to a trait doesn't, and that a grant switched to
+// another kind keeps its switchability as it was.
+func TestGrantsOnSpellsStartSwitchable(t *testing.T) {
+	c := check.New(t)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
+	entity := gurps.NewEntity()
+	traitPanel, _ := showFeaturesPanel(t, screen, entity, gurps.NewTrait(entity, nil, false), &gurps.Features{}, false)
+	bonus := gurps.NewReactionBonus()
+	unswitched := gurps.NewGrant(feature.GrantSkill)
+	features := gurps.Features{bonus, unswitched}
+	c.False(bonus.IsSwitchable() || unswitched.IsSwitchable(), "precondition: neither feature is switchable")
+	p, _ := showFeaturesPanel(t, screen, entity, gurps.NewSpell(entity, nil, false), &features, false)
+	defer func(last feature.Type) { lastFeatureTypeUsed = last }(lastFeatureTypeUsed)
+	c.True(p.createFeatureForType(feature.GrantTrait).IsSwitchable(), "a new grant on a spell is switchable")
+	c.False(traitPanel.createFeatureForType(feature.GrantTrait).IsSwitchable(), "one on a trait isn't")
+	choose := func(path string, t feature.Type) {
+		screen.Do(func() { p.toggle(path) })
+		screen.Do(func() { featuresPopup[featureTypeEntry](c, p, path+":type").Select(featureTypeEntry{featureType: t}) })
+	}
+	choose("0", feature.GrantTrait)
+	c.Equal(feature.GrantTrait, features[0].FeatureType(), "precondition: the bonus became a grant")
+	c.True(features[0].IsSwitchable(), "a bonus turned into a grant on a spell is switchable")
+	choose("1", feature.GrantSpell)
+	c.Equal(feature.GrantSpell, features[1].FeatureType(), "precondition: the grant changed kind")
+	c.False(features[1].IsSwitchable(), "a grant changing kind keeps its switchability")
+	screen.Do(func() {
+		p.dropGrants(nil, 0, feature.GrantTrait, []*grantLibraryItem{{node: newGrantTestTrait("Fit", 0)}})
+	})
+	c.Equal(3, len(features), "precondition: the drop added a grant")
+	c.True(features[2].IsSwitchable(), "a grant dropped on a spell is switchable")
+}
+
 // TestGrantDropZoneReplacesTheChosenItem checks that the open row of a grant keeps its drop zone once an item is
 // chosen, that a drop on the zone replaces the item rather than adding a grant, and that a drop elsewhere on the row
 // still goes beside it.

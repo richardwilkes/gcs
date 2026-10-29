@@ -236,7 +236,7 @@ func (p *featuresPanel) dropGrants(target *unison.Panel, at int, t feature.Type,
 			if g.Key() != "" {
 				title = i18n.Text("Replace Granted Item")
 			}
-			rest := newGrants(t, items[1:])
+			rest := p.newGrants(t, items[1:])
 			p.sentenceRows.restructure(title, path+keyMore, "", func() string {
 				g.SetItem(items[0].node, items[0].from)
 				*p.features = slices.Insert(*p.features, index+1, rest...)
@@ -255,7 +255,7 @@ func (p *featuresPanel) addGrants(t feature.Type, items []*grantLibraryItem, ind
 	if p.collapse.collapsed {
 		p.collapse.toggle()
 	}
-	grants := newGrants(t, items)
+	grants := p.newGrants(t, items)
 	first, ok := grants[0].(*gurps.Grant)
 	if !ok {
 		return
@@ -272,11 +272,11 @@ func (p *featuresPanel) addGrants(t feature.Type, items []*grantLibraryItem, ind
 	})
 }
 
-// newGrants returns a grant of the given kind for each of the items.
-func newGrants(t feature.Type, items []*grantLibraryItem) []gurps.Feature {
+// newGrants returns a new grant (see newGrant) of the given kind for each of the items.
+func (p *featuresPanel) newGrants(t feature.Type, items []*grantLibraryItem) []gurps.Feature {
 	grants := make([]gurps.Feature, 0, len(items))
 	for _, item := range items {
-		g := gurps.NewGrant(t)
+		g := p.newGrant(t)
 		g.SetItem(item.node, item.from)
 		grants = append(grants, g)
 	}
