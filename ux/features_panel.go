@@ -637,7 +637,10 @@ func (p *featuresPanel) typePopup(parent *unison.Panel, path string, f gurps.Fea
 			}
 			if created := p.createFeatureForType(e.featureType); created != nil {
 				lastFeatureTypeUsed = e.featureType
-				created.SetSwitchable(f.IsSwitchable())
+				// Another kind of feature turned into a grant takes a new grant's default, unless it was switchable.
+				if f.IsSwitchable() || gurps.IsGrant(f.FeatureType()) || !gurps.IsGrant(e.featureType) {
+					created.SetSwitchable(f.IsSwitchable())
+				}
 				(*p.features)[i] = created
 			}
 		})
@@ -1153,6 +1156,16 @@ func (p *featuresPanel) featureTypesList() []feature.Type {
 	return types
 }
 
+// newGrant returns a new grant of the given kind, which on a spell starts out switchable, so that it is only in effect
+// while the spell is switched on.
+func (p *featuresPanel) newGrant(featureType feature.Type) *gurps.Grant {
+	g := gurps.NewGrant(featureType)
+	if _, ok := p.owner.(*gurps.Spell); ok {
+		g.SetSwitchable(true)
+	}
+	return g
+}
+
 func (p *featuresPanel) createFeatureForType(featureType feature.Type) gurps.Feature {
 	if featureType.IsWeaponBonus() {
 		bonus := gurps.NewWeaponBonus(featureType)
@@ -1171,7 +1184,7 @@ func (p *featuresPanel) createFeatureForType(featureType feature.Type) gurps.Fea
 	case feature.ContainedWeightReduction:
 		return gurps.NewContainedWeightReduction()
 	case feature.GrantTrait, feature.GrantSkill, feature.GrantSpell:
-		return gurps.NewGrant(featureType)
+		return p.newGrant(featureType)
 	case feature.CostReduction:
 		return gurps.NewCostReduction(lastAttributeIDUsed)
 	case feature.TitleNote:
