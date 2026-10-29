@@ -19,6 +19,7 @@ import (
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/unison"
+	"github.com/richardwilkes/unison/drag"
 	"github.com/richardwilkes/unison/enums/align"
 )
 
@@ -158,7 +159,7 @@ func TestDragOverFindsInsertionPositionFromGeometry(t *testing.T) {
 		return d.content.PointFromRoot(list.rows.PointToRoot(geom.NewPoint(r.CenterX(), r.Y+r.Height*fraction)))
 	}
 	over := func(pt geom.Point, data any) (inDragOver bool, target *unison.Panel, insert int) {
-		c.True(d.dataDragOver(pt, data), "a row drag is always accepted")
+		c.Equal(drag.Move, d.dataDragOver(pt, data), "a row drag is always accepted")
 		return d.inDragOver, d.dragTarget, d.dragInsert
 	}
 

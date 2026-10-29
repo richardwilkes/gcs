@@ -100,7 +100,8 @@ var flushDragFeedback = func(panel *unison.Panel) {
 }
 
 // startPanelDrag starts a drag from the source of the data under the data type, shown as an image of the size that
-// draw draws, held at offset. done, which may be nil, is called once the drag ends.
+// draw draws, held at offset. The target decides whether the data is moved or copied. done, which may be nil, is
+// called once the drag ends.
 func startPanelDrag(source *unison.Panel, dataType *uti.DataType, data any, size geom.Size, offset geom.Point, draw func(gc *unison.Canvas, r geom.Rect), done func()) {
 	img, err := unison.NewImageFromDrawing(int(xmath.Ceil(size.Width)), int(xmath.Ceil(size.Height)), 144,
 		func(gc *unison.Canvas) { draw(gc, geom.Rect{Size: size}) })
@@ -114,21 +115,23 @@ func startPanelDrag(source *unison.Panel, dataType *uti.DataType, data any, size
 		if done != nil {
 			done()
 		}
-	}, drag.Move, drag.Data{Type: dataType, Data: []byte{0}})
+	}, drag.Move|drag.Copy, drag.Data{Type: dataType, Data: []byte{0}})
 }
 
 // installPanelDragDrop makes the panel accept drags of dataType, passing panelDragData to the over and drop handlers.
+// over returns what a drop where the pointer is would do, or drag.None to decline one there.
 func installPanelDragDrop(panel *unison.Panel, dataType *uti.DataType,
-	over func(where geom.Point, data any) bool,
+	over func(where geom.Point, data any) drag.Op,
 	exit func(),
 	drop func(where geom.Point, data any),
 ) {
 	panel.CanAcceptDropCallback = func(di drag.Info) bool { return di.HasDataType(dataType.UTI) }
 	update := func(di drag.Info, where geom.Point, _ mod.Modifiers) drag.Op {
 		if di.HasDataType(dataType.UTI) {
-			over(where, panelDragData)
+			// Limited to what the source allows, as the platforms limit it, so that a headless run sees the same.
+			op := over(where, panelDragData) & di.SourceDragOpMask()
 			flushDragFeedback(panel)
-			return drag.Move
+			return op
 		}
 		return drag.None
 	}

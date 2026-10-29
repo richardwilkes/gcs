@@ -783,7 +783,8 @@ func TestGrantedItemEditorIsReadOnly(t *testing.T) {
 }
 
 // TestGrantItemEditorOffersNoGrants checks that the editor of a grant's item, and an editor opened from it for one of
-// the item's modifiers, offer no grant feature types and take no dropped grants, since a granted item grants nothing.
+// the item's modifiers, offer no grant feature types and take no dropped grants, whether rows from a table or a grant
+// from another features panel, since a granted item grants nothing.
 func TestGrantItemEditorOffersNoGrants(t *testing.T) {
 	c := check.New(t)
 	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
@@ -805,12 +806,14 @@ func TestGrantItemEditorOffersNoGrants(t *testing.T) {
 		return ok
 	}
 	var outer *editor[*gurps.Trait, *gurps.TraitEditData]
+	var outerFeatures *featuresPanel
 	screen.Do(func() {
 		DisplayNewDockable(sheet)
 		outer = EditTrait(sheet, training)
 		panels := uxtest.PanelsOfType[*featuresPanel](outer.content)
 		c.Equal(1, len(panels))
-		panels[0].editGrantedItem(grantAt(t, panels[0], 0))
+		outerFeatures = panels[0]
+		outerFeatures.editGrantedItem(grantAt(t, outerFeatures, 0))
 	})
 	nested := uxtest.OtherEditor(t, screen, outer, isTraitEditor)
 	var modEditor *editor[*gurps.TraitModifier, *gurps.TraitModifierEditData]
@@ -830,6 +833,9 @@ func TestGrantItemEditorOffersNoGrants(t *testing.T) {
 			c.Equal(1, len(panels))
 			c.False(slices.ContainsFunc(panels[0].featureTypesList(), gurps.IsGrant), "no grant types are offered")
 			c.False(panels[0].takesGrants(), "and no grants are taken")
+			c.False(panels[0].readOnly, "precondition: the panel takes other copies")
+			target, _ := panels[0].dropAt(geom.NewPoint(4, 4), &rowDrag{panel: outerFeatures.AsPanel(), path: "0"})
+			c.Nil(target, "nor a grant from another features panel")
 		}
 	})
 }

@@ -26,6 +26,7 @@ import (
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/accessibility"
+	"github.com/richardwilkes/unison/drag"
 	"github.com/richardwilkes/unison/enums/mod"
 	"github.com/richardwilkes/unison/enums/role"
 )
@@ -583,8 +584,9 @@ func TestDefaultsPanelUndo(t *testing.T) {
 }
 
 // TestDefaultsPanelDragAndDrop checks that a dragged default goes before or after a row by which half of the row it is
-// over, into a new list, that a drop is one step to undo and redo, that the open row follows its default, and that a
-// drop onto or beside itself, or of a row dragged from another panel, changes nothing.
+// over, into a new list, that a drop is one step to undo and redo, that the open row follows its default, that a drop
+// onto or beside itself, or of a row dragged from a panel of another kind, changes nothing, and that a row dragged from
+// another defaults panel is copied in where it is dropped, unless the panel is read-only.
 func TestDefaultsPanelDragAndDrop(t *testing.T) {
 	c := check.New(t)
 	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
@@ -603,17 +605,17 @@ func TestDefaultsPanelDragAndDrop(t *testing.T) {
 		})
 		return accepted
 	}
-	drag := func(from, onto string, fraction float32) bool { return dragFrom(p.AsPanel(), from, onto, fraction) }
-	c.False(dragFrom(unison.NewPanel(), "0", "2", 0.8), "a row from another panel can't be dropped")
-	c.False(drag("0", "0", 0.2), "a row can't be dropped onto itself")
-	c.True(drag("1", "0", 0.8), "after the row above it")
-	c.True(drag("1", "2", 0.2), "and before the row below it")
+	dragRow := func(from, onto string, fraction float32) bool { return dragFrom(p.AsPanel(), from, onto, fraction) }
+	c.False(dragFrom(unison.NewPanel(), "0", "2", 0.8), "a row from a panel of another kind can't be dropped")
+	c.False(dragRow("0", "0", 0.2), "a row can't be dropped onto itself")
+	c.True(dragRow("1", "0", 0.8), "after the row above it")
+	c.True(dragRow("1", "2", 0.2), "and before the row below it")
 	c.Equal([]string{gurps.DexterityID, gurps.SkillID, gurps.ParryID}, defaultTypes(defaults), "but neither moves it")
 	c.False(host.mgr.CanUndo(), "nor records a step")
 
 	screen.Do(func() { p.toggle("1") })
 	held := defaults
-	c.True(drag("0", "2", 0.8))
+	c.True(dragRow("0", "2", 0.8))
 	c.Equal([]string{gurps.SkillID, gurps.ParryID, gurps.DexterityID}, defaultTypes(defaults))
 	c.Equal([]string{gurps.DexterityID, gurps.SkillID, gurps.ParryID}, defaultTypes(held),
 		"the list held before is left as it was")
@@ -625,16 +627,41 @@ func TestDefaultsPanelDragAndDrop(t *testing.T) {
 	c.Equal("1", p.open)
 	screen.Do(host.mgr.Redo)
 	c.Equal([]string{gurps.SkillID, gurps.ParryID, gurps.DexterityID}, defaultTypes(defaults), "and to redo")
+
+	otherDefaults := []*gurps.SkillDefault{{DefaultType: gurps.IntelligenceID, Modifier: -fxp.Three}}
+	var other *defaultsPanel
+	screen.Do(func() { other = newDefaultsPanel(entity, nil, &otherDefaults) })
+	otherJSON := defaultsJSON(c, otherDefaults)
+	modified := host.modified
+	c.True(dragFrom(other.AsPanel(), "0", "0", 0.2), "a row from another defaults panel can be dropped")
+	c.Equal([]string{gurps.IntelligenceID, gurps.SkillID, gurps.ParryID, gurps.DexterityID}, defaultTypes(defaults),
+		"and goes where it is dropped")
+	c.True(len(defaults) == 4 && defaults[0] != otherDefaults[0], "as a copy")
+	c.Equal(otherJSON, defaultsJSON(c, otherDefaults), "leaving the source as it was")
+	c.Equal("1", p.open, "the open row follows its default")
+	c.Equal("Undo Copy Default", host.mgr.UndoTitle())
+	c.Equal(modified+1, host.modified, "a copy marks the editor modified once")
+	screen.Do(host.mgr.Undo)
+	c.Equal([]string{gurps.SkillID, gurps.ParryID, gurps.DexterityID}, defaultTypes(defaults),
+		"a copy is one step to undo")
+	screen.Do(host.mgr.Redo)
+	c.Equal([]string{gurps.IntelligenceID, gurps.SkillID, gurps.ParryID, gurps.DexterityID}, defaultTypes(defaults),
+		"and to redo")
+	screen.Do(p.makeReadOnly)
+	c.False(dragFrom(other.AsPanel(), "0", "0", 0.2), "a read-only panel takes no copies")
+	c.Equal(4, len(defaults))
 }
 
 // TestDefaultsPanelDragFromRow checks that a row can be dragged through the window by its sentence without also opening
-// it, and that a click on a sentence still opens its row.
+// it, that a click on a sentence still opens its row, that a row dragged by its grip into the defaults panel of another
+// window is copied there, with the drag reported as a copy, even from a read-only panel, whose grips offer only that
+// and whose own rows don't move, and that a read-only panel refuses such a drag.
 func TestDefaultsPanelDragFromRow(t *testing.T) {
 	c := check.New(t)
 	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
 	entity := gurps.NewEntity()
 	defaults := newTestDefaults()
-	p, _ := showDefaultsPanel(t, screen, entity, nil, &defaults)
+	p, host := showDefaultsPanel(t, screen, entity, nil, &defaults)
 	var sentence, row *unison.Panel
 	var below geom.Point
 	screen.Do(func() {
@@ -649,6 +676,92 @@ func TestDefaultsPanelDragFromRow(t *testing.T) {
 	screen.Do(func() { sentence = p.FindRefKey("0" + keySentence) })
 	screen.Click(screen.PanelCenter(sentence))
 	c.Equal("0", p.open)
+
+	// The second window sits below the first, so that neither hides the other from the drag.
+	var others []*gurps.SkillDefault
+	q, qHost := showDefaultsPanel(t, screen, entity, nil, &others)
+	var pw, qw *unison.Window
+	var grip *DragHandle
+	var target *unison.Panel
+	placeBelow := func() {
+		frame := qw.FrameRect()
+		frame.X, frame.Y = pw.FrameRect().X, pw.FrameRect().Bottom()+40
+		qw.SetFrameRect(frame)
+		c.False(pw.FrameRect().Intersects(qw.FrameRect()), "precondition: the windows don't overlap")
+		c.True(qw.FrameRect().Bottom() <= 900, "precondition: the second window is on the screen")
+	}
+	gripOf := func(path string) *DragHandle {
+		grips := uxtest.PanelsOfType[*DragHandle](p.FindRefKey(path + keyMore).Parent())
+		c.Equal(1, len(grips), "precondition: the row has a grip")
+		return grips[0]
+	}
+	inView := func(grip *DragHandle) {
+		c.True(screen.PanelCenter(grip).In(pw.FrameRect()), "precondition: the grip is in view")
+	}
+	screen.Do(func() {
+		pw, qw = p.Window(), q.Window()
+		// The open row made the first window's content taller than the window.
+		pw.Pack()
+		placeBelow()
+		RegisterWindowDragTypes(qw)
+		grip = gripOf("1")
+		target = q.FindRefKey(defaultEmptyKey)
+	})
+	inView(grip)
+	c.True(strings.Contains(tooltipText(grip.Tooltip), "copy"), "the grip says a row can be copied")
+	before := defaultsJSON(c, defaults)
+	modified := host.modified
+	screen.Drag(screen.PanelCenter(grip), screen.PanelCenter(target), 10)
+	result := screen.LastDrag()
+	c.Equal(drag.Copy, result.Op, "a row over the defaults of another window is copied")
+	c.True(result.Dropped)
+	c.True(result.Source == pw)
+	c.True(result.Target == qw)
+	c.Equal([]string{gurps.ParryID}, defaultTypes(others), "the copy lands in the other panel")
+	c.Equal(defaultsJSON(c, defaults[1:2]), defaultsJSON(c, others), "equal to the dragged default")
+	c.True(len(others) == 1 && others[0] != defaults[1], "but not the same one")
+	c.Equal(before, defaultsJSON(c, defaults), "the source is left as it was")
+	c.Equal(modified, host.modified, "and its editor isn't marked modified")
+	c.Equal("Undo Copy Default", qHost.mgr.UndoTitle())
+	c.Equal(1, qHost.modified)
+
+	screen.Do(func() {
+		p.makeReadOnly()
+		qw.Pack()
+		placeBelow()
+		grip = gripOf("2")
+		target = q.FindRefKey("0" + keyMore).Parent()
+	})
+	inView(grip)
+	tip := tooltipText(grip.Tooltip)
+	c.True(strings.Contains(tip, "copy") && !strings.Contains(tip, "rearrange"),
+		"the grip of a read-only panel offers a copy but no rearranging: %s", tip)
+	screen.Drag(screen.PanelCenter(grip), screen.PanelPoint(target, geom.NewPoint(40, 4)), 10)
+	c.Equal([]string{gurps.DexterityID, gurps.ParryID}, defaultTypes(others), "a row is copied out of a read-only panel")
+	c.Equal(before, defaultsJSON(c, defaults), "which is left as it was")
+	screen.Do(func() {
+		grip = gripOf("1")
+		target = p.FindRefKey("2" + keyMore).Parent()
+	})
+	screen.Drag(screen.PanelCenter(grip), screen.PanelPoint(target, below), 10)
+	result = screen.LastDrag()
+	c.Equal(drag.None, result.Op, "a read-only panel's own rows can't be rearranged")
+	c.False(result.Dropped)
+	c.Equal(before, defaultsJSON(c, defaults))
+
+	screen.Do(func() {
+		q.makeReadOnly()
+		qw.Pack()
+		placeBelow()
+		grip = gripOf("2")
+		target = q.FindRefKey("0" + keyMore).Parent()
+	})
+	inView(grip)
+	screen.Drag(screen.PanelCenter(grip), screen.PanelPoint(target, geom.NewPoint(40, 4)), 10)
+	result = screen.LastDrag()
+	c.Equal(drag.None, result.Op, "a read-only panel refuses the drag")
+	c.False(result.Dropped)
+	c.Equal([]string{gurps.DexterityID, gurps.ParryID}, defaultTypes(others))
 }
 
 // TestDefaultsPanelEmpty checks that a list with no defaults shows a placeholder before the add button, that clicking

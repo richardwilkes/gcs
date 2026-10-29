@@ -742,8 +742,9 @@ func TestFeaturesPanelUndo(t *testing.T) {
 }
 
 // TestFeaturesPanelDragAndDrop checks that a dragged feature goes before or after a row by which half of the row it is
-// over, that a drop is one step to undo and redo, that the open row follows its feature, and that a drop onto or beside
-// itself, or of a feature from another panel, changes nothing.
+// over, that a drop is one step to undo and redo, that the open row follows its feature, that a drop onto or beside
+// itself changes nothing, and that a feature from another features panel is copied in where it is dropped, owned by
+// this panel's owner, unless the panel couldn't have added one of its kind.
 func TestFeaturesPanelDragAndDrop(t *testing.T) {
 	c := check.New(t)
 	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
@@ -751,9 +752,10 @@ func TestFeaturesPanelDragAndDrop(t *testing.T) {
 	owner := gurps.NewTrait(entity, nil, false)
 	features := newTestFeatures(owner)
 	p, host := showFeaturesPanel(t, screen, entity, owner, &features, false)
-	otherFeatures := newTestFeatures(owner)
+	otherOwner := gurps.NewTrait(entity, nil, false)
+	otherFeatures := newTestFeatures(otherOwner)
 	var other *featuresPanel
-	screen.Do(func() { other = newFeaturesPanel(entity, owner, &otherFeatures, false) })
+	screen.Do(func() { other = newFeaturesPanel(entity, otherOwner, &otherFeatures, false) })
 	point := func(onto string, fraction float32) geom.Point {
 		target := p.FindRefKey(onto + keyMore).Parent()
 		r := p.RectFromRoot(target.RectToRoot(target.ContentRect(true)))
@@ -763,16 +765,17 @@ func TestFeaturesPanelDragAndDrop(t *testing.T) {
 		screen.Do(func() { target, at = p.dropAt(point(onto, fraction), data) })
 		return target, at
 	}
-	drag := func(from, onto string, fraction float32) (accepted bool) {
+	dragFrom := func(source *unison.Panel, from, onto string, fraction float32) (accepted bool) {
 		screen.Do(func() {
 			where := point(onto, fraction)
-			data := &rowDrag{panel: p.AsPanel(), path: from}
+			data := &rowDrag{panel: source, path: from}
 			p.dragOver(where, data)
 			accepted = p.dropTarget != nil
 			p.drop(where, data)
 		})
 		return accepted
 	}
+	drag := func(from, onto string, fraction float32) bool { return dragFrom(p.AsPanel(), from, onto, fraction) }
 	var row2 *unison.Panel
 	screen.Do(func() { row2 = p.FindRefKey("2" + keyMore).Parent() })
 	target, at := spot(&rowDrag{panel: p.AsPanel(), path: "0"}, "2", 0.2)
@@ -781,8 +784,26 @@ func TestFeaturesPanelDragAndDrop(t *testing.T) {
 	target, at = spot(&rowDrag{panel: p.AsPanel(), path: "0"}, "2", 0.8)
 	c.Equal(row2, target)
 	c.Equal(dropAfter, at, "the bottom half is after it")
-	target, _ = spot(&rowDrag{panel: other.AsPanel(), path: "0"}, "2", 0.2)
-	c.Nil(target, "a feature from another panel can't be dropped")
+	target, at = spot(&rowDrag{panel: other.AsPanel(), path: "0"}, "2", 0.2)
+	c.Equal(row2, target, "a feature from another features panel can be dropped")
+	c.Equal(dropBefore, at)
+	target, _ = spot(&rowDrag{panel: other.AsPanel(), path: "2"}, "2", 0.2)
+	c.Nil(target, "unless the panel couldn't add one of its kind, such as one it doesn't understand")
+	containerFeatures := gurps.Features{gurps.NewContainedWeightReduction()}
+	selfGrant := gurps.NewGrant(feature.GrantTrait)
+	selfGrant.SetItem(owner, gurps.LibraryFile{})
+	otherGrant := gurps.NewGrant(feature.GrantTrait)
+	otherGrant.SetItem(newGrantTestTrait("Night Vision", 0), gurps.LibraryFile{})
+	grantFeatures := gurps.Features{selfGrant, otherGrant}
+	var containerPanel, grantPanel *featuresPanel
+	screen.Do(func() {
+		containerPanel = newFeaturesPanel(entity, gurps.NewEquipment(entity, nil, true), &containerFeatures, false)
+		grantPanel = newFeaturesPanel(entity, otherOwner, &grantFeatures, false)
+	})
+	target, _ = spot(&rowDrag{panel: containerPanel.AsPanel(), path: "0"}, "2", 0.2)
+	c.Nil(target, "or a contained weight reduction, which only an equipment container holds")
+	target, _ = spot(&rowDrag{panel: grantPanel.AsPanel(), path: "0"}, "2", 0.2)
+	c.Nil(target, "or a grant of the panel's own item")
 	target, _ = spot("0", "2", 0.2)
 	c.Nil(target, "nor can anything else")
 
@@ -809,6 +830,49 @@ func TestFeaturesPanelDragAndDrop(t *testing.T) {
 	c.True(drag("2", "0", 0.2), "before the first row")
 	c.Equal([]feature.Type{feature.SkillBonus, feature.DRBonus, feature.Unknown}, featureTypes(features))
 	c.Equal("1", p.open)
+
+	otherHash := featuresHash(otherFeatures)
+	modified := host.modified
+	c.True(dragFrom(other.AsPanel(), "0", "0", 0.2), "a feature from another features panel can be dropped")
+	c.Equal([]feature.Type{feature.SkillBonus, feature.SkillBonus, feature.DRBonus, feature.Unknown},
+		featureTypes(features), "and goes where it is dropped")
+	c.True(len(features) == 4 && features[0] != otherFeatures[0], "as a copy")
+	bonus, isBonus := features[0].(gurps.Bonus)
+	c.True(isBonus)
+	if isBonus {
+		c.True(bonus.Owner() == owner, "owned by this panel's owner")
+	}
+	c.Equal(otherHash, featuresHash(otherFeatures), "leaving the source as it was")
+	c.Equal("2", p.open, "the open row follows its feature")
+	c.Equal("Undo Copy Feature", host.mgr.UndoTitle())
+	c.Equal(modified+1, host.modified, "a copy marks the editor modified once")
+	screen.Do(host.mgr.Undo)
+	c.Equal([]feature.Type{feature.SkillBonus, feature.DRBonus, feature.Unknown}, featureTypes(features),
+		"a copy is one step to undo")
+	screen.Do(host.mgr.Redo)
+	c.Equal([]feature.Type{feature.SkillBonus, feature.SkillBonus, feature.DRBonus, feature.Unknown},
+		featureTypes(features), "and to redo")
+	c.True(dragFrom(grantPanel.AsPanel(), "1", "0", 0.8), "a grant of something else can be dropped")
+	g, isGrant := features[1].(*gurps.Grant)
+	c.True(isGrant)
+	if isGrant {
+		c.True(g.Key() != "" && g.Key() != otherGrant.Key(), "its copy grants a copy of the item, with a key of its own")
+	}
+	screen.Do(host.mgr.Undo)
+
+	screen.Do(p.collapse.toggle)
+	screen.Do(func() {
+		summary := p.FindRefKey(sectionSummaryKey)
+		where := p.RectFromRoot(summary.RectToRoot(summary.ContentRect(true))).Center()
+		data := &rowDrag{panel: other.AsPanel(), path: "1"}
+		p.dragOver(where, data)
+		c.Equal(summary, p.dropTarget, "a collapsed panel takes a copy onto its summary")
+		c.Equal(dropInto, p.dropWhere)
+		p.drop(where, data)
+	})
+	c.False(p.collapse.collapsed, "which expands it")
+	c.Equal([]feature.Type{feature.SkillBonus, feature.SkillBonus, feature.DRBonus, feature.Unknown, feature.DRBonus},
+		featureTypes(features), "and adds the copy at the end")
 }
 
 // TestFeaturesPanelDragFromRow checks that a row can be dragged by its sentence without also opening it, and that a

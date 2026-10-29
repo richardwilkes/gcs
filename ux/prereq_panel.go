@@ -376,9 +376,19 @@ func (p *prereqPanel) treeCanUngroup(group gurps.Prereq) bool {
 func (p *prereqPanel) treeTitles(_ gurps.Prereq) treeEditTitles {
 	return treeEditTitles{
 		duplicate: i18n.Text("Duplicate Prerequisite"),
+		copy:      i18n.Text("Copy Prerequisite"),
 		move:      i18n.Text("Move Prerequisite"),
 		delete:    i18n.Text("Delete Prerequisite"),
 	}
+}
+
+// treeCanCopy implements treeCopier. A list can be copied in when everything in it can, and anything else when the
+// panel offers its type.
+func (p *prereqPanel) treeCanCopy(node gurps.Prereq) bool {
+	if list := asPrereqList(node); list != nil {
+		return !slices.ContainsFunc(list.Prereqs, func(child gurps.Prereq) bool { return !p.treeCanCopy(child) })
+	}
+	return slices.Contains(p.permittedChoices, node.PrereqType())
 }
 
 // treeHasLead implements treeNodes. With a sheet, each head starts with its status icon.

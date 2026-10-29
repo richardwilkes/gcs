@@ -824,24 +824,26 @@ func TestPrereqPanelScriptResult(t *testing.T) {
 }
 
 // TestPrereqPanelDragAndDrop checks where a dragged prerequisite goes before, after or into what it is dropped on, that
-// nothing goes into itself, and that a drop is undone as one step.
+// nothing goes into itself, that a drop is undone as one step, and that a prerequisite from another prerequisites
+// panel is copied in where it is dropped, unless it, or something in it, is of a type the panel doesn't offer.
 func TestPrereqPanelDragAndDrop(t *testing.T) {
 	c := check.New(t)
 	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
 	root := newTestPrereqTree()
 	p, host := showPrereqPanel(t, screen, &root, false)
-	drag := func(from, onto string, fraction float32) (accepted bool) {
+	dragFrom := func(source *unison.Panel, from, onto string, fraction float32) (accepted bool) {
 		screen.Do(func() {
 			target := p.FindRefKey(onto + keyMore).Parent()
 			r := p.RectFromRoot(target.RectToRoot(target.ContentRect(true)))
 			where := geom.NewPoint(r.X+r.Width/3, r.Y+r.Height*fraction)
-			data := &rowDrag{panel: p.AsPanel(), path: from}
+			data := &rowDrag{panel: source, path: from}
 			p.dragOver(where, data)
 			accepted = p.dropTarget != nil
 			p.drop(where, data)
 		})
 		return accepted
 	}
+	drag := func(from, onto string, fraction float32) bool { return dragFrom(p.AsPanel(), from, onto, fraction) }
 	c.False(drag("r.1", "r.1.0", 0.5), "a group can't go into itself")
 	c.False(drag("r.0", "r.0", 0.2), "nor a row onto itself")
 	c.True(drag("r.0", "r.1", 0.8), "below the top of a group's head is into it")
@@ -856,6 +858,64 @@ func TestPrereqPanelDragAndDrop(t *testing.T) {
 	c.True(drag("r.0.0", treeRootPath, 0.5), "the root's head is into the root")
 	c.Equal([]prereq.Type{prereq.List, prereq.Script, prereq.Unknown, prereq.Trait, prereq.Skill}, prereqShape(root),
 		"at its end")
+
+	// The other panel is for equipment, so it holds types this one doesn't offer.
+	otherEntity := gurps.NewEntity()
+	anyOf := gurps.NewPrereqList()
+	anyOf.All = false
+	anyOf.Prereqs = gurps.Prereqs{gurps.NewSkillPrereq(), gurps.NewScriptPrereq()}
+	allOf := gurps.NewPrereqList()
+	allOf.Prereqs = gurps.Prereqs{gurps.NewTraitPrereq(), gurps.NewContainedWeightPrereq(otherEntity)}
+	otherRoot := gurps.NewPrereqList()
+	otherRoot.Prereqs = gurps.Prereqs{gurps.NewContainedQuantityPrereq(), anyOf, allOf}
+	otherRoot = otherRoot.CloneAsPrereqList(nil)
+	var other *prereqPanel
+	screen.Do(func() { other = newPrereqPanel(otherEntity, &otherRoot, prereq.TypesForEquipment, false) })
+	otherHash := gurps.Hash64(otherRoot)
+	modified := host.modified
+	c.True(dragFrom(other.AsPanel(), "r.1", "r.0.0", 0.2), "a group from another panel can be dropped before a row")
+	c.Equal([]prereq.Type{prereq.List, prereq.List, prereq.Script, prereq.Unknown, prereq.Trait, prereq.Skill},
+		prereqShape(root))
+	group, isGroup := root.Prereqs[0].(*gurps.PrereqList)
+	c.True(isGroup)
+	if isGroup {
+		copied, isCopy := group.Prereqs[0].(*gurps.PrereqList)
+		c.True(isCopy)
+		if isCopy {
+			c.True(copied != otherRoot.Prereqs[1], "as a copy")
+			c.True(copied.Parent == group, "owned by the group it was dropped into")
+			for _, child := range copied.Prereqs {
+				c.True(child.ParentList() == copied, "whose children it owns")
+			}
+		}
+	}
+	c.Equal(otherHash, gurps.Hash64(otherRoot), "leaving the source as it was")
+	c.Equal("Undo Copy Prerequisite", host.mgr.UndoTitle())
+	c.Equal(modified+1, host.modified, "a copy marks the editor modified once")
+	screen.Do(host.mgr.Undo)
+	c.Equal([]prereq.Type{prereq.List, prereq.Script, prereq.Unknown, prereq.Trait, prereq.Skill}, prereqShape(root),
+		"a copy is one step to undo")
+	c.False(dragFrom(other.AsPanel(), "r.0", "r.0.0", 0.2), "one of a type the panel doesn't offer can't be dropped")
+	c.False(dragFrom(other.AsPanel(), "r.2", "r.0.0", 0.2), "nor a group holding one")
+	c.True(dragFrom(other.AsPanel(), "r.1", treeRootPath, 0.5), "the root's head takes a copy into the root")
+	shape := []prereq.Type{
+		prereq.List, prereq.Script, prereq.Unknown, prereq.Trait, prereq.Skill, prereq.List, prereq.Skill, prereq.Script,
+	}
+	c.Equal(shape, prereqShape(root), "at its end")
+
+	screen.Do(p.collapse.toggle)
+	screen.Do(func() {
+		summary := p.FindRefKey(sectionSummaryKey)
+		where := p.RectFromRoot(summary.RectToRoot(summary.ContentRect(true))).Center()
+		data := &rowDrag{panel: other.AsPanel(), path: "r.1"}
+		p.dragOver(where, data)
+		c.Equal(summary, p.dropTarget, "a collapsed panel takes a copy onto its summary")
+		c.Equal(dropInto, p.dropWhere)
+		p.drop(where, data)
+	})
+	c.False(p.collapse.collapsed, "which expands it")
+	c.Equal(slices.Concat(shape, []prereq.Type{prereq.List, prereq.Skill, prereq.Script}), prereqShape(root),
+		"and adds the copy at the root's end")
 }
 
 // TestPrereqPanelDropAfterGroup checks that a drop beside the last child of a group that ends its parent goes after

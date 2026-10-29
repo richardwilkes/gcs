@@ -98,6 +98,7 @@ func newFeaturesPanel(entity *gurps.Entity, owner fmt.Stringer, features *gurps.
 	p.initCollapse(border, len(*features) != 0)
 	p.initDrop(p.dropAt, p.drop)
 	p.initGrantDrop()
+	p.copies = true
 	p.build()
 	return p
 }
@@ -281,9 +282,43 @@ func (p *featuresPanel) moreEntries(path string) []menuEntry {
 	}})
 }
 
+// foreignFeature returns the panel and the feature at the path of another features panel that the data of a drag
+// carries, when this panel could hold a copy of it: one of a type it offers (see featureTypesList) that isn't a grant
+// of its own item. Otherwise it returns nil.
+func (p *featuresPanel) foreignFeature(data any) (*featuresPanel, gurps.Feature) {
+	source, path := p.foreignRow(data)
+	if source == nil {
+		return nil, nil
+	}
+	src, ok := source.Self.(*featuresPanel)
+	if !ok {
+		return nil, nil
+	}
+	i := src.index(path)
+	if i < 0 {
+		return nil, nil
+	}
+	f := (*src.features)[i]
+	if !slices.Contains(p.featureTypesList(), f.FeatureType()) {
+		return nil, nil
+	}
+	if g, isGrant := f.(*gurps.Grant); isGrant && g.Key() != "" &&
+		len(p.grantable([]*grantLibraryItem{{node: g.Item()}})) == 0 {
+		return nil, nil
+	}
+	return src, f
+}
+
 // dropAt returns the row a feature dragged to where would be dropped on and whether it would go before or after it, by
-// which half of the row where is in. The row is nil where the feature can't go, such as onto itself.
+// which half of the row where is in. The row is nil where the feature can't go, such as onto itself. One from another
+// panel, which is copied in, goes at the end when it isn't over a row (see endSpot).
 func (p *featuresPanel) dropAt(where geom.Point, data any) (target *unison.Panel, at int) {
+	if _, f := p.foreignFeature(data); f != nil {
+		if target, _, at = p.rowAt(where); target != nil {
+			return target, at
+		}
+		return p.endSpot(featureDropKey, featureEmptyKey)
+	}
 	from := p.dragPath(data)
 	if p.index(from) < 0 {
 		return nil, 0
@@ -317,11 +352,15 @@ func (p *featuresPanel) rowOf(panel *unison.Panel) (row *unison.Panel, path stri
 	return nil, ""
 }
 
-// drop moves the dragged feature to where it would go.
+// drop moves the dragged feature to where it would go, or copies in one from another panel.
 func (p *featuresPanel) drop(where geom.Point, data any) {
 	target, at := p.dropAt(where, data)
 	p.dragExit()
 	if target == nil {
+		return
+	}
+	if src, f := p.foreignFeature(data); f != nil {
+		p.dropCopy(src, f, target, at)
 		return
 	}
 	path, isRow := target.ClientData()[featureDropKey].(string)
@@ -344,6 +383,40 @@ func (p *featuresPanel) drop(where geom.Point, data any) {
 	p.restructure(i18n.Text("Move Feature"), from+keyMore, "", func() int {
 		one := (*p.features)[i]
 		*p.features = slices.Insert(slices.Delete(*p.features, i, i+1), index, one)
+		return index
+	})
+}
+
+// dropCopy adds a copy of a feature of another panel where dropAt said it goes, owned by this panel's owner, expanding
+// the panel if it is collapsed. A copied grant gets a key of its own, as a duplicate does, and a weapon bonus whose
+// percentage the other panel suspends stays suspended.
+func (p *featuresPanel) dropCopy(src *featuresPanel, f gurps.Feature, target *unison.Panel, at int) {
+	index := len(*p.features)
+	if _, path := p.rowOf(target); path != "" {
+		if i := p.index(path); i >= 0 {
+			index = i
+			if at == dropAfter {
+				index++
+			}
+		}
+	}
+	if p.collapse.collapsed {
+		p.collapse.toggle()
+	}
+	p.restructure(i18n.Text("Copy Feature"), featureAddKey, "", func() int {
+		dup := f.Clone()
+		if g, ok := dup.(*gurps.Grant); ok {
+			g.RenewKey()
+		}
+		if owned, ok := dup.(interface{ SetOwner(fmt.Stringer) }); ok {
+			owned.SetOwner(p.owner)
+		}
+		if bonus, ok := f.(*gurps.WeaponBonus); ok && src.percentSuspended[bonus] {
+			if copied, isWeapon := dup.(*gurps.WeaponBonus); isWeapon {
+				p.percentSuspended[copied] = true
+			}
+		}
+		*p.features = slices.Insert(*p.features, index, dup)
 		return index
 	})
 }

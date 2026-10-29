@@ -23,6 +23,7 @@ import (
 	"github.com/richardwilkes/toolbox/v2/xmath"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/accessibility"
+	"github.com/richardwilkes/unison/drag"
 	"github.com/richardwilkes/unison/enums/align"
 	"github.com/richardwilkes/unison/enums/mod"
 	"github.com/richardwilkes/unison/enums/paintstyle"
@@ -101,18 +102,27 @@ type sentenceRows[T any] struct {
 	staticTip func(path string) string
 	// readOnly lets rows be opened and closed to read them, but not changed; see makeReadOnly.
 	readOnly bool
+	// copies has a row dragged from another panel of the panel's kind copied into it, which its grips say can be done.
+	copies bool
 }
 
 // makeReadOnly disables every control of the panel but those that open and close its rows and collapse it, so that its
 // rows can still be read in full, and keeps it that way as the panel is rebuilt. The panel itself stays enabled, since
-// its Escape closes the open row.
+// its Escape closes the open row. So do the grips where rows can be copied to another panel (see copies), whose
+// tooltips then offer only that.
 func (p *sentenceRows[T]) makeReadOnly() {
 	p.readOnly = true
 	for _, child := range p.Children() {
 		disableAllBut(child, func(panel *unison.Panel) bool {
-			switch panel.Self.(type) {
+			switch one := panel.Self.(type) {
 			case *sentenceButton, *sectionToggle:
 				return true
+			case *DragHandle:
+				one.Tooltip = nil
+				if p.copies {
+					one.Tooltip = newWrappedTooltip(i18n.Text("Click and drag this handle to copy this into the same section of another editor"))
+				}
+				return p.copies
 			}
 			return panel.RefKey == p.open+keyDone
 		})
@@ -400,17 +410,30 @@ type rowDrag struct {
 	path  string
 }
 
-// dragPath returns the path of the row the data of a drag carries, or "" if it isn't one of this panel's.
+// dragPath returns the path of the row the data of a drag carries, or "" if it isn't one of this panel's. A read-only
+// panel's rows can be dragged out to be copied, but not moved, so it finds none.
 func (p *sentenceRows[T]) dragPath(data any) string {
-	if d, ok := data.(*rowDrag); ok && d.panel == p.AsPanel() {
+	if d, ok := data.(*rowDrag); ok && d.panel == p.AsPanel() && !p.readOnly {
 		return d.path
 	}
 	return ""
 }
 
+// foreignRow returns the panel of another panel's row that the data of a drag carries, and the row's path there, or
+// nil. A read-only panel takes nothing, so it finds none.
+func (p *sentenceRows[T]) foreignRow(data any) (source *unison.Panel, path string) {
+	if d, ok := data.(*rowDrag); ok && d.panel != nil && d.panel != p.AsPanel() && !p.readOnly {
+		return d.panel, d.path
+	}
+	return nil, ""
+}
+
 // grip adds a drag handle to the row at the path and lets either be dragged.
 func (p *sentenceRows[T]) grip(row *unison.Panel, path string) *DragHandle {
 	handle := NewDragHandle(p.dragKey, nil)
+	if p.copies {
+		handle.Tooltip = newWrappedTooltip(i18n.Text("Click and drag this handle to rearrange, or to copy this into the same section of another editor"))
+	}
 	row.AddChild(handle)
 	p.dragBy(handle.AsPanel(), row, path)
 	p.dragBy(row, row, path)
@@ -431,7 +454,7 @@ func (p *sentenceRows[T]) dragBy(target, row *unison.Panel, path string) {
 	}
 	target.MouseDragCallback = func(where geom.Point, button int, _ mod.Modifiers) bool {
 		_, drift := unison.DragGestureParameters()
-		if p.readOnly || dragged || button != unison.ButtonLeft ||
+		if (p.readOnly && !p.copies) || dragged || button != unison.ButtonLeft ||
 			(xmath.Abs(where.X-start.X) <= drift && xmath.Abs(where.Y-start.Y) <= drift) {
 			return true
 		}
@@ -571,8 +594,9 @@ func frameRow(row *unison.Panel, open bool) {
 	}
 }
 
-// dragOver keeps the pointer in view and marks where the row would be dropped.
-func (p *sentenceRows[T]) dragOver(where geom.Point, data any) bool {
+// dragOver keeps the pointer in view and marks where the row would be dropped, returning what the drop would do: move
+// one of the panel's own rows, copy another panel's, or nothing where the row can't go.
+func (p *sentenceRows[T]) dragOver(where geom.Point, data any) drag.Op {
 	p.ScrollRectIntoView(geom.NewRect(where.X, where.Y-16, 1, 1))
 	p.ScrollRectIntoView(geom.NewRect(where.X, where.Y+16, 1, 1))
 	target, at := p.spotAt(where, data)
@@ -581,7 +605,14 @@ func (p *sentenceRows[T]) dragOver(where geom.Point, data any) bool {
 		p.dropWhere = at
 		p.MarkForRedraw()
 	}
-	return true
+	switch {
+	case target == nil:
+		return drag.None
+	case p.dragPath(data) != "":
+		return drag.Move
+	default:
+		return drag.Copy
+	}
 }
 
 func (p *sentenceRows[T]) dragExit() {
@@ -589,10 +620,25 @@ func (p *sentenceRows[T]) dragExit() {
 	p.MarkForRedraw()
 }
 
+// endSpot returns where a row added after all the others is shown going: after the last child holding rowKey in its
+// client data, or, with no rows or while the panel is collapsed, into the placeholder keyed emptyKey or the summary.
+func (p *sentenceRows[T]) endSpot(rowKey, emptyKey string) (target *unison.Panel, at int) {
+	var last *unison.Panel
+	for _, child := range p.Children() {
+		if _, isRow := child.ClientData()[rowKey]; isRow {
+			last = child
+		}
+	}
+	if last != nil {
+		return last, dropAfter
+	}
+	return cmp.Or(p.FindRefKey(emptyKey), p.FindRefKey(sectionSummaryKey)), dropInto
+}
+
 // drawDrop dims the row being dragged, and marks where it would go (see drawDropMarker).
 func (p *sentenceRows[T]) drawDrop(gc *unison.Canvas, _ geom.Rect) {
-	if path := p.dragPath(panelDragData); path != "" {
-		if more := p.FindRefKey(path + keyMore); more != nil {
+	if d, ok := panelDragData.(*rowDrag); ok && d.panel == p.AsPanel() {
+		if more := p.FindRefKey(d.path + keyMore); more != nil {
 			rect := p.RectFromRoot(more.Parent().RectToRoot(more.Parent().ContentRect(true)))
 			gc.DrawRect(rect, faintInk(unison.ThemeSurface).Paint(gc, rect, paintstyle.Fill))
 		}

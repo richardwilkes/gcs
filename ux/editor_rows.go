@@ -17,6 +17,7 @@ import (
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/accessibility"
+	"github.com/richardwilkes/unison/drag"
 	"github.com/richardwilkes/unison/enums/align"
 	"github.com/richardwilkes/unison/enums/mod"
 	"github.com/richardwilkes/unison/enums/paintstyle"
@@ -68,8 +69,8 @@ func (s *rowDragState) install(editor rowDragEditor, content *unison.Panel) {
 }
 
 // dataDragOver keeps the pointer in view and works out which list, and which insertion position within it, the pointer
-// is over, redrawing when that changes.
-func (s *rowDragState) dataDragOver(where geom.Point, data any) bool {
+// is over, redrawing when that changes. A drop moves the row, or does nothing where there is no position.
+func (s *rowDragState) dataDragOver(where geom.Point, data any) drag.Op {
 	s.content.ScrollRectIntoView(geom.NewRect(where.X, where.Y-16, 1, 1))
 	s.content.ScrollRectIntoView(geom.NewRect(where.X, where.Y+16, 1, 1))
 
@@ -100,7 +101,7 @@ func (s *rowDragState) dataDragOver(where geom.Point, data any) bool {
 	if prevInDragOver != s.inDragOver || dragInsert != s.dragInsert || dragTarget != s.dragTarget {
 		s.editor.AsPanel().MarkForRedraw()
 	}
-	return true
+	return drag.Move
 }
 
 func (s *rowDragState) dataDragExit() {

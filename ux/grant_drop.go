@@ -10,7 +10,6 @@
 package ux
 
 import (
-	"cmp"
 	"slices"
 	"strconv"
 
@@ -206,16 +205,7 @@ func (p *featuresPanel) grantDropAt(where geom.Point, t feature.Type) (target *u
 		}
 		return target, at
 	}
-	for _, child := range p.Children() {
-		if _, isRow := child.ClientData()[featureDropKey].(string); isRow {
-			target = child
-		}
-	}
-	if target != nil {
-		return target, dropAfter
-	}
-	// With no rows, or with the panel collapsed, the grants are shown going over what stands in for the rows.
-	return cmp.Or(p.FindRefKey(featureEmptyKey), p.FindRefKey(sectionSummaryKey)), dropInto
+	return p.endSpot(featureDropKey, featureEmptyKey)
 }
 
 // dropGrants makes grants of the items where grantDropAt said they go: the first dropped into a grant becomes its item,

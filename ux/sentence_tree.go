@@ -67,7 +67,7 @@ type treeNodes[N comparable] interface {
 	// treeCanUngroup reports whether a group may be replaced by its children, as far as the tree is concerned; the
 	// sentenceTree also requires that doing so keeps what the group means.
 	treeCanUngroup(group N) bool
-	// treeTitles returns the titles of the edits that duplicate, move and delete the node.
+	// treeTitles returns the titles of the edits that duplicate, copy, move and delete the node (see treeEditTitles).
 	treeTitles(node N) treeEditTitles
 	// treeHasLead reports whether the head of a group starts with something ahead of its pill, such as the status icon
 	// of a prerequisite.
@@ -93,9 +93,17 @@ type treeNodes[N comparable] interface {
 	treeGroupAdds(group N, path string) []menuEntry
 }
 
-// treeEditTitles holds the titles of the edits that duplicate, move and delete a node.
+// treeCopier is implemented by the treeNodes of a tree that takes copies of nodes dragged to it from another tree of
+// its kind. Without it, as for a list filter, such drags are refused.
+type treeCopier[N comparable] interface {
+	// treeCanCopy reports whether the tree can hold a copy of the node, which comes from another tree of its kind.
+	treeCanCopy(node N) bool
+}
+
+// treeEditTitles holds the titles of the edits that duplicate, copy, move and delete a node. copy is unused by a tree
+// that takes no copies (see treeCopier).
 type treeEditTitles struct {
-	duplicate, move, delete string
+	duplicate, copy, move, delete string
 }
 
 // sentenceTree is a panel of sentence rows for a tree of nodes of type N. Each group is a head, saying how it combines
@@ -106,13 +114,38 @@ type sentenceTree[T any, N comparable] struct {
 	nodes treeNodes[N]
 }
 
-// initTree sets up the tree, whose shape nodes describes, and lets its rows be dragged.
+// initTree sets up the tree, whose shape nodes describes, and lets its rows be dragged, and copies of another tree's
+// dropped on it when nodes is a treeCopier.
 func (p *sentenceTree[T, N]) initTree(nodes treeNodes[N]) {
 	p.nodes = nodes
+	_, p.copies = nodes.(treeCopier[N])
 	p.initDrop(func(where geom.Point, data any) (*unison.Panel, int) {
 		target, _, at := p.dropAt(where, data)
 		return target, at
 	}, p.drop)
+}
+
+// foreignNode returns the node of another tree of this tree's kind that the data of a drag carries, when the tree can
+// hold a copy of it (see treeCopier), or else the zero value.
+func (p *sentenceTree[T, N]) foreignNode(data any) N {
+	var none N
+	copier, ok := p.nodes.(treeCopier[N])
+	if !ok {
+		return none
+	}
+	source, path := p.foreignRow(data)
+	if source == nil {
+		return none
+	}
+	tree, ok := source.Self.(interface{ node(path string) N })
+	if !ok {
+		return none
+	}
+	node := tree.node(path)
+	if node == none || !copier.treeCanCopy(node) {
+		return none
+	}
+	return node
 }
 
 func childPath(path string, i int) string {
@@ -436,11 +469,14 @@ func (p *sentenceTree[T, N]) moreEntries(node N, path string) []menuEntry {
 
 // dropAt returns the panel a node dragged to where would be dropped on, the path of its node and where it would go:
 // before or after a row, before a group over the top of its head and into it below that, after a group beside or below
-// its last child, or into an empty group. The panel is nil where nothing can go, such as into itself.
+// its last child, or into an empty group. The panel is nil where nothing can go, such as into itself. A node from
+// another tree, which is copied in, also goes into a group from its margins, and into the root at its end from anywhere
+// else (see rootSpot).
 func (p *sentenceTree[T, N]) dropAt(where geom.Point, data any) (target *unison.Panel, path string, at int) {
 	from := p.dragPath(data)
 	var none N
-	if p.node(from) == none {
+	foreign := p.foreignNode(data) != none
+	if !foreign && p.node(from) == none {
 		return nil, "", 0
 	}
 	for target = p.PanelAt(where); target != nil && target != p.AsPanel(); target = target.Parent() {
@@ -448,7 +484,7 @@ func (p *sentenceTree[T, N]) dropAt(where geom.Point, data any) (target *unison.
 		if !isTarget {
 			continue
 		}
-		if spot.path == from || strings.HasPrefix(spot.path, from+".") {
+		if !foreign && (spot.path == from || strings.HasPrefix(spot.path, from+".")) {
 			return nil, "", 0
 		}
 		y := target.PointFromRoot(p.PointToRoot(where)).Y
@@ -463,6 +499,9 @@ func (p *sentenceTree[T, N]) dropAt(where geom.Point, data any) (target *unison.
 			if where.Y > p.RectFromRoot(last.RectToRoot(last.ContentRect(true))).CenterY() {
 				return target, spot.path, dropAfter
 			}
+			if foreign {
+				return target, spot.path, dropInto
+			}
 			return nil, "", 0
 		case dropOnHead:
 			if spot.path != treeRootPath && y < height*0.3 {
@@ -476,17 +515,32 @@ func (p *sentenceTree[T, N]) dropAt(where geom.Point, data any) (target *unison.
 			return target, spot.path, dropAfter
 		}
 	}
+	if foreign {
+		return p.rootSpot(), treeRootPath, dropInto
+	}
 	return nil, "", 0
 }
 
-// drop moves the dragged node to where it would go.
-func (p *sentenceTree[T, N]) drop(where geom.Point, data any) {
-	target, path, at := p.dropAt(where, data)
-	p.dragExit()
-	if target == nil {
-		return
+// rootSpot returns what shows a node going into the root at its end: the summary paragraph while the panel is
+// collapsed, or else the root's head, which holds the placeholder of an untouched empty root.
+func (p *sentenceTree[T, N]) rootSpot() *unison.Panel {
+	if p.collapse != nil && p.collapse.collapsed {
+		return p.FindRefKey(sectionSummaryKey)
 	}
-	to, index := p.locate(path)
+	var head *unison.Panel
+	p.HasInSelfOrDescendants(func(panel *unison.Panel) bool {
+		if spot, ok := panel.ClientData()[treeDropKey].(treeDropSpot); ok && spot.path == treeRootPath {
+			head = panel
+			return true
+		}
+		return false
+	})
+	return head
+}
+
+// destination returns the group a node dropped at the path goes into, as dropAt says, and its index there.
+func (p *sentenceTree[T, N]) destination(path string, at int) (to N, index int) {
+	to, index = p.locate(path)
 	if group := p.node(path); at == dropInto {
 		if children, ok := p.nodes.treeChildren(group); ok {
 			to, index = group, len(*children)
@@ -494,6 +548,22 @@ func (p *sentenceTree[T, N]) drop(where geom.Point, data any) {
 	} else if at == dropAfter {
 		index++
 	}
+	return to, index
+}
+
+// drop moves the dragged node to where it would go, or copies in one from another tree.
+func (p *sentenceTree[T, N]) drop(where geom.Point, data any) {
+	target, path, at := p.dropAt(where, data)
+	p.dragExit()
+	if target == nil {
+		return
+	}
+	var none N
+	if node := p.foreignNode(data); node != none {
+		p.dropCopy(node, path, at)
+		return
+	}
+	to, index := p.destination(path, at)
 	dragged := p.dragPath(data)
 	from, i := p.locate(dragged)
 	if from == to && i < index {
@@ -502,10 +572,24 @@ func (p *sentenceTree[T, N]) drop(where geom.Point, data any) {
 	}
 	p.restructure(p.nodes.treeTitles(p.node(dragged)).move, dragged+keyMore, "", func() N {
 		if from == to && i == index {
-			var none N
 			return none
 		}
 		return p.relocate(from, i, to, index)
+	})
+}
+
+// dropCopy adds a copy of a node of another tree where dropAt said it goes, expanding the panel if it is collapsed.
+// The group it goes into is found ahead of the edit, which may make a stand-in root the real one.
+func (p *sentenceTree[T, N]) dropCopy(node N, path string, at int) {
+	if p.collapse != nil && p.collapse.collapsed {
+		p.collapse.toggle()
+	}
+	to, index := p.destination(path, at)
+	p.restructure(p.nodes.treeTitles(node).copy, p.addKey(to, p.pathOf(to)), "", func() N {
+		dst := p.nodes.treeClone(node, to)
+		children, _ := p.nodes.treeChildren(to)
+		*children = slices.Insert(*children, index, dst)
+		return dst
 	})
 }
 

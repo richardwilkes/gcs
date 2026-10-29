@@ -24,6 +24,7 @@ import (
 	"github.com/richardwilkes/toolbox/v2/xmath"
 	"github.com/richardwilkes/toolbox/v2/xreflect"
 	"github.com/richardwilkes/unison"
+	"github.com/richardwilkes/unison/drag"
 	"github.com/richardwilkes/unison/enums/align"
 	"github.com/richardwilkes/unison/enums/mod"
 	"github.com/richardwilkes/unison/enums/paintstyle"
@@ -824,10 +825,13 @@ func (p *nameablesPanel) optionDropAt(where geom.Point, data any) (chip *unison.
 	return nil, false
 }
 
-func (p *nameablesPanel) optionDragOver(where geom.Point, data any) bool {
+func (p *nameablesPanel) optionDragOver(where geom.Point, data any) drag.Op {
 	p.dropChip, p.dropAfter = p.optionDropAt(where, data)
 	p.MarkForRedraw()
-	return p.dropChip != nil
+	if p.dropChip != nil {
+		return drag.Move
+	}
+	return drag.None
 }
 
 func (p *nameablesPanel) optionDragExit() {

@@ -740,6 +740,33 @@ func TestListFilterPanelDragAndDrop(t *testing.T) {
 		"None of:", "tags", "cost", "container", ":end", "name", "future_field", "unknown", "Any of:",
 		"weight", ":end",
 	}, shape())
+
+	// A filter is for one list, so a row from another filter panel isn't copied in, as a prerequisite would be.
+	var other *listFilterPanel
+	screen.Do(func() {
+		other = newListFilterPanel(listFilterPanelTestKey, newTestListFilter(),
+			filterFieldInfos(gurps.EquipmentFilterFields(), nil))
+	})
+	before := shape()
+	screen.Do(func() {
+		more, ok := refAs[*unison.Panel](t, p.AsPanel(), "r.1"+keyMore)
+		if !ok {
+			return
+		}
+		target := more.Parent()
+		r := p.RectFromRoot(target.RectToRoot(target.ContentRect(true)))
+		where := geom.NewPoint(r.X+r.Width/3, r.Y+r.Height*0.2)
+		data := &rowDrag{panel: other.AsPanel(), path: "r.0"}
+		p.dragOver(where, data)
+		c.Nil(p.dropTarget, "a row from another list filter panel can't be dropped")
+		p.drop(where, data)
+		grips := uxtest.PanelsOfType[*DragHandle](p.AsPanel())
+		c.NotEqual(0, len(grips))
+		if len(grips) != 0 {
+			c.False(strings.Contains(tooltipText(grips[0].Tooltip), "copy"), "and the grips don't say it can be")
+		}
+	})
+	c.Equal(before, shape())
 }
 
 // TestListFilterPanelPassesEscape checks the rows' own handling of Escape, which passEscape sets for the filter editor:

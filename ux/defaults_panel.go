@@ -66,6 +66,7 @@ func newDefaultsPanel(entity *gurps.Entity, owner nameable.Accesser, defaults *[
 	p.initRows(defaultDragKey, p.build, p.state, p.setState, p.dataHash)
 	p.initCollapse(border, len(*defaults) != 0)
 	p.initDrop(p.dropAt, p.drop)
+	p.copies = true
 	choices := p.typeChoices()
 	for _, one := range *defaults {
 		t := one.Type()
@@ -232,11 +233,29 @@ func (p *defaultsPanel) moreEntries(path string) []menuEntry {
 	}})
 }
 
+// foreignDefault returns the default at the path of another defaults panel that the data of a drag carries, or nil.
+func (p *defaultsPanel) foreignDefault(data any) *gurps.SkillDefault {
+	source, path := p.foreignRow(data)
+	if source == nil {
+		return nil
+	}
+	src, ok := source.Self.(*defaultsPanel)
+	if !ok {
+		return nil
+	}
+	if i := src.index(path); i >= 0 {
+		return (*src.defaults)[i]
+	}
+	return nil
+}
+
 // dropAt returns the row a default dragged to where would be dropped on and whether it would go before or after it, by
-// which half of the row where is in. The row is nil where the default can't go, such as onto itself.
+// which half of the row where is in. The row is nil where the default can't go, such as onto itself. One from another
+// panel, which is copied in, goes at the end when it isn't over a row (see endSpot).
 func (p *defaultsPanel) dropAt(where geom.Point, data any) (target *unison.Panel, at int) {
 	from := p.dragPath(data)
-	if p.index(from) < 0 {
+	foreign := p.foreignDefault(data) != nil
+	if !foreign && p.index(from) < 0 {
 		return nil, 0
 	}
 	for target = p.PanelAt(where); target != nil && target != p.AsPanel(); target = target.Parent() {
@@ -244,7 +263,7 @@ func (p *defaultsPanel) dropAt(where geom.Point, data any) (target *unison.Panel
 		if !isRow {
 			continue
 		}
-		if path == from {
+		if !foreign && path == from {
 			return nil, 0
 		}
 		if target.PointFromRoot(p.PointToRoot(where)).Y < target.FrameRect().Height/2 {
@@ -252,14 +271,21 @@ func (p *defaultsPanel) dropAt(where geom.Point, data any) (target *unison.Panel
 		}
 		return target, dropAfter
 	}
+	if foreign {
+		return p.endSpot(defaultDropKey, defaultEmptyKey)
+	}
 	return nil, 0
 }
 
-// drop moves the dragged default to where it would go.
+// drop moves the dragged default to where it would go, or copies in one from another panel.
 func (p *defaultsPanel) drop(where geom.Point, data any) {
 	target, at := p.dropAt(where, data)
 	p.dragExit()
 	if target == nil {
+		return
+	}
+	if def := p.foreignDefault(data); def != nil {
+		p.dropCopy(def, target, at)
 		return
 	}
 	path, isRow := target.ClientData()[defaultDropKey].(string)
@@ -283,6 +309,28 @@ func (p *defaultsPanel) drop(where geom.Point, data any) {
 		func(list []*gurps.SkillDefault) ([]*gurps.SkillDefault, int) {
 			one := list[i]
 			return slices.Insert(slices.Delete(list, i, i+1), index, one), index
+		})
+}
+
+// dropCopy adds a copy of a default from another panel where dropAt said it goes, expanding the panel if it is
+// collapsed.
+func (p *defaultsPanel) dropCopy(def *gurps.SkillDefault, target *unison.Panel, at int) {
+	index := len(*p.defaults)
+	if path, isRow := target.ClientData()[defaultDropKey].(string); isRow {
+		if i := p.index(path); i >= 0 {
+			index = i
+			if at == dropAfter {
+				index++
+			}
+		}
+	}
+	if p.collapse.collapsed {
+		p.collapse.toggle()
+	}
+	p.restructure(i18n.Text("Copy Default"), defaultAddKey, "",
+		func(list []*gurps.SkillDefault) ([]*gurps.SkillDefault, int) {
+			c := *def
+			return slices.Insert(list, index, &c), index
 		})
 }
 
