@@ -10,6 +10,7 @@
 package gurps
 
 import (
+	"cmp"
 	"encoding/json/jsontext"
 	"encoding/json/v2"
 	"fmt"
@@ -142,11 +143,20 @@ type SpellNonContainerOnlySyncData struct {
 	CastingTime     string              `json:"casting_time,omitzero"`
 	Duration        string              `json:"duration,omitzero"`
 	Item            string              `json:"item,omitzero"`
+	RitualOverrides RitualOverrides     `json:"rituals,omitzero"`
 	RitualSkillName string              `json:"base_skill,omitzero"`
 	PrereqCount     int                 `json:"prereq_count,omitzero"`
 	Prereq          *PrereqList         `json:"prereqs,omitzero"`
 	Weapons         []*Weapon           `json:"weapons,omitempty"`
 	Features        Features            `json:"features,omitempty"`
+}
+
+// RitualOverrides holds the parts of the rituals text a spell's description fixes in place of what its level would
+// otherwise give. Blank uses the standard part, "-" omits it, anything else replaces it at every level.
+type RitualOverrides struct {
+	Ritual string `json:"ritual,omitzero"`
+	Time   string `json:"time,omitzero"`
+	Cost   string `json:"cost,omitzero"`
 }
 
 // NewSpellsFromFile loads a Spell list from a file.
@@ -974,13 +984,13 @@ func (s *Spell) Notes() string {
 	return s.ResolveLocalNotes()
 }
 
-// Rituals returns the rituals required to cast the spell.
+// Rituals returns the rituals required to cast the spell: the ritual, time and cost its level gives, each replaced by
+// the matching ritual override that isn't blank.
 func (s *Spell) Rituals() string {
 	e := EntityFromNode(s)
 	if s.Container() || e == nil || !e.SheetSettings.ShowSpellAdj {
 		return ""
 	}
-	var buffer strings.Builder
 	// The level is the one the last recalculation recorded, except for a disabled spell, whose recorded level is
 	// cleared and whose adjusted points are zero; its rituals are still those of the level it would have if enabled,
 	// which for a granted spell is the level its grant would give.
@@ -989,34 +999,41 @@ func (s *Spell) Rituals() string {
 		level = s.calculateLevel(AdjustedPointsForNonContainerSpell(e, s.Points+e.grantedPointsFor(s),
 			s.NameWithReplacements(), s.PowerSourceWithReplacements(), s.CollegeWithReplacements(), s.Tags, nil)).Level
 	}
-	ritualText := i18n.Text("Ritual")
+	// High skill never reduces the time or cost of an enchantment, the time of a missile spell, or the cost of a
+	// blocking spell.
+	class := strings.ToLower(s.ClassWithReplacements())
+	enchantment := strings.Contains(class, "enchant")
+	noTimeReduction := enchantment || strings.Contains(class, "missile")
+	noCostReduction := enchantment || strings.Contains(class, "blocking")
+	var ritual, castTime, cost string
 	switch {
 	case level < fxp.Ten:
-		addPartToBuffer(&buffer, ritualText, i18n.Text("need both hands and feet free and must speak"))
-		addPartToBuffer(&buffer, i18n.Text("Time"), i18n.Text("Doubled"))
-		return buffer.String()
+		ritual = i18n.Text("need both hands and feet free and must speak")
+		castTime = i18n.Text("Doubled")
 	case level < fxp.Fifteen:
-		addPartToBuffer(&buffer, ritualText, i18n.Text("speak quietly and make a gesture"))
-		return buffer.String()
+		ritual = i18n.Text("speak quietly and make a gesture")
 	case level < fxp.Twenty:
-		addPartToBuffer(&buffer, ritualText, i18n.Text("speak a word or two OR make a small gesture"))
-		if strings.Contains(strings.ToLower(s.ClassWithReplacements()), "blocking") {
-			return buffer.String()
+		ritual = i18n.Text("speak a word or two OR make a small gesture")
+		if !noCostReduction {
+			cost = "-1"
 		}
-		addPartToBuffer(&buffer, i18n.Text("Cost"), "-1")
-		return buffer.String()
 	default:
-		addPartToBuffer(&buffer, ritualText, i18n.Text("none"))
+		ritual = i18n.Text("none")
 		adj := (level - fxp.Fifteen).Div(fxp.Five).AsInteger[int]()
-		class := strings.ToLower(s.ClassWithReplacements())
-		if !strings.Contains(class, "missile") {
-			addPartToBuffer(&buffer, i18n.Text("Time"), i18n.Text("x1/%d, rounded up (min 1 second)", 1<<adj))
+		if !noTimeReduction {
+			castTime = i18n.Text("x1/%d, rounded up (min 1 second)", 1<<adj)
 		}
-		if !strings.Contains(class, "blocking") {
-			addPartToBuffer(&buffer, i18n.Text("Cost"), fmt.Sprintf("-%d", adj+1))
+		if !noCostReduction {
+			cost = fmt.Sprintf("-%d", adj+1)
 		}
-		return buffer.String()
 	}
+	// An override of "-" is dropped by addPartToBuffer, leaving that part out.
+	overrides := s.RitualOverridesWithReplacements()
+	var buffer strings.Builder
+	addPartToBuffer(&buffer, i18n.Text("Ritual"), cmp.Or(overrides.Ritual, ritual))
+	addPartToBuffer(&buffer, i18n.Text("Time"), cmp.Or(overrides.Time, castTime))
+	addPartToBuffer(&buffer, i18n.Text("Cost"), cmp.Or(overrides.Cost, cost))
+	return buffer.String()
 }
 
 // IsLeveled implements LeveledOwner.
@@ -1311,6 +1328,15 @@ func (s *Spell) ItemWithReplacements() string {
 	return nameable.Apply(s.Item, s.Replacements)
 }
 
+// RitualOverridesWithReplacements returns the ritual overrides with any replacements applied.
+func (s *Spell) RitualOverridesWithReplacements() RitualOverrides {
+	return RitualOverrides{
+		Ritual: nameable.Apply(s.RitualOverrides.Ritual, s.Replacements),
+		Time:   nameable.Apply(s.RitualOverrides.Time, s.Replacements),
+		Cost:   nameable.Apply(s.RitualOverrides.Cost, s.Replacements),
+	}
+}
+
 // RitualSkillNameWithReplacements returns the ritual skill name with any replacements applied.
 func (s *Spell) RitualSkillNameWithReplacements() string {
 	return nameable.Apply(s.RitualSkillName, s.Replacements)
@@ -1338,6 +1364,9 @@ func (s *Spell) FillWithNameableKeys(m, existing map[string]string) {
 		s.CastingTime,
 		s.Duration,
 		s.Item,
+		s.RitualOverrides.Ritual,
+		s.RitualOverrides.Time,
+		s.RitualOverrides.Cost,
 		s.RitualSkillName,
 	)
 	nameable.Extract(m, existing, s.College...)
@@ -1436,6 +1465,9 @@ func (s *SpellNonContainerOnlySyncData) hash(h hash.Hash) {
 	xhash.StringWithLen(h, s.CastingTime)
 	xhash.StringWithLen(h, s.Duration)
 	xhash.StringWithLen(h, s.Item)
+	xhash.StringWithLen(h, s.RitualOverrides.Ritual)
+	xhash.StringWithLen(h, s.RitualOverrides.Time)
+	xhash.StringWithLen(h, s.RitualOverrides.Cost)
 	xhash.StringWithLen(h, s.RitualSkillName)
 	xhash.Num64(h, s.PrereqCount)
 	s.Prereq.Hash(h)

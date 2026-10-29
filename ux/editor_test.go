@@ -273,6 +273,58 @@ func TestSpellEditorHasFeaturesPanelAndSwitch(t *testing.T) {
 	})
 }
 
+// panelBesideLabel returns the panel that follows the label bearing the given text among the panel's direct children,
+// or nil if there is none.
+func panelBesideLabel(p *unison.Panel, labelText string) *unison.Panel {
+	children := p.Children()
+	for i, child := range children {
+		if label, ok := child.Self.(*unison.Label); ok && label.String() == labelText && i+1 < len(children) {
+			return children[i+1]
+		}
+	}
+	return nil
+}
+
+// A non-container spell gets a field for each part of its rituals text, each wired to its own part; a spell container
+// has no rituals, so it gets none.
+func TestSpellEditorEditsEachRitualOverride(t *testing.T) {
+	t.Run("spell", func(t *testing.T) {
+		c := check.New(t)
+		sheet := newTestSheetForTemplate(t)
+		spell := gurps.NewSpell(sheet.Entity(), nil, false)
+		e, content := buildEditorContent(sheet, spell, initSpellEditor)
+		row := panelBesideLabel(content, i18n.Text("Rituals"))
+		if row == nil {
+			t.Fatal("expected a Rituals row in the spell editor")
+		}
+		for _, one := range []struct {
+			label string
+			text  string
+		}{
+			{i18n.Text("Ritual"), "must speak"},
+			{i18n.Text("Time"), "not reduced"},
+			{i18n.Text("Cost"), "-"},
+		} {
+			field := stringFieldLabeled(row, one.label)
+			if field == nil {
+				t.Fatalf("expected a field after the %s label in the Rituals row", one.label)
+			}
+			field.SetText(one.text)
+		}
+		c.Equal(gurps.RitualOverrides{Ritual: "must speak", Time: "not reduced", Cost: "-"}, e.editorData.RitualOverrides,
+			"each field edits its own part")
+		c.True(e.isModified(), "editing an override modifies the editor")
+	})
+
+	t.Run("spell container", func(t *testing.T) {
+		c := check.New(t)
+		sheet := newTestSheetForTemplate(t)
+		spell := gurps.NewSpell(sheet.Entity(), nil, true)
+		_, content := buildEditorContent(sheet, spell, initSpellEditor)
+		c.Nil(panelBesideLabel(content, i18n.Text("Rituals")), "a spell container has no rituals to override")
+	})
+}
+
 // Only a skill that can hold features offers the switch.
 func TestSkillEditorSwitchedOnCheckBoxOnlyForNonContainers(t *testing.T) {
 	t.Run("skill", func(t *testing.T) {

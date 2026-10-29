@@ -14,6 +14,7 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/difficulty"
+	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/toolbox/v2/check"
 )
 
@@ -335,4 +336,127 @@ func TestRitualMagicSpellWithOptionallySpecializedRitualSkill(t *testing.T) {
 	e.Recalculate()
 	c.True(water.RitualMagicSatisfied(nil, ""), "an unspecialized Ritual Magic satisfies a Water spell")
 	c.True(water.LevelData.Level > 0, "an unspecialized Ritual Magic gives a Water spell a level")
+}
+
+// TestSpellRitualsFollowLevelClassAndOverrides pins the rituals text each level band gives, the parts the missile,
+// blocking and enchantment classes leave out, and the ritual overrides, which replace a part at every level, drop it
+// when "-", and take replacements.
+func TestSpellRitualsFollowLevelClassAndOverrides(t *testing.T) {
+	const (
+		fullRitual  = "**Ritual:** need both hands and feet free and must speak"
+		quietRitual = "**Ritual:** speak quietly and make a gesture"
+		smallRitual = "**Ritual:** speak a word or two OR make a small gesture"
+		noRitual    = "**Ritual:** none"
+		halfTime    = "; **Time:** x1/2, rounded up (min 1 second)"
+	)
+	for _, tc := range []struct {
+		name      string
+		iq        fxp.Int
+		class     string
+		overrides RitualOverrides
+		answers   map[string]string
+		want      string
+	}{
+		{name: "below 10", iq: fxp.Nine, want: fullRitual + "; **Time:** Doubled"},
+		{name: "10 to 14", iq: fxp.Ten, want: quietRitual},
+		{name: "15 to 19", iq: fxp.Fifteen, want: smallRitual + "; **Cost:** -1"},
+		{name: "15 to 19 blocking", iq: fxp.Fifteen, class: "Blocking", want: smallRitual},
+		{name: "20 to 24", iq: fxp.Twenty, want: noRitual + halfTime + "; **Cost:** -2"},
+		{
+			name: "25 to 29",
+			iq:   fxp.TwentyFive,
+			want: noRitual + "; **Time:** x1/4, rounded up (min 1 second); **Cost:** -3",
+		},
+		{name: "20 to 24 missile", iq: fxp.Twenty, class: "Missile", want: noRitual + "; **Cost:** -2"},
+		{name: "20 to 24 blocking", iq: fxp.Twenty, class: "Blocking", want: noRitual + halfTime},
+		{name: "15 to 19 enchantment", iq: fxp.Fifteen, class: "Enchantment", want: smallRitual},
+		{name: "20 to 24 enchantment", iq: fxp.Twenty, class: "Enchantment", want: noRitual},
+		{
+			name:      "override beats the class",
+			iq:        fxp.Twenty,
+			class:     "Enchantment",
+			overrides: RitualOverrides{Cost: "full"},
+			want:      noRitual + "; **Cost:** full",
+		},
+		{
+			name:      "dash omits the part",
+			iq:        fxp.Twenty,
+			overrides: RitualOverrides{Time: "-", Cost: "-"},
+			want:      noRitual,
+		},
+		{
+			name:      "override applies where the level gives no part",
+			iq:        fxp.Ten,
+			overrides: RitualOverrides{Time: "not reduced", Cost: "not reduced"},
+			want:      quietRitual + "; **Time:** not reduced; **Cost:** not reduced",
+		},
+		{
+			name:      "override beats blocking",
+			iq:        fxp.Fifteen,
+			class:     "Blocking",
+			overrides: RitualOverrides{Cost: "full"},
+			want:      smallRitual + "; **Cost:** full",
+		},
+		{
+			name:      "ritual override leaves the other parts alone",
+			iq:        fxp.Nine,
+			overrides: RitualOverrides{Ritual: "must speak"},
+			want:      "**Ritual:** must speak; **Time:** Doubled",
+		},
+		{
+			name:      "overrides take replacements",
+			iq:        fxp.Twenty,
+			overrides: RitualOverrides{Ritual: "@Ritual@", Time: "@Time@", Cost: "@Cost@"},
+			answers:   map[string]string{"Ritual": "must speak", "Time": "as listed", "Cost": "full"},
+			want:      "**Ritual:** must speak; **Time:** as listed; **Cost:** full",
+		},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			c := check.New(t)
+			e := NewEntity()
+			e.SheetSettings.ShowSpellAdj = true
+			e.Attributes.Set[IntelligenceID].Adjustment = tc.iq - fxp.Ten
+			sp := addTestSpell(e, "Spell", fxp.Four)
+			if tc.class != "" {
+				sp.Class = tc.class
+			}
+			sp.RitualOverrides = tc.overrides
+			if tc.answers != nil {
+				sp.ApplyNameableKeys(tc.answers)
+			}
+			e.Recalculate()
+			c.Equal(tc.iq, sp.LevelData.Level, "a Hard spell at 4 points is IQ+0")
+			c.Equal(tc.want, sp.Rituals())
+		})
+	}
+}
+
+// TestSpellRitualOverridesAreSourceDataSavedOnlyWhenSet checks that the ritual overrides are saved only when one is
+// set, so that existing files re-save unchanged, load back, and are hashed, so that a library spell differing only
+// in one is reported as mismatched.
+func TestSpellRitualOverridesAreSourceDataSavedOnlyWhenSet(t *testing.T) {
+	c := check.New(t)
+	spell := NewSpell(NewEntity(), nil, false)
+	spell.Name = "Enchant"
+	data, err := jio.Marshal(spell)
+	c.NoError(err)
+	c.NotContains(string(data), `"rituals"`, "unset overrides aren't saved")
+	for _, one := range []struct {
+		part string
+		set  func()
+	}{
+		{"ritual", func() { spell.RitualOverrides.Ritual = "must speak" }},
+		{"time", func() { spell.RitualOverrides.Time = "not reduced" }},
+		{"cost", func() { spell.RitualOverrides.Cost = "-" }},
+	} {
+		hash := Hash64(spell)
+		one.set()
+		c.NotEqual(hash, Hash64(spell), "the %s override is source data and is hashed", one.part)
+	}
+	data, err = jio.Marshal(spell)
+	c.NoError(err)
+	c.Contains(string(data), `"rituals":{"ritual":"must speak","time":"not reduced","cost":"-"}`)
+	var restored Spell
+	c.NoError(jio.Unmarshal(data, &restored))
+	c.Equal(spell.RitualOverrides, restored.RitualOverrides, "the overrides load back")
 }

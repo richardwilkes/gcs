@@ -103,6 +103,7 @@ func initSpellEditor(e *editor[*gurps.Spell, *gurps.SpellEditData], content *uni
 		addLabelAndMultiLineStringField(content, i18n.Text("Casting Time"), "", &e.editorData.CastingTime)
 		addLabelAndMultiLineStringField(content, i18n.Text("Duration"), "", &e.editorData.Duration)
 		addLabelAndMultiLineStringField(content, i18n.Text("Item"), "", &e.editorData.Item)
+		addRitualOverrideFields(content, &e.editorData.RitualOverrides)
 	}
 	if !choice {
 		addTagsLabelAndField(content, &e.editorData.Tags)
@@ -119,7 +120,8 @@ func initSpellEditor(e *editor[*gurps.Spell, *gurps.SpellEditData], content *uni
 		content.AddChild(newNameablesPanel(&d.Nameables, func() map[string]int {
 			return nameableUses(append([]string{
 				d.Name, d.LocalNotes, d.PowerSource, d.Class, d.Resist, d.CastingCost, d.MaintenanceCost, d.CastingTime,
-				d.Duration, d.Item, d.RitualSkillName,
+				d.Duration, d.Item, d.RitualOverrides.Ritual, d.RitualOverrides.Time, d.RitualOverrides.Cost,
+				d.RitualSkillName,
 			}, d.College...), d.Prereq, d.Features, d.Weapons)
 		}, func() map[string]nameable.Detail { return grantedNameableDefinitions(d.Features) }, nil, nil, nil))
 		content.AddChild(newPrereqPanel(entity, &e.editorData.Prereq, prereq.TypesForNonEquipment, true).
@@ -135,4 +137,23 @@ func initSpellEditor(e *editor[*gurps.Spell, *gurps.SpellEditData], content *uni
 		}
 	}
 	return nil
+}
+
+// addRitualOverrideFields adds a row with a field for each part of the rituals text a spell's description can fix in
+// place of what its level gives.
+func addRitualOverrideFields(parent *unison.Panel, overrides *gurps.RitualOverrides) {
+	tip := i18n.Text("Leave blank to use the standard text for the spell's level, enter \"-\" to leave this part out, or enter the text to show in its place at every level")
+	wrapper, label := addFillWrapper(parent, i18n.Text("Rituals"), 6)
+	label.Tooltip = newWrappedTooltip(tip)
+	ritual := i18n.Text("Ritual")
+	wrapper.AddChild(NewFieldLeadingLabel(ritual, false))
+	addStringField(wrapper, ritual, tip, &overrides.Ritual)
+	// The time and cost fields follow "Time" and "Cost" labels, which would leave a screen reader and the Undo menu
+	// unable to tell them from the casting time and cost, so they are named in full.
+	wrapper.AddChild(NewFieldInteriorLeadingLabel(i18n.Text("Time"), false))
+	text := i18n.Text("Ritual Time")
+	addStringField(wrapper, text, tip, &overrides.Time).Accessibility.Name = text
+	wrapper.AddChild(NewFieldInteriorLeadingLabel(i18n.Text("Cost"), false))
+	text = i18n.Text("Ritual Cost")
+	addStringField(wrapper, text, tip, &overrides.Cost).Accessibility.Name = text
 }
