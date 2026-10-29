@@ -1359,6 +1359,11 @@ var allEnums = []*enumInfo{
 				Alt: "*From [Pyramid 3-83, pages 16-19](PY83:16)*",
 			},
 			{
+				Key:    "knowing_your_own_strength_no_lift",
+				String: "Knowing Your Own Strength (without Basic Lift adjustment)",
+				Alt:    "*From [Pyramid 3-83, pages 16-19](PY83:16)*",
+			},
+			{
 				Key: "no_school_grognard_damage",
 				Alt: "*From [Adjusting Swing Damage in Dungeon Fantasy](https://noschoolgrognard.blogspot.com/2013/04/adjusting-swing-damage-in-dungeon.html)*",
 			},

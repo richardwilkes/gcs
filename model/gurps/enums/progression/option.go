@@ -40,7 +40,7 @@ func (enum Option) Thrust(strength int) dice.Dice {
 			Modifier:   value%8/2 - 1,
 			Multiplier: 1,
 		}
-	case KnowingYourOwnStrength:
+	case KnowingYourOwnStrength, KnowingYourOwnStrengthNoLift:
 		if strength < 12 {
 			return dice.Dice{
 				Count:      1,
@@ -198,7 +198,7 @@ func (enum Option) Swing(strength int) dice.Dice {
 			Modifier:   value%8/2 - 1,
 			Multiplier: 1,
 		}
-	case KnowingYourOwnStrength:
+	case KnowingYourOwnStrength, KnowingYourOwnStrengthNoLift:
 		if strength < 10 {
 			return dice.Dice{
 				Count:      1,

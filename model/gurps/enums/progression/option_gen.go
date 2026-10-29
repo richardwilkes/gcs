@@ -21,6 +21,7 @@ import (
 const (
 	BasicSet Option = iota
 	KnowingYourOwnStrength
+	KnowingYourOwnStrengthNoLift
 	NoSchoolGrognardDamage
 	ThrustEqualsSwingMinus2
 	SwingEqualsThrustPlus2
@@ -44,6 +45,7 @@ const LastOption Option = PhoenixFlameD3
 var Options = []Option{
 	BasicSet,
 	KnowingYourOwnStrength,
+	KnowingYourOwnStrengthNoLift,
 	NoSchoolGrognardDamage,
 	ThrustEqualsSwingMinus2,
 	SwingEqualsThrustPlus2,
@@ -72,6 +74,8 @@ func (enum Option) Key() string {
 		return "basic_set"
 	case KnowingYourOwnStrength:
 		return "knowing_your_own_strength"
+	case KnowingYourOwnStrengthNoLift:
+		return "knowing_your_own_strength_no_lift"
 	case NoSchoolGrognardDamage:
 		return "no_school_grognard_damage"
 	case ThrustEqualsSwingMinus2:
@@ -100,6 +104,8 @@ func (enum Option) String() string {
 		return i18n.Text(`Basic Set`)
 	case KnowingYourOwnStrength:
 		return i18n.Text(`Knowing Your Own Strength`)
+	case KnowingYourOwnStrengthNoLift:
+		return i18n.Text(`Knowing Your Own Strength (without Basic Lift adjustment)`)
 	case NoSchoolGrognardDamage:
 		return i18n.Text(`No School Grognard Damage`)
 	case ThrustEqualsSwingMinus2:
@@ -127,6 +133,8 @@ func (enum Option) AltString() string {
 	case BasicSet:
 		return i18n.Text(`*The standard damage progression*`)
 	case KnowingYourOwnStrength:
+		return i18n.Text(`*From [Pyramid 3-83, pages 16-19](PY83:16)*`)
+	case KnowingYourOwnStrengthNoLift:
 		return i18n.Text(`*From [Pyramid 3-83, pages 16-19](PY83:16)*`)
 	case NoSchoolGrognardDamage:
 		return i18n.Text(`*From [Adjusting Swing Damage in Dungeon Fantasy](https://noschoolgrognard.blogspot.com/2013/04/adjusting-swing-damage-in-dungeon.html)*`)
