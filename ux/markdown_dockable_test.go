@@ -57,3 +57,32 @@ func TestMarkdownDockableNotModifiedWhenOpened(t *testing.T) {
 		}
 	}
 }
+
+// TestMarkdownDockableResolvesRelativePathsAgainstItsFile verifies that a markdown dockable opened from a file resolves
+// the relative links and images in its content against the file's own folder, while content that is not in a file
+// resolves them against the current directory. The working directory is captured when the dockable is built, before
+// its content is set and its images are first retrieved, so capturing it before the backing file path is known sends
+// every relative image to the wrong folder.
+func TestMarkdownDockableResolvesRelativePathsAgainstItsFile(t *testing.T) {
+	c := check.New(t)
+	dir := t.TempDir()
+	p := filepath.Join(dir, "notes.md")
+	c.NoError(os.WriteFile(p, []byte("![icon](images/icon.svg)\n"), 0o600))
+	for _, allowEditing := range []bool{true, false} {
+		opened, err := NewMarkdownDockable(p, allowEditing, false)
+		c.NoError(err, "allowEditing=%v", allowEditing)
+		d, ok := opened.(*MarkdownDockable)
+		c.True(ok, "allowEditing=%v: expected a markdown dockable", allowEditing)
+		if !ok {
+			continue
+		}
+		c.Equal(dir, d.markdown.ClientData()[WorkingDirKey],
+			"allowEditing=%v: a markdown file must resolve relative paths against its own folder", allowEditing)
+	}
+	d, ok := NewMarkdownDockableWithContent("Notes", "![icon](images/icon.svg)\n", false, false).(*MarkdownDockable)
+	c.True(ok, "expected a markdown dockable")
+	if ok {
+		c.Equal(".", d.markdown.ClientData()[WorkingDirKey],
+			"markdown content that is not in a file must resolve relative paths against the current directory")
+	}
+}

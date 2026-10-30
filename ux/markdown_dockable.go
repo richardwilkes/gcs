@@ -94,7 +94,6 @@ func newMarkdownDockable(filePath, content string, allowEditing, startInEditMode
 	d.SetLayout(&unison.FlexLayout{Columns: 1})
 
 	d.markdown = unison.NewMarkdown(true)
-	d.markdown.ClientData()[WorkingDirKey] = WorkingDirProvider(d)
 	insets := geom.NewUniformInsets(20)
 	d.markdown.SetBorder(unison.NewEmptyBorder(insets))
 	d.markdown.SetFocusable(true)
@@ -102,13 +101,17 @@ func newMarkdownDockable(filePath, content string, allowEditing, startInEditMode
 	// determines whether the dockable has been modified. Without this, a file stored with CRLF (or CR) line endings
 	// would be reported as modified the moment it was opened.
 	d.content = xstrings.NormalizeLineEndings(content)
-	d.markdown.SetContent(d.content, 0)
 	if allowEditing {
 		d.initFileEditor(d, filePath, "md", d.saveData, d)
 	} else {
 		// Content that can't be edited can't have unsaved changes either, so the dockable is only a viewer of it.
 		d.initFileViewer(d, filePath)
 	}
+	// The working directory that relative links and images resolve against comes from the backing file path, so it
+	// must be captured after that path is set, and before the content is set, since that is when the images are first
+	// retrieved and the markdown is not yet inside the dockable for the provider to find.
+	d.markdown.ClientData()[WorkingDirKey] = WorkingDirProvider(d)
+	d.markdown.SetContent(d.content, 0)
 
 	d.editor = NewMultiLineStringField(nil, "", "",
 		func() string { return d.content },
