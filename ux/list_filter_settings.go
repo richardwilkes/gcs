@@ -20,6 +20,7 @@ import (
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
+	"github.com/richardwilkes/unison/enums/behavior"
 	"github.com/richardwilkes/unison/enums/mod"
 )
 
@@ -73,7 +74,7 @@ func ShowListFilterSettings() {
 	d.RefLoader = d.load
 	d.SelectionSaver = d.saveSelected
 	d.HasSelection = func() bool { return len(d.selectedFilters()) != 0 }
-	d.ContentFollowsWidth = true
+	d.ContentWidthBehavior = behavior.Follow
 	d.ContentMinSize = listFilterSettingsMinSize
 	d.initSettings(d, &settingsSpec{
 		title: i18n.Text("Saved Filters"),

@@ -33,6 +33,7 @@ import (
 	"github.com/richardwilkes/toolbox/v2/xos"
 	"github.com/richardwilkes/toolbox/v2/xslices"
 	"github.com/richardwilkes/unison"
+	"github.com/richardwilkes/unison/enums/behavior"
 	"github.com/richardwilkes/unison/enums/check"
 )
 
@@ -95,7 +96,7 @@ func ShowGeneralSettings() {
 		return
 	}
 	d := &generalSettingsDockable{}
-	d.ContentFollowsWidth = true
+	d.ContentWidthBehavior = behavior.Follow
 	d.ContentMinSize = generalSettingsMinSize
 	d.initSettings(d, &settingsSpec{
 		title:             i18n.Text("General Settings"),

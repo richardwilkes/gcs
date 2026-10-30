@@ -20,9 +20,9 @@ import (
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
+	"github.com/richardwilkes/unison/enums/behavior"
 	"github.com/richardwilkes/unison/enums/paintstyle"
 	"github.com/richardwilkes/unison/enums/thememode"
-	"github.com/richardwilkes/unison/enums/weight"
 )
 
 type colorSettingsDockable struct {
@@ -36,6 +36,8 @@ func ShowColorSettings() {
 		return
 	}
 	d := &colorSettingsDockable{}
+	// The sections wrap to the view's width, but a view too narrow for even one of them scrolls sideways.
+	d.ContentWidthBehavior = behavior.HintedFill
 	d.initSettings(d, &settingsSpec{
 		title:             i18n.Text("Colors"),
 		ext:               gurps.ColorSettingsExt,
@@ -47,8 +49,14 @@ func ShowColorSettings() {
 	})
 }
 
+// initContent lays the sections out in a flow, so that they sit side by side when the view is wide enough for both and
+// stack when it is not.
 func (d *colorSettingsDockable) initContent(content *unison.Panel) {
-	d.content = initSettingsContent(content, 4)
+	content.SetLayout(&unison.FlowLayout{
+		HSpacing: unison.StdHSpacing * 4,
+		VSpacing: unison.DefaultLabelTheme.Font.LineHeight(),
+	})
+	d.content = content
 	d.fill()
 }
 
@@ -76,47 +84,48 @@ func (d *colorSettingsDockable) sync() {
 }
 
 func (d *colorSettingsDockable) fill() {
-	foundTint := false
-	d.createHeader(i18n.Text("Theme Colors"), 0, false)
+	section := d.createSection(i18n.Text("Theme Colors"), "")
+	inTints := false
 	for _, one := range colors.Current() {
-		if !foundTint && strings.HasPrefix(one.ID, "tint_") {
-			foundTint = true
-			d.createHeader(i18n.Text("Sheet Block Tints"), unison.StdVSpacing*4, false)
-			d.createHeader(i18n.Text("(Alpha channel > 0 enables the tint, while 0 turns it off)"), 0, true)
+		if !inTints && strings.HasPrefix(one.ID, "tint_") {
+			inTints = true
+			section = d.createSection(i18n.Text("Sheet Block Tints"),
+				i18n.Text("Alpha channel > 0 enables the tint, while 0 turns it off"))
 		}
-		d.content.AddChild(NewFieldLeadingLabel(one.Title, false))
-		d.createColorWellField(one, true)
-		d.createColorWellField(one, false)
-		d.createResetField(one)
+		section.AddChild(NewFieldLeadingLabel(one.Title, false))
+		light := d.createColorWellField(section, one, true)
+		dark := d.createColorWellField(section, one, false)
+		d.createResetField(section, one, light, dark)
 	}
 }
 
-func (d *colorSettingsDockable) createHeader(title string, topMargin float32, small bool) {
-	label := unison.NewLabel()
-	if topMargin > 0 {
-		label.SetBorder(unison.NewEmptyBorder(geom.Insets{Top: topMargin}))
+// createSection adds a section to the content for rows of colors, each a name, a well apiece for the color's light and
+// dark mode variants and a reset button, with the mode names over the wells and, when note is not empty, the note
+// under the title.
+func (d *colorSettingsDockable) createSection(title, note string) *unison.Panel {
+	section := newSettingsSection(d.content, title, 4)
+	if note != "" {
+		label := unison.NewLabel()
+		label.Font = unison.SystemFont
+		label.SetTitle(note)
+		label.SetLayoutData(&unison.FlexLayoutData{HSpan: 4})
+		section.AddChild(label)
 	}
-	desc := label.Font.Descriptor()
-	if small {
-		desc.Size *= 0.8
-	} else {
-		label.Underline = true
+	section.AddChild(unison.NewPanel()) // Nothing heads the name column...
+	for _, mode := range []thememode.Enum{thememode.Light, thememode.Dark} {
+		label := unison.NewLabel()
+		label.SetTitle(mode.String())
+		label.SetLayoutData(&unison.FlexLayoutData{HAlign: align.Middle})
+		section.AddChild(label)
 	}
-	desc.Weight = weight.Bold
-	label.Font = desc.Font()
-	label.SetTitle(title)
-	label.SetLayoutData(&unison.FlexLayoutData{
-		HSpan:  4,
-		HAlign: align.Middle,
-		VAlign: align.Middle,
-	})
-	d.content.AddChild(label)
+	section.AddChild(unison.NewPanel()) // ...or the reset column.
+	return section
 }
 
 // createColorWellField adds the well that edits the light or dark mode variant of the color. Each well is named for
 // both the color and the mode, since only the first of the two follows the label that names the row, and it would take
 // the label's text as its name while the second went without one.
-func (d *colorSettingsDockable) createColorWellField(c *colors.ThemedColor, light bool) {
+func (d *colorSettingsDockable) createColorWellField(section *unison.Panel, c *colors.ThemedColor, light bool) *unison.Well {
 	w := unison.NewWell()
 	w.Mask = unison.ColorWellMask
 	if light {
@@ -140,10 +149,15 @@ func (d *colorSettingsDockable) createColorWellField(c *colors.ThemedColor, ligh
 			}
 		}
 	}
-	d.content.AddChild(w)
+	w.SetLayoutData(&unison.FlexLayoutData{
+		HAlign: align.Middle,
+		VAlign: align.Middle,
+	})
+	section.AddChild(w)
+	return w
 }
 
-func (d *colorSettingsDockable) createResetField(c *colors.ThemedColor) {
+func (d *colorSettingsDockable) createResetField(section *unison.Panel, c *colors.ThemedColor, light, dark *unison.Well) {
 	b := unison.NewSVGButton(svg.Reset)
 	b.Tooltip = newWrappedTooltip(i18n.Text("Reset this color"))
 	b.ClickCallback = func() {
@@ -153,14 +167,8 @@ func (d *colorSettingsDockable) createResetField(c *colors.ThemedColor) {
 					continue
 				}
 				*c.Color = *v.Color
-				i := b.Parent().IndexOfChild(b)
-				children := b.Parent().Children()
-				if w, ok := children[i-2].Self.(*unison.Well); ok {
-					w.SetInk(c.Color.Light)
-				}
-				if w, ok := children[i-1].Self.(*unison.Well); ok {
-					w.SetInk(c.Color.Dark)
-				}
+				light.SetInk(c.Color.Light)
+				dark.SetInk(c.Color.Dark)
 				unison.ThemeChanged()
 				break
 			}
@@ -170,7 +178,7 @@ func (d *colorSettingsDockable) createResetField(c *colors.ThemedColor) {
 		HAlign: align.Start,
 		VAlign: align.Middle,
 	})
-	d.content.AddChild(b)
+	section.AddChild(b)
 }
 
 func (d *colorSettingsDockable) load(fileSystem fs.FS, filePath string) error {

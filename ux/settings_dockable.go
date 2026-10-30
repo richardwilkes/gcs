@@ -53,9 +53,11 @@ type SettingsDockable struct {
 	SelectionSaver func(filePath string) error
 	// HasSelection reports whether anything is selected, which Export Selected… needs to be enabled.
 	HasSelection func() bool
-	// ContentFollowsWidth, when set, makes the content as wide as the view, never wider, so that it doesn't scroll
-	// sideways however narrow the view becomes; it must then fit its content to whatever width it is given.
-	ContentFollowsWidth bool
+	// ContentWidthBehavior is how the content's width follows the view's. Left Unmodified, it is Fill: the content is
+	// at least as wide as the view. Follow makes it exactly as wide, never wider, so that it doesn't scroll sideways
+	// however narrow the view becomes, and it must then fit its content to whatever width it is given. HintedFill gives
+	// it the view's width to lay itself out within, for content that wraps to fit, but lets it be wider when it cannot.
+	ContentWidthBehavior behavior.Enum
 	// ContentMinSize is the smallest size the view lets its content be shrunk to, below which the content would be
 	// hidden or too cramped to use. The view scrolls rather than shrinking it further.
 	ContentMinSize geom.Size
@@ -117,8 +119,8 @@ func initSettingsSections(content *unison.Panel) {
 	})
 }
 
-// newSettingsSection adds a section to content laid out by initSettingsSections: a grid of the given number of
-// columns, as wide as the content, under a header with the title. It returns the grid for the section's rows.
+// newSettingsSection adds a section to content: a grid of the given number of columns under a header with the title,
+// as wide as the content when it is laid out by initSettingsSections. It returns the grid for the section's rows.
 func newSettingsSection(content *unison.Panel, title string, columns int) *unison.Panel {
 	section := unison.NewPanel()
 	section.SetLayout(&unison.FlexLayout{
@@ -226,9 +228,9 @@ func (d *SettingsDockable) Setup(addToStartToolbar, addToEndToolbar, initContent
 	content.SetBorder(unison.NewEmptyBorder(geom.NewUniformInsets(unison.StdHSpacing * 2)))
 	initContent(content)
 	scroller := unison.NewScrollPanel()
-	widthBehavior := behavior.Fill
-	if d.ContentFollowsWidth {
-		widthBehavior = behavior.Follow
+	widthBehavior := d.ContentWidthBehavior
+	if widthBehavior == behavior.Unmodified {
+		widthBehavior = behavior.Fill
 	}
 	scroller.SetContent(content, widthBehavior, behavior.Fill)
 	scroller.SetLayoutData(&unison.FlexLayoutData{
