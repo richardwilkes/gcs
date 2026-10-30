@@ -13,11 +13,14 @@ import (
 	"os"
 	"path/filepath"
 	"reflect"
+	"slices"
 	"strconv"
 	"testing"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/display"
+	"github.com/richardwilkes/gcs/v5/model/paper"
 	"github.com/richardwilkes/gcs/v5/ux/uxtest"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/toolbox/v2/geom"
@@ -256,6 +259,73 @@ func TestSheetSettingsNumberFormatWidgetsWriteTheirOwnSetting(t *testing.T) {
 			}
 		}
 		c.Equal(updates+2, len(recorder.updates), "each %s change must notify the open sheets", w.name)
+	}
+}
+
+// TestSheetSettingsDisplayPopupsWriteTheirOwnSetting checks that each popup saying where a kind of detail is shown
+// writes its own setting and no other, notifying the open sheets, and that sync() shows each popup its setting. The
+// popups are paired with their settings here independently of the accessor each carries, since the rows differ only
+// in that accessor and a slip there is the most likely error.
+func TestSheetSettingsDisplayPopupsWriteTheirOwnSetting(t *testing.T) {
+	c := check.New(t)
+	owner := newEntityPanelWithFlaggedSettings()
+	d, recorder := newTestSheetSettingsDockable(t, owner)
+	s := owner.entity.SheetSettings
+	settings := func() []display.Option {
+		return []display.Option{s.UserDescriptionDisplay, s.ModifiersDisplay, s.NotesDisplay, s.SkillLevelAdjDisplay}
+	}
+	c.Equal(len(settings()), len(d.displayPopups), "a popup for each kind of detail")
+	for i, one := range d.displayPopups {
+		before := settings()
+		updates := len(recorder.updates)
+		// A choice the popup does not already show, so that selecting it fires the popup's callback.
+		choice := display.Options[(slices.Index(display.Options, before[i])+1)%len(display.Options)]
+		one.popup.Select(choice)
+		expected := slices.Clone(before)
+		expected[i] = choice
+		c.Equal(expected, settings(), "popup #%d must write its own setting and no other", i)
+		c.Equal(updates+1, len(recorder.updates), "popup #%d must notify the open sheets", i)
+	}
+	s.UserDescriptionDisplay = display.Options[0]
+	s.ModifiersDisplay = display.Options[1]
+	s.NotesDisplay = display.Options[2]
+	s.SkillLevelAdjDisplay = display.Options[3]
+	d.sync()
+	for i, one := range d.displayPopups {
+		selected, ok := one.popup.Selected()
+		c.True(ok, "popup #%d must have a selection", i)
+		c.Equal(settings()[i], selected, "popup #%d must show its setting", i)
+	}
+}
+
+// TestSheetSettingsMarginFieldsWriteTheirOwnSetting checks the same for the page margin fields: each writes its own
+// margin and no other, notifying the open sheets, and sync() shows each field its margin.
+func TestSheetSettingsMarginFieldsWriteTheirOwnSetting(t *testing.T) {
+	c := check.New(t)
+	owner := newEntityPanelWithFlaggedSettings()
+	d, recorder := newTestSheetSettingsDockable(t, owner)
+	page := owner.entity.SheetSettings.Page
+	margins := func() []paper.Length {
+		return []paper.Length{page.TopMargin, page.BottomMargin, page.LeftMargin, page.RightMargin}
+	}
+	c.Equal(len(margins()), len(d.marginFields), "a field for each margin")
+	for i, one := range d.marginFields {
+		before := margins()
+		updates := len(recorder.updates)
+		value := paper.Length{Length: float64(i + 1), Units: paper.Centimeter}
+		one.field.SetText(value.String())
+		expected := slices.Clone(before)
+		expected[i] = value
+		c.Equal(expected, margins(), "field #%d must write its own margin and no other", i)
+		c.Equal(updates+1, len(recorder.updates), "field #%d must notify the open sheets", i)
+	}
+	page.TopMargin = paper.Length{Length: 5, Units: paper.Millimeter}
+	page.BottomMargin = paper.Length{Length: 6, Units: paper.Millimeter}
+	page.LeftMargin = paper.Length{Length: 7, Units: paper.Millimeter}
+	page.RightMargin = paper.Length{Length: 8, Units: paper.Millimeter}
+	d.sync()
+	for i, one := range d.marginFields {
+		c.Equal(margins()[i].String(), one.field.Text(), "field #%d must show its margin", i)
 	}
 }
 

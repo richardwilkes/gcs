@@ -26,6 +26,7 @@ import (
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/drag"
 	"github.com/richardwilkes/unison/enums/align"
+	"github.com/richardwilkes/unison/enums/behavior"
 	"github.com/richardwilkes/unison/enums/check"
 	"github.com/richardwilkes/unison/enums/mod"
 	"github.com/richardwilkes/unison/enums/paintstyle"
@@ -37,6 +38,10 @@ var _ GroupedCloser = &sheetSettingsDockable{}
 // it.
 const sellMoneyColumns = 3
 
+// sheetSettingsMinSize is the smallest the Sheet Settings view lets its content be shrunk to, which its widest row,
+// the damage progression popup beside its label, needs to show whole.
+var sheetSettingsMinSize = geom.NewSize(540, 200)
+
 // EntityPanel defines methods for a panel that can hold an entity.
 type EntityPanel interface {
 	unison.Paneler
@@ -45,27 +50,21 @@ type EntityPanel interface {
 
 type sheetSettingsDockable struct {
 	SettingsDockable
-	owner                     EntityPanel
-	damageProgressionPopup    *unison.PopupMenu[progression.Option]
-	options                   []sheetOptionCheckBox
-	lengthUnitsPopup          *unison.PopupMenu[fxp.LengthUnit]
-	weightUnitsPopup          *unison.PopupMenu[fxp.WeightUnit]
-	numberFormats             []sheetNumberFormatRow
-	userDescDisplayPopup      *unison.PopupMenu[display.Option]
-	modifiersDisplayPopup     *unison.PopupMenu[display.Option]
-	notesDisplayPopup         *unison.PopupMenu[display.Option]
-	skillLevelAdjDisplayPopup *unison.PopupMenu[display.Option]
-	buyPercentField           *PercentageField
-	sellPercentField          *PercentageField
-	sellMoneyPanel            *unison.Panel
-	sellMoneyRows             [][]unison.Paneler // the widgets of each row of the sell money list, for banding
-	sellMoneyDropping         bool
-	orientationPopup          *unison.PopupMenu[paper.Orientation]
-	paperSizeField            *unison.Field
-	topMarginField            *unison.Field
-	leftMarginField           *unison.Field
-	bottomMarginField         *unison.Field
-	rightMarginField          *unison.Field
+	owner                  EntityPanel
+	damageProgressionPopup *unison.PopupMenu[progression.Option]
+	options                []sheetOptionCheckBox
+	displayPopups          []sheetDisplayPopup
+	lengthUnitsPopup       *unison.PopupMenu[fxp.LengthUnit]
+	weightUnitsPopup       *unison.PopupMenu[fxp.WeightUnit]
+	numberFormats          []sheetNumberFormatRow
+	buyPercentField        *PercentageField
+	sellPercentField       *PercentageField
+	sellMoneyPanel         *unison.Panel
+	sellMoneyRows          [][]unison.Paneler // the widgets of each row of the sell money list, for banding
+	sellMoneyDropping      bool
+	paperSizeField         *unison.Field
+	orientationPopup       *unison.PopupMenu[paper.Orientation]
+	marginFields           []sheetMarginField
 }
 
 // sheetOption describes one of the boolean sheet settings the dockable presents as a checkbox. The setting is reached
@@ -98,78 +97,23 @@ type sheetNumberFormatRow struct {
 	format func(s *gurps.SheetSettings) *fxp.NumberFormat
 }
 
-// sheetOptions returns the boolean sheet settings the dockable presents as checkboxes, in the order they are shown.
-func sheetOptions() []sheetOption {
+// sheetDisplayPopup pairs a popup with the setting that says where one kind of detail is shown, so that sync() can bring
+// it back into line. The setting is reached through an accessor, as a sheetOption's is.
+type sheetDisplayPopup struct {
+	popup  *unison.PopupMenu[display.Option]
+	option func(s *gurps.SheetSettings) *display.Option
+}
+
+// sheetMarginField pairs a field with the page margin it edits, so that sync() can bring it back into line. The margin
+// is reached through an accessor, as a sheetOption's setting is.
+type sheetMarginField struct {
+	field  *unison.Field
+	margin func(s *gurps.SheetSettings) *paper.Length
+}
+
+// damageOptions returns the boolean settings the Damage section presents as checkboxes, in the order they are shown.
+func damageOptions() []sheetOption {
 	return []sheetOption{
-		{
-			title:    i18n.Text("Show library source column"),
-			field:    func(s *gurps.SheetSettings) *bool { return &s.HideSourceMismatch },
-			inverted: true,
-			fullSync: true,
-		},
-		{
-			title:    i18n.Text("Show page reference column"),
-			field:    func(s *gurps.SheetSettings) *bool { return &s.HidePageRefColumn },
-			inverted: true,
-			fullSync: true,
-		},
-		{
-			title:    i18n.Text("Show tech level (TL) column"),
-			field:    func(s *gurps.SheetSettings) *bool { return &s.HideTLColumn },
-			inverted: true,
-			fullSync: true,
-		},
-		{
-			title:    i18n.Text("Show legality class (LC) column"),
-			field:    func(s *gurps.SheetSettings) *bool { return &s.HideLCColumn },
-			inverted: true,
-			fullSync: true,
-		},
-		{
-			title: i18n.Text("Show trait modifier cost adjustments"),
-			field: func(s *gurps.SheetSettings) *bool { return &s.ShowTraitModifierAdj },
-		},
-		{
-			title: i18n.Text("Show equipment modifier cost & weight adjustments"),
-			field: func(s *gurps.SheetSettings) *bool { return &s.ShowEquipmentModifierAdj },
-		},
-		{
-			title:    i18n.Text("Show all attacks"),
-			field:    func(s *gurps.SheetSettings) *bool { return &s.ShowAllWeapons },
-			fullSync: true,
-		},
-		{
-			title:    i18n.Text("Hide unused columns in the melee & ranged attack tables"),
-			field:    func(s *gurps.SheetSettings) *bool { return &s.HideUnusedWeaponColumns },
-			fullSync: true,
-		},
-		{
-			title: i18n.Text("Show spell ritual, cost & time adjustments"),
-			field: func(s *gurps.SheetSettings) *bool { return &s.ShowSpellAdj },
-		},
-		{
-			title: i18n.Text("Show the title instead of the name in the footer"),
-			field: func(s *gurps.SheetSettings) *bool { return &s.UseTitleInFooter },
-		},
-		{
-			title:   i18n.Text("Use Multiplicative Modifiers"),
-			pageRef: "P102",
-			field:   func(s *gurps.SheetSettings) *bool { return &s.UseMultiplicativeModifiers },
-		},
-		{
-			title:   i18n.Text("Use Half-Stat Defaults"),
-			pageRef: "PY65:30",
-			field:   func(s *gurps.SheetSettings) *bool { return &s.UseHalfStatDefaults },
-		},
-		{
-			title:   i18n.Text("Use Modifying Dice + Adds"),
-			pageRef: "B269",
-			field:   func(s *gurps.SheetSettings) *bool { return &s.UseModifyingDicePlusAdds },
-		},
-		{
-			title: i18n.Text("Exclude unspent points from total"),
-			field: func(s *gurps.SheetSettings) *bool { return &s.ExcludeUnspentPointsFromTotal },
-		},
 		{
 			title: i18n.Text("Show Lifting ST-based damage"),
 			field: func(s *gurps.SheetSettings) *bool { return &s.ShowLiftingSTDamage },
@@ -179,10 +123,30 @@ func sheetOptions() []sheetOption {
 			pageRef: "PY120:7",
 			field:   func(s *gurps.SheetSettings) *bool { return &s.ShowIQBasedDamage },
 		},
+	}
+}
+
+// ruleOptions returns the boolean settings the Rules section presents as checkboxes, in the order they are shown.
+func ruleOptions() []sheetOption {
+	return []sheetOption{
 		{
-			title:    i18n.Text("Hide conditional modifiers whose total is zero"),
-			field:    func(s *gurps.SheetSettings) *bool { return &s.HideZeroValueConditionalMods },
-			fullSync: true,
+			title:   i18n.Text("Multiplicative Modifiers"),
+			pageRef: "P102",
+			field:   func(s *gurps.SheetSettings) *bool { return &s.UseMultiplicativeModifiers },
+		},
+		{
+			title:   i18n.Text("Half-Stat Defaults"),
+			pageRef: "PY65:30",
+			field:   func(s *gurps.SheetSettings) *bool { return &s.UseHalfStatDefaults },
+		},
+		{
+			title:   i18n.Text("Modifying Dice + Adds"),
+			pageRef: "B269",
+			field:   func(s *gurps.SheetSettings) *bool { return &s.UseModifyingDicePlusAdds },
+		},
+		{
+			title: i18n.Text("Exclude unspent points from total"),
+			field: func(s *gurps.SheetSettings) *bool { return &s.ExcludeUnspentPointsFromTotal },
 		},
 		{
 			title:    i18n.Text("Disable traits whose prerequisites are unsatisfied"),
@@ -193,12 +157,86 @@ func sheetOptions() []sheetOption {
 	}
 }
 
+// columnOptions returns the boolean settings the Columns section presents as checkboxes, in the order they are shown.
+func columnOptions() []sheetOption {
+	return []sheetOption{
+		{
+			title:    i18n.Text("Show library source"),
+			field:    func(s *gurps.SheetSettings) *bool { return &s.HideSourceMismatch },
+			inverted: true,
+			fullSync: true,
+		},
+		{
+			title:    i18n.Text("Show page reference"),
+			field:    func(s *gurps.SheetSettings) *bool { return &s.HidePageRefColumn },
+			inverted: true,
+			fullSync: true,
+		},
+		{
+			title:    i18n.Text("Show tech level (TL)"),
+			field:    func(s *gurps.SheetSettings) *bool { return &s.HideTLColumn },
+			inverted: true,
+			fullSync: true,
+		},
+		{
+			title:    i18n.Text("Show legality class (LC)"),
+			field:    func(s *gurps.SheetSettings) *bool { return &s.HideLCColumn },
+			inverted: true,
+			fullSync: true,
+		},
+		{
+			title:    i18n.Text("Hide unused columns in the melee & ranged attack tables"),
+			field:    func(s *gurps.SheetSettings) *bool { return &s.HideUnusedWeaponColumns },
+			fullSync: true,
+		},
+	}
+}
+
+// displayOptions returns the boolean settings the Display section presents as checkboxes, in the order they are shown.
+func displayOptions() []sheetOption {
+	return []sheetOption{
+		{
+			title: i18n.Text("Show trait modifier cost adjustments"),
+			field: func(s *gurps.SheetSettings) *bool { return &s.ShowTraitModifierAdj },
+		},
+		{
+			title: i18n.Text("Show equipment modifier cost & weight adjustments"),
+			field: func(s *gurps.SheetSettings) *bool { return &s.ShowEquipmentModifierAdj },
+		},
+		{
+			title: i18n.Text("Show spell ritual, cost & time adjustments"),
+			field: func(s *gurps.SheetSettings) *bool { return &s.ShowSpellAdj },
+		},
+		{
+			title:    i18n.Text("Show all attacks"),
+			field:    func(s *gurps.SheetSettings) *bool { return &s.ShowAllWeapons },
+			fullSync: true,
+		},
+		{
+			title:    i18n.Text("Hide conditional modifiers whose total is zero"),
+			field:    func(s *gurps.SheetSettings) *bool { return &s.HideZeroValueConditionalMods },
+			fullSync: true,
+		},
+		{
+			title: i18n.Text("Show the title instead of the name in the footer"),
+			field: func(s *gurps.SheetSettings) *bool { return &s.UseTitleInFooter },
+		},
+	}
+}
+
+// sheetOptions returns every boolean sheet setting the dockable presents as a checkbox, in the order they are shown.
+func sheetOptions() []sheetOption {
+	return slices.Concat(damageOptions(), ruleOptions(), columnOptions(), displayOptions())
+}
+
 // ShowSheetSettings shows the Sheet Settings. Pass nil to edit the defaults, or a sheet to edit that sheet's.
 func ShowSheetSettings(owner EntityPanel) {
 	if ActivateDockableOfType(func(s *sheetSettingsDockable) bool { return s.owner == owner }) {
 		return
 	}
 	d := &sheetSettingsDockable{owner: owner}
+	d.ContentWidthBehavior = behavior.Follow
+	d.ContentMinSize = sheetSettingsMinSize
 	d.initSettings(d, &settingsSpec{
 		title:             sheetSettingsTabTitle(owner),
 		ext:               gurps.SheetSettingsExt,
@@ -236,56 +274,83 @@ func (d *sheetSettingsDockable) settings() *gurps.SheetSettings {
 	return gurps.GlobalSettings().Sheet
 }
 
+// initContent builds the content as sections, each a grid of its own so that its label column is only as wide as its
+// own labels, in the order the settings tend to be wanted, so that what a narrow view shows without scrolling is what
+// is most often looked for.
 func (d *sheetSettingsDockable) initContent(content *unison.Panel) {
 	initSettingsSections(content)
-	d.createDamageProgression(content)
-	d.createOptions(content)
-	d.createUnitsOfMeasurement(content)
-	d.createDecimalPlaces(content)
-	d.createTrading(content)
-	d.createWhereToDisplay(content)
-	d.createPageSettings(content)
+	d.createDamageSection(content)
+	d.createRulesSection(content)
+	d.createColumnsSection(content)
+	d.createDisplaySection(content)
+	d.createUnitsSection(content)
+	d.createDecimalPlacesSection(content)
+	d.createTradingSection(content)
+	d.createPageSection(content)
 }
 
-func (d *sheetSettingsDockable) createDamageProgression(content *unison.Panel) {
+func (d *sheetSettingsDockable) createDamageSection(content *unison.Panel) {
+	section := newSettingsSection(content, i18n.Text("Damage"), 2)
 	s := d.settings()
-	panel := unison.NewPanel()
-	panel.SetLayout(&unison.FlexLayout{
-		Columns:  2,
-		HSpacing: unison.StdHSpacing,
-		VSpacing: unison.StdVSpacing,
-	})
 	desc := unison.NewMarkdown(true)
 	// The description sits under the popup with no label of its own, so it is named outright for the screen readers
 	// whose cursor moves into a document.
 	desc.Accessibility.Name = i18n.Text("Damage Progression Description")
 	desc.SetContent(s.DamageProgression.AltString(), -1)
-	d.damageProgressionPopup = d.createSettingPopup(panel, i18n.Text("Damage Progression"),
-		progression.Options, s.DamageProgression,
-		func(item progression.Option) {
+	d.damageProgressionPopup = d.addSettingPopup(section, i18n.Text("Progression"), progression.Options,
+		s.DamageProgression, func(item progression.Option) {
 			d.settings().DamageProgression = item
 			desc.SetContent(item.AltString(), -1)
 			desc.MarkForLayoutRecursivelyUpward()
 			desc.MarkForRedraw()
 		})
+	// The label says only what the section's title leaves to say, so the popup is named in full for screen readers,
+	// which hear no title.
+	d.damageProgressionPopup.Accessibility.Name = i18n.Text("Damage Progression")
 	d.damageProgressionPopup.Tooltip = newWrappedTooltip(i18n.Text("Determines the method used to calculate thrust and swing damage"))
-	panel.AddChild(unison.NewPanel())
-	panel.AddChild(desc)
-	content.AddChild(panel)
+	section.AddChild(unison.NewPanel()) // The description sits under the popup, not its label.
+	section.AddChild(desc)
+	d.addOptions(section, damageOptions())
 }
 
-func (d *sheetSettingsDockable) createOptions(content *unison.Panel) {
+func (d *sheetSettingsDockable) createRulesSection(content *unison.Panel) {
+	d.addOptions(newSettingsSection(content, i18n.Text("Rules"), 1), ruleOptions())
+}
+
+func (d *sheetSettingsDockable) createColumnsSection(content *unison.Panel) {
+	d.addOptions(newSettingsSection(content, i18n.Text("Columns"), 1), columnOptions())
+}
+
+func (d *sheetSettingsDockable) createDisplaySection(content *unison.Panel) {
+	section := newSettingsSection(content, i18n.Text("Display"), 1)
+	d.addOptions(section, displayOptions())
+	grid := newSettingsSubgroup(section, i18n.Text("Where to display"), 2)
+	d.displayPopups = []sheetDisplayPopup{
+		d.addDisplayPopup(grid, i18n.Text("User Description"),
+			func(s *gurps.SheetSettings) *display.Option { return &s.UserDescriptionDisplay }),
+		d.addDisplayPopup(grid, i18n.Text("Modifiers"),
+			func(s *gurps.SheetSettings) *display.Option { return &s.ModifiersDisplay }),
+		d.addDisplayPopup(grid, i18n.Text("Notes"),
+			func(s *gurps.SheetSettings) *display.Option { return &s.NotesDisplay }),
+		d.addDisplayPopup(grid, i18n.Text("Skill Level Adjustments"),
+			func(s *gurps.SheetSettings) *display.Option { return &s.SkillLevelAdjDisplay }),
+	}
+}
+
+// addDisplayPopup adds the popup that chooses where the kind of detail the title names is shown, for the setting that
+// option reaches.
+func (d *sheetSettingsDockable) addDisplayPopup(grid *unison.Panel, title string, option func(s *gurps.SheetSettings) *display.Option) sheetDisplayPopup {
+	popup := d.addSettingPopup(grid, title, display.Options, *option(d.settings()),
+		func(choice display.Option) { *option(d.settings()) = choice })
+	return sheetDisplayPopup{popup: popup, option: option}
+}
+
+// addOptions adds a checkbox for each of the options to the section, each spanning every column of it.
+func (d *sheetSettingsDockable) addOptions(section *unison.Panel, options []sheetOption) {
 	s := d.settings()
-	panel := unison.NewPanel()
-	panel.SetLayout(&unison.FlexLayout{
-		Columns:  1,
-		HSpacing: unison.StdHSpacing,
-		VSpacing: unison.StdVSpacing,
-	})
-	options := sheetOptions()
-	d.options = make([]sheetOptionCheckBox, 0, len(options))
+	span := flexColumns(section)
 	for _, option := range options {
-		box := d.addCheckBox(panel, option.title, option.pageRef, option.checked(s), func(checked bool) {
+		box := d.addCheckBox(section, option.title, option.pageRef, span, option.checked(s), func(checked bool) {
 			option.apply(d.settings(), checked)
 			d.syncSheet(gurps.SheetSettingsGeneralPart, option.fullSync)
 		})
@@ -294,83 +359,70 @@ func (d *sheetSettingsDockable) createOptions(content *unison.Panel) {
 		}
 		d.options = append(d.options, sheetOptionCheckBox{box: box, option: option})
 	}
-	content.AddChild(panel)
 }
 
-// addCheckBox adds a checkbox with the given title to the panel, followed by a link to the page reference when one is
-// given, and returns it. The click callback is handed the state the box was left in. The reference is a single label
-// with the link inside it, so a screen reader reads it whole and still finds the link.
-func (d *sheetSettingsDockable) addCheckBox(panel *unison.Panel, title, pageRef string, checked bool, onClick func(checked bool)) *unison.CheckBox {
+// addCheckBox adds a checkbox with the given title to the panel, spanning span of its columns and followed by a link to
+// the page reference when one is given, and returns it. The click callback is handed the state the box was left in.
+// The reference is a single label with the link inside it, so a screen reader reads it whole and still finds the link.
+func (d *sheetSettingsDockable) addCheckBox(panel *unison.Panel, title, pageRef string, span int, checked bool, onClick func(checked bool)) *unison.CheckBox {
 	checkbox := unison.NewCheckBox()
 	checkbox.SetTitle(title)
 	checkbox.State = check.FromBool(checked)
 	checkbox.ClickCallback = func() { onClick(checkbox.State == check.On) }
-	if pageRef == "" {
-		panel.AddChild(checkbox)
-		return checkbox
+	added := checkbox.AsPanel()
+	if pageRef != "" {
+		added = unison.NewPanel()
+		added.SetLayout(&unison.FlexLayout{Columns: 2, HSpacing: unison.StdHSpacing})
+		added.AddChild(checkbox)
+		label := NewSingleLineLabel()
+		label.Font = checkbox.Font
+		label.LinkRefs(openPageRefLink, pageRef)
+		label.SetTitle("(" + pageRef + ")")
+		added.AddChild(label)
 	}
-	wrapper := unison.NewPanel()
-	wrapper.SetLayout(&unison.FlexLayout{Columns: 2, HSpacing: unison.StdHSpacing})
-	wrapper.AddChild(checkbox)
-	label := NewSingleLineLabel()
-	label.Font = checkbox.Font
-	label.LinkRefs(openPageRefLink, pageRef)
-	label.SetTitle("(" + pageRef + ")")
-	wrapper.AddChild(label)
-	panel.AddChild(wrapper)
+	added.SetLayoutData(&unison.FlexLayoutData{HSpan: span})
+	panel.AddChild(added)
 	return checkbox
 }
 
-func (d *sheetSettingsDockable) createUnitsOfMeasurement(content *unison.Panel) {
+func (d *sheetSettingsDockable) createUnitsSection(content *unison.Panel) {
+	section := newSettingsSection(content, i18n.Text("Units of Measurement"), 2)
 	s := d.settings()
-	panel := unison.NewPanel()
-	panel.SetLayout(&unison.FlexLayout{
-		Columns:  2,
-		HSpacing: unison.StdHSpacing,
-		VSpacing: unison.StdVSpacing,
-	})
-	panel.SetLayoutData(&unison.FlexLayoutData{HAlign: align.Fill})
-	addSettingsSectionHeader(panel, i18n.Text("Units of Measurement"), 2)
-	d.lengthUnitsPopup = d.createSettingPopup(panel, i18n.Text("Length Units"), fxp.LengthUnits,
-		s.DefaultLengthUnits, func(item fxp.LengthUnit) { d.settings().DefaultLengthUnits = item })
-	d.weightUnitsPopup = d.createSettingPopup(panel, i18n.Text("Weight Units"), fxp.WeightUnits,
-		s.DefaultWeightUnits, func(item fxp.WeightUnit) { d.settings().DefaultWeightUnits = item })
-	content.AddChild(panel)
+	// The labels say only what the section's title leaves to say, so the popups are named in full for screen readers,
+	// which hear no title.
+	d.lengthUnitsPopup = d.addSettingPopup(section, i18n.Text("Length"), fxp.LengthUnits, s.DefaultLengthUnits,
+		func(item fxp.LengthUnit) { d.settings().DefaultLengthUnits = item })
+	d.lengthUnitsPopup.Accessibility.Name = i18n.Text("Length Units")
+	d.weightUnitsPopup = d.addSettingPopup(section, i18n.Text("Weight"), fxp.WeightUnits, s.DefaultWeightUnits,
+		func(item fxp.WeightUnit) { d.settings().DefaultWeightUnits = item })
+	d.weightUnitsPopup.Accessibility.Name = i18n.Text("Weight Units")
 }
 
-// createDecimalPlaces adds the section that controls how many decimal places the sheet rounds various numbers to. These
-// affect only what is shown: the values themselves are always stored, and edited, at full precision.
-func (d *sheetSettingsDockable) createDecimalPlaces(content *unison.Panel) {
-	panel := unison.NewPanel()
-	panel.SetLayout(&unison.FlexLayout{
-		Columns:  3,
-		HSpacing: unison.StdHSpacing,
-		VSpacing: unison.StdVSpacing,
-	})
-	panel.SetLayoutData(&unison.FlexLayoutData{HAlign: align.Fill})
-	addSettingsSectionHeader(panel, i18n.Text("Decimal Places"), 3)
+// createDecimalPlacesSection adds the section that controls how many decimal places the sheet rounds various numbers
+// to. These affect only what is shown: the values themselves are always stored, and edited, at full precision.
+func (d *sheetSettingsDockable) createDecimalPlacesSection(content *unison.Panel) {
+	section := newSettingsSection(content, i18n.Text("Decimal Places"), 3)
 	d.numberFormats = []sheetNumberFormatRow{
-		d.addNumberFormatRow(panel, i18n.Text("Height"),
+		d.addNumberFormatRow(section, i18n.Text("Height"),
 			i18n.Text(`How many decimal places the height in the Description block on the sheet is rounded to for display. "As Needed" shows every decimal place the value has.`),
 			func(s *gurps.SheetSettings) *fxp.NumberFormat { return &s.HeightFormat }, nil),
-		d.addNumberFormatRow(panel, i18n.Text("Body Weight"),
+		d.addNumberFormatRow(section, i18n.Text("Body Weight"),
 			i18n.Text("How many decimal places the character's weight in the Description block on the sheet is rounded to for display"),
 			func(s *gurps.SheetSettings) *fxp.NumberFormat { return &s.BodyWeightFormat }, nil),
-		d.addNumberFormatRow(panel, i18n.Text("Equipment Weight"),
+		d.addNumberFormatRow(section, i18n.Text("Equipment Weight"),
 			i18n.Text("How many decimal places the weight columns and the carried & other equipment totals on the sheet are rounded to for display"),
 			func(s *gurps.SheetSettings) *fxp.NumberFormat { return &s.EquipmentWeightFormat }, nil),
-		d.addNumberFormatRow(panel, i18n.Text("Equipment Value"),
+		d.addNumberFormatRow(section, i18n.Text("Equipment Value"),
 			i18n.Text("How many decimal places the value columns and the carried & other equipment totals on the sheet are rounded to for display"),
 			func(s *gurps.SheetSettings) *fxp.NumberFormat { return &s.EquipmentValueFormat },
 			d.rebuildSellMoney), // The sell money list shows its values in this format.
 	}
-	content.AddChild(panel)
 }
 
 // addNumberFormatRow adds the popup that chooses how many decimal places one of the sheet's number formats rounds to,
 // with the given tooltip, and the checkbox that has it pad with zeros out to that many. Either change calls changed,
 // if given, before the open sheets are told of it.
-func (d *sheetSettingsDockable) addNumberFormatRow(panel *unison.Panel, title, tooltip string, format func(s *gurps.SheetSettings) *fxp.NumberFormat, changed func()) sheetNumberFormatRow {
+func (d *sheetSettingsDockable) addNumberFormatRow(section *unison.Panel, title, tooltip string, format func(s *gurps.SheetSettings) *fxp.NumberFormat, changed func()) sheetNumberFormatRow {
 	row := sheetNumberFormatRow{format: format}
 	current := format(d.settings())
 	apply := func(change func(f *fxp.NumberFormat)) {
@@ -379,10 +431,10 @@ func (d *sheetSettingsDockable) addNumberFormatRow(panel *unison.Panel, title, t
 			changed()
 		}
 	}
-	row.popup = d.createSettingPopup(panel, title, fxp.DecimalPlaces, current.Places,
+	row.popup = d.addSettingPopup(section, title, fxp.DecimalPlaces, current.Places,
 		func(item fxp.DecimalPlace) { apply(func(f *fxp.NumberFormat) { f.Places = item }) })
 	row.popup.Tooltip = newWrappedTooltip(tooltip)
-	row.pad = d.addCheckBox(panel, i18n.Text("Pad with zeros"), "", current.PadWithZeros, func(checked bool) {
+	row.pad = d.addCheckBox(section, i18n.Text("Pad with zeros"), "", 1, current.PadWithZeros, func(checked bool) {
 		apply(func(f *fxp.NumberFormat) { f.PadWithZeros = checked })
 		d.syncSheet(gurps.SheetSettingsGeneralPart, false)
 	})
@@ -392,21 +444,14 @@ func (d *sheetSettingsDockable) addNumberFormatRow(panel *unison.Panel, title, t
 	return row
 }
 
-// createTrading adds the section that controls buying and selling equipment: the percentages of full price offered by
-// default and the money that sales pay out in.
-func (d *sheetSettingsDockable) createTrading(content *unison.Panel) {
-	panel := unison.NewPanel()
-	panel.SetLayout(&unison.FlexLayout{
-		Columns:  2,
-		HSpacing: unison.StdHSpacing,
-		VSpacing: unison.StdVSpacing,
-	})
-	panel.SetLayoutData(&unison.FlexLayoutData{HAlign: align.Fill})
-	addSettingsSectionHeader(panel, i18n.Text("Trading"), 2)
-	d.buyPercentField = d.createPercentField(panel, i18n.Text("Buy Percent"),
+// createTradingSection adds the section that controls buying and selling equipment: the percentages of full price
+// offered by default and the money that sales pay out in.
+func (d *sheetSettingsDockable) createTradingSection(content *unison.Panel) {
+	section := newSettingsSection(content, i18n.Text("Trading"), 2)
+	d.buyPercentField = d.addPercentField(section, i18n.Text("Buy Percent"),
 		i18n.Text("The percentage of an item's full price that buying it costs, unless another is chosen when buying"),
 		func(s *gurps.SheetSettings) *int { return &s.BuyPercent })
-	d.sellPercentField = d.createPercentField(panel, i18n.Text("Sell Percent"),
+	d.sellPercentField = d.addPercentField(section, i18n.Text("Sell Percent"),
 		i18n.Text("The percentage of an item's full price that selling it brings in, unless another is chosen when selling"),
 		func(s *gurps.SheetSettings) *int { return &s.SellPercent })
 	listBorder := unison.NewCompoundBorder(
@@ -417,7 +462,7 @@ func (d *sheetSettingsDockable) createTrading(content *unison.Panel) {
 	// Level with the list's first row rather than its border.
 	label.SetBorder(unison.NewEmptyBorder(geom.Insets{Top: listBorder.Insets().Top}))
 	label.SetLayoutData(&unison.FlexLayoutData{HAlign: align.End, VAlign: align.Start})
-	panel.AddChild(label)
+	section.AddChild(label)
 	d.sellMoneyPanel = unison.NewPanel()
 	d.sellMoneyPanel.SetLayout(&unison.FlexLayout{
 		Columns:  sellMoneyColumns,
@@ -431,15 +476,13 @@ func (d *sheetSettingsDockable) createTrading(content *unison.Panel) {
 	d.installSellMoneyBanding()
 	d.installSellMoneyDropSupport()
 	d.rebuildSellMoney()
-	panel.AddChild(d.sellMoneyPanel)
-	content.AddChild(panel)
+	section.AddChild(d.sellMoneyPanel)
 }
 
-// createPercentField adds a field for the percentage of the settings that value reaches, with the given title and
+// addPercentField adds a field for the percentage of the settings that value reaches, with the given title and
 // tooltip, and returns it. The open sheets are told only of a change, since sync() hands the field the value it already
 // holds.
-func (d *sheetSettingsDockable) createPercentField(panel *unison.Panel, title, tooltip string, value func(s *gurps.SheetSettings) *int) *PercentageField {
-	panel.AddChild(NewFieldLeadingLabel(title, false))
+func (d *sheetSettingsDockable) addPercentField(section *unison.Panel, title, tooltip string, value func(s *gurps.SheetSettings) *int) *PercentageField {
 	field := NewPercentageField(nil, "", title, func() int { return *value(d.settings()) },
 		func(v int) {
 			if current := value(d.settings()); *current != v {
@@ -448,7 +491,7 @@ func (d *sheetSettingsDockable) createPercentField(panel *unison.Panel, title, t
 			}
 		}, gurps.MinTradePercent, gurps.MaxTradePercent, false, false)
 	field.Tooltip = newWrappedTooltip(tooltip)
-	panel.AddChild(field)
+	addSettingsRow(section, title, field, 1)
 	return field
 }
 
@@ -597,11 +640,14 @@ func (d *sheetSettingsDockable) rebuildSellMoney() {
 	d.sellMoneyRows = nil
 	entries := d.sortedSellMoney()
 	if len(entries) == 0 {
-		hint := unison.NewLabel()
+		hint := NewWrappingLabel()
 		hint.Font = fonts.FieldSecondary
-		hint.OnBackgroundInk = dimmedTextColor
-		hint.SetTitle(i18n.Text("Drag equipment tagged \"%s\" from any equipment list here.", gurps.MoneyTag))
-		hint.SetLayoutData(&unison.FlexLayoutData{HSpan: sellMoneyColumns})
+		hint.setText(i18n.Text("Drag equipment tagged \"%s\" from any equipment list here.", gurps.MoneyTag),
+			dimmedTextColor)
+		hint.SetLayoutData(&unison.FlexLayoutData{
+			HSpan:  sellMoneyColumns,
+			HAlign: align.Fill,
+		})
 		p.AddChild(hint)
 	}
 	for i, entry := range entries {
@@ -660,66 +706,27 @@ func (d *sheetSettingsDockable) focusSellMoneyRemoveButton(index int) {
 	buttons[min(index, len(buttons)-1)].RequestFocus()
 }
 
-func (d *sheetSettingsDockable) createWhereToDisplay(content *unison.Panel) {
+func (d *sheetSettingsDockable) createPageSection(content *unison.Panel) {
+	section := newSettingsSection(content, i18n.Text("Page"), 2)
 	s := d.settings()
-	panel := unison.NewPanel()
-	panel.SetLayout(&unison.FlexLayout{
-		Columns:  2,
-		HSpacing: unison.StdHSpacing,
-		VSpacing: unison.StdVSpacing,
-	})
-	panel.SetLayoutData(&unison.FlexLayoutData{HAlign: align.Fill})
-	addSettingsSectionHeader(panel, i18n.Text("Where to display…"), 2)
-	d.userDescDisplayPopup = d.createSettingPopup(panel, i18n.Text("User Description"), display.Options,
-		s.UserDescriptionDisplay, func(option display.Option) { d.settings().UserDescriptionDisplay = option })
-	d.modifiersDisplayPopup = d.createSettingPopup(panel, i18n.Text("Modifiers"), display.Options,
-		s.ModifiersDisplay, func(option display.Option) { d.settings().ModifiersDisplay = option })
-	d.notesDisplayPopup = d.createSettingPopup(panel, i18n.Text("Notes"), display.Options, s.NotesDisplay,
-		func(option display.Option) { d.settings().NotesDisplay = option })
-	d.skillLevelAdjDisplayPopup = d.createSettingPopup(panel, i18n.Text("Skill Level Adjustments"), display.Options,
-		s.SkillLevelAdjDisplay, func(option display.Option) { d.settings().SkillLevelAdjDisplay = option })
-	content.AddChild(panel)
-}
-
-func (d *sheetSettingsDockable) createPageSettings(content *unison.Panel) {
-	s := d.settings()
-	panel := unison.NewPanel()
-	panel.SetLayout(&unison.FlexLayout{
-		Columns:  4,
-		HSpacing: unison.StdHSpacing,
-		VSpacing: unison.StdVSpacing,
-	})
-	panel.SetLayoutData(&unison.FlexLayoutData{HAlign: align.Fill})
-	addSettingsSectionHeader(panel, i18n.Text("Page Settings"), 4)
-	d.paperSizeField = d.createPaperSizeField(panel, s.Page.Size, func(option string) { d.settings().Page.Size = option })
-	d.orientationPopup = d.createSettingPopup(panel, i18n.Text("Orientation"), paper.Orientations,
+	d.paperSizeField = d.createPaperSizeField(section, s.Page.Size, func(option string) { d.settings().Page.Size = option })
+	d.orientationPopup = d.addSettingPopup(section, i18n.Text("Orientation"), paper.Orientations,
 		s.Page.Orientation, func(option paper.Orientation) { d.settings().Page.Orientation = option })
-	d.topMarginField = d.createPaperMarginField(panel, i18n.Text("Top Margin"), s.Page.TopMargin,
-		func(value paper.Length) { d.settings().Page.TopMargin = value })
-	d.bottomMarginField = d.createPaperMarginField(panel, i18n.Text("Bottom Margin"), s.Page.BottomMargin,
-		func(value paper.Length) { d.settings().Page.BottomMargin = value })
-	d.leftMarginField = d.createPaperMarginField(panel, i18n.Text("Left Margin"), s.Page.LeftMargin,
-		func(value paper.Length) { d.settings().Page.LeftMargin = value })
-	d.rightMarginField = d.createPaperMarginField(panel, i18n.Text("Right Margin"), s.Page.RightMargin,
-		func(value paper.Length) { d.settings().Page.RightMargin = value })
-	content.AddChild(panel)
+	grid := newSettingsSubgroup(section, i18n.Text("Margins"), 4)
+	d.marginFields = []sheetMarginField{
+		d.addMarginField(grid, i18n.Text("Top"), i18n.Text("Top Margin"),
+			func(s *gurps.SheetSettings) *paper.Length { return &s.Page.TopMargin }),
+		d.addMarginField(grid, i18n.Text("Bottom"), i18n.Text("Bottom Margin"),
+			func(s *gurps.SheetSettings) *paper.Length { return &s.Page.BottomMargin }),
+		d.addMarginField(grid, i18n.Text("Left"), i18n.Text("Left Margin"),
+			func(s *gurps.SheetSettings) *paper.Length { return &s.Page.LeftMargin }),
+		d.addMarginField(grid, i18n.Text("Right"), i18n.Text("Right Margin"),
+			func(s *gurps.SheetSettings) *paper.Length { return &s.Page.RightMargin }),
+	}
 }
 
-func (d *sheetSettingsDockable) createPaperSizeField(panel *unison.Panel, current string, set func(value string)) *unison.Field {
-	label := NewFieldLeadingLabel(i18n.Text("Paper Size"), false)
-	panel.AddChild(label)
-	wrapper := unison.NewPanel()
-	wrapper.SetLayout(&unison.FlexLayout{
-		Columns:  2,
-		HSpacing: unison.StdHSpacing,
-	})
-	wrapper.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: align.Fill,
-		HGrab:  true,
-	})
-	panel.AddChild(wrapper)
-	// The wrapper separates the field from its label, so the field is pointed at the label explicitly.
-	field := labelControl(unison.NewField(), label)
+func (d *sheetSettingsDockable) createPaperSizeField(section *unison.Panel, current string, set func(value string)) *unison.Field {
+	field := unison.NewField()
 	field.SetText(current)
 	field.ValidateCallback = func() bool {
 		_, _, valid := gurps.ParsePageSize(field.Text())
@@ -735,7 +742,6 @@ func (d *sheetSettingsDockable) createPaperSizeField(panel *unison.Panel, curren
 		HAlign: align.Fill,
 		HGrab:  true,
 	})
-	wrapper.AddChild(field)
 	info := NewInfoPop()
 	var buffer strings.Builder
 	for _, one := range gurps.StdPaperSizes {
@@ -747,39 +753,39 @@ func (d *sheetSettingsDockable) createPaperSizeField(panel *unison.Panel, curren
 		buffer.WriteByte('"')
 	}
 	AddHelpToInfoPop(info, wrapTextForTooltip(i18n.Text(`Enter a standard paper size (e.g., one of %s) or a custom size (e.g., "8.5in x 11in", "210mm x 297mm")`, buffer.String())))
-	wrapper.AddChild(info)
+	addSettingsRow(section, i18n.Text("Paper Size"), field, 1, info)
 	return field
 }
 
-func (d *sheetSettingsDockable) createPaperMarginField(panel *unison.Panel, title string, current paper.Length, set func(value paper.Length)) *unison.Field {
-	panel.AddChild(NewFieldLeadingLabel(title, false))
+// addMarginField adds a field for the page margin that margin reaches, labeled with what the group's heading leaves
+// to say but named outright with name, for screen readers, which hear no heading.
+func (d *sheetSettingsDockable) addMarginField(grid *unison.Panel, label, name string, margin func(s *gurps.SheetSettings) *paper.Length) sheetMarginField {
 	field := unison.NewField()
-	field.SetText(current.String())
+	field.SetText(margin(d.settings()).String())
 	field.ValidateCallback = func() bool {
 		_, err := paper.ParseLengthFromString(field.Text())
 		return err == nil
 	}
 	field.ModifiedCallback = func(_, after *unison.FieldState) {
 		if value, err := paper.ParseLengthFromString(after.Text); err == nil {
-			set(value)
+			*margin(d.settings()) = value
 			d.syncSheet(gurps.SheetSettingsGeneralPart, false)
 		}
 	}
-	field.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: align.Fill,
-		HGrab:  true,
-	})
-	panel.AddChild(field)
-	return field
+	field.SetMinimumTextWidthUsing("99.99 mm")
+	field.Accessibility.Name = name
+	addSettingsRow(grid, label, field, 1)
+	return sheetMarginField{field: field, margin: margin}
 }
 
-func (d *sheetSettingsDockable) createSettingPopup[T comparable](panel *unison.Panel, title string, choices []T, current T, set func(option T)) *unison.PopupMenu[T] {
-	panel.AddChild(NewFieldLeadingLabel(title, false))
+// addSettingPopup adds a labeled popup to the section for one of the settings a popup chooses, handing each choice to
+// set before telling the open sheets of it.
+func (d *sheetSettingsDockable) addSettingPopup[T comparable](section *unison.Panel, title string, choices []T, current T, set func(option T)) *unison.PopupMenu[T] {
 	popup := newPopupMenu(choices, current, func(item T) {
 		set(item)
 		d.syncSheet(gurps.SheetSettingsGeneralPart, false)
 	})
-	panel.AddChild(popup)
+	addSettingsRow(section, title, popup, 1)
 	return popup
 }
 
@@ -800,6 +806,9 @@ func (d *sheetSettingsDockable) sync() {
 	for _, one := range d.options {
 		one.box.State = check.FromBool(one.option.checked(s))
 	}
+	for _, one := range d.displayPopups {
+		one.popup.Select(*one.option(s))
+	}
 	d.lengthUnitsPopup.Select(s.DefaultLengthUnits)
 	d.weightUnitsPopup.Select(s.DefaultWeightUnits)
 	for _, row := range d.numberFormats {
@@ -807,19 +816,14 @@ func (d *sheetSettingsDockable) sync() {
 		row.popup.Select(format.Places)
 		row.pad.State = check.FromBool(format.PadWithZeros)
 	}
-	d.userDescDisplayPopup.Select(s.UserDescriptionDisplay)
-	d.modifiersDisplayPopup.Select(s.ModifiersDisplay)
-	d.notesDisplayPopup.Select(s.NotesDisplay)
-	d.skillLevelAdjDisplayPopup.Select(s.SkillLevelAdjDisplay)
 	SetFieldValue(d.buyPercentField.Field, d.buyPercentField.Format(s.BuyPercent))
 	SetFieldValue(d.sellPercentField.Field, d.sellPercentField.Format(s.SellPercent))
 	d.rebuildSellMoney()
 	d.paperSizeField.SetText(s.Page.Size)
 	d.orientationPopup.Select(s.Page.Orientation)
-	d.topMarginField.SetText(s.Page.TopMargin.String())
-	d.leftMarginField.SetText(s.Page.LeftMargin.String())
-	d.bottomMarginField.SetText(s.Page.BottomMargin.String())
-	d.rightMarginField.SetText(s.Page.RightMargin.String())
+	for _, one := range d.marginFields {
+		one.field.SetText(one.margin(s).String())
+	}
 	d.MarkForRedraw()
 }
 

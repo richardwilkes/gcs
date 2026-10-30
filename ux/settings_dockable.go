@@ -219,14 +219,20 @@ func addStretchedSettingsRow(section *unison.Panel, title string, field unison.P
 	section.AddChild(field)
 }
 
+// newSettingsContent returns the content panel of a settings view, filled by initContent within the standard margin.
+func newSettingsContent(initContent func(*unison.Panel)) *unison.Panel {
+	content := unison.NewPanel()
+	content.SetBorder(unison.NewEmptyBorder(geom.NewUniformInsets(unison.StdHSpacing * 2)))
+	initContent(content)
+	return content
+}
+
 // Setup the dockable and display it.
 func (d *SettingsDockable) Setup(addToStartToolbar, addToEndToolbar, initContent func(*unison.Panel)) {
 	d.SetLayout(&unison.FlexLayout{Columns: 1})
 	toolbar := d.createToolbar(addToStartToolbar, addToEndToolbar)
 	d.AddChild(toolbar)
-	content := unison.NewPanel()
-	content.SetBorder(unison.NewEmptyBorder(geom.NewUniformInsets(unison.StdHSpacing * 2)))
-	initContent(content)
+	content := newSettingsContent(initContent)
 	scroller := unison.NewScrollPanel()
 	widthBehavior := d.ContentWidthBehavior
 	if widthBehavior == behavior.Unmodified {

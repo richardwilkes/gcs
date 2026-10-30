@@ -27,7 +27,7 @@ func TestSheetSettingsPageRefsAreAllLinks(t *testing.T) {
 	var refs []string
 	for _, option := range sheetOptions() {
 		panel := unison.NewPanel()
-		box := d.addCheckBox(panel, option.title, option.pageRef, false, func(bool) {})
+		box := d.addCheckBox(panel, option.title, option.pageRef, 1, false, func(bool) {})
 		c.Equal(option.title, box.Text.String())
 		if option.pageRef == "" {
 			c.Equal([]*unison.Panel{box.AsPanel()}, panel.Children(),
@@ -64,7 +64,7 @@ func TestSheetSettingsPageRefsAreAllLinks(t *testing.T) {
 		c.True(label.keyDown(unison.KeySpace, 0, false))
 		c.Equal([]string{option.pageRef}, followed, "the link of %q opens its page", option.title)
 	}
-	c.Equal([]string{"P102", "PY65:30", "B269", "PY120:7"}, refs, "the sheet settings that cite a page")
+	c.Equal([]string{"PY120:7", "P102", "PY65:30", "B269"}, refs, "the sheet settings that cite a page")
 }
 
 func TestFindRefs(t *testing.T) {

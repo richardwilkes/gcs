@@ -11,6 +11,7 @@ package ux
 
 import (
 	"errors"
+	"fmt"
 	"io/fs"
 	"os"
 	"path/filepath"
@@ -20,6 +21,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/library"
 	"github.com/richardwilkes/gcs/v5/ux/uxtest"
 	"github.com/richardwilkes/toolbox/v2/check"
+	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/unison"
 )
 
@@ -307,4 +309,68 @@ func toolbarStartsWithViewContent(base *SettingsDockable) bool {
 	}
 	data, ok := children[0].LayoutData().(*unison.FlexLayoutData)
 	return !ok || !data.HGrab || children[0].Self != children[0]
+}
+
+// TestSettingsViewsFitTheirMinimumWidth checks that the views whose content follows the view's width can show every
+// row whole at the minimum width they name: laid out that wide, nothing extends past what holds it and no widget is
+// given less room than it asks for, but for the path fields, which shorten the path they show by design.
+func TestSettingsViewsFitTheirMinimumWidth(t *testing.T) {
+	general := &generalSettingsDockable{}
+	general.Self = general
+	sheet := &sheetSettingsDockable{}
+	sheet.Self = sheet
+	views := []struct {
+		name    string
+		init    func(content *unison.Panel)
+		minSize geom.Size
+	}{
+		{name: "general settings", init: general.initContent, minSize: generalSettingsMinSize},
+		{name: "sheet settings", init: sheet.initContent, minSize: sheetSettingsMinSize},
+	}
+	for _, view := range views {
+		content := newSettingsContent(view.init)
+		_, pref, _ := content.Sizes(geom.Size{})
+		content.SetFrameRect(geom.NewRect(0, 0, view.minSize.Width, pref.Height))
+		content.ValidateLayout()
+		for _, problem := range crampedPanels(content) {
+			t.Errorf("%s: %s", view.name, problem)
+		}
+	}
+}
+
+// crampedPanels describes each descendant of the panel that its layout has not given the room it needs: one that
+// extends past the panel holding it, or a widget without children of its own that is narrower than it asks to be. A
+// path field asks for the whole path's width and shortens the path to whatever it gets, so it is never cramped.
+func crampedPanels(root *unison.Panel) []string {
+	var problems []string
+	var walk func(p *unison.Panel)
+	walk = func(p *unison.Panel) {
+		area := p.ContentRect(false)
+		for _, child := range p.Children() {
+			frame := child.FrameRect()
+			if frame.Right() > area.Right()+0.5 {
+				problems = append(problems, fmt.Sprintf("%s extends past %s (%.0f > %.0f)", describePanel(child),
+					describePanel(p), frame.Right(), area.Right()))
+			}
+			if _, isPath := child.Self.(*PathField); !isPath && len(child.Children()) == 0 {
+				if _, pref, _ := child.Sizes(geom.Size{}); frame.Width < pref.Width-0.5 {
+					problems = append(problems, fmt.Sprintf("%s is narrower than it asks to be (%.0f < %.0f)",
+						describePanel(child), frame.Width, pref.Width))
+				}
+			}
+			walk(child)
+		}
+	}
+	walk(root)
+	return problems
+}
+
+// describePanel names a panel by its type and, when it has one, its text.
+func describePanel(p *unison.Panel) string {
+	if s, ok := p.Self.(fmt.Stringer); ok {
+		if text := s.String(); text != "" {
+			return fmt.Sprintf("%T %q", p.Self, text)
+		}
+	}
+	return fmt.Sprintf("%T", p.Self)
 }
