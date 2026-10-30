@@ -124,11 +124,11 @@ func TestReadOnlyFieldsJoinTheTabOrderForScreenReaders(t *testing.T) {
 	c.True(focusable(notes[0]))
 
 	screen.Do(ShowGeneralSettings)
-	var paths, empty []*NonEditableField
+	var paths, empty []*PathField
 	screen.Do(func() {
 		// The log path is empty here, since only main sets it.
-		for _, one := range uxtest.PanelsOfType[*NonEditableField](wnd.Content()) {
-			if one.Text.String() != "" {
+		for _, one := range uxtest.PanelsOfType[*PathField](wnd.Content()) {
+			if one.path != "" {
 				paths = append(paths, one)
 			} else {
 				empty = append(empty, one)
@@ -141,13 +141,13 @@ func TestReadOnlyFieldsJoinTheTabOrderForScreenReaders(t *testing.T) {
 		t.Fatal("the window must be described")
 	}
 	for _, one := range paths {
-		c.True(focusable(one), "%q must be a tab stop while the setting is on", one.Text.String())
+		c.True(focusable(one), "%q must be a tab stop while the setting is on", one.path)
 		node := screen.AccessibilityNodeFor(one)
 		if node == nil {
-			t.Fatalf("%q must be described", one.Text.String())
+			t.Fatalf("%q must be described", one.path)
 		}
-		c.False(node.Ignored, "%q must be described", one.Text.String())
-		c.Equal(one.Text.String(), node.Name)
+		c.False(node.Ignored, "%q must be described", one.path)
+		c.Equal(one.path, node.Name, "the whole path is the name, however much of it is showing")
 	}
 	for _, one := range empty {
 		c.False(focusable(one), "a field without text must not be a tab stop")
@@ -165,6 +165,6 @@ func TestReadOnlyFieldsJoinTheTabOrderForScreenReaders(t *testing.T) {
 	}
 	c.True(focusable(portrait))
 	for _, one := range paths {
-		c.False(focusable(one), "%q must not be a tab stop once the setting is off again", one.Text.String())
+		c.False(focusable(one), "%q must not be a tab stop once the setting is off again", one.path)
 	}
 }

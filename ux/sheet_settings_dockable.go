@@ -29,7 +29,6 @@ import (
 	"github.com/richardwilkes/unison/enums/check"
 	"github.com/richardwilkes/unison/enums/mod"
 	"github.com/richardwilkes/unison/enums/paintstyle"
-	"github.com/richardwilkes/unison/enums/weight"
 )
 
 var _ GroupedCloser = &sheetSettingsDockable{}
@@ -238,11 +237,7 @@ func (d *sheetSettingsDockable) settings() *gurps.SheetSettings {
 }
 
 func (d *sheetSettingsDockable) initContent(content *unison.Panel) {
-	content.SetLayout(&unison.FlexLayout{
-		Columns:  1,
-		HSpacing: unison.StdHSpacing,
-		VSpacing: unison.DefaultLabelTheme.Font.LineHeight(),
-	})
+	initSettingsSections(content)
 	d.createDamageProgression(content)
 	d.createOptions(content)
 	d.createUnitsOfMeasurement(content)
@@ -335,7 +330,7 @@ func (d *sheetSettingsDockable) createUnitsOfMeasurement(content *unison.Panel) 
 		VSpacing: unison.StdVSpacing,
 	})
 	panel.SetLayoutData(&unison.FlexLayoutData{HAlign: align.Fill})
-	d.createHeader(panel, i18n.Text("Units of Measurement"), 2)
+	addSettingsSectionHeader(panel, i18n.Text("Units of Measurement"), 2)
 	d.lengthUnitsPopup = d.createSettingPopup(panel, i18n.Text("Length Units"), fxp.LengthUnits,
 		s.DefaultLengthUnits, func(item fxp.LengthUnit) { d.settings().DefaultLengthUnits = item })
 	d.weightUnitsPopup = d.createSettingPopup(panel, i18n.Text("Weight Units"), fxp.WeightUnits,
@@ -353,7 +348,7 @@ func (d *sheetSettingsDockable) createDecimalPlaces(content *unison.Panel) {
 		VSpacing: unison.StdVSpacing,
 	})
 	panel.SetLayoutData(&unison.FlexLayoutData{HAlign: align.Fill})
-	d.createHeader(panel, i18n.Text("Decimal Places"), 3)
+	addSettingsSectionHeader(panel, i18n.Text("Decimal Places"), 3)
 	d.numberFormats = []sheetNumberFormatRow{
 		d.addNumberFormatRow(panel, i18n.Text("Height"),
 			i18n.Text(`How many decimal places the height in the Description block on the sheet is rounded to for display. "As Needed" shows every decimal place the value has.`),
@@ -407,7 +402,7 @@ func (d *sheetSettingsDockable) createTrading(content *unison.Panel) {
 		VSpacing: unison.StdVSpacing,
 	})
 	panel.SetLayoutData(&unison.FlexLayoutData{HAlign: align.Fill})
-	d.createHeader(panel, i18n.Text("Trading"), 2)
+	addSettingsSectionHeader(panel, i18n.Text("Trading"), 2)
 	d.buyPercentField = d.createPercentField(panel, i18n.Text("Buy Percent"),
 		i18n.Text("The percentage of an item's full price that buying it costs, unless another is chosen when buying"),
 		func(s *gurps.SheetSettings) *int { return &s.BuyPercent })
@@ -674,7 +669,7 @@ func (d *sheetSettingsDockable) createWhereToDisplay(content *unison.Panel) {
 		VSpacing: unison.StdVSpacing,
 	})
 	panel.SetLayoutData(&unison.FlexLayoutData{HAlign: align.Fill})
-	d.createHeader(panel, i18n.Text("Where to display…"), 2)
+	addSettingsSectionHeader(panel, i18n.Text("Where to display…"), 2)
 	d.userDescDisplayPopup = d.createSettingPopup(panel, i18n.Text("User Description"), display.Options,
 		s.UserDescriptionDisplay, func(option display.Option) { d.settings().UserDescriptionDisplay = option })
 	d.modifiersDisplayPopup = d.createSettingPopup(panel, i18n.Text("Modifiers"), display.Options,
@@ -695,7 +690,7 @@ func (d *sheetSettingsDockable) createPageSettings(content *unison.Panel) {
 		VSpacing: unison.StdVSpacing,
 	})
 	panel.SetLayoutData(&unison.FlexLayoutData{HAlign: align.Fill})
-	d.createHeader(panel, i18n.Text("Page Settings"), 4)
+	addSettingsSectionHeader(panel, i18n.Text("Page Settings"), 4)
 	d.paperSizeField = d.createPaperSizeField(panel, s.Page.Size, func(option string) { d.settings().Page.Size = option })
 	d.orientationPopup = d.createSettingPopup(panel, i18n.Text("Orientation"), paper.Orientations,
 		s.Page.Orientation, func(option paper.Orientation) { d.settings().Page.Orientation = option })
@@ -786,23 +781,6 @@ func (d *sheetSettingsDockable) createSettingPopup[T comparable](panel *unison.P
 	})
 	panel.AddChild(popup)
 	return popup
-}
-
-func (d *sheetSettingsDockable) createHeader(panel *unison.Panel, title string, hspan int) {
-	label := unison.NewLabel()
-	desc := label.Font.Descriptor()
-	desc.Weight = weight.Bold
-	label.Font = desc.Font()
-	label.SetTitle(title)
-	label.SetLayoutData(&unison.FlexLayoutData{HSpan: hspan})
-	panel.AddChild(label)
-	sep := unison.NewSeparator()
-	sep.SetLayoutData(&unison.FlexLayoutData{
-		HSpan:  hspan,
-		HAlign: align.Fill,
-		HGrab:  true,
-	})
-	panel.AddChild(sep)
 }
 
 func (d *sheetSettingsDockable) reset() {

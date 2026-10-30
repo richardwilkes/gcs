@@ -22,6 +22,7 @@ import (
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
 	"github.com/richardwilkes/unison/enums/behavior"
+	"github.com/richardwilkes/unison/enums/weight"
 )
 
 var (
@@ -104,6 +105,116 @@ func initSettingsContent(content *unison.Panel, columns int) *unison.Panel {
 		VSpacing: unison.StdVSpacing,
 	})
 	return content
+}
+
+// initSettingsSections gives a settings view's content panel the layout the views built from titled sections share: a
+// single column of the sections newSettingsSection adds, with a line of space between them.
+func initSettingsSections(content *unison.Panel) {
+	content.SetLayout(&unison.FlexLayout{
+		Columns:  1,
+		HSpacing: unison.StdHSpacing,
+		VSpacing: unison.DefaultLabelTheme.Font.LineHeight(),
+	})
+}
+
+// newSettingsSection adds a section to content laid out by initSettingsSections: a grid of the given number of
+// columns, as wide as the content, under a header with the title. It returns the grid for the section's rows.
+func newSettingsSection(content *unison.Panel, title string, columns int) *unison.Panel {
+	section := unison.NewPanel()
+	section.SetLayout(&unison.FlexLayout{
+		Columns:  columns,
+		HSpacing: unison.StdHSpacing,
+		VSpacing: unison.StdVSpacing,
+	})
+	section.SetLayoutData(&unison.FlexLayoutData{
+		HAlign: align.Fill,
+		HGrab:  true,
+	})
+	addSettingsSectionHeader(section, title, columns)
+	content.AddChild(section)
+	return section
+}
+
+// addSettingsSectionHeader adds a bold title and a separator, each spanning hspan columns of the panel, to head a
+// section of a settings view.
+func addSettingsSectionHeader(panel *unison.Panel, title string, hspan int) {
+	label := unison.NewLabel()
+	desc := label.Font.Descriptor()
+	desc.Weight = weight.Bold
+	label.Font = desc.Font()
+	label.SetTitle(title)
+	label.SetLayoutData(&unison.FlexLayoutData{HSpan: hspan})
+	panel.AddChild(label)
+	sep := unison.NewSeparator()
+	sep.SetLayoutData(&unison.FlexLayoutData{
+		HSpan:  hspan,
+		HAlign: align.Fill,
+		HGrab:  true,
+	})
+	panel.AddChild(sep)
+}
+
+// newSettingsSubgroup adds a group of related rows to a section, spanning all of its columns: a heading with the
+// title, then an indented grid of the given number of columns, which is returned. The heading is static text, which
+// nothing reads as naming the grid, so the grid is named with it as well.
+func newSettingsSubgroup(section *unison.Panel, title string, columns int) *unison.Panel {
+	span := flexColumns(section)
+	heading := unison.NewLabel()
+	heading.SetTitle(title)
+	heading.SetLayoutData(&unison.FlexLayoutData{HSpan: span})
+	section.AddChild(heading)
+	grid := unison.NewPanel()
+	grid.SetBorder(unison.NewEmptyBorder(geom.Insets{Left: unison.StdHSpacing * 2}))
+	grid.SetLayout(&unison.FlexLayout{
+		Columns:  columns,
+		HSpacing: unison.StdHSpacing,
+		VSpacing: unison.StdVSpacing,
+	})
+	grid.SetLayoutData(&unison.FlexLayoutData{
+		HSpan:  span,
+		HAlign: align.Fill,
+	})
+	grid.Accessibility.Name = title
+	section.AddChild(grid)
+	return grid
+}
+
+// flexColumns returns the number of columns the panel's layout has, which is one for anything but a FlexLayout.
+func flexColumns(panel *unison.Panel) int {
+	if layout, ok := panel.Layout().(*unison.FlexLayout); ok && layout.Columns > 0 {
+		return layout.Columns
+	}
+	return 1
+}
+
+// addSettingsRow adds a labeled row to a section: a label with the title, then the field spanning the next hspan
+// columns. Any trailing panels follow the field on the same row, in a wrapper that separates the field from its label,
+// so the field is pointed at the label explicitly either way. It returns the label.
+func addSettingsRow(section *unison.Panel, title string, field unison.Paneler, hspan int, trailing ...unison.Paneler) *unison.Label {
+	label := NewFieldLeadingLabel(title, false)
+	section.AddChild(label)
+	labelControl(field, label)
+	if len(trailing) == 0 {
+		field.AsPanel().SetLayoutData(&unison.FlexLayoutData{HSpan: hspan})
+		section.AddChild(field)
+	} else {
+		section.AddChild(WrapWithSpan(hspan, append([]unison.Paneler{field}, trailing...)...))
+	}
+	return label
+}
+
+// addStretchedSettingsRow adds a labeled row to a section whose field, spanning hspan columns, takes whatever width
+// the section has left.
+func addStretchedSettingsRow(section *unison.Panel, title string, field unison.Paneler, hspan int) {
+	label := NewFieldLeadingLabel(title, false)
+	section.AddChild(label)
+	labelControl(field, label)
+	field.AsPanel().SetLayoutData(&unison.FlexLayoutData{
+		HSpan:  hspan,
+		HAlign: align.Fill,
+		HGrab:  true,
+	})
+	section.AddChild(field)
 }
 
 // Setup the dockable and display it.

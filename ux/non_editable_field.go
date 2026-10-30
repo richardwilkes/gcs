@@ -28,11 +28,17 @@ func NewNonEditableField(syncer func(*NonEditableField)) *NonEditableField {
 }
 
 func newNonEditableField(syncer func(*NonEditableField), hAlign align.Enum) *NonEditableField {
-	f := &NonEditableField{
-		Label:  unison.NewLabel(),
-		syncer: syncer,
-	}
-	f.Self = f
+	f := &NonEditableField{}
+	f.init(f, syncer, hAlign)
+	return f
+}
+
+// init sets the field up around a new label, with self as what the field's panel resolves to, so that a widget built
+// by embedding the field can point it at itself.
+func (f *NonEditableField) init(self unison.Paneler, syncer func(*NonEditableField), hAlign align.Enum) {
+	f.Label = unison.NewLabel()
+	f.syncer = syncer
+	f.Self = self
 	// Self is the field, not a *Label, so without an explicit role unison would not take it for static text, and
 	// unison.SetFocusForReading would not make it a tab stop.
 	f.Accessibility.Role = role.Label
@@ -45,7 +51,6 @@ func newNonEditableField(syncer func(*NonEditableField), hAlign align.Enum) *Non
 		VAlign: align.Middle,
 	})
 	f.Sync()
-	return f
 }
 
 // Sync the field to the current value.
