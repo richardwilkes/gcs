@@ -32,34 +32,52 @@ type KeyBindings struct {
 // Binding holds a single key binding.
 type Binding struct {
 	ID         string
+	Title      string
 	KeyBinding unison.KeyBinding
 	Action     *unison.Action
 }
 
-// RegisterKeyBinding registers a key binding. A second registration of the same ID is ignored.
+// RegisterKeyBinding registers a key binding for the action, titled as the action is. A second registration of the same
+// ID is ignored.
 func RegisterKeyBinding(id string, action *unison.Action) {
+	RegisterTitledKeyBinding(id, action.Title, action)
+}
+
+// RegisterTitledKeyBinding registers a key binding for the action under a title of its own, for an action whose title
+// changes with what it would do, such as Undo. A second registration of the same ID is ignored.
+func RegisterTitledKeyBinding(id, title string, action *unison.Action) {
 	if _, exists := factoryBindings[id]; exists {
 		return
 	}
 	factoryBindings[id] = &Binding{
 		ID:         id,
+		Title:      title,
 		KeyBinding: action.KeyBinding,
 		Action:     action,
 	}
 }
 
-// CurrentBindings returns a sorted list with the current bindings.
+// FactoryKeyBinding returns the key binding the ID was registered with, or a zero KeyBinding if the ID isn't registered.
+func FactoryKeyBinding(id string) unison.KeyBinding {
+	if f, ok := factoryBindings[id]; ok {
+		return f.KeyBinding
+	}
+	return unison.KeyBinding{}
+}
+
+// CurrentBindings returns the current bindings, sorted by title.
 func CurrentBindings() []*Binding {
 	list := make([]*Binding, 0, len(factoryBindings))
 	for _, v := range factoryBindings {
 		list = append(list, &Binding{
 			ID:         v.ID,
+			Title:      v.Title,
 			KeyBinding: v.Action.KeyBinding,
 			Action:     v.Action,
 		})
 	}
 	slices.SortFunc(list, func(a, b *Binding) int {
-		result := xstrings.NaturalCmp(a.Action.Title, b.Action.Title, true)
+		result := xstrings.NaturalCmp(a.Title, b.Title, true)
 		if result == 0 {
 			result = cmp.Compare(a.ID, b.ID)
 		}

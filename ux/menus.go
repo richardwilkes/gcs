@@ -256,7 +256,7 @@ func (s menuBarScope) setupFileMenu(bar unison.Menu) {
 	i = s.insertMenuSeparator(m, i)
 	i = s.insertMenuItem(m, i, saveAction.NewMenuItem(f))
 	i = s.insertMenuItem(m, i, saveAsAction.NewMenuItem(f))
-	i = s.insertMenu(m, i, f.NewMenu(ExportToMenuID, i18n.Text("Export"), s.exportToUpdater))
+	i = s.insertMenu(m, i, s.createExportMenu(f))
 	s.insertMenuItem(m, i, printAction.NewMenuItem(f))
 }
 
@@ -530,16 +530,36 @@ func (s menuBarScope) createOpenRecentFileAction(index int, path, title string) 
 	}
 }
 
-func (s menuBarScope) exportToUpdater(menu unison.Menu) {
-	menu.RemoveAll()
+// createExportMenu returns the File menu's Export submenu. The image and portrait exports head it from the start, so
+// that they are in the menu whenever it is looked at and not only once it has been shown, and the templates the
+// libraries offer are filled in under them each time it is shown.
+func (s menuBarScope) createExportMenu(f unison.MenuFactory) unison.Menu {
+	m := f.NewMenu(ExportToMenuID, i18n.Text("Export"), s.exportTemplatesUpdater)
+	s.appendActions(m, exportMenuPrologue()...)
+	return m
+}
+
+// exportMenuPrologue returns the actions that head the Export menu whatever the libraries hold, with a separator after
+// each group.
+func exportMenuPrologue() []*unison.Action {
+	return []*unison.Action{
+		exportAsPDFAction,
+		exportAsWEBPAction,
+		exportAsPNGAction,
+		exportAsJPEGAction,
+		nil,
+		exportPortraitAction,
+		nil,
+	}
+}
+
+// exportTemplatesUpdater replaces whatever follows the Export menu's prologue with the templates each library offers,
+// under the library's title, or a note that there are none.
+func (s menuBarScope) exportTemplatesUpdater(menu unison.Menu) {
+	for prologue := len(exportMenuPrologue()); menu.Count() > prologue; {
+		menu.RemoveItem(menu.Count() - 1)
+	}
 	factory := menu.Factory()
-	menu.InsertItem(-1, exportAsPDFAction.NewMenuItem(factory))
-	menu.InsertItem(-1, exportAsWEBPAction.NewMenuItem(factory))
-	menu.InsertItem(-1, exportAsPNGAction.NewMenuItem(factory))
-	menu.InsertItem(-1, exportAsJPEGAction.NewMenuItem(factory))
-	menu.InsertSeparator(-1, false)
-	menu.InsertItem(-1, exportPortraitAction.NewMenuItem(factory))
-	menu.InsertSeparator(-1, false)
 	index := 0
 	for _, lib := range gurps.GlobalSettings().Libraries.List() {
 		dir := lib.Path(false)

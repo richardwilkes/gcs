@@ -142,6 +142,8 @@ func TestShowSettingsViewsOpenOnceAndActivate(t *testing.T) {
 			ext:    gurps.KeySettingsExt,
 			loads:  true,
 			resets: true,
+			// The filter field is in the toolbar.
+			toolbarButton: true,
 		},
 		{
 			name:          "general",

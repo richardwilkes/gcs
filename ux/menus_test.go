@@ -44,18 +44,16 @@ func menuItemTitles(menu unison.Menu) []string {
 	return titles
 }
 
-// newExportToMenu builds the "Export To…" menu the same way the menu bar does.
+// newExportToMenu builds the Export menu the same way the menu bar does.
 func newExportToMenu() unison.Menu {
-	var s menuBarScope
 	registerKeyBindingsOnce.Do(registerActions)
-	return unison.NewInWindowMenuFactory().NewMenu(ExportToMenuID, "Export To…", s.exportToUpdater)
+	return menuBarScope{}.createExportMenu(unison.NewInWindowMenuFactory())
 }
 
-// exportToMenuTitles builds and populates the "Export To…" menu, returning the titles of the items following the fixed
+// exportToMenuTitles fills the Export menu's templates in, returning the titles of the items following the fixed
 // prologue of image export formats, the portrait export and the separators after them.
 func exportToMenuTitles(c check.Checker, menu unison.Menu) []string {
-	var s menuBarScope
-	s.exportToUpdater(menu)
+	menuBarScope{}.exportTemplatesUpdater(menu)
 	titles := menuItemTitles(menu)
 	c.Equal([]string{"PDF", "WEBP", "PNG", "JPEG", "---", "Export Portrait", "---"}, titles[:7], "fixed prologue")
 	return titles[7:]

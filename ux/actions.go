@@ -521,8 +521,9 @@ func registerActions() {
 		func(s *Sheet) { ShowSheetSettings(s) })
 	printAction = registerFocusAction("print", PrintItemID, i18n.Text("Print…"),
 		unison.KeyBinding{KeyCode: unison.KeyP, Modifiers: mod.OSMenuCommand()})
-	redoAction = registerKeyBindableAction("redo", undoRedoAction(RedoItemID, unison.KeyY, unison.CannotRedoTitle,
-		(*unison.UndoManager).RedoTitle, (*unison.UndoManager).CanRedo, (*unison.UndoManager).Redo))
+	redoAction = registerTitledKeyBindableAction("redo", i18n.Text("Redo"), undoRedoAction(RedoItemID, unison.KeyY,
+		unison.CannotRedoTitle, (*unison.UndoManager).RedoTitle, (*unison.UndoManager).CanRedo,
+		(*unison.UndoManager).Redo))
 	saveAction = registerFocusAction("save", SaveItemID, i18n.Text("Save"),
 		unison.KeyBinding{KeyCode: unison.KeyS, Modifiers: mod.OSMenuCommand()})
 	saveAsAction = registerFocusAction("save_as", SaveAsItemID, i18n.Text("Save As…"),
@@ -561,8 +562,9 @@ func registerActions() {
 		unison.KeyBinding{KeyCode: unison.KeyX, Modifiers: mod.Shift | mod.OSMenuCommand()})
 	toggleStateAction = registerFocusAction("toggle", ToggleStateItemID, i18n.Text("Toggle State"),
 		unison.KeyBinding{KeyCode: unison.KeyApostrophe, Modifiers: mod.OSMenuCommand()})
-	undoAction = registerKeyBindableAction("undo", undoRedoAction(UndoItemID, unison.KeyZ, unison.CannotUndoTitle,
-		(*unison.UndoManager).UndoTitle, (*unison.UndoManager).CanUndo, (*unison.UndoManager).Undo))
+	undoAction = registerTitledKeyBindableAction("undo", i18n.Text("Undo"), undoRedoAction(UndoItemID, unison.KeyZ,
+		unison.CannotUndoTitle, (*unison.UndoManager).UndoTitle, (*unison.UndoManager).CanUndo,
+		(*unison.UndoManager).Undo))
 
 	// Actions that may not be assigned a key binding
 	checkForAppUpdatesAction = &unison.Action{
@@ -647,6 +649,13 @@ func registerActions() {
 
 func registerKeyBindableAction(key string, action *unison.Action) *unison.Action {
 	gurps.RegisterKeyBinding(key, action)
+	return action
+}
+
+// registerTitledKeyBindableAction registers a key-bindable action under a title of its own, for an action whose title
+// changes with what it would do, such as Undo, so that the Menu Keys settings have a fixed one to show for it.
+func registerTitledKeyBindableAction(key, title string, action *unison.Action) *unison.Action {
+	gurps.RegisterTitledKeyBinding(key, title, action)
 	return action
 }
 

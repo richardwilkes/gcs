@@ -24,10 +24,6 @@ import (
 	"github.com/richardwilkes/unison/enums/behavior"
 )
 
-// quickFilterWidthSample is the text whose width, in the quick filter's font, is the least room the field keeps for its
-// text.
-const quickFilterWidthSample = "MMMMMMMMMM"
-
 var (
 	_ FileBackedDockable           = &TableDockable[*gurps.Trait]{}
 	_ unison.UndoManagerProvider   = &TableDockable[*gurps.Trait]{}
@@ -170,14 +166,7 @@ func (d *TableDockable[T]) createToolbar() *unison.Panel {
 
 	// The quick filter is always in play: what is typed here narrows what the saved filter and the chosen tags let
 	// through when either is in force, and is all that filters the list otherwise.
-	d.filterField = NewSearchField(i18n.Text("Quick Filter"), func(_, _ *unison.FieldState) { d.applyFilter() })
-	// The field grabs width, and a column that does so in a FlexLayout shrinks no further than an explicit MinSize,
-	// ignoring the field's own minimum, so that minimum is copied there to keep the field from shrinking out of sight.
-	d.filterField.SetMinimumTextWidthUsing(quickFilterWidthSample)
-	if data, ok := d.filterField.LayoutData().(*unison.FlexLayoutData); ok {
-		minSize, _, _ := d.filterField.Sizes(geom.Size{})
-		data.MinSize.Width = minSize.Width
-	}
+	d.filterField = NewToolbarSearchField(i18n.Text("Quick Filter"), func(_, _ *unison.FieldState) { d.applyFilter() })
 
 	toolbar := NewToolbar()
 	toolbar.AddChild(NewDefaultInfoPop())

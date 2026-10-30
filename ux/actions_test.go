@@ -31,6 +31,7 @@ var keyBindingRegistrars = map[string]bool{
 	"registerFocusActionWithContextTitle": true,
 	"registerLibraryAction":               true,
 	"registerSheetAction":                 true,
+	"registerTitledKeyBindableAction":     true,
 }
 
 // gurps.RegisterKeyBinding silently ignores a duplicate ID, so an action that reuses one is never added to the binding

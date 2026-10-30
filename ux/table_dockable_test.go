@@ -596,7 +596,7 @@ func TestTableDockableTagFilterFixesWidth(t *testing.T) {
 
 // TestTableDockableFilterPopupsTurnCompact verifies that the filter popups turn into icons while the toolbar is too
 // narrow to show them in full, that the saved filter's name then leads its tooltip, that the quick filter shrinks no
-// further than the room for quickFilterWidthSample rather than out of sight, and that the popups turn back once the
+// further than the room for toolbarSearchWidthSample rather than out of sight, and that the popups turn back once the
 // toolbar is wide enough again.
 func TestTableDockableFilterPopupsTurnCompact(t *testing.T) {
 	c := check.New(t)
@@ -617,7 +617,7 @@ func TestTableDockableFilterPopupsTurnCompact(t *testing.T) {
 	c.Contains(tooltipText(d.savedFilters.popup.Tooltip), "No Filter", "the icon's tooltip names the saved filter")
 
 	layOut(100)
-	sample := unison.NewText(quickFilterWidthSample, &unison.TextDecoration{Font: d.filterField.Font}).Width()
+	sample := unison.NewText(toolbarSearchWidthSample, &unison.TextDecoration{Font: d.filterField.Font}).Width()
 	width := d.filterField.FrameRect().Width
 	c.True(width >= sample, "the quick filter is %v wide, less than the sample's %v", width, sample)
 

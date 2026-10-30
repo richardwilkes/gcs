@@ -18,6 +18,10 @@ import (
 
 const searchFieldClientDataKey = "is_search_field"
 
+// toolbarSearchWidthSample is the text whose width, in a toolbar search field's font, is the least room the field keeps
+// for its text.
+const toolbarSearchWidthSample = "MMMMMMMMMM"
+
 // NewSearchField creates a new search widget.
 func NewSearchField(watermark string, modifiedCallback func(before, after *unison.FieldState)) *unison.Field {
 	f := unison.NewField()
@@ -46,5 +50,18 @@ func NewSearchField(watermark string, modifiedCallback func(before, after *uniso
 	}
 	f.InstallAccessoryPanel(b)
 	f.ClientData()[searchFieldClientDataKey] = true
+	return f
+}
+
+// NewToolbarSearchField creates a search widget for a toolbar, where it grabs the width the toolbar has to spare. A
+// column that grabs in a FlexLayout shrinks no further than an explicit MinSize, ignoring the field's own minimum, so
+// that minimum is copied there to keep the field from shrinking out of sight.
+func NewToolbarSearchField(watermark string, modifiedCallback func(before, after *unison.FieldState)) *unison.Field {
+	f := NewSearchField(watermark, modifiedCallback)
+	f.SetMinimumTextWidthUsing(toolbarSearchWidthSample)
+	if data, ok := f.LayoutData().(*unison.FlexLayoutData); ok {
+		minSize, _, _ := f.Sizes(geom.Size{})
+		data.MinSize.Width = minSize.Width
+	}
 	return f
 }
