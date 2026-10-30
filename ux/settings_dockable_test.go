@@ -319,6 +319,18 @@ func TestSettingsViewsFitTheirMinimumWidth(t *testing.T) {
 	general.Self = general
 	sheet := &sheetSettingsDockable{}
 	sheet.Self = sheet
+	pageRefs := &pageRefMappingsDockable{}
+	pageRefs.Self = pageRefs
+	uxtest.SwapForTest(t, &gurps.GlobalSettings().PageRefs, gurps.PageRefs{})
+	withPageRefs := func(refs ...*gurps.PageRef) func(content *unison.Panel) {
+		return func(content *unison.Panel) {
+			gurps.GlobalSettings().PageRefs = gurps.PageRefs{}
+			for _, ref := range refs {
+				gurps.GlobalSettings().PageRefs.Set(ref)
+			}
+			pageRefs.initContent(content)
+		}
+	}
 	views := []struct {
 		name    string
 		init    func(content *unison.Panel)
@@ -326,6 +338,15 @@ func TestSettingsViewsFitTheirMinimumWidth(t *testing.T) {
 	}{
 		{name: "general settings", init: general.initContent, minSize: generalSettingsMinSize},
 		{name: "sheet settings", init: sheet.initContent, minSize: sheetSettingsMinSize},
+		{
+			name: "page reference mappings",
+			init: withPageRefs(
+				&gurps.PageRef{ID: "B", Path: filepath.Join(t.TempDir(), "A directory with a long name", "Basic Set - Revised.pdf"), Offset: -1000},
+				&gurps.PageRef{ID: "PY120:", Path: filepath.Join("pdfs", "Pyramid 3-120.pdf")},
+			),
+			minSize: pageRefMappingsMinSize,
+		},
+		{name: "page reference mappings, empty", init: withPageRefs(), minSize: pageRefMappingsMinSize},
 	}
 	for _, view := range views {
 		content := newSettingsContent(view.init)

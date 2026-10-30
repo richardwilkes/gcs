@@ -13,6 +13,7 @@ import (
 	"path/filepath"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/toolbox/v2/xos"
 	"github.com/richardwilkes/unison"
 )
 
@@ -21,14 +22,19 @@ import (
 // choice is made, the directory holding the first chosen file is recorded there for next time. Only files may be
 // chosen, and only those with one of the given extensions; pass none to allow any file.
 func chooseFilesToOpen(lastDirKey string, multiple bool, extensions ...string) ([]string, bool) {
+	return chooseFilesToOpenIn(gurps.GlobalSettings().LastDir(lastDirKey), lastDirKey, multiple, extensions...)
+}
+
+// chooseFilesToOpenIn is chooseFilesToOpen with the dialog opening in dir rather than the directory last used under
+// lastDirKey, which is still where the chosen file's directory is recorded.
+func chooseFilesToOpenIn(dir, lastDirKey string, multiple bool, extensions ...string) ([]string, bool) {
 	dialog := unison.NewOpenDialog()
 	dialog.SetAllowsMultipleSelection(multiple)
 	dialog.SetResolvesAliases(true)
 	dialog.SetAllowedExtensions(extensions...)
 	dialog.SetCanChooseDirectories(false)
 	dialog.SetCanChooseFiles(true)
-	global := gurps.GlobalSettings()
-	dialog.SetInitialDirectory(global.LastDir(lastDirKey))
+	dialog.SetInitialDirectory(dir)
 	if !dialog.RunModal() {
 		return nil, false
 	}
@@ -36,14 +42,30 @@ func chooseFilesToOpen(lastDirKey string, multiple bool, extensions ...string) (
 	if len(paths) == 0 {
 		return nil, false
 	}
-	global.SetLastDir(lastDirKey, filepath.Dir(paths[0]))
+	gurps.GlobalSettings().SetLastDir(lastDirKey, filepath.Dir(paths[0]))
 	return paths, true
 }
 
 // chooseFileToOpen is chooseFilesToOpen for a single file: it returns the file the user chose, or false if the dialog
 // was canceled.
 func chooseFileToOpen(lastDirKey string, extensions ...string) (string, bool) {
-	paths, ok := chooseFilesToOpen(lastDirKey, false, extensions...)
+	return firstChosen(chooseFilesToOpen(lastDirKey, false, extensions...))
+}
+
+// chooseFileToOpenNear is chooseFileToOpen for a file chosen in place of the one at path: the dialog opens in the
+// directory holding that file, so that the file or one beside it is at hand, falling back to the directory last used
+// under lastDirKey when the path is relative, which would leave its directory to wherever the process happens to be
+// working, or its directory is gone. No open-file dialog can select the file itself.
+func chooseFileToOpenNear(path, lastDirKey string, extensions ...string) (string, bool) {
+	dir := filepath.Dir(path)
+	if !filepath.IsAbs(path) || !xos.IsDir(dir) {
+		dir = gurps.GlobalSettings().LastDir(lastDirKey)
+	}
+	return firstChosen(chooseFilesToOpenIn(dir, lastDirKey, false, extensions...))
+}
+
+// firstChosen reduces the result of a multiple-file chooser to the first file chosen.
+func firstChosen(paths []string, ok bool) (string, bool) {
 	if !ok {
 		return "", false
 	}

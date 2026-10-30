@@ -26,7 +26,6 @@ import (
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
 	"github.com/richardwilkes/unison/enums/check"
-	"github.com/richardwilkes/unison/enums/slant"
 )
 
 type librarySettingsDockable struct {
@@ -206,12 +205,8 @@ func (d *librarySettingsDockable) initContent(content *unison.Panel) {
 }
 
 func (d *librarySettingsDockable) addNote(parent *unison.Panel, note string) {
-	fd := unison.DefaultLabelTheme.Font.Descriptor()
-	fd.Slant = slant.Italic
-	fd.Size--
-	font := fd.Font()
 	for _, line := range unison.NewTextWrappedLines(note, &unison.TextDecoration{
-		Font:            font,
+		Font:            settingsNoteFont(),
 		OnBackgroundInk: unison.DefaultLabelTheme.OnBackgroundInk,
 	}, 400) {
 		label := unison.NewLabel()

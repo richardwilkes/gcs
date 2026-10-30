@@ -44,13 +44,19 @@ func (f *NonEditableField) init(self unison.Paneler, syncer func(*NonEditableFie
 	f.Accessibility.Role = role.Label
 	f.Font = unison.FieldFont
 	f.HAlign = hAlign
-	f.SetBorder(unison.NewCompoundBorder(unison.NewLineBorder(unison.ThemeSurfaceEdge, geom.Size{},
-		geom.NewUniformInsets(1), false), unison.NewEmptyBorder(geom.Insets{Top: 3, Left: 3, Bottom: 2, Right: 3})))
+	f.SetBorder(nonEditableFieldBorder(unison.ThemeSurfaceEdge))
 	f.SetLayoutData(&unison.FlexLayoutData{
 		HAlign: align.Fill,
 		VAlign: align.Middle,
 	})
 	f.Sync()
+}
+
+// nonEditableFieldBorder returns the border of a non-editable field, a line in the ink within the same insets as the
+// border an editable field has while it is not focused, so that the two line up in a row.
+func nonEditableFieldBorder(ink unison.Ink) unison.Border {
+	return unison.NewCompoundBorder(unison.NewLineBorder(ink, geom.Size{}, geom.NewUniformInsets(1), false),
+		unison.NewEmptyBorder(geom.Insets{Top: 3, Left: 3, Bottom: 2, Right: 3}))
 }
 
 // Sync the field to the current value.

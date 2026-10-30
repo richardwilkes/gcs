@@ -131,6 +131,66 @@ func TestChooseFilesToOpen(t *testing.T) {
 	c.False(recorded, "a canceled dialog records no directory")
 }
 
+// TestChooseFileToOpenNearStartsInThePathsDirectory verifies that choosing a file in place of another starts the dialog
+// in that file's directory rather than the one last used under the key, unless that directory is gone, or the path is
+// relative and so leaves its directory to the working directory, when the last used one serves as usual.
+func TestChooseFileToOpenNearStartsInThePathsDirectory(t *testing.T) {
+	c := check.New(t)
+	screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
+	lastDir := t.TempDir()
+	lastPath := filepath.Join(lastDir, "last.pdf")
+	nearDir := t.TempDir()
+	nearPath := filepath.Join(nearDir, "near.pdf")
+	for _, one := range []string{lastPath, nearPath} {
+		if err := os.WriteFile(one, []byte("x"), 0o640); err != nil {
+			t.Fatalf("unable to write %s: %v", one, err)
+		}
+	}
+	// The working directory holds a file by the bare name, so that a dialog opened there would offer it.
+	t.Chdir(nearDir)
+	const key = "choose-near-test"
+	screen.Do(func() { gurps.GlobalSettings().SetLastDir(key, lastDir) })
+	for _, tc := range []struct {
+		name string
+		near string
+		want string
+	}{
+		{name: "the path's directory", near: nearPath, want: nearPath},
+		{
+			name: "the last used directory when the path's is gone",
+			near: filepath.Join(nearDir, "gone", "x.pdf"),
+			want: lastPath,
+		},
+		{name: "the last used directory for a bare file name", near: filepath.Base(nearPath), want: lastPath},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			var chosen string
+			var chosenOK, returned bool
+			c.True(screen.Post(func() {
+				chosen, chosenOK = chooseFileToOpenNear(tc.near, key, "pdf")
+				returned = true
+			}))
+			screen.Sync()
+			dialogWnd, dialog := modalDialog(t, screen, wnd)
+			fileList, rowCount := openDialogFileList(t, screen, dialogWnd)
+			if rowCount != 1 {
+				t.Fatalf("expected the dialog to list the one PDF in the directory, found %d rows", rowCount)
+			}
+			screen.Click(fileListRowPoint(screen, dialogWnd, fileList, 0))
+			var openButton *unison.Button
+			screen.Do(func() { openButton = dialog.Button(unison.ModalResponseOK) })
+			screen.Click(screen.PanelCenter(openButton))
+			var windows int
+			screen.Do(func() { windows = len(unison.Windows()) })
+			c.Equal(1, windows, "the dialog has been dismissed")
+			c.True(returned, "the choice has been made")
+			c.True(chosenOK, "a chosen file is reported as chosen")
+			c.Equal(tc.want, chosen, "the dialog started in %s", tc.name)
+		})
+		screen.Do(func() { gurps.GlobalSettings().SetLastDir(key, lastDir) })
+	}
+}
+
 // The shared save-file dialog opens in the directory it is given offering the sanitized initial name, hands back the
 // chosen path with the required extension on it and records the directory under the caller's key, but records nothing
 // when canceled or when given no key.

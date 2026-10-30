@@ -22,6 +22,7 @@ import (
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
 	"github.com/richardwilkes/unison/enums/behavior"
+	"github.com/richardwilkes/unison/enums/slant"
 	"github.com/richardwilkes/unison/enums/weight"
 )
 
@@ -217,6 +218,14 @@ func addStretchedSettingsRow(section *unison.Panel, title string, field unison.P
 		HGrab:  true,
 	})
 	section.AddChild(field)
+}
+
+// settingsNoteFont returns the font a note in a settings view is set in: the label font, italic and a size smaller.
+func settingsNoteFont() unison.Font {
+	fd := unison.DefaultLabelTheme.Font.Descriptor()
+	fd.Slant = slant.Italic
+	fd.Size--
+	return fd.Font()
 }
 
 // newSettingsContent returns the content panel of a settings view, filled by initContent within the standard margin.
