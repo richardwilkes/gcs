@@ -36,7 +36,7 @@ var _ unison.TableRowData[*NavigatorNode] = &NavigatorNode{}
 // NavigatorNode holds the favorites, a library, a directory or a file.
 type NavigatorNode struct {
 	id                       tid.TID
-	path                     string // Relative to the library and slash-separated, as refreshChildren builds it
+	path                     string // Relative to the library and slash-separated, as listFolder builds it
 	nav                      *Navigator
 	library                  *library.Library
 	parent                   *NavigatorNode
@@ -45,18 +45,25 @@ type NavigatorNode struct {
 	updateCellCache          *updatableLibraryCell
 }
 
-// NewFavoritesNode creates the Favorites node.
-func NewFavoritesNode(nav *Navigator) *NavigatorNode {
+// NewFavoritesNode creates the Favorites node, with a row for each favorite a walk of the libraries listed (see
+// listFavorites).
+func NewFavoritesNode(nav *Navigator, favorites []*favoriteEntry) *NavigatorNode {
 	n := &NavigatorNode{
 		id:  "00000000000000000",
 		nav: nav,
 	}
-	n.Refresh()
+	for _, one := range favorites {
+		if one.entry.isDir {
+			n.children = append(n.children, NewDirectoryNode(nav, one.library, one.entry.path, n, one.entry.entries))
+		} else {
+			n.children = append(n.children, NewFileNode(one.library, one.entry.path, n))
+		}
+	}
 	return n
 }
 
-// NewLibraryNode creates a new library node.
-func NewLibraryNode(nav *Navigator, lib *library.Library) *NavigatorNode {
+// NewLibraryNode creates a new library node, with rows for the entries a walk of the library listed (see listFolder).
+func NewLibraryNode(nav *Navigator, lib *library.Library, entries []*navigatorEntry) *NavigatorNode {
 	var id tid.TID
 	switch {
 	case lib.IsMaster():
@@ -74,7 +81,7 @@ func NewLibraryNode(nav *Navigator, lib *library.Library) *NavigatorNode {
 		nav:     nav,
 		library: lib,
 	}
-	n.Refresh()
+	n.children = n.childrenFor(entries)
 	return n
 }
 
@@ -83,7 +90,7 @@ func NewLibraryNode(nav *Navigator, lib *library.Library) *NavigatorNode {
 // library. A folder can show up under Favorites more than once, when a favorite lies within a favorited folder, so a
 // copy shown within a favorite other than the nearest one holding the folder is keyed by that favorite's path too,
 // leaving a folder shown once with the key, and so the open state, it has always had.
-func NewDirectoryNode(nav *Navigator, lib *library.Library, dirPath string, parent *NavigatorNode) *NavigatorNode {
+func NewDirectoryNode(nav *Navigator, lib *library.Library, dirPath string, parent *NavigatorNode, entries []*navigatorEntry) *NavigatorNode {
 	pathForID := "@" + filepath.Join(lib.Path(false), dirPath)
 	root := parent
 	var shownWithin *NavigatorNode // The row beneath the root that this one is shown within, unless it is that row
@@ -106,8 +113,24 @@ func NewDirectoryNode(nav *Navigator, lib *library.Library, dirPath string, pare
 		library: lib,
 		parent:  parent,
 	}
-	n.Refresh()
+	n.children = n.childrenFor(entries)
 	return n
+}
+
+// childrenFor returns a row for each of the entries, which a walk of the libraries listed in the node's folder.
+func (n *NavigatorNode) childrenFor(entries []*navigatorEntry) []*NavigatorNode {
+	if len(entries) == 0 {
+		return nil
+	}
+	children := make([]*NavigatorNode, 0, len(entries))
+	for _, entry := range entries {
+		if entry.isDir {
+			children = append(children, NewDirectoryNode(n.nav, n.library, entry.path, n, entry.entries))
+		} else {
+			children = append(children, NewFileNode(n.library, entry.path, n))
+		}
+	}
+	return children
 }
 
 // hasNearerFavorite returns true if a favorite of the library lies within the favorite folder and is the folder at
@@ -315,59 +338,6 @@ func (n *NavigatorNode) Path() string {
 	}
 }
 
-// Refresh the contents of this node.
-func (n *NavigatorNode) Refresh() {
-	switch {
-	case n.IsFavorites():
-		type fav struct {
-			path    string
-			library *library.Library
-		}
-		var favs []*fav
-		for _, lib := range gurps.GlobalSettings().Libraries.List() {
-			lib.CleanupFavorites()
-			if favorites := lib.Favorites(); len(favorites) != 0 {
-				for _, one := range favorites {
-					favs = append(favs, &fav{
-						path:    one,
-						library: lib,
-					})
-				}
-			}
-		}
-		groupContainers := gurps.GlobalSettings().General.GroupContainersOnSort
-		slices.SortFunc(favs, func(a, b *fav) int {
-			if groupContainers {
-				aIsDir := xos.IsDir(filepath.Join(a.library.Path(false), a.path))
-				if aIsDir != xos.IsDir(filepath.Join(b.library.Path(false), b.path)) {
-					if aIsDir {
-						return -1 // Directories before files
-					}
-					return 1
-				}
-			}
-			result := xstrings.NaturalCmp(xfilepath.TrimExtension(a.path), xfilepath.TrimExtension(b.path), true)
-			if result == 0 {
-				result = xstrings.NaturalCmp(a.path, b.path, true)
-			}
-			return result
-		})
-		for _, one := range favs {
-			p := filepath.Join(one.library.Path(false), one.path)
-			if xos.IsDir(p) {
-				n.children = append(n.children, NewDirectoryNode(n.nav, one.library, one.path, n))
-			} else {
-				n.children = append(n.children, NewFileNode(one.library, one.path, n))
-			}
-		}
-	case n.IsLibrary():
-		n.children = n.refreshChildren(".", n)
-	case n.IsDirectory():
-		n.children = n.refreshChildren(n.path, n)
-	default:
-	}
-}
-
 // OpenNodeContent opens the node's content.
 func (n *NavigatorNode) OpenNodeContent() (dockable unison.Dockable, wasOpen bool) {
 	if n.IsFile() {
@@ -376,17 +346,84 @@ func (n *NavigatorNode) OpenNodeContent() (dockable unison.Dockable, wasOpen boo
 	return nil, false
 }
 
-func (n *NavigatorNode) refreshChildren(dirPath string, parent *NavigatorNode) []*NavigatorNode {
-	libPath := n.library.Path(false)
+// navigatorEntry is one entry of a folder as a walk of the libraries listed it (see listFolder): a subfolder, with the
+// entries beneath it, or a file. The walk runs on a background goroutine and reads nothing but the disk; the rows are
+// built from its entries on the UI thread (see NewLibraryNode).
+type navigatorEntry struct {
+	path    string            // Relative to the library and slash-separated
+	entries []*navigatorEntry // What a folder holds; nil for a file
+	isDir   bool
+}
+
+// favoriteEntry is one favorite as a walk of the libraries listed it (see listFavorites).
+type favoriteEntry struct {
+	library *library.Library
+	entry   *navigatorEntry
+}
+
+// libraryListing is what a walk of the libraries listed in one of them.
+type libraryListing struct {
+	library *library.Library
+	entries []*navigatorEntry
+}
+
+// navigatorListing is what one walk of the libraries listed (see listLibraries): the entries of each library, in the
+// order the libraries were given, and the favorites.
+type navigatorListing struct {
+	libraries []libraryListing
+	favorites []*favoriteEntry
+}
+
+// librariesLister is the signature of listLibraries, which the navigator holds as a field so that tests can hold a walk
+// back.
+type librariesLister func(libs []*library.Library, groupContainers bool, symlinkedFolder func(lib *library.Library, dirPath string)) *navigatorListing
+
+// listLibraries lists the given libraries and their favorites on the caller's goroutine, which Navigator.Reload makes a
+// background one, so that a library on a slow disk or a network share does not stall the UI for as long as listing its
+// folders takes. symlinkedFolder is told of each symlinked folder found, so that the library's watch can be made to
+// follow it; see listFolder.
+func listLibraries(libs []*library.Library, groupContainers bool, symlinkedFolder func(lib *library.Library, dirPath string)) *navigatorListing {
+	listing := &navigatorListing{libraries: make([]libraryListing, 0, len(libs))}
+	for _, lib := range libs {
+		listing.libraries = append(listing.libraries, libraryListing{
+			library: lib,
+			entries: listFolder(lib, ".", groupContainers, symlinkedFolder),
+		})
+	}
+	listing.favorites = listFavorites(libs, groupContainers, symlinkedFolder)
+	return listing
+}
+
+// bareListing returns a listing of the given libraries with nothing listed in any of them, which is what the navigator
+// shows until its first walk of the libraries returns; see Navigator.Reload.
+func bareListing(libs []*library.Library) *navigatorListing {
+	listing := &navigatorListing{libraries: make([]libraryListing, 0, len(libs))}
+	for _, lib := range libs {
+		listing.libraries = append(listing.libraries, libraryListing{library: lib})
+	}
+	return listing
+}
+
+// listFolder lists the folder at dirPath within the library, and the folders beneath it, in the order the tree shows
+// them: folders ahead of files when groupContainers is set, within that in natural order of the name without its
+// extension and then of the whole name. Entries whose names begin with a dot are left out, as are the library's
+// settings and output template folders and the files of the types the file type registry marks as special, which the
+// type that stands in for every unknown one is. A symlink counts as a folder when it leads to one that holds something,
+// and symlinkedFolder is told of it, since the native filesystem monitoring does not follow symlinks on its own (see
+// MonitorToken.AddSubPath); any other symlink is listed as a file. One that leads back to a folder it lies within is
+// listed as a folder with nothing beneath it, since that folder would otherwise be listed within itself over and over
+// until the path grew too long to resolve, and symlinkedFolder is not told of it, since that folder is watched already.
+// A folder that cannot be read lists nothing, which is logged unless the folder is missing, as it is during filesystem
+// updates.
+func listFolder(lib *library.Library, dirPath string, groupContainers bool, symlinkedFolder func(lib *library.Library, dirPath string)) []*navigatorEntry {
+	libPath := lib.Path(false)
 	entries, err := os.ReadDir(filepath.Join(libPath, dirPath))
 	if err != nil {
 		if !errors.Is(err, fs.ErrNotExist) {
-			// Only log the error if it wasn't due to a missing dir, since that happens during filesystem updates
 			errs.Log(errs.NewWithCause("unable to read the directory", err), "dir", dirPath)
 		}
 		return nil
 	}
-	groupContainers := gurps.GlobalSettings().General.GroupContainersOnSort
 	slices.SortFunc(entries, func(a, b fs.DirEntry) int {
 		if groupContainers {
 			if aIsDir := a.IsDir(); aIsDir != b.IsDir() {
@@ -404,32 +441,90 @@ func (n *NavigatorNode) refreshChildren(dirPath string, parent *NavigatorNode) [
 		}
 		return result
 	})
-	children := make([]*NavigatorNode, 0, len(entries))
+	listed := make([]*navigatorEntry, 0, len(entries))
 	for _, entry := range entries {
 		name := entry.Name()
-		if !strings.HasPrefix(name, ".") {
-			p := path.Join(dirPath, name)
-			isDir := entry.IsDir()
-			if entry.Type() == fs.ModeSymlink {
-				var sub []fs.DirEntry
-				if sub, err = os.ReadDir(filepath.Join(libPath, p)); err == nil && len(sub) > 0 {
-					isDir = true
-					for _, token := range n.nav.tokens {
-						if token.Library() == n.library {
-							token.AddSubPath(p)
-						}
-					}
+		if strings.HasPrefix(name, ".") {
+			continue
+		}
+		p := path.Join(dirPath, name)
+		isDir := entry.IsDir()
+		leadsBack := false
+		if entry.Type() == fs.ModeSymlink {
+			if sub, readErr := os.ReadDir(filepath.Join(libPath, p)); readErr == nil && len(sub) > 0 {
+				isDir = true
+				if leadsBack = symlinkLeadsBack(libPath, dirPath, p); !leadsBack {
+					symlinkedFolder(lib, p)
 				}
-			}
-			if isDir {
-				if !strings.EqualFold(p, library.SettingsDirName) && !strings.EqualFold(p, library.OutputTemplatesDirName) {
-					dirNode := NewDirectoryNode(n.nav, n.library, p, parent)
-					children = append(children, dirNode)
-				}
-			} else if !gurps.FileInfoFor(name).IsSpecial {
-				children = append(children, NewFileNode(n.library, p, parent))
 			}
 		}
+		switch {
+		case isDir:
+			if !strings.EqualFold(p, library.SettingsDirName) && !strings.EqualFold(p, library.OutputTemplatesDirName) {
+				var beneath []*navigatorEntry
+				if !leadsBack {
+					beneath = listFolder(lib, p, groupContainers, symlinkedFolder)
+				}
+				listed = append(listed, &navigatorEntry{path: p, entries: beneath, isDir: true})
+			}
+		case !gurps.FileInfoFor(name).IsSpecial:
+			listed = append(listed, &navigatorEntry{path: p})
+		}
 	}
-	return children
+	return listed
+}
+
+// symlinkLeadsBack returns true if the symlink at p within the library at libPath leads to the folder at dirPath, which
+// holds it, or to one above that, up to the library's own folder.
+func symlinkLeadsBack(libPath, dirPath, p string) bool {
+	target, err := os.Stat(filepath.Join(libPath, p))
+	if err != nil {
+		return false
+	}
+	for folder := dirPath; ; {
+		if fi, statErr := os.Stat(filepath.Join(libPath, folder)); statErr == nil && os.SameFile(fi, target) {
+			return true
+		}
+		parent := path.Dir(folder)
+		if parent == folder {
+			return false
+		}
+		folder = parent
+	}
+}
+
+// listFavorites lists the favorites of the given libraries, after dropping from each library the favorites that can no
+// longer be found (see Library.CleanupFavorites), in the order the Favorites row shows them: folders ahead of files
+// when groupContainers is set, within that in natural order of the path without its extension and then of the whole
+// path. A folder among them is listed as listFolder lists it.
+func listFavorites(libs []*library.Library, groupContainers bool, symlinkedFolder func(lib *library.Library, dirPath string)) []*favoriteEntry {
+	var favs []*favoriteEntry
+	for _, lib := range libs {
+		lib.CleanupFavorites()
+		for _, one := range lib.Favorites() {
+			favs = append(favs, &favoriteEntry{
+				library: lib,
+				entry:   &navigatorEntry{path: one, isDir: xos.IsDir(filepath.Join(lib.Path(false), one))},
+			})
+		}
+	}
+	slices.SortFunc(favs, func(a, b *favoriteEntry) int {
+		if groupContainers && a.entry.isDir != b.entry.isDir {
+			if a.entry.isDir {
+				return -1 // Directories before files
+			}
+			return 1
+		}
+		result := xstrings.NaturalCmp(xfilepath.TrimExtension(a.entry.path), xfilepath.TrimExtension(b.entry.path), true)
+		if result == 0 {
+			result = xstrings.NaturalCmp(a.entry.path, b.entry.path, true)
+		}
+		return result
+	})
+	for _, one := range favs {
+		if one.entry.isDir {
+			one.entry.entries = listFolder(one.library, one.entry.path, groupContainers, symlinkedFolder)
+		}
+	}
+	return favs
 }

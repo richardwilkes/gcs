@@ -10,12 +10,15 @@
 package ux
 
 import (
+	"slices"
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/fonts"
+	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/mod"
+	"github.com/richardwilkes/unison/enums/slant"
 )
 
 // maxSearchMatches is the most rows a search dropdown offers, since the list that shows them builds a cell for every
@@ -25,8 +28,8 @@ const maxSearchMatches = 100
 
 // searchMatch is a row a search found: its label, a title shown dimmed after it (the list or folder it is in), a key
 // that names the same row across a rebuild of the table holding it, an optional icon drawn ahead of the label, and a
-// function that discloses, selects and scrolls to it, which is nil for the row that says the matches were cut short
-// (see searchMatchRows), which chooses nothing.
+// function that discloses, selects and scrolls to it, which is nil for the rows that only carry a note, that the
+// matches were cut short (see searchMatchRows) or the status (see rowsFor), which choose nothing.
 type searchMatch struct {
 	show  func()
 	icon  unison.Drawable
@@ -42,12 +45,15 @@ func (m *searchMatch) String() string {
 // searchDropdown is a search field whose matches are offered in a dropdown as the user types; choosing one reveals it.
 // The rows are only looked for while the dropdown can be seen, since the walk that finds them can be costly: on a sheet
 // it has every row of a page list derive its children and the data of its cells afresh as it is read (see rowReuse),
-// and in the Library Explorer it reads the files the deep search has not cached yet.
+// and in the Library Explorer it starts a read of the files the deep search has not cached yet.
 type searchDropdown struct {
 	field       *unison.Field
 	suggestions *unison.FieldSuggestions[*searchMatch]
 	// findMatches returns the rows matching the lower-cased text. A field so that tests can count the walks.
 	findMatches func(text string) []*searchMatch
+	// status, if set, returns a note to offer after the rows the last findMatches found, or "" for none. The Library
+	// Explorer says through it when the matches may be incomplete because file contents are still being indexed.
+	status func() string
 	// choose reveals the chosen match.
 	choose func(match *searchMatch)
 }
@@ -98,8 +104,20 @@ func (s *searchDropdown) showMatches() bool {
 		return false
 	}
 	found := s.findMatches(text)
-	s.suggestions.SetRows(searchMatchRows(found))
+	s.suggestions.SetRows(s.rowsFor(found))
 	return len(found) != 0
+}
+
+// rowsFor returns the rows the dropdown offers for the matches found: those searchMatchRows returns, followed by the
+// status note, if there is one, as a row that chooses nothing.
+func (s *searchDropdown) rowsFor(found []*searchMatch) []*searchMatch {
+	rows := searchMatchRows(found)
+	if s.status != nil {
+		if text := s.status(); text != "" {
+			rows = append(slices.Clip(rows), &searchMatch{name: text})
+		}
+	}
+	return rows
 }
 
 // searchMatchRows returns the rows the dropdown offers for the matches found: all of them, or, when there are more than
@@ -122,7 +140,7 @@ func (s *searchDropdown) textModified(_, after *unison.FieldState) {
 		s.suggestions.SetRows(nil)
 		return
 	}
-	s.suggestions.SetRows(searchMatchRows(s.findMatches(strings.ToLower(after.Text))))
+	s.suggestions.SetRows(s.rowsFor(s.findMatches(strings.ToLower(after.Text))))
 }
 
 // keyDown gives the field's keys their meaning for the search. While the rows are hidden, RETURN or a bare Down offers
@@ -161,7 +179,7 @@ func (s *searchDropdown) Refresh() {
 	if i := s.suggestions.Selected(); i >= 0 {
 		highlighted = s.suggestions.List().DataAtIndex(i).key
 	}
-	rows := searchMatchRows(s.findMatches(strings.ToLower(s.field.Text())))
+	rows := s.rowsFor(s.findMatches(strings.ToLower(s.field.Text())))
 	s.suggestions.SetRows(rows)
 	if highlighted == "" {
 		return
@@ -175,7 +193,8 @@ func (s *searchDropdown) Refresh() {
 }
 
 // searchMatchCellFactory draws the dropdown's rows as the default factory does, with the match's icon, if it has one,
-// ahead of its name and its title dimmed after it.
+// ahead of its name and its title dimmed after it. A row that only carries a note (see searchMatch) is set apart from
+// the matches, so that it does not read as one of them: dimmed, in the italic secondary font, under a line.
 type searchMatchCellFactory struct {
 	unison.DefaultCellFactory
 }
@@ -188,16 +207,44 @@ func (f *searchMatchCellFactory) CreateCell(owner unison.Paneler, element any, r
 	if !ok || !ok2 {
 		return panel
 	}
+	label.Accessibility.Name = match.name
+	if match.show == nil {
+		label.Font = noteFont()
+		label.Text = unison.NewText(match.name, &unison.TextDecoration{Font: label.Font, OnBackgroundInk: dimmed(foreground)})
+		label.SetBorder(unison.NewCompoundBorder(
+			unison.NewLineBorder(unison.ThemeSurfaceEdge, geom.Size{}, geom.Insets{Top: 1}, false), label.Border(),
+		))
+		return label
+	}
 	label.Drawable = match.icon
 	label.Text = unison.NewText(match.name, &unison.TextDecoration{Font: unison.FieldFont, OnBackgroundInk: foreground})
 	if match.title != "" {
-		label.Text.AddString("  "+match.title, &unison.TextDecoration{
-			Font:            fonts.FieldSecondary,
-			OnBackgroundInk: &unison.ColorFilteredInk{OriginalInk: foreground, ColorFilter: unison.Alpha50Filter()},
-		})
+		label.Text.AddString("  "+match.title, &unison.TextDecoration{Font: fonts.FieldSecondary, OnBackgroundInk: dimmed(foreground)})
 		label.Accessibility.Name = i18n.Text("%s, %s", match.name, match.title)
-	} else {
-		label.Accessibility.Name = match.name
 	}
 	return label
+}
+
+// dimmed returns the ink at half strength.
+func dimmed(ink unison.Ink) unison.Ink {
+	return &unison.ColorFilteredInk{OriginalInk: ink, ColorFilter: unison.Alpha50Filter()}
+}
+
+// noteFontCache holds the font noteFont last returned and the descriptor it was derived from, so that the font is only
+// matched again once the secondary field font has changed. Only touched on the UI thread, where the cells are built.
+var noteFontCache struct {
+	desc unison.FontDescriptor
+	font unison.Font
+}
+
+// noteFont returns the secondary field font in italics, for the rows of a search dropdown that only carry a note.
+func noteFont() unison.Font {
+	desc := fonts.FieldSecondary.Descriptor()
+	if noteFontCache.font == nil || noteFontCache.desc != desc {
+		italic := desc
+		italic.Slant = slant.Italic
+		noteFontCache.desc = desc
+		noteFontCache.font = italic.Font()
+	}
+	return noteFontCache.font
 }

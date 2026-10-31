@@ -70,24 +70,33 @@ type Navigator struct {
 	scroll                    *unison.ScrollPanel
 	table                     *unison.Table[*NavigatorNode]
 	tokens                    []*library.MonitorToken
+	listLibraries             librariesLister // A field so that tests can hold a walk back
+	afterReload               []func()
 	deepSearch                map[string]bool
 	contentCache              map[string]*contentCacheEntry
 	lastBuild                 *contentCacheBuild
+	contentLoad               *contentLoad
+	missingContent            map[string]bool
 	invalidatedPaths          map[string]bool
 	appUpdatePulse            appUpdatePulse
+	walks                     sync.WaitGroup // The walks in flight, which tests wait out before removing the libraries
 	cacheGeneration           atomic.Int64
 	prewarmSuspensions        int
 	needReload                bool
+	walking                   bool
+	reloadAgain               bool
+	listed                    bool
 	prewarmPending            bool
 	adjustTableSizePending    bool
 }
 
 func newNavigator() *Navigator {
 	n := &Navigator{
-		toolbar:    NewToolbar(),
-		scroll:     unison.NewScrollPanel(),
-		table:      unison.NewTable(&unison.SimpleTableModel[*NavigatorNode]{}),
-		deepSearch: make(map[string]bool),
+		toolbar:       NewToolbar(),
+		scroll:        unison.NewScrollPanel(),
+		table:         unison.NewTable(&unison.SimpleTableModel[*NavigatorNode]{}),
+		deepSearch:    make(map[string]bool),
+		listLibraries: listLibraries,
 	}
 	n.Self = n
 
@@ -101,12 +110,9 @@ func newNavigator() *Navigator {
 	n.table.ShowFirstColumnDivider = false
 	n.table.ShowLastColumnDivider = false
 	n.table.Columns = make([]unison.ColumnInfo, 1)
-	n.needReload = true
-	rows := n.populateRows()
-	n.needReload = false
 	scale := float32(globalSettings.General.NavigatorUIScale) / 100
 	n.table.SetScale(geom.NewPoint(scale, scale))
-	n.table.SetRootRows(rows)
+	n.table.SetRootRows(n.rowsFor(bareListing(globalSettings.Libraries.List())))
 	n.table.SizeColumnsToFit(true)
 
 	n.scroll.SetContent(n.table, behavior.Fill, behavior.Fill)
@@ -137,7 +143,9 @@ func newNavigator() *Navigator {
 	// The launch-time update check can finish before the Library Explorer exists, in which case the notification that
 	// would have revealed the button has already come and gone.
 	n.syncAppUpdateButton()
-	n.EventuallyReload() // Without this, the version for libraries is sometimes truncated at initial load
+	// Fills in the rows, which start out bare; see Reload. Reloading rather than building the rows in full here also
+	// keeps the version for libraries from sometimes being truncated at initial load, as it was without a reload.
+	n.EventuallyReload()
 	return n
 }
 
@@ -201,6 +209,7 @@ func (n *Navigator) setupToolBar() {
 	n.appUpdatePulse.apply = n.applyAppUpdatePulse
 
 	n.search = newSearchDropdown(n.findMatches, func(match *searchMatch) { match.show() })
+	n.search.status = n.searchStatus
 
 	n.toolbar.AddChild(NewDefaultInfoPop())
 	n.toolbar.AddChild(helpButton)
@@ -453,17 +462,20 @@ func promptForFileSystemName(currentName, label, initial string, targetPath func
 	return targetPath(name), true
 }
 
-// reloadAndSelect reloads the tree and selects the row for the path within the parent's row alone, though the path may
-// show elsewhere too, as within a folder shown both under its library and under Favorites. Should the parent's row not
-// show it, as Favorites doesn't show a folder made beside a favorite file, it is selected wherever it shows.
+// reloadAndSelect reloads the tree and, once the reloaded rows are in, selects the row for the path within the parent's
+// row alone, though the path may show elsewhere too, as within a folder shown both under its library and under
+// Favorites. Should the parent's row not show it, as Favorites doesn't show a folder made beside a favorite file, it is
+// selected wherever it shows.
 func (n *Navigator) reloadAndSelect(path string, parent *NavigatorNode) {
 	place := path + "\x00" + parent.placeKey() // As placeKey would key the row
+	n.afterReload = append(n.afterReload, func() {
+		n.applySelectedPlaces(map[string]bool{place: true})
+		if !n.table.HasSelection() {
+			n.ApplySelectedPaths([]string{path})
+		}
+		n.MarkForRedraw()
+	})
 	n.Reload()
-	n.applySelectedPlaces(map[string]bool{place: true})
-	if !n.table.HasSelection() {
-		n.ApplySelectedPaths([]string{path})
-	}
-	n.MarkForRedraw()
 }
 
 func (n *Navigator) renameSelection() {
@@ -747,40 +759,129 @@ func (n *Navigator) EventuallyReload() {
 	})
 }
 
-// Reload the content of the navigator view. A navigator that is no longer in a window has been discarded along with its
-// workspace (the headless tests start a workspace per test), yet the reload it scheduled and the library watches it
-// holds still fire into unison's process-wide task queue. Were it to reload, it would rebuild its rows from the live
-// libraries, find none of them in the places its old rows had disclosed, and close them all; library rows share their
-// disclosure keys, so that would close the live navigator's rows too. It stops its watches and does nothing else.
+// Reload the content of the navigator view. The libraries are walked on a background goroutine and the rows rebuilt
+// from what it listed once it returns (see applyListing), so that a library on a slow disk or a network share does not
+// stall the UI for as long as watching and listing its folders takes; the walk watches the libraries afresh before it
+// lists them, so that a change made while it runs is reported and brings a reload of its own. A reload asked for while
+// a walk is in flight is made once that walk's rows are in rather than canceling it, since under a steady stream of
+// changes, as a library being updated from another machine brings, a walk that is canceled by each change would never
+// finish.
+//
+// A navigator that is no longer in a window has been discarded along with its workspace (the headless tests start a
+// workspace per test), yet the reload it scheduled and the library watches it holds still fire into unison's
+// process-wide task queue. Were it to reload, it would rebuild its rows from the live libraries, find none of them in
+// the places its old rows had disclosed, and close them all; library rows share their disclosure keys, so that would
+// close the live navigator's rows too. It stops its watches and does nothing else, as does a walk of its that returns.
 func (n *Navigator) Reload() {
 	n.needReload = false
-	for _, token := range n.tokens {
-		token.Stop()
-	}
-	n.tokens = nil
 	if n.Window() == nil {
+		n.stopWatches()
 		return
 	}
-	disclosed := n.disclosedPlaces()
+	if n.walking {
+		n.reloadAgain = true
+		return
+	}
+	n.startWalk()
+}
+
+// startWalk stops the library watches, then watches the libraries afresh and lists them on a background goroutine,
+// after which the rows are rebuilt from the listing on the UI thread; see Reload. The watches are established on that
+// goroutine, since on Linux the native filesystem monitoring watches each folder on its own, so that watching a library
+// reads every folder in it. They are stopped here, since that reads nothing, and Library.SetPath, which restarts the
+// watches it finds on the UI thread, would bring back one stopped on another goroutine meanwhile. Whatever is to follow
+// the reload (see reloadAndSelect) is taken along to run once those rows are in, so that it finds what was made before
+// the reload was asked for.
+func (n *Navigator) startWalk() {
+	n.stopWatches()
+	settings := gurps.GlobalSettings()
+	libs := settings.Libraries.List()
+	groupContainers := settings.General.GroupContainersOnSort
+	afterward := n.afterReload
+	n.afterReload = nil
+	n.walking = true
+	list := n.listLibraries
+	n.walks.Go(func() {
+		tokens := make([]*library.MonitorToken, 0, len(libs))
+		for _, lib := range libs {
+			tokens = append(tokens, lib.Watch(n.watchCallback, true))
+		}
+		listing := list(libs, groupContainers, func(lib *library.Library, dirPath string) {
+			for _, token := range tokens {
+				if token.Library() == lib {
+					token.AddSubPath(dirPath)
+				}
+			}
+		})
+		unison.InvokeTask(func() { n.applyListing(listing, tokens, afterward) })
+	})
+}
+
+// applyListing takes over the watches a walk of the libraries established and rebuilds the rows from what it listed,
+// keeping the rows that were disclosed and selected so by their place in the tree (see placeKey), then has the deep
+// search content cache rebuilt and the matches on offer found again, and runs what was to follow the reload. Which rows
+// were disclosed is carried over only once the rows have come from a walk before: until then they are the bare rows
+// newNavigator starts with, which know nothing of the folders beneath the libraries, and the open state each row keeps
+// of its own (see IsOpen) is what is wanted. A reload asked for while the walk ran is made last; the walk counts as in
+// flight until then, so that a reload asked for by what runs here is owed along with it rather than starting a walk
+// beside it. Must be called on the UI thread.
+func (n *Navigator) applyListing(listing *navigatorListing, tokens []*library.MonitorToken, afterward []func()) {
+	n.tokens = tokens // The watches were all stopped when the walk started, and nothing has watched since
+	if n.Window() == nil {
+		n.walking = false
+		n.stopWatches()
+		return
+	}
+	var disclosed map[string]bool
+	if n.listed {
+		disclosed = n.disclosedPlaces()
+	}
+	n.listed = true
 	selection := n.selectedPlaces()
-	n.table.SetRootRows(n.populateRows())
-	applyDisclosedPlaces(n.table.RootRows(), disclosed)
+	n.table.SetRootRows(n.rowsFor(listing))
+	if disclosed != nil {
+		applyDisclosedPlaces(n.table.RootRows(), disclosed)
+	}
 	n.table.SyncToModel()
 	n.applySelectedPlaces(selection)
 	n.table.SizeColumnsToFit(true)
 	n.prewarmContentCache()
 	n.refreshSearch()
+	for _, f := range afterward {
+		f()
+	}
+	n.walking = false
+	if n.reloadAgain {
+		n.reloadAgain = false
+		n.startWalk()
+	}
 }
 
-func (n *Navigator) populateRows() []*NavigatorNode {
-	libs := gurps.GlobalSettings().Libraries.List()
-	rows := make([]*NavigatorNode, 0, 1+len(libs))
-	rows = append(rows, NewFavoritesNode(n))
-	for _, lib := range libs {
-		n.tokens = append(n.tokens, lib.Watch(n.watchCallback, true))
-		rows = append(rows, NewLibraryNode(n, lib))
+// rowsFor returns the rows for what a walk of the libraries listed: the Favorites row, then a row for each library,
+// with rows beneath each for what was listed there. A library removed while the walk ran is left out, along with its
+// favorites, rather than shown again until the reload its removal asked for is made; one added meanwhile shows then.
+func (n *Navigator) rowsFor(listing *navigatorListing) []*NavigatorNode {
+	libs := gurps.GlobalSettings().Libraries
+	current := func(lib *library.Library) bool { return libs.Lookup(lib.Key()) == lib }
+	favorites := slices.DeleteFunc(slices.Clone(listing.favorites), func(one *favoriteEntry) bool {
+		return !current(one.library)
+	})
+	rows := make([]*NavigatorNode, 0, 1+len(listing.libraries))
+	rows = append(rows, NewFavoritesNode(n, favorites))
+	for _, one := range listing.libraries {
+		if current(one.library) {
+			rows = append(rows, NewLibraryNode(n, one.library, one.entries))
+		}
 	}
 	return rows
+}
+
+// stopWatches stops the library watches.
+func (n *Navigator) stopWatches() {
+	for _, token := range n.tokens {
+		token.Stop()
+	}
+	n.tokens = nil
 }
 
 func (n *Navigator) adjustTableSizeEventually() {
@@ -889,7 +990,7 @@ func (n *Navigator) handleSelectionDoubleClick() {
 			if d, _ := row.OpenNodeContent(); !xreflect.IsNil(d) {
 				// A row the search text matches on its contents rather than its name is handed the text, so that the
 				// dockable just opened for it can show where it matched.
-				if lower != "" && !row.Match(lower) && n.contentMatches(row, lower) {
+				if lower != "" && !row.Match(lower) && n.openedContentMatches(row, lower) {
 					if r, ok := d.(searchTextReceiver); ok {
 						r.receiveSearchText(text)
 					} else if f := findSearchFieldInSelfOrDescendants(d.AsPanel()); f != nil {
@@ -955,11 +1056,24 @@ func setNavigatorRowOpen(row *NavigatorNode, open bool) {
 }
 
 // findMatches returns the rows matching the lower-cased text, up to one more than maxSearchMatches of them (see
-// searchMatchRows), in the order the tree shows them.
+// searchMatchRows), in the order the tree shows them. The files whose contents the walk could not check are read in
+// the background afterwards (see loadMissingContent), so a search never waits on the disk.
 func (n *Navigator) findMatches(text string) []*searchMatch {
 	var found []*searchMatch
+	n.missingContent = nil
 	n.collectMatches(&found, text, n.table.RootRows())
+	n.loadMissingContent()
 	return found
+}
+
+// searchStatus returns the note the search dropdown shows after the matches while the last search found deep-searchable
+// files whose contents were not yet in the cache, so the user knows the rows on offer may be incomplete and why, and
+// "" once it found them all there.
+func (n *Navigator) searchStatus() string {
+	if len(n.missingContent) == 0 {
+		return ""
+	}
+	return i18n.Text("File contents are still being indexed. Matches on contents will appear when that finishes.")
 }
 
 // collectMatches adds the rows among those given, and beneath them, that match the text to the matches, stopping once
@@ -983,26 +1097,60 @@ func (n *Navigator) collectMatches(matches *[]*searchMatch, text string, rows []
 }
 
 // contentMatches returns true if the row is a file of a type the deep search covers whose contents hold the
-// lower-cased text. The deep search check comes before the cache lookup, so that disabling a type in the settings
-// takes effect immediately rather than only after the asynchronous cache rebuild completes.
+// lower-cased text. A file the cache has no usable entry for is reported as not matching and noted in missingContent,
+// to be read off the UI thread (see loadMissingContent) rather than here: the cache is empty until the first background
+// build completes, and reading every deep-searchable file inline on the first keystroke froze the UI for as long as
+// that build takes, which from a network share is many seconds.
 func (n *Navigator) contentMatches(row *NavigatorNode, text string) bool {
-	if !row.IsFile() {
+	p, entry, searchable := n.cachedContent(row)
+	if !searchable {
 		return false
 	}
-	p := row.Path()
-	if !n.deepSearch[gurps.FileInfoFor(p).UTI.Extensions[0]] {
+	if entry == nil {
+		if n.missingContent == nil {
+			n.missingContent = make(map[string]bool)
+		}
+		n.missingContent[p] = true
 		return false
+	}
+	return entry.content != "" && strings.Contains(entry.content, text)
+}
+
+// openedContentMatches is contentMatches for a file being opened, which is read here when the cache has no usable entry
+// for it, since opening it reads it on the UI thread anyway, rather than being noted in missingContent, where no search
+// waits on it.
+func (n *Navigator) openedContentMatches(row *NavigatorNode, text string) bool {
+	p, entry, searchable := n.cachedContent(row)
+	if !searchable {
+		return false
+	}
+	if entry == nil {
+		entry = loadContentCacheEntry(p)
+		n.addToContentCache(p, entry)
+	}
+	return entry.content != "" && strings.Contains(entry.content, text)
+}
+
+// cachedContent returns the row's path and its usable deep search content cache entry, which is nil when the cache has
+// none, and whether the row is a file of a type the deep search covers at all. The deep search check comes before the
+// cache lookup, so that disabling a type in the settings takes effect immediately rather than only after the
+// asynchronous cache rebuild completes.
+func (n *Navigator) cachedContent(row *NavigatorNode) (p string, entry *contentCacheEntry, searchable bool) {
+	if !row.IsFile() {
+		return "", nil, false
+	}
+	p = row.Path()
+	if !n.deepSearch[gurps.FileInfoFor(p).UTI.Extensions[0]] {
+		return "", nil, false
 	}
 	// A cache hit is served as is, without checking the file on disk: the filesystem watches drop the entry for a
 	// file as soon as its change is reported (see watchCallback), which is what keeps this from being a stat per
 	// deep-searchable file on every keystroke. A symlinked file is the exception, since a change to the file it points
 	// at is reported under that file's path, and not at all when it lies outside the library.
-	entry, ok := n.contentCache[p]
-	if !ok || entry == nil || (entry.symlink && !entry.isCurrent(p)) {
-		entry = loadContentCacheEntry(p)
-		n.addToContentCache(p, entry)
+	if entry = n.contentCache[p]; entry != nil && entry.symlink && !entry.isCurrent(p) {
+		entry = nil
 	}
-	return entry != nil && entry.content != "" && strings.Contains(entry.content, text)
+	return p, entry, true
 }
 
 // newSearchMatch returns the match for the row: named as the tree names it, with the icon the tree gives its kind,
@@ -1074,7 +1222,7 @@ func prepareForContentCacheWith[T gurps.Node[T]](data []T, text func(T) string) 
 
 // contentCacheEntry holds the extracted, lowercased and trimmed text of one file for the deep search, along with the
 // file metadata used to decide whether the entry can be reused when the cache is revalidated after a reload, and, for a
-// symlink, whenever a search hits it (see contentMatches). Size and modification time are used instead of a content
+// symlink, whenever a search hits it (see cachedContent). Size and modification time are used instead of a content
 // hash: hashing would require reading every file just to decide whether it needs re-reading, and the case it would
 // catch — a content change that alters neither size nor modification time — is unlikely to occur in real use.
 type contentCacheEntry struct {
@@ -1084,13 +1232,16 @@ type contentCacheEntry struct {
 	symlink bool // The path is a symlink, so the size and modification time are those of the file it points at
 }
 
-// isCurrent returns true if the file at the given path still has the size and modification time captured in the entry.
-// The background cache builds check this for every entry, a search only for that of a symlink; a search serves other
-// cache hits without touching the disk, relying on the filesystem watches to drop the entries of changed files (see
-// invalidateContentCacheEntry).
+// isCurrent returns true if the file at the given path still has the size and modification time captured in the entry,
+// or still cannot be found, as it could not be when the entry was made. The background cache builds check this for
+// every entry, a search only for that of a symlink; a search serves other cache hits without touching the disk, relying
+// on the filesystem watches to drop the entries of changed files (see invalidateContentCacheEntry).
 func (e *contentCacheEntry) isCurrent(p string) bool {
 	fi, err := os.Stat(p)
-	return err == nil && fi.Size() == e.size && fi.ModTime().Equal(e.modTime)
+	if err != nil {
+		return e.modTime.IsZero()
+	}
+	return fi.Size() == e.size && fi.ModTime().Equal(e.modTime)
 }
 
 // contentCacheBuild is one background build of the deep search content cache, kept so that the build which supersedes
@@ -1104,12 +1255,20 @@ type contentCacheBuild struct {
 	entries map[string]*contentCacheEntry // What the build started from, overlaid with what it completed
 }
 
+// contentLoad is one background read of the files a search found no usable cache entry for (see loadMissingContent),
+// kept so that a search made while it runs does not start another.
+type contentLoad struct {
+	done    chan struct{}                 // Closed once entries may be read
+	entries map[string]*contentCacheEntry // An entry for each file read
+	gen     int64                         // The cache generation the load began in
+}
+
 // loadContentCacheEntry reads the file at the given path and extracts its searchable text. The search text is
 // lowercased before comparison, so the content is lowercased as well. A file that fails to load or parse — including
 // one whose parse panics — produces an entry with empty content, so it isn't pointlessly re-read (or re-panicked on) on
-// every keystroke, though a symlink whose target is gone still is, since a search checks a symlink's entry with
-// isCurrent, which then always fails. The file metadata is captured before the read so that a concurrent modification
-// can only make the entry look older than it is, never newer.
+// every keystroke. So does a symlink whose target is gone, which keeps it while the target stays gone (see isCurrent).
+// The file metadata is captured before the read so that a concurrent modification can only make the entry look older
+// than it is, never newer.
 func loadContentCacheEntry(p string) *contentCacheEntry {
 	entry := &contentCacheEntry{}
 	if fi, err := os.Lstat(p); err == nil {
@@ -1228,7 +1387,7 @@ func (n *Navigator) addToContentCache(p string, entry *contentCacheEntry) {
 }
 
 // invalidateContentCacheEntry drops the deep search content cache entry for the given path, so that the next search
-// re-reads the file. The filesystem watches call this as each change is reported, which is what lets a search serve
+// has the file re-read. The filesystem watches call this as each change is reported, which is what lets a search serve
 // cache hits without checking the files on disk: revalidating every hit instead would be a stat per deep-searchable
 // file on each keystroke, thousands of syscalls per character typed with the master library enabled. A background build
 // that is in flight may already have read the file's old contents, so the path is also noted for
@@ -1257,12 +1416,14 @@ func (n *Navigator) collectDeepSearchPaths(rows []*NavigatorNode, paths map[stri
 	}
 }
 
-// prewarmContentCache rebuilds the deep search content cache on background goroutines so the first keystroke in the
-// search field doesn't have to read and parse every deep-searchable file inline on the UI thread. Entries from the
-// previous cache are reused when the file's size and modification time are unchanged, so a reload triggered by a single
-// file change only pays to re-parse that file. A newer call cancels an older one that is still running and inherits the
-// entries it had completed, so back-to-back reloads make a large build incremental rather than restarting it from zero.
-// Must be called on the UI thread; the completed cache is swapped in on the UI thread as well.
+// prewarmContentCache rebuilds the deep search content cache on background goroutines so that a search finds the
+// contents of every deep-searchable file on hand; until it does, the files it could not check are left out of the
+// matches and the dropdown says so (see contentMatches), and the matches are found again once the build is installed
+// (see applyPrewarmedContentCache). Entries from the previous cache are reused when the file's size and modification
+// time are unchanged, so a reload triggered by a single file change only pays to re-parse that file. A newer call
+// cancels an older one that is still running and inherits the entries it had completed, so back-to-back reloads make a
+// large build incremental rather than restarting it from zero. Must be called on the UI thread; the completed cache is
+// swapped in on the UI thread as well.
 func (n *Navigator) prewarmContentCache() {
 	if n.prewarmSuspensions > 0 {
 		n.prewarmPending = true
@@ -1333,8 +1494,8 @@ func (n *Navigator) prewarmContentCache() {
 // build whose generation is no longer current has been superseded — a newer prewarm or a suspension started after it
 // began — so its result is not installed, where it would clobber the cache the newer build will install; the newer
 // build inherits its entries instead (see contentCacheBuild). Entries for files whose changes were reported while the
-// build ran are left out, since the build may have read them before the change; the next search re-reads those inline.
-// Must be called on the UI thread.
+// build ran are left out, since the build may have read them before the change; the next search has those read again
+// (see loadMissingContent). Must be called on the UI thread.
 func (n *Navigator) applyPrewarmedContentCache(gen int64, fresh map[string]*contentCacheEntry) bool {
 	if gen != n.cacheGeneration.Load() {
 		return false
@@ -1344,6 +1505,54 @@ func (n *Navigator) applyPrewarmedContentCache(gen int64, fresh map[string]*cont
 	}
 	n.invalidatedPaths = nil
 	n.contentCache = fresh
+	return true
+}
+
+// loadMissingContent reads the files the last search found no usable content cache entry for (see contentMatches) on
+// a background goroutine, then installs the entries and finds the matches on offer again, so that a search never reads
+// a file on the UI thread. Nothing is started while a build is in flight, held off by a suspension, owed to a pending
+// reload or to a walk of the libraries in flight, since the build reads every deep-searchable file and its
+// installation finds the matches again, nor while an earlier load is still running, since its completion does the same
+// and so starts a load for whatever is still missing. Must be called on the UI thread.
+func (n *Navigator) loadMissingContent() {
+	if len(n.missingContent) == 0 || n.contentLoad != nil || n.lastBuild != nil || n.prewarmSuspensions > 0 ||
+		n.needReload || n.walking {
+		return
+	}
+	// With no build in flight, the invalidations noted so far have nothing left to be applied to: the live cache
+	// already lacks those entries, and this load reads the files afresh. Only invalidations that arrive while it runs
+	// need to be applied to its result.
+	n.invalidatedPaths = nil
+	load := &contentLoad{done: make(chan struct{}), gen: n.cacheGeneration.Load()}
+	n.contentLoad = load
+	// The goroutine reads a copy, since contentMatches goes on noting files in missingContent on the UI thread.
+	paths := maps.Clone(n.missingContent)
+	go func() {
+		load.entries = buildContentCache(paths, nil, func() bool { return n.cacheGeneration.Load() != load.gen })
+		close(load.done)
+		unison.InvokeTask(func() {
+			// The matches are found again even when the load was discarded: the walk that does so starts another load
+			// for the files still missing, once the build that superseded this one has been installed.
+			n.applyContentLoad(load)
+			n.refreshSearch()
+		})
+	}()
+}
+
+// applyContentLoad adds the entries a load produced to the content cache and reports whether it did so. A load begun
+// in an earlier cache generation has been superseded by a build, which reads those files itself, so its result is
+// discarded. Entries for files whose changes were reported while the load ran are left out, since it may have read
+// them before the change; the next search starts a load for them again. Must be called on the UI thread.
+func (n *Navigator) applyContentLoad(load *contentLoad) bool {
+	n.contentLoad = nil
+	if load.gen != n.cacheGeneration.Load() {
+		return false
+	}
+	for p, entry := range load.entries {
+		if !n.invalidatedPaths[p] {
+			n.addToContentCache(p, entry)
+		}
+	}
 	return true
 }
 

@@ -61,6 +61,9 @@ var (
 	pendingLibraryChange  bool
 )
 
+// statFavorite is os.Stat, held in a variable so that tests can stand in for a favorite whose check on disk is slow.
+var statFavorite = os.Stat
+
 // SetNotifyOfLibraryChangeFunc sets the function that will be called to notify of library changes. Passing nil removes
 // the current function. If a change was reported before a function was installed, the newly installed function is
 // called immediately, so that changes detected during startup aren't lost. The function may be called from any
@@ -379,17 +382,33 @@ func (l *Library) RenameFavorite(oldRelativePath, newRelativePath string) {
 	}
 }
 
-// CleanupFavorites prunes out any favorites that can no longer be read.
+// CleanupFavorites prunes out any favorites that can no longer be read. They are checked on disk without the lock held,
+// since a check of one on a slow or unresponsive network share would otherwise hold up every reader of the library for
+// as long as it takes. A favorite added meanwhile is kept, and none is pruned should the library's path have changed
+// meanwhile, since they were checked against the old one.
 func (l *Library) CleanupFavorites() {
+	l.lock.RLock()
+	root := l.data.PathOnDisk
+	checked := slices.Clone(l.data.Favorites)
+	l.lock.RUnlock()
+	gone := make(map[string]bool)
+	for _, one := range checked {
+		if fi, err := statFavorite(filepath.Join(root, one)); err == nil {
+			if mode := fi.Mode(); (mode.IsDir() || mode.IsRegular()) && mode.Perm()&0o400 != 0 {
+				continue
+			}
+		}
+		gone[one] = true
+	}
 	l.lock.Lock()
 	defer l.lock.Unlock()
+	if l.data.PathOnDisk != root {
+		return
+	}
 	var favs []string
 	for _, one := range l.data.Favorites {
-		p := filepath.Join(l.data.PathOnDisk, one)
-		if fi, err := os.Stat(p); err == nil {
-			if mode := fi.Mode(); (mode.IsDir() || mode.IsRegular()) && mode.Perm()&0o400 != 0 {
-				favs = append(favs, one)
-			}
+		if !gone[one] {
+			favs = append(favs, one)
 		}
 	}
 	slices.Sort(favs)

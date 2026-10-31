@@ -190,6 +190,53 @@ func TestLibraryFavorites(t *testing.T) {
 	c.Equal([]string{"c.gcs"}, lib.Favorites())
 }
 
+// TestCleanupFavoritesChecksTheDiskWithoutTheLock verifies that CleanupFavorites drops the favorites that can no longer
+// be found without holding the library's lock while it checks them on disk, which for a favorite on a slow or
+// unresponsive network share would hold up every reader of the library, the UI thread among them, for as long as the
+// check takes, and that a favorite added while it checks is kept.
+func TestCleanupFavoritesChecksTheDiskWithoutTheLock(t *testing.T) {
+	c := check.New(t)
+	dir := t.TempDir()
+	c.NoError(os.WriteFile(filepath.Join(dir, "kept.gcs"), nil, 0o600))
+	lib := NewLibrary("Test", "someone", "", "repo", dir)
+	lib.ToggleFavorite("kept.gcs")
+	lib.ToggleFavorite("gone.gcs")
+	entered := make(chan struct{})
+	release := make(chan struct{})
+	var once sync.Once
+	original := statFavorite
+	statFavorite = func(p string) (os.FileInfo, error) {
+		if filepath.Base(p) == "kept.gcs" {
+			once.Do(func() { close(entered) })
+			<-release
+		}
+		return original(p)
+	}
+	t.Cleanup(func() { statFavorite = original })
+	cleaned := make(chan struct{})
+	go func() {
+		lib.CleanupFavorites()
+		close(cleaned)
+	}()
+	<-entered
+	toggled := make(chan struct{})
+	go func() {
+		_ = lib.Path(false)
+		lib.ToggleFavorite("added.gcs")
+		close(toggled)
+	}()
+	select {
+	case <-toggled:
+	case <-time.After(5 * time.Second):
+		t.Error("the library must be usable while its favorites are checked on disk")
+	}
+	close(release)
+	<-cleaned
+	<-toggled
+	c.Equal([]string{"added.gcs", "kept.gcs"}, lib.Favorites(), "the favorite that is gone must be dropped and the "+
+		"one added meanwhile kept")
+}
+
 // TestLibrarySetPathWhenWatchFails verifies that a path change to a location that cannot be watched still notifies the
 // existing watchers rather than panicking on the monitor's discarded task queue.
 func TestLibrarySetPathWhenWatchFails(t *testing.T) {

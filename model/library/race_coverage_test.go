@@ -22,6 +22,7 @@ import "testing"
 func TestRace(t *testing.T) {
 	t.Run("LibraryWatchCreatesPath", TestLibraryWatchCreatesPath)
 	t.Run("LibraryConcurrentAccess", TestLibraryConcurrentAccess)
+	t.Run("CleanupFavoritesChecksTheDiskWithoutTheLock", TestCleanupFavoritesChecksTheDiskWithoutTheLock)
 	t.Run("LibrarySetPathWhenWatchFails", TestLibrarySetPathWhenWatchFails)
 	t.Run("LibrarySetPathAfterWatchFailsRestartsWatch", TestLibrarySetPathAfterWatchFailsRestartsWatch)
 	t.Run("LibraryWatchDeliversNothingUntilSomethingHappens", TestLibraryWatchDeliversNothingUntilSomethingHappens)

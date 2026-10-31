@@ -494,9 +494,9 @@ func TestNavigatorContextMenuHeadless(t *testing.T) {
 	var n *Navigator
 	var selected []string
 	var focused bool
+	screen.Do(func() { n = Workspace.Navigator })
+	reloadNavigator(t, screen, n)
 	screen.Do(func() {
-		n = Workspace.Navigator
-		n.Reload()
 		n.ApplySelectedPaths([]string{path})
 		n.InitialFocus()
 		selected = n.SelectedPaths()

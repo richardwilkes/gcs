@@ -18,9 +18,17 @@ import "testing"
 // model/gurps/race_coverage_test.go for the full rationale. List any new concurrency test here as well.
 func TestRace(t *testing.T) {
 	t.Run("BuildContentCacheReuseAndFailureCaching", TestBuildContentCacheReuseAndFailureCaching)
+	t.Run("ContentLoadYieldsToBuildsAndInvalidations", TestContentLoadYieldsToBuildsAndInvalidations)
+	t.Run("DeepSearchCachesFileWhoseParsePanics", TestDeepSearchCachesFileWhoseParsePanics)
+	t.Run("DeepSearchDisabledTypeIgnoresCache", TestDeepSearchDisabledTypeIgnoresCache)
+	t.Run("DeepSearchOfSheetProfileIsCaseInsensitive", TestDeepSearchOfSheetProfileIsCaseInsensitive)
+	t.Run("DeepSearchServesCacheHitsUntilInvalidated", TestDeepSearchServesCacheHitsUntilInvalidated)
 	t.Run("HandoffRefusesOversizedPayload", TestHandoffRefusesOversizedPayload)
 	t.Run("HandoffRoundTrip", TestHandoffRoundTrip)
 	t.Run("NavigatorSearchOffersMatches", TestNavigatorSearchOffersMatches)
+	t.Run("PrewarmWithNoDeepSearchPathsRefreshesSearch", TestPrewarmWithNoDeepSearchPathsRefreshesSearch)
+	t.Run("ReloadWalksTheLibrariesOffTheUIThread", TestReloadWalksTheLibrariesOffTheUIThread)
 	t.Run("RunInBackgroundDeliversResultBeforeFinishing", TestRunInBackgroundDeliversResultBeforeFinishing)
+	t.Run("SearchReadsMissingContentInTheBackground", TestSearchReadsMissingContentInTheBackground)
 	t.Run("SupersededCacheBuildHandsEntriesToItsSuccessor", TestSupersededCacheBuildHandsEntriesToItsSuccessor)
 }

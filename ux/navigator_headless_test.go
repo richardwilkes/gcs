@@ -15,6 +15,7 @@ import (
 	"path/filepath"
 	"slices"
 	"strings"
+	"sync/atomic"
 	"testing"
 	"time"
 
@@ -148,16 +149,17 @@ func TestReloadOfADiscardedNavigatorLeavesTheLiveOneAlone(t *testing.T) {
 
 // stopNavigatorWatches stops the navigator's library watches and returns once nothing is left that would bring them
 // back. A change the watches have already reported is still on its way to a reload, as is the reload a new navigator
-// asks for of itself, and a reload watches every library afresh, so any that is pending is waited out first and the
-// watches are stopped again behind it. Until the navigator is next reloaded, changes on disk go unnoticed: its rows go
-// stale rather than being rebuilt, and a library folder that is removed is not put back.
+// asks for of itself, and a reload watches every library afresh, so any that is pending, or whose walk of the
+// libraries is still in flight, is waited out first and the watches are stopped again behind it. Until the navigator
+// is next reloaded, changes on disk go unnoticed: its rows go stale rather than being rebuilt, and a library folder
+// that is removed is not put back.
 func stopNavigatorWatches(t *testing.T, screen *unison.HeadlessScreen, n *Navigator) {
 	t.Helper()
 	deadline := time.Now().Add(10 * time.Second)
 	for {
 		var stopped bool
 		screen.Do(func() {
-			if n.needReload {
+			if n.needReload || n.walking {
 				return
 			}
 			stopped = len(n.tokens) == 0
@@ -176,6 +178,66 @@ func stopNavigatorWatches(t *testing.T, screen *unison.HeadlessScreen, n *Naviga
 	}
 }
 
+// awaitContentCache returns once the navigator's deep search content cache holds an entry for every deep-searchable
+// file in the tree and nothing is in flight that would change it: a pending reload is waited out, as are the
+// background build a reload starts and the read a search starts, and an entry a filesystem watch dropped with no
+// rebuild behind it is rebuilt here, as a reload would. The searches a test makes afterwards then find every file's
+// contents in the cache rather than leaving the file out while it is read in the background.
+func awaitContentCache(t *testing.T, screen *unison.HeadlessScreen, n *Navigator) {
+	t.Helper()
+	deadline := time.Now().Add(10 * time.Second)
+	for {
+		var complete bool
+		screen.Do(func() {
+			if n.needReload || n.walking || n.lastBuild != nil || n.contentLoad != nil {
+				return
+			}
+			paths := make(map[string]bool)
+			n.collectDeepSearchPaths(n.table.RootRows(), paths)
+			for p := range paths {
+				if n.contentCache[p] == nil {
+					n.prewarmContentCache()
+					return
+				}
+			}
+			complete = true
+		})
+		if complete {
+			return
+		}
+		if time.Now().After(deadline) {
+			t.Fatal("the content cache never finished building")
+		}
+		time.Sleep(10 * time.Millisecond)
+	}
+}
+
+// awaitNavigatorWalk returns once no walk of the libraries is in flight and none is owed, so that the rows are those
+// the last reload built; see Navigator.Reload.
+func awaitNavigatorWalk(t *testing.T, screen *unison.HeadlessScreen, n *Navigator) {
+	t.Helper()
+	deadline := time.Now().Add(10 * time.Second)
+	for {
+		var done bool
+		screen.Do(func() { done = !n.walking && !n.reloadAgain })
+		if done {
+			return
+		}
+		if time.Now().After(deadline) {
+			t.Fatal("the navigator never finished walking the libraries")
+		}
+		time.Sleep(10 * time.Millisecond)
+	}
+}
+
+// reloadNavigator reloads the navigator and returns once the rows are rebuilt from the walk of the libraries that
+// starts, so that the test can read them.
+func reloadNavigator(t *testing.T, screen *unison.HeadlessScreen, n *Navigator) {
+	t.Helper()
+	screen.Do(n.Reload)
+	awaitNavigatorWalk(t, screen, n)
+}
+
 // TestReloadServesInPlaceOfAPendingOne verifies that a reload made while one asked for with EventuallyReload is still
 // pending serves in its place: once the delay is up, the navigator is not reloaded a second time, which would replace
 // its rows and watch every library afresh behind the back of whoever made the reload, while a request made after the
@@ -188,28 +250,140 @@ func TestReloadServesInPlaceOfAPendingOne(t *testing.T) {
 	// Waits out the reload a new navigator asks for of itself.
 	stopNavigatorWatches(t, screen, n)
 
-	// rowsAfterDelay returns the navigator's root rows once any reload that was pending has had time to be made.
-	rowsAfterDelay := func() []*NavigatorNode {
-		time.Sleep(2 * eventualReloadDelay)
+	// rowsNow returns the navigator's root rows.
+	rowsNow := func() []*NavigatorNode {
 		var rows []*NavigatorNode
 		screen.Do(func() { rows = slices.Clone(n.table.RootRows()) })
 		return rows
 	}
+	// rowsAfterDelay returns the navigator's root rows once any reload that was pending has had time to be made and
+	// the walk it starts has returned.
+	rowsAfterDelay := func() []*NavigatorNode {
+		time.Sleep(2 * eventualReloadDelay)
+		awaitNavigatorWalk(t, screen, n)
+		return rowsNow()
+	}
 	screen.Do(n.EventuallyReload)
 	var pending bool
-	var rows []*NavigatorNode
 	screen.Do(func() {
 		pending = n.needReload
 		n.Reload()
-		rows = slices.Clone(n.table.RootRows())
 	})
 	c.True(pending, "precondition: a reload is pending")
+	awaitNavigatorWalk(t, screen, n)
+	rows := rowsNow()
 	c.True(len(rows) != 0, "precondition: the navigator has rows")
 	c.True(slices.Equal(rows, rowsAfterDelay()), "a reload made in the meantime leaves nothing for the pending one "+
 		"to do")
 
 	screen.Do(n.EventuallyReload)
 	c.False(slices.Equal(rows, rowsAfterDelay()), "a reload asked for after that is still made")
+}
+
+// TestReloadWalksTheLibrariesOffTheUIThread verifies that a reload watches and lists the libraries on a background
+// goroutine and leaves the rows as they are until it returns, so that the UI stays responsive while a library on a slow
+// disk or a network share is watched and listed; that a reload asked for while a walk is in flight is made once that
+// walk's rows are in, rather than being dropped or canceling it; and that what is to follow a reload (see
+// reloadAndSelect) runs after the walk that starts once it was asked for, since an earlier walk may have listed the
+// folder it concerns before the change it waits on was made, and that a reload it asks for while one is owed starts no
+// walk beside the owed one. The walks are held back by the test, which is what lets it look in on the UI thread while
+// one runs.
+func TestReloadWalksTheLibrariesOffTheUIThread(t *testing.T) {
+	c := check.New(t)
+	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
+	var n *Navigator
+	screen.Do(func() { n = Workspace.Navigator })
+	stopNavigatorWatches(t, screen, n)
+
+	release := make(chan struct{})
+	t.Cleanup(func() { close(release) }) // Lets a walk still held back return, rather than leaving its goroutine behind
+	var walks atomic.Int32
+	screen.Do(func() {
+		n.listLibraries = func(libs []*library.Library, groupContainers bool, symlinkedFolder func(*library.Library, string)) *navigatorListing {
+			walks.Add(1)
+			<-release
+			return listLibraries(libs, groupContainers, symlinkedFolder)
+		}
+	})
+	// releaseWalk lets the walk that is held back return.
+	releaseWalk := func() {
+		select {
+		case release <- struct{}{}:
+		case <-time.After(10 * time.Second):
+			t.Fatal("no walk is waiting to be released")
+		}
+	}
+	// awaitWalks returns once that many walks have started.
+	awaitWalks := func(count int32) {
+		deadline := time.Now().Add(10 * time.Second)
+		for walks.Load() < count {
+			screen.Do(func() {}) // Runs the tasks a walk that returned queued
+			if time.Now().After(deadline) {
+				t.Fatalf("expected %d walks to have started, got %d", count, walks.Load())
+			}
+			time.Sleep(10 * time.Millisecond)
+		}
+	}
+	rowsNow := func() []*NavigatorNode {
+		var rows []*NavigatorNode
+		screen.Do(func() { rows = slices.Clone(n.table.RootRows()) })
+		return rows
+	}
+	var followed []string
+	followedNow := func() []string {
+		var result []string
+		screen.Do(func() { result = slices.Clone(followed) })
+		return result
+	}
+
+	before := rowsNow()
+	var walking, again bool
+	var watchedOnUIThread int
+	screen.Do(func() {
+		n.afterReload = append(n.afterReload, func() {
+			followed = append(followed, "first")
+			n.Reload()
+		})
+		n.Reload()
+		walking = n.walking
+		watchedOnUIThread = len(n.tokens)
+		n.afterReload = append(n.afterReload, func() { followed = append(followed, "second") })
+		n.Reload()
+		again = n.reloadAgain
+	})
+	c.True(walking, "a reload must start a walk and return")
+	c.Equal(0, watchedOnUIThread, "the libraries must be watched afresh by the walk, not on the UI thread")
+	c.True(again, "a reload asked for while a walk is in flight must be owed")
+	awaitWalks(1)
+	c.True(slices.Equal(before, rowsNow()), "the rows must stay as they are until the walk returns")
+	c.Equal(int32(1), walks.Load(), "an owed reload must not start a walk beside the one in flight")
+	c.Equal(0, len(followedNow()), "nothing follows a reload before its walk returns")
+
+	releaseWalk()
+	awaitWalks(2)
+	c.False(slices.Equal(before, rowsNow()), "the rows must be rebuilt once the walk returns")
+	c.Equal([]string{"first"}, followedNow(), "what was to follow the first reload must run once its walk returns, "+
+		"while what was asked for during that walk waits for the next")
+	var stillWalking, stillOwed bool
+	screen.Do(func() {
+		stillWalking = n.walking
+		stillOwed = n.reloadAgain
+	})
+	c.True(stillWalking, "the owed reload must have started a walk of its own")
+	c.False(stillOwed, "and no longer be owed")
+
+	releaseWalk()
+	awaitNavigatorWalk(t, screen, n)
+	c.Equal([]string{"first", "second"}, followedNow(), "what was to follow the second reload must run once its "+
+		"walk returns")
+	c.Equal(int32(2), walks.Load(), "a reload asked for by what follows a walk, while one is owed, must not start a "+
+		"walk beside the owed one")
+	var watches, libraries int
+	screen.Do(func() {
+		watches = len(n.tokens)
+		libraries = len(gurps.GlobalSettings().Libraries.List())
+	})
+	c.Equal(libraries, watches, "each library must be watched once the walk returns")
 }
 
 // TestNewFolderIsUnavailableForFavorites verifies that New Folder is disabled while the Favorites row is the selection
@@ -257,12 +431,13 @@ func TestEachCopyOfAFolderUnderFavoritesKeepsItsOwnState(t *testing.T) {
 	lib := library.NewLibrary("Test", "acct", "", "repo", dir)
 	lib.ToggleFavorite("sub")
 	lib.ToggleFavorite("sub/inner")
+	var n *Navigator
+	screen.Do(func() { n = Workspace.Navigator })
+	// The library joins once the rows the navigator starts with are in, so that the reload below is what adds its rows.
+	stopNavigatorWatches(t, screen, n)
 	libraries := gurps.GlobalSettings().Libraries
 	libraries.Store(lib.Key(), lib)
 	t.Cleanup(func() { libraries.Remove(lib.Key()) })
-	var n *Navigator
-	screen.Do(func() { n = Workspace.Navigator })
-	stopNavigatorWatches(t, screen, n)
 
 	// The copies of inner and deeper as the favorite inner shows them and as the favorite sub shows them, and other,
 	// which only sub shows.
@@ -283,7 +458,9 @@ func TestEachCopyOfAFolderUnderFavoritesKeepsItsOwnState(t *testing.T) {
 		screen.Do(func() {
 			favorites := n.table.RootRows()[0]
 			if fresh {
-				favorites = NewFavoritesNode(n)
+				settings := gurps.GlobalSettings()
+				favorites = NewFavoritesNode(n, listFavorites(settings.Libraries.List(),
+					settings.General.GroupContainersOnSort, ignoreSymlinkedFolder))
 			}
 			if found.inner = child(favorites, "sub/inner"); found.inner != nil {
 				found.deeper = child(found.inner, "sub/inner/deeper")
@@ -300,7 +477,7 @@ func TestEachCopyOfAFolderUnderFavoritesKeepsItsOwnState(t *testing.T) {
 		}
 		return found
 	}
-	screen.Do(n.Reload)
+	reloadNavigator(t, screen, n)
 	rows := find(false)
 	var otherID tid.TID
 	screen.Do(func() {
@@ -334,7 +511,7 @@ func TestEachCopyOfAFolderUnderFavoritesKeepsItsOwnState(t *testing.T) {
 	c.Equal(want, open, "opening a copy leaves the other closed")
 	c.Equal([]string{"sub/inner in Favorites"}, selected, "selecting a copy selects it alone")
 
-	screen.Do(n.Reload)
+	reloadNavigator(t, screen, n)
 	open, selected = state(find(false))
 	c.Equal(want, open, "each copy keeps its own open state across a Reload")
 	c.Equal([]string{"sub/inner in Favorites"}, selected, "and the selection stays on the copy selected")
@@ -391,9 +568,9 @@ func TestNewFolderSelectsOnlyTheFolderItMade(t *testing.T) {
 		{name: "made beside file", row: "Favorites > top" + gurps.SheetExt, want: "library > made beside file"},
 	} {
 		stopNavigatorWatches(t, screen, n)
+		reloadNavigator(t, screen, n)
 		var found bool
 		screen.Do(func() {
-			n.Reload()
 			// Discloses sub under both Favorites and the library, so that a folder made in it shows in both.
 			for _, root := range n.table.RootRows() {
 				if root.IsFavorites() || root.library == lib {
@@ -425,6 +602,7 @@ func TestNewFolderSelectsOnlyTheFolderItMade(t *testing.T) {
 		var okButton *unison.Button
 		screen.Do(func() { okButton = dialog.Button(unison.ModalResponseOK) })
 		screen.Click(screen.PanelCenter(okButton))
+		awaitNavigatorWalk(t, screen, n) // The folder is selected once the reload New Folder asks for has its rows in
 		var selected []string
 		screen.Do(func() {
 			for _, row := range n.table.SelectedRows(false) {
@@ -462,10 +640,8 @@ func TestNewFolderCreatesWhatIsMissingAboveIt(t *testing.T) {
 	} {
 		c.NoError(os.MkdirAll(staleDir, 0o750), one.name)
 		c.NoError(gurps.NewEntity().Save(staleFile), one.name)
-		screen.Do(func() {
-			n.Reload()
-			n.ApplySelectedPaths([]string{one.rowPath})
-		})
+		reloadNavigator(t, screen, n)
+		screen.Do(func() { n.ApplySelectedPaths([]string{one.rowPath}) })
 		stopNavigatorWatches(t, screen, n)
 		var selected []string
 		screen.Do(func() {
@@ -487,6 +663,7 @@ func TestNewFolderCreatesWhatIsMissingAboveIt(t *testing.T) {
 		var okButton *unison.Button
 		screen.Do(func() { okButton = dialog.Button(unison.ModalResponseOK) })
 		screen.Click(screen.PanelCenter(okButton))
+		awaitNavigatorWalk(t, screen, n) // The folder is selected once the reload New Folder asks for has its rows in
 
 		created := filepath.Join(one.parentDir, "made in "+one.name)
 		info, err := os.Stat(created)
@@ -565,7 +742,7 @@ func TestNavigatorToolbarWrapsToFitTheSearchField(t *testing.T) {
 // matching rows in a dropdown, each titled with where it is, choosing one with RETURN discloses its folder and selects
 // it alone while the focus stays in the field, a reload of the tree while the matches show finds them again with the
 // highlight kept, and a file that matched on its contents opens with the search text handed to its own search field,
-// which shows where it matched.
+// which shows where it matched, even when the file's cache entry was dropped just before.
 func TestNavigatorSearchOffersMatches(t *testing.T) {
 	c := check.New(t)
 	screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
@@ -583,15 +760,20 @@ func TestNavigatorSearchOffersMatches(t *testing.T) {
 	sheetPath := filepath.Join(folder, "Hero"+gurps.SheetExt)
 	c.NoError(entity.Save(sheetPath))
 	var libraryTitle string
+	screen.Do(func() { n.deepSearch[gurps.SheetExt] = true })
+	reloadNavigator(t, screen, n)
 	screen.Do(func() {
-		n.deepSearch[gurps.SheetExt] = true
-		n.Reload()
 		for _, row := range n.table.RootRows() {
 			if row.IsLibrary() && row.library.IsMaster() {
 				libraryTitle = row.primaryColumnText()
 			}
 		}
 	})
+	// The writes above reach the watches the reload set up afresh late, dropping the sheet's cache entry and asking for
+	// another reload, so the watches are stopped again behind that and the cache then waited for, so that the searches
+	// below find the sheet's contents in the cache rather than leaving it out while they are read in the background.
+	stopNavigatorWatches(t, screen, n)
+	awaitContentCache(t, screen, n)
 	offered := func() *unison.Window { return screen.SuggestionsWindow(wnd) }
 	rows := func() []*searchMatch {
 		var found []*searchMatch
@@ -645,7 +827,7 @@ func TestNavigatorSearchOffersMatches(t *testing.T) {
 	screen.KeyPress(unison.KeyDown, mod.None)
 	c.NotNil(offered(), "Down with the matches hidden offers them again")
 	c.Equal(0, highlighted(), "with the first highlighted")
-	screen.Do(func() { n.Reload() })
+	reloadNavigator(t, screen, n)
 	c.NotNil(offered(), "the matches stay on offer across a reload")
 	c.Equal(1, len(rows()))
 	c.Equal(0, highlighted(), "with the highlight kept")
@@ -664,7 +846,13 @@ func TestNavigatorSearchOffersMatches(t *testing.T) {
 	screen.KeyPress(unison.KeyDown, mod.None)
 	screen.KeyPress(unison.KeyReturn, mod.None)
 	c.Equal([]string{sheetPath}, selectedPaths())
-	screen.Do(func() { n.handleSelectionDoubleClick() })
+	var noted bool
+	screen.Do(func() {
+		n.invalidateContentCacheEntry(sheetPath) // As a change to the sheet reported by a watch does
+		n.handleSelectionDoubleClick()
+		noted = n.missingContent[sheetPath]
+	})
+	c.False(noted, "opening a file must not leave it noted as missing for a search")
 	sheet := uxtest.SoleEditor[*Sheet](t, screen, func(d unison.Dockable) bool { _, ok := d.(*Sheet); return ok })
 	var text string
 	var sheetSearchFocused bool

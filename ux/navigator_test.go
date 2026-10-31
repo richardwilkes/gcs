@@ -51,12 +51,36 @@ func installTestTable(n *Navigator, rows ...*NavigatorNode) {
 // on offer sets them on the dropdown directly.
 func installTestSearch(n *Navigator) {
 	n.search = newSearchDropdown(n.findMatches, func(match *searchMatch) { match.show() })
+	n.search.status = n.searchStatus
 	unison.NewPanel().AddChild(n.search.field)
 }
 
-// matchCount returns how many of the rows, and those beneath them, match the lower-cased text.
+// settleContentLoad waits for the background read a search started for the files it found no usable content entry
+// for, if there is one, and installs its result as its completion task would, since nothing in these tests pumps
+// unison's task queue. Returns true if there was one.
+func settleContentLoad(n *Navigator) bool {
+	load := n.contentLoad
+	if load == nil {
+		return false
+	}
+	<-load.done
+	n.applyContentLoad(load)
+	return true
+}
+
+// matchCount returns how many of the rows, and those beneath them, match the lower-cased text, as the dropdown ends up
+// showing: the files the walk found no usable content entry for are read as the background load a search starts reads
+// them, and the rows are walked again.
 func matchCount(n *Navigator, text string, rows ...*NavigatorNode) int {
 	var found []*searchMatch
+	n.missingContent = nil
+	n.collectMatches(&found, text, rows)
+	n.loadMissingContent()
+	if !settleContentLoad(n) {
+		return len(found)
+	}
+	found = nil
+	n.missingContent = nil
 	n.collectMatches(&found, text, rows)
 	return len(found)
 }
@@ -92,7 +116,7 @@ func TestNavigatorNodeSortTextIsTheTextShown(t *testing.T) {
 	c := check.New(t)
 	n := newDeepSearchNavigator()
 	lib := newTestLibrary(t)
-	libNode := NewLibraryNode(n, lib)
+	libNode := NewLibraryNode(n, lib, nil)
 	c.Equal("Test", libNode.CellDataForSort(0), "a library row is named by its title alone")
 	c.Equal("", libNode.CellDataForSort(1), "the navigator has only one column")
 	fileNode := writeTestLibraryFile(c, lib, "Conan.gcs", []byte("{}"))
@@ -216,6 +240,19 @@ func TestDeepSearchServesCacheHitsUntilInvalidated(t *testing.T) {
 	n.watchCallback(lib, p, notify.Write)
 	c.Equal(1, matchCount(n, "echo", inside), "a change reported under the path of the file a symlink points at "+
 		"must be found under the symlink's")
+
+	// A symlink whose target is gone is re-read once, and the empty entry that produces is then served while the
+	// target stays gone, rather than being re-read on every search because it can never be found current.
+	c.NoError(os.Remove(target))
+	c.Equal(0, matchCount(n, "delta", outside), "the content of a target that is gone must no longer match")
+	shortcut := filepath.Join(lib.Path(false), "shortcut"+ext)
+	entry := n.contentCache[shortcut]
+	c.NotNil(entry, "the symlink whose target is gone must still be cached")
+	c.Equal(0, matchCount(n, "delta", outside))
+	c.True(n.contentCache[shortcut] == entry, "a symlink whose target is gone must not be re-read on every search")
+	c.NoError(os.WriteFile(target, []byte("delta\n"), 0o600))
+	c.NoError(os.Chtimes(target, time.Time{}, time.Now().Add(3*time.Hour)))
+	c.Equal(1, matchCount(n, "delta", outside), "a target that is back must be read again")
 }
 
 // TestInvalidationReachesInFlightCacheBuild verifies that a file change reported while a background cache build is
@@ -422,9 +459,9 @@ func TestBuildContentCacheReuseAndFailureCaching(t *testing.T) {
 	c.Equal(0, len(buildContentCache(paths, nil, func() bool { return true })))
 }
 
-// TestDeepSearchCachesFileWhoseParsePanics verifies that the inline cache-miss path a keystroke takes survives a file
-// whose parse panics, and that the panic is cached like a parse error, so the file isn't re-read — and doesn't
-// re-panic — on every subsequent keystroke.
+// TestDeepSearchCachesFileWhoseParsePanics verifies that the background read a keystroke starts for a file the cache
+// lacks survives a file whose parse panics, and that the panic is cached like a parse error, so the file isn't re-read
+// — and doesn't re-panic — on every subsequent keystroke.
 func TestDeepSearchCachesFileWhoseParsePanics(t *testing.T) {
 	c := check.New(t)
 	lib := newTestLibrary(t)
@@ -596,6 +633,8 @@ func TestPrewarmWithNoDeepSearchPathsRefreshesSearch(t *testing.T) {
 	installTestSearch(n)
 
 	n.search.field.SetText("conan")
+	c.Equal(0, len(n.search.findMatches("conan")), "the first search must start reading the sheet in the background")
+	c.True(settleContentLoad(n), "and have a read to wait for")
 	n.search.suggestions.SetRows(n.search.findMatches("conan")) // As typing with the focus would
 	c.Equal(1, n.search.suggestions.List().Count(), "the sheet must match by content while its type is deep-searched")
 
@@ -605,6 +644,109 @@ func TestPrewarmWithNoDeepSearchPathsRefreshesSearch(t *testing.T) {
 	c.True(n.contentCache == nil, "the cache must be dropped")
 	c.Equal(0, n.search.suggestions.List().Count(), "the deep-search matches must be gone immediately")
 	c.Equal(0, len(n.search.findMatches("conan")), "and not be found again")
+}
+
+// TestSearchReadsMissingContentInTheBackground verifies that a search reads no file on the UI thread: a file the cache
+// has no entry for is left out of the matches, the dropdown offers a row saying the file contents are still being
+// indexed, a background read of the file is started, and once that is installed the search finds the file and the note
+// is gone. While a build is in flight, as the first one is at startup, or a walk of the libraries, which ends in one,
+// no read is started, since the build reads every file and its installation finds the matches again.
+func TestSearchReadsMissingContentInTheBackground(t *testing.T) {
+	c := check.New(t)
+	ext := uti.Markdown.Extensions[0]
+	lib := newTestLibrary(t)
+	fileName := "notes" + ext
+	p := filepath.Join(lib.Path(false), fileName)
+	node := writeTestLibraryFile(c, lib, fileName, []byte("# Alpha\n"))
+	n := newDeepSearchNavigator(ext)
+	installTestTable(n, node)
+	installTestSearch(n)
+
+	found := n.findMatches("alpha")
+	c.Equal(0, len(found), "a file whose contents are not cached must be left out")
+	c.Equal(0, len(n.contentCache), "a search must not read the file on the UI thread")
+	c.NotNil(n.contentLoad, "a search must start a background read of the files it could not check")
+	rows := n.search.rowsFor(found)
+	if len(rows) != 1 {
+		t.Fatalf("expected the note alone, found %d rows", len(rows))
+	}
+	c.Equal(n.searchStatus(), rows[0].name, "the dropdown must say the contents are still being indexed")
+	c.NotEqual("", rows[0].name)
+	c.Nil(rows[0].show, "the note must choose nothing")
+	load := n.contentLoad
+	c.Equal(0, len(n.findMatches("alpha")))
+	c.True(n.contentLoad == load, "a search made meanwhile must not start another read")
+
+	c.True(settleContentLoad(n))
+	c.Nil(n.contentLoad, "an installed read must make way for the next")
+	c.NotNil(n.contentCache[p], "the read must be installed")
+	found = n.findMatches("alpha")
+	c.Equal(1, len(found), "the file must be found once its contents are cached")
+	c.Equal("", n.searchStatus(), "with nothing left to index, there is no note")
+	c.Equal(1, len(n.search.rowsFor(found)))
+
+	// While a build is in flight, a search leaves the reading to it.
+	n.contentCache = nil
+	n.lastBuild = &contentCacheBuild{done: make(chan struct{})}
+	c.Equal(0, len(n.findMatches("alpha")))
+	c.Nil(n.contentLoad, "no read must be started while a build is in flight")
+	c.NotEqual("", n.searchStatus(), "the note must say why the file is missing")
+	n.lastBuild = nil
+	n.walking = true
+	c.Equal(0, len(n.findMatches("alpha")))
+	c.Nil(n.contentLoad, "no read must be started while a walk of the libraries is in flight")
+	n.walking = false
+	built := buildContentCache(map[string]bool{p: true}, nil, nil)
+	c.True(n.applyPrewarmedContentCache(n.cacheGeneration.Load(), built))
+	c.Equal(1, len(n.findMatches("alpha")), "the installed build must serve the search")
+	c.Equal("", n.searchStatus())
+}
+
+// TestContentLoadYieldsToBuildsAndInvalidations verifies the bookkeeping a background read a search starts shares with
+// the builds: a read begun before a build started is discarded when it completes, since the build reads the file
+// itself, a file whose change was reported while the read ran is left out of its result, since it may have been read
+// before the change, and the next search has it read again. It also verifies that the read works from its own copy of
+// the files it was handed, which the UI thread goes on noting files in while it runs.
+func TestContentLoadYieldsToBuildsAndInvalidations(t *testing.T) {
+	c := check.New(t)
+	ext := uti.Markdown.Extensions[0]
+	lib := newTestLibrary(t)
+	fileName := "notes" + ext
+	p := filepath.Join(lib.Path(false), fileName)
+	node := writeTestLibraryFile(c, lib, fileName, []byte("# Alpha\n"))
+	n := newDeepSearchNavigator(ext)
+	installTestTable(n, node)
+
+	c.Equal(0, len(n.findMatches("alpha")))
+	load := n.contentLoad
+	c.NotNil(load)
+	n.cacheGeneration.Add(1) // A build starts from here
+	<-load.done
+	c.False(n.applyContentLoad(load), "a read begun before a build started must be discarded")
+	c.Equal(0, len(n.contentCache), "and must not touch the cache")
+	c.Nil(n.contentLoad, "a discarded read must still make way for the next")
+
+	c.Equal(0, len(n.findMatches("alpha")))
+	load = n.contentLoad
+	c.NotNil(load)
+	n.invalidateContentCacheEntry(p)
+	<-load.done
+	c.True(n.applyContentLoad(load), "a read that no build superseded must be installed")
+	_, ok := n.contentCache[p]
+	c.False(ok, "but without the entry for a file whose change was reported while it ran")
+	c.Equal(1, matchCount(n, "alpha", node), "the next search must have the file read again")
+
+	other := filepath.Join(lib.Path(false), "other"+ext)
+	writeTestLibraryFile(c, lib, "other"+ext, []byte("# Beta\n"))
+	n.contentCache = nil
+	c.Equal(0, len(n.findMatches("alpha")))
+	load = n.contentLoad
+	c.NotNil(load)
+	n.missingContent[other] = true // As a check of a file's contents made on the UI thread meanwhile notes it
+	<-load.done
+	_, ok = load.entries[other]
+	c.False(ok, "a read must not take in a file noted as missing after it started")
+	c.True(n.applyContentLoad(load))
 }
 
 // TestToggleFavoritesKeysOnFullPath verifies that the de-duplication done while toggling favorites is keyed on the full
@@ -633,8 +775,151 @@ func TestToggleFavoritesKeysOnFullPath(t *testing.T) {
 	c.Equal([]string{relPath}, lib3.Favorites())
 
 	// A selection holding nothing but library nodes toggles nothing.
-	c.False(toggleFavorites([]*NavigatorNode{NewLibraryNode(nil, lib1)}))
+	c.False(toggleFavorites([]*NavigatorNode{NewLibraryNode(nil, lib1, nil)}))
 	c.Equal([]string{relPath}, lib1.Favorites())
+}
+
+// flattenEntries returns the paths of the entries and, after each folder's, of those beneath it, folders marked with a
+// trailing slash.
+func flattenEntries(entries []*navigatorEntry) []string {
+	var paths []string
+	for _, entry := range entries {
+		if entry.isDir {
+			paths = append(paths, entry.path+"/")
+			paths = append(paths, flattenEntries(entry.entries)...)
+		} else {
+			paths = append(paths, entry.path)
+		}
+	}
+	return paths
+}
+
+// ignoreSymlinkedFolder is the symlinkedFolder callback for a listing whose symlinks are of no interest.
+func ignoreSymlinkedFolder(_ *library.Library, _ string) {}
+
+// TestListFolderListsWhatTheTreeShows verifies the walk the rows are built from: the entries come in the order the tree
+// shows them, folders ahead of files when they are grouped and otherwise mixed in, in natural order of the name without
+// its extension and then of the whole name; entries named with a leading dot, the library's own settings and output
+// template folders, though not folders so named deeper down, and the files of special types are left out; a symlink to
+// a folder that holds something is listed as a folder and reported, so that the library's watch can follow it, while
+// one to an empty folder or to a file is listed as a file of the type its own name says, and one that leads back to a
+// folder it lies within is listed as a folder with nothing beneath it and not reported.
+func TestListFolderListsWhatTheTreeShows(t *testing.T) {
+	c := check.New(t)
+	RegisterKnownFileTypes()
+	lib := newTestLibrary(t)
+	root := lib.Path(false)
+	for _, dir := range []string{
+		"sub/inner", "zeta", ".hidden", library.SettingsDirName,
+		library.OutputTemplatesDirName, "sub/" + library.SettingsDirName, "empty",
+	} {
+		c.NoError(os.MkdirAll(filepath.Join(root, dir), 0o750))
+	}
+	for _, name := range []string{
+		"b.gcs", "a.skl", "10.gcs", "9.gcs", "alpha.gcs", "same.gcs", "same.skl", ".dotfile",
+		"weird" + gurps.ClosedFolder, "sub/inner/deep.gcs", "sub/x.gcs",
+	} {
+		c.NoError(os.WriteFile(filepath.Join(root, name), []byte("{}"), 0o600))
+	}
+	c.Equal([]string{
+		"empty/", "sub/", "sub/inner/", "sub/inner/deep.gcs", "sub/" + library.SettingsDirName + "/", "sub/x.gcs",
+		"zeta/", "9.gcs", "10.gcs", "a.skl", "alpha.gcs", "b.gcs", "same.gcs", "same.skl",
+	}, flattenEntries(listFolder(lib, ".", true, ignoreSymlinkedFolder)), "grouped")
+	mixed := listFolder(lib, ".", false, ignoreSymlinkedFolder)
+	top := make([]string, 0, len(mixed))
+	for _, entry := range mixed {
+		top = append(top, entry.path)
+	}
+	c.Equal([]string{"9.gcs", "10.gcs", "a.skl", "alpha.gcs", "b.gcs", "empty", "same.gcs", "same.skl", "sub", "zeta"},
+		top, "mixed in")
+
+	if err := os.Symlink(filepath.Join(root, "sub"), filepath.Join(root, "link-sub")); err != nil {
+		t.Skipf("unable to create a symlink here: %v", err) // Windows requires a privilege for this by default
+	}
+	c.NoError(os.Symlink(filepath.Join(root, "empty"), filepath.Join(root, "link-empty.gcs")))
+	c.NoError(os.Symlink(filepath.Join(root, "b.gcs"), filepath.Join(root, "link-file.gcs")))
+	var reported []string
+	byPath := make(map[string]*navigatorEntry)
+	for _, entry := range listFolder(lib, ".", true, func(reportedLib *library.Library, dirPath string) {
+		c.True(reportedLib == lib)
+		reported = append(reported, dirPath)
+	}) {
+		byPath[entry.path] = entry
+	}
+	c.Equal([]string{"link-sub"}, reported, "only a symlink to a folder that holds something is reported")
+	c.True(byPath["link-sub"] != nil && byPath["link-sub"].isDir, "and listed as a folder")
+	c.Equal([]string{
+		"link-sub/inner/", "link-sub/inner/deep.gcs", "link-sub/" + library.SettingsDirName + "/",
+		"link-sub/x.gcs",
+	}, flattenEntries(byPath["link-sub"].entries), "with what the folder holds beneath it")
+	c.True(byPath["link-empty.gcs"] != nil && !byPath["link-empty.gcs"].isDir, "a symlink to an empty folder is a file")
+	c.True(byPath["link-file.gcs"] != nil && !byPath["link-file.gcs"].isDir, "as is one to a file")
+
+	loopLib := newTestLibrary(t)
+	loopRoot := loopLib.Path(false)
+	c.NoError(os.MkdirAll(filepath.Join(loopRoot, "a"), 0o750))
+	c.NoError(os.WriteFile(filepath.Join(loopRoot, "a", "b.gcs"), []byte("{}"), 0o600))
+	c.NoError(os.Symlink(loopRoot, filepath.Join(loopRoot, "a", "up")))
+	reported = nil
+	c.Equal([]string{"a/", "a/b.gcs", "a/up/"}, flattenEntries(listFolder(loopLib, ".", true,
+		func(_ *library.Library, dirPath string) { reported = append(reported, dirPath) })),
+		"a symlink that leads back to a folder it lies within must not have that folder listed within itself")
+	c.Equal(0, len(reported), "nor be reported, since the folder it leads to is watched already")
+}
+
+// TestListFavoritesDropsWhatIsGone verifies that listing the favorites drops from each library the favorites that can
+// no longer be found, lists the rest in the order the Favorites row shows them, folders ahead of files when they are
+// grouped, and lists what a favorite folder holds.
+func TestListFavoritesDropsWhatIsGone(t *testing.T) {
+	c := check.New(t)
+	RegisterKnownFileTypes()
+	lib := newTestLibrary(t)
+	root := lib.Path(false)
+	c.NoError(os.MkdirAll(filepath.Join(root, "sub"), 0o750))
+	for _, name := range []string{"alpha.gcs", "beta.gcs", "sub/inner.gcs"} {
+		c.NoError(os.WriteFile(filepath.Join(root, name), []byte("{}"), 0o600))
+	}
+	for _, p := range []string{"sub", "alpha.gcs", "gone.gcs", "beta.gcs"} {
+		lib.ToggleFavorite(p)
+	}
+	entries := func(grouped bool) []string {
+		favs := listFavorites([]*library.Library{lib}, grouped, ignoreSymlinkedFolder)
+		paths := make([]string, 0, len(favs))
+		for _, one := range favs {
+			c.True(one.library == lib)
+			paths = append(paths, flattenEntries([]*navigatorEntry{one.entry})...)
+		}
+		return paths
+	}
+	c.Equal([]string{"sub/", "sub/inner.gcs", "alpha.gcs", "beta.gcs"}, entries(true), "grouped")
+	c.Equal([]string{"alpha.gcs", "beta.gcs", "sub"}, lib.Favorites(), "the favorite that is gone must be dropped")
+	c.Equal([]string{"alpha.gcs", "beta.gcs", "sub/", "sub/inner.gcs"}, entries(false), "mixed in")
+}
+
+// TestRowsForLeavesOutARemovedLibrary verifies that the rows built from a walk leave out a library, and its favorites,
+// that was removed from the settings while the walk ran, since the reload its removal asked for is still to come and
+// the library would otherwise show again until then.
+func TestRowsForLeavesOutARemovedLibrary(t *testing.T) {
+	c := check.New(t)
+	libs := gurps.GlobalSettings().Libraries
+	kept := library.NewLibrary("Kept", "kept", "", "kept", t.TempDir())
+	libs.Store(kept.Key(), kept)
+	t.Cleanup(func() { libs.Remove(kept.Key()) })
+	removed := library.NewLibrary("Removed", "removed", "", "removed", t.TempDir())
+	n := &Navigator{}
+	listing := bareListing([]*library.Library{kept, removed})
+	listing.favorites = []*favoriteEntry{
+		{library: kept, entry: &navigatorEntry{path: "a.gcs"}},
+		{library: removed, entry: &navigatorEntry{path: "b.gcs"}},
+	}
+	rows := n.rowsFor(listing)
+	if len(rows) != 2 {
+		t.Fatalf("expected the Favorites row and the kept library alone, got %d rows", len(rows))
+	}
+	c.True(rows[0].IsFavorites())
+	c.Equal(1, len(rows[0].Children()), "the removed library's favorite must be left out")
+	c.True(rows[0].Children()[0].library == kept)
+	c.True(rows[1].library == kept)
 }
 
 // TestDoubleClickCountsTheFilesItOpens verifies that the count a double-click on the selection prompts with, when it
@@ -642,11 +927,8 @@ func TestToggleFavoritesKeysOnFullPath(t *testing.T) {
 func TestDoubleClickCountsTheFilesItOpens(t *testing.T) {
 	c := check.New(t)
 	lib := newTestLibrary(t)
-	libNode := NewLibraryNode(nil, lib)
-	folder := func(name string) *NavigatorNode {
-		c.NoError(os.Mkdir(filepath.Join(lib.Path(false), name), 0o700))
-		return NewDirectoryNode(nil, lib, name, libNode)
-	}
+	libNode := NewLibraryNode(nil, lib, nil)
+	folder := func(name string) *NavigatorNode { return NewDirectoryNode(nil, lib, name, libNode, nil) }
 	folders := []*NavigatorNode{folder("A"), folder("B"), folder("C"), folder("D"), folder("E")}
 	file := func(name string) *NavigatorNode { return NewFileNode(lib, name, libNode) }
 	files := []*NavigatorNode{file("1.gcs"), file("2.gcs"), file("3.gcs"), file("4.gcs")}
