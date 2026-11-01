@@ -347,13 +347,16 @@ func Export(entity *gurps.Entity, templatePath, exportPath string) error {
 	if err != nil {
 		return errs.Wrap(err)
 	}
+	// A byte order mark or whitespace around the format line, which some editors add, must not keep the line from being
+	// recognized.
+	tmpl = xbytes.StripBOM(tmpl)
 	var advance int
 	var line []byte
 	if advance, line, err = bufio.ScanLines(tmpl, true); err != nil {
 		return errs.Wrap(err)
 	}
 	entity.Recalculate()
-	switch string(line) {
+	switch strings.TrimSpace(string(line)) {
 	case "GCS HTML Template v1":
 		var t *htmltmpl.Template
 		if t, err = htmltmpl.New("").Funcs(createTemplateFuncs()).Parse(string(tmpl[advance:])); err != nil {

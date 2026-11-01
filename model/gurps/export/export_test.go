@@ -363,3 +363,31 @@ func TestExportEquipmentContainerType(t *testing.T) {
 	c.NoError(err)
 	c.Equal("<<Backpack|container>><<Kit|group>><<Rope|item>>", string(data))
 }
+
+// TestExportFormatLineTolerance verifies that a byte order mark or whitespace around the format line, which some editors
+// add, doesn't keep it from being recognized, while a line that differs in anything else still selects the legacy
+// processor.
+func TestExportFormatLineTolerance(t *testing.T) {
+	c := check.New(t)
+	entity := gurps.NewEntity()
+	entity.Profile.Name = "Dai"
+	dir := t.TempDir()
+	for i, data := range []struct {
+		firstLine string
+		expected  string
+	}{
+		{firstLine: "\uFEFFGCS Text Template v1", expected: "Dai"},
+		{firstLine: "GCS Text Template v1 ", expected: "Dai"},
+		{firstLine: " \tGCS Text Template v1\t", expected: "Dai"},
+		{firstLine: "\uFEFFGCS HTML Template v1 ", expected: "Dai"},
+		{firstLine: "GCS Text Template v2", expected: "GCS Text Template v2\n{{.Name}}"},
+	} {
+		tmplPath := filepath.Join(dir, "tmpl.txt")
+		c.NoError(os.WriteFile(tmplPath, []byte(data.firstLine+"\n{{.Name}}"), 0o600), "Test %d", i)
+		outPath := filepath.Join(dir, "out.txt")
+		c.NoError(Export(entity, tmplPath, outPath), "Test %d", i)
+		out, err := os.ReadFile(outPath)
+		c.NoError(err, "Test %d", i)
+		c.Equal(data.expected, string(out), "Test %d", i)
+	}
+}
