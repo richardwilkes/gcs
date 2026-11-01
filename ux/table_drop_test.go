@@ -612,3 +612,56 @@ func TestApplyModifierSkipsChoiceContainers(t *testing.T) {
 		c.Equal(1, len(backpack.Modifiers), "the physical container must still get it")
 	})
 }
+
+// TestCopyDroppedIntoAModifierGroupBelongsToTheEditorsItem verifies that a modifier copied by a drop into a group of
+// modifiers in a trait's editor is pointed at the trait, as is the weapon it holds, just as one dropped at the top level
+// of the list is. unison puts a copy dropped into a group among the group's children, which doesn't replace the list.
+func TestCopyDroppedIntoAModifierGroupBelongsToTheEditorsItem(t *testing.T) {
+	c := check.New(t)
+	forbidModifierPrompts(t)
+	sheet := newTestSheetForTemplate(t)
+	group := gurps.NewTraitModifier(sheet.Entity(), nil, true)
+	e, _, table := traitEditorOnSheet(t, sheet, group)
+
+	dropped := gurps.NewTraitModifier(nil, nil, false)
+	dropped.Name = "Strike"
+	dropped.Weapons = []*gurps.Weapon{gurps.NewWeapon(nil, true)}
+	from := unison.NewTable(&unison.SimpleTableModel[*Node[*gurps.TraitModifier]]{})
+	simulateCopyDrop(from, table, []*Node[*gurps.TraitModifier]{NewNode(from, nil, dropped, false)},
+		e.editorData.Modifiers[0].ID())
+
+	if len(e.editorData.Modifiers) != 1 || len(e.editorData.Modifiers[0].Children) != 1 {
+		t.Fatal("the group must hold the copy")
+	}
+	copied := e.editorData.Modifiers[0].Children[0]
+	c.True(copied != dropped, "the drop must copy the modifier")
+	c.True(copied.Target() == e.target, "the copy must belong to the editor's trait")
+	if len(copied.Weapons) != 1 {
+		t.Fatal("the copy must hold a copy of the weapon")
+	}
+	c.True(copied.Weapons[0].Owner == gurps.WeaponOwner(e.target), "and its weapon to the trait")
+	c.True(copied.Weapons[0].HoldingModifier() == gurps.WeaponHoldingModifier(copied), "held by the copy")
+}
+
+// simulateCopyDrop drops copies of the rows of another table into the container row of the table with the given ID,
+// ahead of its children, doing what unison does for a drop that copies rows and then finishing it with the table's
+// own drop callbacks.
+func simulateCopyDrop[T gurps.Node[T]](from, table *unison.Table[*Node[T]], rows []*Node[T], into tid.TID) {
+	undo := willDropCallback(from, table, false)
+	var parent *Node[T]
+	for _, one := range table.RootRows() {
+		if one.ID() == into {
+			parent = one
+		}
+	}
+	copies := make([]*Node[T], len(rows))
+	selection := make(map[tid.TID]bool, len(rows))
+	for i, row := range rows {
+		copies[i] = row.CloneForTarget(table, parent)
+		selection[copies[i].ID()] = true
+	}
+	parent.SetChildren(slices.Insert(slices.Clone(parent.Children()), 0, copies...))
+	table.SyncToModel()
+	table.SetSelectionMap(selection)
+	didDropCallback(undo, from, table, false)
+}

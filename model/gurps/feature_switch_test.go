@@ -1059,6 +1059,17 @@ func TestEquipmentSwitchCellDimming(t *testing.T) {
 		eqp.Weapons = []*Weapon{w}
 		return eqp
 	}
+	// withModifierWeapon is withWeapon with the weapon held by a modifier of the item, which is disabled if asked.
+	withModifierWeapon := func(eqp *Equipment, disabled bool) *Equipment {
+		mod := NewEquipmentModifier(e, nil, false)
+		mod.Name = "Spiked"
+		mod.SetDisabled(disabled)
+		w := NewWeapon(nil, false)
+		w.Defaults = []*SkillDefault{{DefaultType: DexterityID}}
+		mod.Weapons = []*Weapon{w}
+		eqp.AddModifiers(mod)
+		return eqp
+	}
 	fullBag := func(features ...Feature) *Equipment {
 		bag := NewEquipment(e, nil, true)
 		bag.Name = "Bag"
@@ -1202,6 +1213,15 @@ func TestEquipmentSwitchCellDimming(t *testing.T) {
 		{
 			name:  "unequipped weapon with a 'this weapon' bonus",
 			build: func() *Equipment { return withWeapon(item(weaponAccBonus(wsel.ThisWeapon))) },
+		},
+		{
+			name:  "unequipped item whose modifier holds a weapon, with a 'this weapon' bonus",
+			build: func() *Equipment { return withModifierWeapon(item(weaponAccBonus(wsel.ThisWeapon)), false) },
+		},
+		{
+			name:  "unequipped item whose disabled modifier holds a weapon, with a 'this weapon' bonus",
+			build: func() *Equipment { return withModifierWeapon(item(weaponAccBonus(wsel.ThisWeapon)), true) },
+			dim:   true,
 		},
 		{
 			name:  "unequipped item with a 'this weapon' bonus but no weapon",

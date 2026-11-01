@@ -187,11 +187,17 @@ func (n *Node[T]) CloneForTarget(target unison.Paneler, newParent *Node[T]) *Nod
 		xos.ExitIfErr(errs.New("unable to convert to table"))
 	}
 	var owner gurps.DataOwner
-	if provider := DetermineDataOwnerProvider(target); provider != nil {
+	provider := DetermineDataOwnerProvider(target)
+	if provider != nil {
 		owner = provider.DataOwner()
 	}
-	return NewNode(table, newParent,
-		n.data.Clone(libraryFileFromTable(n.table), owner, newParent.Data(), gurps.Reference), false)
+	clone := n.data.Clone(libraryFileFromTable(n.table), owner, newParent.Data(), gurps.Reference)
+	// A copy dropped into a container joins an editor's list without the list being replaced, which is what otherwise
+	// points the list's nodes at what they belong to, such as the item its modifiers modify.
+	if list, isList := provider.(interface{ attachNode(node T) }); isList {
+		list.attachNode(clone)
+	}
+	return NewNode(table, newParent, clone, false)
 }
 
 // ID implements unison.TableRowData.

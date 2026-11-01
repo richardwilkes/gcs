@@ -48,10 +48,12 @@ type requiredSkill struct {
 // are resolved over and over -- once per column of its row per sync of its table, again for the hash that tells the
 // weapons apart, again on every draw -- so without the memo a sheet with many weapons spent most of its time here. A
 // memo lives in the entity's weaponMemos, which discardCaches drops, so it lasts until the next recalculation or
-// DiscardCaches. Weapon.memo replaces it sooner only when the weapon's own data changes or it is given another owner;
-// a change to the owner's data, such as its rated ST or features, or to the rest of the entity is not seen until then.
+// DiscardCaches. Weapon.memo replaces it sooner only when the weapon's own data changes or it is given another owner or
+// holding modifier; a change to the owner's data, such as its rated ST or features, or to the rest of the entity is not
+// seen until then.
 type weaponMemo struct {
 	owner          WeaponOwner
+	modifier       WeaponHoldingModifier
 	fingerprint    uint64
 	requiredSkills []requiredSkill
 	bonuses        []*WeaponBonus
@@ -81,22 +83,23 @@ func (e *Entity) weaponCachesUsable() bool {
 	return weaponMemosEnabled && e.recalculating == 0 && !e.carriesGrant(e.judging)
 }
 
-// memo returns the memo for the weapon's current data and owner, or nil when nothing may be memoized: a weapon with
-// no entity has nothing to resolve against, and one whose entity's caches can't be used may not keep it (see
-// Entity.weaponCachesUsable).
+// memo returns the memo for the weapon's current data, owner and holding modifier, or nil when nothing may be
+// memoized: a weapon with no entity has nothing to resolve against, and one whose entity's caches can't be used may not
+// keep it (see Entity.weaponCachesUsable).
 func (w *Weapon) memo() *weaponMemo {
 	entity := w.Entity()
 	if entity == nil || !entity.weaponCachesUsable() {
 		return nil
 	}
 	fingerprint := w.memoFingerprint()
-	if m, ok := entity.weaponMemos[w]; ok && m.owner == w.Owner && m.fingerprint == fingerprint {
+	if m, ok := entity.weaponMemos[w]; ok && m.owner == w.Owner && m.modifier == w.holdingModifier &&
+		m.fingerprint == fingerprint {
 		return m
 	}
 	if entity.weaponMemos == nil || len(entity.weaponMemos) >= maximumWeaponMemos {
 		entity.weaponMemos = make(map[*Weapon]*weaponMemo)
 	}
-	m := &weaponMemo{owner: w.Owner, fingerprint: fingerprint}
+	m := &weaponMemo{owner: w.Owner, modifier: w.holdingModifier, fingerprint: fingerprint}
 	entity.weaponMemos[w] = m
 	return m
 }

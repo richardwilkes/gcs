@@ -2343,21 +2343,23 @@ func weaponListIndex(melee, includeUnequipped, excludeHidden bool) uint8 {
 	return index
 }
 
-// collectWeapons is Weapons without the cache. As it goes, it marks the weapons of equipment that isn't equipped or
-// carried as such, which their names report.
+// collectWeapons is Weapons without the cache. The weapons of a trait or piece of equipment include those of its
+// enabled modifiers, so an enabled trait container takes part for the sake of its modifiers, as it does for its
+// features. As it goes, it marks the weapons of equipment that isn't equipped or carried as such, which their names
+// report.
 func (e *Entity) collectWeapons(melee, includeUnequipped, excludeHidden bool) []*Weapon {
 	m := make(map[uint64]*Weapon)
 	Traverse(func(t *Trait) bool {
-		for _, w := range t.Weapons {
+		for _, w := range t.weaponsInPlay() {
 			if w.IsMelee() == melee && (!excludeHidden || !w.Hide) {
 				m[w.HashDisplayedState()] = w
 			}
 		}
 		return false
-	}, true, true, e.Traits...)
+	}, true, false, e.Traits...)
 	Traverse(func(eqp *Equipment) bool {
 		if hasQuantityThroughAncestors(eqp) && (includeUnequipped || eqp.ReallyEquipped()) {
-			for _, w := range eqp.Weapons {
+			for _, w := range eqp.weaponsInPlay() {
 				if w.IsMelee() == melee && (!excludeHidden || !w.Hide) {
 					w.NotEquipped = !eqp.ReallyEquipped()
 					w.NotCarried = false
@@ -2370,7 +2372,7 @@ func (e *Entity) collectWeapons(melee, includeUnequipped, excludeHidden bool) []
 	if includeUnequipped {
 		Traverse(func(eqp *Equipment) bool {
 			if hasQuantityThroughAncestors(eqp) {
-				for _, w := range eqp.Weapons {
+				for _, w := range eqp.weaponsInPlay() {
 					if w.IsMelee() == melee && (!excludeHidden || !w.Hide) {
 						w.NotEquipped = true
 						w.NotCarried = true

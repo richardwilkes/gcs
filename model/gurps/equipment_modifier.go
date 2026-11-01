@@ -98,7 +98,10 @@ type EquipmentModifierNonContainerSyncData struct {
 	TechLevel         string        `json:"tech_level,omitzero"`
 	CostAmount        string        `json:"cost,omitzero"`
 	WeightAmount      string        `json:"weight,omitzero"`
-	Features          Features      `json:"features,omitempty"`
+	// Weapons are the attacks the modifier gives its equipment, which belong to the equipment while the modifier is
+	// enabled.
+	Weapons  []*Weapon `json:"weapons,omitempty"`
+	Features Features  `json:"features,omitempty"`
 	// HideNotes keeps the modifier's notes out of its owner's notes, where it is still listed.
 	HideNotes bool `json:"hide_notes,omitzero"`
 	// ShowInTitle moves the modifier from its owner's notes to the title notes after its owner's name. A modifier with
@@ -194,7 +197,7 @@ func (e *EquipmentModifier) Clone(from LibraryFile, owner DataOwner, parent *Equ
 	other.AdjustSource(from, e.SourcedID, mode)
 	other.SetOpen(e.IsOpen())
 	other.ThirdParty = e.ThirdParty
-	other.CopyFrom(e)
+	other.copyFrom(other, &e.EquipmentModifierEditData, mode)
 	PropagateNodeNoteClosedState(e, other)
 	if e.HasChildren() {
 		other.Children = make([]*EquipmentModifier, 0, len(e.Children))
@@ -230,6 +233,7 @@ func (e *EquipmentModifier) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 	open := fixupLegacyTID(&localData.TID, localData.Type, equipmentModifierKind, kinds.EquipmentModifier,
 		kinds.EquipmentModifierContainer) && localData.IsOpen
 	e.EquipmentModifierData = localData.EquipmentModifierData
+	e.Weapons = dropNilNodes(e.Weapons)
 	e.Replacements = nameable.Normalize(e.Replacements)
 	migrateLegacyText(&e.LocalNotes, localData.ExprNotes)
 	e.ClearUnusedFieldsForType()
@@ -330,6 +334,22 @@ func (e *EquipmentModifier) DataOwner() DataOwner {
 	return e.owner
 }
 
+// WeaponOwner implements WeaponHolder. A modifier's weapons belong to its equipment, so this is nil while it has none.
+func (e *EquipmentModifier) WeaponOwner() WeaponOwner {
+	if e.equipment == nil {
+		return nil
+	}
+	return e.equipment
+}
+
+// AttachWeapons implements WeaponHolder.
+func (e *EquipmentModifier) AttachWeapons(list []*Weapon) {
+	owner := e.WeaponOwner()
+	for _, w := range list {
+		w.setOwner(owner, e)
+	}
+}
+
 // SetTarget sets the equipment being targeted for modification and configures any sub-components as needed
 func (e *EquipmentModifier) SetTarget(target *Equipment) *EquipmentModifier {
 	e.equipment = target
@@ -344,6 +364,8 @@ func (e *EquipmentModifier) SetTarget(target *Equipment) *EquipmentModifier {
 		for _, child := range e.Children {
 			child.SetTarget(target)
 		}
+	} else {
+		e.AttachWeapons(e.Weapons)
 	}
 
 	return e
@@ -356,6 +378,8 @@ func (e *EquipmentModifier) SetDataOwner(owner DataOwner) {
 		for _, child := range e.Children {
 			child.SetDataOwner(owner)
 		}
+	} else {
+		e.AttachWeapons(e.Weapons)
 	}
 }
 
@@ -534,6 +558,9 @@ func (e *EquipmentModifier) fillWithNameableKeysEvenIfDisabled(m, existing map[s
 		e.LocalNotes,
 	)
 	for _, one := range e.Features {
+		one.FillWithNameableKeys(found, existing)
+	}
+	for _, one := range e.Weapons {
 		one.FillWithNameableKeys(found, existing)
 	}
 	addLinkedNameableKeys(m, found, links)
@@ -752,6 +779,7 @@ func (e *EquipmentModifier) SyncWithSource() {
 			SettleModifierChoicesAround(e)
 		} else {
 			e.EquipmentModifierNonContainerSyncData = other.EquipmentModifierNonContainerSyncData
+			e.Weapons = cloneWeaponsHeldBy(other.Weapons, e.WeaponOwner(), e, Reference)
 			e.Features = other.Features.Clone()
 		}
 	})
@@ -779,6 +807,7 @@ func (e *EquipmentModifierNonContainerSyncData) hash(h hash.Hash) {
 	xhash.StringWithLen(h, e.TechLevel)
 	xhash.StringWithLen(h, e.CostAmount)
 	xhash.StringWithLen(h, e.WeightAmount)
+	hashList(h, e.Weapons)
 	hashList(h, e.Features)
 	xhash.Bool(h, e.HideNotes)
 	xhash.Bool(h, e.ShowInTitle)
@@ -786,19 +815,23 @@ func (e *EquipmentModifierNonContainerSyncData) hash(h hash.Hash) {
 
 // CopyFrom implements EditorData.
 func (e *EquipmentModifierEditData) CopyFrom(other *EquipmentModifier) {
-	e.copyFrom(&other.EquipmentModifierEditData)
+	e.copyFrom(other, &other.EquipmentModifierEditData, Copy)
 }
 
 // ApplyTo implements EditorData.
 func (e *EquipmentModifierEditData) ApplyTo(other *EquipmentModifier) {
-	other.copyFrom(e)
+	other.copyFrom(other, e, Copy)
 	slices.Sort(other.Tags)
 }
 
-func (e *EquipmentModifierEditData) copyFrom(other *EquipmentModifierEditData) {
+// copyFrom copies other into e, which is the data of holder, or an editor's working copy of it. mode controls how the
+// weapons are cloned: CopyFrom and ApplyTo use Copy, since that's staging or committing the same modifier's own data,
+// while Clone passes its own mode through.
+func (e *EquipmentModifierEditData) copyFrom(holder *EquipmentModifier, other *EquipmentModifierEditData, mode CloneMode) {
 	*e = *other
 	e.Tags = slices.Clone(other.Tags)
 	e.Replacements = maps.Clone(other.Replacements)
 	e.Nameables = nameable.CloneDetails(other.Nameables)
+	e.Weapons = cloneWeaponsHeldBy(other.Weapons, holder.WeaponOwner(), holder, mode)
 	e.Features = other.Features.Clone()
 }

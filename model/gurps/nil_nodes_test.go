@@ -26,21 +26,36 @@ import (
 func TestLoadingDropsNullNodes(t *testing.T) {
 	c := check.New(t)
 	id := func(node interface{ ID() tid.TID }) string { return string(node.ID()) }
-	traits := fmt.Sprintf(`[null,{"id":%q,"children":[null,{"id":%q,"modifiers":[null,{"id":%q,"children":[null]}],"weapons":[null]}]}]`,
-		id(NewTrait(nil, nil, true)), id(NewTrait(nil, nil, false)), id(NewTraitModifier(nil, nil, true)))
+	// Each list of modifiers holds a null, a container with a null child and a leaf with a null weapon.
+	modifiers := `[null,{"id":%q,"children":[null]},{"id":%q,"weapons":[null]}]`
+	traitModifiers := fmt.Sprintf(modifiers, id(NewTraitModifier(nil, nil, true)),
+		id(NewTraitModifier(nil, nil, false)))
+	equipmentModifiers := fmt.Sprintf(modifiers, id(NewEquipmentModifier(nil, nil, true)),
+		id(NewEquipmentModifier(nil, nil, false)))
+	traits := fmt.Sprintf(`[null,{"id":%q,"children":[null,{"id":%q,"modifiers":%s,"weapons":[null]}]}]`,
+		id(NewTrait(nil, nil, true)), id(NewTrait(nil, nil, false)), traitModifiers)
 	skills := fmt.Sprintf(`[null,{"id":%q,"children":[null,{"id":%q,"weapons":[null]}]}]`,
 		id(NewSkill(nil, nil, true)), id(NewSkill(nil, nil, false)))
 	spells := fmt.Sprintf(`[null,{"id":%q,"children":[null,{"id":%q,"weapons":[null]}]}]`,
 		id(NewSpell(nil, nil, true)), id(NewSpell(nil, nil, false)))
-	equipment := fmt.Sprintf(`[null,{"id":%q,"children":[null,{"id":%q,"modifiers":[null,{"id":%q,"children":[null]}],"weapons":[null]}]}]`,
-		id(NewEquipment(nil, nil, true)), id(NewEquipment(nil, nil, false)), id(NewEquipmentModifier(nil, nil, true)))
+	equipment := fmt.Sprintf(`[null,{"id":%q,"children":[null,{"id":%q,"modifiers":%s,"weapons":[null]}]}]`,
+		id(NewEquipment(nil, nil, true)), id(NewEquipment(nil, nil, false)), equipmentModifiers)
 	notes := fmt.Sprintf(`[null,{"id":%q,"children":[null]}]`, id(NewNote(nil, nil, true)))
 
+	checkTraitModifiers := func(list []*TraitModifier) {
+		c.Equal(2, len(list), "trait modifiers")
+		c.Equal(0, len(list[0].Children), "trait modifier children")
+		c.Equal(0, len(list[1].Weapons), "trait modifier weapons")
+	}
+	checkEquipmentModifiers := func(list []*EquipmentModifier) {
+		c.Equal(2, len(list), "equipment modifiers")
+		c.Equal(0, len(list[0].Children), "equipment modifier children")
+		c.Equal(0, len(list[1].Weapons), "equipment modifier weapons")
+	}
 	checkTraits := func(list []*Trait) {
 		c.Equal(1, len(list), "traits")
 		c.Equal(1, len(list[0].Children), "trait children")
-		c.Equal(1, len(list[0].Children[0].Modifiers), "trait modifiers")
-		c.Equal(0, len(list[0].Children[0].Modifiers[0].Children), "trait modifier children")
+		checkTraitModifiers(list[0].Children[0].Modifiers)
 		c.Equal(0, len(list[0].Children[0].Weapons), "trait weapons")
 	}
 	checkSkills := func(list []*Skill) {
@@ -56,8 +71,7 @@ func TestLoadingDropsNullNodes(t *testing.T) {
 	checkEquipment := func(list []*Equipment) {
 		c.Equal(1, len(list), "equipment")
 		c.Equal(1, len(list[0].Children), "equipment children")
-		c.Equal(1, len(list[0].Children[0].Modifiers), "equipment modifiers")
-		c.Equal(0, len(list[0].Children[0].Modifiers[0].Children), "equipment modifier children")
+		checkEquipmentModifiers(list[0].Children[0].Modifiers)
 		c.Equal(0, len(list[0].Children[0].Weapons), "equipment weapons")
 	}
 	checkNotes := func(list []*Note) {
@@ -114,14 +128,10 @@ func TestLoadingDropsNullNodes(t *testing.T) {
 	loadedNotes, err := NewNotesFromFile(listFile(notes), "list")
 	c.NoError(err)
 	checkNotes(loadedNotes)
-	loadedTraitModifiers, err := NewTraitModifiersFromFile(listFile(fmt.Sprintf(`[null,{"id":%q,"children":[null]}]`,
-		id(NewTraitModifier(nil, nil, true)))), "list")
+	loadedTraitModifiers, err := NewTraitModifiersFromFile(listFile(traitModifiers), "list")
 	c.NoError(err)
-	c.Equal(1, len(loadedTraitModifiers), "trait modifier rows")
-	c.Equal(0, len(loadedTraitModifiers[0].Children), "trait modifier row children")
-	loadedEquipmentModifiers, err := NewEquipmentModifiersFromFile(listFile(fmt.Sprintf(`[null,{"id":%q,"children":[null]}]`,
-		id(NewEquipmentModifier(nil, nil, true)))), "list")
+	checkTraitModifiers(loadedTraitModifiers)
+	loadedEquipmentModifiers, err := NewEquipmentModifiersFromFile(listFile(equipmentModifiers), "list")
 	c.NoError(err)
-	c.Equal(1, len(loadedEquipmentModifiers), "equipment modifier rows")
-	c.Equal(0, len(loadedEquipmentModifiers[0].Children), "equipment modifier row children")
+	checkEquipmentModifiers(loadedEquipmentModifiers)
 }

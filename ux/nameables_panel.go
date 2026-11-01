@@ -101,6 +101,8 @@ type nameablesPanel struct {
 	modifiers func() []nameableModifier
 	owner     func() *nameableOwner
 	signature uint64
+	// shown is the hash of what the editors open on the item's modifiers were last shown (see shownHash).
+	shown uint64
 	// pending is the key of a chip added to the open row that holds nothing yet, such as a new option still being
 	// typed. It shows until the row closes, since nothing in the data says it is there.
 	pending   string
@@ -129,6 +131,9 @@ func newNameablesPanel(defs *map[string]nameable.Detail, uses func() map[string]
 	}
 	border := initTitledEditorSection(p, i18n.Text("Nameables"))
 	p.initRows(nil, p.build, p.state, p.restore, p.dataHash)
+	if modifiers != nil {
+		p.shown = p.shownHash(p.grantedDefinitions(), modifiers())
+	}
 	p.initCollapse(border, len(*defs) != 0)
 	installPanelDragDrop(p.AsPanel(), nameableOptionDragKey, p.optionDragOver, p.optionDragExit, p.optionDrop)
 	p.DrawOverCallback = p.drawOptionDrop
@@ -193,11 +198,30 @@ func (s *nameablesState) hash() uint64 {
 
 // Sync implements Syncer. The rows show how often the item refers to each code, what the items its grants give define,
 // what its modifiers are and what the item a modifier belongs to is, so they are rebuilt whenever any of these changes.
+// The editors open on the item's modifiers and their weapons read the item as its editor holds it: a modifier's
+// nameables say which of its codes the item, an item its grants give or another of its modifiers defines, and its
+// features and weapons resolve its codes through the links. So their rows are made again whenever any of these
+// changes, whatever changed it.
 func (p *nameablesPanel) Sync() {
 	uses, granted, mods, owner := p.inputs()
+	if p.modifiers != nil {
+		if hash := p.shownHash(granted, mods); hash != p.shown {
+			p.shown = hash
+			if e := unison.Ancestor[interface{ showSubEditorSubstitutions() }](p); e != nil {
+				e.showSubEditorSubstitutions()
+			}
+		}
+	}
 	if signature(uses, granted, mods, owner) != p.signature {
 		p.rebuild("")
 	}
+}
+
+// shownHash returns a hash of what the editors open on the item's modifiers read from the item's editor: the panel's
+// data, the definitions of the items the item's grants give, and its modifiers. How often the item refers to each code
+// is left out, as they don't read it, so that typing in the item's text doesn't make their rows again.
+func (p *nameablesPanel) shownHash(granted map[string]nameable.Detail, mods []nameableModifier) uint64 {
+	return xxh3.HashString(fmt.Sprintf("%d|%v|%v", p.dataHash(), granted, mods))
 }
 
 // inputs returns what the rows show besides the panel's own data: how often the item refers to each code, the
@@ -1022,23 +1046,23 @@ func nameableUses(texts []string, prereq *gurps.PrereqList, features gurps.Featu
 	return uses
 }
 
-// nameableModifiers returns the modifiers, containers included, for the nameables panel, refs returning the texts and
-// features of each, by which it refers to codes.
+// nameableModifiers returns the modifiers, containers included, for the nameables panel, refs returning the texts,
+// features and weapons of each, by which it refers to codes.
 func nameableModifiers[T interface {
 	gurps.Node[T]
 	Enabled() bool
 	nameable.Definer
-}](modifiers []T, refs func(T) (texts []string, features gurps.Features)) []nameableModifier {
+}](modifiers []T, refs func(T) (texts []string, features gurps.Features, weapons []*gurps.Weapon)) []nameableModifier {
 	var result []nameableModifier
 	gurps.Traverse(func(mod T) bool {
-		texts, features := refs(mod)
+		texts, features, weapons := refs(mod)
 		result = append(result, nameableModifier{
 			id:       mod.ID(),
 			location: rowLocation(mod),
 			name:     mod.String(),
 			disabled: !mod.Enabled(),
 			defs:     mod.NameableDefinitions(),
-			uses:     nameableUses(texts, nil, features, nil),
+			uses:     nameableUses(texts, nil, features, weapons),
 			granted:  grantedNameableDefinitions(features),
 		})
 		return false
@@ -1048,14 +1072,14 @@ func nameableModifiers[T interface {
 
 // traitNameableModifiers returns the trait's modifiers for the nameables panel (see nameableModifiers).
 func traitNameableModifiers(modifiers []*gurps.TraitModifier) []nameableModifier {
-	return nameableModifiers(modifiers, func(m *gurps.TraitModifier) ([]string, gurps.Features) {
-		return []string{m.Name, m.LocalNotes}, m.Features
+	return nameableModifiers(modifiers, func(m *gurps.TraitModifier) ([]string, gurps.Features, []*gurps.Weapon) {
+		return []string{m.Name, m.LocalNotes}, m.Features, m.Weapons
 	})
 }
 
 // equipmentNameableModifiers returns the equipment's modifiers for the nameables panel (see nameableModifiers).
 func equipmentNameableModifiers(modifiers []*gurps.EquipmentModifier) []nameableModifier {
-	return nameableModifiers(modifiers, func(m *gurps.EquipmentModifier) ([]string, gurps.Features) {
-		return []string{m.Name, m.LocalNotes}, m.Features
+	return nameableModifiers(modifiers, func(m *gurps.EquipmentModifier) ([]string, gurps.Features, []*gurps.Weapon) {
+		return []string{m.Name, m.LocalNotes}, m.Features, m.Weapons
 	})
 }

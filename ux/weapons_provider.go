@@ -17,6 +17,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/ux/svg"
 	"github.com/richardwilkes/toolbox/v2/errs"
 	"github.com/richardwilkes/toolbox/v2/i18n"
+	"github.com/richardwilkes/toolbox/v2/tid"
 	"github.com/richardwilkes/toolbox/v2/uti"
 	"github.com/richardwilkes/unison"
 )
@@ -206,53 +207,86 @@ func (p *weaponsProvider) OpenEditor(owner Rebuildable, table *unison.Table[*Nod
 	}
 }
 
+// openWeaponEditor opens the editor of the item on the sheet's list that owns the weapon and, from that, the editor of
+// the item editor's copy of the weapon, going through the editor of the item editor's copy of the modifier that holds
+// the weapon, if one does. It returns false if the list doesn't hold the item.
 func openWeaponEditor[T gurps.Node[T], D gurps.EditorData[T]](sheet *Sheet, pageList *PageList[T], item *gurps.Weapon, itemOwner T, editFunc func(Rebuildable, T) *editor[T, D]) bool {
-	if node := searchSheetTableFor(pageList, itemOwner); node != nil {
-		pageList.Table.DiscloseRow(node, false)
-		pageList.Table.ClearSelection()
-		pageList.Table.SelectByIndex(pageList.Table.RowToIndex(node))
-		OpenEditor(pageList.Table, func(data T) {
-			if editor := editFunc(sheet, data); editor != nil {
-				var p *weaponsPanel
-				if item.IsMelee() {
-					p = editor.meleeWeapons
-				} else {
-					p = editor.rangedWeapons
-				}
-				if p != nil {
-					wt := p.table
-					for _, row := range wt.RootRows() {
-						if row.data.TID == item.TID {
-							wt.ClearSelection()
-							wt.SelectByIndex(wt.RowToIndex(row))
-							OpenEditor(wt, func(w *gurps.Weapon) { EditWeapon(editor, w) })
-						}
-					}
-				}
+	node := findRow(pageList.Table.RootRows(), func(data T) bool { return data == itemOwner })
+	if node == nil {
+		return false
+	}
+	pageList.Table.DiscloseRow(node, false)
+	pageList.Table.ClearSelection()
+	pageList.Table.SelectByIndex(pageList.Table.RowToIndex(node))
+	OpenEditor(pageList.Table, func(data T) {
+		if editor := editFunc(sheet, data); editor != nil {
+			switch mod := item.HoldingModifier().(type) {
+			case *gurps.TraitModifier:
+				openModifierWeaponEditor(editor, mod.ID(), item, EditTraitModifier)
+			case *gurps.EquipmentModifier:
+				openModifierWeaponEditor(editor, mod.ID(), item, EditEquipmentModifier)
+			default:
+				openWeaponInEditor(editor, item)
 			}
-		})
-		return true
-	}
-	return false
-}
-
-func searchSheetTableFor[T gurps.Node[T]](pageList *PageList[T], what T) *Node[T] {
-	for _, row := range pageList.Table.RootRows() {
-		if result := searchSheetTableRowsFor(pageList.Table, row, what); result != nil {
-			return result
 		}
-	}
-	return nil
+	})
+	return true
 }
 
-func searchSheetTableRowsFor[T gurps.Node[T]](table *unison.Table[*Node[T]], row *Node[T], what T) *Node[T] {
-	if what == row.data {
-		return row
+// openModifierWeaponEditor opens, from the item's editor, the editor of its copy of the modifier with the given ID and,
+// from that, the editor of the modifier editor's copy of the weapon. The copies keep the IDs of what they copy, so the
+// modifier is found in the item editor's list of modifiers by its ID.
+func openModifierWeaponEditor[N gurps.Node[N], DN gurps.EditorData[N], M gurps.Node[M], DM gurps.EditorData[M]](itemEditor *editor[N, DN], id tid.TID, item *gurps.Weapon, edit func(Rebuildable, M) *editor[M, DM]) {
+	for _, child := range itemEditor.content.Children() {
+		list, ok := child.Self.(interface {
+			listTable() *unison.Table[*Node[M]]
+		})
+		if !ok {
+			continue
+		}
+		table := list.listTable()
+		if node := findRow(table.RootRows(), func(data M) bool { return data.ID() == id }); node != nil {
+			table.DiscloseRow(node, false)
+			table.ClearSelection()
+			table.SelectByIndex(table.RowToIndex(node))
+			OpenEditor(table, func(m M) {
+				if modEditor := edit(itemEditor, m); modEditor != nil {
+					openWeaponInEditor(modEditor, item)
+				}
+			})
+		}
+		return
 	}
-	if row.CanHaveChildren() {
-		for _, child := range row.Children() {
-			if result := searchSheetTableRowsFor(table, child, what); result != nil {
-				return result
+}
+
+// openWeaponInEditor selects the editor's copy of the weapon, which has the weapon's ID, in the editor's list of that
+// kind of weapon and opens the copy's editor. It does nothing if the editor has no such list or the list no such copy.
+func openWeaponInEditor[N gurps.Node[N], D gurps.EditorData[N]](e *editor[N, D], item *gurps.Weapon) {
+	p := e.rangedWeapons
+	if item.IsMelee() {
+		p = e.meleeWeapons
+	}
+	if p == nil {
+		return
+	}
+	wt := p.table
+	if row := findRow(wt.RootRows(), func(w *gurps.Weapon) bool { return w.TID == item.TID }); row != nil {
+		wt.ClearSelection()
+		wt.SelectByIndex(wt.RowToIndex(row))
+		OpenEditor(wt, func(w *gurps.Weapon) { EditWeapon(e, w) })
+	}
+}
+
+// findRow returns the first row whose data match accepts, looking through the rows and, at any depth, the rows within
+// them, those of closed containers included, or nil if there is none.
+func findRow[T gurps.Node[T]](rows []*Node[T], match func(T) bool) *Node[T] {
+	for _, row := range rows {
+		if match(row.data) {
+			return row
+		}
+		if row.CanHaveChildren() {
+			if found := findRow(row.Children(), match); found != nil {
+				return found
 			}
 		}
 	}

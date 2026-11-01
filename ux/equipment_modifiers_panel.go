@@ -16,14 +16,19 @@ import (
 
 type equipmentModifiersPanel struct {
 	editorListPanel[*gurps.EquipmentModifier]
+	replacements *editedModifierReplacements
 }
 
 // newEquipmentModifiersPanel returns a panel for the modifiers of the equipment being edited, which are kept pointed at
-// it.
-func newEquipmentModifiersPanel(cmdRoot Rebuildable, owner gurps.DataOwner, equipment *gurps.Equipment, modifiers *[]*gurps.EquipmentModifier) *equipmentModifiersPanel {
-	p := &equipmentModifiersPanel{}
+// it. data is the editor's data, whose replacements take any that a modifier joining the list carries from an older
+// version, and give them up again should it leave the list (see followEditedModifiers).
+func newEquipmentModifiersPanel(cmdRoot Rebuildable, owner gurps.DataOwner, equipment *gurps.Equipment, modifiers *[]*gurps.EquipmentModifier, data replacementsHolder) *equipmentModifiersPanel {
+	p := &equipmentModifiersPanel{replacements: &editedModifierReplacements{data: data}}
 	p.init(p, cmdRoot, owner, modifiers, NewEquipmentModifiersProvider(p, true), "equipment-modifiers-"+uuid.New().String())
-	p.attach = func(list []*gurps.EquipmentModifier) { gurps.AttachModifiers(equipment, list) }
+	p.attach = func(list []*gurps.EquipmentModifier) {
+		attachEditedModifiers(equipment, p.replacements, list,
+			func(mod *gurps.EquipmentModifier) *map[string]string { return &mod.Replacements })
+	}
 	p.installNewItemHandler(cmdRoot, NewEquipmentModifierItemID, NoItemVariant)
 	p.installNewItemHandler(cmdRoot, NewEquipmentContainerModifierItemID, ContainerItemVariant)
 	p.installNewItemHandler(cmdRoot, NewEquipmentModifierChoiceItemID, ChoiceContainerItemVariant)
@@ -36,4 +41,5 @@ func (p *equipmentModifiersPanel) EquipmentModifierList() []*gurps.EquipmentModi
 
 func (p *equipmentModifiersPanel) SetEquipmentModifierList(list []*gurps.EquipmentModifier) {
 	p.setList(list)
+	followEditedModifiers(p.replacements, list)
 }

@@ -28,5 +28,6 @@ func newScriptEquipmentModifier(r *goja.Runtime, mod *EquipmentModifier) *goja.O
 	m["techLevel"] = func() goja.Value { return r.ToValue(mod.TechLevel) }
 	m["tags"] = scriptTags(r, mod.Tags)
 	m["notes"] = scriptNotes(r, mod)
+	addScriptWeapons(r, m, func() []*Weapon { return mod.Weapons })
 	return r.NewDynamicObject(NewScriptObject(r, m))
 }

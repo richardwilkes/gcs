@@ -33,5 +33,6 @@ func newScriptTraitModifier(r *goja.Runtime, mod *TraitModifier) *goja.Object {
 	}
 	m["tags"] = scriptTags(r, mod.Tags)
 	m["notes"] = scriptNotes(r, mod)
+	addScriptWeapons(r, m, func() []*Weapon { return mod.Weapons })
 	return r.NewDynamicObject(NewScriptObject(r, m))
 }

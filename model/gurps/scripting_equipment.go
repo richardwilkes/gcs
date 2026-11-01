@@ -52,7 +52,7 @@ func newScriptEquipment(r *goja.Runtime, item *Equipment) *goja.Object {
 	m["find"] = scriptNameTagFinder(r, func(name, tag string) goja.Value {
 		return findScriptEquipment(r, name, tag, item.Children...)
 	})
-	addScriptWeapons(r, m, func() []*Weapon { return item.Weapons })
+	addScriptWeapons(r, m, item.weaponsInPlay)
 	addScriptActiveModifiers(r, m, item, newScriptEquipmentModifier)
 	if item.Container() {
 		m["kind"] = func() goja.Value { return r.ToValue(strings.ReplaceAll(item.ContainerType.Key(), "_", " ")) }

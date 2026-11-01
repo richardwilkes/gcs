@@ -15,6 +15,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/ux/uxtest"
 	"github.com/richardwilkes/toolbox/v2/check"
+	"github.com/richardwilkes/unison"
 )
 
 // Each "new item" command must land in the right list of the editor's data and on the right table. The list panels
@@ -60,4 +61,81 @@ func TestEditorNewItemCommandsAddToTheirPanels(t *testing.T) {
 	c.True(ee.editorData.Modifiers[1].Container(), "the container command must add a container")
 	c.Equal(2, equipmentModifiers.table.RootRowCount(), "both modifiers must be rows in the panel's table")
 	c.Equal(0, len(equipment.Modifiers), "the equipment itself must not change until the editor is applied")
+}
+
+// TestDroppedModifierLegacyReplacementsJoinTheEditorsData verifies that the replacements an older version saved on a
+// modifier dropped into an item editor's list of modifiers go into the editor's data, which keeps its own value for a
+// code both have, leaving the item alone until the editor is applied, that undoing the drop takes them back out and
+// redoing it puts them back, and that applying the editor gives them to the item.
+func TestDroppedModifierLegacyReplacementsJoinTheEditorsData(t *testing.T) {
+	for _, tc := range []struct {
+		name string
+		// drop opens an editor for an item on the sheet whose substitutions give Foo the value Bar, drops a modifier
+		// carrying the legacy replacements into the group of modifiers it holds, and returns the item's replacements,
+		// the editor data's, the editor's undo manager and a function that applies the editor.
+		drop func(t *testing.T, sheet *Sheet, legacy map[string]string) (item, data *map[string]string,
+			undo *unison.UndoManager, apply func())
+	}{
+		{
+			name: "trait",
+			drop: func(t *testing.T, sheet *Sheet, legacy map[string]string) (item, data *map[string]string,
+				undo *unison.UndoManager, apply func(),
+			) {
+				trait := gurps.NewTrait(sheet.Entity(), nil, false)
+				trait.Replacements = map[string]string{"Foo": "Bar"}
+				trait.SetModifiers([]*gurps.TraitModifier{gurps.NewTraitModifier(sheet.Entity(), nil, true)})
+				e, content := buildEditorContent(sheet, trait, initTraitEditor)
+				panel, ok := uxtest.FirstPanelOfType[*traitModifiersPanel](content)
+				if !ok {
+					t.Fatal("expected a trait modifiers panel in the trait editor")
+				}
+				dropped := gurps.NewTraitModifier(nil, nil, false)
+				dropped.Name = "@Material@ Coating"
+				dropped.Replacements = legacy
+				from := unison.NewTable(&unison.SimpleTableModel[*Node[*gurps.TraitModifier]]{})
+				simulateCopyDrop(from, panel.table, []*Node[*gurps.TraitModifier]{NewNode(from, nil, dropped, false)},
+					e.editorData.Modifiers[0].ID())
+				return &trait.Replacements, &e.editorData.Replacements, e.undoMgr, e.applyEdits
+			},
+		},
+		{
+			name: "equipment",
+			drop: func(t *testing.T, sheet *Sheet, legacy map[string]string) (item, data *map[string]string,
+				undo *unison.UndoManager, apply func(),
+			) {
+				eqp := gurps.NewEquipment(sheet.Entity(), nil, false)
+				eqp.Replacements = map[string]string{"Foo": "Bar"}
+				eqp.SetModifiers([]*gurps.EquipmentModifier{gurps.NewEquipmentModifier(sheet.Entity(), nil, true)})
+				e, content := buildEditorContent(sheet, eqp, initEquipmentEditor(true))
+				panel, ok := uxtest.FirstPanelOfType[*equipmentModifiersPanel](content)
+				if !ok {
+					t.Fatal("expected an equipment modifiers panel in the equipment editor")
+				}
+				dropped := gurps.NewEquipmentModifier(nil, nil, false)
+				dropped.Name = "@Material@ Coating"
+				dropped.Replacements = legacy
+				from := unison.NewTable(&unison.SimpleTableModel[*Node[*gurps.EquipmentModifier]]{})
+				simulateCopyDrop(from, panel.table,
+					[]*Node[*gurps.EquipmentModifier]{NewNode(from, nil, dropped, false)}, e.editorData.Modifiers[0].ID())
+				return &eqp.Replacements, &e.editorData.Replacements, e.undoMgr, e.applyEdits
+			},
+		},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			c := check.New(t)
+			forbidModifierPrompts(t)
+			sheet := newTestSheetForTemplate(t)
+			// As an older version saved it.
+			item, data, undo, apply := tc.drop(t, sheet, map[string]string{"Material": "Steel", "Foo": "Baz"})
+			c.Equal(map[string]string{"Foo": "Bar"}, *item, "the item must be left alone until the editor is applied")
+			c.Equal(map[string]string{"Foo": "Bar", "Material": "Steel"}, *data,
+				"the editor's data must take the dropped modifier's replacements, keeping its own value for Foo")
+			undo.Undo()
+			c.Equal(map[string]string{"Foo": "Bar"}, *data, "undoing the drop must take them back out")
+			undo.Redo()
+			c.Equal(map[string]string{"Foo": "Bar", "Material": "Steel"}, *data, "redoing it must put them back")
+			apply()
+			c.Equal(map[string]string{"Foo": "Bar", "Material": "Steel"}, *item, "applying must give them to the item")
+		})
+	}
 }

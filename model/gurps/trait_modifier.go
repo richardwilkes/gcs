@@ -36,8 +36,10 @@ var (
 	_ = assertModifierNode[*TraitModifier]
 	_ = assertEditorData[*TraitModifierEditData]
 
-	_ GeneralModifier = &TraitModifier{}
-	_ LeveledOwner    = &TraitModifier{}
+	_ GeneralModifier       = &TraitModifier{}
+	_ LeveledOwner          = &TraitModifier{}
+	_ WeaponHolder          = &TraitModifier{}
+	_ WeaponHoldingModifier = &TraitModifier{}
 )
 
 // Columns that can be used with the trait modifier method .CellData()
@@ -94,7 +96,12 @@ type TraitModifierNonContainerSyncData struct {
 	CostIgnoresLevel  bool           `json:"cost_ignores_level,omitzero"`
 	ShowNotesOnWeapon bool           `json:"show_notes_on_weapon,omitzero"`
 	Affects           affects.Option `json:"affects,omitzero"`
-	Features          Features       `json:"features,omitempty"`
+	// Weapons are the attacks the modifier gives its trait, which belong to the trait while the modifier is enabled.
+	Weapons []*Weapon `json:"weapons,omitempty"`
+	// WeaponsUseLevel makes the per-level damage of the modifier's weapons count the modifier's levels rather than the
+	// trait's, while the modifier has levels of its own.
+	WeaponsUseLevel bool     `json:"weapons_use_level,omitzero"`
+	Features        Features `json:"features,omitempty"`
 	// HideNotes keeps the modifier's notes out of its owner's notes, where it is still listed.
 	HideNotes bool `json:"hide_notes,omitzero"`
 	// ShowInTitle moves the modifier from its owner's notes to the title notes after its owner's name. A modifier with
@@ -190,7 +197,7 @@ func (t *TraitModifier) Clone(from LibraryFile, owner DataOwner, parent *TraitMo
 	other.AdjustSource(from, t.SourcedID, mode)
 	other.SetOpen(t.IsOpen())
 	other.ThirdParty = t.ThirdParty
-	other.CopyFrom(t)
+	other.copyFrom(other, &t.TraitModifierEditData, mode)
 	PropagateNodeNoteClosedState(t, other)
 	if t.HasChildren() {
 		other.Children = make([]*TraitModifier, 0, len(t.Children))
@@ -238,6 +245,7 @@ func (t *TraitModifier) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 		}
 	}
 	t.TraitModifierData = localData.TraitModifierData
+	t.Weapons = dropNilNodes(t.Weapons)
 	t.Replacements = nameable.Normalize(t.Replacements)
 	migrateLegacyText(&t.LocalNotes, localData.ExprNotes)
 	t.ClearUnusedFieldsForType()
@@ -324,6 +332,22 @@ func (t *TraitModifier) DataOwner() DataOwner {
 	return t.owner
 }
 
+// WeaponOwner implements WeaponHolder. A modifier's weapons belong to its trait, so this is nil while it has none.
+func (t *TraitModifier) WeaponOwner() WeaponOwner {
+	if t.trait == nil {
+		return nil
+	}
+	return t.trait
+}
+
+// AttachWeapons implements WeaponHolder.
+func (t *TraitModifier) AttachWeapons(list []*Weapon) {
+	owner := t.WeaponOwner()
+	for _, w := range list {
+		w.setOwner(owner, t)
+	}
+}
+
 // SetTarget sets the trait being targeted for modification and configures any sub-components as needed.
 func (t *TraitModifier) SetTarget(target *Trait) *TraitModifier {
 	t.trait = target
@@ -338,6 +362,8 @@ func (t *TraitModifier) SetTarget(target *Trait) *TraitModifier {
 		for _, child := range t.Children {
 			child.SetTarget(target)
 		}
+	} else {
+		t.AttachWeapons(t.Weapons)
 	}
 
 	return t
@@ -350,6 +376,8 @@ func (t *TraitModifier) SetDataOwner(owner DataOwner) {
 		for _, child := range t.Children {
 			child.SetDataOwner(owner)
 		}
+	} else {
+		t.AttachWeapons(t.Weapons)
 	}
 }
 
@@ -593,6 +621,9 @@ func (t *TraitModifier) fillWithNameableKeysEvenIfDisabled(m, existing map[strin
 	for _, one := range t.Features {
 		one.FillWithNameableKeys(found, existing)
 	}
+	for _, one := range t.Weapons {
+		one.FillWithNameableKeys(found, existing)
+	}
 	addLinkedNameableKeys(m, found, links)
 }
 
@@ -670,6 +701,7 @@ func (t *TraitModifier) SyncWithSource() {
 			SettleModifierChoicesAround(t)
 		} else {
 			t.TraitModifierNonContainerSyncData = other.TraitModifierNonContainerSyncData
+			t.Weapons = cloneWeaponsHeldBy(other.Weapons, t.WeaponOwner(), t, Reference)
 			t.Features = other.Features.Clone()
 		}
 	})
@@ -693,6 +725,8 @@ func (t *TraitModifierNonContainerSyncData) hash(h hash.Hash) {
 	xhash.Bool(h, t.CostIgnoresLevel)
 	xhash.Bool(h, t.ShowNotesOnWeapon)
 	xhash.Num8(h, t.Affects)
+	hashList(h, t.Weapons)
+	xhash.Bool(h, t.WeaponsUseLevel)
 	hashList(h, t.Features)
 	xhash.Bool(h, t.HideNotes)
 	xhash.Bool(h, t.ShowInTitle)
@@ -700,19 +734,23 @@ func (t *TraitModifierNonContainerSyncData) hash(h hash.Hash) {
 
 // CopyFrom implements EditorData.
 func (t *TraitModifierEditData) CopyFrom(other *TraitModifier) {
-	t.copyFrom(&other.TraitModifierEditData)
+	t.copyFrom(other, &other.TraitModifierEditData, Copy)
 }
 
 // ApplyTo implements EditorData.
 func (t *TraitModifierEditData) ApplyTo(other *TraitModifier) {
-	other.copyFrom(t)
+	other.copyFrom(other, t, Copy)
 	slices.Sort(other.Tags)
 }
 
-func (t *TraitModifierEditData) copyFrom(other *TraitModifierEditData) {
+// copyFrom copies other into t, which is the data of holder, or an editor's working copy of it. mode controls how the
+// weapons are cloned: CopyFrom and ApplyTo use Copy, since that's staging or committing the same modifier's own data,
+// while Clone passes its own mode through.
+func (t *TraitModifierEditData) copyFrom(holder *TraitModifier, other *TraitModifierEditData, mode CloneMode) {
 	*t = *other
 	t.Tags = slices.Clone(other.Tags)
 	t.Replacements = maps.Clone(other.Replacements)
 	t.Nameables = nameable.CloneDetails(other.Nameables)
+	t.Weapons = cloneWeaponsHeldBy(other.Weapons, holder.WeaponOwner(), holder, mode)
 	t.Features = other.Features.Clone()
 }

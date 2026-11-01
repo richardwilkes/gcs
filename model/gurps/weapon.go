@@ -82,6 +82,26 @@ type WeaponOwner interface {
 	TitleNotes() []string
 }
 
+// WeaponHolder is a node whose data holds a list of weapons: a trait, skill, spell or piece of equipment, whose
+// weapons belong to it, or a trait or equipment modifier, whose weapons belong to the item it modifies.
+type WeaponHolder interface {
+	DataOwner() DataOwner
+	// WeaponOwner returns the owner the held weapons belong to: the holder itself, or a modifier's target, which is an
+	// untyped nil for a modifier that has none.
+	WeaponOwner() WeaponOwner
+	// AttachWeapons points the weapons at their owner and, for a modifier, at the modifier holding them.
+	AttachWeapons(list []*Weapon)
+}
+
+// WeaponHoldingModifier is a trait or equipment modifier that holds weapons of its own. They belong to the item it
+// modifies, but resolve their nameable codes as the modifier does, through the links that item holds for it.
+type WeaponHoldingModifier interface {
+	fmt.Stringer
+	nameable.Accesser
+	ID() tid.TID
+	NameWithReplacements() string
+}
+
 // WeaponData holds the Weapon data that is written to disk.
 type WeaponData struct {
 	TID        tid.TID         `json:"id"`
@@ -105,14 +125,17 @@ type WeaponData struct {
 
 // Weapon holds the stats for a weapon. What its methods, and those of its damage, resolve is kept until its entity's
 // caches are discarded (see Entity.DiscardCaches), unless the weapon's own data changes or it is given another owner
-// first. A change to the owner's data, such as its rated ST or features, or to the rest of the entity is therefore
-// seen only after a recalculation or DiscardCaches.
+// or holding modifier first. A change to the owner's data, such as its rated ST or features, or to the rest of the
+// entity is therefore seen only after a recalculation or DiscardCaches.
 type Weapon struct {
 	WeaponData
-	Owner         WeaponOwner
-	ClonedFromTID tid.TID
-	NotEquipped   bool
-	NotCarried    bool
+	Owner WeaponOwner
+	// holdingModifier is the modifier of Owner that holds the weapon, when it is one of a modifier's rather than one of
+	// the owner's own. It is only ever set along with the owner (see setOwner).
+	holdingModifier WeaponHoldingModifier
+	ClonedFromTID   tid.TID
+	NotEquipped     bool
+	NotCarried      bool
 }
 
 // ExtractWeaponsOfType filters the input list down to only those weapons of the given type.
@@ -166,17 +189,25 @@ func (w *Weapon) IsRanged() bool {
 	return tid.IsKind(w.TID, kinds.WeaponRanged)
 }
 
-// CloneWeapons clones the input list of weapons, pointing each copy at the given owner. Weapon.Clone() keeps the
-// original's owner, and a weapon resolves its nameable replacements, skill defaults and strength requirements through
-// its owner, so a copy left pointing at the original's owner would report that node's values rather than its own.
+// CloneWeapons clones the input list of weapons, pointing each copy at the given owner as one of its own.
+// Weapon.Clone() keeps the original's owner and holding modifier, and a weapon resolves its nameable replacements,
+// skill defaults and strength requirements through them, so a copy left pointing at the original's would report that
+// node's values rather than its own.
 func CloneWeapons(list []*Weapon, owner WeaponOwner, mode CloneMode) []*Weapon {
+	return cloneWeaponsHeldBy(list, owner, nil, mode)
+}
+
+// cloneWeaponsHeldBy is CloneWeapons for the weapons a modifier holds, which belong to the modifier's target but
+// resolve their nameable codes through the modifier (see WeaponHoldingModifier). A nil modifier makes the copies the
+// owner's own.
+func cloneWeaponsHeldBy(list []*Weapon, owner WeaponOwner, modifier WeaponHoldingModifier, mode CloneMode) []*Weapon {
 	if len(list) == 0 {
 		return nil
 	}
 	weapons := make([]*Weapon, len(list))
 	for i, w := range list {
 		weapons[i] = w.Clone(LibraryFile{}, nil, nil, mode)
-		weapons[i].SetOwner(owner)
+		weapons[i].setOwner(owner, modifier)
 	}
 	return weapons
 }
@@ -390,7 +421,7 @@ func (w *Weapon) Kind() string {
 
 func (w *Weapon) String() string {
 	if xreflect.IsNil(w.Owner) {
-		return ""
+		return w.holderName()
 	}
 	s := w.Owner.String()
 	if w.NotCarried {
@@ -401,10 +432,14 @@ func (w *Weapon) String() string {
 	return s
 }
 
-// Name returns the name of the weapon's owner, without its level, TL or specializations.
+// Name returns the name of the weapon's owner, or for a weapon without one that of the modifier holding it, without its
+// level, TL or specializations.
 func (w *Weapon) Name() string {
 	if xreflect.IsNil(w.Owner) {
-		return ""
+		if w.holdingModifier == nil {
+			return ""
+		}
+		return w.holdingModifier.NameWithReplacements()
 	}
 	return w.Owner.NameWithReplacements()
 }
@@ -412,9 +447,18 @@ func (w *Weapon) Name() string {
 // Title returns the title of the weapon's owner, which is String without its carried or equipped state.
 func (w *Weapon) Title() string {
 	if xreflect.IsNil(w.Owner) {
-		return ""
+		return w.holderName()
 	}
 	return w.Owner.String()
+}
+
+// holderName returns the name a weapon without an owner goes by in String and Title: that of the modifier holding it,
+// level included, as in the editor of a modifier in a library file, or "" when there is none.
+func (w *Weapon) holderName() string {
+	if w.holdingModifier == nil {
+		return ""
+	}
+	return w.holdingModifier.String()
 }
 
 // Notes returns the notes for this weapon.
@@ -454,11 +498,23 @@ func (w *Weapon) forEachOwnerModifier(visit func(mod ownerModifier, active Featu
 	}
 }
 
-// SetOwner sets the owner and ensures sub-components have their owners set.
+// SetOwner sets the owner, making the weapon one of its own, and ensures sub-components have their owners set.
 func (w *Weapon) SetOwner(owner WeaponOwner) {
+	w.setOwner(owner, nil)
+}
+
+// setOwner sets the owner and the modifier of the owner that holds the weapon, nil for a weapon of the owner's own,
+// and ensures sub-components have their owners set.
+func (w *Weapon) setOwner(owner WeaponOwner, modifier WeaponHoldingModifier) {
 	w.Owner = owner
+	w.holdingModifier = modifier
 	w.Damage.Owner = w
 	w.performDataSubVersionFixups()
+}
+
+// HoldingModifier returns the modifier of the owner that holds the weapon, or nil for a weapon of the owner's own.
+func (w *Weapon) HoldingModifier() WeaponHoldingModifier {
+	return w.holdingModifier
 }
 
 func (w *Weapon) performDataSubVersionFixups() {
@@ -1092,8 +1148,12 @@ func (w *Weapon) ResolveUsageNotes() string {
 	return ResolveText(w.Entity(), deferredNewScriptWeapon(w), w.UsageNotesWithReplacements())
 }
 
-// NameableReplacements returns the replacements to be used with this weapon.
+// NameableReplacements returns the replacements to be used with this weapon: those of the modifier holding it, which
+// sees its owner's through the links the owner holds for it, or the owner's own.
 func (w *Weapon) NameableReplacements() map[string]string {
+	if w.holdingModifier != nil {
+		return w.holdingModifier.NameableReplacements()
+	}
 	if xreflect.IsNil(w.Owner) {
 		return nil
 	}

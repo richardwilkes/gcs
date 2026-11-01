@@ -40,7 +40,7 @@ func NewTraitModifiersProvider(provider gurps.TraitModifierListProvider, forEdit
 			libSrcColumn: gurps.TraitModifierLibSrcColumn,
 			newItem:      gurps.NewTraitModifier,
 			newChoice:    gurps.NewTraitModifierChoice,
-			edit:         EditTraitModifier,
+			edit:         func(owner Rebuildable, item *gurps.TraitModifier) { EditTraitModifier(owner, item) },
 			menuActions: []*unison.Action{
 				newTraitModifierAction,
 				newTraitContainerModifierAction,

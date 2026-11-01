@@ -47,9 +47,10 @@ func canToggleModifierEnabled[T gurps.Node[T]](table *unison.Table[*Node[T]]) bo
 	return canAdjustSelection(table, modifierExtractor[T])
 }
 
-// toggleModifierEnabled flips the enabled state of each selected modifier, following the choice rules. Unlike a trait
-// or a piece of equipment, turning a modifier on or off changes only what its owner is worth and what it grants, never
-// which lists the owner shows, so the owner is merely marked as modified rather than rebuilt.
+// toggleModifierEnabled flips the enabled state of each selected modifier, following the choice rules. Only the table of
+// an item's editor toggles a modifier, which never changes the rows of that editor's lists, so the editor is merely
+// marked as modified rather than rebuilt. The lists it can change, such as those showing the weapons the modifier gives
+// its item, belong to the editor's owner, which applying the editor rebuilds.
 func toggleModifierEnabled[T gurps.Node[T]](owner Rebuildable, table *unison.Table[*Node[T]]) {
 	var nodes []T
 	for _, row := range table.SelectedRows(false) {

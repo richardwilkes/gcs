@@ -291,15 +291,31 @@ func (e *editor[N, D]) rebuildContent() {
 }
 
 // showSubstitutions makes the rows of the editor's prerequisites, defaults and features again, and those of the editors
-// open on its weapons, which take their substitutions from it, so that they show the substitutions set since they were
-// made.
+// open on its weapons, its modifiers and their weapons (see showSubEditorSubstitutions), so that they show the
+// substitutions set since they were made.
 func (e *editor[N, D]) showSubstitutions() {
 	for _, section := range rowSections(e.content) {
 		section.rebuild("")
 	}
-	traverseGroup(e, func(target GroupedCloser) bool {
-		if weaponEditor, ok := target.(*editor[*gurps.Weapon, *gurps.Weapon]); ok && weaponEditor.content != nil {
-			for _, section := range rowSections(weaponEditor.content) {
+	e.showSubEditorSubstitutions()
+}
+
+// showSubEditorSubstitutions makes the rows of the editors open on the editor's weapons, its modifiers and their
+// weapons again, which take their substitutions, and a modifier's nameables what defines its codes, from it, so that
+// they show what it holds now.
+func (e *editor[N, D]) showSubEditorSubstitutions() {
+	traverseGroupDeep(e, func(target GroupedCloser) bool {
+		var content *unison.Panel
+		switch other := target.(type) {
+		case *editor[*gurps.Weapon, *gurps.Weapon]:
+			content = other.content
+		case *editor[*gurps.TraitModifier, *gurps.TraitModifierEditData]:
+			content = other.content
+		case *editor[*gurps.EquipmentModifier, *gurps.EquipmentModifierEditData]:
+			content = other.content
+		}
+		if content != nil {
+			for _, section := range rowSections(content) {
 				section.rebuild("")
 			}
 		}
@@ -307,13 +323,48 @@ func (e *editor[N, D]) showSubstitutions() {
 	})
 }
 
-// pendingNameables returns the editor's data as the source of the substitutions it holds, which Set Substitutions
-// changes ahead of their being applied, or nil if its data can't hold substitutions.
+// pendingNameables returns the source of the substitutions the editor holds, which Set Substitutions changes ahead of
+// their being applied: the editor's data or, for a modifier edited from its item's editor, the substitutions that
+// editor's data holds, as the modifier sees them through the links held for it. It returns nil if there is none.
 func (e *editor[N, D]) pendingNameables() nameable.Accesser {
 	if source, ok := any(e.editorData).(nameable.Accesser); ok {
 		return source
 	}
+	// A bare item with just the substitutions and links, and a bare modifier with the edited one's ID, resolve them as
+	// the edited modifier does those its item has applied.
+	switch mod := any(e.target).(type) {
+	case *gurps.TraitModifier:
+		if item, ok := e.owner.(*editor[*gurps.Trait, *gurps.TraitEditData]); ok && item.target == mod.Target() {
+			return nameablesFunc(func() map[string]string {
+				view := &gurps.Trait{}
+				view.Replacements = item.editorData.Replacements
+				view.NameableLinks = item.editorData.NameableLinks
+				m := &gurps.TraitModifier{}
+				m.TID = mod.TID
+				return m.SetTarget(view).NameableReplacements()
+			})
+		}
+	case *gurps.EquipmentModifier:
+		if item, ok := e.owner.(*editor[*gurps.Equipment, *gurps.EquipmentEditData]); ok && item.target == mod.Target() {
+			return nameablesFunc(func() map[string]string {
+				view := &gurps.Equipment{}
+				view.Replacements = item.editorData.Replacements
+				view.NameableLinks = item.editorData.NameableLinks
+				m := &gurps.EquipmentModifier{}
+				m.TID = mod.TID
+				return m.SetTarget(view).NameableReplacements()
+			})
+		}
+	}
 	return nil
+}
+
+// nameablesFunc is a nameable.Accesser whose substitutions the function returns each time they are asked for.
+type nameablesFunc func() map[string]string
+
+// NameableReplacements implements nameable.Accesser.
+func (f nameablesFunc) NameableReplacements() map[string]string {
+	return f()
 }
 
 // rowSection is a section of an editor's content made of sentence rows, whose view rebuildContent keeps, and which

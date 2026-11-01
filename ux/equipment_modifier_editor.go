@@ -23,8 +23,8 @@ import (
 const equipmentCostAndWeightPrototype = "-99.99 CF"
 
 // EditEquipmentModifier displays the editor for an equipment modifier.
-func EditEquipmentModifier(owner Rebuildable, modifier *gurps.EquipmentModifier) {
-	displayEditor(owner, modifier, svg.GCSEquipmentModifiers, "md:User%20Guide/Equipment%20Modifiers", nil,
+func EditEquipmentModifier(owner Rebuildable, modifier *gurps.EquipmentModifier) *editor[*gurps.EquipmentModifier, *gurps.EquipmentModifierEditData] {
+	return displayEditor(owner, modifier, svg.GCSEquipmentModifiers, "md:User%20Guide/Equipment%20Modifiers", nil,
 		initEquipmentModifierEditor, nil)
 }
 
@@ -47,10 +47,20 @@ func initEquipmentModifierEditor(e *editor[*gurps.EquipmentModifier, *gurps.Equi
 	addTagsLabelAndField(content, &e.editorData.Tags)
 	addPageRefLabelsAndFields(content, &e.editorData.PageRef, &e.editorData.PageRefHighlight, e.pageRefHighlight)
 	content.AddChild(newNameablesPanel(&e.editorData.Nameables, func() map[string]int {
-		return nameableUses([]string{e.editorData.Name, e.editorData.LocalNotes}, nil, e.editorData.Features, nil)
+		return nameableUses([]string{e.editorData.Name, e.editorData.LocalNotes}, nil, e.editorData.Features,
+			e.editorData.Weapons)
 	}, func() map[string]nameable.Detail { return grantedNameableDefinitions(e.editorData.Features) }, nil, nil,
 		func() *nameableOwner { return equipmentModifierOwnerNameables(e.owner, e.target) }))
-	content.AddChild(newFeaturesPanel(gurps.EntityFromNode(e.target), e.target, &e.editorData.Features, true))
+	features := newFeaturesPanel(gurps.EntityFromNode(e.target), e.target, &e.editorData.Features, true)
+	// Edited from its item's editor, the features show the substitutions that editor holds, which may not be applied.
+	if pending := e.pendingNameables(); pending != nil {
+		features.withReplacementsFrom(pending)
+	}
+	content.AddChild(features)
+	e.meleeWeapons = newWeaponsPanel(e, e.target, true, &e.editorData.Weapons)
+	content.AddChild(e.meleeWeapons)
+	e.rangedWeapons = newWeaponsPanel(e, e.target, false, &e.editorData.Weapons)
+	content.AddChild(e.rangedWeapons)
 	return nil
 }
 

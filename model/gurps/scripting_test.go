@@ -945,17 +945,25 @@ func TestScriptAttributeMaximumAndCurrent(t *testing.T) {
 
 // findActiveModifier on both traits and equipment ignores the case of and surrounding whitespace in the name, as the
 // entity's own name lookups do, answers null for a modifier that is not present, and activeModifiers omits disabled
-// modifiers.
+// modifiers. The weapons of a trait or piece of equipment include those of its enabled modifiers, and a modifier lists
+// its own.
 func TestScriptFindActiveModifier(t *testing.T) {
 	c := check.New(t)
 	e := NewEntity()
+	weaponWith := func(usage string) []*Weapon {
+		w := NewWeapon(nil, true)
+		w.Usage = usage
+		return []*Weapon{w}
+	}
 
 	trait := NewTrait(e, nil, false)
 	trait.Name = "Trait"
 	traitMod := NewTraitModifier(e, nil, false)
 	traitMod.Name = "Trait Mod"
+	traitMod.Weapons = weaponWith("Swipe")
 	disabledTraitMod := NewTraitModifier(e, nil, false)
 	disabledTraitMod.Name = "Off"
+	disabledTraitMod.Weapons = weaponWith("Bash")
 	disabledTraitMod.SetDisabled(true)
 	trait.Modifiers = []*TraitModifier{traitMod, disabledTraitMod}
 	e.Traits = []*Trait{trait}
@@ -964,8 +972,10 @@ func TestScriptFindActiveModifier(t *testing.T) {
 	item.Name = "Gear"
 	itemMod := NewEquipmentModifier(e, nil, false)
 	itemMod.Name = "Gear Mod"
+	itemMod.Weapons = weaponWith("Swipe")
 	disabledItemMod := NewEquipmentModifier(e, nil, false)
 	disabledItemMod.Name = "Off"
+	disabledItemMod.Weapons = weaponWith("Bash")
 	disabledItemMod.SetDisabled(true)
 	item.Modifiers = []*EquipmentModifier{itemMod, disabledItemMod}
 	e.CarriedEquipment = []*Equipment{item}
@@ -981,4 +991,11 @@ func TestScriptFindActiveModifier(t *testing.T) {
 	c.Equal("null", resolve(scriptTrait+`.findActiveModifier("Missing")`))
 	c.Equal("Trait Mod", resolve(scriptTrait+`.activeModifiers.map(m => m.name).join()`))
 	c.Equal("Gear Mod", resolve(scriptItem+`.activeModifiers.map(m => m.name).join()`))
+	c.Equal("Swipe", resolve(scriptTrait+`.weapons.map(w => w.usage).join()`),
+		"a trait's weapons include those of its enabled modifiers, not those of its disabled ones")
+	c.Equal("Swipe", resolve(scriptItem+`.weapons.map(w => w.usage).join()`), "and so do a piece of equipment's")
+	c.Equal("Swipe", resolve(scriptTrait+`.findActiveModifier("Trait Mod").weapons[0].usage`),
+		"a trait modifier lists its own weapons")
+	c.Equal("Swipe", resolve(scriptItem+`.findActiveModifier("Gear Mod").weapons[0].usage`),
+		"as does an equipment modifier")
 }

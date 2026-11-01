@@ -22,8 +22,8 @@ import (
 )
 
 // EditTraitModifier displays the editor for a trait modifier.
-func EditTraitModifier(owner Rebuildable, modifier *gurps.TraitModifier) {
-	displayEditor(owner, modifier, svg.GCSTraitModifiers,
+func EditTraitModifier(owner Rebuildable, modifier *gurps.TraitModifier) *editor[*gurps.TraitModifier, *gurps.TraitModifierEditData] {
+	return displayEditor(owner, modifier, svg.GCSTraitModifiers,
 		"md:User%20Guide/Trait%20Modifiers", nil, initTraitModifierEditor, nil)
 }
 
@@ -65,6 +65,9 @@ func initTraitModifierEditor(e *editor[*gurps.TraitModifier, *gurps.TraitModifie
 	AdjustFieldBlank(levels, e.editorData.UseLevelFromTrait)
 	multiplyBox := addInvertedCheckBox(wrapper, i18n.Text("Multiply cost by level"), &e.editorData.CostIgnoresLevel)
 	multiplyBox.Tooltip = newWrappedTooltip(i18n.Text("When checked, a leveled modifier's cost adjustment is multiplied by its level. For a modifier that takes its level from its owner, that is the owner's purchased level, not counting any levels granted by bonuses. Uncheck it to leave the cost adjustment unmultiplied, while any per-level features the modifier carries still scale with the level. Either way, a point adjustment that affects levels only is added to the owner's cost per level, so it is still charged for each of the owner's levels."))
+	content.AddChild(unison.NewPanel()) // Skip the label column
+	attacksBox := addCheckBox(content, i18n.Text("Attacks use this modifier's level"), &e.editorData.WeaponsUseLevel)
+	attacksBox.Tooltip = newWrappedTooltip(i18n.Text("When checked, the per-level damage of the attacks this modifier provides is multiplied by this modifier's level rather than its owner's. It only applies while the modifier has levels of its own, since one that takes its level from its owner has the owner's level anyway."))
 	total := NewNonEditableField(func(field *NonEditableField) {
 		v := emweight.ValueFromString(e.editorData.CostAdj)
 		modifier := traitModifierWithOverlay(e.target, e.editorData)
@@ -73,6 +76,7 @@ func initTraitModifierEditor(e *editor[*gurps.TraitModifier, *gurps.TraitModifie
 		// leveled even when it has no owner yet, as in a library list, since it takes its level from whichever
 		// trait it is eventually attached to.
 		multiplyBox.SetEnabled(e.editorData.UseLevelFromTrait || e.editorData.Levels > 0)
+		attacksBox.SetEnabled(!e.editorData.UseLevelFromTrait && e.editorData.Levels > 0)
 		enabled := v != emweight.Multiplier && v != emweight.PercentageMultiplier
 		if !enabled {
 			affectsPopup.Select(affects.Total)
@@ -89,10 +93,20 @@ func initTraitModifierEditor(e *editor[*gurps.TraitModifier, *gurps.TraitModifie
 	addTagsLabelAndField(content, &e.editorData.Tags)
 	addPageRefLabelsAndFields(content, &e.editorData.PageRef, &e.editorData.PageRefHighlight, e.pageRefHighlight)
 	content.AddChild(newNameablesPanel(&e.editorData.Nameables, func() map[string]int {
-		return nameableUses([]string{e.editorData.Name, e.editorData.LocalNotes}, nil, e.editorData.Features, nil)
+		return nameableUses([]string{e.editorData.Name, e.editorData.LocalNotes}, nil, e.editorData.Features,
+			e.editorData.Weapons)
 	}, func() map[string]nameable.Detail { return grantedNameableDefinitions(e.editorData.Features) }, nil, nil,
 		func() *nameableOwner { return traitModifierOwnerNameables(e.owner, e.target) }))
-	content.AddChild(newFeaturesPanel(gurps.EntityFromNode(e.target), e.target, &e.editorData.Features, false))
+	features := newFeaturesPanel(gurps.EntityFromNode(e.target), e.target, &e.editorData.Features, false)
+	// Edited from its item's editor, the features show the substitutions that editor holds, which may not be applied.
+	if pending := e.pendingNameables(); pending != nil {
+		features.withReplacementsFrom(pending)
+	}
+	content.AddChild(features)
+	e.meleeWeapons = newWeaponsPanel(e, e.target, true, &e.editorData.Weapons)
+	content.AddChild(e.meleeWeapons)
+	e.rangedWeapons = newWeaponsPanel(e, e.target, false, &e.editorData.Weapons)
+	content.AddChild(e.rangedWeapons)
 	return nil
 }
 

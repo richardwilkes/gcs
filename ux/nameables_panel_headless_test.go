@@ -416,8 +416,9 @@ func TestNameablesPanelModifierCodeSharesWhatTheItemUses(t *testing.T) {
 // as the prompt does: an enabled modifier's, under the code its own is linked to, before that of the item a grant
 // gives, so that no row says the code isn't defined or offers to define it over theirs. In a modifier's own editor,
 // those of the trait it belongs to, as the trait's open editor has them, and of the trait's grants and other enabled
-// modifiers come first, under the code the trait links the modifier's to. A legacy marker holds its own, and a disabled
-// modifier, which the prompt leaves out, neither defines a code nor counts as using it.
+// modifiers come first, under the code the trait links the modifier's to. A legacy marker holds its own, a modifier's
+// weapons use codes as its text does, and a disabled modifier, which the prompt leaves out, neither defines a code nor
+// counts as using it.
 func TestNameablesPanelTellsWhatDefinesACode(t *testing.T) {
 	style := map[string]nameable.Detail{"style": {Label: "Martial art", Options: []string{"Judo", "Karate"}}}
 	sportGrant := func() gurps.Features {
@@ -442,6 +443,10 @@ func TestNameablesPanelTellsWhatDefinesACode(t *testing.T) {
 	schooled := newModifier("Schooled", "In @art@", map[string]nameable.Detail{"art": {Label: "Art", FreeForm: true}})
 	idle := newModifier("Idle", "In @style@", style)
 	idle.SetDisabled(true)
+	striking := newModifier("Striking", "", map[string]nameable.Detail{"stance": {Label: "Stance", FreeForm: true}})
+	strike := gurps.NewWeapon(nil, true)
+	strike.Usage = "@stance@ strike"
+	striking.Weapons = []*gurps.Weapon{strike}
 	// ownerOf returns the panel's owner for the trait's last modifier, whose editor the panel is in, with the trait's
 	// editor open on edits when there are some.
 	ownerOf := func(trait *gurps.Trait, edits *gurps.TraitEditData) *nameableOwner {
@@ -543,6 +548,15 @@ func TestNameablesPanelTellsWhatDefinesACode(t *testing.T) {
 			rows: []row{{
 				path: "m:" + string(practiced.TID) + ":Who: A deity",
 				text: "@Who: A deity@ on Practiced is asked for under its own code; used once",
+			}},
+		},
+		{
+			name:      "by a modifier whose weapon uses it, on the modifier",
+			texts:     []string{"Trained"},
+			modifiers: []*gurps.TraitModifier{striking},
+			rows: []row{{
+				path: "m:" + string(striking.TID) + ":stance",
+				text: "@stance@ on Striking is asked for under its own code; used once",
 			}},
 		},
 		{

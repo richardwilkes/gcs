@@ -20,10 +20,12 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/criteria"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/feature"
 	"github.com/richardwilkes/gcs/v5/model/nameable"
 	"github.com/richardwilkes/gcs/v5/ux/uxtest"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/toolbox/v2/geom"
+	"github.com/richardwilkes/toolbox/v2/tid"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/accessibility"
 	"github.com/richardwilkes/unison/drag"
@@ -1344,53 +1346,305 @@ func TestDefaultsPanelUnusualTypes(t *testing.T) {
 	c.Equal(gurps.DodgeID, defaults[0].Type(), "the type it had can be chosen again")
 }
 
-// TestWeaponEditorTakesItemSubstitutions checks that the defaults of a weapon edited from its skill's editor show the
-// substitutions that editor holds, including those Set Substitutions makes while the weapon's editor is open.
+// TestWeaponEditorTakesItemSubstitutions checks that the defaults of a weapon edited from its item's editor, or from
+// the editor of the item editor's copy of the modifier holding it, show the substitutions the item's editor holds,
+// including those Set Substitutions makes while the weapon's editor is open.
 func TestWeaponEditorTakesItemSubstitutions(t *testing.T) {
-	c := check.New(t)
-	screen, _ := uxtest.StartHeadlessWorkspace(t, c)
-	sheet, ok := uxtest.OpenedByAction(t, screen, newCharacterSheetAction).(*Sheet)
-	if !ok {
-		t.Fatal("New Character Sheet must open a character sheet")
-	}
-	var e *editor[*gurps.Skill, *gurps.SkillEditData]
-	var p *defaultsPanel
-	screen.Do(func() {
-		entity := sheet.Entity()
-		skill := gurps.NewSkill(entity, nil, false)
-		skill.Replacements = map[string]string{"Weapon": "Spear"}
-		weapon := gurps.NewWeapon(skill, true)
-		weapon.Defaults = []*gurps.SkillDefault{
-			{DefaultType: gurps.SkillID, Name: criteria.Text{Compare: criteria.IsText, Qualifier: "@Weapon@"}},
-		}
-		skill.Weapons = []*gurps.Weapon{weapon}
-		entity.Skills = append(entity.Skills, skill)
-		sheet.Rebuild(true)
-		e = EditSkill(sheet, skill)
-		before := AllDockables()
-		EditWeapon(e, e.editorData.Weapons[0])
-		for _, d := range AllDockables() {
-			if !slices.Contains(before, d) {
-				if panels := uxtest.PanelsOfType[*defaultsPanel](d.AsPanel()); len(panels) == 1 {
+	for _, tc := range []struct {
+		name string
+		// edit puts an item on the sheet whose substitutions give the weapon's @Blade@ the value Spear, with the weapon
+		// as one of the item's own or one its modifier holds, opens the weapon's editor from the item's editor or the
+		// modifier's, and returns the item editor's Set Substitutions button.
+		edit func(sheet *Sheet, weapon *gurps.Weapon) *unison.Button
+	}{
+		{
+			name: "skill",
+			edit: func(sheet *Sheet, weapon *gurps.Weapon) *unison.Button {
+				entity := sheet.Entity()
+				skill := gurps.NewSkill(entity, nil, false)
+				skill.Replacements = map[string]string{"Blade": "Spear"}
+				weapon.SetOwner(skill)
+				skill.Weapons = []*gurps.Weapon{weapon}
+				entity.Skills = append(entity.Skills, skill)
+				sheet.Rebuild(true)
+				e := EditSkill(sheet, skill)
+				EditWeapon(e, e.editorData.Weapons[0])
+				return e.nameablesButton
+			},
+		},
+		{
+			// The modifier's code is linked to one of the trait's, which answers it.
+			name: "trait modifier",
+			edit: func(sheet *Sheet, weapon *gurps.Weapon) *unison.Button {
+				entity := sheet.Entity()
+				modifier := gurps.NewTraitModifier(entity, nil, false)
+				modifier.Weapons = []*gurps.Weapon{weapon}
+				trait := gurps.NewTrait(entity, nil, false)
+				trait.SetModifiers([]*gurps.TraitModifier{modifier})
+				trait.NameableLinks = map[tid.TID]map[string]string{modifier.TID: {"Blade": "Weapon"}}
+				trait.Replacements = map[string]string{"Weapon": "Spear"}
+				entity.Traits = append(entity.Traits, trait)
+				sheet.Rebuild(true)
+				e := EditTrait(sheet, trait)
+				modEditor := EditTraitModifier(e, e.editorData.Modifiers[0])
+				EditWeapon(modEditor, modEditor.editorData.Weapons[0])
+				return e.nameablesButton
+			},
+		},
+		{
+			name: "equipment modifier",
+			edit: func(sheet *Sheet, weapon *gurps.Weapon) *unison.Button {
+				entity := sheet.Entity()
+				modifier := gurps.NewEquipmentModifier(entity, nil, false)
+				modifier.Weapons = []*gurps.Weapon{weapon}
+				eqp := gurps.NewEquipment(entity, nil, false)
+				eqp.SetModifiers([]*gurps.EquipmentModifier{modifier})
+				eqp.Replacements = map[string]string{"Blade": "Spear"}
+				entity.CarriedEquipment = append(entity.CarriedEquipment, eqp)
+				sheet.Rebuild(true)
+				e := EditEquipment(sheet, eqp, true)
+				modEditor := EditEquipmentModifier(e, e.editorData.Modifiers[0])
+				EditWeapon(modEditor, modEditor.editorData.Weapons[0])
+				return e.nameablesButton
+			},
+		},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			c := check.New(t)
+			screen, _ := uxtest.StartHeadlessWorkspace(t, c)
+			sheet, ok := uxtest.OpenedByAction(t, screen, newCharacterSheetAction).(*Sheet)
+			if !ok {
+				t.Fatal("New Character Sheet must open a character sheet")
+			}
+			var button *unison.Button
+			screen.Do(func() {
+				weapon := gurps.NewWeapon(nil, true)
+				weapon.Defaults = []*gurps.SkillDefault{
+					{DefaultType: gurps.SkillID, Name: criteria.Text{Compare: criteria.IsText, Qualifier: "@Blade@"}},
+				}
+				button = tc.edit(sheet, weapon)
+			})
+			weaponEditor := soleEditorOfType[*editor[*gurps.Weapon, *gurps.Weapon]](t, screen)
+			var p *defaultsPanel
+			screen.Do(func() {
+				if panels := uxtest.PanelsOfType[*defaultsPanel](weaponEditor.content); len(panels) == 1 {
 					p = panels[0]
 				}
+			})
+			if p == nil {
+				t.Fatal("the weapon editor must have a defaults panel")
 			}
-		}
-	})
-	if p == nil {
-		t.Fatal("the weapon editor must have a defaults panel")
+			screen.Do(func() { c.Equal("Skill Spear at +0.", collapsedSummary(p.AsPanel())) })
+			uxtest.SwapForTest(t, &promptForNameables, func(_ promptOperation, sections []nameablesSection) bool {
+				for _, section := range sections {
+					for k := range section.Nameables {
+						section.Nameables[k] = "Rapier"
+					}
+				}
+				return true
+			})
+			screen.Do(button.ClickCallback)
+			screen.Do(func() {
+				c.Equal("Skill Rapier at +0.", collapsedSummary(p.AsPanel()), "the open weapon editor shows the new value")
+			})
+		})
 	}
-	screen.Do(func() { c.Equal("Skill Spear at +0.", collapsedSummary(p.AsPanel())) })
-	uxtest.SwapForTest(t, &promptForNameables, func(_ promptOperation, sections []nameablesSection) bool {
-		for _, section := range sections {
-			for k := range section.Nameables {
-				section.Nameables[k] = "Rapier"
+}
+
+// TestModifierEditorFollowsItemEditor checks that the editor of a modifier edited from its item's editor follows what
+// the item's editor holds: the modifier's features show the substitutions it holds, both those Set Substitutions made
+// before the modifier's editor opened and those it makes while it is open, and follow its link for the modifier's code,
+// and the modifier's nameables what defines its codes, as the item's nameables or its other modifiers change, or that
+// is undone, and as a grant is added to the item's features, while the modifier's editor is open.
+func TestModifierEditorFollowsItemEditor(t *testing.T) {
+	for _, tc := range []struct {
+		name string
+		// edit puts an item on the sheet whose substitutions give the modifier's @Blade@ the value Spear, with the
+		// modifier holding the features, the item using and defining @Arm@ and both using @Grip@, which neither
+		// defines, and a second modifier, Pommel, which defines @Grip@ but is turned off, opens the item's editor, and
+		// returns its Set Substitutions button, its content and a function that opens the editor of the item editor's
+		// copy of the modifier, returning its content.
+		edit func(sheet *Sheet, features gurps.Features) (*unison.Button, *unison.Panel, func() *unison.Panel)
+		// toggle turns Pommel on or off from the modifiers list of the item's editor, given its content.
+		toggle func(content *unison.Panel)
+	}{
+		{
+			// The modifier's code is linked to one of the trait's, which answers it.
+			name: "trait modifier",
+			edit: func(sheet *Sheet, features gurps.Features) (*unison.Button, *unison.Panel, func() *unison.Panel) {
+				entity := sheet.Entity()
+				modifier := gurps.NewTraitModifier(entity, nil, false)
+				modifier.Name = "@Grip@ Hilt"
+				modifier.Features = features
+				pommel := gurps.NewTraitModifier(entity, nil, false)
+				pommel.Name = "Pommel"
+				pommel.Nameables = map[string]nameable.Detail{"Grip": {FreeForm: true}}
+				pommel.SetDisabled(true)
+				trait := gurps.NewTrait(entity, nil, false)
+				trait.Name = "@Arm@ @Grip@ Training"
+				trait.Nameables = map[string]nameable.Detail{"Arm": {FreeForm: true}, "Weapon": {FreeForm: true}}
+				trait.SetModifiers([]*gurps.TraitModifier{modifier, pommel})
+				trait.NameableLinks = map[tid.TID]map[string]string{modifier.TID: {"Blade": "Weapon"}}
+				trait.Replacements = map[string]string{"Weapon": "Spear"}
+				entity.Traits = append(entity.Traits, trait)
+				sheet.Rebuild(true)
+				e := EditTrait(sheet, trait)
+				return e.nameablesButton, e.content, func() *unison.Panel {
+					return EditTraitModifier(e, e.editorData.Modifiers[0]).content
+				}
+			},
+			toggle: func(content *unison.Panel) {
+				if p, ok := uxtest.FirstPanelOfType[*traitModifiersPanel](content); ok {
+					p.table.SetSelectionMap(map[tid.TID]bool{(*p.list)[1].ID(): true})
+					p.table.PerformCmd(nil, ToggleStateItemID)
+				}
+			},
+		},
+		{
+			name: "equipment modifier",
+			edit: func(sheet *Sheet, features gurps.Features) (*unison.Button, *unison.Panel, func() *unison.Panel) {
+				entity := sheet.Entity()
+				modifier := gurps.NewEquipmentModifier(entity, nil, false)
+				modifier.Name = "@Grip@ Hilt"
+				modifier.Features = features
+				pommel := gurps.NewEquipmentModifier(entity, nil, false)
+				pommel.Name = "Pommel"
+				pommel.Nameables = map[string]nameable.Detail{"Grip": {FreeForm: true}}
+				pommel.SetDisabled(true)
+				eqp := gurps.NewEquipment(entity, nil, false)
+				eqp.Name = "@Arm@ @Grip@ Kit"
+				eqp.Nameables = map[string]nameable.Detail{"Arm": {FreeForm: true}}
+				eqp.SetModifiers([]*gurps.EquipmentModifier{modifier, pommel})
+				eqp.Replacements = map[string]string{"Blade": "Spear"}
+				entity.CarriedEquipment = append(entity.CarriedEquipment, eqp)
+				sheet.Rebuild(true)
+				e := EditEquipment(sheet, eqp, true)
+				return e.nameablesButton, e.content, func() *unison.Panel {
+					return EditEquipmentModifier(e, e.editorData.Modifiers[0]).content
+				}
+			},
+			toggle: func(content *unison.Panel) {
+				if p, ok := uxtest.FirstPanelOfType[*equipmentModifiersPanel](content); ok {
+					p.table.SetSelectionMap(map[tid.TID]bool{(*p.list)[1].ID(): true})
+					p.table.PerformCmd(nil, ToggleStateItemID)
+				}
+			},
+		},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			c := check.New(t)
+			screen, _ := uxtest.StartHeadlessWorkspace(t, c)
+			sheet, ok := uxtest.OpenedByAction(t, screen, newCharacterSheetAction).(*Sheet)
+			if !ok {
+				t.Fatal("New Character Sheet must open a character sheet")
 			}
-		}
-		return true
-	})
-	screen.Do(e.nameablesButton.ClickCallback)
-	screen.Do(func() {
-		c.Equal("Skill Rapier at +0.", collapsedSummary(p.AsPanel()), "the open weapon editor shows the new value")
-	})
+			var button *unison.Button
+			var itemContent *unison.Panel
+			var editModifier func() *unison.Panel
+			screen.Do(func() {
+				bonus := gurps.NewSkillBonus()
+				bonus.NameCriteria.Qualifier = "@Blade@"
+				button, itemContent, editModifier = tc.edit(sheet, gurps.Features{bonus})
+			})
+			// Each code is given its own answer, so that the one a link leads to can be told from the others.
+			answer := func(value string) {
+				uxtest.SwapForTest(t, &promptForNameables, func(_ promptOperation, sections []nameablesSection) bool {
+					for _, section := range sections {
+						for k := range section.Nameables {
+							section.Nameables[k] = value + " " + k
+						}
+					}
+					return true
+				})
+				screen.Do(button.ClickCallback)
+			}
+			answer("Rapier")
+			var p *featuresPanel
+			var modifierNameables *nameablesPanel
+			screen.Do(func() {
+				content := editModifier()
+				if panels := uxtest.PanelsOfType[*featuresPanel](content); len(panels) == 1 {
+					p = panels[0]
+				}
+				modifierNameables, _ = uxtest.FirstPanelOfType[*nameablesPanel](content)
+			})
+			if p == nil || modifierNameables == nil {
+				t.Fatal("the modifier editor must have a features panel and a nameables panel")
+			}
+			summary := func() string {
+				var text string
+				screen.Do(func() { text = collapsedSummary(p.AsPanel()) })
+				return text
+			}
+			text := summary()
+			c.True(strings.Contains(text, "Rapier"), "the features show the value set before the editor opened: %s", text)
+			answer("Sabre")
+			before := summary()
+			c.True(strings.Contains(before, "Sabre"), "and the one set while it is open: %s", before)
+
+			var nameables *nameablesPanel
+			var path string
+			screen.Do(func() {
+				nameables, ok = uxtest.FirstPanelOfType[*nameablesPanel](itemContent)
+				if !ok {
+					return
+				}
+				if mods := nameables.modifiers(); len(mods) == 2 {
+					path = "m:" + string(mods[0].id) + ":Blade"
+				}
+				if nameables.collapse.collapsed {
+					nameables.collapse.toggle()
+				}
+			})
+			if nameables == nil || path == "" {
+				t.Fatal("the item editor must have a nameables panel with a row for the modifier's code")
+			}
+			screen.Do(func() { nameables.toggle(path) })
+			screen.Do(func() {
+				popup, isPopup := nameables.FindRefKey(path + ":link").Self.(*unison.PopupMenu[string])
+				c.True(isPopup, "the modifier's code can be linked")
+				if isPopup {
+					popup.Select("Arm")
+				}
+			})
+			text = summary()
+			c.True(strings.Contains(text, "Sabre Arm"), "the features follow the new link: %s", text)
+			screen.Do(unison.UndoManagerFor(nameables).Undo)
+			c.Equal(before, summary(), "and the undo of the new link")
+
+			grip := func() string {
+				var sentence string
+				screen.Do(func() { sentence, _ = nameableRowSentence(modifierNameables, "u:Grip") })
+				return sentence
+			}
+			undefined := grip()
+			c.Equal("@Grip@ isn't defined; used once", undefined)
+			screen.Do(func() { clickNameablesButton(c, nameables, "u:Grip:define") })
+			c.Equal("@Grip@ is defined by the item the modifier belongs to; used once", grip(),
+				"the modifier's nameables follow the item's new definition")
+			screen.Do(unison.UndoManagerFor(nameables).Undo)
+			c.Equal(undefined, grip(), "and the undo of the definition")
+
+			screen.Do(func() { tc.toggle(itemContent) })
+			c.Equal("@Grip@ is defined by the modifier Pommel; used once", grip(),
+				"the modifier's nameables follow another modifier being turned on")
+			screen.Do(unison.UndoManagerFor(nameables).Undo)
+			c.Equal(undefined, grip(), "and the undo of turning it on")
+
+			screen.Do(func() {
+				features, found := uxtest.FirstPanelOfType[*featuresPanel](itemContent)
+				c.True(found, "the item editor has a features panel")
+				if !found {
+					return
+				}
+				granted := gurps.NewTrait(nil, nil, false)
+				granted.Nameables = map[string]nameable.Detail{"Grip": {FreeForm: true}}
+				grant := gurps.NewGrant(feature.GrantTrait)
+				grant.SetItem(granted, gurps.LibraryFile{})
+				features.edit("Add Feature", "", "", func() { *features.features = append(*features.features, grant) })
+			})
+			c.Equal("@Grip@ is defined by an item granted by the item the modifier belongs to; used once", grip(),
+				"the modifier's nameables follow a grant added to the item")
+		})
+	}
 }

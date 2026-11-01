@@ -77,6 +77,64 @@ func TestWeaponPerLevelBaseDamageWithDiceMultiplier(t *testing.T) {
 	}
 }
 
+// TestWeaponPerLevelBaseDamageUsesTheModifierLevelWhenAsked verifies that the per-level base damage of a weapon a trait
+// modifier holds is multiplied by the trait's level unless the modifier says its weapons use its level, and that the
+// modifier's level is only used while the modifier has levels of its own. It fails if WeaponDamage.levels ignores the
+// holding modifier's setting, or honors it for a modifier that isn't leveled or takes its level from the trait.
+func TestWeaponPerLevelBaseDamageUsesTheModifierLevelWhenAsked(t *testing.T) {
+	c := check.New(t)
+	for _, tc := range []struct {
+		name              string
+		traitLevels       int
+		modifierLevels    int
+		weaponsUseLevel   bool
+		useLevelFromTrait bool
+		expected          string
+	}{
+		{name: "the trait's level by default", traitLevels: 2, modifierLevels: 3, expected: "2d cr"},
+		{
+			name:            "the modifier's level when asked",
+			traitLevels:     2,
+			modifierLevels:  3,
+			weaponsUseLevel: true,
+			expected:        "3d cr",
+		},
+		{
+			name:            "the trait's level for a modifier without levels",
+			traitLevels:     2,
+			weaponsUseLevel: true,
+			expected:        "2d cr",
+		},
+		{
+			// At level 0 the trait's level differs from such a modifier's, which CurrentLevel raises to at least 1.
+			name:              "the trait's level for a modifier taking its level from the trait",
+			modifierLevels:    3,
+			weaponsUseLevel:   true,
+			useLevelFromTrait: true,
+			expected:          "cr",
+		},
+	} {
+		e := gurps.NewEntity()
+		trait := gurps.NewTrait(e, nil, false)
+		trait.Name = "Striker"
+		trait.CanLevel = true
+		trait.Levels = fxp.FromInteger(tc.traitLevels)
+		mod := gurps.NewTraitModifier(e, nil, false)
+		mod.Name = "Long"
+		mod.Levels = fxp.FromInteger(tc.modifierLevels)
+		mod.WeaponsUseLevel = tc.weaponsUseLevel
+		mod.UseLevelFromTrait = tc.useLevelFromTrait
+		w := gurps.NewWeapon(nil, false)
+		w.Damage.Base = "" // Leave only the per-level portion contributing to the damage
+		w.Damage.BaseLeveled = "1d"
+		mod.Weapons = []*gurps.Weapon{w}
+		trait.AddModifiers(mod)
+		e.Traits = append(e.Traits, trait)
+		e.Recalculate()
+		c.Equal(tc.expected, w.Damage.ResolvedDamage(nil), tc.name)
+	}
+}
+
 // newLeveledWeapon builds an entity with a leveled trait at the given level that owns a single ranged weapon, so that
 // the weapon's per-level base damage is the only thing contributing to its damage.
 func newLeveledWeapon(levels int) *gurps.Weapon {

@@ -15,18 +15,19 @@ import (
 	"github.com/richardwilkes/toolbox/v2/tid"
 )
 
-// weaponsPanel shows the melee or the ranged half of an item's weapons. Both halves share the one list in the editor's
-// data, so each panel splits it on the way in and merges its half back on the way out.
+// weaponsPanel shows the melee or the ranged half of the weapons an item or a modifier holds. Both halves share the one
+// list in the editor's data, so each panel splits it on the way in and merges its half back on the way out. A
+// modifier's weapons belong to the item it modifies, so the holder says what they belong to.
 type weaponsPanel struct {
 	editorListPanel[*gurps.Weapon]
-	weaponOwner gurps.WeaponOwner
-	melee       bool
+	holder gurps.WeaponHolder
+	melee  bool
 }
 
-func newWeaponsPanel(cmdRoot Rebuildable, weaponOwner gurps.WeaponOwner, melee bool, weapons *[]*gurps.Weapon) *weaponsPanel {
+func newWeaponsPanel(cmdRoot Rebuildable, holder gurps.WeaponHolder, melee bool, weapons *[]*gurps.Weapon) *weaponsPanel {
 	p := &weaponsPanel{
-		weaponOwner: weaponOwner,
-		melee:       melee,
+		holder: holder,
+		melee:  melee,
 	}
 	var id int
 	var refKey string
@@ -37,18 +38,15 @@ func newWeaponsPanel(cmdRoot Rebuildable, weaponOwner gurps.WeaponOwner, melee b
 		id = NewRangedWeaponItemID
 		refKey = string(tid.MustNewTID(kinds.WeaponRanged))
 	}
-	p.init(p, cmdRoot, weaponOwner.DataOwner(), weapons, NewWeaponsProvider(p, melee, false), refKey)
-	p.attach = func(list []*gurps.Weapon) {
-		for _, one := range list {
-			one.SetOwner(weaponOwner)
-		}
-	}
+	p.init(p, cmdRoot, holder.DataOwner(), weapons, NewWeaponsProvider(p, melee, false), refKey)
+	p.attach = holder.AttachWeapons
 	p.installNewItemHandler(cmdRoot, id, NoItemVariant)
 	return p
 }
 
+// WeaponOwner implements gurps.WeaponListProvider. It is nil for the weapons of a modifier that modifies nothing.
 func (p *weaponsPanel) WeaponOwner() gurps.WeaponOwner {
-	return p.weaponOwner
+	return p.holder.WeaponOwner()
 }
 
 func (p *weaponsPanel) Weapons(melee, _, excludeHidden bool) []*gurps.Weapon {

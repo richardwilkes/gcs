@@ -42,7 +42,7 @@ func NewEquipmentModifiersProvider(provider gurps.EquipmentModifierListProvider,
 			libSrcColumn: gurps.EquipmentModifierLibSrcColumn,
 			newItem:      gurps.NewEquipmentModifier,
 			newChoice:    gurps.NewEquipmentModifierChoice,
-			edit:         EditEquipmentModifier,
+			edit:         func(owner Rebuildable, item *gurps.EquipmentModifier) { EditEquipmentModifier(owner, item) },
 			menuActions: []*unison.Action{
 				newEquipmentModifierAction,
 				newEquipmentContainerModifierAction,

@@ -101,8 +101,9 @@ func weaponsMatch(a, b []*Weapon) bool {
 	return true
 }
 
-// equipmentModifiersMatch returns true if the modifiers match, including the nameable links their owners hold for them,
-// aLinks for a and bLinks for b. The links are keyed by modifier ID, so they are compared modifier by modifier.
+// equipmentModifiersMatch returns true if the modifiers match, including the weapons they hold (see weaponsMatch) and
+// the nameable links their owners hold for them, aLinks for a and bLinks for b. The links are keyed by modifier ID, so
+// they are compared modifier by modifier.
 func equipmentModifiersMatch(a, b []*EquipmentModifier, aLinks, bLinks map[tid.TID]map[string]string) bool {
 	if len(a) != len(b) {
 		return false
@@ -113,6 +114,7 @@ func equipmentModifiersMatch(a, b []*EquipmentModifier, aLinks, bLinks map[tid.T
 			one.Disabled != other.Disabled ||
 			one.VTTNotes != other.VTTNotes ||
 			!maps.Equal(one.Replacements, other.Replacements) ||
+			!weaponsMatch(one.Weapons, other.Weapons) ||
 			!maps.Equal(aLinks[one.TID], bLinks[other.TID]) ||
 			!equipmentModifiersMatch(one.Children, other.Children, aLinks, bLinks) {
 			return false

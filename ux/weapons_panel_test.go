@@ -67,3 +67,29 @@ func TestWeaponsPanelKeepsTheKindsInterleaved(t *testing.T) {
 		"undoing the move must put the list back as it was")
 	c.False(e.isModified(), "a move and its undo must leave the editor unmodified")
 }
+
+// TestWeaponsPanelKeepsAModifiersWeaponsHeldByIt verifies that the weapons a structural undo gives back to the weapons
+// panel of a modifier's editor still belong to the trait the modifier modifies and are still held by the modifier,
+// through which they resolve their nameable codes.
+func TestWeaponsPanelKeepsAModifiersWeaponsHeldByIt(t *testing.T) {
+	c := check.New(t)
+	sheet := newTestSheetForTemplate(t)
+	entity := sheet.Entity()
+	mod := gurps.NewTraitModifier(entity, nil, false)
+	mod.Weapons = []*gurps.Weapon{gurps.NewWeapon(nil, true)}
+	trait := gurps.NewTrait(entity, nil, false)
+	trait.SetModifiers([]*gurps.TraitModifier{mod})
+	e, _ := buildEditorContent(sheet, mod, initTraitModifierEditor)
+	if e.meleeWeapons == nil {
+		t.Fatal("the modifier's editor must hold a melee weapons panel")
+	}
+	table := e.meleeWeapons.table
+	table.SetSelectionMap(map[tid.TID]bool{e.editorData.Weapons[0].ID(): true})
+	DuplicateSelection(table)
+	c.Equal(2, len(e.editorData.Weapons), "precondition: the weapon is duplicated")
+	unison.UndoManagerFor(table).Undo()
+	c.Equal(1, len(e.editorData.Weapons))
+	restored := e.editorData.Weapons[0]
+	c.True(restored.Owner == gurps.WeaponOwner(trait), "the restored weapon belongs to the modifier's trait")
+	c.True(restored.HoldingModifier() == gurps.WeaponHoldingModifier(mod), "and is held by the modifier")
+}

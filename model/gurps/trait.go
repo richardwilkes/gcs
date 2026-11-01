@@ -49,6 +49,7 @@ var (
 	_ = assertEditorData[*TraitEditData]
 
 	_ WeaponOwner               = &Trait{}
+	_ WeaponHolder              = &Trait{}
 	_ TemplatePickerProvider    = &Trait{}
 	_ templateChoiceConvertible = &Trait{}
 	_ LeveledOwner              = &Trait{}
@@ -684,9 +685,7 @@ func (t *Trait) SetDataOwner(owner DataOwner) {
 			child.SetDataOwner(owner)
 		}
 	} else {
-		for _, w := range t.Weapons {
-			w.SetOwner(t)
-		}
+		t.AttachWeapons(t.Weapons)
 	}
 	AttachModifiers(t, t.Modifiers)
 }
@@ -1276,6 +1275,25 @@ func (t *Trait) TagList() []string {
 // RatedStrength always returns 0 for traits.
 func (t *Trait) RatedStrength() fxp.Int {
 	return 0
+}
+
+// WeaponOwner implements WeaponHolder.
+func (t *Trait) WeaponOwner() WeaponOwner {
+	return t
+}
+
+// AttachWeapons implements WeaponHolder.
+func (t *Trait) AttachWeapons(list []*Weapon) {
+	for _, w := range list {
+		w.SetOwner(t)
+	}
+}
+
+// weaponsInPlay returns the trait's weapons together with those of its enabled modifiers, which belong to the trait too.
+// Only the trait's own slice is ever returned as is, so the result is for reading.
+func (t *Trait) weaponsInPlay() []*Weapon {
+	return appendModifierWeapons(slices.Clip(t.Weapons), t.Modifiers,
+		func(mod *TraitModifier) []*Weapon { return mod.Weapons })
 }
 
 // NameableReplacements returns the replacements to be used with Nameables.

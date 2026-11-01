@@ -1669,6 +1669,145 @@ func TestEntityWeaponsLeaveOutItemsInEmptyContainers(t *testing.T) {
 	c.Equal(natural, len(e.Weapons(true, false, false)))
 }
 
+// TestEntityWeaponsIncludeThoseOfEnabledModifiers verifies that the weapons in play include those an enabled modifier
+// holds, at any depth and on a trait container too, belonging to the modifier's target and held by the modifier, that a
+// disabled modifier or trait contributes none, and that a modifier's weapon of equipment that isn't equipped or carried
+// is left out or marked just as the equipment's own would be. It fails if collectWeapons reads only the nodes' own
+// weapons or passes over trait containers.
+func TestEntityWeaponsIncludeThoseOfEnabledModifiers(t *testing.T) {
+	c := check.New(t)
+	traitModifier := func(e *Entity, parent *TraitModifier, probe *Weapon) *TraitModifier {
+		mod := NewTraitModifier(e, parent, false)
+		mod.Name = "Venomous"
+		mod.Weapons = []*Weapon{probe}
+		return mod
+	}
+	traitWith := func(e *Entity, container bool, mod *TraitModifier) *Trait {
+		trait := NewTrait(e, nil, container)
+		trait.Name = "Claws"
+		trait.AddModifiers(mod)
+		e.Traits = append(e.Traits, trait)
+		return trait
+	}
+	equipmentWith := func(e *Entity, carried bool, probe *Weapon) (*Equipment, *EquipmentModifier) {
+		mod := NewEquipmentModifier(e, nil, false)
+		mod.Name = "Spiked"
+		mod.Weapons = []*Weapon{probe}
+		eqp := NewEquipment(e, nil, false)
+		eqp.Name = "Shield"
+		eqp.AddModifiers(mod)
+		if carried {
+			e.CarriedEquipment = append(e.CarriedEquipment, eqp)
+		} else {
+			e.OtherEquipment = append(e.OtherEquipment, eqp)
+		}
+		return eqp, mod
+	}
+	for _, tc := range []struct {
+		name              string
+		build             func(e *Entity, probe *Weapon) (WeaponOwner, WeaponHoldingModifier)
+		includeUnequipped bool
+		present           bool
+		notEquipped       bool
+		notCarried        bool
+	}{
+		{
+			name: "enabled modifier of an enabled trait",
+			build: func(e *Entity, probe *Weapon) (WeaponOwner, WeaponHoldingModifier) {
+				mod := traitModifier(e, nil, probe)
+				return traitWith(e, false, mod), mod
+			},
+			present: true,
+		},
+		{
+			name: "disabled modifier",
+			build: func(e *Entity, probe *Weapon) (WeaponOwner, WeaponHoldingModifier) {
+				mod := traitModifier(e, nil, probe)
+				mod.SetDisabled(true)
+				return traitWith(e, false, mod), mod
+			},
+		},
+		{
+			name: "modifier of a disabled trait",
+			build: func(e *Entity, probe *Weapon) (WeaponOwner, WeaponHoldingModifier) {
+				mod := traitModifier(e, nil, probe)
+				trait := traitWith(e, false, mod)
+				trait.SetDisabled(true)
+				return trait, mod
+			},
+		},
+		{
+			name: "modifier inside an enabled modifier group",
+			build: func(e *Entity, probe *Weapon) (WeaponOwner, WeaponHoldingModifier) {
+				group := NewTraitModifier(e, nil, true)
+				group.Name = "Options"
+				mod := traitModifier(e, group, probe)
+				group.Children = []*TraitModifier{mod}
+				return traitWith(e, false, group), mod
+			},
+			present: true,
+		},
+		{
+			name: "modifier of an enabled trait container",
+			build: func(e *Entity, probe *Weapon) (WeaponOwner, WeaponHoldingModifier) {
+				mod := traitModifier(e, nil, probe)
+				return traitWith(e, true, mod), mod
+			},
+			present: true,
+		},
+		{
+			name: "modifier of equipped, carried equipment",
+			build: func(e *Entity, probe *Weapon) (WeaponOwner, WeaponHoldingModifier) {
+				return equipmentWith(e, true, probe)
+			},
+			present: true,
+		},
+		{
+			name: "modifier of unequipped, carried equipment",
+			build: func(e *Entity, probe *Weapon) (WeaponOwner, WeaponHoldingModifier) {
+				eqp, mod := equipmentWith(e, true, probe)
+				eqp.Equipped = false
+				return eqp, mod
+			},
+		},
+		{
+			name: "modifier of unequipped, carried equipment, unequipped weapons included",
+			build: func(e *Entity, probe *Weapon) (WeaponOwner, WeaponHoldingModifier) {
+				eqp, mod := equipmentWith(e, true, probe)
+				eqp.Equipped = false
+				return eqp, mod
+			},
+			includeUnequipped: true,
+			present:           true,
+			notEquipped:       true,
+		},
+		{
+			name: "modifier of other equipment, unequipped weapons included",
+			build: func(e *Entity, probe *Weapon) (WeaponOwner, WeaponHoldingModifier) {
+				return equipmentWith(e, false, probe)
+			},
+			includeUnequipped: true,
+			present:           true,
+			notEquipped:       true,
+			notCarried:        true,
+		},
+	} {
+		e := NewEntity()
+		probe := NewWeapon(nil, true)
+		probe.Usage = "Probe"
+		owner, holder := tc.build(e, probe)
+		e.Recalculate()
+		c.Equal(tc.present, slices.Contains(e.Weapons(true, tc.includeUnequipped, false), probe),
+			"%s: whether the modifier's weapon is in play", tc.name)
+		if tc.present {
+			c.True(probe.Owner == owner, "%s: the weapon belongs to the modifier's target", tc.name)
+			c.True(probe.HoldingModifier() == holder, "%s: the weapon is held by the modifier", tc.name)
+			c.Equal(tc.notEquipped, probe.NotEquipped, "%s: marked as not equipped", tc.name)
+			c.Equal(tc.notCarried, probe.NotCarried, "%s: marked as not carried", tc.name)
+		}
+	}
+}
+
 // TestEntityRecalculateReportsWhetherTheDerivedStateChanged checks that a recalculation reports whether it left the
 // derived state it stores other than the last one did, which is what tells a sheet that an edit to a field only a
 // script reads, such as the character's weight, has changed the rows of its lists as well as what its blocks show.

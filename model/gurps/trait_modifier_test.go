@@ -10,6 +10,8 @@
 package gurps
 
 import (
+	"os"
+	"path/filepath"
 	"testing"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
@@ -263,4 +265,70 @@ func TestTraitModifierApplyNameableKeysKeepsAnswersForDisabledModifiers(t *testi
 	trim.ApplyNameableKeys(trimKeys)
 	c.Equal(map[string]string{"Material": "Iron", "Finish": "Gilded"}, trait.Replacements,
 		"an unanswered key keeps the answer given for the other modifier")
+}
+
+// TestModifierWeaponsRoundTripAListFileWithoutATarget verifies that a modifier saved to a list file of modifiers, where
+// it has no target, keeps its weapon when loaded again, the weapon having no owner, an untyped nil, while being held by
+// the loaded modifier, whose name it goes by. It fails if the weapons are not written, if a modifier without a target
+// gives its weapons a typed nil for an owner, which reads as one, or if setting the data owner doesn't attach them.
+func TestModifierWeaponsRoundTripAListFileWithoutATarget(t *testing.T) {
+	c := check.New(t)
+	dir := t.TempDir()
+	gore := func() []*Weapon {
+		w := NewWeapon(nil, true)
+		w.Usage = "Gore"
+		return []*Weapon{w}
+	}
+	for _, tc := range []struct {
+		name string
+		load func() (WeaponHoldingModifier, []*Weapon, error)
+	}{
+		{
+			name: "trait modifier",
+			load: func() (WeaponHoldingModifier, []*Weapon, error) {
+				mod := NewTraitModifier(nil, nil, false)
+				mod.Name = "Horned"
+				mod.Weapons = gore()
+				fileName := "mods" + TraitModifiersExt
+				if err := SaveTraitModifiers([]*TraitModifier{mod}, filepath.Join(dir, fileName)); err != nil {
+					return nil, nil, err
+				}
+				loaded, err := NewTraitModifiersFromFile(os.DirFS(dir), fileName)
+				if err != nil || len(loaded) != 1 {
+					return nil, nil, err
+				}
+				return loaded[0], loaded[0].Weapons, nil
+			},
+		},
+		{
+			name: "equipment modifier",
+			load: func() (WeaponHoldingModifier, []*Weapon, error) {
+				mod := NewEquipmentModifier(nil, nil, false)
+				mod.Name = "Spiked"
+				mod.Weapons = gore()
+				fileName := "mods" + EquipmentModifiersExt
+				if err := SaveEquipmentModifiers([]*EquipmentModifier{mod}, filepath.Join(dir, fileName)); err != nil {
+					return nil, nil, err
+				}
+				loaded, err := NewEquipmentModifiersFromFile(os.DirFS(dir), fileName)
+				if err != nil || len(loaded) != 1 {
+					return nil, nil, err
+				}
+				return loaded[0], loaded[0].Weapons, nil
+			},
+		},
+	} {
+		holder, weapons, err := tc.load()
+		c.NoError(err, tc.name)
+		c.Equal(1, len(weapons), "%s: the modifier keeps its weapon", tc.name)
+		if len(weapons) != 1 {
+			continue
+		}
+		w := weapons[0]
+		c.Equal("Gore", w.Usage, "%s: the weapon keeps its data", tc.name)
+		c.True(w.Owner == nil, "%s: the weapon of a modifier without a target has no owner", tc.name)
+		c.True(w.HoldingModifier() == holder, "%s: the weapon is held by the loaded modifier", tc.name)
+		c.Equal(holder.String(), w.String(), "%s: the weapon goes by the name of the modifier holding it", tc.name)
+		c.True(w.Damage.Owner == w, "%s: the weapon's damage belongs to it", tc.name)
+	}
 }

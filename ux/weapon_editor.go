@@ -57,7 +57,8 @@ func (we *weaponEditor) initWeaponEditor(e *editor[*gurps.Weapon, *gurps.Weapon]
 		we.addRecoilBlock(w, content)
 	}
 	we.addStrengthBlock(w, content)
-	// A weapon edited from its item's editor takes the substitutions that editor holds, which may not be applied yet.
+	// A weapon edited from its item's editor, or from that of the item's modifier holding it, takes the substitutions
+	// the item's editor holds, which may not be applied yet.
 	var names nameable.Accesser = w
 	if parent, ok := e.owner.(interface{ pendingNameables() nameable.Accesser }); ok {
 		if pending := parent.pendingNameables(); pending != nil {

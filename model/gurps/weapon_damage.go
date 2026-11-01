@@ -271,17 +271,7 @@ func (w *WeaponDamage) baseDamageDice() dice.Dice {
 	if baseSpec := w.resolvedDamageString(selector.WeaponBaseDamageDice, w.Base, nil); baseSpec != "" {
 		base, baseSub = w.resolveDiceSpec(baseSpec)
 	}
-	levels := 0
-	switch t := w.Owner.Owner.(type) {
-	case *Trait:
-		if t.IsLeveled() {
-			levels = t.CurrentLevel().AsInteger[int]()
-		}
-	case *Equipment:
-		if t.IsLeveled() {
-			levels = t.Level.AsInteger[int]()
-		}
-	}
+	levels := w.levels()
 	if baseLeveledSpec := w.resolvedDamageString(selector.WeaponBaseDamageDicePerLevel, w.BaseLeveled, nil); levels > 0 && baseLeveledSpec != "" {
 		leveled, leveledSub := w.resolveDiceSpec(baseLeveledSpec)
 		leveled = multiplyDice(levels, leveled)
@@ -494,6 +484,26 @@ func IsExplosiveDamageType(damageType string) bool {
 // type carries the Explosion modifier, or it throws fragments.
 func (r *ResolvedWeaponDamage) IsExplosive() bool {
 	return IsExplosiveDamageType(r.Type) || r.HasFragmentation
+}
+
+// levels returns the number of levels the per-level base damage is multiplied by: those of the trait modifier holding
+// the weapon when it says its weapons use its level and it has levels of its own, otherwise those of the weapon's
+// owner, which is 0 for one that isn't leveled.
+func (w *WeaponDamage) levels() int {
+	if mod, ok := w.Owner.holdingModifier.(*TraitModifier); ok && mod.WeaponsUseLevel && !mod.UseLevelFromTrait && mod.IsLeveled() {
+		return mod.CurrentLevel().AsInteger[int]()
+	}
+	switch t := w.Owner.Owner.(type) {
+	case *Trait:
+		if t.IsLeveled() {
+			return t.CurrentLevel().AsInteger[int]()
+		}
+	case *Equipment:
+		if t.IsLeveled() {
+			return t.Level.AsInteger[int]()
+		}
+	}
+	return 0
 }
 
 // ResolvedDamage returns the damage, fully resolved for the user's sw or thr, if possible. The result is kept as Weapon

@@ -38,22 +38,32 @@ func linkedTrait() (*Trait, *TraitModifier) {
 }
 
 // TestLinkedModifierCodeIsAskedAsOwnerCode verifies that a modifier's linked code is asked for, answered and kept as
-// its owner's code, and that its linked and unlinked codes both resolve through the owner's replacements.
+// its owner's code, and that its linked and unlinked codes both resolve through the owner's replacements, in the text
+// of the modifier's own weapon as in the rest of it.
 func TestLinkedModifierCodeIsAskedAsOwnerCode(t *testing.T) {
 	c := check.New(t)
 	trait, mod := linkedTrait()
+	w := NewWeapon(nil, true)
+	w.Usage = "@focus@ strike"
+	w.UsageNotes = "@stance@"
+	mod.Weapons = []*Weapon{w}
+	mod.SetTarget(trait)
 	trait.Replacements = map[string]string{"style": "Judo"}
 	m := make(map[string]string)
 	trait.FillWithNameableKeys(m, nil)
-	c.Equal(map[string]string{"style": "Judo", "extra": nameable.Unset}, m, "the linked code is asked as the trait's")
+	c.Equal(map[string]string{"style": "Judo", "extra": nameable.Unset, "stance": nameable.Unset}, m,
+		"the linked code is asked as the trait's, and the weapon's codes are asked too")
 
 	// An answer given for the trait's code is the one the linked code shows.
 	m["style"] = "Karate"
 	m["extra"] = "zeal"
+	m["stance"] = "Horse stance"
 	trait.ApplyNameableKeys(m)
 	c.Equal("Karate focus", mod.NameWithReplacements())
 	c.Equal("with zeal", mod.LocalNotesWithReplacements(), "an unlinked code resolves through the owner too")
-	c.Equal(map[string]string{"style": "Karate", "extra": "zeal"}, trait.Replacements,
+	c.Equal("Karate strike", w.UsageWithReplacements(), "the modifier's weapon resolves the linked code as it does")
+	c.Equal("Horse stance", w.UsageNotesWithReplacements(), "and an unlinked one")
+	c.Equal(map[string]string{"style": "Karate", "extra": "zeal", "stance": "Horse stance"}, trait.Replacements,
 		"nothing is kept under the modifier's own code")
 }
 

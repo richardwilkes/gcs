@@ -107,6 +107,16 @@ func activeModifierFor[M ModifierNode[M, T], T ModifiableNode[T, M], S ~[]M](mod
 	return found
 }
 
+// appendModifierWeapons appends the weapons of the enabled, non-container modifiers, at any depth, to list, which must
+// not share its backing array with anything that is to be left alone.
+func appendModifierWeapons[M ModifierNode[M, T], T ModifiableNode[T, M], S ~[]M](list []*Weapon, modifiers S, weapons func(M) []*Weapon) []*Weapon {
+	Traverse(func(mod M) bool {
+		list = append(list, weapons(mod)...)
+		return false
+	}, true, true, modifiers...)
+	return list
+}
+
 // modifierDescriptions returns the notes descriptions of the enabled, non-container modifiers that appear in their
 // owner's notes, separated by "; ".
 func modifierDescriptions[M ModifierNode[M, T], T ModifiableNode[T, M], S ~[]M](modifiers S) string {

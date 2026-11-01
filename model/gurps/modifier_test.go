@@ -119,21 +119,25 @@ func TestModifierContainersContributeNameableKeys(t *testing.T) {
 }
 
 // TestModifierSyncWithSource verifies that a modifier which has drifted from its library source pulls the synced
-// fields back across, whether or not it has a data owner, and that containers do not pick up leaf-only data.
+// fields back across, whether or not it has a data owner, and that containers do not pick up leaf-only data. The
+// weapons it pulls across are its own copies, belonging to its trait and held by it.
 func TestModifierSyncWithSource(t *testing.T) {
 	c := check.New(t)
 	e := NewEntity()
 	libFile := LibraryFile{Library: "Test Library", Path: "Test" + TraitModifiersExt}
 
-	// A leaf trait modifier whose local copy has drifted in name and cost.
+	// A leaf trait modifier whose local copy has drifted in name and cost, and lacks the source's weapon.
 	source := NewTraitModifier(nil, nil, false)
 	source.Name = "Reduced Time"
 	source.CostAdj = "+20%"
 	source.Tags = []string{"Enhancement"}
+	source.Weapons = []*Weapon{NewWeapon(nil, true)}
 	local := NewTraitModifier(e, nil, false)
 	local.Name = "Reduced Time (old)"
 	local.CostAdj = "+10%"
 	local.Source = Source{LibraryFile: libFile, TID: source.TID}
+	trait := NewTrait(e, nil, false)
+	trait.AddModifiers(local)
 	stubLibrarySources(t, e.SourceMatcher(), libFile, source)
 	state, _ := e.SourceMatcher().Match(local)
 	c.Equal(srcstate.Mismatched, state, "precondition: the local copy differs from its source")
@@ -141,6 +145,13 @@ func TestModifierSyncWithSource(t *testing.T) {
 	c.Equal("Reduced Time", local.Name)
 	c.Equal("+20%", local.CostAdj)
 	c.Equal([]string{"Enhancement"}, local.Tags)
+	c.Equal(1, len(local.Weapons), "the source's weapon is synced")
+	if len(local.Weapons) == 1 {
+		w := local.Weapons[0]
+		c.True(w != source.Weapons[0], "the synced weapon is a copy, not the source's")
+		c.True(w.Owner == trait, "the synced weapon belongs to the local modifier's trait")
+		c.True(w.HoldingModifier() == local, "the synced weapon is held by the local modifier")
+	}
 	source.Tags[0] = "changed"
 	c.Equal([]string{"Enhancement"}, local.Tags, "synced tags must not alias the source's slice")
 	state, _ = e.SourceMatcher().Match(local)

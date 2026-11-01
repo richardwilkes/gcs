@@ -117,6 +117,7 @@ func mergeBase() *Equipment {
 	hooded.Name = "Hooded"
 	hooded.CostAmount = "+5"
 	hooded.VTTNotes = "hood"
+	hooded.Weapons = []*Weapon{NewWeapon(nil, true)}
 	group := NewEquipmentModifier(nil, nil, true)
 	group.Name = "Fuel"
 	oil := NewEquipmentModifier(nil, group, false)
@@ -188,6 +189,8 @@ func TestMergeMatches(t *testing.T) {
 		{name: "modifier replacements", change: func(eqp *Equipment) {
 			eqp.Modifiers[0].Replacements = map[string]string{"x": "y"}
 		}},
+		{name: "modifier weapon data", change: func(eqp *Equipment) { eqp.Modifiers[0].Weapons[0].Usage = "Bash" }},
+		{name: "modifier weapon hidden", change: func(eqp *Equipment) { eqp.Modifiers[0].Weapons[0].Hide = true }},
 		{name: "nameables", change: func(eqp *Equipment) { eqp.Nameables["Price"] = nameable.Detail{Label: "Cost"} }},
 		{name: "modifier nameables", change: func(eqp *Equipment) { eqp.Modifiers[0].Nameables = nil }},
 		{name: "nameable link", change: func(eqp *Equipment) {
@@ -265,8 +268,8 @@ func TestMergeMatchesCoversEveryField(t *testing.T) {
 			expected: []string{
 				"TID", "Source", "Name", "PageRef", "PageRefHighlight", "LocalNotes", "Tags", "Nameables", "VTTNotes",
 				"Replacements", "CostType", "CostIsPerLevel", "CostIsPerPound", "WeightType", "WeightIsPerLevel",
-				"ShowNotesOnWeapon", "TechLevel", "CostAmount", "WeightAmount", "Features", "HideNotes", "ShowInTitle",
-				"Disabled", "Choice", "ThirdParty", "Children", "parent",
+				"ShowNotesOnWeapon", "TechLevel", "CostAmount", "WeightAmount", "Weapons", "Features", "HideNotes",
+				"ShowInTitle", "Disabled", "Choice", "ThirdParty", "Children", "parent",
 			},
 		},
 	}

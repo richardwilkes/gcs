@@ -10,6 +10,7 @@
 package gurps_test
 
 import (
+	"slices"
 	"testing"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
@@ -134,6 +135,9 @@ func TestRecycleNodesPointsTheNestedModifiersAndWeaponsAtTheObjectsThatHoldThem(
 	fine.Name = "Quality"
 	veryFine := gurps.NewEquipmentModifier(entity, fine, false)
 	veryFine.Name = "Very Fine"
+	lash := gurps.NewWeapon(rope, true)
+	lash.Usage = "Lash"
+	veryFine.Weapons = []*gurps.Weapon{lash}
 	fine.Children = []*gurps.EquipmentModifier{veryFine}
 	rope.Modifiers = []*gurps.EquipmentModifier{fine}
 	gurps.AttachModifiers(rope, rope.Modifiers)
@@ -148,6 +152,10 @@ func TestRecycleNodesPointsTheNestedModifiersAndWeaponsAtTheObjectsThatHoldThem(
 	c.True(whip.Damage.Owner == whip, "the damage must belong to the recycled weapon, not the deserialized one")
 	c.True(fine.Target() == rope, "the modifier must target the object holding it, not the deserialized node")
 	c.True(veryFine.Target() == rope, "and so must its child")
+	c.True(slices.Equal(veryFine.Weapons, []*gurps.Weapon{lash}), "the modifier's weapon must be recycled")
+	c.True(lash.Owner == rope, "and belong to the object holding the modifier, not the deserialized node")
+	c.True(lash.HoldingModifier() == veryFine, "and be held by the recycled modifier, not the deserialized one")
+	c.True(lash.Damage.Owner == lash)
 
 	// The fresh list attached to an entity before recycling, as an entity's list setter leaves it.
 	identities = make(gurps.NodeIdentities)
@@ -163,6 +171,10 @@ func TestRecycleNodesPointsTheNestedModifiersAndWeaponsAtTheObjectsThatHoldThem(
 	c.True(veryFine.Target() == rope)
 	c.True(fine.DataOwner() == entity, "the modifier's data owner is the node's")
 	c.True(veryFine.DataOwner() == entity)
+	c.True(slices.Equal(veryFine.Weapons, []*gurps.Weapon{lash}), "the modifier's weapon must be recycled")
+	c.True(lash.Owner == rope, "and belong to the recycled node")
+	c.True(lash.HoldingModifier() == veryFine, "and be held by the recycled modifier")
+	c.True(lash.Damage.Owner == lash)
 
 	// A node that is kept as it is, with a weapon and a modifier that are recycled into it.
 	identities = make(gurps.NodeIdentities)
@@ -178,4 +190,8 @@ func TestRecycleNodesPointsTheNestedModifiersAndWeaponsAtTheObjectsThatHoldThem(
 	c.True(freshRope.Modifiers[0] == fine, "and its modifier is recycled")
 	c.True(fine.Target() == freshRope, "and targets the node that holds it")
 	c.True(veryFine.Target() == freshRope)
+	c.True(slices.Equal(veryFine.Weapons, []*gurps.Weapon{lash}), "and its modifier's weapon is recycled")
+	c.True(lash.Owner == freshRope, "and belongs to the node that holds the modifier")
+	c.True(lash.HoldingModifier() == veryFine, "and is held by the recycled modifier")
+	c.True(lash.Damage.Owner == lash)
 }

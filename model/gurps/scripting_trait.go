@@ -39,14 +39,12 @@ func newScriptTrait(r *goja.Runtime, trait *Trait) *goja.Object {
 		m["find"] = scriptNameTagFinder(r, func(name, tag string) goja.Value {
 			return findScriptTraits(r, name, tag, trait.Children...)
 		})
-	} else {
-		if trait.CanLevel {
-			m["level"] = func() goja.Value {
-				return r.ToValue(trait.CurrentLevel().AsFloat[float64]())
-			}
+	} else if trait.CanLevel {
+		m["level"] = func() goja.Value {
+			return r.ToValue(trait.CurrentLevel().AsFloat[float64]())
 		}
-		addScriptWeapons(r, m, func() []*Weapon { return trait.Weapons })
 	}
+	addScriptWeapons(r, m, trait.weaponsInPlay)
 	addScriptActiveModifiers(r, m, trait, newScriptTraitModifier)
 	return r.NewDynamicObject(NewScriptObject(r, m))
 }

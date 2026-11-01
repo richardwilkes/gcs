@@ -432,7 +432,8 @@ func TestScriptWeaponsMatchOwnerName(t *testing.T) {
 }
 
 // TestOwnerlessWeaponName verifies that a weapon without an owner has an empty name and title, in scripts too, and that
-// matching it by name doesn't panic.
+// matching it by name doesn't panic, while one held by a modifier without a target has the modifier's name without its
+// level and its title with it, as a weapon with an owner has the owner's.
 func TestOwnerlessWeaponName(t *testing.T) {
 	c := check.New(t)
 	w := NewWeapon(nil, true)
@@ -443,6 +444,16 @@ func TestOwnerlessWeaponName(t *testing.T) {
 	e := NewEntity()
 	c.Equal("", ResolveScript(e, deferredNewScriptWeapon(w), "self.name"))
 	c.Equal("", ResolveScript(e, deferredNewScriptWeapon(w), "self.title"))
+
+	mod := NewTraitModifier(nil, nil, false)
+	mod.Name = "Horned"
+	mod.Levels = fxp.Two
+	held := NewWeapon(nil, true)
+	mod.Weapons = []*Weapon{held}
+	mod.AttachWeapons(mod.Weapons)
+	c.Equal("Horned", held.Name(), "a held weapon's name is the modifier's without its level")
+	c.Equal("Horned 2", held.Title(), "a held weapon's title is the modifier's with its level")
+	c.Equal("Horned", ResolveScript(e, deferredNewScriptWeapon(held), "self.name"))
 }
 
 // TestScriptWeaponAttachedTo verifies that a script weapon's attachedTo is its owner, whatever kind of owner it has.

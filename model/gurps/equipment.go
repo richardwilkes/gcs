@@ -44,6 +44,7 @@ var (
 	_ = assertEditorData[*EquipmentEditData]
 
 	_ WeaponOwner               = &Equipment{}
+	_ WeaponHolder              = &Equipment{}
 	_ LeveledOwner              = &Equipment{}
 	_ TechLevelProvider         = &Equipment{}
 	_ FeatureSwitcher           = &Equipment{}
@@ -718,9 +719,7 @@ func (e *Equipment) DataOwner() DataOwner {
 // SetDataOwner sets the data owner and configures any sub-components as needed.
 func (e *Equipment) SetDataOwner(owner DataOwner) {
 	e.owner = owner
-	for _, w := range e.Weapons {
-		w.SetOwner(e)
-	}
+	e.AttachWeapons(e.Weapons)
 	if e.Container() {
 		for _, child := range e.Children {
 			child.SetDataOwner(owner)
@@ -855,19 +854,19 @@ func (e *Equipment) anySwitchableMattersWhileUnequipped(features Features) bool 
 			// "To this weapon" bonuses are resolved by the weapon itself, and the weapons of unequipped equipment are
 			// still displayed when the sheet is set to show them all. "To a named weapon" bonuses count, too: the
 			// weapon reads its owner's active features directly, no matter where that owner lives, so such a bonus
-			// still lands on this equipment's own weapon whenever the criteria match it.
-			if (f.SelectionType == wsel.ThisWeapon || f.SelectionType == wsel.WithName) && len(e.Weapons) != 0 {
+			// still lands on this equipment's weapons, its enabled modifiers' included, whenever the criteria match.
+			if (f.SelectionType == wsel.ThisWeapon || f.SelectionType == wsel.WithName) && e.hasWeaponsInPlay() {
 				return true
 			}
 		case *SkillBonus:
-			// Likewise for a skill bonus aimed at this equipment's own weapons.
-			if f.SelectionType == skillsel.ThisWeapon && len(e.Weapons) != 0 {
+			// Likewise for a skill bonus aimed at this equipment's weapons.
+			if f.SelectionType == skillsel.ThisWeapon && e.hasWeaponsInPlay() {
 				return true
 			}
 		case *SelectorOverride:
-			// And for an override aimed at this equipment's own weapons, whether it selects them or names them.
+			// And for an override aimed at this equipment's weapons, whether it selects them or names them.
 			if f.weaponScoped() && (f.SelectionType == wsel.ThisWeapon || f.SelectionType == wsel.WithName) &&
-				len(e.Weapons) != 0 {
+				e.hasWeaponsInPlay() {
 				return true
 			}
 		}
@@ -875,9 +874,34 @@ func (e *Equipment) anySwitchableMattersWhileUnequipped(features Features) bool 
 	return false
 }
 
+// hasWeaponsInPlay returns true if the equipment or any of its enabled modifiers holds a weapon.
+func (e *Equipment) hasWeaponsInPlay() bool {
+	return len(e.Weapons) != 0 ||
+		AnyEnabledNonContainerModifier(e.Modifiers, func(mod *EquipmentModifier) bool { return len(mod.Weapons) != 0 })
+}
+
+// weaponsInPlay returns the equipment's weapons together with those of its enabled modifiers, which belong to the
+// equipment too. Only the equipment's own slice is ever returned as is, so the result is for reading.
+func (e *Equipment) weaponsInPlay() []*Weapon {
+	return appendModifierWeapons(slices.Clip(e.Weapons), e.Modifiers,
+		func(mod *EquipmentModifier) []*Weapon { return mod.Weapons })
+}
+
 // TagList returns the list of tags.
 func (e *Equipment) TagList() []string {
 	return e.Tags
+}
+
+// WeaponOwner implements WeaponHolder.
+func (e *Equipment) WeaponOwner() WeaponOwner {
+	return e
+}
+
+// AttachWeapons implements WeaponHolder.
+func (e *Equipment) AttachWeapons(list []*Weapon) {
+	for _, w := range list {
+		w.SetOwner(e)
+	}
 }
 
 // RatedStrength returns the rated ST for this equipment, or 0 if it has none.

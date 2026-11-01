@@ -957,7 +957,8 @@ func TestWeaponSkillLevelUsesResolvedMusclePower(t *testing.T) {
 
 // TestWeaponNotesFromOwnerModifiers verifies that a weapon's notes gather the notes of every enabled, non-container
 // modifier of its owner that asks to be shown on the weapon, at any depth, ahead of the weapon's own usage notes,
-// whether the owner is a trait or a piece of equipment.
+// whether the owner is a trait or a piece of equipment, and whether the weapon is the owner's own or one of its
+// modifiers'.
 func TestWeaponNotesFromOwnerModifiers(t *testing.T) {
 	c := check.New(t)
 	e := gurps.NewEntity()
@@ -991,6 +992,13 @@ func TestWeaponNotesFromOwnerModifiers(t *testing.T) {
 	trait.Weapons = []*gurps.Weapon{claws}
 	e.Traits = append(e.Traits, trait)
 	c.Equal("Cutting damage\nTakes a Ready\nUsage", claws.Notes())
+
+	// A modifier's own weapon belongs to the trait as well, so it gathers the same notes, the holder's own included.
+	slash := gurps.NewWeapon(nil, true)
+	slash.UsageNotes = "Slash"
+	shown.Weapons = []*gurps.Weapon{slash}
+	shown.SetTarget(trait)
+	c.Equal("Cutting damage\nTakes a Ready\nSlash", slash.Notes())
 
 	eqp := gurps.NewEquipment(e, nil, false)
 	eqp.Name = "Sword"

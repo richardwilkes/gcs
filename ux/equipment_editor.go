@@ -120,7 +120,7 @@ func initEquipmentItemEditor(e *editor[*gurps.Equipment, *gurps.EquipmentEditDat
 		withReplacementsFrom(e.editorData))
 	content.AddChild(newFeaturesPanel(entity, e.target, &e.editorData.Features, false).
 		withReplacementsFrom(e.editorData))
-	content.AddChild(newEquipmentModifiersPanel(e, entity, e.target, &e.editorData.Modifiers))
+	content.AddChild(newEquipmentModifiersPanel(e, entity, e.target, &e.editorData.Modifiers, e.editorData))
 	e.meleeWeapons = newWeaponsPanel(e, e.target, true, &e.editorData.Weapons)
 	content.AddChild(e.meleeWeapons)
 	e.rangedWeapons = newWeaponsPanel(e, e.target, false, &e.editorData.Weapons)

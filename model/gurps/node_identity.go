@@ -53,7 +53,7 @@ func collectNodeIdentities[T Node[T]](identities NodeIdentities, seen map[tid.TI
 			func(_ *Trait, modifiers *[]*TraitModifier) {
 				collectNodeIdentities(identities, seen, *modifiers)
 			},
-			func(_ WeaponOwner, weapons *[]*Weapon) {
+			func(_ WeaponHolder, weapons *[]*Weapon) {
 				collectNodeIdentities(identities, seen, *weapons)
 			})
 		return false
@@ -66,11 +66,11 @@ func collectNodeIdentities[T Node[T]](identities NodeIdentities, seen map[tid.TI
 // has always had, so those keep working. Nodes the identities have no object for, or whose ID they mark as shared, are
 // kept as they are. Each object is used at most once: its entry is removed from the identities as it is used, so that a
 // later node with the same ID keeps the object it came with instead of collapsing into the one already recycled. The
-// parents of the children, the targets of the modifiers and the owners of the weapons are set to the objects that hold
-// them. The data owners of the nodes come from the deserialized nodes, since their data is copied whole, so they are
-// whatever the caller attached when it put the list in place, and the modifiers take theirs from the nodes that hold
-// them; a template's and a loot sheet's list setters attach nothing, which the rebuild that follows a restore makes
-// good (see EnsureAttachments).
+// parents of the children, the targets of the modifiers and the owners and holding modifiers of the weapons are set to
+// the objects that hold them. The data owners of the nodes come from the deserialized nodes, since their data is copied
+// whole, so they are whatever the caller attached when it put the list in place, and the modifiers take theirs from the
+// nodes that hold them; a template's and a loot sheet's list setters attach nothing, which the rebuild that follows a
+// restore makes good (see EnsureAttachments).
 func RecycleNodes[T Node[T]](identities NodeIdentities, list []T) []T {
 	for i, node := range list {
 		list[i] = recycleNode(identities, node)
@@ -96,7 +96,9 @@ func recycleNode[T Node[T]](identities NodeIdentities, node T) T {
 	}
 	// The nested lists are attached again whether or not the node itself was recycled: a recycled modifier or weapon
 	// takes on the deserialized one's data, back-pointers included, so it would otherwise target or belong to the
-	// deserialized node, and a recycled weapon's damage would belong to the deserialized weapon.
+	// deserialized node, and a recycled weapon's damage would belong to the deserialized weapon. A modifier's weapons
+	// are attached while the modifier is recycled, which is before the node holding it points the modifier at itself,
+	// so they first belong to the deserialized target; SetTarget then attaches them again.
 	nestedNodeLists(node,
 		func(target *Equipment, modifiers *[]*EquipmentModifier) {
 			*modifiers = RecycleNodes(identities, *modifiers)
@@ -106,19 +108,18 @@ func recycleNode[T Node[T]](identities NodeIdentities, node T) T {
 			*modifiers = RecycleNodes(identities, *modifiers)
 			AttachModifiers(target, *modifiers)
 		},
-		func(owner WeaponOwner, weapons *[]*Weapon) {
+		func(holder WeaponHolder, weapons *[]*Weapon) {
 			*weapons = RecycleNodes(identities, *weapons)
-			for _, w := range *weapons {
-				w.SetOwner(owner)
-			}
+			holder.AttachWeapons(*weapons)
 		})
 	return node
 }
 
 // nestedNodeLists calls the function for each list of nodes nested in the node, along with the node that holds it: the
-// modifiers of a trait or a piece of equipment, and the weapons of a trait, skill, spell or piece of equipment.
+// modifiers of a trait or a piece of equipment, and the weapons of a trait, skill, spell, piece of equipment or
+// modifier.
 func nestedNodeLists(node any, equipmentModifiers func(*Equipment, *[]*EquipmentModifier),
-	traitModifiers func(*Trait, *[]*TraitModifier), weapons func(WeaponOwner, *[]*Weapon),
+	traitModifiers func(*Trait, *[]*TraitModifier), weapons func(WeaponHolder, *[]*Weapon),
 ) {
 	switch n := node.(type) {
 	case *Equipment:
@@ -130,6 +131,10 @@ func nestedNodeLists(node any, equipmentModifiers func(*Equipment, *[]*Equipment
 	case *Skill:
 		weapons(n, &n.Weapons)
 	case *Spell:
+		weapons(n, &n.Weapons)
+	case *TraitModifier:
+		weapons(n, &n.Weapons)
+	case *EquipmentModifier:
 		weapons(n, &n.Weapons)
 	}
 }

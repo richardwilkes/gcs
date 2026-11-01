@@ -973,9 +973,19 @@ func (s *Spell) SetDataOwner(owner DataOwner) {
 			child.SetDataOwner(owner)
 		}
 	} else {
-		for _, w := range s.Weapons {
-			w.SetOwner(s)
-		}
+		s.AttachWeapons(s.Weapons)
+	}
+}
+
+// WeaponOwner implements WeaponHolder.
+func (s *Spell) WeaponOwner() WeaponOwner {
+	return s
+}
+
+// AttachWeapons implements WeaponHolder.
+func (s *Spell) AttachWeapons(list []*Weapon) {
+	for _, w := range list {
+		w.SetOwner(s)
 	}
 }
 
