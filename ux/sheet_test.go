@@ -17,10 +17,12 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/encumbrance"
+	"github.com/richardwilkes/gcs/v5/ux/uxtest"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/toolbox/v2/tid"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
+	uncheck "github.com/richardwilkes/unison/enums/check"
 )
 
 // TestMarkModifiedRecalculates checks that telling the sheet something changed brings the entity's derived state up to
@@ -388,4 +390,43 @@ func TestProfileEditReadByAScriptOnlyWhenShownSyncsTheLists(t *testing.T) {
 		c.False(entity.DerivedStateChanged(), "edit %d must leave the derived state as it was, or the check below means nothing", i+1)
 		c.Equal(fmt.Sprintf("Carried Equipment (30 lb; $%d)", weight/10), headerText(), "the header shows the total edit %d changed", i+1)
 	}
+}
+
+// TestSheetPaginatedToggle verifies that a sheet starts out showing pages or not as the general setting says, that
+// togglePaginated flips the mode and latches the toolbar's pages button to match -- selected in its group with its base
+// shown while on, unselected with its base hidden while off -- and that the Show as Pages menu item is checked while
+// the sheet shows pages and unchecked when no sheet has the focus. Starting the mode from anything but the setting,
+// leaving the button alone when toggling, or not setting the menu item's check state fails it.
+func TestSheetPaginatedToggle(t *testing.T) {
+	c := check.New(t)
+	item := unison.NewInWindowMenuFactory().NewItem(ShowAsPagesItemID, "", unison.KeyBinding{}, nil, nil)
+	for _, initial := range []bool{true, false} {
+		uxtest.SwapForTest(t, &gurps.GlobalSettings().General.InitialSheetPaginated, initial)
+		sheet := newTestSheetForTemplate(t)
+		for i, want := range []bool{initial, !initial, initial} {
+			if i != 0 {
+				sheet.togglePaginated()
+			}
+			c.Equal(want, sheet.paginated, "initial %v, step %d: the mode", initial, i)
+			c.Equal(want, sheet.pagesButtonGroup.Selected(sheet.pagesButton),
+				"initial %v, step %d: the button is selected while on", initial, i)
+			c.Equal(!want, sheet.pagesButton.HideBase, "initial %v, step %d: the button shows its base while on",
+				initial, i)
+			c.True(sheet.canTogglePaginated(item), "initial %v, step %d: the command is enabled", initial, i)
+			c.Equal(uncheck.FromBool(want), item.CheckState(), "initial %v, step %d: the menu item's check", initial, i)
+		}
+	}
+	item.SetCheckState(uncheck.On)
+	c.False(showAsPagesAction.Enabled(item), "the action is disabled while no sheet has the focus")
+	c.Equal(uncheck.Off, item.CheckState(), "and its menu item is unchecked")
+
+	// The sheet is shown continuously while its layout is edited, whatever the choice, so the toggle is withheld then.
+	uxtest.SwapForTest(t, &gurps.GlobalSettings().General.InitialSheetPaginated, true)
+	sheet := newTestSheetForTemplate(t)
+	sheet.toggleLayoutEditing()
+	c.False(sheet.canTogglePaginated(item), "the command is withheld while the layout is being edited")
+	c.False(sheet.pagesButton.Enabled(), "and so is the button")
+	sheet.toggleLayoutEditing()
+	c.True(sheet.canTogglePaginated(item), "the command comes back once the editing is over")
+	c.True(sheet.pagesButton.Enabled(), "and so does the button")
 }

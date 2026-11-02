@@ -16,6 +16,7 @@ import (
 	"github.com/richardwilkes/toolbox/v2/i18n"
 	"github.com/richardwilkes/toolbox/v2/xos"
 	"github.com/richardwilkes/unison"
+	"github.com/richardwilkes/unison/enums/check"
 	"github.com/richardwilkes/unison/enums/mod"
 )
 
@@ -150,6 +151,7 @@ var (
 	scaleUpAction                       *unison.Action
 	sellEquipmentAction                 *unison.Action
 	shoppingRecordAction                *unison.Action
+	showAsPagesAction                   *unison.Action
 	syncWithSourceAction                *unison.Action
 	swapDefaultsAction                  *unison.Action
 	toggleStateAction                   *unison.Action
@@ -556,6 +558,20 @@ func registerActions() {
 		i18n.Text("Sell Equipment…"), i18n.Text("Sell…"), unison.KeyBinding{})
 	shoppingRecordAction = registerSheetAction("shopping.record", ShoppingRecordItemID, i18n.Text("Shopping Record"),
 		unison.KeyBinding{}, showShoppingRecord)
+	showAsPagesAction = registerKeyBindableAction("show.as.pages", &unison.Action{
+		ID:         ShowAsPagesItemID,
+		Title:      i18n.Text("Show as Pages"),
+		KeyBinding: unison.KeyBinding{KeyCode: unison.KeyP, Modifiers: mod.Option | mod.OSMenuCommand()},
+		// The focused sheet checks the menu item while it shows pages (see Sheet.canTogglePaginated), so the item is
+		// unchecked first, to be left that way when no sheet has the focus.
+		EnabledCallback: func(action *unison.Action, src any) bool {
+			if item, ok := src.(unison.MenuItem); ok {
+				item.SetCheckState(check.Off)
+			}
+			return unison.RouteActionToFocusEnabledFunc(action, src)
+		},
+		ExecuteCallback: unison.RouteActionToFocusExecuteFunc,
+	})
 	syncWithSourceAction = registerFocusAction("clear.sync", SyncWithSourceItemID, i18n.Text("Sync with Source"),
 		unison.KeyBinding{})
 	swapDefaultsAction = registerFocusAction("swap.defaults", SwapDefaultsItemID, i18n.Text("Swap Defaults"),

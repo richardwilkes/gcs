@@ -26,7 +26,8 @@ type Page struct {
 	flex         *unison.FlexLayout
 	infoProvider gurps.PageInfoProvider
 	lastInsets   geom.Insets
-	Force        bool
+	// Force has the page ask for the full height of the paper rather than the height of its content.
+	Force bool
 }
 
 // NewPage creates a new page.
@@ -49,20 +50,31 @@ func NewPage(infoProvider gurps.PageInfoProvider) *Page {
 
 // LayoutSizes implements unison.Layout.
 func (p *Page) LayoutSizes(_ *unison.Panel, _ geom.Size) (minSize, prefSize, maxSize geom.Size) {
+	paper := p.paperSize()
+	p.syncBorder()
+	prefSize.Width = paper.Width
+	if p.Force {
+		prefSize.Height = paper.Height
+	} else {
+		_, size, _ := p.flex.LayoutSizes(p.AsPanel(), geom.Size{Width: paper.Width})
+		prefSize.Height = size.Height
+	}
+	return prefSize, prefSize, prefSize
+}
+
+// paperSize returns the size of the paper the page is printed on.
+func (p *Page) paperSize() geom.Size {
 	pageSettings := p.infoProvider.PageSettings()
 	w, h := pageSettings.Orientation.Dimensions(gurps.MustParsePageSize(pageSettings.Size))
+	return geom.NewSize(w.Pixels(), h.Pixels())
+}
+
+// syncBorder brings the page's border into line with its margins and footer, which the page settings may have changed.
+func (p *Page) syncBorder() {
 	if insets := p.insets(); insets != p.lastInsets {
 		p.lastInsets = insets
 		p.SetBorder(unison.NewEmptyBorder(insets))
 	}
-	prefSize.Width = w.Pixels()
-	if p.Force {
-		prefSize.Height = h.Pixels()
-	} else {
-		_, size, _ := p.flex.LayoutSizes(p.AsPanel(), geom.Size{Width: w.Pixels()})
-		prefSize.Height = size.Height
-	}
-	return prefSize, prefSize, prefSize
 }
 
 // PerformLayout implements unison.Layout.
@@ -118,8 +130,8 @@ func (p *Page) pageNumbering() (number, count int) {
 
 func (p *Page) drawSelf(gc *unison.Canvas, _ geom.Rect) {
 	insets := p.insets()
-	// The page is always laid out at its preferred size (see ApplyPreferredSize and the exporter's Force), so its
-	// frame is that size, and asking the layout for it again would size every block on the page on every draw.
+	// The page is always laid out at its preferred size (see ApplyPreferredSize and Force), so its frame is that size,
+	// and asking the layout for it again would size every block on the page on every draw.
 	r := p.ContentRect(true)
 	gc.DrawRect(r, unison.ThemeBelowSurface.Paint(gc, r, paintstyle.Fill))
 	r.X += insets.Left

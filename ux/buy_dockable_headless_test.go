@@ -419,6 +419,51 @@ func TestBuyDockableReturnsChange(t *testing.T) {
 	c.Equal(1, recordCount, "redo records the purchase again")
 }
 
+// TestBuyDockableFinalizingFocusesTheViewShowingTheSelection checks that finalizing a purchase while the carried
+// equipment goes on over several pages puts the focus on the view of the list showing its selected row, although a
+// selection made from code, as a drop's is, has no lead row. Focusing the view showing the lead row puts the focus on
+// the list's first page instead.
+func TestBuyDockableFinalizingFocusesTheViewShowingTheSelection(t *testing.T) {
+	c := check.New(t)
+	uxtest.SwapForTest(t, &gurps.GlobalSettings().General.InitialSheetPaginated, true)
+	screen, wnd, sheet := buyTestSheet(t, c, func(entity *gurps.Entity) []*gurps.Equipment {
+		carried := buyTestCoins(entity, 7, 0)[:1]
+		for i := range 150 {
+			carried = append(carried, buyTestItem(entity, fmt.Sprintf("Item %d", i+1), "1", 1))
+		}
+		return carried
+	})
+	dagger := buyTestItem(nil, "Dagger", "15", 1)
+	library := buyTestLibrary(t, screen, "", dagger)
+	var views int
+	screen.Do(func() {
+		table := sheet.CarriedEquipment.Table
+		views = len(table.Views())
+		start, _ := table.Views()[views-1].CurrentDrawRowRange()
+		table.SetSelectionMap(map[tid.TID]bool{table.RowFromIndex(start).ID(): true})
+		showBuyDockable(sheet)
+	})
+	c.True(views > 1, "the carried equipment must go on over several pages")
+	_, dropped := buyTestDrop(t, screen, sheet, library, dagger)
+	c.True(dropped)
+	screen.Do(func() {
+		buyDockableFor(sheet).finalize.RequestFocus()
+		buyDockableFor(sheet).finalize.Click()
+	})
+	var lead int
+	var onLaterPage, focused bool
+	screen.Do(func() {
+		table := sheet.CarriedEquipment.Table
+		lead = table.LeadRowIndex()
+		shownBy := table.ViewForRow(table.FirstSelectedRowIndex())
+		onLaterPage = shownBy != table
+		focused = wnd.Focus() == shownBy.AsPanel()
+	})
+	c.Equal(-1, lead, "the selection must have no lead row")
+	c.True(onLaterPage, "the selected row must still be on a later page")
+	c.True(focused, "the focus must be on the view showing the selected row")
+}
+
 // TestBuyDockableFinalizeMerges checks that a purchase merges into a matching carried item when asked to and is carried
 // separately otherwise.
 func TestBuyDockableFinalizeMerges(t *testing.T) {

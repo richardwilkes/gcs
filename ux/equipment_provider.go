@@ -69,7 +69,7 @@ func (p *equipmentProvider) DragSVG() *unison.SVG {
 }
 
 func (p *equipmentProvider) DropShouldMoveData(from, to *unison.Table[*Node[*gurps.Equipment]]) bool {
-	if from == to {
+	if unison.SameTable(from, to) {
 		return true
 	}
 	dockable := from.Ancestor[unison.Dockable]()
@@ -80,7 +80,7 @@ func (p *equipmentProvider) DropShouldMoveData(from, to *unison.Table[*Node[*gur
 }
 
 func (p *equipmentProvider) ProcessDropData(from, to *unison.Table[*Node[*gurps.Equipment]]) {
-	if p.carried && from != to {
+	if p.carried && !unison.SameTable(from, to) {
 		for _, row := range to.SelectedRows(true) {
 			gurps.Traverse(func(e *gurps.Equipment) bool {
 				e.Equipped = true

@@ -296,3 +296,85 @@ func TestMovingEquipmentClosesItsEditorsFirst(t *testing.T) {
 		})
 	}
 }
+
+// TestPageListContinuationOffersTheListsCommands verifies that a continuation of a page list offers the commands its
+// list does on the selection the two share: those every list offers, those of its kind of list and those of its table.
+// Installing on a continuation less than newPageList and NewNodeTable install on the list fails it.
+func TestPageListContinuationOffersTheListsCommands(t *testing.T) {
+	c := check.New(t)
+	sheet := newTestSheetForTemplate(t)
+	entity := sheet.Entity()
+	trait := gurps.NewTrait(entity, nil, false)
+	trait.Name = "Trait"
+	entity.Traits = []*gurps.Trait{trait}
+	eqp := gurps.NewEquipment(entity, nil, false)
+	eqp.Name = "Rope"
+	entity.CarriedEquipment = []*gurps.Equipment{eqp}
+	for _, one := range []struct {
+		name  string
+		ids   []int
+		views func() (list, cont *unison.Panel)
+	}{
+		{
+			name: "traits",
+			ids:  []int{OpenEditorItemID, unison.DeleteItemID, ToggleStateItemID},
+			views: func() (list, cont *unison.Panel) {
+				return firstRowSelectedViews(NewTraitsPageList(sheet, entity))
+			},
+		},
+		{
+			name: "carried equipment",
+			ids: []int{
+				OpenEditorItemID, unison.DeleteItemID, ToggleStateItemID, IncrementItemID,
+				MoveToOtherEquipmentItemID,
+			},
+			views: func() (list, cont *unison.Panel) {
+				return firstRowSelectedViews(NewCarriedEquipmentPageList(sheet, entity))
+			},
+		},
+	} {
+		list, cont := one.views()
+		for _, id := range one.ids {
+			c.True(list.CanPerformCmd(nil, id), "%s: the list must offer command %d", one.name, id)
+			c.True(cont.CanPerformCmd(nil, id), "%s: its continuation must offer command %d too", one.name, id)
+		}
+	}
+}
+
+// firstRowSelectedViews selects the first row of the list and returns its table and the view of it its first
+// continuation holds, from which a command reaches the handlers of the view and then those of the panel holding it.
+func firstRowSelectedViews[T gurps.Node[T]](list *PageList[T]) (listView, contView *unison.Panel) {
+	list.Table.SelectByIndex(0)
+	return list.Table.AsPanel(), list.continuation(0).Table.AsPanel()
+}
+
+// TestPageListContinuationHasTheListsOverhead verifies that a continuation of a page list takes the same height beyond
+// its rows as the list does, since pagination fits rows to a page by it. A continuation without the list's border
+// fails it.
+func TestPageListContinuationHasTheListsOverhead(t *testing.T) {
+	c := check.New(t)
+	sheet := newTestLootSheet(t)
+	overhead := sheet.Notes.OverheadHeight()
+	c.True(overhead > 0, "a list has a border and a header")
+	c.Equal(overhead, sheet.Notes.continuation(0).OverheadHeight(), "a continuation must take the list's overhead")
+}
+
+// TestPageListTrimContinuationsRemovesTheirViews verifies that trimming the continuations of a page list takes the ones
+// beyond those kept off their pages and their views out of the list's table, where they would go on claiming rows,
+// while the next one asked for is made anew. Dropping them from the list alone fails it.
+func TestPageListTrimContinuationsRemovesTheirViews(t *testing.T) {
+	c := check.New(t)
+	list := newTestLootSheet(t).Notes
+	page := unison.NewPanel()
+	kept := list.continuation(0)
+	trimmed := list.continuation(1)
+	page.AddChild(kept)
+	page.AddChild(trimmed)
+	c.Equal(3, len(list.Table.Views()), "each continuation holds a view of the list's table")
+	list.trimContinuations(1)
+	c.Equal([]*unison.Table[*Node[*gurps.Note]]{list.Table, kept.Table}, list.Table.Views(),
+		"the view of the trimmed continuation must be taken out of the table")
+	c.Equal([]*unison.Panel{kept.AsPanel()}, page.Children(), "and the trimmed continuation off its page")
+	c.Equal(kept, list.continuation(0), "the continuation kept is handed out again")
+	c.NotEqual(trimmed, list.continuation(1), "while the next one is made anew")
+}

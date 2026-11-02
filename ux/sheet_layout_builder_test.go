@@ -289,7 +289,7 @@ func TestFactoryPortraitPictureAreaIsSquare(t *testing.T) {
 // to show, and that the blocks that aren't lists are the panels the sheet keeps rather than new ones.
 func TestSheetPageMatchesTheLayout(t *testing.T) {
 	c := check.New(t)
-	sheet := newTestSheetForTemplate(t)
+	sheet := newContinuousTestSheet(t)
 	layout := sheet.Entity().SheetSettings.Layout
 
 	c.Equal(nonEmptyBandCount(sheet, layout), len(sheet.page.Children()),
@@ -347,7 +347,7 @@ func isEmptyDerivedList(sheet *Sheet, key string) bool {
 // back.
 func TestSheetHidingAndShowingABlock(t *testing.T) {
 	c := check.New(t)
-	sheet := newTestSheetForTemplate(t)
+	sheet := newContinuousTestSheet(t)
 	layout := sheet.Entity().SheetSettings.Layout
 	notes := sheet.Notes
 	c.NotNil(notes.AsPanel().Parent(), "the notes list starts out on the page")

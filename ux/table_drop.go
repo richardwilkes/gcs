@@ -106,7 +106,8 @@ func modifierAltDropSupport[T gurps.ModifiableNode[T, M], M gurps.ModifierNode[M
 	}
 }
 
-// InstallTableDropSupport installs our standard drop support on a table.
+// InstallTableDropSupport installs our standard drop support on a view of a table, the table itself included. Each view
+// that should accept drops needs its own call.
 func InstallTableDropSupport[T gurps.Node[T]](table *unison.Table[*Node[T]], provider TableProvider[T]) {
 	table.ClientData()[TableProviderClientKey] = provider
 	drop := table.InstallDropSupport(provider.DragKey(), provider.DropShouldMoveData, willDropCallback[T],
@@ -117,19 +118,23 @@ func InstallTableDropSupport[T gurps.Node[T]](table *unison.Table[*Node[T]], pro
 	InstallMoveSelectionHandlers(table)
 	// No DragRemovedRowsCallback is installed: it would only ever fire for a move between two different tables, which
 	// the providers only allow within a single dockable (see their DropShouldMoveData), so the report made for the
-	// table the rows landed in covers the one they left as well.
-	table.DropOccurredCallback = func() {
-		// unison notifies the table before it calls the did-drop callback, so this is deferred until the drop handlers
-		// have had their turn, and it looks up the table still on screen, since those handlers may have caused the
-		// owner to replace it. They report the drop themselves when they rebuild the owner (see dropRebuilder), in
-		// which case marking the table as modified would just repeat the whole update; elsewhere it is reported here.
-		unison.InvokeTaskAfter(func() {
-			current := liveTable(table)
-			if dropRebuilder(current) == nil {
-				MarkModified(current)
-			}
-			current.RequestFocusWithoutScroll()
-		}, 1)
+	// table the rows landed in covers the one they left as well. The views of a table share its DropOccurredCallback,
+	// so only the table itself installs that.
+	if table.Primary() == table {
+		table.DropOccurredCallback = func() {
+			// unison notifies the table before it calls the did-drop callback, so this is deferred until the drop
+			// handlers have had their turn, and it looks up the table still on screen, since those handlers may have
+			// caused the owner to replace it. They report the drop themselves when they rebuild the owner (see
+			// dropRebuilder), in which case marking the table as modified would just repeat the whole update; elsewhere
+			// it is reported here. The focus goes to the view showing the row the person is on.
+			unison.InvokeTaskAfter(func() {
+				current := liveTable(table)
+				if dropRebuilder(current) == nil {
+					MarkModified(current)
+				}
+				current.ViewForRow(currentRowIndex(current)).RequestFocusWithoutScroll()
+			}, 1)
+		}
 	}
 	if altDropSupport := provider.AltDropSupport(); altDropSupport != nil {
 		altDataType := altDropSupport.DragKey
@@ -238,10 +243,10 @@ func willDropCallback[T gurps.Node[T]](from, to *unison.Table[*Node[T]], move bo
 	// lists the grants put rows in are then part of the edit; see grantRowListsOf.
 	var others []tableRestorer
 	data, ok := draggedTableData.(*unison.TableDragData[*Node[T]])
-	if ok && move && data.Table == from && rowsCarryGrants(data.Rows) {
+	if ok && move && unison.SameTable(data.Table, from) && rowsCarryGrants(data.Rows) {
 		others = grantRowListsOf(to.ClientData()[TableOwnerClientKey], to.RefKey)
 	}
-	if from != nil && (!move || from == to) {
+	if from != nil && (!move || unison.SameTable(from, to)) {
 		from = nil
 	}
 	before := NewTableDragUndoEditData(from, to)
@@ -362,7 +367,7 @@ func finishDidDrop[T gurps.Node[T]](undo *unison.UndoEdit[*TableDragUndoEditData
 	if mgr == nil {
 		return
 	}
-	if from != nil && (!move || from == to) {
+	if from != nil && (!move || unison.SameTable(from, to)) {
 		from = nil
 	}
 	after := NewTableDragUndoEditData(from, to)

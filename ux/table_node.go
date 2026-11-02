@@ -197,7 +197,8 @@ func (n *Node[T]) CloneForTarget(target unison.Paneler, newParent *Node[T]) *Nod
 	if list, isList := provider.(interface{ attachNode(node T) }); isList {
 		list.attachNode(clone)
 	}
-	return NewNode(table, newParent, clone, false)
+	// A row belongs to the table, not to the view of it that the drop landed in.
+	return NewNode(table.Primary(), newParent, clone, false)
 }
 
 // ID implements unison.TableRowData.
@@ -1343,12 +1344,13 @@ func InsertItems[T gurps.Node[T]](owner Rebuildable, table *unison.Table[*Node[T
 	}
 	table.SetRootRows(rowData(table))
 	table.ValidateScrollRoot()
-	table.RequestFocus()
 	selMap := make(map[tid.TID]bool)
 	for _, item := range items {
 		selMap[item.ID()] = true
 	}
 	table.SetSelectionMap(selMap)
+	// The focus goes to the view of the table showing the new items.
+	table.ViewForRow(table.FirstSelectedRowIndex()).RequestFocus()
 	table.ScrollRowCellIntoView(table.LastSelectedRowIndex(), 0)
 	table.ScrollRowCellIntoView(table.FirstSelectedRowIndex(), 0)
 	commitTableUndo(table, undo)

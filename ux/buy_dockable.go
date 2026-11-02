@@ -644,8 +644,8 @@ func (d *buyDockable) installDropSupport() {
 
 // claimsDrag returns true if the equipment being dragged comes from elsewhere than the sheet and would be bought were
 // it dropped on this dockable, in which case the sheet and its lists leave the drag to it (see Sheet.keyToPanel and
-// PageList.installBuyDragDeferral). The sheet's own equipment is left to its lists, so rows can be moved about while
-// buying; dropped on the dockable, it is bought like any other.
+// installBuyDragDeferral). The sheet's own equipment is left to its lists, so rows can be moved about while buying;
+// dropped on the dockable, it is bought like any other.
 func (d *buyDockable) claimsDrag(di drag.Info) bool {
 	data := d.dropData(di)
 	if data == nil {
@@ -1295,11 +1295,12 @@ func (d *buyDockable) finalizePurchase() bool {
 }
 
 // returnToSheet brings the sheet forward with the keyboard focus on its carried equipment list, which now holds what
-// was bought, or elsewhere on the sheet while the layout leaves the list off the page.
+// was bought, or elsewhere on the sheet while the layout leaves the list off the page. The focus goes to the view of
+// the list showing the row the person is on.
 func (d *buyDockable) returnToSheet() {
 	ActivateDockable(d.sheet)
-	if table := d.sheet.CarriedEquipment.Table; unison.AncestorIs(table, d.sheet.page) {
-		table.RequestFocusWithoutScroll()
+	if table := d.sheet.CarriedEquipment.Table; d.sheet.onPages(table) {
+		table.ViewForRow(currentRowIndex(table)).RequestFocusWithoutScroll()
 	}
 }
 

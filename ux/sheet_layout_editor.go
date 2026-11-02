@@ -28,8 +28,6 @@ import (
 	"github.com/richardwilkes/unison/enums/paintstyle"
 )
 
-var _ unison.Layout = &overlayStackLayout{}
-
 // The sizes, in page pixels, of the things the layout editor draws and reacts to. They are float32 so that halving one
 // yields the half rather than an integer division.
 const (
@@ -48,27 +46,6 @@ const (
 	layoutSquareSlop      float32 = 0.5
 	layoutSquareTolerance float32 = 1
 )
-
-// overlayStackLayout lays a sheet's content out as the page at its preferred size with, while the block layout is being
-// edited, the editor's overlay covering it exactly.
-type overlayStackLayout struct {
-	page    *Page
-	overlay *unison.Panel
-}
-
-// LayoutSizes implements unison.Layout.
-func (l *overlayStackLayout) LayoutSizes(_ *unison.Panel, hint geom.Size) (minSize, prefSize, maxSize geom.Size) {
-	return l.page.Sizes(hint)
-}
-
-// PerformLayout implements unison.Layout.
-func (l *overlayStackLayout) PerformLayout(_ *unison.Panel) {
-	_, prefSize, _ := l.page.Sizes(geom.Size{})
-	l.page.SetFrameRect(geom.Rect{Size: prefSize})
-	if l.overlay != nil {
-		l.overlay.SetFrameRect(l.page.FrameRect())
-	}
-}
 
 // layoutEditMode is what the layout editor is in the middle of doing.
 type layoutEditMode byte
@@ -288,13 +265,12 @@ func (e *sheetLayoutEditor) start() {
 	overlay.ContextMenuCallback = e.contextMenu
 	e.overlay = overlay
 	// Index 0 is drawn last and hit-tested first, so the overlay covers the page no matter what else is added to the
-	// content later.
-	e.sheet.content.AddChildAtIndex(overlay, 0)
-	e.sheet.contentLayout.overlay = overlay
+	// content later. The grid lays it over the whole of itself, which while the layout is edited is the one page.
+	e.sheet.grid.AddChildAtIndex(overlay, 0)
 	// A frame change anywhere below the page means the regions no longer describe where anything is. They are only
 	// thrown away here, not recomputed, since this fires once per panel per layout pass.
 	e.sheet.page.FrameChangeInChildHierarchyCallback = func(_ *unison.Panel) { e.regions = nil }
-	e.sheet.content.MarkForLayoutAndRedraw()
+	e.sheet.grid.MarkForLayoutAndRedraw()
 	e.syncFrame()
 	// Whatever had the focus is remembered so that it can be handed back when editing ends: the Edit menu's undo and
 	// redo go to the focused panel's undo manager, so leaving the sheet without a focus would make the layout edits
@@ -307,13 +283,12 @@ func (e *sheetLayoutEditor) start() {
 func (e *sheetLayoutEditor) stop() {
 	e.cancelDrag()
 	e.sheet.page.FrameChangeInChildHierarchyCallback = nil
-	e.sheet.contentLayout.overlay = nil
 	if e.overlay != nil {
 		e.overlay.RemoveFromParent()
 		e.overlay = nil
 	}
 	e.regions = nil
-	e.sheet.content.MarkForLayoutAndRedraw()
+	e.sheet.grid.MarkForLayoutAndRedraw()
 	e.restoreFocus()
 	e.sheet.UpdateCursorNow()
 }

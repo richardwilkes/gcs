@@ -10,6 +10,7 @@
 package ux
 
 import (
+	"iter"
 	"path/filepath"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
@@ -60,13 +61,14 @@ var (
 type Sheet struct {
 	pageView
 	entity               *gurps.Entity
-	content              *unison.Panel
-	contentLayout        *overlayStackLayout
-	page                 *Page
+	grid                 *pageGrid
+	page                 *Page // The grid's first page, which is the only one while the sheet is shown continuously
 	blocks               map[string]unison.Paneler
 	layoutEditor         *sheetLayoutEditor
 	layoutButton         *unison.Button
 	layoutButtonGroup    *unison.Group
+	pagesButton          *unison.Button
+	pagesButtonGroup     *unison.Group
 	unsettledNotice      *unison.Tag
 	Reactions            *PageList[*gurps.ConditionalModifier]
 	ConditionalModifiers *PageList[*gurps.ConditionalModifier]
@@ -78,6 +80,8 @@ type Sheet struct {
 	CarriedEquipment     *PageList[*gurps.Equipment]
 	OtherEquipment       *PageList[*gurps.Equipment]
 	Notes                *PageList[*gurps.Note]
+	// paginated is whether the sheet shows pages of the paper's size rather than one continuous page.
+	paginated bool
 }
 
 // ActiveSheet returns the currently active sheet.
@@ -111,16 +115,13 @@ func NewSheetFromFile(filePath string) (unison.Dockable, error) {
 // NewSheet creates a new unison.Dockable for GURPS character sheet files.
 func NewSheet(filePath string, entity *gurps.Entity) *Sheet {
 	s := &Sheet{
-		entity:  entity,
-		content: unison.NewPanel(),
+		entity:    entity,
+		paginated: gurps.GlobalSettings().General.InitialSheetPaginated,
 	}
 	s.initPageDockable(s, filePath, gurps.SheetExt, entity.Save, entity)
 
-	s.page = NewPage(s.entity)
-	// The stacking layout puts the layout editor's overlay on top of the page, at exactly the page's size.
-	s.contentLayout = &overlayStackLayout{page: s.page}
-	s.content.SetLayout(s.contentLayout)
-	s.content.AddChild(s.page)
+	s.grid = newPageGrid(s)
+	s.page = s.grid.pages[0]
 	// Every block that isn't a list is built once, here, and kept for as long as the sheet lives, whether the layout
 	// shows it or not. Re-parenting the same panels on each rebuild keeps the field focus and the target manager's
 	// references to them valid.
@@ -131,7 +132,7 @@ func NewSheet(filePath string, entity *gurps.Entity) *Sheet {
 		}
 	}
 	s.buildLayout()
-	s.finishPageDockable(s, s.content)
+	s.finishPageDockable(s, s.grid)
 
 	installListItemCmdHandlers(s, listItemCreators{
 		traits:           s.onPageCreator(gurps.BlockTraitsKey, func() itemCreator { return s.Traits }),
@@ -148,6 +149,7 @@ func NewSheet(filePath string, entity *gurps.Entity) *Sheet {
 	s.InstallCmdHandlers(ExportPortraitItemID, s.canExportPortrait, s.exportPortrait)
 	s.InstallCmdHandlers(CloneSheetItemID, unison.AlwaysEnabled, func(_ any) { s.cloneSheet() })
 	s.InstallCmdHandlers(EditSheetLayoutItemID, unison.AlwaysEnabled, func(_ any) { s.toggleLayoutEditing() })
+	s.InstallCmdHandlers(ShowAsPagesItemID, s.canTogglePaginated, func(_ any) { s.togglePaginated() })
 	return s
 }
 
@@ -199,6 +201,11 @@ func (s *Sheet) createToolbar() {
 	AddUIScaleField(s.toolbar, func() int { return gurps.GlobalSettings().General.InitialSheetUIScale },
 		func() int { return s.scale }, func(scale int) { s.scale = scale }, true, s.scroll)
 
+	s.pagesButton, s.pagesButtonGroup = newLatchingButton(svg.Pages, i18n.Text("Show the sheet as pages"),
+		s.togglePaginated)
+	setLatched(s.pagesButton, s.pagesButtonGroup, s.paginated)
+	s.toolbar.AddChild(s.pagesButton)
+
 	hierarchyButton := unison.NewSVGButton(svg.Hierarchy)
 	hierarchyButton.Tooltip = newWrappedTooltip(i18n.Text("Opens/closes all hierarchical rows"))
 	hierarchyButton.ClickCallback = s.toggleHierarchy
@@ -224,16 +231,8 @@ func (s *Sheet) createToolbar() {
 	bodyTypeButton.ClickCallback = func() { ShowBodySettings(s) }
 	s.toolbar.AddChild(bodyTypeButton)
 
-	// The layout button latches, which unison only draws for a button that belongs to a group, so it is given one of
-	// its own. Its base is hidden while off, the way every other toolbar button's is, and shown while on, so that
-	// editing the layout reads as a filled chip rather than a mere change of tint.
-	s.layoutButton = unison.NewSVGButton(svg.Layout)
-	s.layoutButton.Sticky = true
-	s.layoutButtonGroup = unison.NewGroup(s.layoutButton)
-	s.layoutButton.Tooltip = newWrappedTooltip(i18n.Text("Edit the sheet's block layout"))
-	// A latching button in a group reads as a radio button, but this one is on or off by itself.
-	s.layoutButton.Accessibility.Role = role.ToggleButton
-	s.layoutButton.ClickCallback = s.toggleLayoutEditing
+	s.layoutButton, s.layoutButtonGroup = newLatchingButton(svg.Layout, i18n.Text("Edit the sheet's block layout"),
+		s.toggleLayoutEditing)
 	s.toolbar.AddChild(s.layoutButton)
 
 	layoutMenuButton := unison.NewSVGButton(svg.CircledVerticalEllipsis)
@@ -275,6 +274,31 @@ func (s *Sheet) createToolbar() {
 	}
 
 	finishFlowToolbarLayout(s.toolbar, s.search.field)
+}
+
+// newLatchingButton returns a toolbar button that latches on and off by itself, starting off. unison only draws a
+// latching button that belongs to a group, so it is given one of its own, which setLatched needs to show its state.
+func newLatchingButton(icon *unison.SVG, tooltip string, clickCallback func()) (*unison.Button, *unison.Group) {
+	b := unison.NewSVGButton(icon)
+	b.Sticky = true
+	g := unison.NewGroup(b)
+	b.Tooltip = newWrappedTooltip(tooltip)
+	// A latching button in a group reads as a radio button, but this one is on or off by itself.
+	b.Accessibility.Role = role.ToggleButton
+	b.ClickCallback = clickCallback
+	return b, g
+}
+
+// setLatched shows a button made by newLatchingButton as on or off. Its base is hidden while off, the way every other
+// toolbar button's is, and shown while on, so that on reads as a filled chip rather than a mere change of tint.
+func setLatched(b *unison.Button, g *unison.Group, on bool) {
+	b.HideBase = !on
+	if on {
+		g.Select(b)
+	} else {
+		g.Select(nil)
+	}
+	b.MarkForLayoutAndRedraw()
 }
 
 // syncUnsettledNotice shows the notice in the toolbar while the entity's data never settles (see
@@ -347,7 +371,6 @@ func (s *Sheet) updatePortrait(data []byte) {
 }
 
 func (s *Sheet) keyToPanel(key *uti.DataType) *unison.Panel {
-	var p unison.Paneler
 	switch key {
 	case equipmentDragKey:
 		if d := buyDockableFor(s); d != nil {
@@ -355,23 +378,33 @@ func (s *Sheet) keyToPanel(key *uti.DataType) *unison.Panel {
 			// dockable, wherever it is docked (see buyDockable.claimsDrag).
 			return d.AsPanel()
 		}
-		p = s.CarriedEquipment.Table
+		return dropTargetView(s, s.CarriedEquipment)
 	case skillDragKey:
-		p = s.Skills.Table
+		return dropTargetView(s, s.Skills)
 	case spellDragKey:
-		p = s.Spells.Table
+		return dropTargetView(s, s.Spells)
 	case traitDragKey:
-		p = s.Traits.Table
+		return dropTargetView(s, s.Traits)
 	case noteDragKey:
-		p = s.Notes.Table
+		return dropTargetView(s, s.Notes)
 	default:
 		return nil
 	}
-	if !unison.AncestorIs(p, s.page) {
-		// The layout doesn't place the list, so it isn't a drop target and there is nothing to draw feedback over.
+}
+
+// dropTargetView returns the view of the list's table showing its last row, so that a drop rerouted to the list (see
+// installDropRerouting) lands at its end even when the list goes on over several pages, or nil when the sheet doesn't
+// show the list, which leaves it nothing to drop on and nothing to draw feedback over.
+func dropTargetView[T gurps.Node[T]](s *Sheet, list *PageList[T]) *unison.Panel {
+	if !s.onPages(list) {
 		return nil
 	}
-	return p.AsPanel()
+	return list.Table.ViewForRow(list.Table.LastRowIndex()).AsPanel()
+}
+
+// onPages returns true if the panel is on one of the sheet's pages.
+func (s *Sheet) onPages(p unison.Paneler) bool {
+	return unison.AncestorIs(p, s.grid)
 }
 
 // Entity returns the entity this is displaying information for.
@@ -462,7 +495,7 @@ func (s *Sheet) bumpModificationTimestamp() {
 	}
 }
 
-// buildLayout (re)builds the page from the sheet's block layout tree. The panels themselves are not rebuilt: the
+// buildLayout (re)builds the pages from the sheet's block layout tree. The panels themselves are not rebuilt: the
 // blocks that aren't lists are built once and kept (see NewSheet), and a list is only built anew when the columns it
 // has to show no longer match the ones it has, since a table's columns are fixed at creation. Anything that captured a
 // list has to allow for it being replaced -- see installNewItemCmdHandlers.
@@ -479,18 +512,28 @@ func (s *Sheet) buildLayout() {
 		}
 	}
 	layout := s.entity.SheetSettings.Layout
-	s.page.RemoveAllChildren()
-	for _, band := range buildLayoutBands(layout.Root, s.layoutLeaf) {
-		s.page.AddChild(band)
-	}
-	// A list the layout doesn't show is still brought into being, since the undo data, the disclosure handling, the
-	// searching and the rebuild's selection tracking all reach for all ten without asking whether they are on the page.
-	for _, key := range gurps.AllBlockKeys {
-		if gurps.IsListBlockKey(key) && !layout.Contains(key) {
-			s.layoutLeaf(key)
+	if s.grid.paginated() {
+		// The grid fills the pages itself (see pageGrid), so the leaf is asked for each block here only for what it
+		// does to the lists: syncing them, or building them anew.
+		for _, key := range gurps.AllBlockKeys {
+			if gurps.IsListBlockKey(key) {
+				s.layoutLeaf(key)
+			}
+		}
+		s.grid.invalidate()
+	} else {
+		s.grid.joinLists()
+		s.grid.showContinuous(buildLayoutBands(layout.Root, s.layoutLeaf))
+		// A list the layout doesn't show is still brought into being, since the undo data, the disclosure handling,
+		// the searching and the rebuild's selection tracking all reach for all ten without asking whether they are on
+		// the page.
+		for _, key := range gurps.AllBlockKeys {
+			if gurps.IsListBlockKey(key) && !layout.Contains(key) {
+				s.layoutLeaf(key)
+			}
 		}
 	}
-	s.page.ApplyPreferredSize()
+	s.grid.relayout()
 	if s.layoutEditing() {
 		// The page just changed size and every block moved, so the overlay has to be resized and its regions discarded.
 		s.layoutEditor.syncFrame()
@@ -557,6 +600,56 @@ func derivedListLeaf[T gurps.Node[T]](s *Sheet, list **PageList[T], build func()
 		return nil
 	}
 	return l
+}
+
+// pageLeaf returns the leaf function that fills the sheet's pages, as exportLeaf does the exporter's (see it for what
+// the startAt map holds), but with the sheet's own panels and without syncing anything, which buildLayout has already
+// done. A block that isn't a list is placed whole, a list goes on from the row startAt gives for it (see
+// pageListLeaf), and a block already placed on an earlier page hands back a page spacer.
+func (s *Sheet) pageLeaf(startAt map[string]int) layoutLeafFunc {
+	return func(key string) unison.Paneler {
+		start := startAt[key]
+		if gurps.IsListBlockKey(key) {
+			list, ok := s.list(key).(splittableList)
+			if !ok || xreflect.IsNil(list) {
+				return nil
+			}
+			return pageListLeaf(key, list, start, s.grid.handedOut, isDerivedListKey(key))
+		}
+		block, exists := s.blocks[key]
+		if !exists {
+			return nil
+		}
+		if start == placedBlockMarker {
+			return newPageSpacer()
+		}
+		panel := block.AsPanel()
+		panel.RemoveFromParent()
+		panel.ClientData()[pageKey] = key
+		return block
+	}
+}
+
+// isDerivedListKey returns true if the key is that of one of the four lists derived from the character rather than
+// edited directly, which the sheet leaves out while they have no rows.
+func isDerivedListKey(key string) bool {
+	switch key {
+	case gurps.BlockReactionsKey, gurps.BlockConditionalModifiersKey, gurps.BlockMeleeKey, gurps.BlockRangedKey:
+		return true
+	default:
+		return false
+	}
+}
+
+// splittableLists returns the sheet's lists that exist, by block key, in the canonical block order.
+func (s *Sheet) splittableLists() iter.Seq2[string, splittableList] {
+	return func(yield func(string, splittableList) bool) {
+		for _, key := range gurps.AllBlockKeys {
+			if list, ok := s.list(key).(splittableList); ok && !xreflect.IsNil(list) && !yield(key, list) {
+				return
+			}
+		}
+	}
 }
 
 // blockPanel returns the panel the sheet uses for the block with the given key, or nil if it has none. Unlike
@@ -736,25 +829,80 @@ func (s *Sheet) carriedEquipmentCreator() itemCreator {
 	return s.CarriedEquipment
 }
 
+// toggleLayoutEditing starts or stops the editing of the block layout. A sheet shown as pages is shown continuously
+// while its layout is being edited, without changing what the user chose to show.
 func (s *Sheet) toggleLayoutEditing() {
+	// Taken before the editor hands the focus back, which can scroll to wherever it goes.
+	fraction := s.scrollFraction()
 	if s.layoutEditing() {
 		editor := s.layoutEditor
 		s.layoutEditor = nil
 		editor.stop()
+		if s.paginated {
+			s.applyViewMode(fraction, false)
+		}
 	} else {
 		s.layoutEditor = newSheetLayoutEditor(s)
+		if s.paginated {
+			s.applyViewMode(fraction, false)
+		}
 		s.layoutEditor.start()
 	}
 	editing := s.layoutEditing()
 	if s.layoutButton != nil {
-		s.layoutButton.HideBase = !editing
-		if editing {
-			s.layoutButtonGroup.Select(s.layoutButton)
-		} else {
-			s.layoutButtonGroup.Select(nil)
-		}
-		s.layoutButton.MarkForLayoutAndRedraw()
+		setLatched(s.layoutButton, s.layoutButtonGroup, editing)
 	}
+	if s.pagesButton != nil {
+		s.pagesButton.SetEnabled(!editing)
+	}
+}
+
+// canTogglePaginated permits the Show as Pages command, checking its menu item while the sheet shows pages. The sheet
+// is shown continuously while its block layout is being edited, whatever the user chose, so the command is withheld
+// then rather than letting it latch with nothing to show for it.
+func (s *Sheet) canTogglePaginated(src any) bool {
+	if item, ok := src.(unison.MenuItem); ok {
+		item.SetCheckState(check.FromBool(s.paginated))
+	}
+	return !s.layoutEditing()
+}
+
+// togglePaginated switches the sheet between showing pages and showing one continuous page.
+func (s *Sheet) togglePaginated() {
+	s.paginated = !s.paginated
+	if s.pagesButton != nil {
+		setLatched(s.pagesButton, s.pagesButtonGroup, s.paginated)
+	}
+	s.applyViewMode(s.scrollFraction(), true)
+}
+
+// scrollFraction returns how far down the sheet is scrolled, as a fraction of how far it can be.
+func (s *Sheet) scrollFraction() float32 {
+	bar := s.scroll.Bar(false)
+	if maxValue := bar.MaxValue(); maxValue > 0 {
+		return bar.Value() / maxValue
+	}
+	return 0
+}
+
+// applyViewMode shows the sheet as pages or as one continuous page, whichever pageGrid.paginated now says. Everything
+// moves, so the old scroll position means nothing: the view is scrolled the given fraction of the way down instead, or,
+// when toFocus is set and something on the sheet holds the focus, that is brought into view, which is what a person
+// switching the view for themselves wants, and what leaving the layout editor, which puts the focus back wherever it
+// was before editing began, must not do.
+func (s *Sheet) applyViewMode(fraction float32, toFocus bool) {
+	state := s.captureViewState()
+	s.buildLayout()
+	s.scroll.MarkForLayoutAndRedraw()
+	s.scroll.ValidateLayout()
+	s.targetMgr.ReacquireFocus(state.focusRef, s.toolbar, s.grid)
+	if wnd := s.Window(); toFocus && wnd != nil {
+		if focus := wnd.CurrentFocus(); focus != nil && s.onPages(focus) {
+			focus.ScrollIntoView()
+			return
+		}
+	}
+	s.scroll.SetPosition(0, fraction*s.scroll.Bar(false).MaxValue())
 }
 
 // applySheetLayout replaces the sheet's block layout with a copy of the one given and shows the result. The sheet owns

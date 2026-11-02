@@ -265,7 +265,7 @@ func TestGeneralSettingsCheckBoxesAndScaleFieldsEditTheLiveSettings(t *testing.T
 	c := check.New(t)
 	d := newTestGeneralSettingsDockable(t)
 	gs := gurps.GlobalSettings().General
-	c.Equal(7, len(d.checkBoxes), "expected one checkbox per general setting in the block")
+	c.Equal(8, len(d.checkBoxes), "expected one checkbox per general setting in the block")
 	c.Equal(6, len(d.initialScaleFields), "expected one initial scale field per document kind")
 
 	// Each checkbox must have its own field of the live settings, and show its value.

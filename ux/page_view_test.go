@@ -131,7 +131,7 @@ func newPageDockableFixtures(t *testing.T) []pageDockableFixture {
 	lootData := gurps.NewLoot()
 	loot := NewLootSheet("test"+gurps.LootExt, lootData)
 	return []pageDockableFixture{
-		{"sheet", sheet, &sheet.pageView, sheet.content, func() { entity.Profile.Name = "Bob" }},
+		{"sheet", sheet, &sheet.pageView, sheet.grid, func() { entity.Profile.Name = "Bob" }},
 		{
 			"template", template, &template.pageView, template.content,
 			func() { templateData.Notes = append(templateData.Notes, gurps.NewNote(nil, nil, false)) },

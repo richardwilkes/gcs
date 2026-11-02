@@ -68,7 +68,7 @@ const (
 	CursorSizeMax              = unison.MaxCursorSize
 )
 
-const currentGeneralSettingsVersion = 2
+const currentGeneralSettingsVersion = 3
 
 // GeneralSettings holds the application's general settings.
 type GeneralSettings struct {
@@ -103,6 +103,10 @@ type GeneralSettings struct {
 	RestoreWorkspaceOnStart     bool               `json:"restore_workspace_on_start"`
 	ExpandPageReferences        bool               `json:"expand_page_references"`
 	FocusForReading             bool               `json:"focus_for_reading,omitzero"`
+	// InitialSheetPaginated is whether a character sheet opens showing pages of the paper's size, as many across as fit,
+	// rather than one continuous page. Unlike the printed pages, they show an empty list that can be added to, so they
+	// can break elsewhere.
+	InitialSheetPaginated bool `json:"initial_sheet_paginated"`
 }
 
 // NewGeneralSettings creates settings with factory defaults.
@@ -133,6 +137,7 @@ func NewGeneralSettings() *GeneralSettings {
 		AutoAddNaturalAttacks:      true,
 		RestoreWorkspaceOnStart:    true,
 		ExpandPageReferences:       true,
+		InitialSheetPaginated:      true,
 	}
 }
 
@@ -219,6 +224,10 @@ func (s *GeneralSettings) EnsureValidity() {
 		if s.Version < 2 {
 			// This setting didn't exist before, so enable it to match the new default behavior.
 			s.ExpandPageReferences = true
+		}
+		if s.Version < 3 {
+			// This setting didn't exist before, so enable it to match the new default behavior.
+			s.InitialSheetPaginated = true
 		}
 		s.Version = currentGeneralSettingsVersion
 	}

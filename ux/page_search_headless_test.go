@@ -311,7 +311,8 @@ func TestPageSearchScrollsDisclosedRowIntoView(t *testing.T) {
 		table := f.sheet.Notes.Table
 		index = rowIndexForData(table, last)
 		if index >= 0 {
-			rowRect = table.RectToRoot(table.RowFrame(index))
+			view := table.ViewForRow(index)
+			rowRect = view.RectToRoot(view.RowFrame(index))
 		}
 		view := f.sheet.scroll.ContentView()
 		viewRect = view.RectToRoot(view.ContentRect(false))

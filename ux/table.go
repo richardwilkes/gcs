@@ -29,6 +29,11 @@ import (
 
 const containerMarker = "\000"
 
+// currentRowViewKey is the client data key under which a node table keeps a func() *unison.Panel returning the view
+// showing the row the person is on (see currentRowIndex), or nil when nothing is selected, so that tabStopOf can ask
+// for it without knowing the type of the table's rows.
+const currentRowViewKey = "current-row-view"
+
 // TableOwnerClientKey is the key used to store a table's Rebuildable owner with the table. It is stored on the table
 // itself, rather than looked up through the panel hierarchy, so that it can still be found after the owner has
 // replaced the table with a new one.
@@ -89,21 +94,12 @@ func NewNodeTable[T gurps.Node[T]](provider TableProvider[T], font unison.Font) 
 	table.ShowFirstColumnDivider = false
 	provider.SetTable(table)
 	table.HierarchyColumnID = provider.HierarchyColumnID()
-	layoutData := &unison.FlexLayoutData{
-		HAlign: align.Fill,
-		VAlign: align.Fill,
-		HGrab:  true,
-		VGrab:  true,
-	}
 	if font != nil {
 		table.Padding.Top = 0
 		table.Padding.Bottom = 0
 		table.HierarchyIndent = font.LineHeight()
 		table.MinimumRowHeight = font.LineHeight()
-		layoutData.MinSize = geom.Size{Height: 4 + fonts.PageFieldPrimary.LineHeight()}
 	}
-	table.SetLayoutData(layoutData)
-
 	ids := provider.ColumnIDs()
 	headers := provider.Headers()
 	table.Columns = make([]unison.ColumnInfo, len(headers))
@@ -116,7 +112,21 @@ func NewNodeTable[T gurps.Node[T]](provider TableProvider[T], font unison.Font) 
 		table.Columns[i].Minimum = pref.Width
 		table.Columns[i].Maximum = 10000
 	}
-	header = unison.NewTableHeader(table, headers...)
+	table.DoubleClickCallback = func() { table.PerformCmd(nil, OpenEditorItemID) }
+	table.ClientData()[currentRowViewKey] = func() *unison.Panel {
+		if row := currentRowIndex(table); row >= 0 {
+			return table.ViewForRow(row).AsPanel()
+		}
+		return nil
+	}
+	header = newNodeTableHeader(table, headers...)
+	installNodeTableView(table, header, provider, font)
+	return header, table
+}
+
+// newNodeTableHeader creates the header for a view of a node table (see unison.NewTableHeader).
+func newNodeTableHeader[T gurps.Node[T]](view *unison.Table[*Node[T]], columnHeaders ...unison.TableColumnHeader[*Node[T]]) *unison.TableHeader[*Node[T]] {
+	header := unison.NewTableHeader(view, columnHeaders...)
 	header.Less = flexibleLess
 	header.BackgroundInk = colors.Header
 	header.InteriorDividerColor = colors.Header
@@ -126,44 +136,51 @@ func NewNodeTable[T gurps.Node[T]](provider TableProvider[T], font unison.Font) 
 		VAlign: align.Fill,
 		HGrab:  true,
 	})
+	return header
+}
 
-	table.DoubleClickCallback = func() { table.PerformCmd(nil, OpenEditorItemID) }
-	table.KeyDownCallback = func(keyCode unison.KeyCode, mods mod.Modifiers, repeat bool) bool {
+// installNodeTableView installs what each view of a node table needs of its own, since a view shares the table's
+// model, columns, selection and callbacks but not its Panel-level callbacks or command handlers (see
+// unison.Table.NewView): NewNodeTable calls it for the table itself and PageList for each continuation of a list. Pass
+// the font NewNodeTable was given.
+func installNodeTableView[T gurps.Node[T]](view *unison.Table[*Node[T]], header *unison.TableHeader[*Node[T]], provider TableProvider[T], font unison.Font) {
+	layoutData := &unison.FlexLayoutData{
+		HAlign: align.Fill,
+		VAlign: align.Fill,
+		HGrab:  true,
+		VGrab:  true,
+	}
+	if font != nil {
+		layoutData.MinSize = geom.Size{Height: 4 + fonts.PageFieldPrimary.LineHeight()}
+	}
+	view.SetLayoutData(layoutData)
+	view.KeyDownCallback = func(keyCode unison.KeyCode, mods mod.Modifiers, repeat bool) bool {
 		if noModifiersDown(mods) && (keyCode == unison.KeyBackspace || keyCode == unison.KeyDelete) {
-			table.PerformCmd(table, unison.DeleteItemID)
+			view.PerformCmd(view, unison.DeleteItemID)
 			return true
 		}
-		return table.DefaultKeyDown(keyCode, mods, repeat)
+		return view.DefaultKeyDown(keyCode, mods, repeat)
 	}
 	singular, plural := provider.ItemNames()
-	table.Accessibility.Name = plural
-	announceColumnsOnFocus(table, header)
-	table.InstallDragSupport(provider.DragSVG(), provider.DragKey(), singular, plural)
+	view.Accessibility.Name = plural
+	announceColumnsOnFocus(view, header)
+	view.InstallDragSupport(provider.DragSVG(), provider.DragKey(), singular, plural)
 	// Mirror the dragged rows into our own storage, since unison only retains them internally, so that alternate drop
 	// handlers -- which deal with a different row type than the destination table -- can reach them.
-	origMouseDrag := table.MouseDragCallback
-	table.MouseDragCallback = func(where geom.Point, button int, mods mod.Modifiers) bool {
-		if button == unison.ButtonLeft && table.HasSelection() && table.IsDragGesture(where) {
-			draggedTableData = &unison.TableDragData[*Node[T]]{Table: table, Rows: table.SelectedRows(true)}
+	origMouseDrag := view.MouseDragCallback
+	view.MouseDragCallback = func(where geom.Point, button int, mods mod.Modifiers) bool {
+		if button == unison.ButtonLeft && view.HasSelection() && view.IsDragGesture(where) {
+			draggedTableData = &unison.TableDragData[*Node[T]]{Table: view, Rows: view.SelectedRows(true)}
 		}
 		return origMouseDrag(where, button, mods)
 	}
 	if font != nil {
-		table.FrameChangeCallback = func() {
-			_, before, _ := table.Sizes(geom.Size{})
-			sizePageTableColumns(table, provider.ExcessWidthColumnID())
-			// The layout that set this frame sized the table by its old row heights, so lay it out again when the new
-			// column widths changed how its rows wrap, or the rows that no longer fit are cut off at the bottom.
-			if _, after, _ := table.Sizes(geom.Size{}); after.Height != before.Height {
-				table.MarkForLayoutRecursivelyUpward()
-				table.MarkForRedraw()
-			}
-		}
+		view.FrameChangeCallback = func() { sizePageTableColumnsForFrame(view, provider.ExcessWidthColumnID()) }
 	}
 
 	// unison strips the separators left at either end by commands that cannot be performed just now, and opens nothing
 	// when no command is left.
-	table.ContextMenuCallback = func(_ geom.Point) unison.Menu {
+	view.ContextMenuCallback = func(_ geom.Point) unison.Menu {
 		f := unison.DefaultMenuFactory()
 		cm := f.NewMenu(unison.PopupMenuTemporaryBaseID|unison.ContextMenuIDFlag, "", nil)
 		id := 1
@@ -171,19 +188,19 @@ func NewNodeTable[T gurps.Node[T]](provider TableProvider[T], font unison.Font) 
 			if one.ID == -1 {
 				cm.InsertSeparator(-1, true)
 			} else {
-				InsertCmdContextMenuItem(table, one.Title, one.ID, &id, cm)
+				InsertCmdContextMenuItem(view, one.Title, one.ID, &id, cm)
 			}
 		}
 		return cm
 	}
 
-	table.InstallCmdHandlers(CopyToSheetItemID,
-		func(_ any) bool { return canCopySelectionTo(table, OpenSheets(table.Ancestor[*Sheet]())) },
-		func(_ any) { copySelectionTo(table, OpenSheets(table.Ancestor[*Sheet]())) })
-	table.InstallCmdHandlers(CopyToTemplateItemID,
-		func(_ any) bool { return canCopySelectionTo(table, OpenTemplates(table.Ancestor[*Template]())) },
-		func(_ any) { copySelectionTo(table, OpenTemplates(table.Ancestor[*Template]())) })
-	if t, ok := any(table).(*unison.Table[*Node[*gurps.Equipment]]); ok {
+	view.InstallCmdHandlers(CopyToSheetItemID,
+		func(_ any) bool { return canCopySelectionTo(view, OpenSheets(view.Ancestor[*Sheet]())) },
+		func(_ any) { copySelectionTo(view, OpenSheets(view.Ancestor[*Sheet]())) })
+	view.InstallCmdHandlers(CopyToTemplateItemID,
+		func(_ any) bool { return canCopySelectionTo(view, OpenTemplates(view.Ancestor[*Template]())) },
+		func(_ any) { copySelectionTo(view, OpenTemplates(view.Ancestor[*Template]())) })
+	if t, ok := any(view).(*unison.Table[*Node[*gurps.Equipment]]); ok {
 		t.InstallCmdHandlers(IncrementItemID,
 			func(_ any) bool { return canAdjustQuantity(t, true) },
 			func(_ any) { adjustQuantity(t.AncestorOrSelf[Rebuildable](), t, true) })
@@ -200,8 +217,6 @@ func NewNodeTable[T gurps.Node[T]](provider TableProvider[T], font unison.Font) 
 			func(_ any) bool { return canResetUsesToMax(t) },
 			func(_ any) { resetUsesToMax(t.AncestorOrSelf[Rebuildable](), t) })
 	}
-
-	return header, table
 }
 
 // installStandardTableCmdHandlers installs the commands every node table offers -- opening the editor, following the
@@ -240,15 +255,65 @@ func installStandardTableCmdHandlers[T gurps.Node[T]](target unison.Paneler, tab
 		func(_ any) { ClearSourceFromSelection(table) })
 }
 
-// sizePageTableColumns sizes the columns of a fixed-width page table to fit, then, when the user can't resize columns
-// and the setting is enabled, lets any page reference columns claim leftover space so they can show more than one
-// reference. Run both when the table's frame changes and when it is synced, since a settings change won't necessarily
-// alter the frame.
+// columnsSizedForKey is the client data key under which a page table records what its columns were last sized for.
+const columnsSizedForKey = "columns-sized-for"
+
+// columnsSizedFor is what the columns of a page table were sized for: the content width of its primary view and the
+// heights of its rows, since disclosing rows, or changing what a row shows, can call for wider columns without altering
+// that width. An editor's table has only its frame changes to size its columns when a row changes.
+type columnsSizedFor struct {
+	width   float32
+	heights []float32
+}
+
+// currentColumnsSizedFor returns what the columns of the page table would be sized for now.
+func currentColumnsSizedFor[T gurps.Node[T]](table *unison.Table[*Node[T]]) columnsSizedFor {
+	primary := table.Primary()
+	return columnsSizedFor{width: primary.ContentRect(false).Width, heights: primary.RowHeights()}
+}
+
+// sizePageTableColumns sizes the columns of a fixed-width page table to fit its primary view, then, when the user can't
+// resize columns and the setting is enabled, lets any page reference columns claim leftover space so they can show more
+// than one reference. It records what it sized them for (see sizePageTableColumnsForFrame). Run it when the table is
+// synced as well, since a settings change won't necessarily alter the frame.
 func sizePageTableColumns[T gurps.Node[T]](table *unison.Table[*Node[T]], excessColumnID int) {
+	table = table.Primary()
 	table.SizeColumnsToFitWithExcessIn(excessColumnID)
 	if table.PreventUserColumnResize && gurps.GlobalSettings().General.ExpandPageReferences &&
 		expandPageRefColumns(table, excessColumnID) {
 		table.SyncRowHeights()
+	}
+	table.ClientData()[columnsSizedForKey] = currentColumnsSizedFor(table)
+}
+
+// sizePageTableColumnsForFrame is what a frame change of any view of a page table does. The views share their columns,
+// which are sized for the primary view's width, so they are sized again only when that width or the heights of the
+// rows differ from what they were last sized for. Sizing them can change the heights of the rows, and the layout that
+// set the frame sized the views by the old heights, so each view whose height changed is laid out again, or the rows
+// that no longer fit are cut off at the bottom.
+func sizePageTableColumnsForFrame[T gurps.Node[T]](table *unison.Table[*Node[T]], excessColumnID int) {
+	if sized, ok := table.ClientData()[columnsSizedForKey].(columnsSizedFor); ok {
+		current := currentColumnsSizedFor(table)
+		if sized.width == current.width && slices.Equal(sized.heights, current.heights) {
+			return
+		}
+	}
+	views := table.Views()
+	before := make([]float32, len(views))
+	for i, view := range views {
+		_, pref, _ := view.Sizes(geom.Size{})
+		before[i] = pref.Height
+	}
+	sizePageTableColumns(table, excessColumnID)
+	changed := false
+	for i, view := range views {
+		if _, after, _ := view.Sizes(geom.Size{}); after.Height != before[i] {
+			view.MarkForLayoutRecursivelyUpward()
+			changed = true
+		}
+	}
+	if changed {
+		table.MarkForRedraw()
 	}
 }
 
@@ -630,6 +695,15 @@ func syncTablePreservingSelection[T unison.TableRowConstraint[T]](table *unison.
 	sel := table.CopySelectionMap()
 	table.SyncToModel()
 	table.SetSelectionMap(sel)
+}
+
+// currentRowIndex returns the index of the row the person is on, or -1 when nothing is selected: the lead row while it
+// is selected, else the first selected row, since a selection set from code, such as a drop's, has no lead row.
+func currentRowIndex[T unison.TableRowConstraint[T]](table *unison.Table[T]) int {
+	if row := table.LeadRowIndex(); row >= 0 && table.IsRowSelected(row) {
+		return row
+	}
+	return table.FirstSelectedRowIndex()
 }
 
 // DisableSorting disables the sorting capability in the table headers.

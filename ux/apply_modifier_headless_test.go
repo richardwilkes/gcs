@@ -28,11 +28,12 @@ import (
 	"github.com/richardwilkes/unison/enums/role"
 )
 
-// rowInView reports whether the row at the given index of the table is within the part of the table that can be seen,
-// judged top to bottom only, since a row is as wide as its table and the table may be wider than the view.
+// rowInView reports whether the row at the given index of the table is within the part of the view showing it that can
+// be seen, judged top to bottom only, since a row is as wide as its table and the table may be wider than the view.
 func rowInView[T gurps.Node[T]](table *unison.Table[*Node[T]], row int) bool {
-	frame := table.RectToRoot(table.RowFrame(row))
-	visible := visibleRect(table.AsPanel())
+	view := table.ViewForRow(row)
+	frame := view.RectToRoot(view.RowFrame(row))
+	visible := visibleRect(view.AsPanel())
 	return frame.Y >= visible.Y-viewSlop && frame.Bottom() <= visible.Bottom()+viewSlop
 }
 

@@ -1158,13 +1158,13 @@ func TestEditingModeSurvivesARebuild(t *testing.T) {
 	sheet, editor := newTestSheetForLayoutEditing(t)
 	overlay := editor.overlay
 	c.NotNil(overlay, "the overlay must be in place")
-	c.Equal(0, sheet.content.IndexOfChild(overlay), "the overlay must be on top of the page")
+	c.Equal(0, sheet.grid.IndexOfChild(overlay), "the overlay must be on top of the page")
 
 	sheet.Rebuild(true)
 
 	c.True(sheet.layoutEditing(), "a rebuild must not leave editing mode")
 	c.True(overlay == editor.overlay, "a rebuild must not replace the overlay")
-	c.Equal(0, sheet.content.IndexOfChild(overlay), "the overlay must still be on top of the page")
+	c.Equal(0, sheet.grid.IndexOfChild(overlay), "the overlay must still be on top of the page")
 	c.Equal(sheet.page.FrameRect(), overlay.FrameRect(), "the overlay must still cover the page exactly")
 	c.NotNil(editor.ensureRegions().leafFor(gurps.BlockNotesKey), "the regions must describe the rebuilt page")
 }
@@ -1179,8 +1179,7 @@ func TestLeavingEditingModeTakesTheOverlayAway(t *testing.T) {
 
 	c.False(sheet.layoutEditing(), "editing mode must have been left")
 	c.Nil(overlay.Parent(), "the overlay must have been taken off the content")
-	c.Nil(sheet.contentLayout.overlay, "the content's layout must no longer be laying the overlay out")
-	c.Equal(1, len(sheet.content.Children()), "only the page must be left")
+	c.Equal(1, len(sheet.grid.Children()), "only the page must be left")
 }
 
 // sheetLayoutGivenToNewEntity returns the block layout an entity with no embedded sheet settings is given when it is

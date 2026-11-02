@@ -21,11 +21,11 @@ import (
 	"github.com/richardwilkes/unison"
 )
 
-// newReuseTestSheet returns a sheet whose traits list is the named traits, the one at boxIndex (if any) being a
-// container holding a trait named "Inside", along with the traits at the top of the list.
+// newReuseTestSheet returns a sheet, shown as one continuous page, whose traits list is the named traits, the one at
+// boxIndex (if any) being a container holding a trait named "Inside", along with the traits at the top of the list.
 func newReuseTestSheet(t *testing.T, boxIndex int, names ...string) (*Sheet, []*gurps.Trait) {
 	t.Helper()
-	sheet := newTestSheetForTemplate(t)
+	sheet := newContinuousTestSheet(t)
 	entity := sheet.Entity()
 	traits := make([]*gurps.Trait, len(names))
 	for i, name := range names {
@@ -214,7 +214,7 @@ func TestNotesToggleRebuildsAReusedCell(t *testing.T) {
 // disclosure is kept under, while its row and, when the disclosure is the same under both keys, its cell are kept.
 func TestNotesToggleFollowsAConvertedRow(t *testing.T) {
 	c := check.New(t)
-	sheet := newTestSheetForTemplate(t)
+	sheet := newContinuousTestSheet(t)
 	entity := sheet.Entity()
 	entity.SheetSettings.NotesDisplay = display.Inline
 	eqp := gurps.NewEquipment(entity, nil, false)

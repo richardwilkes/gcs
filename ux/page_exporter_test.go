@@ -86,6 +86,8 @@ func TestPageInfoProviderForSheet(t *testing.T) {
 	c.Equal("Dai Blackthorn", provider.PageTitle(), "the entity supplies its own page title")
 }
 
+var _ pageHelper = &fakeBandList{}
+
 // fakeBandList stands in for a page list when exercising the placement of a band, so that the rows a band is made to
 // give up can be dictated exactly rather than being whatever a real table happens to measure.
 type fakeBandList struct {
@@ -122,13 +124,16 @@ func newFakeBandList(key string, overhead float32, heights ...float32) *fakeBand
 func (f *fakeBandList) currentHeight() float32 {
 	height := f.overhead
 	for _, one := range f.heights[f.start:f.endBefore] {
-		height += one + 1
+		height += one
 	}
 	return height
 }
 
 // OverheadHeight implements pageHelper.
 func (f *fakeBandList) OverheadHeight() float32 { return f.overhead }
+
+// MinimumHeight implements pageHelper. The fake stands at no height beyond its overhead.
+func (f *fakeBandList) MinimumHeight() float32 { return f.overhead }
 
 // RowHeights implements pageHelper.
 func (f *fakeBandList) RowHeights() []float32 { return f.heights }
@@ -141,6 +146,12 @@ func (f *fakeBandList) SetDrawRowRange(start, endBefore int) {
 	f.ranges = append(f.ranges, [2]int{start, endBefore})
 	f.start = start
 	f.endBefore = endBefore
+}
+
+// ClearDrawRowRange implements pageHelper, giving the list every row again.
+func (f *fakeBandList) ClearDrawRowRange() {
+	f.start = 0
+	f.endBefore = len(f.heights)
 }
 
 // buildTestBand builds a band the way the exporter does, from the given node and a leaf function that hands back the
@@ -182,7 +193,7 @@ func TestPlaceBandListTakesAtLeastOneRow(t *testing.T) {
 	band = buildTestBand(node, panels)
 	placer = newBandPlacer(startAt)
 	used, done = placer.placeBand(band, 25, true)
-	c.Equal(float32(31), used, "the row is placed anyway and allowed to run off the end of the page")
+	c.Equal(float32(30), used, "the row is placed anyway and allowed to run off the end of the page")
 	c.False(done, "the second row is still to come")
 	c.True(placer.applyBand(band))
 	c.Equal([][2]int{{0, 1}}, list.ranges)
@@ -245,7 +256,7 @@ func TestPlaceBandColumn(t *testing.T) {
 	startAt := make(map[string]int)
 	placer := newBandPlacer(startAt)
 	used, done := placer.placeBand(band, 57, false)
-	c.Equal(float32(52), used, "what the first block took, since the column stops there")
+	c.Equal(float32(50), used, "what the first block took, since the column stops there")
 	c.False(done)
 
 	c.True(placer.applyBand(band), "the column keeps what was placed")
@@ -258,7 +269,7 @@ func TestPlaceBandColumn(t *testing.T) {
 	startAt = make(map[string]int)
 	placer = newBandPlacer(startAt)
 	used, done = placer.placeBand(band, 200, false)
-	c.Equal(float32(63), used, "a column whose blocks all fit takes both blocks and the space between them")
+	c.Equal(float32(61), used, "a column whose blocks all fit takes both blocks and the space between them")
 	c.True(done, "and is finished in one pass")
 	c.True(placer.applyBand(band))
 	c.Equal(2, len(band.Children()), "nothing comes off the page")
@@ -286,7 +297,7 @@ func TestPlaceBandRow(t *testing.T) {
 	startAt := make(map[string]int)
 	placer := newBandPlacer(startAt)
 	used, done := placer.placeBand(band, 57, false)
-	c.Equal(float32(52), used, "the tallest of the two")
+	c.Equal(float32(50), used, "the tallest of the two")
 	c.False(done, "the block on the left still has rows to place")
 	c.True(placer.applyBand(band))
 	c.Equal([][2]int{{0, 2}}, left.ranges)
@@ -307,7 +318,9 @@ func TestPlaceBandRow(t *testing.T) {
 
 // TestPlaceBandHonorsAMinimumHeight verifies that a block's minimum height is checked against what the page has left: a
 // list whose rows fit but whose floor doesn't is left for the next page rather than running off the bottom, one whose
-// floor fits is placed and stands at it, and one with the page to itself is placed at its floor regardless.
+// floor fits is placed and stands at it, and one with the page to itself is placed at its floor regardless. A page
+// spacer keeping the slot of a block with a floor has none of its own: neither the placer nor the row's layout gives
+// the empty slot any height. Building the spacer with its block's floor fails it.
 func TestPlaceBandHonorsAMinimumHeight(t *testing.T) {
 	c := check.New(t)
 	inch := paper.Length{Length: 1, Units: paper.Inch}
@@ -323,13 +336,13 @@ func TestPlaceBandHonorsAMinimumHeight(t *testing.T) {
 		return band, long, short
 	}
 
-	// The long list takes 115 and the space below it 1, leaving 34: enough for the 31 the short list's rows take, but
+	// The long list takes 110 and the space below it 1, leaving 39: enough for the 30 the short list's rows take, but
 	// not for the 72 it must stand at.
 	band, long, short := build()
 	startAt := make(map[string]int)
 	placer := newBandPlacer(startAt)
 	used, done := placer.placeBand(band, 150, false)
-	c.Equal(float32(116), used, "the block whose floor doesn't fit must be left for the next page")
+	c.Equal(float32(111), used, "the block whose floor doesn't fit must be left for the next page")
 	c.False(done)
 	c.True(placer.applyBand(band))
 	c.Equal([]*unison.Panel{long.AsPanel()}, band.Children(), "so it comes off this page")
@@ -340,7 +353,7 @@ func TestPlaceBandHonorsAMinimumHeight(t *testing.T) {
 	startAt = make(map[string]int)
 	placer = newBandPlacer(startAt)
 	used, done = placer.placeBand(band, 200, false)
-	c.Equal(float32(188), used, "with room for it, the block stands at its floor rather than at the height of its rows")
+	c.Equal(float32(183), used, "with room for it, the block stands at its floor rather than at the height of its rows")
 	c.True(done)
 	c.True(placer.applyBand(band))
 	c.Equal(2, len(band.Children()), "and nothing comes off the page")
@@ -367,6 +380,95 @@ func TestPlaceBandHonorsAMinimumHeight(t *testing.T) {
 	c.Equal(float32(72), used, "unless it has the page to itself, when it stands at its floor regardless")
 	c.True(done)
 	c.True(placer.applyBand(band))
+
+	traits := testBlockNode(gurps.BlockTraitsKey, fxp.One)
+	traits.MinHeight = inch
+	short = newFakeBandList(gurps.BlockSkillsKey, 10, 20)
+	band = buildTestBand(testContainerNode(layoutnode.Row, fxp.One,
+		traits,
+		testBlockNode(gurps.BlockSkillsKey, fxp.One),
+	), map[string]unison.Paneler{gurps.BlockTraitsKey: newPageSpacer(), gurps.BlockSkillsKey: short})
+	placer = newBandPlacer(make(map[string]int))
+	used, done = placer.placeBand(band, 200, false)
+	c.Equal(float32(30), used, "a spacer reserves none of the height its block's floor called for")
+	c.True(done)
+	_, pref, _ := band.Sizes(geom.Size{Width: 400})
+	c.Equal(used, pref.Height, "nor does the row stand at that floor")
+	c.True(placer.applyBand(band))
+	c.Equal(2, len(band.Children()), "the spacer keeps its slot")
+
+	// A real list stands at its view's minimum height however few rows it draws, which for one with no rows, or only a
+	// short one, is more than its border, header and rows take.
+	loot := newTestLootSheet(t)
+	for _, count := range []int{0, 1} {
+		loot.loot.Notes = nil
+		for range count {
+			loot.loot.Notes = append(loot.loot.Notes, gurps.NewNote(nil, nil, false))
+		}
+		loot.Notes.Sync()
+		listBand := func() *unison.Panel {
+			return buildTestBand(testBlockNode(gurps.BlockNotesKey, fxp.One), map[string]unison.Paneler{
+				gurps.BlockNotesKey: pageListLeaf(gurps.BlockNotesKey, loot.Notes, 0, make(map[string]int), false),
+			})
+		}
+		band = listBand()
+		_, pref, _ = band.Sizes(geom.Size{})
+		placer = newBandPlacer(make(map[string]int))
+		used, done = placer.placeBand(band, pref.Height, false)
+		c.Equal(pref.Height, used, "a list with %d row(s) takes the height it stands at", count)
+		c.True(done)
+
+		band = listBand()
+		placer = newBandPlacer(make(map[string]int))
+		used, done = placer.placeBand(band, pref.Height-1, false)
+		c.Equal(float32(0), used, "a list with %d row(s) is left for the next page when that height doesn't fit", count)
+		c.False(done)
+		c.False(placer.applyBand(band))
+
+		band = listBand()
+		placer = newBandPlacer(make(map[string]int))
+		used, done = placer.placeBand(band, pref.Height-1, true)
+		c.Equal(pref.Height, used, "unless a list with %d row(s) has the page to itself", count)
+		c.True(done)
+	}
+}
+
+// TestPlaceBandCountsAListsRowsAtTheHeightTheyMeasure verifies that the placer counts the rows of a real list at the
+// height the list stands at when it draws them: the whole list fits in exactly that height, and a pixel less leaves
+// only its last row for the next page, with the rows placed standing at the height the placer counted for them.
+// Counting a row divider the table doesn't draw fails it.
+func TestPlaceBandCountsAListsRowsAtTheHeightTheyMeasure(t *testing.T) {
+	c := check.New(t)
+	const count = 30
+	loot := newTestLootSheet(t)
+	for i := range count {
+		note := gurps.NewNote(nil, nil, false)
+		note.MarkDown = fmt.Sprintf("Note %d", i+1)
+		loot.loot.Notes = append(loot.loot.Notes, note)
+	}
+	loot.Notes.Sync()
+	listBand := func() *unison.Panel {
+		return buildTestBand(testBlockNode(gurps.BlockNotesKey, fxp.One), map[string]unison.Paneler{
+			gurps.BlockNotesKey: pageListLeaf(gurps.BlockNotesKey, loot.Notes, 0, make(map[string]int), false),
+		})
+	}
+
+	band := listBand()
+	_, pref, _ := band.Sizes(geom.Size{})
+	placer := newBandPlacer(make(map[string]int))
+	used, done := placer.placeBand(band, pref.Height, false)
+	c.Equal(pref.Height, used, "the list takes the height it stands at")
+	c.True(done, "with every row placed")
+
+	band = listBand()
+	startAt := make(map[string]int)
+	placer = newBandPlacer(startAt)
+	used, done = placer.placeBand(band, pref.Height-1, false)
+	c.False(done)
+	c.True(placer.applyBand(band))
+	c.Equal(map[string]int{gurps.BlockNotesKey: count - 1}, startAt, "a pixel less leaves only the last row")
+	_, pref, _ = band.Sizes(geom.Size{})
+	c.Equal(used, pref.Height, "and the rows placed stand at the height the placer counted for them")
 }
 
 // TestPageExporterKeepsEveryBandWithinThePage verifies, over a range of list lengths and for a list stacked below a
@@ -502,9 +604,9 @@ func TestPageExporterForTemplateAndLoot(t *testing.T) {
 }
 
 // drawnRowRanges returns the row range each page draws of the block with the given key, in page order.
-func drawnRowRanges(p *pageExporter, key string) [][2]int {
+func drawnRowRanges(pages []*Page, key string) [][2]int {
 	var ranges [][2]int
-	for _, page := range p.pages {
+	for _, page := range pages {
 		for _, panel := range blockPanels(page.AsPanel(), key) {
 			if helper, ok := panel.Self.(pageHelper); ok {
 				start, endBefore := helper.CurrentDrawRowRange()
@@ -569,7 +671,7 @@ func TestPageExporterSplitsBothListsOfARow(t *testing.T) {
 
 		exporter := newPageExporter(entity)
 		for _, key := range one.split {
-			ranges := drawnRowRanges(exporter, key)
+			ranges := drawnRowRanges(exporter.pages, key)
 			c.True(len(ranges) > 1, "%s: the %s list must be split across pages", one.name, key)
 			next := 0
 			for i, span := range ranges {
@@ -580,6 +682,58 @@ func TestPageExporterSplitsBothListsOfARow(t *testing.T) {
 			}
 			c.Equal(rowCounts[key], next, "%s: every %s row must be drawn", one.name, key)
 		}
+	}
+}
+
+// TestPageExporterContinuesAListWithViewsOfItsTable verifies that the pages a list is split over show the one table:
+// the panel each later page holds for the list, under the block's key, is a continuation of the list on the first page
+// holding a view of its table of its own, sharing its columns. Building a fresh list for each page fails it.
+func TestPageExporterContinuesAListWithViewsOfItsTable(t *testing.T) {
+	c := check.New(t)
+	entity := gurps.NewEntity()
+	for i := range 200 {
+		trait := gurps.NewTrait(nil, nil, false)
+		trait.Name = fmt.Sprintf("Trait %d", i+1)
+		entity.Traits = append(entity.Traits, trait)
+	}
+	layout := &gurps.SheetLayout{
+		Root: testContainerNode(layoutnode.Column, fxp.One, testBlockNode(gurps.BlockTraitsKey, fxp.One)),
+	}
+	for _, key := range gurps.AllBlockKeys {
+		if key != gurps.BlockTraitsKey {
+			layout.Hidden = append(layout.Hidden, key)
+		}
+	}
+	layout.EnsureValidity()
+	entity.SheetSettings.Layout = layout
+
+	exporter := newPageExporter(entity)
+	c.True(len(exporter.pages) > 2, "the traits must take more than two pages")
+	first := blockPanels(exporter.pages[0].AsPanel(), gurps.BlockTraitsKey)
+	if len(first) != 1 {
+		t.Fatalf("the first page must hold the traits list once, not %d times", len(first))
+	}
+	list, ok := first[0].Self.(*PageList[*gurps.Trait])
+	if !ok {
+		t.Fatal("the first page must hold the traits list itself")
+	}
+	views := []*unison.Table[*Node[*gurps.Trait]]{list.Table}
+	for i, page := range exporter.pages[1:] {
+		number := i + 2
+		panels := blockPanels(page.AsPanel(), gurps.BlockTraitsKey)
+		if len(panels) != 1 {
+			c.Errorf("page %d must hold the traits once under the block's key, not %d times", number, len(panels))
+			continue
+		}
+		cont, isCont := panels[0].Self.(*pageListContinuation[*gurps.Trait])
+		if !isCont {
+			c.Errorf("page %d must hold a continuation of the traits list", number)
+			continue
+		}
+		c.True(unison.SameTable(list.Table, cont.Table), "page %d must show a view of the first page's table", number)
+		c.False(slices.Contains(views, cont.Table), "page %d must show a view of its own", number)
+		c.Equal(list.Table.Columns, cont.Table.Columns, "page %d must show the first page's columns", number)
+		views = append(views, cont.Table)
 	}
 }
 
@@ -621,7 +775,7 @@ func TestPageExporterPaginatesABandGroup(t *testing.T) {
 	exporter := newPageExporter(entity)
 	c.True(len(exporter.pages) > 1, "the traits don't fit on a single page")
 	c.Equal(columnBandPanel, bandKindOf(exporter.pages[0].Children()[0]), "the band is placed as a column")
-	ranges := drawnRowRanges(exporter, gurps.BlockTraitsKey)
+	ranges := drawnRowRanges(exporter.pages, gurps.BlockTraitsKey)
 	c.True(len(ranges) > 1, "the traits list must be split across pages")
 	next := 0
 	for i, one := range ranges {
@@ -632,11 +786,188 @@ func TestPageExporterPaginatesABandGroup(t *testing.T) {
 	c.Equal(len(entity.Traits), next, "every trait must be drawn")
 
 	c.Equal(1, countBlockPanels(exporter, gurps.BlockNotesKey), "the notes list must appear exactly once")
-	c.Equal([][2]int{{0, len(entity.Notes)}}, drawnRowRanges(exporter, gurps.BlockNotesKey),
+	c.Equal([][2]int{{0, len(entity.Notes)}}, drawnRowRanges(exporter.pages, gurps.BlockNotesKey),
 		"the notes list must draw all of its rows")
 	last := len(exporter.pages) - 1
 	c.Equal(1, len(blockPanels(exporter.pages[last].AsPanel(), gurps.BlockNotesKey)),
 		"the notes list must follow the traits on the page the traits finish on")
 	c.Equal(1, len(blockPanels(exporter.pages[last].AsPanel(), gurps.BlockTraitsKey)),
 		"the last page must hold the end of the traits list")
+}
+
+// TestPageExporterKeepsTheSlotsOfFinishedBlocks verifies that a list continuing onto later pages keeps the place it had
+// on the first: beside a block that finished on the first page, whether a list or not, it keeps its width, the finished
+// block's slot in the Row standing empty, while below one in a Column it moves up to the top of the page. Handing back
+// nothing rather than a page spacer for a finished block, or a Row dropping its spacers, widens the continuing list to
+// the full page, and a Column keeping them leaves an empty slot above it.
+func TestPageExporterKeepsTheSlotsOfFinishedBlocks(t *testing.T) {
+	c := check.New(t)
+	for _, one := range []struct {
+		name      string
+		container layoutnode.Type
+		finished  string // The key of the block that finishes on the first page
+		keepsSlot bool   // Whether the finished block's slot is kept on the later pages
+	}{
+		{name: "beside a list", container: layoutnode.Row, finished: gurps.BlockTraitsKey, keepsSlot: true},
+		{name: "beside a block", container: layoutnode.Row, finished: gurps.BlockLiftingKey, keepsSlot: true},
+		{name: "below a list", container: layoutnode.Column, finished: gurps.BlockTraitsKey},
+	} {
+		entity := gurps.NewEntity()
+		for i := range 3 {
+			trait := gurps.NewTrait(nil, nil, false)
+			trait.Name = fmt.Sprintf("Trait %d", i+1)
+			entity.Traits = append(entity.Traits, trait)
+		}
+		for i := range 200 {
+			skill := gurps.NewSkill(entity, nil, false)
+			skill.Name = fmt.Sprintf("Skill %d", i+1)
+			entity.Skills = append(entity.Skills, skill)
+		}
+		entity.Recalculate()
+		layout := &gurps.SheetLayout{
+			Root: testContainerNode(layoutnode.Column, fxp.One,
+				testContainerNode(one.container, fxp.One,
+					testBlockNode(one.finished, fxp.One),
+					testBlockNode(gurps.BlockSkillsKey, fxp.One),
+				),
+			),
+		}
+		for _, key := range gurps.AllBlockKeys {
+			if key != one.finished && key != gurps.BlockSkillsKey {
+				layout.Hidden = append(layout.Hidden, key)
+			}
+		}
+		layout.EnsureValidity()
+		entity.SheetSettings.Layout = layout
+
+		exporter := newPageExporter(entity)
+		c.True(len(exporter.pages) > 1, "%s: the skills must continue onto a second page", one.name)
+		c.Equal(1, countBlockPanels(exporter, one.finished), "%s: the %s block must appear exactly once", one.name,
+			one.finished)
+		c.Equal(1, len(blockPanels(exporter.pages[0].AsPanel(), one.finished)),
+			"%s: the %s block must finish on the first page", one.name, one.finished)
+		first := blockPanels(exporter.pages[0].AsPanel(), gurps.BlockSkillsKey)
+		if len(first) != 1 {
+			c.Errorf("%s: the skills must start on the first page", one.name)
+			continue
+		}
+		width := first[0].FrameRect().Width
+		for i, page := range exporter.pages[1:] {
+			number := i + 2
+			lists := blockPanels(page.AsPanel(), gurps.BlockSkillsKey)
+			if len(lists) != 1 {
+				c.Errorf("%s: page %d must hold the skills list once, not %d times", one.name, number, len(lists))
+				continue
+			}
+			list := lists[0]
+			c.Equal(width, list.FrameRect().Width, "%s: the skills list must keep its width on page %d", one.name,
+				number)
+			spacers := uxtest.PanelsMatching(page.AsPanel(), isPageSpacer)
+			if one.keepsSlot {
+				c.Equal(1, len(spacers), "%s: page %d must hold one empty slot", one.name, number)
+				siblings := list.Parent().Children()
+				c.True(len(siblings) == 2 && isPageSpacer(siblings[0]) && pageKeyOf(siblings[0]) == "" &&
+					siblings[1] == list, "%s: on page %d the %s block's slot must stand empty left of the skills",
+					one.name, number, one.finished)
+			} else {
+				c.Equal(0, len(spacers), "%s: page %d must hold no empty slot", one.name, number)
+				c.Equal([]*unison.Panel{list}, page.Children(), "%s: the skills list must start page %d", one.name,
+					number)
+			}
+		}
+	}
+}
+
+// TestPaginateBandsFinishesABandWithNothingLeft verifies that a band that builds to nothing but a page spacer, every
+// block of it having been placed already, is finished, whether it comes to that before any of it is placed or after a
+// pass that wasn't done: it is neither left on a page nor given a new page of its own. Treating only a nil band as
+// finished fails it, putting the spacer on the page or opening a page for nothing.
+func TestPaginateBandsFinishesABandWithNothingLeft(t *testing.T) {
+	c := check.New(t)
+	entity := gurps.NewEntity()
+	pageSize := (&pageExporter{entity: entity}).PageSize()
+	tall := pageSize.Height * 0.6
+	for _, one := range []struct {
+		name     string
+		root     *gurps.SheetLayoutNode
+		rows     map[string][]float32 // The rows of each list the leaf hands back
+		placedAt map[string]int       // The row from which the leaf reports a list as placed on an earlier page
+		keys     []string             // The keys of the blocks the only page must hold, in order
+	}{
+		{
+			name: "before any of it is placed",
+			root: testContainerNode(layoutnode.Column, fxp.One,
+				testContainerNode(layoutnode.Row, fxp.One,
+					testBlockNode(gurps.BlockTraitsKey, fxp.One),
+					testBlockNode(gurps.BlockSkillsKey, fxp.One),
+				),
+				testBlockNode(gurps.BlockNotesKey, fxp.One),
+			),
+			rows: map[string][]float32{
+				gurps.BlockTraitsKey: {20},
+				gurps.BlockSkillsKey: {20},
+				gurps.BlockNotesKey:  {20, 20},
+			},
+			placedAt: map[string]int{gurps.BlockNotesKey: 2},
+			keys:     []string{gurps.BlockNotesKey},
+		},
+		{
+			name: "after a pass that wasn't done",
+			root: testContainerNode(layoutnode.Column, fxp.One,
+				testBlockNode(gurps.BlockTraitsKey, fxp.One),
+			),
+			rows:     map[string][]float32{gurps.BlockTraitsKey: {tall, tall}},
+			placedAt: map[string]int{gurps.BlockTraitsKey: 1},
+			keys:     []string{gurps.BlockTraitsKey},
+		},
+	} {
+		leaf := func(startAt map[string]int) layoutLeafFunc {
+			return func(key string) unison.Paneler {
+				rows, exists := one.rows[key]
+				if !exists {
+					return nil
+				}
+				if startAt[key] >= one.placedAt[key] {
+					return newPageSpacer()
+				}
+				list := newFakeBandList(key, 10, rows...)
+				list.start = startAt[key]
+				return list
+			}
+		}
+		created := 0
+		pages := paginateBands(one.root, leaf, func() *Page {
+			created++
+			return NewPage(entity)
+		}, pageSize)
+		c.Equal(1, created, "%s: no page may be opened for the band with nothing left", one.name)
+		c.Equal(1, len(pages), "%s: everything fits on a single page", one.name)
+		for i, page := range pages {
+			keys := make([]string, 0, len(page.Children()))
+			for _, band := range page.Children() {
+				keys = append(keys, pageKeyOf(band))
+			}
+			c.Equal(one.keys, keys, "%s: page %d must hold just the blocks that had something to place", one.name,
+				i+1)
+			c.Equal(0, len(uxtest.PanelsMatching(page.AsPanel(), isPageSpacer)),
+				"%s: page %d must hold no spacer", one.name, i+1)
+		}
+	}
+}
+
+// TestPageExporterLaysPagesOutAtTheCharactersPageSize verifies that a character's pages are laid out at the page size
+// its own sheet settings call for. Measuring the page before the exporter knows which character it is exporting fails
+// it, laying the pages out at the size the global settings call for instead.
+func TestPageExporterLaysPagesOutAtTheCharactersPageSize(t *testing.T) {
+	c := check.New(t)
+	entity := gurps.NewEntity()
+	entity.SheetSettings.Page.Orientation = paper.Landscape
+	if gurps.SheetSettingsFor(nil).Page.Orientation == paper.Landscape {
+		entity.SheetSettings.Page.Orientation = paper.Portrait
+	}
+	exporter := newPageExporter(entity)
+	size := exporter.PageSize()
+	for i, page := range exporter.pages {
+		c.Equal(size, page.FrameRect().Size, "page %d must be laid out at the character's page size", i+1)
+	}
 }

@@ -134,3 +134,24 @@ func TestUpdateCheckSettings(t *testing.T) {
 	c.NotContains(string(data), "library_update_check", "the default library update check isn't written")
 	c.NotContains(string(data), "focus_for_reading", "the default focus for reading isn't written")
 }
+
+// TestInitialSheetPaginatedDefaultsToOn verifies that sheets open as pages unless the user has turned that off: new
+// settings have the setting on, as does a settings file written before it existed, which has no key for it, while a
+// choice to turn it off survives a save and load. Dropping the default from NewGeneralSettings or the version 3
+// migration from EnsureValidity fails it.
+func TestInitialSheetPaginatedDefaultsToOn(t *testing.T) {
+	c := check.New(t)
+	c.True(NewGeneralSettings().InitialSheetPaginated, "new settings show sheets as pages")
+
+	p := filepath.Join(t.TempDir(), "general.json")
+	c.NoError(os.WriteFile(p, []byte(`{"version":2}`), 0o600))
+	loaded, err := NewGeneralSettingsFromFile(nil, p)
+	c.NoError(err)
+	c.True(loaded.InitialSheetPaginated, "a settings file from before the setting existed shows sheets as pages")
+
+	loaded.InitialSheetPaginated = false
+	c.NoError(loaded.Save(p))
+	loaded, err = NewGeneralSettingsFromFile(nil, p)
+	c.NoError(err)
+	c.False(loaded.InitialSheetPaginated, "turning the setting off survives a save and load")
+}

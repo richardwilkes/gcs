@@ -148,6 +148,7 @@ const (
 	Scale500ItemID
 	Scale600ItemID
 	EditSheetLayoutItemID
+	ShowAsPagesItemID
 	DockUnDockItemID
 	CalculatorItemID
 	SellEquipmentItemID
@@ -417,6 +418,7 @@ func (s menuBarScope) createSheetMenu(f unison.MenuFactory) unison.Menu {
 		perSheetAttributeSettingsAction,
 		perSheetBodyTypeSettingsAction,
 		editSheetLayoutAction,
+		showAsPagesAction,
 	)
 }
 

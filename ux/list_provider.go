@@ -103,7 +103,7 @@ func (p *listProvider[T]) FilterFields() []*gurps.FilterField[T] {
 }
 
 func (p *listProvider[T]) SetTable(table *unison.Table[*Node[T]]) {
-	if p.table != table {
+	if !unison.SameTable(p.table, table) {
 		p.roots = nil // Rows belong to the table they were made for.
 	}
 	p.table = table
@@ -172,7 +172,7 @@ func (p *listProvider[T]) appendReferenceColumns(columnIDs []int, refColumnID, l
 }
 
 func (p *listProvider[T]) DropShouldMoveData(from, to *unison.Table[*Node[T]]) bool {
-	return from == to
+	return unison.SameTable(from, to)
 }
 
 func (p *listProvider[T]) ProcessDropData(_, _ *unison.Table[*Node[T]]) {

@@ -368,23 +368,27 @@ func (r *restoredTables) report() {
 // orphaned: applying data to it would update the model but leave the table on screen untouched, and a rebuild asked
 // for through it would be skipped, since an orphan has no Rebuildable above it. The replacement is found through the
 // owner recorded on the table, under the reference key the two share. A table with no owner recorded, or whose owner
-// holds nothing under that key, is returned as-is, as is a nil table.
+// holds nothing under that key, is returned as-is, as is a nil table. Either way, a view of a table (see
+// unison.Table.NewView) yields the table itself, its primary view.
 func liveTable[T gurps.Node[T]](table *unison.Table[*Node[T]]) *unison.Table[*Node[T]] {
-	if table == nil || table.RefKey == "" {
-		return table
+	if table == nil {
+		return nil
+	}
+	if table.RefKey == "" {
+		return table.Primary()
 	}
 	rebuildable, found := table.ClientData()[TableOwnerClientKey].(Rebuildable)
 	if !found || xreflect.IsNil(rebuildable) {
-		return table
+		return table.Primary()
 	}
 	current := rebuildable.AsPanel().FindRefKey(table.RefKey)
 	if current == nil {
-		return table
+		return table.Primary()
 	}
 	if live, ok := current.Self.(*unison.Table[*Node[T]]); ok {
-		return live
+		return live.Primary()
 	}
-	return table
+	return table.Primary()
 }
 
 // TableDragUndoEditData holds the undo edit data for a table drag: the table the rows landed in, the one they came from

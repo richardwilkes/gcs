@@ -266,6 +266,7 @@ func TestMenuBarStructure(t *testing.T) {
 		"Attributes…",
 		"Body Type…",
 		"Edit Sheet Layout",
+		"Show as Pages",
 	}, menuItemTitles(bar.Menu(SheetMenuID)), "Sheet menu")
 
 	c.Equal([]string{

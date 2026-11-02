@@ -12,6 +12,7 @@ package ux
 import (
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
@@ -19,6 +20,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/srcstate"
 	"github.com/richardwilkes/gcs/v5/ux/uxtest"
 	"github.com/richardwilkes/toolbox/v2/check"
+	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/unison"
 )
 
@@ -69,6 +71,86 @@ func TestPageListEditingCmdsFollowOwner(t *testing.T) {
 	c.True(weapons.Table.CanPerformCmd(nil, OpenEditorItemID), "a read-only list must still offer Open Editor")
 	for _, id := range editingTableCmdIDs {
 		c.False(weapons.Table.CanPerformCmd(nil, id), "a read-only list must not offer command %d", id)
+	}
+}
+
+// TestPageTableSizesItsColumnsForANewWidthOrNewRows verifies that a frame change of any view of a page table sizes the
+// table's columns again only when the width of the table's primary view or the heights of its rows are not what they
+// were last sized for: a frame change that alters only a height, or that of a continuation of the list whatever its
+// width, leaves them be. Sizing them on every frame change, letting a continuation size them for its own width, sizing
+// them for the width alone, which leaves disclosed rows in columns too narrow for them, or for the width and the number
+// of rows alone, which leaves an editor's columns as they were when what a row shows changed, fails it.
+func TestPageTableSizesItsColumnsForANewWidthOrNewRows(t *testing.T) {
+	c := check.New(t)
+	sheet := newTestSheetForTemplate(t)
+	entity := sheet.Entity()
+	container := gurps.NewTrait(entity, nil, true)
+	container.Name = "Container"
+	container.SetOpen(false)
+	child := gurps.NewTrait(entity, container, false)
+	child.Name = "Child"
+	container.Children = []*gurps.Trait{child}
+	entity.Traits = []*gurps.Trait{container}
+	setFrame := func(table *unison.Table[*Node[*gurps.Trait]], width, height float32) {
+		table.SetFrameRect(geom.NewRect(0, 0, width, height))
+	}
+	for _, one := range []struct {
+		name   string
+		change func(list *PageList[*gurps.Trait])
+		sized  bool
+	}{
+		{
+			name:   "a new height",
+			change: func(list *PageList[*gurps.Trait]) { setFrame(list.Table, 800, 150) },
+		},
+		{
+			name:   "a new width",
+			change: func(list *PageList[*gurps.Trait]) { setFrame(list.Table, 700, 100) },
+			sized:  true,
+		},
+		{
+			name:   "a continuation's frame",
+			change: func(list *PageList[*gurps.Trait]) { setFrame(list.continuation(0).Table, 500, 60) },
+		},
+		{
+			name: "disclosed rows",
+			change: func(list *PageList[*gurps.Trait]) {
+				// unison fits the frame to the table as it syncs, which can alter its width, so the frame change is
+				// held back until the frame is back at the width the columns were sized for.
+				frameChanged := list.Table.FrameChangeCallback
+				list.Table.FrameChangeCallback = nil
+				list.SetDisclosureState(true)
+				list.Table.FrameChangeCallback = frameChanged
+				setFrame(list.Table, 800, 120)
+			},
+			sized: true,
+		},
+		{
+			name: "a row grown taller",
+			change: func(list *PageList[*gurps.Trait]) {
+				// An editor's table is synced to its model without its columns being sized, unlike a page list (see
+				// PageList.Sync), and the frame change is held back as for disclosed rows.
+				frameChanged := list.Table.FrameChangeCallback
+				list.Table.FrameChangeCallback = nil
+				container.Name = strings.Repeat("A much longer name ", 40)
+				list.Table.SyncToModel()
+				list.Table.FrameChangeCallback = frameChanged
+				setFrame(list.Table, 800, 150)
+			},
+			sized: true,
+		},
+	} {
+		container.SetOpen(false)
+		container.Name = "Container"
+		list := NewTraitsPageList(sheet, entity)
+		setFrame(list.Table, 800, 100)
+		col := 0
+		if col == list.Table.ColumnIndexForID(list.provider.ExcessWidthColumnID()) {
+			col = 1
+		}
+		list.Table.Columns[col].Current = 1
+		one.change(list)
+		c.Equal(one.sized, list.Table.Columns[col].Current != 1, "%s: whether the columns are sized again", one.name)
 	}
 }
 

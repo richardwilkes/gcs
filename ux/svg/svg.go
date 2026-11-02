@@ -240,6 +240,10 @@ var (
 	openFolderData string
 	OpenFolder     = unison.MustSVGFromContentString(openFolderData)
 
+	//go:embed pages.svg
+	pagesData string
+	Pages     = unison.MustSVGFromContentString(pagesData)
+
 	//go:embed pdf_file.svg
 	pdfFileData string
 	PDFFile     = unison.MustSVGFromContentString(pdfFileData)

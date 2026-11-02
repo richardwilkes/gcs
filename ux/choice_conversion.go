@@ -101,12 +101,12 @@ const (
 // installChoiceConversionHandlers installs the commands that convert the selected group containers to template choice
 // containers and back. Only a template may hold choices, so only a template's lists install these, which keeps the
 // commands disabled, and out of the context menus, everywhere else.
-func installChoiceConversionHandlers[T gurps.Node[T], D gurps.EditorData[T]](p *PageList[T], owner Rebuildable) {
+func installChoiceConversionHandlers[T gurps.Node[T], D gurps.EditorData[T]](paneler unison.Paneler, table *unison.Table[*Node[T]], owner Rebuildable) {
 	if _, ok := owner.(*Template); !ok {
 		return
 	}
-	installContainerKindConversionHandler[T, D](p, p.Table, owner, ConvertToChoiceContainerItemID, choiceContainerKind)
-	installContainerKindConversionHandler[T, D](p, p.Table, owner, ConvertToGroupContainerItemID, groupContainerKind)
+	installContainerKindConversionHandler[T, D](paneler, table, owner, ConvertToChoiceContainerItemID, choiceContainerKind)
+	installContainerKindConversionHandler[T, D](paneler, table, owner, ConvertToGroupContainerItemID, groupContainerKind)
 }
 
 // installEquipmentContainerConversionHandlers installs the commands that convert equipment containers to a choice and

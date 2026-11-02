@@ -267,8 +267,8 @@ func (s *editorShell) confirmClose(isModified func() bool, apply func()) bool {
 }
 
 // returnToPrevious makes the dockable that was current when the editor opened current again and gives the keyboard
-// focus back to the panel within it that held it then, returning that panel or nil when there is no such dockable or
-// panel.
+// focus back to the panel within it that held it then, or for a table to the view the table gives it to (see
+// tabStopOf), returning that panel or nil when there is no such dockable or panel.
 func (s *editorShell) returnToPrevious() *unison.Panel {
 	if xreflect.IsNil(s.previousDockable) {
 		return nil
@@ -283,6 +283,7 @@ func (s *editorShell) returnToPrevious() *unison.Panel {
 	}
 	p := s.previousDockable.AsPanel().FindRefKey(s.previousFocusKey)
 	if p != nil {
+		p = tabStopOf(p)
 		restoreFocus(p)
 	}
 	return p

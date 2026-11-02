@@ -27,6 +27,7 @@ var (
 	_ Syncer     = &PageList[*gurps.Trait]{}
 	_ pageHelper = &PageList[*gurps.Trait]{}
 	_ sheetList  = &PageList[*gurps.Trait]{}
+	_ pageHelper = &pageListContinuation[*gurps.Trait]{}
 )
 
 // sheetList is what a dockable that shows page lists asks of each of them without regard to the type of row a list
@@ -208,75 +209,74 @@ func preserveSelections(lists func() []sheetList) (restore func()) {
 	}
 }
 
-// PageList holds a list for a sheet page.
+// PageList holds a list for a sheet page. The rows that don't fit on the page the list is on go on in continuations of
+// it (see continuation), each showing a view of the list's table.
 type PageList[T gurps.Node[T]] struct {
 	unison.Panel
 	tableHeader *unison.TableHeader[*Node[T]]
 	Table       *unison.Table[*Node[T]]
 	provider    TableProvider[T]
-	syncedAt    uint64 // The display stamp the list was last synced at; see syncedAtStamp.
+	owner       Rebuildable // nil for a read-only list
+	tint        *unison.ThemeColor
+	// installKindHandlers installs the commands only this kind of list offers on the list and on its continuations.
+	installKindHandlers kindHandlerInstaller[T]
+	continuations       []*pageListContinuation[T]
+	syncedAt            uint64 // The display stamp the list was last synced at; see syncedAtStamp.
 }
+
+// kindHandlerInstaller installs the commands only one kind of page list offers on a panel showing a view of the list's
+// table: the list itself, or one of its continuations.
+type kindHandlerInstaller[T gurps.Node[T]] func(target *unison.Panel, table *unison.Table[*Node[T]])
 
 // NewTraitsPageList creates the traits page list.
 func NewTraitsPageList(owner Rebuildable, provider gurps.ListProvider) *PageList[*gurps.Trait] {
-	p := newPageList(owner, NewTraitsProvider(provider, true))
-	p.installToggleDisabledHandler(owner)
-	p.installIncrementLevelHandler(owner)
-	p.installDecrementLevelHandler(owner)
-	installChoiceConversionHandlers[*gurps.Trait, *gurps.TraitEditData](p, owner)
-	InstallTintFunc(p, colors.TintTraits)
-	return p
+	return newPageList(owner, NewTraitsProvider(provider, true), colors.TintTraits,
+		func(target *unison.Panel, table *unison.Table[*Node[*gurps.Trait]]) {
+			installToggleDisabledHandler(target, table, owner)
+			installTraitLevelHandlers(target, table, owner)
+			installChoiceConversionHandlers[*gurps.Trait, *gurps.TraitEditData](target, table, owner)
+		})
 }
 
 // NewCarriedEquipmentPageList creates the carried equipment page list.
 func NewCarriedEquipmentPageList(owner Rebuildable, provider gurps.ListProvider) *PageList[*gurps.Equipment] {
-	p := newPageList(owner, NewEquipmentProvider(provider, true, true))
-	p.installToggleEquippedHandler(owner)
-	p.installIncrementTechLevelHandler(owner)
-	p.installDecrementTechLevelHandler(owner)
-	p.installContainerConversionHandlers(owner)
-	installEquipmentContainerConversionHandlers(p, p.Table, owner)
-	p.installMoveToOtherEquipmentHandler(owner)
-	p.installSellEquipmentHandler(owner)
-	p.installBuyEquipmentHandler()
-	p.installBuyDragDeferral(owner)
-	installEquipmentLevelHandlers(p, owner)
-	InstallTintFunc(p, colors.TintCarriedEquipment)
-	return p
+	return newPageList(owner, NewEquipmentProvider(provider, true, true), colors.TintCarriedEquipment,
+		func(target *unison.Panel, table *unison.Table[*Node[*gurps.Equipment]]) {
+			installToggleEquippedHandler(target, table, owner)
+			installTechLevelHandlers(target, table, owner)
+			InstallContainerConversionHandlers(target, owner, table)
+			installEquipmentContainerConversionHandlers(target, table, owner)
+			installMoveToOtherEquipmentHandler(target, table, owner)
+			installSellEquipmentHandler(target, table, owner)
+			installBuyEquipmentHandler(target, table)
+			installBuyDragDeferral(table, owner)
+			installEquipmentLevelHandlers(target, table, owner)
+		})
 }
 
 // NewOtherEquipmentPageList creates the other equipment page list.
 func NewOtherEquipmentPageList(owner Rebuildable, provider gurps.ListProvider) *PageList[*gurps.Equipment] {
-	p := newPageList(owner, NewEquipmentProvider(provider, false, true))
-	p.installIncrementTechLevelHandler(owner)
-	p.installDecrementTechLevelHandler(owner)
-	p.installContainerConversionHandlers(owner)
-	installEquipmentContainerConversionHandlers(p, p.Table, owner)
-	p.installMoveToCarriedEquipmentHandler(owner)
-	p.installBuyEquipmentHandler()
-	p.installBuyDragDeferral(owner)
-	installEquipmentLevelHandlers(p, owner)
-	InstallTintFunc(p, colors.TintOtherEquipment)
-	return p
+	return newPageList(owner, NewEquipmentProvider(provider, false, true), colors.TintOtherEquipment,
+		func(target *unison.Panel, table *unison.Table[*Node[*gurps.Equipment]]) {
+			installTechLevelHandlers(target, table, owner)
+			InstallContainerConversionHandlers(target, owner, table)
+			installEquipmentContainerConversionHandlers(target, table, owner)
+			installMoveToCarriedEquipmentHandler(target, table, owner)
+			installBuyEquipmentHandler(target, table)
+			installBuyDragDeferral(table, owner)
+			installEquipmentLevelHandlers(target, table, owner)
+		})
 }
 
-// installBuyEquipmentHandler has an equipment list buy its selected equipment for a character sheet (see
-// buySelectedEquipment).
-func (p *PageList[T]) installBuyEquipmentHandler() {
-	if t, ok := any(p.Table).(*unison.Table[*Node[*gurps.Equipment]]); ok {
-		installBuyEquipmentHandler(p, t)
-	}
-}
-
-// installBuyDragDeferral has a sheet's list decline the equipment drags the sheet's buy dockable would take while it is
-// open, so that the drag goes on up to the sheet, which reroutes it to the dockable (see Sheet.keyToPanel): equipment
-// dragged anywhere onto a sheet that is buying is to be bought, not carried. The sheet's own equipment is still taken,
-// so rows can be moved about while buying; dropped on the dockable itself, it is bought like any other (see
-// buyDockable.claimsDrag).
-func (p *PageList[T]) installBuyDragDeferral(owner Rebuildable) {
+// installBuyDragDeferral has a view of a sheet's list decline the equipment drags the sheet's buy dockable would take
+// while it is open, so that the drag goes on up to the sheet, which reroutes it to the dockable (see Sheet.keyToPanel):
+// equipment dragged anywhere onto a sheet that is buying is to be bought, not carried. The sheet's own equipment is
+// still taken, so rows can be moved about while buying; dropped on the dockable itself, it is bought like any other
+// (see buyDockable.claimsDrag). The view must already accept drops (see InstallTableDropSupport).
+func installBuyDragDeferral[T gurps.Node[T]](table *unison.Table[*Node[T]], owner Rebuildable) {
 	if sheet, ok := owner.AsPanel().Self.(*Sheet); ok {
-		accept := p.Table.CanAcceptDropCallback
-		p.Table.CanAcceptDropCallback = func(di drag.Info) bool {
+		accept := table.CanAcceptDropCallback
+		table.CanAcceptDropCallback = func(di drag.Info) bool {
 			if d := buyDockableFor(sheet); d != nil && d.claimsDrag(di) {
 				return false
 			}
@@ -287,100 +287,149 @@ func (p *PageList[T]) installBuyDragDeferral(owner Rebuildable) {
 
 // NewSkillsPageList creates the skills page list.
 func NewSkillsPageList(owner Rebuildable, provider gurps.ListProvider) *PageList[*gurps.Skill] {
-	p := newPageList(owner, NewSkillsProvider(provider, true))
-	p.installIncrementPointsHandler(owner)
-	p.installDecrementPointsHandler(owner)
-	p.installIncrementSkillHandler(owner)
-	p.installDecrementSkillHandler(owner)
-	p.installIncrementTechLevelHandler(owner)
-	p.installDecrementTechLevelHandler(owner)
-	installChoiceConversionHandlers[*gurps.Skill, *gurps.SkillEditData](p, owner)
-	InstallTintFunc(p, colors.TintSkills)
-	return p
+	return newPageList(owner, NewSkillsProvider(provider, true), colors.TintSkills,
+		func(target *unison.Panel, table *unison.Table[*Node[*gurps.Skill]]) {
+			installPointsHandlers(target, table, owner)
+			installSkillLevelHandlers(target, table, owner)
+			installTechLevelHandlers(target, table, owner)
+			installChoiceConversionHandlers[*gurps.Skill, *gurps.SkillEditData](target, table, owner)
+		})
 }
 
 // NewSpellsPageList creates the spells page list.
 func NewSpellsPageList(owner Rebuildable, provider gurps.SpellListProvider) *PageList[*gurps.Spell] {
-	p := newPageList(owner, NewSpellsProvider(provider, true))
-	p.installIncrementPointsHandler(owner)
-	p.installDecrementPointsHandler(owner)
-	p.installIncrementSkillHandler(owner)
-	p.installDecrementSkillHandler(owner)
-	installChoiceConversionHandlers[*gurps.Spell, *gurps.SpellEditData](p, owner)
-	InstallTintFunc(p, colors.TintSpells)
-	return p
+	return newPageList(owner, NewSpellsProvider(provider, true), colors.TintSpells,
+		func(target *unison.Panel, table *unison.Table[*Node[*gurps.Spell]]) {
+			installPointsHandlers(target, table, owner)
+			installSkillLevelHandlers(target, table, owner)
+			installChoiceConversionHandlers[*gurps.Spell, *gurps.SpellEditData](target, table, owner)
+		})
 }
 
 // NewNotesPageList creates the notes page list.
 func NewNotesPageList(owner Rebuildable, provider gurps.ListProvider) *PageList[*gurps.Note] {
-	p := newPageList(owner, NewNotesProvider(provider, true))
-	p.installContainerConversionHandlers(owner)
-	InstallTintFunc(p, colors.TintNotes)
-	return p
+	return newPageList(owner, NewNotesProvider(provider, true), colors.TintNotes,
+		func(target *unison.Panel, table *unison.Table[*Node[*gurps.Note]]) {
+			InstallContainerConversionHandlers(target, owner, table)
+		})
 }
 
 // NewConditionalModifiersPageList creates the conditional modifiers page list.
 func NewConditionalModifiersPageList(entity *gurps.Entity) *PageList[*gurps.ConditionalModifier] {
-	p := newPageList(nil, NewConditionalModifiersProvider(entity))
-	InstallTintFunc(p, colors.TintConditions)
-	return p
+	return newPageList(nil, NewConditionalModifiersProvider(entity), colors.TintConditions, nil)
 }
 
 // NewReactionsPageList creates the reaction modifiers page list.
 func NewReactionsPageList(entity *gurps.Entity) *PageList[*gurps.ConditionalModifier] {
-	p := newPageList(nil, NewReactionModifiersProvider(entity))
-	InstallTintFunc(p, colors.TintReactions)
-	return p
+	return newPageList(nil, NewReactionModifiersProvider(entity), colors.TintReactions, nil)
 }
 
 // NewMeleeWeaponsPageList creates the melee weapons page list.
 func NewMeleeWeaponsPageList(entity *gurps.Entity) *PageList[*gurps.Weapon] {
-	p := newPageList(nil, NewWeaponsProvider(entity, true, true))
-	InstallTintFunc(p, colors.TintMelee)
-	return p
+	return newPageList(nil, NewWeaponsProvider(entity, true, true), colors.TintMelee, nil)
 }
 
 // NewRangedWeaponsPageList creates the ranged weapons page list.
 func NewRangedWeaponsPageList(entity *gurps.Entity) *PageList[*gurps.Weapon] {
-	p := newPageList(nil, NewWeaponsProvider(entity, false, true))
-	InstallTintFunc(p, colors.TintRanged)
-	return p
+	return newPageList(nil, NewWeaponsProvider(entity, false, true), colors.TintRanged, nil)
 }
 
-func newPageList[T gurps.Node[T]](owner Rebuildable, provider TableProvider[T]) *PageList[T] {
+// newPageList creates a page list for the provider. A nil owner makes a read-only list. The tint and the kind-specific
+// command handlers go on the list and on each of its continuations alike.
+func newPageList[T gurps.Node[T]](owner Rebuildable, provider TableProvider[T], tint *unison.ThemeColor, installKindHandlers kindHandlerInstaller[T]) *PageList[T] {
 	header, table := NewNodeTable(provider, fonts.PageFieldPrimary)
 	table.ClientData()[WorkingDirKey] = WorkingDirProvider(owner)
-	editable := !xreflect.IsNil(owner)
-	if editable {
+	if xreflect.IsNil(owner) {
+		owner = nil
+	} else {
 		table.ClientData()[TableOwnerClientKey] = owner
 	}
 	table.RefKey = provider.RefKey()
 	p := &PageList[T]{
-		tableHeader: header,
-		Table:       table,
-		provider:    provider,
+		tableHeader:         header,
+		Table:               table,
+		provider:            provider,
+		owner:               owner,
+		tint:                tint,
+		installKindHandlers: installKindHandlers,
 	}
 	p.Self = p
-	p.SetLayout(&unison.FlexLayout{Columns: 1})
-	p.SetBorder(unison.NewLineBorder(header.BackgroundInk, geom.Size{}, geom.NewUniformInsets(1), false))
-
 	p.Table.PreventUserColumnResize = true
 	p.Table.ShowLastColumnDivider = false
 	p.Table.SyncToModel()
-	p.AddChild(p.tableHeader)
-	p.AddChild(p.Table)
+	p.installOnPanel(p.AsPanel(), header, table)
+	return p
+}
+
+// installOnPanel shapes the panel of the list or of one of its continuations around the given header and view of the
+// list's table, and installs on the panel and the view what the list offers.
+func (p *PageList[T]) installOnPanel(panel *unison.Panel, header *unison.TableHeader[*Node[T]], view *unison.Table[*Node[T]]) {
+	panel.SetLayout(&unison.FlexLayout{Columns: 1})
+	panel.SetBorder(unison.NewLineBorder(header.BackgroundInk, geom.Size{}, geom.NewUniformInsets(1), false))
+	panel.AddChild(header)
+	panel.AddChild(view)
 	// The read-only lists -- the weapons and the conditional and reaction modifiers, which are derived from the rest
 	// of the sheet -- have no owner and offer none of the editing commands.
-	installStandardTableCmdHandlers(p, p.Table, p.provider, func() Rebuildable { return owner }, editable)
+	editable := p.owner != nil
+	installStandardTableCmdHandlers(panel, view, p.provider, func() Rebuildable { return p.owner }, editable)
 	if editable {
-		InstallTableDropSupport(p.Table, p.provider)
+		InstallTableDropSupport(view, p.provider)
 	}
-	p.SetLayoutData(&unison.FlexLayoutData{
+	if p.installKindHandlers != nil {
+		p.installKindHandlers(panel, view)
+	}
+	if p.tint != nil {
+		InstallTintFunc(panel, p.tint)
+	}
+	panel.SetLayoutData(&unison.FlexLayoutData{
 		HAlign: align.Fill,
 		VAlign: align.Fill,
 		HGrab:  true,
 	})
-	return p
+}
+
+// continuation returns the n-th continuation of the list, counting from 0, creating it and any before it that don't
+// exist yet. A new one shows no rows, having an empty range, until whoever places it sets one with SetDrawRowRange, and
+// records the block it shows in its ClientData under pageKey. Pagination may move a continuation from one page to
+// another.
+func (p *PageList[T]) continuation(n int) *pageListContinuation[T] {
+	for len(p.continuations) <= n {
+		p.continuations = append(p.continuations, p.newContinuation())
+	}
+	return p.continuations[n]
+}
+
+// continuationPanel is continuation for a caller that doesn't know the type of the list's rows.
+func (p *PageList[T]) continuationPanel(n int) pagePanel {
+	return p.continuation(n)
+}
+
+// newContinuation creates a continuation of the list: a panel shaped like the list, holding a new view of the list's
+// table under a header of its own, and offering the same commands.
+func (p *PageList[T]) newContinuation() *pageListContinuation[T] {
+	view := p.Table.NewView(0, 0)
+	c := &pageListContinuation[T]{
+		tableHeader: newNodeTableHeader(view, p.tableHeader.ColumnHeaders...),
+		Table:       view,
+	}
+	c.Self = c
+	installNodeTableView(view, c.tableHeader, p.provider, fonts.PageFieldPrimary)
+	p.installOnPanel(c.AsPanel(), c.tableHeader, view)
+	return c
+}
+
+// trimContinuations removes the continuations of the list beyond the first used of them, taking each out of its parent
+// and its view out of the list's table.
+func (p *PageList[T]) trimContinuations(used int) {
+	if used >= len(p.continuations) {
+		return
+	}
+	for _, c := range p.continuations[used:] {
+		c.RemoveFromParent()
+		p.Table.RemoveView(c.Table)
+	}
+	clear(p.continuations[used:])
+	p.continuations = p.continuations[:used]
 }
 
 func (p *PageList[T]) needReconstruction() bool {
@@ -433,40 +482,31 @@ func columnsOutOfSync(ids []int, columns []unison.ColumnInfo) bool {
 	return false
 }
 
-func (p *PageList[T]) installMoveToCarriedEquipmentHandler(owner Rebuildable) {
+func installMoveToCarriedEquipmentHandler(target *unison.Panel, table *unison.Table[*Node[*gurps.Equipment]], owner Rebuildable) {
 	if sheet, ok := owner.AsPanel().Self.(*Sheet); ok {
-		var t *unison.Table[*Node[*gurps.Equipment]]
-		if t, ok = any(p.Table).(*unison.Table[*Node[*gurps.Equipment]]); ok {
-			// While the layout leaves the carried equipment list off the page, the list's table has no undo manager,
-			// so a move would do nothing.
-			p.InstallCmdHandlers(MoveToCarriedEquipmentItemID,
-				func(_ any) bool { return t.HasSelection() && sheet.showsBlock(gurps.BlockEquipmentKey) },
-				func(_ any) { moveSelectedEquipment(sheet, t, sheet.CarriedEquipment.Table) })
-		}
+		// While the layout leaves the carried equipment list off the page, the list's table has no undo manager, so a
+		// move would do nothing.
+		target.InstallCmdHandlers(MoveToCarriedEquipmentItemID,
+			func(_ any) bool { return table.HasSelection() && sheet.showsBlock(gurps.BlockEquipmentKey) },
+			func(_ any) { moveSelectedEquipment(sheet, table, sheet.CarriedEquipment.Table) })
 	}
 }
 
-func (p *PageList[T]) installMoveToOtherEquipmentHandler(owner Rebuildable) {
+func installMoveToOtherEquipmentHandler(target *unison.Panel, table *unison.Table[*Node[*gurps.Equipment]], owner Rebuildable) {
 	if sheet, ok := owner.AsPanel().Self.(*Sheet); ok {
-		var t *unison.Table[*Node[*gurps.Equipment]]
-		if t, ok = any(p.Table).(*unison.Table[*Node[*gurps.Equipment]]); ok {
-			// While the layout leaves the other equipment list off the page, its table has no undo manager, so a move
-			// would do nothing.
-			p.InstallCmdHandlers(MoveToOtherEquipmentItemID,
-				func(_ any) bool { return t.HasSelection() && sheet.showsBlock(gurps.BlockOtherEquipmentKey) },
-				func(_ any) { moveSelectedEquipment(sheet, t, sheet.OtherEquipment.Table) })
-		}
+		// While the layout leaves the other equipment list off the page, its table has no undo manager, so a move would
+		// do nothing.
+		target.InstallCmdHandlers(MoveToOtherEquipmentItemID,
+			func(_ any) bool { return table.HasSelection() && sheet.showsBlock(gurps.BlockOtherEquipmentKey) },
+			func(_ any) { moveSelectedEquipment(sheet, table, sheet.OtherEquipment.Table) })
 	}
 }
 
-func (p *PageList[T]) installSellEquipmentHandler(owner Rebuildable) {
+func installSellEquipmentHandler(target *unison.Panel, table *unison.Table[*Node[*gurps.Equipment]], owner Rebuildable) {
 	if sheet, ok := owner.AsPanel().Self.(*Sheet); ok {
-		var t *unison.Table[*Node[*gurps.Equipment]]
-		if t, ok = any(p.Table).(*unison.Table[*Node[*gurps.Equipment]]); ok {
-			p.InstallCmdHandlers(SellEquipmentItemID,
-				func(_ any) bool { return !t.IsFiltered() && len(selectedSaleRows(t)) != 0 },
-				func(_ any) { sellSelectedEquipment(sheet, t) })
-		}
+		target.InstallCmdHandlers(SellEquipmentItemID,
+			func(_ any) bool { return !table.IsFiltered() && len(selectedSaleRows(table)) != 0 },
+			func(_ any) { sellSelectedEquipment(sheet, table) })
 	}
 }
 
@@ -516,85 +556,61 @@ func moveSelectedEquipment(sheet *Sheet, from, to *unison.Table[*Node[*gurps.Equ
 	rebuildAsModified(sheet, true)
 }
 
-func (p *PageList[T]) installToggleDisabledHandler(owner Rebuildable) {
-	if t, ok := any(p.Table).(*unison.Table[*Node[*gurps.Trait]]); ok {
-		p.InstallCmdHandlers(ToggleStateItemID,
-			func(_ any) bool { return canToggleDisabled(t) },
-			func(_ any) { toggleDisabled(owner, t) })
-	}
+func installToggleDisabledHandler(target *unison.Panel, table *unison.Table[*Node[*gurps.Trait]], owner Rebuildable) {
+	target.InstallCmdHandlers(ToggleStateItemID,
+		func(_ any) bool { return canToggleDisabled(table) },
+		func(_ any) { toggleDisabled(owner, table) })
 }
 
-func (p *PageList[T]) installToggleEquippedHandler(owner Rebuildable) {
-	if t, ok := any(p.Table).(*unison.Table[*Node[*gurps.Equipment]]); ok {
-		p.InstallCmdHandlers(ToggleStateItemID,
-			func(_ any) bool { return canToggleEquipped(t) },
-			func(_ any) { toggleEquipped(owner, t) })
-	}
+func installToggleEquippedHandler(target *unison.Panel, table *unison.Table[*Node[*gurps.Equipment]], owner Rebuildable) {
+	target.InstallCmdHandlers(ToggleStateItemID,
+		func(_ any) bool { return canToggleEquipped(table) },
+		func(_ any) { toggleEquipped(owner, table) })
 }
 
-func (p *PageList[T]) installIncrementPointsHandler(owner Rebuildable) {
-	p.InstallCmdHandlers(IncrementItemID,
-		func(_ any) bool { return canAdjustRawPoints(p.Table, true) },
-		func(_ any) { adjustRawPoints(owner, p.Table, true) })
+func installPointsHandlers[T gurps.Node[T]](target *unison.Panel, table *unison.Table[*Node[T]], owner Rebuildable) {
+	target.InstallCmdHandlers(IncrementItemID,
+		func(_ any) bool { return canAdjustRawPoints(table, true) },
+		func(_ any) { adjustRawPoints(owner, table, true) })
+	target.InstallCmdHandlers(DecrementItemID,
+		func(_ any) bool { return canAdjustRawPoints(table, false) },
+		func(_ any) { adjustRawPoints(owner, table, false) })
 }
 
-func (p *PageList[T]) installDecrementPointsHandler(owner Rebuildable) {
-	p.InstallCmdHandlers(DecrementItemID,
-		func(_ any) bool { return canAdjustRawPoints(p.Table, false) },
-		func(_ any) { adjustRawPoints(owner, p.Table, false) })
+func installTraitLevelHandlers(target *unison.Panel, table *unison.Table[*Node[*gurps.Trait]], owner Rebuildable) {
+	target.InstallCmdHandlers(IncrementItemID,
+		func(_ any) bool { return canAdjustTraitLevel(table, true) },
+		func(_ any) { adjustTraitLevel(owner, table, true) })
+	target.InstallCmdHandlers(DecrementItemID,
+		func(_ any) bool { return canAdjustTraitLevel(table, false) },
+		func(_ any) { adjustTraitLevel(owner, table, false) })
 }
 
-func (p *PageList[T]) installIncrementLevelHandler(owner Rebuildable) {
-	if t, ok := any(p.Table).(*unison.Table[*Node[*gurps.Trait]]); ok {
-		p.InstallCmdHandlers(IncrementItemID,
-			func(_ any) bool { return canAdjustTraitLevel(t, true) },
-			func(_ any) { adjustTraitLevel(owner, t, true) })
-	}
+func installSkillLevelHandlers[T gurps.Node[T]](target *unison.Panel, table *unison.Table[*Node[T]], owner Rebuildable) {
+	target.InstallCmdHandlers(IncrementSkillLevelItemID,
+		func(_ any) bool { return canAdjustSkillLevel(table, true) },
+		func(_ any) { adjustSkillLevel(owner, table, true) })
+	target.InstallCmdHandlers(DecrementSkillLevelItemID,
+		func(_ any) bool { return canAdjustSkillLevel(table, false) },
+		func(_ any) { adjustSkillLevel(owner, table, false) })
 }
 
-func (p *PageList[T]) installDecrementLevelHandler(owner Rebuildable) {
-	if t, ok := any(p.Table).(*unison.Table[*Node[*gurps.Trait]]); ok {
-		p.InstallCmdHandlers(DecrementItemID,
-			func(_ any) bool { return canAdjustTraitLevel(t, false) },
-			func(_ any) { adjustTraitLevel(owner, t, false) })
-	}
+func installTechLevelHandlers[T gurps.Node[T]](target *unison.Panel, table *unison.Table[*Node[T]], owner Rebuildable) {
+	target.InstallCmdHandlers(IncrementTechLevelItemID,
+		func(_ any) bool { return canAdjustTechLevel(table, fxp.One) },
+		func(_ any) { adjustTechLevel(owner, table, fxp.One) })
+	target.InstallCmdHandlers(DecrementTechLevelItemID,
+		func(_ any) bool { return canAdjustTechLevel(table, -fxp.One) },
+		func(_ any) { adjustTechLevel(owner, table, -fxp.One) })
 }
 
-func (p *PageList[T]) installIncrementSkillHandler(owner Rebuildable) {
-	p.InstallCmdHandlers(IncrementSkillLevelItemID,
-		func(_ any) bool { return canAdjustSkillLevel(p.Table, true) },
-		func(_ any) { adjustSkillLevel(owner, p.Table, true) })
-}
-
-func (p *PageList[T]) installDecrementSkillHandler(owner Rebuildable) {
-	p.InstallCmdHandlers(DecrementSkillLevelItemID,
-		func(_ any) bool { return canAdjustSkillLevel(p.Table, false) },
-		func(_ any) { adjustSkillLevel(owner, p.Table, false) })
-}
-
-func (p *PageList[T]) installIncrementTechLevelHandler(owner Rebuildable) {
-	p.InstallCmdHandlers(IncrementTechLevelItemID,
-		func(_ any) bool { return canAdjustTechLevel(p.Table, fxp.One) },
-		func(_ any) { adjustTechLevel(owner, p.Table, fxp.One) })
-}
-
-func (p *PageList[T]) installDecrementTechLevelHandler(owner Rebuildable) {
-	p.InstallCmdHandlers(DecrementTechLevelItemID,
-		func(_ any) bool { return canAdjustTechLevel(p.Table, -fxp.One) },
-		func(_ any) { adjustTechLevel(owner, p.Table, -fxp.One) })
-}
-
-func installEquipmentLevelHandlers(p *PageList[*gurps.Equipment], owner Rebuildable) {
-	p.InstallCmdHandlers(IncrementEquipmentLevelItemID,
-		func(_ any) bool { return canAdjustEquipmentLevel(p.Table, fxp.One) },
-		func(_ any) { adjustEquipmentLevel(owner, p.Table, fxp.One) })
-	p.InstallCmdHandlers(DecrementEquipmentLevelItemID,
-		func(_ any) bool { return canAdjustEquipmentLevel(p.Table, -fxp.One) },
-		func(_ any) { adjustEquipmentLevel(owner, p.Table, -fxp.One) })
-}
-
-func (p *PageList[T]) installContainerConversionHandlers(owner Rebuildable) {
-	InstallContainerConversionHandlers(p, owner, p.Table)
+func installEquipmentLevelHandlers(target *unison.Panel, table *unison.Table[*Node[*gurps.Equipment]], owner Rebuildable) {
+	target.InstallCmdHandlers(IncrementEquipmentLevelItemID,
+		func(_ any) bool { return canAdjustEquipmentLevel(table, fxp.One) },
+		func(_ any) { adjustEquipmentLevel(owner, table, fxp.One) })
+	target.InstallCmdHandlers(DecrementEquipmentLevelItemID,
+		func(_ any) bool { return canAdjustEquipmentLevel(table, -fxp.One) },
+		func(_ any) { adjustEquipmentLevel(owner, table, -fxp.One) })
 }
 
 // SelectedNodes returns the set of selected nodes. If 'minimal' is true, then children of selected rows that may also
@@ -654,8 +670,8 @@ func (p *PageList[T]) Sync() {
 	selection := p.RecordSelection()
 	p.Table.SyncToModel()
 	p.ApplySelection(selection)
-	// Re-evaluate page reference column expansion here, since a change to that setting won't necessarily alter the
-	// table's frame and thus won't trigger the table's FrameChangeCallback.
+	// Size the columns here, since a settings change, such as to page reference column expansion, won't necessarily
+	// alter the table's frame or the heights of its rows and thus won't have the table's FrameChangeCallback size them.
 	sizePageTableColumns(p.Table, p.provider.ExcessWidthColumnID())
 	p.Table.NeedsLayout = true
 	p.NeedsLayout = true
@@ -677,9 +693,32 @@ func (p *PageList[T]) CreateItem(owner Rebuildable, variant ItemVariant) {
 
 // OverheadHeight returns the overhead for this page list, i.e. the border and header space.
 func (p *PageList[T]) OverheadHeight() float32 {
-	_, pref, _ := p.tableHeader.Sizes(geom.Size{})
-	insets := p.Border().Insets()
-	return insets.Height() + pref.Height
+	return pageListOverheadHeight(p.AsPanel(), p.tableHeader)
+}
+
+// MinimumHeight implements pageHelper.
+func (p *PageList[T]) MinimumHeight() float32 {
+	return pageListMinimumHeight(p.AsPanel(), p.tableHeader, p.Table)
+}
+
+// pageListMinimumHeight returns the height the panel of a page list, or of one of its continuations, stands at however
+// few rows it draws: its overhead and the minimum height its view of the table is laid out at.
+func pageListMinimumHeight[T gurps.Node[T]](panel *unison.Panel, header *unison.TableHeader[*Node[T]], view *unison.Table[*Node[T]]) float32 {
+	height := pageListOverheadHeight(panel, header)
+	if data, ok := view.LayoutData().(*unison.FlexLayoutData); ok {
+		height += data.MinSize.Height
+	}
+	return height
+}
+
+// pageListOverheadHeight returns the height the panel of a page list, or of one of its continuations, takes beyond the
+// rows it shows: its border and its header.
+func pageListOverheadHeight[T gurps.Node[T]](panel *unison.Panel, header *unison.TableHeader[*Node[T]]) float32 {
+	_, pref, _ := header.Sizes(geom.Size{})
+	if border := panel.Border(); border != nil {
+		pref.Height += border.Insets().Height()
+	}
+	return pref.Height
 }
 
 // RowHeights returns the heights of each row.
@@ -700,4 +739,53 @@ func (p *PageList[T]) CurrentDrawRowRange() (start, endBefore int) {
 // SetDrawRowRange sets the row range that will be drawn.
 func (p *PageList[T]) SetDrawRowRange(start, endBefore int) {
 	p.Table.SetDrawRowRange(start, endBefore)
+}
+
+// ClearDrawRowRange removes the row range set by SetDrawRowRange, so that the list shows every row again.
+func (p *PageList[T]) ClearDrawRowRange() {
+	p.Table.ClearDrawRowRange()
+}
+
+// pagePanel is a panel showing a range of the rows of a page list: the list itself or one of its continuations.
+type pagePanel interface {
+	unison.Paneler
+	pageHelper
+}
+
+// pageListContinuation shows rows of a page list that go on past the page the list is on: a panel shaped like the list,
+// holding a view of the list's table under a header of its own (see PageList.continuation).
+type pageListContinuation[T gurps.Node[T]] struct {
+	unison.Panel
+	tableHeader *unison.TableHeader[*Node[T]]
+	Table       *unison.Table[*Node[T]] // The view of the list's table
+}
+
+// OverheadHeight implements pageHelper.
+func (c *pageListContinuation[T]) OverheadHeight() float32 {
+	return pageListOverheadHeight(c.AsPanel(), c.tableHeader)
+}
+
+// MinimumHeight implements pageHelper.
+func (c *pageListContinuation[T]) MinimumHeight() float32 {
+	return pageListMinimumHeight(c.AsPanel(), c.tableHeader, c.Table)
+}
+
+// RowHeights implements pageHelper.
+func (c *pageListContinuation[T]) RowHeights() []float32 {
+	return c.Table.RowHeights()
+}
+
+// CurrentDrawRowRange implements pageHelper.
+func (c *pageListContinuation[T]) CurrentDrawRowRange() (start, endBefore int) {
+	return c.Table.CurrentDrawRowRange()
+}
+
+// SetDrawRowRange implements pageHelper.
+func (c *pageListContinuation[T]) SetDrawRowRange(start, endBefore int) {
+	c.Table.SetDrawRowRange(start, endBefore)
+}
+
+// ClearDrawRowRange implements pageHelper.
+func (c *pageListContinuation[T]) ClearDrawRowRange() {
+	c.Table.ClearDrawRowRange()
 }

@@ -195,8 +195,10 @@ func (d *generalSettingsDockable) createListsSection(content *unison.Panel) {
 
 func (d *generalSettingsDockable) createWorkspaceSection(content *unison.Panel) {
 	section := newSettingsSection(content, i18n.Text("Workspace"), 1)
-	d.addGeneralCheckBox(section, i18n.Text("Restore arrangement on start"),
-		&gurps.GlobalSettings().General.RestoreWorkspaceOnStart, nil)
+	gs := gurps.GlobalSettings().General
+	d.addGeneralCheckBox(section, i18n.Text("Restore arrangement on start"), &gs.RestoreWorkspaceOnStart, nil)
+	box := d.addGeneralCheckBox(section, i18n.Text("Show sheets as pages"), &gs.InitialSheetPaginated, nil)
+	box.Tooltip = newWrappedTooltip(i18n.Text(`When enabled, character sheets open as pages of the paper's size, as many across as fit. Unlike the printed pages, they show an empty list you can add to, such as Spells for a character without any, so their page breaks can differ from the print's. Each sheet's toolbar can switch between pages and a single continuous page.`))
 	d.createOpenInWindowCheckboxes(section)
 	d.createInitialScaleFields(section)
 }

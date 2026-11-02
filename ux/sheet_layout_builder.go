@@ -40,7 +40,8 @@ const sheetLayoutContainerKey = "sheetLayoutContainer"
 const sheetLayoutSquareKey = "sheetLayoutSquare"
 
 // layoutLeafFunc returns the panel to show for the block with the given key, or nil if that block is not to be shown
-// at all -- because it has nothing to say, or because this kind of sheet has no such block.
+// at all -- because it has nothing to say, or because this kind of sheet has no such block. A leaf that paginates hands
+// back a page spacer (see newPageSpacer) for a block it placed on an earlier page, so that the block's slot is kept.
 type layoutLeafFunc func(key string) unison.Paneler
 
 // buildLayoutBands builds one panel per band of the given layout root, in order. Bands whose blocks all had nothing to
@@ -73,6 +74,12 @@ func buildLayoutBands(root *gurps.SheetLayoutNode, leaf layoutLeafFunc) []*uniso
 // A Block's square flag travels with its panel in the same way, save that the child taking a dropped container's place
 // keeps the flag of the block it was built from rather than picking up the container's, since it is that block's
 // content the row would be squaring.
+//
+// A page spacer standing for a block placed on an earlier page is kept by a Row, holding the block's slot at the
+// block's weight so that whatever continues beside it keeps its width, and dropped by a Column, letting the blocks
+// below it move up. A container with nothing but spacers left in it was placed on an earlier page as a whole, so it
+// comes back as a single spacer that keeps its slot in the Row around it. A spacer never carries a minimum height or a
+// square flag, since it is an empty slot with nothing to stand tall or square.
 func buildLayoutNode(node *gurps.SheetLayoutNode, leaf layoutLeafFunc) unison.Paneler {
 	if node == nil {
 		return nil
@@ -81,6 +88,9 @@ func buildLayoutNode(node *gurps.SheetLayoutNode, leaf layoutLeafFunc) unison.Pa
 		panel := leaf(node.Key)
 		if xreflect.IsNil(panel) {
 			return nil
+		}
+		if isPageSpacer(panel.AsPanel()) {
+			return applyLayoutNode(panel, node, 0)
 		}
 		// The blocks that aren't lists are built once and used again by every rebuild, so a flag that is no longer set
 		// has to be taken off the panel rather than merely not being put on it.
@@ -94,16 +104,32 @@ func buildLayoutNode(node *gurps.SheetLayoutNode, leaf layoutLeafFunc) unison.Pa
 	panels := make([]unison.Paneler, 0, len(node.Children))
 	weights := make([]fxp.Int, 0, len(node.Children))
 	squares := make([]bool, 0, len(node.Children))
+	hasContent := false
+	hasSpacer := false
 	for _, child := range node.Children {
-		if built := buildLayoutNode(child, leaf); !xreflect.IsNil(built) {
-			panels = append(panels, built)
-			weights = append(weights, child.Weight)
-			squares = append(squares, squareLayoutNodeOf(built.AsPanel()) != nil)
+		built := buildLayoutNode(child, leaf)
+		if xreflect.IsNil(built) {
+			continue
 		}
+		if isPageSpacer(built.AsPanel()) {
+			hasSpacer = true
+			if node.Type != layoutnode.Row {
+				continue
+			}
+		} else {
+			hasContent = true
+		}
+		panels = append(panels, built)
+		weights = append(weights, child.Weight)
+		squares = append(squares, squareLayoutNodeOf(built.AsPanel()) != nil)
+	}
+	if !hasContent {
+		if hasSpacer {
+			return applyLayoutNode(newPageSpacer(), node, 0)
+		}
+		return nil
 	}
 	switch len(panels) {
-	case 0:
-		return nil
 	case 1:
 		only := panels[0].AsPanel()
 		minHeight := node.MinHeight.Pixels()

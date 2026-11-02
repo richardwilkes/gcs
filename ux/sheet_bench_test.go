@@ -39,7 +39,8 @@ import (
 //
 // Besides ns/op, which is the end-to-end time including the headless session's round trips, each benchmark reports
 // ui-ns/op, the time the operation itself took on the UI thread, and draw-ns/op, the time the redraw it provoked
-// took. Each benchmark starts one headless session and must therefore never run in parallel.
+// took. Each benchmark starts one headless session and must therefore never run in parallel. The sheet is shown as one
+// continuous page, except where a benchmark measures each of sheetViewModes in turn.
 
 // benchFileEnvVar names the environment variable that, when set to the path of a character sheet, has the benchmarks
 // measure that sheet instead of a generated one.
@@ -53,6 +54,12 @@ type sheetBench struct {
 	heapMB float64 // The heap in use once the sheet was open, which each measurement reports as heap-MB.
 	draws  int     // How many times the window has drawn, counted on the UI thread; read it once the session is quiet.
 }
+
+// sheetViewModes are the ways a sheet can be shown, which the benchmarks of rebuilding and drawing measure in turn.
+var sheetViewModes = []struct {
+	name      string
+	paginated bool
+}{{"continuous", false}, {"pages", true}}
 
 // benchEntity returns the character to measure: the sheet named by benchFileEnvVar, or a generated one of the size
 // gurpstest.LargeEntitySizeFromEnv reports.
@@ -80,6 +87,7 @@ func newSheetBench(b *testing.B) *sheetBench {
 	b.Helper()
 	c := check.New(b)
 	screen, wnd := uxtest.StartHeadlessWorkspace(b, c)
+	uxtest.SwapForTest(b, &gurps.GlobalSettings().General.InitialSheetPaginated, false)
 	sb := &sheetBench{screen: screen, wnd: wnd}
 	entity, generated := benchEntity(b)
 	var sheet *Sheet
@@ -119,6 +127,15 @@ func newSheetBench(b *testing.B) *sheetBench {
 	sb.sheet = sheet
 	sb.heapMB = float64(stats.HeapAlloc) / (1 << 20)
 	return sb
+}
+
+// showAs shows the sheet as pages or as one continuous page.
+func (sb *sheetBench) showAs(paginated bool) {
+	sb.screen.Do(func() {
+		if sb.sheet.paginated != paginated {
+			sb.sheet.togglePaginated()
+		}
+	})
 }
 
 // reportHeap reports the heap in use once the sheet was open. It has to be reported after the timed loop, since
@@ -187,29 +204,35 @@ func BenchmarkSheetMarkModified(b *testing.B) {
 
 func BenchmarkSheetRebuild(b *testing.B) {
 	sb := newSheetBench(b)
-	for _, one := range []struct {
-		name string
-		full bool
-	}{{"full", true}, {"partial", false}} {
-		b.Run(one.name, func(b *testing.B) {
-			sb.run(b, func() { sb.sheet.Rebuild(one.full) })
-		})
+	for _, mode := range sheetViewModes {
+		for _, one := range []struct {
+			name string
+			full bool
+		}{{"full", true}, {"partial", false}} {
+			b.Run(mode.name+"/"+one.name, func(b *testing.B) {
+				sb.showAs(mode.paginated)
+				sb.run(b, func() { sb.sheet.Rebuild(one.full) })
+			})
+		}
 	}
 }
 
 func BenchmarkSheetRedraw(b *testing.B) {
 	sb := newSheetBench(b)
-	for _, one := range []struct {
-		name  string
-		panel unison.Paneler
-	}{{"top", sb.sheet.page}, {"melee", sb.sheet.MeleeWeapons}, {"spells", sb.sheet.Spells}} {
-		b.Run(one.name, func(b *testing.B) {
-			sb.scrollTo(b, one.panel)
-			sb.run(b, func() {
-				sb.wnd.MarkForRedraw()
-				sb.wnd.FlushDrawing()
+	for _, mode := range sheetViewModes {
+		for _, one := range []struct {
+			name  string
+			panel unison.Paneler
+		}{{"top", sb.sheet.page}, {"melee", sb.sheet.MeleeWeapons}, {"spells", sb.sheet.Spells}} {
+			b.Run(mode.name+"/"+one.name, func(b *testing.B) {
+				sb.showAs(mode.paginated)
+				sb.scrollTo(b, one.panel)
+				sb.run(b, func() {
+					sb.wnd.MarkForRedraw()
+					sb.wnd.FlushDrawing()
+				})
 			})
-		})
+		}
 	}
 }
 

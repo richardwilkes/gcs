@@ -88,6 +88,7 @@ func (t *TargetMgr) ReacquireFocus(ref *FocusRef, toolbar, content unison.Panele
 		return
 	}
 	if focus := t.Find(ref.Key); focus != nil {
+		focus = tabStopOf(focus)
 		focus.RequestFocus()
 		if ref.Selectable {
 			if s, ok := focus.Self.(Selectable); ok {
@@ -97,4 +98,23 @@ func (t *TargetMgr) ReacquireFocus(ref *FocusRef, toolbar, content unison.Panele
 	} else {
 		FocusFirstContent(toolbar, content)
 	}
+}
+
+// tabStopOf returns the panel a panel found by its reference key gives the focus to. The views of a table share its
+// reference key, and the first found is its primary view, which may be pages away from the row the person is on, so
+// the focus goes to the view showing that row or, when there is none, to the view the table gives its tab stop to. The
+// row comes first, since the view the focus was left on may no longer show it once the rows have been set out anew.
+// Any other panel takes the focus itself.
+func tabStopOf(p *unison.Panel) *unison.Panel {
+	if holder, ok := p.Self.(unison.TabStopHolder); ok {
+		if rowView, hasRowView := p.ClientData()[currentRowViewKey].(func() *unison.Panel); hasRowView {
+			if view := rowView(); view != nil {
+				return view
+			}
+		}
+		if stop := holder.TabStopPanel(); stop != nil {
+			return stop
+		}
+	}
+	return p
 }
