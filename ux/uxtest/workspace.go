@@ -33,7 +33,10 @@ type Workspace struct {
 	// registers the file types and the window's drag types, sets up the menu bar and initializes the workspace, and
 	// points the workspace's error handler at the test, since the modal dialog it would otherwise put up has nobody
 	// to dismiss it. It runs on the UI thread, before the session is handed to the test, and should put back any
-	// process-wide state it replaces when the test ends (see SwapForTest).
+	// process-wide state it replaces when the test ends (see SwapForTest). It must also register a cleanup that waits
+	// out the navigator's walks of the libraries (ux.Navigator.WaitForWalks): a walk still in flight when the
+	// session stops puts back a library folder that the removal of the test's temporary directories, which hold the
+	// libraries, has just taken away, and the removal then fails.
 	Setup func(t testing.TB, wnd *unison.Window)
 	// AllDockables lists every open dockable, whether in the workspace or in a window of its own.
 	AllDockables func() []unison.Dockable

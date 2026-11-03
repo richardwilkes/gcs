@@ -26,6 +26,7 @@ func TestMain(m *testing.M) {
 			ux.RegisterWindowDragTypes(wnd)
 			ux.SetupMenuBar(wnd)
 			ux.InitWorkspace(wnd)
+			t.Cleanup(ux.Workspace.Navigator.WaitForWalks) // Before the folders holding the libraries are removed
 			ux.Workspace.ErrorHandler = func(msg string, err error) { t.Errorf("unexpected error: %s: %v", msg, err) }
 		},
 		AllDockables: ux.AllDockables,

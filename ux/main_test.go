@@ -29,10 +29,7 @@ func TestMain(m *testing.M) {
 			RegisterWindowDragTypes(wnd)
 			SetupMenuBar(wnd)
 			InitWorkspace(wnd)
-			// A walk of the libraries the navigator still has in flight when the session stops goes on to watch them,
-			// which puts back a library's folder that is missing, so it is waited out before the test's temporary
-			// folders, which hold the libraries, are removed.
-			t.Cleanup(Workspace.Navigator.walks.Wait)
+			t.Cleanup(Workspace.Navigator.WaitForWalks) // Before the folders holding the libraries are removed
 			// The workspace reports errors with a modal dialog once it has finished initializing. Nobody would dismiss
 			// it, so report them as test failures instead.
 			Workspace.ErrorHandler = func(msg string, err error) { t.Errorf("unexpected error: %s: %v", msg, err) }

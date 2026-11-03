@@ -79,7 +79,7 @@ type Navigator struct {
 	missingContent            map[string]bool
 	invalidatedPaths          map[string]bool
 	appUpdatePulse            appUpdatePulse
-	walks                     sync.WaitGroup // The walks in flight, which tests wait out before removing the libraries
+	walks                     sync.WaitGroup // The walks in flight; see WaitForWalks
 	cacheGeneration           atomic.Int64
 	prewarmSuspensions        int
 	needReload                bool
@@ -882,6 +882,14 @@ func (n *Navigator) stopWatches() {
 		token.Stop()
 	}
 	n.tokens = nil
+}
+
+// WaitForWalks waits for any walk of the libraries in flight to finish. A walk goes on to watch the libraries, which
+// puts back a library's folder that is missing (see Library.Watch), so a test that stops the workspace must wait its
+// walks out before removing the temporary folders holding its libraries, or the walk puts one back while they are
+// being removed and the removal fails.
+func (n *Navigator) WaitForWalks() {
+	n.walks.Wait()
 }
 
 func (n *Navigator) adjustTableSizeEventually() {
