@@ -227,6 +227,10 @@ func TestEveryControlHasAnAccessibleName(t *testing.T) {
 		coin.BaseValue = "1"
 		coin.Tags = []string{gurps.MoneyTag}
 		entity.SheetSettings.SellMoney = []*gurps.Equipment{coin}
+		// A skill level cap has a row, with its sentence and remove button.
+		levelCap := gurps.NewSkillLevelCap()
+		levelCap.Cap.Children = gurps.LevelCaps{gurps.NewFixedLevelCap(levelCap.Cap, fxp.Ten)}
+		entity.SheetSettings.SkillLevelCaps = gurps.SkillLevelCaps{levelCap}
 		ShowSheetSettings(sheet)
 	})
 	audit.CheckOpened("attribute settings", func() { ShowAttributeSettings(sheet) })

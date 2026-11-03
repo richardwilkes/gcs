@@ -15,7 +15,9 @@ import (
 	"testing"
 
 	"github.com/richardwilkes/gcs/v5/model/criteria"
+	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/levelcap"
 	"github.com/richardwilkes/gcs/v5/model/gurps/gurpstest"
 	"github.com/richardwilkes/gcs/v5/model/nameable"
 )
@@ -115,6 +117,26 @@ func coldAndWarm(b *testing.B, e *gurps.Entity, fn func()) {
 
 func BenchmarkEntityRecalculate(b *testing.B) {
 	e := benchEntity(b)
+	for b.Loop() {
+		e.Recalculate()
+	}
+}
+
+// BenchmarkEntityRecalculateWithLevelCaps is BenchmarkEntityRecalculate with every skill and spell held to the lowest
+// of a skill's level, a trait's level and a fixed level, which resolves the caps for each of them on every pass.
+func BenchmarkEntityRecalculateWithLevelCaps(b *testing.B) {
+	e := benchEntity(b)
+	levelCap := gurps.NewSkillLevelCap()
+	levelCap.Target = levelcap.SkillsAndSpells
+	levelCap.NameCriteria = criteria.Text{}
+	skill := gurps.NewReferenceLevelCap(e, levelCap.Cap, levelcap.Skill)
+	skill.NameCriteria.Qualifier = "Thaumatology"
+	skill.Modifier = -fxp.Two
+	trait := gurps.NewReferenceLevelCap(e, levelCap.Cap, levelcap.Trait)
+	trait.NameCriteria.Qualifier = "Magery"
+	trait.Modifier = fxp.Ten
+	levelCap.Cap.Children = gurps.LevelCaps{skill, trait, gurps.NewFixedLevelCap(levelCap.Cap, fxp.FromInteger(14))}
+	e.SheetSettings.SkillLevelCaps = gurps.SkillLevelCaps{levelCap}
 	for b.Loop() {
 		e.Recalculate()
 	}

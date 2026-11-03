@@ -59,10 +59,11 @@ type treeNodes[N comparable] interface {
 	treeSetParent(node, group N)
 	// treeClone returns a deep copy of the node, owned by the parent.
 	treeClone(node, parent N) N
-	// treeAll reports whether the group combines its children as "all of" rather than "any of", which is so as well
-	// for a group that a negation makes "not all of" rather than "none of".
+	// treeAll reports whether the group is the first of the two kinds a group can be: "all of" rather than "any of" for
+	// most trees (see treeGroupLabeler), which is so as well for a group that a negation makes "not all of" rather than
+	// "none of".
 	treeAll(group N) bool
-	// treeNewGroup returns a new, empty group owned by the parent, which requires all of its children when all is set.
+	// treeNewGroup returns a new, empty group owned by the parent, for which treeAll is true when all is set.
 	treeNewGroup(parent N, all bool) N
 	// treeCanUngroup reports whether a group may be replaced by its children, as far as the tree is concerned; the
 	// sentenceTree also requires that doing so keeps what the group means.
@@ -98,6 +99,13 @@ type treeNodes[N comparable] interface {
 type treeCopier[N comparable] interface {
 	// treeCanCopy reports whether the tree can hold a copy of the node, which comes from another tree of its kind.
 	treeCanCopy(node N) bool
+}
+
+// treeGroupLabeler is implemented by the treeNodes of a tree whose groups don't combine their children as "all of"
+// and "any of", such as skill level caps. Without it, groupEntries offers "All of Group" and "Any of Group".
+type treeGroupLabeler interface {
+	// treeGroupLabels returns the labels of the entries that add a group for which treeAll is true and false.
+	treeGroupLabels() (all, other string)
 }
 
 // treeEditTitles holds the titles of the edits that duplicate, copy, move and delete a node. copy is unused by a tree
@@ -359,14 +367,19 @@ func (p *sentenceTree[T, N]) addKey(group N, path string) string {
 	return path + keyMore
 }
 
-// groupEntries returns the entries that add a group to the group at the path, one that requires all of its children
-// and one that requires any one of them. An empty root that shows its placeholder alone (see treeEmpty) takes the group
-// type itself, through setRoot, rather than holding a group of that type; undo then gives the focus back to what adds
-// to it, since the pill goes with the type.
+// groupEntries returns the entries that add a group to the group at the path, one for which treeAll is true and one for
+// which it is false: for most trees, one that requires all of its children and one that requires any one of them (see
+// treeGroupLabeler). An empty root that shows its placeholder alone (see treeEmpty) takes the group type itself,
+// through setRoot, rather than holding a group of that type; undo then gives the focus back to what adds to it, since
+// the pill goes with the type.
 func (p *sentenceTree[T, N]) groupEntries(group N, path string, setRoot func(all bool)) []menuEntry {
 	children, _ := p.nodes.treeChildren(group)
+	labels := []string{i18n.Text("All of Group"), i18n.Text("Any of Group")}
+	if labeler, ok := p.nodes.(treeGroupLabeler); ok {
+		labels[0], labels[1] = labeler.treeGroupLabels()
+	}
 	entries := make([]menuEntry, 0, 2)
-	for i, label := range []string{i18n.Text("All of Group"), i18n.Text("Any of Group")} {
+	for i, label := range labels {
 		all := i == 0
 		entries = append(entries, menuEntry{Label: label, Act: func() {
 			if path == treeRootPath && len(*children) == 0 {

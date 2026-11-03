@@ -57,6 +57,7 @@ const (
 	NamesExt           = ".names"
 	PageRefSettingsExt = ".refs"
 	SheetSettingsExt   = ".sheet"
+	SkillLevelCapsExt  = ".caps"
 )
 
 // FileInfo contains some static information about a given file type.
@@ -145,6 +146,7 @@ func GCSSecondaryExtensions() []string {
 		NamesExt,
 		PageRefSettingsExt,
 		SheetSettingsExt,
+		SkillLevelCapsExt,
 	}
 }
 

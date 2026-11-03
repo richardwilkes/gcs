@@ -32,7 +32,10 @@ import (
 	"github.com/richardwilkes/unison/enums/paintstyle"
 )
 
-var _ GroupedCloser = &sheetSettingsDockable{}
+var (
+	_ GroupedCloser                = &sheetSettingsDockable{}
+	_ gurps.SheetSettingsResponder = &sheetSettingsDockable{}
+)
 
 // sellMoneyColumns is the number of columns in the sell money list: the item's name, its value and a button to remove
 // it.
@@ -50,21 +53,26 @@ type EntityPanel interface {
 
 type sheetSettingsDockable struct {
 	SettingsDockable
-	owner                  EntityPanel
-	damageProgressionPopup *unison.PopupMenu[progression.Option]
-	options                []sheetOptionCheckBox
-	displayPopups          []sheetDisplayPopup
-	lengthUnitsPopup       *unison.PopupMenu[fxp.LengthUnit]
-	weightUnitsPopup       *unison.PopupMenu[fxp.WeightUnit]
-	numberFormats          []sheetNumberFormatRow
-	buyPercentField        *PercentageField
-	sellPercentField       *PercentageField
-	sellMoneyPanel         *unison.Panel
-	sellMoneyRows          [][]unison.Paneler // the widgets of each row of the sell money list, for banding
-	sellMoneyDropping      bool
-	paperSizeField         *unison.Field
-	orientationPopup       *unison.PopupMenu[paper.Orientation]
-	marginFields           []sheetMarginField
+	owner                    EntityPanel
+	damageProgressionPopup   *unison.PopupMenu[progression.Option]
+	options                  []sheetOptionCheckBox
+	displayPopups            []sheetDisplayPopup
+	lengthUnitsPopup         *unison.PopupMenu[fxp.LengthUnit]
+	weightUnitsPopup         *unison.PopupMenu[fxp.WeightUnit]
+	numberFormats            []sheetNumberFormatRow
+	buyPercentField          *PercentageField
+	sellPercentField         *PercentageField
+	sellMoneyPanel           *unison.Panel
+	sellMoneyRows            [][]unison.Paneler // the widgets of each row of the sell money list, for banding
+	sellMoneyDropping        bool
+	skillLevelCapsPanel      *unison.Panel
+	skillLevelCapRows        [][]unison.Paneler // the widgets of each row of the skill level cap list, for banding
+	skillLevelCapAddButton   *unison.Button
+	skillLevelCapsMenu       *settingsFileMenu
+	skillLevelCapsMenuButton *unison.Button
+	paperSizeField           *unison.Field
+	orientationPopup         *unison.PopupMenu[paper.Orientation]
+	marginFields             []sheetMarginField
 }
 
 // sheetOption describes one of the boolean sheet settings the dockable presents as a checkbox. The setting is reached
@@ -267,6 +275,14 @@ func (d *sheetSettingsDockable) CloseWithGroup(other unison.Paneler) bool {
 	return d.owner != nil && d.owner == other
 }
 
+// entity returns the entity whose sheet settings are edited, or nil when the defaults are.
+func (d *sheetSettingsDockable) entity() *gurps.Entity {
+	if d.owner != nil {
+		return d.owner.Entity()
+	}
+	return nil
+}
+
 func (d *sheetSettingsDockable) settings() *gurps.SheetSettings {
 	if d.owner != nil {
 		return d.owner.Entity().SheetSettings
@@ -286,6 +302,7 @@ func (d *sheetSettingsDockable) initContent(content *unison.Panel) {
 	d.createUnitsSection(content)
 	d.createDecimalPlacesSection(content)
 	d.createTradingSection(content)
+	d.createSkillLevelCapsSection(content)
 	d.createPageSection(content)
 }
 
@@ -454,10 +471,7 @@ func (d *sheetSettingsDockable) createTradingSection(content *unison.Panel) {
 	d.sellPercentField = d.addPercentField(section, i18n.Text("Sell Percent"),
 		i18n.Text("The percentage of an item's full price that selling it brings in, unless another is chosen when selling"),
 		func(s *gurps.SheetSettings) *int { return &s.SellPercent })
-	listBorder := unison.NewCompoundBorder(
-		unison.NewLineBorder(unison.ThemeSurfaceEdge, geom.Size{}, geom.NewUniformInsets(1), false),
-		unison.NewEmptyBorder(geom.NewUniformInsets(unison.StdHSpacing)),
-	)
+	listBorder := newSettingsListBorder()
 	label := NewFieldLeadingLabel(i18n.Text("Sell Money"), false)
 	// Level with the list's first row rather than its border.
 	label.SetBorder(unison.NewEmptyBorder(geom.Insets{Top: listBorder.Insets().Top}))
@@ -473,10 +487,19 @@ func (d *sheetSettingsDockable) createTradingSection(content *unison.Panel) {
 	d.sellMoneyPanel.SetLayoutData(&unison.FlexLayoutData{HAlign: align.Fill, HGrab: true})
 	d.sellMoneyPanel.Tooltip = newWrappedTooltip(i18n.Text("The money that selling equipment pays out in, using as few items as possible. Drag equipment tagged \"%s\", which is what buying spends, from any equipment list here to add a copy of it.",
 		gurps.MoneyTag))
-	d.installSellMoneyBanding()
+	installListBanding(d.sellMoneyPanel, func() [][]unison.Paneler { return d.sellMoneyRows })
 	d.installSellMoneyDropSupport()
 	d.rebuildSellMoney()
 	section.AddChild(d.sellMoneyPanel)
+}
+
+// newSettingsListBorder returns the border of a list in a settings section: a line around the list, inset from its
+// rows by the standard spacing.
+func newSettingsListBorder() unison.Border {
+	return unison.NewCompoundBorder(
+		unison.NewLineBorder(unison.ThemeSurfaceEdge, geom.Size{}, geom.NewUniformInsets(1), false),
+		unison.NewEmptyBorder(geom.NewUniformInsets(unison.StdHSpacing)),
+	)
 }
 
 // addPercentField adds a field for the percentage of the settings that value reaches, with the given title and
@@ -579,25 +602,24 @@ func (d *sheetSettingsDockable) addSellMoney(tableData *unison.TableDragData[*No
 	return added
 }
 
-// installSellMoneyBanding has the sell money list draw its rows on the background a table gives its rows, banding
-// every other one as a table does. The border is drawn after this, over the edge of the fill.
-func (d *sheetSettingsDockable) installSellMoneyBanding() {
-	p := d.sellMoneyPanel
+// installListBanding has the list panel p draw its rows, whose widgets rows returns, on the background a table gives
+// its rows, banding every other one as a table does. The border is drawn after this, over the edge of the fill.
+func installListBanding(p *unison.Panel, rows func() [][]unison.Paneler) {
 	p.DrawCallback = func(gc *unison.Canvas, _ geom.Rect) {
 		area := p.ContentRect(true)
 		gc.DrawRect(area, unison.ThemeBelowSurface.Paint(gc, area, paintstyle.Fill))
-		for i, row := range d.sellMoneyRows {
+		for i, row := range rows() {
 			if i&1 == 1 {
-				band := sellMoneyRowBounds(row, area)
+				band := listRowBounds(row, area)
 				gc.DrawRect(band, unison.ThemeBanding.Paint(gc, band, paintstyle.Fill))
 			}
 		}
 	}
 }
 
-// sellMoneyRowBounds returns the band a row of the sell money list is drawn on: as wide as the list, and as tall as the
-// row's widgets plus half of the spacing to the rows on either side, so that the bands of neighboring rows meet.
-func sellMoneyRowBounds(row []unison.Paneler, area geom.Rect) geom.Rect {
+// listRowBounds returns the band a row of a list is drawn on: as wide as the list, and as tall as the row's widgets
+// plus half of the spacing to the rows on either side, so that the bands of neighboring rows meet.
+func listRowBounds(row []unison.Paneler, area geom.Rect) geom.Rect {
 	var bounds geom.Rect
 	for i, w := range row {
 		if i == 0 {
@@ -819,6 +841,7 @@ func (d *sheetSettingsDockable) sync() {
 	SetFieldValue(d.buyPercentField.Field, d.buyPercentField.Format(s.BuyPercent))
 	SetFieldValue(d.sellPercentField.Field, d.sellPercentField.Format(s.SellPercent))
 	d.rebuildSellMoney()
+	d.rebuildSkillLevelCaps()
 	d.paperSizeField.SetText(s.Page.Size)
 	d.orientationPopup.Select(s.Page.Orientation)
 	for _, one := range d.marginFields {
@@ -830,14 +853,33 @@ func (d *sheetSettingsDockable) sync() {
 // syncSheet reports a change to the given parts of the settings this dockable edits to the open dockables that show
 // them.
 func (d *sheetSettingsDockable) syncSheet(parts gurps.SheetSettingsParts, full bool) {
-	var entity *gurps.Entity
-	if d.owner != nil {
-		entity = d.owner.Entity()
-	} else {
+	if d.owner == nil {
 		// The global sheet settings were just changed, so republish the snapshot background parses read.
 		gurps.SyncGlobalSheetSettings()
 	}
-	notifySheetSettingsUpdated(entity, parts, full)
+	notifySheetSettingsUpdated(d.entity(), parts, full)
+}
+
+// SheetSettingsUpdated implements gurps.SheetSettingsResponder. The skill level cap list names the attributes the caps
+// rest on, so a change to the attribute definitions of the settings this dockable edits describes its rows anew. The
+// rebuild takes every row's widgets off the page, so the focus, when on one of them, is moved to the widget that takes
+// its place.
+func (d *sheetSettingsDockable) SheetSettingsUpdated(entity *gurps.Entity, parts gurps.SheetSettingsParts, _ bool) {
+	if entity != d.entity() || parts&gurps.SheetSettingsAttributesPart == 0 {
+		return
+	}
+	focusRow, focusColumn := -1, 0
+	for i, row := range d.skillLevelCapRows {
+		for j, w := range row {
+			if hasWindowFocus(w) {
+				focusRow, focusColumn = i, j
+			}
+		}
+	}
+	d.rebuildSkillLevelCaps()
+	if focusRow >= 0 && focusRow < len(d.skillLevelCapRows) {
+		d.skillLevelCapRows[focusRow][focusColumn].AsPanel().RequestFocus()
+	}
 }
 
 // notifySheetSettingsUpdated reports a change to the given parts of the entity's sheet settings, or of the defaults

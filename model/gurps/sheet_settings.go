@@ -31,7 +31,7 @@ type SheetSettingsParts uint8
 // The parts of the SheetSettings a change can alter.
 const (
 	// SheetSettingsGeneralPart is everything but the parts below, which is what the sheet settings editor changes
-	// field by field: the page, display, unit, number format and rule settings.
+	// field by field: the page, display, unit, number format and rule settings, and the skill level caps.
 	SheetSettingsGeneralPart SheetSettingsParts = 1 << iota
 	// SheetSettingsLayoutPart is the block layout.
 	SheetSettingsLayoutPart
@@ -96,6 +96,9 @@ type SheetSettingsData struct {
 	// themselves, they are for the UI thread only. Entries are only added (see AddSellMoney) or removed (see
 	// RemoveSellMoney).
 	SellMoney SellMoneyList `json:"sell_money,omitempty"`
+	// SkillLevelCaps holds the caps on the levels of skills and spells (see SkillLevelCap and Entity.capLevel), none
+	// meaning no caps. Unlike the sell money, the entries are edited in place, so a clone of the settings copies them.
+	SkillLevelCaps SkillLevelCaps `json:"skill_level_caps,omitempty"`
 }
 
 // SellMoneyList holds the sell money of a SheetSettings (see SheetSettingsData.SellMoney). It marshals without the
@@ -249,6 +252,7 @@ func (s *SheetSettings) EnsureValidity() {
 		seen[one.TID] = true
 		return false
 	})
+	s.SkillLevelCaps.EnsureValidity()
 }
 
 // MinTradePercent and MaxTradePercent bound the percentage of its full price that equipment is bought or sold at.
@@ -383,6 +387,7 @@ func (s *SheetSettings) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 
 // Clone creates a copy of this. The sell money entries are shared rather than cloned, which is safe since they are
 // never edited (see SheetSettingsData.SellMoney) and keeps the clone cheap, as one is made for every entity loaded.
+// The skill level caps are cloned, since they are edited in place.
 func (s *SheetSettings) Clone(entity *Entity) *SheetSettings {
 	clone := *s
 	clone.Entity = entity
@@ -391,6 +396,7 @@ func (s *SheetSettings) Clone(entity *Entity) *SheetSettings {
 	clone.Attributes = s.Attributes.Clone()
 	clone.BodyType = s.BodyType.Clone(entity, nil)
 	clone.SellMoney = slices.Clone(s.SellMoney)
+	clone.SkillLevelCaps = s.SkillLevelCaps.Clone()
 	return &clone
 }
 

@@ -379,6 +379,11 @@ func (p *sentenceRows[T]) focusOn(key string) bool {
 	return true
 }
 
+// hasOpenRow reports whether a row is open.
+func (p *sentenceRows[T]) hasOpenRow() bool {
+	return p.open != ""
+}
+
 // closeRow closes the open row as toggle does, except that it leaves the focus alone when the focus is outside the
 // panel.
 func (p *sentenceRows[T]) closeRow() {
@@ -700,6 +705,11 @@ func rowCriteria(key string) rowCriterion {
 			subject: i18n.Text("Tag"), add: i18n.Text("+ tag"),
 			prefix: i18n.Text("and at least one tag"), notPrefix: i18n.Text("and all tags"),
 		}
+	case "college":
+		return rowCriterion{
+			subject: i18n.Text("College"), add: i18n.Text("+ college"),
+			prefix: i18n.Text("and at least one college"), notPrefix: i18n.Text("and all colleges"),
+		}
 	case "titlenote":
 		return rowCriterion{
 			subject: i18n.Text("Title Note"), add: i18n.Text("+ title note"),
@@ -715,6 +725,12 @@ func rowCriteria(key string) rowCriterion {
 	case "specialization":
 		return rowCriterion{
 			subject: i18n.Text("Specialization"), add: i18n.Text("+ specialization"),
+			prefix: i18n.Text("and whose specialization"),
+		}
+	case "skillspecialization":
+		// The specialization of the skill a cap value rests on, named apart from that of what the cap applies to.
+		return rowCriterion{
+			subject: i18n.Text("Skill Specialization"), add: i18n.Text("+ skill specialization"),
 			prefix: i18n.Text("and whose specialization"),
 		}
 	case "optspecialization":
@@ -806,9 +822,9 @@ func (p *sentenceRows[T]) textChipWith(chips *unison.Panel, path, key string, c 
 			var hint string
 			// An empty "is" specialization, owner tech level or title note picks only something without one, as the
 			// row's sentence says.
-			if c.Compare == criteria.IsText && (key == "specialization" || key == "optspecialization" ||
-				key == "ownertl" || key == "ownerspecialization" || key == "owneroptspecialization" ||
-				key == "titlenote" || key == "ownertitlenote") {
+			if c.Compare == criteria.IsText && (key == "specialization" || key == "skillspecialization" ||
+				key == "optspecialization" || key == "ownertl" || key == "ownerspecialization" ||
+				key == "owneroptspecialization" || key == "titlenote" || key == "ownertitlenote") {
 				hint = i18n.Text("none")
 			}
 			render := textWordsAfter(one.prefix, cmp.Or(one.notPrefix, one.prefix))
@@ -832,6 +848,14 @@ func (p *sentenceRows[T]) tagsChip(chips *unison.Panel, path string, c *criteria
 	p.textChip(chips, path, "tag", c)
 	if field := chips.FindRefKey(path + ":tag"); field != nil {
 		field.Tooltip = newWrappedTooltip(i18n.Text(`Separate multiple tags with commas to match any one of them, e.g. "Sword, Axe"`))
+	}
+}
+
+// collegesChip adds the optional colleges criterion, whose field says how to match any of several colleges.
+func (p *sentenceRows[T]) collegesChip(chips *unison.Panel, path string, c *criteria.Text) {
+	p.textChip(chips, path, "college", c)
+	if field := chips.FindRefKey(path + ":college"); field != nil {
+		field.Tooltip = newWrappedTooltip(i18n.Text(`Separate multiple colleges with commas to match any one of them, e.g. "Fire, Air"`))
 	}
 }
 
@@ -1079,6 +1103,14 @@ func compactPopup[S any, T comparable](p *sentenceRows[S], key, name string, ite
 		p.rebuild(key)
 	})
 	return popup
+}
+
+// attributePopup adds a popup of attributes, each after the prefix. A key that isn't one of them is shown as such, and
+// kept until another is chosen.
+func attributePopup[S any](p *sentenceRows[S], parent *unison.Panel, key, name, prefix string, entity *gurps.Entity, value *string, flags gurps.AttributeFlags) {
+	choices, current := gurps.AttributeChoices(entity, prefix, flags, *value)
+	addCentered(parent, compactPopup(p, key, name, choices, current,
+		func(c *gurps.AttributeChoice) string { return c.Title }, func(c *gurps.AttributeChoice) { *value = c.Key }))
 }
 
 // addJoiningWords adds text that joins the controls of an open row into a sentence.

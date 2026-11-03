@@ -1270,6 +1270,86 @@ var allEnums = []*enumInfo{
 		DefaultUnknown: true,
 	},
 	{
+		Pkg:  "model/gurps/enums/levelcap",
+		Name: "type",
+		Desc: "holds the type of a LevelCap",
+		Values: []*enumValue{
+			{
+				Name:   "Group",
+				Key:    "group",
+				String: "the lowest or highest of",
+				Alt:    "Group",
+			},
+			{
+				Name:   "Fixed",
+				Key:    "fixed",
+				String: "a fixed level",
+				Alt:    "Fixed Level",
+			},
+			{
+				Name:   "Skill",
+				Key:    "skill",
+				String: "a skill's level",
+				Alt:    "Skill Level",
+			},
+			{
+				Name:   "Spell",
+				Key:    "spell",
+				String: "a spell's level",
+				Alt:    "Spell Level",
+			},
+			{
+				Name:   "Trait",
+				Key:    "trait",
+				String: "a trait's level",
+				Alt:    "Trait Level",
+			},
+			{
+				Name:   "Attribute",
+				Key:    "attribute",
+				String: "an attribute's value",
+				Alt:    "Attribute Value",
+			},
+			{
+				Name:   "Unknown",
+				Key:    "unknown",
+				String: "an unknown level cap type",
+				Alt:    "Unknown",
+			},
+		},
+		DefaultLast:    true,
+		DefaultUnknown: true,
+	},
+	{
+		Pkg:  "model/gurps/enums/levelcap",
+		Name: "target",
+		Desc: "holds the kind of item a SkillLevelCap applies to",
+		Values: []*enumValue{
+			{
+				Name:   "Skills",
+				Key:    "skills",
+				String: "Skills",
+			},
+			{
+				Name:   "Spells",
+				Key:    "spells",
+				String: "Spells",
+			},
+			{
+				Name:   "SkillsAndSpells",
+				Key:    "skills_and_spells",
+				String: "Skills and spells",
+			},
+			{
+				Name:   "UnknownTarget",
+				Key:    "unknown",
+				String: "Items of an unknown kind",
+			},
+		},
+		DefaultLast:    true,
+		DefaultUnknown: true,
+	},
+	{
 		Pkg:  "model/gurps/enums/prereq",
 		Name: "type",
 		Desc: "holds the type of a Prereq",

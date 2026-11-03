@@ -10,6 +10,7 @@
 package ux
 
 import (
+	"cmp"
 	"io/fs"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
@@ -18,7 +19,6 @@ import (
 	"github.com/richardwilkes/gcs/v5/ux/svg"
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/toolbox/v2/i18n"
-	"github.com/richardwilkes/toolbox/v2/xfilepath"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
 	"github.com/richardwilkes/unison/enums/behavior"
@@ -330,7 +330,7 @@ func (d *SettingsDockable) createToolbar(addToStartToolbar, addToEndToolbar func
 	if d.canLoad() || d.Saver != nil {
 		b := unison.NewSVGButton(svg.Menu)
 		b.Tooltip = newWrappedTooltip(i18n.Text("Menu"))
-		b.ClickCallback = func() { d.showMenu(b) }
+		b.ClickCallback = func() { d.fileMenu().show(b) }
 		toolbar.AddChild(b)
 	}
 	if len(toolbar.Children()) != index {
@@ -348,60 +348,20 @@ func (d *SettingsDockable) handleReset() {
 	}
 }
 
-func (d *SettingsDockable) showMenu(b *unison.Button) {
-	f := unison.DefaultMenuFactory()
-	id := unison.ContextMenuIDFlag
-	m := f.NewMenu(id, "", nil)
-	id++
-	if d.canLoad() {
-		m.InsertItem(-1, f.NewItem(id, d.loadItemTitle(), unison.KeyBinding{}, nil, d.handleImport))
-		id++
-	}
-	if d.Saver != nil {
-		title := i18n.Text("Export…")
-		if d.SelectionSaver != nil {
-			title = i18n.Text("Export All…")
-		}
-		m.InsertItem(-1, f.NewItem(id, title, unison.KeyBinding{}, nil, func(_ unison.MenuItem) { d.export(d.Saver) }))
-		id++
-		if d.SelectionSaver != nil {
-			m.InsertItem(-1, f.NewItem(id, i18n.Text("Export Selected…"), unison.KeyBinding{},
-				func(_ unison.MenuItem) bool { return d.HasSelection() },
-				func(_ unison.MenuItem) { d.export(d.SelectionSaver) }))
-			id++
-		}
+// fileMenu returns the toolbar's menu of files to load and save, made from the dockable's fields as they are now.
+func (d *SettingsDockable) fileMenu() *settingsFileMenu {
+	m := &settingsFileMenu{
+		title:          d.TabTitle,
+		extensions:     d.Extensions,
+		loadItemTitle:  d.LoadItemTitle,
+		saver:          d.Saver,
+		selectionSaver: d.SelectionSaver,
+		hasSelection:   d.HasSelection,
 	}
 	if d.canLoad() {
-		libraries := gurps.GlobalSettings().Libraries
-		sets := library.ScanForNamedFileSets(nil, "", false, libraries, d.Extensions...)
-		if len(sets) != 0 {
-			m.InsertSeparator(-1, false)
-			for _, lib := range sets {
-				m.InsertItem(-1, f.NewItem(id, lib.Name, unison.KeyBinding{},
-					func(_ unison.MenuItem) bool { return false }, nil))
-				id++
-				for _, one := range lib.List {
-					d.insertFileToLoad(m, id, one)
-					id++
-				}
-			}
-		}
+		m.load = d.loadRef
 	}
-	m.Popup(b.RectToRoot(b.ContentRect(true)), 0)
-}
-
-func (d *SettingsDockable) insertFileToLoad(m unison.Menu, id int, ref *library.NamedFileRef) {
-	m.InsertItem(-1, m.Factory().NewItem(id, "    "+ref.Name, unison.KeyBinding{}, nil, func(_ unison.MenuItem) {
-		d.doLoad(ref)
-	}))
-}
-
-// loadItemTitle returns LoadItemTitle, or Import… when none was given.
-func (d *SettingsDockable) loadItemTitle() string {
-	if d.LoadItemTitle != "" {
-		return d.LoadItemTitle
-	}
-	return i18n.Text("Import…")
+	return m
 }
 
 // canLoad reports whether the dockable was given either form of loader.
@@ -409,31 +369,103 @@ func (d *SettingsDockable) canLoad() bool {
 	return d.Loader != nil || d.RefLoader != nil
 }
 
-// doLoad hands the whole file reference to RefLoader when one is set, and otherwise its file system and path to Loader.
-// A failure is reported through the workspace's error handler.
-func (d *SettingsDockable) doLoad(ref *library.NamedFileRef) {
-	var err error
+// loadRef hands the whole file reference to RefLoader when one is set, and otherwise its file system and path to
+// Loader.
+func (d *SettingsDockable) loadRef(ref *library.NamedFileRef) error {
 	if d.RefLoader != nil {
-		err = d.RefLoader(ref)
-	} else {
-		err = d.Loader(ref.FileSystem, ref.FilePath)
+		return d.RefLoader(ref)
 	}
-	if err != nil {
-		Workspace.ErrorHandler(i18n.Text("Unable to load ")+d.TabTitle, err)
+	return d.Loader(ref.FileSystem, ref.FilePath)
+}
+
+// settingsFileMenu is the menu that loads and saves a settings file: Import… (or loadItemTitle), Export… (Export All…
+// and Export Selected… when there is a selectionSaver), and the files of the extensions found in the libraries'
+// Settings folders. Either of load and saver may be nil, leaving its items out.
+type settingsFileMenu struct {
+	title          string // what is loaded or saved, for error messages
+	extensions     []string
+	loadItemTitle  string // "" means Import…
+	load           func(ref *library.NamedFileRef) error
+	saver          func(filePath string) error
+	selectionSaver func(filePath string) error
+	hasSelection   func() bool
+	canSave        func() bool // nil means always; otherwise Export… is enabled only when it returns true
+}
+
+// show pops up the menu below the button.
+func (m *settingsFileMenu) show(b *unison.Button) {
+	f := unison.DefaultMenuFactory()
+	id := unison.ContextMenuIDFlag
+	menu := f.NewMenu(id, "", nil)
+	id++
+	if m.load != nil {
+		menu.InsertItem(-1, f.NewItem(id, cmp.Or(m.loadItemTitle, i18n.Text("Import…")), unison.KeyBinding{}, nil,
+			m.handleImport))
+		id++
+	}
+	if m.saver != nil {
+		title := i18n.Text("Export…")
+		if m.selectionSaver != nil {
+			title = i18n.Text("Export All…")
+		}
+		var canSave func(unison.MenuItem) bool
+		if m.canSave != nil {
+			canSave = func(_ unison.MenuItem) bool { return m.canSave() }
+		}
+		menu.InsertItem(-1, f.NewItem(id, title, unison.KeyBinding{}, canSave,
+			func(_ unison.MenuItem) { m.export(m.saver) }))
+		id++
+		if m.selectionSaver != nil {
+			menu.InsertItem(-1, f.NewItem(id, i18n.Text("Export Selected…"), unison.KeyBinding{},
+				func(_ unison.MenuItem) bool { return m.hasSelection() },
+				func(_ unison.MenuItem) { m.export(m.selectionSaver) }))
+			id++
+		}
+	}
+	if m.load != nil {
+		libraries := gurps.GlobalSettings().Libraries
+		sets := library.ScanForNamedFileSets(nil, "", false, libraries, m.extensions...)
+		if len(sets) != 0 {
+			menu.InsertSeparator(-1, false)
+			for _, lib := range sets {
+				menu.InsertItem(-1, f.NewItem(id, lib.Name, unison.KeyBinding{},
+					func(_ unison.MenuItem) bool { return false }, nil))
+				id++
+				for _, one := range lib.List {
+					m.insertFileToLoad(menu, id, one)
+					id++
+				}
+			}
+		}
+	}
+	menu.Popup(b.RectToRoot(b.ContentRect(true)), 0)
+}
+
+func (m *settingsFileMenu) insertFileToLoad(menu unison.Menu, id int, ref *library.NamedFileRef) {
+	menu.InsertItem(-1, menu.Factory().NewItem(id, "    "+ref.Name, unison.KeyBinding{}, nil, func(_ unison.MenuItem) {
+		m.doLoad(ref)
+	}))
+}
+
+// doLoad loads the file, reporting a failure through the workspace's error handler.
+func (m *settingsFileMenu) doLoad(ref *library.NamedFileRef) {
+	if err := m.load(ref); err != nil {
+		Workspace.ErrorHandler(i18n.Text("Unable to load ")+m.title, err)
 	}
 }
 
-func (d *SettingsDockable) handleImport(_ unison.MenuItem) {
-	if filePath, ok := chooseFileToOpen(gurps.SettingsLastDirKey, d.Extensions...); ok {
-		d.doLoad(diskFileRef(filePath))
+func (m *settingsFileMenu) handleImport(_ unison.MenuItem) {
+	if filePath, ok := chooseFileToOpen(gurps.SettingsLastDirKey, m.extensions...); ok {
+		m.doLoad(diskFileRef(filePath))
 	}
 }
 
-func (d *SettingsDockable) export(saver func(filePath string) error) {
+func (m *settingsFileMenu) export(saver func(filePath string) error) {
+	// The title is not a path, so it is offered whole; chooseFileToSave makes it safe for the file system.
 	if filePath, ok := chooseFileToSave(gurps.GlobalSettings().LastDir(gurps.SettingsLastDirKey),
-		xfilepath.BaseName(d.Title()), d.Extensions[0], gurps.SettingsLastDirKey); ok {
+		m.title, m.extensions[0], gurps.SettingsLastDirKey); ok {
 		if err := saver(filePath); err != nil {
-			Workspace.ErrorHandler(i18n.Text("Unable to save ")+d.TabTitle, err)
+			Workspace.ErrorHandler(i18n.Text("Unable to save ")+m.title, err)
 		}
 	}
 }

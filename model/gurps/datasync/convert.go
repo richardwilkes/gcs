@@ -91,6 +91,7 @@ var converters = map[string]func(p string) error{
 	gurps.NamesExt:           nil,
 	gurps.PageRefSettingsExt: convertFile(gurps.NewPageRefsFromFS, (*gurps.PageRefs).Save),
 	gurps.SheetSettingsExt:   convertFile(gurps.NewSheetSettingsFromFile, (*gurps.SheetSettings).Save),
+	gurps.SkillLevelCapsExt:  convertFile(gurps.NewSkillLevelCapsFromFile, gurps.SaveSkillLevelCaps),
 }
 
 // convertFile returns a function that loads the file at the path it is given with load and writes it back out with
