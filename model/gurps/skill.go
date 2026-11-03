@@ -749,15 +749,34 @@ func (s *Skill) PointsWithGrants(data *SkillEditData, points fxp.Int) fxp.Int {
 }
 
 // LevelWithGrants returns the level with the levels grants merged into the skill added, as CalculateLevel adds them,
-// for a level computed from the edit data in place of the skill's own (see PointsWithGrants). levelAt returns the level
-// that data gives with the given points in place of the skill's own and without a default, which the level a Keep
-// Highest or Keep Lowest grant keeps is read with, and which holds a technique with a limit to it.
+// and held to the sheet's level caps as the edit data selects them, for a level computed from the edit data in place
+// of the skill's own (see PointsWithGrants): the level the sheet would show once the edits are applied. levelAt
+// returns the level that data gives with the given points in place of the skill's own and without a default, which
+// the level a Keep Highest or Keep Lowest grant keeps is read with, and which holds a technique with a limit to it.
 func (s *Skill) LevelWithGrants(data *SkillEditData, level Level, levelAt func(points fxp.Int) Level) Level {
-	state := grantsWithEdits(s, s.withEditData(data))
+	edited := s.withEditData(data)
+	state := grantsWithEdits(s, edited)
 	if s.IsTechnique() && data.TechniqueLimitModifier != nil {
-		return state.applyLevelsWithinLimit(nil, level, levelAt)
+		level = state.applyLevelsWithinLimit(nil, level, levelAt)
+	} else {
+		level = state.applyLevels(nil, level, levelAt)
 	}
-	return state.applyLevels(nil, level, levelAt)
+	// The copy stands in for the skill while the caps are resolved, so it carries what the grants give it as edited.
+	edited.grant = *state
+	return EntityFromNode(s).capSkillLevel(edited, s, nil, level, nil)
+}
+
+// TechniqueLevelWith returns the level the technique has with the edit data in place of its own and the given points,
+// already adjusted for the point bonuses, before what grants make of it (see LevelWithGrants), as the sheet computes it
+// once the edits are applied: the level caps met on the way see the technique as edited (see Entity.matchLevelCapsAs)
+// and pass it over (see Entity.passOver).
+func (s *Skill) TechniqueLevelWith(data *SkillEditData, points fxp.Int) Level {
+	edited := s.withEditData(data)
+	e := EntityFromNode(s)
+	if e.hasLevelCaps() {
+		defer e.matchLevelCapsAs(s, edited)()
+	}
+	return edited.techniqueLevel(e, points, nil)
 }
 
 // withEditData returns a copy of the skill holding the edit data in place of its own.
@@ -788,12 +807,15 @@ func (s *Skill) levelForPrereqsOf(exclude any) fxp.Int {
 }
 
 // adjustedPointsExcept is AdjustedPoints without the points grants carried by exclude gave the skill, or by the item
-// whose prerequisites are being judged when exclude is nil; see grantState.pointsExcept and Entity.judgingOr.
+// whose prerequisites are being judged when exclude is nil, and, while an editor previews edits, with those of the
+// grants that would then merge into it in place of those merging into it now; see grantState.pointsExcept,
+// Entity.judgingOr and Entity.grantsAsEdited.
 func (s *Skill) adjustedPointsExcept(exclude any, tooltip *xbytes.InsertBuffer) fxp.Int {
 	if !s.Enabled() {
 		return 0
 	}
-	exclude = EntityFromNode(s).judgingOr(exclude)
+	e := EntityFromNode(s)
+	exclude = e.judgingOr(exclude)
 	if s.Container() {
 		// The tooltip goes no further: a container never puts anything into it; see PointsRange for why.
 		if !s.TemplatePicker.IsZero() {
@@ -808,7 +830,7 @@ func (s *Skill) adjustedPointsExcept(exclude any, tooltip *xbytes.InsertBuffer) 
 		}
 		return total
 	}
-	return s.grant.applyPoints(exclude, AdjustedPointsForNonContainerSkillOrTechnique(EntityFromNode(s), s.Points,
+	return e.grantsAsEdited(s).applyPoints(exclude, AdjustedPointsForNonContainerSkillOrTechnique(e, s.Points,
 		s.NameWithReplacements(), s.SpecializationWithReplacements(), s.OptionalSpecializationWithReplacements(), s.Tags,
 		tooltip), tooltip)
 }
@@ -988,7 +1010,7 @@ func (s *Skill) CalculateLevel(excludes map[string]bool) Level {
 
 // calculateLevelExcept is CalculateLevel without the levels and points grants carried by exclude gave the skill (see
 // grantState.applyLevelNotes), and with its default picked afresh while the prerequisites of an item carrying a grant
-// are judged; see defaultExcept.
+// are judged or an editor previews a skill's level; see defaultExcept.
 func (s *Skill) calculateLevelExcept(exclude any, excludes map[string]bool) Level {
 	return s.calculateLevelWith(exclude, s.defaultExcept(exclude, excludes), excludes)
 }
@@ -996,18 +1018,19 @@ func (s *Skill) calculateLevelExcept(exclude any, excludes map[string]bool) Leve
 // defaultExcept returns the default the skill recorded or, when exclude (nil, or the item whose prerequisites are being
 // judged; see Entity.judgingOr) carries a grant and the skill is not a technique, a default picked afresh as those
 // prerequisites see the sheet, since the recorded one, or the lack of one, was picked, and its level taken, with what
-// the grants did to the skills it rests on. It is picked as bestDefault picks, but with the levels taken with the skill
-// added to the excludes given rather than with it alone excluded, so that a chain of defaults never comes back to a
-// skill it passes through: the recorded default, if the skill keeps it (see keepsDefault), it resolves and it does not
-// lead back to the skill, and otherwise the best of the skill's defaults. Each pick is kept while those prerequisites
-// are judged and reused only for the same skill with the same excludes, so that the answers are those of picking afresh
-// every time, while a pick beneath a skill weighing several defaults is not made again for each of them, and so on down
-// every chain. The picks are still as many as the distinct excludes a skill is reached with, which double with each
-// member of a set of skills with points that default to one another, so judging stays fast only while such a set stays
-// small.
+// the grants did to the skills it rests on. It is picked afresh too while an editor previews a skill's level, since the
+// recorded one was picked with that skill as it is on the sheet rather than as edited; see Entity.matchLevelCapsAs. It
+// is picked as bestDefault picks, but with the levels taken with the skill added to the excludes given rather than with
+// it alone excluded, so that a chain of defaults never comes back to a skill it passes through: the recorded default,
+// if the skill keeps it (see keepsDefault), it resolves and it does not lead back to the skill, and otherwise the best
+// of the skill's defaults. Each pick is kept while those prerequisites are judged, or the edits previewed, and reused
+// only for the same skill with the same excludes, so that the answers are those of picking afresh every time, while a
+// pick beneath a skill weighing several defaults is not made again for each of them, and so on down every chain. The
+// picks are still as many as the distinct excludes a skill is reached with, which double with each member of a set of
+// skills with points that default to one another, so judging stays fast only while such a set stays small.
 func (s *Skill) defaultExcept(exclude any, excludes map[string]bool) *SkillDefault {
 	e := EntityFromNode(s)
-	if s.IsTechnique() || !e.carriesGrant(e.judgingOr(exclude)) {
+	if s.IsTechnique() || (!e.carriesGrant(e.judgingOr(exclude)) && !e.previewingSkillEdit()) {
 		return s.DefaultedFrom
 	}
 	excludes = maps.Clone(excludes)
@@ -1050,6 +1073,12 @@ type judgedDefaultKey struct {
 
 // newJudgedDefaultKey returns the key of the default the skill picks with the levels taken with the given excludes.
 func newJudgedDefaultKey(s *Skill, excludes map[string]bool) judgedDefaultKey {
+	return judgedDefaultKey{skill: s, excludes: excludesKey(excludes)}
+}
+
+// excludesKey returns the excludes as a string that is the same for any two sets of the same names: the names sorted
+// and joined.
+func excludesKey(excludes map[string]bool) string {
 	names := make([]string, 0, len(excludes))
 	for name, excluded := range excludes {
 		if excluded {
@@ -1057,23 +1086,30 @@ func newJudgedDefaultKey(s *Skill, excludes map[string]bool) judgedDefaultKey {
 		}
 	}
 	slices.Sort(names)
-	return judgedDefaultKey{skill: s, excludes: strings.Join(names, "\x00")}
+	return strings.Join(names, "\x00")
 }
 
 // calculateLevelWith is calculateLevelExcept with the given default in place of the one defaultExcept returns. With
 // exclude nil, what the grants of the item whose prerequisites are being judged gave is left out; see Entity.judgingOr.
+// While an editor previews edits, the grants that would then merge into the skill count in place of those merging into
+// it now; see Entity.grantsAsEdited.
 // The level a grant keeps is read without a default, since the points kept buy it without one (see
 // pointsForBaseLevel), and with the excludes, so that a technique resting on another never comes back to itself. A
-// technique with a limit is held to it; see grantState.applyLevelsWithinLimit.
+// technique with a limit is held to it; see grantState.applyLevelsWithinLimit. The sheet's level caps are applied
+// last, to the level with everything else in it but the encumbrance penalty, which still applies to the level held;
+// see Entity.capSkillLevel.
 func (s *Skill) calculateLevelWith(exclude any, def *SkillDefault, excludes map[string]bool) Level {
 	e := EntityFromNode(s)
 	exclude = e.judgingOr(exclude)
 	level := s.levelBeforeGrants(exclude, def, excludes)
 	levelAt := func(points fxp.Int) Level { return s.levelAt(e, nil, points, excludes) }
+	state := e.grantsAsEdited(s)
 	if s.IsTechnique() && s.TechniqueLimitModifier != nil {
-		return s.grant.applyLevelsWithinLimit(exclude, level, levelAt)
+		level = state.applyLevelsWithinLimit(exclude, level, levelAt)
+	} else {
+		level = state.applyLevels(exclude, level, levelAt)
 	}
-	return s.grant.applyLevels(exclude, level, levelAt)
+	return e.capSkillLevel(s, s, exclude, level, excludes)
 }
 
 // levelBeforeGrants is calculateLevelWith without what the grants made of the level, though with the points they gave;
@@ -1081,13 +1117,20 @@ func (s *Skill) calculateLevelWith(exclude any, def *SkillDefault, excludes map[
 func (s *Skill) levelBeforeGrants(exclude any, def *SkillDefault, excludes map[string]bool) Level {
 	points := s.adjustedPointsExcept(exclude, nil)
 	if s.IsTechnique() {
-		return CalculateTechniqueLevel(EntityFromNode(s), s.Replacements, s.NameWithReplacements(),
-			s.SpecializationWithReplacements(), s.Tags, s.TechniqueDefault, s.AdjustedDifficulty().Difficulty, points, true,
-			s.TechniqueLimitModifier, excludes)
+		return s.techniqueLevel(EntityFromNode(s), points, excludes)
 	}
 	return CalculateSkillLevel(EntityFromNode(s), s.NameWithReplacements(), s.SpecializationWithReplacements(),
 		s.OptionalSpecializationWithReplacements(), s.Tags, def, s.AdjustedDifficulty(), points,
 		s.EncumbrancePenaltyMultiplier)
+}
+
+// techniqueLevel returns the technique's level with the given adjusted points, before what grants made of it, with the
+// levels of the skills it may rest on taken with the excludes and the technique passed over by the level caps met on
+// the way; see Entity.passOver.
+func (s *Skill) techniqueLevel(e *Entity, points fxp.Int, excludes map[string]bool) Level {
+	defer e.passOver(s)()
+	return CalculateTechniqueLevel(e, s.Replacements, s.NameWithReplacements(), s.SpecializationWithReplacements(),
+		s.Tags, s.TechniqueDefault, s.AdjustedDifficulty().Difficulty, points, true, s.TechniqueLimitModifier, excludes)
 }
 
 // CalculateSkillLevel returns the calculated level for a skill.
@@ -1191,9 +1234,10 @@ func (s *Skill) baseUnresolved(e *Entity) bool {
 	return skillAttributeLevel(e, s.AdjustedDifficulty().Attribute) == fxp.Min
 }
 
-// techniqueBase returns what the technique's level rests on as the sheet sees it, as CalculateTechniqueLevel takes it
-// for the level the sheet shows.
+// techniqueBase returns what the technique's level rests on as the sheet sees it, as techniqueLevel takes it for the
+// level the sheet shows.
 func (s *Skill) techniqueBase(e *Entity) techniqueBase {
+	defer e.passOver(s)()
 	base := techniqueBase{level: fxp.Min, limit: s.TechniqueLimitModifier}
 	if def := s.TechniqueDefault; def != nil {
 		name := s.NameWithReplacements()
@@ -1349,11 +1393,14 @@ func techniqueBaseLevel(e *Entity, replacements map[string]string, name, special
 				}
 			}
 		}
-	} else if t := def.Type(); (t == ParryID || t == BlockID) && e.carriesGrant(e.judging) {
-		// While the prerequisites of an item carrying a grant are judged, the skill a parry or block default rests on
-		// is taken at the level they see, as it is for a skill default, rather than the one it recorded, which holds
-		// what the grant gave; see Entity.JudgingPrereqsOf. Each skill is excluded while its own level is computed, as
-		// above, so that one leading back to this technique cannot recurse without end.
+	} else if t := def.Type(); t == ParryID || t == BlockID {
+		// The level of the skill a parry or block default rests on is computed, as it is for a skill default, rather
+		// than read as recorded: the recorded one holds what the grants of an item whose prerequisites are being judged
+		// gave (see Entity.JudgingPrereqsOf), is that of the skill as it is on the sheet while an editor previews it as
+		// edited (see Entity.matchLevelCapsAs), and has the skill's level caps applied, so that a cap resting on this
+		// technique, rather than passing the skill over, would lower it with every pass (see Entity.capLevel). Each
+		// skill is excluded while its own level is computed, as above, so that one leading back to this technique
+		// cannot recurse without end.
 		if excludes == nil {
 			excludes = make(map[string]bool)
 		}

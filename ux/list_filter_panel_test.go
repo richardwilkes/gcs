@@ -33,19 +33,19 @@ const listFilterPanelTestKey = "eqp"
 // showListFilterPanel shows a filter editor for the filter in a window, within the content the dialog would hold it in,
 // which provides its undo manager. The session's memory of the field last used is swapped out for an empty one, so that
 // one test can't influence another.
-func showListFilterPanel(t *testing.T, screen *unison.HeadlessScreen, filter *gurps.ListFilter) (*listFilterPanel, *listFilterDialogContent) {
+func showListFilterPanel(t *testing.T, screen *unison.HeadlessScreen, filter *gurps.ListFilter) (*listFilterPanel, *sentenceDialogContent) {
 	t.Helper()
 	return showListFilterPanelFor(t, screen, filter, filterFieldInfos(gurps.EquipmentFilterFields(), nil))
 }
 
 // showListFilterPanelFor shows a filter editor as showListFilterPanel does, offering the fields.
-func showListFilterPanelFor(t *testing.T, screen *unison.HeadlessScreen, filter *gurps.ListFilter, fields []filterFieldInfo) (*listFilterPanel, *listFilterDialogContent) {
+func showListFilterPanelFor(t *testing.T, screen *unison.HeadlessScreen, filter *gurps.ListFilter, fields []filterFieldInfo) (*listFilterPanel, *sentenceDialogContent) {
 	t.Helper()
 	uxtest.SwapForTest(t, &lastFilterFieldKeyUsed, make(map[string]string))
 	var p *listFilterPanel
-	var host *listFilterDialogContent
+	var host *sentenceDialogContent
 	screen.Do(func() {
-		host = newListFilterDialogContent()
+		host = newSentenceDialogContent()
 		host.SetLayout(&unison.FlexLayout{Columns: 1})
 		p = newListFilterPanel(listFilterPanelTestKey, filter, fields)
 		host.AddChild(p)
@@ -949,7 +949,7 @@ func newSuggestionTestEquipment() []*gurps.Equipment {
 
 // showSuggestionTestPanel shows a filter editor for the conditions as showListFilterPanel does, filtering the list
 // newSuggestionTestEquipment returns, and opens the first condition.
-func showSuggestionTestPanel(t *testing.T, screen *unison.HeadlessScreen, conditions ...*gurps.FilterCondition) (*listFilterPanel, *listFilterDialogContent) {
+func showSuggestionTestPanel(t *testing.T, screen *unison.HeadlessScreen, conditions ...*gurps.FilterCondition) (*listFilterPanel, *sentenceDialogContent) {
 	t.Helper()
 	list := newSuggestionTestEquipment()
 	f := gurps.NewListFilter("")

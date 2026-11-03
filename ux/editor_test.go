@@ -143,6 +143,32 @@ func TestTraitEditorHasSwitchedOnCheckBox(t *testing.T) {
 	}
 }
 
+// TestTraitEditorOffersUserDescOnlyWhereItIsKept verifies that the trait editor offers the user description field for
+// a trait on a character sheet and for the copy of a trait a grant holds, which goes to the sheet with it, and leaves
+// it out for a trait anywhere else, which has none.
+func TestTraitEditorOffersUserDescOnlyWhereItIsKept(t *testing.T) {
+	c := check.New(t)
+	offers := func(owner Rebuildable, trait *gurps.Trait) bool {
+		_, content := buildEditorContent(owner, trait, initTraitEditor)
+		return slices.Contains(labelTitles(content), "User Description")
+	}
+	sheet := newTestSheetForTemplate(t)
+	c.True(offers(sheet, gurps.NewTrait(sheet.Entity(), nil, false)), "a trait on a sheet has one")
+	c.False(offers(nil, gurps.NewTrait(nil, nil, false)), "a trait in a library has none")
+	c.False(offers(nil, gurps.NewTrait(gurps.NewTemplate(), nil, false)), "nor does one in a template")
+	g := gurps.NewGrant(feature.GrantTrait)
+	g.SetItem(newGrantTestTrait("Night Vision", fxp.One), gurps.LibraryFile{})
+	features := gurps.Features{g}
+	owner := &grantItemOwner{
+		Rebuildable: sheet,
+		panel:       &featuresPanel{features: &features},
+		key:         g.Key(),
+		item:        g.Trait,
+	}
+	c.True(offers(owner, g.Trait.Clone(gurps.LibraryFile{}, nil, nil, gurps.Copy)),
+		"the copy of a trait a grant holds has one")
+}
+
 // findIntegerFieldLabeled returns the integer field that follows the label bearing the given text among the panel's
 // direct children.
 func findIntegerFieldLabeled(p *unison.Panel, labelText string) *IntegerField {

@@ -49,9 +49,22 @@ type grantPlan struct {
 }
 
 // standalonePoints returns the points the plan's grant gives its own copy of its skill or spell on the sheet, standing
-// alone (see Grant.pointsOn), or zero for a trait grant.
+// alone (see Grant.pointsOn), or zero for a trait grant. The level caps met while they are priced pass over the row the
+// copy stands for; see grantPlan.row.
 func (p *grantPlan) standalonePoints(e *Entity) fxp.Int {
+	defer e.passOver(p.row())()
 	return p.grant.pointsOn(e, p.leveler)
+}
+
+// row returns the row on the sheet that the plan's grant gives its item, which its own copy of the item stands for
+// while priced: the row it put there, or else the one it merges into or stands in for, or nil when there is neither.
+// The references of the level caps find that row rather than the copy, so it is the one passed over while the copy's
+// level is priced from the skill it rests on; see Entity.passOver.
+func (p *grantPlan) row() grantHolder {
+	if p.node != nil {
+		return p.node
+	}
+	return p.target
 }
 
 // reaches returns true if the plan's grant, standing alone on the sheet, gives its item something there: a trait
@@ -906,68 +919,152 @@ func (e *Entity) applyGrants() {
 		holder.grants().reset()
 	}
 	e.grantHolders = e.grantHolders[:0]
-	for _, plan := range e.grantPlans {
-		holder := plan.node
-		if holder == nil {
-			holder = plan.target
-		} else {
-			// A row another grant stood in for is again the item its own grant gives.
-			takeGrantDetails(holder, plan.grant)
-		}
-		holder.grants().reset()
-		e.grantHolders = append(e.grantHolders, holder)
+	for i := range e.grantPlans {
+		e.grantHolders = append(e.grantHolders, e.grantPlans[i].resetHolder())
 	}
 	// A level set on a technique or Ritual Magic spell is priced from the skill or technique it rests on, which must
-	// already hold what this pass's grants give it, so the grants are applied in rounds; see grantRounds.
-	rounds := e.grantRounds()
-	for _, round := range slices.Compact(slices.Sorted(slices.Values(rounds))) {
-		e.applyGrantsOf(rounds, round)
+	// already hold what this pass's grants give it, as must the skills and spells the level caps holding that one rest
+	// on, so the grants are applied in rounds; see grantRounds. When some rest on one another through the level caps,
+	// one of them is priced while another is not yet in effect, so the rounds are swept again, each taking back at its
+	// start what the last sweep gave its items, so that each is priced with the others as the last sweep left them,
+	// until a sweep changes nothing; see maxGrantSweeps.
+	rounds, cyclic := e.grantRounds()
+	order := slices.Compact(slices.Sorted(slices.Values(rounds)))
+	var last uint64
+	for sweep := range maxGrantSweeps {
+		for _, round := range order {
+			// What the references of the level caps resolved to rests on what the grants gave the items they matched,
+			// or on the items not yet in effect being absent, which each round changes, so it is resolved afresh.
+			e.levelCapMemo = nil
+			if sweep != 0 {
+				for i := range e.grantPlans {
+					if rounds[i] == round {
+						e.grantPlans[i].resetHolder()
+					}
+				}
+			}
+			e.applyGrantsOf(e.grantPlans, rounds, round)
+		}
+		if !cyclic {
+			break
+		}
+		if fingerprint := e.grantHoldersFingerprint(); sweep == 0 || fingerprint != last {
+			last = fingerprint
+		} else {
+			break
+		}
 	}
+	e.levelCapMemo = nil
 	e.judgeGrantedItems()
 	e.grantCarriersJudged = true
 }
 
-// grantRounds returns, for each of the plans, the round of applyGrants in which its grant is applied, which is the same
-// for all the plans of an item: its rest depth (see restDepth), so that each item is granted after the skills and
-// techniques its level may rest on.
-func (e *Entity) grantRounds() []int {
-	rounds := make([]int, len(e.grantPlans))
-	depths := make(map[*Skill]int)
-	for i := range e.grantPlans {
-		holder := e.grantPlans[i].node
-		if holder == nil {
-			holder = e.grantPlans[i].target
-		}
-		rounds[i] = e.restDepth(holder, depths)
+// maxGrantSweeps caps the sweeps applyGrants makes over the rounds when the items it grants rest on one another through
+// the level caps. Prices that agree with one another are found in a few sweeps, so the cap stops only those that never
+// agree, which are left as the last sweep priced them.
+const maxGrantSweeps = 8
+
+// resetHolder takes back what the grants gave the item the plan's grant gives, its own row or the one it merges into or
+// stands in for, which is returned, and gives its own row the details of its own grant again, in case another grant
+// stood in for it.
+func (p *grantPlan) resetHolder() grantHolder {
+	holder := p.row()
+	if p.node != nil {
+		takeGrantDetails(holder, p.grant)
 	}
-	return rounds
+	holder.grants().reset()
+	return holder
 }
 
-// restDepth returns 0 for an item whose level rests on no skill, and for a technique or Ritual Magic spell whose level
-// does, one more than the greatest rest depth of the techniques on the sheet it may rest on: those its default matches
-// by name and specialization, or for a Ritual Magic spell those named as its ritual skill, whether or not they are in
-// effect, since a granted one is put in effect only in its own round. depths holds the rest depths of the techniques
-// found so far, with -1 for one being found, so that a technique resting on itself through others ends there.
-func (e *Entity) restDepth(item grantHolder, depths map[*Skill]int) int {
+// grantHoldersFingerprint fingerprints what the grants gave the items they touch, for applyGrants to tell when a sweep
+// changed nothing.
+func (e *Entity) grantHoldersFingerprint() uint64 {
+	h := xxh3.New()
+	for _, holder := range e.grantHolders {
+		holder.grants().hash(h)
+		hashGrantDetails(h, holder)
+	}
+	return h.Sum64()
+}
+
+// grantRounds returns, for each of the plans, the round of applyGrants in which its grant is applied, which is the same
+// for all the plans of an item: its rest depth (see restDepths.of), so that each item is granted after the skills,
+// techniques and spells its price may read the levels of, and whether any of those items rest on one another, which
+// leaves the price of one of them reading the level of one not yet granted.
+func (e *Entity) grantRounds() (rounds []int, cyclic bool) {
+	rounds = make([]int, len(e.grantPlans))
+	depths := restDepths{entity: e, depths: make(map[any]int)}
+	for i := range e.grantPlans {
+		rounds[i] = depths.of(e.grantPlans[i].row())
+	}
+	return rounds, depths.cyclic
+}
+
+// restDepths finds the rest depths of the items on the sheet for grantRounds.
+type restDepths struct {
+	entity *Entity
+	// depths holds the rest depths of the techniques and Ritual Magic spells found so far, with -1 for one being found,
+	// so that one resting on itself through others ends there.
+	depths map[any]int
+	// matches holds the skills and spells each reference of the level caps matches; see ReferenceLevelCap.matchingAny.
+	matches map[*ReferenceLevelCap][]any
+	// cyclic is set once one being found is reached again.
+	cyclic bool
+}
+
+// of returns 0 for an item whose level rests on no skill, and for a technique or Ritual Magic spell whose level does,
+// one more than the greatest rest depth of the techniques and Ritual Magic spells on the sheet whose levels its price
+// may read: those it rests on (see restsOn), those the references of the level caps holding a skill or spell read on
+// the way match, and so on from each of those. They are found whether or not they are in effect, since a granted one is
+// put in effect only in its own round, and the item itself is left out, since it is passed over while it is priced
+// (see grantPlan.row).
+func (r *restDepths) of(item any) int {
+	if !restsOnSkill(item) {
+		return 0
+	}
+	if depth, ok := r.depths[item]; ok {
+		if depth < 0 {
+			r.cyclic = true
+		}
+		return max(depth, 0)
+	}
+	r.depths[item] = -1
+	depth := 1
+	seen := map[any]bool{item: true}
+	seenRefs := make(map[*ReferenceLevelCap]bool)
+	pending := r.restsOn(item)
+	for len(pending) != 0 {
+		one := pending[len(pending)-1]
+		pending = pending[:len(pending)-1]
+		if seen[one] {
+			continue
+		}
+		seen[one] = true
+		if restsOnSkill(one) {
+			depth = max(depth, r.of(one)+1)
+			pending = append(pending, r.restsOn(one)...)
+		}
+		for _, ref := range r.entity.levelCapRefsHolding(one) {
+			if !seenRefs[ref] {
+				seenRefs[ref] = true
+				pending = append(pending, r.matching(ref)...)
+			}
+		}
+	}
+	r.depths[item] = depth
+	return depth
+}
+
+// restsOn returns the skills on the sheet the level of the technique or Ritual Magic spell may rest on, whether or not
+// they are in effect: those its default matches by name and specialization, or those named as its ritual skill,
+// whatever their specialization.
+func (r *restDepths) restsOn(item any) []any {
 	var def *SkillDefault
 	var replacements map[string]string
-	var technique *Skill
 	switch one := item.(type) {
 	case *Skill:
-		technique = one
-		if !one.restsOnSkill() {
-			return 0
-		}
-		if depth, ok := depths[one]; ok {
-			return max(depth, 0)
-		}
-		depths[one] = -1
 		def, replacements = one.TechniqueDefault, one.Replacements
 	case *Spell:
-		if !one.restsOnSkill() {
-			return 0
-		}
-		// The ritual skill, whatever its specialization.
 		def = &SkillDefault{
 			DefaultType: SkillID,
 			Name: criteria.Text{
@@ -975,29 +1072,47 @@ func (e *Entity) restDepth(item grantHolder, depths map[*Skill]int) int {
 			},
 		}
 	default:
-		return 0
+		return nil
 	}
-	depth := 1
 	name := def.Name.Matcher(replacements)
 	specialization := def.Specialization.Matcher(replacements)
+	var list []any
 	Traverse(func(sk *Skill) bool {
-		if sk != technique && sk.IsTechnique() && name.Matches(sk.NameWithReplacements()) &&
+		if any(sk) != item && name.Matches(sk.NameWithReplacements()) &&
 			skillSpecializationMatcherMatches(specialization, sk.SpecializationWithReplacements(),
 				sk.OptionalSpecializationWithReplacements()) {
-			depth = max(depth, e.restDepth(sk, depths)+1)
+			list = append(list, sk)
 		}
 		return false
-	}, false, true, e.Skills...)
-	if technique != nil {
-		depths[technique] = depth
-	}
-	return depth
+	}, false, true, r.entity.Skills...)
+	return list
 }
 
-// applyGrantsOf runs the steps of applyGrants for the plans whose grants are applied in the round; see grantRounds.
-func (e *Entity) applyGrantsOf(rounds []int, round int) {
-	for i := range e.grantPlans {
-		plan := &e.grantPlans[i]
+// matching returns the skills and spells on the sheet the reference matches; see ReferenceLevelCap.matchingAny.
+func (r *restDepths) matching(ref *ReferenceLevelCap) []any {
+	list, ok := r.matches[ref]
+	if !ok {
+		list = ref.matchingAny(r.entity)
+		if r.matches == nil {
+			r.matches = make(map[*ReferenceLevelCap][]any)
+		}
+		r.matches[ref] = list
+	}
+	return list
+}
+
+// restsOnSkill returns true if the item is a skill or spell whose level rests on a skill; see
+// grantLeveler.restsOnSkill.
+func restsOnSkill(item any) bool {
+	one, ok := item.(grantLeveler)
+	return ok && one.restsOnSkill()
+}
+
+// applyGrantsOf runs the steps of applyGrants for those of the plans whose grants are applied in the round, rounds
+// holding the round of each; see grantRounds.
+func (e *Entity) applyGrantsOf(plans []grantPlan, rounds []int, round int) {
+	for i := range plans {
+		plan := &plans[i]
 		if rounds[i] != round {
 			continue
 		}
@@ -1024,8 +1139,8 @@ func (e *Entity) applyGrantsOf(rounds []int, round int) {
 			}
 		}
 	}
-	for i := range e.grantPlans {
-		plan := &e.grantPlans[i]
+	for i := range plans {
+		plan := &plans[i]
 		if rounds[i] == round && plan.node == nil && IsGranted(plan.target) && !plan.target.grants().inEffect &&
 			e.grantPlants(plan) {
 			plan.standsIn = true
@@ -1033,8 +1148,8 @@ func (e *Entity) applyGrantsOf(rounds []int, round int) {
 			e.grantItem(plan, plan.target)
 		}
 	}
-	for i := range e.grantPlans {
-		plan := &e.grantPlans[i]
+	for i := range plans {
+		plan := &plans[i]
 		if rounds[i] == round && plan.node == nil && !plan.standsIn && e.grantInEffect(plan) {
 			e.mergeGrant(plan, plan.target, plan.target.grants())
 		}
@@ -1315,13 +1430,16 @@ func (e *Entity) mergeGrant(plan *grantPlan, target grantHolder, state *grantSta
 // levelSetReprice returns what prices afresh, for the prerequisites being judged, the points the level set of the
 // plan's grant gives item, a skill or spell, which are given here as priced against the sheet as a whole, less those
 // the default of holder stands for when holder is not nil (see Grant.pointsBeyondDefault), or nil for a grant that
-// sets no level; see grantReprice.
+// sets no level; see grantReprice. The level caps met while they are priced pass over the plan's row; see
+// grantPlan.row.
 func (e *Entity) levelSetReprice(plan *grantPlan, item grantLeveler, holder grantHolder, points fxp.Int) *grantReprice {
 	g := plan.grant
 	if !g.setsSkillLevel() || item == nil {
 		return nil
 	}
+	row := plan.row()
 	return &grantReprice{entity: e, owner: plan.source.owner, points: points, price: func() fxp.Int {
+		defer e.passOver(row)()
 		if holder == nil {
 			return g.pointsOn(e, item)
 		}
@@ -1337,24 +1455,27 @@ func (e *Entity) remergeGrants(holder grantHolder) {
 	}
 	state := holder.grants()
 	state.reset()
-	e.mergeGrantsInto(holder, holder, state)
+	e.mergeGrantsInto(holder, holder, state, nil)
 }
 
 // grantsWithEdits returns what the grants give the skill or spell holder once edited into edited, a copy of it holding
 // the data an editor holds: what they gave it at the last recalculation for one a grant put on the sheet, whose editor
 // is read-only, nothing while edited is disabled, and otherwise what the grants that would merge into it once the edits
 // are applied give it, merged afresh into edited as remergeGrants merges them into holder: those that merged into
-// holder at the last recalculation while the edits leave it the same item, and otherwise those mergingInto finds.
+// holder at the last recalculation while the edits leave it the same item, and otherwise those mergingInto finds. The
+// level caps met while they are priced pass over holder, which edited stands for, as they pass over holder while the
+// grants merge into it; see Entity.passOver.
 func grantsWithEdits[T grantNode[T]](holder, edited T) *grantState {
 	e := EntityFromNode(holder)
 	if e == nil || IsGranted(holder) {
 		return holder.grants()
 	}
 	state := &grantState{}
+	defer e.passOver(holder)()
 	switch {
 	case userDisabled(edited):
 	case identityHash(edited) == identityHash(holder) && SameItem(edited, holder):
-		e.mergeGrantsInto(holder, edited, state)
+		e.mergeGrantsInto(holder, edited, state, nil)
 	default:
 		for _, plan := range newGrantReconciler(e, entityList[T](e)).mergingInto(holder, edited) {
 			if e.grantInEffect(plan) {
@@ -1363,6 +1484,114 @@ func grantsWithEdits[T grantNode[T]](holder, edited T) *grantState {
 		}
 	}
 	return state
+}
+
+// grantsMovedByEdit returns what applying the edits does to the rows other than holder that grants touch, where holder
+// is an item that no grant put on the sheet and edited a copy of it holding other data, as reconcileGrants would then
+// place the grants that merge into holder now or into edited then, but not both: those grantsWithEdits finds merging
+// into edited that merge into another row now, and those merging into holder now that would not merge into edited
+// (see grantReconciler.leaving). mergedAway holds the rows the former put on the sheet, which applying the edits takes
+// off it, and planted the rows the latter would put there, each holding what the grants would give it, applied as
+// applyGrants applies them. leftBehind holds, for each row no grant put on the sheet that some of those grants merge
+// into now or would then, what the grants that would then merge into it give it, merged afresh as remergeGrants merges
+// them. Each is nil when it would be empty.
+func grantsMovedByEdit[T grantNode[T]](holder, edited T) (mergedAway map[any]bool, leftBehind map[any]*grantState, planted []T) {
+	e := EntityFromNode(holder)
+	if e == nil || IsGranted(holder) || userDisabled(edited) ||
+		(identityHash(edited) == identityHash(holder) && SameItem(edited, holder)) {
+		return nil, nil, nil
+	}
+	r := newGrantReconciler(e, entityList[T](e))
+	moved := make(map[*grantPlan]grantHolder)
+	staying := make(map[*grantPlan]bool)
+	var touched []grantHolder
+	for _, plan := range r.mergingInto(holder, edited) {
+		switch {
+		case plan.node != nil:
+			if mergedAway == nil {
+				mergedAway = make(map[any]bool)
+			}
+			mergedAway[plan.node] = true
+		case any(plan.target) == any(holder):
+			staying[plan] = true
+		case plan.target != nil:
+			moved[plan] = edited
+			if !IsGranted(plan.target) && e.grantInEffect(plan) {
+				touched = append(touched, plan.target)
+			}
+		}
+	}
+	planted, plans := r.leaving(holder, staying, moved)
+	for plan, into := range moved {
+		if into != nil && !IsGranted(into) && any(into) != any(edited) && e.grantInEffect(plan) {
+			touched = append(touched, into)
+		}
+	}
+	for _, row := range touched {
+		if _, done := leftBehind[row]; !done {
+			if leftBehind == nil {
+				leftBehind = make(map[any]*grantState)
+			}
+			state := &grantState{}
+			e.mergeGrantsInto(row, row, state, moved)
+			leftBehind[row] = state
+		}
+	}
+	for _, one := range plans {
+		e.applyGrantsOf(one, make([]int, len(one)), 0)
+	}
+	return mergedAway, leftBehind, planted
+}
+
+// leaving places, as consider would, the grants that merge into holder now but would not merge into the item edited in
+// its place, which the reconciler's mergingInto, called before, found the plans staying of: each merges into the first
+// item present to match it, among which mergingInto put edited in holder's place, or else into the first row an
+// earlier one of them would put on the sheet that matches it, or else, when it can put its item on the sheet, puts a
+// row of its own there. moved records the item or row each merges into, or nil for one that puts its own row on the
+// sheet or does nothing. The rows are returned, made by makeItem, in plan order, which is the order reconcileGrants
+// considers the grants in, along with, for each, the plans of the grants giving it, the one putting it there first:
+// copies naming the row in place of holder, as the node of that one and the target of the others.
+func (r *grantReconciler[T]) leaving(holder T, staying map[*grantPlan]bool, moved map[*grantPlan]grantHolder) (rows []T, plans [][]grantPlan) {
+	e := r.entity
+	for i := range e.grantPlans {
+		plan := &e.grantPlans[i]
+		if plan.node != nil || any(plan.target) != any(holder) || staying[plan] {
+			continue
+		}
+		g := plan.grant
+		item, ok := any(g.Item()).(T)
+		if !ok {
+			continue
+		}
+		// The probe may become one of the rows, which needs a link to count as granted, though nothing reads it.
+		probe := r.makeItem(g, item, &GrantedBy{Key: g.Key()}, g.answers(plan.source))
+		forgetMadeClosedStates(probe)
+		h := identityHash(probe)
+		matches := func(candidate T) bool {
+			return identityHash(candidate) == h && SameItem(candidate, probe) && sameModifiers(candidate, probe)
+		}
+		present := r.presentNamed(probe)
+		if j := slices.IndexFunc(present, matches); j >= 0 {
+			moved[plan] = present[j]
+			continue
+		}
+		if j := slices.IndexFunc(rows, matches); j >= 0 {
+			moved[plan] = rows[j]
+			placed := *plan
+			placed.target = rows[j]
+			plans[j] = append(plans[j], placed)
+			continue
+		}
+		moved[plan] = nil
+		if g.putsItemOnSheet() {
+			probe.grants().source = plan.source
+			placed := *plan
+			placed.node, placed.target = probe, nil
+			rows = append(rows, probe)
+			plans = append(plans, []grantPlan{placed})
+		}
+	}
+	return rows, plans
 }
 
 // mergingInto returns the plans of the grants on the sheet that reconcileGrants would merge into holder, an item that
@@ -1431,10 +1660,20 @@ func entityList[T grantNode[T]](e *Entity) *[]T {
 }
 
 // mergeGrantsInto merges into the state, as applyGrants does, the grants in effect that merge into the holder, priced
-// against target, which is the holder or a copy of it holding other data (see mergeGrant).
-func (e *Entity) mergeGrantsInto(holder, target grantHolder, state *grantState) {
+// against target, which is the holder or a copy of it holding other data (see mergeGrant). moved maps the plans whose
+// grants would merge into another item than their target to that item, or to nil for none, which they are then taken
+// to merge into instead.
+func (e *Entity) mergeGrantsInto(holder, target grantHolder, state *grantState, moved map[*grantPlan]grantHolder) {
 	for i := range e.grantPlans {
 		plan := &e.grantPlans[i]
+		if into, ok := moved[plan]; ok {
+			if into != holder {
+				continue
+			}
+			placed := *plan
+			placed.target = into
+			plan = &placed
+		}
 		if plan.target == holder && plan.node == nil && !plan.standsIn && e.grantInEffect(plan) {
 			e.mergeGrant(plan, target, state)
 		}
@@ -1540,7 +1779,7 @@ func grantSourceName(active grantSource) string {
 // levelAt returns the level the skill would have with the given points in place of its own, adjusted for the point
 // bonuses as its own are, leaving out what grants gave it, and the given default in place of the one it recorded. A
 // technique, which has no such default, takes its level from its own default, with the levels of the skills it may
-// rest on taken with the excludes, as CalculateTechniqueLevel takes them.
+// rest on taken with the excludes, as techniqueLevel takes them.
 func (s *Skill) levelAt(e *Entity, def *SkillDefault, points fxp.Int, excludes map[string]bool) Level {
 	name := s.NameWithReplacements()
 	specialization := s.SpecializationWithReplacements()
@@ -1548,8 +1787,7 @@ func (s *Skill) levelAt(e *Entity, def *SkillDefault, points fxp.Int, excludes m
 	points = AdjustedPointsForNonContainerSkillOrTechnique(e, points, name, specialization, optionalSpecialization,
 		s.Tags, nil)
 	if s.IsTechnique() {
-		return CalculateTechniqueLevel(e, s.Replacements, name, specialization, s.Tags, s.TechniqueDefault,
-			s.AdjustedDifficulty().Difficulty, points, true, s.TechniqueLimitModifier, excludes)
+		return s.techniqueLevel(e, points, excludes)
 	}
 	return CalculateSkillLevel(e, name, specialization, optionalSpecialization, s.Tags, def, s.AdjustedDifficulty(),
 		points, s.EncumbrancePenaltyMultiplier)

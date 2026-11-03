@@ -514,15 +514,17 @@ func (s *SkillDefault) bestFastMatch(entity *Entity, replacements map[string]str
 // best returns the highest level among the skills this SkillDefault selects whose tech level satisfies WhenTL, or
 // fxp.Min if there are none. Only a skill whose recorded level beats the best so far has its level computed, except
 // while the prerequisites of an item carrying a grant are judged: the level is then computed without what that item's
-// grants did to the skill, which a curse among them leaves above the one recorded.
+// grants did to the skill, which a curse among them leaves above the one recorded. Every level is computed too while
+// an editor previews a skill's level, since the recorded ones are those of the skill as it is on the sheet rather
+// than as edited, and of the skills resting on it; see Entity.matchLevelCapsAs.
 func (s *SkillDefault) best(entity *Entity, replacements map[string]string, requirePoints bool, excludes map[string]bool) fxp.Int {
 	best := fxp.Min
-	judging := entity != nil && entity.carriesGrant(entity.judging)
+	afresh := entity != nil && (entity.carriesGrant(entity.judging) || entity.previewingSkillEdit())
 	for _, sk := range s.matchingSkills(entity, replacements, requirePoints, excludes) {
 		if !s.isTLPermitted(entity, sk.TL()) {
 			continue
 		}
-		if judging || best < sk.LevelData.Level {
+		if afresh || best < sk.LevelData.Level {
 			level := sk.CalculateLevel(excludes).Level
 			if best < level {
 				best = level

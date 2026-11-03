@@ -10,12 +10,15 @@
 package gurps
 
 import (
+	"encoding/json/v2"
 	"testing"
+	"testing/fstest"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/container"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/selfctrl"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/traitsel"
+	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/gcs/v5/model/nameable"
 	"github.com/richardwilkes/toolbox/v2/check"
 )
@@ -385,4 +388,41 @@ func TestTraitApplyNameableKeysKeepsAnswersForDisabledModifiers(t *testing.T) {
 	trait.SetModifiers(nil)
 	trait.ApplyNameableKeys(map[string]string{})
 	c.Nil(trait.Replacements, "nothing left to hold must be held as nothing")
+}
+
+// TestLoadingOffASheetClearsUserDesc verifies that a template and a trait list have the user descriptions of their
+// traits removed when loaded, children included, while a character sheet keeps them.
+func TestLoadingOffASheetClearsUserDesc(t *testing.T) {
+	c := check.New(t)
+	described := func() *Trait {
+		group := NewTrait(nil, nil, true)
+		group.UserDesc = "Mine"
+		child := NewTrait(nil, group, false)
+		child.UserDesc = "Also mine"
+		group.Children = []*Trait{child}
+		return group
+	}
+	descs := func(root *Trait) []string { return []string{root.UserDesc, root.Children[0].UserDesc} }
+
+	entity := NewEntity()
+	entity.Traits = []*Trait{described()}
+	data, err := json.Marshal(entity)
+	c.NoError(err)
+	var loadedEntity Entity
+	c.NoError(json.Unmarshal(data, &loadedEntity))
+	c.Equal([]string{"Mine", "Also mine"}, descs(loadedEntity.Traits[0]), "a character sheet must keep them")
+
+	template := NewTemplate()
+	template.Traits = []*Trait{described()}
+	data, err = json.Marshal(template)
+	c.NoError(err)
+	var loadedTemplate Template
+	c.NoError(json.Unmarshal(data, &loadedTemplate))
+	c.Equal([]string{"", ""}, descs(loadedTemplate.Traits[0]), "a template must not keep them")
+
+	list, err := json.Marshal(&listData[*Trait]{Version: jio.CurrentDataVersion, Rows: []*Trait{described()}})
+	c.NoError(err)
+	rows, err := NewTraitsFromFile(fstest.MapFS{"list.adq": &fstest.MapFile{Data: list}}, "list.adq")
+	c.NoError(err)
+	c.Equal([]string{"", ""}, descs(rows[0]), "a trait list must not keep them")
 }

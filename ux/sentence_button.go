@@ -46,6 +46,8 @@ type sentenceButton struct {
 	text    string
 	onClick func()
 	hovered bool
+	// ink is what the text is drawn in, or nil for the label theme's ink; see setInk.
+	ink unison.Ink
 	// The sentence's paragraphs as styled text, built with builtFont, and broken into lines for wrappedWidth, since
 	// laying out and drawing ask for them often.
 	built        []*unison.Text
@@ -125,6 +127,14 @@ func (b *sentenceButton) plainText() string {
 	return stripEm.Replace(b.text)
 }
 
+// setInk draws the text in the ink rather than the label theme's, for a sentence on a background other than the
+// surface.
+func (b *sentenceButton) setInk(ink unison.Ink) {
+	b.ink = ink
+	b.built = nil
+	b.MarkForRedraw()
+}
+
 func (b *sentenceButton) hover(on bool) bool {
 	b.hovered = on
 	b.MarkForRedraw()
@@ -155,9 +165,13 @@ func (b *sentenceButton) lines(width float32) []*unison.Text {
 // buildText returns the paragraphs of the sentence, which line breaks separate, as styled text, its emphasized spans in
 // bold.
 func (b *sentenceButton) buildText() []*unison.Text {
+	ink := b.ink
+	if ink == nil {
+		ink = unison.DefaultLabelTheme.OnBackgroundInk
+	}
 	plain := &unison.TextDecoration{
 		Font:            unison.DefaultLabelTheme.Font,
-		OnBackgroundInk: unison.DefaultLabelTheme.OnBackgroundInk,
+		OnBackgroundInk: ink,
 	}
 	bold := *plain
 	desc := plain.Font.Descriptor()

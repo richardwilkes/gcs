@@ -17,16 +17,20 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/richardwilkes/gcs/v5/model/criteria"
+	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/levelcap"
 	"github.com/richardwilkes/gcs/v5/model/library"
 	"github.com/richardwilkes/gcs/v5/ux/uxtest"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/toolbox/v2/geom"
 	"github.com/richardwilkes/unison"
+	"github.com/richardwilkes/unison/enums/mod"
 )
 
-// TestSettingsDockableDoLoadPrefersRefLoader checks that doLoad prefers RefLoader, falls back to Loader without one,
-// and reports a loader's failure through the workspace's error handler under the dockable's title.
+// TestSettingsDockableDoLoadPrefersRefLoader checks that the toolbar menu's doLoad prefers RefLoader, falls back to
+// Loader without one, and reports a loader's failure through the workspace's error handler under the dockable's title.
 func TestSettingsDockableDoLoadPrefersRefLoader(t *testing.T) {
 	c := check.New(t)
 	dir := t.TempDir()
@@ -55,13 +59,13 @@ func TestSettingsDockableDoLoadPrefersRefLoader(t *testing.T) {
 		},
 	}
 
-	d.doLoad(ref)
+	d.fileMenu().doLoad(ref)
 	c.Equal(1, refLoaderCalls, "RefLoader is preferred")
 	c.Equal(0, loaderCalls, "Loader is not called when RefLoader is set")
 	c.True(gotRef == ref, "RefLoader receives the same reference")
 
 	d.RefLoader = nil
-	d.doLoad(ref)
+	d.fileMenu().doLoad(ref)
 	c.Equal(1, loaderCalls, "Loader is used when there is no RefLoader")
 	c.Equal(ref.FileSystem, gotFS)
 	c.Equal(ref.FilePath, gotPath)
@@ -74,7 +78,7 @@ func TestSettingsDockableDoLoadPrefersRefLoader(t *testing.T) {
 	})
 	boom := errors.New("boom")
 	d.RefLoader = func(_ *library.NamedFileRef) error { return boom }
-	d.doLoad(ref)
+	d.fileMenu().doLoad(ref)
 	c.Equal("Unable to load Ancestry", gotMsg)
 	c.True(errors.Is(gotErr, boom), "the loader's error is passed through")
 	c.Equal(1, loaderCalls, "Loader is not called when RefLoader fails")
@@ -90,6 +94,26 @@ func TestSettingsDockableCanLoad(t *testing.T) {
 	c.True(d.canLoad(), "both loaders")
 	d.Loader = nil
 	c.True(d.canLoad(), "RefLoader only")
+}
+
+// TestSettingsFileMenuExportOffersTheWholeTitle checks that Export… offers the menu's title as the file name, made safe
+// for the file system but otherwise whole, even where it holds a period or a slash, as a character's name may.
+func TestSettingsFileMenuExportOffersTheWholeTitle(t *testing.T) {
+	c := check.New(t)
+	screen, wnd := uxtest.StartHeadlessWorkspace(t, c)
+	for _, one := range []struct{ title, want string }{
+		{title: "Sheet Settings: Dr. Jekyll", want: "Sheet Settings_ Dr. Jekyll"},
+		{title: "Sheet Settings: AC/DC", want: "Sheet Settings_ AC_DC"},
+	} {
+		m := &settingsFileMenu{title: one.title, extensions: []string{gurps.SheetSettingsExt}}
+		// The save dialog runs a nested modal loop, so the export is posted rather than run through Do.
+		c.True(screen.Post(func() { m.export(func(string) error { return nil }) }))
+		screen.Sync()
+		dialogWnd, _ := modalDialog(t, screen, wnd)
+		_, fileName, _ := saveDialogFields(t, screen, dialogWnd)
+		c.Equal(one.want, fileName, one.title)
+		screen.KeyPress(unison.KeyEscape, mod.None)
+	}
 }
 
 // TestShowSettingsViewsOpenOnceAndActivate drives every entry point that goes through initSettings inside a headless
@@ -319,6 +343,26 @@ func TestSettingsViewsFitTheirMinimumWidth(t *testing.T) {
 	general.Self = general
 	sheet := &sheetSettingsDockable{}
 	sheet.Self = sheet
+	cappedSheet := &sheetSettingsDockable{}
+	cappedSheet.Self = cappedSheet
+	uxtest.SwapForTest(t, &gurps.GlobalSettings().Sheet, gurps.GlobalSettings().Sheet)
+	// A cap whose description takes several lines at the minimum width.
+	withSkillLevelCap := func(content *unison.Panel) {
+		levelCap := gurps.NewSkillLevelCap()
+		levelCap.Target = levelcap.SkillsAndSpells
+		levelCap.NameCriteria = criteria.Text{Compare: criteria.ContainsText, Qualifier: "Thaumatology"}
+		levelCap.TagsCriteria = criteria.Text{Compare: criteria.ContainsText, Qualifier: "Occult"}
+		skill := gurps.NewReferenceLevelCap(nil, levelCap.Cap, levelcap.Skill)
+		skill.NameCriteria = criteria.Text{Compare: criteria.IsText, Qualifier: "Thaumatology"}
+		skill.Modifier = fxp.FromInteger(-2)
+		attribute := gurps.NewReferenceLevelCap(nil, levelCap.Cap, levelcap.Attribute)
+		attribute.Modifier = fxp.Two
+		levelCap.Cap.Children = gurps.LevelCaps{gurps.NewFixedLevelCap(levelCap.Cap, fxp.FromInteger(12)), skill, attribute}
+		s := gurps.GlobalSettings().Sheet.Clone(nil)
+		s.SkillLevelCaps = gurps.SkillLevelCaps{levelCap}
+		gurps.GlobalSettings().Sheet = s
+		cappedSheet.initContent(content)
+	}
 	pageRefs := &pageRefMappingsDockable{}
 	pageRefs.Self = pageRefs
 	uxtest.SwapForTest(t, &gurps.GlobalSettings().PageRefs, gurps.PageRefs{})
@@ -338,6 +382,7 @@ func TestSettingsViewsFitTheirMinimumWidth(t *testing.T) {
 	}{
 		{name: "general settings", init: general.initContent, minSize: generalSettingsMinSize},
 		{name: "sheet settings", init: sheet.initContent, minSize: sheetSettingsMinSize},
+		{name: "sheet settings, with a skill level cap", init: withSkillLevelCap, minSize: sheetSettingsMinSize},
 		{
 			name: "page reference mappings",
 			init: withPageRefs(

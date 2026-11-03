@@ -173,6 +173,23 @@ type Entity struct {
 	// judgedPoints holds the points the level sets of grants give the skills and spells, priced afresh as the
 	// prerequisites being judged see the sheet, while the item judged carries a grant; see grantReprice.pointsFor.
 	judgedPoints map[*grantReprice]fxp.Int
+	// levelCapsResolving holds the skills and spells whose level caps are being resolved, whose levels a reference is
+	// computing, or for which the level of the skill they rest on is being computed, while they are, so that no cap
+	// rests on the level of one of them; see capLevel and passOver. It guards the call stack rather than caching
+	// anything, so discardCaches leaves it alone.
+	levelCapsResolving map[any]bool
+	// levelCapMemo holds what the references of the level caps resolved to during the recalculation pass in progress,
+	// by reference and the view it was resolved with, when nothing matched while it was, at any depth, was passed over
+	// for resolving before it began; see ReferenceLevelCap.resolve. It is cleared with the other caches at the start of
+	// each pass, and before and after each round in which applyGrants applies the grants; see Entity.applyGrants.
+	levelCapMemo map[levelCapMemoKey]levelCapMemoEntry
+	// levelCapCandidates points at the list of the items matched while the innermost reference of the level caps being
+	// resolved during a recalculation pass is, by it or by any reference resolved for it, or is nil when none is; see
+	// ReferenceLevelCap.resolve.
+	levelCapCandidates *[]any
+	// levelCapEdit holds the skill or spell an editor previews the level of, with the copy of it holding the edits,
+	// while that level is held to the level caps, so that the references match it as edited; see matchLevelCapsAs.
+	levelCapEdit levelCapEdit
 }
 
 // NewEntityFromFile loads an Entity from a file.
@@ -447,6 +464,7 @@ func (e *Entity) discardCaches(keepAbandonedScripts bool) {
 	e.weaponLists = [8][]*Weapon{}
 	e.weaponListsCached = 0
 	e.weightCarriedCached = [2]bool{}
+	e.levelCapMemo = nil
 	e.derivedGeneration++
 }
 
@@ -1855,9 +1873,17 @@ func (e *Entity) BestSkillNamed(name, specialization string, requirePoints bool,
 // SkillNamed returns the skills whose name matches, ignoring case, and whose specialization or optional specialization
 // does too when one is given. The name is tested first, since it rules out nearly every skill and is the cheapest
 // test; the others, which cost a walk of the skill's features or build its full name, only run for the few that pass.
+// The skill an editor previews the level of is found as edited, the rows applying the edits takes off the sheet are
+// not found, and those it puts there are, after the others; see matchLevelCapsAs.
 func (e *Entity) SkillNamed(name, specialization string, requirePoints bool, excludes map[string]bool) []*Skill {
 	var list []*Skill
-	Traverse(func(sk *Skill) bool {
+	onSheet, edited := e.skillEdit()
+	visit := func(sk *Skill) bool {
+		if sk == onSheet {
+			sk = edited
+		} else if e.takenOffByEdit(sk) {
+			return false
+		}
 		if !strings.EqualFold(sk.NameWithReplacements(), name) || grantedFor(e.judging, sk) {
 			return false
 		}
@@ -1873,7 +1899,11 @@ func (e *Entity) SkillNamed(name, specialization string, requirePoints bool, exc
 		}
 		list = append(list, sk)
 		return false
-	}, true, true, e.Skills...)
+	}
+	Traverse(visit, true, true, e.Skills...)
+	if len(e.levelCapEdit.plantedSkills) != 0 {
+		Traverse(visit, true, true, e.levelCapEdit.plantedSkills...)
+	}
 	return list
 }
 
@@ -1915,12 +1945,19 @@ func skillSpecializationMatcherMatches(specialization criteria.TextMatcher, requ
 
 // SkillMatching returns a list of skills whose name and specialization match the given criteria. The tests run in
 // the order SkillNamed runs them, and for the same reason. Both leave out the skills the grants of the item whose
-// prerequisites are being judged put on the sheet; see JudgingPrereqsOf.
+// prerequisites are being judged put on the sheet (see JudgingPrereqsOf), and both find the skill an editor previews
+// the level of as edited, without the rows applying the edits takes off the sheet and with those it puts there.
 func (e *Entity) SkillMatching(nameCriteria, specializationCriteria criteria.Text, replacements map[string]string, requirePoints bool, excludes map[string]bool) []*Skill {
 	var list []*Skill
 	name := nameCriteria.Matcher(replacements)
 	specialization := specializationCriteria.Matcher(replacements)
-	Traverse(func(sk *Skill) bool {
+	onSheet, edited := e.skillEdit()
+	visit := func(sk *Skill) bool {
+		if sk == onSheet {
+			sk = edited
+		} else if e.takenOffByEdit(sk) {
+			return false
+		}
 		if !name.Matches(sk.NameWithReplacements()) || grantedFor(e.judging, sk) {
 			return false
 		}
@@ -1936,7 +1973,11 @@ func (e *Entity) SkillMatching(nameCriteria, specializationCriteria criteria.Tex
 		}
 		list = append(list, sk)
 		return false
-	}, true, true, e.Skills...)
+	}
+	Traverse(visit, true, true, e.Skills...)
+	if len(e.levelCapEdit.plantedSkills) != 0 {
+		Traverse(visit, true, true, e.levelCapEdit.plantedSkills...)
+	}
 	return list
 }
 
@@ -2264,12 +2305,6 @@ func (e *Entity) attributeForPrereqs(attr *Attribute, current bool) fxp.Int {
 		return attr.currentWithBonus(bonus)
 	}
 	return attr.maximumWithBonus(bonus)
-}
-
-// PreservesUserDesc returns true if the user description widget should be preserved when written to disk. Normally,
-// only character sheets should return true for this.
-func (e *Entity) PreservesUserDesc() bool {
-	return true
 }
 
 // Ancestry returns the current Ancestry.

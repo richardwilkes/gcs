@@ -433,6 +433,41 @@ func TestCopyOutOfATemplateClearsPickSeparately(t *testing.T) {
 	c.True(group.PickSeparately, "the template keeps it")
 }
 
+// TestCopyOffASheetClearsUserDesc verifies that a trait's user description, the user's own note on a trait of their
+// character sheet, is removed from a copy of the trait arriving in a library or a template, child included, while a
+// copy arriving on another sheet keeps it and the trait copied from is left alone.
+func TestCopyOffASheetClearsUserDesc(t *testing.T) {
+	c := check.New(t)
+	source := newTestSheetForTemplate(t)
+	group := gurps.NewTrait(source.Entity(), nil, true)
+	group.Name = "Quirks"
+	group.UserDesc = "Mine"
+	child := gurps.NewTrait(source.Entity(), group, false)
+	child.Name = "Hums"
+	child.UserDesc = "Also mine"
+	group.Children = []*gurps.Trait{child}
+	source.Entity().Traits = []*gurps.Trait{group}
+	source.Rebuild(true)
+	source.Traits.Table.SelectAll()
+	descs := func(root *gurps.Trait) []string { return []string{root.UserDesc, root.Children[0].UserDesc} }
+
+	library := newLibraryStyleTraitsTable()
+	c.True(applyDrop(dragged(source.Traits.Table), library, nil, -1))
+	provider, ok := library.ClientData()[TableProviderClientKey].(TableProvider[*gurps.Trait])
+	c.True(ok)
+	c.Equal([]string{"", ""}, descs(provider.RootData()[0]), "a library doesn't keep them")
+
+	templateData := gurps.NewTemplate()
+	copySelectionTo(source.Traits.Table, []*Template{newTestTemplateDockable("Destination", templateData)})
+	c.Equal([]string{"", ""}, descs(templateData.Traits[0]), "a template doesn't keep them")
+
+	destination := newTestSheetForTemplate(t)
+	copySelectionTo(source.Traits.Table, []*Sheet{destination})
+	traits := destination.Entity().Traits
+	c.Equal([]string{"Mine", "Also mine"}, descs(traits[len(traits)-1]), "a sheet keeps them")
+	c.Equal([]string{"Mine", "Also mine"}, descs(group), "the trait copied from is left alone")
+}
+
 // TestEditorUndoRestoresSourceClearedByTemplatePicker verifies that applying an edit to a choice container that still
 // holds a source clears the source, and that undo and redo put it back and take it away again along with everything
 // else. A choice is stripped of its source whenever it is created, converted, loaded or transferred, so this is only a

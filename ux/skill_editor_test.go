@@ -19,6 +19,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/feature"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/grantadjust"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/grantmerge"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/levelcap"
 	"github.com/richardwilkes/gcs/v5/ux/uxtest"
 	"github.com/richardwilkes/toolbox/v2/check"
 	"github.com/richardwilkes/unison"
@@ -150,7 +151,9 @@ func levelPreview(content *unison.Panel) string {
 // gave the item, a technique included, as the sheet's level does, so that a granted row's editor shows its level rather
 // than none, that they read the level a Keep Highest or Keep Lowest grant keeps as the sheet reads it: without the
 // skill's default, held to a technique's limit, and with its relative level, and that they merge the grants for the
-// item as edited, as applying the edits does.
+// item as edited, as applying the edits does. A technique's or Ritual Magic spell's preview, like the sheet's level,
+// is not lowered, nor the level a grant keeps it at priced higher, by a level cap on the skill it rests on that rests
+// on the item itself.
 func TestEditorLevelPreviewIncludesGrants(t *testing.T) {
 	// grantOn puts on the sheet a trait carrying a grant of the item, which adjusts it as given.
 	grantOn := func(e *gurps.Entity, name string, item any, adjust grantadjust.Kind, amount fxp.Int,
@@ -183,6 +186,15 @@ func TestEditorLevelPreviewIncludesGrants(t *testing.T) {
 		s.TechniqueLimitModifier = limit
 		e.Skills = append(e.Skills, s)
 		return s
+	}
+	// capSkillsAt caps every skill at the level of the skill or spell with the name, plus the modifier.
+	capSkillsAt := func(e *gurps.Entity, capType levelcap.Type, name string, modifier fxp.Int) {
+		levelCap := gurps.NewSkillLevelCap()
+		ref := gurps.NewReferenceLevelCap(e, levelCap.Cap, capType)
+		ref.NameCriteria.Qualifier = name
+		ref.Modifier = modifier
+		levelCap.Cap.Children = gurps.LevelCaps{ref}
+		e.SheetSettings.SkillLevelCaps = gurps.SkillLevelCaps{levelCap}
 	}
 	easyDX := gurps.AttributeDifficulty{Attribute: gurps.DexterityID, Difficulty: difficulty.Easy}
 	hardIQ := gurps.AttributeDifficulty{Attribute: gurps.IntelligenceID, Difficulty: difficulty.Hard}
@@ -397,6 +409,43 @@ func TestEditorLevelPreviewIncludesGrants(t *testing.T) {
 			},
 		},
 		{
+			// Every skill is capped at Kick-2, which holds Karate at 11, while Kick rests on Karate at 12, as it is
+			// without the cap, which passes Kick over.
+			name: "technique a cap on the skill it rests on rests on", want: "13/+1", build: func(e *gurps.Entity) any {
+				addSkill(e, "Karate", easyDX, fxp.Four)
+				kick := addTechnique(e, "Kick", "Karate", 0, nil)
+				capSkillsAt(e, levelcap.Skill, "Kick", -fxp.Two)
+				return kick
+			},
+		},
+		{
+			// Every skill is capped at Kick-2, which passes Kick over while the 3 points that buy 15, the level a grant
+			// keeps it at, are priced from Karate at 12.
+			name: "technique a grant keeps at a level a cap on the skill it rests on rests on", want: "15/+3",
+			build: func(e *gurps.Entity) any {
+				addSkill(e, "Karate", easyDX, fxp.Four)
+				kick := addTechnique(e, "Kick", "Karate", 0, nil)
+				kick.Points = fxp.One
+				grantOn(e, "Training", kick, grantadjust.SetLevel, fxp.Fifteen, grantmerge.KeepHighest)
+				capSkillsAt(e, levelcap.Skill, "Kick", -fxp.Two)
+				return kick
+			},
+		},
+		{
+			// Likewise, every skill is capped at Ignite-1, which holds Ritual Magic (Fire) at 9, while Ignite rests on
+			// it at 10.
+			name: "Ritual Magic spell a cap on the skill it rests on rests on", want: "10/+0",
+			build: func(e *gurps.Entity) any {
+				addSkill(e, "Ritual Magic", hardIQ, fxp.Four).Specialization = "Fire"
+				ignite := gurps.NewRitualMagicSpell(e, nil, false)
+				ignite.Name = "Ignite"
+				ignite.College = gurps.CollegeList{"Fire"}
+				e.Spells = append(e.Spells, ignite)
+				capSkillsAt(e, levelcap.Spell, "Ignite", -fxp.One)
+				return ignite
+			},
+		},
+		{
 			name: "difficulty chosen for a spell a grant puts on the sheet", diff: new(difficulty.VeryHard),
 			want: "9/IQ-1", build: func(e *gurps.Entity) any {
 				light := gurps.NewSpell(e, nil, false)
@@ -462,8 +511,8 @@ func TestEditorLevelPreviewIncludesGrants(t *testing.T) {
 				preview = levelPreview(content)
 			case *gurps.Spell:
 				onSheet = func() string {
-					return item.LevelData.Level.Floor().String() + "/" +
-						gurps.FormatRelativeSkill(entity, false, item.Difficulty, item.LevelData.RelativeLevel)
+					return item.LevelData.Level.Floor().String() + "/" + gurps.FormatRelativeSkill(entity,
+						item.IsRitualMagic(), item.Difficulty, item.LevelData.RelativeLevel)
 				}
 				e, content := buildEditorContent(sheet, item, initSpellEditor)
 				if tc.typed != nil {

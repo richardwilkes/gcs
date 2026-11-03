@@ -582,7 +582,7 @@ func (p *prereqPanel) editor(pr gurps.Prereq, path string) *unison.Panel {
 		p.hasPopup(fields, key("has"), &one.Has, false)
 		p.typePopup(fields, path, pr)
 		flags := gurps.SizeFlag | gurps.DodgeFlag
-		p.attributePopup(fields, key("which"), i18n.Text("Attribute"), "", &one.Which, flags)
+		attributePopup(&p.sentenceRows, fields, key("which"), i18n.Text("Attribute"), "", p.entity, &one.Which, flags)
 		// Named apart from the attribute popup before it.
 		p.numberCriteria(fields, key("value"), i18n.Text("Value"), numericWordsAfter(i18n.Text("which")),
 			&one.QualifierCriteria, fxp.Min, fxp.Max, false, false)
@@ -590,8 +590,8 @@ func (p *prereqPanel) editor(pr gurps.Prereq, path string) *unison.Panel {
 			func() { one.CombinedWith = gurps.AttributeIDFor(p.entity, gurps.DexterityID) },
 			func() { one.CombinedWith = "" },
 			func(chip *unison.Panel) {
-				p.attributePopup(chip, key("combined"), i18n.Text("Combined With"), rowCriteria("combined").prefix,
-					&one.CombinedWith, flags)
+				attributePopup(&p.sentenceRows, chip, key("combined"), i18n.Text("Combined With"),
+					rowCriteria("combined").prefix, p.entity, &one.CombinedWith, flags)
 			})
 	case *gurps.EquippedEquipmentPrereq:
 		p.notPopup(fields, key("has"), &one.Not)
@@ -871,14 +871,6 @@ func (p *prereqPanel) havePopup(parent *unison.Panel, key string, has, spell boo
 		}
 		return no
 	}, set))
-}
-
-// attributePopup adds a popup of attributes, each after the prefix. A key that isn't one of them is shown as such, and
-// kept until another is chosen.
-func (p *prereqPanel) attributePopup(parent *unison.Panel, key, name, prefix string, value *string, flags gurps.AttributeFlags) {
-	choices, current := gurps.AttributeChoices(p.entity, prefix, flags, *value)
-	addCentered(parent, compactPopup(&p.sentenceRows, key, name, choices, current,
-		func(c *gurps.AttributeChoice) string { return c.Title }, func(c *gurps.AttributeChoice) { *value = c.Key }))
 }
 
 // powerSourceChip adds the optional power source criterion of a spell prerequisite. "Same as this spell's" is offered

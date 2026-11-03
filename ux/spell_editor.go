@@ -70,10 +70,7 @@ func initSpellEditor(e *editor[*gurps.Spell, *gurps.SpellEditData], content *uni
 					e.editorData.Points, localName, localPowerSource, localColleges, e.editorData.Tags, nil))
 				levelAt := func(points fxp.Int) gurps.Level {
 					if e.target.IsRitualMagic() {
-						return gurps.CalculateRitualMagicSpellLevel(entity, localName, localPowerSource,
-							nameable.Apply(e.editorData.RitualSkillName, replacements),
-							e.editorData.PrereqCount, localColleges, e.editorData.Tags, e.editorData.Difficulty,
-							points)
+						return e.target.RitualMagicLevelWith(e.editorData, points)
 					}
 					return gurps.CalculateSpellLevel(entity, localName, localPowerSource, localColleges,
 						e.editorData.Tags, e.editorData.Difficulty, points)

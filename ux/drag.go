@@ -40,6 +40,7 @@ var (
 	featureDragKey             = unison.CreatePrivateDataType("gcs.feature")
 	listFilterDragKey          = unison.CreatePrivateDataType("gcs.list-filter")
 	defaultDragKey             = unison.CreatePrivateDataType("gcs.default")
+	levelCapDragKey            = unison.CreatePrivateDataType("gcs.level-cap")
 )
 
 var (
@@ -71,6 +72,7 @@ var allDragDataTypes = []*uti.DataType{
 	featureDragKey,
 	listFilterDragKey,
 	defaultDragKey,
+	levelCapDragKey,
 	nameableOptionDragKey,
 }
 

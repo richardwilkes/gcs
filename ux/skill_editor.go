@@ -224,9 +224,7 @@ func initSkillEditor(e *editor[*gurps.Skill, *gurps.SkillEditData], content *uni
 				}
 				levelAt := func(def *gurps.SkillDefault, points fxp.Int) gurps.Level {
 					if e.target.IsTechnique() {
-						return gurps.CalculateTechniqueLevel(entity, e.target.NameableReplacements(), localName, localSpec,
-							e.editorData.Tags, e.editorData.TechniqueDefault, adjDiff.Difficulty, points, true,
-							e.editorData.TechniqueLimitModifier, nil)
+						return e.target.TechniqueLevelWith(e.editorData, points)
 					}
 					return gurps.CalculateSkillLevel(entity, localName, localSpec, localOptionalSpec, e.editorData.Tags,
 						def, adjDiff, points, e.editorData.EncumbrancePenaltyMultiplier)

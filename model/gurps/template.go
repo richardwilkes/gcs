@@ -114,10 +114,12 @@ func (t *Template) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 	NormalizeTemplateChoiceContainers(t.Skills...)
 	NormalizeTemplateChoiceContainers(t.Spells...)
 	NormalizeTemplateChoiceContainers(t.Equipment...)
-	// Study and disabling only mean something on a character sheet, so any a template carries is removed.
+	// Study, user descriptions and disabling only mean something on a character sheet, so any a template carries are
+	// removed.
 	ClearStudy(t.Traits...)
 	ClearStudy(t.Skills...)
 	ClearStudy(t.Spells...)
+	ClearUserDesc(t.Traits...)
 	ClearDisabled(t.Skills...)
 	ClearDisabled(t.Spells...)
 	ClearDisabled(t.Equipment...)

@@ -668,29 +668,43 @@ func (s *Spell) calculateLevel(points fxp.Int) Level {
 }
 
 // calculateLevelExcept is calculateLevel without the levels grants carried by exclude merged into the spell, or by the
-// item whose prerequisites are being judged when exclude is nil; see grantState.applyLevelNotes and Entity.judgingOr.
-// A Ritual Magic spell is held to its limit; see grantState.applyLevelsWithinLimit.
+// item whose prerequisites are being judged when exclude is nil, and, while an editor previews edits, with those of
+// the grants that would then merge into it in place of those merging into it now; see grantState.applyLevelNotes,
+// Entity.judgingOr and Entity.grantsAsEdited.
+// A Ritual Magic spell is held to its limit; see grantState.applyLevelsWithinLimit. The sheet's level caps are applied
+// last, to the level with everything else in it; see Entity.capLevel.
 func (s *Spell) calculateLevelExcept(exclude any, points fxp.Int) Level {
 	e := EntityFromNode(s)
 	exclude = e.judgingOr(exclude)
 	level := s.levelFromAdjustedPoints(points)
 	levelAt := func(points fxp.Int) Level { return s.levelAt(e, points) }
+	state := e.grantsAsEdited(s)
 	if s.IsRitualMagic() {
-		return s.grant.applyLevelsWithinLimit(exclude, level, levelAt)
+		level = state.applyLevelsWithinLimit(exclude, level, levelAt)
+	} else {
+		level = state.applyLevels(exclude, level, levelAt)
 	}
-	return s.grant.applyLevels(exclude, level, levelAt)
+	return e.capSpellLevel(s, s, exclude, level)
 }
 
 // levelFromAdjustedPoints returns the level the spell has with the given adjusted points, without what grants made of
 // it.
 func (s *Spell) levelFromAdjustedPoints(points fxp.Int) Level {
 	if s.IsRitualMagic() {
-		return CalculateRitualMagicSpellLevel(EntityFromNode(s), s.NameWithReplacements(),
-			s.PowerSourceWithReplacements(), s.RitualSkillNameWithReplacements(), s.PrereqCount,
-			s.CollegeWithReplacements(), s.Tags, s.Difficulty, points)
+		return s.ritualMagicLevel(s, points)
 	}
 	return CalculateSpellLevel(EntityFromNode(s), s.NameWithReplacements(), s.PowerSourceWithReplacements(),
 		s.CollegeWithReplacements(), s.Tags, s.Difficulty, points)
+}
+
+// ritualMagicLevel returns the level the Ritual Magic spell has with the given adjusted points, without what grants
+// made of it, with onSheet, the spell on the sheet, which the receiver is or holds an editor's edits for, passed over
+// by the level caps met on the way; see Entity.passOver.
+func (s *Spell) ritualMagicLevel(onSheet *Spell, points fxp.Int) Level {
+	e := EntityFromNode(s)
+	defer e.passOver(onSheet)()
+	return CalculateRitualMagicSpellLevel(e, s.NameWithReplacements(), s.PowerSourceWithReplacements(),
+		s.RitualSkillNameWithReplacements(), s.PrereqCount, s.CollegeWithReplacements(), s.Tags, s.Difficulty, points)
 }
 
 // IncrementSkillLevel adds enough points to increment the skill level to the next level. Containers and disabled
@@ -761,10 +775,11 @@ func (s *Spell) baseUnresolved(e *Entity) bool {
 }
 
 // ritualMagicBases returns the ritual skills the Ritual Magic spell's level may rest on as the sheet sees them, as
-// CalculateRitualMagicSpellLevel takes them: for each of its colleges, or none when it has none, the ritual skill of
-// that college and the generic one (see ritualMagicDefaults), neither of which the spell rises above once the skill
-// bonuses to it for that college are added.
+// ritualMagicLevel takes them: for each of its colleges, or none when it has none, the ritual skill of that college and
+// the generic one (see ritualMagicDefaults), neither of which the spell rises above once the skill bonuses to it for
+// that college are added.
 func (s *Spell) ritualMagicBases(e *Entity) []techniqueBase {
+	defer e.passOver(s)()
 	colleges := s.CollegeWithReplacements()
 	if len(colleges) == 0 {
 		colleges = []string{""}
@@ -1150,15 +1165,32 @@ func (s *Spell) PointsWithGrants(data *SpellEditData, points fxp.Int) fxp.Int {
 }
 
 // LevelWithGrants returns the level with the levels grants merged into the spell added, as CalculateLevel adds them,
-// for a level computed from the edit data in place of the spell's own (see PointsWithGrants). levelAt returns the level
-// that data gives with the given points in place of the spell's own, which the level a Keep Highest or Keep Lowest
-// grant keeps is read with, and which holds a Ritual Magic spell to its limit.
+// and held to the sheet's level caps as the edit data selects them, for a level computed from the edit data in place
+// of the spell's own (see PointsWithGrants): the level the sheet would show once the edits are applied. levelAt
+// returns the level that data gives with the given points in place of the spell's own, which the level a Keep Highest
+// or Keep Lowest grant keeps is read with, and which holds a Ritual Magic spell to its limit.
 func (s *Spell) LevelWithGrants(data *SpellEditData, level Level, levelAt func(points fxp.Int) Level) Level {
-	state := grantsWithEdits(s, s.withEditData(data))
+	edited := s.withEditData(data)
+	state := grantsWithEdits(s, edited)
 	if s.IsRitualMagic() {
-		return state.applyLevelsWithinLimit(nil, level, levelAt)
+		level = state.applyLevelsWithinLimit(nil, level, levelAt)
+	} else {
+		level = state.applyLevels(nil, level, levelAt)
 	}
-	return state.applyLevels(nil, level, levelAt)
+	return EntityFromNode(s).capSpellLevel(edited, s, nil, level)
+}
+
+// RitualMagicLevelWith returns the level the Ritual Magic spell has with the edit data in place of its own and the
+// given points, already adjusted for the point bonuses, before what grants make of it (see LevelWithGrants), as the
+// sheet computes it once the edits are applied: the level caps met on the way see the spell as edited (see
+// Entity.matchLevelCapsAs) and pass it over (see Entity.passOver).
+func (s *Spell) RitualMagicLevelWith(data *SpellEditData, points fxp.Int) Level {
+	edited := s.withEditData(data)
+	e := EntityFromNode(s)
+	if e.hasLevelCaps() {
+		defer e.matchLevelCapsAs(s, edited)()
+	}
+	return edited.ritualMagicLevel(s, points)
 }
 
 // withEditData returns a copy of the spell holding the edit data in place of its own.
@@ -1176,12 +1208,15 @@ func (s *Spell) pointsForPrereqsOf(exclude any) fxp.Int {
 }
 
 // adjustedPointsExcept is AdjustedPoints without the points grants carried by exclude gave the spell, or by the item
-// whose prerequisites are being judged when exclude is nil; see grantState.pointsExcept and Entity.judgingOr.
+// whose prerequisites are being judged when exclude is nil, and, while an editor previews edits, with those of the
+// grants that would then merge into it in place of those merging into it now; see grantState.pointsExcept,
+// Entity.judgingOr and Entity.grantsAsEdited.
 func (s *Spell) adjustedPointsExcept(exclude any, tooltip *xbytes.InsertBuffer) fxp.Int {
 	if !s.Enabled() {
 		return 0
 	}
-	exclude = EntityFromNode(s).judgingOr(exclude)
+	e := EntityFromNode(s)
+	exclude = e.judgingOr(exclude)
 	if s.Container() {
 		// The tooltip goes no further: a container never puts anything into it; see PointsRange for why.
 		if !s.TemplatePicker.IsZero() {
@@ -1196,7 +1231,7 @@ func (s *Spell) adjustedPointsExcept(exclude any, tooltip *xbytes.InsertBuffer) 
 		}
 		return total
 	}
-	return s.grant.applyPoints(exclude, AdjustedPointsForNonContainerSpell(EntityFromNode(s), s.Points,
+	return e.grantsAsEdited(s).applyPoints(exclude, AdjustedPointsForNonContainerSpell(e, s.Points,
 		s.NameWithReplacements(), s.PowerSourceWithReplacements(), s.CollegeWithReplacements(), s.Tags, tooltip), tooltip)
 }
 

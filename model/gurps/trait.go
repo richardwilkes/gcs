@@ -223,9 +223,6 @@ func (t *Trait) templateChoiceContainerExclusions() []string {
 	if t.VTTNotes != "" {
 		list = append(list, i18n.Text("VTT notes"))
 	}
-	if t.UserDesc != "" {
-		list = append(list, i18n.Text("user description"))
-	}
 	if len(t.Tags) != 0 {
 		list = append(list, i18n.Text("tags"))
 	}
@@ -261,7 +258,6 @@ func (t *Trait) clearTemplateChoiceContainerExclusions() {
 		t.ClearUnusedFieldsForType()
 	}
 	t.VTTNotes = ""
-	t.UserDesc = ""
 	t.Tags = nil
 	t.Modifiers = nil
 	t.NameableLinks = nil
@@ -277,6 +273,18 @@ func (t *Trait) clearTemplateChoiceContainerExclusions() {
 func (t *Trait) clearStudy() {
 	t.Study = nil
 	t.StudyHoursNeeded = study.Standard
+}
+
+// ClearUserDesc removes the user descriptions of the traits among the nodes and their children. A user description is
+// the user's own note on a trait of their character sheet, so it only means something there. The copy of a trait a
+// grant holds is left alone, since it only ever reaches a sheet.
+func ClearUserDesc[T Node[T]](nodes ...T) {
+	Traverse(func(node T) bool {
+		if t, ok := any(node).(*Trait); ok {
+			t.UserDesc = ""
+		}
+		return false
+	}, false, false, nodes...)
 }
 
 func traitKind(isContainer bool) byte {

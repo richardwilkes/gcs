@@ -426,7 +426,7 @@ func TestSheetSettingsSellMoneyBanding(t *testing.T) {
 			return
 		}
 		for _, row := range d.sellMoneyRows {
-			center := sellMoneyRowBounds(row, area).Center()
+			center := listRowBounds(row, area).Center()
 			samples = append(samples, pixels.NRGBAAt(int(center.X), int(center.Y)))
 		}
 	})

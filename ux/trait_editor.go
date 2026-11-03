@@ -49,11 +49,16 @@ func initTraitEditor(e *editor[*gurps.Trait, *gurps.TraitEditData], content *uni
 		}
 		return e.editorData.Levels, true
 	}
+	// A user description is the user's own note on a trait of their character sheet, so a trait anywhere else has
+	// none, save a grant's copy, which goes to the sheet with whatever the grant gives it.
+	entity := gurps.EntityFromNode(e.target)
 	addNameLabelAndField(content, &e.editorData.Name)
 	addNotesLabelAndField(content, &e.editorData.LocalNotes)
 	if !choice {
 		addVTTNotesLabelAndField(content, &e.editorData.VTTNotes)
-		addUserDescLabelAndField(content, &e.editorData.UserDesc)
+		if entity != nil || granted {
+			addUserDescLabelAndField(content, &e.editorData.UserDesc)
+		}
 		addTagsLabelAndField(content, &e.editorData.Tags)
 		addPreconfigurable(e, content)
 		addPickSeparately(content, e.target, &e.editorData.PickSeparately)
@@ -64,7 +69,6 @@ func initTraitEditor(e *editor[*gurps.Trait, *gurps.TraitEditData], content *uni
 	}
 	var perLevelField, levelField *DecimalField
 	var maxLevelField *StringField
-	entity := gurps.EntityFromNode(e.target)
 	if !e.target.Container() {
 		wrapper, _ := addFlowWrapper(content, i18n.Text("Point Cost"), 2)
 		costField := NewNonEditableField(func(field *NonEditableField) {
