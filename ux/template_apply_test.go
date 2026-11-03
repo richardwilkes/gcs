@@ -10,9 +10,11 @@
 package ux
 
 import (
+	"path/filepath"
 	"testing"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/srcstate"
 	"github.com/richardwilkes/gcs/v5/ux/uxtest"
 	"github.com/richardwilkes/toolbox/v2/check"
 )
@@ -155,4 +157,45 @@ func TestApplyTemplateUndoRestoresBodyType(t *testing.T) {
 
 	sheet.undoMgr.Undo()
 	c.Equal(originalBody.Name, entity.SheetSettings.BodyType.Name, "undo must leave the body type alone as well")
+}
+
+// TestApplyLibraryTemplateSourcesItsItems verifies that the items a template in a library puts on a sheet, their
+// modifiers included, have the template as their source and match the template's copy of them.
+func TestApplyLibraryTemplateSourcesItsItems(t *testing.T) {
+	c := check.New(t)
+	_, user := uxtest.UseTestLibraries(t, c)
+	RegisterKnownFileTypes()
+	uxtest.SwapForTest(t, &promptForTraitModifiers, func(_ *modifierPromptInfo, _ []*gurps.TraitModifier) (changed, canceled bool) {
+		return false, false
+	})
+	sheet := newTestSheetForTemplate(t)
+	libFile := gurps.LibraryFile{Library: user.Key(), Path: "Templates/Test" + gurps.TemplatesExt}
+	p := filepath.Join(user.Path(false), filepath.FromSlash(libFile.Path))
+	data := gurps.NewTemplate()
+	trait := gurps.NewTrait(nil, nil, false)
+	trait.Name = "Claws"
+	modifier := gurps.NewTraitModifier(nil, nil, false)
+	modifier.Name = "Long"
+	trait.Modifiers = []*gurps.TraitModifier{modifier}
+	data.Traits = []*gurps.Trait{trait}
+	c.NoError(data.Save(p))
+	d, err := NewTemplateFromFile(p)
+	c.NoError(err)
+	template, ok := d.(*Template)
+	c.True(ok)
+
+	c.True(template.applyTemplateToSheet(sheet, promptOperation{}, true), "the template must be applied")
+	var applied *gurps.Trait
+	for _, one := range sheet.Entity().Traits {
+		if one.Name == trait.Name {
+			applied = one
+		}
+	}
+	if applied == nil || len(applied.Modifiers) != 1 {
+		t.Fatal("the trait and its modifier must have been applied")
+	}
+	c.Equal(gurps.Source{LibraryFile: libFile, TID: trait.TID}, applied.Source)
+	c.Equal(gurps.Source{LibraryFile: libFile, TID: modifier.TID}, applied.Modifiers[0].Source)
+	state, _ := gurps.MatchSource(applied)
+	c.Equal(srcstate.Matched, state)
 }
