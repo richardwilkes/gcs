@@ -212,6 +212,17 @@ func (sm *SrcMatcher) prepareHashesFor(libFile LibraryFile) {
 		if data, err = NewNotesFromFile(dir, file); err == nil {
 			NodesToHashesByID(srcData.dataHashes, data...)
 		}
+	case TemplatesExt:
+		var data *Template
+		if data, err = NewTemplateFromFile(dir, file); err == nil {
+			forEachSourcedNode(data, func(node sourcedNode) {
+				if one, ok := node.(SrcProvider); ok {
+					if _, exists := srcData.dataHashes[one.ID()]; !exists {
+						srcData.dataHashes[one.ID()] = HashAndData{Hash: Hash64(one), Data: one}
+					}
+				}
+			})
+		}
 	}
 	sm.libHashes[libFile] = srcData
 }
