@@ -2307,12 +2307,6 @@ func (e *Entity) attributeForPrereqs(attr *Attribute, current bool) fxp.Int {
 	return attr.maximumWithBonus(bonus)
 }
 
-// PreservesUserDesc returns true if the user description widget should be preserved when written to disk. Normally,
-// only character sheets should return true for this.
-func (e *Entity) PreservesUserDesc() bool {
-	return true
-}
-
 // Ancestry returns the current Ancestry.
 func (e *Entity) Ancestry() *Ancestry {
 	var anc *Ancestry

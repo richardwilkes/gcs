@@ -311,18 +311,22 @@ func TestApplyOptionsFor(t *testing.T) {
 	sheetToSheet.promptForChoices = false
 	c.Equal(sheetToSheet, applyOptionsFor(loot.Equipment.Table, sheet.CarriedEquipment.Table),
 		"a sheet to a sheet is a plain copy, save for what a sheet can't hold and the ancestry questions")
-	c.Equal(applyOptions{normalizeChoices: true, promptForChoices: true, clearStudy: true},
+	c.Equal(applyOptions{normalizeChoices: true, promptForChoices: true, clearSheetOnly: true},
 		applyOptionsFor(library, template.Traits.Table),
-		"a library to a template normalizes choice containers, clears study and prompts for modifiers and nameables only")
-	c.Equal(applyOptions{normalizeChoices: true, clearStudy: true},
+		"a library to a template normalizes choice containers, clears what only a sheet holds and prompts for "+
+			"modifiers and nameables only")
+	c.Equal(applyOptions{normalizeChoices: true, clearSheetOnly: true},
 		applyOptionsFor(template.Traits.Table, template.Traits.Table),
-		"a template to a template is a plain copy, save for normalizing choice containers and clearing study")
-	c.Equal(applyOptions{normalizeChoices: true, clearStudy: true},
+		"a template to a template is a plain copy, save for normalizing choice containers and clearing what only a "+
+			"sheet holds")
+	c.Equal(applyOptions{normalizeChoices: true, clearSheetOnly: true},
 		applyOptionsFor(sheet.Traits.Table, template.Traits.Table),
-		"a sheet to a template is a plain copy, save for normalizing choice containers and clearing study")
-	c.Equal(applyOptions{clearTemplateOnly: true, clearStudy: true}, applyOptionsFor(template.Traits.Table, library),
-		"anything to a library is a plain copy, Preconfigured flag included, save for study and the choices only a "+
-			"template can hold")
+		"a sheet to a template is a plain copy, save for normalizing choice containers and clearing what only a "+
+			"sheet holds")
+	c.Equal(applyOptions{clearTemplateOnly: true, clearSheetOnly: true},
+		applyOptionsFor(template.Traits.Table, library),
+		"anything to a library is a plain copy, Preconfigured flag included, save for what only a sheet holds and the "+
+			"choices only a template can hold")
 }
 
 // TestDropWithinASheetSurvivesTheSourceTableBeingReplaced verifies that a drag from one list on a sheet to another is

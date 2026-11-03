@@ -9,8 +9,8 @@ trap 'echo -e "\033[33;5mBuild failed on build.sh:$LINENO\033[0m"' ERR
 ROOT=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 cd "$ROOT"
 
-# The go.mod for github.com/richardwilkes/gcs/v5 must be here, not in a directory above. Workspace mode is turned off for
-# the check so that the answer describes this directory alone rather than whatever go.work is in effect.
+# The go.mod for github.com/richardwilkes/gcs/v5 must be here, not in a directory above. Workspace mode is turned off
+# for the check so that the answer describes this directory alone rather than whatever go.work is in effect.
 MODULE_PATH=github.com/richardwilkes/gcs/v5
 if ! FOUND_MODULE=$(GOWORK=off go list -m -f '{{.Path}} {{.Dir}}' 2>/dev/null) ||
 	[ "${FOUND_MODULE%% *}" != "$MODULE_PATH" ] ||

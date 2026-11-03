@@ -136,7 +136,6 @@ func TestTemplateLoadNormalizesChoiceContainers(t *testing.T) {
 	choice.Ancestry = "Human"
 	choice.Modifiers = []*TraitModifier{NewTraitModifier(nil, nil, false)}
 	choice.VTTNotes = "vtt"
-	choice.UserDesc = "desc"
 	choice.Tags = []string{"Advantage"}
 	choice.SelfControl = selfctrl.CR12
 	choice.Frequency = frequency.FR9
@@ -170,7 +169,6 @@ func TestTemplateLoadNormalizesChoiceContainers(t *testing.T) {
 	loadedChoice := loaded.Traits[0].Children[0]
 	c.Equal(0, len(loadedChoice.Modifiers), "a choice container must not keep modifiers")
 	c.Equal("", loadedChoice.VTTNotes, "a choice container must not keep VTT notes")
-	c.Equal("", loadedChoice.UserDesc, "a choice container must not keep a user description")
 	c.Equal(0, len(loadedChoice.Tags), "a choice container must not keep tags")
 	c.Equal(selfctrl.None, loadedChoice.SelfControl, "a choice container must not keep a self-control roll")
 	c.Equal(frequency.None, loadedChoice.Frequency, "a choice container must not keep a frequency")
