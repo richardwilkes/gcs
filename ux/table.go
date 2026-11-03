@@ -380,8 +380,15 @@ func expandPageRefColumns[T gurps.Node[T]](table *unison.Table[*Node[T]], excess
 	return changed
 }
 
+// libraryFileFromTable returns the library file holding the table, which only a list or a template in a library has.
 func libraryFileFromTable[T gurps.Node[T]](table *unison.Table[*Node[T]]) gurps.LibraryFile {
-	if d := table.Ancestor[*TableDockable[T]](); d != nil {
+	var d FileBackedDockable
+	if list := table.Ancestor[*TableDockable[T]](); list != nil {
+		d = list
+	} else if template := table.Ancestor[*Template](); template != nil {
+		d = template
+	}
+	if d != nil {
 		for _, lib := range gurps.GlobalSettings().Libraries.List() {
 			libPathOnDisk := lib.Data().PathOnDisk + string(filepath.Separator)
 			filePathOnDisk := d.BackingFilePath()

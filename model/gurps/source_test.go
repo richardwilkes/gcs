@@ -342,6 +342,63 @@ func TestSourceHashesFollowTheLibraryFile(t *testing.T) {
 	c.Equal(srcstate.Missing, state, "a data owner's matcher drops the file of a library that is gone as well")
 }
 
+// TestTemplateSourcesMatch verifies that the items of a template in a library, their modifiers included, are found
+// there by the nodes copied from it, and that such a node syncs with the template's copy.
+func TestTemplateSourcesMatch(t *testing.T) {
+	c := check.New(t)
+	isolateUnownedSrcMatcher(t)
+	registerTestFileTypes(t, TemplatesExt)
+	libFile := LibraryFile{Library: "Test Library", Path: "Templates/Test" + TemplatesExt}
+	p := filepath.Join(useTestLibrary(t, libFile.Library), filepath.FromSlash(libFile.Path))
+	tmpl := NewTemplate()
+	trait := NewTrait(tmpl, nil, false)
+	trait.Name = "Claws"
+	traitMod := NewTraitModifier(tmpl, nil, false)
+	traitMod.Name = "Long"
+	trait.Modifiers = []*TraitModifier{traitMod}
+	tmpl.Traits = []*Trait{trait}
+	skill := NewSkill(tmpl, nil, false)
+	skill.Name = "Climbing"
+	tmpl.Skills = []*Skill{skill}
+	spell := NewSpell(tmpl, nil, false)
+	spell.Name = "Light"
+	tmpl.Spells = []*Spell{spell}
+	eqp := NewEquipment(tmpl, nil, false)
+	eqp.Name = "Rope"
+	eqpMod := NewEquipmentModifier(tmpl, nil, false)
+	eqpMod.Name = "Silk"
+	eqp.Modifiers = []*EquipmentModifier{eqpMod}
+	tmpl.Equipment = []*Equipment{eqp}
+	note := NewNote(tmpl, nil, false)
+	note.MarkDown = "Remember"
+	tmpl.Notes = []*Note{note}
+	c.NoError(tmpl.Save(p))
+
+	localTrait := trait.Clone(libFile, nil, nil, Reference)
+	localSkill := skill.Clone(libFile, nil, nil, Reference)
+	localEqp := eqp.Clone(libFile, nil, nil, Reference)
+	var sm SrcMatcher
+	sm.prepareHashesFor(libFile)
+	for _, local := range []SrcProvider{
+		localTrait,
+		localTrait.Modifiers[0],
+		localSkill,
+		spell.Clone(libFile, nil, nil, Reference),
+		localEqp,
+		localEqp.Modifiers[0],
+		note.Clone(libFile, nil, nil, Reference),
+	} {
+		state, _ := sm.Match(local)
+		c.Equal(srcstate.Matched, state, local.GetSource().TID)
+	}
+
+	localSkill.Name = "Local"
+	state, _ := MatchSource(localSkill)
+	c.Equal(srcstate.Mismatched, state)
+	localSkill.SyncWithSource()
+	c.Equal("Climbing", localSkill.Name, "a node syncs with the template's copy")
+}
+
 // TestSharedMatcherHoldsOnlyTheFilesLastUsed verifies that the shared matcher holds no more than maxUnownedSrcFiles
 // library files, letting go of the one used longest ago.
 func TestSharedMatcherHoldsOnlyTheFilesLastUsed(t *testing.T) {
