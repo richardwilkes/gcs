@@ -160,6 +160,41 @@ func TestTraitModifierCostUsesPurchasedLevels(t *testing.T) {
 		"the modifier's level still tracks the trait's current level, for its per-level features and display")
 }
 
+// TestTraitModifierUsingOwnerLevelAtZeroAndUnleveled verifies that a "use level from owner" modifier makes no cost
+// adjustment on a trait at level 0, adder or multiplier, and applies once on an unleveled trait.
+func TestTraitModifierUsingOwnerLevelAtZeroAndUnleveled(t *testing.T) {
+	c := check.New(t)
+	for _, tc := range []struct {
+		costAdj         string
+		unleveledPoints fxp.Int
+	}{
+		{costAdj: "+10", unleveledPoints: fxp.FromInteger(20)},
+		{costAdj: "+50%", unleveledPoints: fxp.FromInteger(15)},
+		{costAdj: "x2", unleveledPoints: fxp.FromInteger(20)},
+		{costAdj: "x50%", unleveledPoints: fxp.Five},
+	} {
+		e := NewEntity()
+		trait := NewTrait(e, nil, false)
+		trait.BasePoints = fxp.Ten
+		trait.CanLevel = true
+		trait.PointsPerLevel = fxp.Five
+		mod := NewTraitModifier(e, nil, false)
+		mod.CostAdj = tc.costAdj
+		mod.UseLevelFromTrait = true
+		trait.Modifiers = []*TraitModifier{mod}
+		trait.SetDataOwner(e)
+		e.Traits = append(e.Traits, trait)
+		e.Recalculate()
+
+		c.Equal(fxp.Ten, trait.AdjustedPoints(nil), tc.costAdj+" makes no adjustment at level 0")
+
+		trait.CanLevel = false
+		e.Recalculate()
+
+		c.Equal(tc.unleveledPoints, trait.AdjustedPoints(nil), tc.costAdj+" applies once on an unleveled trait")
+	}
+}
+
 // TestTraitDescriptionSelfControlSuffix verifies that the description cell shows the self-control roll suffix for every
 // roll other than "None required", including the "Never resist" case.
 func TestTraitDescriptionSelfControlSuffix(t *testing.T) {

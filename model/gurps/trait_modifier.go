@@ -398,14 +398,23 @@ func (t *TraitModifier) CostModifier() fxp.Fraction {
 // CostIgnoresLevel is set, the adjustment is not multiplied by the level here, which lets a modifier drive per-level
 // features from the trait's level without its own price being scaled by that level as well. A point adder whose
 // Affects is "levels only" is still charged for each of the trait's levels either way, since AdjustedPoints folds it
-// into the trait's cost per level.
+// into the trait's cost per level. At level 0 the adjustment is none at all: zero for an adder, and x1 (or x100%) for a
+// multiplier, which would otherwise zero the trait's whole cost.
 func (t *TraitModifier) CostModifierForTrait(trait *Trait) fxp.Fraction {
 	if t.Container() {
 		return fxp.Fraction{Denominator: fxp.One}
 	}
-	f := t.CostModifierType().ExtractFraction(t.CostAdj)
+	kind := t.CostModifierType()
+	f := kind.ExtractFraction(t.CostAdj)
 	if !t.CostIgnoresLevel && t.isLeveledForTrait(trait) {
-		f.Numerator = f.Numerator.Mul(t.costLevelsForTrait(trait))
+		switch levels := t.costLevelsForTrait(trait); {
+		case levels == 0 && kind == emweight.Multiplier:
+			f = fxp.Fraction{Numerator: fxp.One, Denominator: fxp.One}
+		case levels == 0 && kind == emweight.PercentageMultiplier:
+			f = fxp.Fraction{Numerator: fxp.Hundred, Denominator: fxp.One}
+		default:
+			f.Numerator = f.Numerator.Mul(levels)
+		}
 	}
 	f.Normalize()
 	return f
@@ -428,10 +437,7 @@ func (t *TraitModifier) costLevelsForTrait(trait *Trait) fxp.Int {
 	} else {
 		levels = t.Levels
 	}
-	if levels <= 0 {
-		levels = fxp.One
-	}
-	return levels
+	return levels.Max(0)
 }
 
 // IsLeveled returns true if this TraitModifier is leveled.
